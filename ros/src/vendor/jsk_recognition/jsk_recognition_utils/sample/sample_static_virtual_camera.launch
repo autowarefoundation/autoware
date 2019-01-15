@@ -1,0 +1,16 @@
+<launch>
+
+  <arg name="gui" default="true" />
+
+  <node name="static_virtual_camera"
+        pkg="jsk_recognition_utils" type="static_virtual_camera.py">
+  </node>
+
+  <group if="$(arg gui)">
+    <node name="image_view0"
+          pkg="image_view" type="image_view">
+      <remap from="image" to="static_virtual_camera/image_color" />
+    </node>
+  </group>
+
+</launch>

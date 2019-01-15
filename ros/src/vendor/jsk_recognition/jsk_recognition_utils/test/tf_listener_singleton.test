@@ -1,0 +1,10 @@
+<launch>
+
+  <node name="tf_publisher"
+        pkg="tf" type="static_transform_publisher"
+        args="0 0 1 0 0 0 base head 10" />
+
+  <test test-name="test_tf_listener_singleton"
+        pkg="jsk_recognition_utils" type="test_tf_listener_singleton" />
+
+</launch>
