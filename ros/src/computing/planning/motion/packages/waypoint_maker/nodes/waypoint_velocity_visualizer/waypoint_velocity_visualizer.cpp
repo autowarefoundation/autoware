@@ -179,11 +179,7 @@ void WaypointVelocityVisualizer::deleteMarkers()
 {
   velocity_marker_array_.markers.clear();
   visualization_msgs::Marker marker;
-#ifndef ROS_KINETIC
-  marker.action = visualization_msgs::Marker::DELETE;
-#else
   marker.action = visualization_msgs::Marker::DELETEALL;
-#endif
   velocity_marker_array_.markers.push_back(marker);
   velocity_marker_pub_.publish(velocity_marker_array_);
 }

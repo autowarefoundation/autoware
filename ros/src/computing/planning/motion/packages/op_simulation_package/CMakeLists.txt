@@ -47,10 +47,6 @@ catkin_package(
 ## Build ##
 ###########
 
-if ("${ROS_VERSION}" MATCHES "(kinetic)")
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DROS_KINETIC")
-endif()
-
 include_directories(
         include
         ${catkin_INCLUDE_DIRS}
