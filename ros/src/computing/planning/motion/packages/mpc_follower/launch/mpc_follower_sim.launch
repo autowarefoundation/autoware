@@ -1,0 +1,8 @@
+<launch>
+
+	<node pkg="mpc_follower" type="mpc_follower_node" name="mpc_follower_node" output="screen">
+		<param name="robot_interface" value="sim"/>
+		<rosparam command="load" file="$(find mpc_follower)/config/mpc_follower_config.yaml" />
+	</node>
+
+</launch>

@@ -1,0 +1,61 @@
+#---------------------------------------------------------------------
+# overall parameters
+#---------------------------------------------------------------------
+
+# control period [s]
+ctrl_dt: 0.1
+
+# time period for resampling trajectory [s]
+#   currentlly, resample uses linear interpolation, thus small sampling period
+#   causes sharp (not smoothing) path.
+traj_resample_dt: 0.1
+
+# path smoothing flug, must true except debugging
+use_path_smoothing: true
+
+# path smoothing low pass filter cut off frequency [Hz]
+path_smoothing_cutoff_hz: 1.0
+
+# curvature calculation smoothing, larger makes smoother
+#   curvature is calculated from three points: p(i-num), p(i), p(i+num)
+curvature_smoothing_num: 5
+
+# low pass filter for steering output command [Hz]
+steering_lpf_cutoff_hz: 3.0
+
+# stop mpc calculation when error is larger than the following value
+admisible_position_error: 5.0 #[m]
+admisible_yaw_error_deg: 45.0 #[deg]
+
+
+#---------------------------------------------------------------------
+# MPC algorithm parameters
+#---------------------------------------------------------------------
+
+# total prediction step
+mpc_n: 50
+
+# prediction period for one step [s] (predict holizon period = npc_n * mpc_dt)
+mpc_dt: 0.1
+
+# weight parameters
+mpc_weight_lat_error: 1.0      # for Q[0,0]
+mpc_weight_heading_error: 1.0  # for Q[1,1]
+mpc_weight_steering_input: 2.0 # for R[0,0]
+
+# time delay compensation
+mpc_delay_compensation_time: 0.035 #[s]
+
+
+#---------------------------------------------------------------------
+# vehicle model parameters
+#---------------------------------------------------------------------
+
+# steering dynamics time constant (1d approzimation) [s]
+vehicle_model_steer_tau: 0.3
+
+# wheel base length [m]
+vehicle_model_wheelbase: 2.9
+
+# steering angle limit [deg]
+vehicle_model_steer_lim_deg: 40.0
