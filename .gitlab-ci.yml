@@ -13,6 +13,7 @@ variables:
 .build: &build_common
   before_script:
     - apt-get update
+    - apt-get install -y gnupg2
     - apt-get install -y lsb-release
     - apt-get install -y gcc g++
     - sh -c "echo \"deb http://packages.ros.org/ros/ubuntu $ROS_CI_DESKTOP main\" > /etc/apt/sources.list.d/ros-latest.list"
