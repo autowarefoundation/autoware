@@ -1,0 +1,5 @@
+# UpdatePose.srv
+# This service is designed to specify localization
+# transformation manually
+geometry_msgs/TransformStamped transformation
+---

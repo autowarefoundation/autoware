@@ -1,0 +1,6 @@
+uint32 environment_id
+uint32 plane_index
+geometry_msgs/PolygonStamped polygon
+---
+bool result
+string reason
