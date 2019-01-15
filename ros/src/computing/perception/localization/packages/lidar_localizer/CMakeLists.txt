@@ -51,6 +51,7 @@ find_package(catkin REQUIRED COMPONENTS
         ndt_tku
         ndt_cpu
         autoware_health_checker
+        jsk_rviz_plugins
         ${PCL_OPENMP_PACKAGES}
         autoware_msgs
         autoware_config_msgs
@@ -60,7 +61,15 @@ find_package(catkin REQUIRED COMPONENTS
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-        CATKIN_DEPENDS std_msgs velodyne_pointcloud autoware_msgs autoware_config_msgs ndt_tku ndt_cpu ${PCL_OPENMP_PACKAGES}
+        CATKIN_DEPENDS
+        std_msgs
+        velodyne_pointcloud
+        autoware_msgs
+        autoware_config_msgs
+        ndt_tku
+        ndt_cpu
+        jsk_rviz_plugins
+        ${PCL_OPENMP_PACKAGES}
         DEPENDS PCL
 )
 
