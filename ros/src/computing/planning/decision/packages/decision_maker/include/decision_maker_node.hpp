@@ -390,7 +390,6 @@ private:
 public:
   state_machine::StateContext* ctx_vehicle;
   state_machine::StateContext* ctx_mission;
-  // state_machine::StateContext* ctx_drive;
   state_machine::StateContext* ctx_behavior;
   state_machine::StateContext* ctx_motion;
   VectorMap g_vmap;
@@ -411,13 +410,11 @@ public:
     std::string file_name_motion;
     private_nh_.getParam("state_vehicle_file_name", file_name_vehicle);
     private_nh_.getParam("state_mission_file_name", file_name_mission);
-    // private_nh_.getParam("state_drive_file_name", file_name_drive);
     private_nh_.getParam("state_behavior_file_name", file_name_behavior);
     private_nh_.getParam("state_motion_file_name", file_name_motion);
 
     ctx_vehicle = new state_machine::StateContext(file_name_vehicle, "autoware_states_vehicle");
     ctx_mission = new state_machine::StateContext(file_name_mission, "autoware_states_mission");
-    // ctx_drive = new state_machine::StateContext(file_name_drive, "autoware_states_drive");
     ctx_behavior = new state_machine::StateContext(file_name_behavior, "autoware_states_behavior");
     ctx_motion = new state_machine::StateContext(file_name_motion, "autoware_states_motion");
     init();

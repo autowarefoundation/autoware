@@ -34,7 +34,7 @@ void DecisionMakerNode::entryDriveState(cstring_t& state_name, int status)
     tryNextState("found_obstacle_in_stopped_area");
     return;
   }
-  
+
   tryNextState("clear");
 }
 
@@ -121,7 +121,6 @@ std::pair<uint8_t, int> DecisionMakerNode::getStopSignStateFromWaypoint(void)
 
 void DecisionMakerNode::entryGoState(cstring_t& state_name, int status)
 {
-  // setEventFlag("entry_stop_state", false);
 }
 void DecisionMakerNode::updateGoState(cstring_t& state_name, int status)
 {
@@ -141,7 +140,6 @@ void DecisionMakerNode::updateWaitState(cstring_t& state_name, int status)
 
 void DecisionMakerNode::entryStopState(cstring_t& state_name, int status)
 {
-  // setEventFlag("entry_stop_state", true);
 }
 void DecisionMakerNode::updateStopState(cstring_t& state_name, int status)
 {
