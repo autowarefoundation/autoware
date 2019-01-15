@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(catvehicle)
-set(ROS_VERSION $ENV{ROS_DISTRO})
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)

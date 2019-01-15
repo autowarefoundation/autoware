@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(vision_ssd_detect)
 
-set(ROS_VERSION $ENV{ROS_DISTRO})
-
 include(FindPkgConfig)
 
 find_package(autoware_build_flags REQUIRED)

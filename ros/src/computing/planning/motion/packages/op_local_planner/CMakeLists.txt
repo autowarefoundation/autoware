@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(op_local_planner)
-set(ROS_VERSION $ENV{ROS_DISTRO})
-
-
 
 find_package(autoware_build_flags REQUIRED)
 
@@ -50,10 +47,6 @@ catkin_package(
 ## Build ##
 ###########
 
-
-if ("${ROS_VERSION}" MATCHES "(kinetic)")
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DROS_KINETIC")
-endif()
 
 include_directories(
   include
