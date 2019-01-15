@@ -1,0 +1,16 @@
+<launch>
+  <node pkg="jsk_rviz_plugins"
+        type="overlay_sample.py"
+        respawn="true"
+        name="overlay_sample" />
+  <node pkg="jsk_perception"
+        type="image_publisher.py"
+        name="image_publisher">
+    <rosparam subst_value="true">
+      file_name: $(find jsk_perception)/sample/ros_diamondback.jpg
+    </rosparam>
+  </node>
+  <node pkg="rviz" type="rviz" name="rviz"
+        output="screen"
+        args="-d $(find jsk_rviz_plugins)/cfg/overlay_sample.rviz"/>
+</launch>
