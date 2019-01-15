@@ -1,0 +1,5 @@
+Header header
+geometry_msgs/Point target_point
+byte pick_or_release  # 0 -> pick, 1 -> release
+---
+bool success

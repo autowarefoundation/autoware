@@ -1,0 +1,9 @@
+# screen point
+float32 x
+float32 y
+bool no_update
+---
+# position in actual world
+std_msgs/Header header
+geometry_msgs/Point point
+geometry_msgs/Vector3 vector
