@@ -1,7 +1,7 @@
 stages:
   - build
   - deploy
-  
+
 variables:
   ROS_CI_DESKTOP: "`lsb_release -cs`"
   CI_SOURCE_PATH: $CI_PROJECT_DIR
@@ -31,8 +31,7 @@ variables:
     - test -f "${ROSINSTALL_FILE}" && wstool merge "${ROSINSTALL_FILE}"
     - wstool up
     - cd ..
-    - rosdep install -y --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} 
-    
+    - rosdep install -y --from-paths src --ignore-src --rosdistro ${ROS_DISTRO}
 
 build_kinetic:
   stage: build
@@ -47,7 +46,7 @@ build_kinetic:
     - git clone https://github.com/linux-test-project/lcov.git
     - cd lcov
     - git checkout v1.13
-    - make install 
+    - make install
     - cd ..
     - rm -r lcov
   # We first build the entire workspace normally
@@ -69,15 +68,15 @@ build_kinetic:
     - genhtml -p "$PWD" --legend --demangle-cpp lcov.total.filtered -o $COVERAGE_FOLDER_NAME
     - tar -czvf coverage.tar.gz $COVERAGE_FOLDER_NAME
     - mv coverage.tar.gz $CI_PROJECT_DIR/coverage.tar.gz
-    - ls $CI_PROJECT_DIR 
+    - ls $CI_PROJECT_DIR
   retry: 1
   artifacts:
     paths:
       - $CI_PROJECT_DIR/coverage.tar.gz
     expire_in: 48 hrs
   coverage: /\s*lines.*:\s(\d+\.\d+\%\s\(\d+\sof\s\d+.*\))/
-    
-build_cross:
+
+build_kinetic_cross:
   stage: build
   image: docker
   services:
@@ -116,6 +115,44 @@ build_cross:
                   '
   retry: 1
 
+build_melodic:
+  stage: build
+  image: ubuntu:bionic
+  variables:
+    ROS_DISTRO: melodic
+  <<: *build_common
+  script:
+  # colcon as a Debian package is only available in Kinetic and up
+    - apt-get install -y python3-colcon-common-extensions
+  # Install lcov ffrom the Ubuntu package. We need 1.13 at least.
+    - apt-get install -y lcov
+  # We first build the entire workspace normally
+    - colcon build --cmake-args -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_BUILD_TYPE=Debug
+  # And then build the tests target. catkin (ROS1) packages add their tests to the tests target
+  # which is not the standard target for CMake projects. We need to trigger the tests target so that
+  # tests are built and any fixtures are set up.
+    - colcon build --cmake-target tests --cmake-args -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_BUILD_TYPE=Debug
+    - lcov --initial --directory build --capture --output-file lcov.base
+    - colcon test
+    - colcon test-result
+    - lcov --directory build --capture --output-file lcov.test
+    - lcov -a lcov.base -a lcov.test -o lcov.total
+    - lcov -r lcov.total '*/tests/*' '*/test/*' '*/build/*' '*/devel/*' '/usr/*' '/opt/*' '*/CMakeCCompilerId.c' '*/CMakeCXXCompilerId.cpp' -o lcov.total.filtered
+    # BRANCH_NAME: gets branch name from CI_COMMIT_REF_NAME variable substituting / with _ (feature/test_this_lib becomes feature_test_this_lib)
+    # CI_COMMIT_REF_NAME: (from https://docs.gitlab.com/ee/ci/variables/) The branch or tag name for which project is built
+    - BRANCH_NAME="$(echo $CI_COMMIT_REF_NAME | sed 's/\//_/g')"
+    - COVERAGE_FOLDER_NAME="coverage_$BRANCH_NAME"
+    - genhtml -p "$PWD" --legend --demangle-cpp lcov.total.filtered -o $COVERAGE_FOLDER_NAME
+    - tar -czvf coverage.tar.gz $COVERAGE_FOLDER_NAME
+    - mv coverage.tar.gz $CI_PROJECT_DIR/coverage.tar.gz
+    - ls $CI_PROJECT_DIR
+  retry: 1
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/coverage.tar.gz
+    expire_in: 48 hrs
+  coverage: /\s*lines.*:\s(\d+\.\d+\%\s\(\d+\sof\s\d+.*\))/
+
 pages:
   stage: deploy
   image: alpine
@@ -132,4 +169,3 @@ pages:
   only:
     - master
     - develop
-
