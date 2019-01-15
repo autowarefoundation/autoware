@@ -1,0 +1,44 @@
+<launch>
+  <include file="$(find openni_launch)/launch/openni.launch">
+    <arg name="depth_registration" value="true"/>
+  </include>
+
+
+  <group ns="pcl_nodelet">
+    <node pkg="nodelet" type="nodelet" name="manager"
+          args="manager" output="screen"/>
+
+    <node pkg="nodelet" type="nodelet" name="voxel_grid"
+          args="load pcl/VoxelGrid manager"
+          output="screen"
+          clear_params="true"
+          respawn="false">
+      <remap from="~input" to="/camera/depth_registered/points"/>
+      <param name="filter_limit_min" value="0" />
+      <param name="filter_limit_max" value="5.0" />
+      <param name="leaf_size" value="0.01" />
+    </node>
+
+    <node pkg="nodelet" type="nodelet" name="normal_estimate"
+          args="load pcl/NormalEstimationOMP manager"
+          clear_params="true">
+      <remap from="~input" to="voxel_grid/output" />
+      <!-- <remap from="~output" to="/normal_concat/input" /> -->
+      <rosparam>
+        radius_search: 0
+        k_search: 10
+        # 0, => ANN, 1 => FLANN, 2 => Organized
+        spatial_locator: 2
+      </rosparam>
+    </node>
+    <node pkg="nodelet" type="nodelet" name="normal_concat"
+          args="load jsk_pcl/NormalConcatenater manager"
+          clear_params="true">
+      <remap from="~input" to="voxel_grid/output"/>
+      <remap from="~normal" to="normal_estimate/output"/>
+    </node>
+  </group>
+
+
+  <node pkg="rviz" name="rviz" type="rviz" args="-d $(find jsk_rviz_plugins)/cfg/normal_sample.rviz"/>
+</launch>

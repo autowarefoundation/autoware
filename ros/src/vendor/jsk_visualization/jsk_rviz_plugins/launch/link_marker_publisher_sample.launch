@@ -1,0 +1,15 @@
+<launch>
+  <include file="$(find pr2_description)/robots/upload_pr2.launch" />
+  <node pkg="jsk_rviz_plugins" type="link_marker_publisher.py"
+        name="link_marker_publisher">
+    <rosparam>
+      link: r_shoulder_pan_link
+    </rosparam>
+  </node>
+  <node pkg="joint_state_publisher" name="joint_state_publisher"
+        type="joint_state_publisher" />
+  <node pkg="robot_state_publisher" name="robot_state_publisher"
+        type="robot_state_publisher" />
+  <node pkg="rviz" type="rviz" name="rviz"
+        args="-d $(find jsk_rviz_plugins)/config/link_marker_publisher_sample.rviz" />
+</launch>

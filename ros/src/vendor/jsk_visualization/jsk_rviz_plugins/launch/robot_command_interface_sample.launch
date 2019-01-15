@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="rviz" type="rviz" name="$(anon rviz)"
+        args="-d $(find jsk_rviz_plugins)/cfg/robot_command_interface_sample.rviz">
+    <rosparam command="load" file="$(find jsk_rviz_plugins)/config/default_robot_command.yaml" />
+  </node>
+</launch>

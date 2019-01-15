@@ -1,0 +1,19 @@
+<launch>
+  <include file="$(find pr2_description)/robots/upload_pr2.launch" />
+  <node pkg="jsk_rviz_plugins" type="contact_state_sample.py"
+        name="contact_state_sample">
+    <rosparam>
+      links: [r_shoulder_pan_link, l_shoulder_pan_link, base_link, torso_lift_link]
+    </rosparam>
+  </node>
+  <node pkg="jsk_rviz_plugins" type="contact_state_marker.py"
+        name="contact_state_marker">
+    <remap from="~input" to="contact_state_sample/output" />
+  </node>
+  <node pkg="joint_state_publisher" name="joint_state_publisher"
+        type="joint_state_publisher" />
+  <node pkg="robot_state_publisher" name="robot_state_publisher"
+        type="robot_state_publisher" />
+  <node pkg="rviz" type="rviz" name="rviz"
+        args="-d $(find jsk_rviz_plugins)/config/contact_state_marker_sample.rviz" />
+</launch>

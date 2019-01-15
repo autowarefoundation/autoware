@@ -1,0 +1,56 @@
+robot_command_buttons:
+  - name: "Reset Pose"
+    icon: "package://jsk_rviz_plugins/icons/reset-pose.jpg"
+    type: euscommand
+    command: "(send *ri* :angle-vector (send *robot* :reset-pose) 5000))"
+  - name: "Reset Manip Pose"
+    icon: "package://jsk_rviz_plugins/icons/reset-manip-pose.jpg"
+    type: euscommand
+    command: "(send *ri* :angle-vector (send *robot* :reset-manip-pose) 5000)"
+  - name: "Init Pose"
+    icon: "package://jsk_rviz_plugins/icons/init-pose.jpg"
+    type: euscommand
+    command: "(send *ri* :angle-vector (send *robot* :init-pose) 5000)"
+  - name: "Hand reset pose"
+    icon: "package://jsk_rviz_plugins/icons/hand-reset-pose.jpg"
+    type: euscommand
+    command: "(progn (send *robot* :hand :arms :reset-pose) (send *ri* :hand-angle-vector (apply #'concatenate float-vector (send *robot* :hand :arms :angle-vector))))"
+  - name: "Hand hook pose"
+    icon: "package://jsk_rviz_plugins/icons/hand-hook-pose.jpg"
+    type: euscommand
+    command: "(progn (send *robot* :hand :arms :hook-pose) (send *ri* :hand-angle-vector (apply #'concatenate float-vector (send *robot* :hand :arms :angle-vector))))"
+  - name: "Hand grasp pose"
+    icon: "package://jsk_rviz_plugins/icons/hand-grasp-pose.jpg"
+    type: euscommand
+    command: "(progn (send *robot* :hand :arms :grasp-pose) (send *ri* :hand-angle-vector (apply #'concatenate float-vector (send *robot* :hand :arms :angle-vector))))"
+  - name: "Start ABC"
+    icon: "package://jsk_rviz_plugins/icons/start-abc.png"
+    type: euscommand
+    command: "(send *ri* :start-auto-balancer)"
+  - name: "Start ST"
+    icon: "package://jsk_rviz_plugins/icons/start-st.png"
+    type: euscommand
+    command: "(send *ri* :start-st)"
+  - name: "Start IMP"
+    icon: "package://jsk_rviz_plugins/icons/start-imp.png"
+    type: euscommand
+    command: "(send *ri* :start-impedance :arms :moment-gain #f(0 0 0) :k-p 1000 :d-p 400)"
+  - name: "Start IMP for Drill"
+    icon: "package://jsk_rviz_plugins/icons/start-imp-for-drill.png"
+    type: euscommand
+    command: "(send *ri* :start-impedance :rarm :force-gain #f(1 0 0) :moment-gain #f(0 0 0) :k-p 600 :d-p 60)"
+  - name: "Stop ABC"
+    icon: "package://jsk_rviz_plugins/icons/stop-abc.png"
+    type: euscommand
+    command: "(send *ri* :stop-auto-balancer)"
+  - name: "Stop ST"
+    icon: "package://jsk_rviz_plugins/icons/stop-st.png"
+    type: euscommand
+    command: "(send *ri* :stop-st)"
+  - name: "Stop IMP"
+    icon: "package://jsk_rviz_plugins/icons/stop-imp.png"
+    type: euscommand
+    command: "(send *ri* :stop-impedance :arms)"
+  - name: "sample"
+    type: emptysrv
+    srv: "/hoge"
