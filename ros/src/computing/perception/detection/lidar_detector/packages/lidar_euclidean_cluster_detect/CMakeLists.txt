@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
         grid_map_cv
         grid_map_msgs
         autoware_msgs
+        jsk_rviz_plugins
         )
 
 find_package(OpenMP)
@@ -37,6 +38,7 @@ catkin_package(
         grid_map_ros
         grid_map_cv
         grid_map_msgs
+        jsk_rviz_plugins
         INCLUDE_DIRS include
 )
 
