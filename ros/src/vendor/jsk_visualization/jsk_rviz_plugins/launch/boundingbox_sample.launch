@@ -1,0 +1,5 @@
+<launch>
+  <node pkg="jsk_rviz_plugins" type="bounding_box_sample.py"
+        name="bounding_box_sample" />
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find jsk_rviz_plugins)/config/bounding_box_sample.rviz" />
+</launch>
