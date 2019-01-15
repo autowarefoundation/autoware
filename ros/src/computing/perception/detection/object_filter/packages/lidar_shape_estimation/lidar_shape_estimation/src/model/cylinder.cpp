@@ -63,12 +63,14 @@ bool CylinderModel::estimate(const pcl::PointCloud<pcl::PointXYZ> &cluster, auto
   cv::Point2f center;
   float radius;
   cv::minEnclosingCircle(cv::Mat(cv_points).reshape(2), center, radius);
+  constexpr double ep = 0.001;
+  radius = std::max(radius, (float)ep);
   output.pose.position.x = center.x;
   output.pose.position.y = center.y;
   output.pose.position.z = centroid.z;
   output.dimensions.x = (double) radius * 2.0;
   output.dimensions.y = (double) radius * 2.0;
-  output.dimensions.z = (max_z - min_z);
+  output.dimensions.z = std::max((max_z - min_z), ep);
   output.pose_reliable = true;
   return true;
 }

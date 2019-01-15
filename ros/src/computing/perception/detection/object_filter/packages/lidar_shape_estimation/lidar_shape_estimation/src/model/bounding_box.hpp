@@ -35,5 +35,8 @@ public:
   {
   };
 
+/*
+ * minimum cluster size is 2.
+ */
   bool estimate(const pcl::PointCloud<pcl::PointXYZ> &cluster, autoware_msgs::DetectedObject &output) override;
 };

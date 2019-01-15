@@ -134,15 +134,22 @@ bool BoundingBoxModel::estimate(const pcl::PointCloud<pcl::PointXYZ> &cluster, a
   // calc yaw
   tf2::Quaternion quat;
   quat.setEuler(/* roll */ 0, /* pitch */ 0, /* yaw */ std::atan2(e_1_star.y(), e_1_star.x()));
+  
   output.pose.position.x = (intersection_x_1 + intersection_x_2) / 2.0;
   output.pose.position.y = (intersection_y_1 + intersection_y_2) / 2.0;
   output.pose.position.z = centroid.z;
   output.pose.orientation = tf2::toMsg(quat);
+  constexpr double ep = 0.001;
   output.dimensions.x = std::fabs(e_x.dot(diagonal_vec));
   output.dimensions.y = std::fabs(e_y.dot(diagonal_vec));
-
-  output.dimensions.z = (max_z - min_z);
+  output.dimensions.z = std::max((max_z - min_z), ep);
   output.pose_reliable = true;
+
+  // check wrong output
+  if(output.dimensions.x < ep && output.dimensions.y < ep)
+    return false;
+  output.dimensions.x = std::max(output.dimensions.x, ep);
+  output.dimensions.y = std::max(output.dimensions.y, ep);
   return true;
 }
 
