@@ -1,0 +1,3 @@
+string filename
+---
+geometry_msgs/PolygonStamped points
