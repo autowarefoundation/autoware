@@ -89,6 +89,8 @@ add_library(jsk_recognition_utils SHARED
   src/time_util.cpp
   )
 
+add_dependencies(jsk_recognition_utils jsk_recognition_msgs_generate_messages_cpp)
+
 if (CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
   add_rostest_gtest(test_tf_listener_singleton test/tf_listener_singleton.test src/tests/test_tf_listener_singleton.cpp)
