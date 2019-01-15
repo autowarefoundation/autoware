@@ -325,25 +325,6 @@ subs :
           sync :
             func : self.button_synchronization.GetValue()
 
-      - name : range_fusion
-        desc : range_fusion desc sample
-        cmd  : roslaunch range_fusion range_fusion.launch
-        param: car_fusion
-        gui  :
-          flags                  : [ open_dialog ]
-          config_dialog          : MyDialogCarPedestrian
-          car_pedestrian_obj_key : { car : car_fusion, pedestrian : pedestrian_fusion }
-          config_dialog_only     : [ min_low_height, max_low_height, max_height, min_points, dispersion ]
-          open_dialog_only       : [ car, pedestrian ]
-          open_dialog_ok_label   : Start
-          car :
-            user_category : Detection Target
-          pedestrian :
-            border : 16
-            flags  : [ left ]
-          sync :
-            func : self.button_synchronization.GetValue()
-
       - name : obj_reproj
         desc : obj_reproj desc sample
         cmd  : roslaunch obj_reproj obj_reproj.launch
