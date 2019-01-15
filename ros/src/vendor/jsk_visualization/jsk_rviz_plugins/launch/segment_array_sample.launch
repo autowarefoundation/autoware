@@ -1,0 +1,14 @@
+<launch>
+
+  <arg name="gui" default="true" />
+
+  <node name="polygon_array_sample"
+        pkg="jsk_rviz_plugins" type="segment_array_sample.py" />
+
+  <group if="$(arg gui)" >
+    <node name="rviz"
+          pkg="rviz" type="rviz"
+          args="-d $(find jsk_rviz_plugins)/cfg/segment_array_sample.rviz" />
+  </group>
+
+</launch>
