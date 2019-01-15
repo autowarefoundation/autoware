@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>grid_map_ros</name>
+  <version>1.6.0</version>
+  <description>ROS interface for the grid map library to manage two-dimensional grid maps with multiple data layers.</description>
+  <maintainer email="pfankhauser@ethz.ch">Péter Fankhauser</maintainer>
+  <license>BSD</license>
+  <url type="website">http://github.com/ethz-asl/grid_map</url>
+  <url type="bugtracker">http://github.com/ethz-asl/grid_map/issues</url>
+  <author email="pfankhauser@ethz.ch">Péter Fankhauser</author>
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>roscpp</depend>
+  <depend>grid_map_core</depend>
+  <depend>grid_map_msgs</depend>
+  <depend>grid_map_cv</depend>
+  <depend>sensor_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>cv_bridge</depend>
+  <depend>rosbag</depend>
+  <depend>tf</depend>
+  <depend>visualization_msgs</depend>
+</package>
