@@ -30,6 +30,7 @@ find_package(catkin REQUIRED COMPONENTS
         autoware_msgs
         autoware_config_msgs
         vector_map_msgs
+        jsk_rviz_plugins
         )
 
 catkin_package(
@@ -45,6 +46,7 @@ catkin_package(
         vector_map_msgs
         amathutils_lib
         state_machine_lib
+        jsk_rviz_plugins
 )
 include_directories(
         include
