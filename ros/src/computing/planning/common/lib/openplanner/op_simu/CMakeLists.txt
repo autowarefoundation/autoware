@@ -3,9 +3,6 @@ project(op_simu)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-# Get a ros version
-set(ROS_VERSION $ENV{ROS_DISTRO})
-
 
 find_package(autoware_build_flags REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
