@@ -1,0 +1,47 @@
+<launch>
+
+  <node name="object_array_publisher"
+        pkg="jsk_recognition_msgs" type="object_array_publisher.py">
+    <rosparam>
+      latch: true
+      objects:
+        - id: 1
+          name: avery_binder
+          class_id: 1
+          class_name: book
+          image_resources:
+            - package://jsk_arc2017_common/data/objects/avery_binder/top.jpg
+          mesh_resource: package://jsk_arc2017_common/data/objects/avery_binder/mesh/mesh.obj
+          weight: 0.382
+          dimensions:
+            x: 0.266
+            y: 0.294
+            z: 0.041
+        - id: 18
+          name: hinged_ruled_index_cards
+          class_id: 1
+          class_name: book
+          image_resources:
+            - package://jsk_arc2017_common/data/objects/hinged_ruled_index_cards/top.jpg
+          mesh_resource: package://jsk_arc2017_common/data/objects/hinged_ruled_index_cards/mesh/mesh.obj
+          weight: 0.098
+          dimensions:
+            x: 0.104
+            y: 0.127
+            z: 0.022
+        - id: 35
+          name: tennis_ball_container
+          class_id: 2
+          class_name: cylinder
+          image_resources:
+            - package://jsk_arc2017_common/data/objects/tennis_ball_container/top.jpg
+          mesh_resource: package://jsk_arc2017_common/data/objects/tennis_ball_container/mesh/mesh.obj
+          weight: 0.217
+          dimensions:
+            x: 0.077
+            y: 0.218
+            z: 0.077
+    </rosparam>
+  </node>
+
+</launch>
