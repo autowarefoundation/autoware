@@ -26,7 +26,7 @@ buttons:
     gui :
       flags : [ kill_children ]
   lgsvl_sim :
-    run : sh -c "roslaunch lgsvl_simulator_bridge lgsvl_simulator.launch"
+    run : sh -c "rosrun lgsvl_simulator_bridge rqt_lgsvl_simulator_configurator"
     gui :
       flags : [ kill_children ]
 
