@@ -209,7 +209,7 @@ VisualizeDetectedObjects::ObjectsToBoxes(const autoware_msgs::DetectedObjectArra
   for (auto const &object: in_objects.objects)
   {
     if (IsObjectValid(object) &&
-       object.label != "unknown" &&
+      (object.pose_reliable || object.label != "unknown") &&
         (object.dimensions.x + object.dimensions.y + object.dimensions.z) < object_max_linear_size_)
     {
       visualization_msgs::Marker box;
