@@ -23,7 +23,7 @@ Configure parameters using the `[app]` button.
 From a sourced command line:
 `roslaunch lidar_shape_estimation shape_estimation_clustering.launch`
 
-Launch files will also launch visualization node.
+Launch files also include the visualization node.
 
 ## Requirements
 
@@ -40,7 +40,7 @@ Launch files will also launch visualization node.
 ## Usage example
 
 1. Launch a ground filter algorithm from the `Points Preprocessor` section in the **Sensing** tab. (adjust the parameters to your vehicle setup).
-1. Launch a Lidar Detector from the Computing tab or fusion.
+1. Launch a Lidar Detector from the Computing tab.
 1. Launch this node.
 
 ## Node info
