@@ -256,7 +256,7 @@ subs :
             func : self.button_synchronization.GetValue()
       - name : lidar_shape_estimation
         desc : lidar_shape_estimation desc sample
-        cmd  : roslaunch shape_estimation shape_estimation.launch
+        cmd  : roslaunch shape_estimation shape_estimation_clustering.launch
         param: lidar_shape_estimation_param
         gui  :
           sync :
