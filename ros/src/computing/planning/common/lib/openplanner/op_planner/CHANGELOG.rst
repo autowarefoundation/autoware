@@ -2,8 +2,8 @@
 Changelog for package op_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.10.0 (2019-01-17)
+-------------------
 * Fix Ros/ROS naming convention
 * Contributors: Esteve Fernandez
 

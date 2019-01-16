@@ -2,8 +2,8 @@
 Changelog for package vector_map_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.10.0 (2019-01-17)
+-------------------
 * Fixes for catkin_make
 * Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/kfunaoka/Autoware/issues/1741>`_)
   * Switch to Apache 2

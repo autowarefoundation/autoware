@@ -2,8 +2,8 @@
 Changelog for package autoware_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.10.0 (2019-01-17)
+-------------------
 * Fix Kf/KF naming convention
 * Fix Dpm/DPM naming convention
 * Fix Ndt/NDT naming convention

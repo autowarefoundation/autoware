@@ -2,8 +2,8 @@
 Changelog for package data_preprocessor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.10.0 (2019-01-17)
+-------------------
 * Delete mysterious outputs
 * Use colcon as the build tool (`#1704 <https://github.com/kfunaoka/Autoware/issues/1704>`_)
   * Switch to colcon as the build tool instead of catkin

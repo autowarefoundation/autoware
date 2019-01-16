@@ -2,8 +2,8 @@
 Changelog for package vision_ssd_detect
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.10.0 (2019-01-17)
+-------------------
 * Fixes for catkin_make
 * [fix] SSD detector, cmake colcon (`#1837 <https://github.com/kfunaoka/Autoware/issues/1837>`_)
   * Fixes for new colcon script on ssd cuda based node
