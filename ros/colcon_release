@@ -21,7 +21,7 @@ if [ -f src/CMakeLists.txt ]; then
 	rm -r src/CMakeLists.txt
 fi
 
-COLCON_OPTS="--cmake-args -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs"
+COLCON_OPTS="--cmake-args -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs -DPYTHON_EXECUTABLE=/usr/bin/python3"
 
 export LIBRARY_PATH=/usr/lib/OpenNI2/Drivers:$LIBRARY_PATH
 colcon build $COLCON_OPTS $@
