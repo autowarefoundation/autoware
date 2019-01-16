@@ -43,6 +43,6 @@ foreach (dir launch rviz)
             DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${dir})
 endforeach (dir)
 
-install(PROGRAMS scripts/launch_sim.bash scripts/rqt_lgsvl_simulator_configurator/__init__.py scripts/rqt_lgsvl_simulator_configurator/configurator.py
+install(PROGRAMS scripts/launch_sim.bash src/lgsvl_simulator_bridge/__init__.py src/lgsvl_simulator_bridge/configurator.py
         DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
