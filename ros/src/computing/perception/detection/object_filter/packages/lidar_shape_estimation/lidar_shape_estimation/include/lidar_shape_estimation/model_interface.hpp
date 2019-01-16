@@ -27,13 +27,9 @@
 class ShapeEstimationModelInterface
 {
 public:
-  ShapeEstimationModelInterface()
-  {
-  };
+  ShapeEstimationModelInterface(){};
 
-  virtual ~ShapeEstimationModelInterface()
-  {
-  };
+  virtual ~ShapeEstimationModelInterface(){};
 
-  virtual bool estimate(const pcl::PointCloud<pcl::PointXYZ> &cluster, autoware_msgs::DetectedObject &ouput) = 0;
+  virtual bool estimate(const pcl::PointCloud<pcl::PointXYZ>& cluster, autoware_msgs::DetectedObject& ouput) = 0;
 };

@@ -31,22 +31,22 @@
 
 #include <Eigen/Core>
 
-bool BoundingBoxModel::estimate(const pcl::PointCloud<pcl::PointXYZ> &cluster, autoware_msgs::DetectedObject &output)
+bool BoundingBoxModel::estimate(const pcl::PointCloud<pcl::PointXYZ>& cluster, autoware_msgs::DetectedObject& output)
 {
   // calc centroid point for cylinder height(z)
   pcl::PointXYZ centroid;
   centroid.x = 0;
   centroid.y = 0;
   centroid.z = 0;
-  for (const auto &pcl_point : cluster)
+  for (const auto& pcl_point : cluster)
   {
     centroid.x += pcl_point.x;
     centroid.y += pcl_point.y;
     centroid.z += pcl_point.z;
   }
-  centroid.x = centroid.x / (double) cluster.size();
-  centroid.y = centroid.y / (double) cluster.size();
-  centroid.z = centroid.z / (double) cluster.size();
+  centroid.x = centroid.x / (double)cluster.size();
+  centroid.y = centroid.y / (double)cluster.size();
+  centroid.z = centroid.z / (double)cluster.size();
 
   // calc min and max z for cylinder length
   double min_z = 0;
@@ -60,11 +60,11 @@ bool BoundingBoxModel::estimate(const pcl::PointCloud<pcl::PointXYZ> &cluster, a
   }
 
   // calc circumscribed circle on x-y plane
-  cv::Mat_<float> cv_points((int) cluster.size(), 2);
+  cv::Mat_<float> cv_points((int)cluster.size(), 2);
   for (size_t i = 0; i < cluster.size(); ++i)
   {
-    cv_points(i, 0) = cluster.at(i).x; // x
-    cv_points(i, 1) = cluster.at(i).y; // y
+    cv_points(i, 0) = cluster.at(i).x;  // x
+    cv_points(i, 1) = cluster.at(i).y;  // y
   }
 
   /*
@@ -79,21 +79,21 @@ bool BoundingBoxModel::estimate(const pcl::PointCloud<pcl::PointXYZ> &cluster, a
   for (double theta = 0; theta < max_angle; theta += angle_reso)
   {
     Eigen::Vector2d e_1;
-    e_1 << std::cos(theta), std::sin(theta); // col.3, Algo.2
+    e_1 << std::cos(theta), std::sin(theta);  // col.3, Algo.2
     Eigen::Vector2d e_2;
-    e_2 << -std::sin(theta), std::cos(theta); // col.4, Algo.2
-    std::vector<double> C_1;                  // col.5, Algo.2
-    std::vector<double> C_2;                  // col.6, Algo.2
-    for (const auto &point : cluster)
+    e_2 << -std::sin(theta), std::cos(theta);  // col.4, Algo.2
+    std::vector<double> C_1;                   // col.5, Algo.2
+    std::vector<double> C_2;                   // col.6, Algo.2
+    for (const auto& point : cluster)
     {
       C_1.push_back(point.x * e_1.x() + point.y * e_1.y());
       C_2.push_back(point.x * e_2.x() + point.y * e_2.y());
     }
-    double q = calcClosenessCriterion(C_1, C_2); //col.7, Algo.2
-    Q.push_back(std::make_pair(theta, q));       // col.8, Algo.2
+    double q = calcClosenessCriterion(C_1, C_2);  // col.7, Algo.2
+    Q.push_back(std::make_pair(theta, q));        // col.8, Algo.2
   }
 
-  double theta_star; // col.10, Algo.2
+  double theta_star;  // col.10, Algo.2
   double max_q;
   for (size_t i = 0; i < Q.size(); ++i)
   {
@@ -104,13 +104,13 @@ bool BoundingBoxModel::estimate(const pcl::PointCloud<pcl::PointXYZ> &cluster, a
     }
   }
 
-  Eigen::Vector2d e_1_star; // col.11, Algo.2
+  Eigen::Vector2d e_1_star;  // col.11, Algo.2
   Eigen::Vector2d e_2_star;
   e_1_star << std::cos(theta_star), std::sin(theta_star);
   e_2_star << -std::sin(theta_star), std::cos(theta_star);
-  std::vector<double> C_1_star; // col.11, Algo.2
-  std::vector<double> C_2_star; // col.11, Algo.2
-  for (const auto &point : cluster)
+  std::vector<double> C_1_star;  // col.11, Algo.2
+  std::vector<double> C_2_star;  // col.11, Algo.2
+  for (const auto& point : cluster)
   {
     C_1_star.push_back(point.x * e_1_star.x() + point.y * e_1_star.y());
     C_2_star.push_back(point.x * e_2_star.x() + point.y * e_2_star.y());
@@ -152,7 +152,7 @@ bool BoundingBoxModel::estimate(const pcl::PointCloud<pcl::PointXYZ> &cluster, a
   // calc yaw
   tf2::Quaternion quat;
   quat.setEuler(/* roll */ 0, /* pitch */ 0, /* yaw */ std::atan2(e_1_star.y(), e_1_star.x()));
-  
+
   output.pose.position.x = (intersection_x_1 + intersection_x_2) / 2.0;
   output.pose.position.y = (intersection_y_1 + intersection_y_2) / 2.0;
   output.pose.position.z = centroid.z;
@@ -164,7 +164,7 @@ bool BoundingBoxModel::estimate(const pcl::PointCloud<pcl::PointXYZ> &cluster, a
   output.pose_reliable = true;
 
   // check wrong output
-  if(output.dimensions.x < ep && output.dimensions.y < ep)
+  if (output.dimensions.x < ep && output.dimensions.y < ep)
     return false;
   output.dimensions.x = std::max(output.dimensions.x, ep);
   output.dimensions.y = std::max(output.dimensions.y, ep);
@@ -288,23 +288,23 @@ bool BoundingBoxModel::estimate(const pcl::PointCloud<pcl::PointXYZ> &cluster, a
 //     return max_beta;
 // }
 
-double BoundingBoxModel::calcClosenessCriterion(const std::vector<double> &C_1, const std::vector<double> &C_2)
+double BoundingBoxModel::calcClosenessCriterion(const std::vector<double>& C_1, const std::vector<double>& C_2)
 {
   // Paper : Algo.4 Closeness Criterion
-  const double min_c_1 = *std::min_element(C_1.begin(), C_1.end()); // col.2, Algo.4
-  const double max_c_1 = *std::max_element(C_1.begin(), C_1.end()); // col.2, Algo.4
-  const double min_c_2 = *std::min_element(C_2.begin(), C_2.end()); // col.3, Algo.4
-  const double max_c_2 = *std::max_element(C_2.begin(), C_2.end()); // col.3, Algo.4
+  const double min_c_1 = *std::min_element(C_1.begin(), C_1.end());  // col.2, Algo.4
+  const double max_c_1 = *std::max_element(C_1.begin(), C_1.end());  // col.2, Algo.4
+  const double min_c_2 = *std::min_element(C_2.begin(), C_2.end());  // col.3, Algo.4
+  const double max_c_2 = *std::max_element(C_2.begin(), C_2.end());  // col.3, Algo.4
 
-  std::vector<double> D_1; // col.4, Algo.4
-  for (const auto &c_1_element : C_1)
+  std::vector<double> D_1;  // col.4, Algo.4
+  for (const auto& c_1_element : C_1)
   {
     const double v = std::min(max_c_1 - c_1_element, c_1_element - min_c_1);
     D_1.push_back(std::fabs(v));
   }
 
-  std::vector<double> D_2; // col.5, Algo.4
-  for (const auto &c_2_element : C_2)
+  std::vector<double> D_2;  // col.5, Algo.4
+  for (const auto& c_2_element : C_2)
   {
     const double v = std::min(max_c_2 - c_2_element, c_2_element - min_c_2);
     D_2.push_back(v * v);
@@ -312,7 +312,7 @@ double BoundingBoxModel::calcClosenessCriterion(const std::vector<double> &C_1, 
 
   const double d_min = 0.05;
   const double d_max = 0.50;
-  double beta = 0; // col.6, Algo.4
+  double beta = 0;  // col.6, Algo.4
   for (size_t i = 0; i < D_1.size(); ++i)
   {
     const double d = std::min(std::max(std::min(D_1.at(i), D_2.at(i)), d_min), d_max);

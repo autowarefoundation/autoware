@@ -47,7 +47,6 @@ public:
 
 TEST(TestSuite, CheckOnePoint)
 {
-
   ShapeEstimationTestClass test_shape_estimation;
 
   pcl::PointCloud<pcl::PointXYZ> pointcloud;
@@ -62,16 +61,20 @@ TEST(TestSuite, CheckOnePoint)
   bool ret4 = test_shape_estimation.shape_estimator.getShapeAndPose(std::string("bicycle"), pointcloud, output);
   bool ret5 = test_shape_estimation.shape_estimator.getShapeAndPose(std::string("foo"), pointcloud, output);
 
-  ASSERT_EQ(ret1, false) << "Only 1 point. It shoud be " << "false"; // minimum point is 2
-  ASSERT_EQ(ret2, true) << "Only 1 point. It shoud be " << "true"; // minimum point is 1
-  ASSERT_EQ(ret3, false) << "Only 1 point. It shoud be " << "false"; // minimum point is 2
-  ASSERT_EQ(ret4, false) << "Only 1 point. It shoud be " << "false"; // minimum point is 2
-  ASSERT_EQ(ret5, false) << "Only 1 point. It shoud be " << "false"; // minimum point is 2
+  ASSERT_EQ(ret1, false) << "Only 1 point. It shoud be "
+                         << "false";  // minimum point is 2
+  ASSERT_EQ(ret2, true) << "Only 1 point. It shoud be "
+                        << "true";  // minimum point is 1
+  ASSERT_EQ(ret3, false) << "Only 1 point. It shoud be "
+                         << "false";  // minimum point is 2
+  ASSERT_EQ(ret4, false) << "Only 1 point. It shoud be "
+                         << "false";  // minimum point is 2
+  ASSERT_EQ(ret5, false) << "Only 1 point. It shoud be "
+                         << "false";  // minimum point is 2
 }
 
 TEST(TestSuite, CheckTwoPoint)
 {
-
   ShapeEstimationTestClass test_shape_estimation;
 
   pcl::PointCloud<pcl::PointXYZ> pointcloud;
@@ -88,16 +91,20 @@ TEST(TestSuite, CheckTwoPoint)
   bool ret4 = test_shape_estimation.shape_estimator.getShapeAndPose(std::string("bicycle"), pointcloud, output);
   bool ret5 = test_shape_estimation.shape_estimator.getShapeAndPose(std::string("foo"), pointcloud, output);
 
-  ASSERT_EQ(ret1, true) << "difference 2 points. It shoud be " << "true"; // minimum point is 2
-  ASSERT_EQ(ret2, true) << "difference 2 points. It shoud be " << "true"; // minimum point is 1
-  ASSERT_EQ(ret3, true) << "difference 2 points. It shoud be " << "true"; // minimum point is 2
-  ASSERT_EQ(ret4, true) << "difference 2 points. It shoud be " << "true"; // minimum point is 2
-  ASSERT_EQ(ret5, true) << "difference 2 points. It shoud be " << "true"; // minimum point is 2
+  ASSERT_EQ(ret1, true) << "difference 2 points. It shoud be "
+                        << "true";  // minimum point is 2
+  ASSERT_EQ(ret2, true) << "difference 2 points. It shoud be "
+                        << "true";  // minimum point is 1
+  ASSERT_EQ(ret3, true) << "difference 2 points. It shoud be "
+                        << "true";  // minimum point is 2
+  ASSERT_EQ(ret4, true) << "difference 2 points. It shoud be "
+                        << "true";  // minimum point is 2
+  ASSERT_EQ(ret5, true) << "difference 2 points. It shoud be "
+                        << "true";  // minimum point is 2
 }
 
 TEST(TestSuite, CheckEmptyPoint)
 {
-
   ShapeEstimationTestClass test_shape_estimation;
 
   pcl::PointCloud<pcl::PointXYZ> pointcloud;
@@ -109,15 +116,19 @@ TEST(TestSuite, CheckEmptyPoint)
   bool ret4 = test_shape_estimation.shape_estimator.getShapeAndPose(std::string("bicycle"), pointcloud, output);
   bool ret5 = test_shape_estimation.shape_estimator.getShapeAndPose(std::string("foo"), pointcloud, output);
 
-  ASSERT_EQ(ret1, false) << "empty pointcloud cannnot estimate. It shoud be " << "false";
-  ASSERT_EQ(ret2, false) << "empty pointcloud cannnot estimate. It shoud be " << "false";
-  ASSERT_EQ(ret3, false) << "empty pointcloud cannnot estimate. It shoud be " << "false";
-  ASSERT_EQ(ret4, false) << "empty pointcloud cannnot estimate. It shoud be " << "false";
-  ASSERT_EQ(ret5, false) << "empty pointcloud cannnot estimate. It shoud be " << "false";
-
+  ASSERT_EQ(ret1, false) << "empty pointcloud cannnot estimate. It shoud be "
+                         << "false";
+  ASSERT_EQ(ret2, false) << "empty pointcloud cannnot estimate. It shoud be "
+                         << "false";
+  ASSERT_EQ(ret3, false) << "empty pointcloud cannnot estimate. It shoud be "
+                         << "false";
+  ASSERT_EQ(ret4, false) << "empty pointcloud cannnot estimate. It shoud be "
+                         << "false";
+  ASSERT_EQ(ret5, false) << "empty pointcloud cannnot estimate. It shoud be "
+                         << "false";
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
   ros::init(argc, argv, "ShapeEstimationTestNode");

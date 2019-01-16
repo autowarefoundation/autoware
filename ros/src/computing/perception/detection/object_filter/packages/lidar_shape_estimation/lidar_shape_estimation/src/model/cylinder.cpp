@@ -25,22 +25,22 @@
 #include <pcl/point_cloud.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-bool CylinderModel::estimate(const pcl::PointCloud<pcl::PointXYZ> &cluster, autoware_msgs::DetectedObject &output)
+bool CylinderModel::estimate(const pcl::PointCloud<pcl::PointXYZ>& cluster, autoware_msgs::DetectedObject& output)
 {
   // calc centroid point for cylinder height(z)
   pcl::PointXYZ centroid;
   centroid.x = 0;
   centroid.y = 0;
   centroid.z = 0;
-  for (const auto &pcl_point : cluster)
+  for (const auto& pcl_point : cluster)
   {
     centroid.x += pcl_point.x;
     centroid.y += pcl_point.y;
     centroid.z += pcl_point.z;
   }
-  centroid.x = centroid.x / (double) cluster.size();
-  centroid.y = centroid.y / (double) cluster.size();
-  centroid.z = centroid.z / (double) cluster.size();
+  centroid.x = centroid.x / (double)cluster.size();
+  centroid.y = centroid.y / (double)cluster.size();
+  centroid.z = centroid.z / (double)cluster.size();
 
   // calc min and max z for cylinder length
   double min_z = 0;
@@ -54,11 +54,11 @@ bool CylinderModel::estimate(const pcl::PointCloud<pcl::PointXYZ> &cluster, auto
   }
 
   // calc circumscribed circle on x-y plane
-  cv::Mat_<float> cv_points((int) cluster.size(), 2);
+  cv::Mat_<float> cv_points((int)cluster.size(), 2);
   for (size_t i = 0; i < cluster.size(); ++i)
   {
-    cv_points(i, 0) = cluster.at(i).x; // x
-    cv_points(i, 1) = cluster.at(i).y; // y
+    cv_points(i, 0) = cluster.at(i).x;  // x
+    cv_points(i, 1) = cluster.at(i).y;  // y
   }
   cv::Point2f center;
   float radius;
@@ -68,8 +68,8 @@ bool CylinderModel::estimate(const pcl::PointCloud<pcl::PointXYZ> &cluster, auto
   output.pose.position.x = center.x;
   output.pose.position.y = center.y;
   output.pose.position.z = centroid.z;
-  output.dimensions.x = (double) radius * 2.0;
-  output.dimensions.y = (double) radius * 2.0;
+  output.dimensions.x = (double)radius * 2.0;
+  output.dimensions.y = (double)radius * 2.0;
   output.dimensions.z = std::max((max_z - min_z), ep);
   output.pose_reliable = true;
   return true;

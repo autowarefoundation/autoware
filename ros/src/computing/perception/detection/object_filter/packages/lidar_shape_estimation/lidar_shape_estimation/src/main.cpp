@@ -17,8 +17,8 @@
  * v1.0 Yukihiro Saito
  */
 
-#include <ros/ros.h>
 #include "lidar_shape_estimation/node.hpp"
+#include <ros/ros.h>
 
 int main(int argc, char** argv)
 {

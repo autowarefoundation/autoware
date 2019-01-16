@@ -17,7 +17,6 @@
  * v1.0 Yukihiro Saito
  */
 
-
 #include "lidar_shape_estimation/shape_estimator.hpp"
 #include "lidar_shape_estimation/model_interface.hpp"
 #include "model/bounding_box.hpp"
@@ -30,9 +29,8 @@ ShapeEstimator::ShapeEstimator()
 {
 }
 
-bool ShapeEstimator::getShapeAndPose(const std::string &label,
-                                     const pcl::PointCloud<pcl::PointXYZ> &cluster,
-                                     autoware_msgs::DetectedObject &output)
+bool ShapeEstimator::getShapeAndPose(const std::string& label, const pcl::PointCloud<pcl::PointXYZ>& cluster,
+                                     autoware_msgs::DetectedObject& output)
 {
   if (cluster.empty())
     return false;
@@ -55,7 +53,7 @@ bool ShapeEstimator::getShapeAndPose(const std::string &label,
   }
   else
   {
-//        model_ptr.reset(new CylinderModel);
+    //        model_ptr.reset(new CylinderModel);
     model_ptr.reset(new BoundingBoxModel);
   };
 

@@ -27,20 +27,19 @@
 
 class ShapeEstimationNode
 {
-private: // ros
+private:  // ros
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_;
   ros::Publisher pub_;
   ros::Subscriber sub_;
 
-  void callback(const autoware_msgs::DetectedObjectArray::ConstPtr &input_msg);
+  void callback(const autoware_msgs::DetectedObjectArray::ConstPtr& input_msg);
 
 private:
   ShapeEstimator estimator_;
+
 public:
   ShapeEstimationNode();
 
-  ~ShapeEstimationNode()
-  {
-  };
+  ~ShapeEstimationNode(){};
 };

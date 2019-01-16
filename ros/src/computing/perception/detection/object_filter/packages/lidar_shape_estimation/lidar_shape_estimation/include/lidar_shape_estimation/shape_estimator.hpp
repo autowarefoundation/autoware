@@ -16,7 +16,6 @@
  * v1.0 Yukihiro Saito
  */
 
-
 #pragma once
 
 #include <string>
@@ -28,14 +27,11 @@
 class ShapeEstimator
 {
 private:
-
 public:
   ShapeEstimator();
 
-  ~ShapeEstimator()
-  {
-  };
+  ~ShapeEstimator(){};
 
-  bool getShapeAndPose(const std::string &label, const pcl::PointCloud<pcl::PointXYZ> &cluster,
-                       autoware_msgs::DetectedObject &output);
+  bool getShapeAndPose(const std::string& label, const pcl::PointCloud<pcl::PointXYZ>& cluster,
+                       autoware_msgs::DetectedObject& output);
 };

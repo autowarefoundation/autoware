@@ -24,14 +24,9 @@
 class ConvexHullModel : public ShapeEstimationModelInterface
 {
 public:
-  ConvexHullModel()
-  {
-  };
+  ConvexHullModel(){};
 
-  ~ConvexHullModel()
-  {
-  };
+  ~ConvexHullModel(){};
 
-  bool estimate(const pcl::PointCloud<pcl::PointXYZ> &cluster, autoware_msgs::DetectedObject &output) override;
-
+  bool estimate(const pcl::PointCloud<pcl::PointXYZ>& cluster, autoware_msgs::DetectedObject& output) override;
 };
