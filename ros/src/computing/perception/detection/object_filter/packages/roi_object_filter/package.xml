@@ -18,6 +18,8 @@
     <build_depend>grid_map_msgs</build_depend>
     <build_depend>geometry_msgs</build_depend>
     <build_depend>tf</build_depend>
+    <build_depend>rostest</build_depend>
+    <build_depend>rosunit</build_depend>
 
     <run_depend>roscpp</run_depend>
     <run_depend>sensor_msgs</run_depend>

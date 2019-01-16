@@ -11,6 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
         grid_map_cv
         grid_map_msgs
         tf
+        rostest
+        rosunit
         )
 
 find_package(OpenCV REQUIRED)
@@ -99,10 +101,6 @@ install(TARGETS roi_object_filter
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-
-install(DIRECTORY launch/
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
-        PATTERN ".svn" EXCLUDE)
 
 if (CATKIN_ENABLE_TESTING)
     find_package(rostest REQUIRED)

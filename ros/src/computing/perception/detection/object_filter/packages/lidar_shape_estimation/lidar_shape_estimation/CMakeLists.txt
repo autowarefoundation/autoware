@@ -8,6 +8,8 @@ find_package(catkin REQUIRED COMPONENTS
         roscpp
         tf2
         tf2_geometry_msgs
+        rostest
+        rosunit
         )
 
 find_package(PCL 1.7 REQUIRED)
