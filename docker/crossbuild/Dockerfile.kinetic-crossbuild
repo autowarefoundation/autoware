@@ -18,7 +18,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Autoware dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    cython \
     freeglut3-dev \
+    gstreamer1.0-plugins-good \
     libarmadillo-dev \
     libcurl4-openssl-dev \
     libeigen3-dev \
@@ -27,6 +30,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libglew-dev \
     libglu1-mesa-dev \
     libgoogle-glog-dev \
+    libgstreamer-plugins-good1.0-0 \
     libgtest-dev \
     libnlopt-dev \
     libopencv-dev \
@@ -46,7 +50,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxmu-dev \
     libyaml-cpp-dev \
     python-flask \
+    python-scipy \
     python-serial \
+    python-skimage \
     qtbase5-dev \
     ros-kinetic-angles \
     ros-kinetic-automotive-platform-msgs \
@@ -54,20 +60,29 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-kinetic-catkin \
     ros-kinetic-cmake-modules \
     ros-kinetic-cv-bridge \
+    ros-kinetic-diagnostic-aggregator \
     ros-kinetic-diagnostic-msgs \
     ros-kinetic-diagnostic-updater \
     ros-kinetic-dynamic-reconfigure \
+    ros-kinetic-eigen-conversions \
+    ros-kinetic-filters \
     ros-kinetic-geometry-msgs \
     ros-kinetic-gps-common \
     ros-kinetic-grid-map-cv \
     ros-kinetic-grid-map-msgs \
     ros-kinetic-grid-map-ros \
+    ros-kinetic-gscam \
     ros-kinetic-image-geometry \
     ros-kinetic-image-transport \
     ros-kinetic-imu-filter-madgwick \
     ros-kinetic-imu-tools \
+    ros-kinetic-jsk-footstep-msgs \
+    ros-kinetic-jsk-gui-msgs \
+    ros-kinetic-jsk-hark-msgs \
     ros-kinetic-jsk-recognition-msgs \
     ros-kinetic-jsk-rviz-plugins \
+    ros-kinetic-jsk-tools \
+    ros-kinetic-jsk-topic-tools \
     ros-kinetic-message-filters \
     ros-kinetic-message-generation \
     ros-kinetic-message-runtime \
@@ -78,7 +93,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-kinetic-pcl-conversions \
     ros-kinetic-pcl-msgs \
     ros-kinetic-pcl-ros \
+    ros-kinetic-people-msgs \
     ros-kinetic-pluginlib \
+    ros-kinetic-posedetection-msgs \
+    ros-kinetic-robot-state-publisher \
+    ros-kinetic-rosbridge-server \
     ros-kinetic-rosconsole \
     ros-kinetic-roscpp \
     ros-kinetic-roslaunch \
@@ -96,8 +115,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-kinetic-std-srvs \
     ros-kinetic-stereo-msgs \
     ros-kinetic-tf \
+    ros-kinetic-tf-conversions \
     ros-kinetic-tf2 \
+    ros-kinetic-tf2-geometry-msgs \
     ros-kinetic-tf2-ros \
+    ros-kinetic-urdfdom-py \
+    ros-kinetic-view-controller-msgs \
     ros-kinetic-visualization-msgs \
     ros-kinetic-xacro \
     ros-kinetic-rosbridge-server \
@@ -112,7 +135,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-kinetic-effort-controllers \ 
     ros-kinetic-controller-manager \
     ros-kinetic-robot-state-publisher \
-    ros-kinetic-joint-state-controller
+    ros-kinetic-joint-state-controller \
+    v4l-utils
 
 RUN find / -depth -xdev -type l -lname '/*' -exec sh -c 'linkpath="$(readlink {})" && rm -f {} && ln -frsv "$linkpath" "{}"' \;
 
@@ -129,6 +153,7 @@ COPY --from=sysroot /etc/alternatives ${AUTOWARE_SYSROOT}/etc/alternatives
 RUN echo "deb http://packages.ros.org/ros/ubuntu xenial main" | tee /etc/apt/sources.list.d/ros-latest.list
 RUN apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    cython \
     crossbuild-essential-arm64 \
     pkg-config \
     python-rospkg \
