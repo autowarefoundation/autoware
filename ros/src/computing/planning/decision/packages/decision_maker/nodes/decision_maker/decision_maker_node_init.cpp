@@ -196,6 +196,8 @@ void DecisionMakerNode::createSubscriber(void)
   Subs["obstacle_waypoint"] =
       nh_.subscribe("/obstacle_waypoint", 1, &DecisionMakerNode::callbackFromObstacleWaypoint, this);
   Subs["change_flag"] = nh_.subscribe("/change_flag", 1, &DecisionMakerNode::callbackFromLaneChangeFlag, this);
+  Subs["stop_order_idx"] = nh_.subscribe("/state/stop_wpidx", 1, &DecisionMakerNode::callbackFromStopOrder, this);
+  Subs["clear_order_idx"] = nh_.subscribe("/state/clear_wpidx", 1, &DecisionMakerNode::callbackFromClearOrder, this);
 }
 void DecisionMakerNode::createPublisher(void)
 {

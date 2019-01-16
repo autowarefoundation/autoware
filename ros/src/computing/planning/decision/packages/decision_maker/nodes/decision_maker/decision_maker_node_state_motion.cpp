@@ -202,11 +202,11 @@ void DecisionMakerNode::updateStoplineState(cstring_t& state_name, int status)
 
 void DecisionMakerNode::updateOrderedStopState(cstring_t& state_name, int status)
 {
-  publishStoplineWaypointIdx(current_status_.found_stopsign_idx);
+  publishStoplineWaypointIdx(current_status_.ordered_stop_idx);
 }
 void DecisionMakerNode::updateReservedStopState(cstring_t& state_name, int status)
 {
-  publishStoplineWaypointIdx(current_status_.ordered_stop_idx);
+publishStoplineWaypointIdx(current_status_.found_stopsign_idx);
 }
 
 }

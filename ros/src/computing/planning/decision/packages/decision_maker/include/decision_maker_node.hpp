@@ -370,6 +370,8 @@ private:
   void callbackFromConfig(const autoware_config_msgs::ConfigDecisionMaker& msg);
   void callbackFromStateCmd(const std_msgs::String& msg);
   void callbackFromObstacleWaypoint(const std_msgs::Int32& msg);
+  void callbackFromStopOrder(const std_msgs::Int32& msg);
+  void callbackFromClearOrder(const std_msgs::Int32& msg);
 
   void setEventFlag(cstring_t& key, const bool& value)
   {

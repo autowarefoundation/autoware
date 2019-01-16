@@ -323,4 +323,16 @@ void DecisionMakerNode::callbackFromObstacleWaypoint(const std_msgs::Int32& msg)
 {
   current_status_.obstacle_waypoint = msg.data;
 }
+
+void DecisionMakerNode::callbackFromStopOrder(const std_msgs::Int32& msg)
+{
+  if (current_status_.closest_waypoint < msg.data)
+    current_status_.ordered_stop_idx = msg.data;
+}
+
+void DecisionMakerNode::callbackFromClearOrder(const std_msgs::Int32& msg)
+{
+  if (current_status_.ordered_stop_idx == msg.data)
+    current_status_.ordered_stop_idx = -1;
+}
 }
