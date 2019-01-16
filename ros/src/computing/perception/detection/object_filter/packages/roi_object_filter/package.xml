@@ -5,7 +5,7 @@
     <description>Object Sanitizer filters detected objects</description>
 
     <maintainer email="abrahammonrroy@yahoo.com">amc</maintainer>
-    <license>BSD</license>
+    <license>Apache</license>
 
     <buildtool_depend>catkin</buildtool_depend>
     <buildtool_depend>autoware_build_flags</buildtool_depend>
