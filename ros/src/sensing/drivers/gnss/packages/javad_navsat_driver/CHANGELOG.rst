@@ -2,6 +2,12 @@
 Changelog for package javad_navsat_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added notes about Indigo being deprecated
+* Fix Ros/ROS naming convention
+* Contributors: Esteve Fernandez
+
 1.9.1 (2018-11-06)
 ------------------
 

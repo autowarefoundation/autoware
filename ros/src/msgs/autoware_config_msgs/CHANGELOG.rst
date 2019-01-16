@@ -2,6 +2,14 @@
 Changelog for package autoware_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix Kf/KF naming convention
+* Fix Dpm/DPM naming convention
+* Fix Ndt/NDT naming convention
+* Fix Ssd/SSD naming convention
+* Contributors: Esteve Fernandez
+
 1.9.1 (2018-11-06)
 ------------------
 

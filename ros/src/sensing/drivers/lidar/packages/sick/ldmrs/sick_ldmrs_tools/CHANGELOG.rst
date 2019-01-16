@@ -2,6 +2,9 @@
 Changelog for package sick_ldmrs_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.9.1 (2018-11-06)
 ------------------
 

@@ -2,6 +2,25 @@
 Changelog for package trafficlight_recognizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixes for catkin_make
+* Use colcon as the build tool (`#1704 <https://github.com/kfunaoka/Autoware/issues/1704>`_)
+  * Switch to colcon as the build tool instead of catkin
+  * Added cmake-target
+  * Added note about the second colcon call
+  * Added warning about catkin* scripts being deprecated
+  * Fix COLCON_OPTS
+  * Added install targets
+  * Update Docker image tags
+  * Message packages fixes
+  * Fix missing dependency
+* Fix Roi/ROI naming convention
+* Fix Tlr/TLR naming convention
+* Fix Ros/ROS naming convention
+* Fix Ssd/SSD naming convention
+* Contributors: Esteve Fernandez, amc-nu
+
 1.9.1 (2018-11-06)
 ------------------
 

@@ -2,6 +2,9 @@
 Changelog for package microstrain_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.9.1 (2018-11-06)
 ------------------
 

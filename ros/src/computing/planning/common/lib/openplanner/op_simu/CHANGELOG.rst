@@ -2,6 +2,20 @@
 Changelog for package op_simu
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Use colcon as the build tool (`#1704 <https://github.com/kfunaoka/Autoware/issues/1704>`_)
+  * Switch to colcon as the build tool instead of catkin
+  * Added cmake-target
+  * Added note about the second colcon call
+  * Added warning about catkin* scripts being deprecated
+  * Fix COLCON_OPTS
+  * Added install targets
+  * Update Docker image tags
+  * Message packages fixes
+  * Fix missing dependency
+* Contributors: Esteve Fernandez
+
 1.9.1 (2018-11-06)
 ------------------
 

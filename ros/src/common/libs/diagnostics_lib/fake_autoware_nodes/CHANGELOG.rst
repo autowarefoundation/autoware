@@ -2,6 +2,9 @@
 Changelog for package fake_autoware_nodes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.9.1 (2018-11-06)
 ------------------
 

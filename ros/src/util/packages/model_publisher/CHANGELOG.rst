@@ -2,6 +2,9 @@
 Changelog for package model_publisher
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.9.1 (2018-11-06)
 ------------------
 

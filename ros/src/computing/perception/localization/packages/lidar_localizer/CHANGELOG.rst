@@ -2,6 +2,32 @@
 Changelog for package lidar_localizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixes for catkin_make
+* Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/kfunaoka/Autoware/issues/1741>`_)
+  * Switch to Apache 2
+  * Replace BSD-3 license header with Apache 2 and reassign copyright to the
+  Autoware Foundation.
+  * Update license on Python files
+  * Update copyright years
+  * Add #ifndef/define _POINTS_IMAGE_H\_
+  * Updated license comment
+* Use colcon as the build tool (`#1704 <https://github.com/kfunaoka/Autoware/issues/1704>`_)
+  * Switch to colcon as the build tool instead of catkin
+  * Added cmake-target
+  * Added note about the second colcon call
+  * Added warning about catkin* scripts being deprecated
+  * Fix COLCON_OPTS
+  * Added install targets
+  * Update Docker image tags
+  * Message packages fixes
+  * Fix missing dependency
+* [Fix] Disable forced termination when it can not write log data in ndt_matching (`#1824 <https://github.com/kfunaoka/Autoware/issues/1824>`_)
+* Fix Ros/ROS naming convention
+* Fix Ndt/NDT naming convention
+* Contributors: Esteve Fernandez, YamatoAndo, amc-nu
+
 1.9.1 (2018-11-06)
 ------------------
 
