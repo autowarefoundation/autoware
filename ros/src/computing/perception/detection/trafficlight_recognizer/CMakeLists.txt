@@ -8,9 +8,13 @@ execute_process(
 
 set(ROS_VERSION $ENV{ROS_DISTRO})
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
+
+find_package(vector_map REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
-        autoware_msgs
         cmake_modules
         cv_bridge
         geometry_msgs
@@ -19,7 +23,6 @@ find_package(catkin REQUIRED COMPONENTS
         sensor_msgs
         std_msgs
         tf
-        vector_map
         vector_map_server
         visualization_msgs
         waypoint_follower
@@ -55,6 +58,8 @@ find_package(OpenGL REQUIRED)
 include_directories(
         include
         ${catkin_INCLUDE_DIRS}
+        ${vector_map_INCLUDE_DIRS}
+        ${autoware_msgs_INCLUDE_DIRS}
         ${Eigen3_INCLUDE_DIRS}
 )
 
@@ -121,6 +126,8 @@ add_dependencies(region_tlr
 ### feat_proj ###
 include_directories(
         ${catkin_INCLUDE_DIRS}
+        ${vector_map_INCLUDE_DIRS}
+        ${autoware_msgs_INCLUDE_DIRS}
         ${Eigen3_INCLUDE_DIRS}
 )
 
@@ -148,6 +155,8 @@ include_directories(
         include
         nodes/tlr_tuner/
         ${catkin_INCLUDE_DIRS}
+        ${vector_map_INCLUDE_DIRS}
+        ${autoware_msgs_INCLUDE_DIRS}
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
 )
@@ -179,6 +188,8 @@ target_link_libraries(tlr_tuner
 ### roi_extractor ###
 include_directories(
         ${catkin_INCLUDE_DIRS}
+        ${vector_map_INCLUDE_DIRS}
+        ${autoware_msgs_INCLUDE_DIRS}
         include
 )
 
@@ -207,6 +218,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 include_directories(
         ${catkin_INCLUDE_DIRS}
+        ${vector_map_INCLUDE_DIRS}
+        ${autoware_msgs_INCLUDE_DIRS}
         ${TinyXML_INCLUDE_DIRS}
         nodes/label_maker/
         ${CMAKE_CURRENT_SOURCE_DIR}

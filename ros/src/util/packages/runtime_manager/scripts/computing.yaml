@@ -66,6 +66,8 @@ subs :
             flags : [ nl ]
           imu_topic:
             flags : [ nl ]
+          get_height:
+            flags : [ nl ]
           sync :
             func : self.button_synchronization.GetValue()
       - name : ndt_matching_monitor
@@ -312,13 +314,6 @@ subs :
         gui  :
           sync :
             func : self.button_synchronization.GetValue()
-      - name : lidar_pf_track
-        desc : lidar_pf_track desc sample
-        cmd  : roslaunch lidar_pf_track lidar_pf_track.launch
-        param: lidar_pf_track
-        gui  :
-          sync :
-            func : self.button_synchronization.GetValue()
       - name : lidar_euclidean_track
         desc : lidar_euclidean_track desc sample
         cmd  : roslaunch lidar_euclidean_track lidar_euclidean_track.launch
@@ -334,25 +329,6 @@ subs :
         gui  :
           dialog_width  : 650
           dialog_height : 450
-          sync :
-            func : self.button_synchronization.GetValue()
-
-      - name : range_fusion
-        desc : range_fusion desc sample
-        cmd  : roslaunch range_fusion range_fusion.launch
-        param: car_fusion
-        gui  :
-          flags                  : [ open_dialog ]
-          config_dialog          : MyDialogCarPedestrian
-          car_pedestrian_obj_key : { car : car_fusion, pedestrian : pedestrian_fusion }
-          config_dialog_only     : [ min_low_height, max_low_height, max_height, min_points, dispersion ]
-          open_dialog_only       : [ car, pedestrian ]
-          open_dialog_ok_label   : Start
-          car :
-            user_category : Detection Target
-          pedestrian :
-            border : 16
-            flags  : [ left ]
           sync :
             func : self.button_synchronization.GetValue()
 
@@ -889,16 +865,6 @@ subs :
   - name : Decision
     desc : decision groups
     subs :
-    - name : state_machine(old)
-      desc : state_machine desc sample
-      cmd  : roslaunch state_machine state_machine.launch
-    - name : decision_maker
-      desc : decision_maker desc sample
-      cmd  : roslaunch decision_maker decision_maker.launch
-      param: decision_maker
-      gui  :
-          dialog_width  : 400
-          dialog_height : 620
 
     - name : planner_selector
       desc : planner_selector desc sample
@@ -1612,6 +1578,14 @@ params :
     - name      : get_height
       desc      : get_height desc sample
       label     : Get Height
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : output_log_data
+      desc      : output ndt log data
+      label     : Output Log Data
       kind      : checkbox
       v         : False
       cmd_param :
