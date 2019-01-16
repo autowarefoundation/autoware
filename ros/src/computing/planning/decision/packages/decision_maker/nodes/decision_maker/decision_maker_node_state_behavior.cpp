@@ -6,18 +6,13 @@ void DecisionMakerNode::updateStoppingState(cstring_t& state_name, int status)
 {
 }
 
-void DecisionMakerNode::entryBehaviorEmergencyState(cstring_t& state_name, int status)
-{
-}
 void DecisionMakerNode::updateBehaviorEmergencyState(cstring_t& state_name, int status)
 {
+  publishLampCmd(E_Lamp::LAMP_HAZARD);
 }
 void DecisionMakerNode::exitBehaviorEmergencyState(cstring_t& state_name, int status)
 {
-}
-
-void DecisionMakerNode::entryMovingState(cstring_t& state_name, int status)
-{
+  publishLampCmd(E_Lamp::LAMP_CLEAR);
 }
 
 void DecisionMakerNode::updateMovingState(cstring_t& state_name, int status)

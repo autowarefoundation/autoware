@@ -93,14 +93,10 @@ void DecisionMakerNode::setupStateCallback(void)
   /*** state behavior ***/
   ctx_behavior->setCallback(state_machine::CallbackType::UPDATE, "Stopping",
                          std::bind(&DecisionMakerNode::updateStoppingState, this, std::placeholders::_1, 0));
-  ctx_behavior->setCallback(state_machine::CallbackType::ENTRY, "BehaviorEmergency",
-                         std::bind(&DecisionMakerNode::entryBehaviorEmergencyState, this, std::placeholders::_1, 0));
   ctx_behavior->setCallback(state_machine::CallbackType::UPDATE, "BehaviorEmergency",
                          std::bind(&DecisionMakerNode::updateBehaviorEmergencyState, this, std::placeholders::_1, 0));
   ctx_behavior->setCallback(state_machine::CallbackType::EXIT, "BehaviorEmergency",
                          std::bind(&DecisionMakerNode::exitBehaviorEmergencyState, this, std::placeholders::_1, 0));
-  ctx_behavior->setCallback(state_machine::CallbackType::ENTRY, "Moving",
-                         std::bind(&DecisionMakerNode::entryMovingState, this, std::placeholders::_1, 0));
   ctx_behavior->setCallback(state_machine::CallbackType::UPDATE, "Moving",
                          std::bind(&DecisionMakerNode::updateMovingState, this, std::placeholders::_1, 0));
   ctx_behavior->setCallback(state_machine::CallbackType::UPDATE, "FreeArea",
@@ -159,12 +155,8 @@ void DecisionMakerNode::setupStateCallback(void)
                          std::bind(&DecisionMakerNode::updateWaitDriveReadyState, this, std::placeholders::_1, 0));
   ctx_motion->setCallback(state_machine::CallbackType::UPDATE, "WaitEngage",
                          std::bind(&DecisionMakerNode::updateWaitEngageState, this, std::placeholders::_1, 0));
-  ctx_motion->setCallback(state_machine::CallbackType::ENTRY, "MotionEmergency",
-                         std::bind(&DecisionMakerNode::entryMotionEmergencyState, this, std::placeholders::_1, 0));
   ctx_motion->setCallback(state_machine::CallbackType::UPDATE, "MotionEmergency",
                          std::bind(&DecisionMakerNode::updateMotionEmergencyState, this, std::placeholders::_1, 0));
-  ctx_motion->setCallback(state_machine::CallbackType::EXIT, "MotionEmergency",
-                         std::bind(&DecisionMakerNode::exitMotionEmergencyState, this, std::placeholders::_1, 0));
   ctx_motion->setCallback(state_machine::CallbackType::ENTRY, "Drive",
                          std::bind(&DecisionMakerNode::entryDriveState, this, std::placeholders::_1, 0));
   ctx_motion->setCallback(state_machine::CallbackType::UPDATE, "Drive",

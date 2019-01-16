@@ -61,7 +61,6 @@ add_executable(decision_maker_node
         nodes/decision_maker/decision_maker_node_init.cpp
         nodes/decision_maker/decision_maker_node_callback.cpp
         nodes/decision_maker/decision_maker_node_state_vehicle.cpp
-        # nodes/decision_maker/decision_maker_node_state_drive.cpp
         nodes/decision_maker/decision_maker_node_state_mission.cpp
         nodes/decision_maker/decision_maker_node_state_behavior.cpp
         nodes/decision_maker/decision_maker_node_state_motion.cpp

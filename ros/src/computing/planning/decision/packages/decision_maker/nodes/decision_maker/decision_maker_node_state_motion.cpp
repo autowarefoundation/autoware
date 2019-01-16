@@ -10,13 +10,7 @@ void DecisionMakerNode::updateWaitEngageState(cstring_t& state_name, int status)
 {
 }
 
-void DecisionMakerNode::entryMotionEmergencyState(cstring_t& state_name, int status)
-{
-}
 void DecisionMakerNode::updateMotionEmergencyState(cstring_t& state_name, int status)
-{
-}
-void DecisionMakerNode::exitMotionEmergencyState(cstring_t& state_name, int status)
 {
 }
 
