@@ -26,8 +26,6 @@ find_package(catkin REQUIRED COMPONENTS
         vector_map_server
         visualization_msgs
         waypoint_follower
-        autoware_msgs
-        vector_map
         )
 
 find_package(OpenCV REQUIRED)

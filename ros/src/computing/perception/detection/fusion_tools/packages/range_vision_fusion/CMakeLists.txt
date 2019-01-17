@@ -17,7 +17,6 @@ find_package(catkin REQUIRED COMPONENTS
         jsk_topic_tools
         image_geometry
         jsk_topic_tools
-        autoware_msgs
         )
 
 find_package(OpenCV REQUIRED)

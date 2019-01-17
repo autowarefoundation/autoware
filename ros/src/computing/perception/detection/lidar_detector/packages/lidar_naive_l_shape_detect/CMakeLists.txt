@@ -9,7 +9,6 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   pcl_ros
   tf
-  autoware_msgs
   )
 
 find_package(OpenCV REQUIRED)

@@ -10,9 +10,7 @@ find_package(tablet_socket_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
-  autoware_msgs
   autoware_can_msgs
-  tablet_socket_msgs
 )
 
 set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")

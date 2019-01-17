@@ -11,7 +11,6 @@ find_package(catkin REQUIRED COMPONENTS
   jsk_recognition_msgs
   op_ros_helpers
   cv_bridge
-  autoware_msgs
   )
 
 find_package(OpenCV REQUIRED)

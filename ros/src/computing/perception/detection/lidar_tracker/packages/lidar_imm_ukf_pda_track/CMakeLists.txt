@@ -11,7 +11,6 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   tf
   vector_map
-  autoware_msgs
   )
 
 

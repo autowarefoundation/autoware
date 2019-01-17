@@ -16,7 +16,6 @@ find_package(catkin REQUIRED COMPONENTS
         grid_map_ros
         grid_map_cv
         grid_map_msgs
-        autoware_msgs
         )
 
 find_package(OpenMP)

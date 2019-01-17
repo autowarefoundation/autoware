@@ -7,7 +7,6 @@ find_package(autoware_build_flags REQUIRED)
 find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         roscpp
-        autoware_msgs
         )
 
 catkin_package(

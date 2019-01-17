@@ -12,7 +12,6 @@ find_package(
   roscpp
   geometry_msgs
   rosconsole
-  autoware_msgs
 )
 
 catkin_package(

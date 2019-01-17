@@ -13,8 +13,6 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
         sensor_msgs
         std_msgs
         libdpm_ttic
-        autoware_config_msgs
-        autoware_msgs
         )
 
 FIND_PACKAGE(CUDA)

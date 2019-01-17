@@ -9,7 +9,6 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   sensor_msgs
   std_msgs
-  autoware_msgs
 )
 
 catkin_package(
