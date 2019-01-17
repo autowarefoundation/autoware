@@ -51,10 +51,6 @@
 #include "autoware_msgs/DetectedObject.h"
 #include "autoware_msgs/DetectedObjectArray.h"
 
-#include <grid_map_ros/grid_map_ros.hpp>
-#include <grid_map_msgs/GridMap.h>
-#include <grid_map_cv/grid_map_cv.hpp>
-
 #include <vector_map/vector_map.h>
 
 #include <tf/tf.h>
@@ -84,6 +80,8 @@
 
 #endif
 
+#define __APP_NAME__ "euclidean_clustering"
+
 using namespace cv;
 
 ros::Publisher _pub_cluster_cloud;
@@ -92,26 +90,13 @@ ros::Publisher _centroid_pub;
 
 ros::Publisher _pub_clusters_message;
 
-
 ros::Publisher _pub_points_lanes_cloud;
 
-ros::Publisher _pub_grid_map;
-
 ros::Publisher _pub_detected_objects;
-
-ros::ServiceClient _vectormap_server;
 
 std_msgs::Header _velodyne_header;
 
 std::string _output_frame;
-std::string _vectormap_frame;
-std::string _gridmap_layer;
-
-grid_map::GridMap _wayarea_gridmap;
-
-const int _grid_min_value = 0;
-const int _grid_max_value = 255;
-static int _gridmap_no_road_value;
 
 static bool _velodyne_transform_available;
 static bool _downsample_cloud;
@@ -124,7 +109,6 @@ static bool _remove_ground;  // only ground
 
 static bool _using_sensor_cloud;
 static bool _use_diffnormals;
-static bool _use_vector_map;
 
 static double _clip_min_height;
 static double _clip_max_height;
@@ -173,7 +157,7 @@ tf::StampedTransform findTransform(const std::string &in_target_frame, const std
   return transform;
 }
 
-geometry_msgs::Point transformPoint(const geometry_msgs::Point &point, const tf::Transform &tf)
+geometry_msgs::Point transformPoint(const geometry_msgs::Point& point, const tf::Transform& tf)
 {
   tf::Point tf_point;
   tf::pointMsgToTF(point, tf_point);
@@ -186,30 +170,27 @@ geometry_msgs::Point transformPoint(const geometry_msgs::Point &point, const tf:
   return ros_point;
 }
 
-bool checkPointInGrid(const grid_map::GridMap &in_grid_map, const cv::Mat &in_grid_image,
-                      const geometry_msgs::Point &in_point)
+void transformBoundingBox(const jsk_recognition_msgs::BoundingBox &in_boundingbox,
+                          jsk_recognition_msgs::BoundingBox &out_boundingbox, const std::string &in_target_frame,
+                          const std_msgs::Header &in_header)
 {
-  // calculate out_grid_map position
-  grid_map::Position map_pos = in_grid_map.getPosition();
-  double origin_x_offset = in_grid_map.getLength().x() / 2.0 - map_pos.x();
-  double origin_y_offset = in_grid_map.getLength().y() / 2.0 - map_pos.y();
-  // coordinate conversion for cv image
-  double cv_x = (in_grid_map.getLength().y() - origin_y_offset - in_point.y) / in_grid_map.getResolution();
-  double cv_y = (in_grid_map.getLength().x() - origin_x_offset - in_point.x) / in_grid_map.getResolution();
-
-  // check coords are inside the gridmap
-  if (cv_x < 0 || cv_x > in_grid_image.cols || cv_y < 0 || cv_y > in_grid_image.rows)
-  {
-    return false;
-  }
-
-  //_gridmap_no_road_value if road
-  if (in_grid_image.at<uchar>(cv_y, cv_x) != _gridmap_no_road_value)
-  {
-    return true;
-  }
-
-  return false;
+    geometry_msgs::PoseStamped pose_in, pose_out;
+    pose_in.header = in_header;
+    pose_in.pose = in_boundingbox.pose;
+    try
+    {
+        _transform_listener->transformPose(in_target_frame, ros::Time(), pose_in, in_header.frame_id, pose_out);
+    }
+    catch (tf::TransformException &ex)
+    {
+        ROS_ERROR("transformBoundingBox: %s", ex.what());
+    }
+    out_boundingbox.pose = pose_out.pose;
+    out_boundingbox.header = in_header;
+    out_boundingbox.header.frame_id = in_target_frame;
+    out_boundingbox.dimensions = in_boundingbox.dimensions;
+    out_boundingbox.value = in_boundingbox.value;
+    out_boundingbox.label = in_boundingbox.label;
 }
 
 void publishDetectedObjects(const autoware_msgs::CloudClusterArray &in_clusters)
@@ -615,16 +596,20 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
       if (origin_distance < _clustering_ranges[0])
       {
         cloud_segments_array[0]->points.push_back(current_point);
-      } else if (origin_distance < _clustering_ranges[1])
+      }
+      else if (origin_distance < _clustering_ranges[1])
       {
         cloud_segments_array[1]->points.push_back(current_point);
-      } else if (origin_distance < _clustering_ranges[2])
+
+      }else if (origin_distance < _clustering_ranges[2])
       {
         cloud_segments_array[2]->points.push_back(current_point);
-      } else if (origin_distance < _clustering_ranges[3])
+
+      }else if (origin_distance < _clustering_ranges[3])
       {
         cloud_segments_array[3]->points.push_back(current_point);
-      } else
+
+      }else
       {
         cloud_segments_array[4]->points.push_back(current_point);
       }
@@ -667,67 +652,53 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
   else
     final_clusters = mid_clusters;
 
-  tf::StampedTransform vectormap_transform;
-  if (_use_vector_map)
-  {
-    if (_wayarea_gridmap.exists(_gridmap_layer))
+    // Get final PointCloud to be published
+    for (unsigned int i = 0; i < final_clusters.size(); i++)
     {
-      // check if centroids are inside the drivable area
-      cv::Mat grid_image;
-      grid_map::GridMapCvConverter::toImage<unsigned char, 1>(_wayarea_gridmap, _gridmap_layer, CV_8UC1,
-                                                              _grid_min_value, _grid_max_value, grid_image);
+      *out_cloud_ptr = *out_cloud_ptr + *(final_clusters[i]->GetCloud());
 
-#pragma omp for
-      for (unsigned int i = 0; i < final_clusters.size(); i++)
+      jsk_recognition_msgs::BoundingBox bounding_box = final_clusters[i]->GetBoundingBox();
+      geometry_msgs::PolygonStamped polygon = final_clusters[i]->GetPolygon();
+      jsk_rviz_plugins::Pictogram pictogram_cluster;
+      pictogram_cluster.header = _velodyne_header;
+
+      // PICTO
+      pictogram_cluster.mode = pictogram_cluster.STRING_MODE;
+      pictogram_cluster.pose.position.x = final_clusters[i]->GetMaxPoint().x;
+      pictogram_cluster.pose.position.y = final_clusters[i]->GetMaxPoint().y;
+      pictogram_cluster.pose.position.z = final_clusters[i]->GetMaxPoint().z;
+      tf::Quaternion quat(0.0, -0.7, 0.0, 0.7);
+      tf::quaternionTFToMsg(quat, pictogram_cluster.pose.orientation);
+      pictogram_cluster.size = 4;
+      std_msgs::ColorRGBA color;
+      color.a = 1;
+      color.r = 1;
+      color.g = 1;
+      color.b = 1;
+      pictogram_cluster.color = color;
+      pictogram_cluster.character = std::to_string(i);
+      // PICTO
+
+      // pcl::PointXYZ min_point = final_clusters[i]->GetMinPoint();
+      // pcl::PointXYZ max_point = final_clusters[i]->GetMaxPoint();
+      pcl::PointXYZ center_point = final_clusters[i]->GetCentroid();
+      geometry_msgs::Point centroid;
+      centroid.x = center_point.x;
+      centroid.y = center_point.y;
+      centroid.z = center_point.z;
+      bounding_box.header = _velodyne_header;
+      polygon.header = _velodyne_header;
+
+      if (final_clusters[i]->IsValid())
       {
-        pcl::PointXYZ pcl_centroid = final_clusters[i]->GetCentroid();
 
-        geometry_msgs::Point original_centroid_point, final_centroid_point;
-        original_centroid_point.x = pcl_centroid.x;
-        original_centroid_point.y = pcl_centroid.y;
-        original_centroid_point.z = pcl_centroid.z;
+        in_out_centroids.points.push_back(centroid);
 
-        if (_wayarea_gridmap.getFrameId() != _velodyne_header.frame_id)
-        {
-          tf::StampedTransform grid_sensor_tf = findTransform(_wayarea_gridmap.getFrameId(),
-                                                              _velodyne_header.frame_id);
-          final_centroid_point = transformPoint(original_centroid_point, grid_sensor_tf);
-        } else
-        {
-          final_centroid_point = original_centroid_point;
-        }
-
-        bool point_in_grid = checkPointInGrid(_wayarea_gridmap, grid_image, final_centroid_point);
-        final_clusters[i]->SetValidity(point_in_grid);
+        autoware_msgs::CloudCluster cloud_cluster;
+        final_clusters[i]->ToROSMessage(_velodyne_header, cloud_cluster);
+        in_out_clusters.clusters.push_back(cloud_cluster);
       }
-      // timer.stop();
-      // std::cout << "vectormap filtering took " << timer.getTimeMilli() << " ms to check " << final_clusters.size() <<
-      // std::endl;
-    } else
-    {
-      ROS_INFO("%s layer not contained in the OccupancyGrid", _gridmap_layer.c_str());
     }
-  }
-  // Get final PointCloud to be published
-  for (unsigned int i = 0; i < final_clusters.size(); i++)
-  {
-    *out_cloud_ptr = *out_cloud_ptr + *(final_clusters[i]->GetCloud());
-    pcl::PointXYZ center_point = final_clusters[i]->GetCentroid();
-    geometry_msgs::Point centroid;
-    centroid.x = center_point.x;
-    centroid.y = center_point.y;
-    centroid.z = center_point.z;
-
-    if (final_clusters[i]->IsValid())
-    {
-
-      in_out_centroids.points.push_back(centroid);
-
-      autoware_msgs::CloudCluster cloud_cluster;
-      final_clusters[i]->ToROSMessage(_velodyne_header, cloud_cluster);
-      in_out_clusters.clusters.push_back(cloud_cluster);
-    }
-  }
 }
 
 void removeFloor(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
@@ -868,7 +839,7 @@ void removePointsUpTo(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
   }
 }
 
-void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr &in_sensor_cloud)
+void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 {
   //_start = std::chrono::system_clock::now();
 
@@ -896,8 +867,11 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr &in_sensor_cloud)
     if (_remove_points_upto > 0.0)
     {
       removePointsUpTo(current_sensor_cloud_ptr, removed_points_cloud_ptr, _remove_points_upto);
-    } else
+    }
+    else
+    {
       removed_points_cloud_ptr = current_sensor_cloud_ptr;
+    }
 
     if (_downsample_cloud)
       downsampleCloud(removed_points_cloud_ptr, downsampled_cloud_ptr, _leaf_size);
@@ -915,8 +889,11 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr &in_sensor_cloud)
     {
       removeFloor(inlanes_cloud_ptr, nofloor_cloud_ptr, onlyfloor_cloud_ptr);
       publishCloud(&_pub_ground_cloud, onlyfloor_cloud_ptr);
-    } else
+    }
+    else
+    {
       nofloor_cloud_ptr = inlanes_cloud_ptr;
+    }
 
     publishCloud(&_pub_points_lanes_cloud, nofloor_cloud_ptr);
 
@@ -941,12 +918,6 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr &in_sensor_cloud)
     _using_sensor_cloud = false;
   }
 }
-
-void wayarea_gridmap_callback(const grid_map_msgs::GridMap &message)
-{
-  grid_map::GridMapRosConverter::fromMessage(message, _wayarea_gridmap);
-}
-
 int main(int argc, char **argv)
 {
   // Initialize ROS
@@ -977,8 +948,6 @@ int main(int argc, char **argv)
   _pub_clusters_message = h.advertise<autoware_msgs::CloudClusterArray>("/detection/lidar_detector/cloud_clusters", 1);
   _pub_detected_objects = h.advertise<autoware_msgs::DetectedObjectArray>("/detection/lidar_detector/objects", 1);
 
-  _pub_grid_map = h.advertise<grid_map_msgs::GridMap>("grid_map_wayarea", 1, true);
-
   std::string points_topic, gridmap_topic;
 
   _using_sensor_cloud = false;
@@ -986,7 +955,8 @@ int main(int argc, char **argv)
   if (private_nh.getParam("points_node", points_topic))
   {
     ROS_INFO("euclidean_cluster > Setting points node to %s", points_topic.c_str());
-  } else
+  }
+  else
   {
     ROS_INFO("euclidean_cluster > No points node received, defaulting to points_raw, you can use "
                "_points_node:=YOUR_TOPIC");
@@ -1004,57 +974,52 @@ int main(int argc, char **argv)
 
   /* Initialize tuning parameter */
   private_nh.param("downsample_cloud", _downsample_cloud, false);
-  ROS_INFO("downsample_cloud: %d", _downsample_cloud);
+  ROS_INFO("[%s] downsample_cloud: %d", __APP_NAME__, _downsample_cloud);
   private_nh.param("remove_ground", _remove_ground, true);
-  ROS_INFO("remove_ground: %d", _remove_ground);
+  ROS_INFO("[%s] remove_ground: %d", __APP_NAME__, _remove_ground);
   private_nh.param("leaf_size", _leaf_size, 0.1);
-  ROS_INFO("leaf_size: %f", _leaf_size);
+  ROS_INFO("[%s] leaf_size: %f", __APP_NAME__, _leaf_size);
   private_nh.param("cluster_size_min", _cluster_size_min, 20);
-  ROS_INFO("cluster_size_min %d", _cluster_size_min);
+  ROS_INFO("[%s] cluster_size_min %d", __APP_NAME__, _cluster_size_min);
   private_nh.param("cluster_size_max", _cluster_size_max, 100000);
-  ROS_INFO("cluster_size_max: %d", _cluster_size_max);
+  ROS_INFO("[%s] cluster_size_max: %d", __APP_NAME__, _cluster_size_max);
   private_nh.param("pose_estimation", _pose_estimation, false);
-  ROS_INFO("pose_estimation: %d", _pose_estimation);
+  ROS_INFO("[%s] pose_estimation: %d", __APP_NAME__, _pose_estimation);
   private_nh.param("clip_min_height", _clip_min_height, -1.3);
-  ROS_INFO("clip_min_height: %f", _clip_min_height);
+  ROS_INFO("[%s] clip_min_height: %f", __APP_NAME__, _clip_min_height);
   private_nh.param("clip_max_height", _clip_max_height, 0.5);
-  ROS_INFO("clip_max_height: %f", _clip_max_height);
+  ROS_INFO("[%s] clip_max_height: %f", __APP_NAME__, _clip_max_height);
   private_nh.param("keep_lanes", _keep_lanes, false);
-  ROS_INFO("keep_lanes: %d", _keep_lanes);
+  ROS_INFO("[%s] keep_lanes: %d", __APP_NAME__, _keep_lanes);
   private_nh.param("keep_lane_left_distance", _keep_lane_left_distance, 5.0);
-  ROS_INFO("keep_lane_left_distance: %f", _keep_lane_left_distance);
+  ROS_INFO("[%s] keep_lane_left_distance: %f", __APP_NAME__, _keep_lane_left_distance);
   private_nh.param("keep_lane_right_distance", _keep_lane_right_distance, 5.0);
-  ROS_INFO("keep_lane_right_distance: %f", _keep_lane_right_distance);
+  ROS_INFO("[%s] keep_lane_right_distance: %f", __APP_NAME__, _keep_lane_right_distance);
   private_nh.param("max_boundingbox_side", _max_boundingbox_side, 10.0);
-  ROS_INFO("max_boundingbox_side: %f", _max_boundingbox_side);
+  ROS_INFO("[%s] max_boundingbox_side: %f", __APP_NAME__, _max_boundingbox_side);
   private_nh.param("cluster_merge_threshold", _cluster_merge_threshold, 1.5);
-  ROS_INFO("cluster_merge_threshold: %f", _cluster_merge_threshold);
+  ROS_INFO("[%s] cluster_merge_threshold: %f", __APP_NAME__, _cluster_merge_threshold);
   private_nh.param<std::string>("output_frame", _output_frame, "velodyne");
-  ROS_INFO("output_frame: %s", _output_frame.c_str());
-
-  private_nh.param("use_vector_map", _use_vector_map, false);
-  ROS_INFO("use_vector_map: %d", _use_vector_map);
-  private_nh.param<std::string>("vectormap_frame", _vectormap_frame, "map");
-  ROS_INFO("vectormap_frame: %s", _vectormap_frame.c_str());
+  ROS_INFO("[%s] output_frame: %s", __APP_NAME__, _output_frame.c_str());
 
   private_nh.param("remove_points_upto", _remove_points_upto, 0.0);
-  ROS_INFO("remove_points_upto: %f", _remove_points_upto);
+  ROS_INFO("[%s] remove_points_upto: %f", __APP_NAME__, _remove_points_upto);
 
   private_nh.param("clustering_distance", _clustering_distance, 0.75);
-  ROS_INFO("clustering_distance: %f", _clustering_distance);
+  ROS_INFO("[%s] clustering_distance: %f", __APP_NAME__, _clustering_distance);
 
   private_nh.param("use_gpu", _use_gpu, false);
-  ROS_INFO("use_gpu: %d", _use_gpu);
+  ROS_INFO("[%s] use_gpu: %d", __APP_NAME__, _use_gpu);
 
   private_nh.param("use_multiple_thres", _use_multiple_thres, false);
-  ROS_INFO("use_multiple_thres: %d", _use_multiple_thres);
+  ROS_INFO("[%s] use_multiple_thres: %d", __APP_NAME__, _use_multiple_thres);
 
   std::string str_distances;
   std::string str_ranges;
   private_nh.param("clustering_distances", str_distances, std::string("[0.5,1.1,1.6,2.1,2.6]"));
-  ROS_INFO("clustering_distances: %s", str_distances.c_str());
+  ROS_INFO("[%s] clustering_distances: %s", __APP_NAME__, str_distances.c_str());
   private_nh.param("clustering_ranges", str_ranges, std::string("[15,30,45,60]"));
-  ROS_INFO("clustering_ranges: %s", str_ranges.c_str());
+    ROS_INFO("[%s] clustering_ranges: %s", __APP_NAME__, str_ranges.c_str());
 
   if (_use_multiple_thres)
   {
@@ -1088,14 +1053,6 @@ int main(int argc, char **argv)
 
   // Create a ROS subscriber for the input point cloud
   ros::Subscriber sub = h.subscribe(points_topic, 1, velodyne_callback);
-
-  private_nh.param<std::string>("wayarea_gridmap_topic", gridmap_topic, "grid_map_wayarea");
-  ROS_INFO("wayarea_gridmap_topic: %s", gridmap_topic.c_str());
-  private_nh.param<std::string>("wayarea_gridmap_layer", _gridmap_layer, "wayarea");
-  ROS_INFO("wayarea_gridmap_layer: %s", _gridmap_layer.c_str());
-  private_nh.param<int>("wayarea_no_road_value", _gridmap_no_road_value, _grid_max_value);
-  ROS_INFO("wayarea_no_road_value: %ds", _gridmap_no_road_value);
-  ros::Subscriber wayarea_sub = h.subscribe(gridmap_topic, 1, wayarea_gridmap_callback);
 
   // Spin
   ros::spin();
