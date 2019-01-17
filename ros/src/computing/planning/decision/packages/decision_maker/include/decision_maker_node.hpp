@@ -178,7 +178,6 @@ private:
   uint32_t param_num_of_steer_behind_;
   double change_threshold_dist_;
   double change_threshold_angle_;
-  double time_to_avoidance_;
   double goal_threshold_dist_;
   double goal_threshold_vel_;
   int stopline_reset_count_;
@@ -312,10 +311,6 @@ private:
   void entryDriveState(cstring_t& state_name, int status);
   void entryTurnState(cstring_t& state_name, int status);
   void entryGoState(cstring_t& state_name, int status);
-  void entryTryAvoidanceState(cstring_t& state_name, int status);
-  void entryCheckAvoidanceState(cstring_t& state_name, int status);
-  void entryAvoidanceState(cstring_t& state_name, int status);
-  void entryReturnToLaneState(cstring_t& state_name, int status);
   void entryLaneChangeState(cstring_t& state_name, int status);
   void entryDriveEmergencyState(cstring_t& state_name, int status);
   void entryStopState(cstring_t& state_name, int status);
@@ -345,10 +340,6 @@ private:
   void updateCheckRightLaneState(cstring_t& state_name, int status);
   void updateChangeToLeftState(cstring_t& state_name, int status);
   void updateChangeToRightState(cstring_t& state_name, int status);
-  void updateTryAvoidanceState(cstring_t& state_name, int status);
-  void updateCheckAvoidanceState(cstring_t& state_name, int status);
-  void updateAvoidanceState(cstring_t& state_name, int status);
-  void updateReturnToLaneState(cstring_t& state_name, int status);
   // exit callback
   void exitStopState(cstring_t& state_name, int status);
   void exitDriveEmergencyState(cstring_t& state_name, int status);

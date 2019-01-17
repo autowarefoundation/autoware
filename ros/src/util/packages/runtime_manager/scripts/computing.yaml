@@ -2147,12 +2147,6 @@ params :
       min   : 0.0
       max   : 90.0
       v     : 15.0
-    - name  : time_to_avoidance
-      desc  : The stop time until the state transitions to Avoidance state after the vehicle stops due to the obstacle.
-      label : time_to_avoidance[s]
-      min   : 0.0
-      max   : 60.0
-      v     : 3.0
     - name  : points_topic
       desc  : points_topic
       kind  : str

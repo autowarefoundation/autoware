@@ -50,7 +50,6 @@ void DecisionMakerNode::callbackFromConfig(const autoware_config_msgs::ConfigDec
   param_num_of_steer_behind_ = msg.num_of_steer_behind;
   change_threshold_dist_ = msg.change_threshold_dist;
   change_threshold_angle_ = msg.change_threshold_angle;
-  time_to_avoidance_ = msg.time_to_avoidance;
   goal_threshold_dist_ = msg.goal_threshold_dist;
   goal_threshold_vel_ = msg.goal_threshold_vel;
   disuse_vector_map_ = msg.disuse_vector_map;

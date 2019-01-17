@@ -251,49 +251,6 @@ autoware_states_drive:
       -
         Key: found_stopline
         Target: StopLine
-      -
-        Key: completely_stopped
-        Target: TryAvoidance
-    Parent: Straight
-  -
-    StateName: TryAvoidance
-    Transition:
-      -
-        Key: found_path
-        Target: CheckAvoidance
-      -
-        Key: cannot_found_path
-        Target: Go
-    Parent: Straight
-  -
-    StateName: CheckAvoidance
-    Transition:
-      -
-        Key: execute_avoidance
-        Target: Avoidance
-      -
-        Key: avoidance_aborted
-        Target: Go
-    Parent: Straight
-  -
-    StateName: Avoidance
-    Transition:
-      -
-        Key: completed_avoidance
-        Target: ReturnToLane
-      -
-        Key: avoidance_aborted
-        Target: Go
-    Parent: Straight
-  -
-    StateName: ReturnToLane
-    Transition:
-      -
-        Key: completed_return
-        Target: Go
-      -
-        Key: avoidance_aborted
-        Target: Go
     Parent: Straight
   -
     StateName: Back
