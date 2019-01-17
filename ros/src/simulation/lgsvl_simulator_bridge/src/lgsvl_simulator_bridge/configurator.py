@@ -133,11 +133,16 @@ class RqtLgsvlSimulatorConfiguratorPlugin(Plugin):
         self.settings.endGroup()
         if self.instance_id == "" and self.is_remote == True:
             return
+        if self.is_remote == True:
+            try:
+                response = requests.post(address,json={u'instance_id':self.instance_id})    
+            except:
+                self._widget.terminate_button.setStyleSheet("background-color: #F5A9A9")
+                return
         try:
-            response = requests.post(address,json={u'instance_id':self.instance_id})
             self.proc.terminate()
         except:
             self._widget.terminate_button.setStyleSheet("background-color: #F5A9A9")
-            return
+            return            
         self._widget.terminate_button.setStyleSheet("background-color: #8fb8e0")
         self._widget.launch_button.setStyleSheet("background-color: #FFFFFF")
