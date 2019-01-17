@@ -59,3 +59,6 @@ vehicle_model_wheelbase: 2.9
 
 # steering angle limit [deg]
 vehicle_model_steer_lim_deg: 40.0
+
+# gear ratio tire to steering angle (lexus is about 17)
+vehicle_model_gear_ratio_tire_to_steer: 17.0

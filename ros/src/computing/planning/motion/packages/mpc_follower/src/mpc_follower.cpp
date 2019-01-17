@@ -64,6 +64,7 @@ private:
     TWIST = 0,
     STEER = 1,
     STEER_AND_VEL = 2,
+    ALL = 3,
   };
 
   /* parameters */
@@ -95,7 +96,7 @@ private:
     double steer_tau;
     double wheelbase;
     double steer_lim_deg;
-    double steer_to_tire_angle;
+    double gear_ratio_tire_to_steer;
   };
   VehicleModel vehicle_model_; // vehicle physical parameters
 
@@ -148,7 +149,7 @@ MPCFollower::MPCFollower()
     : nh_(""), pnh_("~"), path_frame_id_(""), my_position_ok_(false), my_velocity_ok_(false), my_steering_ok_(false) {
 
   pnh_.param("robot_interface", robot_interface_, std::string("pacmod"));
-  pnh_.param("ctrl_cmd_interface", ctrl_cmd_interface_string_, std::string("twist"));
+  pnh_.param("ctrl_cmd_interface", ctrl_cmd_interface_string_, std::string("all"));
   pnh_.param("ctrl_dt", ctrl_dt_, double(0.1));
   pnh_.param("use_path_smoothing", use_path_smoothing_, bool(true));
   pnh_.param("path_smoothing_cutoff_hz", path_smoothing_cutoff_hz_, double(1.0));
@@ -176,7 +177,7 @@ MPCFollower::MPCFollower()
   pnh_.param("vehicle_model_steer_tau", vehicle_model_.steer_tau, double(0.3));
   pnh_.param("vehicle_model_wheelbase", vehicle_model_.wheelbase, double(2.9));
   pnh_.param("vehicle_model_steer_lim_deg", vehicle_model_.steer_lim_deg, double(40.0));
-  pnh_.param("vehicle_model_steer_to_tire_angle", vehicle_model_.steer_to_tire_angle, double(1 / 17.0));
+  pnh_.param("vehicle_model_gear_ratio_tire_to_steer", vehicle_model_.gear_ratio_tire_to_steer, double(17.0));
 
   /* initialize for vehicle status */
   vehicle_status_.frame_id_pos = "";
@@ -195,6 +196,8 @@ MPCFollower::MPCFollower()
     ctrl_cmd_interface_ = CtrlCmdInterface::STEER_AND_VEL;
   } else if (ctrl_cmd_interface_string_ == "steer") {
     ctrl_cmd_interface_ = CtrlCmdInterface::STEER;
+  } else if (ctrl_cmd_interface_string_ == "all") {
+    ctrl_cmd_interface_ = CtrlCmdInterface::ALL;
   }
 
   /* initialize lowpass filter */
@@ -233,7 +236,7 @@ void MPCFollower::timerCallback(const ros::TimerEvent& te) {
   const bool mpc_solved = calculateMPC(vel_cmd, steer_cmd);
   const auto end = std::chrono::system_clock::now();
   const double elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-  printf("MPC calculating time = %f [ms]\n", elapsed * 1.0e-6);
+  MPC_INFO("MPC calculating time = %f [ms]\n", elapsed * 1.0e-6);
 
   if (!mpc_solved) {
     ROS_WARN("MPC is not solved\n");
@@ -243,29 +246,33 @@ void MPCFollower::timerCallback(const ros::TimerEvent& te) {
   }
 
   /* publish control command */
-  publishAsTwist(vel_cmd, steer_cmd);
-  publishSteerAndVel(vel_cmd, steer_cmd);
 
-  // switch (ctrl_cmd_interface_) {
-  // case CtrlCmdInterface::TWIST:
-  //   publishAsTwist(vel_cmd, steer_cmd);
-  //   break;
-  // case CtrlCmdInterface::STEER:
-  //   // TODO: write me
-  //   break;
-  // case CtrlCmdInterface::STEER_AND_VEL:
-  //   // TODO: write me
-  //   break;
-  // default:
-  //   // TODO: write me
-  //   break;
-  // }
+
+  switch (ctrl_cmd_interface_) {
+  case CtrlCmdInterface::TWIST:
+    publishAsTwist(vel_cmd, steer_cmd);
+    break;
+  case CtrlCmdInterface::STEER:
+    // TODO: write me
+    ROS_WARN("control command interface STEER is not implemented");
+    break;
+  case CtrlCmdInterface::STEER_AND_VEL:
+    publishSteerAndVel(vel_cmd, steer_cmd);
+    break;
+  case CtrlCmdInterface::ALL:
+    publishAsTwist(vel_cmd, steer_cmd);
+    publishSteerAndVel(vel_cmd, steer_cmd);
+    break;
+  default:
+    ROS_WARN("control command interface is not appropriate");
+    break;
+  }
 };
 
 bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd) {
 
   if (ref_traj_.size() == 0 || !my_position_ok_ || !my_velocity_ok_ || !my_steering_ok_) {
-    printf("ref_traj_.size() = %d, my_position_ok_ = %d,  my_velocity_ok_ = %d,  my_steering_ok_ = %d\n",
+    MPC_INFO("ref_traj_.size() = %d, my_position_ok_ = %d,  my_velocity_ok_ = %d,  my_steering_ok_ = %d\n",
             ref_traj_.size(), my_position_ok_, my_velocity_ok_, my_steering_ok_);
     return false;
   }
@@ -434,7 +441,7 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd) {
   /* time delay compensation, look ahead delay_compensation_time for optimized input vector*/
   double u_delay_comped;
   double total_delay = (ros::Time::now() - selfpose_sensor_time_).toSec();
-  printf("[calculateMPC] total delay time = %f [s]\n", total_delay);
+  MPC_INFO("[calculateMPC] total delay time = %f [s]\n", total_delay);
   interp1d(MPC_T, Uex, nearest_traj_time + mpc_param_.delay_compensation_time, u_delay_comped);
   MPC_INFO("[calculateMPC] mpc steering angle command = %f [deg] (no delay comp = %f)\n", u_delay_comped * rad2deg, Uex(0) * rad2deg);
 
@@ -780,12 +787,14 @@ void MPCFollower::callbackPose(const geometry_msgs::PoseStamped::ConstPtr &msg){
 };
 
 void MPCFollower::callbackVelocity(const pacmod_msgs::WheelSpeedRpt &msg){
-  vehicle_status_.vx = (msg.rear_left_wheel_speed + msg.rear_right_wheel_speed) / 2.0;
+  static const double tire_radius = 0.77 / 2.0;
+  static const double wheel_speed_rads_to_ms = tire_radius;
+  vehicle_status_.vx = (msg.rear_left_wheel_speed + msg.rear_right_wheel_speed) / 2.0 * wheel_speed_rads_to_ms;
   my_velocity_ok_ = true;
 };
 
 void MPCFollower::callbackSteering(const pacmod_msgs::SystemRptFloat &msg){
-  vehicle_status_.steer_rad = msg.output * vehicle_model_.steer_to_tire_angle;
+  vehicle_status_.steer_rad = msg.output / vehicle_model_.gear_ratio_tire_to_steer;
   my_steering_ok_ = true;
 };
 
