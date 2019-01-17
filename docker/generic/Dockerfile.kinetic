@@ -1,4 +1,4 @@
-FROM nvidia/cuda:8.0-devel-ubuntu16.04
+FROM nvidia/cuda:9.0-devel-ubuntu16.04
 MAINTAINER Yuki Iida <yuki.iida@tier4.jp>
 
 # Develop
@@ -48,20 +48,7 @@ RUN apt-get update && apt-get install -y \
 RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
 RUN apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
 RUN apt-get update && apt-get install -y \
-        ros-kinetic-desktop-full \
-        ros-kinetic-gps-common \
-        ros-kinetic-grid-map \
-        ros-kinetic-jsk-visualization \
-        ros-kinetic-nmea-msgs \
-        ros-kinetic-nmea-navsat-driver \
-        ros-kinetic-sound-play
-RUN apt-get update && apt-get install -y \
-        ros-kinetic-automotive-platform-msgs \
-        ros-kinetic-controller-manager \
-        ros-kinetic-gazebo-ros-control \
-        ros-kinetic-joystick-drivers \
-        ros-kinetic-ros-control \
-        ros-kinetic-ros-controllers
+        ros-kinetic-desktop-full
 RUN apt-get update && apt-get install -y \
         freeglut3-dev \
         gksu \
@@ -117,9 +104,25 @@ RUN sudo ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stub
 ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64/stubs/:$LD_LIBRARY_PATH"
 
 # Install Autoware
-RUN cd && mkdir /home/$USERNAME/Autoware
-COPY --chown=autoware ./ /home/$USERNAME/Autoware/
-RUN /bin/bash -c 'source /opt/ros/kinetic/setup.bash; cd /home/$USERNAME/Autoware/ros/src; git submodule update --init --recursive; cd ../; ./colcon_release'
+ENV AW_PATH /home/$USERNAME/Autoware 
+RUN cd && mkdir $AW_PATH
+COPY --chown=autoware ./ $AW_PATH
+
+# Use catkin_make_release for now until we migrate entirely to colcon
+
+RUN cd $AW_PATH/ros/src \ 
+	&& git submodule update --init --recursive \
+	&& rm -rf CMakeLists.txt
+
+RUN cd $AW_PATH/ros \
+	&& rm -rf devel/ build/
+
+RUN /bin/bash -c 'source /opt/ros/kinetic/setup.bash; rosdep install -y --from-paths $AW_PATH/ros/src --ignore-src --rosdistro kinetic'
+
+RUN /bin/bash -c 'source /opt/ros/kinetic/setup.bash; cd $AW_PATH/ros; catkin_make -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs'
+
+#RUN /bin/bash -c 'source /opt/ros/kinetic/setup.bash; cd /home/$USERNAME/Autoware/ros/src; git submodule update --init --recursive; rm -rf CMakeLists.txt; catkin_init_workspace; cd ../; rm -rf devel/ build/; rosdep install -y --from-paths src --ignore-src --rosdistro kinetic; catkin_make'
+
 RUN echo "source /home/$USERNAME/Autoware/ros/devel/setup.bash" >> /home/$USERNAME/.bashrc
 
 # Setting

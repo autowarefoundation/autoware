@@ -2,6 +2,35 @@
 Changelog for package dp_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.10.0 (2019-01-17)
+-------------------
+* [fix] SSD detector, cmake colcon (`#1837 <https://github.com/kfunaoka/Autoware/issues/1837>`_)
+  * Fixes for new colcon script on ssd cuda based node
+  * Fixed to RTM and darknet launch files
+  * catkin_fix
+  * * catkin & colcon build successfully
+  * reverted back run to devel space (for the time being)
+* Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/kfunaoka/Autoware/issues/1741>`_)
+  * Switch to Apache 2
+  * Replace BSD-3 license header with Apache 2 and reassign copyright to the
+  Autoware Foundation.
+  * Update license on Python files
+  * Update copyright years
+  * Add #ifndef/define _POINTS_IMAGE_H\_
+  * Updated license comment
+* Use colcon as the build tool (`#1704 <https://github.com/kfunaoka/Autoware/issues/1704>`_)
+  * Switch to colcon as the build tool instead of catkin
+  * Added cmake-target
+  * Added note about the second colcon call
+  * Added warning about catkin* scripts being deprecated
+  * Fix COLCON_OPTS
+  * Added install targets
+  * Update Docker image tags
+  * Message packages fixes
+  * Fix missing dependency
+* Fix Ros/ROS naming convention
+* Contributors: Abraham Monrroy Cano, Esteve Fernandez
+
 1.9.1 (2018-11-06)
 ------------------
 

@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   visualization_msgs
   points2image
+  autoware_msgs
 )
 find_package(OpenCV REQUIRED)
 

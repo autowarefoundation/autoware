@@ -51,6 +51,8 @@ find_package(catkin REQUIRED COMPONENTS
         ndt_tku
         ndt_cpu
         ${PCL_OPENMP_PACKAGES}
+        autoware_msgs
+        autoware_config_msgs
         )
 
 ###################################
