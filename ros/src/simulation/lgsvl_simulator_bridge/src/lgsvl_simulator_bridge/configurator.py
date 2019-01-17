@@ -61,6 +61,7 @@ class RqtLgsvlSimulatorConfiguratorPlugin(Plugin):
         self.settings.endGroup()
         self.json_dict = {}
         self.instance_id = ""
+        self.is_remote = False
         self._widget.button_config_ref.clicked[bool].connect(self._handle_config_ref_button_clicked)
         self._widget.button_config.clicked[bool].connect(self._handle_config_button_clicked)
         self._widget.launch_button.clicked[bool].connect(self._handle_launch_button_clicked)
@@ -84,6 +85,10 @@ class RqtLgsvlSimulatorConfiguratorPlugin(Plugin):
         if str(self._widget.ip_box.text()) == "localhost" or str(self._widget.ip_box.text()) == "0.0.0.0" or str(self._widget.ip_box.text()) == "127.0.0.1":
             cmd = ["roslaunch","lgsvl_simulator_bridge","lgsvl_simulator.launch"]
             self.proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+            self._widget.launch_button.setStyleSheet("background-color: #8fb8e0")
+            self._widget.terminate_button.setStyleSheet("background-color: #FFFFFF")
+            self.is_remote = False
+            return
         else:
             cmd = ["roslaunch","lgsvl_simulator_bridge","bridge.launch"]
             self.proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)            
@@ -98,6 +103,7 @@ class RqtLgsvlSimulatorConfiguratorPlugin(Plugin):
         except:
             self._widget.launch_button.setStyleSheet("background-color: #F5A9A9")
             return
+        self.is_remote = False
         self._widget.launch_button.setStyleSheet("background-color: #8fb8e0")
         self._widget.terminate_button.setStyleSheet("background-color: #FFFFFF")
 
@@ -125,7 +131,7 @@ class RqtLgsvlSimulatorConfiguratorPlugin(Plugin):
         self.settings.setValue("ip", self._widget.ip_box.text())
         self.settings.setValue("port", self._widget.port_box.text())
         self.settings.endGroup()
-        if self.instance_id == "":
+        if self.instance_id == "" and self.is_remote == True:
             return
         try:
             response = requests.post(address,json={u'instance_id':self.instance_id})
