@@ -37,6 +37,7 @@
   <exec_depend>rqt_gui</exec_depend>
   <exec_depend>rqt_gui_py</exec_depend>
   <exec_depend version_gte="0.2.19">python_qt_binding</exec_depend>
+  <exec_depend>python-requests</exec_depend>
   <exec_depend>python-rospkg</exec_depend>
   <export>
     <rqt_gui plugin="${prefix}/plugin.xml" />
