@@ -27,6 +27,8 @@ steering_lpf_cutoff_hz: 3.0
 admisible_position_error: 5.0 #[m]
 admisible_yaw_error_deg: 45.0 #[deg]
 
+predict_model_for_delay: 0.07
+
 
 #---------------------------------------------------------------------
 # MPC algorithm parameters
@@ -44,7 +46,7 @@ mpc_weight_heading_error: 1.0  # for Q[1,1]
 mpc_weight_steering_input: 2.0 # for R[0,0]
 
 # time delay compensation
-mpc_delay_compensation_time: 0.035 #[s]
+mpc_delay_compensation_time: 0.0 #[s]
 
 
 #---------------------------------------------------------------------

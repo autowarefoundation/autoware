@@ -62,13 +62,13 @@ bool interp1d(const std::vector<double> &index,
     return false;
   }
   if (ref < index.front()) {
-    ret = index.front();
-    printf("ref point is out of index (low), return false.\n");
+    ret = values.front();
+    // printf("ref point is out of index (low), return false.\n");
     return false;
   }
   if (index.back() < ref) {
-    ret = index.back();
-    printf("ref point is out of index (high), return false.\n");
+    ret = values.back();
+    // printf("ref point is out of index (high), return false.\n");
     return false;
   }
 
@@ -104,13 +104,13 @@ bool interp1d(const Eigen::VectorXd &index,
   }
   uint end = index.size() - 1;
   if (ref < index[0]) {
-    ret = index[0];
-    printf("ref point is out of index (low), return false.\n");
+    ret = values[0];
+    // printf("ref point is out of index (low), return false.\n");
     return false;
   }
   if (index[end] < ref) {
-    ret = index[end];
-    printf("ref point is out of index (high), return false.\n");
+    ret = values[end];
+    // printf("ref point is out of index (high), return false.\n");
     return false;
   }
 
