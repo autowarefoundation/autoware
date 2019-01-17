@@ -62,4 +62,7 @@
     <param name="object_frame" value="$(arg object_frame)"/>
   </node>
 
+  <node pkg="detected_objects_visualizer" type="visualize_detected_objects" name="fake_perception_visualization_01"
+        output="screen" ns="/detection/fake_perception" />
+
 </launch>
