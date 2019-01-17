@@ -195,15 +195,11 @@ subs :
         gui  :
           sync :
             func : self.button_synchronization.GetValue()
-      - name : lidar_fake_perception
-        desc : lidar_fake_perception desc sample
-        cmd  : roslaunch lidar_fake_perception lidar_fake_perception.launch
-        param: lidar_fake_perception_param
+      - name : lidar_shape_estimation
+        desc : lidar_shape_estimation desc sample
+        cmd  : roslaunch lidar_shape_estimation shape_estimation_clustering.launch
+        param: lidar_shape_estimation_param
         gui  :
-          dialog_width  : 600
-          dialog_height : 450
-          real_points_topic :
-            flags : [nl ]
           sync :
             func : self.button_synchronization.GetValue()
 
@@ -233,7 +229,7 @@ subs :
 
     - name : lidar_tracker
       desc : lidar_tracker desc sample
-      subs :          
+      subs :
         - name : imm_ukf_pda_track
           desc : imm_ukf_pda_track desc sample
           cmd  : roslaunch imm_ukf_pda_track imm_ukf_pda_track.launch
@@ -4912,6 +4908,26 @@ params :
         dash        : ''
         delim       : ':='
 
+  - name  : lidar_shape_estimation_param
+    vars  :
+    - name    : input
+      desc    : input topic desc sample
+      label   : 'input topic'
+      kind  : topic
+      topic_type : autoware_msgs/DetectedObjectArray
+      v       : /detection/lidar_detector/objects
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : output
+      desc    : output topic desc sample
+      label   : 'output topic'
+      kind    : str
+      v       : /detection/shape_estimation/objects
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
   - name  : lidar_fake_perception_param
     vars  :
     - name    : initial_pose_topic
@@ -5158,6 +5174,14 @@ params :
     - name  : sync_topics
       desc  : Defines if synchronization is performed on the detection source topics
       label : sync_topics
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : use_vector_map
+      desc  : Use ROI Filter to remove objects outside of the drivable area
+      label : use_vector_map
       kind  : checkbox
       v     : False
       cmd_param :
