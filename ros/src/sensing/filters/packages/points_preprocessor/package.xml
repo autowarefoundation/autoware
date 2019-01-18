@@ -8,7 +8,7 @@
     <author email="n.patiphon@gmail.com">n-patiphon</author>
     <author email="akihito.ohsato@tier4.jp">aohsato</author>
 
-    <license>BSD</license>
+    <license>Apache 2</license>
 
     <buildtool_depend>catkin</buildtool_depend>
     <buildtool_depend>autoware_build_flags</buildtool_depend>

@@ -4,7 +4,7 @@
   <version>1.6.3</version>
   <description>The requirements_version_checker package</description>
   <maintainer email="syoshida@axe.bz">Syohei YOSHIDA</maintainer>
-  <license>BSD</license>
+  <license>Apache 2</license>
   <export>
   </export>
 </package>

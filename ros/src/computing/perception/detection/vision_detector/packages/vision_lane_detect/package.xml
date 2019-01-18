@@ -4,7 +4,7 @@
     <version>1.10.0</version>
     <description>The vision_lane_detect package</description>
     <maintainer email="syoshida@axe.bz">Syoeh YOSHIDA</maintainer>
-    <license>BSD</license>
+    <license>Apache 2</license>
     <buildtool_depend>catkin</buildtool_depend>
 
     <build_depend>roscpp</build_depend>
