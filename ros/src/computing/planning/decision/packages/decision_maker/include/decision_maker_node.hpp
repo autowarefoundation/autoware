@@ -173,6 +173,8 @@ private:
   // Param
   bool enableDisplayMarker;
   bool auto_mission_reload_;
+  bool auto_engage_;
+  bool auto_mission_change_;
   bool use_management_system_;
   bool disuse_vector_map_;
   uint32_t param_num_of_steer_behind_;
@@ -383,6 +385,8 @@ public:
     : private_nh_("~")
     , enableDisplayMarker(false)
     , auto_mission_reload_(false)
+    , auto_engage_(false)
+    , auto_mission_change_(false)
     , use_management_system_(false)
     , param_num_of_steer_behind_(30)
   {

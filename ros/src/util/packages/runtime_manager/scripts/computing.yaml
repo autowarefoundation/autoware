@@ -892,7 +892,17 @@ subs :
       gui  :
           dialog_width  : 400
           dialog_height : 600
+          enable_display_marker:
+            flags : [ nl ]
+          use_management_system:
+            flags : [ nl ]
           auto_mission_reload:
+            depend : use_management_system
+            depend_bool : 'lambda v : v == 0'
+          auto_engage:
+            depend : use_management_system
+            depend_bool : 'lambda v : v == 0'
+          auto_mission_change:
             depend : use_management_system
             depend_bool : 'lambda v : v == 0'
 
@@ -2172,6 +2182,22 @@ params :
     - name  : auto_mission_reload
       desc  : If this is enabled, the mission will be automatically reloaded after the MissionComplete state.
       label : auto_mission_reload
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : auto_engage
+      desc  : Automatically engage after load the mission.
+      label : auto_engage
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : auto_mission_change
+      desc  : The state transitions to DrivingMissionChange state automatically when load the mission while Driving state.
+      label : auto_mission_change
       kind  : checkbox
       v     : False
       cmd_param :
