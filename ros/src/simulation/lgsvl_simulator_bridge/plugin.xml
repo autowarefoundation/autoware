@@ -1,0 +1,18 @@
+
+<library path="src">
+  <class name="RqtLgsvlSimulatorConfiguratorPlugin" type="lgsvl_simulator_bridge.configurator.RqtLgsvlSimulatorConfiguratorPlugin" base_class_type="rqt_gui_py::Plugin" >
+    <description>
+      rqt Plugin for configureing LGSVL simulator.
+    </description>
+    <qtgui>
+      <group>
+        <label>Autoware</label>
+        <icon type="file">media/autoware.png</icon>
+        <statustip>Plugins for Autoware.</statustip>
+      </group>
+      <label>LGSVL Simulator Configurator</label>
+      <icon type="theme">system-search</icon>
+      <statustip>rqt Plugin for configureing LGSVL simulator.</statustip>
+    </qtgui>
+  </class>
+</library>
