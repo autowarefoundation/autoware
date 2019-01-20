@@ -305,13 +305,22 @@ void Autoware_Rosbag_Plugin::on_botton_topic_refresh_clicked()
   int topic_num = 0;
 
   /* Scan current topics and build checkboxs */
+  std::vector<std::string> current_topic;
   for (ros::master::V_TopicInfo::iterator it = master_topics.begin() ; it != master_topics.end(); it++) {
     const ros::master::TopicInfo& info = *it;
-    QCheckBox *dynamic = new QCheckBox(QString::fromStdString(info.name));
+    current_topic.push_back(info.name);
+  }
+
+  std::sort(current_topic.begin(),current_topic.end());
+
+  std::vector<std::string>::iterator ite = current_topic.begin();
+  while( ite != current_topic.end() )
+  {
+    QCheckBox *dynamic = new QCheckBox(QString::fromStdString(*ite));
     dynamic->setChecked (false);
     lay->addWidget(dynamic);
     topic_num++;
-
+    ite++;
   }
 
   ui->scrollAreaWidgetContents->setLayout(lay);
