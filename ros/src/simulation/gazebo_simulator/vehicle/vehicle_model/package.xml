@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>vehicle_model</name>
+  <version>0.0.0</version>
+  <description>The vehicle_model package</description>
+
+
+  <maintainer email="yukky.saito@gmail.com">yukihiro saito</maintainer>
+
+  <license>Apache2.0</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>gazebo_ros_control</build_depend>
+  <build_depend>position_controllers</build_depend>
+  <build_depend>transmission_interface</build_depend>
+  <build_depend>velocity_controllers</build_depend>
+  <build_depend>effort_controllers</build_depend>
+  <build_export_depend>gazebo_ros_control</build_export_depend>
+  <build_export_depend>position_controllers</build_export_depend>
+  <build_export_depend>transmission_interface</build_export_depend>
+  <build_export_depend>velocity_controllers</build_export_depend>
+  <build_export_depend>effort_controllers</build_export_depend>
+  <exec_depend>gazebo_ros_control</exec_depend>
+  <exec_depend>position_controllers</exec_depend>
+  <exec_depend>transmission_interface</exec_depend>
+  <exec_depend>velocity_controllers</exec_depend>
+  <exec_depend>effort_controllers</exec_depend>
+
+  <export>
+  </export>
+</package>

@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>gazebo_world_description</name>
+  <version>0.0.0</version>
+  <description>The gazebo_world_description package</description>
+
+  <maintainer email="yukky.saito@gmail.com">yukihiro saito</maintainer>
+
+  <license>Apache2.0</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <export>
+  </export>
+</package>
