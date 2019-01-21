@@ -1,6 +1,6 @@
 #!/bin/sh
 
-mkdir -p ~/.gazebo
+mkdir -p ~/.gazebo/models
 echo "Download generic gazebo models"
 if [ -e /tmp/gazebo_models ]; then
   echo "Already exist /tmp/gazebo_models"
