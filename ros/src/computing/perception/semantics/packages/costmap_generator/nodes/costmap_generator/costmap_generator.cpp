@@ -36,7 +36,8 @@
 CostmapGenerator::CostmapGenerator()
   : private_nh_("~")
   , has_subscribed_wayarea_(false)
-  , OBJECTS_COSTMAP_LAYER_("objects")
+  , OBJECTS_BOX_COSTMAP_LAYER_("objects_box")
+  , OBJECTS_CONVEX_HULL_COSTMAP_LAYER_("objects_convex_hull")
   , SENSOR_POINTS_COSTMAP_LAYER_("sensor_points")
   , VECTORMAP_COSTMAP_LAYER_("vectormap")
   , COMBINED_COSTMAP_LAYER_("costmap")
@@ -60,10 +61,11 @@ void CostmapGenerator::init()
   private_nh_.param<double>("grid_position_y", grid_position_y_, 0);
   private_nh_.param<double>("maximum_lidar_height_thres", maximum_lidar_height_thres_, 0.3);
   private_nh_.param<double>("minimum_lidar_height_thres", minimum_lidar_height_thres_, -2.2);
-  private_nh_.param<bool>("use_objects", use_objects_, true);
+  private_nh_.param<bool>("use_objects_box", use_objects_box_, false);
+  private_nh_.param<bool>("use_objects_convex_hull", use_objects_convex_hull_, true);
   private_nh_.param<bool>("use_points", use_points_, true);
   private_nh_.param<bool>("use_wayarea", use_wayarea_, true);
-  private_nh_.param<double>("expand_rectangle_size", expand_rectangle_size_, 1.0);
+  private_nh_.param<double>("expand_polygon_size", expand_polygon_size_, 1.0);
   private_nh_.param<int>("size_of_expansion_kernel", size_of_expansion_kernel_, 9);
 
   initGridmap();
@@ -74,7 +76,7 @@ void CostmapGenerator::run()
   pub_costmap_ = nh_.advertise<grid_map_msgs::GridMap>("/semantics/costmap", 1);
   pub_occupancy_grid_ = nh_.advertise<nav_msgs::OccupancyGrid>("/semantics/costmap_generator/occupancy_grid", 1);
 
-  if (use_objects_)
+  if (use_objects_box_ || use_objects_convex_hull_)
   {
     sub_objects_ = nh_.subscribe("/prediction/motion_predictor/objects", 1, &CostmapGenerator::objectsCallback, this);
   }
@@ -87,7 +89,16 @@ void CostmapGenerator::run()
 
 void CostmapGenerator::objectsCallback(const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects)
 {
-  costmap_[OBJECTS_COSTMAP_LAYER_] = generateObjectsCostmap(in_objects);
+  if(use_objects_box_)
+  {
+    const bool use_convex_hull = !use_objects_box_;
+    costmap_[OBJECTS_BOX_COSTMAP_LAYER_] = generateObjectsCostmap(in_objects, use_convex_hull);
+  }
+
+  if(use_objects_convex_hull_)
+  {
+    costmap_[OBJECTS_CONVEX_HULL_COSTMAP_LAYER_] = generateObjectsCostmap(in_objects, use_objects_convex_hull_);
+  }
   costmap_[VECTORMAP_COSTMAP_LAYER_] = generateVectormapCostmap();
   costmap_[COMBINED_COSTMAP_LAYER_] = generateCombinedCostmap();
 
@@ -110,7 +121,8 @@ void CostmapGenerator::initGridmap()
                        grid_map::Position(grid_position_x_, grid_position_y_));
 
   costmap_.add(SENSOR_POINTS_COSTMAP_LAYER_, grid_min_value_);
-  costmap_.add(OBJECTS_COSTMAP_LAYER_, grid_min_value_);
+  costmap_.add(OBJECTS_BOX_COSTMAP_LAYER_, grid_min_value_);
+  costmap_.add(OBJECTS_CONVEX_HULL_COSTMAP_LAYER_, grid_min_value_);
   costmap_.add(VECTORMAP_COSTMAP_LAYER_, grid_min_value_);
   costmap_.add(COMBINED_COSTMAP_LAYER_, grid_min_value_);
 }
@@ -125,10 +137,11 @@ CostmapGenerator::generateSensorPointsCostmap(const sensor_msgs::PointCloud2::Co
 }
 
 grid_map::Matrix
-CostmapGenerator::generateObjectsCostmap(const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects)
+CostmapGenerator::generateObjectsCostmap(const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects,
+                                         const bool use_convex_hull)
 {
   grid_map::Matrix objects_costmap = objects2costmap_.makeCostmapFromObjects(
-      costmap_, OBJECTS_COSTMAP_LAYER_, expand_rectangle_size_, size_of_expansion_kernel_, in_objects);
+    costmap_, expand_polygon_size_, size_of_expansion_kernel_, in_objects, use_convex_hull);
   return objects_costmap;
 }
 
@@ -163,7 +176,9 @@ grid_map::Matrix CostmapGenerator::generateCombinedCostmap()
   combined_costmap[COMBINED_COSTMAP_LAYER_] =
       combined_costmap[COMBINED_COSTMAP_LAYER_].cwiseMax(combined_costmap[VECTORMAP_COSTMAP_LAYER_]);
   combined_costmap[COMBINED_COSTMAP_LAYER_] =
-      combined_costmap[COMBINED_COSTMAP_LAYER_].cwiseMax(combined_costmap[OBJECTS_COSTMAP_LAYER_]);
+      combined_costmap[COMBINED_COSTMAP_LAYER_].cwiseMax(combined_costmap[OBJECTS_BOX_COSTMAP_LAYER_]);
+  combined_costmap[COMBINED_COSTMAP_LAYER_] =
+      combined_costmap[COMBINED_COSTMAP_LAYER_].cwiseMax(combined_costmap[OBJECTS_CONVEX_HULL_COSTMAP_LAYER_]);
   return combined_costmap[COMBINED_COSTMAP_LAYER_];
 }
 

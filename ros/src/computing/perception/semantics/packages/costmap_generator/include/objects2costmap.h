@@ -27,7 +27,7 @@
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ********************/
- 
+
 #ifndef OBJECTS2COSTMAP_H
 #define OBJECTS2COSTMAP_H
 
@@ -46,14 +46,14 @@ public:
 
   /// \brief calculate cost from DetectedObjectArray
   /// \param[in] costmap: initialized gridmap
-  /// \param[in] gridmap_layer_name: target gridmap layer for calculating cost
-  /// \param[in] expand_rectangle_size: expand object's rectangle
+  /// \param[in] expand_polygon_size: expand object's costmap polygon
   /// \param[in] size_of_expansion_kernel: kernel size for blurring cost
   /// \param[in] in_objects: subscribed DetectedObjectArray
   /// \param[out] calculated cost in grid_map::Matrix format
-  grid_map::Matrix makeCostmapFromObjects(const grid_map::GridMap& costmap, const std::string& gridmap_layer_name,
-                                          const double expand_rectangle_size, const double size_of_expansion_kernel,
-                                          const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects);
+  grid_map::Matrix makeCostmapFromObjects(const grid_map::GridMap& costmap,
+                                          const double expand_polygon_size, const double size_of_expansion_kernel,
+                                          const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects,
+                                          const bool use_objects_convex_hull);
 
 private:
   friend class TestClass;
@@ -72,8 +72,24 @@ private:
   /// \param[in] in_object: subscribed one of DetectedObjectArray
   /// \param[in] expand_rectangle_size: expanding 4 points
   /// \param[out] polygon with 4 rectangle points
-  grid_map::Polygon makePolygonFromObject(const autoware_msgs::DetectedObject& in_object,
+  grid_map::Polygon makePolygonFromObjectBox(const autoware_msgs::DetectedObject& in_object,
                                           const double expand_rectangle_size);
+
+  /// \brief make expanded point from convex hull's point
+  /// \param[in] in_centroid: object's centroid
+  /// \param[in] in_point one of convex hull points
+  /// \param[in] expand_polygon_size  the param for expanding convex_hull points
+  /// \param[out] expanded point
+  geometry_msgs::Point makeExpandedPoint(const geometry_msgs::Point& in_centroid,
+                                         const geometry_msgs::Point32& in_point,
+                                         const double expand_polygon_size);
+
+  /// \brief make polygon(grid_map::Polygon) from convex hull points
+  /// \param[in] in_centroid: object's centroid
+  /// \param[in] expand_polygon_size: expanding convex_hull points
+  /// \param[out] polygon object with convex hull points
+  grid_map::Polygon makePolygonFromObjectConvexHull(const autoware_msgs::DetectedObject& in_object,
+                                                    const double expand_polygon_size);
 
   /// \brief set cost in polygon by using DetectedObject's score
   /// \param[in] polygon: 4 rectangle points in polygon format

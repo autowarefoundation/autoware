@@ -11,9 +11,10 @@
   <arg name="grid_position_y" default="0" />
   <arg name="maximum_lidar_height_thres" default="0.3" />
   <arg name="minimum_lidar_height_thres" default="-2.2" />
-  <arg name="expand_rectangle_size" default="1.0" />
+  <arg name="expand_polygon_size" default="1.0" />
   <arg name="size_of_expansion_kernel" default="9" />
-  <arg name="use_objects" default="true" />
+  <arg name="use_objects_box" default="false" />
+  <arg name="use_objects_convex_hull" default="true" />
   <arg name="use_points" default="true" />
   <arg name="use_wayarea" default="true" />
 
@@ -33,9 +34,10 @@
     <param name="grid_position_y" value="$(arg grid_position_y)" />
     <param name="maximum_lidar_height_thres" value="$(arg maximum_lidar_height_thres)" />
     <param name="minimum_lidar_height_thres" value="$(arg minimum_lidar_height_thres)" />
-    <param name="expand_rectangle_size" value="$(arg expand_rectangle_size)" />
+    <param name="expand_polygon_size" value="$(arg expand_polygon_size)" />
     <param name="size_of_expansion_kernel" value="$(arg size_of_expansion_kernel)" />
-    <param name="use_objects" value="$(arg use_objects)" />
+    <param name="use_objects_box" value="$(arg use_objects_box)" />
+    <param name="use_objects_convex_hull" value="$(arg use_objects_convex_hull)" />
     <param name="use_points" value="$(arg use_points)" />
     <param name="use_wayarea" value="$(arg use_wayarea)" />
 

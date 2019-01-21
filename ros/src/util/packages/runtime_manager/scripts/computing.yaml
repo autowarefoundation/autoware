@@ -5465,9 +5465,17 @@ params :
 
   - name  : costmap_generator_param
     vars  :
-    - name  : use_objects
-      desc  : use DetectedObjectArray or not
-      label : use_objects
+    - name  : use_objects_box
+      desc  : use bouding box from DetectedObjectArray
+      label : use_objects_box
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : use_objects_convex_hull
+      desc  : use convex hull from DetectedObjectArray
+      label : use_objects_convex_hull
       kind  : checkbox
       v     : True
       cmd_param :
@@ -5604,9 +5612,9 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name  : expand_rectangle_size
-      desc  : Expand oberct's rectangle
-      label : expand_rectangle_size
+    - name  : expand_polygon_size
+      desc  : Expand oberct's costmap polygon
+      label : expand_polygon_size
       min     : 0.0
       max     : 10.0
       v       : 1.0

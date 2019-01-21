@@ -27,7 +27,7 @@
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ********************/
- 
+
 #ifndef COSTMAP_GENERATOR_H
 #define COSTMAP_GENERATOR_H
 
@@ -61,7 +61,8 @@ public:
 private:
   ros::NodeHandle nh_;
   ros::NodeHandle private_nh_;
-  bool use_objects_;
+  bool use_objects_box_;
+  bool use_objects_convex_hull_;
   bool use_points_;
   bool use_wayarea_;
 
@@ -80,7 +81,7 @@ private:
   double maximum_lidar_height_thres_;
   double minimum_lidar_height_thres_;
 
-  double expand_rectangle_size_;
+  double expand_polygon_size_;
   int size_of_expansion_kernel_;
 
   vector_map::VectorMap vmap_;
@@ -100,7 +101,8 @@ private:
   Points2Costmap points2costmap_;
   Objects2Costmap objects2costmap_;
 
-  const std::string OBJECTS_COSTMAP_LAYER_;
+  const std::string OBJECTS_BOX_COSTMAP_LAYER_;
+  const std::string OBJECTS_CONVEX_HULL_COSTMAP_LAYER_;
   const std::string SENSOR_POINTS_COSTMAP_LAYER_;
   const std::string VECTORMAP_COSTMAP_LAYER_;
   const std::string COMBINED_COSTMAP_LAYER_;
@@ -127,7 +129,8 @@ private:
 
   /// \brief calculate cost from DetectedObjectArray
   /// \param[in] in_objects: subscribed DetectedObjectArray
-  grid_map::Matrix generateObjectsCostmap(const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects);
+  grid_map::Matrix generateObjectsCostmap(const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects,
+                                          const bool use_objects_convex_hull);
 
   /// \brief calculate cost from vectormap
   grid_map::Matrix generateVectormapCostmap();
