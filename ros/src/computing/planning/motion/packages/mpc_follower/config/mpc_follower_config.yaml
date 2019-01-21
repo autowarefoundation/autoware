@@ -2,7 +2,7 @@
 # debug option
 #---------------------------------------------------------------------
 
-show_debug_info: false
+show_debug_info: true
 
 
 #---------------------------------------------------------------------
@@ -23,9 +23,16 @@ use_path_smoothing: true
 # path smoothing low pass filter cut off frequency [Hz]
 path_smoothing_cutoff_hz: 1.0
 
+
+# length span for resampling trajectory [m]
+traj_resample_dl: 0.2
+
+# path smoothing low pass filler, moving average number
+path_smoothing_moving_ave_num: 15
+
 # curvature calculation smoothing, larger makes smoother
 #   curvature is calculated from three points: p(i-num), p(i), p(i+num)
-curvature_smoothing_num: 5
+curvature_smoothing_num: 15
 
 # low pass filter for steering output command [Hz]
 steering_lpf_cutoff_hz: 3.0
@@ -34,7 +41,7 @@ steering_lpf_cutoff_hz: 3.0
 admisible_position_error: 5.0 #[m]
 admisible_yaw_error_deg: 45.0 #[deg]
 
-predict_model_for_delay: 0.07
+predict_model_for_delay: 0.07 # 0.22 for lexus
 
 
 #---------------------------------------------------------------------
@@ -50,7 +57,7 @@ mpc_dt: 0.1
 # weight parameters
 mpc_weight_lat_error: 1.0      # for Q[0,0]
 mpc_weight_heading_error: 1.0  # for Q[1,1]
-mpc_weight_steering_input: 2.0 # for R[0,0]
+mpc_weight_steering_input: 50.0 # for R[0,0]
 
 # time delay compensation
 mpc_delay_compensation_time: 0.0 #[s]
@@ -64,7 +71,7 @@ mpc_delay_compensation_time: 0.0 #[s]
 vehicle_model_steer_tau: 0.3
 
 # wheel base length [m]
-vehicle_model_wheelbase: 2.9
+vehicle_model_wheelbase: 3.0
 
 # steering angle limit [deg]
 vehicle_model_steer_lim_deg: 40.0

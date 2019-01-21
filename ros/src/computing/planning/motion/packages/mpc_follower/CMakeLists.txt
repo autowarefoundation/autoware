@@ -79,7 +79,7 @@ add_executable(mpc_follower_node src/mpc_follower.cpp)
 add_dependencies(mpc_follower_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(mpc_follower_node ${catkin_LIBRARIES})
+target_link_libraries(mpc_follower_node ${catkin_LIBRARIES} glog)
 
 #############
 ## Install ##

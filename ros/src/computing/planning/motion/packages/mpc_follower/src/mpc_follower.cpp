@@ -20,6 +20,7 @@
 
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/LU>
+#include <glog/logging.h>
 
 #include "autoware_msgs/ControlCommandStamped.h"
 #include "autoware_msgs/Lane.h"
@@ -32,6 +33,7 @@ using vector = Eigen::VectorXd;
 using matrix = Eigen::MatrixXd;
 
 #define PRINT_MAT(X) std::cout << #X << ":\n" << X << std::endl << std::endl
+
 
 #define MPC_DEBUG_VERBOSE
 #ifdef MPC_DEBUG_VERBOSE
@@ -74,8 +76,10 @@ private:
   double ctrl_dt_; // deside control frequency
   bool use_path_smoothing_; // flag for path smoothing
   double path_smoothing_cutoff_hz_; // path smoothing cutoff frequency [Hz]
+  int path_smoothing_moving_ave_num_; // path smoothing moving average number
   int curvature_smoothing_num_; // for smoothing curvature calculation
-  double traj_resample_dt_; // used for resample path
+  double traj_resample_dt_; // path resample time span
+  double traj_resample_dl_; // path resample distance span
   double steering_lpf_cutoff_hz_; // for steering command smoothing
   double admisible_position_error_; // stop mpc calculation when lateral error is large than this value.
   double admisible_yaw_error_deg_; // stop mpc calculation when yaw error is large than this value.
@@ -136,7 +140,10 @@ private:
 
   /* debug */
   ros::Publisher pub_debug_filtered_traj_, pub_debug_predicted_traj_, pub_debug_values_, pub_debug_pred_pose_;
+  ros::Subscriber sub_ndt_twist_;
   bool show_debug_info_;
+  geometry_msgs::TwistStamped estimate_twist_;
+  double estimated_curvature_;
 
 
 
@@ -151,7 +158,8 @@ private:
   void callbackSimOdom(const nav_msgs::Odometry::ConstPtr&);
 
   void calcRelativeTimeForPath(const autoware_msgs::Lane&, std::vector<double> &);
-  void resamplePathToTraj(const autoware_msgs::Lane &path, const std::vector<double> &time, const double &resample_dt, MPCTrajectory &ref_traj_);
+  void resamplePathToTrajByTime(const autoware_msgs::Lane &path, const std::vector<double> &time, const double &resample_dt, MPCTrajectory &ref_traj_);
+  void resamplePathToTrajByDistance(const autoware_msgs::Lane &path, const std::vector<double> &time, const double &resample_dl, MPCTrajectory &ref_traj_);
   void calcTrajectoryCurvature(MPCTrajectory &traj);
   void publishControlCommands(const double &vel_cmd, const double &steer_cmd);
   void publishAsTwist(const double &vel_cmd, const double &steer_cmd);
@@ -170,19 +178,23 @@ private:
   /* debug */
   void convertTraj2Marker(const MPCTrajectory &traj, visualization_msgs::Marker &markers, std::string ns, double r, double g, double b);
   void publishPredictedPose();
+  void callbackEstimateTwist(const geometry_msgs::TwistStamped::ConstPtr &msg);
 };
 
 MPCFollower::MPCFollower()
     : nh_(""), pnh_("~"), path_frame_id_(""), previous_steering_command_(0.0),
-      my_position_ok_(false), my_velocity_ok_(false), my_steering_ok_(false) {
+      my_position_ok_(false), my_velocity_ok_(false), my_steering_ok_(false),
+      estimated_curvature_(0.0) {
 
   pnh_.param("robot_interface", robot_interface_, std::string("pacmod"));
   pnh_.param("ctrl_cmd_interface", ctrl_cmd_interface_string_, std::string("all"));
   pnh_.param("ctrl_dt", ctrl_dt_, double(0.1));
   pnh_.param("use_path_smoothing", use_path_smoothing_, bool(true));
   pnh_.param("path_smoothing_cutoff_hz", path_smoothing_cutoff_hz_, double(1.0));
-  pnh_.param("curvature_smoothing_num", curvature_smoothing_num_, int(5));
-  pnh_.param("traj_resample_dt", traj_resample_dt_, double(0.1));
+  pnh_.param("path_smoothing_moving_ave_num", path_smoothing_moving_ave_num_, int(5));
+  pnh_.param("curvature_smoothing_num", curvature_smoothing_num_, int(10));
+  pnh_.param("traj_resample_dt", traj_resample_dt_, double(0.1)); // [s]
+  pnh_.param("traj_resample_dl", traj_resample_dl_, double(0.1)); // [m]
   pnh_.param("steering_lpf_cutoff_hz", steering_lpf_cutoff_hz_, double(3.0));
   pnh_.param("admisible_position_error", admisible_position_error_, double(5.0));
   pnh_.param("admisible_yaw_error_deg", admisible_yaw_error_deg_, double(45.0));
@@ -262,6 +274,7 @@ MPCFollower::MPCFollower()
   pub_debug_predicted_traj_ = pnh_.advertise<visualization_msgs::Marker>("debug/predicted_traj", 1);
   pub_debug_values_ = pnh_.advertise<std_msgs::Float64MultiArray>("debug/debug_values", 1);
   pub_debug_pred_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("debug/predicted_pose", 1);
+  sub_ndt_twist_ = nh_.subscribe("/estimate_twist", 1, &MPCFollower::callbackEstimateTwist, this);
 };
 
 void MPCFollower::timerCallback(const ros::TimerEvent& te) {
@@ -350,6 +363,7 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd) {
 
   /* set mpc initial time */
   const double nearest_traj_time = ref_traj_.relative_time[nearest_index];
+  MPC_INFO("[calculateMPC] nearest_traj_time = %f\n", nearest_traj_time);
   double mpc_time = nearest_traj_time; /* as initialize */
 
   /* check trajectory length */
@@ -528,6 +542,7 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd) {
 
 
   ////////// publish debug values //////////
+  const double input_curvature = tan(steer_cmd) / vehicle_model_.wheelbase;
   std_msgs::Float64MultiArray debug_values;
   double nearest_ref_k = ref_traj_.k[nearest_index];
   debug_values.data.clear();
@@ -537,6 +552,8 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd) {
   debug_values.data.push_back(err_yaw);
   debug_values.data.push_back(steer);
   debug_values.data.push_back(nearest_ref_k);
+  debug_values.data.push_back(input_curvature);
+  debug_values.data.push_back(estimated_curvature_);
   pub_debug_values_.publish(debug_values);
 
   return true;
@@ -673,43 +690,43 @@ void MPCFollower::callbackRefPath(const autoware_msgs::Lane::ConstPtr& msg){
   /* calculate relative time */
   std::vector<double> relative_time;
   MPCFollower::calcRelativeTimeForPath(current_ref_path_, relative_time);
-  // MPC_INFO("[path callback] relative_time.front() = %f, relative_time.back() = %f\n", ref_traj_.relative_time.front(), ref_traj_.relative_time.back());
-  // MPC_INFO("[path callback] relative_time.size() = %d\n",relative_time.size());
+  // MPC_INFO("[path callback] relative_time.front() = %f, relative_time.back() = %f\n", relative_time.front(), relative_time.back());
+  // MPC_INFO("[path callback] relative_time.size() = %lu\n",relative_time.size());
 
   /* resampling */
-  MPCFollower::resamplePathToTraj(current_ref_path_, relative_time, traj_resample_dt_, traj);
+  // MPCFollower::resamplePathToTrajByTime(current_ref_path_, relative_time, traj_resample_dt_, traj);
+  MPCFollower::resamplePathToTrajByDistance(current_ref_path_, relative_time, traj_resample_dl_, traj);
   convertEulerAngleToMonotonic(traj.yaw);
-  // MPC_INFO("[path callback] resampled traj.relative_time.size() = %d\n",traj.relative_time.size());
+  // MPC_INFO("[path callback] resampled traj.relative_time.size() = %lu\n",traj.relative_time.size());
 
   /* low pass filter */
   const auto start = std::chrono::system_clock::now();
   if (use_path_smoothing_) {
     /* moving average filter */
-    // int moving_filter_num = 5;
-    // filteringMovingAverate(traj.x, moving_filter_num);
-    // filteringMovingAverate(traj.y, moving_filter_num);
-    // filteringMovingAverate(traj.z, moving_filter_num);
-    // filteringMovingAverate(traj.yaw, moving_filter_num);
-    // filteringMovingAverate(traj.k, moving_filter_num);
+    filteringMovingAverate(traj.x, path_smoothing_moving_ave_num_);
+    filteringMovingAverate(traj.y, path_smoothing_moving_ave_num_);
+    filteringMovingAverate(traj.z, path_smoothing_moving_ave_num_);
+    filteringMovingAverate(traj.yaw, path_smoothing_moving_ave_num_);
+    filteringMovingAverate(traj.k, path_smoothing_moving_ave_num_);
 
     /* 2d butterworth filter */
-    path_smoothing_filter_.filtfilt_vector(traj.relative_time, traj.x);
-    path_smoothing_filter_.filtfilt_vector(traj.relative_time, traj.y);
-    path_smoothing_filter_.filtfilt_vector(traj.relative_time, traj.z);
-    path_smoothing_filter_.filtfilt_vector(traj.relative_time, traj.yaw);
-    path_smoothing_filter_.filtfilt_vector(traj.relative_time, traj.k);
+    // path_smoothing_filter_.filtfilt_vector(traj.relative_time, traj.x);
+    // path_smoothing_filter_.filtfilt_vector(traj.relative_time, traj.y);
+    // path_smoothing_filter_.filtfilt_vector(traj.relative_time, traj.z);
+    // path_smoothing_filter_.filtfilt_vector(traj.relative_time, traj.yaw);
+    // path_smoothing_filter_.filtfilt_vector(traj.relative_time, traj.k);
   }
   const auto end = std::chrono::system_clock::now();
   const double elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-  MPC_INFO("[path callback] path filtering time = %f [ms]\n", elapsed * 1.0e-6);
+  // MPC_INFO("[path callback] path filtering time = %f [ms]\n", elapsed * 1.0e-6);
 
   /* calculate curvature */
   MPCFollower::calcTrajectoryCurvature(traj);
   const double max_k = *max_element(traj.k.begin(), traj.k.end());
   const double min_k = *min_element(traj.k.begin(), traj.k.end());
-  MPC_INFO("[path callback] curvature (raw): max_k = %f, min_k = %f\n", max_k, min_k);
+  // MPC_INFO("[path callback] curvature (raw): max_k = %f, min_k = %f\n", max_k, min_k);
 
-  /* add end point on traj for mpc prediction */
+  /* add end point with vel=0 on traj for mpc prediction */
   const double mpc_predict_time_length = mpc_param_.n * mpc_param_.dt;
   const double end_velocity = 0.0;
   traj.vx.back() = 0.0; // for end point
@@ -751,7 +768,8 @@ void MPCFollower::calcRelativeTimeForPath(const autoware_msgs::Lane &path,
   }
 }
 
-void MPCFollower::resamplePathToTraj(const autoware_msgs::Lane &path, const std::vector<double> &time, const double &dt, MPCTrajectory &ref_traj_){
+void MPCFollower::resamplePathToTrajByTime(const autoware_msgs::Lane &path, const std::vector<double> &time,
+                                           const double &dt, MPCTrajectory &ref_traj_) {
 
   ref_traj_.clear();
   double t = 0.0;
@@ -789,6 +807,57 @@ void MPCFollower::resamplePathToTraj(const autoware_msgs::Lane &path, const std:
   }
 }
 
+void MPCFollower::resamplePathToTrajByDistance(const autoware_msgs::Lane &path, const std::vector<double> &time,
+                                               const double &dl, MPCTrajectory &ref_traj_) {
+
+  ref_traj_.clear();
+  double t = 0.0;
+  double dist = 0.0;
+  std::vector<double> dists;
+  dists.push_back(0.0);
+
+  for (int i = 1; i < time.size(); ++i) {
+      double dx = path.waypoints.at(i).pose.pose.position.x - path.waypoints.at(i-1).pose.pose.position.x;
+      double dy = path.waypoints.at(i).pose.pose.position.y - path.waypoints.at(i-1).pose.pose.position.y;
+      dist += sqrt(dx * dx + dy * dy);
+      dists.push_back(dist);
+  }
+
+  double l = 0.0;
+  while (l < dists.back()) {
+    uint j = 1;
+    while (l > dists.at(j)) {
+      ++j;
+      if (j > dists.size() - 1){
+        ROS_ERROR("[resamplePathToTraj] sampling time is not monotonically increasing");
+        printf("l = %f, dists.at(j-1)=%f\n", l, dists.at(j-1));
+        return;
+      }
+    }
+
+    const double a = l - dists.at(j - 1);
+    const double path_dl_j = dists.at(j) - dists.at(j-1);
+    const geometry_msgs::Pose pos0 = path.waypoints.at(j-1).pose.pose;
+    const geometry_msgs::Pose pos1 = path.waypoints.at(j).pose.pose;
+    const geometry_msgs::Twist twist0 = path.waypoints.at(j-1).twist.twist;
+    const geometry_msgs::Twist twist1 = path.waypoints.at(j).twist.twist;
+    const double x = ((path_dl_j - a) * pos0.position.x + a * pos1.position.x) / path_dl_j;
+    const double y = ((path_dl_j - a) * pos0.position.y + a * pos1.position.y) / path_dl_j;
+    const double z = ((path_dl_j - a) * pos0.position.z + a * pos1.position.z) / path_dl_j;
+
+    /* for singular point of euler angle */
+    const double yaw0 = tf2::getYaw(pos0.orientation);
+    const double dyaw = intoSemicircle(tf2::getYaw(pos1.orientation) - yaw0);
+    const double yaw1 = yaw0 + dyaw;
+    const double yaw = ((path_dl_j - a) * yaw0 + a * yaw1) / path_dl_j;
+    const double vx = ((path_dl_j - a) * twist0.linear.x + a * twist1.linear.x) / path_dl_j;
+    const double curvature_tmp = 0.0;
+    const double t = ((path_dl_j - a) * time.at(j-1) + a * time.at(j)) / path_dl_j;
+    ref_traj_.push_back(x, y, z, yaw, vx, curvature_tmp, t);
+    l += dl;
+  }
+}
+
 void MPCFollower::calcTrajectoryCurvature(MPCTrajectory &traj) {
   traj.k.clear();
 
@@ -797,6 +866,7 @@ void MPCFollower::calcTrajectoryCurvature(MPCTrajectory &traj) {
   };
   // MPC_INFO("k = ");
 
+printf("num = %d, traj.x.size() = %d\n", curvature_smoothing_num_, traj.x.size());
   /* calculate curvature by circle fitting from three points */
   geometry_msgs::Point p1, p2, p3;
   for (uint i = curvature_smoothing_num_; i < traj.x.size() - curvature_smoothing_num_; ++i) {
@@ -821,6 +891,7 @@ void MPCFollower::calcTrajectoryCurvature(MPCTrajectory &traj) {
     traj.k.insert(traj.k.begin(), traj.k.front());
     traj.k.push_back(traj.k.back());
   }
+
 }
 
 void MPCFollower::convertTraj2Marker(const MPCTrajectory &traj, visualization_msgs::Marker &marker, std::string ns, double r, double g, double b){
@@ -949,16 +1020,29 @@ void MPCFollower::callbackSteeringGazebo(const std_msgs::Float64 &msg){
 };
 
 void MPCFollower::callbackTwist(const geometry_msgs::TwistStamped::ConstPtr& msg){
-  vehicle_status_.frame_id_pos = msg->header.frame_id;
-  vehicle_status_.vx = msg->twist.linear.x;
-  vehicle_status_.wz = msg->twist.angular.z;
-  my_velocity_ok_ = true;
+  // vehicle_status_.frame_id_pos = msg->header.frame_id;
+  // vehicle_status_.vx = msg->twist.linear.x;
+  // vehicle_status_.wz = msg->twist.angular.z;
+  // my_velocity_ok_ = true;
 };
+
+void MPCFollower::callbackEstimateTwist(const geometry_msgs::TwistStamped::ConstPtr &msg) {
+  estimate_twist_ = *msg;
+  if (fabs(msg->twist.linear.x) < 0.01) {
+    estimated_curvature_ = 0.0;
+  } else {
+    estimated_curvature_ = msg->twist.angular.z / msg->twist.linear.x;
+  }
+}
 
 
 MPCFollower::~MPCFollower(){};
 
 int main(int argc, char **argv) {
+
+  google::InitGoogleLogging(argv[0]);
+  google::InstallFailureSignalHandler();
+
   ros::init(argc, argv, "mpc_follower");
   MPCFollower obj;
 
