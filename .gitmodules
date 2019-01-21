@@ -11,3 +11,9 @@
 [submodule "ros/src/simulation/gazebo_simulator/vehicle/sensor_model/velodyne"]
 	path = ros/src/simulation/gazebo_simulator/vehicle/sensor_model/velodyne
 	url = https://bitbucket.org/DataspeedInc/velodyne_simulator.git
+[submodule "ros/src/simulation/gazebo_simulator/worlds/external/osrf_citysim"]
+	path = ros/src/simulation/gazebo_simulator/worlds/external/osrf_citysim
+	url = https://github.com/yukkysaito/osrf_citysim.git
+[submodule "ros/src/simulation/gazebo_simulator/worlds/external/car_demo"]
+	path = ros/src/simulation/gazebo_simulator/worlds/external/car_demo
+	url = https://github.com/yukkysaito/car_demo.git
