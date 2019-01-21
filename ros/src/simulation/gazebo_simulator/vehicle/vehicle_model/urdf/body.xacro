@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:macro name="body_macro" params="suffix parent wheel_radius wheel_base vehicle_mass vehicle_mass_height vehicle_width vehicle_length vehicle_height">
+  <xacro:macro name="body_macro" params="suffix parent wheel_base vehicle_mass vehicle_mass_height vehicle_width vehicle_length vehicle_height">
   <xacro:property name="pi" value="3.1415926835897931" />
     <joint name="${suffix}_joint" type="fixed">
       <parent link="${parent}"/>
-      <origin rpy="0 0 0" xyz="0 0 ${wheel_radius}"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <child  link="${suffix}_link"/>
     </joint>  
     <link name="${suffix}_link">

@@ -12,7 +12,7 @@
 
   <xacro:property name="pi" value="3.1415926835897931"/>
 
-  <link name="base_footprint"/>
+  <link name="base_link"/>
 
   <!-- ================ vehicle ================ -->
   <!-- load parameter -->
@@ -29,16 +29,21 @@
   <xacro:property name="vehicle_mass_height" value="0.5"/>
 
   <!-- body-->
-  <xacro:body_macro suffix="base"
-                    parent="base_footprint"
-                    wheel_radius="${wheel_radius}"
+  <xacro:body_macro suffix="base_body"
+                    parent="base_link"
                     wheel_base="${wheel_base}"
                     vehicle_mass="${vehicle_mass}"
                     vehicle_mass_height="${vehicle_mass_height}"
                     vehicle_length="${vehicle_length}"
                     vehicle_width="${vehicle_width}"
                     vehicle_height="${vehicle_height}"/>
-  
+  <joint name="base_footprint_joint" type="fixed">
+    <parent link="base_link"/>
+    <origin rpy="0 0 0" xyz="0 0 ${-wheel_radius}"/>
+    <child  link="base_footprint"/>
+  </joint>
+  <link name="base_footprint">
+  </link>
   <!-- steering-->
   <xacro:steering_link_macro suffix="steering_front" parent="base_link" x="${wheel_base}" y="0"/>
   <xacro:steering_macro suffix="steering_right_front" parent="steering_front_link" x="0" y="${-1*wheel_tread/2}" yaw="0" length="${wheel_width}"/>
