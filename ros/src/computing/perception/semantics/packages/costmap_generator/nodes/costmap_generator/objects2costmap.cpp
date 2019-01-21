@@ -71,7 +71,6 @@ Eigen::MatrixXd Objects2Costmap::makeRectanglePoints(const autoware_msgs::Detect
 grid_map::Polygon Objects2Costmap::makePolygonFromObjectBox(const autoware_msgs::DetectedObject& in_object,
                                                          const double expand_rectangle_size)
 {
-  // grid_map::Position forward_right;
   grid_map::Polygon polygon;
   polygon.setFrameId(in_object.header.frame_id);
   Eigen::MatrixXd rectangle_points = makeRectanglePoints(in_object, expand_rectangle_size);
