@@ -35,7 +35,7 @@ using matrix = Eigen::MatrixXd;
 
 #define MPC_DEBUG_VERBOSE
 #ifdef MPC_DEBUG_VERBOSE
-#define MPC_INFO(...) printf(__VA_ARGS__)
+#define MPC_INFO(...) {if (show_debug_info_) { printf(__VA_ARGS__); }}
 #else
 #define MPC_INFO(...)
 #endif
@@ -47,7 +47,7 @@ public:
 
 private:
   ros::NodeHandle nh_, pnh_;
-  ros::Publisher pub_steer_vel_ctrl_cmd_, pub_twist_cmd_, pub_debug_filtered_traj_, pub_debug_predicted_traj_, pub_debug_values_, pub_debug_pred_pose_;
+  ros::Publisher pub_steer_vel_ctrl_cmd_, pub_twist_cmd_;
   ros::Subscriber sub_ref_path_, sub_twist_, sub_pose_, sub_steering_, sub_vel_;
   ros::Timer timer_control_;
 
@@ -59,6 +59,7 @@ private:
   std::string robot_interface_;
   std::string path_frame_id_;
   ros::Time selfpose_sensor_time_;
+  double previous_steering_command_;
 
   enum CtrlCmdInterface {
     TWIST = 0,
@@ -133,6 +134,11 @@ private:
   bool my_velocity_ok_;
   bool my_steering_ok_;
 
+  /* debug */
+  ros::Publisher pub_debug_filtered_traj_, pub_debug_predicted_traj_, pub_debug_values_, pub_debug_pred_pose_;
+  bool show_debug_info_;
+
+
 
   void timerCallback(const ros::TimerEvent&);
   void callbackRefPath(const autoware_msgs::Lane::ConstPtr&);
@@ -146,27 +152,29 @@ private:
 
   void calcRelativeTimeForPath(const autoware_msgs::Lane&, std::vector<double> &);
   void resamplePathToTraj(const autoware_msgs::Lane &path, const std::vector<double> &time, const double &resample_dt, MPCTrajectory &ref_traj_);
-  void convertTraj2Marker(const MPCTrajectory &traj, visualization_msgs::Marker &markers, std::string ns, double r, double g, double b);
   void calcTrajectoryCurvature(MPCTrajectory &traj);
-  void publishAsTwist(double &vel_cmd, double &steer_cmd);
-  void publishSteerAndVel(double &vel_cmd, double &steer_cmd);
+  void publishControlCommands(const double &vel_cmd, const double &steer_cmd);
+  void publishAsTwist(const double &vel_cmd, const double &steer_cmd);
+  void publishSteerAndVel(const double &vel_cmd, const double &steer_cmd);
 
   bool calculateMPC(double &vel_cmd, double &steer_cmd);
   void calculateNearestPose(unsigned int &nearest_index, double &min_dist_error, double &nearest_yaw_error,
                             const double &my_x, const double &my_y, const double &my_yaw);
-  void getErrorDynamicsStateMatrix(const double &dt, const double &ref_vx,
-                                   const double &wheelbase,
-                                   const double &steer_tau,
-                                   const double &ref_curvature, matrix &Ad,
-                                   matrix &Bd, matrix &Wd,
-                                   matrix &Cd);
+  void getErrorDynamicsStateMatrix(const double &dt, const double &ref_vx, const double &wheelbase,
+                                   const double &steer_tau, const double &ref_curvature,
+                                   matrix &Ad, matrix &Bd, matrix &Wd, matrix &Cd);
   void predictCurrentPose();
   void updateVehicleDynamics(const double &steer, const double &vel, const double &dt, vector &state);
+
+
+  /* debug */
+  void convertTraj2Marker(const MPCTrajectory &traj, visualization_msgs::Marker &markers, std::string ns, double r, double g, double b);
   void publishPredictedPose();
 };
 
 MPCFollower::MPCFollower()
-    : nh_(""), pnh_("~"), path_frame_id_(""), my_position_ok_(false), my_velocity_ok_(false), my_steering_ok_(false) {
+    : nh_(""), pnh_("~"), path_frame_id_(""), previous_steering_command_(0.0),
+      my_position_ok_(false), my_velocity_ok_(false), my_steering_ok_(false) {
 
   pnh_.param("robot_interface", robot_interface_, std::string("pacmod"));
   pnh_.param("ctrl_cmd_interface", ctrl_cmd_interface_string_, std::string("all"));
@@ -187,9 +195,6 @@ MPCFollower::MPCFollower()
   pnh_.param("mpc_weight_heading_error", mpc_param_.weight_heading_error, double(1.0));
   pnh_.param("mpc_weight_steering_input", mpc_param_.weight_steering_input, double(1.0));
   pnh_.param("mpc_delay_compensation_time", mpc_param_.delay_compensation_time, double(0.05));
-  // pnh_.param("mpc_dim_state", mpc_param_.dim_state_, int(3));
-  // pnh_.param("mpc_dim_input", mpc_param_.dim_input_, int(1));
-  // pnh_.param("mpc_dim_output", mpc_param_.dim_output_, int(2));
   mpc_param_.dim_state_ = 3;
   mpc_param_.dim_input_ = 1;
   mpc_param_.dim_output_ = 2;
@@ -199,6 +204,8 @@ MPCFollower::MPCFollower()
   pnh_.param("vehicle_model_wheelbase", vehicle_model_.wheelbase, double(2.9));
   pnh_.param("vehicle_model_steer_lim_deg", vehicle_model_.steer_lim_deg, double(40.0));
   pnh_.param("vehicle_model_gear_ratio_tire_to_steer", vehicle_model_.gear_ratio_tire_to_steer, double(17.0));
+
+  pnh_.param("show_debug_info", show_debug_info_, bool(false));
 
   /* initialize for vehicle status */
   vehicle_status_.frame_id_pos = "";
@@ -250,7 +257,7 @@ MPCFollower::MPCFollower()
   fill_increase(vel_steer_data_.steer_time.begin(), vel_steer_data_.steer_time.end(), 0.0, 0.01);
 
 
-  /* for DEBUG */
+  /* for debug */
   pub_debug_filtered_traj_ = pnh_.advertise<visualization_msgs::Marker>("debug/filtered_traj", 1);
   pub_debug_predicted_traj_ = pnh_.advertise<visualization_msgs::Marker>("debug/predicted_traj", 1);
   pub_debug_values_ = pnh_.advertise<std_msgs::Float64MultiArray>("debug/debug_values", 1);
@@ -258,6 +265,13 @@ MPCFollower::MPCFollower()
 };
 
 void MPCFollower::timerCallback(const ros::TimerEvent& te) {
+
+  /* check flags */
+  if (ref_traj_.size() == 0 || !my_position_ok_ || !my_velocity_ok_ || !my_steering_ok_) {
+    MPC_INFO("MPC is not solved. ref_traj_.size() = %d, my_position_ok_ = %d,  my_velocity_ok_ = %d,  my_steering_ok_ = %d\n",
+            ref_traj_.size(), my_position_ok_, my_velocity_ok_, my_steering_ok_);
+    return;
+  }
 
   /* predict current pose for delay compensation */
   auto start = std::chrono::system_clock::now();
@@ -280,29 +294,12 @@ void MPCFollower::timerCallback(const ros::TimerEvent& te) {
     ROS_WARN("MPC is not solved\n");
     // TODO: this is very temporal code. Stop when mpc error occurs.
     vel_cmd = 0.0;
-    steer_cmd = 0.0;
+    steer_cmd = previous_steering_command_;
   }
 
-  /* publish control command */
-  switch (ctrl_cmd_interface_) {
-  case CtrlCmdInterface::TWIST:
-    publishAsTwist(vel_cmd, steer_cmd);
-    break;
-  case CtrlCmdInterface::STEER:
-    // TODO: write me
-    ROS_WARN("control command interface STEER is not implemented");
-    break;
-  case CtrlCmdInterface::STEER_AND_VEL:
-    publishSteerAndVel(vel_cmd, steer_cmd);
-    break;
-  case CtrlCmdInterface::ALL:
-    publishAsTwist(vel_cmd, steer_cmd);
-    publishSteerAndVel(vel_cmd, steer_cmd);
-    break;
-  default:
-    ROS_WARN("control command interface is not appropriate");
-    break;
-  }
+  publishControlCommands(vel_cmd, steer_cmd);
+
+  previous_steering_command_ = steer_cmd;
 
   /* debug */
   publishPredictedPose();
@@ -310,11 +307,7 @@ void MPCFollower::timerCallback(const ros::TimerEvent& te) {
 
 bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd) {
 
-  if (ref_traj_.size() == 0 || !my_position_ok_ || !my_velocity_ok_ || !my_steering_ok_) {
-    MPC_INFO("ref_traj_.size() = %d, my_position_ok_ = %d,  my_velocity_ok_ = %d,  my_steering_ok_ = %d\n",
-            ref_traj_.size(), my_position_ok_, my_velocity_ok_, my_steering_ok_);
-    return false;
-  }
+
 
   /* parameter definition */
   static const double rad2deg = 180.0 / M_PI;
@@ -471,7 +464,7 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd) {
       Rex.block(idx_u_i, idx_u_i, DIM_U, DIM_U) = R;
     }
     Uref(i * DIM_U, 0) = std::atan(vehicle_model_.wheelbase * ref_k);
-    // printf("i = %d, ref_k = %f, uref = %f\n", i, ref_k, Uref(i*DIM_U, 0));
+    // MPC_INFO("i = %d, ref_k = %f, uref = %f\n", i, ref_k, Uref(i*DIM_U, 0));
 
     /* update mpc time */
     mpc_time += mpc_param_.dt;
@@ -621,7 +614,30 @@ void MPCFollower::calculateNearestPose(unsigned int &nearest_index,
   min_dist_error = std::sqrt(min_dist_squared);
 };
 
-void MPCFollower::publishAsTwist(double &vel_cmd, double &steer_cmd) {
+void MPCFollower::publishControlCommands(const double &vel_cmd, const double &steer_cmd) {
+  switch (ctrl_cmd_interface_) {
+  case CtrlCmdInterface::TWIST:
+    publishAsTwist(vel_cmd, steer_cmd);
+    break;
+  case CtrlCmdInterface::STEER:
+    // TODO: write me
+    ROS_WARN("control command interface STEER is not implemented");
+    break;
+  case CtrlCmdInterface::STEER_AND_VEL:
+    publishSteerAndVel(vel_cmd, steer_cmd);
+    break;
+  case CtrlCmdInterface::ALL:
+    publishAsTwist(vel_cmd, steer_cmd);
+    publishSteerAndVel(vel_cmd, steer_cmd);
+    break;
+  default:
+    ROS_WARN("control command interface is not appropriate");
+    break;
+  }
+}
+
+
+void MPCFollower::publishAsTwist(const double &vel_cmd, const double &steer_cmd) {
   /* convert steering to twist */
   double omega = vel_cmd * std::tan(steer_cmd) / vehicle_model_.wheelbase;
 
@@ -637,7 +653,7 @@ void MPCFollower::publishAsTwist(double &vel_cmd, double &steer_cmd) {
   pub_twist_cmd_.publish(twist);
 }
 
-void MPCFollower::publishSteerAndVel(double &vel_cmd, double &steer_cmd) {
+void MPCFollower::publishSteerAndVel(const double &vel_cmd, const double &steer_cmd) {
   autoware_msgs::ControlCommandStamped cmd;
   cmd.header.frame_id = "/base_link";
   cmd.header.stamp = ros::Time::now();
@@ -891,37 +907,45 @@ void MPCFollower::callbackVelocity(const pacmod_msgs::WheelSpeedRpt &msg){
   static const double wheel_speed_rads_to_ms = tire_radius;
   vehicle_status_.vx = (msg.rear_left_wheel_speed + msg.rear_right_wheel_speed) / 2.0 * wheel_speed_rads_to_ms;
   my_velocity_ok_ = true;
-  vel_steer_data_.vel.push_back(vehicle_status_.vx);
-  vel_steer_data_.vel.erase(vel_steer_data_.vel.begin());
-  vel_steer_data_.vel_time.push_back(ros::Time::now().toSec());
-  vel_steer_data_.vel_time.erase(vel_steer_data_.vel_time.begin());
+  if (ros::Time::now().toSec() > 0.0) {
+    vel_steer_data_.vel.push_back(vehicle_status_.vx);
+    vel_steer_data_.vel.erase(vel_steer_data_.vel.begin());
+    vel_steer_data_.vel_time.push_back(ros::Time::now().toSec());
+    vel_steer_data_.vel_time.erase(vel_steer_data_.vel_time.begin());
+  }
 };
 
 void MPCFollower::callbackSteering(const pacmod_msgs::SystemRptFloat &msg){
   vehicle_status_.steer_rad = msg.output / vehicle_model_.gear_ratio_tire_to_steer;
   my_steering_ok_ = true;
-  vel_steer_data_.steer.push_back(vehicle_status_.steer_rad);
-  vel_steer_data_.steer.erase(vel_steer_data_.steer.begin());
-  vel_steer_data_.steer_time.push_back(ros::Time::now().toSec());
-  vel_steer_data_.steer_time.erase(vel_steer_data_.steer_time.begin());
+  if (ros::Time::now().toSec() > 0.0) {
+    vel_steer_data_.steer.push_back(vehicle_status_.steer_rad);
+    vel_steer_data_.steer.erase(vel_steer_data_.steer.begin());
+    vel_steer_data_.steer_time.push_back(ros::Time::now().toSec());
+    vel_steer_data_.steer_time.erase(vel_steer_data_.steer_time.begin());
+  }
 };
 
 void MPCFollower::callbackVelocityGazebo(const std_msgs::Float64& msg){
   vehicle_status_.vx = msg.data;
   my_velocity_ok_ = true;
-  vel_steer_data_.vel.push_back(vehicle_status_.vx);
-  vel_steer_data_.vel.erase(vel_steer_data_.vel.begin());
-  vel_steer_data_.vel_time.push_back(ros::Time::now().toSec());
-  vel_steer_data_.vel_time.erase(vel_steer_data_.vel_time.begin());
+  if (ros::Time::now().toSec() > 0.0) {
+    vel_steer_data_.vel.push_back(vehicle_status_.vx);
+    vel_steer_data_.vel.erase(vel_steer_data_.vel.begin());
+    vel_steer_data_.vel_time.push_back(ros::Time::now().toSec());
+    vel_steer_data_.vel_time.erase(vel_steer_data_.vel_time.begin());
+  }
 };
 
 void MPCFollower::callbackSteeringGazebo(const std_msgs::Float64 &msg){
   vehicle_status_.steer_rad = msg.data;
   my_steering_ok_ = true;
-  vel_steer_data_.steer.push_back(vehicle_status_.steer_rad);
-  vel_steer_data_.steer.erase(vel_steer_data_.steer.begin());
-  vel_steer_data_.steer_time.push_back(ros::Time::now().toSec());
-  vel_steer_data_.steer_time.erase(vel_steer_data_.steer_time.begin());
+  if (ros::Time::now().toSec() > 0.0) {
+    vel_steer_data_.steer.push_back(vehicle_status_.steer_rad);
+    vel_steer_data_.steer.erase(vel_steer_data_.steer.begin());
+    vel_steer_data_.steer_time.push_back(ros::Time::now().toSec());
+    vel_steer_data_.steer_time.erase(vel_steer_data_.steer_time.begin());
+  }
 };
 
 void MPCFollower::callbackTwist(const geometry_msgs::TwistStamped::ConstPtr& msg){
