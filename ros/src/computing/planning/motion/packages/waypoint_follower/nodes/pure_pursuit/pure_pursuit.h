@@ -22,6 +22,10 @@
 
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
+#include <geometry_msgs/TransformStamped.h>
+
+#include <tf2_ros/transform_listener.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 // User defined includes
 #include "autoware_msgs/Lane.h"
@@ -88,7 +92,7 @@ public:
   }
   // processing
   bool canGetCurvature(double *output_kappa);
-
+  bool getPoseError(double kappa,int num_evaluate_waypoints,double& error);
 private:
   // constant
   const double RADIUS_MAX_;
@@ -108,6 +112,10 @@ private:
   double calcCurvature(geometry_msgs::Point target) const;
   bool interpolateNextTarget(int next_waypoint, geometry_msgs::Point *next_target) const;
   void getNextWaypoint();
+
+  //tf
+  tf2_ros::Buffer tf_buffer_;
+  tf2_ros::TransformListener tf_listener_;
 };
 }  // waypoint_follower
 

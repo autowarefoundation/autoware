@@ -40,7 +40,6 @@ PurePursuitNode::PurePursuitNode()
   // initialize for PurePursuit
   pp_.setLinearInterpolationParameter(is_linear_interpolation_);
 }
-
 // Destructor
 PurePursuitNode::~PurePursuitNode()
 {
@@ -50,7 +49,7 @@ void PurePursuitNode::initForROS()
 {
   // ros parameter settings
   private_nh_.param("is_linear_interpolation", is_linear_interpolation_, bool(true));
-  // ROS_INFO_STREAM("is_linear_interpolation : " << is_linear_interpolation_);
+  private_nh_.param("use_adaptive_lookahead_ratio",use_adaptive_lookahead_ratio_, bool(false));
   private_nh_.param("publishes_for_steering_robot", publishes_for_steering_robot_, bool(false));
   nh_.param("vehicle_info/wheel_base", wheel_base_, double(2.7));
 
@@ -87,13 +86,68 @@ void PurePursuitNode::run()
       continue;
     }
 
-    pp_.setLookaheadDistance(computeLookaheadDistance());
-    pp_.setMinimumLookaheadDistance(minimum_lookahead_distance_);
-
     double kappa = 0;
-    bool can_get_curvature = pp_.canGetCurvature(&kappa);
-    publishTwistStamped(can_get_curvature, kappa);
-    publishControlCommandStamped(can_get_curvature, kappa);
+    bool cmd_published = false;
+    if(!use_adaptive_lookahead_ratio_)
+    {
+      pp_.setLookaheadDistance(computeLookaheadDistance());
+      pp_.setMinimumLookaheadDistance(minimum_lookahead_distance_);
+      bool can_get_curvature = pp_.canGetCurvature(&kappa);
+      publishTwistStamped(can_get_curvature, kappa);
+      publishControlCommandStamped(can_get_curvature, kappa);
+      cmd_published = true;
+    }
+    else
+    {
+      std::vector<double> dists = computeLookaheadDistanceSamples();
+      if(dists.size() != 1)
+      {
+        std::vector<double> kappas;
+        for(unsigned int i=0; i<dists.size(); i++)
+        {
+          pp_.setLookaheadDistance(dists[i]);
+          pp_.setMinimumLookaheadDistance(minimum_lookahead_distance_);
+          double tmp_kappa;
+          bool can_get_curvature = pp_.canGetCurvature(&tmp_kappa);
+          if(can_get_curvature)
+          {
+            kappas.push_back(tmp_kappa);
+          }
+        }
+        if(kappas.size() != 0)
+        {
+          std::vector<double> valid_kappas,errors;
+          for(unsigned int i=0; i<kappas.size(); i++)
+          {
+            double error;
+            bool result = pp_.getPoseError(kappas[i],num_evaluate_waypoints_,error);
+            if(result == true)
+            {
+              valid_kappas.push_back(kappas[i]);
+              errors.push_back(error);
+            }
+          }
+          if(valid_kappas.size() != 0)
+          {
+            std::vector<double>::iterator error_itr = std::min_element(errors.begin(), errors.end());
+            size_t min_index = std::distance(errors.begin(), error_itr);
+            double kappa = valid_kappas[min_index];
+            bool can_get_curvature = pp_.canGetCurvature(&kappa);
+            publishTwistStamped(can_get_curvature, kappa);
+            publishControlCommandStamped(can_get_curvature, kappa);
+            cmd_published = true;
+          }
+        }
+      }
+      if(cmd_published == false)
+      {
+        pp_.setLookaheadDistance(dists[0]);
+        pp_.setMinimumLookaheadDistance(minimum_lookahead_distance_);
+        bool can_get_curvature = pp_.canGetCurvature(&kappa);
+        publishTwistStamped(can_get_curvature, kappa);
+        publishControlCommandStamped(can_get_curvature, kappa);
+      }
+    }
 
     // for visualization with Rviz
     pub11_.publish(displayNextWaypoint(pp_.getPoseOfNextWaypoint()));
@@ -136,6 +190,28 @@ void PurePursuitNode::publishControlCommandStamped(const bool &can_get_curvature
   ccs.cmd.steering_angle = can_get_curvature ? convertCurvatureToSteeringAngle(wheel_base_, kappa) : 0;
 
   pub2_.publish(ccs);
+}
+
+std::vector<double> PurePursuitNode::computeLookaheadDistanceSamples()
+{
+  std::vector<double> ret;
+  double maximum_lookahead_distance = current_linear_velocity_ * 10;
+  double ld = current_linear_velocity_ * lookahead_distance_ratio_;
+  if(ld < minimum_lookahead_distance_)
+  {
+    ret.push_back(minimum_lookahead_distance_);
+    return ret;
+  }
+  if(ld > maximum_lookahead_distance)
+  {
+    ld = maximum_lookahead_distance;
+  }
+  for(int i=0; i<num_samples_; i++)
+  {
+    double dist = (ld - minimum_lookahead_distance_)/(double)(num_samples_-1)*(double)i;
+    ret.push_back(dist);
+  }
+  return ret;
 }
 
 double PurePursuitNode::computeLookaheadDistance() const
@@ -185,6 +261,8 @@ void PurePursuitNode::callbackFromConfig(const autoware_config_msgs::ConfigWaypo
   const_velocity_ = config->velocity;
   lookahead_distance_ratio_ = config->lookahead_ratio;
   minimum_lookahead_distance_ = config->minimum_lookahead_distance;
+  num_samples_ = config->num_samples;
+  num_evaluate_waypoints_ = config->num_evaluate_waypoints;
   is_config_set_ = true;
 }
 

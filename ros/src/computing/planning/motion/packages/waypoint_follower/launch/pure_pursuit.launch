@@ -7,6 +7,7 @@
 	<node pkg="waypoint_follower" type="pure_pursuit" name="pure_pursuit" output="log">
 		<param name="is_linear_interpolation" value="$(arg is_linear_interpolation)"/>
 		<param name="publishes_for_steering_robot" value="$(arg publishes_for_steering_robot)"/>
+		<param name="use_adaptive_lookahead_ratio" value="$(arg use_adaptive_lookahead_ratio)"/>
 	</node>
 
 </launch>

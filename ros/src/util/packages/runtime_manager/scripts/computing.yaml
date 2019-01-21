@@ -1758,6 +1758,26 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name    : use_adaptive_lookahead_ratio
+      desc    : enable adaptive lookahead ratio
+      label   : 'Adaptive lookahead ratio'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : num_samples
+      desc  : number of samples in adaptive lookahead ratio
+      label : number of samples
+      min   : 0
+      max   : 100
+      v     : 10
+    - name  : num_evaluate_waypoints
+      desc  : number of waypoints in evaluate function
+      label : number of evaluate waypoints
+      min   : 0
+      max   : 50
+      v     : 10
     - name    : publishes_for_steering_robot
       desc    : linear_interpolate_mode desc sample
       label   : 'Publishes topic for steering robot'

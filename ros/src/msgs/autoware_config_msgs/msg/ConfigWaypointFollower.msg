@@ -6,3 +6,5 @@ float32 lookahead_ratio
 float32 minimum_lookahead_distance
 float32 displacement_threshold
 float32 relative_angle_threshold
+int32 num_samples
+int32 num_evaluate_waypoints

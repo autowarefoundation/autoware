@@ -27,6 +27,7 @@ PurePursuit::PurePursuit()
   , lookahead_distance_(0)
   , current_linear_velocity_(0)
   , minimum_lookahead_distance_(6)
+  , tf_listener_(tf_buffer_)
 {
 }
 
@@ -54,10 +55,53 @@ double PurePursuit::calcCurvature(geometry_msgs::Point target) const
   return kappa;
 }
 
+bool PurePursuit::getPoseError(double kappa,int num_evaluate_waypoints,double& error)
+{
+  int path_size = static_cast<int>(current_waypoints_.size());
+  if((next_waypoint_number_+num_evaluate_waypoints) >= path_size)
+  {
+    return false;
+  }
+  geometry_msgs::TransformStamped transform_stamped_;
+  std::vector<geometry_msgs::PoseStamped> target_poses(num_evaluate_waypoints);
+  std::string waypoint_frame;
+  for(int i=0; i<num_evaluate_waypoints; i++)
+  {
+    if(i==0)
+    {
+      waypoint_frame = current_waypoints_.at(next_waypoint_number_).pose.header.frame_id;
+    }
+    target_poses[i] = current_waypoints_.at(next_waypoint_number_+i).pose;
+  }
+  try
+  {
+    transform_stamped_ = tf_buffer_.lookupTransform("base_link", waypoint_frame, ros::Time(0));
+  }
+  catch (tf2::TransformException &ex)
+  {
+    ROS_WARN("%s",ex.what());
+    return false;
+  }
+  error = 0;
+  double r = 1/kappa;
+  geometry_msgs::Point circle_center;
+  circle_center.y = -1 * r;
+  for(int i=0; i<num_evaluate_waypoints; i++)
+  {
+    geometry_msgs::PoseStamped transformed_pose;
+    tf2::doTransform(target_poses[i], transformed_pose, transform_stamped_);
+    double phi = std::atan2(r-transformed_pose.pose.position.y,transformed_pose.pose.position.x);
+    double x = r * (1 - std::cos(phi));
+    double y = r * std::sin(phi);
+    error = error + std::sqrt(std::pow(transformed_pose.pose.position.x-x,2)+std::pow(transformed_pose.pose.position.y-y,2));
+  }
+  return true;
+}
+
 // linear interpolation of next target
 bool PurePursuit::interpolateNextTarget(int next_waypoint, geometry_msgs::Point *next_target) const
 {
-  constexpr double ERROR = pow(10, -5);  // 0.00001
+  double ERROR = pow(10, -5);  // 0.00001
 
   int path_size = static_cast<int>(current_waypoints_.size());
   if (next_waypoint == path_size - 1)

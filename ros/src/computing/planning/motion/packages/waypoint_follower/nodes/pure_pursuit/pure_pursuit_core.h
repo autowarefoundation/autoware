@@ -24,6 +24,10 @@
 #include <std_msgs/Float32.h>
 #include <visualization_msgs/Marker.h>
 
+//headers in STL
+#include <vector>
+#include <algorithm>
+
 // User defined includes
 #include "autoware_config_msgs/ConfigWaypointFollower.h"
 #include "autoware_msgs/ControlCommandStamped.h"
@@ -73,11 +77,13 @@ private:
   const int LOOP_RATE_;  // processing frequency
 
   // variables
-  bool is_linear_interpolation_, publishes_for_steering_robot_;
+  bool is_linear_interpolation_, publishes_for_steering_robot_, use_adaptive_lookahead_ratio_;
   bool is_waypoint_set_, is_pose_set_, is_velocity_set_, is_config_set_;
   double current_linear_velocity_, command_linear_velocity_;
   double wheel_base_;
 
+  int num_samples_; // number of samples in adaptive lookahead ratio
+  int num_evaluate_waypoints_; //number of waypoints in evaluate function
   int32_t param_flag_;               // 0 = waypoint, 1 = Dialog
   double const_lookahead_distance_;  // meter
   double const_velocity_;            // km/h
@@ -100,6 +106,7 @@ private:
                                        const std::vector<autoware_msgs::Waypoint> &waypoints) const;
 
   double computeLookaheadDistance() const;
+  std::vector<double> computeLookaheadDistanceSamples();
   double computeCommandVelocity() const;
   double computeCommandAccel() const;
   double computeAngularGravity(double velocity, double kappa) const;
