@@ -17,8 +17,6 @@
 
   <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model autoware_gazebo" />
 
-  <node pkg="tf2_ros" type="static_transform_publisher" name="world2map" args="0 0 0 0 0 0 world map" />
-
   <group ns="$(arg ns)">
     <!-- Load joint controller configurations from YAML file to parameter server -->
     <rosparam file="$(find vehicle_model)/config/controller.yaml" command="load"/>
@@ -32,7 +30,9 @@
     <rosparam file="$(find vehicle_model)/config/vehicle_info.yaml" command="load"/>
     <node name="vehicle_gazebo_input_subscriber" pkg="vehicle_gazebo_simulation_interface" type="vehicle_gazebo_input_subscriber" respawn="false"
           output="screen">
-      <remap from="ctrl_cmd" to="/ctrl_cmd"/>
+      <param name="twist_sub" value="true" />
+      <param name="twiststamped_sub" value="true" />
+      <param name="ctrl_cmd" value="true" />
     </node>
     <node name="vehicle_gazebo_info_publisher" pkg="vehicle_gazebo_simulation_interface" type="vehicle_gazebo_info_publisher" respawn="false"
           output="screen">
