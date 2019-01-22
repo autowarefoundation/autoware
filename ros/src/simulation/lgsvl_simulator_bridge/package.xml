@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>lgsvl_simulator_bridge</name>
-  <version>0.0.0</version>
+  <version>1.10.0</version>
   <description>The lgsvl_simulator_bridge package</description>
 
   <maintainer email="masaya.kataoka@tier4.jp">Masaya Kataoka</maintainer>
 
-  <license>BSD</license>
+  <license>Apache 2</license>
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>autoware_msgs</build_depend>

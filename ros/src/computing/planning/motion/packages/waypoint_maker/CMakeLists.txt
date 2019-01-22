@@ -16,6 +16,8 @@ find_package(catkin REQUIRED COMPONENTS
         tf
         waypoint_follower
         lane_planner
+        autoware_msgs
+        vector_map
         )
 
 find_package(Boost REQUIRED)
