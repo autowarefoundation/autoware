@@ -1,31 +1,17 @@
 /*
- *  Copyright (c) 2018, Nagoya University
- *  All rights reserved.
+ * Copyright 2018-2019 Autoware Foundation. All rights reserved.
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  * Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name of Autoware nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef OBJECT_TRACKING_UKF_H
@@ -39,9 +25,6 @@
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 
-#include <geometry_msgs/PoseStamped.h>
-#include <jsk_recognition_msgs/BoundingBox.h>
-
 #include "autoware_msgs/DetectedObject.h"
 
 enum TrackingState : int
@@ -49,6 +32,7 @@ enum TrackingState : int
   Die = 0,     // No longer tracking
   Init = 1,    // Start tracking
   Stable = 4,  // Stable tracking
+  Occlusion = 5, // Lost 1 frame possibly by occlusion
   Lost = 10,   // About to lose target
 };
 
@@ -70,8 +54,13 @@ class UKF
 public:
   int ukf_id_;
 
-  //* initially set to false, set to true in first call of ProcessMeasurement
-  bool is_initialized_;
+  int num_state_;
+
+  int num_lidar_state_;
+
+  int num_lidar_direction_state_;
+
+  int num_motion_model_;
 
   //* state vector: [pos1 pos2 vel_abs yaw_angle yaw_rate] in SI units and rad
   Eigen::MatrixXd x_merge_;
@@ -131,14 +120,8 @@ public:
   Eigen::VectorXd weights_c_;
   Eigen::VectorXd weights_s_;
 
-  //* State dimension
-  int n_x_;
-
   //* Sigma point spreading parameter
   double lambda_;
-
-  int count_;
-  int count_empty_;
 
   double mode_match_prob_cv2cv_;
   double mode_match_prob_ctrv2cv_;
@@ -186,27 +169,15 @@ public:
   int lifetime_;
   bool is_static_;
 
-  // bounding box params
-  bool is_vis_bb_;
-
-  jsk_recognition_msgs::BoundingBox jsk_bb_;
-  jsk_recognition_msgs::BoundingBox best_jsk_bb_;
-
-  bool is_best_jsk_bb_empty_;
-
-  double best_yaw_;
-  double bb_yaw_;
-  double bb_area_;
-  std::vector<double> bb_yaw_history_;
-  std::vector<double> bb_vel_history_;
-  std::vector<double> bb_area_history_;
+  // object msg information
+  bool is_stable_;
+  autoware_msgs::DetectedObject object_;
+  std::string label_;
+  double min_assiciation_distance_;
 
   // for env classification
   Eigen::VectorXd init_meas_;
   std::vector<double> vel_history_;
-
-  std::vector<Eigen::VectorXd> local2local_;
-  std::vector<double> local2localYawVec_;
 
   double x_merge_yaw_;
 
@@ -244,6 +215,29 @@ public:
   Eigen::MatrixXd new_s_ctrv_;
   Eigen::MatrixXd new_s_rm_;
 
+  // for lane direction combined filter
+  bool is_direction_cv_available_;
+  bool is_direction_ctrv_available_;
+  bool is_direction_rm_available_;
+  double std_lane_direction_;
+  Eigen::MatrixXd lidar_direction_r_cv_;
+  Eigen::MatrixXd lidar_direction_r_ctrv_;
+  Eigen::MatrixXd lidar_direction_r_rm_;
+
+  Eigen::VectorXd z_pred_lidar_direction_cv_;
+  Eigen::VectorXd z_pred_lidar_direction_ctrv_;
+  Eigen::VectorXd z_pred_lidar_direction_rm_;
+
+  Eigen::MatrixXd s_lidar_direction_cv_;
+  Eigen::MatrixXd s_lidar_direction_ctrv_;
+  Eigen::MatrixXd s_lidar_direction_rm_;
+
+  Eigen::MatrixXd k_lidar_direction_cv_;
+  Eigen::MatrixXd k_lidar_direction_ctrv_;
+  Eigen::MatrixXd k_lidar_direction_rm_;
+
+  Eigen::VectorXd lidar_direction_ctrv_meas_;
+
   /**
    * Constructor
    */
@@ -261,13 +255,15 @@ public:
 
   void interaction();
 
-  void predictionSUKF(const double dt);
+  void predictionSUKF(const double dt, const bool has_subscribed_vectormap);
 
-  void predictionIMMUKF(const double dt);
+  void predictionIMMUKF(const double dt, const bool has_subscribed_vectormap);
 
   void findMaxZandS(Eigen::VectorXd& max_det_z, Eigen::MatrixXd& max_det_s);
 
-  void updateLikelyMeasurementForCTRV(const std::vector<autoware_msgs::DetectedObject>& object_vec);
+  void updateMeasurementForCTRV(const std::vector<autoware_msgs::DetectedObject>& object_vec);
+
+  void uppateForCTRV();
 
   void updateEachMotion(const double detection_probability, const double gate_probability, const double gating_thres,
                         const std::vector<autoware_msgs::DetectedObject>& object_vec, std::vector<double>& lambda_vec);
@@ -288,9 +284,27 @@ public:
 
   void initCovarQs(const double dt, const double yaw);
 
-  void prediction(const double delta_t, const int model_ind);
+  void predictionMotion(const double delta_t, const int model_ind);
 
-  void updateLidar(const int model_ind);
+  void checkLaneDirectionAvailability(const autoware_msgs::DetectedObject& in_object,
+                                      const double lane_direction_chi_thres, const bool use_sukf);
+
+  void predictionLidarMeasurement(const int motion_ind, const int num_meas_state);
+
+  double calculateNIS(const autoware_msgs::DetectedObject& in_object, const int motion_ind);
+
+  bool isLaneDirectionAvailable(const autoware_msgs::DetectedObject& in_object, const int motion_ind,
+                                const double lane_direction_chi_thres);
+
+  // void updateKalmanGain(const int motion_ind, const int num_meas_state);
+  void updateKalmanGain(const int motion_ind);
+
+  double normalizeAngle(const double angle);
+
+  void update(const bool use_sukf, const double detection_probability, const double gate_probability,
+              const double gating_thres, const std::vector<autoware_msgs::DetectedObject>& object_vec);
+
+  void prediction(const bool use_sukf, const bool has_subscribed_vectormap, const double dt);
 };
 
 #endif /* UKF_H */

@@ -1,0 +1,5 @@
+<launch>
+
+  <test test-name="test-lidar_shape_estimation" pkg="lidar_shape_estimation" type="test-lidar_shape_estimation" name="test"/>
+
+</launch>

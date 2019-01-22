@@ -3,8 +3,9 @@ project(kitti_player)
 
 SET(CMAKE_CXX_FLAGS "-O3")
 
+
+find_package(autoware_build_flags REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
         roscpp
         tf
         tf2
