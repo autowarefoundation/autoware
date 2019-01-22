@@ -208,7 +208,16 @@ std::vector<double> PurePursuitNode::computeLookaheadDistanceSamples()
   }
   for(int i=0; i<num_samples_; i++)
   {
-    double dist = (ld - minimum_lookahead_distance_)/(double)(num_samples_-1)*(double)i;
+    //double dist = (maximum_lookahead_distance - ld)/(double)(num_samples_-1)*(double)i;
+    double dist = ld - (ld * adaptive_lookahead_distance_ratio_)/(double)(num_samples_-1)*(double)i;
+    if(dist > maximum_lookahead_distance)
+    {
+      dist = maximum_lookahead_distance;
+    }
+    if(dist < minimum_lookahead_distance_)
+    {
+      dist =  minimum_lookahead_distance_;
+    }
     ret.push_back(dist);
   }
   return ret;
@@ -264,6 +273,7 @@ void PurePursuitNode::callbackFromConfig(const autoware_config_msgs::ConfigWaypo
   num_samples_ = config->num_samples;
   num_evaluate_waypoints_ = config->num_evaluate_waypoints;
   is_config_set_ = true;
+  adaptive_lookahead_distance_ratio_ = config->adaptive_lookahead_distance_ratio;
 }
 
 void PurePursuitNode::publishDeviationCurrentPosition(const geometry_msgs::Point &point,

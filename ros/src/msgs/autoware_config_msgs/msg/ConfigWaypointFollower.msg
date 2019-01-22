@@ -8,3 +8,4 @@ float32 displacement_threshold
 float32 relative_angle_threshold
 int32 num_samples
 int32 num_evaluate_waypoints
+float32 adaptive_lookahead_distance_ratio

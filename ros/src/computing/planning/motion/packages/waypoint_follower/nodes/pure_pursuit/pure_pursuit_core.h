@@ -82,6 +82,7 @@ private:
   double current_linear_velocity_, command_linear_velocity_;
   double wheel_base_;
 
+  double adaptive_lookahead_distance_ratio_;
   int num_samples_; // number of samples in adaptive lookahead ratio
   int num_evaluate_waypoints_; //number of waypoints in evaluate function
   int32_t param_flag_;               // 0 = waypoint, 1 = Dialog

@@ -177,7 +177,7 @@ Visualization Manager:
       Max Color: 255; 255; 255
       Max Intensity: 255
       Min Color: 0; 0; 0
-      Min Intensity: 0
+      Min Intensity: 1
       Name: Points Raw
       Position Transformer: XYZ
       Queue Size: 10
@@ -350,7 +350,9 @@ Visualization Manager:
       Marker Topic: /global_waypoints_mark
       Name: Global Waypoints
       Namespaces:
-        {}
+        global_change_flag_lane_1: true
+        global_lane_waypoint_orientation_marker_1: true
+        global_velocity_lane_1: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -524,11 +526,11 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Scale: 21.3792267
+      Scale: 6.84634638
       Target Frame: <Fixed Frame>
       Value: TopDownOrtho (rviz)
-      X: 142.412277
-      Y: 70.5605011
+      X: -54.7731743
+      Y: 150.018982
     Saved: ~
 Window Geometry:
   Camera:

@@ -1778,6 +1778,12 @@ params :
       min   : 0
       max   : 50
       v     : 10
+    - name  : adaptive_lookahead_distance_ratio
+      desc  : adaptive lookahead distance ratio
+      label : adaptive lookahead distance ratio
+      min   : 0
+      max   : 1
+      v     : 0.2
     - name    : publishes_for_steering_robot
       desc    : linear_interpolate_mode desc sample
       label   : 'Publishes topic for steering robot'
