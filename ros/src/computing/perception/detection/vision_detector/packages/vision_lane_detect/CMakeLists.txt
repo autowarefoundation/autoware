@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
         cv_bridge
         image_transport
         roscpp
+        autoware_msgs
         )
 find_package(OpenCV REQUIRED)
 find_package(OpenGL REQUIRED)

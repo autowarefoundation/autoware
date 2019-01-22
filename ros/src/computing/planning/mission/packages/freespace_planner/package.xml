@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <package>
   <name>freespace_planner</name>
-  <version>1.9.1</version>
+  <version>1.10.0</version>
   <description>The freespace_planner package</description>
   <maintainer email="antm678@ertl.jp">Tomohito ANDO</maintainer>
 
-  <license>BSD</license>
+  <license>Apache 2</license>
 
   <buildtool_depend>catkin</buildtool_depend>
   <buildtool_depend>autoware_build_flags</buildtool_depend>

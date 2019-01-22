@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
         sensor_msgs
         std_msgs
         rviz
+        autoware_msgs
         )
 
 set(CMAKE_CXX_FLAGS

@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
         tablet_socket
         waypoint_follower
         gnss
+        autoware_msgs
         )
 
 set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")

@@ -18,6 +18,8 @@ find_package(catkin REQUIRED COMPONENTS
         grid_map_ros
         grid_map_cv
         grid_map_msgs
+        autoware_msgs
+        vector_map
         )
 
 find_package(Qt5Core REQUIRED)

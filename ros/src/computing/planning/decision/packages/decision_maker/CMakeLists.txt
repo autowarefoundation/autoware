@@ -27,6 +27,9 @@ find_package(catkin REQUIRED COMPONENTS
         dynamic_reconfigure
         amathutils_lib
         state_machine_lib
+        autoware_msgs
+        autoware_config_msgs
+        vector_map_msgs
         )
 
 catkin_package(
