@@ -12,6 +12,7 @@
   <arg name="get_height" default="false" />
   <arg name="use_local_transform" default="false" />
   <arg name="sync" default="false" />
+  <arg name="output_log_data" default="false" />
 
   <node pkg="lidar_localizer" type="ndt_matching" name="ndt_matching" output="log">
     <param name="method_type" value="$(arg method_type)" />
@@ -24,6 +25,7 @@
     <param name="offset" value="$(arg offset)" />
     <param name="get_height" value="$(arg get_height)" />
     <param name="use_local_transform" value="$(arg use_local_transform)" />
+    <param name="output_log_data" value="$(arg output_log_data)" />
     <remap from="/points_raw" to="/sync_drivers/points_raw" if="$(arg sync)" />
   </node>
 

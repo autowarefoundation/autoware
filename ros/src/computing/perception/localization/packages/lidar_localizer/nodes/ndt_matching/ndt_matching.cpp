@@ -1,32 +1,18 @@
 /*
- *  Copyright (c) 2015, Nagoya University
- *  All rights reserved.
+ * Copyright 2015-2019 Autoware Foundation. All rights reserved.
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  * Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name of Autoware nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 /*
  Localization program using Normal Distributions Transform
@@ -41,6 +27,8 @@
 #include <memory>
 #include <sstream>
 #include <string>
+
+#include <boost/filesystem.hpp>
 
 #include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
@@ -158,7 +146,7 @@ static geometry_msgs::PoseStamped ndt_pose_msg;
 /*
 static ros::Publisher current_pose_pub;
 static geometry_msgs::PoseStamped current_pose_msg;
-*/
+ */
 
 static ros::Publisher localizer_pose_pub;
 static geometry_msgs::PoseStamped localizer_pose_msg;
@@ -227,6 +215,7 @@ static bool _use_local_transform = false;
 static bool _use_imu = false;
 static bool _use_odom = false;
 static bool _imu_upside_down = false;
+static bool _output_log_data = false;
 
 static std::string _imu_topic = "/imu_raw";
 
@@ -1385,25 +1374,28 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     ndt_reliability_pub.publish(ndt_reliability);
 
     // Write log
-    if (!ofs)
+    if(_output_log_data)
     {
-      std::cerr << "Could not open " << filename << "." << std::endl;
-      exit(1);
+      if (!ofs)
+      {
+        std::cerr << "Could not open " << filename << "." << std::endl;
+      }
+      else
+      {
+        ofs << input->header.seq << "," << scan_points_num << "," << step_size << "," << trans_eps << "," << std::fixed
+            << std::setprecision(5) << current_pose.x << "," << std::fixed << std::setprecision(5) << current_pose.y << ","
+            << std::fixed << std::setprecision(5) << current_pose.z << "," << current_pose.roll << "," << current_pose.pitch
+            << "," << current_pose.yaw << "," << predict_pose.x << "," << predict_pose.y << "," << predict_pose.z << ","
+            << predict_pose.roll << "," << predict_pose.pitch << "," << predict_pose.yaw << ","
+            << current_pose.x - predict_pose.x << "," << current_pose.y - predict_pose.y << ","
+            << current_pose.z - predict_pose.z << "," << current_pose.roll - predict_pose.roll << ","
+            << current_pose.pitch - predict_pose.pitch << "," << current_pose.yaw - predict_pose.yaw << ","
+            << predict_pose_error << "," << iteration << "," << fitness_score << "," << trans_probability << ","
+            << ndt_reliability.data << "," << current_velocity << "," << current_velocity_smooth << "," << current_accel
+            << "," << angular_velocity << "," << time_ndt_matching.data << "," << align_time << "," << getFitnessScore_time
+            << std::endl;
+      }
     }
-    static ros::Time start_time = input->header.stamp;
-
-    ofs << input->header.seq << "," << scan_points_num << "," << step_size << "," << trans_eps << "," << std::fixed
-        << std::setprecision(5) << current_pose.x << "," << std::fixed << std::setprecision(5) << current_pose.y << ","
-        << std::fixed << std::setprecision(5) << current_pose.z << "," << current_pose.roll << "," << current_pose.pitch
-        << "," << current_pose.yaw << "," << predict_pose.x << "," << predict_pose.y << "," << predict_pose.z << ","
-        << predict_pose.roll << "," << predict_pose.pitch << "," << predict_pose.yaw << ","
-        << current_pose.x - predict_pose.x << "," << current_pose.y - predict_pose.y << ","
-        << current_pose.z - predict_pose.z << "," << current_pose.roll - predict_pose.roll << ","
-        << current_pose.pitch - predict_pose.pitch << "," << current_pose.yaw - predict_pose.yaw << ","
-        << predict_pose_error << "," << iteration << "," << fitness_score << "," << trans_probability << ","
-        << ndt_reliability.data << "," << current_velocity << "," << current_velocity_smooth << "," << current_accel
-        << "," << angular_velocity << "," << time_ndt_matching.data << "," << align_time << "," << getFitnessScore_time
-        << std::endl;
 
     std::cout << "-----------------------------------------------------------------" << std::endl;
     std::cout << "Sequence: " << input->header.seq << std::endl;
@@ -1494,12 +1486,18 @@ int main(int argc, char** argv)
   ros::NodeHandle private_nh("~");
 
   // Set log file name.
-  char buffer[80];
-  std::time_t now = std::time(NULL);
-  std::tm* pnow = std::localtime(&now);
-  std::strftime(buffer, 80, "%Y%m%d_%H%M%S", pnow);
-  filename = "ndt_matching_" + std::string(buffer) + ".csv";
-  ofs.open(filename.c_str(), std::ios::app);
+  private_nh.getParam("output_log_data", _output_log_data);
+  if(_output_log_data)
+  {
+    char buffer[80];
+    std::time_t now = std::time(NULL);
+    std::tm* pnow = std::localtime(&now);
+    std::strftime(buffer, 80, "%Y%m%d_%H%M%S", pnow);
+    std::string directory_name = "/tmp/Autoware/log/ndt_matching";
+    filename = directory_name + "/" + std::string(buffer) + ".csv";
+    boost::filesystem::create_directories(boost::filesystem::path(directory_name));
+    ofs.open(filename.c_str(), std::ios::app);
+  }
 
   // Geting parameters
   int method_type_tmp = 0;

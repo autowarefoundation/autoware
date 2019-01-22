@@ -196,7 +196,7 @@ void DecisionMakerNode::updateLaneWaypointsArray(void)
     for (auto& wp : lane.waypoints)
     {
       wp.twist.twist.linear.x = 0.0;
-      wp.wpstate.stopline_state = 0;
+      wp.wpstate.stop_state = 0;
     }
   }
   for (auto& lane : current_shifted_lane_array_.lanes)
@@ -206,7 +206,7 @@ void DecisionMakerNode::updateLaneWaypointsArray(void)
       // if stopped at stopline, to delete flags already used.
       if (CurrentStoplineTarget_.gid - 2 <= wp.gid && wp.gid <= CurrentStoplineTarget_.gid + 2)
       {
-        wp.wpstate.stopline_state = 0;
+        wp.wpstate.stop_state = 0;
       }
     }
   }
@@ -262,7 +262,7 @@ void DecisionMakerNode::setAllStoplineStop(void)
             b->x = lane.waypoints.at(wp_idx).pose.pose.position.x;
             b->y = lane.waypoints.at(wp_idx).pose.pose.position.y;
             if (amathutils::find_distance(a, b) <= 4)  //
-              lane.waypoints.at(wp_idx).wpstate.stopline_state = 1;
+              lane.waypoints.at(wp_idx).wpstate.stop_state = 1;
           }
         }
       }

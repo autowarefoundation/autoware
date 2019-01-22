@@ -1,4 +1,4 @@
-ng# Range Vision Fusion
+# Range Vision Fusion
 
 The Range Vision Fusion node will try match the objects detected on a range sensor, with the ones obtained from a vision detector. 
 A match will be considered found if the 3D projection of the object overlaps at least 50% (configurable) over the 2D object detection.
@@ -13,9 +13,7 @@ The label from the 2D Image detector will be attached to the corresponding 3D Ob
 1. Object Detections results from a Range Detector (`autoware_msgs/DetectedObjectArray`)
 
 ### Output Topics
-1. Fused Detected Objects (`autoware_msgs/DetectedObjectArray`) on the `/detection/combined_objects` topic.
-1. Fused Detected Objects' boxes (`jsk_recognition_msgs/BoundingBoxArray`) on the `/detection/combined_objects_boxes` topic.
-1. Fused Detected Objects' labels (`visualization_msgs/MarkerArray`) on the `/detection/combined_objects_labels` topic.
+1. Fused Detected Objects (`autoware_msgs/DetectedObjectArray`) on the `/detection/fusion_tools/objects` topic.
 
 ## Parameters
 

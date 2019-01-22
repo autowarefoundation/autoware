@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="lgsvl_simulator_bridge" type="launch_sim.bash" name="lgsvl_simulator_launcher">
+    </node>
+
+    <include file="$(find lgsvl_simulator_bridge)/launch/bridge.launch"/>>
+</launch>
