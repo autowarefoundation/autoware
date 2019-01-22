@@ -1,11 +1,11 @@
 <package format="2">
   <name>fake_autoware_nodes</name>
-  <version>1.9.1</version>
+  <version>1.10.0</version>
   <description>The fake_autoware_nodes package</description>
 
   <maintainer email="masaya.kataoka@tier4.jp">Masaya Kataoka</maintainer>
 
-  <license>BSD</license>
+  <license>Apache 2</license>
 
   <author email="masaya.kataoka@tier4.jp">Masaya Kataoka</author>
 

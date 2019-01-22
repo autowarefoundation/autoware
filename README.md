@@ -69,7 +69,7 @@ You may create 3D map data through Tier IV's [Map Tools](https://maptools.tier4.
 
 ## License
 
-Autoware is provided under the [New BSD License](https://github.com/CPFL/Autoware/blob/master/LICENSE).
+Autoware is provided under the [Apache 2 License](https://github.com/CPFL/Autoware/blob/master/LICENSE).
 
 ## Contact
 

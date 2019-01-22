@@ -17,6 +17,8 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_ros
   tf2_ros
   tf2_geometry_msgs
+  autoware_msgs
+  vector_map
 )
 
 find_package(PCL REQUIRED COMPONENTS io)

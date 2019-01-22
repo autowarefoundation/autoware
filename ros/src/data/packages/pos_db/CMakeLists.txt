@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
         jsk_recognition_msgs
         tf
         jsk_rviz_plugins
+        autoware_msgs
         )
 
 include(FindLibSsh2.cmake)
