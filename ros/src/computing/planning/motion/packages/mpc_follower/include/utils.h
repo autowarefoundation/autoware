@@ -64,17 +64,17 @@ bool interp1d(const std::vector<double> &index,
   if (ref < index.front()) {
     ret = values.front();
     // printf("ref point is out of index (low), return false.\n");
-    return false;
+    return true;
   }
   if (index.back() < ref) {
     ret = values.back();
     // printf("ref point is out of index (high), return false.\n");
-    return false;
+    return true;
   }
 
   for (uint i = 1; i < index.size(); ++i) {
     if (!(index[i] > index[i - 1])) {
-      printf("index must be monotonically increasing, return false.\n");
+      printf("index must be monotonically increasing, return false. index[i] = %f, but index[i - 1] = %f\n", index[i], index[i - 1]);
       return false;
     }
   }
@@ -106,17 +106,17 @@ bool interp1d(const Eigen::VectorXd &index,
   if (ref < index[0]) {
     ret = values[0];
     // printf("ref point is out of index (low), return false.\n");
-    return false;
+    return true;
   }
   if (index[end] < ref) {
     ret = values[end];
     // printf("ref point is out of index (high), return false.\n");
-    return false;
+    return true;
   }
 
   for (uint i = 1; i < index.size(); ++i) {
     if (!(index[i] > index[i - 1])) {
-      printf("index must be monotonically increasing, return false.\n");
+      printf("index must be monotonically increasing, return false. index[i] = %f, but index[i - 1] = %f\n", index[i], index[i - 1]);
       return false;
     }
   }

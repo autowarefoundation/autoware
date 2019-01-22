@@ -168,6 +168,9 @@ private:
   bool calculateMPC(double &vel_cmd, double &steer_cmd);
   void calculateNearestPose(unsigned int &nearest_index, double &min_dist_error, double &nearest_yaw_error,
                             const double &my_x, const double &my_y, const double &my_yaw);
+ void calculateNearestPoseWithInterp(unsigned int &nearest_index, double &min_dist_error, double &nearest_yaw_error,
+                                     double &nearest_x, double &nearest_y, double &nearest_yaw, double &nearest_time,
+                                     const double &my_x, const double &my_y,   const double &my_yaw);
   void getErrorDynamicsStateMatrix(const double &dt, const double &ref_vx, const double &wheelbase,
                                    const double &steer_tau, const double &ref_curvature,
                                    matrix &Ad, matrix &Bd, matrix &Wd, matrix &Cd);
@@ -346,7 +349,18 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd) {
   uint nearest_index = 0;
   double nearest_yaw_error = std::numeric_limits<double>::max();
   double nearest_dist_error = std::numeric_limits<double>::max();
-  calculateNearestPose(nearest_index, nearest_dist_error, nearest_yaw_error, my_x, my_y, my_yaw);
+  double nearest_x = 0.0;
+  double nearest_y = 0.0;
+  double nearest_yaw = 0.0;
+  double nearest_traj_time = 0.0;
+  double nearest_ref_k = 0.0;
+  // calculateNearestPose(nearest_index, nearest_dist_error, nearest_yaw_error, my_x, my_y, my_yaw);
+  // nearest_x = ref_traj_.x[nearest_index];
+  // nearest_y = ref_traj_.y[nearest_index];
+  // nearest_yaw = ref_traj_.yaw[nearest_index];
+  // nearest_traj_time = ref_traj_.relative_time[nearest_index];
+  calculateNearestPoseWithInterp(nearest_index, nearest_dist_error, nearest_yaw_error,
+                                 nearest_x, nearest_y, nearest_yaw, nearest_traj_time, my_x, my_y, my_yaw);
   MPC_INFO("[calculateMPC] nearest_index = %d, nearest_dist_error = %f\n",nearest_index, nearest_dist_error);
 
   /* check if lateral error is not too large */
@@ -362,9 +376,8 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd) {
   }
 
   /* set mpc initial time */
-  const double nearest_traj_time = ref_traj_.relative_time[nearest_index];
-  MPC_INFO("[calculateMPC] nearest_traj_time = %f\n", nearest_traj_time);
   double mpc_time = nearest_traj_time; /* as initialize */
+  MPC_INFO("[calculateMPC] nearest_traj_time = %f\n", nearest_traj_time);
 
   /* check trajectory length */
   const double mpc_end_time = mpc_time + (N - 1) * mpc_param_.dt;
@@ -374,15 +387,14 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd) {
     return false;
   }
 
-
   /* convert tracking x,y error to lat error */
-  const double err_x = my_x - ref_traj_.x[nearest_index];
-  const double err_y = my_y - ref_traj_.y[nearest_index];
-  const double sp_yaw = ref_traj_.yaw[nearest_index];
+  const double err_x = my_x - nearest_x;
+  const double err_y = my_y - nearest_y;
+  const double sp_yaw = nearest_yaw;
   const double err_lat = -sin(sp_yaw) * err_x + cos(sp_yaw) * err_y;
 
   /* calculate yaw error, convert into range [-pi to pi] */
-  const double err_yaw = intoSemicircle(my_yaw - sp_yaw);
+  const double err_yaw = intoSemicircle(nearest_yaw_error);
 
   /* get steering angle */
   const double steer = vehicle_status_.steer_rad;
@@ -433,7 +445,7 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd) {
     double ref_k;  /* reference curvature at current mpc time */
     if (!interp1d(ref_traj_.relative_time, ref_traj_.vx, mpc_time, ref_vx) ||
         !interp1d(ref_traj_.relative_time, ref_traj_.k, mpc_time, ref_k)) {
-      ROS_ERROR("invalid interpolation\n");
+      ROS_ERROR("invalid interpolatio for ref_vx, ref_k\n");
       return false;
     }
 
@@ -443,7 +455,7 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd) {
         !interp1d(ref_traj_.relative_time, ref_traj_.y, mpc_time, debug_ref_y_tmp) ||
         !interp1d(ref_traj_.relative_time, ref_traj_.z, mpc_time, debug_ref_z_tmp) ||
         !interp1d(ref_traj_.relative_time, ref_traj_.yaw, mpc_time, debug_ref_yaw_tmp)) {
-      ROS_ERROR("invalid interpolation\n");
+      ROS_ERROR("invalid interpolation for ref_x, y, z, yaw\n");
       return false;
     }
     debug_ref_vec.push_back(debug_ref_x_tmp, debug_ref_y_tmp, debug_ref_z_tmp, debug_ref_yaw_tmp, 0, 0, 0);
@@ -455,6 +467,7 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd) {
                                 vehicle_model_.steer_tau, ref_k, Ad, Bd, Wd, Cd);
     /* update mpc matrix */
     if (i == 0) {
+      nearest_ref_k = ref_k;
       Aex.block(0, 0, DIM_X, DIM_X) = Ad;
       Bex.block(0, 0, DIM_X, DIM_U) = Bd;
       Wex.block(0, 0, DIM_X, 1) = Wd;
@@ -499,7 +512,9 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd) {
   double u_delay_comped;
   double total_delay = (ros::Time::now() - selfpose_sensor_time_).toSec();
   MPC_INFO("[calculateMPC] total delay time = %f [s]\n", total_delay);
-  interp1d(MPC_T, Uex, nearest_traj_time + mpc_param_.delay_compensation_time, u_delay_comped);
+  if (!interp1d(MPC_T, Uex, nearest_traj_time + mpc_param_.delay_compensation_time, u_delay_comped)) {
+    ROS_ERROR("invalid interpolation for u_delay\n");
+  }
   MPC_INFO("[calculateMPC] mpc steering angle command = %f [deg] (no delay comp = %f)\n", u_delay_comped * rad2deg, Uex(0) * rad2deg);
 
   /* saturation */
@@ -516,7 +531,9 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd) {
   // NOTE: this is temporal for velocity control
   double lookahead_time = 1.0; // [s]
   double cmd_vel_ref_time = nearest_traj_time + lookahead_time; // get ahead reference velocity
-  interp1d(ref_traj_.relative_time, ref_traj_.vx, cmd_vel_ref_time, vel_cmd);
+  if (!interp1d(ref_traj_.relative_time, ref_traj_.vx, cmd_vel_ref_time, vel_cmd)) {
+    ROS_ERROR("invalid interpolation for vel_cmd\n");
+  }
   MPC_INFO("[calculateMPC] velocitycommand = %f [m/s]\n", vel_cmd);
 
 
@@ -544,7 +561,6 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd) {
   ////////// publish debug values //////////
   const double input_curvature = tan(steer_cmd) / vehicle_model_.wheelbase;
   std_msgs::Float64MultiArray debug_values;
-  double nearest_ref_k = ref_traj_.k[nearest_index];
   debug_values.data.clear();
   debug_values.data.push_back(u_sat);
   debug_values.data.push_back(u_filtered);
@@ -554,6 +570,8 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd) {
   debug_values.data.push_back(nearest_ref_k);
   debug_values.data.push_back(input_curvature);
   debug_values.data.push_back(estimated_curvature_);
+  debug_values.data.push_back(intoSemicircle(my_yaw));
+  debug_values.data.push_back(intoSemicircle(sp_yaw));
   pub_debug_values_.publish(debug_values);
 
   return true;
@@ -615,12 +633,12 @@ void MPCFollower::calculateNearestPose(unsigned int &nearest_index,
     const double dx = my_x - ref_traj_.x[i];
     const double dy = my_y - ref_traj_.y[i];
     const double dist_squared = dx * dx + dy * dy;
-    if (dist_squared < min_dist_squared) {
 
-      /* ignore when yaw error is large, for crossing path */
-      const double err_yaw = intoSemicircle(my_yaw - ref_traj_.yaw[i]);
-      if (fabs(err_yaw) < (M_PI / 2.0)) {
+    /* ignore when yaw error is large, for crossing path */
+    const double err_yaw = intoSemicircle(my_yaw - ref_traj_.yaw[i]);
+    if (fabs(err_yaw) < (M_PI / 2.0)) {
 
+      if (dist_squared < min_dist_squared) {
         /* save nearest index */
         min_dist_squared = dist_squared;
         nearest_yaw_error = err_yaw;
@@ -628,8 +646,109 @@ void MPCFollower::calculateNearestPose(unsigned int &nearest_index,
       }
     }
   }
+
   min_dist_error = std::sqrt(min_dist_squared);
+
 };
+
+void MPCFollower::calculateNearestPoseWithInterp(
+    unsigned int &nearest_index, double &min_dist_error, double &nearest_yaw_error, double &nearest_x, double &nearest_y,
+    double &nearest_yaw, double &nearest_time, const double &my_x, const double &my_y, const double &my_yaw) {
+
+  if (ref_traj_.size() == 0) {
+    ROS_WARN("[calculateNearestPoseWithInterp] trajectory size is zero");
+    return;
+  }
+
+  nearest_index = 0;
+  double min_dist_squared = std::numeric_limits<double>::max();
+  for (uint i = 0; i < ref_traj_.size(); ++i) {
+    const double dx = my_x - ref_traj_.x[i];
+    const double dy = my_y - ref_traj_.y[i];
+    const double dist_squared = dx * dx + dy * dy;
+
+    /* ignore when yaw error is large, for crossing path */
+    const double err_yaw = intoSemicircle(my_yaw - ref_traj_.yaw[i]);
+    if (fabs(err_yaw) < (M_PI / 2.0)) {
+
+      if (dist_squared < min_dist_squared) {
+        /* save nearest index */
+        min_dist_squared = dist_squared;
+        nearest_index = i;
+      }
+    }
+  }
+
+  if (ref_traj_.size() == 1) {
+    nearest_x = ref_traj_.x[nearest_index];
+    nearest_y = ref_traj_.y[nearest_index];
+    nearest_yaw = ref_traj_.yaw[nearest_index];
+    nearest_time = ref_traj_.relative_time[nearest_index];
+    min_dist_error = std::sqrt(min_dist_squared);
+    nearest_yaw_error = intoSemicircle(my_yaw - ref_traj_.yaw[nearest_index]);
+    return;
+  }
+
+  /* get second nearest index, next to nearest_index */
+  int second_nearest_index = 0;
+  if (nearest_index == ref_traj_.size() - 1) {
+    second_nearest_index = nearest_index - 1;
+  } else if (nearest_index == 0) {
+    second_nearest_index = 1;
+  } else {
+    double dx1, dy1, dist_squared1, dx2, dy2, dist_squared2;
+    dx1 = my_x - ref_traj_.x[nearest_index + 1];
+    dy1 = my_y - ref_traj_.y[nearest_index + 1];
+    dist_squared1 = dx1 * dx1 + dy1 * dy1;
+    dx2 = my_x - ref_traj_.x[nearest_index - 1];
+    dy2 = my_y - ref_traj_.y[nearest_index - 1];
+    dist_squared2 = dx2 * dx2 + dy2 * dy2;
+    if (dist_squared1 < dist_squared2) {
+      second_nearest_index = nearest_index + 1;
+    } else {
+      second_nearest_index = nearest_index - 1;
+    }
+  }
+
+  const double a_sq = min_dist_squared;
+
+  /* distance between my position and second nearest position */
+  const double dx2 = my_x - ref_traj_.x[second_nearest_index];
+  const double dy2 = my_y - ref_traj_.y[second_nearest_index];
+  const double b_sq = dx2 * dx2 + dy2 * dy2;
+
+  /* distance between first and second nearest position */
+  const double dx3 = ref_traj_.x[nearest_index] - ref_traj_.x[second_nearest_index];
+  const double dy3 = ref_traj_.y[nearest_index] - ref_traj_.y[second_nearest_index];
+  const double c_sq = dx3 * dx3 + dy3 * dy3;
+
+  /* if distance between two points are too close */
+  if (c_sq < 0.000001) {
+    nearest_x = ref_traj_.x[nearest_index];
+    nearest_y = ref_traj_.y[nearest_index];
+    nearest_yaw = ref_traj_.yaw[nearest_index];
+    nearest_time = ref_traj_.relative_time[nearest_index];
+    min_dist_error = std::sqrt(min_dist_squared);
+    nearest_yaw_error = intoSemicircle(my_yaw - ref_traj_.yaw[nearest_index]);
+    ROS_ERROR("!!!a = %f, b = %f, c = %f, min_dist_error = %f", std::sqrt(a_sq), std::sqrt(b_sq), std::sqrt(c_sq), min_dist_error);
+    return;
+  }
+
+  /* linear interpolation */
+  const double alpha = 0.5 * (c_sq - a_sq + b_sq) / c_sq;
+  nearest_x = alpha * ref_traj_.x[nearest_index] + (1 - alpha) * ref_traj_.x[second_nearest_index];
+  nearest_y = alpha * ref_traj_.y[nearest_index] + (1 - alpha) * ref_traj_.y[second_nearest_index];
+  nearest_yaw = alpha * ref_traj_.yaw[nearest_index] + (1 - alpha) * ref_traj_.yaw[second_nearest_index];
+  nearest_time = alpha * ref_traj_.relative_time[nearest_index] + (1 - alpha) * ref_traj_.relative_time[second_nearest_index];
+  min_dist_error = std::sqrt(b_sq - c_sq * alpha * alpha);
+  nearest_yaw_error = intoSemicircle(my_yaw - nearest_yaw);
+  // ROS_ERROR("min1 x = %f, y = %f, yaw = %f, error = %f", ref_traj_.x[nearest_index], ref_traj_.y[nearest_index], ref_traj_.yaw[nearest_index], std::sqrt(a_sq));
+  // ROS_ERROR("intp x = %f, y = %f, yaw = %f, error = %f", nearest_x, nearest_y, nearest_yaw, min_dist_error);
+  // ROS_ERROR("min2 x = %f, y = %f, yaw = %f, error = %f", ref_traj_.x[second_nearest_index], ref_traj_.y[second_nearest_index], ref_traj_.yaw[second_nearest_index], std::sqrt(b_sq));
+  // ROS_ERROR("a = %f, b = %f, c = %f, alpha = %f, min_dist_error = %f", std::sqrt(a_sq), std::sqrt(b_sq), std::sqrt(c_sq), alpha, min_dist_error);
+  return;
+}
+
 
 void MPCFollower::publishControlCommands(const double &vel_cmd, const double &steer_cmd) {
   switch (ctrl_cmd_interface_) {
@@ -681,26 +800,27 @@ void MPCFollower::publishSteerAndVel(const double &vel_cmd, const double &steer_
 }
 
 void MPCFollower::callbackRefPath(const autoware_msgs::Lane::ConstPtr& msg){
+  const auto start = std::chrono::system_clock::now();
+
   current_ref_path_ = *msg;
   path_frame_id_ = msg->header.frame_id;
-  // MPC_INFO("[path callback] current_ref_path_.size() = %d\n",current_ref_path_.waypoints.size());
+  MPC_INFO("[path callback] received path size = %lu\n", current_ref_path_.waypoints.size());
 
   MPCTrajectory traj;
 
   /* calculate relative time */
   std::vector<double> relative_time;
   MPCFollower::calcRelativeTimeForPath(current_ref_path_, relative_time);
-  // MPC_INFO("[path callback] relative_time.front() = %f, relative_time.back() = %f\n", relative_time.front(), relative_time.back());
-  // MPC_INFO("[path callback] relative_time.size() = %lu\n",relative_time.size());
+  MPC_INFO("[path callback] relative_time.size() = %lu, front() = %f, back() = %f\n",
+          relative_time.size(), relative_time.front(), relative_time.back());
 
   /* resampling */
   // MPCFollower::resamplePathToTrajByTime(current_ref_path_, relative_time, traj_resample_dt_, traj);
   MPCFollower::resamplePathToTrajByDistance(current_ref_path_, relative_time, traj_resample_dl_, traj);
   convertEulerAngleToMonotonic(traj.yaw);
-  // MPC_INFO("[path callback] resampled traj.relative_time.size() = %lu\n",traj.relative_time.size());
+  MPC_INFO("[path callback] resampled traj size() = %lu\n", traj.relative_time.size());
 
   /* low pass filter */
-  const auto start = std::chrono::system_clock::now();
   if (use_path_smoothing_) {
     /* moving average filter */
     filteringMovingAverate(traj.x, path_smoothing_moving_ave_num_);
@@ -716,15 +836,12 @@ void MPCFollower::callbackRefPath(const autoware_msgs::Lane::ConstPtr& msg){
     // path_smoothing_filter_.filtfilt_vector(traj.relative_time, traj.yaw);
     // path_smoothing_filter_.filtfilt_vector(traj.relative_time, traj.k);
   }
-  const auto end = std::chrono::system_clock::now();
-  const double elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-  // MPC_INFO("[path callback] path filtering time = %f [ms]\n", elapsed * 1.0e-6);
 
   /* calculate curvature */
   MPCFollower::calcTrajectoryCurvature(traj);
-  const double max_k = *max_element(traj.k.begin(), traj.k.end());
-  const double min_k = *min_element(traj.k.begin(), traj.k.end());
-  // MPC_INFO("[path callback] curvature (raw): max_k = %f, min_k = %f\n", max_k, min_k);
+  MPC_INFO("[path callback] trajectory curvature : max_k = %f, min_k = %f\n",
+           *max_element(traj.k.begin(), traj.k.end()),
+           *min_element(traj.k.begin(), traj.k.end()));
 
   /* add end point with vel=0 on traj for mpc prediction */
   const double mpc_predict_time_length = mpc_param_.n * mpc_param_.dt;
@@ -739,6 +856,10 @@ void MPCFollower::callbackRefPath(const autoware_msgs::Lane::ConstPtr& msg){
   }
 
   ref_traj_ = traj;
+
+  const auto end = std::chrono::system_clock::now();
+  const double elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+  MPC_INFO("[path callback] path modification total time = %f [ms]\n", elapsed * 1.0e-6);
 
   /* publish trajectory for visualize */
   visualization_msgs::Marker markers;
@@ -866,7 +987,6 @@ void MPCFollower::calcTrajectoryCurvature(MPCTrajectory &traj) {
   };
   // MPC_INFO("k = ");
 
-printf("num = %d, traj.x.size() = %d\n", curvature_smoothing_num_, traj.x.size());
   /* calculate curvature by circle fitting from three points */
   geometry_msgs::Point p1, p2, p3;
   for (uint i = curvature_smoothing_num_; i < traj.x.size() - curvature_smoothing_num_; ++i) {
@@ -924,12 +1044,22 @@ void MPCFollower::predictCurrentPose() {
   const double dt = 0.01;
   vector state(3);
   state << vehicle_status_.posx, vehicle_status_.posy, vehicle_status_.yaw;
+// printf("vel_steer_data_.vel_time = ");
+//   for (int i = 0; i < vel_steer_data_.vel_time.size(); ++i) {
+//     printf("%f, ", vel_steer_data_.vel_time[i]);
+//   }
+//   printf("\nvel_steer_data_.steer_time = ");
+//     for (int i = 0; i < vel_steer_data_.steer_time.size(); ++i) {
+//       printf("%f, ", vel_steer_data_.steer_time[i]);
+//     }
 
   for (double t = t_curr - predict_model_for_delay_; t < t_curr; t += dt) {
     double vel = 0;
     double steer = 0;
-    interp1d(vel_steer_data_.vel_time, vel_steer_data_.vel, t, vel);
-    interp1d(vel_steer_data_.steer_time, vel_steer_data_.steer, t, steer);
+    if (!interp1d(vel_steer_data_.vel_time, vel_steer_data_.vel, t, vel) ||
+        !interp1d(vel_steer_data_.steer_time, vel_steer_data_.steer, t, steer)) {
+      ROS_ERROR("[predictCurrentPose] invalid interpolation\n");
+    }
     updateVehicleDynamics(steer, vel, dt, state);
     // printf("t = %f, vel = %f, steer = %f, x = %f, y = %f, yaw = %f\n", t, vel, steer, state(0), state(1), state(2));
   }

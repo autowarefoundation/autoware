@@ -4,7 +4,7 @@
 		<param name="robot_interface" value="sim"/>
 		<param name="ctrl_cmd_interface" value="twist"/>
 		<param name="use_sim_time" value="true"/>
-		<rosparam command="load" file="$(find mpc_follower)/config/mpc_follower_config.yaml" />
+		<rosparam command="load" file="$(find mpc_follower)/config/mpc_follower_config_sim.yaml" />
 	</node>
 
 </launch>

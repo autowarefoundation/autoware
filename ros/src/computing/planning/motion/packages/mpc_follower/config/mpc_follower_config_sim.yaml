@@ -15,19 +15,17 @@ ctrl_dt: 0.1
 # time period for resampling trajectory [s]
 #   currentlly, resample uses linear interpolation, thus small sampling period
 #   causes sharp (not smoothing) path.
-traj_resample_dt: 0.01 # NOT USED
-
-# path smoothing low pass filter cut off frequency [Hz]
-path_smoothing_cutoff_hz: 1.0 # NOT USED
-
-# length span for resampling trajectory [m]
-#   currentlly, resample uses linear interpolation, thus small sampling distance
-#   causes sharp (not smoothing) path.
-traj_resample_dl: 0.1
-
+traj_resample_dt: 0.01
 
 # path smoothing flug, must true except debugging
 use_path_smoothing: true
+
+# path smoothing low pass filter cut off frequency [Hz]
+path_smoothing_cutoff_hz: 1.0
+
+
+# length span for resampling trajectory [m]
+traj_resample_dl: 0.1
 
 # path smoothing low pass filler, moving average number
 path_smoothing_moving_ave_num: 25
@@ -43,7 +41,7 @@ steering_lpf_cutoff_hz: 3.0
 admisible_position_error: 5.0 #[m]
 admisible_yaw_error_deg: 45.0 #[deg]
 
-predict_model_for_delay: 0.22 # 0.22 for lexus
+predict_model_for_delay: 0.1 # 0.22 for lexus
 
 
 #---------------------------------------------------------------------
@@ -73,9 +71,9 @@ mpc_delay_compensation_time: 0.0 #[s]
 vehicle_model_steer_tau: 0.3 # lexus: 0.2 + LPF delay
 
 # wheel base length [m]
-vehicle_model_wheelbase: 2.79 # lexus: 2.79
+vehicle_model_wheelbase: 2.9 # lexus: 2.79
 # steering angle limit [deg]
-vehicle_model_steer_lim_deg: 30.0
+vehicle_model_steer_lim_deg: 45.0
 
 # gear ratio tire to steering angle (lexus is about 17)
 vehicle_model_gear_ratio_tire_to_steer: 17.0
