@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
+echo "This script is deprecated and will be removed soon, please use colcon_release_cross instead"
+sleep 2
+
 if [ "$1" = "synquacer" ] || [ "$1" = "driveworks" ] || [ "$1" = "generic-aarch64" ]
 then
     AUTOWARE_TARGET_ARCH=aarch64
@@ -71,6 +74,8 @@ END
             -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH} \
             -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH} \
             -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH} \
+            -DCMAKE_PREFIX_PATH='${AUTOWARE_SYSROOT}/opt/ros/kinetic;${AUTOWARE_DEVEL_PATH}' \
+            -DCMAKE_FIND_ROOT_PATH=${AUTOWARE_DEVEL_PATH} \
             --build ${AUTOWARE_BUILD_PATH} \
             clean && \
         source devel-${AUTOWARE_TARGET_PLATFORM}/setup.bash && \
@@ -79,6 +84,8 @@ END
             -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH} \
             -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH} \
             -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH} \
+            -DCMAKE_PREFIX_PATH='${AUTOWARE_SYSROOT}/opt/ros/kinetic;${AUTOWARE_DEVEL_PATH}' \
+            -DCMAKE_FIND_ROOT_PATH=${AUTOWARE_DEVEL_PATH} \
             --build ${AUTOWARE_BUILD_PATH} \
             -DCMAKE_BUILD_TYPE=Release $*
         "

@@ -1,3 +1,0 @@
-- name: range_fusion
-  publish: [/obj_X/image_obj_ranged]
-  subscribe: [/obj_X/image_obj, /points_image]
