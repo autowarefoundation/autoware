@@ -20,7 +20,6 @@ install(FILES
   scripts/adis16470.sh
   scripts/avt_camera.launch
   scripts/avt_vimba.sh
-  scripts/calibration_publisher.launch
   scripts/computing.yaml
   scripts/data.yaml
   scripts/empty.yaml
