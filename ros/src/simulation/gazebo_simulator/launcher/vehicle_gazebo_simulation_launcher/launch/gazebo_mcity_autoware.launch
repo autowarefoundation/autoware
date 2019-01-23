@@ -7,7 +7,7 @@
   <param name="robot_description" command="$(find xacro)/xacro.py --inorder $(arg model) gpu:=$(arg gpu)" />
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" default="$(find gazebo_world_description)/worlds/mcity.world"/> 
+    <arg name="world_name" default="$(find gazebo_world_description)/worlds/mcity_r1.world"/> 
     <arg name="paused" value="false"/>
     <arg name="use_sim_time" value="true"/>
     <arg name="gui" value="true"/>
