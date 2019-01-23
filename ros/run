@@ -37,8 +37,8 @@ fi
 
 echo "Process Manager"
 
-gksudo --message "Please input password for launching process manager" \
-       -- $MY_PATH/run_proc_manager &
+read -s -p "Enter Password for sudo: " sudoPW
+echo $sudoPW | sudo -S $MY_PATH/run_proc_manager &
 
 ADDR=$($MY_PATH/src/.config/rviz/subnet_chk.py -)
 if [ "$?" == "0" ]; then
