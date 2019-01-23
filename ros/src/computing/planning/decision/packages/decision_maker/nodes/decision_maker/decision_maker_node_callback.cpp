@@ -96,11 +96,6 @@ void DecisionMakerNode::insertPointWithinCrossRoad(const std::vector<CrossRoadAr
   }
 }
 
-inline double getDistance(double ax, double ay, double bx, double by)
-{
-  return std::hypot(ax - bx, ay - by);
-}
-
 void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
 {
   // intersects.clear();
@@ -299,9 +294,6 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::Lane& msg
 {
   current_status_.finalwaypoints = msg;
   setEventFlag("received_finalwaypoints", true);
-}
-void DecisionMakerNode::callbackFromTwistCmd(const geometry_msgs::TwistStamped& msg)
-{
 }
 
 void DecisionMakerNode::callbackFromClosestWaypoint(const std_msgs::Int32& msg)
