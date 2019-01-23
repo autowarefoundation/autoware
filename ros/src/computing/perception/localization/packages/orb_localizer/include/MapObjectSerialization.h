@@ -478,8 +478,8 @@ void save (Archive & ar, const MapPoint &mapPoint, const unsigned int version)
 		mapPoint.mNormalVector &
 		mapPoint.mDescriptor;
 
-	int refKfId = (mapPoint.mpRefKF==NULL ? -1 : mapPoint.mpRefKF->mnId);
-	ar & refKfId;
+	int refKFId = (mapPoint.mpRefKF==NULL ? -1 : mapPoint.mpRefKF->mnId);
+	ar & refKFId;
 
 	ar &
 		mapPoint.mnVisible &
@@ -531,8 +531,8 @@ void load (Archive & ar, MapPoint &mapPoint, const unsigned int version)
 		mapPoint.mNormalVector &
 		mapPoint.mDescriptor;
 
-	int refKfId;
-	ar & refKfId;
+	int refKFId;
+	ar & refKFId;
 
 	ar &
 		mapPoint.mnVisible &
@@ -550,9 +550,9 @@ void load (Archive & ar, MapPoint &mapPoint, const unsigned int version)
 	// saving part
 	MapPoint::mpReplacement[mapPoint.mnId] = _mpReplaced;
 	mapPoint.mObservations = createObjectList<KeyFrame> (kfObservation);
-	mapPoint.mpRefKF = (refKfId==-1 ?
+	mapPoint.mpRefKF = (refKFId==-1 ?
 			NULL :
-			KeyFrame::objectListLookup[refKfId]);
+			KeyFrame::objectListLookup[refKFId]);
 	MapPoint::objectListLookup[mapPoint.mnId] = &mapPoint;
 }
 

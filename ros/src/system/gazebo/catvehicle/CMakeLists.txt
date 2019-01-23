@@ -5,8 +5,9 @@ set(ROS_VERSION $ENV{ROS_DISTRO})
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+
+find_package(autoware_build_flags REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
         controller_manager
         gazebo_ros_control
         geometry_msgs

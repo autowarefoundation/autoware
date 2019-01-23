@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(scan2image)
 
+
+find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         cv_bridge
         image_transport
@@ -16,7 +18,8 @@ catkin_package(
 )
 
 
-include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS}
+ ${autoware_msgs_INCLUDE_DIRS})
 
 add_executable(scan2image nodes/scan2image/scan2image.cpp)
 

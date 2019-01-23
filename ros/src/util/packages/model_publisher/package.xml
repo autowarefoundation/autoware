@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>model_publisher</name>
-  <version>1.9.1</version>
+  <version>1.10.0</version>
   <description>The model_publisher package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
@@ -13,7 +13,7 @@
   <!-- One license tag required, multiple allowed, one license per tag -->
   <!-- Commonly used license strings: -->
   <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
-  <license>TODO</license>
+  <license>Apache 2</license>
 
 
   <buildtool_depend>catkin</buildtool_depend>

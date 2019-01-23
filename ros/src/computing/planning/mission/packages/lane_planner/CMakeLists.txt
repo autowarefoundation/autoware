@@ -1,13 +1,17 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(lane_planner)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
+
+find_package(vector_map REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
         roscpp
         std_msgs
         tablet_socket
         waypoint_follower
-        vector_map
         gnss
         autoware_msgs
         )
@@ -29,6 +33,8 @@ catkin_package(
 include_directories(
         include
         ${catkin_INCLUDE_DIRS}
+        ${vector_map_INCLUDE_DIRS}
+        ${autoware_msgs_INCLUDE_DIRS}
 )
 
 add_library(lane_planner lib/lane_planner/lane_planner_vmap.cpp)

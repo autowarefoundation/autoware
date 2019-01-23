@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
     <name>autoware_camera_lidar_calibrator</name>
-    <version>1.9.1</version>
+    <version>1.10.0</version>
     <description>Autoware CameraLidarCalibration tools, this package includes work from
         http://www.ros.org/wiki/camera_calibration
     </description>
@@ -11,7 +11,7 @@
     <author>Jacob Lambert</author>
     <author>Abraham Monrroy</author>
 
-    <license>BSD</license>
+    <license>Apache 2</license>
 
     <buildtool_depend>catkin</buildtool_depend>
     <buildtool_depend>autoware_build_flags</buildtool_depend>

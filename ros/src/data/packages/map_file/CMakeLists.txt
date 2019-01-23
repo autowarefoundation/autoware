@@ -2,15 +2,23 @@ cmake_minimum_required(VERSION 2.8.3)
 project(map_file)
 
 include(FindPkgConfig)
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
+
+find_package(vector_map REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-  autoware_build_flags
   roscpp
   std_msgs
   visualization_msgs
   geometry_msgs
   tf
-  vector_map
+  pcl_ros
+  tf2_ros
+  tf2_geometry_msgs
   autoware_msgs
+  vector_map
 )
 
 find_package(PCL REQUIRED COMPONENTS io)
@@ -43,7 +51,9 @@ catkin_package(
 
 include_directories(
   include
+  ${vector_map_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
+  ${autoware_msgs_INCLUDE_DIRS}
   ${PCL_IO_INCLUDE_DIRS}
   ${CURL_INCLUDE_DIRS}
 )
@@ -58,7 +68,11 @@ target_link_libraries(points_map_loader ${catkin_LIBRARIES} get_file ${CURL_LIBR
 add_dependencies(points_map_loader ${catkin_EXPORTED_TARGETS})
 
 add_executable(vector_map_loader nodes/vector_map_loader/vector_map_loader.cpp)
-target_link_libraries(vector_map_loader ${catkin_LIBRARIES} get_file ${CURL_LIBRARIES})
+target_link_libraries(vector_map_loader ${catkin_LIBRARIES} ${vector_map_LIBRARIES} get_file ${CURL_LIBRARIES})
+
+add_executable(points_map_filter nodes/points_map_filter/points_map_filter_node.cpp nodes/points_map_filter/points_map_filter.cpp)
+target_link_libraries(points_map_filter ${catkin_LIBRARIES})
+add_dependencies(points_map_filter ${catkin_EXPORTED_TARGETS})
 
 ## Install executables and/or libraries
 install(TARGETS get_file points_map_loader vector_map_loader
