@@ -111,6 +111,7 @@ private:
   double computeCommandVelocity() const;
   double computeCommandAccel() const;
   double computeAngularGravity(double velocity, double kappa) const;
+  double sigmoid(double alpha,double beta,double x);
 };
 
 double convertCurvatureToSteeringAngle(const double &wheel_base, const double &kappa);

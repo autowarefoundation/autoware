@@ -192,28 +192,24 @@ void PurePursuitNode::publishControlCommandStamped(const bool &can_get_curvature
   pub2_.publish(ccs);
 }
 
+double PurePursuitNode::sigmoid(double alpha,double beta,double x)
+{
+  double ret = 1/(1+std::exp(-1*alpha*(x-beta)));
+  return ret;
+}
+
 std::vector<double> PurePursuitNode::computeLookaheadDistanceSamples()
 {
   std::vector<double> ret;
-  double maximum_lookahead_distance = current_linear_velocity_ * 10;
   double ld = current_linear_velocity_ * lookahead_distance_ratio_;
   if(ld < minimum_lookahead_distance_)
   {
     ret.push_back(minimum_lookahead_distance_);
     return ret;
   }
-  if(ld > maximum_lookahead_distance)
-  {
-    ld = maximum_lookahead_distance;
-  }
   for(int i=0; i<num_samples_; i++)
   {
-    //double dist = (maximum_lookahead_distance - ld)/(double)(num_samples_-1)*(double)i;
     double dist = ld - (ld * adaptive_lookahead_distance_ratio_)/(double)(num_samples_-1)*(double)i;
-    if(dist > maximum_lookahead_distance)
-    {
-      dist = maximum_lookahead_distance;
-    }
     if(dist < minimum_lookahead_distance_)
     {
       dist =  minimum_lookahead_distance_;
