@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
     sensor_msgs
     geometry_msgs
     tf
+    autoware_msgs
 )
 find_package(Qt5Core REQUIRED)
 find_package(OpenCV REQUIRED)

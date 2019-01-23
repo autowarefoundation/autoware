@@ -17,6 +17,9 @@ find_package(catkin REQUIRED COMPONENTS
         pcl_ros
         pcl_conversions
         sensor_msgs
+        autoware_msgs
+        autoware_config_msgs
+        tablet_socket_msgs
         )
 
 ################################################

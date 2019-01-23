@@ -2988,7 +2988,7 @@ class MyDialogROSbagRecord(rtmgr.MyDialogROSbagRecord):
 			mb = 0
 		if mb <= 0:
 			tc.SetValue('')
-		return [ '--size=' + str(int(mb * 1024 * 1024)) ] if mb > 0 else []
+		return [ '--size=' + str(int(mb)) ] if mb > 0 else []
 
 def set_size_gdic(dlg, gdic={}):
 	(w, h) = dlg.GetSize()

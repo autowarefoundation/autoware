@@ -12,7 +12,7 @@ roslaunch autoware_camera_lidar_calibrator camera_lidar_calibration.launch intri
 
     <node if="$(arg compressed_stream)" name="decompress" type="republish" pkg="image_transport" output="screen" args="compressed in:=/$(arg camera_id)/$(arg image_src) raw out:=/$(arg camera_id)/$(arg image_src)" />
 
-    <node pkg="calibration_camera_lidar" type="calibration_publisher" name="calibration_publisher" ns="$(arg camera_id)">
+    <node pkg="calibration_publisher" type="calibration_publisher" name="calibration_publisher" ns="$(arg camera_id)">
         <param name="register_lidar2camera_tf" type="bool" value="false"/>
         <param name="publish_extrinsic_mat" type="bool" value="false"/>
         <param name="publish_camera_info" type="bool" value="true"/>

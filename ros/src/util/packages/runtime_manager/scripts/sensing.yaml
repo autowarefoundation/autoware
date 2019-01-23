@@ -368,12 +368,6 @@ cmds:
         dialog_height : 450
 
 buttons:
-  calibration_toolkit :
-    desc  : calibration_toolkit desc sample
-    run   : rosrun calibration_camera_lidar calibration_toolkit
-    gui   :
-      flags : [ SIGTERM ]
-
   calibration_publisher :
     desc  : calibration_publisher desc sample
     run   : roslaunch runtime_manager calibration_publisher.launch
@@ -416,11 +410,6 @@ buttons:
         flags : [ all ]
       sync :
         func : self.button_synchronization.GetValue()
-
-  scan_image :
-    desc  : scan_image desc sample
-    run   : rosrun scan2image scan2image
-    #param : scan_image
 
   virtual_scan_image :
     desc  : virtual_scan_image desc sample
@@ -1049,8 +1038,7 @@ params :
     - name      : image_topic_src
       desc      : Adds the Camera info to this image topic. Default /image_raw
       label     : image topic source
-      kind  : topic
-      topic_type : sensor_msgs/Image
+      kind      : str
       v         : '/image_raw'
       cmd_param :
         dash      : ''
