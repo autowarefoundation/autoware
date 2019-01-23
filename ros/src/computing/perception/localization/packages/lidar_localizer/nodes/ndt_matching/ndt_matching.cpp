@@ -232,6 +232,30 @@ static unsigned int points_map_num = 0;
 
 pthread_mutex_t mutex;
 
+static pose convertPoseIntoRelativeCoordinate(const pose &target_pose, const pose &reference_pose)
+{
+    tf::Quaternion target_q;
+    target_q.setRPY(target_pose.roll, target_pose.pitch, target_pose.yaw);
+    tf::Vector3 target_v(target_pose.x, target_pose.y, target_pose.z);
+    tf::Transform target_tf(target_q, target_v);
+
+    tf::Quaternion reference_q;
+    reference_q.setRPY(reference_pose.roll, reference_pose.pitch, reference_pose.yaw);
+    tf::Vector3 reference_v(reference_pose.x, reference_pose.y, reference_pose.z);
+    tf::Transform reference_tf(reference_q, reference_v);
+
+    tf::Transform trans_target_tf = reference_tf.inverse() * target_tf;
+
+    pose trans_target_pose;
+    trans_target_pose.x = trans_target_tf.getOrigin().getX();
+    trans_target_pose.y = trans_target_tf.getOrigin().getY();
+    trans_target_pose.z = trans_target_tf.getOrigin().getZ();
+    tf::Matrix3x3 tmp_m(trans_target_tf.getRotation());
+    tmp_m.getRPY(trans_target_pose.roll, trans_target_pose.pitch, trans_target_pose.yaw);
+
+    return trans_target_pose;
+}
+
 static void param_callback(const autoware_config_msgs::ConfigNDT::ConstPtr& input)
 {
   if (_use_gnss != input->init_pos_gnss)
@@ -545,8 +569,11 @@ static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
     diff_yaw = current_pose.yaw - previous_pose.yaw;
     diff = sqrt(diff_x * diff_x + diff_y * diff_y + diff_z * diff_z);
 
+    const pose trans_current_pose = convertPoseIntoRelativeCoordinate(current_pose, previous_pose);
+
     const double diff_time = (current_gnss_time - previous_gnss_time).toSec();
     current_velocity = (diff_time > 0) ? (diff / diff_time) : 0;
+    current_velocity =  (trans_current_pose.x >= 0) ? current_velocity : -current_velocity;
     current_velocity_x = (diff_time > 0) ? (diff_x / diff_time) : 0;
     current_velocity_y = (diff_time > 0) ? (diff_y / diff_time) : 0;
     current_velocity_z = (diff_time > 0) ? (diff_z / diff_time) : 0;
@@ -1131,7 +1158,10 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     diff_yaw = calcDiffForRadian(current_pose.yaw, previous_pose.yaw);
     diff = sqrt(diff_x * diff_x + diff_y * diff_y + diff_z * diff_z);
 
+    const pose trans_current_pose = convertPoseIntoRelativeCoordinate(current_pose, previous_pose);
+
     current_velocity = (diff_time > 0) ? (diff / diff_time) : 0;
+    current_velocity =  (trans_current_pose.x >= 0) ? current_velocity : -current_velocity;
     current_velocity_x = (diff_time > 0) ? (diff_x / diff_time) : 0;
     current_velocity_y = (diff_time > 0) ? (diff_y / diff_time) : 0;
     current_velocity_z = (diff_time > 0) ? (diff_z / diff_time) : 0;
@@ -1163,7 +1193,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     current_pose_imu_odom.yaw = current_pose.yaw;
 
     current_velocity_smooth = (current_velocity + previous_velocity + previous_previous_velocity) / 3.0;
-    if (current_velocity_smooth < 0.2)
+    if (std::fabs(current_velocity_smooth) < 0.2)
     {
       current_velocity_smooth = 0.0;
     }
