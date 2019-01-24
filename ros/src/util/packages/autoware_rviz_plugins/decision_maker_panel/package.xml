@@ -20,4 +20,8 @@
     <run_depend>std_msgs</run_depend>
     <run_depend>libqt5-core</run_depend>
     <run_depend>libqt5-widgets</run_depend>
+
+    <export>
+        <rviz plugin="${prefix}/plugin_description.xml"/>
+    </export>
 </package>
