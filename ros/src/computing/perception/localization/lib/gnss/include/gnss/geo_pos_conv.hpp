@@ -12,15 +12,16 @@ private:
 	double m_lat;  //latitude
 	double m_lon; //longitude
 	double m_h;
-  
+
 	double m_PLato;        //plane lat
 	double m_PLo;          //plane lon
 
 public:
+	geo_pos_conv();
 	double x() const;
 	double y() const;
 	double z() const;
-  
+
 	void set_plane(double lat,   double lon);
 	void set_plane(int num);
 	void set_xyz(double cx,   double cy,   double cz);
