@@ -7,11 +7,13 @@ find_package(catkin REQUIRED COMPONENTS
   autoware_system_msgs
   roscpp
   diagnostic_msgs
+  topic_tools
+  message_filters
 )
 
 catkin_package(
 #  INCLUDE_DIRS include
-  LIBRARIES node_status_publisher
+  LIBRARIES node_status_publisher protected_publisher protected_subscriber
 #  CATKIN_DEPENDS autoware_system_msgs roscpp
 #  DEPENDS system_lib
 )
@@ -42,6 +44,18 @@ add_executable(health_aggregator
 target_link_libraries(health_aggregator ${catkin_LIBRARIES})
 add_dependencies(health_aggregator ${catkin_EXPORTED_TARGETS})
 
+add_library(protected_subscriber
+  src/protected_subscriber.cpp
+)
+target_link_libraries(protected_subscriber ${catkin_LIBRARIES} node_status_publisher)
+add_dependencies(protected_subscriber ${catkin_EXPORTED_TARGETS})
+
+add_library(protected_publisher
+  src/protected_publisher.cpp
+)
+target_link_libraries(protected_publisher ${catkin_LIBRARIES} node_status_publisher)
+add_dependencies(protected_publisher ${catkin_EXPORTED_TARGETS})
+
 # CPP Execution programs
 set(CPP_EXEC_NAMES health_aggregator)
 foreach(cpp_exec_names ${CPP_EXEC_NAMES})
@@ -56,7 +70,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
 )
 
 # Install library
-install(TARGETS node_status_publisher system_status_subscriber
+install(TARGETS node_status_publisher system_status_subscriber protected_subscriber protected_publisher
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin

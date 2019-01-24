@@ -14,9 +14,12 @@ namespace autoware_health_checker
     constexpr uint8_t TYPE_UNDEFINED = autoware_system_msgs::DiagnosticStatus::UNDEFINED;
     constexpr uint8_t TYPE_OUT_OF_RANGE = autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE;
     constexpr uint8_t TYPE_RATE_IS_SLOW = autoware_system_msgs::DiagnosticStatus::RATE_IS_SLOW;
+    constexpr uint8_t TOPIC_PUBLISHER_IS_INVALUD = autoware_system_msgs::DiagnosticStatus::TOPIC_PUBLISHER_IS_INVALID;
 
     constexpr double BUFFER_LENGTH = 10.0;
     constexpr double UPDATE_RATE = 10.0;
+
+    constexpr int PROTECTED_PUB_SUB_BUFFER_LENGTH = 10;
 }
 
 #endif //CONSTANTS_H_INCLUDED

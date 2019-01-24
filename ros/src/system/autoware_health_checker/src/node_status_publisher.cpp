@@ -50,6 +50,31 @@ namespace autoware_health_checker
         return;
     }
 
+    void NodeStatusPublisher::CHECK_SUBSCRIBED_TOPICS(std::string key,std::string publisher,std::vector<std::string> publisher_nodes,std::string description)
+    {
+        bool is_found = false;
+        addNewBuffer(key,autoware_system_msgs::DiagnosticStatus::TOPIC_PUBLISHER_IS_INVALID,description);
+        autoware_system_msgs::DiagnosticStatus new_status;
+        for(auto node_name_itr = publisher_nodes.begin(); node_name_itr != publisher_nodes.end(); node_name_itr++)
+        {
+            if(*node_name_itr == publisher)
+            {
+                is_found = true;
+            }
+        }
+        if(!is_found)
+        {
+            new_status.level = autoware_system_msgs::DiagnosticStatus::FATAL;
+        }
+        else
+        {
+            new_status.level = autoware_system_msgs::DiagnosticStatus::OK;
+        }
+        new_status.description = description;
+        diag_buffers_[key]->addDiag(new_status);
+        return;
+    }
+
     void NodeStatusPublisher::ENABLE()
     {
         boost::thread publish_thread(boost::bind(&NodeStatusPublisher::publishStatus, this));

@@ -52,6 +52,7 @@ namespace autoware_health_checker
             diag_buffers_[key]->addDiag(new_status);
         }
         void CHECK_RATE(std::string key,double warn_rate,double error_rate,double fatal_rate,std::string description);
+        void CHECK_SUBSCRIBED_TOPICS(std::string key,std::string publisher,std::vector<std::string> publisher_nodes,std::string description);
     private:
         std::vector<std::string> getKeys();
         std::vector<std::string> getRateCheckerKeys();
