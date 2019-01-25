@@ -44,6 +44,7 @@ class DecisionMakerPanel : public rviz::Panel
   Q_OBJECT
 public:
   DecisionMakerPanel(QWidget* parent = 0);
+  QWidget *window_vehicle, *window_mission, *window_drive;
 
   virtual void load(const rviz::Config& config);
   virtual void save(rviz::Config config) const;
