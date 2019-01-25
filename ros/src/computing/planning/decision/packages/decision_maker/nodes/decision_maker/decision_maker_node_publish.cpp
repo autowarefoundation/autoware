@@ -81,10 +81,24 @@ void DecisionMakerNode::update_msgs(void)
 #if 1
   if (ctx_vehicle && ctx_mission && ctx_behavior && ctx_motion)
   {
+    static std::string text_vehicle_state, text_mission_state, text_behavior_state, text_motion_state;
+    text_vehicle_state = ctx_vehicle->getStateText();
+    text_mission_state = ctx_mission->getStateText();
+    text_behavior_state = ctx_behavior->getStateText();
+    text_motion_state = ctx_motion->getStateText();
+
     static std_msgs::String state_msg;
-    state_msg.data = ctx_vehicle->getStateText() + "\n" + ctx_mission->getStateText() + "\n" + ctx_behavior->getStateText() + "\n" + ctx_motion->getStateText();
+    state_msg.data = text_vehicle_state + text_mission_state + text_behavior_state + text_motion_state;
     Pubs["state"].publish(state_msg);
     Pubs["state_overlay"].publish(createOverlayText(state_msg.data, 1));
+
+    static autoware_msgs::State state_array_msg;
+    state_array_msg.header.stamp = ros::Time::now();
+    state_array_msg.vehicle_state = text_vehicle_state;
+    state_array_msg.mission_state = text_mission_state;
+    state_array_msg.behavior_state = text_behavior_state;
+    state_array_msg.motion_state = text_motion_state;
+    Pubs["state_msg"].publish(state_array_msg);
 
     static std_msgs::String transition_msg;
     transition_msg.data = ctx_vehicle->getAvailableTransition() + "\n" + ctx_mission->getAvailableTransition() + "\n" +

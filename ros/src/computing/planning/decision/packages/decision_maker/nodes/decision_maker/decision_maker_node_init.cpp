@@ -214,6 +214,7 @@ void DecisionMakerNode::createPublisher(void)
 
   // for visualize status
   Pubs["state"] = private_nh_.advertise<std_msgs::String>("state", 1, true);
+  Pubs["state_msg"] = private_nh_.advertise<autoware_msgs::State>("state_msg", 1, true);
   Pubs["state_overlay"] = private_nh_.advertise<jsk_rviz_plugins::OverlayText>("state_overlay", 1);
   Pubs["available_transition"] = private_nh_.advertise<std_msgs::String>("available_transition", 1, true);
 
