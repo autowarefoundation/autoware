@@ -4,6 +4,7 @@ uint32                          id
 string                          label
 float32                         score   #Score as defined by the detection, Optional
 std_msgs/ColorRGBA              color   # Define this object specific color
+bool                            valid   # Defines if this object is valid, or invalid as defined by the filtering
 
 ################ 3D BB
 string                          space_frame #3D Space coordinate frame of the object, required if pose and dimensions are defines

@@ -94,7 +94,7 @@ double calcPosesAngleDiffRaw(const geometry_msgs::Pose &p_from, const geometry_m
   return getPoseYawAngle(p_from) - getPoseYawAngle(_p_to);
 }
 
-double radianNormalize(const double &_angle)
+double radianNormalize(double _angle)
 {
   double n_angle = std::fmod(_angle, 2 * M_PI);
   n_angle = n_angle > M_PI ? n_angle - 2 * M_PI : n_angle < -M_PI ? 2 * M_PI + n_angle : n_angle;

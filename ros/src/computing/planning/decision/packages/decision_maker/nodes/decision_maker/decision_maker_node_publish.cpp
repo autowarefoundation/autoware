@@ -76,41 +76,27 @@ void DecisionMakerNode::publishOperatorHelpMessage(cstring_t& message)
   Pubs["operator_help_text"].publish(createOverlayText(joined_msg, 0));
 }
 
-void DecisionMakerNode::update_pubsub(void)
-{
-}
-
-int DecisionMakerNode::createCrossRoadAreaMarker(visualization_msgs::Marker& crossroad_marker, double scale)
-{
-  crossroad_marker.header.frame_id = "/map";
-  crossroad_marker.header.stamp = ros::Time();
-  crossroad_marker.id = 1;
-  crossroad_marker.type = visualization_msgs::Marker::SPHERE_LIST;
-  crossroad_marker.action = visualization_msgs::Marker::ADD;
-  crossroad_marker.ns = "crossroad";
-
-  crossroad_marker.scale.x = scale;
-  crossroad_marker.scale.y = scale;
-  crossroad_marker.scale.z = 0.5;
-  crossroad_marker.color.a = 0.15;
-  crossroad_marker.color.r = 1.0;
-  crossroad_marker.color.g = 0.0;
-  crossroad_marker.color.b = 0.0;
-  crossroad_marker.frame_locked = true;
-  crossroad_marker.lifetime = ros::Duration(0.3);
-
-  return 0;
-}
-
 void DecisionMakerNode::update_msgs(void)
 {
 #if 1
   if (ctx_vehicle && ctx_mission && ctx_drive)
   {
+    static std::string text_vehicle_state, text_mission_state, text_drive_state;
+    text_vehicle_state = ctx_vehicle->getStateText();
+    text_mission_state = ctx_mission->getStateText();
+    text_drive_state = ctx_drive->getStateText();
+
     static std_msgs::String state_msg;
-    state_msg.data = ctx_vehicle->getStateText() + ctx_mission->getStateText() + ctx_drive->getStateText();
+    state_msg.data = text_vehicle_state + text_mission_state + text_drive_state;
     Pubs["state"].publish(state_msg);
     Pubs["state_overlay"].publish(createOverlayText(state_msg.data, 1));
+
+    static autoware_msgs::State state_array_msg;
+    state_array_msg.header.stamp = ros::Time::now();
+    state_array_msg.vehicle_state = text_vehicle_state;
+    state_array_msg.mission_state = text_mission_state;
+    state_array_msg.drive_state = text_drive_state;
+    Pubs["state_msg"].publish(state_array_msg);
 
     static std_msgs::String transition_msg;
     transition_msg.data = ctx_vehicle->getAvailableTransition() + ctx_mission->getAvailableTransition() +

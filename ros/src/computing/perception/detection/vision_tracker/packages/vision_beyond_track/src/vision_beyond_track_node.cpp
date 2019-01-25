@@ -36,11 +36,11 @@
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "vision_beyond_track");
+  ros::init(argc, argv, "vision_beyond_track");
 
-    BeyondTrackerNode app;
+  BeyondTrackerNode app;
 
-    app.Run();
+  app.Run();
 
-    return 0;
+  return 0;
 }
