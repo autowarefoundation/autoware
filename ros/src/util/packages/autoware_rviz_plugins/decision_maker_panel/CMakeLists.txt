@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(autoware_rviz_plugins)
+project(decision_maker_panel)
 
 
 find_package(autoware_build_flags REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   rviz
   std_msgs
+	autoware_msgs
 )
 
 if(rviz_QT_VERSION VERSION_LESS "5")
@@ -53,12 +54,11 @@ add_definitions(-DQT_NO_KEYWORDS -g)
 
 set(CMAKE_AUTOMOC ON)
 set(SOURCE_FILES
-  src/state_panel/state_panel.cpp
-  src/sim_object/autoware_flag_tool.cpp
+  src/decision_maker_panel.cpp
   )
 
-add_library(autoware_rviz_plugins ${SOURCE_FILES} ${UIC_FILES})
-target_link_libraries(autoware_rviz_plugins ${QT_LIBRARIES} ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES})
+add_library(decision_maker_panel ${SOURCE_FILES} ${UIC_FILES})
+target_link_libraries(decision_maker_panel ${QT_LIBRARIES} ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES})
 
 ## Install rules
 
@@ -68,9 +68,3 @@ install(TARGETS
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
-
-install(DIRECTORY media/
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/media)
-
-install(DIRECTORY icons/
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/icons)
