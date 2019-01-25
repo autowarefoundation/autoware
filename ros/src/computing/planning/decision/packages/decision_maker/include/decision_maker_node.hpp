@@ -125,37 +125,8 @@ private:
 
   AutowareStatus current_status_;
 
-  // ROS Messages
-  std_msgs::String state_string_msg;
-  geometry_msgs::PoseStamped current_pose_;
-
-  jsk_rviz_plugins::OverlayText state_text_msg;
-
-  // ROS Messages(Autoware)
-  autoware_msgs::Lane current_finalwaypoints_;
-  vector_map_msgs::AreaArray vMap_Areas;
-  vector_map_msgs::PointArray vMap_Points;
-  vector_map_msgs::LineArray vMap_Lines;
-  vector_map_msgs::CrossRoadArray vMap_CrossRoads;
-
-  std::vector<geometry_msgs::Point> inside_points_;
-
-  tf::TransformListener tflistener_baselink;
-
-  int closest_stop_waypoint_;
-  int closest_stopline_waypoint_;
-  int goal_waypoint_;
-  autoware_msgs::Waypoint CurrentStoplineTarget_;
-
-  double average_velocity_;
-  int closest_waypoint_;
-  CrossRoadArea* ClosestArea_;
-  std::string CurrentStateName;
-  std::string TextOffset;
   std::vector<CrossRoadArea> intersects;
-  double displacement_from_path_;
 
-  bool foundOtherVehicleForIntersectionStop_;  // In fact this should be defined as state.
   class DetectionArea
   {
   public:
@@ -173,29 +144,20 @@ private:
   // Param
   bool enableDisplayMarker;
   bool auto_mission_reload_;
+  bool auto_engage_;
+  bool auto_mission_change_;
   bool use_management_system_;
   bool disuse_vector_map_;
   uint32_t param_num_of_steer_behind_;
   double change_threshold_dist_;
   double change_threshold_angle_;
-  double time_to_avoidance_;
   double goal_threshold_dist_;
   double goal_threshold_vel_;
   int stopline_reset_count_;
 
-  // for vectormap server
-  // ros::ServiceClient cross_road_cli;
-  // vector_map_server::GetCrossRoad cross_road_srv;
-
-  // initialization flags for initialized by callback
-  std::mutex vMap_mutex;
-  bool created_shift_lane_flag_;
-
   // initialization method
   void initROS();
   void initVectorMap(void);
-  void initStateMsgs(void);
-  bool initVectorMapClient(void);
 
   void createSubscriber(void);
   void createPublisher(void);
@@ -203,21 +165,8 @@ private:
   // looping method
   void update(void);
   void update_msgs(void);
-  void update_pubsub(void);
 
   void publishToVelocityArray();
-  int createCrossRoadAreaMarker(visualization_msgs::Marker& crossroad_marker, double scale);
-
-  /* for planning according to state*/
-  void publishStoppedLaneArray(void);
-  void publishControlledLaneArray(void);
-  void updateLaneWaypointsArray(void);
-  void changeVelocityBasedLane(void);
-  void changeVelocityLane(int dir);
-  void createShiftLane(void);
-  void changeShiftLane(void);
-  void removeShiftLane(void);
-  void setAllStoplineStop(void);
 
   void publishOperatorHelpMessage(cstring_t& message);
   void publishLampCmd(const E_Lamp& status);
@@ -227,7 +176,6 @@ private:
   /* decision */
   void tryNextState(cstring_t& key);
   bool isArrivedGoal(void);
-  bool isCrossRoadByVectorMapServer(const autoware_msgs::Lane& lane_msg, const geometry_msgs::PoseStamped& pose_msg);
   bool isLocalizationConvergence(const geometry_msgs::Point& _current_point);
   void insertPointWithinCrossRoad(const std::vector<CrossRoadArea>& _intersects, autoware_msgs::LaneArray& lane_array);
   void setWaypointState(autoware_msgs::LaneArray& lane_array);
@@ -236,9 +184,6 @@ private:
   bool drivingMissionCheck(void);
 
   double calcIntersectWayAngle(const autoware_msgs::Lane& laneinArea);
-  double calcPosesAngleDiff(const geometry_msgs::Pose& p_from, const geometry_msgs::Pose& p_to);
-  double calcPosesAngleDiffN(const geometry_msgs::Pose& p_from, const geometry_msgs::Pose& p_to);
-  double getPoseAngle(const geometry_msgs::Pose& p);
 
   uint8_t getSteeringStateFromWaypoint(void);
   uint8_t getEventStateFromWaypoint(void);
@@ -312,10 +257,6 @@ private:
   void entryDriveState(cstring_t& state_name, int status);
   void entryTurnState(cstring_t& state_name, int status);
   void entryGoState(cstring_t& state_name, int status);
-  void entryTryAvoidanceState(cstring_t& state_name, int status);
-  void entryCheckAvoidanceState(cstring_t& state_name, int status);
-  void entryAvoidanceState(cstring_t& state_name, int status);
-  void entryReturnToLaneState(cstring_t& state_name, int status);
   void entryLaneChangeState(cstring_t& state_name, int status);
   void entryDriveEmergencyState(cstring_t& state_name, int status);
   void entryStopState(cstring_t& state_name, int status);
@@ -335,7 +276,7 @@ private:
   void updateBackState(cstring_t& state_name, int status);
   void updateLeftLaneChangeState(cstring_t& state_name, int status);
   void updateRightLaneChangeState(cstring_t& state_name, int status);
-  void updatePullOverState(cstring_t& state_name, int status);
+  void updatePullInState(cstring_t& state_name, int status);
   void updatePullOutState(cstring_t& state_name, int status);
   void updateStoplineState(cstring_t& state_name, int status);
   void updateGoState(cstring_t& state_name, int status);
@@ -345,10 +286,6 @@ private:
   void updateCheckRightLaneState(cstring_t& state_name, int status);
   void updateChangeToLeftState(cstring_t& state_name, int status);
   void updateChangeToRightState(cstring_t& state_name, int status);
-  void updateTryAvoidanceState(cstring_t& state_name, int status);
-  void updateCheckAvoidanceState(cstring_t& state_name, int status);
-  void updateAvoidanceState(cstring_t& state_name, int status);
-  void updateReturnToLaneState(cstring_t& state_name, int status);
   // exit callback
   void exitStopState(cstring_t& state_name, int status);
   void exitDriveEmergencyState(cstring_t& state_name, int status);
@@ -362,7 +299,6 @@ private:
   void callbackFromLaneChangeFlag(const std_msgs::Int32& msg);
   void callbackFromFinalWaypoint(const autoware_msgs::Lane& msg);
   void callbackFromLaneWaypoint(const autoware_msgs::LaneArray& msg);
-  void callbackFromTwistCmd(const geometry_msgs::TwistStamped& msg);
   void callbackFromSimPose(const geometry_msgs::PoseStamped& msg);
   void callbackFromConfig(const autoware_config_msgs::ConfigDecisionMaker& msg);
   void callbackFromStateCmd(const std_msgs::String& msg);
@@ -392,6 +328,8 @@ public:
     : private_nh_("~")
     , enableDisplayMarker(false)
     , auto_mission_reload_(false)
+    , auto_engage_(false)
+    , auto_mission_change_(false)
     , use_management_system_(false)
     , param_num_of_steer_behind_(30)
   {

@@ -111,22 +111,34 @@ void DecisionMakerNode::entryDriveReadyState(cstring_t& state_name, int status)
 
 void DecisionMakerNode::updateDriveReadyState(cstring_t& state_name, int status)
 {
+  if (!use_management_system_ && auto_engage_)
+  {
+    tryNextState("engage");
+  }
 }
 
 void DecisionMakerNode::entryDrivingState(cstring_t& state_name, int status)
 {
-  tryNextState("operation_start");
+  setEventFlag("received_based_lane_waypoint", false);
 
   if (isEventFlagTrue("emergency_flag"))
   {
     tryNextState("mission_aborted");
+    return;
   }
+
+  tryNextState("operation_start");
 }
 void DecisionMakerNode::updateDrivingState(cstring_t& state_name, int status)
 {
   if (isEventFlagTrue("emergency_flag"))
   {
     tryNextState("mission_aborted");
+  }
+
+  if (!use_management_system_ && auto_mission_change_ && isEventFlagTrue("received_based_lane_waypoint"))
+  {
+    tryNextState("request_mission_change");
   }
 }
 void DecisionMakerNode::exitDrivingState(cstring_t& state_name, int status)
@@ -135,7 +147,8 @@ void DecisionMakerNode::exitDrivingState(cstring_t& state_name, int status)
 
 void DecisionMakerNode::entryDrivingMissionChangeState(cstring_t& state_name, int status)
 {
-  setEventFlag("received_based_lane_waypoint", false);
+  if (!auto_mission_change_)
+    setEventFlag("received_based_lane_waypoint", false);
 }
 
 void DecisionMakerNode::updateDrivingMissionChangeState(cstring_t& state_name, int status)
