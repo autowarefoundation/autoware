@@ -97,4 +97,7 @@ autoware_states_mission:
       -
         Key: return_from_emergency
         Target: WaitVehicleReady
+      -
+        Key: return_to_ready
+        Target: DriveReady
     Parent: ~

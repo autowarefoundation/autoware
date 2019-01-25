@@ -62,4 +62,7 @@ autoware_states_vehicle:
       -
         Key: return_from_emergency
         Target: Init
+      -
+        Key: return_to_ready
+        Target: VehicleReady
     Parent: ~

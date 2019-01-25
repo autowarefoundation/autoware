@@ -218,7 +218,7 @@ void DecisionMakerNode::updateBusStopState(cstring_t& state_name, int status)
 {
 }
 
-void DecisionMakerNode::updatePullOverState(cstring_t& state_name, int status)
+void DecisionMakerNode::updatePullInState(cstring_t& state_name, int status)
 {
   publishLampCmd(E_Lamp::LAMP_LEFT);
 }
@@ -301,7 +301,6 @@ void DecisionMakerNode::updateParkingState(cstring_t& state_name, int status)
 
 void DecisionMakerNode::entryGoState(cstring_t& state_name, int status)
 {
-  setEventFlag("entry_go_state", true);
   setEventFlag("entry_stop_state", false);
 }
 void DecisionMakerNode::updateGoState(cstring_t& state_name, int status)
@@ -313,19 +312,6 @@ void DecisionMakerNode::updateGoState(cstring_t& state_name, int status)
     tryNextState("found_stopline");
   }
 
-  static double stopped_time;
-  if (current_status_.velocity == 0.0 && current_status_.obstacle_waypoint != -1 && !isEventFlagTrue("entry_go_state"))
-  {
-    if (ros::Time::now().toSec() - stopped_time > time_to_avoidance_)
-    {
-      tryNextState("completely_stopped");
-    }
-  }
-  else
-  {
-    stopped_time = ros::Time::now().toSec();
-  }
-  setEventFlag("entry_go_state", false);
 }
 
 void DecisionMakerNode::updateWaitState(cstring_t& state_name, int status)
@@ -357,7 +343,7 @@ void DecisionMakerNode::updateStoplineState(cstring_t& state_name, int status)
   static bool timerflag = false;
   static ros::Timer stopping_timer;
 
-  if (current_status_.velocity == 0.0 && !timerflag)
+  if (current_status_.velocity == 0.0 && !timerflag && (current_status_.obstacle_waypoint + current_status_.closest_waypoint) == current_status_.found_stopsign_idx)
   {
     stopping_timer = nh_.createTimer(ros::Duration(0.5),
                                      [&](const ros::TimerEvent&) {
@@ -383,34 +369,6 @@ void DecisionMakerNode::exitStopState(cstring_t& state_name, int status)
     current_status_.found_stopsign_idx = -1;
     publishStoplineWaypointIdx(current_status_.found_stopsign_idx);
   }
-}
-
-void DecisionMakerNode::entryTryAvoidanceState(cstring_t& state_name, int status)
-{
-}
-void DecisionMakerNode::updateTryAvoidanceState(cstring_t& state_name, int status)
-{
-}
-
-void DecisionMakerNode::entryCheckAvoidanceState(cstring_t& state_name, int status)
-{
-}
-void DecisionMakerNode::updateCheckAvoidanceState(cstring_t& state_name, int status)
-{
-}
-
-void DecisionMakerNode::entryAvoidanceState(cstring_t& state_name, int status)
-{
-}
-void DecisionMakerNode::updateAvoidanceState(cstring_t& state_name, int status)
-{
-}
-
-void DecisionMakerNode::entryReturnToLaneState(cstring_t& state_name, int status)
-{
-}
-void DecisionMakerNode::updateReturnToLaneState(cstring_t& state_name, int status)
-{
 }
 
 void DecisionMakerNode::entryDriveEmergencyState(cstring_t& state_name, int status)
