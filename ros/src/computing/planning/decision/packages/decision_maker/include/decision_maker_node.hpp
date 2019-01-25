@@ -276,7 +276,7 @@ private:
   void updateBackState(cstring_t& state_name, int status);
   void updateLeftLaneChangeState(cstring_t& state_name, int status);
   void updateRightLaneChangeState(cstring_t& state_name, int status);
-  void updatePullOverState(cstring_t& state_name, int status);
+  void updatePullInState(cstring_t& state_name, int status);
   void updatePullOutState(cstring_t& state_name, int status);
   void updateStoplineState(cstring_t& state_name, int status);
   void updateGoState(cstring_t& state_name, int status);

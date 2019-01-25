@@ -137,8 +137,8 @@ void DecisionMakerNode::setupStateCallback(void)
                          std::bind(&DecisionMakerNode::entryLaneChangeState, this, std::placeholders::_1, 0));
   ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "RightLaneChange",
                          std::bind(&DecisionMakerNode::updateRightLaneChangeState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "PullOver",
-                         std::bind(&DecisionMakerNode::updatePullOverState, this, std::placeholders::_1, 0));
+  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "PullIn",
+                         std::bind(&DecisionMakerNode::updatePullInState, this, std::placeholders::_1, 0));
   ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "PullOut",
                          std::bind(&DecisionMakerNode::updatePullOutState, this, std::placeholders::_1, 0));
 
@@ -262,11 +262,11 @@ void DecisionMakerNode::createPublisher(void)
 
   // for visualize status
   Pubs["state"] = private_nh_.advertise<std_msgs::String>("state", 1, true);
-  Pubs["state_overlay"] = private_nh_.advertise<jsk_rviz_plugins::OverlayText>("/state/overlay_text", 1);
+  Pubs["state_overlay"] = private_nh_.advertise<jsk_rviz_plugins::OverlayText>("state_overlay", 1);
   Pubs["available_transition"] = private_nh_.advertise<std_msgs::String>("available_transition", 1, true);
 
   // for debug
-  Pubs["target_velocity_array"] = nh_.advertise<std_msgs::Float64MultiArray>("/target_velocity_array", 1);
+  Pubs["target_velocity_array"] = nh_.advertise<std_msgs::Float64MultiArray>("target_velocity_array", 1);
   Pubs["operator_help_text"] = private_nh_.advertise<jsk_rviz_plugins::OverlayText>("operator_help_text", 1, true);
 }
 

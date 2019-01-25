@@ -61,14 +61,14 @@ autoware_states_drive:
     StateName: BusStop
     Transition:
       -
-        Key: on_pull_over
-        Target: PullOver
+        Key: on_pull_in
+        Target: PullIn
       -
         Key: on_pull_out
         Target: PullOut
     Parent: LaneArea
   -
-    StateName: PullOver
+    StateName: PullIn
     Transition: []
     Parent: BusStop
   -

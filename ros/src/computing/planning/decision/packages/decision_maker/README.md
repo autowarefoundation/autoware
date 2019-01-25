@@ -70,7 +70,7 @@ Topic|Type|Objective
 /state/cross_inside_marker|visualization_msgs/Marker|visualization of objectes inside cross roads. Not implemented yet.
 /state/cross_road_marker|visualization_msgs/MarkerArray|visualization of crossroads. Not implemented yet.
 /state/crossroad_bbox|jsk_recognition_msgs/BoundingBoxArray| visualization of crossroads by bounding box. Not implemented yet.
-/state/overlay_text|jsk_rviz_plugins/OverlayText|Current state as overlay_txt.
+/decision_maker/state_overlay|jsk_rviz_plugins/OverlayText|Current state as overlay_txt.
 /state/stopline_target|visualization_msgs/Marker| Visualization of referenced stop line. Not implemented yet.
 /state/stopline_wpidx|std_msgs/Int32|Index of waypoint for the vehicle to stop.
 /target_velocity_array|std_msgs/Float64MultiArray| Array of target velocity obtained from final_waypoints.
@@ -143,7 +143,7 @@ RightLaneChange|-|Vehicle is switching to right lane|publish /lamp_cmd to change
 CheckRightLane|-|Check if it is safe to change lane to left|No implementation.
 ChangeToRight|-|Change to left lane|No implementation.
 BusStop|-|Vehicle is approaching to bus stop| No implementation.
-PullOver|-|Vehicle is pulling over to bus stop| publish /lamp_cmd to change blinker to left.
+PullIn|-|Vehicle is pulling in to bus stop| publish /lamp_cmd to change blinker to left.
 PullOut|-|Vehicle is pulling out from bus stop|publish /lamp_cmd to change blinker to right.
 FreeArea|-|Vehicle is driving in free space(e.g. parking area)|No implementation.
 Parking|-|Vehicle is parking|Publish /lamp_cmd to change blinker to hazard.  
@@ -176,6 +176,6 @@ Parking|-|Vehicle is parking|Publish /lamp_cmd to change blinker to hazard.
 
 ### Obstacle avoidance
 
-### Pull over & Pull out
+### Pull in & Pull out
 
 ### Emergency stop

@@ -218,7 +218,7 @@ void DecisionMakerNode::updateBusStopState(cstring_t& state_name, int status)
 {
 }
 
-void DecisionMakerNode::updatePullOverState(cstring_t& state_name, int status)
+void DecisionMakerNode::updatePullInState(cstring_t& state_name, int status)
 {
   publishLampCmd(E_Lamp::LAMP_LEFT);
 }
