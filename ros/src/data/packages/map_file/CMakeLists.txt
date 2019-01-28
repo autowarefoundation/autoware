@@ -65,7 +65,10 @@ target_link_libraries(get_file ${CURL_LIBRARIES})
 
 add_executable(points_map_loader nodes/points_map_loader/points_map_loader.cpp)
 target_link_libraries(points_map_loader ${catkin_LIBRARIES} get_file ${CURL_LIBRARIES} ${PCL_IO_LIBRARIES})
-add_dependencies(points_map_loader ${catkin_EXPORTED_TARGETS})
+add_dependencies(points_map_loader 
+        ${catkin_EXPORTED_TARGETS}
+        autoware_msgs_generate_messages_cpp
+        )
 
 add_executable(vector_map_loader nodes/vector_map_loader/vector_map_loader.cpp)
 target_link_libraries(vector_map_loader ${catkin_LIBRARIES} ${vector_map_LIBRARIES} get_file ${CURL_LIBRARIES})
