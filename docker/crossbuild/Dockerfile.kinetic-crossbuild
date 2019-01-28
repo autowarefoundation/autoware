@@ -178,6 +178,9 @@ RUN sed -i -e "s#set(imported_location \"\${_qt5Core_install_prefix}/lib/${AUTOW
 RUN sed -i -e "s#define ARMA_SUPERLU_INCLUDE_DIR /usr/include/superlu/#define ARMA_SUPERLU_INCLUDE_DIR ${AUTOWARE_SYSROOT}/usr/include/superlu/#g" \
     ${AUTOWARE_SYSROOT}/usr/include/armadillo_bits/config.hpp
 
+RUN apt-get install -y python-numpy
+RUN apt-get install -y python-pip python-setuptools
+RUN pip install -U setuptools
 RUN apt-get install -y python3-pip python3-setuptools
 RUN pip3 install -U setuptools
 RUN apt-get install -y python3-colcon-common-extensions
