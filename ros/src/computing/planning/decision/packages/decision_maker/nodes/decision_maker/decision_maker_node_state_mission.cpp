@@ -121,21 +121,10 @@ void DecisionMakerNode::entryDrivingState(cstring_t& state_name, int status)
 {
   setEventFlag("received_based_lane_waypoint", false);
 
-  if (isEventFlagTrue("emergency_flag"))
-  {
-    tryNextState("mission_aborted");
-    return;
-  }
-
   tryNextState("operation_start");
 }
 void DecisionMakerNode::updateDrivingState(cstring_t& state_name, int status)
 {
-  if (isEventFlagTrue("emergency_flag"))
-  {
-    tryNextState("mission_aborted");
-  }
-
   if (!use_management_system_ && auto_mission_change_ && isEventFlagTrue("received_based_lane_waypoint"))
   {
     tryNextState("request_mission_change");

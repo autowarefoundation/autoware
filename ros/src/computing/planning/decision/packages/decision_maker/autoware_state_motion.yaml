@@ -24,6 +24,9 @@ autoware_states_motion:
         Key: operation_start
         Target: Drive
       -
+        Key: mission_canceled
+        Target: WaitDriveReady
+      -
         Key: emergency
         Target: MotionEmergency
     Parent: ~
@@ -32,6 +35,9 @@ autoware_states_motion:
     Transition:
       -
         Key: return_from_emergency
+        Target: WaitDriveReady
+      -
+        Key: return_to_ready
         Target: WaitDriveReady
     Parent: ~
   -
