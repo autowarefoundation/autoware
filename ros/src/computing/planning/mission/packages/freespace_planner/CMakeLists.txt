@@ -40,6 +40,7 @@ target_link_libraries(astar_navi
 
 add_dependencies(astar_navi
   ${catkin_EXPORTED_TARGETS}
+  autoware_msgs_generate_messages_cpp
 )
 
 install(TARGETS astar_navi
