@@ -66,9 +66,8 @@ VehicleGazeboInputSubscriber::VehicleGazeboInputSubscriber() : nh_(""), pnh_("~"
 
 void VehicleGazeboInputSubscriber::twistStampedCallback(const geometry_msgs::TwistStamped::ConstPtr &input_twist_msg)
 {
-    std_msgs::Float64 output_wheel_right_rear, output_wheel_left_rear, output_steering_right_front, output_steering_left_front;
-    output_wheel_right_rear.data = input_twist_msg->twist.linear.x / wheel_radius_;
-    output_wheel_left_rear.data = input_twist_msg->twist.linear.x / wheel_radius_;
+    std_msgs::Float64 output_wheel_rear, output_steering_right_front, output_steering_left_front;
+    output_wheel_rear.data = input_twist_msg->twist.linear.x / wheel_radius_;
 
     double vref_rear = input_twist_msg->twist.linear.x;
     if (std::fabs(vref_rear) < 0.01)
@@ -86,17 +85,16 @@ void VehicleGazeboInputSubscriber::twistStampedCallback(const geometry_msgs::Twi
     output_steering_right_front.data = std::atan(std::tan(delta_ref) / (1.0 + (wheel_tread_ / (2.0 * wheel_base_)) * std::tan(delta_ref)));
     output_steering_left_front.data = std::atan(std::tan(delta_ref) / (1.0 - (wheel_tread_ / (2.0 * wheel_base_)) * std::tan(delta_ref)));
 
-    wheel_right_rear_pub_.publish(output_wheel_right_rear);
-    wheel_left_rear_pub_.publish(output_wheel_left_rear);
+    wheel_right_rear_pub_.publish(output_wheel_rear);
+    wheel_left_rear_pub_.publish(output_wheel_rear);
     steering_right_front_pub_.publish(output_steering_right_front);
     steering_left_front_pub_.publish(output_steering_left_front);
 }
 
 void VehicleGazeboInputSubscriber::twistCallback(const geometry_msgs::Twist::ConstPtr &input_twist_msg)
 {
-    std_msgs::Float64 output_wheel_right_rear, output_wheel_left_rear, output_steering_right_front, output_steering_left_front;
-    output_wheel_right_rear.data = input_twist_msg->linear.x / wheel_radius_;
-    output_wheel_left_rear.data = input_twist_msg->linear.x / wheel_radius_;
+    std_msgs::Float64 output_wheel_rear, output_steering_right_front, output_steering_left_front;
+    output_wheel_rear.data = input_twist_msg->linear.x / wheel_radius_;
 
     double vref_rear = input_twist_msg->linear.x;
     if (std::fabs(vref_rear) < 0.01)
@@ -114,8 +112,8 @@ void VehicleGazeboInputSubscriber::twistCallback(const geometry_msgs::Twist::Con
     output_steering_right_front.data = std::atan(std::tan(delta_ref) / (1.0 + (wheel_tread_ / (2.0 * wheel_base_)) * std::tan(delta_ref)));
     output_steering_left_front.data = std::atan(std::tan(delta_ref) / (1.0 - (wheel_tread_ / (2.0 * wheel_base_)) * std::tan(delta_ref)));
 
-    wheel_right_rear_pub_.publish(output_wheel_right_rear);
-    wheel_left_rear_pub_.publish(output_wheel_left_rear);
+    wheel_right_rear_pub_.publish(output_wheel_rear);
+    wheel_left_rear_pub_.publish(output_wheel_rear);
     steering_right_front_pub_.publish(output_steering_right_front);
     steering_left_front_pub_.publish(output_steering_left_front);
 }
@@ -138,26 +136,26 @@ void VehicleGazeboInputSubscriber::sterringAngleCallback(const std_msgs::Float64
 
 void VehicleGazeboInputSubscriber::velocityCallback(const std_msgs::Float64::ConstPtr &input_velocity_msg)
 {
-    wheel_right_rear_pub_.publish(input_velocity_msg);
-    wheel_left_rear_pub_.publish(input_velocity_msg);
+    std_msgs::Float64 output_wheel_rear;
+    output_wheel_rear.data = input_velocity_msg->data / wheel_radius_;
+    wheel_right_rear_pub_.publish(output_wheel_rear);
+    wheel_left_rear_pub_.publish(output_wheel_rear);
 }
 
 void VehicleGazeboInputSubscriber::controlCommandStampedCallback(const autoware_msgs::ControlCommandStamped::ConstPtr &input_msg)
 {
-    std_msgs::Float64 output_wheel_right_rear, output_wheel_left_rear, output_steering_right_front, output_steering_left_front;
+    std_msgs::Float64 output_wheel_rear, output_steering_right_front, output_steering_left_front;
 
     double delta_ref = input_msg->cmd.steering_angle;
     if (M_PI / 4.0 < std::fabs(delta_ref))
     {
         delta_ref = 0.0 < delta_ref ? M_PI / 4.0 : -M_PI / 4.0;
     }
-
     output_steering_right_front.data = std::atan(std::tan(delta_ref) / (1.0 + (wheel_tread_ / (2.0 * wheel_base_)) * std::tan(delta_ref)));
     output_steering_left_front.data = std::atan(std::tan(delta_ref) / (1.0 - (wheel_tread_ / (2.0 * wheel_base_)) * std::tan(delta_ref)));
-    output_wheel_right_rear.data = input_msg->cmd.linear_velocity;
-    output_wheel_left_rear.data = input_msg->cmd.linear_velocity;
-    wheel_right_rear_pub_.publish(output_wheel_right_rear);
-    wheel_left_rear_pub_.publish(output_wheel_left_rear);
+    output_wheel_rear.data = input_msg->cmd.linear_velocity / wheel_radius_;
+    wheel_right_rear_pub_.publish(output_wheel_rear);
+    wheel_left_rear_pub_.publish(output_wheel_rear);
     steering_right_front_pub_.publish(output_steering_right_front);
     steering_left_front_pub_.publish(output_steering_left_front);
 }
