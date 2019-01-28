@@ -34,6 +34,7 @@ target_link_libraries(can_status_translator
 
 add_dependencies(can_status_translator
         ${catkin_EXPORTED_TARGETS}
+        autoware_msgs_generate_messages_cpp
         )
 
 add_executable(can_odometry
@@ -47,6 +48,7 @@ target_link_libraries(can_odometry
 
 add_dependencies(can_odometry
         ${catkin_EXPORTED_TARGETS}
+        autoware_msgs_generate_messages_cpp
         )
 
 install(TARGETS can_status_translator
