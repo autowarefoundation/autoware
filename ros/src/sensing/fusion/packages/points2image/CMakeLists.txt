@@ -60,7 +60,10 @@ include_directories(
 add_library(points_image
         lib/points_image/points_image.cpp
         )
-add_dependencies(points_image ${catkin_EXPORTED_TARGETS})
+add_dependencies(points_image
+  ${catkin_EXPORTED_TARGETS}
+  autoware_msgs_generate_messages_cpp
+  )
 target_link_libraries(points_image
         ${OpenCV_LIBS}
         )

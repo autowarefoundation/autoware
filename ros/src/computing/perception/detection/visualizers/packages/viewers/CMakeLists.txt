@@ -29,7 +29,10 @@ target_link_libraries(image_viewer
         ${OpenCV_LIBRARIES}
         ${OPENGL_LIBRARIES}
         )
-add_dependencies(image_viewer ${catkin_EXPORTED_TARGETS})
+add_dependencies(image_viewer 
+  ${catkin_EXPORTED_TARGETS}
+  autoware_msgs_generate_messages_cpp
+  )
 
 add_executable(scan_image_viewer nodes/scan_image_viewer/scan_image_viewer.cpp)
 target_link_libraries(scan_image_viewer
@@ -37,7 +40,10 @@ target_link_libraries(scan_image_viewer
         ${OpenCV_LIBRARIES}
         ${OPENGL_LIBRARIES}
         )
-add_dependencies(scan_image_viewer ${catkin_EXPORTED_TARGETS})
+add_dependencies(scan_image_viewer 
+  ${catkin_EXPORTED_TARGETS}
+  autoware_msgs_generate_messages_cpp
+  )
 
 add_executable(scan_image_d_viewer nodes/scan_image_d_viewer/scan_image_d_viewer.cpp)
 target_link_libraries(scan_image_d_viewer
@@ -45,7 +51,10 @@ target_link_libraries(scan_image_d_viewer
         ${OpenCV_LIBRARIES}
         ${OPENGL_LIBRARIES}
         )
-add_dependencies(scan_image_d_viewer ${catkin_EXPORTED_TARGETS})
+add_dependencies(scan_image_d_viewer 
+  ${catkin_EXPORTED_TARGETS}
+  autoware_msgs_generate_messages_cpp
+  )
 
 add_executable(points_image_viewer nodes/points_image_viewer/points_image_viewer.cpp)
 target_link_libraries(points_image_viewer
@@ -53,7 +62,10 @@ target_link_libraries(points_image_viewer
         ${OpenCV_LIBRARIES}
         ${OPENGL_LIBRARIES}
         )
-add_dependencies(points_image_viewer ${catkin_EXPORTED_TARGETS})
+add_dependencies(points_image_viewer  
+  ${catkin_EXPORTED_TARGETS}
+  autoware_msgs_generate_messages_cpp
+  )
 
 add_executable(image_d_viewer nodes/image_d_viewer/image_d_viewer.cpp)
 target_link_libraries(image_d_viewer
@@ -61,7 +73,10 @@ target_link_libraries(image_d_viewer
         ${OpenCV_LIBRARIES}
         ${OPENGL_LIBRARIES}
         )
-add_dependencies(image_d_viewer ${catkin_EXPORTED_TARGETS})
+add_dependencies(image_d_viewer 
+  ${catkin_EXPORTED_TARGETS}
+  autoware_msgs_generate_messages_cpp
+  )
 
 add_executable(points_image_d_viewer nodes/points_image_d_viewer/points_image_d_viewer.cpp)
 target_link_libraries(points_image_d_viewer
@@ -69,7 +84,10 @@ target_link_libraries(points_image_d_viewer
         ${OpenCV_LIBRARIES}
         ${OPENGL_LIBRARIES}
         )
-add_dependencies(points_image_d_viewer ${catkin_EXPORTED_TARGETS})
+add_dependencies(points_image_d_viewer 
+  ${catkin_EXPORTED_TARGETS}
+  autoware_msgs_generate_messages_cpp
+  )
 
 add_executable(vscan_image_viewer nodes/vscan_image_viewer/vscan_image_viewer.cpp)
 target_link_libraries(vscan_image_viewer
@@ -77,7 +95,10 @@ target_link_libraries(vscan_image_viewer
         ${OpenCV_LIBRARIES}
         ${OPENGL_LIBRARIES}
         )
-add_dependencies(vscan_image_viewer ${catkin_EXPORTED_TARGETS})
+add_dependencies(vscan_image_viewer 
+  ${catkin_EXPORTED_TARGETS}
+  autoware_msgs_generate_messages_cpp
+  )
 
 add_executable(vscan_image_d_viewer nodes/vscan_image_d_viewer/vscan_image_d_viewer.cpp)
 target_link_libraries(vscan_image_d_viewer
@@ -85,7 +106,10 @@ target_link_libraries(vscan_image_d_viewer
         ${OpenCV_LIBRARIES}
         ${OPENGL_LIBRARIES}
         )
-add_dependencies(vscan_image_d_viewer ${catkin_EXPORTED_TARGETS})
+add_dependencies(vscan_image_d_viewer 
+  ${catkin_EXPORTED_TARGETS}
+  autoware_msgs_generate_messages_cpp
+  )
 
 include_directories(
         ${catkin_INCLUDE_DIRS}
@@ -98,7 +122,10 @@ target_link_libraries(traffic_light_viewer
         ${OpenCV_LIBRARIES}
         ${OPENGL_LIBRARIES}
         )
-add_dependencies(traffic_light_viewer ${catkin_EXPORTED_TARGETS})
+add_dependencies(traffic_light_viewer 
+  ${catkin_EXPORTED_TARGETS}
+  autoware_msgs_generate_messages_cpp
+  )
 
 install(TARGETS
         image_viewer

@@ -58,6 +58,7 @@ include_directories(
 add_library(libwaypoint_follower lib/libwaypoint_follower.cpp)
 add_dependencies(libwaypoint_follower
         ${catkin_EXPORTED_TARGETS}
+        autoware_msgs_generate_messages_cpp
         )
 target_link_libraries(libwaypoint_follower ${catkin_LIBRARIES})
 
@@ -82,7 +83,8 @@ add_dependencies(twist_filter
 add_executable(twist_gate nodes/twist_gate/twist_gate.cpp)
 target_link_libraries(twist_gate ${catkin_LIBRARIES})
 add_dependencies(twist_gate
-        ${catkin_EXPORTED_TARGETS})
+        ${catkin_EXPORTED_TARGETS}
+        autoware_msgs_generate_messages_cpp)
 
 ## Install executables and/or libraries
 install(TARGETS libwaypoint_follower pure_pursuit wf_simulator twist_filter twist_gate

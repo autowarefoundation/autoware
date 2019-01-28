@@ -40,6 +40,7 @@ add_executable(lidar_naive_l_shape_detect ${SOURCE_FILES})
 
 add_dependencies(lidar_naive_l_shape_detect
         ${catkin_EXPORTED_TARGETS}
+        autoware_msgs_generate_messages_cpp
         )
 
 target_link_libraries(lidar_naive_l_shape_detect ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})

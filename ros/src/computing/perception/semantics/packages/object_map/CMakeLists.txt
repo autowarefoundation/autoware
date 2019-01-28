@@ -75,6 +75,7 @@ add_executable(potential_field
         )
 add_dependencies(potential_field
         ${catkin_EXPORTED_TARGETS}
+        autoware_msgs_generate_messages_cpp
         )
 target_link_libraries(potential_field
         ${catkin_LIBRARIES}
