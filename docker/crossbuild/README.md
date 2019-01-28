@@ -20,8 +20,8 @@ $ ./build_cross_image.sh synquacer
 $ cd Autoware/ros/
 
 # generic-aarch64
-$ ./catkin_make_release_cross generic-aarch64
+$ ./colcon_release_cross generic-aarch64
 
 # synquacer
-$ ./catkin_make_release_cross synquacer
+$ ./colcon_release_cross synquacer
 ```

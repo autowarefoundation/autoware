@@ -1,0 +1,16 @@
+<launch>
+  <arg name="DEVICE" default="/dev/video0"/> <!--change this to the correct video device -->
+  <arg name="FPS" default="30"/>
+  <arg name="WIDTH" default="640"/>
+  <arg name="HEIGHT" default="512"/>
+  <arg name="NS" default="flir_adk"/>
+
+  <node ns="$(arg NS)" name="flir_adk_01" pkg="gscam" type="gscam" output="screen">
+    <param name="camera_name" value="flir"/>
+    <param name="gscam_config"
+           value="v4l2src device=$(arg DEVICE) ! video/x-raw-yuv,framerate=$(arg FPS)/1,width=$(arg WIDTH),height=$(arg HEIGHT) ! ffmpegcolorspace "/>
+    <param name="frame_id" value="$(arg NS)"/>
+    <param name="sync_sink" value="true"/>
+    <remap from="/$(arg NS)/camera/camera_info" to="not_camera_info"/> <!-- Ignore original camera_info topic -->
+  </node>
+</launch>

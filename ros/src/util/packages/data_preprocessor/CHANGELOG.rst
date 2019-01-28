@@ -2,6 +2,24 @@
 Changelog for package data_preprocessor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.10.0 (2019-01-17)
+-------------------
+* Delete mysterious outputs
+* Use colcon as the build tool (`#1704 <https://github.com/kfunaoka/Autoware/issues/1704>`_)
+  * Switch to colcon as the build tool instead of catkin
+  * Added cmake-target
+  * Added note about the second colcon call
+  * Added warning about catkin* scripts being deprecated
+  * Fix COLCON_OPTS
+  * Added install targets
+  * Update Docker image tags
+  * Message packages fixes
+  * Fix missing dependency
+* Fix Ros/ROS naming convention
+* Fix Dpm/DPM naming convention
+* Fix Ndt/NDT naming convention
+* Contributors: Esteve Fernandez, Kenji Funaoka
+
 1.9.1 (2018-11-06)
 ------------------
 

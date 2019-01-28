@@ -32,6 +32,12 @@ subs :
         probe:
         run  : roslaunch pointgrey_camera_driver camera.launch
 
+      - name : FLIR ADK
+        desc : Driver for Boson FLIR Thermal camera
+        probe:
+        run  : roslaunch autoware_pointgrey_drivers flir_adk.launch
+        param: fliradk_params
+
       - name : PointGrey LadyBug 5
         desc : PointGrey LadyBug 5 desc sample
         probe:
@@ -362,12 +368,6 @@ cmds:
         dialog_height : 450
 
 buttons:
-  calibration_toolkit :
-    desc  : calibration_toolkit desc sample
-    run   : rosrun calibration_camera_lidar calibration_toolkit
-    gui   :
-      flags : [ SIGTERM ]
-
   calibration_publisher :
     desc  : calibration_publisher desc sample
     run   : roslaunch runtime_manager calibration_publisher.launch
@@ -410,11 +410,6 @@ buttons:
         flags : [ all ]
       sync :
         func : self.button_synchronization.GetValue()
-
-  scan_image :
-    desc  : scan_image desc sample
-    run   : rosrun scan2image scan2image
-    #param : scan_image
 
   virtual_scan_image :
     desc  : virtual_scan_image desc sample
@@ -1043,8 +1038,7 @@ params :
     - name      : image_topic_src
       desc      : Adds the Camera info to this image topic. Default /image_raw
       label     : image topic source
-      kind  : topic
-      topic_type : sensor_msgs/Image
+      kind      : str
       v         : '/image_raw'
       cmd_param :
         dash      : ''
@@ -1646,6 +1640,48 @@ params :
       min   : -3.14157
       max   : 3.14157
       v     : 0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
+  - name  : fliradk_params
+    vars  :
+    - name  : DEVICE
+      label : Device
+      desc  : System Device name /dev/videoX
+      kind  : str
+      v     : /dev/video0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : FPS
+      label : FPS
+      desc  : FPS Acquisition (Default 30)
+      min   : 1
+      max   : 100
+      v     : 30
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : WIDTH
+      label : Width
+      desc  : Image Width (Default 640)
+      v     : 640
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : HEIGHT
+      label : Height
+      desc  : Image Height (Default 512)
+      v     : 512
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : NS
+      label : Frame
+      desc  : Camera Frame to register in TF (Default flir_adk)
+      kind  : str
+      v     : flir_adk
       cmd_param :
         dash        : ''
         delim       : ':='
