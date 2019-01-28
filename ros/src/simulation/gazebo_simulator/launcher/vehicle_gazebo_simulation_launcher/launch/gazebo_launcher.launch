@@ -4,10 +4,19 @@
   <arg name="model" default="$(find vehicle_model)/urdf/vehicle.xacro"/>
   <arg name="ns" default="/autoware_gazebo"/>
   <arg name="gpu" default="false"/>
+  <arg name="world_name" default="mcity"/>
   <param name="robot_description" command="$(find xacro)/xacro.py --inorder $(arg model) gpu:=$(arg gpu)" />
 
+  <!-- world file -->
+  <arg name="world_file_name" default="worlds/empty.world" if="$(eval world_name=='empty')" />
+  <arg name="world_file_name" default="$(find gazebo_world_description)/worlds/autoware.world" if="$(eval world_name=='simple')" />
+  <arg name="world_file_name" default="$(find gazebo_world_description)/worlds/mcity_r1.world" if="$(eval world_name=='mcity')" />
+  <arg name="world_file_name" default="$(find gazebo_world_description)/worlds/citysim_gazebo7.world" if="$(eval world_name=='citysim_gazebo7')" />
+  <arg name="world_file_name" default="$(find gazebo_world_description)/worlds/citysim_gazebo9.world" if="$(eval world_name=='citysim_gazebo9')" />
+
+  <!-- launch gazebo -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" default="$(find gazebo_world_description)/worlds/mcity_r1.world"/> 
+    <arg name="world_name" default="$(arg world_file_name)"/> 
     <arg name="paused" value="false"/>
     <arg name="use_sim_time" value="true"/>
     <arg name="gui" value="true"/>
@@ -15,7 +24,7 @@
     <arg name="debug" value="false"/>
   </include>
 
-  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -x 3 -y -12 -z 0.5 -model autoware_gazebo" />
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model autoware_gazebo" />
 
   <group ns="$(arg ns)">
     <!-- Load joint controller configurations from YAML file to parameter server -->
