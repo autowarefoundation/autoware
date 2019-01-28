@@ -1,10 +1,12 @@
-# Get Numpy include directories
-execute_process(
-  COMMAND python -c "import sys, numpy; sys.stdout.write(numpy.get_include())"
-  OUTPUT_VARIABLE Numpy_INCLUDE_DIRS
-  RESULT_VARIABLE retcode)
-if(NOT ${retcode} EQUAL 0)
-  message(FATAL_ERROR "Failed to get Numpy include dirs by numpy.get_include(). Exit code: ${retcode}")
+if(NOT DEFINED Numpy_INCLUDE_DIRS)
+  # Get Numpy include directories
+  execute_process(
+    COMMAND python -c "import sys, numpy; sys.stdout.write(numpy.get_include())"
+    OUTPUT_VARIABLE Numpy_INCLUDE_DIRS
+    RESULT_VARIABLE retcode)
+  if(NOT ${retcode} EQUAL 0)
+    message(FATAL_ERROR "Failed to get Numpy include dirs by numpy.get_include(). Exit code: ${retcode}")
+  endif()
 endif()
 # Compile nms.pyx
 include_directories(${Numpy_INCLUDE_DIRS})
