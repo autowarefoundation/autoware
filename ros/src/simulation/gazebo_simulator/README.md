@@ -9,7 +9,7 @@ The following sensors are simulated.
 # Requirements
 - ROS (higher kinetic)
 - gazebo (higher version 7)
-- CUDA (optional)
+- CUDA (Optional but requires GPU by default)
 
 # Setup
 1. upgrade gazebo version and download gazebo models(**only once**)
@@ -44,7 +44,7 @@ $ roslaunch vehicle_gazebo_simulation_launcher gazebo_launcher.launch world_name
 ```
 [![](https://img.youtube.com/vi/wIzZ25XJI2M/0.jpg)](https://www.youtube.com/watch?v=wIzZ25XJI2M)
 
-## 
+##  Download pointcloud map
 If you need pointcloud map and path files, you can [download](https://drive.google.com/open?id=1yu8s885HDkJp3IbMV06KWim2ZdUxIoIF).  
 
 # How to change vehicle info
