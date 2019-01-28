@@ -34,5 +34,7 @@ Computing Tab -> Detection/ lidar_detector -> `cnn_segmenter_baidu`
 
 ## Notes
 
-To display the results in Rviz `objects_visualizer` is required.
+* To display the results in Rviz `objects_visualizer` is required.
 (Launch file launches automatically this node).
+
+* Pre trained models can be downloaded from the Apollo project repository.

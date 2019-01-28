@@ -72,6 +72,9 @@ if (EXISTS "${CAFFE_PATH}")
             LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
             RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
             )
+    install(DIRECTORY launch/
+            DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+            PATTERN ".svn" EXCLUDE)
 else ()
     message("'Caffe' is not installed. 'lidar_apollo_cnn_seg_detect' will not be built.")
 endif ()
