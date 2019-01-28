@@ -4,7 +4,7 @@ namespace ros
 {
     template <typename T>
     ProtectedSubscriber::ProtectedSubscriber(std::vector<std::string> publisher_nodes,std::string topic_name,int buffer_length,double warn_rate,double error_rate,double fatal_rate,
-        boost::shared_ptr<autoware_health_checker::NodeStatusPublisher> node_status_publisher_ptr, std::function<void(T)> callback) : topic_name(topic_name)
+        boost::shared_ptr<autoware_health_checker::NodeStatusPublisher> node_status_publisher_ptr, boost::function<void(T)> callback) : topic_name(topic_name)
     {
         is_advertised_ = false;
         buffer_length_ = buffer_length;

@@ -10,9 +10,7 @@
 
 //headers in boost
 #include <boost/shared_ptr.hpp>
-
-//headers in STL
-#include <functional>
+#include <boost/function.hpp>
 
 namespace ros
 {
@@ -21,7 +19,7 @@ namespace ros
     public:
         template <typename T>
         ProtectedSubscriber(std::vector<std::string> publisher_nodes,std::string topic_name,int buffer_length,double warn_rate,double error_rate,double fatal_rate,
-            boost::shared_ptr<autoware_health_checker::NodeStatusPublisher> node_status_publisher_ptr,std::function<void(T)> callback);
+            boost::shared_ptr<autoware_health_checker::NodeStatusPublisher> node_status_publisher_ptr,boost::function<void(T)> callback);
         ~ProtectedSubscriber();
         const std::string topic_name;
     private:
