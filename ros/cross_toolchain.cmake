@@ -29,3 +29,8 @@ set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 # (this emulates that the return of the TRY_RUN is a return code "0"
 set(THREADS_PTHREAD_ARG "0"
   CACHE STRING "Result from TRY_RUN" FORCE)
+
+set(Numpy_INCLUDE_DIRS "${CMAKE_SYSROOT}/usr/lib/python2.7/dist-packages/numpy/core/include")
+
+set(CYTHON_EXECUTABLE $ENV{AUTOWARE_CYTHON_EXECUTABLE})
+set(CUDA_ARCH $ENV{AUTOWARE_CUDA_ARCH})
