@@ -30,6 +30,9 @@ autoware_states_drive:
       -
         Key: return_from_emergency
         Target: WaitEngage
+      -
+        Key: return_to_ready
+        Target: WaitEngage
     Parent: ~
   -
     StateName: Drive
