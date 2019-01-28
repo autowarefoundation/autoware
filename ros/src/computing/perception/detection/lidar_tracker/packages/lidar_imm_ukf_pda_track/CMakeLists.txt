@@ -31,8 +31,6 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   include)
 
-link_directories(${PCL_LIBRARY_DIRS})
-
 #imm_ukf_pda
 add_executable(imm_ukf_pda
         nodes/imm_ukf_pda/imm_ukf_pda_main.cpp
@@ -41,7 +39,6 @@ add_executable(imm_ukf_pda
         )
 target_link_libraries(imm_ukf_pda
         ${catkin_LIBRARIES}
-        ${PCL_LIBRARIES}
         )
 add_dependencies(imm_ukf_pda
         ${catkin_EXPORTED_TARGETS}

@@ -79,6 +79,10 @@ if (LIBSSH2_FOUND)
 
     install(DIRECTORY include
             DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+
+    install(FILES model/prius_model.dae
+            DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/model/
+            )
 else()
     message("LibSSH2 not found. pos_db package won't be built.")
 endif()

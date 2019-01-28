@@ -54,7 +54,6 @@ include_directories(
         ${autoware_msgs_INCLUDE_DIRS}
         ${OpenCV_INCLUDE_DIRS}
 )
-link_directories(${PCL_LIBRARY_DIRS})
 link_directories(${OpenCV_LIBRARY_DIRS})
 
 #Euclidean Cluster
@@ -82,7 +81,6 @@ if (${CUDA_FOUND})
     target_link_libraries(lidar_euclidean_cluster_detect
             ${OpenCV_LIBRARIES}
             ${catkin_LIBRARIES}
-            ${PCL_LIBRARIES}
             ${YAML_CPP_LIBRARIES}
             gpu_euclidean_clustering)
 
@@ -97,7 +95,6 @@ else ()
     target_link_libraries(lidar_euclidean_cluster_detect
             ${OpenCV_LIBRARIES}
             ${catkin_LIBRARIES}
-            ${PCL_LIBRARIES}
             ${YAML_CPP_LIBRARIES})
 
 endif ()

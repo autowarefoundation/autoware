@@ -42,6 +42,9 @@ if (EXISTS "/usr/include/flycapture")
             LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
             RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
             )
+    install(DIRECTORY scripts/
+            DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+            PATTERN ".svn" EXCLUDE)
 
 else ()
     message("'FlyCapture SDK' is not installed. 'grasshopper3_camera' will not be built.")
@@ -81,6 +84,9 @@ if (EXISTS "/usr/include/ladybug")
             LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
             RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
             )
+    install(DIRECTORY scripts/
+            DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+            PATTERN ".svn" EXCLUDE)
 else ()
     message("'SDK for Ladybug' is not installed. 'ladybug_camera' will not be built.")
 endif ()

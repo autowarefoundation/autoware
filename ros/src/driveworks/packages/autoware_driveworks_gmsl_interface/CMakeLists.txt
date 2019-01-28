@@ -89,6 +89,9 @@ if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64" AND CUDA_FOUND)
         nodelet_gmsl_camera.xml
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
     )
+    install(DIRECTORY launch/
+            DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+            PATTERN ".svn" EXCLUDE)
 
 else()
     find_package(catkin REQUIRED)

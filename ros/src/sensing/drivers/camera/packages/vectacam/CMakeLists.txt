@@ -48,5 +48,5 @@ install(TARGETS
         )
 
 install(DIRECTORY scripts/
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/scripts
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
         PATTERN ".svn" EXCLUDE)
