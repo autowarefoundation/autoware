@@ -13,6 +13,12 @@
   <arg name="world_file_name" default="$(find gazebo_world_description)/worlds/mcity_r1.world" if="$(eval world_name=='mcity')" />
   <arg name="world_file_name" default="$(find gazebo_world_description)/worlds/citysim_gazebo7.world" if="$(eval world_name=='citysim_gazebo7')" />
   <arg name="world_file_name" default="$(find gazebo_world_description)/worlds/citysim_gazebo9.world" if="$(eval world_name=='citysim_gazebo9')" />
+  <!-- spawn model flag-->
+  <arg name="spawn_model_flag" default="" if="$(eval world_name=='empty')" />
+  <arg name="spawn_model_flag" default=""  if="$(eval world_name=='simple')" />
+  <arg name="spawn_model_flag" default="-x 3 -y -12 -z 0.5" if="$(eval world_name=='mcity')" />
+  <arg name="spawn_model_flag" default="" if="$(eval world_name=='citysim_gazebo7')" />
+  <arg name="spawn_model_flag" default="" if="$(eval world_name=='citysim_gazebo9')" />
 
   <!-- launch gazebo -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
@@ -24,7 +30,7 @@
     <arg name="debug" value="false"/>
   </include>
 
-  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model autoware_gazebo" />
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description $(arg spawn_model_flag) -urdf -model autoware_gazebo" />
 
   <group ns="$(arg ns)">
     <!-- Load joint controller configurations from YAML file to parameter server -->
