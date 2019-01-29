@@ -5,7 +5,7 @@
       <material>Gazebo/Red</material>
       <mu1 value="100000.0" />
       <mu2 value="100000.0" />
-   		<kp value="1000000.0" />
+   	  <kp value="1000000.0" />
       <kd value="1.0" />
       <minDepth value="0.01" />
       <maxVel  value="10.0" /> 
