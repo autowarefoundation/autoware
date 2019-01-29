@@ -4,5 +4,5 @@ ARG AUTOWARE_TARGET_PLATFORM
 FROM autoware/build:${AUTOWARE_TARGET_PLATFORM}-melodic-20190116
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential
-COPY files/FindCUDA.cmake /usr/share/cmake-3.5/Modules/FindCUDA.cmake
+COPY files/FindCUDA.cmake /usr/share/cmake-3.10/Modules/FindCUDA.cmake
 CMD . /opt/ros/melodic/setup.sh && /bin/bash

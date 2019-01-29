@@ -2,12 +2,16 @@ ARG AUTOWARE_DOCKER_ARCH
 ARG AUTOWARE_TARGET_ARCH
 FROM multiarch/alpine:${AUTOWARE_TARGET_ARCH}-latest-stable AS bootstrap
 
-FROM ${AUTOWARE_DOCKER_ARCH}/ubuntu:16.04 AS sysroot
+FROM ${AUTOWARE_DOCKER_ARCH}/ubuntu:18.04 AS sysroot
 ARG AUTOWARE_TARGET_ARCH
 
 COPY --from=bootstrap /usr/bin/qemu-${AUTOWARE_TARGET_ARCH}-static /usr/bin/qemu-${AUTOWARE_TARGET_ARCH}-static
 
-RUN echo "deb http://packages.ros.org/ros/ubuntu xenial main" | tee /etc/apt/sources.list.d/ros-latest.list
+RUN apt-get update
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gnupg
+
+RUN echo "deb http://packages.ros.org/ros/ubuntu bionic main" | tee /etc/apt/sources.list.d/ros-latest.list
 RUN apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -36,7 +40,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libopencv-dev \
     libpcap0.8-dev \
     libpcl-dev \
-    libpcl1.7 \
     libqt5core5a \
     libqt5gui5 \
     libqt5opengl5 \
@@ -68,9 +71,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-melodic-filters \
     ros-melodic-geometry-msgs \
     ros-melodic-gps-common \
-    ros-melodic-grid-map-cv \
-    ros-melodic-grid-map-msgs \
-    ros-melodic-grid-map-ros \
     ros-melodic-gscam \
     ros-melodic-image-geometry \
     ros-melodic-image-transport \
@@ -79,8 +79,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-melodic-jsk-footstep-msgs \
     ros-melodic-jsk-gui-msgs \
     ros-melodic-jsk-hark-msgs \
-    ros-melodic-jsk-recognition-msgs \
-    ros-melodic-jsk-rviz-plugins \
     ros-melodic-jsk-tools \
     ros-melodic-jsk-topic-tools \
     ros-melodic-message-filters \
@@ -127,7 +125,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN find / -depth -xdev -type l -lname '/*' -exec sh -c 'linkpath="$(readlink {})" && rm -f {} && ln -frsv "$linkpath" "{}"' \;
 
-FROM ubuntu:16.04 AS builder
+FROM ubuntu:18.04 AS builder
 ARG AUTOWARE_TARGET_ARCH
 ARG AUTOWARE_TARGET_PLATFORM
 ENV AUTOWARE_SYSROOT /sysroot/${AUTOWARE_TARGET_PLATFORM}
@@ -137,7 +135,10 @@ COPY --from=sysroot /usr/lib ${AUTOWARE_SYSROOT}/usr/lib
 COPY --from=sysroot /usr/share/pkgconfig ${AUTOWARE_SYSROOT}/usr/share/pkgconfig
 COPY --from=sysroot /opt ${AUTOWARE_SYSROOT}/opt
 COPY --from=sysroot /etc/alternatives ${AUTOWARE_SYSROOT}/etc/alternatives
-RUN echo "deb http://packages.ros.org/ros/ubuntu xenial main" | tee /etc/apt/sources.list.d/ros-latest.list
+RUN apt-get update
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gnupg
+RUN echo "deb http://packages.ros.org/ros/ubuntu bionic main" | tee /etc/apt/sources.list.d/ros-latest.list
 RUN apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
 RUN apt-get update && apt-get install -y --no-install-recommends \
     cython \
