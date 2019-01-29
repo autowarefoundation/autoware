@@ -70,14 +70,14 @@ void VehicleGazeboInputSubscriber::twistStampedCallback(const geometry_msgs::Twi
     output_wheel_rear.data = input_twist_msg->twist.linear.x / wheel_radius_;
 
     double vref_rear = input_twist_msg->twist.linear.x;
-    if (std::fabs(vref_rear) < 0.01)
+    if (std::fabs(vref_rear) < 0.01) // Prevent zero division when calculating ackerman steering
     {
         vref_rear = 0.0 < vref_rear ? 0.01 : -0.01;
     }
 
     double delta_ref = std::atan(input_twist_msg->twist.angular.z * wheel_base_ / vref_rear);
     delta_ref = 0.0 < vref_rear ? delta_ref : -delta_ref;
-    if (M_PI / 4.0 < std::fabs(delta_ref))
+    if (M_PI / 4.0 < std::fabs(delta_ref)) // It is a constraint that the theory does not turn more than 90 degrees
     {
         delta_ref = 0.0 < delta_ref ? M_PI / 4.0 : -M_PI / 4.0;
     }
@@ -97,14 +97,14 @@ void VehicleGazeboInputSubscriber::twistCallback(const geometry_msgs::Twist::Con
     output_wheel_rear.data = input_twist_msg->linear.x / wheel_radius_;
 
     double vref_rear = input_twist_msg->linear.x;
-    if (std::fabs(vref_rear) < 0.01)
+    if (std::fabs(vref_rear) < 0.01) // Prevent zero division when calculating ackerman steering
     {
         vref_rear = 0.0 < vref_rear ? 0.01 : -0.01;
     }
 
     double delta_ref = std::atan(input_twist_msg->angular.z * wheel_base_ / vref_rear);
     delta_ref = 0.0 < vref_rear ? delta_ref : -delta_ref;
-    if (M_PI / 4.0 < std::fabs(delta_ref))
+    if (M_PI / 4.0 < std::fabs(delta_ref)) // It is a constraint that the theory does not turn more than 90 degrees
     {
         delta_ref = 0.0 < delta_ref ? M_PI / 4.0 : -M_PI / 4.0;
     }
