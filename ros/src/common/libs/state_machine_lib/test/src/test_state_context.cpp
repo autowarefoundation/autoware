@@ -26,9 +26,7 @@
 class TestClass
 {
 public:
-  TestClass(){
-    counter_ = 0;
-  }
+  TestClass() : counter_(0) {}
 
   int counter_;
   void increaseCounter(const std::string&)

@@ -91,7 +91,7 @@ public:
     CallbackExitFunc = _f;
   }
 
-  std::string getStateName(void)
+  const std::string & getStateName(void) const
   {
     return state_name_;
   }
