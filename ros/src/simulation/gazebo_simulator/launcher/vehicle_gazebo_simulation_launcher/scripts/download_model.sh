@@ -21,5 +21,5 @@ echo "Install osrf_citysim models"
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 cp -rn $SCRIPT_DIR/../../../worlds/external/osrf_citysim/models/* ~/.gazebo/models/
 
-echo "Install card_demo models"
+echo "Install car_demo models"
 cp -rn $SCRIPT_DIR/../../../worlds/external/car_demo/car_demo/models/* ~/.gazebo/models/
