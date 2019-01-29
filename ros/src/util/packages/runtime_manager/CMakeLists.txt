@@ -5,6 +5,10 @@ find_package(catkin REQUIRED COMPONENTS
         rospy
         )
 
+catkin_package(
+        CATKIN_DEPENDS rospy std_msgs message_runtime
+)
+
 catkin_install_python(PROGRAMS
         scripts/ftrace.py
         scripts/proc_manager.py
@@ -85,7 +89,4 @@ install(FILES
         #DESTINATION share/${PROJECT_NAME}/launch_files
         )
 
-catkin_package(
-        CATKIN_DEPENDS rospy std_msgs message_runtime
-)
 
