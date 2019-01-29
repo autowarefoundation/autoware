@@ -34,7 +34,6 @@ install(FILES
         scripts/main.yaml
         scripts/map.yaml
         scripts/qs.yaml
-        scripts/param.yaml
         scripts/rtmgr_icon.xpm
         scripts/rtmgr.wxg
         scripts/sensing.yaml
