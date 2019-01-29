@@ -9,10 +9,10 @@ Autoware users skip this step.
 $ cd Autoware/docker/crossbuild/
 
 # generic-aarch64
-$ ./build_cross_image.sh generic-aarch64
+$ ./build_cross_image.sh kinetic generic-aarch64
 
 # synquacer
-$ ./build_cross_image.sh synquacer
+$ ./build_cross_image.sh kinetic synquacer
 ```
 
 ## How to Build Cross
@@ -20,8 +20,8 @@ $ ./build_cross_image.sh synquacer
 $ cd Autoware/ros/
 
 # generic-aarch64
-$ ./colcon_release_cross generic-aarch64
+$ ./colcon_release_cross kinetic generic-aarch64
 
 # synquacer
-$ ./colcon_release_cross synquacer
+$ ./colcon_release_cross kinetic synquacer
 ```
