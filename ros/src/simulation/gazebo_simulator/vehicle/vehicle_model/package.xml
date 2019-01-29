@@ -7,7 +7,7 @@
 
   <maintainer email="yukky.saito@gmail.com">yukihiro saito</maintainer>
 
-  <license>Apache2.0</license>
+  <license>Apache 2</license>
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>gazebo_ros_control</build_depend>
