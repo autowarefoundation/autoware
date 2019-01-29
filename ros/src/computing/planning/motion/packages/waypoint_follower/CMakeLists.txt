@@ -82,7 +82,7 @@ target_link_libraries(twist_filter ${catkin_LIBRARIES})
 add_dependencies(twist_filter
         ${catkin_EXPORTED_TARGETS})
 
-add_executable(twist_gate nodes/twist_gate/twist_gate.cpp)
+add_executable(twist_gate nodes/twist_gate/twist_gate_node.cpp nodes/twist_gate/twist_gate.cpp)
 target_link_libraries(twist_gate ${catkin_LIBRARIES})
 add_dependencies(twist_gate
         ${catkin_EXPORTED_TARGETS})
