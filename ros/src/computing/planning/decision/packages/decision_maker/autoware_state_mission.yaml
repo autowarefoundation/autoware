@@ -105,5 +105,5 @@ autoware_states_mission:
         Target: WaitVehicleReady
       -
         Key: return_to_ready
-        Target: MissionCheck
+        Target: DriveReady
     Parent: ~
