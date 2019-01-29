@@ -38,7 +38,7 @@ autoware_states_motion:
         Target: WaitDriveReady
       -
         Key: return_to_ready
-        Target: WaitDriveReady
+        Target: WaitEngage
     Parent: ~
   -
     StateName: Drive
