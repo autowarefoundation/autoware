@@ -70,16 +70,18 @@ void VehicleGazeboInputSubscriber::twistStampedCallback(const geometry_msgs::Twi
     output_wheel_rear.data = input_twist_msg->twist.linear.x / wheel_radius_;
 
     double vref_rear = input_twist_msg->twist.linear.x;
-    if (std::fabs(vref_rear) < 0.01) // Prevent zero division when calculating ackerman steering
+    constexpr double min_vref_rear = 0.01;
+    if (std::fabs(vref_rear) < min_vref_rear) // Prevent zero division when calculating ackerman steering
     {
-        vref_rear = 0.0 < vref_rear ? 0.01 : -0.01;
+        vref_rear = 0.0 < vref_rear ? min_vref_rear : -min_vref_rear;
     }
 
     double delta_ref = std::atan(input_twist_msg->twist.angular.z * wheel_base_ / vref_rear);
     delta_ref = 0.0 < vref_rear ? delta_ref : -delta_ref;
-    if (M_PI / 4.0 < std::fabs(delta_ref)) // It is a constraint that the theory does not turn more than 90 degrees
+    constexpr double max_delta_ref = M_PI / 4.0;
+    if (max_delta_ref < std::fabs(delta_ref)) // It is a constraint that the theory does not turn more than 90 degrees
     {
-        delta_ref = 0.0 < delta_ref ? M_PI / 4.0 : -M_PI / 4.0;
+        delta_ref = 0.0 < delta_ref ? max_delta_ref : -max_delta_ref;
     }
 
     output_steering_right_front.data = std::atan(std::tan(delta_ref) / (1.0 + (wheel_tread_ / (2.0 * wheel_base_)) * std::tan(delta_ref)));
@@ -97,16 +99,18 @@ void VehicleGazeboInputSubscriber::twistCallback(const geometry_msgs::Twist::Con
     output_wheel_rear.data = input_twist_msg->linear.x / wheel_radius_;
 
     double vref_rear = input_twist_msg->linear.x;
-    if (std::fabs(vref_rear) < 0.01) // Prevent zero division when calculating ackerman steering
+    constexpr double min_vref_rear = 0.01;
+    if (std::fabs(vref_rear) < min_vref_rear) // Prevent zero division when calculating ackerman steering
     {
-        vref_rear = 0.0 < vref_rear ? 0.01 : -0.01;
+        vref_rear = 0.0 < vref_rear ? min_vref_rear : -min_vref_rear;
     }
 
     double delta_ref = std::atan(input_twist_msg->angular.z * wheel_base_ / vref_rear);
     delta_ref = 0.0 < vref_rear ? delta_ref : -delta_ref;
-    if (M_PI / 4.0 < std::fabs(delta_ref)) // It is a constraint that the theory does not turn more than 90 degrees
+    constexpr double max_delta_ref = M_PI / 4.0;
+    if (max_delta_ref < std::fabs(delta_ref)) // It is a constraint that the theory does not turn more than 90 degrees
     {
-        delta_ref = 0.0 < delta_ref ? M_PI / 4.0 : -M_PI / 4.0;
+        delta_ref = 0.0 < delta_ref ? max_delta_ref : -max_delta_ref;
     }
 
     output_steering_right_front.data = std::atan(std::tan(delta_ref) / (1.0 + (wheel_tread_ / (2.0 * wheel_base_)) * std::tan(delta_ref)));
@@ -123,9 +127,10 @@ void VehicleGazeboInputSubscriber::sterringAngleCallback(const std_msgs::Float64
     std_msgs::Float64 output_steering_right_front, output_steering_left_front;
 
     double delta_ref = input_steering_angle_msg->data;
-    if (M_PI / 4.0 < std::fabs(delta_ref))
+    constexpr double max_delta_ref = M_PI / 4.0;
+    if (max_delta_ref < std::fabs(delta_ref)) // It is a constraint that the theory does not turn more than 90 degrees
     {
-        delta_ref = 0.0 < delta_ref ? M_PI / 4.0 : -M_PI / 4.0;
+        delta_ref = 0.0 < delta_ref ? max_delta_ref : -max_delta_ref;
     }
     output_steering_right_front.data = std::atan(std::tan(delta_ref) / (1.0 + (wheel_tread_ / (2.0 * wheel_base_)) * std::tan(delta_ref)));
     output_steering_left_front.data = std::atan(std::tan(delta_ref) / (1.0 - (wheel_tread_ / (2.0 * wheel_base_)) * std::tan(delta_ref)));
@@ -147,9 +152,10 @@ void VehicleGazeboInputSubscriber::controlCommandStampedCallback(const autoware_
     std_msgs::Float64 output_wheel_rear, output_steering_right_front, output_steering_left_front;
 
     double delta_ref = input_msg->cmd.steering_angle;
-    if (M_PI / 4.0 < std::fabs(delta_ref))
+    constexpr double max_delta_ref = M_PI / 4.0;
+    if (max_delta_ref < std::fabs(delta_ref)) // It is a constraint that the theory does not turn more than 90 degrees
     {
-        delta_ref = 0.0 < delta_ref ? M_PI / 4.0 : -M_PI / 4.0;
+        delta_ref = 0.0 < delta_ref ? max_delta_ref : -max_delta_ref;
     }
     output_steering_right_front.data = std::atan(std::tan(delta_ref) / (1.0 + (wheel_tread_ / (2.0 * wheel_base_)) * std::tan(delta_ref)));
     output_steering_left_front.data = std::atan(std::tan(delta_ref) / (1.0 - (wheel_tread_ / (2.0 * wheel_base_)) * std::tan(delta_ref)));
