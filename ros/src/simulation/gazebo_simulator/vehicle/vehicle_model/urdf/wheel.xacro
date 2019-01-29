@@ -6,7 +6,7 @@
     <joint name="${suffix}_joint" type="continuous">
       <origin rpy="0 0 ${pi/2}" xyz="${x} ${y} 0"/>
       <parent link="${parent}"/>
-      <child  link="${suffix}_link"/>
+      <child link="${suffix}_link"/>
       <axis xyz="1 0 0"/>
       <dynamics damping="0.1"/>
       <limit effort="50000" velocity="50" />
@@ -27,7 +27,7 @@
       <inertial>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <mass value="${mass}"/>
-        <inertia ixx="${mass*radius*radius/2}"  ixy="0"  ixz="0" iyy="${radius*radius*mass/4+width*width*mass/12}" iyz="0" izz="${radius*radius*mass/4+width*width*mass/12}" />
+        <inertia ixx="${mass*radius*radius/2}" ixy="0" ixz="0" iyy="${radius*radius*mass/4+width*width*mass/12}" iyz="0" izz="${radius*radius*mass/4+width*width*mass/12}" />
       </inertial>
       <collision>
         <origin xyz="0 0 0" rpy="0 ${pi/2} 0"/>
@@ -36,5 +36,5 @@
         </geometry>
       </collision>
     </link>
-  </xacro:macro>  
+  </xacro:macro>
 </robot>
