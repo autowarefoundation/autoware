@@ -19,15 +19,19 @@
 SSCInterface::SSCInterface() : nh_(), private_nh_("~"), engage_(false), command_initialized_(false)
 {
   // setup parameters
-  // NOTE: max steering wheel rotation rate = 6.28 [rad/s]
   private_nh_.param<bool>("use_rear_wheel_speed", use_rear_wheel_speed_, true);
+  private_nh_.param<bool>("use_adaptive_gear_ratio", use_adaptive_gear_ratio_, true);
+  private_nh_.param<int>("command_timeout", command_timeout_, 1000);
   private_nh_.param<double>("loop_rate", loop_rate_, 30.0);
   private_nh_.param<double>("wheel_base", wheel_base_, 2.79);
   private_nh_.param<double>("tire_radius", tire_radius_, 0.39);
+  private_nh_.param<double>("ssc_gear_ratio", ssc_gear_ratio_, 16.135);
   private_nh_.param<double>("acceleration_limit", acceleration_limit_, 3.0);
   private_nh_.param<double>("deceleration_limit", deceleration_limit_, 3.0);
   private_nh_.param<double>("max_curvature_rate", max_curvature_rate_, 0.15);
-  private_nh_.param<double>("command_timeout", command_timeout_, 1000);
+  private_nh_.param<double>("agr_coef_a", agr_coef_a_, 15.713);
+  private_nh_.param<double>("agr_coef_b", agr_coef_b_, 0.053);
+  private_nh_.param<double>("agr_coef_c", agr_coef_c_, 0.042);
 
   rate_ = new ros::Rate(loop_rate_);
 
@@ -50,11 +54,13 @@ SSCInterface::SSCInterface() : nh_(), private_nh_("~"), engage_(false), command_
   // subscribers from PACMod
   wheel_speed_sub_ =
       new message_filters::Subscriber<pacmod_msgs::WheelSpeedRpt>(nh_, "pacmod/parsed_tx/wheel_speed_rpt", 10);
+  steering_wheel_sub_ =
+      new message_filters::Subscriber<pacmod_msgs::SystemRptFloat>(nh_, "pacmod/parsed_tx/steer_rpt", 10);
   ssc_feedbacks_sync_ = new message_filters::Synchronizer<SSCFeedbacksSyncPolicy>(
       SSCFeedbacksSyncPolicy(10), *velocity_accel_sub_, *curvature_feedback_sub_, *throttle_feedback_sub_,
-      *brake_feedback_sub_, *gear_feedback_sub_, *wheel_speed_sub_);
+      *brake_feedback_sub_, *gear_feedback_sub_, *wheel_speed_sub_, *steering_wheel_sub_);
   ssc_feedbacks_sync_->registerCallback(
-      boost::bind(&SSCInterface::callbackFromSSCFeedbacks, this, _1, _2, _3, _4, _5, _6));
+      boost::bind(&SSCInterface::callbackFromSSCFeedbacks, this, _1, _2, _3, _4, _5, _6, _7));
 
   // publishers to autoware
   vehicle_status_pub_ = nh_.advertise<autoware_msgs::VehicleStatus>("vehicle_status", 10);
@@ -107,37 +113,51 @@ void SSCInterface::callbackFromSSCFeedbacks(const automotive_platform_msgs::Velo
                                             const automotive_platform_msgs::ThrottleFeedbackConstPtr& msg_throttle,
                                             const automotive_platform_msgs::BrakeFeedbackConstPtr& msg_brake,
                                             const automotive_platform_msgs::GearFeedbackConstPtr& msg_gear,
-                                            const pacmod_msgs::WheelSpeedRptConstPtr& msg_wheel)
+                                            const pacmod_msgs::WheelSpeedRptConstPtr& msg_wheel_speed,
+                                            const pacmod_msgs::SystemRptFloatConstPtr& msg_steering_wheel)
 {
   ros::Time stamp = msg_velocity->header.stamp;
 
-  double speed = !use_rear_wheel_speed_ ?
-                     (msg_velocity->velocity) :
-                     (msg_wheel->rear_left_wheel_speed + msg_wheel->rear_right_wheel_speed) * tire_radius_ / 2.;
+  // current speed
+  double speed =
+      !use_rear_wheel_speed_ ?
+          (msg_velocity->velocity) :
+          (msg_wheel_speed->rear_left_wheel_speed + msg_wheel_speed->rear_right_wheel_speed) * tire_radius_ / 2.;
+
+  // update adaptive gear ratio
+  adaptive_gear_ratio_ = agr_coef_a_ + agr_coef_b_ * speed * speed - agr_coef_c_ * msg_steering_wheel->output;
+  // current steering curvature
+  double curvature = !use_adaptive_gear_ratio_ ?
+                         (msg_curvature->curvature) :
+                         std::tan(msg_steering_wheel->output / adaptive_gear_ratio_) / wheel_base_;
 
   // as_current_velocity (geometry_msgs::TwistStamped)
   geometry_msgs::TwistStamped twist;
   twist.header.frame_id = BASE_FRAME_ID;
   twist.header.stamp = stamp;
-  twist.twist.linear.x = speed;                              // [m/s]
-  twist.twist.angular.z = msg_curvature->curvature * speed;  // [rad/s]
+  twist.twist.linear.x = speed;               // [m/s]
+  twist.twist.angular.z = curvature * speed;  // [rad/s]
   current_twist_pub_.publish(twist);
 
   // vehicle_status (autoware_msgs::VehicleStatus)
   autoware_msgs::VehicleStatus vehicle_status;
   vehicle_status.header.frame_id = BASE_FRAME_ID;
   vehicle_status.header.stamp = stamp;
+
   // drive/steeringmode
   vehicle_status.drivemode = (module_states_.state == "active") ? autoware_msgs::VehicleStatus::MODE_AUTO :
                                                                   autoware_msgs::VehicleStatus::MODE_MANUAL;
   vehicle_status.steeringmode = vehicle_status.drivemode;
+
   // speed [km/h]
   vehicle_status.speed = speed * 3.6;
+
   // drive/brake pedal [0,1000] (TODO: Scaling)
   vehicle_status.drivepedal = (int)(1000 * msg_throttle->throttle_pedal);
   vehicle_status.brakepedal = (int)(1000 * msg_brake->brake_pedal);
-  // steering angle [rad] (TODO: Add adaptive gear ratio)
-  vehicle_status.angle = std::atan(msg_curvature->curvature * wheel_base_);
+
+  // steering angle [rad]
+  vehicle_status.angle = std::atan(curvature * wheel_base_);
 
   // gearshift
   if (msg_gear->current_gear.gear == automotive_platform_msgs::Gear::NONE)
@@ -180,12 +200,19 @@ void SSCInterface::publishCommand()
   // Desired values
   // Driving mode (If autonomy mode should be active, mode = 1)
   unsigned char desired_mode = engage_ ? 1 : 0;
+
   // Speed for SSC speed_model
   double desired_speed = vehicle_cmd_.ctrl_cmd.linear_velocity;
-  // Curvature for SSC steer_model (TODO: Add adaptive gear ratio)
-  double desired_curvature = std::tan(vehicle_cmd_.ctrl_cmd.steering_angle) / wheel_base_;
+
+  // Curvature for SSC steer_model
+  double desired_steering_angle = !use_adaptive_gear_ratio_ ?
+                                      vehicle_cmd_.ctrl_cmd.steering_angle :
+                                      vehicle_cmd_.ctrl_cmd.steering_angle * ssc_gear_ratio_ / adaptive_gear_ratio_;
+  double desired_curvature = std::tan(desired_steering_angle) / wheel_base_;
+
   // Gear (TODO: Use vehicle_cmd.gear)
   unsigned char desired_gear = engage_ ? automotive_platform_msgs::Gear::DRIVE : automotive_platform_msgs::Gear::NONE;
+
   // Turn signal
   unsigned char desired_turn_signal = automotive_platform_msgs::TurnSignalCommand::NONE;
 

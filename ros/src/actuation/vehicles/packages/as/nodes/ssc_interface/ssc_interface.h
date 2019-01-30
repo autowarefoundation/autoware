@@ -37,6 +37,7 @@
 #include <automotive_platform_msgs/GearFeedback.h>
 #include <automotive_navigation_msgs/ModuleState.h>
 #include <pacmod_msgs/WheelSpeedRpt.h>
+#include <pacmod_msgs/SystemRptFloat.h>
 
 #include <autoware_msgs/VehicleCmd.h>
 #include <autoware_msgs/VehicleStatus.h>
@@ -55,7 +56,7 @@ private:
   typedef message_filters::sync_policies::ApproximateTime<
       automotive_platform_msgs::VelocityAccel, automotive_platform_msgs::CurvatureFeedback,
       automotive_platform_msgs::ThrottleFeedback, automotive_platform_msgs::BrakeFeedback,
-      automotive_platform_msgs::GearFeedback, pacmod_msgs::WheelSpeedRpt>
+      automotive_platform_msgs::GearFeedback, pacmod_msgs::WheelSpeedRpt, pacmod_msgs::SystemRptFloat>
       SSCFeedbacksSyncPolicy;
 
   // handle
@@ -72,6 +73,7 @@ private:
   message_filters::Subscriber<automotive_platform_msgs::BrakeFeedback>* brake_feedback_sub_;
   message_filters::Subscriber<automotive_platform_msgs::GearFeedback>* gear_feedback_sub_;
   message_filters::Subscriber<pacmod_msgs::WheelSpeedRpt>* wheel_speed_sub_;
+  message_filters::Subscriber<pacmod_msgs::SystemRptFloat>* steering_wheel_sub_;
   message_filters::Synchronizer<SSCFeedbacksSyncPolicy>* ssc_feedbacks_sync_;
 
   // publishers
@@ -83,18 +85,30 @@ private:
   ros::Publisher current_twist_pub_;
 
   // ros param
-  bool use_rear_wheel_speed_;
-  double loop_rate_;    // [Hz]
-  double wheel_base_;   // [m]
-  double tire_radius_;  // [m], NOTE: used by 'use_rear_wheel_speed' mode
-  double acceleration_limit_; // [m/s^2]
-  double deceleration_limit_; // [m/s^2]
-  double max_curvature_rate_; // [rad/m/s]
-  double command_timeout_;    // vehicle_cmd timeout [ms]
+  int command_timeout_;        // vehicle_cmd timeout [ms]
+  double loop_rate_;           // [Hz]
+  double wheel_base_;          // [m]
+  double acceleration_limit_;  // [m/s^2]
+  double deceleration_limit_;  // [m/s^2]
+  double max_curvature_rate_;  // [rad/m/s]
+
+  bool use_rear_wheel_speed_;     // instead of 'as/velocity_accel'
+  bool use_adaptive_gear_ratio_;  // for more accurate steering angle (gr = theta_sw / theta_s)
+  double tire_radius_;            // [m] (NOTE: used by 'use_rear_wheel_speed' mode)
+  double ssc_gear_ratio_;         // gr = const (NOTE: used by 'use_adaptive_gear_ratio' mode)
+  double agr_coef_a_, agr_coef_b_, agr_coef_c_;  // gr = a + b * speed^2 + c * theta_sw
+
+  // NOTE: default parameters in SSC
+  // tire radius = 0.39             [m]
+  // max steering angle = 0.533     [rad]
+  // max steering wheel angle = 8.3 [rad]
+  // -> ssc_gear_ratio = 16.135     [-]
+  // max steering wheel rotation rate = 6.28 [rad/s]
 
   // variables
   bool engage_;
   bool command_initialized_;
+  double adaptive_gear_ratio_;
   ros::Time command_time_;
   autoware_msgs::VehicleCmd vehicle_cmd_;
   automotive_navigation_msgs::ModuleState module_states_;
@@ -109,7 +123,8 @@ private:
                                 const automotive_platform_msgs::ThrottleFeedbackConstPtr& msg_throttle,
                                 const automotive_platform_msgs::BrakeFeedbackConstPtr& msg_brake,
                                 const automotive_platform_msgs::GearFeedbackConstPtr& msg_gear,
-                                const pacmod_msgs::WheelSpeedRptConstPtr& msg_wheel);
+                                const pacmod_msgs::WheelSpeedRptConstPtr& msg_wheel_speed,
+                                const pacmod_msgs::SystemRptFloatConstPtr& msg_steering_wheel);
   // functions
   void publishCommand();
 };
