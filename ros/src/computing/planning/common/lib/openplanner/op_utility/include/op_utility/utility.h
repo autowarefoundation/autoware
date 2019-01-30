@@ -25,32 +25,83 @@ public:
   UtilityH();
   virtual ~UtilityH();
 
+  /// Make sure angle is in [0, 2 * pi)
   static double fixNegativeAngle(const double & a);
+
+  /// Make sure angle is in [-pi, pi)
   static double splitPositiveAngle(const double & a);
+
+  /** Rotate angle 180 degrees
+   *
+   * @param a Angle in [0, 2 * pi)
+   * @return Reversed angle in [0, 2 * pi)
+   */
   static double inverseAngle(const double & a);
+
+  /// Angular difference in [0, pi]
   static double angleBetweenTwoAnglesPositive(
     const double & a1,
     const double & a2);
+
+  // TODO: figure out and document what this does and test
   static double getCircularAngle(
     const double & prevContAngle,
     const double & prevAngle, const double & currAngle);
 
+  /// Return -1 for negative, 1 for non-negative values
+  static int getSign(double x);
+
   //Time Functions
+  /** Gets time since the Epoch, using the system-wide realtime clock
+   *
+   * NB Spins (possibly indefinitely) when getting the time fails.
+   */
   static void getTickCount(struct timespec & t);
-  static std::string getFilePrefixHourMinuteSeconds();
+
+  /** Turn a time_t representation of time into a timespec
+   *
+   * NB provided time is expected to be _nanoseconds_, rather than in seconds
+   * (so unlike what the standard function `time` returns)
+   */
+  static timespec getTimeSpec(const time_t & srcT);
+
+  /** Turn a timespec representation of time into a time_t
+   *
+   * NB return time is in _nanoseconds_, rather than in seconds
+   * (so unlike what the standard function `time` returns)
+   */
+  static time_t getLongTime(const struct timespec & srcT);
+
+  /// Determine time difference between provided past time and now
   static double getTimeDiffNow(const struct timespec & old_t);
+
+  /// Determine time difference between provided times
   static double getTimeDiff(
     const struct timespec & old_t,
     const struct timespec & curr_t);
-  static std::string getDateTimeStr();
+
+  /** Check the order of two timestamps
+   *
+   * @param time1 Time A
+   * @param time2 Time B
+   * @param micro_tolerance If absolute difference is less or equal than this amount of nanoseconds, ignore and return 0
+   * @return -1 if time 1 is before time2, 0 if they are the same, 1 otherwise
+   */
   static int tsCompare(
     struct timespec time1, struct timespec time2,
     int micro_tolerance = 10);
-  static int getSign(double x);
+
+  /// Returns string with format 'Y<YEAR>-M<MONTH>-D<DAY>-H<HOUR>-M<MINUTE>-S<SECOND>', based on current time
+  static std::string getFilePrefixHourMinuteSeconds();
+
+  /// Returns string with format like 'Wed_Jun_30_21-49-08_1993'
+  static std::string getDateTimeStr();
+
+  // Get path to the current user's home directory
   static std::string getHomeDirectory();
+
+  /// TODO: figure out and document what this does and test
   static double getMomentumScaleFactor(const double & v);
-  static timespec getTimeSpec(const time_t & srcT);
-  static time_t getLongTime(const struct timespec & srcT);
 };
 
 class PIDController

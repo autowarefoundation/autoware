@@ -5,10 +5,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 set(ROS_VERSION $ENV{ROS_DISTRO})
 find_package(catkin REQUIRED COMPONENTS
-	vector_map_msgs 
-	vector_map_server
-	 autoware_build_flags
-)
+  vector_map_msgs 
+  vector_map_server
+  autoware_build_flags
+  )
 
 find_package(TinyXML REQUIRED)
 
@@ -16,42 +16,48 @@ find_package(TinyXML REQUIRED)
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-        INCLUDE_DIRS include
-        LIBRARIES op_utility
-        CATKIN_DEPENDS vector_map_msgs vector_map_server
-)
+  INCLUDE_DIRS include
+  LIBRARIES op_utility
+  CATKIN_DEPENDS vector_map_msgs vector_map_server
+  )
 
 ###########
 ## Build ##
 ###########
 
 include_directories(${catkin_INCLUDE_DIRS}
-        include)
+  include)
 
 set(UTILITYH_SRC
-        src/data_rw.cpp
-        src/utility.cpp
-        )
+  src/data_rw.cpp
+  src/utility.cpp
+  )
 
 ## Declare a cpp library
 add_library(${PROJECT_NAME}
-        ${UTILITYH_SRC}
-        )
+  ${UTILITYH_SRC}
+  )
 
 target_link_libraries(${PROJECT_NAME}
-        ${catkin_LIBRARIES}
-        ${OpenCV_LIBS}
-        ${TinyXML_LIBRARIES}
-        )
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+  ${TinyXML_LIBRARIES}
+  )
 
 install(DIRECTORY include/${PROJECT_NAME}/
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-        FILES_MATCHING PATTERN "*.h"
-        )
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h"
+  )
 
 
 install(TARGETS op_utility
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-        )
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  )
+
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  add_rostest_gtest(test-op-utility test/test_op_utility.test test/src/test_op_utility.cpp)
+  target_link_libraries(test-op-utility ${catkin_LIBRARIES} ${PROJECT_NAME})
+endif()

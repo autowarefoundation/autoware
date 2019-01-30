@@ -55,7 +55,7 @@ int UtilityH::getSign(double x)
 double UtilityH::fixNegativeAngle(const double & a)
 {
   double angle = 0;
-  if (a < -2.0 * M_PI || a > 2.0 * M_PI) {
+  if (a < -2.0 * M_PI || a >= 2.0 * M_PI) {
     angle = fmod(a, 2.0 * M_PI);
   } else {
     angle = a;
@@ -72,11 +72,11 @@ double UtilityH::splitPositiveAngle(const double & a)
 {
   double angle = a;
 
-  if (a < -2.0 * M_PI || a > 2.0 * M_PI) {
+  if (a < -2.0 * M_PI || a >= 2.0 * M_PI) {
     angle = fmod(a, 2.0 * M_PI);
   }
 
-  if (angle > M_PI) {
+  if (angle >= M_PI) {
     angle -= 2.0 * M_PI;
   } else if (angle < -M_PI) {
     angle += 2.0 * M_PI;
@@ -87,9 +87,8 @@ double UtilityH::splitPositiveAngle(const double & a)
 
 double UtilityH::inverseAngle(const double & a)
 {
-
   double angle = 0;
-  if (a <= M_PI) {
+  if (a < M_PI) {
     angle = a + M_PI;
   } else {
     angle = a - M_PI;
