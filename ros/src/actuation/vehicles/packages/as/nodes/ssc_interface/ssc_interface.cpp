@@ -16,7 +16,7 @@
 
 #include "ssc_interface.h"
 
-SSCInterface::SSCInterface() : nh_(), private_nh_("~"), engage_(false)
+SSCInterface::SSCInterface() : nh_(), private_nh_("~"), engage_(false), command_initialized_(false)
 {
   // setup parameters
   // NOTE: max steering wheel rotation rate = 6.28 [rad/s]
@@ -27,6 +27,7 @@ SSCInterface::SSCInterface() : nh_(), private_nh_("~"), engage_(false)
   private_nh_.param<double>("acceleration_limit", acceleration_limit_, 3.0);
   private_nh_.param<double>("deceleration_limit", deceleration_limit_, 3.0);
   private_nh_.param<double>("max_curvature_rate", max_curvature_rate_, 0.15);
+  private_nh_.param<double>("command_timeout", command_timeout_, 1000);
 
   rate_ = new ros::Rate(loop_rate_);
 
@@ -72,6 +73,7 @@ SSCInterface::~SSCInterface()
 
 void SSCInterface::run()
 {
+  bool timeouted = false;
   while (ros::ok())
   {
     ros::spinOnce();
@@ -82,7 +84,9 @@ void SSCInterface::run()
 
 void SSCInterface::callbackFromVehicleCmd(const autoware_msgs::VehicleCmdConstPtr& msg)
 {
+  command_time_ = ros::Time::now();
   vehicle_cmd_ = *msg;
+  command_initialized_ = true;
 }
 
 void SSCInterface::callbackFromEngage(const std_msgs::BoolConstPtr& msg)
@@ -166,6 +170,11 @@ void SSCInterface::callbackFromSSCFeedbacks(const automotive_platform_msgs::Velo
 
 void SSCInterface::publishCommand()
 {
+  if (!command_initialized_)
+  {
+    return;
+  }
+
   ros::Time stamp = ros::Time::now();
 
   // Desired values
@@ -179,6 +188,7 @@ void SSCInterface::publishCommand()
   unsigned char desired_gear = engage_ ? automotive_platform_msgs::Gear::DRIVE : automotive_platform_msgs::Gear::NONE;
   // Turn signal
   unsigned char desired_turn_signal = automotive_platform_msgs::TurnSignalCommand::NONE;
+
   if (vehicle_cmd_.lamp_cmd.l == 0 && vehicle_cmd_.lamp_cmd.r == 0)
   {
     desired_turn_signal = automotive_platform_msgs::TurnSignalCommand::NONE;
@@ -194,6 +204,16 @@ void SSCInterface::publishCommand()
   else if (vehicle_cmd_.lamp_cmd.l == 1 && vehicle_cmd_.lamp_cmd.r == 1)
   {
     // NOTE: HAZARD signal cannot be used in automotive_platform_msgs::TurnSignalCommand
+  }
+
+  // Override desired speed to ZERO by emergency/timeout
+  bool emergency = (vehicle_cmd_.emergency == 1);
+  bool timeouted = (((ros::Time::now() - command_time_).toSec() * 1000) > command_timeout_);
+
+  if (emergency || timeouted)
+  {
+    ROS_ERROR("Emergency Stopping, emergency = %d, timeouted = %d", emergency, timeouted);
+    desired_speed = 0.0;
   }
 
   // speed command

@@ -84,15 +84,18 @@ private:
 
   // ros param
   bool use_rear_wheel_speed_;
-  double loop_rate_;
-  double wheel_base_;
-  double tire_radius_;  // used for wheel speed
-  double acceleration_limit_;
-  double deceleration_limit_;
-  double max_curvature_rate_;
+  double loop_rate_;    // [Hz]
+  double wheel_base_;   // [m]
+  double tire_radius_;  // [m], NOTE: used by 'use_rear_wheel_speed' mode
+  double acceleration_limit_; // [m/s^2]
+  double deceleration_limit_; // [m/s^2]
+  double max_curvature_rate_; // [rad/m/s]
+  double command_timeout_;    // vehicle_cmd timeout [ms]
 
   // variables
   bool engage_;
+  bool command_initialized_;
+  ros::Time command_time_;
   autoware_msgs::VehicleCmd vehicle_cmd_;
   automotive_navigation_msgs::ModuleState module_states_;
   ros::Rate* rate_;
