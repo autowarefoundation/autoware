@@ -29,6 +29,7 @@ namespace autoware_health_checker
             // iterate Rate checker and publish rate_check result
             for(auto key_itr = checker_keys.begin(); key_itr != checker_keys.end(); key_itr++)
             {
+                //ROS_ERROR_STREAM(*key_itr);
                 autoware_system_msgs::DiagnosticStatusArray diag_array;
                 autoware_system_msgs::DiagnosticStatus diag;
                 diag.type = autoware_system_msgs::DiagnosticStatus::RATE_IS_SLOW;
@@ -62,10 +63,22 @@ namespace autoware_health_checker
     std::vector<std::string> NodeStatusPublisher::getKeys()
     {
         std::vector<std::string> keys;
+        std::vector<std::string> checker_keys = getRateCheckerKeys();
         std::pair<std::string,std::shared_ptr<DiagBuffer> > buf_itr;
         BOOST_FOREACH(buf_itr,diag_buffers_)
         {
-            keys.push_back(buf_itr.first);
+            bool matched = false;
+            for(auto checker_key_itr = checker_keys.begin(); checker_key_itr != checker_keys.end(); checker_key_itr++)
+            {
+                if(*checker_key_itr == buf_itr.first)
+                {
+                    matched = true;
+                }
+            }
+            if(!matched)
+            {
+                keys.push_back(buf_itr.first);
+            }
         }
         return keys;
     }
@@ -83,12 +96,11 @@ namespace autoware_health_checker
 
     bool NodeStatusPublisher::keyExist(std::string key)
     {
-        decltype(diag_buffers_)::iterator it = diag_buffers_.find(key);
-        if(it != diag_buffers_.end())
+        if(diag_buffers_.count(key) == 0)
         {
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 
     // add New Diagnostic Buffer if the key does not exist
@@ -152,6 +164,7 @@ namespace autoware_health_checker
         }
         new_status.description = description;
         new_status.value = doubeToJson(value);
+        new_status.header.stamp = ros::Time::now();
         diag_buffers_[key]->addDiag(new_status);
         return;
     }
@@ -179,6 +192,7 @@ namespace autoware_health_checker
         }
         new_status.value = doubeToJson(value);
         new_status.description = description;
+        new_status.header.stamp = ros::Time::now();
         diag_buffers_[key]->addDiag(new_status);
         return;
     }

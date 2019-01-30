@@ -49,6 +49,7 @@ namespace autoware_health_checker
             new_status.level = check_result;
             new_status.description = description;
             new_status.description = ss.str();
+            new_status.header.stamp = ros::Time::now();
             diag_buffers_[key]->addDiag(new_status);
         }
         void CHECK_RATE(std::string key,double warn_rate,double error_rate,double fatal_rate,std::string description);

@@ -28,6 +28,7 @@ PurePursuit::PurePursuit()
   , current_linear_velocity_(0)
   , minimum_lookahead_distance_(6)
 {
+  
 }
 
 // Destructor

@@ -15,7 +15,7 @@ namespace autoware_health_checker
     constexpr uint8_t TYPE_OUT_OF_RANGE = autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE;
     constexpr uint8_t TYPE_RATE_IS_SLOW = autoware_system_msgs::DiagnosticStatus::RATE_IS_SLOW;
 
-    constexpr double BUFFER_LENGTH = 1.0;
+    constexpr double BUFFER_LENGTH = 5.0;
     constexpr double UPDATE_RATE = 10.0;
 }
 

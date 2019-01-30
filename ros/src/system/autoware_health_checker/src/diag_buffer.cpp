@@ -5,7 +5,7 @@ namespace autoware_health_checker
     DiagBuffer::DiagBuffer(std::string key, uint8_t type, std::string description, double buffer_length) : type(type), description(description)
     {
         key_ = key;
-        buffer_length_ = ros::Duration(buffer_length_);
+        buffer_length_ = ros::Duration(buffer_length);
     }
 
     DiagBuffer::~DiagBuffer()
@@ -61,10 +61,9 @@ namespace autoware_health_checker
     {
         autoware_system_msgs::DiagnosticStatusArray filterd_data;
         autoware_system_msgs::DiagnosticStatusArray ret;
-        decltype(buffer_)::iterator it = buffer_.find(level);
-        if(it != buffer_.end())
+        if(buffer_.count(level) != 0)
         {
-            it->second = filterd_data;
+            filterd_data = buffer_[level];
         }
         for(auto data_itr = filterd_data.status.begin(); data_itr != filterd_data.status.end(); data_itr++)
         {
