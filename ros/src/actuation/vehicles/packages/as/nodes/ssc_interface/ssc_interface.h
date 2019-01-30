@@ -21,7 +21,6 @@
 #include <std_msgs/Bool.h>
 #include <std_msgs/Header.h>
 #include <geometry_msgs/TwistStamped.h>
-#include <nav_msgs/Odometry.h>
 #include <message_filters/subscriber.h>
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
@@ -34,11 +33,10 @@
 #include <automotive_platform_msgs/GearCommand.h>
 #include <automotive_platform_msgs/Gear.h>
 
-#include <autoware_msgs/LampCmd.h>
-#include <std_msgs/UInt8.h>
-#include <std_msgs/Float32.h>
+#include <autoware_msgs/VehicleCmd.h>
+#include <autoware_msgs/VehicleStatus.h>
 
-static const double MINIMUM_DESIRED_SPEED = 1e-6;  // [m/s]
+static const std::string BASE_FRAME_ID = "base_link";
 
 class SSCInterface
 {
@@ -57,41 +55,38 @@ private:
   ros::NodeHandle nh_;
   ros::NodeHandle private_nh_;
 
-  // subscriber
-  ros::Subscriber twist_cmd_sub_;
-  ros::Subscriber control_mode_sub_;
-  ros::Subscriber lamp_cmd_sub_;
+  // subscribers
+  ros::Subscriber vehicle_cmd_sub_;
+  ros::Subscriber engage_sub_;
   message_filters::Subscriber<automotive_platform_msgs::VelocityAccel>* current_velocity_sub_;
   message_filters::Subscriber<automotive_platform_msgs::CurvatureFeedback>* current_curvature_sub_;
   message_filters::Synchronizer<CurrentTwistSyncPolicy>* current_twist_sync_;
 
-  // publisher
+  // publishers
   ros::Publisher steer_mode_pub_;
   ros::Publisher speed_mode_pub_;
   ros::Publisher turn_signal_pub_;
   ros::Publisher gear_pub_;
+  ros::Publisher vehicle_status_pub_;
   ros::Publisher current_twist_pub_;
-  ros::Publisher current_speed_pub_;
 
   // ros param
   double loop_rate_;
+  double wheel_base_;
   double acceleration_limit_;
   double deceleration_limit_;
   double max_curvature_rate_;
 
   // variables
-  bool control_mode_;
-  double desired_speed_;
-  double desired_curvature_;
-  autoware_msgs::LampCmd lamp_cmd_;
+  bool engage_;
+  autoware_msgs::VehicleCmd vehicle_cmd_;
   ros::Rate* rate_;
 
   // callbacks
-  void callbackFromTwistCmd(const geometry_msgs::TwistStampedConstPtr& msg);
-  void callbackFromControlMode(const std_msgs::BoolConstPtr& msg);
+  void callbackFromVehicleCmd(const autoware_msgs::VehicleCmdConstPtr& msg);
+  void callbackFromEngage(const std_msgs::BoolConstPtr& msg);
   void callbackFromSyncedCurrentTwist(const automotive_platform_msgs::VelocityAccelConstPtr& msg_velocity,
                                       const automotive_platform_msgs::CurvatureFeedbackConstPtr& msg_curvature);
-  void callbackFromLampCmd(const autoware_msgs::LampCmdConstPtr& msg);
 
   // functions
   void publishCommand();

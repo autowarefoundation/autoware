@@ -1,7 +1,7 @@
 <!-- -->
 <launch>
 
-	<arg name="loop_rate" default="100.0"/>
+	<arg name="loop_rate" default="30.0"/>
 	<arg name="acceleration_limit" default="3.0"/>
 	<arg name="deceleration_limit" default="6.0"/>
 	<arg name="max_curvature_rate" default="0.75"/>

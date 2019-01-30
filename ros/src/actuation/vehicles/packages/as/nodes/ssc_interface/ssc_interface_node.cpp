@@ -21,8 +21,8 @@
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "ssc_interface");
-  SSCInterface ssc_interface;
-  ssc_interface.run();
+  SSCInterface node;
+  node.run();
 
   return 0;
 }
