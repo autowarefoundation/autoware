@@ -9,6 +9,7 @@ find_package(
   std_msgs
   geometry_msgs
   automotive_platform_msgs
+  automotive_navigation_msgs
   autoware_msgs
 )
 
@@ -19,6 +20,7 @@ catkin_package(
   std_msgs
   geometry_msgs
   automotive_platform_msgs
+  automotive_navigation_msgs
   autoware_msgs
 )
 

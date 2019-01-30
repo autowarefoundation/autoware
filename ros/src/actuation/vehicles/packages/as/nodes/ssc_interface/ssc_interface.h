@@ -19,6 +19,7 @@
 
 #include <ros/ros.h>
 #include <std_msgs/Bool.h>
+#include <std_msgs/Time.h>
 #include <std_msgs/Header.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <message_filters/subscriber.h>
@@ -27,11 +28,14 @@
 
 #include <automotive_platform_msgs/SteerMode.h>
 #include <automotive_platform_msgs/SpeedMode.h>
+#include <automotive_platform_msgs/GearCommand.h>
+#include <automotive_platform_msgs/TurnSignalCommand.h>
 #include <automotive_platform_msgs/VelocityAccel.h>
 #include <automotive_platform_msgs/CurvatureFeedback.h>
-#include <automotive_platform_msgs/TurnSignalCommand.h>
-#include <automotive_platform_msgs/GearCommand.h>
-#include <automotive_platform_msgs/Gear.h>
+#include <automotive_platform_msgs/ThrottleFeedback.h>
+#include <automotive_platform_msgs/BrakeFeedback.h>
+#include <automotive_platform_msgs/GearFeedback.h>
+#include <automotive_navigation_msgs/ModuleState.h>
 
 #include <autoware_msgs/VehicleCmd.h>
 #include <autoware_msgs/VehicleStatus.h>
@@ -48,8 +52,11 @@ public:
 
 private:
   typedef message_filters::sync_policies::ApproximateTime<automotive_platform_msgs::VelocityAccel,
-                                                          automotive_platform_msgs::CurvatureFeedback>
-      CurrentTwistSyncPolicy;
+                                                          automotive_platform_msgs::CurvatureFeedback,
+                                                          automotive_platform_msgs::ThrottleFeedback,
+                                                          automotive_platform_msgs::BrakeFeedback,
+                                                          automotive_platform_msgs::GearFeedback>
+      SSCFeedbacksSyncPolicy;
 
   // handle
   ros::NodeHandle nh_;
@@ -58,9 +65,13 @@ private:
   // subscribers
   ros::Subscriber vehicle_cmd_sub_;
   ros::Subscriber engage_sub_;
-  message_filters::Subscriber<automotive_platform_msgs::VelocityAccel>* current_velocity_sub_;
-  message_filters::Subscriber<automotive_platform_msgs::CurvatureFeedback>* current_curvature_sub_;
-  message_filters::Synchronizer<CurrentTwistSyncPolicy>* current_twist_sync_;
+  ros::Subscriber module_states_sub_;
+  message_filters::Subscriber<automotive_platform_msgs::VelocityAccel>* velocity_accel_sub_;
+  message_filters::Subscriber<automotive_platform_msgs::CurvatureFeedback>* curvature_feedback_sub_;
+  message_filters::Subscriber<automotive_platform_msgs::ThrottleFeedback>* throttle_feedback_sub_;
+  message_filters::Subscriber<automotive_platform_msgs::BrakeFeedback>* brake_feedback_sub_;
+  message_filters::Subscriber<automotive_platform_msgs::GearFeedback>* gear_feedback_sub_;
+  message_filters::Synchronizer<SSCFeedbacksSyncPolicy>* ssc_feedbacks_sync_;
 
   // publishers
   ros::Publisher steer_mode_pub_;
@@ -80,13 +91,18 @@ private:
   // variables
   bool engage_;
   autoware_msgs::VehicleCmd vehicle_cmd_;
+  automotive_navigation_msgs::ModuleState module_states_;
   ros::Rate* rate_;
 
   // callbacks
   void callbackFromVehicleCmd(const autoware_msgs::VehicleCmdConstPtr& msg);
   void callbackFromEngage(const std_msgs::BoolConstPtr& msg);
-  void callbackFromSyncedCurrentTwist(const automotive_platform_msgs::VelocityAccelConstPtr& msg_velocity,
-                                      const automotive_platform_msgs::CurvatureFeedbackConstPtr& msg_curvature);
+  void callbackFromSSCModuleStates(const automotive_navigation_msgs::ModuleStateConstPtr& msg);
+  void callbackFromSSCFeedbacks(const automotive_platform_msgs::VelocityAccelConstPtr& msg_velocity,
+                                const automotive_platform_msgs::CurvatureFeedbackConstPtr& msg_curvature,
+                                const automotive_platform_msgs::ThrottleFeedbackConstPtr& msg_throttle,
+                                const automotive_platform_msgs::BrakeFeedbackConstPtr& msg_brake,
+                                const automotive_platform_msgs::GearFeedbackConstPtr& msg_gear);
 
   // functions
   void publishCommand();
