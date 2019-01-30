@@ -22,14 +22,14 @@ UtilityH::~UtilityH()
 {
 }
 
-std::string UtilityH::GetHomeDirectory()
+std::string UtilityH::getHomeDirectory()
 {
   struct passwd * pw = getpwuid(getuid());
   const char * homedir = pw->pw_dir;
   return std::string(homedir);
 }
 
-double UtilityH::GetMomentumScaleFactor(const double & v)
+double UtilityH::getMomentumScaleFactor(const double & v)
 {
   if (v < 0.3) {
     return 0.6;
@@ -43,7 +43,7 @@ double UtilityH::GetMomentumScaleFactor(const double & v)
   }
 }
 
-int UtilityH::GetSign(double x)
+int UtilityH::getSign(double x)
 {
   if (x < 0) {
     return -1;
@@ -52,7 +52,7 @@ int UtilityH::GetSign(double x)
   }
 }
 
-double UtilityH::FixNegativeAngle(const double & a)
+double UtilityH::fixNegativeAngle(const double & a)
 {
   double angle = 0;
   if (a < -2.0 * M_PI || a > 2.0 * M_PI) {
@@ -68,7 +68,7 @@ double UtilityH::FixNegativeAngle(const double & a)
   return angle;
 }
 
-double UtilityH::SplitPositiveAngle(const double & a)
+double UtilityH::splitPositiveAngle(const double & a)
 {
   double angle = a;
 
@@ -85,7 +85,7 @@ double UtilityH::SplitPositiveAngle(const double & a)
   return angle;
 }
 
-double UtilityH::InverseAngle(const double & a)
+double UtilityH::inverseAngle(const double & a)
 {
 
   double angle = 0;
@@ -98,7 +98,7 @@ double UtilityH::InverseAngle(const double & a)
   return angle;
 }
 
-double UtilityH::AngleBetweenTwoAnglesPositive(
+double UtilityH::angleBetweenTwoAnglesPositive(
   const double & a1,
   const double & a2)
 {
@@ -114,7 +114,7 @@ double UtilityH::AngleBetweenTwoAnglesPositive(
   return diff;
 }
 
-double UtilityH::GetCircularAngle(
+double UtilityH::getCircularAngle(
   const double & prevContAngle,
   const double & prevAngle, const double & currAngle)
 {
@@ -137,13 +137,13 @@ double UtilityH::GetCircularAngle(
   return c_ang;
 }
 
-void UtilityH::GetTickCount(struct timespec & t)
+void UtilityH::getTickCount(struct timespec & t)
 {
   while (clock_gettime(0, &t) == -1) {
   }
 }
 
-double UtilityH::GetTimeDiff(
+double UtilityH::getTimeDiff(
   const struct timespec & old_t,
   const struct timespec & curr_t)
 {
@@ -151,18 +151,18 @@ double UtilityH::GetTimeDiff(
          ((double) (curr_t.tv_nsec - old_t.tv_nsec) / 1000000000.0);
 }
 
-double UtilityH::GetTimeDiffNow(const struct timespec & old_t)
+double UtilityH::getTimeDiffNow(const struct timespec & old_t)
 {
   struct timespec curr_t;
-  GetTickCount(curr_t);
+  getTickCount(curr_t);
   return (curr_t.tv_sec - old_t.tv_sec) +
          ((double) (curr_t.tv_nsec - old_t.tv_nsec) / 1000000000.0);
 }
 
-std::string UtilityH::GetFilePrefixHourMinuteSeconds()
+std::string UtilityH::getFilePrefixHourMinuteSeconds()
 {
   struct timespec now_time;
-  UtilityH::GetTickCount(now_time);
+  UtilityH::getTickCount(now_time);
   tm * gmtm = localtime(&now_time.tv_sec);
   std::ostringstream str;
 
@@ -181,7 +181,7 @@ std::string UtilityH::GetFilePrefixHourMinuteSeconds()
   return str.str();
 }
 
-std::string UtilityH::GetDateTimeStr()
+std::string UtilityH::getDateTimeStr()
 {
   time_t now = time(0);
   char * dateStr = ctime(&now);
@@ -222,7 +222,7 @@ int UtilityH::tsCompare(
   }
 }
 
-timespec UtilityH::GetTimeSpec(const time_t & srcT)
+timespec UtilityH::getTimeSpec(const time_t & srcT)
 {
   timespec dstT;
   dstT.tv_sec = srcT / 1000000000;
@@ -230,7 +230,7 @@ timespec UtilityH::GetTimeSpec(const time_t & srcT)
   return dstT;
 }
 
-time_t UtilityH::GetLongTime(const struct timespec & srcT)
+time_t UtilityH::getLongTime(const struct timespec & srcT)
 {
   time_t dstT;
   dstT = srcT.tv_sec * 1000000000 + srcT.tv_nsec;
@@ -255,7 +255,7 @@ PIDController::PIDController(
   const double & kp, const double & ki,
   const double & kd)
 {
-  Init(kp, ki, kd);
+  init(kp, ki, kd);
   upper_limit = lower_limit = 0;
   bEnableLimit = false;
   accumErr = 0;
@@ -265,7 +265,7 @@ PIDController::PIDController(
 
 }
 
-void PIDController::Setlimit(const double & upper, const double & lower)
+void PIDController::setLimit(const double & upper, const double & lower)
 {
   upper_limit = upper;
   lower_limit = lower;
@@ -321,7 +321,7 @@ double PIDController::getPID(const double & e)
   return pid_lim;
 }
 
-std::string PIDController::ToStringHeader()
+std::string PIDController::toStringHeader()
 {
   std::ostringstream str_out;
   str_out << "Time" << "," << "KP" << "," << "KI" << "," << "KD" << "," <<
@@ -331,12 +331,12 @@ std::string PIDController::ToStringHeader()
   return str_out.str();
 }
 
-std::string PIDController::ToString()
+std::string PIDController::toString()
 {
   std::ostringstream str_out;
   timespec t_stamp;
-  UtilityH::GetTickCount(t_stamp);
-  str_out << UtilityH::GetLongTime(t_stamp) << "," << kp << "," << ki << "," <<
+  UtilityH::getTickCount(t_stamp);
+  str_out << UtilityH::getLongTime(t_stamp) << "," << kp << "," << ki << "," <<
     kd << "," << kp_v << "," << ki_v << "," << kd_v << "," << pid_v <<
     "," << "," << pid_lim << "," << "," << prevErr << "," << accumErr <<
     ",";
@@ -345,17 +345,17 @@ std::string PIDController::ToString()
 
 }
 
-void PIDController::ResetD()
+void PIDController::resetD()
 {
   bResetD = true;
 }
 
-void PIDController::ResetI()
+void PIDController::resetI()
 {
   bResetI = true;
 }
 
-void PIDController::Init(const double & kp, const double & ki, const double & kd)
+void PIDController::init(const double & kp, const double & ki, const double & kd)
 {
   this->kp = kp;
   this->ki = ki;
@@ -396,14 +396,14 @@ LowpassFilter::LowpassFilter(
   const int & filterOrder, const double & sampleFreq,
   const double & cutOffFreq)
 {
-  Init(filterOrder, sampleFreq, cutOffFreq);
+  init(filterOrder, sampleFreq, cutOffFreq);
 }
 
-void LowpassFilter::Init(
-  const int & n, const double & sampleFreq,
+void LowpassFilter::init(
+  const int & filterOrder, const double & sampleFreq,
   const double & cutOffFreq)
 {
-  if (!(n == 2 || n == 4 || n == 6 || n == 8)) {
+  if (!(filterOrder == 2 || filterOrder == 4 || filterOrder == 6 || filterOrder == 8)) {
     std::cout << "Undefined LowpassFilter order ! " << std::endl;
 
     A = 0;
@@ -417,7 +417,7 @@ void LowpassFilter::Init(
     sampleF = 0;
     cutOffF = 0;
   } else {
-    m = n / 2;
+    m = filterOrder / 2;
     sampleF = sampleFreq;
     cutOffF = cutOffFreq;
     double ep = 1;
@@ -426,8 +426,8 @@ void LowpassFilter::Init(
     double a = tan(M_PI * f / s);
     double a2 = a * a;
     double u = log((1.0 + sqrt(1.0 + ep * ep)) / ep);
-    double su = sinh(u / (double) n);
-    double cu = cosh(u / (double) n);
+    double su = sinh(u / (double) filterOrder);
+    double cu = cosh(u / (double) filterOrder);
     double b, c;
 
 //		A  = new double[m];
@@ -448,8 +448,8 @@ void LowpassFilter::Init(
 //		}
 
     for (int i = 0; i < m; ++i) {
-      b = sin(M_PI * (2.0 * i + 1.0) / (2.0 * n)) * su;
-      c = cos(M_PI * (2.0 * i + 1.0) / (2.0 * n)) * cu;
+      b = sin(M_PI * (2.0 * i + 1.0) / (2.0 * filterOrder)) * su;
+      c = cos(M_PI * (2.0 * i + 1.0) / (2.0 * filterOrder)) * cu;
       c = b * b + c * c;
       s = a2 * c + 2.0 * a * b + 1.0;
       A = a2 / (4.0 * s);                   // 4.0

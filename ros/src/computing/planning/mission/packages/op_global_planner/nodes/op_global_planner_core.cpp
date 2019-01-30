@@ -41,7 +41,7 @@ GlobalPlanner::GlobalPlanner()
 	m_bKmlMap = false;
 	m_bFirstStart = false;
 	m_GlobalPathID = 1;
-	op_utility_ns::UtilityH::GetTickCount(m_ReplnningTimer);
+  op_utility_ns::UtilityH::getTickCount(m_ReplnningTimer);
 
 	nh.getParam("/op_global_planner/pathDensity" , m_params.pathDensity);
 	nh.getParam("/op_global_planner/enableSmoothing" , m_params.bEnableSmoothing);
@@ -146,7 +146,7 @@ void GlobalPlanner::callbackGetRoadStatusOccupancyGrid(const nav_msgs::Occupancy
 	PlannerHNS::OccupancyToGridMap grid(msg->info.width,msg->info.height, msg->info.resolution, center);
 	std::vector<PlannerHNS::WayPoint*> modified_nodes;
 	timespec t;
-	op_utility_ns::UtilityH::GetTickCount(t);
+  op_utility_ns::UtilityH::getTickCount(t);
 	PlannerHNS::MappingHelpers::UpdateMapWithOccupancyGrid(grid, m_GridMapIntType, m_Map, modified_nodes);
 	m_ModifiedMapItemsTimes.push_back(std::make_pair(modified_nodes, t));
 
@@ -164,7 +164,7 @@ void GlobalPlanner::ClearOldCostFromMap()
 {
 	for(int i=0; i < (int)m_ModifiedMapItemsTimes.size(); i++)
 	{
-		if(op_utility_ns::UtilityH::GetTimeDiffNow(m_ModifiedMapItemsTimes.at(i).second) > CLEAR_COSTS_TIME)
+		if(op_utility_ns::UtilityH::getTimeDiffNow(m_ModifiedMapItemsTimes.at(i).second) > CLEAR_COSTS_TIME)
 		{
 			for(unsigned int j= 0 ; j < m_ModifiedMapItemsTimes.at(i).first.size(); j++)
 			{
@@ -215,7 +215,7 @@ void GlobalPlanner::callbackGetVehicleStatus(const geometry_msgs::TwistStampedCo
 	m_CurrentPose.v = m_VehicleState.speed;
 	if(fabs(msg->twist.linear.x) > 0.25)
 		m_VehicleState.steer = atan(2.7 * msg->twist.angular.z/msg->twist.linear.x);
-	op_utility_ns::UtilityH::GetTickCount(m_VehicleState.tStamp);
+  op_utility_ns::UtilityH::getTickCount(m_VehicleState.tStamp);
 }
 
 void GlobalPlanner::callbackGetCANInfo(const autoware_can_msgs::CANInfoConstPtr &msg)
@@ -223,7 +223,7 @@ void GlobalPlanner::callbackGetCANInfo(const autoware_can_msgs::CANInfoConstPtr 
 	m_VehicleState.speed = msg->speed/3.6;
 	m_CurrentPose.v = m_VehicleState.speed;
 	m_VehicleState.steer = msg->angle * 0.45 / 660;
-	op_utility_ns::UtilityH::GetTickCount(m_VehicleState.tStamp);
+  op_utility_ns::UtilityH::getTickCount(m_VehicleState.tStamp);
 }
 
 bool GlobalPlanner::GenerateGlobalPlan(PlannerHNS::WayPoint& startPoint, PlannerHNS::WayPoint& goalPoint, std::vector<std::vector<PlannerHNS::WayPoint> >& generatedTotalPaths)
@@ -301,7 +301,7 @@ void GlobalPlanner::VisualizeAndSend(const std::vector<std::vector<PlannerHNS::W
 	for(unsigned int i=0; i < generatedTotalPaths.size(); i++)
 	{
 		std::ostringstream str_out;
-		str_out << op_utility_ns::UtilityH::GetHomeDirectory();
+		str_out << op_utility_ns::UtilityH::getHomeDirectory();
 		str_out << op_utility_ns::DataRW::LoggingMainfolderName;
 		str_out << op_utility_ns::DataRW::GlobalPathLogFolderName;
 		str_out << "GlobalPath_";
@@ -371,7 +371,7 @@ void GlobalPlanner::SaveSimulationData()
 	std::string header = "X,Y,Z,A,C,V,name,";
 
 	std::ostringstream fileName;
-	fileName << op_utility_ns::UtilityH::GetHomeDirectory()+op_utility_ns::DataRW::LoggingMainfolderName+op_utility_ns::DataRW::SimulationFolderName;
+	fileName << op_utility_ns::UtilityH::getHomeDirectory()+op_utility_ns::DataRW::LoggingMainfolderName+op_utility_ns::DataRW::SimulationFolderName;
 	fileName << "EgoCar.csv";
 	std::ofstream f(fileName.str().c_str());
 
@@ -391,11 +391,11 @@ int GlobalPlanner::LoadSimulationData()
 	std::ostringstream fileName;
 	fileName << "EgoCar.csv";
 
-	std::string simuDataFileName = op_utility_ns::UtilityH::GetHomeDirectory()+op_utility_ns::DataRW::LoggingMainfolderName+op_utility_ns::DataRW::SimulationFolderName + fileName.str();
+	std::string simuDataFileName = op_utility_ns::UtilityH::getHomeDirectory()+op_utility_ns::DataRW::LoggingMainfolderName+op_utility_ns::DataRW::SimulationFolderName + fileName.str();
 	op_utility_ns::SimulationFileReader sfr(simuDataFileName);
 	op_utility_ns::SimulationFileReader::SimulationData data;
 
-	int nData = sfr.ReadAllData(data);
+	int nData = sfr.readAllData(data);
 	if(nData == 0)
 		return 0;
 
@@ -414,7 +414,7 @@ void GlobalPlanner::MainLoop()
 {
 	ros::Rate loop_rate(25);
 	timespec animation_timer;
-	op_utility_ns::UtilityH::GetTickCount(animation_timer);
+  op_utility_ns::UtilityH::getTickCount(animation_timer);
 
 	while (ros::ok())
 	{
@@ -442,7 +442,7 @@ void GlobalPlanner::MainLoop()
 		{
 			std::vector<op_utility_ns::AisanDataConnFileReader::DataConn> conn_data;;
 
-			if(m_MapRaw.GetVersion()==2)
+			if(m_MapRaw.getVersion()==2)
 			{
 				std::cout << "Map Version 2" << endl;
 				m_bKmlMap = true;
@@ -453,7 +453,7 @@ void GlobalPlanner::MainLoop()
 						m_MapRaw.pCrossWalks->m_data_list, m_MapRaw.pNodes->m_data_list, conn_data,
 						m_MapRaw.pLanes, m_MapRaw.pPoints, m_MapRaw.pNodes, m_MapRaw.pLines, PlannerHNS::GPSPoint(), m_Map, true, m_params.bEnableLaneChange, false);
 			}
-			else if(m_MapRaw.GetVersion()==1)
+			else if(m_MapRaw.getVersion()==1)
 			{
 				std::cout << "Map Version 1" << endl;
 				m_bKmlMap = true;
@@ -498,9 +498,9 @@ void GlobalPlanner::MainLoop()
 			else
 				bMakeNewPlan = true;
 
-			if(bMakeNewPlan || (m_params.bEnableDynamicMapUpdate && op_utility_ns::UtilityH::GetTimeDiffNow(m_ReplnningTimer) > REPLANNING_TIME))
+			if(bMakeNewPlan || (m_params.bEnableDynamicMapUpdate && op_utility_ns::UtilityH::getTimeDiffNow(m_ReplnningTimer) > REPLANNING_TIME))
 			{
-				op_utility_ns::UtilityH::GetTickCount(m_ReplnningTimer);
+        op_utility_ns::UtilityH::getTickCount(m_ReplnningTimer);
 				PlannerHNS::WayPoint goalPoint = m_GoalsPos.at(m_iCurrentGoalIndex);
 				bool bNewPlan = GenerateGlobalPlan(m_CurrentPose, goalPoint, m_GeneratedTotalPaths);
 

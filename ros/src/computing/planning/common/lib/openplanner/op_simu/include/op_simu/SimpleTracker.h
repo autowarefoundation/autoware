@@ -187,7 +187,7 @@ public:
       predObj.center.pos.a = currA;
       predObj.center.v = currV;
       predObj.bVelocity = true;
-      predObj.acceleration = op_utility_ns::UtilityH::GetSign(predObj.center.v - prev_v);
+      predObj.acceleration = op_utility_ns::UtilityH::getSign(predObj.center.v - prev_v);
     } else {
       predObj.bDirection = false;
       predObj.bVelocity = false;
@@ -298,7 +298,7 @@ public:
       predObj.center.v = currV;
 
       predObj.bVelocity = true;
-      predObj.acceleration = op_utility_ns::UtilityH::GetSign(predObj.center.v - oldObj.center.v);
+      predObj.acceleration = op_utility_ns::UtilityH::getSign(predObj.center.v - oldObj.center.v);
     } else {
       predObj.bDirection = false;
       predObj.bVelocity = false;

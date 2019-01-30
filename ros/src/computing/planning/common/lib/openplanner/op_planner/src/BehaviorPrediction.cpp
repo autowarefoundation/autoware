@@ -22,8 +22,8 @@ BehaviorPrediction::BehaviorPrediction()
   m_bStepByStep = false;
   m_bCanDecide = true;
   m_bParticleFilter = false;
-  op_utility_ns::UtilityH::GetTickCount(m_GenerationTimer);
-  op_utility_ns::UtilityH::GetTickCount(m_ResamplingTimer);
+	op_utility_ns::UtilityH::getTickCount(m_GenerationTimer);
+	op_utility_ns::UtilityH::getTickCount(m_ResamplingTimer);
   m_bFirstMove = true;
   m_bDebugOut = false;
 }
@@ -281,10 +281,10 @@ void BehaviorPrediction::CalOnePartWeight(ObjParticles * pParts, Particle & p)
   p.pose_w = 1.0 /
     hypot(0.5 * (p.pose.pos.y - pParts->obj.center.pos.y),
       0.5 * (p.pose.pos.x - pParts->obj.center.pos.x));
-  //p.dir_w  = exp(-(pow(fabs(op_utility_ns::UtilityH::AngleBetweenTwoAnglesPositive(p.pose.pos.a,  pParts->obj.center.pos.a)),2)/(2*MEASURE_ANGLE_ERROR*MEASURE_ANGLE_ERROR)));
+  //p.dir_w  = exp(-(pow(fabs(op_utility_ns::UtilityH::angleBetweenTwoAnglesPositive(p.pose.pos.a,  pParts->obj.center.pos.a)),2)/(2*MEASURE_ANGLE_ERROR*MEASURE_ANGLE_ERROR)));
   p.dir_w = M_PI_2 -
-    fabs(op_utility_ns::UtilityH::AngleBetweenTwoAnglesPositive(p.pose.pos.a,
-      pParts->obj.center.pos.a));
+    fabs(op_utility_ns::UtilityH::angleBetweenTwoAnglesPositive(p.pose.pos.a,
+																																pParts->obj.center.pos.a));
   p.vel_w =
     exp(-(pow((p.vel - pParts->obj.center.v), 2) / (2 * MEASURE_VEL_ERROR * MEASURE_VEL_ERROR)));
   //p.vel_w = fabs(p.vel - pParts->obj.center.v);
@@ -570,7 +570,7 @@ void BehaviorPrediction::FindBest(ObjParticles * pParts)
 void BehaviorPrediction::SamplesFreshParticles(ObjParticles * pParts)
 {
   timespec _time;
-  op_utility_ns::UtilityH::GetTickCount(_time);
+	op_utility_ns::UtilityH::getTickCount(_time);
   srand(_time.tv_nsec);
 
   ENG eng(_time.tv_nsec);
@@ -590,8 +590,8 @@ void BehaviorPrediction::SamplesFreshParticles(ObjParticles * pParts)
   p.indicator = 0;
   bool bRegenerate = true;
 
-  if (op_utility_ns::UtilityH::GetTimeDiffNow(m_GenerationTimer) > 2) {
-    op_utility_ns::UtilityH::GetTickCount(m_GenerationTimer);
+  if (op_utility_ns::UtilityH::getTimeDiffNow(m_GenerationTimer) > 2) {
+		op_utility_ns::UtilityH::getTickCount(m_GenerationTimer);
     bRegenerate = true;
   }
 
@@ -667,8 +667,8 @@ void BehaviorPrediction::MoveParticles(ObjParticles * pParts)
   if (m_bStepByStep) {
     dt = 0.08;
   } else {
-    dt = op_utility_ns::UtilityH::GetTimeDiffNow(m_ResamplingTimer);
-    op_utility_ns::UtilityH::GetTickCount(m_ResamplingTimer);
+    dt = op_utility_ns::UtilityH::getTimeDiffNow(m_ResamplingTimer);
+		op_utility_ns::UtilityH::getTickCount(m_ResamplingTimer);
     if (m_bFirstMove) {
       m_bFirstMove = false;
       return;
@@ -750,7 +750,7 @@ void BehaviorPrediction::MoveParticles(ObjParticles * pParts)
 
     } else {
       curr_behavior = decision_make.MoveStep(dt, p->pose, p->pTraj->trajectory, carInfo);
-      p->acc = op_utility_ns::UtilityH::GetSign(curr_behavior.maxVelocity - p->vel_prev_big);
+      p->acc = op_utility_ns::UtilityH::getSign(curr_behavior.maxVelocity - p->vel_prev_big);
       p->vel = curr_behavior.maxVelocity;
       if (fabs(p->vel - p->vel_prev_big) > 0.5) {
         p->vel_prev_big = p->vel;

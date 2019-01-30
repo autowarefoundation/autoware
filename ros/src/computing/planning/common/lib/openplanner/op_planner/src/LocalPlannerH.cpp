@@ -36,7 +36,7 @@ LocalPlannerH::LocalPlannerH()
   m_pStopSignWaitState = 0;
   m_pFollowState = 0;
   m_SimulationSteeringDelayFactor = 0.1;
-  op_utility_ns::UtilityH::GetTickCount(m_SteerDelayTimer);
+  op_utility_ns::UtilityH::getTickCount(m_SteerDelayTimer);
   m_PredictionTime = 0;
 
   InitBehaviorStates();
@@ -72,11 +72,11 @@ void LocalPlannerH::Init(
   m_params = params;
   m_InitialFollowingDistance = m_params.minFollowingDistance;
 
-  m_pidVelocity.Init(0.005, 0.005, 0.05);
-  m_pidVelocity.Setlimit(m_params.maxSpeed, 0);
+  m_pidVelocity.init(0.005, 0.005, 0.05);
+  m_pidVelocity.setLimit(m_params.maxSpeed, 0);
 
-  m_pidStopping.Init(0.1, 0.05, 0.1);
-  m_pidStopping.Setlimit(m_params.horizonDistance, 0);
+  m_pidStopping.init(0.1, 0.05, 0.1);
+  m_pidStopping.setLimit(m_params.horizonDistance, 0);
 
   if (m_pCurrentBehaviorState) {
     m_pCurrentBehaviorState->SetBehaviorsParams(&m_params);
@@ -149,11 +149,11 @@ void LocalPlannerH::InitPolygons()
 void LocalPlannerH::ReInitializePlanner(const WayPoint & start_pose)
 {
 
-  m_pidVelocity.Init(0.005, 0.005, 0.05);
-  m_pidVelocity.Setlimit(m_params.maxSpeed, 0);
+  m_pidVelocity.init(0.005, 0.005, 0.05);
+  m_pidVelocity.setLimit(m_params.maxSpeed, 0);
 
-  m_pidStopping.Init(0.1, 0.05, 0.1);
-  m_pidStopping.Setlimit(m_params.horizonDistance, 0);
+  m_pidStopping.init(0.1, 0.05, 0.1);
+  m_pidStopping.setLimit(m_params.horizonDistance, 0);
 
   m_PrevBrakingWayPoint = 0;
   m_iSafeTrajectory = 0;
@@ -201,7 +201,7 @@ void LocalPlannerH::LocalizeMe(const double & dt)
   }
 
   m_OdometryState.pos.a = atan2(sin(m_OdometryState.pos.a), cos(m_OdometryState.pos.a));
-  m_OdometryState.pos.a = op_utility_ns::UtilityH::FixNegativeAngle(m_OdometryState.pos.a);
+  m_OdometryState.pos.a = op_utility_ns::UtilityH::fixNegativeAngle(m_OdometryState.pos.a);
 
   state.pos.a = m_OdometryState.pos.a;
   state.pos.x = m_OdometryState.pos.x -
@@ -219,9 +219,9 @@ void LocalPlannerH::UpdateState(const PlannerHNS::VehicleState & state, const bo
     double currSteerDeg = RAD2DEG * m_CurrentSteering;
     double desiredSteerDeg = RAD2DEG * m_CurrentSteeringD;
 
-    double mFact = op_utility_ns::UtilityH::GetMomentumScaleFactor(state.speed);
+    double mFact = op_utility_ns::UtilityH::getMomentumScaleFactor(state.speed);
     double diff = desiredSteerDeg - currSteerDeg;
-    double diffSign = op_utility_ns::UtilityH::GetSign(diff);
+    double diffSign = op_utility_ns::UtilityH::getSign(diff);
     double inc = 1.0 * diffSign;
     if (fabs(diff) < 1.0) {
       inc = diff;
@@ -231,10 +231,10 @@ void LocalPlannerH::UpdateState(const PlannerHNS::VehicleState & state, const bo
 //				 << ", Fact: " << mFact
 //				 << ", Diff: " << diff
 //				 << ", inc: " << inc << std::endl;
-    if (op_utility_ns::UtilityH::GetTimeDiffNow(m_SteerDelayTimer) >
+    if (op_utility_ns::UtilityH::getTimeDiffNow(m_SteerDelayTimer) >
       m_SimulationSteeringDelayFactor * mFact)
     {
-      op_utility_ns::UtilityH::GetTickCount(m_SteerDelayTimer);
+      op_utility_ns::UtilityH::getTickCount(m_SteerDelayTimer);
       currSteerDeg += inc;
     }
 
@@ -279,10 +279,10 @@ bool LocalPlannerH::GetNextTrafficLight(
           i).pos.x - state.pos.x);
     if (d <= trafficLights.at(i).stoppingDistance) {
       double a_diff =
-        op_utility_ns::UtilityH::AngleBetweenTwoAnglesPositive(op_utility_ns::UtilityH::FixNegativeAngle(
-            trafficLights
+        op_utility_ns::UtilityH::angleBetweenTwoAnglesPositive(op_utility_ns::UtilityH::fixNegativeAngle(
+          trafficLights
             .at(
-              i).pos.a), op_utility_ns::UtilityH::FixNegativeAngle(state.pos.a));
+              i).pos.a), op_utility_ns::UtilityH::fixNegativeAngle(state.pos.a));
 
       if (a_diff < M_PI_2 && trafficLights.at(i).id != prevTrafficLightId) {
         //std::cout << "Detected Light, ID = " << trafficLights.at(i).id << ", Distance = " << d << ", Angle = " << trafficLights.at(i).pos.a*RAD2DEG << ", Car Heading = " << state.pos.a*RAD2DEG << ", Diff = " << a_diff*RAD2DEG << std::endl;
@@ -818,25 +818,24 @@ PlannerHNS::BehaviorState LocalPlannerH::DoOneStep(
   m_PredictedTrajectoryObstacles = obj_list;
 
   timespec t;
-  op_utility_ns::UtilityH::GetTickCount(t);
+  op_utility_ns::UtilityH::getTickCount(t);
   TrajectoryCost tc = m_TrajectoryCostsCalculatotor.DoOneStep(m_RollOuts, m_TotalPath, state,
       m_pCurrentBehaviorState->GetCalcParams()->iCurrSafeTrajectory,
       m_pCurrentBehaviorState->GetCalcParams()->iCurrSafeLane, *m_pCurrentBehaviorState->m_pParams,
       m_CarInfo, vehicleState, m_PredictedTrajectoryObstacles);
-  m_CostCalculationTime = op_utility_ns::UtilityH::GetTimeDiffNow(t);
+  m_CostCalculationTime = op_utility_ns::UtilityH::getTimeDiffNow(t);
 
-
-  op_utility_ns::UtilityH::GetTickCount(t);
+  op_utility_ns::UtilityH::getTickCount(t);
   CalculateImportantParameterForDecisionMaking(vehicleState, goalID, bEmergencyStop, trafficLight,
     tc);
 
   beh = GenerateBehaviorState(vehicleState);
-  m_BehaviorGenTime = op_utility_ns::UtilityH::GetTimeDiffNow(t);
+  m_BehaviorGenTime = op_utility_ns::UtilityH::getTimeDiffNow(t);
 
-  op_utility_ns::UtilityH::GetTickCount(t);
+  op_utility_ns::UtilityH::getTickCount(t);
   beh.bNewPlan = SelectSafeTrajectoryAndSpeedProfile(vehicleState);
 
-  m_RollOutsGenerationTime = op_utility_ns::UtilityH::GetTimeDiffNow(t);
+  m_RollOutsGenerationTime = op_utility_ns::UtilityH::getTimeDiffNow(t);
 
   beh.maxVelocity = UpdateVelocityDirectlyToTrajectory(beh, vehicleState, dt);
 

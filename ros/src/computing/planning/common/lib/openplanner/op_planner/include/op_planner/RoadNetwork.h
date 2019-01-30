@@ -1099,7 +1099,7 @@ public:
     std::string str = "Unknown";
     switch (beh) {
       case PlannerHNS::INITIAL_STATE:
-        str = "Init";
+        str = "init";
         break;
       case PlannerHNS::WAITING_STATE:
         str = "Waiting";

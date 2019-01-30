@@ -28,9 +28,9 @@ SimulatedTrajectoryFollower::SimulatedTrajectoryFollower()
   m_iCalculatedIndex = 0;
 
 
-  //m_pidSteer.Init(0.35, 0.01, 0.01); // for 5 m/s
-  //m_pidSteer.Init(1.5, 0.00, 0.00); // for 3 m/s
-  //m_pidSteer.Init(0.9, 0.1, 0.2); //for lateral error
+  //m_pidSteer.init(0.35, 0.01, 0.01); // for 5 m/s
+  //m_pidSteer.init(1.5, 0.00, 0.00); // for 3 m/s
+  //m_pidSteer.init(0.9, 0.1, 0.2); //for lateral error
 
 }
 
@@ -40,9 +40,9 @@ void SimulatedTrajectoryFollower::Init(
 {
   m_Params = params;
   m_VehicleInfo = vehicleInfo;
-  m_pidSteer.Init(params.Steering_Gain.kP, params.Steering_Gain.kI, params.Steering_Gain.kD);       // for 3 m/s
-  m_pidSteer.Setlimit(vehicleInfo.max_steer_angle, -vehicleInfo.max_steer_angle);
-  m_pidVelocity.Init(params.Velocity_Gain.kP, params.Velocity_Gain.kI, params.Velocity_Gain.kD);
+  m_pidSteer.init(params.Steering_Gain.kP, params.Steering_Gain.kI, params.Steering_Gain.kD);       // for 3 m/s
+  m_pidSteer.setLimit(vehicleInfo.max_steer_angle, -vehicleInfo.max_steer_angle);
+  m_pidVelocity.init(params.Velocity_Gain.kP, params.Velocity_Gain.kI, params.Velocity_Gain.kD);
 }
 
 SimulatedTrajectoryFollower::~SimulatedTrajectoryFollower()
@@ -115,10 +115,10 @@ int SimulatedTrajectoryFollower::SteerControllerPart(
   const PlannerHNS::WayPoint & state, const PlannerHNS::WayPoint & way_point,
   const double & lateral_error, double & steerd)
 {
-  double current_a = op_utility_ns::UtilityH::SplitPositiveAngle(state.pos.a);
+  double current_a = op_utility_ns::UtilityH::splitPositiveAngle(state.pos.a);
   double target_a = atan2(way_point.pos.y - state.pos.y, way_point.pos.x - state.pos.x);
 
-  double e = op_utility_ns::UtilityH::SplitPositiveAngle(target_a - current_a);
+  double e = op_utility_ns::UtilityH::splitPositiveAngle(target_a - current_a);
 
   if (e > M_PI_2 || e < -M_PI_2) {
     return -1;
@@ -134,7 +134,7 @@ int SimulatedTrajectoryFollower::VeclocityControllerUpdate(
   const PlannerHNS::BehaviorState & CurrBehavior, double & desiredVelocity)
 {
   //desiredVelocity = CurrBehavior.maxVelocity;
-  m_pidVelocity.Setlimit(CurrBehavior.maxVelocity, 0);
+  m_pidVelocity.setLimit(CurrBehavior.maxVelocity, 0);
   double e = CurrBehavior.maxVelocity - CurrStatus.speed;
 
   desiredVelocity = m_pidVelocity.getPID(e);

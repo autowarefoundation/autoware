@@ -63,14 +63,14 @@ void DecisionMaker::Init(
   m_ControlParams = ctrlParams;
   m_params = params;
 
-  m_pidVelocity.Init(0.01, 0.004, 0.01);
-  m_pidVelocity.Setlimit(m_params.maxSpeed, 0);
+	m_pidVelocity.init(0.01, 0.004, 0.01);
+	m_pidVelocity.setLimit(m_params.maxSpeed, 0);
 
-  m_pidStopping.Init(0.05, 0.05, 0.1);
-  m_pidStopping.Setlimit(m_params.horizonDistance, 0);
+	m_pidStopping.init(0.05, 0.05, 0.1);
+	m_pidStopping.setLimit(m_params.horizonDistance, 0);
 
-  m_pidFollowing.Init(0.05, 0.05, 0.01);
-  m_pidFollowing.Setlimit(m_params.minFollowingDistance, 0);
+	m_pidFollowing.init(0.05, 0.05, 0.01);
+	m_pidFollowing.setLimit(m_params.minFollowingDistance, 0);
 
   InitBehaviorStates();
 
@@ -145,10 +145,10 @@ bool DecisionMaker::GetNextTrafficLight(
           i).pos.x - state.pos.x);
     if (d <= trafficLights.at(i).stoppingDistance) {
       double a_diff =
-        op_utility_ns::UtilityH::AngleBetweenTwoAnglesPositive(op_utility_ns::UtilityH::FixNegativeAngle(
-            trafficLights
-            .at(
-              i).pos.a), op_utility_ns::UtilityH::FixNegativeAngle(state.pos.a));
+				op_utility_ns::UtilityH::angleBetweenTwoAnglesPositive(op_utility_ns::UtilityH::fixNegativeAngle(
+					trafficLights
+						.at(
+							i).pos.a), op_utility_ns::UtilityH::fixNegativeAngle(state.pos.a));
 
       if (a_diff < M_PI_2 && trafficLights.at(i).id != prevTrafficLightId) {
         //std::cout << "Detected Light, ID = " << trafficLights.at(i).id << ", Distance = " << d << ", Angle = " << trafficLights.at(i).pos.a*RAD2DEG << ", Car Heading = " << state.pos.a*RAD2DEG << ", Diff = " << a_diff*RAD2DEG << std::endl;
@@ -415,7 +415,7 @@ double DecisionMaker::UpdateVelocityDirectlyToTrajectory(
     double e = -beh.stopDistance;
     double desiredVelocity = m_pidStopping.getPID(e);
 
-//		std::cout << "Stopping : e=" << e << ", desiredPID=" << desiredVelocity << ", PID: " << m_pidStopping.ToString() << std::endl;
+//		std::cout << "Stopping : e=" << e << ", desiredPID=" << desiredVelocity << ", PID: " << m_pidStopping.toString() << std::endl;
 
     if (desiredVelocity > max_velocity) {
       desiredVelocity = max_velocity;

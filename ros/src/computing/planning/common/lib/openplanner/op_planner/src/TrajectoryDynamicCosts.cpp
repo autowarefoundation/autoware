@@ -79,7 +79,7 @@ TrajectoryCost TrajectoryDynamicCosts::DoOneStepDynamic(
 
   //cout << "Trajectory Costs Log : CurrIndex: " << currIndex << " --------------------- " << endl;
   for (unsigned int ic = 0; ic < m_TrajectoryCosts.size(); ic++) {
-    //cout << m_TrajectoryCosts.at(ic).ToString();
+    //cout << m_TrajectoryCosts.at(ic).toString();
     if (!m_TrajectoryCosts.at(ic).bBlocked && m_TrajectoryCosts.at(ic).cost < smallestCost) {
       smallestCost = m_TrajectoryCosts.at(ic).cost;
       smallestIndex = ic;
@@ -183,7 +183,7 @@ TrajectoryCost TrajectoryDynamicCosts::DoOneStepStatic(
 
   //cout << "Trajectory Costs Log : CurrIndex: " << currIndex << " --------------------- " << endl;
   for (unsigned int ic = 0; ic < m_TrajectoryCosts.size(); ic++) {
-    //cout << m_TrajectoryCosts.at(ic).ToString();
+    //cout << m_TrajectoryCosts.at(ic).toString();
     if (!m_TrajectoryCosts.at(ic).bBlocked && m_TrajectoryCosts.at(ic).cost < smallestCost) {
       smallestCost = m_TrajectoryCosts.at(ic).cost;
       smallestIndex = ic;
@@ -268,7 +268,7 @@ TrajectoryCost TrajectoryDynamicCosts::DoOneStep(
 
   //cout << "Trajectory Costs Log : CurrIndex: " << currIndex << " --------------------- " << endl;
   for (unsigned int ic = 0; ic < m_TrajectoryCosts.size(); ic++) {
-    //cout << m_TrajectoryCosts.at(ic).ToString();
+    //cout << m_TrajectoryCosts.at(ic).toString();
     if (!m_TrajectoryCosts.at(ic).bBlocked && m_TrajectoryCosts.at(ic).cost < smallestCost) {
       smallestCost = m_TrajectoryCosts.at(ic).cost;
       smallestIndex = ic;
@@ -750,8 +750,8 @@ void TrajectoryDynamicCosts::CalculateIntersectionVelocities(
           if (collision_distance <= c_lateral_d && i < closest_path_i) {
 
             closest_path_i = i;
-            double a = op_utility_ns::UtilityH::AngleBetweenTwoAnglesPositive(path.at(
-                  i).pos.a, obj.predTrajectories.at(k).at(j).pos.a) / M_PI;
+            double a = op_utility_ns::UtilityH::angleBetweenTwoAnglesPositive(path.at(
+							i).pos.a, obj.predTrajectories.at(k).at(j).pos.a) / M_PI;
             if (a < 0.25 && (currPose.v - obj.center.v) > 0) {
               trajectoryCosts.closest_obj_velocity = (currPose.v - obj.center.v);
             } else {

@@ -31,8 +31,8 @@ TrajectoryFollower::TrajectoryFollower()
   m_StartFollowDistance = 0;
   m_FollowAcc = 0.5;
   m_iCalculatedIndex = 0;
-  op_utility_ns::UtilityH::GetTickCount(m_SteerDelayTimer);
-  op_utility_ns::UtilityH::GetTickCount(m_VelocityDelayTimer);
+  op_utility_ns::UtilityH::getTickCount(m_SteerDelayTimer);
+  op_utility_ns::UtilityH::getTickCount(m_VelocityDelayTimer);
 }
 
 void TrajectoryFollower::Init(
@@ -48,39 +48,44 @@ void TrajectoryFollower::Init(
   m_Params = params;
   m_VehicleInfo = vehicleInfo;
 
-  //m_pidSteer.Init(0.1, 0.005, 0.001); // for 5 m/s
-  //m_pidSteer.Init(0.07, 0.02, 0.01); // for 3 m/s
-  //m_pidSteer.Init(0.9, 0.1, 0.2); //for lateral error
-  //m_pidVelocity.Init(0.1, 0.005, 0.1);
-  m_lowpassSteer.Init(2, 100, 4);
+  //m_pidSteer.init(0.1, 0.005, 0.001); // for 5 m/s
+  //m_pidSteer.init(0.07, 0.02, 0.01); // for 3 m/s
+  //m_pidSteer.init(0.9, 0.1, 0.2); //for lateral error
+  //m_pidVelocity.init(0.1, 0.005, 0.1);
+  m_lowpassSteer.init(2, 100, 4);
 
-  m_pidSteer.Init(params.Steering_Gain.kP, params.Steering_Gain.kI, params.Steering_Gain.kD);       // for 3 m/s
-  m_pidSteer.Setlimit(m_VehicleInfo.max_steer_angle, -m_VehicleInfo.max_steer_angle);
-  m_pidVelocity.Init(params.Velocity_Gain.kP, params.Velocity_Gain.kI, params.Velocity_Gain.kD);
+  m_pidSteer.init(params.Steering_Gain.kP, params.Steering_Gain.kI, params.Steering_Gain.kD);       // for 3 m/s
+  m_pidSteer.setLimit(m_VehicleInfo.max_steer_angle, -m_VehicleInfo.max_steer_angle);
+  m_pidVelocity.init(params.Velocity_Gain.kP, params.Velocity_Gain.kI, params.Velocity_Gain.kD);
 }
 
 TrajectoryFollower::~TrajectoryFollower()
 {
   if (m_bEnableLog) {
-    op_utility_ns::DataRW::WriteLogData(
-      op_utility_ns::UtilityH::GetHomeDirectory() + op_utility_ns::DataRW::LoggingMainfolderName + op_utility_ns::DataRW::ControlLogFolderName, "ControlLog",
+    op_utility_ns::DataRW::writeLogData(
+      op_utility_ns::UtilityH::getHomeDirectory() + op_utility_ns::DataRW::LoggingMainfolderName
+        + op_utility_ns::DataRW::ControlLogFolderName, "ControlLog",
       "time,X,Y,heading, Target, error,LateralError,SteerBeforLowPass,Steer,iIndex, pathSize",
       m_LogData);
 
-    op_utility_ns::DataRW::WriteLogData(
-      op_utility_ns::UtilityH::GetHomeDirectory() + op_utility_ns::DataRW::LoggingMainfolderName + op_utility_ns::DataRW::ControlLogFolderName, "SteeringCalibrationLog",
+    op_utility_ns::DataRW::writeLogData(
+      op_utility_ns::UtilityH::getHomeDirectory() + op_utility_ns::DataRW::LoggingMainfolderName
+        + op_utility_ns::DataRW::ControlLogFolderName, "SteeringCalibrationLog",
       "time, reset, start A, end A, desired A, dt, vel", m_SteerCalibrationData);
 
-    op_utility_ns::DataRW::WriteLogData(
-      op_utility_ns::UtilityH::GetHomeDirectory() + op_utility_ns::DataRW::LoggingMainfolderName + op_utility_ns::DataRW::ControlLogFolderName, "VelocityCalibrationLog",
+    op_utility_ns::DataRW::writeLogData(
+      op_utility_ns::UtilityH::getHomeDirectory() + op_utility_ns::DataRW::LoggingMainfolderName
+        + op_utility_ns::DataRW::ControlLogFolderName, "VelocityCalibrationLog",
       "time, reset, start V, end V, desired V, dt, steering", m_VelocityCalibrationData);
 
-    op_utility_ns::DataRW::WriteLogData(
-      op_utility_ns::UtilityH::GetHomeDirectory() + op_utility_ns::DataRW::LoggingMainfolderName + op_utility_ns::DataRW::ControlLogFolderName, "SteeringPIDLog",
-      m_pidSteer.ToStringHeader(), m_LogSteerPIDData);
-    op_utility_ns::DataRW::WriteLogData(
-      op_utility_ns::UtilityH::GetHomeDirectory() + op_utility_ns::DataRW::LoggingMainfolderName + op_utility_ns::DataRW::ControlLogFolderName, "VelocityPIDLog",
-      m_pidVelocity.ToStringHeader(), m_LogVelocityPIDData);
+    op_utility_ns::DataRW::writeLogData(
+      op_utility_ns::UtilityH::getHomeDirectory() + op_utility_ns::DataRW::LoggingMainfolderName
+        + op_utility_ns::DataRW::ControlLogFolderName, "SteeringPIDLog",
+      m_pidSteer.toStringHeader(), m_LogSteerPIDData);
+    op_utility_ns::DataRW::writeLogData(
+      op_utility_ns::UtilityH::getHomeDirectory() + op_utility_ns::DataRW::LoggingMainfolderName
+        + op_utility_ns::DataRW::ControlLogFolderName, "VelocityPIDLog",
+      m_pidVelocity.toStringHeader(), m_LogVelocityPIDData);
   }
 }
 
@@ -181,20 +186,20 @@ int TrajectoryFollower::SteerControllerPart(
   const PlannerHNS::WayPoint & state, const PlannerHNS::WayPoint & way_point,
   const double & lateral_error, double & steerd)
 {
-  double current_a = op_utility_ns::UtilityH::SplitPositiveAngle(state.pos.a);
+  double current_a = op_utility_ns::UtilityH::splitPositiveAngle(state.pos.a);
   double target_a = atan2(way_point.pos.y - state.pos.y, way_point.pos.x - state.pos.x);
 
-  double e = op_utility_ns::UtilityH::SplitPositiveAngle(target_a - current_a);
+  double e = op_utility_ns::UtilityH::splitPositiveAngle(target_a - current_a);
 
 //	if(e > M_PI_2 || e < -M_PI_2)
 //		return -1;
 
 
   double before_lowpass = m_pidSteer.getPID(e);
-  //cout << m_pidSteer.ToString() << endl;
+  //cout << m_pidSteer.toString() << endl;
 
   if (m_bEnableLog) {
-    m_LogSteerPIDData.push_back(m_pidSteer.ToString());
+    m_LogSteerPIDData.push_back(m_pidSteer.toString());
   }
 
   //TODO use lateral error instead of angle error
@@ -218,7 +223,7 @@ int TrajectoryFollower::SteerControllerPart(
 //	timespec t;
 //	UtilityH::GetTickCount(t);
 //	std::ostringstream dataLine;
-//	dataLine << UtilityH::GetLongTime(t) << "," << state.pos.x << "," << state.pos.y << "," <<  current_a << "," <<
+//	dataLine << UtilityH::getLongTime(t) << "," << state.pos.x << "," << state.pos.y << "," <<  current_a << "," <<
 //			target_a << "," <<  e << "," <<m_LateralError << "," <<  before_lowpass << "," <<  steerd <<  "," <<
 //			m_iPrevWayPoint << "," << m_Path.size() << ",";
 //	m_LogData.push_back(dataLine.str());
@@ -261,7 +266,7 @@ int TrajectoryFollower::VeclocityControllerUpdate(
     double e = CurrBehavior.maxVelocity - CurrStatus.speed;
 
     //Using PID for velocity
-    //m_pidVelocity.Setlimit(CurrBehavior.maxVelocity, 0);
+    //m_pidVelocity.setLimit(CurrBehavior.maxVelocity, 0);
     //desiredVelocity = m_pidVelocity.getPID(e);
 
     //Using constant acceleration for velocity
@@ -320,7 +325,7 @@ int TrajectoryFollower::VeclocityControllerUpdate(
 
   desiredShift = PlannerHNS::SHIFT_POS_DD;
   if (m_bEnableLog) {
-    m_LogVelocityPIDData.push_back(m_pidVelocity.ToString());
+    m_LogVelocityPIDData.push_back(m_pidVelocity.toString());
   }
   return 1;
 }
@@ -412,12 +417,12 @@ void TrajectoryFollower::LogCalibrationData(const PlannerHNS::VehicleState & cur
     startAngle = m_prevCurrState_steer.steer * RAD2DEG;
     finishAngle = currState.steer * RAD2DEG;
     originalTargetAngle = m_prevDesiredState_steer.steer * RAD2DEG;
-    t_FromStartToFinish_a = op_utility_ns::UtilityH::GetTimeDiffNow(m_SteerDelayTimer);
+    t_FromStartToFinish_a = op_utility_ns::UtilityH::getTimeDiffNow(m_SteerDelayTimer);
     currVelocity = currState.speed * 3.6;
-    op_utility_ns::UtilityH::GetTickCount(m_SteerDelayTimer);
+    op_utility_ns::UtilityH::getTickCount(m_SteerDelayTimer);
 
     std::ostringstream dataLine;
-    dataLine << op_utility_ns::UtilityH::GetLongTime(m_SteerDelayTimer) << "," <<
+    dataLine << op_utility_ns::UtilityH::getLongTime(m_SteerDelayTimer) << "," <<
       bAngleReset << "," <<
       startAngle << "," <<
       finishAngle << "," <<
@@ -438,12 +443,12 @@ void TrajectoryFollower::LogCalibrationData(const PlannerHNS::VehicleState & cur
     startV = m_prevCurrState_vel.speed * 3.6;
     finishV = currState.speed * 3.6;
     originalTargetV = m_prevDesiredState_vel.speed * 3.6;
-    t_FromStartToFinish_v = op_utility_ns::UtilityH::GetTimeDiffNow(m_VelocityDelayTimer);
+    t_FromStartToFinish_v = op_utility_ns::UtilityH::getTimeDiffNow(m_VelocityDelayTimer);
     currSteering = currState.steer * RAD2DEG;
-    op_utility_ns::UtilityH::GetTickCount(m_VelocityDelayTimer);
+    op_utility_ns::UtilityH::getTickCount(m_VelocityDelayTimer);
 
     std::ostringstream dataLine;
-    dataLine << op_utility_ns::UtilityH::GetLongTime(m_VelocityDelayTimer) << "," <<
+    dataLine << op_utility_ns::UtilityH::getLongTime(m_VelocityDelayTimer) << "," <<
       bVelocityReset << "," <<
       startV << "," <<
       finishV << "," <<

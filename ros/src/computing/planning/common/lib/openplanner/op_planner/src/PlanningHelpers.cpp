@@ -35,8 +35,8 @@ bool PlanningHelpers::GetRelativeInfoRange(
   for (unsigned int i = 0; i < trajectories.size(); i++) {
     RelativeInfo info_item;
     GetRelativeInfo(trajectories.at(i), p, info_item);
-    double angle_diff = op_utility_ns::UtilityH::AngleBetweenTwoAnglesPositive(
-      info_item.perp_point.pos.a, p.pos.a) * RAD2DEG;
+    double angle_diff = op_utility_ns::UtilityH::angleBetweenTwoAnglesPositive(
+			info_item.perp_point.pos.a, p.pos.a) * RAD2DEG;
     if (angle_diff < 75) {
       info_item.iGlobalPath = i;
       infos.push_back(info_item);
@@ -148,7 +148,7 @@ bool PlanningHelpers::GetRelativeInfo(
       info.perp_point.pos.x - prevWP.pos.x);
 
   info.angle_diff =
-    op_utility_ns::UtilityH::AngleBetweenTwoAnglesPositive(p1.pos.a, p.pos.a) * RAD2DEG;
+		op_utility_ns::UtilityH::angleBetweenTwoAnglesPositive(p1.pos.a, p.pos.a) * RAD2DEG;
 
   return true;
 }
@@ -224,7 +224,7 @@ bool PlanningHelpers::GetRelativeInfoLimited(
         info.perp_point.pos.x - prevWP.pos.x);
 
     info.angle_diff =
-      op_utility_ns::UtilityH::AngleBetweenTwoAnglesPositive(p1.pos.a, p.pos.a) * RAD2DEG;
+			op_utility_ns::UtilityH::angleBetweenTwoAnglesPositive(p1.pos.a, p.pos.a) * RAD2DEG;
 
     info.bAfter = false;
     info.bBefore = false;
@@ -234,13 +234,13 @@ bool PlanningHelpers::GetRelativeInfoLimited(
     } else if (info.iFront == _trajectory.size() - 1) {
       int s = _trajectory.size();
       double angle_befor_last =
-        op_utility_ns::UtilityH::FixNegativeAngle(atan2(_trajectory.at(s - 2).pos.y -
-          _trajectory.at(s - 1).pos.y, _trajectory.at(s - 2).pos.x - _trajectory.at(s - 1).pos.x));
+				op_utility_ns::UtilityH::fixNegativeAngle(atan2(_trajectory.at(s - 2).pos.y -
+					_trajectory.at(s - 1).pos.y, _trajectory.at(s - 2).pos.x - _trajectory.at(s - 1).pos.x));
       double angle_from_perp =
-        op_utility_ns::UtilityH::FixNegativeAngle(atan2(info.perp_point.pos.y -
-          _trajectory.at(s - 1).pos.y, info.perp_point.pos.x - _trajectory.at(s - 1).pos.x));
-      double diff_last_perp = op_utility_ns::UtilityH::AngleBetweenTwoAnglesPositive(
-        angle_befor_last, angle_from_perp);
+				op_utility_ns::UtilityH::fixNegativeAngle(atan2(info.perp_point.pos.y -
+					_trajectory.at(s - 1).pos.y, info.perp_point.pos.x - _trajectory.at(s - 1).pos.x));
+      double diff_last_perp = op_utility_ns::UtilityH::angleBetweenTwoAnglesPositive(
+				angle_befor_last, angle_from_perp);
       info.after_angle = diff_last_perp;
       if (diff_last_perp > M_PI_2) {
         info.bAfter = true;
@@ -299,7 +299,7 @@ bool PlanningHelpers::GetRelativeInfoLimited(
         info.perp_point.pos.x - prevWP.pos.x);
 
     info.angle_diff =
-      op_utility_ns::UtilityH::AngleBetweenTwoAnglesPositive(p1.pos.a, p.pos.a) * RAD2DEG;
+			op_utility_ns::UtilityH::angleBetweenTwoAnglesPositive(p1.pos.a, p.pos.a) * RAD2DEG;
 
     info.bAfter = false;
     info.bBefore = false;
@@ -309,13 +309,13 @@ bool PlanningHelpers::GetRelativeInfoLimited(
     } else if (info.iFront == trajectory.size() - 1) {
       int s = trajectory.size();
       double angle_befor_last =
-        op_utility_ns::UtilityH::FixNegativeAngle(atan2(trajectory.at(s - 2).pos.y -
-          trajectory.at(s - 1).pos.y, trajectory.at(s - 2).pos.x - trajectory.at(s - 1).pos.x));
+				op_utility_ns::UtilityH::fixNegativeAngle(atan2(trajectory.at(s - 2).pos.y -
+					trajectory.at(s - 1).pos.y, trajectory.at(s - 2).pos.x - trajectory.at(s - 1).pos.x));
       double angle_from_perp =
-        op_utility_ns::UtilityH::FixNegativeAngle(atan2(info.perp_point.pos.y -
-          trajectory.at(s - 1).pos.y, info.perp_point.pos.x - trajectory.at(s - 1).pos.x));
-      double diff_last_perp = op_utility_ns::UtilityH::AngleBetweenTwoAnglesPositive(
-        angle_befor_last, angle_from_perp);
+				op_utility_ns::UtilityH::fixNegativeAngle(atan2(info.perp_point.pos.y -
+					trajectory.at(s - 1).pos.y, info.perp_point.pos.x - trajectory.at(s - 1).pos.x));
+      double diff_last_perp = op_utility_ns::UtilityH::angleBetweenTwoAnglesPositive(
+				angle_befor_last, angle_from_perp);
       info.after_angle = diff_last_perp;
       if (diff_last_perp > M_PI_2) {
         info.bAfter = true;
@@ -478,7 +478,7 @@ int PlanningHelpers::GetClosestNextPointIndex_obsolete(
     GPSPoint v_2(next.x - curr.x, next.y - curr.y, 0, 0);
     double norm2 = pointNorm(v_2);
     double dot_pro = v_1.x * v_2.x + v_1.y * v_2.y;
-    double a = op_utility_ns::UtilityH::FixNegativeAngle(acos(dot_pro / (norm1 * norm2)));
+    double a = op_utility_ns::UtilityH::fixNegativeAngle(acos(dot_pro / (norm1 * norm2)));
     if (a <= M_PI_2) {
       min_index = min_index + 1;
     }
@@ -597,7 +597,7 @@ int PlanningHelpers::GetClosestNextPointIndexFastV2(
     GPSPoint v_2(next.x - curr.x, next.y - curr.y, 0, 0);
     double norm2 = pointNorm(v_2);
     double dot_pro = v_1.x * v_2.x + v_1.y * v_2.y;
-    double a = op_utility_ns::UtilityH::FixNegativeAngle(acos(dot_pro / (norm1 * norm2)));
+    double a = op_utility_ns::UtilityH::fixNegativeAngle(acos(dot_pro / (norm1 * norm2)));
     if (a <= M_PI_2) {
       min_index = min_index + 1;
     }
@@ -691,7 +691,7 @@ int PlanningHelpers::GetClosestNextPointIndexFast(
     GPSPoint v_2(next.x - curr.x, next.y - curr.y, 0, 0);
     double norm2 = pointNorm(v_2);
     double dot_pro = v_1.x * v_2.x + v_1.y * v_2.y;
-    double a = op_utility_ns::UtilityH::FixNegativeAngle(acos(dot_pro / (norm1 * norm2)));
+    double a = op_utility_ns::UtilityH::fixNegativeAngle(acos(dot_pro / (norm1 * norm2)));
     if (a <= M_PI_2) {
       min_index = min_index + 1;
     }
@@ -716,8 +716,8 @@ int PlanningHelpers::GetClosestNextPointIndexDirectionFast(
 
   for (unsigned int i = prevIndex; i < size; i++) {
     d = distance2pointsSqr(trajectory[i].pos, p.pos);
-    double angle_diff = op_utility_ns::UtilityH::AngleBetweenTwoAnglesPositive(trajectory[i].pos.a,
-        p.pos.a) * RAD2DEG;
+    double angle_diff = op_utility_ns::UtilityH::angleBetweenTwoAnglesPositive(trajectory[i].pos.a,
+																																							 p.pos.a) * RAD2DEG;
 
     if (d < minD && angle_diff < 45) {
       min_index = i;
@@ -734,7 +734,7 @@ int PlanningHelpers::GetClosestNextPointIndexDirectionFast(
     GPSPoint v_2(next.x - curr.x, next.y - curr.y, 0, 0);
     double norm2 = pointNorm(v_2);
     double dot_pro = v_1.x * v_2.x + v_1.y * v_2.y;
-    double a = op_utility_ns::UtilityH::FixNegativeAngle(acos(dot_pro / (norm1 * norm2)));
+    double a = op_utility_ns::UtilityH::fixNegativeAngle(acos(dot_pro / (norm1 * norm2)));
     if (a <= M_PI_2) {
       min_index = min_index + 1;
     }
@@ -1287,13 +1287,13 @@ void PlanningHelpers::FixAngleOnly(std::vector<WayPoint> & path)
   if (path.size() <= 2) {return;}
 
   path[0].pos.a =
-    op_utility_ns::UtilityH::FixNegativeAngle(atan2(path[1].pos.y - path[0].pos.y,
-      path[1].pos.x - path[0].pos.x));
+		op_utility_ns::UtilityH::fixNegativeAngle(atan2(path[1].pos.y - path[0].pos.y,
+																										path[1].pos.x - path[0].pos.x));
 
   for (int j = 1; j < path.size() - 1; j++) {
     path[j].pos.a =
-      op_utility_ns::UtilityH::FixNegativeAngle(atan2(path[j + 1].pos.y - path[j].pos.y,
-        path[j + 1].pos.x - path[j].pos.x));
+			op_utility_ns::UtilityH::fixNegativeAngle(atan2(path[j + 1].pos.y - path[j].pos.y,
+																											path[j + 1].pos.x - path[j].pos.x));
   }
 
   int j = (int)path.size() - 1;
@@ -1314,8 +1314,8 @@ double PlanningHelpers::CalcAngleAndCost(
   if (path.size() < 2) {return 0;}
   if (path.size() == 2) {
     path[0].pos.a =
-      op_utility_ns::UtilityH::FixNegativeAngle(atan2(path[1].pos.y - path[0].pos.y,
-        path[1].pos.x - path[0].pos.x));
+			op_utility_ns::UtilityH::fixNegativeAngle(atan2(path[1].pos.y - path[0].pos.y,
+																											path[1].pos.x - path[0].pos.x));
     path[0].cost = lastCost;
     path[1].pos.a = path[0].pos.a;
     path[1].cost = path[0].cost + distance2points(path[0].pos, path[1].pos);
@@ -1323,14 +1323,14 @@ double PlanningHelpers::CalcAngleAndCost(
   }
 
   path[0].pos.a =
-    op_utility_ns::UtilityH::FixNegativeAngle(atan2(path[1].pos.y - path[0].pos.y,
-      path[1].pos.x - path[0].pos.x));
+		op_utility_ns::UtilityH::fixNegativeAngle(atan2(path[1].pos.y - path[0].pos.y,
+																										path[1].pos.x - path[0].pos.x));
   path[0].cost = lastCost;
 
   for (int j = 1; j < path.size() - 1; j++) {
     path[j].pos.a =
-      op_utility_ns::UtilityH::FixNegativeAngle(atan2(path[j + 1].pos.y - path[j].pos.y,
-        path[j + 1].pos.x - path[j].pos.x));
+			op_utility_ns::UtilityH::fixNegativeAngle(atan2(path[j + 1].pos.y - path[j].pos.y,
+																											path[j + 1].pos.x - path[j].pos.x));
     path[j].cost = path[j - 1].cost + distance2points(path[j - 1].pos, path[j].pos);
   }
 
@@ -2040,8 +2040,9 @@ WayPoint * PlanningHelpers::BuildPlanningSearchTreeV2(
     nextLeafToTrace.erase(nextLeafToTrace.begin() + min_cost_index);
 
     double distance_to_goal = distance2points(pH->pos, goalPos.pos);
-    double angle_to_goal = op_utility_ns::UtilityH::AngleBetweenTwoAnglesPositive(op_utility_ns::UtilityH::FixNegativeAngle(
-          pH->pos.a), op_utility_ns::UtilityH::FixNegativeAngle(goalPos.pos.a));
+    double angle_to_goal =
+			op_utility_ns::UtilityH::angleBetweenTwoAnglesPositive(op_utility_ns::UtilityH::fixNegativeAngle(
+				pH->pos.a), op_utility_ns::UtilityH::fixNegativeAngle(goalPos.pos.a));
     if (distance_to_goal <= 0.1 && angle_to_goal < M_PI_4) {
       cout << "Goal Found, LaneID: " << pH->laneId << ", Distance : " << distance_to_goal <<
           ", Angle: " << angle_to_goal * RAD2DEG << endl;
@@ -2649,7 +2650,7 @@ ACTION_TYPE PlanningHelpers::GetBranchingDirection(WayPoint & currWP, WayPoint &
 //	angle = angle / counter;
 //
 //	//Get Circular angle for correct subtraction
-//	double circle_angle = UtilityH::GetCircularAngle(currWP.pos.a, angle);
+//	double circle_angle = UtilityH::getCircularAngle(currWP.pos.a, angle);
 //
 //	if( currWP.pos.a - circle_angle > (7.5*DEG2RAD))
 //	{
@@ -2757,7 +2758,7 @@ void PlanningHelpers::WritePathToFile(const string & fileName, const vector<WayP
     dataList.push_back(strwp.str());
   }
 
-  dataFile.WriteLogData("", fileName, str_header.str(), dataList);
+	dataFile.writeLogData("", fileName, str_header.str(), dataList);
 }
 
 LIGHT_INDICATOR PlanningHelpers::GetIndicatorsFromPath(

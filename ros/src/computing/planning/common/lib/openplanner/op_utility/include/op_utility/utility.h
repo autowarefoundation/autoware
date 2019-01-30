@@ -25,32 +25,32 @@ public:
   UtilityH();
   virtual ~UtilityH();
 
-  static double FixNegativeAngle(const double & a);
-  static double SplitPositiveAngle(const double & a);
-  static double InverseAngle(const double & a);
-  static double AngleBetweenTwoAnglesPositive(
+  static double fixNegativeAngle(const double & a);
+  static double splitPositiveAngle(const double & a);
+  static double inverseAngle(const double & a);
+  static double angleBetweenTwoAnglesPositive(
     const double & a1,
     const double & a2);
-  static double GetCircularAngle(
+  static double getCircularAngle(
     const double & prevContAngle,
     const double & prevAngle, const double & currAngle);
 
   //Time Functions
-  static void GetTickCount(struct timespec & t);
-  static std::string GetFilePrefixHourMinuteSeconds();
-  static double GetTimeDiffNow(const struct timespec & old_t);
-  static double GetTimeDiff(
+  static void getTickCount(struct timespec & t);
+  static std::string getFilePrefixHourMinuteSeconds();
+  static double getTimeDiffNow(const struct timespec & old_t);
+  static double getTimeDiff(
     const struct timespec & old_t,
     const struct timespec & curr_t);
-  static std::string GetDateTimeStr();
+  static std::string getDateTimeStr();
   static int tsCompare(
     struct timespec time1, struct timespec time2,
     int micro_tolerance = 10);
-  static int GetSign(double x);
-  static std::string GetHomeDirectory();
-  static double GetMomentumScaleFactor(const double & v);
-  static timespec GetTimeSpec(const time_t & srcT);
-  static time_t GetLongTime(const struct timespec & srcT);
+  static int getSign(double x);
+  static std::string getHomeDirectory();
+  static double getMomentumScaleFactor(const double & v);
+  static timespec getTimeSpec(const time_t & srcT);
+  static time_t getLongTime(const struct timespec & srcT);
 };
 
 class PIDController
@@ -58,14 +58,14 @@ class PIDController
 public:
   PIDController();
   PIDController(const double & kp, const double & ki, const double & kd);
-  void Init(const double & kp, const double & ki, const double & kd);
-  void Setlimit(const double & upper, const double & lower);
+  void init(const double & kp, const double & ki, const double & kd);
+  void setLimit(const double & upper, const double & lower);
   double getPID(const double & currValue, const double & targetValue);
   double getPID(const double & e);
-  void ResetD();
-  void ResetI();
-  std::string ToString();
-  std::string ToStringHeader();
+  void resetD();
+  void resetI();
+  std::string toString();
+  std::string toStringHeader();
 
 private:
   double kp;
@@ -95,7 +95,7 @@ public:
   LowpassFilter(
     const int & filterOrder, const double & sampleFreq,
     const double & cutOffFreq);
-  void Init(
+  void init(
     const int & filterOrder, const double & sampleFreq,
     const double & cutOffFreq);
   double getFilter(const double & value);

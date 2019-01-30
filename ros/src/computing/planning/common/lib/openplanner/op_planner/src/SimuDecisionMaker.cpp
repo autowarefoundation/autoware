@@ -21,7 +21,7 @@ SimuDecisionMaker::SimuDecisionMaker()
   m_CurrentAccSteerAngle = m_CurrentAccVelocity = 0;
 
   m_SimulationSteeringDelayFactor = 0.1;
-  op_utility_ns::UtilityH::GetTickCount(m_SteerDelayTimer);
+	op_utility_ns::UtilityH::getTickCount(m_SteerDelayTimer);
 }
 
 SimuDecisionMaker::~SimuDecisionMaker()
@@ -30,14 +30,14 @@ SimuDecisionMaker::~SimuDecisionMaker()
 
 void SimuDecisionMaker::ReInitializePlanner(const WayPoint & start_pose)
 {
-  m_pidVelocity.Init(0.01, 0.004, 0.01);
-  m_pidVelocity.Setlimit(m_params.maxSpeed, 0);
+	m_pidVelocity.init(0.01, 0.004, 0.01);
+	m_pidVelocity.setLimit(m_params.maxSpeed, 0);
 
-  m_pidStopping.Init(0.05, 0.05, 0.1);
-  m_pidStopping.Setlimit(m_params.horizonDistance, 0);
+	m_pidStopping.init(0.05, 0.05, 0.1);
+	m_pidStopping.setLimit(m_params.horizonDistance, 0);
 
-  m_pidFollowing.Init(0.05, 0.05, 0.01);
-  m_pidFollowing.Setlimit(m_params.minFollowingDistance, 0);
+	m_pidFollowing.init(0.05, 0.05, 0.01);
+	m_pidFollowing.setLimit(m_params.minFollowingDistance, 0);
 
   m_iCurrentTotalPathId = 0;
   m_CurrentVelocity = m_CurrentVelocityD = 0;
@@ -91,7 +91,7 @@ void SimuDecisionMaker::LocalizeMe(const double & dt)
   }
 
   m_OdometryState.pos.a = atan2(sin(m_OdometryState.pos.a), cos(m_OdometryState.pos.a));
-  m_OdometryState.pos.a = op_utility_ns::UtilityH::FixNegativeAngle(m_OdometryState.pos.a);
+  m_OdometryState.pos.a = op_utility_ns::UtilityH::fixNegativeAngle(m_OdometryState.pos.a);
 
   state.pos.a = m_OdometryState.pos.a;
   state.pos.x = m_OdometryState.pos.x -
@@ -108,18 +108,18 @@ void SimuDecisionMaker::UpdateState(const PlannerHNS::VehicleState & state, cons
     double currSteerDeg = RAD2DEG * m_CurrentSteering;
     double desiredSteerDeg = RAD2DEG * m_CurrentSteeringD;
 
-    double mFact = op_utility_ns::UtilityH::GetMomentumScaleFactor(state.speed);
+    double mFact = op_utility_ns::UtilityH::getMomentumScaleFactor(state.speed);
     double diff = desiredSteerDeg - currSteerDeg;
-    double diffSign = op_utility_ns::UtilityH::GetSign(diff);
+    double diffSign = op_utility_ns::UtilityH::getSign(diff);
     double inc = 1.0 * diffSign;
     if (fabs(diff) < 1.0) {
       inc = diff;
     }
 
-    if (op_utility_ns::UtilityH::GetTimeDiffNow(m_SteerDelayTimer) >
+    if (op_utility_ns::UtilityH::getTimeDiffNow(m_SteerDelayTimer) >
       m_SimulationSteeringDelayFactor * mFact)
     {
-      op_utility_ns::UtilityH::GetTickCount(m_SteerDelayTimer);
+			op_utility_ns::UtilityH::getTickCount(m_SteerDelayTimer);
       currSteerDeg += inc;
     }
 

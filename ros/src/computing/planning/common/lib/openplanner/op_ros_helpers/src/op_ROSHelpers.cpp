@@ -484,8 +484,8 @@ void ROSHelpers::ConvertFromPlannerHToAutowarePathFormat(
     wp.pose.pose.position.y = path.at(i).pos.y;
     wp.pose.pose.position.z = path.at(i).pos.z;
     wp.pose.pose.orientation =
-      tf::createQuaternionMsgFromYaw(op_utility_ns::UtilityH::SplitPositiveAngle(path.at(
-          i).pos.a));
+      tf::createQuaternionMsgFromYaw(op_utility_ns::UtilityH::splitPositiveAngle(path.at(
+				i).pos.a));
     wp.twist.twist.linear.x = path.at(i).v;
     if (path.at(i).bDir == FORWARD_DIR) {
       wp.dtlane.dir = 0;
@@ -495,7 +495,7 @@ void ROSHelpers::ConvertFromPlannerHToAutowarePathFormat(
       wp.dtlane.dir = 2;
     }
     //PlannerHNS::GPSPoint p = path.at(i).pos;
-    //std::cout << p.ToString() << std::endl;
+    //std::cout << p.toString() << std::endl;
     trajectory.waypoints.push_back(wp);
   }
 }
@@ -1022,9 +1022,9 @@ void ROSHelpers::ConvertFromPlannerObstaclesToAutoware(
     direction_marker.pose.position = point;
     direction_marker.pose.position.z += 0.5;
     direction_marker.pose.orientation =
-      tf::createQuaternionMsgFromYaw(op_utility_ns::UtilityH::SplitPositiveAngle(trackedObstacles.
-        at(
-          i).center.pos.a));
+      tf::createQuaternionMsgFromYaw(op_utility_ns::UtilityH::splitPositiveAngle(trackedObstacles.
+				at(
+				i).center.pos.a));
 
 
     for (unsigned int iq = 0; iq < 8; iq++) {
@@ -1032,8 +1032,8 @@ void ROSHelpers::ConvertFromPlannerObstaclesToAutoware(
       quarters_marker.id = quartersIds;
       quarters_marker.points.push_back(point);
       geometry_msgs::Point point2 = point;
-      double a_q = op_utility_ns::UtilityH::SplitPositiveAngle(trackedObstacles.at(
-            i).center.pos.a + (iq * M_PI_4));
+      double a_q = op_utility_ns::UtilityH::splitPositiveAngle(trackedObstacles.at(
+				i).center.pos.a + (iq * M_PI_4));
       point2.x += 2.0 * cos(a_q);
       point2.y += 1.5 * sin(a_q);
       quarters_marker.points.push_back(point2);
@@ -1066,7 +1066,7 @@ std::string ROSHelpers::GetBehaviorNameFromCode(const PlannerHNS::STATE_TYPE & b
   std::string str = "Unknown";
   switch (behState) {
     case PlannerHNS::INITIAL_STATE:
-      str = "Init";
+      str = "init";
       break;
     case PlannerHNS::WAITING_STATE:
       str = "Waiting";
@@ -1365,8 +1365,8 @@ void ROSHelpers::ConvertFromLocalLaneToAutowareLane(
     wp.pose.pose.position.y = path.at(i).pos.y;
     wp.pose.pose.position.z = path.at(i).pos.z;
     wp.pose.pose.orientation =
-      tf::createQuaternionMsgFromYaw(op_utility_ns::UtilityH::SplitPositiveAngle(path.at(
-          i).pos.a));
+      tf::createQuaternionMsgFromYaw(op_utility_ns::UtilityH::splitPositiveAngle(path.at(
+				i).pos.a));
 
     wp.twist.twist.linear.x = path.at(i).v;
     wp.lane_id = path.at(i).laneId;
@@ -1401,8 +1401,8 @@ void ROSHelpers::ConvertFromLocalLaneToAutowareLane(
     wp.pose.pose.position.y = path.at(i).y;
     wp.pose.pose.position.z = path.at(i).z;
     wp.pose.pose.orientation =
-      tf::createQuaternionMsgFromYaw(op_utility_ns::UtilityH::SplitPositiveAngle(path.at(
-          i).a));
+      tf::createQuaternionMsgFromYaw(op_utility_ns::UtilityH::splitPositiveAngle(path.at(
+				i).a));
 
     trajectory.waypoints.push_back(wp);
   }
@@ -1692,8 +1692,8 @@ void ROSHelpers::ConvertFromOpenPlannerDetectedObjectToAutowareDetectedObject(
   obj.pose.position.x = det_obj.center.pos.x;
   obj.pose.position.y = det_obj.center.pos.y;
   obj.pose.position.z = det_obj.center.pos.z;
-  obj.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0, 0, op_utility_ns::UtilityH::SplitPositiveAngle(
-        det_obj.center.pos.a));
+  obj.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0, 0, op_utility_ns::UtilityH::splitPositiveAngle(
+		det_obj.center.pos.a));
 
   obj.velocity.linear.x = det_obj.center.v;
   obj.velocity.linear.y = det_obj.acceleration_raw;

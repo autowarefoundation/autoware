@@ -83,7 +83,7 @@ TrajectoryCost TrajectoryCosts::DoOneStep(
 
   //cout << "Trajectory Costs Log : CurrIndex: " << currIndex << " --------------------- " << endl;
   for (unsigned int ic = 0; ic < m_TrajectoryCosts.size(); ic++) {
-    //cout << m_TrajectoryCosts.at(ic).ToString();
+    //cout << m_TrajectoryCosts.at(ic).toString();
     if (!m_TrajectoryCosts.at(ic).bBlocked && m_TrajectoryCosts.at(ic).cost < smallestCost) {
       smallestCost = m_TrajectoryCosts.at(ic).cost;
       smallestIndex = ic;

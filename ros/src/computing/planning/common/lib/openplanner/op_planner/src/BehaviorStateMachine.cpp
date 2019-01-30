@@ -102,12 +102,12 @@ BehaviorStateMachine * BehaviorStateMachine::FindBehaviorState(const STATE_TYPE 
 
 void BehaviorStateMachine::Init()
 {
-  op_utility_ns::UtilityH::GetTickCount(m_StateTimer);
+  op_utility_ns::UtilityH::getTickCount(m_StateTimer);
 }
 
 void BehaviorStateMachine::ResetTimer()
 {
-  op_utility_ns::UtilityH::GetTickCount(m_StateTimer);
+  op_utility_ns::UtilityH::getTickCount(m_StateTimer);
 }
 
 BehaviorStateMachine::~BehaviorStateMachine()
@@ -116,7 +116,7 @@ BehaviorStateMachine::~BehaviorStateMachine()
 
 BehaviorStateMachine * ForwardState::GetNextState()
 {
-  if (op_utility_ns::UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime) {
+  if (op_utility_ns::UtilityH::getTimeDiffNow(m_StateTimer) < decisionMakingTime) {
     return this;             //return this behavior only , without reset
 
   }
@@ -167,7 +167,7 @@ BehaviorStateMachine * MissionAccomplishedState::GetNextState()
 
 BehaviorStateMachine * StopState::GetNextState()
 {
-  if (op_utility_ns::UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime) {
+  if (op_utility_ns::UtilityH::getTimeDiffNow(m_StateTimer) < decisionMakingTime) {
     return this;
   }
 
@@ -182,7 +182,7 @@ BehaviorStateMachine * StopState::GetNextState()
 
 BehaviorStateMachine * TrafficLightStopState::GetNextState()
 {
-  if (op_utility_ns::UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime) {
+  if (op_utility_ns::UtilityH::getTimeDiffNow(m_StateTimer) < decisionMakingTime) {
     return this;
   }
 
@@ -200,7 +200,7 @@ BehaviorStateMachine * TrafficLightStopState::GetNextState()
 
 BehaviorStateMachine * TrafficLightWaitState::GetNextState()
 {
-  if (op_utility_ns::UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime) {
+  if (op_utility_ns::UtilityH::getTimeDiffNow(m_StateTimer) < decisionMakingTime) {
     return this;
   }
 
@@ -219,7 +219,7 @@ BehaviorStateMachine * TrafficLightWaitState::GetNextState()
 
 BehaviorStateMachine * StopSignStopState::GetNextState()
 {
-  if (op_utility_ns::UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime) {
+  if (op_utility_ns::UtilityH::getTimeDiffNow(m_StateTimer) < decisionMakingTime) {
     return this;
   }
 
@@ -236,7 +236,7 @@ BehaviorStateMachine * StopSignStopState::GetNextState()
 
 BehaviorStateMachine * StopSignWaitState::GetNextState()
 {
-  if (op_utility_ns::UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime) {
+  if (op_utility_ns::UtilityH::getTimeDiffNow(m_StateTimer) < decisionMakingTime) {
     return this;
   }
 
@@ -251,7 +251,7 @@ BehaviorStateMachine * StopSignWaitState::GetNextState()
 
 BehaviorStateMachine * WaitState::GetNextState()
 {
-  if (op_utility_ns::UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime) {
+  if (op_utility_ns::UtilityH::getTimeDiffNow(m_StateTimer) < decisionMakingTime) {
     return this;
   }
 
@@ -262,7 +262,7 @@ BehaviorStateMachine * WaitState::GetNextState()
 
 BehaviorStateMachine * InitState::GetNextState()
 {
-  if (op_utility_ns::UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime) {
+  if (op_utility_ns::UtilityH::getTimeDiffNow(m_StateTimer) < decisionMakingTime) {
     return this;
   }
 
@@ -278,7 +278,7 @@ BehaviorStateMachine * InitState::GetNextState()
 
 BehaviorStateMachine * FollowState::GetNextState()
 {
-  if (op_utility_ns::UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime) {
+  if (op_utility_ns::UtilityH::getTimeDiffNow(m_StateTimer) < decisionMakingTime) {
     return this;
   }
 
@@ -308,7 +308,7 @@ BehaviorStateMachine * FollowState::GetNextState()
 
 BehaviorStateMachine * SwerveState::GetNextState()
 {
-  if (op_utility_ns::UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime) {
+  if (op_utility_ns::UtilityH::getTimeDiffNow(m_StateTimer) < decisionMakingTime) {
     return this;
   }
 
@@ -327,7 +327,7 @@ BehaviorStateMachine * SwerveState::GetNextState()
 
 BehaviorStateMachine * GoalState::GetNextState()
 {
-  if (op_utility_ns::UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime) {
+  if (op_utility_ns::UtilityH::getTimeDiffNow(m_StateTimer) < decisionMakingTime) {
     return this;
   }
 
@@ -456,7 +456,7 @@ BehaviorStateMachine * StopSignStopStateII::GetNextState()
 
 BehaviorStateMachine * StopSignWaitStateII::GetNextState()
 {
-  if (op_utility_ns::UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime) {
+  if (op_utility_ns::UtilityH::getTimeDiffNow(m_StateTimer) < decisionMakingTime) {
     return this;
   }
 

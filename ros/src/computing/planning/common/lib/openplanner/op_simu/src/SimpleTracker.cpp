@@ -32,12 +32,12 @@ SimpleTracker::SimpleTracker()
   m_nMinTrustAppearances = 5;
   m_Horizon = 100.0;
   m_CirclesResolution = 5.0;
-  op_utility_ns::UtilityH::GetTickCount(m_TrackTimer);
+  op_utility_ns::UtilityH::getTickCount(m_TrackTimer);
 }
 
 void SimpleTracker::InitSimpleTracker()
 {
-  op_utility_ns::UtilityH::GetTickCount(m_TrackTimer);
+  op_utility_ns::UtilityH::getTickCount(m_TrackTimer);
   InitializeInterestRegions(m_InterestRegions);
 }
 
@@ -98,18 +98,18 @@ void SimpleTracker::DoOneStep(
   const TRACKING_TYPE & type)
 {
   if (!m_bFirstCall) {
-    m_dt = op_utility_ns::UtilityH::GetTimeDiffNow(m_TrackTimer);
+    m_dt = op_utility_ns::UtilityH::getTimeDiffNow(m_TrackTimer);
     m_StateDiff.pos.x = m_PrevState.pos.x - currPose.pos.x;
     m_StateDiff.pos.y = m_PrevState.pos.y - currPose.pos.y;
-    m_StateDiff.pos.a = op_utility_ns::UtilityH::AngleBetweenTwoAnglesPositive(currPose.pos.a,
-        m_PrevState.pos.a) *
-      op_utility_ns::UtilityH::GetSign(m_PrevState.pos.a - currPose.pos.a);
+    m_StateDiff.pos.a = op_utility_ns::UtilityH::angleBetweenTwoAnglesPositive(currPose.pos.a,
+                                                                               m_PrevState.pos.a) *
+      op_utility_ns::UtilityH::getSign(m_PrevState.pos.a - currPose.pos.a);
     //std::cout << "(" << m_StateDiff.pos.x << ", " << m_StateDiff.pos.y << ", " << m_StateDiff.pos.a << std::endl;
   } else {
     m_bFirstCall = false;
   }
 
-  op_utility_ns::UtilityH::GetTickCount(m_TrackTimer);
+  op_utility_ns::UtilityH::getTickCount(m_TrackTimer);
 
   m_DetectedObjects = obj_list;
 
@@ -273,9 +273,9 @@ void SimpleTracker::MatchClosestCost()
           double diff_x = m_DetectedObjects.at(jj).center.pos.x -
             m_TrackSimply.at(i).obj.center.pos.x;
           if (hypot(diff_y, diff_x) > 0.2) {
-            double a = op_utility_ns::UtilityH::FixNegativeAngle(atan2(diff_y, diff_x));
-            a_diff = op_utility_ns::UtilityH::AngleBetweenTwoAnglesPositive(a, m_TrackSimply.at(
-                  i).obj.center.pos.a);
+            double a = op_utility_ns::UtilityH::fixNegativeAngle(atan2(diff_y, diff_x));
+            a_diff = op_utility_ns::UtilityH::angleBetweenTwoAnglesPositive(a, m_TrackSimply.at(
+              i).obj.center.pos.a);
             if (a_diff < m_MAX_ASSOCIATION_ANGLE_DIFF) {
               bDirectionMatch = true;
             }

@@ -346,8 +346,8 @@ public:
     }
     double dMatch = 1.0 - dCost;
 
-    double _a_diff = op_utility_ns::UtilityH::AngleBetweenTwoAnglesPositive(path_last_pose.pos.a,
-        curr_last_pose.pos.a);
+    double _a_diff = op_utility_ns::UtilityH::angleBetweenTwoAnglesPositive(path_last_pose.pos.a,
+                                                                            curr_last_pose.pos.a);
     double aCost = _a_diff / M_PI;
     if (aCost > 1.0) {
       aCost = 1.0;

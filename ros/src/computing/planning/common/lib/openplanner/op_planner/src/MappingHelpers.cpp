@@ -530,21 +530,20 @@ void MappingHelpers::ConstructRoadNetworkFromDataFiles(const std::string vectoMa
   vector<op_utility_ns::AisanCrossWalkFileReader::AisanCrossWalk> crosswalk_data;
   vector<op_utility_ns::AisanDataConnFileReader::DataConn> conn_data;
 
-
-  nodes.ReadAllData(nodes_data);
-  lanes.ReadAllData(lanes_data);
-  points.ReadAllData(points_data);
-  center_lanes.ReadAllData(dt_data);
-  lines.ReadAllData(line_data);
-  stop_line.ReadAllData(stop_line_data);
-  signal.ReadAllData(signal_data);
-  vec.ReadAllData(vector_data);
-  curb.ReadAllData(curb_data);
-  roadedge.ReadAllData(roadedge_data);
-  areas.ReadAllData(area_data);
-  way_area.ReadAllData(way_area_data);
-  cross_walk.ReadAllData(crosswalk_data);
-  conn.ReadAllData(conn_data);
+  nodes.readAllData(nodes_data);
+  lanes.readAllData(lanes_data);
+  points.readAllData(points_data);
+  center_lanes.readAllData(dt_data);
+  lines.readAllData(line_data);
+  stop_line.readAllData(stop_line_data);
+  signal.readAllData(signal_data);
+  vec.readAllData(vector_data);
+  curb.readAllData(curb_data);
+  roadedge.readAllData(roadedge_data);
+  areas.readAllData(area_data);
+  way_area.readAllData(way_area_data);
+  cross_walk.readAllData(crosswalk_data);
+  conn.readAllData(conn_data);
 
   if (points_data.size() == 0) {
     std::cout << std::endl << "## Alert Can't Read Points Data from vector map files in path: " <<
@@ -1069,8 +1068,8 @@ Lane * MappingHelpers::GetClosestLaneFromMapDirectionBased(const WayPoint & pos,
       continue;
     }
 
-    a_diff = op_utility_ns::UtilityH::AngleBetweenTwoAnglesPositive(laneLinksList.at(
-          i).second->pos.a, pos.pos.a);
+    a_diff = op_utility_ns::UtilityH::angleBetweenTwoAnglesPositive(laneLinksList.at(
+      i).second->pos.a, pos.pos.a);
 
     if (fabs(info.perp_distance) < min_d && a_diff <= M_PI_4) {
       min_d = fabs(info.perp_distance);
@@ -1094,8 +1093,8 @@ std::vector<Lane *> MappingHelpers::GetClosestMultipleLanesFromMap(const WayPoin
       for (unsigned int pindex = 0; pindex < map.roadSegments.at(j).Lanes.at(k).points.size();
         pindex++) {
         d = distance2points(map.roadSegments.at(j).Lanes.at(k).points.at(pindex).pos, pos.pos);
-        a_diff = op_utility_ns::UtilityH::AngleBetweenTwoAnglesPositive(map.roadSegments.at(
-              j).Lanes.at(k).points.at(pindex).pos.a, pos.pos.a);
+        a_diff = op_utility_ns::UtilityH::angleBetweenTwoAnglesPositive(map.roadSegments.at(
+          j).Lanes.at(k).points.at(pindex).pos.a, pos.pos.a);
 
         if (d <= distance && a_diff <= M_PI_4) {
           bool bLaneExist = false;
@@ -1813,7 +1812,7 @@ void MappingHelpers::FindAdjacentLanes(RoadNetwork & map)
           double mid_a1 = wp_1.pos.a;
           double mid_a2 = closest_p.pos.a;
           double angle_diff =
-            op_utility_ns::UtilityH::AngleBetweenTwoAnglesPositive(mid_a1, mid_a2);
+            op_utility_ns::UtilityH::angleBetweenTwoAnglesPositive(mid_a1, mid_a2);
           double distance = distance2points(wp_1.pos, closest_p.pos);
 
           if (pL->id != map.roadSegments.at(rs_2).Lanes.at(i2).id && angle_diff < 0.05 &&
@@ -2279,7 +2278,7 @@ bool MappingHelpers::GetPointFromDataList(op_utility_ns::AisanPointsFileReader *
 {
   if (pPointsData == nullptr) {return false;}
 
-  op_utility_ns::AisanPointsFileReader::AisanPoints * pP = pPointsData->GetDataRowById(pid);
+  op_utility_ns::AisanPointsFileReader::AisanPoints * pP = pPointsData->getDataRowById(pid);
 
   if (pP != nullptr) {
     out_wp.id = pP->PID;
@@ -2302,7 +2301,7 @@ int MappingHelpers::GetBeginPointIdFromLaneNo(
   op_utility_ns::AisanPointsFileReader::AisanPoints * pP = nullptr;
   op_utility_ns::AisanNodesFileReader::AisanNode * pN = nullptr;
 
-  pL = pLaneData->GetDataRowById(LnID);
+  pL = pLaneData->getDataRowById(LnID);
   if (pL != nullptr) {
     return pL->FNID;
   }
@@ -2319,7 +2318,7 @@ int MappingHelpers::GetEndPointIdFromLaneNo(
   op_utility_ns::AisanPointsFileReader::AisanPoints * pP = nullptr;
   op_utility_ns::AisanNodesFileReader::AisanNode * pN = nullptr;
 
-  pL = pLaneData->GetDataRowById(LnID);
+  pL = pLaneData->getDataRowById(LnID);
   if (pL != nullptr) {
     return pL->BNID;
   }
@@ -2338,7 +2337,7 @@ bool MappingHelpers::IsStartLanePoint(op_utility_ns::AisanLanesFileReader * pLan
     return true;
   }
 
-  op_utility_ns::AisanLanesFileReader::AisanLane * pPrevL = pLaneData->GetDataRowById(pL->BLID);
+  op_utility_ns::AisanLanesFileReader::AisanLane * pPrevL = pLaneData->getDataRowById(pL->BLID);
   if (pPrevL == nullptr || pPrevL->FLID2 > 0 || pPrevL->FLID3 > 0 || pPrevL->FLID4 > 0 ||
     pPrevL->JCT > 0) {
     return true;
@@ -2354,7 +2353,7 @@ bool MappingHelpers::IsEndLanePoint(op_utility_ns::AisanLanesFileReader * pLaneD
     return true;
   }
 
-  op_utility_ns::AisanLanesFileReader::AisanLane * pNextL = pLaneData->GetDataRowById(pL->FLID);
+  op_utility_ns::AisanLanesFileReader::AisanLane * pNextL = pLaneData->getDataRowById(pL->FLID);
 
   return IsStartLanePoint(pLaneData, pNextL);
 }
@@ -2386,7 +2385,7 @@ void MappingHelpers::ConnectLanes(op_utility_ns::AisanLanesFileReader * pLaneDat
 {
   for (unsigned int il = 0; il < lanes.size(); il++) {
     WayPoint fp = lanes.at(il).points.at(0);
-    op_utility_ns::AisanLanesFileReader::AisanLane * pFirstL = pLaneData->GetDataRowById(
+    op_utility_ns::AisanLanesFileReader::AisanLane * pFirstL = pLaneData->getDataRowById(
       fp.originalMapID);
     if (pFirstL != nullptr) {
       if (pFirstL->BLID > 0) {
@@ -2404,7 +2403,7 @@ void MappingHelpers::ConnectLanes(op_utility_ns::AisanLanesFileReader * pLaneDat
     }
 
     WayPoint ep = lanes.at(il).points.at(lanes.at(il).points.size() - 1);
-    op_utility_ns::AisanLanesFileReader::AisanLane * pEndL = pLaneData->GetDataRowById(
+    op_utility_ns::AisanLanesFileReader::AisanLane * pEndL = pLaneData->getDataRowById(
       ep.originalMapID);
     if (pEndL != nullptr) {
       if (pEndL->FLID > 0) {
@@ -2456,7 +2455,7 @@ void MappingHelpers::GetLanePoints(
   out_lane.speed = 0;
 
   while (!bStart) {
-    pL = pLaneData->GetDataRowById(next_lnid);
+    pL = pLaneData->getDataRowById(next_lnid);
     if (pL == nullptr) {
       cout << "## Error, Can't find lane from ID: " << next_lnid << endl;
       break;
@@ -2466,7 +2465,7 @@ void MappingHelpers::GetLanePoints(
     if (next_lnid == 0) {
       bStart = true;
     } else {
-      bStart = IsStartLanePoint(pLaneData, pLaneData->GetDataRowById(next_lnid));
+      bStart = IsStartLanePoint(pLaneData, pLaneData->getDataRowById(next_lnid));
     }
 
 //		if(_lnid == 1267 ) //|| _lnid == 1268 || _lnid == 1269 || _lnid == 958)
@@ -2474,7 +2473,7 @@ void MappingHelpers::GetLanePoints(
 
     if (out_lane.points.size() == 0) {
       WayPoint wp1, wp2;
-      GetPointFromDataList(pPointsData, pNodesData->GetDataRowById(pL->BNID)->PID, wp1);
+      GetPointFromDataList(pPointsData, pNodesData->getDataRowById(pL->BNID)->PID, wp1);
       wp1.v = pL->RefVel == 0 ? DEFAULT_REF_VELOCITY : pL->RefVel;
 
       wp1.id = pL->BNID;
@@ -2504,7 +2503,7 @@ void MappingHelpers::GetLanePoints(
         }
       }
 
-      GetPointFromDataList(pPointsData, pNodesData->GetDataRowById(pL->FNID)->PID, wp2);
+      GetPointFromDataList(pPointsData, pNodesData->getDataRowById(pL->FNID)->PID, wp2);
       wp2.v = pL->RefVel == 0 ? DEFAULT_REF_VELOCITY : pL->RefVel;
       wp2.id = pL->FNID;
 
@@ -2557,7 +2556,7 @@ void MappingHelpers::GetLanePoints(
       out_lane.speed = pL->RefVel == 0 ? DEFAULT_REF_VELOCITY : pL->RefVel;
     } else {
       WayPoint wp;
-      GetPointFromDataList(pPointsData, pNodesData->GetDataRowById(pL->FNID)->PID, wp);
+      GetPointFromDataList(pPointsData, pNodesData->getDataRowById(pL->FNID)->PID, wp);
       wp.v = pL->RefVel == 0 ? DEFAULT_REF_VELOCITY : pL->RefVel;
       wp.id = pL->FNID;
 
@@ -3064,7 +3063,7 @@ void MappingHelpers::ExtractCurbDataV2(
           s_id = pLinedata->m_data_list.at(il).FPID;
         }
 
-        op_utility_ns::AisanPointsFileReader::AisanPoints * pP = pPointsData->GetDataRowById(s_id);
+        op_utility_ns::AisanPointsFileReader::AisanPoints * pP = pPointsData->getDataRowById(s_id);
         if (pP != nullptr) {
           c.points.push_back(GPSPoint(pP->Ly + origin.x, pP->Bx + origin.y, pP->H + origin.z, 0));
           WayPoint wp;
@@ -3097,8 +3096,8 @@ void MappingHelpers::ExtractSignalDataV2(
 
       for (unsigned int iv = 0; iv < vector_data.size(); iv++) {
         if (signal_data.at(is).VID == vector_data.at(iv).VID) {
-          op_utility_ns::AisanPointsFileReader::AisanPoints * pP = pPointData->GetDataRowById(vector_data.at(
-                iv).PID);
+          op_utility_ns::AisanPointsFileReader::AisanPoints * pP = pPointData->getDataRowById(vector_data.at(
+            iv).PID);
           if (pP != nullptr) {
             tl.pos = GPSPoint(pP->Ly + origin.x, pP->Bx + origin.y, pP->H + origin.z, vector_data.at(
                   iv).Hang * DEG2RAD);
@@ -3129,12 +3128,12 @@ void MappingHelpers::ExtractStopLinesDataV2(
       sl.stopSignID = 100 + ist;
     }
 
-    op_utility_ns::AisanLinesFileReader::AisanLine * pLine = pLineData->GetDataRowById(stop_line_data.at(
-          ist).LID);
+    op_utility_ns::AisanLinesFileReader::AisanLine * pLine = pLineData->getDataRowById(stop_line_data.at(
+      ist).LID);
     if (pLine != nullptr) {
-      op_utility_ns::AisanPointsFileReader::AisanPoints * pStart = pPointData->GetDataRowById(
+      op_utility_ns::AisanPointsFileReader::AisanPoints * pStart = pPointData->getDataRowById(
         pLine->BPID);
-      op_utility_ns::AisanPointsFileReader::AisanPoints * pEnd = pPointData->GetDataRowById(
+      op_utility_ns::AisanPointsFileReader::AisanPoints * pEnd = pPointData->getDataRowById(
         pLine->FPID);
       if (pStart != nullptr) {
         sl.points.push_back(GPSPoint(pStart->Ly + origin.x, pStart->Bx + origin.y,
@@ -3220,8 +3219,8 @@ void MappingHelpers::FindAdjacentLanesV2(RoadNetwork & map)
 
           if (!info.bAfter && !info.bBefore && fabs(info.perp_distance) > 1.2 &&
             fabs(info.perp_distance) < 3.5 &&
-            op_utility_ns::UtilityH::AngleBetweenTwoAnglesPositive(info.perp_point.pos.a,
-            pWP->pos.a) < 0.06) {
+            op_utility_ns::UtilityH::angleBetweenTwoAnglesPositive(info.perp_point.pos.a,
+                                                                   pWP->pos.a) < 0.06) {
             WayPoint * pWP2 = &pL2->points.at(info.iFront);
             if (info.perp_distance < 0) {
               if (pWP->pRight == 0) {
