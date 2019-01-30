@@ -46,11 +46,12 @@
     <node name="vehicle_gazebo_input_subscriber" pkg="vehicle_gazebo_simulation_interface" type="vehicle_gazebo_input_subscriber" respawn="false"
           output="screen">
       <param name="twist_sub" value="true" />
-      <param name="twiststamped_sub" value="true" />
-      <param name="ctrl_cmd" value="true" />
+      <param name="twiststamped_" value="true" />
+      <param name="ctrl_cmd_" value="false" />
     </node>
     <node name="vehicle_gazebo_info_publisher" pkg="vehicle_gazebo_simulation_interface" type="vehicle_gazebo_info_publisher" respawn="false"
           output="screen">
+      <param name="enable_base_link_tf" value="false" />
     </node>
   </group>
 

@@ -10,6 +10,8 @@ find_package(catkin REQUIRED
   std_msgs
   gazebo_msgs
   autoware_msgs
+  tf2_ros
+  tf2
 )
 
 catkin_package(
@@ -20,7 +22,9 @@ catkin_package(
     std_msgs
     gazebo_msgs
     autoware_msgs
-)
+    tf2_ros
+    tf2
+    )
 
 include_directories(
  ${catkin_INCLUDE_DIRS}

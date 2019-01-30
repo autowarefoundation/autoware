@@ -3,7 +3,8 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <std_msgs/Float64.h>
 #include <cmath>
-#include <autoware_msgs/ControlCommandStamped.h>
+#include <autoware_msgs/ControlCommand.h>
+#include <autoware_msgs/VehicleCmd.h>
 
 class VehicleGazeboInputSubscriber
 {
@@ -14,21 +15,22 @@ class VehicleGazeboInputSubscriber
     ros::Publisher wheel_left_rear_pub_;
     ros::Publisher steering_right_front_pub_;
     ros::Publisher steering_left_front_pub_;
-    ros::Subscriber twiststamped_sub_;
     ros::Subscriber twist_sub_;
     ros::Subscriber steering_angle_sub_;
     ros::Subscriber velocity_sub_;
-    ros::Subscriber ctrl_cmd_sub_;
+    ros::Subscriber vehicle_cmd_sub_;
 
-    void twistStampedCallback(const geometry_msgs::TwistStamped::ConstPtr &input_twist_msg);
     void twistCallback(const geometry_msgs::Twist::ConstPtr &input_twist_msg);
     void sterringAngleCallback(const std_msgs::Float64::ConstPtr &input_steering_angle_msg);
     void velocityCallback(const std_msgs::Float64::ConstPtr &input_velocity_msg);
-    void controlCommandStampedCallback(const autoware_msgs::ControlCommandStamped::ConstPtr &input_msg);
-
+    void vehicleCmdCallback(const autoware_msgs::VehicleCmd::ConstPtr &input_msg);
+    void publishControlCommandStamped2Gazebo(const autoware_msgs::ControlCommand &input_msg);
+    void publishTwistStamped2Gazebo(const geometry_msgs::TwistStamped &input_twist_msg);
     double wheel_base_;
     double wheel_tread_;
     double wheel_radius_;
+    bool twiststamped_;
+    bool ctrl_cmd_;
 
   public:
     VehicleGazeboInputSubscriber();
@@ -41,56 +43,24 @@ VehicleGazeboInputSubscriber::VehicleGazeboInputSubscriber() : nh_(""), pnh_("~"
     pnh_.param("wheel_base", wheel_base_, 2.95);
     pnh_.param("wheel_radius", wheel_radius_, 0.341);
     pnh_.param("wheel_tread", wheel_tread_, 1.55);
-    bool twist_sub, twiststamped_sub, steering_angle_sub, velocity_sub, cmd_vel_sub, ctrl_cmd_sub;
-    pnh_.param("twist_sub", twist_sub, true);
-    pnh_.param("twiststamped_sub", twiststamped_sub, false);
-    pnh_.param("steering_angle_sub", steering_angle_sub, false);
-    pnh_.param("velocity_sub", velocity_sub, false);
-    pnh_.param("ctrl_cmd_sub", ctrl_cmd_sub, true);
+    pnh_.param("twiststamped_", twiststamped_, true);
+    pnh_.param("ctrl_cmd", ctrl_cmd_, false);
     wheel_right_rear_pub_ = nh_.advertise<std_msgs::Float64>("wheel_right_rear_velocity_controller/command", 1, true);
     wheel_left_rear_pub_ = nh_.advertise<std_msgs::Float64>("wheel_left_rear_velocity_controller/command", 1, true);
     steering_right_front_pub_ = nh_.advertise<std_msgs::Float64>("steering_right_front_position_controller/command", 1, true);
     steering_left_front_pub_ = nh_.advertise<std_msgs::Float64>("steering_left_front_position_controller/command", 1, true);
 
+    bool twist_sub, steering_angle_sub, velocity_sub;
+    pnh_.param("twist_sub", twist_sub, true);
+    pnh_.param("steering_angle_sub", steering_angle_sub, false);
+    pnh_.param("velocity_sub", velocity_sub, false);
     if (twist_sub)
         twist_sub_ = nh_.subscribe("/cmd_vel", 1, &VehicleGazeboInputSubscriber::twistCallback, this);
-    if (twiststamped_sub)
-        twiststamped_sub_ = nh_.subscribe("/twist_cmd", 1, &VehicleGazeboInputSubscriber::twistStampedCallback, this);
     if (steering_angle_sub)
         steering_angle_sub_ = nh_.subscribe("/steering_angle", 1, &VehicleGazeboInputSubscriber::sterringAngleCallback, this);
     if (velocity_sub)
         velocity_sub_ = nh_.subscribe("/velocity", 1, &VehicleGazeboInputSubscriber::velocityCallback, this);
-    if (ctrl_cmd_sub)
-        ctrl_cmd_sub_ = nh_.subscribe("/ctrl_cmd", 1, &VehicleGazeboInputSubscriber::controlCommandStampedCallback, this);
-}
-
-void VehicleGazeboInputSubscriber::twistStampedCallback(const geometry_msgs::TwistStamped::ConstPtr &input_twist_msg)
-{
-    std_msgs::Float64 output_wheel_rear, output_steering_right_front, output_steering_left_front;
-    output_wheel_rear.data = input_twist_msg->twist.linear.x / wheel_radius_;
-
-    double vref_rear = input_twist_msg->twist.linear.x;
-    constexpr double min_vref_rear = 0.01;
-    if (std::fabs(vref_rear) < min_vref_rear) // Prevent zero division when calculating ackerman steering
-    {
-        vref_rear = 0.0 < vref_rear ? min_vref_rear : -min_vref_rear;
-    }
-
-    double delta_ref = std::atan(input_twist_msg->twist.angular.z * wheel_base_ / vref_rear);
-    delta_ref = 0.0 < vref_rear ? delta_ref : -delta_ref;
-    constexpr double max_delta_ref = M_PI / 4.0;
-    if (max_delta_ref < std::fabs(delta_ref)) // It is a constraint that the theory does not turn more than 90 degrees
-    {
-        delta_ref = 0.0 < delta_ref ? max_delta_ref : -max_delta_ref;
-    }
-
-    output_steering_right_front.data = std::atan(std::tan(delta_ref) / (1.0 + (wheel_tread_ / (2.0 * wheel_base_)) * std::tan(delta_ref)));
-    output_steering_left_front.data = std::atan(std::tan(delta_ref) / (1.0 - (wheel_tread_ / (2.0 * wheel_base_)) * std::tan(delta_ref)));
-
-    wheel_right_rear_pub_.publish(output_wheel_rear);
-    wheel_left_rear_pub_.publish(output_wheel_rear);
-    steering_right_front_pub_.publish(output_steering_right_front);
-    steering_left_front_pub_.publish(output_steering_left_front);
+    vehicle_cmd_sub_ = nh_.subscribe("/vehicle_cmd", 1, &VehicleGazeboInputSubscriber::vehicleCmdCallback, this);
 }
 
 void VehicleGazeboInputSubscriber::twistCallback(const geometry_msgs::Twist::ConstPtr &input_twist_msg)
@@ -147,11 +117,19 @@ void VehicleGazeboInputSubscriber::velocityCallback(const std_msgs::Float64::Con
     wheel_left_rear_pub_.publish(output_wheel_rear);
 }
 
-void VehicleGazeboInputSubscriber::controlCommandStampedCallback(const autoware_msgs::ControlCommandStamped::ConstPtr &input_msg)
+void VehicleGazeboInputSubscriber::vehicleCmdCallback(const autoware_msgs::VehicleCmd::ConstPtr &input_msg)
+{
+    if (twiststamped_)
+        publishTwistStamped2Gazebo(input_msg->twist_cmd);
+    if (ctrl_cmd_)
+        publishControlCommandStamped2Gazebo(input_msg->ctrl_cmd);
+}
+
+void VehicleGazeboInputSubscriber::publishControlCommandStamped2Gazebo(const autoware_msgs::ControlCommand &input_msg)
 {
     std_msgs::Float64 output_wheel_rear, output_steering_right_front, output_steering_left_front;
 
-    double delta_ref = input_msg->cmd.steering_angle;
+    double delta_ref = input_msg.steering_angle;
     constexpr double max_delta_ref = M_PI / 4.0;
     if (max_delta_ref < std::fabs(delta_ref)) // It is a constraint that the theory does not turn more than 90 degrees
     {
@@ -159,7 +137,36 @@ void VehicleGazeboInputSubscriber::controlCommandStampedCallback(const autoware_
     }
     output_steering_right_front.data = std::atan(std::tan(delta_ref) / (1.0 + (wheel_tread_ / (2.0 * wheel_base_)) * std::tan(delta_ref)));
     output_steering_left_front.data = std::atan(std::tan(delta_ref) / (1.0 - (wheel_tread_ / (2.0 * wheel_base_)) * std::tan(delta_ref)));
-    output_wheel_rear.data = input_msg->cmd.linear_velocity / wheel_radius_;
+    output_wheel_rear.data = input_msg.linear_velocity / wheel_radius_;
+    wheel_right_rear_pub_.publish(output_wheel_rear);
+    wheel_left_rear_pub_.publish(output_wheel_rear);
+    steering_right_front_pub_.publish(output_steering_right_front);
+    steering_left_front_pub_.publish(output_steering_left_front);
+}
+
+void VehicleGazeboInputSubscriber::publishTwistStamped2Gazebo(const geometry_msgs::TwistStamped &input_twist_msg)
+{
+    std_msgs::Float64 output_wheel_rear, output_steering_right_front, output_steering_left_front;
+    output_wheel_rear.data = input_twist_msg.twist.linear.x / wheel_radius_;
+
+    double vref_rear = input_twist_msg.twist.linear.x;
+    constexpr double min_vref_rear = 0.01;
+    if (std::fabs(vref_rear) < min_vref_rear) // Prevent zero division when calculating ackerman steering
+    {
+        vref_rear = 0.0 < vref_rear ? min_vref_rear : -min_vref_rear;
+    }
+
+    double delta_ref = std::atan(input_twist_msg.twist.angular.z * wheel_base_ / vref_rear);
+    delta_ref = 0.0 < vref_rear ? delta_ref : -delta_ref;
+    constexpr double max_delta_ref = M_PI / 4.0;
+    if (max_delta_ref < std::fabs(delta_ref)) // It is a constraint that the theory does not turn more than 90 degrees
+    {
+        delta_ref = 0.0 < delta_ref ? max_delta_ref : -max_delta_ref;
+    }
+
+    output_steering_right_front.data = std::atan(std::tan(delta_ref) / (1.0 + (wheel_tread_ / (2.0 * wheel_base_)) * std::tan(delta_ref)));
+    output_steering_left_front.data = std::atan(std::tan(delta_ref) / (1.0 - (wheel_tread_ / (2.0 * wheel_base_)) * std::tan(delta_ref)));
+
     wheel_right_rear_pub_.publish(output_wheel_rear);
     wheel_left_rear_pub_.publish(output_wheel_rear);
     steering_right_front_pub_.publish(output_steering_right_front);
