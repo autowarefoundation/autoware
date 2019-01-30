@@ -56,7 +56,6 @@ private:
   autoware_msgs::Lane current_ref_path_;
   MPCTrajectory ref_traj_;
   Butterworth2d lpf_steering_cmd_; // steering command lowpass filter
-  Butterworth2d path_smoothing_filter_; // path smoothing lowpass filter
 
   std::string robot_interface_;
   std::string path_frame_id_;
@@ -149,7 +148,6 @@ private:
 
   void timerCallback(const ros::TimerEvent&);
   void callbackRefPath(const autoware_msgs::Lane::ConstPtr&);
-  void callbackTwist(const geometry_msgs::TwistStamped::ConstPtr&);
   void callbackPose(const geometry_msgs::PoseStamped::ConstPtr&);
   void callbackVelocity(const pacmod_msgs::WheelSpeedRpt &);
   void callbackSteering(const pacmod_msgs::SystemRptFloat &);
@@ -165,10 +163,13 @@ private:
   void publishAsTwist(const double &vel_cmd, const double &steer_cmd);
   void publishSteerAndVel(const double &vel_cmd, const double &steer_cmd);
 
+  // double convertHandleToTireAngle(double &handle_angle_rad);
+  // double convertTireToHandleAngle(double &tire_angle_rad);
+
   bool calculateMPC(double &vel_cmd, double &steer_cmd);
   void calculateNearestPose(unsigned int &nearest_index, double &min_dist_error, double &nearest_yaw_error,
                             const double &my_x, const double &my_y, const double &my_yaw);
- void calculateNearestPoseWithInterp(unsigned int &nearest_index, double &min_dist_error, double &nearest_yaw_error,
+ void calcNearestPoseInterp(unsigned int &nearest_index, double &min_dist_error, double &nearest_yaw_error,
                                      double &nearest_x, double &nearest_y, double &nearest_yaw, double &nearest_time,
                                      const double &my_x, const double &my_y,   const double &my_yaw);
   void getErrorDynamicsStateMatrix(const double &dt, const double &ref_vx, const double &wheelbase,
@@ -245,14 +246,12 @@ MPCFollower::MPCFollower()
 
   /* initialize lowpass filter */
   lpf_steering_cmd_.initialize(ctrl_dt_, steering_lpf_cutoff_hz_);
-  path_smoothing_filter_.initialize(traj_resample_dt_, path_smoothing_cutoff_hz_);
 
   /* set up ros system */
   timer_control_ = nh_.createTimer(ros::Duration(ctrl_dt_), &MPCFollower::timerCallback, this);
   pub_twist_cmd_ = nh_.advertise<geometry_msgs::TwistStamped>("/twist_cmd", 1);
   pub_steer_vel_ctrl_cmd_ = nh_.advertise<autoware_msgs::ControlCommandStamped>("/ctrl_cmd", 1);
   sub_ref_path_ = nh_.subscribe("/base_waypoints", 1, &MPCFollower::callbackRefPath, this);
-  sub_twist_ = nh_.subscribe("/vehicle_info/twist", 1, &MPCFollower::callbackTwist, this);
   sub_pose_ = nh_.subscribe("/current_pose", 1, &MPCFollower::callbackPose, this);
   if (robot_interface_ == "pacmod") {
     sub_vel_ = nh_.subscribe("/pacmod/parsed_tx/wheel_speed_rpt", 1, &MPCFollower::callbackVelocity, this);
@@ -307,8 +306,7 @@ void MPCFollower::timerCallback(const ros::TimerEvent& te) {
   MPC_INFO("[timerCallback] MPC calculating time = %f [ms]\n", elapsed * 1.0e-6);
 
   if (!mpc_solved) {
-    ROS_WARN("MPC is not solved\n");
-    // TODO: this is very temporal code. Stop when mpc error occurs.
+    ROS_WARN("MPC is not solved. publish 0 velocity.\n");
     vel_cmd = 0.0;
     steer_cmd = previous_steering_command_;
   }
@@ -322,8 +320,6 @@ void MPCFollower::timerCallback(const ros::TimerEvent& te) {
 };
 
 bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd) {
-
-
 
   /* parameter definition */
   static const double rad2deg = 180.0 / M_PI;
@@ -354,13 +350,8 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd) {
   double nearest_yaw = 0.0;
   double nearest_traj_time = 0.0;
   double nearest_ref_k = 0.0;
-  // calculateNearestPose(nearest_index, nearest_dist_error, nearest_yaw_error, my_x, my_y, my_yaw);
-  // nearest_x = ref_traj_.x[nearest_index];
-  // nearest_y = ref_traj_.y[nearest_index];
-  // nearest_yaw = ref_traj_.yaw[nearest_index];
-  // nearest_traj_time = ref_traj_.relative_time[nearest_index];
-  calculateNearestPoseWithInterp(nearest_index, nearest_dist_error, nearest_yaw_error,
-                                 nearest_x, nearest_y, nearest_yaw, nearest_traj_time, my_x, my_y, my_yaw);
+  calcNearestPoseInterp(nearest_index, nearest_dist_error, nearest_yaw_error,
+                        nearest_x, nearest_y, nearest_yaw, nearest_traj_time, my_x, my_y, my_yaw);
   MPC_INFO("[calculateMPC] nearest_index = %d, nearest_dist_error = %f\n",nearest_index, nearest_dist_error);
 
   /* check if lateral error is not too large */
@@ -651,12 +642,12 @@ void MPCFollower::calculateNearestPose(unsigned int &nearest_index,
 
 };
 
-void MPCFollower::calculateNearestPoseWithInterp(
+void MPCFollower::calcNearestPoseInterp(
     unsigned int &nearest_index, double &min_dist_error, double &nearest_yaw_error, double &nearest_x, double &nearest_y,
     double &nearest_yaw, double &nearest_time, const double &my_x, const double &my_y, const double &my_yaw) {
 
   if (ref_traj_.size() == 0) {
-    ROS_WARN("[calculateNearestPoseWithInterp] trajectory size is zero");
+    ROS_WARN("[calcNearestPoseInterp] trajectory size is zero");
     return;
   }
 
@@ -742,10 +733,6 @@ void MPCFollower::calculateNearestPoseWithInterp(
   nearest_time = alpha * ref_traj_.relative_time[nearest_index] + (1 - alpha) * ref_traj_.relative_time[second_nearest_index];
   min_dist_error = std::sqrt(b_sq - c_sq * alpha * alpha);
   nearest_yaw_error = intoSemicircle(my_yaw - nearest_yaw);
-  // ROS_ERROR("min1 x = %f, y = %f, yaw = %f, error = %f", ref_traj_.x[nearest_index], ref_traj_.y[nearest_index], ref_traj_.yaw[nearest_index], std::sqrt(a_sq));
-  // ROS_ERROR("intp x = %f, y = %f, yaw = %f, error = %f", nearest_x, nearest_y, nearest_yaw, min_dist_error);
-  // ROS_ERROR("min2 x = %f, y = %f, yaw = %f, error = %f", ref_traj_.x[second_nearest_index], ref_traj_.y[second_nearest_index], ref_traj_.yaw[second_nearest_index], std::sqrt(b_sq));
-  // ROS_ERROR("a = %f, b = %f, c = %f, alpha = %f, min_dist_error = %f", std::sqrt(a_sq), std::sqrt(b_sq), std::sqrt(c_sq), alpha, min_dist_error);
   return;
 }
 
@@ -799,6 +786,20 @@ void MPCFollower::publishSteerAndVel(const double &vel_cmd, const double &steer_
   pub_steer_vel_ctrl_cmd_.publish(cmd);
 }
 
+// double MPCFollower::convertHandleToTireAngle(double &handle_angle_rad, double &vel) {
+//   const double a0 = 15.713;
+//   const double a1 = 0.053;
+//   const double a2 = -0.042;
+//   const double N = a0 + a1 * vel * vel + a2 * handle_angle_rad;
+//   return handle_angle_rad / N;
+// };
+// double MPCFollower::convertTireToHandleAngle(double &tire_angle_rad, double &vel) {
+//   const double a0 = 15.713;
+//   const double a1 = 0.053;
+//   const double a2 = -0.042;
+//   return tire_angle_rad * (a0 + a1 * vel * vel) / (1.0 - a2 * tire_angle_rad);
+// };
+
 void MPCFollower::callbackRefPath(const autoware_msgs::Lane::ConstPtr& msg){
   const auto start = std::chrono::system_clock::now();
 
@@ -815,26 +816,17 @@ void MPCFollower::callbackRefPath(const autoware_msgs::Lane::ConstPtr& msg){
           relative_time.size(), relative_time.front(), relative_time.back());
 
   /* resampling */
-  // MPCFollower::resamplePathToTrajByTime(current_ref_path_, relative_time, traj_resample_dt_, traj);
   MPCFollower::resamplePathToTrajByDistance(current_ref_path_, relative_time, traj_resample_dl_, traj);
   convertEulerAngleToMonotonic(traj.yaw);
   MPC_INFO("[path callback] resampled traj size() = %lu\n", traj.relative_time.size());
 
-  /* low pass filter */
+  /* path smoothing */
   if (use_path_smoothing_) {
-    /* moving average filter */
     filteringMovingAverate(traj.x, path_smoothing_moving_ave_num_);
     filteringMovingAverate(traj.y, path_smoothing_moving_ave_num_);
     filteringMovingAverate(traj.z, path_smoothing_moving_ave_num_);
     filteringMovingAverate(traj.yaw, path_smoothing_moving_ave_num_);
     filteringMovingAverate(traj.k, path_smoothing_moving_ave_num_);
-
-    /* 2d butterworth filter */
-    // path_smoothing_filter_.filtfilt_vector(traj.relative_time, traj.x);
-    // path_smoothing_filter_.filtfilt_vector(traj.relative_time, traj.y);
-    // path_smoothing_filter_.filtfilt_vector(traj.relative_time, traj.z);
-    // path_smoothing_filter_.filtfilt_vector(traj.relative_time, traj.yaw);
-    // path_smoothing_filter_.filtfilt_vector(traj.relative_time, traj.k);
   }
 
   /* calculate curvature */
@@ -1044,15 +1036,6 @@ void MPCFollower::predictCurrentPose() {
   const double dt = 0.01;
   vector state(3);
   state << vehicle_status_.posx, vehicle_status_.posy, vehicle_status_.yaw;
-// printf("vel_steer_data_.vel_time = ");
-//   for (int i = 0; i < vel_steer_data_.vel_time.size(); ++i) {
-//     printf("%f, ", vel_steer_data_.vel_time[i]);
-//   }
-//   printf("\nvel_steer_data_.steer_time = ");
-//     for (int i = 0; i < vel_steer_data_.steer_time.size(); ++i) {
-//       printf("%f, ", vel_steer_data_.steer_time[i]);
-//     }
-
   for (double t = t_curr - predict_model_for_delay_; t < t_curr; t += dt) {
     double vel = 0;
     double steer = 0;
@@ -1117,7 +1100,8 @@ void MPCFollower::callbackVelocity(const pacmod_msgs::WheelSpeedRpt &msg){
 };
 
 void MPCFollower::callbackSteering(const pacmod_msgs::SystemRptFloat &msg){
-  vehicle_status_.steer_rad = msg.output / vehicle_model_.gear_ratio_tire_to_steer;
+  // vehicle_status_.steer_rad = convertHandleToTireAngle(msg.output);
+  vehicle_status_.steer_rad = msg.output;
   my_steering_ok_ = true;
   if (ros::Time::now().toSec() > 0.0) {
     vel_steer_data_.steer.push_back(vehicle_status_.steer_rad);
@@ -1147,13 +1131,6 @@ void MPCFollower::callbackSteeringGazebo(const std_msgs::Float64 &msg){
     vel_steer_data_.steer_time.push_back(ros::Time::now().toSec());
     vel_steer_data_.steer_time.erase(vel_steer_data_.steer_time.begin());
   }
-};
-
-void MPCFollower::callbackTwist(const geometry_msgs::TwistStamped::ConstPtr& msg){
-  // vehicle_status_.frame_id_pos = msg->header.frame_id;
-  // vehicle_status_.vx = msg->twist.linear.x;
-  // vehicle_status_.wz = msg->twist.angular.z;
-  // my_velocity_ok_ = true;
 };
 
 void MPCFollower::callbackEstimateTwist(const geometry_msgs::TwistStamped::ConstPtr &msg) {
