@@ -47,6 +47,7 @@ find_package(catkin REQUIRED COMPONENTS
         velodyne_pointcloud
         ndt_tku
         ndt_cpu
+        autoware_health_checker
         ${PCL_OPENMP_PACKAGES}
         )
 

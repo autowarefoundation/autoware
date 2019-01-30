@@ -25,6 +25,7 @@
     <build_depend>ndt_tku</build_depend>
     <build_depend>libpcl-all-dev</build_depend>
     <build_depend>eigen</build_depend>
+    <build_depend>autoware_health_checker</build_depend>
 
     <run_depend>roscpp</run_depend>
     <run_depend>std_msgs</run_depend>
@@ -43,6 +44,7 @@
     <run_depend>ndt_tku</run_depend>
     <run_depend>libpcl-all</run_depend>
     <run_depend>eigen</run_depend>
+    <run_depend>autoware_health_checker</run_depend>
 
     <export>
     </export>

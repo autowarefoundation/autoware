@@ -81,6 +81,9 @@
 
 #include <autoware_msgs/NDTStat.h>
 
+//headers in Autoware Health Checker
+//#include <autoware_health_checker/protected_subscriber.h>
+
 #define PREDICT_POSE_THRESHOLD 0.5
 
 #define Wa 0.4
