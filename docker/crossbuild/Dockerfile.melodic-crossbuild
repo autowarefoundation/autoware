@@ -12,13 +12,68 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gnupg
 
 RUN echo "deb http://packages.ros.org/ros/ubuntu bionic main" | tee /etc/apt/sources.list.d/ros-latest.list
-RUN apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
+RUN apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     lsb-release \
     python-rosdep \
     sudo
+
+# adwaita-icon-theme humanity-icon-theme and ubuntu-mono install the following as dependencies,
+# however when attempting to installing the former, dpkg fails due to an unknown error, so we
+# install the separately
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    fontconfig \
+    fontconfig-config \
+    fonts-dejavu-core \
+    gtk-update-icon-cache \
+    hicolor-icon-theme \
+    libbsd0 \
+    libcairo2 \
+    libcroco3 \
+    libdatrie1 \
+    libfontconfig1 \
+    libfreetype6 \
+    libgdk-pixbuf2.0-0 \
+    libgdk-pixbuf2.0-common \
+    libglib2.0-0 \
+    libgraphite2-3 \
+    libharfbuzz0b \
+    libicu60 \
+    libjbig0 \
+    libjpeg-turbo8 \
+    libjpeg8 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libpangoft2-1.0-0 \
+    libpixman-1-0 \
+    libpng16-16 \
+    librsvg2-2 \
+    librsvg2-common \
+    libthai-data \
+    libthai0 \
+    libtiff5 \
+    libx11-6 \
+    libx11-data \
+    libxau6 \
+    libxcb-render0 \
+    libxcb-shm0 \
+    libxcb1 \
+    libxdmcp6 \
+    libxext6 \
+    libxml2 \
+    libxrender1 \
+    multiarch-support \
+    shared-mime-info \
+    ucf
+
+# Install these adwaita-icon-theme humanity-icon-theme and ubuntu-mono separately to avoid
+# dpkg errors
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    adwaita-icon-theme \
+    humanity-icon-theme \
+    ubuntu-mono
 
 # Autoware dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -136,10 +191,12 @@ COPY --from=sysroot /usr/share/pkgconfig ${AUTOWARE_SYSROOT}/usr/share/pkgconfig
 COPY --from=sysroot /opt ${AUTOWARE_SYSROOT}/opt
 COPY --from=sysroot /etc/alternatives ${AUTOWARE_SYSROOT}/etc/alternatives
 RUN apt-get update
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    tzdata
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gnupg
 RUN echo "deb http://packages.ros.org/ros/ubuntu bionic main" | tee /etc/apt/sources.list.d/ros-latest.list
-RUN apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
+RUN apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
 RUN apt-get update && apt-get install -y --no-install-recommends \
     cython \
     crossbuild-essential-arm64 \
