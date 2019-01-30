@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 2.8.3)
 project(runtime_manager)
 
 find_package(catkin REQUIRED COMPONENTS
-        rospy
+        rospy autoware_msgs autoware_config_msgs tablet_socket_msgs std_msgs
         )
 
 catkin_package(
-        CATKIN_DEPENDS rospy std_msgs message_runtime
+        CATKIN_DEPENDS rospy autoware_msgs autoware_config_msgs tablet_socket_msgs std_msgs
 )
 
 catkin_install_python(PROGRAMS
@@ -44,7 +44,7 @@ install(FILES
         scripts/topics.yaml
         scripts/vector_map_files.yaml
         scripts/viewer.yaml
-        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts)
+        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 install(FILES
         scripts/images/autoware_logo_1.png

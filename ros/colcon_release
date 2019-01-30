@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -e
 
+if [[ -d devel ]]; then
+    rm -rf devel
+fi
+
 if [[ -d build ]]; then
     rm -rf build
 fi
