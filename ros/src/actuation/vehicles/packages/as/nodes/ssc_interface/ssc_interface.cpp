@@ -83,8 +83,8 @@ void SSCInterface::callbackFromSyncedCurrentTwist(
   geometry_msgs::TwistStamped ts;
   ts.header.frame_id = BASE_FRAME_ID;
   ts.header.stamp = msg_velocity->header.stamp;
-  ts.twist.linear.x = msg_velocity->velocity; // [m/s]
-  ts.twist.angular.z = msg_curvature->curvature *  ts.twist.linear.x; // [rad/s]
+  ts.twist.linear.x = msg_velocity->velocity;                         // [m/s]
+  ts.twist.angular.z = msg_curvature->curvature * ts.twist.linear.x;  // [rad/s]
   current_twist_pub_.publish(ts);
 }
 
