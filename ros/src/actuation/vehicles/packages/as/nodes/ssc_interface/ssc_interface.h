@@ -36,6 +36,7 @@
 #include <automotive_platform_msgs/BrakeFeedback.h>
 #include <automotive_platform_msgs/GearFeedback.h>
 #include <automotive_navigation_msgs/ModuleState.h>
+#include <pacmod_msgs/WheelSpeedRpt.h>
 
 #include <autoware_msgs/VehicleCmd.h>
 #include <autoware_msgs/VehicleStatus.h>
@@ -51,11 +52,10 @@ public:
   void run();
 
 private:
-  typedef message_filters::sync_policies::ApproximateTime<automotive_platform_msgs::VelocityAccel,
-                                                          automotive_platform_msgs::CurvatureFeedback,
-                                                          automotive_platform_msgs::ThrottleFeedback,
-                                                          automotive_platform_msgs::BrakeFeedback,
-                                                          automotive_platform_msgs::GearFeedback>
+  typedef message_filters::sync_policies::ApproximateTime<
+      automotive_platform_msgs::VelocityAccel, automotive_platform_msgs::CurvatureFeedback,
+      automotive_platform_msgs::ThrottleFeedback, automotive_platform_msgs::BrakeFeedback,
+      automotive_platform_msgs::GearFeedback, pacmod_msgs::WheelSpeedRpt>
       SSCFeedbacksSyncPolicy;
 
   // handle
@@ -71,6 +71,7 @@ private:
   message_filters::Subscriber<automotive_platform_msgs::ThrottleFeedback>* throttle_feedback_sub_;
   message_filters::Subscriber<automotive_platform_msgs::BrakeFeedback>* brake_feedback_sub_;
   message_filters::Subscriber<automotive_platform_msgs::GearFeedback>* gear_feedback_sub_;
+  message_filters::Subscriber<pacmod_msgs::WheelSpeedRpt>* wheel_speed_sub_;
   message_filters::Synchronizer<SSCFeedbacksSyncPolicy>* ssc_feedbacks_sync_;
 
   // publishers
@@ -82,8 +83,10 @@ private:
   ros::Publisher current_twist_pub_;
 
   // ros param
+  bool use_rear_wheel_speed_;
   double loop_rate_;
   double wheel_base_;
+  double tire_radius_;  // used for wheel speed
   double acceleration_limit_;
   double deceleration_limit_;
   double max_curvature_rate_;
@@ -102,8 +105,8 @@ private:
                                 const automotive_platform_msgs::CurvatureFeedbackConstPtr& msg_curvature,
                                 const automotive_platform_msgs::ThrottleFeedbackConstPtr& msg_throttle,
                                 const automotive_platform_msgs::BrakeFeedbackConstPtr& msg_brake,
-                                const automotive_platform_msgs::GearFeedbackConstPtr& msg_gear);
-
+                                const automotive_platform_msgs::GearFeedbackConstPtr& msg_gear,
+                                const pacmod_msgs::WheelSpeedRptConstPtr& msg_wheel);
   // functions
   void publishCommand();
 };

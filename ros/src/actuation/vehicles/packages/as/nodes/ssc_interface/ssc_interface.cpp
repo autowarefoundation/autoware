@@ -20,8 +20,10 @@ SSCInterface::SSCInterface() : nh_(), private_nh_("~"), engage_(false)
 {
   // setup parameters
   // NOTE: max steering wheel rotation rate = 6.28 [rad/s]
+  private_nh_.param<bool>("use_rear_wheel_speed", use_rear_wheel_speed_, true);
   private_nh_.param<double>("loop_rate", loop_rate_, 30.0);
   private_nh_.param<double>("wheel_base", wheel_base_, 2.79);
+  private_nh_.param<double>("tire_radius", tire_radius_, 0.39);
   private_nh_.param<double>("acceleration_limit", acceleration_limit_, 3.0);
   private_nh_.param<double>("deceleration_limit", deceleration_limit_, 3.0);
   private_nh_.param<double>("max_curvature_rate", max_curvature_rate_, 0.15);
@@ -32,10 +34,8 @@ SSCInterface::SSCInterface() : nh_(), private_nh_("~"), engage_(false)
   vehicle_cmd_sub_ = nh_.subscribe("vehicle_cmd", 1, &SSCInterface::callbackFromVehicleCmd, this);
   engage_sub_ = nh_.subscribe("vehicle/engage", 1, &SSCInterface::callbackFromEngage, this);
 
-  // subscribers from ssc
+  // subscribers from SSC
   module_states_sub_ = nh_.subscribe("as/module_states", 1, &SSCInterface::callbackFromSSCModuleStates, this);
-  velocity_accel_sub_ =
-      new message_filters::Subscriber<automotive_platform_msgs::VelocityAccel>(nh_, "as/velocity_accel", 10);
   curvature_feedback_sub_ =
       new message_filters::Subscriber<automotive_platform_msgs::CurvatureFeedback>(nh_, "as/curvature_feedback", 10);
   throttle_feedback_sub_ =
@@ -44,16 +44,22 @@ SSCInterface::SSCInterface() : nh_(), private_nh_("~"), engage_(false)
       new message_filters::Subscriber<automotive_platform_msgs::BrakeFeedback>(nh_, "as/brake_feedback", 10);
   gear_feedback_sub_ =
       new message_filters::Subscriber<automotive_platform_msgs::GearFeedback>(nh_, "as/gear_feedback", 10);
+  velocity_accel_sub_ =
+      new message_filters::Subscriber<automotive_platform_msgs::VelocityAccel>(nh_, "as/velocity_accel", 10);
+  // subscribers from PACMod
+  wheel_speed_sub_ =
+      new message_filters::Subscriber<pacmod_msgs::WheelSpeedRpt>(nh_, "pacmod/parsed_tx/wheel_speed_rpt", 10);
   ssc_feedbacks_sync_ = new message_filters::Synchronizer<SSCFeedbacksSyncPolicy>(
       SSCFeedbacksSyncPolicy(10), *velocity_accel_sub_, *curvature_feedback_sub_, *throttle_feedback_sub_,
-      *brake_feedback_sub_, *gear_feedback_sub_);
-  ssc_feedbacks_sync_->registerCallback(boost::bind(&SSCInterface::callbackFromSSCFeedbacks, this, _1, _2, _3, _4, _5));
+      *brake_feedback_sub_, *gear_feedback_sub_, *wheel_speed_sub_);
+  ssc_feedbacks_sync_->registerCallback(
+      boost::bind(&SSCInterface::callbackFromSSCFeedbacks, this, _1, _2, _3, _4, _5, _6));
 
   // publishers to autoware
   vehicle_status_pub_ = nh_.advertise<autoware_msgs::VehicleStatus>("vehicle_status", 10);
   current_twist_pub_ = nh_.advertise<geometry_msgs::TwistStamped>("vehicle/twist", 10);
 
-  // publishers to ssc
+  // publishers to SSC
   steer_mode_pub_ = nh_.advertise<automotive_platform_msgs::SteerMode>("as/arbitrated_steering_commands", 10);
   speed_mode_pub_ = nh_.advertise<automotive_platform_msgs::SpeedMode>("as/arbitrated_speed_commands", 10);
   turn_signal_pub_ = nh_.advertise<automotive_platform_msgs::TurnSignalCommand>("as/turn_signal_command", 10);
@@ -96,16 +102,21 @@ void SSCInterface::callbackFromSSCFeedbacks(const automotive_platform_msgs::Velo
                                             const automotive_platform_msgs::CurvatureFeedbackConstPtr& msg_curvature,
                                             const automotive_platform_msgs::ThrottleFeedbackConstPtr& msg_throttle,
                                             const automotive_platform_msgs::BrakeFeedbackConstPtr& msg_brake,
-                                            const automotive_platform_msgs::GearFeedbackConstPtr& msg_gear)
+                                            const automotive_platform_msgs::GearFeedbackConstPtr& msg_gear,
+                                            const pacmod_msgs::WheelSpeedRptConstPtr& msg_wheel)
 {
   ros::Time stamp = msg_velocity->header.stamp;
+
+  double speed = !use_rear_wheel_speed_ ?
+                     (msg_velocity->velocity) :
+                     (msg_wheel->rear_left_wheel_speed + msg_wheel->rear_right_wheel_speed) * tire_radius_ / 2.;
 
   // as_current_velocity (geometry_msgs::TwistStamped)
   geometry_msgs::TwistStamped twist;
   twist.header.frame_id = BASE_FRAME_ID;
   twist.header.stamp = stamp;
-  twist.twist.linear.x = msg_velocity->velocity;                            // [m/s]
-  twist.twist.angular.z = msg_curvature->curvature * twist.twist.linear.x;  // [rad/s]
+  twist.twist.linear.x = speed;                              // [m/s]
+  twist.twist.angular.z = msg_curvature->curvature * speed;  // [rad/s]
   current_twist_pub_.publish(twist);
 
   // vehicle_status (autoware_msgs::VehicleStatus)
@@ -117,7 +128,7 @@ void SSCInterface::callbackFromSSCFeedbacks(const automotive_platform_msgs::Velo
                                                                   autoware_msgs::VehicleStatus::MODE_MANUAL;
   vehicle_status.steeringmode = vehicle_status.drivemode;
   // speed [km/h]
-  vehicle_status.speed = msg_velocity->velocity * 3.6;
+  vehicle_status.speed = speed * 3.6;
   // drive/brake pedal [0,1000] (TODO: Scaling)
   vehicle_status.drivepedal = (int)(1000 * msg_throttle->throttle_pedal);
   vehicle_status.brakepedal = (int)(1000 * msg_brake->brake_pedal);
