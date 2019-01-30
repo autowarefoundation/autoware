@@ -1,0 +1,19 @@
+<!-- -->
+<launch>
+  <arg name="base_frame" default="/base_link"/>
+  <arg name="topic_name" default="vehicle_model"/>
+  <arg name="offset_x" default="1.2"/>
+  <arg name="offset_y" default="0.0"/>
+  <arg name="offset_z" default="0.0"/>
+  <arg name="offset_roll" default="0.0"/> <!-- degree -->
+  <arg name="offset_pitch" default="0.0"/> <!-- degree -->
+  <arg name="offset_yaw" default="0.0"/> <!-- degree -->
+  <arg name="model_path" default="$(find vehicle_description)/urdf/estima_black.urdf" />
+  <arg name="gui" default="False" />
+
+  <param name="robot_description" textfile="$(arg model_path)" />
+  <param name="use_gui" value="$(arg gui)"/>
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+
+</launch>

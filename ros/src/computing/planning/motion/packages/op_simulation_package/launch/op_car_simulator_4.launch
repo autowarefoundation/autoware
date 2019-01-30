@@ -3,7 +3,7 @@
 	<arg name="id" 							default="4" />		
 	<arg name="enableRvizPoseSelect"		default="true"   />	
 	<arg name="enableLooper"				default="true"   />	
-	<arg name="meshPath" 					default="package://model_publisher/../../../.config/model/default.dae" />
+	<arg name="meshPath" 					default="package://vehicle_description/mesh/default.dae" />
 	<arg name="baseColorR"					default="0.5" />
 	<arg name="baseColorG"					default="0.5" />
 	<arg name="baseColorB"					default="0.7" />

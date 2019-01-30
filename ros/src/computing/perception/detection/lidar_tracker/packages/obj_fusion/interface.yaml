@@ -1,3 +1,0 @@
-- name: obj_fusion
-  publish: [/obj_X/obj_pose]
-  subscribe: [/obj_X/obj_label, /cluster_centroids]

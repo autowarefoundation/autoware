@@ -124,6 +124,7 @@ TwistGate::TwistGate(const ros::NodeHandle& nh, const ros::NodeHandle& private_n
   twist_gate_msg_.header.seq = 0;
   emergency_stop_msg_.data = false;
   send_emergency_cmd = false;
+  node_status_pub_ptr_->ENABLE();
 
   remote_cmd_time_ = ros::Time::now();
   watchdog_timer_thread_ = std::thread(&TwistGate::watchdog_timer, this);
@@ -232,6 +233,8 @@ void TwistGate::remote_cmd_callback(const remote_msgs_t::ConstPtr& input_msg)
 
 void TwistGate::auto_cmd_twist_cmd_callback(const geometry_msgs::TwistStamped::ConstPtr& input_msg)
 {
+  node_status_pub_ptr_->NODE_ACTIVATE();
+  node_status_pub_ptr_->CHECK_RATE("/topic/rate/twist_cmd/slow",8,5,1,"topic twist_cmd rate low.");
   if(command_mode_ == CommandMode::AUTO)
   {
     twist_gate_msg_.header.frame_id = input_msg->header.frame_id;

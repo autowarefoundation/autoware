@@ -21,15 +21,15 @@ namespace autoware_health_checker
         {
             ret = std::make_pair(autoware_health_checker::LEVEL_ERROR,0);
         }
-        if(rate.get() < fatal_rate_)
+        else if(rate.get() < fatal_rate_)
         {
             ret = std::make_pair(autoware_health_checker::LEVEL_FATAL,rate.get());
         }
-        if(rate.get() < error_rate_)
+        else if(rate.get() < error_rate_)
         {
             ret = std::make_pair(autoware_health_checker::LEVEL_ERROR,rate.get());
         }
-        if(rate.get() < warn_rate_)
+        else if(rate.get() < warn_rate_)
         {
             ret = std::make_pair(autoware_health_checker::LEVEL_WARN,rate.get());
         }

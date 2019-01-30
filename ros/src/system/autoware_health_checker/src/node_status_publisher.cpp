@@ -4,6 +4,7 @@ namespace autoware_health_checker
 {
     NodeStatusPublisher::NodeStatusPublisher(ros::NodeHandle nh,ros::NodeHandle pnh)
     {
+        node_activated_ = false;
         nh_ = nh;
         pnh_ = pnh;
         status_pub_ = pnh_.advertise<autoware_system_msgs::NodeStatus>("node_status",10);
@@ -20,6 +21,7 @@ namespace autoware_health_checker
         while(ros::ok())
         {
             autoware_system_msgs::NodeStatus status;
+            status.node_activated = node_activated_;
             ros::Time now = ros::Time::now();
             status.header.stamp = now;
             status.node_name = ros::this_node::getName();
@@ -32,6 +34,7 @@ namespace autoware_health_checker
                 diag.type = autoware_system_msgs::DiagnosticStatus::RATE_IS_SLOW;
                 std::pair<uint8_t,double> result = rate_checkers_[*key_itr]->getErrorLevelAndRate();
                 diag.level = result.first;
+                diag.key = *key_itr;
                 diag.value = doubeToJson(result.second);
                 diag.description = rate_checkers_[*key_itr]->description;
                 diag.header.stamp = now;
@@ -47,31 +50,6 @@ namespace autoware_health_checker
             status_pub_.publish(status);
             rate.sleep();
         }
-        return;
-    }
-
-    void NodeStatusPublisher::CHECK_SUBSCRIBED_TOPICS(std::string key,std::string publisher,std::vector<std::string> publisher_nodes,std::string description)
-    {
-        bool is_found = false;
-        addNewBuffer(key,autoware_system_msgs::DiagnosticStatus::TOPIC_PUBLISHER_IS_INVALID,description);
-        autoware_system_msgs::DiagnosticStatus new_status;
-        for(auto node_name_itr = publisher_nodes.begin(); node_name_itr != publisher_nodes.end(); node_name_itr++)
-        {
-            if(*node_name_itr == publisher)
-            {
-                is_found = true;
-            }
-        }
-        if(!is_found)
-        {
-            new_status.level = autoware_system_msgs::DiagnosticStatus::FATAL;
-        }
-        else
-        {
-            new_status.level = autoware_system_msgs::DiagnosticStatus::OK;
-        }
-        new_status.description = description;
-        diag_buffers_[key]->addDiag(new_status);
         return;
     }
 
