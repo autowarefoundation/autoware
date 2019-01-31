@@ -138,6 +138,7 @@ SpinnakerCamera::~SpinnakerCamera() {
 }
 
 void SpinnakerCamera::publisher(int index) {
+  while(ros::ok()){
   try {
     mtx.lock();
     ImagePtr pResultImage = pCamList_[index]->GetNextImage();
@@ -174,20 +175,19 @@ void SpinnakerCamera::publisher(int index) {
   } catch (Spinnaker::Exception &e) {
     cout << "Error: " << e.what() << endl;
   }
+  }
 }
 void SpinnakerCamera::spin() {
   for (int i = 0; i < camList_.GetSize(); i++) {
     pCamList_[i]->BeginAcquisition();
     cout << "Camera " << i << " started acquiring images..." << endl;
   }
-  while (ros::ok()) {
-    vector<std::shared_ptr<std::thread>> threads(camList_.GetSize());
-    for (int i = 0; i < camList_.GetSize(); i++) {
-      threads[i] = make_shared<thread>(&SpinnakerCamera::publisher, this, i);
-    }
-    for (auto &thread : threads) {
-      thread->join();
-    }
+  vector<std::shared_ptr<std::thread>> threads(camList_.GetSize());
+  for (int i = 0; i < camList_.GetSize(); i++) {
+    threads[i] = make_shared<thread>(&SpinnakerCamera::publisher, this, i);
+  }
+  for (auto &thread : threads) {
+    thread->join();
   }
 }
 
