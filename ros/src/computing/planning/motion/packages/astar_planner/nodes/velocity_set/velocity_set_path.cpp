@@ -69,49 +69,51 @@ void VelocitySetPath::setTemporalWaypoints(int temporal_waypoints_size, int clos
 
 void VelocitySetPath::changeWaypointsForDeceleration(double deceleration, int closest_waypoint, int obstacle_waypoint)
 {
-  double square_vel_min = decelerate_vel_min_ * decelerate_vel_min_;
+  const double square_vel_min = decelerate_vel_min_ * decelerate_vel_min_;
   int extra = 4; // for safety
 
   // decelerate with constant deceleration
   for (int index = obstacle_waypoint + extra; index >= closest_waypoint; index--)
   {
     if (!checkWaypoint(index, __FUNCTION__))
+    {
       continue;
+    }
 
+    const double dist = calcInterval(index, obstacle_waypoint);
     // v = sqrt( (v0)^2 + 2ax )
-    double changed_vel = std::sqrt(square_vel_min + 2.0 * deceleration * calcInterval(index, obstacle_waypoint));
+    const double changed_vel = std::sqrt(square_vel_min + 2.0 * deceleration * dist);
 
-    double prev_vel = prev_waypoints_.waypoints[index].twist.twist.linear.x;
-    if (changed_vel > prev_vel)
-    {
-      new_waypoints_.waypoints[index].twist.twist.linear.x = prev_vel;
-    }
-    else
-    {
-      new_waypoints_.waypoints[index].twist.twist.linear.x = changed_vel;
-    }
+    const double prev_vel = prev_waypoints_.waypoints[index].twist.twist.linear.x;
+    const int sgn = (prev_vel < 0) ? -1 : 1;
+    new_waypoints_.waypoints[index].twist.twist.linear.x = (fabs(prev_vel) < changed_vel) ? prev_vel : sgn * changed_vel;
   }
 
 }
 
 void VelocitySetPath::avoidSuddenAcceleration(double deceleration, int closest_waypoint)
 {
-  double square_current_vel = current_vel_ * current_vel_;
+  const double square_current_vel = current_vel_ * current_vel_;
 
   for (int i = 0;; i++)
   {
     if (!checkWaypoint(closest_waypoint + i, __FUNCTION__))
+    {
       return;
+    }
 
+    const double dist = calcInterval(closest_waypoint, closest_waypoint + i);
     // accelerate with constant acceleration
     // v = root((v0)^2 + 2ax)
-    double changed_vel = std::sqrt(square_current_vel + 2 * deceleration * calcInterval(closest_waypoint, closest_waypoint + i)) + velocity_offset_;
-
+    const double changed_vel = std::sqrt(square_current_vel + 2 * deceleration * dist) + velocity_offset_;
+    double& target_vel = new_waypoints_.waypoints[closest_waypoint + i].twist.twist.linear.x;
     // Don't exceed original velocity
-    if (changed_vel > new_waypoints_.waypoints[closest_waypoint + i].twist.twist.linear.x)
-      return;
-
-    new_waypoints_.waypoints[closest_waypoint + i].twist.twist.linear.x = changed_vel;
+    if (fabs(target_vel) < changed_vel)
+    {
+      continue;
+    }
+    const int sgn = (target_vel < 0) ? -1 : 1;
+    target_vel = sgn * changed_vel;
   }
 
   return;
@@ -120,27 +122,38 @@ void VelocitySetPath::avoidSuddenAcceleration(double deceleration, int closest_w
 void VelocitySetPath::avoidSuddenDeceleration(double velocity_change_limit, double deceleration, int closest_waypoint)
 {
   if (closest_waypoint < 0)
+  {
     return;
-
+  }
+  const double& closest_wp_vel = new_waypoints_.waypoints[closest_waypoint].twist.twist.linear.x;
   // not avoid braking
-  if (current_vel_ - new_waypoints_.waypoints[closest_waypoint].twist.twist.linear.x < velocity_change_limit)
+  if (fabs(current_vel_ - closest_wp_vel) < velocity_change_limit || fabs(current_vel_) < fabs(closest_wp_vel))
+  {
     return;
+  }
 
-  //std::cout << "avoid sudden braking!" << std::endl;
-
-  double square_vel = (current_vel_ - velocity_change_limit) * (current_vel_ - velocity_change_limit);
+  const double square_current_vel = current_vel_ * current_vel_;
   for (int i = 0;; i++)
   {
     if (!checkWaypoint(closest_waypoint + i, __FUNCTION__))
+    {
       return;
+    }
 
     // sqrt(v^2 - 2ax)
-    double changed_vel = square_vel - 2 * deceleration * calcInterval(closest_waypoint, closest_waypoint + i);
+    const double changed_vel = square_current_vel - 2 * deceleration * calcInterval(closest_waypoint, closest_waypoint + i);
+    double& target_vel = new_waypoints_.waypoints[closest_waypoint + i].twist.twist.linear.x;
 
     if (changed_vel < 0)
-      break;
-
-    new_waypoints_.waypoints[closest_waypoint + i].twist.twist.linear.x = std::sqrt(changed_vel);
+    {
+      return;
+    }
+    else if (target_vel * target_vel > changed_vel)
+    {
+      continue;
+    }
+    const int sgn = (target_vel < 0) ? -1 : 1;
+    target_vel = sgn * std::sqrt(changed_vel);
   }
 
 }
@@ -148,26 +161,25 @@ void VelocitySetPath::avoidSuddenDeceleration(double velocity_change_limit, doub
 void VelocitySetPath::changeWaypointsForStopping(int stop_waypoint, int obstacle_waypoint, int closest_waypoint, double deceleration)
 {
   if (closest_waypoint < 0)
+  {
     return;
+  }
 
   // decelerate with constant deceleration
   for (int index = stop_waypoint; index >= closest_waypoint; index--)
   {
     if (!checkWaypoint(index, __FUNCTION__))
+    {
       continue;
+    }
 
     // v = (v0)^2 + 2ax, and v0 = 0
-    double changed_vel = std::sqrt(2.0 * deceleration * calcInterval(index, stop_waypoint));
+    const double changed_vel = std::sqrt(2.0 * deceleration * calcInterval(index, stop_waypoint));
 
-    double prev_vel = prev_waypoints_.waypoints[index].twist.twist.linear.x;
-    if (changed_vel > prev_vel)
-    {
-      new_waypoints_.waypoints[index].twist.twist.linear.x = prev_vel;
-    }
-    else
-    {
-      new_waypoints_.waypoints[index].twist.twist.linear.x = changed_vel;
-    }
+    const double prev_vel = prev_waypoints_.waypoints[index].twist.twist.linear.x;
+    double& target_vel = new_waypoints_.waypoints[index].twist.twist.linear.x;
+    const int sgn = (prev_vel < 0) ? -1 : 1;
+    target_vel = (changed_vel > fabs(prev_vel)) ? prev_vel : sgn * changed_vel;
   }
 
   // fill velocity with 0 for stopping

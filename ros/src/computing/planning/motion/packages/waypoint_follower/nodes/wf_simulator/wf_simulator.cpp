@@ -50,6 +50,7 @@ ros::Publisher velocity_publisher_;
 int32_t closest_waypoint_ = -1;
 double position_error_;
 double angle_error_;
+double gear_coeff_ = 0;
 double linear_acceleration_ = 0;
 double steering_angle_ = 0;
 double lidar_height_ = 1.0;
@@ -59,6 +60,7 @@ constexpr int LOOP_RATE = 50;  // 50Hz
 
 void CmdCallBack(const autoware_msgs::VehicleCmdConstPtr& msg, double accel_rate)
 {
+  gear_coeff_ = (msg->gear < 2) ? 1 : (msg->gear == 2) ? -1 : 0;
   if (use_ctrl_cmd == true)
   {
     linear_acceleration_ = msg->ctrl_cmd.linear_acceleration;
@@ -68,28 +70,19 @@ void CmdCallBack(const autoware_msgs::VehicleCmdConstPtr& msg, double accel_rate
   {
     static double previous_linear_velocity = 0;
 
-    if (current_velocity_.linear.x < msg->twist_cmd.twist.linear.x)
+    current_velocity_.linear.x = fabs(msg->twist_cmd.twist.linear.x);
+    const double abs_prev_vel = fabs(previous_linear_velocity);
+    const int sgn = (current_velocity_.linear.x > abs_prev_vel) ? 1 : -1;
+    double limited_vel = abs_prev_vel + sgn * accel_rate / (double)LOOP_RATE;
+    limited_vel = (limited_vel < 0.0) ? 0.0 : limited_vel;
+    if (sgn * current_velocity_.linear.x > sgn * limited_vel)
     {
-      current_velocity_.linear.x = previous_linear_velocity + accel_rate / (double)LOOP_RATE;
-
-      if (current_velocity_.linear.x > msg->twist_cmd.twist.linear.x)
-      {
-        current_velocity_.linear.x = msg->twist_cmd.twist.linear.x;
-      }
+      current_velocity_.linear.x = limited_vel;
     }
-    else
-    {
-      current_velocity_.linear.x = previous_linear_velocity - accel_rate / (double)LOOP_RATE;
-
-      if (current_velocity_.linear.x < msg->twist_cmd.twist.linear.x)
-      {
-        current_velocity_.linear.x = msg->twist_cmd.twist.linear.x;
-      }
-    }
-
+    current_velocity_.linear.x *= gear_coeff_;
     previous_linear_velocity = current_velocity_.linear.x;
 
-    current_velocity_.angular.z = msg->twist_cmd.twist.angular.z;
+    current_velocity_.angular.z = gear_coeff_ * msg->twist_cmd.twist.angular.z;
 
     //current_velocity_ = msg->twist;
   }
@@ -151,7 +144,7 @@ void updateVelocity()
   if (use_ctrl_cmd == false)
     return;
 
-  current_velocity_.linear.x += linear_acceleration_ / (double)LOOP_RATE;
+  current_velocity_.linear.x += gear_coeff_ * linear_acceleration_ / (double)LOOP_RATE;
   current_velocity_.angular.z = current_velocity_.linear.x * std::sin(steering_angle_) / wheel_base_;
 }
 

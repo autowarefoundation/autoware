@@ -483,39 +483,33 @@ EControl obstacleDetection(int closest_waypoint, const autoware_msgs::Lane& lane
 void changeWaypoints(const VelocitySetInfo& vs_info, const EControl& detection_result, int closest_waypoint,
                      int obstacle_waypoint, const ros::Publisher& final_waypoints_pub, VelocitySetPath* vs_path)
 {
+  const double deceleration =
+  (detection_result == EControl::STOP) ? vs_info.getDecelerationObstacle() : vs_info.getDecelerationStopline();
+  const double change_limit = vs_info.getVelocityChangeLimit();
+
   if (detection_result == EControl::STOP || detection_result == EControl::STOPLINE)
   {  // STOP for obstacle/stopline
     // stop_waypoint is about stop_distance meter away from obstacles/stoplines
     int stop_distance = (detection_result == EControl::STOP)
       ? vs_info.getStopDistanceObstacle() : vs_info.getStopDistanceStopline();
-    double deceleration = (detection_result == EControl::STOP)
-      ? vs_info.getDecelerationObstacle() : vs_info.getDecelerationStopline();
     int stop_waypoint =
         calcWaypointIndexReverse(vs_path->getPrevWaypoints(), obstacle_waypoint, stop_distance);
     // change waypoints to stop by the stop_waypoint
     vs_path->changeWaypointsForStopping(stop_waypoint, obstacle_waypoint, closest_waypoint, deceleration);
-    vs_path->avoidSuddenAcceleration(deceleration, closest_waypoint);
-    vs_path->avoidSuddenDeceleration(vs_info.getVelocityChangeLimit(), deceleration, closest_waypoint);
-    vs_path->setTemporalWaypoints(vs_info.getTemporalWaypointsSize(), closest_waypoint, vs_info.getControlPose());
-    final_waypoints_pub.publish(vs_path->getTemporalWaypoints());
-  }
-  else if (detection_result == EControl::DECELERATE)
-  {  // DECELERATE for obstacles
-    vs_path->initializeNewWaypoints();
-    vs_path->changeWaypointsForDeceleration(vs_info.getDecelerationObstacle(), closest_waypoint, obstacle_waypoint);
-    vs_path->avoidSuddenDeceleration(vs_info.getVelocityChangeLimit(), vs_info.getDecelerationObstacle(), closest_waypoint);
-    vs_path->avoidSuddenAcceleration(vs_info.getDecelerationObstacle(), closest_waypoint);
-    vs_path->setTemporalWaypoints(vs_info.getTemporalWaypointsSize(), closest_waypoint, vs_info.getControlPose());
-    final_waypoints_pub.publish(vs_path->getTemporalWaypoints());
   }
   else
-  {  // ACCELERATE or KEEP
+  {
     vs_path->initializeNewWaypoints();
-    vs_path->avoidSuddenAcceleration(vs_info.getDecelerationObstacle(), closest_waypoint);
-    vs_path->avoidSuddenDeceleration(vs_info.getVelocityChangeLimit(), vs_info.getDecelerationObstacle(), closest_waypoint);
-    vs_path->setTemporalWaypoints(vs_info.getTemporalWaypointsSize(), closest_waypoint, vs_info.getControlPose());
-    final_waypoints_pub.publish(vs_path->getTemporalWaypoints());
+    // DECELERATE for obstacles
+    if (detection_result == EControl::DECELERATE)
+    {
+      vs_path->changeWaypointsForDeceleration(deceleration, closest_waypoint, obstacle_waypoint);
+    }
   }
+  vs_path->avoidSuddenAcceleration(deceleration, closest_waypoint);
+  vs_path->avoidSuddenDeceleration(change_limit, deceleration, closest_waypoint);
+  vs_path->setTemporalWaypoints(vs_info.getTemporalWaypointsSize(), closest_waypoint, vs_info.getControlPose());
+  final_waypoints_pub.publish(vs_path->getTemporalWaypoints());
 }
 
 }  // end namespace

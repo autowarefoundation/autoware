@@ -76,6 +76,7 @@ private:
 
   bool is_using_decisionmaker();
   void reset_vehicle_cmd_msg();
+  void change_twist_for_rear();
 
   ros::NodeHandle nh_;
   ros::NodeHandle private_nh_;
@@ -101,6 +102,7 @@ private:
   std_msgs::String command_mode_topic_;
 
   bool is_state_drive_ = true;
+  bool is_valid_gear_ = false;
   // still send is true
   bool send_emergency_cmd = false;
 };
@@ -176,7 +178,11 @@ bool TwistGate::is_using_decisionmaker()
 
 void TwistGate::check_state()
 {
-  if (is_using_decisionmaker() && !is_state_drive_)
+  if (!is_using_decisionmaker())
+  {
+    return;
+  }
+  if (!is_state_drive_ || !is_valid_gear_)
   {
     twist_gate_msg_.twist_cmd.twist = geometry_msgs::Twist();
     twist_gate_msg_.ctrl_cmd = autoware_msgs::ControlCommand();
@@ -271,6 +277,7 @@ void TwistGate::remote_cmd_callback(const remote_msgs_t::ConstPtr& input_msg)
     twist_gate_msg_.gear = input_msg->vehicle_cmd.gear;
     twist_gate_msg_.lamp_cmd = input_msg->vehicle_cmd.lamp_cmd;
     twist_gate_msg_.mode = input_msg->vehicle_cmd.mode;
+    change_twist_for_rear();
     vehicle_cmd_pub_.publish(twist_gate_msg_);
   }
 }
@@ -283,7 +290,7 @@ void TwistGate::auto_cmd_twist_cmd_callback(const geometry_msgs::TwistStamped::C
     twist_gate_msg_.header.stamp = input_msg->header.stamp;
     twist_gate_msg_.header.seq++;
     twist_gate_msg_.twist_cmd.twist = input_msg->twist;
-
+    change_twist_for_rear();
     check_state();
     vehicle_cmd_pub_.publish(twist_gate_msg_);
   }
@@ -386,11 +393,14 @@ void TwistGate::state_callback(const std_msgs::StringConstPtr& input_msg)
     if (input_msg->data.find("WaitOrder") != std::string::npos)
     {
       twist_gate_msg_.gear = CMD_GEAR_P;
+      is_valid_gear_ = false;
     }
-    // Set Drive Gear
+    // Set Drive/Back Gear
     else
     {
-      twist_gate_msg_.gear = CMD_GEAR_D;
+      const bool is_back = (input_msg->data.find("Back\n") != std::string::npos);
+      twist_gate_msg_.gear = is_back ? CMD_GEAR_R : CMD_GEAR_D;
+      is_valid_gear_ = true;
     }
 
     // get drive state
@@ -410,6 +420,22 @@ void TwistGate::state_callback(const std_msgs::StringConstPtr& input_msg)
       emergency_stop_msg_.data = false;
       send_emergency_cmd = false;
     }
+  }
+}
+
+void TwistGate::change_twist_for_rear()
+{
+  double& vel = twist_gate_msg_.twist_cmd.twist.linear.x;
+  double& omega = twist_gate_msg_.twist_cmd.twist.angular.z;
+  if (twist_gate_msg_.gear == CMD_GEAR_R)
+  {
+    vel = (vel > 0.0) ? 0.0 : vel;
+    vel *= -1;
+    omega *= -1;
+  }
+  else
+  {
+    vel = (vel < 0.0) ? 0.0 : vel;
   }
 }
 
