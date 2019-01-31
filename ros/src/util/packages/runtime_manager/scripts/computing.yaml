@@ -558,6 +558,10 @@ subs :
            dialog_height : 550
            multi_lane_csv :
              prop  : 1
+       - name : waypoint_replanner
+         desc : waypoint_replanner desc sample
+         cmd  : roslaunch waypoint_maker waypoint_replanner.launch
+         param: waypoint_replanner
            replanning_mode :
              flags : [ nl ]
            resample_mode :
@@ -599,7 +603,6 @@ subs :
              depend      : replanning_mode
              depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
-           dialog : MyDialogWaypointLoader
        - name : waypoint_saver
          desc : waypoint_saver desc sample
          cmd  : roslaunch waypoint_maker waypoint_saver.launch
