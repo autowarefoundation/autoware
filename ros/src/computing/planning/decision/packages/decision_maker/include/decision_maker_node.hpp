@@ -103,7 +103,7 @@ struct AutowareStatus
   int found_stopsign_idx;
   int prev_stopped_wpidx;
 
-  AutowareStatus(void) : closest_waypoint(-1), velocity(0), found_stopsign_idx(-1), obstacle_waypoint(-1)
+  AutowareStatus(void) : closest_waypoint(-1), obstacle_waypoint(-1), velocity(0), found_stopsign_idx(-1), prev_stopped_wpidx(-1)
   {
   }
 
@@ -142,7 +142,6 @@ private:
   bool isManualLight;
 
   // Param
-  bool enableDisplayMarker;
   bool auto_mission_reload_;
   bool auto_engage_;
   bool auto_mission_change_;
@@ -335,7 +334,6 @@ public:
 
   DecisionMakerNode(int argc, char** argv)
     : private_nh_("~")
-    , enableDisplayMarker(false)
     , auto_mission_reload_(false)
     , auto_engage_(false)
     , auto_mission_change_(false)
