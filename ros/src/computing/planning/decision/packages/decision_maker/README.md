@@ -16,8 +16,9 @@ Each status is managed by state machine.
 ## Runtime Manager Parameters
 Parameter|Type|Description
 --|---|--
-enable_display_marker|Bool|(default: *false*)<br>not used
 auto_mission_reload|Bool|(default: *false*)<br>If this is set true, decision maker automatically reloads mission as new mission after previous mission is completed.
+auto_engage|Bool|(default: *false*)<br>If this is set true, decision maker automatically engage immediately after ready to drive.
+auto_mission_change|Bool|(default: *false*)<br>If this is set true, decision maker automatically change the mission(waypoint) without state_cmd when new mission is loaded while driving.
 use_management_system|Bool|(default: *false*)<br>This must be true in order to incoorporate with [Autoware Management System](https://github.com/CPFL/AMS)
 disuse_vector_map|Bool|(default: *false*)<br> If set *true*, decision_maker will exit "MapInitState" even if vector map is not successfully loaded.
 num_of_steer_behind|Int|(default: *20*)<br> lookup distance along waypoints to determine steering state(straight, turning right, or turning left)
@@ -64,16 +65,13 @@ Topic|Type|Objective
 /decision_maker/available_transition|std_msgs/String|available transition from current state
 /decision_maker/operator_help_text|jsk_rviz_plugins/OverlayText|Help message during operation
 /decision_maker/state|std_msgs/String|current state for "Vehicle", "Mission", and "Drive" state machine.
+/decision_maker/state_msg|autoware_msgs/State|current state for "Vehicle", "Mission", and "Drive" state machine with header.
 /lamp_cmd|autoware_msgs/LampCmd|blinker command to vehicle (0=straight, 1=right, 2=left)
 /lane_waypoints_array|autoware_msgs/LaneArray|waypoints passed down to following planners. (e.g. lane_rule)
 /light_color_managed|autoware_msgs/TrafficLight|meant to publish light_color status. Not implemented yet.
-/state/cross_inside_marker|visualization_msgs/Marker|visualization of objectes inside cross roads. Not implemented yet.
-/state/cross_road_marker|visualization_msgs/MarkerArray|visualization of crossroads. Not implemented yet.
-/state/crossroad_bbox|jsk_recognition_msgs/BoundingBoxArray| visualization of crossroads by bounding box. Not implemented yet.
 /decision_maker/state_overlay|jsk_rviz_plugins/OverlayText|Current state as overlay_txt.
-/state/stopline_target|visualization_msgs/Marker| Visualization of referenced stop line. Not implemented yet.
 /state/stopline_wpidx|std_msgs/Int32|Index of waypoint for the vehicle to stop.
-/target_velocity_array|std_msgs/Float64MultiArray| Array of target velocity obtained from final_waypoints.
+/decision_maker/target_velocity_array|std_msgs/Float64MultiArray| Array of target velocity obtained from final_waypoints.
 
 
 ## State Description
@@ -87,7 +85,7 @@ LocalizationInit|/current_pose|Waits until localizer is ready | Waits until curr
 PlanningInit|/closest_waypoint|Waits unil planners are ready | Subscriber is set for /closest_waypoint.
 VehicleInit|-|Waits until vehicle is ready for departure.|No implementation goes directly to vehilce ready state.
 VehicleReady|-|Vehicle is ready to move.|Exits to VehicleEmergency when `emergency` key is given by state_cmd from other states, or if `emergency_flag` is set true by other states.
-VehicleEmergency|-|Emergency is detected somewhere in the system. |Waits until `return_from_emergency` key is by /state_cmd (e.g. by DecisionMakerPanel)
+VehicleEmergency|-|Emergency is detected somewhere in the system. |Waits until `return_from_emergency` or `return_to_ready`  key is by /state_cmd (e.g. by DecisionMakerPanel)
 
 ### Mission States
 State name|Required topic|Description|Implementation
@@ -117,10 +115,6 @@ Stop|-|vehicle is stopping since stop signal is sent from other nodes (e.g. by s
 Wait|-|Vehilce is waiting (e.g. due to safety reason)|Publishes /state/stopline_wpidx with the index = closest_waypoint + 1.
 Go|-|Vehicle is moving|Throws found_stopline if stopline is nearby. Throws completely_stopped if vehicle stops due to obstacle.
 StopLine|/vector_map_info/stop_line|Vehicle is stopping due to stop line|Throws clear key after vehicle stops for 0.5 seconds.
-TryAvoidance|-|Vehicle trys to avoid obstacle. Not implemented yet|No implementation.
-CheckAvoidance|-|Checks if obstalce avoidance is safe or not. Not implemented yet|No implementation.
-Avoidance|-|Vehicle is avoiding obstacle. Not implemented.|No implementation.
-ReturnToLane|-|Goes back to lane after avoiding obstacle. Not implemented.|-
 LeftTurn|-|Vehicle is turning left at intersection. Change blinker to left. | Publish /lamp_cmd to change blinker.
 L_Stop|-|Same as Stop State|Same as Stop State
 L_Wait|-|Same as Wait State|Same as Wait State
@@ -142,10 +136,10 @@ ChangeToLeft|-|Change to left lane|No implementation.
 RightLaneChange|-|Vehicle is switching to right lane|publish /lamp_cmd to change blinker to right.
 CheckRightLane|-|Check if it is safe to change lane to left|No implementation.
 ChangeToRight|-|Change to left lane|No implementation.
-BusStop|-|Vehicle is approaching to bus stop| No implementation.
+BusStop|-|Vehicle is approaching to bus stop(not supported yet)| No implementation.
 PullIn|-|Vehicle is pulling in to bus stop| publish /lamp_cmd to change blinker to left.
 PullOut|-|Vehicle is pulling out from bus stop|publish /lamp_cmd to change blinker to right.
-FreeArea|-|Vehicle is driving in free space(e.g. parking area)|No implementation.
+FreeArea|-|Vehicle is driving in free space(e.g. parking area, not supported yet)|No implementation.
 Parking|-|Vehicle is parking|Publish /lamp_cmd to change blinker to hazard.  
 
 
@@ -159,23 +153,13 @@ Parking|-|Vehicle is parking|Publish /lamp_cmd to change blinker to hazard.
 5. When the vehicle reaches the end of waypoint and stops, state Mission state transits to `WaitOrder` via the `MissionComplete`
 6. You can repeat from 3. with other waypoint
 
-### Move backward
-
 ### Lane change
   1. Start Normal driving with waypoint files necessary for lane change
   2. On `CheckLeft` or `RightLane` state, push `Execute LaneChange` button on DecisionMakerPannel
   3. The vehicle start lane change
-
-### Stop at stop line
 
 ### Driving mission change
   1. Prepare waypoint files to change, and start Normal driving
   2. On `Driving` state, push `Request mission change` button on DecisionMakerPannel
   3. When the state becomes `DrivingMissionChange`, please load another waypoint for change
   4. If it is possible to change the waypoint will switch, otherwise it will not be changed
-
-### Obstacle avoidance
-
-### Pull in & Pull out
-
-### Emergency stop
