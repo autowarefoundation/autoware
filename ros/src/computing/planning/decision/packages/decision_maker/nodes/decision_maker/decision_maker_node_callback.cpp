@@ -44,7 +44,6 @@ void DecisionMakerNode::callbackFromLaneChangeFlag(const std_msgs::Int32& msg)
 void DecisionMakerNode::callbackFromConfig(const autoware_config_msgs::ConfigDecisionMaker& msg)
 {
   ROS_INFO("Param setted by Runtime Manager");
-  enableDisplayMarker = msg.enable_display_marker;
   auto_mission_reload_ = msg.auto_mission_reload;
   auto_engage_ = msg.auto_engage;
   auto_mission_change_ = msg.auto_mission_change;

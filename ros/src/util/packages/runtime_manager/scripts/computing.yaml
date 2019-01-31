@@ -669,8 +669,6 @@ subs :
       gui  :
           dialog_width  : 400
           dialog_height : 600
-          enable_display_marker:
-            flags : [ nl ]
           use_management_system:
             flags : [ nl ]
           auto_mission_reload:
@@ -1896,14 +1894,6 @@ params :
     topic : /config/decision_maker
     msg   : ConfigDecisionMaker
     vars  :
-    - name  : enable_display_marker
-      desc  : enable display marker flag
-      label : enable_display_marker
-      kind  : checkbox
-      v     : False
-      cmd_param :
-        dash      : ''
-        delim     : ':='
     - name  : disuse_vector_map
       desc  : If this is enabled, the state passes through the MapInit state without vectormap.
       label : disuse_vector_map

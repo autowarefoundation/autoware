@@ -1,5 +1,4 @@
 Header header
-bool enable_display_marker
 bool auto_mission_reload
 bool auto_engage
 bool auto_mission_change
