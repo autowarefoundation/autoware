@@ -19,6 +19,7 @@
 
 //headers in STL
 #include <mutex>
+#include <map>
 
 class HealthAggregator
 {
@@ -38,5 +39,6 @@ private:
     boost::optional<autoware_system_msgs::HardwareStatus> convert(const diagnostic_msgs::DiagnosticArray::ConstPtr msg);
     autoware_system_msgs::SystemStatus system_status_;
     std::mutex mtx_;
+    void updateConnectionStatus();
 };
 #endif  //HEALTH_AGGREGATOR_H_INCLUDED

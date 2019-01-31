@@ -73,6 +73,7 @@ void VelocitySetInfo::configCallback(const autoware_config_msgs::ConfigVelocityS
 
 void VelocitySetInfo::pointsCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
 {
+  node_status_publisher_ptr_->CHECK_RATE("/topic/rate/points_no_ground/slow",8,5,1,"topic points_no_ground subscribe rate low.");
   pcl::PointCloud<pcl::PointXYZ> sub_points;
   pcl::fromROSMsg(*msg, sub_points);
 

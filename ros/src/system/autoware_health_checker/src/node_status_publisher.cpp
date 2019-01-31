@@ -7,7 +7,7 @@ namespace autoware_health_checker
         node_activated_ = false;
         nh_ = nh;
         pnh_ = pnh;
-        status_pub_ = pnh_.advertise<autoware_system_msgs::NodeStatus>("node_status",10);
+        status_pub_ = nh_.advertise<autoware_system_msgs::NodeStatus>("node_status",10);
     }
 
     NodeStatusPublisher::~NodeStatusPublisher()

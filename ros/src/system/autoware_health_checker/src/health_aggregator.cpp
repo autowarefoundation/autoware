@@ -27,12 +27,21 @@ void HealthAggregator::publishSystemStatus()
     {
         mtx_.lock();
         system_status_.header.stamp = ros::Time::now();
+        updateConnectionStatus();
         system_status_pub_.publish(system_status_);
         system_status_.node_status.clear();
         system_status_.hardware_status.clear();
         mtx_.unlock();
         rate.sleep();
     }
+    return;
+}
+
+void HealthAggregator::updateConnectionStatus()
+{
+    std::vector<std::string> detected_nodes;
+    ros::master::getNodes(detected_nodes);
+    system_status_.available_nodes = detected_nodes;
     return;
 }
 
