@@ -53,7 +53,7 @@ void WaypointLoaderNode::createLaneArray(const std::vector<std::string>& paths, 
   {
     autoware_msgs::Lane lane;
     createLaneWaypoint(el, &lane);
-    lane_array->lanes.push_back(lane);
+    lane_array->lanes.emplace_back(lane);
   }
 }
 
@@ -101,7 +101,7 @@ void WaypointLoaderNode::loadWaypointsForVer1(const char* filename, std::vector<
   {
     autoware_msgs::Waypoint wp;
     parseWaypointForVer1(line, &wp);
-    wps->push_back(wp);
+    wps->emplace_back(wp);
   }
 
   size_t last = wps->size() - 1;
@@ -147,7 +147,7 @@ void WaypointLoaderNode::loadWaypointsForVer2(const char* filename, std::vector<
   {
     autoware_msgs::Waypoint wp;
     parseWaypointForVer2(line, &wp);
-    wps->push_back(wp);
+    wps->emplace_back(wp);
   }
 }
 
@@ -182,7 +182,7 @@ void WaypointLoaderNode::loadWaypointsForVer3(const char* filename, std::vector<
   {
     autoware_msgs::Waypoint wp;
     parseWaypointForVer3(line, contents, &wp);
-    wps->push_back(wp);
+    wps->emplace_back(wp);
   }
 }
 
@@ -297,7 +297,7 @@ void parseColumns(const std::string& line, std::vector<std::string>* columns)
     }
     if (!column.empty())
     {
-      columns->push_back(column);
+      columns->emplace_back(column);
     }
   }
 }
