@@ -669,16 +669,16 @@ subs :
       gui  :
           dialog_width  : 400
           dialog_height : 600
-          use_management_system:
+          use_fms:
             flags : [ nl ]
           auto_mission_reload:
-            depend : use_management_system
+            depend : use_fms
             depend_bool : 'lambda v : v == 0'
           auto_engage:
-            depend : use_management_system
+            depend : use_fms
             depend_bool : 'lambda v : v == 0'
           auto_mission_change:
-            depend : use_management_system
+            depend : use_fms
             depend_bool : 'lambda v : v == 0'
 
 
@@ -1946,9 +1946,9 @@ params :
       cmd_param :
               dash : ''
               delim: ':='
-    - name  : use_management_system
+    - name  : use_fms
       desc  : If this is disbled, part of state transitions are automatically executed.
-      label : use_management_system
+      label : use_fms
       kind  : checkbox
       v     : False
       cmd_param :
