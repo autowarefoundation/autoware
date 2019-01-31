@@ -173,8 +173,8 @@ DecisionMakerPanel::DecisionMakerPanel(QWidget* parent) : rviz::Panel(parent)
   buttons_ext["goto_wait_order"] = new QPushButton("Go to WaitOrder");
   signalMapper->setMapping(buttons_ext["goto_wait_order"], QString("goto_wait_order"));
   // state drive
-  buttons_ext["opoeration_start"] = new QPushButton("Operation start");
-  signalMapper->setMapping(buttons_ext["opoeration_start"], QString("opoeration_start"));
+  buttons_ext["operation_start"] = new QPushButton("Operation start");
+  signalMapper->setMapping(buttons_ext["operation_start"], QString("operation_start"));
   buttons_ext["operation_end"] = new QPushButton("Operation end");
   signalMapper->setMapping(buttons_ext["operation_end"], QString("operation_end"));
   buttons_ext["on_lane_area"] = new QPushButton("Lane area");
@@ -235,7 +235,7 @@ DecisionMakerPanel::DecisionMakerPanel(QWidget* parent) : rviz::Panel(parent)
   // state drive
   QGridLayout* extra_layout_drive = new QGridLayout;
   extra_layout_drive->addWidget(new QLabel("state Drive"), 0, 0);
-  extra_layout_drive->addWidget(buttons_ext["opoeration_start"], 1, 0);
+  extra_layout_drive->addWidget(buttons_ext["operation_start"], 1, 0);
   extra_layout_drive->addWidget(buttons_ext["operation_end"], 1, 1);
   extra_layout_drive->addWidget(buttons_ext["on_lane_area"], 2, 0);
   extra_layout_drive->addWidget(buttons_ext["on_free_area"], 2, 1);
