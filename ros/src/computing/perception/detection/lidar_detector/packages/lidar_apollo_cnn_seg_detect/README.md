@@ -11,7 +11,7 @@ $ cd
 $ git clone https://github.com/BVLC/caffe
 $ cd caffe
 ```
-Follow instructions from (Installing Caffe from source)[http://caffe.berkeleyvision.org/installation.html].
+Follow instructions from [Installing Caffe from source](http://caffe.berkeleyvision.org/installation.html).
 
 * **Use offical Make compilation procedure**. 
 * Do not use thirdparty CMake setup.
