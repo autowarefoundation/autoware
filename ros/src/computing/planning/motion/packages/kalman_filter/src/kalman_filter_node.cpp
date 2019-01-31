@@ -97,9 +97,9 @@ KalmanFilterNode::KalmanFilterNode()
       initial_twist_received_(false) {
 
   pnh_.param("show_debug_info", show_debug_info_, bool(false));
-  pnh_.param("predict_frequency", predict_frequency_, double(40.0));
+  pnh_.param("predict_frequency", predict_frequency_, double(50.0));
   pnh_.param("wheelbase", wheelbase_, double(2.79));
-  pnh_.param("extend_state_step", extend_state_step_, int(30));
+  pnh_.param("extend_state_step", extend_state_step_, int(40));
 
   pnh_.param("stddev_proc_x_c", stddev_proc_x_c_, double(1.0));
   pnh_.param("stddev_proc_y_c", stddev_proc_y_c_, double(1.0));
@@ -282,7 +282,7 @@ void KalmanFilterNode::predictKinematicsModel() {
  */
 void KalmanFilterNode::measurementUpdateNDTPose(const geometry_msgs::PoseStamped &ndt_pose) {
 
-  const int dim_y = 3; // pos_x, pos_y, yaw, depending ndt output
+  const int dim_y = 3; // pos_x, pos_y, yaw, depending on NDT output
   const ros::Time t_curr = ros::Time::now();
 
   /* calculate delay step */
@@ -317,7 +317,6 @@ void KalmanFilterNode::measurementUpdateNDTPose(const geometry_msgs::PoseStamped
   const double cov_pos_y = measure_time_uncertainty_ * measure_time_uncertainty_ * vx * vx;
   const double cov_yaw = measure_time_uncertainty_ * measure_time_uncertainty_ * wz * wz;
   Eigen::MatrixXf R = Eigen::MatrixXf::Zero(dim_y, dim_y);
-  EKF_INFO("[NDT] dt = %f, meas_time_unc = %f, cov_pos_x_t = %f\n", dt, measure_time_uncertainty_, cov_pos_x);
   R(0, 0) = std::pow(0.05, 2) + cov_pos_x*0.01; // pos_x
   R(1, 1) = std::pow(0.05, 2) + cov_pos_y*0.01; // pos_y
   R(2, 2) = std::pow(0.05, 2) + cov_yaw*0.01;   // yaw

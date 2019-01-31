@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(kalman_filter)
 
-SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
-
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
 
@@ -21,6 +19,8 @@ find_package(catkin REQUIRED
 )
 
 find_package(Eigen3 REQUIRED)
+
+
 
 ###################################
 ## catkin specific configuration ##
@@ -56,6 +56,10 @@ include_directories(
 include
 ${catkin_INCLUDE_DIRS}
 )
+
+message(STATUS "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ")
+message(STATUS "!!!!!!!!!!!! CMAKE_CXX_FLAGS = ${CMAKE_CXX_FLAGS}  !!!!!!!!!!!!!!!!!!!!!!!! ")
+message(STATUS "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ")
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
