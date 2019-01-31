@@ -2,17 +2,41 @@
 
 Autoware package based on Baidu's object segmenter.
 
+## Pre requisites
+
+Caffe distributable installed in your home (`~/caffe/distribute`).
+
+```
+$ cd
+$ git clone https://github.com/BVLC/caffe
+$ cd caffe
+```
+Follow instructions from (Installing Caffe from source)[http://caffe.berkeleyvision.org/installation.html].
+
+* **Use offical Make compilation procedure**. 
+* Do not use thirdparty CMake setup.
+
+Compile and create distributable:
+```
+$ make
+$ make distribute
+```
+
+**Recompile Autoware to build the node.**
+
 ## How to launch
 
 * From a sourced terminal:
 
+Using rosrun:
 `rosrun lidar_apollo_cnn_seg_detect lidar_apollo_cnn_seg_detect _network_definition_file:=/PATH/TO/FILE.prototxt _pretrained_model_file:=/PATH/TO/WEIGHTS.caffemodel _points_src:=/points_raw`
 
+Using launch file:
 `roslaunch lidar_apollo_cnn_seg_detect lidar_apollo_cnn_seg_detect.launch network_definition_file:=/PATH/TO/FILE.prototxt pretrained_model_file:=/PATH/TO/WEIGHTS.caffemodel points_src:=/points_raw`
 
 * From Runtime Manager:
 
-Computing Tab -> Detection/ lidar_detector -> `cnn_segmenter_baidu`
+Computing Tab -> Detection/ lidar_detector -> `lidar_cnn_baidu_detect`. Configure parameters using the `[app]` button.
 
 ## Parameters
 
