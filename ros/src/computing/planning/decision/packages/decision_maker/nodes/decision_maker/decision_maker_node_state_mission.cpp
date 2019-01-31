@@ -96,7 +96,7 @@ void DecisionMakerNode::entryMissionAbortedState(cstring_t& state_name, int stat
 }
 void DecisionMakerNode::updateMissionAbortedState(cstring_t& state_name, int status)
 {
-  if (!use_management_system_)
+  if (!use_fms_)
   {
     sleep(1);
     tryNextState("goto_wait_order");
@@ -111,7 +111,7 @@ void DecisionMakerNode::entryDriveReadyState(cstring_t& state_name, int status)
 
 void DecisionMakerNode::updateDriveReadyState(cstring_t& state_name, int status)
 {
-  if (!use_management_system_ && auto_engage_)
+  if (!use_fms_ && auto_engage_)
   {
     tryNextState("engage");
   }
@@ -125,7 +125,7 @@ void DecisionMakerNode::entryDrivingState(cstring_t& state_name, int status)
 }
 void DecisionMakerNode::updateDrivingState(cstring_t& state_name, int status)
 {
-  if (!use_management_system_ && auto_mission_change_ && isEventFlagTrue("received_based_lane_waypoint"))
+  if (!use_fms_ && auto_mission_change_ && isEventFlagTrue("received_based_lane_waypoint"))
   {
     tryNextState("request_mission_change");
   }
@@ -162,7 +162,7 @@ void DecisionMakerNode::updateDrivingMissionChangeState(cstring_t& state_name, i
 
 void DecisionMakerNode::updateMissionChangeSucceededState(cstring_t& state_name, int status)
 {
-  if (!use_management_system_)
+  if (!use_fms_)
   {
     sleep(1);
     tryNextState("return_to_driving");
@@ -170,7 +170,7 @@ void DecisionMakerNode::updateMissionChangeSucceededState(cstring_t& state_name,
 }
 void DecisionMakerNode::updateMissionChangeFailedState(cstring_t& state_name, int status)
 {
-  if (!use_management_system_)
+  if (!use_fms_)
   {
     sleep(1);
     tryNextState("return_to_driving");
@@ -183,7 +183,7 @@ void DecisionMakerNode::entryMissionCompleteState(cstring_t& state_name, int sta
 }
 void DecisionMakerNode::updateMissionCompleteState(cstring_t& state_name, int status)
 {
-  if (!use_management_system_)
+  if (!use_fms_)
   {
     if (auto_mission_reload_)
     {
