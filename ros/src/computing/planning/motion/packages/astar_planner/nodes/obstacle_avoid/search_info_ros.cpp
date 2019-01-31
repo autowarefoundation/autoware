@@ -33,6 +33,7 @@ SearchInfo::SearchInfo()
   ros::NodeHandle nh;
   ros::NodeHandle private_nh_("~");
   node_status_publisher_ptr_ = std::make_shared<autoware_health_checker::NodeStatusPublisher>(nh,private_nh_);
+  node_status_publisher_ptr_->ENABLE();
   private_nh_.param<std::string>("map_frame", map_frame_, "map");
   private_nh_.param<int>("obstacle_detect_count", obstacle_detect_count_, 10);
   private_nh_.param<int>("avoid_distance", avoid_distance_, 13);

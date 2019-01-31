@@ -41,7 +41,10 @@ VelocitySetInfo::VelocitySetInfo()
     wpidx_detectionResultByOtherNodes_(-1)
 {
   ros::NodeHandle private_nh_("~");
+  ros::NodeHandle nh;
   private_nh_.param<double>("remove_points_upto", remove_points_upto_, 2.3);
+  node_status_publisher_ptr_ = std::make_shared<autoware_health_checker::NodeStatusPublisher>(nh,private_nh_);
+  node_status_publisher_ptr_->ENABLE();
 }
 
 VelocitySetInfo::~VelocitySetInfo()
@@ -111,6 +114,7 @@ void VelocitySetInfo::controlPoseCallback(const geometry_msgs::PoseStampedConstP
 
 void VelocitySetInfo::localizerPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
+  node_status_publisher_ptr_->CHECK_RATE("/topic/rate/current_pose/slow",8,5,1,"topic current_pose subscribe rate low.");
   localizer_pose_ = *msg;
 }
 
