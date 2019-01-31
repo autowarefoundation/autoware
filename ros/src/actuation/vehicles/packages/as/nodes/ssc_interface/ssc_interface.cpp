@@ -79,7 +79,6 @@ SSCInterface::~SSCInterface()
 
 void SSCInterface::run()
 {
-  bool timeouted = false;
   while (ros::ok())
   {
     ros::spinOnce();
