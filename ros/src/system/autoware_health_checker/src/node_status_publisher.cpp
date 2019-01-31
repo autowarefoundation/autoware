@@ -29,7 +29,6 @@ namespace autoware_health_checker
             // iterate Rate checker and publish rate_check result
             for(auto key_itr = checker_keys.begin(); key_itr != checker_keys.end(); key_itr++)
             {
-                //ROS_ERROR_STREAM(*key_itr);
                 autoware_system_msgs::DiagnosticStatusArray diag_array;
                 autoware_system_msgs::DiagnosticStatus diag;
                 diag.type = autoware_system_msgs::DiagnosticStatus::RATE_IS_SLOW;
