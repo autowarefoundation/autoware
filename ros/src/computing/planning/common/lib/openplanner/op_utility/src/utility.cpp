@@ -289,7 +289,7 @@ double PIDController::getPID(double e)
     prev_err_ = e;
   }
 
-  if (pid_v_ < upper_limit_ && pid_v_ > lower_limit_) {
+  if (!enable_limit_ || (pid_v_ < upper_limit_ && pid_v_ > lower_limit_)) {
     accum_err_ += e;
   }
 

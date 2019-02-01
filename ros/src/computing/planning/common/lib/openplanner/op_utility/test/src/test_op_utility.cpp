@@ -144,6 +144,16 @@ TEST(TestSuite, PIDController_lowpass) {
   ASSERT_DOUBLE_EQ(target, v);
 }
 
+TEST(TestSuite, PIDController_integral) {
+  // An integral controller should accumulate error
+  auto controller = op_utility_ns::PIDController{0.0, 0.9, 0.0};
+
+  ASSERT_NEAR(0.0, controller.getPID(0.0, 0.0), 1e-9);  // acc. err: 0.0
+  ASSERT_NEAR(0.9 * 1.0, controller.getPID(0.0, 1.0), 1e-9);  // acc. err: 1.0
+  ASSERT_NEAR(0.9 * 1.1, controller.getPID(0.9, 1.0), 1e-9);  // acc. err: 1.1
+  ASSERT_NEAR(0.9 * 0.2, controller.getPID(1.9, 1.0), 1e-9);  // acc. err: 0.2
+}
+
 TEST(TestSuite, PIDController_fullController) {
   // Example taken from https://upload.wikimedia.org/wikipedia/commons/3/33/PID_Compensation_Animated.gif
   auto controller = op_utility_ns::PIDController{1.0, 0.5, 0.1};
