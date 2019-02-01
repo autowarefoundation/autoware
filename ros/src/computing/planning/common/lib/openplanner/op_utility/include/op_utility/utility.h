@@ -104,18 +104,62 @@ public:
   static double getMomentumScaleFactor(const double & v);
 };
 
+/** Proportional-Integral-Derivative controller
+ *
+ * Continuously calculates an error value e ( t ) {\displaystyle e(t)} e(t) as the difference between a desired setpoint
+ * (SP) and a measured process variable (PV) and applies a correction based on proportional, integral, and derivative
+ * terms (denoted P, I, and D respectively).
+ */
 class PIDController
 {
 public:
+  /// Initalize controller with call coefficients set to 0 and no limits
   PIDController();
+
+  /** Initialize controller with given coefficients and no limits
+   *
+   * @param kp Proportional coefficient
+   * @param ki Integral coefficient
+   * @param kd Derivative coefficient
+   */
   PIDController(const double & kp, const double & ki, const double & kd);
+
+  /** (Re)initialize controller coefficients
+   *
+   * @param kp Proportional coefficient
+   * @param ki Integral coefficient
+   * @param kd Derivative coefficient
+   */
   void init(const double & kp, const double & ki, const double & kd);
+
+  /// Set range that output is clipped to
   void setLimit(const double & upper, const double & lower);
+
+  /** Determine control given current and target values
+   *
+   * @param currValue Current value of process variable under control
+   * @param targetValue Desired setpoint
+   * @return Control value
+   */
   double getPID(const double & currValue, const double & targetValue);
+
+  /** Determine control given error value
+   *
+   * @param e Error; difference between target and current value
+   * @return Control value
+   */
   double getPID(const double & e);
+
+  /// Reset derivative calculation; derivative term will be 0 at next step
   void resetD();
+
+  /// Reset integral calculation: integral term will be equal to immediate error at next step
   void resetI();
+
+  /// Comma separated string representation with current system time, PID coefficient and terms and state variables
   std::string toString();
+
+  /// Comma separated string representation to be used as header for CSV file with data from PIDController::toString()
   std::string toStringHeader();
 
 private:
