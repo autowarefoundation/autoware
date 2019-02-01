@@ -237,87 +237,81 @@ time_t UtilityH::getLongTime(const struct timespec & srcT)
 }
 
 PIDController::PIDController()
+: kp_{0}, kp_v_{0},
+  ki_{0}, ki_v_{0},
+  kd_{0}, kd_v_{0},
+  pid_lim_{0}, pid_v_{0},
+  upper_limit_{0}, lower_limit_{0},
+  enable_limit_{false},
+  accum_err_{0}, prev_err_{0},
+  reset_d_{false}, reset_i_{false}
 {
-  kp = kp_v = 0;
-  ki = ki_v = 0;
-  kd = kd_v = 0;
-  pid_lim = pid_v = 0;
-  upper_limit = lower_limit = 0;
-  bEnableLimit = false;
-  accumErr = 0;
-  prevErr = 0;
-  bResetD = false;
-  bResetI = false;
 }
 
-PIDController::PIDController(
-  const double & kp, const double & ki,
-  const double & kd)
+PIDController::PIDController(double kp, double ki, double kd)
+  : kp_{kp}, kp_v_{0},
+    ki_{ki}, ki_v_{0},
+    kd_{kd}, kd_v_{0},
+    pid_lim_{0}, pid_v_{0},
+    upper_limit_{0}, lower_limit_{0},
+    enable_limit_{false},
+    accum_err_{0}, prev_err_{0},
+    reset_d_{false}, reset_i_{false}
 {
-  init(kp, ki, kd);
-  upper_limit = lower_limit = 0;
-  bEnableLimit = false;
-  accumErr = 0;
-  prevErr = 0;
-  bResetD = false;
-  bResetI = false;
-
 }
 
-void PIDController::setLimit(const double & upper, const double & lower)
+void PIDController::setLimit(double upper, double lower)
 {
-  upper_limit = upper;
-  lower_limit = lower;
-  bEnableLimit = true;
+  upper_limit_ = upper;
+  lower_limit_ = lower;
+  enable_limit_ = true;
 }
 
-double PIDController::getPID(
-  const double & currValue,
-  const double & targetValue)
+double PIDController::getPID(double curr_value, double target_value)
 {
-  double e = targetValue - currValue;
+  double e = target_value - curr_value;
   return getPID(e);
 }
 
-double PIDController::getPID(const double & e)
+double PIDController::getPID(double e)
 {
   //TODO Remember to add sampling time and multiply the time elapsed by the error
   //complex PID error calculation
   //TODO //De = ( e(i) + 3*e(i-1) - 3*e(i-2) - e(i-3) ) / 6
 
-  if (bResetI) {
-    bResetI = false;
-    accumErr = 0;
+  if (reset_i_) {
+    reset_i_ = false;
+    accum_err_ = 0;
   }
 
-  if (bResetD) {
-    bResetD = false;
-    prevErr = e;
+  if (reset_d_) {
+    reset_d_ = false;
+    prev_err_ = e;
   }
 
-  if (pid_v < upper_limit && pid_v > lower_limit) {
-    accumErr += e;
+  if (pid_v_ < upper_limit_ && pid_v_ > lower_limit_) {
+    accum_err_ += e;
   }
 
-  double edot = e - prevErr;
+  double edot = e - prev_err_;
 
-  kp_v = kp * e;
-  ki_v = ki * accumErr;
-  kd_v = kd * edot;
+  kp_v_ = kp_ * e;
+  ki_v_ = ki_ * accum_err_;
+  kd_v_ = kd_ * edot;
 
-  pid_v = kp_v + ki_v + kd_v;
-  pid_lim = pid_v;
-  if (bEnableLimit) {
-    if (pid_v > upper_limit) {
-      pid_lim = upper_limit;
-    } else if (pid_v < lower_limit) {
-      pid_lim = lower_limit;
+  pid_v_ = kp_v_ + ki_v_ + kd_v_;
+  pid_lim_ = pid_v_;
+  if (enable_limit_) {
+    if (pid_v_ > upper_limit_) {
+      pid_lim_ = upper_limit_;
+    } else if (pid_v_ < lower_limit_) {
+      pid_lim_ = lower_limit_;
     }
   }
 
-  prevErr = e;
+  prev_err_ = e;
 
-  return pid_lim;
+  return pid_lim_;
 }
 
 std::string PIDController::toStringHeader()
@@ -325,7 +319,7 @@ std::string PIDController::toStringHeader()
   std::ostringstream str_out;
   str_out << "Time" << "," << "KP" << "," << "KI" << "," << "KD" << "," <<
     "KP_v" << "," << "KI_v" << "," << "KD_v" << "," << "pid_v" << "," <<
-    "," << "pid_lim" << "," << "," << "prevErr" << "," << "accumErr" <<
+    "," << "pid_lim" << "," << "," << "prev_err_" << "," << "accum_err_" <<
     ",";
   return str_out.str();
 }
@@ -335,9 +329,9 @@ std::string PIDController::toString()
   std::ostringstream str_out;
   timespec t_stamp;
   UtilityH::getTickCount(t_stamp);
-  str_out << UtilityH::getLongTime(t_stamp) << "," << kp << "," << ki << "," <<
-    kd << "," << kp_v << "," << ki_v << "," << kd_v << "," << pid_v <<
-    "," << "," << pid_lim << "," << "," << prevErr << "," << accumErr <<
+  str_out << UtilityH::getLongTime(t_stamp) << "," << kp_ << "," << ki_ << "," <<
+    kd_ << "," << kp_v_ << "," << ki_v_ << "," << kd_v_ << "," << pid_v_ <<
+    "," << "," << pid_lim_ << "," << "," << prev_err_ << "," << accum_err_ <<
     ",";
 
   return str_out.str();
@@ -346,19 +340,19 @@ std::string PIDController::toString()
 
 void PIDController::resetD()
 {
-  bResetD = true;
+  reset_d_ = true;
 }
 
 void PIDController::resetI()
 {
-  bResetI = true;
+  reset_i_ = true;
 }
 
-void PIDController::init(const double & kp, const double & ki, const double & kd)
+void PIDController::init(double kp, double ki, double kd)
 {
-  this->kp = kp;
-  this->ki = ki;
-  this->kd = kd;
+  kp_ = kp;
+  ki_ = ki;
+  kd_ = kd;
 }
 
 LowpassFilter::LowpassFilter()

@@ -122,7 +122,7 @@ public:
    * @param ki Integral coefficient
    * @param kd Derivative coefficient
    */
-  PIDController(const double & kp, const double & ki, const double & kd);
+  PIDController(double kp, double ki, double kd);
 
   /** (Re)initialize controller coefficients
    *
@@ -130,10 +130,10 @@ public:
    * @param ki Integral coefficient
    * @param kd Derivative coefficient
    */
-  void init(const double & kp, const double & ki, const double & kd);
+  void init(double kp, double ki, double kd);
 
   /// Set range that output is clipped to
-  void setLimit(const double & upper, const double & lower);
+  void setLimit(double upper, double lower);
 
   /** Determine control given current and target values
    *
@@ -141,14 +141,14 @@ public:
    * @param targetValue Desired setpoint
    * @return Control value
    */
-  double getPID(const double & currValue, const double & targetValue);
+  double getPID(double curr_value, double target_value);
 
   /** Determine control given error value
    *
    * @param e Error; difference between target and current value
    * @return Control value
    */
-  double getPID(const double & e);
+  double getPID(double e);
 
   /// Reset derivative calculation; derivative term will be 0 at next step
   void resetD();
@@ -163,21 +163,21 @@ public:
   std::string toStringHeader();
 
 private:
-  double kp;
-  double ki;
-  double kd;
-  double kp_v;
-  double ki_v;
-  double kd_v;
-  double pid_v;
-  double pid_lim;
-  double upper_limit;
-  double lower_limit;
-  bool bEnableLimit;
-  double accumErr;
-  double prevErr;
-  bool bResetD;
-  bool bResetI;
+  double kp_;
+  double ki_;
+  double kd_;
+  double kp_v_;
+  double ki_v_;
+  double kd_v_;
+  double pid_v_;
+  double pid_lim_;
+  double upper_limit_;
+  double lower_limit_;
+  bool enable_limit_;
+  double accum_err_;
+  double prev_err_;
+  bool reset_d_;
+  bool reset_i_;
 
 };
 
