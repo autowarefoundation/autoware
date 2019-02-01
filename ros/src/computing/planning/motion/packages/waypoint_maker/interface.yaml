@@ -6,7 +6,7 @@
   publish: [/based/lane_waypoint_raw]
   subscribe: []
 - name: /waypoint_replanner
-  publish: [/based/lane_waypoint_array]
+  publish: [/based/lane_waypoint_array, /lane_waypoints_array]
   subscribe: [/based/lane_waypoint_raw]
 - name: /waypoints_marker_publisher
   publish: [/local_waypoints_mark, /global_waypoints_mark]
