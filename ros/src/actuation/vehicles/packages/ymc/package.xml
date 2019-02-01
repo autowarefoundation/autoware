@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <package>
   <name>ymc</name>
-  <version>1.9.1</version>
+  <version>1.10.0</version>
   <description>The ymc package</description>
   <maintainer email="aohsato@gmail.com">Akihito Ohsato</maintainer>
-  <license>BSD</license>
+  <license>Apache 2</license>
   <author email="aohsato@gmail.com">Akihito Ohsato</author>
   <author email="antm678@ertl.jp">T.Ando</author>
   <buildtool_depend>catkin</buildtool_depend>

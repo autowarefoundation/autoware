@@ -172,65 +172,6 @@ subs :
           camera_info_src :
             flags  : [ nl ]
 
-      - name : vision_klt_track
-        desc : vision_klt_track desc sample
-        cmd  : roslaunch vision_klt_track vision_klt_track.launch
-        param: car_kf
-        gui  :
-          dialog_width  : 600
-          dialog_height : 350
-          flags : [ need_camera_info ]
-          sel_cam_dialog_only : [ camera_id ]
-          sel_cam_dialog_allow: [ camera_id ]
-          camera_id :
-            border : 16
-            flags : [ all ]
-          sync :
-            func : self.button_synchronization.GetValue()
-
-      - name : vision_kf_track
-        desc : vision_kf_track desc sample
-        cmd  : roslaunch vision_kf_track vision_kf_track.launch
-        param: car_kf
-        gui  :
-          flags                  : [ open_dialog, need_camera_info ]
-          config_dialog          : MyDialogCarPedestrian
-          car_pedestrian_obj_key : { car : car_kf, pedestrian : pedestrian_kf }
-          config_dialog_only     :
-            - initial_lifespan
-            - default_lifespan
-            - noise_covariance
-            - measurement_noise_covariance
-            - error_estimate_covariance
-            - percentage_of_overlapping
-            - orb_features
-            - use_orb
-          open_dialog_only       : [ car, pedestrian ]
-          open_dialog_ok_label   : Start
-          car :
-            user_category : Detection Target
-          pedestrian :
-            border : 16
-            flags  : [ left ]
-          sel_cam_dialog_only : [ camera_id ]
-          sel_cam_dialog_allow: [ camera_id ]
-          camera_id :
-            border : 16
-            flags : [ all ]
-          sync :
-            func : self.button_synchronization.GetValue()
-
-      - name : vision_dummy_track
-        desc : vision_dummy_track desc sample
-        cmd  : roslaunch vision_dummy_track vision_dummy_track.launch
-        gui  :
-          flags : [ need_camera_info ]
-          sel_cam_dialog_only : [ camera_id ]
-          sel_cam_dialog_allow: [ camera_id ]
-          camera_id :
-            border : 16
-            flags : [ all ]
-
     - name : lidar_detector
       desc : lidar_detector desc sample
       subs :
@@ -254,22 +195,11 @@ subs :
         gui  :
           sync :
             func : self.button_synchronization.GetValue()
-      - name : lidar_svm_detect
-        desc : lidar_svm_detect desc sample
-        cmd  : roslaunch lidar_svm_detect lidar_svm_detect.launch
-        param: lidar_svm_detect
+      - name : lidar_shape_estimation
+        desc : lidar_shape_estimation desc sample
+        cmd  : roslaunch lidar_shape_estimation shape_estimation_clustering.launch
+        param: lidar_shape_estimation_param
         gui  :
-          sync :
-            func : self.button_synchronization.GetValue()
-      - name : lidar_fake_perception
-        desc : lidar_fake_perception desc sample
-        cmd  : roslaunch lidar_fake_perception lidar_fake_perception.launch
-        param: lidar_fake_perception_param
-        gui  :
-          dialog_width  : 600
-          dialog_height : 450
-          real_points_topic :
-            flags : [nl ]
           sync :
             func : self.button_synchronization.GetValue()
 
@@ -300,95 +230,6 @@ subs :
     - name : lidar_tracker
       desc : lidar_tracker desc sample
       subs :
-      - name : lidar_kf_track
-        desc : lidar_kf_track desc sample
-        cmd  : roslaunch lidar_kf_track lidar_kf_track.launch
-        param: lidar_kf_track
-        gui  :
-          sync :
-            func : self.button_synchronization.GetValue()
-      - name : lidar_pf_track
-        desc : lidar_pf_track desc sample
-        cmd  : roslaunch lidar_pf_track lidar_pf_track.launch
-        param: lidar_pf_track
-        gui  :
-          sync :
-            func : self.button_synchronization.GetValue()
-      - name : lidar_euclidean_track
-        desc : lidar_euclidean_track desc sample
-        cmd  : roslaunch lidar_euclidean_track lidar_euclidean_track.launch
-        param: lidar_euclidean_track
-        gui  :
-          sync :
-            func : self.button_synchronization.GetValue()
-
-      - name : lidar_kf_contour_track
-        desc : part of open planner perception package
-        cmd  : roslaunch lidar_kf_contour_track lidar_kf_contour_track.launch
-        param: lidar_kf_contour_track_param
-        gui  :
-          dialog_width  : 650
-          dialog_height : 450
-          sync :
-            func : self.button_synchronization.GetValue()
-
-      - name : range_fusion
-        desc : range_fusion desc sample
-        cmd  : roslaunch range_fusion range_fusion.launch
-        param: car_fusion
-        gui  :
-          flags                  : [ open_dialog ]
-          config_dialog          : MyDialogCarPedestrian
-          car_pedestrian_obj_key : { car : car_fusion, pedestrian : pedestrian_fusion }
-          config_dialog_only     : [ min_low_height, max_low_height, max_height, min_points, dispersion ]
-          open_dialog_only       : [ car, pedestrian ]
-          open_dialog_ok_label   : Start
-          car :
-            user_category : Detection Target
-          pedestrian :
-            border : 16
-            flags  : [ left ]
-          sync :
-            func : self.button_synchronization.GetValue()
-
-      - name : obj_reproj
-        desc : obj_reproj desc sample
-        cmd  : roslaunch obj_reproj obj_reproj.launch
-        param: obj_reproj
-        gui  :
-          flags                : [ open_dialog, no_link, need_camera_info ]
-          open_dialog_ok_label : Start
-          car :
-            user_category : Detection Target
-          pedestrian :
-            border : 16
-            flags  : [ left ]
-          sel_cam_dialog_only : [ camera_id ]
-          sel_cam_dialog_allow: [ camera_id ]
-          camera_id :
-            border : 16
-            flags : [ all ]
-          sync :
-            func : self.button_synchronization.GetValue()
-      - name : obj_fusion
-        desc : obj_fusion desc sample
-        cmd  : roslaunch obj_fusion obj_fusion.launch
-        param: obj_fusion
-        gui  :
-          flags                : [ open_dialog, no_link ]
-          open_dialog_ok_label : Start
-          car :
-            user_category : Detection Target
-          pedestrian :
-            border : 16
-            flags  : [ left ]
-          sync :
-            func : self.button_synchronization.GetValue()
-
-
-    - name : object_tracker
-      desc : object_tracker desc sample
-      subs :
         - name : imm_ukf_pda_track
           desc : imm_ukf_pda_track desc sample
           cmd  : roslaunch imm_ukf_pda_track imm_ukf_pda_track.launch
@@ -403,6 +244,13 @@ subs :
             sync :
               func : self.button_synchronization.GetValue()
 
+        - name : lidar_kf_contour_track
+          desc : part of open planner perception package
+          cmd  : roslaunch lidar_kf_contour_track lidar_kf_contour_track.launch
+          param: lidar_kf_contour_track_param
+          gui  :
+            dialog_width  : 650
+            dialog_height : 450
 
     - name : trafficlight_recognizer
       desc : trafficlight_recognizer desc sample
@@ -454,79 +302,6 @@ subs :
           camera_id :
             border : 16
             flags : [ all ]
-
-    - name : viewers
-      desc : viewers desc sample
-      subs :
-      - name : image_viewer
-        desc : image_viewer desc sample
-        cmd  : roslaunch viewers viewers.launch viewer_type:=image_viewer
-        param: viewer_sel_cam
-        gui  :
-          flags : [ need_camera_info ]
-          sel_cam_dialog_only : [ camera_id ]
-          sel_cam_dialog_allow: [ camera_id ]
-          camera_id :
-            border : 16
-            flags : [ all ]
-      - name : image_d_viewer
-        desc : image_d_viewer desc sample
-        cmd  : roslaunch viewers viewers.launch viewer_type:=image_d_viewer
-        param: viewer_sel_cam
-        gui  :
-          flags : [ need_camera_info ]
-          sel_cam_dialog_only : [ camera_id ]
-          sel_cam_dialog_allow: [ camera_id ]
-          camera_id :
-            border : 16
-            flags : [ all ]
-      - name : points_image_viewer
-        desc : points_image_viewer desc sample
-        cmd  : roslaunch viewers viewers.launch viewer_type:=points_image_viewer
-        param: viewer_sel_cam
-        gui  :
-          flags : [ need_camera_info ]
-          sel_cam_dialog_only : [ camera_id ]
-          sel_cam_dialog_allow: [ camera_id ]
-          camera_id :
-            border : 16
-            flags : [ all ]
-      - name : points_image_d_viewer
-        desc : points_image_d_viewer desc sample
-        cmd  : roslaunch viewers viewers.launch viewer_type:=points_image_d_viewer
-        param: viewer_sel_cam
-        gui  :
-          flags : [ need_camera_info ]
-          sel_cam_dialog_only : [ camera_id ]
-          sel_cam_dialog_allow: [ camera_id ]
-          camera_id :
-            border : 16
-            flags : [ all ]
-      - name : vscan_image_viewer
-        desc : vscan_image_viewer desc sample
-        cmd  : roslaunch viewers viewers.launch viewer_type:=vscan_image_viewer
-        param: viewer_sel_cam
-        gui  :
-          flags : [ need_camera_info ]
-          sel_cam_dialog_only : [ camera_id ]
-          sel_cam_dialog_allow: [ camera_id ]
-          camera_id :
-            border : 16
-            flags : [ all ]
-      - name : vscan_image_d_viewer
-        desc : vscan_image_d_viewer desc sample
-        cmd  : roslaunch viewers viewers.launch viewer_type:=vscan_image_d_viewer
-        param: viewer_sel_cam
-        gui  :
-          flags : [ need_camera_info ]
-          sel_cam_dialog_only : [ camera_id ]
-          sel_cam_dialog_allow: [ camera_id ]
-          camera_id :
-            border : 16
-            flags : [ all ]
-      - name : traffic_light_viewer
-        desc : traffic_light_viewer desc sample
-        cmd  : roslaunch viewers viewers.launch viewer_type:=traffic_light_viewer
 
   - name : Semantics
     desc : Semantics desc sample
@@ -884,16 +659,6 @@ subs :
   - name : Decision
     desc : decision groups
     subs :
-    - name : state_machine(old)
-      desc : state_machine desc sample
-      cmd  : roslaunch state_machine state_machine.launch
-    - name : decision_maker
-      desc : decision_maker desc sample
-      cmd  : roslaunch decision_maker decision_maker.launch
-      param: decision_maker
-      gui  :
-          dialog_width  : 400
-          dialog_height : 620
 
     - name : planner_selector
       desc : planner_selector desc sample
@@ -5143,6 +4908,26 @@ params :
         dash        : ''
         delim       : ':='
 
+  - name  : lidar_shape_estimation_param
+    vars  :
+    - name    : input
+      desc    : input topic desc sample
+      label   : 'input topic'
+      kind  : topic
+      topic_type : autoware_msgs/DetectedObjectArray
+      v       : /detection/lidar_detector/objects
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : output
+      desc    : output topic desc sample
+      label   : 'output topic'
+      kind    : str
+      v       : /detection/shape_estimation/objects
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
   - name  : lidar_fake_perception_param
     vars  :
     - name    : initial_pose_topic
@@ -5389,6 +5174,14 @@ params :
     - name  : sync_topics
       desc  : Defines if synchronization is performed on the detection source topics
       label : sync_topics
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : use_vector_map
+      desc  : Use ROI Filter to remove objects outside of the drivable area
+      label : use_vector_map
       kind  : checkbox
       v     : False
       cmd_param :

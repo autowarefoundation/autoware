@@ -6,6 +6,7 @@ find_package(autoware_build_flags REQUIRED)
 find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         roscpp
+        autoware_msgs
         )
 
 set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
