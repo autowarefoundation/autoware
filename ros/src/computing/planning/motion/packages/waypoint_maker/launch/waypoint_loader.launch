@@ -1,0 +1,13 @@
+<!-- -->
+<launch>
+	<arg name="load_csv" default="false" />
+	<arg name="multi_lane_csv" default="/tmp/driving_lane.csv" />
+
+	<!-- rosrun waypoint_maker waypoint_loader _multi_lane_csv:="path file" -->
+	<node pkg="waypoint_maker" type="waypoint_loader" name="waypoint_loader" output="screen" if="$(arg load_csv)">
+	<param name="multi_lane_csv" value="$(arg multi_lane_csv)" />
+	</node>
+	<node pkg="waypoint_maker" type="waypoint_replanner" name="waypoint_replanner" output="screen"/>
+	<node pkg="waypoint_maker" type="waypoint_marker_publisher" name="waypoint_marker_publisher" />
+
+</launch>
