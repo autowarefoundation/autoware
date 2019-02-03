@@ -99,7 +99,7 @@ KalmanFilterNode::KalmanFilterNode()
   pnh_.param("show_debug_info", show_debug_info_, bool(false));
   pnh_.param("predict_frequency", predict_frequency_, double(50.0));
   pnh_.param("wheelbase", wheelbase_, double(2.79));
-  pnh_.param("extend_state_step", extend_state_step_, int(40));
+  pnh_.param("extend_state_step", extend_state_step_, int(50));
 
   pnh_.param("stddev_proc_x_c", stddev_proc_x_c_, double(1.0));
   pnh_.param("stddev_proc_y_c", stddev_proc_y_c_, double(1.0));
@@ -146,7 +146,10 @@ void KalmanFilterNode::timerCallback(const ros::TimerEvent &e) {
   }
 
   /* predict model in kalman filter */
+  auto start = std::chrono::system_clock::now();
   predictKinematicsModel();
+  double elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - start).count();
+  EKF_INFO("[kalman filter] predictEKF calculation time = %f [ms]\n", elapsed * 1.0e-6);
 
   publishEstimatedPose();
 
@@ -160,7 +163,10 @@ void KalmanFilterNode::callbackNDTPose(
   current_ndt_pose_ = *msg;
   initial_pose_received_ = true;
 
+  auto start = std::chrono::system_clock::now();
   measurementUpdateNDTPose(current_ndt_pose_);
+  double elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - start).count();
+  EKF_INFO("[kalman filter] updateEKF calculation time = %f [ms]\n", elapsed * 1.0e-6);
 };
 
 /*
@@ -354,11 +360,7 @@ void KalmanFilterNode::measurementUpdateNDTPose(const geometry_msgs::PoseStamped
   y << ndt_pose.pose.position.x, ndt_pose.pose.position.y,
       tf::getYaw(ndt_pose.pose.orientation);
 
-  auto start = std::chrono::system_clock::now();
   kf_.update(y, C_ex, R);
-  auto end = std::chrono::system_clock::now();
-  double elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-  EKF_INFO("[time] calc measurement updateEKF time = %f [ms]\n", elapsed * 1.0e-6);
 
   last_ndt_received_time_ = t_curr;
 }
@@ -423,12 +425,13 @@ void KalmanFilterNode::publishEstimatedPose() {
   // pub_ndt_pose_.publish(p);
 
   /* debug publish */
+  double RAD2DEG = 180.0 * 3.141592;
   std_msgs::Float64MultiArray msg;
   msg.data.push_back(current_twist_.twist.linear.x);
   msg.data.push_back(current_twist_.twist.angular.z);
-  msg.data.push_back(X(2) * 180.0 / 3.1415); // yaw angle
-  msg.data.push_back(tf::getYaw(current_ndt_pose_.pose.orientation) * 180.0 / 3.1415); // NDT yaw angle
-  msg.data.push_back(X(3) * 180.0 / 3.1415); // omega bias
+  msg.data.push_back(X(2) * RAD2DEG); // yaw angle
+  msg.data.push_back(tf::getYaw(current_ndt_pose_.pose.orientation) * RAD2DEG); // NDT yaw angle
+  msg.data.push_back(X(3) * RAD2DEG); // omega bias
   pub_debug_.publish(msg);
 }
 
