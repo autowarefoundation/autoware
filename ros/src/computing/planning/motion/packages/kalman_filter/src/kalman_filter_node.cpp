@@ -252,6 +252,8 @@ void KalmanFilterNode::predictKinematicsModel() {
 
   EKF_INFO("X_next = %f, %f, %f, %f\n", X_next(0), X_next(1), X_next(2), X_next(3));
 
+#if 0
+
   /* set A matrix for latest state */
   Eigen::MatrixXf A_ex = Eigen::MatrixXf::Zero(dim_x_ex_, dim_x_ex_);
   A_ex.block(0, 0, dim_x_, dim_x_) = Eigen::MatrixXf::Identity(dim_x_, dim_x_);
@@ -270,11 +272,37 @@ void KalmanFilterNode::predictKinematicsModel() {
   Q_ex(2, 2) = cov_proc_yaw_d_;
   Q_ex(3, 3) = cov_proc_wz_bias_d_;
 
-  auto start = std::chrono::system_clock::now();
   kf_.predictEKF(X_next, A_ex, Q_ex);
-  auto now = std::chrono::system_clock::now();
-  double elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(now - start).count();
-  EKF_INFO("[time] calc predictEKF time = %f [ms]\n", elapsed * 1.0e-6);
+
+#endif
+
+  /* set A matrix for latest state */
+  Eigen::MatrixXf A = Eigen::MatrixXf::Identity(dim_x_, dim_x_);
+  A(0, 2) = -vx * sin(yaw) * dt;
+  A(1, 2) = vx * cos(yaw) * dt;
+  A(2, 3) = dt;
+
+  /* set covariance matrix Q for process noise */
+  Eigen::MatrixXf Q_ex = Eigen::MatrixXf::Zero(dim_x_ex_, dim_x_ex_);
+  Q_ex(0, 0) = cov_proc_x_d_;
+  Q_ex(1, 1) = cov_proc_y_d_;
+  Q_ex(2, 2) = cov_proc_yaw_d_;
+  Q_ex(3, 3) = cov_proc_wz_bias_d_;
+
+  /* update P matrix */
+  Eigen::MatrixXf P_curr, P_next;
+  kf_.getP(P_curr);
+  const int d_dim_x = dim_x_ex_ - dim_x_;
+  P_next = Eigen::MatrixXf::Zero(dim_x_ex_, dim_x_ex_);
+  P_next.block(0, 0, dim_x_, dim_x_) = A * P_curr.block(0, 0, dim_x_, dim_x_) * A.transpose();
+  P_next.block(0, dim_x_, dim_x_, d_dim_x) = A * P_curr.block(0, 0, dim_x_, d_dim_x);
+  P_next.block(dim_x_, 0, d_dim_x, dim_x_) = P_curr.block(0, 0, d_dim_x, dim_x_) * A.transpose();
+  P_next.block(dim_x_, dim_x_, d_dim_x, d_dim_x) = P_curr.block(0, 0, d_dim_x, d_dim_x);
+  P_next += Q_ex;
+
+  /* set P and X in kalman flter */
+  kf_.predictXandP(X_next, P_next);
+
 }
 
 /*

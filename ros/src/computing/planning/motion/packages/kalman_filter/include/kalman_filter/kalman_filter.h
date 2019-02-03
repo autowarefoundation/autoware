@@ -1,8 +1,8 @@
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/LU>
 
-
-class KalmanFilter {
+class KalmanFilter
+{
 public:
   KalmanFilter();
   KalmanFilter(const Eigen::MatrixXf &x, const Eigen::MatrixXf &A,
@@ -24,6 +24,7 @@ public:
   void getX(Eigen::MatrixXf &x);
   void getP(Eigen::MatrixXf &P);
 
+  void predictXandP(const Eigen::MatrixXf &x, const Eigen::MatrixXf &P);
   void predictEKF(const Eigen::MatrixXf &x_next, const Eigen::MatrixXf &A,
                   const Eigen::MatrixXf &Q);
   void predictEKF(const Eigen::MatrixXf &x_next, const Eigen::MatrixXf &A);
@@ -39,6 +40,7 @@ public:
               const Eigen::MatrixXf &R);
   void update(const Eigen::MatrixXf &y);
 
+
 private:
   Eigen::MatrixXf x_;
   Eigen::MatrixXf A_;
@@ -53,14 +55,16 @@ KalmanFilter::KalmanFilter() {}
 KalmanFilter::KalmanFilter(const Eigen::MatrixXf &x, const Eigen::MatrixXf &A,
                            const Eigen::MatrixXf &B, const Eigen::MatrixXf &C,
                            const Eigen::MatrixXf &Q, const Eigen::MatrixXf &R,
-                           const Eigen::MatrixXf &P) {
+                           const Eigen::MatrixXf &P)
+{
   init(x, A, B, C, Q, R, P);
 }
 KalmanFilter::~KalmanFilter() {}
 void KalmanFilter::init(const Eigen::MatrixXf &x, const Eigen::MatrixXf &A,
                         const Eigen::MatrixXf &B, const Eigen::MatrixXf &C,
                         const Eigen::MatrixXf &Q, const Eigen::MatrixXf &R,
-                        const Eigen::MatrixXf &P) {
+                        const Eigen::MatrixXf &P)
+{
   x_ = x;
   A_ = A;
   B_ = B;
@@ -69,7 +73,8 @@ void KalmanFilter::init(const Eigen::MatrixXf &x, const Eigen::MatrixXf &A,
   R_ = R;
   P_ = P;
 }
-void KalmanFilter::init(const Eigen::MatrixXf &x, const Eigen::MatrixXf &P0) {
+void KalmanFilter::init(const Eigen::MatrixXf &x, const Eigen::MatrixXf &P0)
+{
   x_ = x;
   P_ = P0;
 }
@@ -82,19 +87,27 @@ void KalmanFilter::setR(const Eigen::MatrixXf &R) { R_ = R; }
 void KalmanFilter::getX(Eigen::MatrixXf &x) { x = x_; };
 void KalmanFilter::getP(Eigen::MatrixXf &P) { P = P_; };
 
+void KalmanFilter::predictXandP(const Eigen::MatrixXf &x, const Eigen::MatrixXf &P)
+{
+  x_ = x;
+  P_ = P;
+}
 void KalmanFilter::predictEKF(const Eigen::MatrixXf &x_next,
                               const Eigen::MatrixXf &A,
-                              const Eigen::MatrixXf &Q) {
+                              const Eigen::MatrixXf &Q)
+{
   x_ = x_next;
   P_ = A * P_ * A.transpose() + Q;
 }
 void KalmanFilter::predictEKF(const Eigen::MatrixXf &x_next,
-                              const Eigen::MatrixXf &A) {
+                              const Eigen::MatrixXf &A)
+{
   predictEKF(x_next, A, Q_);
 }
 
 void KalmanFilter::predict(const Eigen::MatrixXf &u, const Eigen::MatrixXf &A,
-                           const Eigen::MatrixXf &B, const Eigen::MatrixXf &Q) {
+                           const Eigen::MatrixXf &B, const Eigen::MatrixXf &Q)
+{
   const Eigen::MatrixXf x_next = A * x_ + B * u;
   predictEKF(x_next, A, Q);
 }
@@ -103,21 +116,23 @@ void KalmanFilter::predict(const Eigen::MatrixXf &u) { predict(u, A_, B_, Q_); }
 void KalmanFilter::updateEKF(const Eigen::MatrixXf &y,
                              const Eigen::MatrixXf &y_pred,
                              const Eigen::MatrixXf &C,
-                             const Eigen::MatrixXf &R) {
-  const Eigen::MatrixXf S = R + C * P_ * C.transpose();
-  const Eigen::MatrixXf K = P_ * C.transpose() * S.inverse();
+                             const Eigen::MatrixXf &R)
+{
+  const Eigen::MatrixXf S_inv = (R + C * P_ * C.transpose()).inverse();
+  const Eigen::MatrixXf K = P_ * C.transpose() * S_inv;
   x_ = x_ + K * (y - y_pred);
   const int dim = P_.cols();
-  const Eigen::MatrixXf I = Eigen::MatrixXf::Identity(dim, dim);
-  P_ = (I - K * C) * P_;
+  P_ = P_ - (P_ * C.transpose()) * S_inv * (C * P_);  
 }
 void KalmanFilter::updateEKF(const Eigen::MatrixXf &y,
                              const Eigen::MatrixXf &y_pred,
-                             const Eigen::MatrixXf &C) {
+                             const Eigen::MatrixXf &C)
+{
   updateEKF(y, y_pred, C, R_);
 }
 void KalmanFilter::update(const Eigen::MatrixXf &y, const Eigen::MatrixXf &C,
-                          const Eigen::MatrixXf &R) {
+                          const Eigen::MatrixXf &R)
+{
   const Eigen::MatrixXf y_pred = C * x_;
   updateEKF(y, y_pred, C, R);
 }
