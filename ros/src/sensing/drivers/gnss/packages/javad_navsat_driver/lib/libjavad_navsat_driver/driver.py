@@ -41,7 +41,7 @@ from libjavad_navsat_driver.checksum_utils import check_nmea_checksum
 import libjavad_navsat_driver.parser
 
 
-class RosNMEADriver(object):
+class ROSNMEADriver(object):
     def __init__(self):
         self.fix_pub = rospy.Publisher('fix', NavSatFix, queue_size=1)
         self.vel_pub = rospy.Publisher('vel', TwistStamped, queue_size=1)

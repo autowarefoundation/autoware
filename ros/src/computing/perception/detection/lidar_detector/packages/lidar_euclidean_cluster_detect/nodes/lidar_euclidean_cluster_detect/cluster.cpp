@@ -62,7 +62,7 @@ Eigen::Vector3f Cluster::GetEigenValues()
   return eigen_values_;
 }
 
-void Cluster::ToRosMessage(std_msgs::Header in_ros_header, autoware_msgs::CloudCluster& out_cluster_message)
+void Cluster::ToROSMessage(std_msgs::Header in_ros_header, autoware_msgs::CloudCluster &out_cluster_message)
 {
   sensor_msgs::PointCloud2 cloud_msg;
 

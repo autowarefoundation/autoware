@@ -1,35 +1,21 @@
 /*
- *  Copyright (c) 2018, Nagoya University
- *  All rights reserved.
+ * Copyright 2018-2019 Autoware Foundation. All rights reserved.
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  * Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name of Autoware nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #include "op_behavior_selector_core.h"
-#include "op_ros_helpers/op_RosHelpers.h"
+#include "op_ros_helpers/op_ROSHelpers.h"
 #include "op_planner/MappingHelpers.h"
 
 namespace BehaviorGeneratorNS
@@ -51,7 +37,7 @@ BehaviorGen::BehaviorGen()
 	UpdatePlanningParams(_nh);
 
 	tf::StampedTransform transform;
-	PlannerHNS::RosHelpers::GetTransformFromTF("map", "world", transform);
+	PlannerHNS::ROSHelpers::GetTransformFromTF("map", "world", transform);
 	m_OriginPos.position.x  = transform.getOrigin().x();
 	m_OriginPos.position.y  = transform.getOrigin().y();
 	m_OriginPos.position.z  = transform.getOrigin().z();
@@ -243,7 +229,7 @@ void BehaviorGen::callbackGetGlobalPlannerPath(const autoware_msgs::LaneArrayCon
 
 		for(unsigned int i = 0 ; i < msg->lanes.size(); i++)
 		{
-			PlannerHNS::RosHelpers::ConvertFromAutowareLaneToLocalLane(msg->lanes.at(i), m_temp_path);
+			PlannerHNS::ROSHelpers::ConvertFromAutowareLaneToLocalLane(msg->lanes.at(i), m_temp_path);
 			PlannerHNS::Lane* pPrevValid = 0;
 			for(unsigned int j = 0 ; j < m_temp_path.size(); j++)
 			{
@@ -327,7 +313,7 @@ void BehaviorGen::callbackGetLocalPlannerPath(const autoware_msgs::LaneArrayCons
 		for(unsigned int i = 0 ; i < msg->lanes.size(); i++)
 		{
 			std::vector<PlannerHNS::WayPoint> path;
-			PlannerHNS::RosHelpers::ConvertFromAutowareLaneToLocalLane(msg->lanes.at(i), path);
+			PlannerHNS::ROSHelpers::ConvertFromAutowareLaneToLocalLane(msg->lanes.at(i), path);
 			m_RollOuts.push_back(path);
 
 			if(path.size() > 0)
@@ -423,12 +409,12 @@ void BehaviorGen::VisualizeLocalPlanner()
 		iDirection = 1;
 	else if(m_BehaviorGenerator.m_pCurrentBehaviorState->GetCalcParams()->iCurrSafeTrajectory < m_BehaviorGenerator.m_pCurrentBehaviorState->GetCalcParams()->iCentralTrajectory)
 		iDirection = -1;
-	PlannerHNS::RosHelpers::VisualizeBehaviorState(m_CurrentPos, m_CurrentBehavior, !m_BehaviorGenerator.m_pCurrentBehaviorState->GetCalcParams()->bTrafficIsRed , iDirection, behavior_rviz, "beh_state");
+	PlannerHNS::ROSHelpers::VisualizeBehaviorState(m_CurrentPos, m_CurrentBehavior, !m_BehaviorGenerator.m_pCurrentBehaviorState->GetCalcParams()->bTrafficIsRed , iDirection, behavior_rviz, "beh_state");
 	//pub_BehaviorStateRviz.publish(behavior_rviz);
 
 	visualization_msgs::MarkerArray markerArray;
 
-	//PlannerHNS::RosHelpers::GetIndicatorArrows(m_CurrentPos, m_CarInfo.width, m_CarInfo.length, m_CurrentBehavior.indicator, 0, markerArray);
+	//PlannerHNS::ROSHelpers::GetIndicatorArrows(m_CurrentPos, m_CarInfo.width, m_CarInfo.length, m_CurrentBehavior.indicator, 0, markerArray);
 
 	markerArray.markers.push_back(behavior_rviz);
 
@@ -441,7 +427,7 @@ void BehaviorGen::VisualizeLocalPlanner()
 //	paths.at(0).push_back(m_BehaviorGenerator.m_Path);
 //	paths.push_back(m_GlobalPathsToUse);
 //	paths.push_back(m_RollOuts);
-//	PlannerHNS::RosHelpers::TrajectoriesToMarkers(paths, selected_path);
+//	PlannerHNS::ROSHelpers::TrajectoriesToMarkers(paths, selected_path);
 //	pub_SelectedPathRviz.publish(selected_path);
 }
 
@@ -486,7 +472,7 @@ void BehaviorGen::SendLocalPlanningTopics()
 	std_msgs::Int32 closest_waypoint;
 	PlannerHNS::RelativeInfo info;
 	PlannerHNS::PlanningHelpers::GetRelativeInfo(m_BehaviorGenerator.m_Path, m_BehaviorGenerator.state, info);
-	PlannerHNS::RosHelpers::ConvertFromLocalLaneToAutowareLane(m_BehaviorGenerator.m_Path, m_CurrentTrajectoryToSend, info.iBack);
+	PlannerHNS::ROSHelpers::ConvertFromLocalLaneToAutowareLane(m_BehaviorGenerator.m_Path, m_CurrentTrajectoryToSend, info.iBack);
 	//std::cout << "Path Size: " << m_BehaviorGenerator.m_Path.size() << ", Send Size: " << m_CurrentTrajectoryToSend << std::endl;
 
 	closest_waypoint.data = 1;
@@ -500,7 +486,7 @@ void BehaviorGen::LogLocalPlanningInfo(double dt)
 	timespec log_t;
 	UtilityHNS::UtilityH::GetTickCount(log_t);
 	std::ostringstream dataLine;
-	dataLine << UtilityHNS::UtilityH::GetLongTime(log_t) <<"," << dt << "," << m_CurrentBehavior.state << ","<< PlannerHNS::RosHelpers::GetBehaviorNameFromCode(m_CurrentBehavior.state) << "," <<
+	dataLine << UtilityHNS::UtilityH::GetLongTime(log_t) <<"," << dt << "," << m_CurrentBehavior.state << ","<< PlannerHNS::ROSHelpers::GetBehaviorNameFromCode(m_CurrentBehavior.state) << "," <<
 			m_BehaviorGenerator.m_pCurrentBehaviorState->m_pParams->rollOutNumber << "," <<
 			m_BehaviorGenerator.m_pCurrentBehaviorState->GetCalcParams()->bFullyBlock << "," <<
 			m_BehaviorGenerator.m_pCurrentBehaviorState->GetCalcParams()->iCentralTrajectory << "," <<
@@ -569,7 +555,7 @@ void BehaviorGen::MainLoop()
 
 			if(m_MapRaw.GetVersion()==2)
 			{
-				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessageV2(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
+				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromROSMessageV2(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
 						m_MapRaw.pCenterLines->m_data_list, m_MapRaw.pIntersections->m_data_list,m_MapRaw.pAreas->m_data_list,
 						m_MapRaw.pLines->m_data_list, m_MapRaw.pStopLines->m_data_list,	m_MapRaw.pSignals->m_data_list,
 						m_MapRaw.pVectors->m_data_list, m_MapRaw.pCurbs->m_data_list, m_MapRaw.pRoadedges->m_data_list, m_MapRaw.pWayAreas->m_data_list,
@@ -584,7 +570,7 @@ void BehaviorGen::MainLoop()
 			}
 			else if(m_MapRaw.GetVersion()==1)
 			{
-				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessage(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
+				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromROSMessage(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
 						m_MapRaw.pCenterLines->m_data_list, m_MapRaw.pIntersections->m_data_list,m_MapRaw.pAreas->m_data_list,
 						m_MapRaw.pLines->m_data_list, m_MapRaw.pStopLines->m_data_list,	m_MapRaw.pSignals->m_data_list,
 						m_MapRaw.pVectors->m_data_list, m_MapRaw.pCurbs->m_data_list, m_MapRaw.pRoadedges->m_data_list, m_MapRaw.pWayAreas->m_data_list,

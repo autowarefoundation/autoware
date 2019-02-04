@@ -1,32 +1,18 @@
 /*
- *  Copyright (c) 2016, Nagoya University
- *  All rights reserved.
+ * Copyright 2016-2019 Autoware Foundation. All rights reserved.
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  * Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name of Autoware nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #include "way_planner_core.h"
 
@@ -370,7 +356,7 @@ void way_planner_core::UpdateRoadMap(const AutowareRoadNetwork& src_map, Planner
 	std::vector<UtilityHNS::AisanDataConnFileReader::DataConn> conn_data;
 
 	PlannerHNS::GPSPoint origin;//(m_OriginPos.position.x, m_OriginPos.position.y, m_OriginPos.position.z, 0);
-	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessage(lanes, points, dts, inters, areas, line_data, stop_line_data, signal_data, vector_data, curb_data, roadedge_data,way_area, crossing, nodes_data, conn_data, origin, out_map);
+	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromROSMessage(lanes, points, dts, inters, areas, line_data, stop_line_data, signal_data, vector_data, curb_data, roadedge_data,way_area, crossing, nodes_data, conn_data, origin, out_map);
 }
 
 bool way_planner_core::GenerateGlobalPlan(PlannerHNS::WayPoint& startPoint, PlannerHNS::WayPoint& goalPoint, std::vector<std::vector<PlannerHNS::WayPoint> >& generatedTotalPaths)
@@ -445,17 +431,17 @@ void way_planner_core::VisualizeAndSend(const std::vector<std::vector<PlannerHNS
 	visualization_msgs::MarkerArray pathsToVisualize;
 
 	for(unsigned int i=0; i < generatedTotalPaths.size(); i++)
-		RosHelpers::ConvertFromPlannerHToAutowarePathFormat(generatedTotalPaths.at(i), lane_array);
+		ROSHelpers::ConvertFromPlannerHToAutowarePathFormat(generatedTotalPaths.at(i), lane_array);
 
 	std_msgs::ColorRGBA total_color;
 	total_color.r = 0;
 	total_color.g = 0.7;
 	total_color.b = 1.0;
 	total_color.a = 0.9;
-	RosHelpers::createGlobalLaneArrayMarker(total_color, lane_array, pathsToVisualize);
-	RosHelpers::createGlobalLaneArrayOrientationMarker(lane_array, pathsToVisualize);
-	RosHelpers::createGlobalLaneArrayVelocityMarker(lane_array, pathsToVisualize);
-	//RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(generatedTotalPaths, pathsToVisualize);
+	ROSHelpers::createGlobalLaneArrayMarker(total_color, lane_array, pathsToVisualize);
+	ROSHelpers::createGlobalLaneArrayOrientationMarker(lane_array, pathsToVisualize);
+	ROSHelpers::createGlobalLaneArrayVelocityMarker(lane_array, pathsToVisualize);
+	//ROSHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(generatedTotalPaths, pathsToVisualize);
 	pub_PathsRviz.publish(pathsToVisualize);
 	pub_Paths.publish(lane_array);
 
@@ -568,7 +554,7 @@ bool way_planner_core::HMI_DoOneStep()
 		startPoint = m_CurrentPose;
 
 	PlannerHNS::WayPoint* currOptions = 0;
-	RosHelpers::FindIncommingBranches(m_GeneratedTotalPaths,startPoint, min_distance, branches, currOptions);
+	ROSHelpers::FindIncommingBranches(m_GeneratedTotalPaths,startPoint, min_distance, branches, currOptions);
 	if(branches.size() > 0)
 	{
 		HMI_MSG msg;
@@ -685,7 +671,7 @@ void way_planner_core::PlannerMainLoop()
 			PlannerHNS::MappingHelpers::LoadKML(m_params.KmlMapPath, m_Map);
 			//PlannerHNS::MappingHelpers::WriteKML("/home/hatem/SimuLogs/KmlMaps/ToyotaMap2017.kml", "/home/hatem/SimuLogs/KmlMaps/PlannerX_MapTemplate.kml", m_Map);
 			visualization_msgs::MarkerArray map_marker_array;
-			RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(m_Map, map_marker_array);
+			ROSHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(m_Map, map_marker_array);
 			pub_MapRviz.publish(map_marker_array);
 		}
 		else if (m_params.mapSource == MAP_FOLDER && !m_bKmlMap)
@@ -694,7 +680,7 @@ void way_planner_core::PlannerMainLoop()
 			PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(m_params.KmlMapPath, m_Map, true);
 			//PlannerHNS::MappingHelpers::WriteKML("/home/hatem/SimuLogs/KmlMaps/Moriyama_NoTransform_2017.kml", "/home/hatem/SimuLogs/KmlMaps/PlannerX_MapTemplate.kml", m_Map);
 			visualization_msgs::MarkerArray map_marker_array;
-			RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(m_Map, map_marker_array);
+			ROSHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(m_Map, map_marker_array);
 
 			pub_MapRviz.publish(map_marker_array);
 
@@ -706,7 +692,7 @@ void way_planner_core::PlannerMainLoop()
 				 m_AwMap.bDtLanes = m_AwMap.bLanes = m_AwMap.bPoints = false;
 				 UpdateRoadMap(m_AwMap,m_Map);
 				visualization_msgs::MarkerArray map_marker_array;
-				RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(m_Map, map_marker_array);
+				ROSHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(m_Map, map_marker_array);
 				pub_MapRviz.publish(map_marker_array);
 			 }
 		}

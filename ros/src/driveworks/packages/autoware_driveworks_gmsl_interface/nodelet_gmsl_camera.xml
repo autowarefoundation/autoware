@@ -1,0 +1,9 @@
+<library path="lib/libnodelet_autoware_driveworks_gmsl_interface">
+  <class name="gmsl_camera/CameraNodelet"
+         type="gmsl_camera::CameraNodelet"
+         base_class_type="nodelet::Nodelet">
+    <description>
+         A node that controls and publish one or more gmsl cameras on PX2 DriveWorks
+    </description>
+  </class>
+</library>

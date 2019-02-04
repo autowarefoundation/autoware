@@ -1,7 +1,7 @@
 <launch>
 
   <!-- calibration file path -->
-  <arg name="velodyne_calib" default="/opt/ros/indigo/share/velodyne_pointcloud/params/32db.yaml"/>
+  <arg name="velodyne_calib" default="/opt/ros/kinetic/share/velodyne_pointcloud/params/32db.yaml"/>
   <arg name="camera_calib" default="~/.autoware/data/calibration/camera_lidar_3d/prius/nic_150407.yml"/>
 
   <!-- HDL-32e -->

@@ -2,6 +2,30 @@
 Changelog for package points2image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.10.0 (2019-01-17)
+-------------------
+* Fixes for catkin_make
+* Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/kfunaoka/Autoware/issues/1741>`_)
+  * Switch to Apache 2
+  * Replace BSD-3 license header with Apache 2 and reassign copyright to the
+  Autoware Foundation.
+  * Update license on Python files
+  * Update copyright years
+  * Add #ifndef/define _POINTS_IMAGE_H\_
+  * Updated license comment
+* Use colcon as the build tool (`#1704 <https://github.com/kfunaoka/Autoware/issues/1704>`_)
+  * Switch to colcon as the build tool instead of catkin
+  * Added cmake-target
+  * Added note about the second colcon call
+  * Added warning about catkin* scripts being deprecated
+  * Fix COLCON_OPTS
+  * Added install targets
+  * Update Docker image tags
+  * Message packages fixes
+  * Fix missing dependency
+* Fix Ros/ROS naming convention
+* Contributors: Esteve Fernandez, amc-nu
+
 1.9.1 (2018-11-06)
 ------------------
 
@@ -247,7 +271,7 @@ Changelog for package points2image
 * Correct calibration_camera_lidar dependnecy about message header
 * Correct dependency name
 * Delete image size fixing
-* Ros-parameterize all defined value in points2vscan
+* ROS-parameterize all defined value in points2vscan
   Now we can specify parameters value from launch file
 * Update threshold
   So that vscan can work for close-range obstacles when velodyne 32 is
