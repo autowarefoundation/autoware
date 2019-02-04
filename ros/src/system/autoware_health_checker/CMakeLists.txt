@@ -13,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES node_status_publisher
-#  CATKIN_DEPENDS autoware_system_msgs roscpp
+  CATKIN_DEPENDS autoware_system_msgs roscpp
 #  DEPENDS system_lib
 )
 
