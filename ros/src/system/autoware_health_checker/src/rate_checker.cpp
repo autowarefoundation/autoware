@@ -72,6 +72,7 @@ namespace autoware_health_checker
 
     void RateChecker::update()
     {
+        mtx_.lock();
         std::vector<ros::Time> buffer;
         for(auto data_itr = data_.begin(); data_itr != data_.end(); data_itr++)
         {
@@ -80,7 +81,6 @@ namespace autoware_health_checker
                 buffer.push_back(*data_itr);
             }
         }
-        mtx_.lock();
         data_ = buffer;
         mtx_.unlock();
         return;

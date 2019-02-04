@@ -20,6 +20,7 @@ namespace autoware_health_checker
         ros::Rate rate = ros::Rate(autoware_health_checker::UPDATE_RATE);
         while(ros::ok())
         {
+            mtx_.lock();
             autoware_system_msgs::NodeStatus status;
             status.node_activated = node_activated_;
             ros::Time now = ros::Time::now();
@@ -48,6 +49,7 @@ namespace autoware_health_checker
                 status.status.push_back(diag_buffers_[*key_itr]->getAndClearData());
             }
             status_pub_.publish(status);
+            mtx_.unlock();
             rate.sleep();
         }
         return;

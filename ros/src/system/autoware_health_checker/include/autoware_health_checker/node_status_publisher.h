@@ -53,8 +53,16 @@ namespace autoware_health_checker
             diag_buffers_[key]->addDiag(new_status);
         }
         void CHECK_RATE(std::string key,double warn_rate,double error_rate,double fatal_rate,std::string description);
-        void NODE_ACTIVATE(){node_activated_ = true;};
-        void NODE_DIACTIVATE(){node_activated_ = false;};
+        void NODE_ACTIVATE()
+        {
+            std::lock_guard<std::mutex> lock(mtx_);
+            node_activated_ = true;
+        };
+        void NODE_DEACTIVATE()
+        {
+            std::lock_guard<std::mutex> lock(mtx_);
+            node_activated_ = false;
+        };
     private:
         std::vector<std::string> getKeys();
         std::vector<std::string> getRateCheckerKeys();
@@ -68,6 +76,7 @@ namespace autoware_health_checker
         std::string doubeToJson(double value);
         void publishStatus();
         bool node_activated_;
+        std::mutex mtx_;
     };
 }
 #endif  //NODE_STATUS_PUBLISHER_H_INCLUDED

@@ -16,20 +16,21 @@ namespace autoware_health_checker
     void DiagBuffer::addDiag(autoware_system_msgs::DiagnosticStatus status)
     {
         std::lock_guard<std::mutex> lock(mtx_);
-        buffer_[status.level].status.push_back(status);
+        buffer_[status.level].status.emplace_back(status);
         updateBuffer();
         return;
     }
 
     autoware_system_msgs::DiagnosticStatusArray DiagBuffer::getAndClearData()
     {
+        std::lock_guard<std::mutex> lock(mtx_);
         autoware_system_msgs::DiagnosticStatusArray data;
         data = buffer_[autoware_health_checker::LEVEL_FATAL];
         data.status.insert(data.status.end(),buffer_[autoware_health_checker::LEVEL_ERROR].status.begin(),buffer_[autoware_health_checker::LEVEL_ERROR].status.end());
         data.status.insert(data.status.end(),buffer_[autoware_health_checker::LEVEL_WARN].status.begin(),buffer_[autoware_health_checker::LEVEL_WARN].status.end());
         data.status.insert(data.status.end(),buffer_[autoware_health_checker::LEVEL_OK].status.begin(),buffer_[autoware_health_checker::LEVEL_OK].status.end());
         data.status.insert(data.status.end(),buffer_[autoware_health_checker::LEVEL_UNDEFINED].status.begin(),buffer_[autoware_health_checker::LEVEL_UNDEFINED].status.end());
-        std::sort(data.status.begin(), data.status.end(), std::bind(&DiagBuffer::compareTimestamp, this, std::placeholders::_1, std::placeholders::_2));
+        std::sort(data.status.begin(), data.status.end(), std::bind(&DiagBuffer::isOlderTimestamp, this, std::placeholders::_1, std::placeholders::_2));
         buffer_.clear();
         return data;
     }
@@ -86,7 +87,7 @@ namespace autoware_health_checker
         return;
     }
 
-    bool DiagBuffer::compareTimestamp(const autoware_system_msgs::DiagnosticStatus &a, const autoware_system_msgs::DiagnosticStatus &b)
+    bool DiagBuffer::isOlderTimestamp(const autoware_system_msgs::DiagnosticStatus &a, const autoware_system_msgs::DiagnosticStatus &b)
     {
         return a.header.stamp < b.header.stamp;
     }
