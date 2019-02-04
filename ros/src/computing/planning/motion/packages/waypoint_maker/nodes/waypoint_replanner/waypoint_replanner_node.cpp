@@ -32,7 +32,7 @@ private:
   WaypointReplanner replanner_;
   autoware_msgs::LaneArray lane_array_;
   bool withoutDecisionMaker();
-  void replan(autoware_msgs::LaneArray *lane_array);
+  void replan(autoware_msgs::LaneArray &lane_array);
   void publishLaneArray();
   void laneCallback(const autoware_msgs::LaneArray::ConstPtr& lane_array);
   void configCallback(const autoware_config_msgs::ConfigWaypointReplanner::ConstPtr& conf);
@@ -50,15 +50,11 @@ WaypointReplannerNode::~WaypointReplannerNode()
 {
 }
 
-void WaypointReplannerNode::replan(autoware_msgs::LaneArray* lane_array)
+void WaypointReplannerNode::replan(autoware_msgs::LaneArray& lane_array)
 {
-  if (!lane_array)
+  for (auto &el : lane_array.lanes)
   {
-    return;
-  }
-  for (auto &el : lane_array->lanes)
-  {
-    replanner_.replanLaneWaypointVel(&el);
+    replanner_.replanLaneWaypointVel(el);
   }
 }
 
@@ -74,7 +70,7 @@ void WaypointReplannerNode::publishLaneArray()
   autoware_msgs::LaneArray array(lane_array_);
   if (replanning_mode_)
   {
-    replan(&array);
+    replan(array);
   }
   lane_pub_["with_decision"].publish(array);
   if (withoutDecisionMaker())

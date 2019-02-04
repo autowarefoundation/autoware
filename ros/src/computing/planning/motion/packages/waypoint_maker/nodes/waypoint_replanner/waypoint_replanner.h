@@ -48,35 +48,35 @@ public:
   WaypointReplanner();
   ~WaypointReplanner();
   void initParameter(const autoware_config_msgs::ConfigWaypointReplanner::ConstPtr& conf);
-  void replanLaneWaypointVel(autoware_msgs::Lane* lane);
+  void replanLaneWaypointVel(autoware_msgs::Lane& lane);
 
 protected:
-  void changeVelSign(autoware_msgs::Lane* lane, bool positive) const;
+  void changeVelSign(autoware_msgs::Lane& lane, bool positive) const;
   int getDirection(const autoware_msgs::Lane& lane) const;
-  void resampleLaneWaypoint(const double resample_interval, autoware_msgs::Lane* lane, int dir);
-  void resampleOnStraight(const CbufGPoint& curve_point, autoware_msgs::Lane* lane);
+  void resampleLaneWaypoint(const double resample_interval, autoware_msgs::Lane& lane, int dir);
+  void resampleOnStraight(const CbufGPoint& curve_point, autoware_msgs::Lane& lane);
   void resampleOnCurve(const geometry_msgs::Point& target_point,
-    const std::vector<double>& param,autoware_msgs::Lane* lane, int dir);
+    const std::vector<double>& param,autoware_msgs::Lane& lane, int dir);
 
   const CbufGPoint getCrvPointsOnResample(const autoware_msgs::Lane& lane,
     const autoware_msgs::Lane& original_lane, unsigned long original_index) const;
   const CbufGPoint getCrvPoints(const autoware_msgs::Lane& lane, unsigned long index) const;
 
-  void createRadiusList(const autoware_msgs::Lane& lane, std::vector<double>* curve_radius);
+  void createRadiusList(const autoware_msgs::Lane& lane, std::vector<double>& curve_radius);
   const double calcVelParam(double vmax) const;
-  void createCurveList(const std::vector<double>& curve_radius, KeyVal* curve_list);
+  void createCurveList(const std::vector<double>& curve_radius, KeyVal& curve_list);
   void createVmaxList(const autoware_msgs::Lane& lane, const KeyVal &curve_list,
-    unsigned long offset, KeyVal *vmax_list);
+    unsigned long offset, KeyVal &vmax_list);
   double searchVmaxByRange(unsigned long start_idx, unsigned long end_idx, unsigned int offset,
     const autoware_msgs::Lane &lane) const;
   void setVelocityByRange(unsigned long start_idx, unsigned long end_idx, unsigned int offset, double vel,
-    autoware_msgs::Lane* lane);
+    autoware_msgs::Lane& lane);
   void raiseVelocityByRange(unsigned long start_idx, unsigned long end_idx, unsigned int offset,
-    double vmin, autoware_msgs::Lane* lane);
+    double vmin, autoware_msgs::Lane& lane);
 
   void limitVelocityByRange(unsigned long start_idx, unsigned long end_idx, unsigned int offset, double vmin,
-    autoware_msgs::Lane* lane);
-  void limitAccelDecel(const unsigned long idx, autoware_msgs::Lane* lane);
+    autoware_msgs::Lane& lane);
+  void limitAccelDecel(const unsigned long idx, autoware_msgs::Lane& lane);
 
   const std::vector<double> calcCurveParam(CbufGPoint point) const;
   const double calcPathLength(const autoware_msgs::Lane& lane) const;

@@ -47,10 +47,10 @@ void WaypointReplanner::initParameter(const autoware_config_msgs::ConfigWaypoint
   vel_param_ = calcVelParam(velocity_max_);
 }
 
-void WaypointReplanner::changeVelSign(autoware_msgs::Lane* lane, bool positive) const
+void WaypointReplanner::changeVelSign(autoware_msgs::Lane& lane, bool positive) const
 {
   const int sgn = positive ? 1 : -1;
-  for (auto& el : lane->waypoints)
+  for (auto& el : lane.waypoints)
   {
     el.twist.twist.linear.x = sgn * fabs(el.twist.twist.linear.x);
   }
@@ -68,14 +68,14 @@ int WaypointReplanner::getDirection(const autoware_msgs::Lane& lane) const
   return rlt_point.x < 0 ? -1 : 1;
 }
 
-void WaypointReplanner::replanLaneWaypointVel(autoware_msgs::Lane* lane)
+void WaypointReplanner::replanLaneWaypointVel(autoware_msgs::Lane& lane)
 {
-  if (lane->waypoints.empty())
+  if (lane.waypoints.empty())
   {
     return;
   }
-  const int dir = getDirection(*lane);
-  const unsigned long last = lane->waypoints.size() - 1;
+  const int dir = getDirection(lane);
+  const unsigned long last = lane.waypoints.size() - 1;
   changeVelSign(lane, true);
   limitVelocityByRange(0, last, 0, velocity_max_, lane);
   if (resample_mode_)
@@ -86,8 +86,8 @@ void WaypointReplanner::replanLaneWaypointVel(autoware_msgs::Lane* lane)
   {
     std::vector<double> curve_radius;
     KeyVal curve_list;
-    createRadiusList(*lane, &curve_radius);
-    createCurveList(curve_radius, &curve_list);
+    createRadiusList(lane, curve_radius);
+    createCurveList(curve_radius, curve_list);
     if (overwrite_vmax_mode_)
     {// set velocity_max for all_point
       setVelocityByRange(0, last, 0, velocity_max_, lane);
@@ -117,24 +117,24 @@ void WaypointReplanner::replanLaneWaypointVel(autoware_msgs::Lane* lane)
   }
 }
 
-void WaypointReplanner::resampleLaneWaypoint(const double resample_interval, autoware_msgs::Lane* lane, int dir)
+void WaypointReplanner::resampleLaneWaypoint(const double resample_interval, autoware_msgs::Lane& lane, int dir)
 {
-  if (lane->waypoints.size() < 2)
+  if (lane.waypoints.size() < 2)
   {
     return;
   }
-  autoware_msgs::Lane original_lane(*lane);
-  lane->waypoints.clear();
-  lane->waypoints.emplace_back(original_lane.waypoints[0]);
-  lane->waypoints.reserve(ceil(1.5 * calcPathLength(original_lane) / resample_interval_));
+  autoware_msgs::Lane original_lane(lane);
+  lane.waypoints.clear();
+  lane.waypoints.emplace_back(original_lane.waypoints[0]);
+  lane.waypoints.reserve(ceil(1.5 * calcPathLength(original_lane) / resample_interval_));
 
   for (unsigned long i = 1; i < original_lane.waypoints.size(); i++)
   {
-    CbufGPoint curve_point = getCrvPointsOnResample(*lane, original_lane, i);
+    CbufGPoint curve_point = getCrvPointsOnResample(lane, original_lane, i);
     const std::vector<double> curve_param = calcCurveParam(curve_point);
-    lane->waypoints.back().twist.twist = original_lane.waypoints[i - 1].twist.twist;
-    lane->waypoints.back().wpstate = original_lane.waypoints[i - 1].wpstate;
-    lane->waypoints.back().change_flag = original_lane.waypoints[i - 1].change_flag;
+    lane.waypoints.back().twist.twist = original_lane.waypoints[i - 1].twist.twist;
+    lane.waypoints.back().wpstate = original_lane.waypoints[i - 1].wpstate;
+    lane.waypoints.back().change_flag = original_lane.waypoints[i - 1].change_flag;
     // if going straight
     if (curve_param.empty())
     {
@@ -146,19 +146,19 @@ void WaypointReplanner::resampleLaneWaypoint(const double resample_interval, aut
       resampleOnCurve(curve_point[1], curve_param, lane, dir);
     }
   }
-  lane->waypoints[0].pose.pose.orientation = lane->waypoints[1].pose.pose.orientation;
-  lane->waypoints.back().twist.twist = original_lane.waypoints.back().twist.twist;
-  lane->waypoints.back().wpstate = original_lane.waypoints.back().wpstate;
-  lane->waypoints.back().change_flag = original_lane.waypoints.back().change_flag;
+  lane.waypoints[0].pose.pose.orientation = lane.waypoints[1].pose.pose.orientation;
+  lane.waypoints.back().twist.twist = original_lane.waypoints.back().twist.twist;
+  lane.waypoints.back().wpstate = original_lane.waypoints.back().wpstate;
+  lane.waypoints.back().change_flag = original_lane.waypoints.back().change_flag;
 }
 
-void WaypointReplanner::resampleOnStraight(const CbufGPoint& curve_point, autoware_msgs::Lane* lane)
+void WaypointReplanner::resampleOnStraight(const CbufGPoint& curve_point, autoware_msgs::Lane& lane)
 {
   if (curve_point.size() != 3)
   {
     return;
   }
-  autoware_msgs::Waypoint wp(lane->waypoints.back());
+  autoware_msgs::Waypoint wp(lane.waypoints.back());
   const geometry_msgs::Point& pt = wp.pose.pose.position;
   const double yaw = atan2(curve_point[2].y - curve_point[0].y, curve_point[2].x - curve_point[0].x);
   wp.pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
@@ -176,18 +176,18 @@ void WaypointReplanner::resampleOnStraight(const CbufGPoint& curve_point, autowa
     wp.pose.pose.position.x += resample_vec[0];
     wp.pose.pose.position.y += resample_vec[1];
     wp.pose.pose.position.z += resample_vec[2];
-    lane->waypoints.emplace_back(wp);
+    lane.waypoints.emplace_back(wp);
   }
 }
 
 void WaypointReplanner::resampleOnCurve(const geometry_msgs::Point& target_point,
-                                        const std::vector<double>& curve_param, autoware_msgs::Lane* lane, int dir)
+                                        const std::vector<double>& curve_param, autoware_msgs::Lane& lane, int dir)
 {
   if (curve_param.size() != 3)
   {
     return;
   }
-  autoware_msgs::Waypoint wp(lane->waypoints.back());
+  autoware_msgs::Waypoint wp(lane.waypoints.back());
   const double& cx = curve_param[0];
   const double& cy = curve_param[1];
   const double& radius = curve_param[2];
@@ -208,7 +208,7 @@ void WaypointReplanner::resampleOnCurve(const geometry_msgs::Point& target_point
   const double resample_dz = resample_interval_ * (p1.z - p0.z) / dist;
   for (; dist > resample_interval_; dist -= resample_interval_)
   {
-    if (lane->waypoints.size() == lane->waypoints.capacity())
+    if (lane.waypoints.size() == lane.waypoints.capacity())
     {
       break;
     }
@@ -218,7 +218,7 @@ void WaypointReplanner::resampleOnCurve(const geometry_msgs::Point& target_point
     wp.pose.pose.position.y = cy + radius * sin(t);
     wp.pose.pose.position.z += resample_dz;
     wp.pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
-    lane->waypoints.emplace_back(wp);
+    lane.waypoints.emplace_back(wp);
   }
 }
 
@@ -256,29 +256,29 @@ const CbufGPoint WaypointReplanner::getCrvPoints(const autoware_msgs::Lane& lane
   return curve_point;
 }
 
-void WaypointReplanner::createRadiusList(const autoware_msgs::Lane& lane, std::vector<double>* curve_radius)
+void WaypointReplanner::createRadiusList(const autoware_msgs::Lane& lane, std::vector<double>& curve_radius)
 {
   if (lane.waypoints.empty())
   {
     return;
   }
-  curve_radius->resize(lane.waypoints.size());
-  curve_radius->at(0) = curve_radius->back() = r_inf_;
+  curve_radius.resize(lane.waypoints.size());
+  curve_radius.at(0) = curve_radius.back() = r_inf_;
 
   for (unsigned long i = 1; i < lane.waypoints.size() - 1; i++)
   {
     CbufGPoint curve_point(getCrvPoints(lane, i));
-    const std::vector<double> curve_param = calcCurveParam(curve_point);
+    const std::vector<double> curve_param(calcCurveParam(curve_point));
 
     // if going straight
     if (curve_param.empty())
     {
-      curve_radius->at(i) = r_inf_;
+      curve_radius.at(i) = r_inf_;
     }
     // else if turnning curve
     else
     {
-      curve_radius->at(i) = (curve_param[2] > r_inf_) ? r_inf_ : curve_param[2];
+      curve_radius.at(i) = (curve_param[2] > r_inf_) ? r_inf_ : curve_param[2];
     }
   }
 }
@@ -292,7 +292,7 @@ const double WaypointReplanner::calcVelParam(double vmax) const
   return (vmax - velocity_min_) / (r_th_ - r_min_);
 }
 
-void WaypointReplanner::createCurveList(const std::vector<double>& curve_radius, KeyVal* curve_list)
+void WaypointReplanner::createCurveList(const std::vector<double>& curve_radius, KeyVal& curve_list)
 {
   unsigned long index = 0;
   bool on_curve = false;
@@ -311,7 +311,7 @@ void WaypointReplanner::createCurveList(const std::vector<double>& curve_radius,
       {
         radius_localmin = r_min_;
       }
-      (*curve_list)[index] = std::make_pair(i, radius_localmin);
+      curve_list[index] = std::make_pair(i, radius_localmin);
       radius_localmin = DBL_MAX;
     }
     if (!on_curve)
@@ -327,9 +327,9 @@ void WaypointReplanner::createCurveList(const std::vector<double>& curve_radius,
 
 
 void WaypointReplanner::setVelocityByRange(unsigned long start_idx, unsigned long end_idx, unsigned int offset,
-                                             double vel, autoware_msgs::Lane* lane)
+                                             double vel, autoware_msgs::Lane& lane)
 {
-  if (lane->waypoints.empty())
+  if (lane.waypoints.empty())
   {
     return;
   }
@@ -338,17 +338,17 @@ void WaypointReplanner::setVelocityByRange(unsigned long start_idx, unsigned lon
     start_idx = (start_idx > offset) ? (start_idx - offset) : 0;
     end_idx = (end_idx > offset) ? (end_idx - offset) : 0;
   }
-  end_idx = (end_idx >= lane->waypoints.size()) ? lane->waypoints.size() - 1 : end_idx;
+  end_idx = (end_idx >= lane.waypoints.size()) ? lane.waypoints.size() - 1 : end_idx;
   for (unsigned long idx = start_idx; idx <= end_idx; idx++)
   {
-    lane->waypoints[idx].twist.twist.linear.x = vel;
+    lane.waypoints[idx].twist.twist.linear.x = vel;
   }
 }
 
 void WaypointReplanner::raiseVelocityByRange(unsigned long start_idx, unsigned long end_idx, unsigned int offset,
-                                           double vmin, autoware_msgs::Lane* lane)
+                                           double vmin, autoware_msgs::Lane& lane)
 {
-  if (lane->waypoints.empty())
+  if (lane.waypoints.empty())
   {
     return;
   }
@@ -357,21 +357,21 @@ void WaypointReplanner::raiseVelocityByRange(unsigned long start_idx, unsigned l
     start_idx = (start_idx > offset) ? (start_idx - offset) : 0;
     end_idx = (end_idx > offset) ? (end_idx - offset) : 0;
   }
-  end_idx = (end_idx >= lane->waypoints.size()) ? lane->waypoints.size() - 1 : end_idx;
+  end_idx = (end_idx >= lane.waypoints.size()) ? lane.waypoints.size() - 1 : end_idx;
   for (unsigned long idx = start_idx; idx <= end_idx; idx++)
   {
-    if (lane->waypoints[idx].twist.twist.linear.x >= vmin)
+    if (lane.waypoints[idx].twist.twist.linear.x >= vmin)
     {
       continue;
     }
-    lane->waypoints[idx].twist.twist.linear.x = vmin;
+    lane.waypoints[idx].twist.twist.linear.x = vmin;
   }
 }
 
 void WaypointReplanner::limitVelocityByRange(unsigned long start_idx, unsigned long end_idx, unsigned int offset,
-                                             double vmin, autoware_msgs::Lane* lane)
+                                             double vmin, autoware_msgs::Lane& lane)
 {
-  if (lane->waypoints.empty())
+  if (lane.waypoints.empty())
   {
     return;
   }
@@ -380,39 +380,39 @@ void WaypointReplanner::limitVelocityByRange(unsigned long start_idx, unsigned l
     start_idx = (start_idx > offset) ? (start_idx - offset) : 0;
     end_idx = (end_idx > offset) ? (end_idx - offset) : 0;
   }
-  end_idx = (end_idx >= lane->waypoints.size()) ? lane->waypoints.size() - 1 : end_idx;
+  end_idx = (end_idx >= lane.waypoints.size()) ? lane.waypoints.size() - 1 : end_idx;
   for (unsigned long idx = start_idx; idx <= end_idx; idx++)
   {
-    if (lane->waypoints[idx].twist.twist.linear.x < vmin)
+    if (lane.waypoints[idx].twist.twist.linear.x < vmin)
     {
       continue;
     }
-    lane->waypoints[idx].twist.twist.linear.x = vmin;
+    lane.waypoints[idx].twist.twist.linear.x = vmin;
   }
   limitAccelDecel(start_idx, lane);
   limitAccelDecel(end_idx, lane);
 }
 
-void WaypointReplanner::limitAccelDecel(const unsigned long idx, autoware_msgs::Lane* lane)
+void WaypointReplanner::limitAccelDecel(const unsigned long idx, autoware_msgs::Lane& lane)
 {
   const double acc[2] = { accel_limit_, decel_limit_ };
-  const unsigned long end_idx[2] = { lane->waypoints.size() - idx, idx + 1 };
+  const unsigned long end_idx[2] = { lane.waypoints.size() - idx, idx + 1 };
   const int sgn[2] = { 1, -1 };
   for (int j = 0; j < 2; j++)  // [j=0]: accel_limit_process, [j=1]: decel_limit_process
   {
-    double v = lane->waypoints[idx].twist.twist.linear.x;
+    double v = lane.waypoints[idx].twist.twist.linear.x;
     unsigned long next = idx + sgn[j];
     for (unsigned long i = 1; i < end_idx[j]; i++, next += sgn[j])
     {
-      const geometry_msgs::Point& p0 = lane->waypoints[next - sgn[j]].pose.pose.position;
-      const geometry_msgs::Point& p1 = lane->waypoints[next].pose.pose.position;
+      const geometry_msgs::Point& p0 = lane.waypoints[next - sgn[j]].pose.pose.position;
+      const geometry_msgs::Point& p1 = lane.waypoints[next].pose.pose.position;
       const double dist = std::hypot(p0.x - p1.x, p0.y - p1.y);
       v = sqrt(2 * acc[j] * dist + v * v);
-      if (v > velocity_max_ || v > lane->waypoints[next].twist.twist.linear.x)
+      if (v > velocity_max_ || v > lane.waypoints[next].twist.twist.linear.x)
       {
         break;
       }
-      lane->waypoints[next].twist.twist.linear.x = v;
+      lane.waypoints[next].twist.twist.linear.x = v;
     }
   }
 }
