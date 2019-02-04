@@ -23,6 +23,7 @@ public:
   void setR(const Eigen::MatrixXf &R);
   void getX(Eigen::MatrixXf &x);
   void getP(Eigen::MatrixXf &P);
+  double getXelement(unsigned int i);
 
   void predictXandP(const Eigen::MatrixXf &x, const Eigen::MatrixXf &P);
   void predictEKF(const Eigen::MatrixXf &x_next, const Eigen::MatrixXf &A,
@@ -86,6 +87,7 @@ void KalmanFilter::setQ(const Eigen::MatrixXf &Q) { Q_ = Q; }
 void KalmanFilter::setR(const Eigen::MatrixXf &R) { R_ = R; }
 void KalmanFilter::getX(Eigen::MatrixXf &x) { x = x_; };
 void KalmanFilter::getP(Eigen::MatrixXf &P) { P = P_; };
+double KalmanFilter::getXelement(unsigned int i) { return x_(i); };
 
 void KalmanFilter::predictXandP(const Eigen::MatrixXf &x, const Eigen::MatrixXf &P)
 {
