@@ -153,6 +153,10 @@ void WaypointReplanner::resampleLaneWaypoint(const double resample_interval, aut
 
 void WaypointReplanner::resampleOnStraight(const CbufGPoint& curve_point, autoware_msgs::Lane* lane)
 {
+  if (curve_point.size() != 3)
+  {
+    return;
+  }
   autoware_msgs::Waypoint wp = lane->waypoints.back();
   const geometry_msgs::Point& pt = wp.pose.pose.position;
   const double yaw = atan2(curve_point[2].y - curve_point[0].y, curve_point[2].x - curve_point[0].x);
@@ -178,6 +182,10 @@ void WaypointReplanner::resampleOnStraight(const CbufGPoint& curve_point, autowa
 void WaypointReplanner::resampleOnCurve(const geometry_msgs::Point& target_point,
                                         const std::vector<double>& curve_param, autoware_msgs::Lane* lane, int dir)
 {
+  if (curve_param.size() != 3)
+  {
+    return;
+  }
   autoware_msgs::Waypoint wp = lane->waypoints.back();
   const double& cx = curve_param[0];
   const double& cy = curve_param[1];
@@ -320,11 +328,16 @@ void WaypointReplanner::createCurveList(const std::vector<double>& curve_radius,
 void WaypointReplanner::setVelocityByRange(unsigned long start_idx, unsigned long end_idx, unsigned int offset,
                                              double vel, autoware_msgs::Lane* lane)
 {
+  if (lane->waypoints.empty())
+  {
+    return;
+  }
   if (offset > 0)
   {
     start_idx = (start_idx > offset) ? (start_idx - offset) : 0;
     end_idx = (end_idx > offset) ? (end_idx - offset) : 0;
   }
+  end_idx = (end_idx >= lane->waypoints.size()) ? lane->waypoints.size() - 1 : end_idx;
   for (unsigned long idx = start_idx; idx <= end_idx; idx++)
   {
     lane->waypoints[idx].twist.twist.linear.x = vel;
@@ -334,11 +347,16 @@ void WaypointReplanner::setVelocityByRange(unsigned long start_idx, unsigned lon
 void WaypointReplanner::raiseVelocityByRange(unsigned long start_idx, unsigned long end_idx, unsigned int offset,
                                            double vmin, autoware_msgs::Lane* lane)
 {
+  if (lane->waypoints.empty())
+  {
+    return;
+  }
   if (offset > 0)
   {
     start_idx = (start_idx > offset) ? (start_idx - offset) : 0;
     end_idx = (end_idx > offset) ? (end_idx - offset) : 0;
   }
+  end_idx = (end_idx >= lane->waypoints.size()) ? lane->waypoints.size() - 1 : end_idx;
   for (unsigned long idx = start_idx; idx <= end_idx; idx++)
   {
     if (lane->waypoints[idx].twist.twist.linear.x >= vmin)
@@ -352,11 +370,16 @@ void WaypointReplanner::raiseVelocityByRange(unsigned long start_idx, unsigned l
 void WaypointReplanner::limitVelocityByRange(unsigned long start_idx, unsigned long end_idx, unsigned int offset,
                                              double vmin, autoware_msgs::Lane* lane)
 {
+  if (lane->waypoints.empty())
+  {
+    return;
+  }
   if (offset > 0)
   {
     start_idx = (start_idx > offset) ? (start_idx - offset) : 0;
     end_idx = (end_idx > offset) ? (end_idx - offset) : 0;
   }
+  end_idx = (end_idx >= lane->waypoints.size()) ? lane->waypoints.size() - 1 : end_idx;
   for (unsigned long idx = start_idx; idx <= end_idx; idx++)
   {
     if (lane->waypoints[idx].twist.twist.linear.x < vmin)
