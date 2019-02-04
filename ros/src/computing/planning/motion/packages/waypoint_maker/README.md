@@ -6,8 +6,10 @@
 
     - waypoint_clicker
     - waypoint_saver
+    - waypoint_extractor
     - waypoint_marker_publisher
     - waypoint_loader
+    - waypoint_replanner
     - waypoint_velocity_visualizer
 
 - 3-formats of waypoints.csv handled by waypoint_maker
@@ -134,7 +136,11 @@
 
 1. Overview
 
+  * waypoint_saver
     - When activated, subscribe `/current_pose`, `/current_velocity`(option) and save waypoint in the file at specified intervals.
+  * waypoint_extractor
+    - When activated, subscribe autoware_msgs/LaneArray and save waypoint in the file. Input topic name is selectable.
+  * common
     - `change_flag` is basically stored as 0 (straight ahead),
       so if you want to change the lane, edit by yourself. (1 turn right, 2 turn left)
     - This node corresponds to preservation of ver3 format.
@@ -142,15 +148,27 @@
 1. How to use
 
     On app:
+  * common
     - Ref on the `Save File` and specify the save file name.
+    - Select the function you want to use from the `Input Type`.
+  * if `Input Type` == VehicleFootprint (`waypoint_saver`)   
     - Check `Save/current_velocity` if you want to save velocity.
       In otherwise, saved as 0 velocity.
     - Using `Interval`, it is set how many meters to store waypoint.
+  * if `Input Type` == LaneArrayTopic (`waypoint_extractor`)
+    - Set lane_array topic name you want to save.
+    - Cache starts at the same time as the node starts up.
+    - The cache is always overwritten while the node is running.
+    - The cache is flushed when the node is closed.
 
 1. Subscribed Topics
 
+  * waypoint_saver
     - /current_pose (geometry_msgs/PoseStamped) : default
     - /current_velocity (geometry_msgs/TwistStamped) : default
+
+  * waypoint_extractor
+    - /lane_waypoints_array (autoware_msgs/LaneArray) : default
 
 1. Published Topics
 
@@ -158,8 +176,13 @@
 
 1. Parameters
 
+  * waypoints_saver
     - ~save_filename
     - ~interval
     - ~velocity_topic
     - ~pose_topic
     - ~save_velocity
+
+  * waypoints_extractor
+    - ~lane_csv
+    - ~lane_topic

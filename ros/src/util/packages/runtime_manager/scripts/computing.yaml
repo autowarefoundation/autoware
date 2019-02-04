@@ -623,10 +623,21 @@ subs :
          cmd  : roslaunch waypoint_maker waypoint_saver.launch
          param: waypoint_saver
          gui  :
+           input_type    :
+             flags       : [ nl ]
            save_filename :
-             prop  : 1
+             prop        : 1
+             flags       : [ nl ]
            save_velocity :
-             flags : [ nl ]
+             depend      : input_type
+             depend_bool : 'lambda v : v == 0'
+           interval      :
+             depend      : input_type
+             depend_bool : 'lambda v : v == 0'
+             flags       : [ nl ]
+           lane_topic    :
+             depend      : input_type
+             depend_bool : 'lambda v : v == 1'
        - name : waypoint_clicker
          desc : waypoint_clicker desc sample
          cmd  : rosrun waypoint_maker waypoint_clicker
@@ -3511,6 +3522,20 @@ params :
         var_name    : save_finename
         dash        : ''
         delim       : ':='
+    - name      : input_type
+      desc      : input type
+      label     : Input Type
+      kind      : radio_box
+      choices   :
+      - VehicleFootprint
+      - LaneArrayTopic
+      descs     :
+      - save vehicle footprint as waypoints.csv
+      - save autoware_msgs/LaneArray topic as waypoints.
+      v         : 0
+      cmd_param :
+        dash     : ''
+        delim    : ':='
     - name  : save_velocity
       descs : When you save the velocity in each waypoints, Please check if /current_velocity is publishing
       label : Save /current_velocity
@@ -3526,6 +3551,15 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name      : lane_topic
+      desc      : subscribed LaneArray topic name
+      label     : lane topic
+      v         : /lane_waypoints_array
+      kind  : topic
+      topic_type : autoware_msgs/LaneArray
+      cmd_param :
+        dash      : ''
+        delim     : ':='
 
   - name  : waypoint_clicker
     vars  :

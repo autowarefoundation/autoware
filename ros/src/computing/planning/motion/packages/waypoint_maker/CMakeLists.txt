@@ -59,6 +59,11 @@ target_link_libraries(waypoint_saver ${catkin_LIBRARIES})
 add_dependencies(waypoint_saver
         ${catkin_EXPORTED_TARGETS})
 
+add_executable(waypoint_extractor nodes/waypoint_extractor/waypoint_extractor.cpp)
+target_link_libraries(waypoint_extractor ${catkin_LIBRARIES})
+add_dependencies(waypoint_extractor
+        ${catkin_EXPORTED_TARGETS})
+
 add_executable(waypoint_clicker nodes/waypoint_clicker/waypoint_clicker.cpp)
 target_link_libraries(waypoint_clicker ${catkin_LIBRARIES})
 
