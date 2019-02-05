@@ -28,7 +28,8 @@ G30esliInterface::G30esliInterface() : nh_(), private_nh_("~")
   private_nh_.param<bool>("engaged", engage_, true);
 
   // subscriber
-  vehicle_cmd_sub_ = nh_.subscribe<autoware_msgs::VehicleCmd>("vehicle_cmd", 1, &G30esliInterface::vehicleCmdCallback, this);
+  vehicle_cmd_sub_ =
+      nh_.subscribe<autoware_msgs::VehicleCmd>("vehicle_cmd", 1, &G30esliInterface::vehicleCmdCallback, this);
 
   if (!use_ds4_)
   {
@@ -180,9 +181,9 @@ void G30esliInterface::run()
   }
 
   // start threads
-  thread_read_status_= new std::thread(&G30esliInterface::readStatus, this);
-  thread_read_keyboard_= new std::thread(&G30esliInterface::readKeyboard, this);
-  thread_publish_status_= new std::thread(&G30esliInterface::publishStatus, this);
+  thread_read_status_ = new std::thread(&G30esliInterface::readStatus, this);
+  thread_read_keyboard_ = new std::thread(&G30esliInterface::readKeyboard, this);
+  thread_publish_status_ = new std::thread(&G30esliInterface::publishStatus, this);
 
   ros::Rate rate(100);
 

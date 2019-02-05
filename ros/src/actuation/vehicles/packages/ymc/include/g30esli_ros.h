@@ -30,7 +30,8 @@
 #include "cansend.h"
 #include "g30esli.h"
 
-enum struct MODE {
+enum struct MODE
+{
   AUTO,
   JOYSTICK,
 };
@@ -58,12 +59,10 @@ private:
   Status status_;
 
   unsigned char alive_;
-  double steering_offset_deg_;
   geometry_msgs::TwistStamped current_twist_;
   autoware_msgs::VehicleStatus vehicle_status_;
 
 public:
-
   G30esliROS();
   ~G30esliROS();
 

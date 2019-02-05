@@ -29,7 +29,8 @@ bool G30esliROS::openDevice(const std::string& device)
   return g30esli_.openDevice(device);
 }
 
-void G30esliROS::updateCommand(const autoware_msgs::VehicleCmd& msg, const bool& engage, const double& steering_offset_deg)
+void G30esliROS::updateCommand(const autoware_msgs::VehicleCmd& msg, const bool& engage,
+                               const double& steering_offset_deg)
 {
   Command& cmd = commands_[(int)MODE::AUTO];
 
@@ -150,9 +151,9 @@ void G30esliROS::receiveStatus(const double& steering_offset_deg)
   ros::Time now = ros::Time::now();
 
   // update twist
-  double lv = status_.status.speed.actual / 3.6;  // [km/h] -> [m/s]
+  double lv = status_.status.speed.actual / 3.6;                                    // [km/h] -> [m/s]
   double th = (-status_.status.steer.actual + steering_offset_deg) * M_PI / 180.0;  // [deg] -> [rad]
-  double az = std::tan(th) * lv / G30ESLI_WHEEL_BASE; // [rad] -> [rad/s]
+  double az = std::tan(th) * lv / G30ESLI_WHEEL_BASE;                               // [rad] -> [rad/s]
   current_twist_.header.frame_id = "base_link";
   current_twist_.header.stamp = now;
   current_twist_.twist.linear.x = lv;
@@ -218,7 +219,7 @@ void G30esliROS::receiveStatus(const double& steering_offset_deg)
   }
 
   // light
-  vehicle_status_.light = 0; // not used
+  vehicle_status_.light = 0;  // not used
 }
 
 bool G30esliROS::checkOverride()
