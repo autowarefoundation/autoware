@@ -70,11 +70,11 @@ install(TARGETS node_status_publisher system_status_subscriber
 )
 
 if (CATKIN_ENABLE_TESTING)
-    find_package(rostest REQUIRED)
-    add_rostest_gtest(test-autoware_helath_checker
-    test/test_autoware_health_checker.test
-    test/src/test_autoware_health_checker.cpp
-    ${NODE_STATUS_PUBLISHER_SRC})
-    target_link_libraries(test-autoware_helath_checker
-    ${catkin_LIBRARIES})
+  find_package(rostest REQUIRED)
+  add_rostest_gtest(test-autoware_health_checker
+  test/test_autoware_health_checker.test
+  test/src/test_autoware_health_checker.cpp
+  ${NODE_STATUS_PUBLISHER_SRC})
+  target_link_libraries(test-autoware_health_checker
+  ${catkin_LIBRARIES})
 endif ()
