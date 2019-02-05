@@ -63,6 +63,10 @@ namespace autoware_health_checker
             std::lock_guard<std::mutex> lock(mtx_);
             node_activated_ = false;
         };
+        bool getNodeStatus()
+        {
+            return node_activated_;
+        };
     private:
         std::vector<std::string> getKeys();
         std::vector<std::string> getRateCheckerKeys();
