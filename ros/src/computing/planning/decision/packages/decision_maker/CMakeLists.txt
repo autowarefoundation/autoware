@@ -82,3 +82,23 @@ install(DIRECTORY launch
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}/launch/
         PATTERN ".svn" EXCLUDE
         )
+
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  add_rostest_gtest(test-decision_maker
+    test/test_decision_maker.test
+    test/src/test_main.cpp
+    test/src/test_node_decision.cpp
+    test/src/test_node_state_drive.cpp
+    nodes/decision_maker/decision_maker_node_core.cpp
+    nodes/decision_maker/decision_maker_node_decision.cpp
+    nodes/decision_maker/decision_maker_node_init.cpp
+    nodes/decision_maker/decision_maker_node_callback.cpp
+    nodes/decision_maker/decision_maker_node_state_vehicle.cpp
+    nodes/decision_maker/decision_maker_node_state_drive.cpp
+    nodes/decision_maker/decision_maker_node_state_mission.cpp
+    nodes/decision_maker/decision_maker_node_publish.cpp
+    nodes/decision_maker/cross_road_area.cpp)
+  add_dependencies(test-decision_maker ${catkin_EXPORTED_TARGETS})
+  target_link_libraries(test-decision_maker ${catkin_LIBRARIES} ${vector_map_LIBRARIES})
+endif()

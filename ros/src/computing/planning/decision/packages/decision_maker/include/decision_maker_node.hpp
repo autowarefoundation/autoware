@@ -112,6 +112,7 @@ struct AutowareStatus
 
 class DecisionMakerNode
 {
+  friend class TestSuite;
 private:
   ros::NodeHandle nh_;
   ros::NodeHandle private_nh_;
