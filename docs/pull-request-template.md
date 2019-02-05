@@ -12,11 +12,15 @@ branch | PR
 other_pr_production | [link]()
 other_pr_master | [link]()
 
-
 ## Todos
-- [ ] Tests
-- [ ] Documentation
+- [ ] List Todos
 
+## Reviewers' CheckList
+- [ ] Unit Tests
+- [ ] Documentation
+- [ ] Copy & Paste Code
+- [ ] Install directives in CMakelists
+- [ ] Apache 2.0 License in package.xml and file headers
 
 ## Steps to Test or Reproduce
 Outline the steps to test or reproduce the PR here.
