@@ -83,6 +83,47 @@ TEST(TestSuite, CHECK_RANGE)
   ASSERT_EQ(ret_ok, autoware_health_checker::LEVEL_OK) << "The value was self-diagnosed as ok";
 }
 
+uint8_t test_function(double value)
+{
+if(value == 0.0)
+{
+    return autoware_health_checker::LEVEL_FATAL;
+}
+if(value == 1.0)
+{
+    return autoware_health_checker::LEVEL_ERROR;
+}
+if(value == 2.0)
+{
+    return autoware_health_checker::LEVEL_WARN;
+}
+return autoware_health_checker::LEVEL_OK;
+};
+
+boost::property_tree::ptree test_value_json_func(double value)
+{
+boost::property_tree::ptree tree;
+tree.put("value", value);
+return tree;
+};
+
+TEST(TestSuite, CHECK_VALUE)
+{
+  AutowareHealthCheckerTestClass test_autoware_health_checker;
+  std::function<uint8_t(double value)> check_func = test_function;
+  std::function<boost::property_tree::ptree(double value)> check_value_json_func = test_value_json_func;
+  uint8_t ret_fatal = test_autoware_health_checker.node_status_publisher_ptr->CHECK_VALUE("test",0.0,check_func,check_value_json_func,"test");
+  ASSERT_EQ(ret_fatal, autoware_health_checker::LEVEL_FATAL) << "The value was self-diagnosed as fatal"; 
+  uint8_t ret_error = test_autoware_health_checker.node_status_publisher_ptr->CHECK_VALUE("test",1.0,check_func,check_value_json_func,"test");
+  ASSERT_EQ(ret_error, autoware_health_checker::LEVEL_ERROR) << "The value was self-diagnosed as fatal"; 
+  uint8_t ret_warn = test_autoware_health_checker.node_status_publisher_ptr->CHECK_VALUE("test",2.0,check_func,check_value_json_func,"test");
+  ASSERT_EQ(ret_warn, autoware_health_checker::LEVEL_WARN) << "The value was self-diagnosed as fatal"; 
+  uint8_t ret_ok = test_autoware_health_checker.node_status_publisher_ptr->CHECK_VALUE("test",-1.0,check_func,check_value_json_func,"test");
+  ASSERT_EQ(ret_ok, autoware_health_checker::LEVEL_OK) << "The value was self-diagnosed as fatal";
+  boost::optional<double> value = check_value_json_func(0.0).get_optional<double>("value");
+  ASSERT_EQ(value.get(),0.0) << "The value must be true, failed to get json value";
+}
+
 TEST(TestSuite, NODE_STATUS)
 {
   AutowareHealthCheckerTestClass test_autoware_health_checker;

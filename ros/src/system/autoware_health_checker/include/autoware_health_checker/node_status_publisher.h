@@ -37,7 +37,7 @@ namespace autoware_health_checker
         // std::pair<double,double> first value is min value and second value is max value
         uint8_t CHECK_RANGE(std::string key,double value,std::pair<double,double> warn_value,std::pair<double,double> error_value,std::pair<double,double> fatal_value,std::string description);
         template<class T>
-        void CHECK_VALUE(std::string key,T value,std::function<uint8_t(T value)> check_func,std::function<boost::property_tree::ptree(T value)> value_json_func,std::string description)
+        uint8_t CHECK_VALUE(std::string key,T value,std::function<uint8_t(T value)> check_func,std::function<boost::property_tree::ptree(T value)> value_json_func,std::string description)
         {
             addNewBuffer(key,autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE,description);
             uint8_t check_result = check_func(value);
@@ -51,6 +51,7 @@ namespace autoware_health_checker
             new_status.description = ss.str();
             new_status.header.stamp = ros::Time::now();
             diag_buffers_[key]->addDiag(new_status);
+            return new_status.level;
         }
         void CHECK_RATE(std::string key,double warn_rate,double error_rate,double fatal_rate,std::string description);
         void NODE_ACTIVATE()
