@@ -142,7 +142,7 @@ namespace autoware_health_checker
         return new_status.level;
     }
 
-    void NodeStatusPublisher::CHECK_MAX_VALUE(std::string key,double value,double warn_value,double error_value,double fatal_value,std::string description)
+    uint8_t NodeStatusPublisher::CHECK_MAX_VALUE(std::string key,double value,double warn_value,double error_value,double fatal_value,std::string description)
     {
         addNewBuffer(key,autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE,description);
         autoware_system_msgs::DiagnosticStatus new_status;
@@ -167,23 +167,23 @@ namespace autoware_health_checker
         new_status.value = doubeToJson(value);
         new_status.header.stamp = ros::Time::now();
         diag_buffers_[key]->addDiag(new_status);
-        return;
+        return new_status.level;
     }
 
-    void NodeStatusPublisher::CHECK_RANGE(std::string key,double value,std::pair<double,double> warn_value,std::pair<double,double> error_value,std::pair<double,double> fatal_value,std::string description)
+    uint8_t NodeStatusPublisher::CHECK_RANGE(std::string key,double value,std::pair<double,double> warn_value,std::pair<double,double> error_value,std::pair<double,double> fatal_value,std::string description)
     {
         addNewBuffer(key,autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE,description);
         autoware_system_msgs::DiagnosticStatus new_status;
         new_status.type = autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE;
-        if(value < fatal_value.first && value > fatal_value.second)
+        if(value < fatal_value.first || value > fatal_value.second)
         {
             new_status.level = autoware_system_msgs::DiagnosticStatus::FATAL;
         }
-        else if(value < error_value.first && value > error_value.second)
+        else if(value < error_value.first || value > error_value.second)
         {
             new_status.level = autoware_system_msgs::DiagnosticStatus::ERROR;
         }
-        else if(value < warn_value.first && value > warn_value.second)
+        else if(value < warn_value.first || value > warn_value.second)
         {
             new_status.level = autoware_system_msgs::DiagnosticStatus::WARN;
         }
@@ -195,7 +195,7 @@ namespace autoware_health_checker
         new_status.description = description;
         new_status.header.stamp = ros::Time::now();
         diag_buffers_[key]->addDiag(new_status);
-        return;
+        return new_status.level;
     }
 
     void NodeStatusPublisher::CHECK_RATE(std::string key,double warn_rate,double error_rate,double fatal_rate,std::string description)

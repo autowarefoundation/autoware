@@ -33,9 +33,9 @@ namespace autoware_health_checker
         ~NodeStatusPublisher();
         void ENABLE();
         uint8_t CHECK_MIN_VALUE(std::string key,double value,double warn_value,double error_value,double fatal_value, std::string description);
-        void CHECK_MAX_VALUE(std::string key,double value,double warn_value,double error_value,double fatal_value, std::string description);
+        uint8_t CHECK_MAX_VALUE(std::string key,double value,double warn_value,double error_value,double fatal_value, std::string description);
         // std::pair<double,double> first value is min value and second value is max value
-        void CHECK_RANGE(std::string key,double value,std::pair<double,double> warn_value,std::pair<double,double> error_value,std::pair<double,double> fatal_value,std::string description);
+        uint8_t CHECK_RANGE(std::string key,double value,std::pair<double,double> warn_value,std::pair<double,double> error_value,std::pair<double,double> fatal_value,std::string description);
         template<class T>
         void CHECK_VALUE(std::string key,T value,std::function<uint8_t(T value)> check_func,std::function<boost::property_tree::ptree(T value)> value_json_func,std::string description)
         {
