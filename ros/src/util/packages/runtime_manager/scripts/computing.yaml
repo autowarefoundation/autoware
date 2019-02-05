@@ -669,18 +669,16 @@ subs :
       gui  :
           dialog_width  : 400
           dialog_height : 600
-          enable_display_marker:
-            flags : [ nl ]
-          use_management_system:
+          use_fms:
             flags : [ nl ]
           auto_mission_reload:
-            depend : use_management_system
+            depend : use_fms
             depend_bool : 'lambda v : v == 0'
           auto_engage:
-            depend : use_management_system
+            depend : use_fms
             depend_bool : 'lambda v : v == 0'
           auto_mission_change:
-            depend : use_management_system
+            depend : use_fms
             depend_bool : 'lambda v : v == 0'
 
 
@@ -1896,14 +1894,6 @@ params :
     topic : /config/decision_maker
     msg   : ConfigDecisionMaker
     vars  :
-    - name  : enable_display_marker
-      desc  : enable display marker flag
-      label : enable_display_marker
-      kind  : checkbox
-      v     : False
-      cmd_param :
-        dash      : ''
-        delim     : ':='
     - name  : disuse_vector_map
       desc  : If this is enabled, the state passes through the MapInit state without vectormap.
       label : disuse_vector_map
@@ -1956,9 +1946,9 @@ params :
       cmd_param :
               dash : ''
               delim: ':='
-    - name  : use_management_system
+    - name  : use_fms
       desc  : If this is disbled, part of state transitions are automatically executed.
-      label : use_management_system
+      label : use_fms
       kind  : checkbox
       v     : False
       cmd_param :

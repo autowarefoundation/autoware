@@ -104,7 +104,7 @@ struct AutowareStatus
   int prev_stopped_wpidx;
   int ordered_stop_idx;
 
-  AutowareStatus(void) : closest_waypoint(-1), velocity(0), found_stopsign_idx(-1), obstacle_waypoint(-1), ordered_stop_idx(-1)
+  AutowareStatus(void) : closest_waypoint(-1), obstacle_waypoint(-1), velocity(0), found_stopsign_idx(-1), prev_stopped_wpidx(-1), ordered_stop_idx(-1)
   {
   }
 
@@ -126,37 +126,8 @@ private:
 
   AutowareStatus current_status_;
 
-  // ROS Messages
-  std_msgs::String state_string_msg;
-  geometry_msgs::PoseStamped current_pose_;
-
-  jsk_rviz_plugins::OverlayText state_text_msg;
-
-  // ROS Messages(Autoware)
-  autoware_msgs::Lane current_finalwaypoints_;
-  vector_map_msgs::AreaArray vMap_Areas;
-  vector_map_msgs::PointArray vMap_Points;
-  vector_map_msgs::LineArray vMap_Lines;
-  vector_map_msgs::CrossRoadArray vMap_CrossRoads;
-
-  std::vector<geometry_msgs::Point> inside_points_;
-
-  tf::TransformListener tflistener_baselink;
-
-  int closest_stop_waypoint_;
-  int closest_stopline_waypoint_;
-  int goal_waypoint_;
-  autoware_msgs::Waypoint CurrentStoplineTarget_;
-
-  double average_velocity_;
-  int closest_waypoint_;
-  CrossRoadArea* ClosestArea_;
-  std::string CurrentStateName;
-  std::string TextOffset;
   std::vector<CrossRoadArea> intersects;
-  double displacement_from_path_;
 
-  bool foundOtherVehicleForIntersectionStop_;  // In fact this should be defined as state.
   class DetectionArea
   {
   public:
@@ -172,32 +143,21 @@ private:
   bool isManualLight;
 
   // Param
-  bool enableDisplayMarker;
   bool auto_mission_reload_;
   bool auto_engage_;
   bool auto_mission_change_;
-  bool use_management_system_;
+  bool use_fms_;
   bool disuse_vector_map_;
-  uint32_t param_num_of_steer_behind_;
+  int param_num_of_steer_behind_;
   double change_threshold_dist_;
   double change_threshold_angle_;
   double goal_threshold_dist_;
   double goal_threshold_vel_;
   int stopline_reset_count_;
 
-  // for vectormap server
-  // ros::ServiceClient cross_road_cli;
-  // vector_map_server::GetCrossRoad cross_road_srv;
-
-  // initialization flags for initialized by callback
-  std::mutex vMap_mutex;
-  bool created_shift_lane_flag_;
-
   // initialization method
   void initROS();
   void initVectorMap(void);
-  void initStateMsgs(void);
-  bool initVectorMapClient(void);
 
   void createSubscriber(void);
   void createPublisher(void);
@@ -205,21 +165,8 @@ private:
   // looping method
   void update(void);
   void update_msgs(void);
-  void update_pubsub(void);
 
   void publishToVelocityArray();
-  int createCrossRoadAreaMarker(visualization_msgs::Marker& crossroad_marker, double scale);
-
-  /* for planning according to state*/
-  void publishStoppedLaneArray(void);
-  void publishControlledLaneArray(void);
-  void updateLaneWaypointsArray(void);
-  void changeVelocityBasedLane(void);
-  void changeVelocityLane(int dir);
-  void createShiftLane(void);
-  void changeShiftLane(void);
-  void removeShiftLane(void);
-  void setAllStoplineStop(void);
 
   void publishOperatorHelpMessage(cstring_t& message);
   void publishLampCmd(const E_Lamp& status);
@@ -229,7 +176,6 @@ private:
   /* decision */
   void tryNextState(cstring_t& key);
   bool isArrivedGoal(void);
-  bool isCrossRoadByVectorMapServer(const autoware_msgs::Lane& lane_msg, const geometry_msgs::PoseStamped& pose_msg);
   bool isLocalizationConvergence(const geometry_msgs::Point& _current_point);
   void insertPointWithinCrossRoad(const std::vector<CrossRoadArea>& _intersects, autoware_msgs::LaneArray& lane_array);
   void setWaypointState(autoware_msgs::LaneArray& lane_array);
@@ -238,9 +184,6 @@ private:
   bool drivingMissionCheck(void);
 
   double calcIntersectWayAngle(const autoware_msgs::Lane& laneinArea);
-  double calcPosesAngleDiff(const geometry_msgs::Pose& p_from, const geometry_msgs::Pose& p_to);
-  double calcPosesAngleDiffN(const geometry_msgs::Pose& p_from, const geometry_msgs::Pose& p_to);
-  double getPoseAngle(const geometry_msgs::Pose& p);
 
   uint8_t getSteeringStateFromWaypoint(void);
   uint8_t getEventStateFromWaypoint(void);
@@ -328,7 +271,7 @@ private:
   void updateBackState(cstring_t& state_name, int status);
   void updateLeftLaneChangeState(cstring_t& state_name, int status);
   void updateRightLaneChangeState(cstring_t& state_name, int status);
-  void updatePullOverState(cstring_t& state_name, int status);
+  void updatePullInState(cstring_t& state_name, int status);
   void updatePullOutState(cstring_t& state_name, int status);
   void updateCheckLeftLaneState(cstring_t& state_name, int status);
   void updateCheckRightLaneState(cstring_t& state_name, int status);
@@ -365,7 +308,6 @@ private:
   void callbackFromLaneChangeFlag(const std_msgs::Int32& msg);
   void callbackFromFinalWaypoint(const autoware_msgs::Lane& msg);
   void callbackFromLaneWaypoint(const autoware_msgs::LaneArray& msg);
-  void callbackFromTwistCmd(const geometry_msgs::TwistStamped& msg);
   void callbackFromSimPose(const geometry_msgs::PoseStamped& msg);
   void callbackFromConfig(const autoware_config_msgs::ConfigDecisionMaker& msg);
   void callbackFromStateCmd(const std_msgs::String& msg);
@@ -396,12 +338,17 @@ public:
 
   DecisionMakerNode(int argc, char** argv)
     : private_nh_("~")
-    , enableDisplayMarker(false)
     , auto_mission_reload_(false)
     , auto_engage_(false)
     , auto_mission_change_(false)
-    , use_management_system_(false)
+    , use_fms_(false)
+    , disuse_vector_map_(false)
     , param_num_of_steer_behind_(30)
+    , change_threshold_dist_(1.0)
+    , change_threshold_angle_(15)
+    , goal_threshold_dist_(3.0)
+    , goal_threshold_vel_(0.1)
+    , stopline_reset_count_(20)
   {
     std::string file_name_mission;
     std::string file_name_vehicle;
@@ -419,7 +366,16 @@ public:
     init();
     setupStateCallback();
 
-    stopline_reset_count_ = 20;
+    private_nh_.getParam("auto_mission_reload", auto_mission_reload_);
+    private_nh_.getParam("auto_engage", auto_engage_);
+    private_nh_.getParam("auto_mission_change", auto_mission_change_);
+    private_nh_.getParam("use_fms", use_fms_);
+    private_nh_.getParam("disuse_vector_map", disuse_vector_map_);
+    private_nh_.getParam("param_num_of_steer_behind", param_num_of_steer_behind_);
+    private_nh_.getParam("change_threshold_dist", change_threshold_dist_);
+    private_nh_.getParam("change_threshold_angle", change_threshold_angle_);
+    private_nh_.getParam("goal_threshold_dist", goal_threshold_dist_);
+    private_nh_.getParam("goal_threshold_vel", goal_threshold_vel_);
     private_nh_.getParam("stopline_reset_count", stopline_reset_count_);
     current_status_.prev_stopped_wpidx = -1;
   }

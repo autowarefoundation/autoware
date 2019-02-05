@@ -44,11 +44,10 @@ void DecisionMakerNode::callbackFromLaneChangeFlag(const std_msgs::Int32& msg)
 void DecisionMakerNode::callbackFromConfig(const autoware_config_msgs::ConfigDecisionMaker& msg)
 {
   ROS_INFO("Param setted by Runtime Manager");
-  enableDisplayMarker = msg.enable_display_marker;
   auto_mission_reload_ = msg.auto_mission_reload;
   auto_engage_ = msg.auto_engage;
   auto_mission_change_ = msg.auto_mission_change;
-  use_management_system_ = msg.use_management_system;
+  use_fms_ = msg.use_fms;
   param_num_of_steer_behind_ = msg.num_of_steer_behind;
   change_threshold_dist_ = msg.change_threshold_dist;
   change_threshold_angle_ = msg.change_threshold_angle;
@@ -94,11 +93,6 @@ void DecisionMakerNode::insertPointWithinCrossRoad(const std::vector<CrossRoadAr
       }
     }
   }
-}
-
-inline double getDistance(double ax, double ay, double bx, double by)
-{
-  return std::hypot(ax - bx, ay - by);
 }
 
 void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
@@ -299,9 +293,6 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::Lane& msg
 {
   current_status_.finalwaypoints = msg;
   setEventFlag("received_finalwaypoints", true);
-}
-void DecisionMakerNode::callbackFromTwistCmd(const geometry_msgs::TwistStamped& msg)
-{
 }
 
 void DecisionMakerNode::callbackFromClosestWaypoint(const std_msgs::Int32& msg)

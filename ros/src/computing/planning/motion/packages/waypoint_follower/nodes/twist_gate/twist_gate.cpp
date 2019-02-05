@@ -115,7 +115,7 @@ TwistGate::TwistGate(const ros::NodeHandle& nh, const ros::NodeHandle& private_n
   emergency_stop_pub_ = nh_.advertise<std_msgs::Bool>("/emergency_stop", 1, true);
   control_command_pub_ = nh_.advertise<std_msgs::String>("/ctrl_mode", 1);
   vehicle_cmd_pub_ = nh_.advertise<vehicle_cmd_msg_t>("/vehicle_cmd", 1, true);
-  state_cmd_pub_ = nh_.advertise<std_msgs::String>("/state_cmd", 1, true);
+  state_cmd_pub_ = nh_.advertise<std_msgs::String>("/state_cmd", 1, false);
 
   remote_cmd_sub_ = nh_.subscribe("/remote_cmd", 1, &TwistGate::remote_cmd_callback, this);
 
@@ -386,8 +386,6 @@ void TwistGate::state_callback(const std_msgs::StringConstPtr& input_msg)
     if (input_msg->data.find("WaitOrder") != std::string::npos)
     {
       twist_gate_msg_.gear = CMD_GEAR_P;
-      emergency_stop_msg_.data = false;
-      send_emergency_cmd = false;
     }
     // Set Drive Gear
     else
@@ -405,6 +403,13 @@ void TwistGate::state_callback(const std_msgs::StringConstPtr& input_msg)
       is_state_drive_ = false;
     }
     vehicle_cmd_pub_.publish(twist_gate_msg_);
+
+    // reset emergency flags
+    if (input_msg->data.find("VehicleReady") != std::string::npos)
+    {
+      emergency_stop_msg_.data = false;
+      send_emergency_cmd = false;
+    }
   }
 }
 

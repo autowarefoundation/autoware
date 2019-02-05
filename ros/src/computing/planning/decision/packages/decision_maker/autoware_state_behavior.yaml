@@ -23,6 +23,9 @@ autoware_states_behavior:
       -
         Key: return_from_emergency
         Target: Stopping
+      -
+        Key: return_to_ready
+        Target: Stopping
     Parent: ~
   -
     StateName: Moving
@@ -54,14 +57,14 @@ autoware_states_behavior:
     StateName: BusStop
     Transition:
       -
-        Key: on_pull_over
-        Target: PullOver
+        Key: on_pull_in
+        Target: PullIn
       -
         Key: on_pull_out
         Target: PullOut
     Parent: LaneArea
   -
-    StateName: PullOver
+    StateName: PullIn
     Transition: []
     Parent: BusStop
   -
