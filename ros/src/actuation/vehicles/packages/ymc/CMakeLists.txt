@@ -25,12 +25,6 @@ catkin_package(
   ds4_msgs
 )
 
-IF ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64")
-  set(LIB_ARCH _aarch64)
-ELSE ()
-  unset(LIB_ARCH)
-ENDIF ()
-
 include_directories(
   ${autoware_msgs_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
@@ -47,5 +41,5 @@ add_dependencies(g30esli_interface
 
 target_link_libraries(g30esli_interface
   ${catkin_LIBRARIES}
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/libg30esli${LIB_ARCH}.a
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/libg30esli.a
 )

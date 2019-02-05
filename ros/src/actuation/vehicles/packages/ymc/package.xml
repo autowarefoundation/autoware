@@ -21,6 +21,7 @@
   <run_depend>geometry_msgs</run_depend>
   <run_depend>autoware_msgs</run_depend>
   <run_depend>ds4_msgs</run_depend>
+  <run_depend>can-utils</run_depend>
 
   <export>
   </export>
