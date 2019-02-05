@@ -27,6 +27,7 @@
     <build_depend>rostest</build_depend>
     <build_depend>gtest</build_depend>
     <build_depend>yaml-cpp</build_depend>
+    <build_depend>autoware_health_checker</build_depend>
 
     <run_depend>autoware_config_msgs</run_depend>
     <run_depend>cv_bridge</run_depend>
@@ -40,6 +41,7 @@
     <run_depend>velodyne_pointcloud</run_depend>
     <run_depend>libqt5-core</run_depend>
     <run_depend>yaml-cpp</run_depend>
+    <run_depend>autoware_health_checker</run_depend>
 
     <test_depend>roslaunch</test_depend>
     <test_depend>rosunit</test_depend>

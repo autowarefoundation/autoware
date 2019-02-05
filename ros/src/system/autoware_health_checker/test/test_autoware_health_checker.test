@@ -1,0 +1,3 @@
+<launch>
+  <test test-name="test-autoware_health_checker" pkg="autoware_health_checker" type="test-autoware_health_checker" name="test"/>
+</launch>
