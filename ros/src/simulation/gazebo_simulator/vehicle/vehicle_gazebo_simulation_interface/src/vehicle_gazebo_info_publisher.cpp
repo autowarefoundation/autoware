@@ -54,8 +54,8 @@ VehicleGazeboInfoPublisher::VehicleGazeboInfoPublisher() : nh_(""), pnh_("~"), t
     vehicle_status_pub_ = nh_.advertise<autoware_msgs::VehicleStatus>("/vehicle_status", 1);
     double publish_pose_rate;
     pnh_.param<double>("publish_pose_rate", publish_pose_rate, double(10.0));
-    pnh_.param<double>("wheel_radius", wheel_radius_, 0.341);
-    pnh_.param("wheel_base", wheel_base_, 2.95);
+    pnh_.param<double>("/vehicle_info/wheel_radius", wheel_radius_, 0.341);
+    pnh_.param("/vehicle_info/wheel_base", wheel_base_, 2.95);
     pnh_.param("ns", ns_, std::string("autoware_gazebo"));
     pnh_.param("enable_base_link_tf", enable_base_link_tf_, false);
 
@@ -72,7 +72,7 @@ void VehicleGazeboInfoPublisher::publishTimerCallback(const ros::TimerEvent &e)
     client_.call(base_link_srv);
 
     geometry_msgs::PoseStamped output_pose;
-    output_pose.header.frame_id = "base_link";
+    output_pose.header.frame_id = "world";
     output_pose.header.stamp = current_time;
     output_pose.pose = base_link_srv.response.link_state.pose;
 
@@ -142,7 +142,7 @@ void VehicleGazeboInfoPublisher::jointStateCallback(const sensor_msgs::JointStat
     output_steering_angle.data = (steering_right_front_angle + steering_left_front_angle) / 2.0;
     output_vehicle_status.header.stamp = current_time;
     output_vehicle_status.header.frame_id = "base_link";
-    output_vehicle_status.speed = output_vel.data;
+    output_vehicle_status.speed = output_vel.data * 3.6; //km/h
     output_vehicle_status.angle = output_steering_angle.data;
 
     output_twiststamped.header.stamp = current_time;

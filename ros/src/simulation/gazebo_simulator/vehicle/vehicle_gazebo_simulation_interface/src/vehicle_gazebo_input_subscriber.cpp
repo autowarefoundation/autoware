@@ -40,10 +40,10 @@ class VehicleGazeboInputSubscriber
 VehicleGazeboInputSubscriber::VehicleGazeboInputSubscriber() : nh_(""), pnh_("~")
 {
 
-    pnh_.param("wheel_base", wheel_base_, 2.95);
-    pnh_.param("wheel_radius", wheel_radius_, 0.341);
-    pnh_.param("wheel_tread", wheel_tread_, 1.55);
-    pnh_.param("twiststamped_", twiststamped_, true);
+    pnh_.param("/vehicle_info/wheel_base", wheel_base_, 2.95);
+    pnh_.param("/vehicle_info/wheel_radius", wheel_radius_, 0.341);
+    pnh_.param("/vehicle_info/wheel_tread", wheel_tread_, 1.55);
+    pnh_.param("twiststamped", twiststamped_, true);
     pnh_.param("ctrl_cmd", ctrl_cmd_, false);
     wheel_right_rear_pub_ = nh_.advertise<std_msgs::Float64>("wheel_right_rear_velocity_controller/command", 1, true);
     wheel_left_rear_pub_ = nh_.advertise<std_msgs::Float64>("wheel_left_rear_velocity_controller/command", 1, true);
