@@ -20,6 +20,7 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${autoware_system_msgs_INCLUDE_DIRS}
 )
 
 add_library(node_status_publisher
