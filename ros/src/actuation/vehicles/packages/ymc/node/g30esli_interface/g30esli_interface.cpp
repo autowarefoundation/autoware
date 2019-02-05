@@ -41,8 +41,9 @@ G30esliInterface::G30esliInterface() : nh_(), private_nh_("~")
   }
 
   // publisher
-  current_twist_pub_ = nh_.advertise<geometry_msgs::TwistStamped>("vehicle/twist", 10);
   vehicle_status_pub_ = nh_.advertise<autoware_msgs::VehicleStatus>("vehicle_status", 10);
+  current_twist_pub_ = nh_.advertise<geometry_msgs::TwistStamped>("vehicle/twist", 10);
+  battery_pub_ = nh_.advertise<std_msgs::Float32>("vehicle/battery", 10);
 
   terminate_thread_ = false;
 }
@@ -157,10 +158,13 @@ void G30esliInterface::readKeyboard()
 // publish vehicle status
 void G30esliInterface::publishStatus()
 {
+  std_msgs::Float32 battery;
   while (!terminate_thread_)
   {
-    current_twist_pub_.publish(g30esli_ros_.getCurrentTwist());
+    battery.data = g30esli_ros_.getBatteryCharge();
     vehicle_status_pub_.publish(g30esli_ros_.getVehicleStatus());
+    current_twist_pub_.publish(g30esli_ros_.getCurrentTwist());
+    battery_pub_.publish(battery);
     usleep(10000);
   }
 }
