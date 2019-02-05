@@ -15,7 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES node_status_publisher
-#  CATKIN_DEPENDS autoware_system_msgs roscpp
+  CATKIN_DEPENDS autoware_system_msgs roscpp
 #  DEPENDS system_lib
 )
 
@@ -34,20 +34,20 @@ add_library(node_status_publisher
   ${NODE_STATUS_PUBLISHER_SRC}
 )
 target_link_libraries(node_status_publisher ${catkin_LIBRARIES})
-add_dependencies(node_status_publisher ${catkin_EXPORTED_TARGETS})
+add_dependencies(node_status_publisher ${catkin_EXPORTED_TARGETS} autoware_system_msgs_generate_messages_cpp)
 
 add_library(system_status_subscriber
   src/system_status_subscriber.cpp
 )
 target_link_libraries(system_status_subscriber ${catkin_LIBRARIES})
-add_dependencies(system_status_subscriber ${catkin_EXPORTED_TARGETS})
+add_dependencies(system_status_subscriber ${catkin_EXPORTED_TARGETS} autoware_system_msgs_generate_messages_cpp)
 
 add_executable(health_aggregator
   src/health_aggregator_node.cpp
   src/health_aggregator.cpp
 )
 target_link_libraries(health_aggregator ${catkin_LIBRARIES})
-add_dependencies(health_aggregator ${catkin_EXPORTED_TARGETS})
+add_dependencies(health_aggregator ${catkin_EXPORTED_TARGETS} autoware_system_msgs_generate_messages_cpp)
 
 # CPP Execution programs
 set(CPP_EXEC_NAMES health_aggregator)
