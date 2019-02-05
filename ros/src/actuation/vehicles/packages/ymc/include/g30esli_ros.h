@@ -21,6 +21,7 @@
 #include <sstream>
 
 #include <ros/ros.h>
+#include <std_msgs/Float32.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <autoware_msgs/VehicleCmd.h>
 #include <autoware_msgs/VehicleStatus.h>
@@ -88,6 +89,11 @@ public:
   geometry_msgs::TwistStamped& getCurrentTwist()
   {
     return current_twist_;
+  }
+
+  double getBatteryCharge()
+  {
+    return status_.status.battery.charge;
   }
 };
 

@@ -23,11 +23,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include <ros/ros.h>
-#include <autoware_msgs/VehicleCmd.h>
-#include <autoware_msgs/VehicleStatus.h>
-#include <ds4_msgs/DS4.h>
-
 #include "g30esli_ros.h"
 
 class G30esliInterface
@@ -41,8 +36,9 @@ private:
   ros::Subscriber ds4_sub_;
 
   // ros publisher
-  ros::Publisher current_twist_pub_;
   ros::Publisher vehicle_status_pub_;
+  ros::Publisher current_twist_pub_;
+  ros::Publisher battery_pub_;
 
   // ros param
   std::string device_;
