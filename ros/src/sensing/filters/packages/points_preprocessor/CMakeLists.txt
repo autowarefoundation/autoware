@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
         cv_bridge
         velodyne_pointcloud
         tf
+        autoware_health_checker
         )
 
 catkin_package(CATKIN_DEPENDS
@@ -26,6 +27,7 @@ catkin_package(CATKIN_DEPENDS
         velodyne_pointcloud
         autoware_config_msgs
         tf
+        autoware_health_checker
         )
 
 find_package(Qt5Core REQUIRED)
