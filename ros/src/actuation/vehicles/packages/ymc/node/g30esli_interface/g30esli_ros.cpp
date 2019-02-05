@@ -143,7 +143,7 @@ void G30esliROS::updateCommand(const ds4_msgs::DS4& msg, const bool& engage, con
   }
 }
 
-void G30esliROS::recvStatus(const double& steering_offset_deg)
+void G30esliROS::receiveStatus(const double& steering_offset_deg)
 {
   g30esli_.readStatus(status_.status);
 
@@ -234,7 +234,7 @@ bool G30esliROS::checkTimeout(const MODE& mode, const double& timeout)
   return (cmd.received && timeouted);
 }
 
-bool G30esliROS::setEmergencyStop(const MODE& mode)
+bool G30esliROS::emergencyStop(const MODE& mode)
 {
   Command& cmd = commands_[(int)mode];
   cmd.command.speed = 0.0;
