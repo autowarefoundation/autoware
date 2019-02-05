@@ -8,6 +8,8 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   diagnostic_msgs
   topic_tools
+  rostest
+  rosunit
 )
 
 catkin_package(
@@ -23,10 +25,13 @@ include_directories(
   ${autoware_system_msgs_INCLUDE_DIRS}
 )
 
-add_library(node_status_publisher
+set(NODE_STATUS_PUBLISHER_SRC
   src/node_status_publisher.cpp
   src/diag_buffer.cpp
   src/rate_checker.cpp
+)
+add_library(node_status_publisher
+  ${NODE_STATUS_PUBLISHER_SRC}
 )
 target_link_libraries(node_status_publisher ${catkin_LIBRARIES})
 add_dependencies(node_status_publisher ${catkin_EXPORTED_TARGETS})
@@ -63,3 +68,13 @@ install(TARGETS node_status_publisher system_status_subscriber
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
 )
+
+if (CATKIN_ENABLE_TESTING)
+    find_package(rostest REQUIRED)
+    add_rostest_gtest(test-autoware_helath_checker
+    test/test_autoware_health_checker.test
+    test/src/test_autoware_health_checker.cpp
+    ${NODE_STATUS_PUBLISHER_SRC})
+    target_link_libraries(test-autoware_helath_checker
+    ${catkin_LIBRARIES})
+endif ()

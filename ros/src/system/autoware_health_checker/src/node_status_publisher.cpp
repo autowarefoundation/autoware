@@ -115,7 +115,7 @@ namespace autoware_health_checker
         return;
     }
 
-    void NodeStatusPublisher::CHECK_MIN_VALUE(std::string key,double value,double warn_value,double error_value,double fatal_value,std::string description)
+    uint8_t NodeStatusPublisher::CHECK_MIN_VALUE(std::string key,double value,double warn_value,double error_value,double fatal_value,std::string description)
     {
         addNewBuffer(key,autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE,description);
         autoware_system_msgs::DiagnosticStatus new_status;
@@ -139,7 +139,7 @@ namespace autoware_health_checker
         new_status.description = description;
         new_status.value = doubeToJson(value);
         diag_buffers_[key]->addDiag(new_status);
-        return;
+        return new_status.level;
     }
 
     void NodeStatusPublisher::CHECK_MAX_VALUE(std::string key,double value,double warn_value,double error_value,double fatal_value,std::string description)

@@ -32,7 +32,7 @@ namespace autoware_health_checker
         NodeStatusPublisher(ros::NodeHandle nh,ros::NodeHandle pnh);
         ~NodeStatusPublisher();
         void ENABLE();
-        void CHECK_MIN_VALUE(std::string key,double value,double warn_value,double error_value,double fatal_value, std::string description);
+        uint8_t CHECK_MIN_VALUE(std::string key,double value,double warn_value,double error_value,double fatal_value, std::string description);
         void CHECK_MAX_VALUE(std::string key,double value,double warn_value,double error_value,double fatal_value, std::string description);
         // std::pair<double,double> first value is min value and second value is max value
         void CHECK_RANGE(std::string key,double value,std::pair<double,double> warn_value,std::pair<double,double> error_value,std::pair<double,double> fatal_value,std::string description);
