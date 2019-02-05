@@ -104,7 +104,7 @@ void G30esliInterface::readStatus()
 {
   while (!terminate_thread_)
   {
-    g30esli_ros_.recvStatus(steering_offset_deg_);
+    g30esli_ros_.receiveStatus(steering_offset_deg_);
 
     // accel/brake override, switch to manual mode
     if (g30esli_ros_.checkOverride() && engage_)
@@ -198,7 +198,7 @@ void G30esliInterface::run()
     {
       // semi-emergency stop if timeout occured
       ROS_ERROR("Emergency stop by timeout...");
-      g30esli_ros_.setEmergencyStop(mode);
+      g30esli_ros_.emergencyStop(mode);
     }
 
     // send command

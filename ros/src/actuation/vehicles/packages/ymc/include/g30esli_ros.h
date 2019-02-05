@@ -68,7 +68,7 @@ public:
   ~G30esliROS();
 
   bool openDevice(const std::string& device);
-  void recvStatus(const double& steering_offset_deg);
+  void receiveStatus(const double& steering_offset_deg);
   void sendCommand(const MODE& mode);
 
   void updateCommand(const autoware_msgs::VehicleCmd& msg, const bool& engage, const double& steering_offset_deg);
@@ -77,7 +77,7 @@ public:
 
   bool checkOverride();
   bool checkTimeout(const MODE& mode, const double& timeout);
-  bool setEmergencyStop(const MODE& mode);
+  bool emergencyStop(const MODE& mode);
 
   std::string dumpDebug(const MODE& mode);
 
