@@ -1,36 +1,29 @@
-#include <ros/ros.h>
 #include <gtest/gtest.h>
+#include <ros/ros.h>
 
-#include "decision_maker_node.hpp"
 #include "amathutils_lib/amathutils.hpp"
+#include "decision_maker_node.hpp"
 
-namespace decision_maker
-{
+namespace decision_maker {
 
 class TestSuite : public ::testing::Test {
 public:
-  TestSuite(){}
-  ~TestSuite(){}
+  TestSuite() {}
+  ~TestSuite() {}
 
 protected:
-  virtual void SetUp()
-  {
+  virtual void SetUp() {
     int argc;
-    char** argv;
+    char **argv;
     dmn = new DecisionMakerNode(argc, argv);
   };
-  virtual void TearDown()
-  {
-    delete dmn;
-  };
+  virtual void TearDown() { delete dmn; };
 
-  DecisionMakerNode* dmn;
+  DecisionMakerNode *dmn;
 
-  void createFinalWaypoints()
-  {
+  void createFinalWaypoints() {
     autoware_msgs::Lane final_lane;
-    for (int idx = 0; idx < 100; idx++)
-    {
+    for (int idx = 0; idx < 100; idx++) {
       static autoware_msgs::Waypoint wp;
       wp.gid = idx;
       wp.lid = idx;
@@ -46,8 +39,7 @@ protected:
     dmn->current_status_.finalwaypoints = final_lane;
   }
 
-  void setCurrentPose(double x, double y, double yaw)
-  {
+  void setCurrentPose(double x, double y, double yaw) {
     geometry_msgs::Pose current_pose;
     current_pose.position.x = x;
     current_pose.position.y = y;
@@ -57,16 +49,12 @@ protected:
     dmn->current_status_.pose = current_pose;
   }
 
-  void setCurrentVelocity(double vel)
-  {
-    dmn->current_status_.velocity = vel;
-  }
+  void setCurrentVelocity(double vel) { dmn->current_status_.velocity = vel; }
 
   bool isArrivedGoal() { return dmn->isArrivedGoal(); }
 };
 
-TEST_F(TestSuite, isArrivedGoal)
-{
+TEST_F(TestSuite, isArrivedGoal) {
   createFinalWaypoints();
 
   setCurrentPose(100, 0, 0);
@@ -88,7 +76,6 @@ TEST_F(TestSuite, isArrivedGoal)
   setCurrentVelocity(3.0);
   ASSERT_FALSE(isArrivedGoal()) << "Current pose is inside the target range."
                                 << "It should be false";
-
 }
 
 } // namespace decision_maker
