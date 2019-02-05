@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="map_file" type="points_map_filter" name="points_map_filter" output="screen" respawn="true" respawn_delay="0">
+        <param name="load_grid_size" value="500.0"/>
+        <param name="load_trigger_distance" value="100.0"/>
+    </node>
+</launch>

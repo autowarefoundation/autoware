@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <package>
     <name>kvaser</name>
-    <version>1.9.1</version>
+    <version>1.10.0</version>
     <description>can tools package</description>
 
     <maintainer email="etake.a7m2@gmail.com">etake</maintainer>
 
-    <license>TODO</license>
+    <license>Apache 2</license>
 
     <buildtool_depend>catkin</buildtool_depend>
     <build_depend>roscpp</build_depend>

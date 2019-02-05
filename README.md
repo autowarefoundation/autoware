@@ -2,7 +2,7 @@
 
 | *master* | *develop* |
 |----------|-----------|
-|[![Build Status](https://travis-ci.org/CPFL/Autoware.svg?branch=master)](https://travis-ci.org/CPFL/Autoware)|[![Build Status](https://travis-ci.org/CPFL/Autoware.svg?branch=develop)](https://travis-ci.org/CPFL/Autoware)|
+|[![Build Status](https://img.shields.io/gitlab/pipeline/CPFL/Autoware/master.svg)](https://gitlab.com/CPFL/Autoware/pipelines)|[![Build Status](https://img.shields.io/gitlab/pipeline/CPFL/Autoware/develop.svg)](https://gitlab.com/CPFL/Autoware/pipelines)|
 
 [Autoware](https://www.autoware.ai) is the world's first "all-in-one" open-source software for self-driving vehicles. The capabilities of Autoware are primarily well-suited for urban cities, but highways, freeways, mesomountaineous regions, and geofenced areas can be also covered. The code base of Autoware is protected by the BSD License. Please use it at your own discretion. For safe use, we provide a ROSBAG-based simulation environment for those who do not own real autonomous vehicles. If you plan to use Autoware with real autonomous vehicles, **please formulate safety measures and assessment of risk before field testing.**
 
@@ -33,6 +33,7 @@ Free manuals can be also found at [Autoware-Manuals](https://github.com/CPFL/Aut
     1. [Source](https://github.com/CPFL/Autoware/wiki/Source-Build)
 1. [Demo](https://github.com/CPFL/Autoware/wiki/Demo)
 1. [Field Test](https://github.com/CPFL/Autoware/wiki/Field-Test)
+1. [Simulation Test](https://github.com/CPFL/Autoware/wiki/Simulation-Test)
 1. [Videos](https://github.com/CPFL/Autoware/wiki/videos)
 
 ### Developers Guide
@@ -68,7 +69,7 @@ You may create 3D map data through Tier IV's [Map Tools](https://maptools.tier4.
 
 ## License
 
-Autoware is provided under the [New BSD License](https://github.com/CPFL/Autoware/blob/master/LICENSE).
+Autoware is provided under the [Apache 2 License](https://github.com/CPFL/Autoware/blob/master/LICENSE).
 
 ## Contact
 

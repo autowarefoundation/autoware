@@ -31,7 +31,7 @@ LidarFakePerception::LidarFakePerception() : nh_(), private_nh_("~")
   real_points_sub_ = nh_.subscribe("/points_raw", 1, &LidarFakePerception::pointsCallback, this);
   fake_twist_sub_ = nh_.subscribe("/fake_twist", 1, &LidarFakePerception::twistCallback, this);
 
-  fake_objects_pub_ = nh_.advertise<autoware_msgs::DetectedObjectArray>("/fake_objects", 1);
+  fake_objects_pub_ = nh_.advertise<autoware_msgs::DetectedObjectArray>("/detection/fake_perception/objects", 1);
   fake_points_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/fake_points", 1);
 
   fake_object_id_ = 0;      // overwritten by real object ids

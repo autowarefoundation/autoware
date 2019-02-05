@@ -1,35 +1,21 @@
 /*
- *  Copyright (c) 2018, Nagoya University
- *  All rights reserved.
+ * Copyright 2018-2019 Autoware Foundation. All rights reserved.
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  * Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name of Autoware nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "lidar_kf_contour_track_core.h"
-#include "op_ros_helpers/op_RosHelpers.h"
+#include "op_ros_helpers/op_ROSHelpers.h"
 #include "op_planner/MappingHelpers.h"
 #include "op_planner/PlannerH.h"
 
@@ -91,11 +77,11 @@ ContourTracker::ContourTracker()
 	m_DetectedPolygonsDummy.push_back(visualization_msgs::MarkerArray());
 	m_DetectedPolygonsDummy.push_back(visualization_msgs::MarkerArray());
 	m_DetectedPolygonsActual = m_DetectedPolygonsDummy;
-	PlannerHNS::RosHelpers::InitMarkers(m_nDummyObjPerRep, m_DetectedPolygonsDummy.at(0), m_DetectedPolygonsDummy.at(1), m_DetectedPolygonsDummy.at(2), m_DetectedPolygonsDummy.at(3), m_DetectedPolygonsDummy.at(4));
+	PlannerHNS::ROSHelpers::InitMarkers(m_nDummyObjPerRep, m_DetectedPolygonsDummy.at(0), m_DetectedPolygonsDummy.at(1), m_DetectedPolygonsDummy.at(2), m_DetectedPolygonsDummy.at(3), m_DetectedPolygonsDummy.at(4));
 
 	m_MatchingInfoDummy.push_back(visualization_msgs::MarkerArray());
 	m_MatchingInfoActual = m_MatchingInfoDummy;
-	PlannerHNS::RosHelpers::InitMatchingMarkers(m_nDummyObjPerRep, m_MatchingInfoDummy.at(0));
+	PlannerHNS::ROSHelpers::InitMatchingMarkers(m_nDummyObjPerRep, m_MatchingInfoDummy.at(0));
 }
 
 ContourTracker::~ContourTracker()
@@ -326,7 +312,7 @@ void ContourTracker::callbackGetCurrentPose(const geometry_msgs::PoseStampedCons
 
 void ContourTracker::VisualizeLocalTracking()
 {
-	PlannerHNS::RosHelpers::ConvertTrackedObjectsMarkers(m_CurrentPos, m_ObstacleTracking.m_DetectedObjects,
+	PlannerHNS::ROSHelpers::ConvertTrackedObjectsMarkers(m_CurrentPos, m_ObstacleTracking.m_DetectedObjects,
 				m_DetectedPolygonsDummy.at(0),
 				m_DetectedPolygonsDummy.at(1),
 				m_DetectedPolygonsDummy.at(2),
@@ -338,7 +324,7 @@ void ContourTracker::VisualizeLocalTracking()
 				m_DetectedPolygonsActual.at(3),
 				m_DetectedPolygonsActual.at(4));
 
-	PlannerHNS::RosHelpers::ConvertMatchingMarkers(m_ObstacleTracking.m_MatchList, m_MatchingInfoDummy.at(0), m_MatchingInfoActual.at(0), 0);
+	PlannerHNS::ROSHelpers::ConvertMatchingMarkers(m_ObstacleTracking.m_MatchList, m_MatchingInfoDummy.at(0), m_MatchingInfoActual.at(0), 0);
 
 	m_DetectedPolygonsAllMarkers.markers.clear();
 	m_DetectedPolygonsAllMarkers.markers.insert(m_DetectedPolygonsAllMarkers.markers.end(), m_DetectedPolygonsActual.at(0).markers.begin(), m_DetectedPolygonsActual.at(0).markers.end());
@@ -352,7 +338,7 @@ void ContourTracker::VisualizeLocalTracking()
 	for(unsigned int i = 0; i < m_ObstacleTracking.m_InterestRegions.size(); i++)
 	{
 		visualization_msgs::Marker circle_mkrs;
-		PlannerHNS::RosHelpers::CreateCircleMarker(m_CurrentPos, m_ObstacleTracking.m_InterestRegions.at(i)->radius, i ,circle_mkrs );
+		PlannerHNS::ROSHelpers::CreateCircleMarker(m_CurrentPos, m_ObstacleTracking.m_InterestRegions.at(i)->radius, i ,circle_mkrs );
 		all_circles.markers.push_back(circle_mkrs);
 	}
 
@@ -422,7 +408,7 @@ void ContourTracker::LogAndSend()
 	autoware_msgs::DetectedObject obj;
 	for(unsigned int i = 0 ; i <m_ObstacleTracking.m_DetectedObjects.size(); i++)
 	{
-		PlannerHNS::RosHelpers::ConvertFromOpenPlannerDetectedObjectToAutowareDetectedObject(m_ObstacleTracking.m_DetectedObjects.at(i), m_Params.bEnableSimulation, obj);
+		PlannerHNS::ROSHelpers::ConvertFromOpenPlannerDetectedObjectToAutowareDetectedObject(m_ObstacleTracking.m_DetectedObjects.at(i), m_Params.bEnableSimulation, obj);
 		m_OutPutResults.objects.push_back(obj);
 	}
 
@@ -506,7 +492,7 @@ void ContourTracker::CalculateTTC(const std::vector<PlannerHNS::DetectedObject>&
 	m_TTC_Path.markers.clear();
 	if(direct_paths.size() == 0)
 		direct_paths.push_back(currState);
-	PlannerHNS::RosHelpers::TTC_PathRviz(direct_paths, m_TTC_Path);
+	PlannerHNS::ROSHelpers::TTC_PathRviz(direct_paths, m_TTC_Path);
 	pub_TTC_PathRviz.publish(m_TTC_Path);
 
 
@@ -557,7 +543,7 @@ void ContourTracker::MainLoop()
 
 			if(m_MapRaw.GetVersion()==2)
 			{
-				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessageV2(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
+				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromROSMessageV2(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
 						m_MapRaw.pCenterLines->m_data_list, m_MapRaw.pIntersections->m_data_list,m_MapRaw.pAreas->m_data_list,
 						m_MapRaw.pLines->m_data_list, m_MapRaw.pStopLines->m_data_list,	m_MapRaw.pSignals->m_data_list,
 						m_MapRaw.pVectors->m_data_list, m_MapRaw.pCurbs->m_data_list, m_MapRaw.pRoadedges->m_data_list, m_MapRaw.pWayAreas->m_data_list,
@@ -572,7 +558,7 @@ void ContourTracker::MainLoop()
 			}
 			else if(m_MapRaw.GetVersion()==1)
 			{
-				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessage(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
+				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromROSMessage(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
 						m_MapRaw.pCenterLines->m_data_list, m_MapRaw.pIntersections->m_data_list,m_MapRaw.pAreas->m_data_list,
 						m_MapRaw.pLines->m_data_list, m_MapRaw.pStopLines->m_data_list,	m_MapRaw.pSignals->m_data_list,
 						m_MapRaw.pVectors->m_data_list, m_MapRaw.pCurbs->m_data_list, m_MapRaw.pRoadedges->m_data_list, m_MapRaw.pWayAreas->m_data_list,

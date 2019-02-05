@@ -92,7 +92,7 @@ public:
                 int in_g, int in_b, std::string in_label, bool in_estimate_pose);
 
   /* \brief Returns the autoware_msgs::CloudCluster message associated to this Cluster */
-  void ToRosMessage(std_msgs::Header in_ros_header, autoware_msgs::CloudCluster& out_cluster_message);
+  void ToROSMessage(std_msgs::Header in_ros_header, autoware_msgs::CloudCluster& out_cluster_message);
 
   Cluster();
   virtual ~Cluster();

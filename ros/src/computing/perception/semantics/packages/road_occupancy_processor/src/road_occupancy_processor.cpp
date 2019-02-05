@@ -1,31 +1,17 @@
 /*
- *  Copyright (c) 2018, Nagoya University
- *  All rights reserved.
+ * Copyright 2018-2019 Autoware Foundation. All rights reserved.
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  * Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name of Autoware nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  ********************
  *  v1.0: amc-nu (abrahammonrroy@yahoo.com)
  *
@@ -36,10 +22,10 @@
 
 #include "road_occupancy_processor.h"
 
-void RosRoadOccupancyProcessorApp::ConvertXYZIToRTZ(const pcl::PointCloud<pcl::PointXYZI>::Ptr in_cloud,
-                                                    RosRoadOccupancyProcessorApp::PointCloudXYZIRTColor &out_organized_points,
+void ROSRoadOccupancyProcessorApp::ConvertXYZIToRTZ(const pcl::PointCloud<pcl::PointXYZI>::Ptr in_cloud,
+                                                    ROSRoadOccupancyProcessorApp::PointCloudXYZIRTColor &out_organized_points,
                                                     std::vector<pcl::PointIndices> &out_radial_divided_indices,
-                                                    std::vector<RosRoadOccupancyProcessorApp::PointCloudXYZIRTColor> &out_radial_ordered_clouds)
+                                                    std::vector<ROSRoadOccupancyProcessorApp::PointCloudXYZIRTColor> &out_radial_ordered_clouds)
 {
 	out_organized_points.resize(in_cloud->points.size());
 	out_radial_divided_indices.clear();
@@ -84,7 +70,7 @@ void RosRoadOccupancyProcessorApp::ConvertXYZIToRTZ(const pcl::PointCloud<pcl::P
 	}
 }
 
-void RosRoadOccupancyProcessorApp::PublishGridMap(grid_map::GridMap &in_grid_map, const std::string& in_layer_publish)
+void ROSRoadOccupancyProcessorApp::PublishGridMap(grid_map::GridMap &in_grid_map, const std::string& in_layer_publish)
 {
 	if (in_grid_map.exists(in_layer_publish))
 	{
@@ -105,7 +91,7 @@ void RosRoadOccupancyProcessorApp::PublishGridMap(grid_map::GridMap &in_grid_map
 	}
 }
 
-bool RosRoadOccupancyProcessorApp::LoadRoadLayerFromMat(grid_map::GridMap &in_grid_map, cv::Mat &in_grid_image)
+bool ROSRoadOccupancyProcessorApp::LoadRoadLayerFromMat(grid_map::GridMap &in_grid_map, cv::Mat &in_grid_image)
 {
 	if (!in_grid_image.empty())
 	{
@@ -122,7 +108,7 @@ bool RosRoadOccupancyProcessorApp::LoadRoadLayerFromMat(grid_map::GridMap &in_gr
 	return false;
 }
 
-void RosRoadOccupancyProcessorApp::Convert3dPointToOccupancy(grid_map::GridMap &in_grid_map,
+void ROSRoadOccupancyProcessorApp::Convert3dPointToOccupancy(grid_map::GridMap &in_grid_map,
                                                              const geometry_msgs::Point &in_point, cv::Point &out_point)
 {
 	// calculate position
@@ -134,7 +120,7 @@ void RosRoadOccupancyProcessorApp::Convert3dPointToOccupancy(grid_map::GridMap &
 	out_point.y = (in_grid_map.getLength().x() - origin_x_offset - in_point.x) / in_grid_map.getResolution();
 }
 
-void RosRoadOccupancyProcessorApp::DrawLineInGridMap(grid_map::GridMap &in_grid_map, cv::Mat &in_grid_image,
+void ROSRoadOccupancyProcessorApp::DrawLineInGridMap(grid_map::GridMap &in_grid_map, cv::Mat &in_grid_image,
                                                      const geometry_msgs::Point &in_start_point,
                                                      const geometry_msgs::Point &in_end_point, uchar in_value)
 {
@@ -156,7 +142,7 @@ void RosRoadOccupancyProcessorApp::DrawLineInGridMap(grid_map::GridMap &in_grid_
 	}
 }
 
-void RosRoadOccupancyProcessorApp::SetPointInGridMap(grid_map::GridMap &in_grid_map, cv::Mat &in_grid_image,
+void ROSRoadOccupancyProcessorApp::SetPointInGridMap(grid_map::GridMap &in_grid_map, cv::Mat &in_grid_image,
                                                      const geometry_msgs::Point &in_point, uchar in_value)
 {
 	// calculate position
@@ -176,7 +162,7 @@ void RosRoadOccupancyProcessorApp::SetPointInGridMap(grid_map::GridMap &in_grid_
 	}
 }
 
-void RosRoadOccupancyProcessorApp::GridMapCallback(const grid_map_msgs::GridMap& in_message)
+void ROSRoadOccupancyProcessorApp::GridMapCallback(const grid_map_msgs::GridMap& in_message)
 {
 	grid_map::GridMap input_grid;
 	grid_map::GridMapRosConverter::fromMessage(in_message, input_grid);
@@ -194,7 +180,7 @@ void RosRoadOccupancyProcessorApp::GridMapCallback(const grid_map_msgs::GridMap&
 	input_gridmap_position_     = input_grid.getPosition();
 }
 
-void RosRoadOccupancyProcessorApp::ConvertPointCloud(const pcl::PointCloud<pcl::PointXYZI>& in_pointcloud,
+void ROSRoadOccupancyProcessorApp::ConvertPointCloud(const pcl::PointCloud<pcl::PointXYZI>& in_pointcloud,
                                                      const std::string& in_targetframe,
                                                      pcl::PointCloud<pcl::PointXYZI>& out_pointcloud)
 {
@@ -211,7 +197,7 @@ void RosRoadOccupancyProcessorApp::ConvertPointCloud(const pcl::PointCloud<pcl::
 	}
 };
 
-void RosRoadOccupancyProcessorApp::PointsCallback(const sensor_msgs::PointCloud2::ConstPtr &in_ground_cloud_msg,
+void ROSRoadOccupancyProcessorApp::PointsCallback(const sensor_msgs::PointCloud2::ConstPtr &in_ground_cloud_msg,
                                                   const sensor_msgs::PointCloud2::ConstPtr &in_no_ground_cloud_msg)
 {
 	if(road_wayarea_original_mat_.empty())
@@ -303,7 +289,7 @@ void RosRoadOccupancyProcessorApp::PointsCallback(const sensor_msgs::PointCloud2
 
 }
 
-void RosRoadOccupancyProcessorApp::InitializeRosIo(ros::NodeHandle &in_private_handle)
+void ROSRoadOccupancyProcessorApp::InitializeROSIo(ros::NodeHandle &in_private_handle)
 {
 	//get params
 	std::string points_ground_topic_str, points_no_ground_topic_str, wayarea_topic_str;
@@ -345,16 +331,16 @@ void RosRoadOccupancyProcessorApp::InitializeRosIo(ros::NodeHandle &in_private_h
 
 	/*gridmap_subscriber_ = new message_filters::Subscriber<grid_map_msgs::GridMap>(node_handle_,
 	                                                                              wayarea_topic_str, 1);
-	gridmap_subscriber_->registerCallback(boost::bind(&RosRoadOccupancyProcessorApp::PointsCallback, this));*/
+	gridmap_subscriber_->registerCallback(boost::bind(&ROSRoadOccupancyProcessorApp::PointsCallback, this));*/
 	gridmap_subscriber_ = node_handle_.subscribe(wayarea_topic_str, 10,
-	                                                             &RosRoadOccupancyProcessorApp::GridMapCallback, this);
+	                                                             &ROSRoadOccupancyProcessorApp::GridMapCallback, this);
 	ROS_INFO("[%s] Subscribing to... %s",__APP_NAME__, wayarea_topic_str.c_str());
 
 	cloud_synchronizer_ =
 			new message_filters::Synchronizer<SyncPolicyT>(SyncPolicyT(100),
 			                                               *cloud_ground_subscriber_,
 			                                               *cloud_no_ground_subscriber_);
-	cloud_synchronizer_->registerCallback(boost::bind(&RosRoadOccupancyProcessorApp::PointsCallback, this, _1, _2));
+	cloud_synchronizer_->registerCallback(boost::bind(&ROSRoadOccupancyProcessorApp::PointsCallback, this, _1, _2));
 
 	//register publishers
 	publisher_grid_map_= node_handle_.advertise<grid_map_msgs::GridMap>("gridmap_road_status", 1);
@@ -365,7 +351,7 @@ void RosRoadOccupancyProcessorApp::InitializeRosIo(ros::NodeHandle &in_private_h
 }
 
 tf::StampedTransform
-RosRoadOccupancyProcessorApp::FindTransform(const std::string &in_target_frame, const std::string &in_source_frame)
+ROSRoadOccupancyProcessorApp::FindTransform(const std::string &in_target_frame, const std::string &in_source_frame)
 {
 	tf::StampedTransform transform;
 
@@ -382,7 +368,7 @@ RosRoadOccupancyProcessorApp::FindTransform(const std::string &in_target_frame, 
 }
 
 geometry_msgs::Point
-RosRoadOccupancyProcessorApp::TransformPoint(const geometry_msgs::Point &in_point, const tf::Transform &in_transform)
+ROSRoadOccupancyProcessorApp::TransformPoint(const geometry_msgs::Point &in_point, const tf::Transform &in_transform)
 {
 	tf::Point tf_point;
 	tf::pointMsgToTF(in_point, tf_point);
@@ -395,14 +381,14 @@ RosRoadOccupancyProcessorApp::TransformPoint(const geometry_msgs::Point &in_poin
 	return geometry_point;
 }
 
-void RosRoadOccupancyProcessorApp::Run()
+void ROSRoadOccupancyProcessorApp::Run()
 {
 	ros::NodeHandle private_node_handle("~");
 	tf::TransformListener transform_listener;
 
 	transform_listener_ = &transform_listener;
 
-	InitializeRosIo(private_node_handle);
+	InitializeROSIo(private_node_handle);
 
 	ROS_INFO("[%s] Ready. Waiting for data...",__APP_NAME__);
 
@@ -411,7 +397,7 @@ void RosRoadOccupancyProcessorApp::Run()
 	ROS_INFO("[%s] END",__APP_NAME__);
 }
 
-RosRoadOccupancyProcessorApp::RosRoadOccupancyProcessorApp()
+ROSRoadOccupancyProcessorApp::ROSRoadOccupancyProcessorApp()
 {
 	radial_dividers_num_ = ceil(360 / radial_divider_angle_);
 }
