@@ -19,19 +19,11 @@
 
 #include "kalman_filter/kalman_filter.h"
 
-#define PRINT_MAT(X) std::cout << #X << ":\n"    \
-                               << X << std::endl \
-                               << std::endl
+#define PRINT_MAT(X) std::cout << #X << ":\n" << X << std::endl << std::endl
 
 #define EKF_DEBUG_VERBOSE
 #ifdef EKF_DEBUG_VERBOSE
-#define EKF_INFO(...)      \
-  {                        \
-    if (show_debug_info_)  \
-    {                      \
-      printf(__VA_ARGS__); \
-    }                      \
-  }
+#define EKF_INFO(...) { if (show_debug_info_) { printf(__VA_ARGS__); } }
 #else
 #define EKF_INFO(...)
 #endif
@@ -44,32 +36,33 @@ public:
 
 private:
   ros::NodeHandle nh_, pnh_;
-  ros::Publisher pub_pose_, pub_pose_array_, pub_debug_, pub_ndt_pose_, pub_ndt_delayed_pose_, pub_tmp_;
+  ros::Publisher pub_pose_, pub_pose_array_, pub_debug_, pub_ndt_pose_;
   ros::Subscriber sub_ndt_pose_, sub_vehicle_status_, sub_imu_;
   ros::Timer timer_control_, timer_tf_;
   tf::TransformBroadcaster tf_br_;
   bool show_debug_info_;
 
   KalmanFilter kf_;
+
   bool initial_pose_received_;
   bool initial_twist_received_;
 
   /* parameters */
-  double predict_frequency_;
-  double predict_dt_;
-  double tf_dt_;
-  double wheelbase_;
-  unsigned int dim_x_;
-  unsigned int dim_x_ex_;
-  int extend_state_step_;
-  double wz_bias_lim_;
-  double additional_delay_;
+  double predict_frequency_; // kalman filter predict rate
+  double predict_dt_;        // = 1 / predict_frequency_
+  double tf_dt_;             // tf publish rate
+  double wheelbase_;         // to convert steering angle to angular velocity
+  double additional_delay_;  // compensated ndt delay time = (ndt.header.stamp - now) + additional_delay [s]
+  int dim_x_;                // dimension of kalman state
+  int extend_state_step_;    // for time delay compensation
+  int dim_x_ex_;             // dimension of extended kalman state (dim_x_ * extended_state_step)
 
   /* process noise standard deviation for continuous model*/
-  double stddev_proc_x_c_;
-  double stddev_proc_y_c_;
-  double stddev_proc_yaw_c_;
-  double stddev_proc_wz_bias_c_;
+  double stddev_proc_x_c_;       // for dot x
+  double stddev_proc_y_c_;       // for dot y
+  double stddev_proc_yaw_c_;     // for dot yaw
+  double stddev_proc_wz_bias_c_; // for wz_bias
+  double stddev_vx_c_;           // for vx
 
   /* process noise variance for discrete model */
   double cov_proc_x_d_;
@@ -78,7 +71,7 @@ private:
   double cov_proc_wz_bias_d_;
 
   /* measurement noise for time uncertainty */
-  double measure_time_uncertainty_;
+  double measure_time_uncertainty_; // added for measurement covariance
 
   /* for model prediction */
   autoware_msgs::VehicleStatus current_vehicle_status_;
@@ -111,14 +104,14 @@ KalmanFilterNode::KalmanFilterNode()
   pnh_.param("predict_frequency", predict_frequency_, double(100.0));
   pnh_.param("tf_dt", tf_dt_, double(0.05));
   pnh_.param("wheelbase", wheelbase_, double(2.79));
-  pnh_.param("additional_delay", additional_delay_, double(0.15));
+  pnh_.param("additional_delay", additional_delay_, double(0.10));
   pnh_.param("extend_state_step", extend_state_step_, int(50));
-  pnh_.param("wz_bias_lim", wz_bias_lim_, double(0.2));
 
   pnh_.param("stddev_proc_x_c", stddev_proc_x_c_, double(1.0));
   pnh_.param("stddev_proc_y_c", stddev_proc_y_c_, double(1.0));
-  pnh_.param("stddev_proc_yaw_c", stddev_proc_yaw_c_, double(0.5));
-  pnh_.param("stddev_proc_wz_bias_c", stddev_proc_wz_bias_c_, double(0.01));
+  pnh_.param("stddev_proc_yaw_c", stddev_proc_yaw_c_, double(1.0));
+  pnh_.param("stddev_proc_wz_bias_c", stddev_proc_wz_bias_c_, double(0.1));
+  pnh_.param("stddev_vx_c", stddev_vx_c_, double(0.5));
 
   pnh_.param("measure_time_uncertainty", measure_time_uncertainty_, double(0.01));
 
@@ -132,8 +125,6 @@ KalmanFilterNode::KalmanFilterNode()
   timer_tf_ = nh_.createTimer(ros::Duration(tf_dt_), &KalmanFilterNode::timerTFCallback, this);
   pub_pose_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("/kf_estimated_pose", 1);
   pub_ndt_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("/my_ndt_pose", 1);
-  pub_ndt_delayed_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("/my_ndt_delayed_pose", 1);
-  pub_tmp_ = pnh_.advertise<geometry_msgs::PoseStamped>("/tmp_pose", 1);
   pub_pose_array_ = nh_.advertise<geometry_msgs::PoseArray>("/kalman_filter_pose_array", 1);
   pub_debug_ = pnh_.advertise<std_msgs::Float64MultiArray>("debug", 1);
   sub_ndt_pose_ = nh_.subscribe("/ndt_pose", 1, &KalmanFilterNode::callbackNDTPose, this);
@@ -243,7 +234,7 @@ void KalmanFilterNode::initKalmanFilter()
   Eigen::MatrixXd P = Eigen::MatrixXd::Identity(dim_x_ex_, dim_x_ex_) * 1.0E9;
   for (int i = 0; i + 3 < dim_x_ex_; i += dim_x_)
   {
-    P(i + 3, i + 3) = 0.000001; // for omega bias
+    P(i + 3, i + 3) = 1.0E-6; // for omega bias
   }
   kf_.init(X, P);
 }
@@ -253,7 +244,6 @@ void KalmanFilterNode::initKalmanFilter()
  */
 void KalmanFilterNode::predictKinematicsModel()
 {
-
   /*  == Nonlinear model ==
    *
    * x_{k+1} = x_k + vx * cos(yaw_k) * dt
@@ -282,29 +272,20 @@ void KalmanFilterNode::predictKinematicsModel()
   const double wz = current_twist_.twist.angular.z;
   const double yaw = X_curr(2);
   const double wz_bias = X_curr(3);
-  // const double wz_bias = 0.0;
   const double dt = predict_dt_;
 
   EKF_INFO("X_curr = %f, %f, %f, %f\n", X_curr(0), X_curr(1), X_curr(2), X_curr(3));
 
   /* update for latest state */
-  EKF_INFO("vx = %f, yaw = %f, sin(yaw) = %f, cos(yaw) = %f, dt = %f, dx = %f, dy = %f\n", 
-  vx, yaw, sin(yaw), cos(yaw), dt,  vx * cos(yaw) * dt,  vx * sin(yaw) * dt);
-  X_next(0) = X_curr(0) + vx * cos(yaw) * dt;                           // dx = v * cos(yaw)
-  X_next(1) = X_curr(1) + vx * sin(yaw) * dt;                           // dy = v * sin(yaw)
-  X_next(2) = X_curr(2) + (wz + wz_bias) * dt;                          // dyaw = omega + omega_bias
-  X_next(3) = wz_bias; // d_omega_bias = 0;
-  printf("X_next(1) - X_curr(1) = %f\n", X_next(1) - X_curr(1));
-  if (X_next(2) > M_PI)
+  X_next(0) = X_curr(0) + vx * cos(yaw) * dt;  // dx = v * cos(yaw)
+  X_next(1) = X_curr(1) + vx * sin(yaw) * dt;  // dy = v * sin(yaw)
+  X_next(2) = X_curr(2) + (wz + wz_bias) * dt; // dyaw = omega + omega_bias
+  X_next(3) = wz_bias;                         // d_omega_bias = 0;
+  while (std::fabs(X_next(2)) > M_PI)
   {
-    X_next(2) -= 2.0 * M_PI;
+    X_next(2) -= 2.0 * M_PI * ((X_next(2) > 0) - (X_next(2) < 0));
   }
-  else if (X_next(2) < -M_PI)
-  {
-    X_next(2) += 2.0 * M_PI;
-  }
-
-EKF_INFO("X_next = %f, %f, %f, %f\n", X_next(0), X_next(1), X_next(2), X_next(3));
+  EKF_INFO("X_next = %f, %f, %f, %f\n", X_next(0), X_next(1), X_next(2), X_next(3));
 
   /* slide states in the time direction */
   X_next.block(dim_x_, 0, d_dim_x, 1) = X_curr.block(0, 0, d_dim_x, 1);
@@ -317,24 +298,20 @@ EKF_INFO("X_next = %f, %f, %f, %f\n", X_next(0), X_next(1), X_next(2), X_next(3)
 
   /* set covariance matrix Q for process noise 
       calc Q by velocity and yaw angle covariance :
-        dx = Ax + J*sigma -> Q = J*sigma*J' */
+        dx = Ax + J*w -> Q = J*w_cov*J' */
   Eigen::MatrixXd J(2, 2); // coeff of deviation of vx & yaw
   J << cos(yaw), -vx * sin(yaw),
       sin(yaw), vx * cos(yaw);
-  const double cov_vx = 0.5 * 0.5;
-  // const double cov_yaw = 0.2 * 0.2;
-  const double cov_yaw = P_curr(2, 2);
   Eigen::MatrixXd Q_vx_yaw = Eigen::MatrixXd::Zero(2, 2); // cov of vx and yaw
-  Q_vx_yaw(0, 0) = cov_vx * dt;
-  Q_vx_yaw(1, 1) = cov_yaw * dt;
+  Q_vx_yaw(0, 0) = stddev_vx_c_ * stddev_vx_c_ * dt;      // covariance of vx
+  Q_vx_yaw(1, 1) = P_curr(2, 2) * dt;                     // covariance of yaw
   Eigen::MatrixXd Q_ex = Eigen::MatrixXd::Zero(dim_x_ex_, dim_x_ex_);
   Q_ex.block(0, 0, 2, 2) = J * Q_vx_yaw * J.transpose(); // for pos_x & pos_y
   Q_ex(2, 2) = cov_proc_yaw_d_ * dt;                     // for yaw
   Q_ex(3, 3) = cov_proc_wz_bias_d_ * dt;                 // for yaw bias
 
-  // PRINT_MAT(Q_ex.block(0, 0, 2, 2));
-
 #if 0
+
   /* update P directly (slow for large dimension) */
 
   Eigen::MatrixXd A_ex = Eigen::MatrixXd::Zero(dim_x_ex_, dim_x_ex_);
@@ -342,9 +319,9 @@ EKF_INFO("X_next = %f, %f, %f, %f\n", X_next(0), X_next(1), X_next(2), X_next(3)
   A_ex.block(dim_x_, 0, dim_d, dim_d) = Eigen::MatrixXd::Identity(dim_d, dim_d);
   kf_.predictEKF(X_next, A_ex, Q_ex);
 
-#endif
+#else
 
-  /* update P with special structure (fast) */
+  /* update P with A matrix structure (fast) */
   P_next = Eigen::MatrixXd::Zero(dim_x_ex_, dim_x_ex_);
   P_next.block(0, 0, dim_x_, dim_x_) = A * P_curr.block(0, 0, dim_x_, dim_x_) * A.transpose();
   P_next.block(0, dim_x_, dim_x_, d_dim_x) = A * P_curr.block(0, 0, dim_x_, d_dim_x);
@@ -352,7 +329,8 @@ EKF_INFO("X_next = %f, %f, %f, %f\n", X_next(0), X_next(1), X_next(2), X_next(3)
   P_next.block(dim_x_, dim_x_, d_dim_x, d_dim_x) = P_curr.block(0, 0, d_dim_x, d_dim_x);
   P_next += Q_ex;
   kf_.predictXandP(X_next, P_next);
-  // PRINT_MAT(P_next.block(0, 0, 4, 4));
+
+#endif
 }
 
 /*
@@ -360,7 +338,6 @@ EKF_INFO("X_next = %f, %f, %f, %f\n", X_next(0), X_next(1), X_next(2), X_next(3)
  */
 void KalmanFilterNode::measurementUpdateNDTPose(const geometry_msgs::PoseStamped &ndt_pose)
 {
-
   const int dim_y = 3; // pos_x, pos_y, yaw, depending on NDT output
   const ros::Time t_curr = ros::Time::now();
 
@@ -390,12 +367,10 @@ void KalmanFilterNode::measurementUpdateNDTPose(const geometry_msgs::PoseStamped
   C_ex(1, dim_x_ * delay_step + 1) = 1.0; // for pos y
   C_ex(2, dim_x_ * delay_step + 2) = 1.0; // for yaw
 
-  /* set measurement noise covariancs */
-  const double vx = current_twist_.twist.linear.x;
-  const double wz = current_twist_.twist.angular.z;
-  const double cov_pos_x = std::pow(measure_time_uncertainty_ * vx, 2);
-  const double cov_pos_y = std::pow(measure_time_uncertainty_ * vx, 2);
-  const double cov_yaw = std::pow(measure_time_uncertainty_ * wz, 2);
+  /* set measurement noise covariancs : NOTE this should be set by NDT reliability */
+  const double cov_pos_x = std::pow(measure_time_uncertainty_ * current_twist_.twist.linear.x, 2);
+  const double cov_pos_y = std::pow(measure_time_uncertainty_ * current_twist_.twist.linear.x, 2);
+  const double cov_yaw = std::pow(measure_time_uncertainty_ * current_twist_.twist.angular.z, 2);
   Eigen::MatrixXd R = Eigen::MatrixXd::Zero(dim_y, dim_y);
   R(0, 0) = std::pow(0.05, 2) + cov_pos_x; // pos_x
   R(1, 1) = std::pow(0.05, 2) + cov_pos_y; // pos_y
@@ -404,13 +379,9 @@ void KalmanFilterNode::measurementUpdateNDTPose(const geometry_msgs::PoseStamped
 
   const double yaw_curr = kf_.getXelement((unsigned int)(delay_step * dim_x_ + 2));
   double yaw = tf::getYaw(ndt_pose.pose.orientation);
-  if (yaw - yaw_curr > M_PI)
+  while (std::fabs(yaw - yaw_curr) > M_PI)
   {
-    yaw -= 2.0 * M_PI;
-  }
-  else if (yaw - yaw_curr < -M_PI)
-  {
-    yaw += 2.0 * M_PI;
+    yaw -= 2.0 * M_PI * ((yaw > yaw_curr) - (yaw < yaw_curr));
   }
 
   /* measurement update */
@@ -418,26 +389,6 @@ void KalmanFilterNode::measurementUpdateNDTPose(const geometry_msgs::PoseStamped
   y << ndt_pose.pose.position.x, ndt_pose.pose.position.y, yaw;
 
   kf_.update(y, C_ex, R);
-
-
-///////////////////////////////////////////////////////
-  static geometry_msgs::PoseStamped p0, p1, p2;
-  p2 = ndt_pose;
-  double dtp = (p2.header.stamp - p0.header.stamp).toSec();
-  double vxp = (p2.pose.position.x - p0.pose.position.x) / dtp;
-  double vyp = (p2.pose.position.y - p0.pose.position.y) / dtp;
-  
-  double theta = atan2(vyp, vxp);
-  geometry_msgs::PoseStamped pp = p1;
-  pp.pose.position.x = theta * 180.0 / 3.1415;
-pub_tmp_.publish(pp);
-
-
-
-
-  p0 = p1;
-  p1 = p2;
-
 }
 
 /*
@@ -454,7 +405,6 @@ void KalmanFilterNode::publishEstimatedPose()
   Eigen::MatrixXd P(dim_x_ex_, dim_x_ex_);
   kf_.getX(X);
   kf_.getP(P);
-  // PRINT_MAT(P);
 
   /* publish latest pose */
   geometry_msgs::PoseWithCovarianceStamped pose_curr;
@@ -468,25 +418,18 @@ void KalmanFilterNode::publishEstimatedPose()
   {
     pose_curr.pose.covariance[i] = 0.0;
   }
-  pose_curr.pose.covariance[0] = P(0, 0);
-  pose_curr.pose.covariance[1] = P(0, 1);
-  pose_curr.pose.covariance[5] = P(0, 2);
-  pose_curr.pose.covariance[6] = P(1, 0);
-  pose_curr.pose.covariance[7] = P(1, 1);
-  pose_curr.pose.covariance[11] = P(1, 2);
-  pose_curr.pose.covariance[30] = P(2, 0);
-  pose_curr.pose.covariance[31] = P(2, 1);
-  pose_curr.pose.covariance[35] = P(2, 2);
+  pose_curr.pose.covariance[0] = P(0, 0); // x, x
+  pose_curr.pose.covariance[1] = P(0, 1); // x, y
+  pose_curr.pose.covariance[5] = P(0, 2); // x, yaw
+  pose_curr.pose.covariance[6] = P(1, 0); // y, x
+  pose_curr.pose.covariance[7] = P(1, 1); // y, y
+  pose_curr.pose.covariance[11] = P(1, 2); // y, yaw
+  pose_curr.pose.covariance[30] = P(2, 0); // yaw, x
+  pose_curr.pose.covariance[31] = P(2, 1); // yaw, y
+  pose_curr.pose.covariance[35] = P(2, 2); // yaw, yaw
   pub_pose_.publish(pose_curr);
   current_kf_pose_.header = pose_curr.header;
   current_kf_pose_.pose = pose_curr.pose.pose;
-
-
-  /* TEMP deug */
-  geometry_msgs::PoseStamped ps;
-  ps.header = current_ndt_pose_.header;
-  ps.pose.position.x = tf::getYaw(current_ndt_pose_.pose.orientation) * 180.0 / 3.1415;
-  pub_ndt_delayed_pose_.publish(ps);
 
   /* publish pose array */
   // geometry_msgs::PoseArray pose_array;
@@ -511,12 +454,12 @@ void KalmanFilterNode::publishEstimatedPose()
   /* debug publish */
   double RAD2DEG = 180.0 / 3.141592;
   std_msgs::Float64MultiArray msg;
-  msg.data.push_back(current_twist_.twist.linear.x);                            // [0]
-  msg.data.push_back(current_twist_.twist.angular.z);                           // [1]
+  msg.data.push_back(current_twist_.twist.linear.x);                            // [0] vx
+  msg.data.push_back(current_twist_.twist.angular.z);                           // [1] wz (omega)
   msg.data.push_back(X(2) * RAD2DEG);                                           // [2] yaw angle
   msg.data.push_back(tf::getYaw(current_ndt_pose_.pose.orientation) * RAD2DEG); // [3] NDT yaw angle
   msg.data.push_back(X(3) * RAD2DEG);                                           // [4] omega bias
-  msg.data.push_back((current_twist_.twist.angular.z + X(3)));
+  msg.data.push_back((current_twist_.twist.angular.z + X(3)));                  // [5] omega + omega_bias
   pub_debug_.publish(msg);
 }
 
