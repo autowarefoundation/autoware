@@ -24,6 +24,9 @@
 
 #include "autoware_config_msgs/ConfigVelocitySet.h"
 
+#include <autoware_health_checker/node_status_publisher.h>
+#include <memory>
+
 class VelocitySetInfo
 {
  private:
@@ -50,6 +53,8 @@ class VelocitySetInfo
   geometry_msgs::PoseStamped control_pose_;    // pose of base_link
   bool set_pose_;
   bool use_obstacle_sim_;
+
+  std::shared_ptr<autoware_health_checker::NodeStatusPublisher> node_status_publisher_ptr_;
 
  public:
   VelocitySetInfo();
