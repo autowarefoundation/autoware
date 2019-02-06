@@ -32,6 +32,7 @@
 #include <iostream>
 #include <map>
 #include <thread>
+#include <memory>
 
 #include <geometry_msgs/TwistStamped.h>
 #include <ros/ros.h>
@@ -51,6 +52,10 @@
 #include "autoware_msgs/ControlCommandStamped.h"
 #include "tablet_socket_msgs/gear_cmd.h"
 #include "tablet_socket_msgs/mode_cmd.h"
+
+//headers in Autowae Health Checker
+#include <autoware_health_checker/node_status_publisher.h>
+
 class TwistGate
 {
   using remote_msgs_t = autoware_msgs::RemoteCmd;
@@ -79,6 +84,7 @@ private:
 
   ros::NodeHandle nh_;
   ros::NodeHandle private_nh_;
+  std::shared_ptr<autoware_health_checker::NodeStatusPublisher> node_status_pub_ptr_;
   ros::Publisher emergency_stop_pub_;
   ros::Publisher control_command_pub_;
   ros::Publisher vehicle_cmd_pub_;
@@ -112,6 +118,7 @@ TwistGate::TwistGate(const ros::NodeHandle& nh, const ros::NodeHandle& private_n
   , command_mode_(CommandMode::AUTO)
   , previous_command_mode_(CommandMode::AUTO)
 {
+  node_status_pub_ptr_ = std::make_shared<autoware_health_checker::NodeStatusPublisher>(nh_,private_nh_);
   emergency_stop_pub_ = nh_.advertise<std_msgs::Bool>("/emergency_stop", 1, true);
   control_command_pub_ = nh_.advertise<std_msgs::String>("/ctrl_mode", 1);
   vehicle_cmd_pub_ = nh_.advertise<vehicle_cmd_msg_t>("/vehicle_cmd", 1, true);
@@ -132,6 +139,7 @@ TwistGate::TwistGate(const ros::NodeHandle& nh, const ros::NodeHandle& private_n
   twist_gate_msg_.header.seq = 0;
   emergency_stop_msg_.data = false;
   send_emergency_cmd = false;
+  node_status_pub_ptr_->ENABLE();
 
   remote_cmd_time_ = ros::Time::now();
   watchdog_timer_thread_ = std::thread(&TwistGate::watchdog_timer, this);
@@ -277,6 +285,8 @@ void TwistGate::remote_cmd_callback(const remote_msgs_t::ConstPtr& input_msg)
 
 void TwistGate::auto_cmd_twist_cmd_callback(const geometry_msgs::TwistStamped::ConstPtr& input_msg)
 {
+  node_status_pub_ptr_->NODE_ACTIVATE();
+  node_status_pub_ptr_->CHECK_RATE("/topic/rate/twist_cmd/slow",8,5,1,"topic twist_cmd subscribe rate low.");
   if (command_mode_ == CommandMode::AUTO)
   {
     twist_gate_msg_.header.frame_id = input_msg->header.frame_id;

@@ -31,6 +31,10 @@
 #include "pure_pursuit.h"
 #include "pure_pursuit_viz.h"
 
+#include <autoware_health_checker/node_status_publisher.h>
+
+#include <memory>
+
 namespace waypoint_follower
 {
 enum class Mode : int32_t
@@ -59,6 +63,8 @@ private:
   // handle
   ros::NodeHandle nh_;
   ros::NodeHandle private_nh_;
+
+  std::shared_ptr<autoware_health_checker::NodeStatusPublisher> node_status_publisher_ptr_;
 
   // class
   PurePursuit pp_;
