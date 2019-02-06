@@ -41,6 +41,9 @@ RUN apt-get update && apt-get install -y \
         v4l-utils \
         vim \
         wget \
+        python3-pip python3-setuptools \
+        python3-colcon-common-extensions \
+        && pip3 install -U setuptools \
         && rm -rf /var/lib/apt/lists/*
 
 #
