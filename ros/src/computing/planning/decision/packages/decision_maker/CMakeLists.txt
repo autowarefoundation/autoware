@@ -30,6 +30,8 @@ find_package(catkin REQUIRED COMPONENTS
         autoware_msgs
         autoware_config_msgs
         vector_map_msgs
+        rostest
+        rosunit
         )
 
 catkin_package(
