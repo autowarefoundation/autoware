@@ -1,4 +1,5 @@
 num_lasers: 64
+distance_resolution: 0.002
 lasers:
   - laser_id: 0
     rot_correction: -0.122173048555851

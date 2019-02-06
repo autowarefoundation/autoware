@@ -1,14 +1,14 @@
 <!-- -*- mode: XML -*- -->
-<!-- run velodyne_pointcloud/CloudNodelet in a nodelet manager for an VLP-32C -->
+<!-- run velodyne_pointcloud/CloudNodelet in a nodelet manager for an HDL-32E -->
 
 <launch>
 
   <!-- declare arguments with default values -->
-  <arg name="calibration" default="$(find velodyne_pointcloud)/params/VeloView-VLP-32C.yaml"/>
+  <arg name="calibration" default="$(find velodyne_pointcloud)/params/64e_s3-xiesc.yaml"/>
   <arg name="device_ip" default="" />
   <arg name="frame_id" default="velodyne" />
   <arg name="manager" default="$(arg frame_id)_nodelet_manager" />
-  <arg name="max_range" default="200.0" />
+  <arg name="max_range" default="130.0" />
   <arg name="min_range" default="0.4" />
   <arg name="pcap" default="" />
   <arg name="port" default="2368" />
@@ -16,22 +16,24 @@
   <arg name="read_once" default="false" />
   <arg name="repeat_delay" default="0.0" />
   <arg name="rpm" default="600.0" />
+  <arg name="cut_angle" default="-0.01" />
   <arg name="laserscan_ring" default="-1" />
   <arg name="laserscan_resolution" default="0.007" />
-  <arg name="topic_name" default="points_raw"/>
+  <arg name="model" value="64E_S3"/>
 
   <!-- start nodelet manager and driver nodelets -->
   <include file="$(find velodyne_driver)/launch/nodelet_manager.launch">
     <arg name="device_ip" value="$(arg device_ip)"/>
     <arg name="frame_id" value="$(arg frame_id)"/>
     <arg name="manager" value="$(arg manager)" />
-    <arg name="model" value="32C"/>
+    <arg name="model" value="$(arg model)"/>
     <arg name="pcap" value="$(arg pcap)"/>
     <arg name="port" value="$(arg port)"/>
     <arg name="read_fast" value="$(arg read_fast)"/>
     <arg name="read_once" value="$(arg read_once)"/>
     <arg name="repeat_delay" value="$(arg repeat_delay)"/>
     <arg name="rpm" value="$(arg rpm)"/>
+    <arg name="cut_angle" value="$(arg cut_angle)"/>
   </include>
 
   <!-- start cloud nodelet -->
@@ -40,7 +42,6 @@
     <arg name="manager" value="$(arg manager)" />
     <arg name="max_range" value="$(arg max_range)"/>
     <arg name="min_range" value="$(arg min_range)"/>
-    <arg name="topic_name" value="$(arg topic_name)"/>
   </include>
 
   <!-- start laserscan nodelet -->

@@ -6,11 +6,13 @@
   <arg name="manager" default="velodyne_nodelet_manager" />
   <arg name="max_range" default="130.0" />
   <arg name="min_range" default="0.9" />
+  <arg name="topic_name" default="velodyne_points"/>
 
   <node pkg="nodelet" type="nodelet" name="$(arg manager)_cloud"
         args="load velodyne_pointcloud/CloudNodelet $(arg manager)">
     <param name="calibration" value="$(arg calibration)"/>
     <param name="max_range" value="$(arg max_range)"/>
     <param name="min_range" value="$(arg min_range)"/>
+    <remap from="velodyne_points" to="$(arg topic_name)"/>
   </node>
 </launch>

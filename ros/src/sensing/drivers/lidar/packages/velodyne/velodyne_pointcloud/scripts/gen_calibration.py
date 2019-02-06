@@ -91,7 +91,7 @@ if not calibrationGood:
     sys.exit(2)
 
 # create a dictionary to hold all relevant calibration values
-calibration = {'num_lasers': 0, 'lasers': []}
+calibration = {'num_lasers': 0, 'lasers': [], 'distance_resolution': 0.2}
 cm2meters = 0.01                       # convert centimeters to meters
 
 def addLaserCalibration(laser_num, key, val):
@@ -122,6 +122,11 @@ else:
 
 calibration['num_lasers'] = num_enabled
 print(str(num_enabled) + ' lasers')
+
+# add distance resolution (cm)
+distLSB = db.find('DB/distLSB_')
+if distLSB != None:
+    calibration['distance_resolution'] = float(distLSB.text) * cm2meters
 
 # add minimum laser intensities
 minIntensities = db.find('DB/minIntensity_')

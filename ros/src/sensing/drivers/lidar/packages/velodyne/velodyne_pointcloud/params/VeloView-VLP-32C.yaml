@@ -96,3 +96,4 @@ lasers:
   focal_slope: 0.0, horiz_offset_correction: 0.0, laser_id: 31, rot_correction: 0.024434609527920613,
   vert_correction: -0.02326523892908441, vert_offset_correction: 0.0}
 num_lasers: 32
+distance_resolution: 0.004

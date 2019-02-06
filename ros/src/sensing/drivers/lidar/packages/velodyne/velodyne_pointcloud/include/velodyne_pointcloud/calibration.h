@@ -13,6 +13,7 @@
 #define __VELODYNE_CALIBRATION_H
 
 #include <map>
+#include <vector>
 #include <string>
 
 namespace velodyne_pointcloud {
@@ -56,7 +57,9 @@ namespace velodyne_pointcloud {
 
   public:
 
-    std::map<int, LaserCorrection> laser_corrections;
+    float distance_resolution_m;
+    std::map<int,LaserCorrection> laser_corrections_map;
+    std::vector<LaserCorrection> laser_corrections;
     int num_lasers;
     bool initialized;
     bool ros_info;
@@ -64,9 +67,10 @@ namespace velodyne_pointcloud {
   public:
 
     Calibration(bool info=true):
-      initialized(false), ros_info(info) {}
+      distance_resolution_m(0.002f), initialized(false), ros_info(info) {}
     Calibration(const std::string& calibration_file,
                 bool info=true):
+      distance_resolution_m(0.002f),
       ros_info(info)
     {
       read(calibration_file);

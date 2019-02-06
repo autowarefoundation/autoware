@@ -37,6 +37,7 @@ namespace velodyne_pointcloud
 {
 
   const std::string NUM_LASERS = "num_lasers";
+  const std::string DISTANCE_RESOLUTION = "distance_resolution";
   const std::string LASERS = "lasers";
   const std::string LASER_ID = "laser_id";
   const std::string ROT_CORRECTION = "rot_correction";
@@ -143,13 +144,23 @@ namespace velodyne_pointcloud
   {
     int num_lasers;
     node[NUM_LASERS] >> num_lasers;
+    float distance_resolution_m;
+    node[DISTANCE_RESOLUTION] >> distance_resolution_m;
     const YAML::Node& lasers = node[LASERS];
     calibration.laser_corrections.clear();
     calibration.num_lasers = num_lasers;
+    calibration.distance_resolution_m = distance_resolution_m;
+    calibration.laser_corrections.resize(num_lasers);
     for (int i = 0; i < num_lasers; i++) {
       std::pair<int, LaserCorrection> correction;
       lasers[i] >> correction;
-      calibration.laser_corrections.insert(correction);
+      const int index = correction.first;
+      if( index >= calibration.laser_corrections.size() )
+      {
+        calibration.laser_corrections.resize( index+1 );
+      }
+      calibration.laser_corrections[index] = (correction.second);
+      calibration.laser_corrections_map.insert(correction);
     }
 
     // For each laser ring, find the next-smallest vertical angle.
@@ -223,10 +234,12 @@ namespace velodyne_pointcloud
     out << YAML::BeginMap;
     out << YAML::Key << NUM_LASERS <<
       YAML::Value << calibration.laser_corrections.size();
+    out << YAML::Key << DISTANCE_RESOLUTION <<
+      YAML::Value << calibration.distance_resolution_m;
     out << YAML::Key << LASERS << YAML::Value << YAML::BeginSeq;
     for (std::map<int, LaserCorrection>::const_iterator
-           it = calibration.laser_corrections.begin();
-         it != calibration.laser_corrections.end(); it++)
+           it = calibration.laser_corrections_map.begin();
+         it != calibration.laser_corrections_map.end(); it++)
       {
         out << *it; 
       }

@@ -20,7 +20,7 @@
   <test test-name="cloud_node_64e_s21_hz_test" pkg="rostest"
         type="hztest" name="hztest_cloud_node_64e_s21" >
     <param name="hz" value="5.0" />
-    <param name="hzerror" value="1.0" />
+    <param name="hzerror" value="2.0" />
     <param name="test_duration" value="5.0" />    
     <param name="topic" value="velodyne_points" />  
     <param name="wait_time" value="2.0" />  
