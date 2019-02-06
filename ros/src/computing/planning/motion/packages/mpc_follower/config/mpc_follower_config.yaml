@@ -12,14 +12,6 @@ show_debug_info: true
 # control period [s]
 ctrl_dt: 0.1
 
-# time period for resampling trajectory [s]
-#   currentlly, resample uses linear interpolation, thus small sampling period
-#   causes sharp (not smoothing) path.
-traj_resample_dt: 0.01 # NOT USED
-
-# path smoothing low pass filter cut off frequency [Hz]
-path_smoothing_cutoff_hz: 1.0 # NOT USED
-
 # length span for resampling trajectory [m]
 #   currentlly, resample uses linear interpolation, thus small sampling distance
 #   causes sharp (not smoothing) path.
