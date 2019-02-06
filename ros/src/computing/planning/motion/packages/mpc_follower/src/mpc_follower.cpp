@@ -28,18 +28,19 @@
 #include "utils.h"
 #include "lowpass_filter.h"
 #include "mpc_trajectory.h"
+#include "kinematics_bicycle_model.h"
 
 using vector = Eigen::VectorXd;
 using matrix = Eigen::MatrixXd;
 
-// #define PRINT_MAT(X) std::cout << #X << ":\n" << X << std::endl << std::endl
+#define PRINT_MAT(X) std::cout << #X << ":\n" << X << std::endl << std::endl
 
-// #define MPC_DEBUG_VERBOSE
-// #ifdef MPC_DEBUG_VERBOSE
-// #define MPC_INFO(...) { if (show_debug_info_) { printf(__VA_ARGS__); } }
-// #else
+#define MPC_DEBUG_VERBOSE
+#ifdef MPC_DEBUG_VERBOSE
+#define MPC_INFO(...) { if (show_debug_info_) { printf(__VA_ARGS__); } }
+#else
 #define MPC_INFO(...)
-// #endif
+#endif
 
 class MPCFollower
 {
@@ -61,6 +62,8 @@ private:
   std::string path_frame_id_;
   double previous_steering_command_;
 
+  KinematicsBicycleModel vehicle_model_;
+
   /* set what is published to vehicle */
   enum CtrlCmdInterface
   {
@@ -73,8 +76,6 @@ private:
   std::string ctrl_cmd_interface_string_; // currentlly, twist or steer_and_vel
 
   /* parameters */
-
-  
   double ctrl_dt_;                    // deside control frequency
   bool use_path_smoothing_;           // flag for path smoothing
   double path_smoothing_cutoff_hz_;   // path smoothing cutoff frequency [Hz]
@@ -84,6 +85,8 @@ private:
   double steering_lpf_cutoff_hz_;     // for steering command smoothing
   double admisible_position_error_;   // stop mpc calculation when lateral error is large than this value.
   double admisible_yaw_error_deg_;    // stop mpc calculation when yaw error is large than this value.
+  double steer_cmd_lim_;              // steering command limit [rad]
+  double wheelbase_;                  // only used to convert steering to twist
 
   struct MPCParam
   {
@@ -93,20 +96,8 @@ private:
     double weight_heading_error;    // for weight matrix Q
     double weight_steering_input;   // for weight matrix R
     double delay_compensation_time; // use interpolation for time delay compensation
-    int dim_state_;                 // dimension of predict model state
-    int dim_input_;                 // dimension of predict model input
-    int dim_output_;                // dimension of predict model output
   };
   MPCParam mpc_param_; // for mpc design
-
-  struct VehicleModel
-  {
-    double steer_tau;
-    double wheelbase;
-    double steer_lim_deg;
-    double gear_ratio_tire_to_steer;
-  };
-  VehicleModel vehicle_model_; // vehicle physical parameters
 
   struct VehicleStatus
   {
@@ -150,9 +141,6 @@ private:
   void publishAsTwist(const double &vel_cmd, const double &steer_cmd);
   void publishSteerAndVel(const double &vel_cmd, const double &steer_cmd);
 
-  // double convertHandleToTireAngle(double &handle_angle_rad);
-  // double convertTireToHandleAngle(double &tire_angle_rad);
-
   bool calculateMPC(double &vel_cmd, double &steer_cmd);
   void calculateNearestPose(unsigned int &nearest_index, double &min_dist_error, double &nearest_yaw_error,
                             const double &my_x, const double &my_y, const double &my_yaw);
@@ -185,6 +173,7 @@ MPCFollower::MPCFollower()
   pnh_.param("steering_lpf_cutoff_hz", steering_lpf_cutoff_hz_, double(3.0));
   pnh_.param("admisible_position_error", admisible_position_error_, double(5.0));
   pnh_.param("admisible_yaw_error_deg", admisible_yaw_error_deg_, double(45.0));
+  pnh_.param("steer_cmd_lim", steer_cmd_lim_, double(35.0 * 3.1415 / 180.0));
 
   /* mpc parameters */
   pnh_.param("mpc_n", mpc_param_.n, int(50));
@@ -193,15 +182,6 @@ MPCFollower::MPCFollower()
   pnh_.param("mpc_weight_heading_error", mpc_param_.weight_heading_error, double(1.0));
   pnh_.param("mpc_weight_steering_input", mpc_param_.weight_steering_input, double(1.0));
   pnh_.param("mpc_delay_compensation_time", mpc_param_.delay_compensation_time, double(0.05));
-  mpc_param_.dim_state_ = 3;
-  mpc_param_.dim_input_ = 1;
-  mpc_param_.dim_output_ = 2;
-
-  /*/ vehicle model */
-  pnh_.param("vehicle_model_steer_tau", vehicle_model_.steer_tau, double(0.3));
-  pnh_.param("vehicle_model_wheelbase", vehicle_model_.wheelbase, double(2.9));
-  pnh_.param("vehicle_model_steer_lim_deg", vehicle_model_.steer_lim_deg, double(40.0));
-  pnh_.param("vehicle_model_gear_ratio_tire_to_steer", vehicle_model_.gear_ratio_tire_to_steer, double(17.0));
 
   pnh_.param("show_debug_info", show_debug_info_, bool(false));
 
@@ -217,21 +197,13 @@ MPCFollower::MPCFollower()
 
   /* set control command interface */
   if (ctrl_cmd_interface_string_ == "twist")
-  {
     ctrl_cmd_interface_ = CtrlCmdInterface::TWIST;
-  }
   else if (ctrl_cmd_interface_string_ == "steer_and_vel")
-  {
     ctrl_cmd_interface_ = CtrlCmdInterface::STEER_AND_VEL;
-  }
   else if (ctrl_cmd_interface_string_ == "steer")
-  {
     ctrl_cmd_interface_ = CtrlCmdInterface::STEER;
-  }
   else if (ctrl_cmd_interface_string_ == "all")
-  {
     ctrl_cmd_interface_ = CtrlCmdInterface::ALL;
-  }
 
   /* initialize lowpass filter */
   lpf_steering_cmd_.initialize(ctrl_dt_, steering_lpf_cutoff_hz_);
@@ -302,9 +274,9 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
   static const double rad2deg = 180.0 / M_PI;
   static const double deg2rad = M_PI / 180.0;
   const int N = mpc_param_.n;
-  const int DIM_X = mpc_param_.dim_state_;
-  const int DIM_U = mpc_param_.dim_input_;
-  const int DIM_Y = mpc_param_.dim_output_;
+  const int DIM_X = vehicle_model_.getDimX();
+  const int DIM_U = vehicle_model_.getDimU();
+  const int DIM_Y = vehicle_model_.getDimY();
 
   double my_x = vehicle_status_.posx;
   double my_y = vehicle_status_.posy;
@@ -367,7 +339,7 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
   /////////////// generate mpc matrix  ///////////////
   /*
    * predict equation: Xec = Aex * x0 + Bex * Uex + Wex
-   * cost function: J = Xex' * Qex * Xex + (Uex - Uref)' * Rex * (Uex - Uref)
+   * cost function: J = Xex' * Qex * Xex + (Uex - Uref)' * Rex * (Uex - Urefex)
    * Qex = diag([Q,Q,...]), Rex = diag([R,R,...])
    */
 
@@ -377,9 +349,10 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
   matrix Cex = matrix::Zero(DIM_Y * N, DIM_X * N);
   matrix Qex = matrix::Zero(DIM_Y * N, DIM_Y * N);
   matrix Rex = matrix::Zero(DIM_U * N, DIM_U * N);
-  matrix Uref = matrix::Zero(DIM_U * N, 1);
+  matrix Urefex = matrix::Zero(DIM_U * N, 1);
   vector MPC_T = vector::Zero(N);
 
+  /* weight matrix depends on the vehicle model */
   matrix Q = matrix::Zero(DIM_Y, DIM_Y);
   matrix R = matrix::Zero(DIM_U, DIM_U);
   Q(0, 0) = mpc_param_.weight_lat_error;
@@ -390,6 +363,7 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
   matrix Bd(DIM_X, DIM_U);
   matrix Wd(DIM_X, 1);
   matrix Cd(DIM_Y, DIM_X);
+  matrix Uref(DIM_U, 0);
 
   MPCTrajectory debug_ref_vec; /* DEBUG: to calculate predicted trajectory */
 
@@ -421,9 +395,9 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
     }
     debug_ref_vec.push_back(debug_ref_x_tmp, debug_ref_y_tmp, debug_ref_z_tmp, debug_ref_yaw_tmp, 0, 0, 0);
 
-    /* get discrete state matrix */
-    getErrorDynamicsStateMatrix(mpc_param_.dt, ref_vx, vehicle_model_.wheelbase,
-                                vehicle_model_.steer_tau, ref_k, Ad, Bd, Wd, Cd);
+    /* get discrete state matrix A, B, C, W */
+    vehicle_model_.calculateDiscreteMatrix(Ad, Bd, Cd, Wd, mpc_param_.dt, ref_k, ref_vx);
+
     /* update mpc matrix */
     if (i == 0)
     {
@@ -453,8 +427,11 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
       Qex.block(idx_y_i, idx_y_i, DIM_Y, DIM_Y) = Q;
       Rex.block(idx_u_i, idx_u_i, DIM_U, DIM_U) = R;
     }
-    Uref(i * DIM_U, 0) = std::atan(vehicle_model_.wheelbase * ref_k);
-    // MPC_INFO("i = %d, ref_k = %f, uref = %f\n", i, ref_k, Uref(i*DIM_U, 0));
+
+    /* get reference input (feed-forward) */
+    vehicle_model_.calculateReferenceInput(Uref, ref_k);
+    Urefex.block(i * DIM_U, 0, DIM_U, 0) = Uref;
+    // MPC_INFO("i = %d, ref_k = %f, uref = %f\n", i, ref_k, Urefex(i*DIM_U, 0));
 
     /* update mpc time */
     mpc_time += mpc_param_.dt;
@@ -467,7 +444,7 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
    * cost function: Uex' * H * Uex + f' * Uex
    */
   matrix H = (Cex * Bex).transpose() * Qex * Cex * Bex + Rex;
-  matrix f = (Cex * (Aex * x0 + Wex)).transpose() * Qex * Cex * Bex - Uref.transpose() * Rex;
+  matrix f = (Cex * (Aex * x0 + Wex)).transpose() * Qex * Cex * Bex - Urefex.transpose() * Rex;
   vector Uex = -H.inverse() * f.transpose(); /* least square */
   // PRINT_MAT(-H.inverse() * f.transpose());
 
@@ -482,7 +459,7 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
   MPC_INFO("[calculateMPC] mpc steering angle command = %f [deg] (no delay comp = %f)\n", u_delay_comped * rad2deg, Uex(0) * rad2deg);
 
   /* saturation */
-  double u_sat = std::max(std::min(u_delay_comped, vehicle_model_.steer_lim_deg * deg2rad), -vehicle_model_.steer_lim_deg * deg2rad);
+  double u_sat = std::max(std::min(u_delay_comped, steer_cmd_lim_), -steer_cmd_lim_);
 
   /* filtering */
   double u_filtered = lpf_steering_cmd_.filter(u_sat);
@@ -492,8 +469,7 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
 
 
   /////////////// velocity control ////////////////
-
-  // NOTE: this is temporal for velocity control
+  /* For simplicity, now we calculate steer and speed separately */
   double lookahead_time = 1.0;                                  // [s]
   double cmd_vel_ref_time = nearest_traj_time + lookahead_time; // get ahead reference velocity
   if (!interp1d(ref_traj_.relative_time, ref_traj_.vx, cmd_vel_ref_time, vel_cmd))
@@ -527,7 +503,7 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
   pub_debug_predicted_traj_.publish(marker);
 
   /* publish debug values */
-  const double input_curvature = tan(steer_cmd) / vehicle_model_.wheelbase;
+  const double input_curvature = tan(steer_cmd) / wheelbase_;
   std_msgs::Float64MultiArray debug_values;
   debug_values.data.clear();
   debug_values.data.push_back(u_sat);
@@ -544,50 +520,6 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
 
   return true;
 };
-
-void MPCFollower::getErrorDynamicsStateMatrix(
-    const double &dt, const double &v, const double &wheelbase,
-    const double &steer_tau, const double &ref_curvature, matrix &Ad,
-    matrix &Bd, matrix &Wd, matrix &Cd)
-{
-
-  int DIM_X = 3;
-  int DIM_U = 1;
-  int DIM_Y = 2;
-
-  auto sign = [](double x) { return (x > 0.0) - (x < 0.0); };
-
-  /* linearization around delta = delta_r */
-  double delta_r = atan(wheelbase * ref_curvature);
-  if (abs(delta_r) >= vehicle_model_.steer_lim_deg / 180.0 * M_PI)
-    delta_r = (vehicle_model_.steer_lim_deg / 180.0 * M_PI) * (double)sign(delta_r);
-
-  double cos_delta_r_squared_inv = 1 / (cos(delta_r) * cos(delta_r));
-
-  /* difine continuous model */
-  matrix A(DIM_X, DIM_X);
-  matrix B(DIM_X, DIM_U);
-  matrix W(DIM_X, 1);
-  matrix C(DIM_Y, DIM_X);
-  A << 0.0, v, 0.0,
-      0.0, 0.0, v / wheelbase * cos_delta_r_squared_inv,
-      0.0, 0.0, -1.0 / steer_tau;
-
-  B << 0.0, 0.0, 1.0 / steer_tau;
-  C << 1.0, 0.0, 0.0,
-      0.0, 1.0, 0.0;
-  W << 0.0,
-      -v * ref_curvature + v / wheelbase * (tan(delta_r) - delta_r * cos_delta_r_squared_inv),
-      0.0;
-
-  /* bilinear discretization */
-  // Ad = eye(3) + A * dt;
-  matrix I = matrix::Identity(DIM_X, DIM_X);
-  Ad = (I - dt * 0.5 * A).inverse() * (I + dt * 0.5 * A);
-  Bd = B * dt;
-  Cd = C;
-  Wd = W * dt;
-}
 
 void MPCFollower::calculateNearestPose(unsigned int &nearest_index,
                                        double &min_dist_error,
@@ -748,7 +680,7 @@ void MPCFollower::publishControlCommands(const double &vel_cmd, const double &st
 void MPCFollower::publishAsTwist(const double &vel_cmd, const double &steer_cmd)
 {
   /* convert steering to twist */
-  double omega = vel_cmd * std::tan(steer_cmd) / vehicle_model_.wheelbase;
+  double omega = vel_cmd * std::tan(steer_cmd) / wheelbase_;
 
   geometry_msgs::TwistStamped twist;
   twist.header.frame_id = "/base_link";
@@ -1056,7 +988,6 @@ void MPCFollower::callbackVelocity(const pacmod_msgs::WheelSpeedRpt &msg)
 
 void MPCFollower::callbackSteering(const pacmod_msgs::SystemRptFloat &msg)
 {
-  // vehicle_status_.steer_rad = convertHandleToTireAngle(msg.output);
   vehicle_status_.steer_rad = msg.output;
   my_steering_ok_ = true;
 };

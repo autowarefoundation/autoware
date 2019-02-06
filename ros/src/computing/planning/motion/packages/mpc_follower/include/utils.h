@@ -1,6 +1,8 @@
 #pragma once
 #include <cmath>
 #include <vector>
+#include <eigen3/Eigen/Core>
+
 
 // set into [-pi to pi]
 double intoSemicircle(const double a) {
@@ -10,7 +12,7 @@ double intoSemicircle(const double a) {
 }
 
 void convertEulerAngleToMonotonic(std::vector<double> &a) {
-  for (uint i = 1; i < a.size(); ++i) {
+  for (unsigned int i = 1; i < a.size(); ++i) {
     const double da = a[i] - a[i - 1];
     a[i] = a[i - 1] + intoSemicircle(da);
   }
@@ -34,7 +36,7 @@ void filteringMovingAverate(std::vector<double> &u, const int num) {
     return;
   }
   std::vector<double> filtered_u(u);
-  for (uint i = 0; i < u.size(); ++i) {
+  for (unsigned int i = 0; i < u.size(); ++i) {
     double tmp = 0.0;
     int count = 0;
     for (int j = -num; j < num + 1; ++j) {
@@ -72,14 +74,14 @@ bool interp1d(const std::vector<double> &index,
     return true;
   }
 
-  for (uint i = 1; i < index.size(); ++i) {
+  for (unsigned int i = 1; i < index.size(); ++i) {
     if (!(index[i] > index[i - 1])) {
       printf("index must be monotonically increasing, return false. index[i] = %f, but index[i - 1] = %f\n", index[i], index[i - 1]);
       return false;
     }
   }
 
-  uint i = 1;
+  unsigned int i = 1;
   while (ref > index[i]) {
     ++i;
   }
@@ -102,7 +104,7 @@ bool interp1d(const Eigen::VectorXd &index,
     printf("index size is 1, too short. return false.\n");
     return false;
   }
-  uint end = index.size() - 1;
+  unsigned int end = index.size() - 1;
   if (ref < index[0]) {
     ret = values[0];
     // printf("ref point is out of index (low), return false.\n");
@@ -114,13 +116,13 @@ bool interp1d(const Eigen::VectorXd &index,
     return true;
   }
 
-  for (uint i = 1; i < index.size(); ++i) {
+  for (unsigned int i = 1; i < index.size(); ++i) {
     if (!(index[i] > index[i - 1])) {
       printf("index must be monotonically increasing, return false. index[i] = %f, but index[i - 1] = %f\n", index[i], index[i - 1]);
       return false;
     }
   }
-  uint i = 1;
+  unsigned int i = 1;
   while (ref > index[i]) {
     ++i;
   }
