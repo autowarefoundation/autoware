@@ -4,12 +4,14 @@ set -e
 
 . ./hooks/env
 
-# Parse image name for repo name
-tagStart=$(expr index "$IMAGE_NAME" :)
-repoName=${IMAGE_NAME:0:tagStart-1}
-
 if [[ "${LATEST_TAG}" =~ "ON" ]]; then
   # Tag and push image for latest tag
-  docker tag $IMAGE_NAME ${repoName}:latest-$ROS_DISTRO-cuda
-  docker push ${repoName}:latest-$ROS_DISTRO-cuda
+  docker tag $BASE ${DOCKER_REPO}:latest-$ROS_DISTRO-base
+  docker push ${DOCKER_REPO}:latest-$ROS_DISTRO-base
+  
+  docker tag $BASE_CUDA ${DOCKER_REPO}:latest-$ROS_DISTRO-base-cuda
+  docker push ${DOCKER_REPO}:latest-$ROS_DISTRO-base-cuda
+  
+  docker tag $IMAGE_NAME ${DOCKER_REPO}:latest-$ROS_DISTRO-cuda
+  docker push ${DOCKER_REPO}:latest-$ROS_DISTRO-cuda
 fi
