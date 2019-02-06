@@ -1,6 +1,69 @@
 Change history
 ==============
 
+1.5.2 (2019-01-28)
+------------------
+* Merge pull request `#205 <https://github.com/ros-drivers/velodyne/issues/205>`_ from xiesc/master
+  support for 64E-S3
+* add an example yaml file for S3
+* Contributors: Joshua Whitley, Shichao XIE, xiesc
+
+1.5.1 (2018-12-10)
+------------------
+* Merge pull request `#194 <https://github.com/ros-drivers/velodyne/issues/194>`_ from ros-drivers/avoid_unnecessary_computation
+  Avoid unnecessary computation - causes approximately 20% performance increase on VLP-32C - should be similar for other sensors
+* std::vector<>::reserve is your friend
+* add static to avoid frequence memory allocation
+* avoid unecesary calculations in unpack()
+* Contributors: Davide Faconti, Joshua Whitley
+
+1.5.0 (2018-10-19)
+------------------
+* Merge pull request `#164 <https://github.com/ros-drivers/velodyne/issues/164>`_ from ros-drivers/maint/vlp_32c_support
+  Adding VLP-32C support.
+  This was tested by AutonomouStuff and several external users. Though it does not include new information that I've learned (it appears that the distance resolution is different <50m vs >=50m), it is a good start.
+* Merge pull request `#189 <https://github.com/ros-drivers/velodyne/issues/189>`_ from kveretennicov/patch-1
+* Fix malformed plugin description XML
+  ROS pluginlib only recognizes multiple <library> elements if they are under
+  <class_libraries> XML root. It silently ignores malformed XMLs with multiple
+  <library> "root"s and just reads the first one, due to relaxed way tinyxml2 does
+  parsing. Though if you do `rosrun nodelet declared_nodelets`, the issue is
+  reported properly.
+  See also similar issue in https://github.com/ros-perception/perception_pcl/issues/131
+* Adding distance_resolution to test yaml files.
+* Adding VLP-32C support.
+  Based on work done by @rockcdr. Adds distance_resolution calibration
+  value to support 0.004m distance resolution for VLP-32C.
+* Contributors: Joshua Whitley, Konstantin Veretennicov
+
+1.4.0 (2018-09-19)
+------------------
+* Merge pull request `#178 <https://github.com/ros-drivers/velodyne/issues/178>`_ from sts-thm/bugfix_issue\_`#174 <https://github.com/ros-drivers/velodyne/issues/174>`_
+  Bugfix issue `#174 <https://github.com/ros-drivers/velodyne/issues/174>`_
+* Merge pull request `#177 <https://github.com/ros-drivers/velodyne/issues/177>`_ from C-NR/feature/WrapPointcloudData
+  Feature/wrap pointcloud data
+* Changes fixing deadlock for specific cut_angle values.
+* moved definition of VPoint and VPointCloud back to namespace rawdata in rawdata.h
+* put a wrapper around pointcloud data including a generic setter method to enable the use of arbitrary data structures  (pcl pointcloud, depth image, octomaps and so on) to be filled by just using RawData::unpack method with the wrapper object as parameter
+* Merge pull request `#170 <https://github.com/ros-drivers/velodyne/issues/170>`_ from ros-drivers/maint/move_header_files
+  Moving header files to traditional location inside include folders.
+* Merge pull request `#160 <https://github.com/ros-drivers/velodyne/issues/160>`_ from ros-drivers/maint/updating_package_xml_to_v2
+* Updated all package.xmls to ver 2. Cleaned up catkin_lint errors.
+  All package.xml files are now compatible with version 2 of the
+  package.xml specification in REP 140. Removed some unnecessary
+  execute permissions on a few files. Fixed a missing test_depend.
+* Merge pull request `#136 <https://github.com/ros-drivers/velodyne/issues/136>`_ from stsundermann/patch-1
+  Use std::abs instead of abs
+* Adding missing 32C configuration file.
+* Merge pull request `#139 <https://github.com/ros-drivers/velodyne/issues/139>`_ from ASDeveloper00/vlp32
+  Adding support for VLP-32C.
+* Merge pull request `#138 <https://github.com/ros-drivers/velodyne/issues/138>`_ from volkandre/cut_at_specified_angle_feature
+  Cut at specified angle feature
+* Updated default cut_angle parameters in launch files after switching from deg to rad.
+* Use std::abs instead of abs
+  abs is the c version which returns an integer. This is probably not intended here, so use the templated std::abs function.
+* Contributors: Andre Volk, Autonomoustuff Developer, CNR, Joshua Whitley, Kyle Rector, Stephan Sundermann, Tobias Athmer, kennouni
+
 1.3.0 (2017-11-10)
 -------------------
 * Merge pull request `#110 <https://github.com/ros-drivers/velodyne/issues/110>`_ from kmhallen/master

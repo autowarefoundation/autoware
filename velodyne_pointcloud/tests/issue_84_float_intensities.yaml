@@ -237,3 +237,4 @@ lasers:
   laser_id: 63, rot_correction: 0.02351688573662471, vert_correction: -0.20683046990039078,
   vert_offset_correction: 0.14718871}
 num_lasers: 64
+distance_resolution: 0.002

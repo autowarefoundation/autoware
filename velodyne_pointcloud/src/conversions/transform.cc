@@ -17,7 +17,7 @@
 
 */
 
-#include "transform.h"
+#include "velodyne_pointcloud/transform.h"
 
 #include <pcl_conversions/pcl_conversions.h>
 
@@ -73,7 +73,7 @@ namespace velodyne_pointcloud
       return;                                     // avoid much work
 
     // allocate an output point cloud with same time as raw data
-    VPointCloud::Ptr outMsg(new VPointCloud());
+    velodyne_rawdata::VPointCloud::Ptr outMsg(new velodyne_rawdata::VPointCloud());
     outMsg->header.stamp = pcl_conversions::toPCL(scanMsg->header).stamp;
     outMsg->header.frame_id = config_.frame_id;
     outMsg->height = 1;
@@ -82,13 +82,13 @@ namespace velodyne_pointcloud
     for (size_t next = 0; next < scanMsg->packets.size(); ++next)
       {
         // clear input point cloud to handle this packet
-        inPc_.points.clear();
-        inPc_.width = 0;
-        inPc_.height = 1;
+        inPc_.pc->points.clear();
+        inPc_.pc->width = 0;
+        inPc_.pc->height = 1;
         std_msgs::Header header;
         header.stamp = scanMsg->packets[next].stamp;
         header.frame_id = scanMsg->header.frame_id;
-        pcl_conversions::toPCL(header, inPc_.header);
+        pcl_conversions::toPCL(header, inPc_.pc->header);
 
         // unpack the raw data
         data_->unpack(scanMsg->packets[next], inPc_);
@@ -104,13 +104,13 @@ namespace velodyne_pointcloud
         // transform the packet point cloud into the target frame
         try
           {
-            ROS_DEBUG_STREAM("transforming from " << inPc_.header.frame_id
+            ROS_DEBUG_STREAM("transforming from " << inPc_.pc->header.frame_id
                              << " to " << config_.frame_id);
-            pcl_ros::transformPointCloud(config_.frame_id, inPc_, tfPc_,
+            pcl_ros::transformPointCloud(config_.frame_id, *(inPc_.pc), tfPc_,
                                          listener_);
 #if 0       // use the latest transform available, should usually work fine
-            pcl_ros::transformPointCloud(inPc_.header.frame_id,
-                                         ros::Time(0), inPc_,
+            pcl_ros::transformPointCloud(inPc_.pc->header.frame_id,
+                                         ros::Time(0), *(inPc_.pc),
                                          config_.frame_id,
                                          tfPc_, listener_);
 #endif

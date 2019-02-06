@@ -1,7 +1,7 @@
-<package>
-
+<?xml version="1.0"?>
+<package format="2">
   <name>velodyne_pointcloud</name>
-  <version>1.3.0</version>
+  <version>1.5.2</version>
   <description>
     Point cloud conversions for Velodyne 3D LIDARs.
   </description>
@@ -16,42 +16,28 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>angles</build_depend>
-  <build_depend>nodelet</build_depend>
-  <build_depend>pcl_conversions</build_depend>
-  <build_depend>pcl_ros</build_depend>
-  <build_depend>pluginlib</build_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>roslib</build_depend>
-  <build_depend>sensor_msgs</build_depend>
-  <build_depend>tf</build_depend>
-  <build_depend>velodyne_driver</build_depend>
-  <build_depend>velodyne_msgs</build_depend>
-  <build_depend>yaml-cpp</build_depend>
-  <build_depend>dynamic_reconfigure</build_depend>
+  <depend>angles</depend>
+  <depend>nodelet</depend>
+  <depend>pcl_conversions</depend>
+  <depend>pcl_ros</depend>
+  <depend>pluginlib</depend>
+  <depend>roscpp</depend>
+  <depend>roslib</depend>
+  <depend>sensor_msgs</depend>
+  <depend>tf</depend>
+  <depend>velodyne_driver</depend>
+  <depend>velodyne_msgs</depend>
+  <depend>yaml-cpp</depend>
+  <depend>dynamic_reconfigure</depend>
 
-  <!-- these build dependencies are only needed for unit testing -->
-  <build_depend>roslaunch</build_depend>
-  <build_depend>rostest</build_depend>
-  <build_depend>tf2_ros</build_depend>
+  <exec_depend>velodyne_laserscan</exec_depend>
 
-  <run_depend>angles</run_depend>
-  <run_depend>nodelet</run_depend>
-  <run_depend>pcl_ros</run_depend>
-  <run_depend>pluginlib</run_depend>
-  <run_depend>python-yaml</run_depend>
-  <run_depend>roscpp</run_depend>
-  <run_depend>roslib</run_depend>
-  <run_depend>sensor_msgs</run_depend>
-  <run_depend>tf</run_depend>
-  <run_depend>velodyne_driver</run_depend>
-  <run_depend>velodyne_msgs</run_depend>
-  <run_depend>yaml-cpp</run_depend>
-  <run_depend>dynamic_reconfigure</run_depend>
-  <run_depend>velodyne_laserscan</run_depend>
+  <test_depend>rosunit</test_depend>
+  <test_depend>roslaunch</test_depend>
+  <test_depend>rostest</test_depend>
+  <test_depend>tf2_ros</test_depend>
 
   <export>
     <nodelet plugin="${prefix}/nodelets.xml"/>
   </export>
-
 </package>

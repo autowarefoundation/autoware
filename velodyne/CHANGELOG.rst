@@ -1,6 +1,24 @@
 Change history
 ==============
 
+1.5.2 (2019-01-28)
+------------------
+
+1.5.1 (2018-12-10)
+------------------
+
+1.5.0 (2018-10-19)
+------------------
+
+1.4.0 (2018-09-19)
+------------------
+* Merge pull request `#160 <https://github.com/ros-drivers/velodyne/issues/160>`_ from ros-drivers/maint/updating_package_xml_to_v2
+* Updated all package.xmls to ver 2. Cleaned up catkin_lint errors.
+  All package.xml files are now compatible with version 2 of the
+  package.xml specification in REP 140. Removed some unnecessary
+  execute permissions on a few files. Fixed a missing test_depend.
+* Contributors: Andre Volk, Joshua Whitley
+
 1.3.0 (2017-11-10)
 ------------------
 * Merge pull request `#110 <https://github.com/ros-drivers/velodyne/issues/110>`_ from kmhallen/master

@@ -1,7 +1,7 @@
 #include <ros/ros.h>
 #include <pluginlib/class_list_macros.h>
 #include <nodelet/nodelet.h>
-#include "VelodyneLaserScan.h"
+#include "velodyne_laserscan/VelodyneLaserScan.h"
 
 namespace velodyne_laserscan
 {
@@ -21,4 +21,4 @@ private:
 
 }
 
-PLUGINLIB_DECLARE_CLASS(velodyne_laserscan, LaserScanNodelet, velodyne_laserscan::LaserScanNodelet, nodelet::Nodelet);
+PLUGINLIB_EXPORT_CLASS(velodyne_laserscan::LaserScanNodelet, nodelet::Nodelet);

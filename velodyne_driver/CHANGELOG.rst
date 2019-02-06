@@ -1,6 +1,52 @@
 Change history
 ==============
 
+1.5.2 (2019-01-28)
+------------------
+* Merge pull request `#212 <https://github.com/ros-drivers/velodyne/issues/212>`_ from ros-drivers/maint/vdump_as_root
+  Modifying vdump script for use as root.
+  Tested by @andersfischernielsen.
+* Merge pull request `#205 <https://github.com/ros-drivers/velodyne/issues/205>`_ from xiesc/master
+  support for 64E-S3
+* Contributors: Joshua Whitley, Shichao XIE, xiesc
+
+1.5.1 (2018-12-10)
+------------------
+
+1.5.0 (2018-10-19)
+------------------
+* Merge pull request `#187 <https://github.com/ros-drivers/velodyne/issues/187>`_ from moooeeeep/master
+  Fixed sign error in return value of InputSocket::getPacket()
+* bugfix: getPacket() function is expected to return negative value on error
+* Contributors: Fabian Maas, Joshua Whitley
+
+1.4.0 (2018-09-19)
+------------------
+* Merge pull request `#178 <https://github.com/ros-drivers/velodyne/issues/178>`_ from sts-thm/bugfix_issue\_`#174 <https://github.com/ros-drivers/velodyne/issues/174>`_
+  Bugfix issue `#174 <https://github.com/ros-drivers/velodyne/issues/174>`_
+* Removed debug outputs
+* Changes fixing deadlock for specific cut_angle values.
+* Merge pull request `#135 <https://github.com/ros-drivers/velodyne/issues/135>`_ from cfneuhaus/bugfix
+  Bugfix: when no device ip is set, we still want to filter by udp port.
+* Merge pull request `#170 <https://github.com/ros-drivers/velodyne/issues/170>`_ from ros-drivers/maint/move_header_files
+  Moving header files to traditional location inside include folders.
+* Merge pull request `#160 <https://github.com/ros-drivers/velodyne/issues/160>`_ from ros-drivers/maint/updating_package_xml_to_v2
+* Updated all package.xmls to ver 2. Cleaned up catkin_lint errors.
+  All package.xml files are now compatible with version 2 of the
+  package.xml specification in REP 140. Removed some unnecessary
+  execute permissions on a few files. Fixed a missing test_depend.
+* Merge pull request `#151 <https://github.com/ros-drivers/velodyne/issues/151>`_ from Axel13fr/feature/No_Communication_Diag_Update
+* Fix packet rate for the Velodyne 32C
+* Conventions: adding name for unused method parameter.
+* Added a periodic update of the diagnostics so that when no data is received at all from the Velodyne, a diagnostic information will be published. The previous implementation would publish diagnostics only on packet reception.
+* Merge pull request `#139 <https://github.com/ros-drivers/velodyne/issues/139>`_ from ASDeveloper00/vlp32
+  Adding support for VLP-32C.
+* Merge pull request `#138 <https://github.com/ros-drivers/velodyne/issues/138>`_ from volkandre/cut_at_specified_angle_feature
+* cut_angle parameter is now in rad according to REP 103
+* Fixed timestamp related bug found by @cfneuhaus, which was described here: https://github.com/ros-drivers/velodyne/pull/126#discussion_r154137793
+* bugfix: when no device ip is set, we still want to filter by udp port.
+* Contributors: Andre Volk, CNR, Denis Dillenberger, Frank Neuhaus, Jack O'Quin, Joshua Whitley, Sammy Pfeiffer, Tobias Athmer, axd, kennouni
+
 1.3.0 (2017-11-10)
 ------------------
 * Merge pull request `#129 <https://github.com/ros-drivers/velodyne/issues/129>`_ from kmhallen/pluginlib_macro

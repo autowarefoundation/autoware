@@ -1,4 +1,4 @@
-#include "VelodyneLaserScan.h"
+#include "velodyne_laserscan/VelodyneLaserScan.h"
 #include <sensor_msgs/point_cloud2_iterator.h>
 
 namespace velodyne_laserscan {
@@ -96,7 +96,7 @@ void VelodyneLaserScan::recvCallback(const sensor_msgs::PointCloud2ConstPtr& msg
 
   // Construct LaserScan message
   if ((offset_x >= 0) && (offset_y >= 0) && (offset_r >= 0)) {
-    const float RESOLUTION = fabsf(cfg_.resolution);
+    const float RESOLUTION = std::abs(cfg_.resolution);
     const size_t SIZE = 2.0 * M_PI / RESOLUTION;
     sensor_msgs::LaserScanPtr scan(new sensor_msgs::LaserScan());
     scan->header = msg->header;

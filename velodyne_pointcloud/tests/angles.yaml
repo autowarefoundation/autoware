@@ -255,3 +255,4 @@ lasers:
   rot_correction: 0.0314159244298935, two_pt_correction_available: false, vert_correction: -0.209881335496902,
   vert_offset_correction: 0}
 num_lasers: 64
+distance_resolution: 0.002

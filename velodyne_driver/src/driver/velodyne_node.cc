@@ -12,7 +12,7 @@
  */
 
 #include <ros/ros.h>
-#include "driver.h"
+#include "velodyne_driver/driver.h"
 
 int main(int argc, char** argv)
 {
