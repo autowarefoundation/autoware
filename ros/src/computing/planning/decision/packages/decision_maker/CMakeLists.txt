@@ -72,7 +72,7 @@ target_link_libraries(decision_maker_node
         ${catkin_LIBRARIES}
         ${vector_map_LIBRARIES}
         )
-add_dependencies(decision_maker_node ${catkin_EXPORTED_TARGETS})
+add_dependencies(decision_maker_node autoware_msgs_generate_msgs_cpp ${catkin_EXPORTED_TARGETS})
 
 install(TARGETS decision_maker_node
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
