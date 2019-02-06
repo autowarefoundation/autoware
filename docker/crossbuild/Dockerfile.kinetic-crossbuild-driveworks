@@ -3,7 +3,7 @@ ARG AUTOWARE_TARGET_ARCH
 ARG AUTOWARE_TARGET_PLATFORM
 ARG AUTOWARE_DOCKER_DATE
 ARG DOCKER_REPO
-FROM ${DOCKER_REPO}:${AUTOWARE_TARGET_PLATFORM}-kinetic-${AUTOWARE_DOCKER_DATE}
+FROM ${DOCKER_REPO}:latest-${AUTOWARE_TARGET_PLATFORM}-kinetic-rosdep
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential
 COPY files/FindCUDA.cmake /usr/share/cmake-3.5/Modules/FindCUDA.cmake

@@ -20,7 +20,7 @@ then
         --build-arg AUTOWARE_TARGET_ARCH=${AUTOWARE_TARGET_ARCH} \
         --build-arg AUTOWARE_TARGET_PLATFORM=${AUTOWARE_TARGET_PLATFORM} \
         -t ${DOCKER_REPO}:${AUTOWARE_TARGET_PLATFORM}-kinetic-${AUTOWARE_DOCKER_DATE} \
-        -f Dockerfile.kinetic-crossbuild .
+        -f Dockerfile.kinetic-crossbuild ./../..
     if [ "$AUTOWARE_TARGET_PLATFORM" = "driveworks" ]
     then
         docker image build \
