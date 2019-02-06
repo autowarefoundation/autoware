@@ -96,8 +96,7 @@ private:
 };
 
 KalmanFilterNode::KalmanFilterNode()
-    : nh_(""), pnh_("~"), initial_pose_received_(false),
-      initial_twist_received_(false)
+    : nh_(""), pnh_("~"), initial_pose_received_(false), initial_twist_received_(false)
 {
 
   pnh_.param("show_debug_info", show_debug_info_, bool(false));
@@ -303,12 +302,12 @@ void KalmanFilterNode::predictKinematicsModel()
   J << cos(yaw), -vx * sin(yaw),
       sin(yaw), vx * cos(yaw);
   Eigen::MatrixXd Q_vx_yaw = Eigen::MatrixXd::Zero(2, 2); // cov of vx and yaw
-  Q_vx_yaw(0, 0) = stddev_vx_c_ * stddev_vx_c_ * dt;      // covariance of vx
-  Q_vx_yaw(1, 1) = P_curr(2, 2) * dt;                     // covariance of yaw
+  Q_vx_yaw(0, 0) = stddev_vx_c_ * stddev_vx_c_ * dt * dt;      // covariance of vx
+  Q_vx_yaw(1, 1) = P_curr(2, 2) * dt * dt;                     // covariance of yaw
   Eigen::MatrixXd Q_ex = Eigen::MatrixXd::Zero(dim_x_ex_, dim_x_ex_);
   Q_ex.block(0, 0, 2, 2) = J * Q_vx_yaw * J.transpose(); // for pos_x & pos_y
-  Q_ex(2, 2) = cov_proc_yaw_d_ * dt;                     // for yaw
-  Q_ex(3, 3) = cov_proc_wz_bias_d_ * dt;                 // for yaw bias
+  Q_ex(2, 2) = cov_proc_yaw_d_ * dt * dt;                     // for yaw
+  Q_ex(3, 3) = cov_proc_wz_bias_d_ * dt * dt;                 // for yaw bias
 
 #if 0
 
@@ -418,11 +417,11 @@ void KalmanFilterNode::publishEstimatedPose()
   {
     pose_curr.pose.covariance[i] = 0.0;
   }
-  pose_curr.pose.covariance[0] = P(0, 0); // x, x
-  pose_curr.pose.covariance[1] = P(0, 1); // x, y
-  pose_curr.pose.covariance[5] = P(0, 2); // x, yaw
-  pose_curr.pose.covariance[6] = P(1, 0); // y, x
-  pose_curr.pose.covariance[7] = P(1, 1); // y, y
+  pose_curr.pose.covariance[0] = P(0, 0);  // x, x
+  pose_curr.pose.covariance[1] = P(0, 1);  // x, y
+  pose_curr.pose.covariance[5] = P(0, 2);  // x, yaw
+  pose_curr.pose.covariance[6] = P(1, 0);  // y, x
+  pose_curr.pose.covariance[7] = P(1, 1);  // y, y
   pose_curr.pose.covariance[11] = P(1, 2); // y, yaw
   pose_curr.pose.covariance[30] = P(2, 0); // yaw, x
   pose_curr.pose.covariance[31] = P(2, 1); // yaw, y
