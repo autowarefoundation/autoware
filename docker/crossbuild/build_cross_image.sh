@@ -8,6 +8,7 @@ then
     AUTOWARE_DOCKER_DATE=20190102
     AUTOWARE_TARGET_ARCH=aarch64
     AUTOWARE_TARGET_PLATFORM=$1
+    DOCKER_REPO=autoware/build
 
     echo "Using ${AUTOWARE_TARGET_PLATFORM} as the target architecture"
     # Register QEMU as a handler for non-x86 targets
@@ -18,7 +19,7 @@ then
         --build-arg AUTOWARE_DOCKER_ARCH=${AUTOWARE_DOCKER_ARCH} \
         --build-arg AUTOWARE_TARGET_ARCH=${AUTOWARE_TARGET_ARCH} \
         --build-arg AUTOWARE_TARGET_PLATFORM=${AUTOWARE_TARGET_PLATFORM} \
-        -t autoware/build:${AUTOWARE_TARGET_PLATFORM}-kinetic-${AUTOWARE_DOCKER_DATE} \
+        -t ${DOCKER_REPO}:${AUTOWARE_TARGET_PLATFORM}-kinetic-${AUTOWARE_DOCKER_DATE} \
         -f Dockerfile.kinetic-crossbuild .
     if [ "$AUTOWARE_TARGET_PLATFORM" = "driveworks" ]
     then
@@ -26,7 +27,8 @@ then
         --build-arg AUTOWARE_DOCKER_ARCH=${AUTOWARE_DOCKER_ARCH} \
         --build-arg AUTOWARE_TARGET_ARCH=${AUTOWARE_TARGET_ARCH} \
         --build-arg AUTOWARE_TARGET_PLATFORM=${AUTOWARE_TARGET_PLATFORM} \
-        -t autoware/build:${AUTOWARE_TARGET_PLATFORM}-kinetic-${AUTOWARE_DOCKER_DATE} \
+        --build-arg DOCKER_REPO=${DOCKER_REPO} \
+        -t ${DOCKER_REPO}:${AUTOWARE_TARGET_PLATFORM}-kinetic-${AUTOWARE_DOCKER_DATE} \
         -f Dockerfile.kinetic-crossbuild-driveworks .
     fi
 

@@ -1,7 +1,9 @@
 ARG AUTOWARE_DOCKER_ARCH
 ARG AUTOWARE_TARGET_ARCH
 ARG AUTOWARE_TARGET_PLATFORM
-FROM autoware/build:${AUTOWARE_TARGET_PLATFORM}-kinetic-20190102
+ARG AUTOWARE_DOCKER_DATE
+ARG DOCKER_REPO
+FROM ${DOCKER_REPO}:${AUTOWARE_TARGET_PLATFORM}-kinetic-${AUTOWARE_DOCKER_DATE}
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential
 COPY files/FindCUDA.cmake /usr/share/cmake-3.5/Modules/FindCUDA.cmake
