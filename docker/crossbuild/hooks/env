@@ -1,0 +1,12 @@
+[ -n "$SOURCE_BRANCH" ]  || SOURCE_BRANCH=$(git symbolic-ref -q --short HEAD)
+
+LATEST_TAG="ON"
+if [[ "${SOURCE_BRANCH}" =~ "release/" ]]; then
+  LATEST_TAG="OFF"
+fi
+
+ROS_DISTRO=kinetic
+
+AUTOWARE_DOCKER_ARCH=arm64v8
+AUTOWARE_DOCKER_DATE=`date '+%Y%M%d'`
+AUTOWARE_TARGET_ARCH=aarch64

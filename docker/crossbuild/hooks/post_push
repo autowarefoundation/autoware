@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -e
+
+. ./hooks/env
+
+if [[ "${LATEST_TAG}" =~ "ON" ]]; then
+  # Tag and push image for latest tag
+  docker tag ${DOCKER_REPO}:latest-synquacer-kinetic ${DOCKER_REPO}:synquacer-kinetic-${AUTOWARE_DOCKER_DATE}
+  docker push ${DOCKER_REPO}:synquacer-kinetic-${AUTOWARE_DOCKER_DATE}
+
+  docker tag ${DOCKER_REPO}:latest-driveworks-kinetic ${DOCKER_REPO}:driveworks-kinetic-${AUTOWARE_DOCKER_DATE}
+  docker push ${DOCKER_REPO}:driveworks-kinetic-${AUTOWARE_DOCKER_DATE}
+fi
