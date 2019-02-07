@@ -2,7 +2,7 @@
 
 set -e
 
-. ./hooks/env
+. ./hooks/env 
 
 if [[ "${LATEST_TAG}" =~ "ON" ]]; then
   # Tag and push image for latest tag
