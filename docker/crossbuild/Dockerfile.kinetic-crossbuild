@@ -50,6 +50,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     qtbase5-dev \
     ros-kinetic-angles \
     ros-kinetic-automotive-platform-msgs \
+    ros-kinetic-automotive-autonomy-msgs \
+    ros-kinetic-automotive-navigation-msgs \
     ros-kinetic-camera-info-manager \
     ros-kinetic-catkin \
     ros-kinetic-cmake-modules \
