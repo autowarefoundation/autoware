@@ -554,16 +554,30 @@ subs :
          cmd  : roslaunch waypoint_maker waypoint_loader.launch
          param: waypoint_loader
          gui  :
-           dialog_width  : 700
-           dialog_height : 550
+           dialog_width  : 600
+           dialog_height : 450
            multi_lane_csv :
+             depend      : load_csv
+             depend_bool : 'lambda v : v == 1'
              prop  : 1
-           replanning_mode :
+           realtime_tuning_mode:
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
            resample_mode :
              depend      : replanning_mode
              depend_bool : 'lambda v : v == 1'
            resample_interval :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+             flags : [ nl ]
+           replan_curve_mode :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+           overwrite_vmax_mode :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+           replan_endpoint_mode :
              depend      : replanning_mode
              depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
@@ -599,16 +613,31 @@ subs :
              depend      : replanning_mode
              depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
-           dialog : MyDialogWaypointLoader
+           braking_distance :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+             flags : [ nl ]
+
        - name : waypoint_saver
          desc : waypoint_saver desc sample
          cmd  : roslaunch waypoint_maker waypoint_saver.launch
          param: waypoint_saver
          gui  :
+           input_type    :
+             flags       : [ nl ]
            save_filename :
-             prop  : 1
+             prop        : 1
+             flags       : [ nl ]
            save_velocity :
-             flags : [ nl ]
+             depend      : input_type
+             depend_bool : 'lambda v : v == 0'
+           interval      :
+             depend      : input_type
+             depend_bool : 'lambda v : v == 0'
+             flags       : [ nl ]
+           lane_topic    :
+             depend      : input_type
+             depend_bool : 'lambda v : v == 1'
        - name : waypoint_clicker
          desc : waypoint_clicker desc sample
          cmd  : rosrun waypoint_maker waypoint_clicker
@@ -3493,6 +3522,20 @@ params :
         var_name    : save_finename
         dash        : ''
         delim       : ':='
+    - name      : input_type
+      desc      : input type
+      label     : Input Type
+      kind      : radio_box
+      choices   :
+      - VehicleFootprint
+      - LaneArrayTopic
+      descs     :
+      - save vehicle footprint as waypoints.csv
+      - save autoware_msgs/LaneArray topic as waypoints.
+      v         : 0
+      cmd_param :
+        dash     : ''
+        delim    : ':='
     - name  : save_velocity
       descs : When you save the velocity in each waypoints, Please check if /current_velocity is publishing
       label : Save /current_velocity
@@ -3508,6 +3551,15 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name      : lane_topic
+      desc      : subscribed LaneArray topic name
+      label     : lane topic
+      v         : /lane_waypoints_array
+      kind  : topic
+      topic_type : autoware_msgs/LaneArray
+      cmd_param :
+        dash      : ''
+        delim     : ':='
 
   - name  : waypoint_clicker
     vars  :
@@ -3527,9 +3579,17 @@ params :
       rosparam  : /waypoint_clicker/output_file
 
   - name  : waypoint_loader
-    topic : /config/waypoint_loader
-    msg   : ConfigWaypointLoader
+    topic : /config/waypoint_replanner
+    msg   : ConfigWaypointReplanner
     vars  :
+    - name      : load_csv
+      desc      : launch waypoint_loader
+      label     : load csv
+      kind      : checkbox
+      v         : true
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name      : multi_lane_csv
       desc      : driving_lane_csv desc sample
       label     : 'multi_lane'
@@ -3542,6 +3602,14 @@ params :
     - name      : replanning_mode
       desc      : Enable velocity replanning mode
       label     : 'replanning_mode'
+      kind      : checkbox
+      v         : false
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : realtime_tuning_mode
+      desc      : Enable realtime tuning mode
+      label     : realtime_tuning_mode
       kind      : checkbox
       v         : false
       cmd_param :
@@ -3562,11 +3630,35 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name      : replan_curve_mode
+      desc      : Enable replan curve mode
+      label     : replan curve mode
+      kind      : checkbox
+      v         : false
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : overwrite_vmax_mode
+      desc      : Enavle overwrite velocity max mode
+      label     : overwrite velocity max mode
+      kind      : checkbox
+      v         : false
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : replan_endpoint_mode
+      desc      : Enable replan endpoint mode
+      label     : replan endpoint mode
+      kind      : checkbox
+      v         : true
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name      : velocity_max
       desc      : All velocities are limited under Vmax [km/h]
       label     : Velocity Max Limit - Vmax [km/h]
-      min       : 10.0
-      max       : 60.0
+      min       : 0.1
+      max       : 100.0
       v         : 20.0
       cmd_param :
         dash        : ''
@@ -3603,7 +3695,7 @@ params :
       label     : Acceleration Limit - Accel limit [m/s^2]
       min       : 0.0
       max       : 5.0
-      v         : 0.98
+      v         : 0.5
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -3612,7 +3704,7 @@ params :
       label     : Deceleration Limit - Decel limit [m/s^2]
       min       : 0.0
       max       : 5.0
-      v         : 0.98
+      v         : 0.3
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -3625,20 +3717,21 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name      : end_point_offset
-      desc      : Expanded end points (v = 0) for safe stopping
-      label     : End Point Offset
+    - name      : braking_distance
+      desc      : braking distance (v = vmin) for safe stopping
+      label     : Braking Distance
       min       : 0
-      max       : 30
+      max       : 10
       v         : 5
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name      : disable_decision_maker
-      desc      : if you not check this, you have to run a decisionmaker node.
-      label     : 'disable_decision_maker'
-      kind      : checkbox
-      v         : true
+    - name      : end_point_offset
+      desc      : Expanded end points (v = 0) for safe stopping
+      label     : End Point Offset
+      min       : 0
+      max       : 2
+      v         : 1
       cmd_param :
         dash        : ''
         delim       : ':='
