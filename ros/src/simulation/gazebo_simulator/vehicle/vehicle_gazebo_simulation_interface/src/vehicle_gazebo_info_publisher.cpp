@@ -143,7 +143,7 @@ void VehicleGazeboInfoPublisher::jointStateCallback(const sensor_msgs::JointStat
     output_vehicle_status.header.stamp = current_time;
     output_vehicle_status.header.frame_id = "base_link";
     output_vehicle_status.speed = output_vel.data * 3.6; //km/h
-    output_vehicle_status.angle = output_steering_angle.data;
+    output_vehicle_status.angle = output_steering_angle.data * 180.0 / M_PI; //degree 
 
     output_twiststamped.header.stamp = current_time;
     output_twiststamped.header.frame_id = "base_link";

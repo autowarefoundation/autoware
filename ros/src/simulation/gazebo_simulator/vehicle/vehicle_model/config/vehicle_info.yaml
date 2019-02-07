@@ -6,5 +6,5 @@ vehicle_mass: 5000.0
 vehicle_length: 4.82
 vehicle_width: 1.81
 vehicle_height: 1.5
-minimum_turning_radius: 1.0
-maximum_steering_angle: 0.6
+minimum_turning_radius: 2.950
+maximum_steering_angle: 97.3 #deg
