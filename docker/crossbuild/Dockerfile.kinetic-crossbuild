@@ -49,7 +49,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python-serial \
     qtbase5-dev && \
     rm -rf /var/lib/apt/lists/*
-    
 
 #
 # Scan Autoware packages to install dependencies
