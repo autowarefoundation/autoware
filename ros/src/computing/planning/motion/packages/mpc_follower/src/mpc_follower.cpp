@@ -24,6 +24,7 @@
 
 #include "autoware_msgs/ControlCommandStamped.h"
 #include "autoware_msgs/Lane.h"
+#include <autoware_msgs/VehicleStatus.h>
 
 #include "utils.h"
 #include "lowpass_filter.h"
@@ -51,7 +52,8 @@ public:
 private:
   ros::NodeHandle nh_, pnh_;
   ros::Publisher pub_steer_vel_ctrl_cmd_, pub_twist_cmd_;
-  ros::Subscriber sub_ref_path_, sub_twist_, sub_pose_, sub_steering_, sub_vel_;
+  ros::Subscriber sub_ref_path_, sub_twist_, sub_pose_, sub_vehicle_status_;
+  ros::Subscriber sub_steering_, sub_vel_; // to be removed
   ros::Timer timer_control_;
 
   autoware_msgs::Lane current_waypoints_; // current received waypoints
@@ -128,10 +130,11 @@ private:
   void timerCallback(const ros::TimerEvent &);
   void callbackRefPath(const autoware_msgs::Lane::ConstPtr &);
   void callbackPose(const geometry_msgs::PoseStamped::ConstPtr &);
-  void callbackVelocity(const pacmod_msgs::WheelSpeedRpt &);
-  void callbackSteering(const pacmod_msgs::SystemRptFloat &);
+  // void callbackVelocity(const pacmod_msgs::WheelSpeedRpt &);
+  // void callbackSteering(const pacmod_msgs::SystemRptFloat &);
   void callbackVelocityGazebo(const std_msgs::Float64 &);
   void callbackSteeringGazebo(const std_msgs::Float64 &);
+  void callbackVehicleStatus(const autoware_msgs::VehicleStatus &msg);
 
   void calcRelativeTimeForPath(const autoware_msgs::Lane &, std::vector<double> &);
   void resamplePathToTrajByTime(const autoware_msgs::Lane &path, const std::vector<double> &time, const double &resample_dt, MPCTrajectory &ref_traj_);
@@ -218,8 +221,9 @@ MPCFollower::MPCFollower()
   /* setup can interface */
   if (robot_interface_ == "pacmod")
   {
-    sub_vel_ = nh_.subscribe("/pacmod/parsed_tx/wheel_speed_rpt", 1, &MPCFollower::callbackVelocity, this);
-    sub_steering_ = nh_.subscribe("/pacmod/parsed_tx/steer_rpt", 1, &MPCFollower::callbackSteering, this);
+    // sub_vel_ = nh_.subscribe("/pacmod/parsed_tx/wheel_speed_rpt", 1, &MPCFollower::callbackVelocity, this);
+    // sub_steering_ = nh_.subscribe("/pacmod/parsed_tx/steer_rpt", 1, &MPCFollower::callbackSteering, this);
+    sub_vehicle_status_ = nh_.subscribe("/vehicle_status", 1, &MPCFollower::callbackVehicleStatus, this);
   }
   else if (robot_interface_ == "sim")
   {
@@ -978,18 +982,26 @@ void MPCFollower::callbackPose(const geometry_msgs::PoseStamped::ConstPtr &msg)
   my_position_ok_ = true;
 };
 
-void MPCFollower::callbackVelocity(const pacmod_msgs::WheelSpeedRpt &msg)
-{
-  static const double tire_radius = 0.77 / 2.0;
-  static const double wheel_speed_rads_to_ms = tire_radius;
-  vehicle_status_.vx = (msg.rear_left_wheel_speed + msg.rear_right_wheel_speed) / 2.0 * wheel_speed_rads_to_ms;
-  my_velocity_ok_ = true;
-};
+// void MPCFollower::callbackVelocity(const pacmod_msgs::WheelSpeedRpt &msg)
+// {
+//   static const double tire_radius = 0.77 / 2.0;
+//   static const double wheel_speed_rads_to_ms = tire_radius;
+//   vehicle_status_.vx = (msg.rear_left_wheel_speed + msg.rear_right_wheel_speed) / 2.0 * wheel_speed_rads_to_ms;
+//   my_velocity_ok_ = true;
+// };
 
-void MPCFollower::callbackSteering(const pacmod_msgs::SystemRptFloat &msg)
+// void MPCFollower::callbackSteering(const pacmod_msgs::SystemRptFloat &msg)
+// {
+//   vehicle_status_.steer_rad = msg.output;
+//   my_steering_ok_ = true;
+// };
+
+void MPCFollower::callbackVehicleStatus(const autoware_msgs::VehicleStatus &msg)
 {
-  vehicle_status_.steer_rad = msg.output;
+  vehicle_status_.steer_rad = msg.angle;
+  vehicle_status_.vx = msg.speed * 1000.0 / 3600.0;
   my_steering_ok_ = true;
+  my_velocity_ok_ = true;
 };
 
 void MPCFollower::callbackVelocityGazebo(const std_msgs::Float64 &msg)

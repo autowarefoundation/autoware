@@ -16,6 +16,7 @@ find_package(catkin REQUIRED
   geometry_msgs
   autoware_msgs
   sensor_msgs
+  pacmod_msgs
 )
 
 find_package(Eigen3 REQUIRED)
@@ -44,6 +45,7 @@ catkin_package(
    geometry_msgs
    autoware_msgs
    sensor_msgs
+   pacmod_msgs
 )
 
 ###########
