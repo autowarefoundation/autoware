@@ -31,28 +31,22 @@
   <!-- body-->
   <xacro:body_macro suffix="base_body"
                     parent="base_link"
+                    wheel_radius="${wheel_radius}"
                     wheel_base="${wheel_base}"
                     vehicle_mass="${vehicle_mass}"
                     vehicle_mass_height="${vehicle_mass_height}"
                     vehicle_length="${vehicle_length}"
                     vehicle_width="${vehicle_width}"
                     vehicle_height="${vehicle_height}"/>
-  <joint name="base_footprint_joint" type="fixed">
-    <parent link="base_link"/>
-    <origin rpy="0 0 0" xyz="0 0 ${-wheel_radius}"/>
-    <child  link="base_footprint"/>
-  </joint>
-  <link name="base_footprint">
-  </link>
   <!-- steering-->
-  <xacro:steering_link_macro suffix="steering_front" parent="base_link" x="${wheel_base}" y="0"/>
+  <xacro:steering_link_macro suffix="steering_front" parent="base_body_link" x="${wheel_base}" y="0"/>
   <xacro:steering_macro suffix="steering_right_front" parent="steering_front_link" x="0" y="${-1*wheel_tread/2}" yaw="0" length="${wheel_width}"/>
   <xacro:steering_macro suffix="steering_left_front" parent="steering_front_link" x="0" y="${wheel_tread/2}" yaw="0" length="${wheel_width}"/>
   <!-- wheel -->
   <xacro:wheel_macro suffix="wheel_right_front" parent="steering_right_front_link" x="0" y="0" yaw="${pi}" radius="${wheel_radius}" width="${wheel_width}"/>
   <xacro:wheel_macro suffix="wheel_left_front" parent="steering_left_front_link" x="0" y="0" yaw="0" radius="${wheel_radius}" width="${wheel_width}"/>
-  <xacro:wheel_macro suffix="wheel_right_rear" parent="base_link" x="0" y="${-1*wheel_tread/2}" yaw="${pi}" radius="${wheel_radius}" width="${wheel_width}"/>
-  <xacro:wheel_macro suffix="wheel_left_rear" parent="base_link" x="0" y="${wheel_tread/2}" yaw="0" radius="${wheel_radius}" width="${wheel_width}"/>
+  <xacro:wheel_macro suffix="wheel_right_rear" parent="base_body_link" x="0" y="${-1*wheel_tread/2}" yaw="${pi}" radius="${wheel_radius}" width="${wheel_width}"/>
+  <xacro:wheel_macro suffix="wheel_left_rear" parent="base_body_link" x="0" y="${wheel_tread/2}" yaw="0" radius="${wheel_radius}" width="${wheel_width}"/>
   <!-- actuator -->
  	<xacro:include filename="$(find vehicle_model)/urdf/actuator.xacro"/>
   <!-- gazebo -->
