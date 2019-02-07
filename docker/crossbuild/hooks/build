@@ -23,7 +23,7 @@ docker image build \
 docker container run --rm --privileged multiarch/qemu-user-static:register --reset
 
 # Push image
-docker push ${DOCKER_REPO}:latest-${AUTOWARE_TARGET_PLATFORM}-kinetic
+docker push ${DOCKER_REPO}:latest-${AUTOWARE_TARGET_PLATFORM}-kinetic-rosdep
 
 # Build Docker Image for driveworks
 AUTOWARE_TARGET_PLATFORM="driveworks"
@@ -51,4 +51,4 @@ docker image build \
 docker container run --rm --privileged multiarch/qemu-user-static:register --reset
 
 # Push image
-docker push ${DOCKER_REPO}:latest-${AUTOWARE_TARGET_PLATFORM}-kinetic
+docker push ${DOCKER_REPO}:latest-${AUTOWARE_TARGET_PLATFORM}-kinetic-rosdep
