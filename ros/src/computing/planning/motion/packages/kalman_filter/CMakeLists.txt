@@ -57,10 +57,6 @@ include
 ${catkin_INCLUDE_DIRS}
 )
 
-message(STATUS "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ")
-message(STATUS "!!!!!!!!!!!! CMAKE_CXX_FLAGS = ${CMAKE_CXX_FLAGS}  !!!!!!!!!!!!!!!!!!!!!!!! ")
-message(STATUS "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ")
-
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/mpc_follower.cpp

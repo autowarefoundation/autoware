@@ -19,11 +19,19 @@
 
 #include "kalman_filter/kalman_filter.h"
 
-#define PRINT_MAT(X) std::cout << #X << ":\n" << X << std::endl << std::endl
+#define PRINT_MAT(X) std::cout << #X << ":\n"    \
+                               << X << std::endl \
+                               << std::endl
 
 #define EKF_DEBUG_VERBOSE
 #ifdef EKF_DEBUG_VERBOSE
-#define EKF_INFO(...) { if (show_debug_info_) { printf(__VA_ARGS__); } }
+#define EKF_INFO(...)      \
+  {                        \
+    if (show_debug_info_)  \
+    {                      \
+      printf(__VA_ARGS__); \
+    }                      \
+  }
 #else
 #define EKF_INFO(...)
 #endif
@@ -103,14 +111,14 @@ KalmanFilterNode::KalmanFilterNode()
   pnh_.param("predict_frequency", predict_frequency_, double(100.0));
   pnh_.param("tf_dt", tf_dt_, double(0.05));
   pnh_.param("wheelbase", wheelbase_, double(2.79));
-  pnh_.param("additional_delay", additional_delay_, double(0.10));
+  pnh_.param("additional_delay", additional_delay_, double(0.050));
   pnh_.param("extend_state_step", extend_state_step_, int(50));
 
   pnh_.param("stddev_proc_x_c", stddev_proc_x_c_, double(1.0));
   pnh_.param("stddev_proc_y_c", stddev_proc_y_c_, double(1.0));
   pnh_.param("stddev_proc_yaw_c", stddev_proc_yaw_c_, double(1.0));
   pnh_.param("stddev_proc_wz_bias_c", stddev_proc_wz_bias_c_, double(0.1));
-  pnh_.param("stddev_vx_c", stddev_vx_c_, double(0.5));
+  pnh_.param("stddev_vx_c", stddev_vx_c_, double(1.0));
 
   pnh_.param("measure_time_uncertainty", measure_time_uncertainty_, double(0.01));
 
@@ -130,7 +138,7 @@ KalmanFilterNode::KalmanFilterNode()
   sub_vehicle_status_ = nh_.subscribe("/vehicle_status", 1, &KalmanFilterNode::callbackVehicleStatus, this);
   sub_imu_ = nh_.subscribe("/imu_raw", 1, &KalmanFilterNode::callbackIMU, this);
 
-  dim_x_ = 4; // x, y, yaw, omega_bias
+  dim_x_ = 5; // x, y, yaw, omega_bias
   dim_x_ex_ = dim_x_ * extend_state_step_;
 
   initKalmanFilter();
@@ -199,11 +207,15 @@ void KalmanFilterNode::callbackVehicleStatus(
   // current_twist_.linear.x = msg->speed;
   // current_twist_.angular.z = msg->speed * tan(msg->angle) / wheelbase_;
 
-  // TEMP
-  current_twist_.twist.linear.x = msg.speed / 3.6;
-  current_twist_.twist.angular.z =
-      (msg.speed / 3.6) * tan(msg.angle * 3.1415 / 180.0 / 17.85) / 2.95 / 1.09;
-  initial_twist_received_ = true;
+  
+  // // TEMP
+  // current_twist_.twist.linear.x = msg.speed / 3.6;
+  // current_twist_.twist.angular.z =
+  //     (msg.speed / 3.6) * tan(msg.angle * 3.1415 / 180.0 / 17.85) / 2.95 / 1.09;
+  // initial_twist_received_ = true;
+
+  // TEMP2
+  const double gear_ratio = 15.713 + 0.053 * v * v + 0.042 * str;
 };
 
 /*
@@ -234,6 +246,7 @@ void KalmanFilterNode::initKalmanFilter()
   for (int i = 0; i + 3 < dim_x_ex_; i += dim_x_)
   {
     P(i + 3, i + 3) = 1.0E-6; // for omega bias
+    P(i + 4, i + 4) = 1.0E-5; // for omega bias
   }
   kf_.init(X, P);
 }
@@ -245,18 +258,20 @@ void KalmanFilterNode::predictKinematicsModel()
 {
   /*  == Nonlinear model ==
    *
-   * x_{k+1} = x_k + vx * cos(yaw_k) * dt
-   * y_{k+1} = y_k + vx * sin(yaw_k) * dt
+   * x_{k+1} = x_k + vx * cos(yaw_k + yaw_bias_k) * dt
+   * y_{k+1} = y_k + vx * sin(yaw_k + yaw_bias_k) * dt
    * yaw_{k+1} = yaw_k + (wz + wz_bias_k) * dt
    * wz_bias_{k+1} = wz_bias_k
+   * yaw_bias_{k+1} = yaw_bias_k
    */
 
   /*  == Linearized model ==
    *
-   * A = [ 1, 0, -vx*sin(yaw)*dt, 0 ]
-   *     [ 0, 1, vx*cos(yaw)*dt, 0 ]
-   *     [ 0, 0, 1,              dt ]
-   *     [ 0, 0, 0,               1 ]
+   * A = [ 1, 0, -vx*sin(yaw + yaw_bias_k)*dt, 0 , -vx*sin(yaw + yaw_bias_k)*dt]
+   *     [ 0, 1, vx*cos(yaw + yaw_bias_k)*dt,  0,   vx*cos(yaw + yaw_bias_k)*dt]
+   *     [ 0, 0, 1,                           dt,   0]
+   *     [ 0, 0, 0,                           1,    0]
+   *     [ 0, 0, 0,                           0,    1]
    */
 
   Eigen::MatrixXd X_curr(dim_x_ex_, 1); // curent state
@@ -271,29 +286,33 @@ void KalmanFilterNode::predictKinematicsModel()
   const double wz = current_twist_.twist.angular.z;
   const double yaw = X_curr(2);
   const double wz_bias = X_curr(3);
+  const double yaw_bias = X_curr(4);
   const double dt = predict_dt_;
 
-  EKF_INFO("X_curr = %f, %f, %f, %f\n", X_curr(0), X_curr(1), X_curr(2), X_curr(3));
+  EKF_INFO("X_curr = %f, %f, %f, %f, %f\n", X_curr(0), X_curr(1), X_curr(2), X_curr(3), X_curr(4));
 
   /* update for latest state */
-  X_next(0) = X_curr(0) + vx * cos(yaw) * dt;  // dx = v * cos(yaw)
-  X_next(1) = X_curr(1) + vx * sin(yaw) * dt;  // dy = v * sin(yaw)
-  X_next(2) = X_curr(2) + (wz + wz_bias) * dt; // dyaw = omega + omega_bias
-  X_next(3) = wz_bias;                         // d_omega_bias = 0;
+  X_next(0) = X_curr(0) + vx * cos(yaw + yaw_bias) * dt; // dx = v * cos(yaw)
+  X_next(1) = X_curr(1) + vx * sin(yaw + yaw_bias) * dt; // dy = v * sin(yaw)
+  X_next(2) = X_curr(2) + (wz + wz_bias) * dt;           // dyaw = omega + omega_bias
+  X_next(3) = wz_bias;                                   // d_omega_bias = 0;
+  X_next(4) = yaw_bias;
   while (std::fabs(X_next(2)) > M_PI)
   {
     X_next(2) -= 2.0 * M_PI * ((X_next(2) > 0) - (X_next(2) < 0));
   }
-  EKF_INFO("X_next = %f, %f, %f, %f\n", X_next(0), X_next(1), X_next(2), X_next(3));
+  EKF_INFO("X_next = %f, %f, %f, %f, %f\n", X_next(0), X_next(1), X_next(2), X_next(3), X_next(4));
 
   /* slide states in the time direction */
   X_next.block(dim_x_, 0, d_dim_x, 1) = X_curr.block(0, 0, d_dim_x, 1);
 
   /* set A matrix for latest state */
   Eigen::MatrixXd A = Eigen::MatrixXd::Identity(dim_x_, dim_x_);
-  A(0, 2) = -vx * sin(yaw) * dt;
-  A(1, 2) = vx * cos(yaw) * dt;
+  A(0, 2) = -vx * sin(yaw + yaw_bias) * dt;
+  A(1, 2) = vx * cos(yaw + yaw_bias) * dt;
   A(2, 3) = dt;
+  A(0, 4) = -vx * sin(yaw + yaw_bias) * dt;
+  A(1, 4) = vx * cos(yaw + yaw_bias) * dt;
 
   /* set covariance matrix Q for process noise 
       calc Q by velocity and yaw angle covariance :
@@ -302,13 +321,13 @@ void KalmanFilterNode::predictKinematicsModel()
   J << cos(yaw), -vx * sin(yaw),
       sin(yaw), vx * cos(yaw);
   Eigen::MatrixXd Q_vx_yaw = Eigen::MatrixXd::Zero(2, 2); // cov of vx and yaw
-  Q_vx_yaw(0, 0) = stddev_vx_c_ * stddev_vx_c_ * dt * dt;      // covariance of vx
-  Q_vx_yaw(1, 1) = P_curr(2, 2) * dt * dt;                     // covariance of yaw
+  Q_vx_yaw(0, 0) = stddev_vx_c_ * stddev_vx_c_ * dt * dt; // covariance of vx
+  Q_vx_yaw(1, 1) = P_curr(2, 2) * dt * dt;                // covariance of yaw
   Eigen::MatrixXd Q_ex = Eigen::MatrixXd::Zero(dim_x_ex_, dim_x_ex_);
   Q_ex.block(0, 0, 2, 2) = J * Q_vx_yaw * J.transpose(); // for pos_x & pos_y
-  Q_ex(2, 2) = cov_proc_yaw_d_ * dt * dt;                     // for yaw
-  Q_ex(3, 3) = cov_proc_wz_bias_d_ * dt * dt;                 // for yaw bias
-
+  Q_ex(2, 2) = cov_proc_yaw_d_;                          // for yaw
+  Q_ex(3, 3) = cov_proc_wz_bias_d_;                      // for yaw bias
+  Q_ex(4, 4) = 0.0001 * 0.0001;
 #if 0
 
   /* update P directly (slow for large dimension) */
@@ -412,7 +431,7 @@ void KalmanFilterNode::publishEstimatedPose()
   pose_curr.pose.pose.position.x = X(0);
   pose_curr.pose.pose.position.y = X(1);
   pose_curr.pose.pose.position.z = current_ndt_pose_.pose.position.z;
-  pose_curr.pose.pose.orientation = tf::createQuaternionMsgFromYaw(X(2, 0));
+  pose_curr.pose.pose.orientation = tf::createQuaternionMsgFromYaw(X(2, 0) + X(4, 0));
   for (int i = 0; i < 36; ++i)
   {
     pose_curr.pose.covariance[i] = 0.0;
@@ -459,6 +478,7 @@ void KalmanFilterNode::publishEstimatedPose()
   msg.data.push_back(tf::getYaw(current_ndt_pose_.pose.orientation) * RAD2DEG); // [3] NDT yaw angle
   msg.data.push_back(X(3) * RAD2DEG);                                           // [4] omega bias
   msg.data.push_back((current_twist_.twist.angular.z + X(3)));                  // [5] omega + omega_bias
+  msg.data.push_back(X(4));                                                     // [6] yaw_bias
   pub_debug_.publish(msg);
 }
 
