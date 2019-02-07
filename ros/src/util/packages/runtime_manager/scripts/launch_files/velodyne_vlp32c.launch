@@ -35,19 +35,12 @@
   </include>
 
   <!-- start cloud nodelet -->
-  <include file="$(find velodyne_pointcloud)/launch/cloud_nodelet.launch">
-    <arg name="calibration" value="$(arg calibration)"/>
-    <arg name="manager" value="$(arg manager)" />
-    <arg name="max_range" value="$(arg max_range)"/>
-    <arg name="min_range" value="$(arg min_range)"/>
+  <node pkg="nodelet" type="nodelet" name="cloud_nodelet"
+        args="load velodyne_pointcloud/CloudNodelet velodyne_nodelet_manager">
+    <param name="calibration" value="$(arg calibration)"/>
+    <param name="min_range" value="$(arg min_range)"/>
+    <param name="max_range" value="$(arg max_range)"/>
     <remap from="velodyne_points" to="$(arg topic_name)"/>
-  </include>
-
-  <!-- start laserscan nodelet -->
-  <include file="$(find velodyne_pointcloud)/launch/laserscan_nodelet.launch">
-    <arg name="manager" value="$(arg manager)" />
-    <arg name="ring" value="$(arg laserscan_ring)"/>
-    <arg name="resolution" value="$(arg laserscan_resolution)"/>
-  </include>
-
+  </node>
+  
 </launch>
