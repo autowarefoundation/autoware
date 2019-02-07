@@ -9,6 +9,9 @@ if [[ "${LATEST_TAG}" =~ "ON" ]]; then
   docker tag ${DOCKER_REPO}:latest-synquacer-kinetic-rosdep ${DOCKER_REPO}:synquacer-kinetic-rosdep-${AUTOWARE_DOCKER_DATE}
   docker push ${DOCKER_REPO}:synquacer-kinetic-rosdep-${AUTOWARE_DOCKER_DATE}
 
+  docker tag ${DOCKER_REPO}:latest-generic-aarch64-kinetic-rosdep ${DOCKER_REPO}:generic-aarch64-kinetic-rosdep-${AUTOWARE_DOCKER_DATE}
+  docker push ${DOCKER_REPO}:generic-aarch64-kinetic-rosdep-${AUTOWARE_DOCKER_DATE}
+
   docker tag ${DOCKER_REPO}:latest-driveworks-kinetic-rosdep ${DOCKER_REPO}:driveworks-kinetic-rosdep-${AUTOWARE_DOCKER_DATE}
   docker push ${DOCKER_REPO}:driveworks-kinetic-rosdep-${AUTOWARE_DOCKER_DATE}
 fi
