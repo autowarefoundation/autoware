@@ -39,6 +39,8 @@ void DecisionMakerNode::setupStateCallback(void)
                            std::bind(&DecisionMakerNode::entryVehicleReadyState, this, std::placeholders::_1, 0));
   ctx_vehicle->setCallback(state_machine::CallbackType::UPDATE, "VehicleReady",
                            std::bind(&DecisionMakerNode::updateVehicleReadyState, this, std::placeholders::_1, 0));
+  ctx_vehicle->setCallback(state_machine::CallbackType::UPDATE, "BatteryCharging",
+                           std::bind(&DecisionMakerNode::updateBatteryChargingState, this, std::placeholders::_1, 0));
   ctx_vehicle->setCallback(state_machine::CallbackType::ENTRY, "VehicleEmergency",
                            std::bind(&DecisionMakerNode::entryVehicleEmergencyState, this, std::placeholders::_1, 0));
   ctx_vehicle->setCallback(state_machine::CallbackType::UPDATE, "VehicleEmergency",
