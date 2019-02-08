@@ -130,8 +130,6 @@ private:
   void timerCallback(const ros::TimerEvent &);
   void callbackRefPath(const autoware_msgs::Lane::ConstPtr &);
   void callbackPose(const geometry_msgs::PoseStamped::ConstPtr &);
-  // void callbackVelocity(const pacmod_msgs::WheelSpeedRpt &);
-  // void callbackSteering(const pacmod_msgs::SystemRptFloat &);
   void callbackVelocityGazebo(const std_msgs::Float64 &);
   void callbackSteeringGazebo(const std_msgs::Float64 &);
   void callbackVehicleStatus(const autoware_msgs::VehicleStatus &msg);
@@ -213,16 +211,14 @@ MPCFollower::MPCFollower()
 
   /* set up ros system */
   timer_control_ = nh_.createTimer(ros::Duration(ctrl_dt_), &MPCFollower::timerCallback, this);
-  pub_twist_cmd_ = nh_.advertise<geometry_msgs::TwistStamped>("/twist_cmd", 1);
-  pub_steer_vel_ctrl_cmd_ = nh_.advertise<autoware_msgs::ControlCommandStamped>("/ctrl_cmd", 1);
+  pub_twist_cmd_ = nh_.advertise<geometry_msgs::TwistStamped>("/twist_cmd2", 1);
+  pub_steer_vel_ctrl_cmd_ = nh_.advertise<autoware_msgs::ControlCommandStamped>("/ctrl_cmd2", 1);
   sub_ref_path_ = nh_.subscribe("/base_waypoints", 1, &MPCFollower::callbackRefPath, this);
   sub_pose_ = nh_.subscribe("/current_pose", 1, &MPCFollower::callbackPose, this);
 
   /* setup can interface */
   if (robot_interface_ == "pacmod")
   {
-    // sub_vel_ = nh_.subscribe("/pacmod/parsed_tx/wheel_speed_rpt", 1, &MPCFollower::callbackVelocity, this);
-    // sub_steering_ = nh_.subscribe("/pacmod/parsed_tx/steer_rpt", 1, &MPCFollower::callbackSteering, this);
     sub_vehicle_status_ = nh_.subscribe("/vehicle_status", 1, &MPCFollower::callbackVehicleStatus, this);
   }
   else if (robot_interface_ == "sim")
@@ -367,7 +363,7 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
   matrix Bd(DIM_X, DIM_U);
   matrix Wd(DIM_X, 1);
   matrix Cd(DIM_Y, DIM_X);
-  matrix Uref(DIM_U, 0);
+  matrix Uref(DIM_U, 1);
 
   MPCTrajectory debug_ref_vec; /* DEBUG: to calculate predicted trajectory */
 
@@ -434,7 +430,8 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
 
     /* get reference input (feed-forward) */
     vehicle_model_.calculateReferenceInput(Uref, ref_k);
-    Urefex.block(i * DIM_U, 0, DIM_U, 0) = Uref;
+    Urefex.block(i * DIM_U, 0, DIM_U, 1) = Uref;
+
     // MPC_INFO("i = %d, ref_k = %f, uref = %f\n", i, ref_k, Urefex(i*DIM_U, 0));
 
     /* update mpc time */
@@ -709,20 +706,6 @@ void MPCFollower::publishSteerAndVel(const double &vel_cmd, const double &steer_
   pub_steer_vel_ctrl_cmd_.publish(cmd);
 }
 
-// double MPCFollower::convertHandleToTireAngle(double &handle_angle_rad, double &vel) {
-//   const double a0 = 15.713;
-//   const double a1 = 0.053;
-//   const double a2 = -0.042;
-//   const double N = a0 + a1 * vel * vel + a2 * handle_angle_rad;
-//   return handle_angle_rad / N;
-// };
-// double MPCFollower::convertTireToHandleAngle(double &tire_angle_rad, double &vel) {
-//   const double a0 = 15.713;
-//   const double a1 = 0.053;
-//   const double a2 = -0.042;
-//   return tire_angle_rad * (a0 + a1 * vel * vel) / (1.0 - a2 * tire_angle_rad);
-// };
-
 void MPCFollower::callbackRefPath(const autoware_msgs::Lane::ConstPtr &msg)
 {
   const auto start = std::chrono::system_clock::now();
@@ -981,20 +964,6 @@ void MPCFollower::callbackPose(const geometry_msgs::PoseStamped::ConstPtr &msg)
   vehicle_status_.time = msg->header.stamp.toSec();
   my_position_ok_ = true;
 };
-
-// void MPCFollower::callbackVelocity(const pacmod_msgs::WheelSpeedRpt &msg)
-// {
-//   static const double tire_radius = 0.77 / 2.0;
-//   static const double wheel_speed_rads_to_ms = tire_radius;
-//   vehicle_status_.vx = (msg.rear_left_wheel_speed + msg.rear_right_wheel_speed) / 2.0 * wheel_speed_rads_to_ms;
-//   my_velocity_ok_ = true;
-// };
-
-// void MPCFollower::callbackSteering(const pacmod_msgs::SystemRptFloat &msg)
-// {
-//   vehicle_status_.steer_rad = msg.output;
-//   my_steering_ok_ = true;
-// };
 
 void MPCFollower::callbackVehicleStatus(const autoware_msgs::VehicleStatus &msg)
 {

@@ -10,7 +10,7 @@ show_debug_info: true
 #---------------------------------------------------------------------
 
 # control period [s]
-ctrl_dt: 0.1
+ctrl_dt: 0.04
 
 # length span for resampling trajectory [m]
 #   currentlly, resample uses linear interpolation, thus small sampling distance
@@ -22,11 +22,11 @@ traj_resample_dl: 0.1
 use_path_smoothing: true
 
 # path smoothing low pass filler, moving average number
-path_smoothing_moving_ave_num: 25
+path_smoothing_moving_ave_num: 40
 
 # curvature calculation smoothing, larger makes smoother
 #   curvature is calculated from three points: p(i-num), p(i), p(i+num)
-curvature_smoothing_num: 25
+curvature_smoothing_num: 40
 
 # low pass filter for steering output command [Hz]
 steering_lpf_cutoff_hz: 3.0
@@ -35,7 +35,7 @@ steering_lpf_cutoff_hz: 3.0
 admisible_position_error: 5.0 #[m]
 admisible_yaw_error_deg: 45.0 #[deg]
 
-predict_model_for_delay: 0.22 # 0.22 for lexus
+predict_model_for_delay: 0. # 0.22 for lexus
 
 
 #---------------------------------------------------------------------
@@ -50,7 +50,7 @@ mpc_dt: 0.1
 
 # weight parameters
 mpc_weight_lat_error: 1.0      # for Q[0,0]
-mpc_weight_heading_error: 1.0  # for Q[1,1]
+mpc_weight_heading_error: 0.1  # for Q[1,1]
 mpc_weight_steering_input: 50.0 # for R[0,0]
 
 # time delay compensation

@@ -28,7 +28,8 @@ class KinematicsBicycleModel
     double steer_lim_deg_;
 };
 
-KinematicsBicycleModel::KinematicsBicycleModel() : wheelbase_(2.79), steer_tau_(0.3), steer_lim_deg_(35.0) {};
+KinematicsBicycleModel::KinematicsBicycleModel() : dim_x_(3), dim_u_(1), dim_y_(2),
+                                                   wheelbase_(2.79), steer_tau_(0.3), steer_lim_deg_(35.0){};
 KinematicsBicycleModel::~KinematicsBicycleModel(){};
 
 int KinematicsBicycleModel::getDimX() { return dim_x_; };
@@ -39,7 +40,7 @@ void KinematicsBicycleModel::calculateDiscreteMatrix(Eigen::MatrixXd &Ad, Eigen:
                                                      Eigen::MatrixXd &Wd, double &dt, double &curvature, double &vel)
 {
     auto sign = [](double x) { return (x > 0.0) - (x < 0.0); };
-    static const double DEG2RAD = M_PI/ 180.0;
+    static const double DEG2RAD = M_PI / 180.0;
 
     /* Linearize delta around delta_r (referece delta) */
     double delta_r = atan(wheelbase_ * curvature);
@@ -65,7 +66,7 @@ void KinematicsBicycleModel::calculateDiscreteMatrix(Eigen::MatrixXd &Ad, Eigen:
     Wd *= dt;
 }
 
-
-void KinematicsBicycleModel::calculateReferenceInput(Eigen::MatrixXd &Uref, double &curvature) {
-  Uref(0,0) =  std::atan(wheelbase_ * curvature);
+void KinematicsBicycleModel::calculateReferenceInput(Eigen::MatrixXd &Uref, double &curvature)
+{
+    Uref(0, 0) = std::atan(wheelbase_ * curvature);
 }
