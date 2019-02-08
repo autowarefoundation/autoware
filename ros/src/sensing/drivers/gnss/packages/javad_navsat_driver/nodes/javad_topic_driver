@@ -47,7 +47,7 @@ def nmea_sentence_callback(nmea_sentence, driver):
 if __name__ == '__main__':
     rospy.init_node('javad_topic_driver')
 
-    driver = libjavad_navsat_driver.driver.RosNMEADriver()
+    driver = libjavad_navsat_driver.driver.ROSNMEADriver()
 
     rospy.Subscriber("nmea_sentence", Sentence, nmea_sentence_callback,
             driver)

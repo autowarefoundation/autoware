@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>sick_ldmrs_description</name>
-  <version>1.9.1</version>
+  <version>1.10.0</version>
   <description>
     This package contains an URDF description of the SICK LD-MRS scanner and all supporting mesh files.
   </description>
@@ -9,7 +9,7 @@
   <maintainer email="martin.guenther@dfki.de">Martin Günther</maintainer>
   <author email="martin.guenther@dfki.de">Martin Günther</author>
 
-  <license>BSD</license>
+  <license>Apache 2</license>
 
   <url type="website">http://wiki.ros.org/sick_ldmrs_description</url>
 
