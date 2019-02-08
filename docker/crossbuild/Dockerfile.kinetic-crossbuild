@@ -71,7 +71,7 @@ ENV AUTOWARE_SYSROOT /sysroot/${AUTOWARE_TARGET_PLATFORM}
 COPY --from=sysroot /lib ${AUTOWARE_SYSROOT}/lib
 COPY --from=sysroot /usr/include ${AUTOWARE_SYSROOT}/usr/include
 COPY --from=sysroot /usr/lib ${AUTOWARE_SYSROOT}/usr/lib
-COPY --from=sysroot /usr/share/pkgconfig ${AUTOWARE_SYSROOT}/usr/share/pkgconfig
+COPY --from=sysroot /usr/share ${AUTOWARE_SYSROOT}/usr/share
 COPY --from=sysroot /opt ${AUTOWARE_SYSROOT}/opt
 COPY --from=sysroot /etc/alternatives ${AUTOWARE_SYSROOT}/etc/alternatives
 RUN echo "deb http://packages.ros.org/ros/ubuntu xenial main" | tee /etc/apt/sources.list.d/ros-latest.list
