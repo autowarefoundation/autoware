@@ -67,6 +67,7 @@ ${catkin_INCLUDE_DIRS}
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(mpc_follower_node src/mpc_follower.cpp)
+add_executable(mpc_follower_node2 src/mpc_follower_with_predict.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -77,9 +78,11 @@ add_executable(mpc_follower_node src/mpc_follower.cpp)
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 add_dependencies(mpc_follower_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(mpc_follower_node2 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(mpc_follower_node ${catkin_LIBRARIES} glog)
+target_link_libraries(mpc_follower_node2 ${catkin_LIBRARIES} glog)
 
 #############
 ## Install ##

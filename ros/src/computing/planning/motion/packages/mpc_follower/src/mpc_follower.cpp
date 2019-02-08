@@ -396,7 +396,9 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
     debug_ref_vec.push_back(debug_ref_x_tmp, debug_ref_y_tmp, debug_ref_z_tmp, debug_ref_yaw_tmp, 0, 0, 0);
 
     /* get discrete state matrix A, B, C, W */
-    vehicle_model_.calculateDiscreteMatrix(Ad, Bd, Cd, Wd, mpc_param_.dt, ref_k, ref_vx);
+    vehicle_model_.setVel(ref_vx);
+    vehicle_model_.setCurvature(ref_k);
+    vehicle_model_.calculateDiscreteMatrix(Ad, Bd, Cd, Wd, mpc_param_.dt);
 
     /* update mpc matrix */
     if (i == 0)
@@ -429,7 +431,7 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
     }
 
     /* get reference input (feed-forward) */
-    vehicle_model_.calculateReferenceInput(Uref, ref_k);
+    vehicle_model_.calculateReferenceInput(Uref);
     Urefex.block(i * DIM_U, 0, DIM_U, 1) = Uref;
 
     // MPC_INFO("i = %d, ref_k = %f, uref = %f\n", i, ref_k, Urefex(i*DIM_U, 0));

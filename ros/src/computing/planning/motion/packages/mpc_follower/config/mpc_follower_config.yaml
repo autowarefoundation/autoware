@@ -50,7 +50,7 @@ mpc_dt: 0.1
 
 # weight parameters
 mpc_weight_lat_error: 1.0      # for Q[0,0]
-mpc_weight_heading_error: 0.1  # for Q[1,1]
+mpc_weight_heading_error: 0.0  # for Q[1,1]
 mpc_weight_steering_input: 50.0 # for R[0,0]
 
 # time delay compensation
@@ -62,12 +62,12 @@ mpc_delay_compensation_time: 0.0 #[s]
 #---------------------------------------------------------------------
 
 # steering dynamics time constant (1d approzimation) [s]
-vehicle_model_steer_tau: 0.3 # lexus: 0.2 + LPF delay
+vehicle_model_steer_tau: 0.2 # lexus: 0.2 + LPF delay
 
 # wheel base length [m]
 vehicle_model_wheelbase: 2.79 # lexus: 2.79
 # steering angle limit [deg]
-vehicle_model_steer_lim_deg: 30.0
+vehicle_model_steer_lim_deg: 40.0
 
 # gear ratio tire to steering angle (lexus is about 17)
 vehicle_model_gear_ratio_tire_to_steer: 17.0
