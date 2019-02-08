@@ -176,7 +176,7 @@ void DecisionMakerNode::setupStateCallback(void)
   ctx_motion->setCallback(state_machine::CallbackType::UPDATE, "OrderedStop",
                          std::bind(&DecisionMakerNode::updateOrderedStopState, this, std::placeholders::_1, 1));
   ctx_motion->setCallback(state_machine::CallbackType::UPDATE, "ReservedStop",
-                         std::bind(&DecisionMakerNode::updateStopState, this, std::placeholders::_1, 1));
+                         std::bind(&DecisionMakerNode::updateReservedStopState, this, std::placeholders::_1, 1));
 
   ctx_vehicle->nextState("started");
   ctx_mission->nextState("started");

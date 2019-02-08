@@ -207,6 +207,8 @@ void DecisionMakerNode::updateOrderedStopState(cstring_t& state_name, int status
 void DecisionMakerNode::updateReservedStopState(cstring_t& state_name, int status)
 {
   publishStoplineWaypointIdx(current_status_.found_stopsign_idx);
+  if (current_status_.velocity == 0.0 && (current_status_.obstacle_waypoint + current_status_.closest_waypoint) == current_status_.found_stopsign_idx)
+    current_status_.prev_stopped_wpidx = current_status_.found_stopsign_idx;
 }
 
 }
