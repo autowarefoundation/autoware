@@ -40,6 +40,9 @@ autoware_states_behavior:
         Key: operation_end
         Target: Stopping
       -
+        Key: mission_reloaded
+        Target: Stopping
+      -
         Key: emergency
         Target: BehaviorEmergency
     Parent: ~
