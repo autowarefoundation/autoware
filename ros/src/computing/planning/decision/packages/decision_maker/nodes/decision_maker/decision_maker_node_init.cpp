@@ -175,6 +175,8 @@ void DecisionMakerNode::setupStateCallback(void)
                          std::bind(&DecisionMakerNode::updateStoplineState, this, std::placeholders::_1, 0));
   ctx_motion->setCallback(state_machine::CallbackType::UPDATE, "OrderedStop",
                          std::bind(&DecisionMakerNode::updateOrderedStopState, this, std::placeholders::_1, 1));
+  ctx_motion->setCallback(state_machine::CallbackType::EXIT, "OrderedStop",
+                         std::bind(&DecisionMakerNode::exitOrderedStopState, this, std::placeholders::_1, 1));
   ctx_motion->setCallback(state_machine::CallbackType::UPDATE, "ReservedStop",
                          std::bind(&DecisionMakerNode::updateReservedStopState, this, std::placeholders::_1, 1));
 
@@ -216,6 +218,8 @@ void DecisionMakerNode::createPublisher(void)
   Pubs["state_msg"] = private_nh_.advertise<autoware_msgs::State>("state_msg", 1, true);
   Pubs["state_overlay"] = private_nh_.advertise<jsk_rviz_plugins::OverlayText>("state_overlay", 1);
   Pubs["available_transition"] = private_nh_.advertise<std_msgs::String>("available_transition", 1, true);
+  Pubs["stop_cmd_location"] = private_nh_.advertise<autoware_msgs::VehicleLocation>("stop_cmd_location", 1, true);
+  Pubs["clear_cmd_location"] = private_nh_.advertise<autoware_msgs::VehicleLocation>("clear_cmd_location", 1, true);
 
   // for debug
   Pubs["target_velocity_array"] = nh_.advertise<std_msgs::Float64MultiArray>("target_velocity_array", 1);

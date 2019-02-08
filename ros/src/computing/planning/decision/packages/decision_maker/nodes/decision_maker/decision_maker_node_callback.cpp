@@ -317,13 +317,33 @@ void DecisionMakerNode::callbackFromObstacleWaypoint(const std_msgs::Int32& msg)
 
 void DecisionMakerNode::callbackFromStopOrder(const std_msgs::Int32& msg)
 {
+  autoware_msgs::VehicleLocation pub_msg;
+  pub_msg.header.stamp = ros::Time::now();
+  pub_msg.lane_array_id = current_status_.using_lane_array.id;
+  pub_msg.waypoint_index = -1;
+
   if (current_status_.closest_waypoint < msg.data)
+  {
     current_status_.ordered_stop_idx = msg.data;
+    pub_msg.waypoint_index = msg.data;
+  }
+
+  Pubs["stop_cmd_location"].publish(pub_msg);
 }
 
 void DecisionMakerNode::callbackFromClearOrder(const std_msgs::Int32& msg)
 {
+  autoware_msgs::VehicleLocation pub_msg;
+  pub_msg.header.stamp = ros::Time::now();
+  pub_msg.lane_array_id = current_status_.using_lane_array.id;
+  pub_msg.waypoint_index = -1;
+
   if (current_status_.ordered_stop_idx == msg.data)
+  {
     current_status_.ordered_stop_idx = -1;
+    pub_msg.waypoint_index = msg.data;
+  }
+
+    Pubs["clear_cmd_location"].publish(pub_msg);
 }
 }

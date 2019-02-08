@@ -34,6 +34,7 @@
 #include <autoware_msgs/State.h>
 #include <autoware_msgs/TrafficLight.h>
 #include <autoware_msgs/VehicleCmd.h>
+#include <autoware_msgs/VehicleLocation.h>
 #include <autoware_msgs/Waypoint.h>
 #include <vector_map/vector_map.h>
 
@@ -298,6 +299,7 @@ private:
   // exit callback
   void exitWaitState(cstring_t& state_name, int status);
   void exitStopState(cstring_t& state_name, int status);
+  void exitOrderedStopState(cstring_t& state_name, int status);
 
   // callback by topic subscribing
   void callbackFromFilteredPoints(const sensor_msgs::PointCloud2::ConstPtr& msg);
