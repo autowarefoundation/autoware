@@ -179,7 +179,10 @@ void DecisionMakerNode::updateMissionChangeFailedState(cstring_t& state_name, in
 
 void DecisionMakerNode::entryMissionCompleteState(cstring_t& state_name, int status)
 {
-  tryNextState("operation_end");
+  if (!use_fms_ && auto_mission_reload_)
+    tryNextState("mission_reloaded");
+  else
+    tryNextState("operation_end");
 }
 void DecisionMakerNode::updateMissionCompleteState(cstring_t& state_name, int status)
 {
