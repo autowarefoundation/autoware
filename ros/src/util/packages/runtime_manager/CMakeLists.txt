@@ -76,6 +76,13 @@ install(FILES
   scripts/launch_files/planning.launch
   scripts/launch_files/sensor.launch
   scripts/launch_files/set.launch
+
+  scripts/launch_files/velodyne_hdl64e_s2.launch
+  scripts/launch_files/velodyne_hdl64e_s3.launch
+  scripts/launch_files/velodyne_hdl32e.launch
+  scripts/launch_files/velodyne_vlp16.launch
+  scripts/launch_files/velodyne_vlp16_hires.launch
+  scripts/launch_files/velodyne_vlp32c.launch
   DESTINATION share/${PROJECT_NAME}/launch_files)
 
 catkin_package(
