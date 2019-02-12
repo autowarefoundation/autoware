@@ -1,0 +1,29 @@
+<launch>
+
+    <arg name="param_flag"                 default="0"/>
+    <arg name="velocity"                   default="5.0"/>
+    <arg name="lookahead_distance"         default="4.0"/>
+    <arg name="lookahead_ratio"            default="2.0"/>
+    <arg name="minimum_lookahead_distance" default="6.0"/>
+    <arg name="displacement_threshold"     default="0.0"/>
+    <arg name="relative_angle_threshold"   default="0.0"/>
+
+	<arg name="is_linear_interpolation" default="True"/>
+	<arg name="publishes_for_steering_robot" default="False"/>
+
+	<node pkg="waypoint_follower" type="pure_pursuit" name="pure_pursuit" output="log">
+		<param name="is_linear_interpolation" value="$(arg is_linear_interpolation)"/>
+		<param name="publishes_for_steering_robot" value="$(arg publishes_for_steering_robot)"/>
+	</node>
+
+	<node pkg="autoware_launcher" type="config_waypoint_follower" name="config_waypoint_follower" ns="autoware_launcher">
+		<param name="param_flag"                 value="$(arg param_flag)"/>
+		<param name="velocity"                   value="$(arg velocity)"/>
+		<param name="lookahead_distance"         value="$(arg lookahead_distance)"/>
+		<param name="lookahead_ratio"            value="$(arg lookahead_ratio)"/>
+		<param name="minimum_lookahead_distance" value="$(arg minimum_lookahead_distance)"/>
+		<param name="displacement_threshold"     value="$(arg displacement_threshold)"/>
+		<param name="relative_angle_threshold"   value="$(arg relative_angle_threshold)"/>
+	</node>
+
+</launch>

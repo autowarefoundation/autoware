@@ -1,0 +1,5 @@
+format: Autoware Launcher Plugin Version 0.1
+rules:
+- { name: downsampler,      plugin: leaf/voxel_grid_filter  }
+- { name: localizer,        plugin: leaf/ndt_matching }
+- { name: vel_pose_connect, plugin: refs/vel_pose_connect }

@@ -1,0 +1,12 @@
+format: Autoware Launcher Plugin Version 0.1
+args:
+- { name: multi_lane_csv,         type: str }
+- { name: disable_decision_maker, type: bool, default: true }
+
+panel:
+  widget: node.panel
+  frames:
+  - target: args.multi_lane_csv
+    widget: basic.file
+  - target: args.disable_decision_maker
+    widget: basic.bool

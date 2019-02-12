@@ -1,0 +1,5 @@
+children: []
+config:
+  args.disable_decision_maker: true
+  args.multi_lane_csv: $(env HOME)/.autoware/data/path/moriyama_path.txt
+plugin: leaf/waypoint_loader

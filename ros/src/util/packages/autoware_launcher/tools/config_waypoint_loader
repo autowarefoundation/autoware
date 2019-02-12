@@ -1,0 +1,17 @@
+#! /usr/bin/env python
+
+import rospy
+from autoware_config_msgs.msg import ConfigWaypointLoader
+
+rospy.init_node('config_publisher', anonymous=True)
+
+config = ConfigWaypointLoader()
+for key, val in rospy.get_param("~").items():
+    print (key, val)
+    setattr(config, key, val)
+
+publisher = rospy.Publisher("/config/waypoint_loader", ConfigWaypointLoader, queue_size=1, latch=True)
+publisher.publish(config)
+
+rate = rospy.Rate(1)
+while not rospy.is_shutdown(): rate.sleep()

@@ -1,0 +1,18 @@
+<Plugin File> is [Dictionary]
+
+    args: [List of <Argument>]
+
+<Argument> is [Dictionary]
+
+    title: [String]
+    view : <View Type>
+    opts : <View Options>
+    data : <Argument Definition> or [List of <Argument Definition>]
+
+<Argument Defs> is [Dictionary]
+
+    type: bool, str, int, real
+    list: None, space, json
+    name: [String]
+    default: [Depends on <Argument.type>]
+    cfgkey (Auto)

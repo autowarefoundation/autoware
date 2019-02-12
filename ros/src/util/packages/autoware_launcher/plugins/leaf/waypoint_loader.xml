@@ -1,0 +1,37 @@
+<launch>
+
+	<arg name="multi_lane_csv"/>
+	<arg name="disable_decision_maker"/>
+	<arg name="replanning_mode"   default="false"/>
+	<arg name="resample_mode"     default="true"/>
+	<arg name="resample_interval" default="1"/>
+	<arg name="velocity_max"      default="20"/>
+	<arg name="velocity_min"      default="4"/>
+	<arg name="radius_thresh"     default="20"/>
+	<arg name="radius_min"        default="6"/>
+	<arg name="accel_limit"       default="0.98"/>
+	<arg name="decel_limit"       default="0.98"/>
+	<arg name="velocity_offset"   default="4"/>
+	<arg name="end_point_offset"  default="5"/>
+
+	<node pkg="waypoint_maker" type="waypoint_loader" name="waypoint_loader" output="screen">
+	    <param name="disable_decision_maker" value="$(arg disable_decision_maker)" />
+	</node>
+	<node pkg="waypoint_maker" type="waypoint_marker_publisher" name="waypoint_marker_publisher" />
+
+	<node pkg="autoware_launcher" type="config_waypoint_loader" name="config_waypoint_loader" ns="autoware_launcher">
+		<param name="multi_lane_csv"    value="$(arg multi_lane_csv)"/>
+		<param name="replanning_mode"   value="$(arg replanning_mode)"/>
+		<param name="resample_mode"     value="$(arg resample_mode)"/>
+		<param name="resample_interval" value="$(arg resample_interval)"/>
+		<param name="velocity_max"      value="$(arg velocity_max)"/>
+		<param name="velocity_min"      value="$(arg velocity_min)"/>
+		<param name="radius_thresh"     value="$(arg radius_thresh)"/>
+		<param name="radius_min"        value="$(arg radius_min)"/>
+		<param name="accel_limit"       value="$(arg accel_limit)"/>
+		<param name="decel_limit"       value="$(arg decel_limit)"/>
+		<param name="velocity_offset"   value="$(arg velocity_offset)"/>
+		<param name="end_point_offset"  value="$(arg end_point_offset)"/>
+	</node>
+
+</launch>
