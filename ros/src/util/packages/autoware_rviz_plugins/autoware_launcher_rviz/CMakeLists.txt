@@ -38,9 +38,9 @@ install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-install(DIRECTORY icons
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/icons
-)
+#install(DIRECTORY icons
+#  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/icons
+#)
 
 ## Add gtest based cpp test target and link libraries
 # catkin_add_gtest(${PROJECT_NAME}-test test/test_autoware_launcher_rviz.cpp)
