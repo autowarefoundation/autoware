@@ -18,7 +18,6 @@
 #include <tf/transform_broadcaster.h>
 
 #include "kalman_filter/kalman_filter.h"
-#include "kalman_filter/kalman_filter_delayed_measurement.h"
 
 #include <pacmod_msgs/SystemRptFloat.h>
 #include <pacmod_msgs/WheelSpeedRpt.h>
@@ -48,13 +47,13 @@ public:
 
 private:
   ros::NodeHandle nh_, pnh_;
-  ros::Publisher pub_pose_, pub_pose_cov_, pub_debug_, pub_ndt_pose_;
-  ros::Subscriber sub_ndt_pose_, sub_vehicle_status_, sub_imu_;
+  ros::Publisher pub_pose_, pub_pose_cov_, pub_pose_array_, pub_debug_, pub_ndt_pose_;
+  ros::Subscriber sub_ndt_pose_, sub_vehicle_status_, sub_imu_, sub1_, sub2_;
   ros::Timer timer_control_, timer_tf_;
   tf::TransformBroadcaster tf_br_;
   bool show_debug_info_;
 
-  KalmanFilterDelayedMeasurement kf_;
+  KalmanFilter kf_;
 
   bool initial_pose_received_;
   bool initial_twist_received_;
@@ -123,11 +122,11 @@ KalmanFilterNode::KalmanFilterNode()
 {
 
   pnh_.param("show_debug_info", show_debug_info_, bool(false));
-  pnh_.param("predict_frequency", predict_frequency_, double(50.0));
+  pnh_.param("predict_frequency", predict_frequency_, double(100.0));
   pnh_.param("tf_dt", tf_dt_, double(0.05));
   pnh_.param("wheelbase", wheelbase_, double(2.79));
   pnh_.param("additional_delay", additional_delay_, double(0.15));
-  pnh_.param("extend_state_step", extend_state_step_, int(30));
+  pnh_.param("extend_state_step", extend_state_step_, int(50));
 
   pnh_.param("stddev_proc_x_c", stddev_proc_x_c_, double(1.0));
   pnh_.param("stddev_proc_y_c", stddev_proc_y_c_, double(1.0));
@@ -145,9 +144,10 @@ KalmanFilterNode::KalmanFilterNode()
 
   timer_control_ = nh_.createTimer(ros::Duration(predict_dt_), &KalmanFilterNode::timerCallback, this);
   timer_tf_ = nh_.createTimer(ros::Duration(tf_dt_), &KalmanFilterNode::timerTFCallback, this);
-  pub_pose_ = nh_.advertise<geometry_msgs::PoseStamped>("/kf_pose2", 1);
+  pub_pose_ = nh_.advertise<geometry_msgs::PoseStamped>("/kf_pose_old", 1);
   pub_pose_cov_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("/kf_pose_with_covariance", 1);
   pub_ndt_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("/my_ndt_pose", 1);
+  pub_pose_array_ = nh_.advertise<geometry_msgs::PoseArray>("/kalman_filter_pose_array", 1);
   pub_debug_ = pnh_.advertise<std_msgs::Float64MultiArray>("debug", 1);
   sub_ndt_pose_ = nh_.subscribe("/ndt_pose", 1, &KalmanFilterNode::callbackNDTPose, this);
   sub_vehicle_status_ = nh_.subscribe("/vehicle_status", 1, &KalmanFilterNode::callbackVehicleStatus, this);
@@ -157,6 +157,9 @@ KalmanFilterNode::KalmanFilterNode()
   dim_x_ex_ = dim_x_ * extend_state_step_;
 
   initKalmanFilter();
+
+  // sub1_ = nh_.subscribe("/pacmod/parsed_tx/steer_rpt", 1, &KalmanFilterNode::callback1, this);
+  // sub2_ = nh_.subscribe("/pacmod/parsed_tx/wheel_speed_rpt", 1, &KalmanFilterNode::callback2, this);
 };
 
 KalmanFilterNode::~KalmanFilterNode(){};
@@ -179,15 +182,9 @@ void KalmanFilterNode::timerCallback(const ros::TimerEvent &e)
   auto start = std::chrono::system_clock::now();
   predictKinematicsModel();
   double elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - start).count();
-  EKF_INFO("[kalman filter] predictKinematicsModel calculation time = %f [ms]\n", elapsed * 1.0e-6);
-
-  auto start = std::chrono::system_clock::now();
-  measurementUpdateNDTPose(current_ndt_pose_);
-  double elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - start).count();
-  EKF_INFO("[kalman filter] measurementUpdateNDTPose calculation time = %f [ms]\n", elapsed * 1.0e-6);
+  EKF_INFO("[kalman filter] predictEKF calculation time = %f [ms]\n", elapsed * 1.0e-6);
 
   publishEstimatedPose();
-
 }
 
 /*
@@ -211,6 +208,11 @@ void KalmanFilterNode::callbackNDTPose(
 {
   current_ndt_pose_ = *msg;
   initial_pose_received_ = true;
+
+  auto start = std::chrono::system_clock::now();
+  measurementUpdateNDTPose(current_ndt_pose_);
+  double elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - start).count();
+  EKF_INFO("[kalman filter] updateEKF calculation time = %f [ms]\n", elapsed * 1.0e-6);
 };
 
 /*
@@ -223,7 +225,23 @@ void KalmanFilterNode::callbackVehicleStatus(const autoware_msgs::VehicleStatus 
   current_twist_.twist.linear.x = msg.speed * kmph2mps;
   current_twist_.twist.angular.z = current_twist_.twist.linear.x * tan(msg.angle) / wheelbase_;
   initial_twist_received_ = true;
+
+  // // TEMP
+  // current_twist_.twist.linear.x = msg.speed / 3.6;
+  // current_twist_.twist.angular.z =
+  //     (msg.speed / 3.6) * tan(msg.angle * 3.1415 / 180.0 / 17.85) / 2.95 / 1.09;
+  // initial_twist_received_ = true;
 };
+
+/* temp */
+  void KalmanFilterNode::callback1(const pacmod_msgs::SystemRptFloat &msg){
+    double adaptive_gear_ratio_ = 15.713 + 0.053 * std::pow(current_twist_.twist.linear.x, 2) + 0.042 * msg.output;
+    current_twist_.twist.angular.z = current_twist_.twist.linear.x * std::tan(msg.output / adaptive_gear_ratio_) / 2.79;
+  };
+  void KalmanFilterNode::callback2(const pacmod_msgs::WheelSpeedRpt &msg) {
+    initial_twist_received_ = true;
+    current_twist_.twist.linear.x = (msg.rear_left_wheel_speed + msg.rear_right_wheel_speed) * 0.39 / 2;
+  };
 
 /*
  * callbackTwist
@@ -248,13 +266,14 @@ void KalmanFilterNode::callbackIMU(const sensor_msgs::Imu &msg)
  */
 void KalmanFilterNode::initKalmanFilter()
 {
-  Eigen::MatrixXd X = Eigen::MatrixXd::Zero(dim_x_, 1);
-  Eigen::MatrixXd P = Eigen::MatrixXd::Identity(dim_x_, dim_x_) * 1.0E9;
-  P(3, 3) = 1.0E-6; // for omega bias
-  P(4, 4) = 1.0E-5; // for omega bias
-
-  kf_.init(X, P, extend_state_step_);
-
+  Eigen::MatrixXd X = Eigen::MatrixXd::Zero(dim_x_ex_, 1);
+  Eigen::MatrixXd P = Eigen::MatrixXd::Identity(dim_x_ex_, dim_x_ex_) * 1.0E9;
+  for (int i = 0; i + 3 < dim_x_ex_; i += dim_x_)
+  {
+    P(i + 3, i + 3) = 1.0E-6; // for omega bias
+    P(i + 4, i + 4) = 1.0E-5; // for omega bias
+  }
+  kf_.init(X, P);
 }
 
 /*
@@ -279,14 +298,14 @@ void KalmanFilterNode::predictKinematicsModel()
    *     [ 0, 0, 0,                           1,    0]
    *     [ 0, 0, 0,                           0,    1]
    */
- 
-  Eigen::MatrixXd X_curr(dim_x_, 1); // curent state
-  Eigen::MatrixXd X_next(dim_x_, 1); // predicted state
-  kf_.getCurrentX(X_curr);
- 
-  Eigen::MatrixXd P_curr;
-  kf_.getCurrentP(P_curr);
- 
+
+  Eigen::MatrixXd X_curr(dim_x_ex_, 1); // curent state
+  Eigen::MatrixXd X_next(dim_x_ex_, 1); // predicted state
+  kf_.getX(X_curr);
+
+  Eigen::MatrixXd P_curr, P_next;
+  kf_.getP(P_curr);
+
   const int d_dim_x = dim_x_ex_ - dim_x_;
   const double vx = current_twist_.twist.linear.x;
   const double wz = current_twist_.twist.angular.z;
@@ -296,20 +315,22 @@ void KalmanFilterNode::predictKinematicsModel()
   const double dt = predict_dt_;
 
   EKF_INFO("X_curr = %f, %f, %f, %f, %f\n", X_curr(0), X_curr(1), X_curr(2), X_curr(3), X_curr(4));
- 
+
   /* update for latest state */
   X_next(0) = X_curr(0) + vx * cos(yaw + yaw_bias) * dt; // dx = v * cos(yaw)
   X_next(1) = X_curr(1) + vx * sin(yaw + yaw_bias) * dt; // dy = v * sin(yaw)
   X_next(2) = X_curr(2) + (wz + wz_bias) * dt;           // dyaw = omega + omega_bias
   X_next(3) = wz_bias;                                   // d_omega_bias = 0;
   X_next(4) = yaw_bias;
-   
   while (std::fabs(X_next(2)) > M_PI)
   {
     X_next(2) -= 2.0 * M_PI * ((X_next(2) > 0) - (X_next(2) < 0));
   }
   EKF_INFO("X_next = %f, %f, %f, %f, %f\n", X_next(0), X_next(1), X_next(2), X_next(3), X_next(4));
- 
+
+  /* slide states in the time direction */
+  X_next.block(dim_x_, 0, d_dim_x, 1) = X_curr.block(0, 0, d_dim_x, 1);
+
   /* set A matrix for latest state */
   Eigen::MatrixXd A = Eigen::MatrixXd::Identity(dim_x_, dim_x_);
   A(0, 2) = -vx * sin(yaw + yaw_bias) * dt;
@@ -317,26 +338,42 @@ void KalmanFilterNode::predictKinematicsModel()
   A(2, 3) = dt;
   A(0, 4) = -vx * sin(yaw + yaw_bias) * dt;
   A(1, 4) = vx * cos(yaw + yaw_bias) * dt;
- 
-  /* set covariance matrix Q for process noise.
-   * calc Q by velocity and yaw angle covariance :
-   *     dx = Ax + J*w -> Q = J*w_cov*J' 
-   */
+
+  /* set covariance matrix Q for process noise 
+      calc Q by velocity and yaw angle covariance :
+        dx = Ax + J*w -> Q = J*w_cov*J' */
   Eigen::MatrixXd J(2, 2); // coeff of deviation of vx & yaw
   J << cos(yaw), -vx * sin(yaw),
       sin(yaw), vx * cos(yaw);
- 
   Eigen::MatrixXd Q_vx_yaw = Eigen::MatrixXd::Zero(2, 2); // cov of vx and yaw
   Q_vx_yaw(0, 0) = stddev_vx_c_ * stddev_vx_c_ * dt * dt; // covariance of vx
   Q_vx_yaw(1, 1) = P_curr(2, 2) * dt * dt;                // covariance of yaw
-  Eigen::MatrixXd Q = Eigen::MatrixXd::Zero(dim_x_, dim_x_);
-   
-  Q.block(0, 0, 2, 2) = J * Q_vx_yaw * J.transpose(); // for pos_x & pos_y
-  Q(2, 2) = cov_proc_yaw_d_;                          // for yaw
-  Q(3, 3) = cov_proc_wz_bias_d_;                      // for yaw bias
-  Q(4, 4) = 0.0001 * 0.0001;
-     
-  kf_.predictDelayedEKF(X_next, A, Q);  
+  Eigen::MatrixXd Q_ex = Eigen::MatrixXd::Zero(dim_x_ex_, dim_x_ex_);
+  Q_ex.block(0, 0, 2, 2) = J * Q_vx_yaw * J.transpose(); // for pos_x & pos_y
+  Q_ex(2, 2) = cov_proc_yaw_d_;                          // for yaw
+  Q_ex(3, 3) = cov_proc_wz_bias_d_;                      // for yaw bias
+  Q_ex(4, 4) = 0.0001 * 0.0001;
+#if 0
+
+  /* update P directly (slow for large dimension) */
+
+  Eigen::MatrixXd A_ex = Eigen::MatrixXd::Zero(dim_x_ex_, dim_x_ex_);
+  A_ex.block(0, 0, dim_x_, dim_x_) = A;
+  A_ex.block(dim_x_, 0, dim_d, dim_d) = Eigen::MatrixXd::Identity(dim_d, dim_d);
+  kf_.predictEKF(X_next, A_ex, Q_ex);
+
+#else
+
+  /* update P with A matrix structure (fast) */
+  P_next = Eigen::MatrixXd::Zero(dim_x_ex_, dim_x_ex_);
+  P_next.block(0, 0, dim_x_, dim_x_) = A * P_curr.block(0, 0, dim_x_, dim_x_) * A.transpose();
+  P_next.block(0, dim_x_, dim_x_, d_dim_x) = A * P_curr.block(0, 0, dim_x_, d_dim_x);
+  P_next.block(dim_x_, 0, d_dim_x, dim_x_) = P_curr.block(0, 0, d_dim_x, dim_x_) * A.transpose();
+  P_next.block(dim_x_, dim_x_, d_dim_x, d_dim_x) = P_curr.block(0, 0, d_dim_x, d_dim_x);
+  P_next += Q_ex;
+  kf_.predictXandP(X_next, P_next);
+
+#endif
 }
 
 /*
@@ -344,10 +381,9 @@ void KalmanFilterNode::predictKinematicsModel()
  */
 void KalmanFilterNode::measurementUpdateNDTPose(const geometry_msgs::PoseStamped &ndt_pose)
 {
-     
   const int dim_y = 3; // pos_x, pos_y, yaw, depending on NDT output
   const ros::Time t_curr = ros::Time::now();
- 
+
   /* calculate delay step */
   double delay_time = (t_curr - ndt_pose.header.stamp).toSec() + additional_delay_;
   if (delay_time < 0)
@@ -356,7 +392,7 @@ void KalmanFilterNode::measurementUpdateNDTPose(const geometry_msgs::PoseStamped
     ROS_WARN("time stamp is inappropriate. delay = %f, now() = %f, ndt.stamp = %f",
              delay_time, t_curr.toSec(), ndt_pose.header.stamp.toSec());
   };
- 
+
   int delay_step = std::roundf(delay_time / predict_dt_);
   if (delay_step > extend_state_step_ - 1)
   {
@@ -364,16 +400,16 @@ void KalmanFilterNode::measurementUpdateNDTPose(const geometry_msgs::PoseStamped
     ROS_WARN("NDT pose delay time: %f[s] exceeds the allowable limit: extend_state_step * predict_dt_ = %f [s]",
              delay_time, extend_state_step_ * predict_dt_);
   }
- 
+
   EKF_INFO("predict_dt_ = %f, delay_time = %f, delay_step = %d, extend_state_step_ = %d\n",
            predict_dt_, delay_time, delay_step, extend_state_step_);
- 
+
   /* set measurement matrix */
-  Eigen::MatrixXd C = Eigen::MatrixXd::Zero(dim_y, dim_x_);
-  C(0, 0) = 1.0; // for pos x
-  C(1, 1) = 1.0; // for pos y
-  C(2, 2) = 1.0; // for yaw
- 
+  Eigen::MatrixXd C_ex = Eigen::MatrixXd::Zero(dim_y, dim_x_ex_);
+  C_ex(0, dim_x_ * delay_step) = 1.0;     // for pos x
+  C_ex(1, dim_x_ * delay_step + 1) = 1.0; // for pos y
+  C_ex(2, dim_x_ * delay_step + 2) = 1.0; // for yaw
+
   /* set measurement noise covariancs : NOTE this should be set by NDT reliability */
   const double kf_yaw = kf_.getXelement((unsigned int)Idx::YAW);
   const double cov_pos_x = std::pow(measure_time_uncertainty_ * current_twist_.twist.linear.x * cos(kf_yaw), 2);
@@ -384,19 +420,19 @@ void KalmanFilterNode::measurementUpdateNDTPose(const geometry_msgs::PoseStamped
   R(1, 1) = std::pow(0.05, 2) + cov_pos_y; // pos_y
   R(2, 2) = std::pow(0.035, 2) + cov_yaw;  // yaw
   // PRINT_MAT(R);
- 
+
   const double yaw_curr = kf_.getXelement((unsigned int)(delay_step * dim_x_ + 2));
   double yaw = tf::getYaw(ndt_pose.pose.orientation);
   while (std::fabs(yaw - yaw_curr) > M_PI)
   {
     yaw -= 2.0 * M_PI * ((yaw > yaw_curr) - (yaw < yaw_curr));
   }
- 
+
   /* measurement update */
   Eigen::MatrixXd y(dim_y, 1);
   y << ndt_pose.pose.position.x, ndt_pose.pose.position.y, yaw;
 
-  kf_.updateDelayedEKF(y, C, R, delay_step);
+  kf_.update(y, C_ex, R);
 }
 
 /*
@@ -409,10 +445,10 @@ void KalmanFilterNode::measurementUpdateIMU(const sensor_msgs::Imu &msg) {}
  */
 void KalmanFilterNode::publishEstimatedPose()
 {
-  Eigen::MatrixXd X(dim_x_, 1);
-  Eigen::MatrixXd P(dim_x_, dim_x_);
-  kf_.getCurrentX(X);
-  kf_.getCurrentP(P);
+  Eigen::MatrixXd X(dim_x_ex_, 1);
+  Eigen::MatrixXd P(dim_x_ex_, dim_x_ex_);
+  kf_.getX(X);
+  kf_.getP(P);
 
   /* publish latest pose */
   geometry_msgs::PoseStamped kf_pose;
@@ -445,6 +481,20 @@ void KalmanFilterNode::publishEstimatedPose()
   current_kf_pose_.header = pose_cov.header;
   current_kf_pose_.pose = pose_cov.pose.pose;
 
+  /* publish pose array */
+  // geometry_msgs::PoseArray pose_array;
+  // geometry_msgs::Pose pose;
+  // for (unsigned int i = 0; i < dim_x_ex_; i += dim_x_) {
+  //   pose.position.x = X(i, 0);
+  //   pose.position.y = X(i + 1, 0);
+  //   pose.position.z = current_ndt_pose_.pose.position.z;
+  //   pose.orientation = tf::createQuaternionMsgFromYaw(X(i + 2, 0));
+  //   pose_array.poses.push_back(pose);
+  // }
+  // pose_array.header.stamp = ros::Time::now();
+  // pose_array.header.frame_id = current_ndt_pose_.header.frame_id;
+  // pub_pose_array_.publish(pose_array);
+
   /* debug my ndt */
   geometry_msgs::PoseStamped p;
   p = current_ndt_pose_;
@@ -467,7 +517,7 @@ void KalmanFilterNode::publishEstimatedPose()
 int main(int argc, char **argv)
 {
 
-  ros::init(argc, argv, "kalman_filter");
+  ros::init(argc, argv, "kalman_filter_old");
   KalmanFilterNode obj;
 
   ros::spin();

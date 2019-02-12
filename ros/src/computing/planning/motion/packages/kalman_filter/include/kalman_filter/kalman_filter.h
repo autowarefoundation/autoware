@@ -1,3 +1,5 @@
+#pragma once
+
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/LU>
 
@@ -42,7 +44,7 @@ public:
   void update(const Eigen::MatrixXd &y);
 
 
-private:
+protected:
   Eigen::MatrixXd x_;
   Eigen::MatrixXd A_;
   Eigen::MatrixXd B_;
