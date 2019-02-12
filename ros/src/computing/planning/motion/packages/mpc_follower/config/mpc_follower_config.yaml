@@ -35,8 +35,6 @@ steering_lpf_cutoff_hz: 3.0
 admisible_position_error: 5.0 #[m]
 admisible_yaw_error_deg: 45.0 #[deg]
 
-predict_model_for_delay: 0. # 0.22 for lexus
-
 
 #---------------------------------------------------------------------
 # MPC algorithm parameters
@@ -51,7 +49,8 @@ mpc_dt: 0.1
 # weight parameters
 mpc_weight_lat_error: 1.0      # for Q[0,0]
 mpc_weight_heading_error: 0.0  # for Q[1,1]
-mpc_weight_steering_input: 150.0 # for R[0,0]
+mpc_weight_steering_input: 20.0 # for R[0,0]
+mpc_weight_steering_input_vel_coeff: 8.0 # for R[0,0] = a + b * v
 
 # time delay compensation
 mpc_delay_compensation_time: 0.0 #[s]

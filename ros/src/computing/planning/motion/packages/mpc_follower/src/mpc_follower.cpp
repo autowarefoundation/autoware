@@ -93,12 +93,13 @@ private:
 
   struct MPCParam
   {
-    int n;                          // prediction horizon step
-    double dt;                      // prediction horizon period
-    double weight_lat_error;        // for weight matrix Q
-    double weight_heading_error;    // for weight matrix Q
-    double weight_steering_input;   // for weight matrix R
-    double delay_compensation_time; // use interpolation for time delay compensation
+    int n;                                  // prediction horizon step
+    double dt;                              // prediction horizon period
+    double weight_lat_error;                // for weight matrix Q
+    double weight_heading_error;            // for weight matrix Q
+    double weight_steering_input;           // for weight matrix R
+    double weight_steering_input_vel_coeff; // for weight matrix R coeff of velocity
+    double delay_compensation_time;         // use interpolation for time delay compensation
   };
   MPCParam mpc_param_; // for mpc design
 
@@ -184,7 +185,11 @@ MPCFollower::MPCFollower()
   pnh_.param("mpc_weight_lat_error", mpc_param_.weight_lat_error, double(1.0));
   pnh_.param("mpc_weight_heading_error", mpc_param_.weight_heading_error, double(1.0));
   pnh_.param("mpc_weight_steering_input", mpc_param_.weight_steering_input, double(1.0));
+  pnh_.param("mpc_weight_steering_input_vel_coeff", mpc_param_.weight_steering_input_vel_coeff, double(0.0));
   pnh_.param("mpc_delay_compensation_time", mpc_param_.delay_compensation_time, double(0.05));
+  
+
+  
 
   pnh_.param("show_debug_info", show_debug_info_, bool(false));
 
@@ -359,7 +364,7 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
   matrix R = matrix::Zero(DIM_U, DIM_U);
   Q(0, 0) = mpc_param_.weight_lat_error;
   Q(1, 1) = mpc_param_.weight_heading_error;
-  R(0, 0) = mpc_param_.weight_steering_input;
+  R(0, 0) = mpc_param_.weight_steering_input + mpc_param_.weight_steering_input_vel_coeff * std::fabs(vehicle_status_.vx);
 
   matrix Ad(DIM_X, DIM_X);
   matrix Bd(DIM_X, DIM_U);
