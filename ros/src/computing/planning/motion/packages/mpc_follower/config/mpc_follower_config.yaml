@@ -51,18 +51,20 @@ mpc_dt: 0.1
 # weight parameters
 mpc_weight_lat_error: 1.0      # for Q[0,0]
 mpc_weight_heading_error: 0.0  # for Q[1,1]
-mpc_weight_steering_input: 50.0 # for R[0,0]
+mpc_weight_steering_input: 150.0 # for R[0,0]
 
 # time delay compensation
 mpc_delay_compensation_time: 0.0 #[s]
 
+# To reduce path noise effect, reference curvature is set to zeto when it is smaller than this valuse
+zero_curvature_range: 0.03
 
 #---------------------------------------------------------------------
 # vehicle model parameters
 #---------------------------------------------------------------------
 
 # steering dynamics time constant (1d approzimation) [s]
-vehicle_model_steer_tau: 0.2 # lexus: 0.2 + LPF delay
+vehicle_model_steer_tau: 0.05 # lexus: 0.2 + LPF delay
 
 # wheel base length [m]
 vehicle_model_wheelbase: 2.79 # lexus: 2.79

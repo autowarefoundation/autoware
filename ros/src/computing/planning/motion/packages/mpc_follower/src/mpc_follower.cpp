@@ -89,6 +89,7 @@ private:
   double admisible_yaw_error_deg_;    // stop mpc calculation when yaw error is large than this value.
   double steer_cmd_lim_;              // steering command limit [rad]
   double wheelbase_;                  // only used to convert steering to twist
+  double zero_curvature_range_;       // set reference curvature to zero when the value is smaller than this.
 
   struct MPCParam
   {
@@ -175,6 +176,7 @@ MPCFollower::MPCFollower()
   pnh_.param("admisible_position_error", admisible_position_error_, double(5.0));
   pnh_.param("admisible_yaw_error_deg", admisible_yaw_error_deg_, double(45.0));
   pnh_.param("steer_cmd_lim", steer_cmd_lim_, double(35.0 * 3.1415 / 180.0));
+  pnh_.param("zero_curvature_range", zero_curvature_range_, double(0.03));
 
   /* mpc parameters */
   pnh_.param("mpc_n", mpc_param_.n, int(50));
@@ -381,6 +383,10 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
     {
       ROS_ERROR("invalid interpolatio for ref_vx, ref_k\n");
       return false;
+    }
+
+    if (std::fabs(ref_k) < zero_curvature_range_) {
+      ref_k = 0.0;      
     }
 
     /* DEBUG:  to predict trajectory */
@@ -721,8 +727,7 @@ void MPCFollower::callbackRefPath(const autoware_msgs::Lane::ConstPtr &msg)
   /* calculate relative time */
   std::vector<double> relative_time;
   MPCFollower::calcRelativeTimeForPath(current_waypoints_, relative_time);
-  MPC_INFO("[path callback] relative_time.size() = %lu, front() = %f, back() = %f\n",
-           relative_time.size(), relative_time.front(), relative_time.back());
+  MPC_INFO("[path callback] relative_time.size() = %lu, front() = %f, back() = %f\n", relative_time.size(), relative_time.front(), relative_time.back());
 
   /* resampling */
   MPCFollower::resamplePathToTrajByDistance(current_waypoints_, relative_time, traj_resample_dl_, traj);
@@ -741,9 +746,7 @@ void MPCFollower::callbackRefPath(const autoware_msgs::Lane::ConstPtr &msg)
 
   /* calculate curvature */
   MPCFollower::calcTrajectoryCurvature(traj);
-  MPC_INFO("[path callback] trajectory curvature : max_k = %f, min_k = %f\n",
-           *max_element(traj.k.begin(), traj.k.end()),
-           *min_element(traj.k.begin(), traj.k.end()));
+  MPC_INFO("[path callback] trajectory curvature : max_k = %f, min_k = %f\n", *max_element(traj.k.begin(), traj.k.end()), *min_element(traj.k.begin(), traj.k.end()));
 
   /* add end point with vel=0 on traj for mpc prediction */
   const double mpc_predict_time_length = mpc_param_.n * mpc_param_.dt;
@@ -768,7 +771,7 @@ void MPCFollower::callbackRefPath(const autoware_msgs::Lane::ConstPtr &msg)
   /* publish trajectory for visualize */
   visualization_msgs::Marker markers;
   convertTrajToMarker(ref_traj_, markers, "ref_traj", 0.0, 0.0, 1.0);
-  pub_debug_filtered_traj_.publish(markers);
+  pub_debug_filtered_traj_.publish(markers);  
 };
 
 void MPCFollower::calcRelativeTimeForPath(const autoware_msgs::Lane &path,
