@@ -4,70 +4,28 @@ set -e
 
 . ./hooks/env
 
-# Build Docker Image for synquacer 
-AUTOWARE_TARGET_PLATFORM="synquacer"
-
 echo "Using ${AUTOWARE_TARGET_PLATFORM} as the target architecture"
-# Register QEMU as a handler for non-x86 targets
-docker container run --rm --privileged multiarch/qemu-user-static:register
-
-# Build Docker Image for synquacer
-docker image build \
-    --build-arg AUTOWARE_DOCKER_ARCH=${AUTOWARE_DOCKER_ARCH} \
-    --build-arg AUTOWARE_TARGET_ARCH=${AUTOWARE_TARGET_ARCH} \
-    --build-arg AUTOWARE_TARGET_PLATFORM=${AUTOWARE_TARGET_PLATFORM} \
-    -t ${DOCKER_REPO}:latest-${AUTOWARE_TARGET_PLATFORM}-kinetic-rosdep \
-    -f Dockerfile.kinetic-crossbuild ./../..
-    
-# Deregister QEMU as a handler for non-x86 targets
-docker container run --rm --privileged multiarch/qemu-user-static:register --reset
-
-
-# Build Docker Image for generic-aarch64 
-AUTOWARE_TARGET_PLATFORM="generic-aarch64"
-
-echo "Using ${AUTOWARE_TARGET_PLATFORM} as the target architecture"
-# Register QEMU as a handler for non-x86 targets
-docker container run --rm --privileged multiarch/qemu-user-static:register
-
-# Build Docker Image for synquacer
-docker image build \
-    --build-arg AUTOWARE_DOCKER_ARCH=${AUTOWARE_DOCKER_ARCH} \
-    --build-arg AUTOWARE_TARGET_ARCH=${AUTOWARE_TARGET_ARCH} \
-    --build-arg AUTOWARE_TARGET_PLATFORM=${AUTOWARE_TARGET_PLATFORM} \
-    -t ${DOCKER_REPO}:latest-${AUTOWARE_TARGET_PLATFORM}-kinetic-rosdep \
-    -f Dockerfile.kinetic-crossbuild ./../..
-    
-# Deregister QEMU as a handler for non-x86 targets
-docker container run --rm --privileged multiarch/qemu-user-static:register --reset
-
-# Push image
-docker push ${DOCKER_REPO}:latest-${AUTOWARE_TARGET_PLATFORM}-kinetic-rosdep
-
-# Build Docker Image for driveworks
-AUTOWARE_TARGET_PLATFORM="driveworks"
 
 # Register QEMU as a handler for non-x86 targets
 docker container run --rm --privileged multiarch/qemu-user-static:register
 
+# Build Docker Image
 docker image build \
     --build-arg AUTOWARE_DOCKER_ARCH=${AUTOWARE_DOCKER_ARCH} \
     --build-arg AUTOWARE_TARGET_ARCH=${AUTOWARE_TARGET_ARCH} \
     --build-arg AUTOWARE_TARGET_PLATFORM=${AUTOWARE_TARGET_PLATFORM} \
-    -t ${DOCKER_REPO}:latest-${AUTOWARE_TARGET_PLATFORM}-kinetic-rosdep \
+    -t ${DOCKER_REPO}:${IMAGE_NAME} \
     -f Dockerfile.kinetic-crossbuild ./../..
 
-docker image build \
---build-arg AUTOWARE_DOCKER_ARCH=${AUTOWARE_DOCKER_ARCH} \
---build-arg AUTOWARE_TARGET_ARCH=${AUTOWARE_TARGET_ARCH} \
---build-arg AUTOWARE_TARGET_PLATFORM=${AUTOWARE_TARGET_PLATFORM} \
---build-arg AUTOWARE_DOCKER_DATE=${AUTOWARE_DOCKER_DATE} \
---build-arg DOCKER_REPO=${DOCKER_REPO} \
--t ${DOCKER_REPO}:latest-${AUTOWARE_TARGET_PLATFORM}-kinetic-rosdep \
--f Dockerfile.kinetic-crossbuild-driveworks .
-
+if [[ "${AUTOWARE_TARGET_PLATFORM}" =~ "driveworks" ]]; then
+  
+  docker image build \
+	--build-arg DOCKER_REPO=${DOCKER_REPO} \
+	--build-arg IMAGE_NAME=${IMAGE_NAME} \
+	-t ${DOCKER_REPO}:${IMAGE_NAME} \
+	-f Dockerfile.kinetic-crossbuild-driveworks .
+  
+fi
+ 
 # Deregister QEMU as a handler for non-x86 targets
 docker container run --rm --privileged multiarch/qemu-user-static:register --reset
-
-# Push image
-docker push ${DOCKER_REPO}:latest-${AUTOWARE_TARGET_PLATFORM}-kinetic-rosdep
