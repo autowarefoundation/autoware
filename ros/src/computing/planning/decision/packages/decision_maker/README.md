@@ -90,7 +90,7 @@ VehicleEmergency|-|Emergency is detected somewhere in the system. |Waits until `
 ### Mission States
 State name|Required topic|Description|Implementation
 --|--|---|--
-WaitVehicleReady|-|Waits until vehicle setup is done|Waits until vehicle_is_ready key is given from Vehicle State Machine
+MissionInit|-|Initialization state of Mission State Machine.|Throws state_mission_initialized key if use_fms is set false.
 WaitOrder|/based_lane_array|wayits until mission is given. | waits until base_lane_array is received.
 MissionCheck|/final_waypoints<br> /current_waypoint|Waits until all the planners are ready. |Waits until /final_waypoints (from planner nodes) and /current_waypoint are received.
 DriveReady|-|Given Mission is approved and vehicle is ready to move. |Waits until engage or mission_canceled key is given.

@@ -2,11 +2,15 @@
 
 namespace decision_maker
 {
-void DecisionMakerNode::entryWaitVehicleReadyState(cstring_t& state_name, int status)
+void DecisionMakerNode::entryMissionInitState(cstring_t& state_name, int status)
 {
 }
-void DecisionMakerNode::updateWaitVehicleReadyState(cstring_t& state_name, int status)
+void DecisionMakerNode::updateMissionInitState(cstring_t& state_name, int status)
 {
+  if (!use_fms_)
+  {
+    tryNextState("state_mission_initialized");
+  }
 }
 
 void DecisionMakerNode::entryWaitOrderState(cstring_t& state_name, int status)

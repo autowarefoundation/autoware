@@ -45,10 +45,10 @@ void DecisionMakerNode::setupStateCallback(void)
                            std::bind(&DecisionMakerNode::updateVehicleEmergencyState, this, std::placeholders::_1, 0));
 
   /*** state mission ***/
-  ctx_mission->setCallback(state_machine::CallbackType::ENTRY, "WaitVehicleReady",
-                           std::bind(&DecisionMakerNode::entryWaitVehicleReadyState, this, std::placeholders::_1, 0));
-  ctx_mission->setCallback(state_machine::CallbackType::UPDATE, "WaitVehicleReady",
-                           std::bind(&DecisionMakerNode::updateWaitVehicleReadyState, this, std::placeholders::_1, 0));
+  ctx_mission->setCallback(state_machine::CallbackType::ENTRY, "MissionInit",
+                           std::bind(&DecisionMakerNode::entryMissionInitState, this, std::placeholders::_1, 0));
+  ctx_mission->setCallback(state_machine::CallbackType::UPDATE, "MissionInit",
+                           std::bind(&DecisionMakerNode::updateMissionInitState, this, std::placeholders::_1, 0));
   ctx_mission->setCallback(state_machine::CallbackType::ENTRY, "WaitOrder",
                            std::bind(&DecisionMakerNode::entryWaitOrderState, this, std::placeholders::_1, 0));
   ctx_mission->setCallback(state_machine::CallbackType::UPDATE, "WaitOrder",
