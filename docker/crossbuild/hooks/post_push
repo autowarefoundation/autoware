@@ -5,5 +5,5 @@ set -e
 . ./hooks/env 
 
 # Tag and push image for latest tag
-docker tag ${DOCKER_REPO}:${IMAGE_NAME} ${DOCKER_REPO}:latest-$ROS_DISTRO
+docker tag ${IMAGE_NAME} ${DOCKER_REPO}:latest-$ROS_DISTRO
 docker push ${DOCKER_REPO}:latest-$ROS_DISTRO
