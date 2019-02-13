@@ -122,11 +122,15 @@ void KalmanFilter::updateEKF(const Eigen::MatrixXd &y,
                              const Eigen::MatrixXd &C,
                              const Eigen::MatrixXd &R)
 {
-  const Eigen::MatrixXd S_inv = (R + C * P_ * C.transpose()).inverse();
-  const Eigen::MatrixXd K = P_ * C.transpose() * S_inv;
+  // const Eigen::MatrixXd S_inv = (R + C * P_ * C.transpose()).inverse();
+  // const Eigen::MatrixXd K = P_ * C.transpose() * S_inv;
+  // x_ = x_ + K * (y - y_pred);
+  // const int dim = P_.cols();
+  // P_ = P_ - (P_ * C.transpose()) * S_inv * (C * P_);  
+  const Eigen::MatrixXd PCT = P_ * C.transpose();
+  const Eigen::MatrixXd K = PCT * ((R + C * PCT).inverse());
   x_ = x_ + K * (y - y_pred);
-  const int dim = P_.cols();
-  P_ = P_ - (P_ * C.transpose()) * S_inv * (C * P_);  
+  P_ = P_ - K * (C * P_);
 }
 void KalmanFilter::updateEKF(const Eigen::MatrixXd &y,
                              const Eigen::MatrixXd &y_pred,
