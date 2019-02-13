@@ -99,7 +99,7 @@ build_cross:
           --rm
           -v ${AUTOWARE_HOME}:${AUTOWARE_HOME}
           -w ${AUTOWARE_HOME}/ros
-          autoware/build:${AUTOWARE_TARGET_PLATFORM}-kinetic-${AUTOWARE_DOCKER_DATE}
+          autoware/build:devel-${AUTOWARE_TARGET_PLATFORM}-kinetic
           bash
             -c "
                 source ${AUTOWARE_SYSROOT}/opt/ros/kinetic/setup.bash &&
