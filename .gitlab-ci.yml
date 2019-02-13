@@ -84,7 +84,7 @@ build_cross:
     - docker:dind
   variables:
     ROS_DISTRO: kinetic
-    AUTOWARE_DOCKER_DATE: 20190102
+    AUTOWARE_DOCKER_DATE: 20190211
     AUTOWARE_HOME: $CI_PROJECT_DIR
     AUTOWARE_TARGET_ARCH: aarch64
     AUTOWARE_TARGET_PLATFORM: generic-aarch64
@@ -115,7 +115,7 @@ build_cross:
                   "
                   '
   retry: 1
-  
+
 pages:
   stage: deploy
   image: alpine
