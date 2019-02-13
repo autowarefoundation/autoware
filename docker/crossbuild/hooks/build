@@ -1,0 +1,31 @@
+#!/bin/bash
+
+set -e
+
+. ./hooks/env
+
+echo "Using ${AUTOWARE_TARGET_PLATFORM} as the target architecture"
+
+# Register QEMU as a handler for non-x86 targets
+docker container run --rm --privileged multiarch/qemu-user-static:register
+
+# Build Docker Image
+docker image build \
+    --build-arg AUTOWARE_DOCKER_ARCH=${AUTOWARE_DOCKER_ARCH} \
+    --build-arg AUTOWARE_TARGET_ARCH=${AUTOWARE_TARGET_ARCH} \
+    --build-arg AUTOWARE_TARGET_PLATFORM=${AUTOWARE_TARGET_PLATFORM} \
+    -t ${IMAGE_NAME} \
+    -f Dockerfile.kinetic-crossbuild ./../..
+
+if [[ "${AUTOWARE_TARGET_PLATFORM}" =~ "driveworks" ]]; then
+  
+  docker image build \
+	--build-arg DOCKER_REPO=${DOCKER_REPO} \
+	--build-arg IMAGE_NAME=${IMAGE_NAME} \
+	-t ${IMAGE_NAME} \
+	-f Dockerfile.kinetic-crossbuild-driveworks .
+  
+fi
+ 
+# Deregister QEMU as a handler for non-x86 targets
+docker container run --rm --privileged multiarch/qemu-user-static:register --reset
