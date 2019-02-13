@@ -26,7 +26,6 @@ private:
   int max_delay_step_;
   int dim_x_;
   int dim_x_ex_;
-  int dim_y_;
 };
 
 KalmanFilterDelayedMeasurement::KalmanFilterDelayedMeasurement() {}
