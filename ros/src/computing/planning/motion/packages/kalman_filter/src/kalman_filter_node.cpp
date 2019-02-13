@@ -1,13 +1,12 @@
-#include <deque>
 #include <iostream>
 #include <vector>
 #include <chrono>
 
+#include <ros/ros.h>
 #include <geometry_msgs/PoseArray.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/TwistStamped.h>
-#include <ros/ros.h>
 #include <sensor_msgs/Imu.h>
 #include <std_msgs/Float64.h>
 #include <std_msgs/Float64MultiArray.h>
@@ -20,8 +19,6 @@
 #include "kalman_filter/kalman_filter.h"
 #include "kalman_filter/kalman_filter_delayed_measurement.h"
 
-#include <pacmod_msgs/SystemRptFloat.h>
-#include <pacmod_msgs/WheelSpeedRpt.h>
 
 #define PRINT_MAT(X) std::cout << #X << ":\n" << X << std::endl << std::endl
 
@@ -95,15 +92,11 @@ private:
   void measurementUpdateIMU(const sensor_msgs::Imu &msg);
 
   void publishEstimatedPose();
-
-  void callback1(const pacmod_msgs::SystemRptFloat &msg);
-  void callback2(const pacmod_msgs::WheelSpeedRpt &msg);
 };
 
 KalmanFilterNode::KalmanFilterNode()
     : nh_(""), pnh_("~"), initial_pose_received_(false), initial_twist_received_(false)
 {
-
   pnh_.param("show_debug_info", show_debug_info_, bool(false));
   pnh_.param("predict_frequency", kf_rate_, double(100.0));
   pnh_.param("tf_rate", tf_rate_, double(20.0));
@@ -148,7 +141,6 @@ KalmanFilterNode::~KalmanFilterNode(){};
  */
 void KalmanFilterNode::timerCallback(const ros::TimerEvent &e)
 {
-
   /* check flags */
   if (!initial_pose_received_ || !initial_twist_received_)
   {
@@ -364,7 +356,6 @@ void KalmanFilterNode::measurementUpdateNDTPose(const geometry_msgs::PoseStamped
     ROS_WARN("[kalman filter] measurement update, mahalanobis distance is larger than limit. ignore NDT measurement data.");
     return;
   }
-  
 
   /* Set measurement matrix */
   Eigen::MatrixXd C = Eigen::MatrixXd::Zero(dim_y, dim_x_);
@@ -388,13 +379,9 @@ void KalmanFilterNode::measurementUpdateNDTPose(const geometry_msgs::PoseStamped
   // PRINT_MAT(R);
 
 
-
-
-
   Eigen::MatrixXd X_before, X_after;
   if (show_debug_info_)
     kf_.getCurrentX(X_before);
-
 
   kf_.updateDelayedEKF(y, C, R, delay_step);
 
@@ -433,7 +420,6 @@ void KalmanFilterNode::publishEstimatedPose()
   kf_pose.pose.position.x = X(0);
   kf_pose.pose.position.y = X(1);
   kf_pose.pose.position.z = current_ndt_pose_.pose.position.z;
-  // kf_pose.pose.orientation = tf::createQuaternionMsgFromYaw(X(2) + X(4));
   kf_pose.pose.orientation = tf::createQuaternionMsgFromYaw(X(2) + X(3));
   pub_pose_.publish(kf_pose);
 
