@@ -9,6 +9,11 @@ find_package(catkin REQUIRED
   position_controllers
   transmission_interface
   velocity_controllers
+  camera_description
+  imu_description
+  velodyne_description
+  velodyne_gazebo_plugins
+  velodyne_simulator
 )
 
 catkin_package(
@@ -18,6 +23,11 @@ catkin_package(
     position_controllers
     transmission_interface
     velocity_controllers
+    camera_description
+    imu_description
+    velodyne_description
+    velodyne_gazebo_plugins
+    velodyne_simulator
 )
 
 install(DIRECTORY mesh
