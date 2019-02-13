@@ -13,7 +13,6 @@ find_package(catkin REQUIRED
   imu_description
   velodyne_description
   velodyne_gazebo_plugins
-  velodyne_simulator
 )
 
 catkin_package(
@@ -27,7 +26,6 @@ catkin_package(
     imu_description
     velodyne_description
     velodyne_gazebo_plugins
-    velodyne_simulator
 )
 
 install(DIRECTORY mesh
