@@ -14,7 +14,7 @@ docker image build \
     --build-arg AUTOWARE_DOCKER_ARCH=${AUTOWARE_DOCKER_ARCH} \
     --build-arg AUTOWARE_TARGET_ARCH=${AUTOWARE_TARGET_ARCH} \
     --build-arg AUTOWARE_TARGET_PLATFORM=${AUTOWARE_TARGET_PLATFORM} \
-    -t ${DOCKER_REPO}:${IMAGE_NAME} \
+    -t ${IMAGE_NAME} \
     -f Dockerfile.kinetic-crossbuild ./../..
 
 if [[ "${AUTOWARE_TARGET_PLATFORM}" =~ "driveworks" ]]; then
@@ -22,7 +22,7 @@ if [[ "${AUTOWARE_TARGET_PLATFORM}" =~ "driveworks" ]]; then
   docker image build \
 	--build-arg DOCKER_REPO=${DOCKER_REPO} \
 	--build-arg IMAGE_NAME=${IMAGE_NAME} \
-	-t ${DOCKER_REPO}:${IMAGE_NAME} \
+	-t ${IMAGE_NAME} \
 	-f Dockerfile.kinetic-crossbuild-driveworks .
   
 fi
