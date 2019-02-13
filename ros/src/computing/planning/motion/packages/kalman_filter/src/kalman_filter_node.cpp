@@ -69,8 +69,8 @@ private:
   double stddev_vx_c_;            // for vx
 
   /* process noise variance for discrete model */
-  double cov_proc_yaw_d_;
-  double cov_proc_yaw_bias_d_;
+  double cov_proc_yaw_d_;      // discrete yaw process noise
+  double cov_proc_yaw_bias_d_; // discrete yaw bias process noise
 
   /* measurement noise for time uncertainty */
   double measure_time_uncertainty_; // added for measurement covariance
@@ -230,8 +230,7 @@ void KalmanFilterNode::initKalmanFilter()
 {
   Eigen::MatrixXd X = Eigen::MatrixXd::Zero(dim_x_, 1);
   Eigen::MatrixXd P = Eigen::MatrixXd::Identity(dim_x_, dim_x_) * 1.0E3;
-  P(3, 3) = 1.0E-5; // for omega bias
-  // P(4, 4) = 1.0E-5; // for omega bias
+  P(3, 3) = 1.0E-5; // for yaw bias
 
   kf_.init(X, P, extend_state_step_);
 }
@@ -283,8 +282,8 @@ void KalmanFilterNode::predictKinematicsModel()
   {
     X_next(2) -= 2.0 * M_PI * ((X_next(2) > 0) - (X_next(2) < 0));
   }
-  // EKF_INFO("prediction: X_next = %f, %f, %f, %f, %f\n", X_next(0), X_next(1), X_next(2), X_next(3), X_next(4));
-  // EKF_INFO("prediction: X_diff = %f, %f, %f, %f, %f\n", X_next(0) - X_curr(0), X_next(1) - X_curr(1), X_next(2) - X_curr(2), X_next(3) - X_curr(3), X_next(4) - X_curr(4));
+  EKF_INFO("prediction: X_next = %f, %f, %f, %f\n", X_next(0), X_next(1), X_next(2), X_next(3));
+  EKF_INFO("prediction: X_diff = %f, %f, %f, %f\n", X_next(0) - X_curr(0), X_next(1) - X_curr(1), X_next(2) - X_curr(2), X_next(3) - X_curr(3));
 
   /* Set A matrix for latest state */
   Eigen::MatrixXd A = Eigen::MatrixXd::Identity(dim_x_, dim_x_);
@@ -293,8 +292,7 @@ void KalmanFilterNode::predictKinematicsModel()
   A(0, 3) = -vx * sin(yaw + yaw_bias) * dt;
   A(1, 3) = vx * cos(yaw + yaw_bias) * dt;
 
-  /* Set covariance matrix Q for process noise.
-     Calc Q by velocity and yaw angle covariance :
+  /* Set covariance matrix Q for process noise. Calc Q by velocity and yaw angle covariance :
      dx = Ax + J*w -> Q = J*w_cov*J'          */
   Eigen::MatrixXd J(2, 2); // coeff of deviation of vx & yaw
   J << cos(yaw), -vx * sin(yaw),
@@ -406,10 +404,10 @@ void KalmanFilterNode::measurementUpdateNDTPose(const geometry_msgs::PoseStamped
     EKF_INFO("measurement update: y_ndt    = %f, %f, %f\n", y(0), y(1), y(2));
     EKF_INFO("measurement update: y_kf     = %f, %f, %f\n", kf_.getXelement(delay_step * dim_x_), kf_.getXelement(delay_step * dim_x_ + 1), kf_.getXelement(delay_step * dim_x_ + 2));
     EKF_INFO("measurement update: y_diff   = %f, %f, %f\n", kf_.getXelement(delay_step * dim_x_)-y(0), kf_.getXelement(delay_step * dim_x_ + 1)-y(1), kf_.getXelement(delay_step * dim_x_ + 2)-y(2));
-    EKF_INFO("measurement update: X_before = %f, %f, %f, %f, %f\n", X_before(0), X_before(1), X_before(2), X_before(3), X_before(4));
-    EKF_INFO("measurement update: X_after  = %f, %f, %f, %f, %f\n", X_after(0), X_after(1), X_after(2), X_after(3), X_after(4));
+    EKF_INFO("measurement update: X_before = %f, %f, %f, %f\n", X_before(0), X_before(1), X_before(2), X_before(3));
+    EKF_INFO("measurement update: X_after  = %f, %f, %f, %f\n", X_after(0), X_after(1), X_after(2), X_after(3));
     Eigen::MatrixXd X_diff = X_after - X_before;
-    EKF_INFO("measurement update: X_diff   = %f, %f, %f, %f, %f\n", X_diff(0), X_diff(1), X_diff(2), X_diff(3), X_diff(4));
+    EKF_INFO("measurement update: X_diff   = %f, %f, %f, %f\n", X_diff(0), X_diff(1), X_diff(2), X_diff(3));
   }
 }
 
@@ -473,10 +471,7 @@ void KalmanFilterNode::publishEstimatedPose()
   msg.data.push_back(current_twist_.twist.angular.z);                           // [1] wz (omega)
   msg.data.push_back(X(2) * RAD2DEG);                                           // [2] yaw angle
   msg.data.push_back(tf::getYaw(current_ndt_pose_.pose.orientation) * RAD2DEG); // [3] NDT yaw angle
-  msg.data.push_back(X(3) * RAD2DEG);                                           // [4] omega bias
-  msg.data.push_back((current_twist_.twist.angular.z + X(3)));                  // [5] omega + omega_bias
-  // msg.data.push_back(X(4));                                                     // [6] yaw_bias
-  // msg.data.push_back((X(2) + X(4)) * RAD2DEG);                                  // [7] kf yaw + yaw_bias
+  msg.data.push_back(X(3) * RAD2DEG);                                           // [4] yaw bias
   pub_debug_.publish(msg);
 }
 

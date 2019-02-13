@@ -19,7 +19,6 @@
   <depend>autoware_msgs</depend>
   <depend>autoware_build_flags</depend>
   <depend>sensor_msgs</depend>
-  <depend>pacmod_msgs</depend>
 
   <buildtool_depend>catkin</buildtool_depend>
 
