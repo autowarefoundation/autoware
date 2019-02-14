@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(autoware_build_flags)
 
-find_package(catkin REQUIRED)
+find_package(ament_cmake REQUIRED)
 
-catkin_package(CFG_EXTRAS autoware_build_flags-extras.cmake)
+ament_package(CONFIG_EXTRAS autoware_build_flags-extras.cmake)

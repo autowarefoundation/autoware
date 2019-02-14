@@ -19,7 +19,6 @@ catkin_package(
         INCLUDE_DIRS
             include
         CATKIN_DEPENDS
-            autoware_build_flags
             autoware_msgs
             pcl_ros
             roscpp
