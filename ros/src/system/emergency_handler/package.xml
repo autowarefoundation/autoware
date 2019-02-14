@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>emergency_handler</name>
+  <version>0.0.0</version>
+  <description>The emergency_handler package</description>
+
+  <maintainer email="yuma.nihei@tier4.jp">yn</maintainer>
+  <license>Apache 2</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>autoware_system_msgs</build_depend>
+  <build_depend>autoware_health_checker</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_export_depend>autoware_system_msgs</build_export_depend>
+  <build_export_depend>autoware_health_checker</build_export_depend>
+  <build_export_depend>roscpp</build_export_depend>
+  <build_export_depend>std_msgs</build_export_depend>
+  <exec_depend>autoware_system_msgs</exec_depend>
+  <exec_depend>autoware_health_checker</exec_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+
+  <export>
+  </export>
+</package>
