@@ -5,16 +5,19 @@ set(ROS_VERSION $ENV{ROS_DISTRO})
 
 include(FindPkgConfig)
 
+find_package(autoware_build_flags REQUIRED)
+find_package(autoware_msgs REQUIRED)
+find_package(autoware_config_msgs REQUIRED)
 
 FIND_PACKAGE(catkin REQUIRED COMPONENTS
-        autoware_build_flags
         cv_bridge
         image_transport
         roscpp
         sensor_msgs
         std_msgs
-        autoware_msgs
         tf
+        autoware_msgs
+        autoware_config_msgs
         )
 
 FIND_PACKAGE(CUDA)
@@ -27,6 +30,7 @@ catkin_package(
         sensor_msgs
         std_msgs
         autoware_msgs
+        autoware_config_msgs
         tf
 )
 
@@ -71,6 +75,8 @@ if (EXISTS "${SSD_CAFFE_PATH}")
             )
 
     target_include_directories(vision_ssd_detect PRIVATE
+            ${autoware_msgs_INCLUDE_DIRS}
+            ${autoware_config_msgs_INCLUDE_DIRS}
             ${SSD_CAFFE_PATH}/include
             include
             )

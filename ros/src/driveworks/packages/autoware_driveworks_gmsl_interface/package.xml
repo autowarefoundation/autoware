@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>autoware_driveworks_gmsl_interface</name>
-  <version>0.0.0</version>
+  <version>1.10.0</version>
   <description>
     A collection of node(let)s that publish images from one or multiple gmsl cameras
   </description>
@@ -10,7 +10,7 @@
   <license>BSD</license>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <!-- <buildtool_depend>autoware_build_flags</buildtool_depend> -->
+  <buildtool_depend>autoware_build_flags</buildtool_depend>
   <build_depend>libglew-dev</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>sensor_msgs</build_depend>

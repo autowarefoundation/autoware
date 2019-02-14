@@ -1,32 +1,18 @@
 /*
-// *  Copyright (c) 2015, Nagoya University
- *  All rights reserved.
+ * Copyright 2015-2019 Autoware Foundation. All rights reserved.
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  * Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name of Autoware nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #ifndef WAYPOINT_LOADER_CORE_H
 #define WAYPOINT_LOADER_CORE_H
@@ -43,7 +29,6 @@
 #include <unordered_map>
 
 #include "autoware_msgs/LaneArray.h"
-#include "velocity_replanner.h"
 
 namespace waypoint_maker
 {
@@ -74,6 +59,7 @@ class WaypointLoaderNode
 public:
   WaypointLoaderNode();
   ~WaypointLoaderNode();
+  void run();
 
 private:
   // handle
@@ -83,26 +69,18 @@ private:
   // publisher & subscriber
   ros::Publisher lane_pub_;
   ros::Subscriber config_sub_;
-  ros::Subscriber output_cmd_sub_;
 
   // variables
   std::string multi_lane_csv_;
-  bool disable_decision_maker_;
-  bool replanning_mode_;
-  VelocityReplanner replanner_;
   std::vector<std::string> multi_file_path_;
   autoware_msgs::LaneArray output_lane_array_;
 
   // initializer
   void initPubSub();
-  void initParameter(const autoware_config_msgs::ConfigWaypointLoader::ConstPtr& conf);
 
   // functions
-  void configCallback(const autoware_config_msgs::ConfigWaypointLoader::ConstPtr& conf);
-  void outputCommandCallback(const std_msgs::Bool::ConstPtr& output_cmd);
   void createLaneWaypoint(const std::string& file_path, autoware_msgs::Lane* lane);
   void createLaneArray(const std::vector<std::string>& paths, autoware_msgs::LaneArray* lane_array);
-  void saveLaneArray(const std::vector<std::string>& paths, const autoware_msgs::LaneArray& lane_array);
 
   FileFormat checkFileFormat(const char* filename);
   bool verifyFileConsistency(const char* filename);

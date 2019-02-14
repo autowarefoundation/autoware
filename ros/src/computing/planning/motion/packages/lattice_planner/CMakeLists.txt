@@ -1,8 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(lattice_planner)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(vector_map REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
         roscpp
         std_msgs
         pcl_ros
@@ -50,6 +53,7 @@ include_directories(
         include
         ${ARMADILLO_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
+        ${vector_map_INCLUDE_DIRS}
 )
 
 add_library(libtraj_gen lib/libtraj_gen.cpp)
@@ -74,4 +78,3 @@ add_executable(path_select nodes/path_select/path_select.cpp)
 target_link_libraries(path_select ${catkin_LIBRARIES})
 add_dependencies(path_select
         ${catkin_EXPORTED_TARGETS})
-

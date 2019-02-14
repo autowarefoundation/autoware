@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<robot name="car">
+  <link name="base_link">
+    <visual name="base_visual">
+      <origin xyz="1 0 0.0" rpy="1.57 0 4.71" />
+      <geometry>
+        <mesh filename="package://vehicle_description/mesh/estima_black.dae" scale="1.0 1.0 1.0"/>
+      </geometry>
+    </visual>
+  </link>
+</robot>

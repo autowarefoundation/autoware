@@ -35,10 +35,7 @@ elif [ $(which konsole) ]; then
     OPTION_TITLE='-T'
 fi
 
-echo "Process Manager"
-
-gksudo --message "Please input password for launching process manager" \
-       -- $MY_PATH/run_proc_manager &
+sudo bash -c "$MY_PATH/run_proc_manager &"
 
 ADDR=$($MY_PATH/src/.config/rviz/subnet_chk.py -)
 if [ "$?" == "0" ]; then

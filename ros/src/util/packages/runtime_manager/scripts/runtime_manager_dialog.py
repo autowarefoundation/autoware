@@ -1,33 +1,18 @@
 #!/usr/bin/env python
-"""
-  Copyright (c) 2015, Nagoya University
-  All rights reserved.
-
-  Redistribution and use in source and binary forms, with or without
-  modification, are permitted provided that the following conditions are met:
-
-  * Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
-
-  * Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
-
-  * Neither the name of Autoware nor the names of its
-    contributors may be used to endorse or promote products derived from
-    this software without specific prior written permission.
-
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-"""
+#
+# Copyright 2015-2019 Autoware Foundation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 
 import wx
@@ -70,7 +55,7 @@ from autoware_config_msgs.msg import ConfigDistanceFilter
 from autoware_config_msgs.msg import ConfigRandomFilter
 from autoware_config_msgs.msg import ConfigRingGroundFilter
 from autoware_config_msgs.msg import ConfigRayGroundFilter
-from autoware_config_msgs.msg import ConfigWaypointLoader
+from autoware_config_msgs.msg import ConfigWaypointReplanner
 from autoware_config_msgs.msg import ConfigWaypointFollower
 from autoware_config_msgs.msg import ConfigTwistFilter
 from autoware_config_msgs.msg import ConfigVelocitySet
@@ -2732,32 +2717,6 @@ class MyDialogNDTMapping(rtmgr.MyDialogNDTMapping):
 		self.panel.detach_func()
 		self.EndModal(0)
 
-class MyDialogWaypointLoader(rtmgr.MyDialogWaypointLoader):
-	def __init__(self, *args, **kwds):
-		self.pdic = kwds.pop('pdic')
-		self.pdic_bak = self.pdic.copy()
-		self.gdic = kwds.pop('gdic')
-		self.prm = kwds.pop('prm')
-		rtmgr.MyDialogWaypointLoader.__init__(self, *args, **kwds)
-		set_size_gdic(self)
-
-		parent = self.panel_v
-		frame = self.GetParent()
-		self.panel = ParamPanel(parent, frame=frame, pdic=self.pdic, gdic=self.gdic, prm=self.prm)
-		sizer_wrap((self.panel,), wx.VERTICAL, 1, wx.EXPAND, 0, parent)
-
-		self.klass_msg = Bool
-		self.pub = rospy.Publisher('/config/waypoint_loader_output', self.klass_msg, queue_size=10)
-
-	def OnCsvOutput(self, event):
-		msg = self.klass_msg()
-		msg.data = True
-		self.pub.publish(msg)
-
-	def OnOk(self, event):
-		self.panel.detach_func()
-		self.EndModal(0)
-
 class InfoBarLabel(wx.BoxSizer):
 	def __init__(self, parent, btm_txt=None, lmt_bar_prg=90, bar_orient=wx.VERTICAL):
 		wx.BoxSizer.__init__(self, orient=wx.VERTICAL)
@@ -3003,7 +2962,7 @@ class MyDialogROSbagRecord(rtmgr.MyDialogROSbagRecord):
 			mb = 0
 		if mb <= 0:
 			tc.SetValue('')
-		return [ '--size=' + str(int(mb * 1024 * 1024)) ] if mb > 0 else []
+		return [ '--size=' + str(int(mb)) ] if mb > 0 else []
 
 def set_size_gdic(dlg, gdic={}):
 	(w, h) = dlg.GetSize()

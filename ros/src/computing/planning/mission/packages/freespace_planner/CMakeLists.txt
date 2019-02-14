@@ -1,10 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(freespace_planner)
 
-set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
+find_package(autoware_build_flags REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-  autoware_build_flags
   roscpp
   tf
   nav_msgs
