@@ -2,8 +2,9 @@ cmake_minimum_required(VERSION 2.8.12)
 project(rosinterface)
 
 include(FindPkgConfig)
+
+find_package(autoware_build_flags REQUIRED)
 find_package(catkin REQUIRED
-        autoware_build_flags
         roscpp
         tf
         )

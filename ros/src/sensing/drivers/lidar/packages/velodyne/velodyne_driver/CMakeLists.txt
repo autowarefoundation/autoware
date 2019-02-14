@@ -9,6 +9,8 @@ set(${PROJECT_NAME}_CATKIN_DEPS
     tf
     velodyne_msgs)
 
+
+find_package(velodyne_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS ${${PROJECT_NAME}_CATKIN_DEPS})
 
 # This driver uses Boost threads

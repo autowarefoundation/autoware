@@ -2,6 +2,11 @@
 Changelog for package memsic_imu
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.10.0 (2019-01-17)
+-------------------
+* Fix Ros/ROS naming convention
+* Contributors: Esteve Fernandez
+
 1.9.1 (2018-11-06)
 ------------------
 
