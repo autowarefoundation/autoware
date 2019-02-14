@@ -1,16 +1,20 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(vector_map_server)
 
+
+find_package(vector_map REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
         roscpp
         geometry_msgs
         visualization_msgs
-        autoware_msgs
-        vector_map_msgs
-        vector_map
         message_generation
         )
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
+
+find_package(vector_map_msgs REQUIRED)
 
 set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
@@ -57,17 +61,19 @@ catkin_package(
 )
 
 include_directories(
+        ${autoware_msgs_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
+        ${vector_map_INCLUDE_DIRS}
 )
 
 add_executable(vector_map_server nodes/vector_map_server/vector_map_server.cpp)
-target_link_libraries(vector_map_server ${catkin_LIBRARIES})
+target_link_libraries(vector_map_server ${catkin_LIBRARIES} ${vector_map_LIBRARIES})
 add_dependencies(vector_map_server
         ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS}
         )
 
 add_executable(vector_map_client nodes/vector_map_client/vector_map_client.cpp)
-target_link_libraries(vector_map_client ${catkin_LIBRARIES})
+target_link_libraries(vector_map_client ${catkin_LIBRARIES} ${vector_map_LIBRARIES})
 add_dependencies(vector_map_client
         ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS}
         )

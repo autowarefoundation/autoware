@@ -33,6 +33,7 @@
     <run_depend>grid_map_ros</run_depend>
     <run_depend>grid_map_cv</run_depend>
     <run_depend>grid_map_msgs</run_depend>
+    <run_depend>grid_map_visualization</run_depend>
     <run_depend>autoware_msgs</run_depend>
     <run_depend>vector_map</run_depend>
     <run_depend>libqt5-core</run_depend>

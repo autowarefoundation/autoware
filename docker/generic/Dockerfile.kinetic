@@ -100,6 +100,11 @@ RUN echo "source /opt/ros/kinetic/setup.bash" >> /home/$USERNAME/.bashrc && \
         # cd to home on login
         echo "cd" >> /home/$USERNAME/.bashrc
 
+# Install colcon
+RUN apt-get install -y python3-pip python3-setuptools
+RUN pip3 install -U setuptools
+RUN apt-get install -y python3-colcon-common-extensions
+
 # Change user
 USER autoware
 
@@ -107,15 +112,14 @@ RUN sudo rosdep init \
         && rosdep update \
         && echo "source /opt/ros/kinetic/setup.bash" >> ~/.bashrc
 
-# YOLO_V2
-RUN cd && git clone https://github.com/pjreddie/darknet.git
-RUN cd ~/darknet && git checkout 56d69e73aba37283ea7b9726b81afd2f79cd1134
-RUN cd ~/darknet/data && wget https://pjreddie.com/media/files/yolo.weights
+# Setting
+RUN sudo ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1
+ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64/stubs/:$LD_LIBRARY_PATH"
 
 # Install Autoware
 RUN cd && mkdir /home/$USERNAME/Autoware
 COPY --chown=autoware ./ /home/$USERNAME/Autoware/
-RUN /bin/bash -c 'source /opt/ros/kinetic/setup.bash; cd /home/$USERNAME/Autoware/ros/src; git submodule update --init --recursive; catkin_init_workspace; cd ../; ./catkin_make_release'
+RUN /bin/bash -c 'source /opt/ros/kinetic/setup.bash; cd /home/$USERNAME/Autoware/ros/src; git submodule update --init --recursive; cd ../; ./colcon_release'
 RUN echo "source /home/$USERNAME/Autoware/ros/devel/setup.bash" >> /home/$USERNAME/.bashrc
 
 # Setting

@@ -99,7 +99,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-kinetic-tf2 \
     ros-kinetic-tf2-ros \
     ros-kinetic-visualization-msgs \
-    ros-kinetic-xacro
+    ros-kinetic-xacro \
+    ros-kinetic-rosbridge-server
 
 RUN find / -depth -xdev -type l -lname '/*' -exec sh -c 'linkpath="$(readlink {})" && rm -f {} && ln -frsv "$linkpath" "{}"' \;
 
@@ -139,6 +140,11 @@ RUN sed -i -e "s#set(imported_location \"\${_qt5Core_install_prefix}/lib/${AUTOW
     ${AUTOWARE_SYSROOT}/usr/lib/${AUTOWARE_TARGET_ARCH}-linux-gnu/cmake/Qt5Core/Qt5CoreConfigExtras.cmake
 RUN sed -i -e "s#define ARMA_SUPERLU_INCLUDE_DIR /usr/include/superlu/#define ARMA_SUPERLU_INCLUDE_DIR ${AUTOWARE_SYSROOT}/usr/include/superlu/#g" \
     ${AUTOWARE_SYSROOT}/usr/include/armadillo_bits/config.hpp
+
+RUN apt-get install -y python3-pip python3-setuptools
+RUN pip3 install -U setuptools
+RUN apt-get install -y python3-colcon-common-extensions
+
 ENV ROS_DISTRO kinetic
 ENV CC /usr/bin/${AUTOWARE_TARGET_ARCH}-linux-gnu-gcc
 ENV CXX /usr/bin/${AUTOWARE_TARGET_ARCH}-linux-gnu-g++

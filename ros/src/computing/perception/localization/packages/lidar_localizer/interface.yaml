@@ -4,9 +4,6 @@
 - name: ndt_mapping
   publish: [/ndt_map, /current_pose]
   subscribe: [/config/ndt_mapping, /config/ndt_mapping_output, /points_raw]
-- name: lazy_ndt_mapping
-  publish: [/ndt_map, /reference_map, /current_pose]
-  subscribe: [/config/ndt_mapping, /config/ndt_mapping_output, /points_raw]
 - name: queue_counter
   publish: []
   subscribe: [/points_raw, /ndt_map]

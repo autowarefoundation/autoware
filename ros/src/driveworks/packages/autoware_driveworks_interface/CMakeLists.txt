@@ -4,8 +4,11 @@ project(autoware_driveworks_interface)
 set(CMAKE_CXX_FLAGS "-O2 -s  -Wno-error=unused-parameter")
 
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
         roscpp
         std_msgs sensor_msgs autoware_msgs
         )
@@ -32,13 +35,13 @@ if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64" AND CUDA_FOUND)
             cv_bridge
             std_msgs
             sensor_msgs
-            autoware_msgs
             tf
             )
 
     include_directories(
             include
             ${catkin_INCLUDE_DIRS}
+            ${autoware_msgs_INCLUDE_DIRS}
             ${Boost_INCLUDE_DIRS}
             ${OpenCV_INCLUDE_DIRS}
     )
