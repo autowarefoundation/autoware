@@ -81,6 +81,10 @@ void DecisionMakerNode::entryMissionCheckState(cstring_t& state_name, int status
     Subs["final_waypoints"] =
         nh_.subscribe("final_waypoints", 100, &DecisionMakerNode::callbackFromFinalWaypoint, this);
   }
+  if (!isSubscriberRegistered("stop_order_idx"))
+  {
+    Subs["stop_order_idx"] = nh_.subscribe("/state/stop_order_wpidx", 1, &DecisionMakerNode::callbackFromStopOrder, this);
+  }
 }
 void DecisionMakerNode::updateMissionCheckState(cstring_t& state_name, int status)
 {

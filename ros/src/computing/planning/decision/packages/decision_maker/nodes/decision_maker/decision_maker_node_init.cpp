@@ -198,8 +198,6 @@ void DecisionMakerNode::createSubscriber(void)
   Subs["obstacle_waypoint"] =
       nh_.subscribe("/obstacle_waypoint", 1, &DecisionMakerNode::callbackFromObstacleWaypoint, this);
   Subs["change_flag"] = nh_.subscribe("/change_flag", 1, &DecisionMakerNode::callbackFromLaneChangeFlag, this);
-  Subs["stop_order_idx"] = nh_.subscribe("/state/stop_order_wpidx", 1, &DecisionMakerNode::callbackFromStopOrder, this);
-  Subs["clear_order_idx"] = nh_.subscribe("/state/clear_order_wpidx", 1, &DecisionMakerNode::callbackFromClearOrder, this);
 }
 void DecisionMakerNode::createPublisher(void)
 {
@@ -219,7 +217,6 @@ void DecisionMakerNode::createPublisher(void)
   Pubs["state_overlay"] = private_nh_.advertise<jsk_rviz_plugins::OverlayText>("state_overlay", 1);
   Pubs["available_transition"] = private_nh_.advertise<std_msgs::String>("available_transition", 1, true);
   Pubs["stop_cmd_location"] = private_nh_.advertise<autoware_msgs::VehicleLocation>("stop_location", 1, true);
-  Pubs["clear_cmd_location"] = private_nh_.advertise<autoware_msgs::VehicleLocation>("clear_location", 1, true);
 
   // for debug
   Pubs["target_velocity_array"] = nh_.advertise<std_msgs::Float64MultiArray>("target_velocity_array", 1);

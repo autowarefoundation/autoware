@@ -104,8 +104,9 @@ struct AutowareStatus
   int found_stopsign_idx;
   int prev_stopped_wpidx;
   int ordered_stop_idx;
+  int prev_ordered_idx;
 
-  AutowareStatus(void) : closest_waypoint(-1), obstacle_waypoint(-1), velocity(0), found_stopsign_idx(-1), prev_stopped_wpidx(-1), ordered_stop_idx(-1)
+  AutowareStatus(void) : closest_waypoint(-1), obstacle_waypoint(-1), velocity(0), found_stopsign_idx(-1), prev_stopped_wpidx(-1), ordered_stop_idx(-1), prev_ordered_idx(-1)
   {
   }
 
@@ -185,6 +186,8 @@ private:
   bool drivingMissionCheck(void);
 
   double calcIntersectWayAngle(const autoware_msgs::Lane& laneinArea);
+  double getDistToWaypointIdx(int wpidx);
+  double calcRequiredDistForStop(void);
 
   uint8_t getSteeringStateFromWaypoint(void);
   uint8_t getEventStateFromWaypoint(void);

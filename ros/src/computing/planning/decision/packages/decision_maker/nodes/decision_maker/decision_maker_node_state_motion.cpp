@@ -125,7 +125,7 @@ void DecisionMakerNode::updateGoState(cstring_t& state_name, int status)
     current_status_.found_stopsign_idx = get_stopsign.second;
   }
 
-  if((get_stopsign.first != 0 && current_status_.found_stopsign_idx != -1) || current_status_.ordered_stop_idx != -1)
+  if((get_stopsign.first != 0 && current_status_.found_stopsign_idx != -1) || (current_status_.ordered_stop_idx != -1 && calcRequiredDistForStop() > getDistToWaypointIdx(current_status_.ordered_stop_idx)))
   {
     tryNextState("found_stop_decision");
   }
@@ -150,7 +150,7 @@ void DecisionMakerNode::updateStopState(cstring_t& state_name, int status)
     if (current_status_.found_stopsign_idx < current_status_.ordered_stop_idx)
       tryNextState("found_stopline");
     else
-      tryNextState("found_reserved_stop");
+      tryNextState("received_stop_order");
   }
   else if (current_status_.found_stopsign_idx != -1)
   {
@@ -202,12 +202,24 @@ void DecisionMakerNode::updateStoplineState(cstring_t& state_name, int status)
 
 void DecisionMakerNode::updateOrderedStopState(cstring_t& state_name, int status)
 {
-  publishStoplineWaypointIdx(current_status_.ordered_stop_idx);
+  if (current_status_.ordered_stop_idx == -1 || current_status_.prev_ordered_idx != -1)
+  {
+    tryNextState("clear");
+  }
+  else
+  {
+    publishStoplineWaypointIdx(current_status_.ordered_stop_idx);
+  }
 }
 
 void DecisionMakerNode::exitOrderedStopState(cstring_t& state_name, int status)
 {
-  current_status_.ordered_stop_idx = -1;
+  if (current_status_.closest_waypoint > current_status_.ordered_stop_idx)
+  {
+    current_status_.ordered_stop_idx = -1;
+  }
+
+  current_status_.prev_ordered_idx = -1;
 }
 void DecisionMakerNode::updateReservedStopState(cstring_t& state_name, int status)
 {

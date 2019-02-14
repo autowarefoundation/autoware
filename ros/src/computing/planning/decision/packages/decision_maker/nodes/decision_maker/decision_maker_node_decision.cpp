@@ -74,6 +74,41 @@ double DecisionMakerNode::calcIntersectWayAngle(const autoware_msgs::Lane& lanei
   return diff;
 }
 
+double DecisionMakerNode::getDistToWaypointIdx(int wpidx)
+{
+  double distance = 0.0;
+  geometry_msgs::Pose prev_pose = current_status_.pose;
+
+  for (unsigned int idx = 0; idx < current_status_.finalwaypoints.waypoints.size() - 1; idx++)
+  {
+    distance += amathutils::find_distance(prev_pose, current_status_.finalwaypoints.waypoints.at(idx).pose.pose);
+
+    if (current_status_.finalwaypoints.waypoints.at(idx).gid == wpidx)
+    {
+      break;
+    }
+
+    prev_pose = current_status_.finalwaypoints.waypoints.at(idx).pose.pose;
+  }
+
+  return distance;
+}
+
+double DecisionMakerNode::calcRequiredDistForStop(void)
+{
+  static const double mu = 0.7;  // dry ground/ asphalt/ normal tire
+  static const double g = 9.80665;
+  static const double margin = 5;
+  static const double reaction_time = 0.3 + margin;  // system delay(sec)
+  const double velocity = amathutils::kmph2mps(current_status_.velocity);
+
+  const double free_running_distance = reaction_time * velocity;
+  const double braking_distance = velocity * velocity / (2 * g * mu);
+  const double distance_to_target = (free_running_distance + braking_distance) * 2 /* safety margin*/;
+
+  return distance_to_target;
+}
+
 bool DecisionMakerNode::isLocalizationConvergence(const geometry_msgs::Point& _current_point)
 {
   static std::vector<double> distances;
