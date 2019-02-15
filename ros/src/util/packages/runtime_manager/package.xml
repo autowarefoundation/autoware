@@ -18,6 +18,7 @@
   <run_depend>autoware_msgs</run_depend>
   <run_depend>autoware_config_msgs</run_depend>
   <run_depend>tablet_socket_msgs</run_depend>
+  <run_depend>velodyne</run_depend>
   <export>
   </export>
 </package>
