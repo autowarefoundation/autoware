@@ -141,6 +141,7 @@ uint8_t NodeStatusPublisher::CHECK_MIN_VALUE(std::string key, double value,
   }
   new_status.description = description;
   new_status.value = doubeToJson(value);
+  new_status.header.stamp = ros::Time::now();
   diag_buffers_[key]->addDiag(new_status);
   return new_status.level;
 }
