@@ -29,6 +29,32 @@
 //headers in Autoware
 #include <autoware_system_msgs/SystemStatus.h>
 
+//headers in boost
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/graph_utility.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
+#include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
+
+struct transition_property
+{
+    std::string node_pub;
+    std::string node_sub;
+    std::string topic;
+};
+
+struct node_property
+{
+    std::string node_name;
+};
+
+typedef boost::adjacency_list<boost::listS, boost::vecS, boost::bidirectionalS, node_property, transition_property> graph_t;
+typedef graph_t::vertex_descriptor vertex_t;
+typedef graph_t::edge_descriptor edge_t;
+typedef boost::graph_traits<graph_t>::adjacency_iterator adjacency_iterator_t;
+typedef boost::graph_traits<graph_t>::out_edge_iterator out_edge_iterator_t;
+
 class HealthAnalyzer
 {
 public:
@@ -40,6 +66,8 @@ private:
     ros::NodeHandle nh_;
     ros::NodeHandle pnh_;
     void systemStatusCallback(const autoware_system_msgs::SystemStatus::ConstPtr msg);
+    void generateDependGraph(autoware_system_msgs::SystemStatus status);
+    graph_t depend_graph_;
 };
 
 #endif //HEALTH_ANALYZER_H_INCLUDED

@@ -35,3 +35,13 @@ void HealthAnalyzer::systemStatusCallback(const autoware_system_msgs::SystemStat
 {
     return;
 }
+
+void HealthAnalyzer::generateDependGraph(autoware_system_msgs::SystemStatus status)
+{
+    for(auto itr = status.topic_statistics.begin(); itr != status.topic_statistics.end(); itr++)
+    {
+        vertex_t node_sub;
+        vertex_t node_pub;
+    }
+    return;
+}
