@@ -22,7 +22,5 @@ fi
 
 CATKIN_OPTS="-DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs install"
 
-catkin_make clean $CATKIN_OPTS
-
 export LIBRARY_PATH=/usr/lib/OpenNI2/Drivers:$LIBRARY_PATH
 catkin_make $CATKIN_OPTS $@
