@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 2.8)
 project(offline_tools)
 
 add_compile_options(-std=c++11)
@@ -12,7 +12,6 @@ find_package(catkin REQUIRED COMPONENTS
 	rviz
 	cv_bridge
 	pcl_ros
-	vector_map
 	rosbag_storage)
 
 #find_package(Qt5 REQUIRED Core Widgets)
@@ -27,7 +26,10 @@ catkin_package(
   LIBRARIES 
   	rviz_offline_display
   	random_access_bag
-  CATKIN_DEPENDS roscpp rviz vector_map rosbag_storage
+  CATKIN_DEPENDS 
+	roscpp 
+	rviz 
+	rosbag_storage
 )
 
 
@@ -47,8 +49,6 @@ add_library(
 		rviz_plugins/PCDFileDisplay.cpp
 		rviz_plugins/CSVTrajectory.cpp
 		rviz_plugins/FileProperty.cpp
-		rviz_plugins/VectorMapDisplay.cpp
-		rviz_plugins/VectorMapLoader.cpp
 )
 
 target_link_libraries(
