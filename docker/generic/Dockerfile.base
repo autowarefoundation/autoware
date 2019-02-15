@@ -43,7 +43,8 @@ RUN apt-get update && apt-get install -y \
         tmux \
         v4l-utils \
         vim \
-        wget && \
+        wget \
+        lsb-release && \
         pip3 install -U setuptools && \
         rm -rf /var/lib/apt/lists/*
 
@@ -69,6 +70,7 @@ RUN groupadd --gid $GROUP_ID $USERNAME && \
         chmod 0440 /etc/sudoers.d/$USERNAME
 
 # Startup scripts
+ARG ROS_DISTRO
 ENV LANG="en_US.UTF-8"
 RUN echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> /etc/profile.d/ros.sh && \
         # Fix for QT and X server errors
@@ -79,14 +81,71 @@ RUN echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> /etc/profile.d/ros.sh && \
 #
 # Scan Autoware packages to install dependencies
 #
+# Ignore ament dependencies for now
 COPY ./ /tmp/Autoware
 RUN apt-get update && \
         apt-get install -y ros-$ROS_DISTRO-desktop-full && \
-        rosdep install -y --from-paths /tmp/Autoware/ros/src --ignore-src && \
+        rosdep install -y --from-paths /tmp/Autoware/ros/src --ignore-src --skip-keys="ament_lint_common ament_lint_auto ament_cmake_gtest ament_cmake ament_cmake_lint_cmake" && \
         rm -rf /var/lib/apt/lists/* && \
         rm -rf /tmp/Autoware  # Removed for clean environment
 
 RUN su -c "rosdep update" autoware
+
+#
+# Enable ament_cmake
+#
+ARG ROS2_DISTRO
+RUN echo "deb http://repo.ros2.org/ubuntu/main `lsb_release -sc` main" | tee /etc/apt/sources.list.d/ros2-latest.list
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ros-${ROS2_DISTRO}-ament-clang-format \
+    ros-${ROS2_DISTRO}-ament-cmake \
+    ros-${ROS2_DISTRO}-ament-cmake-auto \
+    ros-${ROS2_DISTRO}-ament-cmake-clang-format \
+    ros-${ROS2_DISTRO}-ament-cmake-copyright \
+    ros-${ROS2_DISTRO}-ament-cmake-core \
+    ros-${ROS2_DISTRO}-ament-cmake-cppcheck \
+    ros-${ROS2_DISTRO}-ament-cmake-cpplint \
+    ros-${ROS2_DISTRO}-ament-cmake-export-definitions \
+    ros-${ROS2_DISTRO}-ament-cmake-export-dependencies \
+    ros-${ROS2_DISTRO}-ament-cmake-export-include-directories \
+    ros-${ROS2_DISTRO}-ament-cmake-export-interfaces \
+    ros-${ROS2_DISTRO}-ament-cmake-export-libraries \
+    ros-${ROS2_DISTRO}-ament-cmake-export-link-flags \
+    ros-${ROS2_DISTRO}-ament-cmake-flake8 \
+    ros-${ROS2_DISTRO}-ament-cmake-gmock \
+    ros-${ROS2_DISTRO}-ament-cmake-gtest \
+    ros-${ROS2_DISTRO}-ament-cmake-include-directories \
+    ros-${ROS2_DISTRO}-ament-cmake-libraries \
+    ros-${ROS2_DISTRO}-ament-cmake-lint-cmake \
+    ros-${ROS2_DISTRO}-ament-cmake-nose \
+    ros-${ROS2_DISTRO}-ament-cmake-pep257 \
+    ros-${ROS2_DISTRO}-ament-cmake-pep8 \
+    ros-${ROS2_DISTRO}-ament-cmake-pyflakes \
+    ros-${ROS2_DISTRO}-ament-cmake-pytest \
+    ros-${ROS2_DISTRO}-ament-cmake-python \
+    ros-${ROS2_DISTRO}-ament-cmake-ros \
+    ros-${ROS2_DISTRO}-ament-cmake-target-dependencies \
+    ros-${ROS2_DISTRO}-ament-cmake-test \
+    ros-${ROS2_DISTRO}-ament-cmake-uncrustify \
+    ros-${ROS2_DISTRO}-ament-copyright \
+    ros-${ROS2_DISTRO}-ament-cppcheck \
+    ros-${ROS2_DISTRO}-ament-cpplint \
+    ros-${ROS2_DISTRO}-ament-flake8 \
+    ros-${ROS2_DISTRO}-ament-index-cpp \
+    ros-${ROS2_DISTRO}-ament-index-python \
+    ros-${ROS2_DISTRO}-ament-lint-auto \
+    ros-${ROS2_DISTRO}-ament-lint-cmake \
+    ros-${ROS2_DISTRO}-ament-lint-common \
+    ros-${ROS2_DISTRO}-ament-package \
+    ros-${ROS2_DISTRO}-ament-pep257 \
+    ros-${ROS2_DISTRO}-ament-pep8 \
+    ros-${ROS2_DISTRO}-ament-pyflakes \
+    ros-${ROS2_DISTRO}-ament-tools \
+    ros-${ROS2_DISTRO}-ament-uncrustify && \
+    rm -rf /var/lib/apt/lists/*
+
+# Startup scripts
+RUN echo "source /opt/ros/$ROS2_DISTRO/setup.bash" >> /etc/profile.d/ros2.sh
 
 # Configure terminal colors
 RUN su -c "gconftool-2 --set \"/apps/gnome-terminal/profiles/Default/use_theme_background\" --type bool false" autoware && \

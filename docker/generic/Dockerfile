@@ -1,12 +1,14 @@
 ARG FROM_ARG
-ARG ROS_DISTRO
 FROM ${FROM_ARG}
 
+ARG ROS_DISTRO
+ARG ROS2_DISTRO
 ENV USERNAME autoware
 
 # Build Autoware
 COPY --chown=autoware ./ /home/$USERNAME/Autoware
 RUN su -c "bash -c 'source /opt/ros/$ROS_DISTRO/setup.bash; \
+                  source /opt/ros/$ROS2_DISTRO/setup.bash; \
                   cd /home/$USERNAME/Autoware/ros/src; \
                   catkin_init_workspace; \
                   cd ../; \

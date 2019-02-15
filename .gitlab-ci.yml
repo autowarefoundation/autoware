@@ -8,6 +8,7 @@ variables:
   ROSINSTALL_FILE: $CI_SOURCE_PATH/dependencies.rosinstall
   CATKIN_OPTIONS: $CI_SOURCE_PATH/catkin.options
   GIT_SUBMODULE_STRATEGY: recursive
+  ROS2_DISTRO: ardent
   #CI_DEBUG_TRACE: "true"
 
 .build: &build_common
@@ -16,14 +17,64 @@ variables:
     - apt-get install -y lsb-release
     - apt-get install -y gcc g++
     - sh -c "echo \"deb http://packages.ros.org/ros/ubuntu $ROS_CI_DESKTOP main\" > /etc/apt/sources.list.d/ros-latest.list"
+    - sh -c "echo \"deb [arch=amd64,arm64] http://repo.ros2.org/ubuntu/main $ROS_CI_DESKTOP main\" > /etc/apt/sources.list.d/ros2-latest.list"
     - apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
     - apt-get update
     - apt-get install -y dpkg
     - apt-get install -y python-catkin-pkg python-rosdep python-wstool ros-${ROS_DISTRO}-catkin
     - apt-get install -y python3-pip python3-setuptools
+    - |
+      apt-get install -y \
+      ros-${ROS2_DISTRO}-ament-clang-format \
+      ros-${ROS2_DISTRO}-ament-cmake \
+      ros-${ROS2_DISTRO}-ament-cmake-auto \
+      ros-${ROS2_DISTRO}-ament-cmake-clang-format \
+      ros-${ROS2_DISTRO}-ament-cmake-copyright \
+      ros-${ROS2_DISTRO}-ament-cmake-core \
+      ros-${ROS2_DISTRO}-ament-cmake-cppcheck \
+      ros-${ROS2_DISTRO}-ament-cmake-cpplint \
+      ros-${ROS2_DISTRO}-ament-cmake-export-definitions \
+      ros-${ROS2_DISTRO}-ament-cmake-export-dependencies \
+      ros-${ROS2_DISTRO}-ament-cmake-export-include-directories \
+      ros-${ROS2_DISTRO}-ament-cmake-export-interfaces \
+      ros-${ROS2_DISTRO}-ament-cmake-export-libraries \
+      ros-${ROS2_DISTRO}-ament-cmake-export-link-flags \
+      ros-${ROS2_DISTRO}-ament-cmake-flake8 \
+      ros-${ROS2_DISTRO}-ament-cmake-gmock \
+      ros-${ROS2_DISTRO}-ament-cmake-gtest \
+      ros-${ROS2_DISTRO}-ament-cmake-include-directories \
+      ros-${ROS2_DISTRO}-ament-cmake-libraries \
+      ros-${ROS2_DISTRO}-ament-cmake-lint-cmake \
+      ros-${ROS2_DISTRO}-ament-cmake-nose \
+      ros-${ROS2_DISTRO}-ament-cmake-pep257 \
+      ros-${ROS2_DISTRO}-ament-cmake-pep8 \
+      ros-${ROS2_DISTRO}-ament-cmake-pyflakes \
+      ros-${ROS2_DISTRO}-ament-cmake-pytest \
+      ros-${ROS2_DISTRO}-ament-cmake-python \
+      ros-${ROS2_DISTRO}-ament-cmake-ros \
+      ros-${ROS2_DISTRO}-ament-cmake-target-dependencies \
+      ros-${ROS2_DISTRO}-ament-cmake-test \
+      ros-${ROS2_DISTRO}-ament-cmake-uncrustify \
+      ros-${ROS2_DISTRO}-ament-copyright \
+      ros-${ROS2_DISTRO}-ament-cppcheck \
+      ros-${ROS2_DISTRO}-ament-cpplint \
+      ros-${ROS2_DISTRO}-ament-flake8 \
+      ros-${ROS2_DISTRO}-ament-index-cpp \
+      ros-${ROS2_DISTRO}-ament-index-python \
+      ros-${ROS2_DISTRO}-ament-lint-auto \
+      ros-${ROS2_DISTRO}-ament-lint-cmake \
+      ros-${ROS2_DISTRO}-ament-lint-common \
+      ros-${ROS2_DISTRO}-ament-package \
+      ros-${ROS2_DISTRO}-ament-pep257 \
+      ros-${ROS2_DISTRO}-ament-pep8 \
+      ros-${ROS2_DISTRO}-ament-pyflakes \
+      ros-${ROS2_DISTRO}-ament-tools \
+      ros-${ROS2_DISTRO}-ament-uncrustify
+
     # Update setuptools from PyPI because the version Ubuntu ships with is too old
     - pip3 install -U setuptools
     - source /opt/ros/${ROS_DISTRO}/setup.bash
+    - source /opt/ros/${ROS2_DISTRO}/setup.bash
     - rosdep init
     - rosdep update
     - cd ros/src
@@ -31,7 +82,8 @@ variables:
     - test -f "${ROSINSTALL_FILE}" && wstool merge "${ROSINSTALL_FILE}"
     - wstool up
     - cd ..
-    - rosdep install -y --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} 
+    # Ignore ament dependencies for now
+    - rosdep install -y --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} --skip-keys="ament_lint_common ament_lint_auto ament_cmake_gtest ament_cmake ament_cmake_lint_cmake"
     
 
 build_kinetic:
@@ -51,11 +103,12 @@ build_kinetic:
     - cd ..
     - rm -r lcov
   # We first build the entire workspace normally
-    - colcon build --cmake-args -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_BUILD_TYPE=Debug
+    - colcon build --cmake-args -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_BUILD_TYPE=Debug -DPYTHON_EXECUTABLE=/usr/bin/python3
   # And then build the tests target. catkin (ROS1) packages add their tests to the tests target
   # which is not the standard target for CMake projects. We need to trigger the tests target so that
-  # tests are built and any fixtures are set up.
-    - colcon build --cmake-target tests --cmake-args -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_BUILD_TYPE=Debug
+  # tests are built and any fixtures are set up. Also ignore packages without tests target, such as
+  # autoware_build_flags.
+    - colcon build --cmake-target tests --cmake-target-skip-unavailable --cmake-args -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_BUILD_TYPE=Debug
     - lcov --initial --directory build --capture --output-file lcov.base
     - colcon test
     - colcon test-result
@@ -84,7 +137,7 @@ build_cross:
     - docker:dind
   variables:
     ROS_DISTRO: kinetic
-    AUTOWARE_DOCKER_DATE: 20190102
+    AUTOWARE_DOCKER_DATE: 20190103
     AUTOWARE_HOME: $CI_PROJECT_DIR
     AUTOWARE_TARGET_ARCH: aarch64
     AUTOWARE_TARGET_PLATFORM: generic-aarch64
@@ -99,10 +152,11 @@ build_cross:
           --rm
           -v ${AUTOWARE_HOME}:${AUTOWARE_HOME}
           -w ${AUTOWARE_HOME}/ros
-          autoware/build:${AUTOWARE_TARGET_PLATFORM}-kinetic-${AUTOWARE_DOCKER_DATE}
+          autoware/build:${AUTOWARE_TARGET_PLATFORM}-${ROS_DISTRO}-${AUTOWARE_DOCKER_DATE}
           bash
             -c "
-                source ${AUTOWARE_SYSROOT}/opt/ros/kinetic/setup.bash &&
+                source ${AUTOWARE_SYSROOT}/opt/ros/${ROS_DISTRO}/setup.bash &&
+                source ${AUTOWARE_SYSROOT}/opt/ros/${ROS2_DISTRO}/setup.bash &&
                 colcon build
                     --merge-install
                     --build-base ${AUTOWARE_BUILD_PATH}
@@ -110,8 +164,8 @@ build_cross:
                     --cmake-args
                     -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH}
                     -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH}
-                    -DCMAKE_PREFIX_PATH=\"${AUTOWARE_SYSROOT}/opt/ros/kinetic;${AUTOWARE_INSTALL_PATH}\"
                     -DCMAKE_FIND_ROOT_PATH=${AUTOWARE_INSTALL_PATH}
+                    -DPYTHON_EXECUTABLE=/usr/bin/python3
                   "
                   '
   retry: 1
@@ -132,4 +186,3 @@ pages:
   only:
     - master
     - develop
-

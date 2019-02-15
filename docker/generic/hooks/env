@@ -13,3 +13,4 @@ if [[ "${SOURCE_BRANCH}" =~ "release/" ]]; then
 fi
 
 ROS_DISTRO=kinetic
+ROS2_DISTRO=ardent

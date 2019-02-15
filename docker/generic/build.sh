@@ -5,6 +5,7 @@ CUDA="on"
 IMAGE_NAME="autoware/autoware"
 TAG_PREFIX="local"
 ROS_DISTRO="kinetic"
+ROS2_DISTRO="ardent"
 BASE_ONLY="false"
 
 function usage() {
@@ -78,6 +79,7 @@ BASE=$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-base
 docker build \
     --tag $BASE \
     --build-arg ROS_DISTRO=$ROS_DISTRO \
+    --build-arg ROS2_DISTRO=$ROS2_DISTRO \
     --file Dockerfile.base ./../..
 
 CUDA_SUFFIX=""
@@ -98,4 +100,5 @@ docker build \
     --tag $IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO$CUDA_SUFFIX \
     --build-arg FROM_ARG=$BASE$CUDA_SUFFIX \
     --build-arg ROS_DISTRO=$ROS_DISTRO \
+    --build-arg ROS2_DISTRO=$ROS2_DISTRO \
     --file Dockerfile ./../..

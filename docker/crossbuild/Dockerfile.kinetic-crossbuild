@@ -53,14 +53,66 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 #
 # Scan Autoware packages to install dependencies
 #
+# Ignore ament dependencies for now
 RUN cd && mkdir -p /tmp/Autoware
 COPY ./ /tmp/Autoware
 RUN apt-get update && \
         rosdep init && \
         rosdep update && \
-        rosdep install -y --from-paths /tmp/Autoware/ros/src --ignore-src --rosdistro kinetic && \
+        rosdep install -y --from-paths /tmp/Autoware/ros/src --ignore-src --rosdistro kinetic --skip-keys="ament_lint_common ament_lint_auto ament_cmake_gtest ament_cmake ament_cmake_lint_cmake" && \
         rm -rf /var/lib/apt/lists/* && \
         rm -rf /tmp/Autoware  # Removed for clean environment
+
+RUN echo "deb http://repo.ros2.org/ubuntu/main xenial main" | tee /etc/apt/sources.list.d/ros2-latest.list
+RUN apt-get update
+
+ARG ROS2_DISTRO
+RUN apt-get install -y --no-install-recommends \
+    ros-${ROS2_DISTRO}-ament-clang-format \
+    ros-${ROS2_DISTRO}-ament-cmake \
+    ros-${ROS2_DISTRO}-ament-cmake-auto \
+    ros-${ROS2_DISTRO}-ament-cmake-clang-format \
+    ros-${ROS2_DISTRO}-ament-cmake-copyright \
+    ros-${ROS2_DISTRO}-ament-cmake-core \
+    ros-${ROS2_DISTRO}-ament-cmake-cppcheck \
+    ros-${ROS2_DISTRO}-ament-cmake-cpplint \
+    ros-${ROS2_DISTRO}-ament-cmake-export-definitions \
+    ros-${ROS2_DISTRO}-ament-cmake-export-dependencies \
+    ros-${ROS2_DISTRO}-ament-cmake-export-include-directories \
+    ros-${ROS2_DISTRO}-ament-cmake-export-interfaces \
+    ros-${ROS2_DISTRO}-ament-cmake-export-libraries \
+    ros-${ROS2_DISTRO}-ament-cmake-export-link-flags \
+    ros-${ROS2_DISTRO}-ament-cmake-flake8 \
+    ros-${ROS2_DISTRO}-ament-cmake-gmock \
+    ros-${ROS2_DISTRO}-ament-cmake-gtest \
+    ros-${ROS2_DISTRO}-ament-cmake-include-directories \
+    ros-${ROS2_DISTRO}-ament-cmake-libraries \
+    ros-${ROS2_DISTRO}-ament-cmake-lint-cmake \
+    ros-${ROS2_DISTRO}-ament-cmake-nose \
+    ros-${ROS2_DISTRO}-ament-cmake-pep257 \
+    ros-${ROS2_DISTRO}-ament-cmake-pep8 \
+    ros-${ROS2_DISTRO}-ament-cmake-pyflakes \
+    ros-${ROS2_DISTRO}-ament-cmake-pytest \
+    ros-${ROS2_DISTRO}-ament-cmake-python \
+    ros-${ROS2_DISTRO}-ament-cmake-ros \
+    ros-${ROS2_DISTRO}-ament-cmake-target-dependencies \
+    ros-${ROS2_DISTRO}-ament-cmake-test \
+    ros-${ROS2_DISTRO}-ament-cmake-uncrustify \
+    ros-${ROS2_DISTRO}-ament-copyright \
+    ros-${ROS2_DISTRO}-ament-cppcheck \
+    ros-${ROS2_DISTRO}-ament-cpplint \
+    ros-${ROS2_DISTRO}-ament-flake8 \
+    ros-${ROS2_DISTRO}-ament-index-cpp \
+    ros-${ROS2_DISTRO}-ament-index-python \
+    ros-${ROS2_DISTRO}-ament-lint-auto \
+    ros-${ROS2_DISTRO}-ament-lint-cmake \
+    ros-${ROS2_DISTRO}-ament-lint-common \
+    ros-${ROS2_DISTRO}-ament-package \
+    ros-${ROS2_DISTRO}-ament-pep257 \
+    ros-${ROS2_DISTRO}-ament-pep8 \
+    ros-${ROS2_DISTRO}-ament-pyflakes \
+    ros-${ROS2_DISTRO}-ament-tools \
+    ros-${ROS2_DISTRO}-ament-uncrustify
 
 RUN find / -depth -xdev -type l -lname '/*' -exec sh -c 'linkpath="$(readlink {})" && rm -f {} && ln -frsv "$linkpath" "{}"' \;
 
@@ -106,8 +158,9 @@ RUN pip3 install -U setuptools
 RUN apt-get install -y python3-colcon-common-extensions
 
 ENV ROS_DISTRO kinetic
+ARG ROS2_DISTRO
 ENV CC /usr/bin/${AUTOWARE_TARGET_ARCH}-linux-gnu-gcc
 ENV CXX /usr/bin/${AUTOWARE_TARGET_ARCH}-linux-gnu-g++
 ENV AR /usr/bin/${AUTOWARE_TARGET_ARCH}-linux-gnu-ar
 ENV CPP /usr/bin/${AUTOWARE_TARGET_ARCH}-linux-gnu-cpp
-CMD . /opt/ros/kinetic/setup.sh && /bin/bash
+CMD . /opt/ros/kinetic/setup.sh && . /opt/ros/${ROS2_DISTRO}/setup.sh && /bin/bash

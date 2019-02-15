@@ -9,6 +9,8 @@ then
     AUTOWARE_TARGET_ARCH=aarch64
     AUTOWARE_TARGET_PLATFORM=$1
     DOCKER_REPO=autoware/build
+    IMAGE_NAME=local-kinetic
+    ROS2_DISTRO="ardent"
 
     echo "Using ${AUTOWARE_TARGET_PLATFORM} as the target architecture"
     # Register QEMU as a handler for non-x86 targets
@@ -19,14 +21,16 @@ then
         --build-arg AUTOWARE_DOCKER_ARCH=${AUTOWARE_DOCKER_ARCH} \
         --build-arg AUTOWARE_TARGET_ARCH=${AUTOWARE_TARGET_ARCH} \
         --build-arg AUTOWARE_TARGET_PLATFORM=${AUTOWARE_TARGET_PLATFORM} \
-        -t ${DOCKER_REPO}:local-kinetic \
+        --build-arg ROS2_DISTRO=${ROS2_DISTRO} \
+        -t ${DOCKER_REPO}:${IMAGE_NAME} \
         -f Dockerfile.kinetic-crossbuild ./../..
     if [ "$AUTOWARE_TARGET_PLATFORM" = "driveworks" ]
     then
         docker image build \
         --build-arg DOCKER_REPO=${DOCKER_REPO} \
         --build-arg IMAGE_NAME=${IMAGE_NAME} \
-        -t ${DOCKER_REPO}:local-kinetic \
+        --build-arg ROS2_DISTRO=${ROS2_DISTRO} \
+        -t ${DOCKER_REPO}:${IMAGE_NAME} \
         -f Dockerfile.kinetic-crossbuild-driveworks .
     fi
 

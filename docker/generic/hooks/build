@@ -9,6 +9,7 @@ echo "[***] Build hook running"
 docker build \
     -t $BASE \
     --build-arg ROS_DISTRO=$ROS_DISTRO \
+    --build-arg ROS2_DISTRO=$ROS2_DISTRO \
     -f Dockerfile.base ./../..
 docker push $BASE
 

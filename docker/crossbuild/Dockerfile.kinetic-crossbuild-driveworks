@@ -2,7 +2,9 @@ ARG DOCKER_REPO
 ARG IMAGE_NAME
 
 FROM ${DOCKER_REPO}:${IMAGE_NAME}
+
+ARG ROS2_DISTRO
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential
 COPY files/FindCUDA.cmake /usr/share/cmake-3.5/Modules/FindCUDA.cmake
-CMD . /opt/ros/kinetic/setup.sh && /bin/bash
+CMD . /opt/ros/kinetic/setup.sh && . /opt/ros/${ROS2_DISTRO}/setup.sh && /bin/bash
