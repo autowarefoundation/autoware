@@ -202,6 +202,15 @@ void RatioLayoutedFrame::mousePressEvent(QMouseEvent * mouseEvent)
   QFrame::mousePressEvent(mouseEvent);
 }
 
+
+void
+RatioLayoutedFrame::mouseMoveEvent(QMouseEvent *mouseEvent)
+{
+	emit mouseMove(mouseEvent->x(), mouseEvent->y());
+	QFrame::mousePressEvent(mouseEvent);
+}
+
+
 void RatioLayoutedFrame::onSmoothImageChanged(bool checked) {
   smoothImage_ = checked;
 }

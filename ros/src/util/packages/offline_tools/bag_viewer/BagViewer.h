@@ -36,6 +36,7 @@
 #include <memory>
 
 #include <QMainWindow>
+#include "ClickableLabel.h"
 
 #include <rosbag/bag.h>
 
@@ -63,6 +64,7 @@ public slots:
 	void on_playProgress_sliderMoved(int i);
 	void on_topicSelector_currentIndexChanged(int i);
 	void on_saveButton_clicked(bool checked);
+	void timeOffsetIndicator_clicked();
 
 private:
     Ui::BagViewer *ui;
@@ -82,6 +84,16 @@ protected:
 	void updateImage(int n);
 
 	void disableControlsOnPlaying(bool state);
+
+	// Identifies current playing position in integer
+	int currentPosition;
+
+	ClickableLabel *timeOffsetIndicator;
+	enum {
+		OFFSET_INTEGER,
+		OFFSET_TIME
+	} timeOffsetIndicatorMode = OFFSET_TIME;
+	void updateTimeOffsetIndicator();
 };
 
 #endif // BAGVIEWER_H

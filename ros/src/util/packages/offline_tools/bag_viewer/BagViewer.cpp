@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019, Nagoya University
+ *  Copyright (c) 2015, Nagoya University
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -26,7 +26,7 @@
  *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+*/
 
 
 #include <iostream>
@@ -64,6 +64,10 @@ BagViewer::BagViewer(QWidget *parent) :
     ui(new Ui::BagViewer)
 {
     ui->setupUi(this);
+
+    timeOffsetIndicator = new ClickableLabel("0.00", this);
+    ui->statusbar->addPermanentWidget(timeOffsetIndicator);
+    this->connect(timeOffsetIndicator, SIGNAL(clicked()), this, SLOT(timeOffsetIndicator_clicked()));
 }
 
 
@@ -188,6 +192,7 @@ BagViewer::updateImage(int n)
 {
 	if (n>=currentActiveTopic->size())
 		return;
+	currentPosition = n;
 
 	if (currentActiveTopic->messageType()=="sensor_msgs/Image") {
 		sensor_msgs::Image::ConstPtr imageMsg = currentActiveTopic->at<sensor_msgs::Image>(n);
@@ -202,6 +207,7 @@ BagViewer::updateImage(int n)
 
 	QImage curImage (currentImage.data, currentImage.cols, currentImage.rows, currentImage.step[0], QImage::Format_RGB888);
 	ui->imageFrame->setImage(curImage);
+	updateTimeOffsetIndicator();
 }
 
 
@@ -211,4 +217,36 @@ BagViewer::disableControlsOnPlaying(bool state)
 	ui->topicSelector->setDisabled(state);
 	ui->saveButton->setDisabled(state);
 	ui->playProgress->setDisabled(state);
+}
+
+
+void
+BagViewer::timeOffsetIndicator_clicked()
+{
+	if (timeOffsetIndicatorMode==OFFSET_TIME)
+		timeOffsetIndicatorMode = OFFSET_INTEGER;
+	else if(timeOffsetIndicatorMode==OFFSET_INTEGER)
+		timeOffsetIndicatorMode = OFFSET_TIME;
+
+	updateTimeOffsetIndicator();
+}
+
+
+void
+BagViewer::updateTimeOffsetIndicator()
+{
+	string toi;
+
+	if (timeOffsetIndicatorMode==OFFSET_INTEGER) {
+		auto td = currentActiveTopic->timeAt(currentPosition) - currentActiveTopic->timeAt(0);
+		stringstream ss;
+		ss << fixed << setprecision(2) << td.toSec();
+		toi = ss.str();
+	}
+
+	else if (timeOffsetIndicatorMode==OFFSET_TIME) {
+		toi = std::to_string(currentPosition);
+	}
+
+	timeOffsetIndicator->setText(QString::fromStdString(toi));
 }

@@ -82,6 +82,8 @@ signals:
 
   void mouseLeft(int x, int y);
 
+  void mouseMove(int x, int y);
+
 protected slots:
 
   void onSmoothImageChanged(bool checked);
@@ -91,6 +93,8 @@ protected:
   void setAspectRatio(unsigned short width, unsigned short height);
 
   void paintEvent(QPaintEvent* event);
+
+  void mouseMoveEvent(QMouseEvent *mouseEvent) override;
 
 private:
 
