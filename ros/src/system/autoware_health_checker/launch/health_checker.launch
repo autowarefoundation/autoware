@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
     <param name="enable_statistics" value="true"/>
-    <node pkg="autoware_health_checker" type="health_aggregator" name="health_aggregator" output="log" respawn="false" respawn_delay="0" />
-    <node pkg="autoware_health_checker" type="health_analyzer" name="health_analyzer" output="log" respawn="false" respawn_delay="0" />
+    <node pkg="autoware_health_checker" type="health_aggregator" name="health_aggregator" output="log" respawn="true" respawn_delay="0" />
+    <node pkg="autoware_health_checker" type="health_analyzer" name="health_analyzer" output="log" respawn="true" respawn_delay="0" />
 </launch>
