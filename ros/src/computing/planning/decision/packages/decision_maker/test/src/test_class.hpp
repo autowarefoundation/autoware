@@ -73,6 +73,8 @@ public:
 
 	void setCurrentVelocity(double vel) { dmn->current_status_.velocity = vel; }
 
+	bool isLocalizationConvergence(geometry_msgs::Point _current_point) { return dmn->isLocalizationConvergence(_current_point); }
+
 	bool isArrivedGoal() { return dmn->isArrivedGoal(); }
 
 	uint8_t getSteeringStateFromWaypoint() {

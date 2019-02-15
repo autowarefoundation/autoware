@@ -40,6 +40,32 @@ protected:
   virtual void TearDown() { delete test_obj_.dmn; };
 };
 
+TEST_F(TestSuite, isLocalizationConvergence) {
+  geometry_msgs::Point pointA, pointB;
+  pointA.x = 10.0;
+  pointA.y = 10.0;
+  pointA.z = 0.0;
+  pointB.x = 10.0;
+  pointB.y = 12.0;
+  pointB.z = 0.0;
+
+  for (int i=0; i<10; i++)
+  {
+    ASSERT_FALSE(test_obj_.isLocalizationConvergence(pointA)) << "It should be false";
+  }
+  ASSERT_TRUE(test_obj_.isLocalizationConvergence(pointA)) << "It should be true";
+
+  for (int i=0; i<5; i++)
+  {
+    ASSERT_TRUE(test_obj_.isLocalizationConvergence(pointA)) << "It should be true";
+    ASSERT_TRUE(test_obj_.isLocalizationConvergence(pointB)) << "It should be true";
+  }
+  ASSERT_TRUE(test_obj_.isLocalizationConvergence(pointA)) << "It should be true";
+
+  pointB.y = 12.1;
+  ASSERT_FALSE(test_obj_.isLocalizationConvergence(pointB)) << "It should be true";
+}
+
 TEST_F(TestSuite, isArrivedGoal) {
 	test_obj_.createFinalWaypoints();
 
