@@ -8,10 +8,10 @@
   <arg name="model" default="64E_S3"/>
   <arg name="pcap" default="" />
   
-  <arg name="calibration" default="$(find velodyne_pointcloud)/params/64_s3.yaml"/>
+  <arg name="calibration" default="$(find velodyne_pointcloud)/params/64e_s3-xiesc.yaml"/>
   <arg name="min_range" default="2.0"/>
   <arg name="max_range" default="250.0"/>
-  <arg name="cloud_topic" default="points_raw"/>
+  <arg name="topic_name" default="points_raw"/>
 
   <!-- start nodelet manager and driver nodelets -->
   <include file="$(find velodyne_driver)/launch/nodelet_manager.launch">
@@ -25,6 +25,6 @@
     <param name="calibration" value="$(arg calibration)"/>
     <param name="min_range" value="$(arg min_range)" />
     <param name="max_range" value="$(arg max_range)" />
-    <remap from="/velodyne_points" to="$(arg cloud_topic)"/>
+    <remap from="/velodyne_points" to="$(arg topic_name)"/>
   </node>
 </launch>
