@@ -20,8 +20,11 @@
  * v1.0 Masaya Kataoka
  */
 
+//headers in ROS
 #include <ros/ros.h>
-#include <rosgraph_msgs/TopicStatistics.h>
+
+//headers in STL
+#include <map>
 
 //headers in Autoware
 #include <autoware_system_msgs/SystemStatus.h>
@@ -37,7 +40,6 @@ private:
     ros::NodeHandle nh_;
     ros::NodeHandle pnh_;
     void systemStatusCallback(const autoware_system_msgs::SystemStatus::ConstPtr msg);
-    void topicStatisticsCallback(const rosgraph_msgs::TopicStatistics::ConstPtr msg);
 };
 
 #endif //HEALTH_ANALYZER_H_INCLUDED

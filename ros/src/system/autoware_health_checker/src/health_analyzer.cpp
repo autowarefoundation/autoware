@@ -24,7 +24,6 @@ HealthAnalyzer::HealthAnalyzer(ros::NodeHandle nh, ros::NodeHandle pnh)
     nh_ = nh;
     pnh_ = pnh;
     system_status_sub_ = nh_.subscribe("/system_status",1,&HealthAnalyzer::systemStatusCallback,this);
-    topic_statistics_sub_ = nh_.subscribe("/statistics",1,&HealthAnalyzer::topicStatisticsCallback,this);
 }
 
 HealthAnalyzer::~HealthAnalyzer()
@@ -33,11 +32,6 @@ HealthAnalyzer::~HealthAnalyzer()
 }
 
 void HealthAnalyzer::systemStatusCallback(const autoware_system_msgs::SystemStatus::ConstPtr msg)
-{
-    return;
-}
-
-void HealthAnalyzer::topicStatisticsCallback(const rosgraph_msgs::TopicStatistics::ConstPtr msg)
 {
     return;
 }
