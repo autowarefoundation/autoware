@@ -102,25 +102,30 @@ SpinnakerCamera::SpinnakerCamera()
       // config
       pCamList_[i]->Width.SetValue(width_);
       pCamList_[i]->Height.SetValue(height_);
-
+      CEnumerationPtr ptrDeviceType = pCamList_[i]->GetTLDeviceNodeMap().GetNode("DeviceType");
+      if (ptrDeviceType->GetCurrentEntry()->GetSymbolic()=="GEV"){
       ///////////////////////                 DeviceLinkThroughputLimit   /////////////////////////////
-      /*CIntegerPtr ptrDeviceLinkThroughputLimit = node_map_->GetNode("DeviceLinkThroughputLimit");
+      CIntegerPtr ptrDeviceLinkThroughputLimit = node_map_->GetNode("DeviceLinkThroughputLimit");
       if (IsAvailable(ptrDeviceLinkThroughputLimit) && IsWritable(ptrDeviceLinkThroughputLimit))
       {
-        std::cout << "DeviceLinkThroughputLimit" << ptrDeviceLinkThroughputLimit->GetValue() << std::endl;
+        std::cout << "DeviceLinkThroughputLimit: " << ptrDeviceLinkThroughputLimit->GetValue() << std::endl;
         ptrDeviceLinkThroughputLimit->SetValue(dltl_);
       }
       else
       {
         ROS_WARN("[%s] This camera does not support DeviceLinkThroughputLimit, using default value.", __APP_NAME__);
-      }*/
+      }
+      }
 
       ///////////////////////                 FrameRate                   /////////////////////////////
       CFloatPtr ptrAcquisitionFrameRate = node_map_->GetNode("AcquisitionFrameRate");
       CBooleanPtr ptrAcquisitionFrameRateEnable = node_map_->GetNode("AcquisitionFrameRateEnable");
+      // enable to change fps
+      ptrAcquisitionFrameRateEnable->SetValue(true);
+
       if (IsAvailable(ptrAcquisitionFrameRate) && IsWritable(ptrAcquisitionFrameRate))
       {
-        ptrAcquisitionFrameRateEnable->SetValue(true);
+        // ptrAcquisitionFrameRateEnable->SetValue(true);
         ptrAcquisitionFrameRate->SetValue(fps_);
       }
       else
