@@ -140,7 +140,7 @@ subs :
       - name : Velodyne HDL-64E-S2
         desc : Launches the driver for the selected Velodyne sensor and publishes the pointcloud in points_raw. To select a custom calibration file press the [config] button.
         probe: 'ifconfig eth0 | grep "192.168.1.105" > /dev/null'
-        run  : roslaunch velodyne_pointcloud velodyne_hdl64e_s2.launch
+        run  : roslaunch runtime_manager velodyne_hdl64e_s2.launch
         param: calibration_path
         gui  :
           flags : [ SIGTERM, kill_children ]
@@ -150,7 +150,7 @@ subs :
       - name : Velodyne HDL-64E-S3
         desc : Launches the driver for the selected Velodyne sensor and publishes the pointcloud in points_raw. To select a custom calibration file press the [config] button.
         probe: 'ifconfig eth0 | grep "192.168.1.105" > /dev/null'
-        run  : roslaunch velodyne_pointcloud velodyne_hdl64e_s3.launch
+        run  : roslaunch runtime_manager velodyne_hdl64e_s3.launch
         param: calibration_path
         gui  :
           flags : [ SIGTERM, kill_children ]
@@ -160,7 +160,7 @@ subs :
       - name : Velodyne HDL-32E
         desc : Launches the driver for the selected Velodyne sensor and publishes the pointcloud in points_raw. To select a custom calibration file press the [config] button.
         probe: 'ping -c 1 -W 1 192.168.1.201 > /dev/null'
-        run  : roslaunch velodyne_pointcloud velodyne_hdl32e.launch
+        run  : roslaunch runtime_manager velodyne_hdl32e.launch
         param: calibration_path
         gui  :
           flags : [ SIGTERM, kill_children ]
@@ -170,7 +170,7 @@ subs :
       - name : Velodyne VLP-32C
         desc : Launches the driver for the selected Velodyne sensor and publishes the pointcloud in points_raw. To select a custom calibration file press the [config] button.
         probe: 'ping -c 1 -W 1 192.168.1.201 > /dev/null'
-        run  : roslaunch velodyne_pointcloud velodyne_vlp32c.launch
+        run  : roslaunch runtime_manager velodyne_vlp32c.launch
         param: calibration_path
         gui  :
           flags : [ SIGTERM, kill_children ]
@@ -180,7 +180,7 @@ subs :
       - name : Velodyne VLP-16
         desc : Launches the driver for the selected Velodyne sensor and publishes the pointcloud in points_raw. To select a custom calibration file press the [config] button.
         probe:
-        run  : roslaunch velodyne_pointcloud velodyne_vlp16.launch
+        run  : roslaunch runtime_manager velodyne_vlp16.launch
         param: calibration_path
         gui  :
           flags : [ SIGTERM, kill_children ]
@@ -190,7 +190,7 @@ subs :
       - name : Velodyne VLP-16 Hi-Res
         desc : Launches the driver for the selected Velodyne sensor and publishes the pointcloud in points_raw. To select a custom calibration file press the [config] button.
         probe:
-        run  : roslaunch velodyne_pointcloud velodyne_vlp16_hires.launch
+        run  : roslaunch runtime_manager velodyne_vlp16_hires.launch
         param: calibration_path
         gui  :
           flags : [ SIGTERM, kill_children ]
