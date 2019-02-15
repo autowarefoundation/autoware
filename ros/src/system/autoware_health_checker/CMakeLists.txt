@@ -10,12 +10,13 @@ find_package(catkin REQUIRED COMPONENTS
   jsk_rviz_plugins
   rostest
   rosunit
+  rosgraph_msgs
 )
 
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES node_status_publisher
-  CATKIN_DEPENDS autoware_system_msgs roscpp
+  CATKIN_DEPENDS autoware_system_msgs roscpp rosgraph_msgs
 #  DEPENDS system_lib
 )
 

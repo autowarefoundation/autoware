@@ -25,6 +25,7 @@ int main(int argc, char *argv[]) {
   ros::init(argc, argv, "health_analyzer");
   ros::NodeHandle nh;
   ros::NodeHandle pnh("~");
+  HealthAnalyzer analyzer(nh,pnh);
   ros::spin();
   return 0;
 }

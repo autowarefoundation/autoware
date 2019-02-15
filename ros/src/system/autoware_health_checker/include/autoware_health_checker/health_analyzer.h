@@ -22,14 +22,19 @@
 
 #include <ros/ros.h>
 
+//headers in Autoware
+#include <autoware_system_msgs/SystemStatus.h>
+
 class HealthAnalyzer
 {
 public:
     HealthAnalyzer(ros::NodeHandle nh, ros::NodeHandle pnh);
     ~HealthAnalyzer();
 private:
+    ros::Subscriber system_status_sub_;
     ros::NodeHandle nh_;
     ros::NodeHandle pnh_;
+    void systemStatusCallback(const autoware_system_msgs::SystemStatus::ConstPtr msg);
 };
 
 #endif //HEALTH_ANALYZER_H_INCLUDED
