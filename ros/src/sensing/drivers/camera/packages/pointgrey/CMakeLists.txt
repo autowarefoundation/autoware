@@ -95,6 +95,14 @@ if(EXISTS "/usr/include/spinnaker")
 		${OpenCV_LIBS}
 		${Spinnaker_LIBRARIES}
 	)
+	install(TARGETS spinnaker_camera
+			ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+			LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+			RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+			)
+	install(DIRECTORY scripts/
+			DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+			PATTERN ".svn" EXCLUDE)
 else()
 	message("'SDK for Spinnaker' is not installed. 'spinnaker_camera' will not be built.")
 endif()

@@ -1718,8 +1718,8 @@ params :
         delim       : ':='
     - name  : dltl
       label : dltl
-      desc  : DeviceLinkThroughputLimit (Default 100000000)
-      v     : 100000000
+      desc  : DeviceLinkThroughputLimit (Default 1568000)
+      v     : 1568000
       cmd_param :
         dash        : ''
         delim       : ':='
