@@ -72,5 +72,5 @@ install(DIRECTORY launch/
         PATTERN ".svn" EXCLUDE)
 
 install(DIRECTORY params/
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/params
         PATTERN ".svn" EXCLUDE)
