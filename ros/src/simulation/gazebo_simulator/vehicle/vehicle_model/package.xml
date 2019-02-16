@@ -19,7 +19,6 @@
   <exec_depend>imu_description</exec_depend>
   <exec_depend>velodyne_description</exec_depend>
   <exec_depend>velodyne_gazebo_plugins</exec_depend>
-  <exec_depend>velodyne_simulator</exec_depend>
   <export>
   </export>
 </package>
