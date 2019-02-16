@@ -1,12 +1,33 @@
 # Overview
 Autonomous driving car simulator based on gazebo.
-The following sensors are simulated.
+![screenshot from 2019-01-11 00-42-10-min](https://user-images.githubusercontent.com/8327598/50984661-bed3f780-1545-11e9-9af6-071ddd1cec76.png)
+
+## Sensors
 - velodyne (VLP-16, HDL-32E)
 - camera
 - imu
-![screenshot from 2019-01-11 00-42-10-min](https://user-images.githubusercontent.com/8327598/50984661-bed3f780-1545-11e9-9af6-071ddd1cec76.png)
 
-# Requirements
+## Input, Output
+- Input :
+  -  Autoware
+     - vehicle_cmd : select field twist_cmd (default) or ctrl_cmd
+  - Debug
+    - cmd_vel : for teleop
+- Output : 
+  - Autoware
+    - /vehicle_status : CAN data
+    - /image_raw : Image data
+    - /camera_info : camera infomation
+    - /points_raw : Lidar data
+    - /imu : Imu data
+  - Debug (Ground Truth)
+    - /gazebo_vehicle/pose : base_link pose
+    - /gazebo_vehicle/twist : base_link twist
+    - /gazebo_vehicle/velocity : vechicle velocity[m/s]
+    - /gazebo_vehicle/steering_angle : vehicle steering angle[rad]
+    - ground truth pose tf : default disable
+
+# **Requirements**
 - ROS (higher kinetic)
 - gazebo (higher version 7)
 - CUDA (Optional but requires GPU by default)
@@ -18,7 +39,6 @@ The following sensors are simulated.
 $ rosrun vehicle_gazebo_simulation_launcher setup.sh
 ```
 
-
 # Some example
 ## **Citysim** : http://gazebosim.org/blog/car_sim
 ```
@@ -26,7 +46,7 @@ $ roslaunch vehicle_gazebo_simulation_launcher gazebo_launcher.launch world_name
 ```
 
 If you use gazebo9, simulate traffic lights and moving objects.
-Build according to the [readme](https://github.com/yukkysaito/osrf_citysim/tree/9356b76bd827a3afcb71000b9274e3f64713a77c) and execute the following command
+Build according to the [readme](https://github.com/CPFL/osrf_citysim) and execute the following command
 ```
 $ roslaunch vehicle_gazebo_simulation_launcher gazebo_launcher.launch world_name:=citysim_gazebo9 gpu:=true
 ```
@@ -38,7 +58,7 @@ $ roslaunch vehicle_gazebo_simulation_launcher gazebo_launcher.launch world_name
 ```
 ![screenshot from 2019-01-11 00-38-49-min](https://user-images.githubusercontent.com/8327598/50985258-3e15fb00-1547-11e9-91d4-3b826b82136e.png)
 
-## **simple** : https://github.com/CPFL/Autoware
+## **simple** :
 ```
 $ roslaunch vehicle_gazebo_simulation_launcher gazebo_launcher.launch world_name:=simple gpu:=true
 ```
