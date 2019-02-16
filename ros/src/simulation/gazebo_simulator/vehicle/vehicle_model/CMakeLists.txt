@@ -4,30 +4,10 @@ project(vehicle_model)
 add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED
-  effort_controllers
-  gazebo_ros_control
-  position_controllers
-  transmission_interface
-  velocity_controllers
-  camera_description
-  imu_description
-  velodyne_description
-  velodyne_gazebo_plugins
-  velodyne_simulator
 )
 
 catkin_package(
   CATKIN_DEPENDS    
-    effort_controllers
-    gazebo_ros_control
-    position_controllers
-    transmission_interface
-    velocity_controllers
-    camera_description
-    imu_description
-    velodyne_description
-    velodyne_gazebo_plugins
-    velodyne_simulator
 )
 
 install(DIRECTORY mesh

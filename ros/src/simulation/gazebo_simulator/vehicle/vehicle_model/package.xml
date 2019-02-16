@@ -10,26 +10,6 @@
   <license>Apache 2</license>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>gazebo_ros_control</build_depend>
-  <build_depend>position_controllers</build_depend>
-  <build_depend>transmission_interface</build_depend>
-  <build_depend>velocity_controllers</build_depend>
-  <build_depend>effort_controllers</build_depend>
-  <build_depend>camera_description</build_depend>
-  <build_depend>imu_description</build_depend>
-  <build_depend>velodyne_description</build_depend>
-  <build_depend>velodyne_gazebo_plugins</build_depend>
-  <build_depend>velodyne_simulator</build_depend>
-  <build_export_depend>gazebo_ros_control</build_export_depend>
-  <build_export_depend>position_controllers</build_export_depend>
-  <build_export_depend>transmission_interface</build_export_depend>
-  <build_export_depend>velocity_controllers</build_export_depend>
-  <build_export_depend>effort_controllers</build_export_depend>
-  <build_export_depend>camera_description</build_export_depend>
-  <build_export_depend>imu_description</build_export_depend>
-  <build_export_depend>velodyne_description</build_export_depend>
-  <build_export_depend>velodyne_gazebo_plugins</build_export_depend>
-  <build_export_depend>velodyne_simulator</build_export_depend>
   <exec_depend>gazebo_ros_control</exec_depend>
   <exec_depend>position_controllers</exec_depend>
   <exec_depend>transmission_interface</exec_depend>
