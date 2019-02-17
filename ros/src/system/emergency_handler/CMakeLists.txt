@@ -33,7 +33,6 @@ add_dependencies(system_status_filter ${catkin_EXPORTED_TARGETS})
 
 add_library(emergency_handler lib/libemergency_handler.cpp)
 target_link_libraries(emergency_handler
-  system_status_subscriber
   system_status_filter
   ${catkin_LIBRARIES}
 )
