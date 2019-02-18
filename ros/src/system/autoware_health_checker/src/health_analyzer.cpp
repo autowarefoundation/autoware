@@ -23,18 +23,67 @@ HealthAnalyzer::HealthAnalyzer(ros::NodeHandle nh, ros::NodeHandle pnh)
 {
     nh_ = nh;
     pnh_ = pnh;
+    pnh_.param<int>("warn_threashold", warn_threashold_, 30);
     system_status_summary_pub_ = nh_.advertise<autoware_system_msgs::SystemStatus>("/system_status/summary",1);
     system_status_sub_ = nh_.subscribe("/system_status",1,&HealthAnalyzer::systemStatusCallback,this);
 }
 
 HealthAnalyzer::~HealthAnalyzer()
 {
-    
+    writeDot();
+}
+
+int HealthAnalyzer::countWarn(autoware_system_msgs::SystemStatus msg)
+{
+    int count = 0;
+    for(auto node_status_itr = msg.node_status.begin(); node_status_itr!=msg.node_status.end(); node_status_itr++)
+    {
+        for(auto status_itr = node_status_itr->status.begin(); status_itr != node_status_itr->status.end(); status_itr++)
+        {
+            for(auto itr = status_itr->status.begin(); itr != status_itr->status.end(); itr++)
+            {
+                if(itr->level == autoware_health_checker::LEVEL_WARN)
+                {
+                    count++;
+                }
+            }
+        }
+    }
+    for(auto hardware_status_itr = msg.hardware_status.begin(); hardware_status_itr!=msg.hardware_status.end(); hardware_status_itr++)
+    {
+        for(auto status_itr = hardware_status_itr->status.begin(); status_itr != hardware_status_itr->status.end(); status_itr++)
+        {
+            for(auto itr = status_itr->status.begin(); itr != status_itr->status.end(); itr++)
+            {
+                if(itr->level == autoware_health_checker::LEVEL_WARN)
+                {
+                    count++;
+                }
+            }
+        }
+    }
+    return count;
+}
+
+autoware_system_msgs::SystemStatus HealthAnalyzer::filterSystemStatus(autoware_system_msgs::SystemStatus status)
+{
+    int warn_count = countWarn(status);
+    autoware_system_msgs::SystemStatus filtered_status;
+    filtered_status.header = status.header;
+    filtered_status.available_nodes = status.available_nodes;
+    filtered_status.hardware_status = status.hardware_status;
+    filtered_status.topic_statistics = status.topic_statistics;
+    for(auto status_itr = status.node_status.begin(); status_itr!=status.node_status.end(); status_itr++)
+    {
+        
+    }
+    return filtered_status;
 }
 
 void HealthAnalyzer::systemStatusCallback(const autoware_system_msgs::SystemStatus::ConstPtr msg)
 {
     generateDependGraph(*msg);
+    system_status_summary_pub_.publish(filterSystemStatus(*msg));
     return;
 }
 
@@ -45,7 +94,6 @@ void HealthAnalyzer::generateDependGraph(autoware_system_msgs::SystemStatus stat
     {
         addDepend(*itr);
     }
-    writeDot();
     return;
 }
 

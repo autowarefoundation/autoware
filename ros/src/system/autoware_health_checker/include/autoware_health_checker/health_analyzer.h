@@ -29,6 +29,7 @@
 
 //headers in Autoware
 #include <autoware_system_msgs/SystemStatus.h>
+#include <autoware_health_checker/constants.h>
 
 //headers in boost
 #include <boost/graph/adjacency_list.hpp>
@@ -70,8 +71,11 @@ private:
     void systemStatusCallback(const autoware_system_msgs::SystemStatus::ConstPtr msg);
     void generateDependGraph(autoware_system_msgs::SystemStatus status);
     void addDepend(rosgraph_msgs::TopicStatistics statistics);
+    autoware_system_msgs::SystemStatus filterSystemStatus(autoware_system_msgs::SystemStatus status);
+    int countWarn(autoware_system_msgs::SystemStatus msg);
     void writeDot();
     graph_t depend_graph_;
+    int warn_threashold_;
 };
 
 #endif //HEALTH_ANALYZER_H_INCLUDED
