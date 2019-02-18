@@ -104,13 +104,14 @@ SpinnakerCamera::SpinnakerCamera()
       pCamList_[i]->Height.SetValue(height_);
       CEnumerationPtr ptrDeviceType = pCamList_[i]->GetTLDeviceNodeMap().GetNode("DeviceType");
 
-      if (IsAvailable(ptrDeviceType) && ptrDeviceType->GetCurrentEntry()->GetSymbolic()=="GEV")
+      if (IsAvailable(ptrDeviceType) && ptrDeviceType->GetCurrentEntry()->GetSymbolic() == "GEV")
       {
         ///////////////////////                 DeviceLinkThroughputLimit   /////////////////////////////
         CIntegerPtr ptrDeviceLinkThroughputLimit = node_map_->GetNode("DeviceLinkThroughputLimit");
         if (IsAvailable(ptrDeviceLinkThroughputLimit) && IsWritable(ptrDeviceLinkThroughputLimit))
         {
-          ROS_INFO_STREAM("[" << __APP_NAME__ << "] DeviceLinkThroughputLimit: " << ptrDeviceLinkThroughputLimit->GetValue());
+          ROS_INFO_STREAM("[" << __APP_NAME__
+                              << "] DeviceLinkThroughputLimit: " << ptrDeviceLinkThroughputLimit->GetValue());
           ptrDeviceLinkThroughputLimit->SetValue(dltl_);
         }
         else
@@ -123,11 +124,8 @@ SpinnakerCamera::SpinnakerCamera()
       CFloatPtr ptrAcquisitionFrameRate = node_map_->GetNode("AcquisitionFrameRate");
       CBooleanPtr ptrAcquisitionFrameRateEnable = node_map_->GetNode("AcquisitionFrameRateEnable");
 
-      if (IsAvailable(ptrAcquisitionFrameRate)
-          && IsWritable(ptrAcquisitionFrameRate)
-          && IsAvailable(ptrAcquisitionFrameRateEnable)
-          && IsWritable(ptrAcquisitionFrameRateEnable)
-        )
+      if (IsAvailable(ptrAcquisitionFrameRate) && IsWritable(ptrAcquisitionFrameRate) &&
+          IsAvailable(ptrAcquisitionFrameRateEnable) && IsWritable(ptrAcquisitionFrameRateEnable))
       {
         // enable to change fps
         ptrAcquisitionFrameRateEnable->SetValue(true);
