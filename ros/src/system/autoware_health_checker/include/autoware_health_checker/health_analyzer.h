@@ -22,6 +22,7 @@
 
 //headers in ROS
 #include <ros/ros.h>
+#include <ros/package.h>
 
 //headers in STL
 #include <map>
@@ -36,12 +37,12 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/graph/graphviz.hpp>
 
-struct transition_property
+struct topic_property
 {
     std::string node_pub;
     std::string node_sub;
-    std::string topic;
 };
 
 struct node_property
@@ -49,7 +50,7 @@ struct node_property
     std::string node_name;
 };
 
-typedef boost::adjacency_list<boost::listS, boost::vecS, boost::bidirectionalS, node_property, transition_property> graph_t;
+typedef boost::adjacency_list<boost::listS, boost::vecS, boost::bidirectionalS, node_property, topic_property> graph_t;
 typedef graph_t::vertex_descriptor vertex_t;
 typedef graph_t::edge_descriptor edge_t;
 typedef boost::graph_traits<graph_t>::adjacency_iterator adjacency_iterator_t;
@@ -63,10 +64,13 @@ public:
 private:
     ros::Subscriber system_status_sub_;
     ros::Subscriber topic_statistics_sub_;
+    ros::Publisher system_status_summary_pub_;
     ros::NodeHandle nh_;
     ros::NodeHandle pnh_;
     void systemStatusCallback(const autoware_system_msgs::SystemStatus::ConstPtr msg);
     void generateDependGraph(autoware_system_msgs::SystemStatus status);
+    void addDepend(rosgraph_msgs::TopicStatistics statistics);
+    void writeDot();
     graph_t depend_graph_;
 };
 
