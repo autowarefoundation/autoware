@@ -65,18 +65,74 @@ int HealthAnalyzer::countWarn(autoware_system_msgs::SystemStatus msg)
     return count;
 }
 
+std::vector<std::string> HealthAnalyzer::findWarningNodes(autoware_system_msgs::SystemStatus status)
+{
+    std::vector<std::string> ret;
+    for(auto node_status_itr = status.node_status.begin(); node_status_itr != status.node_status.end(); node_status_itr++)
+    {
+        for(auto status_itr = node_status_itr->status.begin(); status_itr != node_status_itr->status.end(); status_itr++)
+        {
+            for(auto itr = status_itr->status.begin(); itr != status_itr->status.end(); itr++)
+            {
+                if((itr->level == autoware_health_checker::LEVEL_WARN) && (isAlreadyExist(ret,node_status_itr->node_name) == false))
+                {
+                    ret.push_back(node_status_itr->node_name);
+                }
+                else if((itr->level == autoware_health_checker::LEVEL_ERROR) && (isAlreadyExist(ret,node_status_itr->node_name) == false))
+                {
+                    ret.push_back(node_status_itr->node_name);
+                }
+                else if((itr->level == autoware_health_checker::LEVEL_FATAL) && (isAlreadyExist(ret,node_status_itr->node_name) == false))
+                {
+                    ret.push_back(node_status_itr->node_name);
+                }
+            }
+        }
+    }
+    return ret;
+}
+
+std::vector<std::string> HealthAnalyzer::findErrorNodes(autoware_system_msgs::SystemStatus status)
+{
+    std::vector<std::string> ret;
+    for(auto node_status_itr = status.node_status.begin(); node_status_itr != status.node_status.end(); node_status_itr++)
+    {
+        for(auto status_itr = node_status_itr->status.begin(); status_itr != node_status_itr->status.end(); status_itr++)
+        {
+            for(auto itr = status_itr->status.begin(); itr != status_itr->status.end(); itr++)
+            {
+                if((itr->level == autoware_health_checker::LEVEL_ERROR) && (isAlreadyExist(ret,node_status_itr->node_name) == false))
+                {
+                    ret.push_back(node_status_itr->node_name);
+                }
+                else if((itr->level == autoware_health_checker::LEVEL_FATAL) && (isAlreadyExist(ret,node_status_itr->node_name) == false))
+                {
+                    ret.push_back(node_status_itr->node_name);
+                }
+            }
+        }
+    }
+}
+
 autoware_system_msgs::SystemStatus HealthAnalyzer::filterSystemStatus(autoware_system_msgs::SystemStatus status)
 {
     int warn_count = countWarn(status);
     autoware_system_msgs::SystemStatus filtered_status;
+    std::vector<std::string> target_nodes;
+    if(warn_count >= warn_threashold_)
+    {
+        filtered_status.detect_too_match_warning = true;
+        target_nodes = findWarningNodes(status);
+    }
+    else
+    {
+        filtered_status.detect_too_match_warning = false;
+        target_nodes = findErrorNodes(status);
+    }
     filtered_status.header = status.header;
     filtered_status.available_nodes = status.available_nodes;
     filtered_status.hardware_status = status.hardware_status;
     filtered_status.topic_statistics = status.topic_statistics;
-    for(auto status_itr = status.node_status.begin(); status_itr!=status.node_status.end(); status_itr++)
-    {
-        
-    }
     return filtered_status;
 }
 

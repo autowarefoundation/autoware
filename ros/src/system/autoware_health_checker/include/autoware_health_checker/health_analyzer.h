@@ -72,10 +72,24 @@ private:
     void generateDependGraph(autoware_system_msgs::SystemStatus status);
     void addDepend(rosgraph_msgs::TopicStatistics statistics);
     autoware_system_msgs::SystemStatus filterSystemStatus(autoware_system_msgs::SystemStatus status);
+    std::vector<std::string> findWarningNodes(autoware_system_msgs::SystemStatus status);
+    std::vector<std::string> findErrorNodes(autoware_system_msgs::SystemStatus status);
     int countWarn(autoware_system_msgs::SystemStatus msg);
     void writeDot();
     graph_t depend_graph_;
     int warn_threashold_;
+    template <typename T>
+    bool isAlreadyExist(std::vector<T> vector,T target)
+    {
+        for(auto itr = vector.begin(); itr != vector.end(); itr++)
+        {
+            if(target == *itr)
+            {
+                return true;
+            }
+        }
+        return false;
+    };
 };
 
 #endif //HEALTH_ANALYZER_H_INCLUDED
