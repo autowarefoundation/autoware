@@ -8,6 +8,7 @@ then
     AUTOWARE_DOCKER_DATE=20190211
     AUTOWARE_TARGET_ARCH=aarch64
     AUTOWARE_TARGET_PLATFORM=$1
+    DOCKER_REPO=autoware/build
 
     echo "Using ${AUTOWARE_TARGET_PLATFORM} as the target architecture"
     # Register QEMU as a handler for non-x86 targets
