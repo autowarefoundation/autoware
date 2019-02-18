@@ -44,6 +44,8 @@ include_directories(
 
 IF (CUDA_FOUND)
     include_directories(${CUDA_INCLUDE_DIRS})
+    
+    set(CMAKE_CXX_FLAGS "-lcuda ${CMAKE_CXX_FLAGS}")
 
     IF ("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "^arm")
         link_directories(/usr/lib/arm-linux-gnueabihf/tegra)
