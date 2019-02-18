@@ -13,6 +13,10 @@ if [[ -d install ]]; then
     rm -rf install
 fi
 
+if [[ -d log ]]; then
+    rm -rf log
+fi
+
 if [ -f src/CMakeLists.txt ]; then
 	rm -r src/CMakeLists.txt
 fi
