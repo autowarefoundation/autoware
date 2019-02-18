@@ -188,6 +188,11 @@ subs :
             flags : [nl ]
           sync :
             func : self.button_synchronization.GetValue()
+      - name : lidar_cnn_baidu_detect
+        desc : lidar_cnn_segmentation_baidu_detect. Requires Caffe framework
+        cmd  : roslaunch lidar_apollo_cnn_seg_detect lidar_apollo_cnn_seg_detect.launch
+        param: lidar_cnn_baidu_params
+
       - name : lidar_naive_l_shape_detect
         desc : lidar_naive_l_shape_detect desc sample
         cmd  : roslaunch lidar_naive_l_shape_detect lidar_naive_l_shape_detect.launch
@@ -5345,6 +5350,60 @@ params :
       min     : 0.0
       max     : 5.0
       v       : 2.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+
+  - name  : lidar_cnn_baidu_params
+    vars  :
+    - name      : points_src
+      desc      : PointCloud topic to be fed to the network for detection
+      label     : image_src
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
+      v         : /points_raw
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : score_threshold
+      desc  : Detections with a confidence value larger than this value will be displayed.
+      label : Score Threshold
+      min   : 0.0
+      max   : 1.0
+      v     : 0.7
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name     : network_definition_file
+      desc     : Configuration file defining the network
+      label    : 'network_definition (cfg)'
+      kind     : path
+      v        : ''
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : pretrained_model_file
+      desc     : Pre-trained  model
+      label    : 'pre_trained_model (weights)'
+      kind     : path
+      v        : ''
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name      : use_gpu
+      desc      : Whether to use GPU to process the CNN
+      label     : use_gpu
+      kind      : checkbox
+      v         : True
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : gpu_device_id
+      desc      : gpu_device_id
+      label     : gpu_device_id
+      min       : 0
+      max       : 10
+      v         : 0
       cmd_param :
         dash      : ''
         delim     : ':='
