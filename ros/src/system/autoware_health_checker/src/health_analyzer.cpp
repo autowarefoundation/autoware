@@ -92,6 +92,29 @@ std::vector<std::string> HealthAnalyzer::findWarningNodes(autoware_system_msgs::
     return ret;
 }
 
+std::vector<std::string> HealthAnalyzer::findRootNodes(std::vector<std::string> target_nodes)
+{
+    std::vector<std::string> ret;
+    for(auto itr = target_nodes.begin(); itr != target_nodes.end(); itr++)
+    {
+        std::vector<std::string> pub_nodes;
+        adjacency_iterator_t vi;
+        adjacency_iterator_t vi_end;
+        vertex_t target_node;
+        depend_graph_[target_node].node_name = *itr;
+        bool depend_found = false;
+        for (boost::tie(vi, vi_end) = adjacent_vertices(target_node, depend_graph_); vi != vi_end; ++vi)
+        {
+            depend_found = true;
+        }
+        if(!depend_found)
+        {
+            ret.push_back(*itr);
+        }
+    }
+    return ret;
+}
+
 std::vector<std::string> HealthAnalyzer::findErrorNodes(autoware_system_msgs::SystemStatus status)
 {
     std::vector<std::string> ret;
@@ -128,6 +151,14 @@ autoware_system_msgs::SystemStatus HealthAnalyzer::filterSystemStatus(autoware_s
     {
         filtered_status.detect_too_match_warning = false;
         target_nodes = findErrorNodes(status);
+    }
+    std::vector<std::string> root_nodes = findRootNodes(target_nodes);
+    for(auto node_status_itr = status.node_status.begin(); node_status_itr != status.node_status.end(); node_status_itr++)
+    {
+        if(isAlreadyExist(root_nodes,node_status_itr->node_name))
+        {
+            filtered_status.node_status.push_back(*node_status_itr);
+        }
     }
     filtered_status.header = status.header;
     filtered_status.available_nodes = status.available_nodes;

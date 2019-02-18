@@ -74,6 +74,7 @@ private:
     autoware_system_msgs::SystemStatus filterSystemStatus(autoware_system_msgs::SystemStatus status);
     std::vector<std::string> findWarningNodes(autoware_system_msgs::SystemStatus status);
     std::vector<std::string> findErrorNodes(autoware_system_msgs::SystemStatus status);
+    std::vector<std::string> findRootNodes(std::vector<std::string> target_nodes);
     int countWarn(autoware_system_msgs::SystemStatus msg);
     void writeDot();
     graph_t depend_graph_;
