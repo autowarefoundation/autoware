@@ -42,3 +42,17 @@ target_link_libraries(kitti_player
         ${OpenCV_LIBS})
 
 add_dependencies(kitti_player ${catkin_EXPORTED_TARGETS})
+
+install(TARGETS kitti_player
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)
+
+install(DIRECTORY cfg/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/cfg
+        PATTERN ".svn" EXCLUDE)

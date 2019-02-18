@@ -74,3 +74,17 @@ target_link_libraries(op_bag_player
 
 add_dependencies(op_pose2tf op_data_logger op_bag_player ${catkin_EXPORTED_TARGETS})
 
+        
+install(TARGETS
+        op_pose2tf
+        op_data_logger
+        op_bag_player
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
+        
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)
+
