@@ -8,10 +8,13 @@ find_package(catkin REQUIRED COMPONENTS
         std_msgs
         message_generation
         tf
-        )
+        sensor_msgs
+	    camera_info_manager
+    	image_transport
+    	cv_bridge
+)
 
 set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
-
 find_package(OpenCV REQUIRED)
 
 catkin_package()
@@ -72,13 +75,13 @@ if (EXISTS "/usr/include/ladybug")
             nodes/ladybug/ladybug.cpp
             )
 
-    target_link_libraries(ladybug_camera
-            ${catkin_LIBRARIES}
-            ${OpenCV_LIBS}
-            ${XercesC_LIBRARIES}
-            flycapture
-            ladybug
-            )
+	target_link_libraries(ladybug_camera
+		${catkin_LIBRARIES}
+		${OpenCV_LIBS}
+		${XercesC_LIBRARIES}
+		flycapture
+		ladybug
+	)
     install(TARGETS
             ladybug_camera
             ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
@@ -89,7 +92,37 @@ if (EXISTS "/usr/include/ladybug")
             scripts/ladybug.launch
             DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
             )
+else()
+	message("'SDK for Ladybug' is not installed. 'ladybug_camera' will not be built.")
+endif()
 
-else ()
-    message("'SDK for Ladybug' is not installed. 'ladybug_camera' will not be built.")
-endif ()
+if(EXISTS "/usr/include/spinnaker")
+	include(FindSpinnaker.cmake)
+	include_directories(
+		nodes/spinnaker
+		${Spinnaker_INCLUDE_DIRS}
+		${catkin_INCLUDE_DIRS}
+		${OpenCV_INCLUDE_DIRS}
+	)
+
+	add_executable(spinnaker_camera
+		nodes/spinnaker/spinnaker.cpp
+	)
+
+	target_link_libraries(spinnaker_camera
+		${catkin_LIBRARIES}
+		${OpenCV_LIBS}
+		${Spinnaker_LIBRARIES}
+	)
+	install(TARGETS spinnaker_camera
+			ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+			LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+			RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+			)
+	install(FILES
+			scripts/spinnaker.launch
+			DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+			)
+else()
+	message("'SDK for Spinnaker' is not installed. 'spinnaker_camera' will not be built.")
+endif()
