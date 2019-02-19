@@ -75,7 +75,7 @@ install(TARGETS node_status_publisher system_status_subscriber
 
 # Install Python scripts
 set(PYTHON_SCRIPTS 
-  scripts/autoware_health_checker_python/__init__.py
+  #scripts/autoware_health_checker_python/__init__.py
   scripts/autoware_health_checker_python/constants.py
   scripts/autoware_health_checker_python/diag_buffer.py
   scripts/autoware_health_checker_python/node_status_publisher.py
