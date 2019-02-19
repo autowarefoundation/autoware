@@ -10,7 +10,10 @@ find_package(catkin REQUIRED COMPONENTS
   jsk_rviz_plugins
   rostest
   rosunit
+  rospy
 )
+
+catkin_python_setup()
 
 catkin_package(
   INCLUDE_DIRS include
@@ -49,7 +52,7 @@ add_executable(health_aggregator
 target_link_libraries(health_aggregator ${catkin_LIBRARIES})
 add_dependencies(health_aggregator ${catkin_EXPORTED_TARGETS} autoware_system_msgs_generate_messages_cpp)
 
-# CPP Execution programs
+# Install CPP Execution programs
 set(CPP_EXEC_NAMES health_aggregator)
 foreach(cpp_exec_names ${CPP_EXEC_NAMES})
   install(TARGETS ${cpp_exec_names}
@@ -57,7 +60,7 @@ foreach(cpp_exec_names ${CPP_EXEC_NAMES})
 )
 endforeach(cpp_exec_names)
 
-# include header files
+# Install include header files
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
@@ -68,6 +71,21 @@ install(TARGETS node_status_publisher system_status_subscriber
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
 )
+
+
+# Install Python scripts
+set(PYTHON_SCRIPTS 
+  scripts/autoware_health_checker_python/__init__.py
+  scripts/autoware_health_checker_python/constants.py
+  scripts/autoware_health_checker_python/diag_buffer.py
+  scripts/autoware_health_checker_python/node_status_publisher.py
+  scripts/autoware_health_checker_python/rate_checker.py
+  scripts/autoware_health_checker_python/system_status_subscriber.py
+  )
+foreach(scripts ${PYTHON_SCRIPTS})
+  catkin_install_python(PROGRAMS ${scripts}
+    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+endforeach(scripts)
 
 if (CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
