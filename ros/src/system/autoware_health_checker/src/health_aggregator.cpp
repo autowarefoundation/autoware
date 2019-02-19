@@ -16,7 +16,7 @@
  *
  * v1.0 Masaya Kataoka
  */
- 
+
 #include <autoware_health_checker/health_aggregator.h>
 
 HealthAggregator::HealthAggregator(ros::NodeHandle nh, ros::NodeHandle pnh) {
@@ -41,29 +41,29 @@ void HealthAggregator::run() {
                                    &HealthAggregator::nodeStatusCallback, this);
   diagnostic_array_sub_ = nh_.subscribe(
       "/diagnostic_agg", 10, &HealthAggregator::diagnosticArrayCallback, this);
-  topic_statistics_sub_ = nh_.subscribe("/statistics",1,&HealthAggregator::topicStatisticsCallback,this);
+  topic_statistics_sub_ = nh_.subscribe(
+      "/statistics", 1, &HealthAggregator::topicStatisticsCallback, this);
   boost::thread publish_thread(
       boost::bind(&HealthAggregator::publishSystemStatus, this));
   return;
 }
 
-void HealthAggregator::topicStatisticsCallback(const rosgraph_msgs::TopicStatistics::ConstPtr msg)
-{
-  std::array<std::string,3> key = {msg->topic,msg->node_pub,msg->node_sub};
+void HealthAggregator::topicStatisticsCallback(
+    const rosgraph_msgs::TopicStatistics::ConstPtr msg) {
+  std::array<std::string, 3> key = {msg->topic, msg->node_pub, msg->node_sub};
   topic_status_[key] = *msg;
   return;
 }
 
-void HealthAggregator::updateTopicStatus()
-{
+void HealthAggregator::updateTopicStatus() {
   ros::Time now = ros::Time::now();
-  for(std::pair<std::array<std::string,3>,rosgraph_msgs::TopicStatistics> pair:topic_status_)
-  {
-    if((now-ros::Duration(autoware_health_checker::BUFFER_LENGTH)) < pair.second.window_stop)
-    {
+  for (std::pair<std::array<std::string, 3>, rosgraph_msgs::TopicStatistics>
+           pair : topic_status_) {
+    if ((now - ros::Duration(autoware_health_checker::BUFFER_LENGTH)) <
+        pair.second.window_stop) {
       system_status_.topic_statistics.push_back(pair.second);
     }
-	}
+  }
   return;
 }
 

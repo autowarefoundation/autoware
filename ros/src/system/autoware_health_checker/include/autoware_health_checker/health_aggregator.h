@@ -60,7 +60,8 @@ private:
   void nodeStatusCallback(const autoware_system_msgs::NodeStatus::ConstPtr msg);
   void
   diagnosticArrayCallback(const diagnostic_msgs::DiagnosticArray::ConstPtr msg);
-  void topicStatisticsCallback(const rosgraph_msgs::TopicStatistics::ConstPtr msg);
+  void
+  topicStatisticsCallback(const rosgraph_msgs::TopicStatistics::ConstPtr msg);
   std::string
   generateText(std::vector<autoware_system_msgs::DiagnosticStatus> status);
   jsk_rviz_plugins::OverlayText
@@ -72,8 +73,9 @@ private:
   autoware_system_msgs::SystemStatus system_status_;
   std::mutex mtx_;
   void updateConnectionStatus();
-  //key topic_name,publisher_node,subscriber_node
-  std::map<std::array<std::string,3>,rosgraph_msgs::TopicStatistics> topic_status_;
+  // key topic_name,publisher_node,subscriber_node
+  std::map<std::array<std::string, 3>, rosgraph_msgs::TopicStatistics>
+      topic_status_;
   void updateTopicStatus();
 };
 #endif // HEALTH_AGGREGATOR_H_INCLUDED
