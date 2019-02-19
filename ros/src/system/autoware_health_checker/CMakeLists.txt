@@ -75,12 +75,12 @@ install(TARGETS node_status_publisher system_status_subscriber
 
 # Install Python scripts
 set(PYTHON_SCRIPTS 
-  #scripts/autoware_health_checker_python/__init__.py
-  scripts/autoware_health_checker_python/constants.py
-  scripts/autoware_health_checker_python/diag_buffer.py
-  scripts/autoware_health_checker_python/node_status_publisher.py
-  scripts/autoware_health_checker_python/rate_checker.py
-  scripts/autoware_health_checker_python/system_status_subscriber.py
+  #scripts/autoware_health_checker/__init__.py
+  scripts/autoware_health_checker/constants.py
+  scripts/autoware_health_checker/diag_buffer.py
+  scripts/autoware_health_checker/node_status_publisher.py
+  scripts/autoware_health_checker/rate_checker.py
+  scripts/autoware_health_checker/system_status_subscriber.py
   )
 foreach(scripts ${PYTHON_SCRIPTS})
   catkin_install_python(PROGRAMS ${scripts}
