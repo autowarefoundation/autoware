@@ -3,12 +3,12 @@
 SystemStatusFilter::SystemStatusFilter() :
   callback_(std::bind(&SystemStatusFilter::selectBehavior, this, std::placeholders::_1)){}
 
-std::string SystemStatusFilter::selectBehavior(const SystemStatus& status)
+int SystemStatusFilter::selectBehavior(const SystemStatus& status)
 {
-  return "None";
+  return 0;
 }
 
-const std::function<std::string(const SystemStatus&)>& SystemStatusFilter::getFunc() const
+const std::function<int(const SystemStatus&)>& SystemStatusFilter::getFunc() const
 {
   return callback_;
 }

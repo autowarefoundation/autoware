@@ -7,20 +7,23 @@
 #include <autoware_system_msgs/SystemStatus.h>
 #include <emergency_handler/libsystem_status_filter.h>
 
-class EmergencyHandler : public autoware_health_checker::SystemStatusSubscriber
+class EmergencyHandler
 {
 public:
   EmergencyHandler(ros::NodeHandle &nh, ros::NodeHandle &pnh);
   ~EmergencyHandler();
+  void addPublisher(const std::map<int, std::string>& behavior);
   void addFilter(const SystemStatusFilter& filter);
-  void addPublishCallback();
+  void run();
 
 private:
-  ros::Publisher emergency_pub_, statecmd_pub_, recordcmd_pub_;
-  bool is_emergency_, start_record_;
-  std::string statecmd_str_;
-  void changePublisherFlag(std::string behavior);
-  void wrapFunc(std::function<std::string(const SystemStatus&)> func, SystemStatus status);
+  ros::NodeHandle nh_, pnh_;
+  ros::Publisher statecmd_pub_, recordcmd_pub_;
+  std::map<int, ros::Publisher> emergency_pub_;
+  int handling_level_;
+  int record_level_thresh_;
+  autoware_health_checker::SystemStatusSubscriber status_sub_;
+  void wrapFunc(std::function<int(const SystemStatus&)> func, SystemStatus status);
   void publishCallback(SystemStatus status);
 };
 

@@ -1,5 +1,6 @@
 #ifndef __SYSTEM_STATUS_FILTER_H__
 #define __SYSTEM_STATUS_FILTER_H__
+#include <ros/ros.h>
 #include <autoware_system_msgs/SystemStatus.h>
 
 typedef autoware_system_msgs::SystemStatus SystemStatus;
@@ -20,11 +21,11 @@ class SystemStatusFilter
 {
 public:
   SystemStatusFilter();
-  virtual std::string selectBehavior(const SystemStatus& status);
-  const std::function<std::string(const SystemStatus&)>& getFunc() const;
+  virtual int selectBehavior(const SystemStatus& status);
+  const std::function<int(const SystemStatus&)>& getFunc() const;
 
 protected:
-  std::function<std::string(const SystemStatus&)> callback_;
+  std::function<int(const SystemStatus&)> callback_;
 
   StatusType getStatus(const DiagnosticStatusArray& st_array, int level_th) const;
   StatusType getStatus(const NodeStatus& node_status, int level_th) const;

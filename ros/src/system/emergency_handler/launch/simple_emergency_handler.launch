@@ -1,0 +1,5 @@
+<launch>
+  <arg name="config_file" default="$(find emergency_handler)/config/simple_emergency_handler.yaml"/>
+  <node pkg="emergency_handler" type="simple_emergency_handler" name="simple_emergency_handler" output="screen" respawn="true"/>
+  <rosparam command="load" file="$(arg config_file)" ns="simple_emergency_handler"/>
+</launch>

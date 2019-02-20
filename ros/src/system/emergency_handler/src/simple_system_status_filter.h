@@ -3,16 +3,24 @@
 
 #include <emergency_handler/libsystem_status_filter.h>
 
-class SimpleHardwareFilter : public SystemStatusFilter
+class CommonFilterRule : public SystemStatusFilter
 {
 public:
-  virtual std::string selectBehavior(const SystemStatus& status);
+  static const std::map<int, std::string> getBehaviorParam(ros::NodeHandle& pnh);
+protected:
+  static int emergency_stop_;
 };
 
-class SimpleNodeFilter : public SystemStatusFilter
+class SimpleHardwareFilter : public CommonFilterRule
 {
 public:
-  virtual std::string selectBehavior(const SystemStatus& status);
+  virtual int selectBehavior(const SystemStatus& status);
+};
+
+class SimpleNodeFilter : public CommonFilterRule
+{
+public:
+  virtual int selectBehavior(const SystemStatus& status);
 };
 
 #endif

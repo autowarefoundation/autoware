@@ -5,12 +5,30 @@ const int DIAG_WARN = autoware_system_msgs::DiagnosticStatus::WARN;
 const int DIAG_ERROR = autoware_system_msgs::DiagnosticStatus::ERROR;
 const int DIAG_FATAL = autoware_system_msgs::DiagnosticStatus::FATAL;
 
-std::string SimpleHardwareFilter::selectBehavior(const SystemStatus& status)
+const std::map<int, std::string> CommonFilterRule::getBehaviorParam(ros::NodeHandle& pnh)
 {
-  return (checkAllHardwareSimplly(status.hardware_status, DIAG_ERROR)) ? "None" : "Emergency";
+  std::map<std::string, int> emergency_stop_map;
+  std::map<int, std::string> behavior_param;
+  pnh.getParam("behavior/emergency_stop", emergency_stop_map);
+  if (emergency_stop_map.size() == 1)
+  {
+    const auto& el = emergency_stop_map.begin();
+    emergency_stop_ = el->second;
+    behavior_param.emplace(el->second, el->first);
+  }
+  return behavior_param;
 }
 
-std::string SimpleNodeFilter::selectBehavior(const SystemStatus& status)
+int CommonFilterRule::emergency_stop_ = 0;
+
+int SimpleHardwareFilter::selectBehavior(const SystemStatus& status)
 {
-  return (checkAllNodeSimplly(status.node_status, DIAG_ERROR)) ? "None" : "Emergency";
+  const bool is_emergency = !(checkAllHardwareSimplly(status.hardware_status, DIAG_ERROR));
+  return is_emergency ? emergency_stop_ : 0;
+}
+
+int SimpleNodeFilter::selectBehavior(const SystemStatus& status)
+{
+  const bool is_emergency = !(checkAllNodeSimplly(status.node_status, DIAG_ERROR));
+  return is_emergency ? emergency_stop_ : 0;
 }

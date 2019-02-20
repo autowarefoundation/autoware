@@ -3,14 +3,15 @@
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "emergency_handler");
-  ros::NodeHandle nh, pnh("~");
-  SimpleNodeFilter node_filter;
+  ros::init(argc, argv, "simple_emergency_handler");
+  ros::NodeHandle nh;
+  ros::NodeHandle pnh("~");
   SimpleHardwareFilter hw_filter;
+  SimpleNodeFilter node_filter;
   EmergencyHandler emergency_handler(nh, pnh);
-  emergency_handler.addFilter((SystemStatusFilter)node_filter);
+  emergency_handler.addPublisher(CommonFilterRule::getBehaviorParam(pnh));
   emergency_handler.addFilter((SystemStatusFilter)hw_filter);
-  emergency_handler.addPublishCallback();
-  emergency_handler.enable();
+  emergency_handler.addFilter((SystemStatusFilter)node_filter);
+  emergency_handler.run();
   return 0;
 }

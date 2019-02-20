@@ -1,74 +1,54 @@
 #include <emergency_handler/libemergency_handler.h>
 
 EmergencyHandler::EmergencyHandler(ros::NodeHandle &nh, ros::NodeHandle &pnh) :
-  autoware_health_checker::SystemStatusSubscriber(nh, pnh),
-  is_emergency_(false), start_record_(false)
+  nh_(nh), pnh_(pnh), status_sub_(nh_, pnh_), handling_level_(0)
 {
-  emergency_pub_ = nh.advertise<std_msgs::Header>("/emergency_cmd", 1, true);
-  statecmd_pub_ = nh.advertise<std_msgs::String>("/state_cmd", 1, true);
-  recordcmd_pub_ = nh.advertise<std_msgs::Header>("/record_cmd", 1, true);
+  pnh_.param<int>("record_level_thresh", record_level_thresh_, 1);
+  statecmd_pub_ = nh_.advertise<std_msgs::String>("/state_cmd", 1, true);
+  recordcmd_pub_ = nh_.advertise<std_msgs::Header>("/record_cmd", 1, true);
 }
 
 EmergencyHandler::~EmergencyHandler(){}
 
+void EmergencyHandler::addPublisher(const std::map<int, std::string>& behavior)
+{
+  for (const auto& el : behavior)
+  {
+    emergency_pub_[el.first] = nh_.advertise<std_msgs::Header>(el.second, 1, true);
+  }
+}
+
 void EmergencyHandler::addFilter(const SystemStatusFilter& filter)
 {
-  addCallback(std::bind(&EmergencyHandler::wrapFunc, this, filter.getFunc(), std::placeholders::_1));
+  status_sub_.addCallback(std::bind(&EmergencyHandler::wrapFunc, this, filter.getFunc(), std::placeholders::_1));
 }
 
-void EmergencyHandler::addPublishCallback()
+void EmergencyHandler::run()
 {
-  addCallback(std::bind(&EmergencyHandler::publishCallback, this, std::placeholders::_1));
+  status_sub_.addCallback(std::bind(&EmergencyHandler::publishCallback, this, std::placeholders::_1));
+  status_sub_.enable();
 }
 
-void EmergencyHandler::changePublisherFlag(std::string behavior)
+void EmergencyHandler::wrapFunc(std::function<int(const SystemStatus&)> func, SystemStatus status)
 {
-  if (behavior == "None")
-  {
-    return;
-  }
-  if (behavior.find("Emergency") != std::string::npos)
-  {
-    is_emergency_ = true;
-  }
-  else if (!is_emergency_)
-  {
-    const std::string key = "Cmd=";
-    if (behavior.find(key) != std::string::npos)
-    {
-      const auto len = key.length();
-      statecmd_str_ = behavior;
-      statecmd_str_.replace(0, len, "");
-    }
-  }
-  start_record_ = (is_emergency_ || !statecmd_str_.empty());
-}
-
-void EmergencyHandler::wrapFunc(std::function<std::string(const SystemStatus&)> func, SystemStatus status)
-{
-  const std::string ret = func(status);
-  changePublisherFlag(ret);
+  handling_level_ = func(status);
 }
 
 void EmergencyHandler::publishCallback(SystemStatus status)
 {
+  if (handling_level_ == 0)
+  {
+    return;
+  }
   std_msgs::Header header_msg;
   header_msg.stamp = ros::Time::now();
-
-  if (is_emergency_)
-  {
-    emergency_pub_.publish(header_msg);
-  }
-  else if (!statecmd_str_.empty())
-  {
-    std_msgs::String str_msg;
-    str_msg.data = statecmd_str_;
-    statecmd_pub_.publish(str_msg);
-  }
-  if (start_record_)
+  emergency_pub_[handling_level_].publish(header_msg);
+  std_msgs::String str_msg;
+  str_msg.data = "emergency";
+  statecmd_pub_.publish(str_msg);
+  if (handling_level_ >= record_level_thresh_)
   {
     recordcmd_pub_.publish(header_msg);
   }
-  is_emergency_ = start_record_ = false;
-  statecmd_str_.clear();
+  handling_level_ = 0;
 }
