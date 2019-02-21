@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-#include <ros/ros.h>
 #include <gtest/gtest.h>
+#include <ros/ros.h>
 
 #include "test_lane_select.hpp"
 
-namespace lane_planner
-{
+namespace lane_planner {
 
-class LaneSelectTestSuite : public ::testing::Test
-{
+class LaneSelectTestSuite : public ::testing::Test {
 public:
   LaneSelectTestSuite() {}
   ~LaneSelectTestSuite() {}
@@ -31,19 +29,13 @@ public:
   LaneSelectTestClass test_obj_;
 
 protected:
-  virtual void SetUp()
-  {
-    test_obj_.lsn = new LaneSelectNode();
-  };
-  virtual void TearDown()
-  {
-    delete test_obj_.lsn;
-  };
+  virtual void SetUp() { test_obj_.lsn = new LaneSelectNode(); };
+  virtual void TearDown() { delete test_obj_.lsn; };
 };
 
-TEST_F(LaneSelectTestSuite, publishVehicleLocation)
-{
-  ASSERT_EQ(test_obj_.vehicle_location_sub.getNumPublishers(), 1U) << "No publisher exist!";
+TEST_F(LaneSelectTestSuite, publishVehicleLocation) {
+  ASSERT_EQ(test_obj_.vehicle_location_sub.getNumPublishers(), 1U)
+      << "No publisher exist!";
 
   test_obj_.publishTrafficWaypointsArray();
   test_obj_.publishCurrentPose(-0.5, 0.0, 0.0);
@@ -54,8 +46,13 @@ TEST_F(LaneSelectTestSuite, publishVehicleLocation)
   ros::WallDuration(0.1).sleep();
   ros::spinOnce();
 
-  ASSERT_EQ(0, test_obj_.cb_vehicle_location.waypoint_index) << "Waypoint index does not match." << "It should be -1";
-  ASSERT_EQ(test_obj_.lane_array_id_, test_obj_.cb_vehicle_location.lane_array_id) << "LaneArray id does not match." << "It should be " << test_obj_.lane_array_id_;
+  ASSERT_EQ(0, test_obj_.cb_vehicle_location.waypoint_index)
+      << "Waypoint index does not match."
+      << "It should be -1";
+  ASSERT_EQ(test_obj_.lane_array_id_,
+            test_obj_.cb_vehicle_location.lane_array_id)
+      << "LaneArray id does not match."
+      << "It should be " << test_obj_.lane_array_id_;
 
   test_obj_.publishCurrentPose(0.5, 0.0, 0.0);
   test_obj_.publishCurrentVelocity(0);
@@ -65,13 +62,14 @@ TEST_F(LaneSelectTestSuite, publishVehicleLocation)
   ros::WallDuration(0.1).sleep();
   ros::spinOnce();
 
-  ASSERT_EQ(1, test_obj_.cb_vehicle_location.waypoint_index) << "Waypoint index does not match." << "It should be 1";
+  ASSERT_EQ(1, test_obj_.cb_vehicle_location.waypoint_index)
+      << "Waypoint index does not match."
+      << "It should be 1";
 }
 
 } // namespace lane_planner
 
-int main(int argc, char** argv)
-{
+int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
   ros::init(argc, argv, "LaneSelectTestNode");
   ros::NodeHandle nh;
