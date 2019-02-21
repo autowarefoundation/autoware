@@ -38,6 +38,8 @@ class TwistGate
   using remote_msgs_t = autoware_msgs::RemoteCmd;
   using vehicle_cmd_msg_t = autoware_msgs::VehicleCmd;
 
+  friend class TwistGateTestClass;
+
 public:
   TwistGate(const ros::NodeHandle& nh, const ros::NodeHandle& private_nh);
   ~TwistGate();
@@ -59,6 +61,9 @@ private:
   bool is_using_decisionmaker();
   void reset_vehicle_cmd_msg();
 
+  // spinOnce for test
+  void spinOnce(){ ros::spinOnce(); }
+
   ros::NodeHandle nh_;
   ros::NodeHandle private_nh_;
   ros::Publisher emergency_stop_pub_;
@@ -74,6 +79,8 @@ private:
   ros::Duration timeout_period_;
 
   std::thread watchdog_timer_thread_;
+  bool is_alive;
+
   enum class CommandMode
   {
     AUTO = 1,

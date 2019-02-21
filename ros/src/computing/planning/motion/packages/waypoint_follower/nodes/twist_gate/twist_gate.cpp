@@ -69,10 +69,12 @@ TwistGate::TwistGate(const ros::NodeHandle& nh, const ros::NodeHandle& private_n
   remote_cmd_time_ = ros::Time::now();
   watchdog_timer_thread_ = std::thread(&TwistGate::watchdog_timer, this);
   watchdog_timer_thread_.detach();
+  is_alive = true;
 }
 
 TwistGate::~TwistGate()
 {
+  is_alive = false;
 }
 
 void TwistGate::reset_vehicle_cmd_msg()
@@ -118,7 +120,7 @@ void TwistGate::check_state()
 
 void TwistGate::watchdog_timer()
 {
-  while (1)
+  while (is_alive)
   {
     ros::Time now_time = ros::Time::now();
     bool emergency_flag = false;
