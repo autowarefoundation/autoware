@@ -16,24 +16,25 @@
  *
  * v1.0 Masaya Kataoka
  */
- 
+
 #include <autoware_health_checker/node_status_publisher.h>
 
 namespace autoware_health_checker {
 NodeStatusPublisher::NodeStatusPublisher(ros::NodeHandle nh,
                                          ros::NodeHandle pnh) {
   node_activated_ = false;
+  ros_ok_ = true;
   nh_ = nh;
   pnh_ = pnh;
   status_pub_ =
       nh_.advertise<autoware_system_msgs::NodeStatus>("node_status", 10);
 }
 
-NodeStatusPublisher::~NodeStatusPublisher() {}
+NodeStatusPublisher::~NodeStatusPublisher() { ros_ok_ = false; }
 
 void NodeStatusPublisher::publishStatus() {
   ros::Rate rate = ros::Rate(autoware_health_checker::UPDATE_RATE);
-  while (ros::ok()) {
+  while (ros_ok_) {
     mtx_.lock();
     autoware_system_msgs::NodeStatus status;
     status.node_activated = node_activated_;

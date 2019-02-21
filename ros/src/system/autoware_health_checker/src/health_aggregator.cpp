@@ -16,15 +16,16 @@
  *
  * v1.0 Masaya Kataoka
  */
- 
+
 #include <autoware_health_checker/health_aggregator.h>
 
 HealthAggregator::HealthAggregator(ros::NodeHandle nh, ros::NodeHandle pnh) {
   nh_ = nh;
   pnh_ = pnh;
+  ros_ok_ = true;
 }
 
-HealthAggregator::~HealthAggregator() {}
+HealthAggregator::~HealthAggregator() { ros_ok_ = false; }
 
 void HealthAggregator::run() {
   system_status_pub_ =
@@ -48,7 +49,7 @@ void HealthAggregator::run() {
 
 void HealthAggregator::publishSystemStatus() {
   ros::Rate rate = ros::Rate(autoware_health_checker::UPDATE_RATE);
-  while (ros::ok()) {
+  while (ros_ok_) {
     mtx_.lock();
     system_status_.header.stamp = ros::Time::now();
     updateConnectionStatus();

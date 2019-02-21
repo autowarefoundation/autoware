@@ -68,6 +68,7 @@ private:
   convert(const diagnostic_msgs::DiagnosticArray::ConstPtr msg);
   autoware_system_msgs::SystemStatus system_status_;
   std::mutex mtx_;
+  bool ros_ok_;
   void updateConnectionStatus();
 };
 #endif // HEALTH_AGGREGATOR_H_INCLUDED

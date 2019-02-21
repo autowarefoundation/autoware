@@ -107,6 +107,7 @@ private:
   std::string doubeToJson(double value);
   void publishStatus();
   bool node_activated_;
+  bool ros_ok_;
   std::mutex mtx_;
 };
 }

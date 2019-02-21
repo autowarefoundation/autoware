@@ -1,0 +1,5 @@
+digraph G {
+0[label="/health_aggregator"];
+1[label="/health_analyzer"];
+1->0 ;
+}
