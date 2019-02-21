@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   waypoint_follower
   autoware_msgs 
+  autoware_health_checker
 )
 
 ###################################

@@ -50,7 +50,7 @@
     sudo apt-get install -y ros-kinetic-desktop-full
     sudo apt-get install -y ros-kinetic-nmea-msgs ros-kinetic-nmea-navsat-driver ros-kinetic-sound-play ros-kinetic-jsk-visualization ros-kinetic-grid-map ros-kinetic-gps-common
     sudo apt-get install -y ros-kinetic-controller-manager ros-kinetic-ros-control ros-kinetic-ros-controllers ros-kinetic-gazebo-ros-control ros-kinetic-joystick-drivers
-    sudo apt-get install -y libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev libglew-dev
+    sudo apt-get install -y libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev libgl1-mesa-dev libglew-dev
     sudo apt-get install -y ros-kinetic-camera-info-manager-py ros-kinetic-camera-info-manager
 
 ### SSD Installation
@@ -60,7 +60,7 @@ If you need to use a SSD detector, please refer SSD readme.
     source /opt/ros/kinetic/setup.bash
 
     sudo apt-get install -y openssh-server libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev git
-    sudo apt-get install -y libnlopt-dev freeglut3-dev qt5-default libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev libglew-dev gksu
+    sudo apt-get install -y libnlopt-dev freeglut3-dev qt5-default libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev libglew-dev
     sudo apt-get install -y libxmu-dev python-wxgtk3.0 python-wxgtk3.0-dev
     sudo ln -s /usr/include/aarch64-linux-gnu/qt5 /usr/include/qt5
 

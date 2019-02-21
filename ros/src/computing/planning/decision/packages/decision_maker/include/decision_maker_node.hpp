@@ -103,7 +103,7 @@ struct AutowareStatus
   int found_stopsign_idx;
   int prev_stopped_wpidx;
 
-  AutowareStatus(void) : closest_waypoint(-1), velocity(0), found_stopsign_idx(-1), obstacle_waypoint(-1)
+  AutowareStatus(void) : closest_waypoint(-1), obstacle_waypoint(-1), velocity(0), found_stopsign_idx(-1), prev_stopped_wpidx(-1)
   {
   }
 
@@ -142,13 +142,12 @@ private:
   bool isManualLight;
 
   // Param
-  bool enableDisplayMarker;
   bool auto_mission_reload_;
   bool auto_engage_;
   bool auto_mission_change_;
-  bool use_management_system_;
+  bool use_fms_;
   bool disuse_vector_map_;
-  uint32_t param_num_of_steer_behind_;
+  int param_num_of_steer_behind_;
   double change_threshold_dist_;
   double change_threshold_angle_;
   double goal_threshold_dist_;
@@ -326,12 +325,17 @@ public:
 
   DecisionMakerNode(int argc, char** argv)
     : private_nh_("~")
-    , enableDisplayMarker(false)
     , auto_mission_reload_(false)
     , auto_engage_(false)
     , auto_mission_change_(false)
-    , use_management_system_(false)
+    , use_fms_(false)
+    , disuse_vector_map_(false)
     , param_num_of_steer_behind_(30)
+    , change_threshold_dist_(1.0)
+    , change_threshold_angle_(15)
+    , goal_threshold_dist_(3.0)
+    , goal_threshold_vel_(0.1)
+    , stopline_reset_count_(20)
   {
     std::string file_name_mission;
     std::string file_name_drive;
@@ -346,7 +350,16 @@ public:
     init();
     setupStateCallback();
 
-    stopline_reset_count_ = 20;
+    private_nh_.getParam("auto_mission_reload", auto_mission_reload_);
+    private_nh_.getParam("auto_engage", auto_engage_);
+    private_nh_.getParam("auto_mission_change", auto_mission_change_);
+    private_nh_.getParam("use_fms", use_fms_);
+    private_nh_.getParam("disuse_vector_map", disuse_vector_map_);
+    private_nh_.getParam("param_num_of_steer_behind", param_num_of_steer_behind_);
+    private_nh_.getParam("change_threshold_dist", change_threshold_dist_);
+    private_nh_.getParam("change_threshold_angle", change_threshold_angle_);
+    private_nh_.getParam("goal_threshold_dist", goal_threshold_dist_);
+    private_nh_.getParam("goal_threshold_vel", goal_threshold_vel_);
     private_nh_.getParam("stopline_reset_count", stopline_reset_count_);
     current_status_.prev_stopped_wpidx = -1;
   }

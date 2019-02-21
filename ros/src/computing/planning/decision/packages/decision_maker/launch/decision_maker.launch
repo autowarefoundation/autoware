@@ -3,12 +3,32 @@
   <arg name="state_mission_file_name" default="autoware_state_mission.yaml" />
   <arg name="state_drive_file_name" default="autoware_state_drive.yaml" />
   <arg name="state_vehicle_file_name" default="autoware_state_vehicle.yaml" />
+  <arg name="auto_mission_reload" default="false" />
+  <arg name="auto_engage" default="false" />
+  <arg name="auto_mission_change" default="false" />
+  <arg name="use_fms" default="false" />
+  <arg name="disuse_vector_map" default="false" />
+  <arg name="param_num_of_steer_behind" default="30" />
+  <arg name="change_threshold_dist" default="1.0" />
+  <arg name="change_threshold_angle" default="15" />
+  <arg name="goal_threshold_dist" default="3.0" />
+  <arg name="goal_threshold_vel" default="0.1" />
   <arg name="stopline_reset_count" default="20" />
 
   <node pkg="decision_maker" type="decision_maker_node" name="decision_maker" output="screen">
     <param name ="state_mission_file_name" value="$(find decision_maker)/$(arg state_mission_file_name)"/>
     <param name ="state_drive_file_name" value="$(find decision_maker)/$(arg state_drive_file_name)"/>
     <param name ="state_vehicle_file_name" value="$(find decision_maker)/$(arg state_vehicle_file_name)"/>
+    <param name="auto_mission_reload" value="$(arg auto_mission_reload)"/>
+    <param name="auto_engage" value="$(arg auto_engage)"/>
+    <param name="auto_mission_change" value="$(arg auto_mission_change)"/>
+    <param name="use_fms" value="$(arg use_fms)"/>
+    <param name="disuse_vector_map" value="$(arg disuse_vector_map)"/>
+    <param name="param_num_of_steer_behind" value="$(arg param_num_of_steer_behind)"/>
+    <param name="change_threshold_dist" value="$(arg change_threshold_dist)"/>
+    <param name="change_threshold_angle" value="$(arg change_threshold_angle)"/>
+    <param name="goal_threshold_dist" value="$(arg goal_threshold_dist)"/>
+    <param name="goal_threshold_vel" value="$(arg goal_threshold_vel)"/>
     <param name ="stopline_reset_count" value="$(arg stopline_reset_count)"/>
 	</node>
 

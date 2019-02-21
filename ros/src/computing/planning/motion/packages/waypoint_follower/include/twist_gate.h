@@ -18,12 +18,15 @@
 #define TWIST_GATE_H
 
 #include <string>
+#include <iostream>
 #include <map>
 #include <thread>
+#include <memory>
 
 #include <geometry_msgs/TwistStamped.h>
 #include <ros/ros.h>
 #include <std_msgs/Bool.h>
+#include <std_msgs/Int32.h>
 #include <std_msgs/String.h>
 
 #include "autoware_msgs/ControlCommandStamped.h"
@@ -32,6 +35,9 @@
 
 #include "tablet_socket_msgs/gear_cmd.h"
 #include "tablet_socket_msgs/mode_cmd.h"
+
+//headers in Autowae Health Checker
+#include <autoware_health_checker/node_status_publisher.h>
 
 class TwistGate
 {
@@ -66,6 +72,7 @@ private:
 
   ros::NodeHandle nh_;
   ros::NodeHandle private_nh_;
+  std::shared_ptr<autoware_health_checker::NodeStatusPublisher> node_status_pub_ptr_;
   ros::Publisher emergency_stop_pub_;
   ros::Publisher control_command_pub_;
   ros::Publisher vehicle_cmd_pub_;

@@ -20,6 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
         autoware_msgs
         autoware_config_msgs
         tablet_socket_msgs
+        autoware_health_checker
         rostest
         rosunit
         )
@@ -44,6 +45,7 @@ catkin_package(
         pcl_conversions
         sensor_msgs
         tablet_socket_msgs
+        autoware_health_checker
 )
 
 ###########
