@@ -20,6 +20,8 @@ find_package(catkin REQUIRED COMPONENTS
         autoware_msgs
         autoware_config_msgs
         tablet_socket_msgs
+        rostest
+        rosunit
         )
 
 ################################################
@@ -100,3 +102,16 @@ install(DIRECTORY include/${PROJECT_NAME}/
 install(DIRECTORY launch/
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
         PATTERN ".svn" EXCLUDE)
+
+if (CATKIN_ENABLE_TESTING)
+    find_package(rostest REQUIRED)
+    add_rostest_gtest(test-twist_gate
+      test/test_twist_gate.test
+      test/src/test_twist_gate.cpp
+      nodes/twist_gate/twist_gate.cpp
+    )
+    add_dependencies(test-twist_gate
+      ${catkin_EXPORTED_TARGETS})
+    target_link_libraries(test-twist_gate
+      ${catkin_LIBRARIES})
+endif ()
