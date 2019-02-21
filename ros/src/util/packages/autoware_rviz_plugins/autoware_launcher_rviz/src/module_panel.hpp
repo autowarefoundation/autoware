@@ -9,33 +9,28 @@
 
 namespace autoware_launcher_rviz {
 
-class ModulePanel : public rviz::Panel
-{
-    Q_OBJECT
+class ModulePanel : public rviz::Panel {
+  Q_OBJECT
 
-    public:
+ public:
+  ModulePanel(QWidget* parent = 0);
 
-        ModulePanel(QWidget* parent = 0);
+ protected:
+  void paintEvent(QPaintEvent* event) override;
 
-    protected:
+ private Q_SLOTS:
 
-        void paintEvent(QPaintEvent* event) override;
+  void launch_button_toggled(bool checked);
 
-    private Q_SLOTS:
+  void server_connected();
+  void server_disconnected();
+  void server_error();
+  void server_ready_read();
 
-        void launch_button_toggled(bool checked);
-
-        void server_connected();
-        void server_disconnected();
-        void server_error();
-        void server_ready_read();
-
-    private:
-
-        QTcpSocket* socket;
-        std::unordered_map<QPushButton*, std::string> buttons;
+ private:
+  QTcpSocket* socket;
+  std::unordered_map<QPushButton*, std::string> buttons;
 };
-
 }
 
 #endif
