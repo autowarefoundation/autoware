@@ -36,15 +36,6 @@ install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
 
-#install(DIRECTORY icons
-#  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/icons
-#)
-
-## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_autoware_launcher_rviz.cpp)
-# if(TARGET ${PROJECT_NAME}-test)
-#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
-# endif()
-
-## Add folders to be run by python nosetests
-# catkin_add_nosetests(test)
+install(DIRECTORY icons
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/icons
+)
