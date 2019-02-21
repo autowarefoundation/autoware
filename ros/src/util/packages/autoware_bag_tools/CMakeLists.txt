@@ -20,3 +20,8 @@ add_executable(nmea2kml nodes/nmea2kml/nmea2kml.cpp nodes/nmea2kml/ReadNMEASente
 target_link_libraries(nmea2kml ${catkin_LIBRARIES})
 
 add_dependencies(nmea2kml ${catkin_EXPORTED_TARGETS})
+
+install(TARGETS nmea2kml
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

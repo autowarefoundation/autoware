@@ -85,13 +85,18 @@ if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64" AND CUDA_FOUND)
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
     )
 
-    install(FILES
-        nodelet_gmsl_camera.xml
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-    )
+
+    install(DIRECTORY launch/
+            DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+            PATTERN ".svn" EXCLUDE)
 
 else()
     find_package(catkin REQUIRED)
     catkin_package()
     message("gmsl_camera driver will not be built. CUDA was not found.")
 endif()
+
+install(FILES
+        nodelet_gmsl_camera.xml
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+        )

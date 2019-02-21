@@ -44,6 +44,8 @@ include_directories(
 
 IF (CUDA_FOUND)
     include_directories(${CUDA_INCLUDE_DIRS})
+    
+    set(CMAKE_CXX_FLAGS "-lcuda ${CMAKE_CXX_FLAGS}")
 
     IF ("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "^arm")
         link_directories(/usr/lib/arm-linux-gnueabihf/tegra)
@@ -98,3 +100,11 @@ install(TARGETS vision_dpm_ttic_detect
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)
+
+install(DIRECTORY data/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/data
+        PATTERN ".svn" EXCLUDE)
