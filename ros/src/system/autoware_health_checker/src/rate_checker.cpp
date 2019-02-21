@@ -65,11 +65,23 @@ uint8_t RateChecker::getErrorLevel() {
   return autoware_health_checker::LEVEL_OK;
 }
 
+void RateChecker::setRate(double warn_rate, double error_rate,double fatal_rate)
+{
+  update();
+  mtx_.lock();
+  warn_rate_ = warn_rate;
+  error_rate_ = error_rate;
+  fatal_rate_ = fatal_rate;
+  mtx_.unlock();
+  return;
+}
+
 void RateChecker::check() {
   update();
   mtx_.lock();
   data_.push_back(ros::Time::now());
   mtx_.unlock();
+  return;
 }
 
 void RateChecker::update() {

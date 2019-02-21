@@ -27,6 +27,7 @@
 #include <autoware_health_checker/constants.h>
 #include <autoware_health_checker/diag_buffer.h>
 #include <autoware_health_checker/rate_checker.h>
+#include <autoware_health_checker/value_manager.h>
 #include <autoware_system_msgs/NodeStatus.h>
 
 // headers in STL
@@ -95,6 +96,7 @@ public:
   bool getNodeStatus() { return node_activated_; };
 
 private:
+  std::shared_ptr<ValueManager> value_manager_ptr_;
   std::vector<std::string> getKeys();
   std::vector<std::string> getRateCheckerKeys();
   ros::NodeHandle nh_;
@@ -103,7 +105,7 @@ private:
   std::map<std::string, std::shared_ptr<RateChecker>> rate_checkers_;
   ros::Publisher status_pub_;
   bool keyExist(std::string key);
-  void addNewBuffer(std::string key, uint8_t type, std::string description);
+  bool addNewBuffer(std::string key, uint8_t type, std::string description);
   std::string doubeToJson(double value);
   void publishStatus();
   bool node_activated_;

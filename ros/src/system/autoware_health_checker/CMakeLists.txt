@@ -29,6 +29,7 @@ set(NODE_STATUS_PUBLISHER_SRC
   src/node_status_publisher.cpp
   src/diag_buffer.cpp
   src/rate_checker.cpp
+  src/value_manager.cpp
 )
 add_library(node_status_publisher
   ${NODE_STATUS_PUBLISHER_SRC}
