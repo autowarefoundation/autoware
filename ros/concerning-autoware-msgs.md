@@ -1,12 +1,14 @@
-#Autoware Messages Refactoring
+# Autoware Messages Refactoring
 
-##Description
+## Description
+
 (Tested on develop branch commit `c1166d91da58dc5c59c787e760d7d20f15d470f8` of Tue Feb 19 11:20:48 2019)
 
 So far, `autoware_msgs` is the sink where all Autoware related messages are created and maintained. 
 We decided to refactor the messages into new namespaces more suitable to their purpose.
 
-##Modifications
+## Modifications
+
 The following message refactoring will be performed in source code and file structure on `337` different files and `1569` lines of code and documentation:
 
 1. Defining new namespaces `autoware_xxx_msgs` for each existing message type, where `xxx` corresponds to the new namespace, ex. actuation, decision, detection, localization, mission, etc. (see tables below)
@@ -16,7 +18,8 @@ The following message refactoring will be performed in source code and file stru
 5. Allow reverting all the changes to their original state (simply rm FILE; git checkout FILE) to do tests.
 
 
-###Message types to new namespace associations
+### Message types to new namespace associations
+
 Namespace of existing message types in `src/msgs/autoware_msgs/msg/` will change as follows:
 
 | New namespace                 | Associated messages      |
@@ -80,10 +83,12 @@ The following is a different view of the above table, to ease finding messages t
 |`autoware_msgs/Waypoint`|`autoware_motion_msgs`|
 |`autoware_msgs/WaypointState`|`autoware_decision_msgs`|
 
-##Notes:
+## Notes:
+
 Please check the following cases:
 
-##Not in use
+## Not in use
+
 As to the commit/date stated above, the following messages are not used by any package and will be moved to a new namespace `autoware_unused_msgs` temporarily:
 
 * `ColorSet`
@@ -102,7 +107,7 @@ Such unused messages can be also verified by the shell command:
 IFS=$'\n'; for I in `find . -type f`; do egrep -i '(publish|advertise|subscri|import|include)' -H $I | egrep '(ValueSet|ImageObjects|ImageRectRanged|VscanTracked|VscanTrackedArray|StateCmd|ScanImage|ColorSet|ObjPose|GeometricRectangle)'; done
 ```
 
-##Errors
+## Errors
 As to the commit/date stated above, the following messages are referred by a package but its file does not exists in `src/msgs/autoware_msgs/msgs/`
 
 * `ImageObjRange` referred by `src/system/sync/computing/perception/detection/packages/cv_tracker/nodes/kf_track/sync_track.cpp`  `ImageObjRange` does not exist, `ImageObjRanged` does exist. `cv_tracker` has no `package.xml` and `CMakeLists.txt` files therefore it's not built and can be removed.
