@@ -1,0 +1,26 @@
+format: Autoware Launcher Plugin Version 0.1
+exts:
+- name: description
+  type: str
+args:
+- name: transform_file
+  type: str
+  list: null
+- name: point_cloud_files
+  type: str
+  list: space
+- name: vector_map_files
+  type: str
+  list: space
+
+panel:
+  widget: node.panel
+  frames:
+  - target: exts.description
+    widget: basic.text
+  - target: args.transform_file
+    widget: basic.file
+  - target: args.point_cloud_files
+    widget: basic.filelist
+  - target: args.vector_map_files
+    widget: basic.filelist

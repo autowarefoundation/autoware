@@ -1,0 +1,4 @@
+children: []
+config:
+  args.use_gpu: true
+plugin: refs/euclidean_cluster

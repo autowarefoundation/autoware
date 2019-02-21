@@ -1,0 +1,15 @@
+format: Autoware Launcher Plugin Version 0.1
+exts:
+- name: description
+  type: str
+args:
+- name: rviz_config_file
+  type: str
+
+panel:
+  widget: node.panel
+  frames:
+  - target: exts.description
+    widget: basic.text
+  - target: args.rviz_config_file
+    widget: basic.file

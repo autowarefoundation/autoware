@@ -1,0 +1,31 @@
+format: Autoware Launcher Plugin Version 0.1
+rosxml: $(find vision_darknet_detect)/launch/vision_yolo3_detect.launch
+args:
+- { name: score_threshold,         type: real,  default: 0.50 }
+- { name: nms_threshold,           type: real,  default: 0.45 }
+- { name: image_src,               type: str,   default: /image_raw }
+- { name: camera_id,               type: str,   default: "" }
+- { name: gpu_device_id,           type: int,   default: 0 }
+- { name: network_definition_file, type: str,   default: $(find vision_darknet_detect)/darknet/cfg/yolov3.cfg }
+- { name: pretrained_model_file,   type: str,   default: $(find vision_darknet_detect)/darknet/data/yolov3.weights }
+- { name: names_file,              type: str,   default: $(find vision_darknet_detect)/darknet/cfg/coco.names }
+
+panel:
+  widget: node.panel
+  frames:
+  - target: args.score_threshold
+    widget: basic.real
+  - target: args.nms_threshold
+    widget: basic.real
+  - target: args.image_src
+    widget: basic.text
+  - target: args.camera_id
+    widget: basic.text
+  - target: args.gpu_device_id
+    widget: basic.int
+  - target: args.network_definition_file
+    widget: basic.text
+  - target: args.pretrained_model_file
+    widget: basic.text
+  - target: args.names_file
+    widget: basic.text

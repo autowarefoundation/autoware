@@ -1,0 +1,4 @@
+format: Autoware Launcher Plugin Version 0.1
+rules:
+- { name: driver,      plugin: { scan: driver/camera } }
+- { name: calibration, plugin: leaf/calibration }

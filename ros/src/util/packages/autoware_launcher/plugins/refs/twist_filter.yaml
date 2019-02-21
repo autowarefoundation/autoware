@@ -1,0 +1,2 @@
+format: Autoware Launcher Plugin Version 0.1
+rosxml: $(find waypoint_follower)/launch/twist_filter.launch

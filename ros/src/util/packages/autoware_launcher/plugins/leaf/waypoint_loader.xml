@@ -1,0 +1,49 @@
+<launch>
+
+	<arg name="load_csv"             default="true"/>
+	<arg name="multi_lane_csv"       default=""/>
+
+	<arg name="replanning_mode"      default="false"/>
+	<arg name="velocity_max"         default="20"/>
+	<arg name="velocity_min"         default="4"/>
+	<arg name="accel_limit"          default="0.5"/>
+	<arg name="decel_limit"          default="0.3"/>
+	<arg name="radius_thresh"        default="20"/>
+	<arg name="radius_min"           default="6"/>
+	<arg name="resample_mode"        default="true"/>
+	<arg name="resample_interval"    default="1"/>
+	<arg name="velocity_offset"      default="4"/>
+	<arg name="end_point_offset"     default="1"/>
+	<arg name="braking_distance"     default="5"/>
+	<arg name="replan_curve_mode"    default="false"/>
+	<arg name="replan_endpoint_mode" default="true"/>
+	<arg name="overwrite_vmax_mode"  default="false"/>
+	<arg name="realtime_tuning_mode" default="false"/>
+
+	<include file="$(find waypoint_maker)/launch/waypoint_loader.launch">
+		<arg name="load_csv"       value="$(arg load_csv)"/>
+		<arg name="multi_lane_csv" value="$(arg multi_lane_csv)"/>
+	</include>
+
+	<node pkg="rostopic" type="rostopic" name="config_waypoint_loader" ns="autoware_launcher"
+		args="pub --latch --once /config/waypoint_replanner autoware_config_msgs/ConfigWaypointReplanner '{
+		multi_lane_csv:       '',
+		replanning_mode:      $(arg replanning_mode),
+		velocity_max:         $(arg velocity_max),
+		velocity_min:         $(arg velocity_min),
+		accel_limit:          $(arg accel_limit),
+		decel_limit:          $(arg decel_limit),
+		radius_thresh:        $(arg radius_thresh),
+		radius_min:           $(arg radius_min),
+		resample_mode:        $(arg resample_mode),
+		resample_interval:    $(arg resample_interval),
+		velocity_offset:      $(arg velocity_offset),
+		end_point_offset:     $(arg end_point_offset),
+		braking_distance:     $(arg braking_distance),
+		replan_curve_mode:    $(arg replan_curve_mode),
+		replan_endpoint_mode: $(arg replan_endpoint_mode),
+		overwrite_vmax_mode:  $(arg overwrite_vmax_mode),
+		realtime_tuning_mode: $(arg realtime_tuning_mode)
+	}'"/>
+
+</launch>
