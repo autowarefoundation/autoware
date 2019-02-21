@@ -1,13 +1,12 @@
 #include "module_panel.hpp"
+
+#include <ros/console.h>
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QGridLayout>
 #include <QStyle>
 #include <QStyleOption>
 #include <QPainter>
-
-#include <iostream>
-using namespace std;
 
 namespace {
 
@@ -27,7 +26,7 @@ namespace autoware_launcher_rviz {
 ModulePanel::ModulePanel(QWidget* parent) : rviz::Panel(parent)
 {
     QRect screen = QApplication::desktop()->screenGeometry();
-    int font_size = min(screen.width(), screen.height()) / 50;
+    int font_size = std::min(screen.width(), screen.height()) / 50;
     setStyleSheet(QString("* {font-size: %1px; background-color: #FFFFFF;} QPushButton{color: #FFFFFF; background-color: #223A70;}").arg(font_size));
 
     auto layout = new QGridLayout();
@@ -66,13 +65,11 @@ void ModulePanel::launch_button_toggled(bool checked)
     auto button = static_cast<QPushButton*>(sender());
     QString json = R"({"command":"%1", "path":"%2"})";
     json = json.arg(checked ? "launch" : "terminate").arg(QString::fromStdString(buttons[button]));
-    cout << json.toStdString() << endl;
     socket->write(json.toUtf8().append('\0'));
 }
 
 void ModulePanel::server_connected()
 {
-    cout << "connected" << endl;
     for(const auto& pair : buttons)
     {
         pair.first->setEnabled(true);
@@ -81,7 +78,6 @@ void ModulePanel::server_connected()
 
 void ModulePanel::server_disconnected()
 {
-    cout << "disconnected" << endl;
     for(const auto& pair : buttons)
     {
         pair.first->setEnabled(false);
@@ -90,14 +86,12 @@ void ModulePanel::server_disconnected()
 
 void ModulePanel::server_error()
 {
-    cout << "error" << endl;
-    cout << socket->errorString().toStdString() << endl;
+    ROS_ERROR_STREAM(socket->errorString().toStdString());
 }
 
 void ModulePanel::server_ready_read()
 {
-    cout << "ready_read" << endl;
-    cout << socket->readAll().toStdString() << endl;
+    ROS_INFO_STREAM(socket->readAll().toStdString());
 }
 
 }

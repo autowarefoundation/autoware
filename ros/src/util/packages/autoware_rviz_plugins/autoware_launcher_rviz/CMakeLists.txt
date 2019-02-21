@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(autoware_launcher_rviz)
 
-find_package(catkin REQUIRED COMPONENTS rviz autoware_build_flags)
+find_package(catkin REQUIRED COMPONENTS rosconsole rviz autoware_build_flags)
 find_package(Qt5 ${rviz_QT_VERSION} EXACT REQUIRED Core Widgets Network)
 set(QT_LIBRARIES Qt5::Widgets Qt5::Network)
 add_definitions(-DQT_NO_KEYWORDS)
@@ -33,9 +33,7 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 #install(DIRECTORY icons
