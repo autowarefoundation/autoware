@@ -1,9 +1,7 @@
 from logging import getLogger
 logger = getLogger(__name__)
 
-import collections
 import os
-import xml.etree.ElementTree as xmltree
 import yaml
 
 from . import basetree
