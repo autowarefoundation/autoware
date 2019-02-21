@@ -69,18 +69,6 @@ target_link_libraries(
 		${catkin_LIBRARIES}
 )
 
-add_executable(test_bag
-	random_access_bag
-		random_access_bag/test.cpp
-)
-
-target_link_libraries(
-	test_bag
-		random_access_bag
-		${catkin_LIBRARIES}
-)
-
-
 
 add_executable(bag_viewer
 	bag_viewer/main.cpp
@@ -106,6 +94,12 @@ target_include_directories(bag_viewer
 
 
 if (CATKIN_ENABLE_TESTING)
-
+	find_package(rostest REQUIRED)
+	add_rostest_gtest(bag_test 
+		test/test_random_access_bag.launch 
+		test/test_random_access_bag.cpp)
+	target_link_libraries(bag_test 
+		random_access_bag 
+		${catkin_LIBRARIES})
 endif ()
 
