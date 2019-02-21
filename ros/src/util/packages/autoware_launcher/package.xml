@@ -18,6 +18,8 @@
   <exec_depend>python_qt_binding</exec_depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>python-rospkg</exec_depend>
+  <test_depend>rostest</test_depend>
+  <test_depend>python-nose</test_depend>
 
   <export></export>
 

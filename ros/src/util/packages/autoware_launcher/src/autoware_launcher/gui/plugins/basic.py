@@ -41,6 +41,10 @@ class AwTextFrame(widgets.AwAbstructFrame):
     def apply(self, value):
         self.node.update({"config": {self.view.target: value}})
 
+    @staticmethod
+    def validate_argtypes(fields, view):
+        data = fields[view.target]
+        return (data.type == "str") and (data.list is None)
 
 
 class AwTextListFrame(widgets.AwAbstructFrame):
@@ -57,6 +61,10 @@ class AwTextListFrame(widgets.AwAbstructFrame):
     def apply(self, value):
         self.node.update({"config": {self.view.target: value}})
 
+    @staticmethod
+    def validate_argtypes(fields, view):
+        data = fields[view.target]
+        return (data.type == "str") and (data.list is not None)
 
 
 class AwFileFrame(AwTextFrame):
@@ -89,6 +97,10 @@ class AwBooleanFrame(widgets.AwAbstructFrame):
     def apply(self, value):
         self.node.update({"config": {self.view.target: value}})
 
+    @staticmethod
+    def validate_argtypes(fields, view):
+        data = fields[view.target]
+        return (data.type == "bool") and (data.list is None)
 
 
 class AwIntegerFrame(widgets.AwAbstructFrame):
@@ -105,6 +117,10 @@ class AwIntegerFrame(widgets.AwAbstructFrame):
     def apply(self, value):
         self.node.update({"config": {self.view.target: value}})
 
+    @staticmethod
+    def validate_argtypes(fields, view):
+        data = fields[view.target]
+        return (data.type == "int") and (data.list is None)
 
 
 class AwRealFrame(widgets.AwAbstructFrame):
@@ -121,6 +137,10 @@ class AwRealFrame(widgets.AwAbstructFrame):
     def apply(self, value):
         self.node.update({"config": {self.view.target: value}})
 
+    @staticmethod
+    def validate_argtypes(fields, view):
+        data = fields[view.target]
+        return (data.type == "real") and (data.list is None)
 
 
 class AwTransformFrame(widgets.AwAbstructFrame):
@@ -144,8 +164,13 @@ class AwTransformFrame(widgets.AwAbstructFrame):
         field = self.sender()
         self.node.update({"config": {field.target: value}})
 
-
-
+    @staticmethod
+    def validate_argtypes(fields, view):
+        if type(view.target) is not list: return False
+        if len(view.target) != 6: return False
+        targets = [fields[target] for target in view.target]
+        targets = [(data.type == "real") and (data.list is None) for data in targets]
+        return all(targets)
 
 
 

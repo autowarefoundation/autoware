@@ -69,6 +69,9 @@ class AwPluginNode(basetree.AwBaseNode):
     def rosxml(self):
         return self.__rosxml
 
+    def fields(self):
+        return self.__fields
+
     def exts(self):
         return self.__exts
 
@@ -97,7 +100,6 @@ class AwPluginNode(basetree.AwBaseNode):
         config.update({"exts." + data.name: default_value(data) for data in self.__exts})
         return config
 
-    # temporary
     def argstr(self, config):
         lines = []
         for argkey, argdef in self.__args.items():
@@ -108,20 +110,10 @@ class AwPluginNode(basetree.AwBaseNode):
     def load(self, rootpath):
         filepath = os.path.join(rootpath, self.path())
 
-        # load xml (roslaunch)
-        #xml_args = []
-        #if os.path.exists(filepath + ".xml"):
-        #    xroot = xmltree.parse(filepath + ".xml").getroot()
-        #    for xnode in xroot:
-        #        if ("arg" == xnode.tag) and ("value" not in xnode.attrib):
-        #            xml_args.append(xnode.attrib)
-
-        # load yaml
         if os.path.exists(filepath + ".yaml"):
             with open(filepath+ ".yaml") as fp:
                 ydata = yaml.safe_load(fp)
 
-            # format check
             if ydata.get("format") != "Autoware Launcher Plugin Version 0.1":
                 raise Exception("unknown plugin format: " + filepath)
 
@@ -132,13 +124,9 @@ class AwPluginNode(basetree.AwBaseNode):
             self.__rules  = [AwPluginRuleElement(data, self) for data in ydata.get("rules", [])]
             self.__panel  = AwPluginPanelElement(ydata.get("panel", {}))
             self.__frame  = AwPluginFrameElement(ydata.get("frame", {}))
-            fields = {}
-            fields.update({"exts."+data.name: data for data in self.__exts})
-            fields.update({"args."+data.name: data for data in self.__args})
-
-            # Validation
-            for frame in self.__panel.frames:
-                frame.debug(fields)
+            self.__fields = {}
+            self.__fields.update({"exts."+data.name: data for data in self.__exts})
+            self.__fields.update({"args."+data.name: data for data in self.__args})
 
 
 
@@ -199,30 +187,6 @@ class AwPluginFrameElement(object):
 
     def todict(self):
         return vars(self)
-
-    # ToDo: Move to guimgr
-    def debug(self, fields):
-        if self.widget in ["basic.textlist", "basic.filelist"]:
-            if fields[self.target].list is None:
-                raise TypeError(fields[self.target].name + ": " + self.widget + " " + fields[self.target].type)
-        elif self.widget in ["basic.text", "basic.file"]:
-            if fields[self.target].type not in ["str"]:
-                raise TypeError(fields[self.target].name + ": " + self.widget + " " + fields[self.target].type)
-        elif self.widget in ["basic.bool"]:
-            if fields[self.target].type not in ["bool"]:
-                raise TypeError(fields[self.target].name + ": " + self.widget + " " + fields[self.target].type)
-        elif self.widget in ["basic.int"]:
-            if fields[self.target].type not in ["int"]:
-                raise TypeError(fields[self.target].name + ": " + self.widget + " " + fields[self.target].type)
-        elif self.widget in ["basic.real"]:
-            if fields[self.target].type not in ["real"]:
-                raise TypeError(fields[self.target].name + ": " + self.widget + " " + fields[self.target].type)
-        elif self.widget in ["basic.transform"]:
-            if type(self.target) is not list:
-                raise TypeError(fields[self.target].name + ": transform")
-        else:
-            raise TypeError("unknown widget: " + self.widget + " " + self.target)
-
 
 class AwPluginPanelElement(object):
 

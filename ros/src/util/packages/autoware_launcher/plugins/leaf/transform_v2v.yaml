@@ -2,12 +2,12 @@ format: Autoware Launcher Plugin Version 0.1
 args:
 - { name: parent_frame, type: str, default: velodyne }
 - { name: local_frame,  type: str }
-- { name: tx, type: int }
-- { name: ty, type: int }
-- { name: tz, type: int }
-- { name: rx, type: int }
-- { name: ry, type: int }
-- { name: rz, type: int }
+- { name: tx, type: real }
+- { name: ty, type: real }
+- { name: tz, type: real }
+- { name: rx, type: real }
+- { name: ry, type: real }
+- { name: rz, type: real }
 
 panel:
   widget: node.panel
