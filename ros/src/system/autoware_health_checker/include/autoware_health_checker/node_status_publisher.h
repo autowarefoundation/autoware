@@ -68,14 +68,14 @@ public:
       std::string key, T value, std::function<uint8_t(T value)> check_func,
       std::function<boost::property_tree::ptree(T value)> value_json_func,
       std::string description) {
-    addNewBuffer(key, autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE,
+    addNewBuffer(key, autoware_system_msgs::DiagnosticStatus::INVALID_VALUE,
                  description);
     uint8_t check_result = check_func(value);
     boost::property_tree::ptree pt = value_json_func(value);
     std::stringstream ss;
     write_json(ss, pt);
     autoware_system_msgs::DiagnosticStatus new_status;
-    new_status.type = autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE;
+    new_status.type = autoware_system_msgs::DiagnosticStatus::INVALID_VALUE;
     new_status.level = check_result;
     new_status.description = description;
     new_status.description = ss.str();
@@ -85,6 +85,10 @@ public:
   }
   void CHECK_RATE(std::string key, double warn_rate, double error_rate,
                   double fatal_rate, std::string description);
+  void SET_DIAG_STATUS(std::string key,autoware_system_msgs::DiagnosticStatus status)
+  {
+
+  }
   void NODE_ACTIVATE() {
     std::lock_guard<std::mutex> lock(mtx_);
     node_activated_ = true;
@@ -106,7 +110,19 @@ private:
   ros::Publisher status_pub_;
   bool keyExist(std::string key);
   bool addNewBuffer(std::string key, uint8_t type, std::string description);
-  std::string doubeToJson(double value);
+  std::string doubleToJson(double value);
+  std::string intToJson(int value);
+  std::string boolToJson(bool value);
+  template <typename T>
+  std::string valueToJson(T value)
+  {
+    using namespace boost::property_tree;
+    std::stringstream ss;
+    ptree pt;
+    pt.put("value.double", value);
+    write_json(ss, pt);
+    return ss.str();
+  }
   void publishStatus();
   bool node_activated_;
   bool ros_ok_;
