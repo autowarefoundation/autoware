@@ -99,7 +99,7 @@ void SearchInfo::currentPoseCallback(const geometry_msgs::PoseStampedConstPtr &m
 {
   current_pose_ = *msg;
   node_status_publisher_ptr_->NODE_ACTIVATE();
-  node_status_publisher_ptr_->CHECK_RATE("/topic/rate/current_pose/slow",8,5,1,"topic current_pose subscribe rate low.");
+  node_status_publisher_ptr_->CHECK_RATE("topic_current_pose_slow_in_obstacle_avoid",8,5,1,"topic current_pose subscribe rate in obstacle_avoid node is low.");
   if(closest_waypoint_index_!=-1 && path_set_)
   {
     autoware_msgs::Waypoint closest_waypoint = subscribed_waypoints_.waypoints[closest_waypoint_index_];
@@ -182,7 +182,7 @@ void SearchInfo::waypointsCallback(const autoware_msgs::LaneConstPtr &msg)
 
 void SearchInfo::closestWaypointCallback(const std_msgs::Int32ConstPtr &msg)
 {
-  node_status_publisher_ptr_->CHECK_RATE("/topic/rate/closest_waypoint/slow",8,5,1,"topic closest_waypoint subscribe rate low.");
+  node_status_publisher_ptr_->CHECK_RATE("topic_closest_waypoint_slow_in_obstacle_avoid",8,5,1,"topic closest_waypoint subscribe in obstacle_avoid node rate is slow.");
   closest_waypoint_index_ = msg->data;
 }
 

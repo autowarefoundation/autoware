@@ -284,7 +284,7 @@ void RayGroundFilter::RemovePointsUpTo(const pcl::PointCloud<pcl::PointXYZI>::Pt
 void RayGroundFilter::CloudCallback(const sensor_msgs::PointCloud2ConstPtr &in_sensor_cloud)
 {
   node_status_pub_ptr_->NODE_ACTIVATE();
-  node_status_pub_ptr_->CHECK_RATE("/topic/rate/points_raw/slow",8,5,1,"topic points_raw subscribe rate low.");
+  node_status_pub_ptr_->CHECK_RATE("topic_points_raw_slow_in_ray_ground_filter",8,5,1,"topic points_raw subscribe rate in ray_ground_filter is slow.");
   pcl::PointCloud<pcl::PointXYZI>::Ptr current_sensor_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::fromROSMsg(*in_sensor_cloud, *current_sensor_cloud_ptr);
 
