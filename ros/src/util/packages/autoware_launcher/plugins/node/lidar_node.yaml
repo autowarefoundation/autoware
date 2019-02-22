@@ -1,0 +1,4 @@
+format: Autoware Launcher Plugin Version 0.1
+rules:
+- { name: driver,    plugin: { scan: driver/lidar } }
+- { name: transform, plugin: leaf/transform_v2v }

@@ -1,0 +1,8 @@
+children:
+- points_preproc
+- points_detect
+- images_detect
+- fusion
+- tracking
+config: {}
+plugin: node/detect_obj

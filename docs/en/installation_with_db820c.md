@@ -58,7 +58,7 @@ $ sudo fastboot flash rootfs stretch.raw
 Install the below packages on Dragonboard820c:
 
 ```shell
-$ sudo apt-get install -y libxmu-dev libxi-dev libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev libglew-dev python-wxgtk3.0 software-properties-common libmosquitto-dev libyaml-cpp-dev python-flask python-requests dirmngr libtf2-eigen-dev libpcl-dev python3-pip python3-setuptools
+$ sudo apt-get install -y libxmu-dev libxi-dev libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev libgl1-mesa-dev libglew-dev python-wxgtk3.0 software-properties-common libmosquitto-dev libyaml-cpp-dev python-flask python-requests dirmngr libtf2-eigen-dev libpcl-dev python3-pip python3-setuptools
 $ sudo pip3 install -U setuptools
 ```
 

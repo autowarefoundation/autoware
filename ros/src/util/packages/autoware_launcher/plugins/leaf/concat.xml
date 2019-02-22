@@ -1,0 +1,13 @@
+<launch>
+
+    <arg name="input_topics"/>
+    <arg name="output_topic"/>
+    <arg name="output_frame"/>
+
+    <include file="$(find points_preprocessor)/launch/points_concat_filter.launch">
+        <arg name="input_topics"    value="$(arg input_topics)" />
+        <arg name="output_topic"    value="$(arg output_topic)" />
+        <arg name="output_frame_id" value="$(arg output_frame)" />
+    </include>
+
+</launch>

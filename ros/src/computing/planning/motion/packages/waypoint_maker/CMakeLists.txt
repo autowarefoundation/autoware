@@ -44,14 +44,24 @@ include_directories(
         ${Boost_INCLUDE_DIRS}
 )
 
-add_executable(waypoint_loader nodes/waypoint_loader/waypoint_loader_core.cpp nodes/waypoint_loader/velocity_replanner.cpp nodes/waypoint_loader/waypoint_loader_node.cpp)
+add_executable(waypoint_loader nodes/waypoint_loader/waypoint_loader_core.cpp nodes/waypoint_loader/waypoint_loader_node.cpp)
 target_link_libraries(waypoint_loader ${catkin_LIBRARIES})
 add_dependencies(waypoint_loader
+        ${catkin_EXPORTED_TARGETS})
+
+add_executable(waypoint_replanner nodes/waypoint_replanner/waypoint_replanner.cpp nodes/waypoint_replanner/waypoint_replanner_node.cpp)
+target_link_libraries(waypoint_replanner ${catkin_LIBRARIES})
+add_dependencies(waypoint_replanner
         ${catkin_EXPORTED_TARGETS})
 
 add_executable(waypoint_saver nodes/waypoint_saver/waypoint_saver.cpp)
 target_link_libraries(waypoint_saver ${catkin_LIBRARIES})
 add_dependencies(waypoint_saver
+        ${catkin_EXPORTED_TARGETS})
+
+add_executable(waypoint_extractor nodes/waypoint_extractor/waypoint_extractor.cpp)
+target_link_libraries(waypoint_extractor ${catkin_LIBRARIES})
+add_dependencies(waypoint_extractor
         ${catkin_EXPORTED_TARGETS})
 
 add_executable(waypoint_clicker nodes/waypoint_clicker/waypoint_clicker.cpp)
@@ -69,11 +79,16 @@ add_dependencies(waypoint_velocity_visualizer
 
 install(TARGETS
         waypoint_loader
+        waypoint_replanner
         waypoint_saver
         waypoint_clicker
         waypoint_marker_publisher
         waypoint_velocity_visualizer
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)
