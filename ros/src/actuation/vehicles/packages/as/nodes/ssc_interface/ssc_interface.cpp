@@ -123,8 +123,9 @@ void SSCInterface::callbackFromSSCFeedbacks(const automotive_platform_msgs::Velo
           (msg_velocity->velocity) :
           (msg_wheel_speed->rear_left_wheel_speed + msg_wheel_speed->rear_right_wheel_speed) * tire_radius_ / 2.;
 
-  // update adaptive gear ratio
-  adaptive_gear_ratio_ = agr_coef_a_ + agr_coef_b_ * speed * speed - agr_coef_c_ * msg_steering_wheel->output;
+  // update adaptive gear ratio (avoiding zero divizion)
+  adaptive_gear_ratio_ =
+    std::max(1e-5, agr_coef_a_ + agr_coef_b_ * speed * speed - agr_coef_c_ * msg_steering_wheel->output);
   // current steering curvature
   double curvature = !use_adaptive_gear_ratio_ ?
                          (msg_curvature->curvature) :
