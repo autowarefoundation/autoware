@@ -1,0 +1,4 @@
+children:
+- transform
+config: {}
+plugin: node/lidar_single
