@@ -53,6 +53,7 @@ void DecisionMakerNode::callbackFromConfig(const autoware_config_msgs::ConfigDec
   change_threshold_angle_ = msg.change_threshold_angle;
   goal_threshold_dist_ = msg.goal_threshold_dist;
   goal_threshold_vel_ = msg.goal_threshold_vel;
+  stopped_vel_ = msg.stopped_vel;
   disuse_vector_map_ = msg.disuse_vector_map;
 }
 

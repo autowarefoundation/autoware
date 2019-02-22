@@ -155,6 +155,7 @@ private:
   double change_threshold_angle_;
   double goal_threshold_dist_;
   double goal_threshold_vel_;
+  double stopped_vel_;
   int stopline_reset_count_;
 
   // initialization method
@@ -353,6 +354,7 @@ public:
     , change_threshold_angle_(15)
     , goal_threshold_dist_(3.0)
     , goal_threshold_vel_(0.1)
+    , stopped_vel_(0.1)
     , stopline_reset_count_(20)
   {
     std::string file_name_mission;
@@ -381,6 +383,7 @@ public:
     private_nh_.getParam("change_threshold_angle", change_threshold_angle_);
     private_nh_.getParam("goal_threshold_dist", goal_threshold_dist_);
     private_nh_.getParam("goal_threshold_vel", goal_threshold_vel_);
+    private_nh_.getParam("stopped_vel", stopped_vel_);
     private_nh_.getParam("stopline_reset_count", stopline_reset_count_);
     current_status_.prev_stopped_wpidx = -1;
   }

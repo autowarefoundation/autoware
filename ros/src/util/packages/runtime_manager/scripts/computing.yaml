@@ -1932,6 +1932,12 @@ params :
       min   : 0.0
       max   : 90.0
       v     : 15.0
+    - name  : stopped_vel
+      desc  : Threshold for transitioning to the MissionComplete state(velocity of the vehicle).
+      label : stopped_vel[km/h]
+      min   : 0.0
+      max   : 5.0
+      v     : 0.1
     - name  : points_topic
       desc  : points_topic
       kind  : str

@@ -181,7 +181,7 @@ void DecisionMakerNode::updateStoplineState(cstring_t& state_name, int status)
   static bool timerflag = false;
   static ros::Timer stopping_timer;
 
-  if (current_status_.velocity == 0.0 && !timerflag && (current_status_.obstacle_waypoint + current_status_.closest_waypoint) == current_status_.found_stopsign_idx)
+  if (current_status_.velocity <= stopped_vel_ && !timerflag && (current_status_.obstacle_waypoint + current_status_.closest_waypoint) == current_status_.found_stopsign_idx)
   {
     stopping_timer = nh_.createTimer(ros::Duration(0.5),
                                      [&](const ros::TimerEvent&) {
@@ -224,7 +224,7 @@ void DecisionMakerNode::exitOrderedStopState(cstring_t& state_name, int status)
 void DecisionMakerNode::updateReservedStopState(cstring_t& state_name, int status)
 {
   publishStoplineWaypointIdx(current_status_.found_stopsign_idx);
-  if (current_status_.velocity == 0.0 && (current_status_.obstacle_waypoint + current_status_.closest_waypoint) == current_status_.found_stopsign_idx)
+  if (current_status_.velocity <= stopped_vel_ && (current_status_.obstacle_waypoint + current_status_.closest_waypoint) == current_status_.found_stopsign_idx)
     current_status_.prev_stopped_wpidx = current_status_.found_stopsign_idx;
 }
 

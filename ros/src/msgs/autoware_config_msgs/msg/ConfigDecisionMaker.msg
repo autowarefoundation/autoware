@@ -9,3 +9,4 @@ float64 change_threshold_dist
 float64 change_threshold_angle
 float64 goal_threshold_dist
 float64 goal_threshold_vel
+float64 stopped_vel
