@@ -39,20 +39,21 @@ public:
   ValueManager(ros::NodeHandle nh, ros::NodeHandle pnh);
   ~ValueManager();
   void run();
-  void setDefaultValue(std::string key, double warn_value, double error_value,
-                       double fatal_value);
-  double getValue(std::string key, uint8_t level);
+  void setDefaultValue(std::string key, std::string type, double warn_value,
+                       double error_value, double fatal_value);
+  double getValue(std::string key, std::string type, uint8_t level);
 
 private:
   bool default_value_exist_;
-  std::map<std::pair<std::string, uint8_t>, double> data_;
-  std::map<std::pair<std::string, uint8_t>, double> rosparam_data_;
+  std::map<std::pair<std::pair<std::string, std::string>, uint8_t>, double>
+      data_;
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_;
   XmlRpc::XmlRpcValue diag_params_;
   void updateParams();
   bool ros_ok_;
-  bool foundParamKey(std::string key, uint8_t level, std::string &key_str);
+  bool foundParamKey(std::string key, std::string type, uint8_t level,
+                     double &value);
   std::mutex mtx_;
 };
 #endif // VALUE_MANAGER_H_INCLUDED

@@ -22,7 +22,7 @@
 ValueManager::ValueManager(ros::NodeHandle nh, ros::NodeHandle pnh) {
   nh_ = nh;
   pnh_ = pnh;
-  nh_.getParam("health_checker", diag_params_);
+  nh_.getParam("/health_checker", diag_params_);
   ros_ok_ = true;
   default_value_exist_ = false;
 }
@@ -34,47 +34,69 @@ void ValueManager::run() {
       boost::thread(boost::bind(&ValueManager::updateParams, this));
 }
 
-void ValueManager::setDefaultValue(std::string key, double warn_value,
-                                   double error_value, double fatal_value) {
+void ValueManager::setDefaultValue(std::string key, std::string type,
+                                   double warn_value, double error_value,
+                                   double fatal_value) {
   if (default_value_exist_) {
     return;
   }
-  data_[{key, autoware_health_checker::LEVEL_WARN}] = warn_value;
-  data_[{key, autoware_health_checker::LEVEL_ERROR}] = error_value;
-  data_[{key, autoware_health_checker::LEVEL_FATAL}] = fatal_value;
+  data_[{{key, type}, autoware_health_checker::LEVEL_WARN}] = warn_value;
+  data_[{{key, type}, autoware_health_checker::LEVEL_ERROR}] = error_value;
+  data_[{{key, type}, autoware_health_checker::LEVEL_FATAL}] = fatal_value;
   default_value_exist_ = true;
   return;
 }
 
-bool ValueManager::foundParamKey(std::string key, uint8_t level,
-                                 std::string &key_str) {
-  key_str == "";
-  if (level == autoware_health_checker::LEVEL_WARN) {
-    key_str = key + "/warn";
-  }
-  if (level == autoware_health_checker::LEVEL_ERROR) {
-    key_str = key + "/error";
-  }
-  if (level == autoware_health_checker::LEVEL_FATAL) {
-    key_str = key + "/fatal";
-  }
+bool ValueManager::foundParamKey(std::string key, std::string type,
+                                 uint8_t level, double &value) {
   for (auto itr = diag_params_.begin(); itr != diag_params_.end(); itr++) {
-    if (itr->first == key_str) {
-      return true;
+    if (itr->first != key) {
+      continue;
+    }
+    for (auto params_itr = itr->second.begin(); params_itr != itr->second.end();
+         params_itr++) {
+      if (params_itr->first != type) {
+        continue;
+      }
+      for (auto value_itr = params_itr->second.begin();
+           value_itr != params_itr->second.end(); value_itr++) {
+        if (autoware_health_checker::LEVEL_OK == level ||
+            autoware_health_checker::LEVEL_UNDEFINED == level) {
+          continue;
+        }
+        if (value_itr->first == "warn" &&
+            autoware_health_checker::LEVEL_WARN == level) {
+          XmlRpc::XmlRpcValue data = value_itr->second;
+          value = data;
+          return true;
+        }
+        if (value_itr->first == "error" &&
+            autoware_health_checker::LEVEL_ERROR == level) {
+          XmlRpc::XmlRpcValue data = value_itr->second;
+          value = data;
+          return true;
+        }
+        if (value_itr->first == "fatal" &&
+            autoware_health_checker::LEVEL_FATAL == level) {
+          XmlRpc::XmlRpcValue data = value_itr->second;
+          value = data;
+          return true;
+        }
+      }
     }
   }
   return false;
 }
 
-double ValueManager::getValue(std::string key, uint8_t level) {
+double ValueManager::getValue(std::string key, std::string type,
+                              uint8_t level) {
   double ret;
   mtx_.lock();
   if (level == autoware_health_checker::LEVEL_WARN) {
     std::string key_str;
-    if (foundParamKey(key, level, key_str)) {
-      ret = diag_params_[key_str];
+    if (foundParamKey(key, type, level, ret)) {
     } else {
-      ret = data_[{key, level}];
+      ret = data_[{{key, type}, level}];
     }
   }
   mtx_.unlock();

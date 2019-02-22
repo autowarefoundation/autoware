@@ -1,13 +1,61 @@
-
-estimate_twist_angular
-estimate_twist_linear
-time_ndt_matching
-closest_waypoint_distance
-twist_cmd
-topic_points_raw_slow_in_ndt_matching
-topic_ndt_pose_slow_in_ndt_matching
-topic_current_pose_slow_in_obstacle_avoid
-topic_closest_waypoint_slow_in_obstacle_avoid
-topic_points_no_ground_slow_in_velocity_set
-topic_vehicle_cmd_slow_in_pure_pursuit
-topic_twist_cmd_slow_in_twist_gate
+health_checker:
+  estimate_twist_angular:
+    max:
+      warn: 0.3
+      error: 0.6
+      fatal : 0.9
+  estimate_twist_linear:
+    max:
+      warn: 10.0
+      error: 20.0
+      fatal: 30.0
+  time_ndt_matching:
+    max:
+      warn: 50.0
+      error: 75.0
+      fatal : 100.0
+  closest_waypoint_distance:
+    max:
+      warn: 1.0
+      error: 2.0
+      fatal: 3.0
+  twist_cmd_linear_high:
+    max:
+      warn: 10.0
+      error: 18.0
+      fatal: 20.0
+  topic_points_raw_slow_in_ndt_matching:
+    rate:
+      warn: 8.0
+      error: 4.0
+      fatal: 2.0
+  topic_ndt_pose_slow_in_ndt_matching:
+    rate:
+      warn: 8.0
+      error: 4.0
+      fatal: 2.0
+  topic_current_pose_slow_in_obstacle_avoid:
+    rate:
+      warn: 8.0
+      error: 4.0
+      fatal: 2.0
+  topic_closest_waypoint_slow_in_obstacle_avoid:
+    rate:
+      warn: 8.0
+      error: 4.0
+      fatal: 2.0
+  topic_points_no_ground_slow_in_velocity_set:
+    rate:
+      warn: 8.0
+      error: 4.0
+      fatal: 2.0
+  topic_vehicle_cmd_slow_in_pure_pursuit:
+    rate:
+      warn: 8.0
+      error: 4.0
+      fatal: 2.0
+  topic_twist_cmd_slow_in_twist_gate:
+    rate:
+      warn: 10.0
+      error: 4.0
+      fatal: 2.0
