@@ -8,6 +8,7 @@ Autonomous driving car simulator based on gazebo.
 - imu
 
 ## Input, Output
+![arch](https://user-images.githubusercontent.com/8327598/52900689-1861cd00-323c-11e9-84cc-ecf7bf15ee6a.png)
 - Input :
   -  Autoware
      - vehicle_cmd : select field twist_cmd (default) or ctrl_cmd
@@ -17,7 +18,7 @@ Autonomous driving car simulator based on gazebo.
   - Autoware
     - /vehicle_status : CAN data
     - /image_raw : Image data
-    - /camera_info : camera infomation
+    - /camera_info : Camera infomation
     - /points_raw : Lidar data
     - /imu : Imu data
   - Debug (Ground Truth)
