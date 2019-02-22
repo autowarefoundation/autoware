@@ -201,7 +201,7 @@ Visualization Manager:
       Size (Pixels): 5
       Size (m): 0.00999999978
       Style: Points
-      Topic: /points_ground
+      Topic: /points_raw
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
