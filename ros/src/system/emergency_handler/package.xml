@@ -7,18 +7,11 @@
   <maintainer email="yuma.nihei@tier4.jp">yn</maintainer>
   <license>Apache 2</license>
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>autoware_system_msgs</build_depend>
-  <build_depend>autoware_health_checker</build_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_export_depend>autoware_system_msgs</build_export_depend>
-  <build_export_depend>autoware_health_checker</build_export_depend>
-  <build_export_depend>roscpp</build_export_depend>
-  <build_export_depend>std_msgs</build_export_depend>
-  <exec_depend>autoware_system_msgs</exec_depend>
-  <exec_depend>autoware_health_checker</exec_depend>
-  <exec_depend>roscpp</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
+  <depend>autoware_system_msgs</depend>
+  <depend>autoware_health_checker</depend>
+  <depend>roscpp</depend>
+  <depend>std_msgs</depend>
+  <depend>actionlib</depend>
 
   <export>
   </export>

@@ -1,0 +1,11 @@
+# goal definition
+int32 handling_level
+---
+# result definition
+---
+# feedback definition
+int32 handling_type
+autoware_msgs/VehicleCmd control
+autoware_msgs/Lane plan
+int32 TYPE_CONTROL=0
+int32 TYPE_PLAN=1

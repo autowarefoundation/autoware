@@ -6,16 +6,22 @@
 
   <maintainer email="masaya.kataoka@tier4.jp">Masaya Kataoka</maintainer>
 
-  <license>BSD</license>
+  <license>Apache 2</license>
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>message_generation</build_depend>
   <build_depend>std_msgs</build_depend>
-  
+  <build_depend>autoware_msgs</build_depend>
+  <build_depend>acionlib_msgs</build_depend>
+
   <build_export_depend>std_msgs</build_export_depend>
+  <build_export_depend>autoware_msgs</build_export_depend>
+  <build_export_depend>actionlib_msgs</build_export_depend>
 
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>message_runtime</exec_depend>
+  <exec_depend>autoware_msgs</exec_depend>
+  <exec_depend>actionlib_msgs</exec_depend>
 
   <export>
   </export>
