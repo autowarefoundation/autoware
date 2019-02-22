@@ -7,6 +7,8 @@
   <arg name="min_truck_dimensions" default="[4,2,2]"/>
   <arg name="sync_topics" default="false"/>
   <arg name="overlap_threshold" default="0.6"/>
+  <arg name="use_vector_map" default="false"/>
+  <arg name="namespace" default="/detection/fusion_tools"/>
 
   <node name="range_vision_fusion_01" pkg="range_vision_fusion" type="range_vision_fusion" output="screen">
     <param name="detected_objects_range" value="$(arg detected_objects_range)"/>
@@ -18,6 +20,22 @@
     <param name="overlap_threshold" value="$(arg overlap_threshold)"/>
   </node>
 
-  <node pkg="detected_objects_visualizer" type="visualize_detected_objects" name="range_vision_visualization_01"
-        output="screen" ns="/detection/fusion_tools"/>
+  <group if="$(arg use_vector_map)">
+    <node name="object_roi_filter_range_fusion" pkg="roi_object_filter" type="roi_object_filter"
+          output="screen" ns="$(arg namespace)">
+      <param name="objects_src_topic" value="/objects"/>
+      <param name="sync_topics" value="false"/>
+      <param name="exception_list" value="[person, bicycle]"/>
+    </node>
+    <node pkg="detected_objects_visualizer" type="visualize_detected_objects" name="range_fusion_visualization_01"
+          output="screen" ns="$(arg namespace)">
+      <param name="objects_src_topic" value="/objects_filtered"/>
+    </node>
+  </group>
+  <group unless="$(arg use_vector_map)">
+    <node pkg="detected_objects_visualizer" type="visualize_detected_objects" name="range_fusion_visualization_01"
+          output="screen" ns="$(arg namespace)">
+      <param name="objects_src_topic" value="/objects"/>
+    </node>
+  </group>
 </launch>

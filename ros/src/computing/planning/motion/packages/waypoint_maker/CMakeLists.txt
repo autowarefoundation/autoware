@@ -1,8 +1,13 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(waypoint_maker)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
+
+find_package(vector_map REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
         gnss
         roscpp
         std_msgs
@@ -10,9 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
         nav_msgs
         tf
         waypoint_follower
-        vector_map
         lane_planner
-        autoware_msgs
         )
 
 find_package(Boost REQUIRED)
@@ -34,6 +37,8 @@ SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(
         ${catkin_INCLUDE_DIRS}
+        ${vector_map_INCLUDE_DIRS}
+        ${autoware_msgs_INCLUDE_DIRS}
         ${Boost_INCLUDE_DIRS}
 )
 

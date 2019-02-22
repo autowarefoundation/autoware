@@ -3,7 +3,6 @@ project(as)
 
 find_package(
         catkin REQUIRED COMPONENTS
-        autoware_build_flags
         roscpp
         std_msgs
         geometry_msgs

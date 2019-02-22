@@ -9,13 +9,23 @@ set(${PROJECT_NAME}_CATKIN_DEPS
     roslib
     sensor_msgs
     tf
-    velodyne_driver
-    velodyne_msgs
     dynamic_reconfigure
 )
 
+
+find_package(velodyne_msgs REQUIRED)
+
+find_package(velodyne_driver REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-             ${${PROJECT_NAME}_CATKIN_DEPS} pcl_conversions)
+    angles
+    nodelet
+    pcl_ros
+    roscpp
+    roslib
+    sensor_msgs
+    tf
+    dynamic_reconfigure
+    pcl_conversions)
 find_package(Boost COMPONENTS signals)
 
 # Resolve system dependency on yaml-cpp, which apparently does not
@@ -39,12 +49,24 @@ if(NOT ${YAML_CPP_VERSION} VERSION_LESS "0.5")
 add_definitions(-DHAVE_NEW_YAMLCPP)
 endif(NOT ${YAML_CPP_VERSION} VERSION_LESS "0.5")
 
-include_directories(include ${catkin_INCLUDE_DIRS} 
-  ${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake
+include_directories(
+    include
+    ${velodyne_msgs_INCLUDE_DIRS}
+    ${catkin_INCLUDE_DIRS}
+    ${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake
 )
 
 catkin_package(
-    CATKIN_DEPENDS ${${PROJECT_NAME}_CATKIN_DEPS}
+    CATKIN_DEPENDS
+    angles
+    nodelet
+    pcl_ros
+    roscpp
+    roslib
+    sensor_msgs
+    tf
+    dynamic_reconfigure
+    velodyne_driver
     INCLUDE_DIRS include
     LIBRARIES velodyne_rawdata)
     

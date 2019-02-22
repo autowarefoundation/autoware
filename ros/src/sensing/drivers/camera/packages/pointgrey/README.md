@@ -46,3 +46,29 @@ Sensing Tab -> Cameras -> PointGrey Ladybug5
 
 * The FlyCapture SDK must be obtained from Point Grey's website.\
 <https://www.ptgrey.com/flycapture-sdk>
+
+
+## FLIR ADK
+
+Execute from `Autoware/ros` base path.
+
+1. `rosdep update`
+1. `rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO` 
+1. `./catkin_make_release`
+1. `./run`
+1. Connect your camera
+1. Confirm the camera has been detected using `v4l2-ctl --list-devices`
+1. Select from *Sensing* tab / *Cameras* -> FLIR ADK
+1. Press the `[config]` button and write the device name reported by `v4l2-ctl --list-devices`.
+1. Click the *FLIR ADK* checkbox
+1. Open Rviz and add image topic `/flir_adk/camera/image_raw`
+
+### Parameters available
+
+|Parameter| Type| Description|
+----------|-----|--------
+|`DEVICE`|*string* |Name of the system device in the form `/dev/videoX`. Obtain the correct name using `v4l2-ctl --list-devices`.|
+|`FPS`|*integer*|Frame per second. Default 30. |
+|`WIDTH`|*integer*|Image width of the stream (Default 640).|
+|`HEIGHT`|*integer*|Image height of the camera (Default 512).|
+|`NS`|*string*|Namespace to add as prefix. Default `flir_adk`.|

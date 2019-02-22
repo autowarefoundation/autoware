@@ -1,15 +1,17 @@
 cmake_minimum_required(VERSION 2.8.7)
 project(integrated_viewer)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
         cv_bridge
         image_transport
         roscpp
         sensor_msgs
         std_msgs
         rviz
-        autoware_msgs
         )
 
 set(CMAKE_CXX_FLAGS
@@ -60,6 +62,7 @@ include_directories(
         lib/
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
+        ${autoware_msgs_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
         include
 )
