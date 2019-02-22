@@ -14,34 +14,28 @@
  * limitations under the License.
  */
 
-#include <ros/ros.h>
 #include <gtest/gtest.h>
+#include <ros/ros.h>
 
 #include "test_twist_gate.hpp"
 
-class TwistGateTestSuite : public ::testing::Test
-{
+class TwistGateTestSuite : public ::testing::Test {
 public:
-  TwistGateTestSuite(){}
-  ~TwistGateTestSuite(){}
+  TwistGateTestSuite() {}
+  ~TwistGateTestSuite() {}
 
   TwistGateTestClass test_obj_;
 
 protected:
-  virtual void SetUp()
-  {
+  virtual void SetUp() {
     ros::NodeHandle nh;
     ros::NodeHandle private_nh("~");
     test_obj_.tg = new TwistGate(nh, private_nh);
   };
-  virtual void TearDown()
-  {
-    delete test_obj_.tg;
-  };
+  virtual void TearDown() { delete test_obj_.tg; };
 };
 
-TEST_F(TwistGateTestSuite, twistCmdCallback)
-{
+TEST_F(TwistGateTestSuite, twistCmdCallback) {
   double linear_x = 5.0;
   double angular_z = 1.5;
   test_obj_.publishTwistCmd(linear_x, angular_z);
@@ -54,8 +48,7 @@ TEST_F(TwistGateTestSuite, twistCmdCallback)
   ASSERT_EQ(angular_z, test_obj_.cb_vehicle_cmd.twist_cmd.twist.angular.z);
 }
 
-TEST_F(TwistGateTestSuite, controlCmdCallback)
-{
+TEST_F(TwistGateTestSuite, controlCmdCallback) {
   double linear_vel = 5.0;
   double linear_acc = 1.5;
   double steer_angle = 1.57;
@@ -70,8 +63,7 @@ TEST_F(TwistGateTestSuite, controlCmdCallback)
   ASSERT_EQ(steer_angle, test_obj_.cb_vehicle_cmd.ctrl_cmd.steering_angle);
 }
 
-TEST_F(TwistGateTestSuite, stateCallback)
-{
+TEST_F(TwistGateTestSuite, stateCallback) {
   test_obj_.publishDecisionMakerState("VehicleReady\nWaitOrder\nWaitEngage\n");
   test_obj_.tgSpinOnce();
   ros::WallDuration(0.1).sleep();
@@ -89,11 +81,9 @@ TEST_F(TwistGateTestSuite, stateCallback)
   tg_msg = test_obj_.getTwistGateMsg();
   ASSERT_EQ(CMD_GEAR_D, tg_msg.gear);
   ASSERT_EQ(true, test_obj_.getIsStateDriveFlag());
-
 }
 
-int main(int argc, char** argv)
-{
+int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
   ros::init(argc, argv, "TwistGateTestNode");
   return RUN_ALL_TESTS();

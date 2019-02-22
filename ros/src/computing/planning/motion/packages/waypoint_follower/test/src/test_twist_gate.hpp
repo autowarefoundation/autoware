@@ -14,20 +14,22 @@
  * limitations under the License.
  */
 
-#include <ros/ros.h>
 #include <gtest/gtest.h>
+#include <ros/ros.h>
 
 #include "twist_gate.h"
 
-class TwistGateTestClass
-{
+class TwistGateTestClass {
 public:
-  TwistGateTestClass()
-  {
-    twist_cmd_publisher = nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", 0);
-    control_cmd_publisher = nh.advertise<autoware_msgs::ControlCommandStamped>("ctrl_cmd", 0);
-    decision_maker_state_publisher = nh.advertise<std_msgs::String>("decision_maker/state", 0);
-    vehicle_cmd_subscriber = nh.subscribe("/vehicle_cmd", 1, &TwistGateTestClass::vehicleCmdCallback, this);
+  TwistGateTestClass() {
+    twist_cmd_publisher =
+        nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", 0);
+    control_cmd_publisher =
+        nh.advertise<autoware_msgs::ControlCommandStamped>("ctrl_cmd", 0);
+    decision_maker_state_publisher =
+        nh.advertise<std_msgs::String>("decision_maker/state", 0);
+    vehicle_cmd_subscriber = nh.subscribe(
+        "/vehicle_cmd", 1, &TwistGateTestClass::vehicleCmdCallback, this);
   }
 
   TwistGate *tg;
@@ -39,10 +41,9 @@ public:
   ros::Publisher decision_maker_state_publisher;
   ros::Subscriber vehicle_cmd_subscriber;
 
-  void tgSpinOnce(){ tg->spinOnce(); }
+  void tgSpinOnce() { tg->spinOnce(); }
 
-  void publishTwistCmd(double linear_x, double angular_z)
-  {
+  void publishTwistCmd(double linear_x, double angular_z) {
     geometry_msgs::TwistStamped msg;
     msg.header.stamp = ros::Time::now();
     msg.twist.linear.x = linear_x;
@@ -51,8 +52,8 @@ public:
     twist_cmd_publisher.publish(msg);
   }
 
-  void publishControlCmd(double linear_vel, double linear_acc, double steer_angle)
-  {
+  void publishControlCmd(double linear_vel, double linear_acc,
+                         double steer_angle) {
     autoware_msgs::ControlCommandStamped msg;
     msg.header.stamp = ros::Time::now();
     msg.cmd.linear_velocity = linear_vel;
@@ -62,20 +63,18 @@ public:
     control_cmd_publisher.publish(msg);
   }
 
-  void publishDecisionMakerState(std::string states)
-  {
+  void publishDecisionMakerState(std::string states) {
     std_msgs::String msg;
     msg.data = states;
 
     decision_maker_state_publisher.publish(msg);
   }
 
-  void vehicleCmdCallback(autoware_msgs::VehicleCmd msg)
-  {
+  void vehicleCmdCallback(autoware_msgs::VehicleCmd msg) {
     cb_vehicle_cmd = msg;
   }
 
-  autoware_msgs::VehicleCmd getTwistGateMsg(){ return tg->twist_gate_msg_; }
+  autoware_msgs::VehicleCmd getTwistGateMsg() { return tg->twist_gate_msg_; }
 
-  bool getIsStateDriveFlag(){ return tg->is_state_drive_; }
+  bool getIsStateDriveFlag() { return tg->is_state_drive_; }
 };
