@@ -61,7 +61,7 @@ install(TARGETS lidar_shape_estimation
         )
 
 install(DIRECTORY launch/
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
         FILES_MATCHING PATTERN "*.launch"
         )
 

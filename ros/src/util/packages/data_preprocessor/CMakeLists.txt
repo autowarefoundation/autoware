@@ -37,3 +37,8 @@ add_executable(get_Depth nodes/get_Depth/get_Depth.cpp)
 target_link_libraries(get_Depth ${catkin_LIBRARIES})
 target_link_libraries(get_PCD ${catkin_LIBRARIES})
 target_link_libraries(get_Image ${catkin_LIBRARIES})
+
+install(TARGETS get_Image get_PCD get_Depth
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

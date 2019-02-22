@@ -50,6 +50,7 @@ find_package(catkin REQUIRED COMPONENTS
         velodyne_pointcloud
         ndt_tku
         ndt_cpu
+        autoware_health_checker
         ${PCL_OPENMP_PACKAGES}
         autoware_msgs
         autoware_config_msgs
@@ -136,23 +137,20 @@ add_executable(icp_matching nodes/icp_matching/icp_matching.cpp)
 target_link_libraries(icp_matching ${catkin_LIBRARIES})
 add_dependencies(icp_matching ${catkin_EXPORTED_TARGETS})
 
-install(TARGETS ndt_matching_tku ndt_mapping_tku ndt_mapping_tku ndt_matching_monitor
+install(TARGETS
+            ndt_matching
+            ndt_mapping
+            approximate_ndt_mapping
+            ndt_mapping_tku
+            mapping
+            ndt_matching_monitor_lib
+            ndt_matching_monitor
+            icp_matching
+            queue_counter
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
-
-install(TARGETS ndt_matching ndt_mapping approximate_ndt_mapping queue_counter
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-        )
-
-install(TARGETS icp_matching
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-
 
 install(DIRECTORY launch/
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch

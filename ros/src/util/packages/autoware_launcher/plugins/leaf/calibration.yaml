@@ -1,0 +1,10 @@
+format: Autoware Launcher Plugin Version 0.1
+args:
+- name: calibration_file
+  type: str
+
+panel:
+  widget: node.panel
+  frames:
+  - target: args.calibration_file
+    widget: basic.file

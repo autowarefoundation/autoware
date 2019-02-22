@@ -1,0 +1,7 @@
+format: Autoware Launcher Plugin Version 0.1
+rules:
+- { name: points_preproc, plugin: refs/ray_ground_filter }
+- { name: points_detect,  plugin: refs/euclidean_cluster }
+- { name: images_detect,  plugin: refs/yolov3 }
+- { name: fusion,         plugin: refs/range_vision_fusion }
+- { name: tracking,       plugin: refs/imm_ukf_pda_track   }

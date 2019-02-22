@@ -1,0 +1,4 @@
+format: Autoware Launcher Plugin Version 0.1
+rules:
+- { name: object,         plugin : node/detect_obj }
+- { name: traffic_lights, plugin : node/detect_tl  }

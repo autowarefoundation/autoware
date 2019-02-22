@@ -1,0 +1,8 @@
+children:
+- obstacle_avoid
+- velocity_set
+- waypoint_loader
+- pure_pursuit
+- twist_filter
+config: {}
+plugin: node/motion
