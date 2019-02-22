@@ -31,7 +31,7 @@
 #include "pure_pursuit.h"
 #include "pure_pursuit_viz.h"
 
-#include <autoware_health_checker/node_status_publisher.h>
+#include <node_status_publisher/node_status_publisher.h>
 
 #include <memory>
 

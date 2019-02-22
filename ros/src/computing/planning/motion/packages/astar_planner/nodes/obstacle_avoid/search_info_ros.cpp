@@ -105,7 +105,7 @@ void SearchInfo::currentPoseCallback(const geometry_msgs::PoseStampedConstPtr &m
     autoware_msgs::Waypoint closest_waypoint = subscribed_waypoints_.waypoints[closest_waypoint_index_];
     double dist = std::sqrt(std::pow(closest_waypoint.pose.pose.position.x-current_pose_.pose.position.x,2)
       +std::pow(closest_waypoint.pose.pose.position.y-current_pose_.pose.position.y,2));
-    node_status_publisher_ptr_->CHECK_MAX_VALUE("/value/range/closest_waypoint_distance",dist,0.5,1.0,2.0,"distance between closest_waypoint and current_pose is too long.");
+    node_status_publisher_ptr_->CHECK_MAX_VALUE("closest_waypoint_distance",dist,0.5,1.0,2.0,"distance between closest_waypoint and current_pose is too long.");
   }
   return;
 }

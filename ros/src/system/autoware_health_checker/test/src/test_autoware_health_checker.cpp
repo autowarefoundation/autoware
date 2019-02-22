@@ -16,7 +16,7 @@
  *
  * v1.0 Masaya Kataoka
  */
-#include <autoware_health_checker/node_status_publisher.h>
+#include <node_status_publisher/node_status_publisher.h>
 #include <gtest/gtest.h>
 #include <ros/ros.h>
 

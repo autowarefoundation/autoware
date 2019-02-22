@@ -70,7 +70,7 @@
 #include <autoware_msgs/NDTStat.h>
 
 //headers in Autoware Health Checker
-#include <autoware_health_checker/node_status_publisher.h>
+#include <node_status_publisher/node_status_publisher.h>
 
 #define PREDICT_POSE_THRESHOLD 0.5
 
@@ -1376,7 +1376,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     matching_end = std::chrono::system_clock::now();
     exe_time = std::chrono::duration_cast<std::chrono::microseconds>(matching_end - matching_start).count() / 1000.0;
     time_ndt_matching.data = exe_time;
-    node_status_publisher_ptr_->CHECK_MAX_VALUE("/value/time_ndt_matching",time_ndt_matching.data,50,70,100,"value time_ndt_matching is too high.");
+    node_status_publisher_ptr_->CHECK_MAX_VALUE("time_ndt_matching",time_ndt_matching.data,50,70,100,"value time_ndt_matching is too high.");
     time_ndt_matching_pub.publish(time_ndt_matching);
 
     // Set values for /estimate_twist
@@ -1394,8 +1394,8 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     geometry_msgs::Vector3Stamped estimate_vel_msg;
     estimate_vel_msg.header.stamp = current_scan_time;
     estimate_vel_msg.vector.x = current_velocity;
-    node_status_publisher_ptr_->CHECK_MAX_VALUE("/value/estimate_twist/linear",current_velocity,5,10,15,"value linear estimated twist is too high.");
-    node_status_publisher_ptr_->CHECK_MAX_VALUE("/value/estimate_twist/angular",angular_velocity,5,10,15,"value linear angular twist is too high.");
+    node_status_publisher_ptr_->CHECK_MAX_VALUE("estimate_twist_linear",current_velocity,5,10,15,"value linear estimated twist is too high.");
+    node_status_publisher_ptr_->CHECK_MAX_VALUE("estimate_twist_angular",angular_velocity,5,10,15,"value linear angular twist is too high.");
     estimated_vel_pub.publish(estimate_vel_msg);
 
     // Set values for /ndt_stat

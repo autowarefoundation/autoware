@@ -24,7 +24,7 @@
 
 #include "autoware_config_msgs/ConfigVelocitySet.h"
 
-#include <autoware_health_checker/node_status_publisher.h>
+#include <node_status_publisher/node_status_publisher.h>
 #include <memory>
 
 class VelocitySetInfo
