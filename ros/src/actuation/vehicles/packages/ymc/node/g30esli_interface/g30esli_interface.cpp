@@ -30,6 +30,7 @@ G30esliInterface::G30esliInterface() : nh_(), private_nh_("~")
   // subscriber
   vehicle_cmd_sub_ =
       nh_.subscribe<autoware_msgs::VehicleCmd>("vehicle_cmd", 1, &G30esliInterface::vehicleCmdCallback, this);
+  engage_sub_ = nh_.subscribe<std_msgs::Bool>("vehicle/engage", 1, &G30esliInterface::engageCallback, this);
 
   if (!use_ds4_)
   {
@@ -68,6 +69,24 @@ void G30esliInterface::vehicleCmdCallback(const autoware_msgs::VehicleCmdConstPt
   g30esli_ros_.updateCommand(*msg, engage_, steering_offset_deg_);
 }
 
+// engaging by topic
+void G30esliInterface::engageCallback(const std_msgs::BoolConstPtr& msg)
+{
+  bool engaging = msg->data;
+  engage_mutex_.lock();
+  if (!engage_ && engaging)
+  {
+    engage_ = true;
+    ROS_INFO("TOPIC: Engaged");
+  }
+  else if (engage_ && !engaging)
+  {
+    engage_ = false;
+    ROS_WARN("TOPIC: Disengaged");
+  }
+  engage_mutex_.unlock();
+}
+
 // generate command by ds4 joystick
 void G30esliInterface::ds4Callback(const ds4_msgs::DS4ConstPtr& msg)
 {
@@ -88,6 +107,7 @@ void G30esliInterface::ds4Callback(const ds4_msgs::DS4ConstPtr& msg)
   }
 
   // engage vehicle
+  engage_mutex_.lock();
   if (msg->option && !engage_)
   {
     engage_ = true;
@@ -98,6 +118,7 @@ void G30esliInterface::ds4Callback(const ds4_msgs::DS4ConstPtr& msg)
     engage_ = false;
     ROS_WARN("JOYSTICK: Disengaged");
   }
+  engage_mutex_.unlock();
 }
 
 // read vehicle status
@@ -108,11 +129,13 @@ void G30esliInterface::readStatus()
     g30esli_ros_.receiveStatus(steering_offset_deg_);
 
     // accel/brake override, switch to manual mode
+    engage_mutex_.lock();
     if (g30esli_ros_.checkOverride() && engage_)
     {
       engage_ = false;
       ROS_WARN("OVERRIDE: Disengaged");
     }
+    engage_mutex_.unlock();
   }
 }
 
@@ -127,11 +150,14 @@ void G30esliInterface::readKeyboard()
       char c = getchar();
       if (c == 's')
       {
+        engage_mutex_.lock();
         if (!engage_)
         {
           engage_ = true;
           ROS_INFO("KEYBOARD: Engaged");
         }
+        engage_mutex_.unlock();
+
         if (mode_ == MODE::JOYSTICK)
         {
           mode_ = MODE::AUTO;
@@ -140,11 +166,14 @@ void G30esliInterface::readKeyboard()
       }
       else if (c == ' ')
       {
+        engage_mutex_.lock();
         if (engage_)
         {
           engage_ = false;
           ROS_WARN("KEYBOARD: Disengaged");
         }
+        engage_mutex_.unlock();
+
         if (mode_ == MODE::JOYSTICK)
         {
           mode_ = MODE::AUTO;

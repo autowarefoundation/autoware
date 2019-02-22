@@ -21,6 +21,7 @@
 #include <sstream>
 
 #include <ros/ros.h>
+#include <std_msgs/Bool.h>
 #include <std_msgs/Float32.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <autoware_msgs/VehicleCmd.h>
