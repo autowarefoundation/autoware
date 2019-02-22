@@ -1,0 +1,6 @@
+children:
+- downsampler
+- localizer
+- vel_pose_connect
+config: {}
+plugin: node/localization

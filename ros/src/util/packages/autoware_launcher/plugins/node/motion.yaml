@@ -1,0 +1,7 @@
+format: Autoware Launcher Plugin Version 0.1
+rules:
+- { name: obstacle_avoid,   plugin: refs/obstacle_avoid }
+- { name: velocity_set,     plugin: refs/velocity_set }
+- { name: waypoint_loader,  plugin: leaf/waypoint_loader }
+- { name: pure_pursuit,     plugin: leaf/pure_pursuit }
+- { name: twist_filter,     plugin: refs/twist_filter }

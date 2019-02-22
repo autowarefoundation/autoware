@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(autoware_rviz_plugins)
 
-
 find_package(autoware_build_flags REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   rviz
@@ -55,7 +54,7 @@ set(CMAKE_AUTOMOC ON)
 set(SOURCE_FILES
   src/state_panel/state_panel.cpp
   src/sim_object/autoware_flag_tool.cpp
-  )
+)
 
 add_library(autoware_rviz_plugins ${SOURCE_FILES} ${UIC_FILES})
 target_link_libraries(autoware_rviz_plugins ${QT_LIBRARIES} ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES})
@@ -74,3 +73,6 @@ install(DIRECTORY media/
 
 install(DIRECTORY icons/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/icons)
+
+install(FILES plugin_description.xml
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})

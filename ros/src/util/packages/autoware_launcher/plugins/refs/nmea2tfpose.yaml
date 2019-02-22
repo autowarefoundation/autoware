@@ -1,0 +1,12 @@
+format: Autoware Launcher Plugin Version 0.1
+rosxml: $(find gnss_localizer)/launch/nmea2tfpose.launch
+args:
+- name: plane
+  type: int
+  default: 7
+
+panel:
+  widget: node.panel
+  frames:
+  - target: args.plane
+    widget: basic.int

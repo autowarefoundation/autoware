@@ -1,0 +1,10 @@
+format: Autoware Launcher Plugin Version 0.1
+rosxml: $(find lidar_euclidean_cluster_detect)/launch/lidar_euclidean_cluster_detect.launch
+args:
+- { name: use_gpu,  type: bool, default: true }
+
+panel:
+  widget: node.panel
+  frames:
+  - target: args.use_gpu
+    widget: basic.bool

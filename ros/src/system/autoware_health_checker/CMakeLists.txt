@@ -7,7 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   autoware_system_msgs
   roscpp
   diagnostic_msgs
-  topic_tools
+  jsk_rviz_plugins
   rostest
   rosunit
 )

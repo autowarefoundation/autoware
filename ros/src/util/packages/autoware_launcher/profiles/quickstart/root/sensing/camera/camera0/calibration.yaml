@@ -1,0 +1,4 @@
+children: []
+config:
+  args.calibration_file: $(env HOME)/.autoware/data/calibration/calibration.yml
+plugin: leaf/calibration

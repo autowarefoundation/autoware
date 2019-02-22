@@ -39,13 +39,19 @@ include_directories(
         ${autoware_msgs_INCLUDE_DIRS}
 )
 
-add_library(lane_planner lib/lane_planner/lane_planner_vmap.cpp)
-target_link_libraries(lane_planner ${catkin_LIBRARIES})
+add_library(lane_planner
+        lib/lane_planner/lane_planner_vmap.cpp
+        )
+target_link_libraries(lane_planner
+        ${catkin_LIBRARIES}
+        )
 add_dependencies(lane_planner
         ${catkin_EXPORTED_TARGETS}
         )
 
-add_executable(lane_navi nodes/lane_navi/lane_navi.cpp)
+add_executable(lane_navi
+        nodes/lane_navi/lane_navi.cpp
+        )
 target_link_libraries(lane_navi
         lane_planner
         ${catkin_LIBRARIES}
@@ -54,7 +60,9 @@ add_dependencies(lane_navi
         ${catkin_EXPORTED_TARGETS}
         )
 
-add_executable(lane_rule nodes/lane_rule/lane_rule.cpp)
+add_executable(lane_rule
+        nodes/lane_rule/lane_rule.cpp
+        )
 target_link_libraries(lane_rule
         lane_planner
         ${catkin_LIBRARIES}
@@ -63,7 +71,9 @@ add_dependencies(lane_rule
         ${catkin_EXPORTED_TARGETS}
         )
 
-add_executable(lane_stop nodes/lane_stop/lane_stop.cpp)
+add_executable(lane_stop
+        nodes/lane_stop/lane_stop.cpp
+        )
 target_link_libraries(lane_stop lane_planner ${catkin_LIBRARIES})
 add_dependencies(lane_stop
         ${catkin_EXPORTED_TARGETS}
@@ -92,8 +102,11 @@ install(TARGETS
         lane_planner
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)
 
 if (CATKIN_ENABLE_TESTING)
     find_package(rostest REQUIRED)
