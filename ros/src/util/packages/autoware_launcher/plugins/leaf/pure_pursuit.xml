@@ -1,0 +1,30 @@
+<launch>
+
+    <arg name="is_linear_interpolation"      default="true"/>
+    <arg name="publishes_for_steering_robot" default="false"/>
+
+    <arg name="param_flag"                   default="0"/>
+    <arg name="velocity"                     default="5.0"/>
+    <arg name="lookahead_distance"           default="4.0"/>
+    <arg name="lookahead_ratio"              default="2.0"/>
+    <arg name="minimum_lookahead_distance"   default="6.0"/>
+    <arg name="displacement_threshold"       default="0.0"/>
+    <arg name="relative_angle_threshold"     default="0.0"/>
+
+    <include file="$(find waypoint_follower)/launch/pure_pursuit.launch">
+        <arg name="is_linear_interpolation"      value="$(arg is_linear_interpolation)"/>
+        <arg name="publishes_for_steering_robot" value="$(arg publishes_for_steering_robot)"/>
+    </include>
+
+    <node pkg="rostopic" type="rostopic" name="config_waypoint_follower" ns="autoware_launcher"
+        args="pub --latch --once /config/waypoint_follower autoware_config_msgs/ConfigWaypointFollower '{
+        param_flag:                 $(arg param_flag),
+        velocity:                   $(arg velocity),
+        lookahead_distance:         $(arg lookahead_distance),
+        lookahead_ratio:            $(arg lookahead_ratio),
+        minimum_lookahead_distance: $(arg minimum_lookahead_distance),
+        displacement_threshold:     $(arg displacement_threshold),
+        relative_angle_threshold:   $(arg relative_angle_threshold)
+    }'"/>
+
+</launch>
