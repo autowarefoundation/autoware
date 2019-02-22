@@ -15,10 +15,10 @@ The node uses traffic signal obtained by image recognition and that recieved fro
 ### Published topics
 |Topic|Type|Objective|
 ------|----|---------
-|`/camera_light_color`|`autoware_msgs/traffic_light`|Subscribe traffic light color obtained from camera image.|
-|`/ams_light_color`|`autoware_msgs/traffic_light`| Subscribe traffic light color recieved from external systems.|
+|`/camera_light_color`|`autoware_msgs/TrafficLight`|Subscribe traffic light color obtained from camera image.|
+|`/ams_light_color`|`autoware_msgs/TrafficLight`| Subscribe traffic light color recieved from external systems.|
 
 ### Subscribed topics
 |Topic|Type|Objective|
 ------|----|---------
-|`/light_color`|`autoware_msgs/traffic_light`|Publishes traffic light color for planning.|
+|`/light_color`|`autoware_msgs/TrafficLight`|Publishes traffic light color for planning.|

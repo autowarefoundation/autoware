@@ -54,7 +54,7 @@ Computing Tab -> Detection/ lidar_detector -> `lidar_cnn_baidu_detect`. Configur
 |Topic|Type|Description|
 |---|---|---|
 |`/detection/lidar_detector/points_cluster`|`sensor_msgs/PointCloud2`|Colored PointCloud of the resulting detected objects|
-|`/detection/lidar_detector/objects`|`autoware_msgs/DetectedObjetArray`|Array of Detected Objects in Autoware format|
+|`/detection/lidar_detector/objects`|`autoware_msgs/DetectedObjectArray`|Array of Detected Objects in Autoware format|
 
 ## Notes
 

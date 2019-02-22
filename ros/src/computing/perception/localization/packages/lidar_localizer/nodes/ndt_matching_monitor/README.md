@@ -39,7 +39,7 @@ Computing Tab -> lidar_localizer -> ndt_matching_monitor
 
 |Topic|Type|Objective|
 ------|----|---------
-|`ndt_stat`|`autoware_msgs/ndt_stat`|Obtain NDT statistics: `score`, `iterations`.|
+|`ndt_stat`|`autoware_msgs/NDTStat`|Obtain NDT statistics: `score`, `iterations`.|
 |`ndt_pose`|`geometry_msgs/PoseStamped`|Obtain pose as calculated by `ndt_matching_node`.|
 |`initialpose`|`geometry_msgs/PoseWithCovarianceStamped`|Obtain pose from RVIZ to reinitialize in case of an unrecoverable error.|
 |`gnss_pose`|`geometry_msgs/Pose`|If a GNSS device is available it will be used to automatically try to reset NDT, requires `nmea2tfpose`.|
