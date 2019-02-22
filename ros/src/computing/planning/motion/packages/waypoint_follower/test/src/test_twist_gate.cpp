@@ -45,7 +45,6 @@ TEST_F(TwistGateTestSuite, twistCmdCallback)
   double linear_x = 5.0;
   double angular_z = 1.5;
   test_obj_.publishTwistCmd(linear_x, angular_z);
-  ros::spinOnce();
   ros::WallDuration(0.1).sleep();
   test_obj_.tgSpinOnce();
   ros::WallDuration(0.1).sleep();
@@ -61,7 +60,6 @@ TEST_F(TwistGateTestSuite, controlCmdCallback)
   double linear_acc = 1.5;
   double steer_angle = 1.57;
   test_obj_.publishControlCmd(linear_vel, linear_acc, steer_angle);
-  ros::spinOnce();
   ros::WallDuration(0.1).sleep();
   test_obj_.tgSpinOnce();
   ros::WallDuration(0.1).sleep();
@@ -70,6 +68,28 @@ TEST_F(TwistGateTestSuite, controlCmdCallback)
   ASSERT_EQ(linear_vel, test_obj_.cb_vehicle_cmd.ctrl_cmd.linear_velocity);
   ASSERT_EQ(linear_acc, test_obj_.cb_vehicle_cmd.ctrl_cmd.linear_acceleration);
   ASSERT_EQ(steer_angle, test_obj_.cb_vehicle_cmd.ctrl_cmd.steering_angle);
+}
+
+TEST_F(TwistGateTestSuite, stateCallback)
+{
+  test_obj_.publishDecisionMakerState("VehicleReady\nWaitOrder\nWaitEngage\n");
+  test_obj_.tgSpinOnce();
+  ros::WallDuration(0.1).sleep();
+  ros::spinOnce();
+
+  autoware_msgs::VehicleCmd tg_msg = test_obj_.getTwistGateMsg();
+  ASSERT_EQ(CMD_GEAR_P, tg_msg.gear);
+  ASSERT_EQ(false, test_obj_.getIsStateDriveFlag());
+
+  test_obj_.publishDecisionMakerState("VehicleReady\nDriving\nDrive\n");
+  test_obj_.tgSpinOnce();
+  ros::WallDuration(0.1).sleep();
+  ros::spinOnce();
+
+  tg_msg = test_obj_.getTwistGateMsg();
+  ASSERT_EQ(CMD_GEAR_D, tg_msg.gear);
+  ASSERT_EQ(true, test_obj_.getIsStateDriveFlag());
+
 }
 
 int main(int argc, char** argv)

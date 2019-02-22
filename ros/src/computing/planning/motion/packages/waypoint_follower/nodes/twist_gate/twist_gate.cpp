@@ -32,12 +32,6 @@
 
 #include <chrono>
 
-#define CMD_GEAR_D 1
-#define CMD_GEAR_R 2
-#define CMD_GEAR_B 3
-#define CMD_GEAR_N 4
-#define CMD_GEAR_P 5
-
 TwistGate::TwistGate(const ros::NodeHandle& nh, const ros::NodeHandle& private_nh)
   : nh_(nh)
   , private_nh_(private_nh)

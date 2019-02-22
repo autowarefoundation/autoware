@@ -39,6 +39,12 @@
 //headers in Autowae Health Checker
 #include <autoware_health_checker/node_status_publisher.h>
 
+#define CMD_GEAR_D 1
+#define CMD_GEAR_R 2
+#define CMD_GEAR_B 3
+#define CMD_GEAR_N 4
+#define CMD_GEAR_P 5
+
 class TwistGate
 {
   using remote_msgs_t = autoware_msgs::RemoteCmd;

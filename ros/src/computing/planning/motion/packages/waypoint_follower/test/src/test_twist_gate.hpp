@@ -26,6 +26,7 @@ public:
   {
     twist_cmd_publisher = nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", 0);
     control_cmd_publisher = nh.advertise<autoware_msgs::ControlCommandStamped>("ctrl_cmd", 0);
+    decision_maker_state_publisher = nh.advertise<std_msgs::String>("decision_maker/state", 0);
     vehicle_cmd_subscriber = nh.subscribe("/vehicle_cmd", 1, &TwistGateTestClass::vehicleCmdCallback, this);
   }
 
@@ -35,6 +36,7 @@ public:
   ros::NodeHandle nh;
   ros::Publisher twist_cmd_publisher;
   ros::Publisher control_cmd_publisher;
+  ros::Publisher decision_maker_state_publisher;
   ros::Subscriber vehicle_cmd_subscriber;
 
   void tgSpinOnce(){ tg->spinOnce(); }
@@ -60,8 +62,20 @@ public:
     control_cmd_publisher.publish(msg);
   }
 
+  void publishDecisionMakerState(std::string states)
+  {
+    std_msgs::String msg;
+    msg.data = states;
+
+    decision_maker_state_publisher.publish(msg);
+  }
+
   void vehicleCmdCallback(autoware_msgs::VehicleCmd msg)
   {
     cb_vehicle_cmd = msg;
   }
+
+  autoware_msgs::VehicleCmd getTwistGateMsg(){ return tg->twist_gate_msg_; }
+
+  bool getIsStateDriveFlag(){ return tg->is_state_drive_; }
 };
