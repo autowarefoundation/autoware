@@ -4,10 +4,11 @@ project(vehicle_model)
 add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED
+  autoware_build_flags
 )
 
 catkin_package(
-  CATKIN_DEPENDS    
+  CATKIN_DEPENDS
 )
 
 install(DIRECTORY mesh

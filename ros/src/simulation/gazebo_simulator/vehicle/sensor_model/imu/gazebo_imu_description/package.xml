@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>imu_description</name>
+  <name>gazebo_imu_description</name>
   <version>0.0.0</version>
-  <description>The imu_description package</description>
+  <description>The gazebo_imu_description package</description>
 
   <maintainer email="yukky.saito@gmail.com">yukihiro saito</maintainer>
 

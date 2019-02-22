@@ -12,6 +12,7 @@ find_package(catkin REQUIRED
   autoware_msgs
   tf2_ros
   tf2
+  autoware_build_flags
 )
 
 catkin_package(
@@ -24,7 +25,7 @@ catkin_package(
     autoware_msgs
     tf2_ros
     tf2
-    )
+)
 
 include_directories(
  ${catkin_INCLUDE_DIRS}

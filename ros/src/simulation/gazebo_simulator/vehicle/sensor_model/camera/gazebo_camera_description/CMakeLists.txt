@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(camera_description)
+project(gazebo_camera_description)
 
 find_package(catkin REQUIRED)
 
