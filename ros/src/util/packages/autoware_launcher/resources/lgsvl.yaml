@@ -1,0 +1,27 @@
+initial_configuration:
+  map: SanFrancisco
+  time_of_day: 12
+  freeze_time_of_day: true
+  fog_intensity: 0
+  rain_intensity: 0
+  road_wetness: 0
+  enable_traffic: true
+  enable_pedestrian: true
+  traffic_density: 300
+vehicles:
+- type: XE_Rigged-autoware
+  address: 127.0.0.1
+  port: 9090
+  command_type: twist
+  enable_lidar: true
+  enable_gps: true
+  enable_main_camera: true
+  enable_high_quality_rendering: false
+  position:
+    n: 4140310.4
+    e: 590681.5
+    h: 10
+  orientation:
+    r: 0
+    p: 0
+    y: 269.9

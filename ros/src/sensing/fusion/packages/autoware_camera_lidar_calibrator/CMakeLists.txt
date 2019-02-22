@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
     sensor_msgs
     geometry_msgs
     tf
+    autoware_msgs
 )
 find_package(Qt5Core REQUIRED)
 find_package(OpenCV REQUIRED)
@@ -65,3 +66,7 @@ catkin_install_python(PROGRAMS
     scripts/tarfile_calibration.py
     DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)

@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   sensor_msgs
   std_msgs
+  autoware_msgs
 )
 
 catkin_package(
@@ -23,3 +24,6 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${autoware_msgs_INCLUDE_DIRS}
 )
+
+catkin_install_python(PROGRAMS scripts/kitti_box_publisher.py
+        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

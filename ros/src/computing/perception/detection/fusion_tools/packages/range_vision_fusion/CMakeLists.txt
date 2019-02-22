@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
         jsk_topic_tools
         image_geometry
         jsk_topic_tools
+        autoware_msgs
         )
 
 find_package(OpenCV REQUIRED)
@@ -109,10 +110,13 @@ target_include_directories(range_vision_fusion PRIVATE
 target_link_libraries(range_vision_fusion
         range_vision_fusion_lib)
 
-install(TARGETS range_vision_fusion
+install(TARGETS range_vision_fusion range_vision_fusion_lib
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+install(DIRECTORY include/${PROJECT_NAME}/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
 install(DIRECTORY launch/
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch

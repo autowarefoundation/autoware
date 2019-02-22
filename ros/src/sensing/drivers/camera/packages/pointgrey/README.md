@@ -4,7 +4,7 @@ This package allows the capture of an image stream from Point Grey cameras.
 It has been tested successfully with Grasshopper3 and LadyBug5 devices on both Ubuntu 14.04 and 16.04.
 
 ## Requirements
-* FlyCapture SDK provided by Point Grey.
+* FlyCapture SDK or Spinnaker SDK provided by Point Grey.
 
 ---
 
@@ -72,3 +72,22 @@ Execute from `Autoware/ros` base path.
 |`WIDTH`|*integer*|Image width of the stream (Default 640).|
 |`HEIGHT`|*integer*|Image height of the camera (Default 512).|
 |`NS`|*string*|Namespace to add as prefix. Default `flir_adk`.|
+
+## Spinnaker
+
+### How to launch
+* From a sourced terminal:\
+`roslaunch autoware_pointgrey_drivers spinnaker.launch`
+* From Runtime manager:\
+Sensing Tab -> Cameras -> PointGrey Spinnaker
+
+### Parameters available
+
+|Parameter| Type| Description|
+----------|-----|--------
+|`fps`|*integer* |Frame per second (Default 60).|
+|`width`|*integer*|Image width of the stream (Default 1440).|
+|`height`|*integer*|Image height of the camera (Default 1080).|
+|`dltl`|*integer*|DeviceLinkThroughputLimit (Default 100000000).|
+
+

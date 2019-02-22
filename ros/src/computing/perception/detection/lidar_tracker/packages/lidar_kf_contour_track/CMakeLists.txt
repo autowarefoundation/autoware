@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   jsk_recognition_msgs
   op_ros_helpers
   cv_bridge
+  autoware_msgs
   )
 
 find_package(OpenCV REQUIRED)
@@ -51,5 +52,9 @@ install(TARGETS
         lidar_kf_contour_track
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)

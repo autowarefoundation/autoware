@@ -69,11 +69,16 @@
 
 #include <autoware_msgs/NDTStat.h>
 
+//headers in Autoware Health Checker
+#include <autoware_health_checker/node_status_publisher.h>
+
 #define PREDICT_POSE_THRESHOLD 0.5
 
 #define Wa 0.4
 #define Wb 0.3
 #define Wc 0.3
+
+static std::shared_ptr<autoware_health_checker::NodeStatusPublisher> node_status_publisher_ptr_;
 
 struct pose
 {
@@ -231,6 +236,30 @@ static tf::StampedTransform local_transform;
 static unsigned int points_map_num = 0;
 
 pthread_mutex_t mutex;
+
+static pose convertPoseIntoRelativeCoordinate(const pose &target_pose, const pose &reference_pose)
+{
+    tf::Quaternion target_q;
+    target_q.setRPY(target_pose.roll, target_pose.pitch, target_pose.yaw);
+    tf::Vector3 target_v(target_pose.x, target_pose.y, target_pose.z);
+    tf::Transform target_tf(target_q, target_v);
+
+    tf::Quaternion reference_q;
+    reference_q.setRPY(reference_pose.roll, reference_pose.pitch, reference_pose.yaw);
+    tf::Vector3 reference_v(reference_pose.x, reference_pose.y, reference_pose.z);
+    tf::Transform reference_tf(reference_q, reference_v);
+
+    tf::Transform trans_target_tf = reference_tf.inverse() * target_tf;
+
+    pose trans_target_pose;
+    trans_target_pose.x = trans_target_tf.getOrigin().getX();
+    trans_target_pose.y = trans_target_tf.getOrigin().getY();
+    trans_target_pose.z = trans_target_tf.getOrigin().getZ();
+    tf::Matrix3x3 tmp_m(trans_target_tf.getRotation());
+    tmp_m.getRPY(trans_target_pose.roll, trans_target_pose.pitch, trans_target_pose.yaw);
+
+    return trans_target_pose;
+}
 
 static void param_callback(const autoware_config_msgs::ConfigNDT::ConstPtr& input)
 {
@@ -545,8 +574,11 @@ static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
     diff_yaw = current_pose.yaw - previous_pose.yaw;
     diff = sqrt(diff_x * diff_x + diff_y * diff_y + diff_z * diff_z);
 
+    const pose trans_current_pose = convertPoseIntoRelativeCoordinate(current_pose, previous_pose);
+
     const double diff_time = (current_gnss_time - previous_gnss_time).toSec();
     current_velocity = (diff_time > 0) ? (diff / diff_time) : 0;
+    current_velocity =  (trans_current_pose.x >= 0) ? current_velocity : -current_velocity;
     current_velocity_x = (diff_time > 0) ? (diff_x / diff_time) : 0;
     current_velocity_y = (diff_time > 0) ? (diff_y / diff_time) : 0;
     current_velocity_z = (diff_time > 0) ? (diff_z / diff_time) : 0;
@@ -889,6 +921,7 @@ static void imu_callback(const sensor_msgs::Imu::Ptr& input)
 
 static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 {
+  node_status_publisher_ptr_->CHECK_RATE("/topic/rate/points_raw/slow",8,5,1,"topic points_raw subscribe rate low.");
   if (map_loaded == 1 && init_pos_set == 1)
   {
     matching_start = std::chrono::system_clock::now();
@@ -1131,7 +1164,10 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     diff_yaw = calcDiffForRadian(current_pose.yaw, previous_pose.yaw);
     diff = sqrt(diff_x * diff_x + diff_y * diff_y + diff_z * diff_z);
 
+    const pose trans_current_pose = convertPoseIntoRelativeCoordinate(current_pose, previous_pose);
+
     current_velocity = (diff_time > 0) ? (diff / diff_time) : 0;
+    current_velocity =  (trans_current_pose.x >= 0) ? current_velocity : -current_velocity;
     current_velocity_x = (diff_time > 0) ? (diff_x / diff_time) : 0;
     current_velocity_y = (diff_time > 0) ? (diff_y / diff_time) : 0;
     current_velocity_z = (diff_time > 0) ? (diff_z / diff_time) : 0;
@@ -1163,7 +1199,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     current_pose_imu_odom.yaw = current_pose.yaw;
 
     current_velocity_smooth = (current_velocity + previous_velocity + previous_previous_velocity) / 3.0;
-    if (current_velocity_smooth < 0.2)
+    if (std::fabs(current_velocity_smooth) < 0.2)
     {
       current_velocity_smooth = 0.0;
     }
@@ -1318,6 +1354,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     }
 
     predict_pose_pub.publish(predict_pose_msg);
+    node_status_publisher_ptr_->CHECK_RATE("/topic/rate/ndt_pose/slow",8,5,1,"topic points_raw publish rate low.");
     ndt_pose_pub.publish(ndt_pose_msg);
     // current_pose is published by vel_pose_mux
     //    current_pose_pub.publish(current_pose_msg);
@@ -1339,6 +1376,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     matching_end = std::chrono::system_clock::now();
     exe_time = std::chrono::duration_cast<std::chrono::microseconds>(matching_end - matching_start).count() / 1000.0;
     time_ndt_matching.data = exe_time;
+    node_status_publisher_ptr_->CHECK_MAX_VALUE("/value/time_ndt_matching",time_ndt_matching.data,50,70,100,"value time_ndt_matching is too high.");
     time_ndt_matching_pub.publish(time_ndt_matching);
 
     // Set values for /estimate_twist
@@ -1356,6 +1394,8 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     geometry_msgs::Vector3Stamped estimate_vel_msg;
     estimate_vel_msg.header.stamp = current_scan_time;
     estimate_vel_msg.vector.x = current_velocity;
+    node_status_publisher_ptr_->CHECK_MAX_VALUE("/value/estimate_twist/linear",current_velocity,5,10,15,"value linear estimated twist is too high.");
+    node_status_publisher_ptr_->CHECK_MAX_VALUE("/value/estimate_twist/angular",angular_velocity,5,10,15,"value linear angular twist is too high.");
     estimated_vel_pub.publish(estimate_vel_msg);
 
     // Set values for /ndt_stat
@@ -1484,6 +1524,9 @@ int main(int argc, char** argv)
 
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
+  node_status_publisher_ptr_ = std::make_shared<autoware_health_checker::NodeStatusPublisher>(nh,private_nh);
+  node_status_publisher_ptr_->ENABLE();
+  node_status_publisher_ptr_->NODE_ACTIVATE();
 
   // Set log file name.
   private_nh.getParam("output_log_data", _output_log_data);

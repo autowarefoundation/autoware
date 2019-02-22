@@ -57,3 +57,13 @@ target_link_libraries(voxel_grid_filter ${catkin_LIBRARIES})
 target_link_libraries(ring_filter ${catkin_LIBRARIES})
 target_link_libraries(distance_filter ${catkin_LIBRARIES})
 target_link_libraries(random_filter ${catkin_LIBRARIES})
+
+install(TARGETS voxel_grid_filter ring_filter distance_filter random_filter
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
+
+install(DIRECTORY launch
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)

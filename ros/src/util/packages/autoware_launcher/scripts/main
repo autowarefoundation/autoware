@@ -1,0 +1,13 @@
+#! /usr/bin/env python
+
+import logging
+import sys
+
+from autoware_launcher.core import AwLaunchServer
+from autoware_launcher.gui  import AwQtGuiClient
+
+logging.basicConfig(level=logging.DEBUG, format="%(levelname)-5s: %(name)s: %(message)s")
+
+server = AwLaunchServer(sys.argv)
+client = AwQtGuiClient(sys.argv, server)
+sys.exit(client.start2())
