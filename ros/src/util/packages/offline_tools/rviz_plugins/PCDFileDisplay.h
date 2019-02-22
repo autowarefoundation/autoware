@@ -5,8 +5,8 @@
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
  *
- *  * Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ *  * Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
  *
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
@@ -18,15 +18,16 @@
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ *  THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 
 /*
@@ -42,71 +43,62 @@
 #include <string>
 #include <vector>
 
+#include <pcl/io/pcd_io.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include <pcl/io/pcd_io.h>
 #include <sensor_msgs/PointCloud2.h>
 
-#include <rviz/properties/enum_property.h>
-#include <rviz/properties/string_property.h>
-#include <rviz/properties/float_property.h>
-#include <rviz/ogre_helpers/point_cloud.h>
 #include <rviz/default_plugin/point_cloud_transformers.h>
 #include <rviz/display.h>
+#include <rviz/ogre_helpers/point_cloud.h>
+#include <rviz/properties/enum_property.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/properties/string_property.h>
 
-
-class PCDFileDisplay : public rviz::Display
-{
-Q_OBJECT
+class PCDFileDisplay : public rviz::Display {
+  Q_OBJECT
 public:
-	PCDFileDisplay();
-	virtual ~PCDFileDisplay();
+  PCDFileDisplay();
+  virtual ~PCDFileDisplay();
 
-	enum {
-		FLAT_COLOR,
-		Z_COLOR
-	};
+  enum { FLAT_COLOR, Z_COLOR };
 
 protected:
-	virtual void onInitialize();
+  virtual void onInitialize();
 
-public
-	Q_SLOTS:
-	void causeRetransform();
+public Q_SLOTS:
+  void causeRetransform();
 
-
-private
-	Q_SLOTS:
-	void changeFile();
-	void updateStyle();
-	void updateBillboardSize();
-	void updateColorTransformer();
-
+private Q_SLOTS:
+  void changeFile();
+  void updateStyle();
+  void updateBillboardSize();
+  void updateColorTransformer();
 
 private:
-	rviz::StringProperty* pcdfile_;
-	rviz::EnumProperty* style_property_;
-	rviz::FloatProperty* point_world_size_property_;
-	rviz::FloatProperty* point_pixel_size_property_;
+  rviz::StringProperty *pcdfile_;
+  rviz::EnumProperty *style_property_;
+  rviz::FloatProperty *point_world_size_property_;
+  rviz::FloatProperty *point_pixel_size_property_;
 
-	sensor_msgs::PointCloud2::Ptr cloudMsg_;
-	boost::shared_ptr<rviz::PointCloud> cloud_render_;
-	std::vector<rviz::PointCloud::Point> pointList;
+  sensor_msgs::PointCloud2::Ptr cloudMsg_;
+  boost::shared_ptr<rviz::PointCloud> cloud_render_;
+  std::vector<rviz::PointCloud::Point> pointList;
 
-	rviz::EnumProperty* colorChooser_;
+  rviz::EnumProperty *colorChooser_;
 
-	rviz::AxisColorPCTransformer* axesColorTransform_;
-	QList<rviz::Property*> axesColorTransformProps;
+  rviz::AxisColorPCTransformer *axesColorTransform_;
+  QList<rviz::Property *> axesColorTransformProps;
 
-	rviz::FlatColorPCTransformer* flatColorTransform_;
-	QList<rviz::Property*> flatColorTransformProps;
+  rviz::FlatColorPCTransformer *flatColorTransform_;
+  QList<rviz::Property *> flatColorTransformProps;
 
-	rviz::PointCloudTransformer* activeTransform_ = NULL;
+  rviz::PointCloudTransformer *activeTransform_ = NULL;
 
 private:
-	void updatePointCloud(const std::string &loadThisFile);
+  void updatePointCloud(const std::string &loadThisFile);
 
-	void updateDisplay();
+  void updateDisplay();
 };
 
 #endif /* _RVIZ_PLUGINS_PCDMAP_H_ */

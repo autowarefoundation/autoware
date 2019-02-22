@@ -1,6 +1,10 @@
 /*
  * Copied from
  * https://github.com/martong/access_private
+ *
+ * License notice:
+ * Due to the original author being unreachable, this file is released
+ * as public domain.
  */
 
 #include <utility>

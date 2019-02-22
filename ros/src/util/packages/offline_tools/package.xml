@@ -5,7 +5,7 @@
 
   <description>Tools, libraries and plugins to work offline (ie. directly from ROS bag files)</description>
 
-  <maintainer email="sujiwo@todo.todo">Adi Sujiwo</maintainer>
+  <maintainer email="sujiwo@gmail.com">Adi Sujiwo</maintainer>
 
   <license>BSD</license>
 

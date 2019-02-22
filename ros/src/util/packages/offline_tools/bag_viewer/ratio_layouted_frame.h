@@ -43,38 +43,36 @@
 #include <QSize>
 
 /**
- * RatioLayoutedFrame is a layout containing a single frame with a fixed aspect ratio.
+ * RatioLayoutedFrame is a layout containing a single frame with a fixed aspect
+ * ratio.
  * The default aspect ratio is 4:3.
  */
-class RatioLayoutedFrame
-  : public QFrame
-{
+class RatioLayoutedFrame : public QFrame {
 
   Q_OBJECT
 
 public:
-
-  RatioLayoutedFrame(QWidget* parent, Qt::WindowFlags flags = 0);
+  RatioLayoutedFrame(QWidget *parent, Qt::WindowFlags flags = 0);
 
   virtual ~RatioLayoutedFrame();
 
-  const QImage& getImage() const;
+  const QImage &getImage() const;
 
   QImage getImageCopy() const;
 
-  void setImage(const QImage& image);
+  void setImage(const QImage &image);
 
   QRect getAspectRatioCorrectPaintArea();
 
   void resizeToFitAspectRatio();
 
-  void setOuterLayout(QHBoxLayout* outer_layout);
+  void setOuterLayout(QHBoxLayout *outer_layout);
 
-  void setInnerFrameMinimumSize(const QSize& size);
+  void setInnerFrameMinimumSize(const QSize &size);
 
-  void setInnerFrameMaximumSize(const QSize& size);
+  void setInnerFrameMaximumSize(const QSize &size);
 
-  void setInnerFrameFixedSize(const QSize& size);
+  void setInnerFrameFixedSize(const QSize &size);
 
 signals:
 
@@ -89,20 +87,18 @@ protected slots:
   void onSmoothImageChanged(bool checked);
 
 protected:
-
   void setAspectRatio(unsigned short width, unsigned short height);
 
-  void paintEvent(QPaintEvent* event);
+  void paintEvent(QPaintEvent *event);
 
   void mouseMoveEvent(QMouseEvent *mouseEvent) override;
 
 private:
-
   static int greatestCommonDivisor(int a, int b);
 
-  void mousePressEvent(QMouseEvent * mouseEvent);
+  void mousePressEvent(QMouseEvent *mouseEvent);
 
-  QHBoxLayout* outer_layout_;
+  QHBoxLayout *outer_layout_;
 
   QSize aspect_ratio_;
 
@@ -111,7 +107,5 @@ private:
 
   bool smoothImage_;
 };
-
-
 
 #endif // rqt_image_view__RatioLayoutedFrame_H
