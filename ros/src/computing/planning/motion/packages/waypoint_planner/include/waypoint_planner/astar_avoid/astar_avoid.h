@@ -20,6 +20,7 @@
 #include <iostream>
 #include <vector>
 #include <thread>
+#include <mutex>
 
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
@@ -59,6 +60,7 @@ private:
   ros::Subscriber closest_waypoint_sub_;
   ros::Subscriber obstacle_waypoint_sub_;
   ros::Subscriber state_sub_;
+  ros::Rate *rate_;
   tf::TransformListener tf_listener_;
 
   // params
@@ -77,15 +79,17 @@ private:
   State state_;
 
   // threads
-  std::thread astar_thread_;
+  std::thread publish_thread_;
+  std::mutex mutex_;
 
   // variables
+  bool terminate_thread_;
   bool found_avoid_path_;
   int closest_waypoint_index_;
   int obstacle_waypoint_index_;
-  int goal_waypoint_index_;
   nav_msgs::OccupancyGrid costmap_;
   autoware_msgs::Lane base_waypoints_;
+  autoware_msgs::Lane avoid_waypoints_;
   autoware_msgs::Lane safety_waypoints_;
   geometry_msgs::PoseStamped current_pose_local_, current_pose_global_;
   geometry_msgs::PoseStamped goal_pose_local_, goal_pose_global_;
@@ -108,11 +112,9 @@ private:
 
   // functions
   bool checkInitialized();
-  void startPlanThread(const autoware_msgs::Lane& current_waypoints, autoware_msgs::Lane& avoid_waypoints, int& end_of_avoid_index, ros::WallTime& start_avoid_time);
-  void planWorker(const autoware_msgs::Lane& current_waypoints, autoware_msgs::Lane& avoid_waypoints, int& end_of_avoid_index, State& state, ros::WallTime& start_avoid_time);
-  bool planAvoidWaypoints(const autoware_msgs::Lane& current_waypoints, autoware_msgs::Lane& avoid_waypoints, int& end_of_avoid_index);
-  void mergeAvoidWaypoints(const nav_msgs::Path& path,const autoware_msgs::Lane& current_waypoints, autoware_msgs::Lane& avoid_waypoints, int& end_of_avoid_index);
-  void publishWaypoints(const autoware_msgs::Lane& base_waypoints);
+  bool planAvoidWaypoints(int& end_of_avoid_index);
+  void mergeAvoidWaypoints(const nav_msgs::Path& path, const int& end_of_avoid_index);
+  void publishWaypoints();
   tf::Transform getTransform(const std::string& from, const std::string& to);
 };
 
