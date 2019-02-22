@@ -195,6 +195,22 @@ catkin_package(\n\
 )\n\
 "
 
+cmakelist_autoware_msgs = "\n\
+find_package(autoware_msgs REQUIRED)\n\
+find_package(\n\
+  catkin REQUIRED COMPONENTS\n\
+  autoware_msgs\n\
+)\n\
+catkin_package(\n\
+  CATKIN_DEPENDS\n\
+  autoware_msgs\n\
+)\n\
+\n\
+include_directories(\n\
+  ${autoware_msgs_INCLUDE_DIRS}\n\
+)\n\
+"
+
 def flattenList(somelist):
     ll = []
     for l in somelist:
@@ -232,7 +248,8 @@ def findFiles(path='src', query='autoware_msgs'):
     lines = {}
     for fname in allfiles:
         # Because binary "src/driveworks/packages/autoware_driveworks_interface/lib/libautoware_driveworks.so" is part of the source code
-        if (not isBinary(fname)) and ('CHANGELOG.rst' not in fname) and ("src/msgs/autoware_msgs" not in fname):
+        #if (not isBinary(fname)) and ('CHANGELOG.rst' not in fname) and ("src/msgs/autoware_msgs" not in fname):
+        if (not isBinary(fname)) and ('CHANGELOG.rst' not in fname):
             with open(fname) as f:
                 for line in f:
                     line = line.strip().rstrip("\n\r")
@@ -589,7 +606,7 @@ def createFolderStructure(newfolder, packagexml, cmakeliststxt):
     f.write(packagexml)
     f.close()
     # create CMAKELISTS.txt
-    f = open(newfolder + "/CMAKELISTS.txt", 'w')
+    f = open(newfolder + "/CMakeLists.txt", 'w')
     f.write(cmakeliststxt)
     f.close()
 
@@ -606,13 +623,14 @@ def createNewMsgsStructure(movemsgsrev, manual_list=manual_association_list):
                 movemsgsrev.update({v: [k]})
     srcmsgsprefix = "src/msgs/"
     for n, m in movemsgsrev.items():
-        # prepare package.xml and CMAKELISTS.txt files' contents
+        # prepare package.xml and CMakeLists.txt files' contents
         msgsliststr = ""
         for t in m:
             msgfilename = t.replace("autoware_msgs/", "") + ".msg"
             msgsliststr = msgsliststr + "          " + msgfilename + "\n"
         packagexmlaux = packagexml.replace("AUTOWARE_NEW_NAMESPACE", n)
         cmakeliststxtaux = cmakeliststxt.replace("          MESSAGE_FILENAME.msg", msgsliststr)
+        cmakeliststxtaux = cmakeliststxtaux.replace("autoware_msgs", n)
         # one special case: "CloudCluster.msg" in "autoware_detection_msgs" needs jsk dependency
         if "autoware_detection_msgs" in n:
             packagexmlaux = packagexmlaux.replace("<!--<build_depend>jsk_recognition_msgs</build_depend>-->", "<build_depend>jsk_recognition_msgs</build_depend>")
@@ -697,6 +715,21 @@ def revertReplacements(files):
         os.system("rm {}.backup 2>/dev/null".format(f))
         os.system("rm {} 2>/dev/null".format(f))
         os.system("git checkout {} 2>/dev/null".format(f))
+    # We have to delete the src/msgs/autoware_*_msgs directories too
+    os.system("rm -rf src/msgs/autoware_actuation_msgs 2>/dev/null")
+    os.system("rm -rf src/msgs/autoware_decision_msgs 2>/dev/null")
+    os.system("rm -rf src/msgs/autoware_detection_msgs 2>/dev/null")
+    os.system("rm -rf src/msgs/autoware_localization_msgs 2>/dev/null")
+    os.system("rm -rf src/msgs/autoware_mission_msgs 2>/dev/null")
+    os.system("rm -rf src/msgs/autoware_motion_msgs 2>/dev/null")
+    os.system("rm -rf src/msgs/autoware_motion_msgs 2>/dev/null")
+    os.system("rm -rf src/msgs/autoware_sensing_msgs 2>/dev/null")
+    os.system("rm -rf src/msgs/autoware_socket_msgs 2>/dev/null")
+    os.system("rm -rf src/msgs/autoware_unused_msgs 2>/dev/null")
+    os.system("rm -rf src/msgs/autoware_util_msgs 2>/dev/null")
+    os.system("rm -rf src/msgs/autoware_sync_msgs 2>/dev/null")
+    # and restore the original autoware_msgs folder
+    os.system("git checkout src/msgs/autoware_msgs 2>/dev/null")
 
 
 # Find all
@@ -731,6 +764,21 @@ def findAllAutowareMsgs(xmls, movemsgsrev):
         usedmsgs = findAutowareMsgsInPackage(f, movemsgsrev)
         if usedmsgs:
             allmsgs.update({f: usedmsgs})
+            if os.path.isfile(f):
+                with open(f, 'r') as fd:
+                    contents = fd.read()
+                    if "autoware_msgs" not in contents:
+                        print("Package `{}` depends on `autoware_msgs` but file `{}` does not declare the dependency".format(os.path.dirname(f), os.path.basename(f)))
+            else:
+                print("Problem opening file `{}`".format(f))
+        else:
+            if os.path.isfile(f):
+                with open(f, 'r') as fd:
+                    contents = fd.read()
+                    if "autoware_msgs" in contents:
+                        print("File `{}` depends on `autoware_msgs` but the package does not use it".format(f))
+            else:
+                print("Problem opening file `{}`".format(f))
     return allmsgs
 
 
@@ -739,12 +787,16 @@ def fixPackageXMLAutowareMsgs(xml2msgs, takebackup=True):
     depends = "<depend>autoware_msgs</depend>"
     builddeps = "<build_depend>autoware_msgs</build_depend>"
     rundeps = "<run_depend>autoware_msgs</run_depend>"
+    buildexpdeps = "<build_export_depend>autoware_msgs</build_export_depend>"
+    execdeps = "<exec_depend>autoware_msgs</exec_depend>"
     for f, m in xml2msgs.items():
         newdepends = "\n".join(["  <depend>{}</depend>".format(t) for t in m])
         newbuilddeps = "\n".join(["  <build_depend>{}</build_depend>".format(t) for t in m])  # not necessarily aligned with the rest of the xml
         newrundeps = "\n".join(["  <run_depend>{}</run_depend>".format(t) for t in m])
-        querylist = [depends, builddeps, rundeps]
-        repllist = [newdepends, newbuilddeps, newrundeps]
+        newbuildexpdeps = "\n".join(["  <build_export_depend>{}</build_export_depend>".format(t) for t in m])
+        newexecdeps = "\n".join(["  <exec_depend>{}</exec_depend>".format(t) for t in m])
+        querylist = [depends, builddeps, rundeps, buildexpdeps, execdeps]
+        repllist = [newdepends, newbuilddeps, newrundeps, newbuildexpdeps, newexecdeps]
         changed = replaceInFile(f, querylist, repllist, False)
         if not changed:  # The query messages were not on the file, have to add them
             with open(f, 'r+') as fd:
@@ -768,11 +820,24 @@ def fixPackageXMLAutowareMsgs(xml2msgs, takebackup=True):
                     line = fd.readline()
                     newdata = newdata.replace(line, line + newrundeps + "\n")
                     changed = True
+                pos = contents.rfind('<build_export_depend>')
+                if pos > 0:
+                    fd.seek(pos)
+                    line = fd.readline()
+                    newdata = newdata.replace(line, line + newbuildexpdeps + "\n")
+                    changed = True
+                pos = contents.rfind('<exec_depend>')
+                if pos > 0:
+                    fd.seek(pos)
+                    line = fd.readline()
+                    newdata = newdata.replace(line, line + newexecdeps + "\n")
+                    changed = True
                 if changed:
                     fd.seek(0)
                     fd.writelines(newdata)
         if changed:
             modfiles.append(f)
+            print("Fixed file \"{}\"".format(f))
             changed = False
     return modfiles
 
@@ -782,57 +847,119 @@ def fixCMakeListsAutowareMsgs(xml2msgs, takebackup=True):
     multiline_querylist = ['find_package(autoware_msgs REQUIRED)', '${autoware_msgs_INCLUDE_DIRS}', 'autoware_msgs']
     p = re.compile(r"(?P<word>\w+)(?P<auto>\s+{})(?P<rest>\s*)".format("autoware_msgs"))
     for f, m in xml2msgs.items():
-        multiline_replacements = "\n".join(["{}".format(t) for t in m])
-        singleline_replacements = " " + " ".join(["{}".format(t) for t in m]) + " "
-        # Performs replacement of single-line case
-        with open(f, 'r+') as fd:
-            contents = fd.read()
-            lines = contents.splitlines()
-            newlines = [p.sub(lambda matchobj: matchobj.group(1) + singleline_replacements + matchobj.group(3) if matchobj.group(3) else matchobj.group(1) + singleline_replacements, l) for l in lines]
-            newdata = '\n'.join(newlines)
-            if newdata != contents:
-                fd.seek(0)
-                fd.writelines(newdata)
-                changed = True
-        # Performs replacement for multiline cases
-        changed = replaceInFile(f, multiline_querylist, multiline_replacements, False)
-        if changed:
-            modfiles.append(f)
+        changed = False
+        hasautowaremsgs = False
+        fname = os.path.join(os.path.dirname(f), "CMakeLists.txt")
+        if os.path.isfile(fname):  # normally, there should be a CMakeLists.txt in the same directory of package.xml
+            multiline1 = "\n".join(["find_package({} REQUIRED)".format(t) for t in m])
+            multiline2 = "\n".join(["${%s_INCLUDE_DIRS}" %(t) for t in m])
+            multiline3 = "\n".join(["{}".format(t) for t in m])
+            multiline_repllist = [multiline1, multiline2, multiline3]
+            singleline_replacements = " " + " ".join(["{}".format(t) for t in m]) + " "
+            # Performs replacement of single-line case
+            # this is for example: "CATKIN_DEPENDS std_msgs velodyne_pointcloud *autoware_msgs* autoware_config_msgs" where
+            # where autoware_msgs has to be replaced by autoware_namespace1_msgs autoware_namespace2_msgs ...
+            # horizontally (single line) to keep the style 
+            with open(fname, 'r+') as fd:
+                contents = fd.read()
+                if "autoware_msgs" in contents:
+                    # make a backup if requested
+                    if takebackup:
+                        # write backup
+                        fb = open(fname + '.backup', 'w')
+                        fb.write(contents)
+                        fb.close()
+                    hasautowaremsgs = True
+                    lines = contents.splitlines()
+                    newlines = [p.sub(lambda matchobj:
+                                      matchobj.group(1) + singleline_replacements + matchobj.group(3) if matchobj.group(3) 
+                                      else matchobj.group(1) + singleline_replacements, l)
+                                for l in lines]
+                    newdata = '\n'.join(newlines)
+                    if singleline_replacements in newdata:
+                        fd.seek(0)
+                        fd.writelines(newdata)
+                        changed = True
+                else:
+                    # if autoware_msgs was not found but the package uses it, we have to add it
+                    # ex. "src/computing/planning/motion/packages/dp_planner" does not declare the dependency
+                    # and yet it includes autoware_msgs in the source code
+                    #
+                    # The trick is to copy a template in the file and then use multiline replacement below
+                    # however, finding the right possition is difficult
+                    # for the time being, we report the problem and proposed solution
+                    # so user can make changes by hand
+                    print("File \"{}\"".format(fname) + " does not include any dependency on autoware messages but the package refers to them.\n" +
+                          "Please add the following to this file where appropiate:")
+                    # aux = cmakelist_autoware_msgs.replace("autoware_msgs", multiline_replacements)
+                    newdata = cmakelist_autoware_msgs
+                    for i in range(len(multiline_querylist)):
+                        newdata = newdata.replace(multiline_querylist[i], multiline_repllist[i])
+                    print(newdata)
+            # file is closed
+            if hasautowaremsgs:
+                # Performs replacement for multiline cases
+                # this includes the following:
+                # find_package(autoware_msgs REQUIRED)
+                # find_package(
+                #   catkin REQUIRED COMPONENTS
+                #   ...
+                #   autoware_msgs
+                #   ...
+                # )
+                # catkin_package(
+                #   CATKIN_DEPENDS
+                #   ...
+                #   autoware_msgs
+                #   ...
+                # )
+                # ${autoware_msgs_INCLUDE_DIRS}
+                #
+                # where autoware_msgs will be replaced by:
+                #   autoware_namespace1_msgs
+                #   autoware_namespace2_msgs
+                #   ...
+                # as multiple lines
+                changed = replaceInFile(fname, multiline_querylist, multiline_repllist, False)
+            # done with changes (if any)
+            if changed:
+                modfiles.append(fname)
+                print("Fixed file \"{}\"".format(fname))
     return modfiles
 
 
-def fixPackageDefFiles(movmsgsrev, root="src/"):
+def fixPackageDefFiles(movmsgsrev, root="src/", takebackup=True):
     modfiles = []
     # Find all package.xml files
     xmls = findPackageXMLFiles(root)
     # Finds the list of new autoware msgs being used at each package
     xml2msgs = findAllAutowareMsgs(xmls, movmsgsrev)
     # Fixes the contents of package.xml accordingly
-    modfiles = fixPackageXMLAutowareMsgs(xml2msgs, False)
+    modfiles = fixPackageXMLAutowareMsgs(xml2msgs, takebackup)
     # The CMakeLists.txt should be in the same directory as the package.xml, no need to search
-    # modfiles = modfiles + fixCMakeListsAutowareMsgs(xml2msgs, False)
+    modfiles = modfiles + fixCMakeListsAutowareMsgs(xml2msgs, takebackup)
     return modfiles
 
 
 if __name__ == '__main__':
-# Finds all files and lines containing "autoware_msgs"
-lines = findFiles()
-# Associates file names with replacement list
-filespattern = files2Pattern(lines)
-# Find which autoware message are published
-pubmsgs = messagesPublishersToPattern(lines, filespattern)
-# Find all the autoware messages in use
-allmsgs = allMsgsToPattern(lines, filespattern)
-# Generate the message type to new namespace associations
-movmsgs = moveMsgs(pubmsgs, allmsgs)
-# Generate the inverse (new namespace to message types) associations
-movmsgsrev = moveMsgsReverse(pubmsgs, allmsgs)
-# For each file generate the namespace replacement
-replacements = genAutowareMsgsReplacement(lines, movmsgs)
-# Applies he replacements to actual files, returns the list of modified files
-modfiles = replaceAutowareMsgsInPlace(replacements)
-    # Fixes the contents of package.xml and CMakeLists.txt accordingly, returns the list of modified files
-    modfiles = modfiles + fixPackageDefFiles(movmsgsrev, "src/")
+    # Finds all files and lines containing "autoware_msgs"
+    lines = findFiles()
+    # Associates file names with replacement list
+    filespattern = files2Pattern(lines)
+    # Find which autoware message are published
+    pubmsgs = messagesPublishersToPattern(lines, filespattern)
+    # Find all the autoware messages in use
+    allmsgs = allMsgsToPattern(lines, filespattern)
+    # Generate the message type to new namespace associations
+    movmsgs = moveMsgs(pubmsgs, allmsgs)
+    # Generate the inverse (new namespace to message types) associations
+    movmsgsrev = moveMsgsReverse(pubmsgs, allmsgs)
+    # For each file generate the namespace replacement
+    replacements = genAutowareMsgsReplacement(lines, movmsgs)
+    # Applies he replacements to actual files, returns the list of modified files (no backups)
+    modfiles = replaceAutowareMsgsInPlace(replacements, False)
+    # Fixes the contents of package.xml and CMakeLists.txt accordingly, returns the list of modified files (no backups)
+    modfiles = modfiles + fixPackageDefFiles(movmsgsrev, "src/", False)
     # Creates the new autoware messages structure, and deletes the old
     createNewMsgsStructure(movmsgsrev)
     #

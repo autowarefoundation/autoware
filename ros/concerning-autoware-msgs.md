@@ -83,11 +83,21 @@ The following is a different view of the above table, to ease finding messages t
 |`autoware_msgs/Waypoint`|`autoware_motion_msgs`|
 |`autoware_msgs/WaypointState`|`autoware_decision_msgs`|
 
+## Procedure
+
+To test whether the proposed approach works, please follow these steps:
+
+1. Get a fresh copy of Autoware develop branch, ex. `git clone https://github.com/CPFL/Autoware.git -b develop --recurse-submodules` or `git pull --recurse-submodules=yes origin develop` on your existing local repository.
+2. Make sure the original builds correctly: run `./catkin_make_release` (follow the steps in [How to build](https://github.com/CPFL/Autoware/wiki/Source-Build) ).
+3. Switch to `feature/autoware_msgs_refactoring` branch, ex. `git checkout feature/autoware_msgs_refactoring`.
+3. Run the autoware messages refactoring script `fix-autoware-msgs.py` from the `[AUTOWARE_PATH]/ros` folder.
+4. Make sure refactored version builds correctly: run `./catkin_make_release`.
+
 ## Notes:
 
 Please check the following cases:
 
-## Not in use
+### Not in use
 
 As to the commit/date stated above, the following messages are not used by any package and will be moved to a new namespace `autoware_unused_msgs` temporarily:
 
@@ -107,7 +117,27 @@ Such unused messages can be also verified by the shell command:
 IFS=$'\n'; for I in `find . -type f`; do egrep -i '(publish|advertise|subscri|import|include)' -H $I | egrep '(ValueSet|ImageObjects|ImageRectRanged|VscanTracked|VscanTrackedArray|StateCmd|ScanImage|ColorSet|ObjPose|GeometricRectangle)'; done
 ```
 
-## Errors
+### Errors
 As to the commit/date stated above, the following messages are referred by a package but its file does not exists in `src/msgs/autoware_msgs/msgs/`
 
 * `ImageObjRange` referred by `src/system/sync/computing/perception/detection/packages/cv_tracker/nodes/kf_track/sync_track.cpp`  `ImageObjRange` does not exist, `ImageObjRanged` does exist. `cv_tracker` has no `package.xml` and `CMakeLists.txt` files therefore it's not built and can be removed.
+
+
+### Others 
+
+* File `src/driveworks/packages/autoware_driveworks_interface/package.xml` depends on `autoware_msgs` but the package does not use it
+* File `src/simulation/lgsvl_simulator_bridge/package.xml` depends on `autoware_msgs` but the package does not use it
+* File `src/sensing/fusion/packages/autoware_camera_lidar_calibrator/package.xml` depends on `autoware_msgs` but the package does not use it
+* File `src/common/libs/amathutils_lib/package.xml` depends on `autoware_msgs` but the package does not use it
+* File `src/common/libs/state_machine_lib/package.xml` depends on `autoware_msgs` but the package does not use it
+* Package `src/msgs/lgsvl_msgs/` does not have a `package.xml` file
+* Package `src/sensing/drivers/lidar/packages/robosense/rslidar_pointcloud` does not have a `package.xml` file
+* Package `src/sensing/drivers/lidar/packages/robosense/rslidar_msgs` does not have a `package.xml` file
+* Package `src/sensing/drivers/lidar/packages/robosense/rslidar` does not have a `package.xml` file
+* Package `src/sensing/drivers/lidar/packages/robosense/rslidar_driver` does not have a `package.xml` file
+* Package `src/sensing/drivers/lidar/packages/ouster` does not have a `package.xml` file
+* Package `src/computing/planning/mission/packages/op_global_planner` depends on `autoware_msgs` but file `package.xml` does not declare the dependency
+* Package `src/computing/planning/mission/packages/way_planner` depends on `autoware_msgs` but file `package.xml` does not declare the dependency
+* Package `src/computing/planning/motion/packages/lattice_planner` depends on `autoware_msgs` but file `package.xml` does not declare the dependency
+* Package `src/computing/planning/motion/packages/dp_planner` depends on `autoware_msgs` but file `package.xml` does not declare the dependency
+
