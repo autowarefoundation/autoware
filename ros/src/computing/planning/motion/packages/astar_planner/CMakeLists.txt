@@ -49,3 +49,18 @@ add_dependencies(obstacle_avoid ${catkin_EXPORTED_TARGETS})
 add_executable(obstacle_sim nodes/obstacle_avoid/obstacle_sim/obstacle_sim.cpp nodes/obstacle_avoid/obstacle_sim/obstacle_sim_node.cpp)
 target_link_libraries(obstacle_sim ${catkin_LIBRARIES})
 add_dependencies(obstacle_sim ${catkin_EXPORTED_TARGETS})
+
+
+install(TARGETS
+            velocity_set
+            obstacle_avoid
+            obstacle_sim
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)
+

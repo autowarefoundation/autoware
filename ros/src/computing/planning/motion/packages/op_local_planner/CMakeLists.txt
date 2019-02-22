@@ -79,3 +79,19 @@ add_executable(op_motion_predictor nodes/op_motion_predictor/op_motion_predictor
 target_link_libraries(op_motion_predictor ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
 add_dependencies(op_common_params op_trajectory_generator op_trajectory_evaluator op_behavior_selector op_motion_predictor ${catkin_EXPORTED_TARGETS})
+
+
+install(TARGETS
+        op_common_params
+        op_trajectory_generator
+        op_trajectory_evaluator
+        op_behavior_selector
+        op_motion_predictor
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
+        
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)

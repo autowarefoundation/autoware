@@ -1,0 +1,22 @@
+<!-- -->
+<launch>
+  <arg name="network_definition_file" />
+  <arg name="pretrained_model_file" />
+  <arg name="points_src" default="/points_raw" />
+  <arg name="score_threshold" default="0.6" />
+  <arg name="use_gpu" default="true" />
+  <arg name="gpu_device_id" default="0" />
+
+  <node pkg="lidar_apollo_cnn_seg_detect" type="lidar_apollo_cnn_seg_detect" name="lidar_apollo_cnn_seg_detect_01" output="screen">
+    <param name="network_definition_file" value="$(arg network_definition_file)" />
+    <param name="pretrained_model_file" value="$(arg pretrained_model_file)" />
+    <param name="points_src" value="$(arg points_src)" />
+    <param name="score_threshold" value="$(arg score_threshold)" />
+    <param name="use_gpu" value="$(arg use_gpu)" />
+    <param name="gpu_device_id" value="$(arg gpu_device_id)" />
+  </node>
+
+  <node pkg="detected_objects_visualizer" type="visualize_detected_objects" name="cluster_detect_visualization_01"
+          output="screen" ns="/detection/lidar_detector" />
+
+</launch>

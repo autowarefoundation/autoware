@@ -42,3 +42,8 @@ target_link_libraries(vehicle_sender ${catkin_LIBRARIES})
 add_dependencies(vehicle_sender
   ${catkin_EXPORTED_TARGETS}
   )
+
+install(TARGETS vehicle_sender vehicle_receiver
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
