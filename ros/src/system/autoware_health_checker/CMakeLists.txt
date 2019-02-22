@@ -27,10 +27,10 @@ include_directories(
 )
 
 set(NODE_STATUS_PUBLISHER_SRC
-  src/node_status_publisher.cpp
-  src/diag_buffer.cpp
-  src/rate_checker.cpp
-  src/value_manager.cpp
+  src/node_status_publisher/node_status_publisher.cpp
+  src/node_status_publisher/diag_buffer.cpp
+  src/node_status_publisher/rate_checker.cpp
+  src/node_status_publisher/value_manager.cpp
 )
 add_library(node_status_publisher
   ${NODE_STATUS_PUBLISHER_SRC}
@@ -39,21 +39,21 @@ target_link_libraries(node_status_publisher ${catkin_LIBRARIES})
 add_dependencies(node_status_publisher ${catkin_EXPORTED_TARGETS} autoware_system_msgs_generate_messages_cpp)
 
 add_library(system_status_subscriber
-  src/system_status_subscriber.cpp
+  src/system_status_subscriber/system_status_subscriber.cpp
 )
 target_link_libraries(system_status_subscriber ${catkin_LIBRARIES})
 add_dependencies(system_status_subscriber ${catkin_EXPORTED_TARGETS} autoware_system_msgs_generate_messages_cpp)
 
 add_executable(health_aggregator
-  src/health_aggregator_node.cpp
-  src/health_aggregator.cpp
+  src/health_aggregator/health_aggregator_node.cpp
+  src/health_aggregator/health_aggregator.cpp
 )
 target_link_libraries(health_aggregator ${catkin_LIBRARIES})
 add_dependencies(health_aggregator ${catkin_EXPORTED_TARGETS} autoware_system_msgs_generate_messages_cpp)
 
 add_executable(health_analyzer
-  src/health_analyzer_node.cpp
-  src/health_analyzer.cpp
+  src/health_analyzer/health_analyzer_node.cpp
+  src/health_analyzer/health_analyzer.cpp
 )
 target_link_libraries(health_analyzer ${catkin_LIBRARIES})
 add_dependencies(health_analyzer ${catkin_EXPORTED_TARGETS} autoware_system_msgs_generate_messages_cpp)
@@ -68,6 +68,22 @@ endforeach(cpp_exec_names)
 
 # include header files
 install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
+
+install(DIRECTORY include/health_analyzer/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
+
+install(DIRECTORY include/node_status_publisher/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
+
+install(DIRECTORY include/health_aggregator/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
+
+install(DIRECTORY include/system_status_subscriber/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
 
