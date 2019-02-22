@@ -150,7 +150,7 @@ uint8_t NodeStatusPublisher::CHECK_MIN_VALUE(std::string key, double value,
                          key, "min", autoware_health_checker::LEVEL_ERROR)) {
     new_status.level = autoware_system_msgs::DiagnosticStatus::ERROR;
   } else if (value < value_manager_ptr_->getValue(
-                         key, "/min", autoware_health_checker::LEVEL_WARN)) {
+                         key, "min", autoware_health_checker::LEVEL_WARN)) {
     new_status.level = autoware_system_msgs::DiagnosticStatus::WARN;
   } else {
     new_status.level = autoware_system_msgs::DiagnosticStatus::OK;

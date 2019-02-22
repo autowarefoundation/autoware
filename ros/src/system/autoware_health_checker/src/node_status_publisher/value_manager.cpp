@@ -50,38 +50,21 @@ void ValueManager::setDefaultValue(std::string key, std::string type,
 bool ValueManager::foundParamKey(std::string key, std::string type,
                                  uint8_t level, double &value) {
   for (auto itr = diag_params_.begin(); itr != diag_params_.end(); itr++) {
-    if (itr->first != key) {
-      continue;
-    }
-    for (auto params_itr = itr->second.begin(); params_itr != itr->second.end();
-         params_itr++) {
-      if (params_itr->first != type) {
-        continue;
+    if (itr->first == key) {
+      if (level == autoware_health_checker::LEVEL_WARN) {
+        XmlRpc::XmlRpcValue data = itr->second[type]["warn"];
+        value = data;
+        return true;
       }
-      for (auto value_itr = params_itr->second.begin();
-           value_itr != params_itr->second.end(); value_itr++) {
-        if (autoware_health_checker::LEVEL_OK == level ||
-            autoware_health_checker::LEVEL_UNDEFINED == level) {
-          continue;
-        }
-        if (value_itr->first == "warn" &&
-            autoware_health_checker::LEVEL_WARN == level) {
-          XmlRpc::XmlRpcValue data = value_itr->second;
-          value = data;
-          return true;
-        }
-        if (value_itr->first == "error" &&
-            autoware_health_checker::LEVEL_ERROR == level) {
-          XmlRpc::XmlRpcValue data = value_itr->second;
-          value = data;
-          return true;
-        }
-        if (value_itr->first == "fatal" &&
-            autoware_health_checker::LEVEL_FATAL == level) {
-          XmlRpc::XmlRpcValue data = value_itr->second;
-          value = data;
-          return true;
-        }
+      if (level == autoware_health_checker::LEVEL_ERROR) {
+        XmlRpc::XmlRpcValue data = itr->second[type]["error"];
+        value = data;
+        return true;
+      }
+      if (level == autoware_health_checker::LEVEL_FATAL) {
+        XmlRpc::XmlRpcValue data = itr->second[type]["fatal"];
+        value = data;
+        return true;
       }
     }
   }
@@ -92,12 +75,9 @@ double ValueManager::getValue(std::string key, std::string type,
                               uint8_t level) {
   double ret;
   mtx_.lock();
-  if (level == autoware_health_checker::LEVEL_WARN) {
-    std::string key_str;
-    if (foundParamKey(key, type, level, ret)) {
-    } else {
-      ret = data_[{{key, type}, level}];
-    }
+  if (foundParamKey(key, type, level, ret)) {
+  } else {
+    ret = data_[{{key, type}, level}];
   }
   mtx_.unlock();
   return ret;

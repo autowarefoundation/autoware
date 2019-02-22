@@ -21,7 +21,7 @@ health_checker:
       fatal: 3.0
   twist_cmd_linear_high:
     max:
-      warn: 10.0
+      warn: 15.0
       error: 18.0
       fatal: 20.0
   topic_points_raw_slow_in_ndt_matching:
