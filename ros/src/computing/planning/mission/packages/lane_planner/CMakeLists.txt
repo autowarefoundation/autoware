@@ -14,6 +14,8 @@ find_package(catkin REQUIRED COMPONENTS
         waypoint_follower
         gnss
         autoware_msgs
+        rostest
+        rosunit
         )
 
 set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -92,3 +94,16 @@ install(TARGETS
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
         )
+
+if (CATKIN_ENABLE_TESTING)
+    find_package(rostest REQUIRED)
+    add_rostest_gtest(test-lane_select
+      test/test_lane_select.test
+      test/src/test_lane_select.cpp
+      nodes/lane_select/lane_select_core.cpp
+      nodes/lane_select/hermite_curve.cpp
+    )
+    add_dependencies(test-lane_select ${catkin_EXPORTED_TARGETS})
+    target_link_libraries(test-lane_select
+    ${catkin_LIBRARIES})
+endif ()

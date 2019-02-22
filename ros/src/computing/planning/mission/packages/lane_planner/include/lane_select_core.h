@@ -56,6 +56,8 @@ typename std::underlying_type<T>::type enumToInteger(T t)
 
 class LaneSelectNode
 {
+friend class LaneSelectTestClass;
+
 public:
   LaneSelectNode();
   ~LaneSelectNode();
@@ -132,6 +134,12 @@ private:
   void updateChangeFlag();
   void createLaneForChange();
   int32_t getClosestLaneChangeWaypointNumber(const std::vector<autoware_msgs::Waypoint>& wps, int32_t cl_wp);
+
+  // spinOnce for test
+  void spinOnce()
+  {
+    ros::spinOnce();
+  }
 };
 
 int32_t getClosestWaypointNumber(const autoware_msgs::Lane& current_lane, const geometry_msgs::Pose& current_pose,
