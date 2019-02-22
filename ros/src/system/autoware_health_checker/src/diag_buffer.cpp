@@ -16,7 +16,7 @@
  *
  * v1.0 Masaya Kataoka
  */
- 
+
 #include <autoware_health_checker/diag_buffer.h>
 
 namespace autoware_health_checker {

@@ -1,0 +1,6 @@
+children: []
+config:
+  args.sim_mode: false
+  args.topic_pose_stamped: /ndt_pose
+  args.topic_twist_stamped: /estimate_twist
+plugin: refs/vel_pose_connect

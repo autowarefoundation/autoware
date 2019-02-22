@@ -1,0 +1,11 @@
+<launch>
+
+    <arg name="transform_file"/>
+    <arg name="point_cloud_files"/>
+    <arg name="vector_map_files"/>
+
+    <include file="$(arg transform_file)"/>
+    <node pkg="map_file" type="points_map_loader" name="points_map_loader" args="noupdate $(arg point_cloud_files)"/>
+    <node pkg="map_file" type="vector_map_loader" name="vector_map_loader" args="$(arg vector_map_files)"/>
+
+</launch>

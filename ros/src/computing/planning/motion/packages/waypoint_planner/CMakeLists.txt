@@ -59,3 +59,14 @@ target_link_libraries(velocity_set
 add_dependencies(velocity_set
   ${catkin_EXPORTED_TARGETS}
 )
+
+install(TARGETS astar_avoid velocity_set
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE
+)

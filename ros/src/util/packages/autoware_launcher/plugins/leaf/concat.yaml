@@ -1,0 +1,15 @@
+format: Autoware Launcher Plugin Version 0.1
+args:
+- { name: input_topics, type: str, list: yaml }
+- { name: output_topic, type: str, default: /points_raw }
+- { name: output_frame, type: str, default: velodyne }
+
+panel:
+  widget: node.panel
+  frames:
+  - target: args.output_frame
+    widget: basic.text
+  - target: args.output_topic
+    widget: basic.text
+  - target: args.input_topics
+    widget: basic.textlist

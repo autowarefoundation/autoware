@@ -97,7 +97,7 @@ target_include_directories(roi_object_filter PRIVATE
 target_link_libraries(roi_object_filter
         roi_object_filter_lib)
 
-install(TARGETS roi_object_filter
+install(TARGETS roi_object_filter_lib roi_object_filter
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

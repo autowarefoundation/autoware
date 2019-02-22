@@ -41,3 +41,14 @@ target_link_libraries(astar_navi
 add_dependencies(astar_navi
   ${catkin_EXPORTED_TARGETS}
 )
+
+install(TARGETS astar_navi
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE
+)
