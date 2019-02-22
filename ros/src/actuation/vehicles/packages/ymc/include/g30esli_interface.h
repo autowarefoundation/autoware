@@ -19,6 +19,7 @@
 
 #include <cmath>
 #include <thread>
+#include <mutex>
 #include <termios.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -34,6 +35,7 @@ private:
   // ros subscriber
   ros::Subscriber vehicle_cmd_sub_;
   ros::Subscriber ds4_sub_;
+  ros::Subscriber engage_sub_;
 
   // ros publisher
   ros::Publisher vehicle_status_pub_;
@@ -52,6 +54,7 @@ private:
   std::thread* thread_read_status_;
   std::thread* thread_read_keyboard_;
   std::thread* thread_publish_status_;
+  std::mutex engage_mutex_;
 
   // ymc g30esli ros driver
   MODE mode_;
@@ -63,6 +66,7 @@ public:
 
   // callbacks
   void vehicleCmdCallback(const autoware_msgs::VehicleCmdConstPtr& msg);
+  void engageCallback(const std_msgs::BoolConstPtr& msg);
   void ds4Callback(const ds4_msgs::DS4ConstPtr& msg);
 
   // thread functions
