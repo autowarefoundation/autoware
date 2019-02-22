@@ -121,7 +121,8 @@ private:
   /// \brief publish ros msg: /semantics/costmap (grid_map::GridMap),
   ///                         /semantics/costmap_generator/occupancy_grid(nav_msgs::OccupancyGrid)
   /// \param[in] gridmap with calculated cost
-  void publishRosMsg(const grid_map::GridMap& gridmap);
+  /// \param[in] input ros header
+  void publishRosMsg(const grid_map::GridMap& gridmap, const std_msgs::Header& in_header);
 
   /// \brief calculate cost from pointcloud data
   /// \param[in] in_sensor_points: subscribed pointcloud data

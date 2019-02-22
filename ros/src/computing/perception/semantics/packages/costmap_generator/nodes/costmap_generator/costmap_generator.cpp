@@ -102,7 +102,8 @@ void CostmapGenerator::objectsCallback(const autoware_msgs::DetectedObjectArray:
   costmap_[VECTORMAP_COSTMAP_LAYER_] = generateVectormapCostmap();
   costmap_[COMBINED_COSTMAP_LAYER_] = generateCombinedCostmap();
 
-  publishRosMsg(costmap_);
+  std_msgs::Header in_header = in_objects->header;
+  publishRosMsg(costmap_, in_header);
 }
 
 void CostmapGenerator::sensorPointsCallback(const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points_msg)
@@ -111,7 +112,8 @@ void CostmapGenerator::sensorPointsCallback(const sensor_msgs::PointCloud2::Cons
   costmap_[VECTORMAP_COSTMAP_LAYER_] = generateVectormapCostmap();
   costmap_[COMBINED_COSTMAP_LAYER_] = generateCombinedCostmap();
 
-  publishRosMsg(costmap_);
+  std_msgs::Header in_header = in_sensor_points_msg->header;
+  publishRosMsg(costmap_, in_header);
 }
 
 void CostmapGenerator::initGridmap()
@@ -182,14 +184,16 @@ grid_map::Matrix CostmapGenerator::generateCombinedCostmap()
   return combined_costmap[COMBINED_COSTMAP_LAYER_];
 }
 
-void CostmapGenerator::publishRosMsg(const grid_map::GridMap& costmap)
+void CostmapGenerator::publishRosMsg(const grid_map::GridMap& costmap, const std_msgs::Header& in_header)
 {
   nav_msgs::OccupancyGrid out_occupancy_grid;
   grid_map::GridMapRosConverter::toOccupancyGrid(costmap, COMBINED_COSTMAP_LAYER_, grid_min_value_, grid_max_value_,
                                                  out_occupancy_grid);
+  out_occupancy_grid.header = in_header;
   pub_occupancy_grid_.publish(out_occupancy_grid);
 
   grid_map_msgs::GridMap out_gridmap_msg;
   grid_map::GridMapRosConverter::toMessage(costmap, out_gridmap_msg);
+  out_gridmap_msg.info.header = in_header;
   pub_costmap_.publish(out_gridmap_msg);
 }
