@@ -20,38 +20,39 @@
  * v1.0 Masaya Kataoka
  */
 
-//headers in ROS
+// headers in ROS
 #include <ros/ros.h>
 
-//headers in Autoware
+// headers in Autoware
 #include <autoware_health_checker/constants.h>
 
-//headers in STL
+// headers in STL
 #include <map>
 #include <mutex>
 
-//headers in Boost
+// headers in Boost
 #include <boost/optional.hpp>
 #include <boost/thread.hpp>
 
-class ValueManager
-{
+class ValueManager {
 public:
-    ValueManager(ros::NodeHandle nh,ros::NodeHandle pnh);
-    ~ValueManager();
-    void run();
-    void setDefaultValue(std::string key,double warn_value,double error_value, double fatal_value);
-    double getValue(std::string key,uint8_t level);
+  ValueManager(ros::NodeHandle nh, ros::NodeHandle pnh);
+  ~ValueManager();
+  void run();
+  void setDefaultValue(std::string key, double warn_value, double error_value,
+                       double fatal_value);
+  double getValue(std::string key, uint8_t level);
+
 private:
-    bool default_value_exist_;
-    std::map<std::pair<std::string,uint8_t>,double> data_;
-    std::map<std::pair<std::string,uint8_t>,double> rosparam_data_;
-    ros::NodeHandle nh_;
-    ros::NodeHandle pnh_;
-    XmlRpc::XmlRpcValue diag_params_;
-    void updateParams();
-    bool ros_ok_;
-    bool foundParamKey(std::string key,uint8_t level,std::string& key_str);
-    std::mutex mtx_;
+  bool default_value_exist_;
+  std::map<std::pair<std::string, uint8_t>, double> data_;
+  std::map<std::pair<std::string, uint8_t>, double> rosparam_data_;
+  ros::NodeHandle nh_;
+  ros::NodeHandle pnh_;
+  XmlRpc::XmlRpcValue diag_params_;
+  void updateParams();
+  bool ros_ok_;
+  bool foundParamKey(std::string key, uint8_t level, std::string &key_str);
+  std::mutex mtx_;
 };
-#endif  //VALUE_MANAGER_H_INCLUDED
+#endif // VALUE_MANAGER_H_INCLUDED

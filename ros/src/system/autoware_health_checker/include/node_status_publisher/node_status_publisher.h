@@ -25,10 +25,10 @@
 
 // headers in Autoware
 #include <autoware_health_checker/constants.h>
+#include <autoware_system_msgs/NodeStatus.h>
 #include <node_status_publisher/diag_buffer.h>
 #include <node_status_publisher/rate_checker.h>
 #include <node_status_publisher/value_manager.h>
-#include <autoware_system_msgs/NodeStatus.h>
 
 // headers in STL
 #include <functional>
@@ -85,10 +85,7 @@ public:
   }
   void CHECK_RATE(std::string key, double warn_rate, double error_rate,
                   double fatal_rate, std::string description);
-  void SET_DIAG_STATUS(std::string key,autoware_system_msgs::DiagnosticStatus status)
-  {
-
-  }
+  void SET_DIAG_STATUS(autoware_system_msgs::DiagnosticStatus status);
   void NODE_ACTIVATE() {
     std::lock_guard<std::mutex> lock(mtx_);
     node_activated_ = true;
@@ -110,9 +107,7 @@ private:
   ros::Publisher status_pub_;
   bool keyExist(std::string key);
   bool addNewBuffer(std::string key, uint8_t type, std::string description);
-  template <typename T>
-  std::string valueToJson(T value)
-  {
+  template <typename T> std::string valueToJson(T value) {
     using namespace boost::property_tree;
     std::stringstream ss;
     ptree pt;

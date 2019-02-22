@@ -44,7 +44,8 @@ public:
   uint8_t getErrorLevel();
   boost::optional<double> getRate();
   const std::string description;
-  void setRate(double warn_rate, double error_rate,double fatal_rate);
+  void setRate(double warn_rate, double error_rate, double fatal_rate);
+
 private:
   ros::Time start_time_;
   void update();
