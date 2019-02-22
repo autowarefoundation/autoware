@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-// ROS Includes
 #include <ros/ros.h>
 
-#include "pacmod_interface.h"
+#include "ssc_interface.h"
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "pacmod_interface");
-  pacmod::PacmodInterface pacmod_interface;
-
-  pacmod_interface.run();
+  ros::init(argc, argv, "ssc_interface");
+  SSCInterface node;
+  node.run();
 
   return 0;
 }
