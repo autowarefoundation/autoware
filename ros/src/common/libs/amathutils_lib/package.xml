@@ -1,17 +1,23 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>amathutils_lib</name>
   <version>1.10.0</version>
   <description>The libamathutils package</description>
+
   <maintainer email="yusuke.fujii@tier4.jp">Yusuke FUJII</maintainer>
   <license>Apache 2</license>
   <author email="yusuke.fujii@tier4.jp">Yusuke FUJII</author>
-  <buildtool_depend>catkin</buildtool_depend>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>autoware_build_flags</buildtool_depend>
+
   <build_depend>roscpp</build_depend>
   <build_depend>autoware_msgs</build_depend>
-  <run_depend>roscpp</run_depend>
-  <run_depend>autoware_msgs</run_depend>
+
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>autoware_msgs</exec_depend>
+
   <export>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>

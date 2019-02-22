@@ -1,46 +1,52 @@
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.5)
 project(amathutils_lib) # autoware math utility
 
 find_package(autoware_build_flags REQUIRED)
 
 find_package(autoware_msgs REQUIRED)
-find_package(catkin REQUIRED COMPONENTS
-        roscpp
-        autoware_msgs
-        )
+find_package(roscpp REQUIRED)
+
+find_package(ament_cmake REQUIRED)
 
 set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
-catkin_package(
-        INCLUDE_DIRS include
-        LIBRARIES amathutils_lib
-        CATKIN_DEPENDS roscpp autoware_msgs
-)
-
 include_directories(amathutils_lib
         include
-        ${catkin_INCLUDE_DIRS}
         ${autoware_msgs_INCLUDE_DIRS}
         )
 
 add_library(amathutils_lib
         src/Amathutils.cpp
         )
-target_link_libraries(amathutils_lib
-        ${catkin_LIBRARIES}
+
+ament_target_dependencies(amathutils_lib
+        autoware_msgs
+        roscpp
         )
 
-add_dependencies(amathutils_lib
-        ${catkin_EXPORTED_TARGETS}
-        )
-
-install(DIRECTORY include/${PROJECT_NAME}/
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+install(
+        DIRECTORY include/
+        DESTINATION include
         FILES_MATCHING PATTERN "*.hpp"
         )
 
 install(TARGETS amathutils_lib
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin
         )
+
+ament_export_dependencies(ament_cmake)
+ament_export_dependencies(autoware_msgs)
+ament_export_dependencies(roscpp)
+
+ament_export_include_directories(include)
+
+ament_export_libraries(amathutils_lib)
+
+if(BUILD_TESTING)
+        find_package(ament_lint_auto REQUIRED)
+        ament_lint_auto_find_test_dependencies()
+endif()
+
+ament_package()
