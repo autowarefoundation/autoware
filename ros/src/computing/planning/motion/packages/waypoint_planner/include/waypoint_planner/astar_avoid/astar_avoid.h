@@ -113,7 +113,7 @@ private:
   // functions
   bool checkInitialized();
   bool planAvoidWaypoints(int& end_of_avoid_index);
-  void mergeAvoidWaypoints(const nav_msgs::Path& path, const int& end_of_avoid_index);
+  void mergeAvoidWaypoints(const nav_msgs::Path& path, const int& goal_waypoint_index);
   void publishWaypoints();
   tf::Transform getTransform(const std::string& from, const std::string& to);
 };

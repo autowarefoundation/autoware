@@ -259,16 +259,13 @@ bool AstarAvoid::planAvoidWaypoints(int& end_of_avoid_index)
     // ros::WallTime start = ros::WallTime::now();
     found_path = astar_.makePlan(current_pose_local_.pose, goal_pose_local_.pose);
     // ros::WallTime end = ros::WallTime::now();
-
-    static ros::Publisher pub = nh_.advertise<nav_msgs::Path>("debug", 1, true);
-
     // ROS_INFO("Astar planning: %f [s], at index = %d", (end - start).toSec(), goal_waypoint_index);
 
     if (found_path)
     {
-      pub.publish(astar_.getPath());
-      end_of_avoid_index = goal_waypoint_index;
-      mergeAvoidWaypoints(astar_.getPath(), end_of_avoid_index);
+      const nav_msgs::Path& path = astar_.getPath();
+      end_of_avoid_index = closest_waypoint_index + path.poses.size();
+      mergeAvoidWaypoints(path, goal_waypoint_index);
       if (avoid_waypoints_.waypoints.size() > 0)
       {
         ROS_INFO("Found GOAL at index = %d", goal_waypoint_index);
@@ -287,7 +284,7 @@ bool AstarAvoid::planAvoidWaypoints(int& end_of_avoid_index)
   return false;
 }
 
-void AstarAvoid::mergeAvoidWaypoints(const nav_msgs::Path& path, const int& end_of_avoid_index)
+void AstarAvoid::mergeAvoidWaypoints(const nav_msgs::Path& path, const int& goal_waypoint_index)
 {
   autoware_msgs::Lane current_waypoints = avoid_waypoints_;
 
@@ -314,7 +311,7 @@ void AstarAvoid::mergeAvoidWaypoints(const nav_msgs::Path& path, const int& end_
   }
 
   // add waypoints after goal index
-  for (int i = end_of_avoid_index; i < static_cast<int>(current_waypoints.waypoints.size()); ++i)
+  for (int i = goal_waypoint_index; i < static_cast<int>(current_waypoints.waypoints.size()); ++i)
   {
     avoid_waypoints_.waypoints.push_back(current_waypoints.waypoints.at(i));
   }
