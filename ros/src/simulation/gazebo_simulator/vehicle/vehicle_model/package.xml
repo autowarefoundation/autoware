@@ -16,8 +16,8 @@
   <exec_depend>transmission_interface</exec_depend>
   <exec_depend>velocity_controllers</exec_depend>
   <exec_depend>effort_controllers</exec_depend>
-  <exec_depend>camera_description</exec_depend>
-  <exec_depend>imu_description</exec_depend>
+  <exec_depend>gazebo_camera_description</exec_depend>
+  <exec_depend>gazebo_imu_description</exec_depend>
   <exec_depend>velodyne_description</exec_depend>
   <exec_depend>velodyne_gazebo_plugins</exec_depend>
   <export>
