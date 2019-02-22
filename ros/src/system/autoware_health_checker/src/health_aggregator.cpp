@@ -41,13 +41,9 @@ void HealthAggregator::run() {
   node_status_sub_ = nh_.subscribe("/node_status", 10,
                                    &HealthAggregator::nodeStatusCallback, this);
   diagnostic_array_sub_ = nh_.subscribe(
-<<<<<<< HEAD
       "/diagnostics_agg", 10, &HealthAggregator::diagnosticArrayCallback, this);
-=======
-      "/diagnostic_agg", 10, &HealthAggregator::diagnosticArrayCallback, this);
   topic_statistics_sub_ = nh_.subscribe(
       "/statistics", 1, &HealthAggregator::topicStatisticsCallback, this);
->>>>>>> 4a9dc5ab77e3c9f87957e67b806276ec7ad39f6f
   boost::thread publish_thread(
       boost::bind(&HealthAggregator::publishSystemStatus, this));
   return;

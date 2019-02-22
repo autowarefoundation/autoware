@@ -110,9 +110,6 @@ private:
   ros::Publisher status_pub_;
   bool keyExist(std::string key);
   bool addNewBuffer(std::string key, uint8_t type, std::string description);
-  std::string doubleToJson(double value);
-  std::string intToJson(int value);
-  std::string boolToJson(bool value);
   template <typename T>
   std::string valueToJson(T value)
   {

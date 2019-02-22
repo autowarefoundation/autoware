@@ -54,7 +54,7 @@ void NodeStatusPublisher::publishStatus() {
           rate_checkers_[*key_itr]->getErrorLevelAndRate();
       diag.level = result.first;
       diag.key = *key_itr;
-      diag.value = doubleToJson(result.second);
+      diag.value = valueToJson(result.second);
       diag.description = rate_checkers_[*key_itr]->description;
       diag.header.stamp = now;
       diag_array.status.push_back(diag);
@@ -146,12 +146,7 @@ uint8_t NodeStatusPublisher::CHECK_MIN_VALUE(std::string key, double value,
   }
   new_status.key = key;
   new_status.description = description;
-<<<<<<< HEAD
-  new_status.value = doubleToJson(value);
-=======
-  new_status.value = doubeToJson(value);
-  new_status.header.stamp = ros::Time::now();
->>>>>>> 4a9dc5ab77e3c9f87957e67b806276ec7ad39f6f
+  new_status.value = valueToJson(value);
   diag_buffers_[key]->addDiag(new_status);
   return new_status.level;
 }
@@ -177,7 +172,7 @@ uint8_t NodeStatusPublisher::CHECK_MAX_VALUE(std::string key, double value,
   }
   new_status.key = key;
   new_status.description = description;
-  new_status.value = doubleToJson(value);
+  new_status.value = valueToJson(value);
   new_status.header.stamp = ros::Time::now();
   diag_buffers_[key]->addDiag(new_status);
   return new_status.level;
@@ -207,7 +202,7 @@ uint8_t NodeStatusPublisher::CHECK_RANGE(std::string key, double value,
     new_status.level = autoware_system_msgs::DiagnosticStatus::OK;
   }
   new_status.key = key;
-  new_status.value = doubleToJson(value);
+  new_status.value = valueToJson(value);
   new_status.description = description;
   new_status.header.stamp = ros::Time::now();
   diag_buffers_[key]->addDiag(new_status);
@@ -231,14 +226,5 @@ void NodeStatusPublisher::CHECK_RATE(std::string key, double warn_rate,
     value_manager_ptr_->getValue(key+"/rate",autoware_health_checker::LEVEL_FATAL));
   rate_checkers_[key]->check();
   return;
-}
-
-std::string NodeStatusPublisher::doubleToJson(double value) {
-  using namespace boost::property_tree;
-  std::stringstream ss;
-  ptree pt;
-  pt.put("value.double", value);
-  write_json(ss, pt);
-  return ss.str();
 }
 }
