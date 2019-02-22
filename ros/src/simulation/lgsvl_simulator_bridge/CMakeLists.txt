@@ -4,7 +4,6 @@ project(lgsvl_simulator_bridge)
 add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
-        autoware_msgs
         geometry_msgs
         roscpp
         rospy
@@ -18,7 +17,6 @@ catkin_python_setup()
 
 catkin_package(
         CATKIN_DEPENDS
-        autoware_msgs
         geometry_msgs
         roscpp
         rospy

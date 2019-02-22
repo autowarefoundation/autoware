@@ -7,16 +7,15 @@ set(CMAKE_CXX_FLAGS "-O2 -s  -Wno-error=unused-parameter")
 
 find_package(autoware_build_flags REQUIRED)
 
-find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         roscpp
-        std_msgs sensor_msgs autoware_msgs
+        std_msgs sensor_msgs 
         )
 
 find_package(CUDA)
 
 catkin_package(
-        CATKIN_DEPENDS std_msgs sensor_msgs autoware_msgs
+        CATKIN_DEPENDS std_msgs sensor_msgs 
 )
 
 if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64" AND CUDA_FOUND)
@@ -41,7 +40,6 @@ if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64" AND CUDA_FOUND)
     include_directories(
             include
             ${catkin_INCLUDE_DIRS}
-            ${autoware_msgs_INCLUDE_DIRS}
             ${Boost_INCLUDE_DIRS}
             ${OpenCV_INCLUDE_DIRS}
     )
