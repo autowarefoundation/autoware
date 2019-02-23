@@ -27,7 +27,7 @@
 #include <std_msgs/Int32.h>
 #include <std_msgs/String.h>
 
-#include <node_status_publisher/node_status_publisher.h>
+#include <autoware_health_checker/node_status_publisher/node_status_publisher.h>
 #include <memory>
 
 namespace astar_planner

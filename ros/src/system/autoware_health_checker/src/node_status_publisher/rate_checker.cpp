@@ -17,7 +17,7 @@
  * v1.0 Masaya Kataoka
  */
 
-#include <node_status_publisher/rate_checker.h>
+#include <autoware_health_checker/node_status_publisher/rate_checker.h>
 
 namespace autoware_health_checker {
 RateChecker::RateChecker(double buffer_length, double warn_rate,

@@ -50,7 +50,7 @@
 #include "autoware_msgs/ControlCommandStamped.h"
 
 //headers in Autowae Health Checker
-#include <node_status_publisher/node_status_publisher.h>
+#include <autoware_health_checker/node_status_publisher/node_status_publisher.h>
 
 class TwistGate
 {

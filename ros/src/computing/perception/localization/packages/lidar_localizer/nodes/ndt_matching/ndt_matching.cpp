@@ -70,7 +70,7 @@
 #include <autoware_msgs/NDTStat.h>
 
 //headers in Autoware Health Checker
-#include <node_status_publisher/node_status_publisher.h>
+#include <autoware_health_checker/node_status_publisher/node_status_publisher.h>
 
 #define PREDICT_POSE_THRESHOLD 0.5
 

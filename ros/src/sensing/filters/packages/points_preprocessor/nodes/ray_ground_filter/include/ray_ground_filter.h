@@ -34,7 +34,7 @@
 #include "autoware_config_msgs/ConfigRayGroundFilter.h"
 
 //headers in Autoware Health Checker
-#include <node_status_publisher/node_status_publisher.h>
+#include <autoware_health_checker/node_status_publisher/node_status_publisher.h>
 
 #include <opencv2/core/version.hpp>
 #if (CV_MAJOR_VERSION == 3)

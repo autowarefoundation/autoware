@@ -17,7 +17,7 @@
  * v1.0 Masaya Kataoka
  */
 
-#include <node_status_publisher/node_status_publisher.h>
+#include <autoware_health_checker/node_status_publisher/node_status_publisher.h>
 
 namespace autoware_health_checker {
 NodeStatusPublisher::NodeStatusPublisher(ros::NodeHandle nh,
