@@ -39,19 +39,19 @@ replacement_list = [
     AutowareMsgs("common", "autoware_common_msgs", "openplanner_op_ros_helpers"),
     AutowareMsgs("common", "autoware_common_msgs", "openplanner_op_utility"),
     AutowareMsgs("decision", "autoware_decision_msgs", "decision_maker"),
-    AutowareMsgs("mission", "autoware_mission_msgs", "freespace_planner"),
-    AutowareMsgs("mission", "autoware_mission_msgs", "lane_planner"),
-    AutowareMsgs("mission", "autoware_mission_msgs", "op_global_planner"),
-    AutowareMsgs("mission", "autoware_mission_msgs", "way_planner"),
-    AutowareMsgs("motion", "autoware_motion_msgs", "astar_planner"),
-    AutowareMsgs("motion", "autoware_motion_msgs", "dp_planner"),
-    AutowareMsgs("motion", "autoware_motion_msgs", "ff_waypoint_follower"),
-    AutowareMsgs("motion", "autoware_motion_msgs", "lattice_planner"),
-    AutowareMsgs("motion", "autoware_motion_msgs", "op_local_planner"),
-    AutowareMsgs("motion", "autoware_motion_msgs", "op_simulation_package"),
-    AutowareMsgs("motion", "autoware_motion_msgs", "op_utilities"),
-    AutowareMsgs("motion", "autoware_motion_msgs", "waypoint_follower"),
-    AutowareMsgs("motion", "autoware_motion_msgs", "waypoint_maker"),
+    AutowareMsgs("mission", "autoware_navigation_msgs", "freespace_planner"),
+    AutowareMsgs("mission", "autoware_navigation_msgs", "lane_planner"),
+    AutowareMsgs("mission", "autoware_navigation_msgs", "op_global_planner"),
+    AutowareMsgs("mission", "autoware_navigation_msgs", "way_planner"),
+    AutowareMsgs("motion", "autoware_navigation_msgs", "astar_planner"),
+    AutowareMsgs("motion", "autoware_navigation_msgs", "dp_planner"),
+    AutowareMsgs("motion", "autoware_navigation_msgs", "ff_waypoint_follower"),
+    AutowareMsgs("motion", "autoware_navigation_msgs", "lattice_planner"),
+    AutowareMsgs("motion", "autoware_navigation_msgs", "op_local_planner"),
+    AutowareMsgs("motion", "autoware_navigation_msgs", "op_simulation_package"),
+    AutowareMsgs("motion", "autoware_navigation_msgs", "op_utilities"),
+    AutowareMsgs("motion", "autoware_navigation_msgs", "waypoint_follower"),
+    AutowareMsgs("motion", "autoware_navigation_msgs", "waypoint_maker"),
     AutowareMsgs("map", "autoware_map_msgs", "map_file"),
     AutowareMsgs("map", "autoware_map_msgs", "obj_db"),
     AutowareMsgs("map", "autoware_map_msgs", "pos_db"),
@@ -74,24 +74,24 @@ replacement_list = [
 # We allow to have manual associations of message types to a new namespace using the following 1:1 dictionary
 # Example {"autoware_msgs/Lane": "autoware_map_msgs"}
 # run `printAllMsgsAssociations(allMsgsToPattern(lines, filespattern))` to generate the basic associations
-# based on message publishing and subscribing, manually assign namespace `autoware_unused_msgs` to those 
-# messages without associations, make necessary correction to suggested namespaces, and make sure each 
+# based on message publishing and subscribing, manually assign namespace `autoware_unused_msgs` to those
+# messages without associations, make necessary correction to suggested namespaces, and make sure each
 # message type is assigned to only ONE namespace.
 manual_association_list = {
-    'autoware_msgs/AccelCmd': 'autoware_motion_msgs',
+    'autoware_msgs/AccelCmd': 'autoware_navigation_msgs',
     'autoware_msgs/AdjustXY': 'autoware_detection_msgs',
-    'autoware_msgs/BrakeCmd': 'autoware_motion_msgs',
+    'autoware_msgs/BrakeCmd': 'autoware_navigation_msgs',
     'autoware_msgs/CameraExtrinsic': 'autoware_sensing_msgs',
     'autoware_msgs/Centroids': 'autoware_detection_msgs',  # 'autoware_system_msgs',
-    'autoware_msgs/CloudCluster': 'autoware_detection_msgs',  # 'autoware_motion_msgs',
-    'autoware_msgs/CloudClusterArray': 'autoware_detection_msgs',  # 'autoware_motion_msgs', 'autoware_decision_msgs',
-    'autoware_msgs/ColorSet': 'autoware_unused_msgs',
-    'autoware_msgs/ControlCommand': 'autoware_motion_msgs',
-    'autoware_msgs/ControlCommandStamped': 'autoware_motion_msgs',
-    'autoware_msgs/DTLane': 'autoware_mission_msgs',
-    'autoware_msgs/DetectedObject': 'autoware_detection_msgs',  # 'autoware_semantics_msgs', 'autoware_motion_msgs', 'autoware_prediction_msgs',
-    'autoware_msgs/DetectedObjectArray': 'autoware_detection_msgs',  # 'autoware_motion_msgs', 'autoware_semantics_msgs', 'autoware_util_msgs', 'autoware_prediction_msgs',
-    'autoware_msgs/ExtractedPosition': 'autoware_motion_msgs',  # 'autoware_detection_msgs'
+    'autoware_msgs/CloudCluster': 'autoware_detection_msgs',  # 'autoware_navigation_msgs',
+    'autoware_msgs/CloudClusterArray': 'autoware_detection_msgs',  # 'autoware_navigation_msgs', 'autoware_decision_msgs',
+    'autoware_msgs/ColorSet': 'autoware_detection_msgs',
+    'autoware_msgs/ControlCommand': 'autoware_navigation_msgs',
+    'autoware_msgs/ControlCommandStamped': 'autoware_navigation_msgs',
+    'autoware_msgs/DTLane': 'autoware_navigation_msgs',
+    'autoware_msgs/DetectedObject': 'autoware_detection_msgs',  # 'autoware_semantics_msgs', 'autoware_navigation_msgs', 'autoware_prediction_msgs',
+    'autoware_msgs/DetectedObjectArray': 'autoware_detection_msgs',  # 'autoware_navigation_msgs', 'autoware_semantics_msgs', 'autoware_util_msgs', 'autoware_prediction_msgs',
+    'autoware_msgs/ExtractedPosition': 'autoware_navigation_msgs',  # 'autoware_detection_msgs'
     'autoware_msgs/GeometricRectangle': 'autoware_unused_msgs',
     'autoware_msgs/ICPStat': 'autoware_localization_msgs',
     'autoware_msgs/ImageLaneObjects': 'autoware_detection_msgs',
@@ -100,34 +100,34 @@ manual_association_list = {
     'autoware_msgs/ImageObjTracked': 'autoware_detection_msgs',  # 'autoware_system_msgs',
     'autoware_msgs/ImageObjects': 'autoware_unused_msgs',
     'autoware_msgs/ImageRect': 'autoware_detection_msgs',
-    'autoware_msgs/ImageRectRanged': 'autoware_unused_msgs',
+    'autoware_msgs/ImageRectRanged': 'autoware_detection_msgs',
     'autoware_msgs/IndicatorCmd': 'autoware_util_msgs',  # <- wrong auto association
-    'autoware_msgs/LampCmd': 'autoware_decision_msgs',  # 'autoware_motion_msgs',
-    'autoware_msgs/Lane': 'autoware_mission_msgs',  # 'autoware_detection_msgs', 'autoware_map_msgs', 'autoware_decision_msgs', 
-    'autoware_msgs/LaneArray': 'autoware_mission_msgs',  # 'autoware_motion_msgs', 'autoware_map_msgs', 'autoware_util_msgs', 'autoware_decision_msgs',
+    'autoware_msgs/LampCmd': 'autoware_decision_msgs',  # 'autoware_navigation_msgs',
+    'autoware_msgs/Lane': 'autoware_navigation_msgs',  # 'autoware_detection_msgs', 'autoware_map_msgs', 'autoware_decision_msgs',
+    'autoware_msgs/LaneArray': 'autoware_navigation_msgs',  # 'autoware_navigation_msgs', 'autoware_map_msgs', 'autoware_util_msgs', 'autoware_decision_msgs',
     'autoware_msgs/NDTStat': 'autoware_localization_msgs',  # 'autoware_socket_msgs',
     'autoware_msgs/ObjLabel': 'autoware_detection_msgs',  # 'autoware_system_msgs',  #  <-  wrong auto association
     'autoware_msgs/ObjPose': 'autoware_unused_msgs',
     'autoware_msgs/PointsImage': 'autoware_sensing_msgs',  # 'autoware_detection_msgs', 'autoware_system_msgs',
     'autoware_msgs/ProjectionMatrix': 'autoware_sensing_msgs',  # 'autoware_util_msgs',
-    'autoware_msgs/RemoteCmd': 'autoware_socket_msgs',  # 'autoware_motion_msgs',
+    'autoware_msgs/RemoteCmd': 'autoware_socket_msgs',  # 'autoware_navigation_msgs',
     'autoware_msgs/ScanImage': 'autoware_unused_msgs',
-    'autoware_msgs/Signals': 'autoware_detection_msgs',  # 'autoware_motion_msgs',
-    'autoware_msgs/State': 'autoware_decision_msgs',  # 'autoware_mission_msgs',
+    'autoware_msgs/Signals': 'autoware_detection_msgs',  # 'autoware_navigation_msgs',
+    'autoware_msgs/State': 'autoware_decision_msgs',  # 'autoware_navigation_msgs',
     'autoware_msgs/StateCmd': 'autoware_unused_msgs',
-    'autoware_msgs/SteerCmd': 'autoware_motion_msgs',
+    'autoware_msgs/SteerCmd': 'autoware_navigation_msgs',
     'autoware_msgs/SyncTimeDiff': 'autoware_sync_msgs',  # <- manually assigned to sync, was system
     'autoware_msgs/SyncTimeMonitor': 'autoware_sync_msgs',  # <- manually assigned to sync, was system
-    'autoware_msgs/TrafficLight': 'autoware_detection_msgs',  # 'autoware_motion_msgs', 'autoware_decision_msgs', 'autoware_mission_msgs',
+    'autoware_msgs/TrafficLight': 'autoware_detection_msgs',  # 'autoware_navigation_msgs', 'autoware_decision_msgs', 'autoware_navigation_msgs',
     'autoware_msgs/TrafficLightResult': 'autoware_detection_msgs',
     'autoware_msgs/TrafficLightResultArray': 'autoware_detection_msgs',
     'autoware_msgs/TunedResult': 'autoware_detection_msgs',
-    'autoware_msgs/ValueSet': 'autoware_unused_msgs',
-    'autoware_msgs/VehicleCmd': 'autoware_socket_msgs',  # 'autoware_actuation_msgs', 'autoware_motion_msgs', 
+    'autoware_msgs/ValueSet': 'autoware_detection_msgs',
+    'autoware_msgs/VehicleCmd': 'autoware_socket_msgs',  # 'autoware_actuation_msgs', 'autoware_navigation_msgs',
     'autoware_msgs/VehicleStatus': 'autoware_localization_msgs',
     'autoware_msgs/VscanTracked': 'autoware_unused_msgs',
     'autoware_msgs/VscanTrackedArray': 'autoware_unused_msgs',
-    'autoware_msgs/Waypoint': 'autoware_motion_msgs',  # 'autoware_decision_msgs', 'autoware_mission_msgs',
+    'autoware_msgs/Waypoint': 'autoware_navigation_msgs',  # 'autoware_decision_msgs', 'autoware_navigation_msgs',
     'autoware_msgs/WaypointState': 'autoware_decision_msgs'}
 
 
@@ -652,7 +652,7 @@ def createNewMsgsStructure(movemsgsrev, manual_list=manual_association_list):
     # finally, remove "src/msgs/autoware_msgs"
     try:
         autowaremsgs = srcmsgsprefix + "autoware_msgs"
-        print("deleting folder{}".format(autowaremsgs))
+        print("deleting folder \"{}\"".format(autowaremsgs))
         os.rmdir(autowaremsgs + "/msg")  # empty by now
         for root, _, files in os.walk(autowaremsgs):
             for f in files:
@@ -720,9 +720,9 @@ def revertReplacements(files):
     os.system("rm -rf src/msgs/autoware_decision_msgs 2>/dev/null")
     os.system("rm -rf src/msgs/autoware_detection_msgs 2>/dev/null")
     os.system("rm -rf src/msgs/autoware_localization_msgs 2>/dev/null")
-    os.system("rm -rf src/msgs/autoware_mission_msgs 2>/dev/null")
-    os.system("rm -rf src/msgs/autoware_motion_msgs 2>/dev/null")
-    os.system("rm -rf src/msgs/autoware_motion_msgs 2>/dev/null")
+    os.system("rm -rf src/msgs/autoware_navigation_msgs 2>/dev/null")
+    os.system("rm -rf src/msgs/autoware_navigation_msgs 2>/dev/null")
+    os.system("rm -rf src/msgs/autoware_navigation_msgs 2>/dev/null")
     os.system("rm -rf src/msgs/autoware_sensing_msgs 2>/dev/null")
     os.system("rm -rf src/msgs/autoware_socket_msgs 2>/dev/null")
     os.system("rm -rf src/msgs/autoware_unused_msgs 2>/dev/null")
@@ -942,26 +942,26 @@ def fixPackageDefFiles(movmsgsrev, root="src/", takebackup=True):
 
 
 if __name__ == '__main__':
-    # Finds all files and lines containing "autoware_msgs"
-    lines = findFiles()
-    # Associates file names with replacement list
-    filespattern = files2Pattern(lines)
-    # Find which autoware message are published
-    pubmsgs = messagesPublishersToPattern(lines, filespattern)
-    # Find all the autoware messages in use
-    allmsgs = allMsgsToPattern(lines, filespattern)
-    # Generate the message type to new namespace associations
-    movmsgs = moveMsgs(pubmsgs, allmsgs)
-    # Generate the inverse (new namespace to message types) associations
-    movmsgsrev = moveMsgsReverse(pubmsgs, allmsgs)
-    # For each file generate the namespace replacement
-    replacements = genAutowareMsgsReplacement(lines, movmsgs)
-    # Applies he replacements to actual files, returns the list of modified files (no backups)
-    modfiles = replaceAutowareMsgsInPlace(replacements, False)
-    # Fixes the contents of package.xml and CMakeLists.txt accordingly, returns the list of modified files (no backups)
-    modfiles = modfiles + fixPackageDefFiles(movmsgsrev, "src/", False)
-    # Creates the new autoware messages structure, and deletes the old
-    createNewMsgsStructure(movmsgsrev)
+# Finds all files and lines containing "autoware_msgs"
+lines = findFiles()
+# Associates file names with replacement list
+filespattern = files2Pattern(lines)
+# Find which autoware message are published
+pubmsgs = messagesPublishersToPattern(lines, filespattern)
+# Find all the autoware messages in use
+allmsgs = allMsgsToPattern(lines, filespattern)
+# Generate the message type to new namespace associations
+movmsgs = moveMsgs(pubmsgs, allmsgs)
+# Generate the inverse (new namespace to message types) associations
+movmsgsrev = moveMsgsReverse(pubmsgs, allmsgs)
+# For each file generate the namespace replacement
+replacements = genAutowareMsgsReplacement(lines, movmsgs)
+# Applies he replacements to actual files, returns the list of modified files (no backups)
+modfiles = replaceAutowareMsgsInPlace(replacements, False)
+# Fixes the contents of package.xml and CMakeLists.txt accordingly, returns the list of modified files (no backups)
+modfiles = modfiles + fixPackageDefFiles(movmsgsrev, "src/", False)
+# Creates the new autoware messages structure, and deletes the old
+createNewMsgsStructure(movmsgsrev)
     #
     # Optionally, we can revert changes if needed
     # modfiles = list(set(modfiles))  # remove duplicated entries

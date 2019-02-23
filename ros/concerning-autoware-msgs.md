@@ -24,16 +24,15 @@ Namespace of existing message types in `src/msgs/autoware_msgs/msg/` will change
 
 | New namespace                 | Associated messages      |
 | ----------------------------- | ------------------------ |
-|`autoware_actuation_msgs`|`autoware_msgs/VehicleCmd`|
 |`autoware_decision_msgs`|`autoware_msgs/LampCmd`,`autoware_msgs/WaypointState`,`autoware_msgs/State`|
 |`autoware_detection_msgs`|`autoware_msgs/DetectedObjectArray`,`autoware_msgs/Centroids`,`autoware_msgs/ImageObjRanged`,`autoware_msgs/ImageLaneObjects`,`autoware_msgs/CloudClusterArray`,`autoware_msgs/ImageRect`,`autoware_msgs/TrafficLightResult`,`autoware_msgs/TrafficLight`,`autoware_msgs/ImageObj`,`autoware_msgs/ImageObjTracked`,`autoware_msgs/Signals`,`autoware_msgs/DetectedObject`,`autoware_msgs/TrafficLightResultArray`,`autoware_msgs/TunedResult`,`autoware_msgs/AdjustXY`,`autoware_msgs/CloudCluster`,`autoware_msgs/ObjLabel`|
 |`autoware_localization_msgs`|`autoware_msgs/VehicleStatus`,`autoware_msgs/ICPStat`,`autoware_msgs/NDTStat`|
 |`autoware_mission_msgs`|`autoware_msgs/DTLane`,`autoware_msgs/LaneArray`,`autoware_msgs/Lane`|
 |`autoware_motion_msgs`|`autoware_msgs/ControlCommandStamped`,`autoware_msgs/Waypoint`,`autoware_msgs/ExtractedPosition`,`autoware_msgs/ControlCommand`,`autoware_msgs/BrakeCmd`,`autoware_msgs/AccelCmd`,`autoware_msgs/SteerCmd`|
 |`autoware_sensing_msgs`|`autoware_msgs/ProjectionMatrix`,`autoware_msgs/PointsImage`,`autoware_msgs/CameraExtrinsic`|
-|`autoware_socket_msgs`|`autoware_msgs/RemoteCmd`|
-|`autoware_system_msgs`|`autoware_msgs/SyncTimeDiff`,`autoware_msgs/SyncTimeMonitor`|
-|`autoware_unused_msgs`|`autoware_msgs/StateCmd`,`autoware_msgs/ImageObjects`,`autoware_msgs/ImageRectRanged`,`autoware_msgs/VscanTracked`,`autoware_msgs/ScanImage`,`autoware_msgs/ValueSet`,`autoware_msgs/ColorSet`,`autoware_msgs/VscanTrackedArray`,`autoware_msgs/ObjPose`,`autoware_msgs/GeometricRectangle`,`autoware_msgs/StateCmd`,`autoware_msgs/ImageObjects`,`autoware_msgs/ImageRectRanged`,`autoware_msgs/VscanTracked`,`autoware_msgs/ScanImage`,`autoware_msgs/ValueSet`,`autoware_msgs/ColorSet`,`autoware_msgs/VscanTrackedArray`,`autoware_msgs/ObjPose`,`autoware_msgs/GeometricRectangle`|
+|`autoware_socket_msgs`|`autoware_msgs/VehicleCmd`,`autoware_msgs/RemoteCmd`|
+|`autoware_sync_msgs`|`autoware_msgs/SyncTimeDiff`,`autoware_msgs/SyncTimeMonitor`|
+|`autoware_unused_msgs`|`autoware_msgs/StateCmd`,`autoware_msgs/ImageObjects`,`autoware_msgs/ImageRectRanged`,`autoware_msgs/VscanTracked`,`autoware_msgs/ScanImage`,`autoware_msgs/ValueSet`,`autoware_msgs/ColorSet`,`autoware_msgs/VscanTrackedArray`,`autoware_msgs/ObjPose`,`autoware_msgs/GeometricRectangle`|
 |`autoware_util_msgs`|`autoware_msgs/IndicatorCmd`|
 
 
@@ -72,13 +71,13 @@ The following is a different view of the above table, to ease finding messages t
 |`autoware_msgs/Signals`|`autoware_detection_msgs`|
 |`autoware_msgs/State`|`autoware_decision_msgs`|
 |`autoware_msgs/SteerCmd`|`autoware_motion_msgs`|
-|`autoware_msgs/SyncTimeDiff`|`autoware_system_msgs`|
-|`autoware_msgs/SyncTimeMonitor`|`autoware_system_msgs`|
+|`autoware_msgs/SyncTimeDiff`|`autoware_sync_msgs`|
+|`autoware_msgs/SyncTimeMonitor`|`autoware_sync_msgs`|
 |`autoware_msgs/TrafficLight`|`autoware_detection_msgs`|
 |`autoware_msgs/TrafficLightResult`|`autoware_detection_msgs`|
 |`autoware_msgs/TrafficLightResultArray`|`autoware_detection_msgs`|
 |`autoware_msgs/TunedResult`|`autoware_detection_msgs`|
-|`autoware_msgs/VehicleCmd`|`autoware_actuation_msgs`|
+|`autoware_msgs/VehicleCmd`|`autoware_socket_msgs`|
 |`autoware_msgs/VehicleStatus`|`autoware_localization_msgs`|
 |`autoware_msgs/Waypoint`|`autoware_motion_msgs`|
 |`autoware_msgs/WaypointState`|`autoware_decision_msgs`|
@@ -95,20 +94,27 @@ To test whether the proposed approach works, please follow these steps:
 
 ## Notes:
 
+Initially `autoware_motion_msgs` and `autoware_mission_msgs` were proposed as independent namespaces and in accordance with the existing categories in the computing group. This, however, caused a problem of circular dependencies on the newly generated message packages, as shown on the following image (lightgreen groups have interdependency and lightred group will be deleted due to lack of use by any package):
+
+![Circular dependencies](autoware_msgs_relation.png)
+
+To solve this interdependency, both `autoware_motion_msgs` and `autoware_mission_msgs` were replaced by a single namespace `autoware_navigation_msgs`. Also, up to the initial proposal, several messages were not being used by any other package and deemed `unused` and suitable to removal. However we did not consider actual autoware messages interdependencies, this was also fixed by moving some `unused` messages to the corresponding namespace. Both solutions are shown in the following image (new navigation namespace highlighted in lightblue):
+
+![Fixed](autoware_msgs_relation-new.png)
+
+## Issues
+
 Please check the following cases:
 
 ### Not in use
 
 As to the commit/date stated above, the following messages are not used by any package and will be moved to a new namespace `autoware_unused_msgs` temporarily:
 
-* `ColorSet`
 * `GeometricRectangle`
 * `ImageObjects`
-* `ImageRectRanged`
 * `ObjPose`
 * `ScanImage`
 * `StateCmd`
-* `ValueSet`
 * `VscanTracked`
 * `VscanTrackedArray`
 

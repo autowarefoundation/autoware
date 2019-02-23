@@ -1,0 +1,122 @@
+digraph G {
+	
+	graph [fontsize=20, compound=true, ranksep=3];
+	
+	subgraph cluster_2 {
+		node [style=filled];
+		"LampCmd" "WaypointState" "State";
+		label = "autoware_decision_msgs";
+		color=blue;
+	}
+	
+	subgraph cluster_3 {
+		node [style=filled];
+		"DetectedObjectArray"
+		"Centroids"
+		"ImageObjRanged"
+		"ImageLaneObjects"
+		"CloudClusterArray"
+		"ImageRect"
+		"TrafficLightResult"
+		"TrafficLight"
+		"ImageObj"
+		"ImageObjTracked"
+		"Signals"
+		"DetectedObject"
+		"TrafficLightResultArray"
+		"TunedResult"
+		"AdjustXY"
+		"CloudCluster"
+		"ObjLabel";
+		label = "autoware_detection_msgs";
+		color=blue;
+	}
+	
+	subgraph cluster_4 {
+		node [style=filled];
+		"VehicleStatus" "ICPStat" "NDTStat";
+		label = "autoware_localization_msgs";
+		color=blue;
+	}
+	
+	subgraph cluster_5 {
+		node [style=filled];
+		"DTLane" "LaneArray" "Lane";
+		label = "autoware_mission_msgs";
+		color=blue;
+		fillcolor=lightgreen;
+		style = filled;
+	}
+	
+	subgraph cluster_6 {
+		node [style=filled];
+		"ControlCommandStamped" "Waypoint" "ExtractedPosition" "ControlCommand" "BrakeCmd" "AccelCmd" "SteerCmd";
+		label = "autoware_motion_msgs";
+		color=blue;
+		fillcolor=lightgreen;
+		style = filled;
+	}
+	
+	subgraph cluster_7 {
+		node [style=filled];
+		"ProjectionMatrix" "PointsImage" "CameraExtrinsic";
+		label = "autoware_sensing_msgs";
+		color=blue;
+	}
+	
+	subgraph cluster_8 {
+		node [style=filled];
+		"VehicleCmd" "RemoteCmd";
+		label = "autoware_socket_msgs";
+		color=blue;
+	}
+	
+	subgraph cluster_9 {
+		node [style=filled];
+		"SyncTimeDiff" "SyncTimeMonitor";
+		label = "autoware_sync_msgs";
+		color=blue;
+	}
+	
+	subgraph cluster_10 {
+		node [style=filled];
+		"IndicatorCmd";
+		label = "autoware_util_msgs";
+		color=blue;
+	}
+	
+	subgraph cluster_11 {
+		node [style=filled];
+		"StateCmd" "ImageObjects" "ImageRectRanged" "VscanTracked" "ScanImage" "ValueSet" "ColorSet" "VscanTrackedArray" "ObjPose" "GeometricRectangle";
+		label = "autoware_unused_msgs";
+		color=blue;
+		fillcolor=pink;
+		style = filled;
+	}
+	
+	"CloudClusterArray" -> "CloudCluster";
+	"ColorSet" -> "ValueSet";
+	"ControlCommandStamped" -> "ControlCommand";
+	"DetectedObject" -> "LaneArray";
+	"DetectedObjectArray" -> "DetectedObject";
+	"ImageObj" -> "ImageRect";
+	"ImageObjRanged" -> "ImageRectRanged" [color=red, penwidth=3];
+	"ImageObjTracked" -> "ImageRectRanged" [color=red, penwidth=3];
+	"ImageRectRanged" -> "ImageRect" [color=red, penwidth=3];
+	"Lane" -> "Waypoint" [color=red, penwidth=3];
+	"LaneArray" -> "Lane";
+	"RemoteCmd" -> "VehicleCmd";
+	"Signals" -> "ExtractedPosition";
+	"TrafficLightResultArray" -> "TrafficLightResult";
+	"TunedResult" -> "ColorSet" [color=red, penwidth=3];
+	"VehicleCmd" -> "AccelCmd";
+	"VehicleCmd" -> "BrakeCmd";
+	"VehicleCmd" -> "ControlCommand";
+	"VehicleCmd" -> "LampCmd";
+	"VehicleCmd" -> "SteerCmd";
+	"VscanTracked" -> "GeometricRectangle";
+	"VscanTrackedArray" -> "VscanTracked";
+	"Waypoint" -> "DTLane" [color=red, penwidth=3];
+	"Waypoint" -> "WaypointState";
+
+}
