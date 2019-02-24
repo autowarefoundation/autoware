@@ -13,7 +13,10 @@ find_package(
 )
 
 catkin_package(
-  LIBRARIES emergency_handler system_status_filter
+  LIBRARIES
+  emergency_handler
+  system_status_filter
+  emergency_plan_client
   CATKIN_DEPENDS
   autoware_system_msgs
   autoware_health_checker

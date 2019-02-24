@@ -1,4 +1,4 @@
 record_thresh: 1
 behavior:
   emergency_stop:
-    emergency_stop_cmd: 1
+    emergency_stop_planner: 1
