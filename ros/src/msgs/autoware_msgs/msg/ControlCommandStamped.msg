@@ -1,2 +1,2 @@
 Header header
-ControlCommand cmd
+autoware_msgs/ControlCommand cmd

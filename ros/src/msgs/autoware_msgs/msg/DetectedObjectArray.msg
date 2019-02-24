@@ -1,2 +1,2 @@
 std_msgs/Header header
-DetectedObject[] objects
+autoware_msgs/DetectedObject[] objects

@@ -4,9 +4,9 @@ int32 gid
 int32 lid
 geometry_msgs/PoseStamped pose
 geometry_msgs/TwistStamped twist
-DTLane dtlane
+autoware_msgs/DTLane dtlane
 int32 change_flag
-WaypointState wpstate
+autoware_msgs/WaypointState wpstate
 
 uint32 lane_id
 uint32 left_lane_id
