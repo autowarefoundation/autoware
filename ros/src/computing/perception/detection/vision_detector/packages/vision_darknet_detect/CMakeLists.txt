@@ -167,52 +167,6 @@ IF (CUDA_FOUND)
             RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
             )
 
-ELSEIF(EXISTS "$ENV{HOME}/darknet")
-	message("CUDA was not found, attempting to build CPU-darknet.")
-	#removing CUDA dependencies so Darknet yolo-v3 can be run. Darknet must be built natively in order to work (simalar to Caffe installation).
-    	
-  include_directories(
-		${catkin_INCLUDE_DIRS}
-	)
-	
-  #CPU_DARKNET_PATH must be the location of the "darknet" directory.
-	set(CPU_DARKNET_PATH "$ENV{HOME}/darknet")
-
-	add_executable(vision_darknet_detect
-		src/vision_darknet_detect_node.cpp
-		src/vision_darknet_detect.cpp
-		src/vision_darknet_detect.h
-	)
-
-	include_directories(vision_darknet_detect PRIVATE
-		${OpenCV_INCLUDE_DIRS}
-		${catkin_INCLUDE_DIRS}
-		${Boost_INCLUDE_DIRS}
-		${CPU_DARKNET_PATH}
-		${CPU_DARKNET_PATH}/include
-		${CPU_DARKNET_PATH}/src
-		${CPU_DARKNET_PATH}/obj
-		src
-	)
-
-	target_link_libraries(vision_darknet_detect
-		${CPU_DARKNET_PATH}/libdarknet.so
-		${catkin_LIBRARIES}
-		${OpenCV_LIBRARIES}
-		${PCL_LIBRARIES}
-		${Qt5Core_LIBRARIES}
-	)
-
-	add_dependencies(vision_darknet_detect
-		${catkin_EXPORTED_TARGETS}
-	)
-
-	install(TARGETS vision_darknet_detect
-		ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-		LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-		RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-	)
-
 ELSE()
 	message(WARNING "Building vision_darknet_detect without CUDA")
 	
