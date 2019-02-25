@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.5)
 project(decision_maker)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
@@ -8,51 +8,35 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
 SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
 SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pg")
 
-
 find_package(autoware_build_flags REQUIRED)
-
 find_package(autoware_msgs REQUIRED)
-
 find_package(autoware_config_msgs REQUIRED)
-
 find_package(vector_map_msgs REQUIRED)
-
 find_package(vector_map REQUIRED)
-find_package(catkin REQUIRED COMPONENTS
-        roscpp
-        std_msgs
-        tf
-        geometry_msgs
-        jsk_recognition_msgs
-        dynamic_reconfigure
-        amathutils_lib
-        state_machine_lib
-        autoware_msgs
-        autoware_config_msgs
-        vector_map_msgs
-        )
+find_package(roscpp REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(tf REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(jsk_recognition_msgs REQUIRED)
+find_package(dynamic_reconfigure REQUIRED)
+find_package(amathutils_lib REQUIRED)
+find_package(state_machine_lib REQUIRED)
+find_package(ament_cmake REQUIRED)
 
-catkin_package(
-        CATKIN_DEPENDS roscpp
-        tf
-        std_msgs
-        autoware_config_msgs
-        autoware_msgs
-        geometry_msgs
-        vector_map_msgs
-        vector_map
-        jsk_recognition_msgs
-        vector_map_msgs
-        amathutils_lib
-        state_machine_lib
-)
 include_directories(
         include
-        ${catkin_INCLUDE_DIRS}
         ${vector_map_INCLUDE_DIRS}
         ${autoware_config_msgs_INCLUDE_DIRS}
         ${autoware_msgs_INCLUDE_DIRS}
-)
+        ${roscpp_INCLUDE_DIRS}
+        ${std_msgs_INCLUDE_DIRS}
+        ${tf_INCLUDE_DIRS}
+        ${geometry_msgs_INCLUDE_DIRS}
+        ${jsk_recognition_msgs_INCLUDE_DIRS}
+        ${dynamic_reconfigure_INCLUDE_DIRS}
+        ${amathutils_lib_INCLUDE_DIRS}
+        ${state_machine_lib_INCLUDE_DIRS}
+        )
 
 add_executable(decision_maker_node
         nodes/decision_maker/decision_maker_node.cpp
@@ -64,24 +48,59 @@ add_executable(decision_maker_node
         nodes/decision_maker/decision_maker_node_publish.cpp
         nodes/decision_maker/cross_road_area.cpp
         )
-target_link_libraries(decision_maker_node
-        ${catkin_LIBRARIES}
-        ${vector_map_LIBRARIES}
+ament_target_dependencies(decision_maker_node
+        roscpp
+        tf
+        std_msgs
+        autoware_config_msgs
+        autoware_msgs
+        geometry_msgs
+        vector_map_msgs
+        vector_map
+        jsk_recognition_msgs
+        amathutils_lib
+        state_machine_lib
         )
-add_dependencies(decision_maker_node ${catkin_EXPORTED_TARGETS})
 
 # This function will be integrated into decision_maker soon.
 add_executable(planner_selector_node nodes/planner_selector/planner_selector_node.cpp)
-target_link_libraries(planner_selector_node ${catkin_LIBRARIES})
-add_dependencies(planner_selector_node ${catkin_EXPORTED_TARGETS})
+ament_target_dependencies(planner_selector_node
+        roscpp
+        tf
+        std_msgs
+        autoware_config_msgs
+        autoware_msgs
+        geometry_msgs
+        vector_map_msgs
+        vector_map
+        jsk_recognition_msgs
+        amathutils_lib
+        state_machine_lib
+        )
 
 install(TARGETS decision_maker_node planner_selector_node
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin
         )
 
 install(DIRECTORY launch
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}/launch/
+        DESTINATION include/${PROJECT_NAME}/launch/
         PATTERN ".svn" EXCLUDE
         )
+
+ament_export_dependencies(ament_cmake)
+ament_export_dependencies(roscpp)
+ament_export_dependencies(tf)
+ament_export_dependencies(std_msgs)
+ament_export_dependencies(autoware_config_msgs)
+ament_export_dependencies(autoware_msgs)
+ament_export_dependencies(geometry_msgs)
+ament_export_dependencies(vector_map_msgs)
+ament_export_dependencies(vector_map)
+ament_export_dependencies(jsk_recognition_msgs)
+ament_export_dependencies(vector_map_msgs)
+ament_export_dependencies(amathutils_lib)
+ament_export_dependencies(state_machine_lib)
+
+ament_package()

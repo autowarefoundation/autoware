@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
     <name>decision_maker</name>
     <version>1.10.0</version>
     <description>The decision maker package for autoware</description>
@@ -7,7 +7,7 @@
     <author email="yusuke.fujii@tier4.jp">Yusuke Fujii</author>
 
     <license>Apache 2</license>
-    <buildtool_depend>catkin</buildtool_depend>
+    <buildtool_depend>ament_cmake</buildtool_depend>
     <buildtool_depend>autoware_build_flags</buildtool_depend>
     <build_depend>roscpp</build_depend>
     <build_depend>std_msgs</build_depend>
@@ -22,19 +22,20 @@
     <build_depend>amathutils_lib</build_depend>
     <build_depend>state_machine_lib</build_depend>
 
-    <run_depend>roscpp</run_depend>
-    <run_depend>std_msgs</run_depend>
-    <run_depend>autoware_config_msgs</run_depend>
-    <run_depend>autoware_msgs</run_depend>
-    <run_depend>geometry_msgs</run_depend>
-    <run_depend>vector_map</run_depend>
-    <run_depend>vector_map_msgs</run_depend>
-    <run_depend>tf</run_depend>
-    <run_depend>jsk_recognition_msgs</run_depend>
-    <run_depend>dynamic_reconfigure</run_depend>
-    <run_depend>amathutils_lib</run_depend>
-    <run_depend>state_machine_lib</run_depend>
+    <exec_depend>roscpp</exec_depend>
+    <exec_depend>std_msgs</exec_depend>
+    <exec_depend>autoware_config_msgs</exec_depend>
+    <exec_depend>autoware_msgs</exec_depend>
+    <exec_depend>geometry_msgs</exec_depend>
+    <exec_depend>vector_map</exec_depend>
+    <exec_depend>vector_map_msgs</exec_depend>
+    <exec_depend>tf</exec_depend>
+    <exec_depend>jsk_recognition_msgs</exec_depend>
+    <exec_depend>dynamic_reconfigure</exec_depend>
+    <exec_depend>amathutils_lib</exec_depend>
+    <exec_depend>state_machine_lib</exec_depend>
 
     <export>
+        <build_type>ament_cmake</build_type>
     </export>
 </package>
