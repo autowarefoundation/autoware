@@ -234,7 +234,7 @@ void TwistGate::remote_cmd_callback(const remote_msgs_t::ConstPtr& input_msg)
 void TwistGate::auto_cmd_twist_cmd_callback(const geometry_msgs::TwistStamped::ConstPtr& input_msg)
 {
   health_checker_ptr_->NODE_ACTIVATE();
-  health_checker_ptr_->CHECK_RATE("/topic/rate/twist_cmd/slow",8,5,1,"topic twist_cmd subscribe rate low.");
+  health_checker_ptr_->CHECK_RATE("topic_rate_twist_cmd_in_twist_gate_slow",8,5,1,"topic twist_cmd subscribe rate in twist_get node is slow.");
   if(command_mode_ == CommandMode::AUTO)
   {
     twist_gate_msg_.header.frame_id = input_msg->header.frame_id;

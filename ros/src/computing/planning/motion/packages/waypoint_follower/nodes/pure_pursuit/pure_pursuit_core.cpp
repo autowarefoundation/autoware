@@ -97,7 +97,6 @@ void PurePursuitNode::run()
     publishTwistStamped(can_get_curvature, kappa);
     publishControlCommandStamped(can_get_curvature, kappa);
     health_checker_ptr_->NODE_ACTIVATE();
-    health_checker_ptr_->CHECK_RATE("topic_vehicle_cmd_slow_in_pure_pursuit",8,5,1,"topic vehicle_cmd publish rate in pure_pursuit node is slow.");
     // for visualization with Rviz
     pub11_.publish(displayNextWaypoint(pp_.getPoseOfNextWaypoint()));
     pub13_.publish(displaySearchRadius(pp_.getCurrentPose().position, pp_.getLookaheadDistance()));

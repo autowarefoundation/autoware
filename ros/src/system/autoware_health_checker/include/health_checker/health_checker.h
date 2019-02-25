@@ -111,7 +111,7 @@ private:
     using namespace boost::property_tree;
     std::stringstream ss;
     ptree pt;
-    pt.put("value.double", value);
+    pt.put("value", value);
     write_json(ss, pt);
     return ss.str();
   }
