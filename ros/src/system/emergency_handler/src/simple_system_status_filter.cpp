@@ -21,14 +21,14 @@ const std::map<int, std::string> CommonFilterRule::getBehaviorParam(ros::NodeHan
 
 int CommonFilterRule::emergency_stop_ = 0;
 
-int SimpleHardwareFilter::selectBehavior(const SystemStatus& status)
+int SimpleHardwareFilter::selectPriority(const SystemStatus& status)
 {
   const bool is_emergency = !(checkAllHardwareSimplly(status.hardware_status, DIAG_ERROR));
-  return is_emergency ? emergency_stop_ : 0;
+  return is_emergency ? emergency_stop_ : normal_behavior_;
 }
 
-int SimpleNodeFilter::selectBehavior(const SystemStatus& status)
+int SimpleNodeFilter::selectPriority(const SystemStatus& status)
 {
   const bool is_emergency = !(checkAllNodeSimplly(status.node_status, DIAG_ERROR));
-  return is_emergency ? emergency_stop_ : 0;
+  return is_emergency ? emergency_stop_ : normal_behavior_;
 }

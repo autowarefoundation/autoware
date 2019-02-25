@@ -14,13 +14,13 @@ protected:
 class SimpleHardwareFilter : public CommonFilterRule
 {
 public:
-  virtual int selectBehavior(const SystemStatus& status);
+  virtual int selectPriority(const SystemStatus& status);
 };
 
 class SimpleNodeFilter : public CommonFilterRule
 {
 public:
-  virtual int selectBehavior(const SystemStatus& status);
+  virtual int selectPriority(const SystemStatus& status);
 };
 
 #endif

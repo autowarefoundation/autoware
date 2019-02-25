@@ -1,5 +1,5 @@
 # goal definition
-int32 handling_level
+int32 priority
 ---
 # result definition
 ---

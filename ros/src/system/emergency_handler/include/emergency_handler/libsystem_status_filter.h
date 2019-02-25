@@ -21,11 +21,12 @@ class SystemStatusFilter
 {
 public:
   SystemStatusFilter();
-  virtual int selectBehavior(const SystemStatus& status);
+  virtual int selectPriority(const SystemStatus& status);
   const std::function<int(const SystemStatus&)>& getFunc() const;
 
 protected:
   std::function<int(const SystemStatus&)> callback_;
+  static const int normal_behavior_;
 
   StatusType getStatus(const DiagnosticStatusArray& st_array, int level_th) const;
   StatusType getStatus(const NodeStatus& node_status, int level_th) const;

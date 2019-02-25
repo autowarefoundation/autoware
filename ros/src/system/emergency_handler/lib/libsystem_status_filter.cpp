@@ -1,17 +1,19 @@
 #include <emergency_handler/libsystem_status_filter.h>
 
 SystemStatusFilter::SystemStatusFilter() :
-  callback_(std::bind(&SystemStatusFilter::selectBehavior, this, std::placeholders::_1)){}
+  callback_(std::bind(&SystemStatusFilter::selectPriority, this, std::placeholders::_1)){}
 
-int SystemStatusFilter::selectBehavior(const SystemStatus& status)
+int SystemStatusFilter::selectPriority(const SystemStatus& status)
 {
-  return 0;
+  return INT_MAX;
 }
 
 const std::function<int(const SystemStatus&)>& SystemStatusFilter::getFunc() const
 {
   return callback_;
 }
+
+const int SystemStatusFilter::normal_behavior_ = INT_MAX;
 
 StatusType SystemStatusFilter::getStatus(const DiagnosticStatusArray& st_array, int level_th) const
 {

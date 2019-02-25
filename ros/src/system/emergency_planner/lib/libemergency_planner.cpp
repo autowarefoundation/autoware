@@ -14,7 +14,7 @@ void EmergencyPlanner::goalCallback(){}
 
 void EmergencyPlanner::goalCallbackForPrivate()
 {
-  goal_ = action_server_.acceptNewGoal()->handling_level;
+  priority_ = action_server_.acceptNewGoal()->priority;
   goalCallback();
 }
 
@@ -29,6 +29,11 @@ void EmergencyPlanner::preemptCallbackForPrivate()
 const bool EmergencyPlanner::isActive()
 {
   return action_server_.isActive();
+}
+
+const bool EmergencyPlanner::isNewGoalAvailable()
+{
+  action_server_.isNewGoalAvailable();
 }
 
 void EmergencyPlanner::setAborted()

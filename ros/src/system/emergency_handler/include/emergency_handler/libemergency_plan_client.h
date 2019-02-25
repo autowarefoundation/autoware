@@ -15,9 +15,10 @@ class EmergencyPlanClient
 {
 public:
   EmergencyPlanClient(const std::pair<int, std::string>& param);
-  void initNextHandlingLevel();
+  void initNextPriority();
   static void setupPublisher(ros::NodeHandle& nh, ros::NodeHandle& pnh);
-  static void reserveOrder(int handling_level);
+  static void reserveOrder(int priority);
+  static void resetOrder();
 private:
   void fbCallback(const Feedback::ConstPtr& feedback);
   void mainThread();
@@ -27,14 +28,15 @@ private:
 
   boost::shared_ptr<boost::thread> thread_;
   ActionClient client_;
-  const int client_handling_level_;
-  int next_handling_level_, order_id_;
+  const int client_priority_;
+  int next_priority_, order_id_;
   bool is_running_;
 
   static ros::Publisher statecmd_pub_, recordcmd_pub_, emlane_pub_, emvel_pub_;
-  static boost::mutex level_mutex_;
-  static int required_level_, max_handling_level_, record_level_thresh_;
-  static std::set<int> level_list_;
+  static boost::mutex priority_mutex_;
+  static const int normal_behavior_;
+  static int required_priority_, min_priority_, record_priority_thresh_;
+  static std::set<int> priority_list_;
 };
 
 #endif

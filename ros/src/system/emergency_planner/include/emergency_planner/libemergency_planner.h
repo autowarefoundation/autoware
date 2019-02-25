@@ -12,13 +12,14 @@ public:
   virtual void goalCallback();
   virtual void preemptCallback();
   const bool isActive();
+  const bool isNewGoalAvailable();
   void setAborted();
   void setSucceeded();
   void publishFeedback(const autoware_msgs::VehicleCmd& vel);
   void publishFeedback(const autoware_msgs::Lane& lane);
 protected:
   ros::NodeHandle nh_;
-  int goal_;
+  int priority_;
   autoware_system_msgs::EmergencyFeedback feedback_;
   autoware_system_msgs::EmergencyResult result_;
 private:

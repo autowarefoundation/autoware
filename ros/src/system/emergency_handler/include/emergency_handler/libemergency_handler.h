@@ -22,7 +22,7 @@ private:
   std::vector<ros::Publisher> pub_;
   std::map<int, boost::shared_ptr<EmergencyPlanClient>> emplan_client_;
   std::mutex level_mutex_;
-  int handling_level_;
+  int priority_;
   int record_level_thresh_;
   autoware_health_checker::SystemStatusSubscriber status_sub_;
   void wrapFunc(FilterFunc func, SystemStatus status);
