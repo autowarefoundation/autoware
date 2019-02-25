@@ -2,3 +2,14 @@ record_priority_thresh: 0
 behavior:
   emergency_stop:
     emergency_stop_planner: 0
+#vital_monitor:
+#  lane_rule: "planner"
+#  lane_stop: "planner"
+#  lane_select: "planner"
+#  obstacle_avoid: "planner"
+#  obstacle_sim: "planner"
+#  velocity_set: "planner"
+#  pure_pursuit: "controller"
+#  twist_filter: "controller"
+#  twist_gate: "controller"
+#  wf_simulator: "actuator"

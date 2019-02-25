@@ -24,6 +24,7 @@ int main(int argc, char** argv)
   SimpleHardwareFilter hw_filter;
   SimpleNodeFilter node_filter;
   EmergencyHandler emergency_handler(nh, pnh);
+  CommonFilterRule::initMonitoredNodeList(pnh);
   emergency_handler.addPublisher(CommonFilterRule::getBehaviorParam(pnh));
   emergency_handler.addFilter((SystemStatusFilter)hw_filter);
   emergency_handler.addFilter((SystemStatusFilter)node_filter);

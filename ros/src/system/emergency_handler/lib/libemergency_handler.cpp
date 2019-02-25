@@ -16,7 +16,7 @@
 #include <emergency_handler/libemergency_handler.h>
 
 EmergencyHandler::EmergencyHandler(ros::NodeHandle &nh, ros::NodeHandle &pnh) :
-  status_sub_(nh, pnh), priority_(0), spinner_(1)
+  status_sub_(nh, pnh), priority_(INT_MAX), spinner_(1)
 {
   EmergencyPlanClient::setupPublisher(nh, pnh);
   spinner_.start();
@@ -52,10 +52,11 @@ void EmergencyHandler::run()
 
 void EmergencyHandler::wrapFunc(FilterFunc func, SystemStatus status)
 {
-  priority_ = func(status);
+  priority_ = std::min(func(status), priority_);
 }
 
 void EmergencyHandler::reserveCallback(SystemStatus status)
 {
   EmergencyPlanClient::reserveOrder(priority_);
+  priority_ = INT_MAX;
 }

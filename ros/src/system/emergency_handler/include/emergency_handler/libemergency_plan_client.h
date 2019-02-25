@@ -34,8 +34,9 @@ public:
   void initNextPriority();
   static void setupPublisher(ros::NodeHandle& nh, ros::NodeHandle& pnh);
   static void reserveOrder(int priority);
-  static void resetOrder();
 private:
+  static void resetOrder();
+  static void killVehicleDriver();
   void fbCallback(const Feedback::ConstPtr& feedback);
   void mainThread();
   void getSimpleState(const ActionState& st, bool& fail, bool& success, bool& pending);
@@ -45,7 +46,7 @@ private:
   boost::shared_ptr<boost::thread> thread_;
   ActionClient client_;
   const int client_priority_;
-  int next_priority_, order_id_;
+  int next_priority_;
   bool is_running_;
 
   static ros::Publisher statecmd_pub_, recordcmd_pub_, emlane_pub_, emvel_pub_;

@@ -27,7 +27,7 @@ ros::Publisher EmergencyPlanClient::emlane_pub_;
 ros::Publisher EmergencyPlanClient::emvel_pub_;
 
 EmergencyPlanClient::EmergencyPlanClient(const std::pair<int, std::string>& param) :
-  client_(param.second), order_id_(0), client_priority_(param.first), next_priority_(0)
+  client_(param.second), client_priority_(param.first), next_priority_(0)
 {
   priority_list_.insert(param.first);
   auto func = boost::bind(&EmergencyPlanClient::mainThread, this);
@@ -52,6 +52,11 @@ void EmergencyPlanClient::setupPublisher(ros::NodeHandle& nh, ros::NodeHandle& p
   recordcmd_pub_ = nh.advertise<std_msgs::Header>("/record_cmd", 1, true);
   emlane_pub_ = nh.advertise<autoware_msgs::Lane>("/emergency_waypoints", 1);
   emvel_pub_ = nh.advertise<autoware_msgs::VehicleCmd>("/emergency_velocity", 1);
+}
+
+void EmergencyPlanClient::killVehicleDriver()
+{
+  // TODO
 }
 
 void EmergencyPlanClient::reserveOrder(int priority)
@@ -86,7 +91,11 @@ void EmergencyPlanClient::mainThread()
       getSimpleState(client_.getState(), is_failed, is_succeeded, is_pending);
       increase_urgency = (is_failed && !is_canceled);
       is_running_ = !(is_failed || is_succeeded);
-      if (is_running_ && is_canceled)
+      if (!is_running_)
+      {
+        resetOrder();
+      }
+      else if (is_canceled)
       {
         client_.cancelAllGoals();
       }
@@ -97,9 +106,10 @@ void EmergencyPlanClient::mainThread()
       is_running_ = true;
     }
 
-    if (increase_urgency && required_priority_ > min_priority_)
+    if (increase_urgency)
     {
-      reserveOrder(next_priority_);
+      (required_priority_ > min_priority_) ? reserveOrder(next_priority_)
+                                           : killVehicleDriver();
     }
     r.sleep();
   }
