@@ -9,7 +9,7 @@ We decided to refactor the messages into new namespaces more suitable to their p
 
 ## Modifications
 
-The following message refactoring will be performed in source code and file structure on `337` different files and `1569` lines of code and documentation:
+The following message refactoring will be performed in source code and file structure on `343` different files and over `1500` lines of code and documentation:
 
 1. Defining new namespaces `autoware_xxx_msgs` for each existing message type, where `xxx` corresponds to the new namespace, ex. actuation, decision, detection, localization, mission, etc. (see tables below)
 2. Create the new message packages and get rid of old `autoware_msgs` package.
@@ -89,8 +89,9 @@ To test whether the proposed approach works, please follow these steps:
 1. Get a fresh copy of Autoware develop branch, ex. `git clone https://github.com/CPFL/Autoware.git -b develop --recurse-submodules` or `git pull --recurse-submodules=yes origin develop` on your existing local repository.
 2. Make sure the original builds correctly: run `./catkin_make_release` (follow the steps in [How to build](https://github.com/CPFL/Autoware/wiki/Source-Build) ).
 3. Switch to `feature/autoware_msgs_refactoring` branch, ex. `git checkout feature/autoware_msgs_refactoring`.
-3. Run the autoware messages refactoring script `fix-autoware-msgs.py` from the `[AUTOWARE_PATH]/ros` folder.
+3. Run the autoware messages refactoring script `./fix-autoware-msgs.py --fix` from the `[AUTOWARE_PATH]/ros` folder (it assumes `src` is a subdirectory).
 4. Make sure refactored version builds correctly: run `./catkin_make_release`.
+5. (Optionally) If necessary, everything can be reverted to its original unaltered state with `./fix-autoware-msgs.py --recovery`
 
 ## Notes:
 
@@ -131,19 +132,24 @@ As to the commit/date stated above, the following messages are referred by a pac
 
 ### Others 
 
+The following issues were found, we corrected them.
+
 * File `src/driveworks/packages/autoware_driveworks_interface/package.xml` depends on `autoware_msgs` but the package does not use it
 * File `src/simulation/lgsvl_simulator_bridge/package.xml` depends on `autoware_msgs` but the package does not use it
 * File `src/sensing/fusion/packages/autoware_camera_lidar_calibrator/package.xml` depends on `autoware_msgs` but the package does not use it
 * File `src/common/libs/amathutils_lib/package.xml` depends on `autoware_msgs` but the package does not use it
 * File `src/common/libs/state_machine_lib/package.xml` depends on `autoware_msgs` but the package does not use it
+* Package `src/computing/planning/mission/packages/op_global_planner` depends on `autoware_msgs` but file `package.xml` does not declare the dependency
+* Package `src/computing/planning/mission/packages/way_planner` depends on `autoware_msgs` but file `package.xml` does not declare the dependency
+* Package `src/computing/planning/motion/packages/lattice_planner` depends on `autoware_msgs` but file `package.xml` does not declare the dependency
+* Package `src/computing/planning/motion/packages/dp_planner` depends on `autoware_msgs` but file `package.xml` does not declare the dependency
+
+The following issues need to be solved manually:
+
 * Package `src/msgs/lgsvl_msgs/` does not have a `package.xml` file
 * Package `src/sensing/drivers/lidar/packages/robosense/rslidar_pointcloud` does not have a `package.xml` file
 * Package `src/sensing/drivers/lidar/packages/robosense/rslidar_msgs` does not have a `package.xml` file
 * Package `src/sensing/drivers/lidar/packages/robosense/rslidar` does not have a `package.xml` file
 * Package `src/sensing/drivers/lidar/packages/robosense/rslidar_driver` does not have a `package.xml` file
 * Package `src/sensing/drivers/lidar/packages/ouster` does not have a `package.xml` file
-* Package `src/computing/planning/mission/packages/op_global_planner` depends on `autoware_msgs` but file `package.xml` does not declare the dependency
-* Package `src/computing/planning/mission/packages/way_planner` depends on `autoware_msgs` but file `package.xml` does not declare the dependency
-* Package `src/computing/planning/motion/packages/lattice_planner` depends on `autoware_msgs` but file `package.xml` does not declare the dependency
-* Package `src/computing/planning/motion/packages/dp_planner` depends on `autoware_msgs` but file `package.xml` does not declare the dependency
 
