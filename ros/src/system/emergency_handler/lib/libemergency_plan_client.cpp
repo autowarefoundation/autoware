@@ -67,10 +67,10 @@ void EmergencyPlanClient::mainThread()
     {
       bool is_failed, is_succeeded, is_pending;
       const bool is_canceled = !is_reserved;
-      client_.waitForResult(ros::Duration(0.01));
+      client_.waitForResult(ros::Duration(0.02));
       getSimpleState(client_.getState(), is_failed, is_succeeded, is_pending);
       increase_urgency = (is_failed && !is_canceled);
-      is_running_ = !(is_failed || is_succeeded || is_pending);
+      is_running_ = !(is_failed || is_succeeded);
       if (is_running_ && is_canceled)
       {
         client_.cancelAllGoals();
@@ -88,12 +88,13 @@ void EmergencyPlanClient::mainThread()
     }
     r.sleep();
   }
+  client_.cancelAllGoals();
 }
 
 void EmergencyPlanClient::getSimpleState(const ActionState& st, bool& fail, bool& success, bool& pending)
 {
   fail = (st == ActionState::REJECTED) || (st == ActionState::ABORTED)
-    || (st == ActionState::LOST) || (st == ActionState::RECALLED);
+    || (st == ActionState::LOST) || (st == ActionState::RECALLED) || (st == ActionState::PREEMPTED);
   success = (st == ActionState::SUCCEEDED);
   pending = (st == ActionState::PENDING);
 }
@@ -103,7 +104,6 @@ void EmergencyPlanClient::startOrder()
   const ros::Time t = ros::Time::now();
   autoware_system_msgs::EmergencyGoal goal;
   goal.priority = client_priority_;
-  client_.cancelAllGoals();
   client_.sendGoal(goal,
     ActionClient::SimpleDoneCallback(),
     ActionClient::SimpleActiveCallback(),
