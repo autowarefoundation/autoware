@@ -108,15 +108,14 @@ void VelocitySetInfo::detectionCallback(const std_msgs::Int32 &msg)
 void VelocitySetInfo::controlPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
   control_pose_ = *msg;
-
+  health_checker_ptr_->NODE_ACTIVATE();
+  health_checker_ptr_->CHECK_RATE("topic_current_pose_slow_in_velocity_set",8,5,1,"topic current_pose subscribe rate in velocity_set node is slow.");
   if (!set_pose_)
     set_pose_ = true;
 }
 
 void VelocitySetInfo::localizerPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
-  health_checker_ptr_->NODE_ACTIVATE();
-  health_checker_ptr_->CHECK_RATE("topic_current_pose_slow_in_velocity_set",8,5,1,"topic current_pose subscribe rate in velocity_set node is slow.");
   localizer_pose_ = *msg;
 }
 
