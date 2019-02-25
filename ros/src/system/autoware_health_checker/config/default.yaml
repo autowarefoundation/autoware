@@ -24,38 +24,33 @@ health_checker:
       warn: 15.0
       error: 18.0
       fatal: 20.0
-  topic_points_raw_slow_in_ndt_matching:
-    rate:
+  topic_rate:
+    topic_points_raw_slow_in_ndt_matching_topic_rate:
+      pub_node: /velodyne_driver
+      sub_node: /ndt_matching
+      topic_name: /points_raw
       warn: 8.0
       error: 4.0
       fatal: 2.0
-  topic_ndt_pose_slow_in_ndt_matching:
-    rate:
+    topic_twist_cmd_in_twist_gate_topic_rate:
+      pub_node: /twist_filter
+      sub_node: /twist_gate
+      topic_name: /twist_cmd
       warn: 8.0
       error: 4.0
       fatal: 2.0
-  topic_current_pose_slow_in_obstacle_avoid:
-    rate:
-      warn: 8.0
-      error: 4.0
-      fatal: 2.0
-  topic_closest_waypoint_slow_in_obstacle_avoid:
-    rate:
-      warn: 8.0
-      error: 4.0
-      fatal: 2.0
-  topic_points_no_ground_slow_in_velocity_set:
-    rate:
-      warn: 8.0
-      error: 4.0
-      fatal: 2.0
-  topic_vehicle_cmd_slow_in_pure_pursuit:
-    rate:
-      warn: 8.0
-      error: 4.0
-      fatal: 2.0
-  topic_twist_cmd_slow_in_twist_gate:
-    rate:
-      warn: 10.0
-      error: 4.0
-      fatal: 2.0
+  drop_rate:
+    topic_points_raw_slow_in_ndt_matching_drop_rate:
+      pub_node: /velodyne_driver
+      sub_node: /ndt_matching
+      topic_name: /points_raw
+      warn : 0.05
+      error: 0.1
+      fatal: 0.2
+    topic_twist_cmd_in_twist_gate_drop_rate:
+      pub_node: /twist_filter
+      sub_node: /twist_gate
+      topic_name: /twist_cmd
+      warn : 0.05
+      error: 0.1
+      fatal: 0.2
