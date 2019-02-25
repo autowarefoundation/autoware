@@ -1,3 +1,6 @@
+
+Before filling out a bug report or feature request, please be sure to read the [support guidelines](https://github.com/CPFL/Autoware/wiki/Support-guidelines).
+
 Fill-out only one section depending on whether you are reporting a bug or a new feature.
 
 # Bug
