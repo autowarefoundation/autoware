@@ -130,7 +130,7 @@ As to the commit/date stated above, the following messages are referred by a pac
 * `ImageObjRange` referred by `src/system/sync/computing/perception/detection/packages/cv_tracker/nodes/kf_track/sync_track.cpp`  `ImageObjRange` does not exist, `ImageObjRanged` does exist. `cv_tracker` has no `package.xml` and `CMakeLists.txt` files therefore it's not built and can be removed.
 
 
-### Others 
+### Others
 
 The following issues were found, we corrected them.
 
@@ -143,13 +143,4 @@ The following issues were found, we corrected them.
 * Package `src/computing/planning/mission/packages/way_planner` depends on `autoware_msgs` but file `package.xml` does not declare the dependency
 * Package `src/computing/planning/motion/packages/lattice_planner` depends on `autoware_msgs` but file `package.xml` does not declare the dependency
 * Package `src/computing/planning/motion/packages/dp_planner` depends on `autoware_msgs` but file `package.xml` does not declare the dependency
-
-The following issues need to be solved manually:
-
-* Package `src/msgs/lgsvl_msgs/` does not have a `package.xml` file
-* Package `src/sensing/drivers/lidar/packages/robosense/rslidar_pointcloud` does not have a `package.xml` file
-* Package `src/sensing/drivers/lidar/packages/robosense/rslidar_msgs` does not have a `package.xml` file
-* Package `src/sensing/drivers/lidar/packages/robosense/rslidar` does not have a `package.xml` file
-* Package `src/sensing/drivers/lidar/packages/robosense/rslidar_driver` does not have a `package.xml` file
-* Package `src/sensing/drivers/lidar/packages/ouster` does not have a `package.xml` file
 
