@@ -156,7 +156,8 @@ SpinnakerCamera::SpinnakerCamera()
       CEnumerationPtr ptrPixelFormat = node_map_->GetNode("PixelFormat");
       if (IsAvailable(ptrPixelFormat) && IsWritable(ptrPixelFormat))
       {
-        ROS_INFO_STREAM("Current Format" << ptrPixelFormat->GetCurrentEntry()->GetSymbolic());
+        ROS_INFO_STREAM("[" << __APP_NAME__ << "] Current pixel Format"
+                            << ptrPixelFormat->GetCurrentEntry()->GetSymbolic());
         /*gcstring pixel_format = format_.c_str();
 
         CEnumEntryPtr ptrPixelFormatSetup = ptrPixelFormat->GetEntryByName(pixel_format);
