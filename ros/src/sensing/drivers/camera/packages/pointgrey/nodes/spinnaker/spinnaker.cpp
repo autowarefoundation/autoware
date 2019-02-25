@@ -123,12 +123,12 @@ SpinnakerCamera::SpinnakerCamera()
       ///////////////////////                 FrameRate                   /////////////////////////////
       CFloatPtr ptrAcquisitionFrameRate = node_map_->GetNode("AcquisitionFrameRate");
       CBooleanPtr ptrAcquisitionFrameRateEnable = node_map_->GetNode("AcquisitionFrameRateEnable");
-
-      if (IsAvailable(ptrAcquisitionFrameRate) && IsWritable(ptrAcquisitionFrameRate) &&
-          IsAvailable(ptrAcquisitionFrameRateEnable) && IsWritable(ptrAcquisitionFrameRateEnable))
+      if (IsAvailable(ptrAcquisitionFrameRateEnable) && IsWritable(ptrAcquisitionFrameRateEnable))
       {
-        // enable to change fps
         ptrAcquisitionFrameRateEnable->SetValue(true);
+      }
+      if (IsAvailable(ptrAcquisitionFrameRate) && IsWritable(ptrAcquisitionFrameRate))
+      {
         ptrAcquisitionFrameRate->SetValue(fps_);
       }
       else
