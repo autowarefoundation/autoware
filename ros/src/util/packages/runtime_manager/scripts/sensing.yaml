@@ -43,6 +43,12 @@ subs :
         probe:
         run  : roslaunch autoware_pointgrey_drivers ladybug.launch
         param: ladybug_params
+      
+      - name : PointGrey Spinnaker
+        desc : PointGrey Spinnaker desc sample
+        probe:
+        run  : roslaunch autoware_pointgrey_drivers spinnaker.launch
+        param: spinnaker_params
 
       - name : USB Generic
         desc : USB Generic desc sample
@@ -225,11 +231,11 @@ subs :
 
       - name : Robosense RS32
         desc : Launches the driver for the selected RoboSense LiDAR sensor and publishes the pointcloud in rslidar_points.
-        run  : roslaunch rslidar_pointcloud cloud_nodelet_32.launch
+        run  : roslaunch rslidar_pointcloud rs_cloud_nodelet_32.launch
 
       - name : Robosense RS16
         desc : Launches the driver for the selected RoboSense LiDAR sensor and publishes the pointcloud in rslidar_points.
-        run  : roslaunch rslidar_pointcloud cloud_nodelet_16.launch
+        run  : roslaunch rslidar_pointcloud rs_cloud_nodelet_16.launch
 
       - name : Ouster OS1
         desc : Launches the driver for the Ouster OS1 LiDAR and publishes the pointcloud as points_raw.
@@ -1682,6 +1688,38 @@ params :
       desc  : Camera Frame to register in TF (Default flir_adk)
       kind  : str
       v     : flir_adk
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+  - name  : spinnaker_params
+    vars  :
+    - name  : fps
+      label : fps
+      desc  : FPS Acquisition (Default 60)
+      min   : 1
+      max   : 100
+      v     : 60
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : width
+      label : width
+      desc  : Image Width (Default 1440)
+      v     : 1440
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : height
+      label : height
+      desc  : Image Height (Default 1080)
+      v     : 1080
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : dltl
+      label : dltl
+      desc  : DeviceLinkThroughputLimit (Default 1568000)
+      v     : 1568000
       cmd_param :
         dash        : ''
         delim       : ':='

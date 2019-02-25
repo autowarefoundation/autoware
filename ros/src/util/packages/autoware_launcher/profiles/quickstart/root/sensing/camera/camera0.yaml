@@ -1,0 +1,4 @@
+children:
+- calibration
+config: {}
+plugin: node/camera_node

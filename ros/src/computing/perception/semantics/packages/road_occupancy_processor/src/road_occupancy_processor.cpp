@@ -20,7 +20,7 @@
  *  Created on: Jan 29, 2018
  */
 
-#include "road_occupancy_processor.h"
+#include "road_occupancy_processor/road_occupancy_processor.h"
 
 void ROSRoadOccupancyProcessorApp::ConvertXYZIToRTZ(const pcl::PointCloud<pcl::PointXYZI>::Ptr in_cloud,
                                                     ROSRoadOccupancyProcessorApp::PointCloudXYZIRTColor &out_organized_points,

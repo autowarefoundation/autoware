@@ -100,7 +100,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-kinetic-tf2-ros \
     ros-kinetic-visualization-msgs \
     ros-kinetic-xacro \
-    ros-kinetic-rosbridge-server
+    ros-kinetic-rosbridge-server \
+    ros-kinetic-gazebo-ros \ 
+    ros-kinetic-gazebo-msgs \ 
+    ros-kinetic-gazebo-ros-control \ 
+    ros-kinetic-urdf \ 
+    ros-kinetic-xacro \ 
+    ros-kinetic-position-controllers \ 
+    ros-kinetic-transmission-interface \ 
+    ros-kinetic-velocity-controllers \ 
+    ros-kinetic-effort-controllers \ 
+    ros-kinetic-controller-manager \
+    ros-kinetic-robot-state-publisher \
+    ros-kinetic-joint-state-controller
 
 RUN find / -depth -xdev -type l -lname '/*' -exec sh -c 'linkpath="$(readlink {})" && rm -f {} && ln -frsv "$linkpath" "{}"' \;
 

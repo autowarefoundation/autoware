@@ -29,6 +29,7 @@
 #include <autoware_health_checker/constants.h>
 #include <autoware_system_msgs/NodeStatus.h>
 #include <autoware_system_msgs/SystemStatus.h>
+#include <rosgraph_msgs/TopicStatistics.h>
 
 // headers in boost
 #include <boost/foreach.hpp>
@@ -54,10 +55,13 @@ private:
   std::map<uint8_t, ros::Publisher> text_pub_;
   ros::Subscriber node_status_sub_;
   ros::Subscriber diagnostic_array_sub_;
+  ros::Subscriber topic_statistics_sub_;
   void publishSystemStatus();
   void nodeStatusCallback(const autoware_system_msgs::NodeStatus::ConstPtr msg);
   void
   diagnosticArrayCallback(const diagnostic_msgs::DiagnosticArray::ConstPtr msg);
+  void
+  topicStatisticsCallback(const rosgraph_msgs::TopicStatistics::ConstPtr msg);
   std::string
   generateText(std::vector<autoware_system_msgs::DiagnosticStatus> status);
   jsk_rviz_plugins::OverlayText
@@ -69,5 +73,9 @@ private:
   autoware_system_msgs::SystemStatus system_status_;
   std::mutex mtx_;
   void updateConnectionStatus();
+  // key topic_name,publisher_node,subscriber_node
+  std::map<std::array<std::string, 3>, rosgraph_msgs::TopicStatistics>
+      topic_status_;
+  void updateTopicStatus();
 };
 #endif // HEALTH_AGGREGATOR_H_INCLUDED

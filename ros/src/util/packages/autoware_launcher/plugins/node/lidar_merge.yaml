@@ -1,0 +1,4 @@
+format: Autoware Launcher Plugin Version 0.1
+rules:
+- { name: concat,    plugin: leaf/concat }
+- { name: transform, plugin: leaf/transform_v2b }

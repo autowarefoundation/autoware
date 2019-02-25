@@ -1,0 +1,21 @@
+base_link2camera:
+  x: 2.0
+  y: 0.0
+  z: 1.35
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+base_link2velodyne:
+  x: 1.2
+  y: 0.0
+  z: 2.0
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0
+base_link2imu:
+  x: 1.2
+  y: 0.0
+  z: 1.8
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0

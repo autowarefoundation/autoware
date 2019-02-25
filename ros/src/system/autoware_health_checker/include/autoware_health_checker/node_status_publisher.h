@@ -77,7 +77,7 @@ public:
     new_status.type = autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE;
     new_status.level = check_result;
     new_status.description = description;
-    new_status.description = ss.str();
+    new_status.value = ss.str();
     new_status.header.stamp = ros::Time::now();
     diag_buffers_[key]->addDiag(new_status);
     return new_status.level;

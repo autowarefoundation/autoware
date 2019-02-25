@@ -6,6 +6,7 @@ add_compile_options(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
   message_generation
   std_msgs
+  rosgraph_msgs
   genmsg
   autoware_msgs
   actionlib_msgs
@@ -27,6 +28,7 @@ add_message_files(
 
 generate_messages(DEPENDENCIES
   std_msgs
+  rosgraph_msgs
   autoware_msgs
   actionlib_msgs
 )
@@ -35,6 +37,7 @@ catkin_package(
   CATKIN_DEPENDS
   message_runtime
   std_msgs
+  rosgraph_msgs
   autoware_msgs
 )
 
