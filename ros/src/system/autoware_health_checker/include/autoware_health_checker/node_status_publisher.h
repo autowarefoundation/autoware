@@ -104,7 +104,7 @@ private:
   ros::Publisher status_pub_;
   bool keyExist(std::string key);
   void addNewBuffer(std::string key, uint8_t type, std::string description);
-  std::string doubeToJson(double value);
+  std::string doubleToJson(double value);
   void publishStatus();
   bool node_activated_;
   std::mutex mtx_;
