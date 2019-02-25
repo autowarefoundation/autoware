@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:macro name="steering_macro" params="suffix parent x y yaw length">
+    <xacro:property name="pi" value="3.1415926835897931" />
+    <xacro:property name="radius" value="0.1" />
+    <xacro:property name="length" value="0.01" />
+    <xacro:property name="mass" value="10.0" />
+
+    <joint name="${suffix}_joint" type="revolute">
+      <origin rpy="0 0 0" xyz="${x} ${y} 0"/>
+      <parent link="${parent}"/>
+      <child  link="${suffix}_link"/>
+      <axis xyz="0 0 1"/>
+      <limit effort="100000000.0" lower="-0.6" upper="0.6" velocity="0.5"/>
+    </joint>
+
+    <link name="${suffix}_link">
+      <visual>
+        <geometry>
+          <cylinder radius="${radius}" length="${length}"/>
+        </geometry>
+        <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
+        <material name="black">
+          <color rgba="0.1 0.1 0.1 2.0"/>
+        </material>
+      </visual>
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="${mass}"/>
+        <inertia ixx="${radius*radius*mass/4+length*length*mass/12}"  ixy="0"  ixz="0" 
+                 iyy="${mass*radius*radius/2}" iyz="0" 
+                 izz="${radius*radius*mass/4+length*length*mass/12}" />
+      </inertial>
+      <!-- <collision>
+        <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
+        <geometry>
+          <cylinder radius="0.1" length="0.01" />
+        </geometry>
+      </collision> -->
+    </link>
+  </xacro:macro>  
+
+  <xacro:macro name="steering_link_macro" params="suffix parent x y">
+    <xacro:property name="pi" value="3.1415926835897931" />
+    <xacro:property name="radius" value="0.1" />
+    <xacro:property name="length" value="0.01" />
+    <xacro:property name="mass" value="10.0" />
+    
+    <joint name="${suffix}_joint" type="fixed">
+      <origin rpy="0 0 0" xyz="${x} ${y} 0"/>
+      <parent link="${parent}"/>
+      <child  link="${suffix}_link"/>
+    </joint> 
+    <link name="${suffix}_link">
+      <visual>
+        <geometry>
+          <cylinder radius="${radius}" length="${length}"/>
+        </geometry>
+        <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
+        <material name="black">
+          <color rgba="0.1 0.1 0.1 2.0"/>
+        </material>
+      </visual>
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="${mass}"/>
+        <inertia ixx="${radius*radius*mass/4+length*length*mass/12}"  ixy="0"  ixz="0" 
+                 iyy="${mass*radius*radius/2}" iyz="0" 
+                 izz="${radius*radius*mass/4+length*length*mass/12}" />
+      </inertial>
+    </link>
+  </xacro:macro>
+</robot>

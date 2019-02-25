@@ -3,22 +3,31 @@
   <name>as</name>
   <version>1.10.0</version>
   <description>The pacmod interface package</description>
-  <maintainer email="antm678@ertl.jp">T.Ando</maintainer>
+  <maintainer email="aohsato@gmail.com">Akihito Ohsato</maintainer>
   <license>Apache 2</license>
+  <author email="aohsato@gmail.com">Akihito Ohsato</author>
+  <author email="antm678@ertl.jp">T.Ando</author>
+
   <buildtool_depend>catkin</buildtool_depend>
   <buildtool_depend>autoware_build_flags</buildtool_depend>
 
   <build_depend>roscpp</build_depend>
+  <build_depend>message_filters</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>automotive_platform_msgs</build_depend>
-  <build_depend>dbw_mkz_msgs</build_depend>
+  <build_depend>automotive_navigation_msgs</build_depend>
+  <build_depend>pacmod_msgs</build_depend>
+  <build_depend>autoware_msgs</build_depend>
 
   <run_depend>roscpp</run_depend>
+  <run_depend>message_filters</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>automotive_platform_msgs</run_depend>
-  <run_depend>dbw_mkz_msgs</run_depend>
+  <run_depend>automotive_navigation_msgs</run_depend>
+  <run_depend>pacmod_msgs</run_depend>
+  <run_depend>autoware_msgs</run_depend>
 
   <export>
   </export>

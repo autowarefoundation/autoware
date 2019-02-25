@@ -115,7 +115,7 @@ build_cross:
                   "
                   '
   retry: 1
-  
+
 pages:
   stage: deploy
   image: alpine
