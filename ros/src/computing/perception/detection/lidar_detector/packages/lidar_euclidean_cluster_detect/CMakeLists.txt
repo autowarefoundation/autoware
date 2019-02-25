@@ -54,7 +54,6 @@ include_directories(
         ${autoware_msgs_INCLUDE_DIRS}
         ${OpenCV_INCLUDE_DIRS}
 )
-link_directories(${PCL_LIBRARY_DIRS})
 link_directories(${OpenCV_LIBRARY_DIRS})
 
 #Euclidean Cluster
@@ -82,15 +81,20 @@ if (${CUDA_FOUND})
     target_link_libraries(lidar_euclidean_cluster_detect
             ${OpenCV_LIBRARIES}
             ${catkin_LIBRARIES}
-            ${PCL_LIBRARIES}
             ${YAML_CPP_LIBRARIES}
             gpu_euclidean_clustering)
+
+    install(TARGETS
+            gpu_euclidean_clustering
+            ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+            LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+            RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+            )
 
 else ()
     target_link_libraries(lidar_euclidean_cluster_detect
             ${OpenCV_LIBRARIES}
             ${catkin_LIBRARIES}
-            ${PCL_LIBRARIES}
             ${YAML_CPP_LIBRARIES})
 
 endif ()
@@ -106,9 +110,16 @@ if (OPENMP_FOUND)
             )
 endif ()
 
+install(DIRECTORY include/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+
 install(TARGETS
         lidar_euclidean_cluster_detect
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)

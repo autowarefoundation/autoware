@@ -1,0 +1,14 @@
+<launch>
+	<arg name="width" default="1440"/>
+	<arg name="height" default="1080"/>
+	<arg name="fps" default="60"/>
+	<arg name="dltl" default="100000000"/>
+
+	<node pkg="autoware_pointgrey_drivers" type="spinnaker_camera" name="spinnaker_camera" output="screen">
+		<param name="width" value="$(arg width)"/>
+	 	<param name="height" value="$(arg height)"/>
+	 	<param name="fps" value="$(arg fps)"/>
+		<param name="dltl" value="$(arg dltl)"/>
+	</node>
+
+</launch>

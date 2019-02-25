@@ -38,7 +38,7 @@ foreach (programs)
             )
 endforeach (programs)
 
-foreach (dir launch rviz)
+foreach (dir launch rviz config media)
     install(DIRECTORY ${dir}/
             DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${dir})
 endforeach (dir)

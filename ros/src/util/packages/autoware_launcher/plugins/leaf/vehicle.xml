@@ -1,0 +1,12 @@
+<launch>
+
+    <arg name="vehicle_model" default="$(find vehicle_description)/urdf/default.urdf"/>
+    <arg name="vehicle_info"  default="$(find autoware_launcher)/resources/dummy.yaml"/>
+
+    <include file="$(find vehicle_description)/launch/vehicle_model.launch">
+        <arg name="model_path" value="$(arg vehicle_model)"/>
+    </include>
+
+    <rosparam command="load" file="$(arg vehicle_info)"/>
+
+</launch>

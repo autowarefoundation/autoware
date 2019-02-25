@@ -71,14 +71,22 @@ target_link_libraries(decision_maker_node
 add_dependencies(decision_maker_node ${catkin_EXPORTED_TARGETS})
 
 # This function will be integrated into decision_maker soon.
-add_executable(planner_selector_node nodes/planner_selector/planner_selector_node.cpp)
-target_link_libraries(planner_selector_node ${catkin_LIBRARIES})
-add_dependencies(planner_selector_node ${catkin_EXPORTED_TARGETS})
+add_executable(planner_selector_node
+        nodes/planner_selector/planner_selector_node.cpp
+        )
+target_link_libraries(planner_selector_node
+        ${catkin_LIBRARIES}
+        )
+add_dependencies(planner_selector_node
+        ${catkin_EXPORTED_TARGETS}
+        )
 
-install(TARGETS decision_maker_node planner_selector_node
+install(TARGETS
+            decision_maker_node
+            planner_selector_node
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
 
 install(DIRECTORY launch

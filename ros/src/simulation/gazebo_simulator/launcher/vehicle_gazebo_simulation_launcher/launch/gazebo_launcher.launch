@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+  <arg name="model" default="$(find vehicle_model)/urdf/vehicle.xacro"/>
+  <arg name="ns" default="/autoware_gazebo"/>
+  <arg name="gpu" default="false"/>
+  <arg name="world_name" default="mcity"/>
+  <arg name="input/twiststamped" default="true"/>
+  <arg name="input/ctrl_cmd" default="false"/>
+  <arg name="output/groud_truth_tf_pose" default="false"/>
+
+  <param name="robot_description" command="$(find xacro)/xacro.py --inorder $(arg model) gpu:=$(arg gpu)" />
+
+  <!-- world file -->
+  <arg name="world_file_name" default="worlds/empty.world" if="$(eval world_name=='empty')" />
+  <arg name="world_file_name" default="$(find gazebo_world_description)/worlds/autoware.world" if="$(eval world_name=='simple')" />
+  <arg name="world_file_name" default="$(find gazebo_world_description)/worlds/mcity_r1.world" if="$(eval world_name=='mcity')" />
+  <arg name="world_file_name" default="$(find gazebo_world_description)/worlds/citysim_gazebo7.world" if="$(eval world_name=='citysim_gazebo7')" />
+  <arg name="world_file_name" default="$(find gazebo_world_description)/worlds/citysim_gazebo9.world" if="$(eval world_name=='citysim_gazebo9')" />
+  <!-- spawn model flag-->
+  <arg name="spawn_model_flag" default="" if="$(eval world_name=='empty')" />
+  <arg name="spawn_model_flag" default=""  if="$(eval world_name=='simple')" />
+  <arg name="spawn_model_flag" default="-x 3 -y -12 -z 0.5" if="$(eval world_name=='mcity')" />
+  <arg name="spawn_model_flag" default="" if="$(eval world_name=='citysim_gazebo7')" />
+  <arg name="spawn_model_flag" default="" if="$(eval world_name=='citysim_gazebo9')" />
+
+  <!-- launch gazebo -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" default="$(arg world_file_name)"/> 
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="true"/>
+    <arg name="headless" value="false"/>
+    <arg name="debug" value="false"/>
+  </include>
+
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description $(arg spawn_model_flag) -urdf -model autoware_gazebo" />
+
+  <group ns="/vehicle_info">
+    <rosparam file="$(find vehicle_model)/config/vehicle_info.yaml" command="load"/>
+  </group>
+  <group ns="$(arg ns)">
+    <!-- Load joint controller configurations from YAML file to parameter server -->
+    <rosparam file="$(find vehicle_model)/config/controller.yaml" command="load"/>
+    <!-- load the controllers -->
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+          output="screen" 
+          args="wheel_left_rear_velocity_controller wheel_right_rear_velocity_controller steering_left_front_position_controller steering_right_front_position_controller joint_state_controller"/>
+    <!-- tf publisher -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+    <node name="vehicle_gazebo_input_subscriber" pkg="vehicle_gazebo_simulation_interface" type="vehicle_gazebo_input_subscriber" respawn="false"
+          output="screen">
+      <param name="twist_sub" value="true" />
+      <param name="twiststamped" value="$(arg input/twiststamped)" />
+      <param name="ctrl_cmd" value="$(arg input/ctrl_cmd)" />
+    </node>
+    <node name="vehicle_gazebo_info_publisher" pkg="vehicle_gazebo_simulation_interface" type="vehicle_gazebo_info_publisher" respawn="false"
+          output="screen">
+      <param name="enable_base_link_tf" value="$(arg output/groud_truth_tf_pose)" />
+    </node>
+  </group>
+
+</launch>

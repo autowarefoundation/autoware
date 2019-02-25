@@ -1,0 +1,12 @@
+format: Autoware Launcher Plugin Version 0.1
+args:
+- { name: load_csv,        type: bool, default: true }
+- { name: multi_lane_csv,  type: str,  default: "" }
+
+panel:
+  widget: node.panel
+  frames:
+  - target: args.load_csv
+    widget: basic.bool
+  - target: args.multi_lane_csv
+    widget: basic.file
