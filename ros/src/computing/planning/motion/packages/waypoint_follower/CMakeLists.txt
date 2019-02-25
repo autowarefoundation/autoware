@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
         roscpp
         std_msgs
         tf
+        tf2
         geometry_msgs
         pcl_ros
         pcl_conversions
@@ -36,6 +37,7 @@ catkin_package(
         CATKIN_DEPENDS roscpp
         std_msgs
         tf
+        tf2
         geometry_msgs
         autoware_msgs
         autoware_config_msgs
@@ -88,6 +90,13 @@ add_executable(twist_gate nodes/twist_gate/twist_gate.cpp)
 target_link_libraries(twist_gate ${catkin_LIBRARIES})
 add_dependencies(twist_gate
         ${catkin_EXPORTED_TARGETS})
+
+add_executable(mpc_follower 
+        nodes/mpc_follower/mpc_follower.cpp 
+        nodes/mpc_follower/mpc_utils.cpp
+        nodes/mpc_follower/mpc_trajectory.cpp)
+add_dependencies(mpc_follower ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(mpc_follower ${catkin_LIBRARIES})
 
 ## Install executables and/or libraries
 install(TARGETS libwaypoint_follower pure_pursuit wf_simulator twist_filter twist_gate

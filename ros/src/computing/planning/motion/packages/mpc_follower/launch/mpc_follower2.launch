@@ -1,9 +1,0 @@
-<launch>
-
-	<node pkg="mpc_follower" type="mpc_follower_node2" name="mpc_follower_node2" output="screen">
-		<param name="robot_interface" value="pacmod"/>
-		<param name="ctrl_cmd_interface" value="all"/>
-		<rosparam command="load" file="$(find mpc_follower)/config/mpc_follower_config.yaml" />
-	</node>
-
-</launch>
