@@ -43,8 +43,8 @@ VelocitySetInfo::VelocitySetInfo()
   ros::NodeHandle private_nh_("~");
   ros::NodeHandle nh;
   private_nh_.param<double>("remove_points_upto", remove_points_upto_, 2.3);
-  node_status_publisher_ptr_ = std::make_shared<autoware_health_checker::NodeStatusPublisher>(nh,private_nh_);
-  node_status_publisher_ptr_->ENABLE();
+  health_checker_ptr_ = std::make_shared<autoware_health_checker::HealthChecker>(nh,private_nh_);
+  health_checker_ptr_->ENABLE();
 }
 
 VelocitySetInfo::~VelocitySetInfo()
@@ -73,7 +73,7 @@ void VelocitySetInfo::configCallback(const autoware_config_msgs::ConfigVelocityS
 
 void VelocitySetInfo::pointsCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
 {
-  node_status_publisher_ptr_->CHECK_RATE("topic_points_no_ground_slow_in_velocity_set",8,5,1,"topic points_no_ground subscribe rate in velocity_set is slow.");
+  health_checker_ptr_->CHECK_RATE("topic_points_no_ground_slow_in_velocity_set",8,5,1,"topic points_no_ground subscribe rate in velocity_set is slow.");
   pcl::PointCloud<pcl::PointXYZ> sub_points;
   pcl::fromROSMsg(*msg, sub_points);
 
@@ -115,8 +115,8 @@ void VelocitySetInfo::controlPoseCallback(const geometry_msgs::PoseStampedConstP
 
 void VelocitySetInfo::localizerPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
-  node_status_publisher_ptr_->NODE_ACTIVATE();
-  node_status_publisher_ptr_->CHECK_RATE("topic_current_pose_slow_in_velocity_set",8,5,1,"topic current_pose subscribe rate in velocity_set node is slow.");
+  health_checker_ptr_->NODE_ACTIVATE();
+  health_checker_ptr_->CHECK_RATE("topic_current_pose_slow_in_velocity_set",8,5,1,"topic current_pose subscribe rate in velocity_set node is slow.");
   localizer_pose_ = *msg;
 }
 

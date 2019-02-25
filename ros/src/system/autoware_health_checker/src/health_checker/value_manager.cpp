@@ -17,7 +17,7 @@
  * v1.0 Masaya Kataoka
  */
 
-#include <node_status_publisher/value_manager.h>
+#include <health_checker/value_manager.h>
 
 ValueManager::ValueManager(ros::NodeHandle nh, ros::NodeHandle pnh) {
   nh_ = nh;

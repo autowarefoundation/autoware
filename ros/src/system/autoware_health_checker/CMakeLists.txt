@@ -15,7 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES node_status_publisher
+  LIBRARIES health_checker
   CATKIN_DEPENDS autoware_system_msgs roscpp rosgraph_msgs
 #  DEPENDS system_lib
 )
@@ -26,17 +26,17 @@ include_directories(
   ${autoware_system_msgs_INCLUDE_DIRS}
 )
 
-set(NODE_STATUS_PUBLISHER_SRC
-  src/node_status_publisher/node_status_publisher.cpp
-  src/node_status_publisher/diag_buffer.cpp
-  src/node_status_publisher/rate_checker.cpp
-  src/node_status_publisher/value_manager.cpp
+set(HEALTH_CHECKER_SRC
+  src/health_checker/health_checker.cpp
+  src/health_checker/diag_buffer.cpp
+  src/health_checker/rate_checker.cpp
+  src/health_checker/value_manager.cpp
 )
-add_library(node_status_publisher
-  ${NODE_STATUS_PUBLISHER_SRC}
+add_library(health_checker
+  ${HEALTH_CHECKER_SRC}
 )
-target_link_libraries(node_status_publisher ${catkin_LIBRARIES})
-add_dependencies(node_status_publisher ${catkin_EXPORTED_TARGETS} autoware_system_msgs_generate_messages_cpp)
+target_link_libraries(health_checker ${catkin_LIBRARIES})
+add_dependencies(health_checker ${catkin_EXPORTED_TARGETS} autoware_system_msgs_generate_messages_cpp)
 
 add_library(system_status_subscriber
   src/system_status_subscriber/system_status_subscriber.cpp
@@ -75,7 +75,7 @@ install(DIRECTORY include/health_analyzer/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
 
-install(DIRECTORY include/node_status_publisher/
+install(DIRECTORY include/health_checker/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
 
@@ -88,7 +88,7 @@ install(DIRECTORY include/system_status_subscriber/
 )
 
 # Install library
-install(TARGETS node_status_publisher system_status_subscriber
+install(TARGETS health_checker system_status_subscriber
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
@@ -99,7 +99,7 @@ if (CATKIN_ENABLE_TESTING)
   add_rostest_gtest(test-autoware_health_checker
   test/test_autoware_health_checker.test
   test/src/test_autoware_health_checker.cpp
-  ${NODE_STATUS_PUBLISHER_SRC})
+  ${HEALTH_CHECKER_SRC})
   target_link_libraries(test-autoware_health_checker
   ${catkin_LIBRARIES})
 endif ()

@@ -331,7 +331,7 @@ RayGroundFilter::RayGroundFilter():node_handle_("~")
 {
   ros::NodeHandle nh;
   ros::NodeHandle pnh("~");
-  node_status_pub_ptr_ = std::make_shared<autoware_health_checker::NodeStatusPublisher>(nh,pnh);
+  node_status_pub_ptr_ = std::make_shared<autoware_health_checker::HealthChecker>(nh,pnh);
   node_status_pub_ptr_->ENABLE();
 }
 

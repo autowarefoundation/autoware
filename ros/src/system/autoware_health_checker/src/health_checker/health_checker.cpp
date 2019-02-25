@@ -17,10 +17,10 @@
  * v1.0 Masaya Kataoka
  */
 
-#include <node_status_publisher/node_status_publisher.h>
+#include <health_checker/health_checker.h>
 
 namespace autoware_health_checker {
-NodeStatusPublisher::NodeStatusPublisher(ros::NodeHandle nh,
+HealthChecker::HealthChecker(ros::NodeHandle nh,
                                          ros::NodeHandle pnh) {
   node_activated_ = false;
   ros_ok_ = true;
@@ -32,9 +32,9 @@ NodeStatusPublisher::NodeStatusPublisher(ros::NodeHandle nh,
       nh_.advertise<autoware_system_msgs::NodeStatus>("node_status", 10);
 }
 
-NodeStatusPublisher::~NodeStatusPublisher() { ros_ok_ = false; }
+HealthChecker::~HealthChecker() { ros_ok_ = false; }
 
-void NodeStatusPublisher::publishStatus() {
+void HealthChecker::publishStatus() {
   ros::Rate rate = ros::Rate(autoware_health_checker::UPDATE_RATE);
   while (ros_ok_) {
     mtx_.lock();
@@ -72,20 +72,20 @@ void NodeStatusPublisher::publishStatus() {
   return;
 }
 
-void NodeStatusPublisher::SET_DIAG_STATUS(
+void HealthChecker::SET_DIAG_STATUS(
     autoware_system_msgs::DiagnosticStatus status) {
   addNewBuffer(status.key, status.type, status.description);
   diag_buffers_[status.key]->addDiag(status);
   return;
 }
 
-void NodeStatusPublisher::ENABLE() {
+void HealthChecker::ENABLE() {
   boost::thread publish_thread(
-      boost::bind(&NodeStatusPublisher::publishStatus, this));
+      boost::bind(&HealthChecker::publishStatus, this));
   return;
 }
 
-std::vector<std::string> NodeStatusPublisher::getKeys() {
+std::vector<std::string> HealthChecker::getKeys() {
   std::vector<std::string> keys;
   std::vector<std::string> checker_keys = getRateCheckerKeys();
   std::pair<std::string, std::shared_ptr<DiagBuffer>> buf_itr;
@@ -104,7 +104,7 @@ std::vector<std::string> NodeStatusPublisher::getKeys() {
   return keys;
 }
 
-std::vector<std::string> NodeStatusPublisher::getRateCheckerKeys() {
+std::vector<std::string> HealthChecker::getRateCheckerKeys() {
   std::vector<std::string> keys;
   std::pair<std::string, std::shared_ptr<RateChecker>> checker_itr;
   BOOST_FOREACH (checker_itr, rate_checkers_) {
@@ -113,7 +113,7 @@ std::vector<std::string> NodeStatusPublisher::getRateCheckerKeys() {
   return keys;
 }
 
-bool NodeStatusPublisher::keyExist(std::string key) {
+bool HealthChecker::keyExist(std::string key) {
   if (diag_buffers_.count(key) == 0) {
     return false;
   }
@@ -121,7 +121,7 @@ bool NodeStatusPublisher::keyExist(std::string key) {
 }
 
 // add New Diagnostic Buffer if the key does not exist
-bool NodeStatusPublisher::addNewBuffer(std::string key, uint8_t type,
+bool HealthChecker::addNewBuffer(std::string key, uint8_t type,
                                        std::string description) {
   if (!keyExist(key)) {
     std::shared_ptr<DiagBuffer> buf_ptr = std::make_shared<DiagBuffer>(
@@ -132,7 +132,7 @@ bool NodeStatusPublisher::addNewBuffer(std::string key, uint8_t type,
   return false;
 }
 
-uint8_t NodeStatusPublisher::CHECK_MIN_VALUE(std::string key, double value,
+uint8_t HealthChecker::CHECK_MIN_VALUE(std::string key, double value,
                                              double warn_value,
                                              double error_value,
                                              double fatal_value,
@@ -162,7 +162,7 @@ uint8_t NodeStatusPublisher::CHECK_MIN_VALUE(std::string key, double value,
   return new_status.level;
 }
 
-uint8_t NodeStatusPublisher::CHECK_MAX_VALUE(std::string key, double value,
+uint8_t HealthChecker::CHECK_MAX_VALUE(std::string key, double value,
                                              double warn_value,
                                              double error_value,
                                              double fatal_value,
@@ -193,7 +193,7 @@ uint8_t NodeStatusPublisher::CHECK_MAX_VALUE(std::string key, double value,
   return new_status.level;
 }
 
-uint8_t NodeStatusPublisher::CHECK_RANGE(std::string key, double value,
+uint8_t HealthChecker::CHECK_RANGE(std::string key, double value,
                                          std::pair<double, double> warn_value,
                                          std::pair<double, double> error_value,
                                          std::pair<double, double> fatal_value,
@@ -232,7 +232,7 @@ uint8_t NodeStatusPublisher::CHECK_RANGE(std::string key, double value,
   return new_status.level;
 }
 
-void NodeStatusPublisher::CHECK_RATE(std::string key, double warn_rate,
+void HealthChecker::CHECK_RATE(std::string key, double warn_rate,
                                      double error_rate, double fatal_rate,
                                      std::string description) {
   if (!keyExist(key)) {

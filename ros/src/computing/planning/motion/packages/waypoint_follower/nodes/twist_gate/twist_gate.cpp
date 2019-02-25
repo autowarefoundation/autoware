@@ -50,7 +50,7 @@
 #include "autoware_msgs/ControlCommandStamped.h"
 
 //headers in Autowae Health Checker
-#include <node_status_publisher/node_status_publisher.h>
+#include <health_checker/health_checker.h>
 
 class TwistGate
 {
@@ -76,7 +76,7 @@ class TwistGate
 
     ros::NodeHandle nh_;
     ros::NodeHandle private_nh_;
-    std::shared_ptr<autoware_health_checker::NodeStatusPublisher> node_status_pub_ptr_;
+    std::shared_ptr<autoware_health_checker::HealthChecker> node_status_pub_ptr_;
     ros::Publisher emergency_stop_pub_;
     ros::Publisher control_command_pub_;
     ros::Publisher vehicle_cmd_pub_;
@@ -104,7 +104,7 @@ TwistGate::TwistGate(const ros::NodeHandle& nh, const ros::NodeHandle& private_n
     ,command_mode_(CommandMode::AUTO)
     ,previous_command_mode_(CommandMode::AUTO)
 {
-  node_status_pub_ptr_ = std::make_shared<autoware_health_checker::NodeStatusPublisher>(nh_,private_nh_);
+  node_status_pub_ptr_ = std::make_shared<autoware_health_checker::HealthChecker>(nh_,private_nh_);
   emergency_stop_pub_ = nh_.advertise<std_msgs::Bool>("/emergency_stop", 1, true);
   control_command_pub_ = nh_.advertise<std_msgs::String>("/ctrl_mode", 1);
   vehicle_cmd_pub_ = nh_.advertise<vehicle_cmd_msg_t>("/vehicle_cmd", 1, true);
