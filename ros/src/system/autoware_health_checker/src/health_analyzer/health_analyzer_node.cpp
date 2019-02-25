@@ -19,7 +19,7 @@
 
 #include <ros/ros.h>
 
-#include <health_analyzer/health_analyzer.h>
+#include <autoware_health_checker/health_analyzer/health_analyzer.h>
 
 int main(int argc, char *argv[]) {
   ros::init(argc, argv, "health_analyzer");
