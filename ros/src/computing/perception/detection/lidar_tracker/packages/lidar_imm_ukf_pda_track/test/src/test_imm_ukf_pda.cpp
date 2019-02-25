@@ -192,8 +192,8 @@ TEST(UKF, checkRAFilter)
   ukf.estimationUpdate(MotionModel::CTRV, use_lane_direction);
   double test_x_ctrv_0 = ukf.x_ctrv_(0);
   double test_p_ctrv_1 = ukf.p_ctrv_(1, 1);
-  EXPECT_NEAR(-12.4948, test_x_ctrv_0, 0.0001);
-  EXPECT_NEAR(0.0215346, test_p_ctrv_1, 0.00001);
+  EXPECT_NEAR(-12.5545, test_x_ctrv_0, 0.0001);
+  EXPECT_NEAR(0.0110024, test_p_ctrv_1, 0.00001);
 }
 
 // Run all the tests that were declared with TEST()

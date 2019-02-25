@@ -1646,11 +1646,11 @@ void UKF::adaptiveAdjustmentR(const int model_ind, const bool use_lane_direction
   Eigen::MatrixXd s;
   if (use_lane_direction)
   {
-    s = Eigen::VectorXd(num_lidar_direction_state_, num_lidar_direction_state_);
+    s = Eigen::MatrixXd(num_lidar_direction_state_, num_lidar_direction_state_);
   }
   else
   {
-    s = Eigen::VectorXd(num_lidar_state_, num_lidar_state_);
+    s = Eigen::MatrixXd(num_lidar_state_, num_lidar_state_);
   }
   s.fill(0.0);
   for (int i = 0; i < 2 * num_state_ + 1; i++)
