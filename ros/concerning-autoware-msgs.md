@@ -86,12 +86,12 @@ The following is a different view of the above table, to ease finding messages t
 
 To test whether the proposed approach works, please follow these steps:
 
-1. Get a fresh copy of Autoware `feature/autoware_msgs_refactoring` branch, ex. `git clone https://github.com/CPFL/Autoware.git -b feature/autoware_msgs_refactoring --recurse-submodules`.
+1. Get a fresh copy of Autoware `develop` branch, ex. `git clone https://github.com/CPFL/Autoware.git -b develop --recurse-submodules [AUTOWARE_PATH]`.
 2. Make sure the original builds correctly: run `./catkin_make_release` (follow the steps in [How to build](https://github.com/CPFL/Autoware/wiki/Source-Build) ).
-3. Switch to `feature/autoware_msgs_refactoring` branch, ex. `git checkout feature/autoware_msgs_refactoring`.
-3. Run the autoware messages refactoring script `./fix-autoware-msgs.py --fix` from the `[AUTOWARE_PATH]/ros` folder (it assumes `src` is a subdirectory).
-4. Make sure refactored version builds correctly: run `./catkin_make_release`.
-5. (Optionally) If necessary, everything can be reverted to its original unaltered state with `./fix-autoware-msgs.py --recovery`
+3. Switch to `feature/autoware_msgs_refactoring` branch, ex. `git checkout feature/autoware_msgs_refactoring` and pull for changes `git pull`.
+3. Run the autoware messages refactoring script as `./fix-autoware-msgs.py --fix` from the `[AUTOWARE_PATH]/ros` folder (it assumes `src` is a subdirectory).
+4. Make sure refactored version builds correctly: run again `./catkin_make_release`.
+5. (Optionally) If necessary, everything can be reverted to its original unaltered state with `./fix-autoware-msgs.py --recovery`. The recovery file `.autoware_msgs_refactoring_recovery` has a list of modified files, it can be deleted.
 
 ## Notes:
 
@@ -109,7 +109,7 @@ Please check the following cases:
 
 ### Not in use
 
-As to the commit/date stated above, the following messages are not used by any package and will be moved to a new namespace `autoware_unused_msgs` temporarily:
+As to the commit/date stated above, the following messages are not used by any package. The above script will move them to a new namespace `autoware_unused_msgs` temporarily (these messages will be deleted):
 
 * `GeometricRectangle`
 * `ImageObjects`
