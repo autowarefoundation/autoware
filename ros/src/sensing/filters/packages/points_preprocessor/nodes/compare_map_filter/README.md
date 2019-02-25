@@ -36,7 +36,7 @@ Launch file available parameters:
 ------|----|---------
 |`/points_raw`|`sensor_msgs/PointCloud2`|PointCloud source topic.|
 |`/points_map`|`sensor_msgs/PointCloud2`|PointCloud Map topic.|
-|`/config/compare_map_filter`|`autoware_msgs/ConfigCompareMapFilter`|Configuration adjustment for threshold.|
+|`/config/compare_map_filter`|`autoware_config_msgs/ConfigCompareMapFilter`|Configuration adjustment for threshold.|
 |`/tf`|TF|sensor frame <-> map frame|
 
 ### Published topics
