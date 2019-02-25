@@ -2,7 +2,7 @@
 
 ## Description
 
-(Tested on develop branch commit `c1166d91da58dc5c59c787e760d7d20f15d470f8` of Tue Feb 19 11:20:48 2019)
+(Tested on develop branch, commit `216cf5f8be63b81d46a90615caebf09d67496172` of Mon Feb 25 17:11:39 2019)
 
 So far, `autoware_msgs` is the sink where all Autoware related messages are created and maintained. 
 We decided to refactor the messages into new namespaces more suitable to their purpose.
