@@ -17,7 +17,7 @@
  * v1.0 Masaya Kataoka
  */
 
-#include <autoware_health_checker/health_aggregator.h>
+#include <health_aggregator/health_aggregator.h>
 
 HealthAggregator::HealthAggregator(ros::NodeHandle nh, ros::NodeHandle pnh) {
   nh_ = nh;

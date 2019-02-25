@@ -44,15 +44,16 @@ public:
   uint8_t getErrorLevel();
   boost::optional<double> getRate();
   const std::string description;
+  void setRate(double warn_rate, double error_rate, double fatal_rate);
 
 private:
   ros::Time start_time_;
   void update();
   std::vector<ros::Time> data_;
-  const double buffer_length_;
-  const double warn_rate_;
-  const double error_rate_;
-  const double fatal_rate_;
+  double buffer_length_;
+  double warn_rate_;
+  double error_rate_;
+  double fatal_rate_;
   std::mutex mtx_;
 };
 }

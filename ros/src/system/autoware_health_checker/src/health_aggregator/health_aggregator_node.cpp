@@ -19,7 +19,7 @@
 
 #include <ros/ros.h>
 
-#include <autoware_health_checker/health_aggregator.h>
+#include <health_aggregator/health_aggregator.h>
 
 int main(int argc, char *argv[]) {
   ros::init(argc, argv, "health_aggregator");

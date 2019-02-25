@@ -17,7 +17,7 @@
  * v1.0 Masaya Kataoka
  */
 
-#include <autoware_health_checker/health_analyzer.h>
+#include <health_analyzer/health_analyzer.h>
 
 HealthAnalyzer::HealthAnalyzer(ros::NodeHandle nh, ros::NodeHandle pnh) {
   nh_ = nh;

@@ -17,25 +17,24 @@
  * v1.0 Masaya Kataoka
  */
 
-#include <autoware_health_checker/node_status_publisher.h>
+#include <health_checker/health_checker.h>
 
 namespace autoware_health_checker {
-NodeStatusPublisher::NodeStatusPublisher(ros::NodeHandle nh,
+HealthChecker::HealthChecker(ros::NodeHandle nh,
                                          ros::NodeHandle pnh) {
   node_activated_ = false;
   ros_ok_ = true;
   nh_ = nh;
   pnh_ = pnh;
+  value_manager_ptr_ = std::make_shared<ValueManager>(nh_, pnh_);
+  value_manager_ptr_->run();
   status_pub_ =
       nh_.advertise<autoware_system_msgs::NodeStatus>("node_status", 10);
 }
 
-NodeStatusPublisher::~NodeStatusPublisher() {
-  ros_ok_ = false;
-  publish_thread_.join();
-}
+HealthChecker::~HealthChecker() { ros_ok_ = false; }
 
-void NodeStatusPublisher::publishStatus() {
+void HealthChecker::publishStatus() {
   ros::Rate rate = ros::Rate(autoware_health_checker::UPDATE_RATE);
   while (ros_ok_) {
     mtx_.lock();
@@ -55,7 +54,7 @@ void NodeStatusPublisher::publishStatus() {
           rate_checkers_[*key_itr]->getErrorLevelAndRate();
       diag.level = result.first;
       diag.key = *key_itr;
-      diag.value = doubleToJson(result.second);
+      diag.value = valueToJson(result.second);
       diag.description = rate_checkers_[*key_itr]->description;
       diag.header.stamp = now;
       diag_array.status.push_back(diag);
@@ -73,12 +72,20 @@ void NodeStatusPublisher::publishStatus() {
   return;
 }
 
-void NodeStatusPublisher::ENABLE() {
-  publish_thread_ = boost::thread(boost::bind(&NodeStatusPublisher::publishStatus, this));
+void HealthChecker::SET_DIAG_STATUS(
+    autoware_system_msgs::DiagnosticStatus status) {
+  addNewBuffer(status.key, status.type, status.description);
+  diag_buffers_[status.key]->addDiag(status);
   return;
 }
 
-std::vector<std::string> NodeStatusPublisher::getKeys() {
+void HealthChecker::ENABLE() {
+  boost::thread publish_thread(
+      boost::bind(&HealthChecker::publishStatus, this));
+  return;
+}
+
+std::vector<std::string> HealthChecker::getKeys() {
   std::vector<std::string> keys;
   std::vector<std::string> checker_keys = getRateCheckerKeys();
   std::pair<std::string, std::shared_ptr<DiagBuffer>> buf_itr;
@@ -97,7 +104,7 @@ std::vector<std::string> NodeStatusPublisher::getKeys() {
   return keys;
 }
 
-std::vector<std::string> NodeStatusPublisher::getRateCheckerKeys() {
+std::vector<std::string> HealthChecker::getRateCheckerKeys() {
   std::vector<std::string> keys;
   std::pair<std::string, std::shared_ptr<RateChecker>> checker_itr;
   BOOST_FOREACH (checker_itr, rate_checkers_) {
@@ -106,7 +113,7 @@ std::vector<std::string> NodeStatusPublisher::getRateCheckerKeys() {
   return keys;
 }
 
-bool NodeStatusPublisher::keyExist(std::string key) {
+bool HealthChecker::keyExist(std::string key) {
   if (diag_buffers_.count(key) == 0) {
     return false;
   }
@@ -114,95 +121,123 @@ bool NodeStatusPublisher::keyExist(std::string key) {
 }
 
 // add New Diagnostic Buffer if the key does not exist
-void NodeStatusPublisher::addNewBuffer(std::string key, uint8_t type,
+bool HealthChecker::addNewBuffer(std::string key, uint8_t type,
                                        std::string description) {
   if (!keyExist(key)) {
     std::shared_ptr<DiagBuffer> buf_ptr = std::make_shared<DiagBuffer>(
         key, type, description, autoware_health_checker::BUFFER_LENGTH);
     diag_buffers_[key] = buf_ptr;
+    return true;
   }
-  return;
+  return false;
 }
 
-uint8_t NodeStatusPublisher::CHECK_MIN_VALUE(std::string key, double value,
+uint8_t HealthChecker::CHECK_MIN_VALUE(std::string key, double value,
                                              double warn_value,
                                              double error_value,
                                              double fatal_value,
                                              std::string description) {
+  value_manager_ptr_->setDefaultValue(key, "min", warn_value, error_value,
+                                      fatal_value);
   addNewBuffer(key, autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE,
                description);
   autoware_system_msgs::DiagnosticStatus new_status;
   new_status.type = autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE;
-  if (value < fatal_value) {
+  if (value < value_manager_ptr_->getValue(
+                  key, "min", autoware_health_checker::LEVEL_FATAL)) {
     new_status.level = autoware_system_msgs::DiagnosticStatus::FATAL;
-  } else if (value < error_value) {
+  } else if (value < value_manager_ptr_->getValue(
+                         key, "min", autoware_health_checker::LEVEL_ERROR)) {
     new_status.level = autoware_system_msgs::DiagnosticStatus::ERROR;
-  } else if (value < warn_value) {
+  } else if (value < value_manager_ptr_->getValue(
+                         key, "min", autoware_health_checker::LEVEL_WARN)) {
     new_status.level = autoware_system_msgs::DiagnosticStatus::WARN;
   } else {
     new_status.level = autoware_system_msgs::DiagnosticStatus::OK;
   }
+  new_status.key = key;
   new_status.description = description;
-  new_status.value = doubleToJson(value);
+  new_status.value = valueToJson(value);
+  diag_buffers_[key]->addDiag(new_status);
+  return new_status.level;
+}
+
+uint8_t HealthChecker::CHECK_MAX_VALUE(std::string key, double value,
+                                             double warn_value,
+                                             double error_value,
+                                             double fatal_value,
+                                             std::string description) {
+  value_manager_ptr_->setDefaultValue(key, "max", warn_value, error_value,
+                                      fatal_value);
+  addNewBuffer(key, autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE,
+               description);
+  autoware_system_msgs::DiagnosticStatus new_status;
+  new_status.type = autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE;
+  if (value > value_manager_ptr_->getValue(
+                  key, "max", autoware_health_checker::LEVEL_FATAL)) {
+    new_status.level = autoware_system_msgs::DiagnosticStatus::FATAL;
+  } else if (value > value_manager_ptr_->getValue(
+                         key, "max", autoware_health_checker::LEVEL_ERROR)) {
+    new_status.level = autoware_system_msgs::DiagnosticStatus::ERROR;
+  } else if (value > value_manager_ptr_->getValue(
+                         key, "max", autoware_health_checker::LEVEL_WARN)) {
+    new_status.level = autoware_system_msgs::DiagnosticStatus::WARN;
+  } else {
+    new_status.level = autoware_system_msgs::DiagnosticStatus::OK;
+  }
+  new_status.key = key;
+  new_status.description = description;
+  new_status.value = valueToJson(value);
   new_status.header.stamp = ros::Time::now();
   diag_buffers_[key]->addDiag(new_status);
   return new_status.level;
 }
 
-uint8_t NodeStatusPublisher::CHECK_MAX_VALUE(std::string key, double value,
-                                             double warn_value,
-                                             double error_value,
-                                             double fatal_value,
-                                             std::string description) {
-  addNewBuffer(key, autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE,
-               description);
-  autoware_system_msgs::DiagnosticStatus new_status;
-  new_status.type = autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE;
-  if (value > fatal_value) {
-    new_status.level = autoware_system_msgs::DiagnosticStatus::FATAL;
-  } else if (value > error_value) {
-    new_status.level = autoware_system_msgs::DiagnosticStatus::ERROR;
-  } else if (value > warn_value) {
-    new_status.level = autoware_system_msgs::DiagnosticStatus::WARN;
-  } else {
-    new_status.level = autoware_system_msgs::DiagnosticStatus::OK;
-  }
-  new_status.description = description;
-  new_status.value = doubleToJson(value);
-  new_status.header.stamp = ros::Time::now();
-  diag_buffers_[key]->addDiag(new_status);
-  return new_status.level;
-}
-
-uint8_t NodeStatusPublisher::CHECK_RANGE(std::string key, double value,
+uint8_t HealthChecker::CHECK_RANGE(std::string key, double value,
                                          std::pair<double, double> warn_value,
                                          std::pair<double, double> error_value,
                                          std::pair<double, double> fatal_value,
                                          std::string description) {
+  value_manager_ptr_->setDefaultValue(key, "min", warn_value.first,
+                                      error_value.first, fatal_value.first);
+  value_manager_ptr_->setDefaultValue(key, "max", warn_value.second,
+                                      error_value.second, fatal_value.second);
   addNewBuffer(key, autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE,
                description);
   autoware_system_msgs::DiagnosticStatus new_status;
   new_status.type = autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE;
-  if (value < fatal_value.first || value > fatal_value.second) {
+  if (value < value_manager_ptr_->getValue(
+                  key, "min", autoware_health_checker::LEVEL_FATAL) ||
+      value > value_manager_ptr_->getValue(
+                  key, "max", autoware_health_checker::LEVEL_FATAL)) {
     new_status.level = autoware_system_msgs::DiagnosticStatus::FATAL;
-  } else if (value < error_value.first || value > error_value.second) {
+  } else if (value < value_manager_ptr_->getValue(
+                         key, "min", autoware_health_checker::LEVEL_ERROR) ||
+             value > value_manager_ptr_->getValue(
+                         key, "max", autoware_health_checker::LEVEL_ERROR)) {
     new_status.level = autoware_system_msgs::DiagnosticStatus::ERROR;
-  } else if (value < warn_value.first || value > warn_value.second) {
+  } else if (value < value_manager_ptr_->getValue(
+                         key, "min", autoware_health_checker::LEVEL_WARN) ||
+             value > value_manager_ptr_->getValue(
+                         key, "min", autoware_health_checker::LEVEL_WARN)) {
     new_status.level = autoware_system_msgs::DiagnosticStatus::WARN;
   } else {
     new_status.level = autoware_system_msgs::DiagnosticStatus::OK;
   }
-  new_status.value = doubleToJson(value);
+  new_status.key = key;
+  new_status.value = valueToJson(value);
   new_status.description = description;
   new_status.header.stamp = ros::Time::now();
   diag_buffers_[key]->addDiag(new_status);
   return new_status.level;
 }
 
-void NodeStatusPublisher::CHECK_RATE(std::string key, double warn_rate,
+void HealthChecker::CHECK_RATE(std::string key, double warn_rate,
                                      double error_rate, double fatal_rate,
                                      std::string description) {
   if (!keyExist(key)) {
+    value_manager_ptr_->setDefaultValue(key, "rate", warn_rate, error_rate,
+                                        fatal_rate);
     std::shared_ptr<RateChecker> checker_ptr = std::make_shared<RateChecker>(
         autoware_health_checker::BUFFER_LENGTH, warn_rate, error_rate,
         fatal_rate, description);
@@ -210,16 +245,14 @@ void NodeStatusPublisher::CHECK_RATE(std::string key, double warn_rate,
   }
   addNewBuffer(key, autoware_system_msgs::DiagnosticStatus::RATE_IS_SLOW,
                description);
+  rate_checkers_[key]->setRate(
+      value_manager_ptr_->getValue(key, "rate",
+                                   autoware_health_checker::LEVEL_WARN),
+      value_manager_ptr_->getValue(key, "rate",
+                                   autoware_health_checker::LEVEL_ERROR),
+      value_manager_ptr_->getValue(key, "rate",
+                                   autoware_health_checker::LEVEL_FATAL));
   rate_checkers_[key]->check();
   return;
-}
-
-std::string NodeStatusPublisher::doubleToJson(double value) {
-  using namespace boost::property_tree;
-  std::stringstream ss;
-  ptree pt;
-  pt.put("value.double", value);
-  write_json(ss, pt);
-  return ss.str();
 }
 }
