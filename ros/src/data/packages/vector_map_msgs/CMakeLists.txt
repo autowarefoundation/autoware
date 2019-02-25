@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(vector_map_msgs)
 
+
+find_package(autoware_build_flags REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-  autoware_build_flags
   std_msgs
   message_generation
 )

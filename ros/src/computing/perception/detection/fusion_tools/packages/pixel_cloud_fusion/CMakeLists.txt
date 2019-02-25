@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(pixel_cloud_fusion)
 
+
+find_package(autoware_build_flags REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
         cv_bridge
         image_transport
         pcl_conversions
@@ -87,10 +88,13 @@ target_include_directories(pixel_cloud_fusion PRIVATE
 target_link_libraries(pixel_cloud_fusion
         pixel_cloud_fusion_lib)
 
-install(TARGETS pixel_cloud_fusion
+install(TARGETS pixel_cloud_fusion pixel_cloud_fusion_lib
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+install(DIRECTORY include/${PROJECT_NAME}/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
 install(DIRECTORY launch/
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch

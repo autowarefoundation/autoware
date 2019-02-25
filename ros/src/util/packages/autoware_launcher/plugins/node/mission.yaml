@@ -1,0 +1,5 @@
+format: Autoware Launcher Plugin Version 0.1
+rules:
+- { name: lane_rule,   plugin: leaf/lane_rule }
+- { name: lane_stop,   plugin: leaf/lane_stop }
+- { name: lane_select, plugin: refs/lane_select }

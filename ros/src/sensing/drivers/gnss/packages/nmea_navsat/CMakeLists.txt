@@ -19,3 +19,6 @@ catkin_package(
 #target_link_libraries(javad_tty
 #   ${catkin_LIBRARIES}
 #)
+install(DIRECTORY scripts/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)

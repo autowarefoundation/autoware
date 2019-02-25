@@ -1,0 +1,3 @@
+std_msgs/Header header
+string hardware_name
+autoware_system_msgs/DiagnosticStatusArray[] status

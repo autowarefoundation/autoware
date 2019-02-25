@@ -6,8 +6,10 @@
 
     - waypoint_clicker
     - waypoint_saver
+    - waypoint_extractor
     - waypoint_marker_publisher
     - waypoint_loader
+    - waypoint_replanner
     - waypoint_velocity_visualizer
 
 - 3-formats of waypoints.csv handled by waypoint_maker
@@ -63,18 +65,19 @@
 
 1. Overview
 
+  * waypoint_loader
     - Convert waypoints.csv to ROS message type.
     - Correspond to the above 3 types of csv.
+  * waypoint_replanner
     - Adjust waypoints offline (resample and replan velocity)
-    - Save waypoints.csv as ver3 format.
 
 1. How to use
 
   * How to start
     - At `Computing`->`waypoint_loader`:
-      - Check app->`disable_decision_maker`.
-        If you want to use `decision_maker`, switch to false.
-        Otherwise switch to true.
+      - Check app->`load csv`.
+        If you want to load csv_files, switch to true.
+        Otherwise switch to false.
       - Check `waypoint_loader` and start.
   * Idea of velocity replanning
     - The velocity plan is based on the following idea.
@@ -88,9 +91,13 @@
     - On `multi_lane`, please select multiple input files. If you want lane change with `lane_select`, prepare ver3 type.
     - Check `replanning_mode` if you want to replan velocity.
       - On replanning mode:
+        * Check `realtime_tuning_mode` if you want to tune waypoint.
         * Check `resample_mode` if you want to resample waypoints.
           On resample mode, please set `resample_interval`.
         * Velocity replanning parameter
+          - Check `replan curve mode` if you want to decelerate on curve.
+          - Check `overwrite vmax mode` if you want to overwrite velocity of all waypoint.
+          - Check `replan endpoint mode` if you want to decelerate on endpoint.
           - `Vmax` is max velocity.
           - `Rth`  is radius threshold for extracting curve in waypoints.
             Increasing this, you can extract curves more sensitively.
@@ -101,27 +108,39 @@
           - `Accel limit` is acceleration value for limitting velocity.
           - `Decel limit` is deceleration value for limitting velocity.
           - `Velocity Offset` is offset amount preceding the velocity plan.
+          - `Braking Distance` is the number of minimum velocity before end point offset.
           - `End Point Offset` is the number of 0 velocity points at the end of waypoints.
 
 1. Subscribed Topics
 
-    - /config/waypoint_loader (autoware_config_msgs/ConfigWaypointLoadre)
-    - /config/waypoint_loader_output (std_msgs/Bool)
+  * waypoint_replanner
+    - /based/lane_waypoints_raw (autoware_msgs/LaneArray)
+    - /config/waypoint_replanner (autoware_config_msgs/ConfigWaypointReplanner)
 
 1. Published Topics
 
+  * waypoint_loader
+    - /based/lane_waypoints_raw (autoware_msgs/LaneArray)
+
+  * waypoint_replanner
+    - /based/lane_waypoints_array (autoware_msgs/LaneArray)
     - /lane_waypoints_array (autoware_msgs/LaneArray)
 
 1. Parameters
 
-    - ~disable_decision_maker
+  * waypoint_loader
+    - ~multi_lane_csv
 
 
 ### waypoint_saver
 
 1. Overview
 
+  * waypoint_saver
     - When activated, subscribe `/current_pose`, `/current_velocity`(option) and save waypoint in the file at specified intervals.
+  * waypoint_extractor
+    - When activated, subscribe autoware_msgs/LaneArray and save waypoint in the file. Input topic name is selectable.
+  * common
     - `change_flag` is basically stored as 0 (straight ahead),
       so if you want to change the lane, edit by yourself. (1 turn right, 2 turn left)
     - This node corresponds to preservation of ver3 format.
@@ -129,15 +148,27 @@
 1. How to use
 
     On app:
+  * common
     - Ref on the `Save File` and specify the save file name.
+    - Select the function you want to use from the `Input Type`.
+  * if `Input Type` == VehicleFootprint (`waypoint_saver`)   
     - Check `Save/current_velocity` if you want to save velocity.
       In otherwise, saved as 0 velocity.
     - Using `Interval`, it is set how many meters to store waypoint.
+  * if `Input Type` == LaneArrayTopic (`waypoint_extractor`)
+    - Set lane_array topic name you want to save.
+    - Cache starts at the same time as the node starts up.
+    - The cache is always overwritten while the node is running.
+    - The cache is flushed when the node is closed.
 
 1. Subscribed Topics
 
+  * waypoint_saver
     - /current_pose (geometry_msgs/PoseStamped) : default
     - /current_velocity (geometry_msgs/TwistStamped) : default
+
+  * waypoint_extractor
+    - /lane_waypoints_array (autoware_msgs/LaneArray) : default
 
 1. Published Topics
 
@@ -145,8 +176,13 @@
 
 1. Parameters
 
+  * waypoints_saver
     - ~save_filename
     - ~interval
     - ~velocity_topic
     - ~pose_topic
     - ~save_velocity
+
+  * waypoints_extractor
+    - ~lane_csv
+    - ~lane_topic

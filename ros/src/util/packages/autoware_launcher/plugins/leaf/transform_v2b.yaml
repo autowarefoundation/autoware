@@ -1,0 +1,20 @@
+format: Autoware Launcher Plugin Version 0.1
+args:
+- { name: parent_frame, type: str, default: base_link }
+- { name: local_frame,  type: str, default: velodyne  }
+- { name: tx, type: real }
+- { name: ty, type: real }
+- { name: tz, type: real }
+- { name: rx, type: real }
+- { name: ry, type: real }
+- { name: rz, type: real }
+
+panel:
+  widget: node.panel
+  frames:
+  - target: args.parent_frame
+    widget: basic.file
+  - target: args.local_frame
+    widget: basic.file
+  - target: [args.tx, args.ty, args.tz, args.rx, args.ry, args.rz]
+    widget: basic.transform

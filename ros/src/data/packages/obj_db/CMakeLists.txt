@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(obj_db)
 
+
+find_package(autoware_build_flags REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
         roscpp
         gnss
         visualization_msgs
@@ -50,3 +51,16 @@ set_target_properties(obj_uploader
 add_executable(can_uploader nodes/can_uploader/can_uploader.cpp)
 target_link_libraries(can_uploader ${catkin_LIBRARIES} obj_db)
 add_dependencies(can_uploader ${catkin_EXPORTED_TARGETS})
+
+install(TARGETS
+        can_uploader
+        obj_uploader
+        obj_db
+        obj_downloader
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+
+install(DIRECTORY include
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})

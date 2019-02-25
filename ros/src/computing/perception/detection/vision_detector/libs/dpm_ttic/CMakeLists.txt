@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(libdpm_ttic)
 
+
+find_package(autoware_build_flags REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
         sensor_msgs
         std_msgs
         )
@@ -139,5 +140,5 @@ install(TARGETS
         libdpm_ttic
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )

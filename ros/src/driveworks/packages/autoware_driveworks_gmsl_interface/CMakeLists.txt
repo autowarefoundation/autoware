@@ -10,25 +10,25 @@ if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64" AND CUDA_FOUND)
       set(DRIVEWORKS_LINKER_FLAGS "-Wl,-undefined,dynamic_lookup")
     endif()
 
-    add_definitions(-DVIBRANTE)
-
     find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
-        roscpp
-        sensor_msgs
-        std_msgs
-        cv_bridge
-        image_transport
-        camera_info_manager
-        nodelet
+            autoware_build_flags
+            roscpp
+            sensor_msgs
+            std_msgs
+            cv_bridge
+            image_transport
+            camera_info_manager
+            nodelet
     )
 
     catkin_package(
-        LIBRARIES ${PROJECT_NAME}
-        CATKIN_DEPENDS
-        sensor_msgs
-        std_msgs
+            LIBRARIES ${PROJECT_NAME}
+            CATKIN_DEPENDS
+            sensor_msgs
+            std_msgs
     )
+
+    add_definitions(-DVIBRANTE)
 
     include_directories(
         include
@@ -85,11 +85,18 @@ if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64" AND CUDA_FOUND)
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
     )
 
-    install(FILES
-        nodelet_gmsl_camera.xml
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-    )
+
+    install(DIRECTORY launch/
+            DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+            PATTERN ".svn" EXCLUDE)
 
 else()
+    find_package(catkin REQUIRED)
+    catkin_package()
     message("gmsl_camera driver will not be built. CUDA was not found.")
 endif()
+
+install(FILES
+        nodelet_gmsl_camera.xml
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+        )

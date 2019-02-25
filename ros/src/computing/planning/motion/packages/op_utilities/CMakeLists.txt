@@ -1,8 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(op_utilities)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(vector_map_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS		
-    autoware_build_flags
 	roscpp
   	geometry_msgs  	
   	autoware_msgs
@@ -11,7 +14,6 @@ find_package(catkin REQUIRED COMPONENTS
   	op_planner
   	op_ros_helpers
   	pcl_conversions
-  	vector_map_msgs
 )
 
 find_package(OpenCV REQUIRED)
@@ -40,7 +42,8 @@ catkin_package(
 ###########
 
 
-include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS}
+ ${vector_map_INCLUDE_DIRS})
 
 link_directories(lib)
 
@@ -70,4 +73,18 @@ target_link_libraries(op_bag_player
 )
 
 add_dependencies(op_pose2tf op_data_logger op_bag_player ${catkin_EXPORTED_TARGETS})
+
+        
+install(TARGETS
+        op_pose2tf
+        op_data_logger
+        op_bag_player
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
+        
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)
 

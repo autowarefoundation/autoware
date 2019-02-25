@@ -1,19 +1,22 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(lidar_euclidean_cluster_detect)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
         pcl_ros
         roscpp
         geometry_msgs
         std_msgs
         sensor_msgs
-        autoware_msgs
         tf
         vector_map_server
         grid_map_ros
         grid_map_cv
         grid_map_msgs
+        autoware_msgs
         )
 
 find_package(OpenMP)
@@ -48,9 +51,9 @@ link_directories(${YAML_CPP_LIBRARY_DIRS})
 include_directories(
         include
         ${catkin_INCLUDE_DIRS}
+        ${autoware_msgs_INCLUDE_DIRS}
         ${OpenCV_INCLUDE_DIRS}
 )
-link_directories(${PCL_LIBRARY_DIRS})
 link_directories(${OpenCV_LIBRARY_DIRS})
 
 #Euclidean Cluster
@@ -78,15 +81,20 @@ if (${CUDA_FOUND})
     target_link_libraries(lidar_euclidean_cluster_detect
             ${OpenCV_LIBRARIES}
             ${catkin_LIBRARIES}
-            ${PCL_LIBRARIES}
             ${YAML_CPP_LIBRARIES}
             gpu_euclidean_clustering)
+
+    install(TARGETS
+            gpu_euclidean_clustering
+            ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+            LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+            RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+            )
 
 else ()
     target_link_libraries(lidar_euclidean_cluster_detect
             ${OpenCV_LIBRARIES}
             ${catkin_LIBRARIES}
-            ${PCL_LIBRARIES}
             ${YAML_CPP_LIBRARIES})
 
 endif ()
@@ -102,9 +110,16 @@ if (OPENMP_FOUND)
             )
 endif ()
 
+install(DIRECTORY include/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+
 install(TARGETS
         lidar_euclidean_cluster_detect
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)

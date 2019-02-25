@@ -6,8 +6,8 @@ if [[ $PROC_MANAGERS == "" ]]; then
 fi
 
 if [[ $UID != 0 ]]; then
-    gksudo --message "Please input for password for cleanup" \
-           -- kill $PROC_MANAGERS
+    echo "Please input password for cleanup"    
+    sudo kill $PROC_MANAGERS
 else
     kill $PROC_MANAGERS
 fi

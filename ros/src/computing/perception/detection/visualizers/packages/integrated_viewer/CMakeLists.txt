@@ -1,8 +1,11 @@
 cmake_minimum_required(VERSION 2.8.7)
 project(integrated_viewer)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
         cv_bridge
         image_transport
         roscpp
@@ -60,6 +63,7 @@ include_directories(
         lib/
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
+        ${autoware_msgs_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
         include
 )
@@ -118,6 +122,12 @@ install(TARGETS ${PROJECT_NAME}
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 install(FILES rviz_plugin_description.xml
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+
+install(FILES
+        node/image_viewer_plugin/autoware_logo.png
+        node/image_viewer_plugin/car.png
+        node/image_viewer_plugin/pedestrian.png
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/node/image_viewer_plugin/)
 
 add_dependencies(${PROJECT_NAME}
         ${catkin_EXPORTED_TARGETS}

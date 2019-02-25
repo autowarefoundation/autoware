@@ -11,3 +11,11 @@ find_package(sound_play REQUIRED)
 catkin_package(
   CATKIN_DEPENDS rospy std_msgs
 )
+
+catkin_install_python(PROGRAMS scripts/sound_player.py
+        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+install(FILES scripts/sound_player.yaml
+        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+#TODO INSTALL ALL THE WAVs, MODIFY SCRIPT

@@ -4,16 +4,19 @@ project(synchronization)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-  autoware_build_flags
   roscpp
   sensor_msgs
   std_msgs
-  autoware_msgs
   lidar_tracker
   geometry_msgs
   visualization_msgs
   points2image
+  autoware_msgs
 )
 find_package(OpenCV REQUIRED)
 
@@ -29,7 +32,11 @@ catkin_package(
 ## Build ##
 ###########
 
-include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(
+  include
+  ${catkin_INCLUDE_DIRS}
+  ${autoware_msgs_INCLUDE_DIRS}
+)
 
 add_executable(sync_drivers sync_drivers.cpp)
 target_link_libraries(sync_drivers ${catkin_LIBRARIES} ${OpenCV_LIBS})
@@ -50,3 +57,20 @@ target_link_libraries(sync_obj_fusion ${catkin_LIBRARIES} ${OpenCV_LIBS})
 add_executable(time_monitor time_monitor.cpp)
 target_link_libraries(time_monitor ${catkin_LIBRARIES} ${OpenCV_LIBS})
 add_dependencies(time_monitor ${catkin_EXPORTED_TARGETS})
+
+        
+install(TARGETS
+        sync_drivers
+        sync_range_fusion
+        sync_track
+        sync_obj_reproj
+        sync_obj_fusion
+        time_monitor
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
+        
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)

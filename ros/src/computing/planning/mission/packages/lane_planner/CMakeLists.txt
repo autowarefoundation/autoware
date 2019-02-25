@@ -1,13 +1,17 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(lane_planner)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
+
+find_package(vector_map REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
         roscpp
         std_msgs
         tablet_socket
         waypoint_follower
-        vector_map
         gnss
         autoware_msgs
         )
@@ -29,15 +33,23 @@ catkin_package(
 include_directories(
         include
         ${catkin_INCLUDE_DIRS}
+        ${vector_map_INCLUDE_DIRS}
+        ${autoware_msgs_INCLUDE_DIRS}
 )
 
-add_library(lane_planner lib/lane_planner/lane_planner_vmap.cpp)
-target_link_libraries(lane_planner ${catkin_LIBRARIES})
+add_library(lane_planner
+        lib/lane_planner/lane_planner_vmap.cpp
+        )
+target_link_libraries(lane_planner
+        ${catkin_LIBRARIES}
+        )
 add_dependencies(lane_planner
         ${catkin_EXPORTED_TARGETS}
         )
 
-add_executable(lane_navi nodes/lane_navi/lane_navi.cpp)
+add_executable(lane_navi
+        nodes/lane_navi/lane_navi.cpp
+        )
 target_link_libraries(lane_navi
         lane_planner
         ${catkin_LIBRARIES}
@@ -46,7 +58,9 @@ add_dependencies(lane_navi
         ${catkin_EXPORTED_TARGETS}
         )
 
-add_executable(lane_rule nodes/lane_rule/lane_rule.cpp)
+add_executable(lane_rule
+        nodes/lane_rule/lane_rule.cpp
+        )
 target_link_libraries(lane_rule
         lane_planner
         ${catkin_LIBRARIES}
@@ -55,7 +69,9 @@ add_dependencies(lane_rule
         ${catkin_EXPORTED_TARGETS}
         )
 
-add_executable(lane_stop nodes/lane_stop/lane_stop.cpp)
+add_executable(lane_stop
+        nodes/lane_stop/lane_stop.cpp
+        )
 target_link_libraries(lane_stop lane_planner ${catkin_LIBRARIES})
 add_dependencies(lane_stop
         ${catkin_EXPORTED_TARGETS}
@@ -84,5 +100,8 @@ install(TARGETS
         lane_planner
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)

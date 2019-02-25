@@ -1,13 +1,17 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(imm_ukf_pda_track)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-  autoware_build_flags
   roscpp
   pcl_ros
-  autoware_msgs
+  geometry_msgs
   tf
   vector_map
+  autoware_msgs
   )
 
 
@@ -23,10 +27,9 @@ catkin_package(
   )
 
 include_directories(
-        ${catkin_INCLUDE_DIRS}
-        include)
-
-link_directories(${PCL_LIBRARY_DIRS})
+  ${autoware_msgs_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS}
+  include)
 
 #imm_ukf_pda
 add_library(imm_ukf_pda_lib
@@ -49,7 +52,6 @@ add_executable(imm_ukf_pda
         )
 target_link_libraries(imm_ukf_pda
         ${catkin_LIBRARIES}
-        ${PCL_LIBRARIES}
         )
 add_dependencies(imm_ukf_pda
         ${catkin_EXPORTED_TARGETS}
@@ -60,8 +62,11 @@ install(TARGETS
         imm_ukf_pda
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)
 
 if (CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)

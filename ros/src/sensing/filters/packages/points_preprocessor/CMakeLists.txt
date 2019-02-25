@@ -1,8 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(points_preprocessor)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_config_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
         roscpp
         std_msgs
         sensor_msgs
@@ -10,8 +13,8 @@ find_package(catkin REQUIRED COMPONENTS
         pcl_conversions
         cv_bridge
         velodyne_pointcloud
-        autoware_config_msgs
         tf
+        autoware_health_checker
         )
 
 catkin_package(CATKIN_DEPENDS
@@ -24,6 +27,7 @@ catkin_package(CATKIN_DEPENDS
         velodyne_pointcloud
         autoware_config_msgs
         tf
+        autoware_health_checker
         )
 
 find_package(Qt5Core REQUIRED)
@@ -45,6 +49,7 @@ link_directories(${YAML_CPP_LIBRARY_DIRS})
 
 include_directories(
         ${catkin_INCLUDE_DIRS}
+        ${autoware_config_msgs_INCLUDE_DIRS}
         include
 )
 
@@ -185,7 +190,14 @@ add_dependencies(compare_map_filter ${catkin_EXPORTED_TARGETS})
 #endif ()
 
 
-install(TARGETS cloud_transformer points_concat_filter ray_ground_filter ring_ground_filter space_filter compare_map_filter
+install(TARGETS
+            cloud_transformer
+            points_concat_filter
+            ray_ground_filter_lib
+            ray_ground_filter
+            ring_ground_filter
+            space_filter
+            compare_map_filter
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -195,3 +207,6 @@ install(DIRECTORY include/
         DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
         PATTERN ".svn" EXCLUDE
         )
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)

@@ -1,13 +1,16 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(freespace_planner)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-  autoware_build_flags
   roscpp
   nav_msgs
   visualization_msgs
-  autoware_msgs
   tf
+  autoware_msgs
 )
 
 set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -17,9 +20,30 @@ catkin_package(
 )
 
 include_directories(
-  ${catkin_INCLUDE_DIRS} include
+  include
+  ${autoware_msgs_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(astar_navi nodes/astar_navi/astar_navi.cpp nodes/astar_navi/astar_search.cpp nodes/astar_navi/search_info_ros.cpp include/astar_util.cpp)
-target_link_libraries(astar_navi ${catkin_LIBRARIES})
-add_dependencies(astar_navi ${catkin_EXPORTED_TARGETS})
+add_executable(astar_navi
+        nodes/astar_navi/astar_navi.cpp
+        nodes/astar_navi/astar_search.cpp
+        nodes/astar_navi/search_info_ros.cpp
+        include/astar_util.cpp
+        )
+target_link_libraries(astar_navi
+        ${catkin_LIBRARIES}
+        )
+add_dependencies(astar_navi
+        ${catkin_EXPORTED_TARGETS}
+        )
+
+install(TARGETS astar_navi
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)
+
