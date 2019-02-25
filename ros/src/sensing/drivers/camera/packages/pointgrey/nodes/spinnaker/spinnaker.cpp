@@ -123,6 +123,21 @@ SpinnakerCamera::SpinnakerCamera()
       ///////////////////////                 FrameRate                   /////////////////////////////
       CFloatPtr ptrAcquisitionFrameRate = node_map_->GetNode("AcquisitionFrameRate");
       CBooleanPtr ptrAcquisitionFrameRateEnable = node_map_->GetNode("AcquisitionFrameRateEnable");
+      CEnumerationPtr ptrAcquisitionFrameRateAuto = pCamList_[i]->GetNodeMap().GetNode("AcquisitionFrameRateAuto");
+      if (IsAvailable(ptrAcquisitionFrameRateAuto) && IsWritable(ptrAcquisitionFrameRateAuto))
+      {
+        CEnumEntryPtr ptrAcquisitionFrameRateAutoOff = ptrAcquisitionFrameRateAuto->GetEntryByName("Off");
+        if (IsAvailable(ptrAcquisitionFrameRateAutoOff) && IsReadable(ptrAcquisitionFrameRateAutoOff))
+        {
+          int64_t FrameRateAutoOff = ptrAcquisitionFrameRateAutoOff->GetValue();
+          ptrAcquisitionFrameRateAuto->SetIntValue(FrameRateAutoOff);
+          ROS_INFO_STREAM("[" << __APP_NAME__ << "] Updated FrameRateAuto to Off");
+        }
+        else
+        {
+          ROS_INFO_STREAM("[" << __APP_NAME__ << "] Cannot update FrameRateAuto to Off");
+        }
+      }
       if (IsAvailable(ptrAcquisitionFrameRateEnable) && IsWritable(ptrAcquisitionFrameRateEnable))
       {
         ptrAcquisitionFrameRateEnable->SetValue(true);
@@ -130,6 +145,7 @@ SpinnakerCamera::SpinnakerCamera()
       if (IsAvailable(ptrAcquisitionFrameRate) && IsWritable(ptrAcquisitionFrameRate))
       {
         ptrAcquisitionFrameRate->SetValue(fps_);
+        ROS_INFO_STREAM("[" << __APP_NAME__ << "] Set FrameRate to " << fps_);
       }
       else
       {
