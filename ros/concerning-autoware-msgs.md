@@ -86,7 +86,7 @@ The following is a different view of the above table, to ease finding messages t
 
 To test whether the proposed approach works, please follow these steps:
 
-1. Get a fresh copy of Autoware develop branch, ex. `git clone https://github.com/CPFL/Autoware.git -b develop --recurse-submodules` or `git pull --recurse-submodules=yes origin develop` on your existing local repository.
+1. Get a fresh copy of Autoware `feature/autoware_msgs_refactoring` branch, ex. `git clone https://github.com/CPFL/Autoware.git -b feature/autoware_msgs_refactoring --recurse-submodules`.
 2. Make sure the original builds correctly: run `./catkin_make_release` (follow the steps in [How to build](https://github.com/CPFL/Autoware/wiki/Source-Build) ).
 3. Switch to `feature/autoware_msgs_refactoring` branch, ex. `git checkout feature/autoware_msgs_refactoring`.
 3. Run the autoware messages refactoring script `./fix-autoware-msgs.py --fix` from the `[AUTOWARE_PATH]/ros` folder (it assumes `src` is a subdirectory).
