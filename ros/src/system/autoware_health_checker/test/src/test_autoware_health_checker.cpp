@@ -177,5 +177,6 @@ TEST(TestSuite, NODE_STATUS) {
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
   ros::init(argc, argv, "AutowareHealthCheckerTestNode");
-  return RUN_ALL_TESTS();
+  int result = RUN_ALL_TESTS();
+  return result;
 }
