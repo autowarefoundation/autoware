@@ -42,9 +42,7 @@ public:
   void setDefaultValue(std::string key, std::string type, double warn_value,
                        double error_value, double fatal_value);
   double getValue(std::string key, std::string type, uint8_t level);
-
 private:
-  bool default_value_exist_;
   std::map<std::pair<std::pair<std::string, std::string>, uint8_t>, double>
       data_;
   ros::NodeHandle nh_;

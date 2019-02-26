@@ -24,7 +24,6 @@ ValueManager::ValueManager(ros::NodeHandle nh, ros::NodeHandle pnh) {
   pnh_ = pnh;
   nh_.getParam("/health_checker", diag_params_);
   ros_ok_ = true;
-  default_value_exist_ = false;
 }
 
 ValueManager::~ValueManager() { ros_ok_ = false; }
@@ -37,13 +36,9 @@ void ValueManager::run() {
 void ValueManager::setDefaultValue(std::string key, std::string type,
                                    double warn_value, double error_value,
                                    double fatal_value) {
-  if (default_value_exist_) {
-    return;
-  }
   data_[{{key, type}, autoware_health_checker::LEVEL_WARN}] = warn_value;
   data_[{{key, type}, autoware_health_checker::LEVEL_ERROR}] = error_value;
   data_[{{key, type}, autoware_health_checker::LEVEL_FATAL}] = fatal_value;
-  default_value_exist_ = true;
   return;
 }
 
