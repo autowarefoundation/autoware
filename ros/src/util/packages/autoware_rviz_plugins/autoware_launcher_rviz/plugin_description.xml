@@ -1,0 +1,7 @@
+<library path="lib/libautoware_launcher_rviz">
+
+  <class type="autoware_launcher_rviz::ModulePanel" base_class_type="rviz::Panel">
+    <description>The panel to easy control the Autoware Launcher</description>
+  </class>
+
+</library>

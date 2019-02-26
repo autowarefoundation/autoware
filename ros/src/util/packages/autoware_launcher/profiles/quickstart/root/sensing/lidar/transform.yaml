@@ -1,0 +1,11 @@
+children: []
+config:
+  args.local_frame: velodyne
+  args.parent_frame: base_link
+  args.rx: '0'
+  args.ry: '0'
+  args.rz: '0'
+  args.tx: '1.2'
+  args.ty: '0'
+  args.tz: '2.0'
+plugin: leaf/transform_v2b

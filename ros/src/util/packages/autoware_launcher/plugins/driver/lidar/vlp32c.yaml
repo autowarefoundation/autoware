@@ -1,0 +1,15 @@
+format: Autoware Launcher Plugin Version 0.1
+args:
+- { name: local_frame, type: str }
+- { name: device_addr, type: str }
+- { name: device_port, type: int }
+
+panel:
+  widget: node.panel
+  frames:
+  - target: args.local_frame
+    widget: basic.text
+  - target: args.device_addr
+    widget: basic.text
+  - target: args.device_port
+    widget: basic.int

@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   rostest
   rosunit
   rospy
+  rosgraph_msgs
 )
 
 catkin_python_setup()
@@ -18,7 +19,7 @@ catkin_python_setup()
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES node_status_publisher
-  CATKIN_DEPENDS autoware_system_msgs roscpp
+  CATKIN_DEPENDS autoware_system_msgs roscpp rosgraph_msgs
 #  DEPENDS system_lib
 )
 
@@ -52,8 +53,16 @@ add_executable(health_aggregator
 target_link_libraries(health_aggregator ${catkin_LIBRARIES})
 add_dependencies(health_aggregator ${catkin_EXPORTED_TARGETS} autoware_system_msgs_generate_messages_cpp)
 
-# Install CPP Execution programs
-set(CPP_EXEC_NAMES health_aggregator)
+add_executable(health_analyzer
+  src/health_analyzer_node.cpp
+  src/health_analyzer.cpp
+)
+target_link_libraries(health_analyzer ${catkin_LIBRARIES})
+add_dependencies(health_analyzer ${catkin_EXPORTED_TARGETS} autoware_system_msgs_generate_messages_cpp)
+
+# CPP Execution programs
+set(CPP_EXEC_NAMES health_aggregator health_analyzer)
+
 foreach(cpp_exec_names ${CPP_EXEC_NAMES})
   install(TARGETS ${cpp_exec_names}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

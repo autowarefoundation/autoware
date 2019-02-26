@@ -1,0 +1,13 @@
+children:
+- map
+- vehicle
+- sensing
+- localization
+- detection
+- prediction
+- decision
+- mission
+- motion
+- visualization
+config: {}
+plugin: root/default
