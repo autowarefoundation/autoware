@@ -97,7 +97,8 @@ public:
   bool getNodeStatus() { return node_activated_; };
 
 private:
-  std::shared_ptr<ValueManager> value_manager_ptr_;
+  //std::shared_ptr<ValueManager> value_manager_ptr_;
+  ValueManager value_manager_;
   std::vector<std::string> getKeys();
   std::vector<std::string> getRateCheckerKeys();
   ros::NodeHandle nh_;
