@@ -59,109 +59,117 @@ boost::property_tree::ptree test_value_json_func(double value) {
   return tree;
 };
 
-TEST(TestSuite, CHECK_VALUE) {
+TEST(TestSuite, CHECK_HEALTH_CHECK_FUNCS) {
   AutowareHealthCheckerTestClass test_autoware_health_checker;
+  /*
+    test for value check function
+  */
+
   std::function<uint8_t(double value)> check_func = test_function;
   std::function<boost::property_tree::ptree(double value)>
       check_value_json_func = test_value_json_func;
-  uint8_t ret_fatal =
+  uint8_t ret_fatal_value =
       test_autoware_health_checker.health_checker_ptr->CHECK_VALUE(
           "test", 0.0, check_func, check_value_json_func, "test");
-  ASSERT_EQ(ret_fatal, autoware_health_checker::LEVEL_FATAL)
+  ASSERT_EQ(ret_fatal_value, autoware_health_checker::LEVEL_FATAL)
       << "The value was self-diagnosed as fatal";
-  uint8_t ret_error =
+  uint8_t ret_error_value =
       test_autoware_health_checker.health_checker_ptr->CHECK_VALUE(
           "test", 1.0, check_func, check_value_json_func, "test");
-  ASSERT_EQ(ret_error, autoware_health_checker::LEVEL_ERROR)
+  ASSERT_EQ(ret_error_value, autoware_health_checker::LEVEL_ERROR)
       << "The value was self-diagnosed as fatal";
-  uint8_t ret_warn =
+  uint8_t ret_warn_value =
       test_autoware_health_checker.health_checker_ptr->CHECK_VALUE(
           "test", 2.0, check_func, check_value_json_func, "test");
-  ASSERT_EQ(ret_warn, autoware_health_checker::LEVEL_WARN)
+  ASSERT_EQ(ret_warn_value, autoware_health_checker::LEVEL_WARN)
       << "The value was self-diagnosed as fatal";
-  uint8_t ret_ok =
+  uint8_t ret_ok_value =
       test_autoware_health_checker.health_checker_ptr->CHECK_VALUE(
           "test", -1.0, check_func, check_value_json_func, "test");
-  ASSERT_EQ(ret_ok, autoware_health_checker::LEVEL_OK)
+  ASSERT_EQ(ret_ok_value, autoware_health_checker::LEVEL_OK)
       << "The value was self-diagnosed as fatal";
   boost::optional<double> value =
       check_value_json_func(0.0).get_optional<double>("value");
   ASSERT_EQ(value.get(), 0.0)
       << "The value must be true, failed to get json value";
-}
 
-TEST(TestSuite, CHECK_MIN_VALUE) {
-  AutowareHealthCheckerTestClass test_autoware_health_checker;
-  uint8_t ret_fatal =
+  /*
+    test for minimum value check function
+  */
+  uint8_t ret_fatal_min =
       test_autoware_health_checker.health_checker_ptr->CHECK_MIN_VALUE(
           "test", 1, 6, 4, 2, "test");
-  ASSERT_EQ(ret_fatal, autoware_health_checker::LEVEL_FATAL)
+  ASSERT_EQ(ret_fatal_min, autoware_health_checker::LEVEL_FATAL)
       << "The value was self-diagnosed as fatal";
-  uint8_t ret_error =
+  uint8_t ret_error_min =
       test_autoware_health_checker.health_checker_ptr->CHECK_MIN_VALUE(
           "test", 3, 6, 4, 2, "test");
-  ASSERT_EQ(ret_error, autoware_health_checker::LEVEL_ERROR)
+  ASSERT_EQ(ret_error_min, autoware_health_checker::LEVEL_ERROR)
       << "The value was self-diagnosed as error";
-  uint8_t ret_warn =
+  uint8_t ret_warn_min =
       test_autoware_health_checker.health_checker_ptr->CHECK_MIN_VALUE(
           "test", 5, 6, 4, 2, "test");
-  ASSERT_EQ(ret_warn, autoware_health_checker::LEVEL_WARN)
+  ASSERT_EQ(ret_warn_min, autoware_health_checker::LEVEL_WARN)
       << "The value was self-diagnosed as warn";
-  uint8_t ret_ok =
+  uint8_t ret_ok_min =
       test_autoware_health_checker.health_checker_ptr->CHECK_MIN_VALUE(
           "test", 7, 6, 4, 2, "test");
-  ASSERT_EQ(ret_ok, autoware_health_checker::LEVEL_OK)
+  ASSERT_EQ(ret_ok_min, autoware_health_checker::LEVEL_OK)
       << "The value was self-diagnosed as ok";
-}
 
-TEST(TestSuite, CHECK_MAX_VALUE) {
-  AutowareHealthCheckerTestClass test_autoware_health_checker;
-  uint8_t ret_fatal =
+
+  /*
+    test for maximum value check function
+  */
+  uint8_t ret_fatal_max =
       test_autoware_health_checker.health_checker_ptr->CHECK_MAX_VALUE(
           "test", 7, 2, 4, 6, "test");
-  ASSERT_EQ(ret_fatal, autoware_health_checker::LEVEL_FATAL)
+  ASSERT_EQ(ret_fatal_max, autoware_health_checker::LEVEL_FATAL)
       << "The value was self-diagnosed as fatal";
-  uint8_t ret_error =
+  uint8_t ret_error_max =
       test_autoware_health_checker.health_checker_ptr->CHECK_MAX_VALUE(
           "test", 5, 2, 4, 6, "test");
-  ASSERT_EQ(ret_error, autoware_health_checker::LEVEL_ERROR)
+  ASSERT_EQ(ret_error_max, autoware_health_checker::LEVEL_ERROR)
       << "The value was self-diagnosed as error";
-  uint8_t ret_warn =
+  uint8_t ret_warn_max =
       test_autoware_health_checker.health_checker_ptr->CHECK_MAX_VALUE(
           "test", 3, 2, 4, 6, "test");
-  ASSERT_EQ(ret_warn, autoware_health_checker::LEVEL_WARN)
+  ASSERT_EQ(ret_warn_max, autoware_health_checker::LEVEL_WARN)
       << "The value was self-diagnosed as warn";
-  uint8_t ret_ok =
+  uint8_t ret_ok_max =
       test_autoware_health_checker.health_checker_ptr->CHECK_MAX_VALUE(
           "test", 1, 2, 4, 6, "test");
-  ASSERT_EQ(ret_ok, autoware_health_checker::LEVEL_OK)
+  ASSERT_EQ(ret_ok_max, autoware_health_checker::LEVEL_OK)
       << "The value was self-diagnosed as ok";
-}
 
-TEST(TestSuite, CHECK_RANGE) {
-  AutowareHealthCheckerTestClass test_autoware_health_checker;
-  uint8_t ret_fatal =
+  /*
+    test for range check functions
+  */
+  uint8_t ret_fatal_range =
       test_autoware_health_checker.health_checker_ptr->CHECK_RANGE(
           "test", 7.0, {2.0, 4.0}, {1.0, 5.0}, {0.0, 6.0}, "test");
-  ASSERT_EQ(ret_fatal, autoware_health_checker::LEVEL_FATAL)
+  ASSERT_EQ(ret_fatal_range, autoware_health_checker::LEVEL_FATAL)
       << "The value was self-diagnosed as fatal";
-  uint8_t ret_error =
+  uint8_t ret_error_range =
       test_autoware_health_checker.health_checker_ptr->CHECK_RANGE(
           "test", 5.5, {2.0, 4.0}, {1.0, 5.0}, {0.0, 6.0}, "test");
-  ASSERT_EQ(ret_error, autoware_health_checker::LEVEL_ERROR)
+  ASSERT_EQ(ret_error_range, autoware_health_checker::LEVEL_ERROR)
       << "The value was self-diagnosed as error";
-  uint8_t ret_warn =
+  uint8_t ret_warn_range =
       test_autoware_health_checker.health_checker_ptr->CHECK_RANGE(
           "test", 4.5, {2.0, 4.0}, {1.0, 5.0}, {0.0, 6.0}, "test");
-  ASSERT_EQ(ret_warn, autoware_health_checker::LEVEL_WARN)
+  ASSERT_EQ(ret_warn_range, autoware_health_checker::LEVEL_WARN)
       << "The value was self-diagnosed as warn";
-  uint8_t ret_ok =
+  uint8_t ret_ok_range =
       test_autoware_health_checker.health_checker_ptr->CHECK_RANGE(
           "test", 3.0, {2.0, 4.0}, {1.0, 5.0}, {0.0, 6.0}, "test");
-  ASSERT_EQ(ret_ok, autoware_health_checker::LEVEL_OK)
+  ASSERT_EQ(ret_ok_range, autoware_health_checker::LEVEL_OK)
       << "The value was self-diagnosed as ok";
 }
 
+/*
+  test for node status
+*/
 TEST(TestSuite, NODE_STATUS) {
   AutowareHealthCheckerTestClass test_autoware_health_checker;
   test_autoware_health_checker.health_checker_ptr->NODE_ACTIVATE();

@@ -31,7 +31,11 @@ HealthChecker::HealthChecker(ros::NodeHandle nh, ros::NodeHandle pnh)
       nh_.advertise<autoware_system_msgs::NodeStatus>("node_status", 10);
 }
 
-HealthChecker::~HealthChecker() { ros_ok_ = false; }
+HealthChecker::~HealthChecker()
+{
+  ros_ok_ = false;
+  value_manager_.stop();
+}
 
 void HealthChecker::publishStatus() {
   ros::Rate rate = ros::Rate(autoware_health_checker::UPDATE_RATE);
