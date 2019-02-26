@@ -88,16 +88,16 @@ std::vector<std::string> HealthChecker::getKeys() {
   std::vector<std::string> keys;
   std::vector<std::string> checker_keys = getRateCheckerKeys();
   std::pair<std::string, std::shared_ptr<DiagBuffer>> buf_itr;
-  BOOST_FOREACH (buf_itr, diag_buffers_) {
+  for(auto buf_itr = diag_buffers_.begin(); buf_itr != diag_buffers_.end(); buf_itr++){
     bool matched = false;
     for (auto checker_key_itr = checker_keys.begin();
          checker_key_itr != checker_keys.end(); checker_key_itr++) {
-      if (*checker_key_itr == buf_itr.first) {
+      if (*checker_key_itr == buf_itr->first) {
         matched = true;
       }
     }
     if (!matched) {
-      keys.push_back(buf_itr.first);
+      keys.push_back(buf_itr->first);
     }
   }
   return keys;
@@ -105,9 +105,9 @@ std::vector<std::string> HealthChecker::getKeys() {
 
 std::vector<std::string> HealthChecker::getRateCheckerKeys() {
   std::vector<std::string> keys;
-  std::pair<std::string, std::shared_ptr<RateChecker>> checker_itr;
-  BOOST_FOREACH (checker_itr, rate_checkers_) {
-    keys.push_back(checker_itr.first);
+  std::pair<std::string, std::unique_ptr<RateChecker>> checker_itr;
+  for(auto itr = rate_checkers_.begin(); itr != rate_checkers_.end(); itr++){
+    keys.push_back(itr->first);
   }
   return keys;
 }
@@ -124,9 +124,8 @@ bool HealthChecker::addNewBuffer(std::string key, uint8_t type,
                                  std::string description) {
   mtx_.lock();
   if (!keyExist(key)) {
-    std::shared_ptr<DiagBuffer> buf_ptr = std::make_shared<DiagBuffer>(
-        key, type, description, autoware_health_checker::BUFFER_LENGTH);
-    diag_buffers_[key] = buf_ptr;
+    std::unique_ptr<DiagBuffer> buf_ptr(new DiagBuffer(key, type, description, autoware_health_checker::BUFFER_LENGTH));
+    diag_buffers_[key] = std::move(buf_ptr);
     mtx_.unlock();
     return true;
   }
@@ -239,10 +238,8 @@ void HealthChecker::CHECK_RATE(std::string key, double warn_rate,
   if (!keyExist(key)) {
     value_manager_.setDefaultValue(key, "rate", warn_rate, error_rate,
                                    fatal_rate);
-    std::shared_ptr<RateChecker> checker_ptr = std::make_shared<RateChecker>(
-        autoware_health_checker::BUFFER_LENGTH, warn_rate, error_rate,
-        fatal_rate, description);
-    rate_checkers_[key] = checker_ptr;
+    std::unique_ptr<RateChecker> checker_ptr(new RateChecker(autoware_health_checker::BUFFER_LENGTH, warn_rate, error_rate, fatal_rate, description));
+    rate_checkers_[key] = std::move(checker_ptr);
   }
   addNewBuffer(key, autoware_system_msgs::DiagnosticStatus::LOOP_RATE_IS_SLOW,
                description);
