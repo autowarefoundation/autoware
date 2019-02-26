@@ -1,30 +1,26 @@
+#pragma once
 #include <eigen3/Eigen/Core>
+#include "mpc_follower/vehicle_model/vehicle_model_interface.h"
 
 /* 
    Following error dynamics of the vehicle and the trajectory 
    in the vicinity of the target trajectory.
 */
 
-class KinematicsBicycleModel
+class KinematicsBicycleModel : public VehicleModelInterface
 {
   public:
     KinematicsBicycleModel();
     ~KinematicsBicycleModel();
 
-    int getDimX();
-    int getDimU();
-    int getDimY();
     void calculateDiscreteMatrix(Eigen::MatrixXd &Ad, Eigen::MatrixXd &Bd,
-                                 Eigen::MatrixXd &Cd, Eigen::MatrixXd &Wd, double &dt);
-    void calculateReferenceInput(Eigen::MatrixXd &Uref);
+                                 Eigen::MatrixXd &Cd, Eigen::MatrixXd &Wd, double &dt) override;
+    void calculateReferenceInput(Eigen::MatrixXd &Uref) override;
+    void calculateReferenceInput(Eigen::MatrixXd &Uref, const double &curvature);
     void setVel(double &vel);
     void setCurvature(double &curvature);
 
   private:
-    int dim_x_;
-    int dim_u_;
-    int dim_y_;
-
     double wheelbase_;
     double steer_tau_;
     double steer_lim_deg_;
@@ -33,13 +29,13 @@ class KinematicsBicycleModel
     double curvature_;
 };
 
-KinematicsBicycleModel::KinematicsBicycleModel() : dim_x_(3), dim_u_(1), dim_y_(2),
-                                                   wheelbase_(2.79), steer_tau_(0.2), steer_lim_deg_(35.0){};
+KinematicsBicycleModel::KinematicsBicycleModel() : wheelbase_(2.79), steer_tau_(0.2), steer_lim_deg_(35.0)
+{
+    dim_x_ = 3;
+    dim_u_ = 1;
+    dim_y_ = 2;
+};
 KinematicsBicycleModel::~KinematicsBicycleModel(){};
-
-int KinematicsBicycleModel::getDimX() { return dim_x_; };
-int KinematicsBicycleModel::getDimU() { return dim_u_; };
-int KinematicsBicycleModel::getDimY() { return dim_y_; };
 
 void KinematicsBicycleModel::calculateDiscreteMatrix(Eigen::MatrixXd &Ad, Eigen::MatrixXd &Bd,
                                                      Eigen::MatrixXd &Cd, Eigen::MatrixXd &Wd, double &dt)
@@ -75,6 +71,9 @@ void KinematicsBicycleModel::calculateReferenceInput(Eigen::MatrixXd &Uref)
 {
     Uref(0, 0) = std::atan(wheelbase_ * curvature_);
 }
-
+void KinematicsBicycleModel::calculateReferenceInput(Eigen::MatrixXd &Uref, const double &curvature)
+{
+    Uref(0, 0) = std::atan(wheelbase_ * curvature);
+}
 void KinematicsBicycleModel::setVel(double &vel) { vel_ = vel; };
 void KinematicsBicycleModel::setCurvature(double &curvature) { curvature_ = curvature; };

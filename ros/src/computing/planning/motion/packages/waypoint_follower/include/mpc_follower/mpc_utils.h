@@ -2,8 +2,6 @@
 #include <cmath>
 #include <vector>
 #include <eigen3/Eigen/Core>
-
-#include "autoware_msgs/ControlCommandStamped.h"
 #include "autoware_msgs/Lane.h"
 #include <autoware_msgs/VehicleStatus.h>
 #include <tf2/utils.h>

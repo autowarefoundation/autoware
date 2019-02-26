@@ -10,19 +10,19 @@ show_debug_info: true
 #---------------------------------------------------------------------
 
 # control period [s]
-ctrl_dt: 0.04
+ctrl_period: 0.04
 
 # length span for resampling trajectory [m]
 #   currentlly, resample uses linear interpolation, thus small sampling distance
 #   causes sharp (not smoothing) path.
-traj_resample_dl: 0.1
+traj_resample_dist: 0.1
 
 
 # path smoothing flug, must true except debugging
 use_path_smoothing: true
 
 # path smoothing low pass filler, moving average number
-path_smoothing_moving_ave_num: 25
+path_filter_moving_ave_num: 25
 
 # curvature calculation smoothing, larger makes smoother
 #   curvature is calculated from three points: p(i-num), p(i), p(i+num)
