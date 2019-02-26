@@ -85,7 +85,9 @@ public:
   }
   void CHECK_RATE(std::string key, double warn_rate, double error_rate,
                   double fatal_rate, std::string description);
-  void SET_DIAG_STATUS(autoware_system_msgs::DiagnosticStatus status);
+  uint8_t CHECK_TRUE(std::string key, bool value, uint8_t level,
+                     std::string description);
+  uint8_t SET_DIAG_STATUS(autoware_system_msgs::DiagnosticStatus status);
   void NODE_ACTIVATE() {
     std::lock_guard<std::mutex> lock(mtx_);
     node_activated_ = true;
@@ -95,6 +97,7 @@ public:
     node_activated_ = false;
   };
   bool getNodeStatus() { return node_activated_; };
+
 private:
   ValueManager value_manager_;
   std::vector<std::string> getKeys();

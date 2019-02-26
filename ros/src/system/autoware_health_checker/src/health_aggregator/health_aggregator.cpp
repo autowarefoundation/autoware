@@ -48,8 +48,9 @@ void HealthAggregator::run() {
   return;
 }
 
-void HealthAggregator::addTopicDiag(){
-  for (auto itr = topic_rate_params_.begin(); itr != topic_rate_params_.end(); itr++) {
+void HealthAggregator::addTopicDiag() {
+  for (auto itr = topic_rate_params_.begin(); itr != topic_rate_params_.end();
+       itr++) {
     std::string key = itr->first;
     XmlRpc::XmlRpcValue data = itr->second["sub_node"];
     std::string sub_node = data;
@@ -65,35 +66,38 @@ void HealthAggregator::addTopicDiag(){
     double fatal_topic_rate = data;
     autoware_system_msgs::DiagnosticStatus diag_topic_rate;
     diag_topic_rate.key = key;
-    diag_topic_rate.description = topic_name + " in " + sub_node + " from " + pub_node + " topic rate is slow";
+    diag_topic_rate.description = topic_name + " in " + sub_node + " from " +
+                                  pub_node + " topic rate is slow";
     diag_topic_rate.type = diag_topic_rate.TOPIC_RATE_IS_SLOW;
-    std::array<std::string, 3> query_key = {topic_name,pub_node,sub_node};
-    if(topic_status_.count(query_key) != 0){
+    std::array<std::string, 3> query_key = {topic_name, pub_node, sub_node};
+    if (topic_status_.count(query_key) != 0) {
       rosgraph_msgs::TopicStatistics stat = topic_status_[query_key];
-      double topic_rate = (double)stat.delivered_msgs/(double)(stat.window_stop-stat.window_start).toSec();
+      double topic_rate =
+          (double)stat.delivered_msgs /
+          (double)(stat.window_stop - stat.window_start).toSec();
       diag_topic_rate.header.stamp = stat.window_stop;
       diag_topic_rate.key = key;
       diag_topic_rate.value = valueToJson(topic_rate);
-      if(topic_rate < fatal_topic_rate){
+      if (topic_rate < fatal_topic_rate) {
         diag_topic_rate.level = autoware_health_checker::LEVEL_FATAL;
-      }
-      else if(topic_rate < error_topic_rate){
+      } else if (topic_rate < error_topic_rate) {
         diag_topic_rate.level = autoware_health_checker::LEVEL_ERROR;
-      }
-      else if(topic_rate < error_topic_rate){
+      } else if (topic_rate < error_topic_rate) {
         diag_topic_rate.level = autoware_health_checker::LEVEL_WARN;
-      }
-      else{
+      } else {
         diag_topic_rate.level = autoware_health_checker::LEVEL_OK;
       }
-      for(auto node_status_itr = system_status_.node_status.begin(); node_status_itr != system_status_.node_status.end(); node_status_itr++){
+      for (auto node_status_itr = system_status_.node_status.begin();
+           node_status_itr != system_status_.node_status.end();
+           node_status_itr++) {
         autoware_system_msgs::DiagnosticStatusArray diag;
         diag.status.push_back(diag_topic_rate);
         node_status_itr->status.push_back(diag);
       }
     }
   }
-  for (auto itr = drop_rate_params_.begin(); itr != drop_rate_params_.end(); itr++) {
+  for (auto itr = drop_rate_params_.begin(); itr != drop_rate_params_.end();
+       itr++) {
     std::string key = itr->first;
     XmlRpc::XmlRpcValue data = itr->second["sub_node"];
     std::string sub_node = data;
@@ -109,28 +113,29 @@ void HealthAggregator::addTopicDiag(){
     double fatal_drop_rate = data;
     autoware_system_msgs::DiagnosticStatus diag_drop_rate;
     diag_drop_rate.key = key;
-    diag_drop_rate.description = topic_name + " in " + sub_node + " from " + pub_node + " message deop rate is too high";
+    diag_drop_rate.description = topic_name + " in " + sub_node + " from " +
+                                 pub_node + " message deop rate is too high";
     diag_drop_rate.type = diag_drop_rate.TOPIC_DROP_RATE_IS_HIGH;
-    std::array<std::string, 3> query_key = {topic_name,pub_node,sub_node};
-    if(topic_status_.count(query_key) != 0){
+    std::array<std::string, 3> query_key = {topic_name, pub_node, sub_node};
+    if (topic_status_.count(query_key) != 0) {
       rosgraph_msgs::TopicStatistics stat = topic_status_[query_key];
-      double drop_rate = (double)stat.dropped_msgs/(double)(stat.dropped_msgs+stat.delivered_msgs);
+      double drop_rate = (double)stat.dropped_msgs /
+                         (double)(stat.dropped_msgs + stat.delivered_msgs);
       diag_drop_rate.header.stamp = stat.window_stop;
       diag_drop_rate.key = key;
       diag_drop_rate.value = valueToJson(drop_rate);
-      if(drop_rate > fatal_drop_rate){
+      if (drop_rate > fatal_drop_rate) {
         diag_drop_rate.level = autoware_health_checker::LEVEL_FATAL;
-      }
-      else if(drop_rate > error_drop_rate){
+      } else if (drop_rate > error_drop_rate) {
         diag_drop_rate.level = autoware_health_checker::LEVEL_ERROR;
-      }
-      else if(drop_rate > error_drop_rate){
+      } else if (drop_rate > error_drop_rate) {
         diag_drop_rate.level = autoware_health_checker::LEVEL_WARN;
-      }
-      else{
+      } else {
         diag_drop_rate.level = autoware_health_checker::LEVEL_OK;
       }
-      for(auto node_status_itr = system_status_.node_status.begin(); node_status_itr != system_status_.node_status.end(); node_status_itr++){
+      for (auto node_status_itr = system_status_.node_status.begin();
+           node_status_itr != system_status_.node_status.end();
+           node_status_itr++) {
         autoware_system_msgs::DiagnosticStatusArray diag;
         diag.status.push_back(diag_drop_rate);
         node_status_itr->status.push_back(diag);

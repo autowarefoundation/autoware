@@ -29,14 +29,13 @@ public:
 
 class AutowareHealthCheckerTestClass {
 public:
-  AutowareHealthCheckerTestClass() {
-    ros::NodeHandle nh;
-    ros::NodeHandle pnh("~");
+  AutowareHealthCheckerTestClass() : pnh("~") {
     health_checker_ptr =
         std::make_shared<autoware_health_checker::HealthChecker>(nh, pnh);
   };
-  std::shared_ptr<autoware_health_checker::HealthChecker>
-      health_checker_ptr;
+  std::shared_ptr<autoware_health_checker::HealthChecker> health_checker_ptr;
+  ros::NodeHandle pnh;
+  ros::NodeHandle nh;
   ~AutowareHealthCheckerTestClass(){};
 };
 
@@ -117,7 +116,6 @@ TEST(TestSuite, CHECK_HEALTH_CHECK_FUNCS) {
   ASSERT_EQ(ret_ok_min, autoware_health_checker::LEVEL_OK)
       << "The value was self-diagnosed as ok";
 
-
   /*
     test for maximum value check function
   */
@@ -164,6 +162,31 @@ TEST(TestSuite, CHECK_HEALTH_CHECK_FUNCS) {
       test_autoware_health_checker.health_checker_ptr->CHECK_RANGE(
           "test", 3.0, {2.0, 4.0}, {1.0, 5.0}, {0.0, 6.0}, "test");
   ASSERT_EQ(ret_ok_range, autoware_health_checker::LEVEL_OK)
+      << "The value was self-diagnosed as ok";
+
+  /*
+    test for set diag function
+  */
+  autoware_system_msgs::DiagnosticStatus status;
+  status.level = status.FATAL;
+  uint8_t ret_diag_fatal =
+      test_autoware_health_checker.health_checker_ptr->SET_DIAG_STATUS(status);
+  ASSERT_EQ(ret_diag_fatal, autoware_health_checker::LEVEL_FATAL)
+      << "The value was self-diagnosed as fatal";
+  status.level = status.ERROR;
+  uint8_t ret_diag_error =
+      test_autoware_health_checker.health_checker_ptr->SET_DIAG_STATUS(status);
+  ASSERT_EQ(ret_diag_error, autoware_health_checker::LEVEL_ERROR)
+      << "The value was self-diagnosed as error";
+  status.level = status.WARN;
+  uint8_t ret_diag_warn =
+      test_autoware_health_checker.health_checker_ptr->SET_DIAG_STATUS(status);
+  ASSERT_EQ(ret_diag_warn, autoware_health_checker::LEVEL_WARN)
+      << "The value was self-diagnosed as warn";
+  status.level = status.OK;
+  uint8_t ret_diag_ok =
+      test_autoware_health_checker.health_checker_ptr->SET_DIAG_STATUS(status);
+  ASSERT_EQ(ret_diag_ok, autoware_health_checker::LEVEL_OK)
       << "The value was self-diagnosed as ok";
 }
 
