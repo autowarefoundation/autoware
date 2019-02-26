@@ -28,42 +28,7 @@ const std::function<int(const SystemStatus&)>& SystemStatusFilter::getFunc() con
   return callback_;
 }
 
-const std::map<std::string, std::string>& SystemStatusFilter::getDeadNodes()
-{
-  return dead_nodes_;
-}
-
-void SystemStatusFilter::updateNodeStatus(const SystemStatus& status)
-{
-  for (const auto& node : status.available_nodes)
-  {
-    if (dead_nodes_.count(node) != 0)
-    {
-      ROS_INFO("%s is switched to be available", node.c_str());
-      dead_nodes_.erase(node);
-    }
-  }
-  const auto& current_node = status.available_nodes;
-  for (const auto& node : monitored_nodes_)
-  {
-    const std::string node_name = "/" + node.first;
-    const auto& found = std::find(current_node.begin(), current_node.end(), node_name);
-    if (found == current_node.end() && dead_nodes_.count(node_name) == 0)
-    {
-      ROS_INFO("%s is not available", node_name.c_str());
-      dead_nodes_.emplace(node_name, node.second);
-    }
-  }
-}
-
-void SystemStatusFilter::initMonitoredNodeList(ros::NodeHandle& pnh)
-{
-  pnh.getParam("vital_monitor", monitored_nodes_);
-  dead_nodes_.clear();
-}
-
-std::map<std::string, std::string> SystemStatusFilter::monitored_nodes_;
-std::map<std::string, std::string> SystemStatusFilter::dead_nodes_;
+VitalMonitor SystemStatusFilter::vital_monitor_;
 const int SystemStatusFilter::normal_behavior_ = INT_MAX;
 
 StatusType SystemStatusFilter::getStatus(const DiagnosticStatusArray& st_array, int level_th) const

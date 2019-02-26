@@ -2,14 +2,34 @@ record_priority_thresh: 0
 behavior:
   emergency_stop:
     emergency_stop_planner: 0
-#vital_monitor:
-#  lane_rule: "planner"
-#  lane_stop: "planner"
-#  lane_select: "planner"
-#  obstacle_avoid: "planner"
-#  obstacle_sim: "planner"
-#  velocity_set: "planner"
-#  pure_pursuit: "controller"
-#  twist_filter: "controller"
-#  twist_gate: "controller"
-#  wf_simulator: "actuator"
+vital_monitor:
+  lane_rule:
+    timeout: 0.1
+    respawn: false
+  lane_stop:
+    timeout: 0.1
+    respawn: false
+  lane_select:
+    timeout: 0.1
+    respawn: false
+  obstacle_avoid:
+    timeout: 0.1
+    respawn: false
+  obstacle_sim:
+    timeout: 0.1
+    respawn: false
+  velocity_set:
+    timeout: 0.1
+    respawn: false
+  pure_pursuit:
+    timeout: 0.1
+    respawn: false
+  twist_filter:
+    timeout: 0.1
+    respawn: false
+  twist_gate:
+    timeout: 0.1
+    respawn: false
+  wf_simulator:
+    timeout: 0.1
+    respawn: false

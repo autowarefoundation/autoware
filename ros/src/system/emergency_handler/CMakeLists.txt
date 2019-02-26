@@ -29,7 +29,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_library(system_status_filter lib/libsystem_status_filter.cpp)
+add_library(system_status_filter lib/libsystem_status_filter.cpp lib/libvital_monitor.cpp)
 target_link_libraries(system_status_filter
   ${catkin_LIBRARIES}
 )

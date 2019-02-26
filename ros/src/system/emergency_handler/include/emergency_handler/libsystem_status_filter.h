@@ -20,6 +20,8 @@
 #include <autoware_system_msgs/SystemStatus.h>
 #include <set>
 #include <map>
+#include <emergency_handler/libvital_monitor.h>
+
 typedef autoware_system_msgs::SystemStatus SystemStatus;
 typedef autoware_system_msgs::DiagnosticStatusArray DiagnosticStatusArray;
 typedef autoware_system_msgs::DiagnosticStatus DiagnosticStatus;
@@ -40,13 +42,10 @@ public:
   SystemStatusFilter();
   virtual int selectPriority(const SystemStatus& status);
   const std::function<int(const SystemStatus&)>& getFunc() const;
-  static void initMonitoredNodeList(ros::NodeHandle& pnh);
-  static void updateNodeStatus(const SystemStatus& status);
-  static const std::map<std::string, std::string>& getDeadNodes();
+  static VitalMonitor vital_monitor_;
 
 protected:
   std::function<int(const SystemStatus&)> callback_;
-  static std::map<std::string, std::string> monitored_nodes_, dead_nodes_;
   static const int normal_behavior_;
 
   StatusType getStatus(const DiagnosticStatusArray& st_array, int level_th) const;
