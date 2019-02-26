@@ -28,37 +28,50 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef LIBDEAD_REKONER_H
-#define LIBDEAD_REKONER_H
+#include "pose_linear_interpolator.h"
 
-#include <geometry_msgs/TwistStamped.h>
-#include <sensor_msgs/Imu.h>
-#include <nav_msgs/Odometry.h>
-
-class LibDeadRekoner
+PoseStamped interpolatePose(const PoseStamped& pose_a, const PoseStamped& pose_b, const double time_stamp)
 {
-    public:
-        LibDeadRekoner();
-        void updateOdometry(const geometry_msgs::TwistStamped& arg_twist);
-        void updateOdometry(const nav_msgs::Odometry& arg_odom);
-        void updateOdometry(const sensor_msgs::Imu& imu);
+    if(pose_a.stamp == 0 || pose_b.stamp == 0 || time_stamp == 0) {
+        return PoseStamped();
+    }
 
-        void setUseImuFlag(const bool use_imu)
-        {
-            use_imu_ = use_imu;
-        };
+    Velocity v(pose_a, pose_b);
+    const double dt = time_stamp - pose_b.stamp;
 
-        nav_msgs::Odometry getOdometryMsg() const
-        {
-            return odom_;
-        };
+    PoseStamped p;
+    p.pose.x = pose_b.pose.x + v.linear.x * dt;
+    p.pose.y = pose_b.pose.y + v.linear.y * dt;
+    p.pose.z = pose_b.pose.z;
+    p.pose.roll = pose_b.pose.roll;
+    p.pose.pitch = pose_b.pose.pitch;
+    p.pose.yaw = pose_b.pose.yaw + v.angular.z * dt;
+    p.stamp = time_stamp;
+    return p;
+}
 
-    private:
-        void updateOdometryCommon(const double current_time_sec);
 
-        nav_msgs::Odometry odom_;
-        geometry_msgs::TwistStamped twist_;
-        bool use_imu_;
-};
+PoseLinearInterpolator::PoseLinearInterpolator()
+{
+}
 
-#endif
+void PoseLinearInterpolator::clearPoseStamped()
+{
+    pose_.clear();
+    prev_pose_.clear();
+}
+
+bool PoseLinearInterpolator::isNotSetPoseStamped() const
+{
+    return (pose_ == PoseStamped() && prev_pose_ == PoseStamped());
+}
+void PoseLinearInterpolator::pushbackPoseStamped(const PoseStamped& pose)
+{
+    prev_pose_ = pose_;
+    pose_ = pose;
+}
+
+PoseStamped PoseLinearInterpolator::getInterpolatePose(const double time_stamp) const
+{
+    return interpolatePose(prev_pose_, pose_, time_stamp);
+}

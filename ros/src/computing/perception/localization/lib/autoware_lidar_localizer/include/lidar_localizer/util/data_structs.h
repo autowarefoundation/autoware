@@ -99,6 +99,12 @@ struct Pose
     return tmp_pose;
   };
 
+  bool operator==(const Pose& rhs_pose) const
+  {
+    return (x == rhs_pose.x && y == rhs_pose.y && z == rhs_pose.z
+       && roll == rhs_pose.roll && pitch == rhs_pose.pitch && yaw == rhs_pose.yaw);
+  };
+
   bool operator!=(const Pose& rhs_pose) const
   {
     return !(x == rhs_pose.x && y == rhs_pose.y && z == rhs_pose.z
@@ -125,6 +131,32 @@ struct Pose
       }
 };
 
+struct PoseStamped
+{
+    Pose pose;
+    double stamp;
+
+    PoseStamped() : pose(), stamp(0) {};
+    PoseStamped(const Pose& pose, const double stamp)
+      : pose(pose), stamp(stamp) {};
+
+    void clear()
+    {
+        pose.clear();
+        stamp = 0;
+    }
+
+    bool operator==(const PoseStamped& rhs_pose_stamped) const
+    {
+      return (pose == rhs_pose_stamped.pose && stamp == rhs_pose_stamped.stamp);
+    };
+
+    friend std::ostream& operator<<(std::ostream& os, const PoseStamped& pose_stamped)
+    {
+      os << pose_stamped.pose << " stamp:"<< pose_stamped.stamp;
+      return os;
+    };
+};
 
 
 struct Linear
@@ -269,6 +301,26 @@ struct Velocity
     }
 
     const Pose diff_pose = current_pose - previous_pose;
+
+    linear.x = diff_pose.x / time_diff_sec;
+    linear.y = diff_pose.y / time_diff_sec;
+    linear.z = diff_pose.z / time_diff_sec;
+    angular.x = diff_pose.roll / time_diff_sec;
+    angular.y = diff_pose.pitch / time_diff_sec;
+    angular.z = diff_pose.yaw / time_diff_sec;
+  };
+
+  Velocity(const PoseStamped& previous_pose, const PoseStamped& current_pose)
+  {
+    const double time_diff_sec = current_pose.stamp - previous_pose.stamp;
+
+    if(time_diff_sec == 0)
+    {
+      clear();
+      return;
+    }
+
+    const Pose diff_pose = current_pose.pose - previous_pose.pose;
 
     linear.x = diff_pose.x / time_diff_sec;
     linear.y = diff_pose.y / time_diff_sec;

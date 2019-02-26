@@ -113,8 +113,8 @@ subs :
              depend      : with_mapping
              depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
-          odometry_topic :
-             depend      : use_odometry
+          twist_topic :
+             depend      : use_twist
              depend_bool : 'lambda v : v == 1'
 
 
@@ -1722,18 +1722,18 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
-    - name  : use_odometry
-      desc  : Use Odometry to try to reduce errors
-      label : Use Odometry
+    - name  : use_vehicle_twist
+      desc  : use_vehicle_twist
+      label : Use Vehicle Twist
       kind  : checkbox
       v     : False
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name  : odometry_topic
-      desc  : odometry_topic
-      label : Odomery Topic
-      v     : /odom
+    - name  : twist_topic
+      desc  : twist_topic
+      label : Twist Topic
+      v     : /vehicle/twist
       kind  : str
       cmd_param:
         dash      : ''

@@ -33,6 +33,7 @@
 
 #include <string>
 #include <memory>
+#include <deque>
 
 #include <ros/ros.h>
 
@@ -49,20 +50,27 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/TwistStamped.h>
+#include <sensor_msgs/Imu.h>
 #include <sensor_msgs/PointCloud2.h>
-#include <nav_msgs/Odometry.h>
 #include <autoware_msgs/ConfigNdtSlam.h>
+#include <nav_msgs/Odometry.h>
+
 
 #include <lidar_localizer/ndt/ndt_slam_pcl_omp.h>
 #include <lidar_localizer/ndt/ndt_slam_pcl_anh.h>
 #include <lidar_localizer/ndt/ndt_slam_pcl_anh_gpu.h>
 #include <lidar_localizer/ndt/ndt_slam_pcl.h>
+#include <lidar_localizer/load_save_map/load_save_map.h>
+#include <lidar_localizer/map_manager/map_manager.h>
 #include <lidar_localizer/reliability/slam_reliability.h>
+#include <lidar_localizer/pose_linear_interpolator/pose_linear_interpolator.h>
+
 
 class NdtSlam
 {
     using PointSource = pcl::PointXYZI;
     using PointTarget = pcl::PointXYZI;
+    //TODO ExactTime?
     using SyncPolicyPoints = message_filters::sync_policies::ApproximateTime<sensor_msgs::PointCloud2, sensor_msgs::PointCloud2>;
 
     enum class MethodType
@@ -80,16 +88,17 @@ class NdtSlam
     private:
         void configCallback(const autoware_msgs::ConfigNdtSlam::ConstPtr& config_msg_ptr);
         void pointsMapUpdatedCallback(const sensor_msgs::PointCloud2::ConstPtr& pointcloud2_msg_ptr);
-        void manualPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& pose_cov_msg_ptr);
+        void initialPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& pose_conv_msg_ptr);
         void staticPoseCallback(const geometry_msgs::PoseStamped::ConstPtr& pose_msg_ptr);
-        void gnssPoseCallback(const geometry_msgs::PoseStamped::ConstPtr& pose_msg_ptr);
-        void odometryCallback(const nav_msgs::Odometry::ConstPtr& odom_msg_ptr);
         void pointsRawAndFilterdCallback(const sensor_msgs::PointCloud2::ConstPtr& points_raw_msg_ptr, const sensor_msgs::PointCloud2::ConstPtr& points_filtered_msg_ptr);
 
+        void mapping(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& points_raw_ptr);
+        //TODO const ros::Time time_stamp
         void publishPosition(ros::Time time_stamp);
         void publishPointsMap(ros::Time time_stamp);
         void publishNDVoxelMap(ros::Time time_stamp);
         void publishLocalizerStatus(ros::Time time_stamp);
+        void publishTF(ros::Time time_stamp);
 
         ros::NodeHandle nh_;
         ros::NodeHandle private_nh_;
@@ -104,10 +113,11 @@ class NdtSlam
 
         ros::Subscriber config_sub_;
         ros::Subscriber points_map_updated_sub_;
-        ros::Subscriber manual_pose_sub_;
+        ros::Subscriber initial_pose_sub_;
         ros::Subscriber static_pose_sub_;
-        ros::Subscriber gnss_pose_sub_;
-        ros::Subscriber odom_sub_;
+        // ros::Subscriber gnss_pose_sub_;
+        // ros::Subscriber twist_sub_;
+        // ros::Subscriber imu_sub_;
 
         std::unique_ptr< message_filters::Subscriber<sensor_msgs::PointCloud2> > points_raw_sub_;
         std::unique_ptr< message_filters::Subscriber<sensor_msgs::PointCloud2> > points_filtered_sub_;
@@ -117,21 +127,27 @@ class NdtSlam
         tf::TransformListener tf_listener_;
 
         std::unique_ptr< NdtSlamBase<PointSource, PointTarget> > localizer_ptr_;
+        LoadSaveMap<PointSource, PointTarget> load_save_map_;
+        MapManager<PointTarget> map_manager_;
         SlamReliability reliability_;
+        PoseLinearInterpolator pose_interpolator_;
 
         MethodType method_type_;
         Eigen::Matrix4f tf_btol_;
         bool with_mapping_;
         bool separate_mapping_;
-        bool init_pos_gnss_;
-        bool use_odometry_;
+        // bool init_pos_gnss_;
+        // bool use_vehicle_twist_;
         std::string sensor_frame_;
         std::string base_link_frame_;
         std::string map_frame_;
+        std::string log_file_directory_path_;
         double min_scan_range_;
         double max_scan_range_;
         double min_add_scan_shift_;
 
+        PoseStamped init_pose_stamped_;
+        std::deque<PoseStamped> init_pose_stamped_queue_;
 };
 
 #endif

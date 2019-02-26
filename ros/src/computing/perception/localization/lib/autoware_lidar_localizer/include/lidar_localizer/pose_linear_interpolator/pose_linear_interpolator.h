@@ -28,56 +28,26 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef DEAD_REKONER_CORE_H
-#define DEAD_REKONER_CORE_H
+#ifndef POSE_LINEAR_INTERPOLATOR_H
+#define POSE_LINEAR_INTERPOLATOR_H
 
-#include <ros/ros.h>
-#include <geometry_msgs/TwistStamped.h>
-#include <sensor_msgs/Imu.h>
-#include <nav_msgs/Odometry.h>
+#include "lidar_localizer/util/data_structs.h"
 
-#include <tf/transform_listener.h>
+PoseStamped interpolatePose(const PoseStamped& pose_a, const PoseStamped& pose_b, const double time_stamp);
 
-#include "dead_rekoner/libdead_rekoner.h"
-
-class DeadRekoner
+class PoseLinearInterpolator
 {
     public:
-        DeadRekoner(ros::NodeHandle nh, ros::NodeHandle private_nh);
+        PoseLinearInterpolator();
+        ~PoseLinearInterpolator() = default;
+        void clearPoseStamped();
+        bool isNotSetPoseStamped() const;
+        void pushbackPoseStamped(const PoseStamped& pose);
+        PoseStamped getInterpolatePose(const double time_stamp) const;
 
     private:
-        template <class T> void update(const boost::shared_ptr<T const> msg_ptr);
-        void odomCallback(const nav_msgs::Odometry::ConstPtr& odom_msg_ptr);
-        void twistCallback(const geometry_msgs::TwistStamped::ConstPtr& twist_msg_ptr);
-        void imuCallback(const sensor_msgs::Imu::ConstPtr& imu_msg_ptr);
-
-        ros::NodeHandle nh_;
-        ros::NodeHandle private_nh_;
-
-        ros::Publisher odom_pub_;
-        ros::Subscriber odom_sub_;
-        ros::Subscriber twist_sub_;
-        ros::Subscriber imu_sub_;
-
-        tf::TransformListener tf_listener_;
-
-        LibDeadRekoner dead_rekoner_;
+        PoseStamped pose_;
+        PoseStamped prev_pose_;
 };
-
-template <class T>
-void DeadRekoner::update(const boost::shared_ptr<T const> msg_ptr)
-{
-    dead_rekoner_.updateOdometry(*msg_ptr);
-
-    static int seq = 0;
-    nav_msgs::Odometry odom_msg = dead_rekoner_.getOdometryMsg();
-
-    odom_msg.header.stamp = msg_ptr->header.stamp;
-    odom_msg.header.seq = seq;
-    odom_msg.header.frame_id = "/odom";
-    odom_msg.child_frame_id = "/base_link";
-    odom_pub_.publish(odom_msg);
-    ++seq;
-}
 
 #endif

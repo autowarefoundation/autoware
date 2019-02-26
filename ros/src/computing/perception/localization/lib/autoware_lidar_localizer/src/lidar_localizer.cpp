@@ -34,5 +34,6 @@
 #include "lidar_localizer/ndt/ndt_slam_pcl_omp.h"
 #include "lidar_localizer/ndt/ndt_slam_pcl_anh.h"
 #include "lidar_localizer/ndt/ndt_slam_pcl_anh_gpu.h"
+#include "lidar_localizer/load_save_map/load_save_map.h"
 #include "lidar_localizer/reliability/slam_reliability.h"
 #include "lidar_localizer/util/data_structs.h"

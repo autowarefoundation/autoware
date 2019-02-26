@@ -285,7 +285,7 @@ cmds:
       desc : Performs extrinsic calibration between two point clouds
       cmd  : roslaunch multi_lidar_calibrator multi_lidar_calibrator.launch
       param: multi_lidar_calibrator
-      
+
 buttons:
   calibration_toolkit :
     desc  : calibration_toolkit desc sample
@@ -1031,7 +1031,7 @@ params :
       desc  : Remove Points above this height value (default 0.2 meters)
       label : clipping_height
       min   : -5
-      max   : 5
+      max   : 50
       v     : 0.2
       cmd_param :
         dash        : ''
@@ -1365,5 +1365,3 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-
-

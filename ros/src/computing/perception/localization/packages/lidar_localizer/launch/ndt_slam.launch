@@ -1,7 +1,7 @@
 <!-- -->
 <launch>
 
-  <arg name="method_type" default="1" /> <!-- pcl_generic=0, pcl_anh=1, pcl_anh_gpu=2, pcl_openmp=3 -->
+  <arg name="method_type" default="0" /> <!-- pcl_generic=0, pcl_anh=1, pcl_anh_gpu=2, pcl_openmp=3 -->
 
   <arg name="points_raw_topic" default="/points_raw" />
   <arg name="points_filtered_topic" default="/filtered_points" />
@@ -26,8 +26,8 @@
   <arg name="separate_mapping" default="false" />
   <arg name="separate_map_size" default="100.0" />
 
-  <arg name="use_odometry" default="false" />
-  <arg name="odometry_topic" default="/odom" />
+  <arg name="use_vehicle_twist" default="false" />
+  <arg name="twist_topic" default="/twist" />
 
 
   <!-- rosrun lidar_localizer ndt_mapping  -->
@@ -57,8 +57,8 @@
     <param name="separate_mapping" value="$(arg separate_mapping)" />
     <param name="separate_map_size" value="$(arg separate_map_size)" />
 
-    <param name="use_odometry" value="$(arg use_odometry)" />
-    <remap from="odom" to="$(arg odometry_topic)" />
+    <param name="use_vehicle_twist" value="$(arg use_vehicle_twist)" />
+    <remap from="/vehicle/twist" to="$(arg twist_topic)" />
   </node>
 
 </launch>
