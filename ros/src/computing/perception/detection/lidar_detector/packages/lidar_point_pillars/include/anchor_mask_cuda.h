@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
- /**
- * @file anchor_mask_cuda.h
- * @brief Make anchor mask for filtering output
- * @author Kosuke Murakami
- * @date 2019/02/26
- */
+/**
+* @file anchor_mask_cuda.h
+* @brief Make anchor mask for filtering output
+* @author Kosuke Murakami
+* @date 2019/02/26
+*/
 
-#ifndef   ANCHOR_MASK_CUDA_H
-#define   ANCHOR_MASK_CUDA_H
+#ifndef ANCHOR_MASK_CUDA_H
+#define ANCHOR_MASK_CUDA_H
 
 class AnchorMaskCuda
 {
@@ -37,6 +37,7 @@ private:
   const float PILLAR_Y_SIZE_;
   const int GRID_X_SIZE_;
   const int GRID_Y_SIZE_;
+
 public:
   /**
   * @brief Constructor
@@ -52,16 +53,9 @@ public:
   * @param[in] GRID_Y_SIZE Number of pillars in y-coordinate
   * @details Captital variables never change after the compile
   */
-  AnchorMaskCuda(const int NUM_INDS_FOR_SCAN,
-                 const int NUM_ANCHOR_X_INDS,
-                 const int NUM_ANCHOR_Y_INDS,
-                 const int NUM_ANCHOR_R_INDS,
-                 const float MIN_X_RANGE,
-                 const float MIN_Y_RANGE,
-                 const float PILLAR_X_SIZE,
-                 const float PILLAR_Y_SIZE,
-                 const int GRID_X_SIZE,
-                 const int GRID_Y_SIZE);
+  AnchorMaskCuda(const int NUM_INDS_FOR_SCAN, const int NUM_ANCHOR_X_INDS, const int NUM_ANCHOR_Y_INDS,
+                 const int NUM_ANCHOR_R_INDS, const float MIN_X_RANGE, const float MIN_Y_RANGE,
+                 const float PILLAR_X_SIZE, const float PILLAR_Y_SIZE, const int GRID_X_SIZE, const int GRID_Y_SIZE);
 
   /**
   * @brief call cuda code for making anchor mask
@@ -77,8 +71,8 @@ public:
   * @details dev_* means device memory. Make a mask for activating pillar occupancy area
   */
   void doAnchorMaskCuda(int* dev_sparse_pillar_map, int* dev_cumsum_along_x, int* dev_cumsum_along_y,
-    const float* dev_box_anchors_min_x, const float* dev_box_anchors_min_y,
-    const float* dev_box_anchors_max_x, const float* dev_box_anchors_max_y, int* dev_anchor_mask);
+                        const float* dev_box_anchors_min_x, const float* dev_box_anchors_min_y,
+                        const float* dev_box_anchors_max_x, const float* dev_box_anchors_max_y, int* dev_anchor_mask);
 };
 
 #endif  // ANCHOR_MASK_CUDA_H

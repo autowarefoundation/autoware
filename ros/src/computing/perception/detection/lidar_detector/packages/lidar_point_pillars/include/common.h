@@ -14,32 +14,36 @@
  * limitations under the License.
  */
 
- /**
- * @file common.h
- * @brief MACRO for CUDA codes
- * @author Kosuke Murakami
- * @date 2019/02/26
- */
+/**
+* @file common.h
+* @brief MACRO for CUDA codes
+* @author Kosuke Murakami
+* @date 2019/02/26
+*/
 
-#ifndef   COMMON_H
-#define   COMMON_H
+#ifndef COMMON_H
+#define COMMON_H
 
-//headers in STL
+// headers in STL
 #include <stdio.h>
 
-//headers in CUDA
+// headers in CUDA
 #include <cuda_runtime_api.h>
 
 #define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
 
-#define GPU_CHECK(ans) { GPUAssert((ans), __FILE__, __LINE__); }
-inline void GPUAssert(cudaError_t code, const char *file, int line, bool abort=true)
+#define GPU_CHECK(ans)                                                                                                 \
+  {                                                                                                                    \
+    GPUAssert((ans), __FILE__, __LINE__);                                                                              \
+  }
+inline void GPUAssert(cudaError_t code, const char* file, int line, bool abort = true)
 {
-   if (code != cudaSuccess)
-   {
-      fprintf(stderr,"GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
-      if (abort) exit(code);
-   }
+  if (code != cudaSuccess)
+  {
+    fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
+    if (abort)
+      exit(code);
+  }
 }
 
 #endif  // COMMON_H

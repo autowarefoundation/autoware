@@ -14,22 +14,20 @@
  * limitations under the License.
  */
 
- /**
- * @file preprocess_points_cuda.h
- * @brief GPU version of preprocess points
- * @author Kosuke Murakami
- * @date 2019/02/26
- */
+/**
+* @file preprocess_points_cuda.h
+* @brief GPU version of preprocess points
+* @author Kosuke Murakami
+* @date 2019/02/26
+*/
 
-
-#ifndef   PREPROCESS_POINTS_CUDA_H
-#define   PREPROCESS_POINTS_CUDA_H
-
+#ifndef PREPROCESS_POINTS_CUDA_H
+#define PREPROCESS_POINTS_CUDA_H
 
 class PreprocessPointsCuda
 {
 private:
-  //initialzer list
+  // initialzer list
   const int NUM_THREADS_;
   const int MAX_NUM_PILLARS_;
   const int MAX_NUM_POINTS_PER_PILLAR_;
@@ -43,7 +41,7 @@ private:
   const float MIN_X_RANGE_;
   const float MIN_Y_RANGE_;
   const float MIN_Z_RANGE_;
-  //end initalizer list
+  // end initalizer list
 
   float* dev_pillar_x_in_coors_;
   float* dev_pillar_y_in_coors_;
@@ -74,19 +72,10 @@ public:
   * @param[in] MIN_Z_RANGE Minimum z value for pointcloud
   * @details Captital variables never change after the compile
   */
-  PreprocessPointsCuda(const int NUM_THREADS,
-                       const int MAX_NUM_PILLARS,
-                       const int MAX_POINTS_PER_PILLAR,
-                       const int NUM_INDS_FOR_SCAN,
-                       const int GRID_X_SIZE,
-                       const int GRID_Y_SIZE,
-                       const int GRID_Z_SIZE,
-                       const float PILLAR_X_SIZE,
-                       const float PILLAR_Y_SIZE,
-                       const float PILLAR_Z_SIZE,
-                       const float MIN_X_RANGE,
-                       const float MIN_Y_RANGE,
-                       const float MIN_Z_RANGE);
+  PreprocessPointsCuda(const int NUM_THREADS, const int MAX_NUM_PILLARS, const int MAX_POINTS_PER_PILLAR,
+                       const int NUM_INDS_FOR_SCAN, const int GRID_X_SIZE, const int GRID_Y_SIZE, const int GRID_Z_SIZE,
+                       const float PILLAR_X_SIZE, const float PILLAR_Y_SIZE, const float PILLAR_Z_SIZE,
+                       const float MIN_X_RANGE, const float MIN_Y_RANGE, const float MIN_Z_RANGE);
   ~PreprocessPointsCuda();
 
   /**
@@ -108,9 +97,10 @@ public:
   * @details Convert pointcloud to pillar representation
   */
   void doPreprocessPointsCuda(const float* dev_points, const int in_num_points, int* dev_x_coors, int* dev_y_coors,
-                      float* dev_num_points_per_pillar, float* dev_pillar_x, float* dev_pillar_y, float* dev_pillar_z, float* dev_pillar_i,
-                      float* dev_x_coors_for_sub_shaped, float* dev_y_coors_for_sub_shaped,
-                      float* dev_pillar_feature_mask, int* dev_sparse_pillar_map, int* host_pillar_count);
+                              float* dev_num_points_per_pillar, float* dev_pillar_x, float* dev_pillar_y,
+                              float* dev_pillar_z, float* dev_pillar_i, float* dev_x_coors_for_sub_shaped,
+                              float* dev_y_coors_for_sub_shaped, float* dev_pillar_feature_mask,
+                              int* dev_sparse_pillar_map, int* host_pillar_count);
 };
 
 #endif  // PREPROCESS_POINTS_CUDA_H

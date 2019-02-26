@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
- /**
- * @file point_pillars.h
- * @brief Algorithm for PointPillars
- * @author Kosuke Murakami
- * @date 2019/02/26
- */
-
+/**
+* @file point_pillars.h
+* @brief Algorithm for PointPillars
+* @author Kosuke Murakami
+* @date 2019/02/26
+*/
 
 #ifndef POINTS_PILLAR_H
 #define POINTS_PILLAR_H
 
-//headers in STL
+// headers in STL
 #include <vector>
 #include <iomanip>
 #include <string>
@@ -34,11 +33,11 @@
 #include <algorithm>
 #include <limits>
 
-//headers in TensorRT
+// headers in TensorRT
 #include "NvInfer.h"
 #include "NvOnnxParser.h"
 
-//headers in local files
+// headers in local files
 #include "common.h"
 #include "preprocess_points.h"
 #include "preprocess_points_cuda.h"
@@ -46,40 +45,48 @@
 #include "scatter_cuda.h"
 #include "postprocess_cuda.h"
 
-
 // Logger for TensorRT info/warning/errors
 class Logger : public nvinfer1::ILogger
 {
 public:
-    Logger(Severity severity = Severity::kWARNING)
-        : reportableSeverity(severity)
+  Logger(Severity severity = Severity::kWARNING) : reportableSeverity(severity)
+  {
+  }
+
+  void log(Severity severity, const char* msg) override
+  {
+    // suppress messages with severity enum value greater than the reportable
+    if (severity > reportableSeverity)
+      return;
+
+    switch (severity)
     {
+      case Severity::kINTERNAL_ERROR:
+        std::cerr << "INTERNAL_ERROR: ";
+        break;
+      case Severity::kERROR:
+        std::cerr << "ERROR: ";
+        break;
+      case Severity::kWARNING:
+        std::cerr << "WARNING: ";
+        break;
+      case Severity::kINFO:
+        std::cerr << "INFO: ";
+        break;
+      default:
+        std::cerr << "UNKNOWN: ";
+        break;
     }
+    std::cerr << msg << std::endl;
+  }
 
-    void log(Severity severity, const char* msg) override
-    {
-        // suppress messages with severity enum value greater than the reportable
-        if (severity > reportableSeverity)
-            return;
-
-        switch (severity)
-        {
-        case Severity::kINTERNAL_ERROR: std::cerr << "INTERNAL_ERROR: "; break;
-        case Severity::kERROR: std::cerr << "ERROR: "; break;
-        case Severity::kWARNING: std::cerr << "WARNING: "; break;
-        case Severity::kINFO: std::cerr << "INFO: "; break;
-        default: std::cerr << "UNKNOWN: "; break;
-        }
-        std::cerr << msg << std::endl;
-    }
-
-    Severity reportableSeverity;
+  Severity reportableSeverity;
 };
 
 class PointPillars
 {
 private:
-  //initize in initializer list
+  // initize in initializer list
   const bool reproduce_result_mode_;
   const float score_threshold_;
   const float nms_overlap_threshold_;
@@ -117,8 +124,7 @@ private:
   const float ANCHOR_DZ_SIZE_;
   const int NUM_BOX_CORNERS_;
   const int NUM_OUTPUT_BOX_FEATURE_;
-  //end initializer list
-
+  // end initializer list
 
   int host_pillar_count_[1];
 
@@ -181,7 +187,6 @@ private:
   int* dev_filtered_dir_;
   float* dev_box_for_nms_;
   int* dev_filter_count_;
-
 
   std::unique_ptr<PreprocessPoints> preprocess_points_ptr_;
   std::unique_ptr<PreprocessPointsCuda> preprocess_points_cuda_ptr_;
@@ -285,8 +290,8 @@ public:
   * @param[in] out_num_objects Number of output bounding box
   * @details This is interface for the algorithm
   */
-  void doInference(const float* in_points_array, const int in_num_points,
-    std::vector<float>& out_detection, int& out_num_objects);
+  void doInference(const float* in_points_array, const int in_num_points, std::vector<float>& out_detection,
+                   int& out_num_objects);
 };
 
 #endif  // POINTS_PILLAR_H

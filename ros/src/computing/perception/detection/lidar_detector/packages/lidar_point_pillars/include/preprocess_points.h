@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
- /**
- * @file preprocess_points.h
- * @brief CPU version of preprocess points
- * @author Kosuke Murakami
- * @date 2019/02/26
- */
+/**
+* @file preprocess_points.h
+* @brief CPU version of preprocess points
+* @author Kosuke Murakami
+* @date 2019/02/26
+*/
 
 #ifndef PREPROCESS_POINTS_H
 #define PREPROCESS_POINTS_H
-
-
 
 class PreprocessPoints
 {
@@ -44,7 +42,6 @@ private:
   const int NUM_INDS_FOR_SCAN_;
   const int NUM_BOX_CORNERS_;
 
-
 public:
   /**
   * @brief Constructor
@@ -63,19 +60,10 @@ public:
   * @param[in] NUM_BOX_CORNERS Number of box's corner
   * @details Captital variables never change after the compile
   */
-  PreprocessPoints(const int MAX_NUM_PILLARS,
-                   const int MAX_POINTS_PER_PILLAR,
-                   const int GRID_X_SIZE,
-                   const int GRID_Y_SIZE,
-                   const int GRID_Z_SIZE,
-                   const float PILLAR_X_SIZE,
-                   const float PILLAR_Y_SIZE,
-                   const float PILLAR_Z_SIZE,
-                   const float MIN_X_RANGE,
-                   const float MIN_Y_RANGE,
-                   const float MIN_Z_RANGE,
-                   const int NUM_INDS_FOR_SCAN,
-                   const int NUM_BOX_CORNERS);
+  PreprocessPoints(const int MAX_NUM_PILLARS, const int MAX_POINTS_PER_PILLAR, const int GRID_X_SIZE,
+                   const int GRID_Y_SIZE, const int GRID_Z_SIZE, const float PILLAR_X_SIZE, const float PILLAR_Y_SIZE,
+                   const float PILLAR_Z_SIZE, const float MIN_X_RANGE, const float MIN_Y_RANGE, const float MIN_Z_RANGE,
+                   const int NUM_INDS_FOR_SCAN, const int NUM_BOX_CORNERS);
 
   /**
   * @brief CPU preprocessing for input pointcloud
@@ -95,11 +83,10 @@ public:
   * @param[in] host_pillar_count The numnber of valid pillars for the input pointcloud
   * @details Convert pointcloud to pillar representation
   */
-  void preprocess(const float* in_points_array, int in_num_points,
-                  int* x_coors, int* y_coors, float* num_points_per_pillar,
-                  float* pillar_x, float* pillar_y, float* pillar_z, float* pillar_i,
-                  float* x_coors_for_sub_shaped, float* y_coors_for_sub_shaped,
-                  float* pillar_feature_mask, float* sparse_pillar_map, int* host_pillar_count);
+  void preprocess(const float* in_points_array, int in_num_points, int* x_coors, int* y_coors,
+                  float* num_points_per_pillar, float* pillar_x, float* pillar_y, float* pillar_z, float* pillar_i,
+                  float* x_coors_for_sub_shaped, float* y_coors_for_sub_shaped, float* pillar_feature_mask,
+                  float* sparse_pillar_map, int* host_pillar_count);
 
   /**
   * @brief Initializing variables for preprocessing
@@ -113,9 +100,9 @@ public:
   * @param[in] y_coors_for_sub_shaped Used for y substraction in the network
   * @details Initializeing input arguments with certain values
   */
-  void initializeVariables(int* coor_to_pillaridx, float* sparse_pillar_map,
-                           float* pillar_x, float* pillar_y, float* pillar_z, float* pillar_i,
-                           float* x_coors_for_sub_shaped, float* y_coors_for_sub_shaped);
+  void initializeVariables(int* coor_to_pillaridx, float* sparse_pillar_map, float* pillar_x, float* pillar_y,
+                           float* pillar_z, float* pillar_i, float* x_coors_for_sub_shaped,
+                           float* y_coors_for_sub_shaped);
 };
 
 #endif  // PREPROCESS_POINTS_H

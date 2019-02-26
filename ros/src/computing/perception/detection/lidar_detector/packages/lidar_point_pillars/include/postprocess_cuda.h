@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
- /**
- * @file postprocess_cuda.h
- * @brief Postprocess for network output
- * @author Kosuke Murakami
- * @date 2019/02/26
- */
+/**
+* @file postprocess_cuda.h
+* @brief Postprocess for network output
+* @author Kosuke Murakami
+* @date 2019/02/26
+*/
 
-#ifndef   POSTPROCESS_CUDA_H
-#define   POSTPROCESS_CUDA_H
+#ifndef POSTPROCESS_CUDA_H
+#define POSTPROCESS_CUDA_H
 
-//headers in STL
+// headers in STL
 #include <memory>
 #include <iostream>
 
-//headers in local files
+// headers in local files
 #include "nms_cuda.h"
 
 class PostprocessCuda
@@ -62,38 +62,39 @@ public:
   * @param[in] NUM_OUTPUT_BOX_FEATURE_ Number of output box's feature
   * @details Captital variables never change after the compile, non-capital variables could be chaned through rosparam
   */
-  PostprocessCuda(const float FLOAT_MIN, const float FLOAT_MAX,
-    const int NUM_ANCHOR_X_INDS, const int NUM_ANCHOR_Y_INDS, const int NUM_ANCHOR_R_INDS,
-    const float score_threshold, const int NUM_THREADS, const float nms_overlap_threshold,
-    const int NUM_BOX_CORNERS, const int NUM_OUTPUT_BOX_FEATURE);
+  PostprocessCuda(const float FLOAT_MIN, const float FLOAT_MAX, const int NUM_ANCHOR_X_INDS,
+                  const int NUM_ANCHOR_Y_INDS, const int NUM_ANCHOR_R_INDS, const float score_threshold,
+                  const int NUM_THREADS, const float nms_overlap_threshold, const int NUM_BOX_CORNERS,
+                  const int NUM_OUTPUT_BOX_FEATURE);
 
-    /**
-    * @brief Postprocessing for the network output
-    * @param[in] rpn_box_output Box prediction from the network output
-    * @param[in] rpn_cls_output Class prediction from the network output
-    * @param[in] rpn_dir_output Direction prediction from the network output
-    * @param[in] dev_anchor_mask Anchor mask for filtering
-    * @param[in] dev_anchors_px X-coordinate value for corresponding anchor
-    * @param[in] dev_anchors_py Y-coordinate value for corresponding anchor
-    * @param[in] dev_anchors_pz Z-coordinate value for corresponding anchor
-    * @param[in] dev_anchors_dx X-dimension value for corresponding anchor
-    * @param[in] dev_anchors_dy Y-dimension value for corresponding anchor
-    * @param[in] dev_anchors_dz Z-dimension value for corresponding anchor
-    * @param[in] dev_anchors_ro Rotation value for corresponding anchor
-    * @param[in] dev_filtered_box Filtered box prediction
-    * @param[in] dev_filtered_score Filtered score prediction
-    * @param[in] dev_filtered_dir Filtered direction prediction
-    * @param[in] dev_box_for_nms Decoded box from pose and dimension to min_x min_y max_x max_y represenation for nms
-    * @param[in] dev_filter_count The number of filtered output
-    * @param[out] out_detection Output bounding boxes
-    * @param[out] out_num_objects The number of output bounding boxes
-    * @details dev_* represents device memory allocated variables
-    */
+  /**
+  * @brief Postprocessing for the network output
+  * @param[in] rpn_box_output Box prediction from the network output
+  * @param[in] rpn_cls_output Class prediction from the network output
+  * @param[in] rpn_dir_output Direction prediction from the network output
+  * @param[in] dev_anchor_mask Anchor mask for filtering
+  * @param[in] dev_anchors_px X-coordinate value for corresponding anchor
+  * @param[in] dev_anchors_py Y-coordinate value for corresponding anchor
+  * @param[in] dev_anchors_pz Z-coordinate value for corresponding anchor
+  * @param[in] dev_anchors_dx X-dimension value for corresponding anchor
+  * @param[in] dev_anchors_dy Y-dimension value for corresponding anchor
+  * @param[in] dev_anchors_dz Z-dimension value for corresponding anchor
+  * @param[in] dev_anchors_ro Rotation value for corresponding anchor
+  * @param[in] dev_filtered_box Filtered box prediction
+  * @param[in] dev_filtered_score Filtered score prediction
+  * @param[in] dev_filtered_dir Filtered direction prediction
+  * @param[in] dev_box_for_nms Decoded box from pose and dimension to min_x min_y max_x max_y represenation for nms
+  * @param[in] dev_filter_count The number of filtered output
+  * @param[out] out_detection Output bounding boxes
+  * @param[out] out_num_objects The number of output bounding boxes
+  * @details dev_* represents device memory allocated variables
+  */
   void doPostprocessCuda(const float* rpn_box_output, const float* rpn_cls_output, const float* rpn_dir_output,
-          int* dev_anchor_mask, const float* dev_anchors_px, const float* dev_anchors_py, const float* dev_anchors_pz,
-          const float* dev_anchors_dx, const float* dev_anchors_dy, const float* dev_anchors_dz, const float* dev_anchors_ro,
-          float* dev_filtered_box, float* dev_filtered_score, int* dev_filtered_dir, float* dev_box_for_nms, int* dev_filter_count,
-          std::vector<float>& out_detection, int& out_num_objects);
+                         int* dev_anchor_mask, const float* dev_anchors_px, const float* dev_anchors_py,
+                         const float* dev_anchors_pz, const float* dev_anchors_dx, const float* dev_anchors_dy,
+                         const float* dev_anchors_dz, const float* dev_anchors_ro, float* dev_filtered_box,
+                         float* dev_filtered_score, int* dev_filtered_dir, float* dev_box_for_nms,
+                         int* dev_filter_count, std::vector<float>& out_detection, int& out_num_objects);
 };
 
 #endif  // POSTPROCESS_CUDA_H

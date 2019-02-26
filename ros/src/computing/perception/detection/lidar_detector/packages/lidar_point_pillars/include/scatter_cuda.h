@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
- /**
- * @file scatter_cuda.h
- * @brief CUDA code for scatter operation
- * @author Kosuke Murakami
- * @date 2019/02/26
- */
+/**
+* @file scatter_cuda.h
+* @brief CUDA code for scatter operation
+* @author Kosuke Murakami
+* @date 2019/02/26
+*/
 
-#ifndef   SCATTERCUDA_H
-#define   SCATTERCUDA_H
+#ifndef SCATTERCUDA_H
+#define SCATTERCUDA_H
 
 class ScatterCuda
 {
@@ -52,7 +52,7 @@ public:
   * @param[out] scattered_feature Gridmap representation for pillars' feature
   * @details Allocate pillars in gridmap based on index(coordinates) information
   */
-  void doScatterCuda(const int pillar_count, int *x_coors, int *y_coors, float *pfe_output, float *scattered_feature);
+  void doScatterCuda(const int pillar_count, int* x_coors, int* y_coors, float* pfe_output, float* scattered_feature);
 };
 
 #endif  // SCATTERCUDA_H

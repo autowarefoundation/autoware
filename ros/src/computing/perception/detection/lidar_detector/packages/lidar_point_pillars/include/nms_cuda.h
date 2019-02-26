@@ -21,14 +21,14 @@
 * @date 2019/02/26
 */
 
-#ifndef   NMS_CUDA_H
-#define   NMS_CUDA_H
+#ifndef NMS_CUDA_H
+#define NMS_CUDA_H
 
-//heders in STL
+// heders in STL
 #include <vector>
 #include <iostream>
 
-//headers in local files
+// headers in local files
 #include "common.h"
 
 class NMSCuda
@@ -54,7 +54,7 @@ public:
   * @param[out] out_num_to_keep Number of keep bounding box
   * @details Includes CUDA NMS and postprocessing for selecting box in CPU
   */
-  void doNMSCuda(const int host_filter_count, float* dev_sorted_box_for_nms, int* out_keep_inds,  int& out_num_to_keep);
+  void doNMSCuda(const int host_filter_count, float* dev_sorted_box_for_nms, int* out_keep_inds, int& out_num_to_keep);
 };
 
 #endif  // NMS_CUDA_H

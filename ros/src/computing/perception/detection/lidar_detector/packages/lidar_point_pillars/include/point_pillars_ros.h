@@ -14,38 +14,37 @@
  * limitations under the License.
  */
 
- /**
- * @file point_pillars_ros.h
- * @brief ROS interface for PointPillars
- * @author Kosuke Murakami
- * @date 2019/02/26
- */
+/**
+* @file point_pillars_ros.h
+* @brief ROS interface for PointPillars
+* @author Kosuke Murakami
+* @date 2019/02/26
+*/
 
 #ifndef POINTS_PILLAR_ROS_H
 #define POINTS_PILLAR_ROS_H
 
-//headers in STL
+// headers in STL
 #include <memory>
 #include <vector>
 
-//headers in ROS
+// headers in ROS
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <tf/transform_listener.h>
 
-//headers in PCL
+// headers in PCL
 #include <pcl/io/pcd_io.h>
 
-//headers in local files
+// headers in local files
 #include "point_pillars.h"
-
 
 class PointPillarsROS
 {
 private:
   friend class TestClass;
 
-  //initializer list
+  // initializer list
   ros::NodeHandle private_nh_;
   bool has_subscribed_baselink_;
   const int NUM_POINT_FEATURE_;
@@ -53,16 +52,16 @@ private:
   const float TRAINED_SENSOR_HEIGHT_;
   const float NORMALIZING_INTENSITY_VALUE_;
   const std::string BASELINK_FRAME_;
-  //end initializer list
+  // end initializer list
 
-  //rosparam
+  // rosparam
   bool baselink_support_;
   bool reproduce_result_mode_;
   float score_threshold_;
   float nms_overlap_threshold_;
   std::string pfe_onnx_file_;
   std::string rpn_onnx_file_;
-  //end rosparam
+  // end rosparam
 
   ros::NodeHandle nh_;
   ros::Subscriber sub_points_;
@@ -72,8 +71,6 @@ private:
   tf::StampedTransform baselink2lidar_;
   tf::Transform angle_transform_;
   tf::Transform angle_transform_inversed_;
-
-
 
   float offset_z_from_trained_data_;
 
@@ -100,8 +97,7 @@ private:
   * @return geometry_msgs::Pose Transformed pose
   * @details Calculate transformed pose
   */
-  geometry_msgs::Pose getTransformedPose(const geometry_msgs::Pose& in_pose,
-                                         const tf::Transform& tf);
+  geometry_msgs::Pose getTransformedPose(const geometry_msgs::Pose& in_pose, const tf::Transform& tf);
 
   /**
   * @brief callback for pointcloud
@@ -117,7 +113,8 @@ private:
   * @param[in] offset_z (default: 1.0) when using baselink_support, offset height based on current sensor configuration
   * @details convert pcl points to c++ array, plus offset z if it is necessary
   */
-  void pclToArray(const pcl::PointCloud<pcl::PointXYZI>::Ptr & in_pcl_pc_ptr, float* out_points_array, const float offset_z = 0);
+  void pclToArray(const pcl::PointCloud<pcl::PointXYZI>::Ptr& in_pcl_pc_ptr, float* out_points_array,
+                  const float offset_z = 0);
 
   /**
   * @brief publish DetectedObject
@@ -126,7 +123,8 @@ private:
   * @param[in] pc_header Header from pointcloud
   * @details Convert std::vector to DetectedObject, and publish them
   */
-  void pubDetectedObject(const std::vector<float>& detections, const int num_objects, const std_msgs::Header& pc_header);
+  void pubDetectedObject(const std::vector<float>& detections, const int num_objects,
+                         const std_msgs::Header& pc_header);
 
 public:
   PointPillarsROS();

@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-//headers in STL
+// headers in STL
 #include <iostream>
 
-//headers in local files
+// headers in local files
 #include "point_pillars_ros.h"
 
 int main(int argc, char** argv)
