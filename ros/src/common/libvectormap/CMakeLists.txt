@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.5)
 project(libvectormap)
 
 
@@ -6,7 +6,7 @@ find_package(autoware_build_flags REQUIRED)
 
 find_package(vector_map REQUIRED)
 find_package(vector_map_msgs REQUIRED)
-find_package(catkin REQUIRED)
+find_package(ament_cmake REQUIRED)
 
 find_package(Eigen3 QUIET)
 
@@ -23,22 +23,10 @@ endif ()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
-## Declare things to be passed to dependent projects
-## INCLUDE_DIRS: uncomment this if you package contains header files
-## LIBRARIES: libraries you create in this project that dependent projects also need
-## CATKIN_DEPENDS: catkin_packages dependent projects also need
-## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(
-        INCLUDE_DIRS include ${EIGEN3_INCLUDE_DIRS}
-        LIBRARIES libvectormap
-        CATKIN_DEPENDS vector_map
-)
-
 include_directories(
         include
         ${vector_map_INCLUDE_DIRS}
         ${vector_map_msgs_INCLUDE_DIRS}
-        ${catkin_INCLUDE_DIRS}
         ${EIGEN3_INCLUDE_DIRS}
 )
 
@@ -46,24 +34,35 @@ include_directories(
 add_library(libvectormap STATIC
         src/vector_map.cpp
         )
-
 target_link_libraries(libvectormap
-        ${catkin_LIBRARIES}
-        ${vector_map_msgs_LIBRARIES}
         ${EIGEN3_LIBRARIES}
         )
-
-add_dependencies(libvectormap
-        ${catkin_EXPORTED_TARGETS}
-        ${vector_map_msgs_EXPORTED_TARGETS}
+ament_target_dependencies(libvectormap
+        vector_map_msgs
         )
 
 install(TARGETS libvectormap
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY include/${PROJECT_NAME}/
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        DESTINATION include/${PROJECT_NAME}
         PATTERN ".svn" EXCLUDE
         )
+
+ament_export_dependencies(ament_cmake)
+ament_export_dependencies(vector_map)
+ament_export_dependencies(vector_map_msgs)
+
+ament_export_include_directories(include)
+ament_export_include_directories(${EIGEN3_INCLUDE_DIRS})
+
+ament_export_libraries(libvectormap)
+
+if(BUILD_TESTING)
+        find_package(ament_lint_auto REQUIRED)
+        ament_lint_auto_find_test_dependencies()
+endif()
+
+ament_package()
