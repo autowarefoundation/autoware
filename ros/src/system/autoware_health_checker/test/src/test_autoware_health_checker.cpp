@@ -130,6 +130,7 @@ boost::property_tree::ptree test_value_json_func(double value) {
   return tree;
 };
 
+/*
 TEST(TestSuite, CHECK_VALUE) {
   AutowareHealthCheckerTestClass test_autoware_health_checker;
   std::function<uint8_t(double value)> check_func = test_function;
@@ -160,6 +161,7 @@ TEST(TestSuite, CHECK_VALUE) {
   ASSERT_EQ(value.get(), 0.0)
       << "The value must be true, failed to get json value";
 }
+*/
 
 TEST(TestSuite, NODE_STATUS) {
   AutowareHealthCheckerTestClass test_autoware_health_checker;

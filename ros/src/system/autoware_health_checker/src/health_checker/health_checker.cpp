@@ -220,7 +220,7 @@ uint8_t HealthChecker::CHECK_RANGE(std::string key, double value,
   } else if (value < value_manager_ptr_->getValue(
                          key, "min", autoware_health_checker::LEVEL_WARN) ||
              value > value_manager_ptr_->getValue(
-                         key, "min", autoware_health_checker::LEVEL_WARN)) {
+                         key, "max", autoware_health_checker::LEVEL_WARN)) {
     new_status.level = autoware_system_msgs::DiagnosticStatus::WARN;
   } else {
     new_status.level = autoware_system_msgs::DiagnosticStatus::OK;
