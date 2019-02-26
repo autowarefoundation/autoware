@@ -34,7 +34,7 @@ Parameter|Type|Description
 state_vehicle_file_name|string|file that defines vehicle state transition
 state_mission_file_name|string|file that defines mission state transition
 state_drive_file_name|string|file that defines drive state transition
-stopline_reset_count|int|
+stopline_reset_count|int|This parameter is used if the vehicle stops at the stop line and moves backward without crossing the stop line. When the vehicle moves backward by this count of the waypoints, the stop line is recognized again.
 
 
 ## Subscribed topics
