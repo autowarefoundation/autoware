@@ -42,6 +42,8 @@ private:
   const float score_threshold_;
   const int NUM_THREADS_;
   const float nms_overlap_threshold_;
+  const int NUM_BOX_CORNERS_;
+  const int NUM_OUTPUT_BOX_FEATURE_;
 
   std::unique_ptr<NMSCuda> nms_cuda_ptr_;
 
@@ -56,11 +58,14 @@ public:
   * @param[in] score_threshold Score threshold for filtering output
   * @param[in] NUM_THREDS Number of threads for launching cuda kernel
   * @param[in] nms_overlap_threshold IOU threshold for NMS
+  * @param[in] NUM_BOX_CORNERS Number of box's corner
+  * @param[in] NUM_OUTPUT_BOX_FEATURE_ Number of output box's feature
   * @details Captital variables never change after the compile, non-capital variables could be chaned through rosparam
   */
   PostprocessCuda(const float FLOAT_MIN, const float FLOAT_MAX,
     const int NUM_ANCHOR_X_INDS, const int NUM_ANCHOR_Y_INDS, const int NUM_ANCHOR_R_INDS,
-    const float score_threshold, const int NUM_THREADS, const float nms_overlap_threshold);
+    const float score_threshold, const int NUM_THREADS, const float nms_overlap_threshold,
+    const int NUM_BOX_CORNERS, const int NUM_OUTPUT_BOX_FEATURE);
 
     /**
     * @brief Postprocessing for the network output

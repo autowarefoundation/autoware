@@ -62,7 +62,9 @@ NUM_THREADS_(64),//if you chancge NUM_THREADS_, need to modify nms_kernel's shar
 SENSOR_HEIGHT_(1.73),
 ANCHOR_DX_SIZE_(1.6),
 ANCHOR_DY_SIZE_(3.9),
-ANCHOR_DZ_SIZE_(1.56)
+ANCHOR_DZ_SIZE_(1.56),
+NUM_BOX_CORNERS_(4),
+NUM_OUTPUT_BOX_FEATURE_(7)
 {
   anchors_px_ = new float[NUM_ANCHOR_];
   anchors_py_ = new float[NUM_ANCHOR_];
@@ -91,7 +93,8 @@ ANCHOR_DZ_SIZE_(1.56)
       MIN_X_RANGE_,
       MIN_Y_RANGE_,
       MIN_Z_RANGE_,
-      NUM_INDS_FOR_SCAN_));
+      NUM_INDS_FOR_SCAN_,
+      NUM_BOX_CORNERS_));
   }
   else
   {
@@ -141,7 +144,9 @@ ANCHOR_DZ_SIZE_(1.56)
     NUM_ANCHOR_R_INDS_,
     score_threshold_,
     NUM_THREADS_,
-    nms_overlap_threshold_
+    nms_overlap_threshold_,
+    NUM_BOX_CORNERS_,
+    NUM_OUTPUT_BOX_FEATURE_
   ));
 
   deviceMemoryMalloc();

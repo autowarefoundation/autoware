@@ -42,6 +42,7 @@ private:
   const float MIN_Y_RANGE_;
   const float MIN_Z_RANGE_;
   const int NUM_INDS_FOR_SCAN_;
+  const int NUM_BOX_CORNERS_;
 
 
 public:
@@ -59,6 +60,7 @@ public:
   * @param[in] MIN_Y_RANGE Minimum y value for pointcloud
   * @param[in] MIN_Z_RANGE Minimum z value for pointcloud
   * @param[in] NUM_INDS_FOR_SCAN Number of indexes for scan(cumsum)
+  * @param[in] NUM_BOX_CORNERS Number of box's corner
   * @details Captital variables never change after the compile
   */
   PreprocessPoints(const int MAX_NUM_PILLARS,
@@ -72,7 +74,8 @@ public:
                    const float MIN_X_RANGE,
                    const float MIN_Y_RANGE,
                    const float MIN_Z_RANGE,
-                   const int NUM_INDS_FOR_SCAN);
+                   const int NUM_INDS_FOR_SCAN,
+                   const int NUM_BOX_CORNERS);
 
   /**
   * @brief CPU preprocessing for input pointcloud

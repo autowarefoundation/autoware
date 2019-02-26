@@ -33,6 +33,7 @@ __global__ void nms_kernel(const int n_boxes, const float nms_overlap_thresh,
       min(n_boxes - row_start * block_threads, block_threads);
   const int col_size =
       min(n_boxes - col_start * block_threads, block_threads);
+  //Only can initialize with figures, not by variables
   __shared__ float block_boxes[64 * 4];
   if (threadIdx.x < col_size)
   {

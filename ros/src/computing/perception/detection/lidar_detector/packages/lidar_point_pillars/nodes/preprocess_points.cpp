@@ -32,7 +32,8 @@ PreprocessPoints::PreprocessPoints(const int MAX_NUM_PILLARS,
                                    const float MIN_X_RANGE,
                                    const float MIN_Y_RANGE,
                                    const float MIN_Z_RANGE,
-                                   const int NUM_INDS_FOR_SCAN)
+                                   const int NUM_INDS_FOR_SCAN,
+                                   const int NUM_BOX_CORNERS)
 :
 MAX_NUM_PILLARS_(MAX_NUM_PILLARS),
 MAX_NUM_POINTS_PER_PILLAR_(MAX_POINTS_PER_PILLAR),
@@ -45,7 +46,8 @@ PILLAR_Z_SIZE_(PILLAR_Z_SIZE),
 MIN_X_RANGE_(MIN_X_RANGE),
 MIN_Y_RANGE_(MIN_Y_RANGE),
 MIN_Z_RANGE_(MIN_Z_RANGE),
-NUM_INDS_FOR_SCAN_(NUM_INDS_FOR_SCAN)
+NUM_INDS_FOR_SCAN_(NUM_INDS_FOR_SCAN),
+NUM_BOX_CORNERS_(NUM_BOX_CORNERS)
 {
 }
 
@@ -96,9 +98,9 @@ void PreprocessPoints::preprocess(const float* in_points_array, int in_num_point
                      x_coors_for_sub_shaped, y_coors_for_sub_shaped);
   for(int i = 0; i < in_num_points; i++)
   {
-    int x_coor = std::floor((in_points_array[i*4 + 0] - MIN_X_RANGE_)/PILLAR_X_SIZE_);
-    int y_coor = std::floor((in_points_array[i*4 + 1] - MIN_Y_RANGE_)/PILLAR_Y_SIZE_);
-    int z_coor = std::floor((in_points_array[i*4 + 2] - MIN_Z_RANGE_)/PILLAR_Z_SIZE_);
+    int x_coor = std::floor((in_points_array[i*NUM_BOX_CORNERS_ + 0] - MIN_X_RANGE_)/PILLAR_X_SIZE_);
+    int y_coor = std::floor((in_points_array[i*NUM_BOX_CORNERS_ + 1] - MIN_Y_RANGE_)/PILLAR_Y_SIZE_);
+    int z_coor = std::floor((in_points_array[i*NUM_BOX_CORNERS_ + 2] - MIN_Z_RANGE_)/PILLAR_Z_SIZE_);
     if(x_coor < 0 || x_coor >= GRID_X_SIZE_ ||
        y_coor < 0 || y_coor >= GRID_Y_SIZE_ ||
        z_coor < 0 || z_coor >= GRID_Z_SIZE_)
@@ -133,10 +135,10 @@ void PreprocessPoints::preprocess(const float* in_points_array, int in_num_point
     int num = num_points_per_pillar[pillar_index];
     if (num < MAX_NUM_POINTS_PER_PILLAR_)
     {
-      pillar_x[pillar_index*MAX_NUM_POINTS_PER_PILLAR_ + num]= in_points_array[i*4 + 0];
-      pillar_y[pillar_index*MAX_NUM_POINTS_PER_PILLAR_ + num]= in_points_array[i*4 + 1];
-      pillar_z[pillar_index*MAX_NUM_POINTS_PER_PILLAR_ + num]= in_points_array[i*4 + 2];
-      pillar_i[pillar_index*MAX_NUM_POINTS_PER_PILLAR_ + num]= in_points_array[i*4 + 3];
+      pillar_x[pillar_index*MAX_NUM_POINTS_PER_PILLAR_ + num]= in_points_array[i*NUM_BOX_CORNERS_ + 0];
+      pillar_y[pillar_index*MAX_NUM_POINTS_PER_PILLAR_ + num]= in_points_array[i*NUM_BOX_CORNERS_ + 1];
+      pillar_z[pillar_index*MAX_NUM_POINTS_PER_PILLAR_ + num]= in_points_array[i*NUM_BOX_CORNERS_ + 2];
+      pillar_i[pillar_index*MAX_NUM_POINTS_PER_PILLAR_ + num]= in_points_array[i*NUM_BOX_CORNERS_ + 3];
       num_points_per_pillar[pillar_index] += 1;
     }
   }

@@ -115,6 +115,8 @@ private:
   const float ANCHOR_DX_SIZE_;
   const float ANCHOR_DY_SIZE_;
   const float ANCHOR_DZ_SIZE_;
+  const int NUM_BOX_CORNERS_;
+  const int NUM_OUTPUT_BOX_FEATURE_;
   //end initializer list
 
 
