@@ -1,12 +1,14 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
     <name>trafficlight_recognizer</name>
     <version>1.10.0</version>
     <description>The trafficlight_recognizer package</description>
     <maintainer email="hirabayashi@ertl.jp">Manato HIRABAYASHI</maintainer>
     <license>Apache 2</license>
-    <buildtool_depend>catkin</buildtool_depend>
+
+    <buildtool_depend>ament_cmake</buildtool_depend>
     <buildtool_depend>autoware_build_flags</buildtool_depend>
+
     <build_depend>cmake_modules</build_depend>
     <build_depend>runtime_manager</build_depend>
     <build_depend>std_msgs</build_depend>
@@ -24,26 +26,27 @@
     <build_depend>vector_map</build_depend>
     <build_depend>visualization_msgs</build_depend>
 
-    <run_depend>cmake_modules</run_depend>
-    <run_depend>runtime_manager</run_depend>
-    <run_depend>std_msgs</run_depend>
-    <run_depend>message_runtime</run_depend>
-    <run_depend>autoware_msgs</run_depend>
-    <run_depend>vector_map_server</run_depend>
-    <run_depend>geometry_msgs</run_depend>
-    <run_depend>waypoint_follower</run_depend>
-    <run_depend>libqt5-core</run_depend>
-    <run_depend>libqt5-gui</run_depend>
-    <run_depend>libqt5-widgets</run_depend>
-    <run_depend>cv_bridge</run_depend>
-    <run_depend>eigen</run_depend>
-    <run_depend>libvectormap</run_depend>
-    <run_depend>roscpp</run_depend>
-    <run_depend>sensor_msgs</run_depend>
-    <run_depend>tf</run_depend>
-    <run_depend>vector_map</run_depend>
-    <run_depend>visualization_msgs</run_depend>
+    <exec_depend>cmake_modules</exec_depend>
+    <exec_depend>runtime_manager</exec_depend>
+    <exec_depend>std_msgs</exec_depend>
+    <exec_depend>message_runtime</exec_depend>
+    <exec_depend>autoware_msgs</exec_depend>
+    <exec_depend>vector_map_server</exec_depend>
+    <exec_depend>geometry_msgs</exec_depend>
+    <exec_depend>waypoint_follower</exec_depend>
+    <exec_depend>libqt5-core</exec_depend>
+    <exec_depend>libqt5-gui</exec_depend>
+    <exec_depend>libqt5-widgets</exec_depend>
+    <exec_depend>cv_bridge</exec_depend>
+    <exec_depend>eigen</exec_depend>
+    <exec_depend>libvectormap</exec_depend>
+    <exec_depend>roscpp</exec_depend>
+    <exec_depend>sensor_msgs</exec_depend>
+    <exec_depend>tf</exec_depend>
+    <exec_depend>vector_map</exec_depend>
+    <exec_depend>visualization_msgs</exec_depend>
 
     <export>
+        <build_type>ament_cmake</build_type>
     </export>
 </package>

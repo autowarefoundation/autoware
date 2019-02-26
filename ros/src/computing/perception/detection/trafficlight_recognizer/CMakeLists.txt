@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(trafficlight_recognizer)
 execute_process(
         COMMAND rosversion -d
@@ -14,21 +14,18 @@ find_package(autoware_build_flags REQUIRED)
 find_package(autoware_msgs REQUIRED)
 
 find_package(vector_map REQUIRED)
-find_package(catkin REQUIRED COMPONENTS
-        cmake_modules
-        cv_bridge
-        geometry_msgs
-        libvectormap
-        roscpp
-        sensor_msgs
-        std_msgs
-        tf
-        vector_map_server
-        visualization_msgs
-        waypoint_follower
-        autoware_msgs
-        vector_map
-        )
+find_package(cmake_modules REQUIRED)
+find_package(cv_bridge REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(libvectormap REQUIRED)
+find_package(roscpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(tf REQUIRED)
+find_package(vector_map_server REQUIRED)
+find_package(visualization_msgs REQUIRED)
+find_package(waypoint_follower REQUIRED)
+find_package(ament_cmake REQUIRED)
 
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 QUIET)
@@ -59,30 +56,18 @@ find_package(OpenGL REQUIRED)
 ###################################
 include_directories(
         include
-        ${catkin_INCLUDE_DIRS}
+        ${cv_bridge_INCLUDE_DIRS}
+        ${geometry_msgs_INCLUDE_DIRS}
+        ${libvectormap_INCLUDE_DIRS}
+        ${roscpp_INCLUDE_DIRS}
+        ${sensor_msgs_INCLUDE_DIRS}
+        ${std_msgs_INCLUDE_DIRS}
+        ${tf_INCLUDE_DIRS}
+        ${visualization_msgs_INCLUDE_DIRS}
+        ${waypoint_follower_INCLUDE_DIRS}
         ${vector_map_INCLUDE_DIRS}
         ${autoware_msgs_INCLUDE_DIRS}
         ${Eigen3_INCLUDE_DIRS}
-)
-
-catkin_package(
-        INCLUDE_DIRS ${EIGEN3_INCLUDE_DIRS}
-        CATKIN_DEPENDS
-        autoware_msgs
-        cmake_modules
-        cv_bridge
-        geometry_msgs
-        libvectormap
-        roscpp
-        sensor_msgs
-        std_msgs
-        tf
-        vector_map
-        vector_map_server
-        visualization_msgs
-        waypoint_follower
-
-        LIBRARIES libcontext
 )
 
 set(CMAKE_CXX_FLAGS "-O2 -Wall -Wunused-variable ${CMAKE_CXX_FLAGS}")
@@ -94,18 +79,38 @@ add_library(libcontext lib/Context.cpp)
 add_dependencies(libcontext
         ${catkin_EXPORTED_TARGETS}
         )
+ament_target_dependencies(libcontext
+        autoware_msgs
+        cv_bridge
+        geometry_msgs
+        libvectormap
+        roscpp
+        sensor_msgs
+        std_msgs
+        tf
+        vector_map
+        vector_map_server
+        visualization_msgs
+        waypoint_follower
+        )
 
 ### tl_switch ###
 add_executable(tl_switch
         nodes/tl_switch/tl_switch.cpp
         )
-
-target_link_libraries(tl_switch
-        ${catkin_LIBRARIES}
-        )
-
-add_dependencies(tl_switch
-        ${catkin_EXPORTED_TARGETS}
+ament_target_dependencies(tl_switch
+        autoware_msgs
+        cv_bridge
+        geometry_msgs
+        libvectormap
+        roscpp
+        sensor_msgs
+        std_msgs
+        tf
+        vector_map
+        vector_map_server
+        visualization_msgs
+        waypoint_follower
         )
 
 ### region_tlr ###
@@ -115,19 +120,37 @@ add_executable(region_tlr
         )
 
 target_link_libraries(region_tlr
-        ${catkin_LIBRARIES}
         ${OpenCV_LIBS}
         libcontext
         ${OPENGL_LIBRARIES}
         )
 
-add_dependencies(region_tlr
-        ${catkin_EXPORTED_TARGETS}
+ament_target_dependencies(region_tlr
+        autoware_msgs
+        cv_bridge
+        geometry_msgs
+        libvectormap
+        roscpp
+        sensor_msgs
+        std_msgs
+        tf
+        vector_map
+        vector_map_server
+        visualization_msgs
+        waypoint_follower
         )
 
 ### feat_proj ###
 include_directories(
-        ${catkin_INCLUDE_DIRS}
+        ${cv_bridge_INCLUDE_DIRS}
+        ${geometry_msgs_INCLUDE_DIRS}
+        ${libvectormap_INCLUDE_DIRS}
+        ${roscpp_INCLUDE_DIRS}
+        ${sensor_msgs_INCLUDE_DIRS}
+        ${std_msgs_INCLUDE_DIRS}
+        ${tf_INCLUDE_DIRS}
+        ${visualization_msgs_INCLUDE_DIRS}
+        ${waypoint_follower_INCLUDE_DIRS}
         ${vector_map_INCLUDE_DIRS}
         ${autoware_msgs_INCLUDE_DIRS}
         ${Eigen3_INCLUDE_DIRS}
@@ -138,12 +161,22 @@ add_executable(feat_proj
         )
 
 target_link_libraries(feat_proj
-        ${catkin_LIBRARIES}
         ${OpenCV_LIBS}
         )
 
-add_dependencies(feat_proj
-        ${catkin_EXPORTED_TARGETS}
+ament_target_dependencies(feat_proj
+        autoware_msgs
+        cv_bridge
+        geometry_msgs
+        libvectormap
+        roscpp
+        sensor_msgs
+        std_msgs
+        tf
+        vector_map
+        vector_map_server
+        visualization_msgs
+        waypoint_follower
         )
 
 ### tlr_tuner ###
@@ -156,7 +189,15 @@ EXECUTE_PROCESS(
 include_directories(
         include
         nodes/tlr_tuner/
-        ${catkin_INCLUDE_DIRS}
+        ${cv_bridge_INCLUDE_DIRS}
+        ${geometry_msgs_INCLUDE_DIRS}
+        ${libvectormap_INCLUDE_DIRS}
+        ${roscpp_INCLUDE_DIRS}
+        ${sensor_msgs_INCLUDE_DIRS}
+        ${std_msgs_INCLUDE_DIRS}
+        ${tf_INCLUDE_DIRS}
+        ${visualization_msgs_INCLUDE_DIRS}
+        ${waypoint_follower_INCLUDE_DIRS}
         ${vector_map_INCLUDE_DIRS}
         ${autoware_msgs_INCLUDE_DIRS}
         ${CMAKE_CURRENT_SOURCE_DIR}
@@ -179,17 +220,39 @@ set_target_properties(tlr_tuner
         )
 
 target_link_libraries(tlr_tuner
-        ${catkin_LIBRARIES}
         ${OpenCV_LIBS}
         Qt5::Core
         Qt5::Widgets
         ${OPENGL_LIBRARIES}
         )
 
+ament_target_dependencies(tlr_tuner
+        autoware_msgs
+        cv_bridge
+        geometry_msgs
+        libvectormap
+        roscpp
+        sensor_msgs
+        std_msgs
+        tf
+        vector_map
+        vector_map_server
+        visualization_msgs
+        waypoint_follower
+        )
+
 
 ### roi_extractor ###
 include_directories(
-        ${catkin_INCLUDE_DIRS}
+        ${cv_bridge_INCLUDE_DIRS}
+        ${geometry_msgs_INCLUDE_DIRS}
+        ${libvectormap_INCLUDE_DIRS}
+        ${roscpp_INCLUDE_DIRS}
+        ${sensor_msgs_INCLUDE_DIRS}
+        ${std_msgs_INCLUDE_DIRS}
+        ${tf_INCLUDE_DIRS}
+        ${visualization_msgs_INCLUDE_DIRS}
+        ${waypoint_follower_INCLUDE_DIRS}
         ${vector_map_INCLUDE_DIRS}
         ${autoware_msgs_INCLUDE_DIRS}
         include
@@ -200,12 +263,23 @@ add_executable(roi_extractor
         )
 
 target_link_libraries(roi_extractor
-        ${catkin_LIBRARIES}
         libcontext
         )
 
-add_dependencies(region_tlr
-        ${catkin_EXPORTED_TARGETS})
+ament_target_dependencies(roi_extractor
+        autoware_msgs
+        cv_bridge
+        geometry_msgs
+        libvectormap
+        roscpp
+        sensor_msgs
+        std_msgs
+        tf
+        vector_map
+        vector_map_server
+        visualization_msgs
+        waypoint_follower
+        )
 
 
 ### label_maker ###
@@ -219,7 +293,15 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 include_directories(
-        ${catkin_INCLUDE_DIRS}
+        ${cv_bridge_INCLUDE_DIRS}
+        ${geometry_msgs_INCLUDE_DIRS}
+        ${libvectormap_INCLUDE_DIRS}
+        ${roscpp_INCLUDE_DIRS}
+        ${sensor_msgs_INCLUDE_DIRS}
+        ${std_msgs_INCLUDE_DIRS}
+        ${tf_INCLUDE_DIRS}
+        ${visualization_msgs_INCLUDE_DIRS}
+        ${waypoint_follower_INCLUDE_DIRS}
         ${vector_map_INCLUDE_DIRS}
         ${autoware_msgs_INCLUDE_DIRS}
         ${TinyXML_INCLUDE_DIRS}
@@ -245,12 +327,26 @@ set_target_properties(label_maker
         )
 
 target_link_libraries(label_maker
-        ${catkin_LIBRARIES}
         ${TinyXML_LIBRARIES}
         Qt5::Core
         Qt5::Gui
         Qt5::Widgets
         ${OPENGL_LIBRARIES}
+        )
+
+ament_target_dependencies(label_maker
+        autoware_msgs
+        cv_bridge
+        geometry_msgs
+        libvectormap
+        roscpp
+        sensor_msgs
+        std_msgs
+        tf
+        vector_map
+        vector_map_server
+        visualization_msgs
+        waypoint_follower
         )
 
 
@@ -268,7 +364,6 @@ if (EXISTS "${SSD_CAFFE_PATH}")
             )
 
     target_link_libraries(region_tlr_ssd
-            ${catkin_LIBRARIES}
             ${OpenCV_LIBS}
             ${CUDA_LIBRARIES}
             ${CUDA_CUBLAS_LIBRARIES}
@@ -284,14 +379,25 @@ if (EXISTS "${SSD_CAFFE_PATH}")
             nodes/region_tlr_ssd/
             )
 
-    add_dependencies(region_tlr_ssd
-            ${catkin_EXPORTED_TARGETS}
+    ament_target_dependencies(region_tlr_ssd
+            autoware_msgs
+            cv_bridge
+            geometry_msgs
+            libvectormap
+            roscpp
+            sensor_msgs
+            std_msgs
+            tf
+            vector_map
+            vector_map_server
+            visualization_msgs
+            waypoint_follower
             )
 
     install(TARGETS region_tlr_ssd
-            ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-            LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-            RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+            ARCHIVE DESTINATION lib
+            LIBRARY DESTINATION lib
+            RUNTIME DESTINATION lib/${PROJECT_NAME}
             )
 
 else ()                          # if(EXISTS "${SSD_CAFFE_PATH}")
@@ -300,18 +406,18 @@ endif ()                         # if(EXISTS "${SSD_CAFFE_PATH}")
 
 
 install(TARGETS region_tlr feat_proj tlr_tuner roi_extractor label_maker
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION lib/${PROJECT_NAME}
         )
 
 install(DIRECTORY include
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        DESTINATION include/${PROJECT_NAME}
         PATTERN ".svn" EXCLUDE
         )
 
 install(DIRECTORY launch/
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        DESTINATION share/${PROJECT_NAME}/launch
         PATTERN ".svn" EXCLUDE)
 
 
@@ -332,7 +438,6 @@ if (EXISTS "${MXNET_PATH}")
             )
 
     target_link_libraries(region_tlr_mxnet
-            ${catkin_LIBRARIES}
             ${OpenCV_LIBS}
             ${CUDA_LIBRARIES}
             ${CUDA_CUBLAS_LIBRARIES}
@@ -351,16 +456,54 @@ if (EXISTS "${MXNET_PATH}")
             include
             )
 
-    add_dependencies(region_tlr_mxnet
-            ${catkin_EXPORTED_TARGETS}
+    ament_target_dependencies(region_tlr_mxnet
+            autoware_msgs
+            cv_bridge
+            geometry_msgs
+            libvectormap
+            roscpp
+            sensor_msgs
+            std_msgs
+            tf
+            vector_map
+            vector_map_server
+            visualization_msgs
+            waypoint_follower
             )
 
     install(TARGETS region_tlr_mxnet
-            ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-            LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-            RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+            ARCHIVE DESTINATION lib
+            LIBRARY DESTINATION lib
+            RUNTIME DESTINATION lib/${PROJECT_NAME}
             )
 
 else ()
     message("'MXNET Package' is not installed. 'region_tlr_mxnet' will not be built.")
 endif ()
+
+ament_export_dependencies(ament_cmake)
+ament_export_dependencies(autoware_msgs)
+ament_export_dependencies(cmake_modules)
+ament_export_dependencies(cv_bridge)
+ament_export_dependencies(geometry_msgs)
+ament_export_dependencies(libvectormap)
+ament_export_dependencies(roscpp)
+ament_export_dependencies(sensor_msgs)
+ament_export_dependencies(std_msgs)
+ament_export_dependencies(tf)
+ament_export_dependencies(vector_map)
+ament_export_dependencies(vector_map_server)
+ament_export_dependencies(visualization_msgs)
+ament_export_dependencies(waypoint_follower)
+
+ament_export_include_directories(include)
+ament_export_include_directories(${EIGEN3_INCLUDE_DIRS})
+
+ament_export_libraries(libcontext)
+
+if(BUILD_TESTING)
+        find_package(ament_lint_auto REQUIRED)
+        ament_lint_auto_find_test_dependencies()
+endif()
+
+ament_package()
