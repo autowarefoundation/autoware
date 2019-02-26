@@ -39,10 +39,11 @@ public:
   ValueManager(ros::NodeHandle nh, ros::NodeHandle pnh);
   ~ValueManager();
   void run();
-  void stop(){ros_ok_ = false;};
+  void stop() { ros_ok_ = false; };
   void setDefaultValue(std::string key, std::string type, double warn_value,
                        double error_value, double fatal_value);
   double getValue(std::string key, std::string type, uint8_t level);
+
 private:
   std::map<std::pair<std::pair<std::string, std::string>, uint8_t>, double>
       data_;
