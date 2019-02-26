@@ -91,13 +91,17 @@ target_link_libraries(twist_gate ${catkin_LIBRARIES})
 add_dependencies(twist_gate
         ${catkin_EXPORTED_TARGETS})
 
-add_executable(mpc_follower 
-        nodes/mpc_follower/mpc_follower.cpp 
+set(MPC_FOLLOWER_SRC
         nodes/mpc_follower/mpc_utils.cpp
         nodes/mpc_follower/mpc_trajectory.cpp
         nodes/mpc_follower/lowpass_filter.cpp
         nodes/mpc_follower/vehicle_model/vehicle_model_interface.cpp
-        nodes/mpc_follower/vehicle_model/vehicle_model_bicycle_kinematics.cpp)
+        nodes/mpc_follower/vehicle_model/vehicle_model_bicycle_kinematics.cpp
+)
+
+add_executable(mpc_follower 
+        nodes/mpc_follower/mpc_follower.cpp 
+        ${MPC_FOLLOWER_SRC})
 add_dependencies(mpc_follower ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(mpc_follower ${catkin_LIBRARIES})
 
@@ -114,3 +118,10 @@ install(DIRECTORY include/${PROJECT_NAME}/
 install(DIRECTORY launch/
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
         PATTERN ".svn" EXCLUDE)
+
+## TESTS
+# if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  add_rostest_gtest(test-mpc nodes/mpc_follower/test/test_mpc.test nodes/mpc_follower/test/src/test_mpc.cpp ${MPC_FOLLOWER_SRC})
+  target_link_libraries(test-mpc ${catkin_LIBRARIES})
+# endif()

@@ -51,7 +51,7 @@ MPCFollower::MPCFollower()
   /* set up ros system */
   timer_control_ = nh_.createTimer(ros::Duration(ctrl_period_), &MPCFollower::timerCallback, this);
   std::string out_twist, out_vehicle_cmd, in_vehicle_status, in_waypoints, in_selfpose;
-  pnh_.param("out_twist_name", out_twist, std::string("/twist_cmd"));
+  pnh_.param("out_twist_name", out_twist, std::string("/twist_raw"));
   pnh_.param("out_vehicle_cmd_name", out_vehicle_cmd, std::string("/ctrl_cmd"));
   pnh_.param("in_waypoints_name", in_waypoints, std::string("/base_waypoints"));
   pnh_.param("in_selfpose_name", in_selfpose, std::string("/current_pose"));
