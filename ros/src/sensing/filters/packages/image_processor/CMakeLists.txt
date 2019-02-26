@@ -69,10 +69,6 @@ install(TARGETS image_rotator image_rectifier
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
 
-install(FILES
-        launch/image_rotator.launch
-        launch/image_rotator_ladybug.launch
-        launch/image_rectifier.launch
-        launch/image_rectifier_ladybug.launch
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-        )
+install(DIRECTORY launch
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)

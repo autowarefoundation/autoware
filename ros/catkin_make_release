@@ -12,10 +12,15 @@ if [[ -d devel ]]; then
     rm -rf devel
 fi
 
-CATKIN_OPTS="-DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs"
+if [[ -d install ]]; then
+    rm -rf install
+fi
 
-catkin_make clean $CATKIN_OPTS
-source devel/setup.bash
+if [[ -d log ]]; then
+    rm -rf log
+fi
+
+CATKIN_OPTS="-DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs install"
 
 export LIBRARY_PATH=/usr/lib/OpenNI2/Drivers:$LIBRARY_PATH
 catkin_make $CATKIN_OPTS $@

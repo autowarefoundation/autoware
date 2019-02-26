@@ -70,8 +70,7 @@ buttons :
 
   rviz_qs :
     desc : rviz_qs desc sample
-    #run : rosrun rviz rviz
-    run  : sh -c '$(rospack find runtime_manager)/../../../.config/rviz/cmd.sh'
+    run : rosrun rviz rviz
     gui  :
       flags : [ kill_children ]
 
