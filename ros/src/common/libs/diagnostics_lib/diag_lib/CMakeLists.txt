@@ -1,12 +1,11 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(diag_lib)
 
 add_compile_options(-std=c++11)
 
-find_package(catkin REQUIRED COMPONENTS
-  diag_msgs
-  roscpp
-)
+find_package(diag_msgs REQUIRED)
+find_package(roscpp REQUIRED)
+find_package(ament_cmake REQUIRED)
 
 find_package(Boost REQUIRED COMPONENTS filesystem)
 
@@ -18,49 +17,44 @@ if(STRICT_ERROR_CODE_CHECK)
   add_definitions(-DSTRICT_ERROR_CODE_CHECK)
 endif()
 
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES diag_manager diag_filter
-  CATKIN_DEPENDS diag_msgs roscpp
-)
-
 include_directories(
   include
-  ${catkin_INCLUDE_DIRS}
+  ${diag_msgs_INCLUDE_DIRS}
+  ${YAML_CPP_INCLUDE_DIRS}
 )
 
 set(watchdog_node_src src/watchdog_node.cpp src/watchdog.cpp src/diag_manager.cpp src/rate_checker.cpp src/diag_subscriber.cpp)
 add_executable(watchdog_node ${watchdog_node_src})
-target_link_libraries(watchdog_node ${catkin_LIBRARIES} ${YAML_CPP_LIBRARIES})
-add_dependencies(watchdog_node ${catkin_EXPORTED_TARGETS})
+target_link_libraries(watchdog_node ${YAML_CPP_LIBRARIES})
+ament_target_dependencies(watchdog_node diag_msgs roscpp)
 
 set(diag_manager_src src/diag_manager.cpp src/rate_checker.cpp src/diag_subscriber.cpp)
 add_library(diag_manager SHARED ${diag_manager_src})
-target_link_libraries(diag_manager ${catkin_LIBRARIES} ${YAML_CPP_LIBRARIES})
-add_dependencies(diag_manager ${catkin_EXPORTED_TARGETS})
+target_link_libraries(diag_manager ${YAML_CPP_LIBRARIES})
+ament_target_dependencies(diag_manager diag_msgs roscpp)
 
 set(diag_filter_src src/diag_filter.cpp)
 add_library(diag_filter SHARED ${diag_filter_src})
-target_link_libraries(diag_filter ${catkin_LIBRARIES} ${YAML_CPP_LIBRARIES})
-add_dependencies(diag_filter ${catkin_EXPORTED_TARGETS})
+target_link_libraries(diag_filter ${YAML_CPP_LIBRARIES})
+ament_target_dependencies(diag_filter diag_msgs roscpp)
 
 # CPP Execution programs
 set(CPP_EXEC_NAMES watchdog_node)
 foreach(cpp_exec_names ${CPP_EXEC_NAMES})
   install(TARGETS ${cpp_exec_names}
-    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+    RUNTIME DESTINATION lib/${PROJECT_NAME}
     )
 endforeach(cpp_exec_names)
 
 # include header files
 install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  DESTINATION include/${PROJECT_NAME}
 )
 
 # Install all files
 foreach(dir config launch)
   install(DIRECTORY ${dir}/
-    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${dir})
+    DESTINATION share/${PROJECT_NAME}/${dir})
 endforeach(dir)
 
 # Install library
@@ -69,3 +63,19 @@ install(TARGETS diag_manager diag_filter
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
 )
+
+ament_export_dependencies(ament_cmake)
+ament_export_dependencies(diag_msgs)
+ament_export_dependencies(roscpp)
+
+ament_export_include_directories(include)
+
+ament_export_libraries(diag_manager)
+ament_export_libraries(diag_filter)
+
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
+endif()
+
+ament_package()
