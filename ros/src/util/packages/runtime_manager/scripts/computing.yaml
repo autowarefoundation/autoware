@@ -193,6 +193,11 @@ subs :
         cmd  : roslaunch lidar_apollo_cnn_seg_detect lidar_apollo_cnn_seg_detect.launch
         param: lidar_cnn_baidu_params
 
+      - name : lidar_point_pillars
+        desc : lidar_point_pillars. Requires CUDA and TensorRT
+        cmd  : roslaunch lidar_point_pillars lidar_point_pillars.launch
+        param: lidar_point_pillars_params
+
       - name : lidar_naive_l_shape_detect
         desc : lidar_naive_l_shape_detect desc sample
         cmd  : roslaunch lidar_naive_l_shape_detect lidar_naive_l_shape_detect.launch
@@ -5407,3 +5412,64 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
+  - name  : lidar_point_pillars_params
+    vars  :
+    - name      : input_topic
+      desc      : PointCloud topic to be fed to the network for detection.
+      label     : Input topic
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
+      v         : /points_raw
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : baselink_support
+      desc      : Whether to use baselink to adujust current sensor setup.
+      label     : Baselink support
+      kind      : checkbox
+      v         : True
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : reproduce_result_mode
+      desc      : Whether to enable reproducible result at the cost of the runtime.
+      label     : reproduce_result_mode
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : score_threshold
+      desc  : Detections with a confidence value larger than this value will be displayed.
+      label : Score threshold
+      min   : 0.0
+      max   : 1.0
+      v     : 0.5
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : nms_overlap_threshold
+      desc  : Lower IOU than this value will be filtered.
+      label : NMS overlap threshold
+      min   : 0.0
+      max   : 1.0
+      v     : 0.5
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name     : pfe_onnx_file
+      desc     : Pillar Feature Extractor onnx file.
+      label    : 'PFE ONNX file'
+      kind     : path
+      v        : ''
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : rpn_onnx_file
+      desc     : Region Proposal Network onnx file.
+      label    : 'RPN ONNX file'
+      kind     : path
+      v        : ''
+      cmd_param:
+        dash     : ''
+        delim    : ':='
