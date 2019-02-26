@@ -16,11 +16,8 @@
  * limitations under the License.
  */
 #include <ros/ros.h>
-#include <autoware_system_msgs/SystemStatus.h>
 #include <map>
 #include <set>
-
-typedef autoware_system_msgs::SystemStatus SystemStatus;
 
 struct LifeTime
 {
@@ -47,7 +44,7 @@ class VitalMonitor
 {
 public:
   void initMonitoredNodeList(ros::NodeHandle& pnh);
-  void updateNodeStatus(const SystemStatus& status);
+  void updateNodeStatus(const std::vector<std::string>& available_nodes);
   const std::map<std::string, bool>& getDeadNodes();
 private:
   std::map<std::string, LifeTime> required_nodes_;

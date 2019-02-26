@@ -20,15 +20,15 @@ const std::map<std::string, bool>& VitalMonitor::getDeadNodes()
   return dead_nodes_;
 }
 
-void VitalMonitor::updateNodeStatus(const SystemStatus& status)
+void VitalMonitor::updateNodeStatus(const std::vector<std::string>& available_nodes)
 {
-  static ros::Time previous = status.header.stamp;
-  const ros::Time current = status.header.stamp;
+  const ros::Time current = ros::Time::now();
+  static ros::Time previous = current;
   const double diff = (current - previous).toSec();
   previous = current;
 
-  const auto& cur_node = status.available_nodes;
-  for (const auto& node : cur_node)
+  const auto& cur_nodes = available_nodes;
+  for (const auto& node : cur_nodes)
   {
     if (dead_nodes_.count(node) != 0)
     {
@@ -40,8 +40,8 @@ void VitalMonitor::updateNodeStatus(const SystemStatus& status)
   for (auto& node : required_nodes_)
   {
     const std::string node_name = "/" + node.first;
-    const auto& found = std::find(cur_node.begin(), cur_node.end(), node_name);
-    if (found == cur_node.end())
+    const auto& found = std::find(cur_nodes.begin(), cur_nodes.end(), node_name);
+    if (found == cur_nodes.end())
     {
       node.second.spend(diff);
     }
