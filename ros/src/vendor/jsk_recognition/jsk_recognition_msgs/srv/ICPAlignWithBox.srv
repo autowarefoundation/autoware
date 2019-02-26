@@ -1,4 +1,0 @@
-sensor_msgs/PointCloud2 target_cloud
-jsk_recognition_msgs/BoundingBox target_box
----
-jsk_recognition_msgs/ICPResult result

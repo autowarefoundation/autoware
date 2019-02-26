@@ -1,3 +1,0 @@
-Header header
-BoundingBoxArray boxes
-sensor_msgs/CameraInfo camera_info
