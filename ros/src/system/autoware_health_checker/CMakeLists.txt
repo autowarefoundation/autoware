@@ -80,10 +80,10 @@ install(TARGETS health_checker system_status_subscriber
 
 if (CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
-  add_rostest_gtest(test-autoware_health_checker
+  add_rostest_gtest(test_autoware_health_checker
   test/test_autoware_health_checker.test
   test/src/test_autoware_health_checker.cpp
   ${HEALTH_CHECKER_SRC})
-  target_link_libraries(test-autoware_health_checker
+  target_link_libraries(test_autoware_health_checker
   ${catkin_LIBRARIES})
 endif ()
