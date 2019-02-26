@@ -1,6 +1,5 @@
 #include "mpc_follower/mpc_utils.h"
 
-// set into [-pi to pi];
 double MPCUtils::intoSemicircle(const double a)
 {
   double b = fmod(a, 2.0 * M_PI);
@@ -17,12 +16,6 @@ void MPCUtils::convertEulerAngleToMonotonic(std::vector<double> &a)
   }
 }
 
-geometry_msgs::Quaternion MPCUtils::getQuaternionFromYaw(const double &yaw) {
-  tf2::Quaternion q;
-  q.setRPY(0, 0, yaw);
-  return tf2::toMsg(q);
-}
-
 void MPCUtils::fillIncrease(std::vector<double>::iterator first,
                    std::vector<double>::iterator last, double init,
                    double diff)
@@ -35,31 +28,10 @@ void MPCUtils::fillIncrease(std::vector<double>::iterator first,
   }
 }
 
-void MPCUtils::filteringMovingAverate(std::vector<double> &u, const int num)
-{
-
-  if ((int)u.size() < num)
-  {
-    printf("[MovingAverageFilter] vector size is low than moving average "
-           "number\n");
-    return;
-  }
-  std::vector<double> filtered_u(u);
-  for (unsigned int i = 0; i < u.size(); ++i)
-  {
-    double tmp = 0.0;
-    int count = 0;
-    for (int j = -num; j < num + 1; ++j)
-    {
-      if (i + j > -0.5 && i + j < u.size() - 0.5)
-      {
-        tmp += u[i + j];
-        ++count;
-      }
-    }
-    filtered_u[i] = tmp / count;
-  }
-  u = filtered_u;
+geometry_msgs::Quaternion MPCUtils::getQuaternionFromYaw(const double &yaw) {
+  tf2::Quaternion q;
+  q.setRPY(0, 0, yaw);
+  return tf2::toMsg(q);
 }
 
 // 1D interpolation

@@ -94,7 +94,10 @@ add_dependencies(twist_gate
 add_executable(mpc_follower 
         nodes/mpc_follower/mpc_follower.cpp 
         nodes/mpc_follower/mpc_utils.cpp
-        nodes/mpc_follower/mpc_trajectory.cpp)
+        nodes/mpc_follower/mpc_trajectory.cpp
+        nodes/mpc_follower/lowpass_filter.cpp
+        nodes/mpc_follower/vehicle_model/vehicle_model_interface.cpp
+        nodes/mpc_follower/vehicle_model/vehicle_model_bicycle_kinematics.cpp)
 add_dependencies(mpc_follower ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(mpc_follower ${catkin_LIBRARIES})
 

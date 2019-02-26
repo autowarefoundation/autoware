@@ -11,7 +11,6 @@
 #include <std_msgs/Float64MultiArray.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
-#include <nav_msgs/Odometry.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
 #include <tf2/utils.h>
@@ -21,8 +20,8 @@
 #include <eigen3/Eigen/LU>
 #include <glog/logging.h>
 
-#include "autoware_msgs/ControlCommandStamped.h"
-#include "autoware_msgs/Lane.h"
+#include <autoware_msgs/ControlCommandStamped.h>
+#include <autoware_msgs/Lane.h>
 #include <autoware_msgs/VehicleStatus.h>
 
 #include "mpc_follower/mpc_utils.h"
@@ -43,9 +42,8 @@ private:
   ros::Timer timer_control_;
 
   MPCTrajectory ref_traj_;                // reference trajectory for mpc
-  Butterworth2d lpf_steering_cmd_;        // steering command lowpass filter
+  Butterworth2dFilter lpf_steering_cmd_;  // steering command lowpass filter
   KinematicsBicycleModel vehicle_model_;  // vehicle model
-  MPCUtils mpc_utils;                     // utility functions
   autoware_msgs::Lane current_waypoints_; // current received waypoints
 
   /* set vehicle control command interface */

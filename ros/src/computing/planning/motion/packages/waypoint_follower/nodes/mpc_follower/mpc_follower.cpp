@@ -115,11 +115,11 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
   double current_yaw = tf2::getYaw(vehicle_status_.pose.orientation);
 
   /* calculate nearest point on reference trajectory (used as initial state) */
-  uint nearest_index = 0;
+  unsigned int nearest_index = 0;
   double nearest_yaw_error = std::numeric_limits<double>::max();
   double nearest_dist_error = std::numeric_limits<double>::max();
   double nearest_traj_time(0.0), nearest_ref_k(0.0);
-  mpc_utils.calcNearestPoseInterp(ref_traj_, vehicle_status_.pose, nearest_pose, nearest_index,
+  MPCUtils::calcNearestPoseInterp(ref_traj_, vehicle_status_.pose, nearest_pose, nearest_index,
                                   nearest_dist_error, nearest_yaw_error, nearest_traj_time);
   DEBUG_INFO("[calculateMPC] selfpose.x = %f, y = %f, yaw = %f", vehicle_status_.pose.position.x, vehicle_status_.pose.position.y, current_yaw);
   DEBUG_INFO("[calculateMPC] nearpose.x = %f, y = %f, yaw = %f", nearest_pose.position.x, nearest_pose.position.y, tf2::getYaw(nearest_pose.orientation));
@@ -159,7 +159,7 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
   const double err_lat = -sin(sp_yaw) * err_x + cos(sp_yaw) * err_y;
 
   /* calculate yaw error, convert into range [-pi to pi] */
-  const double err_yaw = mpc_utils.intoSemicircle(nearest_yaw_error);
+  const double err_yaw = MPCUtils::intoSemicircle(nearest_yaw_error);
 
   /* get steering angle */
   const double steer = vehicle_status_.tire_angle_rad;
@@ -211,8 +211,8 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
     /* get reference information at mpc_time by interpolation */
     double ref_vx; /* reference velocity at current mpc time */
     double ref_k;  /* reference curvature at current mpc time */
-    if (!mpc_utils.interp1d(ref_traj_.relative_time, ref_traj_.vx, mpc_time, ref_vx) ||
-        !mpc_utils.interp1d(ref_traj_.relative_time, ref_traj_.k, mpc_time, ref_k))
+    if (!MPCUtils::interp1d(ref_traj_.relative_time, ref_traj_.vx, mpc_time, ref_vx) ||
+        !MPCUtils::interp1d(ref_traj_.relative_time, ref_traj_.k, mpc_time, ref_k))
     {
       ROS_ERROR("invalid interpolatio for ref_vx, ref_k\n");
       return false;
@@ -220,10 +220,10 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
 
     /* DEBUG: to predict trajectory */
     double debug_ref_x_tmp, debug_ref_y_tmp, debug_ref_z_tmp, debug_ref_yaw_tmp;
-    if (!mpc_utils.interp1d(ref_traj_.relative_time, ref_traj_.x, mpc_time, debug_ref_x_tmp) ||
-        !mpc_utils.interp1d(ref_traj_.relative_time, ref_traj_.y, mpc_time, debug_ref_y_tmp) ||
-        !mpc_utils.interp1d(ref_traj_.relative_time, ref_traj_.z, mpc_time, debug_ref_z_tmp) ||
-        !mpc_utils.interp1d(ref_traj_.relative_time, ref_traj_.yaw, mpc_time, debug_ref_yaw_tmp))
+    if (!MPCUtils::interp1d(ref_traj_.relative_time, ref_traj_.x, mpc_time, debug_ref_x_tmp) ||
+        !MPCUtils::interp1d(ref_traj_.relative_time, ref_traj_.y, mpc_time, debug_ref_y_tmp) ||
+        !MPCUtils::interp1d(ref_traj_.relative_time, ref_traj_.z, mpc_time, debug_ref_z_tmp) ||
+        !MPCUtils::interp1d(ref_traj_.relative_time, ref_traj_.yaw, mpc_time, debug_ref_yaw_tmp))
     {
       ROS_ERROR("invalid interpolation for ref_x, y, z, yaw\n");
       return false;
@@ -295,7 +295,7 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
   double u_delay_comped;
   double total_delay = (ros::Time::now() - vehicle_status_.header.stamp).toSec();
   DEBUG_INFO("[calculateMPC] total delay time = %f [s]", total_delay);
-  if (!mpc_utils.interp1d(MPC_T, Uex, nearest_traj_time + mpc_param_.delay_compensation_time, u_delay_comped))
+  if (!MPCUtils::interp1d(MPC_T, Uex, nearest_traj_time + mpc_param_.delay_compensation_time, u_delay_comped))
   {
     ROS_ERROR("invalid interpolation for u_delay");
   }
@@ -315,7 +315,7 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
   /* For simplicity, now we calculate steer and speed separately */
   double lookahead_time = 1.0;                                  // [s]
   double cmd_vel_ref_time = nearest_traj_time + lookahead_time; // get ahead reference velocity
-  if (!mpc_utils.interp1d(ref_traj_.relative_time, ref_traj_.vx, cmd_vel_ref_time, vel_cmd))
+  if (!MPCUtils::interp1d(ref_traj_.relative_time, ref_traj_.vx, cmd_vel_ref_time, vel_cmd))
   {
     ROS_ERROR("invalid interpolation for vel_cmd");
   }
@@ -355,8 +355,8 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
   debug_values.data.push_back(steer);
   debug_values.data.push_back(nearest_ref_k);
   debug_values.data.push_back(input_curvature);
-  debug_values.data.push_back(mpc_utils.intoSemicircle(current_yaw));
-  debug_values.data.push_back(mpc_utils.intoSemicircle(sp_yaw));
+  debug_values.data.push_back(MPCUtils::intoSemicircle(current_yaw));
+  debug_values.data.push_back(MPCUtils::intoSemicircle(sp_yaw));
   pub_debug_values_.publish(debug_values);
 
   return true;
@@ -424,27 +424,27 @@ void MPCFollower::callbackRefPath(const autoware_msgs::Lane::ConstPtr &msg)
 
   /* calculate relative time */
   std::vector<double> relative_time;
-  mpc_utils.calcPathRelativeTime(current_waypoints_, relative_time);
+  MPCUtils::calcPathRelativeTime(current_waypoints_, relative_time);
   DEBUG_INFO("[path callback] relative_time.size() = %lu, front() = %f, back() = %f",
              relative_time.size(), relative_time.front(), relative_time.back());
 
   /* resampling */
-  mpc_utils.resamplePathToTrajByDistance(current_waypoints_, relative_time, traj_resample_dist_, traj);
-  mpc_utils.convertEulerAngleToMonotonic(traj.yaw);
+  MPCUtils::resamplePathToTrajByDistance(current_waypoints_, relative_time, traj_resample_dist_, traj);
+  MPCUtils::convertEulerAngleToMonotonic(traj.yaw);
   DEBUG_INFO("[path callback] resampled traj size() = %lu", traj.relative_time.size());
 
   /* path smoothing */
   if (use_path_smoothing_)
   {
-    mpc_utils.filteringMovingAverate(traj.x, path_filter_moving_ave_num_);
-    mpc_utils.filteringMovingAverate(traj.y, path_filter_moving_ave_num_);
-    mpc_utils.filteringMovingAverate(traj.z, path_filter_moving_ave_num_);
-    mpc_utils.filteringMovingAverate(traj.yaw, path_filter_moving_ave_num_);
-    mpc_utils.filteringMovingAverate(traj.k, path_filter_moving_ave_num_);
+    MoveAverageFilter::filt_vector(path_filter_moving_ave_num_, traj.x);
+    MoveAverageFilter::filt_vector(path_filter_moving_ave_num_, traj.y);
+    MoveAverageFilter::filt_vector(path_filter_moving_ave_num_, traj.z);
+    MoveAverageFilter::filt_vector(path_filter_moving_ave_num_, traj.yaw);
+    MoveAverageFilter::filt_vector(path_filter_moving_ave_num_, traj.k);
   }
 
   /* calculate curvature */
-  mpc_utils.calcTrajectoryCurvature(traj, curvature_smoothing_num_);
+  MPCUtils::calcTrajectoryCurvature(traj, curvature_smoothing_num_);
   DEBUG_INFO("[path callback] trajectory curvature : max_k = %f, min_k = %f",
              *max_element(traj.k.begin(), traj.k.end()), *min_element(traj.k.begin(), traj.k.end()));
 
@@ -491,7 +491,7 @@ void MPCFollower::convertTrajToMarker(const MPCTrajectory &traj, visualization_m
   marker.color.r = r;
   marker.color.g = g;
   marker.color.b = b;
-  for (uint i = 0; i < traj.x.size(); ++i)
+  for (unsigned int i = 0; i < traj.x.size(); ++i)
   {
     geometry_msgs::Point p;
     p.x = traj.x.at(i);

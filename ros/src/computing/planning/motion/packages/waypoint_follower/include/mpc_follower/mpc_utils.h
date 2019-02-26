@@ -15,35 +15,44 @@
 
 class MPCUtils
 {
-  public:
-    MPCUtils(){};
-    ~MPCUtils(){};
+public:
+  MPCUtils(){};
+  ~MPCUtils(){};
 
-    // set into [-pi to pi]
-    double intoSemicircle(const double a);
+  /* Set into [-pi to pi] */
+  static double intoSemicircle(const double a);
 
-    void fillIncrease(std::vector<double>::iterator first, std::vector<double>::iterator last, double init, double diff);
+  /* Continuously connect singularities of Euler angles */
+  static void convertEulerAngleToMonotonic(std::vector<double> &a);
 
-    void convertEulerAngleToMonotonic(std::vector<double> &a);
+  /* Fill vector's component with increasing number */
+  static void fillIncrease(std::vector<double>::iterator first, std::vector<double>::iterator last, double init, double diff);
 
-    geometry_msgs::Quaternion getQuaternionFromYaw(const double &yaw);
+  /* Conversion from yaw to ros-Quaternion */
+  static geometry_msgs::Quaternion getQuaternionFromYaw(const double &yaw);
 
-    void fill_increase(std::vector<double>::iterator first, std::vector<double>::iterator last, double init, double diff);
-    void filteringMovingAverate(std::vector<double> &u, const int num);
+  /* 1D interpolation */
+  static bool interp1d(const std::vector<double> &index, const std::vector<double> &values, const double &ref, double &ret);
+  static bool interp1d(const Eigen::VectorXd &index, const Eigen::VectorXd &values, const double &ref, double &ret);
 
-    // 1D interpolation
-    bool interp1d(const std::vector<double> &index, const std::vector<double> &values, const double &ref, double &ret);
-    bool interp1d(const Eigen::VectorXd &index, const Eigen::VectorXd &values, const double &ref, double &ret);
+  /* Calculate path curvature by 3-points circle fitting with smoothing num (use nearest 3 points when "num = 1") */
+  static void calcTrajectoryCurvature(MPCTrajectory &traj, int curvature_smoothing_num);
 
-    void calcTrajectoryCurvature(MPCTrajectory &traj, int curvature_smoothing_num);
-    void resamplePathToTrajByDistance(const autoware_msgs::Lane &path, const std::vector<double> &time,
-                                      const double &dl, MPCTrajectory &ref_traj);
-    void resamplePathToTrajByTime(const autoware_msgs::Lane &path, const std::vector<double> &time,
-                                  const double &dt, MPCTrajectory &ref_traj_);
+  /* Resample path with constant distance */
+  static void resamplePathToTrajByDistance(const autoware_msgs::Lane &path, const std::vector<double> &time,
+                                           const double &dl, MPCTrajectory &ref_traj);
 
-    void calcPathRelativeTime(const autoware_msgs::Lane &path, std::vector<double> &path_time);
-    void calcNearestPose(const MPCTrajectory &traj, const geometry_msgs::Pose &self_pose, geometry_msgs::Pose &nearest_pose,
-                         unsigned int &nearest_index, double &min_dist_error, double &nearest_yaw_error, double &nearest_time);
-    void calcNearestPoseInterp(const MPCTrajectory &traj, const geometry_msgs::Pose &self_pose, geometry_msgs::Pose &nearest_pose,
-                               unsigned int &nearest_index, double &min_dist_error, double &nearest_yaw_error, double &nearest_time);
+  /* Resample path with constant time */
+  static void resamplePathToTrajByTime(const autoware_msgs::Lane &path, const std::vector<double> &time,
+                                       const double &dt, MPCTrajectory &ref_traj_);
+  /* Insert time into path with velocity */
+  static void calcPathRelativeTime(const autoware_msgs::Lane &path, std::vector<double> &path_time);
+  
+  /* Calculate nearest pose on path */
+  static void calcNearestPose(const MPCTrajectory &traj, const geometry_msgs::Pose &self_pose, geometry_msgs::Pose &nearest_pose,
+                              unsigned int &nearest_index, double &min_dist_error, double &nearest_yaw_error, double &nearest_time);
+
+  /* Calculate neareset pose on path with interpolation */
+  static void calcNearestPoseInterp(const MPCTrajectory &traj, const geometry_msgs::Pose &self_pose, geometry_msgs::Pose &nearest_pose,
+                                    unsigned int &nearest_index, double &min_dist_error, double &nearest_yaw_error, double &nearest_time);
 };
