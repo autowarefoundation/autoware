@@ -1,0 +1,16 @@
+format: Autoware Launcher Plugin Version 0.1
+rosxml: $(find autoware_connector)/launch/vel_pose_connect.launch
+args:
+- { name: topic_pose_stamped,  type: str,  default: /ndt_pose }
+- { name: topic_twist_stamped, type: str,  default: /estimate_twist }
+- { name: sim_mode,            type: bool }
+
+panel:
+  widget: node.panel
+  frames:
+  - target: args.topic_pose_stamped
+    widget: basic.text
+  - target: args.topic_twist_stamped
+    widget: basic.text
+  - target: args.sim_mode
+    widget: basic.bool

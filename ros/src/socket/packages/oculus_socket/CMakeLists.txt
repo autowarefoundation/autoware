@@ -19,3 +19,12 @@ include_directories(
 
 add_executable(oculus_sender nodes/oculus_sender/oculus_sender.cpp)
 target_link_libraries(oculus_sender ${catkin_LIBRARIES})
+
+install(TARGETS oculus_sender
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)

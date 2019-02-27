@@ -12,6 +12,12 @@ install(PROGRAMS
    nodes/javad_topic_serial_reader
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)
+install(DIRECTORY cfg/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/cfg
+        PATTERN ".svn" EXCLUDE)
 
 # Check package for pep8 style, add a test to fail on violations.
 roslint_python()
