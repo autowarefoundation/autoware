@@ -54,10 +54,11 @@ This node includes
 
 # Parameter description
 
+## overall 
 
 |Name|Type|Description|
 |:---|:---|:---|
-|show_debug_info|Bool|display debug info|
+|show_debug_info|bool|display debug info|
 |ctrl_period|double|control period [s]|
 |traj_resample_dist|double|length for resampling trajectory [m]|
 |use_path_smoothing|bool|path smoothing flug. should be true when uses path resampling to reduce resampling noise.|
@@ -66,6 +67,11 @@ This node includes
 |steering_lpf_cutoff_hz|double| cutoff frequency [hz] of butterworth-2D lowpass filter for steering output command |
 |admisible_position_error|double| stop vehicle when following position error is larger than this value [m].|
 |admisible_yaw_error_deg|double|stop vehicle when following yaw angle error is larger than this value [deg].|
+
+## mpc algorithm 
+
+|Name|Type|Description|
+|:---|:---|:---|
 |mpc_n|double|total prediction step for MPC|
 |mpc_dt|double|prediction period for one step [s] for MPC|
 |mpc_weight_lat_error|double|weight for lateral error for MPC|
@@ -74,6 +80,11 @@ This node includes
 |mpc_weight_steering_input_vel_coeff|double|velocity coefficient of weight for steering error (actual steer - reference steer) for MPC|
 |mpc_delay_compensation_time|double |time delay compensation for MPC|
 |mpc_zero_curvature_range|double|reference curvature is set to zeto when it is smaller than this valuse for noise reduction for MPC|
+
+## vehicle model
+
+|Name|Type|Description|
+|:---|:---|:---|
 |vehicle_model_steer_tau|double|steering dynamics time constant (1d approzimation) [s] for vehicle model|
 |vehicle_model_wheelbase|double|wheel base length [m] for vehicle model|
 |vehicle_model_steer_lim_deg|double|steering angle limit [deg] for vehicle model|
