@@ -47,7 +47,7 @@ public:
 class TestClass
 {
 public:
-  TestClass(){};
+  TestClass();
 
   Objects2Costmap objects2costmap_;
 
@@ -56,10 +56,8 @@ public:
 
   Points2Costmap points2costmap_;
 
-  CostmapGenerator costmap_genrator_;
-
   std::vector<std::vector<std::vector<double>>>
-  assignPoints2GridCell(const grid_map::GridMap& gridmap, const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points);
+  assignPoints2GridCell(const grid_map::GridMap& gridmap, const pcl::PointCloud<pcl::PointXYZ>::Ptr& in_sensor_points);
 };
 
 Eigen::MatrixXd TestClass::makeRectanglePoints(const autoware_msgs::DetectedObject& in_object,
@@ -69,7 +67,7 @@ Eigen::MatrixXd TestClass::makeRectanglePoints(const autoware_msgs::DetectedObje
 }
 
 std::vector<std::vector<std::vector<double>>> TestClass::assignPoints2GridCell(
-    const grid_map::GridMap& gridmap, const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points)
+    const grid_map::GridMap& gridmap, const pcl::PointCloud<pcl::PointXYZ>::Ptr& in_sensor_points)
 {
   points2costmap_.grid_length_x_ = gridmap.getLength()[0];
   points2costmap_.grid_length_y_ = gridmap.getLength()[1];
@@ -126,17 +124,15 @@ TEST(TestSuite, CheckAssignPoints2GridCell)
 
   costmap.add(layer_name, initialize_cost);
 
-  pcl::PointCloud<pcl::PointXYZ> pointcloud;
+  pcl::PointCloud<pcl::PointXYZ>::Ptr in_sensor_points(new pcl::PointCloud<pcl::PointXYZ>);
   pcl::PointXYZ point;
   point.x = 0.5;
   point.y = 0.5;
   point.z = 100;
-  pointcloud.push_back(point);
+  in_sensor_points->push_back(point);
 
-  sensor_msgs::PointCloud2::Ptr pointcloud_msg(new sensor_msgs::PointCloud2);
-  pcl::toROSMsg(pointcloud, *pointcloud_msg);
 
-  std::vector<std::vector<std::vector<double>>> grid_vec = test_obj.assignPoints2GridCell(costmap, pointcloud_msg);
+  std::vector<std::vector<std::vector<double>>> grid_vec = test_obj.assignPoints2GridCell(costmap, in_sensor_points);
 
   const double expected_value = 100;
   EXPECT_EQ(expected_value, grid_vec[5][5][0]);
