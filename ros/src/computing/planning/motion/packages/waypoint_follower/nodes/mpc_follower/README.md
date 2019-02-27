@@ -78,7 +78,7 @@ This node includes
 |mpc_weight_heading_error|double|weight for heading error for MPC|
 |mpc_weight_steering_input|double|weight for steering error (actual steer - reference steer) for MPC|
 |mpc_weight_steering_input_vel_coeff|double|velocity coefficient of weight for steering error (actual steer - reference steer) for MPC|
-|mpc_delay_compensation_time|double |time delay compensation for MPC|
+|mpc_delay_compensation_time|double |time delay compensation for MPC<br>  (Since this is effective under severe assumptions, large values are not acceptable. Set smaller than 0.05s)|
 |mpc_zero_curvature_range|double|reference curvature is set to zeto when it is smaller than this valuse for noise reduction for MPC|
 
 ## vehicle model
