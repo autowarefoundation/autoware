@@ -18,7 +18,6 @@
 
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/LU>
-#include <glog/logging.h>
 
 #include <autoware_msgs/ControlCommandStamped.h>
 #include <autoware_msgs/Lane.h>
@@ -65,9 +64,8 @@ private:
   double steering_lpf_cutoff_hz_;   // for steering command smoothing
   double admisible_position_error_; // stop mpc calculation when lateral error is large than this value.
   double admisible_yaw_error_deg_;  // stop mpc calculation when yaw error is large than this value.
-  double steer_cmd_lim_;            // steering command limit [rad]
+  double steer_lim_deg_;            // steering command limit [rad]
   double wheelbase_;                // only used to convert steering to twist
-  double zero_curvature_range_;     // set reference curvature to zero when the value is smaller than this.
 
   struct MPCParam
   {
@@ -78,6 +76,7 @@ private:
     double weight_steering_input;           // for weight matrix R
     double weight_steering_input_vel_coeff; // for weight matrix R coeff of velocity
     double delay_compensation_time;         // use interpolation for time delay compensation
+    double zero_curvature_range;     // set reference curvature to zero when the value is smaller than this.
   };
   MPCParam mpc_param_; // for mpc design
 

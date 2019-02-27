@@ -35,6 +35,8 @@ steering_lpf_cutoff_hz: 3.0
 admisible_position_error: 5.0 #[m]
 admisible_yaw_error_deg: 45.0 #[deg]
 
+# steering angle limit [deg]
+steer_lim_deg: 40.0
 
 #---------------------------------------------------------------------
 # MPC algorithm parameters
@@ -56,7 +58,7 @@ mpc_weight_steering_input_vel_coeff: 8.0 # for R[0,0] = a + b * v
 mpc_delay_compensation_time: 0.0 #[s]
 
 # To reduce path noise effect, reference curvature is set to zeto when it is smaller than this valuse
-zero_curvature_range: 0.03
+mpc_zero_curvature_range: 0.03
 
 #---------------------------------------------------------------------
 # vehicle model parameters
@@ -67,8 +69,4 @@ vehicle_model_steer_tau: 0.05 # lexus: 0.2 + LPF delay
 
 # wheel base length [m]
 vehicle_model_wheelbase: 2.79 # lexus: 2.79
-# steering angle limit [deg]
-vehicle_model_steer_lim_deg: 40.0
 
-# gear ratio tire to steering angle (lexus is about 17)
-vehicle_model_gear_ratio_tire_to_steer: 17.0

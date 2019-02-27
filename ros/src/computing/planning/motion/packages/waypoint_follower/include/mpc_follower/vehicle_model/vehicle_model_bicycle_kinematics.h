@@ -14,10 +14,11 @@ class KinematicsBicycleModel : public VehicleModelInterface
     KinematicsBicycleModel();
     ~KinematicsBicycleModel();
 
-    void calculateDiscreteMatrix(Eigen::MatrixXd &Ad, Eigen::MatrixXd &Bd,
-                                 Eigen::MatrixXd &Cd, Eigen::MatrixXd &Wd, double &dt) override;
+    void calculateDiscreteMatrix(Eigen::MatrixXd &Ad, Eigen::MatrixXd &Bd, Eigen::MatrixXd &Cd, Eigen::MatrixXd &Wd, double &dt) override;
     void calculateReferenceInput(Eigen::MatrixXd &Uref) override;
+    
     void calculateReferenceInput(Eigen::MatrixXd &Uref, const double &curvature);
+    void setParams(double &wheelbase, double &steer_tau, double &steer_lim_deg);
     void setVel(double &vel);
     void setCurvature(double &curvature);
 

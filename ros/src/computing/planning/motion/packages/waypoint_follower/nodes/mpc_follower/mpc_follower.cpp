@@ -5,6 +5,7 @@
 MPCFollower::MPCFollower()
     : nh_(""), pnh_("~"), my_position_ok_(false), my_velocity_ok_(false), my_steering_ok_(false)
 {
+  pnh_.param("show_debug_info", show_debug_info_, bool(false));
   pnh_.param("ctrl_period", ctrl_period_, double(0.1));
   pnh_.param("use_path_smoothing", use_path_smoothing_, bool(true));
   pnh_.param("path_filter_moving_ave_num", path_filter_moving_ave_num_, int(5));
@@ -13,9 +14,6 @@ MPCFollower::MPCFollower()
 
   pnh_.param("admisible_position_error", admisible_position_error_, double(5.0));
   pnh_.param("admisible_yaw_error_deg", admisible_yaw_error_deg_, double(45.0));
-  pnh_.param("steer_cmd_lim", steer_cmd_lim_, double(35.0 * 3.1415 / 180.0));
-  pnh_.param("vehicle_model_wheelbase", wheelbase_, double(2.9));
-  pnh_.param("zero_curvature_range", zero_curvature_range_, double(0.03));
 
   /* mpc parameters */
   pnh_.param("mpc_n", mpc_param_.n, int(50));
@@ -25,7 +23,15 @@ MPCFollower::MPCFollower()
   pnh_.param("mpc_weight_steering_input", mpc_param_.weight_steering_input, double(1.0));
   pnh_.param("mpc_weight_steering_input_vel_coeff", mpc_param_.weight_steering_input_vel_coeff, double(0.0));
   pnh_.param("mpc_delay_compensation_time", mpc_param_.delay_compensation_time, double(0.05));
-  pnh_.param("show_debug_info", show_debug_info_, bool(false));
+  pnh_.param("mpc_zero_curvature_range", mpc_param_.zero_curvature_range, double(0.03));
+  
+  pnh_.param("steer_lim_deg", steer_lim_deg_, double(35.0));
+  pnh_.param("vehicle_model_wheelbase", wheelbase_, double(2.9));
+
+  /* vehicle model initialize */
+  double steer_tau;
+  pnh_.param("vehicle_model_steer_tau", steer_tau, double(0.1));
+  vehicle_model_.setParams(wheelbase_, steer_tau, steer_lim_deg_);
 
   /* set control command interface */
   std::string ctrl_cmd_interface_string;
@@ -267,7 +273,7 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
 
     /* get reference input (feed-forward) */
 
-    if (std::fabs(ref_k) < zero_curvature_range_)
+    if (std::fabs(ref_k) < mpc_param_.zero_curvature_range)
     {
       vehicle_model_.calculateReferenceInput(Uref, 0.0); // with 0 curvature
     }
@@ -303,7 +309,7 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
              u_delay_comped * RAD2DEG, Uex(0) * RAD2DEG);
 
   /* saturation */
-  double u_sat = std::max(std::min(u_delay_comped, steer_cmd_lim_), -steer_cmd_lim_);
+  double u_sat = std::max(std::min(u_delay_comped, steer_lim_deg_ * DEG2RAD), -steer_lim_deg_ * DEG2RAD);
 
   /* filtering */
   double u_filtered = lpf_steering_cmd_.filter(u_sat);

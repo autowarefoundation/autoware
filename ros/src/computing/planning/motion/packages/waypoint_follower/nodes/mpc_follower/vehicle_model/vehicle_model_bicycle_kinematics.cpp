@@ -1,7 +1,6 @@
 #include "mpc_follower/vehicle_model/vehicle_model_bicycle_kinematics.h"
 
-KinematicsBicycleModel::KinematicsBicycleModel() : VehicleModelInterface(/* dim_x */ 3, /* dim_u */ 1, /* dim_y */ 2),
-                                                   wheelbase_(2.79), steer_tau_(0.2), steer_lim_deg_(35.0) {};
+KinematicsBicycleModel::KinematicsBicycleModel() : VehicleModelInterface(/* dim_x */ 3, /* dim_u */ 1, /* dim_y */ 2) {};
 KinematicsBicycleModel::~KinematicsBicycleModel(){};
 
 void KinematicsBicycleModel::calculateDiscreteMatrix(Eigen::MatrixXd &Ad, Eigen::MatrixXd &Bd,
@@ -41,6 +40,11 @@ void KinematicsBicycleModel::calculateReferenceInput(Eigen::MatrixXd &Uref)
 void KinematicsBicycleModel::calculateReferenceInput(Eigen::MatrixXd &Uref, const double &curvature)
 {
     Uref(0, 0) = std::atan(wheelbase_ * curvature);
+}
+void KinematicsBicycleModel::setParams(double &wheelbase, double &steer_tau, double &steer_lim_deg) {
+    wheelbase_ = wheelbase;
+    steer_tau_ = steer_tau;
+    steer_lim_deg_ = steer_lim_deg;
 }
 void KinematicsBicycleModel::setVel(double &vel) { vel_ = vel; };
 void KinematicsBicycleModel::setCurvature(double &curvature) { curvature_ = curvature; };
