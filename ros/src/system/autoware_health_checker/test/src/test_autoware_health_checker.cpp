@@ -17,7 +17,7 @@
  * v1.0 Masaya Kataoka
  */
 #include <gtest/gtest.h>
-#include <health_checker/health_checker.h>
+#include <autoware_health_checker/health_checker/health_checker.h>
 #include <ros/ros.h>
 
 class AutowareHealthCheckerTestSuite : public ::testing::Test {

@@ -31,7 +31,7 @@
 #include "pure_pursuit.h"
 #include "pure_pursuit_viz.h"
 
-#include <health_checker/health_checker.h>
+#include <autoware_health_checker/health_checker/health_checker.h>
 
 #include <memory>
 

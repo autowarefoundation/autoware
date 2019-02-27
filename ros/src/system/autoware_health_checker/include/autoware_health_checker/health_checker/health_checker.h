@@ -26,9 +26,9 @@
 // headers in Autoware
 #include <autoware_health_checker/constants.h>
 #include <autoware_system_msgs/NodeStatus.h>
-#include <health_checker/diag_buffer.h>
-#include <health_checker/rate_checker.h>
-#include <health_checker/value_manager.h>
+#include <autoware_health_checker/health_checker/diag_buffer.h>
+#include <autoware_health_checker/health_checker/rate_checker.h>
+#include <autoware_health_checker/health_checker/value_manager.h>
 
 // headers in STL
 #include <functional>

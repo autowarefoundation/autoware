@@ -24,7 +24,7 @@
 
 #include "autoware_config_msgs/ConfigVelocitySet.h"
 
-#include <health_checker/health_checker.h>
+#include <autoware_health_checker/health_checker/health_checker.h>
 #include <memory>
 
 class VelocitySetInfo
