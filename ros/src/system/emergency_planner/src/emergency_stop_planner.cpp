@@ -55,8 +55,7 @@ public:
       }
       autoware_msgs::VehicleCmd vehicle_cmd;
       vehicle_cmd.header.stamp = ros::Time::now();
-      // TODO: get emergency value and put it!!!
-      // vehicle_cmd.emergency = ;
+      vehicle_cmd.emergency = 1;
       publishFeedback(vehicle_cmd);
       ros::spinOnce();
       r.sleep();
