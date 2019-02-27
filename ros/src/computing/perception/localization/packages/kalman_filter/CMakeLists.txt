@@ -54,12 +54,17 @@ add_executable(kalman_filter_node src/kalman_filter_node.cpp)
 add_dependencies(kalman_filter_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(kalman_filter_node ${catkin_LIBRARIES} kalman_filter_delayed_measurement)
 
+add_executable(kalman_filter_node_with_vel_est src/kalman_filter_node_with_vel_est.cpp)
+add_dependencies(kalman_filter_node_with_vel_est ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(kalman_filter_node_with_vel_est ${catkin_LIBRARIES} kalman_filter_delayed_measurement)
+
+
 #############
 ## Install ##
 #############
 
 ## Install executables and/or libraries
-install(TARGETS kalman_filter kalman_filter_delayed_measurement kalman_filter_node
+install(TARGETS kalman_filter kalman_filter_delayed_measurement kalman_filter_node kalman_filter_node_with_vel_est
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
