@@ -49,11 +49,6 @@ class TestClass
 public:
   TestClass(){};
 
-  Objects2Costmap objects2costmap_;
-
-  Eigen::MatrixXd makeRectanglePoints(const autoware_msgs::DetectedObject& in_object,
-                                      const double expand_rectangle_size);
-
   Points2Costmap points2costmap_;
 
   std::vector<std::vector<std::vector<double>>>
@@ -68,6 +63,17 @@ public:
                                     const double grid_max_value, const grid_map::GridMap& gridmap,
                                     const std::string& gridmap_layer_name,
                                     const std::vector<std::vector<std::vector<double>>> grid_vec);
+
+
+  Objects2Costmap objects2costmap_;
+  Eigen::MatrixXd makeRectanglePoints(const autoware_msgs::DetectedObject& in_object,
+    const double expand_rectangle_size);
+  geometry_msgs::Point makeExpandedPoint(const geometry_msgs::Point& in_centroid,
+                                         const geometry_msgs::Point32& in_corner_point,
+                                         const double expand_polygon_size);
+
+  grid_map::Polygon makePolygonFromObjectConvexHull(const autoware_msgs::DetectedObject& in_object,
+                                                    const double expand_polygon_size);
 };
 
 Eigen::MatrixXd TestClass::makeRectanglePoints(const autoware_msgs::DetectedObject& in_object,
@@ -118,6 +124,18 @@ grid_map::Matrix TestClass::calculateCostmap(const double maximum_height_thres,
                                           gridmap, gridmap_layer_name, grid_vec);
 }
 
+geometry_msgs::Point TestClass::makeExpandedPoint(const geometry_msgs::Point& in_centroid,
+                                       const geometry_msgs::Point32& in_corner_point,
+                                       const double expand_polygon_size)
+{
+  return objects2costmap_.makeExpandedPoint(in_centroid, in_corner_point, expand_polygon_size);
+}
+
+grid_map::Polygon TestClass::makePolygonFromObjectConvexHull(const autoware_msgs::DetectedObject& in_object,
+                                                  const double expand_polygon_size)
+{
+  return objects2costmap_.makePolygonFromObjectConvexHull(in_object, expand_polygon_size);
+}
 
 TEST(TestSuite, CheckMakeRectanglePoints)
 {
@@ -329,6 +347,93 @@ TEST(TestSuite, CheckHeightThresholdForCost)
   EXPECT_DOUBLE_EQ(expected_cost, costmap_mat(5,5));
 }
 
+TEST(TestSuite, CheckMakeExpandedPoints)
+{
+  TestClass test_obj;
+  geometry_msgs::Point in_centroid;
+  geometry_msgs::Point32 in_corner_point;
+  double expand_polygon_size = 1;
+
+  in_centroid.x = 0;
+  in_centroid.y = 0;
+  in_centroid.z = 0;
+
+  in_corner_point.x = 1;
+  in_corner_point.y = 1;
+  in_corner_point.z = 1;
+
+  geometry_msgs::Point expanded_point = test_obj.makeExpandedPoint(in_centroid, in_corner_point, expand_polygon_size);
+  double expected_x = 1.707109;
+  double expected_y = 1.707109;
+  const double buffer = 0.01;
+  EXPECT_NEAR(expected_x, expanded_point.x, buffer);
+  EXPECT_NEAR(expected_y, expanded_point.y, buffer);
+}
+
+TEST(TestSuite, ChecMakePolygonFromObjectConvexhull)
+{
+  TestClass test_obj;
+
+  double expand_polygon_size = 0;
+  autoware_msgs::DetectedObject in_object;
+  in_object.header.frame_id = "test";
+  geometry_msgs::Point32 point;
+  point.x = -1;
+  point.y = -1;
+  point.z = 0;
+  in_object.convex_hull.polygon.points.push_back(point);
+  point.x = 1;
+  point.y = 1;
+  point.z = 0;
+  in_object.convex_hull.polygon.points.push_back(point);
+  point.x = 0;
+  point.y = 2;
+  point.z = 0;
+  in_object.convex_hull.polygon.points.push_back(point);
+
+  in_object.pose.position.x = 0;
+  in_object.pose.position.y = 0;
+  in_object.pose.position.z = 0;
+  grid_map::Polygon polygon = test_obj.makePolygonFromObjectConvexHull(in_object, expand_polygon_size);
+  double expected_0_x = -1;
+  double expected_1_y =  1;
+  EXPECT_EQ(expected_0_x, polygon[0].x());
+  EXPECT_EQ(expected_1_y, polygon[1].y());
+}
+
+TEST(TestSuite, ChecMakePolygonFromObjectConvexhullDofferentHeight)
+{
+  TestClass test_obj;
+
+  double expand_polygon_size = 0;
+  autoware_msgs::DetectedObject in_object;
+  in_object.header.frame_id = "test";
+  geometry_msgs::Point32 point;
+  point.x = -1;
+  point.y = -1;
+  point.z = 0;
+  in_object.convex_hull.polygon.points.push_back(point);
+  point.x = -1;
+  point.y = 3;
+  point.z = 0;
+  in_object.convex_hull.polygon.points.push_back(point);
+  point.x = 1;
+  point.y = 1;
+  point.z = 0;
+  in_object.convex_hull.polygon.points.push_back(point);
+  point.x = 0;
+  point.y = 2;
+  point.z = 3;
+  in_object.convex_hull.polygon.points.push_back(point);
+
+  in_object.pose.position.x = 0;
+  in_object.pose.position.y = 0;
+  in_object.pose.position.z = 0;
+  grid_map::Polygon polygon = test_obj.makePolygonFromObjectConvexHull(in_object, expand_polygon_size);
+  int num_vertices = polygon.nVertices();
+  double expected_num_vertices = 3;
+  EXPECT_EQ(expected_num_vertices, num_vertices);
+}
 
 int main(int argc, char** argv)
 {

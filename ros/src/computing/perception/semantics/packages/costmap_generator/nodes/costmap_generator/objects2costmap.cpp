@@ -86,21 +86,21 @@ grid_map::Polygon Objects2Costmap::makePolygonFromObjectBox(const autoware_msgs:
 }
 
 geometry_msgs::Point Objects2Costmap::makeExpandedPoint(const geometry_msgs::Point& in_centroid,
-                                                         const geometry_msgs::Point32& in_point,
-                                                         const double expand_polygon_size)
+                                                        const geometry_msgs::Point32& in_corner_point,
+                                                        const double expand_polygon_size)
 {
   geometry_msgs::Point expanded_point;
   if(expand_polygon_size == 0)
   {
-    expanded_point.x = in_point.x;
-    expanded_point.y = in_point.y;
+    expanded_point.x = in_corner_point.x;
+    expanded_point.y = in_corner_point.y;
     return expanded_point;
   }
-  double theta = std::atan2(in_point.y - in_centroid.y, in_point.x - in_centroid.x);
+  double theta = std::atan2(in_corner_point.y - in_centroid.y, in_corner_point.x - in_centroid.x);
   double delta_x = expand_polygon_size * std::cos(theta);
   double delta_y = expand_polygon_size * std::sin(theta);
-  expanded_point.x = in_point.x + delta_x;
-  expanded_point.y = in_point.y + delta_y;
+  expanded_point.x = in_corner_point.x + delta_x;
+  expanded_point.y = in_corner_point.y + delta_y;
   return expanded_point;
 }
 

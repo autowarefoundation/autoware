@@ -79,11 +79,11 @@ private:
 
   /// \brief make expanded point from convex hull's point
   /// \param[in] in_centroid: object's centroid
-  /// \param[in] in_point one of convex hull points
+  /// \param[in] in_corner_point one of convex hull points
   /// \param[in] expand_polygon_size  the param for expanding convex_hull points
   /// \param[out] expanded point
   geometry_msgs::Point makeExpandedPoint(const geometry_msgs::Point& in_centroid,
-                                         const geometry_msgs::Point32& in_point,
+                                         const geometry_msgs::Point32& in_corner_point,
                                          const double expand_polygon_size);
 
   /// \brief make polygon(grid_map::Polygon) from convex hull points
