@@ -17,12 +17,12 @@
  * v1.0 Masaya Kataoka
  */
 
-#include <autoware_health_checker/health_analyzer.h>
+#include <autoware_health_checker/health_analyzer/health_analyzer.h>
 
 HealthAnalyzer::HealthAnalyzer(ros::NodeHandle nh, ros::NodeHandle pnh) {
   nh_ = nh;
   pnh_ = pnh;
-  pnh_.param<int>("warn_nodes_count_threshold", warn_nodes_count_threshold_, 30);
+  pnh_.param<int>("warn_count_threshold", warn_count_threshold_, 30);
   system_status_summary_pub_ =
       nh_.advertise<autoware_system_msgs::SystemStatus>(
           "/system_status/summary", 1);
@@ -144,7 +144,7 @@ HealthAnalyzer::filterSystemStatus(autoware_system_msgs::SystemStatus status) {
   int warn_count = countWarn(status);
   autoware_system_msgs::SystemStatus filtered_status;
   std::vector<std::string> target_nodes;
-  if (warn_count >= warn_nodes_count_threshold_) {
+  if (warn_count >= warn_count_threshold_) {
     filtered_status.detect_too_match_warning = true;
     target_nodes = findWarningNodes(status);
   } else {

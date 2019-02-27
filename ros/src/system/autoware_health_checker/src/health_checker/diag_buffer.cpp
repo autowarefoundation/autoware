@@ -17,7 +17,7 @@
  * v1.0 Masaya Kataoka
  */
 
-#include <autoware_health_checker/diag_buffer.h>
+#include <autoware_health_checker/health_checker/diag_buffer.h>
 
 namespace autoware_health_checker {
 DiagBuffer::DiagBuffer(std::string key, uint8_t type, std::string description,

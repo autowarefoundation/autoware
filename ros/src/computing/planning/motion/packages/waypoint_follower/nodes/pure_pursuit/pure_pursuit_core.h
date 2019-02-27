@@ -31,7 +31,7 @@
 #include "pure_pursuit.h"
 #include "pure_pursuit_viz.h"
 
-#include <autoware_health_checker/node_status_publisher.h>
+#include <autoware_health_checker/health_checker/health_checker.h>
 
 #include <memory>
 
@@ -64,7 +64,7 @@ private:
   ros::NodeHandle nh_;
   ros::NodeHandle private_nh_;
 
-  std::shared_ptr<autoware_health_checker::NodeStatusPublisher> node_status_publisher_ptr_;
+  std::shared_ptr<autoware_health_checker::HealthChecker> health_checker_ptr_;
 
   // class
   PurePursuit pp_;

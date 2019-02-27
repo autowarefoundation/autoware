@@ -56,6 +56,9 @@ private:
   ros::Subscriber node_status_sub_;
   ros::Subscriber diagnostic_array_sub_;
   ros::Subscriber topic_statistics_sub_;
+  XmlRpc::XmlRpcValue topic_rate_params_;
+  XmlRpc::XmlRpcValue drop_rate_params_;
+  void addTopicDiag();
   void publishSystemStatus();
   void nodeStatusCallback(const autoware_system_msgs::NodeStatus::ConstPtr msg);
   void
@@ -72,10 +75,19 @@ private:
   convert(const diagnostic_msgs::DiagnosticArray::ConstPtr msg);
   autoware_system_msgs::SystemStatus system_status_;
   std::mutex mtx_;
+  bool ros_ok_;
   void updateConnectionStatus();
   // key topic_name,publisher_node,subscriber_node
   std::map<std::array<std::string, 3>, rosgraph_msgs::TopicStatistics>
       topic_status_;
   void updateTopicStatus();
+  template <typename T> std::string valueToJson(T value) {
+    using namespace boost::property_tree;
+    std::stringstream ss;
+    ptree pt;
+    pt.put("value", value);
+    write_json(ss, pt);
+    return ss.str();
+  }
 };
 #endif // HEALTH_AGGREGATOR_H_INCLUDED
