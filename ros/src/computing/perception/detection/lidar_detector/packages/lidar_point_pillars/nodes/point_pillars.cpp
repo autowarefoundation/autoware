@@ -268,6 +268,19 @@ void PointPillars::deviceMemoryMalloc()
 
 void PointPillars::initAnchors()
 {
+  generateAnchors(anchors_px_, anchors_py_, anchors_pz_,
+                  anchors_dx_, anchors_dy_, anchors_dz_, anchors_ro_);
+
+  convertAnchors2BoxAnchors(anchors_px_, anchors_py_, anchors_dx_, anchors_dy_,
+                            box_anchors_min_x_, box_anchors_min_y_,
+                            box_anchors_max_x_, box_anchors_max_y_);
+
+  putAnchorsInDeviceMemory();
+}
+
+void PointPillars::generateAnchors(float* anchors_px_, float* anchors_py_, float* anchors_pz_,
+                                   float* anchors_dx_, float* anchors_dy_, float* anchors_dz_, float* anchors_ro_)
+{
   // zero clear
   for (size_t i = 0; i < NUM_ANCHOR_; i++)
   {
@@ -320,9 +333,6 @@ void PointPillars::initAnchors()
       }
     }
   }
-  convertAnchors2BoxAnchors(anchors_px_, anchors_py_, anchors_dx_, anchors_dy_);
-
-  putAnchorsInDeviceMemory();
 }
 
 void PointPillars::putAnchorsInDeviceMemory()
@@ -345,7 +355,9 @@ void PointPillars::putAnchorsInDeviceMemory()
   GPU_CHECK(cudaMemcpy(dev_anchors_ro_, anchors_ro_, NUM_ANCHOR_ * sizeof(float), cudaMemcpyHostToDevice));
 }
 
-void PointPillars::convertAnchors2BoxAnchors(float* anchors_px, float* anchors_py, float* anchors_dx, float* anchors_dy)
+void PointPillars::convertAnchors2BoxAnchors(float* anchors_px, float* anchors_py, float* anchors_dx, float* anchors_dy,
+                                             float* box_anchors_min_x_, float* box_anchors_min_y_,
+                                             float* box_anchors_max_x_, float* box_anchors_max_y_)
 {
   // flip box's dimension when the at the third axis == 1
   float flipped_anchors_dx[NUM_ANCHOR_] = { 0 };

@@ -221,6 +221,20 @@ private:
   void initTRT();
 
   /**
+  * @brief Generate anchors
+  * @param[in] anchors_px_ Represents x-coordinate value for corresponding anchor
+  * @param[in] anchors_py_ Represents y-coordinate value for corresponding anchor
+  * @param[in] anchors_pz_ Represents z-coordinate value for corresponding anchor
+  * @param[in] anchors_dx_ Represents x-dimension value for corresponding anchor
+  * @param[in] anchors_dy_ Represents y-dimension value for corresponding anchor
+  * @param[in] anchors_dz_ Represents z-dimension value for corresponding anchor
+  * @param[in] anchors_ro_ Represents rotation value for corresponding anchor
+  * @details Generate anchors for each grid
+  */
+  void generateAnchors(float* anchors_px_, float* anchors_py_, float* anchors_pz_,
+                       float* anchors_dx_, float* anchors_dy_, float* anchors_dz_, float* anchors_ro_);
+
+  /**
   * @brief Convert ONNX to TensorRT model
   * @param[in] model_file ONNX model file path
   * @param[out] trt_model_stream TensorRT model made out of ONNX model
@@ -254,13 +268,19 @@ private:
 
   /**
   * @brief Convert anchors to box form like min_x, min_y, max_x, max_y anchors
-  * @param[in] anchors_px Represents x-coordinate value for corresponding anchor
-  * @param[in] anchors_py Represents y-coordinate value for corresponding anchor
-  * @param[in] anchors_dx Represents x-dimension value for corresponding anchor
-  * @param[in] anchors_dy Represents y-dimension value for corresponding anchor
+  * @param[in] anchors_px_ Represents x-coordinate value for a corresponding anchor
+  * @param[in] anchors_py_ Represents y-coordinate value for a corresponding anchor
+  * @param[in] anchors_dx_ Represents x-dimension value for a corresponding anchor
+  * @param[in] anchors_dy_ Represents y-dimension value for a corresponding anchor
+  * @param[in] box_anchors_min_x_ Represents minimum x value for a correspomding anchor
+  * @param[in] box_anchors_min_y_ Represents minimum y value for a correspomding anchor
+  * @param[in] box_anchors_max_x_ Represents maximum x value for a correspomding anchor
+  * @param[in] box_anchors_max_y_ Represents maximum y value for a correspomding anchor
   * @details Make box anchors for nms
   */
-  void convertAnchors2BoxAnchors(float* anchors_px, float* anchors_py, float* anchors_dx, float* anchors_dy);
+  void convertAnchors2BoxAnchors(float* anchors_px_, float* anchors_py_, float* anchors_dx_, float* anchors_dy_,
+                                 float* box_anchors_min_x_, float* box_anchors_min_y_,
+                                 float* box_anchors_max_x_, float* box_anchors_max_y_);
 
   /**
   * @brief Memory allocation for anchors
