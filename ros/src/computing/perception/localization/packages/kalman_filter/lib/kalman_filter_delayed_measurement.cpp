@@ -62,13 +62,8 @@ bool KalmanFilterDelayedMeasurement::updateDelayedEKF(const Eigen::MatrixXd &y, 
   Eigen::MatrixXd C_ex = Eigen::MatrixXd::Zero(dim_y, dim_x_ex_);
   C_ex.block(0, dim_x_ * delay_step, dim_y, dim_x_) = C;
 
-  Eigen::MatrixXd y_pred = C_ex * x_;
-
   /* update */
-  const Eigen::MatrixXd PCT = P_ * C_ex.transpose();
-  const Eigen::MatrixXd K = PCT * ((R + C_ex * PCT).inverse());
-  x_ = x_ + K * (y - y_pred);
-  P_ = P_ - K * (C_ex * P_);
+  updateEKF(y, C_ex, R);
 
   return true;
 };

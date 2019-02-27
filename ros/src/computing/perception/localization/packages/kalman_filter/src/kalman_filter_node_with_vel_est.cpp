@@ -8,6 +8,7 @@ KalmanFilterNode::KalmanFilterNode(): nh_(""), pnh_("~")
 {
   pnh_.param("show_debug_info", show_debug_info_, bool(false));
   pnh_.param("predict_frequency", kf_rate_, double(50.0));
+  kf_dt_ = 1.0 / std::max(kf_rate_, 0.1);
   pnh_.param("tf_rate", tf_rate_, double(10.0));
   pnh_.param("extend_state_step", extend_state_step_, int(50));
   pnh_.param("wheelbase", wheelbase_, double(2.79));
@@ -17,7 +18,7 @@ KalmanFilterNode::KalmanFilterNode(): nh_(""), pnh_("~")
   
   pnh_.param("ndt_measure_uncertainty_time", ndt_measure_uncertainty_time_, double(0.01));
   pnh_.param("ndt_rate", ndt_rate_, double(10.0));            // used for covariance calculation
-  pnh_.param("ndt_gate_dist", ndt_gate_dist_, double(100.0)); // Mahalanobis limit
+  pnh_.param("ndt_gate_dist", ndt_gate_dist_, double(1000.0)); // Mahalanobis limit
   pnh_.param("ndt_stddev_x", ndt_stddev_x_, double(0.05));
   pnh_.param("ndt_stddev_y", ndt_stddev_y_, double(0.05));
   pnh_.param("ndt_stddev_yaw", ndt_stddev_yaw_, double(0.035));
@@ -25,20 +26,23 @@ KalmanFilterNode::KalmanFilterNode(): nh_(""), pnh_("~")
   /* twist measurement */
   pnh_.param("twist_additional_delay", twist_additional_delay_, double(0.0));
   pnh_.param("twist_rate", twist_rate_, double(10.0));            // used for covariance calculation
-  pnh_.param("twist_gate_dist", twist_gate_dist_, double(100.0)); // Mahalanobis limit
+  pnh_.param("twist_gate_dist", twist_gate_dist_, double(1000.0)); // Mahalanobis limit
   pnh_.param("twist_stddev_vx", twist_stddev_vx_, double(0.3));
   pnh_.param("twist_stddev_wz", twist_stddev_wz_, double(0.3));
 
   /* process noise */
-  double stddev_proc_yaw_c, stddev_proc_yaw_bias_c, stddev_vx_c;
+  double stddev_proc_yaw_c, stddev_proc_yaw_bias_c, stddev_proc_vx_c, stddev_proc_wz_c;
   pnh_.param("stddev_proc_yaw_c", stddev_proc_yaw_c, double(0.03));
   pnh_.param("stddev_proc_yaw_bias_c", stddev_proc_yaw_bias_c, double(0.001));
-  pnh_.param("stddev_vx_c", stddev_vx_c, double(1.0));
-  cov_vx_d_ = stddev_vx_c * stddev_vx_c * kf_dt_ * kf_dt_;
-  cov_proc_yaw_d_ = stddev_proc_yaw_c * stddev_proc_yaw_c * kf_dt_ * kf_dt_;
-  cov_proc_yaw_bias_d_ = stddev_proc_yaw_bias_c * stddev_proc_yaw_bias_c * kf_dt_ * kf_dt_;
+  pnh_.param("stddev_proc_vx_c", stddev_proc_vx_c, double(10.0));
+  pnh_.param("stddev_proc_wz_c", stddev_proc_wz_c, double(10.0));
 
-  kf_dt_ = 1.0 / std::max(kf_rate_, 0.1);
+  cov_proc_vx_d_ = std::pow(stddev_proc_vx_c * kf_dt_, 2.0);
+  cov_proc_wz_d_ = std::pow(stddev_proc_wz_c * kf_dt_, 2.0);
+  cov_proc_yaw_d_ = std::pow(stddev_proc_yaw_c * kf_dt_, 2.0);
+  cov_proc_yaw_bias_d_ = std::pow(stddev_proc_yaw_bias_c * kf_dt_, 2.0);
+
+
   timer_control_ = nh_.createTimer(ros::Duration(kf_dt_), &KalmanFilterNode::timerCallback, this);
   timer_tf_ = nh_.createTimer(ros::Duration(1.0 / tf_rate_), &KalmanFilterNode::timerTFCallback, this);
   pub_pose_ = nh_.advertise<geometry_msgs::PoseStamped>("/kf_pose2", 1);
@@ -257,17 +261,15 @@ void KalmanFilterNode::predictKinematicsModel()
   Eigen::MatrixXd J(2, 2); // coeff of deviation of vx & yaw
   J << cos(yaw), -vx * sin(yaw),
       sin(yaw), vx * cos(yaw);
-
   Eigen::MatrixXd Q_vx_yaw = Eigen::MatrixXd::Zero(2, 2); // cov of vx and yaw
-  Q_vx_yaw(0, 0) = cov_vx_d_; // covariance of vx
-  Q_vx_yaw(1, 1) = P_curr(2, 2) * dt * dt;                // covariance of yaw
+  Q_vx_yaw(0, 0) = P_curr(IDX::VX, IDX::VX) * dt * dt;              // covariance of vx
+  Q_vx_yaw(1, 1) = P_curr(IDX::YAW, IDX::YAW) * dt * dt;  // covariance of yaw
   Eigen::MatrixXd Q = Eigen::MatrixXd::Zero(dim_x_, dim_x_);
-
   Q.block(0, 0, 2, 2) = J * Q_vx_yaw * J.transpose(); // for pos_x & pos_y
   Q(IDX::YAW, IDX::YAW) = cov_proc_yaw_d_;            // for yaw
   Q(IDX::YAWB, IDX::YAWB) = cov_proc_yaw_bias_d_;     // for yaw bias
-  Q(IDX::VX, IDX::VX) = 1.0;                          // for vx
-  Q(IDX::WZ, IDX::WZ) = 1.0;                          // for wz
+  Q(IDX::VX, IDX::VX) = cov_proc_vx_d_;               // for vx
+  Q(IDX::WZ, IDX::WZ) = cov_proc_wz_d_;               // for wz
 
   kf_.predictDelayedEKF(X_next, A, Q);
 }
@@ -306,7 +308,6 @@ void KalmanFilterNode::measurementUpdateNDTPose(const geometry_msgs::PoseStamped
 
   /* Calculate delay step */
   double delay_time = (t_curr - ndt_pose.header.stamp).toSec() + ndt_additional_delay_;
-    printf("ndt: now = %f, ndt_time = %f, add_deley = %f, delay_time = %f\n", ros::Time::now().toSec(), ndt_pose.header.stamp.toSec(), ndt_additional_delay_, delay_time);
   int delay_step = getDelayStep(delay_time);
 
   /* Set yaw */

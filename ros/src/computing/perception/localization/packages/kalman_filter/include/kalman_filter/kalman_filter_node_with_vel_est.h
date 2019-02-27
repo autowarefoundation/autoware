@@ -65,7 +65,8 @@ private:
   /* process noise variance for discrete model */
   double cov_proc_yaw_d_;      // discrete yaw process noise
   double cov_proc_yaw_bias_d_; // discrete yaw bias process noise
-  double cov_vx_d_;
+  double cov_proc_vx_d_;
+  double cov_proc_wz_d_;
 
 
   enum  IDX {
