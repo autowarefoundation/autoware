@@ -74,6 +74,15 @@ public:
 
   grid_map::Polygon makePolygonFromObjectConvexHull(const autoware_msgs::DetectedObject& in_object,
                                                     const double expand_polygon_size);
+
+  void setCostInPolygon(const grid_map::Polygon& polygon, const std::string& gridmap_layer_name,
+                                       const float score, grid_map::GridMap& objects_costmap);
+
+  grid_map::Matrix makeCostmapFromObjects(const grid_map::GridMap& costmap,
+                                          const double expand_polygon_size,
+                                          const double size_of_expansion_kernel,
+                                          const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects,
+                                          const bool use_objects_convex_hull);
 };
 
 Eigen::MatrixXd TestClass::makeRectanglePoints(const autoware_msgs::DetectedObject& in_object,
@@ -135,6 +144,25 @@ grid_map::Polygon TestClass::makePolygonFromObjectConvexHull(const autoware_msgs
                                                   const double expand_polygon_size)
 {
   return objects2costmap_.makePolygonFromObjectConvexHull(in_object, expand_polygon_size);
+}
+
+void TestClass::setCostInPolygon(const grid_map::Polygon& polygon, const std::string& gridmap_layer_name,
+                                     const float score, grid_map::GridMap& objects_costmap)
+{
+  objects2costmap_.setCostInPolygon(polygon, gridmap_layer_name, score, objects_costmap);
+}
+
+grid_map::Matrix TestClass::makeCostmapFromObjects(const grid_map::GridMap& costmap,
+                                       const double expand_polygon_size,
+                                       const double size_of_expansion_kernel,
+                                       const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects,
+                                       const bool use_objects_convex_hull)
+{
+  return objects2costmap_.makeCostmapFromObjects(costmap,
+                                                  expand_polygon_size,
+                                                  size_of_expansion_kernel,
+                                                  in_objects,
+                                                  use_objects_convex_hull);
 }
 
 TEST(TestSuite, CheckMakeRectanglePoints)
@@ -433,6 +461,348 @@ TEST(TestSuite, ChecMakePolygonFromObjectConvexhullDofferentHeight)
   int num_vertices = polygon.nVertices();
   double expected_num_vertices = 3;
   EXPECT_EQ(expected_num_vertices, num_vertices);
+}
+
+TEST(TestSuite, ChecSetCostInPolygon)
+{
+  TestClass test_obj;
+
+  grid_map::Polygon polygon;
+  polygon.setFrameId("test");
+  polygon.addVertex(grid_map::Position(-1, -1));
+  polygon.addVertex(grid_map::Position(1, -1));
+  polygon.addVertex(grid_map::Position(1, 1));
+  polygon.addVertex(grid_map::Position(-1, 1));
+
+  const double grid_length_x = 10;
+  const double grid_length_y = 10;
+  const double grid_resolution = 1;
+  const double grid_position_x = 0;
+  const double grid_position_y = 0;
+  const std::string layer_name = "test";
+  const double initialize_cost = 0;
+  grid_map::GridMap costmap;
+
+  costmap.setGeometry(grid_map::Length(grid_length_x, grid_length_y), grid_resolution,
+  grid_map::Position(grid_position_x, grid_position_y));
+  costmap.add(layer_name, initialize_cost);
+
+  float score = 1;
+  test_obj.setCostInPolygon(polygon, layer_name, score, costmap);
+  float expected_score = 1;
+  EXPECT_EQ(expected_score, costmap.atPosition(layer_name, grid_map::Position(0, 0)));
+}
+
+TEST(TestSuite, CheckMakeCostmapFromObjects)
+{
+  TestClass test_obj;
+  autoware_msgs::DetectedObject in_object;
+  in_object.header.frame_id = "test";
+  geometry_msgs::Point32 point;
+  point.x = -1;
+  point.y = -1;
+  point.z = 0;
+  in_object.convex_hull.polygon.points.push_back(point);
+  point.x =  1;
+  point.y = -1;
+  point.z = 0;
+  in_object.convex_hull.polygon.points.push_back(point);
+  point.x = 1;
+  point.y = 1;
+  point.z = 0;
+  in_object.convex_hull.polygon.points.push_back(point);
+  point.x = 0;
+  point.y = 2;
+  point.z = 0;
+  in_object.convex_hull.polygon.points.push_back(point);
+  in_object.pose.position.x = 0;
+  in_object.pose.position.y = 0;
+  in_object.pose.position.z = 0;
+  in_object.score = 1;
+  autoware_msgs::DetectedObjectArray::Ptr in_objects(new autoware_msgs::DetectedObjectArray);
+  in_objects->objects.push_back(in_object);
+
+  const double grid_length_x = 10;
+  const double grid_length_y = 10;
+  const double grid_resolution = 1;
+  const double grid_position_x = 0;
+  const double grid_position_y = 0;
+  const std::string layer_name = "test";
+  const double initialize_cost = 0;
+  grid_map::GridMap costmap;
+
+  costmap.setGeometry(grid_map::Length(grid_length_x, grid_length_y), grid_resolution,
+  grid_map::Position(grid_position_x, grid_position_y));
+  costmap.add(layer_name, initialize_cost);
+
+  double expand_polygon_size = 0;
+  double size_of_expansion_kernel = 1;
+  bool use_objects_convex_hull = true;
+  grid_map::Matrix gridmap_mat = test_obj.makeCostmapFromObjects(costmap,
+                                          expand_polygon_size,
+                                          size_of_expansion_kernel,
+                                          in_objects,
+                                          use_objects_convex_hull);
+  /*
+    0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 1 1 0 0 0 0
+    0 0 0 0 1 1 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0
+  */
+  float expected_score = 1;
+  EXPECT_EQ(expected_score,gridmap_mat(5,5));
+}
+
+TEST(TestSuite, CheckMakeCostmapFromObjectsExpandSize)
+{
+  TestClass test_obj;
+  autoware_msgs::DetectedObject in_object;
+  in_object.header.frame_id = "test";
+  geometry_msgs::Point32 point;
+  point.x = -1;
+  point.y = -1;
+  point.z = 0;
+  in_object.convex_hull.polygon.points.push_back(point);
+  point.x =  1;
+  point.y = -1;
+  point.z = 0;
+  in_object.convex_hull.polygon.points.push_back(point);
+  point.x = 1;
+  point.y = 1;
+  point.z = 0;
+  in_object.convex_hull.polygon.points.push_back(point);
+  point.x = 0;
+  point.y = 2;
+  point.z = 0;
+  in_object.convex_hull.polygon.points.push_back(point);
+  in_object.pose.position.x = 0;
+  in_object.pose.position.y = 0;
+  in_object.pose.position.z = 0;
+  in_object.score = 1;
+  autoware_msgs::DetectedObjectArray::Ptr in_objects(new autoware_msgs::DetectedObjectArray);
+  in_objects->objects.push_back(in_object);
+
+  const double grid_length_x = 10;
+  const double grid_length_y = 10;
+  const double grid_resolution = 1;
+  const double grid_position_x = 0;
+  const double grid_position_y = 0;
+  const std::string layer_name = "test";
+  const double initialize_cost = 0;
+  grid_map::GridMap costmap;
+
+  costmap.setGeometry(grid_map::Length(grid_length_x, grid_length_y), grid_resolution,
+  grid_map::Position(grid_position_x, grid_position_y));
+  costmap.add(layer_name, initialize_cost);
+
+  double expand_polygon_size = 1;
+  double size_of_expansion_kernel = 1;
+  bool use_objects_convex_hull = true;
+  grid_map::Matrix gridmap_mat = test_obj.makeCostmapFromObjects(costmap,
+                                          expand_polygon_size,
+                                          size_of_expansion_kernel,
+                                          in_objects,
+                                          use_objects_convex_hull);
+  /*
+    0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0
+    0 0 0 1 1 1 1 0 0 0
+    0 0 1 1 1 1 1 0 0 0
+    0 0 0 1 1 1 1 0 0 0
+    0 0 0 0 0 0 1 0 0 0
+    0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0
+  */
+  float expected_score = 1;
+  EXPECT_EQ(expected_score,gridmap_mat(6,6));
+}
+
+TEST(TestSuite, CheckMakeCostmapFromObjectsBlur)
+{
+  TestClass test_obj;
+  autoware_msgs::DetectedObject in_object;
+  in_object.header.frame_id = "test";
+  geometry_msgs::Point32 point;
+  point.x = -1;
+  point.y = -1;
+  point.z = 0;
+  in_object.convex_hull.polygon.points.push_back(point);
+  point.x =  1;
+  point.y = -1;
+  point.z = 0;
+  in_object.convex_hull.polygon.points.push_back(point);
+  point.x = 1;
+  point.y = 1;
+  point.z = 0;
+  in_object.convex_hull.polygon.points.push_back(point);
+  point.x = 0;
+  point.y = 2;
+  point.z = 0;
+  in_object.convex_hull.polygon.points.push_back(point);
+  in_object.pose.position.x = 0;
+  in_object.pose.position.y = 0;
+  in_object.pose.position.z = 0;
+  in_object.score = 1;
+  autoware_msgs::DetectedObjectArray::Ptr in_objects(new autoware_msgs::DetectedObjectArray);
+  in_objects->objects.push_back(in_object);
+
+  const double grid_length_x = 10;
+  const double grid_length_y = 10;
+  const double grid_resolution = 1;
+  const double grid_position_x = 0;
+  const double grid_position_y = 0;
+  const std::string layer_name = "test";
+  const double initialize_cost = 0;
+  grid_map::GridMap costmap;
+
+  costmap.setGeometry(grid_map::Length(grid_length_x, grid_length_y), grid_resolution,
+  grid_map::Position(grid_position_x, grid_position_y));
+  costmap.add(layer_name, initialize_cost);
+
+  double expand_polygon_size = 0;
+  double size_of_expansion_kernel = 3;
+  bool use_objects_convex_hull = true;
+  grid_map::Matrix gridmap_mat = test_obj.makeCostmapFromObjects(costmap,
+                                          expand_polygon_size,
+                                          size_of_expansion_kernel,
+                                          in_objects,
+                                          use_objects_convex_hull);
+  /*
+  0  0  0           0           0           0 0.000228624 0.000635066 0.000683101 0.000629966
+  0  0  0           0           0  0.00137174  0.00358177  0.00346354  0.00183676  0.00128529
+  0  0  0           0   0.0123457   0.0306356   0.0267264   0.0117492  0.00456194  0.00264567
+  0  0  0    0.111111    0.262003    0.204948   0.0719709    0.024008  0.00819001   0.0043936
+  0  0  0    0.234568           1           1    0.105625    0.033391    0.010964  0.00580402
+  0  0  0    0.248285           1           1   0.0989154   0.0330867   0.0112765  0.00618194
+  0  0  0    0.138698    0.207193    0.110906   0.0598489    0.024047  0.00904712  0.00537396
+  0  0  0   0.0154109    0.040335   0.0405389    0.024572   0.0130139  0.00573816  0.00386448
+  0  0  0  0.00171233  0.00641596  0.00985468  0.00865679  0.00553543  0.00302765  0.00242517
+  0  0  0 0.000285388  0.00140228  0.00294549  0.00357616   0.0029614  0.00192074  0.00184339
+  */
+  double expected_score = 0.0598489;
+  double buffer = 0.001;
+  EXPECT_NEAR(expected_score,gridmap_mat(6,6), buffer);
+}
+
+TEST(TestSuite, CheckMakeCostmapFromObjectsBox)
+{
+  TestClass test_obj;
+  autoware_msgs::DetectedObject in_object;
+  in_object.header.frame_id = "test";
+  in_object.pose.position.x = 0;
+  in_object.pose.position.y = 0;
+  in_object.pose.position.z = 0;
+  in_object.pose.orientation.x = 0;
+  in_object.pose.orientation.y = 0;
+  in_object.pose.orientation.z = 0;
+  in_object.pose.orientation.w = 1;
+  in_object.dimensions.x = 2;
+  in_object.dimensions.y = 1.5;
+  in_object.dimensions.z = 2;
+  in_object.score = 1;
+  autoware_msgs::DetectedObjectArray::Ptr in_objects(new autoware_msgs::DetectedObjectArray);
+  in_objects->objects.push_back(in_object);
+
+  const double grid_length_x = 10;
+  const double grid_length_y = 10;
+  const double grid_resolution = 1;
+  const double grid_position_x = 0;
+  const double grid_position_y = 0;
+  const std::string layer_name = "test";
+  const double initialize_cost = 0;
+  grid_map::GridMap costmap;
+
+  costmap.setGeometry(grid_map::Length(grid_length_x, grid_length_y), grid_resolution,
+  grid_map::Position(grid_position_x, grid_position_y));
+  costmap.add(layer_name, initialize_cost);
+
+  double expand_polygon_size = 1;
+  double size_of_expansion_kernel = 1;
+  bool use_objects_convex_hull = false;
+  grid_map::Matrix gridmap_mat = test_obj.makeCostmapFromObjects(costmap,
+                                          expand_polygon_size,
+                                          size_of_expansion_kernel,
+                                          in_objects,
+                                          use_objects_convex_hull);
+  /*
+  0 0 0 0 0 0 0 0 0 0
+  0 0 0 0 0 0 0 0 0 0
+  0 0 0 0 0 0 0 0 0 0
+  0 0 0 0 0 0 0 0 0 0
+  0 0 0 0 1 1 0 0 0 0
+  0 0 0 0 1 1 0 0 0 0
+  0 0 0 0 1 1 0 0 0 0
+  0 0 0 0 0 0 0 0 0 0
+  0 0 0 0 0 0 0 0 0 0
+  0 0 0 0 0 0 0 0 0 0
+  */
+  float expected_score = 1;
+  EXPECT_EQ(expected_score,gridmap_mat(5,5));
+}
+
+TEST(TestSuite, CheckMakeCostmapFromObjectsBoxBlur)
+{
+  TestClass test_obj;
+  autoware_msgs::DetectedObject in_object;
+  in_object.header.frame_id = "test";
+  in_object.pose.position.x = -4;
+  in_object.pose.position.y = -3;
+  in_object.pose.position.z = 0;
+  in_object.pose.orientation.x = 0;
+  in_object.pose.orientation.y = 0;
+  in_object.pose.orientation.z = 0;
+  in_object.pose.orientation.w = 1;
+  in_object.dimensions.x = 2;
+  in_object.dimensions.y = 1.5;
+  in_object.dimensions.z = 2;
+  in_object.score = 1;
+  autoware_msgs::DetectedObjectArray::Ptr in_objects(new autoware_msgs::DetectedObjectArray);
+  in_objects->objects.push_back(in_object);
+
+  const double grid_length_x = 10;
+  const double grid_length_y = 10;
+  const double grid_resolution = 1;
+  const double grid_position_x = 0;
+  const double grid_position_y = 0;
+  const std::string layer_name = "test";
+  const double initialize_cost = 0;
+  grid_map::GridMap costmap;
+
+  costmap.setGeometry(grid_map::Length(grid_length_x, grid_length_y), grid_resolution,
+  grid_map::Position(grid_position_x, grid_position_y));
+  costmap.add(layer_name, initialize_cost);
+
+  double expand_polygon_size = 1;
+  double size_of_expansion_kernel = 3;
+  bool use_objects_convex_hull = false;
+  grid_map::Matrix gridmap_mat = test_obj.makeCostmapFromObjects(costmap,
+                                          expand_polygon_size,
+                                          size_of_expansion_kernel,
+                                          in_objects,
+                                          use_objects_convex_hull);
+  /*
+  0 0 0 0 0 0           0           0           0           0
+  0 0 0 0 0 0           0           0           0           0
+  0 0 0 0 0 0           0           0           0           0
+  0 0 0 0 0 0           0           0           0           0
+  0 0 0 0 0 0           0           0           0 0.000228624
+  0 0 0 0 0 0           0           0  0.00137174  0.00537266
+  0 0 0 0 0 0           0   0.0123457   0.0306356   0.0406435
+  0 0 0 0 0 0    0.111111    0.262003    0.206481    0.115094
+  0 0 0 0 0 0    0.234568           1           1    0.196272
+  0 0 0 0 0 0    0.372428           1           1    0.263083
+  */
+  float expected_score = 0.11111;
+  float buffer = 0.00001;
+  EXPECT_NEAR(expected_score, gridmap_mat(7,6), buffer);
 }
 
 int main(int argc, char** argv)
