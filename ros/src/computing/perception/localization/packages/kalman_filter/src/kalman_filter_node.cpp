@@ -1,105 +1,12 @@
-#include <iostream>
-#include <vector>
-#include <chrono>
+#include "kalman_filter/kalman_filter_node.h"
 
-#include <ros/ros.h>
-#include <geometry_msgs/PoseArray.h>
-#include <geometry_msgs/PoseStamped.h>
-#include <geometry_msgs/PoseWithCovarianceStamped.h>
-#include <geometry_msgs/TwistStamped.h>
-#include <sensor_msgs/Imu.h>
-#include <std_msgs/Float64.h>
-#include <std_msgs/Float64MultiArray.h>
-#include <tf/transform_datatypes.h>
-#include <tf2/utils.h>
-
-#include <autoware_msgs/VehicleStatus.h>
-#include <tf/transform_broadcaster.h>
-
-#include "kalman_filter/kalman_filter.h"
-#include "kalman_filter/kalman_filter_delayed_measurement.h"
-
-
-#define PRINT_MAT(X) std::cout << #X << ":\n" << X << std::endl << std::endl
-
-#define EKF_DEBUG_VERBOSE
-#ifdef EKF_DEBUG_VERBOSE
-#define EKF_INFO(...) {if (show_debug_info_) { printf(__VA_ARGS__);}}
-#else
-#define EKF_INFO(...)
-#endif
-
-class KalmanFilterNode
-{
-public:
-  KalmanFilterNode();
-  ~KalmanFilterNode();
-
-private:
-  ros::NodeHandle nh_, pnh_;
-  ros::Publisher pub_pose_, pub_pose_cov_, pub_debug_, pub_ndt_pose_;
-  ros::Subscriber sub_ndt_pose_, sub_vehicle_status_, sub_imu_;
-  ros::Timer timer_control_, timer_tf_;
-  tf::TransformBroadcaster tf_br_;
-  bool show_debug_info_;
-
-  KalmanFilterDelayedMeasurement kf_;
-
-  bool initial_pose_received_;
-  bool initial_twist_received_;
-
-  /* parameters */
-  double kf_rate_;          // kalman filter predict rate
-  double kf_dt_;            // = 1 / kf_rate_
-  double tf_rate_;          // tf publish rate
-  double wheelbase_;        // to convert steering angle to angular velocity
-  double additional_delay_; // compensated ndt delay time = (ndt.header.stamp - now) + additional_delay [s]
-  double ndt_rate_;         // ndt rate [s], used for covariance calculation
-  double ndt_gate_dist_;    // ndt measurement is ignored if the maharanobis distance is larger than this value.
-  int dim_x_;               // dimension of kalman state
-  int extend_state_step_;   // for time delay compensation
-  int dim_x_ex_;            // dimension of extended kalman state (dim_x_ * extended_state_step)
-
-  /* process noise standard deviation for continuous model*/
-  double stddev_proc_yaw_c_;      // for dot yaw
-  double stddev_proc_yaw_bias_c_; // for yaw bias
-  double stddev_vx_c_;            // for vx
-
-  /* process noise variance for discrete model */
-  double cov_proc_yaw_d_;      // discrete yaw process noise
-  double cov_proc_yaw_bias_d_; // discrete yaw bias process noise
-
-  /* measurement noise for time uncertainty */
-  double measure_time_uncertainty_; // added for measurement covariance
-
-  /* for model prediction */
-  autoware_msgs::VehicleStatus current_vehicle_status_;
-  geometry_msgs::TwistStamped current_twist_;
-  geometry_msgs::PoseStamped current_ndt_pose_;
-  sensor_msgs::Imu current_imu_;
-  geometry_msgs::PoseStamped current_kf_pose_;
-
-  void timerCallback(const ros::TimerEvent &e);
-  void timerTFCallback(const ros::TimerEvent &e);
-  void callbackNDTPose(const geometry_msgs::PoseStamped::ConstPtr &msg);
-  void callbackVehicleStatus(const autoware_msgs::VehicleStatus &msg);
-  void callbackIMU(const sensor_msgs::Imu &msg);
-  void callbackTwist(const geometry_msgs::TwistStamped &msg);
-
-  void initKalmanFilter();
-  void predictKinematicsModel();
-  void measurementUpdateNDTPose(const geometry_msgs::PoseStamped &ndt_pose);
-  void measurementUpdateIMU(const sensor_msgs::Imu &msg);
-
-  void publishEstimatedPose();
-};
 
 KalmanFilterNode::KalmanFilterNode()
     : nh_(""), pnh_("~"), initial_pose_received_(false), initial_twist_received_(false)
 {
   pnh_.param("show_debug_info", show_debug_info_, bool(false));
   pnh_.param("predict_frequency", kf_rate_, double(100.0));
-  pnh_.param("tf_rate", tf_rate_, double(20.0));
+  pnh_.param("tf_rate", tf_rate_, double(10.0));
   pnh_.param("wheelbase", wheelbase_, double(2.79));
   pnh_.param("additional_delay", additional_delay_, double(0.15));
   pnh_.param("extend_state_step", extend_state_step_, int(50));
@@ -110,7 +17,7 @@ KalmanFilterNode::KalmanFilterNode()
   pnh_.param("stddev_proc_yaw_bias_c", stddev_proc_yaw_bias_c_, double(0.001));
   pnh_.param("stddev_vx_c", stddev_vx_c_, double(1.0));
 
-  pnh_.param("measure_time_uncertainty", measure_time_uncertainty_, double(0.01));
+  pnh_.param("measure_uncertainty_time", measure_uncertainty_time_, double(0.01));
 
   kf_dt_ = 1.0 / std::max(kf_rate_, 0.1);
   cov_proc_yaw_d_ = stddev_proc_yaw_c_ * stddev_proc_yaw_c_ * kf_dt_ * kf_dt_;
@@ -131,7 +38,7 @@ KalmanFilterNode::KalmanFilterNode()
 
   /* debug */
   pub_debug_ = pnh_.advertise<std_msgs::Float64MultiArray>("debug", 1);
-    pub_ndt_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("/my_ndt_pose", 1);
+  pub_ndt_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("/my_ndt_pose", 1);
 };
 
 KalmanFilterNode::~KalmanFilterNode(){};
@@ -148,18 +55,18 @@ void KalmanFilterNode::timerCallback(const ros::TimerEvent &e)
     return;
   }
 
-  EKF_INFO("----- timer called -----\n");
+  DEBUG_INFO("----- timer called -----\n");
 
   /* predict model in kalman filter */
   auto start = std::chrono::system_clock::now();
   predictKinematicsModel();
   double elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - start).count();
-  EKF_INFO("[kalman filter] predictKinematicsModel calculation time = %f [ms]\n", elapsed * 1.0e-6);
+  DEBUG_INFO("[kalman filter] predictKinematicsModel calculation time = %f [ms]\n", elapsed * 1.0e-6);
 
   start = std::chrono::system_clock::now();
   measurementUpdateNDTPose(current_ndt_pose_);
   elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - start).count();
-  EKF_INFO("[kalman filter] measurementUpdateNDTPose calculation time = %f [ms]\n", elapsed * 1.0e-6);
+  DEBUG_INFO("[kalman filter] measurementUpdateNDTPose calculation time = %f [ms]\n", elapsed * 1.0e-6);
 
   publishEstimatedPose();
 }
@@ -262,7 +169,7 @@ void KalmanFilterNode::predictKinematicsModel()
   const double yaw_bias = X_curr(3);
   const double dt = kf_dt_;
 
-  EKF_INFO("prediction: X_curr = %f, %f, %f, %f, %f\n", X_curr(0), X_curr(1), X_curr(2), X_curr(3), X_curr(4));
+  DEBUG_INFO("prediction: X_curr = %f, %f, %f, %f, %f\n", X_curr(0), X_curr(1), X_curr(2), X_curr(3), X_curr(4));
 
   /* Update for latest state */
   X_next(0) = X_curr(0) + vx * cos(yaw + yaw_bias) * dt; // dx = v * cos(yaw)
@@ -274,8 +181,8 @@ void KalmanFilterNode::predictKinematicsModel()
   {
     X_next(2) -= 2.0 * M_PI * ((X_next(2) > 0) - (X_next(2) < 0));
   }
-  EKF_INFO("prediction: X_next = %f, %f, %f, %f\n", X_next(0), X_next(1), X_next(2), X_next(3));
-  EKF_INFO("prediction: X_diff = %f, %f, %f, %f\n", X_next(0) - X_curr(0), X_next(1) - X_curr(1), X_next(2) - X_curr(2), X_next(3) - X_curr(3));
+  DEBUG_INFO("prediction: X_next = %f, %f, %f, %f\n", X_next(0), X_next(1), X_next(2), X_next(3));
+  DEBUG_INFO("prediction: X_diff = %f, %f, %f, %f\n", X_next(0) - X_curr(0), X_next(1) - X_curr(1), X_next(2) - X_curr(2), X_next(3) - X_curr(3));
 
   /* Set A matrix for latest state */
   Eigen::MatrixXd A = Eigen::MatrixXd::Identity(dim_x_, dim_x_);
@@ -329,7 +236,7 @@ void KalmanFilterNode::measurementUpdateNDTPose(const geometry_msgs::PoseStamped
              delay_time, extend_state_step_ * kf_dt_);
   }
 
-  EKF_INFO("measurement update: kf_dt_ = %f, delay_time = %f, delay_step = %d, extend_state_step_ = %d\n",
+  DEBUG_INFO("measurement update: kf_dt_ = %f, delay_time = %f, delay_step = %d, extend_state_step_ = %d\n",
            kf_dt_, delay_time, delay_step, extend_state_step_);
 
   /* Set yaw */
@@ -351,7 +258,7 @@ void KalmanFilterNode::measurementUpdateNDTPose(const geometry_msgs::PoseStamped
   kf_.getCurrentP(P_curr);
   P_y = P_curr.block(0, 0, dim_y, dim_y);
   Eigen::MatrixXd mahalanobis_squared = (y - y_kf).transpose() * P_y.inverse() * (y - y_kf);
-  EKF_INFO("measurement update: mahalanobis = %f, gate limit = %f\n", std::sqrt(mahalanobis_squared(0)), ndt_gate_dist_);
+  DEBUG_INFO("measurement update: mahalanobis = %f, gate limit = %f\n", std::sqrt(mahalanobis_squared(0)), ndt_gate_dist_);
   if (mahalanobis_squared(0) > ndt_gate_dist_ * ndt_gate_dist_) {
     ROS_WARN("[kalman filter] measurement update, mahalanobis distance is larger than limit. ignore NDT measurement data.");
     return;
@@ -365,9 +272,9 @@ void KalmanFilterNode::measurementUpdateNDTPose(const geometry_msgs::PoseStamped
 
   /* Set measurement noise covariancs : NOTE this should be set by NDT reliability */
   const double kf_yaw = kf_.getXelement(2);
-  const double cov_pos_x = std::pow(measure_time_uncertainty_ * current_twist_.twist.linear.x * cos(kf_yaw), 2);
-  const double cov_pos_y = std::pow(measure_time_uncertainty_ * current_twist_.twist.linear.x * sin(kf_yaw), 2);
-  const double cov_yaw = std::pow(measure_time_uncertainty_ * current_twist_.twist.angular.z, 2);
+  const double cov_pos_x = std::pow(measure_uncertainty_time_ * current_twist_.twist.linear.x * cos(kf_yaw), 2);
+  const double cov_pos_y = std::pow(measure_uncertainty_time_ * current_twist_.twist.linear.x * sin(kf_yaw), 2);
+  const double cov_yaw = std::pow(measure_uncertainty_time_ * current_twist_.twist.angular.z, 2);
   Eigen::MatrixXd R = Eigen::MatrixXd::Zero(dim_y, dim_y);
   R(0, 0) = std::pow(0.05, 2) + cov_pos_x; // pos_x
   R(1, 1) = std::pow(0.05, 2) + cov_pos_y; // pos_y
@@ -388,13 +295,13 @@ void KalmanFilterNode::measurementUpdateNDTPose(const geometry_msgs::PoseStamped
   if (show_debug_info_)
   {
     kf_.getCurrentX(X_after);
-    EKF_INFO("measurement update: y_ndt    = %f, %f, %f\n", y(0), y(1), y(2));
-    EKF_INFO("measurement update: y_kf     = %f, %f, %f\n", kf_.getXelement(delay_step * dim_x_), kf_.getXelement(delay_step * dim_x_ + 1), kf_.getXelement(delay_step * dim_x_ + 2));
-    EKF_INFO("measurement update: y_diff   = %f, %f, %f\n", kf_.getXelement(delay_step * dim_x_)-y(0), kf_.getXelement(delay_step * dim_x_ + 1)-y(1), kf_.getXelement(delay_step * dim_x_ + 2)-y(2));
-    EKF_INFO("measurement update: X_before = %f, %f, %f, %f\n", X_before(0), X_before(1), X_before(2), X_before(3));
-    EKF_INFO("measurement update: X_after  = %f, %f, %f, %f\n", X_after(0), X_after(1), X_after(2), X_after(3));
+    DEBUG_INFO("measurement update: y_ndt    = %f, %f, %f\n", y(0), y(1), y(2));
+    DEBUG_INFO("measurement update: y_kf     = %f, %f, %f\n", kf_.getXelement(delay_step * dim_x_), kf_.getXelement(delay_step * dim_x_ + 1), kf_.getXelement(delay_step * dim_x_ + 2));
+    DEBUG_INFO("measurement update: y_diff   = %f, %f, %f\n", kf_.getXelement(delay_step * dim_x_)-y(0), kf_.getXelement(delay_step * dim_x_ + 1)-y(1), kf_.getXelement(delay_step * dim_x_ + 2)-y(2));
+    DEBUG_INFO("measurement update: X_before = %f, %f, %f, %f\n", X_before(0), X_before(1), X_before(2), X_before(3));
+    DEBUG_INFO("measurement update: X_after  = %f, %f, %f, %f\n", X_after(0), X_after(1), X_after(2), X_after(3));
     Eigen::MatrixXd X_diff = X_after - X_before;
-    EKF_INFO("measurement update: X_diff   = %f, %f, %f, %f\n", X_diff(0), X_diff(1), X_diff(2), X_diff(3));
+    DEBUG_INFO("measurement update: X_diff   = %f, %f, %f, %f\n", X_diff(0), X_diff(1), X_diff(2), X_diff(3));
   }
 }
 
