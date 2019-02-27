@@ -47,7 +47,7 @@ public:
 class TestClass
 {
 public:
-  TestClass();
+  TestClass(){};
 
   Objects2Costmap objects2costmap_;
 
@@ -58,6 +58,16 @@ public:
 
   std::vector<std::vector<std::vector<double>>>
   assignPoints2GridCell(const grid_map::GridMap& gridmap, const pcl::PointCloud<pcl::PointXYZ>::Ptr& in_sensor_points);
+
+  grid_map::Index fetchGridIndexFromPoint(const grid_map::GridMap& gridmap, const pcl::PointXYZ& point);
+
+  bool isValidInd(const grid_map::GridMap& gridmap, const grid_map::Index& grid_ind);
+
+  grid_map::Matrix calculateCostmap(const double maximum_height_thres,
+                                    const double minimum_lidar_height_thres, const double grid_min_value,
+                                    const double grid_max_value, const grid_map::GridMap& gridmap,
+                                    const std::string& gridmap_layer_name,
+                                    const std::vector<std::vector<std::vector<double>>> grid_vec);
 };
 
 Eigen::MatrixXd TestClass::makeRectanglePoints(const autoware_msgs::DetectedObject& in_object,
@@ -76,6 +86,38 @@ std::vector<std::vector<std::vector<double>>> TestClass::assignPoints2GridCell(
   points2costmap_.grid_position_y_ = gridmap.getPosition()[1];
   return points2costmap_.assignPoints2GridCell(gridmap, in_sensor_points);
 }
+
+grid_map::Index TestClass::fetchGridIndexFromPoint(const grid_map::GridMap& gridmap, const pcl::PointXYZ& point)
+{
+  points2costmap_.grid_length_x_ = gridmap.getLength()[0];
+  points2costmap_.grid_length_y_ = gridmap.getLength()[1];
+  points2costmap_.grid_resolution_ = gridmap.getResolution();
+  points2costmap_.grid_position_x_ = gridmap.getPosition()[0];
+  points2costmap_.grid_position_y_ = gridmap.getPosition()[1];
+  return points2costmap_.fetchGridIndexFromPoint(point);
+}
+
+bool TestClass::isValidInd(const grid_map::GridMap& gridmap, const grid_map::Index& grid_ind)
+{
+  points2costmap_.grid_length_x_ = gridmap.getLength()[0];
+  points2costmap_.grid_length_y_ = gridmap.getLength()[1];
+  points2costmap_.grid_resolution_ = gridmap.getResolution();
+  points2costmap_.grid_position_x_ = gridmap.getPosition()[0];
+  points2costmap_.grid_position_y_ = gridmap.getPosition()[1];
+  return points2costmap_.isValidInd(grid_ind);
+}
+
+grid_map::Matrix TestClass::calculateCostmap(const double maximum_height_thres,
+                                                  const double minimum_lidar_height_thres, const double grid_min_value,
+                                                  const double grid_max_value, const grid_map::GridMap& gridmap,
+                                                  const std::string& gridmap_layer_name,
+                                                  const std::vector<std::vector<std::vector<double>>> grid_vec)
+{
+  return points2costmap_.calculateCostmap(maximum_height_thres, minimum_lidar_height_thres,
+                                          grid_min_value, grid_max_value,
+                                          gridmap, gridmap_layer_name, grid_vec);
+}
+
 
 TEST(TestSuite, CheckMakeRectanglePoints)
 {
@@ -137,6 +179,156 @@ TEST(TestSuite, CheckAssignPoints2GridCell)
   const double expected_value = 100;
   EXPECT_EQ(expected_value, grid_vec[5][5][0]);
 }
+
+TEST(TestSuite, CheckFetchGridIndexFromPoint)
+{
+  TestClass test_obj;
+
+  const double grid_length_x = 10;
+  const double grid_length_y = 10;
+  const double grid_resolution = 1;
+  const double grid_position_x = 0;
+  const double grid_position_y = 0;
+  const std::string layer_name = "test";
+  const double initialize_cost = 0;
+  grid_map::GridMap costmap;
+  costmap.setGeometry(grid_map::Length(grid_length_x, grid_length_y), grid_resolution,
+                      grid_map::Position(grid_position_x, grid_position_y));
+
+  costmap.add(layer_name, initialize_cost);
+
+  pcl::PointXYZ point;
+  point.x = 3.5;
+  point.y = 0.5;
+  point.z = 100;
+
+  grid_map::Index index = test_obj.fetchGridIndexFromPoint(costmap, point);
+
+
+  const double expected_x_ind = 2;
+  const double expected_y_ind = 5;
+  EXPECT_EQ(expected_x_ind, index.x());
+  EXPECT_EQ(expected_y_ind, index.y());
+}
+
+TEST(TestSuite, CheckValidIndex)
+{
+  TestClass test_obj;
+
+  const double grid_length_x = 10;
+  const double grid_length_y = 10;
+  const double grid_resolution = 1;
+  const double grid_position_x = 0;
+  const double grid_position_y = 0;
+  const std::string layer_name = "test";
+  const double initialize_cost = 0;
+  grid_map::GridMap costmap;
+  costmap.setGeometry(grid_map::Length(grid_length_x, grid_length_y), grid_resolution,
+                      grid_map::Position(grid_position_x, grid_position_y));
+
+  costmap.add(layer_name, initialize_cost);
+
+  grid_map::Index index(2,5);
+  bool is_valid = test_obj.isValidInd(costmap, index);
+
+  bool expected_valid = true;
+  EXPECT_EQ(expected_valid, is_valid);
+}
+
+TEST(TestSuite, CheckNonValidIndex)
+{
+  TestClass test_obj;
+
+  const double grid_length_x = 10;
+  const double grid_length_y = 10;
+  const double grid_resolution = 1;
+  const double grid_position_x = 0;
+  const double grid_position_y = 0;
+  const std::string layer_name = "test";
+  const double initialize_cost = 0;
+  grid_map::GridMap costmap;
+  costmap.setGeometry(grid_map::Length(grid_length_x, grid_length_y), grid_resolution,
+                      grid_map::Position(grid_position_x, grid_position_y));
+
+  costmap.add(layer_name, initialize_cost);
+
+  grid_map::Index index(2,10);
+  bool is_valid = test_obj.isValidInd(costmap, index);
+
+  bool expected_valid = false;
+  EXPECT_EQ(expected_valid, is_valid);
+}
+
+TEST(TestSuite, CheckCalculationPointsCostmap)
+{
+  TestClass test_obj;
+
+  const double grid_length_x = 10;
+  const double grid_length_y = 10;
+  const double grid_resolution = 1;
+  const double grid_position_x = 0;
+  const double grid_position_y = 0;
+  const std::string layer_name = "test";
+  const double initialize_cost = 0;
+  grid_map::GridMap costmap;
+
+  costmap.setGeometry(grid_map::Length(grid_length_x, grid_length_y), grid_resolution,
+  grid_map::Position(grid_position_x, grid_position_y));
+  costmap.add(layer_name, initialize_cost);
+
+  double y_cell_size = std::ceil(grid_length_y * (1 / grid_resolution));
+  double x_cell_size = std::ceil(grid_length_x * (1 / grid_resolution));
+  std::vector<double> z_vec;
+  std::vector<std::vector<double>> vec_y_z(y_cell_size, z_vec);
+  std::vector<std::vector<std::vector<double>>> vec_x_y_z(x_cell_size, vec_y_z);
+  vec_x_y_z[5][5].push_back(2.2);
+
+  double maximum_height_thres = 3.0;
+  double minimum_lidar_height_thres = -2.0;
+  double grid_min_value = 0;
+  double grid_max_value = 1;
+
+  grid_map::Matrix costmap_mat = test_obj.calculateCostmap(maximum_height_thres, minimum_lidar_height_thres, grid_min_value,
+                                              grid_max_value, costmap, layer_name, vec_x_y_z);
+  double expected_cost = 1.0;
+  EXPECT_DOUBLE_EQ(expected_cost, costmap_mat(5,5));
+}
+
+TEST(TestSuite, CheckHeightThresholdForCost)
+{
+  TestClass test_obj;
+
+  const double grid_length_x = 10;
+  const double grid_length_y = 10;
+  const double grid_resolution = 1;
+  const double grid_position_x = 0;
+  const double grid_position_y = 0;
+  const std::string layer_name = "test";
+  const double initialize_cost = 0;
+  grid_map::GridMap costmap;
+
+  costmap.setGeometry(grid_map::Length(grid_length_x, grid_length_y), grid_resolution,
+  grid_map::Position(grid_position_x, grid_position_y));
+  costmap.add(layer_name, initialize_cost);
+
+  double y_cell_size = std::ceil(grid_length_y * (1 / grid_resolution));
+  double x_cell_size = std::ceil(grid_length_x * (1 / grid_resolution));
+  std::vector<double> z_vec;
+  std::vector<std::vector<double>> vec_y_z(y_cell_size, z_vec);
+  std::vector<std::vector<std::vector<double>>> vec_x_y_z(x_cell_size, vec_y_z);
+  vec_x_y_z[5][5].push_back(3.2);
+
+  double maximum_height_thres = 3.0;
+  double minimum_lidar_height_thres = -2.0;
+  double grid_min_value = 0;
+  double grid_max_value = 1;
+
+  grid_map::Matrix costmap_mat = test_obj.calculateCostmap(maximum_height_thres, minimum_lidar_height_thres, grid_min_value,
+                                              grid_max_value, costmap, layer_name, vec_x_y_z);
+  double expected_cost = 0.0;
+  EXPECT_DOUBLE_EQ(expected_cost, costmap_mat(5,5));
+}
+
 
 int main(int argc, char** argv)
 {
