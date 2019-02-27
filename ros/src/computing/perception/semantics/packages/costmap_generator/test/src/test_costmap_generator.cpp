@@ -56,6 +56,8 @@ public:
 
   Points2Costmap points2costmap_;
 
+  CostmapGenerator costmap_genrator_;
+
   std::vector<std::vector<std::vector<double>>>
   assignPoints2GridCell(const grid_map::GridMap& gridmap, const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points);
 };

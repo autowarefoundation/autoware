@@ -77,7 +77,7 @@ grid_map::Index Points2Costmap::fetchGridIndexFromPoint(const pcl::PointXYZ& poi
 }
 
 std::vector<std::vector<std::vector<double>>> Points2Costmap::assignPoints2GridCell(
-    const grid_map::GridMap& gridmap, const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points_msg)
+    const grid_map::GridMap& gridmap, const pcl::PointCloud<pcl::PointXYZ>::Ptr& in_sensor_points)
 {
   double y_cell_size = std::ceil(grid_length_y_ * (1 / grid_resolution_));
   double x_cell_size = std::ceil(grid_length_x_ * (1 / grid_resolution_));
@@ -85,8 +85,6 @@ std::vector<std::vector<std::vector<double>>> Points2Costmap::assignPoints2GridC
   std::vector<std::vector<double>> vec_y_z(y_cell_size, z_vec);
   std::vector<std::vector<std::vector<double>>> vec_x_y_z(x_cell_size, vec_y_z);
 
-  pcl::PointCloud<pcl::PointXYZ>::Ptr in_sensor_points(new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::fromROSMsg(*in_sensor_points_msg, *in_sensor_points);
   for (const auto& point : *in_sensor_points)
   {
     grid_map::Index grid_ind = fetchGridIndexFromPoint(point);
@@ -131,10 +129,10 @@ grid_map::Matrix Points2Costmap::calculateCostmap(const double maximum_height_th
 grid_map::Matrix Points2Costmap::makeCostmapFromSensorPoints(
     const double maximum_height_thres, const double minimum_lidar_height_thres, const double grid_min_value,
     const double grid_max_value, const grid_map::GridMap& gridmap, const std::string& gridmap_layer_name,
-    const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points_msg)
+    const pcl::PointCloud<pcl::PointXYZ>::Ptr& in_sensor_points)
 {
   initGridmapParam(gridmap);
-  std::vector<std::vector<std::vector<double>>> grid_vec = assignPoints2GridCell(gridmap, in_sensor_points_msg);
+  std::vector<std::vector<std::vector<double>>> grid_vec = assignPoints2GridCell(gridmap, in_sensor_points);
   grid_map::Matrix costmap = calculateCostmap(maximum_height_thres, minimum_lidar_height_thres, grid_min_value,
                                               grid_max_value, gridmap, gridmap_layer_name, grid_vec);
   return costmap;

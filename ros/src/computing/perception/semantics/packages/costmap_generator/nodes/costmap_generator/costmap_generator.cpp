@@ -108,7 +108,9 @@ void CostmapGenerator::objectsCallback(const autoware_msgs::DetectedObjectArray:
 
 void CostmapGenerator::sensorPointsCallback(const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points_msg)
 {
-  costmap_[SENSOR_POINTS_COSTMAP_LAYER_] = generateSensorPointsCostmap(in_sensor_points_msg);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr in_sensor_points(new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::fromROSMsg(*in_sensor_points_msg, *in_sensor_points);
+  costmap_[SENSOR_POINTS_COSTMAP_LAYER_] = generateSensorPointsCostmap(in_sensor_points);
   costmap_[VECTORMAP_COSTMAP_LAYER_] = generateVectormapCostmap();
   costmap_[COMBINED_COSTMAP_LAYER_] = generateCombinedCostmap();
 
@@ -130,11 +132,11 @@ void CostmapGenerator::initGridmap()
 }
 
 grid_map::Matrix
-CostmapGenerator::generateSensorPointsCostmap(const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points_msg)
+CostmapGenerator::generateSensorPointsCostmap(const pcl::PointCloud<pcl::PointXYZ>::Ptr& in_sensor_points)
 {
   grid_map::Matrix sensor_points_costmap = points2costmap_.makeCostmapFromSensorPoints(
       maximum_lidar_height_thres_, minimum_lidar_height_thres_, grid_min_value_, grid_max_value_, costmap_,
-      SENSOR_POINTS_COSTMAP_LAYER_, in_sensor_points_msg);
+      SENSOR_POINTS_COSTMAP_LAYER_, in_sensor_points);
   return sensor_points_costmap;
 }
 

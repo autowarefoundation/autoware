@@ -27,7 +27,7 @@
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ********************/
- 
+
 #ifndef POINTS2COSTMAP_H
 #define POINTS2COSTMAP_H
 
@@ -56,7 +56,7 @@ public:
   grid_map::Matrix makeCostmapFromSensorPoints(const double maximum_height_thres, const double minimum_height_thres,
                                                const double grid_min_value, const double grid_max_value,
                                                const grid_map::GridMap& gridmap, const std::string& gridmap_layer_name,
-                                               const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points);
+                                               const pcl::PointCloud<pcl::PointXYZ>::Ptr& in_sensor_points);
 
 private:
   friend class TestClass;
@@ -88,7 +88,7 @@ private:
   /// \param[in] in_sensor_points: subscribed pointcloud
   /// \param[out] grid-x-length x grid-y-length size grid stuffed with point's height in corresponding grid cell
   std::vector<std::vector<std::vector<double>>>
-  assignPoints2GridCell(const grid_map::GridMap& gridmap, const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points);
+  assignPoints2GridCell(const grid_map::GridMap& gridmap, const pcl::PointCloud<pcl::PointXYZ>::Ptr& in_sensor_points);
 
   /// \brief calculate costmap from subscribed pointcloud
   /// \param[in] maximum_height_thres: Maximum height threshold for pointcloud data
