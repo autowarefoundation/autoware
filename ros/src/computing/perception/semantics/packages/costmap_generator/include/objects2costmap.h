@@ -60,6 +60,8 @@ private:
 
   const int NUMBER_OF_POINTS;
   const int NUMBER_OF_DIMENSIONS;
+  const std::string OBJECTS_COSTMAP_LAYER_;
+  const std::string EXPANDED_OBJECTS_COSTMAP_LAYER_;
 
   /// \brief make 4 rectangle points from centroid position and orientation
   /// \param[in] in_object: subscribed one of DetectedObjectArray
