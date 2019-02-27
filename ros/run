@@ -43,7 +43,7 @@ if [ "$?" == "0" ]; then
 fi
 
 # boot ros-master & health_checker
-${TERMINAL} ${MASTER_DISPLAY_OPTION} ${OPTION_WORKING_DIR}=${MY_PATH} ${OPTION_COMMAND}="bash -c 'source ./devel/setup.bash; roslaunch autoware_health_checker health_checker.launch'"&
+${TERMINAL} ${MASTER_DISPLAY_OPTION} ${OPTION_WORKING_DIR}=${MY_PATH} ${OPTION_COMMAND}="bash -c 'source ./devel/setup.bash; roscore'"&
 
 # boot runtime_manager
 ${TERMINAL} ${RUNMGR_DISPLAY_OPTION} ${OPTION_WORKING_DIR}=${MY_PATH} ${OPTION_COMMAND}="bash -c 'source ./devel/setup.bash; rosrun runtime_manager runtime_manager_dialog.py'"

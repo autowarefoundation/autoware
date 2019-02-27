@@ -15,7 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES node_status_publisher
+  LIBRARIES health_checker
   CATKIN_DEPENDS autoware_system_msgs roscpp rosgraph_msgs
 #  DEPENDS system_lib
 )
@@ -26,33 +26,34 @@ include_directories(
   ${autoware_system_msgs_INCLUDE_DIRS}
 )
 
-set(NODE_STATUS_PUBLISHER_SRC
-  src/node_status_publisher.cpp
-  src/diag_buffer.cpp
-  src/rate_checker.cpp
+set(HEALTH_CHECKER_SRC
+  src/health_checker/health_checker.cpp
+  src/health_checker/diag_buffer.cpp
+  src/health_checker/rate_checker.cpp
+  src/health_checker/value_manager.cpp
 )
-add_library(node_status_publisher
-  ${NODE_STATUS_PUBLISHER_SRC}
+add_library(health_checker
+  ${HEALTH_CHECKER_SRC}
 )
-target_link_libraries(node_status_publisher ${catkin_LIBRARIES})
-add_dependencies(node_status_publisher ${catkin_EXPORTED_TARGETS} autoware_system_msgs_generate_messages_cpp)
+target_link_libraries(health_checker ${catkin_LIBRARIES})
+add_dependencies(health_checker ${catkin_EXPORTED_TARGETS} autoware_system_msgs_generate_messages_cpp)
 
 add_library(system_status_subscriber
-  src/system_status_subscriber.cpp
+  src/system_status_subscriber/system_status_subscriber.cpp
 )
 target_link_libraries(system_status_subscriber ${catkin_LIBRARIES})
 add_dependencies(system_status_subscriber ${catkin_EXPORTED_TARGETS} autoware_system_msgs_generate_messages_cpp)
 
 add_executable(health_aggregator
-  src/health_aggregator_node.cpp
-  src/health_aggregator.cpp
+  src/health_aggregator/health_aggregator_node.cpp
+  src/health_aggregator/health_aggregator.cpp
 )
 target_link_libraries(health_aggregator ${catkin_LIBRARIES})
 add_dependencies(health_aggregator ${catkin_EXPORTED_TARGETS} autoware_system_msgs_generate_messages_cpp)
 
 add_executable(health_analyzer
-  src/health_analyzer_node.cpp
-  src/health_analyzer.cpp
+  src/health_analyzer/health_analyzer_node.cpp
+  src/health_analyzer/health_analyzer.cpp
 )
 target_link_libraries(health_analyzer ${catkin_LIBRARIES})
 add_dependencies(health_analyzer ${catkin_EXPORTED_TARGETS} autoware_system_msgs_generate_messages_cpp)
@@ -71,7 +72,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
 )
 
 # Install library
-install(TARGETS node_status_publisher system_status_subscriber
+install(TARGETS health_checker system_status_subscriber
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
@@ -79,10 +80,10 @@ install(TARGETS node_status_publisher system_status_subscriber
 
 if (CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
-  add_rostest_gtest(test-autoware_health_checker
+  add_rostest_gtest(test_autoware_health_checker
   test/test_autoware_health_checker.test
   test/src/test_autoware_health_checker.cpp
-  ${NODE_STATUS_PUBLISHER_SRC})
-  target_link_libraries(test-autoware_health_checker
+  ${HEALTH_CHECKER_SRC})
+  target_link_libraries(test_autoware_health_checker
   ${catkin_LIBRARIES})
 endif ()

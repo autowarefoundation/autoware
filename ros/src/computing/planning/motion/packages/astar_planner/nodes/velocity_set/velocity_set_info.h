@@ -24,7 +24,7 @@
 
 #include "autoware_config_msgs/ConfigVelocitySet.h"
 
-#include <autoware_health_checker/node_status_publisher.h>
+#include <autoware_health_checker/health_checker/health_checker.h>
 #include <memory>
 
 class VelocitySetInfo
@@ -54,7 +54,7 @@ class VelocitySetInfo
   bool set_pose_;
   bool use_obstacle_sim_;
 
-  std::shared_ptr<autoware_health_checker::NodeStatusPublisher> node_status_publisher_ptr_;
+  std::shared_ptr<autoware_health_checker::HealthChecker> health_checker_ptr_;
 
  public:
   VelocitySetInfo();

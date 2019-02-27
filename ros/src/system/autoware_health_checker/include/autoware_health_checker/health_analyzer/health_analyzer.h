@@ -84,7 +84,7 @@ private:
   int countWarn(autoware_system_msgs::SystemStatus msg);
   void writeDot();
   graph_t depend_graph_;
-  int warn_nodes_count_threshold_;
+  int warn_count_threshold_;
   template <typename T> bool isAlreadyExist(std::vector<T> vector, T target) {
     for (auto itr = vector.begin(); itr != vector.end(); itr++) {
       if (target == *itr) {
