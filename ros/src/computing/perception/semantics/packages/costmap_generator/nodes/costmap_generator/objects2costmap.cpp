@@ -111,12 +111,16 @@ grid_map::Polygon Objects2Costmap::makePolygonFromObjectConvexHull(const autowar
   grid_map::Polygon polygon;
   polygon.setFrameId(in_object.header.frame_id);
 
-  for (size_t index = 0; index < in_object.convex_hull.polygon.points.size()/2; index++)
+  double initial_z = in_object.convex_hull.polygon.points[0].z;
+  for (size_t index = 0; index < in_object.convex_hull.polygon.points.size(); index++)
   {
-    geometry_msgs::Point centroid = in_object.pose.position;
-    geometry_msgs::Point expanded_point = makeExpandedPoint(centroid,
-                                            in_object.convex_hull.polygon.points[index], expand_polygon_size);
-    polygon.addVertex(grid_map::Position(expanded_point.x, expanded_point.y));
+    if(in_object.convex_hull.polygon.points[index].z == initial_z)
+    {
+      geometry_msgs::Point centroid = in_object.pose.position;
+      geometry_msgs::Point expanded_point = makeExpandedPoint(centroid,
+        in_object.convex_hull.polygon.points[index], expand_polygon_size);
+        polygon.addVertex(grid_map::Position(expanded_point.x, expanded_point.y));
+    }
   }
   return polygon;
 }
