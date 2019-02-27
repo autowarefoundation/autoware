@@ -27,7 +27,7 @@
 #include <std_msgs/Int32.h>
 #include <std_msgs/String.h>
 
-#include <autoware_health_checker/node_status_publisher.h>
+#include <autoware_health_checker/health_checker/health_checker.h>
 #include <memory>
 
 namespace astar_planner
@@ -143,7 +143,7 @@ public:
 private:
   double calcPathLength(const autoware_msgs::Lane &lane, const int start_waypoint_index,
                         const int goal_waypoint_index) const;
-  std::shared_ptr<autoware_health_checker::NodeStatusPublisher> node_status_publisher_ptr_;
+  std::shared_ptr<autoware_health_checker::HealthChecker> health_checker_ptr_;
   nav_msgs::OccupancyGrid map_;
   geometry_msgs::PoseStamped start_pose_global_;
   geometry_msgs::PoseStamped goal_pose_global_;

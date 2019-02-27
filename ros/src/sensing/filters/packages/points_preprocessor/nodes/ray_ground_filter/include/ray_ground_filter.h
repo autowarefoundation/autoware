@@ -34,7 +34,7 @@
 #include "autoware_config_msgs/ConfigRayGroundFilter.h"
 
 //headers in Autoware Health Checker
-#include <autoware_health_checker/node_status_publisher.h>
+#include <autoware_health_checker/health_checker/health_checker.h>
 
 #include <opencv2/core/version.hpp>
 #if (CV_MAJOR_VERSION == 3)
@@ -46,7 +46,7 @@
 class RayGroundFilter
 {
 private:
-	std::shared_ptr<autoware_health_checker::NodeStatusPublisher> node_status_pub_ptr_;
+	std::shared_ptr<autoware_health_checker::HealthChecker> node_status_pub_ptr_;
 	ros::NodeHandle     node_handle_;
 	ros::Subscriber     points_node_sub_;
 	ros::Subscriber     config_node_sub_;

@@ -1,0 +1,112 @@
+health_checker:
+  estimate_twist_angular:
+    max:
+      warn: 0.3
+      error: 0.6
+      fatal : 0.9
+  estimate_twist_linear:
+    max:
+      warn: 10.0
+      error: 20.0
+      fatal: 30.0
+  time_ndt_matching:
+    max:
+      warn: 50.0
+      error: 75.0
+      fatal : 100.0
+  closest_waypoint_distance:
+    max:
+      warn: 1.0
+      error: 2.0
+      fatal: 3.0
+  twist_cmd_linear_high:
+    max:
+      warn: 15.0
+      error: 18.0
+      fatal: 20.0
+  topic_rate:
+    topic_points_raw_slow_in_ndt_matching_topic_rate:
+      pub_node: /velodyne_driver
+      sub_node: /ndt_matching
+      topic_name: /points_raw
+      warn: 8.0
+      error: 4.0
+      fatal: 2.0
+    topic_twist_cmd_in_twist_gate_topic_rate:
+      pub_node: /twist_filter
+      sub_node: /twist_gate
+      topic_name: /twist_cmd
+      warn: 8.0
+      error: 4.0
+      fatal: 2.0
+    topic_points_no_ground_slow_in_ndt_matching_topic_rate:
+      pub_node: /ray_ground_filter
+      sub_node: /velocity_set
+      topic_name: /points_no_ground
+      warn: 8.0
+      error: 4.0
+      fatal: 2.0
+    topic_points_no_ground_slow_in_ndt_matching_topic_rate:
+      pub_node: /ray_ground_filter
+      sub_node: /velocity_set
+      topic_name: /points_no_ground
+      warn: 8.0
+      error: 4.0
+      fatal: 2.0
+    topic_ndt_pose_in_obstacle_avoid_topic_rate:
+      pub_node: /ndt_matching
+      sub_node: /obstacle_avoid
+      topic_name: /ndt_pose
+      warn: 8.0
+      error: 4.0
+      fatal: 2.0
+    topic_ndt_pose_in_velocity_set_topic_rate:
+      pub_node: /ndt_matching
+      sub_node: /velocity_set
+      topic_name: /ndt_pose
+      warn: 8.0
+      error: 4.0
+      fatal: 2.0
+  drop_rate:
+    topic_points_raw_slow_in_ndt_matching_drop_rate:
+      pub_node: /velodyne_driver
+      sub_node: /ndt_matching
+      topic_name: /points_raw
+      warn : 0.05
+      error: 0.1
+      fatal: 0.2
+    topic_twist_cmd_in_twist_gate_drop_rate:
+      pub_node: /twist_filter
+      sub_node: /twist_gate
+      topic_name: /twist_cmd
+      warn : 0.05
+      error: 0.1
+      fatal: 0.2
+    topic_points_no_ground_slow_in_ndt_matching_drop_rate:
+      pub_node: /ray_ground_filter
+      sub_node: /velocity_set
+      topic_name: /points_no_ground
+      warn : 0.05
+      error: 0.1
+      fatal: 0.2
+    topic_points_no_ground_slow_in_ndt_matching_drop_rate:
+      pub_node: /ray_ground_filter
+      sub_node: /velocity_set
+      topic_name: /points_no_ground
+      warn : 0.05
+      error: 0.1
+      fatal: 0.2
+    topic_ndt_pose_in_obstacle_avoid_drop_rate:
+      pub_node: /ndt_matching
+      sub_node: /obstacle_avoid
+      topic_name: /ndt_pose
+      warn : 0.05
+      error: 0.1
+      fatal: 0.2
+    topic_ndt_pose_in_velocity_set_drop_rate:
+      pub_node: /ndt_matching
+      sub_node: /velocity_set
+      topic_name: /ndt_pose
+      warn : 0.05
+      error: 0.1
+      fatal: 0.2

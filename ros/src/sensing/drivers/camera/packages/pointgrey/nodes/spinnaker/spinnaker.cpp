@@ -123,13 +123,29 @@ SpinnakerCamera::SpinnakerCamera()
       ///////////////////////                 FrameRate                   /////////////////////////////
       CFloatPtr ptrAcquisitionFrameRate = node_map_->GetNode("AcquisitionFrameRate");
       CBooleanPtr ptrAcquisitionFrameRateEnable = node_map_->GetNode("AcquisitionFrameRateEnable");
-
-      if (IsAvailable(ptrAcquisitionFrameRate) && IsWritable(ptrAcquisitionFrameRate) &&
-          IsAvailable(ptrAcquisitionFrameRateEnable) && IsWritable(ptrAcquisitionFrameRateEnable))
+      CEnumerationPtr ptrAcquisitionFrameRateAuto = pCamList_[i]->GetNodeMap().GetNode("AcquisitionFrameRateAuto");
+      if (IsAvailable(ptrAcquisitionFrameRateAuto) && IsWritable(ptrAcquisitionFrameRateAuto))
       {
-        // enable to change fps
+        CEnumEntryPtr ptrAcquisitionFrameRateAutoOff = ptrAcquisitionFrameRateAuto->GetEntryByName("Off");
+        if (IsAvailable(ptrAcquisitionFrameRateAutoOff) && IsReadable(ptrAcquisitionFrameRateAutoOff))
+        {
+          int64_t FrameRateAutoOff = ptrAcquisitionFrameRateAutoOff->GetValue();
+          ptrAcquisitionFrameRateAuto->SetIntValue(FrameRateAutoOff);
+          ROS_INFO_STREAM("[" << __APP_NAME__ << "] Updated FrameRateAuto to Off");
+        }
+        else
+        {
+          ROS_INFO_STREAM("[" << __APP_NAME__ << "] Cannot update FrameRateAuto to Off");
+        }
+      }
+      if (IsAvailable(ptrAcquisitionFrameRateEnable) && IsWritable(ptrAcquisitionFrameRateEnable))
+      {
         ptrAcquisitionFrameRateEnable->SetValue(true);
+      }
+      if (IsAvailable(ptrAcquisitionFrameRate) && IsWritable(ptrAcquisitionFrameRate))
+      {
         ptrAcquisitionFrameRate->SetValue(fps_);
+        ROS_INFO_STREAM("[" << __APP_NAME__ << "] Set FrameRate to " << fps_);
       }
       else
       {
@@ -140,7 +156,8 @@ SpinnakerCamera::SpinnakerCamera()
       CEnumerationPtr ptrPixelFormat = node_map_->GetNode("PixelFormat");
       if (IsAvailable(ptrPixelFormat) && IsWritable(ptrPixelFormat))
       {
-        ROS_INFO_STREAM("Current Format" << ptrPixelFormat->GetCurrentEntry()->GetSymbolic());
+        ROS_INFO_STREAM("[" << __APP_NAME__ << "] Current pixel Format"
+                            << ptrPixelFormat->GetCurrentEntry()->GetSymbolic());
         /*gcstring pixel_format = format_.c_str();
 
         CEnumEntryPtr ptrPixelFormatSetup = ptrPixelFormat->GetEntryByName(pixel_format);

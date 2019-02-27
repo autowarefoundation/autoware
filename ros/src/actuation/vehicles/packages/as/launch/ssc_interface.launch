@@ -1,0 +1,26 @@
+<!-- -->
+<launch>
+
+	<arg name="use_rear_wheel_speed" default="true"/>
+	<arg name="use_adaptive_gear_ratio" default="true"/>
+	<arg name="command_timeout" default="1000"/>
+	<arg name="loop_rate" default="30.0"/>
+	<arg name="wheel_base" default="2.79"/>
+	<arg name="tire_radius" default="0.39"/>
+	<arg name="acceleration_limit" default="3.0"/>
+	<arg name="deceleration_limit" default="6.0"/>
+	<arg name="max_curvature_rate" default="0.75"/>
+
+	<node pkg="as" type="ssc_interface" name="ssc_interface" output="screen">
+		<param name="use_rear_wheel_speed" value="$(arg use_rear_wheel_speed)" />
+		<param name="use_adaptive_gear_ratio" value="$(arg use_adaptive_gear_ratio)" />
+		<param name="command_timeout" value="$(arg command_timeout)" />
+		<param name="loop_rate" value="$(arg loop_rate)" />
+		<param name="wheel_base" value="$(arg wheel_base)" />
+		<param name="tire_radius" value="$(arg tire_radius)" />
+		<param name="acceleration_limit" value="$(arg acceleration_limit)" />
+		<param name="deceleration_limit" value="$(arg deceleration_limit)" />
+		<param name="max_curvature_rate" value="$(arg max_curvature_rate)" />
+	</node>
+
+</launch>
