@@ -39,7 +39,7 @@ void VitalMonitor::updateNodeStatus(const std::vector<std::string>& available_no
   }
   for (auto& node : required_nodes_)
   {
-    const std::string node_name = "/" + node.first;
+    const std::string node_name = node.first;
     const auto& found = std::find(cur_nodes.begin(), cur_nodes.end(), node_name);
     if (found == cur_nodes.end())
     {
@@ -48,7 +48,7 @@ void VitalMonitor::updateNodeStatus(const std::vector<std::string>& available_no
   }
   for (const auto& node : required_nodes_)
   {
-    const std::string node_name = "/" + node.first;
+    const std::string node_name = node.first;
     if (dead_nodes_.count(node_name) == 0 && node.second.isDead())
     {
       ROS_INFO("%s is not available", node_name.c_str());
@@ -63,7 +63,7 @@ void VitalMonitor::initMonitoredNodeList(ros::NodeHandle& pnh)
   pnh.getParam("vital_monitor", params);
   for (const auto& param : params)
   {
-    auto node_name = param.first;
+    std::string node_name = "/" + param.first;
     auto val = param.second;
     const double timeout_sec = val.hasMember("timeout") ? double(val["timeout"]) : 0.1;
     const bool can_respawn = val.hasMember("respawn") ? bool(val["respawn"]) : false;
