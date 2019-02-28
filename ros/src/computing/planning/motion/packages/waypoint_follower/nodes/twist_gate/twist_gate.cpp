@@ -210,7 +210,7 @@ void TwistGate::auto_cmd_twist_cmd_callback(const geometry_msgs::TwistStamped::C
 {
   node_status_pub_ptr_->NODE_ACTIVATE();
   node_status_pub_ptr_->CHECK_RATE("/topic/rate/twist_cmd/slow",8,5,1,"topic twist_cmd subscribe rate low.");
-  if (command_mode_ == CommandMode::AUTO)
+  if(command_mode_ == CommandMode::AUTO)
   {
     twist_gate_msg_.header.frame_id = input_msg->header.frame_id;
     twist_gate_msg_.header.stamp = input_msg->header.stamp;

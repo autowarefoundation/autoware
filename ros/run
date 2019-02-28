@@ -42,8 +42,8 @@ if [ "$?" == "0" ]; then
   export ROS_IP=$ADDR
 fi
 
-# boot ros-master
-${TERMINAL} ${MASTER_DISPLAY_OPTION} ${OPTION_WORKING_DIR}=${MY_PATH} ${OPTION_COMMAND}="bash -c 'source ./install/setup.bash; roscore'"&
+# boot ros-master & health_checker
+${TERMINAL} ${MASTER_DISPLAY_OPTION} ${OPTION_WORKING_DIR}=${MY_PATH} ${OPTION_COMMAND}="bash -c 'source ./devel/setup.bash; roslaunch autoware_health_checker health_checker.launch'"&
 
 # boot runtime_manager
-${TERMINAL} ${RUNMGR_DISPLAY_OPTION} ${OPTION_WORKING_DIR}=${MY_PATH} ${OPTION_COMMAND}="bash -c 'source ./install/setup.bash; rosrun runtime_manager runtime_manager_dialog.py'"
+${TERMINAL} ${RUNMGR_DISPLAY_OPTION} ${OPTION_WORKING_DIR}=${MY_PATH} ${OPTION_COMMAND}="bash -c 'source ./devel/setup.bash; rosrun runtime_manager runtime_manager_dialog.py'"
