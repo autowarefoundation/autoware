@@ -71,7 +71,6 @@ public:
                   float* x_coors_for_sub_shaped, float* y_coors_for_sub_shaped, float* pillar_feature_mask,
                   float* sparse_pillar_map, int* host_pillar_count);
 
-
 private:
   std::unique_ptr<PreprocessPoints> preprocess_points_ptr_;
 };
@@ -137,7 +136,7 @@ void TestClass::initPoints(pcl::PointCloud<pcl::PointXYZI>::Ptr in_pcl_pc_ptr)
   point.x = 12.489;
   point.y = -9.59703;
   point.z = -2.15565;
-  point.intensity =11;
+  point.intensity = 11;
   in_pcl_pc_ptr->push_back(point);
   point.x = 12.9084;
   point.y = -10.9626;
@@ -156,12 +155,12 @@ void TestClass::initPoints(pcl::PointCloud<pcl::PointXYZI>::Ptr in_pcl_pc_ptr)
   in_pcl_pc_ptr->push_back(point);
   point.x = 13.8213;
   point.y = -10.8529;
-  point.z =-1.22883;
+  point.z = -1.22883;
   point.intensity = 19;
   in_pcl_pc_ptr->push_back(point);
   point.x = 11.8957;
   point.y = -10.3189;
-  point.z =-1.28556;
+  point.z = -1.28556;
   point.intensity = 13;
   in_pcl_pc_ptr->push_back(point);
 }
@@ -174,7 +173,6 @@ TEST(TestSuite, CheckPreprocessPointsCPU)
   std::string package_path = ros::package::getPath("lidar_point_pillars");
   std::string in_file = package_path + "/test/data/1527836009720148.pcd";
   test_obj.initPoints(pcl_pc_ptr);
-
 
   float* points_array = new float[pcl_pc_ptr->size() * 4];
   test_obj.pclToArray(pcl_pc_ptr, points_array);

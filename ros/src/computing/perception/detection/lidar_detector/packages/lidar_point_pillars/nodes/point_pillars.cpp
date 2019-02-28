@@ -265,18 +265,16 @@ void PointPillars::deviceMemoryMalloc()
 
 void PointPillars::initAnchors()
 {
-  generateAnchors(anchors_px_, anchors_py_, anchors_pz_,
-                  anchors_dx_, anchors_dy_, anchors_dz_, anchors_ro_);
+  generateAnchors(anchors_px_, anchors_py_, anchors_pz_, anchors_dx_, anchors_dy_, anchors_dz_, anchors_ro_);
 
-  convertAnchors2BoxAnchors(anchors_px_, anchors_py_, anchors_dx_, anchors_dy_,
-                            box_anchors_min_x_, box_anchors_min_y_,
+  convertAnchors2BoxAnchors(anchors_px_, anchors_py_, anchors_dx_, anchors_dy_, box_anchors_min_x_, box_anchors_min_y_,
                             box_anchors_max_x_, box_anchors_max_y_);
 
   putAnchorsInDeviceMemory();
 }
 
-void PointPillars::generateAnchors(float* anchors_px_, float* anchors_py_, float* anchors_pz_,
-                                   float* anchors_dx_, float* anchors_dy_, float* anchors_dz_, float* anchors_ro_)
+void PointPillars::generateAnchors(float* anchors_px_, float* anchors_py_, float* anchors_pz_, float* anchors_dx_,
+                                   float* anchors_dy_, float* anchors_dz_, float* anchors_ro_)
 {
   // zero clear
   for (size_t i = 0; i < NUM_ANCHOR_; i++)
@@ -512,8 +510,10 @@ void PointPillars::preprocessCPU(const float* in_points_array, const int in_num_
 void PointPillars::preprocessGPU(const float* in_points_array, const int in_num_points)
 {
   float* dev_points;
+  // clang-format off
   GPU_CHECK(cudaMalloc((void**)&dev_points, in_num_points * NUM_BOX_CORNERS_ * sizeof(float)));
-  GPU_CHECK(cudaMemcpy(dev_points, in_points_array, in_num_points * NUM_BOX_CORNERS_ * sizeof(float), cudaMemcpyHostToDevice));
+  GPU_CHECK(cudaMemcpy(dev_points, in_points_array, in_num_points * NUM_BOX_CORNERS_ * sizeof(float),　cudaMemcpyHostToDevice));
+  // clang-format on
 
   GPU_CHECK(cudaMemset(dev_pillar_count_histo_, 0, GRID_Y_SIZE_ * GRID_X_SIZE_ * sizeof(int)));
   GPU_CHECK(cudaMemset(dev_sparse_pillar_map_, 0, NUM_INDS_FOR_SCAN_ * NUM_INDS_FOR_SCAN_ * sizeof(int)));
@@ -577,11 +577,10 @@ void PointPillars::doInference(const float* in_points_array, const int in_num_po
   rpn_context_->enqueue(BATCH_SIZE_, rpn_buffers_, stream, nullptr);
 
   GPU_CHECK(cudaMemset(dev_filter_count_, 0, sizeof(int)));
-  postprocess_cuda_ptr_->doPostprocessCuda((float*)rpn_buffers_[1], (float*)rpn_buffers_[2], (float*)rpn_buffers_[3],
-                                           dev_anchor_mask_, dev_anchors_px_, dev_anchors_py_, dev_anchors_pz_,
-                                           dev_anchors_dx_, dev_anchors_dy_, dev_anchors_dz_, dev_anchors_ro_,
-                                           dev_filtered_box_, dev_filtered_score_, dev_filtered_dir_, dev_box_for_nms_,
-                                           dev_filter_count_, out_detection);
+  postprocess_cuda_ptr_->doPostprocessCuda(
+      (float*)rpn_buffers_[1], (float*)rpn_buffers_[2], (float*)rpn_buffers_[3], dev_anchor_mask_, dev_anchors_px_,
+      dev_anchors_py_, dev_anchors_pz_, dev_anchors_dx_, dev_anchors_dy_, dev_anchors_dz_, dev_anchors_ro_,
+      dev_filtered_box_, dev_filtered_score_, dev_filtered_dir_, dev_box_for_nms_, dev_filter_count_, out_detection);
 
   // release the stream and the buffers
   cudaStreamDestroy(stream);

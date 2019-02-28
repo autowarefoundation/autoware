@@ -68,12 +68,11 @@ geometry_msgs::Pose PointPillarsROS::getTransformedPose(const geometry_msgs::Pos
   return out_pose.pose;
 }
 
-void PointPillarsROS::pubDetectedObject(const std::vector<float>& detections,
-                                        const std_msgs::Header& pc_header)
+void PointPillarsROS::pubDetectedObject(const std::vector<float>& detections, const std_msgs::Header& pc_header)
 {
   autoware_msgs::DetectedObjectArray objects;
   objects.header = pc_header;
-  int num_objects = detections.size()/OUTPUT_NUM_BOX_FEATURE_;
+  int num_objects = detections.size() / OUTPUT_NUM_BOX_FEATURE_;
   for (size_t i = 0; i < num_objects; i++)
   {
     autoware_msgs::DetectedObject object;

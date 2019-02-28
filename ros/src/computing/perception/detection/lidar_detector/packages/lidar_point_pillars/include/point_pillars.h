@@ -231,8 +231,8 @@ private:
   * @param[in] anchors_ro_ Represents rotation value for corresponding anchor
   * @details Generate anchors for each grid
   */
-  void generateAnchors(float* anchors_px_, float* anchors_py_, float* anchors_pz_,
-                       float* anchors_dx_, float* anchors_dy_, float* anchors_dz_, float* anchors_ro_);
+  void generateAnchors(float* anchors_px_, float* anchors_py_, float* anchors_pz_, float* anchors_dx_,
+                       float* anchors_dy_, float* anchors_dz_, float* anchors_ro_);
 
   /**
   * @brief Convert ONNX to TensorRT model
@@ -279,8 +279,8 @@ private:
   * @details Make box anchors for nms
   */
   void convertAnchors2BoxAnchors(float* anchors_px_, float* anchors_py_, float* anchors_dx_, float* anchors_dy_,
-                                 float* box_anchors_min_x_, float* box_anchors_min_y_,
-                                 float* box_anchors_max_x_, float* box_anchors_max_y_);
+                                 float* box_anchors_min_x_, float* box_anchors_min_y_, float* box_anchors_max_x_,
+                                 float* box_anchors_max_y_);
 
   /**
   * @brief Memory allocation for anchors
