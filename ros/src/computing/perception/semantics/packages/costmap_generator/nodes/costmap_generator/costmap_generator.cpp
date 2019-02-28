@@ -29,7 +29,7 @@
  ********************/
 
 // headers in local directory
-#include "object_map_utils.hpp"
+#include "object_map/object_map_utils.hpp"
 #include "costmap_generator.h"
 
 // Constructor
