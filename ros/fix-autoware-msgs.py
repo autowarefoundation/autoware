@@ -32,6 +32,7 @@ import time
 AutowareMsgs = collections.namedtuple('AutowareMsgs', 'pattern, message, node')
 replacement_list = [
     AutowareMsgs("actuation", "autoware_actuation_msgs", "ymc"),
+    AutowareMsgs("actuation", "autoware_actuation_msgs", "as"),
     AutowareMsgs("detection", "autoware_detection_msgs", "range_vision_fusion"),
     AutowareMsgs("detection", "autoware_detection_msgs", "libs_dpm_ttic"),
     AutowareMsgs("detection", "autoware_detection_msgs", "lidar_apollo_cnn_seg_detect"),
@@ -57,24 +58,24 @@ replacement_list = [
     AutowareMsgs("localization", "autoware_localization_msgs", "lidar_localizer"),
     AutowareMsgs("common", "autoware_common_msgs", "amathutils"),
     AutowareMsgs("common", "autoware_common_msgs", "state_machine"),
-    AutowareMsgs("common", "autoware_navigation_msgs", "openplanner_op_planner"),
-    AutowareMsgs("common", "autoware_navigation_msgs", "openplanner_op_ros_helpers"),
-    AutowareMsgs("common", "autoware_navigation_msgs", "openplanner_op_utility"),
-    AutowareMsgs("common", "autoware_navigation_msgs", "op_ros_helpers"),
-    AutowareMsgs("decision", "autoware_decision_msgs", "decision_maker"),
-    AutowareMsgs("mission", "autoware_navigation_msgs", "freespace_planner"),
-    AutowareMsgs("mission", "autoware_navigation_msgs", "lane_planner"),
-    AutowareMsgs("mission", "autoware_navigation_msgs", "op_global_planner"),
-    AutowareMsgs("mission", "autoware_navigation_msgs", "way_planner"),
-    AutowareMsgs("motion", "autoware_navigation_msgs", "astar_planner"),
-    AutowareMsgs("motion", "autoware_navigation_msgs", "dp_planner"),
-    AutowareMsgs("motion", "autoware_navigation_msgs", "ff_waypoint_follower"),
-    AutowareMsgs("motion", "autoware_navigation_msgs", "lattice_planner"),
-    AutowareMsgs("motion", "autoware_navigation_msgs", "op_local_planner"),
-    AutowareMsgs("motion", "autoware_navigation_msgs", "op_simulation_package"),
-    AutowareMsgs("motion", "autoware_navigation_msgs", "op_utilities"),
-    AutowareMsgs("motion", "autoware_navigation_msgs", "waypoint_follower"),
-    AutowareMsgs("motion", "autoware_navigation_msgs", "waypoint_maker"),
+    AutowareMsgs("common", "autoware_planning_msgs", "openplanner_op_planner"),
+    AutowareMsgs("common", "autoware_planning_msgs", "openplanner_op_ros_helpers"),
+    AutowareMsgs("common", "autoware_planning_msgs", "openplanner_op_utility"),
+    AutowareMsgs("common", "autoware_planning_msgs", "op_ros_helpers"),
+    AutowareMsgs("decision", "autoware_planning_msgs", "decision_maker"),
+    AutowareMsgs("mission", "autoware_planning_msgs", "freespace_planner"),
+    AutowareMsgs("mission", "autoware_planning_msgs", "lane_planner"),
+    AutowareMsgs("mission", "autoware_planning_msgs", "op_global_planner"),
+    AutowareMsgs("mission", "autoware_planning_msgs", "way_planner"),
+    AutowareMsgs("motion", "autoware_planning_msgs", "astar_planner"),
+    AutowareMsgs("motion", "autoware_planning_msgs", "dp_planner"),
+    AutowareMsgs("motion", "autoware_planning_msgs", "ff_waypoint_follower"),
+    AutowareMsgs("motion", "autoware_planning_msgs", "lattice_planner"),
+    AutowareMsgs("motion", "autoware_planning_msgs", "op_local_planner"),
+    AutowareMsgs("motion", "autoware_planning_msgs", "op_simulation_package"),
+    AutowareMsgs("motion", "autoware_planning_msgs", "op_utilities"),
+    AutowareMsgs("motion", "autoware_planning_msgs", "waypoint_follower"),
+    AutowareMsgs("motion", "autoware_planning_msgs", "waypoint_maker"),
     AutowareMsgs("map", "autoware_map_msgs", "map_file"),
     AutowareMsgs("map", "autoware_map_msgs", "obj_db"),
     AutowareMsgs("map", "autoware_map_msgs", "vector_map_server"),
@@ -87,6 +88,7 @@ replacement_list = [
     AutowareMsgs("sensing", "autoware_sensing_msgs", "calibration_publisher"),
     AutowareMsgs("sensing", "autoware_sensing_msgs", "points2image"),
     AutowareMsgs("simulation", "autoware_simulation_msgs", "lgsvl_simulator_bridge"),
+    AutowareMsgs("simulation", "autoware_simulation_msgs", "gazebo_simulator"),
     AutowareMsgs("socket", "autoware_socket_msgs", "mqtt_socket"),
     AutowareMsgs("socket", "autoware_socket_msgs", "tablet_socket"),
     AutowareMsgs("socket", "autoware_socket_msgs", "vehicle_socket"),
@@ -102,20 +104,20 @@ replacement_list = [
 # messages without associations, make necessary correction to suggested namespaces, and make sure each
 # message type is assigned to only ONE namespace.
 manual_association_list = {
-    'autoware_msgs/AccelCmd': 'autoware_navigation_msgs',
+    'autoware_msgs/AccelCmd': 'autoware_planning_msgs',
     'autoware_msgs/AdjustXY': 'autoware_detection_msgs',
-    'autoware_msgs/BrakeCmd': 'autoware_navigation_msgs',
+    'autoware_msgs/BrakeCmd': 'autoware_planning_msgs',
     'autoware_msgs/CameraExtrinsic': 'autoware_sensing_msgs',
     'autoware_msgs/Centroids': 'autoware_detection_msgs',  # 'autoware_system_msgs',
-    'autoware_msgs/CloudCluster': 'autoware_detection_msgs',  # 'autoware_navigation_msgs',
-    'autoware_msgs/CloudClusterArray': 'autoware_detection_msgs',  # 'autoware_navigation_msgs', 'autoware_decision_msgs',
+    'autoware_msgs/CloudCluster': 'autoware_detection_msgs',  # 'autoware_planning_msgs',
+    'autoware_msgs/CloudClusterArray': 'autoware_detection_msgs',  # 'autoware_planning_msgs', 'autoware_planning_msgs',
     'autoware_msgs/ColorSet': 'autoware_detection_msgs',
-    'autoware_msgs/ControlCommand': 'autoware_navigation_msgs',
-    'autoware_msgs/ControlCommandStamped': 'autoware_navigation_msgs',
-    'autoware_msgs/DTLane': 'autoware_navigation_msgs',
-    'autoware_msgs/DetectedObject': 'autoware_detection_msgs',  # 'autoware_semantics_msgs', 'autoware_navigation_msgs', 'autoware_prediction_msgs',
-    'autoware_msgs/DetectedObjectArray': 'autoware_detection_msgs',  # 'autoware_navigation_msgs', 'autoware_semantics_msgs', 'autoware_util_msgs', 'autoware_prediction_msgs',
-    'autoware_msgs/ExtractedPosition': 'autoware_navigation_msgs',  # 'autoware_detection_msgs'
+    'autoware_msgs/ControlCommand': 'autoware_planning_msgs',
+    'autoware_msgs/ControlCommandStamped': 'autoware_planning_msgs',
+    'autoware_msgs/DTLane': 'autoware_planning_msgs',
+    'autoware_msgs/DetectedObject': 'autoware_detection_msgs',  # 'autoware_semantics_msgs', 'autoware_planning_msgs', 'autoware_prediction_msgs',
+    'autoware_msgs/DetectedObjectArray': 'autoware_detection_msgs',  # 'autoware_planning_msgs', 'autoware_semantics_msgs', 'autoware_util_msgs', 'autoware_prediction_msgs',
+    'autoware_msgs/ExtractedPosition': 'autoware_planning_msgs',  # 'autoware_detection_msgs'
     'autoware_msgs/GeometricRectangle': 'autoware_unused_msgs',
     'autoware_msgs/ICPStat': 'autoware_localization_msgs',
     'autoware_msgs/ImageLaneObjects': 'autoware_detection_msgs',
@@ -125,34 +127,34 @@ manual_association_list = {
     'autoware_msgs/ImageObjects': 'autoware_unused_msgs',
     'autoware_msgs/ImageRect': 'autoware_detection_msgs',
     'autoware_msgs/ImageRectRanged': 'autoware_detection_msgs',
-    'autoware_msgs/IndicatorCmd': 'autoware_util_msgs',  # <- wrong auto association
-    'autoware_msgs/LampCmd': 'autoware_decision_msgs',  # 'autoware_navigation_msgs',
-    'autoware_msgs/Lane': 'autoware_navigation_msgs',  # 'autoware_detection_msgs', 'autoware_map_msgs', 'autoware_decision_msgs',
-    'autoware_msgs/LaneArray': 'autoware_navigation_msgs',  # 'autoware_navigation_msgs', 'autoware_map_msgs', 'autoware_util_msgs', 'autoware_decision_msgs',
+    # 'autoware_msgs/IndicatorCmd': 'autoware_util_msgs',  # <- wrong auto association
+    'autoware_msgs/LampCmd': 'autoware_planning_msgs',  # 'autoware_planning_msgs',
+    'autoware_msgs/Lane': 'autoware_planning_msgs',  # 'autoware_detection_msgs', 'autoware_map_msgs', 'autoware_planning_msgs',
+    'autoware_msgs/LaneArray': 'autoware_planning_msgs',  # 'autoware_planning_msgs', 'autoware_map_msgs', 'autoware_util_msgs', 'autoware_planning_msgs',
     'autoware_msgs/NDTStat': 'autoware_localization_msgs',  # 'autoware_socket_msgs',
     'autoware_msgs/ObjLabel': 'autoware_detection_msgs',  # 'autoware_system_msgs',  #  <-  wrong auto association
     'autoware_msgs/ObjPose': 'autoware_unused_msgs',
     'autoware_msgs/PointsImage': 'autoware_sensing_msgs',  # 'autoware_detection_msgs', 'autoware_system_msgs',
     'autoware_msgs/ProjectionMatrix': 'autoware_sensing_msgs',  # 'autoware_util_msgs',
-    'autoware_msgs/RemoteCmd': 'autoware_socket_msgs',  # 'autoware_navigation_msgs',
+    'autoware_msgs/RemoteCmd': 'autoware_socket_msgs',  # 'autoware_planning_msgs',
     'autoware_msgs/ScanImage': 'autoware_unused_msgs',
-    'autoware_msgs/Signals': 'autoware_detection_msgs',  # 'autoware_navigation_msgs',
-    'autoware_msgs/State': 'autoware_decision_msgs',  # 'autoware_navigation_msgs',
+    'autoware_msgs/Signals': 'autoware_detection_msgs',  # 'autoware_planning_msgs',
+    'autoware_msgs/State': 'autoware_planning_msgs',  # 'autoware_planning_msgs',
     'autoware_msgs/StateCmd': 'autoware_unused_msgs',
-    'autoware_msgs/SteerCmd': 'autoware_navigation_msgs',
+    'autoware_msgs/SteerCmd': 'autoware_planning_msgs',
     'autoware_msgs/SyncTimeDiff': 'autoware_sync_msgs',  # <- manually assigned to sync, was system
     'autoware_msgs/SyncTimeMonitor': 'autoware_sync_msgs',  # <- manually assigned to sync, was system
-    'autoware_msgs/TrafficLight': 'autoware_detection_msgs',  # 'autoware_navigation_msgs', 'autoware_decision_msgs', 'autoware_navigation_msgs',
+    'autoware_msgs/TrafficLight': 'autoware_detection_msgs',  # 'autoware_planning_msgs', 'autoware_planning_msgs', 'autoware_planning_msgs',
     'autoware_msgs/TrafficLightResult': 'autoware_detection_msgs',
     'autoware_msgs/TrafficLightResultArray': 'autoware_detection_msgs',
     'autoware_msgs/TunedResult': 'autoware_detection_msgs',
     'autoware_msgs/ValueSet': 'autoware_detection_msgs',
-    'autoware_msgs/VehicleCmd': 'autoware_socket_msgs',  # 'autoware_actuation_msgs', 'autoware_navigation_msgs',
+    'autoware_msgs/VehicleCmd': 'autoware_planning_msgs',  # 'autoware_actuation_msgs', 'autoware_socket_msgs',
     'autoware_msgs/VehicleStatus': 'autoware_localization_msgs',
     'autoware_msgs/VscanTracked': 'autoware_unused_msgs',
     'autoware_msgs/VscanTrackedArray': 'autoware_unused_msgs',
-    'autoware_msgs/Waypoint': 'autoware_navigation_msgs',  # 'autoware_decision_msgs', 'autoware_navigation_msgs',
-    'autoware_msgs/WaypointState': 'autoware_decision_msgs'}
+    'autoware_msgs/Waypoint': 'autoware_planning_msgs',  # 'autoware_planning_msgs', 'autoware_planning_msgs',
+    'autoware_msgs/WaypointState': 'autoware_planning_msgs'}
 
 
 actualAutowareMsgs = ['autoware_msgs/AccelCmd', 'autoware_msgs/AdjustXY', 'autoware_msgs/BrakeCmd',
@@ -162,7 +164,7 @@ actualAutowareMsgs = ['autoware_msgs/AccelCmd', 'autoware_msgs/AdjustXY', 'autow
                       'autoware_msgs/DetectedObjectArray', 'autoware_msgs/ExtractedPosition', 'autoware_msgs/GeometricRectangle',
                       'autoware_msgs/ICPStat', 'autoware_msgs/ImageLaneObjects', 'autoware_msgs/ImageObj',
                       'autoware_msgs/ImageObjRanged', 'autoware_msgs/ImageObjTracked', 'autoware_msgs/ImageObjects',
-                      'autoware_msgs/ImageRect', 'autoware_msgs/ImageRectRanged', 'autoware_msgs/IndicatorCmd',
+                      'autoware_msgs/ImageRect', 'autoware_msgs/ImageRectRanged',  # 'autoware_msgs/IndicatorCmd',
                       'autoware_msgs/LampCmd', 'autoware_msgs/Lane', 'autoware_msgs/LaneArray',
                       'autoware_msgs/NDTStat', 'autoware_msgs/ObjLabel', 'autoware_msgs/ObjPose',
                       'autoware_msgs/PointsImage', 'autoware_msgs/ProjectionMatrix', 'autoware_msgs/RemoteCmd',
@@ -664,7 +666,7 @@ def createFolderStructure(newfolder, packagexml, cmakeliststxt):
     f.close()
 
 
-def createNewMsgsStructure(movemsgsrev, manual_list=manual_association_list):
+def createNewMsgsStructure(movemsgsrev, singlenamespace='', manual_list=manual_association_list):
     # We need to add to movemsgsrev the unused messages
     movemsgsrev["autoware_unused_msgs"] = {}
     movemsgsrev.pop("autoware_unused_msgs", "")
@@ -676,6 +678,9 @@ def createNewMsgsStructure(movemsgsrev, manual_list=manual_association_list):
                 movemsgsrev.update({v: [k]})
     srcmsgsprefix = "src/msgs/"
     for n, m in movemsgsrev.items():
+        # if single namespace was requested, make sure it matches the assigned namespace n
+        if singlenamespace != '' and singlenamespace != n:
+            continue
         # prepare package.xml and CMakeLists.txt files' contents
         msgsliststr = ""
         for t in m:
@@ -686,17 +691,13 @@ def createNewMsgsStructure(movemsgsrev, manual_list=manual_association_list):
         cmakeliststxtaux = cmakeliststxtaux.replace("AUTOWARE_NEW_NAMESPACE", n)
         # handle message interdependency cases statically
         if "autoware_detection_msgs" in n:
-            packagexmlaux = packagexmlaux.replace("<!--<build_depend>autoware_msgs</build_depend>-->", "<build_depend>autoware_navigation_msgs</build_depend>")
-            packagexmlaux = packagexmlaux.replace("<!--<run_depend>autoware_msgs</run_depend>-->", "<run_depend>autoware_navigation_msgs</run_depend>")
-            cmakeliststxtaux = cmakeliststxtaux.replace("#autoware_msgs", "autoware_navigation_msgs")
-        elif "autoware_navigation_msgs" in n:
-            packagexmlaux = packagexmlaux.replace("<!--<build_depend>autoware_msgs</build_depend>-->", "<build_depend>autoware_decision_msgs</build_depend>")
-            packagexmlaux = packagexmlaux.replace("<!--<run_depend>autoware_msgs</run_depend>-->", "<run_depend>autoware_decision_msgs</run_depend>")
-            cmakeliststxtaux = cmakeliststxtaux.replace("#autoware_msgs", "autoware_decision_msgs")
+            packagexmlaux = packagexmlaux.replace("<!--<build_depend>autoware_msgs</build_depend>-->", "<build_depend>autoware_planning_msgs</build_depend>")
+            packagexmlaux = packagexmlaux.replace("<!--<run_depend>autoware_msgs</run_depend>-->", "<run_depend>autoware_planning_msgs</run_depend>")
+            cmakeliststxtaux = cmakeliststxtaux.replace("#autoware_msgs", "autoware_planning_msgs")
         elif "autoware_socket_msgs" in n:
-            packagexmlaux = packagexmlaux.replace("<!--<build_depend>autoware_msgs</build_depend>-->", "<build_depend>autoware_navigation_msgs</build_depend>\n  <build_depend>autoware_decision_msgs</build_depend>")
-            packagexmlaux = packagexmlaux.replace("<!--<run_depend>autoware_msgs</run_depend>-->", "<run_depend>autoware_navigation_msgs</run_depend>\n  <run_depend>autoware_decision_msgs</run_depend>")
-            cmakeliststxtaux = cmakeliststxtaux.replace("#autoware_msgs", "autoware_navigation_msgs\n        autoware_decision_msgs")
+            packagexmlaux = packagexmlaux.replace("<!--<build_depend>autoware_msgs</build_depend>-->", "<build_depend>autoware_planning_msgs</build_depend>")
+            packagexmlaux = packagexmlaux.replace("<!--<run_depend>autoware_msgs</run_depend>-->", "<run_depend>autoware_planning_msgs</run_depend>")
+            cmakeliststxtaux = cmakeliststxtaux.replace("#autoware_msgs", "autoware_planning_msgs")
         else:  # remove unnecessary comments
             packagexmlaux = packagexmlaux.replace("<!--<build_depend>autoware_msgs</build_depend>-->", "")
             packagexmlaux = packagexmlaux.replace("<!--<run_depend>autoware_msgs</run_depend>-->", "")
@@ -719,47 +720,62 @@ def createNewMsgsStructure(movemsgsrev, manual_list=manual_association_list):
             srcfilepath = srcmsgsprefix + t.replace("/", "/msg/") + ".msg"
             destfilepath = newfolder + "/msg/" + t.replace("autoware_msgs/", "") + ".msg"
             print("moving {} to {}".format(srcfilepath, destfilepath))
-            try:
-                os.rename(srcfilepath, destfilepath)
-            except OSError:
-                raise OSError('File error on move {} to {}'.format(srcfilepath, destfilepath))
-    # finally, remove "src/msgs/autoware_msgs"
-    try:
+            # This way to move the files was requested (keep tracking)
+            os.system("git mv {} {}".format(srcfilepath, destfilepath))
+            # try:
+            #     os.rename(srcfilepath, destfilepath)
+            # except OSError:
+            #     raise OSError('File error on move {} to {}'.format(srcfilepath, destfilepath))
+    # finally, remove "src/msgs/autoware_msgs" (if singlenamespace was not requested)
+    if singlenamespace == '':
         autowaremsgs = srcmsgsprefix + "autoware_msgs"
         print("deleting folder \"{}\"".format(autowaremsgs))
-        os.rmdir(autowaremsgs + "/msg")  # empty by now
-        for root, _, files in os.walk(autowaremsgs):
-            for f in files:
-                os.remove(os.path.join(root, f))
-        os.rmdir(autowaremsgs)
-    except OSError:
-        raise OSError  # in case of any error
+        # This way to remove the files was requested (keep tracking)
+        os.system("git rm -rf {}".format(autowaremsgs))
+        # try:
+        #     os.rmdir(autowaremsgs + "/msg")  # empty by now
+        #     for root, _, files in os.walk(autowaremsgs):
+        #         for f in files:
+        #             os.remove(os.path.join(root, f))
+        #     os.rmdir(autowaremsgs)
+        # except OSError:
+        #     raise OSError  # in case of any error
     print("operation completed")
 
 
-def replaceMsgsLine(line, movemsgs, query='autoware_msgs'):
+def replaceMsgsLine(line, movemsgs, query='autoware_msgs', singlenamespace=''):
     new_l = line
     # sorts by len (descending) and alpha to avoid replacements errors,
     sortedkeys = sorted(movemsgs.keys(), key=lambda item: (-len(item), item))
+    # some messages are going to be renamed
+    message_nenaming = {'IndicatorCmd': 'LampCmd'}
     # for m, n in movemsgs.items():
     for i in range(len(sortedkeys)):
         m = sortedkeys[i]
         n = movemsgs[m]
+        # if single namespace was requested, make sure it matches the assigned namespace n
+        if singlenamespace != '' and singlenamespace != n:
+            continue
         msgtype = re.split('/', m)[1]  # because all messages in movemsgs are of the form "autoware_msgs/SOMETYPE"
-        replacement_dict = {"{}::{}".format(query, msgtype): "{}::{}".format(n, msgtype),
-                            "{}/{}".format(query, msgtype): "{}/{}".format(n, msgtype),
-                            "{}.msg import {}".format(query, msgtype): "{}.msg import {}".format(n, msgtype)}
+        newmsgtype = msgtype
+        if msgtype in message_nenaming.keys():
+            newmsgtype = message_nenaming[msgtype]
+        replacement_dict = {"{}::{}".format(query, msgtype): "{}::{}".format(n, newmsgtype),
+                            "{}/{}".format(query, msgtype): "{}/{}".format(n, newmsgtype),
+                            "{}.msg import {}".format(query, msgtype): "{}.msg import {}".format(n, newmsgtype)}
         regex_split = '|'.join(map(re.escape, replacement_dict.keys()))
         p = re.compile(regex_split)
         new_l = p.sub(lambda matchobj: replacement_dict.get(matchobj.group(), matchobj.group()), new_l)
     return new_l
 
 
-def genAutowareMsgsReplacement(lines, movemsgs, query='autoware_msgs'):
+def genAutowareMsgsReplacement(lines, movemsgs, singlenamespace='', query='autoware_msgs'):
     replacement = {}
     for k, m in lines.items():
         for l in m:
-            new_l = replaceMsgsLine(l, movemsgs, query)
+            new_l = replaceMsgsLine(l, movemsgs, query, singlenamespace)
+            if singlenamespace != '' and singlenamespace not in new_l:
+                continue
             if k in replacement.keys():
                 replacement[k].append((l, new_l))
             else:
@@ -779,24 +795,25 @@ def replaceAutowareMsgsInPlace(replacement, takebackup=True):
     return modfiles
 
 
-def revertReplacements(modifiedfiles):
+def revertReplacements(modifiedfiles, singlenamespace=''):
     # restore the original autoware_msgs folder
     os.system("git checkout src/msgs/autoware_msgs 2>/dev/null")
-    time.sleep(3)
     # We have to delete the src/msgs/autoware_*_msgs directories too
-    os.system("rm -rf src/msgs/autoware_actuation_msgs 2>/dev/null")
-    os.system("rm -rf src/msgs/autoware_decision_msgs 2>/dev/null")
-    os.system("rm -rf src/msgs/autoware_detection_msgs 2>/dev/null")
-    os.system("rm -rf src/msgs/autoware_localization_msgs 2>/dev/null")
-    os.system("rm -rf src/msgs/autoware_navigation_msgs 2>/dev/null")
-    os.system("rm -rf src/msgs/autoware_navigation_msgs 2>/dev/null")
-    os.system("rm -rf src/msgs/autoware_navigation_msgs 2>/dev/null")
-    os.system("rm -rf src/msgs/autoware_sensing_msgs 2>/dev/null")
-    os.system("rm -rf src/msgs/autoware_socket_msgs 2>/dev/null")
-    os.system("rm -rf src/msgs/autoware_unused_msgs 2>/dev/null")
-    os.system("rm -rf src/msgs/autoware_util_msgs 2>/dev/null")
-    os.system("rm -rf src/msgs/autoware_sync_msgs 2>/dev/null")
-    time.sleep(3)
+    if singlenamespace == '':
+        os.system("rm -rf src/msgs/autoware_actuation_msgs 2>/dev/null")
+        os.system("rm -rf src/msgs/autoware_planning_msgs 2>/dev/null")
+        os.system("rm -rf src/msgs/autoware_detection_msgs 2>/dev/null")
+        os.system("rm -rf src/msgs/autoware_localization_msgs 2>/dev/null")
+        os.system("rm -rf src/msgs/autoware_planning_msgs 2>/dev/null")
+        os.system("rm -rf src/msgs/autoware_planning_msgs 2>/dev/null")
+        os.system("rm -rf src/msgs/autoware_planning_msgs 2>/dev/null")
+        os.system("rm -rf src/msgs/autoware_sensing_msgs 2>/dev/null")
+        os.system("rm -rf src/msgs/autoware_socket_msgs 2>/dev/null")
+        os.system("rm -rf src/msgs/autoware_unused_msgs 2>/dev/null")
+        # os.system("rm -rf src/msgs/autoware_util_msgs 2>/dev/null")
+        os.system("rm -rf src/msgs/autoware_sync_msgs 2>/dev/null")
+    else:
+        os.system("rm -rf src/msgs/{} 2>/dev/null".format(singlenamespace))
     # and recover each file
     for f in modifiedfiles:
         os.system("rm {}.backup 2>/dev/null".format(f))
@@ -805,9 +822,14 @@ def revertReplacements(modifiedfiles):
 
 
 # Find all
-def findAutowareMsgsInPackage(pkgpath, movemsgsrev):
+def findAutowareMsgsInPackage(pkgpath, movemsgsrev, singlenamespace=''):
     newmsgs = movemsgsrev.keys()
     usedmsgs = []
+    # if single namespace was requested, make sure it matches the assigned namespace
+    if singlenamespace != '' and singlenamespace in newmsgs:
+        newmsgs = [singlenamespace]
+    elif singlenamespace != '' and singlenamespace not in newmsgs:
+        return []
     if os.path.isfile(pkgpath):
         pkgpath = os.path.dirname(pkgpath)
     for root, _, files in os.walk(pkgpath):
@@ -830,10 +852,10 @@ def findPackageXMLFiles(root="src/"):
     return files
 
 
-def findAllAutowareMsgs(xmls, movemsgsrev):
+def findAllAutowareMsgs(xmls, movemsgsrev, singlenamespace=''):
     allmsgs = {}
     for f in xmls:
-        usedmsgs = findAutowareMsgsInPackage(f, movemsgsrev)
+        usedmsgs = findAutowareMsgsInPackage(f, movemsgsrev, singlenamespace)
         if usedmsgs:
             allmsgs.update({f: usedmsgs})
             if os.path.isfile(f):
@@ -1000,12 +1022,12 @@ def fixCMakeListsAutowareMsgs(xml2msgs, takebackup=True):
     return modfiles
 
 
-def fixPackageDefFiles(movmsgsrev, root="src/", takebackup=True):
+def fixPackageDefFiles(movmsgsrev, root="src/", takebackup=True, singlenamespace=''):
     modfiles = []
     # Find all package.xml files
     xmls = findPackageXMLFiles(root)
     # Finds the list of new autoware msgs being used at each package
-    xml2msgs = findAllAutowareMsgs(xmls, movmsgsrev)
+    xml2msgs = findAllAutowareMsgs(xmls, movmsgsrev, singlenamespace)
     # Fixes the contents of package.xml accordingly
     modfiles = fixPackageXMLAutowareMsgs(xml2msgs, takebackup)
     # The CMakeLists.txt should be in the same directory as the package.xml, no need to search
@@ -1023,6 +1045,8 @@ if __name__ == '__main__':
                         help='Performs recovery of the original state (default: False).')
     parser.add_argument('--recoveryfile', type=str, default='.autoware_msgs_refactoring_recovery',
                         help='Recovery file to store list of affected files (default: .autoware_msgs_refactoring_recovery).')
+    parser.add_argument('--namespace', type=str, default='',
+                        help='Single namespace refactoring (default: empty-string for all namespaces refactoring')
     opt = parser.parse_args()
     if opt.fix:
         print("Doing autoware_msgs refactoring")
@@ -1039,13 +1063,13 @@ if __name__ == '__main__':
         # Generate the inverse (new namespace to message types) associations
         movmsgsrev = moveMsgsReverse(pubmsgs, allmsgs)
         # For each file generate the namespace replacement
-        replacements = genAutowareMsgsReplacement(lines, movmsgs)
+        replacements = genAutowareMsgsReplacement(lines, movmsgs, opt.namespace)
         # Applies he replacements to actual files, returns the list of modified files (no backups)
         modfiles = replaceAutowareMsgsInPlace(replacements, opt.backup)
         # Fixes the contents of package.xml and CMakeLists.txt accordingly, returns the list of modified files (no backups)
-        modfiles = modfiles + fixPackageDefFiles(movmsgsrev, "src/", opt.backup)
+        modfiles = modfiles + fixPackageDefFiles(movmsgsrev, "src/", opt.backup, opt.namespace)
         # Creates the new autoware messages structure, and deletes the old
-        createNewMsgsStructure(movmsgsrev)
+        createNewMsgsStructure(movmsgsrev, opt.namespace)
         # Save the recovery file
         modfiles = list(set(modfiles))  # remove duplicated entries
         with open(opt.recoveryfile, 'w') as fd:
@@ -1056,7 +1080,7 @@ if __name__ == '__main__':
             modfiles = fd.read().splitlines()
         # Revert the changed files.
         # NOTE, it is actually quicker to run `git checkout src` and then delete the "autoware_xxx_msgs" created in "src/msgs/"
-        revertReplacements(modfiles)
+        revertReplacements(modfiles, opt.namespace)
         print("Done recovering. You can check with 'git status' whether any altered files remain")
     else:
         print("Either choose --fix or --recovery to run this program")
