@@ -52,6 +52,4 @@ void doInference(float* in_points_array, int in_num_points, std::vector<float> o
 * To display the results in Rviz `objects_visualizer` is required.
 (Launch file launches automatically this node).
 
-* Pre trained models can be downloaded from the [github repository](https://github.com/cirpue49/kitti_pretrained_pp). Notice that this model is under `BY-NC-SA 3.0` license.
-
-* If trained model comes from KITTI data, users might not be allowed to use the model for commercial purposes.
+* Pretrained models are available [here](https://github.com/cirpue49/kitti_pretrained_pp), trained with the help of the KITTI dataset. For this reason, these are not suitable for commercial purposes. Derivative works are bound to the BY-NC-SA 3.0 License. (https://creativecommons.org/licenses/by-nc-sa/3.0/)
