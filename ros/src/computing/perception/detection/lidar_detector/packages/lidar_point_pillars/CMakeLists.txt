@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(lidar_point_pillars)
 
-# set flags for CUDA and TensorRT availability
+# set flags for CUDA availability
 option(CUDA_AVAIL "CUDA available" OFF)
 find_package(CUDA)
 if (CUDA_FOUND)
@@ -14,8 +14,9 @@ else()
   set(CUDA_AVAIL OFF)
 endif (CUDA_FOUND)
 
-# try to find the tensorRT modules
+# set flags for TensorRT availability
 option(TRT_AVAIL "TensorRT available" OFF)
+# try to find the tensorRT modules
 find_library(NVINFER NAMES nvinfer)
 find_library(NVPARSERS NAMES nvparsers)
 if(NVINFER AND NVPARSERS)
@@ -80,7 +81,7 @@ if(TRT_AVAIL AND CUDA_AVAIL)
          nodes/point_pillars.cpp
          nodes/preprocess_points.cpp
          )
-         
+
   target_link_libraries(point_pillars_lib
          nvinfer
          nvonnxparser
