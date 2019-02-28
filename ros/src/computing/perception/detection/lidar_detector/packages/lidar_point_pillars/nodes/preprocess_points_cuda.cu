@@ -107,7 +107,7 @@ __global__ void make_pillar_index_kernel(
     dev_x_coors[count] = x;
     dev_y_coors[count] = y;
 
-    //TODO Need to be modified after making properly training model
+    //TODO Need to be modified after making properly trained model
     // x_offset = self.vx / 2 + pc_range[0]
     // y_offset = self.vy / 2 + pc_range[1]
     // x_sub = coors_x.unsqueeze(1) * 0.16 + x_offset
