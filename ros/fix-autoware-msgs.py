@@ -727,8 +727,8 @@ def createNewMsgsStructure(movemsgsrev, singlenamespace='', manual_list=manual_a
             # except OSError:
             #     raise OSError('File error on move {} to {}'.format(srcfilepath, destfilepath))
     # finally, remove "src/msgs/autoware_msgs" (if singlenamespace was not requested)
+    autowaremsgs = srcmsgsprefix + "autoware_msgs"
     if singlenamespace == '':
-        autowaremsgs = srcmsgsprefix + "autoware_msgs"
         print("deleting folder \"{}\"".format(autowaremsgs))
         # This way to remove the files was requested (keep tracking)
         os.system("git rm -rf {}".format(autowaremsgs))
@@ -740,6 +740,22 @@ def createNewMsgsStructure(movemsgsrev, singlenamespace='', manual_list=manual_a
         #     os.rmdir(autowaremsgs)
         # except OSError:
         #     raise OSError  # in case of any error
+    else:
+        # have to remove from `autoware_msgs` package the types we moved to the new message package.
+        with open(autowaremsgs + "/package.xml", 'r+') as fd:
+            contents = fd.read()
+            for t in movemsgsrev[singlenamespace]:
+                contents = contents.replace(t, "")
+        with open(autowaremsgs + "/package.xml", 'w') as fd:
+            fd.write(contents)
+        with open(autowaremsgs + "/CMakeLists.txt", 'r+') as fd:
+            contents = fd.read()
+            for t in movemsgsrev[singlenamespace]:
+                t = t.replace("autoware_msgs/", "") + ".msg"
+                print t
+                contents = contents.replace(t, "")
+        with open(autowaremsgs + "/CMakeLists.txt", 'w') as fd:
+            fd.write(contents)
     print("operation completed")
 
 

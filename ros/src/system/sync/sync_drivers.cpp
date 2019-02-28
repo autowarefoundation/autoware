@@ -22,7 +22,7 @@
 /* user header */
 #include "sensor_msgs/Image.h"
 #include "sensor_msgs/PointCloud2.h"
-#include "autoware_msgs/SyncTimeDiff.h"
+#include "autoware_sync_msgs/SyncTimeDiff.h"
 
 /* ----var---- */
 /* common var */
@@ -48,7 +48,7 @@ void image_raw_callback(sensor_msgs::Image image_raw_msg)
 
 void points_raw_callback(const sensor_msgs::PointCloud2::ConstPtr& points_raw_msg)
 {
-    autoware_msgs::SyncTimeDiff time_diff_msg;
+    autoware_sync_msgs::SyncTimeDiff time_diff_msg;
     time_diff_msg.header.frame_id = "0";
     time_diff_msg.header.stamp = points_raw_msg->header.stamp;
     time_diff_msg.time_diff = fabs_time_diff(&(points_raw_msg->header), &image_raw_buf.header)*1000.0; //msec
@@ -75,7 +75,7 @@ int main(int argc, char **argv)
 
   image_raw__pub = nh.advertise<sensor_msgs::Image>("image_raw", 1);
   points_raw__pub = nh.advertise<sensor_msgs::PointCloud2>("points_raw", 1);
-  time_diff_pub = nh.advertise<autoware_msgs::SyncTimeDiff>("/time_difference", 1);
+  time_diff_pub = nh.advertise<autoware_sync_msgs::SyncTimeDiff>("/time_difference", 1);
 
   ros::spin();
 

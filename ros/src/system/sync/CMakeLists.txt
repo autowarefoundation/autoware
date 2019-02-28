@@ -7,7 +7,7 @@ project(synchronization)
 
 find_package(autoware_build_flags REQUIRED)
 
-find_package(autoware_msgs REQUIRED)
+find_package(autoware_sync_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
@@ -16,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   visualization_msgs
   points2image
-  autoware_msgs
+  autoware_sync_msgs
 )
 find_package(OpenCV REQUIRED)
 
@@ -26,7 +26,7 @@ find_package(OpenCV REQUIRED)
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-  CATKIN_DEPENDS autoware_msgs points2image message_runtime std_msgs
+  CATKIN_DEPENDS autoware_sync_msgs  points2image message_runtime std_msgs
 )
 ###########
 ## Build ##
@@ -35,7 +35,7 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
-  ${autoware_msgs_INCLUDE_DIRS}
+  ${autoware_sync_msgs_INCLUDE_DIRS}
 )
 
 add_executable(sync_drivers sync_drivers.cpp)

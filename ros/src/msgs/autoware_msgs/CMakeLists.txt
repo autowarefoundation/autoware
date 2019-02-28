@@ -63,8 +63,8 @@ add_message_files(
             StateCmd.msg
             State.msg
             ## Sync
-            SyncTimeMonitor.msg
-            SyncTimeDiff.msg
+            
+            
 
             ## Remote Control
             RemoteCmd.msg
