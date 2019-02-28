@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(lattice_planner)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(vector_map REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         roscpp
         std_msgs
@@ -10,9 +14,8 @@ find_package(catkin REQUIRED COMPONENTS
         tf
         gnss
         waypoint_follower
-        vector_map
         astar_planner
-        autoware_msgs
+        autoware_can_msgs
         )
 
 find_package(Armadillo REQUIRED)
@@ -40,15 +43,16 @@ catkin_package(
         waypoint_follower
         vector_map
         astar_planner
-        autoware_msgs
+        autoware_can_msgs
 )
 
-SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(
         include
         ${ARMADILLO_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
+        ${vector_map_INCLUDE_DIRS}
 )
 
 add_library(libtraj_gen lib/libtraj_gen.cpp)
@@ -74,3 +78,16 @@ target_link_libraries(path_select ${catkin_LIBRARIES})
 add_dependencies(path_select
         ${catkin_EXPORTED_TARGETS})
 
+install(TARGETS
+            libtraj_gen
+            lattice_trajectory_gen
+            lattice_twist_convert
+            lattice_velocity_set
+            path_select
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)

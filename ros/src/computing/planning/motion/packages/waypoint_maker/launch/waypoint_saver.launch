@@ -1,18 +1,24 @@
 <!-- -->
 <launch>
 
+	<arg name="input_type" default="LaneArrayTopic" />
 	<arg name="save_finename" default="/tmp/saved_waypoints.csv" />
-    <arg name="interval" default="1" /> 
-    <arg name="pose_topic" default="current_pose" />
-    <arg name="velocity_topic" default="current_velocity" />  
-    <arg name="save_velocity" default="true" /> 
+  <arg name="interval" default="1" />
+  <arg name="pose_topic" default="current_pose" />
+  <arg name="velocity_topic" default="current_velocity" />
+  <arg name="save_velocity" default="true" />
+	<arg name="lane_topic" default="/lane_waypoints_array" />
 
-	<node pkg="waypoint_maker" type="waypoint_saver" name="waypoint_saver" output="screen">
+	<node pkg="waypoint_maker" type="waypoint_saver" name="waypoint_saver" output="screen" unless="$(arg input_type)">
 		<param name="save_filename" value="$(arg save_finename)" />
 		<param name="interval" value="$(arg interval)" />
 		<param name="velocity_topic" value="$(arg velocity_topic)" />
 		<param name="pose_topic" value="$(arg pose_topic)" />
     <param name="save_velocity" value="$(arg save_velocity)" />
+	</node>
+	<node pkg="waypoint_maker" type="waypoint_extractor" name="waypoint_extractor" output="screen" if="$(arg input_type)">
+		<param name="lane_csv" value="$(arg save_finename)" />
+		<param name="lane_topic" value="$(arg lane_topic)" />
 	</node>
 
 </launch>

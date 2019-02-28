@@ -1,26 +1,28 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(lidar_euclidean_cluster_detect)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         pcl_ros
         roscpp
         geometry_msgs
         std_msgs
         sensor_msgs
-        autoware_msgs
         tf
-        jsk_recognition_msgs
-        jsk_rviz_plugins
         vector_map_server
         grid_map_ros
         grid_map_cv
         grid_map_msgs
+        autoware_msgs
         )
 
 find_package(OpenMP)
 find_package(OpenCV REQUIRED)
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
         CATKIN_DEPENDS
@@ -31,8 +33,6 @@ catkin_package(
         sensor_msgs
         autoware_msgs
         tf
-        jsk_recognition_msgs
-        jsk_rviz_plugins
         vector_map_server
         grid_map_ros
         grid_map_cv
@@ -40,12 +40,20 @@ catkin_package(
         INCLUDE_DIRS include
 )
 
+# Resolve system dependency on yaml-cpp, which apparently does not
+# provide a CMake find_package() module.
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(YAML_CPP REQUIRED yaml-cpp)
+find_path(YAML_CPP_INCLUDE_DIR NAMES yaml_cpp.h PATHS ${YAML_CPP_INCLUDE_DIRS})
+find_library(YAML_CPP_LIBRARY NAMES YAML_CPP PATHS ${YAML_CPP_LIBRARY_DIRS})
+link_directories(${YAML_CPP_LIBRARY_DIRS})
+
 include_directories(
         include
         ${catkin_INCLUDE_DIRS}
+        ${autoware_msgs_INCLUDE_DIRS}
         ${OpenCV_INCLUDE_DIRS}
 )
-link_directories(${PCL_LIBRARY_DIRS})
 link_directories(${OpenCV_LIBRARY_DIRS})
 
 #Euclidean Cluster
@@ -61,9 +69,6 @@ if (${CUDA_FOUND})
     message("Library: " ${CUDA_CUDA_LIBRARY})
     message("Runtime: " ${CUDA_CUDART_LIBRARY})
     set(ROS_VERSION $ENV{ROS_DISTRO})
-    if ("${ROS_VERSION}" MATCHES "(indigo)")
-        set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-std=c++11)
-    endif()
     target_compile_definitions(lidar_euclidean_cluster_detect PRIVATE
             GPU_CLUSTERING=1
             )
@@ -76,14 +81,21 @@ if (${CUDA_FOUND})
     target_link_libraries(lidar_euclidean_cluster_detect
             ${OpenCV_LIBRARIES}
             ${catkin_LIBRARIES}
-            ${PCL_LIBRARIES}
+            ${YAML_CPP_LIBRARIES}
             gpu_euclidean_clustering)
+
+    install(TARGETS
+            gpu_euclidean_clustering
+            ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+            LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+            RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+            )
 
 else ()
     target_link_libraries(lidar_euclidean_cluster_detect
             ${OpenCV_LIBRARIES}
             ${catkin_LIBRARIES}
-            ${PCL_LIBRARIES})
+            ${YAML_CPP_LIBRARIES})
 
 endif ()
 
@@ -98,9 +110,16 @@ if (OPENMP_FOUND)
             )
 endif ()
 
+install(DIRECTORY include/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+
 install(TARGETS
         lidar_euclidean_cluster_detect
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)

@@ -52,7 +52,7 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/PointCloud2.h>
-#include <autoware_msgs/ConfigNdtSlam.h>
+#include <autoware_config_msgs/ConfigNDTSlam.h>
 #include <nav_msgs/Odometry.h>
 
 
@@ -86,7 +86,7 @@ class NdtSlam
         ~NdtSlam();
 
     private:
-        void configCallback(const autoware_msgs::ConfigNdtSlam::ConstPtr& config_msg_ptr);
+        void configCallback(const autoware_config_msgs::ConfigNDTSlam::ConstPtr& config_msg_ptr);
         void pointsMapUpdatedCallback(const sensor_msgs::PointCloud2::ConstPtr& pointcloud2_msg_ptr);
         void initialPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& pose_conv_msg_ptr);
         void staticPoseCallback(const geometry_msgs::PoseStamped::ConstPtr& pose_msg_ptr);

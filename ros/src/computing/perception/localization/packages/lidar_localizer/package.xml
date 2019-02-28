@@ -1,11 +1,12 @@
 <?xml version="1.0"?>
 <package>
     <name>lidar_localizer</name>
-    <version>1.7.0</version>
+    <version>1.10.0</version>
     <description>The lidar_localizer package</description>
     <maintainer email="yuki@ertl.jp">kitsukawa</maintainer>
-    <license>BSD</license>
+    <license>Apache 2</license>
     <buildtool_depend>catkin</buildtool_depend>
+    <buildtool_depend>autoware_build_flags</buildtool_depend>
 
     <build_depend>roscpp</build_depend>
     <build_depend>tf</build_depend>
@@ -14,6 +15,7 @@
     <build_depend>sensor_msgs</build_depend>
     <build_depend>visualization_msgs</build_depend>
     <build_depend>autoware_msgs</build_depend>
+    <build_depend>autoware_config_msgs</build_depend>
     <build_depend>pcl_conversions</build_depend>
     <build_depend>message_filters</build_depend>
     <build_depend>velodyne_pointcloud</build_depend>
@@ -25,6 +27,7 @@
     <build_depend>libpcl-all-dev</build_depend>
     <build_depend>eigen</build_depend>
     <build_depend>autoware_lidar_localizer</build_depend>
+    <build_depend>autoware_health_checker</build_depend>
 
     <run_depend>roscpp</run_depend>
     <run_depend>tf</run_depend>
@@ -33,6 +36,7 @@
     <run_depend>sensor_msgs</run_depend>
     <run_depend>visualization_msgs</run_depend>
     <run_depend>autoware_msgs</run_depend>
+    <run_depend>autoware_config_msgs</run_depend>
     <run_depend>pcl_conversions</run_depend>
     <run_depend>message_filters</run_depend>
     <run_depend>velodyne_pointcloud</run_depend>
@@ -44,6 +48,7 @@
     <run_depend>libpcl-all</run_depend>
     <run_depend>eigen</run_depend>
     <run_depend>autoware_lidar_localizer</run_depend>
+    <run_depend>autoware_health_checker</run_depend>
 
     <export>
     </export>

@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(libdpm_ttic)
 
+
+find_package(autoware_build_flags REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         sensor_msgs
         std_msgs
@@ -8,19 +10,13 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(OpenCV REQUIRED)
 find_package(CUDA)
 
-execute_process(
-        COMMAND uname -m
-        OUTPUT_VARIABLE ARCHITECTURE
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
 catkin_package(
         INCLUDE_DIRS include
         LIBRARIES libdpm_ttic
 )
 
 set(CMAKE_C_FLAGS "-O2 -g -Wall -Wno-unused-result ${CMAKE_C_FLAGS}")
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall -Wno-unused-result ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -g -Wall -Wno-unused-result ${CMAKE_CXX_FLAGS}")
 
 if(CUDA_FOUND)
     include_directories(
@@ -32,7 +28,7 @@ if(CUDA_FOUND)
             "gpu"
     )
 
-    if("${ARCHITECTURE}" MATCHES "^arm")
+    if("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "^arm")
         link_directories(/usr/lib/arm-linux-gnueabihf/tegra)
     endif()
 
@@ -51,39 +47,45 @@ if(CUDA_FOUND)
     target_link_libraries(libdpm_ttic
             ${catkin_LIBRARIES}
             ${OpenCV_LIBS}
-            cuda
+            ${CUDA_CUDA_LIBRARY}
             )
 
     set(CUDA_COMPILER "${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc")
 
-    if("${ARCHITECTURE}" MATCHES "^arm")
+    if("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "^arm")
         set(CUDA_LDFLAGS -L/usr/lib/arm-linux-gnueabihf/tegra -lcuda)
     else()
         set(CUDA_LDFLAGS -lcuda)
     endif()
 
-    set(CUDA_CAPABILITY_VERSION_CHECKER
-            "${CATKIN_DEVEL_PREFIX}/lib/capability_version_checker"
-            )
-
-    execute_process(
-            COMMAND
-            ${CUDA_COMPILER}
-            -o ${CUDA_CAPABILITY_VERSION_CHECKER}
-            "${CMAKE_CURRENT_SOURCE_DIR}/util/capability_version_checker.cpp"
-            ${CUDA_LDFLAGS}
-    )
-
-    execute_process(
-            COMMAND ${CUDA_CAPABILITY_VERSION_CHECKER}
-            OUTPUT_VARIABLE CUDA_CAPABILITY_VERSION
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-
-    if("${CUDA_CAPABILITY_VERSION}" MATCHES "^[1-9][0-9]+$")
-        set(CUDA_ARCH "sm_${CUDA_CAPABILITY_VERSION}")
+    if(CMAKE_CROSSCOMPILING)
+        if(NOT CUDA_ARCH)
+                message(FATAL_ERROR "Please define the CUDA_ARCH CMake variable")
+        endif()
     else()
-        set(CUDA_ARCH "sm_52")
+        set(CUDA_CAPABILITY_VERSION_CHECKER
+                "${CATKIN_DEVEL_PREFIX}/lib/capability_version_checker"
+                )
+
+        execute_process(
+                COMMAND
+                ${CUDA_COMPILER}
+                -o ${CUDA_CAPABILITY_VERSION_CHECKER}
+                "${CMAKE_CURRENT_SOURCE_DIR}/util/capability_version_checker.cpp"
+                ${CUDA_LDFLAGS}
+        )
+
+        execute_process(
+                COMMAND ${CUDA_CAPABILITY_VERSION_CHECKER}
+                OUTPUT_VARIABLE CUDA_CAPABILITY_VERSION
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+
+        if("${CUDA_CAPABILITY_VERSION}" MATCHES "^[1-9][0-9]+$")
+                set(CUDA_ARCH "sm_${CUDA_CAPABILITY_VERSION}")
+        else()
+                set(CUDA_ARCH "sm_52")
+        endif()
     endif()
 
     set(CUDA_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/gpu")
@@ -138,5 +140,5 @@ install(TARGETS
         libdpm_ttic
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )

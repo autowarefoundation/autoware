@@ -1,31 +1,17 @@
 /*
- *  Copyright (c) 2015, Nagoya University
- *  All rights reserved.
+ * Copyright 2015-2019 Autoware Foundation. All rights reserved.
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  * Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name of Autoware nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include <ros/ros.h>
@@ -49,8 +35,8 @@
 
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "autoware_msgs/LaneArray.h"
-#include "autoware_msgs/ConfigLaneStop.h"
-#include "autoware_msgs/traffic_light.h"
+#include "autoware_config_msgs/ConfigLaneStop.h"
+#include "autoware_msgs/TrafficLight.h"
 
 class WaypointVelocityVisualizer
 {
@@ -108,7 +94,7 @@ private:
   void resetBuffers();
 
   void laneWaypointsArrayCallback(const autoware_msgs::LaneArray::ConstPtr& msg);
-  void finalWaypointsCallback(const autoware_msgs::lane::ConstPtr& msg);
+  void finalWaypointsCallback(const autoware_msgs::Lane::ConstPtr& msg);
   void controlCallback(const geometry_msgs::PoseStamped::ConstPtr& current_pose_msg,
                        const geometry_msgs::TwistStamped::ConstPtr& current_twist_msg,
                        const geometry_msgs::TwistStamped::ConstPtr& command_twist_msg);
@@ -117,7 +103,7 @@ private:
 
   void createVelocityMarker(const std::vector<nav_msgs::Odometry> waypoints, const std::string& ns,
                             const std_msgs::ColorRGBA& color, visualization_msgs::MarkerArray& markers);
-  void createVelocityMarker(const autoware_msgs::lane& lane, const std::string& ns, const std_msgs::ColorRGBA& color,
+  void createVelocityMarker(const autoware_msgs::Lane& lane, const std::string& ns, const std_msgs::ColorRGBA& color,
                             visualization_msgs::MarkerArray& markers);
   void createVelocityMarker(const boost::circular_buffer<geometry_msgs::PoseStamped>& poses,
                             const boost::circular_buffer<geometry_msgs::TwistStamped>& twists, const std::string& ns,
@@ -220,7 +206,7 @@ void WaypointVelocityVisualizer::laneWaypointsArrayCallback(const autoware_msgs:
   publishVelocityMarker();
 }
 
-void WaypointVelocityVisualizer::finalWaypointsCallback(const autoware_msgs::lane::ConstPtr& msg)
+void WaypointVelocityVisualizer::finalWaypointsCallback(const autoware_msgs::Lane::ConstPtr& msg)
 {
   final_waypoints_marker_array_.markers.clear();
   createVelocityMarker(*msg, "final_waypoints", final_waypoints_color_, final_waypoints_marker_array_);
@@ -292,7 +278,7 @@ void WaypointVelocityVisualizer::createVelocityMarker(const std::vector<nav_msgs
     createVelocityTextMarker(waypoints, ns, color, markers);
 }
 
-void WaypointVelocityVisualizer::createVelocityMarker(const autoware_msgs::lane& lane, const std::string& ns,
+void WaypointVelocityVisualizer::createVelocityMarker(const autoware_msgs::Lane& lane, const std::string& ns,
                                                       const std_msgs::ColorRGBA& color,
                                                       visualization_msgs::MarkerArray& markers)
 {

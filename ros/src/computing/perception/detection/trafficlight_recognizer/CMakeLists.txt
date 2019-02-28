@@ -8,8 +8,13 @@ execute_process(
 
 set(ROS_VERSION $ENV{ROS_DISTRO})
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
+
+find_package(vector_map REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-        autoware_msgs
         cmake_modules
         cv_bridge
         geometry_msgs
@@ -18,10 +23,11 @@ find_package(catkin REQUIRED COMPONENTS
         sensor_msgs
         std_msgs
         tf
-        vector_map
         vector_map_server
         visualization_msgs
         waypoint_follower
+        autoware_msgs
+        vector_map
         )
 
 find_package(OpenCV REQUIRED)
@@ -46,12 +52,16 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 
+find_package(OpenGL REQUIRED)
+
 ###################################
 ## catkin specific configuration ##
 ###################################
 include_directories(
         include
         ${catkin_INCLUDE_DIRS}
+        ${vector_map_INCLUDE_DIRS}
+        ${autoware_msgs_INCLUDE_DIRS}
         ${Eigen3_INCLUDE_DIRS}
 )
 
@@ -75,7 +85,7 @@ catkin_package(
         LIBRARIES libcontext
 )
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall -Wunused-variable ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -Wall -Wunused-variable ${CMAKE_CXX_FLAGS}")
 
 ###########
 ## Build ##
@@ -108,6 +118,7 @@ target_link_libraries(region_tlr
         ${catkin_LIBRARIES}
         ${OpenCV_LIBS}
         libcontext
+        ${OPENGL_LIBRARIES}
         )
 
 add_dependencies(region_tlr
@@ -117,6 +128,8 @@ add_dependencies(region_tlr
 ### feat_proj ###
 include_directories(
         ${catkin_INCLUDE_DIRS}
+        ${vector_map_INCLUDE_DIRS}
+        ${autoware_msgs_INCLUDE_DIRS}
         ${Eigen3_INCLUDE_DIRS}
 )
 
@@ -144,6 +157,8 @@ include_directories(
         include
         nodes/tlr_tuner/
         ${catkin_INCLUDE_DIRS}
+        ${vector_map_INCLUDE_DIRS}
+        ${autoware_msgs_INCLUDE_DIRS}
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
 )
@@ -168,12 +183,15 @@ target_link_libraries(tlr_tuner
         ${OpenCV_LIBS}
         Qt5::Core
         Qt5::Widgets
+        ${OPENGL_LIBRARIES}
         )
 
 
 ### roi_extractor ###
 include_directories(
         ${catkin_INCLUDE_DIRS}
+        ${vector_map_INCLUDE_DIRS}
+        ${autoware_msgs_INCLUDE_DIRS}
         include
 )
 
@@ -202,6 +220,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 include_directories(
         ${catkin_INCLUDE_DIRS}
+        ${vector_map_INCLUDE_DIRS}
+        ${autoware_msgs_INCLUDE_DIRS}
         ${TinyXML_INCLUDE_DIRS}
         nodes/label_maker/
         ${CMAKE_CURRENT_SOURCE_DIR}
@@ -230,6 +250,7 @@ target_link_libraries(label_maker
         Qt5::Core
         Qt5::Gui
         Qt5::Widgets
+        ${OPENGL_LIBRARIES}
         )
 
 
@@ -278,7 +299,7 @@ else ()                          # if(EXISTS "${SSD_CAFFE_PATH}")
 endif ()                         # if(EXISTS "${SSD_CAFFE_PATH}")
 
 
-install(TARGETS region_tlr feat_proj tlr_tuner roi_extractor label_maker
+install(TARGETS region_tlr feat_proj tlr_tuner roi_extractor label_maker libcontext tl_switch
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

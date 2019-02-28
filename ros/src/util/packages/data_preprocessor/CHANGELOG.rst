@@ -2,10 +2,45 @@
 Changelog for package data_preprocessor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.10.0 (2019-01-17)
+-------------------
+* Delete mysterious outputs
+* Use colcon as the build tool (`#1704 <https://github.com/kfunaoka/Autoware/issues/1704>`_)
+  * Switch to colcon as the build tool instead of catkin
+  * Added cmake-target
+  * Added note about the second colcon call
+  * Added warning about catkin* scripts being deprecated
+  * Fix COLCON_OPTS
+  * Added install targets
+  * Update Docker image tags
+  * Message packages fixes
+  * Fix missing dependency
+* Fix Ros/ROS naming convention
+* Fix Dpm/DPM naming convention
+* Fix Ndt/NDT naming convention
+* Contributors: Esteve Fernandez, Kenji Funaoka
+
+1.9.1 (2018-11-06)
+------------------
+
+1.9.0 (2018-10-31)
+------------------
+* [fix] PascalCase messages (`#1408 <https://github.com/CPFL/Autoware/issues/1408>`_)
+  * Switch message files to pascal case
+  * Switch message names to pascal case in Runtime Manager
+  * Switch message names to pascal case in *.yaml
+  * Rename brake_cmd and steer_cmd to BrakeCmd and SteerCmd in main.yaml
+* Contributors: Esteve Fernandez
+
+1.8.0 (2018-08-31)
+------------------
+* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/CPFL/Autoware/pull/1385>`_)
+* Contributors: Esteve Fernandez
+
 1.7.0 (2018-05-18)
 ------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
-* Fix/cmake cleanup (`#1156 <https://github.com/kfunaoka/Autoware/issues/1156>`_)
+* Fix/cmake cleanup (`#1156 <https://github.com/CPFL/Autoware/pull/1156>`_)
   * Initial Cleanup
   * fixed also for indigo
   * kf cjeck
@@ -38,7 +73,7 @@ Changelog for package data_preprocessor
   * Fixed qt5 system dependencies for rosdep
   * NDT TKU Fix catkin not pacakged
   * Fixes from industrial_ci
-* [update] Hokuyo 2D driver update (`#1091 <https://github.com/kfunaoka/Autoware/issues/1091>`_)
+* [update] Hokuyo 2D driver update (`#1091 <https://github.com/CPFL/Autoware/pull/1091>`_)
   * Replaced outdated Hokuyo node with new urg_node
   * Added description to RTM
   * Updated Hokuyo3D, added RTM UI for both 2D and 3D Hokuyo nodes

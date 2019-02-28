@@ -1,0 +1,127 @@
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package vision_beyond_track
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+1.10.0 (2019-01-17)
+-------------------
+* Fixes for catkin_make
+* Use colcon as the build tool (`#1704 <https://github.com/kfunaoka/Autoware/issues/1704>`_)
+  * Switch to colcon as the build tool instead of catkin
+  * Added cmake-target
+  * Added note about the second colcon call
+  * Added warning about catkin* scripts being deprecated
+  * Fix COLCON_OPTS
+  * Added install targets
+  * Update Docker image tags
+  * Message packages fixes
+  * Fix missing dependency
+* Feature/perception visualization cleanup (`#1648 <https://github.com/kfunaoka/Autoware/issues/1648>`_)
+  * * Initial commit for visualization package
+  * Removal of all visualization messages from perception nodes
+  * Visualization dependency removal
+  * Launch file modification
+  * * Fixes to visualization
+  * Error on Clustering CPU
+  * Reduce verbosity on markers
+  * intial commit
+  * * Changed to 2 spaces indentation
+  * Added README
+  * Fixed README messages type
+  * 2 space indenting
+  * ros clang format
+  * Publish acceleration and velocity from ukf tracker
+  * Remove hardcoded path
+  * Updated README
+  * updated prototype
+  * Prototype update for header and usage
+  * Removed unknown label from being reported
+  * Updated publishing orientation to match develop
+  * * Published all the trackers
+  * Added valid field for visualization and future compatibility with ADAS ROI filtering
+  * Add simple functions
+  * Refacor code
+  * * Reversed back UKF node to develop
+  * Formatted speed
+  * Refactor codes
+  * Refactor codes
+  * Refactor codes
+  * Refacor codes
+  * Make tracking visualization work
+  * Relay class info in tracker node
+  * Remove dependency to jskbbox and rosmarker in ukf tracker
+  * apply rosclang to ukf tracker
+  * Refactor codes
+  * Refactor codes
+  * add comment
+  * refactor codes
+  * Revert "Refactor codes"
+  This reverts commit 135aaac46e49cb18d9b76611576747efab3caf9c.
+  * Revert "apply rosclang to ukf tracker"
+  This reverts commit 4f8d1cb5c8263a491f92ae5321e5080cb34b7b9c.
+  * Revert "Remove dependency to jskbbox and rosmarker in ukf tracker"
+  This reverts commit 4fa1dd40ba58065f7afacc5e478001078925b27d.
+  * Revert "Relay class info in tracker node"
+  This reverts commit 1637baac44c8d3d414cc069f3af12a79770439ae.
+  * delete dependency to jsk and remove pointcloud_frame
+  * get direction nis
+  * set velocity_reliable true in tracker node
+  * Add divided function
+  * add function
+  * Sanity checks
+  * Relay all the data from input DetectedObject
+  * Divided function work both for immukf and sukf
+  * Add comment
+  * Refactor codes
+  * Pass immukf test
+  * make direction assisted tracking work
+  * Visualization fixes
+  * Refacor codes
+  * Refactor codes
+  * Refactor codes
+  * refactor codes
+  * refactor codes
+  * Refactor codes
+  * refactor codes
+  * Tracker Merging step added
+  * Added launch file support for merging phase
+  * lane assisted with sukf
+  * Refactor codes
+  * Refactor codes
+  * * change only static objects
+  * keep label of the oldest tracker
+  * Static Object discrimination
+  * Non rotating bouding box
+  * no disappear if detector works
+  * Modify removeRedundant a bit
+  * Replacement of JSK visualization for RViz Native Markers
+  * Added Models namespace to visualization
+  * Naming change for matching the perception component graph
+  * * Added 3D Models for different classes in visualization
+  * 2D Rect node visualize_rects added to visualization_package
+* Contributors: Abraham Monrroy Cano, Esteve Fernandez, amc-nu
+
+1.9.1 (2018-11-06)
+------------------
+
+1.9.0 (2018-10-31)
+------------------
+* Feature/beyond pixel tracker (`#1473 <https://github.com/CPFL/Autoware/issues/1473>`_)
+  * Add beyond_pixel node
+  * Update prototype of beyond pixel (`#1430 <https://github.com/CPFL/Autoware/issues/1430>`_)
+  * Add parser of DetectedObjectArray for beyond tracker(`#1430 <https://github.com/CPFL/Autoware/issues/1430>`_)
+  * * Adaptations to the original code
+  * Added README
+  * Added Runtime Manager entry
+  * Added Video link
+  * Added install commands for cmake
+  * * Add ID only to tracked objects
+  * Display valid IDs on the 3D labels
+  * Display only objects with image coords
+  * * Added Minimum dimensions
+  * Register angle from the vision tracker if available
+  * Keep message publishing rate continuous
+  * Revert platform_automation_msgs (`#1498 <https://github.com/CPFL/Autoware/issues/1498>`_)
+  * Code cleanup
+  * Fixed a crash when the dimensions are outside of the image
+  * Fix annoying catkin_make causing to run twice the Cmake generation
+* Contributors: Abraham Monrroy

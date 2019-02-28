@@ -2,18 +2,57 @@
 Changelog for package vision_dpm_ttic_detect
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.10.0 (2019-01-17)
+-------------------
+* Fixes for catkin_make
+* Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/kfunaoka/Autoware/issues/1741>`_)
+  * Switch to Apache 2
+  * Replace BSD-3 license header with Apache 2 and reassign copyright to the
+  Autoware Foundation.
+  * Update license on Python files
+  * Update copyright years
+  * Add #ifndef/define _POINTS_IMAGE_H\_
+  * Updated license comment
+* Use colcon as the build tool (`#1704 <https://github.com/kfunaoka/Autoware/issues/1704>`_)
+  * Switch to colcon as the build tool instead of catkin
+  * Added cmake-target
+  * Added note about the second colcon call
+  * Added warning about catkin* scripts being deprecated
+  * Fix COLCON_OPTS
+  * Added install targets
+  * Update Docker image tags
+  * Message packages fixes
+  * Fix missing dependency
+* Fix Dpm/DPM naming convention
+* Contributors: Esteve Fernandez, amc-nu
+
+1.9.1 (2018-11-06)
+------------------
+
+1.9.0 (2018-10-31)
+------------------
+* Moved configuration messages to autoware_config_msgs
+* [fix] PascalCase messages (`#1408 <https://github.com/CPFL/Autoware/issues/1408>`_)
+  * Switch message files to pascal case
+  * Switch message names to pascal case in Runtime Manager
+  * Switch message names to pascal case in *.yaml
+  * Rename brake_cmd and steer_cmd to BrakeCmd and SteerCmd in main.yaml
+* Contributors: Esteve Fernandez
+
+1.8.0 (2018-08-31)
+------------------
+* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)
+* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/CPFL/Autoware/pull/1385>`_)
+* [Feature] Cross compile Autoware for aarch64 (`#1375 <https://github.com/CPFL/Autoware/pull/1375>`_)
+* Contributors: Esteve Fernandez
+
 1.7.0 (2018-05-16)
 ------------------
-* [Fix] rename packages (`#1269 <https://github.com/kfunaoka/Autoware/issues/1269>`_)
-* Contributors: Kosuke Murakami
-
-Forthcoming
------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
 * Modify package xml version other than 1.6.3
 * Remove history of sub-branches
 * Add automatically-generated CHANGELOG.rst
-* [Fix] rename packages (`#1269 <https://github.com/kfunaoka/Autoware/issues/1269>`_)
+* [Fix] rename packages (`#1269 <https://github.com/CPFL/Autoware/pull/1269>`_)
   * rename lidar_tracker
   * Modify pf_lidar_track's cmake file
   * Refactor code

@@ -12,19 +12,19 @@
 #include "Context.h"
 #include "autoware_msgs/Signals.h"
 
-class RoiExtractor {
+class ROIExtractor {
  public:
-  explicit RoiExtractor(int minimum_height, double similarity_threshold):
+  explicit ROIExtractor(int minimum_height, double similarity_threshold):
     k_minimum_height_(minimum_height),
     k_similarity_threshold_(similarity_threshold),
     previous_saved_frame_(cv::Mat())
   {};
 
-  ~RoiExtractor(){};
+  ~ROIExtractor(){};
 
   // Callback functions to obtain images and signal position
   void ImageRawCallback(const sensor_msgs::Image &image);
-  void RoiSignalCallback(const autoware_msgs::Signals::ConstPtr &extracted_pos);
+  void ROISignalCallback(const autoware_msgs::Signals::ConstPtr &extracted_pos);
   
   // Utility function to create directory which roi images will be saved
   void CreateTargetDirectory(std::string base_name);

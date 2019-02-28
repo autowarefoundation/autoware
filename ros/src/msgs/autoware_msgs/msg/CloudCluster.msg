@@ -22,3 +22,10 @@ std_msgs/Float32MultiArray fpfh_descriptor
 
 jsk_recognition_msgs/BoundingBox bounding_box
 geometry_msgs/PolygonStamped convex_hull
+
+# Indicator information
+# INDICATOR_LEFT 0
+# INDICATOR_RIGHT 1
+# INDICATOR_BOTH 2
+# INDICATOR_NONE 3
+uint32 indicator_state

@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(image_processor)
 
+
+find_package(autoware_build_flags REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         roscpp
         sensor_msgs
@@ -23,7 +25,7 @@ include_directories(
         include
 )
 
-SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 #Image rotator
 add_executable(image_rotator
@@ -67,10 +69,6 @@ install(TARGETS image_rotator image_rectifier
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
 
-install(FILES
-        launch/image_rotator.launch
-        launch/image_rotator_ladybug.launch
-        launch/image_rectifier.launch
-        launch/image_rectifier_ladybug.launch
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-        )
+install(DIRECTORY launch
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)

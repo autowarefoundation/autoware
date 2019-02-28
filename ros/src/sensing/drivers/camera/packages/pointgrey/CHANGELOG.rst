@@ -2,10 +2,43 @@
 Changelog for package autoware_pointgrey_drivers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.10.0 (2019-01-17)
+-------------------
+* Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/kfunaoka/Autoware/issues/1741>`_)
+  * Switch to Apache 2
+  * Replace BSD-3 license header with Apache 2 and reassign copyright to the
+  Autoware Foundation.
+  * Update license on Python files
+  * Update copyright years
+  * Add #ifndef/define _POINTS_IMAGE_H\_
+  * Updated license comment
+* [feature] Initial integration of Boson FLIR ADK camera driver for Autoware (`#1809 <https://github.com/kfunaoka/Autoware/issues/1809>`_)
+  * Initial integration of Boson FLIR ADK camera driver for Autoware
+  * Added README description for Boson FLIR ADK
+* Fix Ros/ROS naming convention
+* Contributors: Abraham Monrroy Cano, Esteve Fernandez
+
+1.9.1 (2018-11-06)
+------------------
+
+1.9.0 (2018-10-31)
+------------------
+
+1.8.0 (2018-08-31)
+------------------
+* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)
+* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/CPFL/Autoware/pull/1385>`_)
+* Added ID for multiple camera frames (`#1296 <https://github.com/CPFL/Autoware/pull/1296>`_)
+  * Added ID for multiple camera frames
+  * Fixed indexing for Ladybug camera
+  * Fixed camera index on grasshopper
+* [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/CPFL/Autoware/pull/1291>`_)
+* Contributors: Abraham Monrroy, Esteve Fernandez, Kenji Funaoka
+
 1.7.0 (2018-05-18)
 ------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
-* Fix/cmake cleanup (`#1156 <https://github.com/kfunaoka/Autoware/issues/1156>`_)
+* Fix/cmake cleanup (`#1156 <https://github.com/CPFL/Autoware/pull/1156>`_)
   * Initial Cleanup
   * fixed also for indigo
   * kf cjeck
@@ -38,14 +71,14 @@ Changelog for package autoware_pointgrey_drivers
   * Fixed qt5 system dependencies for rosdep
   * NDT TKU Fix catkin not pacakged
   * Fixes from industrial_ci
-* [feature] Add timeout to the grasshopper camera node. (`#1154 <https://github.com/kfunaoka/Autoware/issues/1154>`_)
+* [feature] Add timeout to the grasshopper camera node. (`#1154 <https://github.com/CPFL/Autoware/pull/1154>`_)
   * Added timeout to the grasshopper camera node.
   * Added timeout to the launch file
-* Autoware PointGrey driver package README (`#1145 <https://github.com/kfunaoka/Autoware/issues/1145>`_)
+* Autoware PointGrey driver package README (`#1145 <https://github.com/CPFL/Autoware/pull/1145>`_)
   * Autoware PointGrey driver package README
   * Pushed latest README
   * Edited README
-* [feature] Grasshopper3 node modified to set the mode and pixel format (`#1105 <https://github.com/kfunaoka/Autoware/issues/1105>`_)
+* [feature] Grasshopper3 node modified to set the mode and pixel format (`#1105 <https://github.com/CPFL/Autoware/pull/1105>`_)
   * Grasshopper3 node modified to set the mode and pixel format
   * Baumer Type Readme
   * Baumer Auto Exposure Algorithm improvement

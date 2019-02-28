@@ -16,7 +16,8 @@ add_subdirectory(src/driver)
 
 find_package(Boost REQUIRED COMPONENTS system)
 
-find_package(SickLDMRS REQUIRED)
+# The following is commented because we're importing sick_ldmrs from src/dirver
+# find_package(SickLDMRS REQUIRED)
 
 generate_dynamic_reconfigure_options(cfg/SickLDMRSDriver.cfg)
 
@@ -34,9 +35,12 @@ include_directories(include
 
 add_executable(sick_ldmrs_node
     src/sick_ldmrs_node.cpp)
+
+# sick_ldmrs is an imported target from libsick_ldmrs (in src/driver), we'd use
+# ${SICK_LDMRS_LIBRARIES} as defined by find_package(SickLDMRS) otherwise
 target_link_libraries(sick_ldmrs_node
     ${catkin_LIBRARIES}
-    ${SICK_LDMRS_LIBRARIES})
+    sick_ldmrs)
 add_dependencies(sick_ldmrs_node ${PROJECT_NAME}_gencfg)
 add_dependencies(sick_ldmrs_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 

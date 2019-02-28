@@ -1,32 +1,18 @@
 /*
- *  Copyright (c) 2015, Nagoya University
- *  All rights reserved.
+ * Copyright 2015-2019 Autoware Foundation. All rights reserved.
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  * Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name of Autoware nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 /*
  Localization and mapping program using Normal Distributions Transform
@@ -66,8 +52,8 @@
 #include <pcl/registration/ndt.h>
 #endif
 
-#include <autoware_msgs/ConfigApproximateNdtMapping.h>
-#include <autoware_msgs/ConfigNdtMappingOutput.h>
+#include <autoware_config_msgs/ConfigApproximateNDTMapping.h>
+#include <autoware_config_msgs/ConfigNDTMappingOutput.h>
 
 struct pose
 {
@@ -131,6 +117,7 @@ static int initial_scan_loaded = 0;
 static Eigen::Matrix4f gnss_transform = Eigen::Matrix4f::Identity();
 
 static double min_scan_range = 5.0;
+static double max_scan_range = 200.0;
 static double min_add_scan_shift = 1.0;
 static double max_submap_size = 100.0;
 
@@ -153,7 +140,10 @@ static double submap_size = 0.0;
 static sensor_msgs::Imu imu;
 static nav_msgs::Odometry odom;
 
-static void param_callback(const autoware_msgs::ConfigApproximateNdtMapping::ConstPtr& input)
+static std::ofstream ofs;
+static std::string filename;
+
+static void param_callback(const autoware_config_msgs::ConfigApproximateNDTMapping::ConstPtr& input)
 {
   ndt_res = input->resolution;
   step_size = input->step_size;
@@ -161,6 +151,7 @@ static void param_callback(const autoware_msgs::ConfigApproximateNdtMapping::Con
   max_iter = input->max_iterations;
   voxel_leaf_size = input->leaf_size;
   min_scan_range = input->min_scan_range;
+  max_scan_range = input->max_scan_range;
   min_add_scan_shift = input->min_add_scan_shift;
   max_submap_size = input->max_submap_size;
 
@@ -171,11 +162,12 @@ static void param_callback(const autoware_msgs::ConfigApproximateNdtMapping::Con
   std::cout << "max_iter: " << max_iter << std::endl;
   std::cout << "voxel_leaf_size: " << voxel_leaf_size << std::endl;
   std::cout << "min_scan_range: " << min_scan_range << std::endl;
+  std::cout << "max_scan_range: " << max_scan_range << std::endl;
   std::cout << "min_add_scan_shift: " << min_add_scan_shift << std::endl;
   std::cout << "max_submap_size: " << max_submap_size << std::endl;
 }
 
-static void output_callback(const autoware_msgs::ConfigNdtMappingOutput::ConstPtr& input)
+static void output_callback(const autoware_config_msgs::ConfigNDTMappingOutput::ConstPtr& input)
 {
   double filter_res = input->filter_res;
   std::string filename = input->filename;
@@ -469,7 +461,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     p.intensity = (double)item->intensity;
 
     r = sqrt(pow(p.x, 2.0) + pow(p.y, 2.0));
-    if (r > min_scan_range)
+    if (min_scan_range < r && r < max_scan_range)
     {
       scan.push_back(p);
     }
@@ -730,6 +722,34 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     submap_num++;
   }
 
+  // Write log
+  if (!ofs)
+  {
+    std::cerr << "Could not open " << filename << "." << std::endl;
+    exit(1);
+  }
+
+  ofs << input->header.seq << ","
+      << input->header.stamp << ","
+      << input->header.frame_id << ","
+      << scan_ptr->size() << ","
+      << filtered_scan_ptr->size() << ","
+      << std::fixed << std::setprecision(5) << current_pose.x << ","
+      << std::fixed << std::setprecision(5) << current_pose.y << ","
+      << std::fixed << std::setprecision(5) << current_pose.z << ","
+      << current_pose.roll << ","
+      << current_pose.pitch << ","
+      << current_pose.yaw << ","
+      << ndt_res << ","
+      << step_size << ","
+      << trans_eps << ","
+      << max_iter << ","
+      << voxel_leaf_size << ","
+      << min_scan_range << ","
+      << max_scan_range << ","
+      << min_add_scan_shift << ","
+      << max_submap_size << std::endl;
+
   std::cout << "-----------------------------------------------------------------" << std::endl;
   std::cout << "Sequence number: " << input->header.seq << std::endl;
   std::cout << "Number of scan points: " << scan_ptr->size() << " points." << std::endl;
@@ -823,6 +843,42 @@ int main(int argc, char** argv)
 
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
+
+  // Set log file name.
+  char buffer[80];
+  std::time_t now = std::time(NULL);
+  std::tm* pnow = std::localtime(&now);
+  std::strftime(buffer, 80, "%Y%m%d_%H%M%S", pnow);
+  filename = "approximate_ndt_mapping_" + std::string(buffer) + ".csv";
+  ofs.open(filename.c_str(), std::ios::app);
+
+  // write header for log file
+  if (!ofs)
+  {
+    std::cerr << "Could not open " << filename << "." << std::endl;
+    exit(1);
+  }
+
+  ofs << "input->header.seq" << ","
+      << "input->header.stamp" << ","
+      << "input->header.frame_id" << ","
+      << "scan_ptr->size()" << ","
+      << "filtered_scan_ptr->size()" << ","
+      << "current_pose.x" << ","
+      << "current_pose.y" << ","
+      << "current_pose.z" << ","
+      << "current_pose.roll" << ","
+      << "current_pose.pitch" << ","
+      << "current_pose.yaw" << ","
+      << "ndt_res" << ","
+      << "step_size" << ","
+      << "trans_eps" << ","
+      << "max_iter" << ","
+      << "voxel_leaf_size" << ","
+      << "min_scan_range" << ","
+      << "max_scan_range" << ","
+      << "min_add_scan_shift" << ","
+      << "max_submap_size" << std::endl;
 
   // setting parameters
   private_nh.getParam("use_openmp", _use_openmp);

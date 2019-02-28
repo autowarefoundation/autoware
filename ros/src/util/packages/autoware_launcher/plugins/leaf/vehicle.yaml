@@ -1,0 +1,19 @@
+format: Autoware Launcher Plugin Version 0.1
+exts:
+- name: description
+  type: str
+args:
+- name: vehicle_model
+  type: str
+- name: vehicle_info
+  type: str
+
+panel:
+  widget: node.panel
+  frames:
+  - target: exts.description
+    widget: basic.text
+  - target: args.vehicle_model
+    widget: basic.file
+  - target: args.vehicle_info
+    widget: basic.file

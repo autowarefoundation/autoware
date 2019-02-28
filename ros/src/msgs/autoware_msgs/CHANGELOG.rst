@@ -2,10 +2,168 @@
 Changelog for package autoware_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.10.0 (2019-01-17)
+-------------------
+* Feature/perception visualization cleanup (`#1648 <https://github.com/kfunaoka/Autoware/issues/1648>`_)
+  * * Initial commit for visualization package
+  * Removal of all visualization messages from perception nodes
+  * Visualization dependency removal
+  * Launch file modification
+  * * Fixes to visualization
+  * Error on Clustering CPU
+  * Reduce verbosity on markers
+  * intial commit
+  * * Changed to 2 spaces indentation
+  * Added README
+  * Fixed README messages type
+  * 2 space indenting
+  * ros clang format
+  * Publish acceleration and velocity from ukf tracker
+  * Remove hardcoded path
+  * Updated README
+  * updated prototype
+  * Prototype update for header and usage
+  * Removed unknown label from being reported
+  * Updated publishing orientation to match develop
+  * * Published all the trackers
+  * Added valid field for visualization and future compatibility with ADAS ROI filtering
+  * Add simple functions
+  * Refacor code
+  * * Reversed back UKF node to develop
+  * Formatted speed
+  * Refactor codes
+  * Refactor codes
+  * Refactor codes
+  * Refacor codes
+  * Make tracking visualization work
+  * Relay class info in tracker node
+  * Remove dependency to jskbbox and rosmarker in ukf tracker
+  * apply rosclang to ukf tracker
+  * Refactor codes
+  * Refactor codes
+  * add comment
+  * refactor codes
+  * Revert "Refactor codes"
+  This reverts commit 135aaac46e49cb18d9b76611576747efab3caf9c.
+  * Revert "apply rosclang to ukf tracker"
+  This reverts commit 4f8d1cb5c8263a491f92ae5321e5080cb34b7b9c.
+  * Revert "Remove dependency to jskbbox and rosmarker in ukf tracker"
+  This reverts commit 4fa1dd40ba58065f7afacc5e478001078925b27d.
+  * Revert "Relay class info in tracker node"
+  This reverts commit 1637baac44c8d3d414cc069f3af12a79770439ae.
+  * delete dependency to jsk and remove pointcloud_frame
+  * get direction nis
+  * set velocity_reliable true in tracker node
+  * Add divided function
+  * add function
+  * Sanity checks
+  * Relay all the data from input DetectedObject
+  * Divided function work both for immukf and sukf
+  * Add comment
+  * Refactor codes
+  * Pass immukf test
+  * make direction assisted tracking work
+  * Visualization fixes
+  * Refacor codes
+  * Refactor codes
+  * Refactor codes
+  * refactor codes
+  * refactor codes
+  * Refactor codes
+  * refactor codes
+  * Tracker Merging step added
+  * Added launch file support for merging phase
+  * lane assisted with sukf
+  * Refactor codes
+  * Refactor codes
+  * * change only static objects
+  * keep label of the oldest tracker
+  * Static Object discrimination
+  * Non rotating bouding box
+  * no disappear if detector works
+  * Modify removeRedundant a bit
+  * Replacement of JSK visualization for RViz Native Markers
+  * Added Models namespace to visualization
+  * Naming change for matching the perception component graph
+  * * Added 3D Models for different classes in visualization
+  * 2D Rect node visualize_rects added to visualization_package
+* Fix Ndt/NDT naming convention
+* Contributors: Abraham Monrroy Cano, Esteve Fernandez
+
+1.9.1 (2018-11-06)
+------------------
+
+1.9.0 (2018-10-31)
+------------------
+* Moved CAN mesages to autoware_can_msgs
+* Moved configuration messages to autoware_config_msgs
+* [fix] PascalCase messages (`#1408 <https://github.com/CPFL/Autoware/issues/1408>`_)
+  * Switch message files to pascal case
+  * Switch message names to pascal case in Runtime Manager
+  * Switch message names to pascal case in *.yaml
+  * Rename brake_cmd and steer_cmd to BrakeCmd and SteerCmd in main.yaml
+* Feature/compare map filter (`#1559 <https://github.com/CPFL/Autoware/issues/1559>`_)
+  * add compare map filter
+  * add README
+  * add copyright
+  * change default parameter
+  * fix typo
+  * clang-format
+  * Revert "clang-format"
+  This reverts commit 95869328f35f6ed1e918c26901ad36ab9737e466.
+  * retry clang-format
+* Contributors: Esteve Fernandez, YamatoAndo
+
+1.8.0 (2018-08-31)
+------------------
+* Support old behavior of insert static object for obstacle avoidance testing
+  Only one simulated car available in the runtime manager
+  update for copywrite note
+  insert autoware_build_flags to new nodes
+* Feature/std perception msg (`#1418 <https://github.com/CPFL/Autoware/pull/1418>`_)
+  * New standard message definition for the perception nodes
+  * New Detected Object message applied to:
+  * SSD
+  * Integrated RVIZ viewer
+  * External Viewer
+  * modified yolo2 and yolo3, compiles but cuda issues, trying different PC
+  * Boiler plate for range vision fusion node
+  * Added GenColors for Kinetic
+  Typo fixes for yolo2
+  * testing colors in Yolo3
+  * Completed transformation, projection of 3D boxes
+  * Fixed error on negative assignation
+  * code clean up
+  * removed yolo2 and yolo3, replaced by single darknet node. GUI launches yolo3 for now, to change. Pushing to test code on other PC.
+  * Readme updated, added gitignore for data folder.
+  * *Added Runtime manager UI for yolo2, yolo3.
+  *Support tested for TinyYolo v2 and v3
+  * Fusion Vision Range
+  Icons for viewer
+  * Range Vision Fusion node
+  * Indigo cv im read
+  * Indigo compiation fix
+  * Topic renaming according to new spec
+  * Try to fix arm64 stuff
+  * * Added launch file
+  * Added Runtime manager entry
+  * * Added Publication of non fused objects
+  * Fixed topic names
+* add max_scan_range to ConfigNDTMapping/ConfigApproximateNDTMapping
+* Update OpenPlanner libraries (op_planner, op_utitity, op_ros_helpers)
+  Update ring ground filter with latest implementation
+  Update lidar_kf_contour_track with latest implementation
+  Add op_utilities nodes (op_bag_player, op_data_logger, op_pose2tf)
+  Modify autoware_msgs for OpenPlanner use (CloudCluster, DetectedObject, lane, waypoint)
+  Update UI computing.yaml for the new nodes and modifies parameters
+  Update UI sensing.yaml for updated ring_ground_filter params
+* Modify points_concat_filter to support up to 8 lidars
+* Contributors: Abraham Monrroy, Akihito Ohsato, hatem-darweesh, yukikitsukawa
+
 1.7.0 (2018-05-18)
 ------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
-* [Fix] rename packages (`#1269 <https://github.com/kfunaoka/Autoware/issues/1269>`_)
+* [Fix] rename packages (`#1269 <https://github.com/CPFL/Autoware/pull/1269>`_)
   * rename lidar_tracker
   * Modify pf_lidar_track's cmake file
   * Refactor code
@@ -141,7 +299,7 @@ Changelog for package autoware_msgs
   - Support to output vehicle autonomous mode
 * add vehicle_status msg
 * Add end point offset option
-* Fix/cmake cleanup (`#1156 <https://github.com/kfunaoka/Autoware/issues/1156>`_)
+* Fix/cmake cleanup (`#1156 <https://github.com/CPFL/Autoware/pull/1156>`_)
   * Initial Cleanup
   * fixed also for indigo
   * kf cjeck

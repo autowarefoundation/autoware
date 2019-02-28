@@ -1,31 +1,17 @@
 /*
- *  Copyright (c) 2015, Nagoya University
- *  All rights reserved.
+ * Copyright 2015-2019 Autoware Foundation. All rights reserved.
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  * Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name of Autoware nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include <ros/ros.h>
@@ -40,8 +26,8 @@
 
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "autoware_msgs/LaneArray.h"
-#include "autoware_msgs/ConfigLaneStop.h"
-#include "autoware_msgs/traffic_light.h"
+#include "autoware_config_msgs/ConfigLaneStop.h"
+#include "autoware_msgs/TrafficLight.h"
 
 namespace
 {
@@ -204,7 +190,7 @@ void createGlobalLaneArrayChangeFlagMarker(const autoware_msgs::LaneArray& lane_
 }
 
 void createLocalWaypointVelocityMarker(std_msgs::ColorRGBA color, int closest_waypoint,
-                                       const autoware_msgs::lane& lane_waypoint)
+                                       const autoware_msgs::Lane& lane_waypoint)
 {
   // display by markers the velocity of each waypoint.
   visualization_msgs::Marker velocity;
@@ -296,7 +282,7 @@ void createGlobalLaneArrayOrientationMarker(const autoware_msgs::LaneArray& lane
                                        tmp_marker_array.markers.end());
 }
 
-void createLocalPathMarker(std_msgs::ColorRGBA color, const autoware_msgs::lane& lane_waypoint)
+void createLocalPathMarker(std_msgs::ColorRGBA color, const autoware_msgs::Lane& lane_waypoint)
 {
   visualization_msgs::Marker lane_waypoint_marker;
   lane_waypoint_marker.header.frame_id = "map";
@@ -318,7 +304,7 @@ void createLocalPathMarker(std_msgs::ColorRGBA color, const autoware_msgs::lane&
   g_local_waypoints_marker_array.markers.push_back(lane_waypoint_marker);
 }
 
-void createLocalPointMarker(const autoware_msgs::lane& lane_waypoint)
+void createLocalPointMarker(const autoware_msgs::Lane& lane_waypoint)
 {
   visualization_msgs::Marker lane_waypoint_marker;
   lane_waypoint_marker.header.frame_id = "map";
@@ -343,7 +329,7 @@ void createLocalPointMarker(const autoware_msgs::lane& lane_waypoint)
   g_local_waypoints_marker_array.markers.push_back(lane_waypoint_marker);
 }
 
-void lightCallback(const autoware_msgs::traffic_lightConstPtr& msg)
+void lightCallback(const autoware_msgs::TrafficLightConstPtr& msg)
 {
   std_msgs::ColorRGBA global_color;
   global_color.a = g_global_alpha;
@@ -379,19 +365,19 @@ void lightCallback(const autoware_msgs::traffic_lightConstPtr& msg)
   }
 }
 
-void receiveAutoDetection(const autoware_msgs::traffic_lightConstPtr& msg)
+void receiveAutoDetection(const autoware_msgs::TrafficLightConstPtr& msg)
 {
   if (!g_config_manual_detection)
     lightCallback(msg);
 }
 
-void receiveManualDetection(const autoware_msgs::traffic_lightConstPtr& msg)
+void receiveManualDetection(const autoware_msgs::TrafficLightConstPtr& msg)
 {
   if (g_config_manual_detection)
     lightCallback(msg);
 }
 
-void configParameter(const autoware_msgs::ConfigLaneStopConstPtr& msg)
+void configParameter(const autoware_config_msgs::ConfigLaneStopConstPtr& msg)
 {
   g_config_manual_detection = msg->manual_detection;
 }
@@ -406,7 +392,7 @@ void laneArrayCallback(const autoware_msgs::LaneArrayConstPtr& msg)
   publishMarkerArray(g_global_marker_array, g_global_mark_pub);
 }
 
-void finalCallback(const autoware_msgs::laneConstPtr& msg)
+void finalCallback(const autoware_msgs::LaneConstPtr& msg)
 {
   g_local_waypoints_marker_array.markers.clear();
   if (_closest_waypoint != -1)

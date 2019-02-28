@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(kitti_player)
 
-SET(CMAKE_CXX_FLAGS "-O3 -std=c++11")
+SET(CMAKE_CXX_FLAGS "-O3")
 
+
+find_package(autoware_build_flags REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         roscpp
         tf
@@ -40,3 +42,17 @@ target_link_libraries(kitti_player
         ${OpenCV_LIBS})
 
 add_dependencies(kitti_player ${catkin_EXPORTED_TARGETS})
+
+install(TARGETS kitti_player
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)
+
+install(DIRECTORY cfg/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/cfg
+        PATTERN ".svn" EXCLUDE)

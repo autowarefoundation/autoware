@@ -2,18 +2,189 @@
 Changelog for package lidar_euclidean_cluster_detect
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.10.0 (2019-01-17)
+-------------------
+* Fixes for catkin_make
+* Use colcon as the build tool (`#1704 <https://github.com/kfunaoka/Autoware/issues/1704>`_)
+  * Switch to colcon as the build tool instead of catkin
+  * Added cmake-target
+  * Added note about the second colcon call
+  * Added warning about catkin* scripts being deprecated
+  * Fix COLCON_OPTS
+  * Added install targets
+  * Update Docker image tags
+  * Message packages fixes
+  * Fix missing dependency
+* Feature/perception visualization cleanup (`#1648 <https://github.com/kfunaoka/Autoware/issues/1648>`_)
+  * * Initial commit for visualization package
+  * Removal of all visualization messages from perception nodes
+  * Visualization dependency removal
+  * Launch file modification
+  * * Fixes to visualization
+  * Error on Clustering CPU
+  * Reduce verbosity on markers
+  * intial commit
+  * * Changed to 2 spaces indentation
+  * Added README
+  * Fixed README messages type
+  * 2 space indenting
+  * ros clang format
+  * Publish acceleration and velocity from ukf tracker
+  * Remove hardcoded path
+  * Updated README
+  * updated prototype
+  * Prototype update for header and usage
+  * Removed unknown label from being reported
+  * Updated publishing orientation to match develop
+  * * Published all the trackers
+  * Added valid field for visualization and future compatibility with ADAS ROI filtering
+  * Add simple functions
+  * Refacor code
+  * * Reversed back UKF node to develop
+  * Formatted speed
+  * Refactor codes
+  * Refactor codes
+  * Refactor codes
+  * Refacor codes
+  * Make tracking visualization work
+  * Relay class info in tracker node
+  * Remove dependency to jskbbox and rosmarker in ukf tracker
+  * apply rosclang to ukf tracker
+  * Refactor codes
+  * Refactor codes
+  * add comment
+  * refactor codes
+  * Revert "Refactor codes"
+  This reverts commit 135aaac46e49cb18d9b76611576747efab3caf9c.
+  * Revert "apply rosclang to ukf tracker"
+  This reverts commit 4f8d1cb5c8263a491f92ae5321e5080cb34b7b9c.
+  * Revert "Remove dependency to jskbbox and rosmarker in ukf tracker"
+  This reverts commit 4fa1dd40ba58065f7afacc5e478001078925b27d.
+  * Revert "Relay class info in tracker node"
+  This reverts commit 1637baac44c8d3d414cc069f3af12a79770439ae.
+  * delete dependency to jsk and remove pointcloud_frame
+  * get direction nis
+  * set velocity_reliable true in tracker node
+  * Add divided function
+  * add function
+  * Sanity checks
+  * Relay all the data from input DetectedObject
+  * Divided function work both for immukf and sukf
+  * Add comment
+  * Refactor codes
+  * Pass immukf test
+  * make direction assisted tracking work
+  * Visualization fixes
+  * Refacor codes
+  * Refactor codes
+  * Refactor codes
+  * refactor codes
+  * refactor codes
+  * Refactor codes
+  * refactor codes
+  * Tracker Merging step added
+  * Added launch file support for merging phase
+  * lane assisted with sukf
+  * Refactor codes
+  * Refactor codes
+  * * change only static objects
+  * keep label of the oldest tracker
+  * Static Object discrimination
+  * Non rotating bouding box
+  * no disappear if detector works
+  * Modify removeRedundant a bit
+  * Replacement of JSK visualization for RViz Native Markers
+  * Added Models namespace to visualization
+  * Naming change for matching the perception component graph
+  * * Added 3D Models for different classes in visualization
+  * 2D Rect node visualize_rects added to visualization_package
+* Drop support for ROS Indigo
+* Added notes about Indigo being deprecated
+* Fix Ros/ROS naming convention
+* Contributors: Abraham Monrroy Cano, Esteve Fernandez, amc-nu
+
+1.9.1 (2018-11-06)
+------------------
+
+1.9.0 (2018-10-31)
+------------------
+* [fix] PascalCase messages (`#1408 <https://github.com/CPFL/Autoware/issues/1408>`_)
+  * Switch message files to pascal case
+  * Switch message names to pascal case in Runtime Manager
+  * Switch message names to pascal case in *.yaml
+  * Rename brake_cmd and steer_cmd to BrakeCmd and SteerCmd in main.yaml
+* * Fixed typo
+  * Changed default values
+* Fix multiple definition
+* Fix condition for pcl::PCA, issue:`#1604 <https://github.com/CPFL/Autoware/issues/1604>`_
+* Feature/beyond pixel tracker (`#1473 <https://github.com/CPFL/Autoware/issues/1473>`_)
+  * Add beyond_pixel node
+  * Update prototype of beyond pixel (`#1430 <https://github.com/CPFL/Autoware/issues/1430>`_)
+  * Add parser of DetectedObjectArray for beyond tracker(`#1430 <https://github.com/CPFL/Autoware/issues/1430>`_)
+  * * Adaptations to the original code
+  * Added README
+  * Added Runtime Manager entry
+  * Added Video link
+  * Added install commands for cmake
+  * * Add ID only to tracked objects
+  * Display valid IDs on the 3D labels
+  * Display only objects with image coords
+  * * Added Minimum dimensions
+  * Register angle from the vision tracker if available
+  * Keep message publishing rate continuous
+  * Revert platform_automation_msgs (`#1498 <https://github.com/CPFL/Autoware/issues/1498>`_)
+  * Code cleanup
+  * Fixed a crash when the dimensions are outside of the image
+  * Fix annoying catkin_make causing to run twice the Cmake generation
+* Contributors: Abraham Monrroy, Akihito OHSATO, Esteve Fernandez, amc-nu
+
+1.8.0 (2018-08-31)
+------------------
+* Add variable number of params for clustering_ranges and clustering_distances
+* load multiple thres params from string: less rosparam
+* Naming change from segment to clustering
+* Apllying ros clang
+* Add optional multiple threshold euclidean clustert
+* applying ros clang formant
+* Add only one segment distance
+* Feature/std perception msg (`#1418 <https://github.com/CPFL/Autoware/pull/1418>`_)
+  * New standard message definition for the perception nodes
+  * New Detected Object message applied to:
+  * SSD
+  * Integrated RVIZ viewer
+  * External Viewer
+  * modified yolo2 and yolo3, compiles but cuda issues, trying different PC
+  * Boiler plate for range vision fusion node
+  * Added GenColors for Kinetic
+  Typo fixes for yolo2
+  * testing colors in Yolo3
+  * Completed transformation, projection of 3D boxes
+  * Fixed error on negative assignation
+  * code clean up
+  * removed yolo2 and yolo3, replaced by single darknet node. GUI launches yolo3 for now, to change. Pushing to test code on other PC.
+  * Readme updated, added gitignore for data folder.
+  * *Added Runtime manager UI for yolo2, yolo3.
+  *Support tested for TinyYolo v2 and v3
+  * Fusion Vision Range
+  Icons for viewer
+  * Range Vision Fusion node
+  * Indigo cv im read
+  * Indigo compiation fix
+  * Topic renaming according to new spec
+  * Try to fix arm64 stuff
+  * * Added launch file
+  * Added Runtime manager entry
+  * * Added Publication of non fused objects
+  * Fixed topic names
+* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)
+* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/CPFL/Autoware/pull/1385>`_)
+* * CUDA Fixes for indigo (`#1280 <https://github.com/CPFL/Autoware/pull/1280>`_)
+  * CMake fixes for vision packages
+* Contributors: Abraham Monrroy, Esteve Fernandez, Kosuke Murakami
+
 1.7.0 (2018-05-16)
 ------------------
-* [Fix] rename packages (`#1269 <https://github.com/kfunaoka/Autoware/issues/1269>`_)
-* Contributors: Kosuke Murakami
-
-Forthcoming
------------
-* Add  code in cmakelists
-* update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
-* Remove history of sub-branches
-* Add automatically-generated CHANGELOG.rst
-* [Fix] rename packages (`#1269 <https://github.com/kfunaoka/Autoware/issues/1269>`_)
+* [Fix] rename packages (`#1269 <https://github.com/CPFL/Autoware/pull/1269>`_)
   * rename lidar_tracker
   * Modify pf_lidar_track's cmake file
   * Refactor code

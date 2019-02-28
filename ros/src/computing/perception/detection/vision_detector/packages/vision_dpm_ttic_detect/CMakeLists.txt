@@ -3,29 +3,29 @@ project(vision_dpm_ttic_detect)
 
 include(FindPkgConfig)
 
+find_package(autoware_msgs REQUIRED)
+
+find_package(autoware_config_msgs REQUIRED)
+
 FIND_PACKAGE(catkin REQUIRED COMPONENTS
         cv_bridge
         roscpp
         sensor_msgs
         std_msgs
-        autoware_msgs
         libdpm_ttic
+        autoware_config_msgs
+        autoware_msgs
         )
 
 FIND_PACKAGE(CUDA)
 FIND_PACKAGE(OpenCV REQUIRED)
-
-EXECUTE_PROCESS(
-        COMMAND uname -m
-        OUTPUT_VARIABLE ARCHITECTURE
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-)
 
 catkin_package(
         CATKIN_DEPENDS cv_bridge
         roscpp
         sensor_msgs
         std_msgs
+        autoware_config_msgs
         autoware_msgs
         libdpm_ttic
 )
@@ -34,16 +34,20 @@ catkin_package(
 ## Build ##
 ###########
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(
+        ${autoware_config_msgs_INCLUDE_DIRS}
+        ${autoware_msgs_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
 )
 
 IF (CUDA_FOUND)
     include_directories(${CUDA_INCLUDE_DIRS})
+    
+    set(CMAKE_CXX_FLAGS "-lcuda ${CMAKE_CXX_FLAGS}")
 
-    IF ("${ARCHITECTURE}" MATCHES "^arm")
+    IF ("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "^arm")
         link_directories(/usr/lib/arm-linux-gnueabihf/tegra)
     endif ()
 ENDIF ()
@@ -96,3 +100,11 @@ install(TARGETS vision_dpm_ttic_detect
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)
+
+install(DIRECTORY data/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/data
+        PATTERN ".svn" EXCLUDE)

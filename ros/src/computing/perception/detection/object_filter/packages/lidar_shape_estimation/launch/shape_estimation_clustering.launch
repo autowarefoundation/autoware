@@ -1,0 +1,16 @@
+<launch>
+
+  <arg name="namespace" default="detection"/>
+  <arg name="packagename" default="shape_estimation"/>
+  <arg name="input" default="/$(arg namespace)/lidar_detector/objects"/>
+  <arg name="output" default="/$(arg namespace)/$(arg packagename)/objects"/>
+
+  <node pkg="lidar_shape_estimation" type="lidar_shape_estimation" name="lidar_shape_estimation" output="screen">
+    <remap from="input"         to="$(arg input)" />
+    <remap from="objects"       to="$(arg output)" />
+  </node>
+
+  <node pkg="detected_objects_visualizer" type="visualize_detected_objects" name="shape_estimation_visualization"
+        output="screen" ns="/$(arg namespace)/$(arg packagename)"/>
+
+</launch>

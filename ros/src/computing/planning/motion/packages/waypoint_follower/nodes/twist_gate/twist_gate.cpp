@@ -32,6 +32,7 @@
 #include <thread>
 #include <chrono>
 #include <map>
+#include <memory>
 
 #include <ros/ros.h>
 #include <std_msgs/Int32.h>
@@ -43,10 +44,13 @@
 #include "autoware_msgs/VehicleCmd.h"
 #include "tablet_socket_msgs/mode_cmd.h"
 #include "tablet_socket_msgs/gear_cmd.h"
-#include "autoware_msgs/accel_cmd.h"
-#include "autoware_msgs/brake_cmd.h"
-#include "autoware_msgs/steer_cmd.h"
+#include "autoware_msgs/AccelCmd.h"
+#include "autoware_msgs/BrakeCmd.h"
+#include "autoware_msgs/SteerCmd.h"
 #include "autoware_msgs/ControlCommandStamped.h"
+
+//headers in Autowae Health Checker
+#include <autoware_health_checker/node_status_publisher.h>
 
 class TwistGate
 {
@@ -62,16 +66,17 @@ class TwistGate
     void auto_cmd_twist_cmd_callback(const geometry_msgs::TwistStamped::ConstPtr& input_msg);
     void mode_cmd_callback(const tablet_socket_msgs::mode_cmd::ConstPtr& input_msg);
     void gear_cmd_callback(const tablet_socket_msgs::gear_cmd::ConstPtr& input_msg);
-    void accel_cmd_callback(const autoware_msgs::accel_cmd::ConstPtr& input_msg);
-    void steer_cmd_callback(const autoware_msgs::steer_cmd::ConstPtr& input_msg);
-    void brake_cmd_callback(const autoware_msgs::brake_cmd::ConstPtr& input_msg);
-    void lamp_cmd_callback(const autoware_msgs::lamp_cmd::ConstPtr& input_msg);
+    void accel_cmd_callback(const autoware_msgs::AccelCmd::ConstPtr& input_msg);
+    void steer_cmd_callback(const autoware_msgs::SteerCmd::ConstPtr& input_msg);
+    void brake_cmd_callback(const autoware_msgs::BrakeCmd::ConstPtr& input_msg);
+    void lamp_cmd_callback(const autoware_msgs::LampCmd::ConstPtr& input_msg);
     void ctrl_cmd_callback(const autoware_msgs::ControlCommandStamped::ConstPtr& input_msg);
 
     void reset_vehicle_cmd_msg();
 
     ros::NodeHandle nh_;
     ros::NodeHandle private_nh_;
+    std::shared_ptr<autoware_health_checker::NodeStatusPublisher> node_status_pub_ptr_;
     ros::Publisher emergency_stop_pub_;
     ros::Publisher control_command_pub_;
     ros::Publisher vehicle_cmd_pub_;
@@ -99,6 +104,7 @@ TwistGate::TwistGate(const ros::NodeHandle& nh, const ros::NodeHandle& private_n
     ,command_mode_(CommandMode::AUTO)
     ,previous_command_mode_(CommandMode::AUTO)
 {
+  node_status_pub_ptr_ = std::make_shared<autoware_health_checker::NodeStatusPublisher>(nh_,private_nh_);
   emergency_stop_pub_ = nh_.advertise<std_msgs::Bool>("/emergency_stop", 1, true);
   control_command_pub_ = nh_.advertise<std_msgs::String>("/ctrl_mode", 1);
   vehicle_cmd_pub_ = nh_.advertise<vehicle_cmd_msg_t>("/vehicle_cmd", 1, true);
@@ -118,6 +124,7 @@ TwistGate::TwistGate(const ros::NodeHandle& nh, const ros::NodeHandle& private_n
   twist_gate_msg_.header.seq = 0;
   emergency_stop_msg_.data = false;
   send_emergency_cmd = false;
+  node_status_pub_ptr_->ENABLE();
 
   remote_cmd_time_ = ros::Time::now();
   watchdog_timer_thread_ = std::thread(&TwistGate::watchdog_timer, this);
@@ -226,6 +233,8 @@ void TwistGate::remote_cmd_callback(const remote_msgs_t::ConstPtr& input_msg)
 
 void TwistGate::auto_cmd_twist_cmd_callback(const geometry_msgs::TwistStamped::ConstPtr& input_msg)
 {
+  node_status_pub_ptr_->NODE_ACTIVATE();
+  node_status_pub_ptr_->CHECK_RATE("/topic/rate/twist_cmd/slow",8,5,1,"topic twist_cmd subscribe rate low.");
   if(command_mode_ == CommandMode::AUTO)
   {
     twist_gate_msg_.header.frame_id = input_msg->header.frame_id;
@@ -261,7 +270,7 @@ void TwistGate::gear_cmd_callback(const tablet_socket_msgs::gear_cmd::ConstPtr& 
   }
 }
 
-void TwistGate::accel_cmd_callback(const autoware_msgs::accel_cmd::ConstPtr& input_msg)
+void TwistGate::accel_cmd_callback(const autoware_msgs::AccelCmd::ConstPtr& input_msg)
 {
   if(command_mode_ == CommandMode::AUTO)
   {
@@ -273,7 +282,7 @@ void TwistGate::accel_cmd_callback(const autoware_msgs::accel_cmd::ConstPtr& inp
   }
 }
 
-void TwistGate::steer_cmd_callback(const autoware_msgs::steer_cmd::ConstPtr& input_msg)
+void TwistGate::steer_cmd_callback(const autoware_msgs::SteerCmd::ConstPtr& input_msg)
 {
   if(command_mode_ == CommandMode::AUTO)
   {
@@ -285,7 +294,7 @@ void TwistGate::steer_cmd_callback(const autoware_msgs::steer_cmd::ConstPtr& inp
   }
 }
 
-void TwistGate::brake_cmd_callback(const autoware_msgs::brake_cmd::ConstPtr& input_msg)
+void TwistGate::brake_cmd_callback(const autoware_msgs::BrakeCmd::ConstPtr& input_msg)
 {
   if(command_mode_ == CommandMode::AUTO)
   {
@@ -297,7 +306,7 @@ void TwistGate::brake_cmd_callback(const autoware_msgs::brake_cmd::ConstPtr& inp
   }
 }
 
-void TwistGate::lamp_cmd_callback(const autoware_msgs::lamp_cmd::ConstPtr& input_msg)
+void TwistGate::lamp_cmd_callback(const autoware_msgs::LampCmd::ConstPtr& input_msg)
 {
   if(command_mode_ == CommandMode::AUTO)
   {

@@ -1,3 +1,0 @@
-- name: /op_simulator_perception
-  publish: [/cloud_clusters]
-  subscribe: [/op_simulator/sim_box_pose_, /sim_box_pose_ego]

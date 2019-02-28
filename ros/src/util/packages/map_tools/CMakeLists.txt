@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(map_tools)
 
-find_package(PCL REQUIRED)
 
+find_package(autoware_build_flags REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         roscpp
         tf
@@ -17,10 +17,9 @@ catkin_package(
         sensor_msgs
         pcl_ros
         pcl_conversions
-        DEPENDS PCL
 )
 
-SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 

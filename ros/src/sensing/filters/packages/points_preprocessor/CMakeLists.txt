@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(points_preprocessor)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_config_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         roscpp
         std_msgs
@@ -9,8 +13,8 @@ find_package(catkin REQUIRED COMPONENTS
         pcl_conversions
         cv_bridge
         velodyne_pointcloud
-        autoware_msgs
         tf
+        autoware_health_checker
         )
 
 catkin_package(CATKIN_DEPENDS
@@ -21,8 +25,9 @@ catkin_package(CATKIN_DEPENDS
         pcl_conversions
         cv_bridge
         velodyne_pointcloud
-        autoware_msgs
+        autoware_config_msgs
         tf
+        autoware_health_checker
         )
 
 find_package(Qt5Core REQUIRED)
@@ -30,16 +35,25 @@ find_package(OpenCV REQUIRED)
 find_package(PCL 1.7 REQUIRED)
 find_package(OpenMP)
 
+# Resolve system dependency on yaml-cpp, which apparently does not
+# provide a CMake find_package() module.
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(YAML_CPP REQUIRED yaml-cpp)
+find_path(YAML_CPP_INCLUDE_DIR NAMES yaml_cpp.h PATHS ${YAML_CPP_INCLUDE_DIRS})
+find_library(YAML_CPP_LIBRARY NAMES YAML_CPP PATHS ${YAML_CPP_LIBRARY_DIRS})
+link_directories(${YAML_CPP_LIBRARY_DIRS})
+
 ###########
 ## Build ##
 ###########
 
 include_directories(
         ${catkin_INCLUDE_DIRS}
+        ${autoware_config_msgs_INCLUDE_DIRS}
         include
 )
 
-SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 link_directories(${PCL_LIBRARY_DIRS})
 
@@ -115,10 +129,16 @@ add_executable(points_concat_filter
         nodes/points_concat_filter/points_concat_filter.cpp
         )
 
+target_include_directories(points_concat_filter PRIVATE
+        ${PCL_INCLUDE_DIRS}
+        )
+
 target_link_libraries(points_concat_filter
         ${catkin_LIBRARIES}
         ${PCL_LIBRARIES}
+        ${YAML_CPP_LIBRARIES}
         )
+
 add_dependencies(points_concat_filter ${catkin_EXPORTED_TARGETS})
 
 #Cloud Transformer
@@ -136,12 +156,29 @@ target_link_libraries(cloud_transformer
         ${Qt5Core_LIBRARIES}
         )
 add_dependencies(cloud_transformer ${catkin_EXPORTED_TARGETS})
+
+#Compare Map Filter
+add_executable(compare_map_filter
+        nodes/compare_map_filter/compare_map_filter.cpp
+        )
+
+target_include_directories(compare_map_filter PRIVATE
+        ${PCL_INCLUDE_DIRS}
+        )
+
+target_link_libraries(compare_map_filter
+        ${catkin_LIBRARIES}
+        ${PCL_LIBRARIES}
+        ${Qt5Core_LIBRARIES}
+        )
+add_dependencies(compare_map_filter ${catkin_EXPORTED_TARGETS})
+
 ### Unit Tests ###
 #if (CATKIN_ENABLE_TESTING)
 #    find_package(rostest REQUIRED)
 #    find_package(roslaunch REQUIRED)
 
-#    add_rostest_gtest(test_points_preprocessor 
+#    add_rostest_gtest(test_points_preprocessor
 #			test/test_points_preprocessor.test
 #			test/src/test_points_preprocessor.cpp)
 #   target_include_directories(test_points_preprocessor PRIVATE
@@ -153,7 +190,14 @@ add_dependencies(cloud_transformer ${catkin_EXPORTED_TARGETS})
 #endif ()
 
 
-install(TARGETS cloud_transformer points_concat_filter ray_ground_filter ring_ground_filter space_filter
+install(TARGETS
+            cloud_transformer
+            points_concat_filter
+            ray_ground_filter_lib
+            ray_ground_filter
+            ring_ground_filter
+            space_filter
+            compare_map_filter
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -163,3 +207,6 @@ install(DIRECTORY include/
         DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
         PATTERN ".svn" EXCLUDE
         )
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)

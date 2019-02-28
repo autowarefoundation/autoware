@@ -9,8 +9,8 @@
 #include <std_msgs/UInt8.h>
 
 #include <autoware_msgs/CloudClusterArray.h>
-#include <autoware_msgs/lane.h>
-#include <autoware_msgs/traffic_light.h>
+#include <autoware_msgs/Lane.h>
+#include <autoware_msgs/TrafficLight.h>
 
 #include <cross_road_area.hpp>
 #include <decision_maker_node.hpp>
@@ -89,7 +89,7 @@ void DecisionMakerNode::callbackFromLaneChangeFlag(const std_msgs::Int32 &msg)
   }
 }
 
-void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMaker &msg)
+void DecisionMakerNode::callbackFromConfig(const autoware_config_msgs::ConfigDecisionMaker &msg)
 {
   ROS_INFO("Param setted by Runtime Manager");
   enableDisplayMarker = msg.enable_display_marker;
@@ -110,9 +110,9 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
   detectionArea_.y2 = msg.detection_area_y2;
 }
 
-void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_msgs::traffic_light const> &event)
+void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_msgs::TrafficLight const> &event)
 {    
-  const autoware_msgs::traffic_light *light = event.getMessage().get();
+  const autoware_msgs::TrafficLight *light = event.getMessage().get();
 //  const ros::M_string &header = event.getConnectionHeader();
 //  std::string topic = header.at("topic"); 
   
@@ -201,13 +201,13 @@ void DecisionMakerNode::insertPointWithinCrossRoad(const std::vector<CrossRoadAr
           // area's
           if (area.insideLanes.empty() || wp.gid != area.insideLanes.back().waypoints.back().gid + 1)
           {
-            autoware_msgs::lane nlane;
+            autoware_msgs::Lane nlane;
             area.insideLanes.push_back(nlane);
 	    area.bbox.pose.orientation = wp.pose.pose.orientation;
           }
           area.insideLanes.back().waypoints.push_back(wp);
           area.insideWaypoint_points.push_back(pp);  // geometry_msgs::point
-          // area.insideLanes.Waypoints.push_back(wp);//autoware_msgs::waypoint
+          // area.insideLanes.Waypoints.push_back(wp);//autoware_msgs::Waypoint
           // lane's wp
           wp.wpstate.aid = area.area_id;
         }
@@ -284,8 +284,8 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
                     lane.waypoints.at(wp_idx).pose.pose.position.y, lane.waypoints.at(wp_idx + 1).pose.pose.position.x,
                     lane.waypoints.at(wp_idx + 1).pose.pose.position.y))
             {
-              lane.waypoints.at(wp_idx).wpstate.stopline_state = g_vmap.findByKey(Key<RoadSign>(stopline.signid)).type;
-              // lane.waypoints.at(wp_idx + 1).wpstate.stopline_state = 1;
+              lane.waypoints.at(wp_idx).wpstate.stop_state = g_vmap.findByKey(Key<RoadSign>(stopline.signid)).type;
+              // lane.waypoints.at(wp_idx + 1).wpstate.stop_state = 1;
             }
           }
         }
@@ -311,7 +311,7 @@ void DecisionMakerNode::callbackFromLaneWaypoint(const autoware_msgs::LaneArray 
       wp.wpstate.aid = 0;
       wp.wpstate.steering_state = autoware_msgs::WaypointState::NULLSTATE;
       wp.wpstate.accel_state = autoware_msgs::WaypointState::NULLSTATE;
-      wp.wpstate.stopline_state = autoware_msgs::WaypointState::NULLSTATE;
+      wp.wpstate.stop_state = autoware_msgs::WaypointState::NULLSTATE;
       wp.wpstate.lanechange_state = autoware_msgs::WaypointState::NULLSTATE;
       wp.wpstate.event_state = 0;
     }
@@ -333,7 +333,7 @@ state_machine::StateFlags getStateFlags(uint8_t msg_state)
     return state_machine::DRIVE_STR_STRAIGHT_STATE;
 }
 
-void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg)
+void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::Lane &msg)
 {
   if (!hasvMap())
   {
@@ -361,12 +361,12 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
   {
     if (i < current_finalwaypoints_.waypoints.size())
     {
-      if (current_finalwaypoints_.waypoints.at(i).wpstate.stopline_state == autoware_msgs::WaypointState::TYPE_STOPLINE)
+      if (current_finalwaypoints_.waypoints.at(i).wpstate.stop_state == autoware_msgs::WaypointState::TYPE_STOPLINE)
       {
         ctx->setCurrentState(state_machine::DRIVE_ACC_STOPLINE_STATE);
         closest_stopline_waypoint_ = CurrentStoplineTarget_.gid;
       }
-      if (current_finalwaypoints_.waypoints.at(i).wpstate.stopline_state == autoware_msgs::WaypointState::TYPE_STOP)
+      if (current_finalwaypoints_.waypoints.at(i).wpstate.stop_state == autoware_msgs::WaypointState::TYPE_STOP)
         ctx->setCurrentState(state_machine::DRIVE_ACC_STOP_STATE);
     }
   }

@@ -1,31 +1,17 @@
 /*
- *  Copyright (c) 2018, Nagoya University
- *  All rights reserved.
+ * Copyright 2018-2019 Autoware Foundation. All rights reserved.
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  * Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name of Autoware nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
   ********************
     Abraham Monrroy
     based on Alexander Carballo's idea for Tsukuba Challenge for NDT monitoring.
@@ -35,7 +21,7 @@
 
 #include "ndt_matching_monitor.h"
 
-void RosNdtMatchingMonitor::gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
+void ROSNDTMatchingMonitor::gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
 {
     gnss_pose_.header = input->header;
     gnss_pose_.pose.pose = input->pose;
@@ -43,7 +29,7 @@ void RosNdtMatchingMonitor::gnss_callback(const geometry_msgs::PoseStamped::Cons
     gnss_text_ = " - GNSS available";
 }
 
-void RosNdtMatchingMonitor::ndt_stat_callback(const autoware_msgs::ndt_stat::ConstPtr& input)
+void ROSNDTMatchingMonitor::ndt_stat_callback(const autoware_msgs::NDTStat::ConstPtr& input)
 {
     iteration_count_ = input->iteration;
 
@@ -55,7 +41,7 @@ void RosNdtMatchingMonitor::ndt_stat_callback(const autoware_msgs::ndt_stat::Con
 }
 
 geometry_msgs::PoseWithCovarianceStamped
-                RosNdtMatchingMonitor::predict_next_pose(geometry_msgs::PoseWithCovarianceStamped prev_pose,
+                ROSNDTMatchingMonitor::predict_next_pose(geometry_msgs::PoseWithCovarianceStamped prev_pose,
                                                          geometry_msgs::PoseWithCovarianceStamped current_pose)
 {
     geometry_msgs::PoseWithCovarianceStamped predicted_pose;
@@ -82,7 +68,7 @@ geometry_msgs::PoseWithCovarianceStamped
 
 }
 
-void RosNdtMatchingMonitor::initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& input)
+void ROSNDTMatchingMonitor::initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& input)
 {
     //if currently blocking reset and receiving a different blocking pose, then try to reset
     if (ndt_status::NDT_FATAL == ndt_status_
@@ -102,7 +88,7 @@ void RosNdtMatchingMonitor::initialpose_callback(const geometry_msgs::PoseWithCo
     }
 }
 
-void RosNdtMatchingMonitor::ndt_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
+void ROSNDTMatchingMonitor::ndt_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
 {
     geometry_msgs::PoseWithCovarianceStamped initialpose_msg;
     initialpose_msg.header = input->header;
@@ -207,7 +193,7 @@ void RosNdtMatchingMonitor::ndt_pose_callback(const geometry_msgs::PoseStamped::
     last_score_ = current_score_;
 }
 
-void RosNdtMatchingMonitor::Run()
+void ROSNDTMatchingMonitor::Run()
 {
     ros::NodeHandle nh;
     ros::NodeHandle private_nh("~");
@@ -228,10 +214,10 @@ void RosNdtMatchingMonitor::Run()
     }
 
     // Subscribers
-    ros::Subscriber ndt_stat_sub = nh.subscribe("/ndt_stat", 10, &RosNdtMatchingMonitor::ndt_stat_callback, this);
-    ros::Subscriber ndt_pose_sub = nh.subscribe("/ndt_pose", 10, &RosNdtMatchingMonitor::ndt_pose_callback, this);
-    ros::Subscriber initial_pose_sub = nh.subscribe("/initialpose", 10, &RosNdtMatchingMonitor::initialpose_callback, this);
-    ros::Subscriber gnss_sub = nh.subscribe("gnss_pose", 10, &RosNdtMatchingMonitor::gnss_callback, this);
+    ros::Subscriber ndt_stat_sub = nh.subscribe("/ndt_stat", 10, &ROSNDTMatchingMonitor::ndt_stat_callback, this);
+    ros::Subscriber ndt_pose_sub = nh.subscribe("/ndt_pose", 10, &ROSNDTMatchingMonitor::ndt_pose_callback, this);
+    ros::Subscriber initial_pose_sub = nh.subscribe("/initialpose", 10, &ROSNDTMatchingMonitor::initialpose_callback, this);
+    ros::Subscriber gnss_sub = nh.subscribe("gnss_pose", 10, &ROSNDTMatchingMonitor::gnss_callback, this);
 
     // Publishers
     initialpose_pub_ = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("/initialpose", 1);
@@ -242,7 +228,7 @@ void RosNdtMatchingMonitor::Run()
 
 }
 
-RosNdtMatchingMonitor::RosNdtMatchingMonitor()
+ROSNDTMatchingMonitor::ROSNDTMatchingMonitor()
 {
     gnss_pose_available_ = false;
     last_score_     = 0.0;

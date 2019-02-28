@@ -1,9 +1,9 @@
-/*
- * MatrixOperations.h
- *
- *  Created on: Jun 19, 2016
- *      Author: hatem
- */
+
+/// \file MatrixOperations.h
+/// \brief Simple matrix operations
+/// \author Hatem Darweesh
+/// \date Jun 19, 2016
+
 
 #ifndef MATRIXOPERATIONS_H_
 #define MATRIXOPERATIONS_H_

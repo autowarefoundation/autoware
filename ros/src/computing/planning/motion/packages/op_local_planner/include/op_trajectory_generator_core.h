@@ -1,41 +1,23 @@
 /*
-// *  Copyright (c) 2016, Nagoya University
- *  All rights reserved.
+ * Copyright 2017-2019 Autoware Foundation. All rights reserved.
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  * Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name of Autoware nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #ifndef OP_TRAJECTORY_GENERATOR_CORE
 #define OP_TRAJECTORY_GENERATOR_CORE
 
-// ROS includes
 #include <ros/ros.h>
-#include "op_planner/PlannerH.h"
-#include "op_planner/PlannerCommonDef.h"
-
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/Vector3Stamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
@@ -43,15 +25,17 @@
 #include <geometry_msgs/PoseArray.h>
 #include <nav_msgs/Odometry.h>
 #include <autoware_msgs/LaneArray.h>
-#include <autoware_msgs/CanInfo.h>
+#include <autoware_can_msgs/CANInfo.h>
+
+#include "op_planner/PlannerH.h"
+#include "op_planner/PlannerCommonDef.h"
 
 namespace TrajectoryGeneratorNS
 {
 
 class TrajectoryGen
 {
-protected: //Planning Related variables
-
+protected:
 	PlannerHNS::PlannerH m_Planner;
 	geometry_msgs::Pose m_OriginPos;
 	PlannerHNS::WayPoint m_InitPos;
@@ -63,46 +47,43 @@ protected: //Planning Related variables
 	PlannerHNS::VehicleState m_VehicleStatus;
 	bool bVehicleStatus;
 
+	std::vector<PlannerHNS::WayPoint> m_temp_path;
 	std::vector<std::vector<PlannerHNS::WayPoint> > m_GlobalPaths;
 	std::vector<std::vector<PlannerHNS::WayPoint> > m_GlobalPathSections;
 	std::vector<PlannerHNS::WayPoint> t_centerTrajectorySmoothed;
 	std::vector<std::vector<std::vector<PlannerHNS::WayPoint> > > m_RollOuts;
 	bool bWayGlobalPath;
-
 	struct timespec m_PlanningTimer;
   	std::vector<std::string>    m_LogData;
-
   	PlannerHNS::PlanningParams m_PlanningParams;
   	PlannerHNS::CAR_BASIC_INFO m_CarInfo;
 
 
-protected: //ROS messages (topics)
+  	//ROS messages (topics)
 	ros::NodeHandle nh;
 
 	//define publishers
-	ros::Publisher pub_LocalPath;
-	ros::Publisher pub_LocalBasePath;
+	ros::Publisher pub_LocalTrajectories;
 	ros::Publisher pub_LocalTrajectoriesRviz;
 
 	// define subscribers.
-	ros::Subscriber sub_initialpose			;
-	ros::Subscriber sub_current_pose 		;
-	ros::Subscriber sub_current_velocity	;
-	ros::Subscriber sub_vehicle_simu_status ;
-	ros::Subscriber sub_robot_odom			;
-	ros::Subscriber sub_can_info			;
-	ros::Subscriber sub_GlobalPlannerPaths	;
+	ros::Subscriber sub_initialpose;
+	ros::Subscriber sub_current_pose;
+	ros::Subscriber sub_current_velocity;
+	ros::Subscriber sub_robot_odom;
+	ros::Subscriber sub_can_info;
+	ros::Subscriber sub_GlobalPlannerPaths;
 
 
-protected: // Callback function for subscriber.
+	// Callback function for subscriber.
 	void callbackGetInitPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &input);
 	void callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
 	void callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg);
-	void callbackGetCanInfo(const autoware_msgs::CanInfoConstPtr &msg);
+	void callbackGetCANInfo(const autoware_can_msgs::CANInfoConstPtr &msg);
 	void callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg);
 	void callbackGetGlobalPlannerPath(const autoware_msgs::LaneArrayConstPtr& msg);
 
-protected: //Helper Functions
+	//Helper Functions
   void UpdatePlanningParams(ros::NodeHandle& _nh);
 
 public:

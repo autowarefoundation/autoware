@@ -1,32 +1,18 @@
 /*
- *  Copyright (c) 2015, Nagoya University
- *  All rights reserved.
+ * Copyright 2015-2019 Autoware Foundation. All rights reserved.
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  * Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name of Autoware nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 /*
  Localization program using Normal Distributions Transform
@@ -63,9 +49,9 @@
 #include <pcl/registration/icp.h>
 #include <pcl/filters/voxel_grid.h>
 
-#include "autoware_msgs/ConfigICP.h"
+#include "autoware_config_msgs/ConfigICP.h"
 
-#include "autoware_msgs/icp_stat.h"
+#include "autoware_msgs/ICPStat.h"
 
 #define PREDICT_POSE_THRESHOLD 0.5
 
@@ -156,7 +142,7 @@ static std_msgs::Float32 time_icp_matching;
 static int _queue_size = 1000;
 
 static ros::Publisher icp_stat_pub;
-static autoware_msgs::icp_stat icp_stat_msg;
+static autoware_msgs::ICPStat icp_stat_msg;
 
 static double predict_pose_error = 0.0;
 
@@ -169,7 +155,7 @@ static std::string _offset = "linear";  // linear, zero, quadratic
 static std::ofstream ofs;
 static std::string filename;
 
-static void param_callback(const autoware_msgs::ConfigICP::ConstPtr& input)
+static void param_callback(const autoware_config_msgs::ConfigICP::ConstPtr& input)
 {
   if (_use_gnss != input->init_pos_gnss)
   {
@@ -732,7 +718,7 @@ int main(int argc, char** argv)
   estimated_vel_kmph_pub = nh.advertise<std_msgs::Float32>("/estimated_vel_kmph", 1000);
   estimated_vel_pub = nh.advertise<geometry_msgs::Vector3Stamped>("/estimated_vel", 1000);
   time_icp_matching_pub = nh.advertise<std_msgs::Float32>("/time_icp_matching", 1000);
-  icp_stat_pub = nh.advertise<autoware_msgs::icp_stat>("/icp_stat", 1000);
+  icp_stat_pub = nh.advertise<autoware_msgs::ICPStat>("/icp_stat", 1000);
 
   // Subscribers
   ros::Subscriber param_sub = nh.subscribe("config/icp", 10, param_callback);

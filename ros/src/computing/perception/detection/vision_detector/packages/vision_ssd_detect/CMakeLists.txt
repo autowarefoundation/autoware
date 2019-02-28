@@ -5,6 +5,9 @@ set(ROS_VERSION $ENV{ROS_DISTRO})
 
 include(FindPkgConfig)
 
+find_package(autoware_build_flags REQUIRED)
+find_package(autoware_msgs REQUIRED)
+find_package(autoware_config_msgs REQUIRED)
 
 FIND_PACKAGE(catkin REQUIRED COMPONENTS
         cv_bridge
@@ -12,19 +15,13 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
         roscpp
         sensor_msgs
         std_msgs
-        autoware_msgs
         tf
-        jsk_recognition_msgs
+        autoware_msgs
+        autoware_config_msgs
         )
 
 FIND_PACKAGE(CUDA)
 FIND_PACKAGE(OpenCV REQUIRED)
-
-EXECUTE_PROCESS(
-        COMMAND uname -m
-        OUTPUT_VARIABLE ARCHITECTURE
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-)
 
 catkin_package(
         CATKIN_DEPENDS cv_bridge
@@ -33,15 +30,15 @@ catkin_package(
         sensor_msgs
         std_msgs
         autoware_msgs
+        autoware_config_msgs
         tf
-        jsk_recognition_msgs
 )
 
 ###########
 ## Build ##
 ###########
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(
         ${catkin_INCLUDE_DIRS}
@@ -50,7 +47,7 @@ include_directories(
 IF (CUDA_FOUND)
     include_directories(${CUDA_INCLUDE_DIRS})
 
-    IF ("${ARCHITECTURE}" MATCHES "^arm")
+    IF ("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "^arm")
         link_directories(/usr/lib/arm-linux-gnueabihf/tegra)
     endif ()
 ENDIF ()
@@ -78,6 +75,8 @@ if (EXISTS "${SSD_CAFFE_PATH}")
             )
 
     target_include_directories(vision_ssd_detect PRIVATE
+            ${autoware_msgs_INCLUDE_DIRS}
+            ${autoware_config_msgs_INCLUDE_DIRS}
             ${SSD_CAFFE_PATH}/include
             include
             )
@@ -86,11 +85,18 @@ if (EXISTS "${SSD_CAFFE_PATH}")
             ${catkin_EXPORTED_TARGETS}
             )
 
+    install(DIRECTORY include/
+            DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+
     install(TARGETS vision_ssd_detect
             ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
             LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
             RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
             )
+    install(DIRECTORY launch/
+            DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+            PATTERN ".svn" EXCLUDE)
+
 else ()
     message("'SSD/Caffe' is not installed. 'ssd_unc' will not be built.")
 endif ()

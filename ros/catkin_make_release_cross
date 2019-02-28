@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+set -e
+
+echo "This script is deprecated and will be removed soon, please use colcon_release_cross instead"
+sleep 2
+
+if [ "$1" = "synquacer" ] || [ "$1" = "driveworks" ] || [ "$1" = "generic-aarch64" ]
+then
+    AUTOWARE_TARGET_ARCH=aarch64
+    AUTOWARE_TARGET_PLATFORM=$1
+    shift
+
+   if [[ -d build-${AUTOWARE_TARGET_PLATFORM} ]]; then
+       rm -rf build-${AUTOWARE_TARGET_PLATFORM}
+   fi
+
+   if [[ -d devel-${AUTOWARE_TARGET_PLATFORM} ]]; then
+       rm -rf devel-${AUTOWARE_TARGET_PLATFORM}
+   fi
+
+    AUTOWARE_HOME=/home/autoware/Autoware
+    if [ "$AUTOWARE_TARGET_PLATFORM" = "driveworks" ]
+    then
+        if [[ -z "${DRIVEWORKS_TOOLKIT_ROOT_DIR}" ]] || [[ -z "${CUDA_TOOLKIT_ROOT_DIR}" ]] || [[ -z "${NVIDIA_TENSORRT_ROOT_DIR}" ]] || [[ -z "${DRIVE_T186REF_LINUX_ROOT_DIR}" ]]
+        then
+            echo "Please ensure that the following environment variables are set and point to their respective correct locations: DRIVEWORKS_TOOLKIT_ROOT_DIR CUDA_TOOLKIT_ROOT_DIR NVIDIA_TENSORRT_ROOT_DIR DRIVE_T186REF_LINUX_ROOT_DIR"
+            exit 1
+        fi
+        AUTOWARE_HOME=/home/nvidia/Autoware
+        AUTOWARE_TOOLCHAIN_FILE=cross_toolchain_driveworks.cmake
+        AUTOWARE_DOCKER_EXTRA_ARGS=$(cat <<-END
+-v ${DRIVEWORKS_TOOLKIT_ROOT_DIR}:/usr/local/driveworks:ro
+-v ${CUDA_TOOLKIT_ROOT_DIR}:/usr/local/cuda:ro
+-v ${NVIDIA_TENSORRT_ROOT_DIR}:/usr/local/tensorrt:ro
+-v ${DRIVE_T186REF_LINUX_ROOT_DIR}:/usr/local/drive-t186ref-linux:ro
+-e DRIVEWORKS_TOOLKIT_ROOT_DIR=/usr/local/driveworks
+-e CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda
+-e NVIDIA_TENSORRT_ROOT_DIR=/usr/local/tensorrt
+-e DRIVE_T186REF_LINUX_ROOT_DIR=/usr/local/drive-t186ref-linux
+END
+)
+        AUTOWARE_CUDA_ARCH=sm_61
+    else
+        AUTOWARE_TOOLCHAIN_FILE=cross_toolchain.cmake
+    fi
+    if [ ! -f "${PWD}/${AUTOWARE_TOOLCHAIN_FILE}" ]; then
+        echo "Toolchain file: '${PWD}/${AUTOWARE_TOOLCHAIN_FILE}' not found"
+        exit 1
+    fi
+
+    AUTOWARE_BUILD_PATH=${AUTOWARE_HOME}/ros/build-${AUTOWARE_TARGET_PLATFORM}
+    AUTOWARE_DEVEL_PATH=${AUTOWARE_HOME}/ros/devel-${AUTOWARE_TARGET_PLATFORM}
+
+    AUTOWARE_TOOLCHAIN_FILE_PATH="${AUTOWARE_HOME}/ros/${AUTOWARE_TOOLCHAIN_FILE}"
+    echo "Using toolchain file: '${AUTOWARE_TOOLCHAIN_FILE_PATH}''"
+    AUTOWARE_SYSROOT=/sysroot/${AUTOWARE_TARGET_PLATFORM}
+
+    AUTOWARE_DOCKER_DATE=20181220
+
+    docker container run \
+        -it \
+        --rm \
+        ${AUTOWARE_DOCKER_EXTRA_ARGS} \
+        -e AUTOWARE_SYSROOT=${AUTOWARE_SYSROOT} \
+        -v ${PWD}/../:${AUTOWARE_HOME} \
+        -w ${AUTOWARE_HOME}/ros \
+        -u ${UID}:${UID} \
+        autoware/build:${AUTOWARE_TARGET_PLATFORM}-kinetic-${AUTOWARE_DOCKER_DATE} \
+        bash \
+        -c "\
+        source /opt/ros/kinetic/setup.bash && \
+        catkin_make \
+            -DCUDA_ARCH=${AUTOWARE_CUDA_ARCH} \
+            -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH} \
+            -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH} \
+            -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH} \
+            -DCMAKE_PREFIX_PATH='${AUTOWARE_SYSROOT}/opt/ros/kinetic;${AUTOWARE_DEVEL_PATH}' \
+            -DCMAKE_FIND_ROOT_PATH=${AUTOWARE_DEVEL_PATH} \
+            --build ${AUTOWARE_BUILD_PATH} \
+            clean && \
+        source devel-${AUTOWARE_TARGET_PLATFORM}/setup.bash && \
+        catkin_make \
+            -DCUDA_ARCH=${AUTOWARE_CUDA_ARCH} \
+            -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH} \
+            -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH} \
+            -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH} \
+            -DCMAKE_PREFIX_PATH='${AUTOWARE_SYSROOT}/opt/ros/kinetic;${AUTOWARE_DEVEL_PATH}' \
+            -DCMAKE_FIND_ROOT_PATH=${AUTOWARE_DEVEL_PATH} \
+            --build ${AUTOWARE_BUILD_PATH} \
+            -DCMAKE_BUILD_TYPE=Release $*
+        "
+
+    find devel-${AUTOWARE_TARGET_PLATFORM}/ -type f -exec grep -Iq . {} \; -and -exec sed -i -e "s#${AUTOWARE_SYSROOT}##g" {} \;
+else
+    echo "Select target platform: synquacer, driveworks, generic-aarch64"
+fi
+

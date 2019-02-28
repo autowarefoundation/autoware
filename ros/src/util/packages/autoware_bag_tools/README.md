@@ -17,3 +17,14 @@ Alternatively, you specify a 1-to-1 mapping of and topics and frame_id. Below, t
 ```
 rosrun autoware_bag_tools change_frame_id.py -o out.bag -i in.bag -t /camera2/image_raw /camera3/image_raw /camera4/image_raw /camera5/image_raw /camera6/image_raw -f camera2 camera3 camera4 camera5 camera6
 ```
+
+## nmea2kml tool 
+Extract GPS data from rosbag file(s) into .kml and .csv files. 
+.kml file could be viewed by Google Earth. color information indicate the quality of GPS satellite coverage (dark to light red) - (bad - good coverage) 
+
+How to Run: 
+
+```
+rosrun autoware_bag_tools nmea2kml bag_file_name.bag
+rosrun autoware_bag_tools nmea2kml bag_files_folder/
+```

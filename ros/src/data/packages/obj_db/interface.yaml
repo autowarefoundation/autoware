@@ -2,7 +2,7 @@
   publish: []
   subscribe: [/can_info]
 - name: /obj_downloader
-  publish: [/mo_marker]
+  publish: [/mo_pictograms]
   subscribe: []
 - name: /obj_uploader
   publish: []

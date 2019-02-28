@@ -2,6 +2,33 @@
 Changelog for package kitti_player
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.10.0 (2019-01-17)
+-------------------
+* Use colcon as the build tool (`#1704 <https://github.com/kfunaoka/Autoware/issues/1704>`_)
+  * Switch to colcon as the build tool instead of catkin
+  * Added cmake-target
+  * Added note about the second colcon call
+  * Added warning about catkin* scripts being deprecated
+  * Fix COLCON_OPTS
+  * Added install targets
+  * Update Docker image tags
+  * Message packages fixes
+  * Fix missing dependency
+* Contributors: Esteve Fernandez
+
+1.9.1 (2018-11-06)
+------------------
+
+1.9.0 (2018-10-31)
+------------------
+
+1.8.0 (2018-08-31)
+------------------
+* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)
+* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/CPFL/Autoware/pull/1385>`_)
+* [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/CPFL/Autoware/pull/1291>`_)
+* Contributors: Esteve Fernandez, Kenji Funaoka
+
 1.7.0 (2018-05-18)
 ------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
@@ -12,7 +39,7 @@ Changelog for package kitti_player
   3. Include <boost/format.hpp> header for using boost format API's.
   Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
 * [fix] kitti_player publisher add sequence number to header
-* Fix/cmake cleanup (`#1156 <https://github.com/kfunaoka/Autoware/issues/1156>`_)
+* Fix/cmake cleanup (`#1156 <https://github.com/CPFL/Autoware/pull/1156>`_)
   * Initial Cleanup
   * fixed also for indigo
   * kf cjeck
@@ -45,7 +72,7 @@ Changelog for package kitti_player
   * Fixed qt5 system dependencies for rosdep
   * NDT TKU Fix catkin not pacakged
   * Fixes from industrial_ci
-* Editorial changes to README files. See `#1124 <https://github.com/kfunaoka/Autoware/issues/1124>`_. (`#1125 <https://github.com/kfunaoka/Autoware/issues/1125>`_)
+* Editorial changes to README files. See `#1124 <https://github.com/CPFL/Autoware/pull/1124>`_. (`#1125 <https://github.com/CPFL/Autoware/pull/1125>`_)
 * Contributors: Abraham Monrroy, Alexander Carballo, David, Kosuke Murakami, Manivannan Sadhasivam
 
 1.6.3 (2018-03-06)

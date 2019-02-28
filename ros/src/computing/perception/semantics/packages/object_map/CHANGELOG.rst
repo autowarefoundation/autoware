@@ -2,10 +2,131 @@
 Changelog for package object_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.10.0 (2019-01-17)
+-------------------
+* Fixes for catkin_make
+* Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/kfunaoka/Autoware/issues/1741>`_)
+  * Switch to Apache 2
+  * Replace BSD-3 license header with Apache 2 and reassign copyright to the
+  Autoware Foundation.
+  * Update license on Python files
+  * Update copyright years
+  * Add #ifndef/define _POINTS_IMAGE_H\_
+  * Updated license comment
+* Use colcon as the build tool (`#1704 <https://github.com/kfunaoka/Autoware/issues/1704>`_)
+  * Switch to colcon as the build tool instead of catkin
+  * Added cmake-target
+  * Added note about the second colcon call
+  * Added warning about catkin* scripts being deprecated
+  * Fix COLCON_OPTS
+  * Added install targets
+  * Update Docker image tags
+  * Message packages fixes
+  * Fix missing dependency
+* Add grid_map_vizualization to run_depend
+* Feature/perception visualization cleanup (`#1648 <https://github.com/kfunaoka/Autoware/issues/1648>`_)
+  * * Initial commit for visualization package
+  * Removal of all visualization messages from perception nodes
+  * Visualization dependency removal
+  * Launch file modification
+  * * Fixes to visualization
+  * Error on Clustering CPU
+  * Reduce verbosity on markers
+  * intial commit
+  * * Changed to 2 spaces indentation
+  * Added README
+  * Fixed README messages type
+  * 2 space indenting
+  * ros clang format
+  * Publish acceleration and velocity from ukf tracker
+  * Remove hardcoded path
+  * Updated README
+  * updated prototype
+  * Prototype update for header and usage
+  * Removed unknown label from being reported
+  * Updated publishing orientation to match develop
+  * * Published all the trackers
+  * Added valid field for visualization and future compatibility with ADAS ROI filtering
+  * Add simple functions
+  * Refacor code
+  * * Reversed back UKF node to develop
+  * Formatted speed
+  * Refactor codes
+  * Refactor codes
+  * Refactor codes
+  * Refacor codes
+  * Make tracking visualization work
+  * Relay class info in tracker node
+  * Remove dependency to jskbbox and rosmarker in ukf tracker
+  * apply rosclang to ukf tracker
+  * Refactor codes
+  * Refactor codes
+  * add comment
+  * refactor codes
+  * Revert "Refactor codes"
+  This reverts commit 135aaac46e49cb18d9b76611576747efab3caf9c.
+  * Revert "apply rosclang to ukf tracker"
+  This reverts commit 4f8d1cb5c8263a491f92ae5321e5080cb34b7b9c.
+  * Revert "Remove dependency to jskbbox and rosmarker in ukf tracker"
+  This reverts commit 4fa1dd40ba58065f7afacc5e478001078925b27d.
+  * Revert "Relay class info in tracker node"
+  This reverts commit 1637baac44c8d3d414cc069f3af12a79770439ae.
+  * delete dependency to jsk and remove pointcloud_frame
+  * get direction nis
+  * set velocity_reliable true in tracker node
+  * Add divided function
+  * add function
+  * Sanity checks
+  * Relay all the data from input DetectedObject
+  * Divided function work both for immukf and sukf
+  * Add comment
+  * Refactor codes
+  * Pass immukf test
+  * make direction assisted tracking work
+  * Visualization fixes
+  * Refacor codes
+  * Refactor codes
+  * Refactor codes
+  * refactor codes
+  * refactor codes
+  * Refactor codes
+  * refactor codes
+  * Tracker Merging step added
+  * Added launch file support for merging phase
+  * lane assisted with sukf
+  * Refactor codes
+  * Refactor codes
+  * * change only static objects
+  * keep label of the oldest tracker
+  * Static Object discrimination
+  * Non rotating bouding box
+  * no disappear if detector works
+  * Modify removeRedundant a bit
+  * Replacement of JSK visualization for RViz Native Markers
+  * Added Models namespace to visualization
+  * Naming change for matching the perception component graph
+  * * Added 3D Models for different classes in visualization
+  * 2D Rect node visualize_rects added to visualization_package
+* Fix Ros/ROS naming convention
+* Contributors: Abraham Monrroy Cano, Akihito Ohsato, Esteve Fernandez, amc-nu
+
+1.9.1 (2018-11-06)
+------------------
+
+1.9.0 (2018-10-31)
+------------------
+
+1.8.0 (2018-08-31)
+------------------
+* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)
+* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/CPFL/Autoware/pull/1385>`_)
+* [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/CPFL/Autoware/pull/1291>`_)
+* Contributors: Esteve Fernandez, Kenji Funaoka
+
 1.7.0 (2018-05-18)
 ------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
-* [fix] Fixes for all packages and dependencies (`#1240 <https://github.com/kfunaoka/Autoware/issues/1240>`_)
+* [fix] Fixes for all packages and dependencies (`#1240 <https://github.com/CPFL/Autoware/pull/1240>`_)
   * Initial Cleanup
   * fixed also for indigo
   * kf cjeck
@@ -103,7 +224,7 @@ Changelog for package object_map
   * * Fixes to README
   * Enable industrial_ci
   * re enable native travis tests
-* Fix/cmake cleanup (`#1156 <https://github.com/kfunaoka/Autoware/issues/1156>`_)
+* Fix/cmake cleanup (`#1156 <https://github.com/CPFL/Autoware/pull/1156>`_)
   * Initial Cleanup
   * fixed also for indigo
   * kf cjeck
@@ -136,8 +257,8 @@ Changelog for package object_map
   * Fixed qt5 system dependencies for rosdep
   * NDT TKU Fix catkin not pacakged
   * Fixes from industrial_ci
-* Editorial changes to README files. See `#1124 <https://github.com/kfunaoka/Autoware/issues/1124>`_. (`#1125 <https://github.com/kfunaoka/Autoware/issues/1125>`_)
-* Feature/occupancygrid filter (`#1002 <https://github.com/kfunaoka/Autoware/issues/1002>`_)
+* Editorial changes to README files. See `#1124 <https://github.com/CPFL/Autoware/pull/1124>`_. (`#1125 <https://github.com/CPFL/Autoware/pull/1125>`_)
+* Feature/occupancygrid filter (`#1002 <https://github.com/CPFL/Autoware/pull/1002>`_)
   * Add grid map filter node
   * Add wayarea2grid node
   * Replace dist_transform with grid_map_filter

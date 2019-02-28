@@ -204,7 +204,7 @@ NdtSlam::~NdtSlam()
     }
 }
 
-void NdtSlam::configCallback(const autoware_msgs::ConfigNdtSlam::ConstPtr& config_msg_ptr)
+void NdtSlam::configCallback(const autoware_config_msgs::ConfigNDTSlam::ConstPtr& config_msg_ptr)
 {
     localizer_ptr_->setStepSize(config_msg_ptr->step_size);
     localizer_ptr_->setTransformationEpsilon(config_msg_ptr->trans_epsilon);
