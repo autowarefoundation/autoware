@@ -88,7 +88,7 @@ private:
   * @param[in] lidar2baselink transofomation info
   * @details Calculate z offset compared with trained sensor height and get rotation matrix
   */
-  void getTFInfo(tf::StampedTransform lidar2baselink);
+  void analyzeTFInfo(tf::StampedTransform lidar2baselink);
 
   /**
   * @brief Transform pose based on tf stamp info

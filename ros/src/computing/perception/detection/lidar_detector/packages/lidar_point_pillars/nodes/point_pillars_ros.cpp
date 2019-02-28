@@ -86,6 +86,7 @@ void PointPillarsROS::pubDetectedObject(const std::vector<float>& detections, co
 
     float yaw = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 6];
     yaw = std::atan2(std::sin(yaw), std::cos(yaw));
+    // Trained this way
     geometry_msgs::Quaternion q = tf::createQuaternionMsgFromYaw(-yaw);
     object.pose.orientation = q;
 
@@ -109,7 +110,7 @@ void PointPillarsROS::getBaselinkToLidarTF(const std::string& target_frameid)
   {
     tf_listener_.waitForTransform(BASELINK_FRAME_, target_frameid, ros::Time(0), ros::Duration(1.0));
     tf_listener_.lookupTransform(BASELINK_FRAME_, target_frameid, ros::Time(0), baselink2lidar_);
-    getTFInfo(baselink2lidar_);
+    analyzeTFInfo(baselink2lidar_);
     has_subscribed_baselink_ = true;
   }
   catch (tf::TransformException ex)
@@ -118,7 +119,7 @@ void PointPillarsROS::getBaselinkToLidarTF(const std::string& target_frameid)
   }
 }
 
-void PointPillarsROS::getTFInfo(tf::StampedTransform baselink2lidar)
+void PointPillarsROS::analyzeTFInfo(tf::StampedTransform baselink2lidar)
 {
   tf::Vector3 v = baselink2lidar.getOrigin();
   offset_z_from_trained_data_ = v.getZ() - TRAINED_SENSOR_HEIGHT_;
