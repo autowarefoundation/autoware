@@ -307,11 +307,9 @@ public:
   * @param[in] in_points_array pointcloud array
   * @param[in] in_num_points Number of points
   * @param[in] out_detections Network output bounding box
-  * @param[in] out_num_objects Number of output bounding box
   * @details This is interface for the algorithm
   */
-  void doInference(const float* in_points_array, const int in_num_points, std::vector<float>& out_detection,
-                   int& out_num_objects);
+  void doInference(const float* in_points_array, const int in_num_points, std::vector<float>& out_detection);
 };
 
 #endif  // POINTS_PILLAR_H

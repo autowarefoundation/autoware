@@ -86,7 +86,6 @@ public:
   * @param[in] dev_box_for_nms Decoded box from pose and dimension to min_x min_y max_x max_y represenation for nms
   * @param[in] dev_filter_count The number of filtered output
   * @param[out] out_detection Output bounding boxes
-  * @param[out] out_num_objects The number of output bounding boxes
   * @details dev_* represents device memory allocated variables
   */
   void doPostprocessCuda(const float* rpn_box_output, const float* rpn_cls_output, const float* rpn_dir_output,
@@ -94,7 +93,7 @@ public:
                          const float* dev_anchors_pz, const float* dev_anchors_dx, const float* dev_anchors_dy,
                          const float* dev_anchors_dz, const float* dev_anchors_ro, float* dev_filtered_box,
                          float* dev_filtered_score, int* dev_filtered_dir, float* dev_box_for_nms,
-                         int* dev_filter_count, std::vector<float>& out_detection, int& out_num_objects);
+                         int* dev_filter_count, std::vector<float>& out_detection);
 };
 
 #endif  // POSTPROCESS_CUDA_H

@@ -259,10 +259,10 @@ void PointPillars::deviceMemoryMalloc()
   GPU_CHECK(cudaMalloc((void**)&dev_anchors_dy_, NUM_ANCHOR_ * sizeof(float)));
   GPU_CHECK(cudaMalloc((void**)&dev_anchors_dz_, NUM_ANCHOR_ * sizeof(float)));
   GPU_CHECK(cudaMalloc((void**)&dev_anchors_ro_, NUM_ANCHOR_ * sizeof(float)));
-  GPU_CHECK(cudaMalloc((void**)&dev_filtered_box_, NUM_ANCHOR_ * 7 * sizeof(float)));
+  GPU_CHECK(cudaMalloc((void**)&dev_filtered_box_, NUM_ANCHOR_ * NUM_OUTPUT_BOX_FEATURE_ * sizeof(float)));
   GPU_CHECK(cudaMalloc((void**)&dev_filtered_score_, NUM_ANCHOR_ * sizeof(float)));
   GPU_CHECK(cudaMalloc((void**)&dev_filtered_dir_, NUM_ANCHOR_ * sizeof(int)));
-  GPU_CHECK(cudaMalloc((void**)&dev_box_for_nms_, NUM_ANCHOR_ * 4 * sizeof(float)));
+  GPU_CHECK(cudaMalloc((void**)&dev_box_for_nms_, NUM_ANCHOR_ * NUM_BOX_CORNERS_ * sizeof(float)));
   GPU_CHECK(cudaMalloc((void**)&dev_filter_count_, sizeof(int)));
 }
 
@@ -524,8 +524,8 @@ void PointPillars::preprocessCPU(const float* in_points_array, const int in_num_
 void PointPillars::preprocessGPU(const float* in_points_array, const int in_num_points)
 {
   float* dev_points;
-  GPU_CHECK(cudaMalloc((void**)&dev_points, in_num_points * 4 * sizeof(float)));
-  GPU_CHECK(cudaMemcpy(dev_points, in_points_array, in_num_points * 4 * sizeof(float), cudaMemcpyHostToDevice));
+  GPU_CHECK(cudaMalloc((void**)&dev_points, in_num_points * NUM_BOX_CORNERS_ * sizeof(float)));
+  GPU_CHECK(cudaMemcpy(dev_points, in_points_array, in_num_points * NUM_BOX_CORNERS_ * sizeof(float), cudaMemcpyHostToDevice));
 
   GPU_CHECK(cudaMemset(dev_pillar_count_histo_, 0, GRID_Y_SIZE_ * GRID_X_SIZE_ * sizeof(int)));
   GPU_CHECK(cudaMemset(dev_sparse_pillar_map_, 0, NUM_INDS_FOR_SCAN_ * NUM_INDS_FOR_SCAN_ * sizeof(int)));
@@ -558,8 +558,7 @@ void PointPillars::preprocess(const float* in_points_array, const int in_num_poi
   }
 }
 
-void PointPillars::doInference(const float* in_points_array, const int in_num_points, std::vector<float>& out_detection,
-                               int& out_num_objects)
+void PointPillars::doInference(const float* in_points_array, const int in_num_points, std::vector<float>& out_detection)
 {
   preprocess(in_points_array, in_num_points);
 
@@ -607,7 +606,7 @@ void PointPillars::doInference(const float* in_points_array, const int in_num_po
                                            dev_anchor_mask_, dev_anchors_px_, dev_anchors_py_, dev_anchors_pz_,
                                            dev_anchors_dx_, dev_anchors_dy_, dev_anchors_dz_, dev_anchors_ro_,
                                            dev_filtered_box_, dev_filtered_score_, dev_filtered_dir_, dev_box_for_nms_,
-                                           dev_filter_count_, out_detection, out_num_objects);
+                                           dev_filter_count_, out_detection);
 
   // release the stream and the buffers
   cudaStreamDestroy(stream);

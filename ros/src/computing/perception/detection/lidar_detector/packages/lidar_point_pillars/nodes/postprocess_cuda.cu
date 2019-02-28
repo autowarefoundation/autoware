@@ -73,9 +73,9 @@ __global__ void filter_kernel(const float* box_preds, const float* cls_preds, co
     //convrt normal box(normal boxes: x, y, z, w, l, h, r) to box(xmin, ymin, xmax, ymax) for nms calculation
     //First: dx, dy -> box(x0y0, x0y1, x1y0, x1y1)
     float corners[2*4] = {float(-0.5*box_dx), float(-0.5*box_dy),
-                          float(-0.5*box_dx), float( 0.5*box_dy),
-                          float( 0.5*box_dx), float( 0.5*box_dy),
-                          float( 0.5*box_dx), float(-0.5*box_dy)};
+                                        float(-0.5*box_dx), float( 0.5*box_dy),
+                                        float( 0.5*box_dx), float( 0.5*box_dy),
+                                        float( 0.5*box_dx), float(-0.5*box_dy)};
 
     //Second: Rotate, Offset and convert to point(xmin. ymin, xmax, ymax)
     //cannot use variable initialization since "error: expression must have a constant value"
@@ -159,7 +159,7 @@ void PostprocessCuda::doPostprocessCuda(const float* rpn_box_output, const float
         int* dev_anchor_mask, const float* dev_anchors_px, const float* dev_anchors_py, const float* dev_anchors_pz,
         const float* dev_anchors_dx, const float* dev_anchors_dy, const float* dev_anchors_dz, const float* dev_anchors_ro,
         float* dev_filtered_box, float* dev_filtered_score, int* dev_filtered_dir, float* dev_box_for_nms, int* dev_filter_count,
-        std::vector<float>& out_detection, int& out_num_objects)
+        std::vector<float>& out_detection)
 {
 
   filter_kernel<<<NUM_ANCHOR_X_INDS_*NUM_ANCHOR_R_INDS_, NUM_ANCHOR_Y_INDS_>>>
@@ -194,10 +194,11 @@ void PostprocessCuda::doPostprocessCuda(const float* rpn_box_output, const float
                                                               NUM_BOX_CORNERS_, NUM_OUTPUT_BOX_FEATURE_);
 
   int keep_inds[host_filter_count[0]] = {0};
+  int out_num_objects = 0;
   nms_cuda_ptr_->doNMSCuda(host_filter_count[0], dev_sorted_box_for_nms, keep_inds, out_num_objects);
 
 
-  float host_filtered_box[host_filter_count[0]*7];
+  float host_filtered_box[host_filter_count[0]*NUM_OUTPUT_BOX_FEATURE_];
   int host_filtered_dir[host_filter_count[0]];
   GPU_CHECK( cudaMemcpy(host_filtered_box, dev_sorted_filtered_box, NUM_OUTPUT_BOX_FEATURE_*host_filter_count[0] *sizeof(float), cudaMemcpyDeviceToHost ) );
   GPU_CHECK( cudaMemcpy(host_filtered_dir, dev_sorted_filtered_dir,                        host_filter_count[0] *sizeof(int), cudaMemcpyDeviceToHost ) );
