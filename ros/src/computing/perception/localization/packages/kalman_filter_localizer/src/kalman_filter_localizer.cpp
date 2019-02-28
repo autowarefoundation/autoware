@@ -1,4 +1,4 @@
-#include "kalman_filter/kalman_filter_node_with_vel_est.h"
+#include "kalman_filter/kalman_filter_localizer.h"
 
 #define PRINT_MAT(X) std::cout << #X << ":\n" << X << std::endl << std::endl
 
@@ -42,16 +42,23 @@ KalmanFilterNode::KalmanFilterNode(): nh_(""), pnh_("~")
   cov_proc_yaw_d_ = std::pow(stddev_proc_yaw_c * kf_dt_, 2.0);
   cov_proc_yaw_bias_d_ = std::pow(stddev_proc_yaw_bias_c * kf_dt_, 2.0);
 
-
   timer_control_ = nh_.createTimer(ros::Duration(kf_dt_), &KalmanFilterNode::timerCallback, this);
   timer_tf_ = nh_.createTimer(ros::Duration(1.0 / tf_rate_), &KalmanFilterNode::timerTFCallback, this);
-  pub_pose_ = nh_.advertise<geometry_msgs::PoseStamped>("/kf_pose2", 1);
-  pub_pose_cov_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("/kf_pose_with_covariance", 1);
-  pub_twist_ = nh_.advertise<geometry_msgs::TwistStamped>("/kf_twist", 1);
-  sub_ndt_pose_ = nh_.subscribe("/ndt_pose", 1, &KalmanFilterNode::callbackNDTPose, this);
-  sub_vehicle_status_ = nh_.subscribe("/vehicle_status", 1, &KalmanFilterNode::callbackVehicleStatus, this);
-  sub_imu_ = nh_.subscribe("/imu_raw", 1, &KalmanFilterNode::callbackIMU, this);
 
+  std::string in_ndt_pose, in_twist, in_imu, out_pose, out_twist;
+  pnh_.param("input_ndt_pose_name", in_ndt_pose, std::string("/ndt_pose"));
+  pnh_.param("input_twist_name", in_twist, std::string("/can_twist"));
+  pnh_.param("input_imu_name", in_imu, std::string("/imu_raw"));
+  pnh_.param("output_pose_name", out_pose, std::string("/kf_pose"));
+  pnh_.param("output_twist_name", out_twist, std::string("/kf_twist"));
+  pub_pose_ = nh_.advertise<geometry_msgs::PoseStamped>(out_pose, 1);
+  pub_pose_cov_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("/kf_pose_with_covariance", 1);
+  pub_twist_ = nh_.advertise<geometry_msgs::TwistStamped>(out_twist, 1);
+  sub_ndt_pose_ = nh_.subscribe(in_ndt_pose, 1, &KalmanFilterNode::callbackNDTPose, this);
+  sub_twist_ = nh_.subscribe(in_twist, 1, &KalmanFilterNode::callbackTwist, this);
+  sub_imu_ = nh_.subscribe(in_imu, 1, &KalmanFilterNode::callbackIMU, this);
+  sub_vehicle_status_ = nh_.subscribe("/vehicle_status", 1, &KalmanFilterNode::callbackVehicleStatus, this);
+  
   dim_x_ = 6; // x, y, yaw, yaw_bias, vx, wz
   dim_x_ex_ = dim_x_ * extend_state_step_;
 
@@ -74,7 +81,6 @@ void KalmanFilterNode::timerCallback(const ros::TimerEvent &e)
   {
     ROS_WARN_DELAYED_THROTTLE(1.0, "waiting topic... twist:%d, selfpose:%d",
                               current_twist_ptr_ != nullptr, current_ndt_pose_ptr_ != nullptr);
-
     return;
   }
 
@@ -352,10 +358,8 @@ void KalmanFilterNode::measurementUpdateNDTPose(const geometry_msgs::PoseStamped
   R(1, 1) = std::pow(ndt_stddev_y_, 2) + cov_pos_y; // pos_y
   R(2, 2) = std::pow(ndt_stddev_yaw_, 2) + cov_yaw;  // yaw
 
-  /* In order to avoid a large change at the time of updating, 
-     measuremeent update is performed by dividing at every step. */
+  /* In order to avoid a large change at the time of updating, measuremeent update is performed by dividing at every step. */
   R *= (kf_rate_ / ndt_rate_);
-  // PRINT_MAT(R);
 
   Eigen::MatrixXd X_before, X_after;
   if (show_debug_info_)

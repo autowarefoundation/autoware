@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(kalman_filter)
+project(kalman_filter_localizer)
 
 add_compile_options(-std=c++11)
 
@@ -50,13 +50,9 @@ add_dependencies(kalman_filter_delayed_measurement ${catkin_EXPORTED_TARGETS})
 target_link_libraries(kalman_filter_delayed_measurement ${catkin_LIBRARIES} kalman_filter)
 
 
-add_executable(kalman_filter_node src/kalman_filter_node.cpp)
-add_dependencies(kalman_filter_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(kalman_filter_node ${catkin_LIBRARIES} kalman_filter_delayed_measurement)
-
-add_executable(kalman_filter_node_with_vel_est src/kalman_filter_node_with_vel_est.cpp)
-add_dependencies(kalman_filter_node_with_vel_est ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(kalman_filter_node_with_vel_est ${catkin_LIBRARIES} kalman_filter_delayed_measurement)
+add_executable(kalman_filter_localizer src/kalman_filter_localizer.cpp)
+add_dependencies(kalman_filter_localizer ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(kalman_filter_localizer ${catkin_LIBRARIES} kalman_filter_delayed_measurement)
 
 
 #############
@@ -64,7 +60,7 @@ target_link_libraries(kalman_filter_node_with_vel_est ${catkin_LIBRARIES} kalman
 #############
 
 ## Install executables and/or libraries
-install(TARGETS kalman_filter kalman_filter_delayed_measurement kalman_filter_node kalman_filter_node_with_vel_est
+install(TARGETS kalman_filter kalman_filter_delayed_measurement kalman_filter_localizer
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
