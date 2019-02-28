@@ -546,7 +546,7 @@ void PointPillars::preprocess(const float* in_points_array, const int in_num_poi
   }
 }
 
-void PointPillars::doInference(const float* in_points_array, const int in_num_points, std::vector<float>& out_detection)
+void PointPillars::doInference(const float* in_points_array, const int in_num_points, std::vector<float>& out_detections)
 {
   preprocess(in_points_array, in_num_points);
 
@@ -580,7 +580,7 @@ void PointPillars::doInference(const float* in_points_array, const int in_num_po
   postprocess_cuda_ptr_->doPostprocessCuda(
       (float*)rpn_buffers_[1], (float*)rpn_buffers_[2], (float*)rpn_buffers_[3], dev_anchor_mask_, dev_anchors_px_,
       dev_anchors_py_, dev_anchors_pz_, dev_anchors_dx_, dev_anchors_dy_, dev_anchors_dz_, dev_anchors_ro_,
-      dev_filtered_box_, dev_filtered_score_, dev_filtered_dir_, dev_box_for_nms_, dev_filter_count_, out_detection);
+      dev_filtered_box_, dev_filtered_score_, dev_filtered_dir_, dev_box_for_nms_, dev_filter_count_, out_detections);
 
   // release the stream and the buffers
   cudaStreamDestroy(stream);

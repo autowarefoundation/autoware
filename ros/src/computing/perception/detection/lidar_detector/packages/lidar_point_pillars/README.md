@@ -26,18 +26,18 @@ TensorRT: Tested with 5.0.2 -> [How to install](https://docs.nvidia.com/deeplear
 * @param[out] out_detections Output bounding box from the network
 * @details This is an interface for the algorithm.
 */
-void doInference(float* in_points_array, int in_num_points, std::vector<float> out_detection);
+void doInference(float* in_points_array, int in_num_points, std::vector<float> out_detections);
 ```
 
 ## Parameters
 
 |Parameter| Type| Description|Default|
 ----------|-----|--------|----|
-|`input_topic`|*String*|Input topic Pointcloud. Default.|`/points_raw`|
-|`baselink_support`|*Bool*|Whether to use baselink to adjust parameters. Default.|`True`|
-|`reproduce_result_mode`|*Bool*|Whether to enable reproducible result mode at the cost of the runtime. Default.|`False`|
-|`score_threshold`|*Float*|Minimum score required to include the result (0.1)|0.5|
-|`nms_overlap_threshold`|*Float*|Minimum IOU required to have when applying NMS (0.1)|0.5|
+|`input_topic`|*String*|Input topic Pointcloud. |`/points_raw`|
+|`baselink_support`|*Bool*|Whether to use baselink to adjust parameters. |`True`|
+|`reproduce_result_mode`|*Bool*|Whether to enable reproducible result mode at the cost of the runtime. |`False`|
+|`score_threshold`|*Float*|Minimum score required to include the result [0,1]|0.5|
+|`nms_overlap_threshold`|*Float*|Minimum IOU required to have when applying NMS [0,1]|0.5|
 |`pfe_onnx_file`|*String* |Path to the PFE onnx file||
 |`rpn_onnx_file`|*String* |Path to the RPN onnx file||
 
