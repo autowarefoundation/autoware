@@ -25,37 +25,40 @@
 #include <pcl/registration/ndt.h>
 
 template <class PointSource, class PointTarget>
-class NdtSlamPCL
-    : public NdtSlamBase<PointSource, PointTarget>
-{
-    public:
-        NdtSlamPCL();
-        ~NdtSlamPCL() = default;
+class NdtSlamPCL : public NdtSlamBase<PointSource, PointTarget> {
+public:
+  NdtSlamPCL();
+  ~NdtSlamPCL() = default;
 
-        void setTransformationEpsilon(double trans_eps) override;
-        void setStepSize(double step_size) override;
-        void setResolution(float res) override;
-        void setMaximumIterations(int max_iter) override;
+  void setTransformationEpsilon(double trans_eps) override;
+  void setStepSize(double step_size) override;
+  void setResolution(float res) override;
+  void setMaximumIterations(int max_iter) override;
 
-        double getTransformationEpsilon() override;
-        double getStepSize() const override;
-        float getResolution() const override;
-        int getMaximumIterations() override;
-        double getTransformationProbability() const override;
+  double getTransformationEpsilon() override;
+  double getStepSize() const override;
+  float getResolution() const override;
+  int getMaximumIterations() override;
+  double getTransformationProbability() const override;
 
-    protected:
-        void align(const Pose& predict_pose) override;
-        double getFitnessScore() override;
-        void setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& map_ptr) override;
-        void setInputSource(const boost::shared_ptr< pcl::PointCloud<PointSource> >& scan_ptr) override;
-        Pose getFinalPose() override;
+protected:
+  void align(const Pose &predict_pose) override;
+  double getFitnessScore() override;
+  void setInputTarget(
+      const boost::shared_ptr<pcl::PointCloud<PointTarget>> &map_ptr) override;
+  void setInputSource(
+      const boost::shared_ptr<pcl::PointCloud<PointSource>> &scan_ptr) override;
+  Pose getFinalPose() override;
 
-        void buildMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& map_ptr) override;
-        void swapInstance() override;
+  void buildMap(
+      const boost::shared_ptr<pcl::PointCloud<PointTarget>> &map_ptr) override;
+  void swapInstance() override;
 
-    private:
-        boost::shared_ptr< pcl::NormalDistributionsTransform<PointSource, PointTarget> > ndt_ptr_;
-        boost::shared_ptr< pcl::NormalDistributionsTransform<PointSource, PointTarget> > swap_ndt_ptr_;
+private:
+  boost::shared_ptr<pcl::NormalDistributionsTransform<PointSource, PointTarget>>
+      ndt_ptr_;
+  boost::shared_ptr<pcl::NormalDistributionsTransform<PointSource, PointTarget>>
+      swap_ndt_ptr_;
 };
 
 #endif

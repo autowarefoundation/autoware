@@ -17,68 +17,74 @@
 #ifndef LIDAR_LOCALIZER_H
 #define LIDAR_LOCALIZER_H
 
-#include <iostream>
+#include <chrono>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 #include <string>
-#include <chrono>
-#include <thread>
 #include <sys/stat.h>
+#include <thread>
 
+#include <pcl/common/transforms.h>
+#include <pcl/filters/voxel_grid.h>
 #include <pcl/io/io.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
-#include <pcl/filters/voxel_grid.h>
-#include <pcl/common/transforms.h>
 
 #include "lidar_localizer/util/data_structs.h"
 #include "lidar_localizer/util/util_functions.h"
 
-template <class PointSource, class PointTarget>
-class LidarLocalizer
-{
-    enum class ThreadStatus{
-        Sleeping,
-        Running,
-        Finished,
-    };
+template <class PointSource, class PointTarget> class LidarLocalizer {
+  enum class ThreadStatus {
+    Sleeping,
+    Running,
+    Finished,
+  };
 
-    public:
-        LidarLocalizer();
-        virtual ~LidarLocalizer();
-        void initPointsMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& pointcloud_ptr);
-        void updatePointsMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& pointcloud_ptr);
+public:
+  LidarLocalizer();
+  virtual ~LidarLocalizer();
+  void initPointsMap(
+      const boost::shared_ptr<pcl::PointCloud<PointTarget>> &pointcloud_ptr);
+  void updatePointsMap(
+      const boost::shared_ptr<pcl::PointCloud<PointTarget>> &pointcloud_ptr);
 
-        bool alignMap(const boost::shared_ptr< pcl::PointCloud<PointSource> >& pointcloud_ptr, const Pose& predict_pose);
-        void writeLogFile(const std::string& log_file_directory_path);
+  bool alignMap(
+      const boost::shared_ptr<pcl::PointCloud<PointSource>> &pointcloud_ptr,
+      const Pose &predict_pose);
+  void writeLogFile(const std::string &log_file_directory_path);
 
-        Pose getLocalizerPose() const;
-        double getAlignTime() const;
+  Pose getLocalizerPose() const;
+  double getAlignTime() const;
 
-    protected:
-        virtual void align(const Pose& predict_pose) = 0;
-        virtual void setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& map_ptr) = 0;
-        virtual void setInputSource(const boost::shared_ptr< pcl::PointCloud<PointSource> >& scan_ptr) = 0;
-        virtual Pose getFinalPose() = 0;
+protected:
+  virtual void align(const Pose &predict_pose) = 0;
+  virtual void setInputTarget(
+      const boost::shared_ptr<pcl::PointCloud<PointTarget>> &map_ptr) = 0;
+  virtual void setInputSource(
+      const boost::shared_ptr<pcl::PointCloud<PointSource>> &scan_ptr) = 0;
+  virtual Pose getFinalPose() = 0;
 
-        virtual void buildMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& map_ptr) = 0;
-        virtual void swapInstance() = 0;
+  virtual void
+  buildMap(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &map_ptr) = 0;
+  virtual void swapInstance() = 0;
 
-        virtual std::stringstream logFileContent() const;
+  virtual std::stringstream logFileContent() const;
 
-    private:
-        void buildMapThread(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& map_ptr);
-        bool swapMap();
+private:
+  void buildMapThread(
+      const boost::shared_ptr<pcl::PointCloud<PointTarget>> &map_ptr);
+  bool swapMap();
 
-        Pose localizer_pose_;
+  Pose localizer_pose_;
 
-        bool is_init_map_;
-        size_t map_point_size_;
-        double align_time_;
-        double fitness_score_;
+  bool is_init_map_;
+  size_t map_point_size_;
+  double align_time_;
+  double fitness_score_;
 
-        ThreadStatus thread_status_;
-        std::chrono::system_clock::time_point thread_begin_time_;
+  ThreadStatus thread_status_;
+  std::chrono::system_clock::time_point thread_begin_time_;
 };
 
 #endif

@@ -18,59 +18,59 @@
 #define MAP_MANAGER_H
 
 #include <deque>
-#include <thread>
-#include <mutex>
 #include <functional>
+#include <mutex>
+#include <thread>
 
+#include <pcl/common/transforms.h>
+#include <pcl/filters/voxel_grid.h>
 #include <pcl/io/io.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
-#include <pcl/filters/voxel_grid.h>
-#include <pcl/common/transforms.h>
 
 #include "lidar_localizer/util/data_structs.h"
 #include "lidar_localizer/util/util_functions.h"
 
-template <class PointTarget>
-class MapManager
-{
-    public:
-        MapManager();
-        virtual ~MapManager();
+template <class PointTarget> class MapManager {
+public:
+  MapManager();
+  virtual ~MapManager();
 
-        void addPointCloudMapThread(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& points_raw_ptr);
-        void downsampleMapThread();
-        void saveSingleMapThread();
-        void saveSeparateMapThread();
-        void loadAroundMapThread(const Pose& localizer_pose);
+  void addPointCloudMapThread(
+      const boost::shared_ptr<pcl::PointCloud<PointTarget>> &points_raw_ptr);
+  void downsampleMapThread();
+  void saveSingleMapThread();
+  void saveSeparateMapThread();
+  void loadAroundMapThread(const Pose &localizer_pose);
 
-        void setMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& map_ptr);
-        boost::shared_ptr< pcl::PointCloud<PointTarget> > getMap();
-        void setSaveSeparateMapSize(const double separate_map_size);
-        void setSaveMapLeafSize(const double save_map_leaf_size);
-        double getSaveSeparateMapSize() const;
-        void setFileDirectoryPath(const std::string& directory_path);
+  void setMap(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &map_ptr);
+  boost::shared_ptr<pcl::PointCloud<PointTarget>> getMap();
+  void setSaveSeparateMapSize(const double separate_map_size);
+  void setSaveMapLeafSize(const double save_map_leaf_size);
+  double getSaveSeparateMapSize() const;
+  void setFileDirectoryPath(const std::string &directory_path);
 
-    private:
-        void runProcess();
+private:
+  void runProcess();
 
-        void addPointCloudMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& points_raw_ptr);
-        void downsampleMap();
-        void saveSingleMap();
-        void saveSeparateMap();
-        void loadAroundMap(const Pose& localizer_pose);
+  void addPointCloudMap(
+      const boost::shared_ptr<pcl::PointCloud<PointTarget>> &points_raw_ptr);
+  void downsampleMap();
+  void saveSingleMap();
+  void saveSeparateMap();
+  void loadAroundMap(const Pose &localizer_pose);
 
-        std::string directory_path_;
-        double separate_map_size_;
-        double save_map_leaf_size_;
-        double default_reserve_size_;
+  std::string directory_path_;
+  double separate_map_size_;
+  double save_map_leaf_size_;
+  double default_reserve_size_;
 
-        boost::shared_ptr< pcl::PointCloud<PointTarget> > map_ptr_;
+  boost::shared_ptr<pcl::PointCloud<PointTarget>> map_ptr_;
 
-        std::deque< std::function<void()> > process_queue_;
-        std::thread process_thread_;
-        std::mutex mtx_;
-        bool is_thread_run_ok_;
+  std::deque<std::function<void()>> process_queue_;
+  std::thread process_thread_;
+  std::mutex mtx_;
+  bool is_thread_run_ok_;
 };
 
 #endif

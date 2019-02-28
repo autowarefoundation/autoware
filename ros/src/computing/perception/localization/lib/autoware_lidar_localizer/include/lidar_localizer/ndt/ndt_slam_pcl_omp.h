@@ -19,59 +19,61 @@
 
 #ifndef OPENMP_FOUND
 
-    #include "lidar_localizer/ndt/ndt_slam_dummy.h"
+#include "lidar_localizer/ndt/ndt_slam_dummy.h"
 
-    template <class PointSource, class PointTarget>
-    class NdtSlamPCLOMP
-        : public NdtSlamDummy<PointSource, PointTarget>
-    {
-        public:
-            NdtSlamPCLOMP();
-            ~NdtSlamPCLOMP() = default;
-    };
+template <class PointSource, class PointTarget>
+class NdtSlamPCLOMP : public NdtSlamDummy<PointSource, PointTarget> {
+public:
+  NdtSlamPCLOMP();
+  ~NdtSlamPCLOMP() = default;
+};
 
 #else
 
-    #include "lidar_localizer/ndt/ndt_slam_base.h"
+#include "lidar_localizer/ndt/ndt_slam_base.h"
 
-    #include <pcl/io/io.h>
-    #include <pcl/io/pcd_io.h>
-    #include <pcl/point_types.h>
-    #include <pcl_omp_registration/ndt.h>
+#include <pcl/io/io.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/point_types.h>
+#include <pcl_omp_registration/ndt.h>
 
+template <class PointSource, class PointTarget>
+class NdtSlamPCLOMP : public NdtSlamBase<PointSource, PointTarget> {
+public:
+  NdtSlamPCLOMP();
+  ~NdtSlamPCLOMP() = default;
 
-    template <class PointSource, class PointTarget>
-    class NdtSlamPCLOMP
-        : public NdtSlamBase<PointSource, PointTarget>
-    {
-        public:
-            NdtSlamPCLOMP();
-            ~NdtSlamPCLOMP() = default;
+  void setTransformationEpsilon(double trans_eps) override;
+  void setStepSize(double step_size) override;
+  void setResolution(float res) override;
+  void setMaximumIterations(int max_iter) override;
 
-            void setTransformationEpsilon(double trans_eps) override;
-            void setStepSize(double step_size) override;
-            void setResolution(float res) override;
-            void setMaximumIterations(int max_iter) override;
+  double getTransformationEpsilon() override;
+  double getStepSize() const override;
+  float getResolution() const override;
+  int getMaximumIterations() override;
+  double getTransformationProbability() const override;
 
-            double getTransformationEpsilon() override;
-            double getStepSize() const override;
-            float getResolution() const override;
-            int getMaximumIterations() override;
-            double getTransformationProbability() const override;
+protected:
+  void align(const Pose &predict_pose) override;
+  double getFitnessScore() override;
+  void setInputTarget(
+      const boost::shared_ptr<pcl::PointCloud<PointSource>> &map_ptr) override;
+  void setInputSource(
+      const boost::shared_ptr<pcl::PointCloud<PointTarget>> &scan_ptr) override;
+  Pose getFinalPose() override;
+  void buildMap(
+      const boost::shared_ptr<pcl::PointCloud<PointTarget>> &map_ptr) override;
+  void swapInstance() override;
 
-        protected:
-            void align(const Pose& predict_pose) override;
-            double getFitnessScore() override;
-            void setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointSource> >& map_ptr) override;
-            void setInputSource(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& scan_ptr) override;
-            Pose getFinalPose() override;
-            void buildMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& map_ptr) override;
-            void swapInstance() override;
-
-        private:
-            boost::shared_ptr< pcl_omp::NormalDistributionsTransform<PointSource, PointTarget> > ndt_ptr_;
-            boost::shared_ptr< pcl_omp::NormalDistributionsTransform<PointSource, PointTarget> > swap_ndt_ptr_;
-    };
+private:
+  boost::shared_ptr<
+      pcl_omp::NormalDistributionsTransform<PointSource, PointTarget>>
+      ndt_ptr_;
+  boost::shared_ptr<
+      pcl_omp::NormalDistributionsTransform<PointSource, PointTarget>>
+      swap_ndt_ptr_;
+};
 
 #endif
 

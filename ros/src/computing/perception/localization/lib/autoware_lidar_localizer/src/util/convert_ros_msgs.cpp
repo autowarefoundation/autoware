@@ -23,9 +23,8 @@
 
 #include "lidar_localizer/util/data_structs.h"
 
-
-geometry_msgs::PoseStamped convertToROSMsg(const std_msgs::Header& header, const Pose& pose)
-{
+geometry_msgs::PoseStamped convertToROSMsg(const std_msgs::Header &header,
+                                           const Pose &pose) {
   tf::Quaternion q;
   q.setRPY(pose.roll, pose.pitch, pose.yaw);
 
@@ -41,8 +40,9 @@ geometry_msgs::PoseStamped convertToROSMsg(const std_msgs::Header& header, const
   return msg;
 }
 
-geometry_msgs::PoseStamped convertToROSMsg(const std_msgs::Header& header, const Pose& pose, const tf::Transform& local_transform)
-{
+geometry_msgs::PoseStamped
+convertToROSMsg(const std_msgs::Header &header, const Pose &pose,
+                const tf::Transform &local_transform) {
   tf::Quaternion q;
   q.setRPY(pose.roll, pose.pitch, pose.yaw);
 
@@ -61,8 +61,8 @@ geometry_msgs::PoseStamped convertToROSMsg(const std_msgs::Header& header, const
   return msg;
 }
 
-geometry_msgs::TwistStamped convertToROSMsg(const std_msgs::Header& header, const Velocity& velocity)
-{
+geometry_msgs::TwistStamped convertToROSMsg(const std_msgs::Header &header,
+                                            const Velocity &velocity) {
   geometry_msgs::TwistStamped msg;
   msg.header = header;
   msg.twist.linear.x = velocity.linear.x;
@@ -74,8 +74,7 @@ geometry_msgs::TwistStamped convertToROSMsg(const std_msgs::Header& header, cons
   return msg;
 }
 
-Pose convertFromROSMsg(const geometry_msgs::Pose& msg)
-{
+Pose convertFromROSMsg(const geometry_msgs::Pose &msg) {
   double roll, pitch, yaw;
   tf::Quaternion orientation;
   tf::quaternionMsgToTF(msg.orientation, orientation);
@@ -92,18 +91,15 @@ Pose convertFromROSMsg(const geometry_msgs::Pose& msg)
   return pose;
 }
 
-Pose convertFromROSMsg(const geometry_msgs::PoseStamped& msg)
-{
+Pose convertFromROSMsg(const geometry_msgs::PoseStamped &msg) {
   return convertFromROSMsg(msg.pose);
 }
 
-Pose convertFromROSMsg(const geometry_msgs::PoseWithCovarianceStamped& msg)
-{
+Pose convertFromROSMsg(const geometry_msgs::PoseWithCovarianceStamped &msg) {
   return convertFromROSMsg(msg.pose.pose);
 }
 
-Velocity convertFromROSMsg(const geometry_msgs::Twist& msg)
-{
+Velocity convertFromROSMsg(const geometry_msgs::Twist &msg) {
   Velocity velocity;
   velocity.linear.x = msg.linear.x;
   velocity.linear.y = msg.linear.y;
@@ -115,7 +111,6 @@ Velocity convertFromROSMsg(const geometry_msgs::Twist& msg)
   return velocity;
 }
 
-Velocity convertFromROSMsg(const geometry_msgs::TwistStamped& msg)
-{
+Velocity convertFromROSMsg(const geometry_msgs::TwistStamped &msg) {
   return convertFromROSMsg(msg.twist);
 }

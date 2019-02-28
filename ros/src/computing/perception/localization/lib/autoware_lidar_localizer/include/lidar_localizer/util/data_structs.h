@@ -17,11 +17,10 @@
 #ifndef DATA_STRUCTS_H
 #define DATA_STRUCTS_H
 
-#include <iostream>
 #include <cmath>
+#include <iostream>
 
-struct Pose
-{
+struct Pose {
   double x;
   double y;
   double z;
@@ -29,13 +28,12 @@ struct Pose
   double pitch;
   double yaw;
 
-  Pose() : x(0), y(0), z(0), roll(0), pitch(0), yaw(0) {};
+  Pose() : x(0), y(0), z(0), roll(0), pitch(0), yaw(0){};
   Pose(double x, double y, double z, double roll, double pitch, double yaw)
-    : x(x), y(y), z(z), roll(roll), pitch(pitch), yaw(yaw) {};
-  void clear(){x = y = z = roll = pitch = yaw = 0;};
+      : x(x), y(y), z(z), roll(roll), pitch(pitch), yaw(yaw){};
+  void clear() { x = y = z = roll = pitch = yaw = 0; };
 
-  Pose operator+(const Pose& rhs_pose) const
-  {
+  Pose operator+(const Pose &rhs_pose) const {
     Pose tmp_pose;
     tmp_pose.x = x + rhs_pose.x;
     tmp_pose.y = y + rhs_pose.y;
@@ -46,8 +44,7 @@ struct Pose
     return tmp_pose;
   };
 
-  Pose operator-(const Pose& rhs_pose) const
-  {
+  Pose operator-(const Pose &rhs_pose) const {
     Pose tmp_pose;
     tmp_pose.x = x - rhs_pose.x;
     tmp_pose.y = y - rhs_pose.y;
@@ -58,8 +55,7 @@ struct Pose
     return tmp_pose;
   };
 
-  Pose operator*(const double val) const
-  {
+  Pose operator*(const double val) const {
     Pose tmp_pose;
     tmp_pose.x = x * val;
     tmp_pose.y = y * val;
@@ -70,10 +66,9 @@ struct Pose
     return tmp_pose;
   };
 
-  Pose operator/(const double val) const
-  {
+  Pose operator/(const double val) const {
     Pose tmp_pose;
-    if(val == 0)
+    if (val == 0)
       return tmp_pose;
 
     tmp_pose.x = x / val;
@@ -85,81 +80,72 @@ struct Pose
     return tmp_pose;
   };
 
-  bool operator==(const Pose& rhs_pose) const
-  {
-    return (x == rhs_pose.x && y == rhs_pose.y && z == rhs_pose.z
-       && roll == rhs_pose.roll && pitch == rhs_pose.pitch && yaw == rhs_pose.yaw);
+  bool operator==(const Pose &rhs_pose) const {
+    return (x == rhs_pose.x && y == rhs_pose.y && z == rhs_pose.z &&
+            roll == rhs_pose.roll && pitch == rhs_pose.pitch &&
+            yaw == rhs_pose.yaw);
   };
 
-  bool operator!=(const Pose& rhs_pose) const
-  {
-    return !(x == rhs_pose.x && y == rhs_pose.y && z == rhs_pose.z
-       && roll == rhs_pose.roll && pitch == rhs_pose.pitch && yaw == rhs_pose.yaw);
+  bool operator!=(const Pose &rhs_pose) const {
+    return !(x == rhs_pose.x && y == rhs_pose.y && z == rhs_pose.z &&
+             roll == rhs_pose.roll && pitch == rhs_pose.pitch &&
+             yaw == rhs_pose.yaw);
   };
 
-  friend std::ostream& operator<<(std::ostream& os, const Pose& pose)
-  {
-    os << "x:" << pose.x << " y:" << pose.y << " z:" << pose.z << " roll:" << pose.roll/M_PI*180.0 << "[deg] pitch:" << pose.pitch/M_PI*180.0 << "[deg] yaw:" << pose.yaw/M_PI*180.0 << "[deg]";
+  friend std::ostream &operator<<(std::ostream &os, const Pose &pose) {
+    os << "x:" << pose.x << " y:" << pose.y << " z:" << pose.z
+       << " roll:" << pose.roll / M_PI * 180.0
+       << "[deg] pitch:" << pose.pitch / M_PI * 180.0
+       << "[deg] yaw:" << pose.yaw / M_PI * 180.0 << "[deg]";
     return os;
   };
 
-  private:
-      double calcDiffForRadian(const double lhs_rad, const double rhs_rad) const
-      {
-          double diff_rad = lhs_rad - rhs_rad;
-          if (diff_rad > M_PI) {
-              diff_rad = diff_rad - 2 * M_PI;
-          }
-          else if (diff_rad < -M_PI) {
-              diff_rad = diff_rad + 2 * M_PI;
-          }
-          return diff_rad;
-      }
-};
-
-struct PoseStamped
-{
-    Pose pose;
-    double stamp;
-
-    PoseStamped() : pose(), stamp(0) {};
-    PoseStamped(const Pose& pose, const double stamp)
-      : pose(pose), stamp(stamp) {};
-
-    void clear()
-    {
-        pose.clear();
-        stamp = 0;
+private:
+  double calcDiffForRadian(const double lhs_rad, const double rhs_rad) const {
+    double diff_rad = lhs_rad - rhs_rad;
+    if (diff_rad > M_PI) {
+      diff_rad = diff_rad - 2 * M_PI;
+    } else if (diff_rad < -M_PI) {
+      diff_rad = diff_rad + 2 * M_PI;
     }
-
-    bool operator==(const PoseStamped& rhs_pose_stamped) const
-    {
-      return (pose == rhs_pose_stamped.pose && stamp == rhs_pose_stamped.stamp);
-    };
-
-    friend std::ostream& operator<<(std::ostream& os, const PoseStamped& pose_stamped)
-    {
-      os << pose_stamped.pose << " stamp:"<< pose_stamped.stamp;
-      return os;
-    };
+    return diff_rad;
+  }
 };
 
+struct PoseStamped {
+  Pose pose;
+  double stamp;
 
-struct Linear
-{
+  PoseStamped() : pose(), stamp(0){};
+  PoseStamped(const Pose &pose, const double stamp)
+      : pose(pose), stamp(stamp){};
+
+  void clear() {
+    pose.clear();
+    stamp = 0;
+  }
+
+  bool operator==(const PoseStamped &rhs_pose_stamped) const {
+    return (pose == rhs_pose_stamped.pose && stamp == rhs_pose_stamped.stamp);
+  };
+
+  friend std::ostream &operator<<(std::ostream &os,
+                                  const PoseStamped &pose_stamped) {
+    os << pose_stamped.pose << " stamp:" << pose_stamped.stamp;
+    return os;
+  };
+};
+
+struct Linear {
   double x;
   double y;
   double z;
 
   Linear() : x(0), y(0), z(0){};
 
-  void clear()
-  {
-    x = y = z = 0;
-  };
+  void clear() { x = y = z = 0; };
 
-  Linear operator+(const Linear& rhs_l) const
-  {
+  Linear operator+(const Linear &rhs_l) const {
     Linear tmp_l;
     tmp_l.x = x + rhs_l.x;
     tmp_l.y = y + rhs_l.y;
@@ -167,8 +153,7 @@ struct Linear
     return tmp_l;
   }
 
-  Linear operator-(const Linear& rhs_l) const
-  {
+  Linear operator-(const Linear &rhs_l) const {
     Linear tmp_l;
     tmp_l.x = x - rhs_l.x;
     tmp_l.y = y - rhs_l.y;
@@ -176,11 +161,10 @@ struct Linear
     return tmp_l;
   }
 
-  Linear operator*(const double val) const
-  {
+  Linear operator*(const double val) const {
     Linear tmp_l;
 
-    if(val == 0)
+    if (val == 0)
       return tmp_l;
 
     tmp_l.x = x * val;
@@ -189,11 +173,10 @@ struct Linear
     return tmp_l;
   }
 
-  Linear operator/(const double val) const
-  {
+  Linear operator/(const double val) const {
     Linear tmp_l;
 
-    if(val == 0)
+    if (val == 0)
       return tmp_l;
 
     tmp_l.x = x / val;
@@ -202,29 +185,22 @@ struct Linear
     return tmp_l;
   }
 
-  friend std::ostream& operator<<(std::ostream& os, const Linear& linear)
-  {
+  friend std::ostream &operator<<(std::ostream &os, const Linear &linear) {
     os << "x:" << linear.x << " y:" << linear.y << " z:" << linear.z;
     return os;
   };
-
 };
 
-struct Angular
-{
+struct Angular {
   double x;
   double y;
   double z;
 
   Angular() : x(0), y(0), z(0){};
 
-  void clear()
-  {
-    x = y = z = 0;
-  };
+  void clear() { x = y = z = 0; };
 
-  Angular operator+(const Angular& rhs_a) const
-  {
+  Angular operator+(const Angular &rhs_a) const {
     Angular tmp_a;
     tmp_a.x = x + rhs_a.x;
     tmp_a.y = y + rhs_a.y;
@@ -232,8 +208,7 @@ struct Angular
     return tmp_a;
   }
 
-  Angular operator-(const Angular& rhs_a) const
-  {
+  Angular operator-(const Angular &rhs_a) const {
     Angular tmp_a;
     tmp_a.x = x - rhs_a.x;
     tmp_a.y = y - rhs_a.y;
@@ -241,8 +216,7 @@ struct Angular
     return tmp_a;
   }
 
-  Angular operator*(const double val) const
-  {
+  Angular operator*(const double val) const {
     Angular tmp_a;
     tmp_a.x = x * val;
     tmp_a.y = y * val;
@@ -250,11 +224,10 @@ struct Angular
     return tmp_a;
   }
 
-  Angular operator/(const double val) const
-  {
+  Angular operator/(const double val) const {
     Angular tmp_a;
 
-    if(val == 0)
+    if (val == 0)
       return tmp_a;
 
     tmp_a.x = x / val;
@@ -263,25 +236,21 @@ struct Angular
     return tmp_a;
   }
 
-  friend std::ostream& operator<<(std::ostream& os, const Angular& angular)
-  {
+  friend std::ostream &operator<<(std::ostream &os, const Angular &angular) {
     os << "x:" << angular.x << " y:" << angular.y << " z:" << angular.z;
     return os;
   };
-
 };
 
-struct Velocity
-{
+struct Velocity {
   Linear linear;
   Angular angular;
 
-  Velocity() {};
+  Velocity(){};
 
-  Velocity(const Pose& previous_pose, const Pose& current_pose, double time_diff_sec)
-  {
-    if(time_diff_sec == 0)
-    {
+  Velocity(const Pose &previous_pose, const Pose &current_pose,
+           double time_diff_sec) {
+    if (time_diff_sec == 0) {
       clear();
       return;
     }
@@ -296,12 +265,10 @@ struct Velocity
     angular.z = diff_pose.yaw / time_diff_sec;
   };
 
-  Velocity(const PoseStamped& previous_pose, const PoseStamped& current_pose)
-  {
+  Velocity(const PoseStamped &previous_pose, const PoseStamped &current_pose) {
     const double time_diff_sec = current_pose.stamp - previous_pose.stamp;
 
-    if(time_diff_sec == 0)
-    {
+    if (time_diff_sec == 0) {
       clear();
       return;
     }
@@ -316,64 +283,55 @@ struct Velocity
     angular.z = diff_pose.yaw / time_diff_sec;
   };
 
-  void clear()
-  {
+  void clear() {
     linear.clear();
     angular.clear();
   };
 
-  Velocity operator+(const Velocity& rhs_v) const
-  {
+  Velocity operator+(const Velocity &rhs_v) const {
     Velocity tmp_v;
     tmp_v.linear = linear + rhs_v.linear;
     tmp_v.angular = angular + rhs_v.angular;
     return tmp_v;
   }
 
-  Velocity operator-(const Velocity& rhs_v) const
-  {
+  Velocity operator-(const Velocity &rhs_v) const {
     Velocity tmp_v;
     tmp_v.linear = linear - rhs_v.linear;
     tmp_v.angular = angular - rhs_v.angular;
     return tmp_v;
   }
 
-  Velocity operator*(const double val) const
-  {
+  Velocity operator*(const double val) const {
     Velocity tmp_v;
     tmp_v.linear = linear * val;
     tmp_v.angular = angular * val;
     return tmp_v;
   }
 
-  Velocity operator/(const double val) const
-  {
+  Velocity operator/(const double val) const {
     Velocity tmp_v;
     tmp_v.linear = linear / val;
     tmp_v.angular = angular / val;
     return tmp_v;
   }
 
-  friend std::ostream& operator<<(std::ostream& os, const Velocity& velocity)
-  {
+  friend std::ostream &operator<<(std::ostream &os, const Velocity &velocity) {
     os << "linear:" << velocity.linear << " angular:" << velocity.angular;
     return os;
   };
-
 };
 
-struct Accel
-{
+struct Accel {
 
   Linear linear;
   Angular angular;
 
-  Accel() {};
+  Accel(){};
 
-  Accel(const Velocity& previous_velocity, const Velocity& current_velocity, double time_diff_sec)
-  {
-    if(time_diff_sec == 0)
-    {
+  Accel(const Velocity &previous_velocity, const Velocity &current_velocity,
+        double time_diff_sec) {
+    if (time_diff_sec == 0) {
       clear();
       return;
     }
@@ -383,50 +341,38 @@ struct Accel
     angular = diff_velocity.angular / time_diff_sec;
   };
 
-
-
-  void clear()
-  {
+  void clear() {
     linear.clear();
     angular.clear();
   };
 
-
-
-  Accel operator+(const Accel& rhs_a) const
-  {
+  Accel operator+(const Accel &rhs_a) const {
     Accel tmp_a;
     tmp_a.linear = linear + rhs_a.linear;
     tmp_a.angular = angular + rhs_a.angular;
     return tmp_a;
   }
 
-  Accel operator-(const Accel& rhs_a) const
-  {
+  Accel operator-(const Accel &rhs_a) const {
     Accel tmp_a;
     tmp_a.linear = linear - rhs_a.linear;
     tmp_a.angular = angular - rhs_a.angular;
     return tmp_a;
   }
 
-  Accel operator*(const double val) const
-  {
+  Accel operator*(const double val) const {
     Accel tmp_a;
     tmp_a.linear = linear * val;
     tmp_a.angular = angular * val;
     return tmp_a;
   }
 
-  Accel operator/(const double val) const
-  {
+  Accel operator/(const double val) const {
     Accel tmp_a;
     tmp_a.linear = linear / val;
     tmp_a.angular = angular / val;
     return tmp_a;
   }
-
 };
-
-
 
 #endif

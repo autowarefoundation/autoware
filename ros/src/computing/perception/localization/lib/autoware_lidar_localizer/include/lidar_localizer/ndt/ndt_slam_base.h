@@ -20,27 +20,26 @@
 #include "lidar_localizer/lidar_localizer.h"
 
 template <class PointSource, class PointTarget>
-class NdtSlamBase : public LidarLocalizer<PointSource, PointTarget>
-{
-    public:
-        NdtSlamBase();
-        virtual ~NdtSlamBase() = default;
+class NdtSlamBase : public LidarLocalizer<PointSource, PointTarget> {
+public:
+  NdtSlamBase();
+  virtual ~NdtSlamBase() = default;
 
-        virtual void setTransformationEpsilon(double trans_eps) = 0;
-        virtual void setStepSize(double step_size) = 0;
-        virtual void setResolution(float res) = 0;
-        virtual void setMaximumIterations(int max_iter) = 0;
+  virtual void setTransformationEpsilon(double trans_eps) = 0;
+  virtual void setStepSize(double step_size) = 0;
+  virtual void setResolution(float res) = 0;
+  virtual void setMaximumIterations(int max_iter) = 0;
 
-        virtual double getTransformationEpsilon() = 0;
-        virtual double getStepSize() const = 0;
-        virtual float getResolution() const = 0;
-        virtual int getMaximumIterations() = 0;
+  virtual double getTransformationEpsilon() = 0;
+  virtual double getStepSize() const = 0;
+  virtual float getResolution() const = 0;
+  virtual int getMaximumIterations() = 0;
 
-        virtual double getTransformationProbability() const = 0;
+  virtual double getTransformationProbability() const = 0;
 
-        virtual double getFitnessScore() = 0;
+  virtual double getFitnessScore() = 0;
 
-        virtual std::stringstream logFileContent() const override;
+  virtual std::stringstream logFileContent() const override;
 };
 
 #endif

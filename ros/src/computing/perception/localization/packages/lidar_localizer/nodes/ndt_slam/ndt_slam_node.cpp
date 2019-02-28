@@ -18,8 +18,7 @@
 
 #include "ndt_slam_core.h"
 
-int main(int argc, char** argv)
-{
+int main(int argc, char **argv) {
   ros::init(argc, argv, "ndt_slam_pcl");
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");

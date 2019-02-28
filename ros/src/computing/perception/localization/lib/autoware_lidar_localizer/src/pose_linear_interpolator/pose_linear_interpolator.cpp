@@ -16,63 +16,55 @@
 
 #include "lidar_localizer/pose_linear_interpolator/pose_linear_interpolator.h"
 
-PoseStamped interpolatePose(const PoseStamped& pose_a, const PoseStamped& pose_b, const double time_stamp)
-{
-    if(pose_a.stamp == 0 || pose_b.stamp == 0 || time_stamp == 0) {
-        return PoseStamped();
-    }
+PoseStamped interpolatePose(const PoseStamped &pose_a,
+                            const PoseStamped &pose_b,
+                            const double time_stamp) {
+  if (pose_a.stamp == 0 || pose_b.stamp == 0 || time_stamp == 0) {
+    return PoseStamped();
+  }
 
-    Velocity v(pose_a, pose_b);
-    const double dt = time_stamp - pose_b.stamp;
+  Velocity v(pose_a, pose_b);
+  const double dt = time_stamp - pose_b.stamp;
 
-    PoseStamped p;
-    p.pose.x = pose_b.pose.x + v.linear.x * dt;
-    p.pose.y = pose_b.pose.y + v.linear.y * dt;
-    p.pose.z = pose_b.pose.z + v.linear.z * dt;
-    p.pose.roll = pose_b.pose.roll;
-    p.pose.pitch = pose_b.pose.pitch;
-    p.pose.yaw = pose_b.pose.yaw + v.angular.z * dt;
-    p.stamp = time_stamp;
-    return p;
+  PoseStamped p;
+  p.pose.x = pose_b.pose.x + v.linear.x * dt;
+  p.pose.y = pose_b.pose.y + v.linear.y * dt;
+  p.pose.z = pose_b.pose.z + v.linear.z * dt;
+  p.pose.roll = pose_b.pose.roll;
+  p.pose.pitch = pose_b.pose.pitch;
+  p.pose.yaw = pose_b.pose.yaw + v.angular.z * dt;
+  p.stamp = time_stamp;
+  return p;
 }
 
+PoseLinearInterpolator::PoseLinearInterpolator() {}
 
-PoseLinearInterpolator::PoseLinearInterpolator()
-{
+void PoseLinearInterpolator::clearPoseStamped() {
+  current_pose_.clear();
+  prev_pose_.clear();
 }
 
-void PoseLinearInterpolator::clearPoseStamped()
-{
-    current_pose_.clear();
-    prev_pose_.clear();
+bool PoseLinearInterpolator::isNotSetPoseStamped() const {
+  return (current_pose_ == PoseStamped() && prev_pose_ == PoseStamped());
+}
+void PoseLinearInterpolator::pushbackPoseStamped(const PoseStamped &pose) {
+  prev_pose_ = current_pose_;
+  current_pose_ = pose;
 }
 
-bool PoseLinearInterpolator::isNotSetPoseStamped() const
-{
-    return (current_pose_ == PoseStamped() && prev_pose_ == PoseStamped());
-}
-void PoseLinearInterpolator::pushbackPoseStamped(const PoseStamped& pose)
-{
-    prev_pose_ = current_pose_;
-    current_pose_ = pose;
+PoseStamped PoseLinearInterpolator::getInterpolatePoseStamped(
+    const double time_stamp) const {
+  return interpolatePose(prev_pose_, current_pose_, time_stamp);
 }
 
-PoseStamped PoseLinearInterpolator::getInterpolatePoseStamped(const double time_stamp) const
-{
-    return interpolatePose(prev_pose_, current_pose_, time_stamp);
+PoseStamped PoseLinearInterpolator::getCurrentPoseStamped() const {
+  return current_pose_;
 }
 
-PoseStamped PoseLinearInterpolator::getCurrentPoseStamped() const
-{
-    return current_pose_;
+PoseStamped PoseLinearInterpolator::getPrevPoseStamped() const {
+  return prev_pose_;
 }
 
-PoseStamped PoseLinearInterpolator::getPrevPoseStamped() const
-{
-    return prev_pose_;
-}
-
-Velocity PoseLinearInterpolator::getVelocity() const
-{
-    return  Velocity(prev_pose_, current_pose_);
+Velocity PoseLinearInterpolator::getVelocity() const {
+  return Velocity(prev_pose_, current_pose_);
 }

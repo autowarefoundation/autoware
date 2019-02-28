@@ -19,24 +19,24 @@
 
 #include "lidar_localizer/util/data_structs.h"
 
-PoseStamped interpolatePose(const PoseStamped& pose_a, const PoseStamped& pose_b, const double time_stamp);
+PoseStamped interpolatePose(const PoseStamped &pose_a,
+                            const PoseStamped &pose_b, const double time_stamp);
 
-class PoseLinearInterpolator
-{
-    public:
-        PoseLinearInterpolator();
-        ~PoseLinearInterpolator() = default;
-        void clearPoseStamped();
-        bool isNotSetPoseStamped() const;
-        void pushbackPoseStamped(const PoseStamped& pose);
-        PoseStamped getInterpolatePoseStamped(const double time_stamp) const;
-        PoseStamped getCurrentPoseStamped() const;
-        PoseStamped getPrevPoseStamped() const;
-        Velocity getVelocity() const;
+class PoseLinearInterpolator {
+public:
+  PoseLinearInterpolator();
+  ~PoseLinearInterpolator() = default;
+  void clearPoseStamped();
+  bool isNotSetPoseStamped() const;
+  void pushbackPoseStamped(const PoseStamped &pose);
+  PoseStamped getInterpolatePoseStamped(const double time_stamp) const;
+  PoseStamped getCurrentPoseStamped() const;
+  PoseStamped getPrevPoseStamped() const;
+  Velocity getVelocity() const;
 
-    private:
-        PoseStamped current_pose_;
-        PoseStamped prev_pose_;
+private:
+  PoseStamped current_pose_;
+  PoseStamped prev_pose_;
 };
 
 #endif

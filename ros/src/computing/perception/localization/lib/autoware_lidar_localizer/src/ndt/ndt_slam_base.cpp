@@ -17,17 +17,15 @@
 #include "lidar_localizer/ndt/ndt_slam_base.h"
 
 template <class PointSource, class PointTarget>
-NdtSlamBase<PointSource, PointTarget>::NdtSlamBase()
-{
-}
+NdtSlamBase<PointSource, PointTarget>::NdtSlamBase() {}
 
 template <class PointSource, class PointTarget>
-std::stringstream NdtSlamBase<PointSource, PointTarget>::logFileContent() const
-{
-    std::stringstream content = LidarLocalizer<PointSource, PointTarget>::logFileContent();
-    content << ","
-            << getTransformationProbability();
-    return content;
+std::stringstream
+NdtSlamBase<PointSource, PointTarget>::logFileContent() const {
+  std::stringstream content =
+      LidarLocalizer<PointSource, PointTarget>::logFileContent();
+  content << "," << getTransformationProbability();
+  return content;
 }
 
 template class NdtSlamBase<pcl::PointXYZ, pcl::PointXYZ>;

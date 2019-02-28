@@ -18,138 +18,130 @@
 
 #ifndef OPENMP_FOUND
 
-    template <class PointSource, class PointTarget>
-    NdtSlamPCLOMP<PointSource, PointTarget>::NdtSlamPCLOMP()
-    {
-        std::cerr << "**************************************************************" << std::endl;
-        std::cerr << "[ERROR]PCL_OPENMP is not built. Please use other method type."  << std::endl;
-        std::cerr << "**************************************************************" << std::endl;
-        exit(1);
-    }
+template <class PointSource, class PointTarget>
+NdtSlamPCLOMP<PointSource, PointTarget>::NdtSlamPCLOMP() {
+  std::cerr << "**************************************************************"
+            << std::endl;
+  std::cerr << "[ERROR]PCL_OPENMP is not built. Please use other method type."
+            << std::endl;
+  std::cerr << "**************************************************************"
+            << std::endl;
+  exit(1);
+}
 
 #else
 
-    template <class PointSource, class PointTarget>
-    NdtSlamPCLOMP<PointSource, PointTarget>::NdtSlamPCLOMP()
-        : ndt_ptr_(new pcl_omp::NormalDistributionsTransform<PointSource, PointTarget>)
-        , swap_ndt_ptr_(ndt_ptr_)
-    {
-    }
+template <class PointSource, class PointTarget>
+NdtSlamPCLOMP<PointSource, PointTarget>::NdtSlamPCLOMP()
+    : ndt_ptr_(
+          new pcl_omp::NormalDistributionsTransform<PointSource, PointTarget>),
+      swap_ndt_ptr_(ndt_ptr_) {}
 
-    template <class PointSource, class PointTarget>
-    void NdtSlamPCLOMP<PointSource, PointTarget>::setTransformationEpsilon(double trans_eps)
-    {
-        ndt_ptr_->setTransformationEpsilon(trans_eps);
-    }
+template <class PointSource, class PointTarget>
+void NdtSlamPCLOMP<PointSource, PointTarget>::setTransformationEpsilon(
+    double trans_eps) {
+  ndt_ptr_->setTransformationEpsilon(trans_eps);
+}
 
-    template <class PointSource, class PointTarget>
-    void NdtSlamPCLOMP<PointSource, PointTarget>::setStepSize(double step_size)
-    {
-        ndt_ptr_->setStepSize(step_size);
-    }
+template <class PointSource, class PointTarget>
+void NdtSlamPCLOMP<PointSource, PointTarget>::setStepSize(double step_size) {
+  ndt_ptr_->setStepSize(step_size);
+}
 
-    template <class PointSource, class PointTarget>
-    void NdtSlamPCLOMP<PointSource, PointTarget>::setResolution(float res)
-    {
-        ndt_ptr_->setResolution(res);
-    }
+template <class PointSource, class PointTarget>
+void NdtSlamPCLOMP<PointSource, PointTarget>::setResolution(float res) {
+  ndt_ptr_->setResolution(res);
+}
 
-    template <class PointSource, class PointTarget>
-    void NdtSlamPCLOMP<PointSource, PointTarget>::setMaximumIterations(int max_iter)
-    {
-        ndt_ptr_->setMaximumIterations(max_iter);
-    }
+template <class PointSource, class PointTarget>
+void NdtSlamPCLOMP<PointSource, PointTarget>::setMaximumIterations(
+    int max_iter) {
+  ndt_ptr_->setMaximumIterations(max_iter);
+}
 
-    template <class PointSource, class PointTarget>
-    double NdtSlamPCLOMP<PointSource, PointTarget>::getTransformationEpsilon()
-    {
-        return ndt_ptr_->getTransformationEpsilon();
-    }
+template <class PointSource, class PointTarget>
+double NdtSlamPCLOMP<PointSource, PointTarget>::getTransformationEpsilon() {
+  return ndt_ptr_->getTransformationEpsilon();
+}
 
-    template <class PointSource, class PointTarget>
-    double NdtSlamPCLOMP<PointSource, PointTarget>::getStepSize() const
-    {
-        return ndt_ptr_->getStepSize();
+template <class PointSource, class PointTarget>
+double NdtSlamPCLOMP<PointSource, PointTarget>::getStepSize() const {
+  return ndt_ptr_->getStepSize();
+}
+template <class PointSource, class PointTarget>
+float NdtSlamPCLOMP<PointSource, PointTarget>::getResolution() const {
+  return ndt_ptr_->getResolution();
+}
 
-    }
-    template <class PointSource, class PointTarget>
-    float NdtSlamPCLOMP<PointSource, PointTarget>::getResolution() const
-    {
-        return ndt_ptr_->getResolution();
-    }
+template <class PointSource, class PointTarget>
+int NdtSlamPCLOMP<PointSource, PointTarget>::getMaximumIterations() {
+  return ndt_ptr_->getMaximumIterations();
+}
 
-    template <class PointSource, class PointTarget>
-    int NdtSlamPCLOMP<PointSource, PointTarget>::getMaximumIterations()
-    {
-        return ndt_ptr_->getMaximumIterations();
-    }
+template <class PointSource, class PointTarget>
+double
+NdtSlamPCLOMP<PointSource, PointTarget>::getTransformationProbability() const {
+  return ndt_ptr_->getTransformationProbability();
+}
 
-    template <class PointSource, class PointTarget>
-    double NdtSlamPCLOMP<PointSource, PointTarget>::getTransformationProbability() const
-    {
-        return ndt_ptr_->getTransformationProbability();
-    }
+template <class PointSource, class PointTarget>
+void NdtSlamPCLOMP<PointSource, PointTarget>::align(const Pose &predict_pose) {
+  const auto predict_matrix = convertToEigenMatrix4f(predict_pose);
+  pcl::PointCloud<PointSource> output_cloud;
+  ndt_ptr_->align(output_cloud, predict_matrix);
+}
 
-    template <class PointSource, class PointTarget>
-    void NdtSlamPCLOMP<PointSource, PointTarget>::align(const Pose& predict_pose)
-    {
-        const auto predict_matrix = convertToEigenMatrix4f(predict_pose);
-        pcl::PointCloud<PointSource> output_cloud;
-        ndt_ptr_->align(output_cloud, predict_matrix);
-    }
+template <class PointSource, class PointTarget>
+void NdtSlamPCLOMP<PointSource, PointTarget>::setInputTarget(
+    const boost::shared_ptr<pcl::PointCloud<PointSource>> &map_ptr) {
+  ndt_ptr_->setInputTarget(map_ptr);
+}
 
-    template <class PointSource, class PointTarget>
-    void NdtSlamPCLOMP<PointSource, PointTarget>::setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointSource> >& map_ptr)
-    {
-        ndt_ptr_->setInputTarget(map_ptr);
-    }
+template <class PointSource, class PointTarget>
+void NdtSlamPCLOMP<PointSource, PointTarget>::setInputSource(
+    const boost::shared_ptr<pcl::PointCloud<PointTarget>> &scan_ptr) {
+  ndt_ptr_->setInputSource(scan_ptr);
+}
 
-    template <class PointSource, class PointTarget>
-    void NdtSlamPCLOMP<PointSource, PointTarget>::setInputSource(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& scan_ptr)
-    {
-        ndt_ptr_->setInputSource(scan_ptr);
-    }
+template <class PointSource, class PointTarget>
+double NdtSlamPCLOMP<PointSource, PointTarget>::getFitnessScore() {
+  return ndt_ptr_->getFitnessScore();
+}
 
-    template <class PointSource, class PointTarget>
-    double NdtSlamPCLOMP<PointSource, PointTarget>::getFitnessScore()
-    {
-        return ndt_ptr_->getFitnessScore();
-    }
+template <class PointSource, class PointTarget>
+Pose NdtSlamPCLOMP<PointSource, PointTarget>::getFinalPose() {
+  return convertToPose(ndt_ptr_->getFinalTransformation());
+}
 
-    template <class PointSource, class PointTarget>
-    Pose NdtSlamPCLOMP<PointSource, PointTarget>::getFinalPose()
-    {
-        return convertToPose(ndt_ptr_->getFinalTransformation());
-    }
+template <class PointSource, class PointTarget>
+void NdtSlamPCLOMP<PointSource, PointTarget>::buildMap(
+    const boost::shared_ptr<pcl::PointCloud<PointTarget>> &map_ptr) {
+  const auto trans_estimation = getTransformationEpsilon();
+  const auto step_size = getStepSize();
+  const auto resolution = getResolution();
+  const auto max_iter = getMaximumIterations();
 
-    template <class PointSource, class PointTarget>
-    void NdtSlamPCLOMP<PointSource, PointTarget>::buildMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& map_ptr)
-    {
-        const auto trans_estimation = getTransformationEpsilon();
-        const auto step_size = getStepSize();
-        const auto resolution = getResolution();
-        const auto max_iter = getMaximumIterations();
+  boost::shared_ptr<
+      pcl_omp::NormalDistributionsTransform<PointSource, PointTarget>>
+      tmp_ndt_ptr(
+          new pcl_omp::NormalDistributionsTransform<PointSource, PointTarget>);
+  tmp_ndt_ptr->setTransformationEpsilon(trans_estimation);
+  tmp_ndt_ptr->setStepSize(step_size);
+  tmp_ndt_ptr->setResolution(resolution);
+  tmp_ndt_ptr->setMaximumIterations(max_iter);
+  tmp_ndt_ptr->setInputTarget(map_ptr);
 
-        boost::shared_ptr< pcl_omp::NormalDistributionsTransform<PointSource, PointTarget> > tmp_ndt_ptr(new pcl_omp::NormalDistributionsTransform<PointSource, PointTarget>);
-        tmp_ndt_ptr->setTransformationEpsilon(trans_estimation);
-        tmp_ndt_ptr->setStepSize(step_size);
-        tmp_ndt_ptr->setResolution(resolution);
-        tmp_ndt_ptr->setMaximumIterations(max_iter);
-        tmp_ndt_ptr->setInputTarget(map_ptr);
+  const auto identity_matrix = Eigen::Matrix4f::Identity();
+  pcl::PointCloud<PointSource> output_cloud;
+  tmp_ndt_ptr->align(output_cloud, identity_matrix);
 
-        const auto identity_matrix = Eigen::Matrix4f::Identity();
-        pcl::PointCloud<PointSource> output_cloud;
-        tmp_ndt_ptr->align(output_cloud, identity_matrix);
+  swap_ndt_ptr_ = tmp_ndt_ptr;
+}
 
-        swap_ndt_ptr_ = tmp_ndt_ptr;
-    }
-
-
-    template <class PointSource, class PointTarget>
-    void NdtSlamPCLOMP<PointSource, PointTarget>::swapInstance()
-    {
-        ndt_ptr_ = swap_ndt_ptr_;
-    }
+template <class PointSource, class PointTarget>
+void NdtSlamPCLOMP<PointSource, PointTarget>::swapInstance() {
+  ndt_ptr_ = swap_ndt_ptr_;
+}
 
 #endif
 

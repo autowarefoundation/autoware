@@ -17,79 +17,63 @@
 #include "lidar_localizer/ndt/ndt_slam_dummy.h"
 
 template <class PointSource, class PointTarget>
-void NdtSlamDummy<PointSource, PointTarget>::setTransformationEpsilon(double trans_eps)
-{
-}
+void NdtSlamDummy<PointSource, PointTarget>::setTransformationEpsilon(
+    double trans_eps) {}
 
 template <class PointSource, class PointTarget>
-void NdtSlamDummy<PointSource, PointTarget>::setStepSize(double step_size)
-{
-}
+void NdtSlamDummy<PointSource, PointTarget>::setStepSize(double step_size) {}
 
 template <class PointSource, class PointTarget>
-void NdtSlamDummy<PointSource, PointTarget>::setResolution(float res)
-{
-}
+void NdtSlamDummy<PointSource, PointTarget>::setResolution(float res) {}
 
 template <class PointSource, class PointTarget>
-void NdtSlamDummy<PointSource, PointTarget>::setMaximumIterations(int max_iter)
-{
-}
+void NdtSlamDummy<PointSource, PointTarget>::setMaximumIterations(
+    int max_iter) {}
 
 template <class PointSource, class PointTarget>
-double NdtSlamDummy<PointSource, PointTarget>::getTransformationEpsilon()
-{
+double NdtSlamDummy<PointSource, PointTarget>::getTransformationEpsilon() {
   return 0;
 }
 
 template <class PointSource, class PointTarget>
-double NdtSlamDummy<PointSource, PointTarget>::getStepSize() const
-{
+double NdtSlamDummy<PointSource, PointTarget>::getStepSize() const {
   return 0;
 }
 
 template <class PointSource, class PointTarget>
-float NdtSlamDummy<PointSource, PointTarget>::getResolution() const
-{
+float NdtSlamDummy<PointSource, PointTarget>::getResolution() const {
   return 0;
 }
 
 template <class PointSource, class PointTarget>
-int NdtSlamDummy<PointSource, PointTarget>::getMaximumIterations()
-{
+int NdtSlamDummy<PointSource, PointTarget>::getMaximumIterations() {
   return 0;
 }
 
 template <class PointSource, class PointTarget>
-double NdtSlamDummy<PointSource, PointTarget>::getTransformationProbability() const
-{
+double
+NdtSlamDummy<PointSource, PointTarget>::getTransformationProbability() const {
   return 0;
 }
 
 template <class PointSource, class PointTarget>
-void NdtSlamDummy<PointSource, PointTarget>::align(const Pose& predict_pose)
-{
-}
+void NdtSlamDummy<PointSource, PointTarget>::align(const Pose &predict_pose) {}
 
 template <class PointSource, class PointTarget>
-double NdtSlamDummy<PointSource, PointTarget>::getFitnessScore()
-{
+double NdtSlamDummy<PointSource, PointTarget>::getFitnessScore() {
   return 0;
 }
 
 template <class PointSource, class PointTarget>
-void NdtSlamDummy<PointSource, PointTarget>::setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& map_ptr)
-{
-}
+void NdtSlamDummy<PointSource, PointTarget>::setInputTarget(
+    const boost::shared_ptr<pcl::PointCloud<PointTarget>> &map_ptr) {}
 
 template <class PointSource, class PointTarget>
-void NdtSlamDummy<PointSource, PointTarget>::setInputSource(const boost::shared_ptr< pcl::PointCloud<PointSource> >& scan_ptr)
-{
-}
+void NdtSlamDummy<PointSource, PointTarget>::setInputSource(
+    const boost::shared_ptr<pcl::PointCloud<PointSource>> &scan_ptr) {}
 
 template <class PointSource, class PointTarget>
-Pose NdtSlamDummy<PointSource, PointTarget>::getFinalPose()
-{
+Pose NdtSlamDummy<PointSource, PointTarget>::getFinalPose() {
   return Pose();
 }
 
