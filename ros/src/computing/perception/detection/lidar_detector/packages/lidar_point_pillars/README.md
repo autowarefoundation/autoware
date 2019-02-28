@@ -1,10 +1,10 @@
 # Point Pillars for 3D Object Detection: ver. 1.0
 
-Autoware package for Point Pillars.  ([reference paper](https://arxiv.org/abs/1812.05784))
+Autoware package for Point Pillars.  [Referenced paper](https://arxiv.org/abs/1812.05784).
 
 ## Requirements
 
-CUDA Toolkit v9.0 or 10.0
+CUDA Toolkit v9.0 or v10.0
 
 TensorRT: Tested with 5.0.2 -> [How to install](https://docs.nvidia.com/deeplearning/sdk/tensorrt-install-guide/index.html#installing)
 
@@ -12,8 +12,10 @@ TensorRT: Tested with 5.0.2 -> [How to install](https://docs.nvidia.com/deeplear
 
 ## How to launch
 
-Using launch file:
+* Launch file:
 `roslaunch lidar_point_pillars lidar_point_pillars.launch pfe_onnx_file:=/PATH/TO/FILE.onnx rpn_onnx_file:=/PATH/TO/FILE.onnx input_topic:=/points_raw`
+
+* You can launch it through the runtime manager in Computing tab, as well.
 
 ## API
 ```
@@ -21,10 +23,10 @@ Using launch file:
 * @brief Call PointPillars for the inference.
 * @param[in] in_points_array pointcloud array
 * @param[in] in_num_points Number of points
-* @param[in] out_detections Output bounding box from the network
+* @param[out] out_detections Output bounding box from the network
 * @details This is an interface for the algorithm.
 */
-void doInference(const float* in_points_array, const int in_num_points, std::vector<float>& out_detection);
+void doInference(float* in_points_array, int in_num_points, std::vector<float> out_detection);
 ```
 
 ## Parameters
@@ -50,6 +52,6 @@ void doInference(const float* in_points_array, const int in_num_points, std::vec
 * To display the results in Rviz `objects_visualizer` is required.
 (Launch file launches automatically this node).
 
-* Pre trained models can be downloaded from the [github repository](https://github.com/cirpue49/kitti_pretrained_pp).Notice that this model is under `BY-NC-SA 3.0` license.
+* Pre trained models can be downloaded from the [github repository](https://github.com/cirpue49/kitti_pretrained_pp). Notice that this model is under `BY-NC-SA 3.0` license.
 
-* If trained model comes from KITTI data, users might not be allowed to use the model for Commercial purpose.
+* If trained model comes from KITTI data, users might not be allowed to use the model for commercial purposes.
