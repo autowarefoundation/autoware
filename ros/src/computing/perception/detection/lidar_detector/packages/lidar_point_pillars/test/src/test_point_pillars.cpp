@@ -49,7 +49,7 @@ public:
   TestClass(const int MAX_NUM_PILLARS, const int MAX_NUM_POINTS_PER_PILLAR, const int GRID_X_SIZE,
             const int GRID_Y_SIZE, const int GRID_Z_SIZE, const float PILLAR_X_SIZE, const float PILLAR_Y_SIZE,
             const float PILLAR_Z_SIZE, const float MIN_X_RANGE, const float MIN_Y_RANGE, const float MIN_Z_RANGE,
-            const int NUM_INDS_FOR_SCAN);
+            const int NUM_INDS_FOR_SCAN, const int NUM_BOX_CORNERS);
   const int MAX_NUM_PILLARS_;
   const int MAX_NUM_POINTS_PER_PILLAR_;
   const int GRID_X_SIZE_;
@@ -62,6 +62,8 @@ public:
   const float MIN_Y_RANGE_;
   const float MIN_Z_RANGE_;
   const int NUM_INDS_FOR_SCAN_;
+  const int NUM_BOX_CORNERS_;
+
   void loadPoints(pcl::PointCloud<pcl::PointXYZI>::Ptr in_pcl_pc_ptr, const std::string& in_file);
   void pclToArray(const pcl::PointCloud<pcl::PointXYZI>::Ptr& in_pcl_pc_ptr, float* out_points_array);
   void preprocess(const float* in_points_array, int in_num_points, int* x_coors, int* y_coors,
@@ -76,7 +78,7 @@ private:
 TestClass::TestClass(const int MAX_NUM_PILLARS, const int MAX_NUM_POINTS_PER_PILLAR, const int GRID_X_SIZE,
                      const int GRID_Y_SIZE, const int GRID_Z_SIZE, const float PILLAR_X_SIZE, const float PILLAR_Y_SIZE,
                      const float PILLAR_Z_SIZE, const float MIN_X_RANGE, const float MIN_Y_RANGE,
-                     const float MIN_Z_RANGE, const int NUM_INDS_FOR_SCAN)
+                     const float MIN_Z_RANGE, const int NUM_INDS_FOR_SCAN, const int NUM_BOX_CORNERS)
   : MAX_NUM_PILLARS_(MAX_NUM_PILLARS)
   , MAX_NUM_POINTS_PER_PILLAR_(MAX_NUM_POINTS_PER_PILLAR)
   , GRID_X_SIZE_(GRID_X_SIZE)
@@ -89,10 +91,11 @@ TestClass::TestClass(const int MAX_NUM_PILLARS, const int MAX_NUM_POINTS_PER_PIL
   , MIN_Y_RANGE_(MIN_Y_RANGE)
   , MIN_Z_RANGE_(MIN_Z_RANGE)
   , NUM_INDS_FOR_SCAN_(NUM_INDS_FOR_SCAN)
+  , NUM_BOX_CORNERS_(NUM_BOX_CORNERS)
 {
   preprocess_points_ptr_.reset(new PreprocessPoints(
       MAX_NUM_PILLARS_, MAX_NUM_POINTS_PER_PILLAR_, GRID_X_SIZE_, GRID_Y_SIZE_, GRID_Z_SIZE_, PILLAR_X_SIZE_,
-      PILLAR_Y_SIZE_, PILLAR_Z_SIZE_, MIN_X_RANGE_, MIN_Y_RANGE_, MIN_Z_RANGE_, NUM_INDS_FOR_SCAN_));
+      PILLAR_Y_SIZE_, PILLAR_Z_SIZE_, MIN_X_RANGE_, MIN_Y_RANGE_, MIN_Z_RANGE_, NUM_INDS_FOR_SCAN_, NUM_BOX_CORNERS_));
 };
 
 void TestClass::preprocess(const float* in_points_array, int in_num_points, int* x_coors, int* y_coors,
@@ -127,7 +130,7 @@ void TestClass::loadPoints(pcl::PointCloud<pcl::PointXYZI>::Ptr in_pcl_pc_ptr, c
 
 TEST(TestSuite, CheckPreprocessPointsCPU)
 {
-  TestClass test_obj(12000, 100, 432, 496, 1, 0.16, 0.16, 4.0, 0, -39.68, -3.0, 512);
+  TestClass test_obj(12000, 100, 432, 496, 1, 0.16, 0.16, 4.0, 0, -39.68, -3.0, 512, 4);
 
   pcl::PointCloud<pcl::PointXYZI>::Ptr pcl_pc_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   std::string package_path = ros::package::getPath("lidar_point_pillars");
