@@ -39,7 +39,10 @@ PointPillarsROS::PointPillarsROS()
   , NORMALIZING_INTENSITY_VALUE_(255.0)
   , BASELINK_FRAME_("base_link")
 {
+  //ros related param
   private_nh_.param<bool>("baselink_support", baselink_support_, true);
+
+  //algorithm related params
   private_nh_.param<bool>("reproduce_result_mode", reproduce_result_mode_, false);
   private_nh_.param<float>("score_threshold", score_threshold_, 0.5);
   private_nh_.param<float>("nms_overlap_threshold", nms_overlap_threshold_, 0.5);
@@ -68,15 +71,15 @@ geometry_msgs::Pose PointPillarsROS::getTransformedPose(const geometry_msgs::Pos
   return out_pose.pose;
 }
 
-void PointPillarsROS::pubDetectedObject(const std::vector<float>& detections, const std_msgs::Header& pc_header)
+void PointPillarsROS::pubDetectedObject(const std::vector<float>& detections, const std_msgs::Header& in_header)
 {
   autoware_msgs::DetectedObjectArray objects;
-  objects.header = pc_header;
+  objects.header = in_header;
   int num_objects = detections.size() / OUTPUT_NUM_BOX_FEATURE_;
   for (size_t i = 0; i < num_objects; i++)
   {
     autoware_msgs::DetectedObject object;
-    object.header = pc_header;
+    object.header = in_header;
     object.valid = true;
     object.pose_reliable = true;
 

@@ -119,10 +119,10 @@ private:
   /**
   * @brief publish DetectedObject
   * @param[in] detections Network output bounding box
-  * @param[in] pc_header Header from pointcloud
+  * @param[in] in_header Header from pointcloud
   * @details Convert std::vector to DetectedObject, and publish them
   */
-  void pubDetectedObject(const std::vector<float>& detections, const std_msgs::Header& pc_header);
+  void pubDetectedObject(const std::vector<float>& detections, const std_msgs::Header& in_header);
 
 public:
   PointPillarsROS();

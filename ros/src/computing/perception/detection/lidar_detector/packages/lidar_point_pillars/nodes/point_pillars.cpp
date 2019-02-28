@@ -21,6 +21,7 @@
 // headers in local files
 #include "point_pillars.h"
 
+// clang-format off
 PointPillars::PointPillars(const bool reproduce_result_mode, const float score_threshold,
                            const float nms_overlap_threshold, const std::string pfe_onnx_file,
                            const std::string rpn_onnx_file)
@@ -54,27 +55,14 @@ PointPillars::PointPillars(const bool reproduce_result_mode, const float score_t
   , MAX_Z_RANGE_(1)
   , BATCH_SIZE_(1)
   , NUM_INDS_FOR_SCAN_(512)
-  , NUM_THREADS_(64)
-  ,  // if you chancge NUM_THREADS_, need to modify nms_kernel's shared mempry size
-  SENSOR_HEIGHT_(1.73)
+  , NUM_THREADS_(64) // if you chancge NUM_THREADS_, need to modify nms_kernel's shared mempry size
+  , SENSOR_HEIGHT_(1.73)
   , ANCHOR_DX_SIZE_(1.6)
   , ANCHOR_DY_SIZE_(3.9)
   , ANCHOR_DZ_SIZE_(1.56)
   , NUM_BOX_CORNERS_(4)
   , NUM_OUTPUT_BOX_FEATURE_(7)
 {
-  anchors_px_ = new float[NUM_ANCHOR_];
-  anchors_py_ = new float[NUM_ANCHOR_];
-  anchors_pz_ = new float[NUM_ANCHOR_];
-  anchors_dx_ = new float[NUM_ANCHOR_];
-  anchors_dy_ = new float[NUM_ANCHOR_];
-  anchors_dz_ = new float[NUM_ANCHOR_];
-  anchors_ro_ = new float[NUM_ANCHOR_];
-  box_anchors_min_x_ = new float[NUM_ANCHOR_];
-  box_anchors_min_y_ = new float[NUM_ANCHOR_];
-  box_anchors_max_x_ = new float[NUM_ANCHOR_];
-  box_anchors_max_y_ = new float[NUM_ANCHOR_];
-
   if (reproduce_result_mode_)
   {
     preprocess_points_ptr_.reset(new PreprocessPoints(MAX_NUM_PILLARS_, MAX_NUM_POINTS_PER_PILLAR_, GRID_X_SIZE_,
@@ -105,6 +93,7 @@ PointPillars::PointPillars(const bool reproduce_result_mode, const float score_t
   initTRT();
   initAnchors();
 }
+// clang-format on
 
 PointPillars::~PointPillars()
 {
@@ -262,6 +251,20 @@ void PointPillars::deviceMemoryMalloc()
 
 void PointPillars::initAnchors()
 {
+  // allocate memory for anchors
+  anchors_px_ = new float[NUM_ANCHOR_];
+  anchors_py_ = new float[NUM_ANCHOR_];
+  anchors_pz_ = new float[NUM_ANCHOR_];
+  anchors_dx_ = new float[NUM_ANCHOR_];
+  anchors_dy_ = new float[NUM_ANCHOR_];
+  anchors_dz_ = new float[NUM_ANCHOR_];
+  anchors_ro_ = new float[NUM_ANCHOR_];
+  box_anchors_min_x_ = new float[NUM_ANCHOR_];
+  box_anchors_min_y_ = new float[NUM_ANCHOR_];
+  box_anchors_max_x_ = new float[NUM_ANCHOR_];
+  box_anchors_max_y_ = new float[NUM_ANCHOR_];
+  // deallocate these memory in deconstructor
+
   generateAnchors(anchors_px_, anchors_py_, anchors_pz_, anchors_dx_, anchors_dy_, anchors_dz_, anchors_ro_);
 
   convertAnchors2BoxAnchors(anchors_px_, anchors_py_, anchors_dx_, anchors_dy_, box_anchors_min_x_, box_anchors_min_y_,
