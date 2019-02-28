@@ -21,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
         op_planner
         op_simu
         waypoint_follower
+        autoware_msgs
         )
 
 ## System dependencies are found with CMake's conventions
@@ -46,6 +47,7 @@ catkin_package(
         op_simu
         waypoint_follower
         vector_map_msgs
+        autoware_msgs
         #  DEPENDS system_lib
 )
 

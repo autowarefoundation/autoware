@@ -1,2 +1,2 @@
 std_msgs/Header header
-CloudCluster[] clusters
+autoware_msgs/CloudCluster[] clusters

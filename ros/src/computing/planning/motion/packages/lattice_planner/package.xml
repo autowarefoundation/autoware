@@ -23,6 +23,8 @@
     <build_depend>astar_planner</build_depend>
     <build_depend>autoware_can_msgs</build_depend>
     <build_depend>armadillo</build_depend>
+    <build_depend>autoware_can_msgs</build_depend>
+    <build_depend>autoware_msgs</build_depend>
 
     <run_depend>roscpp</run_depend>
     <run_depend>std_msgs</run_depend>
@@ -36,5 +38,7 @@
     <run_depend>astar_planner</run_depend>
     <run_depend>autoware_can_msgs</run_depend>
     <run_depend>armadillo</run_depend>
+    <run_depend>autoware_can_msgs</run_depend>
+    <run_depend>autoware_msgs</run_depend>
 
 </package>

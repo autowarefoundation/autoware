@@ -1,2 +1,2 @@
 Header header
-TrafficLightResult[] results
+autoware_msgs/TrafficLightResult[] results

@@ -1,2 +1,2 @@
 std_msgs/Header header
-VscanTracked[] obj_tracked
+autoware_msgs/VscanTracked[] obj_tracked

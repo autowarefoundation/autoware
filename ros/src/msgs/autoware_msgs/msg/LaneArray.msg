@@ -1,1 +1,1 @@
-Lane[] lanes
+autoware_msgs/Lane[] lanes

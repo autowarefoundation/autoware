@@ -1,2 +1,2 @@
 Header header
-ExtractedPosition[] Signals
+autoware_msgs/ExtractedPosition[] Signals

@@ -1,4 +1,4 @@
 Header header
 string type
-ImageRect[] obj
+autoware_msgs/ImageRect[] obj
 # XXX Should this message have 'score' ?

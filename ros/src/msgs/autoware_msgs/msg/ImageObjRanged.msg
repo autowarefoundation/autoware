@@ -1,3 +1,3 @@
 Header header
 string type
-ImageRectRanged[] obj
+autoware_msgs/ImageRectRanged[] obj
