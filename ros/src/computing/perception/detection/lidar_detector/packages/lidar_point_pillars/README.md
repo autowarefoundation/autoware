@@ -2,11 +2,12 @@
 
 Autoware package for Point Pillars.  ([reference paper](https://arxiv.org/abs/1812.05784))
 
-## Pre requisites
+## Requirements
 
 CUDA Toolkit v9.0 or 10.0
 
-TensorRT : [How to install](https://docs.nvidia.com/deeplearning/sdk/tensorrt-install-guide/index.html#installing)
+TensorRT: Tested with 5.0.2 -> [How to install](https://docs.nvidia.com/deeplearning/sdk/tensorrt-install-guide/index.html#installing)
+
 
 
 ## How to launch
@@ -17,11 +18,11 @@ Using launch file:
 ## API
 ```
 /**
-* @brief Call PointPillars for the inference
+* @brief Call PointPillars for the inference.
 * @param[in] in_points_array pointcloud array
 * @param[in] in_num_points Number of points
-* @param[in] out_detections Network output bounding box
-* @details This is interface for the algorithm
+* @param[in] out_detections Output bounding box from the network
+* @details This is an interface for the algorithm.
 */
 void doInference(const float* in_points_array, const int in_num_points, std::vector<float>& out_detection);
 ```
