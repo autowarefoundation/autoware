@@ -80,19 +80,6 @@ int NormalDistributionsTransform<PointSourceType, PointTargetType>::getRealItera
 }
 
 template <typename PointSourceType, typename PointTargetType>
-std::vector<Eigen::Vector3d> NormalDistributionsTransform<PointSourceType, PointTargetType>::getCentroid() const
-{
-	return voxel_grid_.getCentroid();
-}
-
-template <typename PointSourceType, typename PointTargetType>
-std::vector<Eigen::Matrix3d> NormalDistributionsTransform<PointSourceType, PointTargetType>::getCovariance() const
-{
-	return voxel_grid_.getCovariance();
-
-}
-
-template <typename PointSourceType, typename PointTargetType>
 double NormalDistributionsTransform<PointSourceType, PointTargetType>::auxilaryFunction_PsiMT(double a, double f_a, double f_0, double g_0, double mu)
 {
   return (f_a - f_0 - mu * g_0 * a);
@@ -759,35 +746,6 @@ double NormalDistributionsTransform<PointSourceType, PointTargetType>::getFitnes
 	return DBL_MAX;
 }
 
-template <typename PointSourceType, typename PointTargetType>
-double NormalDistributionsTransform<PointSourceType, PointTargetType>::getFitnessScore(typename pcl::PointCloud<PointSourceType>::ConstPtr source_cloud, int* const nr, double max_range)
-{
-	double fitness_score = 0.0;
-
-	typename pcl::PointCloud<PointSourceType> trans_cloud;
-
-	transformPointCloud(*source_cloud, trans_cloud, final_transformation_);
-
-	double distance;
-	*nr = 0;
-
-	for (int i = 0; i < trans_cloud.points.size(); i++) {
-		PointSourceType q = trans_cloud.points[i];
-
-		distance = voxel_grid_.nearestNeighborDistance(q, max_range);
-
-		if (distance < max_range) {
-			fitness_score += distance;
-			(*nr)++;
-		}
-	}
-
-	if (*nr > 0) {
-		return (fitness_score / *nr);
-	}
-
-	return DBL_MAX;
-}
 
 template <typename PointSourceType, typename PointTargetType>
 void NormalDistributionsTransform<PointSourceType, PointTargetType>::updateVoxelGrid(typename pcl::PointCloud<PointTargetType>::Ptr new_cloud)

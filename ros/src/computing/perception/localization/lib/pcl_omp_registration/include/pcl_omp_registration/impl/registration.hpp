@@ -189,67 +189,6 @@ pcl_omp::Registration<PointSource, PointTarget, Scalar>::getFitnessScore (double
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-template <typename PointSource, typename PointTarget, typename Scalar> inline double
-pcl_omp::Registration<PointSource, PointTarget, Scalar>::getFitnessScore (PointCloudSourceConstPtr source_cloud, int* const nr, double max_range)
-{
-
-  double fitness_score = 0.0;
-
-  // Transform the input dataset using the final transformation
-  PointCloudSource input_transformed;
-  // transformPointCloud (*input_, input_transformed, final_transformation_);
-  input_transformed.resize (source_cloud->size ());
-
-#ifdef _OPENMP
-  *nr = 0;
-#pragma omp parallel
-  {
-#pragma omp for
-#endif
-  for (size_t i = 0; i < source_cloud->size (); ++i)
-  {
-    const PointSource &src = source_cloud->points[i];
-    PointTarget &tgt = input_transformed.points[i];
-    tgt.x = static_cast<float> (final_transformation_ (0, 0) * src.x + final_transformation_ (0, 1) * src.y + final_transformation_ (0, 2) * src.z + final_transformation_ (0, 3));
-    tgt.y = static_cast<float> (final_transformation_ (1, 0) * src.x + final_transformation_ (1, 1) * src.y + final_transformation_ (1, 2) * src.z + final_transformation_ (1, 3));
-    tgt.z = static_cast<float> (final_transformation_ (2, 0) * src.x + final_transformation_ (2, 1) * src.y + final_transformation_ (2, 2) * src.z + final_transformation_ (2, 3));
-  }
-
-  std::vector<int> nn_indices (1);
-  std::vector<float> nn_dists (1);
-
-  // For each point in the source dataset
-#ifndef _OPENMP
-  *nr = 0;
-#endif
-#ifdef _OPENMP
-#pragma omp for private(nn_dists, nn_indices) reduction(+:fitness_score)
-#endif
-  for (size_t i = 0; i < input_transformed.points.size (); ++i)
-  {
-    // Find its nearest neighbor in the target
-    tree_->nearestKSearch (input_transformed.points[i], 1, nn_indices, nn_dists);
-
-    // Deal with occlusions (incomplete targets)
-    if (nn_dists[0] <= max_range)
-    {
-      // Add to the fitness score
-      fitness_score += nn_dists[0];
-      (*nr)++;
-    }
-  }
-#ifdef _OPENMP
-  }
-#endif
-
-  if (*nr > 0)
-    return (fitness_score / *nr);
-  else
-    return (std::numeric_limits<double>::max ());
-
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////
 template <typename PointSource, typename PointTarget, typename Scalar> inline void
 pcl_omp::Registration<PointSource, PointTarget, Scalar>::align (PointCloudSource &output)
 {

@@ -206,22 +206,11 @@ int VoxelGrid<PointSourceType>::getVgridZ() const
 }
 
 template <typename PointSourceType>
-std::vector<Eigen::Vector3d> VoxelGrid<PointSourceType>::getCentroid() const
-{
-	return *centroid_;
-}
-
-template <typename PointSourceType>
 Eigen::Vector3d VoxelGrid<PointSourceType>::getCentroid(int voxel_id) const
 {
 	return (*centroid_)[voxel_id];
 }
 
-template <typename PointSourceType>
-std::vector<Eigen::Matrix3d> VoxelGrid<PointSourceType>::getCovariance() const
-{
-	return *icovariance_;
-}
 template <typename PointSourceType>
 Eigen::Matrix3d VoxelGrid<PointSourceType>::getInverseCovariance(int voxel_id) const
 {

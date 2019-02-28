@@ -60,10 +60,8 @@ public:
 
 	double nearestNeighborDistance(PointSourceType query_point, float max_range);
 
-	std::vector<Eigen::Vector3d> getCentroid() const;
 	Eigen::Vector3d getCentroid(int voxel_id) const;
 	Eigen::Matrix3d getCovariance(int voxel_id) const;
-	std::vector<Eigen::Matrix3d> getCovariance() const;
 	Eigen::Matrix3d getInverseCovariance(int voxel_id) const;
 
 	void update(typename pcl::PointCloud<PointSourceType>::Ptr new_cloud);
