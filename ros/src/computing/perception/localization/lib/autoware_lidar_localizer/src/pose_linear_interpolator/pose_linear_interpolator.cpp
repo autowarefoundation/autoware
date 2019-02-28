@@ -28,56 +28,50 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "util_functions.h"
+#include "lidar_localizer/pose_linear_interpolator/pose_linear_interpolator.h"
 
-Eigen::Matrix4f convertToEigenMatrix4f(const Pose& pose)
+PoseStamped interpolatePose(const PoseStamped& pose_a, const PoseStamped& pose_b, const double time_stamp)
 {
-    const Eigen::Translation3f translation(pose.x, pose.y, pose.z);
-    const Eigen::AngleAxisf rotation_x(pose.roll, Eigen::Vector3f::UnitX());
-    const Eigen::AngleAxisf rotation_y(pose.pitch, Eigen::Vector3f::UnitY());
-    const Eigen::AngleAxisf rotation_z(pose.yaw, Eigen::Vector3f::UnitZ());
-    const Eigen::Matrix4f m = (translation * rotation_z * rotation_y * rotation_x).matrix();
-    return m;
+    if(pose_a.stamp == 0 || pose_b.stamp == 0 || time_stamp == 0) {
+        return PoseStamped();
+    }
+
+    Velocity v(pose_a, pose_b);
+    const double dt = time_stamp - pose_b.stamp;
+
+    PoseStamped p;
+    p.pose.x = pose_b.pose.x + v.linear.x * dt;
+    p.pose.y = pose_b.pose.y + v.linear.y * dt;
+    p.pose.z = pose_b.pose.z;
+    p.pose.roll = pose_b.pose.roll;
+    p.pose.pitch = pose_b.pose.pitch;
+    p.pose.yaw = pose_b.pose.yaw + v.angular.z * dt;
+    p.stamp = time_stamp;
+    return p;
 }
 
-Pose convertToPose(const Eigen::Matrix4f& m)
+
+PoseLinearInterpolator::PoseLinearInterpolator()
 {
-  Pose pose;
-  pose.x = m(0, 3);
-  pose.y = m(1, 3);
-  pose.z = m(2, 3);
-
-  //reference to tf::getEulerYPR()
-  if (std::fabs(m(2,0)) >= 1)
-  {
-    pose.yaw = 0;
-    if (m(2,0) < 0)
-    {
-      pose.pitch = M_PI / 2.0;
-      pose.roll = std::atan2(m(0,1),m(0,2));
-    }
-    else
-    {
-      pose.pitch = -M_PI / 2.0;
-      pose.roll = std::atan2(-m(0,1),-m(0,2));
-    }
-  }
-  else
-  {
-    pose.pitch = -std::asin(m(2,0));
-    pose.roll  = std::atan2(m(2,1)/std::cos(pose.pitch),
-                            m(2,2)/std::cos(pose.pitch));
-    pose.yaw   = std::atan2(m(1,0)/std::cos(pose.pitch),
-                            m(0,0)/std::cos(pose.pitch));
-  }
-
-  return pose;
 }
 
-Pose transformToPose(const Pose& pose, const Eigen::Matrix4f& m)
+void PoseLinearInterpolator::clearPoseStamped()
 {
-  Eigen::Matrix4f eigen_pose = convertToEigenMatrix4f(pose);
-  Eigen::Matrix4f trans_pose = eigen_pose * m;
+    pose_.clear();
+    prev_pose_.clear();
+}
 
-  return convertToPose(trans_pose);
+bool PoseLinearInterpolator::isNotSetPoseStamped() const
+{
+    return (pose_ == PoseStamped() && prev_pose_ == PoseStamped());
+}
+void PoseLinearInterpolator::pushbackPoseStamped(const PoseStamped& pose)
+{
+    prev_pose_ = pose_;
+    pose_ = pose;
+}
+
+PoseStamped PoseLinearInterpolator::getInterpolatePose(const double time_stamp) const
+{
+    return interpolatePose(prev_pose_, pose_, time_stamp);
 }

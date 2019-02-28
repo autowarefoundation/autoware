@@ -49,47 +49,12 @@ class NdtSlamBase : public LidarLocalizer<PointSource, PointTarget>
         virtual double getStepSize() const = 0;
         virtual float getResolution() const = 0;
         virtual int getMaximumIterations() = 0;
-        virtual std::vector<Eigen::Vector3d> getCentroid() const {
-            std::vector<Eigen::Vector3d> tmp;
-            return tmp;
-        };
-
-        virtual std::vector<Eigen::Vector3d> getEval() const {
-            std::vector<Eigen::Vector3d> tmp;
-            return tmp;
-        };
-
-        virtual std::vector<Eigen::Matrix3d> getEvec() const {
-            std::vector<Eigen::Matrix3d> tmp;
-            return tmp;
-        };
-
-        virtual std::vector<Eigen::Matrix3d> getCovariance() const {
-            std::vector<Eigen::Matrix3d> tmp;
-            return tmp;
-        };
 
         virtual double getTransformationProbability() const = 0;
 
         virtual double getFitnessScore() = 0;
-        virtual double getFitnessScore(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& source_cloud, int* const nr, const double max_range) = 0;
 
         virtual std::stringstream logFileContent() const override;
 };
-
-template <class PointSource, class PointTarget>
-NdtSlamBase<PointSource, PointTarget>::NdtSlamBase()
-{
-
-}
-
-template <class PointSource, class PointTarget>
-std::stringstream NdtSlamBase<PointSource, PointTarget>::logFileContent() const
-{
-    std::stringstream content = LidarLocalizer<PointSource, PointTarget>::logFileContent();
-    content << ","
-            << getTransformationProbability();
-    return content;
-}
 
 #endif

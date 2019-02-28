@@ -36,7 +36,6 @@
 #include <pcl/io/io.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
-//#include <pcl_registration/ndt.h> //TODO
 #include <pcl/registration/ndt.h>
 
 template <class PointSource, class PointTarget>
@@ -57,26 +56,10 @@ class NdtSlamPCL
         float getResolution() const override;
         int getMaximumIterations() override;
         double getTransformationProbability() const override;
-        // std::vector<Eigen::Vector3d> getCentroid() const override{
-        //     return ndt_ptr_->getCentroid();
-        // };
-        //
-        // virtual std::vector<Eigen::Vector3d> getEval() const {
-        //     return ndt_ptr_->getEval();
-        // };
-        //
-        // virtual std::vector<Eigen::Matrix3d> getEvec() const {
-        //     return ndt_ptr_->getEvec();
-        // };
-        //
-        // std::vector<Eigen::Matrix3d> getCovariance() const override{
-        //     return ndt_ptr_->getCovariance();
-        // };
 
     protected:
         void align(const Pose& predict_pose) override;
         double getFitnessScore() override;
-        double getFitnessScore(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& source_cloud, int* const nr, const double max_range) override;
         void setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr) override;
         void setInputSource(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& scan_ptr) override;
         Pose getFinalPose() override;
@@ -88,134 +71,5 @@ class NdtSlamPCL
         boost::shared_ptr< pcl::NormalDistributionsTransform<PointSource, PointTarget> > ndt_ptr_;
         boost::shared_ptr< pcl::NormalDistributionsTransform<PointSource, PointTarget> > swap_ndt_ptr_;
 };
-
-template <class PointSource, class PointTarget>
-NdtSlamPCL<PointSource, PointTarget>::NdtSlamPCL()
-    : ndt_ptr_(new pcl::NormalDistributionsTransform<PointSource, PointTarget>)
-    , swap_ndt_ptr_(ndt_ptr_)
-{
-}
-
-template <class PointSource, class PointTarget>
-void NdtSlamPCL<PointSource, PointTarget>::setTransformationEpsilon(double trans_eps)
-{
-    ndt_ptr_->setTransformationEpsilon(trans_eps);
-}
-
-template <class PointSource, class PointTarget>
-void NdtSlamPCL<PointSource, PointTarget>::setStepSize(double step_size)
-{
-    ndt_ptr_->setStepSize(step_size);
-}
-
-template <class PointSource, class PointTarget>
-void NdtSlamPCL<PointSource, PointTarget>::setResolution(float res)
-{
-    ndt_ptr_->setResolution(res);
-}
-
-template <class PointSource, class PointTarget>
-void NdtSlamPCL<PointSource, PointTarget>::setMaximumIterations(int max_iter)
-{
-    ndt_ptr_->setMaximumIterations(max_iter);
-}
-
-template <class PointSource, class PointTarget>
-double NdtSlamPCL<PointSource, PointTarget>::getTransformationEpsilon()
-{
-    return ndt_ptr_->getTransformationEpsilon();
-}
-
-template <class PointSource, class PointTarget>
-double NdtSlamPCL<PointSource, PointTarget>::getStepSize() const
-{
-    return ndt_ptr_->getStepSize();
-}
-
-template <class PointSource, class PointTarget>
-float NdtSlamPCL<PointSource, PointTarget>::getResolution() const
-{
-    return ndt_ptr_->getResolution();
-}
-
-template <class PointSource, class PointTarget>
-int NdtSlamPCL<PointSource, PointTarget>::getMaximumIterations()
-{
-    return ndt_ptr_->getMaximumIterations();
-}
-
-template <class PointSource, class PointTarget>
-double NdtSlamPCL<PointSource, PointTarget>::getTransformationProbability() const
-{
-    return ndt_ptr_->getTransformationProbability();
-}
-
-template <class PointSource, class PointTarget>
-void NdtSlamPCL<PointSource, PointTarget>::align(const Pose& predict_pose)
-{
-    const auto predict_matrix = convertToEigenMatrix4f(predict_pose);
-    pcl::PointCloud<PointSource> output_cloud;
-    ndt_ptr_->align(output_cloud, predict_matrix);
-}
-
-template <class PointSource, class PointTarget>
-void NdtSlamPCL<PointSource, PointTarget>::setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr)
-{
-    ndt_ptr_->setInputTarget(map_ptr);
-}
-
-template <class PointSource, class PointTarget>
-void NdtSlamPCL<PointSource, PointTarget>::setInputSource(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& scan_ptr)
-{
-    ndt_ptr_->setInputSource(scan_ptr);
-}
-
-template <class PointSource, class PointTarget>
-double NdtSlamPCL<PointSource, PointTarget>::getFitnessScore()
-{
-    return ndt_ptr_->getFitnessScore();
-}
-
-template <class PointSource, class PointTarget>
-double NdtSlamPCL<PointSource, PointTarget>::getFitnessScore(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& source_cloud, int* const nr, const double max_range)
-{
-    return ndt_ptr_->getFitnessScore();
-    //return ndt_ptr_->getFitnessScore(source_cloud, nr, max_range); //TODO
-}
-
-template <class PointSource, class PointTarget>
-Pose NdtSlamPCL<PointSource, PointTarget>::getFinalPose()
-{
-    return convertToPose(ndt_ptr_->getFinalTransformation());
-}
-
-template <class PointSource, class PointTarget>
-void NdtSlamPCL<PointSource, PointTarget>::buildMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr)
-{
-    const auto trans_estimation = getTransformationEpsilon();
-    const auto step_size = getStepSize();
-    const auto resolution = getResolution();
-    const auto max_iter = getMaximumIterations();
-
-    boost::shared_ptr< pcl::NormalDistributionsTransform<PointSource, PointTarget> > tmp_ndt_ptr(new pcl::NormalDistributionsTransform<PointSource, PointTarget>);
-    tmp_ndt_ptr->setTransformationEpsilon(trans_estimation);
-    tmp_ndt_ptr->setStepSize(step_size);
-    tmp_ndt_ptr->setResolution(resolution);
-    tmp_ndt_ptr->setMaximumIterations(max_iter);
-    tmp_ndt_ptr->setInputTarget(map_ptr);
-
-    const auto identity_matrix = Eigen::Matrix4f::Identity();
-    pcl::PointCloud<PointSource> output_cloud;
-    tmp_ndt_ptr->align(output_cloud, identity_matrix);
-
-    swap_ndt_ptr_ = tmp_ndt_ptr;
-}
-
-
-template <class PointSource, class PointTarget>
-void NdtSlamPCL<PointSource, PointTarget>::swapInstance()
-{
-    ndt_ptr_ = swap_ndt_ptr_;
-}
 
 #endif

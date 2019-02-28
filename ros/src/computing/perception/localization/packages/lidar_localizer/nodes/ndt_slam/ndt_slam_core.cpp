@@ -86,7 +86,7 @@ NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
     // private_nh_.getParam("init_pos_gnss", init_pos_gnss_);
     // ROS_INFO("init_pos_gnss: %d", init_pos_gnss_);
 
-    int points_queue_size = 1; //TODO remove?
+    int points_queue_size = 1;
     private_nh_.getParam("points_queue_size", points_queue_size);
     points_queue_size = points_queue_size <= 0 ? 1 : points_queue_size;
     ROS_INFO("points_queue_size: %d", points_queue_size);
@@ -119,8 +119,6 @@ NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
     private_nh_.getParam("min_add_scan_shift", min_add_scan_shift_);
     private_nh_.getParam("separate_mapping", separate_mapping_);
     private_nh_.getParam("separate_map_size", separate_map_size);
-    // load_save_map_.setSaveMapLeafSize(save_map_leaf_size);
-    // load_save_map_.setSaveSeparateMapSize(separate_map_size);
     map_manager_.setSaveMapLeafSize(save_map_leaf_size);
     map_manager_.setSaveSeparateMapSize(separate_map_size);
     ROS_INFO("with_mapping: %d, save_map_leaf_size: %lf, min_scan_range: %lf, max_scan_range: %lf, min_add_scan_shift: %lf", with_mapping_, save_map_leaf_size, min_scan_range_, max_scan_range_, min_add_scan_shift_);
@@ -141,7 +139,6 @@ NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
 
     std::string map_file_path = log_file_directory_path_ + "/map";
     boost::filesystem::create_directories(boost::filesystem::path(map_file_path));
-    // load_save_map_.setFileDirectoryPath(map_file_path);
     map_manager_.setFileDirectoryPath(map_file_path);
 
     //TODO
@@ -176,9 +173,9 @@ NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
     localizer_score_var_pub_ = nh_.advertise<std_msgs::Float32>("localizer_score_var", 10);
     ndvoxel_marker_pub_      = nh_.advertise<visualization_msgs::MarkerArray>("ndvoxel", 10);
 
-    config_sub_             = nh_.subscribe("/config/ndtslam", 10, &NdtSlam::configCallback, this);
+    config_sub_             = nh_.subscribe("/config/ndtslam", 1, &NdtSlam::configCallback, this);
     //points_map_updated_sub_ = nh_.subscribe("/points_map_updated", 10, &NdtSlam::pointsMapUpdatedCallback, this);
-    points_map_updated_sub_ = nh_.subscribe("/points_map", 10, &NdtSlam::pointsMapUpdatedCallback, this);
+    points_map_updated_sub_ = nh_.subscribe("/points_map", 1, &NdtSlam::pointsMapUpdatedCallback, this);
     initial_pose_sub_        = nh_.subscribe("/initialpose", points_queue_size*100, &NdtSlam::initialPoseCallback, this);
     static_pose_sub_        = nh_.subscribe("/current_pose", points_queue_size*100, &NdtSlam::staticPoseCallback, this);
 
@@ -192,12 +189,10 @@ NdtSlam::~NdtSlam()
 {
     if(with_mapping_) {
         if(separate_mapping_) {
-            // load_save_map_.saveSeparateMap(localizer_ptr_->getMapPtr());
             map_manager_.downsampleMapThread();
             map_manager_.saveSeparateMapThread();
         }
         else {
-            // load_save_map_.saveSingleMap(localizer_ptr_->getMapPtr());
             map_manager_.downsampleMapThread();
             map_manager_.saveSingleMapThread();
         }
@@ -209,18 +204,10 @@ void NdtSlam::configCallback(const autoware_config_msgs::ConfigNDTSlam::ConstPtr
     localizer_ptr_->setStepSize(config_msg_ptr->step_size);
     localizer_ptr_->setTransformationEpsilon(config_msg_ptr->trans_epsilon);
     localizer_ptr_->setMaximumIterations(config_msg_ptr->max_iterations);
-
-    //TODO need if?
-    if(config_msg_ptr->resolution != localizer_ptr_->getResolution()) {
-        localizer_ptr_->setResolution(config_msg_ptr->resolution);
-    }
+    localizer_ptr_->setResolution(config_msg_ptr->resolution);
 
     if(config_msg_ptr->with_mapping == true && with_mapping_ == false) {
         if(separate_mapping_) {
-            // load_save_map_.saveSeparateMap(localizer_ptr_->getMapPtr());
-            // boost::shared_ptr< pcl::PointCloud<PointTarget> > load_map_ptr(new pcl::PointCloud<PointTarget>);
-            // load_map_ptr = load_save_map_.loadAroundMap(localizer_ptr_->getLocalizerPose());
-            // localizer_ptr_->updatePointsMap(load_map_ptr);
             map_manager_.downsampleMapThread();
             map_manager_.saveSeparateMapThread();
             map_manager_.loadAroundMapThread(localizer_ptr_->getLocalizerPose());
@@ -228,13 +215,11 @@ void NdtSlam::configCallback(const autoware_config_msgs::ConfigNDTSlam::ConstPtr
     }
     else if(config_msg_ptr->with_mapping == false && with_mapping_ == true) {
         if(separate_mapping_) {
-            // load_save_map_.saveSeparateMap(localizer_ptr_->getMapPtr());
             map_manager_.downsampleMapThread();
             map_manager_.saveSeparateMapThread();
 
         }
         else {
-            // load_save_map_.saveSingleMap(localizer_ptr_->getMapPtr());
             map_manager_.downsampleMapThread();
             map_manager_.saveSingleMapThread();
         }
@@ -247,7 +232,6 @@ void NdtSlam::pointsMapUpdatedCallback(const sensor_msgs::PointCloud2::ConstPtr&
 {
     pcl::PointCloud<PointTarget> pointcloud;
     pcl::fromROSMsg(*pointcloud2_msg_ptr, pointcloud);
-    // localizer_ptr_->updatePointsMap(pointcloud.makeShared());
     map_manager_.setMap(pointcloud.makeShared());
 }
 
@@ -314,8 +298,6 @@ void NdtSlam::staticPoseCallback(const geometry_msgs::PoseStamped::ConstPtr& pos
     if(init_pose_stamped_queue_.size() >= 10000) {
         init_pose_stamped_queue_.pop_front();
     }
-
-    // localizer_ptr_->updateStaticPose(localizer_pose, current_time_sec);
 }
 
 void NdtSlam::pointsRawAndFilterdCallback(const sensor_msgs::PointCloud2::ConstPtr& points_raw_msg_ptr, const sensor_msgs::PointCloud2::ConstPtr& points_filtered_msg_ptr)
@@ -385,7 +367,6 @@ void NdtSlam::pointsRawAndFilterdCallback(const sensor_msgs::PointCloud2::ConstP
             predict_pose = pose_interpolator_.getInterpolatePose(current_time_sec).pose;
         }
     }
-
 
     pcl::PointCloud<PointSource> points_filtered;
     pcl::fromROSMsg(*points_filtered_msg_ptr, points_filtered);
@@ -466,19 +447,16 @@ void NdtSlam::mapping(const boost::shared_ptr< pcl::PointCloud<PointTarget> cons
     const double add_scan_shift_meter = std::sqrt(std::pow(localizer_pose.x - added_pose.x, 2.0) + std::pow(localizer_pose.y - added_pose.y, 2.0) + std::pow(localizer_pose.z - added_pose.z, 2.0));
     if(add_scan_shift_meter >= min_add_scan_shift_) {
         added_pose = localizer_pose;
-        boost::shared_ptr< pcl::PointCloud<PointTarget> > points_raw_limilt_range(new pcl::PointCloud<PointTarget>);
+        const boost::shared_ptr< pcl::PointCloud<PointTarget> > points_raw_limilt_range(new pcl::PointCloud<PointTarget>);
         limitPointCloudRange(points_raw_ptr, points_raw_limilt_range, min_scan_range_, max_scan_range_);
         //TODO trans
         const auto localizer_pose = localizer_ptr_->getLocalizerPose();
         const auto eigen_pose = convertToEigenMatrix4f(localizer_pose);
         pcl::transformPointCloud(*points_raw_limilt_range, *points_raw_limilt_range, eigen_pose);
-        //localizer_ptr_->addMap(points_raw_limilt_range);
         map_manager_.addPointCloudMapThread(points_raw_limilt_range);
     }
 
     if(separate_mapping_) {
-        // const int map_x = std::floor(localizer_pose.x / load_save_map_.getSaveSeparateMapSize());
-        // const int map_y = std::floor(localizer_pose.y / load_save_map_.getSaveSeparateMapSize());
         const int map_x = std::floor(localizer_pose.x / map_manager_.getSaveSeparateMapSize());
         const int map_y = std::floor(localizer_pose.y / map_manager_.getSaveSeparateMapSize());
         static int prev_map_x = map_x;
@@ -486,20 +464,6 @@ void NdtSlam::mapping(const boost::shared_ptr< pcl::PointCloud<PointTarget> cons
 
         if(map_x != prev_map_x || map_y != prev_map_y)
         {
-            // std::cout << "saveSeparateMap & loadAroundMap" << std::endl;
-            // const auto save_start = std::chrono::system_clock::now();
-            // load_save_map_.saveSeparateMap(localizer_ptr_->getMapPtr());
-            // const auto save_end = std::chrono::system_clock::now();
-            // const auto save_time = std::chrono::duration_cast<std::chrono::microseconds>(save_end - save_start).count() / 1000.0;
-            // std::cout << "save_time: " << save_time << "ms" << std::endl;
-            //
-            // const auto load_start = std::chrono::system_clock::now();
-            // boost::shared_ptr< pcl::PointCloud<PointTarget> > load_map_ptr(new pcl::PointCloud<PointTarget>);
-            // load_map_ptr = load_save_map_.loadAroundMap(localizer_pose);
-            // localizer_ptr_->updatePointsMap(load_map_ptr);
-            // const auto load_end = std::chrono::system_clock::now();
-            // const auto load_time = std::chrono::duration_cast<std::chrono::microseconds>(load_end - load_start).count() / 1000.0;
-            // std::cout << "load_time: " << load_time << "ms" << std::endl;
             map_manager_.downsampleMapThread();
             map_manager_.saveSeparateMapThread();
             map_manager_.loadAroundMapThread(localizer_pose);
@@ -514,9 +478,7 @@ void NdtSlam::mapping(const boost::shared_ptr< pcl::PointCloud<PointTarget> cons
     //TODO
     static int loop_count_donw_map = 0;
     if(++loop_count_donw_map >= 300) {
-        // std::cout << "downsampleMap" << std::endl;
         loop_count_donw_map = 0;
-        //localizer_ptr_->downsampleMap(0.2); //TODO
         map_manager_.downsampleMapThread();
     }
 
@@ -587,57 +549,57 @@ void NdtSlam::publishPointsMap(ros::Time time_stamp)
 
 void NdtSlam::publishNDVoxelMap(ros::Time time_stamp)
 {
-    visualization_msgs::MarkerArray marker_array;
-
-    visualization_msgs::Marker ndt_marker_common;
-    ndt_marker_common.header.frame_id = "/map";
-    ndt_marker_common.header.stamp =time_stamp;
-    ndt_marker_common.type = visualization_msgs::Marker::SPHERE;
-    ndt_marker_common.action = visualization_msgs::Marker::ADD;
-    ndt_marker_common.ns = "NDVoxel";
-    ndt_marker_common.color.a = 0.2;
-    ndt_marker_common.color.r = 0.0;
-    ndt_marker_common.color.g = 1.0;
-    ndt_marker_common.color.b = 0.0;
-
-    int id = 0;
-    std::vector<Eigen::Vector3d> centroid_array = localizer_ptr_->getCentroid();
-    std::vector<Eigen::Matrix3d> covariance_array = localizer_ptr_->getCovariance();
-    for(size_t i = 0; i < covariance_array.size(); ++i)
-    {
-        if((covariance_array)[i](0) < 0.0001 && (covariance_array)[i](5) < 0.0001 && (covariance_array)[i](9) < 0.0001) {
-            continue;
-        }
-
-        visualization_msgs::Marker ndvoxel_marker_tmp;
-        ndvoxel_marker_tmp = ndt_marker_common;
-
-        //Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d> es((covariance_array)[i]);
-        Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d> es((covariance_array)[i].inverse());
-        auto el = es.eigenvalues();
-        if(el(0) < 0)
-          continue;
-        el = el.normalized();
-        auto ev = es.eigenvectors().col(2);
-
-        const double x_2 = 1.5; //TODO
-        ndvoxel_marker_tmp.scale.x = sqrt(x_2*el(2));
-        ndvoxel_marker_tmp.scale.y = sqrt(x_2*el(1));
-        ndvoxel_marker_tmp.scale.z = sqrt(x_2*el(0));
-        ndvoxel_marker_tmp.id = id++;
-        ndvoxel_marker_tmp.frame_locked = true;
-
-        ndvoxel_marker_tmp.pose.position.x = (centroid_array)[i](0);
-        ndvoxel_marker_tmp.pose.position.y = (centroid_array)[i](1);
-        ndvoxel_marker_tmp.pose.position.z = (centroid_array)[i](2);
-
-        double xy_theta = std::atan2(ev(1), ev(0));
-        double xz_theta = std::atan2(ev(2), ev(0));
-
-        //TODO
-        ndvoxel_marker_tmp.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(xz_theta, 0, xy_theta);;
-        marker_array.markers.push_back(ndvoxel_marker_tmp);
-    }
+    // visualization_msgs::MarkerArray marker_array;
+    //
+    // visualization_msgs::Marker ndt_marker_common;
+    // ndt_marker_common.header.frame_id = "/map";
+    // ndt_marker_common.header.stamp =time_stamp;
+    // ndt_marker_common.type = visualization_msgs::Marker::SPHERE;
+    // ndt_marker_common.action = visualization_msgs::Marker::ADD;
+    // ndt_marker_common.ns = "NDVoxel";
+    // ndt_marker_common.color.a = 0.2;
+    // ndt_marker_common.color.r = 0.0;
+    // ndt_marker_common.color.g = 1.0;
+    // ndt_marker_common.color.b = 0.0;
+    //
+    // int id = 0;
+    // std::vector<Eigen::Vector3d> centroid_array = localizer_ptr_->getCentroid();
+    // std::vector<Eigen::Matrix3d> covariance_array = localizer_ptr_->getCovariance();
+    // for(size_t i = 0; i < covariance_array.size(); ++i)
+    // {
+    //     if((covariance_array)[i](0) < 0.0001 && (covariance_array)[i](5) < 0.0001 && (covariance_array)[i](9) < 0.0001) {
+    //         continue;
+    //     }
+    //
+    //     visualization_msgs::Marker ndvoxel_marker_tmp;
+    //     ndvoxel_marker_tmp = ndt_marker_common;
+    //
+    //     //Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d> es((covariance_array)[i]);
+    //     Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d> es((covariance_array)[i].inverse());
+    //     auto el = es.eigenvalues();
+    //     if(el(0) < 0)
+    //       continue;
+    //     el = el.normalized();
+    //     auto ev = es.eigenvectors().col(2);
+    //
+    //     const double x_2 = 1.5; //TODO
+    //     ndvoxel_marker_tmp.scale.x = sqrt(x_2*el(2));
+    //     ndvoxel_marker_tmp.scale.y = sqrt(x_2*el(1));
+    //     ndvoxel_marker_tmp.scale.z = sqrt(x_2*el(0));
+    //     ndvoxel_marker_tmp.id = id++;
+    //     ndvoxel_marker_tmp.frame_locked = true;
+    //
+    //     ndvoxel_marker_tmp.pose.position.x = (centroid_array)[i](0);
+    //     ndvoxel_marker_tmp.pose.position.y = (centroid_array)[i](1);
+    //     ndvoxel_marker_tmp.pose.position.z = (centroid_array)[i](2);
+    //
+    //     double xy_theta = std::atan2(ev(1), ev(0));
+    //     double xz_theta = std::atan2(ev(2), ev(0));
+    //
+    //     //TODO
+    //     ndvoxel_marker_tmp.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(xz_theta, 0, xy_theta);;
+    //     marker_array.markers.push_back(ndvoxel_marker_tmp);
+    // }
 
     // std::vector<Eigen::Vector3d> centroid_array = localizer_ptr_->getCentroid();
     // std::vector<Eigen::Vector3d> eval_array = localizer_ptr_->getEval();
@@ -678,7 +640,7 @@ void NdtSlam::publishNDVoxelMap(ros::Time time_stamp)
     //     marker_array.markers.push_back(ndvoxel_marker_tmp);
     // }
 
-    ndvoxel_marker_pub_.publish(marker_array);
+  //  ndvoxel_marker_pub_.publish(marker_array);
 
 }
 

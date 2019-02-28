@@ -28,50 +28,21 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "pose_linear_interpolator.h"
+#include "lidar_localizer/ndt/ndt_slam_base.h"
 
-PoseStamped interpolatePose(const PoseStamped& pose_a, const PoseStamped& pose_b, const double time_stamp)
-{
-    if(pose_a.stamp == 0 || pose_b.stamp == 0 || time_stamp == 0) {
-        return PoseStamped();
-    }
-
-    Velocity v(pose_a, pose_b);
-    const double dt = time_stamp - pose_b.stamp;
-
-    PoseStamped p;
-    p.pose.x = pose_b.pose.x + v.linear.x * dt;
-    p.pose.y = pose_b.pose.y + v.linear.y * dt;
-    p.pose.z = pose_b.pose.z;
-    p.pose.roll = pose_b.pose.roll;
-    p.pose.pitch = pose_b.pose.pitch;
-    p.pose.yaw = pose_b.pose.yaw + v.angular.z * dt;
-    p.stamp = time_stamp;
-    return p;
-}
-
-
-PoseLinearInterpolator::PoseLinearInterpolator()
+template <class PointSource, class PointTarget>
+NdtSlamBase<PointSource, PointTarget>::NdtSlamBase()
 {
 }
 
-void PoseLinearInterpolator::clearPoseStamped()
+template <class PointSource, class PointTarget>
+std::stringstream NdtSlamBase<PointSource, PointTarget>::logFileContent() const
 {
-    pose_.clear();
-    prev_pose_.clear();
+    std::stringstream content = LidarLocalizer<PointSource, PointTarget>::logFileContent();
+    content << ","
+            << getTransformationProbability();
+    return content;
 }
 
-bool PoseLinearInterpolator::isNotSetPoseStamped() const
-{
-    return (pose_ == PoseStamped() && prev_pose_ == PoseStamped());
-}
-void PoseLinearInterpolator::pushbackPoseStamped(const PoseStamped& pose)
-{
-    prev_pose_ = pose_;
-    pose_ = pose;
-}
-
-PoseStamped PoseLinearInterpolator::getInterpolatePose(const double time_stamp) const
-{
-    return interpolatePose(prev_pose_, pose_, time_stamp);
-}
+template class NdtSlamBase<pcl::PointXYZ, pcl::PointXYZ>;
+template class NdtSlamBase<pcl::PointXYZI, pcl::PointXYZI>;

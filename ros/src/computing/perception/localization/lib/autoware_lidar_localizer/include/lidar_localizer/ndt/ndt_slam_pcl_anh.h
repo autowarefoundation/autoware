@@ -56,18 +56,11 @@ class NdtSlamPCLANH
         float getResolution() const override;
         int getMaximumIterations() override;
         double getTransformationProbability() const override;
-        std::vector<Eigen::Vector3d> getCentroid() const override{
-            return ndt_ptr_->getCentroid();
-        };
-        std::vector<Eigen::Matrix3d> getCovariance() const override{
-            return ndt_ptr_->getCovariance();
-        };
         virtual std::stringstream logFileContent() const override;
 
     protected:
         void align(const Pose& predict_pose) override;
         double getFitnessScore() override;
-        double getFitnessScore(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& source_cloud, int* const nr, const double max_range) override;
         void setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr) override;
         void setInputSource(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& scan_ptr) override;
         Pose getFinalPose() override;
@@ -79,149 +72,5 @@ class NdtSlamPCLANH
         boost::shared_ptr< cpu::NormalDistributionsTransform<PointSource, PointTarget> > swap_ndt_ptr_;
         double score;
 };
-
-template <class PointSource, class PointTarget>
-NdtSlamPCLANH<PointSource, PointTarget>::NdtSlamPCLANH()
-    : ndt_ptr_(new cpu::NormalDistributionsTransform<PointSource, PointTarget>)
-    , swap_ndt_ptr_(ndt_ptr_)
-{
-}
-
-template <class PointSource, class PointTarget>
-void NdtSlamPCLANH<PointSource, PointTarget>::setTransformationEpsilon(double trans_eps)
-{
-    ndt_ptr_->setTransformationEpsilon(trans_eps);
-}
-
-template <class PointSource, class PointTarget>
-void NdtSlamPCLANH<PointSource, PointTarget>::setStepSize(double step_size)
-{
-    ndt_ptr_->setStepSize(step_size);
-}
-
-template <class PointSource, class PointTarget>
-void NdtSlamPCLANH<PointSource, PointTarget>::setResolution(float res)
-{
-    ndt_ptr_->setResolution(res);
-}
-
-template <class PointSource, class PointTarget>
-void NdtSlamPCLANH<PointSource, PointTarget>::setMaximumIterations(int max_iter)
-{
-    ndt_ptr_->setMaximumIterations(max_iter);
-}
-
-template <class PointSource, class PointTarget>
-double NdtSlamPCLANH<PointSource, PointTarget>::getTransformationEpsilon()
-{
-    return ndt_ptr_->getTransformationEpsilon();
-}
-
-template <class PointSource, class PointTarget>
-double NdtSlamPCLANH<PointSource, PointTarget>::getStepSize() const
-{
-    return ndt_ptr_->getStepSize();
-}
-
-template <class PointSource, class PointTarget>
-float NdtSlamPCLANH<PointSource, PointTarget>::getResolution() const
-{
-    return ndt_ptr_->getResolution();
-}
-
-template <class PointSource, class PointTarget>
-int NdtSlamPCLANH<PointSource, PointTarget>::getMaximumIterations()
-{
-    return ndt_ptr_->getMaximumIterations();
-}
-
-template <class PointSource, class PointTarget>
-double NdtSlamPCLANH<PointSource, PointTarget>::getTransformationProbability() const
-{
-    return ndt_ptr_->getTransformationProbability();
-}
-
-template <class PointSource, class PointTarget>
-void NdtSlamPCLANH<PointSource, PointTarget>::align(const Pose& predict_pose)
-{
-    const auto predict_matrix = convertToEigenMatrix4f(predict_pose);
-    ndt_ptr_->align(predict_matrix);
-}
-
-template <class PointSource, class PointTarget>
-void NdtSlamPCLANH<PointSource, PointTarget>::setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr)
-{
-    boost::shared_ptr< pcl::PointCloud<PointTarget> > non_const_map_ptr(new pcl::PointCloud<PointTarget>(*map_ptr));
-    ndt_ptr_->setInputTarget(non_const_map_ptr); //TODO
-}
-
-template <class PointSource, class PointTarget>
-void NdtSlamPCLANH<PointSource, PointTarget>::setInputSource(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& scan_ptr)
-{
-    boost::shared_ptr< pcl::PointCloud<PointSource> > non_const_scan_ptr(new pcl::PointCloud<PointSource>(*scan_ptr));
-    ndt_ptr_->setInputSource(non_const_scan_ptr);  //TODO
-}
-
-template <class PointSource, class PointTarget>
-double NdtSlamPCLANH<PointSource, PointTarget>::getFitnessScore()
-{
-    return ndt_ptr_->getFitnessScore();
-}
-
-template <class PointSource, class PointTarget>
-double NdtSlamPCLANH<PointSource, PointTarget>::getFitnessScore(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& source_cloud, int* const nr, const double max_range)
-{
-    return ndt_ptr_->getFitnessScore(source_cloud, nr, max_range);
-}
-
-template <class PointSource, class PointTarget>
-Pose NdtSlamPCLANH<PointSource, PointTarget>::getFinalPose()
-{
-    return convertToPose(ndt_ptr_->getFinalTransformation());
-}
-
-template <class PointSource, class PointTarget>
-void NdtSlamPCLANH<PointSource, PointTarget>::buildMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr)
-{
-    const auto trans_estimation = getTransformationEpsilon();
-    const auto step_size = getStepSize();
-    const auto resolution = getResolution();
-    const auto max_iter = getMaximumIterations();
-
-    boost::shared_ptr< cpu::NormalDistributionsTransform<PointSource, PointTarget> > tmp_ndt_ptr(new cpu::NormalDistributionsTransform<PointSource, PointTarget>);
-    tmp_ndt_ptr->setTransformationEpsilon(trans_estimation);
-    tmp_ndt_ptr->setStepSize(step_size);
-    tmp_ndt_ptr->setResolution(resolution);
-    tmp_ndt_ptr->setMaximumIterations(max_iter);
-
-    boost::shared_ptr< pcl::PointCloud<PointTarget> > non_const_map_ptr(new pcl::PointCloud<PointTarget>(*map_ptr));
-    tmp_ndt_ptr->setInputTarget(non_const_map_ptr);
-
-    boost::shared_ptr< pcl::PointCloud<PointSource> > dummy_scan_ptr(new pcl::PointCloud<PointSource>());
-    PointSource dummy_point;
-    dummy_scan_ptr->push_back(dummy_point);
-    tmp_ndt_ptr->setInputSource(dummy_scan_ptr);
-
-    const auto identity_matrix = Eigen::Matrix4f::Identity();
-    tmp_ndt_ptr->align(identity_matrix);
-
-    swap_ndt_ptr_ = tmp_ndt_ptr;
-}
-
-
-template <class PointSource, class PointTarget>
-void NdtSlamPCLANH<PointSource, PointTarget>::swapInstance()
-{
-    ndt_ptr_ = swap_ndt_ptr_;
-}
-
-template <class PointSource, class PointTarget>
-std::stringstream NdtSlamPCLANH<PointSource, PointTarget>::logFileContent() const
-{
-    std::stringstream content = NdtSlamBase<PointSource, PointTarget>::logFileContent();
-    content << ","
-            << score;
-    return content;
-}
 
 #endif

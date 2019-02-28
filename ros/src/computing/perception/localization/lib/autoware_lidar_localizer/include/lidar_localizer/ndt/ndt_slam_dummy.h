@@ -41,26 +41,23 @@ class NdtSlamDummy
         NdtSlamDummy() = default;
         ~NdtSlamDummy() = default;
 
-        void setTransformationEpsilon(double trans_eps) override {};
-        void setStepSize(double step_size)  override {};
-        void setResolution(float res) override {};
-        void setMaximumIterations(int max_iter) override {};
+        void setTransformationEpsilon(double trans_eps) override;
+        void setStepSize(double step_size)  override;
+        void setResolution(float res) override;
+        void setMaximumIterations(int max_iter) override;
 
-        double getTransformationEpsilon() override {return 0;};
-        double getStepSize() const override {return 0;};
-        float getResolution() const override {return 0;};
-        int getMaximumIterations() override {return 0;};
-        double getTransformationProbability() const override {return 0;};
+        double getTransformationEpsilon() override;
+        double getStepSize() const override;
+        float getResolution() const override;
+        int getMaximumIterations() override;
+        double getTransformationProbability() const override;
 
     protected:
-        void align(const Pose& predict_pose) override {};
-        double getFitnessScore() override {return 0;};
-        double getFitnessScore(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& source_cloud, int* const nr, const double max_range) override {return 0;};
-        void setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr) override {};
-        void setInputSource(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& scan_ptr) override {};
-        Pose getFinalPose() override {return Pose();};
-        void updateVoxelGrid(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& scan_ptr, const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr) override {};
-
+        void align(const Pose& predict_pose) override;
+        double getFitnessScore() override;
+        void setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr) override;
+        void setInputSource(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& scan_ptr) override;
+        Pose getFinalPose() override;
 };
 
 #endif

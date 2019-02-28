@@ -50,7 +50,6 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/TwistStamped.h>
-#include <sensor_msgs/Imu.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <autoware_config_msgs/ConfigNDTSlam.h>
 #include <nav_msgs/Odometry.h>
@@ -60,9 +59,7 @@
 #include <lidar_localizer/ndt/ndt_slam_pcl_anh.h>
 #include <lidar_localizer/ndt/ndt_slam_pcl_anh_gpu.h>
 #include <lidar_localizer/ndt/ndt_slam_pcl.h>
-#include <lidar_localizer/load_save_map/load_save_map.h>
 #include <lidar_localizer/map_manager/map_manager.h>
-#include <lidar_localizer/reliability/slam_reliability.h>
 #include <lidar_localizer/pose_linear_interpolator/pose_linear_interpolator.h>
 
 
@@ -127,9 +124,7 @@ class NdtSlam
         tf::TransformListener tf_listener_;
 
         std::unique_ptr< NdtSlamBase<PointSource, PointTarget> > localizer_ptr_;
-        LoadSaveMap<PointSource, PointTarget> load_save_map_;
         MapManager<PointTarget> map_manager_;
-        SlamReliability reliability_;
         PoseLinearInterpolator pose_interpolator_;
 
         MethodType method_type_;

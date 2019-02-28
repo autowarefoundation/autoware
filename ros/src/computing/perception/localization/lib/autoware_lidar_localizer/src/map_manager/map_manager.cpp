@@ -28,7 +28,7 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "map_manager.h"
+#include "lidar_localizer/map_manager/map_manager.h"
 
 #include <boost/filesystem.hpp>
 
@@ -389,4 +389,3 @@ void MapManager<PointTarget>::setFileDirectoryPath(const std::string& directory_
 
 template class MapManager<pcl::PointXYZ>;
 template class MapManager<pcl::PointXYZI>;
-template class MapManager<pcl::PointXYZRGB>;

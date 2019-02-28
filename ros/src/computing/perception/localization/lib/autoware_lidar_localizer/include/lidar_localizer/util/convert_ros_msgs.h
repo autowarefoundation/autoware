@@ -33,7 +33,6 @@
 
 #include <tf/tf.h>
 
-#include <sensor_msgs/Imu.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseStamped.h>

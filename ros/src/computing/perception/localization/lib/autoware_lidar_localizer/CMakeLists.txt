@@ -52,11 +52,16 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 add_library(${LIB_NAME}
   src/lidar_localizer.cpp
-  include/lidar_localizer/map_manager/map_manager.cpp
-  include/lidar_localizer/pose_linear_interpolator/pose_linear_interpolator.cpp
-  include/lidar_localizer/reliability/slam_reliability.cpp
-  include/lidar_localizer/util/convert_ros_msgs.cpp
-  include/lidar_localizer/util/util_functions.cpp
+  src/ndt/ndt_slam_base.cpp
+  src/ndt/ndt_slam_dummy.cpp
+  src/ndt/ndt_slam_pcl.cpp
+  src/ndt/ndt_slam_pcl_omp.cpp
+  src/ndt/ndt_slam_pcl_anh.cpp
+  src/ndt/ndt_slam_pcl_anh_gpu.cpp
+  src/map_manager/map_manager.cpp
+  src/pose_linear_interpolator/pose_linear_interpolator.cpp
+  src/util/convert_ros_msgs.cpp
+  src/util/util_functions.cpp
 )
 
 if(CUDA_FOUND)

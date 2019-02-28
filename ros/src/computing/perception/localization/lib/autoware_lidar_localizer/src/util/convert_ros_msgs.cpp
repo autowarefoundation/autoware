@@ -28,15 +28,14 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "convert_ros_msgs.h"
+#include "lidar_localizer/util/convert_ros_msgs.h"
 
-#include <sensor_msgs/Imu.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/TwistStamped.h>
 
-#include "data_structs.h"
+#include "lidar_localizer/util/data_structs.h"
 
 
 geometry_msgs::PoseStamped convertToROSMsg(const std_msgs::Header& header, const Pose& pose)
