@@ -3,9 +3,9 @@
   <name>amathutils_lib</name>
   <version>1.10.0</version>
   <description>The libamathutils package</description>
-  <maintainer email="yusuke.fujii@tier4.jp">Yusuke FUJII</maintainer>
+  <maintainer email="yukky.saito@gmail.com">Yukihiro SAITO</maintainer>
   <license>Apache 2</license>
-  <author email="yusuke.fujii@tier4.jp">Yusuke FUJII</author>
+  <author email="yukky.saito@gmail.com">Yukihiro SAITO</author>
   <buildtool_depend>catkin</buildtool_depend>
   <buildtool_depend>autoware_build_flags</buildtool_depend>
   <build_depend>roscpp</build_depend>
