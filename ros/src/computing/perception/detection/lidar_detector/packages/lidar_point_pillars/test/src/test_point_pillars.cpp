@@ -64,12 +64,13 @@ public:
   const int NUM_INDS_FOR_SCAN_;
   const int NUM_BOX_CORNERS_;
 
-  void loadPoints(pcl::PointCloud<pcl::PointXYZI>::Ptr in_pcl_pc_ptr, const std::string& in_file);
+  void initPoints(pcl::PointCloud<pcl::PointXYZI>::Ptr in_pcl_pc_ptr);
   void pclToArray(const pcl::PointCloud<pcl::PointXYZI>::Ptr& in_pcl_pc_ptr, float* out_points_array);
   void preprocess(const float* in_points_array, int in_num_points, int* x_coors, int* y_coors,
                   float* num_points_per_pillar, float* pillar_x, float* pillar_y, float* pillar_z, float* pillar_i,
                   float* x_coors_for_sub_shaped, float* y_coors_for_sub_shaped, float* pillar_feature_mask,
                   float* sparse_pillar_map, int* host_pillar_count);
+
 
 private:
   std::unique_ptr<PreprocessPoints> preprocess_points_ptr_;
@@ -120,12 +121,49 @@ void TestClass::pclToArray(const pcl::PointCloud<pcl::PointXYZI>::Ptr& in_pcl_pc
   }
 }
 
-void TestClass::loadPoints(pcl::PointCloud<pcl::PointXYZI>::Ptr in_pcl_pc_ptr, const std::string& in_file)
+void TestClass::initPoints(pcl::PointCloud<pcl::PointXYZI>::Ptr in_pcl_pc_ptr)
 {
-  if (pcl::io::loadPCDFile<pcl::PointXYZI>(in_file, *in_pcl_pc_ptr) == -1)
-  {
-    ROS_ERROR("Couldn't read test pcd file \n");
-  }
+  pcl::PointXYZI point;
+  point.x = 12.9892;
+  point.y = -9.98058;
+  point.z = 0;
+  point.intensity = 4;
+  in_pcl_pc_ptr->push_back(point);
+  point.x = 11.8697;
+  point.y = -11.123;
+  point.z = -0.189377;
+  point.intensity = 35;
+  in_pcl_pc_ptr->push_back(point);
+  point.x = 12.489;
+  point.y = -9.59703;
+  point.z = -2.15565;
+  point.intensity =11;
+  in_pcl_pc_ptr->push_back(point);
+  point.x = 12.9084;
+  point.y = -10.9626;
+  point.z = -2.15565;
+  point.intensity = 11;
+  in_pcl_pc_ptr->push_back(point);
+  point.x = 13.8676;
+  point.y = -9.61668;
+  point.z = 0.0980819;
+  point.intensity = 14;
+  in_pcl_pc_ptr->push_back(point);
+  point.x = 13.5673;
+  point.y = -12.9834;
+  point.z = 0.21862;
+  point.intensity = 1;
+  in_pcl_pc_ptr->push_back(point);
+  point.x = 13.8213;
+  point.y = -10.8529;
+  point.z =-1.22883;
+  point.intensity = 19;
+  in_pcl_pc_ptr->push_back(point);
+  point.x = 11.8957;
+  point.y = -10.3189;
+  point.z =-1.28556;
+  point.intensity = 13;
+  in_pcl_pc_ptr->push_back(point);
 }
 
 TEST(TestSuite, CheckPreprocessPointsCPU)
@@ -135,7 +173,8 @@ TEST(TestSuite, CheckPreprocessPointsCPU)
   pcl::PointCloud<pcl::PointXYZI>::Ptr pcl_pc_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   std::string package_path = ros::package::getPath("lidar_point_pillars");
   std::string in_file = package_path + "/test/data/1527836009720148.pcd";
-  test_obj.loadPoints(pcl_pc_ptr, in_file);
+  test_obj.initPoints(pcl_pc_ptr);
+
 
   float* points_array = new float[pcl_pc_ptr->size() * 4];
   test_obj.pclToArray(pcl_pc_ptr, points_array);
@@ -158,12 +197,12 @@ TEST(TestSuite, CheckPreprocessPointsCPU)
   test_obj.preprocess(points_array, pcl_pc_ptr->size(), x_coors, y_coors, num_points_per_pillar, pillar_x, pillar_y,
                       pillar_z, pillar_i, x_coors_for_sub_shaped, y_coors_for_sub_shaped, pillar_feature_mask,
                       sparse_pillar_map, host_pillar_count);
-  EXPECT_EQ(15, num_points_per_pillar[0]);
-  EXPECT_FLOAT_EQ(3.7517259, pillar_x[14]);
-  EXPECT_EQ(71, x_coors[100]);
-  EXPECT_EQ(177, y_coors[100]);
-  EXPECT_EQ(1, sparse_pillar_map[177 * 512 + 71]);
-  EXPECT_EQ(6270, host_pillar_count[0]);
+  EXPECT_EQ(1, num_points_per_pillar[0]);
+  EXPECT_FLOAT_EQ(12.9892, pillar_x[0]);
+  EXPECT_EQ(74, x_coors[1]);
+  EXPECT_EQ(178, y_coors[1]);
+  EXPECT_EQ(1, sparse_pillar_map[178 * 512 + 74]);
+  EXPECT_EQ(8, host_pillar_count[0]);
   delete[] points_array;
   delete[] pillar_x;
   delete[] pillar_y;
