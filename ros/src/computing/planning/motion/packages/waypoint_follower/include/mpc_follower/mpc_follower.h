@@ -27,6 +27,7 @@
 #include "mpc_follower/mpc_trajectory.h"
 #include "mpc_follower/lowpass_filter.h"
 #include "mpc_follower/vehicle_model/vehicle_model_bicycle_kinematics.h"
+#include "mpc_follower/qp_solver/qp_solver.h"
 
 class MPCFollower
 {

@@ -293,9 +293,17 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
    * solve quadratic optimization.
    * cost function: Uex' * H * Uex + f' * Uex
    */
+
   Eigen::MatrixXd H = (Cex * Bex).transpose() * Qex * Cex * Bex + Rex;
   Eigen::MatrixXd f = (Cex * (Aex * x0 + Wex)).transpose() * Qex * Cex * Bex - Urefex.transpose() * Rex;
-  Eigen::VectorXd Uex = -H.inverse() * f.transpose(); /* least square */
+  Eigen::VectorXd Uex;
+  auto start = std::chrono::system_clock::now();
+  if (!qpsolver::solveEigenLeastSquareLLT(H, f, Uex)){
+    ROS_WARN("qp solver error");
+    return false;
+  }
+  double elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - start).count();
+  DEBUG_INFO("[calculateMPC] qp solver calculation time = %f [ms]", elapsed * 1.0e-6);
 
   /* time delay compensation, look ahead delay_compensation_time for optimized input vector*/
   double u_delay_comped;
