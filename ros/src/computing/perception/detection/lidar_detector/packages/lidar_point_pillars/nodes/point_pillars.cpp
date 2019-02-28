@@ -193,15 +193,13 @@ PointPillars::~PointPillars()
 
 void PointPillars::deviceMemoryMalloc()
 {
-  GPU_CHECK(cudaMalloc((void**)&dev_pillar_x_in_coors_,
-                       GRID_Y_SIZE_ * GRID_X_SIZE_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float)));
-  GPU_CHECK(cudaMalloc((void**)&dev_pillar_y_in_coors_,
-                       GRID_Y_SIZE_ * GRID_X_SIZE_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float)));
-  GPU_CHECK(cudaMalloc((void**)&dev_pillar_z_in_coors_,
-                       GRID_Y_SIZE_ * GRID_X_SIZE_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float)));
-  GPU_CHECK(cudaMalloc((void**)&dev_pillar_i_in_coors_,
-                       GRID_Y_SIZE_ * GRID_X_SIZE_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float)));
+  // clang-format off
+  GPU_CHECK(cudaMalloc((void**)&dev_pillar_x_in_coors_,GRID_Y_SIZE_ * GRID_X_SIZE_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float)));
+  GPU_CHECK(cudaMalloc((void**)&dev_pillar_y_in_coors_,GRID_Y_SIZE_ * GRID_X_SIZE_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float)));
+  GPU_CHECK(cudaMalloc((void**)&dev_pillar_z_in_coors_,GRID_Y_SIZE_ * GRID_X_SIZE_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float)));
+  GPU_CHECK(cudaMalloc((void**)&dev_pillar_i_in_coors_,GRID_Y_SIZE_ * GRID_X_SIZE_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float)));
   GPU_CHECK(cudaMalloc((void**)&dev_pillar_count_histo_, GRID_Y_SIZE_ * GRID_X_SIZE_ * sizeof(int)));
+  // clang-format on
 
   GPU_CHECK(cudaMalloc((void**)&dev_x_coors_, MAX_NUM_PILLARS_ * sizeof(int)));
   GPU_CHECK(cudaMalloc((void**)&dev_y_coors_, MAX_NUM_PILLARS_ * sizeof(int)));
@@ -213,12 +211,11 @@ void PointPillars::deviceMemoryMalloc()
   GPU_CHECK(cudaMalloc((void**)&dev_pillar_z_, MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float)));
   GPU_CHECK(cudaMalloc((void**)&dev_pillar_i_, MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float)));
 
-  GPU_CHECK(
-      cudaMalloc((void**)&dev_x_coors_for_sub_shaped_, MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float)));
-  GPU_CHECK(
-      cudaMalloc((void**)&dev_y_coors_for_sub_shaped_, MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float)));
-  GPU_CHECK(
-      cudaMalloc((void**)&dev_pillar_feature_mask_, MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float)));
+  // clang-format off
+  GPU_CHECK(cudaMalloc((void**)&dev_x_coors_for_sub_shaped_, MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float)));
+  GPU_CHECK(cudaMalloc((void**)&dev_y_coors_for_sub_shaped_, MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float)));
+  GPU_CHECK(cudaMalloc((void**)&dev_pillar_feature_mask_, MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float)));
+  // clang-format on
 
   // cumsum kernel
   GPU_CHECK(cudaMalloc((void**)&dev_cumsum_along_x_, NUM_INDS_FOR_SCAN_ * NUM_INDS_FOR_SCAN_ * sizeof(int)));
@@ -337,14 +334,12 @@ void PointPillars::generateAnchors(float* anchors_px_, float* anchors_py_, float
 
 void PointPillars::putAnchorsInDeviceMemory()
 {
-  GPU_CHECK(
-      cudaMemcpy(dev_box_anchors_min_x_, box_anchors_min_x_, NUM_ANCHOR_ * sizeof(float), cudaMemcpyHostToDevice));
-  GPU_CHECK(
-      cudaMemcpy(dev_box_anchors_min_y_, box_anchors_min_y_, NUM_ANCHOR_ * sizeof(float), cudaMemcpyHostToDevice));
-  GPU_CHECK(
-      cudaMemcpy(dev_box_anchors_max_x_, box_anchors_max_x_, NUM_ANCHOR_ * sizeof(float), cudaMemcpyHostToDevice));
-  GPU_CHECK(
-      cudaMemcpy(dev_box_anchors_max_y_, box_anchors_max_y_, NUM_ANCHOR_ * sizeof(float), cudaMemcpyHostToDevice));
+  // clang-format off
+  GPU_CHECK(cudaMemcpy(dev_box_anchors_min_x_, box_anchors_min_x_, NUM_ANCHOR_ * sizeof(float), cudaMemcpyHostToDevice));
+  GPU_CHECK(cudaMemcpy(dev_box_anchors_min_y_, box_anchors_min_y_, NUM_ANCHOR_ * sizeof(float), cudaMemcpyHostToDevice));
+  GPU_CHECK(cudaMemcpy(dev_box_anchors_max_x_, box_anchors_max_x_, NUM_ANCHOR_ * sizeof(float), cudaMemcpyHostToDevice));
+  GPU_CHECK(cudaMemcpy(dev_box_anchors_max_y_, box_anchors_max_y_, NUM_ANCHOR_ * sizeof(float), cudaMemcpyHostToDevice));
+  // clang-format on
 
   GPU_CHECK(cudaMemcpy(dev_anchors_px_, anchors_px_, NUM_ANCHOR_ * sizeof(float), cudaMemcpyHostToDevice));
   GPU_CHECK(cudaMemcpy(dev_anchors_py_, anchors_py_, NUM_ANCHOR_ * sizeof(float), cudaMemcpyHostToDevice));
@@ -490,26 +485,19 @@ void PointPillars::preprocessCPU(const float* in_points_array, const int in_num_
   GPU_CHECK(cudaMemset(dev_num_points_per_pillar_, 0, MAX_NUM_PILLARS_ * sizeof(float)));
   GPU_CHECK(cudaMemset(dev_sparse_pillar_map_, 0, NUM_INDS_FOR_SCAN_ * NUM_INDS_FOR_SCAN_ * sizeof(int)));
 
+  // clang-format off
   GPU_CHECK(cudaMemcpy(dev_x_coors_, x_coors, MAX_NUM_PILLARS_ * sizeof(int), cudaMemcpyHostToDevice));
   GPU_CHECK(cudaMemcpy(dev_y_coors_, y_coors, MAX_NUM_PILLARS_ * sizeof(int), cudaMemcpyHostToDevice));
-  GPU_CHECK(cudaMemcpy(dev_pillar_x_, pillar_x, MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float),
-                       cudaMemcpyHostToDevice));
-  GPU_CHECK(cudaMemcpy(dev_pillar_y_, pillar_y, MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float),
-                       cudaMemcpyHostToDevice));
-  GPU_CHECK(cudaMemcpy(dev_pillar_z_, pillar_z, MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float),
-                       cudaMemcpyHostToDevice));
-  GPU_CHECK(cudaMemcpy(dev_pillar_i_, pillar_i, MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float),
-                       cudaMemcpyHostToDevice));
-  GPU_CHECK(cudaMemcpy(dev_x_coors_for_sub_shaped_, x_coors_for_sub_shaped,
-                       MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float), cudaMemcpyHostToDevice));
-  GPU_CHECK(cudaMemcpy(dev_y_coors_for_sub_shaped_, y_coors_for_sub_shaped,
-                       MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float), cudaMemcpyHostToDevice));
-  GPU_CHECK(cudaMemcpy(dev_num_points_per_pillar_, num_points_per_pillar, MAX_NUM_PILLARS_ * sizeof(float),
-                       cudaMemcpyHostToDevice));
-  GPU_CHECK(cudaMemcpy(dev_pillar_feature_mask_, pillar_feature_mask,
-                       MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float), cudaMemcpyHostToDevice));
-  GPU_CHECK(cudaMemcpy(dev_sparse_pillar_map_, sparse_pillar_map,
-                       NUM_INDS_FOR_SCAN_ * NUM_INDS_FOR_SCAN_ * sizeof(float), cudaMemcpyHostToDevice));
+  GPU_CHECK(cudaMemcpy(dev_pillar_x_, pillar_x, MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float),cudaMemcpyHostToDevice));
+  GPU_CHECK(cudaMemcpy(dev_pillar_y_, pillar_y, MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float),cudaMemcpyHostToDevice));
+  GPU_CHECK(cudaMemcpy(dev_pillar_z_, pillar_z, MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float),cudaMemcpyHostToDevice));
+  GPU_CHECK(cudaMemcpy(dev_pillar_i_, pillar_i, MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float),cudaMemcpyHostToDevice));
+  GPU_CHECK(cudaMemcpy(dev_x_coors_for_sub_shaped_, x_coors_for_sub_shaped, MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float), cudaMemcpyHostToDevice));
+  GPU_CHECK(cudaMemcpy(dev_y_coors_for_sub_shaped_, y_coors_for_sub_shaped,MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float), cudaMemcpyHostToDevice));
+  GPU_CHECK(cudaMemcpy(dev_num_points_per_pillar_, num_points_per_pillar, MAX_NUM_PILLARS_ * sizeof(float),cudaMemcpyHostToDevice));
+  GPU_CHECK(cudaMemcpy(dev_pillar_feature_mask_, pillar_feature_mask,MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float), cudaMemcpyHostToDevice));
+  GPU_CHECK(cudaMemcpy(dev_sparse_pillar_map_, sparse_pillar_map,NUM_INDS_FOR_SCAN_ * NUM_INDS_FOR_SCAN_ * sizeof(float), cudaMemcpyHostToDevice));
+  // clang-format on
 
   delete[] pillar_x;
   delete[] pillar_y;
@@ -568,29 +556,16 @@ void PointPillars::doInference(const float* in_points_array, const int in_num_po
 
   cudaStream_t stream;
   GPU_CHECK(cudaStreamCreate(&stream));
-  GPU_CHECK(cudaMemcpyAsync(pfe_buffers_[0], dev_pillar_x_,
-                            BATCH_SIZE_ * MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float),
-                            cudaMemcpyDeviceToDevice, stream));
-  GPU_CHECK(cudaMemcpyAsync(pfe_buffers_[1], dev_pillar_y_,
-                            BATCH_SIZE_ * MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float),
-                            cudaMemcpyDeviceToDevice, stream));
-  GPU_CHECK(cudaMemcpyAsync(pfe_buffers_[2], dev_pillar_z_,
-                            BATCH_SIZE_ * MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float),
-                            cudaMemcpyDeviceToDevice, stream));
-  GPU_CHECK(cudaMemcpyAsync(pfe_buffers_[3], dev_pillar_i_,
-                            BATCH_SIZE_ * MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float),
-                            cudaMemcpyDeviceToDevice, stream));
-  GPU_CHECK(cudaMemcpyAsync(pfe_buffers_[4], dev_num_points_per_pillar_, BATCH_SIZE_ * MAX_NUM_PILLARS_ * sizeof(float),
-                            cudaMemcpyDeviceToDevice, stream));
-  GPU_CHECK(cudaMemcpyAsync(pfe_buffers_[5], dev_x_coors_for_sub_shaped_,
-                            BATCH_SIZE_ * MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float),
-                            cudaMemcpyDeviceToDevice, stream));
-  GPU_CHECK(cudaMemcpyAsync(pfe_buffers_[6], dev_y_coors_for_sub_shaped_,
-                            BATCH_SIZE_ * MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float),
-                            cudaMemcpyDeviceToDevice, stream));
-  GPU_CHECK(cudaMemcpyAsync(pfe_buffers_[7], dev_pillar_feature_mask_,
-                            BATCH_SIZE_ * MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float),
-                            cudaMemcpyDeviceToDevice, stream));
+  // clang-format off
+  GPU_CHECK(cudaMemcpyAsync(pfe_buffers_[0], dev_pillar_x_, MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float), cudaMemcpyDeviceToDevice, stream));
+  GPU_CHECK(cudaMemcpyAsync(pfe_buffers_[1], dev_pillar_y_, MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float), cudaMemcpyDeviceToDevice, stream));
+  GPU_CHECK(cudaMemcpyAsync(pfe_buffers_[2], dev_pillar_z_, MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float), cudaMemcpyDeviceToDevice, stream));
+  GPU_CHECK(cudaMemcpyAsync(pfe_buffers_[3], dev_pillar_i_, MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float), cudaMemcpyDeviceToDevice, stream));
+  GPU_CHECK(cudaMemcpyAsync(pfe_buffers_[4], dev_num_points_per_pillar_, MAX_NUM_PILLARS_ * sizeof(float), cudaMemcpyDeviceToDevice, stream));
+  GPU_CHECK(cudaMemcpyAsync(pfe_buffers_[5], dev_x_coors_for_sub_shaped_, MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float), cudaMemcpyDeviceToDevice, stream));
+  GPU_CHECK(cudaMemcpyAsync(pfe_buffers_[6], dev_y_coors_for_sub_shaped_, MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float), cudaMemcpyDeviceToDevice, stream));
+  GPU_CHECK(cudaMemcpyAsync(pfe_buffers_[7], dev_pillar_feature_mask_, MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float), cudaMemcpyDeviceToDevice, stream));
+  // clang-format on
   pfe_context_->enqueue(BATCH_SIZE_, pfe_buffers_, stream, nullptr);
 
   GPU_CHECK(cudaMemset(dev_scattered_feature_, 0, RPN_INPUT_SIZE_ * sizeof(float)));
