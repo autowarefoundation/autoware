@@ -2,33 +2,9 @@ digraph G {
 	
 	graph [fontsize=20, compound=true, ranksep=3];
 	
-	subgraph cluster_2 {
-		node [style=filled];
-		"LampCmd" "WaypointState" "State";
-		label = "autoware_decision_msgs";
-		color=blue;
-	}
-	
 	subgraph cluster_3 {
 		node [style=filled];
-		"DetectedObjectArray"
-		"Centroids"
-		"ImageObjRanged"
-		"ImageLaneObjects"
-		"CloudClusterArray"
-		"ImageRect"
-		"TrafficLightResult"
-		"TrafficLight"
-		"ImageObj"
-		"ImageObjTracked"
-		"Signals"
-		"DetectedObject"
-		"TrafficLightResultArray"
-		"TunedResult"
-		"AdjustXY"
-		"CloudCluster"
-		"ObjLabel"
-		"ImageRectRanged" "ValueSet" "ColorSet" ;
+		"AdjustXY" "Centroids" "CloudCluster" "CloudClusterArray" "ColorSet" "DetectedObject" "DetectedObjectArray" "ImageLaneObjects" "ImageObj" "ImageObjRanged" "ImageObjTracked" "ImageRect" "ImageRectRanged" "ObjLabel" "Signals" "TrafficLight" "TrafficLightResult" "TrafficLightResultArray" "TunedResult" "ValueSet" ;
 		label = "autoware_detection_msgs";
 		color=blue;
 	}
@@ -42,8 +18,8 @@ digraph G {
 	
 	subgraph cluster_6 {
 		node [style=filled];
-		"DTLane" "LaneArray" "Lane" "ControlCommandStamped" "Waypoint" "ExtractedPosition" "ControlCommand" "BrakeCmd" "AccelCmd" "SteerCmd";
-		label = "autoware_navigation_msgs";
+		"AccelCmd" "BrakeCmd" "ControlCommand" "ControlCommandStamped" "DTLane" "ExtractedPosition" "LampCmd" "Lane" "LaneArray" "State" "SteerCmd" "VehicleCmd" "Waypoint" "WaypointState";
+		label = "autoware_planning_msgs";
 		color=blue;
 		fillcolor=lightblue;
 		style = filled;
@@ -58,7 +34,7 @@ digraph G {
 	
 	subgraph cluster_8 {
 		node [style=filled];
-		"VehicleCmd" "RemoteCmd";
+		"RemoteCmd";
 		label = "autoware_socket_msgs";
 		color=blue;
 	}
@@ -70,16 +46,9 @@ digraph G {
 		color=blue;
 	}
 	
-	subgraph cluster_10 {
-		node [style=filled];
-		"IndicatorCmd";
-		label = "autoware_util_msgs";
-		color=blue;
-	}
-	
 	subgraph cluster_11 {
 		node [style=filled];
-		"StateCmd" "ImageObjects" "VscanTracked" "ScanImage" "VscanTrackedArray" "ObjPose" "GeometricRectangle";
+		"GeometricRectangle" "ImageObjects" "ObjPose" "ScanImage" "StateCmd" "VscanTracked" "VscanTrackedArray";
 		label = "autoware_unused_msgs";
 		color=blue;
 		fillcolor=pink;
