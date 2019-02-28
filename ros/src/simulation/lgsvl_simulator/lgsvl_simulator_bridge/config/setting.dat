@@ -1,0 +1,4 @@
+[simulator_params]
+config_path=/home/masaya-tier4/Autoware/ros/src/simulation/lgsvl_simulator/lgsvl_simulator_bridge/config/default.json
+ip=10.100.2.1
+port=5000
