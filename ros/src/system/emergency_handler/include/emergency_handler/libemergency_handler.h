@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 #include <ros/ros.h>
-#include <autoware_health_checker/system_status_subscriber.h>
+#include <autoware_health_checker/system_status_subscriber/system_status_subscriber.h>
 #include <autoware_system_msgs/SystemStatus.h>
 #include <emergency_handler/libsystem_status_filter.h>
 #include <emergency_handler/libemergency_plan_client.h>
