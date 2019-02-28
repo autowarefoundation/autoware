@@ -70,9 +70,15 @@ public:
                   float* num_points_per_pillar, float* pillar_x, float* pillar_y, float* pillar_z, float* pillar_i,
                   float* x_coors_for_sub_shaped, float* y_coors_for_sub_shaped, float* pillar_feature_mask,
                   float* sparse_pillar_map, int* host_pillar_count);
+  void generateAnchors(float* anchors_px, float* anchors_py, float* anchors_pz, float* anchors_dx,
+                       float* anchors_dy, float* anchors_dz, float* anchors_ro);
+  void convertAnchors2BoxAnchors(float* anchors_px, float* anchors_py, float* anchors_dx, float* anchors_dy,
+                                 float* box_anchors_min_x, float* box_anchors_min_y,
+                                 float* box_anchors_max_x, float* box_anchors_max_y);
 
 private:
   std::unique_ptr<PreprocessPoints> preprocess_points_ptr_;
+  std::unique_ptr<PointPillars> point_pillars_ptr_;
 };
 
 TestClass::TestClass(const int MAX_NUM_PILLARS, const int MAX_NUM_POINTS_PER_PILLAR, const int GRID_X_SIZE,
@@ -96,6 +102,18 @@ TestClass::TestClass(const int MAX_NUM_PILLARS, const int MAX_NUM_POINTS_PER_PIL
   preprocess_points_ptr_.reset(new PreprocessPoints(
       MAX_NUM_PILLARS_, MAX_NUM_POINTS_PER_PILLAR_, GRID_X_SIZE_, GRID_Y_SIZE_, GRID_Z_SIZE_, PILLAR_X_SIZE_,
       PILLAR_Y_SIZE_, PILLAR_Z_SIZE_, MIN_X_RANGE_, MIN_Y_RANGE_, MIN_Z_RANGE_, NUM_INDS_FOR_SCAN_, NUM_BOX_CORNERS_));
+
+  bool baselink_support=true;
+  bool reproduce_result_mode=false;
+  float score_threshold = 0.5;
+  float nms_overlap_threshold = 0.5;
+  std::string package_path = ros::package::getPath("lidar_point_pillars");
+  std::string onnx_path = package_path + "/test/data/dummy.onnx";
+  std::string pfe_onnx_file = onnx_path;
+  std::string rpn_onnx_file = onnx_path;
+
+  point_pillars_ptr_.reset(new PointPillars(reproduce_result_mode, score_threshold, nms_overlap_threshold,
+                                            pfe_onnx_file, rpn_onnx_file));
 };
 
 void TestClass::preprocess(const float* in_points_array, int in_num_points, int* x_coors, int* y_coors,
@@ -165,13 +183,52 @@ void TestClass::initPoints(pcl::PointCloud<pcl::PointXYZI>::Ptr in_pcl_pc_ptr)
   in_pcl_pc_ptr->push_back(point);
 }
 
+void TestClass::generateAnchors(float* anchors_px, float* anchors_py, float* anchors_pz, float* anchors_dx,
+                                float* anchors_dy, float* anchors_dz, float* anchors_ro)
+{
+  return point_pillars_ptr_->generateAnchors(anchors_px, anchors_py, anchors_pz, anchors_dx,
+                                             anchors_dy, anchors_dz, anchors_ro);
+}
+
+void TestClass::convertAnchors2BoxAnchors(float* anchors_px, float* anchors_py, float* anchors_dx, float* anchors_dy,
+                                          float* box_anchors_min_x, float* box_anchors_min_y,
+                                          float* box_anchors_max_x, float* box_anchors_max_y)
+{
+  return point_pillars_ptr_->convertAnchors2BoxAnchors(anchors_px, anchors_py, anchors_dx, anchors_dy,
+                                                       box_anchors_min_x, box_anchors_min_y,
+                                                       box_anchors_max_x, box_anchors_max_y);
+}
+
 TEST(TestSuite, CheckPreprocessPointsCPU)
 {
-  TestClass test_obj(12000, 100, 432, 496, 1, 0.16, 0.16, 4.0, 0, -39.68, -3.0, 512, 4);
+  const int MAX_NUM_PILLARS = 12000;
+  const int MAX_NUM_POINTS_PER_PILLAR = 100;
+  const int GRID_X_SIZE = 432;
+  const int GRID_Y_SIZE = 496;
+  const int GRID_Z_SIZE = 1;
+  const float PILLAR_X_SIZE = 0.16;
+  const float PILLAR_Y_SIZE = 0.16;
+  const float PILLAR_Z_SIZE = 4.0;
+  const float MIN_X_RANGE = 0;
+  const float MIN_Y_RANGE = -39.68;
+  const float MIN_Z_RANGE = -3.0;
+  const int NUM_INDS_FOR_SCAN = 512;
+  const int NUM_BOX_CORNERS = 4;
+  TestClass test_obj(MAX_NUM_PILLARS,
+                     MAX_NUM_POINTS_PER_PILLAR,
+                     GRID_X_SIZE,
+                     GRID_Y_SIZE,
+                     GRID_Z_SIZE,
+                     PILLAR_X_SIZE,
+                     PILLAR_Y_SIZE,
+                     PILLAR_Z_SIZE,
+                     MIN_X_RANGE,
+                     MIN_Y_RANGE,
+                     MIN_Z_RANGE,
+                     NUM_INDS_FOR_SCAN,
+                     NUM_BOX_CORNERS);
 
   pcl::PointCloud<pcl::PointXYZI>::Ptr pcl_pc_ptr(new pcl::PointCloud<pcl::PointXYZI>);
-  std::string package_path = ros::package::getPath("lidar_point_pillars");
-  std::string in_file = package_path + "/test/data/1527836009720148.pcd";
   test_obj.initPoints(pcl_pc_ptr);
 
   float* points_array = new float[pcl_pc_ptr->size() * 4];
@@ -210,6 +267,128 @@ TEST(TestSuite, CheckPreprocessPointsCPU)
   delete[] y_coors_for_sub_shaped;
   delete[] pillar_feature_mask;
   delete[] sparse_pillar_map;
+}
+
+TEST(TestSuite, CheckGenerateAnchors)
+{
+  const int MAX_NUM_PILLARS = 12000;
+  const int MAX_NUM_POINTS_PER_PILLAR = 100;
+  const int GRID_X_SIZE = 432;
+  const int GRID_Y_SIZE = 496;
+  const int GRID_Z_SIZE = 1;
+  const float PILLAR_X_SIZE = 0.16;
+  const float PILLAR_Y_SIZE = 0.16;
+  const float PILLAR_Z_SIZE = 4.0;
+  const float MIN_X_RANGE = 0;
+  const float MIN_Y_RANGE = -39.68;
+  const float MIN_Z_RANGE = -3.0;
+  const int NUM_INDS_FOR_SCAN = 512;
+  const int NUM_BOX_CORNERS = 4;
+  TestClass test_obj(MAX_NUM_PILLARS,
+                     MAX_NUM_POINTS_PER_PILLAR,
+                     GRID_X_SIZE,
+                     GRID_Y_SIZE,
+                     GRID_Z_SIZE,
+                     PILLAR_X_SIZE,
+                     PILLAR_Y_SIZE,
+                     PILLAR_Z_SIZE,
+                     MIN_X_RANGE,
+                     MIN_Y_RANGE,
+                     MIN_Z_RANGE,
+                     NUM_INDS_FOR_SCAN,
+                     NUM_BOX_CORNERS);
+
+  const int NUM_ANCHOR = 432*0.5*496*0.5*2;
+  float* anchors_px = new float[NUM_ANCHOR];
+  float* anchors_py = new float[NUM_ANCHOR];
+  float* anchors_pz = new float[NUM_ANCHOR];
+  float* anchors_dx = new float[NUM_ANCHOR];
+  float* anchors_dy = new float[NUM_ANCHOR];
+  float* anchors_dz = new float[NUM_ANCHOR];
+  float* anchors_ro = new float[NUM_ANCHOR];
+  test_obj.generateAnchors(anchors_px, anchors_py, anchors_pz, anchors_dx, anchors_dy, anchors_dz, anchors_ro);
+
+  EXPECT_NEAR(0.48, anchors_px[3], 0.001);
+  EXPECT_NEAR(-39.52, anchors_py[109], 0.001);
+  EXPECT_NEAR(-1.73, anchors_pz[76], 0.001);
+  EXPECT_NEAR(1.6, anchors_dx[338], 0.001);
+  EXPECT_NEAR(3.9, anchors_dy[22], 0.001);
+  EXPECT_NEAR(1.56, anchors_dz[993], 0.001);
+  EXPECT_NEAR(1.5708, anchors_ro[1765], 0.001);
+
+  delete[] anchors_px;
+  delete[] anchors_py;
+  delete[] anchors_pz;
+  delete[] anchors_dx;
+  delete[] anchors_dy;
+  delete[] anchors_dz;
+  delete[] anchors_ro;
+}
+
+TEST(TestSuite, CheckGenerateBoxAnchors)
+{
+  const int MAX_NUM_PILLARS = 12000;
+  const int MAX_NUM_POINTS_PER_PILLAR = 100;
+  const int GRID_X_SIZE = 432;
+  const int GRID_Y_SIZE = 496;
+  const int GRID_Z_SIZE = 1;
+  const float PILLAR_X_SIZE = 0.16;
+  const float PILLAR_Y_SIZE = 0.16;
+  const float PILLAR_Z_SIZE = 4.0;
+  const float MIN_X_RANGE = 0;
+  const float MIN_Y_RANGE = -39.68;
+  const float MIN_Z_RANGE = -3.0;
+  const int NUM_INDS_FOR_SCAN = 512;
+  const int NUM_BOX_CORNERS = 4;
+  TestClass test_obj(MAX_NUM_PILLARS,
+                     MAX_NUM_POINTS_PER_PILLAR,
+                     GRID_X_SIZE,
+                     GRID_Y_SIZE,
+                     GRID_Z_SIZE,
+                     PILLAR_X_SIZE,
+                     PILLAR_Y_SIZE,
+                     PILLAR_Z_SIZE,
+                     MIN_X_RANGE,
+                     MIN_Y_RANGE,
+                     MIN_Z_RANGE,
+                     NUM_INDS_FOR_SCAN,
+                     NUM_BOX_CORNERS);
+
+  const int NUM_ANCHOR = 432*0.5*496*0.5*2;
+
+  float* anchors_px = new float[NUM_ANCHOR];
+  float* anchors_py = new float[NUM_ANCHOR];
+  float* anchors_pz = new float[NUM_ANCHOR];
+  float* anchors_dx = new float[NUM_ANCHOR];
+  float* anchors_dy = new float[NUM_ANCHOR];
+  float* anchors_dz = new float[NUM_ANCHOR];
+  float* anchors_ro = new float[NUM_ANCHOR];
+  float* box_anchors_min_x = new float[NUM_ANCHOR];
+  float* box_anchors_min_y = new float[NUM_ANCHOR];
+  float* box_anchors_max_x = new float[NUM_ANCHOR];
+  float* box_anchors_max_y = new float[NUM_ANCHOR];
+  test_obj.generateAnchors(anchors_px, anchors_py, anchors_pz, anchors_dx, anchors_dy, anchors_dz, anchors_ro);
+  test_obj.convertAnchors2BoxAnchors(anchors_px, anchors_py, anchors_dx, anchors_dy,
+                                    box_anchors_min_x, box_anchors_min_y,
+                                    box_anchors_max_x, box_anchors_max_y);
+
+  EXPECT_NEAR(53.25,  box_anchors_min_x[345], 0.001);
+  EXPECT_NEAR(-41.47, box_anchors_min_y[22], 0.001);
+  EXPECT_NEAR(38.4,   box_anchors_max_x[1098], 0.001);
+  EXPECT_NEAR(-38.4,  box_anchors_max_y[675], 0.001);
+
+
+  delete[] anchors_px;
+  delete[] anchors_py;
+  delete[] anchors_pz;
+  delete[] anchors_dx;
+  delete[] anchors_dy;
+  delete[] anchors_dz;
+  delete[] anchors_ro;
+  delete[] box_anchors_min_x;
+  delete[] box_anchors_min_y;
+  delete[] box_anchors_max_x;
+  delete[] box_anchors_max_y;
 }
 
 int main(int argc, char** argv)

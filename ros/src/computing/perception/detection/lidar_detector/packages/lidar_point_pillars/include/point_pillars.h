@@ -86,6 +86,7 @@ public:
 class PointPillars
 {
 private:
+  friend class TestClass;
   // initize in initializer list
   const bool reproduce_result_mode_;
   const float score_threshold_;
