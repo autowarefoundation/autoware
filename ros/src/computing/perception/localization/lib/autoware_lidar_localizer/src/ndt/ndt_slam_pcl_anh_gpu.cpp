@@ -112,19 +112,15 @@
     }
 
     template <class PointSource, class PointTarget>
-    void NdtSlamPCLANHGPU<PointSource, PointTarget>::setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr)
+    void NdtSlamPCLANHGPU<PointSource, PointTarget>::setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& map_ptr)
     {
-        //TODO
-        boost::shared_ptr< pcl::PointCloud<PointTarget> > non_const_map_ptr(new pcl::PointCloud<PointTarget>(*map_ptr));
-        ndt_ptr_->setInputTarget(non_const_map_ptr);
+        ndt_ptr_->setInputTarget(map_ptr);
     }
 
     template <class PointSource, class PointTarget>
-    void NdtSlamPCLANHGPU<PointSource, PointTarget>::setInputSource(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& scan_ptr)
+    void NdtSlamPCLANHGPU<PointSource, PointTarget>::setInputSource(const boost::shared_ptr< pcl::PointCloud<PointSource> >& scan_ptr)
     {
-        //TODO
-        boost::shared_ptr< pcl::PointCloud<PointSource> > non_const_scan_ptr(new pcl::PointCloud<PointSource>(*scan_ptr));
-        ndt_ptr_->setInputSource(non_const_scan_ptr);
+        ndt_ptr_->setInputSource(scan_ptr);
     }
 
     template <class PointSource, class PointTarget>
@@ -140,7 +136,7 @@
     }
 
     template <class PointSource, class PointTarget>
-    void NdtSlamPCLANHGPU<PointSource, PointTarget>::buildMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr)
+    void NdtSlamPCLANHGPU<PointSource, PointTarget>::buildMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& map_ptr)
     {
         const auto trans_estimation = getTransformationEpsilon();
         const auto step_size = getStepSize();
@@ -152,9 +148,7 @@
         tmp_ndt_ptr->setStepSize(step_size);
         tmp_ndt_ptr->setResolution(resolution);
         tmp_ndt_ptr->setMaximumIterations(max_iter);
-
-        boost::shared_ptr< pcl::PointCloud<PointTarget> > non_const_map_ptr(new pcl::PointCloud<PointTarget>(*map_ptr));
-        tmp_ndt_ptr->setInputTarget(non_const_map_ptr);
+        tmp_ndt_ptr->setInputTarget(map_ptr);
 
         boost::shared_ptr< pcl::PointCloud<PointSource> > dummy_scan_ptr(new pcl::PointCloud<PointSource>());
         PointSource dummy_point;

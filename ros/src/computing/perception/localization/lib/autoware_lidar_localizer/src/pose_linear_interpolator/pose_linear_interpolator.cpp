@@ -42,7 +42,7 @@ PoseStamped interpolatePose(const PoseStamped& pose_a, const PoseStamped& pose_b
     PoseStamped p;
     p.pose.x = pose_b.pose.x + v.linear.x * dt;
     p.pose.y = pose_b.pose.y + v.linear.y * dt;
-    p.pose.z = pose_b.pose.z;
+    p.pose.z = pose_b.pose.z + v.linear.z * dt;
     p.pose.roll = pose_b.pose.roll;
     p.pose.pitch = pose_b.pose.pitch;
     p.pose.yaw = pose_b.pose.yaw + v.angular.z * dt;
@@ -57,21 +57,36 @@ PoseLinearInterpolator::PoseLinearInterpolator()
 
 void PoseLinearInterpolator::clearPoseStamped()
 {
-    pose_.clear();
+    current_pose_.clear();
     prev_pose_.clear();
 }
 
 bool PoseLinearInterpolator::isNotSetPoseStamped() const
 {
-    return (pose_ == PoseStamped() && prev_pose_ == PoseStamped());
+    return (current_pose_ == PoseStamped() && prev_pose_ == PoseStamped());
 }
 void PoseLinearInterpolator::pushbackPoseStamped(const PoseStamped& pose)
 {
-    prev_pose_ = pose_;
-    pose_ = pose;
+    prev_pose_ = current_pose_;
+    current_pose_ = pose;
 }
 
-PoseStamped PoseLinearInterpolator::getInterpolatePose(const double time_stamp) const
+PoseStamped PoseLinearInterpolator::getInterpolatePoseStamped(const double time_stamp) const
 {
-    return interpolatePose(prev_pose_, pose_, time_stamp);
+    return interpolatePose(prev_pose_, current_pose_, time_stamp);
+}
+
+PoseStamped PoseLinearInterpolator::getCurrentPoseStamped() const
+{
+    return current_pose_;
+}
+
+PoseStamped PoseLinearInterpolator::getPrevPoseStamped() const
+{
+    return prev_pose_;
+}
+
+Velocity PoseLinearInterpolator::getVelocity() const
+{
+    return  Velocity(prev_pose_, current_pose_);
 }

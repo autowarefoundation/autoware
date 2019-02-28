@@ -3,15 +3,20 @@
 
   <arg name="method_type" default="0" /> <!-- pcl_generic=0, pcl_anh=1, pcl_anh_gpu=2, pcl_openmp=3 -->
 
-  <arg name="points_raw_topic" default="/points_raw" />
-  <arg name="points_filtered_topic" default="/filtered_points" />
+  <arg name="mapping_points_topic" default="/points_raw" />
+  <arg name="localizing_points_topic" default="/filtered_points" />
   <arg name="points_queue_size" default="1" />
 
   <arg name="sensor_frame" default="/velodyne" />
   <arg name="base_link_frame" default="/base_link" />
   <arg name="map_frame" default="/map" />
 
-  <arg name="init_pos_gnss" default="false" />
+  <arg name="init_x" default="0.0" />
+  <arg name="init_y" default="0.0" />
+  <arg name="init_z" default="0.0" />
+  <arg name="init_roll" default="0.0" />
+  <arg name="init_pitch" default="0.0" />
+  <arg name="init_yaw" default="0.0" />
 
   <arg name="trans_epsilon" default="0.01" />
   <arg name="step_size" default="0.1" />
@@ -26,23 +31,27 @@
   <arg name="separate_mapping" default="false" />
   <arg name="separate_map_size" default="100.0" />
 
-  <arg name="use_vehicle_twist" default="false" />
-  <arg name="twist_topic" default="/twist" />
+  <arg name="use_nn_point_z_when_initial_pose" default="false" />
 
 
   <!-- rosrun lidar_localizer ndt_mapping  -->
   <node pkg="lidar_localizer" type="ndt_slam" name="ndt_slam" output="screen">
     <param name="method_type" value="$(arg method_type)" />
 
-    <remap from="points_raw" to="$(arg points_raw_topic)" />
-    <remap from="filtered_points" to="$(arg points_filtered_topic)" />
+    <remap from="/points_raw" to="$(arg mapping_points_topic)" />
+    <remap from="/filtered_points" to="$(arg localizing_points_topic)" />
     <param name="points_queue_size" value="$(arg points_queue_size)" />
 
     <param name="sensor_frame" value="$(arg sensor_frame)" />
     <param name="base_link_frame" value="$(arg base_link_frame)" />
     <param name="map_frame" value="$(arg map_frame)" />
 
-    <param name="init_pos_gnss" value="$(arg init_pos_gnss)" />
+    <param name="init_x" value="$(arg init_x)" />
+    <param name="init_y" value="$(arg init_y)" />
+    <param name="init_z" value="$(arg init_z)" />
+    <param name="init_roll" value="$(arg init_roll)" />
+    <param name="init_pitch" value="$(arg init_pitch)" />
+    <param name="init_yaw" value="$(arg init_yaw)" />
 
     <param name="trans_epsilon" value="$(arg trans_epsilon)" />
     <param name="step_size" value="$(arg step_size)" />
@@ -57,8 +66,7 @@
     <param name="separate_mapping" value="$(arg separate_mapping)" />
     <param name="separate_map_size" value="$(arg separate_map_size)" />
 
-    <param name="use_vehicle_twist" value="$(arg use_vehicle_twist)" />
-    <remap from="/vehicle/twist" to="$(arg twist_topic)" />
+    <param name="use_nn_point_z_when_initial_pose" value="$(arg use_nn_point_z_when_initial_pose)" />
   </node>
 
 </launch>

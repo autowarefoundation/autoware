@@ -85,16 +85,16 @@ subs :
         param: ndt_slam
         gui  :
           dialog_width  : 700
-          dialog_height : 700
+          dialog_height : 650
           method_type :
             flags : [ nl ]
           points_queue_size :
             flags : [ nl ]
           map_frame :
             flags : [ nl ]
-          x  :
+          init_x  :
             user_category : ''
-          yaw:
+          init_yaw:
             flags : [ nl ]
           max_iterations:
             flags : [ nl ]
@@ -117,9 +117,6 @@ subs :
              depend      : with_mapping
              depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
-          twist_topic :
-             depend      : use_twist
-             depend_bool : 'lambda v : v == 1'
 
     - name : autoware_connector
       desc : autoware_connector desc sample
@@ -1563,19 +1560,21 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
-    - name      : points_raw_topic
-      desc      : points_raw_topic
-      label     : Raw Points Topic
+    - name      : mapping_points_topic
+      desc      : mappping_points_topic
+      label     : Mapping Points Topic
       v         : /points_raw
-      kind      : str
+      kind      : topic
+      topic_type: sensor_msgs/PointCloud2
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name      : points_filtered_topic
-      desc      : points_filtered_topic
-      label     : Filtered Points Topic
+    - name      : localizing_points_topic
+      desc      : localizing_points_topic
+      label     : Localizing Points Topic
       v         : /filtered_points
-      kind      : str
+      kind      : topic
+      topic_type: sensor_msgs/PointCloud2
       cmd_param :
         dash      : ''
         delim     : ':='
@@ -1611,43 +1610,48 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name  : init_pos_gnss
-      desc  : init_pos_gnss desc sample
-      kind  : radio_box
-      choices:
-      - Initial Pos
-      - GNSS
-      descs :
-      - Initial Pos desc sample
-      - GNSS desc sample
-      v     : 1
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name  : x
-      desc  : x desc sample
-      label : 'x:'
-      v     : 0.0
-    - name  : y
-      desc  : y desc sample
-      label : 'y:'
-      v     : 0.0
-    - name  : z
-      desc  : z desc sample
-      label : 'z:'
-      v     : 0.0
-    - name  : roll
-      desc  : roll desc sample
-      label : 'roll:'
-      v     : 0.0
-    - name  : pitch
-      desc  : pitch desc sample
-      label : 'pitch:'
-      v     : 0.0
-    - name  : yaw
-      desc  : yaw desc sample
-      label : 'yaw:'
-      v     : 0.0
+    - name      : init_x
+      desc      : x desc sample
+      label     : 'x:'
+      v         : 0.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : init_y
+      desc      : y desc sample
+      label     : 'y:'
+      v         : 0.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : init_z
+      desc      : z desc sample
+      label     : 'z:'
+      v         : 0.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : init_roll
+      desc      : roll desc sample
+      label     : 'roll:'
+      v         : 0.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : init_pitch
+      desc      : pitch desc sample
+      label     : 'pitch:'
+      v         : 0.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : init_yaw
+      desc      : yaw desc sample
+      label     : 'yaw:'
+      v         : 0.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
     - name  : resolution
       desc  : resolution desc sample
       label : Resolution
@@ -1745,22 +1749,14 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
-    - name  : use_vehicle_twist
-      desc  : use_vehicle_twist
-      label : Use Vehicle Twist
+    - name  : use_nn_point_z_when_initial_pose
+      desc  : use_nn_point_z_when_initial_pose
+      label : Use NN Point Z When Initial Pose
       kind  : checkbox
       v     : False
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name  : twist_topic
-      desc  : twist_topic
-      label : Twist Topic
-      v     : /vehicle/twist
-      kind  : str
-      cmd_param:
-        dash      : ''
-        delim    : ':='
 
   - name  : vel_pose_connect
     vars  :

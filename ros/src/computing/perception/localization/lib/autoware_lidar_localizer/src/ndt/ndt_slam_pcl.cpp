@@ -100,13 +100,13 @@ void NdtSlamPCL<PointSource, PointTarget>::align(const Pose& predict_pose)
 }
 
 template <class PointSource, class PointTarget>
-void NdtSlamPCL<PointSource, PointTarget>::setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr)
+void NdtSlamPCL<PointSource, PointTarget>::setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& map_ptr)
 {
     ndt_ptr_->setInputTarget(map_ptr);
 }
 
 template <class PointSource, class PointTarget>
-void NdtSlamPCL<PointSource, PointTarget>::setInputSource(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& scan_ptr)
+void NdtSlamPCL<PointSource, PointTarget>::setInputSource(const boost::shared_ptr< pcl::PointCloud<PointSource> >& scan_ptr)
 {
     ndt_ptr_->setInputSource(scan_ptr);
 }
@@ -124,7 +124,7 @@ Pose NdtSlamPCL<PointSource, PointTarget>::getFinalPose()
 }
 
 template <class PointSource, class PointTarget>
-void NdtSlamPCL<PointSource, PointTarget>::buildMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr)
+void NdtSlamPCL<PointSource, PointTarget>::buildMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& map_ptr)
 {
     const auto trans_estimation = getTransformationEpsilon();
     const auto step_size = getStepSize();

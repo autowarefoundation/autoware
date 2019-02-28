@@ -43,10 +43,13 @@ class PoseLinearInterpolator
         void clearPoseStamped();
         bool isNotSetPoseStamped() const;
         void pushbackPoseStamped(const PoseStamped& pose);
-        PoseStamped getInterpolatePose(const double time_stamp) const;
+        PoseStamped getInterpolatePoseStamped(const double time_stamp) const;
+        PoseStamped getCurrentPoseStamped() const;
+        PoseStamped getPrevPoseStamped() const;
+        Velocity getVelocity() const;
 
     private:
-        PoseStamped pose_;
+        PoseStamped current_pose_;
         PoseStamped prev_pose_;
 };
 

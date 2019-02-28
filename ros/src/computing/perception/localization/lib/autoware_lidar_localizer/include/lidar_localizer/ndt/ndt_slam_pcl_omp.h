@@ -76,10 +76,10 @@
         protected:
             void align(const Pose& predict_pose) override;
             double getFitnessScore() override;
-            void setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& map_ptr) override;
-            void setInputSource(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& scan_ptr) override;
+            void setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointSource> >& map_ptr) override;
+            void setInputSource(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& scan_ptr) override;
             Pose getFinalPose() override;
-            void buildMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr) override;
+            void buildMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& map_ptr) override;
             void swapInstance() override;
 
         private:

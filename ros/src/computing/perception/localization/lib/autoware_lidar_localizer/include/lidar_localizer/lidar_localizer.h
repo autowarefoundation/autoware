@@ -59,42 +59,38 @@ class LidarLocalizer
 
     public:
         LidarLocalizer();
-//        virtual ~LidarLocalizer() = default;
         virtual ~LidarLocalizer();
-        void initPointsMap(boost::shared_ptr< pcl::PointCloud<PointTarget> >& pointcloud_ptr);
+        void initPointsMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& pointcloud_ptr);
         void updatePointsMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& pointcloud_ptr);
 
-        bool alignMap(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& pointcloud_ptr, const Pose& predict_pose);
+        bool alignMap(const boost::shared_ptr< pcl::PointCloud<PointSource> >& pointcloud_ptr, const Pose& predict_pose);
         void writeLogFile(const std::string& log_file_directory_path);
 
         Pose getLocalizerPose() const;
-        const boost::shared_ptr< pcl::PointCloud<PointTarget> > getMapPtr() const;
         double getAlignTime() const;
 
     protected:
         virtual void align(const Pose& predict_pose) = 0;
-        virtual void setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr) = 0;
-        virtual void setInputSource(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& scan_ptr) = 0;
+        virtual void setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& map_ptr) = 0;
+        virtual void setInputSource(const boost::shared_ptr< pcl::PointCloud<PointSource> >& scan_ptr) = 0;
         virtual Pose getFinalPose() = 0;
 
-        virtual void buildMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr) = 0;
+        virtual void buildMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& map_ptr) = 0;
         virtual void swapInstance() = 0;
 
         virtual std::stringstream logFileContent() const;
 
     private:
-        void buildMapThread(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr);
+        void buildMapThread(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& map_ptr);
         bool swapMap();
 
-        pcl::PointCloud<PointTarget> map_raw_;
-        boost::shared_ptr< pcl::PointCloud<PointTarget> > map_raw_ptr_;
         Pose localizer_pose_;
 
+        bool is_init_map_;
+        size_t map_point_size_;
         double align_time_;
         double fitness_score_;
-        size_t default_reserve_size_;
 
-        std::thread build_map_thread_;
         ThreadStatus thread_status_;
         std::chrono::system_clock::time_point thread_begin_time_;
 };

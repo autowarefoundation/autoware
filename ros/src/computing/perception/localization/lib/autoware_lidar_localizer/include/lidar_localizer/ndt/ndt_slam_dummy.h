@@ -55,8 +55,8 @@ class NdtSlamDummy
     protected:
         void align(const Pose& predict_pose) override;
         double getFitnessScore() override;
-        void setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr) override;
-        void setInputSource(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& scan_ptr) override;
+        void setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& map_ptr) override;
+        void setInputSource(const boost::shared_ptr< pcl::PointCloud<PointSource> >& scan_ptr) override;
         Pose getFinalPose() override;
 };
 

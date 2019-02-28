@@ -67,7 +67,6 @@ class NdtSlam
 {
     using PointSource = pcl::PointXYZI;
     using PointTarget = pcl::PointXYZI;
-    //TODO ExactTime?
     using SyncPolicyPoints = message_filters::sync_policies::ApproximateTime<sensor_msgs::PointCloud2, sensor_msgs::PointCloud2>;
 
     enum class MethodType
@@ -87,37 +86,30 @@ class NdtSlam
         void pointsMapUpdatedCallback(const sensor_msgs::PointCloud2::ConstPtr& pointcloud2_msg_ptr);
         void initialPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& pose_conv_msg_ptr);
         void staticPoseCallback(const geometry_msgs::PoseStamped::ConstPtr& pose_msg_ptr);
-        void pointsRawAndFilterdCallback(const sensor_msgs::PointCloud2::ConstPtr& points_raw_msg_ptr, const sensor_msgs::PointCloud2::ConstPtr& points_filtered_msg_ptr);
+        void mappingAndLocalizingPointsCallback(const sensor_msgs::PointCloud2::ConstPtr& mapping_points_msg_ptr, const sensor_msgs::PointCloud2::ConstPtr& localizing_points_msg_ptr);
 
-        void mapping(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& points_raw_ptr);
+        void mapping(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& mapping_points_ptr);
         //TODO const ros::Time time_stamp
-        void publishPosition(ros::Time time_stamp);
-        void publishPointsMap(ros::Time time_stamp);
-        void publishNDVoxelMap(ros::Time time_stamp);
-        void publishLocalizerStatus(ros::Time time_stamp);
-        void publishTF(ros::Time time_stamp);
+        void publishPosition(const ros::Time& time_stamp);
+        void publishVelocity(const ros::Time& time_stamp);
+        void publishPointsMap(const ros::Time& time_stamp);
+        void publishTF(const ros::Time& time_stamp);
 
         ros::NodeHandle nh_;
         ros::NodeHandle private_nh_;
 
-        ros::Publisher points_map_region_pub_;
+        ros::Publisher points_map_pub_;
+        ros::Publisher ndt_pose_pub_;
         ros::Publisher localizer_pose_pub_;
-        ros::Publisher localizer_twist_pub_;
-        ros::Publisher localizer_score_pub_;
-        ros::Publisher localizer_score_ave_pub_;
-        ros::Publisher localizer_score_var_pub_;
-        ros::Publisher ndvoxel_marker_pub_;
+        ros::Publisher estimate_twist_pub_;
 
         ros::Subscriber config_sub_;
-        ros::Subscriber points_map_updated_sub_;
+        ros::Subscriber points_map_sub_;
         ros::Subscriber initial_pose_sub_;
         ros::Subscriber static_pose_sub_;
-        // ros::Subscriber gnss_pose_sub_;
-        // ros::Subscriber twist_sub_;
-        // ros::Subscriber imu_sub_;
 
-        std::unique_ptr< message_filters::Subscriber<sensor_msgs::PointCloud2> > points_raw_sub_;
-        std::unique_ptr< message_filters::Subscriber<sensor_msgs::PointCloud2> > points_filtered_sub_;
+        std::unique_ptr< message_filters::Subscriber<sensor_msgs::PointCloud2> > mapping_points_sub_;
+        std::unique_ptr< message_filters::Subscriber<sensor_msgs::PointCloud2> > localizing_points_sub_;
         std::unique_ptr< message_filters::Synchronizer<SyncPolicyPoints> > points_synchronizer_;
 
         tf::TransformBroadcaster tf_broadcaster_;
@@ -131,8 +123,7 @@ class NdtSlam
         Eigen::Matrix4f tf_btol_;
         bool with_mapping_;
         bool separate_mapping_;
-        // bool init_pos_gnss_;
-        // bool use_vehicle_twist_;
+        bool use_nn_point_z_when_initial_pose_;
         std::string sensor_frame_;
         std::string base_link_frame_;
         std::string map_frame_;
@@ -142,7 +133,6 @@ class NdtSlam
         double min_add_scan_shift_;
 
         PoseStamped init_pose_stamped_;
-        std::deque<PoseStamped> init_pose_stamped_queue_;
 };
 
 #endif

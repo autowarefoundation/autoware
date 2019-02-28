@@ -87,29 +87,32 @@ Pose transformToPose(const Pose& pose, const Eigen::Matrix4f& m)
   return convertToPose(trans_pose);
 }
 
+Pose convertPoseIntoRelativeCoordinate(const Pose& target_pose, const Pose& reference_pose)
+{
+    Eigen::Matrix4f target_eigen = convertToEigenMatrix4f(target_pose);
+    Eigen::Matrix4f reference_eigen = convertToEigenMatrix4f(reference_pose);
+
+    Eigen::Matrix4f trans_eigen = reference_eigen.inverse() * target_eigen;
+
+    return convertToPose(trans_eigen);
+}
+
 template <class PointType>
 void addPointCloud(const boost::shared_ptr< pcl::PointCloud<PointType> >& input_ptr, const boost::shared_ptr< pcl::PointCloud<PointType> >& output_ptr)
 {
     const auto need_points_size = output_ptr->points.size()+input_ptr->points.size();
+    output_ptr->width = need_points_size;
+    output_ptr->height = 1;
+    std::cout << __func__ << " " << output_ptr->points.size() << std::endl;
     if(output_ptr->points.capacity() < need_points_size) {
-        output_ptr->points.reserve(need_points_size*2);
+        const auto reverse_size = need_points_size*2;
+        output_ptr->points.reserve(reverse_size);
+        std::cout << __func__ << " " << output_ptr->points.capacity() << std::endl;
     }
     *output_ptr += *input_ptr;
 }
 template void addPointCloud(const boost::shared_ptr< pcl::PointCloud<pcl::PointXYZ> >& input_ptr, const boost::shared_ptr< pcl::PointCloud<pcl::PointXYZ> >& output_ptr);
 template void addPointCloud(const boost::shared_ptr< pcl::PointCloud<pcl::PointXYZI> >& input_ptr, const boost::shared_ptr< pcl::PointCloud<pcl::PointXYZI> >& output_ptr);
-
-template <class PointType>
-void addPointCloud(const boost::shared_ptr< pcl::PointCloud<PointType> const>& input_ptr, const boost::shared_ptr< pcl::PointCloud<PointType> >& output_ptr)
-{
-    const auto need_points_size = output_ptr->points.size()+input_ptr->points.size();
-    if(output_ptr->points.capacity() < need_points_size) {
-        output_ptr->points.reserve(need_points_size*2);
-    }
-    *output_ptr += *input_ptr;
-}
-template void addPointCloud(const boost::shared_ptr< pcl::PointCloud<pcl::PointXYZ> const>& input_ptr, const boost::shared_ptr< pcl::PointCloud<pcl::PointXYZ> >& output_ptr);
-template void addPointCloud(const boost::shared_ptr< pcl::PointCloud<pcl::PointXYZI> const>& input_ptr, const boost::shared_ptr< pcl::PointCloud<pcl::PointXYZI> >& output_ptr);
 
 template <class PointType>
 void passThroughPointCloud(const boost::shared_ptr< pcl::PointCloud<PointType> > &input_point_cloud_ptr, const boost::shared_ptr< pcl::PointCloud<PointType> >& output_point_cloud_ptr, const double x, const double y, const double width)
@@ -143,22 +146,6 @@ void limitPointCloudRange(const boost::shared_ptr< pcl::PointCloud<PointType> >&
 template void limitPointCloudRange(const boost::shared_ptr< pcl::PointCloud<pcl::PointXYZ> >& input_ptr, const boost::shared_ptr< pcl::PointCloud<pcl::PointXYZ> >& output_ptr, const double min_range_meter, const double max_range_meter);
 template void limitPointCloudRange(const boost::shared_ptr< pcl::PointCloud<pcl::PointXYZI> >& input_ptr, const boost::shared_ptr< pcl::PointCloud<pcl::PointXYZI> >& output_ptr, const double min_range_meter, const double max_range_meter);
 
-
-template <class PointType>
-void limitPointCloudRange(const boost::shared_ptr< pcl::PointCloud<PointType> const>& input_ptr, const boost::shared_ptr< pcl::PointCloud<PointType> >& output_ptr, const double min_range_meter, const double max_range_meter)
-{
-    double r = 0;
-    for (const auto& p : input_ptr->points) {
-      r = sqrt(pow(p.x, 2.0) + pow(p.y, 2.0));
-      if (r > min_range_meter && r < max_range_meter) {
-        output_ptr->push_back(p);
-      }
-    }
-}
-template void limitPointCloudRange(const boost::shared_ptr< pcl::PointCloud<pcl::PointXYZ> const>& input_ptr, const boost::shared_ptr< pcl::PointCloud<pcl::PointXYZ> >& output_ptr, const double min_range_meter, const double max_range_meter);
-template void limitPointCloudRange(const boost::shared_ptr< pcl::PointCloud<pcl::PointXYZI> const>& input_ptr, const boost::shared_ptr< pcl::PointCloud<pcl::PointXYZI> >& output_ptr, const double min_range_meter, const double max_range_meter);
-
-//TODO use std::minmax_element
 template <class PointType>
 double calcMaxX(const boost::shared_ptr< pcl::PointCloud<PointType> > &cloud)
 {

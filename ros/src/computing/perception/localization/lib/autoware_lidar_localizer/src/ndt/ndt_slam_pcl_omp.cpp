@@ -113,13 +113,13 @@
     }
 
     template <class PointSource, class PointTarget>
-    void NdtSlamPCLOMP<PointSource, PointTarget>::setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& map_ptr)
+    void NdtSlamPCLOMP<PointSource, PointTarget>::setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointSource> >& map_ptr)
     {
         ndt_ptr_->setInputTarget(map_ptr);
     }
 
     template <class PointSource, class PointTarget>
-    void NdtSlamPCLOMP<PointSource, PointTarget>::setInputSource(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& scan_ptr)
+    void NdtSlamPCLOMP<PointSource, PointTarget>::setInputSource(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& scan_ptr)
     {
         ndt_ptr_->setInputSource(scan_ptr);
     }
@@ -137,7 +137,7 @@
     }
 
     template <class PointSource, class PointTarget>
-    void NdtSlamPCLOMP<PointSource, PointTarget>::buildMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr)
+    void NdtSlamPCLOMP<PointSource, PointTarget>::buildMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& map_ptr)
     {
         const auto trans_estimation = getTransformationEpsilon();
         const auto step_size = getStepSize();

@@ -92,12 +92,12 @@ double NdtSlamDummy<PointSource, PointTarget>::getFitnessScore()
 }
 
 template <class PointSource, class PointTarget>
-void NdtSlamDummy<PointSource, PointTarget>::setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr)
+void NdtSlamDummy<PointSource, PointTarget>::setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& map_ptr)
 {
 }
 
 template <class PointSource, class PointTarget>
-void NdtSlamDummy<PointSource, PointTarget>::setInputSource(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& scan_ptr)
+void NdtSlamDummy<PointSource, PointTarget>::setInputSource(const boost::shared_ptr< pcl::PointCloud<PointSource> >& scan_ptr)
 {
 }
 

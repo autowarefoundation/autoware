@@ -50,10 +50,9 @@ class MapManager
 {
     public:
         MapManager();
-//        virtual ~MapManager() = default;
         virtual ~MapManager();
 
-        void addPointCloudMapThread(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& points_raw_ptr);
+        void addPointCloudMapThread(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& points_raw_ptr);
         void downsampleMapThread();
         void saveSingleMapThread();
         void saveSeparateMapThread();
@@ -68,12 +67,12 @@ class MapManager
 
     private:
         void runProcess();
-        void addPointCloudMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& points_raw_ptr);
+
+        void addPointCloudMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& points_raw_ptr);
         void downsampleMap();
         void saveSingleMap();
         void saveSeparateMap();
         void loadAroundMap(const Pose& localizer_pose);
-
 
         std::string directory_path_;
         double separate_map_size_;
@@ -81,12 +80,10 @@ class MapManager
         double default_reserve_size_;
 
         boost::shared_ptr< pcl::PointCloud<PointTarget> > map_ptr_;
-        boost::shared_ptr< pcl::PointCloud<PointTarget> > thread_map_ptr_;
 
         std::deque< std::function<void()> > process_queue_;
         std::thread process_thread_;
-        std::mutex queue_mtx_;
-        std::mutex map_mtx_;
+        std::mutex mtx_;
         bool is_thread_run_ok_;
 };
 

@@ -32,10 +32,10 @@
 
 template <class PointSource, class PointTarget>
 LidarLocalizer<PointSource, PointTarget>::LidarLocalizer()
-    : localizer_pose_(1.2, 0, 2.0, 0, 0, 0) //TODO
+    : is_init_map_(false)
+    , map_point_size_(0)
     , align_time_(0)
     , fitness_score_(0)
-    , default_reserve_size_(100000000)
     , thread_status_(ThreadStatus::Sleeping)
 {
 
@@ -44,51 +44,34 @@ LidarLocalizer<PointSource, PointTarget>::LidarLocalizer()
 template <class PointSource, class PointTarget>
 LidarLocalizer<PointSource, PointTarget>::~LidarLocalizer()
 {
-    std::cerr << __func__ << std::endl;
-    build_map_thread_.join();
 }
 
 template <class PointSource, class PointTarget>
-void LidarLocalizer<PointSource, PointTarget>::initPointsMap(boost::shared_ptr< pcl::PointCloud<PointTarget> >& pointcloud_ptr)
+void LidarLocalizer<PointSource, PointTarget>::initPointsMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& pointcloud_ptr)
 {
-    std::cout << __func__ << std::endl;
-    map_raw_ptr_ = pointcloud_ptr;
-    // map_raw_ptr_->points.reserve(default_reserve_size_);
-    setInputTarget(map_raw_ptr_);
+    setInputTarget(pointcloud_ptr);
+    map_point_size_ = pointcloud_ptr->points.size();
+    is_init_map_ = true;
 }
 
 template <class PointSource, class PointTarget>
 void LidarLocalizer<PointSource, PointTarget>::updatePointsMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& pointcloud_ptr)
 {
-    std::cout << __func__ << std::endl;
-
     if(pointcloud_ptr == nullptr){
         std::cout << "[ERROR] pointcloud_ptr is nullptr" << std::endl;
         return;
     }
 
-
-    if(map_raw_ptr_ == nullptr) {
-        map_raw_ptr_ = pointcloud_ptr;
-        std::cout << pointcloud_ptr->points.size() << " " <<  map_raw_ptr_->points.size() << std::endl;
-        // map_raw_ptr_->points.reserve(default_reserve_size_);
-        setInputTarget(map_raw_ptr_);
-        // TODO replace
-        //initPointsMap(map_raw_ptr_)
+    if(map_point_size_ == 0) {
+        initPointsMap(pointcloud_ptr);
     }
-    else if (pointcloud_ptr->points.size() != map_raw_ptr_->points.size()){
-        std::cout << pointcloud_ptr->points.size() << " " <<  map_raw_ptr_->points.size() << std::endl;
-        map_raw_ptr_ = pointcloud_ptr;
-        // map_raw_ = *pointcloud_ptr;
-        // map_raw_ptr_ = map_raw_.makeShared();
-        //map_raw_ptr_->points.reserve(default_reserve_size_);
-        buildMapThread(map_raw_ptr_);
-
+    else if(map_point_size_ != pointcloud_ptr->points.size()){
+        buildMapThread(pointcloud_ptr);
     }
 }
 
 template <class PointSource, class PointTarget>
-void LidarLocalizer<PointSource, PointTarget>::buildMapThread(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr)
+void LidarLocalizer<PointSource, PointTarget>::buildMapThread(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& map_ptr)
 {
     //donot create multiple threads
     if(thread_status_ != ThreadStatus::Sleeping) {
@@ -98,20 +81,13 @@ void LidarLocalizer<PointSource, PointTarget>::buildMapThread(const boost::share
     thread_begin_time_ =  std::chrono::system_clock::now();
     thread_status_ = ThreadStatus::Running;
 
-    // build_map_thread_ = std::thread([this, map_ptr](){
-    //     std::cout << __func__ << " " << map_ptr << std::endl;
-    //     buildMap(map_ptr);
-    //     std::cout << __func__ << " " << map_ptr << std::endl;
-    //     thread_status_ = ThreadStatus::Finished;
-    // });
-
-    //TODO
     std::thread build_map_thread([this, map_ptr](){
         buildMap(map_ptr);
         thread_status_ = ThreadStatus::Finished;
     });
     build_map_thread.detach();
 
+    map_point_size_ = map_ptr->points.size();
 }
 
 template <class PointSource, class PointTarget>
@@ -125,7 +101,6 @@ bool LidarLocalizer<PointSource, PointTarget>::swapMap()
         std::cout << "*************************" << std::endl;
         std::cout << "waiting for finish thread" << std::endl;
         std::cout << "*************************" << std::endl;
-        //TODO replace? thread.join()
         while(thread_status_ != ThreadStatus::Finished) {
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
@@ -140,26 +115,20 @@ bool LidarLocalizer<PointSource, PointTarget>::swapMap()
 }
 
 template <class PointSource, class PointTarget>
-bool LidarLocalizer<PointSource, PointTarget>::alignMap(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& pointcloud_ptr, const Pose& predict_pose)
+bool LidarLocalizer<PointSource, PointTarget>::alignMap(const boost::shared_ptr< pcl::PointCloud<PointSource> >& pointcloud_ptr, const Pose& predict_pose)
 {
-    std::cout << __func__ << std::endl;
-
-    if(map_raw_ptr_ == nullptr) {
+    if(!is_init_map_) {
         std::cout << "[WARN]received points. But map is not loaded" << std::endl;
         return false;
     }
 
-    if(swapMap()) {
-        std::cout << "map swapped" << std::endl;
-    }
-
+    swapMap();
     setInputSource(pointcloud_ptr);
 
     const auto align_start = std::chrono::system_clock::now();
     align(predict_pose);
     const auto align_end = std::chrono::system_clock::now();
     align_time_ = std::chrono::duration_cast<std::chrono::microseconds>(align_end - align_start).count() / 1000.0;
-    std::cout << "align_time: " << align_time_ << "ms" << std::endl;
 
     localizer_pose_ = getFinalPose();
 
@@ -178,6 +147,7 @@ void LidarLocalizer<PointSource, PointTarget>::writeLogFile(const std::string& l
     }
     if (!log_file_stream) {
       std::cerr << "Could not open log file." << std::endl;
+      return;
       //exit(1);
     }
 
@@ -210,11 +180,6 @@ double LidarLocalizer<PointSource, PointTarget>::getAlignTime() const
     return align_time_;
 }
 
-template <class PointSource, class PointTarget>
-const boost::shared_ptr< pcl::PointCloud<PointTarget> > LidarLocalizer<PointSource, PointTarget>::getMapPtr() const
-{
-    return map_raw_ptr_;
-}
 
 template class LidarLocalizer<pcl::PointXYZ, pcl::PointXYZ>;
 template class LidarLocalizer<pcl::PointXYZI, pcl::PointXYZI>;
