@@ -80,9 +80,8 @@ if(TRT_AVAIL AND CUDA_AVAIL)
          nodes/point_pillars.cpp
          nodes/preprocess_points.cpp
          )
-  # Need ${catkin_LIBRARIES} because of #include <ros/console.h> for ROS_ERROR
+         
   target_link_libraries(point_pillars_lib
-         ${catkin_LIBRARIES}
          nvinfer
          nvonnxparser
          gpu_point_pillars_lib

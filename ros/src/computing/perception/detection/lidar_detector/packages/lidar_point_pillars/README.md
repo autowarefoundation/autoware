@@ -1,4 +1,4 @@
-# Point Pillars for 3D Object Detection
+# Point Pillars for 3D Object Detection: ver. 1.0
 
 Autoware package for Point Pillars.  ([reference paper](https://arxiv.org/abs/1812.05784))
 
@@ -14,6 +14,17 @@ TensorRT : [How to install](https://docs.nvidia.com/deeplearning/sdk/tensorrt-in
 Using launch file:
 `roslaunch lidar_point_pillars lidar_point_pillars.launch pfe_onnx_file:=/PATH/TO/FILE.onnx rpn_onnx_file:=/PATH/TO/FILE.onnx input_topic:=/points_raw`
 
+## API
+```
+/**
+* @brief Call PointPillars for the inference
+* @param[in] in_points_array pointcloud array
+* @param[in] in_num_points Number of points
+* @param[in] out_detections Network output bounding box
+* @details This is interface for the algorithm
+*/
+void doInference(const float* in_points_array, const int in_num_points, std::vector<float>& out_detection);
+```
 
 ## Parameters
 

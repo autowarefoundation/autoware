@@ -18,9 +18,6 @@
 #include <chrono>
 #include <iostream>
 
-// headers in ROS
-#include <ros/console.h>
-
 // headers in local files
 #include "point_pillars.h"
 
@@ -391,7 +388,7 @@ void PointPillars::initTRT()
   onnxToTRTModel(rpn_onnx_file_, rpn_trt_model_stream);
   if (pfe_trt_model_stream == nullptr || rpn_trt_model_stream == nullptr)
   {
-    ROS_ERROR("Failed to load %s or %s ", pfe_onnx_file_.c_str(), rpn_onnx_file_.c_str());
+    std::cerr<< "Failed to load ONNX file " << std::endl;
   }
 
   // deserialize the engine
@@ -399,7 +396,7 @@ void PointPillars::initTRT()
   rpn_runtime_ = nvinfer1::createInferRuntime(g_logger_);
   if (pfe_runtime_ == nullptr || rpn_runtime_ == nullptr)
   {
-    ROS_ERROR("Failed to create TensorRT Runtime object.");
+    std::cerr<<"Failed to create TensorRT Runtime object."<<std::endl;
   }
   pfe_engine_ =
       pfe_runtime_->deserializeCudaEngine(pfe_trt_model_stream->data(), pfe_trt_model_stream->size(), nullptr);
@@ -407,7 +404,7 @@ void PointPillars::initTRT()
       rpn_runtime_->deserializeCudaEngine(rpn_trt_model_stream->data(), rpn_trt_model_stream->size(), nullptr);
   if (pfe_engine_ == nullptr || rpn_engine_ == nullptr)
   {
-    ROS_ERROR("Failed to create TensorRT Engine.");
+    std::cerr << "Failed to create TensorRT Engine." << std::endl;
   }
   pfe_trt_model_stream->destroy();
   rpn_trt_model_stream->destroy();
@@ -415,7 +412,7 @@ void PointPillars::initTRT()
   rpn_context_ = rpn_engine_->createExecutionContext();
   if (pfe_context_ == nullptr || rpn_context_ == nullptr)
   {
-    ROS_ERROR("Failed to create TensorRT Execution Context.");
+    std::cerr << "Failed to create TensorRT Execution Context." << std::endl;;
   }
 }
 
@@ -512,7 +509,7 @@ void PointPillars::preprocessGPU(const float* in_points_array, const int in_num_
   float* dev_points;
   // clang-format off
   GPU_CHECK(cudaMalloc((void**)&dev_points, in_num_points * NUM_BOX_CORNERS_ * sizeof(float)));
-  GPU_CHECK(cudaMemcpy(dev_points, in_points_array, in_num_points * NUM_BOX_CORNERS_ * sizeof(float),　cudaMemcpyHostToDevice));
+  GPU_CHECK(cudaMemcpy(dev_points, in_points_array, in_num_points * NUM_BOX_CORNERS_ * sizeof(float), cudaMemcpyHostToDevice));
   // clang-format on
 
   GPU_CHECK(cudaMemset(dev_pillar_count_histo_, 0, GRID_Y_SIZE_ * GRID_X_SIZE_ * sizeof(int)));
