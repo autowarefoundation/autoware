@@ -8,6 +8,15 @@ find_package(catkin REQUIRED COMPONENTS
         roscpp
         autoware_msgs
         )
+find_package(Eigen3 REQUIRED)
+find_package(PCL REQUIRED
+  COMPONENTS
+    core
+    filters
+    kdtree
+)
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
 
 set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
@@ -17,17 +26,26 @@ catkin_package(
         CATKIN_DEPENDS roscpp autoware_msgs
 )
 
-include_directories(amathutils_lib
+include_directories(
         include
         ${catkin_INCLUDE_DIRS}
         ${autoware_msgs_INCLUDE_DIRS}
+        ${EIGEN3_INCLUDE_DIRS}
+        ${PCL_INCLUDE_DIRS}
         )
 
 add_library(amathutils_lib
         src/Amathutils.cpp
+        src/vector3d.cpp
+        src/vector2d.cpp
+        src/kdtree_search.cpp
+        src/polygon.cpp
+        src/xorshift128.cpp
         )
+
 target_link_libraries(amathutils_lib
         ${catkin_LIBRARIES}
+        ${PCL_LIBRARIES}
         )
 
 add_dependencies(amathutils_lib
