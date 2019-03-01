@@ -1,16 +1,15 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.5)
 project(pixel_cloud_fusion)
 
 
 find_package(autoware_build_flags REQUIRED)
-find_package(catkin REQUIRED COMPONENTS
-        cv_bridge
-        image_transport
-        pcl_conversions
-        pcl_ros
-        roscpp
-        tf
-        )
+find_package(cv_bridge REQUIRED)
+find_package(image_transport REQUIRED)
+find_package(pcl_conversions REQUIRED)
+find_package(pcl_ros REQUIRED)
+find_package(roscpp REQUIRED)
+find_package(tf REQUIRED)
+find_package(ament_cmake REQUIRED)
 
 find_package(Qt5Core REQUIRED)
 find_package(OpenCV REQUIRED)
@@ -30,15 +29,6 @@ else ()
     set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
 endif ()
 
-catkin_package(CATKIN_DEPENDS
-        cv_bridge
-        image_transport
-        pcl_conversions
-        pcl_ros
-        roscpp
-        tf
-        )
-
 set(CMAKE_CXX_FLAGS "-O3 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 #fusion Library
@@ -56,7 +46,6 @@ endif ()
 
 target_include_directories(pixel_cloud_fusion_lib PRIVATE
         ${OpenCV_INCLUDE_DIR}
-        ${catkin_INCLUDE_DIRS}
         ${Boost_INCLUDE_DIRS}
         ${PCL_INCLUDE_DIRS}
         include
@@ -64,35 +53,67 @@ target_include_directories(pixel_cloud_fusion_lib PRIVATE
 
 target_link_libraries(pixel_cloud_fusion_lib
         ${OpenCV_LIBRARIES}
-        ${catkin_LIBRARIES}
         ${PCL_LIBRARIES}
         ${Qt5Core_LIBRARIES}
         )
 
-add_dependencies(pixel_cloud_fusion_lib
-        ${catkin_EXPORTED_TARGETS}
+ament_target_dependencies(pixel_cloud_fusion_lib
+        cv_bridge
+        image_transport
+        pcl_conversions
+        pcl_ros
+        roscpp
+        tf
         )
 
 #Fusion node
 add_executable(pixel_cloud_fusion
         src/pixel_cloud_fusion_node.cpp
         )
+
 target_include_directories(pixel_cloud_fusion PRIVATE
         ${OpenCV_INCLUDE_DIR}
-        ${catkin_INCLUDE_DIRS}
         ${Boost_INCLUDE_DIRS}
         ${PCL_INCLUDE_DIRS}
         include
         )
 
 target_link_libraries(pixel_cloud_fusion
-        pixel_cloud_fusion_lib)
+        ${OpenCV_LIBRARIES}
+        ${PCL_LIBRARIES}
+        ${Qt5Core_LIBRARIES}
+        pixel_cloud_fusion_lib
+        )
+
+ament_target_dependencies(pixel_cloud_fusion
+        cv_bridge
+        roscpp
+        )
 
 install(TARGETS pixel_cloud_fusion
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch/
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        DESTINATION share/${PROJECT_NAME}/launch
         PATTERN ".svn" EXCLUDE)
+
+ament_export_dependencies(ament_cmake)
+ament_export_dependencies(cv_bridge)
+ament_export_dependencies(image_transport)
+ament_export_dependencies(pcl_conversions)
+ament_export_dependencies(pcl_ros)
+ament_export_dependencies(roscpp)
+ament_export_dependencies(tf)
+
+ament_export_include_directories(include)
+
+ament_export_libraries(pixel_cloud_fusion_lib)
+
+if(BUILD_TESTING)
+        find_package(ament_lint_auto REQUIRED)
+        ament_lint_auto_find_test_dependencies()
+endif()
+
+ament_package()

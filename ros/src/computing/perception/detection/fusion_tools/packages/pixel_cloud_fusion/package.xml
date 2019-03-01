@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
     <name>pixel_cloud_fusion</name>
     <version>1.10.0</version>
     <description>Pixel/Point Cloud fusion node</description>
     <maintainer email="abraham.monrroy@tier4.jp">Abraham Monrroy</maintainer>
     <license>Apache 2</license>
-    <buildtool_depend>catkin</buildtool_depend>
+    <buildtool_depend>ament_cmake</buildtool_depend>
     <buildtool_depend>autoware_build_flags</buildtool_depend>
 
     <build_depend>cv_bridge</build_depend>
@@ -16,12 +16,15 @@
     <build_depend>qtbase5-dev</build_depend>
     <build_depend>tf</build_depend>
 
-    <run_depend>cv_bridge</run_depend>
-    <run_depend>image_transport</run_depend>
-    <run_depend>pcl_conversions</run_depend>
-    <run_depend>pcl_ros</run_depend>
-    <run_depend>roscpp</run_depend>
-    <run_depend>libqt5-core</run_depend>
-    <run_depend>tf</run_depend>
+    <exec_depend>cv_bridge</exec_depend>
+    <exec_depend>image_transport</exec_depend>
+    <exec_depend>pcl_conversions</exec_depend>
+    <exec_depend>pcl_ros</exec_depend>
+    <exec_depend>roscpp</exec_depend>
+    <exec_depend>libqt5-core</exec_depend>
+    <exec_depend>tf</exec_depend>
 
+    <export>
+        <build_type>ament_cmake</build_type>
+    </export>
 </package>
