@@ -22,7 +22,7 @@ NaiveMotionPredict::NaiveMotionPredict() : nh_(), private_nh_("~")
   private_nh_.param<int>("num_prediction", num_prediction_, 10);
   private_nh_.param<double>("sensor_height_", sensor_height_, 2.0);
 
-  predicted_objects_pub_ = nh_.advertise<autoware_msgs::DetectedObjectArray>("/prediction/motion_predictor/objects", 1);
+  predicted_objects_pub_ = nh_.advertise<autoware_detection_msgs::DetectedObjectArray>("/prediction/motion_predictor/objects", 1);
   predicted_paths_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("/prediction/motion_predictor/path_markers", 1);
   detected_objects_sub_ = nh_.subscribe("/detection/objects", 1, &NaiveMotionPredict::objectsCallback, this);
 }
@@ -55,15 +55,15 @@ void NaiveMotionPredict::initializeROSmarker(const std_msgs::Header& header, con
   predicted_line.points.push_back(p);
 }
 
-void NaiveMotionPredict::makePrediction(const autoware_msgs::DetectedObject& object,
-                                        std::vector<autoware_msgs::DetectedObject>& predicted_objects,
+void NaiveMotionPredict::makePrediction(const autoware_detection_msgs::DetectedObject& object,
+                                        std::vector<autoware_detection_msgs::DetectedObject>& predicted_objects,
                                         visualization_msgs::Marker& predicted_line)
 {
-  autoware_msgs::DetectedObject target_object = object;
+  autoware_detection_msgs::DetectedObject target_object = object;
   initializeROSmarker(object.header, object.pose.position, object.id, predicted_line);
   for (int i = 0; i < num_prediction_; i++)
   {
-    autoware_msgs::DetectedObject predicted_object = generatePredictedObject(target_object);
+    autoware_detection_msgs::DetectedObject predicted_object = generatePredictedObject(target_object);
     target_object = predicted_object;
 
     geometry_msgs::Point p;
@@ -80,9 +80,9 @@ Feel free to change/modify generatePredictedObject function
 and send pull request to Autoware
  */
 
-autoware_msgs::DetectedObject NaiveMotionPredict::generatePredictedObject(const autoware_msgs::DetectedObject& object)
+autoware_detection_msgs::DetectedObject NaiveMotionPredict::generatePredictedObject(const autoware_detection_msgs::DetectedObject& object)
 {
-  autoware_msgs::DetectedObject predicted_object;
+  autoware_detection_msgs::DetectedObject predicted_object;
   if (object.behavior_state == MotionModel::CV)
   {
     predicted_object = moveConstantVelocity(object);
@@ -100,9 +100,9 @@ autoware_msgs::DetectedObject NaiveMotionPredict::generatePredictedObject(const 
   return predicted_object;
 }
 
-autoware_msgs::DetectedObject NaiveMotionPredict::moveConstantVelocity(const autoware_msgs::DetectedObject& object)
+autoware_detection_msgs::DetectedObject NaiveMotionPredict::moveConstantVelocity(const autoware_detection_msgs::DetectedObject& object)
 {
-  autoware_msgs::DetectedObject predicted_object;
+  autoware_detection_msgs::DetectedObject predicted_object;
   predicted_object = object;
   double px = object.pose.position.x;
   double py = object.pose.position.y;
@@ -119,10 +119,10 @@ autoware_msgs::DetectedObject NaiveMotionPredict::moveConstantVelocity(const aut
   return predicted_object;
 }
 
-autoware_msgs::DetectedObject
-NaiveMotionPredict::moveConstantTurnRateVelocity(const autoware_msgs::DetectedObject& object)
+autoware_detection_msgs::DetectedObject
+NaiveMotionPredict::moveConstantTurnRateVelocity(const autoware_detection_msgs::DetectedObject& object)
 {
-  autoware_msgs::DetectedObject predicted_object;
+  autoware_detection_msgs::DetectedObject predicted_object;
   predicted_object = object;
   double px = object.pose.position.x;
   double py = object.pose.position.y;
@@ -170,15 +170,15 @@ double NaiveMotionPredict::generateYawFromQuaternion(const geometry_msgs::Quater
   return yaw;
 }
 
-void NaiveMotionPredict::objectsCallback(const autoware_msgs::DetectedObjectArray& input)
+void NaiveMotionPredict::objectsCallback(const autoware_detection_msgs::DetectedObjectArray& input)
 {
-  autoware_msgs::DetectedObjectArray output;
+  autoware_detection_msgs::DetectedObjectArray output;
   visualization_msgs::MarkerArray predicted_lines;
   output.header = input.header;
 
   for (const auto &object : input.objects)
   {
-    std::vector<autoware_msgs::DetectedObject> predicted_objects_vec;
+    std::vector<autoware_detection_msgs::DetectedObject> predicted_objects_vec;
     visualization_msgs::Marker predicted_line;
     if (isObjectValid(object))
     {
@@ -199,7 +199,7 @@ void NaiveMotionPredict::objectsCallback(const autoware_msgs::DetectedObjectArra
   predicted_paths_pub_.publish(predicted_lines);
 }
 
-bool NaiveMotionPredict::isObjectValid(const autoware_msgs::DetectedObject &in_object)
+bool NaiveMotionPredict::isObjectValid(const autoware_detection_msgs::DetectedObject &in_object)
 {
   if (!in_object.valid ||
       std::isnan(in_object.pose.orientation.x) ||

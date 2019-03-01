@@ -13,6 +13,8 @@
   <build_depend>autoware_config_msgs</build_depend>
   <build_depend>tablet_socket_msgs</build_depend>
   <build_depend>autoware_planning_msgs</build_depend>
+  <build_depend>autoware_detection_msgs</build_depend>
+  <build_depend>autoware_detection_msgs</build_depend>
 
   <run_depend>rospy</run_depend>
   <run_depend>std_msgs</run_depend>
@@ -21,6 +23,8 @@
   <run_depend>tablet_socket_msgs</run_depend>
   <run_depend>velodyne</run_depend>
   <run_depend>autoware_planning_msgs</run_depend>
+  <run_depend>autoware_detection_msgs</run_depend>
+  <run_depend>autoware_detection_msgs</run_depend>
   <export>
   </export>
 </package>

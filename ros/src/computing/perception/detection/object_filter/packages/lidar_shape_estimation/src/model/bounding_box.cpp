@@ -31,7 +31,7 @@
 
 #include <Eigen/Core>
 
-bool BoundingBoxModel::estimate(const pcl::PointCloud<pcl::PointXYZ>& cluster, autoware_msgs::DetectedObject& output)
+bool BoundingBoxModel::estimate(const pcl::PointCloud<pcl::PointXYZ>& cluster, autoware_detection_msgs::DetectedObject& output)
 {
   // calc centroid point for cylinder height(z)
   pcl::PointXYZ centroid;

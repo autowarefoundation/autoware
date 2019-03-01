@@ -4,7 +4,7 @@
 /* user header */
 #include "sensor_msgs/Image.h"
 #include "sensor_msgs/PointCloud2.h"
-#include "autoware_msgs/ImageObj.h"
+#include "autoware_detection_msgs/ImageObj.h"
 #include "autoware_sensing_msgs/PointsImage.h"
 
 /* ----mode---- */
@@ -283,7 +283,7 @@ bool publish() {
 }
 #endif
 
-void obj_person__image_obj_callback(const autoware_msgs::ImageObj::ConstPtr& image_obj_msg) {
+void obj_person__image_obj_callback(const autoware_detection_msgs::ImageObj::ConstPtr& image_obj_msg) {
     if (obj_person__image_obj_flag) {
         obj_person__image_obj_flag = false;
         obj_car__image_obj_flag = false;
@@ -310,7 +310,7 @@ void obj_person__image_obj_callback(const autoware_msgs::ImageObj::ConstPtr& ima
     }
 }
 
-void obj_car__image_obj_callback(const autoware_msgs::ImageObj::ConstPtr& image_obj_msg) {
+void obj_car__image_obj_callback(const autoware_detection_msgs::ImageObj::ConstPtr& image_obj_msg) {
     if (obj_car__image_obj_flag) {
         obj_person__image_obj_flag = false;
         obj_car__image_obj_flag = false;

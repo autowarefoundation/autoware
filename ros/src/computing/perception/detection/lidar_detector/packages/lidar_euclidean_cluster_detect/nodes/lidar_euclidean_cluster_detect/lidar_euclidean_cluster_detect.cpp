@@ -45,11 +45,11 @@
 #include <std_msgs/MultiArrayLayout.h>
 #include <std_msgs/MultiArrayDimension.h>
 
-#include "autoware_msgs/Centroids.h"
-#include "autoware_msgs/CloudCluster.h"
-#include "autoware_msgs/CloudClusterArray.h"
-#include "autoware_msgs/DetectedObject.h"
-#include "autoware_msgs/DetectedObjectArray.h"
+#include "autoware_detection_msgs/Centroids.h"
+#include "autoware_detection_msgs/CloudCluster.h"
+#include "autoware_detection_msgs/CloudClusterArray.h"
+#include "autoware_detection_msgs/DetectedObject.h"
+#include "autoware_detection_msgs/DetectedObjectArray.h"
 
 #include <vector_map/vector_map.h>
 
@@ -68,7 +68,7 @@
 #else
 
 #include <opencv2/contrib/contrib.hpp>
-#include <autoware_msgs/DetectedObjectArray.h>
+#include <autoware_detection_msgs/DetectedObjectArray.h>
 
 #endif
 
@@ -193,14 +193,14 @@ void transformBoundingBox(const jsk_recognition_msgs::BoundingBox &in_boundingbo
     out_boundingbox.label = in_boundingbox.label;
 }
 
-void publishDetectedObjects(const autoware_msgs::CloudClusterArray &in_clusters)
+void publishDetectedObjects(const autoware_detection_msgs::CloudClusterArray &in_clusters)
 {
-  autoware_msgs::DetectedObjectArray detected_objects;
+  autoware_detection_msgs::DetectedObjectArray detected_objects;
   detected_objects.header = in_clusters.header;
 
   for (size_t i = 0; i < in_clusters.clusters.size(); i++)
   {
-    autoware_msgs::DetectedObject detected_object;
+    autoware_detection_msgs::DetectedObject detected_object;
     detected_object.header = in_clusters.header;
     detected_object.label = "unknown";
     detected_object.score = 1.;
@@ -216,17 +216,17 @@ void publishDetectedObjects(const autoware_msgs::CloudClusterArray &in_clusters)
   _pub_detected_objects.publish(detected_objects);
 }
 
-void publishCloudClusters(const ros::Publisher *in_publisher, const autoware_msgs::CloudClusterArray &in_clusters,
+void publishCloudClusters(const ros::Publisher *in_publisher, const autoware_detection_msgs::CloudClusterArray &in_clusters,
                           const std::string &in_target_frame, const std_msgs::Header &in_header)
 {
   if (in_target_frame != in_header.frame_id)
   {
-    autoware_msgs::CloudClusterArray clusters_transformed;
+    autoware_detection_msgs::CloudClusterArray clusters_transformed;
     clusters_transformed.header = in_header;
     clusters_transformed.header.frame_id = in_target_frame;
     for (auto i = in_clusters.clusters.begin(); i != in_clusters.clusters.end(); i++)
     {
-      autoware_msgs::CloudCluster cluster_transformed;
+      autoware_detection_msgs::CloudCluster cluster_transformed;
       cluster_transformed.header = in_header;
       try
       {
@@ -262,12 +262,12 @@ void publishCloudClusters(const ros::Publisher *in_publisher, const autoware_msg
   }
 }
 
-void publishCentroids(const ros::Publisher *in_publisher, const autoware_msgs::Centroids &in_centroids,
+void publishCentroids(const ros::Publisher *in_publisher, const autoware_detection_msgs::Centroids &in_centroids,
                       const std::string &in_target_frame, const std_msgs::Header &in_header)
 {
   if (in_target_frame != in_header.frame_id)
   {
-    autoware_msgs::Centroids centroids_transformed;
+    autoware_detection_msgs::Centroids centroids_transformed;
     centroids_transformed.header = in_header;
     centroids_transformed.header.frame_id = in_target_frame;
     for (auto i = centroids_transformed.points.begin(); i != centroids_transformed.points.end(); i++)
@@ -340,7 +340,7 @@ void keepLanePoints(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 
 std::vector<ClusterPtr> clusterAndColorGpu(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
                                            pcl::PointCloud<pcl::PointXYZRGB>::Ptr out_cloud_ptr,
-                                           autoware_msgs::Centroids &in_out_centroids,
+                                           autoware_detection_msgs::Centroids &in_out_centroids,
                                            double in_max_cluster_distance = 0.5)
 {
   std::vector<ClusterPtr> clusters;
@@ -399,7 +399,7 @@ std::vector<ClusterPtr> clusterAndColorGpu(const pcl::PointCloud<pcl::PointXYZ>:
 
 std::vector<ClusterPtr> clusterAndColor(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
                                         pcl::PointCloud<pcl::PointXYZRGB>::Ptr out_cloud_ptr,
-                                        autoware_msgs::Centroids &in_out_centroids,
+                                        autoware_detection_msgs::Centroids &in_out_centroids,
                                         double in_max_cluster_distance = 0.5)
 {
   pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
@@ -534,7 +534,7 @@ void checkAllForMerge(std::vector<ClusterPtr> &in_clusters, std::vector<ClusterP
 
 void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
                        pcl::PointCloud<pcl::PointXYZRGB>::Ptr out_cloud_ptr,
-                       autoware_msgs::Centroids &in_out_centroids, autoware_msgs::CloudClusterArray &in_out_clusters)
+                       autoware_detection_msgs::Centroids &in_out_centroids, autoware_detection_msgs::CloudClusterArray &in_out_clusters)
 {
   // cluster the pointcloud according to the distance of the points using different thresholds (not only one for the
   // entire pc)
@@ -694,7 +694,7 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 
         in_out_centroids.points.push_back(centroid);
 
-        autoware_msgs::CloudCluster cloud_cluster;
+        autoware_detection_msgs::CloudCluster cloud_cluster;
         final_clusters[i]->ToROSMessage(_velodyne_header, cloud_cluster);
         in_out_clusters.clusters.push_back(cloud_cluster);
       }
@@ -857,8 +857,8 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
     pcl::PointCloud<pcl::PointXYZ>::Ptr clipped_cloud_ptr(new pcl::PointCloud<pcl::PointXYZ>);
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr colored_clustered_cloud_ptr(new pcl::PointCloud<pcl::PointXYZRGB>);
 
-    autoware_msgs::Centroids centroids;
-    autoware_msgs::CloudClusterArray cloud_clusters;
+    autoware_detection_msgs::Centroids centroids;
+    autoware_detection_msgs::CloudClusterArray cloud_clusters;
 
     pcl::fromROSMsg(*in_sensor_cloud, *current_sensor_cloud_ptr);
 
@@ -942,11 +942,11 @@ int main(int argc, char **argv)
 
   _pub_cluster_cloud = h.advertise<sensor_msgs::PointCloud2>("/points_cluster", 1);
   _pub_ground_cloud = h.advertise<sensor_msgs::PointCloud2>("/points_ground", 1);
-  _centroid_pub = h.advertise<autoware_msgs::Centroids>("/cluster_centroids", 1);
+  _centroid_pub = h.advertise<autoware_detection_msgs::Centroids>("/cluster_centroids", 1);
 
   _pub_points_lanes_cloud = h.advertise<sensor_msgs::PointCloud2>("/points_lanes", 1);
-  _pub_clusters_message = h.advertise<autoware_msgs::CloudClusterArray>("/detection/lidar_detector/cloud_clusters", 1);
-  _pub_detected_objects = h.advertise<autoware_msgs::DetectedObjectArray>("/detection/lidar_detector/objects", 1);
+  _pub_clusters_message = h.advertise<autoware_detection_msgs::CloudClusterArray>("/detection/lidar_detector/cloud_clusters", 1);
+  _pub_detected_objects = h.advertise<autoware_detection_msgs::DetectedObjectArray>("/detection/lidar_detector/objects", 1);
 
   std::string points_topic, gridmap_topic;
 

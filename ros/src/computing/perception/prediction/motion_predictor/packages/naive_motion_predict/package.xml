@@ -12,15 +12,17 @@
 
     <build_depend>roscpp</build_depend>
     <build_depend>sensor_msgs</build_depend>
-    <build_depend>autoware_msgs</build_depend>
+      <build_depend>autoware_detection_msgs</build_depend>
     <build_depend>tf</build_depend>
     <build_depend>imm_ukf_pda_track</build_depend>
+  <build_depend>autoware_detection_msgs</build_depend>
 
     <run_depend>roscpp</run_depend>
     <run_depend>sensor_msgs</run_depend>
-    <run_depend>autoware_msgs</run_depend>
+      <run_depend>autoware_detection_msgs</run_depend>
     <run_depend>tf</run_depend>
     <run_depend>imm_ukf_pda_track</run_depend>
+  <run_depend>autoware_detection_msgs</run_depend>
 
     <export></export>
 </package>

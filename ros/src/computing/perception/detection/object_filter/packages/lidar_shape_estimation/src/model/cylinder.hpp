@@ -31,5 +31,5 @@ public:
   /*
    * if cluster size is 1, it can be calculated using the lower limit of the size of the object
    */
-  bool estimate(const pcl::PointCloud<pcl::PointXYZ>& cluster, autoware_msgs::DetectedObject& output) override;
+  bool estimate(const pcl::PointCloud<pcl::PointXYZ>& cluster, autoware_detection_msgs::DetectedObject& output) override;
 };

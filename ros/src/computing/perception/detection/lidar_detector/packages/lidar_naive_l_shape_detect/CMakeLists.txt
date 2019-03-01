@@ -4,12 +4,12 @@ project(lidar_naive_l_shape_detect)
 
 find_package(autoware_build_flags REQUIRED)
 
-find_package(autoware_msgs REQUIRED)
+find_package(autoware_detection_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   pcl_ros
   tf
-  autoware_msgs
+  autoware_detection_msgs
   )
 
 find_package(OpenCV REQUIRED)
@@ -20,7 +20,7 @@ catkin_package(
   CATKIN_DEPENDS
   roscpp
   pcl_ros
-  autoware_msgs
+  autoware_detection_msgs
   tf
   )
 
@@ -29,7 +29,7 @@ link_directories(${OpenCV_LIBRARY_DIRS})
 
 include_directories(
   include
-  ${autoware_msgs_INCLUDE_DIRS}
+  ${autoware_detection_msgs_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
 )

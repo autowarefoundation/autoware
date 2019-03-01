@@ -9,7 +9,7 @@
 
 /* Functions declarations */
 void setContexts(TrafficLightDetector &detector,
-                 const autoware_msgs::Signals::ConstPtr &extractedPos);
+                 const autoware_detection_msgs::Signals::ConstPtr &extractedPos);
 
 #define MINIMAM_RADIUS 3
 #define ROI_MARGINE 25

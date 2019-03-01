@@ -6,6 +6,7 @@ set(ROS_VERSION $ENV{ROS_DISTRO})
 find_package(autoware_build_flags REQUIRED)
 
 find_package(autoware_planning_msgs REQUIRED)
+find_package(autoware_detection_msgs REQUIRED)
 
 find_package(vector_map_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
@@ -22,6 +23,7 @@ find_package(catkin REQUIRED COMPONENTS
         op_simu
         waypoint_follower
         autoware_planning_msgs
+        autoware_detection_msgs
         )
 
 catkin_package(
@@ -30,6 +32,7 @@ catkin_package(
         CATKIN_DEPENDS roscpp
         geometry_msgs
         autoware_planning_msgs
+        autoware_detection_msgs
         map_file
         pcl_conversions
         pcl_ros
@@ -53,6 +56,7 @@ include_directories(
         ${catkin_INCLUDE_DIRS}
         ${vector_map_INCLUDE_DIRS}
         ${autoware_planning_msgs_INCLUDE_DIRS}
+        ${autoware_detection_msgs_INCLUDE_DIRS}
 )
 
 set(ROS_HELPERS_SRC

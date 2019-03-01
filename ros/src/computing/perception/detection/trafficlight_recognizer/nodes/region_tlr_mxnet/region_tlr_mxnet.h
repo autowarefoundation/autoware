@@ -14,7 +14,7 @@
 #include <cv_bridge/cv_bridge.h>
 
 #include "Context.h"
-#include "autoware_msgs/Signals.h"
+#include "autoware_detection_msgs/Signals.h"
 #include "mxnet_traffic_light_recognizer.h"
 
 class BufferFile {
@@ -70,7 +70,7 @@ public:
 
 	void ImageRawCallback(const sensor_msgs::Image &image);
 
-	void ROISignalCallback(const autoware_msgs::Signals::ConstPtr &extracted_pos);
+	void ROISignalCallback(const autoware_detection_msgs::Signals::ConstPtr &extracted_pos);
 
 	// The vector of data structure to save traffic light state, position, ...etc
 	std::vector<Context> contexts_;

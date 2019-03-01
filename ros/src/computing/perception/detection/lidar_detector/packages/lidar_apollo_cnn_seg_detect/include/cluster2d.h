@@ -42,8 +42,8 @@
 #include "util.h"
 #include "disjoint_set.h"
 
-#include <autoware_msgs/DetectedObject.h>
-#include <autoware_msgs/DetectedObjectArray.h>
+#include <autoware_detection_msgs/DetectedObject.h>
+#include <autoware_detection_msgs/DetectedObjectArray.h>
 
 #include <std_msgs/Header.h>
 
@@ -130,10 +130,10 @@ public:
   void getObjects(const float confidence_thresh,
                   const float height_thresh,
                   const int min_pts_num,
-                  autoware_msgs::DetectedObjectArray &objects,
+                  autoware_detection_msgs::DetectedObjectArray &objects,
                   const std_msgs::Header &in_header);
 
-  autoware_msgs::DetectedObject obstacleToObject(const Obstacle &in_obstacle,
+  autoware_detection_msgs::DetectedObject obstacleToObject(const Obstacle &in_obstacle,
                                                  const std_msgs::Header &in_header);
 
 private:

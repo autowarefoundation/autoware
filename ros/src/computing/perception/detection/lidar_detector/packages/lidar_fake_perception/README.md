@@ -46,12 +46,12 @@ Parameters can be set in both Launch file and Runtime manager:
 ```
 Node [/lidar_fake_percetion]
 Publications:
- * /fake_objects [autoware_msgs/DetectedObjectArray]
+ * /fake_objects [autoware_detection_msgs/DetectedObjectArray]
  * /fake_points [sensor_msgs/PointCloud2]
 
 Subscriptions:
  * /move_base_simple/goal [geometry_msgs/PoseStamped]
- * /detected_objects [autoware_msgs/DetectedObjectArray]
+ * /detected_objects [autoware_detection_msgs/DetectedObjectArray]
  * /points_raw [sensor_msgs/PointCloud2]
  * /fake_twist [geometry_msgs/Twist]
  * /tf [tf2_msgs/TFMessage]

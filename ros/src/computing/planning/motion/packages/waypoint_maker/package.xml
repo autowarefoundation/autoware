@@ -19,6 +19,8 @@
     <build_depend>vector_map</build_depend>
     <build_depend>lane_planner</build_depend>
       <build_depend>autoware_planning_msgs</build_depend>
+  <build_depend>autoware_detection_msgs</build_depend>
+  <build_depend>autoware_detection_msgs</build_depend>
 
     <run_depend>gnss</run_depend>
     <run_depend>roscpp</run_depend>
@@ -30,4 +32,6 @@
     <run_depend>vector_map</run_depend>
     <run_depend>lane_planner</run_depend>
       <run_depend>autoware_planning_msgs</run_depend>
+  <run_depend>autoware_detection_msgs</run_depend>
+  <run_depend>autoware_detection_msgs</run_depend>
 </package>

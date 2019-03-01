@@ -6,7 +6,7 @@ find_package(OpenCV REQUIRED)
 
 find_package(autoware_build_flags REQUIRED)
 
-find_package(autoware_msgs REQUIRED)
+find_package(autoware_detection_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         cv_bridge
         image_transport
@@ -14,7 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
         sensor_msgs
         std_msgs
         tf
-        autoware_msgs
+        autoware_detection_msgs
         )
 
 catkin_package(CATKIN_DEPENDS
@@ -23,7 +23,7 @@ catkin_package(CATKIN_DEPENDS
         roscpp
         sensor_msgs
         std_msgs
-        autoware_msgs
+        autoware_detection_msgs
         tf
         )
 
@@ -32,7 +32,7 @@ include_directories(
         lib
         ${OpenCV_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
-        ${autoware_msgs_INCLUDE_DIRS}
+        ${autoware_detection_msgs_INCLUDE_DIRS}
 )
 
 add_library(

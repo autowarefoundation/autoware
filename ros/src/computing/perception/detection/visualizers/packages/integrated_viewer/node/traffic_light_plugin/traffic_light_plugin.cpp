@@ -1,5 +1,5 @@
 #include <ros/ros.h>
-#include "autoware_msgs/TrafficLight.h"
+#include "autoware_detection_msgs/TrafficLight.h"
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -30,7 +30,7 @@ namespace integrated_viewer
   } // TrafficLightPlugin::TrafficLightPlugin()
 
 
-  void TrafficLightPlugin::SignalStateCallback(const autoware_msgs::TrafficLight::ConstPtr& msg) {
+  void TrafficLightPlugin::SignalStateCallback(const autoware_detection_msgs::TrafficLight::ConstPtr& msg) {
     StateInfo info = {};
     GetStateInfo(static_cast<StateNumber>(msg->traffic_light), info);
     SetStateInfo(info);

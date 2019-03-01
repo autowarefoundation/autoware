@@ -48,7 +48,7 @@ Launch file available parameters:
 
 |Topic|Type|Objective|
 ------|----|---------
-|`/detection/vision_objects`|`autoware_msgs::DetectedObjectArray`|Contains the coordinates of the bounding box in image coordinates for detected objects.|
+|`/detection/vision_objects`|`autoware_detection_msgs::DetectedObjectArray`|Contains the coordinates of the bounding box in image coordinates for detected objects.|
 
 ### Video
 

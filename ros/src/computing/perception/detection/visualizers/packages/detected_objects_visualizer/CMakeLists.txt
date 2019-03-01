@@ -4,7 +4,7 @@ project(detected_objects_visualizer)
 find_package(catkin REQUIRED COMPONENTS
         autoware_build_flags
         roscpp
-        autoware_msgs
+        autoware_detection_msgs
         geometry_msgs
         sensor_msgs
         tf
@@ -16,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
         CATKIN_DEPENDS
         roscpp
-        autoware_msgs
+        autoware_detection_msgs
         geometry_msgs
         sensor_msgs
         tf

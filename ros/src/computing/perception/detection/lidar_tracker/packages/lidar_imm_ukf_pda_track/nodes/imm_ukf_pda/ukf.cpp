@@ -476,7 +476,7 @@ void UKF::findMaxZandS(Eigen::VectorXd& max_det_z, Eigen::MatrixXd& max_det_s)
 }
 
 void UKF::updateEachMotion(const double detection_probability, const double gate_probability, const double gating_thres,
-                           const std::vector<autoware_msgs::DetectedObject>& object_vec,
+                           const std::vector<autoware_detection_msgs::DetectedObject>& object_vec,
                            std::vector<double>& lambda_vec)
 {
   // calculating association probability
@@ -677,7 +677,7 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
   }
 }
 
-void UKF::updateMeasurementForCTRV(const std::vector<autoware_msgs::DetectedObject>& object_vec)
+void UKF::updateMeasurementForCTRV(const std::vector<autoware_detection_msgs::DetectedObject>& object_vec)
 {
   std::vector<double> e_ctrv_vec;
   std::vector<Eigen::VectorXd> meas_vec;
@@ -733,7 +733,7 @@ void UKF::uppateForCTRV()
   }
 }
 
-void UKF::updateSUKF(const std::vector<autoware_msgs::DetectedObject>& object_vec)
+void UKF::updateSUKF(const std::vector<autoware_detection_msgs::DetectedObject>& object_vec)
 {
   // Applying this skip process only to updateSUKF
   // since updateIMMUKF update covariance even if there is no measurement.
@@ -747,7 +747,7 @@ void UKF::updateSUKF(const std::vector<autoware_msgs::DetectedObject>& object_ve
 }
 
 void UKF::updateIMMUKF(const double detection_probability, const double gate_probability, const double gating_thres,
-                       const std::vector<autoware_msgs::DetectedObject>& object_vec)
+                       const std::vector<autoware_detection_msgs::DetectedObject>& object_vec)
 {
   /*****************************************************************************
   *  IMM Update
@@ -1259,7 +1259,7 @@ void UKF::predictionLidarMeasurement(const int motion_ind, const int num_meas_st
   }
 }
 
-double UKF::calculateNIS(const autoware_msgs::DetectedObject& in_object, const int motion_ind)
+double UKF::calculateNIS(const autoware_detection_msgs::DetectedObject& in_object, const int motion_ind)
 {
   Eigen::VectorXd z_pred = Eigen::VectorXd(num_lidar_direction_state_);
   Eigen::MatrixXd s_pred = Eigen::MatrixXd(num_lidar_direction_state_, num_lidar_direction_state_);
@@ -1286,7 +1286,7 @@ double UKF::calculateNIS(const autoware_msgs::DetectedObject& in_object, const i
   return nis;
 }
 
-bool UKF::isLaneDirectionAvailable(const autoware_msgs::DetectedObject& in_object, const int motion_ind,
+bool UKF::isLaneDirectionAvailable(const autoware_detection_msgs::DetectedObject& in_object, const int motion_ind,
                                    const double lane_direction_chi_thres)
 {
   predictionLidarMeasurement(motion_ind, num_lidar_direction_state_);
@@ -1301,7 +1301,7 @@ bool UKF::isLaneDirectionAvailable(const autoware_msgs::DetectedObject& in_objec
   return is_direction_available;
 }
 
-void UKF::checkLaneDirectionAvailability(const autoware_msgs::DetectedObject& in_object,
+void UKF::checkLaneDirectionAvailability(const autoware_detection_msgs::DetectedObject& in_object,
                                          const double lane_direction_chi_thres, const bool use_sukf)
 {
   if (use_sukf)
@@ -1328,7 +1328,7 @@ void UKF::prediction(const bool use_sukf, const bool has_subscribed_vectormap, c
 }
 
 void UKF::update(const bool use_sukf, const double detection_probability, const double gate_probability,
-                 const double gating_thres, const std::vector<autoware_msgs::DetectedObject>& object_vec)
+                 const double gating_thres, const std::vector<autoware_detection_msgs::DetectedObject>& object_vec)
 {
   if (use_sukf)
   {

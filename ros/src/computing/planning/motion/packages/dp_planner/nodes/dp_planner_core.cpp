@@ -307,7 +307,7 @@ void PlannerX::callbackGetRvizPoint(const geometry_msgs::PointStampedConstPtr& m
 	point.point.y = msg->point.y+m_OriginPos.position.y;
 	point.point.z = msg->point.z+m_OriginPos.position.z;
 
-	autoware_msgs::CloudClusterArray clusters_array;
+	autoware_detection_msgs::CloudClusterArray clusters_array;
 	clusters_array.clusters.push_back(GenerateSimulatedObstacleCluster(width, length, height, 50, point));
 	m_OriginalClusters.clear();
 	int nNum1, nNum2;
@@ -365,9 +365,9 @@ void PlannerX::callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& 
 	bInitPos = true;
 }
 
-autoware_msgs::CloudCluster PlannerX::GenerateSimulatedObstacleCluster(const double& x_rand, const double& y_rand, const double& z_rand, const int& nPoints, const geometry_msgs::PointStamped& centerPose)
+autoware_detection_msgs::CloudCluster PlannerX::GenerateSimulatedObstacleCluster(const double& x_rand, const double& y_rand, const double& z_rand, const int& nPoints, const geometry_msgs::PointStamped& centerPose)
 {
-	autoware_msgs::CloudCluster cluster;
+	autoware_detection_msgs::CloudCluster cluster;
 	cluster.centroid_point.point = centerPose.point;
 	cluster.dimensions.x = x_rand;
 	cluster.dimensions.y = y_rand;
@@ -399,7 +399,7 @@ autoware_msgs::CloudCluster PlannerX::GenerateSimulatedObstacleCluster(const dou
 	return cluster;
 }
 
-void PlannerX::callbackGetCloudClusters(const autoware_msgs::CloudClusterArrayConstPtr& msg)
+void PlannerX::callbackGetCloudClusters(const autoware_detection_msgs::CloudClusterArrayConstPtr& msg)
 {
 	timespec timerTemp;
 	UtilityHNS::UtilityH::GetTickCount(timerTemp);

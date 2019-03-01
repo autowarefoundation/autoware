@@ -5,11 +5,11 @@
 #include <unordered_map>
 
 #include <autoware_config_msgs/ConfigDecisionMaker.h>
-#include <autoware_msgs/CloudClusterArray.h>
+#include <autoware_detection_msgs/CloudClusterArray.h>
 #include <autoware_planning_msgs/LaneArray.h>
 #include <autoware_planning_msgs/Waypoint.h>
 #include <autoware_planning_msgs/Lane.h>
-#include <autoware_msgs/TrafficLight.h>
+#include <autoware_detection_msgs/TrafficLight.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <jsk_recognition_msgs/BoundingBox.h>
@@ -223,7 +223,7 @@ private:
   void callbackFromCurrentVelocity(const geometry_msgs::TwistStamped &msg);
   void callbackFromCurrentPose(const geometry_msgs::PoseStamped &msg);
   void callbackFromClosestWaypoint(const std_msgs::Int32 &msg);
-  void callbackFromLightColor(const ros::MessageEvent<autoware_msgs::TrafficLight const> &event);
+  void callbackFromLightColor(const ros::MessageEvent<autoware_detection_msgs::TrafficLight const> &event);
   void callbackFromLaneChangeFlag(const std_msgs::Int32 &msg);
   void callbackFromPointsRaw(const sensor_msgs::PointCloud2::ConstPtr &msg);
   void callbackFromFinalWaypoint(const autoware_planning_msgs::Lane &msg);
@@ -232,7 +232,7 @@ private:
   void callbackFromSimPose(const geometry_msgs::PoseStamped &msg);
   void callbackFromStateCmd(const std_msgs::Int32 &msg);
   void callbackFromConfig(const autoware_config_msgs::ConfigDecisionMaker &msg);
-  void callbackFromObjectDetector(const autoware_msgs::CloudClusterArray &msg);
+  void callbackFromObjectDetector(const autoware_detection_msgs::CloudClusterArray &msg);
 
   void callbackFromVectorMapArea(const vector_map_msgs::AreaArray &msg);
   void callbackFromVectorMapPoint(const vector_map_msgs::PointArray &msg);

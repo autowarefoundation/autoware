@@ -35,7 +35,7 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 
-#include "autoware_msgs/CloudClusterArray.h"
+#include "autoware_detection_msgs/CloudClusterArray.h"
 
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "autoware_planning_msgs/LaneArray.h"
@@ -193,7 +193,7 @@ public:
 			std::vector<PlannerHNS::DetectedObject>& impObstacles);
 
 	static void ConvertFromAutowareCloudClusterObstaclesToPlannerH(const PlannerHNS::WayPoint& currState, const PlannerHNS::CAR_BASIC_INFO& car_info,
-			const autoware_msgs::CloudClusterArray& clusters,
+			const autoware_detection_msgs::CloudClusterArray& clusters,
 			std::vector<PlannerHNS::DetectedObject>& impObstacles, int& nOriginalPoints, int& nContourPoints);
 
 	static void ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoint& currState, const std::vector<PlannerHNS::DetectedObject>& trackedObstacles,

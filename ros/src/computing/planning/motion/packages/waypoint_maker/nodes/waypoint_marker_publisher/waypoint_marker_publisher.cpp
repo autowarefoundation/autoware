@@ -27,7 +27,7 @@
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "autoware_planning_msgs/LaneArray.h"
 #include "autoware_config_msgs/ConfigLaneStop.h"
-#include "autoware_msgs/TrafficLight.h"
+#include "autoware_detection_msgs/TrafficLight.h"
 
 namespace
 {
@@ -329,7 +329,7 @@ void createLocalPointMarker(const autoware_planning_msgs::Lane& lane_waypoint)
   g_local_waypoints_marker_array.markers.push_back(lane_waypoint_marker);
 }
 
-void lightCallback(const autoware_msgs::TrafficLightConstPtr& msg)
+void lightCallback(const autoware_detection_msgs::TrafficLightConstPtr& msg)
 {
   std_msgs::ColorRGBA global_color;
   global_color.a = g_global_alpha;
@@ -365,13 +365,13 @@ void lightCallback(const autoware_msgs::TrafficLightConstPtr& msg)
   }
 }
 
-void receiveAutoDetection(const autoware_msgs::TrafficLightConstPtr& msg)
+void receiveAutoDetection(const autoware_detection_msgs::TrafficLightConstPtr& msg)
 {
   if (!g_config_manual_detection)
     lightCallback(msg);
 }
 
-void receiveManualDetection(const autoware_msgs::TrafficLightConstPtr& msg)
+void receiveManualDetection(const autoware_detection_msgs::TrafficLightConstPtr& msg)
 {
   if (g_config_manual_detection)
     lightCallback(msg);

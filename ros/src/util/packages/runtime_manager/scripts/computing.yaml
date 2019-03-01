@@ -962,7 +962,7 @@ params :
       desc    : input_topic desc sample
       label   : 'input topic'
       kind    : topic
-      topic_type : autoware_msgs/DetectedObjectArray
+      topic_type : autoware_detection_msgs/DetectedObjectArray
       v       : /detection/fusion_tools/objects
       cmd_param :
         dash        : ''
@@ -971,7 +971,7 @@ params :
       desc    : output_topic desc sample
       label   : 'output topic'
       kind    : topic
-      topic_type : autoware_msgs/DetectedObjectArray
+      topic_type : autoware_detection_msgs/DetectedObjectArray
       v       : /detection/objects
       cmd_param :
         dash        : ''
@@ -4956,7 +4956,7 @@ params :
       desc    : input_topic desc sample
       label   : 'input_topic'
       kind  : topic
-      topic_type : autoware_msgs/DetectedObjectArray
+      topic_type : autoware_detection_msgs/DetectedObjectArray
       v       : /detection/lidar_objects
       cmd_param :
         dash        : ''
@@ -5012,7 +5012,7 @@ params :
       desc    : input topic desc sample
       label   : 'input topic'
       kind  : topic
-      topic_type : autoware_msgs/DetectedObjectArray
+      topic_type : autoware_detection_msgs/DetectedObjectArray
       v       : /detection/lidar_detector/objects
       cmd_param :
         dash        : ''
@@ -5040,7 +5040,7 @@ params :
       desc    : input objects
       label   : 'input objects'
       kind  : topic
-      topic_type : autoware_msgs/DetectedObjectArray
+      topic_type : autoware_detection_msgs/DetectedObjectArray
       v       : /detected_objects
       cmd_param :
         dash  : ''
@@ -5246,7 +5246,7 @@ params :
       desc  : Point cloud detected objects
       label : detected_objects_range
       kind  : topic
-      topic_type : autoware_msgs/DetectedObjectArray
+      topic_type : autoware_detection_msgs/DetectedObjectArray
       v     : /detection/lidar_objects
       cmd_param :
         dash      : ''
@@ -5255,7 +5255,7 @@ params :
       desc  : Image source topic
       label : detected_objects_vision
       kind  : topic
-      topic_type : autoware_msgs/DetectedObjectArray
+      topic_type : autoware_detection_msgs/DetectedObjectArray
       v     : /detection/vision_objects
       cmd_param :
         dash      : ''
@@ -5301,7 +5301,7 @@ params :
       desc  : Detected Objects Topic Source
       label : objects_topic_src
       kind  : topic
-      topic_type : autoware_msgs/DetectedObjectArray
+      topic_type : autoware_detection_msgs/DetectedObjectArray
       v     : /detection/vision_objects
       cmd_param :
         dash      : ''
@@ -5321,7 +5321,7 @@ params :
       desc  : input topic
       label : input_topic
       kind  : topic
-      topic_type : autoware_msgs/DetectedObjectArray
+      topic_type : autoware_detection_msgs/DetectedObjectArray
       v     : /detection/objects
       cmd_param :
         dash      : ''

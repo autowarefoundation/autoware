@@ -4,14 +4,14 @@ project(lidar_kf_contour_track)
 
 find_package(autoware_build_flags REQUIRED)
 
-find_package(autoware_msgs REQUIRED)
+find_package(autoware_detection_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   tf
   jsk_recognition_msgs
   op_ros_helpers
   cv_bridge
-  autoware_msgs
+  autoware_detection_msgs
   )
 
 find_package(OpenCV REQUIRED)
@@ -19,7 +19,7 @@ find_package(OpenCV REQUIRED)
 catkin_package(
   CATKIN_DEPENDS
   roscpp
-  autoware_msgs
+  autoware_detection_msgs
   tf
   jsk_recognition_msgs
   op_ros_helpers
@@ -28,7 +28,7 @@ catkin_package(
 
 include_directories(
         ${catkin_INCLUDE_DIRS}
-        ${autoware_msgs_INCLUDE_DIRS}
+        ${autoware_detection_msgs_INCLUDE_DIRS}
         ${OpenCV_INCLUDE_DIRS}
         include
 )

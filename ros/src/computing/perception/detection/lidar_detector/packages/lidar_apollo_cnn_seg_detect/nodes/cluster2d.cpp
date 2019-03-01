@@ -235,10 +235,10 @@ void Cluster2D::classify(const caffe::Blob<float> &classify_pt_blob)
     }
 }
 
-autoware_msgs::DetectedObject
+autoware_detection_msgs::DetectedObject
 Cluster2D::obstacleToObject(const Obstacle& in_obstacle, const std_msgs::Header& in_header)
 {
-    autoware_msgs::DetectedObject resulting_object;
+    autoware_detection_msgs::DetectedObject resulting_object;
 
     sensor_msgs::PointCloud2 ros_pc;
     pcl::PointCloud<pcl::PointXYZI> in_cluster = *in_obstacle.cloud_ptr;
@@ -328,7 +328,7 @@ Cluster2D::obstacleToObject(const Obstacle& in_obstacle, const std_msgs::Header&
 void Cluster2D::getObjects(const float confidence_thresh,
                            const float height_thresh,
                            const int min_pts_num,
-                           autoware_msgs::DetectedObjectArray &objects,
+                           autoware_detection_msgs::DetectedObjectArray &objects,
                            const std_msgs::Header &in_header)
 {
     CHECK(valid_indices_in_pc_ != nullptr);
@@ -370,7 +370,7 @@ void Cluster2D::getObjects(const float confidence_thresh,
             continue;
         }
 
-        autoware_msgs::DetectedObject out_obj = obstacleToObject(*obs, in_header);
+        autoware_detection_msgs::DetectedObject out_obj = obstacleToObject(*obs, in_header);
 
         objects.objects.push_back(out_obj);
     }

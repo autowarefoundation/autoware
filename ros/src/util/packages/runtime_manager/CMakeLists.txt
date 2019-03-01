@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 2.8.3)
 project(runtime_manager)
 
 find_package(catkin REQUIRED COMPONENTS
-        rospy autoware_sensing_msgs  autoware_config_msgs tablet_socket_msgs std_msgs
+        rospy autoware_sensing_msgs autoware_detection_msgs  autoware_config_msgs tablet_socket_msgs std_msgs
         )
 
 catkin_package(
-        CATKIN_DEPENDS rospy autoware_sensing_msgs  autoware_config_msgs tablet_socket_msgs std_msgs
+        CATKIN_DEPENDS rospy autoware_sensing_msgs autoware_detection_msgs  autoware_config_msgs tablet_socket_msgs std_msgs
 )
 
 catkin_install_python(PROGRAMS

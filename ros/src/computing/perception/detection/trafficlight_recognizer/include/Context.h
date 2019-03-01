@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <opencv2/core/core.hpp>
-#include <autoware_msgs/Signals.h>
+#include <autoware_detection_msgs/Signals.h>
 
 enum LightState
 {
@@ -22,7 +22,7 @@ public:
 	        int aLampRadius, cv::Point aTopLeft, cv::Point aBotRight);
 
 	static void SetContexts(std::vector<Context> &out_contexts,
-	                        const autoware_msgs::Signals::ConstPtr &in_extracted_pos,
+	                        const autoware_detection_msgs::Signals::ConstPtr &in_extracted_pos,
 	                        const int in_image_height,
 	                        const int in_image_width);
 

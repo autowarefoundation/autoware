@@ -36,7 +36,7 @@
 #include <ros/ros.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
-#include "autoware_msgs/ImageLaneObjects.h"
+#include "autoware_detection_msgs/ImageLaneObjects.h"
 #endif
 
 #if defined(USE_POSIX_SHARED_MEMORY)
@@ -438,7 +438,7 @@ static void processLanes(CvSeq *lines, IplImage* edges, IplImage *temp_frame, Ip
   cvLine(org_frame, cvPoint(x, laneR.k.get()*x + laneR.b.get() + org_offset),
          cvPoint(x2, laneR.k.get()*x2 + laneR.b.get() + org_offset), PURPLE, 2);
 #else
-  autoware_msgs::ImageLaneObjects lane_msg;
+  autoware_detection_msgs::ImageLaneObjects lane_msg;
   lane_msg.lane_r_x1 = x;
   lane_msg.lane_r_y1 = laneR.k.get()*x + laneR.b.get() + org_offset;
   lane_msg.lane_r_x2 = x2;
@@ -571,7 +571,7 @@ int main(int argc, char *argv[])
 
   ros::Subscriber subscriber = n.subscribe(image_topic_name, 1, lane_cannyhough_callback);
 
-  image_lane_objects = n.advertise<autoware_msgs::ImageLaneObjects>("lane_pos_xy", 1);
+  image_lane_objects = n.advertise<autoware_detection_msgs::ImageLaneObjects>("lane_pos_xy", 1);
 
   ros::spin();
 #endif

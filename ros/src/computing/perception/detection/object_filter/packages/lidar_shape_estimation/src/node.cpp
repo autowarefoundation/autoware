@@ -23,10 +23,10 @@
 ShapeEstimationNode::ShapeEstimationNode() : nh_(""), pnh_("~")
 {
   sub_ = nh_.subscribe("input", 1, &ShapeEstimationNode::callback, this);
-  pub_ = nh_.advertise<autoware_msgs::DetectedObjectArray>("objects", 1, true);
+  pub_ = nh_.advertise<autoware_detection_msgs::DetectedObjectArray>("objects", 1, true);
 }
 
-void ShapeEstimationNode::callback(const autoware_msgs::DetectedObjectArray::ConstPtr& input_msg)
+void ShapeEstimationNode::callback(const autoware_detection_msgs::DetectedObjectArray::ConstPtr& input_msg)
 {
   // Guard
   if (pub_.getNumSubscribers() < 1)

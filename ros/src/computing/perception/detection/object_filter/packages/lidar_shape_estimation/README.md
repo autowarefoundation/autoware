@@ -48,10 +48,10 @@ Launch files also include the visualization node.
 ```
 Node [/lidar_shape_estimation]
 Publications: 
- * /detection/shape_estimation/objects [autoware_msgs/DetectedObjectArray]
+ * /detection/shape_estimation/objects [autoware_detection_msgs/DetectedObjectArray]
 
 Subscriptions: 
- * /detection/lidar_detector/objects [autoware_msgs/DetectedObjectArray]
+ * /detection/lidar_detector/objects [autoware_detection_msgs/DetectedObjectArray]
  
 -------------------------
 Node [/detection/shape_estimation/shape_estimation_visualization]
@@ -59,5 +59,5 @@ Publications:
  * /detection/shape_estimation/objects_markers [visualization_msgs/MarkerArray]
 
 Subscriptions: 
- * /detection/shape_estimation/objects [autoware_msgs/DetectedObjectArray]
+ * /detection/shape_estimation/objects [autoware_detection_msgs/DetectedObjectArray]
 ```

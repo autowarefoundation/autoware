@@ -34,8 +34,8 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
 
-#include "autoware_msgs/DetectedObject.h"
-#include "autoware_msgs/DetectedObjectArray.h"
+#include "autoware_detection_msgs/DetectedObject.h"
+#include "autoware_detection_msgs/DetectedObjectArray.h"
 
 #define __APP_NAME__ "visualize_detected_objects"
 
@@ -60,23 +60,23 @@ private:
 
   ros::Publisher publisher_markers_;
 
-  visualization_msgs::MarkerArray ObjectsToLabels(const autoware_msgs::DetectedObjectArray &in_objects);
+  visualization_msgs::MarkerArray ObjectsToLabels(const autoware_detection_msgs::DetectedObjectArray &in_objects);
 
-  visualization_msgs::MarkerArray ObjectsToArrows(const autoware_msgs::DetectedObjectArray &in_objects);
+  visualization_msgs::MarkerArray ObjectsToArrows(const autoware_detection_msgs::DetectedObjectArray &in_objects);
 
-  visualization_msgs::MarkerArray ObjectsToBoxes(const autoware_msgs::DetectedObjectArray &in_objects);
+  visualization_msgs::MarkerArray ObjectsToBoxes(const autoware_detection_msgs::DetectedObjectArray &in_objects);
 
-  visualization_msgs::MarkerArray ObjectsToModels(const autoware_msgs::DetectedObjectArray &in_objects);
+  visualization_msgs::MarkerArray ObjectsToModels(const autoware_detection_msgs::DetectedObjectArray &in_objects);
 
-  visualization_msgs::MarkerArray ObjectsToHulls(const autoware_msgs::DetectedObjectArray &in_objects);
+  visualization_msgs::MarkerArray ObjectsToHulls(const autoware_detection_msgs::DetectedObjectArray &in_objects);
 
-  visualization_msgs::MarkerArray ObjectsToCentroids(const autoware_msgs::DetectedObjectArray &in_objects);
+  visualization_msgs::MarkerArray ObjectsToCentroids(const autoware_detection_msgs::DetectedObjectArray &in_objects);
 
   std::string ColorToString(const std_msgs::ColorRGBA &in_color);
 
-  void DetectedObjectsCallback(const autoware_msgs::DetectedObjectArray &in_objects);
+  void DetectedObjectsCallback(const autoware_detection_msgs::DetectedObjectArray &in_objects);
 
-  bool IsObjectValid(const autoware_msgs::DetectedObject &in_object);
+  bool IsObjectValid(const autoware_detection_msgs::DetectedObject &in_object);
 
   float CheckColor(double value);
 

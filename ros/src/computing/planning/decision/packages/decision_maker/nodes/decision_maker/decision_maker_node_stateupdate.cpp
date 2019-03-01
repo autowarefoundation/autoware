@@ -99,7 +99,7 @@ void DecisionMakerNode::callbackOutStateLaneChange(int status)
 
 void DecisionMakerNode::publishLightColor(int status)
 {
-  autoware_msgs::TrafficLight msg;
+  autoware_detection_msgs::TrafficLight msg;
   msg.traffic_light = status;
   Pubs["light_color"].publish(msg);
 }

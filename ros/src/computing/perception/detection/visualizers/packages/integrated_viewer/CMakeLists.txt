@@ -5,6 +5,7 @@ project(integrated_viewer)
 find_package(autoware_build_flags REQUIRED)
 
 find_package(autoware_sensing_msgs REQUIRED)
+find_package(autoware_detection_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         cv_bridge
         image_transport
@@ -13,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
         std_msgs
         rviz
         autoware_sensing_msgs
+        autoware_detection_msgs
         )
 
 set(CMAKE_CXX_FLAGS
@@ -64,6 +66,7 @@ include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
         ${autoware_sensing_msgs_INCLUDE_DIRS}
+        ${autoware_detection_msgs_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
         include
 )

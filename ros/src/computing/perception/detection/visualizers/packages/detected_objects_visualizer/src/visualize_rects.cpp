@@ -46,7 +46,7 @@ VisualizeRects::VisualizeRects()
                                                                                  image_src_topic,
                                                                                              1);
   ROS_INFO("[%s] image_src: %s", __APP_NAME__, image_src_topic.c_str());
-  detection_filter_subscriber_ = new message_filters::Subscriber<autoware_msgs::DetectedObjectArray>(private_nh_,
+  detection_filter_subscriber_ = new message_filters::Subscriber<autoware_detection_msgs::DetectedObjectArray>(private_nh_,
                                                                                                      object_src_topic,
                                                                                              1);
   ROS_INFO("[%s] object_src: %s", __APP_NAME__, object_src_topic.c_str());
@@ -68,7 +68,7 @@ VisualizeRects::VisualizeRects()
 void
 VisualizeRects::SyncedDetectionsCallback(
   const sensor_msgs::Image::ConstPtr &in_image_msg,
-  const autoware_msgs::DetectedObjectArray::ConstPtr &in_objects)
+  const autoware_detection_msgs::DetectedObjectArray::ConstPtr &in_objects)
 {
   try
   {
@@ -85,7 +85,7 @@ VisualizeRects::SyncedDetectionsCallback(
 }
 
 cv::Mat
-VisualizeRects::ObjectsToRects(cv::Mat in_image, const autoware_msgs::DetectedObjectArray::ConstPtr &in_objects)
+VisualizeRects::ObjectsToRects(cv::Mat in_image, const autoware_detection_msgs::DetectedObjectArray::ConstPtr &in_objects)
 {
   cv::Mat final_image = in_image.clone();
   for (auto const &object: in_objects->objects)
@@ -154,7 +154,7 @@ VisualizeRects::ObjectsToRects(cv::Mat in_image, const autoware_msgs::DetectedOb
   return final_image;
 }//ObjectsToBoxes
 
-bool VisualizeRects::IsObjectValid(const autoware_msgs::DetectedObject &in_object)
+bool VisualizeRects::IsObjectValid(const autoware_detection_msgs::DetectedObject &in_object)
 {
   if (!in_object.valid ||
       in_object.width < 0 ||

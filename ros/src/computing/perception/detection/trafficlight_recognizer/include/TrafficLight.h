@@ -2,7 +2,7 @@
 #define TRAFFIC_LIGHT_H
 
 /* Extra includes */
-#include "autoware_msgs/Signals.h"
+#include "autoware_detection_msgs/Signals.h"
 
 #define MAIN_WINDOW_NAME "Main"
 #define SETTINGS_WINDOW_NAME "Settings"

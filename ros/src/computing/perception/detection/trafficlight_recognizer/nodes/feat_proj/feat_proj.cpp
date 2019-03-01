@@ -20,8 +20,8 @@
 #include <cstdio>
 #include "libvectormap/Math.h"
 #include <Eigen/Eigen>
-#include <autoware_msgs/Signals.h>
-#include <autoware_msgs/AdjustXY.h>
+#include <autoware_detection_msgs/Signals.h>
+#include <autoware_detection_msgs/AdjustXY.h>
 #include <vector_map/vector_map.h>
 #include <vector_map_server/GetSignal.h>
 #include <autoware_planning_msgs/Lane.h>
@@ -101,7 +101,7 @@ static VectorMapClient g_vector_map_client;
 
 
 /* Callback function to shift projection result */
-void adjust_xyCallback(const autoware_msgs::AdjustXY::ConstPtr &config_msg)
+void adjust_xyCallback(const autoware_detection_msgs::AdjustXY::ConstPtr &config_msg)
 {
 	adjust_proj_x = config_msg->x;
 	adjust_proj_y = config_msg->y;
@@ -274,7 +274,7 @@ double GetSignalAngleInCameraSystem(double hang, double vang)
 void echoSignals2(ros::Publisher &pub, bool useOpenGLCoord = false)
 {
 	int countPoint = 0;
-	autoware_msgs::Signals signalsInFrame;
+	autoware_detection_msgs::Signals signalsInFrame;
 
 	/* Get signals on the path if vecter_map_server is enabled */
 	if (g_use_vector_map_server)
@@ -447,7 +447,7 @@ int main(int argc, char *argv[])
 		g_ros_client = rosnode.serviceClient<vector_map_server::GetSignal>("vector_map_server/get_signal");
 	}
 
-	ros::Publisher signalPublisher = rosnode.advertise<autoware_msgs::Signals>("roi_signal", 100);
+	ros::Publisher signalPublisher = rosnode.advertise<autoware_detection_msgs::Signals>("roi_signal", 100);
 	signal(SIGINT, interrupt);
 
 	Rate loop(50);

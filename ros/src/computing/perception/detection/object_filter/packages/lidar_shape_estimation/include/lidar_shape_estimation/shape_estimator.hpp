@@ -22,7 +22,7 @@
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <pcl_conversions/pcl_conversions.h>
-#include "autoware_msgs/DetectedObject.h"
+#include "autoware_detection_msgs/DetectedObject.h"
 
 class ShapeEstimator
 {
@@ -33,5 +33,5 @@ public:
   ~ShapeEstimator(){};
 
   bool getShapeAndPose(const std::string& label, const pcl::PointCloud<pcl::PointXYZ>& cluster,
-                       autoware_msgs::DetectedObject& output);
+                       autoware_detection_msgs::DetectedObject& output);
 };

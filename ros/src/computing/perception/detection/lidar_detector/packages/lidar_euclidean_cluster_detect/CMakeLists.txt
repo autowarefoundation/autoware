@@ -4,7 +4,7 @@ project(lidar_euclidean_cluster_detect)
 
 find_package(autoware_build_flags REQUIRED)
 
-find_package(autoware_msgs REQUIRED)
+find_package(autoware_detection_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         pcl_ros
         roscpp
@@ -16,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
         grid_map_ros
         grid_map_cv
         grid_map_msgs
-        autoware_msgs
+        autoware_detection_msgs
         )
 
 find_package(OpenMP)
@@ -31,7 +31,7 @@ catkin_package(
         geometry_msgs
         std_msgs
         sensor_msgs
-        autoware_msgs
+        autoware_detection_msgs
         tf
         vector_map_server
         grid_map_ros
@@ -51,7 +51,7 @@ link_directories(${YAML_CPP_LIBRARY_DIRS})
 include_directories(
         include
         ${catkin_INCLUDE_DIRS}
-        ${autoware_msgs_INCLUDE_DIRS}
+        ${autoware_detection_msgs_INCLUDE_DIRS}
         ${OpenCV_INCLUDE_DIRS}
 )
 link_directories(${OpenCV_LIBRARY_DIRS})

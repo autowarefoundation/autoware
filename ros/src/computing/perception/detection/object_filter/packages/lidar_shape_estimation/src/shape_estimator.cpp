@@ -30,7 +30,7 @@ ShapeEstimator::ShapeEstimator()
 }
 
 bool ShapeEstimator::getShapeAndPose(const std::string& label, const pcl::PointCloud<pcl::PointXYZ>& cluster,
-                                     autoware_msgs::DetectedObject& output)
+                                     autoware_detection_msgs::DetectedObject& output)
 {
   if (cluster.empty())
     return false;

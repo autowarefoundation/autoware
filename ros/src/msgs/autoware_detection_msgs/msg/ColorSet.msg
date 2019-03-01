@@ -1,0 +1,3 @@
+autoware_detection_msgs/ValueSet Hue
+autoware_detection_msgs/ValueSet Sat
+autoware_detection_msgs/ValueSet Val

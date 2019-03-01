@@ -22,7 +22,7 @@
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <pcl_conversions/pcl_conversions.h>
-#include "autoware_msgs/DetectedObject.h"
+#include "autoware_detection_msgs/DetectedObject.h"
 #include "lidar_shape_estimation/shape_estimator.hpp"
 
 class ShapeEstimationTestSuite : public ::testing::Test
@@ -53,7 +53,7 @@ TEST(TestSuite, CheckOnePoint)
   pcl::PointXYZ p0;
   p0.x = p0.y = p0.z = 0;
   pointcloud.push_back(p0);
-  autoware_msgs::DetectedObject output;
+  autoware_detection_msgs::DetectedObject output;
 
   bool ret1 = test_shape_estimation.shape_estimator.getShapeAndPose(std::string("car"), pointcloud, output);
   bool ret2 = test_shape_estimation.shape_estimator.getShapeAndPose(std::string("person"), pointcloud, output);
@@ -83,7 +83,7 @@ TEST(TestSuite, CheckTwoPoint)
   pointcloud.push_back(p0);
   p1.x = p1.y = p1.z = 1;
   pointcloud.push_back(p1);
-  autoware_msgs::DetectedObject output;
+  autoware_detection_msgs::DetectedObject output;
 
   bool ret1 = test_shape_estimation.shape_estimator.getShapeAndPose(std::string("car"), pointcloud, output);
   bool ret2 = test_shape_estimation.shape_estimator.getShapeAndPose(std::string("person"), pointcloud, output);
@@ -108,7 +108,7 @@ TEST(TestSuite, CheckEmptyPoint)
   ShapeEstimationTestClass test_shape_estimation;
 
   pcl::PointCloud<pcl::PointXYZ> pointcloud;
-  autoware_msgs::DetectedObject output;
+  autoware_detection_msgs::DetectedObject output;
 
   bool ret1 = test_shape_estimation.shape_estimator.getShapeAndPose(std::string("car"), pointcloud, output);
   bool ret2 = test_shape_estimation.shape_estimator.getShapeAndPose(std::string("person"), pointcloud, output);

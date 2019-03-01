@@ -218,7 +218,7 @@ void TrajectoryEval::callbackGetLocalPlannerPath(const autoware_planning_msgs::L
 	}
 }
 
-void TrajectoryEval::callbackGetPredictedObjects(const autoware_msgs::DetectedObjectArrayConstPtr& msg)
+void TrajectoryEval::callbackGetPredictedObjects(const autoware_detection_msgs::DetectedObjectArrayConstPtr& msg)
 {
 	m_PredictedObjects.clear();
 	bPredictedObjects = true;

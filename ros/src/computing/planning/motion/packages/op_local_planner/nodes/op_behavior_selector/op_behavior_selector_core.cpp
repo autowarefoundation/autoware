@@ -342,7 +342,7 @@ void BehaviorGen::callbackGetLocalPlannerPath(const autoware_planning_msgs::Lane
 	}
 }
 
-void BehaviorGen::callbackGetTrafficLightStatus(const autoware_msgs::TrafficLight& msg)
+void BehaviorGen::callbackGetTrafficLightStatus(const autoware_detection_msgs::TrafficLight& msg)
 {
 	std::cout << "Received Traffic Light Status : " << msg.traffic_light << std::endl;
 	bNewLightStatus = true;
@@ -352,7 +352,7 @@ void BehaviorGen::callbackGetTrafficLightStatus(const autoware_msgs::TrafficLigh
 		m_CurrLightStatus = PlannerHNS::RED_LIGHT;
 }
 
-void BehaviorGen::callbackGetTrafficLightSignals(const autoware_msgs::Signals& msg)
+void BehaviorGen::callbackGetTrafficLightSignals(const autoware_detection_msgs::Signals& msg)
 {
 	bNewLightSignal = true;
 	std::vector<PlannerHNS::TrafficLight> simulatedLights;

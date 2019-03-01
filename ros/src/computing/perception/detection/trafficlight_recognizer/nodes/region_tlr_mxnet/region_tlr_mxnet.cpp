@@ -1,6 +1,6 @@
 #include <string>
 
-#include <autoware_msgs/TrafficLight.h>
+#include <autoware_detection_msgs/TrafficLight.h>
 #include <std_msgs/String.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
@@ -71,7 +71,7 @@ void RegionTLRMxNetROSNode::ImageRawCallback(const sensor_msgs::Image &image)
 
 }
 
-void RegionTLRMxNetROSNode::ROISignalCallback(const autoware_msgs::Signals::ConstPtr &extracted_pos)
+void RegionTLRMxNetROSNode::ROISignalCallback(const autoware_detection_msgs::Signals::ConstPtr &extracted_pos)
 {
 	static ros::Time previous_timestamp;
 	// If frame has not been prepared, abort this callback
@@ -168,7 +168,7 @@ void RegionTLRMxNetROSNode::StartSubscribersAndPublishers()
                                           this);
 
 	// Register publishers
-	signal_state_publisher = node_handle.advertise<autoware_msgs::TrafficLight>("light_color", 1);
+	signal_state_publisher = node_handle.advertise<autoware_detection_msgs::TrafficLight>("light_color", 1);
 	signal_state_string_publisher = node_handle.advertise<std_msgs::String>("/sound_player", 1);
 	marker_publisher = node_handle.advertise<visualization_msgs::MarkerArray>("tlr_result", 1, kAdvertiseInLatch_);
 	superimpose_image_publisher = node_handle.advertise<sensor_msgs::Image>("tlr_superimpose_image", 1);
@@ -212,7 +212,7 @@ void RegionTLRMxNetROSNode::DetermineState(LightState in_current_state,
 
 void RegionTLRMxNetROSNode::PublishTrafficLight(std::vector<Context> contexts)
 {
-	autoware_msgs::TrafficLight topic;
+	autoware_detection_msgs::TrafficLight topic;
 	static int32_t previous_state = kTrafficLightUnknown;
 	topic.traffic_light = kTrafficLightUnknown;
 	for (const auto ctx: contexts)

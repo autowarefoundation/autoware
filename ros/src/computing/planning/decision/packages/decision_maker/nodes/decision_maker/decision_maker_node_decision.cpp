@@ -9,7 +9,7 @@
 #include <tf/transform_listener.h>
 
 #include <autoware_planning_msgs/Lane.h>
-#include <autoware_msgs/TrafficLight.h>
+#include <autoware_detection_msgs/TrafficLight.h>
 
 #include <cross_road_area.hpp>
 #include <decision_maker_node.hpp>

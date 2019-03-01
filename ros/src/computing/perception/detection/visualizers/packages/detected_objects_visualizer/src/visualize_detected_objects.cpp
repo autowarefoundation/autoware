@@ -132,7 +132,7 @@ std_msgs::ColorRGBA VisualizeDetectedObjects::ParseColor(const std::vector<doubl
   return color;
 }
 
-void VisualizeDetectedObjects::DetectedObjectsCallback(const autoware_msgs::DetectedObjectArray &in_objects)
+void VisualizeDetectedObjects::DetectedObjectsCallback(const autoware_detection_msgs::DetectedObjectArray &in_objects)
 {
   visualization_msgs::MarkerArray label_markers, arrow_markers, centroid_markers, polygon_hulls, bounding_boxes,
                                   object_models;
@@ -166,7 +166,7 @@ void VisualizeDetectedObjects::DetectedObjectsCallback(const autoware_msgs::Dete
 }
 
 visualization_msgs::MarkerArray
-VisualizeDetectedObjects::ObjectsToCentroids(const autoware_msgs::DetectedObjectArray &in_objects)
+VisualizeDetectedObjects::ObjectsToCentroids(const autoware_detection_msgs::DetectedObjectArray &in_objects)
 {
   visualization_msgs::MarkerArray centroid_markers;
   for (auto const &object: in_objects.objects)
@@ -202,7 +202,7 @@ VisualizeDetectedObjects::ObjectsToCentroids(const autoware_msgs::DetectedObject
 }//ObjectsToCentroids
 
 visualization_msgs::MarkerArray
-VisualizeDetectedObjects::ObjectsToBoxes(const autoware_msgs::DetectedObjectArray &in_objects)
+VisualizeDetectedObjects::ObjectsToBoxes(const autoware_detection_msgs::DetectedObjectArray &in_objects)
 {
   visualization_msgs::MarkerArray object_boxes;
 
@@ -242,7 +242,7 @@ VisualizeDetectedObjects::ObjectsToBoxes(const autoware_msgs::DetectedObjectArra
 }//ObjectsToBoxes
 
 visualization_msgs::MarkerArray
-VisualizeDetectedObjects::ObjectsToModels(const autoware_msgs::DetectedObjectArray &in_objects)
+VisualizeDetectedObjects::ObjectsToModels(const autoware_detection_msgs::DetectedObjectArray &in_objects)
 {
   visualization_msgs::MarkerArray object_models;
 
@@ -302,7 +302,7 @@ VisualizeDetectedObjects::ObjectsToModels(const autoware_msgs::DetectedObjectArr
 }//ObjectsToModels
 
 visualization_msgs::MarkerArray
-VisualizeDetectedObjects::ObjectsToHulls(const autoware_msgs::DetectedObjectArray &in_objects)
+VisualizeDetectedObjects::ObjectsToHulls(const autoware_detection_msgs::DetectedObjectArray &in_objects)
 {
   visualization_msgs::MarkerArray polygon_hulls;
 
@@ -344,7 +344,7 @@ VisualizeDetectedObjects::ObjectsToHulls(const autoware_msgs::DetectedObjectArra
 }
 
 visualization_msgs::MarkerArray
-VisualizeDetectedObjects::ObjectsToArrows(const autoware_msgs::DetectedObjectArray &in_objects)
+VisualizeDetectedObjects::ObjectsToArrows(const autoware_detection_msgs::DetectedObjectArray &in_objects)
 {
   visualization_msgs::MarkerArray arrow_markers;
   for (auto const &object: in_objects.objects)
@@ -422,7 +422,7 @@ VisualizeDetectedObjects::ObjectsToArrows(const autoware_msgs::DetectedObjectArr
 }//ObjectsToArrows
 
 visualization_msgs::MarkerArray
-VisualizeDetectedObjects::ObjectsToLabels(const autoware_msgs::DetectedObjectArray &in_objects)
+VisualizeDetectedObjects::ObjectsToLabels(const autoware_detection_msgs::DetectedObjectArray &in_objects)
 {
   visualization_msgs::MarkerArray label_markers;
   for (auto const &object: in_objects.objects)
@@ -492,7 +492,7 @@ VisualizeDetectedObjects::ObjectsToLabels(const autoware_msgs::DetectedObjectArr
   return label_markers;
 }//ObjectsToLabels
 
-bool VisualizeDetectedObjects::IsObjectValid(const autoware_msgs::DetectedObject &in_object)
+bool VisualizeDetectedObjects::IsObjectValid(const autoware_detection_msgs::DetectedObject &in_object)
 {
   if (!in_object.valid ||
       std::isnan(in_object.pose.orientation.x) ||

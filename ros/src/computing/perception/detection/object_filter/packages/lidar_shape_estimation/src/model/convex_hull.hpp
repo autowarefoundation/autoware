@@ -28,5 +28,5 @@ public:
 
   ~ConvexHullModel(){};
 
-  bool estimate(const pcl::PointCloud<pcl::PointXYZ>& cluster, autoware_msgs::DetectedObject& output) override;
+  bool estimate(const pcl::PointCloud<pcl::PointXYZ>& cluster, autoware_detection_msgs::DetectedObject& output) override;
 };

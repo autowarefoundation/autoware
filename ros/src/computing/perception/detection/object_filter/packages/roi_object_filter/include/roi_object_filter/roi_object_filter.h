@@ -51,7 +51,7 @@
 
 #include <yaml-cpp/yaml.h>
 
-#include "autoware_msgs/DetectedObjectArray.h"
+#include "autoware_detection_msgs/DetectedObjectArray.h"
 
 class RosRoiObjectFilterApp
 {
@@ -61,19 +61,19 @@ class RosRoiObjectFilterApp
   ros::Subscriber detections_range_subscriber_, wayarea_gridmap_subscriber_;
   ros::Publisher roi_objects_publisher_;
 
-  message_filters::Subscriber<autoware_msgs::DetectedObjectArray> *detections_filter_subscriber_;
+  message_filters::Subscriber<autoware_detection_msgs::DetectedObjectArray> *detections_filter_subscriber_;
 
   message_filters::Subscriber<grid_map_msgs::GridMap> *gridmap_filter_subscriber_;
 
   typedef
-  message_filters::sync_policies::ApproximateTime<autoware_msgs::DetectedObjectArray,
+  message_filters::sync_policies::ApproximateTime<autoware_detection_msgs::DetectedObjectArray,
     grid_map_msgs::GridMap> SyncPolicyT;
 
   message_filters::Synchronizer<SyncPolicyT>
     *detections_synchronizer_;
 
   grid_map_msgs::GridMap::ConstPtr wayarea_gridmap_;
-  autoware_msgs::DetectedObjectArray::ConstPtr object_detections_;
+  autoware_detection_msgs::DetectedObjectArray::ConstPtr object_detections_;
 
   tf::TransformListener *transform_listener_;
 
@@ -93,14 +93,14 @@ class RosRoiObjectFilterApp
 
   void InitializeRosIo(ros::NodeHandle &in_private_handle);
 
-  void DetectionsCallback(const autoware_msgs::DetectedObjectArray::ConstPtr &in_range_detections);
+  void DetectionsCallback(const autoware_detection_msgs::DetectedObjectArray::ConstPtr &in_range_detections);
 
   void WayAreaGridMapCallback(const grid_map_msgs::GridMap::ConstPtr &message);
 
   bool CheckPointInGrid(const grid_map::GridMap &in_grid_map, const cv::Mat &in_grid_image,
                         const geometry_msgs::Point &in_point);
 
-  void SyncedDetectionsCallback(const autoware_msgs::DetectedObjectArray::ConstPtr &in_detections,
+  void SyncedDetectionsCallback(const autoware_detection_msgs::DetectedObjectArray::ConstPtr &in_detections,
                                 const grid_map_msgs::GridMap::ConstPtr &in_gridmap);
 
   tf::StampedTransform FindTransform(const std::string &in_target_frame, const std::string &in_source_frame);

@@ -5,6 +5,7 @@ project(lane_planner)
 find_package(autoware_build_flags REQUIRED)
 
 find_package(autoware_planning_msgs REQUIRED)
+find_package(autoware_detection_msgs REQUIRED)
 
 find_package(vector_map REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
@@ -14,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
         waypoint_follower
         gnss
         autoware_planning_msgs
+        autoware_detection_msgs
         )
 
 set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -28,6 +30,7 @@ catkin_package(
         vector_map
         gnss
         autoware_planning_msgs
+        autoware_detection_msgs
 )
 
 include_directories(
@@ -35,6 +38,7 @@ include_directories(
         ${catkin_INCLUDE_DIRS}
         ${vector_map_INCLUDE_DIRS}
         ${autoware_planning_msgs_INCLUDE_DIRS}
+        ${autoware_detection_msgs_INCLUDE_DIRS}
 )
 
 add_library(lane_planner

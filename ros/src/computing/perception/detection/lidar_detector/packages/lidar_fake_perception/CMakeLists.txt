@@ -6,7 +6,7 @@ set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 find_package(autoware_build_flags REQUIRED)
 
-find_package(autoware_msgs REQUIRED)
+find_package(autoware_detection_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   tf
@@ -14,7 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_ros
   sensor_msgs
   geometry_msgs
-  autoware_msgs
+  autoware_detection_msgs
 )
 
 catkin_package(
@@ -26,12 +26,12 @@ catkin_package(
   pcl_ros
   sensor_msgs
   geometry_msgs
-  autoware_msgs
+  autoware_detection_msgs
 )
 
 include_directories(
   include
-  ${autoware_msgs_INCLUDE_DIRS}
+  ${autoware_detection_msgs_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
 )
 

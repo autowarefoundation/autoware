@@ -10,6 +10,7 @@ execute_process(
 find_package(autoware_build_flags REQUIRED)
 
 find_package(autoware_planning_msgs REQUIRED)
+find_package(autoware_detection_msgs REQUIRED)
 
 find_package(OpenCV REQUIRED)
 
@@ -17,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   geometry_msgs
   autoware_planning_msgs
+  autoware_detection_msgs
   map_file
   pcl_conversions
   pcl_ros
@@ -39,7 +41,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
         INCLUDE_DIRS include
         LIBRARIES
-        CATKIN_DEPENDS roscpp geometry_msgs autoware_planning_msgs  map_file op_utility op_planner op_simu op_ros_helpers waypoint_follower
+        CATKIN_DEPENDS roscpp geometry_msgs autoware_planning_msgs autoware_detection_msgs map_file op_utility op_planner op_simu op_ros_helpers waypoint_follower
 #  DEPENDS system_lib
 )
 
@@ -55,6 +57,7 @@ include_directories(
         include
         ${catkin_INCLUDE_DIRS}
         ${autoware_planning_msgs_INCLUDE_DIRS}
+        ${autoware_detection_msgs_INCLUDE_DIRS}
         )
 
 link_directories(lib)

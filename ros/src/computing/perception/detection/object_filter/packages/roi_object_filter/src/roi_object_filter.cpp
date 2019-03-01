@@ -23,7 +23,7 @@
 #include "roi_object_filter/roi_object_filter.h"
 
 void
-RosRoiObjectFilterApp::SyncedDetectionsCallback(const autoware_msgs::DetectedObjectArray::ConstPtr &in_detections,
+RosRoiObjectFilterApp::SyncedDetectionsCallback(const autoware_detection_msgs::DetectedObjectArray::ConstPtr &in_detections,
                                                 const grid_map_msgs::GridMap::ConstPtr &in_gridmap)
 {
   if (nullptr == in_detections
@@ -36,8 +36,8 @@ RosRoiObjectFilterApp::SyncedDetectionsCallback(const autoware_msgs::DetectedObj
 
   grid_map::GridMap current_grid;
   grid_map::GridMapRosConverter::fromMessage(*in_gridmap, current_grid);
-  autoware_msgs::DetectedObjectArray in_roi_objects;
-  autoware_msgs::DetectedObjectArray out_roi_objects;
+  autoware_detection_msgs::DetectedObjectArray in_roi_objects;
+  autoware_detection_msgs::DetectedObjectArray out_roi_objects;
 
   in_roi_objects.header = in_detections->header;
   out_roi_objects.header = in_detections->header;
@@ -125,7 +125,7 @@ RosRoiObjectFilterApp::TransformPoint(const geometry_msgs::Point &in_point, cons
 }
 
 void
-RosRoiObjectFilterApp::DetectionsCallback(const autoware_msgs::DetectedObjectArray::ConstPtr &in_detections)
+RosRoiObjectFilterApp::DetectionsCallback(const autoware_detection_msgs::DetectedObjectArray::ConstPtr &in_detections)
 {
   if (!processing_ && !in_detections->objects.empty())
   {
@@ -235,7 +235,7 @@ RosRoiObjectFilterApp::InitializeRosIo(ros::NodeHandle &in_private_handle)
   }
   else
   {
-    detections_filter_subscriber_ = new message_filters::Subscriber<autoware_msgs::DetectedObjectArray>(node_handle_,
+    detections_filter_subscriber_ = new message_filters::Subscriber<autoware_detection_msgs::DetectedObjectArray>(node_handle_,
                                                                                                         objects_src_topic_,
                                                                                                         1);
     gridmap_filter_subscriber_ = new message_filters::Subscriber<grid_map_msgs::GridMap>(node_handle_,
@@ -249,7 +249,7 @@ RosRoiObjectFilterApp::InitializeRosIo(ros::NodeHandle &in_private_handle)
                                                            _1, _2));
   }
 
-  roi_objects_publisher_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>(roi_topic_str, 1);
+  roi_objects_publisher_ = node_handle_.advertise<autoware_detection_msgs::DetectedObjectArray>(roi_topic_str, 1);
   ROS_INFO("[%s] Publishing filtered objects in %s", __APP_NAME__, roi_topic_str.c_str());
 }
 

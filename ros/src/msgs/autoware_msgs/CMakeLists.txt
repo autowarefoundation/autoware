@@ -16,33 +16,33 @@ add_message_files(
         DIRECTORY msg
         FILES
             
-            CloudCluster.msg
-            CloudClusterArray.msg
-            ColorSet.msg
             
-            DetectedObject.msg
-            DetectedObjectArray.msg
             
-            ImageLaneObjects.msg
+            
+            
+            
+            
+            
+            
             ImageObjects.msg
             
             
             ScanImage.msg
-            Signals.msg
-            TunedResult.msg
-            ValueSet.msg
-            Centroids.msg
+            
+            
+            
+            
             
             GeometricRectangle.msg
             
-            ImageObj.msg
-            ImageObjRanged.msg
-            ImageObjTracked.msg
-            ImageRect.msg
-            ImageRectRanged.msg
             
             
-            ObjLabel.msg
+            
+            
+            
+            
+            
+            
             ObjPose.msg
             
             VscanTracked.msg
@@ -51,16 +51,16 @@ add_message_files(
             
             
             
-            TrafficLightResult.msg
-            TrafficLightResultArray.msg
+            
+            
 
             
-            AdjustXY.msg
+            
             
             IndicatorCmd.msg
             
             
-            TrafficLight.msg
+            
             StateCmd.msg
             
             ## Sync

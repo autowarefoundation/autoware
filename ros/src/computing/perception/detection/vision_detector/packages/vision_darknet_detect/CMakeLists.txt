@@ -4,7 +4,7 @@ project(vision_darknet_detect)
 
 find_package(autoware_build_flags REQUIRED)
 
-find_package(autoware_msgs REQUIRED)
+find_package(autoware_detection_msgs REQUIRED)
 
 find_package(autoware_config_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
@@ -13,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
         roscpp
         sensor_msgs
         std_msgs
-        autoware_msgs
+        autoware_detection_msgs
         autoware_config_msgs
         )
 
@@ -27,7 +27,7 @@ catkin_package(CATKIN_DEPENDS
         roscpp
         sensor_msgs
         std_msgs
-        autoware_msgs
+        autoware_detection_msgs
         autoware_config_msgs
         )
 
@@ -109,7 +109,7 @@ IF (CUDA_FOUND)
             ${OpenCV_INCLUDE_DIR}
             ${catkin_INCLUDE_DIRS}
             ${autoware_config_msgs_INCLUDE_DIRS}
-            ${autoware_msgs_INCLUDE_DIRS}
+            ${autoware_detection_msgs_INCLUDE_DIRS}
             ${Boost_INCLUDE_DIRS}
             ${CUDA_INCLUDE_DIRS}
             ${PROJECT_SOURCE_DIR}/darknet
@@ -144,7 +144,7 @@ IF (CUDA_FOUND)
             ${CUDA_INCLUDE_DIRS}
             ${catkin_INCLUDE_DIRS}
             ${autoware_config_msgs_INCLUDE_DIRS}
-            ${autoware_msgs_INCLUDE_DIRS}
+            ${autoware_detection_msgs_INCLUDE_DIRS}
             ${PROJECT_SOURCE_DIR}/darknet
             ${PROJECT_SOURCE_DIR}/darknet/src
             ${PROJECT_SOURCE_DIR}/src

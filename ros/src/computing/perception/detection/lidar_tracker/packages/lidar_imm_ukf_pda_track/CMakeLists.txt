@@ -4,14 +4,14 @@ project(imm_ukf_pda_track)
 
 find_package(autoware_build_flags REQUIRED)
 
-find_package(autoware_msgs REQUIRED)
+find_package(autoware_detection_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   pcl_ros
   geometry_msgs
   tf
   vector_map
-  autoware_msgs
+  autoware_detection_msgs
   )
 
 
@@ -21,13 +21,13 @@ catkin_package(
   CATKIN_DEPENDS
   roscpp
   pcl_ros
-  autoware_msgs
+  autoware_detection_msgs
   tf
   vector_map
   )
 
 include_directories(
-  ${autoware_msgs_INCLUDE_DIRS}
+  ${autoware_detection_msgs_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
   include)
 

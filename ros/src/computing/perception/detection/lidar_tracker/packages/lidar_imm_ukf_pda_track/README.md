@@ -29,8 +29,8 @@ Launch file available parameters for `imm_ukf_pda_tracker`
 
 |Parameter| Type| Description|
 ----------|-----|--------
-|`input topic`|*String* |Input topic(type: autoware_msgs::CloudClusterArray). Default `/cloud cluster`.|
-|`output topic`|*String*|Output topic(type: autoware_msgs::CloudClusterArray). Default `/tracking_cluster_array`.|
+|`input topic`|*String* |Input topic(type: autoware_detection_msgs::CloudClusterArray). Default `/cloud cluster`.|
+|`output topic`|*String*|Output topic(type: autoware_detection_msgs::CloudClusterArray). Default `/tracking_cluster_array`.|
 |`pointcloud frame`|*String*|Pointcloud frame. Default `velodyne`.|
 |`life time thres`|*Int*|The minimum frames for targets to be visualized. Default `8`.|
 |`gating thres`|*Double*|The value of gate threshold for measurement validation. Default `9.22`.|
@@ -52,7 +52,7 @@ Launch file available parameters for `visualize_detected_objects`
 
 |Parameter| Type| Description|
 ----------|-----|--------
-|`input_topic`|*String* |Input topic(type: autoware_msgs::CloudClusterArray). Default `/tracking_cluster_array`.|
+|`input_topic`|*String* |Input topic(type: autoware_detection_msgs::CloudClusterArray). Default `/tracking_cluster_array`.|
 |`pointcloud frame`|*String*|Pointcloud frame. Default `velodyne`.|
 
 
@@ -61,14 +61,14 @@ Node: imm_ukf_pda_tracker
 
 |Topic|Type|Objective|
 ------|----|---------
-|`/detection/lidar_objects`|`autoware_msgs::DetectedObjectArray`|Segmented pointcloud from a clustering algorithm like eucledian cluster.|
+|`/detection/lidar_objects`|`autoware_detection_msgs::DetectedObjectArray`|Segmented pointcloud from a clustering algorithm like eucledian cluster.|
 |`/tf`|`tf`|Tracking objects in `world` coordinate.|
 
 Node: visualize_detected_objects
 
 |Topic|Type|Objective|
 ------|----|---------
-|`/detected_objects`|`autoware_msgs::DetectedObjectArray`|Objects with tracking info.|
+|`/detected_objects`|`autoware_detection_msgs::DetectedObjectArray`|Objects with tracking info.|
 
 ### Published topics
 
@@ -76,7 +76,7 @@ Node: imm_ukf_pda_tracker
 
 |Topic|Type|Objective|
 ------|----|---------
-|`/detected_objects`|`autoware_msgs::DetectedObjectArray`|Added info like velocity, yaw ,yaw_rate and static/dynamic class to DetectedObject msg.|
+|`/detected_objects`|`autoware_detection_msgs::DetectedObjectArray`|Added info like velocity, yaw ,yaw_rate and static/dynamic class to DetectedObject msg.|
 |`/bounding_boxes_tracked`|`jsk_recognition_msgs::BoundingBoxArray`|Visualze bounsing box nicely in rviz by JSK bounding box. Label contains information about static/dynamic class|
 
 Node: visualize_detected_objects

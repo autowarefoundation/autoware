@@ -23,7 +23,7 @@ Launch file available parameters for `naive_motion_predict`
 
 |Parameter| Type| Description|
 ----------|-----|--------
-|`input topic`|*String* |Input topic(type: autoware_msgs::DetectedObjectArray). Default `/detection/lidar_tracker/objects`.|
+|`input topic`|*String* |Input topic(type: autoware_detection_msgs::DetectedObjectArray). Default `/detection/lidar_tracker/objects`.|
 |`interval_sec`|*Double*|Interval second for prediction. Default `9.22`.|
 |`num_prediction`|*Int*|The number of prediction this node will make. Default `0.99`.|
 |`sensor_height`|*Double*|Uses sensor height for visualized path's height. Default `0.9`.|
@@ -35,13 +35,13 @@ Launch file available parameters for `naive_motion_predict`
 
 |Topic|Type|Objective|
 ------|----|---------
-|`/detection/lidar_tracker/objects`|`autoware_msgs::DetectedObjectArray`|The result topic from Autoware Detection stack|
+|`/detection/lidar_tracker/objects`|`autoware_detection_msgs::DetectedObjectArray`|The result topic from Autoware Detection stack|
 
 ### Published topics
 
 |Topic|Type|Objective|
 ------|----|---------
-|`/prediction/objects`|`autoware_msgs::DetectedObjectArray`|Added predicted objects to input data..|
+|`/prediction/objects`|`autoware_detection_msgs::DetectedObjectArray`|Added predicted objects to input data..|
 |`/prediction/motion_predictor/path_markers`|`visualization_msgs::MarkerArray`|Visualzing predicted path in ros marker array|
 
 ### Video

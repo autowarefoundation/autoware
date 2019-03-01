@@ -10,7 +10,7 @@
 #include <cv_bridge/cv_bridge.h>
 
 #include "Context.h"
-#include "autoware_msgs/Signals.h"
+#include "autoware_detection_msgs/Signals.h"
 #include "traffic_light_recognizer.h"
 
 class RegionTLRSSDROSNode {
@@ -20,7 +20,7 @@ class RegionTLRSSDROSNode {
 
   void RunRecognition();
   void ImageRawCallback(const sensor_msgs::Image &image);
-  void ROISignalCallback(const autoware_msgs::Signals::ConstPtr &extracted_pos);
+  void ROISignalCallback(const autoware_detection_msgs::Signals::ConstPtr &extracted_pos);
 
   // The vector of data structure to save traffic light state, position, ...etc
   std::vector<Context> contexts_;

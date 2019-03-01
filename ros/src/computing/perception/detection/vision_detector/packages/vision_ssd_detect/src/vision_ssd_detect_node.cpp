@@ -19,8 +19,8 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 #include "autoware_config_msgs/ConfigSSD.h"
-#include "autoware_msgs/DetectedObject.h"
-#include "autoware_msgs/DetectedObjectArray.h"
+#include "autoware_detection_msgs/DetectedObject.h"
+#include "autoware_detection_msgs/DetectedObjectArray.h"
 
 #include <rect_class_score.h>
 
@@ -63,14 +63,14 @@ class ROSSSDApp
   std::vector<unsigned int> detect_classes_;
 
   void convert_rect_to_detected_object(std::vector< RectClassScore<float> >& in_objects,
-                                       autoware_msgs::DetectedObjectArray &out_message,
+                                       autoware_detection_msgs::DetectedObjectArray &out_message,
                                        cv::Mat& in_image)
   {
     for (unsigned int i = 0; i < in_objects.size(); ++i)
     {
       if (in_objects[i].score >= score_threshold_)
       {
-        autoware_msgs::DetectedObject obj;
+        autoware_detection_msgs::DetectedObject obj;
         obj.header = out_message.header;
         obj.label = in_objects[i].GetClassString();
         obj.score = in_objects[i].score;
@@ -112,7 +112,7 @@ class ROSSSDApp
     //Prepare Output message
     //Convert Objects to Message type
     //timer.reset(); timer.start();
-    autoware_msgs::DetectedObjectArray output_detected_message;
+    autoware_detection_msgs::DetectedObjectArray output_detected_message;
     output_detected_message.header = image_source.header;
     convert_rect_to_detected_object(detections, output_detected_message, image);
 
@@ -194,7 +194,7 @@ public:
     generateColors(colors_, 20);
 #endif
 
-    publisher_detected_objects_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>(
+    publisher_detected_objects_ = node_handle_.advertise<autoware_detection_msgs::DetectedObjectArray>(
       "/detection/image_detector/objects", 1);
 
     ROS_INFO("Subscribing to... %s", image_raw_topic_str.c_str());

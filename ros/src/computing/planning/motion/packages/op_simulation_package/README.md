@@ -49,7 +49,7 @@ Computing Tab -> Motion Planning -> OpenPlanner - Simulator  -> op_car_simulator
 This node simulates traffic lights for only one intersection with interchangable traffic lights. user can specify two sets of traffic lights, and the node will switch between them (green, red), yellow is considered as red.
 
 ### Outputs
-* /roi_signal [autoware_msgs::Signals]
+* /roi_signal [autoware_detection_msgs::Signals]
 
 ### Requirements
 
@@ -77,7 +77,7 @@ This node emulate the object detection using LIDAR data similar to (lidar_euclid
 The node receives position and dimention from op_car_simulator_i then generate noisy point cloud for each vehicle, then send all data as one cluster_cloud to lidar_kf_contour_track
 
 ### Outputs
-* /cloud_clusters [autoware_msgs::CloudClusterArray]
+* /cloud_clusters [autoware_detection_msgs::CloudClusterArray]
 
 ### How to launch
 

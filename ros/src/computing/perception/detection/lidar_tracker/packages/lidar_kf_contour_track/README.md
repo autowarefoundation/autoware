@@ -38,12 +38,12 @@ Computing Tab -> Detection -> lidar_tracker -> lidar_kf_contour_tracker
 
 ```
 Publications: 
- * /tracked_objects [autoware_msgs::DetectedObjectArray]
+ * /tracked_objects [autoware_detection_msgs::DetectedObjectArray]
  * /detected_polygons [visualization_msgs::MarkerArray]
  * /op_planner_tracked_boxes [jsk_recognition_msgs::BoundingBoxArray]
 
 Subscriptions: 
- * /cloud_cluster [autoware_msgs::CloudClusterArray]
+ * /cloud_cluster [autoware_detection_msgs::CloudClusterArray]
  * /current_pose [geometry_msgs::PoseStamped]
  * /vector_map_info/* 
 ```

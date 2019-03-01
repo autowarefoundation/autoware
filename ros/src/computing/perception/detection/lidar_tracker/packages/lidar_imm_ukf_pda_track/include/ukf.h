@@ -25,7 +25,7 @@
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 
-#include "autoware_msgs/DetectedObject.h"
+#include "autoware_detection_msgs/DetectedObject.h"
 
 enum TrackingState : int
 {
@@ -171,7 +171,7 @@ public:
 
   // object msg information
   bool is_stable_;
-  autoware_msgs::DetectedObject object_;
+  autoware_detection_msgs::DetectedObject object_;
   std::string label_;
   double min_assiciation_distance_;
 
@@ -261,17 +261,17 @@ public:
 
   void findMaxZandS(Eigen::VectorXd& max_det_z, Eigen::MatrixXd& max_det_s);
 
-  void updateMeasurementForCTRV(const std::vector<autoware_msgs::DetectedObject>& object_vec);
+  void updateMeasurementForCTRV(const std::vector<autoware_detection_msgs::DetectedObject>& object_vec);
 
   void uppateForCTRV();
 
   void updateEachMotion(const double detection_probability, const double gate_probability, const double gating_thres,
-                        const std::vector<autoware_msgs::DetectedObject>& object_vec, std::vector<double>& lambda_vec);
+                        const std::vector<autoware_detection_msgs::DetectedObject>& object_vec, std::vector<double>& lambda_vec);
 
-  void updateSUKF(const std::vector<autoware_msgs::DetectedObject>& object_vec);
+  void updateSUKF(const std::vector<autoware_detection_msgs::DetectedObject>& object_vec);
 
   void updateIMMUKF(const double detection_probability, const double gate_probability, const double gating_thres,
-                    const std::vector<autoware_msgs::DetectedObject>& object_vec);
+                    const std::vector<autoware_detection_msgs::DetectedObject>& object_vec);
 
   void ctrv(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
             const double delta_t, std::vector<double>& state);
@@ -286,14 +286,14 @@ public:
 
   void predictionMotion(const double delta_t, const int model_ind);
 
-  void checkLaneDirectionAvailability(const autoware_msgs::DetectedObject& in_object,
+  void checkLaneDirectionAvailability(const autoware_detection_msgs::DetectedObject& in_object,
                                       const double lane_direction_chi_thres, const bool use_sukf);
 
   void predictionLidarMeasurement(const int motion_ind, const int num_meas_state);
 
-  double calculateNIS(const autoware_msgs::DetectedObject& in_object, const int motion_ind);
+  double calculateNIS(const autoware_detection_msgs::DetectedObject& in_object, const int motion_ind);
 
-  bool isLaneDirectionAvailable(const autoware_msgs::DetectedObject& in_object, const int motion_ind,
+  bool isLaneDirectionAvailable(const autoware_detection_msgs::DetectedObject& in_object, const int motion_ind,
                                 const double lane_direction_chi_thres);
 
   // void updateKalmanGain(const int motion_ind, const int num_meas_state);
@@ -302,7 +302,7 @@ public:
   double normalizeAngle(const double angle);
 
   void update(const bool use_sukf, const double detection_probability, const double gate_probability,
-              const double gating_thres, const std::vector<autoware_msgs::DetectedObject>& object_vec);
+              const double gating_thres, const std::vector<autoware_detection_msgs::DetectedObject>& object_vec);
 
   void prediction(const bool use_sukf, const bool has_subscribed_vectormap, const double dt);
 };

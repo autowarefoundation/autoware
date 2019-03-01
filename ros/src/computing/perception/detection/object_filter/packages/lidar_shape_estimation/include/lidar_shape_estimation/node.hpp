@@ -23,7 +23,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include "lidar_shape_estimation/shape_estimator.hpp"
-#include "autoware_msgs/DetectedObjectArray.h"
+#include "autoware_detection_msgs/DetectedObjectArray.h"
 
 class ShapeEstimationNode
 {
@@ -33,7 +33,7 @@ private:  // ros
   ros::Publisher pub_;
   ros::Subscriber sub_;
 
-  void callback(const autoware_msgs::DetectedObjectArray::ConstPtr& input_msg);
+  void callback(const autoware_detection_msgs::DetectedObjectArray::ConstPtr& input_msg);
 
 private:
   ShapeEstimator estimator_;

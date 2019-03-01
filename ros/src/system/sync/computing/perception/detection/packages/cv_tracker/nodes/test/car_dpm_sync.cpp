@@ -19,7 +19,7 @@
 /* user header */
 #include "sensor_msgs/Image.h"
 #include "sensor_msgs/PointCloud2.h"
-#include "autoware_msgs/ImageObj.h"
+#include "autoware_detection_msgs/ImageObj.h"
 #include "autoware_sensing_msgs/PointsImage.h"
 
 /* ----mode---- */
@@ -296,7 +296,7 @@ bool publish() {
 }
 #endif
 
-void image_obj_callback(const autoware_msgs::ImageObj::ConstPtr& image_obj_msg) {
+void image_obj_callback(const autoware_detection_msgs::ImageObj::ConstPtr& image_obj_msg) {
     if (image_obj_flag) {
         image_obj_flag = false;
         points_image_flag = false;

@@ -25,7 +25,7 @@
 #include <pcl/point_types.h>
 #include <pcl_ros/point_cloud.h>
 
-#include <autoware_msgs/DetectedObjectArray.h>
+#include <autoware_detection_msgs/DetectedObjectArray.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
 
@@ -101,11 +101,11 @@ private:
 
   bool segment(const pcl::PointCloud<pcl::PointXYZI>::Ptr &pc_ptr,
                const pcl::PointIndices &valid_idx,
-               autoware_msgs::DetectedObjectArray &objects);
+               autoware_detection_msgs::DetectedObjectArray &objects);
 
   void pointsCallback(const sensor_msgs::PointCloud2 &msg);
 
-  void pubColoredPoints(const autoware_msgs::DetectedObjectArray &objects);
+  void pubColoredPoints(const autoware_detection_msgs::DetectedObjectArray &objects);
 
 };
 

@@ -24,6 +24,8 @@
   <build_depend>op_simu</build_depend>
   <build_depend>op_ros_helpers</build_depend>
   <build_depend>waypoint_follower</build_depend>
+  <build_depend>autoware_detection_msgs</build_depend>
+  <build_depend>autoware_detection_msgs</build_depend>
  
   
   <run_depend>roscpp</run_depend>
@@ -40,6 +42,8 @@
   <run_depend>op_simu</run_depend>
   <run_depend>op_ros_helpers</run_depend>  
   <run_depend>waypoint_follower</run_depend>
+  <run_depend>autoware_detection_msgs</run_depend>
+  <run_depend>autoware_detection_msgs</run_depend>
 
   <export>
   </export>

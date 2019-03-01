@@ -40,9 +40,9 @@
 #include <std_msgs/Int32.h>
 #include <geometry_msgs/TwistWithCovarianceStamped.h>
 #include <autoware_can_msgs/CANInfo.h>
-#include <autoware_msgs/DetectedObjectArray.h>
-#include <autoware_msgs/TrafficLight.h>
-#include <autoware_msgs/Signals.h>
+#include <autoware_detection_msgs/DetectedObjectArray.h>
+#include <autoware_detection_msgs/TrafficLight.h>
+#include <autoware_detection_msgs/Signals.h>
 #include <autoware_planning_msgs/ControlCommand.h>
 #include <visualization_msgs/MarkerArray.h>
 
@@ -136,8 +136,8 @@ protected: //Planning Related variables
 	void callbackGetGlobalPlannerPath(const autoware_planning_msgs::LaneArrayConstPtr& msg);
 	void callbackGetLocalPlannerPath(const autoware_planning_msgs::LaneArrayConstPtr& msg);
 	void callbackGetLocalTrajectoryCost(const autoware_planning_msgs::LaneConstPtr& msg);
-	void callbackGetTrafficLightStatus(const autoware_msgs::TrafficLight & msg);
-	void callbackGetTrafficLightSignals(const autoware_msgs::Signals& msg);
+	void callbackGetTrafficLightStatus(const autoware_detection_msgs::TrafficLight & msg);
+	void callbackGetTrafficLightSignals(const autoware_detection_msgs::Signals& msg);
 
 	void callbackGetTwistCMD(const geometry_msgs::TwistStampedConstPtr& msg);
 	void callbackGetTwistRaw(const geometry_msgs::TwistStampedConstPtr& msg);

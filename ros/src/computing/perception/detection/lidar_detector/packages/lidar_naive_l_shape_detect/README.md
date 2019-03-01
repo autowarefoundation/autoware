@@ -23,8 +23,8 @@ Launch file available parameters for `lidar_naive_l_shape_detect`
 
 |Parameter| Type| Description|
 ----------|-----|--------
-|`input topic`|*String* |Input topic(type: autoware_msgs::DetectedObjectArray). Default `/detection/lidar_objects`.|
-|`output topic`|*String*|Output topic(type: autoware_msgs::DetectedObjectArray). Default `/detection/lidar_objects/l_shaped`.|
+|`input topic`|*String* |Input topic(type: autoware_detection_msgs::DetectedObjectArray). Default `/detection/lidar_objects`.|
+|`output topic`|*String*|Output topic(type: autoware_detection_msgs::DetectedObjectArray). Default `/detection/lidar_objects/l_shaped`.|
 |`random_ponts`|*int*|Number of random sampling points. Default `80`.|
 |`slope_dist_thres`|*float*|Threshold for applying L-shape fitting. Default `2.0`.|
 |`num_points_thres`|*int*|Threshold for applying L-shape fitting.  Default `10`.|
@@ -35,13 +35,13 @@ Launch file available parameters for `lidar_naive_l_shape_detect`
 
 |Topic|Type|Objective|
 ------|----|---------
-|`/detection/lidar_objects`|`autoware_msgs::DetectedObjectArray`|Segmented pointcloud from a clustering algorithm like eucledian cluster.|
+|`/detection/lidar_objects`|`autoware_detection_msgs::DetectedObjectArray`|Segmented pointcloud from a clustering algorithm like eucledian cluster.|
 
 ### Published topics
 
 |Topic|Type|Objective|
 ------|----|---------
-|`/detection/lidar_objects/l_shaped`|`autoware_msgs::DetectedObjectArray`|L-shape fitting pose and dimension will be published.|
+|`/detection/lidar_objects/l_shaped`|`autoware_detection_msgs::DetectedObjectArray`|L-shape fitting pose and dimension will be published.|
 
 
 ### Video

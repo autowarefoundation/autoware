@@ -22,7 +22,7 @@ Launch file available parameters:
 
 |Topic|Type|Objective|
 ------|----|---------
-|`ROS_NAMESPACE/objects`|`autoware_msgs/DetectedObjectArray`|Objects Array topic to visualize|
+|`ROS_NAMESPACE/objects`|`autoware_detection_msgs/DetectedObjectArray`|Objects Array topic to visualize|
 
 ### Published topics
 

@@ -23,6 +23,7 @@ find_package(catkin REQUIRED COMPONENTS
   op_ros_helpers
   waypoint_follower
   autoware_planning_msgs
+  autoware_detection_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -45,6 +46,7 @@ catkin_package(
   op_ros_helpers
   waypoint_follower
   autoware_planning_msgs
+  autoware_detection_msgs
 #  DEPENDS system_lib
 )
 

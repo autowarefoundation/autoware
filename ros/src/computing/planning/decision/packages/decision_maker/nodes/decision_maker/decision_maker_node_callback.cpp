@@ -8,9 +8,9 @@
 #include <std_msgs/String.h>
 #include <std_msgs/UInt8.h>
 
-#include <autoware_msgs/CloudClusterArray.h>
+#include <autoware_detection_msgs/CloudClusterArray.h>
 #include <autoware_planning_msgs/Lane.h>
-#include <autoware_msgs/TrafficLight.h>
+#include <autoware_detection_msgs/TrafficLight.h>
 
 #include <cross_road_area.hpp>
 #include <decision_maker_node.hpp>
@@ -110,9 +110,9 @@ void DecisionMakerNode::callbackFromConfig(const autoware_config_msgs::ConfigDec
   detectionArea_.y2 = msg.detection_area_y2;
 }
 
-void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_msgs::TrafficLight const> &event)
+void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_detection_msgs::TrafficLight const> &event)
 {    
-  const autoware_msgs::TrafficLight *light = event.getMessage().get();
+  const autoware_detection_msgs::TrafficLight *light = event.getMessage().get();
 //  const ros::M_string &header = event.getConnectionHeader();
 //  std::string topic = header.at("topic"); 
   
@@ -131,7 +131,7 @@ void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_
   }
 }
 
-void DecisionMakerNode::callbackFromObjectDetector(const autoware_msgs::CloudClusterArray &msg)
+void DecisionMakerNode::callbackFromObjectDetector(const autoware_detection_msgs::CloudClusterArray &msg)
 {
   // This function is a quick hack implementation.
   // If detection result exists in DetectionArea, decisionmaker sets object

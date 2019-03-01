@@ -5,7 +5,7 @@ project(object_map)
 
 find_package(autoware_build_flags REQUIRED)
 
-find_package(autoware_msgs REQUIRED)
+find_package(autoware_detection_msgs REQUIRED)
 
 find_package(vector_map REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
@@ -18,7 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
         grid_map_ros
         grid_map_cv
         grid_map_msgs
-        autoware_msgs
+        autoware_detection_msgs
         vector_map
         )
 
@@ -40,7 +40,7 @@ catkin_package(
         tf
         sensor_msgs
         nav_msgs
-        autoware_msgs
+        autoware_detection_msgs
         vector_map
 )
 
@@ -49,7 +49,7 @@ set(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 include_directories(
         ${catkin_INCLUDE_DIRS}
         ${vector_map_INCLUDE_DIRS}
-        ${autoware_msgs_INCLUDE_DIRS}
+        ${autoware_detection_msgs_INCLUDE_DIRS}
         include
 )
 ### object_map_utils ###

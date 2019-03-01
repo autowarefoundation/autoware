@@ -49,8 +49,8 @@
 
 #include <cv_bridge/cv_bridge.h>
 
-#include <autoware_msgs/DetectedObject.h>
-#include <autoware_msgs/DetectedObjectArray.h>
+#include <autoware_detection_msgs/DetectedObject.h>
+#include <autoware_detection_msgs/DetectedObjectArray.h>
 
 #include "detection.h"
 #include "hungarian.h"
@@ -137,14 +137,14 @@ class BeyondTrackerNode
   double camera_height_;
 
   std::vector<beyondtrack::Detection>
-  parse_detected_object(const autoware_msgs::DetectedObjectArray::ConstPtr &in_vision_detections);
+  parse_detected_object(const autoware_detection_msgs::DetectedObjectArray::ConstPtr &in_vision_detections);
 
-  void vision_detection_callback(const autoware_msgs::DetectedObjectArray::ConstPtr &in_vision_detections);
+  void vision_detection_callback(const autoware_detection_msgs::DetectedObjectArray::ConstPtr &in_vision_detections);
 
   void intrinsics_callback(const sensor_msgs::CameraInfo &in_message);
 
   void detection_to_objects(const std::vector<beyondtrack::Detection> &in_objects,
-                            autoware_msgs::DetectedObjectArray &out_message);
+                            autoware_detection_msgs::DetectedObjectArray &out_message);
 
 public:
   void Run();

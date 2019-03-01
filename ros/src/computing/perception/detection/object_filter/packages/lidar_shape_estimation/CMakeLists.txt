@@ -3,7 +3,7 @@ project(lidar_shape_estimation)
 
 find_package(catkin REQUIRED COMPONENTS
         autoware_build_flags
-        autoware_msgs
+        autoware_detection_msgs
         pcl_ros
         roscpp
         tf2
@@ -20,7 +20,7 @@ catkin_package(
             include
         CATKIN_DEPENDS
             autoware_build_flags
-            autoware_msgs
+            autoware_detection_msgs
             pcl_ros
             roscpp
             tf2

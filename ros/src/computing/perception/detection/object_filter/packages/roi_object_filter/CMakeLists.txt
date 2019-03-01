@@ -6,7 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
         roscpp
         sensor_msgs
         geometry_msgs
-        autoware_msgs
+        autoware_detection_msgs
         grid_map_ros
         grid_map_cv
         grid_map_msgs
@@ -40,7 +40,7 @@ catkin_package(
         roscpp
         sensor_msgs
         geometry_msgs
-        autoware_msgs
+        autoware_detection_msgs
         grid_map_ros
         grid_map_cv
         grid_map_msgs

@@ -1,0 +1,4 @@
+Header header
+autoware_detection_msgs/ColorSet Red
+autoware_detection_msgs/ColorSet Yellow
+autoware_detection_msgs/ColorSet Green

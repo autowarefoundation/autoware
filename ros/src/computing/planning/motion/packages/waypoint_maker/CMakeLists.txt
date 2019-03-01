@@ -5,6 +5,7 @@ project(waypoint_maker)
 find_package(autoware_build_flags REQUIRED)
 
 find_package(autoware_planning_msgs REQUIRED)
+find_package(autoware_detection_msgs REQUIRED)
 
 find_package(vector_map REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
@@ -17,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
         waypoint_follower
         lane_planner
         autoware_planning_msgs
+        autoware_detection_msgs
         vector_map
         )
 
@@ -33,6 +35,7 @@ catkin_package(
         vector_map
         lane_planner
         autoware_planning_msgs
+        autoware_detection_msgs
 )
 
 SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
@@ -41,6 +44,7 @@ include_directories(
         ${catkin_INCLUDE_DIRS}
         ${vector_map_INCLUDE_DIRS}
         ${autoware_planning_msgs_INCLUDE_DIRS}
+        ${autoware_detection_msgs_INCLUDE_DIRS}
         ${Boost_INCLUDE_DIRS}
 )
 

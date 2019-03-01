@@ -27,7 +27,7 @@ bool Context::CompareContext(const Context in_context_a, const Context in_contex
 
 
 void Context::SetContexts(std::vector<Context> &out_signal_contexts,
-                          const autoware_msgs::Signals::ConstPtr &in_lamp_signals_positions,
+                          const autoware_detection_msgs::Signals::ConstPtr &in_lamp_signals_positions,
                           const int in_image_height,
                           const int in_image_width)
 {
