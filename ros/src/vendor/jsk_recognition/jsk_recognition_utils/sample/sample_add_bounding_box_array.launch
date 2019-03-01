@@ -1,0 +1,43 @@
+<launch>
+
+  <arg name="test" default="true" />
+
+  <group ns="bboxes_a">
+    <include file="$(find jsk_recognition_utils)/sample/sample_bounding_box_array_publisher.launch">
+      <arg name="gui" value="false" />
+      <arg name="test" value="false" />
+    </include>
+  </group>
+
+  <group ns="bboxes_b">
+    <include file="$(find jsk_recognition_utils)/sample/sample_bounding_box_array_publisher.launch">
+      <arg name="gui" value="false" />
+      <arg name="test" value="false" />
+    </include>
+  </group>
+
+  <node name="add_bounding_box_array"
+        pkg="jsk_recognition_utils" type="add_bounding_box_array.py"
+        clear_params="true">
+    <rosparam subst_value="true">
+      approximate_sync: true
+      slop: 0.9  # input topics are slow (~1Hz)
+      topics:
+        - bboxes_a/bounding_box_array_publisher/output
+        - bboxes_b/bounding_box_array_publisher/output
+    </rosparam>
+  </node>
+
+  <group if="$(arg test)">
+    <test test-name="test_add_bounding_box_array"
+          name="test_add_bounding_box_array"
+          pkg="jsk_tools" type="test_topic_published.py"
+          time-limit="40" retry="3">
+      <rosparam>
+        topic_0: /add_bounding_box_array/output
+        timeout_0: 30
+      </rosparam>
+    </test>
+  </group>
+
+</launch>

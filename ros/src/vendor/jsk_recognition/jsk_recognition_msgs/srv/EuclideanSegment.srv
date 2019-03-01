@@ -1,0 +1,4 @@
+sensor_msgs/PointCloud2 input
+float32 tolerance
+---
+sensor_msgs/PointCloud2[] output

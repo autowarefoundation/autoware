@@ -1,0 +1,48 @@
+<launch>
+  <arg name="gui" default="true" />
+
+  <node name="static_tf_publisher"
+        pkg="tf" type="static_transform_publisher"
+        args="0 0 0 0 0 0 map base_link 10" />
+
+  <node name="polygon_array_publisher"
+        pkg="jsk_recognition_utils" type="polygon_array_publisher.py"
+        output="screen">
+    <rosparam>
+      frame_id: base_link
+      polygons:
+      - points:
+        - [1.0, -1.0, 0.0]
+        - [2.0, -1.0, 0.0]
+        - [2.0,  1.0, 0.0]
+        - [1.0,  1.0, 0.0]
+        label: 1
+        likelihood: 0.8
+      - points:
+        - [1.0, -1.0, 0.5]
+        - [2.0, -1.0, 0.5]
+        - [2.0,  1.0, 0.5]
+        - [1.0,  1.0, 0.5]
+        label: 2
+        likelihood: 0.6
+      - points:
+        - [1.0, -1.0, 1.0]
+        - [2.0, -1.0, 1.0]
+        - [2.0,  1.0, 1.0]
+        - [1.0,  1.0, 1.0]
+        label: 3
+        likelihood: 0.4
+      - points:
+        - [0.0,  1.0, 0.0]
+        - [0.8,  1.0, 0.0]
+        - [0.8,  1.0, 1.0]
+        - [0.0,  1.0, 1.0]
+        label: 4
+        likelihood: 0.8
+    </rosparam>
+  </node>
+
+  <node if="$(arg gui)"
+        name="rviz" pkg="rviz" type="rviz"
+        args="-d $(find jsk_recognition_utils)/sample/config/sample_polygon_array_publisher.rviz" />
+</launch>
