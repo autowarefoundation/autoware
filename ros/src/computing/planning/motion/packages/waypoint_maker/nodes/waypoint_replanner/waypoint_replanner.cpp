@@ -47,7 +47,7 @@ void WaypointReplanner::initParameter(const autoware_config_msgs::ConfigWaypoint
   vel_param_ = calcVelParam(velocity_max_);
 }
 
-void WaypointReplanner::changeVelSign(autoware_msgs::Lane& lane, bool positive) const
+void WaypointReplanner::changeVelSign(autoware_planning_msgs::Lane& lane, bool positive) const
 {
   const int sgn = positive ? 1 : -1;
   for (auto& el : lane.waypoints)
@@ -56,7 +56,7 @@ void WaypointReplanner::changeVelSign(autoware_msgs::Lane& lane, bool positive) 
   }
 }
 
-int WaypointReplanner::getDirection(const autoware_msgs::Lane& lane) const
+int WaypointReplanner::getDirection(const autoware_planning_msgs::Lane& lane) const
 {
   if (lane.waypoints.size() < 2)
   {
@@ -68,7 +68,7 @@ int WaypointReplanner::getDirection(const autoware_msgs::Lane& lane) const
   return rlt_point.x < 0 ? -1 : 1;
 }
 
-void WaypointReplanner::replanLaneWaypointVel(autoware_msgs::Lane& lane)
+void WaypointReplanner::replanLaneWaypointVel(autoware_planning_msgs::Lane& lane)
 {
   if (lane.waypoints.empty())
   {
@@ -117,13 +117,13 @@ void WaypointReplanner::replanLaneWaypointVel(autoware_msgs::Lane& lane)
   }
 }
 
-void WaypointReplanner::resampleLaneWaypoint(const double resample_interval, autoware_msgs::Lane& lane, int dir)
+void WaypointReplanner::resampleLaneWaypoint(const double resample_interval, autoware_planning_msgs::Lane& lane, int dir)
 {
   if (lane.waypoints.size() < 2)
   {
     return;
   }
-  autoware_msgs::Lane original_lane(lane);
+  autoware_planning_msgs::Lane original_lane(lane);
   lane.waypoints.clear();
   lane.waypoints.emplace_back(original_lane.waypoints[0]);
   lane.waypoints.reserve(ceil(1.5 * calcPathLength(original_lane) / resample_interval_));
@@ -152,13 +152,13 @@ void WaypointReplanner::resampleLaneWaypoint(const double resample_interval, aut
   lane.waypoints.back().change_flag = original_lane.waypoints.back().change_flag;
 }
 
-void WaypointReplanner::resampleOnStraight(const CbufGPoint& curve_point, autoware_msgs::Lane& lane)
+void WaypointReplanner::resampleOnStraight(const CbufGPoint& curve_point, autoware_planning_msgs::Lane& lane)
 {
   if (curve_point.size() != 3)
   {
     return;
   }
-  autoware_msgs::Waypoint wp(lane.waypoints.back());
+  autoware_planning_msgs::Waypoint wp(lane.waypoints.back());
   const geometry_msgs::Point& pt = wp.pose.pose.position;
   const double yaw = atan2(curve_point[2].y - curve_point[0].y, curve_point[2].x - curve_point[0].x);
   wp.pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
@@ -181,13 +181,13 @@ void WaypointReplanner::resampleOnStraight(const CbufGPoint& curve_point, autowa
 }
 
 void WaypointReplanner::resampleOnCurve(const geometry_msgs::Point& target_point,
-                                        const std::vector<double>& curve_param, autoware_msgs::Lane& lane, int dir)
+                                        const std::vector<double>& curve_param, autoware_planning_msgs::Lane& lane, int dir)
 {
   if (curve_param.size() != 3)
   {
     return;
   }
-  autoware_msgs::Waypoint wp(lane.waypoints.back());
+  autoware_planning_msgs::Waypoint wp(lane.waypoints.back());
   const double& cx = curve_param[0];
   const double& cy = curve_param[1];
   const double& radius = curve_param[2];
@@ -225,12 +225,12 @@ void WaypointReplanner::resampleOnCurve(const geometry_msgs::Point& target_point
 // Three points used for curve detection (the target point is the center)
 // [0] = previous point, [1] = target point, [2] = next point
 const CbufGPoint WaypointReplanner::getCrvPointsOnResample(
-    const autoware_msgs::Lane& lane, const autoware_msgs::Lane& original_lane, unsigned long original_index) const
+    const autoware_planning_msgs::Lane& lane, const autoware_planning_msgs::Lane& original_lane, unsigned long original_index) const
 {
   unsigned long id = original_index;
   CbufGPoint curve_point(3);
   const unsigned int n = (lookup_crv_width_ - 1) / 2;
-  const autoware_msgs::Waypoint cp[3] = {
+  const autoware_planning_msgs::Waypoint cp[3] = {
     (lane.waypoints.size() < n) ? lane.waypoints.front() : lane.waypoints[lane.waypoints.size() - n],
     original_lane.waypoints[id],
     (id < original_lane.waypoints.size() - n) ? original_lane.waypoints[id + n] : original_lane.waypoints.back()
@@ -242,7 +242,7 @@ const CbufGPoint WaypointReplanner::getCrvPointsOnResample(
   return curve_point;
 }
 
-const CbufGPoint WaypointReplanner::getCrvPoints(const autoware_msgs::Lane& lane, unsigned long index) const
+const CbufGPoint WaypointReplanner::getCrvPoints(const autoware_planning_msgs::Lane& lane, unsigned long index) const
 {
   CbufGPoint curve_point(3);
   const unsigned int n = (lookup_crv_width_ - 1) / 2;
@@ -256,7 +256,7 @@ const CbufGPoint WaypointReplanner::getCrvPoints(const autoware_msgs::Lane& lane
   return curve_point;
 }
 
-void WaypointReplanner::createRadiusList(const autoware_msgs::Lane& lane, std::vector<double>& curve_radius)
+void WaypointReplanner::createRadiusList(const autoware_planning_msgs::Lane& lane, std::vector<double>& curve_radius)
 {
   if (lane.waypoints.empty())
   {
@@ -327,7 +327,7 @@ void WaypointReplanner::createCurveList(const std::vector<double>& curve_radius,
 
 
 void WaypointReplanner::setVelocityByRange(unsigned long start_idx, unsigned long end_idx, unsigned int offset,
-                                             double vel, autoware_msgs::Lane& lane)
+                                             double vel, autoware_planning_msgs::Lane& lane)
 {
   if (lane.waypoints.empty())
   {
@@ -346,7 +346,7 @@ void WaypointReplanner::setVelocityByRange(unsigned long start_idx, unsigned lon
 }
 
 void WaypointReplanner::raiseVelocityByRange(unsigned long start_idx, unsigned long end_idx, unsigned int offset,
-                                           double vmin, autoware_msgs::Lane& lane)
+                                           double vmin, autoware_planning_msgs::Lane& lane)
 {
   if (lane.waypoints.empty())
   {
@@ -369,7 +369,7 @@ void WaypointReplanner::raiseVelocityByRange(unsigned long start_idx, unsigned l
 }
 
 void WaypointReplanner::limitVelocityByRange(unsigned long start_idx, unsigned long end_idx, unsigned int offset,
-                                             double vmin, autoware_msgs::Lane& lane)
+                                             double vmin, autoware_planning_msgs::Lane& lane)
 {
   if (lane.waypoints.empty())
   {
@@ -393,7 +393,7 @@ void WaypointReplanner::limitVelocityByRange(unsigned long start_idx, unsigned l
   limitAccelDecel(end_idx, lane);
 }
 
-void WaypointReplanner::limitAccelDecel(const unsigned long idx, autoware_msgs::Lane& lane)
+void WaypointReplanner::limitAccelDecel(const unsigned long idx, autoware_planning_msgs::Lane& lane)
 {
   const double acc[2] = { accel_limit_, decel_limit_ };
   const unsigned long end_idx[2] = { lane.waypoints.size() - idx, idx + 1 };
@@ -440,7 +440,7 @@ const std::vector<double> WaypointReplanner::calcCurveParam(CbufGPoint p) const
   return std::vector<double>();  // error
 }
 
-const double WaypointReplanner::calcPathLength(const autoware_msgs::Lane& lane) const
+const double WaypointReplanner::calcPathLength(const autoware_planning_msgs::Lane& lane) const
 {
   double distance = 0.0;
   for (unsigned long i = 1; i < lane.waypoints.size(); i++)

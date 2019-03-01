@@ -76,11 +76,11 @@ from tablet_socket_msgs.msg import Waypoint
 from tablet_socket_msgs.msg import route_cmd
 from geometry_msgs.msg import TwistStamped
 from geometry_msgs.msg import Vector3
-from autoware_msgs.msg import AccelCmd
-from autoware_msgs.msg import SteerCmd
-from autoware_msgs.msg import BrakeCmd
+from autoware_planning_msgs.msg import AccelCmd
+from autoware_planning_msgs.msg import SteerCmd
+from autoware_planning_msgs.msg import BrakeCmd
 from autoware_msgs.msg import IndicatorCmd
-from autoware_msgs.msg import LampCmd
+from autoware_planning_msgs.msg import LampCmd
 from autoware_msgs.msg import TrafficLight
 from autoware_msgs.msg import AdjustXY
 from types import MethodType

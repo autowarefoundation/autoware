@@ -5,7 +5,7 @@ include(FindPkgConfig)
 
 find_package(autoware_build_flags REQUIRED)
 
-find_package(autoware_msgs REQUIRED)
+find_package(autoware_planning_msgs REQUIRED)
 
 find_package(vector_map REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
@@ -17,7 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
         pcl_ros
         tf2_ros
         tf2_geometry_msgs
-        autoware_msgs
+        autoware_planning_msgs
         vector_map
         )
 
@@ -53,7 +53,7 @@ include_directories(
         include
         ${vector_map_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
-        ${autoware_msgs_INCLUDE_DIRS}
+        ${autoware_planning_msgs_INCLUDE_DIRS}
         ${PCL_IO_INCLUDE_DIRS}
         ${CURL_INCLUDE_DIRS}
 )

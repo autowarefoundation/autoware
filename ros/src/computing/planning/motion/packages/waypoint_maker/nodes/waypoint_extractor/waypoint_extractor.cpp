@@ -15,7 +15,7 @@
  */
 #include <ros/ros.h>
 #include <tf/transform_datatypes.h>
-#include <autoware_msgs/LaneArray.h>
+#include <autoware_planning_msgs/LaneArray.h>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -29,7 +29,7 @@ private:
   ros::NodeHandle nh_, private_nh_;
   ros::Subscriber larray_sub_;
   std::string lane_csv_, lane_topic_;
-  autoware_msgs::LaneArray lane_;
+  autoware_planning_msgs::LaneArray lane_;
 public:
   WaypointExtractor() : private_nh_("~")
   {
@@ -92,7 +92,7 @@ public:
     saveLaneArray(dst_multi_file_path, lane_);
   }
 
-  void LaneArrayCallback(const autoware_msgs::LaneArray::ConstPtr& larray)
+  void LaneArrayCallback(const autoware_planning_msgs::LaneArray::ConstPtr& larray)
   {
     if (larray->lanes.empty())
     {
@@ -102,7 +102,7 @@ public:
   }
 
   void saveLaneArray(const std::vector<std::string>& paths,
-                                         const autoware_msgs::LaneArray& lane_array)
+                                         const autoware_planning_msgs::LaneArray& lane_array)
   {
     for (const auto& file_path : paths)
     {

@@ -11,7 +11,7 @@ set(ROS_VERSION $ENV{ROS_DISTRO})
 
 find_package(autoware_build_flags REQUIRED)
 
-find_package(autoware_msgs REQUIRED)
+find_package(autoware_planning_msgs REQUIRED)
 
 find_package(vector_map REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
@@ -26,7 +26,7 @@ find_package(catkin REQUIRED COMPONENTS
         vector_map_server
         visualization_msgs
         waypoint_follower
-        autoware_msgs
+        autoware_planning_msgs
         vector_map
         )
 
@@ -61,14 +61,14 @@ include_directories(
         include
         ${catkin_INCLUDE_DIRS}
         ${vector_map_INCLUDE_DIRS}
-        ${autoware_msgs_INCLUDE_DIRS}
+        ${autoware_planning_msgs_INCLUDE_DIRS}
         ${Eigen3_INCLUDE_DIRS}
 )
 
 catkin_package(
         INCLUDE_DIRS ${EIGEN3_INCLUDE_DIRS}
         CATKIN_DEPENDS
-        autoware_msgs
+        autoware_planning_msgs
         cmake_modules
         cv_bridge
         geometry_msgs
@@ -129,7 +129,7 @@ add_dependencies(region_tlr
 include_directories(
         ${catkin_INCLUDE_DIRS}
         ${vector_map_INCLUDE_DIRS}
-        ${autoware_msgs_INCLUDE_DIRS}
+        ${autoware_planning_msgs_INCLUDE_DIRS}
         ${Eigen3_INCLUDE_DIRS}
 )
 
@@ -158,7 +158,7 @@ include_directories(
         nodes/tlr_tuner/
         ${catkin_INCLUDE_DIRS}
         ${vector_map_INCLUDE_DIRS}
-        ${autoware_msgs_INCLUDE_DIRS}
+        ${autoware_planning_msgs_INCLUDE_DIRS}
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
 )
@@ -191,7 +191,7 @@ target_link_libraries(tlr_tuner
 include_directories(
         ${catkin_INCLUDE_DIRS}
         ${vector_map_INCLUDE_DIRS}
-        ${autoware_msgs_INCLUDE_DIRS}
+        ${autoware_planning_msgs_INCLUDE_DIRS}
         include
 )
 
@@ -221,7 +221,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 include_directories(
         ${catkin_INCLUDE_DIRS}
         ${vector_map_INCLUDE_DIRS}
-        ${autoware_msgs_INCLUDE_DIRS}
+        ${autoware_planning_msgs_INCLUDE_DIRS}
         ${TinyXML_INCLUDE_DIRS}
         nodes/label_maker/
         ${CMAKE_CURRENT_SOURCE_DIR}

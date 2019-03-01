@@ -24,7 +24,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseArray.h>
 #include <nav_msgs/Odometry.h>
-#include <autoware_msgs/LaneArray.h>
+#include <autoware_planning_msgs/LaneArray.h>
 #include <autoware_can_msgs/CANInfo.h>
 #include <autoware_msgs/DetectedObjectArray.h>
 #include <visualization_msgs/MarkerArray.h>
@@ -103,8 +103,8 @@ protected:
 	void callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg);
 	void callbackGetCANInfo(const autoware_can_msgs::CANInfoConstPtr &msg);
 	void callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg);
-	void callbackGetGlobalPlannerPath(const autoware_msgs::LaneArrayConstPtr& msg);
-	void callbackGetLocalPlannerPath(const autoware_msgs::LaneArrayConstPtr& msg);
+	void callbackGetGlobalPlannerPath(const autoware_planning_msgs::LaneArrayConstPtr& msg);
+	void callbackGetLocalPlannerPath(const autoware_planning_msgs::LaneArrayConstPtr& msg);
 	void callbackGetPredictedObjects(const autoware_msgs::DetectedObjectArrayConstPtr& msg);
 	void callbackGetBehaviorState(const geometry_msgs::TwistStampedConstPtr & msg);
 

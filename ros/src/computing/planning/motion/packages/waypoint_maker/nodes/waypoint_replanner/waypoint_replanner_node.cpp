@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 #include <ros/ros.h>
-#include <autoware_msgs/LaneArray.h>
+#include <autoware_planning_msgs/LaneArray.h>
 #include "waypoint_replanner.h"
 
 namespace waypoint_maker
@@ -30,18 +30,18 @@ private:
   ros::Subscriber lane_sub_, config_sub_;
   bool replanning_mode_, realtime_tuning_mode_;
   WaypointReplanner replanner_;
-  autoware_msgs::LaneArray lane_array_;
+  autoware_planning_msgs::LaneArray lane_array_;
   bool withoutDecisionMaker();
-  void replan(autoware_msgs::LaneArray &lane_array);
+  void replan(autoware_planning_msgs::LaneArray &lane_array);
   void publishLaneArray();
-  void laneCallback(const autoware_msgs::LaneArray::ConstPtr& lane_array);
+  void laneCallback(const autoware_planning_msgs::LaneArray::ConstPtr& lane_array);
   void configCallback(const autoware_config_msgs::ConfigWaypointReplanner::ConstPtr& conf);
 };
 
 WaypointReplannerNode::WaypointReplannerNode() : replanning_mode_(false)
 {
-  lane_pub_["with_decision"] = nh_.advertise<autoware_msgs::LaneArray>("/based/lane_waypoints_array", 10, true);
-  lane_pub_["without_decision"] = nh_.advertise<autoware_msgs::LaneArray>("/lane_waypoints_array", 10, true);
+  lane_pub_["with_decision"] = nh_.advertise<autoware_planning_msgs::LaneArray>("/based/lane_waypoints_array", 10, true);
+  lane_pub_["without_decision"] = nh_.advertise<autoware_planning_msgs::LaneArray>("/lane_waypoints_array", 10, true);
   lane_sub_ = nh_.subscribe("/based/lane_waypoints_raw", 1, &WaypointReplannerNode::laneCallback, this);
   config_sub_ = nh_.subscribe("/config/waypoint_replanner", 1, &WaypointReplannerNode::configCallback, this);
 }
@@ -50,7 +50,7 @@ WaypointReplannerNode::~WaypointReplannerNode()
 {
 }
 
-void WaypointReplannerNode::replan(autoware_msgs::LaneArray& lane_array)
+void WaypointReplannerNode::replan(autoware_planning_msgs::LaneArray& lane_array)
 {
   for (auto &el : lane_array.lanes)
   {
@@ -67,7 +67,7 @@ bool WaypointReplannerNode::withoutDecisionMaker()
 
 void WaypointReplannerNode::publishLaneArray()
 {
-  autoware_msgs::LaneArray array(lane_array_);
+  autoware_planning_msgs::LaneArray array(lane_array_);
   if (replanning_mode_)
   {
     replan(array);
@@ -79,7 +79,7 @@ void WaypointReplannerNode::publishLaneArray()
   }
 }
 
-void WaypointReplannerNode::laneCallback(const autoware_msgs::LaneArray::ConstPtr& lane_array)
+void WaypointReplannerNode::laneCallback(const autoware_planning_msgs::LaneArray::ConstPtr& lane_array)
 {
   lane_array_ = *lane_array;
   publishLaneArray();

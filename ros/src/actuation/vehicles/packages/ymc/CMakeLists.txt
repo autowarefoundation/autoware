@@ -5,14 +5,14 @@ set(CMAKE_CXX_FLAGS "-Wall ${CMAKE_CXX_FLAGS}")
 
 find_package(autoware_build_flags REQUIRED)
 
-find_package(autoware_msgs REQUIRED)
+find_package(autoware_planning_msgs REQUIRED)
 
 find_package(
   catkin REQUIRED COMPONENTS
   roscpp
   geometry_msgs
   rosconsole
-  autoware_msgs
+  autoware_planning_msgs
 )
 
 catkin_package(
@@ -20,7 +20,7 @@ catkin_package(
   roscpp
   geometry_msgs
   rosconsole
-  autoware_msgs
+  autoware_planning_msgs
 )
 
 IF ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64")
@@ -30,7 +30,7 @@ ELSE ()
 ENDIF ()
 
 include_directories(
-  ${autoware_msgs_INCLUDE_DIRS}
+  ${autoware_planning_msgs_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
   include
 )

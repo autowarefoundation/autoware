@@ -33,31 +33,31 @@ void WaypointLoaderNode::initPubSub()
 {
   private_nh_.param<std::string>("multi_lane_csv", multi_lane_csv_, "/tmp/driving_lane.csv");
   // setup publisher
-  lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>("/based/lane_waypoints_raw", 10, true);
+  lane_pub_ = nh_.advertise<autoware_planning_msgs::LaneArray>("/based/lane_waypoints_raw", 10, true);
 }
 
 void WaypointLoaderNode::run()
 {
   multi_file_path_.clear();
   parseColumns(multi_lane_csv_, &multi_file_path_);
-  autoware_msgs::LaneArray lane_array;
+  autoware_planning_msgs::LaneArray lane_array;
   createLaneArray(multi_file_path_, &lane_array);
   lane_pub_.publish(lane_array);
   output_lane_array_ = lane_array;
   ros::spin();
 }
 
-void WaypointLoaderNode::createLaneArray(const std::vector<std::string>& paths, autoware_msgs::LaneArray* lane_array)
+void WaypointLoaderNode::createLaneArray(const std::vector<std::string>& paths, autoware_planning_msgs::LaneArray* lane_array)
 {
   for (const auto& el : paths)
   {
-    autoware_msgs::Lane lane;
+    autoware_planning_msgs::Lane lane;
     createLaneWaypoint(el, &lane);
     lane_array->lanes.emplace_back(lane);
   }
 }
 
-void WaypointLoaderNode::createLaneWaypoint(const std::string& file_path, autoware_msgs::Lane* lane)
+void WaypointLoaderNode::createLaneWaypoint(const std::string& file_path, autoware_planning_msgs::Lane* lane)
 {
   if (!verifyFileConsistency(file_path.c_str()))
   {
@@ -67,7 +67,7 @@ void WaypointLoaderNode::createLaneWaypoint(const std::string& file_path, autowa
 
   ROS_INFO("lane data is valid. publishing...");
   FileFormat format = checkFileFormat(file_path.c_str());
-  std::vector<autoware_msgs::Waypoint> wps;
+  std::vector<autoware_planning_msgs::Waypoint> wps;
   if (format == FileFormat::ver1)
   {
     loadWaypointsForVer1(file_path.c_str(), &wps);
@@ -85,7 +85,7 @@ void WaypointLoaderNode::createLaneWaypoint(const std::string& file_path, autowa
   lane->waypoints = wps;
 }
 
-void WaypointLoaderNode::loadWaypointsForVer1(const char* filename, std::vector<autoware_msgs::Waypoint>* wps)
+void WaypointLoaderNode::loadWaypointsForVer1(const char* filename, std::vector<autoware_planning_msgs::Waypoint>* wps)
 {
   std::ifstream ifs(filename);
 
@@ -99,7 +99,7 @@ void WaypointLoaderNode::loadWaypointsForVer1(const char* filename, std::vector<
 
   while (std::getline(ifs, line))
   {
-    autoware_msgs::Waypoint wp;
+    autoware_planning_msgs::Waypoint wp;
     parseWaypointForVer1(line, &wp);
     wps->emplace_back(wp);
   }
@@ -120,7 +120,7 @@ void WaypointLoaderNode::loadWaypointsForVer1(const char* filename, std::vector<
   }
 }
 
-void WaypointLoaderNode::parseWaypointForVer1(const std::string& line, autoware_msgs::Waypoint* wp)
+void WaypointLoaderNode::parseWaypointForVer1(const std::string& line, autoware_planning_msgs::Waypoint* wp)
 {
   std::vector<std::string> columns;
   parseColumns(line, &columns);
@@ -131,7 +131,7 @@ void WaypointLoaderNode::parseWaypointForVer1(const std::string& line, autoware_
   wp->twist.twist.linear.x = kmph2mps(std::stod(columns[3]));
 }
 
-void WaypointLoaderNode::loadWaypointsForVer2(const char* filename, std::vector<autoware_msgs::Waypoint>* wps)
+void WaypointLoaderNode::loadWaypointsForVer2(const char* filename, std::vector<autoware_planning_msgs::Waypoint>* wps)
 {
   std::ifstream ifs(filename);
 
@@ -145,13 +145,13 @@ void WaypointLoaderNode::loadWaypointsForVer2(const char* filename, std::vector<
 
   while (std::getline(ifs, line))
   {
-    autoware_msgs::Waypoint wp;
+    autoware_planning_msgs::Waypoint wp;
     parseWaypointForVer2(line, &wp);
     wps->emplace_back(wp);
   }
 }
 
-void WaypointLoaderNode::parseWaypointForVer2(const std::string& line, autoware_msgs::Waypoint* wp)
+void WaypointLoaderNode::parseWaypointForVer2(const std::string& line, autoware_planning_msgs::Waypoint* wp)
 {
   std::vector<std::string> columns;
   parseColumns(line, &columns);
@@ -163,7 +163,7 @@ void WaypointLoaderNode::parseWaypointForVer2(const std::string& line, autoware_
   wp->twist.twist.linear.x = kmph2mps(std::stod(columns[4]));
 }
 
-void WaypointLoaderNode::loadWaypointsForVer3(const char* filename, std::vector<autoware_msgs::Waypoint>* wps)
+void WaypointLoaderNode::loadWaypointsForVer3(const char* filename, std::vector<autoware_planning_msgs::Waypoint>* wps)
 {
   std::ifstream ifs(filename);
 
@@ -180,14 +180,14 @@ void WaypointLoaderNode::loadWaypointsForVer3(const char* filename, std::vector<
   // std::getline(ifs, line);  // remove second line
   while (std::getline(ifs, line))
   {
-    autoware_msgs::Waypoint wp;
+    autoware_planning_msgs::Waypoint wp;
     parseWaypointForVer3(line, contents, &wp);
     wps->emplace_back(wp);
   }
 }
 
 void WaypointLoaderNode::parseWaypointForVer3(const std::string& line, const std::vector<std::string>& contents,
-                                              autoware_msgs::Waypoint* wp)
+                                              autoware_planning_msgs::Waypoint* wp)
 {
   std::vector<std::string> columns;
   parseColumns(line, &columns);

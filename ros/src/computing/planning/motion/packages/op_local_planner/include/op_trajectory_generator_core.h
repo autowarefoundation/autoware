@@ -24,7 +24,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseArray.h>
 #include <nav_msgs/Odometry.h>
-#include <autoware_msgs/LaneArray.h>
+#include <autoware_planning_msgs/LaneArray.h>
 #include <autoware_can_msgs/CANInfo.h>
 
 #include "op_planner/PlannerH.h"
@@ -81,7 +81,7 @@ protected:
 	void callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg);
 	void callbackGetCANInfo(const autoware_can_msgs::CANInfoConstPtr &msg);
 	void callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg);
-	void callbackGetGlobalPlannerPath(const autoware_msgs::LaneArrayConstPtr& msg);
+	void callbackGetGlobalPlannerPath(const autoware_planning_msgs::LaneArrayConstPtr& msg);
 
 	//Helper Functions
   void UpdatePlanningParams(ros::NodeHandle& _nh);

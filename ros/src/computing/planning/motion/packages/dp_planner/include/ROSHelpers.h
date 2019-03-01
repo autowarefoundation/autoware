@@ -38,7 +38,7 @@
 #include "autoware_msgs/CloudClusterArray.h"
 
 #include "waypoint_follower/libwaypoint_follower.h"
-#include "autoware_msgs/LaneArray.h"
+#include "autoware_planning_msgs/LaneArray.h"
 
 #include <visualization_msgs/MarkerArray.h>
 
@@ -175,7 +175,7 @@ public:
 	virtual ~ROSHelpers();
 	static void GetTransformFromTF(const std::string parent_frame, const std::string child_frame, tf::StampedTransform &transform);
 	static void ConvertFromPlannerHToAutowarePathFormat(const std::vector<PlannerHNS::WayPoint>& path, const int& iStart,
-				autoware_msgs::Lane & trajectory);
+				autoware_planning_msgs::Lane & trajectory);
 
 	static void ConvertFromPlannerHRectangleToAutowareRviz(const std::vector<PlannerHNS::GPSPoint>& safety_rect,
 			visualization_msgs::Marker& marker);

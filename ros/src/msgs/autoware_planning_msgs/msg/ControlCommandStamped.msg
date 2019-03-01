@@ -1,0 +1,2 @@
+Header header
+autoware_planning_msgs/ControlCommand cmd

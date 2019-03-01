@@ -9,7 +9,7 @@
 #include <std_msgs/UInt8.h>
 
 #include <autoware_msgs/CloudClusterArray.h>
-#include <autoware_msgs/Lane.h>
+#include <autoware_planning_msgs/Lane.h>
 #include <autoware_msgs/TrafficLight.h>
 
 #include <cross_road_area.hpp>
@@ -182,7 +182,7 @@ void DecisionMakerNode::callbackFromPointsRaw(const sensor_msgs::PointCloud2::Co
 }
 
 void DecisionMakerNode::insertPointWithinCrossRoad(const std::vector<CrossRoadArea> &_intersects,
-                                                   autoware_msgs::LaneArray &lane_array)
+                                                   autoware_planning_msgs::LaneArray &lane_array)
 {
 
   for (auto &lane : lane_array.lanes)
@@ -201,13 +201,13 @@ void DecisionMakerNode::insertPointWithinCrossRoad(const std::vector<CrossRoadAr
           // area's
           if (area.insideLanes.empty() || wp.gid != area.insideLanes.back().waypoints.back().gid + 1)
           {
-            autoware_msgs::Lane nlane;
+            autoware_planning_msgs::Lane nlane;
             area.insideLanes.push_back(nlane);
 	    area.bbox.pose.orientation = wp.pose.pose.orientation;
           }
           area.insideLanes.back().waypoints.push_back(wp);
           area.insideWaypoint_points.push_back(pp);  // geometry_msgs::point
-          // area.insideLanes.Waypoints.push_back(wp);//autoware_msgs::Waypoint
+          // area.insideLanes.Waypoints.push_back(wp);//autoware_planning_msgs::Waypoint
           // lane's wp
           wp.wpstate.aid = area.area_id;
         }
@@ -221,7 +221,7 @@ inline double getDistance(double ax, double ay, double bx, double by)
   return std::hypot(ax - bx, ay - by);
 }
 
-void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
+void DecisionMakerNode::setWaypointState(autoware_planning_msgs::LaneArray& lane_array)
 {
   insertPointWithinCrossRoad(intersects, lane_array);
   // STR
@@ -235,11 +235,11 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
       int steering_state;
 
       if (angle_deg <= ANGLE_LEFT)
-        steering_state = autoware_msgs::WaypointState::STR_LEFT;
+        steering_state = autoware_planning_msgs::WaypointState::STR_LEFT;
       else if (angle_deg >= ANGLE_RIGHT)
-        steering_state = autoware_msgs::WaypointState::STR_RIGHT;
+        steering_state = autoware_planning_msgs::WaypointState::STR_RIGHT;
       else
-        steering_state = autoware_msgs::WaypointState::STR_STRAIGHT;
+        steering_state = autoware_planning_msgs::WaypointState::STR_STRAIGHT;
 
       for (auto &wp_lane : laneinArea.waypoints)
         for (auto &lane : lane_array.lanes)
@@ -253,7 +253,7 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
   // STOP
   std::vector<StopLine> stoplines = g_vmap.findByFilter([&](const StopLine& stopline) {
     return ((g_vmap.findByKey(Key<RoadSign>(stopline.signid)).type &
-             (autoware_msgs::WaypointState::TYPE_STOP | autoware_msgs::WaypointState::TYPE_STOPLINE)) != 0);
+             (autoware_planning_msgs::WaypointState::TYPE_STOP | autoware_planning_msgs::WaypointState::TYPE_STOPLINE)) != 0);
   });
 
   for (auto &lane : lane_array.lanes)
@@ -295,7 +295,7 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
 }
 
 // for based waypoint
-void DecisionMakerNode::callbackFromLaneWaypoint(const autoware_msgs::LaneArray &msg)
+void DecisionMakerNode::callbackFromLaneWaypoint(const autoware_planning_msgs::LaneArray &msg)
 {
   ROS_INFO("[%s]:LoadedWaypointLaneArray\n", __func__);
   current_based_lane_array_ = msg;  // cached based path
@@ -309,10 +309,10 @@ void DecisionMakerNode::callbackFromLaneWaypoint(const autoware_msgs::LaneArray 
       wp.gid = gid++;
       wp.lid = lid++;
       wp.wpstate.aid = 0;
-      wp.wpstate.steering_state = autoware_msgs::WaypointState::NULLSTATE;
-      wp.wpstate.accel_state = autoware_msgs::WaypointState::NULLSTATE;
-      wp.wpstate.stop_state = autoware_msgs::WaypointState::NULLSTATE;
-      wp.wpstate.lanechange_state = autoware_msgs::WaypointState::NULLSTATE;
+      wp.wpstate.steering_state = autoware_planning_msgs::WaypointState::NULLSTATE;
+      wp.wpstate.accel_state = autoware_planning_msgs::WaypointState::NULLSTATE;
+      wp.wpstate.stop_state = autoware_planning_msgs::WaypointState::NULLSTATE;
+      wp.wpstate.lanechange_state = autoware_planning_msgs::WaypointState::NULLSTATE;
       wp.wpstate.event_state = 0;
     }
   }
@@ -325,15 +325,15 @@ void DecisionMakerNode::callbackFromLaneWaypoint(const autoware_msgs::LaneArray 
 
 state_machine::StateFlags getStateFlags(uint8_t msg_state)
 {
-  if (msg_state == (uint8_t)autoware_msgs::WaypointState::STR_LEFT)
+  if (msg_state == (uint8_t)autoware_planning_msgs::WaypointState::STR_LEFT)
     return state_machine::DRIVE_STR_LEFT_STATE;
-  else if (msg_state == (uint8_t)autoware_msgs::WaypointState::STR_RIGHT)
+  else if (msg_state == (uint8_t)autoware_planning_msgs::WaypointState::STR_RIGHT)
     return state_machine::DRIVE_STR_RIGHT_STATE;
   else
     return state_machine::DRIVE_STR_STRAIGHT_STATE;
 }
 
-void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::Lane &msg)
+void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_planning_msgs::Lane &msg)
 {
   if (!hasvMap())
   {
@@ -361,12 +361,12 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::Lane &msg
   {
     if (i < current_finalwaypoints_.waypoints.size())
     {
-      if (current_finalwaypoints_.waypoints.at(i).wpstate.stop_state == autoware_msgs::WaypointState::TYPE_STOPLINE)
+      if (current_finalwaypoints_.waypoints.at(i).wpstate.stop_state == autoware_planning_msgs::WaypointState::TYPE_STOPLINE)
       {
         ctx->setCurrentState(state_machine::DRIVE_ACC_STOPLINE_STATE);
         closest_stopline_waypoint_ = CurrentStoplineTarget_.gid;
       }
-      if (current_finalwaypoints_.waypoints.at(i).wpstate.stop_state == autoware_msgs::WaypointState::TYPE_STOP)
+      if (current_finalwaypoints_.waypoints.at(i).wpstate.stop_state == autoware_planning_msgs::WaypointState::TYPE_STOP)
         ctx->setCurrentState(state_machine::DRIVE_ACC_STOP_STATE);
     }
   }

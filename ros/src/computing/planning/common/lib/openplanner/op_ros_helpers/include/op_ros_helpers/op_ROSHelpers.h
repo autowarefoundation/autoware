@@ -37,7 +37,7 @@
 #include "autoware_msgs/DetectedObjectArray.h"
 
 #include "waypoint_follower/libwaypoint_follower.h"
-#include "autoware_msgs/LaneArray.h"
+#include "autoware_planning_msgs/LaneArray.h"
 
 #include <visualization_msgs/MarkerArray.h>
 
@@ -230,7 +230,7 @@ public:
 	static void ConvertParticles(std::vector<PlannerHNS::WayPoint>& points, visualization_msgs::MarkerArray& part_mkrs, visualization_msgs::MarkerArray& part_markers_d);
 
 	static void ConvertFromPlannerHToAutowarePathFormat(const std::vector<PlannerHNS::WayPoint>& path, const int& iStart,
-				autoware_msgs::Lane & trajectory);
+				autoware_planning_msgs::Lane & trajectory);
 
 	static void ConvertFromPlannerHRectangleToAutowareRviz(const std::vector<PlannerHNS::GPSPoint>& safety_rect,
 			visualization_msgs::Marker& marker);
@@ -249,17 +249,17 @@ public:
 	static void ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoint& currState, const std::vector<PlannerHNS::DetectedObject>& trackedObstacles,
 			visualization_msgs::MarkerArray& detectedPolygons);
 
-	static void ConvertFromLocalLaneToAutowareLane(const std::vector<PlannerHNS::WayPoint>& path, autoware_msgs::Lane& trajectory , const unsigned int& iStart = 0);
+	static void ConvertFromLocalLaneToAutowareLane(const std::vector<PlannerHNS::WayPoint>& path, autoware_planning_msgs::Lane& trajectory , const unsigned int& iStart = 0);
 
-	static void ConvertFromLocalLaneToAutowareLane(const std::vector<PlannerHNS::GPSPoint>& path, autoware_msgs::Lane& trajectory);
+	static void ConvertFromLocalLaneToAutowareLane(const std::vector<PlannerHNS::GPSPoint>& path, autoware_planning_msgs::Lane& trajectory);
 
-	static void ConvertFromAutowareLaneToLocalLane(const autoware_msgs::Lane& trajectory, std::vector<PlannerHNS::WayPoint>& path);
+	static void ConvertFromAutowareLaneToLocalLane(const autoware_planning_msgs::Lane& trajectory, std::vector<PlannerHNS::WayPoint>& path);
 
-	static void createGlobalLaneArrayMarker(std_msgs::ColorRGBA color, const autoware_msgs::LaneArray &lane_waypoints_array, visualization_msgs::MarkerArray& markerArray);
+	static void createGlobalLaneArrayMarker(std_msgs::ColorRGBA color, const autoware_planning_msgs::LaneArray &lane_waypoints_array, visualization_msgs::MarkerArray& markerArray);
 
-	static void createGlobalLaneArrayVelocityMarker(const autoware_msgs::LaneArray &lane_waypoints_array , visualization_msgs::MarkerArray& markerArray);
+	static void createGlobalLaneArrayVelocityMarker(const autoware_planning_msgs::LaneArray &lane_waypoints_array , visualization_msgs::MarkerArray& markerArray);
 
-	static void createGlobalLaneArrayOrientationMarker(const autoware_msgs::LaneArray &lane_waypoints_array , visualization_msgs::MarkerArray& markerArray);
+	static void createGlobalLaneArrayOrientationMarker(const autoware_planning_msgs::LaneArray &lane_waypoints_array , visualization_msgs::MarkerArray& markerArray);
 
 	static void GetTrafficLightForVisualization(std::vector<PlannerHNS::TrafficLight>& lights, visualization_msgs::MarkerArray& markerArray);
 

@@ -15,7 +15,7 @@
  */
 
 #include <ros/ros.h>
-#include "autoware_msgs/VehicleCmd.h"
+#include "autoware_planning_msgs/VehicleCmd.h"
 
 #include <iostream>
 #include <string>
@@ -58,7 +58,7 @@ void CommandData::reset()
 
 static CommandData command_data;
 
-static void vehicleCmdCallback(const autoware_msgs::VehicleCmd& msg)
+static void vehicleCmdCallback(const autoware_planning_msgs::VehicleCmd& msg)
 {
   command_data.linear_x = msg.twist_cmd.twist.linear.x;
   command_data.angular_z = msg.twist_cmd.twist.angular.z;

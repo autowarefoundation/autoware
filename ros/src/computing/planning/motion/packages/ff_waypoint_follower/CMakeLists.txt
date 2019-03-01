@@ -4,7 +4,7 @@ project(ff_waypoint_follower)
 
 find_package(autoware_build_flags REQUIRED)
 
-find_package(autoware_msgs REQUIRED)
+find_package(autoware_planning_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS
@@ -16,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
         op_planner
         op_simu
         waypoint_follower
-        autoware_msgs
+        autoware_planning_msgs
         )
 
 ## System dependencies are found with CMake's conventions
@@ -28,7 +28,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
         INCLUDE_DIRS include
         LIBRARIES
-        CATKIN_DEPENDS roscpp geometry_msgs runtime_manager map_file op_utility op_planner op_simu waypoint_follower autoware_msgs
+        CATKIN_DEPENDS roscpp geometry_msgs runtime_manager map_file op_utility op_planner op_simu waypoint_follower autoware_planning_msgs 
 )
 
 ###########
@@ -41,7 +41,7 @@ include_directories(
         include
         #  /usr/local/include/zmp/minivan
         ${catkin_INCLUDE_DIRS}
-        ${autoware_msgs_INCLUDE_DIRS}
+        ${autoware_planning_msgs_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library

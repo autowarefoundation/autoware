@@ -23,7 +23,7 @@
 #include <std_msgs/Bool.h>
 #include <tf/transform_listener.h>
 
-#include "autoware_msgs/LaneArray.h"
+#include "autoware_planning_msgs/LaneArray.h"
 
 #include <map_file/get_file.h>
 
@@ -405,11 +405,11 @@ void publish_dragged_pcd(const geometry_msgs::PoseWithCovarianceStamped& msg)
 	publish_pcd(create_pcd(p));
 }
 
-void request_lookahead_download(const autoware_msgs::LaneArray& msg)
+void request_lookahead_download(const autoware_planning_msgs::LaneArray& msg)
 {
 	request_queue.clear_look_ahead();
 
-	for (const autoware_msgs::Lane& l : msg.lanes) {
+	for (const autoware_planning_msgs::Lane& l : msg.lanes) {
 		size_t end = l.waypoints.size() - 1;
 		double distance = 0;
 		double threshold = (MARGIN_UNIT / 2) + margin; // XXX better way?

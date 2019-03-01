@@ -1,0 +1,10 @@
+Header header
+autoware_planning_msgs/SteerCmd steer_cmd
+autoware_planning_msgs/AccelCmd accel_cmd
+autoware_planning_msgs/BrakeCmd brake_cmd
+autoware_planning_msgs/LampCmd lamp_cmd
+int32 gear
+int32 mode
+geometry_msgs/TwistStamped twist_cmd
+autoware_planning_msgs/ControlCommand ctrl_cmd
+int32 emergency

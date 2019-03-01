@@ -5,7 +5,7 @@
 namespace decision_maker
 {
 #define TARGET_WAYPOINTS_NUM 15  // need to change rosparam
-CrossRoadArea *CrossRoadArea::findClosestCrossRoad(const autoware_msgs::Lane &_finalwaypoints,
+CrossRoadArea *CrossRoadArea::findClosestCrossRoad(const autoware_planning_msgs::Lane &_finalwaypoints,
                                                    std::vector<CrossRoadArea> &intersects)
 {
   CrossRoadArea *_area = nullptr;

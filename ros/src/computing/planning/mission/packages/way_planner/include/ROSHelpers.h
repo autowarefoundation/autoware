@@ -21,7 +21,7 @@
 #include <geometry_msgs/PoseStamped.h>
 
 #include "waypoint_follower/libwaypoint_follower.h"
-#include "autoware_msgs/LaneArray.h"
+#include "autoware_planning_msgs/LaneArray.h"
 
 #include <visualization_msgs/MarkerArray.h>
 
@@ -120,7 +120,7 @@ public:
 	virtual ~ROSHelpers();
 	static void GetTransformFromTF(const std::string parent_frame, const std::string child_frame, tf::StampedTransform &transform);
 	static void ConvertFromPlannerHToAutowarePathFormat(const std::vector<PlannerHNS::WayPoint>& path,
-				autoware_msgs::LaneArray& laneArray);
+				autoware_planning_msgs::LaneArray& laneArray);
 
 	static void ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vector<PlannerHNS::WayPoint>& curr_path,
 			const std::vector<std::vector<PlannerHNS::WayPoint> >& paths,
@@ -131,16 +131,16 @@ public:
 
 	static void ConvertFromRoadNetworkToAutowareVisualizeMapFormat(const PlannerHNS::RoadNetwork& map,	visualization_msgs::MarkerArray& markerArray);
 
-	static void createGlobalLaneArrayMarker(std_msgs::ColorRGBA color, const autoware_msgs::LaneArray &lane_waypoints_array, visualization_msgs::MarkerArray& markerArray);
+	static void createGlobalLaneArrayMarker(std_msgs::ColorRGBA color, const autoware_planning_msgs::LaneArray &lane_waypoints_array, visualization_msgs::MarkerArray& markerArray);
 
-	static void createGlobalLaneArrayVelocityMarker(const autoware_msgs::LaneArray &lane_waypoints_array
+	static void createGlobalLaneArrayVelocityMarker(const autoware_planning_msgs::LaneArray &lane_waypoints_array
 			, visualization_msgs::MarkerArray& markerArray);
 
-	static void createGlobalLaneArrayOrientationMarker(const autoware_msgs::LaneArray &lane_waypoints_array
+	static void createGlobalLaneArrayOrientationMarker(const autoware_planning_msgs::LaneArray &lane_waypoints_array
 			, visualization_msgs::MarkerArray& markerArray);
 
 	static void ConvertFromPlannerHPointsToAutowarePathFormat(const std::vector<PlannerHNS::GPSPoint>& path,
-			autoware_msgs::LaneArray& laneArray);
+			autoware_planning_msgs::LaneArray& laneArray);
 
 	static void FindIncommingBranches(const std::vector<std::vector<PlannerHNS::WayPoint> >& globalPaths, const PlannerHNS::WayPoint& currPose, const double& min_distance,
 			std::vector<PlannerHNS::WayPoint*>& branches, PlannerHNS::WayPoint* currOptions);

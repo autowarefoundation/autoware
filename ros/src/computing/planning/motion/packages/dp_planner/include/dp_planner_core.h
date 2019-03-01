@@ -33,7 +33,7 @@
 #include <std_msgs/Int8.h>
 #include <std_msgs/Int32.h>
 #include "waypoint_follower/libwaypoint_follower.h"
-#include "autoware_msgs/LaneArray.h"
+#include "autoware_planning_msgs/LaneArray.h"
 #include "autoware_can_msgs/CANInfo.h"
 
 #include "autoware_msgs/CloudCluster.h"
@@ -205,8 +205,8 @@ protected:
 	void callbackGetEmergencyStop(const std_msgs::Int8& msg);
 	void callbackGetTrafficLight(const std_msgs::Int8& msg);
 	void callbackGetOutsideControl(const std_msgs::Int8& msg);
-	void callbackGetAStarPath(const autoware_msgs::LaneArrayConstPtr& msg);
-	void callbackGetWayPlannerPath(const autoware_msgs::LaneArrayConstPtr& msg);
+	void callbackGetAStarPath(const autoware_planning_msgs::LaneArrayConstPtr& msg);
+	void callbackGetWayPlannerPath(const autoware_planning_msgs::LaneArrayConstPtr& msg);
 	void callbackGetCostMap(const nav_msgs::OccupancyGrid& msg);
 
 

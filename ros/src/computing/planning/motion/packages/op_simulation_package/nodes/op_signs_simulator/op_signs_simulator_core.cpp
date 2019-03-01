@@ -54,7 +54,7 @@ OpenPlannerSimulatorSigns::OpenPlannerSimulatorSigns()
 
 	for(unsigned int i = 0; i < m_Params.firstSignsIds.size(); i++)
 	{
-		autoware_msgs::ExtractedPosition s;
+		autoware_planning_msgs::ExtractedPosition s;
 		s.signalId = m_Params.firstSignsIds.at(i);
 		s.type = 1;
 		m_FirstSignals.Signals.push_back(s);
@@ -62,7 +62,7 @@ OpenPlannerSimulatorSigns::OpenPlannerSimulatorSigns()
 
 	for(unsigned int i=0; i < m_Params.secondSignsIds.size(); i++)
 	{
-		autoware_msgs::ExtractedPosition s;
+		autoware_planning_msgs::ExtractedPosition s;
 		s.signalId = m_Params.secondSignsIds.at(i);
 		s.type = 0;
 		m_SecondSignals.Signals.push_back(s);

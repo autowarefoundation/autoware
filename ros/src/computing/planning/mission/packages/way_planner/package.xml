@@ -56,7 +56,7 @@
   <build_depend>op_planner</build_depend>
   <build_depend>op_simu</build_depend>
   <build_depend>autoware_can_msgs</build_depend>
-  <build_depend>autoware_msgs</build_depend>
+    <build_depend>autoware_planning_msgs</build_depend>
   
   <run_depend>geometry_msgs</run_depend>
   <run_depend>vector_map_msgs</run_depend>
@@ -71,7 +71,7 @@
   <run_depend>op_planner</run_depend>
   <run_depend>op_simu</run_depend>
   <run_depend>autoware_can_msgs</run_depend>
-  <run_depend>autoware_msgs</run_depend>
+    <run_depend>autoware_planning_msgs</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

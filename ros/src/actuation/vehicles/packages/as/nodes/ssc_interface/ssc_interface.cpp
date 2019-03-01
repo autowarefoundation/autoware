@@ -87,7 +87,7 @@ void SSCInterface::run()
   }
 }
 
-void SSCInterface::callbackFromVehicleCmd(const autoware_msgs::VehicleCmdConstPtr& msg)
+void SSCInterface::callbackFromVehicleCmd(const autoware_planning_msgs::VehicleCmdConstPtr& msg)
 {
   command_time_ = ros::Time::now();
   vehicle_cmd_ = *msg;

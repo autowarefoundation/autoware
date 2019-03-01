@@ -52,7 +52,7 @@ GlobalPlanner::GlobalPlanner()
 	m_OriginPos.position.y  = transform.getOrigin().y();
 	m_OriginPos.position.z  = transform.getOrigin().z();
 
-	pub_Paths = nh.advertise<autoware_msgs::LaneArray>("lane_waypoints_array", 1, true);
+	pub_Paths = nh.advertise<autoware_planning_msgs::LaneArray>("lane_waypoints_array", 1, true);
 	pub_PathsRviz = nh.advertise<visualization_msgs::MarkerArray>("global_waypoints_rviz", 1, true);
 	pub_MapRviz  = nh.advertise<visualization_msgs::MarkerArray>("vector_map_center_lines_rviz", 1, true);
 	pub_GoalsListRviz = nh.advertise<visualization_msgs::MarkerArray>("op_destinations_rviz", 1, true);
@@ -262,12 +262,12 @@ bool GlobalPlanner::GenerateGlobalPlan(PlannerHNS::WayPoint& startPoint, Planner
 
 void GlobalPlanner::VisualizeAndSend(const std::vector<std::vector<PlannerHNS::WayPoint> > generatedTotalPaths)
 {
-	autoware_msgs::LaneArray lane_array;
+	autoware_planning_msgs::LaneArray lane_array;
 	visualization_msgs::MarkerArray pathsToVisualize;
 
 	for(unsigned int i=0; i < generatedTotalPaths.size(); i++)
 	{
-		autoware_msgs::Lane lane;
+		autoware_planning_msgs::Lane lane;
 		PlannerHNS::ROSHelpers::ConvertFromLocalLaneToAutowareLane(generatedTotalPaths.at(i), lane);
 		lane_array.lanes.push_back(lane);
 	}

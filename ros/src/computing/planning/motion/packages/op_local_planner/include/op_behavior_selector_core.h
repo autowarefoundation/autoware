@@ -36,14 +36,14 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseArray.h>
 #include <nav_msgs/Odometry.h>
-#include <autoware_msgs/LaneArray.h>
+#include <autoware_planning_msgs/LaneArray.h>
 #include <std_msgs/Int32.h>
 #include <geometry_msgs/TwistWithCovarianceStamped.h>
 #include <autoware_can_msgs/CANInfo.h>
 #include <autoware_msgs/DetectedObjectArray.h>
 #include <autoware_msgs/TrafficLight.h>
 #include <autoware_msgs/Signals.h>
-#include <autoware_msgs/ControlCommand.h>
+#include <autoware_planning_msgs/ControlCommand.h>
 #include <visualization_msgs/MarkerArray.h>
 
 #include "op_planner/PlannerCommonDef.h"
@@ -90,7 +90,7 @@ protected: //Planning Related variables
   	PlannerHNS::PlanningParams m_PlanningParams;
   	PlannerHNS::CAR_BASIC_INFO m_CarInfo;
 
-  	autoware_msgs::Lane m_CurrentTrajectoryToSend;
+  	autoware_planning_msgs::Lane m_CurrentTrajectoryToSend;
   	bool bNewLightStatus;
 	bool bNewLightSignal;
 	PlannerHNS::TrafficLightState  m_CurrLightStatus;
@@ -99,7 +99,7 @@ protected: //Planning Related variables
 
 	geometry_msgs::TwistStamped m_Twist_raw;
 	geometry_msgs::TwistStamped m_Twist_cmd;
-	autoware_msgs::ControlCommand m_Ctrl_cmd;
+	autoware_planning_msgs::ControlCommand m_Ctrl_cmd;
 
 	//ROS messages (topics)
 	ros::NodeHandle nh;
@@ -133,15 +133,15 @@ protected: //Planning Related variables
 	void callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg);
 	void callbackGetCANInfo(const autoware_can_msgs::CANInfoConstPtr &msg);
 	void callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg);
-	void callbackGetGlobalPlannerPath(const autoware_msgs::LaneArrayConstPtr& msg);
-	void callbackGetLocalPlannerPath(const autoware_msgs::LaneArrayConstPtr& msg);
-	void callbackGetLocalTrajectoryCost(const autoware_msgs::LaneConstPtr& msg);
+	void callbackGetGlobalPlannerPath(const autoware_planning_msgs::LaneArrayConstPtr& msg);
+	void callbackGetLocalPlannerPath(const autoware_planning_msgs::LaneArrayConstPtr& msg);
+	void callbackGetLocalTrajectoryCost(const autoware_planning_msgs::LaneConstPtr& msg);
 	void callbackGetTrafficLightStatus(const autoware_msgs::TrafficLight & msg);
 	void callbackGetTrafficLightSignals(const autoware_msgs::Signals& msg);
 
 	void callbackGetTwistCMD(const geometry_msgs::TwistStampedConstPtr& msg);
 	void callbackGetTwistRaw(const geometry_msgs::TwistStampedConstPtr& msg);
-	void callbackGetCommandCMD(const autoware_msgs::ControlCommandConstPtr& msg);
+	void callbackGetCommandCMD(const autoware_planning_msgs::ControlCommandConstPtr& msg);
 
 	//Helper Functions
   void UpdatePlanningParams(ros::NodeHandle& _nh);

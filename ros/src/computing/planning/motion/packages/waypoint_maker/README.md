@@ -114,17 +114,17 @@
 1. Subscribed Topics
 
   * waypoint_replanner
-    - /based/lane_waypoints_raw (autoware_msgs/LaneArray)
+    - /based/lane_waypoints_raw (autoware_planning_msgs/LaneArray)
     - /config/waypoint_replanner (autoware_config_msgs/ConfigWaypointReplanner)
 
 1. Published Topics
 
   * waypoint_loader
-    - /based/lane_waypoints_raw (autoware_msgs/LaneArray)
+    - /based/lane_waypoints_raw (autoware_planning_msgs/LaneArray)
 
   * waypoint_replanner
-    - /based/lane_waypoints_array (autoware_msgs/LaneArray)
-    - /lane_waypoints_array (autoware_msgs/LaneArray)
+    - /based/lane_waypoints_array (autoware_planning_msgs/LaneArray)
+    - /lane_waypoints_array (autoware_planning_msgs/LaneArray)
 
 1. Parameters
 
@@ -139,7 +139,7 @@
   * waypoint_saver
     - When activated, subscribe `/current_pose`, `/current_velocity`(option) and save waypoint in the file at specified intervals.
   * waypoint_extractor
-    - When activated, subscribe autoware_msgs/LaneArray and save waypoint in the file. Input topic name is selectable.
+    - When activated, subscribe autoware_planning_msgs/LaneArray and save waypoint in the file. Input topic name is selectable.
   * common
     - `change_flag` is basically stored as 0 (straight ahead),
       so if you want to change the lane, edit by yourself. (1 turn right, 2 turn left)
@@ -168,7 +168,7 @@
     - /current_velocity (geometry_msgs/TwistStamped) : default
 
   * waypoint_extractor
-    - /lane_waypoints_array (autoware_msgs/LaneArray) : default
+    - /lane_waypoints_array (autoware_planning_msgs/LaneArray) : default
 
 1. Published Topics
 

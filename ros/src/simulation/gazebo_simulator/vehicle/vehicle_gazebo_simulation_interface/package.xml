@@ -17,6 +17,7 @@
     <build_depend>autoware_localization_msgs</build_depend>
   <build_depend>tf2_ros</build_depend>
   <build_depend>tf2</build_depend>
+  <build_depend>autoware_planning_msgs</build_depend>
   <build_export_depend>geometry_msgs</build_export_depend>
   <build_export_depend>roscpp</build_export_depend>
   <build_export_depend>sensor_msgs</build_export_depend>
@@ -25,6 +26,7 @@
     <build_export_depend>autoware_localization_msgs</build_export_depend>
   <build_export_depend>tf2_ros</build_export_depend>
   <build_export_depend>tf2</build_export_depend>
+  <build_export_depend>autoware_planning_msgs</build_export_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>roscpp</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
@@ -33,6 +35,7 @@
     <exec_depend>autoware_localization_msgs</exec_depend>
   <exec_depend>tf2_ros</exec_depend>
   <exec_depend>tf2</exec_depend>
+  <exec_depend>autoware_planning_msgs</exec_depend>
   
   <export>
   </export>

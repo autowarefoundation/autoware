@@ -4,24 +4,24 @@ project(freespace_planner)
 
 find_package(autoware_build_flags REQUIRED)
 
-find_package(autoware_msgs REQUIRED)
+find_package(autoware_planning_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   nav_msgs
   visualization_msgs
   tf
-  autoware_msgs
+  autoware_planning_msgs
 )
 
 set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
-  CATKIN_DEPENDS autoware_msgs
+  CATKIN_DEPENDS autoware_planning_msgs 
 )
 
 include_directories(
   include
-  ${autoware_msgs_INCLUDE_DIRS}
+  ${autoware_planning_msgs_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -46,4 +46,3 @@ install(TARGETS astar_navi
 install(DIRECTORY launch/
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
         PATTERN ".svn" EXCLUDE)
-

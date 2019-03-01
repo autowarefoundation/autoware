@@ -15,7 +15,7 @@
  */
 
 #include <geometry_msgs/PoseStamped.h>
-#include "autoware_msgs/Lane.h"
+#include "autoware_planning_msgs/Lane.h"
 #include <visualization_msgs/MarkerArray.h>
 #include "vector_map/vector_map.h"
 
@@ -47,7 +47,7 @@ class VectorMapClient
 {
 private:
   geometry_msgs::PoseStamped pose_;
-  autoware_msgs::Lane waypoints_;
+  autoware_planning_msgs::Lane waypoints_;
 
 public:
   VectorMapClient()
@@ -59,7 +59,7 @@ public:
     return pose_;
   }
 
-  autoware_msgs::Lane getWaypoints() const
+  autoware_planning_msgs::Lane getWaypoints() const
   {
     return waypoints_;
   }
@@ -69,7 +69,7 @@ public:
     pose_ = pose;
   }
 
-  void setWaypoints(const autoware_msgs::Lane& waypoints)
+  void setWaypoints(const autoware_planning_msgs::Lane& waypoints)
   {
     waypoints_ = waypoints;
   }

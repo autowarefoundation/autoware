@@ -11,7 +11,7 @@ SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pg")
 
 find_package(autoware_build_flags REQUIRED)
 
-find_package(autoware_msgs REQUIRED)
+find_package(autoware_planning_msgs REQUIRED)
 
 find_package(autoware_config_msgs REQUIRED)
 
@@ -27,7 +27,7 @@ find_package(catkin REQUIRED COMPONENTS
         dynamic_reconfigure
         amathutils_lib
         state_machine_lib
-        autoware_msgs
+        autoware_planning_msgs
         autoware_config_msgs
         vector_map_msgs
         )
@@ -37,7 +37,7 @@ catkin_package(
         tf
         std_msgs
         autoware_config_msgs
-        autoware_msgs
+        autoware_planning_msgs
         geometry_msgs
         vector_map_msgs
         vector_map
@@ -51,7 +51,7 @@ include_directories(
         ${catkin_INCLUDE_DIRS}
         ${vector_map_INCLUDE_DIRS}
         ${autoware_config_msgs_INCLUDE_DIRS}
-        ${autoware_msgs_INCLUDE_DIRS}
+        ${autoware_planning_msgs_INCLUDE_DIRS}
 )
 
 add_executable(decision_maker_node

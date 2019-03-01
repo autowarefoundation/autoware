@@ -26,7 +26,7 @@
 #include <random>
 
 #include "waypoint_follower/libwaypoint_follower.h"
-#include "autoware_msgs/ControlCommandStamped.h"
+#include "autoware_planning_msgs/ControlCommandStamped.h"
 
 namespace
 {
@@ -90,7 +90,7 @@ void CmdCallBack(const geometry_msgs::TwistStampedConstPtr& msg, double accel_ra
   //current_velocity_ = msg->twist;
 }
 
-void controlCmdCallBack(const autoware_msgs::ControlCommandStampedConstPtr& msg)
+void controlCmdCallBack(const autoware_planning_msgs::ControlCommandStampedConstPtr& msg)
 {
   if (use_ctrl_cmd == false)
     return;
@@ -138,7 +138,7 @@ void callbackFromPoseStamped(const geometry_msgs::PoseStampedConstPtr& msg)
   initial_set_ = true;
 }
 
-void waypointCallback(const autoware_msgs::LaneConstPtr& msg)
+void waypointCallback(const autoware_planning_msgs::LaneConstPtr& msg)
 {
   current_waypoints_.setPath(*msg);
   waypoint_set_ = true;

@@ -31,7 +31,7 @@ Computing Tab -> Mission Planning -> OpenPlanner - Global Planner  -> op_global_
 
 ```
 Publications: 
- * /lane_waypoints_array [autoware_msgs::LaneArray]
+ * /lane_waypoints_array [autoware_planning_msgs::LaneArray]
  * /global_waypoints_rviz [visualization_msgs::MarkerArray]
  * /op_destinations_rviz [visualization_msgs::MarkerArray]
  * /vector_map_center_lines_rviz [visualization_msgs::MarkerArray]

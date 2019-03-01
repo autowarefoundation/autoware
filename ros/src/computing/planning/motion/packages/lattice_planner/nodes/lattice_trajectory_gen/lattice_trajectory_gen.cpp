@@ -124,7 +124,7 @@ static void currentVelCallback(const geometry_msgs::TwistStampedConstPtr &msg)
   g_current_velocity = msg->twist.linear.x;
 }
 
-static void WayPointCallback(const autoware_msgs::LaneConstPtr &msg)
+static void WayPointCallback(const autoware_planning_msgs::LaneConstPtr &msg)
 {
   g_current_waypoints.setPath(*msg);
   g_waypoint_set = true;

@@ -4,7 +4,7 @@ project(astar_planner)
 
 find_package(autoware_build_flags REQUIRED)
 
-find_package(autoware_msgs REQUIRED)
+find_package(autoware_planning_msgs REQUIRED)
 
 find_package(vector_map REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
@@ -14,7 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
   tf
   waypoint_follower
-  autoware_msgs 
+  autoware_planning_msgs 
   autoware_health_checker
 )
 
@@ -22,7 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-  CATKIN_DEPENDS roscpp std_msgs tf waypoint_follower autoware_msgs vector_map
+  CATKIN_DEPENDS roscpp std_msgs tf waypoint_follower autoware_planning_msgs  vector_map
 )
 
 ###########
@@ -34,7 +34,7 @@ SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${vector_map_INCLUDE_DIRS}
-  ${autoware_msgs_INCLUDE_DIRS}
+  ${autoware_planning_msgs_INCLUDE_DIRS}
 )
 
 add_executable(velocity_set nodes/velocity_set/velocity_set.cpp nodes/velocity_set/velocity_set_path.cpp nodes/velocity_set/velocity_set_info.cpp nodes/velocity_set/libvelocity_set.cpp)
@@ -63,4 +63,3 @@ install(TARGETS
 install(DIRECTORY launch/
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
         PATTERN ".svn" EXCLUDE)
-

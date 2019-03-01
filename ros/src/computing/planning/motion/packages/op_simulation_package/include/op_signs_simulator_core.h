@@ -45,7 +45,7 @@
 #include <std_msgs/Float32.h>
 
 #include <autoware_msgs/Signals.h>
-#include <autoware_msgs/ExtractedPosition.h>
+#include <autoware_planning_msgs/ExtractedPosition.h>
 #include <geometry_msgs/PoseArray.h>
 #include <op_planner/RoadNetwork.h>
 #include <op_planner/MappingHelpers.h>

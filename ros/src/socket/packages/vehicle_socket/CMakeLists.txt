@@ -4,13 +4,13 @@ project(vehicle_socket)
 
 find_package(autoware_build_flags REQUIRED)
 
-find_package(autoware_msgs REQUIRED)
+find_package(autoware_planning_msgs REQUIRED)
 
 find_package(tablet_socket_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
-  autoware_msgs
+  autoware_planning_msgs
   autoware_can_msgs
   tablet_socket_msgs
 )
@@ -21,14 +21,14 @@ catkin_package(CATKIN_DEPENDS
   roscpp
   std_msgs
   autoware_can_msgs
-  autoware_msgs
+  autoware_planning_msgs
   tablet_socket_msgs
 )
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${tablet_socket_msgs_INCLUDE_DIRS}
-  ${autoware_msgs_INCLUDE_DIRS}
+  ${autoware_planning_msgs_INCLUDE_DIRS}
 )
 
 add_executable(vehicle_receiver nodes/vehicle_receiver/vehicle_receiver.cpp)

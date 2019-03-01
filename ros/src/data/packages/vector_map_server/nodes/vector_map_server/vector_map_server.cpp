@@ -15,7 +15,7 @@
  */
 
 #include <geometry_msgs/PoseStamped.h>
-#include "autoware_msgs/Lane.h"
+#include "autoware_planning_msgs/Lane.h"
 #include <visualization_msgs/MarkerArray.h>
 #include "vector_map/vector_map.h"
 
@@ -331,7 +331,7 @@ std::vector<Lane> findNearLanes(const VectorMap& vmap, const std::vector<Lane>& 
   return near_lanes;
 }
 
-std::vector<Lane> createFineLanes(const VectorMap& vmap, const autoware_msgs::Lane& waypoints, double radius,
+std::vector<Lane> createFineLanes(const VectorMap& vmap, const autoware_planning_msgs::Lane& waypoints, double radius,
                                   int loops)
 {
   std::vector<Lane> null_lanes;
@@ -518,7 +518,7 @@ private:
   ros::Publisher marker_array_pub_;
 
   std::vector<Lane> createTravelingRoute(const geometry_msgs::PoseStamped& pose,
-                                         const autoware_msgs::Lane& waypoints)
+                                         const autoware_planning_msgs::Lane& waypoints)
   {
     std::vector<Lane> null_lanes;
 

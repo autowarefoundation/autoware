@@ -3536,7 +3536,7 @@ params :
       - LaneArrayTopic
       descs     :
       - save vehicle footprint as waypoints.csv
-      - save autoware_msgs/LaneArray topic as waypoints.
+      - save autoware_planning_msgs/LaneArray topic as waypoints.
       v         : 0
       cmd_param :
         dash     : ''
@@ -3561,7 +3561,7 @@ params :
       label     : lane topic
       v         : /lane_waypoints_array
       kind  : topic
-      topic_type : autoware_msgs/LaneArray
+      topic_type : autoware_planning_msgs/LaneArray
       cmd_param :
         dash      : ''
         delim     : ':='

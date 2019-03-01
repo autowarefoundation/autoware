@@ -32,14 +32,14 @@ void Context::SetContexts(std::vector<Context> &out_signal_contexts,
                           const int in_image_width)
 {
 	/* copy parts of data to local variable */
-	std::vector<autoware_msgs::ExtractedPosition> signals_lamps;
-	std::vector<autoware_msgs::ExtractedPosition>::iterator lamp_iterator;
+	std::vector<autoware_planning_msgs::ExtractedPosition> signals_lamps;
+	std::vector<autoware_planning_msgs::ExtractedPosition>::iterator lamp_iterator;
 
 	std::vector<int> lane_id_vector;
 
 	for (unsigned int i = 0; i < in_lamp_signals_positions->Signals.size(); i++)
 	{
-		autoware_msgs::ExtractedPosition tmp_lamp_position;
+		autoware_planning_msgs::ExtractedPosition tmp_lamp_position;
 		tmp_lamp_position.signalId = in_lamp_signals_positions->Signals.at(i).signalId;
 		tmp_lamp_position.u = in_lamp_signals_positions->Signals.at(i).u;
 		tmp_lamp_position.v = in_lamp_signals_positions->Signals.at(i).v;

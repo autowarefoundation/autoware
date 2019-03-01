@@ -47,7 +47,7 @@ SearchInfo::~SearchInfo()
 {
 }
 
-double SearchInfo::calcPathLength(const autoware_msgs::Lane &lane, const int start_waypoint_index,
+double SearchInfo::calcPathLength(const autoware_planning_msgs::Lane &lane, const int start_waypoint_index,
                                   const int goal_waypoint_index) const
 {
   if (lane.waypoints.size() <= 1)
@@ -102,7 +102,7 @@ void SearchInfo::currentPoseCallback(const geometry_msgs::PoseStampedConstPtr &m
   node_status_publisher_ptr_->CHECK_RATE("/topic/rate/current_pose/slow",8,5,1,"topic current_pose subscribe rate low.");
   if(closest_waypoint_index_!=-1 && path_set_)
   {
-    autoware_msgs::Waypoint closest_waypoint = subscribed_waypoints_.waypoints[closest_waypoint_index_];
+    autoware_planning_msgs::Waypoint closest_waypoint = subscribed_waypoints_.waypoints[closest_waypoint_index_];
     double dist = std::sqrt(std::pow(closest_waypoint.pose.pose.position.x-current_pose_.pose.position.x,2)
       +std::pow(closest_waypoint.pose.pose.position.y-current_pose_.pose.position.y,2));
     node_status_publisher_ptr_->CHECK_MAX_VALUE("/value/range/closest_waypoint_distance",dist,0.5,1.0,2.0,"distance between closest_waypoint and current_pose is too long.");
@@ -169,7 +169,7 @@ void SearchInfo::goalCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 }
 
 // get waypoints
-void SearchInfo::waypointsCallback(const autoware_msgs::LaneConstPtr &msg)
+void SearchInfo::waypointsCallback(const autoware_planning_msgs::LaneConstPtr &msg)
 {
   subscribed_waypoints_ = *msg;
 

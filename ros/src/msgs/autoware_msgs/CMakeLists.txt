@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
         geometry_msgs
         sensor_msgs
         jsk_recognition_msgs
+        autoware_planning_msgs
         )
 
 
@@ -14,24 +15,24 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
         DIRECTORY msg
         FILES
-            ControlCommandStamped.msg
+            
             CloudCluster.msg
             CloudClusterArray.msg
             ColorSet.msg
-            ControlCommand.msg
+            
             DetectedObject.msg
             DetectedObjectArray.msg
-            ExtractedPosition.msg
+            
             ImageLaneObjects.msg
             ImageObjects.msg
-            LaneArray.msg
+            
             
             ScanImage.msg
             Signals.msg
             TunedResult.msg
             ValueSet.msg
             Centroids.msg
-            DTLane.msg
+            
             GeometricRectangle.msg
             
             ImageObj.msg
@@ -39,29 +40,29 @@ add_message_files(
             ImageObjTracked.msg
             ImageRect.msg
             ImageRectRanged.msg
-            Lane.msg
+            
             
             ObjLabel.msg
             ObjPose.msg
             
             VscanTracked.msg
             VscanTrackedArray.msg
-            Waypoint.msg
-            WaypointState.msg
-            VehicleCmd.msg
+            
+            
+            
             
             TrafficLightResult.msg
             TrafficLightResultArray.msg
 
-            AccelCmd.msg
+            
             AdjustXY.msg
-            BrakeCmd.msg
+            
             IndicatorCmd.msg
-            LampCmd.msg
-            SteerCmd.msg
+            
+            
             TrafficLight.msg
             StateCmd.msg
-            State.msg
+            
             ## Sync
             
             
@@ -77,6 +78,7 @@ generate_messages(
         geometry_msgs
         sensor_msgs
         jsk_recognition_msgs
+        autoware_planning_msgs
 )
 
 catkin_package(
@@ -86,4 +88,5 @@ catkin_package(
         geometry_msgs
         sensor_msgs
         jsk_recognition_msgs
+        autoware_planning_msgs
 )

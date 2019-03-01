@@ -19,7 +19,7 @@
 
 #include <ros/ros.h>
 #include <geometry_msgs/TwistStamped.h>
-#include <autoware_msgs/VehicleCmd.h>
+#include <autoware_planning_msgs/VehicleCmd.h>
 
 #include "g30esli_interface_util.h"
 #include "can_utils/cansend.h"
@@ -48,7 +48,7 @@ double g_steering_offset_deg = 0.0;
 // cansend tool
 mycansend::CanSender g_cansender;
 
-void vehicle_cmd_callback(const autoware_msgs::VehicleCmdConstPtr& msg)
+void vehicle_cmd_callback(const autoware_planning_msgs::VehicleCmdConstPtr& msg)
 {
   // TODO: use steer angle, shift, turn signal
   double target_velocity = msg->twist_cmd.twist.linear.x * 3.6;  // [m/s] -> [km/h]
@@ -146,7 +146,7 @@ int main(int argc, char* argv[])
   g_cansender.init(g_device);
 
   // subscriber
-  ros::Subscriber vehicle_cmd_sub = n.subscribe<autoware_msgs::VehicleCmd>("vehicle_cmd", 1, vehicle_cmd_callback);
+  ros::Subscriber vehicle_cmd_sub = n.subscribe<autoware_planning_msgs::VehicleCmd>("vehicle_cmd", 1, vehicle_cmd_callback);
   ros::Subscriber current_vel_sub =
       n.subscribe<geometry_msgs::TwistStamped>("current_velocity", 1, current_vel_callback);
 

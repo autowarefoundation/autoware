@@ -37,7 +37,7 @@ TrajectoryGen::TrajectoryGen()
 	m_OriginPos.position.y  = transform.getOrigin().y();
 	m_OriginPos.position.z  = transform.getOrigin().z();
 
-	pub_LocalTrajectories = nh.advertise<autoware_msgs::LaneArray>("local_trajectories", 1);
+	pub_LocalTrajectories = nh.advertise<autoware_planning_msgs::LaneArray>("local_trajectories", 1);
 	pub_LocalTrajectoriesRviz = nh.advertise<visualization_msgs::MarkerArray>("local_trajectories_gen_rviz", 1);
 
 	sub_initialpose = nh.subscribe("/initialpose", 1, &TrajectoryGen::callbackGetInitPose, this);
@@ -160,7 +160,7 @@ void TrajectoryGen::callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg)
 	bVehicleStatus = true;
 }
 
-void TrajectoryGen::callbackGetGlobalPlannerPath(const autoware_msgs::LaneArrayConstPtr& msg)
+void TrajectoryGen::callbackGetGlobalPlannerPath(const autoware_planning_msgs::LaneArrayConstPtr& msg)
 {
 	if(msg->lanes.size() > 0)
 	{
@@ -237,12 +237,12 @@ void TrajectoryGen::MainLoop()
 								-1 , -1,
 								m_RollOuts, sampledPoints_debug);
 
-			autoware_msgs::LaneArray local_lanes;
+			autoware_planning_msgs::LaneArray local_lanes;
 			for(unsigned int i=0; i < m_RollOuts.size(); i++)
 			{
 				for(unsigned int j=0; j < m_RollOuts.at(i).size(); j++)
 				{
-					autoware_msgs::Lane lane;
+					autoware_planning_msgs::Lane lane;
 					PlannerHNS::PlanningHelpers::PredictConstantTimeCostForTrajectory(m_RollOuts.at(i).at(j), m_CurrentPos, m_PlanningParams.minSpeed, m_PlanningParams.microPlanDistance);
 					PlannerHNS::ROSHelpers::ConvertFromLocalLaneToAutowareLane(m_RollOuts.at(i).at(j), lane);
 					lane.closest_object_distance = 0;

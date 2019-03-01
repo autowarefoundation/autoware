@@ -6,9 +6,9 @@
 
 #include <autoware_config_msgs/ConfigDecisionMaker.h>
 #include <autoware_msgs/CloudClusterArray.h>
-#include <autoware_msgs/LaneArray.h>
-#include <autoware_msgs/Waypoint.h>
-#include <autoware_msgs/Lane.h>
+#include <autoware_planning_msgs/LaneArray.h>
+#include <autoware_planning_msgs/Waypoint.h>
+#include <autoware_planning_msgs/Lane.h>
 #include <autoware_msgs/TrafficLight.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
@@ -88,7 +88,7 @@ private:
   jsk_rviz_plugins::OverlayText state_text_msg;
 
   // ROS Messages(Autoware)
-  autoware_msgs::Lane current_finalwaypoints_;
+  autoware_planning_msgs::Lane current_finalwaypoints_;
   vector_map_msgs::AreaArray vMap_Areas;
   vector_map_msgs::PointArray vMap_Points;
   vector_map_msgs::LineArray vMap_Lines;
@@ -96,10 +96,10 @@ private:
 
   std::vector<geometry_msgs::Point> inside_points_;
 
-  autoware_msgs::LaneArray current_based_lane_array_;       // with wpstate
-  autoware_msgs::LaneArray current_shifted_lane_array_;     // with shiftedLane
-  autoware_msgs::LaneArray current_controlled_lane_array_;  // modified lane
-  autoware_msgs::LaneArray current_stopped_lane_array_;     // 0velocity
+  autoware_planning_msgs::LaneArray current_based_lane_array_;       // with wpstate
+  autoware_planning_msgs::LaneArray current_shifted_lane_array_;     // with shiftedLane
+  autoware_planning_msgs::LaneArray current_controlled_lane_array_;  // modified lane
+  autoware_planning_msgs::LaneArray current_stopped_lane_array_;     // 0velocity
 
   tf::TransformListener tflistener_baselink;
 
@@ -115,7 +115,7 @@ private:
   std::string TextOffset;
   std::vector<CrossRoadArea> intersects;
   double displacement_from_path_;
-  autoware_msgs::Waypoint CurrentStoplineTarget_;
+  autoware_planning_msgs::Waypoint CurrentStoplineTarget_;
 
   bool foundOtherVehicleForIntersectionStop_; // In fact this should be defined as state.
   class DetectionArea
@@ -176,15 +176,15 @@ private:
 
   // judge method
   // in near future, these methods will be deprecate to decision_maker library
-  bool isCrossRoadByVectorMapServer(const autoware_msgs::Lane &lane_msg, const geometry_msgs::PoseStamped &pose_msg);
+  bool isCrossRoadByVectorMapServer(const autoware_planning_msgs::Lane &lane_msg, const geometry_msgs::PoseStamped &pose_msg);
   bool isLocalizationConvergence(double _x, double _y, double _z, double _roll, double _pitch, double _yaw);
   bool handleStateCmd(const uint64_t _state_num);
   // double calcIntersectWayAngle(const CrossRoadArea& area);
-  double calcIntersectWayAngle(const autoware_msgs::Lane &laneinArea);
+  double calcIntersectWayAngle(const autoware_planning_msgs::Lane &laneinArea);
 
-  void insertPointWithinCrossRoad(const std::vector<CrossRoadArea> &_intersects, autoware_msgs::LaneArray &lane_array);
+  void insertPointWithinCrossRoad(const std::vector<CrossRoadArea> &_intersects, autoware_planning_msgs::LaneArray &lane_array);
 
-  void setWaypointState(autoware_msgs::LaneArray &lane_array);
+  void setWaypointState(autoware_planning_msgs::LaneArray &lane_array);
   double calcPosesAngleDiff(const geometry_msgs::Pose &p_from, const geometry_msgs::Pose &p_to);
   double calcPosesAngleDiffN(const geometry_msgs::Pose &p_from, const geometry_msgs::Pose &p_to);
   double getPoseAngle(const geometry_msgs::Pose &p);
@@ -226,8 +226,8 @@ private:
   void callbackFromLightColor(const ros::MessageEvent<autoware_msgs::TrafficLight const> &event);
   void callbackFromLaneChangeFlag(const std_msgs::Int32 &msg);
   void callbackFromPointsRaw(const sensor_msgs::PointCloud2::ConstPtr &msg);
-  void callbackFromFinalWaypoint(const autoware_msgs::Lane &msg);
-  void callbackFromLaneWaypoint(const autoware_msgs::LaneArray &msg);
+  void callbackFromFinalWaypoint(const autoware_planning_msgs::Lane &msg);
+  void callbackFromLaneWaypoint(const autoware_planning_msgs::LaneArray &msg);
   void callbackFromTwistCmd(const geometry_msgs::TwistStamped &msg);
   void callbackFromSimPose(const geometry_msgs::PoseStamped &msg);
   void callbackFromStateCmd(const std_msgs::Int32 &msg);

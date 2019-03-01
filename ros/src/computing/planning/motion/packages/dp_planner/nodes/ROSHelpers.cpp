@@ -51,12 +51,12 @@ void ROSHelpers::GetTransformFromTF(const std::string parent_frame, const std::s
 }
 
 void ROSHelpers::ConvertFromPlannerHToAutowarePathFormat(const std::vector<PlannerHNS::WayPoint>& path, const int& iStart,
-		autoware_msgs::Lane& trajectory)
+		autoware_planning_msgs::Lane& trajectory)
 {
 	trajectory.waypoints.clear();
 	for(unsigned int i=iStart; i < path.size(); i++)
 	{
-		autoware_msgs::Waypoint wp;
+		autoware_planning_msgs::Waypoint wp;
 		wp.pose.pose.position.x = path.at(i).pos.x;
 		wp.pose.pose.position.y = path.at(i).pos.y;
 		wp.pose.pose.position.z = path.at(i).pos.z;

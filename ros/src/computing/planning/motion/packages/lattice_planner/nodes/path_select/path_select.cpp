@@ -15,12 +15,12 @@
  */
 
 #include <ros/ros.h>
-#include "autoware_msgs/Lane.h"
+#include "autoware_planning_msgs/Lane.h"
 #include <iostream>
 
 static ros::Publisher _pub;
 
-void callback(const autoware_msgs::Lane &msg)
+void callback(const autoware_planning_msgs::Lane &msg)
 {
     _pub.publish(msg);
 }
@@ -32,7 +32,7 @@ int main(int argc, char **argv)
 
     ros::NodeHandle nh;
     ros::Subscriber twist_sub = nh.subscribe("temporal_waypoints", 1, callback);
-    _pub = nh.advertise<autoware_msgs::Lane>("final_waypoints", 1000,true);
+    _pub = nh.advertise<autoware_planning_msgs::Lane>("final_waypoints", 1000,true);
 
     ros::spin();
 

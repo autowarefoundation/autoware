@@ -9,13 +9,13 @@ find_package(catkin REQUIRED COMPONENTS
         visualization_msgs
         message_generation
         vector_map
-        autoware_msgs
+        autoware_planning_msgs
         vector_map_msgs
         )
 
 find_package(autoware_build_flags REQUIRED)
 
-find_package(autoware_msgs REQUIRED)
+find_package(autoware_planning_msgs REQUIRED)
 
 find_package(vector_map_msgs REQUIRED)
 
@@ -55,16 +55,16 @@ add_service_files(
 generate_messages(
         DEPENDENCIES
         geometry_msgs
-        autoware_msgs
+        autoware_planning_msgs
         vector_map_msgs
 )
 
 catkin_package(
-        CATKIN_DEPENDS message_runtime roscpp geometry_msgs autoware_msgs vector_map_msgs vector_map visualization_msgs
+        CATKIN_DEPENDS message_runtime roscpp geometry_msgs autoware_planning_msgs  vector_map_msgs vector_map visualization_msgs
 )
 
 include_directories(
-        ${autoware_msgs_INCLUDE_DIRS}
+        ${autoware_planning_msgs_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
         ${vector_map_INCLUDE_DIRS}
 )

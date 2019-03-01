@@ -39,7 +39,7 @@
 #include <pacmod_msgs/WheelSpeedRpt.h>
 #include <pacmod_msgs/SystemRptFloat.h>
 
-#include <autoware_msgs/VehicleCmd.h>
+#include <autoware_planning_msgs/VehicleCmd.h>
 #include <autoware_localization_msgs/VehicleStatus.h>
 
 static const std::string BASE_FRAME_ID = "base_link";
@@ -110,12 +110,12 @@ private:
   bool command_initialized_;
   double adaptive_gear_ratio_;
   ros::Time command_time_;
-  autoware_msgs::VehicleCmd vehicle_cmd_;
+  autoware_planning_msgs::VehicleCmd vehicle_cmd_;
   automotive_navigation_msgs::ModuleState module_states_;
   ros::Rate* rate_;
 
   // callbacks
-  void callbackFromVehicleCmd(const autoware_msgs::VehicleCmdConstPtr& msg);
+  void callbackFromVehicleCmd(const autoware_planning_msgs::VehicleCmdConstPtr& msg);
   void callbackFromEngage(const std_msgs::BoolConstPtr& msg);
   void callbackFromSSCModuleStates(const automotive_navigation_msgs::ModuleStateConstPtr& msg);
   void callbackFromSSCFeedbacks(const automotive_platform_msgs::VelocityAccelConstPtr& msg_velocity,

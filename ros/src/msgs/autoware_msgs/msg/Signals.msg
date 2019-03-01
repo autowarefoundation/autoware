@@ -1,2 +1,2 @@
 Header header
-autoware_msgs/ExtractedPosition[] Signals
+autoware_planning_msgs/ExtractedPosition[] Signals

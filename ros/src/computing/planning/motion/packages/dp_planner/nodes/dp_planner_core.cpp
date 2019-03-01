@@ -102,8 +102,8 @@ PlannerX::PlannerX()
 		pub_EnableLattice = nh.advertise<std_msgs::Int32>("enableLattice", 1);
 	}
 
-	pub_LocalPath = nh.advertise<autoware_msgs::Lane>(topic_prefix + "/final_waypoints", 100,true);
-	pub_LocalBasePath = nh.advertise<autoware_msgs::Lane>(topic_prefix + "/base_waypoints", 100,true);
+	pub_LocalPath = nh.advertise<autoware_planning_msgs::Lane>(topic_prefix + "/final_waypoints", 100,true);
+	pub_LocalBasePath = nh.advertise<autoware_planning_msgs::Lane>(topic_prefix + "/base_waypoints", 100,true);
 	pub_ClosestIndex = nh.advertise<std_msgs::Int32>(topic_prefix + "/closest_waypoint", 100,true);
 
 	pub_BehaviorState = nh.advertise<geometry_msgs::TwistStamped>("current_behavior", 1);
@@ -498,7 +498,7 @@ void PlannerX::callbackGetOutsideControl(const std_msgs::Int8& msg)
 	m_bOutsideControl  = msg.data;
 }
 
-void PlannerX::callbackGetAStarPath(const autoware_msgs::LaneArrayConstPtr& msg)
+void PlannerX::callbackGetAStarPath(const autoware_planning_msgs::LaneArrayConstPtr& msg)
 {
 	if(msg->lanes.size() > 0)
 	{
@@ -521,7 +521,7 @@ void PlannerX::callbackGetAStarPath(const autoware_msgs::LaneArrayConstPtr& msg)
 	}
 }
 
-void PlannerX::callbackGetWayPlannerPath(const autoware_msgs::LaneArrayConstPtr& msg)
+void PlannerX::callbackGetWayPlannerPath(const autoware_planning_msgs::LaneArrayConstPtr& msg)
 {
 	if(msg->lanes.size() > 0)
 	{
@@ -759,7 +759,7 @@ void PlannerX::PlannerMainLoop()
 		}
 
 
-		autoware_msgs::Lane current_trajectory;
+		autoware_planning_msgs::Lane current_trajectory;
 		std_msgs::Int32 closest_waypoint;
 		PlannerHNS::RelativeInfo info;
 		PlannerHNS::PlanningHelpers::GetRelativeInfo(m_LocalPlanner.m_Path, m_LocalPlanner.state, info);

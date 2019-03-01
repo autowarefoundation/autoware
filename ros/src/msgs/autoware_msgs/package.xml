@@ -11,11 +11,13 @@
   <build_depend>geometry_msgs</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>jsk_recognition_msgs</build_depend>
+  <build_depend>autoware_planning_msgs</build_depend>
   <run_depend>message_runtime</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>jsk_recognition_msgs</run_depend>
+  <run_depend>autoware_planning_msgs</run_depend>
   <export>
   </export>
 </package>

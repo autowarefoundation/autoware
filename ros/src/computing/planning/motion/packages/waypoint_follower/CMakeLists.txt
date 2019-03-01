@@ -4,7 +4,7 @@ project(waypoint_follower)
 
 find_package(autoware_build_flags REQUIRED)
 
-find_package(autoware_msgs REQUIRED)
+find_package(autoware_planning_msgs REQUIRED)
 
 find_package(autoware_config_msgs REQUIRED)
 
@@ -17,7 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
         pcl_ros
         pcl_conversions
         sensor_msgs
-        autoware_msgs
+        autoware_planning_msgs
         autoware_config_msgs
         tablet_socket_msgs
         autoware_health_checker
@@ -37,7 +37,7 @@ catkin_package(
         std_msgs
         tf
         geometry_msgs
-        autoware_msgs
+        autoware_planning_msgs
         autoware_config_msgs
         pcl_ros
         pcl_conversions
@@ -55,7 +55,7 @@ SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 include_directories(
         include
         ${autoware_config_msgs_INCLUDE_DIRS}
-        ${autoware_msgs_INCLUDE_DIRS}
+        ${autoware_planning_msgs_INCLUDE_DIRS}
         ${tablet_socket_msgs_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
 )

@@ -24,7 +24,7 @@
 #include <autoware_msgs/AdjustXY.h>
 #include <vector_map/vector_map.h>
 #include <vector_map_server/GetSignal.h>
-#include <autoware_msgs/Lane.h>
+#include <autoware_planning_msgs/Lane.h>
 
 static std::string camera_id_str;
 
@@ -65,7 +65,7 @@ namespace
 	{
 	private:
 		geometry_msgs::PoseStamped pose_;
-		autoware_msgs::Lane waypoints_;
+		autoware_planning_msgs::Lane waypoints_;
 
 	public:
 		VectorMapClient()
@@ -81,7 +81,7 @@ namespace
 			return pose_;
 		}
 
-		autoware_msgs::Lane waypoints() const
+		autoware_planning_msgs::Lane waypoints() const
 		{
 			return waypoints_;
 		}
@@ -91,7 +91,7 @@ namespace
 			pose_ = pose;
 		}
 
-		void set_waypoints(const autoware_msgs::Lane &waypoints)
+		void set_waypoints(const autoware_planning_msgs::Lane &waypoints)
 		{
 			waypoints_ = waypoints;
 		}
@@ -328,7 +328,7 @@ void echoSignals2(ros::Publisher &pub, bool useOpenGLCoord = false)
 			project2(signalcenterx, ux, vx, useOpenGLCoord);
 			radius = (int) distance(ux, vx, u, v);
 
-			autoware_msgs::ExtractedPosition sign;
+			autoware_planning_msgs::ExtractedPosition sign;
 			sign.signalId = signal.id;
 
 			sign.u = u + adjust_proj_x; // shift project position by configuration value from runtime manager

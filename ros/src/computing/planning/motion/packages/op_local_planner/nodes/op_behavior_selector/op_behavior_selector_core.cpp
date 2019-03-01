@@ -42,8 +42,8 @@ BehaviorGen::BehaviorGen()
 	m_OriginPos.position.y  = transform.getOrigin().y();
 	m_OriginPos.position.z  = transform.getOrigin().z();
 
-	pub_LocalPath = nh.advertise<autoware_msgs::Lane>("final_waypoints", 1,true);
-	pub_LocalBasePath = nh.advertise<autoware_msgs::Lane>("base_waypoints", 1,true);
+	pub_LocalPath = nh.advertise<autoware_planning_msgs::Lane>("final_waypoints", 1,true);
+	pub_LocalBasePath = nh.advertise<autoware_planning_msgs::Lane>("base_waypoints", 1,true);
 	pub_ClosestIndex = nh.advertise<std_msgs::Int32>("closest_waypoint", 1,true);
 	pub_BehaviorState = nh.advertise<geometry_msgs::TwistStamped>("current_behavior", 1);
 	pub_SimuBoxPose	  = nh.advertise<geometry_msgs::PoseArray>("sim_box_pose_ego", 1);
@@ -178,7 +178,7 @@ void BehaviorGen::callbackGetTwistCMD(const geometry_msgs::TwistStampedConstPtr&
 	m_Twist_cmd = *msg;
 }
 
-void BehaviorGen::callbackGetCommandCMD(const autoware_msgs::ControlCommandConstPtr& msg)
+void BehaviorGen::callbackGetCommandCMD(const autoware_planning_msgs::ControlCommandConstPtr& msg)
 {
 	m_Ctrl_cmd = *msg;
 }
@@ -218,7 +218,7 @@ void BehaviorGen::callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg)
 	bVehicleStatus = true;
 }
 
-void BehaviorGen::callbackGetGlobalPlannerPath(const autoware_msgs::LaneArrayConstPtr& msg)
+void BehaviorGen::callbackGetGlobalPlannerPath(const autoware_planning_msgs::LaneArrayConstPtr& msg)
 {
 	if(msg->lanes.size() > 0 && bMap)
 	{
@@ -293,7 +293,7 @@ void BehaviorGen::callbackGetGlobalPlannerPath(const autoware_msgs::LaneArrayCon
 	}
 }
 
-void BehaviorGen::callbackGetLocalTrajectoryCost(const autoware_msgs::LaneConstPtr& msg)
+void BehaviorGen::callbackGetLocalTrajectoryCost(const autoware_planning_msgs::LaneConstPtr& msg)
 {
 	bBestCost = true;
 	m_TrajectoryBestCost.bBlocked = msg->is_blocked;
@@ -303,7 +303,7 @@ void BehaviorGen::callbackGetLocalTrajectoryCost(const autoware_msgs::LaneConstP
 	m_TrajectoryBestCost.closest_obj_velocity = msg->closest_object_velocity;
 }
 
-void BehaviorGen::callbackGetLocalPlannerPath(const autoware_msgs::LaneArrayConstPtr& msg)
+void BehaviorGen::callbackGetLocalPlannerPath(const autoware_planning_msgs::LaneArrayConstPtr& msg)
 {
 	if(msg->lanes.size() > 0)
 	{

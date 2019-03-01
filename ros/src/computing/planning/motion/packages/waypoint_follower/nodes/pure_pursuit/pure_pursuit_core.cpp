@@ -63,7 +63,7 @@ void PurePursuitNode::initForROS()
 
   // setup publisher
   pub1_ = nh_.advertise<geometry_msgs::TwistStamped>("twist_raw", 10);
-  pub2_ = nh_.advertise<autoware_msgs::ControlCommandStamped>("ctrl_cmd", 10);
+  pub2_ = nh_.advertise<autoware_planning_msgs::ControlCommandStamped>("ctrl_cmd", 10);
   pub11_ = nh_.advertise<visualization_msgs::Marker>("next_waypoint_mark", 0);
   pub12_ = nh_.advertise<visualization_msgs::Marker>("next_target_mark", 0);
   pub13_ = nh_.advertise<visualization_msgs::Marker>("search_circle_mark", 0);
@@ -133,7 +133,7 @@ void PurePursuitNode::publishControlCommandStamped(const bool &can_get_curvature
   if (!publishes_for_steering_robot_)
     return;
 
-  autoware_msgs::ControlCommandStamped ccs;
+  autoware_planning_msgs::ControlCommandStamped ccs;
   ccs.header.stamp = ros::Time::now();
   ccs.cmd.linear_velocity = can_get_curvature ? computeCommandVelocity() : 0;
   ccs.cmd.linear_acceleration = can_get_curvature ? computeCommandAccel() : 0;
@@ -193,7 +193,7 @@ void PurePursuitNode::callbackFromConfig(const autoware_config_msgs::ConfigWaypo
 }
 
 void PurePursuitNode::publishDeviationCurrentPosition(const geometry_msgs::Point &point,
-                                                      const std::vector<autoware_msgs::Waypoint> &waypoints) const
+                                                      const std::vector<autoware_planning_msgs::Waypoint> &waypoints) const
 {
   // Calculate the deviation of current position from the waypoint approximate line
 
@@ -225,7 +225,7 @@ void PurePursuitNode::callbackFromCurrentVelocity(const geometry_msgs::TwistStam
   is_velocity_set_ = true;
 }
 
-void PurePursuitNode::callbackFromWayPoints(const autoware_msgs::LaneConstPtr &msg)
+void PurePursuitNode::callbackFromWayPoints(const autoware_planning_msgs::LaneConstPtr &msg)
 {
   if (!msg->waypoints.empty())
     command_linear_velocity_ = msg->waypoints.at(0).twist.twist.linear.x;

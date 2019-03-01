@@ -19,6 +19,7 @@
   <build_depend>automotive_navigation_msgs</build_depend>
   <build_depend>pacmod_msgs</build_depend>
     <build_depend>autoware_localization_msgs</build_depend>
+  <build_depend>autoware_planning_msgs</build_depend>
 
   <run_depend>roscpp</run_depend>
   <run_depend>message_filters</run_depend>
@@ -28,6 +29,7 @@
   <run_depend>automotive_navigation_msgs</run_depend>
   <run_depend>pacmod_msgs</run_depend>
     <run_depend>autoware_localization_msgs</run_depend>
+  <run_depend>autoware_planning_msgs</run_depend>
 
   <export>
   </export>

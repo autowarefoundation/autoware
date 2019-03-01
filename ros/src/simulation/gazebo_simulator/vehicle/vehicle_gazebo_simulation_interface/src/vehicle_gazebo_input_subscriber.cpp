@@ -3,8 +3,8 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <std_msgs/Float64.h>
 #include <cmath>
-#include <autoware_msgs/ControlCommand.h>
-#include <autoware_msgs/VehicleCmd.h>
+#include <autoware_planning_msgs/ControlCommand.h>
+#include <autoware_planning_msgs/VehicleCmd.h>
 
 class VehicleGazeboInputSubscriber
 {
@@ -23,8 +23,8 @@ class VehicleGazeboInputSubscriber
     void twistCallback(const geometry_msgs::Twist::ConstPtr &input_twist_msg);
     void sterringAngleCallback(const std_msgs::Float64::ConstPtr &input_steering_angle_msg);
     void velocityCallback(const std_msgs::Float64::ConstPtr &input_velocity_msg);
-    void vehicleCmdCallback(const autoware_msgs::VehicleCmd::ConstPtr &input_msg);
-    void publishControlCommandStamped2Gazebo(const autoware_msgs::ControlCommand &input_msg);
+    void vehicleCmdCallback(const autoware_planning_msgs::VehicleCmd::ConstPtr &input_msg);
+    void publishControlCommandStamped2Gazebo(const autoware_planning_msgs::ControlCommand &input_msg);
     void publishTwistStamped2Gazebo(const geometry_msgs::TwistStamped &input_twist_msg);
     double wheel_base_;
     double wheel_tread_;
@@ -117,7 +117,7 @@ void VehicleGazeboInputSubscriber::velocityCallback(const std_msgs::Float64::Con
     wheel_left_rear_pub_.publish(output_wheel_rear);
 }
 
-void VehicleGazeboInputSubscriber::vehicleCmdCallback(const autoware_msgs::VehicleCmd::ConstPtr &input_msg)
+void VehicleGazeboInputSubscriber::vehicleCmdCallback(const autoware_planning_msgs::VehicleCmd::ConstPtr &input_msg)
 {
     if (twiststamped_)
         publishTwistStamped2Gazebo(input_msg->twist_cmd);
@@ -125,7 +125,7 @@ void VehicleGazeboInputSubscriber::vehicleCmdCallback(const autoware_msgs::Vehic
         publishControlCommandStamped2Gazebo(input_msg->ctrl_cmd);
 }
 
-void VehicleGazeboInputSubscriber::publishControlCommandStamped2Gazebo(const autoware_msgs::ControlCommand &input_msg)
+void VehicleGazeboInputSubscriber::publishControlCommandStamped2Gazebo(const autoware_planning_msgs::ControlCommand &input_msg)
 {
     std_msgs::Float64 output_wheel_rear, output_steering_right_front, output_steering_left_front;
 

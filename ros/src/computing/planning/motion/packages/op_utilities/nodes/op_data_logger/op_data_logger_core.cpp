@@ -122,7 +122,7 @@ void OpenPlannerDataLogger::callbackGetSimuPose(const geometry_msgs::PoseArray& 
 	}
 }
 
-void OpenPlannerDataLogger::callbackGetSimuCarsPathAndState(const autoware_msgs::LaneConstPtr& msg )
+void OpenPlannerDataLogger::callbackGetSimuCarsPathAndState(const autoware_planning_msgs::LaneConstPtr& msg )
 {
 	//std::cout << "Receive Lane Data ... " << std::endl;
 

@@ -8,7 +8,7 @@ find_package(vector_map_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS		
 	roscpp
   	geometry_msgs  	
-  	autoware_msgs
+  	autoware_planning_msgs
   	map_file
   	op_utility
   	op_planner
