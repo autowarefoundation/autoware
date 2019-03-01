@@ -79,7 +79,7 @@ from geometry_msgs.msg import Vector3
 from autoware_planning_msgs.msg import AccelCmd
 from autoware_planning_msgs.msg import SteerCmd
 from autoware_planning_msgs.msg import BrakeCmd
-from autoware_msgs.msg import IndicatorCmd
+from autoware_planning_msgs.msg import LampCmd   # it was IndicatorCmd
 from autoware_planning_msgs.msg import LampCmd
 from autoware_detection_msgs.msg import TrafficLight
 from autoware_detection_msgs.msg import AdjustXY
@@ -746,8 +746,10 @@ class MyFrame(rtmgr.MyFrame):
 		pub.publish(msg)
 
 	def OnIndi(self, event):
-		pub = rospy.Publisher('indicator_cmd', IndicatorCmd, queue_size=10)
-		msg = IndicatorCmd()
+		# pub = rospy.Publisher('indicator_cmd', IndicatorCmd, queue_size=10)
+		pub = rospy.Publisher('indicator_cmd', LampCmd, queue_size=10)
+		# msg = IndicatorCmd()
+		msg = LampCmd()
 		msg.l = self.button_statchk_indi_l.GetValue()
 		msg.r = self.button_statchk_indi_r.GetValue()
 		pub.publish(msg)
