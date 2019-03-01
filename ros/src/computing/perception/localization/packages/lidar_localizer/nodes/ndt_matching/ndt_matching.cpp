@@ -67,7 +67,7 @@
 
 #include <autoware_config_msgs/ConfigNDT.h>
 
-#include <autoware_msgs/NDTStat.h>
+#include <autoware_localization_msgs/NDTStat.h>
 
 //headers in Autoware Health Checker
 #include <autoware_health_checker/node_status_publisher.h>
@@ -202,7 +202,7 @@ static std_msgs::Float32 time_ndt_matching;
 static int _queue_size = 1000;
 
 static ros::Publisher ndt_stat_pub;
-static autoware_msgs::NDTStat ndt_stat_msg;
+static autoware_localization_msgs::NDTStat ndt_stat_msg;
 
 static double predict_pose_error = 0.0;
 
@@ -1655,7 +1655,7 @@ int main(int argc, char** argv)
   estimated_vel_kmph_pub = nh.advertise<std_msgs::Float32>("/estimated_vel_kmph", 10);
   estimated_vel_pub = nh.advertise<geometry_msgs::Vector3Stamped>("/estimated_vel", 10);
   time_ndt_matching_pub = nh.advertise<std_msgs::Float32>("/time_ndt_matching", 10);
-  ndt_stat_pub = nh.advertise<autoware_msgs::NDTStat>("/ndt_stat", 10);
+  ndt_stat_pub = nh.advertise<autoware_localization_msgs::NDTStat>("/ndt_stat", 10);
   ndt_reliability_pub = nh.advertise<std_msgs::Float32>("/ndt_reliability", 10);
 
   // Subscribers

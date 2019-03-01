@@ -58,7 +58,7 @@ void CanStatusTranslatorNode::initForROS()
   // setup publisher
   pub1_ = nh_.advertise<geometry_msgs::TwistStamped>("can_velocity", 10);
   pub2_ = nh_.advertise<std_msgs::Float32>("linear_velocity_viz", 10);
-  pub3_ = nh_.advertise<autoware_msgs::VehicleStatus>("vehicle_status", 10);
+  pub3_ = nh_.advertise<autoware_localization_msgs::VehicleStatus>("vehicle_status", 10);
 }
 
 void CanStatusTranslatorNode::run()
@@ -66,7 +66,7 @@ void CanStatusTranslatorNode::run()
   ros::spin();
 }
 
-void CanStatusTranslatorNode::publishVelocity(const autoware_msgs::VehicleStatusConstPtr& msg)
+void CanStatusTranslatorNode::publishVelocity(const autoware_localization_msgs::VehicleStatusConstPtr& msg)
 {
   geometry_msgs::TwistStamped tw;
   tw.header = msg->header;
@@ -80,7 +80,7 @@ void CanStatusTranslatorNode::publishVelocity(const autoware_msgs::VehicleStatus
   pub1_.publish(tw);
 }
 
-void CanStatusTranslatorNode::publishVelocityViz(const autoware_msgs::VehicleStatusConstPtr& msg)
+void CanStatusTranslatorNode::publishVelocityViz(const autoware_localization_msgs::VehicleStatusConstPtr& msg)
 {
   std_msgs::Float32 fl;
   fl.data = msg->speed;
@@ -90,7 +90,7 @@ void CanStatusTranslatorNode::publishVelocityViz(const autoware_msgs::VehicleSta
 void CanStatusTranslatorNode::publishVehicleStatus(const autoware_can_msgs::CANInfoConstPtr& msg)
 {
   // currently, this function is only support to autoware_socket format.
-  autoware_msgs::VehicleStatus vs;
+  autoware_localization_msgs::VehicleStatus vs;
   vs.header = msg->header;
   vs.tm = msg->tm;
   vs.drivemode = msg->devmode;  // I think devmode is typo in CANInfo...
@@ -111,7 +111,7 @@ void CanStatusTranslatorNode::publishVehicleStatus(const autoware_can_msgs::CANI
   pub3_.publish(vs);
 }
 
-void CanStatusTranslatorNode::callbackFromVehicleStatus(const autoware_msgs::VehicleStatusConstPtr& msg)
+void CanStatusTranslatorNode::callbackFromVehicleStatus(const autoware_localization_msgs::VehicleStatusConstPtr& msg)
 {
   publishVelocity(msg);
   publishVelocityViz(msg);

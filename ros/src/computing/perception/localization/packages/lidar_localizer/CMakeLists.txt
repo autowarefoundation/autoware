@@ -36,7 +36,7 @@ endif ()
 
 find_package(autoware_build_flags REQUIRED)
 
-find_package(autoware_msgs REQUIRED)
+find_package(autoware_localization_msgs REQUIRED)
 
 find_package(autoware_config_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
@@ -52,7 +52,7 @@ find_package(catkin REQUIRED COMPONENTS
         ndt_cpu
         autoware_health_checker
         ${PCL_OPENMP_PACKAGES}
-        autoware_msgs
+        autoware_localization_msgs
         autoware_config_msgs
         )
 
@@ -60,7 +60,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-        CATKIN_DEPENDS std_msgs velodyne_pointcloud autoware_msgs autoware_config_msgs ndt_tku ndt_cpu ${PCL_OPENMP_PACKAGES}
+        CATKIN_DEPENDS std_msgs velodyne_pointcloud autoware_localization_msgs  autoware_config_msgs ndt_tku ndt_cpu ${PCL_OPENMP_PACKAGES}
         DEPENDS PCL
 )
 
@@ -70,7 +70,7 @@ catkin_package(
 
 include_directories(include ${catkin_INCLUDE_DIRS}
  ${autoware_config_msgs_INCLUDE_DIRS}
- ${autoware_msgs_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
+ ${autoware_localization_msgs_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
 
 SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
@@ -122,7 +122,7 @@ add_library(ndt_matching_monitor_lib SHARED
 target_include_directories(ndt_matching_monitor_lib PRIVATE
         ${catkin_INCLUDE_DIRS}
         ${autoware_config_msgs_INCLUDE_DIRS}
-        ${autoware_msgs_INCLUDE_DIRS}
+        ${autoware_localization_msgs_INCLUDE_DIRS}
         ${PCL_INCLUDE_DIRS}
         )
 add_dependencies(ndt_matching_monitor_lib

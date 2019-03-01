@@ -4,7 +4,7 @@ project(tablet_socket)
 
 find_package(autoware_build_flags REQUIRED)
 
-find_package(autoware_msgs REQUIRED)
+find_package(autoware_localization_msgs REQUIRED)
 
 find_package(tablet_socket_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
@@ -13,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   gnss
   autoware_can_msgs
   geometry_msgs
-  autoware_msgs
+  autoware_localization_msgs
   )
 
 set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -22,7 +22,7 @@ catkin_package(CATKIN_DEPENDS
   tf
   tablet_socket_msgs
   autoware_can_msgs
-  autoware_msgs
+  autoware_localization_msgs
   gnss
 )
 
@@ -30,7 +30,7 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${tablet_socket_msgs_INCLUDE_DIRS}
-  ${autoware_msgs_INCLUDE_DIRS}
+  ${autoware_localization_msgs_INCLUDE_DIRS}
 )
 
 add_executable(tablet_receiver nodes/tablet_receiver/tablet_receiver.cpp)

@@ -9,7 +9,7 @@ find_package(catkin REQUIRED
   sensor_msgs
   std_msgs
   gazebo_msgs
-  autoware_msgs
+  autoware_localization_msgs
   tf2_ros
   tf2
   autoware_build_flags
@@ -22,7 +22,7 @@ catkin_package(
     sensor_msgs
     std_msgs
     gazebo_msgs
-    autoware_msgs
+    autoware_localization_msgs
     tf2_ros
     tf2
 )

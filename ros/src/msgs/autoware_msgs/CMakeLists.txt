@@ -33,14 +33,14 @@ add_message_files(
             Centroids.msg
             DTLane.msg
             GeometricRectangle.msg
-            ICPStat.msg
+            
             ImageObj.msg
             ImageObjRanged.msg
             ImageObjTracked.msg
             ImageRect.msg
             ImageRectRanged.msg
             Lane.msg
-            NDTStat.msg
+            
             ObjLabel.msg
             ObjPose.msg
             
@@ -49,7 +49,7 @@ add_message_files(
             Waypoint.msg
             WaypointState.msg
             VehicleCmd.msg
-            VehicleStatus.msg
+            
             TrafficLightResult.msg
             TrafficLightResultArray.msg
 

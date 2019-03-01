@@ -40,7 +40,7 @@
 #include <pacmod_msgs/SystemRptFloat.h>
 
 #include <autoware_msgs/VehicleCmd.h>
-#include <autoware_msgs/VehicleStatus.h>
+#include <autoware_localization_msgs/VehicleStatus.h>
 
 static const std::string BASE_FRAME_ID = "base_link";
 

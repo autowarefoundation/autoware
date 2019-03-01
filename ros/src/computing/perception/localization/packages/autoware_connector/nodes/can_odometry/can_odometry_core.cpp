@@ -64,7 +64,7 @@ void CanOdometryNode::run()
   ros::spin();
 }
 
-void CanOdometryNode::publishOdometry(const autoware_msgs::VehicleStatusConstPtr &msg)
+void CanOdometryNode::publishOdometry(const autoware_localization_msgs::VehicleStatusConstPtr &msg)
 {
   double vx = kmph2mps(msg->speed);
   double vth = v_info_.convertSteeringAngleToAngularVelocity(kmph2mps(msg->speed), msg->angle);
@@ -107,7 +107,7 @@ void CanOdometryNode::publishOdometry(const autoware_msgs::VehicleStatusConstPtr
   pub1_.publish(odom);
 }
 
-void CanOdometryNode::callbackFromVehicleStatus(const autoware_msgs::VehicleStatusConstPtr &msg)
+void CanOdometryNode::callbackFromVehicleStatus(const autoware_localization_msgs::VehicleStatusConstPtr &msg)
 {
   publishOdometry(msg);
 }

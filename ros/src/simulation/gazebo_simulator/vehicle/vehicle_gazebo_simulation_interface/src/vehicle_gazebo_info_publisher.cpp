@@ -4,7 +4,7 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <gazebo_msgs/GetLinkState.h>
 #include <sensor_msgs/JointState.h>
-#include <autoware_msgs/VehicleStatus.h>
+#include <autoware_localization_msgs/VehicleStatus.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <tf2/transform_datatypes.h>
@@ -51,7 +51,7 @@ VehicleGazeboInfoPublisher::VehicleGazeboInfoPublisher() : nh_(""), pnh_("~"), t
     vehicle_twist_pub_ = nh_.advertise<geometry_msgs::TwistStamped>("/gazebo_vehicle/twist", 1);
     vehicle_vel_pub_ = nh_.advertise<std_msgs::Float64>("/gazebo_vehicle/velocity", 1);
     steering_angle_pub_ = nh_.advertise<std_msgs::Float64>("/gazebo_vehicle/steering_angle", 1);
-    vehicle_status_pub_ = nh_.advertise<autoware_msgs::VehicleStatus>("/vehicle_status", 1);
+    vehicle_status_pub_ = nh_.advertise<autoware_localization_msgs::VehicleStatus>("/vehicle_status", 1);
     double publish_pose_rate;
     pnh_.param<double>("publish_pose_rate", publish_pose_rate, double(10.0));
     pnh_.param<double>("/vehicle_info/wheel_radius", wheel_radius_, 0.341);
@@ -121,7 +121,7 @@ void VehicleGazeboInfoPublisher::jointStateCallback(const sensor_msgs::JointStat
 {
     std_msgs::Float64 output_vel, output_steering_angle;
     geometry_msgs::TwistStamped output_twiststamped;
-    autoware_msgs::VehicleStatus output_vehicle_status;
+    autoware_localization_msgs::VehicleStatus output_vehicle_status;
     double steering_right_front_angle = 0;
     double steering_left_front_angle = 0;
     double wheel_right_rear_vel = 0;

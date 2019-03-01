@@ -11,7 +11,7 @@ find_package(
   automotive_platform_msgs
   automotive_navigation_msgs
   pacmod_msgs
-  autoware_msgs
+  autoware_localization_msgs
 )
 
 catkin_package(
@@ -23,7 +23,7 @@ catkin_package(
   automotive_platform_msgs
   automotive_navigation_msgs
   pacmod_msgs
-  autoware_msgs
+  autoware_localization_msgs
 )
 
 include_directories(

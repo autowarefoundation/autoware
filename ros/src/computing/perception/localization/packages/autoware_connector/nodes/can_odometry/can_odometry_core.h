@@ -26,7 +26,7 @@
 
 // User Defined Includes
 #include "autoware_can_msgs/CANInfo.h"
-#include "autoware_msgs/VehicleStatus.h"
+#include "autoware_localization_msgs/VehicleStatus.h"
 
 namespace autoware_connector
 {
@@ -139,13 +139,13 @@ private:
   Odometry odom_;
 
   // callbacks
-  void callbackFromVehicleStatus(const autoware_msgs::VehicleStatusConstPtr &msg);
+  void callbackFromVehicleStatus(const autoware_localization_msgs::VehicleStatusConstPtr &msg);
 
   // initializer
   void initForROS();
 
   // functions
-  void publishOdometry(const autoware_msgs::VehicleStatusConstPtr &msg);
+  void publishOdometry(const autoware_localization_msgs::VehicleStatusConstPtr &msg);
 };
 }
 #endif  // CAN_ODOMETRY_CORE_H

@@ -26,7 +26,7 @@
 
 // User Defined Includes
 #include "autoware_can_msgs/CANInfo.h"
-#include "autoware_msgs/VehicleStatus.h"
+#include "autoware_localization_msgs/VehicleStatus.h"
 
 namespace autoware_connector
 {
@@ -110,14 +110,14 @@ private:
 
   // callbacks
   void callbackFromCANInfo(const autoware_can_msgs::CANInfoConstPtr& msg);
-  void callbackFromVehicleStatus(const autoware_msgs::VehicleStatusConstPtr& msg);
+  void callbackFromVehicleStatus(const autoware_localization_msgs::VehicleStatusConstPtr& msg);
 
   // initializer
   void initForROS();
 
   // functions
-  void publishVelocity(const autoware_msgs::VehicleStatusConstPtr& msg);
-  void publishVelocityViz(const autoware_msgs::VehicleStatusConstPtr& msg);
+  void publishVelocity(const autoware_localization_msgs::VehicleStatusConstPtr& msg);
+  void publishVelocityViz(const autoware_localization_msgs::VehicleStatusConstPtr& msg);
   void publishVehicleStatus(const autoware_can_msgs::CANInfoConstPtr& msg);
 };
 }

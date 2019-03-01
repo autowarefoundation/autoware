@@ -63,7 +63,7 @@ SSCInterface::SSCInterface() : nh_(), private_nh_("~"), engage_(false), command_
       boost::bind(&SSCInterface::callbackFromSSCFeedbacks, this, _1, _2, _3, _4, _5, _6, _7));
 
   // publishers to autoware
-  vehicle_status_pub_ = nh_.advertise<autoware_msgs::VehicleStatus>("vehicle_status", 10);
+  vehicle_status_pub_ = nh_.advertise<autoware_localization_msgs::VehicleStatus>("vehicle_status", 10);
   current_twist_pub_ = nh_.advertise<geometry_msgs::TwistStamped>("vehicle/twist", 10);
 
   // publishers to SSC
@@ -139,14 +139,14 @@ void SSCInterface::callbackFromSSCFeedbacks(const automotive_platform_msgs::Velo
   twist.twist.angular.z = curvature * speed;  // [rad/s]
   current_twist_pub_.publish(twist);
 
-  // vehicle_status (autoware_msgs::VehicleStatus)
-  autoware_msgs::VehicleStatus vehicle_status;
+  // vehicle_status (autoware_localization_msgs::VehicleStatus)
+  autoware_localization_msgs::VehicleStatus vehicle_status;
   vehicle_status.header.frame_id = BASE_FRAME_ID;
   vehicle_status.header.stamp = stamp;
 
   // drive/steeringmode
-  vehicle_status.drivemode = (module_states_.state == "active") ? autoware_msgs::VehicleStatus::MODE_AUTO :
-                                                                  autoware_msgs::VehicleStatus::MODE_MANUAL;
+  vehicle_status.drivemode = (module_states_.state == "active") ? autoware_localization_msgs::VehicleStatus::MODE_AUTO :
+                                                                  autoware_localization_msgs::VehicleStatus::MODE_MANUAL;
   vehicle_status.steeringmode = vehicle_status.drivemode;
 
   // speed [km/h]
