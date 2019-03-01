@@ -149,4 +149,9 @@ bool Vector2d::operator==(const Vector2d &other) const
             std::abs(getY() - other.getY()) < ep);
 }
 
+bool Vector2d::operator!=(const Vector2d &other) const
+{
+    return !(*this == other);
+}
+
 } // namespace amathutils

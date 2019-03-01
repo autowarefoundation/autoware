@@ -47,6 +47,7 @@ public:
   Vector2d &operator*=(const double ratio);
   Vector2d &operator/=(const double ratio);
   bool operator==(const Vector2d &other) const;
+  bool operator!=(const Vector2d &other) const;
 };
 
 } // namespace amathutils

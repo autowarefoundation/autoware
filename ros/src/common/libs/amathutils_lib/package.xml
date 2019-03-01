@@ -1,17 +1,22 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>amathutils_lib</name>
   <version>1.10.0</version>
   <description>The libamathutils package</description>
+
   <maintainer email="yukky.saito@gmail.com">Yukihiro SAITO</maintainer>
+
   <license>Apache 2</license>
+
   <author email="yukky.saito@gmail.com">Yukihiro SAITO</author>
+
   <buildtool_depend>catkin</buildtool_depend>
   <buildtool_depend>autoware_build_flags</buildtool_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>autoware_msgs</build_depend>
-  <run_depend>roscpp</run_depend>
-  <run_depend>autoware_msgs</run_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>autoware_msgs</exec_depend>
+  <test_depend>rosunit</test_depend>
   <export>
   </export>
 </package>
