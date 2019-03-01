@@ -1,24 +1,22 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.5)
 project(range_vision_fusion)
 
 
 find_package(autoware_build_flags REQUIRED)
 
 find_package(autoware_msgs REQUIRED)
-find_package(catkin REQUIRED COMPONENTS
-        cv_bridge
-        sensor_msgs
-        image_transport
-        roscpp
-        tf
-        jsk_recognition_utils
-        eigen_conversions
-        tf_conversions
-        jsk_topic_tools
-        image_geometry
-        jsk_topic_tools
-        autoware_msgs
-        )
+find_package(cv_bridge REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(image_transport REQUIRED)
+find_package(roscpp REQUIRED)
+find_package(tf REQUIRED)
+find_package(jsk_recognition_utils REQUIRED)
+find_package(eigen_conversions REQUIRED)
+find_package(tf_conversions REQUIRED)
+find_package(jsk_topic_tools REQUIRED)
+find_package(image_geometry REQUIRED)
+find_package(jsk_topic_tools REQUIRED)
+find_package(ament_cmake REQUIRED)
 
 find_package(OpenCV REQUIRED)
 
@@ -42,22 +40,6 @@ pkg_check_modules(YAML_CPP REQUIRED yaml-cpp)
 find_path(YAML_CPP_INCLUDE_DIR NAMES yaml_cpp.h PATHS ${YAML_CPP_INCLUDE_DIRS})
 find_library(YAML_CPP_LIBRARY NAMES YAML_CPP PATHS ${YAML_CPP_LIBRARIES})
 
-catkin_package(
-        CATKIN_DEPENDS
-        cv_bridge
-        sensor_msgs
-        image_transport
-        roscpp
-        tf
-        autoware_msgs
-        jsk_recognition_utils
-        eigen_conversions
-        tf_conversions
-        jsk_topic_tools
-        image_geometry
-        jsk_topic_tools
-)
-
 #fusion Library
 add_library(range_vision_fusion_lib SHARED
         src/range_vision_fusion.cpp
@@ -73,7 +55,6 @@ endif ()
 
 target_include_directories(range_vision_fusion_lib PRIVATE
         ${OpenCV_INCLUDE_DIR}
-        ${catkin_INCLUDE_DIRS}
         ${autoware_msgs_INCLUDE_DIRS}
         ${Boost_INCLUDE_DIRS}
         ${PCL_INCLUDE_DIRS}
@@ -88,20 +69,29 @@ target_link_libraries(range_vision_fusion_lib
         ${EIGEN3_LIBRARIES}
         ${OPENGL_LIBRARIES}
         ${YAML_CPP_LIBRARIES}
-        ${catkin_LIBRARIES}
         )
 
-add_dependencies(range_vision_fusion_lib
-        ${catkin_EXPORTED_TARGETS}
+ament_target_dependencies(range_vision_fusion_lib
+        cv_bridge
+        sensor_msgs
+        image_transport
+        roscpp
+        tf
+        autoware_msgs
+        jsk_recognition_utils
+        eigen_conversions
+        tf_conversions
+        image_geometry
+        jsk_topic_tools
         )
 
 #Fusion node
 add_executable(range_vision_fusion
         src/range_vision_fusion_node.cpp
         )
+
 target_include_directories(range_vision_fusion PRIVATE
         ${OpenCV_INCLUDE_DIR}
-        ${catkin_INCLUDE_DIRS}
         ${autoware_msgs_INCLUDE_DIRS}
         ${Boost_INCLUDE_DIRS}
         include
@@ -111,10 +101,34 @@ target_link_libraries(range_vision_fusion
         range_vision_fusion_lib)
 
 install(TARGETS range_vision_fusion
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch/
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        DESTINATION include/${PROJECT_NAME}/launch/
         PATTERN ".svn" EXCLUDE)
+
+ament_export_dependencies(ament_cmake)
+ament_export_dependencies(cv_bridge)
+ament_export_dependencies(sensor_msgs)
+ament_export_dependencies(image_transport)
+ament_export_dependencies(roscpp)
+ament_export_dependencies(tf)
+ament_export_dependencies(autoware_msgs)
+ament_export_dependencies(jsk_recognition_utils)
+ament_export_dependencies(eigen_conversions)
+ament_export_dependencies(tf_conversions)
+ament_export_dependencies(image_geometry)
+ament_export_dependencies(jsk_topic_tools)
+
+ament_export_include_directories(include)
+
+ament_export_libraries(range_vision_fusion_lib)
+
+if(BUILD_TESTING)
+        find_package(ament_lint_auto REQUIRED)
+        ament_lint_auto_find_test_dependencies()
+endif()
+
+ament_package()
