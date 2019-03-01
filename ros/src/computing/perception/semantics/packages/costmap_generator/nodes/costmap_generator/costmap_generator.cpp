@@ -30,7 +30,7 @@
 
 // headers in local directory
 #include "object_map/object_map_utils.hpp"
-#include "costmap_generator.h"
+#include "costmap_generator/costmap_generator.h"
 
 // Constructor
 CostmapGenerator::CostmapGenerator()

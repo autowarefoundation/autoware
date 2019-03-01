@@ -34,7 +34,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/highgui/highgui.hpp>
 
-#include "object_map_utils.hpp"
+#include "object_map/object_map_utils.hpp"
 
 namespace object_map
 {

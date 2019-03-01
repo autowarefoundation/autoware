@@ -31,7 +31,7 @@
 #include <ros/ros.h>
 #include <gtest/gtest.h>
 
-#include "costmap_generator.h"
+#include "costmap_generator/costmap_generator.h"
 
 class TestSuite : public ::testing::Test
 {

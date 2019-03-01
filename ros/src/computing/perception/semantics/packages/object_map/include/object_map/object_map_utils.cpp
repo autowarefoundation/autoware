@@ -16,7 +16,7 @@
  *
  */
 
-#include "object_map_utils.hpp"
+#include "object_map/object_map_utils.hpp"
 
 namespace object_map
 {
