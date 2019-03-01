@@ -1,0 +1,8 @@
+string type
+sensor_msgs/Image image
+# dimensions of the texture in the real world (in meters)
+float32 dimx
+float32 dimy
+geometry_msgs/Pose relativepose # used to set the coordinate system of the object relative to the texture
+string savefilename # if not empty, will save the resulting pp file to here
+---
