@@ -16,7 +16,7 @@
 namespace integrated_viewer {
     const QString     ImageViewerPlugin::kImageDataType                 = "sensor_msgs/Image";
     const QString     ImageViewerPlugin::kDetectedObjectDataTypeBase    = "autoware_msgs/DetectedObjectArray";
-    const QString     ImageViewerPlugin::kPointDataType                 = "autoware_msgs/PointsImage";
+    const QString     ImageViewerPlugin::kPointDataType                 = "autoware_sensing_msgs/PointsImage";
     const QString     ImageViewerPlugin::kLaneDataType                  = "autoware_msgs/ImageLaneObjects";
     const QString     ImageViewerPlugin::kBlankTopic                    = "-----";
 
@@ -262,7 +262,7 @@ namespace integrated_viewer {
         }
 
         // if selected topic is not blank or empty , start callback function
-        point_sub_ = node_handle_.subscribe<autoware_msgs::PointsImage>(selected_topic,
+        point_sub_ = node_handle_.subscribe<autoware_sensing_msgs::PointsImage>(selected_topic,
                                                                         1,
                                                                         &ImageViewerPlugin::PointCallback,
                                                                         this);
@@ -270,7 +270,7 @@ namespace integrated_viewer {
     } // ImageViewerPlugin::on_point_topic_combo_box__activated()
 
 
-    void ImageViewerPlugin::PointCallback(const autoware_msgs::PointsImage::ConstPtr &msg) {
+    void ImageViewerPlugin::PointCallback(const autoware_sensing_msgs::PointsImage::ConstPtr &msg) {
         points_msg_ = msg;
     } // ImageViewerPlugin::PointCallback()
 
@@ -416,7 +416,7 @@ namespace integrated_viewer {
             topic_index = ui_.point_topic_combo_box_->findText(point_topic);
           }
           ui_.point_topic_combo_box_->setCurrentIndex(topic_index);
-          point_sub_ = node_handle_.subscribe<autoware_msgs::PointsImage>(selected_topic,
+          point_sub_ = node_handle_.subscribe<autoware_sensing_msgs::PointsImage>(selected_topic,
                                                                           1,
                                                                           &ImageViewerPlugin::PointCallback,
                                                                           this);

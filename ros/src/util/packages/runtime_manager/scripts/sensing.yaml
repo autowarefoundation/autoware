@@ -1018,7 +1018,7 @@ params :
         dash      : ''
         delim     : ':='
     - name      : publish_extrinsic_mat
-      desc      : Publish autoware_msgs/ProjectionMatrix message?
+      desc      : Publish autoware_sensing_msgs/ProjectionMatrix message?
       label     : publish extrinsic matrix
       kind      : checkbox
       v         : True

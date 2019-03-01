@@ -7,7 +7,7 @@ The data is read from an Autoware compatible calibration file.
 
 * `sensor_msgs/CameraInfo`, default topic name `/NAMESPACE/camera_info`.
 
-* `autoware_msgs/ProjectionMatrix`, default topic name `/NAMESPACE/camera_info`
+* `autoware_sensing_msgs/ProjectionMatrix`, default topic name `/NAMESPACE/camera_info`
 
 `NAMESPACE` if any.
 

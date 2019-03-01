@@ -35,14 +35,14 @@ void initMatrix(const cv::Mat& cameraExtrinsicMat)
   init_matrix = true;
 }
 
-autoware_msgs::PointsImage pointcloud2_to_image(const sensor_msgs::PointCloud2ConstPtr& pointcloud2,
+autoware_sensing_msgs::PointsImage pointcloud2_to_image(const sensor_msgs::PointCloud2ConstPtr& pointcloud2,
                                                 const cv::Mat& cameraExtrinsicMat, const cv::Mat& cameraMat,
                                                 const cv::Mat& distCoeff, const cv::Size& imageSize)
 {
   int w = imageSize.width;
   int h = imageSize.height;
 
-  autoware_msgs::PointsImage msg;
+  autoware_sensing_msgs::PointsImage msg;
 
   msg.header = pointcloud2->header;
 
@@ -129,11 +129,11 @@ autoware_msgs::PointsImage pointcloud2_to_image(const sensor_msgs::PointCloud2Co
   return msg;
 }
 
-/*autoware_msgs::CameraExtrinsic
+/*autoware_sensing_msgs::CameraExtrinsic
 pointcloud2_to_3d_calibration(const sensor_msgs::PointCloud2ConstPtr& pointcloud2,
             const cv::Mat& cameraExtrinsicMat)
 {
-  autoware_msgs::CameraExtrinsic msg;
+  autoware_sensing_msgs::CameraExtrinsic msg;
   std::vector<double> cali;
   for (int y = 0; y < msg.ysize ; ++y) {
     for (int x = 0; x < msg.xsize ; ++x){

@@ -9,7 +9,7 @@
 #include "autoware_msgs/ImageObj.h"
 #include "autoware_msgs/ImageObjRanged.h"
 #include "autoware_msgs/ImageObjTracked.h"
-#include "autoware_msgs/PointsImage.h"
+#include "autoware_sensing_msgs/PointsImage.h"
 
 #include <string>
 #include <map>
@@ -50,7 +50,7 @@ namespace integrated_viewer
     // The Callback functions
     void ImageCallback(const sensor_msgs::Image::ConstPtr& msg);
     void DetectedObjCallback(const autoware_msgs::DetectedObjectArray::ConstPtr &msg);
-    void PointCallback(const autoware_msgs::PointsImage::ConstPtr &msg);
+    void PointCallback(const autoware_sensing_msgs::PointsImage::ConstPtr &msg);
     void LaneCallback(const autoware_msgs::ImageLaneObjects::ConstPtr& msg);
 
    // The function to refrect modified image on UI
@@ -87,7 +87,7 @@ namespace integrated_viewer
     cv::Mat default_image_;
 
     // Data pointer to hold subscribed data
-    autoware_msgs::PointsImage::ConstPtr points_msg_;
+    autoware_sensing_msgs::PointsImage::ConstPtr points_msg_;
     autoware_msgs::DetectedObjectArray::ConstPtr detected_objects_msg_;
     autoware_msgs::ImageLaneObjects::ConstPtr lane_msg_;
 

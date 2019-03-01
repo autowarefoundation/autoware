@@ -21,7 +21,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <sensor_msgs/Image.h>
-#include "autoware_msgs/ProjectionMatrix.h"
+#include "autoware_sensing_msgs/ProjectionMatrix.h"
 
 static cv::Mat CameraExtrinsicMat;
 static cv::Mat CameraMat;
@@ -44,7 +44,7 @@ static bool instrinsics_parsed_;
 static bool extrinsics_parsed_;
 
 static sensor_msgs::CameraInfo camera_info_msg_;
-static autoware_msgs::ProjectionMatrix extrinsic_matrix_msg_;
+static autoware_sensing_msgs::ProjectionMatrix extrinsic_matrix_msg_;
 
 void tfRegistration(const cv::Mat &camExtMat, const ros::Time &timeStamp)
 {
@@ -250,7 +250,7 @@ int main(int argc, char *argv[])
 
   camera_info_pub = n.advertise<sensor_msgs::CameraInfo>(camera_info_name, 10, true);
 
-  projection_matrix_pub = n.advertise<autoware_msgs::ProjectionMatrix>(projection_matrix_topic, 10, true);
+  projection_matrix_pub = n.advertise<autoware_sensing_msgs::ProjectionMatrix>(projection_matrix_topic, 10, true);
 
   ros::spin();
 

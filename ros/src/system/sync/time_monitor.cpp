@@ -27,7 +27,7 @@
 #include "visualization_msgs/MarkerArray.h"
 
 #include "autoware_msgs/ImageObj.h"
-#include "autoware_msgs/PointsImage.h"
+#include "autoware_sensing_msgs/PointsImage.h"
 #include "autoware_msgs/ImageObjRanged.h"
 #include "autoware_msgs/ImageObjTracked.h"
 #include "autoware_msgs/ObjLabel.h"
@@ -165,9 +165,9 @@ public:
     TimeManager(int);
     void image_raw_callback(const sensor_msgs::Image::ConstPtr& image_raw_msg);
     void points_raw_callback(const sensor_msgs::PointCloud2::ConstPtr& points_raw_msg);
-    void points_image_callback(const autoware_msgs::PointsImage::ConstPtr& points_image_msg);
+    void points_image_callback(const autoware_sensing_msgs::PointsImage::ConstPtr& points_image_msg);
     void vscan_points_callback(const sensor_msgs::PointCloud2::ConstPtr& vscan_points_msg);
-    void vscan_image_callback(const autoware_msgs::PointsImage::ConstPtr& vscan_image_msg);
+    void vscan_image_callback(const autoware_sensing_msgs::PointsImage::ConstPtr& vscan_image_msg);
     void image_obj_callback(const autoware_msgs::ImageObj::ConstPtr& image_obj_msg);
     void image_obj_ranged_callback(const autoware_msgs::ImageObjRanged::ConstPtr& image_obj_ranged_msg);
     void image_obj_tracked_callback(const autoware_msgs::ImageObjTracked::ConstPtr& image_obj_tracked_msg);
@@ -248,7 +248,7 @@ void TimeManager::points_raw_callback(const sensor_msgs::PointCloud2::ConstPtr& 
     points_raw_.push_front(points_raw_msg->header.stamp, get_walltime_now());
 }
 
-void TimeManager::points_image_callback(const autoware_msgs::PointsImage::ConstPtr& points_image_msg) {
+void TimeManager::points_image_callback(const autoware_sensing_msgs::PointsImage::ConstPtr& points_image_msg) {
 //    ROS_INFO("vscan_image: \t\t\t%d.%d", vscan_image_msg->header.stamp.sec, vscan_image_msg->header.stamp.nsec);
     points_image_.push_front(points_image_msg->header.stamp, get_walltime_now());
 }
@@ -258,7 +258,7 @@ void TimeManager::vscan_points_callback(const sensor_msgs::PointCloud2::ConstPtr
     vscan_points_.push_front(vscan_points_msg->header.stamp, get_walltime_now());
 }
 
-void TimeManager::vscan_image_callback(const autoware_msgs::PointsImage::ConstPtr& vscan_image_msg) {
+void TimeManager::vscan_image_callback(const autoware_sensing_msgs::PointsImage::ConstPtr& vscan_image_msg) {
 //    ROS_INFO("vscan_image: \t\t\t%d.%d", vscan_image_msg->header.stamp.sec, vscan_image_msg->header.stamp.nsec);
     vscan_image_.push_front(vscan_image_msg->header.stamp, get_walltime_now());
 }

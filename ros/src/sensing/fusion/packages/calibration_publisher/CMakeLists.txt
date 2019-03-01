@@ -3,14 +3,14 @@ project(calibration_publisher)
 
 find_package(autoware_build_flags REQUIRED)
 
-find_package(autoware_msgs REQUIRED)
+find_package(autoware_sensing_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         roscpp
         std_msgs
         sensor_msgs
         cv_bridge
         image_transport
-        autoware_msgs
+        autoware_sensing_msgs
         tf
         )
 
@@ -23,13 +23,13 @@ catkin_package(
         sensor_msgs
         cv_bridge
         image_transport
-        autoware_msgs
+        autoware_sensing_msgs
         tf
 )
 
 include_directories(
         ${catkin_INCLUDE_DIRS}
-        ${autoware_msgs_INCLUDE_DIRS}
+        ${autoware_sensing_msgs_INCLUDE_DIRS}
         ${OpenCV_INCLUDE_DIRS}
 )
 

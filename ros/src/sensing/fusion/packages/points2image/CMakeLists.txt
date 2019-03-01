@@ -5,7 +5,7 @@ include(FindPkgConfig)
 
 find_package(autoware_build_flags REQUIRED)
 
-find_package(autoware_msgs REQUIRED)
+find_package(autoware_sensing_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         roscpp
         std_msgs
@@ -16,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
         tf
         pcl_ros
         pcl_conversions
-        autoware_msgs
+        autoware_sensing_msgs
         )
 
 find_package(OpenCV REQUIRED)
@@ -38,7 +38,7 @@ catkin_package(
         CATKIN_DEPENDS roscpp
         std_msgs
         sensor_msgs
-        autoware_msgs
+        autoware_sensing_msgs
         rosinterface
         fastvirtualscan
         cv_bridge
@@ -52,7 +52,7 @@ set(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 include_directories(
         include
         ${catkin_INCLUDE_DIRS}
-        ${autoware_msgs_INCLUDE_DIRS}
+        ${autoware_sensing_msgs_INCLUDE_DIRS}
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
 )

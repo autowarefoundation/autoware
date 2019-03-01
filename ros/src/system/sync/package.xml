@@ -12,12 +12,14 @@
   <build_depend>lidar_tracker</build_depend>
   <build_depend>points2image</build_depend>
   <!-- <build_depend>scan2image</build_depend> -->
+  <build_depend>autoware_sensing_msgs</build_depend>
   <run_depend>message_runtime</run_depend>
   <run_depend>std_msgs</run_depend>
     <run_depend>autoware_sync_msgs</run_depend>
   <run_depend>lidar_tracker</run_depend>
   <run_depend>points2image</run_depend>
   <!-- <run_depend>scan2image</run_depend> -->
+  <run_depend>autoware_sensing_msgs</run_depend>
   <export>
   </export>
 </package>

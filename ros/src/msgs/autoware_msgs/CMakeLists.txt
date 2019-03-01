@@ -25,7 +25,7 @@ add_message_files(
             ImageLaneObjects.msg
             ImageObjects.msg
             LaneArray.msg
-            PointsImage.msg
+            
             ScanImage.msg
             Signals.msg
             TunedResult.msg
@@ -43,7 +43,7 @@ add_message_files(
             NDTStat.msg
             ObjLabel.msg
             ObjPose.msg
-            ProjectionMatrix.msg
+            
             VscanTracked.msg
             VscanTrackedArray.msg
             Waypoint.msg

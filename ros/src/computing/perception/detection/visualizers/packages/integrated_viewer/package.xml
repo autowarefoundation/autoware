@@ -10,7 +10,7 @@
 
     <buildtool_depend>catkin</buildtool_depend>
     <buildtool_depend>autoware_build_flags</buildtool_depend>
-    <build_depend>autoware_msgs</build_depend>
+      <build_depend>autoware_sensing_msgs</build_depend>
     <build_depend>std_msgs</build_depend>
     <build_depend>rviz</build_depend>
     <build_depend>qtbase5-dev</build_depend>
@@ -19,7 +19,7 @@
     <build_depend>roscpp</build_depend>
     <build_depend>sensor_msgs</build_depend>
 
-    <run_depend>autoware_msgs</run_depend>
+      <run_depend>autoware_sensing_msgs</run_depend>
     <run_depend>std_msgs</run_depend>
     <run_depend>rviz</run_depend>
     <run_depend>libqt5-core</run_depend>
