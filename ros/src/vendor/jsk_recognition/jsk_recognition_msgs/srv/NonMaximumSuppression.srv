@@ -1,0 +1,5 @@
+jsk_recognition_msgs/Rect[] rect
+float32 threshold
+---
+jsk_recognition_msgs/Rect[] bbox
+int64 bbox_count
