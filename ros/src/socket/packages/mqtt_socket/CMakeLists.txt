@@ -4,7 +4,7 @@ project(mqtt_socket)
 
 find_package(autoware_build_flags REQUIRED)
 
-find_package(autoware_msgs REQUIRED)
+find_package(autoware_socket_msgs REQUIRED)
 
 find_package(tablet_socket_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
@@ -12,14 +12,14 @@ find_package(catkin REQUIRED COMPONENTS
         roslib
         std_msgs
         autoware_can_msgs
-        autoware_msgs
+        autoware_socket_msgs
         )
 
 catkin_package(CATKIN_DEPENDS
         roscpp
         roslib
         std_msgs
-        autoware_msgs
+        autoware_socket_msgs
         autoware_can_msgs
         tablet_socket_msgs
         )
@@ -31,7 +31,7 @@ if (EXISTS /usr/include/mosquitto.h)
             include
             ${catkin_INCLUDE_DIRS}
             ${tablet_socket_msgs_INCLUDE_DIRS}
-            ${autoware_msgs_INCLUDE_DIRS}
+            ${autoware_socket_msgs_INCLUDE_DIRS}
     )
 
     add_executable(mqtt_sender nodes/mqtt_sender/mqtt_sender.cpp)

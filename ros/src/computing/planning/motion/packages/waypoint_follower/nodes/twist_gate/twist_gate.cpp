@@ -40,7 +40,7 @@
 #include <std_msgs/String.h>
 #include <geometry_msgs/TwistStamped.h>
 
-#include "autoware_msgs/RemoteCmd.h"
+#include "autoware_socket_msgs/RemoteCmd.h"
 #include "autoware_planning_msgs/VehicleCmd.h"
 #include "tablet_socket_msgs/mode_cmd.h"
 #include "tablet_socket_msgs/gear_cmd.h"
@@ -54,7 +54,7 @@
 
 class TwistGate
 {
-  using remote_msgs_t = autoware_msgs::RemoteCmd;
+  using remote_msgs_t = autoware_socket_msgs::RemoteCmd;
   using vehicle_cmd_msg_t = autoware_planning_msgs::VehicleCmd;
 
   public:

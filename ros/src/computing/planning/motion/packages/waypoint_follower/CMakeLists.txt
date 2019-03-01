@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
         pcl_conversions
         sensor_msgs
         autoware_planning_msgs
+        autoware_socket_msgs
         autoware_config_msgs
         tablet_socket_msgs
         autoware_health_checker
@@ -38,6 +39,7 @@ catkin_package(
         tf
         geometry_msgs
         autoware_planning_msgs
+        autoware_socket_msgs
         autoware_config_msgs
         pcl_ros
         pcl_conversions
@@ -56,6 +58,7 @@ include_directories(
         include
         ${autoware_config_msgs_INCLUDE_DIRS}
         ${autoware_planning_msgs_INCLUDE_DIRS}
+        ${autoware_socket_msgs_INCLUDE_DIRS}
         ${tablet_socket_msgs_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
 )

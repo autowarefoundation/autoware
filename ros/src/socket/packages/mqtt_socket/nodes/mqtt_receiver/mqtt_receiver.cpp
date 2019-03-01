@@ -39,7 +39,7 @@
 #include <yaml-cpp/yaml.h>
 using namespace std;
 #include "mqtt_socket/mqtt_setting.hpp"
-#include "autoware_msgs/RemoteCmd.h"
+#include "autoware_socket_msgs/RemoteCmd.h"
 
 static ros::Publisher remote_cmd_pub;
 
@@ -61,7 +61,7 @@ MqttReceiver::MqttReceiver() :
     node_handle_("~")
 {
   // ROS Publisher
-  remote_cmd_pub = node_handle_.advertise<autoware_msgs::RemoteCmd>("/remote_cmd", 1);
+  remote_cmd_pub = node_handle_.advertise<autoware_socket_msgs::RemoteCmd>("/remote_cmd", 1);
 
   // Load Config
   MqttReceiver::load_config();
@@ -139,7 +139,7 @@ static void MqttReceiver::on_message(struct mosquitto *mosq, void *obj, const st
     boost::algorithm::split(cmds, msg_str, boost::is_any_of(","));
 
     if(cmds.size() == 8) {
-      autoware_msgs::RemoteCmd msg;
+      autoware_socket_msgs::RemoteCmd msg;
       msg.vehicle_cmd.steer_cmd.steer = stof(cmds[0]) * steer_max_val;
       msg.vehicle_cmd.accel_cmd.accel = stof(cmds[1]) * accel_max_val;
       msg.vehicle_cmd.brake_cmd.brake = stof(cmds[2]) * brake_max_val;
