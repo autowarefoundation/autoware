@@ -1,0 +1,4 @@
+string ground_frame_id  # to create solid model
+jsk_recognition_msgs/BoundingBox box  # to crop mesh
+---
+bool success

@@ -1,0 +1,4 @@
+sensor_msgs/PointCloud2 reference_cloud
+sensor_msgs/PointCloud2 target_cloud
+---
+jsk_recognition_msgs/ICPResult result
