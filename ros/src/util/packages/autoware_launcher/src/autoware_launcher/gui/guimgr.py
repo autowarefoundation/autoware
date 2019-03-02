@@ -22,7 +22,7 @@ class AwQtGuiManager(object):
         for filepath in os.listdir(myutils.package("src/autoware_launcher/gui/plugins")):
             fkey, fext = os.path.splitext(os.path.basename(filepath))
             if (fkey != "__init__") and (fext == ".py"):
-                logger.info("load plugin module: " + fkey)
+                logger.debug("load plugin module: " + fkey)
                 module = importlib.import_module("autoware_launcher.gui.plugins." + fkey)
                 for wkey, wcls in module.plugin_widgets().items():
                      self.__widgets[fkey + "." + wkey] = wcls

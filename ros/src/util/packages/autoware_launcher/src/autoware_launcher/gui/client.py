@@ -43,13 +43,14 @@ class AwQtGuiClient(object):
 
 
 
-    def start2(self):
+    def start(self, profile=None, skin=None):
 
         application = QtWidgets.QApplication(self.__sysarg)
         resolution = application.desktop().screenGeometry()
         resolution = min(resolution.width(), resolution.height())
 
-        with open(myutils.package("resources/skins/autoware.css")) as fp:
+        skin = skin or "autoware"
+        with open(myutils.package("resources/skins/{}.css").format(skin)) as fp:
             stylesheet = fp.read()
         stylesheet += "* { font-size: " + str(resolution/100) + "px; }"
         application.setStyleSheet(stylesheet)
@@ -139,10 +140,10 @@ class AwQtGuiClient(object):
         self.__treeview.register_select_listener(self.__process)
         self.__treeview.register_select_listener(self.__control)
 
-        if len(self.__sysarg) < 2:
-            self.__server.make_profile("root/default")
+        if profile:
+            self.__server.load_profile(profile)
         else:
-            self.__server.load_profile(self.__sysarg[1])
+            self.__server.make_profile("root/default")
 
         return application.exec_()
 
