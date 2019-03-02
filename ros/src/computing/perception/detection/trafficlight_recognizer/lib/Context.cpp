@@ -22,7 +22,7 @@ Context::Context(cv::Point aRedCenter, cv::Point aYellowCenter, cv::Point aGreen
 bool Context::CompareContext(const Context in_context_a, const Context in_context_b)
 {
 	/* if lampRadius is bigger, context is smaller */
-	return in_context_a.lampRadius >= in_context_b.lampRadius;
+	return in_context_a.lampRadius > in_context_b.lampRadius;
 } /* static bool compareContext() */
 
 
@@ -35,7 +35,7 @@ void Context::SetContexts(std::vector<Context> &out_signal_contexts,
 	std::vector<autoware_msgs::ExtractedPosition> signals_lamps;
 	std::vector<autoware_msgs::ExtractedPosition>::iterator lamp_iterator;
 
-	std::vector<int> lane_id_vector;
+	std::vector<int> pole_id_vector;
 
 	for (unsigned int i = 0; i < in_lamp_signals_positions->Signals.size(); i++)
 	{
@@ -52,18 +52,18 @@ void Context::SetContexts(std::vector<Context> &out_signal_contexts,
 		tmp_lamp_position.plId = in_lamp_signals_positions->Signals.at(i).plId;
 		signals_lamps.push_back(tmp_lamp_position);
 
-		lane_id_vector.push_back(tmp_lamp_position.linkId); //store lanes ids, to later identify signals contexts
+		pole_id_vector.push_back(tmp_lamp_position.plId); //store lanes ids, to later identify signals contexts
 	}
 
 	//get unique lane ids
-	std::sort(lane_id_vector.begin(), lane_id_vector.end());
-	std::vector<int>::iterator new_end = std::unique(lane_id_vector.begin(), lane_id_vector.end());
-	lane_id_vector.erase(new_end, lane_id_vector.end());
+	std::sort(pole_id_vector.begin(), pole_id_vector.end());
+	std::vector<int>::iterator new_end = std::unique(pole_id_vector.begin(), pole_id_vector.end());
+	pole_id_vector.erase(new_end, pole_id_vector.end());
 
 	std::vector<Context> final_signal_contexts;
 
 	//one traffic signal per lane, check each lane and find the bulb belonging to this lane (this signal Context)
-	for (unsigned int ctx_idx = 0; ctx_idx < lane_id_vector.size(); ctx_idx++)
+	for (unsigned int ctx_idx = 0; ctx_idx < pole_id_vector.size(); ctx_idx++)
 	{
 		Context current_signal_context;
 		int min_radius = INT_MAX;
@@ -83,7 +83,7 @@ void Context::SetContexts(std::vector<Context> &out_signal_contexts,
 			double map_y = lamp_iterator->y;
 			double map_z = lamp_iterator->z;
 			int radius = lamp_iterator->radius;
-			if (lamp_iterator->linkId == lane_id_vector.at(ctx_idx) &&
+			if (lamp_iterator->plId == pole_id_vector.at(ctx_idx) &&
 			    0 < img_x - radius - 1.5 * radius && img_x + radius + 1.5 * radius < in_image_width &&
 			    0 < img_y - radius - 1.5 * radius && img_y + radius + 1.5 * radius < in_image_height)
 			{
