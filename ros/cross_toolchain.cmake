@@ -3,7 +3,7 @@ set(CMAKE_SYSTEM_VERSION 1)
 set(CMAKE_SYSTEM_PROCESSOR aarch64)
 set(CMAKE_CROSSCOMPILING ON)
 set(CMAKE_SYSROOT $ENV{AUTOWARE_SYSROOT})
-set(CMAKE_PREFIX_PATH "${CMAKE_SYSROOT}/opt/ros/kinetic")
+#set(CMAKE_PREFIX_PATH "${CMAKE_SYSROOT}/opt/ros/kinetic")
 
 # specify the cross compiler
 set(CMAKE_C_COMPILER "/usr/bin/${CMAKE_SYSTEM_PROCESSOR}-linux-gnu-gcc")

@@ -2,6 +2,11 @@
 Changelog for package nmea_navsat
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.10.0 (2019-01-17)
+-------------------
+* Added notes about Indigo being deprecated
+* Contributors: Esteve Fernandez
+
 1.9.1 (2018-11-06)
 ------------------
 

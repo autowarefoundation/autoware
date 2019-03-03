@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(vision_lane_detect)
 
+
+find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         cv_bridge
         image_transport
@@ -23,6 +25,7 @@ catkin_package(
 
 include_directories(
         ${catkin_INCLUDE_DIRS}
+        ${autoware_msgs_INCLUDE_DIRS}
         nodes/vision_lane_detect
         ${OpenCV_INCLUDE_DIRS}
 )
