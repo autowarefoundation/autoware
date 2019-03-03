@@ -1,3 +1,4 @@
+import rospkg
 import os
 import yaml
 
@@ -6,11 +7,9 @@ import yaml
 def userhome(path = ""):
     return os.path.abspath(os.path.join(os.path.expanduser("~"), path))
 
-def autoware(path = ""):
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), 8 * "../", path))
-
 def package(path = ""):
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), 3 * "../", path))
+    rospack = rospkg.RosPack()
+    return os.path.join(rospack.get_path("autoware_launcher"), path)
 
 def plugins():
     return os.path.join(package(), "plugins")
