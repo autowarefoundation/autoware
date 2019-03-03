@@ -57,4 +57,4 @@ class LaunchFileSelect(QtWidgets.QWizardPage):
             if self.pkgname != pkgname:
                 self.pkgname = pkgname
                 pkgpath = self.rospack.get_path(pkgname)
-                print "Update: " + pkgpath
+                print("Update: " + pkgpath)

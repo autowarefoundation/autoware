@@ -43,7 +43,7 @@ class AwPluginNode(basetree.AwBaseNode):
         self.__frame  = None
 
     def dump(self):
-        print yaml.safe_dump(self.todict())
+        print(yaml.safe_dump(self.todict()))
 
     def todict(self):
         return \
@@ -86,7 +86,7 @@ class AwPluginNode(basetree.AwBaseNode):
         return self.__frame
 
     def default_config(self):
-        values = {"str":"", "int":"0", "bool":False}
+        values = {"str":"", "int":0, "real":0.0, "bool":False}
         def default_value(data):
             value = data.rest.get("default")
             if value is None:
