@@ -43,7 +43,7 @@ class AwPluginNode(basetree.AwBaseNode):
         self.__frame  = None
 
     def dump(self):
-        print yaml.safe_dump(self.todict())
+        print(yaml.safe_dump(self.todict()))
 
     def todict(self):
         return \

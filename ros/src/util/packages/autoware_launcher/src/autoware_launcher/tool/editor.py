@@ -88,7 +88,7 @@ class PluginEditWidget(QtWidgets.QWidget):
         data["panel"]["widget"] = "node.panel"
         data["panel"]["frames"] = views
         text = yaml.dump(data, default_flow_style=None)
-        print text
+        print(text)
         clipboard = QtWidgets.QApplication.clipboard()
         clipboard.setText(text)
 

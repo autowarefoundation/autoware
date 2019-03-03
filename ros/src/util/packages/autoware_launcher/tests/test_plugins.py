@@ -12,9 +12,9 @@ def test_plugin_type():
         plugin = plugins.find(plugin_path)
         fields = plugin.fields()
         for frame in plugin.panel().frames:
-            print plugin.path() + " " + str(frame.target)
+            print(plugin.path() + " " + str(frame.target))
             yield ok_, guimgr.widget(frame).validate_argtypes(fields, frame)
-            print
+            print()
 
 def test_plugin_field():
     rospack = rospkg.RosPack()
@@ -28,9 +28,9 @@ def test_plugin_field():
             root = xtree.parse(path).getroot()
             xmlargs = {child.attrib["name"] for child in root if child.tag == "arg"}
             ymlargs = {arg.name for arg in plugin.args()}
-            print plugin.path()
+            print(plugin.path())
             yield ok_, (xmlargs == ymlargs)
-            print
+            print()
             if xmlargs != ymlargs:
-                print ymlargs
-                print xmlargs
+                print(ymlargs)
+                print(xmlargs)
