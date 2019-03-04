@@ -51,6 +51,7 @@ private:
   // variables
   bool engage_;
   bool terminate_thread_;
+  ros::Time engage_start_;
   std::thread* thread_read_status_;
   std::thread* thread_read_keyboard_;
   std::thread* thread_publish_status_;

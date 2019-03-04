@@ -77,6 +77,7 @@ void G30esliInterface::engageCallback(const std_msgs::BoolConstPtr& msg)
   if (!engage_ && engaging)
   {
     engage_ = true;
+    engage_start_ = ros::Time::now();
     ROS_INFO("TOPIC: Engaged");
   }
   else if (engage_ && !engaging)
@@ -111,6 +112,7 @@ void G30esliInterface::ds4Callback(const ds4_msgs::DS4ConstPtr& msg)
   if (msg->option && !engage_)
   {
     engage_ = true;
+    engage_start_ = ros::Time::now();
     ROS_INFO("JOYSTICK: Engaged");
   }
   if (msg->share && engage_)
@@ -130,7 +132,8 @@ void G30esliInterface::readStatus()
 
     // accel/brake override, switch to manual mode
     engage_mutex_.lock();
-    if (g30esli_ros_.checkOverride() && engage_)
+    double dt = (ros::Time::now() - engage_start_).toSec();
+    if (g30esli_ros_.checkOverride() && engage_ && (dt > 0.3))  // 300ms wait
     {
       engage_ = false;
       ROS_WARN("OVERRIDE: Disengaged");
@@ -143,6 +146,7 @@ void G30esliInterface::readStatus()
 // change the mode to manual mode or auto drive mode
 void G30esliInterface::readKeyboard()
 {
+  ros::Rate rate = ros::Rate(100);
   while (!terminate_thread_)
   {
     if (kbhit())
@@ -154,6 +158,7 @@ void G30esliInterface::readKeyboard()
         if (!engage_)
         {
           engage_ = true;
+          engage_start_ = ros::Time::now();
           ROS_INFO("KEYBOARD: Engaged");
         }
         engage_mutex_.unlock();
@@ -181,13 +186,14 @@ void G30esliInterface::readKeyboard()
         }
       }
     }
-    usleep(10);
+    rate.sleep();
   }
 }
 
 // publish vehicle status
 void G30esliInterface::publishStatus()
 {
+  ros::Rate rate = ros::Rate(100);
   std_msgs::Float32 battery;
   while (!terminate_thread_)
   {
@@ -195,7 +201,7 @@ void G30esliInterface::publishStatus()
     vehicle_status_pub_.publish(g30esli_ros_.getVehicleStatus());
     current_twist_pub_.publish(g30esli_ros_.getCurrentTwist());
     battery_pub_.publish(battery);
-    usleep(10000);
+    rate.sleep();
   }
 }
 
