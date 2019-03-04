@@ -263,7 +263,7 @@ subs :
              user_category : 'Advanced'
           pulse_mode : { prop: 0 }
           window_rejection : { flags: [ nl ] }
-          mode_xyzir : 
+          pointcloud_mode : 
              prop  : 0
              user_category : 'Misc.'
           replay : { prop  : 0 }
@@ -552,18 +552,19 @@ params :
       label : 'lidar operation mode'
       kind  : menu
       choices:
-      - 512x10
-      - 1024x10 (default)
-      - 2048x10
-      - 512x20
-      - 1024x20
+      - '512x10'
+      - '1024x10'
+      - '2048x10'
+      - '512x20'
+      - '1024x20'
       descs :
-      - 512 points horizontal, 10Hz
-      - 1024 points horizontal, 10Hz
-      - 2048 points horizontal, 10Hz
-      - 512 points horizontal, 20Hz
-      - 1024 points horizontal, 20Hz
-      v     : 1
+      - '512 points horizontal, 10Hz'
+      - '1024 points horizontal, 10Hz'
+      - '2048 points horizontal, 10Hz'
+      - '512 points horizontal, 20Hz'
+      - '1024 points horizontal, 20Hz'
+      choices_type: str
+      v     : '1024x10'
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -589,14 +590,29 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name  : mode_xyzir
-      desc  : Velodyne compatible pointcloud mode
-      label : 'Velodyne compatible pointcloud mode?'
-      kind      : checkbox
-      v         : True
-      cmd_param :
-        dash        : ''
-        delim       : ':='
+    - name  : pointcloud_mode
+      desc  : Output pointcloud mode
+      label : 'Output pointcloud mode?'
+      kind  : menu
+      choices:
+      - 'NATIVE'
+      - 'XYZ'
+      - 'XYZI'
+      - 'XYZIR'
+      - 'XYZIF'
+      - 'XYZIFN'
+      descs :
+      - 'Ouster native pointcloud (x,y,z,intensity,reflectance,timestamp)'
+      - 'XYZ mode (x,y,z)'
+      - 'XYZI mode (x,y,z,intensity)'
+      - 'XYZIR mode (x,y,z,intensity,ring)'
+      - 'XYZIF mode (x,y,z,intensity,reflectance)'
+      - 'XYZIFN mode (x,y,z,intensity,reflectance,ambient noise)'
+      choices_type: str
+      v     : 'XYZIR'
+      cmd_param:
+        dash     : ''
+        delim    : ':='
     - name  : replay
       desc  : For playing rosbag files of raw ouster data
       label : 'Play rawdata on rosbag?'
@@ -1018,7 +1034,7 @@ params :
         dash      : ''
         delim     : ':='
     - name      : publish_extrinsic_mat
-      desc      : Publish autoware_msgs/projection_matrix message?
+      desc      : Publish autoware_msgs/ProjectionMatrix message?
       label     : publish extrinsic matrix
       kind      : checkbox
       v         : True
