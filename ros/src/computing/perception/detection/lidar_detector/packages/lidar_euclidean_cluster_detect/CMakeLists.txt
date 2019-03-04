@@ -1,44 +1,25 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(lidar_euclidean_cluster_detect)
 
 
 find_package(autoware_build_flags REQUIRED)
 
 find_package(autoware_msgs REQUIRED)
-find_package(catkin REQUIRED COMPONENTS
-        pcl_ros
-        roscpp
-        geometry_msgs
-        std_msgs
-        sensor_msgs
-        tf
-        vector_map_server
-        grid_map_ros
-        grid_map_cv
-        grid_map_msgs
-        autoware_msgs
-        )
+find_package(pcl_ros REQUIRED)
+find_package(roscpp REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(tf REQUIRED)
+find_package(vector_map_server REQUIRED)
+find_package(grid_map_ros REQUIRED)
+find_package(grid_map_cv REQUIRED)
+find_package(grid_map_msgs REQUIRED)
+find_package(ament_cmake REQUIRED)
 
 find_package(OpenMP)
 find_package(OpenCV REQUIRED)
 
 set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
-
-catkin_package(
-        CATKIN_DEPENDS
-        pcl_ros
-        roscpp
-        geometry_msgs
-        std_msgs
-        sensor_msgs
-        autoware_msgs
-        tf
-        vector_map_server
-        grid_map_ros
-        grid_map_cv
-        grid_map_msgs
-        INCLUDE_DIRS include
-)
 
 # Resolve system dependency on yaml-cpp, which apparently does not
 # provide a CMake find_package() module.
@@ -50,7 +31,6 @@ link_directories(${YAML_CPP_LIBRARY_DIRS})
 
 include_directories(
         include
-        ${catkin_INCLUDE_DIRS}
         ${autoware_msgs_INCLUDE_DIRS}
         ${OpenCV_INCLUDE_DIRS}
 )
@@ -81,7 +61,6 @@ if (${CUDA_FOUND})
 
     target_link_libraries(lidar_euclidean_cluster_detect
             ${OpenCV_LIBRARIES}
-            ${catkin_LIBRARIES}
             ${PCL_LIBRARIES}
             ${YAML_CPP_LIBRARIES}
             gpu_euclidean_clustering)
@@ -89,14 +68,23 @@ if (${CUDA_FOUND})
 else ()
     target_link_libraries(lidar_euclidean_cluster_detect
             ${OpenCV_LIBRARIES}
-            ${catkin_LIBRARIES}
             ${PCL_LIBRARIES}
             ${YAML_CPP_LIBRARIES})
 
 endif ()
 
-add_dependencies(lidar_euclidean_cluster_detect
-        ${catkin_EXPORTED_TARGETS}
+ament_target_dependencies(lidar_euclidean_cluster_detect
+        pcl_ros
+        roscpp
+        geometry_msgs
+        std_msgs
+        sensor_msgs
+        autoware_msgs
+        tf
+        vector_map_server
+        grid_map_ros
+        grid_map_cv
+        grid_map_msgs
         )
 
 if (OPENMP_FOUND)
@@ -108,7 +96,31 @@ endif ()
 
 install(TARGETS
         lidar_euclidean_cluster_detect
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin
 )
+
+ament_export_dependencies(ament_cmake)
+ament_export_dependencies(pcl_ros)
+ament_export_dependencies(roscpp)
+ament_export_dependencies(geometry_msgs)
+ament_export_dependencies(std_msgs)
+ament_export_dependencies(sensor_msgs)
+ament_export_dependencies(autoware_msgs)
+ament_export_dependencies(tf)
+ament_export_dependencies(vector_map_server)
+ament_export_dependencies(grid_map_ros)
+ament_export_dependencies(grid_map_cv)
+ament_export_dependencies(grid_map_msgs)
+
+ament_export_include_directories(include)
+
+ament_export_libraries(lidar_euclidean_cluster_detect)
+
+if(BUILD_TESTING)
+        find_package(ament_lint_auto REQUIRED)
+        ament_lint_auto_find_test_dependencies()
+endif()
+
+ament_package()
