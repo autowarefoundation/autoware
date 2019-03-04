@@ -12,6 +12,7 @@
   <build_depend>autoware_system_msgs</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>diagnostic_msgs</build_depend>
+  <build_depend>rosgraph_msgs</build_depend>
   <build_depend>rostest</build_depend>
   <build_depend>rosunit</build_depend>
   <build_depend>jsk_rviz_plugins</build_depend>
@@ -19,10 +20,12 @@
   <build_export_depend>roscpp</build_export_depend>
   <build_export_depend>diagnostic_msgs</build_export_depend>
   <build_export_depend>jsk_rviz_plugins</build_export_depend>
+  <build_export_depend>rosgraph_msgs</build_export_depend>
   <exec_depend>autoware_system_msgs</exec_depend>
   <exec_depend>diagnostic_msgs</exec_depend>
   <exec_depend>roscpp</exec_depend>
   <exec_depend>jsk_rviz_plugins</exec_depend>
+  <exec_depend>rosgraph_msgs</exec_depend>
 
   <export>
   </export>
