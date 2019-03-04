@@ -32,11 +32,23 @@ subs :
         probe:
         run  : roslaunch pointgrey_camera_driver camera.launch
 
+      - name : FLIR ADK
+        desc : Driver for Boson FLIR Thermal camera
+        probe:
+        run  : roslaunch autoware_pointgrey_drivers flir_adk.launch
+        param: fliradk_params
+
       - name : PointGrey LadyBug 5
         desc : PointGrey LadyBug 5 desc sample
         probe:
         run  : roslaunch autoware_pointgrey_drivers ladybug.launch
         param: ladybug_params
+      
+      - name : PointGrey Spinnaker
+        desc : PointGrey Spinnaker desc sample
+        probe:
+        run  : roslaunch autoware_pointgrey_drivers spinnaker.launch
+        param: spinnaker_params
 
       - name : USB Generic
         desc : USB Generic desc sample
@@ -134,7 +146,7 @@ subs :
       - name : Velodyne HDL-64E-S2
         desc : Launches the driver for the selected Velodyne sensor and publishes the pointcloud in points_raw. To select a custom calibration file press the [config] button.
         probe: 'ifconfig eth0 | grep "192.168.1.105" > /dev/null'
-        run  : roslaunch velodyne_pointcloud velodyne_hdl64e_s2.launch
+        run  : roslaunch runtime_manager velodyne_hdl64e_s2.launch
         param: calibration_path
         gui  :
           flags : [ SIGTERM, kill_children ]
@@ -144,7 +156,7 @@ subs :
       - name : Velodyne HDL-64E-S3
         desc : Launches the driver for the selected Velodyne sensor and publishes the pointcloud in points_raw. To select a custom calibration file press the [config] button.
         probe: 'ifconfig eth0 | grep "192.168.1.105" > /dev/null'
-        run  : roslaunch velodyne_pointcloud velodyne_hdl64e_s3.launch
+        run  : roslaunch runtime_manager velodyne_hdl64e_s3.launch
         param: calibration_path
         gui  :
           flags : [ SIGTERM, kill_children ]
@@ -154,7 +166,7 @@ subs :
       - name : Velodyne HDL-32E
         desc : Launches the driver for the selected Velodyne sensor and publishes the pointcloud in points_raw. To select a custom calibration file press the [config] button.
         probe: 'ping -c 1 -W 1 192.168.1.201 > /dev/null'
-        run  : roslaunch velodyne_pointcloud velodyne_hdl32e.launch
+        run  : roslaunch runtime_manager velodyne_hdl32e.launch
         param: calibration_path
         gui  :
           flags : [ SIGTERM, kill_children ]
@@ -164,7 +176,7 @@ subs :
       - name : Velodyne VLP-32C
         desc : Launches the driver for the selected Velodyne sensor and publishes the pointcloud in points_raw. To select a custom calibration file press the [config] button.
         probe: 'ping -c 1 -W 1 192.168.1.201 > /dev/null'
-        run  : roslaunch velodyne_pointcloud velodyne_vlp32c.launch
+        run  : roslaunch runtime_manager velodyne_vlp32c.launch
         param: calibration_path
         gui  :
           flags : [ SIGTERM, kill_children ]
@@ -174,7 +186,7 @@ subs :
       - name : Velodyne VLP-16
         desc : Launches the driver for the selected Velodyne sensor and publishes the pointcloud in points_raw. To select a custom calibration file press the [config] button.
         probe:
-        run  : roslaunch velodyne_pointcloud velodyne_vlp16.launch
+        run  : roslaunch runtime_manager velodyne_vlp16.launch
         param: calibration_path
         gui  :
           flags : [ SIGTERM, kill_children ]
@@ -184,7 +196,7 @@ subs :
       - name : Velodyne VLP-16 Hi-Res
         desc : Launches the driver for the selected Velodyne sensor and publishes the pointcloud in points_raw. To select a custom calibration file press the [config] button.
         probe:
-        run  : roslaunch velodyne_pointcloud velodyne_vlp16_hires.launch
+        run  : roslaunch runtime_manager velodyne_vlp16_hires.launch
         param: calibration_path
         gui  :
           flags : [ SIGTERM, kill_children ]
@@ -219,12 +231,43 @@ subs :
 
       - name : Robosense RS32
         desc : Launches the driver for the selected RoboSense LiDAR sensor and publishes the pointcloud in rslidar_points.
-        run  : roslaunch rslidar_pointcloud cloud_nodelet_32.launch
+        run  : roslaunch rslidar_pointcloud rs_cloud_nodelet_32.launch
 
       - name : Robosense RS16
         desc : Launches the driver for the selected RoboSense LiDAR sensor and publishes the pointcloud in rslidar_points.
-        run  : roslaunch rslidar_pointcloud cloud_nodelet_16.launch
+        run  : roslaunch rslidar_pointcloud rs_cloud_nodelet_16.launch
 
+      - name : Ouster OS1
+        desc : Launches the driver for the Ouster OS1 LiDAR and publishes the pointcloud as points_raw.
+        run  : roslaunch ouster_ros os1.launch
+        param: ouster_ros
+        gui  :
+          dialog_height : 400
+          flags : [ SIGTERM, kill_children ]
+          lidar_address : 
+             user_category : 'Address'
+             flags: [ expand ]
+          pc_address  : 
+             flags: [ expand, nl ]
+          lidar_frame_name  : 
+             user_category : 'PointCloud'
+             flags: [ expand ]
+          lidar_topic_name  : 
+             flags: [ expand, nl ]
+          imu_frame_name  : 
+             user_category : 'IMU'
+             flags: [ expand ]
+          imu_topic_name  : 
+             flags: [ expand, nl ]
+          operation_mode :
+             user_category : 'Advanced'
+          pulse_mode : { prop: 0 }
+          window_rejection : { flags: [ nl ] }
+          mode_xyzir : 
+             prop  : 0
+             user_category : 'Misc.'
+          replay : { prop  : 0 }
+          
   - name : Other Sensors
     desc : Other Sensors desc sample
     subs :
@@ -331,12 +374,6 @@ cmds:
         dialog_height : 450
 
 buttons:
-  calibration_toolkit :
-    desc  : calibration_toolkit desc sample
-    run   : rosrun calibration_camera_lidar calibration_toolkit
-    gui   :
-      flags : [ SIGTERM ]
-
   calibration_publisher :
     desc  : calibration_publisher desc sample
     run   : roslaunch runtime_manager calibration_publisher.launch
@@ -379,11 +416,6 @@ buttons:
         flags : [ all ]
       sync :
         func : self.button_synchronization.GetValue()
-
-  scan_image :
-    desc  : scan_image desc sample
-    run   : rosrun scan2image scan2image
-    #param : scan_image
 
   virtual_scan_image :
     desc  : virtual_scan_image desc sample
@@ -458,6 +490,121 @@ params :
         dash : ''
         delim: ':='
         must : true
+        
+  - name  : ouster_ros
+    vars  :
+    - name : lidar_address
+      desc : OS1 LiDAR hostname or IP address
+      label: 'OS1 address:'
+      kind    : str
+      v       : '192.168.0.100'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        must : True
+    - name : pc_address
+      desc : Computer (PC) hostname or IP address
+      label: 'PC address:'
+      kind    : str
+      v       : '192.168.0.1'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        must : True
+    - name : lidar_frame_name
+      desc : PointCloud frame name (use 'os1' for native Ouster, 'velodyne' for compatible mode)
+      label: 'Cloud frame:'
+      kind    : str
+      v       : 'velodyne'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        must : True
+    - name : lidar_topic_name
+      desc : PointCloud topic name (use '/points' for native Ouster, '/points_raw' for compatible mode)
+      label: 'Cloud topic:'
+      kind    : str
+      v       : '/points_raw'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        must : True
+    - name : imu_frame_name
+      desc : IMU frame name (use 'os1_imu' for native Ouster, 'imu' for general use)
+      label: 'IMU frame:'
+      kind    : str
+      v       : 'imu'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        must : True
+    - name : imu_topic_name
+      desc : IMU topic name (use 'imu' for native Ouster, '/imu_raw' for general use)
+      label: 'IMU topic:'
+      kind    : str
+      v       : 'imu'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        must : True
+    - name  : operation_mode
+      desc  : OS1 LiDAR operation mode (hor. res. and scan rate)
+      label : 'lidar operation mode'
+      kind  : menu
+      choices:
+      - 512x10
+      - 1024x10 (default)
+      - 2048x10
+      - 512x20
+      - 1024x20
+      descs :
+      - 512 points horizontal, 10Hz
+      - 1024 points horizontal, 10Hz
+      - 2048 points horizontal, 10Hz
+      - 512 points horizontal, 20Hz
+      - 1024 points horizontal, 20Hz
+      v     : 1
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : pulse_mode
+      desc  : OS1 LiDAR pulse width
+      label : 'pulse mode'
+      kind  : menu
+      choices:
+      - STANDARD (8ns, default)
+      - NARROW (4ns)
+      descs :
+      - For full range and specs
+      - For higher resolution, lower range
+      v     : 0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : window_rejection
+      desc  : Window rejection enable, disable for short range operation
+      label : 'Window rejection'
+      kind      : checkbox
+      v         : True
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : mode_xyzir
+      desc  : Velodyne compatible pointcloud mode
+      label : 'Velodyne compatible pointcloud mode?'
+      kind      : checkbox
+      v         : True
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : replay
+      desc  : For playing rosbag files of raw ouster data
+      label : 'Play rawdata on rosbag?'
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
 
   - name  : grasshopper3_params
     vars  :
@@ -897,8 +1044,7 @@ params :
     - name      : image_topic_src
       desc      : Adds the Camera info to this image topic. Default /image_raw
       label     : image topic source
-      kind  : topic
-      topic_type : sensor_msgs/Image
+      kind      : str
       v         : '/image_raw'
       cmd_param :
         dash      : ''
@@ -1500,6 +1646,80 @@ params :
       min   : -3.14157
       max   : 3.14157
       v     : 0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
+  - name  : fliradk_params
+    vars  :
+    - name  : DEVICE
+      label : Device
+      desc  : System Device name /dev/videoX
+      kind  : str
+      v     : /dev/video0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : FPS
+      label : FPS
+      desc  : FPS Acquisition (Default 30)
+      min   : 1
+      max   : 100
+      v     : 30
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : WIDTH
+      label : Width
+      desc  : Image Width (Default 640)
+      v     : 640
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : HEIGHT
+      label : Height
+      desc  : Image Height (Default 512)
+      v     : 512
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : NS
+      label : Frame
+      desc  : Camera Frame to register in TF (Default flir_adk)
+      kind  : str
+      v     : flir_adk
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+  - name  : spinnaker_params
+    vars  :
+    - name  : fps
+      label : fps
+      desc  : FPS Acquisition (Default 60)
+      min   : 1
+      max   : 100
+      v     : 60
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : width
+      label : width
+      desc  : Image Width (Default 1440)
+      v     : 1440
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : height
+      label : height
+      desc  : Image Height (Default 1080)
+      v     : 1080
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : dltl
+      label : dltl
+      desc  : DeviceLinkThroughputLimit (Default 1568000)
+      v     : 1568000
       cmd_param :
         dash        : ''
         delim       : ':='

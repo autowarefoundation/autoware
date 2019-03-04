@@ -1,32 +1,18 @@
 /*
- *  Copyright (c) 2015, Nagoya University
- *  All rights reserved.
+ * Copyright 2015-2019 Autoware Foundation. All rights reserved.
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  * Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name of Autoware nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #include "search_info_ros.h"
 
@@ -44,7 +30,10 @@ SearchInfo::SearchInfo()
   , state_("")
   , upper_bound_distance_(-1)
 {
+  ros::NodeHandle nh;
   ros::NodeHandle private_nh_("~");
+  node_status_publisher_ptr_ = std::make_shared<autoware_health_checker::NodeStatusPublisher>(nh,private_nh_);
+  node_status_publisher_ptr_->ENABLE();
   private_nh_.param<std::string>("map_frame", map_frame_, "map");
   private_nh_.param<int>("obstacle_detect_count", obstacle_detect_count_, 10);
   private_nh_.param<int>("avoid_distance", avoid_distance_, 13);
@@ -109,7 +98,15 @@ void SearchInfo::mapCallback(const nav_msgs::OccupancyGridConstPtr &msg)
 void SearchInfo::currentPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
   current_pose_ = *msg;
-
+  node_status_publisher_ptr_->NODE_ACTIVATE();
+  node_status_publisher_ptr_->CHECK_RATE("/topic/rate/current_pose/slow",8,5,1,"topic current_pose subscribe rate low.");
+  if(closest_waypoint_index_!=-1 && path_set_)
+  {
+    autoware_msgs::Waypoint closest_waypoint = subscribed_waypoints_.waypoints[closest_waypoint_index_];
+    double dist = std::sqrt(std::pow(closest_waypoint.pose.pose.position.x-current_pose_.pose.position.x,2)
+      +std::pow(closest_waypoint.pose.pose.position.y-current_pose_.pose.position.y,2));
+    node_status_publisher_ptr_->CHECK_MAX_VALUE("/value/range/closest_waypoint_distance",dist,0.5,1.0,2.0,"distance between closest_waypoint and current_pose is too long.");
+  }
   return;
 }
 
@@ -185,6 +182,7 @@ void SearchInfo::waypointsCallback(const autoware_msgs::LaneConstPtr &msg)
 
 void SearchInfo::closestWaypointCallback(const std_msgs::Int32ConstPtr &msg)
 {
+  node_status_publisher_ptr_->CHECK_RATE("/topic/rate/closest_waypoint/slow",8,5,1,"topic closest_waypoint subscribe rate low.");
   closest_waypoint_index_ = msg->data;
 }
 

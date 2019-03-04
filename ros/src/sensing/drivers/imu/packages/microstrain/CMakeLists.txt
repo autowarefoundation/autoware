@@ -83,3 +83,15 @@ add_executable(3dm_gx5_45_node src/3dm_gx5_45_node.cpp)
 target_link_libraries(microstrain_driver ${catkin_LIBRARIES})
 target_link_libraries(3dm_gx5_15_node microstrain_driver ${catkin_LIBRARIES})
 target_link_libraries(3dm_gx5_45_node microstrain_driver ${catkin_LIBRARIES})
+
+install(TARGETS
+        microstrain_driver
+        3dm_gx5_15_node
+        3dm_gx5_45_node
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)

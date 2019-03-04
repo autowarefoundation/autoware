@@ -1,0 +1,28 @@
+<launch>
+
+    <arg name="device_addr"/>
+    <arg name="device_port"/>
+    <arg name="local_frame"/>
+
+    <group ns="$(arg local_frame)">
+        <node pkg="nodelet" type="nodelet" name="nodelet_manager" args="manager" />
+        <node pkg="nodelet" type="nodelet" name="nodelet_driver" args="load velodyne_driver/DriverNodelet nodelet_manager" >
+            <param name="device_ip"    value="$(arg device_addr)" />
+            <param name="frame_id"     value="$(arg local_frame)" />
+            <param name="model"        value="VLP16" />
+            <param name="pcap"         value="" />
+            <param name="port"         value="$(arg device_port)" />
+            <param name="read_fast"    value="false" />
+            <param name="read_once"    value="false" />
+            <param name="repeat_delay" value="0.0" />
+            <param name="rpm"          value="600.0" />
+        </node>
+        <node pkg="nodelet" type="nodelet" name="nodelet_cloud" args="load velodyne_pointcloud/CloudNodelet nodelet_manager">
+            <param name="calibration"  value="$(find velodyne_pointcloud)/params/VLP16db.yaml" />
+            <param name="max_range"    value="130.0" />
+            <param name="min_range"    value="0.1" />
+            <param name="view_width"   value="3.3" />
+        </node>
+    </group>
+
+</launch>

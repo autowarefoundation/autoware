@@ -3,8 +3,9 @@ project(data_preprocessor)
 
 set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
+
+find_package(autoware_build_flags REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-  autoware_build_flags
   cv_bridge
   #libpcl-all-dev
   pcl_conversions
@@ -36,3 +37,8 @@ add_executable(get_Depth nodes/get_Depth/get_Depth.cpp)
 target_link_libraries(get_Depth ${catkin_LIBRARIES})
 target_link_libraries(get_PCD ${catkin_LIBRARIES})
 target_link_libraries(get_Image ${catkin_LIBRARIES})
+
+install(TARGETS get_Image get_PCD get_Depth
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

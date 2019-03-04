@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <package>
   <name>op_global_planner</name>
-  <version>1.9.1</version>
+  <version>1.10.0</version>
   <description>The OpenPlanner Global Planning package</description>
   <maintainer email="yusuke.fujii@tier4.jp">Yusuke FUJII</maintainer>
-  <license>BSD</license>
+  <license>Apache 2</license>
   <author email="hatem.darweesh@g.sp.m.is.nagoya-u.ac.jp">Hatem Darweesh</author>
 
   <buildtool_depend>catkin</buildtool_depend>

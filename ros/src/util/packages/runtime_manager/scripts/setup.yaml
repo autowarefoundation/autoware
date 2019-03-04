@@ -12,7 +12,7 @@ buttons:
       ext_toggle_enables : [ self.radio_box_localizer ]
 
   vehicle_model:
-    run    : roslaunch model_publisher vehicle_model.launch
+    run    : roslaunch vehicle_description vehicle_model.launch
     param  : vehicle_model
     gui    :
       panel  : self.panel_vehicle_model

@@ -1,12 +1,15 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(autoware_connector)
 
+
+find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         tf
         geometry_msgs
-        autoware_can_msgs
         autoware_msgs
+        autoware_can_msgs
         nav_msgs
         std_msgs
         )
@@ -17,6 +20,7 @@ catkin_package(
 
 include_directories(
         ${catkin_INCLUDE_DIRS}
+        ${autoware_msgs_INCLUDE_DIRS}
 )
 
 add_executable(can_status_translator

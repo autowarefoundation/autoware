@@ -1,8 +1,11 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(pos_db)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
         roscpp
         gnss
         jsk_recognition_msgs
@@ -29,6 +32,7 @@ if (LIBSSH2_FOUND)
     include_directories(
             include
             ${catkin_INCLUDE_DIRS}
+            ${autoware_msgs_INCLUDE_DIRS}
             ${LIBSSH2_INCLUDE_DIRS}
     )
 
@@ -71,10 +75,14 @@ if (LIBSSH2_FOUND)
             pos_uploader
             ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
             LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-            RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
+            RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
     install(DIRECTORY include
             DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+
+    install(FILES model/prius_model.dae
+            DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/model/
+            )
 else()
     message("LibSSH2 not found. pos_db package won't be built.")
 endif()

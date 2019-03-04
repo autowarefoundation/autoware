@@ -3,8 +3,9 @@ project(garmin)
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x") #or
 
+
+find_package(autoware_build_flags REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-  autoware_build_flags
   sensor_msgs
   nmea_msgs
   roscpp
@@ -24,3 +25,8 @@ include_directories(
 add_executable(garmin_gps_18x_lvc src/garmin_gps_18x_lvc.cc)
 
 target_link_libraries(garmin_gps_18x_lvc ${catkin_LIBRARIES})
+
+install(TARGETS garmin_gps_18x_lvc
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

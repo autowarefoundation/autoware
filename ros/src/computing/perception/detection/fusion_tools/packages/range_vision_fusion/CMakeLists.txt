@@ -1,21 +1,23 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(range_vision_fusion)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         cv_bridge
         sensor_msgs
         image_transport
         roscpp
         tf
-        autoware_msgs
-        autoware_build_flags
         jsk_recognition_utils
         eigen_conversions
         tf_conversions
         jsk_topic_tools
         image_geometry
         jsk_topic_tools
-        visualization_msgs
+        autoware_msgs
         )
 
 find_package(OpenCV REQUIRED)
@@ -54,7 +56,6 @@ catkin_package(
         jsk_topic_tools
         image_geometry
         jsk_topic_tools
-        visualization_msgs
 )
 
 #fusion Library
@@ -73,6 +74,7 @@ endif ()
 target_include_directories(range_vision_fusion_lib PRIVATE
         ${OpenCV_INCLUDE_DIR}
         ${catkin_INCLUDE_DIRS}
+        ${autoware_msgs_INCLUDE_DIRS}
         ${Boost_INCLUDE_DIRS}
         ${PCL_INCLUDE_DIRS}
         ${EIGEN3_INCLUDE_DIRS}
@@ -100,6 +102,7 @@ add_executable(range_vision_fusion
 target_include_directories(range_vision_fusion PRIVATE
         ${OpenCV_INCLUDE_DIR}
         ${catkin_INCLUDE_DIRS}
+        ${autoware_msgs_INCLUDE_DIRS}
         ${Boost_INCLUDE_DIRS}
         include
         )
@@ -107,10 +110,13 @@ target_include_directories(range_vision_fusion PRIVATE
 target_link_libraries(range_vision_fusion
         range_vision_fusion_lib)
 
-install(TARGETS range_vision_fusion
+install(TARGETS range_vision_fusion range_vision_fusion_lib
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+install(DIRECTORY include/${PROJECT_NAME}/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
 install(DIRECTORY launch/
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
