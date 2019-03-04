@@ -92,12 +92,16 @@ void Autoware_Rosbag_Plugin::on_edit_record_filename_textChanged(const QString &
 
 void Autoware_Rosbag_Plugin::on_button_record_save_clicked()
 {
+  /* set default filename */
+  QDateTime now = QDateTime::currentDateTime();
+  QString timestamp = now.toString(QLatin1String("yyyyMMddhhmmss"));
+  QString initial_filename = "autoware-" + timestamp + ".bag";
+
   /* open dialog */
   QString pathInfo =
       QFileDialog::getSaveFileName(
               this,
-              tr("path of saving bag"),
-              DEFAULT_SAVE_PATH);
+              tr("path of saving bag"), DEFAULT_SAVE_PATH + initial_filename);
 
   if (!pathInfo.isEmpty())
   {
@@ -124,7 +128,7 @@ void Autoware_Rosbag_Plugin::on_button_record_save_clicked()
     }
 
     record_filepath_ = filepath.toStdString();
-    ui->edit_record_filename->setText(filename);
+    ui->edit_record_filename->setText(filepath + filename);
 
   }
 }
@@ -145,7 +149,7 @@ void Autoware_Rosbag_Plugin::on_button_record_start_clicked()
         if (topic_name.find("!") == string::npos)
           record_topics_.push_back(topic_name);
         else
-          record_topics_.push_back(topic_name.substr(0, topic_name.length() - strlen("(Not found!!!)")));
+          record_topics_.push_back(topic_name.substr(0, topic_name.length() - strlen("(Not published!!)")));
       }
   }
 
@@ -157,15 +161,19 @@ void Autoware_Rosbag_Plugin::on_button_record_start_clicked()
   }
 
   /* Set filename parameter */
-  recoParam.filename = record_filepath_ + record_filename_;
+  recoParam.filename = record_filename_;
 
   /* Caculate max split size */
-  if (split_size != 0)
-    recoParam.max_size = floor(split_size * 1048576 * 1024);
+  if (split_size != 0 && ui->checkBox_split_size->isChecked())
+    recoParam.max_size = ceil(split_size * 1048576 * 1024);
+  else
+    recoParam.max_size = 0;
 
   /* Caculate max split size */
-  if (split_duration != 0)
-    recoParam.max_duration = floor(split_duration * 60);
+  if (split_duration != 0 && ui->checkBox_split_duration->isChecked())
+    recoParam.max_duration = ceil(split_duration * 60);
+  else
+    recoParam.max_duration = -1.0;
 
   /* Start record */
   recordReq(recoParam);
@@ -199,7 +207,7 @@ int Autoware_Rosbag_Plugin::recordReq( RecordParam &recoParam )
   }
 
   /* Set max duration Sec */
-  if (recoParam.max_duration != 0)
+  if (recoParam.max_duration != -1.0)
   {
     recorder_opts_->split = true;
     recorder_opts_->max_duration = ros::Duration(recoParam.max_duration);
@@ -235,8 +243,8 @@ int Autoware_Rosbag_Plugin::recordReq( RecordParam &recoParam )
   ROS_INFO("%s L.%d -   chunk_size      [%d]", __FUNCTION__, __LINE__, recorder_opts_->chunk_size);
   ROS_INFO("%s L.%d -   limit           [%d]", __FUNCTION__, __LINE__, recorder_opts_->limit);
   ROS_INFO("%s L.%d -   split           [%d]", __FUNCTION__, __LINE__, recorder_opts_->split);
-  ROS_INFO("%s L.%d -   max_size        [%.1fGB]", __FUNCTION__, __LINE__, split_size);
-  ROS_INFO("%s L.%d -   max_duration    [%.1fmin]", __FUNCTION__, __LINE__, split_duration );
+  ROS_INFO("%s L.%d -   max_size        [%.2fGB]", __FUNCTION__, __LINE__, recorder_opts_->max_size / 1048576.0 / 1024.0);
+  ROS_INFO("%s L.%d -   max_duration    [%.1fmin]", __FUNCTION__, __LINE__, recorder_opts_->max_duration.toSec() / 60.0 );
   ROS_INFO("%s L.%d -   node            [%s]", __FUNCTION__, __LINE__, recorder_opts_->node.c_str() );
   ROS_INFO("%s L.%d -   min_space       [%d]", __FUNCTION__, __LINE__, recorder_opts_->min_space );
   ROS_INFO("%s L.%d -   min_space_str   [%s]", __FUNCTION__, __LINE__, recorder_opts_->min_space_str.c_str() );
@@ -349,7 +357,7 @@ void Autoware_Rosbag_Plugin::on_botton_topic_refresh_clicked()
     {
       if (std::find(current_topic.begin(), current_topic.end(), *ite) == current_topic.end())
       {
-        QCheckBox *dynamic = new QCheckBox(QString::fromStdString(*ite + "(Not found!!!)"));
+        QCheckBox *dynamic = new QCheckBox(QString::fromStdString(*ite + "(Not published!!)"));
         dynamic->setChecked (true);
         dynamic->setStyleSheet("color: red;"
                                "background-color: yellow;");
@@ -372,13 +380,15 @@ void Autoware_Rosbag_Plugin::on_botton_topic_refresh_clicked()
   std::vector<std::string>::iterator ite = current_topic.begin();
   while (ite != current_topic.end())
   {
-    QCheckBox *dynamic = new QCheckBox(QString::fromStdString(*ite));
-    dynamic->setChecked (false);
-    lay->addWidget(dynamic);
-    topic_num++;
+    if (std::find(conf_topics_.begin(), conf_topics_.end(), *ite) == conf_topics_.end())
+    {
+      QCheckBox *dynamic = new QCheckBox(QString::fromStdString(*ite));
+      dynamic->setChecked (false);
+      lay->addWidget(dynamic);
+      topic_num++;
+    }
     ite++;
   }
-
   ui->scrollAreaWidgetContents->setLayout(lay);
 }
 
@@ -446,7 +456,6 @@ void Autoware_Rosbag_Plugin::on_checkBox_split_size_stateChanged(int arg1)
     ui->checkBox_split_duration->setEnabled(true);
     ui->lineEdit_duration->setDisabled(true);
     ui->lineEdit_size->setDisabled(true);
-    split_size = 0;
   }
 }
 
@@ -463,7 +472,6 @@ void Autoware_Rosbag_Plugin::on_checkBox_split_duration_stateChanged(int arg1)
     ui->checkBox_split_size->setEnabled(true);
     ui->lineEdit_size->setDisabled(true);
     ui->lineEdit_duration->setDisabled(true);
-    split_duration = 0;
   }
 }
 
