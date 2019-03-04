@@ -19,7 +19,7 @@ catkin_package(
     roscpp
     pcl_ros
     grid_map_core
-  	grid_map_ros
+    grid_map_ros
     tf
     autoware_msgs
     vector_map
