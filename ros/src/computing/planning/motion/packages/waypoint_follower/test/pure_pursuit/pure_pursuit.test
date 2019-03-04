@@ -1,0 +1,3 @@
+<launch>
+  <test test-name="pure_pursuit_test" pkg="waypoint_follower" type="pure_pursuit_test" name="test"/>
+</launch>

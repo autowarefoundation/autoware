@@ -29,6 +29,7 @@ PurePursuitNode::PurePursuitNode()
   , is_config_set_(false)
   , current_linear_velocity_(0)
   , command_linear_velocity_(0)
+  , direction_(1)
   , param_flag_(-1)
   , const_lookahead_distance_(4.0)
   , const_velocity_(5.0)
@@ -94,7 +95,7 @@ void PurePursuitNode::run()
 
     double kappa = 0;
     bool can_get_curvature = pp_.canGetCurvature(&kappa);
-    
+
     publishTwistStamped(can_get_curvature, kappa);
     publishControlCommandStamped(can_get_curvature, kappa);
     node_status_publisher_ptr_->NODE_ACTIVATE();
@@ -231,11 +232,15 @@ void PurePursuitNode::callbackFromCurrentVelocity(const geometry_msgs::TwistStam
 void PurePursuitNode::callbackFromWayPoints(const autoware_msgs::LaneConstPtr &msg)
 {
   command_linear_velocity_ = (!msg->waypoints.empty()) ? msg->waypoints.at(0).twist.twist.linear.x : 0;
-  static int direction = 1;
-  direction = (command_linear_velocity_ > 0.0) ? 1 : (command_linear_velocity_ < 0.0) ? -1 : direction;
+  if (msg->waypoints.size() > 2)
+  {
+    geometry_msgs::Point closest_rlt = calcRelativeCoordinate(
+      msg->waypoints.at(2).pose.pose.position, msg->waypoints.at(1).pose.pose);
+    direction_ = (closest_rlt.x > 0.0) ? 1 : (closest_rlt.x < 0.0) ? -1 : direction_;
+  }
   autoware_msgs::Lane expanded_lane(*msg);
   expand_size_ = -expanded_lane.waypoints.size();
-  connectVirtualLastWaypoints(&expanded_lane, direction);
+  connectVirtualLastWaypoints(&expanded_lane, direction_);
   expand_size_ += expanded_lane.waypoints.size();
   pp_.setCurrentWaypoints(expanded_lane.waypoints);
   is_waypoint_set_ = true;
@@ -265,7 +270,7 @@ void PurePursuitNode::connectVirtualLastWaypoints(autoware_msgs::Lane* lane, int
   {
     virtual_last_point_rlt.x += interval * direction;
     virtual_last_waypoint.pose.pose.position = calcAbsoluteCoordinate(virtual_last_point_rlt, pn);
-    lane->waypoints.push_back(virtual_last_waypoint);
+    lane->waypoints.emplace_back(virtual_last_waypoint);
   }
 }
 

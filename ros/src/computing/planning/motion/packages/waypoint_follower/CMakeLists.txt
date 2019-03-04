@@ -16,6 +16,8 @@ find_package(catkin REQUIRED COMPONENTS
         geometry_msgs
         pcl_ros
         pcl_conversions
+        rostest
+        roslaunch
         sensor_msgs
         autoware_msgs
         autoware_config_msgs
@@ -102,3 +104,12 @@ install(DIRECTORY include/${PROJECT_NAME}/
 install(DIRECTORY launch/
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
         PATTERN ".svn" EXCLUDE)
+
+if (CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  add_rostest_gtest(pure_pursuit_test
+  test/pure_pursuit/pure_pursuit.test
+  test/pure_pursuit/src/pure_pursuit_test.cpp)
+  target_link_libraries(pure_pursuit_test
+  ${catkin_LIBRARIES})
+endif ()

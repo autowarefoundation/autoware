@@ -51,6 +51,8 @@ typename std::underlying_type<T>::type enumToInteger(T t)
   return static_cast<typename std::underlying_type<T>::type>(t);
 }
 
+class PurePursuitNodeTest;
+
 class PurePursuitNode
 {
 public:
@@ -58,7 +60,7 @@ public:
   ~PurePursuitNode();
 
   void run();
-
+  friend class PurePursuitNodeTest;
 private:
   // handle
   ros::NodeHandle nh_;
@@ -84,7 +86,7 @@ private:
   double current_linear_velocity_, command_linear_velocity_;
   double wheel_base_;
   int expand_size_;
-
+  int direction_;
   int32_t param_flag_;               // 0 = waypoint, 1 = Dialog
   double const_lookahead_distance_;  // meter
   double const_velocity_;            // km/h
