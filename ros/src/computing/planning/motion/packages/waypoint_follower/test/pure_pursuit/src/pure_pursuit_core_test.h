@@ -17,7 +17,7 @@
  */
 #include <ros/ros.h>
 #include <gtest/gtest.h>
-#include "pure_pursuit_node.h"
+#include <pure_pursuit/pure_pursuit_node.h>
 
 class PurePursuitNodeTest : public ::testing::Test
 {

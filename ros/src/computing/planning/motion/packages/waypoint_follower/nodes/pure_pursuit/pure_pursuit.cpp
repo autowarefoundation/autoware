@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "pure_pursuit.h"
+#include <pure_pursuit/pure_pursuit.h>
 
 namespace waypoint_follower
 {
@@ -28,7 +28,7 @@ PurePursuit::PurePursuit()
   , current_linear_velocity_(0)
   , minimum_lookahead_distance_(6)
 {
-  
+
 }
 
 // Destructor

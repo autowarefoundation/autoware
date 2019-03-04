@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "pure_pursuit_viz.h"
+#include <pure_pursuit/pure_pursuit_viz.h>
 
 namespace waypoint_follower
 {
