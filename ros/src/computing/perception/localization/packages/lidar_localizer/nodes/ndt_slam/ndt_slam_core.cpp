@@ -192,12 +192,13 @@ NdtSlam::~NdtSlam() {
 
 void NdtSlam::configCallback(
     const autoware_config_msgs::ConfigNDTSlam::ConstPtr &config_msg_ptr) {
-  const Pose initial_pose =
-      Pose(config_msg_ptr->init_x, config_msg_ptr->init_y,
-           config_msg_ptr->init_z, config_msg_ptr->init_roll,
-           config_msg_ptr->init_pitch, config_msg_ptr->init_yaw);
-  if (init_pose_stamped_.pose != initial_pose) {
-    init_pose_stamped_.pose = initial_pose;
+
+  static bool is_first_call = false;
+  if(is_first_call) {
+    is_first_call = true;
+    init_pose_stamped_.pose = Pose(config_msg_ptr->init_x, config_msg_ptr->init_y,
+               config_msg_ptr->init_z, config_msg_ptr->init_roll,
+               config_msg_ptr->init_pitch, config_msg_ptr->init_yaw);
     pose_interpolator_.clearPoseStamped();
   }
 
