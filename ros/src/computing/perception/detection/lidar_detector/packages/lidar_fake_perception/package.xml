@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>lidar_fake_perception</name>
   <version>1.10.0</version>
   <description>The lidar_fake_percetion package</description>
@@ -10,7 +10,7 @@
 
   <author email="aohsato@gmail.com">Akihito Ohsato</author>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>autoware_build_flags</buildtool_depend>
 
   <build_depend>roscpp</build_depend>
@@ -21,15 +21,15 @@
   <build_depend>geometry_msgs</build_depend>
   <build_depend>autoware_msgs</build_depend>
 
-  <run_depend>roscpp</run_depend>
-  <run_depend>tf</run_depend>
-  <run_depend>tf_conversions</run_depend>
-  <run_depend>pcl_ros</run_depend>
-  <run_depend>sensor_msgs</run_depend>
-  <run_depend>geometry_msgs</run_depend>
-  <run_depend>autoware_msgs</run_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>tf</exec_depend>
+  <exec_depend>tf_conversions</exec_depend>
+  <exec_depend>pcl_ros</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>autoware_msgs</exec_depend>
 
   <export>
+    <build_type>ament_cmake</build_type>
   </export>
-
 </package>
