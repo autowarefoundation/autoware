@@ -65,6 +65,7 @@ private:
   double save_map_leaf_size_;
   double default_reserve_size_;
 
+  pcl::PointCloud<PointTarget> map_;
   boost::shared_ptr<pcl::PointCloud<PointTarget>> map_ptr_;
 
   std::deque<std::function<void()>> process_queue_;

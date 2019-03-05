@@ -21,7 +21,8 @@
 template <class PointTarget>
 MapManager<PointTarget>::MapManager()
     : separate_map_size_(100.0), save_map_leaf_size_(0.2),
-      default_reserve_size_(100000000), is_thread_run_ok_(true) {
+      default_reserve_size_(10000000), is_thread_run_ok_(true) {
+  map_.points.reserve(default_reserve_size_);
   runProcess();
 }
 
@@ -89,12 +90,17 @@ void MapManager<PointTarget>::loadAroundMapThread(const Pose &localizer_pose) {
 template <class PointTarget>
 void MapManager<PointTarget>::addPointCloudMap(
     const boost::shared_ptr<pcl::PointCloud<PointTarget>> &points_raw_ptr) {
-  if (map_ptr_ == nullptr) {
-    map_ptr_ = boost::make_shared<pcl::PointCloud<PointTarget>>();
+
+  const auto need_points_size =
+      map_.points.size() + points_raw_ptr->points.size();
+  if(map_.points.capacity() < need_points_size) {
+    map_.points.reserve(need_points_size*2);
   }
 
+  map_ += *points_raw_ptr;
+
   mtx_.lock();
-  addPointCloud(points_raw_ptr, map_ptr_);
+  map_ptr_ = map_.makeShared();
   mtx_.unlock();
 }
 
@@ -109,13 +115,14 @@ template <class PointTarget> void MapManager<PointTarget>::downsampleMap() {
   voxel_grid_filter.setLeafSize(save_map_leaf_size_, save_map_leaf_size_,
                                 save_map_leaf_size_);
   voxel_grid_filter.setInputCloud(map_ptr_);
-  voxel_grid_filter.filter(filterd_map);
+  voxel_grid_filter.filter(map_);
+
+  if (map_.points.capacity() < default_reserve_size_) {
+    map_.points.reserve(default_reserve_size_);
+  }
 
   mtx_.lock();
-  map_ptr_ = filterd_map.makeShared();
-  if (map_ptr_->points.capacity() < default_reserve_size_) {
-    map_ptr_->points.reserve(default_reserve_size_);
-  }
+  map_ptr_ = map_.makeShared();
   mtx_.unlock();
 }
 
@@ -190,10 +197,6 @@ template <class PointTarget> void MapManager<PointTarget>::saveSeparateMap() {
 
 template <class PointTarget>
 void MapManager<PointTarget>::loadAroundMap(const Pose &localizer_pose) {
-  if (map_ptr_ == nullptr) {
-    std::cout << __func__ << "[ERROR] map_ptr_ is nullptr" << std::endl;
-    return;
-  }
 
   std::vector<std::string> path_arrary;
 
@@ -227,18 +230,20 @@ void MapManager<PointTarget>::loadAroundMap(const Pose &localizer_pose) {
     tmp_map_ptr.emplace(path, pointcloud.makeShared());
   }
 
-  boost::shared_ptr<pcl::PointCloud<PointTarget>> map_ptr(
-      new pcl::PointCloud<PointTarget>);
-  map_ptr->height = 1;
+  map_.points.clear();
+
   for (const auto &pointcloud_map : tmp_map_ptr) {
-    addPointCloud(pointcloud_map.second, map_ptr);
+    const auto need_points_size =
+        map_.points.size() + pointcloud_map.second->points.size();
+
+    if(map_.points.capacity() < need_points_size) {
+      map_.points.reserve(need_points_size*2);
+    }
+    map_ += *(pointcloud_map.second);
   }
 
   mtx_.lock();
-  map_ptr_ = map_ptr;
-  if (map_ptr_->points.capacity() < default_reserve_size_) {
-    map_ptr_->points.reserve(default_reserve_size_);
-  }
+  map_ptr_ = map_.makeShared();
   mtx_.unlock();
 }
 
@@ -246,10 +251,11 @@ template <class PointTarget>
 void MapManager<PointTarget>::setMap(
     const boost::shared_ptr<pcl::PointCloud<PointTarget>> &map_ptr) {
   mtx_.lock();
-  map_ptr_ = map_ptr;
-  if (map_ptr_->points.capacity() < default_reserve_size_) {
-    map_ptr_->points.reserve(default_reserve_size_);
+  map_ = *map_ptr;
+  if (map_.points.capacity() < default_reserve_size_) {
+    map_.points.reserve(default_reserve_size_);
   }
+  map_ptr_ = map_.makeShared();
   mtx_.unlock();
 }
 
