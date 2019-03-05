@@ -34,5 +34,5 @@ then
     # Deregister QEMU as a handler for non-x86 targets
     docker container run --rm --privileged multiarch/qemu-user-static:register --reset
 else
-    echo "Select target platform: synquacer, driveworks, generic-aarch64"
+    echo "Select target ROS distribution (kinetic, melodic) and target platform (synquacer, driveworks, generic-aarch64)"
 fi
