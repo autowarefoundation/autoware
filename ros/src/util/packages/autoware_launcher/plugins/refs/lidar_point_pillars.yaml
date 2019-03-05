@@ -1,0 +1,20 @@
+format: Autoware Launcher Plugin Version 0.1
+rosxml: $(find lidar_point_pillars)/launch/lidar_point_pillars.launch
+args:
+- {name: input_topic, type: str, default: /points_raw}
+- {name: baselink_support, type: bool, default: true}
+- {name: reproduce_result_mode, type: bool, default: true}
+- {name: score_threshold, type: real, default: 0.5}
+- {name: nms_overlap_threshold, type: real, default: 0.5}
+- {name: pfe_onnx_file, type: str}
+- {name: rpn_onnx_file, type: str}
+panel:
+  widget: node.panel
+  frames:
+  - {target: args.input_topic, widget: basic.text}
+  - {target: args.baselink_support, widget: basic.bool}
+  - {target: args.reproduce_result_mode, widget: basic.bool}
+  - {target: args.score_threshold, widget: basic.real}
+  - {target: args.nms_overlap_threshold, widget: basic.real}
+  - {target: args.pfe_onnx_file, widget: basic.file}
+  - {target: args.rpn_onnx_file, widget: basic.file}
