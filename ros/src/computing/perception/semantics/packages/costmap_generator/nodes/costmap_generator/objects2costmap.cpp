@@ -35,7 +35,7 @@
 #include <tf/transform_datatypes.h>
 
 // headers in local directory
-#include "objects2costmap.h"
+#include "costmap_generator/objects2costmap.h"
 
 // Constructor
 Objects2Costmap::Objects2Costmap() :

@@ -29,7 +29,7 @@
  ********************
  */
 
-#include "costmap_generator.h"
+#include "costmap_generator/costmap_generator.h"
 
 int main(int argc, char** argv)
 {
