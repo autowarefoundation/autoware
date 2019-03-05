@@ -6,7 +6,6 @@ find_package(catkin REQUIRED COMPONENTS
   autoware_build_flags
   roscpp
   pcl_ros
-  grid_map_core
   grid_map_ros
   tf
   autoware_msgs
@@ -18,7 +17,6 @@ catkin_package(
   CATKIN_DEPENDS
     roscpp
     pcl_ros
-    grid_map_core
     grid_map_ros
     tf
     autoware_msgs
