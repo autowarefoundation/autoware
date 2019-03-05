@@ -1,0 +1,24 @@
+format: Autoware Launcher Plugin Version 0.1
+rosxml: $(find as)/launch/ssc_interface.launch
+args:
+- {name: use_rear_wheel_speed, type: bool, default: true}
+- {name: use_adaptive_gear_ratio, type: bool, default: true}
+- {name: command_timeout, type: int, default: 1000}
+- {name: loop_rate, type: real, default: 30.0}
+- {name: wheel_base, type: real, default: 2.79}
+- {name: tire_radius, type: real, default: 0.39}
+- {name: acceleration_limit, type: real, default: 3.0}
+- {name: deceleration_limit, type: real, default: 6.0}
+- {name: max_curvature_rate, type: real, default: 0.75}
+panel:
+  widget: node.panel
+  frames:
+  - {target: args.use_rear_wheel_speed, widget: basic.bool}
+  - {target: args.use_adaptive_gear_ratio, widget: basic.bool}
+  - {target: args.command_timeout, widget: basic.int}
+  - {target: args.loop_rate, widget: basic.real}
+  - {target: args.wheel_base, widget: basic.real}
+  - {target: args.tire_radius, widget: basic.real}
+  - {target: args.acceleration_limit, widget: basic.real}
+  - {target: args.deceleration_limit, widget: basic.real}
+  - {target: args.max_curvature_rate, widget: basic.real}

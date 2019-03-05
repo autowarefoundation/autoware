@@ -5,3 +5,4 @@ rules:
 - { name: waypoint_loader,  plugin: leaf/waypoint_loader }
 - { name: pure_pursuit,     plugin: leaf/pure_pursuit }
 - { name: twist_filter,     plugin: refs/twist_filter }
+- { name: ssc_interface,    plugin: refs/ssc_interface}
