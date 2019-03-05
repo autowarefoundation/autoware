@@ -35,7 +35,7 @@
 
 
   <!-- rosrun lidar_localizer ndt_mapping  -->
-  <node pkg="lidar_localizer" type="ndt_slam" name="ndt_slam" output="screen">
+  <node pkg="lidar_localizer" type="ndt_slam" name="ndt_slam" output="log">
     <param name="method_type" value="$(arg method_type)" />
 
     <remap from="/points_raw" to="$(arg mapping_points_topic)" />
