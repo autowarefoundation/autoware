@@ -8,6 +8,29 @@ CUDA Toolkit v9.0 or v10.0
 
 TensorRT: Tested with 5.0.2 -> [How to install](https://docs.nvidia.com/deeplearning/sdk/tensorrt-install-guide/index.html#installing)
 
+## How to setup
+
+1. Install CUDA from this [website](https://developer.nvidia.com/cuda-downloads)
+
+2. [Download](https://docs.nvidia.com/deeplearning/sdk/tensorrt-install-guide/index.html#downloading) the TensorRT local repo file that matches the Ubuntu version you are using.
+
+3. Install TensorRT from the Debian local repo package.
+
+```
+$ sudo dpkg -i  
+nv-tensorrt-repo-ubuntu1x04-cudax.x-trt5.x.x.x-ga-yyyymmdd_1-1_amd64.deb
+$ sudo apt-key add /var/nv-tensorrt-repo-cudax.x-trt5.x.x.x-ga-yyyymmdd/7fa2af80.pub
+
+$ sudo apt-get update
+$ sudo apt-get install tensorrt
+```
+
+4. Download the pretrained file from [here](https://github.com/cirpue49/kitti_pretrained_pp).
+
+```
+$ git clone git@github.com:cirpue49/kitti_pretrained_point_pillars.git
+```
+
 
 
 ## How to launch
