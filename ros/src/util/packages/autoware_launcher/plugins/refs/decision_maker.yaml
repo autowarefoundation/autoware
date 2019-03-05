@@ -1,0 +1,28 @@
+format: Autoware Launcher Plugin Version 0.1
+rosxml: $(find decision_maker)/launch/decision_maker.launch
+args:
+- {name: auto_mission_reload, type: bool, default: false}
+- {name: auto_engage, type: bool, default: false}
+- {name: auto_mission_change, type: bool, default: false}
+- {name: use_fms, type: bool, default: false}
+- {name: disuse_vector_map, type: bool, default: false}
+- {name: param_num_of_steer_behind, type: int, default: 30}
+- {name: change_threshold_dist, type: real, default: 1.0}
+- {name: change_threshold_angle, type: int, default: 15}
+- {name: goal_threshold_dist, type: real, default: 3.0}
+- {name: goal_threshold_vel, type: real, default: 0.1}
+- {name: stopline_reset_count, type: int, default: 20}
+panel:
+  widget: node.panel
+  frames:
+  - {target: args.auto_mission_reload, widget: basic.bool}
+  - {target: args.auto_engage, widget: basic.bool}
+  - {target: args.auto_mission_change, widget: basic.bool}
+  - {target: args.use_fms, widget: basic.bool}
+  - {target: args.disuse_vector_map, widget: basic.bool}
+  - {target: args.param_num_of_steer_behind, widget: basic.int}
+  - {target: args.change_threshold_dist, widget: basic.real}
+  - {target: args.change_threshold_angle, widget: basic.int}
+  - {target: args.goal_threshold_dist, widget: basic.real}
+  - {target: args.goal_threshold_vel, widget: basic.real}
+  - {target: args.stopline_reset_count, widget: basic.int}
