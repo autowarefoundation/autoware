@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   pcl_ros
   grid_map_core
+  grid_map_ros
   tf
   autoware_msgs
   vector_map
@@ -18,6 +19,7 @@ catkin_package(
     roscpp
     pcl_ros
     grid_map_core
+    grid_map_ros
     tf
     autoware_msgs
     vector_map
@@ -70,7 +72,7 @@ install(DIRECTORY launch/
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
         PATTERN ".svn" EXCLUDE)
 
-install(DIRECTORY include/
+install(DIRECTORY include/${PROJECT_NAME}/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
         PATTERN ".svn" EXCLUDE
         )
