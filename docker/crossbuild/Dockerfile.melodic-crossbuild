@@ -126,6 +126,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-melodic-filters \
     ros-melodic-geometry-msgs \
     ros-melodic-gps-common \
+    ros-melodic-grid-map-cv \
+    ros-melodic-grid-map-msgs \
+    ros-melodic-grid-map-ros \
     ros-melodic-gscam \
     ros-melodic-image-geometry \
     ros-melodic-image-transport \
@@ -134,6 +137,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-melodic-jsk-footstep-msgs \
     ros-melodic-jsk-gui-msgs \
     ros-melodic-jsk-hark-msgs \
+    ros-melodic-jsk-recognition-msgs \
+    ros-melodic-jsk-rviz-plugins \
     ros-melodic-jsk-tools \
     ros-melodic-jsk-topic-tools \
     ros-melodic-message-filters \
