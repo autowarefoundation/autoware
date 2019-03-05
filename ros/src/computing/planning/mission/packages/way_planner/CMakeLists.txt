@@ -1,10 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(way_planner)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(vector_map_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-  autoware_build_flags
   geometry_msgs
-  vector_map_msgs
   roscpp
   rospy
   std_msgs
@@ -40,6 +42,7 @@ SET(CMAKE_CXX_FLAGS "-O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
 include_directories(
   include include/plannerh
   ${catkin_INCLUDE_DIRS}
+  ${vector_map_INCLUDE_DIRS}
 )
 
 
@@ -54,3 +57,14 @@ include_directories(
 
 
 target_link_libraries(way_planner ${catkin_LIBRARIES} )
+
+install(TARGETS
+        way_planner
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
+        
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)

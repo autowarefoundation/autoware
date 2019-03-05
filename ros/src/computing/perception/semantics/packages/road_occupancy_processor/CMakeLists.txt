@@ -1,8 +1,11 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(road_occupancy_processor)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(vector_map REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-    autoware_build_flags
     cv_bridge
     image_transport
     pcl_conversions
@@ -14,7 +17,6 @@ find_package(catkin REQUIRED COMPONENTS
     grid_map_ros
     grid_map_cv
     grid_map_msgs
-    vector_map
 )
 
 find_package(Qt5Core REQUIRED)
@@ -39,7 +41,7 @@ set(CMAKE_CXX_FLAGS "-O3 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 #Road Occupancy Processor Library
 add_library(road_occupancy_processor_lib SHARED
-    include/road_occupancy_processor.h
+        include/road_occupancy_processor/road_occupancy_processor.h
     src/road_occupancy_processor.cpp
 )
 
@@ -53,6 +55,7 @@ endif()
 target_include_directories(road_occupancy_processor_lib PRIVATE
     ${OpenCV_INCLUDE_DIR}
     ${catkin_INCLUDE_DIRS}
+    ${vector_map_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
     ${PCL_INCLUDE_DIRS}
     include
@@ -76,6 +79,7 @@ add_executable(road_occupancy_processor
 target_include_directories(road_occupancy_processor PRIVATE
     ${OpenCV_INCLUDE_DIR}
     ${catkin_INCLUDE_DIRS}
+    ${vector_map_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
     ${PCL_INCLUDE_DIRS}
     include)
@@ -83,10 +87,13 @@ target_include_directories(road_occupancy_processor PRIVATE
 target_link_libraries(road_occupancy_processor
     road_occupancy_processor_lib)
 
-install(TARGETS road_occupancy_processor
+install(TARGETS road_occupancy_processor road_occupancy_processor_lib
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+install(DIRECTORY include/${PROJECT_NAME}/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
 install(DIRECTORY launch/
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch

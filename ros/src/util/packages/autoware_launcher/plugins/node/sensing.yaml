@@ -1,0 +1,14 @@
+format: Autoware Launcher Plugin Version 0.1
+exts:
+- name: description
+  type: str
+rules:
+- { name: lidar,     plugin: [node/lidar_single, node/lidar_multi] }
+- { name: camera,    plugin: node/camera_group }
+- { name: gnss,      plugin: refs/nmea2tfpose }
+
+panel:
+  widget: node.panel
+  frames:
+  - target: exts.description
+    widget: basic.text

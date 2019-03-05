@@ -1,0 +1,6 @@
+<launch>
+    <arg name="width"/>
+    <arg name="height"/>
+    <arg name="fps"/>
+    <node pkg="uvc_camera" type="uvc_camera_node" name="uvc_camera_node"/>
+</launch>
