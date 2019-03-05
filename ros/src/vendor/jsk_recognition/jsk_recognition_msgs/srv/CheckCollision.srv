@@ -1,4 +1,0 @@
-sensor_msgs/JointState joint
-geometry_msgs/PoseStamped pose
----
-bool result
