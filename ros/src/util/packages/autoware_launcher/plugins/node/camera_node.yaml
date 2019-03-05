@@ -1,4 +1,4 @@
 format: Autoware Launcher Plugin Version 0.1
 rules:
-- { name: driver,      plugin: { scan: driver/camera } }
+- { name: driver,      plugin: [scan: driver/camera, driver/avt_vimba_mako ] }
 - { name: calibration, plugin: leaf/calibration }

@@ -1,0 +1,34 @@
+format: Autoware Launcher Plugin Version 0.1
+rosxml: $(find runtime_manager)/scripts/avt_camera_script.launch
+args:
+- {name: guid, type: str}
+- {name: ip, type: str}
+- {name: camera_info_url, type: str}
+- {name: frame_id, type: str, default: avt_camera}
+- {name: show_debug_prints, type: bool, default: true}
+- {name: acquisition_rate, type: int, default: 20}
+- {name: pixel_format, type: str, default: BayerRG8}
+- {name: exposure, type: int, default: 10000}
+- {name: gain, type: int, default: 15}
+- {name: exposure_auto, type: str, default: Continuous}
+- {name: gain_auto, type: str, default: Continuous}
+- {name: whitebalance_auto, type: str, default: Continuous}
+- {name: exposure_auto_max, type: int, default: 50000}
+- {name: gain_auto_max, type: int, default: 50}
+panel:
+  widget: node.panel
+  frames:
+  - {target: args.guid, widget: basic.text}
+  - {target: args.ip, widget: basic.text}
+  - {target: args.camera_info_url, widget: basic.text}
+  - {target: args.frame_id, widget: basic.text}
+  - {target: args.show_debug_prints, widget: basic.bool}
+  - {target: args.acquisition_rate, widget: basic.int}
+  - {target: args.pixel_format, widget: basic.text}
+  - {target: args.exposure, widget: basic.int}
+  - {target: args.gain, widget: basic.int}
+  - {target: args.exposure_auto, widget: basic.text}
+  - {target: args.gain_auto, widget: basic.text}
+  - {target: args.whitebalance_auto, widget: basic.text}
+  - {target: args.exposure_auto_max, widget: basic.int}
+  - {target: args.gain_auto_max, widget: basic.int}

@@ -1,0 +1,41 @@
+<launch>
+    <arg name="guid" default=""/>
+    <arg name="ip" default=""/>
+    <arg name="camera_info_url" default=""/>
+    <arg name="frame_id" default="avt_camera"/>
+    <arg name="trig_timestamp_topic" default=""/>
+    <arg name="show_debug_prints" default="true"/>
+
+    <arg name="trigger_source" default="FixedRate"/>
+
+    <arg name="acquisition_mode" default="Continuous"/>
+    <arg name="acquisition_rate" default="20"/>
+
+    <arg name="pixel_format" default="BayerRG8"/>
+
+    <arg name="exposure" default="10000"/>
+    <arg name="gain" default="15"/>
+
+    <arg name="exposure_auto" default="Continuous"/>
+    <arg name="gain_auto" default="Continuous"/>
+    <arg name="whitebalance_auto" default="Continuous"/>
+
+    <arg name="exposure_auto_max" default="50000"/>
+    <arg name="gain_auto_max" default="50"/>
+
+    <arg name="binning_x" default="1"/>
+    <arg name="binning_y" default="1"/>
+    <arg name="decimation_x" default="1"/>
+    <arg name="decimation_y" default="1"/>
+    <arg name="x_offset" default="0"/>
+    <arg name="y_offset" default="0"/>
+
+    <arg name="width" default="1920"/>
+    <arg name="height" default="1440"/>
+
+    <arg name="stream_bytes_per_second" default="45000000"/>
+
+    <node name="avt_camera_script" pkg="runtime_manager" type="avt_vimba.sh" args="guid:=$(arg guid) ip:=$(arg ip)  camera_info_url:=$(arg camera_info_url) frame_id:=$(arg frame_id) trig_timestamp_topic:=$(arg trig_timestamp_topic) show_debug_prints:=$(arg show_debug_prints) trigger_source:=$(arg trigger_source) acquisition_mode:=$(arg acquisition_mode) acquisition_rate:=$(arg acquisition_rate) pixel_format:=$(arg pixel_format) exposure:=$(arg exposure) gain:=$(arg gain) exposure_auto:=$(arg exposure_auto) gain_auto:=$(arg gain_auto) whitebalance_auto:=$(arg whitebalance_auto) exposure_auto_max:=$(arg exposure_auto_max) gain_auto_max:=$(arg gain_auto_max) binning_x:=$(arg binning_x) binning_y:=$(arg binning_y) decimation_x:=$(arg decimation_x) decimation_y:=$(arg decimation_y) x_offset:=$(arg x_offset) y_offset:=$(arg y_offset) width:=$(arg width) height:=$(arg height) stream_bytes_per_second:=$(arg stream_bytes_per_second)" output="screen">
+    </node>
+
+</launch>
