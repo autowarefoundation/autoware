@@ -1,8 +1,13 @@
 format: Autoware Launcher Plugin Version 0.1
 rules:
 - { name: points_preproc, plugin: refs/ray_ground_filter }
+- { name: wayarea2grid,   plugin: refs/wayarea2grid }
 - { name: points_detect,  plugin: refs/euclidean_cluster }
 - { name: images_detect,  plugin: refs/yolov3 }
 - { name: fusion,         plugin: refs/range_vision_fusion }
+<<<<<<< HEAD
 - { name: tracking,       plugin: refs/imm_ukf_pda_track }
 - { name: lidar_point_pillars, plugin: refs/lidar_point_pillars }
+=======
+- { name: tracking,       plugin: refs/imm_ukf_pda_track   }
+>>>>>>> origin/feature/autoware_launcher_plugins

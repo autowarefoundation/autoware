@@ -1,0 +1,20 @@
+format: Autoware Launcher Plugin Version 0.1
+rosxml: $(find object_map)/launch/wayarea2grid.launch
+args:
+- {name: sensor_frame, type: str, default: velodyne}
+- {name: grid_frame, type: str, default: map}
+- {name: grid_resolution, type: real, default: 0.3}
+- {name: grid_length_x, type: int, default: 150}
+- {name: grid_length_y, type: int, default: 150}
+- {name: grid_position_x, type: int, default: 0}
+- {name: grid_position_y, type: int, default: 0}
+panel:
+  widget: node.panel
+  frames:
+  - {target: args.sensor_frame, widget: basic.text}
+  - {target: args.grid_frame, widget: basic.text}
+  - {target: args.grid_resolution, widget: basic.real}
+  - {target: args.grid_length_x, widget: basic.int}
+  - {target: args.grid_length_y, widget: basic.int}
+  - {target: args.grid_position_x, widget: basic.int}
+  - {target: args.grid_position_y, widget: basic.int}
