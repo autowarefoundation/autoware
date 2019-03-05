@@ -1,12 +1,42 @@
 format: Autoware Launcher Plugin Version 0.1
 args:
-- { name: load_csv,        type: bool, default: true }
-- { name: multi_lane_csv,  type: str,  default: "" }
+- {name: load_csv, type: bool, default: true}
+- {name: multi_lane_csv, type: str}
+- {name: replanning_mode, type: bool, default: false}
+- {name: velocity_max, type: real, default: 20.0}
+- {name: velocity_min, type: real, default: 4.0}
+- {name: accel_limit, type: real, default: 0.5}
+- {name: decel_limit, type: real, default: 0.3}
+- {name: radius_thresh, type: real, default: 20.0}
+- {name: radius_min, type: real, default: 6.0}
+- {name: resample_mode, type: bool, default: true}
+- {name: resample_interval, type: real, default: 1.0}
+- {name: velocity_offset, type: int, default: 4}
+- {name: end_point_offset, type: int, default: 1}
+- {name: braking_distance, type: int, default: 5}
+- {name: replan_curve_mode, type: bool, default: false}
+- {name: replan_endpoint_mode, type: bool, default: true}
+- {name: overwrite_vmax_mode, type: bool, default: false}
+- {name: realtime_tuning_mode, type: bool, default: false}
 
 panel:
   widget: node.panel
   frames:
-  - target: args.load_csv
-    widget: basic.bool
-  - target: args.multi_lane_csv
-    widget: basic.file
+  - {target: args.load_csv, widget: basic.bool}
+  - {target: args.multi_lane_csv, widget: basic.text}
+  - {target: args.replanning_mode, widget: basic.bool}
+  - {target: args.velocity_max, widget: basic.real}
+  - {target: args.velocity_min, widget: basic.real}
+  - {target: args.accel_limit, widget: basic.real}
+  - {target: args.decel_limit, widget: basic.real}
+  - {target: args.radius_thresh, widget: basic.real}
+  - {target: args.radius_min, widget: basic.real}
+  - {target: args.resample_mode, widget: basic.bool}
+  - {target: args.resample_interval, widget: basic.real}
+  - {target: args.velocity_offset, widget: basic.int}
+  - {target: args.end_point_offset, widget: basic.int}
+  - {target: args.braking_distance, widget: basic.int}
+  - {target: args.replan_curve_mode, widget: basic.bool}
+  - {target: args.replan_endpoint_mode, widget: basic.bool}
+  - {target: args.overwrite_vmax_mode, widget: basic.bool}
+  - {target: args.realtime_tuning_mode, widget: basic.bool}

@@ -1,9 +1,7 @@
 from logging import getLogger
 logger = getLogger(__name__)
 
-import collections
 import os
-import xml.etree.ElementTree as xmltree
 import yaml
 
 from . import basetree
@@ -45,7 +43,7 @@ class AwPluginNode(basetree.AwBaseNode):
         self.__frame  = None
 
     def dump(self):
-        print yaml.safe_dump(self.todict())
+        print(yaml.safe_dump(self.todict()))
 
     def todict(self):
         return \
@@ -88,7 +86,7 @@ class AwPluginNode(basetree.AwBaseNode):
         return self.__frame
 
     def default_config(self):
-        values = {"str":"", "int":"0", "bool":False}
+        values = {"str":"", "int":0, "real":0.0, "bool":False}
         def default_value(data):
             value = data.rest.get("default")
             if value is None:
@@ -110,23 +108,22 @@ class AwPluginNode(basetree.AwBaseNode):
     def load(self, rootpath):
         filepath = os.path.join(rootpath, self.path())
 
-        if os.path.exists(filepath + ".yaml"):
-            with open(filepath+ ".yaml") as fp:
-                ydata = yaml.safe_load(fp)
+        with open(filepath+ ".yaml") as fp:
+            ydata = yaml.safe_load(fp)
 
-            if ydata.get("format") != "Autoware Launcher Plugin Version 0.1":
-                raise Exception("unknown plugin format: " + filepath)
+        if ydata.get("format") != "Autoware Launcher Plugin Version 0.1":
+            raise Exception("unknown plugin format: " + filepath)
 
-            self.__isleaf = ydata.get("rules") is None
-            self.__rosxml = ydata.get("rosxml", "$(find autoware_launcher)/plugins/{}.xml".format(self.path()))
-            self.__exts   = [AwPluginDataElement(data) for data in ydata.get("exts", [])]
-            self.__args   = [AwPluginDataElement(data) for data in ydata.get("args", [])]
-            self.__rules  = [AwPluginRuleElement(data, self) for data in ydata.get("rules", [])]
-            self.__panel  = AwPluginPanelElement(ydata.get("panel", {}))
-            self.__frame  = AwPluginFrameElement(ydata.get("frame", {}))
-            self.__fields = {}
-            self.__fields.update({"exts."+data.name: data for data in self.__exts})
-            self.__fields.update({"args."+data.name: data for data in self.__args})
+        self.__isleaf = ydata.get("rules") is None
+        self.__rosxml = ydata.get("rosxml", "$(find autoware_launcher)/plugins/{}.xml".format(self.path()))
+        self.__exts   = [AwPluginDataElement(data) for data in ydata.get("exts", [])]
+        self.__args   = [AwPluginDataElement(data) for data in ydata.get("args", [])]
+        self.__rules  = [AwPluginRuleElement(data, self) for data in ydata.get("rules", [])]
+        self.__panel  = AwPluginPanelElement(ydata.get("panel", {}))
+        self.__frame  = AwPluginFrameElement(ydata.get("frame", {}))
+        self.__fields = {}
+        self.__fields.update({"exts."+data.name: data for data in self.__exts})
+        self.__fields.update({"args."+data.name: data for data in self.__args})
 
 
 

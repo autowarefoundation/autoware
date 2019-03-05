@@ -1,2 +1,67 @@
 format: Autoware Launcher Plugin Version 0.1
 rosxml: $(find astar_planner)/launch/obstacle_avoid.launch
+args:
+- {name: use_2dnav_goal, type: bool, default: false}
+- {name: map_frame, type: str, default: map}
+- {name: angle_size, type: int, default: 42}
+- {name: minimum_turning_radius, type: real, default: 5.5}
+- {name: obstacle_threshold, type: int, default: 70}
+- {name: robot_length, type: real, default: 5.0}
+- {name: robot_width, type: real, default: 4.0}
+- {name: base2back, type: real, default: 0.8}
+- {name: curve_weight, type: real, default: 1.0}
+- {name: reverse_weight, type: real, default: 2.5}
+- {name: distance_heuristic_weight, type: real, default: 1.0}
+- {name: potential_weight, type: real, default: 10.0}
+- {name: lateral_goal_range, type: real, default: 0.5}
+- {name: longitudinal_goal_range, type: real, default: 2.0}
+- {name: goal_angle_range, type: real, default: 48.0}
+- {name: time_limit, type: real, default: 5.0}
+- {name: use_back, type: bool, default: false}
+- {name: use_wavefront_heuristic, type: bool, default: false}
+- {name: use_potential_heuristic, type: bool, default: true}
+- {name: publish_marker, type: bool, default: true}
+- {name: obstacle_detect_count, type: int, default: 8}
+- {name: avoid_distance, type: int, default: 13}
+- {name: avoid_velocity_limit_mps, type: real, default: 4.5}
+- {name: upper_bound_ratio, type: real, default: 1.2}
+- {name: avoidance, type: bool, default: true}
+- {name: switch_path, type: bool, default: true}
+- {name: obstacle_height, type: real, default: 1.0}
+- {name: obstacle_width, type: real, default: 1.0}
+- {name: points_interval, type: real, default: 0.1}
+- {name: obstacle_frame, type: str, default: /velodyne}
+
+panel:
+  widget: node.panel
+  frames:
+  - {target: args.use_2dnav_goal, widget: basic.bool}
+  - {target: args.map_frame, widget: basic.text}
+  - {target: args.angle_size, widget: basic.int}
+  - {target: args.minimum_turning_radius, widget: basic.real}
+  - {target: args.obstacle_threshold, widget: basic.int}
+  - {target: args.robot_length, widget: basic.real}
+  - {target: args.robot_width, widget: basic.real}
+  - {target: args.base2back, widget: basic.real}
+  - {target: args.curve_weight, widget: basic.real}
+  - {target: args.reverse_weight, widget: basic.real}
+  - {target: args.distance_heuristic_weight, widget: basic.real}
+  - {target: args.potential_weight, widget: basic.real}
+  - {target: args.lateral_goal_range, widget: basic.real}
+  - {target: args.longitudinal_goal_range, widget: basic.real}
+  - {target: args.goal_angle_range, widget: basic.real}
+  - {target: args.time_limit, widget: basic.real}
+  - {target: args.use_back, widget: basic.bool}
+  - {target: args.use_wavefront_heuristic, widget: basic.bool}
+  - {target: args.use_potential_heuristic, widget: basic.bool}
+  - {target: args.publish_marker, widget: basic.bool}
+  - {target: args.obstacle_detect_count, widget: basic.int}
+  - {target: args.avoid_distance, widget: basic.int}
+  - {target: args.avoid_velocity_limit_mps, widget: basic.real}
+  - {target: args.upper_bound_ratio, widget: basic.real}
+  - {target: args.avoidance, widget: basic.bool}
+  - {target: args.switch_path, widget: basic.bool}
+  - {target: args.obstacle_height, widget: basic.real}
+  - {target: args.obstacle_width, widget: basic.real}
+  - {target: args.points_interval, widget: basic.real}
+  - {target: args.obstacle_frame, widget: basic.text}
