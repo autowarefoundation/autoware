@@ -1,0 +1,26 @@
+<launch>
+
+    <arg name="parent_frame"/>
+    <arg name="local_frame"/>
+    <arg name="tx"/>
+    <arg name="ty"/>
+    <arg name="tz"/>
+    <arg name="rx"/>
+    <arg name="ry"/>
+    <arg name="rz"/>
+
+    <group ns="$(arg local_frame)">
+        <node pkg="tf2_ros" type="static_transform_publisher" name="static_transform_publisher"
+            args="$(arg tx) $(arg ty) $(arg tz) $(arg rz) $(arg ry) $(arg rx) $(arg parent_frame) $(arg local_frame)" />
+    </group>
+
+    <!-- Parameters for ndt_matching -->
+    <param name="localizer" value="$(arg local_frame)"/>
+    <param name="tf_x"      value="$(arg tx)"/>
+    <param name="tf_y"      value="$(arg ty)"/>
+    <param name="tf_z"      value="$(arg tz)"/>
+    <param name="tf_roll"   value="$(arg rx)"/>
+    <param name="tf_pitch"  value="$(arg ry)"/>
+    <param name="tf_yaw"    value="$(arg rz)"/>
+
+</launch>

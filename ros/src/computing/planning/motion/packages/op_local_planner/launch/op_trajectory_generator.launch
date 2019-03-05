@@ -1,0 +1,17 @@
+<launch>
+	<!-- Trajectory Generation Specific Parameters -->
+	<arg name="samplingTipMargin" 		default="4"  /> 
+	<arg name="samplingOutMargin" 		default="16" /> 
+	<arg name="samplingSpeedFactor" 	default="0.25" />		
+	<arg name="enableHeadingSmoothing" 	default="false" />
+			
+	<node pkg="op_local_planner" type="op_trajectory_generator" name="op_trajectory_generator" output="screen">
+	
+	<param name="samplingTipMargin" 		value="$(arg samplingTipMargin)"  /> 
+	<param name="samplingOutMargin" 		value="$(arg samplingOutMargin)" /> 
+	<param name="samplingSpeedFactor" 		value="$(arg samplingSpeedFactor)" />		
+	<param name="enableHeadingSmoothing" 	value="$(arg enableHeadingSmoothing)" />
+			
+	</node>				
+			
+</launch>

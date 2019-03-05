@@ -1,3 +1,6 @@
-- {name: udon_receiver}
-- name: udon_sender
+- name: /udon_receiver
+  publish: []
+  subscribe: []
+- name: /udon_sender
+  publish: []
   subscribe: [/mode_info, /current_pose]

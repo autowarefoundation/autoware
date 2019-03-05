@@ -1,2 +1,0 @@
-- name: points2polygon
-  subscribe: [/config/points2polygon, /points_raw]

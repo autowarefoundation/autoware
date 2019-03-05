@@ -1,0 +1,6 @@
+children:
+- lane_rule
+- lane_stop
+- lane_select
+config: {}
+plugin: node/mission

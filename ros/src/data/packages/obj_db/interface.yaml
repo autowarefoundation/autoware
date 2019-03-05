@@ -1,6 +1,9 @@
-- name: can_uploader
+- name: /can_uploader
+  publish: []
   subscribe: [/can_info]
-- name: obj_downloader
-  publish: [/mo_marker]
-- name: obj_uploader
+- name: /obj_downloader
+  publish: [/mo_pictograms]
+  subscribe: []
+- name: /obj_uploader
+  publish: []
   subscribe: [/car_pose, /pedestrian_pose, /current_pose]

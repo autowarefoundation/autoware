@@ -1,0 +1,39 @@
+<!--
+roslaunch autoware_camera_lidar_calibrator camera_lidar_calibration.launch intrinsics_file:=/home/ne0/Desktop/calib_heat_camera1_rear_center_fisheye.yaml compressed_stream:=True camera_id:=camera1
+-->
+<launch>
+    <arg name="image_src" default="/image_raw" />
+    <arg name="camera_info_src" default="/camera_info" />
+    <arg name="camera_id" default="/" />
+    <arg name="intrinsics_file" />
+    <arg name="compressed_stream" default="false" />
+    <arg name="target_frame" default="velodyne"/>
+    <arg name="camera_frame" default="camera"/>
+
+    <node if="$(arg compressed_stream)" name="decompress" type="republish" pkg="image_transport" output="screen" args="compressed in:=/$(arg camera_id)/$(arg image_src) raw out:=/$(arg camera_id)/$(arg image_src)" />
+
+    <node pkg="calibration_publisher" type="calibration_publisher" name="calibration_publisher" ns="$(arg camera_id)">
+        <param name="register_lidar2camera_tf" type="bool" value="false"/>
+        <param name="publish_extrinsic_mat" type="bool" value="false"/>
+        <param name="publish_camera_info" type="bool" value="true"/>
+        <param name="image_topic_src" value="$(arg image_src)"/>
+        <param name="calibration_file" value="$(arg intrinsics_file)"/>
+        <param name="target_frame" type="str" value="$(arg target_frame)"/>
+        <param name="camera_frame" type="str" value="$(arg camera_frame)"/>
+    </node>
+
+    <node pkg="image_processor" type="image_rectifier" name="rectifier" ns="$(arg camera_id)" output="screen">
+        <param name="image_src" value="$(arg image_src)" />
+        <param name="camera_info_src" value="$(arg camera_info_src)" />
+    </node>
+
+    <node pkg="image_view2" type="image_view2" name="image_view2" ns="$(arg camera_id)" output="screen">
+        <remap from="image" to="image_rectified" />
+    </node>
+
+    <node pkg="autoware_camera_lidar_calibrator" type="autoware_camera_lidar_calibration_node" name="autoware_camera_lidar_calibration_node" ns="$(arg camera_id)" output="screen">
+        <param name="image_src" value="/image_rectified" />
+        <param name="camera_info_src" value="$(arg camera_info_src)" />
+    </node>
+
+</launch>

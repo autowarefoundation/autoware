@@ -32,3 +32,5 @@ include_directories(
 # include
 # ${catkin_INCLUDE_DIRS}
 )
+catkin_install_python(PROGRAMS scripts/app.py
+        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

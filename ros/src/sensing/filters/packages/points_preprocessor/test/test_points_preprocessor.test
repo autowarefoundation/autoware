@@ -1,0 +1,17 @@
+<!-- -*- mode: XML -*- -->
+<!-- rostest of the velodyne_laserscan system -->
+
+<launch>
+
+  <!-- Select log or screen output -->
+  <arg name="output" default="log"/> <!-- screen/log -->
+
+  <!-- Start the laserscan node -->
+  <node pkg="points_preprocessor" type="ray_ground_filter" name="ray_ground_filter" output="$(arg output)" />
+
+  <!-- Start the rostest -->
+  <test test-name="test_points_preprocessor" pkg="points_preprocessor"
+        type="test_raygroundfilter_clipcloud" name="test_ray_ground_filter">
+  </test>
+
+</launch>

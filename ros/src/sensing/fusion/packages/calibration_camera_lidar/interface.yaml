@@ -1,6 +1,0 @@
-- name: calibration_publisher
-  publish: [/camera/camera_info, /projection_matrix]
-  subscribe: [/image_raw]
-- name: calibration_test
-  subscribe: [/image_raw, /scan]
-- {name: calibration_toolkit}

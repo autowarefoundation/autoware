@@ -1,0 +1,50 @@
+<!-- -->
+<launch>
+  <arg name="gating_thres" default="9.22" />
+  <arg name="gate_probability" default="0.99" />
+  <arg name="detection_probability" default="0.9" />
+  <arg name="life_time_thres" default="8" />
+  <arg name="static_velocity_thres" default="0.5" />
+  <arg name="static_num_history_thres" default="3" />
+  <arg name="prevent_explosion_thres" default="1000" />
+  <arg name="lane_direction_chi_thres" default="2.71" />
+  <arg name="nearest_lane_distance_thres" default="1.0" />
+  <arg name="tracker_input_topic" default="/detection/fusion_tools/objects" />
+  <arg name="tracker_output_topic" default="/detection/object_tracker/objects" />
+  <arg name="use_sukf" default="use_sukf" />
+  <arg name="use_vectormap" default="false" />
+
+  <arg name="tracking_frame" default="/world" />
+  <arg name="lane_frame" default="/map" />
+
+  <arg name="merge_distance_threshold" default="0.5"/>
+
+  <arg name="namespace" default="/detection/object_tracker/"/>
+
+  <!-- rosrun lidar_tracker euclidean_cluster _points_node:="" -->
+  <node pkg="imm_ukf_pda_track" type="imm_ukf_pda" name="imm_ukf_pda_01" output="screen">
+    <param name="gating_thres"            value="$(arg gating_thres)" />
+    <param name="gate_probability"        value="$(arg gate_probability)" />
+    <param name="detection_probability"   value="$(arg detection_probability)" />
+    <param name="life_time_thres"         value="$(arg life_time_thres)" />
+    <param name="static_velocity_thres"   value="$(arg static_velocity_thres)" />
+    <param name="static_num_history_thres"   value="$(arg static_num_history_thres)" />
+    <param name="prevent_explosion_thres" value="$(arg prevent_explosion_thres)" />
+    <param name="lane_direction_chi_thres" value="$(arg lane_direction_chi_thres)" />
+    <param name="nearest_lane_distance_thres" value="$(arg nearest_lane_distance_thres)" />
+    <param name="tracking_frame"          value="$(arg tracking_frame)" />
+    <param name="lane_frame"          value="$(arg lane_frame)" />
+    <param name="use_sukf"                value="$(arg use_sukf)" />
+    <param name="use_vectormap"           value="$(arg use_vectormap)" />
+
+    <remap from="/detection/fusion_tools/objects"         to="$(arg tracker_input_topic)" />
+    <remap from="/detection/objects"       to="$(arg tracker_output_topic)" />
+  </node>
+
+  <node pkg="detected_objects_visualizer" type="visualize_detected_objects" name="ukf_track_visualization_01"
+        output="screen" ns="$(arg namespace)"/>
+
+  <node pkg="topic_tools" type="relay" name="ukf_track_relay_01"
+        output="screen" args="$(arg namespace)/objects /detection/objects"/>
+
+</launch>

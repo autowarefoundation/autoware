@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<package>
+    <name>trafficlight_recognizer</name>
+    <version>1.10.0</version>
+    <description>The trafficlight_recognizer package</description>
+    <maintainer email="hirabayashi@ertl.jp">Manato HIRABAYASHI</maintainer>
+    <license>Apache 2</license>
+    <buildtool_depend>catkin</buildtool_depend>
+    <buildtool_depend>autoware_build_flags</buildtool_depend>
+    <build_depend>cmake_modules</build_depend>
+    <build_depend>runtime_manager</build_depend>
+    <build_depend>std_msgs</build_depend>
+    <build_depend>autoware_msgs</build_depend>
+    <build_depend>vector_map_server</build_depend>
+    <build_depend>geometry_msgs</build_depend>
+    <build_depend>waypoint_follower</build_depend>
+    <build_depend>qtbase5-dev</build_depend>
+    <build_depend>cv_bridge</build_depend>
+    <build_depend>eigen</build_depend>
+    <build_depend>libvectormap</build_depend>
+    <build_depend>roscpp</build_depend>
+    <build_depend>sensor_msgs</build_depend>
+    <build_depend>tf</build_depend>
+    <build_depend>vector_map</build_depend>
+    <build_depend>visualization_msgs</build_depend>
+
+    <run_depend>cmake_modules</run_depend>
+    <run_depend>runtime_manager</run_depend>
+    <run_depend>std_msgs</run_depend>
+    <run_depend>message_runtime</run_depend>
+    <run_depend>autoware_msgs</run_depend>
+    <run_depend>vector_map_server</run_depend>
+    <run_depend>geometry_msgs</run_depend>
+    <run_depend>waypoint_follower</run_depend>
+    <run_depend>libqt5-core</run_depend>
+    <run_depend>libqt5-gui</run_depend>
+    <run_depend>libqt5-widgets</run_depend>
+    <run_depend>cv_bridge</run_depend>
+    <run_depend>eigen</run_depend>
+    <run_depend>libvectormap</run_depend>
+    <run_depend>roscpp</run_depend>
+    <run_depend>sensor_msgs</run_depend>
+    <run_depend>tf</run_depend>
+    <run_depend>vector_map</run_depend>
+    <run_depend>visualization_msgs</run_depend>
+
+    <export>
+    </export>
+</package>

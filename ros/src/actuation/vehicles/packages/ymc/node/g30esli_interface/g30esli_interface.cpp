@@ -1,38 +1,25 @@
 /*
- *  Copyright (c) 2017, Nagoya University
- *  All rights reserved.
+ * Copyright 2017-2019 Autoware Foundation. All rights reserved.
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  * Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name of Autoware nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #include <cmath>
 #include <thread>
 
 #include <ros/ros.h>
 #include <geometry_msgs/TwistStamped.h>
+#include <autoware_msgs/VehicleCmd.h>
 
 #include "g30esli_interface_util.h"
 #include "can_utils/cansend.h"
@@ -42,11 +29,11 @@
 namespace
 {
 // ros param
-double g_wheel_base;
 int g_mode;
-std::string g_device;
 int g_loop_rate;
 int g_stop_time_sec;
+double g_wheel_base;
+std::string g_device;
 
 // ros publisher
 ros::Publisher g_current_twist_pub;
@@ -56,24 +43,28 @@ uint16_t g_target_velocity_ui16;
 int16_t g_steering_angle_deg_i16;
 double g_current_vel_kmph = 0.0;
 bool g_terminate_thread = false;
+double g_steering_offset_deg = 0.0;
 
 // cansend tool
 mycansend::CanSender g_cansender;
 
-void twist_cmd_callback(const geometry_msgs::TwistStampedConstPtr &msg)
+void vehicle_cmd_callback(const autoware_msgs::VehicleCmdConstPtr& msg)
 {
-  double target_velocity = msg->twist.linear.x * 3.6; // [m/s] -> [km/h]
-  double target_steering_angle_deg = ymc::computeTargetSteeringAngleDegree(msg->twist.angular.z, msg->twist.linear.x, g_wheel_base);
+  // TODO: use steer angle, shift, turn signal
+  double target_velocity = msg->twist_cmd.twist.linear.x * 3.6;  // [m/s] -> [km/h]
+  double target_steering_angle_deg = ymc::computeTargetSteeringAngleDegree(msg->twist_cmd.twist.angular.z,
+                                                                           msg->twist_cmd.twist.linear.x, g_wheel_base);
+  target_steering_angle_deg += g_steering_offset_deg;
 
   // factor
-  target_velocity           *= 10.0;
+  target_velocity *= 10.0;
   target_steering_angle_deg *= 10.0;
 
-  g_target_velocity_ui16    = target_velocity;
-  g_steering_angle_deg_i16  = target_steering_angle_deg * -1.0;
+  g_target_velocity_ui16 = target_velocity;
+  g_steering_angle_deg_i16 = target_steering_angle_deg * -1.0;
 }
 
-void current_vel_callback(const geometry_msgs::TwistStampedConstPtr &msg)
+void current_vel_callback(const geometry_msgs::TwistStampedConstPtr& msg)
 {
   g_current_vel_kmph = msg->twist.linear.x * 3.6;
 }
@@ -87,16 +78,16 @@ void changeMode()
     if (ymc::kbhit())
     {
       char c = getchar();
-
-      /*
       if (c == ' ')
+      {
         g_mode = 3;
-      */
-
-      if (c == 's')
+      }
+      else if (c == 's')
+      {
         g_mode = 8;
+      }
     }
-    usleep(20000); // sleep 20msec
+    usleep(20000);  // sleep 20msec
   }
 }
 
@@ -123,21 +114,21 @@ void readCanData(FILE* fp)
 
       int id = std::stoi(parsed_data.at(1), nullptr, 10);
       double _current_vel_mps = ymc::translateCanData(id, data, &g_mode);
-      if(_current_vel_mps != RET_NO_PUBLISH )
+      if (_current_vel_mps != RET_NO_PUBLISH)
       {
-	      geometry_msgs::TwistStamped ts;
-	      ts.twist.linear.x = _current_vel_mps;
-	      g_current_twist_pub.publish(ts);
-      } 
-      
+        geometry_msgs::TwistStamped ts;
+        ts.header.frame_id = "base_link";
+        ts.header.stamp = ros::Time::now();
+        ts.twist.linear.x = _current_vel_mps;
+        g_current_twist_pub.publish(ts);
+      }
     }
-
   }
 }
 
-} // namespace
+}  // namespace
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   // ROS initialization
   ros::init(argc, argv, "g30esli_interface");
@@ -149,19 +140,21 @@ int main(int argc, char *argv[])
   private_nh.param<std::string>("device", g_device, "can0");
   private_nh.param<int>("loop_rate", g_loop_rate, 100);
   private_nh.param<int>("stop_time_sec", g_stop_time_sec, 1);
+  private_nh.param<double>("steering_offset_deg", g_steering_offset_deg, 0.0);
 
   // init cansend tool
   g_cansender.init(g_device);
 
   // subscriber
-  ros::Subscriber twist_cmd_sub = n.subscribe<geometry_msgs::TwistStamped>("twist_cmd", 1, twist_cmd_callback);
-  ros::Subscriber current_vel_sub = n.subscribe<geometry_msgs::TwistStamped>("current_velocity", 1, current_vel_callback);
+  ros::Subscriber vehicle_cmd_sub = n.subscribe<autoware_msgs::VehicleCmd>("vehicle_cmd", 1, vehicle_cmd_callback);
+  ros::Subscriber current_vel_sub =
+      n.subscribe<geometry_msgs::TwistStamped>("current_velocity", 1, current_vel_callback);
 
   // publisher
   g_current_twist_pub = n.advertise<geometry_msgs::TwistStamped>("ymc_current_twist", 10);
 
   // read can data from candump
-  FILE *fp = popen("candump can0", "r");
+  FILE* fp = popen("candump can0", "r");
 
   // create threads
   std::thread t1(changeMode);
@@ -172,11 +165,11 @@ int main(int argc, char *argv[])
   while (ros::ok())
   {
     // data
-    unsigned char mode              = static_cast<unsigned char>(g_mode);
-    unsigned char shift             = 0;
-    uint16_t target_velocity_ui16   = g_target_velocity_ui16;
-    int16_t steering_angle_deg_i16  = g_steering_angle_deg_i16;
-    static unsigned char brake      = 1;
+    unsigned char mode = static_cast<unsigned char>(g_mode);
+    unsigned char shift = 0;
+    uint16_t target_velocity_ui16 = g_target_velocity_ui16;
+    int16_t steering_angle_deg_i16 = g_steering_angle_deg_i16;
+    static unsigned char brake = 1;
     static unsigned char heart_beat = 0;
 
     // change to STOP MODE...
@@ -228,6 +221,6 @@ int main(int argc, char *argv[])
   t2.join();
 
   pclose(fp);
-  
+
   return 0;
 }

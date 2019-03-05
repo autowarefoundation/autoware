@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package>
+    <name>vision_dpm_ttic_detect</name>
+    <version>1.10.0</version>
+    <description>The vision_dpm_ttic_detect package</description>
+    <maintainer email="abrahammonrroy@yahoo.com">amc</maintainer>
+    <license>Apache 2</license>
+
+    <buildtool_depend>catkin</buildtool_depend>
+    <buildtool_depend>autoware_build_flags</buildtool_depend>
+
+    <build_depend>cv_bridge</build_depend>
+    <build_depend>roscpp</build_depend>
+    <build_depend>sensor_msgs</build_depend>
+    <build_depend>std_msgs</build_depend>
+    <build_depend>autoware_config_msgs</build_depend>
+    <build_depend>autoware_msgs</build_depend>
+    <build_depend>libdpm_ttic</build_depend>
+    <build_depend>libopencv-dev</build_depend>
+
+    <run_depend>cv_bridge</run_depend>
+    <run_depend>roscpp</run_depend>
+    <run_depend>sensor_msgs</run_depend>
+    <run_depend>std_msgs</run_depend>
+    <run_depend>autoware_config_msgs</run_depend>
+    <run_depend>autoware_msgs</run_depend>
+    <run_depend>libdpm_ttic</run_depend>
+    <run_depend>libopencv-dev</run_depend>
+
+</package>

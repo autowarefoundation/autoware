@@ -1,40 +1,25 @@
 /*
- *  Copyright (c) 2015, Nagoya University
- *  All rights reserved.
+ * Copyright 2015-2019 Autoware Foundation. All rights reserved.
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  * Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name of Autoware nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #include "ff_waypoint_follower_core.h"
 #include "autoware_msgs/LaneArray.h"
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/InteractiveMarkerPose.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float32.h>
-#include "geo_pos_conv.hh"
-#include "UtilityH.h"
+#include "op_utility/UtilityH.h"
 #include "math.h"
 
 using namespace std;
@@ -266,7 +251,7 @@ void FFSteerControl::callbackGetBehaviorState(const geometry_msgs::TwistStampedC
 	bNewBehaviorState = true;
 }
 
-void FFSteerControl::callbackGetCurrentTrajectory(const autoware_msgs::laneConstPtr &msg)
+void FFSteerControl::callbackGetCurrentTrajectory(const autoware_msgs::LaneConstPtr &msg)
 {
 	m_State.m_Path.clear();
 	for(unsigned int i = 0 ; i < msg->waypoints.size(); i++)
@@ -658,36 +643,36 @@ void FFSteerControl::PlannerMainLoop()
 				std::cout << "Record One Point To Path: " <<  m_CurrentPos.pos.ToString() << std::endl;
 			}
 
-			if(totalDistance > m_CmdParams.recordDistance || m_bOutsideControl != 0)
-			{
-				PlannerHNS::RoadNetwork roadMap;
-				PlannerHNS::RoadSegment segment;
-
-				segment.id = 1;
-
-				PlannerHNS::Lane lane;
-				lane.id = 1;
-				lane.num = 0;
-				lane.roadId = 1;
-				lane.points = path;
-
-				segment.Lanes.push_back(lane);
-				roadMap.roadSegments.push_back(segment);
-
-				ostringstream fileName;
-				fileName << UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName;
-				fileName << UtilityHNS:: UtilityH::GetFilePrefixHourMinuteSeconds();
-				fileName << "_RoadNetwork.kml";
-				string kml_templateFilePath = UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName + UtilityHNS::DataRW::KmlMapsFolderName+"PlannerX_MapTemplate.kml";
-
-				PlannerHNS::MappingHelpers::WriteKML(fileName.str(),kml_templateFilePath , roadMap);
-
-										//string kml_fileToSave =UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+kmltargetFile;
-					//PlannerHNS::MappingHelpers::WriteKML(kml_fileToSave, kml_templateFilePath, m_RoadMap);
-
-				std::cout << " Mapped Saved Successfuly ... " << std::endl;
-				break;
-			}
+//			if(totalDistance > m_CmdParams.recordDistance || m_bOutsideControl != 0)
+//			{
+//				PlannerHNS::RoadNetwork roadMap;
+//				PlannerHNS::RoadSegment segment;
+//
+//				segment.id = 1;
+//
+//				PlannerHNS::Lane lane;
+//				lane.id = 1;
+//				lane.num = 0;
+//				lane.roadId = 1;
+//				lane.points = path;
+//
+//				segment.Lanes.push_back(lane);
+//				roadMap.roadSegments.push_back(segment);
+//
+//				ostringstream fileName;
+//				fileName << UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName;
+//				fileName << UtilityHNS:: UtilityH::GetFilePrefixHourMinuteSeconds();
+//				fileName << "_RoadNetwork.kml";
+//				string kml_templateFilePath = UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName + UtilityHNS::DataRW::KmlMapsFolderName+"PlannerX_MapTemplate.kml";
+//
+//				//PlannerHNS::MappingHelpers::WriteKML(fileName.str(),kml_templateFilePath , roadMap);
+//
+//										//string kml_fileToSave =UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+kmltargetFile;
+//					//PlannerHNS::MappingHelpers::WriteKML(kml_fileToSave, kml_templateFilePath, m_RoadMap);
+//
+//				std::cout << " Mapped Saved Successfuly ... " << std::endl;
+//				break;
+//			}
 		 }
 
 		loop_rate.sleep();

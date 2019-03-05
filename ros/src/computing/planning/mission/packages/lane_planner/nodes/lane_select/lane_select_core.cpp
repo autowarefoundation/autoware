@@ -1,33 +1,18 @@
 /*
- *  Copyright (c) 2015, Nagoya University
-
- *  All rights reserved.
+ * Copyright 2015-2019 Autoware Foundation. All rights reserved.
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  * Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name of Autoware nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #include "lane_select_core.h"
 
@@ -67,21 +52,26 @@ void LaneSelectNode::initForROS()
   sub3_ = nh_.subscribe("current_velocity", 1, &LaneSelectNode::callbackFromTwistStamped, this);
   sub4_ = nh_.subscribe("state", 1, &LaneSelectNode::callbackFromState, this);
   sub5_ = nh_.subscribe("/config/lane_select", 1, &LaneSelectNode::callbackFromConfig, this);
+  sub6_ = nh_.subscribe("/decisionmaker/states", 1, &LaneSelectNode::callbackFromStates, this);
 
-  
   bool enablePlannerDynamicSwitch;
   private_nh_.param<bool>("enablePlannerDynamicSwitch", enablePlannerDynamicSwitch, false);
   // setup publisher
-  
-  pub1_ = nh_.advertise<autoware_msgs::lane>("base_waypoints", 1);
-  
-  if(enablePlannerDynamicSwitch){
-	  pub2_ = nh_.advertise<std_msgs::Int32>("/astar/closest_waypoint", 1);
-  }else{
-	  pub2_ = nh_.advertise<std_msgs::Int32>("closest_waypoint", 1);
+
+  pub1_ = nh_.advertise<autoware_msgs::Lane>("base_waypoints", 1);
+
+  if (enablePlannerDynamicSwitch)
+  {
+    pub2_ = nh_.advertise<std_msgs::Int32>("/astar/closest_waypoint", 1);
   }
-  
+  else
+  {
+    pub2_ = nh_.advertise<std_msgs::Int32>("closest_waypoint", 1);
+  }
+
   pub3_ = nh_.advertise<std_msgs::Int32>("change_flag", 1);
+  pub4_ = nh_.advertise<std_msgs::Int32>("/current_lane_id",1);
+
   vis_pub1_ = nh_.advertise<visualization_msgs::MarkerArray>("lane_select_marker", 1);
 
   // get from rosparam
@@ -101,7 +91,7 @@ bool LaneSelectNode::isAllTopicsSubscribed()
 
 void LaneSelectNode::initForLaneSelect()
 {
-  if(!isAllTopicsSubscribed())
+  if (!isAllTopicsSubscribed())
     return;
 
   // search closest waypoint number for each lanes
@@ -143,7 +133,7 @@ void LaneSelectNode::resetSubscriptionFlag()
 
 void LaneSelectNode::processing()
 {
-  if(!isAllTopicsSubscribed())
+  if (!isAllTopicsSubscribed())
     return;
 
   // search closest waypoint number for each lanes
@@ -169,16 +159,24 @@ void LaneSelectNode::processing()
 
   if (current_state_ == "LANE_CHANGE")
   {
-    changeLane();
-    std::get<1>(lane_for_change_) =
-        getClosestWaypointNumber(std::get<0>(lane_for_change_), current_pose_.pose, current_velocity_.twist,
-                                 std::get<1>(lane_for_change_), distance_threshold_);
-    std::get<2>(lane_for_change_) =
-        static_cast<ChangeFlag>(std::get<0>(lane_for_change_).waypoints.at(std::get<1>(lane_for_change_)).change_flag);
-    ROS_INFO("closest: %d", std::get<1>(lane_for_change_));
-    publishLane(std::get<0>(lane_for_change_));
-    publishClosestWaypoint(std::get<1>(lane_for_change_));
-    publishChangeFlag(std::get<2>(lane_for_change_));
+    try
+    {
+      changeLane();
+      std::get<1>(lane_for_change_) =
+          getClosestWaypointNumber(std::get<0>(lane_for_change_), current_pose_.pose, current_velocity_.twist,
+                                   std::get<1>(lane_for_change_), distance_threshold_);
+      std::get<2>(lane_for_change_) = static_cast<ChangeFlag>(
+          std::get<0>(lane_for_change_).waypoints.at(std::get<1>(lane_for_change_)).change_flag);
+      ROS_INFO("closest: %d", std::get<1>(lane_for_change_));
+      publishLane(std::get<0>(lane_for_change_));
+      publishLaneID(std::get<0>(lane_for_change_));
+      publishClosestWaypoint(std::get<1>(lane_for_change_));
+      publishChangeFlag(std::get<2>(lane_for_change_));
+    }
+    catch (std::out_of_range)
+    {
+      ROS_WARN("Failed to get closest waypoint num\n");
+    }
   }
   else
   {
@@ -193,13 +191,13 @@ void LaneSelectNode::processing()
   resetSubscriptionFlag();
 }
 
-int32_t LaneSelectNode::getClosestLaneChangeWaypointNumber(const std::vector<autoware_msgs::waypoint> &wps, int32_t cl_wp)
+int32_t LaneSelectNode::getClosestLaneChangeWaypointNumber(const std::vector<autoware_msgs::Waypoint> &wps,
+                                                           int32_t cl_wp)
 {
-
   for (uint32_t i = cl_wp; i < wps.size(); i++)
   {
     if (static_cast<ChangeFlag>(wps.at(i).change_flag) == ChangeFlag::right ||
-      static_cast<ChangeFlag>(wps.at(i).change_flag) == ChangeFlag::left)
+        static_cast<ChangeFlag>(wps.at(i).change_flag) == ChangeFlag::left)
     {
       return i;
     }
@@ -213,7 +211,7 @@ void LaneSelectNode::createLaneForChange()
   std::get<0>(lane_for_change_).waypoints.shrink_to_fit();
   std::get<1>(lane_for_change_) = -1;
 
-  const autoware_msgs::lane &cur_lane = std::get<0>(tuple_vec_.at(current_lane_idx_));
+  const autoware_msgs::Lane &cur_lane = std::get<0>(tuple_vec_.at(current_lane_idx_));
   const int32_t &clst_wp = std::get<1>(tuple_vec_.at(current_lane_idx_));
 
   int32_t num_lane_change = getClosestLaneChangeWaypointNumber(cur_lane.waypoints, clst_wp);
@@ -235,18 +233,18 @@ void LaneSelectNode::createLaneForChange()
 
   double dt = getTwoDimensionalDistance(cur_lane.waypoints.at(num_lane_change).pose.pose.position,
                                         cur_lane.waypoints.at(clst_wp).pose.pose.position);
-  double dt_by_vel = current_velocity_.twist.linear.x * lane_change_target_ratio_ > lane_change_target_minimum_
-                         ? current_velocity_.twist.linear.x * lane_change_target_ratio_
-                         : lane_change_target_minimum_;
+  double dt_by_vel = current_velocity_.twist.linear.x * lane_change_target_ratio_ > lane_change_target_minimum_ ?
+                         current_velocity_.twist.linear.x * lane_change_target_ratio_ :
+                         lane_change_target_minimum_;
   ROS_INFO("dt : %lf, dt_by_vel : %lf", dt, dt_by_vel);
-  autoware_msgs::lane &nghbr_lane =
-      static_cast<ChangeFlag>(cur_lane.waypoints.at(num_lane_change).change_flag) == ChangeFlag::right
-          ? std::get<0>(tuple_vec_.at(right_lane_idx_))
-          : std::get<0>(tuple_vec_.at(left_lane_idx_));
+  autoware_msgs::Lane &nghbr_lane =
+      static_cast<ChangeFlag>(cur_lane.waypoints.at(num_lane_change).change_flag) == ChangeFlag::right ?
+          std::get<0>(tuple_vec_.at(right_lane_idx_)) :
+          std::get<0>(tuple_vec_.at(left_lane_idx_));
   const int32_t &nghbr_clst_wp =
-      static_cast<ChangeFlag>(cur_lane.waypoints.at(num_lane_change).change_flag) == ChangeFlag::right
-          ? std::get<1>(tuple_vec_.at(right_lane_idx_))
-          : std::get<1>(tuple_vec_.at(left_lane_idx_));
+      static_cast<ChangeFlag>(cur_lane.waypoints.at(num_lane_change).change_flag) == ChangeFlag::right ?
+          std::get<1>(tuple_vec_.at(right_lane_idx_)) :
+          std::get<1>(tuple_vec_.at(left_lane_idx_));
 
   int32_t target_num = -1;
   for (uint32_t i = nghbr_clst_wp; i < nghbr_lane.waypoints.size(); i++)
@@ -265,7 +263,7 @@ void LaneSelectNode::createLaneForChange()
     return;
 
   std::get<0>(lane_for_change_).header.stamp = nghbr_lane.header.stamp;
-  std::vector<autoware_msgs::waypoint> hermite_wps = generateHermiteCurveForROS(
+  std::vector<autoware_msgs::Waypoint> hermite_wps = generateHermiteCurveForROS(
       cur_lane.waypoints.at(num_lane_change).pose.pose, nghbr_lane.waypoints.at(target_num).pose.pose,
       cur_lane.waypoints.at(num_lane_change).twist.twist.linear.x, vlength_hermite_curve_);
 
@@ -290,13 +288,13 @@ void LaneSelectNode::updateChangeFlag()
 {
   for (auto &el : tuple_vec_)
   {
-    std::get<2>(el) = (std::get<1>(el) != -1)
-                          ? static_cast<ChangeFlag>(std::get<0>(el).waypoints.at(std::get<1>(el)).change_flag)
-                          : ChangeFlag::unknown;
+    std::get<2>(el) = (std::get<1>(el) != -1) ?
+                          static_cast<ChangeFlag>(std::get<0>(el).waypoints.at(std::get<1>(el)).change_flag) :
+                          ChangeFlag::unknown;
 
-    if(std::get<2>(el) == ChangeFlag::right && right_lane_idx_ == -1)
+    if (std::get<2>(el) == ChangeFlag::right && right_lane_idx_ == -1)
       std::get<2>(el) = ChangeFlag::unknown;
-    else if(std::get<2>(el) == ChangeFlag::left && left_lane_idx_ == -1)
+    else if (std::get<2>(el) == ChangeFlag::left && left_lane_idx_ == -1)
       std::get<2>(el) = ChangeFlag::unknown;
 
     ROS_INFO("change_flag: %d", enumToInteger(std::get<2>(el)));
@@ -437,7 +435,7 @@ visualization_msgs::Marker LaneSelectNode::createCurrentLaneMarker()
   color_current.a = 1.0;
   marker.color = color_current;
 
-  for(const auto &em : std::get<0>(tuple_vec_.at(current_lane_idx_)).waypoints)
+  for (const auto &em : std::get<0>(tuple_vec_.at(current_lane_idx_)).waypoints)
     marker.points.push_back(em.pose.pose.position);
 
   return marker;
@@ -474,7 +472,7 @@ visualization_msgs::Marker LaneSelectNode::createRightLaneMarker()
   const ChangeFlag &change_flag = std::get<2>(tuple_vec_.at(current_lane_idx_));
   marker.color = change_flag == ChangeFlag::right ? color_neighbor_change : color_neighbor;
 
-  for(const auto &em : std::get<0>(tuple_vec_.at(right_lane_idx_)).waypoints)
+  for (const auto &em : std::get<0>(tuple_vec_.at(right_lane_idx_)).waypoints)
     marker.points.push_back(em.pose.pose.position);
 
   return marker;
@@ -511,7 +509,7 @@ visualization_msgs::Marker LaneSelectNode::createLeftLaneMarker()
   const ChangeFlag &change_flag = std::get<2>(tuple_vec_.at(current_lane_idx_));
   marker.color = change_flag == ChangeFlag::left ? color_neighbor_change : color_neighbor;
 
-  for(const auto &em : std::get<0>(tuple_vec_.at((left_lane_idx_))).waypoints)
+  for (const auto &em : std::get<0>(tuple_vec_.at((left_lane_idx_))).waypoints)
     marker.points.push_back(em.pose.pose.position);
 
   return marker;
@@ -544,7 +542,7 @@ visualization_msgs::Marker LaneSelectNode::createChangeLaneMarker()
   color_current.a = 1.0;
 
   marker.color = current_state_ == "LANE_CHANGE" ? color_current : color;
-  for(const auto &em : std::get<0>(lane_for_change_).waypoints)
+  for (const auto &em : std::get<0>(lane_for_change_).waypoints)
     marker.points.push_back(em.pose.pose.position);
 
   return marker;
@@ -592,10 +590,17 @@ void LaneSelectNode::publishVisualizer()
   vis_pub1_.publish(marker_array);
 }
 
-void LaneSelectNode::publishLane(const autoware_msgs::lane &lane)
+void LaneSelectNode::publishLane(const autoware_msgs::Lane &lane)
 {
   // publish global lane
   pub1_.publish(lane);
+}
+
+void LaneSelectNode::publishLaneID(const autoware_msgs::Lane &lane)
+{
+  std_msgs::Int32 msg;
+  msg.data = lane.lane_id;
+  pub4_.publish(msg);
 }
 
 void LaneSelectNode::publishClosestWaypoint(const int32_t clst_wp)
@@ -629,7 +634,7 @@ void LaneSelectNode::callbackFromLaneArray(const autoware_msgs::LaneArrayConstPt
   left_lane_idx_ = -1;
   is_lane_array_subscribed_ = true;
 
-  if(current_lane_idx_ == -1)
+  if (current_lane_idx_ == -1)
     initForLaneSelect();
   else
     processing();
@@ -640,7 +645,7 @@ void LaneSelectNode::callbackFromPoseStamped(const geometry_msgs::PoseStampedCon
   current_pose_ = *msg;
   is_current_pose_subscribed_ = true;
 
-  if(current_lane_idx_ == -1)
+  if (current_lane_idx_ == -1)
     initForLaneSelect();
   else
     processing();
@@ -651,7 +656,7 @@ void LaneSelectNode::callbackFromTwistStamped(const geometry_msgs::TwistStampedC
   current_velocity_ = *msg;
   is_current_velocity_subscribed_ = true;
 
-  if(current_lane_idx_ == -1)
+  if (current_lane_idx_ == -1)
     initForLaneSelect();
   else
     processing();
@@ -662,22 +667,41 @@ void LaneSelectNode::callbackFromState(const std_msgs::StringConstPtr &msg)
   current_state_ = msg->data;
   is_current_state_subscribed_ = true;
 
-  if(current_lane_idx_ == -1)
+  if (current_lane_idx_ == -1)
+    initForLaneSelect();
+  else
+    processing();
+}
+void LaneSelectNode::callbackFromStates(const autoware_msgs::StateConstPtr &msg)
+{
+  is_current_state_subscribed_ = true;
+
+  if (msg->behavior_state.find("LaneChange") != std::string::npos)
+  {
+    current_state_ = std::string("LANE_CHANGE");
+    ;
+  }
+  else
+  {
+    current_state_ = msg->main_state;
+  }
+
+  if (current_lane_idx_ == -1)
     initForLaneSelect();
   else
     processing();
 }
 
-void LaneSelectNode::callbackFromConfig(const autoware_msgs::ConfigLaneSelectConstPtr &msg)
+void LaneSelectNode::callbackFromConfig(const autoware_config_msgs::ConfigLaneSelectConstPtr &msg)
 {
-  distance_threshold_ = msg-> distance_threshold_neighbor_lanes;
-  lane_change_interval_= msg->lane_change_interval;
-    lane_change_target_ratio_ = msg->lane_change_target_ratio;
+  distance_threshold_ = msg->distance_threshold_neighbor_lanes;
+  lane_change_interval_ = msg->lane_change_interval;
+  lane_change_target_ratio_ = msg->lane_change_target_ratio;
   lane_change_target_minimum_ = msg->lane_change_target_minimum;
-    vlength_hermite_curve_= msg->vector_length_hermite_curve;
+  vlength_hermite_curve_ = msg->vector_length_hermite_curve;
   is_config_subscribed_ = true;
 
-  if(current_lane_idx_ == -1)
+  if (current_lane_idx_ == -1)
     initForLaneSelect();
   else
     processing();
@@ -695,7 +719,8 @@ double getTwoDimensionalDistance(const geometry_msgs::Point &target1, const geom
   return distance;
 }
 
-geometry_msgs::Point convertPointIntoRelativeCoordinate(const geometry_msgs::Point &input_point, const geometry_msgs::Pose &pose)
+geometry_msgs::Point convertPointIntoRelativeCoordinate(const geometry_msgs::Point &input_point,
+                                                        const geometry_msgs::Pose &pose)
 {
   tf::Transform inverse;
   tf::poseMsgToTF(pose, inverse);
@@ -710,7 +735,7 @@ geometry_msgs::Point convertPointIntoRelativeCoordinate(const geometry_msgs::Poi
 }
 
 geometry_msgs::Point convertPointIntoWorldCoordinate(const geometry_msgs::Point &input_point,
-                                                                      const geometry_msgs::Pose &pose)
+                                                     const geometry_msgs::Pose &pose)
 {
   tf::Transform inverse;
   tf::poseMsgToTF(pose, inverse);
@@ -738,7 +763,7 @@ double getRelativeAngle(const geometry_msgs::Pose &waypoint_pose, const geometry
 }
 
 // get closest waypoint from current pose
-int32_t getClosestWaypointNumber(const autoware_msgs::lane &current_lane, const geometry_msgs::Pose &current_pose,
+int32_t getClosestWaypointNumber(const autoware_msgs::Lane &current_lane, const geometry_msgs::Pose &current_pose,
                                  const geometry_msgs::Twist &current_velocity, const int32_t previous_number,
                                  const double distance_threshold)
 {
@@ -772,9 +797,9 @@ int32_t getClosestWaypointNumber(const autoware_msgs::lane &current_lane, const 
     double minimum_dt = 2.0;
     double dt = current_velocity.linear.x * ratio > minimum_dt ? current_velocity.linear.x * ratio : minimum_dt;
 
-    auto range_max = static_cast<uint32_t>(previous_number + dt) < current_lane.waypoints.size()
-                         ? static_cast<uint32_t>(previous_number + dt)
-                         : current_lane.waypoints.size();
+    auto range_max = static_cast<uint32_t>(previous_number + dt) < current_lane.waypoints.size() ?
+                         static_cast<uint32_t>(previous_number + dt) :
+                         current_lane.waypoints.size();
     for (uint32_t i = static_cast<uint32_t>(previous_number); i < range_max; i++)
     {
       geometry_msgs::Point converted_p =

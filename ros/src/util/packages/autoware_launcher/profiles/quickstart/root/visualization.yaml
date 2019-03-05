@@ -1,0 +1,5 @@
+children: []
+config:
+  args.rviz_config_file: $(find autoware_launcher)/profiles/quickstart/files/default.rviz
+  exts.description: Default
+plugin: leaf/rviz

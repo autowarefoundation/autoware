@@ -2,19 +2,104 @@
 Changelog for package map_file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.10.0 (2019-01-17)
+-------------------
+* Fixes for catkin_make
+* Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/kfunaoka/Autoware/issues/1741>`_)
+  * Switch to Apache 2
+  * Replace BSD-3 license header with Apache 2 and reassign copyright to the
+  Autoware Foundation.
+  * Update license on Python files
+  * Update copyright years
+  * Add #ifndef/define _POINTS_IMAGE_H\_
+  * Updated license comment
+* Use colcon as the build tool (`#1704 <https://github.com/kfunaoka/Autoware/issues/1704>`_)
+  * Switch to colcon as the build tool instead of catkin
+  * Added cmake-target
+  * Added note about the second colcon call
+  * Added warning about catkin* scripts being deprecated
+  * Fix COLCON_OPTS
+  * Added install targets
+  * Update Docker image tags
+  * Message packages fixes
+  * Fix missing dependency
+* Feature/points map filter (`#1658 <https://github.com/kfunaoka/Autoware/issues/1658>`_)
+  * add points_map_filter node
+  * add passthrough filter
+  * fix filter function
+  * apply clang-format
+  * add README.md
+* Contributors: Esteve Fernandez, Masaya Kataoka, amc-nu
+
+1.9.1 (2018-11-06)
+------------------
+
+1.9.0 (2018-10-31)
+------------------
+* [fix] PascalCase messages (`#1408 <https://github.com/CPFL/Autoware/issues/1408>`_)
+  * Switch message files to pascal case
+  * Switch message names to pascal case in Runtime Manager
+  * Switch message names to pascal case in *.yaml
+  * Rename brake_cmd and steer_cmd to BrakeCmd and SteerCmd in main.yaml
+* Contributors: Esteve Fernandez
+
+1.8.0 (2018-08-31)
+------------------
+* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)
+* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/CPFL/Autoware/pull/1385>`_)
+* [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/CPFL/Autoware/pull/1291>`_)
+* Contributors: Esteve Fernandez, Kenji Funaoka
+
+1.7.0 (2018-05-18)
+------------------
+* update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
+* -Added support fot VMap colouring to Left Traffic signals (`#988 <https://github.com/CPFL/Autoware/pull/988>`_)
+  -Added Lane number on tlr_superimpose
+* Contributors: Abraham Monrroy, Kosuke Murakami
+
+1.6.3 (2018-03-06)
+------------------
+
+1.6.2 (2018-02-27)
+------------------
+* Update CHANGELOG
+* Contributors: Yusuke FUJII
+
+1.6.1 (2018-01-20)
+------------------
+* update CHANGELOG
+* Contributors: Yusuke FUJII
+
+1.6.0 (2017-12-11)
+------------------
+* Prepare release for 1.6.0
+* use header.frame_id included in initialpose topic
+* Initial modifications to feat_proj, tlr, context and vector_map loader, server and client to support different types of traffic signals
+* Contributors: AMC, Yamato ANDO
+
 1.5.1 (2017-09-25)
 ------------------
+* Release/1.5.1 (`#816 <https://github.com/cpfl/autoware/issues/816>`_)
+  * fix a build error by gcc version
+  * fix build error for older indigo version
+  * update changelog for v1.5.1
+  * 1.5.1
+* Contributors: Yusuke FUJII
 
 1.5.0 (2017-09-21)
 ------------------
+* Update changelog
 * compilation issues
 * added install targets
   changed finding pcl
   removed unneeded dependencies
-* Contributors: Dejan Pangercic
+* Contributors: Dejan Pangercic, Yusuke FUJII
 
 1.4.0 (2017-08-04)
 ------------------
+* version number must equal current release number so we can start releasing in the future
+* added changelogs
+* Contributors: Dejan Pangercic
 
 1.3.1 (2017-07-16)
 ------------------
@@ -44,8 +129,6 @@ Changelog for package map_file
 1.0.0 (2016-12-22)
 ------------------
 * Remove unnecessary error checks
-* Merge pull request `#452 <https://github.com/CPFL/Autoware/issues/452>`_ from CPFL/add-vector_map-library
-  Add vector map library
 * Delete map_file messages
 * Refactoring
 * Add error check for vector_map_loader

@@ -2,14 +2,74 @@
 Changelog for package kitti_launch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.10.0 (2019-01-17)
+-------------------
+
+1.9.1 (2018-11-06)
+------------------
+
+1.9.0 (2018-10-31)
+------------------
+* [fix] Added option to publish to specific camera frame on camera publisher (`#1565 <https://github.com/CPFL/Autoware/issues/1565>`_)
+  * * Added option to publish to specific camera frame on camera publisher
+  * fixes to the node
+  * Added New line to UI on each param.
+  * * Updates to launch files using calibration publisher
+  * Updated naming after develop merge
+  * Updated suscription type to topic for calibration publisher
+* Contributors: Abraham Monrroy Cano
+
+1.8.0 (2018-08-31)
+------------------
+
+1.7.0 (2018-05-18)
+------------------
+* update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
+* Contributors: Kosuke Murakami
+
+1.6.3 (2018-03-06)
+------------------
+
+1.6.2 (2018-02-27)
+------------------
+* Update CHANGELOG
+* Contributors: Yusuke FUJII
+
+1.6.1 (2018-01-20)
+------------------
+* update CHANGELOG
+* Contributors: Yusuke FUJII
+
+1.6.0 (2017-12-11)
+------------------
+* Prepare release for 1.6.0
+* Feature/kitti player update for kinetic, autoware_msgs (`#865 <https://github.com/cpfl/autoware/issues/865>`_)
+  * Added support for Autoware Messages
+  * Changed argument
+  * Added support for Kinetic
+  * Updated README
+  * Added fps argument to launch file
+* Contributors: Abraham Monrroy, Yamato ANDO
+
 1.5.1 (2017-09-25)
 ------------------
+* Release/1.5.1 (`#816 <https://github.com/cpfl/autoware/issues/816>`_)
+  * fix a build error by gcc version
+  * fix build error for older indigo version
+  * update changelog for v1.5.1
+  * 1.5.1
+* Contributors: Yusuke FUJII
 
 1.5.0 (2017-09-21)
 ------------------
+* Update changelog
+* Contributors: Yusuke FUJII
 
 1.4.0 (2017-08-04)
 ------------------
+* version number must equal current release number so we can start releasing in the future
+* added changelogs
+* Contributors: Dejan Pangercic
 
 1.3.1 (2017-07-16)
 ------------------

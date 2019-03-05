@@ -1,0 +1,12 @@
+format: Autoware Launcher Plugin Version 0.1
+rules:
+- { name: map,           plugin : leaf/map           }
+- { name: vehicle,       plugin : leaf/vehicle       }
+- { name: sensing,       plugin : node/sensing       }
+- { name: localization,  plugin : node/localization  }
+- { name: detection,     plugin : node/detection     }
+- { name: prediction,    plugin : node/prediction    }
+- { name: decision,      plugin : node/decision      }
+- { name: mission,       plugin : node/mission       }
+- { name: motion,        plugin : node/motion        }
+- { name: visualization, plugin : leaf/rviz    }

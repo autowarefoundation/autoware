@@ -1,0 +1,18 @@
+<launch>
+	<!-- arguments list -->
+	<arg name="network_definition_file" default="$(env HOME)/ENet/prototxts/enet_deploy_final.prototxt"/>
+	<arg name="pretrained_model_file" default="$(env HOME)/ENet/enet_weights_zoo/cityscapes_weights.caffemodel"/>
+	<arg name="lookuptable_file" default="$(env HOME)/ENet/scripts/cityscapes19.png"/>
+
+	<arg name="camera_id" default="/" />
+	<arg name="image_src" default="/image_raw"/>
+
+	<!-- ENET -->
+	<node pkg="vision_segment_enet_detect" type="vision_segment_enet_detect" name="vision_segment_enet_detect" output="screen">
+		<param name="network_definition_file" type="str" value="$(arg network_definition_file)"/>
+		<param name="pretrained_model_file" type="str" value="$(arg pretrained_model_file)"/>
+		<param name="lookuptable_file" type="str" value="$(arg lookuptable_file)"/>
+		<param name="image_raw_node" type="str" value="$(arg camera_id)$(arg image_src)"/>
+	</node>
+
+</launch>

@@ -2,15 +2,89 @@
 Changelog for package vectacam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.10.0 (2019-01-17)
+-------------------
+* Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/kfunaoka/Autoware/issues/1741>`_)
+  * Switch to Apache 2
+  * Replace BSD-3 license header with Apache 2 and reassign copyright to the
+  Autoware Foundation.
+  * Update license on Python files
+  * Update copyright years
+  * Add #ifndef/define _POINTS_IMAGE_H\_
+  * Updated license comment
+* Use colcon as the build tool (`#1704 <https://github.com/kfunaoka/Autoware/issues/1704>`_)
+  * Switch to colcon as the build tool instead of catkin
+  * Added cmake-target
+  * Added note about the second colcon call
+  * Added warning about catkin* scripts being deprecated
+  * Fix COLCON_OPTS
+  * Added install targets
+  * Update Docker image tags
+  * Message packages fixes
+  * Fix missing dependency
+* Fix Ros/ROS naming convention
+* Fix Kf/KF naming convention
+* Contributors: Esteve Fernandez
+
+1.9.1 (2018-11-06)
+------------------
+
+1.9.0 (2018-10-31)
+------------------
+
+1.8.0 (2018-08-31)
+------------------
+* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)
+* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/CPFL/Autoware/pull/1385>`_)
+* Changed frame_id to match each camera id on tierfusion (`#1313 <https://github.com/CPFL/Autoware/pull/1313>`_)
+  * Changed frame_id to match each camera id on tierfusion
+  * Fix to check once the point has been transformed.
+* [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/CPFL/Autoware/pull/1291>`_)
+* Contributors: Abraham Monrroy, Esteve Fernandez, Kenji Funaoka
+
+1.7.0 (2018-05-18)
+------------------
+* update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
+* Contributors: Kosuke Murakami
+
+1.6.3 (2018-03-06)
+------------------
+
+1.6.2 (2018-02-27)
+------------------
+* Update CHANGELOG
+* Contributors: Yusuke FUJII
+
+1.6.1 (2018-01-20)
+------------------
+* update CHANGELOG
+* Contributors: Yusuke FUJII
+
+1.6.0 (2017-12-11)
+------------------
+* Prepare release for 1.6.0
+* removing mailing list from pkg maintainer (`#834 <https://github.com/cpfl/autoware/issues/834>`_)
+* Contributors: Dejan Pangercic, Yamato ANDO
+
 1.5.1 (2017-09-25)
 ------------------
+* Release/1.5.1 (`#816 <https://github.com/cpfl/autoware/issues/816>`_)
+  * fix a build error by gcc version
+  * fix build error for older indigo version
+  * update changelog for v1.5.1
+  * 1.5.1
+* Contributors: Yusuke FUJII
 
 1.5.0 (2017-09-21)
 ------------------
+* Update changelog
+* Contributors: Yusuke FUJII
 
 1.4.0 (2017-08-04)
 ------------------
-* TierFusion Driver Updated (`#742 <https://github.com/CPFL/Autoware/issues/742>`_)
+* version number must equal current release number so we can start releasing in the future
+* added changelogs
+* TierFusion Driver Updated (`#742 <https://github.com/cpfl/autoware/issues/742>`_)
   Added Support for new firmware version.
   Features:
   -IP Address changed to the same as Velodyne's
@@ -19,7 +93,7 @@ Changelog for package vectacam
   TierFusion address is fixed to 192.168.1.200
   Velodyne address is considered as default value, 192.168.1.201
   Tested in 14.04 and 16.04
-* Contributors: Abraham Monrroy
+* Contributors: Abraham Monrroy, Dejan Pangercic
 
 1.3.1 (2017-07-16)
 ------------------
@@ -29,7 +103,7 @@ Changelog for package vectacam
 
 1.2.0 (2017-06-07)
 ------------------
-* Kf Added
+* KF Added
   Euclidean Cluster improved
 * Contributors: AMC
 

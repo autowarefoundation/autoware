@@ -1,0 +1,3 @@
+<launch>
+    <node pkg="lane_planner" type="lane_rule" name="lane_rule"/>
+</launch>

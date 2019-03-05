@@ -1,0 +1,48 @@
+# https://github.com/ros-infrastructure/ros_buildfarm/blob/master/doc/jobs/devel_jobs.rst
+# https://github.com/ros-infrastructure/ros_buildfarm/blob/master/doc/jobs/prerelease_jobs.rst
+# while this doesn't require sudo we don't want to run within a Docker container
+sudo: true
+dist: trusty
+language: python
+python:
+  - "3.4"
+env:
+  global:
+    - JOB_PATH=/tmp/devel_job
+    - ABORT_ON_TEST_FAILURE=1
+  matrix:
+    - ROS_DISTRO_NAME=indigo  OS_NAME=ubuntu OS_CODE_NAME=trusty ARCH=amd64
+    - ROS_DISTRO_NAME=kinetic OS_NAME=ubuntu OS_CODE_NAME=xenial ARCH=amd64
+# matrix:
+#   allow_failures:
+#     - env: ROS_DISTRO_NAME=kinetic OS_NAME=ubuntu OS_CODE_NAME=xenial ARCH=amd64
+install:
+  # either install the latest released version of ros_buildfarm
+  - pip install ros_buildfarm
+  # or checkout a specific branch
+  #- git clone -b master https://github.com/ros-infrastructure/ros_buildfarm /tmp/ros_buildfarm
+  #- pip install /tmp/ros_buildfarm
+  # checkout catkin for catkin_test_results script
+  - git clone https://github.com/ros/catkin /tmp/catkin
+  # run devel job for a ROS repository with the same name as this repo
+  - export REPOSITORY_NAME=`basename $TRAVIS_BUILD_DIR`
+  # use the code already checked out by Travis
+  - mkdir -p $JOB_PATH/catkin_workspace/src
+  - cp -R $TRAVIS_BUILD_DIR $JOB_PATH/catkin_workspace/src/
+  # generate the script to run a pre-release job for that target and repo
+  - generate_prerelease_script.py https://raw.githubusercontent.com/ros-infrastructure/ros_buildfarm_config/production/index.yaml $ROS_DISTRO_NAME default $OS_NAME $OS_CODE_NAME $ARCH  --output-dir $JOB_PATH
+  ####
+  #### workaround for run tests on installed space
+  ####
+  - sed -i "/echo \"Build step 6\"/i patch -d ros_buildfarm -p1 -i $TRAVIS_BUILD_DIR/.prerelease.run_tests.diff" $JOB_PATH/prerelease_build_underlay.sh
+  - cat $JOB_PATH/prerelease_build_underlay.sh
+  ####
+  ####
+  ####
+  # run the actual job which involves Docker
+  - cd $JOB_PATH; sh ./prerelease.sh -y
+script:
+  # get summary of test results
+  - /tmp/catkin/bin/catkin_test_results $JOB_PATH/catkin_workspace/test_results --all
+notifications:
+  email: false

@@ -1,31 +1,17 @@
 /*
- *  Copyright (c) 2015, Nagoya University
- *  All rights reserved.
+ * Copyright 2015-2019 Autoware Foundation. All rights reserved.
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  * Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name of Autoware nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "velocity_set_info.h"
@@ -44,15 +30,21 @@ VelocitySetInfo::VelocitySetInfo()
     points_threshold_(10),
     detection_height_top_(0.2),
     detection_height_bottom_(-1.7),
-    stop_distance_(10),
-    decel_(0.8),
+    stop_distance_obstacle_(10),
+    stop_distance_stopline_(5),
+    deceleration_obstacle_(0.8),
+    deceleration_stopline_(0.6),
     velocity_change_limit_(2.77),
     temporal_waypoints_size_(100),
     set_pose_(false),
-    use_obstacle_sim_(false)
+    use_obstacle_sim_(false),
+    wpidx_detectionResultByOtherNodes_(-1)
 {
   ros::NodeHandle private_nh_("~");
+  ros::NodeHandle nh;
   private_nh_.param<double>("remove_points_upto", remove_points_upto_, 2.3);
+  node_status_publisher_ptr_ = std::make_shared<autoware_health_checker::NodeStatusPublisher>(nh,private_nh_);
+  node_status_publisher_ptr_->ENABLE();
 }
 
 VelocitySetInfo::~VelocitySetInfo()
@@ -64,14 +56,16 @@ void VelocitySetInfo::clearPoints()
   points_.clear();
 }
 
-void VelocitySetInfo::configCallback(const autoware_msgs::ConfigVelocitySetConstPtr &config)
+void VelocitySetInfo::configCallback(const autoware_config_msgs::ConfigVelocitySetConstPtr &config)
 {
-  stop_distance_ = config->others_distance;
+  stop_distance_obstacle_ = config->stop_distance_obstacle;
+  stop_distance_stopline_ = config->stop_distance_stopline;
   stop_range_ = config->detection_range;
   points_threshold_ = config->threshold_points;
   detection_height_top_ = config->detection_height_top;
   detection_height_bottom_ = config->detection_height_bottom;
-  decel_ = config->deceleration;
+  deceleration_obstacle_ = config->deceleration_obstacle;
+  deceleration_stopline_ = config->deceleration_stopline;
   velocity_change_limit_ = config->velocity_change_limit / 3.6; // kmph -> mps
   deceleration_range_ = config->deceleration_range;
   temporal_waypoints_size_ = config->temporal_waypoints_size;
@@ -79,6 +73,7 @@ void VelocitySetInfo::configCallback(const autoware_msgs::ConfigVelocitySetConst
 
 void VelocitySetInfo::pointsCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
 {
+  node_status_publisher_ptr_->CHECK_RATE("/topic/rate/points_no_ground/slow",8,5,1,"topic points_no_ground subscribe rate low.");
   pcl::PointCloud<pcl::PointXYZ> sub_points;
   pcl::fromROSMsg(*msg, sub_points);
 
@@ -105,6 +100,11 @@ void VelocitySetInfo::pointsCallback(const sensor_msgs::PointCloud2ConstPtr &msg
   }
 }
 
+void VelocitySetInfo::detectionCallback(const std_msgs::Int32 &msg)
+{
+    wpidx_detectionResultByOtherNodes_ = msg.data;
+}
+
 void VelocitySetInfo::controlPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
   control_pose_ = *msg;
@@ -115,6 +115,8 @@ void VelocitySetInfo::controlPoseCallback(const geometry_msgs::PoseStampedConstP
 
 void VelocitySetInfo::localizerPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
+  node_status_publisher_ptr_->NODE_ACTIVATE();
+  node_status_publisher_ptr_->CHECK_RATE("/topic/rate/current_pose/slow",8,5,1,"topic current_pose subscribe rate low.");
   localizer_pose_ = *msg;
 }
 

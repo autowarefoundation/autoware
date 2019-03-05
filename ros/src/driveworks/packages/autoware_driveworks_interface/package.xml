@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package>
+  <name>autoware_driveworks_interface</name>
+  <version>1.10.0</version>
+  <description>The autoware_driveworks packages</description>
+  <maintainer email="yusuke.fujii@tier4.jp">Yusuke FUJII</maintainer>
+  <author email="yusuke.fujii@tier4.jp">Yusuke FUJII</author>
+  <author email="abrahammonrroy@yahoo.com">amc</author>
+  <license>Apache 2</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>autoware_build_flags</buildtool_depend>
+  
+  <build_depend>roscpp</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>autoware_msgs</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>autoware_msgs</run_depend>
+  <run_depend>message_runtime</run_depend>
+  
+  <export>
+  </export>
+</package>

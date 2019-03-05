@@ -1,0 +1,3 @@
+- name: /line_ocv
+  publish: [/lane_pos_xy]
+  subscribe: [/image_raw]

@@ -1,12 +1,10 @@
-/*
- * TrajectoryFollower.cpp
- *
- *  Created on: Jun 18, 2016
- *      Author: hatem
- */
+/// \file TrajectoryFollower.cpp
+/// \brief PID based trajectory follower
+/// \author Hatem Darweesh
+/// \date Jun 18, 2016
 
-#include "TrajectoryFollower.h"
-#include "PlanningHelpers.h"
+#include "op_simu/TrajectoryFollower.h"
+#include "op_planner/PlanningHelpers.h"
 #include <cmath>
 #include <stdlib.h>
 #include <iostream>
@@ -134,7 +132,7 @@ bool TrajectoryFollower::FindNextWayPoint(const std::vector<PlannerHNS::WayPoint
 	if(totalD <= 1 || totalD <= d_critical)
 	{
 		m_bEndPath = true;
-		cout << "Critical Distance: " << d_critical << endl;
+		//cout << "Critical Distance: " << d_critical << endl;
 	}
 	else
 		m_bEndPath = false;
@@ -276,7 +274,7 @@ int TrajectoryFollower::VeclocityControllerUpdate(const double& dt, const Planne
 		if((desiredVelocity < 0.1 && desiredVelocity > -0.1) || CurrBehavior.followDistance <= 0) //use only effective velocities
 			desiredVelocity = 0;
 
-		cout << "Follow State:  acceleration = " << deceleration_critical << ", speed = " << desiredVelocity <<  ", Distance = " << CurrBehavior.followDistance<< endl;
+		//cout << "Follow State:  acceleration = " << deceleration_critical << ", speed = " << CurrStatus.speed <<  ", Distance = " << CurrBehavior.followDistance<< endl;
 	}
 	else
 	{
@@ -287,9 +285,6 @@ int TrajectoryFollower::VeclocityControllerUpdate(const double& dt, const Planne
 		desiredVelocity = m_VehicleInfo.max_speed_forward;
 	else if (desiredVelocity < 0)
 		desiredVelocity = 0;
-	//desiredVelocity = 2.0;
-
-
 
 	desiredShift = PlannerHNS::SHIFT_POS_DD;
 	if(m_bEnableLog)

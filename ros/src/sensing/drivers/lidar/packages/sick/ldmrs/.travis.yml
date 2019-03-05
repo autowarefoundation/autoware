@@ -1,0 +1,46 @@
+sudo: required
+dist: trusty
+# Force travis to use its minimal image with default Python settings
+language: generic
+env:
+  global:
+    - CATKIN_WS=~/catkin_ws
+    - CATKIN_WS_SRC=${CATKIN_WS}/src
+  matrix:
+    - CI_ROS_DISTRO="indigo"
+    - CI_ROS_DISTRO="jade"
+install:
+  - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu trusty main" > /etc/apt/sources.list.d/ros-latest.list'
+  - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq -y python-rosdep python-catkin-tools
+  - sudo rosdep init
+  - rosdep update
+  # Use rosdep to install all dependencies (including ROS itself)
+  - rosdep install --from-paths ./ -i -y --rosdistro $CI_ROS_DISTRO
+script:
+  - export PYTHONPATH=/usr/lib/python2.7/dist-packages   # temporary fix for travis-ci/travis-ci#8048
+  - source /opt/ros/$CI_ROS_DISTRO/setup.bash
+  - mkdir -p $CATKIN_WS_SRC
+  - cd $CATKIN_WS
+  - catkin init
+  # Enable install space
+  - catkin config --install
+  - catkin build --limit-status-rate 0.1 --no-notify 
+  - source $CATKIN_WS/devel/setup.bash
+  # clone libsick_ldmrs
+  - cd $CATKIN_WS_SRC
+  - git clone -b master https://github.com/SICKAG/libsick_ldmrs.git
+  # Build [and Install] packages
+  - ln -s $TRAVIS_BUILD_DIR $CATKIN_WS_SRC
+  - catkin build --limit-status-rate 0.1 --no-notify -DCMAKE_BUILD_TYPE=Release
+  # NOTE on testing: `catkin run_tests` will show the output of the tests
+  # (gtest, nosetest, etc..) but always returns 0 (success) even if a test
+  # fails. Running `catkin_test_results` aggregates all the results and returns
+  # non-zero when a test fails (which notifies the CI that the build failed).
+  # Build tests
+  - catkin build --limit-status-rate 0.1 --no-notify sick_ldmrs_description sick_ldmrs_driver sick_ldmrs_laser sick_ldmrs_msgs sick_ldmrs_tools --make-args tests
+  # Run tests
+  - catkin run_tests
+  # Verify test results
+  - catkin_test_results
