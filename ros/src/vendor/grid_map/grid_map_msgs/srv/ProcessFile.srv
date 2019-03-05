@@ -1,7 +1,0 @@
-# Absolute file path.
-string file_path
-
----
-
-# True if file processing was successful.
-bool success
