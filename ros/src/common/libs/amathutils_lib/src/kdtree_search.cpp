@@ -83,7 +83,7 @@ bool KdTreeSearcher::searchRadius(const Vector3d &vec, const double radius, std:
     std::vector<float> v_squared_dist;
     const pcl::PointXYZ point(vec.getX(), vec.getY(), vec.getZ());
 
-    if (kdtree_.nearestKSearch(point, radius, v_index, v_squared_dist) > 0)
+    if (kdtree_.radiusSearch(point, radius, v_index, v_squared_dist) > 0)
     {
         return true;
     }
