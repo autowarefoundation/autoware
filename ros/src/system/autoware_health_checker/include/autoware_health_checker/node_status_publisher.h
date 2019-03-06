@@ -1,5 +1,5 @@
-#ifndef HEALTH_CHECKER_H_INCLUDED
-#define HEALTH_CHECKER_H_INCLUDED
+#ifndef NODE_STATUS_PUBLISHER_H_INCLUDED
+#define NODE_STATUS_PUBLISHER_H_INCLUDED
 
 /*
  * Copyright 2019 Autoware Foundation. All rights reserved.
@@ -25,10 +25,9 @@
 
 // headers in Autoware
 #include <autoware_health_checker/constants.h>
+#include <autoware_health_checker/diag_buffer.h>
+#include <autoware_health_checker/rate_checker.h>
 #include <autoware_system_msgs/NodeStatus.h>
-#include <autoware_health_checker/health_checker/diag_buffer.h>
-#include <autoware_health_checker/health_checker/rate_checker.h>
-#include <autoware_health_checker/health_checker/value_manager.h>
 
 // headers in STL
 #include <functional>
@@ -45,10 +44,10 @@
 #include <boost/thread.hpp>
 
 namespace autoware_health_checker {
-class HealthChecker {
+class NodeStatusPublisher {
 public:
-  HealthChecker(ros::NodeHandle nh, ros::NodeHandle pnh);
-  ~HealthChecker();
+  NodeStatusPublisher(ros::NodeHandle nh, ros::NodeHandle pnh);
+  ~NodeStatusPublisher();
   void ENABLE();
   uint8_t CHECK_MIN_VALUE(std::string key, double value, double warn_value,
                           double error_value, double fatal_value,
@@ -68,14 +67,14 @@ public:
       std::string key, T value, std::function<uint8_t(T value)> check_func,
       std::function<boost::property_tree::ptree(T value)> value_json_func,
       std::string description) {
-    addNewBuffer(key, autoware_system_msgs::DiagnosticStatus::INVALID_VALUE,
+    addNewBuffer(key, autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE,
                  description);
     uint8_t check_result = check_func(value);
     boost::property_tree::ptree pt = value_json_func(value);
     std::stringstream ss;
     write_json(ss, pt);
     autoware_system_msgs::DiagnosticStatus new_status;
-    new_status.type = autoware_system_msgs::DiagnosticStatus::INVALID_VALUE;
+    new_status.type = autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE;
     new_status.level = check_result;
     new_status.description = description;
     new_status.value = ss.str();
@@ -85,9 +84,6 @@ public:
   }
   void CHECK_RATE(std::string key, double warn_rate, double error_rate,
                   double fatal_rate, std::string description);
-  uint8_t CHECK_TRUE(std::string key, bool value, uint8_t level,
-                     std::string description);
-  uint8_t SET_DIAG_STATUS(autoware_system_msgs::DiagnosticStatus status);
   void NODE_ACTIVATE() {
     std::lock_guard<std::mutex> lock(mtx_);
     node_activated_ = true;
@@ -99,28 +95,21 @@ public:
   bool getNodeStatus() { return node_activated_; };
 
 private:
-  ValueManager value_manager_;
   std::vector<std::string> getKeys();
   std::vector<std::string> getRateCheckerKeys();
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_;
-  std::map<std::string, std::unique_ptr<DiagBuffer>> diag_buffers_;
-  std::map<std::string, std::unique_ptr<RateChecker>> rate_checkers_;
+  std::map<std::string, std::shared_ptr<DiagBuffer>> diag_buffers_;
+  std::map<std::string, std::shared_ptr<RateChecker>> rate_checkers_;
   ros::Publisher status_pub_;
   bool keyExist(std::string key);
-  bool addNewBuffer(std::string key, uint8_t type, std::string description);
-  template <typename T> std::string valueToJson(T value) {
-    using namespace boost::property_tree;
-    std::stringstream ss;
-    ptree pt;
-    pt.put("value", value);
-    write_json(ss, pt);
-    return ss.str();
-  }
+  void addNewBuffer(std::string key, uint8_t type, std::string description);
+  std::string doubeToJson(double value);
   void publishStatus();
   bool node_activated_;
-  bool ros_ok_;
   std::mutex mtx_;
+  boost::thread publish_thread_;
+  bool ros_ok_;
 };
 }
-#endif // HEALTH_CHECKER_H_INCLUDED
+#endif // NODE_STATUS_PUBLISHER_H_INCLUDED
