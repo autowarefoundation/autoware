@@ -21,7 +21,7 @@ AArch64 and x86_64 systems.
 ## Requirements
 
 * Recent version of [Docker CE](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
-* [NVIDIA Docker](https://github.com/NVIDIA/nvidia-docker) if your system
+* [NVIDIA Docker v2](https://github.com/NVIDIA/nvidia-docker) if your system
 has Cuda support
 
 ## How to build
