@@ -45,7 +45,7 @@ int SimpleHardwareFilter::selectPriority(const SystemStatus& status)
 int SimpleNodeFilter::selectPriority(const SystemStatus& status)
 {
   vital_monitor_.updateNodeStatus(status.available_nodes);
-  const bool exist_dead_node = !vital_monitor_.getDeadNodes().empty();
-  const bool is_emergency = !(checkAllNodeSimplly(status.node_status, DIAG_ERROR)) || exist_dead_node;
+  SystemStatus updated_status(vital_monitor_.addDeadNodes(status));
+  const bool is_emergency = !(checkAllNodeSimplly(updated_status.node_status, DIAG_ERROR));
   return is_emergency ? emergency_stop_ : normal_behavior_;
 }

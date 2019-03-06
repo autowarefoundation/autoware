@@ -16,14 +16,15 @@
  * limitations under the License.
  */
 #include <ros/ros.h>
+#include <autoware_system_msgs/SystemStatus.h>
 #include <map>
 #include <set>
 
 struct LifeTime
 {
-  LifeTime(double secs, bool respawn) :
-    life_time_(secs), default_life_time_(secs), respawn_(respawn){}
-  bool respawn_;
+  LifeTime(double secs, int level) :
+    life_time_(secs), default_life_time_(secs), level_(level){}
+  int level_;
   const double default_life_time_;
   double life_time_;
   const bool isDead() const
@@ -45,10 +46,16 @@ class VitalMonitor
 public:
   void initMonitoredNodeList(ros::NodeHandle& pnh);
   void updateNodeStatus(const std::vector<std::string>& available_nodes);
-  const std::map<std::string, bool>& getDeadNodes();
+  autoware_system_msgs::SystemStatus addDeadNodes(const autoware_system_msgs::SystemStatus& status) const;
+  const std::map<std::string, int>& getDeadNodes();
+  autoware_system_msgs::DiagnosticStatusArray
+    createDiagnosticStatusArray(std::string dead_node_name, std_msgs::Header& header, int level) const;
+  autoware_system_msgs::NodeStatus
+    createNodeStatus(std::string dead_node_name, std_msgs::Header& header, int level) const;
+
 private:
   std::map<std::string, LifeTime> required_nodes_;
-  std::map<std::string, bool> dead_nodes_;
+  std::map<std::string, int> dead_nodes_;
 };
 
 #endif

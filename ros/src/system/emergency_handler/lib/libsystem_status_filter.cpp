@@ -33,6 +33,10 @@ const int SystemStatusFilter::normal_behavior_ = INT_MAX;
 
 StatusType SystemStatusFilter::getStatus(const DiagnosticStatusArray& st_array, int level_th) const
 {
+  if (st_array.status.empty())
+  {
+    return StatusType::OK;
+  }
   const auto found = find_if(st_array.status.begin(), st_array.status.end(),
     [=](const DiagnosticStatus& s){return s.level >= level_th;});
   if (found != st_array.status.end())

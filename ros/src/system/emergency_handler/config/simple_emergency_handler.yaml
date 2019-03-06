@@ -5,31 +5,31 @@ behavior:
 vital_monitor:
   lane_rule:
     timeout: 0.1
-    respawn: false
+    level: 4
   lane_stop:
     timeout: 0.1
-    respawn: false
+    level: 4
   lane_select:
     timeout: 0.1
-    respawn: false
+    level: 4
   obstacle_avoid:
     timeout: 0.1
-    respawn: false
+    level: 4
   obstacle_sim:
     timeout: 0.1
-    respawn: false
+    level: 4
   velocity_set:
     timeout: 0.1
-    respawn: false
+    level: 4
   pure_pursuit:
     timeout: 0.1
-    respawn: false
+    level: 4
   twist_filter:
     timeout: 0.1
-    respawn: false
+    level: 4
   twist_gate:
     timeout: 0.1
-    respawn: false
+    level: 4
   wf_simulator:
     timeout: 0.1
-    respawn: false
+    level: 4

@@ -15,7 +15,7 @@
  */
 #include <emergency_handler/libvital_monitor.h>
 
-const std::map<std::string, bool>& VitalMonitor::getDeadNodes()
+const std::map<std::string, int>& VitalMonitor::getDeadNodes()
 {
   return dead_nodes_;
 }
@@ -52,7 +52,7 @@ void VitalMonitor::updateNodeStatus(const std::vector<std::string>& available_no
     if (dead_nodes_.count(node_name) == 0 && node.second.isDead())
     {
       ROS_INFO("%s is not available", node_name.c_str());
-      dead_nodes_.emplace(node_name, node.second.respawn_);
+      dead_nodes_.emplace(node_name, node.second.level_);
     }
   }
 }
@@ -66,8 +66,62 @@ void VitalMonitor::initMonitoredNodeList(ros::NodeHandle& pnh)
     std::string node_name = "/" + param.first;
     auto val = param.second;
     const double timeout_sec = val.hasMember("timeout") ? double(val["timeout"]) : 0.1;
-    const bool can_respawn = val.hasMember("respawn") ? bool(val["respawn"]) : false;
-    required_nodes_.emplace(node_name, LifeTime(timeout_sec, can_respawn));
+    const int level = val.hasMember("level") ? int(val["level"]) : 1;
+    required_nodes_.emplace(node_name, LifeTime(timeout_sec, level));
   }
   dead_nodes_.clear();
+}
+
+autoware_system_msgs::DiagnosticStatusArray
+  VitalMonitor::createDiagnosticStatusArray(std::string dead_node_name, std_msgs::Header& header, int level) const
+{
+  autoware_system_msgs::DiagnosticStatus ds;
+  std::string name(dead_node_name);
+  if (name[0] == '/')
+  {
+    name.erase(name.begin());
+  }
+  ds.header = header;
+  ds.key = "node_" + name + "_dead";
+  ds.description = "node " + name + "is dead";
+  ds.type = autoware_system_msgs::DiagnosticStatus::PROCESS_HAS_DIED;
+  ds.level = level;
+  autoware_system_msgs::DiagnosticStatusArray array;
+  array.status.emplace_back(ds);
+  return array;
+}
+
+autoware_system_msgs::NodeStatus
+  VitalMonitor::createNodeStatus(std::string dead_node_name, std_msgs::Header& header, int level) const
+{
+  autoware_system_msgs::NodeStatus ns;
+  ns.header = header;
+  ns.node_name = dead_node_name;
+  ns.node_activated = true;
+  ns.status.emplace_back(createDiagnosticStatusArray(dead_node_name, header, level));
+  return ns;
+}
+
+autoware_system_msgs::SystemStatus
+  VitalMonitor::addDeadNodes(const autoware_system_msgs::SystemStatus& status) const
+{
+  autoware_system_msgs::SystemStatus updated_status(status);
+  for (auto& node : dead_nodes_)
+  {
+    const std::string name = node.first;
+    const int level = node.second;
+    auto& array = updated_status.node_status;
+    auto found = std::find_if(array.begin(), array.end(),
+      [&](autoware_system_msgs::NodeStatus& stat){return (name == stat.node_name);});
+    if (found == array.end())
+    {
+      array.emplace_back(createNodeStatus(name, updated_status.header, level));
+    }
+    else
+    {
+      found->node_activated = true;
+      found->status.emplace_back(createDiagnosticStatusArray(name, updated_status.header, level));
+    }
+  }
+  return updated_status;
 }
