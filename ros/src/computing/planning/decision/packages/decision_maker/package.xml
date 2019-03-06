@@ -22,6 +22,8 @@
     <build_depend>dynamic_reconfigure</build_depend>
     <build_depend>amathutils_lib</build_depend>
     <build_depend>state_machine_lib</build_depend>
+    <build_depend>rostest</build_depend>
+    <build_depend>rosunit</build_depend>
 
     <run_depend>roscpp</run_depend>
     <run_depend>std_msgs</run_depend>

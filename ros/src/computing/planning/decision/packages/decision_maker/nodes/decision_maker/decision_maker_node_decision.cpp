@@ -95,7 +95,7 @@ bool DecisionMakerNode::isLocalizationConvergence(const geometry_msgs::Point& _c
   {
     distances.erase(distances.begin());
     distances_count--;
-    double avg_distances = std::accumulate(distances.begin(), distances.end(), 0) / distances.size();
+    double avg_distances = std::accumulate(distances.begin(), distances.end(), 0.0) / (double)distances.size();
     if (avg_distances <= 2) /*meter*/
     {
       ret = true;
