@@ -1266,6 +1266,7 @@ class MyFrame(rtmgr.MyFrame):
 		for cam_id in ids:
 			(pdic_a, gdic_a, _) = self.name_to_pdic_gdic_prm(cam_id)
 			pdic = pdic_a if pdic_a else self.load_dic_pdic_setup(cam_id, {})
+			pdic['camera_id'] = cam_id
 			pdic_baks[cam_id] = pdic.copy()
 			gdic = gdic_a if gdic_a else gdic_org.copy()
 			gdic['flags'] = flags
