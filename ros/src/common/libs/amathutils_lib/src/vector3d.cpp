@@ -61,6 +61,18 @@ Vector3d Vector3d::cross(const Vector3d &_a) const
     return cross(*this, _a);
 }
 
+Vector3d Vector3d::normalized(const Vector3d &_a)
+{
+    Eigen::Vector3d vec;
+    vec << _a.getX(), _a.getY(), _a.getZ();
+    return Vector3d(vec.normalized());
+}
+
+void Vector3d::normalize()
+{
+    return vec_.normalize();
+}
+
 Vector3d Vector3d::operator-(const Vector3d &other) const
 {
     return Vector3d(getX() - other.getX(), getY() - other.getY(), getZ() - other.getZ());
@@ -130,6 +142,11 @@ bool Vector3d::operator==(const Vector3d &other) const
     return (approximatelyEqual(getX(), other.getX()) &&
             approximatelyEqual(getY(), other.getY()) &&
             approximatelyEqual(getZ(), other.getZ()));
+}
+
+bool Vector3d::operator!=(const Vector3d &other) const
+{
+    return !(*this == other);
 }
 
 } // namespace amathutils

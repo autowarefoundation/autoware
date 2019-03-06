@@ -17,7 +17,7 @@ public:
   Vector3d();
   Vector3d(const double _x, const double _y, const double _z);
   virtual ~Vector3d(){};
-    static Vector3d Zero();
+  static Vector3d Zero();
   static Vector3d Identity();
   static Vector3d UnitX();
   static Vector3d UnitY();
@@ -28,6 +28,8 @@ public:
   double dot(const Vector3d &_a) const;
   static Vector3d cross(const Vector3d &_a, const Vector3d &_b);
   Vector3d cross(const Vector3d &_a) const;
+  static Vector3d normalized(const Vector3d &_a);
+  void normalize();
   double getL1norm() const;
   double getL2norm() const;
   double getX() const;
@@ -45,6 +47,7 @@ public:
   Vector3d &operator*=(const double ratio);
   Vector3d &operator/=(const double ratio);
   bool operator==(const Vector3d &other) const;
+  bool operator!=(const Vector3d &other) const;
 };
 
 } // namespace amathutils
