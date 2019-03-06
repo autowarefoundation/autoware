@@ -1,4 +1,5 @@
-#include <amathutils_lib/vector2d.hpp>
+#include "amathutils_lib/vector2d.hpp"
+#include "amathutils_lib/numerical_comparision.hpp"
 #include <iostream>
 
 namespace amathutils
@@ -97,8 +98,7 @@ Vector2d Vector2d::operator*(const double ratio) const
 
 Vector2d Vector2d::operator/(const double ratio) const
 {
-    constexpr double ep = 10e-10;
-    if (std::abs(ratio) < ep)
+    if (approximatelyZero(ratio))
     {
         std::cerr << __FILE__ << "(" << __LINE__ << ")"
                   << ":"
@@ -130,8 +130,7 @@ Vector2d &Vector2d::operator*=(const double ratio)
 
 Vector2d &Vector2d::operator/=(const double ratio)
 {
-    constexpr double ep = 10e-10;
-    if (std::abs(ratio) < ep)
+    if (approximatelyZero(ratio))
     {
         std::cerr << __FILE__ << "(" << __LINE__ << ")"
                   << ":"
@@ -144,9 +143,8 @@ Vector2d &Vector2d::operator/=(const double ratio)
 
 bool Vector2d::operator==(const Vector2d &other) const
 {
-    constexpr double ep = 10e-10;
-    return (std::abs(getX() - other.getX()) < ep &&
-            std::abs(getY() - other.getY()) < ep);
+    return (approximatelyEqual(getX(), other.getX()) &&
+            approximatelyEqual(getY(), other.getY()));
 }
 
 bool Vector2d::operator!=(const Vector2d &other) const

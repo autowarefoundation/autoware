@@ -1,4 +1,5 @@
-#include <amathutils_lib/vector3d.hpp>
+#include "amathutils_lib/vector3d.hpp"
+#include "amathutils_lib/numerical_comparision.hpp"
 #include <iostream>
 
 namespace amathutils
@@ -77,8 +78,7 @@ Vector3d Vector3d::operator*(const double ratio) const
 
 Vector3d Vector3d::operator/(const double ratio) const
 {
-    constexpr double ep = 10e-10;
-    if (std::abs(ratio) < ep)
+    if (approximatelyZero(ratio))
     {
         std::cerr << __FILE__ << "(" << __LINE__ << ")"
                   << ":"
@@ -113,8 +113,7 @@ Vector3d &Vector3d::operator*=(const double ratio)
 
 Vector3d &Vector3d::operator/=(const double ratio)
 {
-    constexpr double ep = 10e-10;
-    if (std::abs(ratio) < ep)
+    if (approximatelyZero(ratio))
     {
         std::cerr << __FILE__ << "(" << __LINE__ << ")"
                   << ":"
@@ -128,10 +127,9 @@ Vector3d &Vector3d::operator/=(const double ratio)
 
 bool Vector3d::operator==(const Vector3d &other) const
 {
-    constexpr double ep = 10e-10;
-    return (std::abs(getX() - other.getX()) < ep &&
-            std::abs(getY() - other.getY()) < ep &&
-            std::abs(getZ() - other.getZ()) < ep);
+    return (approximatelyEqual(getX(), other.getX()) &&
+            approximatelyEqual(getY(), other.getY()) &&
+            approximatelyEqual(getZ(), other.getZ()));
 }
 
 } // namespace amathutils

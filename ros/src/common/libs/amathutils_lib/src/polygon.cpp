@@ -1,4 +1,5 @@
-#include <amathutils_lib/polygon.hpp>
+#include "amathutils_lib/polygon.hpp"
+#include "amathutils_lib/numerical_comparision.hpp"
 #include <iostream>
 
 namespace amathutils
@@ -31,9 +32,9 @@ bool Polygon2d::isInPolygon(const std::vector<Vector2d> &v_point, const Vector2d
         const double dot = vec1.dot(vec2);
         const double cross = vec1.cross(vec2);
         double signed_angle = std::atan2(cross, dot);
-        constexpr double ep = 1.0e-10;
+
         // check boundary
-        if (std::abs(std::abs(signed_angle) - M_PI) < ep)
+        if (approximatelyEqual(std::abs(signed_angle), M_PI))
         {
             return boundary;
             if (boundary)
@@ -42,14 +43,14 @@ bool Polygon2d::isInPolygon(const std::vector<Vector2d> &v_point, const Vector2d
                 signed_angle = -std::abs(signed_angle);
         }
         // check corner
-        if (std::abs(cross) < ep && std::abs(dot) < ep)
+        if (approximatelyZero(cross) && approximatelyZero(dot))
         {
             return boundary;
         }
         signed_angle_sum += signed_angle;
     }
-    constexpr double ep = 1.0e-5;
-    if (fabs(2 * M_PI - fabs(signed_angle_sum)) < ep)
+
+    if (approximatelyEqual(2 * M_PI, fabs(signed_angle_sum)))
         return true;
     else
         return false;

@@ -30,9 +30,6 @@ class PolygonTestSuite : public ::testing::Test
     ~PolygonTestSuite() {}
 };
 
-// static bool isInPolygon(const std::vector<Vector2d> &v_point, const Vector2d &point);
-// void setPolygon(const std::vector<Vector2d> &v_point);
-// bool isInPolygon(const Vector2d &point);
 TEST(TestSuite, CheckSimple)
 {
     Polygon2d polygon_test;
