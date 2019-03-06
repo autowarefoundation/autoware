@@ -17,6 +17,7 @@
 #define CNN_SEGMENTATION_H
 
 #include <chrono>
+#include <numeric>
 
 #include <ros/ros.h>
 
