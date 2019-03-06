@@ -94,6 +94,8 @@ if(TRT_AVAIL AND CUDA_AVAIL)
 
 
   install(TARGETS
+         gpu_point_pillars_lib
+         point_pillars_lib
          lidar_point_pillars
          ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
          LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
