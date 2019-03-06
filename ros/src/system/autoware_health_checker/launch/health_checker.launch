@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
 <launch>
+    <rosparam file="$(find autoware_health_checker)/config/default.yaml" command="load"/>
     <param name="enable_statistics" value="true"/>
     <node pkg="autoware_health_checker" type="health_aggregator" name="health_aggregator" output="log" respawn="true" respawn_delay="0" />
     <node pkg="autoware_health_checker" type="health_analyzer" name="health_analyzer" output="log" respawn="true" respawn_delay="0">
-        <param name="warn_threashold" value="30"/>
+        <param name="warn_count_threshold" value="30"/>
     </node>
 </launch>

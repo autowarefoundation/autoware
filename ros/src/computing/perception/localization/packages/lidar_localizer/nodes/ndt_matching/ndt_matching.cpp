@@ -70,7 +70,7 @@
 #include <autoware_msgs/NDTStat.h>
 
 //headers in Autoware Health Checker
-#include <autoware_health_checker/node_status_publisher.h>
+#include <autoware_health_checker/health_checker/health_checker.h>
 
 #define PREDICT_POSE_THRESHOLD 0.5
 
@@ -78,7 +78,7 @@
 #define Wb 0.3
 #define Wc 0.3
 
-static std::shared_ptr<autoware_health_checker::NodeStatusPublisher> node_status_publisher_ptr_;
+static std::shared_ptr<autoware_health_checker::HealthChecker> health_checker_ptr_;
 
 struct pose
 {
@@ -921,7 +921,6 @@ static void imu_callback(const sensor_msgs::Imu::Ptr& input)
 
 static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 {
-  node_status_publisher_ptr_->CHECK_RATE("/topic/rate/points_raw/slow",8,5,1,"topic points_raw subscribe rate low.");
   if (map_loaded == 1 && init_pos_set == 1)
   {
     matching_start = std::chrono::system_clock::now();
@@ -1354,7 +1353,6 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     }
 
     predict_pose_pub.publish(predict_pose_msg);
-    node_status_publisher_ptr_->CHECK_RATE("/topic/rate/ndt_pose/slow",8,5,1,"topic points_raw publish rate low.");
     ndt_pose_pub.publish(ndt_pose_msg);
     // current_pose is published by vel_pose_mux
     //    current_pose_pub.publish(current_pose_msg);
@@ -1376,7 +1374,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     matching_end = std::chrono::system_clock::now();
     exe_time = std::chrono::duration_cast<std::chrono::microseconds>(matching_end - matching_start).count() / 1000.0;
     time_ndt_matching.data = exe_time;
-    node_status_publisher_ptr_->CHECK_MAX_VALUE("/value/time_ndt_matching",time_ndt_matching.data,50,70,100,"value time_ndt_matching is too high.");
+    health_checker_ptr_->CHECK_MAX_VALUE("time_ndt_matching",time_ndt_matching.data,50,70,100,"value time_ndt_matching is too high.");
     time_ndt_matching_pub.publish(time_ndt_matching);
 
     // Set values for /estimate_twist
@@ -1394,8 +1392,8 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     geometry_msgs::Vector3Stamped estimate_vel_msg;
     estimate_vel_msg.header.stamp = current_scan_time;
     estimate_vel_msg.vector.x = current_velocity;
-    node_status_publisher_ptr_->CHECK_MAX_VALUE("/value/estimate_twist/linear",current_velocity,5,10,15,"value linear estimated twist is too high.");
-    node_status_publisher_ptr_->CHECK_MAX_VALUE("/value/estimate_twist/angular",angular_velocity,5,10,15,"value linear angular twist is too high.");
+    health_checker_ptr_->CHECK_MAX_VALUE("estimate_twist_linear",current_velocity,5,10,15,"value linear estimated twist is too high.");
+    health_checker_ptr_->CHECK_MAX_VALUE("estimate_twist_angular",angular_velocity,5,10,15,"value linear angular twist is too high.");
     estimated_vel_pub.publish(estimate_vel_msg);
 
     // Set values for /ndt_stat
@@ -1524,9 +1522,9 @@ int main(int argc, char** argv)
 
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
-  node_status_publisher_ptr_ = std::make_shared<autoware_health_checker::NodeStatusPublisher>(nh,private_nh);
-  node_status_publisher_ptr_->ENABLE();
-  node_status_publisher_ptr_->NODE_ACTIVATE();
+  health_checker_ptr_ = std::make_shared<autoware_health_checker::HealthChecker>(nh,private_nh);
+  health_checker_ptr_->ENABLE();
+  health_checker_ptr_->NODE_ACTIVATE();
 
   // Set log file name.
   private_nh.getParam("output_log_data", _output_log_data);

@@ -32,8 +32,8 @@ SearchInfo::SearchInfo()
 {
   ros::NodeHandle nh;
   ros::NodeHandle private_nh_("~");
-  node_status_publisher_ptr_ = std::make_shared<autoware_health_checker::NodeStatusPublisher>(nh,private_nh_);
-  node_status_publisher_ptr_->ENABLE();
+  health_checker_ptr_ = std::make_shared<autoware_health_checker::HealthChecker>(nh,private_nh_);
+  health_checker_ptr_->ENABLE();
   private_nh_.param<std::string>("map_frame", map_frame_, "map");
   private_nh_.param<int>("obstacle_detect_count", obstacle_detect_count_, 10);
   private_nh_.param<int>("avoid_distance", avoid_distance_, 13);
@@ -98,14 +98,13 @@ void SearchInfo::mapCallback(const nav_msgs::OccupancyGridConstPtr &msg)
 void SearchInfo::currentPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
   current_pose_ = *msg;
-  node_status_publisher_ptr_->NODE_ACTIVATE();
-  node_status_publisher_ptr_->CHECK_RATE("/topic/rate/current_pose/slow",8,5,1,"topic current_pose subscribe rate low.");
+  health_checker_ptr_->NODE_ACTIVATE();
   if(closest_waypoint_index_!=-1 && path_set_)
   {
     autoware_msgs::Waypoint closest_waypoint = subscribed_waypoints_.waypoints[closest_waypoint_index_];
     double dist = std::sqrt(std::pow(closest_waypoint.pose.pose.position.x-current_pose_.pose.position.x,2)
       +std::pow(closest_waypoint.pose.pose.position.y-current_pose_.pose.position.y,2));
-    node_status_publisher_ptr_->CHECK_MAX_VALUE("/value/range/closest_waypoint_distance",dist,0.5,1.0,2.0,"distance between closest_waypoint and current_pose is too long.");
+    health_checker_ptr_->CHECK_MAX_VALUE("closest_waypoint_distance",dist,0.5,1.0,2.0,"distance between closest_waypoint and current_pose is too long.");
   }
   return;
 }
@@ -182,7 +181,6 @@ void SearchInfo::waypointsCallback(const autoware_msgs::LaneConstPtr &msg)
 
 void SearchInfo::closestWaypointCallback(const std_msgs::Int32ConstPtr &msg)
 {
-  node_status_publisher_ptr_->CHECK_RATE("/topic/rate/closest_waypoint/slow",8,5,1,"topic closest_waypoint subscribe rate low.");
   closest_waypoint_index_ = msg->data;
 }
 

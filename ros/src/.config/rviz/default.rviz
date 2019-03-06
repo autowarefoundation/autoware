@@ -67,11 +67,11 @@ Visualization Manager:
         All Enabled: true
         base_link:
           Value: true
-        gps:
-          Value: true
         map:
           Value: true
         velodyne:
+          Value: true
+        world:
           Value: true
       Marker Scale: 5
       Name: TF
@@ -79,12 +79,11 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        map:
-          base_link:
-            velodyne:
-              {}
-          gps:
-            {}
+        world:
+          map:
+            base_link:
+              velodyne:
+                {}
       Update Interval: 0
       Value: true
     - Alpha: 0.0500000007
@@ -122,9 +121,7 @@ Visualization Manager:
       Marker Topic: /vector_map
       Name: Vector Map
       Namespaces:
-        signal: true
-        stop_line: true
-        white_line: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Camera
@@ -179,8 +176,8 @@ Visualization Manager:
     - Alpha: 0.300000012
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 11.8534737
-        Min Value: 9.73868942
+        Max Value: 11.6879101
+        Min Value: -11.4952602
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -271,10 +268,7 @@ Visualization Manager:
       Marker Topic: /detection_range
       Name: Detection Range
       Namespaces:
-        Crosswalk Detection: true
-        Decelerate Detection: true
-        Stop Detection: true
-        Stop Line: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -282,7 +276,7 @@ Visualization Manager:
       Marker Topic: /next_target_mark
       Name: Next Waypoint Mark
       Namespaces:
-        next_target_marker: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -290,7 +284,7 @@ Visualization Manager:
       Marker Topic: /trajectory_circle_mark
       Name: PP Trajectory Mark
       Namespaces:
-        trajectory_circle_marker: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -357,9 +351,7 @@ Visualization Manager:
       Marker Topic: /local_waypoints_mark
       Name: Local Waypoints
       Namespaces:
-        local_path_marker: true
-        local_point_marker: true
-        local_waypoint_velocity: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -367,9 +359,7 @@ Visualization Manager:
       Marker Topic: /global_waypoints_mark
       Name: Global Waypoints
       Namespaces:
-        global_change_flag_lane_1: true
-        global_lane_waypoint_orientation_marker_1: true
-        global_velocity_lane_1: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -522,15 +512,15 @@ Visualization Manager:
       Unreliable: false
       Value: false
     - Class: jsk_rviz_plugin/OverlayImage
-      Enabled: false
+      Enabled: true
       Name: OverlayImage
       Topic: /image_raw
-      Value: false
+      Value: true
       alpha: 0.800000012
       height: 128
       keep aspect ratio: true
       left: 128
-      top: 128
+      top: 720
       width: 640
     - Background Alpha: 0.800000012
       Background Color: 0; 0; 0
@@ -646,11 +636,11 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Scale: 19.7382278
-      Target Frame: base_link
+      Scale: 3.93164873
+      Target Frame: world
       Value: TopDownOrtho (rviz)
-      X: 0
-      Y: 0
+      X: 1027.31726
+      Y: 636.823425
     Saved: ~
 Window Geometry:
   Camera:
