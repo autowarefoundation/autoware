@@ -160,12 +160,12 @@ build_melodic:
 build_kinetic_cross:
   variables:
       ROS_DISTRO: kinetic
-  << *build_cross
+  <<: *build_cross
 
 build_melodic_cross:
   variables:
       ROS_DISTRO: melodic
-  << *build_cross
+  <<: *build_cross
 
 pages:
   stage: deploy
