@@ -19,5 +19,6 @@
   <depend>cv_bridge</depend>
   <depend>image_transport</depend>
   <depend>tf</depend>
+  <depend>libopencv-dev</depend>
 
 </package>
