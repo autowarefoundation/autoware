@@ -19,17 +19,36 @@ option(TRT_AVAIL "TensorRT available" OFF)
 # try to find the tensorRT modules
 find_library(NVINFER NAMES nvinfer)
 find_library(NVPARSERS NAMES nvparsers)
-if(NVINFER AND NVPARSERS)
-  message("TensorRT is available!")
-  message("NVINFER: ${NVINFER}")
-  message("NVPARSERS: ${NVPARSERS}")
-  set(TRT_AVAIL ON)
+find_library(NVONNXPARSERS NAMES nvonnxparser)
+if(NVINFER AND NVPARSERS AND NVONNXPARSERS)
+   message("TensorRT is available!")
+   message("NVINFER: ${NVINFER}")
+   message("NVPARSERS: ${NVPARSERS}")
+   message("NVONNXPARSERS: ${NVONNXPARSERS}")
+   set(TRT_AVAIL ON)
 else()
   message("TensorRT is NOT Available")
   set(TRT_AVAIL OFF)
 endif()
 
-if(TRT_AVAIL AND CUDA_AVAIL)
+# set flags for CUDNN availability
+option(CUDNN_AVAIL "CUDNN available" OFF)
+# try to find the CUDNN module
+find_library(CUDNN_LIBRARY
+NAMES libcudnn.so${__cudnn_ver_suffix} libcudnn${__cudnn_ver_suffix}.dylib ${__cudnn_lib_win_name}
+PATHS $ENV{LD_LIBRARY_PATH} ${__libpath_cudart} ${CUDNN_ROOT_DIR} ${PC_CUDNN_LIBRARY_DIRS} ${CMAKE_INSTALL_PREFIX}
+PATH_SUFFIXES lib lib64 bin
+DOC "CUDNN library." )
+if(CUDNN_LIBRARY)
+   message("CUDNN is available!")
+   message("CUDNN_LIBRARY: ${CUDNN_LIBRARY}")
+   set(CUDNN_AVAIL ON)
+else()
+  message("CUDNN is NOT Available")
+  set(CUDNN_AVAIL OFF)
+endif()
+
+if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
 
   find_package(autoware_build_flags REQUIRED)
   find_package(catkin REQUIRED COMPONENTS
@@ -81,9 +100,13 @@ if(TRT_AVAIL AND CUDA_AVAIL)
          nodes/preprocess_points.cpp
          )
 
-  target_link_libraries(point_pillars_lib
-         nvinfer
-         nvonnxparser
+   target_link_libraries(point_pillars_lib
+         ${NVINFER}
+         ${NVONNXPARSERS}
+         ${CUDA_LIBRARIES}
+         ${CUDA_CUBLAS_LIBRARIES}
+         ${CUDA_curand_LIBRARY}
+         ${CUDNN_LIBRARY}
          gpu_point_pillars_lib
          )
 
@@ -116,8 +139,8 @@ if(TRT_AVAIL AND CUDA_AVAIL)
     catkin_add_gtest(test-point_pillars test/src/test_point_pillars.cpp)
     target_link_libraries(test-point_pillars ${catkin_LIBRARIES} point_pillars_lib)
   endif()
-ELSE()
+else()
   find_package(catkin REQUIRED)
   catkin_package()
   message("PointPillars won't be built, CUDA and/or TensorRT were not found.")
-ENDIF ()
+endif()
