@@ -5,7 +5,7 @@ if [[ ("$1" = "kinetic" || "$1" = "melodic" ) && ("$2" = "synquacer" || "$2" = "
 then
     # Once we support for targets, change this to the appropriate Docker image
     AUTOWARE_DOCKER_ARCH=arm64v8
-    AUTOWARE_DOCKER_DATE=20190116
+    AUTOWARE_DOCKER_DATE=20190306
     AUTOWARE_TARGET_ARCH=aarch64
     AUTOWARE_TARGET_ROS_DISTRO=$1
     AUTOWARE_TARGET_PLATFORM=$2

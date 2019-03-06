@@ -36,6 +36,46 @@ variables:
     - cd ..
     - rosdep install -y --from-paths src --ignore-src --rosdistro ${ROS_DISTRO}
 
+.build_cross: &build_cross
+  stage: build
+  image: docker
+  services:
+    - docker:dind
+  variables:
+    ROS_DISTRO: kinetic
+    AUTOWARE_DOCKER_DATE: 20190306
+    AUTOWARE_HOME: $CI_PROJECT_DIR
+    AUTOWARE_TARGET_ARCH: aarch64
+    AUTOWARE_TARGET_PLATFORM: generic-aarch64
+    AUTOWARE_BUILD_PATH: $CI_PROJECT_DIR/ros/build-${AUTOWARE_TARGET_PLATFORM}
+    AUTOWARE_INSTALL_PATH: $CI_PROJECT_DIR/ros/install-${AUTOWARE_TARGET_PLATFORM}
+    AUTOWARE_TOOLCHAIN_FILE_PATH: $CI_PROJECT_DIR/ros/cross_toolchain.cmake
+    AUTOWARE_SYSROOT: /sysroot/${AUTOWARE_TARGET_PLATFORM}
+  script:
+    # - ${AUTOWARE_HOME}/docker/crossbuild/build_cross_image.sh
+    - 'docker run
+          -e AUTOWARE_SYSROOT=${AUTOWARE_SYSROOT}
+          --rm
+          -v ${AUTOWARE_HOME}:${AUTOWARE_HOME}
+          -w ${AUTOWARE_HOME}/ros
+          autoware/build:${AUTOWARE_TARGET_PLATFORM}-${ROS_DISTRO}-${AUTOWARE_DOCKER_DATE}
+          bash
+            -c "
+                source ${AUTOWARE_SYSROOT}/opt/ros/${ROS_DISTRO}/setup.bash &&
+                colcon build
+                    --merge-install
+                    --build-base ${AUTOWARE_BUILD_PATH}
+                    --install-base ${AUTOWARE_INSTALL_PATH}
+                    --cmake-args
+                    -DPYTHON_EXECUTABLE=/usr/bin/python3
+                    -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH}
+                    -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH}
+                    -DCMAKE_PREFIX_PATH=\"${AUTOWARE_SYSROOT}/opt/ros/${ROS_DISTRO};${AUTOWARE_INSTALL_PATH}\"
+                    -DCMAKE_FIND_ROOT_PATH=${AUTOWARE_INSTALL_PATH}
+                  "
+                  '
+  retry: 1
+
 build_kinetic:
   stage: build
   image: ubuntu:xenial
@@ -79,46 +119,6 @@ build_kinetic:
     expire_in: 48 hrs
   coverage: /\s*lines.*:\s(\d+\.\d+\%\s\(\d+\sof\s\d+.*\))/
 
-build_kinetic_cross:
-  stage: build
-  image: docker
-  services:
-    - docker:dind
-  variables:
-    ROS_DISTRO: kinetic
-    AUTOWARE_DOCKER_DATE: 20190211
-    AUTOWARE_HOME: $CI_PROJECT_DIR
-    AUTOWARE_TARGET_ARCH: aarch64
-    AUTOWARE_TARGET_PLATFORM: generic-aarch64
-    AUTOWARE_BUILD_PATH: $CI_PROJECT_DIR/ros/build-${AUTOWARE_TARGET_PLATFORM}
-    AUTOWARE_INSTALL_PATH: $CI_PROJECT_DIR/ros/install-${AUTOWARE_TARGET_PLATFORM}
-    AUTOWARE_TOOLCHAIN_FILE_PATH: $CI_PROJECT_DIR/ros/cross_toolchain.cmake
-    AUTOWARE_SYSROOT: /sysroot/${AUTOWARE_TARGET_PLATFORM}
-  script:
-    # - ${AUTOWARE_HOME}/docker/crossbuild/build_cross_image.sh
-    - 'docker run
-          -e AUTOWARE_SYSROOT=${AUTOWARE_SYSROOT}
-          --rm
-          -v ${AUTOWARE_HOME}:${AUTOWARE_HOME}
-          -w ${AUTOWARE_HOME}/ros
-          autoware/build:${AUTOWARE_TARGET_PLATFORM}-${ROS_DISTRO}-${AUTOWARE_DOCKER_DATE}
-          bash
-            -c "
-                source ${AUTOWARE_SYSROOT}/opt/ros/${ROS_DISTRO}/setup.bash &&
-                colcon build
-                    --merge-install
-                    --build-base ${AUTOWARE_BUILD_PATH}
-                    --install-base ${AUTOWARE_INSTALL_PATH}
-                    --cmake-args
-                    -DPYTHON_EXECUTABLE=/usr/bin/python3
-                    -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH}
-                    -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH}
-                    -DCMAKE_PREFIX_PATH=\"${AUTOWARE_SYSROOT}/opt/ros/${ROS_DISTRO};${AUTOWARE_INSTALL_PATH}\"
-                    -DCMAKE_FIND_ROOT_PATH=${AUTOWARE_INSTALL_PATH}
-                  "
-                  '
-  retry: 1
-
 build_melodic:
   stage: build
   image: ubuntu:bionic
@@ -157,45 +157,15 @@ build_melodic:
     expire_in: 48 hrs
   coverage: /\s*lines.*:\s(\d+\.\d+\%\s\(\d+\sof\s\d+.*\))/
 
-build_melodic_cross:
-  stage: build
-  image: docker
-  services:
-    - docker:dind
+build_kinetic_cross:
   variables:
-    ROS_DISTRO: melodic
-    AUTOWARE_DOCKER_DATE: 20190116
-    AUTOWARE_HOME: $CI_PROJECT_DIR
-    AUTOWARE_TARGET_ARCH: aarch64
-    AUTOWARE_TARGET_PLATFORM: generic-aarch64
-    AUTOWARE_BUILD_PATH: $CI_PROJECT_DIR/ros/build-${AUTOWARE_TARGET_PLATFORM}
-    AUTOWARE_INSTALL_PATH: $CI_PROJECT_DIR/ros/install-${AUTOWARE_TARGET_PLATFORM}
-    AUTOWARE_TOOLCHAIN_FILE_PATH: $CI_PROJECT_DIR/ros/cross_toolchain.cmake
-    AUTOWARE_SYSROOT: /sysroot/${AUTOWARE_TARGET_PLATFORM}
-  script:
-    # - ${AUTOWARE_HOME}/docker/crossbuild/build_cross_image.sh
-    - 'docker run
-          -e AUTOWARE_SYSROOT=${AUTOWARE_SYSROOT}
-          --rm
-          -v ${AUTOWARE_HOME}:${AUTOWARE_HOME}
-          -w ${AUTOWARE_HOME}/ros
-          autoware/build:${AUTOWARE_TARGET_PLATFORM}-${ROS_DISTRO}-${AUTOWARE_DOCKER_DATE}
-          bash
-            -c "
-                source ${AUTOWARE_SYSROOT}/opt/ros/${ROS_DISTRO}/setup.bash &&
-                colcon build
-                    --merge-install
-                    --build-base ${AUTOWARE_BUILD_PATH}
-                    --install-base ${AUTOWARE_INSTALL_PATH}
-                    --cmake-args
-                    -DPYTHON_EXECUTABLE=/usr/bin/python3
-                    -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH}
-                    -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH}
-                    -DCMAKE_PREFIX_PATH=\"${AUTOWARE_SYSROOT}/opt/ros/${ROS_DISTRO};${AUTOWARE_INSTALL_PATH}\"
-                    -DCMAKE_FIND_ROOT_PATH=${AUTOWARE_INSTALL_PATH}
-                  "
-                  '
-  retry: 1
+      ROS_DISTRO: kinetic
+  << *build_cross
+
+build_melodic_cross:
+  variables:
+      ROS_DISTRO: melodic
+  << *build_cross
 
 pages:
   stage: deploy
