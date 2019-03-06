@@ -1,4 +1,4 @@
 <!-- -->
 <launch>
-	<node pkg="waypoint_follower" type="motion_monitor" name="motion_monitor" output="log"/>
+	<node pkg="waypoint_follower" type="motion_monitor" name="motion_monitor" output="log" respawn="true"/>
 </launch>
