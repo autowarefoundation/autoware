@@ -1,7 +1,7 @@
 ARG AUTOWARE_DOCKER_ARCH
 ARG AUTOWARE_TARGET_ARCH
 ARG AUTOWARE_TARGET_PLATFORM
-FROM autoware/build:${AUTOWARE_TARGET_PLATFORM}-melodic-20190116
+FROM autoware/build:${AUTOWARE_TARGET_PLATFORM}-melodic-20190306
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential
 COPY files/FindCUDA.cmake /usr/share/cmake-3.10/Modules/FindCUDA.cmake
