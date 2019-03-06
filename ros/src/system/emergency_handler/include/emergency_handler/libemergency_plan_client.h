@@ -18,6 +18,7 @@
 
 #include <ros/ros.h>
 #include <std_msgs/String.h>
+#include <autoware_system_msgs/DiagnosticStatusArray.h>
 #include <autoware_system_msgs/EmergencyAction.h>
 #include <actionlib/client/simple_action_client.h>
 #include <boost/shared_ptr.hpp>
@@ -34,6 +35,7 @@ public:
   void initNextPriority();
   static void setupPublisher(ros::NodeHandle& nh, ros::NodeHandle& pnh);
   static void reserveOrder(int priority);
+  static void getErrorStatusSummary(const autoware_system_msgs::DiagnosticStatusArray& st);
 private:
   static void resetOrder();
   static void killVehicleDriver();
@@ -49,8 +51,9 @@ private:
   int next_priority_;
   bool is_running_;
 
-  static ros::Publisher statecmd_pub_, recordcmd_pub_, emlane_pub_, emvel_pub_;
+  static ros::Publisher statecmd_pub_, recordcmd_pub_, status_pub_, emlane_pub_, emvel_pub_;
   static boost::mutex priority_mutex_;
+  static autoware_system_msgs::DiagnosticStatusArray error_status_;
   static const int normal_behavior_;
   static int required_priority_, min_priority_, record_priority_thresh_;
   static std::set<int> priority_list_;

@@ -36,26 +36,38 @@ enum StatusType
   ERROR
 };
 
+struct FactorStatusArray
+{
+  std::set<std::string> keyset_;
+  DiagnosticStatusArray dataset_;
+  void add(const DiagnosticStatus& status);
+  void reset();
+};
+
 class SystemStatusFilter
 {
 public:
   SystemStatusFilter();
   virtual int selectPriority(const SystemStatus& status);
+  static const DiagnosticStatusArray& getFactorStatusArray();
+  static void resetFactorStatusArray();
   const std::function<int(const SystemStatus&)>& getFunc() const;
   static VitalMonitor vital_monitor_;
 
 protected:
   std::function<int(const SystemStatus&)> callback_;
+  static FactorStatusArray factor_status_array_;
   static const int normal_behavior_;
 
-  StatusType getStatus(const DiagnosticStatusArray& st_array, int level_th) const;
-  StatusType getStatus(const NodeStatus& node_status, int level_th) const;
-  StatusType getStatus(const HardwareStatus& hw_status, int level_th) const;
-  StatusType getStatus(std::string node_name, const std::vector<NodeStatus>& array, int level_th) const;
+  StatusType calcStatus(const DiagnosticStatus& status, int level_th);
+  StatusType calcStatus(const DiagnosticStatusArray& st_array, int level_th);
+  StatusType calcStatus(const NodeStatus& node_status, int level_th);
+  StatusType calcStatus(const HardwareStatus& hw_status, int level_th);
+  StatusType calcStatus(std::string node_name, const std::vector<NodeStatus>& array, int level_th);
 
-  bool checkAllNodeSimplly(const std::vector<NodeStatus>& array, int level_th) const;
-  bool checkAllHardwareSimplly(const std::vector<HardwareStatus>& array, int level_th) const;
-  template<typename T> bool checkAllSimplly(const std::vector<T>& array, int level_th) const;
+  bool checkAllNodeSimplly(const std::vector<NodeStatus>& array, int level_th);
+  bool checkAllHardwareSimplly(const std::vector<HardwareStatus>& array, int level_th);
+  template<typename T> bool checkAllSimplly(const std::vector<T>& array, int level_th);
 };
 
 

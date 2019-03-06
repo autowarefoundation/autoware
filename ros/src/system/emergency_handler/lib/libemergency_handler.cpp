@@ -58,5 +58,7 @@ void EmergencyHandler::wrapFunc(FilterFunc func, SystemStatus status)
 void EmergencyHandler::reserveCallback(SystemStatus status)
 {
   EmergencyPlanClient::reserveOrder(priority_);
+  EmergencyPlanClient::getErrorStatusSummary(SystemStatusFilter::getFactorStatusArray());
+  SystemStatusFilter::resetFactorStatusArray();
   priority_ = INT_MAX;
 }

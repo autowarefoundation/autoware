@@ -83,7 +83,7 @@ autoware_system_msgs::DiagnosticStatusArray
   }
   ds.header = header;
   ds.key = "node_" + name + "_dead";
-  ds.description = "node " + name + "is dead";
+  ds.description = "node " + name + " is dead";
   ds.type = autoware_system_msgs::DiagnosticStatus::PROCESS_HAS_DIED;
   ds.level = level;
   autoware_system_msgs::DiagnosticStatusArray array;

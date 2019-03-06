@@ -60,7 +60,19 @@ target_link_libraries(simple_emergency_handler
 )
 add_dependencies(simple_emergency_handler ${catkin_EXPORTED_TARGETS})
 
-install(TARGETS emergency_handler system_status_filter emergency_plan_client
+install(TARGETS
+        emergency_handler
+        system_status_filter
+        emergency_plan_client
+        simple_emergency_handler
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+## Install project namespaced headers
+install(DIRECTORY include/${PROJECT_NAME}/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)

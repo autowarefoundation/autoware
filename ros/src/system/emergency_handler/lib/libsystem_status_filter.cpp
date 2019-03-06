@@ -15,6 +15,28 @@
  */
 #include <emergency_handler/libsystem_status_filter.h>
 
+void FactorStatusArray::add(const DiagnosticStatus& status)
+{
+  if (keyset_.count(status.key) != 0)
+  {
+    auto const& found = std::find_if(dataset_.status.begin(), dataset_.status.end(),
+      [&](const DiagnosticStatus& st){ return (st.key == status.key);});
+    if (found != dataset_.status.end())
+    {
+      *found = status;
+      return;
+    }
+  }
+  keyset_.emplace(status.key);
+  dataset_.status.emplace_back(status);
+}
+
+void FactorStatusArray::reset()
+{
+  keyset_.clear();
+  dataset_.status.clear();
+}
+
 SystemStatusFilter::SystemStatusFilter() :
   callback_(std::bind(&SystemStatusFilter::selectPriority, this, std::placeholders::_1)){}
 
@@ -23,91 +45,97 @@ int SystemStatusFilter::selectPriority(const SystemStatus& status)
   return normal_behavior_;
 }
 
+const DiagnosticStatusArray& SystemStatusFilter::getFactorStatusArray()
+{
+  return factor_status_array_.dataset_;
+}
+
+void SystemStatusFilter::resetFactorStatusArray()
+{
+  factor_status_array_.reset();
+}
+
 const std::function<int(const SystemStatus&)>& SystemStatusFilter::getFunc() const
 {
   return callback_;
 }
 
 VitalMonitor SystemStatusFilter::vital_monitor_;
+FactorStatusArray SystemStatusFilter::factor_status_array_;
 const int SystemStatusFilter::normal_behavior_ = INT_MAX;
 
-StatusType SystemStatusFilter::getStatus(const DiagnosticStatusArray& st_array, int level_th) const
+StatusType SystemStatusFilter::calcStatus(const DiagnosticStatus& status, int level_th)
 {
-  if (st_array.status.empty())
+  if (status.level >= level_th)
   {
-    return StatusType::OK;
-  }
-  const auto found = find_if(st_array.status.begin(), st_array.status.end(),
-    [=](const DiagnosticStatus& s){return s.level >= level_th;});
-  if (found != st_array.status.end())
-  {
+    factor_status_array_.add(status);
     return StatusType::ERROR;
   }
   return StatusType::OK;
 }
 
-StatusType SystemStatusFilter::getStatus(const NodeStatus& node_status, int level_th) const
+StatusType SystemStatusFilter::calcStatus(const DiagnosticStatusArray& st_array, int level_th)
+{
+  StatusType type = StatusType::OK;
+  for (const auto& status : st_array.status)
+  {
+    type = std::max(calcStatus(status, level_th), type);
+  }
+  return type;
+}
+
+StatusType SystemStatusFilter::calcStatus(const NodeStatus& node_status, int level_th)
 {
   if (!node_status.node_activated)
   {
     return StatusType::NOT_READY;
   }
-  for(const auto& st_array : node_status.status)
+  StatusType type = StatusType::OK;
+  for (const auto& st_array : node_status.status)
   {
-    if (getStatus(st_array, level_th) == StatusType::ERROR)
-    {
-      return StatusType::ERROR;
-    }
+    type = std::max(calcStatus(st_array, level_th), type);
   }
-  return StatusType::OK;
+  return type;
 }
 
-StatusType SystemStatusFilter::getStatus(const HardwareStatus& hw_status, int level_th) const
+StatusType SystemStatusFilter::calcStatus(const HardwareStatus& hw_status, int level_th)
 {
+  StatusType type = StatusType::OK;
   for(const auto& st_array : hw_status.status)
   {
-    if (getStatus(st_array, level_th) == StatusType::ERROR)
-    {
-      return StatusType::ERROR;
-    }
+    type = std::max(calcStatus(st_array, level_th), type);
   }
-  return StatusType::OK;
+  return type;
 }
 
-StatusType SystemStatusFilter::getStatus(std::string node_name, const std::vector<NodeStatus>& array, int level_th) const
+StatusType SystemStatusFilter::calcStatus(std::string node_name, const std::vector<NodeStatus>& array, int level_th)
 {
   const auto found = find_if(array.begin(), array.end(),
     [=](const NodeStatus& s){return s.node_name == node_name;});
   if (found != array.end())
   {
-    return getStatus(*found, level_th);
+    return calcStatus(*found, level_th);
   }
   return StatusType::NONE;
 }
 
-bool SystemStatusFilter::checkAllNodeSimplly(const std::vector<NodeStatus>& array, int level_th) const
+bool SystemStatusFilter::checkAllNodeSimplly(const std::vector<NodeStatus>& array, int level_th)
 {
   return checkAllSimplly<NodeStatus>(array, level_th);
 }
 
-bool SystemStatusFilter::checkAllHardwareSimplly(const std::vector<HardwareStatus>& array, int level_th) const
+bool SystemStatusFilter::checkAllHardwareSimplly(const std::vector<HardwareStatus>& array, int level_th)
 {
   return checkAllSimplly<HardwareStatus>(array, level_th);
 }
 
-template<typename T> bool SystemStatusFilter::checkAllSimplly(const std::vector<T>& array, int level_th) const
+template<typename T> bool SystemStatusFilter::checkAllSimplly(const std::vector<T>& array, int level_th)
 {
+  bool is_ok = true;
   for (const auto& st : array)
   {
-    const StatusType status = getStatus(st, level_th);
-    if (status == StatusType::NOT_READY)
-    {
-      continue;
-    }
-    else if (status == StatusType::ERROR)
-    {
-      return false;
-    }
+    const StatusType status = calcStatus(st, level_th);
+    is_ok = (status == StatusType::ERROR) ? false : is_ok;
   }
-  return true;
+  return is_ok;
 }
