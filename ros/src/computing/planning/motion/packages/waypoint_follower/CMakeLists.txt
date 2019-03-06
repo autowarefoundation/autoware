@@ -89,8 +89,17 @@ target_link_libraries(twist_gate ${catkin_LIBRARIES})
 add_dependencies(twist_gate
         ${catkin_EXPORTED_TARGETS})
 
+add_executable(motion_monitor
+        nodes/motion_monitor/motion_monitor_node.cpp
+        nodes/motion_monitor/motion_monitor.cpp
+        nodes/motion_monitor/motion_dataset.cpp
+        )
+target_link_libraries(motion_monitor libwaypoint_follower ${catkin_LIBRARIES})
+add_dependencies(motion_monitor
+        ${catkin_EXPORTED_TARGETS})
+
 ## Install executables and/or libraries
-install(TARGETS libwaypoint_follower pure_pursuit wf_simulator twist_filter twist_gate
+install(TARGETS libwaypoint_follower pure_pursuit wf_simulator twist_filter twist_gate motion_monitor
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

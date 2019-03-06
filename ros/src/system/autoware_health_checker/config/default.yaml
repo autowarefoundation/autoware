@@ -14,11 +14,16 @@ health_checker:
       warn: 50.0
       error: 75.0
       fatal : 100.0
-  closest_waypoint_distance:
+  path_deviation_long:
     max:
-      warn: 1.0
-      error: 2.0
-      fatal: 3.0
+      warn: 2.0
+      error: 3.0
+      fatal: 3.5
+  closest_distance_long:
+    max:
+      warn: 4.0
+      error: 6.0
+      fatal: 7.0
   twist_cmd_linear_high:
     max:
       warn: 15.0
