@@ -60,7 +60,7 @@ build_kinetic:
     - colcon build --cmake-target tests --cmake-args -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_BUILD_TYPE=Debug -DPYTHON_EXECUTABLE=/usr/bin/python3
     - lcov --initial --directory build --capture --output-file lcov.base
     - colcon test
-    - colcon test-result
+    - colcon test-result --verbose
     - lcov --directory build --capture --output-file lcov.test
     - lcov -a lcov.base -a lcov.test -o lcov.total
     - lcov -r lcov.total '*/tests/*' '*/test/*' '*/build/*' '*/devel/*' '/usr/*' '/opt/*' '*/CMakeCCompilerId.c' '*/CMakeCXXCompilerId.cpp' -o lcov.total.filtered
@@ -138,7 +138,7 @@ build_melodic:
     - colcon build --cmake-target tests --cmake-args -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_BUILD_TYPE=Debug -DPYTHON_EXECUTABLE=/usr/bin/python3
     - lcov --initial --directory build --capture --output-file lcov.base
     - colcon test
-    - colcon test-result
+    - colcon test-result --verbose
     - lcov --directory build --capture --output-file lcov.test
     - lcov -a lcov.base -a lcov.test -o lcov.total
     - lcov -r lcov.total '*/tests/*' '*/test/*' '*/build/*' '*/devel/*' '/usr/*' '/opt/*' '*/CMakeCCompilerId.c' '*/CMakeCXXCompilerId.cpp' -o lcov.total.filtered
