@@ -108,6 +108,8 @@ private:
   void publishStatus();
   bool node_activated_;
   std::mutex mtx_;
+  boost::thread publish_thread_;
+  bool ros_ok_;
 };
 }
 #endif // NODE_STATUS_PUBLISHER_H_INCLUDED
