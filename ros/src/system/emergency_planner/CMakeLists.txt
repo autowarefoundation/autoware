@@ -38,9 +38,9 @@ install(TARGETS emergency_planner emergency_planner emergency_stop_planner
 install(DIRECTORY include/${PROJECT_NAME}/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
-install(DIRECTORY launch/
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
-        PATTERN ".svn" EXCLUDE)
+# install(DIRECTORY launch/
+#         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+#         PATTERN ".svn" EXCLUDE)
 
 # catkin_add_gtest(${PROJECT_NAME}-test test/test_emergency_planner.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
