@@ -87,9 +87,10 @@ void PointPillarsROS::pubDetectedObject(const std::vector<float>& detections, co
     object.pose.position.y = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 1];
     object.pose.position.z = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 2];
 
-    float yaw = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 6];
-    yaw = std::atan2(std::sin(yaw), std::cos(yaw));
     // Trained this way
+    float yaw = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 6];
+    yaw += M_PI/2;
+    yaw = std::atan2(std::sin(yaw), std::cos(yaw));
     geometry_msgs::Quaternion q = tf::createQuaternionMsgFromYaw(-yaw);
     object.pose.orientation = q;
 
@@ -98,9 +99,13 @@ void PointPillarsROS::pubDetectedObject(const std::vector<float>& detections, co
       object.pose = getTransformedPose(object.pose, angle_transform_inversed_);
     }
 
-    object.dimensions.x = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 3];
-    object.dimensions.y = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 4];
+    // Again: Trained this way
+    object.dimensions.x = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 4];
+    object.dimensions.y = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 3];
     object.dimensions.z = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 5];
+
+    //Only detects car in Version 1.0
+    object.label = "car";
 
     objects.objects.push_back(object);
   }
