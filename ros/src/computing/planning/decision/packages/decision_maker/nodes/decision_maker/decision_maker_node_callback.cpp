@@ -97,7 +97,6 @@ void DecisionMakerNode::insertPointWithinCrossRoad(const std::vector<CrossRoadAr
 
 void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
 {
-  // intersects.clear();
   insertPointWithinCrossRoad(intersects, lane_array);
   // STR
   for (auto& area : intersects)

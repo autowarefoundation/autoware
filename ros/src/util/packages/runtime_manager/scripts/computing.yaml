@@ -696,7 +696,7 @@ subs :
     - name : state_machine(old)
       desc : state_machine desc sample
       cmd  : roslaunch state_machine state_machine.launch
-    - name : decision_maker
+    - name : decision_maker(experimental)
       desc : decision_maker desc sample
       cmd  : roslaunch decision_maker decision_maker.launch
       param: decision_maker
@@ -1924,7 +1924,7 @@ params :
         dash        : ''
         delim       : ':='
 
-  - name  : decision_maker
+  - name  : decision_maker(experimental)
     topic : /config/decision_maker
     msg   : ConfigDecisionMaker
     vars  :
