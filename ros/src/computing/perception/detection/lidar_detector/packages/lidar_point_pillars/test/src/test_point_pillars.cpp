@@ -68,7 +68,8 @@ public:
   const int NUM_INDS_FOR_SCAN_;
   const int NUM_BOX_CORNERS_;
 
-  void initPoints(pcl::PointCloud<pcl::PointXYZI>::Ptr in_pcl_pc_ptr);
+  // Make pointcloud for test
+  void makePointsForTest(pcl::PointCloud<pcl::PointXYZI>::Ptr in_pcl_pc_ptr);
   void pclToArray(const pcl::PointCloud<pcl::PointXYZI>::Ptr& in_pcl_pc_ptr, float* out_points_array);
   void preprocess(const float* in_points_array, int in_num_points, int* x_coors, int* y_coors,
                   float* num_points_per_pillar, float* pillar_x, float* pillar_y, float* pillar_z, float* pillar_i,
@@ -142,7 +143,7 @@ void TestClass::pclToArray(const pcl::PointCloud<pcl::PointXYZI>::Ptr& in_pcl_pc
   }
 }
 
-void TestClass::initPoints(pcl::PointCloud<pcl::PointXYZI>::Ptr in_pcl_pc_ptr)
+void TestClass::makePointsForTest(pcl::PointCloud<pcl::PointXYZI>::Ptr in_pcl_pc_ptr)
 {
   pcl::PointXYZI point;
   point.x = 12.9892;
@@ -233,7 +234,7 @@ TEST(TestSuite, CheckPreprocessPointsCPU)
                      NUM_BOX_CORNERS);
 
   pcl::PointCloud<pcl::PointXYZI>::Ptr pcl_pc_ptr(new pcl::PointCloud<pcl::PointXYZI>);
-  test_obj.initPoints(pcl_pc_ptr);
+  test_obj.makePointsForTest(pcl_pc_ptr);
 
   float* points_array = new float[pcl_pc_ptr->size() * 4];
   test_obj.pclToArray(pcl_pc_ptr, points_array);

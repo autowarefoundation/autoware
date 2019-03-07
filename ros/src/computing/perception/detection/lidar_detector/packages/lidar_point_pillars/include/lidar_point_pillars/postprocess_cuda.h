@@ -56,11 +56,11 @@ public:
   * @param[in] NUM_ANCHOR_Y_INDS Number of y-indexes for anchors
   * @param[in] NUM_ANCHOR_R_INDS Number of rotation-indexes for anchors
   * @param[in] score_threshold Score threshold for filtering output
-  * @param[in] NUM_THREDS Number of threads for launching cuda kernel
+  * @param[in] NUM_THREADS Number of threads for launching cuda kernel
   * @param[in] nms_overlap_threshold IOU threshold for NMS
   * @param[in] NUM_BOX_CORNERS Number of box's corner
-  * @param[in] NUM_OUTPUT_BOX_FEATURE_ Number of output box's feature
-  * @details Captital variables never change after the compile, non-capital variables could be chaned through rosparam
+  * @param[in] NUM_OUTPUT_BOX_FEATURE Number of output box's feature
+  * @details Captital variables never change after the compile, non-capital variables could be changed through rosparam
   */
   PostprocessCuda(const float FLOAT_MIN, const float FLOAT_MAX, const int NUM_ANCHOR_X_INDS,
                   const int NUM_ANCHOR_Y_INDS, const int NUM_ANCHOR_R_INDS, const float score_threshold,

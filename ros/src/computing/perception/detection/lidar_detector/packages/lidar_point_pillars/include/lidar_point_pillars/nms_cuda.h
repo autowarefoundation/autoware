@@ -41,7 +41,7 @@ private:
 public:
   /**
   * @brief Constructor
-  * @param[in] NUM_THRESD Number of threads for launching cuda kernel
+  * @param[in] NUM_THREADS Number of threads for launching cuda kernel
   * @param[in] NUM_BOX_CORNERS Number of corners for 2D box
   * @param[in] nms_overlap_threshold IOU threshold for NMS
   * @details Captital variables never change after the compile, Non-captital variables could be chaned through rosparam

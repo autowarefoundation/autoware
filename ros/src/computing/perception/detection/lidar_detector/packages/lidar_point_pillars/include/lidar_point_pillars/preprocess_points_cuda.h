@@ -58,7 +58,7 @@ private:
 public:
   /**
   * @brief Constructor
-  * @param[in] NUM_THREDS Number of threads for launching cuda kernel
+  * @param[in] NUM_THREADS Number of threads for launching cuda kernel
   * @param[in] MAX_NUM_PILLARS Maximum number of pillars
   * @param[in] MAX_POINTS_PER_PILLAR Maximum number of points per pillar
   * @param[in] NUM_INDS_FOR_SCAN Number of indexes for scan(cumsum)
