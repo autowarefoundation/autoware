@@ -64,6 +64,8 @@ void NaiveMotionPredict::makePrediction(const autoware_msgs::DetectedObject& obj
   for (int i = 0; i < num_prediction_; i++)
   {
     autoware_msgs::DetectedObject predicted_object = generatePredictedObject(target_object);
+    predicted_objects.push_back(predicted_object);
+    predicted_object.score = (-1/(interval_sec_*num_prediction_))*i*interval_sec_ + 1.0;
     target_object = predicted_object;
 
     geometry_msgs::Point p;
@@ -185,6 +187,7 @@ void NaiveMotionPredict::objectsCallback(const autoware_msgs::DetectedObjectArra
       makePrediction(object, predicted_objects_vec, predicted_line);
 
       // concate to output object array
+      output.objects.push_back(object);
       output.objects.insert(output.objects.end(), predicted_objects_vec.begin(), predicted_objects_vec.end());
 
       // visualize only stably tracked objects
@@ -209,8 +212,6 @@ bool NaiveMotionPredict::isObjectValid(const autoware_msgs::DetectedObject &in_o
       std::isnan(in_object.pose.position.x) ||
       std::isnan(in_object.pose.position.y) ||
       std::isnan(in_object.pose.position.z) ||
-      (in_object.pose.position.x <= 0) ||
-      (in_object.pose.position.y <= 0) ||
       (in_object.dimensions.x <= 0) ||
       (in_object.dimensions.y <= 0) ||
       (in_object.dimensions.z <= 0)
