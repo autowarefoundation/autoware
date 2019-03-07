@@ -1924,7 +1924,7 @@ params :
         dash        : ''
         delim       : ':='
 
-  - name  : decision_maker(experimental)
+  - name  : decision_maker
     topic : /config/decision_maker
     msg   : ConfigDecisionMaker
     vars  :
