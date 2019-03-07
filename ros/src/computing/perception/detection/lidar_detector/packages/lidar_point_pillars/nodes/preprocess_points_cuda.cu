@@ -18,8 +18,8 @@
 #include <iostream>
 
 //headers in local files
-#include "common.h"
-#include "preprocess_points_cuda.h"
+#include "lidar_point_pillars/common.h"
+#include "lidar_point_pillars/preprocess_points_cuda.h"
 
 __global__ void make_pillar_histo_kernel(
                                      const float* dev_points,

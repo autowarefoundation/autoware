@@ -29,7 +29,7 @@
 #include <iostream>
 
 // headers in local files
-#include "nms_cuda.h"
+#include "lidar_point_pillars/nms_cuda.h"
 
 class PostprocessCuda
 {

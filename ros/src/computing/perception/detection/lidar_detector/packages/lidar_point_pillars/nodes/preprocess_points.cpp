@@ -19,7 +19,7 @@
 #include <iostream>
 
 // headers in local files
-#include "preprocess_points.h"
+#include "lidar_point_pillars/preprocess_points.h"
 
 PreprocessPoints::PreprocessPoints(const int MAX_NUM_PILLARS, const int MAX_POINTS_PER_PILLAR, const int GRID_X_SIZE,
                                    const int GRID_Y_SIZE, const int GRID_Z_SIZE, const float PILLAR_X_SIZE,

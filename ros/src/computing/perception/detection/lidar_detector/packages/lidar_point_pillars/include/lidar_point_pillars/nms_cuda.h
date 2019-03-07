@@ -29,7 +29,7 @@
 #include <iostream>
 
 // headers in local files
-#include "common.h"
+#include "lidar_point_pillars/common.h"
 
 class NMSCuda
 {

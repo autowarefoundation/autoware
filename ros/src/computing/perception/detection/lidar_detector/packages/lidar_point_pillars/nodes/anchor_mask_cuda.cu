@@ -15,8 +15,8 @@
  */
 
 //headers in local files
-#include "common.h"
-#include "anchor_mask_cuda.h"
+#include "lidar_point_pillars/common.h"
+#include "lidar_point_pillars/anchor_mask_cuda.h"
 
 //modified prefix sum code from https://www.mimuw.edu.pl/~ps209291/kgkp/slides/scan.pdf
 __global__ void scan_x(int *g_odata, int *g_idata, int n)

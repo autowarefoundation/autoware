@@ -37,7 +37,7 @@
 #include <pcl/io/pcd_io.h>
 
 // headers in local files
-#include "point_pillars.h"
+#include "lidar_point_pillars/point_pillars.h"
 
 class PointPillarsROS
 {

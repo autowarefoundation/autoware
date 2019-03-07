@@ -20,7 +20,7 @@
 #include <thrust/sort.h>
 
 //headers in local files
-#include "postprocess_cuda.h"
+#include "lidar_point_pillars/postprocess_cuda.h"
 
 __global__ void filter_kernel(const float* box_preds, const float* cls_preds, const float* dir_preds, const int* anchor_mask,
                               const float* dev_anchors_px, const float* dev_anchors_py, const float* dev_anchors_pz,

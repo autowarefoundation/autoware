@@ -19,7 +19,7 @@
 #include <iostream>
 
 // headers in local files
-#include "point_pillars.h"
+#include "lidar_point_pillars/point_pillars.h"
 
 // clang-format off
 PointPillars::PointPillars(const bool reproduce_result_mode, const float score_threshold,

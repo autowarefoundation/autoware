@@ -15,7 +15,7 @@
  */
 
 //headers in local files
-#include "scatter_cuda.h"
+#include "lidar_point_pillars/scatter_cuda.h"
 
 __global__ void scatter_kernel( int *x_coors, int *y_coors, float *pfe_output, float *scattered_feature,
                                 const int MAX_NUM_PILLARS_, const int GRID_X_SIZE, const int GRID_Y_SIZE)

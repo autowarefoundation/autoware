@@ -29,8 +29,8 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 
-#include "point_pillars_ros.h"
-#include "preprocess_points.h"
+#include "lidar_point_pillars/point_pillars_ros.h"
+#include "lidar_point_pillars/preprocess_points.h"
 
 class TestSuite : public ::testing::Test
 {
@@ -376,6 +376,8 @@ TEST(TestSuite, CheckGenerateBoxAnchors)
   EXPECT_NEAR(-41.47, box_anchors_min_y[22], 0.001);
   EXPECT_NEAR(38.4,   box_anchors_max_x[1098], 0.001);
   EXPECT_NEAR(-38.4,  box_anchors_max_y[675], 0.001);
+  EXPECT_NEAR(-31,  box_anchors_max_y[675], 0.001);
+  EXPECT_EQ(true, false);
 
 
   delete[] anchors_px;

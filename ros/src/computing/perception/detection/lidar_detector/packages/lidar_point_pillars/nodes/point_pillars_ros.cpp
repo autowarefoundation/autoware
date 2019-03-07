@@ -28,7 +28,7 @@
 
 // headers in local files
 #include "autoware_msgs/DetectedObjectArray.h"
-#include "point_pillars_ros.h"
+#include "lidar_point_pillars/point_pillars_ros.h"
 
 PointPillarsROS::PointPillarsROS()
   : private_nh_("~")

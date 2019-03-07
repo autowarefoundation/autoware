@@ -6,7 +6,7 @@
 
 
 //headers in local files
-#include "nms_cuda.h"
+#include "lidar_point_pillars/nms_cuda.h"
 
 
 __device__ inline float devIoU(float const *const a, float const *const b)
