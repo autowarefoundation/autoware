@@ -53,6 +53,7 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
   find_package(autoware_build_flags REQUIRED)
   find_package(catkin REQUIRED COMPONENTS
    roscpp
+   roslib
    pcl_ros
    autoware_msgs
    )
@@ -62,6 +63,7 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
   catkin_package(
    CATKIN_DEPENDS
    roscpp
+   roslib
    pcl_ros
    autoware_msgs
    )

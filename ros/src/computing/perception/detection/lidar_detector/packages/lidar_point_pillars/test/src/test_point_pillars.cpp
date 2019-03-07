@@ -21,14 +21,18 @@
 * @date 2019/02/26
 */
 
+// headers in ROS
 #include <ros/ros.h>
 #include <ros/package.h>
 
+// headers in gtest
 #include <gtest/gtest.h>
 
+//headers in PCL
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 
+//headers in local files
 #include "lidar_point_pillars/point_pillars_ros.h"
 #include "lidar_point_pillars/preprocess_points.h"
 
