@@ -28,6 +28,13 @@ public:
         nh.advertise<autoware_msgs::ControlCommandStamped>("ctrl_cmd", 0);
     decision_maker_state_publisher =
         nh.advertise<std_msgs::String>("decision_maker/state", 0);
+    remote_cmd_publisher = nh.advertise<autoware_msgs::RemoteCmd>("remote_cmd", 0);
+    mode_cmd_publisher = nh.advertise<tablet_socket_msgs::mode_cmd>("mode_cmd", 0);
+    gear_cmd_publisher = nh.advertise<tablet_socket_msgs::gear_cmd>("gear_cmd", 0);
+    accel_cmd_publisher = nh.advertise<autoware_msgs::AccelCmd>("accel_cmd", 0);
+    steer_cmd_publisher = nh.advertise<autoware_msgs::SteerCmd>("steer_cmd", 0);
+    brake_cmd_publisher = nh.advertise<autoware_msgs::BrakeCmd>("brake_cmd", 0);
+    lamp_cmd_publisher = nh.advertise<autoware_msgs::LampCmd>("lamp_cmd", 0);
     vehicle_cmd_subscriber = nh.subscribe(
         "/vehicle_cmd", 1, &TwistGateTestClass::vehicleCmdCallback, this);
   }
@@ -36,9 +43,7 @@ public:
   autoware_msgs::VehicleCmd cb_vehicle_cmd;
 
   ros::NodeHandle nh;
-  ros::Publisher twist_cmd_publisher;
-  ros::Publisher control_cmd_publisher;
-  ros::Publisher decision_maker_state_publisher;
+  ros::Publisher twist_cmd_publisher, control_cmd_publisher, remote_cmd_publisher, mode_cmd_publisher, gear_cmd_publisher, accel_cmd_publisher, steer_cmd_publisher, brake_cmd_publisher, lamp_cmd_publisher, decision_maker_state_publisher;
   ros::Subscriber vehicle_cmd_subscriber;
 
   void tgSpinOnce() { tg->spinOnce(); }
@@ -61,6 +66,59 @@ public:
     msg.cmd.steering_angle = steer_angle;
 
     control_cmd_publisher.publish(msg);
+  }
+
+  void publishRemoteCmd(autoware_msgs::RemoteCmd remote_cmd){
+    remote_cmd_publisher.publish(remote_cmd);
+  }
+
+  void publishModeCmd(int mode){
+    tablet_socket_msgs::mode_cmd msg;
+    msg.header.stamp = ros::Time::now();
+    msg.mode = mode;
+
+    mode_cmd_publisher.publish(msg);
+  }
+
+  void publishGearCmd(int gear){
+    tablet_socket_msgs::gear_cmd msg;
+    msg.header.stamp = ros::Time::now();
+    msg.gear = gear;
+
+    gear_cmd_publisher.publish(msg);
+  }
+
+  void publishAccelCmd(int accel){
+    autoware_msgs::AccelCmd msg;
+    msg.header.stamp = ros::Time::now();
+    msg.accel = accel;
+
+    accel_cmd_publisher.publish(msg);
+  }
+
+  void publishSteerCmd(int steer){
+    autoware_msgs::SteerCmd msg;
+    msg.header.stamp = ros::Time::now();
+    msg.steer = steer;
+
+    steer_cmd_publisher.publish(msg);
+  }
+
+  void publishBrakeCmd(int brake){
+    autoware_msgs::BrakeCmd msg;
+    msg.header.stamp = ros::Time::now();
+    msg.brake = brake;
+
+    brake_cmd_publisher.publish(msg);
+  }
+
+  void publishLampCmd(int lamp_l, int lamp_r){
+    autoware_msgs::LampCmd msg;
+    msg.header.stamp = ros::Time::now();
+    msg.l = lamp_l;
+    msg.r = lamp_r;
+
+    lamp_cmd_publisher.publish(msg);
   }
 
   void publishDecisionMakerState(std::string states) {
