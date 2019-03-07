@@ -114,8 +114,8 @@ __global__ void make_pillar_index_kernel(
     // y_offset = self.vy / 2 + pc_range[1]
     // x_sub = coors_x.unsqueeze(1) * 0.16 + x_offset
     // y_sub = coors_y.unsqueeze(1) * 0.16 + y_offset
-    dev_x_coors_for_sub[count] =  x*  PILLAR_X_SIZE + 0.1;
-    dev_y_coors_for_sub[count] =  y*  PILLAR_Y_SIZE + -39.9;
+    dev_x_coors_for_sub[count] =  x*  PILLAR_X_SIZE + 0.1f;
+    dev_y_coors_for_sub[count] =  y*  PILLAR_Y_SIZE + -39.9f;
     dev_sparse_pillar_map[y*NUM_INDS_FOR_SCAN + x] = 1;
   }
 }

@@ -35,8 +35,8 @@ PointPillarsROS::PointPillarsROS()
   , has_subscribed_baselink_(false)
   , NUM_POINT_FEATURE_(4)
   , OUTPUT_NUM_BOX_FEATURE_(7)
-  , TRAINED_SENSOR_HEIGHT_(1.73)
-  , NORMALIZING_INTENSITY_VALUE_(255.0)
+  , TRAINED_SENSOR_HEIGHT_(1.73f)
+  , NORMALIZING_INTENSITY_VALUE_(255.0f)
   , BASELINK_FRAME_("base_link")
 {
   //ros related param
@@ -44,8 +44,8 @@ PointPillarsROS::PointPillarsROS()
 
   //algorithm related params
   private_nh_.param<bool>("reproduce_result_mode", reproduce_result_mode_, false);
-  private_nh_.param<float>("score_threshold", score_threshold_, 0.5);
-  private_nh_.param<float>("nms_overlap_threshold", nms_overlap_threshold_, 0.5);
+  private_nh_.param<float>("score_threshold", score_threshold_, 0.5f);
+  private_nh_.param<float>("nms_overlap_threshold", nms_overlap_threshold_, 0.5f);
   private_nh_.param<std::string>("pfe_onnx_file", pfe_onnx_file_, "");
   private_nh_.param<std::string>("rpn_onnx_file", rpn_onnx_file_, "");
 
