@@ -48,7 +48,7 @@ catkin_package(
         state_machine_lib
 )
 include_directories(
-        include
+        include/decision_maker
         ${catkin_INCLUDE_DIRS}
         ${vector_map_INCLUDE_DIRS}
         ${autoware_config_msgs_INCLUDE_DIRS}
@@ -80,8 +80,10 @@ install(TARGETS decision_maker_node
         )
 
 ## Install project namespaced headers
-install(DIRECTORY include/
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+install(DIRECTORY include/${PROJECT_NAME}/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        PATTERN ".svn" EXCLUDE
+        )
 
 install(DIRECTORY launch/
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
