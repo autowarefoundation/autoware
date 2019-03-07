@@ -376,8 +376,6 @@ TEST(TestSuite, CheckGenerateBoxAnchors)
   EXPECT_NEAR(-41.47, box_anchors_min_y[22], 0.001);
   EXPECT_NEAR(38.4,   box_anchors_max_x[1098], 0.001);
   EXPECT_NEAR(-38.4,  box_anchors_max_y[675], 0.001);
-  EXPECT_NEAR(-31,  box_anchors_max_y[675], 0.001);
-  EXPECT_EQ(true, false);
 
 
   delete[] anchors_px;
