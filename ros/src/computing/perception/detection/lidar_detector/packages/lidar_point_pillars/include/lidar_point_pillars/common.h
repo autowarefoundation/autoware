@@ -30,6 +30,11 @@
 // headers in CUDA
 #include <cuda_runtime_api.h>
 
+//using MACRO to allocate memory inside CUDA kernel
+#define NUM_3D_BOX_CORNERS_MACRO 8
+#define NUM_2D_BOX_CORNERS_MACRO 4
+#define NUM_THREADS_MACRO 64 // need to be changed when NUM_THREADS is changed
+
 #define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
 
 #define GPU_CHECK(ans)                                                                                                 \

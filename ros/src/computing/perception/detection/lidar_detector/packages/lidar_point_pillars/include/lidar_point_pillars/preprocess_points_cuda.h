@@ -41,6 +41,7 @@ private:
   const float MIN_X_RANGE_;
   const float MIN_Y_RANGE_;
   const float MIN_Z_RANGE_;
+  const int NUM_BOX_CORNERS_;
   // end initalizer list
 
   float* dev_pillar_x_in_coors_;
@@ -70,12 +71,13 @@ public:
   * @param[in] MIN_X_RANGE Minimum x value for pointcloud
   * @param[in] MIN_Y_RANGE Minimum y value for pointcloud
   * @param[in] MIN_Z_RANGE Minimum z value for pointcloud
+  * @param[in] NUM_BOX_CORNERS Number of corners for 2D box
   * @details Captital variables never change after the compile
   */
   PreprocessPointsCuda(const int NUM_THREADS, const int MAX_NUM_PILLARS, const int MAX_POINTS_PER_PILLAR,
                        const int NUM_INDS_FOR_SCAN, const int GRID_X_SIZE, const int GRID_Y_SIZE, const int GRID_Z_SIZE,
                        const float PILLAR_X_SIZE, const float PILLAR_Y_SIZE, const float PILLAR_Z_SIZE,
-                       const float MIN_X_RANGE, const float MIN_Y_RANGE, const float MIN_Z_RANGE);
+                       const float MIN_X_RANGE, const float MIN_Y_RANGE, const float MIN_Z_RANGE, const int NUM_BOX_CORNERS);
   ~PreprocessPointsCuda();
 
   /**

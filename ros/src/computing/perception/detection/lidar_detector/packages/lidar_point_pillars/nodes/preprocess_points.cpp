@@ -114,11 +114,12 @@ void PreprocessPoints::preprocess(const float* in_points_array, int in_num_point
       // float y_offset = PILLAR_Y_SIZE_/ 2 + MIN_Y_RANGE_;
       // float x_offset = PILLAR_X_SIZE_/ 2 + MIN_X_RANGE_;
       // TODO Need to be modified after proper trining code
+      // Will be modified in ver 1.1
       y_coors_for_sub[pillar_index] = std::floor(y_coor) * PILLAR_Y_SIZE_ + -39.9;
       x_coors_for_sub[pillar_index] = std::floor(x_coor) * PILLAR_X_SIZE_ + 0.1;
 
       // sparse pillar map
-      sparse_pillar_map[y_coor * 512 + x_coor] = 1;
+      sparse_pillar_map[y_coor * NUM_INDS_FOR_SCAN_ + x_coor] = 1;
     }
     int num = num_points_per_pillar[pillar_index];
     if (num < MAX_NUM_POINTS_PER_PILLAR_)

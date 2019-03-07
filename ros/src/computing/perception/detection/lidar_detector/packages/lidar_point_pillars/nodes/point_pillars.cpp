@@ -74,7 +74,7 @@ PointPillars::PointPillars(const bool reproduce_result_mode, const float score_t
   {
     preprocess_points_cuda_ptr_.reset(new PreprocessPointsCuda(
         NUM_THREADS_, MAX_NUM_PILLARS_, MAX_NUM_POINTS_PER_PILLAR_, NUM_INDS_FOR_SCAN_, GRID_X_SIZE_, GRID_Y_SIZE_,
-        GRID_Z_SIZE_, PILLAR_X_SIZE_, PILLAR_Y_SIZE_, PILLAR_Z_SIZE_, MIN_X_RANGE_, MIN_Y_RANGE_, MIN_Z_RANGE_));
+        GRID_Z_SIZE_, PILLAR_X_SIZE_, PILLAR_Y_SIZE_, PILLAR_Z_SIZE_, MIN_X_RANGE_, MIN_Y_RANGE_, MIN_Z_RANGE_, NUM_BOX_CORNERS_));
   }
 
   anchor_mask_cuda_ptr_.reset(new AnchorMaskCuda(NUM_INDS_FOR_SCAN_, NUM_ANCHOR_X_INDS_, NUM_ANCHOR_Y_INDS_,

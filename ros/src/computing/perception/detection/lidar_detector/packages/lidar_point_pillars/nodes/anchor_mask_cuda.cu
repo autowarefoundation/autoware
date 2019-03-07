@@ -127,7 +127,7 @@ __global__ void make_anchor_mask_kernel(const float* dev_box_anchors_min_x, cons
                                         const int NUM_INDS_FOR_SCAN)
 {
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
-  int anchor_coor[4] = {0};
+  int anchor_coor[NUM_2D_BOX_CORNERS_MACRO] = {0};
   const int GRID_X_SIZE_1 = GRID_X_SIZE - 1;//grid_x_size - 1
   const int GRID_Y_SIZE_1 = GRID_Y_SIZE - 1;//grid_y_size - 1
 
