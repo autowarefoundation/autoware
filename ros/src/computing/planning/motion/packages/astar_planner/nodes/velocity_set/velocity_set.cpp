@@ -244,12 +244,53 @@ EControl crossWalkDetection(const pcl::PointCloud<pcl::PointXYZ>& points, const 
   return EControl::KEEP;  // find no obstacles
 }
 
-int detectStopObstacle(const pcl::PointCloud<pcl::PointXYZ>& points, const int closest_waypoint,
+pcl::PointCloud<pcl::PointXYZ> getUndefPoints(const pcl::PointCloud<pcl::PointXYZ>& points, const autoware_msgs::DetectedObjectArray& objects)
+{
+  return points;  // TODO: merging
+}
+
+// REF: https://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
+float getDistancePoint2Line(const tf::Vector3& x1, const tf::Vector3& x2, const tf::Vector3& y) {
+  float l2 = tf::tfDistance2(x1, x2);
+  if (l2 < 1e-5) {
+    return tf::tfDistance(x1, y);
+  }
+  float t = std::max(0.0, std::min(1.0, tf::tfDot(y - x1, x2 - x1) / l2));
+  tf::Vector3 pj = x1 + t * (x2 - x1);
+  return tf::tfDistance(y, pj);
+}
+
+double getDistancePoint2BB(const tf::Vector3& p, const autoware_msgs::DetectedObject& obj)
+{
+  tf::Transform bb_pose;
+  tf::poseMsgToTF(obj.pose, bb_pose);
+  double dimx = obj.dimensions.x;
+  double dimy = obj.dimensions.y;
+  tf::Vector3 lb = bb_pose * tf::Vector3(-dimx/2.,  dimy/2., 0.);
+  tf::Vector3 lt = bb_pose * tf::Vector3( dimx/2.,  dimy/2., 0.);
+  tf::Vector3 rb = bb_pose * tf::Vector3(-dimx/2., -dimy/2., 0.);
+  tf::Vector3 rt = bb_pose * tf::Vector3( dimx/2., -dimy/2., 0.);
+  lb.setZ(0);
+  lt.setZ(0);
+  rb.setZ(0);
+  rt.setZ(0);
+
+  double lblt = getDistancePoint2Line(lb, lt, p);
+  double ltrt = getDistancePoint2Line(lt, rt, p);
+  double rtrb = getDistancePoint2Line(rt, rb, p);
+  double rblb = getDistancePoint2Line(rb, lb, p);
+
+  return std::min(std::min(lblt, ltrt), std::min(rtrb, rblb));
+}
+
+int detectStopObstacle(const pcl::PointCloud<pcl::PointXYZ>& points, const autoware_msgs::DetectedObjectArray& objects, const int closest_waypoint,
                        const autoware_msgs::Lane& lane, const CrossWalk& crosswalk, double stop_range,
                        double points_threshold, const geometry_msgs::PoseStamped& localizer_pose,
                        ObstaclePoints* obstacle_points, EObstacleType* obstacle_type,
                        const int wpidx_detection_result_by_other_nodes)
 {
+  pcl::PointCloud<pcl::PointXYZ> undef_points = getUndefPoints(points, objects);
+
   int stop_obstacle_waypoint = -1;
   *obstacle_type = EObstacleType::NONE;
   // start search from the closest waypoint
@@ -286,8 +327,19 @@ int detectStopObstacle(const pcl::PointCloud<pcl::PointXYZ>& points, const int c
     tf::Vector3 tf_waypoint = point2vector(waypoint);
     tf_waypoint.setZ(0);
 
+    for (const auto& obj : objects.objects)
+    {
+      double dt = getDistancePoint2BB(tf_waypoint, obj);
+      if (dt < stop_range)
+      {
+        stop_obstacle_waypoint = i;
+        *obstacle_type = EObstacleType::ON_WAYPOINTS;
+        return stop_obstacle_waypoint;
+      }
+    }
+
     int stop_point_count = 0;
-    for (const auto& p : points)
+    for (const auto& p : undef_points)
     {
       tf::Vector3 point_vector(p.x, p.y, 0);
 
@@ -372,17 +424,17 @@ int detectDecelerateObstacle(const pcl::PointCloud<pcl::PointXYZ>& points, const
 }
 
 // Detect an obstacle by using pointcloud
-EControl pointsDetection(const pcl::PointCloud<pcl::PointXYZ>& points, const int closest_waypoint,
+EControl pointsDetection(const pcl::PointCloud<pcl::PointXYZ>& points, const autoware_msgs::DetectedObjectArray& objects, const int closest_waypoint,
                          const autoware_msgs::Lane& lane, const CrossWalk& crosswalk, const VelocitySetInfo& vs_info,
                          int* obstacle_waypoint, ObstaclePoints* obstacle_points)
 {
   // no input for detection || no closest waypoint
-  if ((points.empty() == true && vs_info.getDetectionResultByOtherNodes() == -1) || closest_waypoint < 0)
+  if ((points.empty() == true && objects.objects.size() == 0 && vs_info.getDetectionResultByOtherNodes() == -1) || closest_waypoint < 0)
     return EControl::KEEP;
 
   EObstacleType obstacle_type = EObstacleType::NONE;
   int stop_obstacle_waypoint =
-      detectStopObstacle(points, closest_waypoint, lane, crosswalk, vs_info.getStopRange(),
+      detectStopObstacle(points, objects, closest_waypoint, lane, crosswalk, vs_info.getStopRange(),
                          vs_info.getPointsThreshold(), vs_info.getLocalizerPose(),
                          obstacle_points, &obstacle_type, vs_info.getDetectionResultByOtherNodes());
 
@@ -441,8 +493,9 @@ EControl obstacleDetection(int closest_waypoint, const autoware_msgs::Lane& lane
                            const ros::Publisher& obstacle_pub, int* obstacle_waypoint)
 {
   ObstaclePoints obstacle_points;
-  EControl detection_result = pointsDetection(vs_info.getPoints(), closest_waypoint, lane, crosswalk, vs_info,
+  EControl detection_result = pointsDetection(vs_info.getPoints(), vs_info.getObjects(), closest_waypoint, lane, crosswalk, vs_info,
                                               obstacle_waypoint, &obstacle_points);
+
   displayDetectionRange(lane, crosswalk, closest_waypoint, detection_result, *obstacle_waypoint, vs_info.getStopRange(),
                         vs_info.getDecelerationRange(), detection_range_pub);
 
@@ -554,6 +607,7 @@ int main(int argc, char** argv)
   // velocity set info subscriber
   ros::Subscriber config_sub = nh.subscribe("config/velocity_set", 1, &VelocitySetInfo::configCallback, &vs_info);
   ros::Subscriber points_sub = nh.subscribe(points_topic, 1, &VelocitySetInfo::pointsCallback, &vs_info);
+  ros::Subscriber objects_sub = nh.subscribe("prediction/motion_predictor/objects", 1, &VelocitySetInfo::objectsCallback, &vs_info);
   ros::Subscriber localizer_sub = nh.subscribe("localizer_pose", 1, &VelocitySetInfo::localizerPoseCallback, &vs_info);
   ros::Subscriber control_pose_sub = nh.subscribe("current_pose", 1, &VelocitySetInfo::controlPoseCallback, &vs_info);
   ros::Subscriber obstacle_sim_points_sub = nh.subscribe("obstacle_sim_pointcloud", 1, &VelocitySetInfo::obstacleSimCallback, &vs_info);

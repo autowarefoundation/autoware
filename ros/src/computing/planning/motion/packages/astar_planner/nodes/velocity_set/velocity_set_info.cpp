@@ -100,6 +100,11 @@ void VelocitySetInfo::pointsCallback(const sensor_msgs::PointCloud2ConstPtr &msg
   }
 }
 
+void VelocitySetInfo::objectsCallback(const autoware_msgs::DetectedObjectArray &msg)
+{
+  objects_ = msg;
+}
+
 void VelocitySetInfo::detectionCallback(const std_msgs::Int32 &msg)
 {
     wpidx_detectionResultByOtherNodes_ = msg.data;
