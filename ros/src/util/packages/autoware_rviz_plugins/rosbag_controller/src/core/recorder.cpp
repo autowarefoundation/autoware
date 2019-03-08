@@ -518,8 +518,8 @@ void Recorder::doRecord() {
         if (checkSize())
             break;
 
-        if (checkDuration(out.time))
-            break;
+//        if (checkDuration(out.time))
+//            break;
 
         if (scheduledCheckDisk() && checkLogging()) {
             try {
