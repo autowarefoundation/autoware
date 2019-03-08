@@ -50,13 +50,13 @@ private:
 public:
   /**
   * @brief Constructor
-  * @param[in] FLOAT_MIN the lowest float value
-  * @param[in] FLOAT_MAX the maximum float value
+  * @param[in] FLOAT_MIN The lowest float value
+  * @param[in] FLOAT_MAX The maximum float value
   * @param[in] NUM_ANCHOR_X_INDS Number of x-indexes for anchors
   * @param[in] NUM_ANCHOR_Y_INDS Number of y-indexes for anchors
   * @param[in] NUM_ANCHOR_R_INDS Number of rotation-indexes for anchors
   * @param[in] score_threshold Score threshold for filtering output
-  * @param[in] NUM_THREADS Number of threads for launching cuda kernel
+  * @param[in] NUM_THREADS Number of threads when launching cuda kernel
   * @param[in] nms_overlap_threshold IOU threshold for NMS
   * @param[in] NUM_BOX_CORNERS Number of box's corner
   * @param[in] NUM_OUTPUT_BOX_FEATURE Number of output box's feature
@@ -69,21 +69,21 @@ public:
 
   /**
   * @brief Postprocessing for the network output
-  * @param[in] rpn_box_output Box prediction from the network output
-  * @param[in] rpn_cls_output Class prediction from the network output
-  * @param[in] rpn_dir_output Direction prediction from the network output
-  * @param[in] dev_anchor_mask Anchor mask for filtering
-  * @param[in] dev_anchors_px X-coordinate value for corresponding anchor
-  * @param[in] dev_anchors_py Y-coordinate value for corresponding anchor
-  * @param[in] dev_anchors_pz Z-coordinate value for corresponding anchor
-  * @param[in] dev_anchors_dx X-dimension value for corresponding anchor
-  * @param[in] dev_anchors_dy Y-dimension value for corresponding anchor
-  * @param[in] dev_anchors_dz Z-dimension value for corresponding anchor
-  * @param[in] dev_anchors_ro Rotation value for corresponding anchor
-  * @param[in] dev_filtered_box Filtered box prediction
-  * @param[in] dev_filtered_score Filtered score prediction
-  * @param[in] dev_filtered_dir Filtered direction prediction
-  * @param[in] dev_box_for_nms Decoded box from pose and dimension to min_x min_y max_x max_y represenation for nms
+  * @param[in] rpn_box_output Box predictions from the network output
+  * @param[in] rpn_cls_output Class predictions from the network output
+  * @param[in] rpn_dir_output Direction predictions from the network output
+  * @param[in] dev_anchor_mask Anchor mask for filtering the network output
+  * @param[in] dev_anchors_px X-coordinate values for corresponding anchors
+  * @param[in] dev_anchors_py Y-coordinate values for corresponding anchors
+  * @param[in] dev_anchors_pz Z-coordinate values for corresponding anchors
+  * @param[in] dev_anchors_dx X-dimension values for corresponding anchors
+  * @param[in] dev_anchors_dy Y-dimension values for corresponding anchors
+  * @param[in] dev_anchors_dz Z-dimension values for corresponding anchors
+  * @param[in] dev_anchors_ro Rotation values for corresponding anchors
+  * @param[in] dev_filtered_box Filtered box predictions
+  * @param[in] dev_filtered_score Filtered score predictions
+  * @param[in] dev_filtered_dir Filtered direction predictions
+  * @param[in] dev_box_for_nms Decoded boxes in min_x min_y max_x max_y represenation from pose and dimension
   * @param[in] dev_filter_count The number of filtered output
   * @param[out] out_detection Output bounding boxes
   * @details dev_* represents device memory allocated variables

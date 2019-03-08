@@ -205,31 +205,31 @@ private:
 
   /**
   * @brief Memory allocation for device memory
-  * @details Call in the constructor
+  * @details Called in the constructor
   */
   void deviceMemoryMalloc();
 
   /**
-  * @brief Initialize anchor
-  * @details Call in the constructor
+  * @brief Initializing anchor
+  * @details Called in the constructor
   */
   void initAnchors();
 
   /**
-  * @brief Initialize TensorRT isntances
-  * @details Call in the constructor
+  * @brief Initializing TensorRT instances
+  * @details Called in the constructor
   */
   void initTRT();
 
   /**
   * @brief Generate anchors
-  * @param[in] anchors_px_ Represents x-coordinate value for corresponding anchor
-  * @param[in] anchors_py_ Represents y-coordinate value for corresponding anchor
-  * @param[in] anchors_pz_ Represents z-coordinate value for corresponding anchor
-  * @param[in] anchors_dx_ Represents x-dimension value for corresponding anchor
-  * @param[in] anchors_dy_ Represents y-dimension value for corresponding anchor
-  * @param[in] anchors_dz_ Represents z-dimension value for corresponding anchor
-  * @param[in] anchors_ro_ Represents rotation value for corresponding anchor
+  * @param[in] anchors_px_ Represents x-coordinate values for a corresponding anchor
+  * @param[in] anchors_py_ Represents y-coordinate values for a corresponding anchor
+  * @param[in] anchors_pz_ Represents z-coordinate values for a corresponding anchor
+  * @param[in] anchors_dx_ Represents x-dimension values for a corresponding anchor
+  * @param[in] anchors_dy_ Represents y-dimension values for a corresponding anchor
+  * @param[in] anchors_dz_ Represents z-dimension values for a corresponding anchor
+  * @param[in] anchors_ro_ Represents rotation values for a corresponding anchor
   * @details Generate anchors for each grid
   */
   void generateAnchors(float* anchors_px_, float* anchors_py_, float* anchors_pz_, float* anchors_dx_,
@@ -255,7 +255,7 @@ private:
   * @brief Preproces by CPU
   * @param[in] in_points_array pointcloud array
   * @param[in] in_num_points Number of points
-  * @details The output from CPU preprocess is reproducible
+  * @details The output from preprocessCPU is reproducible, while preprocessGPU is not
   */
   void preprocessCPU(const float* in_points_array, const int in_num_points);
 
@@ -263,7 +263,7 @@ private:
   * @brief Preproces by GPU
   * @param[in] in_points_array pointcloud array
   * @param[in] in_num_points Number of points
-  * @details Fast preprocess comapared with CPU preprocess
+  * @details Faster preprocess comapared with CPU preprocess
   */
   void preprocessGPU(const float* in_points_array, const int in_num_points);
 
@@ -305,10 +305,10 @@ public:
 
   /**
   * @brief Call PointPillars for the inference
-  * @param[in] in_points_array pointcloud array
+  * @param[in] in_points_array Pointcloud array
   * @param[in] in_num_points Number of points
   * @param[in] out_detections Network output bounding box
-  * @details This is interface for the algorithm
+  * @details This is an interface for the algorithm
   */
   void doInference(const float* in_points_array, const int in_num_points, std::vector<float>& out_detections);
 };

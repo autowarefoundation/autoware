@@ -107,7 +107,6 @@ void PreprocessPoints::preprocess(const float* in_points_array, int in_num_point
       pillar_count += 1;
       coor_to_pillaridx[y_coor * GRID_X_SIZE_ + x_coor] = pillar_index;
 
-      // reverse index
       y_coors[pillar_index] = std::floor(y_coor);
       x_coors[pillar_index] = std::floor(x_coor);
 
@@ -118,7 +117,6 @@ void PreprocessPoints::preprocess(const float* in_points_array, int in_num_point
       y_coors_for_sub[pillar_index] = std::floor(y_coor) * PILLAR_Y_SIZE_ + -39.9f;
       x_coors_for_sub[pillar_index] = std::floor(x_coor) * PILLAR_X_SIZE_ + 0.1f;
 
-      // sparse pillar map
       sparse_pillar_map[y_coor * NUM_INDS_FOR_SCAN_ + x_coor] = 1;
     }
     int num = num_points_per_pillar[pillar_index];

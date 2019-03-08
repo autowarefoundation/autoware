@@ -41,7 +41,7 @@ private:
 public:
   /**
   * @brief Constructor
-  * @param[in] NUM_THREADS Number of threads for launching cuda kernel
+  * @param[in] NUM_THREADS Number of threads when launching cuda kernel
   * @param[in] NUM_BOX_CORNERS Number of corners for 2D box
   * @param[in] nms_overlap_threshold IOU threshold for NMS
   * @details Captital variables never change after the compile, Non-captital variables could be chaned through rosparam
@@ -52,9 +52,9 @@ public:
   * @brief GPU Non-Maximum Suppresion for network output
   * @param[in] host_filter_count Number of filtered output
   * @param[in] dev_sorted_box_for_nms Bounding box output sorted by score
-  * @param[out] out_keep_inds Indexes for selected bounding box
-  * @param[out] out_num_to_keep Number of keep bounding box
-  * @details Includes CUDA NMS and postprocessing for selecting box in CPU
+  * @param[out] out_keep_inds Indexes of selected bounding box
+  * @param[out] out_num_to_keep Number of kept bounding boxes
+  * @details NMS in GPU and postprocessing for selecting box in CPU
   */
   void doNMSCuda(const int host_filter_count, float* dev_sorted_box_for_nms, int* out_keep_inds, int& out_num_to_keep);
 };

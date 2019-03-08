@@ -60,15 +60,15 @@ public:
   /**
   * @brief call cuda code for making anchor mask
   * @param[in] dev_sparse_pillar_map Grid map representation for pillar occupancy
-  * @param[in] dev_cumsum_along_x Cumsum dev_sparse_pillar_map along x axis
-  * @param[in] dev_cumsum_along_y Cumsum dev_cumsum_along_x along y axis
-  * @param[in] dev_box_anchors_min_x Array for storng min x value for each anchor
-  * @param[in] dev_box_anchors_min_y Array for storng min y value for each anchor
-  * @param[in] dev_box_anchors_max_x Array for storng max x value for each anchor
-  * @param[in] dev_box_anchors_max_y Array for storng max y value for each anchor
-  * @param[in] dev_box_anchors_max_y Array for storng max y value for each anchor
-  * @param[out] dev_anchor_mask Anchor mask for filtering output
-  * @details dev_* means device memory. Make a mask for activating pillar occupancy area
+  * @param[in] dev_cumsum_along_x Array for storing cumsum-ed dev_sparse_pillar_map values
+  * @param[in] dev_cumsum_along_y Array for storing cumsum-ed dev_cumsum_along_y values
+  * @param[in] dev_box_anchors_min_x Array for storing min x value for each anchor
+  * @param[in] dev_box_anchors_min_y Array for storing min y value for each anchor
+  * @param[in] dev_box_anchors_max_x Array for storing max x value for each anchor
+  * @param[in] dev_box_anchors_max_y Array for storing max y value for each anchor
+  * @param[in] dev_box_anchors_max_y Array for storing max y value for each anchor
+  * @param[out] dev_anchor_mask Anchor mask for filtering the network output
+  * @details dev_* means device memory. Make a mask for filtering pillar occupancy area
   */
   void doAnchorMaskCuda(int* dev_sparse_pillar_map, int* dev_cumsum_along_x, int* dev_cumsum_along_y,
                         const float* dev_box_anchors_min_x, const float* dev_box_anchors_min_y,

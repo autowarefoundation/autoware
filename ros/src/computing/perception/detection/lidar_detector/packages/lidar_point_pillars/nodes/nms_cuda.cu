@@ -27,7 +27,6 @@ __global__ void nms_kernel(const int n_boxes, const float nms_overlap_thresh,
   const int row_start = blockIdx.y;
   const int col_start = blockIdx.x;
 
-  // if (row_start > col_start) return;
   const int block_threads = blockDim.x;
 
   const int row_size =

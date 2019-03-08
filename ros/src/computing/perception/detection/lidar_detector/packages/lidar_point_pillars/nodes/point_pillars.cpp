@@ -55,7 +55,7 @@ PointPillars::PointPillars(const bool reproduce_result_mode, const float score_t
   , MAX_Z_RANGE_(1)
   , BATCH_SIZE_(1)
   , NUM_INDS_FOR_SCAN_(512)
-  , NUM_THREADS_(64) // if you change NUM_THREADS_, need to modify nms_kernel's shared memory size
+  , NUM_THREADS_(64) // if you change NUM_THREADS_, need to modify NUM_THREADS_MACRO in common.h
   , SENSOR_HEIGHT_(1.73f)
   , ANCHOR_DX_SIZE_(1.6f)
   , ANCHOR_DY_SIZE_(3.9f)
@@ -263,7 +263,7 @@ void PointPillars::initAnchors()
   box_anchors_min_y_ = new float[NUM_ANCHOR_];
   box_anchors_max_x_ = new float[NUM_ANCHOR_];
   box_anchors_max_y_ = new float[NUM_ANCHOR_];
-  // deallocate these memory in deconstructor
+  // deallocate these memories in deconstructor
 
   generateAnchors(anchors_px_, anchors_py_, anchors_pz_, anchors_dx_, anchors_dy_, anchors_dz_, anchors_ro_);
 
@@ -352,7 +352,7 @@ void PointPillars::convertAnchors2BoxAnchors(float* anchors_px, float* anchors_p
                                              float* box_anchors_min_x_, float* box_anchors_min_y_,
                                              float* box_anchors_max_x_, float* box_anchors_max_y_)
 {
-  // flip box's dimension when the third axis == 1
+  // flipping box's dimension
   float flipped_anchors_dx[NUM_ANCHOR_] = { 0 };
   float flipped_anchors_dy[NUM_ANCHOR_] = { 0 };
   for (size_t x = 0; x < NUM_ANCHOR_X_INDS_; x++)

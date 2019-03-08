@@ -58,7 +58,7 @@ private:
 public:
   /**
   * @brief Constructor
-  * @param[in] NUM_THREADS Number of threads for launching cuda kernel
+  * @param[in] NUM_THREADS Number of threads when launching cuda kernel
   * @param[in] MAX_NUM_PILLARS Maximum number of pillars
   * @param[in] MAX_POINTS_PER_PILLAR Maximum number of points per pillar
   * @param[in] NUM_INDS_FOR_SCAN Number of indexes for scan(cumsum)
@@ -87,15 +87,15 @@ public:
   * @param[in] dev_x_coors X-coordinate indexes for corresponding pillars
   * @param[in] dev_y_coors Y-coordinate indexes for corresponding pillars
   * @param[in] dev_num_points_per_pillar Number of points in corresponding pillars
-  * @param[in] dev_pillar_x X-coordinate value for points in each pillar
-  * @param[in] dev_pillar_y Y-coordinate value for points in each pillar
-  * @param[in] dev_pillar_z Z-coordinate value for points in each pillar
-  * @param[in] dev_pillar_i Intensity value for points in each pillar
-  * @param[in] dev_x_coors_for_sub_shaped Used for x substraction in the network
-  * @param[in] dev_y_coors_for_sub_shaped Used for y substraction in the network
-  * @param[in] dev_pillar_feature_mask Mask to make sure pillars' feature equal to zero where no points in the pillars
-  * @param[in] dev_sparse_pillar_map Grid map represents occupancy pillars
-  * @param[in] host_pillar_count The numnber of valid pillars for the input pointcloud
+  * @param[in] dev_pillar_x X-coordinate values for points in each pillar
+  * @param[in] dev_pillar_y Y-coordinate values for points in each pillar
+  * @param[in] dev_pillar_z Z-coordinate values for points in each pillar
+  * @param[in] dev_pillar_i Intensity values for points in each pillar
+  * @param[in] dev_x_coors_for_sub_shaped Array for x substraction in the network
+  * @param[in] dev_y_coors_for_sub_shaped Array for y substraction in the network
+  * @param[in] dev_pillar_feature_mask Mask to make pillars' feature zero where no points in the pillars
+  * @param[in] dev_sparse_pillar_map Grid map representation for pillar-occupancy
+  * @param[in] host_pillar_count The numnber of valid pillars for an input pointcloud
   * @details Convert pointcloud to pillar representation
   */
   void doPreprocessPointsCuda(const float* dev_points, const int in_num_points, int* dev_x_coors, int* dev_y_coors,

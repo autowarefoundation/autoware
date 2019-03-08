@@ -78,7 +78,7 @@ private:
 
   /**
   * @brief Get base_link to lidar transformation
-  * @param[in] target_frameid target lidar frame_id
+  * @param[in] target_frameid Name of lidar frame_id to be targeted
   * @details Get transformation info
   */
   void getBaselinkToLidarTF(const std::string& target_frameid);

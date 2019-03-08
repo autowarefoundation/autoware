@@ -72,14 +72,14 @@ public:
   * @param[in] x_coors X-coordinate indexes for corresponding pillars
   * @param[in] y_coors Y-coordinate indexes for corresponding pillars
   * @param[in] num_points_per_pillar Number of points in corresponding pillars
-  * @param[in] pillar_x X-coordinate value for points in each pillar
-  * @param[in] pillar_y Y-coordinate value for points in each pillar
-  * @param[in] pillar_z Z-coordinate value for points in each pillar
-  * @param[in] pillar_i Intensity value for points in each pillar
-  * @param[in] x_coors_for_sub_shaped Used for x substraction in the network
-  * @param[in] y_coors_for_sub_shaped Used for y substraction in the network
-  * @param[in] pillar_feature_mask Mask to make sure pillars' feature equal to zero where no points in the pillars
-  * @param[in] sparse_pillar_map Grid map represents occupancy pillars
+  * @param[in] pillar_x X-coordinate values for points in each pillar
+  * @param[in] pillar_y Y-coordinate values for points in each pillar
+  * @param[in] pillar_z Z-coordinate values for points in each pillar
+  * @param[in] pillar_i Intensity values for points in each pillar
+  * @param[in] x_coors_for_sub_shaped Array for x substraction in the network
+  * @param[in] y_coors_for_sub_shaped Array for y substraction in the network
+  * @param[in] pillar_feature_mask Mask to make pillars' feature zero where no points in the pillars
+  * @param[in] sparse_pillar_map Grid map representation for pillar-occupancy
   * @param[in] host_pillar_count The numnber of valid pillars for the input pointcloud
   * @details Convert pointcloud to pillar representation
   */
@@ -90,14 +90,14 @@ public:
 
   /**
   * @brief Initializing variables for preprocessing
-  * @param[in] coor_to_pillaridx Map for converting from one set of coordinate to a pillar
-  * @param[in] sparse_pillar_map Grid map represents occupancy pillars
-  * @param[in] pillar_x X-coordinate value for points in each pillar
-  * @param[in] pillar_y Y-coordinate value for points in each pillar
-  * @param[in] pillar_z Z-coordinate value for points in each pillar
-  * @param[in] pillar_i Intensity value for points in each pillar
-  * @param[in] x_coors_for_sub_shaped Used for x substraction in the network
-  * @param[in] y_coors_for_sub_shaped Used for y substraction in the network
+  * @param[in] coor_to_pillaridx Map for converting one set of coordinate to a pillar
+  * @param[in] sparse_pillar_map Grid map representation for pillar-occupancy
+  * @param[in] pillar_x X-coordinate values for points in each pillar
+  * @param[in] pillar_y Y-coordinate values for points in each pillar
+  * @param[in] pillar_z Z-coordinate values for points in each pillar
+  * @param[in] pillar_i Intensity values for points in each pillar
+  * @param[in] x_coors_for_sub_shaped Array for x substraction in the network
+  * @param[in] y_coors_for_sub_shaped Array for y substraction in the network
   * @details Initializeing input arguments with certain values
   */
   void initializeVariables(int* coor_to_pillaridx, float* sparse_pillar_map, float* pillar_x, float* pillar_y,
