@@ -37,16 +37,39 @@ public:
     lamp_cmd_publisher = nh.advertise<autoware_msgs::LampCmd>("lamp_cmd", 0);
     vehicle_cmd_subscriber = nh.subscribe(
         "/vehicle_cmd", 1, &TwistGateTestClass::vehicleCmdCallback, this);
+    state_cmd_subscriber = nh.subscribe(
+        "/state_cmd", 1, &TwistGateTestClass::stateCmdCallback, this);
   }
 
   TwistGate *tg;
   autoware_msgs::VehicleCmd cb_vehicle_cmd;
+  std_msgs::String cb_state_cmd;
 
   ros::NodeHandle nh;
   ros::Publisher twist_cmd_publisher, control_cmd_publisher, remote_cmd_publisher, mode_cmd_publisher, gear_cmd_publisher, accel_cmd_publisher, steer_cmd_publisher, brake_cmd_publisher, lamp_cmd_publisher, decision_maker_state_publisher;
-  ros::Subscriber vehicle_cmd_subscriber;
+  ros::Subscriber vehicle_cmd_subscriber, state_cmd_subscriber;
 
   void tgSpinOnce() { tg->spinOnce(); }
+
+  void tgResetVehicleCmdMsg() { tg->reset_vehicle_cmd_msg(); }
+
+  autoware_msgs::VehicleCmd setTgTwistGateMsg(double d_value, int i_value) {
+    tg->twist_gate_msg_.twist_cmd.twist.linear.x = d_value;
+    tg->twist_gate_msg_.twist_cmd.twist.angular.z = d_value;
+    tg->twist_gate_msg_.mode = i_value;
+    tg->twist_gate_msg_.gear = i_value;
+    tg->twist_gate_msg_.lamp_cmd.l = i_value;
+    tg->twist_gate_msg_.lamp_cmd.r = i_value;
+    tg->twist_gate_msg_.accel_cmd.accel = i_value;
+    tg->twist_gate_msg_.brake_cmd.brake = i_value;
+    tg->twist_gate_msg_.steer_cmd.steer = i_value;
+    tg->twist_gate_msg_.ctrl_cmd.linear_velocity = i_value;
+    tg->twist_gate_msg_.ctrl_cmd.steering_angle = i_value;
+
+    return tg->twist_gate_msg_;
+  }
+
+  autoware_msgs::VehicleCmd getTgTwistGateMsg() {return tg->twist_gate_msg_;}
 
   void publishTwistCmd(double linear_x, double angular_z) {
     geometry_msgs::TwistStamped msg;
@@ -130,6 +153,10 @@ public:
 
   void vehicleCmdCallback(autoware_msgs::VehicleCmd msg) {
     cb_vehicle_cmd = msg;
+  }
+
+  void stateCmdCallback(std_msgs::String msg) {
+    cb_state_cmd = msg;
   }
 
   autoware_msgs::VehicleCmd getTwistGateMsg() { return tg->twist_gate_msg_; }

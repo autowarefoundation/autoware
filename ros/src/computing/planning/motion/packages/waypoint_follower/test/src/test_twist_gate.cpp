@@ -35,6 +35,40 @@ protected:
   virtual void TearDown() { delete test_obj_.tg; };
 };
 
+TEST_F(TwistGateTestSuite, resetVehicelCmd) {
+  double d_value = 1.5;
+  int i_value = 1;
+
+  autoware_msgs::VehicleCmd msg = test_obj_.setTgTwistGateMsg(d_value, i_value);
+
+  ASSERT_EQ(d_value, msg.twist_cmd.twist.linear.x);
+  ASSERT_EQ(d_value, msg.twist_cmd.twist.angular.z);
+  ASSERT_EQ(i_value, msg.mode);
+  ASSERT_EQ(i_value, msg.gear);
+  ASSERT_EQ(i_value, msg.lamp_cmd.l);
+  ASSERT_EQ(i_value, msg.lamp_cmd.r);
+  ASSERT_EQ(i_value, msg.accel_cmd.accel);
+  ASSERT_EQ(i_value, msg.brake_cmd.brake);
+  ASSERT_EQ(i_value, msg.steer_cmd.steer);
+  ASSERT_EQ(i_value, msg.ctrl_cmd.linear_velocity);
+  ASSERT_EQ(i_value, msg.ctrl_cmd.steering_angle);
+
+  test_obj_.tgResetVehicleCmdMsg();
+  msg = test_obj_.getTgTwistGateMsg();
+
+  ASSERT_EQ(0, msg.twist_cmd.twist.linear.x);
+  ASSERT_EQ(0, msg.twist_cmd.twist.angular.z);
+  ASSERT_EQ(0, msg.mode);
+  ASSERT_EQ(0, msg.gear);
+  ASSERT_EQ(0, msg.lamp_cmd.l);
+  ASSERT_EQ(0, msg.lamp_cmd.r);
+  ASSERT_EQ(0, msg.accel_cmd.accel);
+  ASSERT_EQ(0, msg.brake_cmd.brake);
+  ASSERT_EQ(0, msg.steer_cmd.steer);
+  ASSERT_EQ(-1, msg.ctrl_cmd.linear_velocity);
+  ASSERT_EQ(0, msg.ctrl_cmd.steering_angle);
+}
+
 TEST_F(TwistGateTestSuite, twistCmdCallback) {
   double linear_x = 5.0;
   double angular_z = 1.5;
@@ -116,7 +150,20 @@ TEST_F(TwistGateTestSuite, remoteCmdCallback) {
       , test_obj_.cb_vehicle_cmd.lamp_cmd.r);
   ASSERT_EQ(remote_cmd.vehicle_cmd.mode
       , test_obj_.cb_vehicle_cmd.mode);
+}
 
+
+TEST_F(TwistGateTestSuite, remoteCmdEmergency) {
+  autoware_msgs::RemoteCmd remote_cmd;
+  remote_cmd.vehicle_cmd.emergency = 1;
+
+  test_obj_.publishRemoteCmd(remote_cmd);
+  ros::WallDuration(0.1).sleep();
+  test_obj_.tgSpinOnce();
+  ros::WallDuration(0.1).sleep();
+  ros::spinOnce();
+
+  ASSERT_EQ("emergency", test_obj_.cb_state_cmd.data);
 }
 
 TEST_F(TwistGateTestSuite, modeCmdCallback) {
