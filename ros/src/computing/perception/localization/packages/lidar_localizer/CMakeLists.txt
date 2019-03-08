@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(lidar_localizer)
 
-find_package(PCL REQUIRED)
-
 IF (NOT (PCL_VERSION VERSION_LESS "1.7.2"))
     SET(PCL_OPENMP_PACKAGES pcl_omp_registration)
 ENDIF (NOT (PCL_VERSION VERSION_LESS "1.7.2"))
@@ -70,7 +68,6 @@ catkin_package(
         ndt_cpu
         jsk_rviz_plugins
         ${PCL_OPENMP_PACKAGES}
-        DEPENDS PCL
 )
 
 ###########
@@ -132,7 +129,6 @@ target_include_directories(ndt_matching_monitor_lib PRIVATE
         ${catkin_INCLUDE_DIRS}
         ${autoware_config_msgs_INCLUDE_DIRS}
         ${autoware_msgs_INCLUDE_DIRS}
-        ${PCL_INCLUDE_DIRS}
         )
 add_dependencies(ndt_matching_monitor_lib
         ${catkin_EXPORTED_TARGETS}

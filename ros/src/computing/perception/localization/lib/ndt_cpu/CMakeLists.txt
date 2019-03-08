@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ndt_cpu)
 
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS
+    pcl_conversions
+    pcl_ros)
+
 find_package(PCL REQUIRED)
 
 find_package(Eigen3 QUIET)
@@ -20,7 +23,9 @@ endif ()
 catkin_package(
         INCLUDE_DIRS include
         LIBRARIES ndt_cpu                   #The exported libraries from the project
-        DEPENDS PCL
+        DEPENDS
+          pcl_conversions
+          pcl_ros
 )
 
 include_directories(
