@@ -6,3 +6,4 @@ float32 lookahead_ratio
 float32 minimum_lookahead_distance
 float32 displacement_threshold
 float32 relative_angle_threshold
+bool velocity_interpolation_mode

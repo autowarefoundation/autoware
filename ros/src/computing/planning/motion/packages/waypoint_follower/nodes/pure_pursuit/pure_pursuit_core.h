@@ -80,6 +80,7 @@ private:
 
   // variables
   bool is_linear_interpolation_, publishes_for_steering_robot_;
+  bool velocity_interpolation_mode_;
   bool is_waypoint_set_, is_pose_set_, is_velocity_set_, is_config_set_;
   double current_linear_velocity_, command_linear_velocity_;
   double wheel_base_;

@@ -1607,6 +1607,14 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name    : velocity_interpolation_mode
+      desc    : linear_interpolate_mode desc sample
+      label   : 'Velocity Interpolation Mode'
+      kind    : checkbox
+      v       : True
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name    : publishes_for_steering_robot
       desc    : linear_interpolate_mode desc sample
       label   : 'Publishes topic for steering robot'

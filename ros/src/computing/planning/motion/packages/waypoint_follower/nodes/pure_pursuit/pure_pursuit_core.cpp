@@ -34,6 +34,7 @@ PurePursuitNode::PurePursuitNode()
   , const_velocity_(5.0)
   , lookahead_distance_ratio_(2.0)
   , minimum_lookahead_distance_(6.0)
+  , velocity_interpolation_mode_(true)
 {
   initForROS();
   node_status_publisher_ptr_ = std::make_shared<autoware_health_checker::NodeStatusPublisher>(nh_,private_nh_);
@@ -93,7 +94,7 @@ void PurePursuitNode::run()
 
     double kappa = 0;
     bool can_get_curvature = pp_.canGetCurvature(&kappa);
-    
+
     publishTwistStamped(can_get_curvature, kappa);
     publishControlCommandStamped(can_get_curvature, kappa);
     node_status_publisher_ptr_->NODE_ACTIVATE();
@@ -189,6 +190,7 @@ void PurePursuitNode::callbackFromConfig(const autoware_config_msgs::ConfigWaypo
   const_velocity_ = config->velocity;
   lookahead_distance_ratio_ = config->lookahead_ratio;
   minimum_lookahead_distance_ = config->minimum_lookahead_distance;
+  velocity_interpolation_mode_ = config->velocity_interpolation_mode;
   is_config_set_ = true;
 }
 
@@ -227,10 +229,9 @@ void PurePursuitNode::callbackFromCurrentVelocity(const geometry_msgs::TwistStam
 
 void PurePursuitNode::callbackFromWayPoints(const autoware_msgs::LaneConstPtr &msg)
 {
-  if (!msg->waypoints.empty())
-    command_linear_velocity_ = msg->waypoints.at(0).twist.twist.linear.x;
-  else
-    command_linear_velocity_ = 0;
+  command_linear_velocity_ = (msg->waypoints.empty()) ? 0 :
+                             (velocity_interpolation_mode_) ? pp_.calcInterpolateVelocity() :
+                             msg->waypoints.at(0).twist.twist.linear.x;
 
   pp_.setCurrentWaypoints(msg->waypoints);
   is_waypoint_set_ = true;
