@@ -14,7 +14,7 @@ def test_plugin_type():
         for frame in plugin.panel().frames:
             print(plugin.path() + " " + str(frame.target))
             yield ok_, guimgr.widget(frame).validate_argtypes(fields, frame)
-            print()
+            print("")
 
 def test_plugin_field():
     rospack = rospkg.RosPack()
@@ -24,13 +24,16 @@ def test_plugin_field():
         plugin = plugins.find(plugin_path)
         if plugin.isleaf():
             result = regexp.match(plugin.rosxml())
-            path = rospack.get_path(result.group(1)) + result.group(2)
-            root = xtree.parse(path).getroot()
-            xmlargs = {child.attrib["name"] for child in root if child.tag == "arg"}
-            ymlargs = {arg.name for arg in plugin.args()}
-            print(plugin.path())
-            yield ok_, (xmlargs == ymlargs)
-            print()
-            if xmlargs != ymlargs:
-                print(ymlargs)
-                print(xmlargs)
+            try:
+                path = rospack.get_path(result.group(1)) + result.group(2)
+                root = xtree.parse(path).getroot()
+                xmlargs = {child.attrib["name"] for child in root if child.tag == "arg"}
+                ymlargs = {arg.name for arg in plugin.args()}
+                print(plugin.path())
+                yield ok_, (xmlargs == ymlargs)
+                print("")
+                if xmlargs != ymlargs:
+                    print(ymlargs)
+                    print(xmlargs)
+            except:
+                print(result.group(1) + " is not built")
