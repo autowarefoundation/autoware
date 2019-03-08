@@ -51,20 +51,23 @@ protected:
   {
     test_obj_.objects2costmap_ = new Objects2Costmap();
     test_obj_.points2costmap_ = new Points2Costmap();
+    test_obj_.dummy_point_ = new geometry_msgs::Point;
+    test_obj_.dummy_pcl_point_ = new pcl::PointXYZ;
   };
   void TearDown()
   {
     delete test_obj_.objects2costmap_;
     delete test_obj_.points2costmap_;
+    delete test_obj_.dummy_point_;
+    delete test_obj_.dummy_pcl_point_;
   };
 };
 
 TEST_F(TestSuite, CheckMakeRectanglePoints)
 {
-  geometry_msgs::Point position;
-  position.x = 2;
-  position.y = 2;
-  position.z = 0;
+  test_obj_.dummy_point_->x = 2;
+  test_obj_.dummy_point_->y = 2;
+  test_obj_.dummy_point_->z = 0;
   geometry_msgs::Vector3 dimensions;
   dimensions.x = 2;
   dimensions.y = 4;
@@ -73,7 +76,7 @@ TEST_F(TestSuite, CheckMakeRectanglePoints)
   geometry_msgs::Quaternion quat = tf::createQuaternionMsgFromYaw(pi / 2);
 
   autoware_msgs::DetectedObject object;
-  object.pose.position = position;
+  object.pose.position = *test_obj_.dummy_point_;
   object.pose.orientation = quat;
   object.dimensions = dimensions;
 
@@ -92,11 +95,10 @@ TEST_F(TestSuite, CheckAssignPoints2GridCell)
   grid_map::GridMap costmap = test_obj_.makeDummyCostmap();
 
   pcl::PointCloud<pcl::PointXYZ>::Ptr in_sensor_points(new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::PointXYZ point;
-  point.x = 0.5;
-  point.y = 0.5;
-  point.z = 100;
-  in_sensor_points->push_back(point);
+  test_obj_.dummy_pcl_point_->x = 0.5;
+  test_obj_.dummy_pcl_point_->y = 0.5;
+  test_obj_.dummy_pcl_point_->z = 100;
+  in_sensor_points->push_back(*test_obj_.dummy_pcl_point_);
 
 
   std::vector<std::vector<std::vector<double>>> grid_vec = test_obj_.assignPoints2GridCell(costmap, in_sensor_points);
@@ -109,12 +111,11 @@ TEST_F(TestSuite, CheckFetchGridIndexFromPoint)
 {
   grid_map::GridMap costmap = test_obj_.makeDummyCostmap();
 
-  pcl::PointXYZ point;
-  point.x = 3.5;
-  point.y = 0.5;
-  point.z = 100;
+  test_obj_.dummy_pcl_point_->x = 3.5;
+  test_obj_.dummy_pcl_point_->y = 0.5;
+  test_obj_.dummy_pcl_point_->z = 100;
 
-  grid_map::Index index = test_obj_.fetchGridIndexFromPoint(costmap, point);
+  grid_map::Index index = test_obj_.fetchGridIndexFromPoint(costmap, *test_obj_.dummy_pcl_point_);
 
 
   const double expected_x_ind = 2;

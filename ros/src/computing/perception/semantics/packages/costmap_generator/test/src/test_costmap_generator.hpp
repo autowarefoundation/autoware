@@ -44,6 +44,10 @@ private:
 public:
   TestClass();
 
+  geometry_msgs::Point* dummy_point_;
+
+  pcl::PointXYZ* dummy_pcl_point_;
+
   Points2Costmap *points2costmap_;
 
   grid_map::GridMap makeDummyCostmap();
