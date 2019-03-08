@@ -1,0 +1,342 @@
+diff --git a/ros/run b/ros/run
+index 34c950e..5dd3adc 100755
+--- a/ros/run
++++ b/ros/run
+@@ -43,7 +43,7 @@ if [ "$?" == "0" ]; then
+ fi
+ 
+ # boot ros-master & health_checker
+-${TERMINAL} ${MASTER_DISPLAY_OPTION} ${OPTION_WORKING_DIR}=${MY_PATH} ${OPTION_COMMAND}="bash -c 'source ./install/setup.bash; roscore'"&
++${TERMINAL} ${MASTER_DISPLAY_OPTION} ${OPTION_WORKING_DIR}=${MY_PATH} ${OPTION_COMMAND}="bash -c 'source ./devel/setup.bash; roscore'"&
+ 
+ # boot runtime_manager
+-${TERMINAL} ${RUNMGR_DISPLAY_OPTION} ${OPTION_WORKING_DIR}=${MY_PATH} ${OPTION_COMMAND}="bash -c 'source ./install/setup.bash; rosrun runtime_manager runtime_manager_dialog.py'"
+\ No newline at end of file
++${TERMINAL} ${RUNMGR_DISPLAY_OPTION} ${OPTION_WORKING_DIR}=${MY_PATH} ${OPTION_COMMAND}="bash -c 'source ./devel/setup.bash; rosrun runtime_manager runtime_manager_dialog.py'"
+diff --git a/ros/src/.config/rviz/default.rviz b/ros/src/.config/rviz/default.rviz
+index 87ad3fc..d4e5a30 100644
+--- a/ros/src/.config/rviz/default.rviz
++++ b/ros/src/.config/rviz/default.rviz
+@@ -19,7 +19,7 @@ Panels:
+         - /ERROR1
+         - /FATAL1
+       Splitter Ratio: 0.695804
+-    Tree Height: 1903
++    Tree Height: 369
+   - Class: rviz/Selection
+     Name: Selection
+   - Class: rviz/Tool Properties
+@@ -39,6 +39,15 @@ Panels:
+     Name: Time
+     SyncMode: 0
+     SyncSource: Points Map
++  - Class: integrated_viewer/ImageViewerPlugin
++    Image topic: -----
++    Lane topic: -----
++    Name: ImageViewerPlugin
++    Point size: 3
++    Point topic: -----
++    Rect topic: -----
++  - Class: autoware_rviz_debug/DecisionMakerPanel
++    Name: DecisionMakerPanel
+ Visualization Manager:
+   Class: ""
+   Displays:
+@@ -65,13 +74,13 @@ Visualization Manager:
+       Frame Timeout: 15
+       Frames:
+         All Enabled: true
+-        base_link:
++        map:
+           Value: true
+-        gps:
++        sim_base_link:
+           Value: true
+-        map:
++        sim_lidar:
+           Value: true
+-        velodyne:
++        world:
+           Value: true
+       Marker Scale: 5
+       Name: TF
+@@ -79,12 +88,11 @@ Visualization Manager:
+       Show Axes: true
+       Show Names: true
+       Tree:
+-        map:
+-          base_link:
+-            velodyne:
+-              {}
+-          gps:
+-            {}
++        world:
++          map:
++            sim_base_link:
++              sim_lidar:
++                {}
+       Update Interval: 0
+       Value: true
+     - Alpha: 0.0500000007
+@@ -122,6 +130,9 @@ Visualization Manager:
+       Marker Topic: /vector_map
+       Name: Vector Map
+       Namespaces:
++        cross_road: true
++        cross_walk: true
++        road_sign: true
+         signal: true
+         stop_line: true
+         white_line: true
+@@ -274,7 +285,6 @@ Visualization Manager:
+         Crosswalk Detection: true
+         Decelerate Detection: true
+         Stop Detection: true
+-        Stop Line: true
+       Queue Size: 100
+       Value: true
+     - Class: rviz/Marker
+@@ -311,11 +321,6 @@ Visualization Manager:
+         Expand Link Details: false
+         Expand Tree: false
+         Link Tree Style: Links in Alphabetic Order
+-        base_link:
+-          Alpha: 1
+-          Show Axes: false
+-          Show Trail: false
+-          Value: true
+       Name: Vehicle Model
+       Robot Description: robot_description
+       TF Prefix: ""
+@@ -491,7 +496,8 @@ Visualization Manager:
+       top: 30
+       update interval: 0.0399999991
+       width: 80
+-    - Background Alpha: 0.800000012
++    - Align Bottom: false
++      Background Alpha: 0.800000012
+       Background Color: 0; 0; 0
+       Class: jsk_rviz_plugin/OverlayText
+       Enabled: true
+@@ -532,7 +538,8 @@ Visualization Manager:
+       left: 128
+       top: 128
+       width: 640
+-    - Background Alpha: 0.800000012
++    - Align Bottom: false
++      Background Alpha: 0.800000012
+       Background Color: 0; 0; 0
+       Class: jsk_rviz_plugin/OverlayText
+       Enabled: true
+@@ -550,7 +557,8 @@ Visualization Manager:
+       text size: 12
+       top: 0
+       width: 128
+-    - Background Alpha: 0.800000012
++    - Align Bottom: false
++      Background Alpha: 0.800000012
+       Background Color: 0; 0; 0
+       Class: jsk_rviz_plugin/OverlayText
+       Enabled: true
+@@ -568,7 +576,8 @@ Visualization Manager:
+       text size: 12
+       top: 0
+       width: 128
+-    - Background Alpha: 0.800000012
++    - Align Bottom: false
++      Background Alpha: 0.800000012
+       Background Color: 0; 0; 0
+       Class: jsk_rviz_plugin/OverlayText
+       Enabled: true
+@@ -586,7 +595,8 @@ Visualization Manager:
+       text size: 12
+       top: 0
+       width: 128
+-    - Background Alpha: 0.800000012
++    - Align Bottom: false
++      Background Alpha: 0.800000012
+       Background Color: 0; 0; 0
+       Class: jsk_rviz_plugin/OverlayText
+       Enabled: true
+@@ -636,7 +646,7 @@ Visualization Manager:
+   Value: true
+   Views:
+     Current:
+-      Angle: 0
++      Angle: 0.0299999975
+       Class: rviz/TopDownOrtho
+       Enable Stereo Rendering:
+         Stereo Eye Separation: 0.0599999987
+@@ -646,7 +656,7 @@ Visualization Manager:
+       Invert Z Axis: false
+       Name: Current View
+       Near Clip Distance: 0.00999999978
+-      Scale: 19.7382278
++      Scale: 13.4510489
+       Target Frame: base_link
+       Value: TopDownOrtho (rviz)
+       X: 0
+@@ -655,14 +665,18 @@ Visualization Manager:
+ Window Geometry:
+   Camera:
+     collapsed: false
++  DecisionMakerPanel:
++    collapsed: false
+   Displays:
+-    collapsed: true
+-  Height: 2136
+-  Hide Left Dock: true
+-  Hide Right Dock: false
++    collapsed: false
++  Height: 896
++  Hide Left Dock: false
++  Hide Right Dock: true
+   Image:
+     collapsed: false
+-  QMainWindow State: 000000ff00000000fd000000040000000000000454000007b0fc020000000efb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006100fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afc00000028000007b00000000000fffffffaffffffff0100000003fb0000000a0049006d0061006700650000000000ffffffff0000005c00fffffffb0000000c00430061006d0065007200610000000000ffffffff0000006700fffffffb000000100044006900730070006c0061007900730000000000000001360000016a00fffffffb0000000a0049006d006100670065010000028e000000d20000000000000000fb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb000000120049006d006100670065005f0072006100770000000000ffffffff0000000000000000fb0000000c00430061006d006500720061000000024e000001710000000000000000fb000000120049006d00610067006500200052006100770100000421000000160000000000000000fb0000000a0049006d00610067006501000002f4000000cb0000000000000000fb0000000a0049006d006100670065010000056c0000026c00000000000000000000000100000163000007b0fc0200000003fb0000000a005600690065007700730100000028000007b0000000ad00fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000020000073f000000a8fc0100000001fb0000000a00560069006500770073030000004e00000080000002e1000001970000000300000ebf0000005cfc0100000002fb0000000800540069006d0065010000000000000ebf0000030000fffffffb0000000800540069006d0065010000000000000450000000000000000000000d56000007b000000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
++  ImageViewerPlugin:
++    collapsed: false
++  QMainWindow State: 000000ff00000000fd00000004000000000000021c000002f9fc020000000ffb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006100fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afc00000028000001d0000001ad0100001dfa000000000100000004fb00000024004400650063006900730069006f006e004d0061006b0065007200500061006e0065006c0100000000ffffffff0000015000fffffffb0000000a0049006d0061006700650000000000ffffffff0000005c00fffffffb0000000c00430061006d0065007200610000000000ffffffff0000006700fffffffb000000100044006900730070006c0061007900730100000000000001360000016a00fffffffb0000000a0049006d006100670065010000028e000000d20000000000000000fb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb000000120049006d006100670065005f0072006100770000000000ffffffff0000000000000000fb0000000c00430061006d006500720061000000024e000001710000000000000000fb000000120049006d00610067006500200052006100770100000421000000160000000000000000fb0000000a0049006d00610067006501000002f4000000cb0000000000000000fb0000000a0049006d006100670065010000056c0000026c0000000000000000fb000000220049006d0061006700650056006900650077006500720050006c007500670069006e01000001fe000001230000008700ffffff000000010000010f000002f9fc0200000003fb0000000a005600690065007700730000000028000002f9000000ad00fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000020000073f000000a8fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004bf0000003bfc0100000002fb0000000800540069006d00650100000000000004bf0000030000fffffffb0000000800540069006d006501000000000000045000000000000000000000029d000002f900000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+   Selection:
+     collapsed: false
+   Time:
+@@ -670,7 +684,7 @@ Window Geometry:
+   Tool Properties:
+     collapsed: false
+   Views:
+-    collapsed: false
+-  Width: 3775
++    collapsed: true
++  Width: 1215
+   X: 65
+   Y: 24
+diff --git a/ros/src/computing/perception/detection/trafficlight_recognizer/nodes/feat_proj/feat_proj.cpp b/ros/src/computing/perception/detection/trafficlight_recognizer/nodes/feat_proj/feat_proj.cpp
+index a07654e..112ae9a 100644
+--- a/ros/src/computing/perception/detection/trafficlight_recognizer/nodes/feat_proj/feat_proj.cpp
++++ b/ros/src/computing/perception/detection/trafficlight_recognizer/nodes/feat_proj/feat_proj.cpp
+@@ -217,7 +217,7 @@ Point3 transform(const Point3 &psrc, tf::StampedTransform &tfsource)
+ bool project2(const Point3 &pt, int &u, int &v, bool useOpenGLCoord = false)
+ {
+ 	float nearPlane = 1.0;
+-	float farPlane = 200.0;
++	float farPlane = 85.0;
+ 	Point3 _pt = transform(pt, trf);
+ 	float _u = _pt.x() * fx / _pt.z() + cx;
+ 	float _v = _pt.y() * fy / _pt.z() + cy;
+diff --git a/ros/src/computing/perception/detection/trafficlight_recognizer/nodes/region_tlr_mxnet/region_tlr_mxnet.cpp b/ros/src/computing/perception/detection/trafficlight_recognizer/nodes/region_tlr_mxnet/region_tlr_mxnet.cpp
+index f56bec3..8f38f3b 100644
+--- a/ros/src/computing/perception/detection/trafficlight_recognizer/nodes/region_tlr_mxnet/region_tlr_mxnet.cpp
++++ b/ros/src/computing/perception/detection/trafficlight_recognizer/nodes/region_tlr_mxnet/region_tlr_mxnet.cpp
+@@ -105,7 +105,12 @@ void RegionTLRMxNetROSNode::ROISignalCallback(const autoware_msgs::Signals::Cons
+ 	}
+ 
+ 	// Publish recognition result as some topic format
+-	PublishTrafficLight(contexts_);
++	if ( extracted_pos->Signals.size() == 0 )
++	{
++		std::cout << "no signals in the image" << std::endl;
++	}else{
++		PublishTrafficLight(contexts_);
++	}
+ 	PublishString(contexts_);
+ 	PublishMarkerArray(contexts_);
+ 	PublishImage(contexts_);
+@@ -242,8 +247,11 @@ void RegionTLRMxNetROSNode::PublishTrafficLight(std::vector<Context> contexts)
+ 	}
+ 
+ 	// If state changes from previous one, publish it
+-	if (topic.traffic_light != previous_state)
++	static ros::Time prev_time = ros::Time::now();
++	double timeout = 10.0; //seconds
++	if (topic.traffic_light != previous_state || ros::Time::now() - prev_time > ros::Duration(timeout))
+ 	{
++		prev_time = ros::Time::now();
+ 		signal_state_publisher.publish(topic);
+ 		previous_state = topic.traffic_light;
+ 	}
+diff --git a/ros/src/computing/planning/decision/packages/decision_maker/nodes/decision_maker/decision_maker_node_callback.cpp b/ros/src/computing/planning/decision/packages/decision_maker/nodes/decision_maker/decision_maker_node_callback.cpp
+index 252373e..d9901d8 100644
+--- a/ros/src/computing/planning/decision/packages/decision_maker/nodes/decision_maker/decision_maker_node_callback.cpp
++++ b/ros/src/computing/planning/decision/packages/decision_maker/nodes/decision_maker/decision_maker_node_callback.cpp
+@@ -166,8 +166,9 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
+           center_point.x = (bp.x * 2 + fp.x) / 3;
+           center_point.y = (bp.y * 2 + fp.y) / 3;
+           center_point.z = (bp.z + fp.z) / 2;
+-          if (amathutils::isPointLeftFromLine(center_point, lane.waypoints.at(wp_idx).pose.pose.position,
+-                                              lane.waypoints.at(wp_idx + 1).pose.pose.position) >= 0)
++//          if (amathutils::isPointLeftFromLine(center_point, lane.waypoints.at(wp_idx).pose.pose.position,
++//                                              lane.waypoints.at(wp_idx + 1).pose.pose.position) >= 0)
++	  if(true)
+           {
+             center_point.x = (bp.x + fp.x) / 2;
+             center_point.y = (bp.y + fp.y) / 2;
+diff --git a/ros/src/computing/planning/decision/packages/decision_maker/nodes/decision_maker/decision_maker_node_state_drive.cpp b/ros/src/computing/planning/decision/packages/decision_maker/nodes/decision_maker/decision_maker_node_state_drive.cpp
+index 0bd4668..468fd74 100644
+--- a/ros/src/computing/planning/decision/packages/decision_maker/nodes/decision_maker/decision_maker_node_state_drive.cpp
++++ b/ros/src/computing/planning/decision/packages/decision_maker/nodes/decision_maker/decision_maker_node_state_drive.cpp
+@@ -340,21 +340,26 @@ void DecisionMakerNode::updateStoplineState(cstring_t& state_name, int status)
+   publishStoplineWaypointIdx(current_status_.found_stopsign_idx);
+   /* wait for clearing risk*/
+ 
+-  static bool timerflag = false;
+-  static ros::Timer stopping_timer;
++//  static bool timerflag = false;
++//  static ros::Timer stopping_timer;
+ 
+-  if (current_status_.velocity == 0.0 && !timerflag && (current_status_.obstacle_waypoint + current_status_.closest_waypoint) == current_status_.found_stopsign_idx)
++//  if (current_status_.velocity == 0.0 && !timerflag && (current_status_.obstacle_waypoint + current_status_.closest_waypoint) == current_status_.found_stopsign_idx)
++//  {
++  if (current_status_.velocity == 0.0 && (current_status_.obstacle_waypoint + current_status_.closest_waypoint) == current_status_.found_stopsign_idx)
+   {
+-    stopping_timer = nh_.createTimer(ros::Duration(0.5),
+-                                     [&](const ros::TimerEvent&) {
+-                                       timerflag = false;
+-                                       current_status_.prev_stopped_wpidx = current_status_.found_stopsign_idx;
+-                                       tryNextState("clear");
+-                                       /*if found risk,
+-                                        * tryNextState("found_risk");*/
+-                                     },
+-                                     this, true);
+-    timerflag = true;
++
++    current_status_.prev_stopped_wpidx = current_status_.found_stopsign_idx;
++
++//    stopping_timer = nh_.createTimer(ros::Duration(0.5),
++//                                     [&](const ros::TimerEvent&) {
++//                                       timerflag = false;
++//                                       current_status_.prev_stopped_wpidx = current_status_.found_stopsign_idx;
++//                                       tryNextState("clear");
++//                                       /*if found risk,
++//                                        * tryNextState("found_risk");*/
++//                                     },
++//                                     this, true);
++//    timerflag = true;
+   }
+ }
+ void DecisionMakerNode::exitStopState(cstring_t& state_name, int status)
+diff --git a/ros/src/computing/planning/motion/packages/astar_planner/launch/velocity_set.launch b/ros/src/computing/planning/motion/packages/astar_planner/launch/velocity_set.launch
+index 6e08aaf..9ed1fd6 100644
+--- a/ros/src/computing/planning/motion/packages/astar_planner/launch/velocity_set.launch
++++ b/ros/src/computing/planning/motion/packages/astar_planner/launch/velocity_set.launch
+@@ -2,7 +2,7 @@
+ <launch>
+   <arg name="use_crosswalk_detection" default="true" />
+   <arg name="points_topic" default="points_no_ground" />
+-  <arg name="velocity_offset" default="1.2" />
++  <arg name="velocity_offset" default="3.0" />
+   <arg name="decelerate_vel_min" default="1.3" />
+   <arg name="remove_points_upto" default="2.3" />
+   <arg name="enable_multiple_crosswalk_detection" default="true" />
+diff --git a/ros/src/util/packages/runtime_manager/scripts/computing.yaml b/ros/src/util/packages/runtime_manager/scripts/computing.yaml
+index 544b1fc..42b7628 100755
+--- a/ros/src/util/packages/runtime_manager/scripts/computing.yaml
++++ b/ros/src/util/packages/runtime_manager/scripts/computing.yaml
+@@ -1738,7 +1738,7 @@ params :
+     - name  : velocity_change_limit
+       desc  : velocity_change_limit desc sample
+       label : Velocity Change Limit (km/h)
+-      min   : 5
++      min   : 1
+       max   : 40
+       v     : 7.0
+     - name  : temporal_waypoints_size

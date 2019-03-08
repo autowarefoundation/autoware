@@ -340,21 +340,26 @@ void DecisionMakerNode::updateStoplineState(cstring_t& state_name, int status)
   publishStoplineWaypointIdx(current_status_.found_stopsign_idx);
   /* wait for clearing risk*/
 
-  static bool timerflag = false;
-  static ros::Timer stopping_timer;
+//  static bool timerflag = false;
+//  static ros::Timer stopping_timer;
 
-  if (current_status_.velocity == 0.0 && !timerflag && (current_status_.obstacle_waypoint + current_status_.closest_waypoint) == current_status_.found_stopsign_idx)
+//  if (current_status_.velocity == 0.0 && !timerflag && (current_status_.obstacle_waypoint + current_status_.closest_waypoint) == current_status_.found_stopsign_idx)
+//  {
+  if (current_status_.velocity == 0.0 && (current_status_.obstacle_waypoint + current_status_.closest_waypoint) == current_status_.found_stopsign_idx)
   {
-    stopping_timer = nh_.createTimer(ros::Duration(0.5),
-                                     [&](const ros::TimerEvent&) {
-                                       timerflag = false;
-                                       current_status_.prev_stopped_wpidx = current_status_.found_stopsign_idx;
-                                       tryNextState("clear");
-                                       /*if found risk,
-                                        * tryNextState("found_risk");*/
-                                     },
-                                     this, true);
-    timerflag = true;
+
+    current_status_.prev_stopped_wpidx = current_status_.found_stopsign_idx;
+
+//    stopping_timer = nh_.createTimer(ros::Duration(0.5),
+//                                     [&](const ros::TimerEvent&) {
+//                                       timerflag = false;
+//                                       current_status_.prev_stopped_wpidx = current_status_.found_stopsign_idx;
+//                                       tryNextState("clear");
+//                                       /*if found risk,
+//                                        * tryNextState("found_risk");*/
+//                                     },
+//                                     this, true);
+//    timerflag = true;
   }
 }
 void DecisionMakerNode::exitStopState(cstring_t& state_name, int status)

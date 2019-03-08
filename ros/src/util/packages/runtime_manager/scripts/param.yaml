@@ -1,0 +1,451 @@
+/:
+  camera_frame: camera
+  camera_id: /
+  camera_info_topic: /camera_info
+  file: /home/dev/citypilot/param/20190227_153352_autoware_lidar_camera_calibration.yaml
+  image_topic_src: /image_raw
+  projection_matrix_topic: /projection_matrix
+  publish_camera_info: true
+  publish_extrinsic_mat: true
+  register_lidar2camera_tf: true
+  solo_camera: false
+  target_frame: velodyne
+/compressed:
+  camera_frame: camera
+  camera_id: /compressed
+  camera_info_topic: /camera_info
+  file: ''
+  image_topic_src: /image_raw
+  projection_matrix_topic: /projection_matrix
+  publish_camera_info: true
+  publish_extrinsic_mat: true
+  register_lidar2camera_tf: true
+  solo_camera: false
+  target_frame: velodyne
+/compressed/parameter_descriptions:
+  camera_frame: camera
+  camera_id: /compressed/parameter_descriptions
+  camera_info_topic: /camera_info
+  file: ''
+  image_topic_src: /image_raw
+  projection_matrix_topic: /projection_matrix
+  publish_camera_info: true
+  publish_extrinsic_mat: true
+  register_lidar2camera_tf: true
+  solo_camera: false
+  target_frame: velodyne
+/compressed/parameter_updates:
+  camera_frame: camera
+  camera_id: /compressed/parameter_updates
+  camera_info_topic: /camera_info
+  file: ''
+  image_topic_src: /image_raw
+  projection_matrix_topic: /projection_matrix
+  publish_camera_info: true
+  publish_extrinsic_mat: true
+  register_lidar2camera_tf: true
+  solo_camera: false
+  target_frame: velodyne
+/compressedDepth:
+  camera_frame: camera
+  camera_id: /compressedDepth
+  camera_info_topic: /camera_info
+  file: ''
+  image_topic_src: /image_raw
+  projection_matrix_topic: /projection_matrix
+  publish_camera_info: true
+  publish_extrinsic_mat: true
+  register_lidar2camera_tf: true
+  solo_camera: false
+  target_frame: velodyne
+/compressedDepth/parameter_descriptions:
+  camera_frame: camera
+  camera_id: /compressedDepth/parameter_descriptions
+  camera_info_topic: /camera_info
+  file: ''
+  image_topic_src: /image_raw
+  projection_matrix_topic: /projection_matrix
+  publish_camera_info: true
+  publish_extrinsic_mat: true
+  register_lidar2camera_tf: true
+  solo_camera: false
+  target_frame: velodyne
+/compressedDepth/parameter_updates:
+  camera_frame: camera
+  camera_id: /compressedDepth/parameter_updates
+  camera_info_topic: /camera_info
+  file: ''
+  image_topic_src: /image_raw
+  projection_matrix_topic: /projection_matrix
+  publish_camera_info: true
+  publish_extrinsic_mat: true
+  register_lidar2camera_tf: true
+  solo_camera: false
+  target_frame: velodyne
+/theora:
+  camera_frame: camera
+  camera_id: /theora
+  camera_info_topic: /camera_info
+  file: ''
+  image_topic_src: /image_raw
+  projection_matrix_topic: /projection_matrix
+  publish_camera_info: true
+  publish_extrinsic_mat: true
+  register_lidar2camera_tf: true
+  solo_camera: false
+  target_frame: velodyne
+/theora/parameter_descriptions:
+  camera_frame: camera
+  camera_id: /theora/parameter_descriptions
+  camera_info_topic: /camera_info
+  file: ''
+  image_topic_src: /image_raw
+  projection_matrix_topic: /projection_matrix
+  publish_camera_info: true
+  publish_extrinsic_mat: true
+  register_lidar2camera_tf: true
+  solo_camera: false
+  target_frame: velodyne
+/theora/parameter_updates:
+  camera_frame: camera
+  camera_id: /theora/parameter_updates
+  camera_info_topic: /camera_info
+  file: ''
+  image_topic_src: /image_raw
+  projection_matrix_topic: /projection_matrix
+  publish_camera_info: true
+  publish_extrinsic_mat: true
+  register_lidar2camera_tf: true
+  solo_camera: false
+  target_frame: velodyne
+astar_navi:
+  use_back: false
+  waypoint_velocity_kmph: 5.0
+booted_cmds:
+  names: []
+calibration_publisher:
+  camera_frame: camera
+  camera_id: ''
+  camera_info_topic: /camera_info
+  file: /home/dev/citypilot/param/20190227_153352_autoware_lidar_camera_calibration.yaml
+  image_topic_src: /image_raw
+  projection_matrix_topic: /projection_matrix
+  publish_camera_info: true
+  publish_extrinsic_mat: true
+  register_lidar2camera_tf: true
+  target_frame: velodyne
+car_dpm:
+  Lambda: 10
+  group_threshold: 0.1
+  num_bins: 9
+  num_cells: 8
+  score_threshold: -0.5
+car_fusion:
+  car: true
+  dispersion: 1.0
+  max_height: 2.0
+  max_low_height: -1.0
+  min_low_height: -1.5
+  min_points: 2
+  pedestrian: false
+  sync: false
+car_kf:
+  camera_id: ''
+  car: true
+  default_lifespan: 8
+  error_estimate_covariance: 1000000.0
+  initial_lifespan: 4
+  measurement_noise_covariance: 25.0
+  noise_covariance: 1.0
+  orb_features: 2000
+  pedestrian: false
+  percentage_of_overlapping: 0.0
+  sync: false
+  use_orb: 0
+decision_maker:
+  auto_engage: false
+  auto_mission_change: true
+  auto_mission_reload: true
+  baselink_tf: base_link
+  change_threshold_angle: 15.0
+  change_threshold_dist: 1.0
+  disuse_vector_map: false
+  goal_threshold_dist: 3.0
+  goal_threshold_vel: 0.1
+  num_of_steer_behind: 20
+  points_topic: /points_lanes
+  use_fms: false
+detection_qs:
+  file: ''
+feat_proj:
+  camera_id: !!python/unicode '/'
+  x: -20
+  y: 0
+imm_ukf_pda_track:
+  detection_probability: 0.9
+  gate_probability: 0.99
+  gating_thres: 9.22
+  lane_direction_chi_thres: 2.71
+  life_time_thres: 8
+  merge_distance_threshold: 0.5
+  nearest_lane_distance_thres: 1.0
+  prevent_explosion_thres: 1000
+  static_num_history_thres: 3
+  static_velocity_thres: 0.5
+  tracker_input_topic: !!python/unicode '/detection/lidar_detector/objects'
+  tracker_output_topic: !!python/unicode '/detection/objects'
+  tracking_frame: world
+  use_sukf: true
+  use_vectormap: false
+  vectormap_frame: map
+lane_rule:
+  acceleration: 1.5
+  number_of_smoothing_count: 0
+  number_of_zeros_ahead: 4
+  number_of_zeros_behind: 0
+  stopline_search_radius: 2.5
+lane_select:
+  distance_threshold_neighbor_lanes: 5.0
+  lane_change_interval: 10.0
+  lane_change_target_minimum: 10.0
+  lane_change_target_ratio: 5.0
+  vector_length_hermite_curve: 10.0
+lane_stop:
+  traffic_light: 1
+lidar_point_pillars:
+  baselink_support: true
+  input_topic: !!python/unicode '/points_raw'
+  nms_overlap_threshold: 0.5
+  pfe_onnx_file: /home/dev/citypilot/model/point_pillar_model/pfe.onnx
+  reproduce_result_mode: false
+  rpn_onnx_file: /home/dev/citypilot/model/point_pillar_model/rpn.onnx
+  score_threshold: 0.5
+localization_qs:
+  file: ''
+map_qs:
+  file: ''
+mission_planning_qs:
+  file: ''
+motion_planning_qs:
+  file: ''
+naive_motion_predict:
+  input_topic: !!python/unicode '/detection/objects'
+  interval_sec: 0.1
+  num_prediction: 20
+  sensor_height: 2.0
+ndt_matching:
+  error_threshold: 1.0
+  get_height: true
+  imu_topic: !!python/unicode '/imu_raw'
+  imu_upside_down: false
+  init_pos_gnss: 1
+  max_iterations: 30
+  method_type: 0
+  output_log_data: false
+  pitch: 0.0
+  resolution: 1.0
+  roll: 0.0
+  step_size: 0.1
+  sync: false
+  trans_epsilon: 0.01
+  use_imu: false
+  use_odom: true
+  use_predict_pose: 1
+  x: 0.0
+  y: 0.0
+  yaw: 0.0
+  z: 0.0
+ndt_matching_monitor:
+  fatal_time_threshold: 2.0
+  iteration_threshold_stop: 32
+  iteration_threshold_warn: 10
+  min_stable_samples: 30
+  score_threshold_delta: 14.0
+obstacle_avoid:
+  avoid_distance: 13.0
+  avoid_velocity_limit_mps: 4.0
+  avoidance: false
+  budget: 20
+  cpu_chks:
+  - true
+  - true
+  - true
+  - true
+  - true
+  - true
+  - true
+  - true
+  nice: 0
+  period: 100
+  policy: !!python/unicode 'FIFO'
+  prio: 99
+  real_time: false
+pcd_binarizer:
+  path_pcd_binarizer: ''
+  point_type: !!python/unicode 'PointXYZ'
+pcd_filter:
+  leaf_size: 0.2
+  path_pcd_filter: ''
+  point_type: !!python/unicode 'PointXYZ'
+pedestrian_dpm:
+  Lambda: 10
+  group_threshold: 0.3
+  num_bins: 9
+  num_cells: 8
+  score_threshold: 0.6
+pedestrian_fusion:
+  dispersion: 1.0
+  max_height: 2.0
+  max_low_height: -1.0
+  min_low_height: -1.5
+  min_points: 2
+pedestrian_kf:
+  default_lifespan: 8
+  error_estimate_covariance: 1000000.0
+  initial_lifespan: 4
+  measurement_noise_covariance: 25.0
+  noise_covariance: 1.0
+  orb_features: 2000
+  percentage_of_overlapping: 0.0
+  use_orb: 0
+play_rosbag_play:
+  file: /home/dev/citypilot/rosbag/03082019/auto_2019-03-08-11-22-32.bag
+  rate: ''
+  repeat: false
+  start: 0
+point_cloud:
+  path_area_list: None
+  path_area_list_cmd_param: null
+  path_pcd: /home/dev/citypilot/pointcloud_map/mandli/0.2_mandli_lidar_map.pcd
+  scene_num: noupdate
+points_image:
+  camera_id: !!python/unicode '/'
+  sync: false
+pure_pursuit:
+  displacement_threshold: 0.0
+  is_linear_interpolation: true
+  lookahead_distance: 4.0
+  lookahead_ratio: 1.6
+  minimum_lookahead_distance: 5.0
+  param_flag: 0
+  publishes_for_steering_robot: true
+  relative_angle_threshold: 0
+  velocity: 0.0
+  velocity_interpolation_mode: false
+ray_ground_filter:
+  clipping_height: 0.2
+  concentric_divider_distance: 0.01
+  general_max_slope: 5
+  input_point_topic: !!python/unicode '/points_raw'
+  local_max_slope: 8
+  min_height_threshold: 0.05
+  min_point_distance: 2.5
+  radial_divider_angle: 0.08
+  reclass_distance_threshold: 0.2
+  sensor_height: 2.0
+region_tlr:
+  camera_id: ''
+  data: false
+region_tlr_mxnet:
+  camera_id: !!python/unicode '/'
+  change_state_threshold: 2
+  data: false
+  network_definition_file: /home/dev/citypilot/model/mxnet/densenet30-symbol.json
+  pretrained_model_file: /home/dev/citypilot/model/mxnet/densenet30-0500-st100-lr-0005.params
+  score_threshold: 0.6
+ring_ground_filter:
+  max_slope: 10.0
+  point_topic: !!python/unicode '/points_raw'
+  sensor_height: 1.85
+  sensor_model: !!python/unicode '32'
+  vertical_thres: 0.08
+sensing_qs:
+  file: ''
+setup_tf:
+  frame_id: /base_link
+  localizer_cmd_param: /velodyne
+  localizer_rosparam: velodyne
+  period_in_ms: 10
+  pitch: 0.0
+  roll: 0.0
+  x: 1.2
+  y: 0.0
+  yaw: 0.0
+  z: 2.0
+tf:
+  file: /home/dev/citypilot/tf/peoria_tf.launch
+twist_filter:
+  lateral_accel_limit: 4.0
+  lowpass_gain_angular_z: 0.0
+  lowpass_gain_linear_x: 0.0
+vector_map:
+  path_vec: /home/dev/citypilot/vector_map/PeoriaAisanMap_03_08_2019_extended_stopline/area.csv,/home/dev/citypilot/vector_map/PeoriaAisanMap_03_08_2019_extended_stopline/crosswalk.csv,/home/dev/citypilot/vector_map/PeoriaAisanMap_03_08_2019_extended_stopline/dtlane.csv,/home/dev/citypilot/vector_map/PeoriaAisanMap_03_08_2019_extended_stopline/idx.csv,/home/dev/citypilot/vector_map/PeoriaAisanMap_03_08_2019_extended_stopline/intersection.csv,/home/dev/citypilot/vector_map/PeoriaAisanMap_03_08_2019_extended_stopline/lane.csv,/home/dev/citypilot/vector_map/PeoriaAisanMap_03_08_2019_extended_stopline/line.csv,/home/dev/citypilot/vector_map/PeoriaAisanMap_03_08_2019_extended_stopline/node.csv,/home/dev/citypilot/vector_map/PeoriaAisanMap_03_08_2019_extended_stopline/point.csv,/home/dev/citypilot/vector_map/PeoriaAisanMap_03_08_2019_extended_stopline/pole.csv,/home/dev/citypilot/vector_map/PeoriaAisanMap_03_08_2019_extended_stopline/roadsign.csv,/home/dev/citypilot/vector_map/PeoriaAisanMap_03_08_2019_extended_stopline/signaldata.csv,/home/dev/citypilot/vector_map/PeoriaAisanMap_03_08_2019_extended_stopline/stopline.csv,/home/dev/citypilot/vector_map/PeoriaAisanMap_03_08_2019_extended_stopline/vector.csv,/home/dev/citypilot/vector_map/PeoriaAisanMap_03_08_2019_extended_stopline/wayarea.csv,/home/dev/citypilot/vector_map/PeoriaAisanMap_03_08_2019_extended_stopline/whiteline.csv
+vehicle_info:
+  info_path: ''
+vehicle_model:
+  model_path: ''
+vel_pose_connect:
+  sim_mode: false
+  topic_pose_stamped: !!python/unicode '/ndt_pose'
+  topic_twist_stamped: /vehicle/twist
+velocity_set:
+  deceleration_obstacle: 0.7
+  deceleration_range: 0
+  deceleration_stopline: 1.2
+  detection_height_bottom: -1.5
+  detection_height_top: 0.1
+  detection_range: 1.3
+  enable_multiple_crosswalk_detection: false
+  points_topic: points_no_ground
+  stop_distance_obstacle: 12.0
+  stop_distance_stopline: 5.0
+  temporal_waypoints_size: 100.0
+  threshold_points: 20
+  use_crosswalk_detection: false
+  velocity_change_limit: 7.0
+virtual_scan_image:
+  camera_id: ''
+  sync: false
+voxel_grid_filter:
+  measurement_range: 100
+  points_topic: !!python/unicode '/points_raw'
+  sync: false
+  voxel_leaf_size: 3.0
+waypoint_clicker:
+  output_file: /tmp/lane_waypoint.csv
+  velocity: 40.0
+waypoint_loader:
+  accel_limit: 2.0
+  braking_distance: 5
+  decel_limit: 2.0
+  end_point_offset: 1
+  load_csv: true
+  multi_lane_csv: /home/dev/citypilot/path/citypilot_1_min_max_vel_loop_fixed2.csv
+  overwrite_vmax_mode: true
+  radius_min: 6.0
+  radius_thresh: 20.0
+  realtime_tuning_mode: true
+  replan_curve_mode: false
+  replan_endpoint_mode: false
+  replanning_mode: false
+  resample_interval: 1.0
+  resample_mode: true
+  velocity_max: 48.0
+  velocity_min: 4.0
+  velocity_offset: 4
+waypoint_saver:
+  input_type: 0
+  interval: 1.0
+  lane_topic: !!python/unicode '/lane_waypoints_array'
+  save_filename: /home/dev/morton/path/morton_tier4_test_traffic_light_1.csv
+  save_velocity: true
+waypoint_velocity_visualizer:
+  plot_metric_interval: 1.0
+  use_bar_plot: true
+  use_line_plot: true
+  use_text_plot: true
+wf_simulator:
+  accel_rate: 10.0
+  angle_error: 0.0
+  initialize_source: !!python/unicode 'Rviz'
+  position_error: 0.0

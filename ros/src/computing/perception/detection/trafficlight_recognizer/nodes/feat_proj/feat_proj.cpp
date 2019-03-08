@@ -217,7 +217,7 @@ Point3 transform(const Point3 &psrc, tf::StampedTransform &tfsource)
 bool project2(const Point3 &pt, int &u, int &v, bool useOpenGLCoord = false)
 {
 	float nearPlane = 1.0;
-	float farPlane = 200.0;
+	float farPlane = 85.0;
 	Point3 _pt = transform(pt, trf);
 	float _u = _pt.x() * fx / _pt.z() + cx;
 	float _v = _pt.y() * fy / _pt.z() + cy;

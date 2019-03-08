@@ -1738,7 +1738,7 @@ params :
     - name  : velocity_change_limit
       desc  : velocity_change_limit desc sample
       label : Velocity Change Limit (km/h)
-      min   : 5
+      min   : 1
       max   : 40
       v     : 7.0
     - name  : temporal_waypoints_size

@@ -105,7 +105,12 @@ void RegionTLRMxNetROSNode::ROISignalCallback(const autoware_msgs::Signals::Cons
 	}
 
 	// Publish recognition result as some topic format
-	PublishTrafficLight(contexts_);
+	if ( extracted_pos->Signals.size() == 0 )
+	{
+		std::cout << "no signals in the image" << std::endl;
+	}else{
+		PublishTrafficLight(contexts_);
+	}
 	PublishString(contexts_);
 	PublishMarkerArray(contexts_);
 	PublishImage(contexts_);
@@ -242,8 +247,11 @@ void RegionTLRMxNetROSNode::PublishTrafficLight(std::vector<Context> contexts)
 	}
 
 	// If state changes from previous one, publish it
-	if (topic.traffic_light != previous_state)
+	static ros::Time prev_time = ros::Time::now();
+	double timeout = 10.0; //seconds
+	if (topic.traffic_light != previous_state || ros::Time::now() - prev_time > ros::Duration(timeout))
 	{
+		prev_time = ros::Time::now();
 		signal_state_publisher.publish(topic);
 		previous_state = topic.traffic_light;
 	}

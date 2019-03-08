@@ -166,8 +166,9 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
           center_point.x = (bp.x * 2 + fp.x) / 3;
           center_point.y = (bp.y * 2 + fp.y) / 3;
           center_point.z = (bp.z + fp.z) / 2;
-          if (amathutils::isPointLeftFromLine(center_point, lane.waypoints.at(wp_idx).pose.pose.position,
-                                              lane.waypoints.at(wp_idx + 1).pose.pose.position) >= 0)
+//          if (amathutils::isPointLeftFromLine(center_point, lane.waypoints.at(wp_idx).pose.pose.position,
+//                                              lane.waypoints.at(wp_idx + 1).pose.pose.position) >= 0)
+	  if(true)
           {
             center_point.x = (bp.x + fp.x) / 2;
             center_point.y = (bp.y + fp.y) / 2;
