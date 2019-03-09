@@ -119,8 +119,9 @@ private:
   }
   void publishStatus();
   bool node_activated_;
-  bool ros_ok_;
   std::mutex mtx_;
+  boost::thread publish_thread_;
+  bool ros_ok_;
 };
 }
 #endif // HEALTH_CHECKER_H_INCLUDED

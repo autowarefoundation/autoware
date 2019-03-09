@@ -33,6 +33,7 @@
 #include "autoware_config_msgs/ConfigLaneSelect.h"
 #include "autoware_msgs/LaneArray.h"
 #include "autoware_msgs/State.h"
+#include "autoware_msgs/VehicleLocation.h"
 #include "hermite_curve.h"
 #include "waypoint_follower/libwaypoint_follower.h"
 
@@ -55,6 +56,8 @@ typename std::underlying_type<T>::type enumToInteger(T t)
 
 class LaneSelectNode
 {
+friend class LaneSelectTestClass;
+
 public:
   LaneSelectNode();
   ~LaneSelectNode();
@@ -67,13 +70,14 @@ private:
   ros::NodeHandle private_nh_;
 
   // publisher
-  ros::Publisher pub1_, pub2_, pub3_, pub4_;
+  ros::Publisher pub1_, pub2_, pub3_, pub4_, pub5_;
   ros::Publisher vis_pub1_;
 
   // subscriber
   ros::Subscriber sub1_, sub2_, sub3_, sub4_, sub5_, sub6_;
 
   // variables
+  int32_t lane_array_id_;
   int32_t current_lane_idx_;  // the index of the lane we are driving
   int32_t right_lane_idx_;
   int32_t left_lane_idx_;
@@ -93,12 +97,12 @@ private:
   std::string current_state_;
 
   // callbacks
-  void callbackFromLaneArray(const autoware_msgs::LaneArrayConstPtr &msg);
-  void callbackFromPoseStamped(const geometry_msgs::PoseStampedConstPtr &msg);
-  void callbackFromTwistStamped(const geometry_msgs::TwistStampedConstPtr &msg);
-  void callbackFromState(const std_msgs::StringConstPtr &msg);
-  void callbackFromStates(const autoware_msgs::StateConstPtr &msg);
-  void callbackFromConfig(const autoware_config_msgs::ConfigLaneSelectConstPtr &msg);
+  void callbackFromLaneArray(const autoware_msgs::LaneArrayConstPtr& msg);
+  void callbackFromPoseStamped(const geometry_msgs::PoseStampedConstPtr& msg);
+  void callbackFromTwistStamped(const geometry_msgs::TwistStampedConstPtr& msg);
+  void callbackFromState(const std_msgs::StringConstPtr& msg);
+  void callbackFromDecisionMakerState(const std_msgs::StringConstPtr& msg);
+  void callbackFromConfig(const autoware_config_msgs::ConfigLaneSelectConstPtr& msg);
 
   // initializer
   void initForROS();
@@ -117,10 +121,11 @@ private:
   void resetSubscriptionFlag();
   bool isAllTopicsSubscribed();
   void processing();
-  void publishLane(const autoware_msgs::Lane &lane);
-  void publishLaneID(const autoware_msgs::Lane &lane);
+  void publishLane(const autoware_msgs::Lane& lane);
+  void publishLaneID(const autoware_msgs::Lane& lane);
   void publishClosestWaypoint(const int32_t clst_wp);
   void publishChangeFlag(const ChangeFlag flag);
+  void publishVehicleLocation(const int32_t clst_wp, const int32_t larray_id);
   bool getClosestWaypointNumberForEachLanes();
   int32_t findMostClosestLane(const std::vector<uint32_t> idx_vec, const geometry_msgs::Point p);
   void findCurrentLane();
@@ -128,22 +133,28 @@ private:
   void changeLane();
   void updateChangeFlag();
   void createLaneForChange();
-  int32_t getClosestLaneChangeWaypointNumber(const std::vector<autoware_msgs::Waypoint> &wps, int32_t cl_wp);
+  int32_t getClosestLaneChangeWaypointNumber(const std::vector<autoware_msgs::Waypoint>& wps, int32_t cl_wp);
+
+  // spinOnce for test
+  void spinOnce()
+  {
+    ros::spinOnce();
+  }
 };
 
-int32_t getClosestWaypointNumber(const autoware_msgs::Lane &current_lane, const geometry_msgs::Pose &current_pose,
-                                 const geometry_msgs::Twist &current_velocity, const int32_t previous_number,
+int32_t getClosestWaypointNumber(const autoware_msgs::Lane& current_lane, const geometry_msgs::Pose& current_pose,
+                                 const geometry_msgs::Twist& current_velocity, const int32_t previous_number,
                                  const double distance_threshold);
 
-double getTwoDimensionalDistance(const geometry_msgs::Point &target1, const geometry_msgs::Point &target2);
+double getTwoDimensionalDistance(const geometry_msgs::Point& target1, const geometry_msgs::Point& target2);
 
-geometry_msgs::Point convertPointIntoRelativeCoordinate(const geometry_msgs::Point &input_point,
-                                                        const geometry_msgs::Pose &pose);
+geometry_msgs::Point convertPointIntoRelativeCoordinate(const geometry_msgs::Point& input_point,
+                                                        const geometry_msgs::Pose& pose);
 
-geometry_msgs::Point convertPointIntoWorldCoordinate(const geometry_msgs::Point &input_point,
-                                                     const geometry_msgs::Pose &pose);
-double getRelativeAngle(const geometry_msgs::Pose &waypoint_pose, const geometry_msgs::Pose &current_pose);
-bool getLinearEquation(geometry_msgs::Point start, geometry_msgs::Point end, double *a, double *b, double *c);
+geometry_msgs::Point convertPointIntoWorldCoordinate(const geometry_msgs::Point& input_point,
+                                                     const geometry_msgs::Pose& pose);
+double getRelativeAngle(const geometry_msgs::Pose& waypoint_pose, const geometry_msgs::Pose& current_pose);
+bool getLinearEquation(geometry_msgs::Point start, geometry_msgs::Point end, double* a, double* b, double* c);
 double getDistanceBetweenLineAndPoint(geometry_msgs::Point point, double sa, double b, double c);
 }
 #endif  // LANE_SELECT_CORE_H

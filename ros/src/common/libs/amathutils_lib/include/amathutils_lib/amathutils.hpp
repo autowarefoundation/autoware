@@ -4,31 +4,25 @@
 #include <cmath>
 #include <iostream>
 
+// ROS Messages
+#include <geometry_msgs/Point.h>
+#include <geometry_msgs/Pose.h>
+#include <tf/tf.h>
+
 using namespace std;
 
 namespace amathutils
 {
-class point
+#define G_MPSS 9.80665  // m/s^2
+
+inline double rad2deg(double _angle)
 {
-private:
-public:
-  double x, y, z;
-
-  point(void)
-  {
-    x = y = z = 0.0;
-  }
-
-  point(double _x, double _y, double _z)
-  {
-    x = _x;
-    y = _y;
-    z = _z;
-  }
-};
-double find_distance(point *_a, point *_b);
-double find_distance(point &_a, point &_b);
-double find_angle(point *_a, point *_b);
+  return _angle * 180 / M_PI;
+}
+inline double deg2rad(double _angle)
+{
+  return _angle / 180 * M_PI;
+}
 
 inline double mps2kmph(double _mpsval)
 {
@@ -40,25 +34,34 @@ inline double kmph2mps(double _kmphval)
   return (_kmphval * 1000 / 60 / 60);  // kmph * 1000m / 60sec / 60sec
 }
 
-#define G_MPSS 9.80665  // m/s^2
-
-inline double getGravityAcceleration(double acceleration_mpss)
+inline double getGravityAcceleration(double _acceleration_mpss)
 {
-  return acceleration_mpss / G_MPSS;
+  return _acceleration_mpss / G_MPSS;
 }
 
-inline double getAcceleration(double v0, double v, double x)
+inline double getAcceleration(double _v0, double _v, double _x)
 {
-  return (v * v - v0 * v0) / 2 / x;
+  return (_v * _v - _v0 * _v0) / 2 / _x;
 }
 
-inline double getTimefromAcceleration(double v0, double v, double a)
+inline double getTimefromAcceleration(double _v0, double _v, double _a)
 {
-  return (v - v0) / a;
+  return (_v - _v0) / _a;
 }
 
-bool isIntersectLine(double p1x, double p1y, double p2x, double p2y, double p3x, double p3y, double p4x, double p4y);
-
-int isPointLeftFromLine(double p1x, double p1y, double line_p1x, double line_p1y, double line_p2x, double line_p2y);
+geometry_msgs::Point getNearPtOnLine(const geometry_msgs::Point &_p, const geometry_msgs::Point &_a,
+                                     const geometry_msgs::Point &_b);
+double find_distance(const geometry_msgs::Point &_from, const geometry_msgs::Point &_to);
+double find_distance(const geometry_msgs::Pose &_from, const geometry_msgs::Pose &_to);
+double find_angle(const geometry_msgs::Point &_from, const geometry_msgs::Point &_to);
+bool isIntersectLine(const geometry_msgs::Point &_l1_p1, const geometry_msgs::Point &_l1_p2,
+                     const geometry_msgs::Point &_l2_p1, const geometry_msgs::Point &_l2_p2);
+int isPointLeftFromLine(const geometry_msgs::Point &_target, const geometry_msgs::Point &_line_p1,
+                        const geometry_msgs::Point &_line_p2);
+double getPoseYawAngle(const geometry_msgs::Pose &_pose);
+double calcPosesAngleDiffRaw(const geometry_msgs::Pose &p_from, const geometry_msgs::Pose &_p_to);
+double radianNormalize(double _angle);
+double calcPosesAngleDiffDeg(const geometry_msgs::Pose &_p_from, const geometry_msgs::Pose &_p_to);
+double calcPosesAngleDiffRad(const geometry_msgs::Pose &_p_from, const geometry_msgs::Pose &_p_to);
 }
 #endif

@@ -15,6 +15,8 @@
     <build_depend>vector_map</build_depend>
     <build_depend>gnss</build_depend>
     <build_depend>autoware_msgs</build_depend>
+    <build_depend>rostest</build_depend>
+    <build_depend>rosunit</build_depend>
 
     <run_depend>roscpp</run_depend>
     <run_depend>std_msgs</run_depend>
