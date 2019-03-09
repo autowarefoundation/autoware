@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:macro name="wheel_macro" params="suffix parent x y yaw radius width">
+    <xacro:property name="pi" value="3.1415926835897931" />
+    <xacro:property name="mass" value="40" />
+    <joint name="${suffix}_joint" type="continuous">
+      <origin rpy="0 0 ${pi/2}" xyz="${x} ${y} 0"/>
+      <parent link="${parent}"/>
+      <child link="${suffix}_link"/>
+      <axis xyz="1 0 0"/>
+      <dynamics damping="0.1"/>
+      <limit effort="50000" velocity="50" />
+      <joint_properties damping="0.0" friction="0.0" />
+    </joint>
+
+    <link name="${suffix}_link">
+      <visual>
+        <geometry>
+          <mesh filename="package://vehicle_model/mesh/wheel.dae" scale="${3*radius} ${3*radius} ${3*radius}"/>
+        </geometry>
+        <origin xyz="0 0 0" rpy="0 0 ${yaw}"/>
+        <material name="gray">
+          <color rgba="0.1 0.1 0.1 2.0"/>
+        </material>
+      </visual>
+
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="${mass}"/>
+        <inertia ixx="${mass*radius*radius/2}" ixy="0" ixz="0" iyy="${radius*radius*mass/4+width*width*mass/12}" iyz="0" izz="${radius*radius*mass/4+width*width*mass/12}" />
+      </inertial>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 ${pi/2} 0"/>
+        <geometry>
+          <cylinder radius="${radius}" length="${width}" />
+        </geometry>
+      </collision>
+    </link>
+  </xacro:macro>
+</robot>

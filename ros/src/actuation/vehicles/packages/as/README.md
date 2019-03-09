@@ -7,5 +7,5 @@ git submodule update --init --recursive
 3. Build the workspace
 4. Ther is no GUI interface to launch this node. Hence use,
 ```
-roslaunch as pacmod_interface.launch
+roslaunch as ssc_interface.launch
 ```
