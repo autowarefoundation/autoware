@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>333</width>
-    <height>462</height>
+    <height>482</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -19,8 +19,8 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout_2">
-   <item row="0" column="0" colspan="2">
+  <layout class="QGridLayout" name="gridLayout_3">
+   <item row="0" column="0">
     <widget class="QPushButton" name="button_record_start">
      <property name="enabled">
       <bool>true</bool>
@@ -42,7 +42,7 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="2">
+   <item row="0" column="1">
     <spacer name="horizontalSpacer">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -55,15 +55,107 @@
      </property>
     </spacer>
    </item>
-   <item row="1" column="0" colspan="2">
+   <item row="0" column="2">
+    <widget class="QPushButton" name="button_record_stop">
+     <property name="minimumSize">
+      <size>
+       <width>101</width>
+       <height>71</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>Record Stop</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
     <widget class="QLabel" name="label_text_recTime">
      <property name="text">
       <string>Record Time:</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="0" colspan="4">
+   <item row="1" column="1">
+    <widget class="QLabel" name="label_recTime">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="text">
+      <string>00:00:00</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="3">
     <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0" colspan="2">
+      <widget class="QCheckBox" name="checkBox_split_size">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Split    </string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QLabel" name="label_size">
+       <property name="text">
+        <string>size</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="3">
+      <widget class="QLineEdit" name="lineEdit_size">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="4">
+      <widget class="QLabel" name="label_GB">
+       <property name="text">
+        <string>GB</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QCheckBox" name="checkBox_split_duration">
+       <property name="text">
+        <string>Split</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1" colspan="2">
+      <widget class="QLabel" name="label_duration">
+       <property name="text">
+        <string>duration</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="3">
+      <widget class="QLineEdit" name="lineEdit_duration">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="4">
+      <widget class="QLabel" name="label_min">
+       <property name="text">
+        <string>min</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="3" column="0" colspan="3">
+    <layout class="QGridLayout" name="gridLayout_2">
      <item row="0" column="0">
       <widget class="QLineEdit" name="edit_record_filename">
        <property name="readOnly">
@@ -74,7 +166,7 @@
      <item row="0" column="1">
       <widget class="QPushButton" name="button_record_save">
        <property name="text">
-        <string>Save</string>
+        <string>Ref</string>
        </property>
       </widget>
      </item>
@@ -94,7 +186,27 @@
      </item>
     </layout>
    </item>
-   <item row="4" column="0" colspan="4">
+   <item row="4" column="0">
+    <widget class="QPushButton" name="botton_topic_refresh">
+     <property name="text">
+      <string>Topic Refresh</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1" colspan="2">
+    <spacer name="horizontalSpacer_2">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>207</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="5" column="0" colspan="3">
     <widget class="QScrollArea" name="scrollArea">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -114,54 +226,11 @@
         <x>0</x>
         <y>0</y>
         <width>313</width>
-        <height>235</height>
+        <height>185</height>
        </rect>
       </property>
      </widget>
     </widget>
-   </item>
-   <item row="1" column="2" colspan="2">
-    <widget class="QLabel" name="label_recTime">
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
-     <property name="text">
-      <string>00:00:00</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="3">
-    <widget class="QPushButton" name="button_record_stop">
-     <property name="minimumSize">
-      <size>
-       <width>101</width>
-       <height>71</height>
-      </size>
-     </property>
-     <property name="text">
-      <string>Record Stop</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QPushButton" name="botton_topic_refresh">
-     <property name="text">
-      <string>Topic Refresh</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1" colspan="3">
-    <spacer name="horizontalSpacer_2">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>207</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
    </item>
   </layout>
  </widget>
