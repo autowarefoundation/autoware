@@ -17,7 +17,7 @@
  * v1.0 Masaya Kataoka
  */
 
-#include <health_checker/health_checker.h>
+#include <autoware_health_checker/health_checker/health_checker.h>
 
 namespace autoware_health_checker {
 HealthChecker::HealthChecker(ros::NodeHandle nh, ros::NodeHandle pnh)

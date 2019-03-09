@@ -16,7 +16,7 @@
  *
  * v1.0 Masaya Kataoka
  */
-#include <health_checker/health_checker.h>
+#include <autoware_health_checker/health_checker/health_checker.h>
 #include <gtest/gtest.h>
 #include <ros/ros.h>
 

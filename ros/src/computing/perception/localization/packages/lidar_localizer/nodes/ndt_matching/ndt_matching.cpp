@@ -70,7 +70,7 @@
 #include <autoware_msgs/NDTStat.h>
 
 //headers in Autoware Health Checker
-#include <health_checker/health_checker.h>
+#include <autoware_health_checker/health_checker/health_checker.h>
 
 #define PREDICT_POSE_THRESHOLD 0.5
 
@@ -921,6 +921,7 @@ static void imu_callback(const sensor_msgs::Imu::Ptr& input)
 
 static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 {
+  health_checker_ptr_->CHECK_RATE("topic_points_filtered_slow_in_ndt_matching",8.0,4.0,2.0,"points_filtered topic rate in ndt_mathing node is slow.");
   if (map_loaded == 1 && init_pos_set == 1)
   {
     matching_start = std::chrono::system_clock::now();

@@ -10,8 +10,9 @@ Panels:
         - /Global Path1/Namespaces1
         - /Local Rollouts1/Namespaces1
         - /MarkerArray1/Namespaces1
+        - /OverlayText4
       Splitter Ratio: 0.695804
-    Tree Height: 342
+    Tree Height: 532
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -70,13 +71,11 @@ Visualization Manager:
         All Enabled: true
         base_link:
           Value: true
-        camera:
-          Value: true
-        gps:
-          Value: true
         map:
           Value: true
-        mobility:
+        sim_base_link:
+          Value: true
+        sim_lidar:
           Value: true
         velodyne:
           Value: true
@@ -90,10 +89,9 @@ Visualization Manager:
       Tree:
         world:
           map:
-            gps:
-              {}
-            mobility:
-              {}
+            sim_base_link:
+              sim_lidar:
+                {}
       Update Interval: 0
       Value: true
     - Alpha: 0.0500000007
@@ -131,19 +129,9 @@ Visualization Manager:
       Marker Topic: /vector_map
       Name: Vector Map
       Namespaces:
-        cross_walk: true
-        curb: true
-        gutter: true
-        road_edge: true
-        road_mark: true
-        road_pole: true
-        road_sign: true
         signal: true
         stop_line: true
-        street_light: true
-        utility_pole: true
         white_line: true
-        zebra_zone: true
       Queue Size: 100
       Value: true
     - Class: rviz/Camera
@@ -157,6 +145,7 @@ Visualization Manager:
       Unreliable: false
       Value: false
       Visibility:
+        "": true
         A* Sim Obstacle: true
         Behavior State: true
         Control Pose: true
@@ -284,7 +273,9 @@ Visualization Manager:
       Marker Topic: /detection_range
       Name: Detection Range
       Namespaces:
-        {}
+        Crosswalk Detection: true
+        Decelerate Detection: true
+        Stop Detection: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -292,7 +283,7 @@ Visualization Manager:
       Marker Topic: /next_target_mark
       Name: Next Waypoint Mark
       Namespaces:
-        {}
+        next_target_marker: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -300,7 +291,7 @@ Visualization Manager:
       Marker Topic: /trajectory_circle_mark
       Name: PP Trajectory Mark
       Namespaces:
-        {}
+        trajectory_circle_marker: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -321,7 +312,7 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
+        sim_base_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -367,7 +358,9 @@ Visualization Manager:
       Marker Topic: /local_waypoints_mark
       Name: Local Waypoints
       Namespaces:
-        {}
+        local_path_marker: true
+        local_point_marker: true
+        local_waypoint_velocity: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -375,7 +368,9 @@ Visualization Manager:
       Marker Topic: /global_waypoints_mark
       Name: Global Waypoints
       Namespaces:
-        {}
+        global_change_flag_lane_1: true
+        global_lane_waypoint_orientation_marker_1: true
+        global_velocity_lane_1: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -531,6 +526,78 @@ Visualization Manager:
         {}
       Queue Size: 100
       Value: true
+    - Background Alpha: 0.800000012
+      Background Color: 0; 0; 0
+      Class: jsk_rviz_plugin/OverlayText
+      Enabled: true
+      Foreground Alpha: 0.800000012
+      Foreground Color: 25; 255; 240
+      Name: OverlayText
+      Overtake Color Properties: false
+      Overtake Position Properties: false
+      Topic: /health_aggregator/ok_text
+      Value: true
+      font: DejaVu Sans Mono
+      height: 128
+      left: 0
+      line width: 2
+      text size: 12
+      top: 0
+      width: 128
+    - Background Alpha: 0.800000012
+      Background Color: 0; 0; 0
+      Class: jsk_rviz_plugin/OverlayText
+      Enabled: true
+      Foreground Alpha: 0.800000012
+      Foreground Color: 25; 255; 240
+      Name: OverlayText
+      Overtake Color Properties: false
+      Overtake Position Properties: false
+      Topic: ""
+      Value: true
+      font: DejaVu Sans Mono
+      height: 128
+      left: 0
+      line width: 2
+      text size: 12
+      top: 0
+      width: 128
+    - Background Alpha: 0.800000012
+      Background Color: 0; 0; 0
+      Class: jsk_rviz_plugin/OverlayText
+      Enabled: true
+      Foreground Alpha: 0.800000012
+      Foreground Color: 25; 255; 240
+      Name: OverlayText
+      Overtake Color Properties: false
+      Overtake Position Properties: false
+      Topic: ""
+      Value: true
+      font: DejaVu Sans Mono
+      height: 128
+      left: 0
+      line width: 2
+      text size: 12
+      top: 0
+      width: 128
+    - Background Alpha: 0.800000012
+      Background Color: 0; 0; 0
+      Class: jsk_rviz_plugin/OverlayText
+      Enabled: true
+      Foreground Alpha: 0.800000012
+      Foreground Color: 25; 255; 240
+      Name: OverlayText
+      Overtake Color Properties: false
+      Overtake Position Properties: false
+      Topic: ""
+      Value: true
+      font: DejaVu Sans Mono
+      height: 128
+      left: 0
+      line width: 2
+      text size: 12
+      top: 0
+      width: 128
   Enabled: true
   Global Options:
     Background Color: 0; 0; 0
@@ -555,33 +622,28 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz/Orbit
-      Distance: 929.954834
+      Angle: 0
+      Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
-      Focal Point:
-        X: -67.4288177
-        Y: -135.02388
-        Z: -0.0927070975
-      Focal Shape Fixed Size: false
-      Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 1.56979632
-      Target Frame: world
-      Value: Orbit (rviz)
-      Yaw: 5.15858078
+      Scale: 20.0295219
+      Target Frame: sim_base_link
+      Value: TopDownOrtho (rviz)
+      X: 0
+      Y: 0
     Saved: ~
 Window Geometry:
   Camera:
     collapsed: false
   Displays:
     collapsed: false
-  Height: 1245
+  Height: 2056
   Hide Left Dock: false
   Hide Right Dock: false
   ImageViewerPlugin:
@@ -590,7 +652,7 @@ Window Geometry:
     collapsed: false
   ModulePanel:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000400000000000002c50000042bfc0200000013fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afc000000380000018e000000c400fffffffa000000020100000003fb0000000a0049006d0061006700650000000000ffffffff0000000000000000fb0000000c00430061006d0065007200610000000000ffffffff0000006000fffffffb000000100044006900730070006c0061007900730100000000000001360000015600fffffffb00000016004d006f00640075006c006500500061006e0065006c01000001cc000000960000009400fffffffb00000022004100750074006f00770061007200650020004c00610075006e006300680065007200000001ec000000b10000000000000000fb0000001e0051007500690063006b0053007400610072007400500061006e0065006c0000000200000000790000000000000000fb0000000a0049006d006100670065010000028e000000d20000000000000000fb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb000000120049006d006100670065005f0072006100770000000000ffffffff0000000000000000fb0000000c00430061006d006500720061000000024e000001710000000000000000fb000000120049006d00610067006500200052006100770100000421000000160000000000000000fb0000000a0049006d00610067006501000002f4000000cb0000000000000000fb00000018004d006f00640075006c0065002000500061006e0065006c00000001c4000000a80000006e00fffffffb000000220049006d0061006700650056006900650077006500720050006c007500670069006e0100000268000001fb0000007e00fffffffb000000220049006d0061006700650056006900650077006500720050006c007500670069006e000000039e000000bb0000000000000000000000010000017b0000042bfc0200000004fb0000000a0056006900650077007301000000380000042b0000009c00fffffffb000000240054007200610066006600690063004c00690067006800740050006c007500670069006e00000003e8000001790000000000000000fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000020000073f000000a8fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000009150000005cfc0100000002fb0000000800540069006d00650100000000000009150000020400fffffffb0000000800540069006d00650100000000000004500000000000000000000004c90000042b00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000004000000000000041d00000733fc0200000013fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006f00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afc0000004000000278000000fa00fffffffa000000020100000003fb0000000a0049006d0061006700650000000000ffffffff0000000000000000fb0000000c00430061006d0065007200610000000000ffffffff000000a300fffffffb000000100044006900730070006c0061007900730100000000000001360000020800fffffffb00000016004d006f00640075006c006500500061006e0065006c01000002c40000017e000000d400fffffffb00000022004100750074006f00770061007200650020004c00610075006e006300680065007200000001ec000000b10000000000000000fb0000001e0051007500690063006b0053007400610072007400500061006e0065006c0000000200000000790000000000000000fb0000000a0049006d006100670065010000028e000000d20000000000000000fb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb000000120049006d006100670065005f0072006100770000000000ffffffff0000000000000000fb0000000c00430061006d006500720061000000024e000001710000000000000000fb000000120049006d00610067006500200052006100770100000421000000160000000000000000fb0000000a0049006d00610067006501000002f4000000cb0000000000000000fb00000018004d006f00640075006c0065002000500061006e0065006c00000001c4000000a80000009300fffffffb000000220049006d0061006700650056006900650077006500720050006c007500670069006e010000044e00000325000000ea00fffffffb000000220049006d0061006700650056006900650077006500720050006c007500670069006e000000039e000000bb0000000000000000000000010000017b00000733fc0200000004fb0000000a00560069006500770073010000004000000733000000e500fffffffb000000240054007200610066006600690063004c00690067006800740050006c007500670069006e00000003e8000001790000000000000000fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000020000073f000000a8fc0100000001fb0000000a00560069006500770073030000004e00000080000002e1000001970000000300000e5e0000005cfc0100000002fb0000000800540069006d0065010000000000000e5e0000057800fffffffb0000000800540069006d00650100000000000004500000000000000000000008ae0000073300000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -599,6 +661,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 2325
-  X: 137
+  Width: 3678
+  X: 162
   Y: 48
