@@ -30,14 +30,14 @@ class MotionMonitor
 
     void laneCallback(const autoware_msgs::Lane::ConstPtr& lane);
     void poseCallback(const geometry_msgs::PoseStamped::ConstPtr& pose);
-    void closestCallback(const std_msgs::Int32::ConstPtr& wpidx);
+    void locationCallback(const autoware_msgs::VehicleLocation::ConstPtr& loc);
 
     void publish();
 
   private:
     std::shared_ptr<autoware_health_checker::HealthChecker> health_checker_ptr_;
     ros::Publisher deviation_pub_, distance_pub_;
-    ros::Subscriber base_waypoints_sub_, closest_sub_, current_pose_sub_;
+    ros::Subscriber base_waypoints_sub_, location_sub_, current_pose_sub_;
     MotionDataset dataset_;
     int search_width_;
     std::array<double, 3> dev_level_default_, dist_level_default_;

@@ -23,9 +23,9 @@ MotionMonitor::MotionMonitor(ros::NodeHandle& nh, ros::NodeHandle& pnh) :
 {
   deviation_pub_ = nh.advertise<std_msgs::Float32>("viz/deviation_from_path", 0);
   distance_pub_ = nh.advertise<std_msgs::Float32>("viz/distance_from_nearest_point", 0);
-  base_waypoints_sub_ = nh.subscribe("base_waypoints", 1, &MotionMonitor::laneCallback, this);
-  closest_sub_ = nh.subscribe("closest_waypoint", 1, &MotionMonitor::closestCallback, this);
-  current_pose_sub_ = nh.subscribe("current_pose", 1, &MotionMonitor::poseCallback, this);
+  base_waypoints_sub_ = nh.subscribe("base_waypoints", 3, &MotionMonitor::laneCallback, this);
+  location_sub_ = nh.subscribe("vehicle_location", 3, &MotionMonitor::locationCallback, this);
+  current_pose_sub_ = nh.subscribe("current_pose", 3, &MotionMonitor::poseCallback, this);
   health_checker_ptr_ = std::make_shared<autoware_health_checker::HealthChecker>(nh, pnh);
   health_checker_ptr_->ENABLE();
   health_checker_ptr_->NODE_ACTIVATE();
@@ -45,20 +45,17 @@ void MotionMonitor::run()
 
 void MotionMonitor::laneCallback(const autoware_msgs::Lane::ConstPtr& lane)
 {
-  dataset_.lane_ = *lane;
-  dataset_.init_.at(DataType::TYPE_LANE) = true;
+  dataset_.lane_.emplace_back(*lane);
 }
 
 void MotionMonitor::poseCallback(const geometry_msgs::PoseStamped::ConstPtr& pose)
 {
-  dataset_.pose_ = *pose;
-  dataset_.init_.at(DataType::TYPE_POSE) = true;
+  dataset_.pose_.emplace_back(*pose);
 }
 
-void MotionMonitor::closestCallback(const std_msgs::Int32::ConstPtr& wpidx)
+void MotionMonitor::locationCallback(const autoware_msgs::VehicleLocation::ConstPtr& loc)
 {
-  dataset_.closest_idx_ = *wpidx;
-  dataset_.init_.at(DataType::TYPE_IDX) = true;
+  dataset_.location_.emplace_back(*loc);
 }
 
 void MotionMonitor::publish()
@@ -66,16 +63,16 @@ void MotionMonitor::publish()
   std_msgs::Float32 dev_msg, dist_msg;
   auto& dev = dev_msg.data;
   auto& dist = dist_msg.data;
-
+  dataset_.sync();
   if (!dataset_.check())
   {
     dev = dist = -1.0;
   }
   else
   {
-    const auto& wp = dataset_.lane_.waypoints;
-    const auto& pos = dataset_.pose_.pose.position;
-    const auto& closest = dataset_.closest_idx_.data;
+    const auto& wp = dataset_.lane_.front().waypoints;
+    const auto& pos = dataset_.pose_.front().pose.position;
+    const auto& closest = dataset_.location_.front().waypoint_index;
     dist = getPlaneDistance(wp[closest].pose.pose.position, pos);
 
     const int size = dataset_.getLaneSize();

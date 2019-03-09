@@ -16,54 +16,83 @@
 
 #include "motion_dataset.h"
 
-MotionDataset::MotionDataset() : init_({false})
-{}
+MotionDataset::MotionDataset() : is_sync_(false){}
 
 void MotionDataset::reset()
 {
-  lane_ = autoware_msgs::Lane();
-  pose_ = geometry_msgs::PoseStamped();
-  closest_idx_ = std_msgs::Int32();
-  init_.fill(false);
+  lane_.clear();
+  pose_.clear();
+  location_.clear();
+}
+
+void MotionDataset::sync()
+{
+  for (auto lane_itr = lane_.rbegin(); lane_itr != lane_.rend(); ++lane_itr)
+  {
+    auto location_itr =
+      std::find_if(location_.rbegin(), location_.rend(),
+      [&](const autoware_msgs::VehicleLocation& loc){return lane_itr->header.seq == loc.header.seq;});
+    if (location_itr == location_.rend())
+    {
+      continue;
+    }
+    double min_time = DBL_MAX;
+    auto sync_pose = pose_.rend();
+    for (auto pose_itr = pose_.rbegin(); pose_itr != pose_.rend(); ++pose_itr)
+    {
+      const double duration = fabs((location_itr->header.stamp - pose_itr->header.stamp).toSec());
+      if (min_time <= duration)
+      {
+        continue;
+      }
+      min_time = duration;
+      sync_pose = pose_itr;
+    }
+    const autoware_msgs::Lane lane(*lane_itr);
+    const geometry_msgs::PoseStamped pose(*sync_pose);
+    const autoware_msgs::VehicleLocation location(*location_itr);
+    reset();
+    lane_.emplace_back(lane);
+    pose_.emplace_back(pose);
+    location_.emplace_back(location);
+    return;
+  }
+  reset();
 }
 
 const bool MotionDataset::check() const
 {
-  if (std::find(init_.begin(), init_.end(), false) != init_.end())
+  if (lane_.empty() || pose_.empty() || location_.empty())
   {
     return false;
   }
-  if (lane_.waypoints.empty())
-  {
-    return false;
-  }
-  const int& idx = closest_idx_.data;
-  return (idx >= 0 && idx < lane_.waypoints.size());
+  const int& idx = location_.front().waypoint_index;
+  return (idx >= 0 && idx < lane_.front().waypoints.size());
 }
 
 const int MotionDataset::getLaneSize() const
 {
-  return init_.at(DataType::TYPE_LANE) ? lane_.waypoints.size() : 0;
+  return !lane_.empty() ? lane_.front().waypoints.size() : 0;
 }
 
 const std::pair<int, int> MotionDataset::calcNearestPair(unsigned int search_width) const
 {
-  if (!check() || getLaneSize() < 2 || closest_idx_.data == -1)
+  if (!check() || getLaneSize() < 2 || location_.front().waypoint_index == -1)
   {
     return std::pair<int, int>();
   }
-  const geometry_msgs::Point& pos = pose_.pose.position;
-  const int end_idx = std::max(closest_idx_.data - (int)search_width, 0);
+  const geometry_msgs::Point& pos = pose_.front().pose.position;
+  const int end_idx = std::max(location_.front().waypoint_index - (int)search_width, 0);
   std::map<double, int> distance;
-  for (int i = closest_idx_.data; i >= end_idx; --i)
+  for (int i = location_.front().waypoint_index; i >= end_idx; --i)
   {
-    const geometry_msgs::Point& wp_pos = lane_.waypoints.at(i).pose.pose.position;
+    const geometry_msgs::Point& wp_pos = lane_.front().waypoints.at(i).pose.pose.position;
     const double dist = getPlaneDistance(wp_pos, pos);
     distance[dist] = i;
   }
   const int nearest = distance.begin()->second;
   const int other =
-    (nearest == closest_idx_.data) ? closest_idx_.data - 1 :
+    (nearest == location_.front().waypoint_index) ? location_.front().waypoint_index - 1 :
     (nearest == end_idx) ? end_idx + 1 :
     std::find_if(distance.begin(), distance.end(), [&](std::pair<double, int> dataset)
       { return (dataset.second == nearest + 1) || (dataset.second == nearest - 1); })->second;

@@ -18,31 +18,25 @@
 #define __MOTION_DATASET_H__
 
 #include <ros/ros.h>
-#include <std_msgs/Int32.h>
 #include <std_msgs/Float32.h>
 #include <autoware_msgs/Lane.h>
+#include <autoware_msgs/VehicleLocation.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <waypoint_follower/libwaypoint_follower.h>
-
-enum DataType
-{
-  TYPE_LANE = 0,
-  TYPE_POSE = 1,
-  TYPE_IDX = 2
-};
 
 struct MotionDataset
 {
   MotionDataset();
   void reset();
+  void sync();
   const bool check() const;
   const int getLaneSize() const;
 
   const std::pair<int, int> calcNearestPair(unsigned int search_width) const;
-  autoware_msgs::Lane lane_;
-  geometry_msgs::PoseStamped pose_;
-  std_msgs::Int32 closest_idx_;
-  std::array<bool, 3> init_;
+  std::vector<autoware_msgs::Lane> lane_;
+  std::vector<geometry_msgs::PoseStamped> pose_;
+  std::vector<autoware_msgs::VehicleLocation> location_;
+  bool is_sync_;
 };
 
 #endif
