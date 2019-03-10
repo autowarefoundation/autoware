@@ -49,8 +49,8 @@ public:
 protected:
   void SetUp()
   {
-    test_obj_.objects2costmap_ = new Objects2Costmap();
-    test_obj_.points2costmap_ = new Points2Costmap();
+    test_obj_.objects2costmap_ = new ObjectsToCostmap();
+    test_obj_.points2costmap_ = new PointsToCostmap();
     test_obj_.dummy_point_ = new geometry_msgs::Point;
     test_obj_.dummy_pcl_point_ = new pcl::PointXYZ;
   };

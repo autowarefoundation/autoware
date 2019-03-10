@@ -99,8 +99,8 @@ private:
 
   std::vector<std::vector<geometry_msgs::Point>> area_points_;
 
-  Points2Costmap points2costmap_;
-  Objects2Costmap objects2costmap_;
+  PointsToCostmap points2costmap_;
+  ObjectsToCostmap objects2costmap_;
 
   const std::string OBJECTS_BOX_COSTMAP_LAYER_;
   const std::string OBJECTS_CONVEX_HULL_COSTMAP_LAYER_;

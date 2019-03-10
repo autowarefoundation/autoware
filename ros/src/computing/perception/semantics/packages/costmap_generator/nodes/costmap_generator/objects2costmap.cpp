@@ -38,7 +38,7 @@
 #include "costmap_generator/objects2costmap.h"
 
 // Constructor
-Objects2Costmap::Objects2Costmap() :
+ObjectsToCostmap::ObjectsToCostmap() :
 NUMBER_OF_POINTS(4),
 NUMBER_OF_DIMENSIONS(2),
 OBJECTS_COSTMAP_LAYER_("objects_costmap"),
@@ -46,11 +46,11 @@ EXPANDED_OBJECTS_COSTMAP_LAYER_("expanded_objects_costmap")
 {
 }
 
-Objects2Costmap::~Objects2Costmap()
+ObjectsToCostmap::~ObjectsToCostmap()
 {
 }
 
-Eigen::MatrixXd Objects2Costmap::makeRectanglePoints(const autoware_msgs::DetectedObject& in_object,
+Eigen::MatrixXd ObjectsToCostmap::makeRectanglePoints(const autoware_msgs::DetectedObject& in_object,
                                                      const double expand_rectangle_size)
 {
   double length = in_object.dimensions.x + expand_rectangle_size;
@@ -72,7 +72,7 @@ Eigen::MatrixXd Objects2Costmap::makeRectanglePoints(const autoware_msgs::Detect
   return transformed_points;
 }
 
-grid_map::Polygon Objects2Costmap::makePolygonFromObjectBox(const autoware_msgs::DetectedObject& in_object,
+grid_map::Polygon ObjectsToCostmap::makePolygonFromObjectBox(const autoware_msgs::DetectedObject& in_object,
                                                          const double expand_rectangle_size)
 {
   grid_map::Polygon polygon;
@@ -85,7 +85,7 @@ grid_map::Polygon Objects2Costmap::makePolygonFromObjectBox(const autoware_msgs:
   return polygon;
 }
 
-geometry_msgs::Point Objects2Costmap::makeExpandedPoint(const geometry_msgs::Point& in_centroid,
+geometry_msgs::Point ObjectsToCostmap::makeExpandedPoint(const geometry_msgs::Point& in_centroid,
                                                         const geometry_msgs::Point32& in_corner_point,
                                                         const double expand_polygon_size)
 {
@@ -105,7 +105,7 @@ geometry_msgs::Point Objects2Costmap::makeExpandedPoint(const geometry_msgs::Poi
 }
 
 
-grid_map::Polygon Objects2Costmap::makePolygonFromObjectConvexHull(const autoware_msgs::DetectedObject& in_object,
+grid_map::Polygon ObjectsToCostmap::makePolygonFromObjectConvexHull(const autoware_msgs::DetectedObject& in_object,
                                                                    const double expand_polygon_size)
 {
   grid_map::Polygon polygon;
@@ -125,7 +125,7 @@ grid_map::Polygon Objects2Costmap::makePolygonFromObjectConvexHull(const autowar
   return polygon;
 }
 
-void Objects2Costmap::setCostInPolygon(const grid_map::Polygon& polygon, const std::string& gridmap_layer_name,
+void ObjectsToCostmap::setCostInPolygon(const grid_map::Polygon& polygon, const std::string& gridmap_layer_name,
                                        const float score, grid_map::GridMap& objects_costmap)
 {
   grid_map::PolygonIterator iterators(objects_costmap, polygon);
@@ -139,7 +139,7 @@ void Objects2Costmap::setCostInPolygon(const grid_map::Polygon& polygon, const s
   }
 }
 
-grid_map::Matrix Objects2Costmap::makeCostmapFromObjects(const grid_map::GridMap& costmap,
+grid_map::Matrix ObjectsToCostmap::makeCostmapFromObjects(const grid_map::GridMap& costmap,
                                                          const double expand_polygon_size,
                                                          const double size_of_expansion_kernel,
                                                          const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects,

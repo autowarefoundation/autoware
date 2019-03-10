@@ -38,11 +38,11 @@
 // headers in PCL
 #include <pcl_ros/point_cloud.h>
 
-class Points2Costmap
+class PointsToCostmap
 {
 public:
-  Points2Costmap();
-  ~Points2Costmap();
+  PointsToCostmap();
+  ~PointsToCostmap();
 
   /// \brief calculate cost from sensor points
   /// \param[in] maximum_height_thres: Maximum height threshold for pointcloud data

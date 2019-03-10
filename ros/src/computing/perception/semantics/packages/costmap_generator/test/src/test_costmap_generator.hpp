@@ -48,7 +48,7 @@ public:
 
   pcl::PointXYZ* dummy_pcl_point_;
 
-  Points2Costmap *points2costmap_;
+  PointsToCostmap *points2costmap_;
 
   grid_map::GridMap makeDummyCostmap();
 
@@ -70,7 +70,7 @@ public:
                                     const std::vector<std::vector<std::vector<double>>> grid_vec);
 
 
-  Objects2Costmap *objects2costmap_;
+  ObjectsToCostmap *objects2costmap_;
   Eigen::MatrixXd makeRectanglePoints(const autoware_msgs::DetectedObject& in_object,
     const double expand_rectangle_size);
   geometry_msgs::Point makeExpandedPoint(const geometry_msgs::Point& in_centroid,

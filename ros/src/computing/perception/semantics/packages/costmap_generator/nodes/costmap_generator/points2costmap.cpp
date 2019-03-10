@@ -31,15 +31,15 @@
 #include "costmap_generator/points2costmap.h"
 
 // Constructor
-Points2Costmap::Points2Costmap()
+PointsToCostmap::PointsToCostmap()
 {
 }
 
-Points2Costmap::~Points2Costmap()
+PointsToCostmap::~PointsToCostmap()
 {
 }
 
-void Points2Costmap::initGridmapParam(const grid_map::GridMap& gridmap)
+void PointsToCostmap::initGridmapParam(const grid_map::GridMap& gridmap)
 {
   grid_length_x_ = gridmap.getLength().x();
   grid_length_y_ = gridmap.getLength().y();
@@ -48,7 +48,7 @@ void Points2Costmap::initGridmapParam(const grid_map::GridMap& gridmap)
   grid_position_y_ = gridmap.getPosition().y();
 }
 
-bool Points2Costmap::isValidInd(const grid_map::Index& grid_ind)
+bool PointsToCostmap::isValidInd(const grid_map::Index& grid_ind)
 {
   bool is_valid = false;
   int x_grid_ind = grid_ind.x();
@@ -61,7 +61,7 @@ bool Points2Costmap::isValidInd(const grid_map::Index& grid_ind)
   return is_valid;
 }
 
-grid_map::Index Points2Costmap::fetchGridIndexFromPoint(const pcl::PointXYZ& point)
+grid_map::Index PointsToCostmap::fetchGridIndexFromPoint(const pcl::PointXYZ& point)
 {
   // calculate out_grid_map position
   const double origin_x_offset = grid_length_x_ / 2.0 - grid_position_x_;
@@ -76,7 +76,7 @@ grid_map::Index Points2Costmap::fetchGridIndexFromPoint(const pcl::PointXYZ& poi
   return index;
 }
 
-std::vector<std::vector<std::vector<double>>> Points2Costmap::assignPoints2GridCell(
+std::vector<std::vector<std::vector<double>>> PointsToCostmap::assignPoints2GridCell(
     const grid_map::GridMap& gridmap, const pcl::PointCloud<pcl::PointXYZ>::Ptr& in_sensor_points)
 {
   double y_cell_size = std::ceil(grid_length_y_ * (1 / grid_resolution_));
@@ -96,7 +96,7 @@ std::vector<std::vector<std::vector<double>>> Points2Costmap::assignPoints2GridC
   return vec_x_y_z;
 }
 
-grid_map::Matrix Points2Costmap::calculateCostmap(const double maximum_height_thres,
+grid_map::Matrix PointsToCostmap::calculateCostmap(const double maximum_height_thres,
                                                   const double minimum_lidar_height_thres, const double grid_min_value,
                                                   const double grid_max_value, const grid_map::GridMap& gridmap,
                                                   const std::string& gridmap_layer_name,
@@ -126,7 +126,7 @@ grid_map::Matrix Points2Costmap::calculateCostmap(const double maximum_height_th
   return gridmap_data;
 }
 
-grid_map::Matrix Points2Costmap::makeCostmapFromSensorPoints(
+grid_map::Matrix PointsToCostmap::makeCostmapFromSensorPoints(
     const double maximum_height_thres, const double minimum_lidar_height_thres, const double grid_min_value,
     const double grid_max_value, const grid_map::GridMap& gridmap, const std::string& gridmap_layer_name,
     const pcl::PointCloud<pcl::PointXYZ>::Ptr& in_sensor_points)

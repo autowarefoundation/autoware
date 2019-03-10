@@ -38,11 +38,11 @@
 // headers in local directory
 #include "autoware_msgs/DetectedObjectArray.h"
 
-class Objects2Costmap
+class ObjectsToCostmap
 {
 public:
-  Objects2Costmap();
-  ~Objects2Costmap();
+  ObjectsToCostmap();
+  ~ObjectsToCostmap();
 
   /// \brief calculate cost from DetectedObjectArray
   /// \param[in] costmap: initialized gridmap
