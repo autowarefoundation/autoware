@@ -1,16 +1,17 @@
 #include <sched.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <thread>
-#include <vector>
-
 #include <cassert>
+#include <memory>
 #include <mutex>
+#include <vector>
+#include <limits>
 
-#include <state_machine_lib/state_context.hpp>
+#include <fstream>
 
 #include <state_machine_lib/state.hpp>
-#include <state_machine_lib/state_common.hpp>
+#include <state_machine_lib/state_context.hpp>
 
 /**
  *
@@ -23,358 +24,332 @@
 
 namespace state_machine
 {
-std::vector<BaseState *> StateContext::getMultipleStates(uint64_t _state_num_set)
+bool StateContext::setCallback(const CallbackType& _type, const std::string& _state_name,
+                               const std::function<void(const std::string&)>& _f)
 {
-  std::vector<BaseState *> ret;
-  for (uint64_t mask = STATE_SUB_END; _state_num_set != 0 && mask != 0; mask >>= 1)
+  bool ret = false;
+  int32_t _state_id = getStateIDbyName(_state_name);
+  if (_state_id != -1 && getStatePtr(static_cast<uint64_t>(_state_id)))
   {
-    if (mask & _state_num_set)
+    switch (_type)
     {
-      ret.push_back(getStateObject(mask));
-      _state_num_set &= ~mask;
+      case CallbackType::UPDATE:
+        getStatePtr(static_cast<uint64_t>(_state_id))->setCallbackUpdate(_f);
+        ret = true;
+        break;
+      case CallbackType::ENTRY:
+        getStatePtr(static_cast<uint64_t>(_state_id))->setCallbackEntry(_f);
+        ret = true;
+        break;
+      case CallbackType::EXIT:
+        getStatePtr(static_cast<uint64_t>(_state_id))->setCallbackExit(_f);
+        ret = true;
+        break;
+      default:
+        break;
     }
   }
   return ret;
 }
+/*****************************/
+/*  Callback                 */
+/*****************************/
 
-void StateContext::update(void)
+void StateContext::onUpdate(void)
 {
-  for (auto &p : HolderMap)
+  root_state_->onUpdate();
+}
+
+bool StateContext::isCurrentState(const std::string& state_name)
+{
+  bool ret = false;
+  std::shared_ptr<State> state = root_state_;
+  do
   {
-    if (p.first == BEHAVIOR_STATE)
+    if (state->getStateName() == state_name)
     {
-      for (auto &&state : getMultipleStates(p.second))
+      ret = true;
+    }
+    state = state->getChild();
+  } while (state != nullptr);
+  return ret;
+}
+
+void StateContext::nextState(const std::string& transition_key)
+{
+  std::shared_ptr<State> state = root_state_;
+  std::string _target_state_name;
+  std::vector<std::string> key_list;
+
+  while (state)
+  {
+    if (state->getTransitionMap().count(transition_key) != 0)
+    {
+      const uint64_t transition_state_id = state->getTransitionMap().at(transition_key);
+      _target_state_name = state_map_.at(transition_state_id)->getStateName();
+
+      if (isCurrentState(_target_state_name))
       {
-        state->update();
+        return;
       }
+
+      if (state_map_.at(transition_state_id)->getParent())
+      {
+        DEBUG_PRINT("[Child]:TransitionState: %d -> %d\n", state->getStateID(), transition_state_id);
+
+        std::shared_ptr<State> in_state = root_state_;
+
+        do
+        {
+          if (in_state == state_map_.at(transition_state_id)->getParent())
+          {
+            if (in_state->getChild())
+            {
+              key_list.push_back(in_state->getChild()->getEnteredKey());
+              in_state->getChild()->onExit();
+            }
+            in_state->setChild(state_map_.at(transition_state_id));
+            break;
+          }
+          in_state = in_state->getChild();
+        } while (in_state);
+
+#ifdef DEBUG
+        createDOTGraph(dot_output_name);
+#endif
+        state_map_.at(transition_state_id)->setEnteredKey(transition_key);
+        state_map_.at(transition_state_id)->onEntry();
+      }
+      else
+      {
+        DEBUG_PRINT("[Root]:TransitionState: %d -> %d\n", state->getStateID(), transition_state_id);
+        state->onExit();
+
+        root_state_ = state_map_.at(transition_state_id);
+        root_state_->setChild(nullptr);
+        root_state_->setParent(nullptr);
+        root_state_->setEnteredKey(transition_key);
+#ifdef DEBUG
+        createDOTGraph(dot_output_name);
+#endif
+
+        root_state_->onEntry();
+      }
+      break;
+    }
+    state = state->getChild();
+  }
+
+  if (isCurrentState(_target_state_name))
+  {
+    showStateName();
+  }
+}
+
+/*****************************/
+/* Getter/Setter             */
+/*****************************/
+
+void StateContext::createGraphTransitionList(std::ofstream& outputfile, int idx,
+                                             std::map<uint64_t, std::vector<uint64_t>>& sublist)
+{
+  if (!sublist[idx].empty() || state_map_.at(idx)->getParent() == NULL)
+  {
+    outputfile << "subgraph cluster_" << idx << "{\n"
+               << "label = \"" << state_map_.at(idx)->getStateName() << "\";\n";
+    if (!state_map_.at(idx)->getParent())
+    {
+      outputfile << "group = 1;\n";
+    }
+
+    for (auto& state : sublist[idx])
+    {
+      createGraphTransitionList(outputfile, state, sublist);
+    }
+  }
+
+  for (auto& map : state_map_.at(idx)->getTransitionMap())
+  {
+    if ((state_map_.at(map.second)->getParent() == state_map_.at(idx)->getParent() ||
+         state_map_.at(map.second)->getParent() == state_map_.at(idx)) &&
+        state_map_.at(map.second)->getParent() != NULL)
+    {
+      outputfile << idx << "->" << map.second << " [label=\"" << map.first << "\"];\n";
+    }
+  }
+  if (!sublist[idx].empty() || state_map_.at(idx)->getParent() == NULL)
+  {
+    outputfile << "}\n";
+  }
+  for (auto& map : state_map_.at(idx)->getTransitionMap())
+  {
+    if ((state_map_.at(map.second)->getParent() != state_map_.at(idx)->getParent() &&
+         state_map_.at(map.second)->getParent() != state_map_.at(idx)) ||
+        state_map_.at(map.second)->getParent() == NULL)
+    {
+      outputfile << idx << "->" << map.second << " [label=\"" << map.first << "\"];\n";
+    }
+  }
+}
+
+void StateContext::createDOTGraph(std::string _file_name)
+{
+  std::ofstream outputfile(_file_name);
+  outputfile << "digraph state_machine_graph {\n"
+             << "dpi = \"192\";\n node [style=filled];\n";
+  std::vector<uint64_t> rootlist;
+  std::map<uint64_t, std::vector<uint64_t>> sublist;
+  std::map<uint64_t, int> layer_map;
+
+  // create child list
+  for (auto& state : state_map_)
+  {
+    outputfile << state.second->getStateID() << "[label=\"" << state.second->getStateName() << "\"";
+
+    {
+      std::shared_ptr<State> temp = root_state_;
+      while (temp)
+      {
+        if (temp->getStateID() == state.second->getStateID())
+        {
+          outputfile << ",color = \"crimson\"";
+        }
+        temp = temp->getChild();
+      }
+    }
+    if (state.second->getParent())
+    {
+      sublist[state.second->getParent()->getStateID()].push_back(state.second->getStateID());
     }
     else
     {
-      if (p.second)
-        if (getStateObject(p.second))
-          getStateObject(p.second)->update();
+      outputfile << ", group = 1";
+      rootlist.push_back(state.second->getStateID());
     }
+    outputfile << "];\n";
   }
+
+  for (auto& root_idx : rootlist)
+  {
+    int idx = root_idx;
+    createGraphTransitionList(outputfile, idx, sublist);
+  }
+
+  outputfile << "}";
 }
 
-void StateContext::inState(uint8_t _kind, uint64_t _prev_state_num)
+std::shared_ptr<State> StateContext::getStartState()
 {
-  if (_kind > UNKNOWN_STATE)
+  for (auto& state : state_map_)
   {
-    return;
-  }
-  else if (_kind == BEHAVIOR_STATE)
-  {
-    for (auto &&state : getMultipleStates(HolderMap[_kind]))
+    if (state.second->getStateName() == "Start")
     {
-      if (!(_prev_state_num & getStateNum(state)))
-        state->inState();
-    }
-  }
-  else
-  {
-    if (getStateObject(HolderMap[_kind]))
-      getStateObject(HolderMap[_kind])->inState();
-  }
-}
-
-BaseState *StateContext::getStateObject(const uint64_t &_state_num)
-{
-  if (_state_num)
-  {
-    if (StateStores[_state_num])
-    {
-      return StateStores[_state_num];
+      return state.second;
     }
   }
   return nullptr;
 }
 
-bool StateContext::setCallbackUpdateFunc(const uint64_t &_state_num, const std::function<void(void)> &_f)
+int32_t StateContext::getStateIDbyName(std::string _name)
 {
-  bool ret = false;
-  if (getStateObject(_state_num))
+  for (const auto& i : state_map_)
   {
-    getStateObject(_state_num)->setCallbackUpdateFunc(_f);
-    ret = true;
-  }
-
-  return ret;
-}
-bool StateContext::setCallbackInFunc(const uint64_t &_state_num, const std::function<void(void)> &_f)
-{
-  bool ret = false;
-  if (getStateObject(_state_num))
-  {
-    getStateObject(_state_num)->setCallbackInFunc(_f);
-    ret = true;
-  }
-  return ret;
-}
-bool StateContext::setCallbackOutFunc(const uint64_t &_state_num, const std::function<void(void)> &_f)
-{
-  bool ret = false;
-  if (getStateObject(_state_num))
-  {
-    getStateObject(_state_num)->setCallbackOutFunc(_f);
-    ret = true;
-  }
-  return ret;
-}
-
-std::string StateContext::getStateName(const uint64_t &_state_num)
-{
-  if (getStateObject(_state_num))
-  {
-    return getStateObject(_state_num)->getStateName();
-  }
-  else
-    return "";
-}
-
-uint64_t StateContext::getStateNum(BaseState *_state)
-{
-  if (_state)
-  {
-    return _state->getStateNum();
-  }
-  else
-    return 0;
-}
-
-uint8_t StateContext::getStateKind(BaseState *_state)
-{
-  if (_state)
-  {
-    return _state->getStateKind();
-  }
-  else
-    return UNKNOWN_STATE;
-}
-
-uint8_t StateContext::getStateKind(const uint64_t &_state_num)
-{
-  if (_state_num)
-  {
-    return getStateKind(getStateObject(_state_num));
-  }
-  return UNKNOWN_STATE;
-}
-
-void StateContext::showCurrentStateName(void)
-{
-  for (auto &p : HolderMap)
-  {
-    if (p.second)
-      if (getStateObject(p.second))
-        getStateObject(p.second)->showStateName();
-  }
-}
-
-bool StateContext::isDifferentState(uint64_t _state_a, uint64_t _state_b)
-{
-  return !(_state_a & _state_b);
-}
-
-bool StateContext::isEmptyMainState(void)
-{
-  if (HolderMap[MAIN_STATE])
-    return false;
-  return true;
-}
-
-uint64_t StateContext::getStateTransMask(BaseState *_state)
-{
-  if (_state)
-    return _state->getStateTransMask();
-  else
-    return 0;
-}
-
-bool StateContext::isMainState(BaseState *_state)
-{
-  return getStateKind(_state) == MAIN_STATE;
-}
-
-bool StateContext::setCurrentState(BaseState *_state)
-{
-  change_state_mutex.lock();
-  bool ret = true;
-  if (_state)
-  {
-    uint64_t prev_state = HolderMap[getStateKind(_state)];
-    bool diff = isDifferentState(getStateNum(_state), HolderMap[getStateKind(_state)]);
-    if (isMainState(_state))
+    if (i.second->getStateName() == _name)
     {
-      if (isEmptyMainState() || enableForceSetState || (getStateTransMask(_state) & HolderMap[MAIN_STATE]))
-      {
-        for (auto &state : HolderMap)
-        {
-          if (state.first == MAIN_STATE)
-          {
-            state.second = getStateNum(_state);
-          }
-          else
-          {
-            state.second = 0ULL;
-          }
-        }
-      }
-      else
-      {
-        ret = false;
-      }
-    }
-    else
-    {
-      if (getStateKind(_state) == BEHAVIOR_STATE)
-      {
-        HolderMap[getStateKind(_state)] |= getStateNum(_state);
-      }
-      else
-      {
-        HolderMap[getStateKind(_state)] = getStateNum(_state);
-      }
-    }
-    change_state_mutex.unlock();
-    if (ret && diff)
-    {
-      this->inState(getStateKind(_state), prev_state);
-
-      if (getStateKind(_state) == getStateKind(prev_state) && getStateKind(_state) != BEHAVIOR_STATE)
-        if (getStateObject(prev_state))
-          getStateObject(prev_state)->outState();
+      return static_cast<int32_t>(i.second->getStateID());
     }
   }
-  else
+  return -1;
+}
+
+std::string StateContext::getAvailableTransition(void)
+{
+  std::string text;
+
+  std::shared_ptr<State> state = root_state_;
+  do
   {
-    change_state_mutex.unlock();
-    ret = false;
-  }
-  return ret;
-}
-
-bool StateContext::setCurrentState(uint64_t flag)
-{
-  bool ret = this->setCurrentState(getStateObject(flag));
-  return ret;
-}
-
-bool StateContext::setEnableForceSetState(bool force_flag)
-{
-  enableForceSetState = force_flag;
-  return true;
-}
-
-std::string StateContext::getCurrentStateName(void)
-{
-  return this->getCurrentStateName(MAIN_STATE);
-}
-
-std::string StateContext::getCurrentStateName(uint8_t _kind)
-{
-  if (HolderMap[_kind])
-  {
-    if (_kind == BEHAVIOR_STATE)
+    for (const auto& keyval : state->getTransitionMap())
     {
-      uint64_t _current_state = HolderMap[_kind];
-      std::string ret = "";
-      for (uint64_t mask = STATE_SUB_END; _current_state != 0 && mask != 0; mask >>= 1)
-      {
-        if (mask & _current_state)
-        {
-          ret += "\n" + getStateName(mask);
-          _current_state &= ~mask;
-        }
-      }
-      return ret;
+      text += keyval.first + ":" + state_map_.at(keyval.second)->getStateName() + ",";
     }
-    else
-    {
-      return getStateName(HolderMap[_kind]);
-    }
-  }
-  return std::string("");
+    state = state->getChild();
+  } while (state != nullptr);
+
+  return text;
 }
 
-BaseState *StateContext::getCurrentMainState(void)
+std::string StateContext::getStateText(void)
 {
-  return getStateObject(HolderMap[MAIN_STATE]);
+  std::string text;
+
+  std::shared_ptr<State> state = root_state_;
+  do
+  {
+    text += state->getStateName() + "\n";
+    state = state->getChild();
+  } while (state != nullptr);
+
+  return text;
 }
 
-bool StateContext::disableCurrentState(uint64_t _state_num)
+void StateContext::setTransitionMap(const YAML::Node& node, const std::shared_ptr<State>& _state)
 {
-  if (isMainState(getStateObject(_state_num)))
+  for (unsigned int j = 0; j < node.size(); j++)
   {
-    return false;
+    int32_t state_id = getStateIDbyName(node[j]["Target"].as<std::string>());
+    if (state_id == -1)
+      continue;
+
+    _state->addTransition(node[j]["Key"].as<std::string>(), static_cast<uint64_t>(state_id));
   }
-  if (isCurrentState(_state_num))
+}
+
+void StateContext::showStateName()
+{
+  std::shared_ptr<State> state = root_state_;
+  do
   {
-    HolderMap[getStateKind(_state_num)] &= ~_state_num;
-    getStateObject(_state_num)->outState();
-    return true;
-  }
+    state = state->getChild();
+  } while (state != nullptr);
+}
+
+std::shared_ptr<State> StateContext::getStatePtr(const YAML::Node& node)
+{
+  return getStatePtr(node["StateName"].as<std::string>());
+}
+
+std::shared_ptr<State> StateContext::getStatePtr(const std::string& _state_name)
+{
+  int32_t state_id = getStateIDbyName(_state_name);
+
+  if (_state_name == "~" || state_id == -1)
+    return nullptr;
   else
+    return getStatePtr(static_cast<uint64_t>(state_id));
+}
+
+std::shared_ptr<State> StateContext::getStatePtr(const uint64_t& _state_id)
+{
+  return state_map_.at(_state_id);
+}
+
+void StateContext::createStateMap(std::string _state_file_name, std::string _msg_name)
+{
+  const YAML::Node StateYAML = YAML::LoadFile(_state_file_name)[_msg_name];
+
+  // create state
+  for (unsigned int i = 0; i < StateYAML.size(); i++)
   {
-    return false;
+    state_map_[i] = std::shared_ptr<State>(new State(StateYAML[i]["StateName"].as<std::string>(), i));
   }
-}
 
-bool StateContext::isCurrentState(uint64_t _state_num)
-{
-  if (_state_num)
-    return HolderMap[getStateKind(_state_num)] & _state_num;
-  else
-    return false;
-}
-
-bool StateContext::isState(BaseState *base, uint64_t _state_num)
-{
-  return base ? base->getStateNum() & _state_num ? true : false : false;
-}
-
-bool StateContext::handleIntersection(bool _hasIntersection, double _angle)
-{
-  /* deprecated */
-  return false;
-}
-
-std::string StateContext::createStateMessageText(void)
-{
-  std::string ret;
-
-  for (auto &p : HolderMap)
+  // set Parent
+  // set transition
+  for (unsigned int i = 0; i < StateYAML.size(); i++)
   {
-    if (p.second)
-    {
-      ret = ret + "\n" + getStateName(p.second);
-    }
+    getStatePtr(StateYAML[i])->setParent(getStatePtr(StateYAML[i]["Parent"].as<std::string>()));
+    setTransitionMap(StateYAML[i]["Transition"], getStatePtr(StateYAML[i]));
   }
-  return ret;
-}
-
-bool StateContext::handleTwistCmd(bool _hasTwistCmd)
-{
-  if (_hasTwistCmd)
-    return this->setCurrentState(DRIVE_STATE);
-  else
-    return false;
-}
-
-void StateContext::stateDecider(void)
-{
-  // not running
-}
-
-void StateContext::InitContext(void)
-{
-  thr_state_dec = new std::thread(&StateContext::stateDecider, this);
-  thr_state_dec->detach();
-  this->setCurrentState(START_STATE);
-  return;
-}
-bool StateContext::TFInitialized(void)
-{
-  return this->setCurrentState(INITIAL_STATE);
 }
 }
