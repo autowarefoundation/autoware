@@ -50,19 +50,21 @@ public:
 
   autoware_msgs::DetectedObject* dummy_object_;
 
+  autoware_msgs::DetectedObjectArray::Ptr dummy_objects_array_;
+
   grid_map::GridMap* dummy_costmap_;
 
   PointsToCostmap *points2costmap_;
 
-  grid_map::GridMap makeDummyCostmap();
-
-  std::vector<std::vector<std::vector<double>>> makeDummy3DVec();
-
-  autoware_msgs::DetectedObjectArray::Ptr makeDummyConvexHullObjectArrayForCalculatingCost();
+  std::unique_ptr<std::vector<std::vector<std::vector<double>>>> dummy_3d_vec_;
 
   void fillDummyObjectParam(autoware_msgs::DetectedObject* dummy_object);
 
+  void fillDummyObjectsArrayParam(autoware_msgs::DetectedObjectArray::Ptr dummy_objects_array);
+
   void fillDummyCostmapParam(grid_map::GridMap* dummy_costmap);
+
+  void initDummy3DVecParam();
 
 
   std::vector<std::vector<std::vector<double>>>
@@ -111,16 +113,6 @@ dummy_initialize_cost_(0)
 
 }
 
-grid_map::GridMap TestClass::makeDummyCostmap()
-{
-  grid_map::GridMap costmap;
-  costmap.setGeometry(grid_map::Length(dummy_grid_length_x_, dummy_grid_length_y_), dummy_grid_resolution_,
-                      grid_map::Position(dummy_grid_position_x_, dummy_grid_position_y_));
-
-  costmap.add(dummy_layer_name_, dummy_initialize_cost_);
-  return costmap;
-}
-
 void TestClass::fillDummyCostmapParam(grid_map::GridMap* dummy_costmap)
 {
   dummy_costmap->setGeometry(grid_map::Length(dummy_grid_length_x_, dummy_grid_length_y_), dummy_grid_resolution_,
@@ -129,16 +121,23 @@ void TestClass::fillDummyCostmapParam(grid_map::GridMap* dummy_costmap)
   dummy_costmap->add(dummy_layer_name_, dummy_initialize_cost_);
 }
 
-std::vector<std::vector<std::vector<double>>> TestClass::makeDummy3DVec()
+void TestClass::fillDummyObjectParam(autoware_msgs::DetectedObject* dummy_object)
 {
-  double y_cell_size = std::ceil(dummy_grid_length_y_ * (1 / dummy_grid_resolution_));
-  double x_cell_size = std::ceil(dummy_grid_length_x_ * (1 / dummy_grid_resolution_));
-  std::vector<double> z_vec;
-  std::vector<std::vector<double>> vec_y_z(y_cell_size, z_vec);
-  std::vector<std::vector<std::vector<double>>> vec_x_y_z(x_cell_size, vec_y_z);
-  return vec_x_y_z;
+  dummy_object->header.frame_id = "test";
+  dummy_object->pose.position.x = 0;
+  dummy_object->pose.position.y = 0;
+  dummy_object->pose.position.z = 0;
+  dummy_object->pose.orientation.x = 0;
+  dummy_object->pose.orientation.y = 0;
+  dummy_object->pose.orientation.z = 0;
+  dummy_object->pose.orientation.w = 1;
+  dummy_object->dimensions.x = 2;
+  dummy_object->dimensions.y = 1.5;
+  dummy_object->dimensions.z = 2;
+  dummy_object->score = 1;
 }
-autoware_msgs::DetectedObjectArray::Ptr TestClass::makeDummyConvexHullObjectArrayForCalculatingCost()
+
+void TestClass::fillDummyObjectsArrayParam(autoware_msgs::DetectedObjectArray::Ptr dummy_objects_array)
 {
   autoware_msgs::DetectedObject object;
   object.header.frame_id = "test";
@@ -163,26 +162,19 @@ autoware_msgs::DetectedObjectArray::Ptr TestClass::makeDummyConvexHullObjectArra
   object.pose.position.y = 0;
   object.pose.position.z = 0;
   object.score = 1;
-  autoware_msgs::DetectedObjectArray::Ptr objects(new autoware_msgs::DetectedObjectArray);
-  objects->objects.push_back(object);
-  return objects;
+  dummy_objects_array->objects.push_back(object);
 }
 
-void TestClass::fillDummyObjectParam(autoware_msgs::DetectedObject* dummy_object)
+void TestClass::initDummy3DVecParam()
 {
-  dummy_object->header.frame_id = "test";
-  dummy_object->pose.position.x = 0;
-  dummy_object->pose.position.y = 0;
-  dummy_object->pose.position.z = 0;
-  dummy_object->pose.orientation.x = 0;
-  dummy_object->pose.orientation.y = 0;
-  dummy_object->pose.orientation.z = 0;
-  dummy_object->pose.orientation.w = 1;
-  dummy_object->dimensions.x = 2;
-  dummy_object->dimensions.y = 1.5;
-  dummy_object->dimensions.z = 2;
-  dummy_object->score = 1;
+  double y_cell_size = std::ceil(dummy_grid_length_y_ * (1 / dummy_grid_resolution_));
+  double x_cell_size = std::ceil(dummy_grid_length_x_ * (1 / dummy_grid_resolution_));
+  std::vector<double> z_vec;
+  std::vector<std::vector<double>> vec_y_z(y_cell_size, z_vec);
+  dummy_3d_vec_.reset(new
+    std::vector<std::vector<std::vector<double>>>(x_cell_size, vec_y_z));
 }
+
 
 Eigen::MatrixXd TestClass::makeRectanglePoints(const autoware_msgs::DetectedObject& in_object,
                                                const double expanded_rectangle_size)

@@ -54,9 +54,14 @@ protected:
     test_obj_.dummy_point_ = new geometry_msgs::Point;
     test_obj_.dummy_pcl_point_ = new pcl::PointXYZ;
     test_obj_.dummy_object_ = new autoware_msgs::DetectedObject;
+    test_obj_.dummy_objects_array_.reset(new autoware_msgs::DetectedObjectArray);
     test_obj_.dummy_costmap_ = new grid_map::GridMap;
+
     test_obj_.fillDummyObjectParam(test_obj_.dummy_object_);
     test_obj_.fillDummyCostmapParam(test_obj_.dummy_costmap_);
+    test_obj_.fillDummyObjectsArrayParam(test_obj_.dummy_objects_array_);
+    test_obj_.initDummy3DVecParam();
+
   };
   void TearDown()
   {
@@ -134,10 +139,8 @@ TEST_F(TestSuite, CheckFetchGridIndexFromPoint)
 
 TEST_F(TestSuite, CheckValidIndex)
 {
-  grid_map::GridMap costmap = test_obj_.makeDummyCostmap();
-
   grid_map::Index index(2,5);
-  bool is_valid = test_obj_.isValidInd(costmap, index);
+  bool is_valid = test_obj_.isValidInd(*test_obj_.dummy_costmap_, index);
 
   bool expected_valid = true;
   EXPECT_EQ(expected_valid, is_valid);
@@ -145,10 +148,8 @@ TEST_F(TestSuite, CheckValidIndex)
 
 TEST_F(TestSuite, CheckNonValidIndex)
 {
-  grid_map::GridMap costmap = test_obj_.makeDummyCostmap();
-
   grid_map::Index index(2,10);
-  bool is_valid = test_obj_.isValidInd(costmap, index);
+  bool is_valid = test_obj_.isValidInd(*test_obj_.dummy_costmap_, index);
 
   bool expected_valid = false;
   EXPECT_EQ(expected_valid, is_valid);
@@ -156,10 +157,7 @@ TEST_F(TestSuite, CheckNonValidIndex)
 
 TEST_F(TestSuite, CheckCalculationPointsCostmap)
 {
-  grid_map::GridMap costmap = test_obj_.makeDummyCostmap();
-
-  std::vector<std::vector<std::vector<double>>>  vec_x_y_z = test_obj_.makeDummy3DVec();
-  vec_x_y_z[5][5].push_back(2.2);
+  test_obj_.dummy_3d_vec_->at(5)[5].push_back(2.2);
 
   double maximum_height_thres = 3.0;
   double minimum_lidar_height_thres = -2.0;
@@ -167,18 +165,16 @@ TEST_F(TestSuite, CheckCalculationPointsCostmap)
   double grid_max_value = 1;
   std::string layer_name = "test";
 
-  grid_map::Matrix costmap_mat = test_obj_.calculateCostmap(maximum_height_thres, minimum_lidar_height_thres, grid_min_value,
-                                              grid_max_value, costmap, layer_name, vec_x_y_z);
+  grid_map::Matrix costmap_mat = test_obj_.calculateCostmap(
+    maximum_height_thres, minimum_lidar_height_thres, grid_min_value,
+    grid_max_value, *test_obj_.dummy_costmap_, layer_name, *test_obj_.dummy_3d_vec_);
   double expected_cost = 1.0;
   EXPECT_DOUBLE_EQ(expected_cost, costmap_mat(5,5));
 }
 
 TEST_F(TestSuite, CheckHeightThresholdForCost)
 {
-  grid_map::GridMap costmap = test_obj_.makeDummyCostmap();
-
-  std::vector<std::vector<std::vector<double>>>  vec_x_y_z = test_obj_.makeDummy3DVec();
-  vec_x_y_z[5][5].push_back(3.2);
+  test_obj_.dummy_3d_vec_->at(5)[5].push_back(3.2);
 
   double maximum_height_thres = 3.0;
   double minimum_lidar_height_thres = -2.0;
@@ -186,8 +182,9 @@ TEST_F(TestSuite, CheckHeightThresholdForCost)
   double grid_max_value = 1;
   std::string layer_name = "test";
 
-  grid_map::Matrix costmap_mat = test_obj_.calculateCostmap(maximum_height_thres, minimum_lidar_height_thres, grid_min_value,
-                                              grid_max_value, costmap, layer_name, vec_x_y_z);
+  grid_map::Matrix costmap_mat = test_obj_.calculateCostmap(
+    maximum_height_thres, minimum_lidar_height_thres, grid_min_value,
+    grid_max_value, *test_obj_.dummy_costmap_, layer_name, *test_obj_.dummy_3d_vec_);
   double expected_cost = 0.0;
   EXPECT_DOUBLE_EQ(expected_cost, costmap_mat(5,5));
 }
@@ -279,12 +276,11 @@ TEST_F(TestSuite, CheckSetCostInPolygon)
   polygon.addVertex(grid_map::Position(1, 1));
   polygon.addVertex(grid_map::Position(-1, 1));
 
-  grid_map::GridMap costmap = test_obj_.makeDummyCostmap();
 
   float score = 1;
-  test_obj_.setCostInPolygon(polygon, layer_name, score, costmap);
+  test_obj_.setCostInPolygon(polygon, layer_name, score, *test_obj_.dummy_costmap_);
   float expected_score = 1;
-  EXPECT_EQ(expected_score, costmap.atPosition(layer_name, grid_map::Position(0, 0)));
+  EXPECT_EQ(expected_score, test_obj_.dummy_costmap_->atPosition(layer_name, grid_map::Position(0, 0)));
 }
 
 TEST_F(TestSuite, CheckMakeCostmapFromObjects)
@@ -310,12 +306,12 @@ TEST_F(TestSuite, CheckMakeCostmapFromObjects)
   autoware_msgs::DetectedObjectArray::Ptr dummy_objects(new autoware_msgs::DetectedObjectArray);
   dummy_objects->objects.push_back(*test_obj_.dummy_object_);
 
-  grid_map::GridMap costmap = test_obj_.makeDummyCostmap();
 
   double expand_polygon_size = 0;
   double size_of_expansion_kernel = 1;
   bool use_objects_convex_hull = true;
-  grid_map::Matrix gridmap_mat = test_obj_.makeCostmapFromObjects(costmap,
+  grid_map::Matrix gridmap_mat = test_obj_.makeCostmapFromObjects(
+                                          *test_obj_.dummy_costmap_,
                                           expand_polygon_size,
                                           size_of_expansion_kernel,
                                           dummy_objects,
@@ -338,17 +334,14 @@ TEST_F(TestSuite, CheckMakeCostmapFromObjects)
 
 TEST_F(TestSuite, CheckMakeCostmapFromObjectsExpandSize)
 {
-  autoware_msgs::DetectedObjectArray::Ptr objects
-    = test_obj_.makeDummyConvexHullObjectArrayForCalculatingCost();
-
-  grid_map::GridMap costmap = test_obj_.makeDummyCostmap();
   double expand_polygon_size = 1;
   double size_of_expansion_kernel = 1;
   bool use_objects_convex_hull = true;
-  grid_map::Matrix gridmap_mat = test_obj_.makeCostmapFromObjects(costmap,
+  grid_map::Matrix gridmap_mat = test_obj_.makeCostmapFromObjects(
+                                          *test_obj_.dummy_costmap_,
                                           expand_polygon_size,
                                           size_of_expansion_kernel,
-                                          objects,
+                                          test_obj_.dummy_objects_array_,
                                           use_objects_convex_hull);
   /*
     0 0 0 0 0 0 0 0 0 0
@@ -368,19 +361,14 @@ TEST_F(TestSuite, CheckMakeCostmapFromObjectsExpandSize)
 
 TEST_F(TestSuite, CheckMakeCostmapFromObjectsBlur)
 {
-  autoware_msgs::DetectedObjectArray::Ptr objects
-    = test_obj_.makeDummyConvexHullObjectArrayForCalculatingCost();
-
-
-  grid_map::GridMap costmap = test_obj_.makeDummyCostmap();
-
   double expand_polygon_size = 0;
   double size_of_expansion_kernel = 3;
   bool use_objects_convex_hull = true;
-  grid_map::Matrix gridmap_mat = test_obj_.makeCostmapFromObjects(costmap,
+  grid_map::Matrix gridmap_mat = test_obj_.makeCostmapFromObjects(
+                                          *test_obj_.dummy_costmap_,
                                           expand_polygon_size,
                                           size_of_expansion_kernel,
-                                          objects,
+                                          test_obj_.dummy_objects_array_,
                                           use_objects_convex_hull);
   /*
   0  0  0           0           0           0 0.000228624 0.000635066 0.000683101 0.000629966
@@ -404,12 +392,11 @@ TEST_F(TestSuite, CheckMakeCostmapFromObjectsBox)
   autoware_msgs::DetectedObjectArray::Ptr dummy_objects(new autoware_msgs::DetectedObjectArray);
   dummy_objects->objects.push_back(*test_obj_.dummy_object_);
 
-  grid_map::GridMap costmap = test_obj_.makeDummyCostmap();
-
   double expand_polygon_size = 1;
   double size_of_expansion_kernel = 1;
   bool use_objects_convex_hull = false;
-  grid_map::Matrix gridmap_mat = test_obj_.makeCostmapFromObjects(costmap,
+  grid_map::Matrix gridmap_mat = test_obj_.makeCostmapFromObjects(
+                                          *test_obj_.dummy_costmap_,
                                           expand_polygon_size,
                                           size_of_expansion_kernel,
                                           dummy_objects,
@@ -439,12 +426,11 @@ TEST_F(TestSuite, CheckMakeCostmapFromObjectsBoxBlur)
   autoware_msgs::DetectedObjectArray::Ptr dummy_objects(new autoware_msgs::DetectedObjectArray);
   dummy_objects->objects.push_back(*test_obj_.dummy_object_);
 
-  grid_map::GridMap costmap = test_obj_.makeDummyCostmap();
-
   double expand_polygon_size = 1;
   double size_of_expansion_kernel = 3;
   bool use_objects_convex_hull = false;
-  grid_map::Matrix gridmap_mat = test_obj_.makeCostmapFromObjects(costmap,
+  grid_map::Matrix gridmap_mat = test_obj_.makeCostmapFromObjects(
+                                          *test_obj_.dummy_costmap_,
                                           expand_polygon_size,
                                           size_of_expansion_kernel,
                                           dummy_objects,
