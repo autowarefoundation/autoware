@@ -371,6 +371,16 @@ subs :
         sync :
           func : self.button_synchronization.GetValue()
 
+    - name : costmap_generator
+      desc : costmap_generator desc sample
+      cmd  : roslaunch costmap_generator costmap_generator.launch
+      param: costmap_generator_param
+      gui  :
+        dialog_width  : 400
+        dialog_height : 400
+        sync :
+          func : self.button_synchronization.GetValue()
+
   - name : Prediction
     desc : Prediction desc sample
     subs :
@@ -5313,6 +5323,173 @@ params :
         dash      : ''
         delim     : ':='
 
+  - name  : costmap_generator_param
+    vars  :
+    - name  : use_objects_box
+      desc  : use bouding box from DetectedObjectArray
+      label : use_objects_box
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : use_objects_convex_hull
+      desc  : use convex hull from DetectedObjectArray
+      label : use_objects_convex_hull
+      kind  : checkbox
+      v     : True
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : use_points
+      desc  : use sensor_msgs::PointCloud2 or not
+      label : use_points
+      kind  : checkbox
+      v     : True
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : use_wayarea
+      desc  : use vector_map wayarea or not
+      label : use_wayarea
+      kind  : checkbox
+      v     : True
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : objects_input
+      desc  : autoware_msgs::DetectedObjectArray
+      label : objects_input
+      kind  : topic
+      topic_type : autoware_msgs/DetectedObjectArray
+      v     : /prediction/motion_predictor/objects
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : points_input
+      desc  : sensor_msgs::PointCloud2
+      label : points_input
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
+      v     : /points_no_ground
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name    : lidar_frame
+      desc    : lidar frame
+      label   : lidar_frame
+      kind    : str
+      v       : /velodyne
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name    : map_frame
+      desc    : map frame
+      label   : map_frame
+      kind    : str
+      v       : /map
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name  : grid_min_value
+      desc  : minimum value for costmap
+      label : grid_min_value
+      min     : 0.00
+      max     : 10.0
+      v       : 0.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : grid_max_value
+      desc  : maximum value for costmap
+      label : grid_max_value
+      min     : 1.0
+      max     : 255.0
+      v       : 1.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : grid_resolution
+      desc  : grid resolution for costmap
+      label : grid_resolution
+      min     : 0.0
+      max     : 10.0
+      v       : 0.2
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : grid_length_x
+      desc  : grid lengh for x coordinate
+      label : grid_length_x
+      min     : 0.0
+      max     : 100.0
+      v       : 50.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : grid_length_y
+      desc  : grid lengh for y coordinate
+      label : grid_length_y
+      min     : 0.0
+      max     : 100.0
+      v       : 30.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : grid_position_x
+      desc  : grid position for x coordinate
+      label : grid_position_x
+      min     : 0.0
+      max     : 100.0
+      v       : 20.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : grid_position_y
+      desc  : grid position for y coordinate
+      label : grid_position_y
+      min     : 0.0
+      max     : 100.0
+      v       : 0.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : maximum_lidar_height_thres
+      desc  : Maximum z for lidar points
+      label : maximum_lidar_height_thres
+      min     : 0.0
+      max     : 10.0
+      v       : 0.3
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : minimum_lidar_height_thres
+      desc  : Minimum z for lidar points
+      label : minimum_lidar_height_thres
+      min     : -10.0
+      max     : 2.0
+      v       : -2.2
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : expand_polygon_size
+      desc  : Expand oberct's costmap polygon
+      label : expand_polygon_size
+      min     : 0.0
+      max     : 10.0
+      v       : 1.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : size_of_expansion_kernel
+      desc  : Size of expansion window(kernel)
+      label : size_of_expansion_kernel(odd number)
+      min     : 0
+      max     : 30
+      v       : 9
+      cmd_param :
+        dash      : ''
+        delim     : ':='
   - name  : lidar_cnn_baidu_params
     vars  :
     - name      : points_src
