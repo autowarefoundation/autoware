@@ -55,7 +55,6 @@ protected:
     test_obj_.dummy_pcl_point_ = new pcl::PointXYZ;
     test_obj_.dummy_object_ = new autoware_msgs::DetectedObject;
     test_obj_.dummy_costmap_ = new grid_map::GridMap;
-    
     test_obj_.dummy_objects_array_.reset(new autoware_msgs::DetectedObjectArray);
 
     test_obj_.fillDummyObjectParam(test_obj_.dummy_object_);
@@ -160,15 +159,14 @@ TEST_F(TestSuite, CheckCalculationPointsCostmap)
 {
   test_obj_.dummy_3d_vec_->at(5)[5].push_back(2.2);
 
-  double maximum_height_thres = 3.0;
-  double minimum_lidar_height_thres = -2.0;
-  double grid_min_value = 0;
-  double grid_max_value = 1;
-  std::string layer_name = "test";
-
   grid_map::Matrix costmap_mat = test_obj_.calculateCostmap(
-    maximum_height_thres, minimum_lidar_height_thres, grid_min_value,
-    grid_max_value, *test_obj_.dummy_costmap_, layer_name, *test_obj_.dummy_3d_vec_);
+    test_obj_.dummy_maximum_lidar_height_thres_,
+    test_obj_.dummy_minimum_lidar_height_thres_,
+    test_obj_.dummy_grid_min_value_,
+    test_obj_.dummy_grid_max_value_,
+    *test_obj_.dummy_costmap_,
+    test_obj_.dummy_layer_name_,
+    *test_obj_.dummy_3d_vec_);
   double expected_cost = 1.0;
   EXPECT_DOUBLE_EQ(expected_cost, costmap_mat(5,5));
 }
@@ -177,29 +175,28 @@ TEST_F(TestSuite, CheckHeightThresholdForCost)
 {
   test_obj_.dummy_3d_vec_->at(5)[5].push_back(3.2);
 
-  double maximum_height_thres = 3.0;
-  double minimum_lidar_height_thres = -2.0;
-  double grid_min_value = 0;
-  double grid_max_value = 1;
-  std::string layer_name = "test";
-
   grid_map::Matrix costmap_mat = test_obj_.calculateCostmap(
-    maximum_height_thres, minimum_lidar_height_thres, grid_min_value,
-    grid_max_value, *test_obj_.dummy_costmap_, layer_name, *test_obj_.dummy_3d_vec_);
+    test_obj_.dummy_maximum_lidar_height_thres_,
+    test_obj_.dummy_minimum_lidar_height_thres_,
+    test_obj_.dummy_grid_min_value_,
+    test_obj_.dummy_grid_max_value_,
+    *test_obj_.dummy_costmap_,
+    test_obj_.dummy_layer_name_,
+    *test_obj_.dummy_3d_vec_);
   double expected_cost = 0.0;
   EXPECT_DOUBLE_EQ(expected_cost, costmap_mat(5,5));
 }
 
 TEST_F(TestSuite, CheckMakeExpandedPoints)
 {
-  geometry_msgs::Point in_centroid;
-  geometry_msgs::Point32 in_corner_point;
   double expand_polygon_size = 1;
 
+  geometry_msgs::Point in_centroid;
   in_centroid.x = 0;
   in_centroid.y = 0;
   in_centroid.z = 0;
 
+  geometry_msgs::Point32 in_corner_point;
   in_corner_point.x = 1;
   in_corner_point.y = 1;
   in_corner_point.z = 1;
@@ -269,9 +266,8 @@ TEST_F(TestSuite, ChecMakePolygonFromObjectConvexhullDofferentHeight)
 
 TEST_F(TestSuite, CheckSetCostInPolygon)
 {
-  std::string layer_name = "test";
   grid_map::Polygon polygon;
-  polygon.setFrameId(layer_name);
+  polygon.setFrameId(test_obj_.dummy_layer_name_);
   polygon.addVertex(grid_map::Position(-1, -1));
   polygon.addVertex(grid_map::Position(1, -1));
   polygon.addVertex(grid_map::Position(1, 1));
@@ -279,9 +275,11 @@ TEST_F(TestSuite, CheckSetCostInPolygon)
 
 
   float score = 1;
-  test_obj_.setCostInPolygon(polygon, layer_name, score, *test_obj_.dummy_costmap_);
+  test_obj_.setCostInPolygon(polygon, test_obj_.dummy_layer_name_,
+                             score, *test_obj_.dummy_costmap_);
   float expected_score = 1;
-  EXPECT_EQ(expected_score, test_obj_.dummy_costmap_->atPosition(layer_name, grid_map::Position(0, 0)));
+  EXPECT_EQ(expected_score,
+    test_obj_.dummy_costmap_->atPosition(test_obj_.dummy_layer_name_, grid_map::Position(0, 0)));
 }
 
 TEST_F(TestSuite, CheckMakeCostmapFromObjects)

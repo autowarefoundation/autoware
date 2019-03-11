@@ -39,10 +39,15 @@ private:
   const double dummy_grid_resolution_;
   const double dummy_grid_position_x_;
   const double dummy_grid_position_y_;
-  const std::string dummy_layer_name_;
   const double dummy_initialize_cost_;
 public:
   TestClass();
+
+  const double dummy_maximum_lidar_height_thres_;
+  const double dummy_minimum_lidar_height_thres_;
+  const double dummy_grid_min_value_;
+  const double dummy_grid_max_value_;
+  const std::string dummy_layer_name_;
 
   geometry_msgs::Point* dummy_point_;
 
@@ -107,8 +112,12 @@ dummy_grid_length_y_(10),
 dummy_grid_resolution_(1),
 dummy_grid_position_x_(0),
 dummy_grid_position_y_(0),
-dummy_layer_name_("test"),
-dummy_initialize_cost_(0)
+dummy_initialize_cost_(0),
+dummy_maximum_lidar_height_thres_(3.0),
+dummy_minimum_lidar_height_thres_(-2.0),
+dummy_grid_min_value_(0.0),
+dummy_grid_max_value_(1.0),
+dummy_layer_name_("test")
 {
 
 }
