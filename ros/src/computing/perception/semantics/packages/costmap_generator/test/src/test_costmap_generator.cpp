@@ -54,8 +54,9 @@ protected:
     test_obj_.dummy_point_ = new geometry_msgs::Point;
     test_obj_.dummy_pcl_point_ = new pcl::PointXYZ;
     test_obj_.dummy_object_ = new autoware_msgs::DetectedObject;
-    test_obj_.dummy_objects_array_.reset(new autoware_msgs::DetectedObjectArray);
     test_obj_.dummy_costmap_ = new grid_map::GridMap;
+    
+    test_obj_.dummy_objects_array_.reset(new autoware_msgs::DetectedObjectArray);
 
     test_obj_.fillDummyObjectParam(test_obj_.dummy_object_);
     test_obj_.fillDummyCostmapParam(test_obj_.dummy_costmap_);
@@ -285,7 +286,6 @@ TEST_F(TestSuite, CheckSetCostInPolygon)
 
 TEST_F(TestSuite, CheckMakeCostmapFromObjects)
 {
-  autoware_msgs::DetectedObject in_object;
   geometry_msgs::Point32 point;
   point.x = -1;
   point.y = -1;
@@ -419,7 +419,6 @@ TEST_F(TestSuite, CheckMakeCostmapFromObjectsBox)
 
 TEST_F(TestSuite, CheckMakeCostmapFromObjectsBoxBlur)
 {
-  autoware_msgs::DetectedObject in_object;
   test_obj_.dummy_object_->pose.position.x = -4;
   test_obj_.dummy_object_->pose.position.y = -3;
   test_obj_.dummy_object_->pose.position.z = 0;
