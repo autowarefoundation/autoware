@@ -53,6 +53,10 @@ protected:
     test_obj_.points2costmap_ = new PointsToCostmap();
     test_obj_.dummy_point_ = new geometry_msgs::Point;
     test_obj_.dummy_pcl_point_ = new pcl::PointXYZ;
+    test_obj_.dummy_object_ = new autoware_msgs::DetectedObject;
+    test_obj_.dummy_costmap_ = new grid_map::GridMap;
+    test_obj_.fillDummyObjectParam(test_obj_.dummy_object_);
+    test_obj_.fillDummyCostmapParam(test_obj_.dummy_costmap_);
   };
   void TearDown()
   {
@@ -60,6 +64,8 @@ protected:
     delete test_obj_.points2costmap_;
     delete test_obj_.dummy_point_;
     delete test_obj_.dummy_pcl_point_;
+    delete test_obj_.dummy_object_;
+    delete test_obj_.dummy_costmap_;
   };
 };
 
@@ -92,7 +98,6 @@ TEST_F(TestSuite, CheckMakeRectanglePoints)
 
 TEST_F(TestSuite, CheckAssignPoints2GridCell)
 {
-  grid_map::GridMap costmap = test_obj_.makeDummyCostmap();
 
   pcl::PointCloud<pcl::PointXYZ>::Ptr in_sensor_points(new pcl::PointCloud<pcl::PointXYZ>);
   test_obj_.dummy_pcl_point_->x = 0.5;
@@ -101,7 +106,9 @@ TEST_F(TestSuite, CheckAssignPoints2GridCell)
   in_sensor_points->push_back(*test_obj_.dummy_pcl_point_);
 
 
-  std::vector<std::vector<std::vector<double>>> grid_vec = test_obj_.assignPoints2GridCell(costmap, in_sensor_points);
+  std::vector<std::vector<std::vector<double>>> grid_vec =
+    test_obj_.assignPoints2GridCell(*test_obj_.dummy_costmap_,
+                                    in_sensor_points);
 
   const double expected_value = 100;
   EXPECT_EQ(expected_value, grid_vec[5][5][0]);
@@ -109,13 +116,14 @@ TEST_F(TestSuite, CheckAssignPoints2GridCell)
 
 TEST_F(TestSuite, CheckFetchGridIndexFromPoint)
 {
-  grid_map::GridMap costmap = test_obj_.makeDummyCostmap();
 
   test_obj_.dummy_pcl_point_->x = 3.5;
   test_obj_.dummy_pcl_point_->y = 0.5;
   test_obj_.dummy_pcl_point_->z = 100;
 
-  grid_map::Index index = test_obj_.fetchGridIndexFromPoint(costmap, *test_obj_.dummy_pcl_point_);
+  grid_map::Index index =
+  test_obj_.fetchGridIndexFromPoint(*test_obj_.dummy_costmap_,
+                                    *test_obj_.dummy_pcl_point_);
 
 
   const double expected_x_ind = 2;
@@ -209,26 +217,23 @@ TEST_F(TestSuite, CheckMakeExpandedPoints)
 TEST_F(TestSuite, ChecMakePolygonFromObjectConvexhull)
 {
   double expand_polygon_size = 0;
-  autoware_msgs::DetectedObject in_object;
-  in_object.header.frame_id = "test";
   geometry_msgs::Point32 point;
   point.x = -1;
   point.y = -1;
   point.z = 0;
-  in_object.convex_hull.polygon.points.push_back(point);
+  test_obj_.dummy_object_->convex_hull.polygon.points.push_back(point);
   point.x = 1;
   point.y = 1;
   point.z = 0;
-  in_object.convex_hull.polygon.points.push_back(point);
+  test_obj_.dummy_object_->convex_hull.polygon.points.push_back(point);
   point.x = 0;
   point.y = 2;
   point.z = 0;
-  in_object.convex_hull.polygon.points.push_back(point);
+  test_obj_.dummy_object_->convex_hull.polygon.points.push_back(point);
 
-  in_object.pose.position.x = 0;
-  in_object.pose.position.y = 0;
-  in_object.pose.position.z = 0;
-  grid_map::Polygon polygon = test_obj_.makePolygonFromObjectConvexHull(in_object, expand_polygon_size);
+  grid_map::Polygon polygon =
+  test_obj_.makePolygonFromObjectConvexHull(*test_obj_.dummy_object_,
+                                                expand_polygon_size);
   double expected_0_x = -1;
   double expected_1_y =  1;
   EXPECT_EQ(expected_0_x, polygon[0].x());
@@ -238,30 +243,27 @@ TEST_F(TestSuite, ChecMakePolygonFromObjectConvexhull)
 TEST_F(TestSuite, ChecMakePolygonFromObjectConvexhullDofferentHeight)
 {
   double expand_polygon_size = 0;
-  autoware_msgs::DetectedObject in_object;
-  in_object.header.frame_id = "test";
   geometry_msgs::Point32 point;
   point.x = -1;
   point.y = -1;
   point.z = 0;
-  in_object.convex_hull.polygon.points.push_back(point);
+  test_obj_.dummy_object_->convex_hull.polygon.points.push_back(point);
   point.x = -1;
   point.y = 3;
   point.z = 0;
-  in_object.convex_hull.polygon.points.push_back(point);
+  test_obj_.dummy_object_->convex_hull.polygon.points.push_back(point);
   point.x = 1;
   point.y = 1;
   point.z = 0;
-  in_object.convex_hull.polygon.points.push_back(point);
+  test_obj_.dummy_object_->convex_hull.polygon.points.push_back(point);
   point.x = 0;
   point.y = 2;
   point.z = 3;
-  in_object.convex_hull.polygon.points.push_back(point);
+  test_obj_.dummy_object_->convex_hull.polygon.points.push_back(point);
 
-  in_object.pose.position.x = 0;
-  in_object.pose.position.y = 0;
-  in_object.pose.position.z = 0;
-  grid_map::Polygon polygon = test_obj_.makePolygonFromObjectConvexHull(in_object, expand_polygon_size);
+  grid_map::Polygon polygon = test_obj_.makePolygonFromObjectConvexHull(
+                                  *test_obj_.dummy_object_,
+                                   expand_polygon_size);
   int num_vertices = polygon.nVertices();
   double expected_num_vertices = 3;
   EXPECT_EQ(expected_num_vertices, num_vertices);
@@ -288,30 +290,25 @@ TEST_F(TestSuite, CheckSetCostInPolygon)
 TEST_F(TestSuite, CheckMakeCostmapFromObjects)
 {
   autoware_msgs::DetectedObject in_object;
-  in_object.header.frame_id = "test";
   geometry_msgs::Point32 point;
   point.x = -1;
   point.y = -1;
   point.z = 0;
-  in_object.convex_hull.polygon.points.push_back(point);
+  test_obj_.dummy_object_->convex_hull.polygon.points.push_back(point);
   point.x =  1;
   point.y = -1;
   point.z = 0;
-  in_object.convex_hull.polygon.points.push_back(point);
+  test_obj_.dummy_object_->convex_hull.polygon.points.push_back(point);
   point.x = 1;
   point.y = 1;
   point.z = 0;
-  in_object.convex_hull.polygon.points.push_back(point);
+  test_obj_.dummy_object_->convex_hull.polygon.points.push_back(point);
   point.x = 0;
   point.y = 2;
   point.z = 0;
-  in_object.convex_hull.polygon.points.push_back(point);
-  in_object.pose.position.x = 0;
-  in_object.pose.position.y = 0;
-  in_object.pose.position.z = 0;
-  in_object.score = 1;
-  autoware_msgs::DetectedObjectArray::Ptr in_objects(new autoware_msgs::DetectedObjectArray);
-  in_objects->objects.push_back(in_object);
+  test_obj_.dummy_object_->convex_hull.polygon.points.push_back(point);
+  autoware_msgs::DetectedObjectArray::Ptr dummy_objects(new autoware_msgs::DetectedObjectArray);
+  dummy_objects->objects.push_back(*test_obj_.dummy_object_);
 
   grid_map::GridMap costmap = test_obj_.makeDummyCostmap();
 
@@ -321,7 +318,7 @@ TEST_F(TestSuite, CheckMakeCostmapFromObjects)
   grid_map::Matrix gridmap_mat = test_obj_.makeCostmapFromObjects(costmap,
                                           expand_polygon_size,
                                           size_of_expansion_kernel,
-                                          in_objects,
+                                          dummy_objects,
                                           use_objects_convex_hull);
   /*
     0 0 0 0 0 0 0 0 0 0
@@ -404,21 +401,8 @@ TEST_F(TestSuite, CheckMakeCostmapFromObjectsBlur)
 
 TEST_F(TestSuite, CheckMakeCostmapFromObjectsBox)
 {
-  autoware_msgs::DetectedObject in_object;
-  in_object.header.frame_id = "test";
-  in_object.pose.position.x = 0;
-  in_object.pose.position.y = 0;
-  in_object.pose.position.z = 0;
-  in_object.pose.orientation.x = 0;
-  in_object.pose.orientation.y = 0;
-  in_object.pose.orientation.z = 0;
-  in_object.pose.orientation.w = 1;
-  in_object.dimensions.x = 2;
-  in_object.dimensions.y = 1.5;
-  in_object.dimensions.z = 2;
-  in_object.score = 1;
-  autoware_msgs::DetectedObjectArray::Ptr in_objects(new autoware_msgs::DetectedObjectArray);
-  in_objects->objects.push_back(in_object);
+  autoware_msgs::DetectedObjectArray::Ptr dummy_objects(new autoware_msgs::DetectedObjectArray);
+  dummy_objects->objects.push_back(*test_obj_.dummy_object_);
 
   grid_map::GridMap costmap = test_obj_.makeDummyCostmap();
 
@@ -428,7 +412,7 @@ TEST_F(TestSuite, CheckMakeCostmapFromObjectsBox)
   grid_map::Matrix gridmap_mat = test_obj_.makeCostmapFromObjects(costmap,
                                           expand_polygon_size,
                                           size_of_expansion_kernel,
-                                          in_objects,
+                                          dummy_objects,
                                           use_objects_convex_hull);
   /*
   0 0 0 0 0 0 0 0 0 0
@@ -449,20 +433,11 @@ TEST_F(TestSuite, CheckMakeCostmapFromObjectsBox)
 TEST_F(TestSuite, CheckMakeCostmapFromObjectsBoxBlur)
 {
   autoware_msgs::DetectedObject in_object;
-  in_object.header.frame_id = "test";
-  in_object.pose.position.x = -4;
-  in_object.pose.position.y = -3;
-  in_object.pose.position.z = 0;
-  in_object.pose.orientation.x = 0;
-  in_object.pose.orientation.y = 0;
-  in_object.pose.orientation.z = 0;
-  in_object.pose.orientation.w = 1;
-  in_object.dimensions.x = 2;
-  in_object.dimensions.y = 1.5;
-  in_object.dimensions.z = 2;
-  in_object.score = 1;
-  autoware_msgs::DetectedObjectArray::Ptr in_objects(new autoware_msgs::DetectedObjectArray);
-  in_objects->objects.push_back(in_object);
+  test_obj_.dummy_object_->pose.position.x = -4;
+  test_obj_.dummy_object_->pose.position.y = -3;
+  test_obj_.dummy_object_->pose.position.z = 0;
+  autoware_msgs::DetectedObjectArray::Ptr dummy_objects(new autoware_msgs::DetectedObjectArray);
+  dummy_objects->objects.push_back(*test_obj_.dummy_object_);
 
   grid_map::GridMap costmap = test_obj_.makeDummyCostmap();
 
@@ -472,7 +447,7 @@ TEST_F(TestSuite, CheckMakeCostmapFromObjectsBoxBlur)
   grid_map::Matrix gridmap_mat = test_obj_.makeCostmapFromObjects(costmap,
                                           expand_polygon_size,
                                           size_of_expansion_kernel,
-                                          in_objects,
+                                          dummy_objects,
                                           use_objects_convex_hull);
   /*
   0 0 0 0 0 0           0           0           0           0

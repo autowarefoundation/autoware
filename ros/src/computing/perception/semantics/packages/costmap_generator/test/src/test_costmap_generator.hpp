@@ -48,6 +48,10 @@ public:
 
   pcl::PointXYZ* dummy_pcl_point_;
 
+  autoware_msgs::DetectedObject* dummy_object_;
+
+  grid_map::GridMap* dummy_costmap_;
+
   PointsToCostmap *points2costmap_;
 
   grid_map::GridMap makeDummyCostmap();
@@ -55,6 +59,11 @@ public:
   std::vector<std::vector<std::vector<double>>> makeDummy3DVec();
 
   autoware_msgs::DetectedObjectArray::Ptr makeDummyConvexHullObjectArrayForCalculatingCost();
+
+  void fillDummyObjectParam(autoware_msgs::DetectedObject* dummy_object);
+
+  void fillDummyCostmapParam(grid_map::GridMap* dummy_costmap);
+
 
   std::vector<std::vector<std::vector<double>>>
   assignPoints2GridCell(const grid_map::GridMap& gridmap, const pcl::PointCloud<pcl::PointXYZ>::Ptr& in_sensor_points);
@@ -112,6 +121,14 @@ grid_map::GridMap TestClass::makeDummyCostmap()
   return costmap;
 }
 
+void TestClass::fillDummyCostmapParam(grid_map::GridMap* dummy_costmap)
+{
+  dummy_costmap->setGeometry(grid_map::Length(dummy_grid_length_x_, dummy_grid_length_y_), dummy_grid_resolution_,
+                      grid_map::Position(dummy_grid_position_x_, dummy_grid_position_y_));
+
+  dummy_costmap->add(dummy_layer_name_, dummy_initialize_cost_);
+}
+
 std::vector<std::vector<std::vector<double>>> TestClass::makeDummy3DVec()
 {
   double y_cell_size = std::ceil(dummy_grid_length_y_ * (1 / dummy_grid_resolution_));
@@ -149,6 +166,22 @@ autoware_msgs::DetectedObjectArray::Ptr TestClass::makeDummyConvexHullObjectArra
   autoware_msgs::DetectedObjectArray::Ptr objects(new autoware_msgs::DetectedObjectArray);
   objects->objects.push_back(object);
   return objects;
+}
+
+void TestClass::fillDummyObjectParam(autoware_msgs::DetectedObject* dummy_object)
+{
+  dummy_object->header.frame_id = "test";
+  dummy_object->pose.position.x = 0;
+  dummy_object->pose.position.y = 0;
+  dummy_object->pose.position.z = 0;
+  dummy_object->pose.orientation.x = 0;
+  dummy_object->pose.orientation.y = 0;
+  dummy_object->pose.orientation.z = 0;
+  dummy_object->pose.orientation.w = 1;
+  dummy_object->dimensions.x = 2;
+  dummy_object->dimensions.y = 1.5;
+  dummy_object->dimensions.z = 2;
+  dummy_object->score = 1;
 }
 
 Eigen::MatrixXd TestClass::makeRectanglePoints(const autoware_msgs::DetectedObject& in_object,
