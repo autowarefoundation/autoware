@@ -29,11 +29,11 @@ public:
                const Eigen::MatrixXd &P);
   ~KalmanFilter();
 
-  void init(const Eigen::MatrixXd &x, const Eigen::MatrixXd &A,
+  bool init(const Eigen::MatrixXd &x, const Eigen::MatrixXd &A,
             const Eigen::MatrixXd &B, const Eigen::MatrixXd &C,
             const Eigen::MatrixXd &Q, const Eigen::MatrixXd &R,
             const Eigen::MatrixXd &P);
-  void init(const Eigen::MatrixXd &x, const Eigen::MatrixXd &P0);
+  bool init(const Eigen::MatrixXd &x, const Eigen::MatrixXd &P0);
   void setA(const Eigen::MatrixXd &A);
   void setB(const Eigen::MatrixXd &B);
   void setC(const Eigen::MatrixXd &C);

@@ -68,7 +68,7 @@ bool KalmanFilterDelayedMeasurement::predictWithDelay(const Eigen::MatrixXd &x_n
 bool KalmanFilterDelayedMeasurement::updateWithDelay(const Eigen::MatrixXd &y, const Eigen::MatrixXd &C,
                                                      const Eigen::MatrixXd &R, const int delay_step)
 {
-  if (delay_step > max_delay_step_)
+  if (delay_step >= max_delay_step_)
   {
     printf("delay step is larger than max_delay_step. ignore update.\n");
     return false;

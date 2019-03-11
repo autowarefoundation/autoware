@@ -12,6 +12,8 @@ find_package(catkin REQUIRED
   geometry_msgs
   autoware_msgs
   sensor_msgs
+  rostest
+  rosunit
 )
 
 find_package(Eigen3 REQUIRED)
@@ -78,6 +80,18 @@ install(DIRECTORY include/${PROJECT_NAME}/
 #############
 ## Testing ##
 #############
+
+if (CATKIN_ENABLE_TESTING)
+    find_package(rostest REQUIRED)
+    add_rostest_gtest(test-kalman_filter
+      test/test_kalman_filter.test
+      test/src/test_kalman_filter.cpp
+      lib/kalman_filter.cpp
+      lib/kalman_filter_delayed_measurement.cpp
+    )
+    add_dependencies(test-kalman_filter ${catkin_EXPORTED_TARGETS})
+    target_link_libraries(test-kalman_filter ${catkin_LIBRARIES})
+endif ()
 
 ## Add gtest based cpp test target and link libraries
 # catkin_add_gtest(${PROJECT_NAME}-test test/test_mpc_follower.cpp)
