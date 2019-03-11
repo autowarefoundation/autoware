@@ -1,3 +1,19 @@
+/*
+ * Copyright 2018-2019 Autoware Foundation. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #pragma once
 
 #include <eigen3/Eigen/Core>
@@ -28,21 +44,20 @@ public:
   double getXelement(unsigned int i);
 
   void predictXandP(const Eigen::MatrixXd &x, const Eigen::MatrixXd &P);
-  void predictEKF(const Eigen::MatrixXd &x_next, const Eigen::MatrixXd &A,
-                  const Eigen::MatrixXd &Q);
-  void predictEKF(const Eigen::MatrixXd &x_next, const Eigen::MatrixXd &A);
-  void predict(const Eigen::MatrixXd &u, const Eigen::MatrixXd &A,
+  bool predict(const Eigen::MatrixXd &u, const Eigen::MatrixXd &A,
                const Eigen::MatrixXd &B, const Eigen::MatrixXd &Q);
-  void predict(const Eigen::MatrixXd &u);
+  bool predict(const Eigen::MatrixXd &x_next, const Eigen::MatrixXd &A,
+               const Eigen::MatrixXd &Q);
+  bool predict(const Eigen::MatrixXd &x_next, const Eigen::MatrixXd &A);
+  bool predict(const Eigen::MatrixXd &u);
 
-  void updateEKF(const Eigen::MatrixXd &y, const Eigen::MatrixXd &y_pred,
-                 const Eigen::MatrixXd &C, const Eigen::MatrixXd &R);
-  void updateEKF(const Eigen::MatrixXd &y, const Eigen::MatrixXd &y_pred,
-                 const Eigen::MatrixXd &C);
-  void update(const Eigen::MatrixXd &y, const Eigen::MatrixXd &C,
+  bool update(const Eigen::MatrixXd &y, const Eigen::MatrixXd &y_pred,
+              const Eigen::MatrixXd &C, const Eigen::MatrixXd &R);
+  // bool update(const Eigen::MatrixXd &y, const Eigen::MatrixXd &y_pred,
+  //             const Eigen::MatrixXd &C);
+  bool update(const Eigen::MatrixXd &y, const Eigen::MatrixXd &C,
               const Eigen::MatrixXd &R);
-  void update(const Eigen::MatrixXd &y);
-
+  bool update(const Eigen::MatrixXd &y);
 
 protected:
   Eigen::MatrixXd x_;

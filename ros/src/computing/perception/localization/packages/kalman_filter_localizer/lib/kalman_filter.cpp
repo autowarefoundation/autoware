@@ -1,3 +1,19 @@
+/*
+ * Copyright 2018-2019 Autoware Foundation. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "kalman_filter/kalman_filter.h"
 
 KalmanFilter::KalmanFilter() {}
@@ -42,47 +58,72 @@ void KalmanFilter::predictXandP(const Eigen::MatrixXd &x, const Eigen::MatrixXd 
   x_ = x;
   P_ = P;
 }
-void KalmanFilter::predictEKF(const Eigen::MatrixXd &x_next,
-                              const Eigen::MatrixXd &A,
-                              const Eigen::MatrixXd &Q)
+bool KalmanFilter::predict(const Eigen::MatrixXd &x_next,
+                           const Eigen::MatrixXd &A,
+                           const Eigen::MatrixXd &Q)
 {
+  if (x_.cols() != x_next.cols() || A.rows() != P_.cols() ||
+      Q.cols() != Q.rows() || A.cols() != Q.cols())
+  {
+    return false;
+  }
   x_ = x_next;
   P_ = A * P_ * A.transpose() + Q;
+  return true;
 }
-void KalmanFilter::predictEKF(const Eigen::MatrixXd &x_next,
-                              const Eigen::MatrixXd &A)
+bool KalmanFilter::predict(const Eigen::MatrixXd &x_next,
+                           const Eigen::MatrixXd &A)
 {
-  predictEKF(x_next, A, Q_);
+  return predict(x_next, A, Q_);
 }
 
-void KalmanFilter::predict(const Eigen::MatrixXd &u, const Eigen::MatrixXd &A,
+bool KalmanFilter::predict(const Eigen::MatrixXd &u, const Eigen::MatrixXd &A,
                            const Eigen::MatrixXd &B, const Eigen::MatrixXd &Q)
 {
+  if (A.rows() != x_.cols() || B.rows() != u.cols())
+  {
+    return false;
+  }
   const Eigen::MatrixXd x_next = A * x_ + B * u;
-  predictEKF(x_next, A, Q);
+  return predict(x_next, A, Q);
 }
-void KalmanFilter::predict(const Eigen::MatrixXd &u) { predict(u, A_, B_, Q_); }
+bool KalmanFilter::predict(const Eigen::MatrixXd &u) { return predict(u, A_, B_, Q_); }
 
-void KalmanFilter::updateEKF(const Eigen::MatrixXd &y,
-                             const Eigen::MatrixXd &y_pred,
-                             const Eigen::MatrixXd &C,
-                             const Eigen::MatrixXd &R)
-{
-  const Eigen::MatrixXd PCT = P_ * C.transpose();
-  const Eigen::MatrixXd K = PCT * ((R + C * PCT).inverse());
-  x_ = x_ + K * (y - y_pred);
-  P_ = P_ - K * (C * P_);
-}
-void KalmanFilter::updateEKF(const Eigen::MatrixXd &y,
-                             const Eigen::MatrixXd &y_pred,
-                             const Eigen::MatrixXd &C)
-{
-  updateEKF(y, y_pred, C, R_);
-}
-void KalmanFilter::update(const Eigen::MatrixXd &y, const Eigen::MatrixXd &C,
+bool KalmanFilter::update(const Eigen::MatrixXd &y,
+                          const Eigen::MatrixXd &y_pred,
+                          const Eigen::MatrixXd &C,
                           const Eigen::MatrixXd &R)
 {
-  const Eigen::MatrixXd y_pred = C * x_;
-  updateEKF(y, y_pred, C, R);
+  if (P_.rows() != C.rows() || R.rows() != R.cols() || R.rows() != C.cols() ||
+      y.cols() != y_pred.cols() || y.cols() != C.cols())
+  {
+    return false;
+  }
+  const Eigen::MatrixXd PCT = P_ * C.transpose();
+  const Eigen::MatrixXd K = PCT * ((R + C * PCT).inverse());
+
+  if (isnan(K.array()).any() || isinf(K.array()).any()) {
+    return false;
+  };
+
+  x_ = x_ + K * (y - y_pred);
+  P_ = P_ - K * (C * P_);
+  return true;
 }
-void KalmanFilter::update(const Eigen::MatrixXd &y) { update(y, C_, R_); }
+// bool KalmanFilter::update(const Eigen::MatrixXd &y,
+//                           const Eigen::MatrixXd &y_pred,
+//                           const Eigen::MatrixXd &C)
+// {
+//   return update(y, y_pred, C, R_);
+// }
+bool KalmanFilter::update(const Eigen::MatrixXd &y, const Eigen::MatrixXd &C,
+                          const Eigen::MatrixXd &R)
+{
+  if (C.rows() != x_.cols())
+  {
+    return false;
+  }
+  const Eigen::MatrixXd y_pred = C * x_;
+  return update(y, y_pred, C, R);
+}
+bool KalmanFilter::update(const Eigen::MatrixXd &y) { return update(y, C_, R_); }

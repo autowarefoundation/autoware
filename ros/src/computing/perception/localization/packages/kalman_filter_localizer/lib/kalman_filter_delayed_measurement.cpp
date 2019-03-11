@@ -1,3 +1,19 @@
+/*
+ * Copyright 2018-2019 Autoware Foundation. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "kalman_filter/kalman_filter_delayed_measurement.h"
 
 KalmanFilterDelayedMeasurement::KalmanFilterDelayedMeasurement() {}
@@ -22,8 +38,8 @@ void KalmanFilterDelayedMeasurement::init(const Eigen::MatrixXd &x, const Eigen:
 void KalmanFilterDelayedMeasurement::getCurrentX(Eigen::MatrixXd &x) { x = x_.block(0, 0, dim_x_, 1); };
 void KalmanFilterDelayedMeasurement::getCurrentP(Eigen::MatrixXd &P) { P = P_.block(0, 0, dim_x_, dim_x_); };
 
-void KalmanFilterDelayedMeasurement::predictDelayedEKF(const Eigen::MatrixXd &x_next, const Eigen::MatrixXd &A,
-                                                       const Eigen::MatrixXd &Q)
+bool KalmanFilterDelayedMeasurement::predictWithDelay(const Eigen::MatrixXd &x_next, const Eigen::MatrixXd &A,
+                                                      const Eigen::MatrixXd &Q)
 {
   const int d_dim_x = dim_x_ex_ - dim_x_;
 
@@ -45,10 +61,12 @@ void KalmanFilterDelayedMeasurement::predictDelayedEKF(const Eigen::MatrixXd &x_
   P_tmp.block(dim_x_, dim_x_, d_dim_x, d_dim_x) = P_.block(0, 0, d_dim_x, d_dim_x);
   P_tmp += Q_ex;
   P_ = P_tmp;
+
+  return true;
 };
 
-bool KalmanFilterDelayedMeasurement::updateDelayedEKF(const Eigen::MatrixXd &y, const Eigen::MatrixXd &C,
-                                                      const Eigen::MatrixXd &R, const int delay_step)
+bool KalmanFilterDelayedMeasurement::updateWithDelay(const Eigen::MatrixXd &y, const Eigen::MatrixXd &C,
+                                                     const Eigen::MatrixXd &R, const int delay_step)
 {
   if (delay_step > max_delay_step_)
   {
@@ -63,7 +81,8 @@ bool KalmanFilterDelayedMeasurement::updateDelayedEKF(const Eigen::MatrixXd &y, 
   C_ex.block(0, dim_x_ * delay_step, dim_y, dim_x_) = C;
 
   /* update */
-  updateEKF(y, C_ex, R);
+  if (!update(y, C_ex, R))
+    return false;
 
   return true;
 };
