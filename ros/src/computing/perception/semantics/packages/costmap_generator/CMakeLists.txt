@@ -35,8 +35,8 @@ include_directories(
 add_library(costmap_generator_lib
         nodes/costmap_generator/costmap_generator_node.cpp
         nodes/costmap_generator/costmap_generator.cpp
-        nodes/costmap_generator/points2costmap.cpp
-        nodes/costmap_generator/objects2costmap.cpp
+        nodes/costmap_generator/points_to_costmap.cpp
+        nodes/costmap_generator/objects_to_costmap.cpp
         )
 target_link_libraries(costmap_generator_lib
         ${catkin_LIBRARIES}
@@ -48,8 +48,8 @@ add_dependencies(costmap_generator_lib
 add_executable(costmap_generator
         nodes/costmap_generator/costmap_generator_node.cpp
         nodes/costmap_generator/costmap_generator.cpp
-        nodes/costmap_generator/points2costmap.cpp
-        nodes/costmap_generator/objects2costmap.cpp
+        nodes/costmap_generator/points_to_costmap.cpp
+        nodes/costmap_generator/objects_to_costmap.cpp
         )
 
 target_link_libraries(costmap_generator

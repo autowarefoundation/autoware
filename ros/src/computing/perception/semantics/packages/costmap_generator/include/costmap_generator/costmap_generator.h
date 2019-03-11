@@ -43,8 +43,8 @@
 // headers in local directory
 #include "vector_map/vector_map.h"
 #include "autoware_msgs/DetectedObjectArray.h"
-#include "points2costmap.h"
-#include "objects2costmap.h"
+#include "points_to_costmap.h"
+#include "objects_to_costmap.h"
 
 // headers in STL
 #include <memory>

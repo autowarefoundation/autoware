@@ -28,8 +28,8 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ********************/
 
-#ifndef OBJECTS2COSTMAP_H
-#define OBJECTS2COSTMAP_H
+#ifndef OBJECTS_TO_COSTMAP_H
+#define OBJECTS_TO_COSTMAP_H
 
 // headers in ROS
 #include <ros/ros.h>
@@ -102,4 +102,4 @@ private:
                         grid_map::GridMap& objects_costmap);
 };
 
-#endif  // OBJECTS2COSTMAP_H
+#endif  // OBJECTS_TO_COSTMAP_H

@@ -28,7 +28,7 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ********************/
 
-#include "costmap_generator/points2costmap.h"
+#include "costmap_generator/points_to_costmap.h"
 
 // Constructor
 PointsToCostmap::PointsToCostmap()

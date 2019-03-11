@@ -28,8 +28,8 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ********************/
 
-#ifndef POINTS2COSTMAP_H
-#define POINTS2COSTMAP_H
+#ifndef POINTS_TO_COSTMAP_H
+#define POINTS_TO_COSTMAP_H
 
 // headers in ROS
 #include <ros/ros.h>
@@ -106,4 +106,4 @@ private:
                                     const std::vector<std::vector<std::vector<double>>> grid_vec);
 };
 
-#endif  // POINTS2COSTMAP_H
+#endif  // POINTS_TO_COSTMAP_H
