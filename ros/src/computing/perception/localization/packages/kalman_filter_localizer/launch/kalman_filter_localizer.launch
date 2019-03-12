@@ -1,10 +1,9 @@
 <launch>
 
   <node pkg="kalman_filter_localizer" type="kalman_filter_localizer" name="kalman_filter_localizer" output="screen">
-    <rosparam command="load" file="$(find kalman_filter)/config/kalman_filter_localizer.yaml" />
+    <rosparam command="load" file="$(find kalman_filter_localizer)/config/kalman_filter_localizer.yaml" />
     <param name="input_ndt_pose_name" 	value="/ndt_pose"/>
     <param name="input_twist_name" 	value="/can_twist"/>
-    <param name="input_imu_name" 	value="/imu_raw"/>
     <param name="output_pose_name" 	value="/kf_pose"/>
     <param name="output_twist_name" 	value="/kf_twist"/>
    </node>

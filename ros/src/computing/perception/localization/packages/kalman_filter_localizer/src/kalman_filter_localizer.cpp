@@ -59,10 +59,9 @@ KalmanFilterNode::KalmanFilterNode() : nh_(""), pnh_("~"), dim_x_(6 /* x, y, yaw
   cov_proc_yaw_bias_d_ = std::pow(stddev_proc_yaw_bias_c * kf_dt_, 2.0);
 
   /* initialize ros system */
-  std::string in_ndt_pose, in_twist, in_imu, out_pose, out_twist;
+  std::string in_ndt_pose, in_twist, out_pose, out_twist;
   pnh_.param("input_ndt_pose_name", in_ndt_pose, std::string("/ndt_pose"));
   pnh_.param("input_twist_name", in_twist, std::string("/can_twist"));
-  pnh_.param("input_imu_name", in_imu, std::string("/imu_raw"));
   pnh_.param("output_pose_name", out_pose, std::string("/kf_pose"));
   pnh_.param("output_twist_name", out_twist, std::string("/kf_twist"));
   timer_control_ = nh_.createTimer(ros::Duration(kf_dt_), &KalmanFilterNode::timerCallback, this);
@@ -79,7 +78,8 @@ KalmanFilterNode::KalmanFilterNode() : nh_(""), pnh_("~"), dim_x_(6 /* x, y, yaw
   initKalmanFilter();
 
   /* debug */
-  pub_debug_ = pnh_.advertise<std_msgs::Float64MultiArray>("debug", 1);
+  sub_vehicle_status_ = nh_.subscribe("/vehicle_status", 1, &KalmanFilterNode::callbackVehicleStatus, this);
+  pub_debug_ = pnh_.advertise<std_msgs::Float64MultiArray>("debug2", 1);
   pub_ndt_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("/my_ndt_pose", 1);
 };
 
@@ -188,7 +188,19 @@ void KalmanFilterNode::callbackInitialPose(const geometry_msgs::PoseWithCovarian
 
 };
 
-
+/*
+ * callbackVehicleStatus
+ */
+void KalmanFilterNode::callbackVehicleStatus(const autoware_msgs::VehicleStatus &msg)
+{
+  const double kmph2mps = 1000.0 / 3600.0;
+  // current_vehicle_status_ = msg;
+  geometry_msgs::TwistStamped twist_stamped;
+  twist_stamped.header = msg.header;
+  twist_stamped.twist.linear.x = msg.speed * kmph2mps;
+  twist_stamped.twist.angular.z = twist_stamped.twist.linear.x * tan(msg.angle) / wheelbase_;
+  current_twist_ptr_ = std::make_shared<geometry_msgs::TwistStamped>(twist_stamped);
+};
 /*
  * callbackNDTPose
  */
@@ -432,13 +444,6 @@ void KalmanFilterNode::measurementUpdateTwist(const geometry_msgs::TwistStamped 
     ROS_WARN("[kalman filter] twist measurement update, mahalanobis distance is larger than limit. ignore twist measurement data.");
     return;
   }
-  // Eigen::MatrixXd mahalanobis_squared = (y - y_kf).transpose() * P_curr.block(4, 4, dim_y, dim_y).inverse() * (y - y_kf);
-  // DEBUG_INFO("[twist measurement update] : mahalanobis = %f, gate limit = %f", std::sqrt(mahalanobis_squared(0)), twist_gate_dist_);
-  // if (mahalanobis_squared(0) > twist_gate_dist_ * twist_gate_dist_)
-  // {
-  //   ROS_WARN("[kalman filter] twist measurement update, mahalanobis distance is larger than limit. ignore twist measurement data.");
-  //   return;
-  // }
 
   /* Set measurement matrix */
   Eigen::MatrixXd C = Eigen::MatrixXd::Zero(dim_y, dim_x_);

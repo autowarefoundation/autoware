@@ -1,6 +1,6 @@
 
 # display debug info
-show_debug_info: true
+show_debug_info: false
 
 # filtering frequency [Hz]
 predict_frequency: 50
@@ -34,7 +34,7 @@ twist_stddev_wz: 0.3
 
 # ----------- process noise ---------------
 # position covariance is automatically calculated, not defined here.
-stddev_proc_yaw_c: 0.03
+stddev_proc_yaw_c: 0.005
 stddev_proc_yaw_bias_c: 0.001
 stddev_proc_vx_c: 10.0
 stddev_proc_wz_c: 10.0

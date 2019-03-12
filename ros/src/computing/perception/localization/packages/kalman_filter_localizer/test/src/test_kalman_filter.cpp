@@ -16,6 +16,7 @@
 
 #include <gtest/gtest.h>
 #include <ros/ros.h>
+#include <tf/transform_datatypes.h>
 
 #include "kalman_filter/kalman_filter.h"
 #include "kalman_filter/kalman_filter_delayed_measurement.h"

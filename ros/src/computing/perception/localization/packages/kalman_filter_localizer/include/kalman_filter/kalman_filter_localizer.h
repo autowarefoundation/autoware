@@ -105,6 +105,7 @@ private:
   void callbackNDTPose(const geometry_msgs::PoseStamped::ConstPtr &msg);
   void callbackTwist(const geometry_msgs::TwistStamped::ConstPtr &msg);
   void callbackInitialPose(const geometry_msgs::PoseWithCovarianceStamped &msg);
+  void callbackVehicleStatus(const autoware_msgs::VehicleStatus &msg);
 
   void initKalmanFilter();
   void predictKinematicsModel();
