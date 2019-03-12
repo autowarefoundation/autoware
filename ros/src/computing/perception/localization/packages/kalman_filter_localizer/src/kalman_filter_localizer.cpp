@@ -69,6 +69,7 @@ KalmanFilterNode::KalmanFilterNode() : nh_(""), pnh_("~"), dim_x_(6 /* x, y, yaw
   pub_pose_ = nh_.advertise<geometry_msgs::PoseStamped>(out_pose, 1);
   pub_pose_cov_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("/kf_pose_with_covariance", 1);
   pub_twist_ = nh_.advertise<geometry_msgs::TwistStamped>(out_twist, 1);
+  pub_yaw_bias_ = pnh_.advertise<geometry_msgs::TwistStamped>("estimated_yaw_bias", 1);
   sub_initialpose_ = nh_.subscribe("/initialpose", 1, &KalmanFilterNode::callbackInitialPose, this);
   sub_ndt_pose_ = nh_.subscribe(in_ndt_pose, 1, &KalmanFilterNode::callbackNDTPose, this);
   sub_twist_ = nh_.subscribe(in_twist, 1, &KalmanFilterNode::callbackTwist, this);
@@ -154,6 +155,9 @@ void KalmanFilterNode::setCurrentResult()
  */
 void KalmanFilterNode::timerTFCallback(const ros::TimerEvent &e)
 {
+  if (current_kf_pose_.header.frame_id == "") 
+    return;
+
   tf::Transform t;
   t.setOrigin(tf::Vector3(current_kf_pose_.pose.position.x, current_kf_pose_.pose.position.y, current_kf_pose_.pose.position.z));
   t.setRotation(tf::Quaternion(current_kf_pose_.pose.orientation.x, current_kf_pose_.pose.orientation.y,
@@ -530,6 +534,11 @@ void KalmanFilterNode::publishEstimatedPose()
 
   /* publish latest twist */
   pub_twist_.publish(current_kf_twist_);
+
+  /* publish yaw bias */
+  std_msgs::Float64 yawb;
+  yawb.data = X(IDX::YAWB);
+  pub_yaw_bias_.publish(yawb);
 
   /* debug my ndt */
   geometry_msgs::PoseStamped p;

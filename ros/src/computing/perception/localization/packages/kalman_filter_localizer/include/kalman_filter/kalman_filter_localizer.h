@@ -43,7 +43,7 @@ public:
 
 private:
   ros::NodeHandle nh_, pnh_;
-  ros::Publisher pub_pose_, pub_pose_cov_, pub_twist_, pub_debug_, pub_ndt_pose_;
+  ros::Publisher pub_pose_, pub_pose_cov_, pub_twist_, pub_debug_, pub_ndt_pose_, pub_yaw_bias_;
   ros::Subscriber sub_initialpose_, sub_ndt_pose_, sub_vehicle_status_, sub_twist_;
   ros::Timer timer_control_, timer_tf_;
   tf::TransformBroadcaster tf_br_;
