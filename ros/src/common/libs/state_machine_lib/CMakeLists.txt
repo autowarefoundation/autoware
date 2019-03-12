@@ -31,6 +31,7 @@ add_library(state_machine_lib
 
 target_link_libraries(state_machine_lib
         ${catkin_LIBRARIES}
+        -lyaml-cpp
         )
 
 add_dependencies(${TARGET}

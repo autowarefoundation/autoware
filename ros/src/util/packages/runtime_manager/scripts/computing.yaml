@@ -193,6 +193,11 @@ subs :
         cmd  : roslaunch lidar_apollo_cnn_seg_detect lidar_apollo_cnn_seg_detect.launch
         param: lidar_cnn_baidu_params
 
+      - name : lidar_point_pillars
+        desc : lidar_point_pillars. Requires CUDA and TensorRT
+        cmd  : roslaunch lidar_point_pillars lidar_point_pillars.launch
+        param: lidar_point_pillars_params
+
       - name : lidar_naive_l_shape_detect
         desc : lidar_naive_l_shape_detect desc sample
         cmd  : roslaunch lidar_naive_l_shape_detect lidar_naive_l_shape_detect.launch
@@ -363,6 +368,16 @@ subs :
       gui  :
         wayarea_topic_src :
           flags : [nl ]
+        sync :
+          func : self.button_synchronization.GetValue()
+
+    - name : costmap_generator
+      desc : costmap_generator desc sample
+      cmd  : roslaunch costmap_generator costmap_generator.launch
+      param: costmap_generator_param
+      gui  :
+        dialog_width  : 400
+        dialog_height : 400
         sync :
           func : self.button_synchronization.GetValue()
 
@@ -693,11 +708,27 @@ subs :
   - name : Decision
     desc : decision groups
     subs :
-
-    - name : planner_selector
-      desc : planner_selector desc sample
-      cmd  : roslaunch planner_selector planner_selector.launch
-      param: planner_selector
+    - name : state_machine(old)
+      desc : state_machine desc sample
+      cmd  : roslaunch state_machine state_machine.launch
+    - name : decision_maker(experimental)
+      desc : decision_maker desc sample
+      cmd  : roslaunch decision_maker decision_maker.launch
+      param: decision_maker
+      gui  :
+          dialog_width  : 400
+          dialog_height : 600
+          use_fms:
+            flags : [ nl ]
+          auto_mission_reload:
+            depend : use_fms
+            depend_bool : 'lambda v : v == 0'
+          auto_engage:
+            depend : use_fms
+            depend_bool : 'lambda v : v == 0'
+          auto_mission_change:
+            depend : use_fms
+            depend_bool : 'lambda v : v == 0'
 
 
 
@@ -1719,15 +1750,6 @@ params :
       max   : 150
       v     : 100.0
 
-    - name : enablePlannerDynamicSwitch
-      desc : Enable Planner dynamical switch
-      label: Enable Planner dynamical switch
-      kind : checkbox
-      v    : False
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-
   - name  : lattice_velocity_set
     topic : /config/lattice_velocity_set
     msg   : ConfigLatticeVelocitySet
@@ -1917,131 +1939,94 @@ params :
         dash        : ''
         delim       : ':='
 
-  - name  : planner_selector
-    topic : /config/PlannerSelector
-    msg   : ConfigPlannerSelector
-    vars  :
-    - name : latency_num
-      desc : latency_num
-      label: latency_num
-      min  : 0
-      max  : 200
-      v    : 10
-    - name : waypoints_num
-      desc : waypoints_num
-      label: waypoints_num
-      min  : 0
-      max  : 30
-      v    : 8
-    - name : convergence_num
-      desc : convergence_num
-      label: convergence_num
-      min  : 0.0
-      max  : 30.0
-      v    : 2.0
-
   - name  : decision_maker
     topic : /config/decision_maker
     msg   : ConfigDecisionMaker
     vars  :
-    - name : enable_force_state_change
-      desc : enable force state change flag
-      label: enable_force_state_change
-      kind : checkbox
-      v    : False
-    - name : enable_display_marker
-      desc : enable display marker flag
-      label: enable_display_marker
-      kind : checkbox
-      v    : False
-    - name : convergence_threshold
-      desc : Convergence threshold to DRIVE_STATE from LOCATE_VEHICLE_STATE.(Meter)
-      label: convergence_threshold
-      min  : 0.0
-      max  : 10.0
-      v    : 0.01
-    - name : convergence_count
-      desc : Number of values used for convergence determination
-      label: convergence_count
-      min  : 1
-      max  : 30
-      v    : 5
-    - name : target_waypoint
-      desc : decision maker load wp_state except stopline by target_waypoint
-      label: target_waypoint
-      min  : 0
-      max  : 50
-      v    : 14
-    - name : stopline_target_waypoint
-      desc : stopline
-      label: stopline_target_waypoint
-      min  : 0
-      max  : 50
-      v    : 10
-    - name : stopline_target_ratio
-      desc : stopline
-      label: stopline_target_ratio
-      min  : 0.0
-      max  : 0.99
-      v    : 0.0
-    - name : shift_width
-      desc : lane shift width
-      label: shift_width
-      min  : -5.0
-      max  : 5.0
-      v    : 1.0
-    - name : detection_area_rate
-      desc : detection_area_rate
-      label: detection_area_rate
-      min  : 0.0
-      max  : 3.0
-      v    : 1.0
-    - name : crawl_velocity
-      desc : crawl_velocity
-      label: crawl_velocity
-      min  : 0.0
-      max  : 10.0
-      v    : 4.0
-    - name : detection_area_x1
-      desc : detection_area_x1
-      label: detection_area_x1
-      min  : -200.0
-      max  : 200.0
-      v    : 80.0
-    - name : detection_area_x2
-      desc : detection_area_x2
-      label: detection_area_x2
-      min  : -200.0
-      max  : 200.0
-      v    : 0.0
-    - name : detection_area_y1
-      desc : detection_area_y1
-      label: detection_area_y1
-      min  : -200.0
-      max  : 200.0
-      v    : 50.0
-    - name : detection_area_y2
-      desc : detection_area_y2
-      label: detection_area_y2
-      min  : -200.0
-      max  : 200.0
-      v    : -50.0
-
-    - name : points_topic
-      desc : points_topic
-      kind  : topic
-      topic_type : sensor_msgs/PointCloud2
-      v    : /points_lanes
-      cmd_param:
+    - name  : disuse_vector_map
+      desc  : If this is enabled, the state passes through the MapInit state without vectormap.
+      label : disuse_vector_map
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : num_of_steer_behind
+      desc  : e
+      label : num_of_steer_behind
+      min   : 0
+      max   : 50
+      v     : 20
+    - name  : goal_threshold_dist
+      desc  : Threshold for transitioning to the MissionComplete state(distance between the vehicle and the end of waypoints).
+      label : goal_threshold_dist[m]
+      min   : 0.1
+      max   : 5.0
+      v     : 3.0
+    - name  : goal_threshold_vel
+      desc  : Threshold for transitioning to the MissionComplete state(velocity of the vehicle).
+      label : goal_threshold_vel[km/h]
+      min   : 0.0
+      max   : 0.1
+      v     : 0.1
+    - name  : change_threshold_dist
+      desc  : Distance threashold for DrivingMissionChange state, between current pose and new closest waypoit.
+      label : change_threshold_dist[m]
+      min   : 0.0
+      max   : 10.0
+      v     : 1.0
+    - name  : change_threshold_angle
+      desc  : Angle threashold for DrivingMissionChange state, between current pose and new closest waypoint.
+      label : change_threshold_angle[deg]
+      min   : 0.0
+      max   : 90.0
+      v     : 15.0
+    - name  : points_topic
+      desc  : points_topic
+      kind  : str
+      v     : /points_lanes
+      cmd_param :
               dash : ''
               delim: ':='
-    - name : baselink_tf
-      desc : baselnk_tf
-      kind : str
-      v    : base_link
-      cmd_param:
+    - name  : baselink_tf
+      desc  : baselnk_tf
+      kind  : str
+      v     : base_link
+      cmd_param :
               dash : ''
               delim: ':='
+    - name  : use_fms
+      desc  : If this is disbled, part of state transitions are automatically executed.
+      label : use_fms
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : auto_mission_reload
+      desc  : If this is enabled, the mission will be automatically reloaded after the MissionComplete state.
+      label : auto_mission_reload
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : auto_engage
+      desc  : Automatically engage after load the mission.
+      label : auto_engage
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : auto_mission_change
+      desc  : The state transitions to DrivingMissionChange state automatically when load the mission while Driving state.
+      label : auto_mission_change
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
 
 
   - name  : car_kf
@@ -2474,14 +2459,6 @@ params :
       min       : 1.0
       max       : 50
       v         : 10.0
-    - name : enablePlannerDynamicSwitch
-      desc : Enable Planner dynamical switch
-      label: Enable Planner dynamical switch
-      kind : checkbox
-      v    : False
-      cmd_param:
-        dash     : ''
-        delim    : ':='
 
   - name  : astar_navi
     vars  :
@@ -2856,14 +2833,6 @@ params :
       - custom read from folder
       - custom read from kml file
       v   : 0
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name : enablePlannerDynamicSwitch
-      desc : Enable Planner dynamical switch
-      label: Enable Planner dynamical switch
-      kind : checkbox
-      v    : False
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -5354,6 +5323,173 @@ params :
         dash      : ''
         delim     : ':='
 
+  - name  : costmap_generator_param
+    vars  :
+    - name  : use_objects_box
+      desc  : use bouding box from DetectedObjectArray
+      label : use_objects_box
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : use_objects_convex_hull
+      desc  : use convex hull from DetectedObjectArray
+      label : use_objects_convex_hull
+      kind  : checkbox
+      v     : True
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : use_points
+      desc  : use sensor_msgs::PointCloud2 or not
+      label : use_points
+      kind  : checkbox
+      v     : True
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : use_wayarea
+      desc  : use vector_map wayarea or not
+      label : use_wayarea
+      kind  : checkbox
+      v     : True
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : objects_input
+      desc  : autoware_msgs::DetectedObjectArray
+      label : objects_input
+      kind  : topic
+      topic_type : autoware_msgs/DetectedObjectArray
+      v     : /prediction/motion_predictor/objects
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : points_input
+      desc  : sensor_msgs::PointCloud2
+      label : points_input
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
+      v     : /points_no_ground
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name    : lidar_frame
+      desc    : lidar frame
+      label   : lidar_frame
+      kind    : str
+      v       : /velodyne
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name    : map_frame
+      desc    : map frame
+      label   : map_frame
+      kind    : str
+      v       : /map
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name  : grid_min_value
+      desc  : minimum value for costmap
+      label : grid_min_value
+      min     : 0.00
+      max     : 10.0
+      v       : 0.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : grid_max_value
+      desc  : maximum value for costmap
+      label : grid_max_value
+      min     : 1.0
+      max     : 255.0
+      v       : 1.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : grid_resolution
+      desc  : grid resolution for costmap
+      label : grid_resolution
+      min     : 0.0
+      max     : 10.0
+      v       : 0.2
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : grid_length_x
+      desc  : grid lengh for x coordinate
+      label : grid_length_x
+      min     : 0.0
+      max     : 100.0
+      v       : 50.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : grid_length_y
+      desc  : grid lengh for y coordinate
+      label : grid_length_y
+      min     : 0.0
+      max     : 100.0
+      v       : 30.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : grid_position_x
+      desc  : grid position for x coordinate
+      label : grid_position_x
+      min     : 0.0
+      max     : 100.0
+      v       : 20.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : grid_position_y
+      desc  : grid position for y coordinate
+      label : grid_position_y
+      min     : 0.0
+      max     : 100.0
+      v       : 0.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : maximum_lidar_height_thres
+      desc  : Maximum z for lidar points
+      label : maximum_lidar_height_thres
+      min     : 0.0
+      max     : 10.0
+      v       : 0.3
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : minimum_lidar_height_thres
+      desc  : Minimum z for lidar points
+      label : minimum_lidar_height_thres
+      min     : -10.0
+      max     : 2.0
+      v       : -2.2
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : expand_polygon_size
+      desc  : Expand oberct's costmap polygon
+      label : expand_polygon_size
+      min     : 0.0
+      max     : 10.0
+      v       : 1.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : size_of_expansion_kernel
+      desc  : Size of expansion window(kernel)
+      label : size_of_expansion_kernel(odd number)
+      min     : 0
+      max     : 30
+      v       : 9
+      cmd_param :
+        dash      : ''
+        delim     : ':='
   - name  : lidar_cnn_baidu_params
     vars  :
     - name      : points_src
@@ -5407,3 +5543,64 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
+  - name  : lidar_point_pillars_params
+    vars  :
+    - name      : input_topic
+      desc      : PointCloud topic to be fed to the network for detection.
+      label     : Input topic
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
+      v         : /points_raw
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : baselink_support
+      desc      : Whether to use baselink to adujust current sensor setup.
+      label     : Baselink support
+      kind      : checkbox
+      v         : True
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : reproduce_result_mode
+      desc      : Whether to enable reproducible result at the cost of the runtime.
+      label     : reproduce_result_mode
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : score_threshold
+      desc  : Detections with a confidence value larger than this value will be displayed.
+      label : Score threshold
+      min   : 0.0
+      max   : 1.0
+      v     : 0.5
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : nms_overlap_threshold
+      desc  : Lower IOU than this value will be filtered.
+      label : NMS overlap threshold
+      min   : 0.0
+      max   : 1.0
+      v     : 0.5
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name     : pfe_onnx_file
+      desc     : Pillar Feature Extractor onnx file.
+      label    : 'PFE ONNX file'
+      kind     : path
+      v        : ''
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : rpn_onnx_file
+      desc     : Region Proposal Network onnx file.
+      label    : 'RPN ONNX file'
+      kind     : path
+      v        : ''
+      cmd_param:
+        dash     : ''
+        delim    : ':='
