@@ -86,10 +86,7 @@ note: process noise for position is calculated automatically from above values.
 # kalman filter model
 
 ## kinematics model in update function
-
-![image](./fig/kinematics_model_eq.png)
+<img src="./fig/kinematics_model_eq.png" width="200">
 
 ## time delay model
-![image](./fig/delay_model_eq.png)
-
-## covariance calculation
+<img src="./fig/delay_model_eq.png" width="320">
