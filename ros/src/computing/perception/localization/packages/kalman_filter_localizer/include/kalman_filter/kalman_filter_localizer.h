@@ -44,7 +44,7 @@ public:
 private:
   ros::NodeHandle nh_, pnh_;
   ros::Publisher pub_pose_, pub_pose_cov_, pub_twist_, pub_debug_, pub_ndt_pose_;
-  ros::Subscriber sub_ndt_pose_, sub_vehicle_status_, sub_imu_, sub_twist_;
+  ros::Subscriber sub_initialpose_, sub_ndt_pose_, sub_vehicle_status_, sub_twist_;
   ros::Timer timer_control_, timer_tf_;
   tf::TransformBroadcaster tf_br_;
 
@@ -94,7 +94,6 @@ private:
   };
 
   /* for model prediction */
-  // autoware_msgs::VehicleStatus current_vehicle_status_;
   std::shared_ptr<geometry_msgs::TwistStamped> current_twist_ptr_;
   std::shared_ptr<geometry_msgs::PoseStamped> current_ndt_pose_ptr_;
   std::shared_ptr<sensor_msgs::Imu> current_imu_ptr_;
@@ -104,9 +103,8 @@ private:
   void timerCallback(const ros::TimerEvent &e);
   void timerTFCallback(const ros::TimerEvent &e);
   void callbackNDTPose(const geometry_msgs::PoseStamped::ConstPtr &msg);
-  void callbackVehicleStatus(const autoware_msgs::VehicleStatus &msg);
-  void callbackIMU(const sensor_msgs::Imu::ConstPtr &msg);
   void callbackTwist(const geometry_msgs::TwistStamped::ConstPtr &msg);
+  void callbackInitialPose(const geometry_msgs::PoseWithCovarianceStamped &msg);
 
   void initKalmanFilter();
   void predictKinematicsModel();

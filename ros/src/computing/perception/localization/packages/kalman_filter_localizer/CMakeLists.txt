@@ -68,12 +68,15 @@ install(TARGETS kalman_filter kalman_filter_delayed_measurement kalman_filter_lo
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 ## Install project namespaced headers
-install(DIRECTORY include/${PROJECT_NAME}/
+install(DIRECTORY include/kalman_filter/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
-# install(DIRECTORY launch/
-#         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
-#         PATTERN ".svn" EXCLUDE)
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)
+install(DIRECTORY config/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/config
+        PATTERN ".svn" EXCLUDE)
 
 
 

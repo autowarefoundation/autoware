@@ -5,7 +5,8 @@ Integrate multiple measurement values and calculate self position/speed consider
 
 Some other features include
  - time delay compensation : for sensor delay, predict current position from vehicle dynamics. The delay is usually calculated by comparing the header time stamp with the current time, but additional delay time can be set with the parameter.
- - mahalanobis measurement gate : for sensor outliers, outlier detection by Mahalanobis distance is carried out.
+ - mahalanobis gate : for sensor outlier detection, Mahalanobis distance is used.
+ - yaw angle compensation : yaw angle bias is estiamted, which is caused by sensor mounting error.
 
 
 # Input and Output
@@ -81,3 +82,14 @@ note: process noise for position is calculated automatically from above values.
 1. create subscriber and related callback function to save measured data.
 2. create measurementUpdateXXX() function, which should include *time delay calculate*, *gate*, and *kalman-filter update*.
 3. call measurementUpdateXXX() in timerCallback() function.
+
+# kalman filter model
+
+## kinematics model in update function
+
+![image](./fig/kinematics_model_eq.png)
+
+## time delay model
+![image](./fig/delay_model_eq.png)
+
+## covariance calculation

@@ -31,7 +31,6 @@ KalmanFilterNode::KalmanFilterNode() : nh_(""), pnh_("~"), dim_x_(6 /* x, y, yaw
 
   /* NDT measurement */
   pnh_.param("ndt_additional_delay", ndt_additional_delay_, double(0.15));
-
   pnh_.param("ndt_measure_uncertainty_time", ndt_measure_uncertainty_time_, double(0.01));
   pnh_.param("ndt_rate", ndt_rate_, double(10.0));             // used for covariance calculation
   pnh_.param("ndt_gate_dist", ndt_gate_dist_, double(1000.0)); // Mahalanobis limit
@@ -71,10 +70,9 @@ KalmanFilterNode::KalmanFilterNode() : nh_(""), pnh_("~"), dim_x_(6 /* x, y, yaw
   pub_pose_ = nh_.advertise<geometry_msgs::PoseStamped>(out_pose, 1);
   pub_pose_cov_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("/kf_pose_with_covariance", 1);
   pub_twist_ = nh_.advertise<geometry_msgs::TwistStamped>(out_twist, 1);
+  sub_initialpose_ = nh_.subscribe("/initialpose", 1, &KalmanFilterNode::callbackInitialPose, this);
   sub_ndt_pose_ = nh_.subscribe(in_ndt_pose, 1, &KalmanFilterNode::callbackNDTPose, this);
   sub_twist_ = nh_.subscribe(in_twist, 1, &KalmanFilterNode::callbackTwist, this);
-  sub_imu_ = nh_.subscribe(in_imu, 1, &KalmanFilterNode::callbackIMU, this);
-  sub_vehicle_status_ = nh_.subscribe("/vehicle_status", 1, &KalmanFilterNode::callbackVehicleStatus, this);
 
   dim_x_ex_ = dim_x_ * extend_state_step_;
 
@@ -138,7 +136,7 @@ void KalmanFilterNode::setCurrentResult()
   current_kf_pose_.pose.position.y = kf_.getXelement(IDX::Y);
   current_kf_pose_.pose.position.z = current_ndt_pose_ptr_->pose.position.z;
 
-  /* use ndt pitch and roll */
+  /* use NDT pitch and roll */
   double roll, pitch, yaw;
   tf::Quaternion q_tf;
   quaternionMsgToTF(current_ndt_pose_ptr_->pose.orientation, q_tf);
@@ -163,6 +161,34 @@ void KalmanFilterNode::timerTFCallback(const ros::TimerEvent &e)
   tf_br_.sendTransform(tf::StampedTransform(t, ros::Time::now(), current_kf_pose_.header.frame_id, "kf_pose"));
 }
 
+void KalmanFilterNode::callbackInitialPose(const geometry_msgs::PoseWithCovarianceStamped &initialpose)
+{
+  if (initialpose.header.frame_id != "world") {
+    ROS_WARN_DELAYED_THROTTLE(5, "twist frame_id must be world");
+  }
+
+  Eigen::MatrixXd X(dim_x_,1);
+  Eigen::MatrixXd P = Eigen::MatrixXd::Zero(dim_x_, dim_x_);
+
+  X(IDX::X) = initialpose.pose.pose.position.x;
+  X(IDX::Y) = initialpose.pose.pose.position.y;
+  X(IDX::YAW) = tf2::getYaw(initialpose.pose.pose.orientation);
+  X(IDX::YAWB) = 0.0;
+  X(IDX::VX) = 0.0;
+  X(IDX::WZ) = 0.0;
+
+  P(IDX::X, IDX::X) = initialpose.pose.covariance[0];
+  P(IDX::Y, IDX::Y) = initialpose.pose.covariance[6+1];
+  P(IDX::YAW, IDX::YAW) = initialpose.pose.covariance[6*5+5];
+  P(IDX::YAWB, IDX::YAWB) = 0.0001;
+  P(IDX::VX, IDX::VX) = 0.01;
+  P(IDX::WZ, IDX::WZ) = 0.01;
+
+  kf_.init(X, P, extend_state_step_);
+
+};
+
+
 /*
  * callbackNDTPose
  */
@@ -171,19 +197,6 @@ void KalmanFilterNode::callbackNDTPose(const geometry_msgs::PoseStamped::ConstPt
   current_ndt_pose_ptr_ = std::make_shared<geometry_msgs::PoseStamped>(*msg);
 };
 
-/*
- * callbackVehicleStatus
- */
-void KalmanFilterNode::callbackVehicleStatus(const autoware_msgs::VehicleStatus &msg)
-{
-  const double kmph2mps = 1000.0 / 3600.0;
-  // current_vehicle_status_ = msg;
-  geometry_msgs::TwistStamped twist_stamped;
-  twist_stamped.header = msg.header;
-  twist_stamped.twist.linear.x = msg.speed * kmph2mps;
-  twist_stamped.twist.angular.z = twist_stamped.twist.linear.x * tan(msg.angle) / wheelbase_;
-  current_twist_ptr_ = std::make_shared<geometry_msgs::TwistStamped>(twist_stamped);
-};
 
 /*
  * callbackTwist
@@ -191,14 +204,6 @@ void KalmanFilterNode::callbackVehicleStatus(const autoware_msgs::VehicleStatus 
 void KalmanFilterNode::callbackTwist(const geometry_msgs::TwistStamped::ConstPtr &msg){
     // current_twist_ptr_ = std::make_shared<geometry_msgs::TwistStamped>(*msg);
 };
-
-/*
- * callbackIMU
- */
-void KalmanFilterNode::callbackIMU(const sensor_msgs::Imu::ConstPtr &msg)
-{
-  current_imu_ptr_ = std::make_shared<sensor_msgs::Imu>(*msg);
-}
 
 /*
  * initKalmanFilter
@@ -324,6 +329,9 @@ int KalmanFilterNode::getDelayStep(const double &delay_time, const int &extend_s
  */
 void KalmanFilterNode::measurementUpdateNDTPose(const geometry_msgs::PoseStamped &ndt_pose)
 {
+  // if (ndt_pose.header.frame_id != "world") {
+  //   ROS_WARN_DELAYED_THROTTLE(5, "twist frame_id must be world");
+  // }
 
   const int dim_y = 3; // pos_x, pos_y, yaw, depending on NDT output
   const ros::Time t_curr = ros::Time::now();
@@ -399,6 +407,9 @@ void KalmanFilterNode::measurementUpdateNDTPose(const geometry_msgs::PoseStamped
  */
 void KalmanFilterNode::measurementUpdateTwist(const geometry_msgs::TwistStamped &twist)
 {
+  if (twist.header.frame_id != "base_link") {
+    ROS_WARN_DELAYED_THROTTLE(3, "twist frame_id must be base_link");
+  }
 
   const int dim_y = 2; // vx, wz
   const ros::Time t_curr = ros::Time::now();
@@ -459,13 +470,6 @@ void KalmanFilterNode::measurementUpdateTwist(const geometry_msgs::TwistStamped 
     Eigen::MatrixXd X_diff = X_after - X_before;
     DEBUG_INFO("twist measurement update: X_diff   = %f, %f, %f, %f, %f, %f", X_diff(0), X_diff(1), X_diff(2), X_diff(3), X_diff(4), X_diff(5));
   }
-};
-
-/*
- * measurementUpdateIMU
- */
-void KalmanFilterNode::measurementUpdateIMU(const sensor_msgs::Imu &msg){
-
 };
 
 /*
