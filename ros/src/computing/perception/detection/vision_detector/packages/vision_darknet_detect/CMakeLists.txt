@@ -166,13 +166,116 @@ IF (CUDA_FOUND)
             LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
             RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
             )
-    install(DIRECTORY launch/
-            DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
-            PATTERN ".svn" EXCLUDE)
 
-    install(DIRECTORY darknet/cfg/
-            DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/darknet/cfg/
-            PATTERN ".svn" EXCLUDE)
 ELSE()
-    message("darknet won't be built, CUDA was not found.")
+    message(WARNING "Building vision_darknet_detect without CUDA")
+	
+    add_library(vision_darknet_detect_lib SHARED
+            darknet/src/gemm.c
+            darknet/src/utils.c
+            darknet/src/cuda.c
+            darknet/src/deconvolutional_layer.c
+            darknet/src/convolutional_layer.c
+            darknet/src/list.c
+            darknet/src/image.c
+            darknet/src/activations.c
+            darknet/src/im2col.c
+            darknet/src/col2im.c
+            darknet/src/blas.c
+            darknet/src/crop_layer.c
+            darknet/src/dropout_layer.c
+            darknet/src/maxpool_layer.c
+            darknet/src/softmax_layer.c
+            darknet/src/data.c
+            darknet/src/matrix.c
+            darknet/src/network.c
+            darknet/src/connected_layer.c
+            darknet/src/cost_layer.c
+            darknet/src/parser.c
+            darknet/src/option_list.c
+            darknet/src/detection_layer.c
+            darknet/src/route_layer.c
+            darknet/src/upsample_layer.c
+            darknet/src/box.c
+            darknet/src/normalization_layer.c
+            darknet/src/avgpool_layer.c
+            darknet/src/layer.c
+            darknet/src/local_layer.c
+            darknet/src/shortcut_layer.c
+            darknet/src/logistic_layer.c
+            darknet/src/activation_layer.c
+            darknet/src/rnn_layer.c
+            darknet/src/gru_layer.c
+            darknet/src/crnn_layer.c
+            darknet/src/batchnorm_layer.c
+            darknet/src/region_layer.c
+            darknet/src/reorg_layer.c
+            darknet/src/tree.c
+            darknet/src/lstm_layer.c
+            darknet/src/l2norm_layer.c
+            darknet/src/yolo_layer.c
+            )
+
+    target_include_directories(vision_darknet_detect_lib PRIVATE
+            ${OpenCV_INCLUDE_DIR}
+            ${catkin_INCLUDE_DIRS}
+            ${autoware_config_msgs_INCLUDE_DIRS}
+            ${autoware_msgs_INCLUDE_DIRS}
+            ${Boost_INCLUDE_DIRS}
+            ${PROJECT_SOURCE_DIR}/darknet
+            ${PROJECT_SOURCE_DIR}/darknet/src
+            ${PROJECT_SOURCE_DIR}/src
+            )
+
+    target_link_libraries(vision_darknet_detect_lib
+            ${OpenCV_LIBRARIES}
+            ${catkin_LIBRARIES}
+            ${PCL_LIBRARIES}
+            ${Qt5Core_LIBRARIES}
+            m
+            pthread
+            )
+
+    add_dependencies(vision_darknet_detect_lib
+            ${catkin_EXPORTED_TARGETS}
+            )
+
+    #ros node
+    add_executable(vision_darknet_detect
+            src/vision_darknet_detect_node.cpp
+            src/vision_darknet_detect.cpp
+            src/vision_darknet_detect.h
+            )
+
+    target_include_directories(vision_darknet_detect PRIVATE
+            ${catkin_INCLUDE_DIRS}
+            ${autoware_config_msgs_INCLUDE_DIRS}
+            ${autoware_msgs_INCLUDE_DIRS}
+            ${PROJECT_SOURCE_DIR}/darknet
+            ${PROJECT_SOURCE_DIR}/darknet/src
+            ${PROJECT_SOURCE_DIR}/src
+            )
+
+    target_link_libraries(vision_darknet_detect
+            ${catkin_LIBRARIES}
+            ${OpenCV_LIBS}
+            vision_darknet_detect_lib
+            )
+    add_dependencies(vision_darknet_detect
+            ${catkin_EXPORTED_TARGETS}
+            )
+    install(TARGETS vision_darknet_detect_lib vision_darknet_detect
+            ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+            LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+            RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+            )
+    
 ENDIF ()
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)
+
+install(DIRECTORY darknet/cfg/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/darknet/cfg/
+        PATTERN ".svn" EXCLUDE)
