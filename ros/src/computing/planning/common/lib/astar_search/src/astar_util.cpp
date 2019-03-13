@@ -28,9 +28,9 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "astar_util.h"
+#include "astar_search/astar_util.h"
 
-WaveFrontNode::WaveFrontNode()
+WaveFrontNode::WaveFrontNode() : index_x(0), index_y(0), hc(0)
 {
 }
 

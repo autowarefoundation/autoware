@@ -31,8 +31,8 @@ include_directories(
 )
 
 add_executable(astar_navi
-  nodes/astar_navi/astar_navi.cpp
-  nodes/astar_navi/astar_navi_node.cpp
+  src/astar_navi/astar_navi.cpp
+  src/astar_navi/astar_navi_node.cpp
 )
 
 target_link_libraries(astar_navi

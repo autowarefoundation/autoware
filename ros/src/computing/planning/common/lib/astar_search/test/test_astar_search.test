@@ -1,0 +1,5 @@
+<launch>
+
+  <test test-name="astar_search-test" pkg="astar_search" type="astar_search-test" name="test_"/>
+
+</launch>

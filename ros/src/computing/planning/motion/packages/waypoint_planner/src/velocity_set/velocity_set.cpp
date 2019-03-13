@@ -33,9 +33,9 @@
 #include <std_msgs/ColorRGBA.h>
 #include <iostream>
 
-#include "libvelocity_set.h"
-#include "velocity_set_info.h"
-#include "velocity_set_path.h"
+#include "../../src/velocity_set/libvelocity_set.h"
+#include "../../src/velocity_set/velocity_set_info.h"
+#include "../../src/velocity_set/velocity_set_path.h"
 
 namespace
 {
