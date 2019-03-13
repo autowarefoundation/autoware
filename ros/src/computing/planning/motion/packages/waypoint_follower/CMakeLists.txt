@@ -106,8 +106,13 @@ add_executable(mpc_follower
 add_dependencies(mpc_follower ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(mpc_follower ${catkin_LIBRARIES})
 
+add_executable(mpc_waypoints_converter nodes/mpc_follower/mpc_waypoints_converter.cpp)
+add_dependencies(mpc_waypoints_converter ${catkin_EXPORTED_TARGETS})
+target_link_libraries(mpc_waypoints_converter ${catkin_LIBRARIES})
+
+
 ## Install executables and/or libraries
-install(TARGETS libwaypoint_follower pure_pursuit wf_simulator twist_filter twist_gate
+install(TARGETS libwaypoint_follower pure_pursuit wf_simulator twist_filter twist_gate mpc_follower mpc_waypoints_converter
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
@@ -117,6 +122,10 @@ install(DIRECTORY include/${PROJECT_NAME}/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
 install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)
+
+install(DIRECTORY config/
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
         PATTERN ".svn" EXCLUDE)
 
