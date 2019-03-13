@@ -129,7 +129,7 @@ inline geometry_msgs::Point calcRelativeCoordinate(geometry_msgs::Pose pose, tf:
 
 inline double calcDiffOfRadian(double a, double b)
 {
-  double diff = std::fabs(a - b);
+  double diff = std::fmod(std::fabs(a - b), 2.0 * M_PI);
   if (diff < M_PI)
     return diff;
   else
