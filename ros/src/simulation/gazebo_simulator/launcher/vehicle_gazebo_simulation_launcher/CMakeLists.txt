@@ -3,7 +3,6 @@ project(vehicle_gazebo_simulation_launcher)
 
 find_package(catkin REQUIRED
   controller_manager
-  controller_manager
   robot_state_publisher
   joint_state_controller
 )
