@@ -168,9 +168,9 @@ IF (CUDA_FOUND)
             )
 
 ELSE()
-	message(WARNING "Building vision_darknet_detect without CUDA")
+    message(WARNING "Building vision_darknet_detect without CUDA")
 	
-  add_library(vision_darknet_detect_lib SHARED
+    add_library(vision_darknet_detect_lib SHARED
             darknet/src/gemm.c
             darknet/src/utils.c
             darknet/src/cuda.c
