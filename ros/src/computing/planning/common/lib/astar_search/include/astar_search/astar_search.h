@@ -33,6 +33,8 @@
 
 class AstarSearch
 {
+  friend class TestClass;
+
 public:
   AstarSearch();
   ~AstarSearch();

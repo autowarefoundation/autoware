@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 Autoware Foundation. All rights reserved.
+ * Copyright 2018 Autoware Foundation. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,17 @@
  * limitations under the License.
  */
 
-#include "astar_search/astar_util.h"
+#include <ros/ros.h>
+#include <gtest/gtest.h>
 
-WaveFrontNode::WaveFrontNode() : index_x(0), index_y(0), hc(0)
-{
-}
+class TestSuite: public ::testing::Test {
+public:
+	TestSuite(){}
+	~TestSuite(){}
+};
 
-WaveFrontNode::WaveFrontNode(int x, int y, double cost) : index_x(x), index_y(y), hc(cost)
-{
-}
-
-SimpleNode::SimpleNode()
-{
-}
-
-SimpleNode::SimpleNode(int x, int y, int theta, double gc, double hc)
-  : index_x(x), index_y(y), index_theta(theta), cost(gc + hc)
-{
+int main(int argc, char **argv) {
+	testing::InitGoogleTest(&argc, argv);
+	ros::init(argc, argv, "TestNode");
+	return RUN_ALL_TESTS();
 }
