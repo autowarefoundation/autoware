@@ -192,12 +192,10 @@ subs :
         desc : lidar_cnn_segmentation_baidu_detect. Requires Caffe framework
         cmd  : roslaunch lidar_apollo_cnn_seg_detect lidar_apollo_cnn_seg_detect.launch
         param: lidar_cnn_baidu_params
-
       - name : lidar_point_pillars
         desc : lidar_point_pillars. Requires CUDA and TensorRT
         cmd  : roslaunch lidar_point_pillars lidar_point_pillars.launch
         param: lidar_point_pillars_params
-
       - name : lidar_naive_l_shape_detect
         desc : lidar_naive_l_shape_detect desc sample
         cmd  : roslaunch lidar_naive_l_shape_detect lidar_naive_l_shape_detect.launch
@@ -209,6 +207,13 @@ subs :
         desc : lidar_shape_estimation desc sample
         cmd  : roslaunch lidar_shape_estimation shape_estimation_clustering.launch
         param: lidar_shape_estimation_param
+        gui  :
+          sync :
+            func : self.button_synchronization.GetValue()
+      - name : lidar_fake_perception
+        desc : lidar_fake_perception desc sample
+        cmd  : roslaunch lidar_fake_perception lidar_fake_perception.launch
+        param: lidar_fake_perception_param
         gui  :
           sync :
             func : self.button_synchronization.GetValue()
@@ -426,7 +431,7 @@ subs :
       - name : astar_navi
         desc : astar_navi desc sample
         cmd  : roslaunch freespace_planner astar_navi.launch
-        param: astar_navi
+        param: astar_navi_param
 #    - name : way_planner (OpenPlanner - old ver)
 #      desc : Global planner for OpenPlanner
 #      subs :
@@ -457,114 +462,6 @@ subs :
 #        desc : Feedforward PID waypoint follower
 #        cmd  : roslaunch ff_waypoint_follower ffwaypointfollower_car.launch
 #        param: ff_waypoint_follower
-    - name : OpenPlanner - Local planning
-      desc : Local Planner for OpenPlanner
-      subs :
-      - name : op_common_params
-        desc : load common local planning parameters
-        cmd  : roslaunch op_local_planner op_common_params.launch
-        param: op_common_params
-        gui  :
-          dialog_width  : 600
-          dialog_height : 550
-      - name : op_trajectory_generator
-        desc : generating candidate rollout trajectory from global path
-        cmd  : roslaunch op_local_planner op_trajectory_generator.launch
-        param: op_trajectory_generator
-      - name : op_motion_predictor
-        desc : predict behavior and trajectories for moving vehicles
-        cmd  : roslaunch op_local_planner op_motion_predictor.launch
-        param: op_motion_predictor
-      - name : op_trajectory_evaluator
-        desc : evaluate candidate rollout trajectory against the tracked obstacles
-        cmd  : roslaunch op_local_planner op_trajectory_evaluator.launch
-        param: op_trajectory_evaluator
-      - name : op_behavior_selector
-        desc : Decision making by selecting best behavior for local planner
-        cmd  : roslaunch op_local_planner op_behavior_selector.launch
-
-    - name : OpenPlanner - Utilities
-      desc : Testing UI, Loggers , ..
-      subs :
-      - name : op_pose2tf
-        desc : Publish transformation from ndt_pose read from rosbag file
-        cmd  : roslaunch op_utilities op_pose2tf.launch
-        param: op_pose2tf
-      - name : op_bag_player
-        desc : Send step by step simulation signal, read ready for localization rosbags and navigate them frame by frame
-        cmd  : roslaunch op_utilities op_bag_player.launch
-        param: op_bag_player
-    - name : OpenPlanner - Simulator
-      desc : Car, Signs, Detection Simulation for OpenPlanner Test
-      subs :
-      - name : op_perception_simulator
-        desc : Simulate euclidean cluster for LIDAR based object detection of simulated cars
-        cmd  : roslaunch op_simulation_package op_perception_simulator.launch
-        param: op_perception_simulator
-      - name : op_signs_simulator
-        desc : Simulate traffic Signs status for intersections included in the map
-        cmd  : roslaunch op_simulation_package op_signs_simulator.launch
-        param: op_signs_simulator
-      - name : op_car_simulator
-        desc : Simulate a car using OpenPlanner
-        cmd  : roslaunch op_simulation_package op_car_simulator_1.launch
-        param: op_car_simulator
-        gui  :
-          dialog_width  : 600
-          dialog_height : 550
-    - name : astar_planner
-      desc : astar_planner desc sample
-      subs :
-      - name : obstacle_avoid
-        desc : obstacle_avoid desc sample
-        cmd  : roslaunch astar_planner obstacle_avoid.launch
-        param: obstacle_avoid
-      - name : velocity_set
-        desc : velocity_set desc sample
-        cmd  : roslaunch astar_planner velocity_set.launch
-        param: velocity_set
-        gui  :
-          use_crosswalk_detection : { border : 4, flags : [ all ] }
-          enable_multiple_crosswalk_detection : { border : 4, flags : [ all ] }
-          dialog_width  : 800
-          dialog_height : 450
-    - name : lattice_planner
-      desc : lattice_planner desc sample
-      subs :
-      - name : lattice_velocity_set
-        desc : lattice_velocity_set desc sample
-        cmd  : roslaunch lattice_planner lattice_velocity_set.launch
-        param: lattice_velocity_set
-        gui  :
-          dialog_width  : 600
-          dialog_height : 450
-          use_crosswalk_detection : { border : 4, flags : [ all ] }
-      - name : path_select
-        desc : path_select desc sample
-        cmd  : rosrun lattice_planner path_select
-      - name : lattice_trajectory_gen
-        desc : lattice_trajectory_gen desc sample
-        cmd  : roslaunch lattice_planner lattice_trajectory_gen.launch
-        param: lane_follower_trajgen
-        gui  :
-          dialog_width  : 600
-          dialog_height : 450
-          velocity:
-            depend : param_flag
-            depend_bool : 'lambda v : v == 1'
-          lookahead_threshold:
-            depend : param_flag
-            depend_bool : 'lambda v : v == 1'
-          minimum_lookahead_threshold:
-            depend : param_flag
-            depend_bool : 'lambda v : v == 0'
-          threshold_ratio:
-            depend : param_flag
-            depend_bool : 'lambda v : v == 0'
-          stat_topic : [ lf ]
-      - name : lattice_twist_convert
-        desc : lattice_twist_convert desc sample
-        cmd  : rosrun lattice_planner lattice_twist_convert
 
     - name : waypoint_maker
       desc : waypoint_maker desc sample
@@ -666,6 +563,24 @@ subs :
          desc : waypoint_velocity_visualizer desc sample
          cmd  : roslaunch waypoint_maker waypoint_velocity_visualizer.launch
          param: waypoint_velocity_visualizer
+
+    - name : waypoint_planner
+      desc : waypoint_planner desc sample
+      subs :
+      - name : astar_avoid
+        desc : astar_avoid desc sample
+        cmd  : roslaunch waypoint_planner astar_avoid.launch
+        param: astar_avoid_param
+      - name : velocity_set
+        desc : velocity_set desc sample
+        cmd  : roslaunch waypoint_planner velocity_set.launch
+        param: velocity_set
+        gui  :
+          use_crosswalk_detection : { border : 4, flags : [ all ] }
+          enable_multiple_crosswalk_detection : { border : 4, flags : [ all ] }
+          dialog_width  : 800
+          dialog_height : 450
+
     - name : waypoint_follower
       desc : waypoint_follower desc sample
       subs :
@@ -704,6 +619,99 @@ subs :
              flags : [ nl ]
            position_error :
              flags : [ nl ]
+
+    - name : OpenPlanner - Local planning
+      desc : Local Planner for OpenPlanner
+      subs :
+      - name : op_common_params
+        desc : load common local planning parameters
+        cmd  : roslaunch op_local_planner op_common_params.launch
+        param: op_common_params
+        gui  :
+          dialog_width  : 600
+          dialog_height : 550
+      - name : op_trajectory_generator
+        desc : generating candidate rollout trajectory from global path
+        cmd  : roslaunch op_local_planner op_trajectory_generator.launch
+        param: op_trajectory_generator
+      - name : op_motion_predictor
+        desc : predict behavior and trajectories for moving vehicles
+        cmd  : roslaunch op_local_planner op_motion_predictor.launch
+        param: op_motion_predictor
+      - name : op_trajectory_evaluator
+        desc : evaluate candidate rollout trajectory against the tracked obstacles
+        cmd  : roslaunch op_local_planner op_trajectory_evaluator.launch
+        param: op_trajectory_evaluator
+      - name : op_behavior_selector
+        desc : Decision making by selecting best behavior for local planner
+        cmd  : roslaunch op_local_planner op_behavior_selector.launch
+
+    - name : OpenPlanner - Utilities
+      desc : Testing UI, Loggers , ..
+      subs :
+      - name : op_pose2tf
+        desc : Publish transformation from ndt_pose read from rosbag file
+        cmd  : roslaunch op_utilities op_pose2tf.launch
+        param: op_pose2tf
+      - name : op_bag_player
+        desc : Send step by step simulation signal, read ready for localization rosbags and navigate them frame by frame
+        cmd  : roslaunch op_utilities op_bag_player.launch
+        param: op_bag_player
+    - name : OpenPlanner - Simulator
+      desc : Car, Signs, Detection Simulation for OpenPlanner Test
+      subs :
+      - name : op_perception_simulator
+        desc : Simulate euclidean cluster for LIDAR based object detection of simulated cars
+        cmd  : roslaunch op_simulation_package op_perception_simulator.launch
+        param: op_perception_simulator
+      - name : op_signs_simulator
+        desc : Simulate traffic Signs status for intersections included in the map
+        cmd  : roslaunch op_simulation_package op_signs_simulator.launch
+        param: op_signs_simulator
+      - name : op_car_simulator
+        desc : Simulate a car using OpenPlanner
+        cmd  : roslaunch op_simulation_package op_car_simulator_1.launch
+        param: op_car_simulator
+        gui  :
+          dialog_width  : 600
+          dialog_height : 550
+    - name : lattice_planner
+      desc : lattice_planner desc sample
+      subs :
+      - name : lattice_velocity_set
+        desc : lattice_velocity_set desc sample
+        cmd  : roslaunch lattice_planner lattice_velocity_set.launch
+        param: lattice_velocity_set
+        gui  :
+          dialog_width  : 600
+          dialog_height : 450
+          use_crosswalk_detection : { border : 4, flags : [ all ] }
+      - name : path_select
+        desc : path_select desc sample
+        cmd  : rosrun lattice_planner path_select
+      - name : lattice_trajectory_gen
+        desc : lattice_trajectory_gen desc sample
+        cmd  : roslaunch lattice_planner lattice_trajectory_gen.launch
+        param: lane_follower_trajgen
+        gui  :
+          dialog_width  : 600
+          dialog_height : 450
+          velocity:
+            depend : param_flag
+            depend_bool : 'lambda v : v == 1'
+          lookahead_threshold:
+            depend : param_flag
+            depend_bool : 'lambda v : v == 1'
+          minimum_lookahead_threshold:
+            depend : param_flag
+            depend_bool : 'lambda v : v == 0'
+          threshold_ratio:
+            depend : param_flag
+            depend_bool : 'lambda v : v == 0'
+          stat_topic : [ lf ]
+      - name : lattice_twist_convert
+        desc : lattice_twist_convert desc sample
+        cmd  : rosrun lattice_planner lattice_twist_convert
 
   - name : Decision
     desc : decision groups
@@ -1626,34 +1634,51 @@ params :
         dash        : ''
         delim       : ':='
 
-  - name  : obstacle_avoid
+  - name  : astar_avoid_param
     vars  :
-    - name  : avoidance
-      desc  : if not checked, decide if we avoid by reading the current state
-      label : Avoidance
+    - name  : enable_avoidance
+      desc  : Enable avoidance mode
+      label : Enable Avoidance
       kind  : checkbox
       v     : False
       cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name      : avoid_distance
-      desc      : Avoid distance from the obstacle
-      label     : Avoid Distance (m)
-      min       : 0.0
-      max       : 50.0
-      v         : 13.0
+        dash  : ''
+        delim : ':='
+    - name  : avoid_waypoints_velocity
+      desc  : Velocity on avoiding waypoints
+      label : Waypoint Velocity [km/h]
+      min   : 0.0
+      max   : 40.0
+      v     : 10.0
       cmd_param :
-        dash      : ''
-        delim     : ':='
-    - name      : avoid_velocity_limit_mps
-      desc      : if the current velocity exceeds this value, we do not avoid
-      label     : Avoid Velocity Limit (m/s)
-      min       : 0.0
-      max       : 20.0
-      v         : 4.0
+        dash  : ''
+        delim : ':='
+    - name  : avoid_start_velocity
+      desc  : Self velocity for staring avoidance behavior
+      label : Avoidance Start Velocity [km/h]
+      min   : 0.0
+      max   : 20.0
+      v     : 3.0
       cmd_param :
-        dash      : ''
-        delim     : ':='
+        dash  : ''
+        delim : ':='
+    - name  : replan_interval
+      desc  : Replan interval for avoidance planning
+      label : Replan Interval [s]
+      min   : 0.0
+      max   : 10.0
+      v     : 2.0
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name  : costmap_topic
+      desc  : Costmap topic for avoidance planning
+      label : Costmap Topic
+      kind  : str
+      v     : semantics/costmap_generator/occupancy_grid
+      cmd_param:
+        dash  : ''
+        delim : ':='
 
   - name  : velocity_set
     topic : /config/velocity_set
@@ -2082,7 +2107,7 @@ params :
       max   : 1
       v     : 0
 
-    - name     : car
+    - name     : carHEAD
       desc     : car desc sample
       label    : Car
       kind     : checkbox
@@ -2460,7 +2485,7 @@ params :
       max       : 50
       v         : 10.0
 
-  - name  : astar_navi
+  - name  : astar_navi_param
     vars  :
     - name  : use_back
       desc  : Use reverse motion for planning
@@ -2468,17 +2493,34 @@ params :
       kind  : checkbox
       v     : False
       cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name      : waypoint_velocity_kmph
-      desc      : Velocity of planned waypoints
-      label     : Waypoint Velocity
-      min       : 0.0
-      max       : 40.0
-      v         : 5.0
+        dash  : ''
+        delim : ':='
+    - name  : waypoints_velocity
+      desc  : Velocity on planned waypoints
+      label : Waypoint Velocity [km/h]
+      min   : 0.0
+      max   : 40.0
+      v     : 5.0
       cmd_param :
-        dash      : ''
-        delim     : ':='
+        dash  : ''
+        delim : ':='
+    - name  : update_rate
+      desc  : Replanning rate
+      label : Update Rate [Hz]
+      min   : 0.0
+      max   : 10.0
+      v     : 0.5
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name  : costmap_topic
+      desc  : Costmap topic for planning
+      label : Costmap Topic
+      kind  : str
+      v     : semantics/costmap_generator/occupancy_grid
+      cmd_param :
+        dash  : ''
+        delim : ':='
 
   - name  : way_planner
     vars  :
