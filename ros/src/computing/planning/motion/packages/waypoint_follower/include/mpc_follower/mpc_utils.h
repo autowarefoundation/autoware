@@ -34,6 +34,9 @@ bool interp1d(const Eigen::VectorXd &index, const Eigen::VectorXd &values, const
 bool interp1dMPCTraj(const std::vector<double> &index, const MPCTrajectory &values,
                      const std::vector<double> &ref, MPCTrajectory &ret);
 
+template <typename T1, typename T2>
+bool interp1dX(const T1 &index, const T2 &values, const double &ref, double &ret);
+
 /* calculate path yaw angle from xy vector*/
 void calcTrajectoryYawFromXY(MPCTrajectory &traj);
 

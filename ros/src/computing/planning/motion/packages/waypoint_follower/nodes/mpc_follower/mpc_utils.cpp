@@ -132,6 +132,57 @@ bool MPCUtils::interp1d(const Eigen::VectorXd &index,
   return true;
 }
 
+template <typename T1, typename T2>
+bool MPCUtils::interp1dX(const T1 &index, const T2 &values, const double &ref, double &ret)
+{
+  ret = 0.0;
+  if (!((int)index.size() == (int)values.size()))
+  {
+    printf("index and values must have same size, return false.\n");
+    return false;
+  }
+  if (index.size() == 1)
+  {
+    printf("index size is 1, too short. return false.\n");
+    return false;
+  }
+  unsigned int end = index.size() - 1;
+  if (ref < index[0])
+  {
+    ret = values[0];
+    // printf("ref point is out of index (low), return false.\n");
+    return true;
+  }
+  if (index[end] < ref)
+  {
+    ret = values[end];
+    // printf("ref point is out of index (high), return false.\n");
+    return true;
+  }
+
+  for (unsigned int i = 1; i < index.size(); ++i)
+  {
+    if (!(index[i] > index[i - 1]))
+    {
+      printf("index must be monotonically increasing, return false. index[i] = %f, but index[i - 1] = %f\n", index[i], index[i - 1]);
+      return false;
+    }
+  }
+  unsigned int i = 1;
+  while (ref > index[i])
+  {
+    ++i;
+  }
+  const double a = ref - index[i - 1];
+  const double d_index = index[i] - index[i - 1];
+  ret = ((d_index - a) * values[i - 1] + a * values[i]) / d_index;
+  return true;
+}
+template bool MPCUtils::interp1dX<std::vector<double>, std::vector<double>>(const std::vector<double> &, const std::vector<double> &, const double &, double &);
+template bool MPCUtils::interp1dX<std::vector<double>, Eigen::VectorXd>(const std::vector<double> &, const Eigen::VectorXd &, const double &, double &);
+template bool MPCUtils::interp1dX<Eigen::VectorXd, std::vector<double>>(const Eigen::VectorXd &, const std::vector<double> &, const double &, double &);
+template bool MPCUtils::interp1dX<Eigen::VectorXd, Eigen::VectorXd>(const Eigen::VectorXd &, const Eigen::VectorXd &, const double &, double &);
+
 // 1D interpolation
 bool MPCUtils::interp1dMPCTraj(const std::vector<double> &index, const MPCTrajectory &values,
                                const std::vector<double> &ref, MPCTrajectory &ret)

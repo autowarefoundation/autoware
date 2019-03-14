@@ -128,19 +128,15 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
   MPCUtils::calcNearestPoseInterp(ref_traj_, vehicle_status_.pose, nearest_pose, nearest_index, nearest_dist_error, nearest_yaw_error, nearest_traj_time);
   DEBUG_INFO("[calculateMPC] selfpose.x = %f, y = %f, yaw = %f", vehicle_status_.pose.position.x, vehicle_status_.pose.position.y, current_yaw);
   DEBUG_INFO("[calculateMPC] nearpose.x = %f, y = %f, yaw = %f", nearest_pose.position.x, nearest_pose.position.y, tf2::getYaw(nearest_pose.orientation));
-  DEBUG_INFO("[calculateMPC] nearest_index = %d, nearest_dist_error = %f\n", nearest_index, nearest_dist_error);
+  DEBUG_INFO("[calculateMPC] nearest_index = %d, nearest_dist_error = %f", nearest_index, nearest_dist_error);
 
   /* check if lateral error is not too large */
-  if (nearest_dist_error > admisible_position_error_)
-  {
-    ROS_WARN("[calculateMPC] position error over limit, stop mpc. (error: %f[m], limit: %f[m])", nearest_dist_error, admisible_position_error_);
-    return false;
-  }
-  if (std::fabs(nearest_yaw_error) > admisible_yaw_error_deg_ * DEG2RAD)
-  {
-    ROS_WARN("[calculateMPC] yaw error over limit, stop mpc.(error: %f[deg], limit: %f[deg])", nearest_yaw_error * RAD2DEG, admisible_yaw_error_deg_);
-    return false;
-  }
+  if (nearest_dist_error > admisible_position_error_ || std::fabs(nearest_yaw_error) > admisible_yaw_error_deg_ * DEG2RAD)
+    {
+      ROS_WARN("[calculateMPC] error is over limit, stop mpc. (pos-error: %f[m], pos-limit: %f[m], yaw-error: %f[deg], yaw-limit: %f[deg])",
+               nearest_dist_error, admisible_position_error_, nearest_yaw_error * RAD2DEG, admisible_yaw_error_deg_);
+      return false;
+    }
 
   /* set mpc initial time */
   double mpc_start_time = nearest_traj_time; /* as initialize */
@@ -212,7 +208,7 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
     MPC_T[i] = mpc_time_tmp;
   }
   if (!MPCUtils::interp1dMPCTraj(ref_traj_.relative_time, ref_traj_, mpc_time_v, mpc_resampled_ref_traj)) {
-    ROS_WARN("[calculateMPC] mpc resample error, stop mpc calculation");
+    ROS_WARN("[calculateMPC] mpc resample error, stop mpc calculation. check code!");
     return false;
   }
 
@@ -271,22 +267,29 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
    * solve quadratic optimization.
    * cost function: Uex' * H * Uex + f' * Uex
    */
-
   const Eigen::MatrixXd CB = Cex * Bex;
   const Eigen::MatrixXd QCB = Qex * CB;
-  const Eigen::MatrixXd H = CB.transpose() * QCB + Rex;
+  Eigen::MatrixXd H = Eigen::MatrixXd::Zero(DIM_U * N, DIM_U * N);
+  H.triangularView<Eigen::Upper>() = CB.transpose() * QCB;
+  H.triangularView<Eigen::Upper>() += Rex;
+  H.triangularView<Eigen::Lower>() = H.transpose();
   const Eigen::MatrixXd f = (Cex * (Aex * x0 + Wex)).transpose() * QCB - Urefex.transpose() * Rex;
   Eigen::VectorXd Uex;
+
+  auto start = std::chrono::system_clock::now();
   if (!qpsolver::solveEigenLeastSquareLLT(H, f, Uex)){
     ROS_WARN("qp solver error");
     return false;
   }
+  double elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - start).count();
+  DEBUG_INFO("[calculateMPC] qp solver calculation time = %f [ms]", elapsed * 1.0e-6);  
 
   /* time delay compensation, look ahead delay_compensation_time for optimized input vector*/
   double u_delay_comped;
   double total_delay = (ros::Time::now() - vehicle_status_.header.stamp).toSec();
   DEBUG_INFO("[calculateMPC] total delay time = %f [s]", total_delay);
-  if (!MPCUtils::interp1d(MPC_T, Uex, nearest_traj_time + mpc_param_.delay_compensation_time, u_delay_comped))
+  // if (!MPCUtils::interp1d(MPC_T, Uex, nearest_traj_time + mpc_param_.delay_compensation_time, u_delay_comped))
+  if (!MPCUtils::interp1dX<std::vector<double>, Eigen::VectorXd>(mpc_time_v, Uex, nearest_traj_time + mpc_param_.delay_compensation_time, u_delay_comped))
   {
     ROS_ERROR("invalid interpolation for u_delay");
   }
@@ -430,13 +433,13 @@ void MPCFollower::callbackRefPath(const autoware_msgs::Lane::ConstPtr &msg)
     MoveAverageFilter::filt_vector(path_filter_moving_ave_num_, traj.x);
     MoveAverageFilter::filt_vector(path_filter_moving_ave_num_, traj.y);
     // MoveAverageFilter::filt_vector(path_filter_moving_ave_num_, traj.z);
-    // MoveAverageFilter::filt_vector(path_filter_moving_ave_num_, traj.yaw);
+    MoveAverageFilter::filt_vector(path_filter_moving_ave_num_, traj.yaw);
     // MoveAverageFilter::filt_vector(path_filter_moving_ave_num_, traj.k);
     }
   }
 
   /* calculate yaw angle */
-  MPCUtils::calcTrajectoryYawFromXY(traj);
+  // MPCUtils::calcTrajectoryYawFromXY(traj);
 
   /* calculate curvature */
   MPCUtils::calcTrajectoryCurvature(traj, curvature_smoothing_num_);
