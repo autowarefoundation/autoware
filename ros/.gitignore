@@ -13,6 +13,8 @@ catkin_generated/
 /devel/
 /install/
 /gtest/
+/build-*
+/devel-*
 
 # Dependency
 /depends/.catkin_workspace

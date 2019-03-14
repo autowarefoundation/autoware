@@ -24,11 +24,11 @@
 
 #include "lidar_kf_track.h"
 
-class KfLidarTrackNode
+class KFLidarTrackNode
 {
 public:
-	KfLidarTrackNode();
-	~KfLidarTrackNode();
+	KFLidarTrackNode();
+	~KFLidarTrackNode();
 
 private:
 
@@ -44,7 +44,7 @@ private:
 	int keep_alive_;
 	int maximum_track_id_;
 
-	boost::shared_ptr<KfLidarTracker> tracker_ptr;
+	boost::shared_ptr<KFLidarTracker> tracker_ptr;
 
 	double distance_matching_threshold_;
 	double tracker_merging_threshold_;
@@ -52,11 +52,11 @@ private:
 	void CloudClustersCallback(const autoware_msgs::CloudClusterArray::Ptr& in_cloud_cluster_array_ptr);
 };
 
-KfLidarTrackNode::KfLidarTrackNode() :
+KFLidarTrackNode::KFLidarTrackNode() :
 		node_handle_("~"),
 		pose_estimation_(false)
 {
-	cloud_clusters_sub_ = node_handle_.subscribe("/cloud_clusters_class", 10, &KfLidarTrackNode::CloudClustersCallback, this);
+	cloud_clusters_sub_ = node_handle_.subscribe("/cloud_clusters_class", 10, &KFLidarTrackNode::CloudClustersCallback, this);
 	pub_detected_objects_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>( "/detected_objects", 10);
 	pub_jsk_tracked_objects_ = node_handle_.advertise<jsk_recognition_msgs::BoundingBoxArray>("/bounding_boxes_tracked",1);
 	pub_jsk_hulls_ = node_handle_.advertise<jsk_recognition_msgs::PolygonArray>("/cluster_hulls_tracked",1);
@@ -75,7 +75,7 @@ KfLidarTrackNode::KfLidarTrackNode() :
 
 
 
-	tracker_ptr = boost::shared_ptr<KfLidarTracker>(new KfLidarTracker(0.2f,  //dt
+	tracker_ptr = boost::shared_ptr<KFLidarTracker>(new KFLidarTracker(0.2f,  //dt
 							0.1f, 			//acceleration_noise
 							distance_matching_threshold_, 			//matching distance threshold
 							tracker_merging_threshold_, //tracker merging threshold
@@ -84,11 +84,11 @@ KfLidarTrackNode::KfLidarTrackNode() :
 							maximum_track_id_));			//trace length
 }
 
-KfLidarTrackNode::~KfLidarTrackNode()
+KFLidarTrackNode::~KFLidarTrackNode()
 {
 }
 
-void KfLidarTrackNode::CloudClustersCallback(const autoware_msgs::CloudClusterArray::Ptr& in_cloud_cluster_array_ptr)
+void KFLidarTrackNode::CloudClustersCallback(const autoware_msgs::CloudClusterArray::Ptr& in_cloud_cluster_array_ptr)
 {
 
 	autoware_msgs::CloudClusterArray final_cloud_cluster_array;
@@ -97,7 +97,7 @@ void KfLidarTrackNode::CloudClustersCallback(const autoware_msgs::CloudClusterAr
 
 
 	//std::cout << "Update start" << std::endl;
-	tracker_ptr->Update(*in_cloud_cluster_array_ptr, KfLidarTracker::CentersDist);
+	tracker_ptr->Update(*in_cloud_cluster_array_ptr, KFLidarTracker::CentersDist);
 	//std::cout << "Update end" << std::endl;
 
 	jsk_recognition_msgs::BoundingBoxArray tracked_boxes;
@@ -172,7 +172,7 @@ int main(int argc, char **argv)
 {
 
 	ros::init(argc, argv, "kf_lidar_track");
-	KfLidarTrackNode node;
+	KFLidarTrackNode node;
 	ros::spin();
 
 	return 0;

@@ -27,7 +27,7 @@ subs :
         cmd  : roslaunch lidar_localizer ndt_mapping.launch
         param: ndt_mapping
         gui  :
-          dialog : MyDialogNdtMapping
+          dialog : MyDialogNDTMapping
           dialog_width  : 750
           dialog_height : 650
           incremental_voxel_update:
@@ -42,7 +42,7 @@ subs :
         cmd  : roslaunch lidar_localizer approximate_ndt_mapping.launch
         param: approximate_ndt_mapping
         gui  :
-          dialog : MyDialogNdtMapping
+          dialog : MyDialogNDTMapping
           dialog_width  : 750
           dialog_height : 500
       - name : ndt_matching
@@ -65,6 +65,8 @@ subs :
           use_odom:
             flags : [ nl ]
           imu_topic:
+            flags : [ nl ]
+          get_height:
             flags : [ nl ]
           sync :
             func : self.button_synchronization.GetValue()
@@ -115,7 +117,7 @@ subs :
           flags                  : [ open_dialog, need_camera_info ]
           config_dialog          : MyDialogCarPedestrian
           car_pedestrian_obj_key : { car : car_dpm, pedestrian : pedestrian_dpm }
-          open_dialog            : MyDialogDpm
+          open_dialog            : MyDialogDPM
           use_gpu :
             flags  : [ nl ]
           car :
@@ -392,6 +394,12 @@ subs :
           cmd  : roslaunch imm_ukf_pda_track imm_ukf_pda_track.launch
           param: imm_ukf_pda_track_param
           gui  :
+            dialog_width  : 600
+            dialog_height : 400
+            downsample_cloud :
+              flags : [nl ]
+            clustering_distances:
+              flags : [nl ]
             sync :
               func : self.button_synchronization.GetValue()
 
@@ -1081,7 +1089,7 @@ params :
 
   - name  : car_dpm
     topic : /config/car_dpm
-    msg   : ConfigCarDpm
+    msg   : ConfigCarDPM
     vars  :
     - name  : score_threshold
       desc  : score_threshold desc sample
@@ -1116,7 +1124,7 @@ params :
 
   - name  : pedestrian_dpm
     topic : /config/pedestrian_dpm
-    msg   : ConfigPedestrianDpm
+    msg   : ConfigPedestrianDPM
     vars  :
     - name  : score_threshold
       desc  : score_threshold desc sample
@@ -1156,23 +1164,16 @@ params :
       label   : 'input topic'
       kind    : topic
       topic_type : autoware_msgs/DetectedObjectArray
-      v       : /detection/lidar_detector/objects
+      v       : /detection/fusion_tools/objects
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : tracker_output_detected_topic
+    - name    : tracker_output_topic
       desc    : output_topic desc sample
       label   : 'output topic'
-      kind    : str
-      v       : /detection/lidar_tracker/objects
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : pointcloud_frame
-      desc    : pointcloud_frame_ desc sample
-      label   : 'pointcloud frame'
-      kind    : str
-      v       : velodyne
+      kind    : topic
+      topic_type : autoware_msgs/DetectedObjectArray
+      v       : /detection/objects
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -1181,6 +1182,14 @@ params :
       label   : 'tracking frame'
       kind    : str
       v       : world
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : vectormap_frame
+      desc    : vectormap_frame_ desc sample
+      label   : 'vectormap frame'
+      kind    : str
+      v       : map
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -1220,21 +1229,21 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : distance_thres
-      desc    : distance_thres_ desc sample
-      label   : 'distance thres'
+    - name    : static_velocity_thres
+      desc    : static_velocity_thres_ desc sample
+      label   : 'static velocity thres'
       min       : 0
-      max       : 100
-      v       : 100
+      max       : 10
+      v       : 0.5
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : static_distance_thres
-      desc    : static_distance_thres_ desc sample
-      label   : 'static distance thres'
+    - name    : static_num_history_thres
+      desc    : static_num_history_thres desc sample
+      label   : 'static num history thres'
       min       : 0
-      max       : 10
-      v       : 3.0
+      max       : 20
+      v       : 3
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -1247,6 +1256,33 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name    : lane_direction_chi_thres
+      desc    : threshold for direction chi squared distribution
+      label   : 'lane direction chi thres'
+      min       : 0.0
+      max       : 20
+      v       : 2.71
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : nearest_lane_distance_thres
+      desc    : threshold for nearest lane distance
+      label   : 'nearest lane distance thres'
+      min       : 0.0
+      max       : 20
+      v       : 1.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : merge_distance_threshold
+      desc    : Distance to merge objects tracker output in meters. Default 0.5m
+      label   : 'merge_distance_threshold [meters]'
+      min       : 0.0
+      max       : 2.0
+      v       : 0.5
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name      : use_sukf
       desc      : Use SUKF
       label     : use_sukf
@@ -1255,15 +1291,14 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name      : is_debug
-      desc      : debug mode on/off
-      label     : is_debug
+    - name      : use_vectormap
+      desc      : Use vectormap fot lane direction assisted tracking
+      label     : use_vectormap
       kind      : checkbox
       v         : False
       cmd_param :
         dash      : ''
         delim     : ':='
-
 
   - name  : lidar_kf_contour_track_param
     vars  :
@@ -1403,7 +1438,7 @@ params :
 
   - name  : ndt
     topic : /config/ndt
-    msg   : ConfigNdt
+    msg   : ConfigNDT
     vars  :
     - name  : init_pos_gnss
       desc  : init_pos_gnss desc sample
@@ -1572,6 +1607,14 @@ params :
     - name      : get_height
       desc      : get_height desc sample
       label     : Get Height
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : output_log_data
+      desc      : output ndt log data
+      label     : Output Log Data
       kind      : checkbox
       v         : False
       cmd_param :
@@ -2204,7 +2247,7 @@ params :
 
   - name  : car_kf
     topic : /config/car_kf
-    msg   : ConfigCarKf
+    msg   : ConfigCarKF
     vars  :
     - name  : initial_lifespan
       desc  : initial_lifespan desc sample
@@ -2291,7 +2334,7 @@ params :
 
   - name  : pedestrian_kf
     topic : /config/pedestrian_kf
-    msg   : ConfigPedestrianKf
+    msg   : ConfigPedestrianKF
     vars  :
     - name  : initial_lifespan
       desc  : initial_lifespan desc sample
@@ -3377,7 +3420,7 @@ params :
     vars  :
     - name : rosbag_file
       desc : path to localization ready rosbag file
-      label: Rosbag Path
+      label: ROSbag Path
       kind : path
       cmd_param:
         dash     : ''
@@ -3872,7 +3915,7 @@ params :
 
   - name  : ndt_mapping
     topic : /config/ndt_mapping
-    msg   : ConfigNdtMapping
+    msg   : ConfigNDTMapping
     vars  :
     - name      : resolution
       desc      : Cell Size while mapping using ND (meters) (default 1.0)
@@ -3986,7 +4029,7 @@ params :
 
   - name  : approximate_ndt_mapping
     topic : /config/approximate_ndt_mapping
-    msg   : ConfigApproximateNdtMapping
+    msg   : ConfigApproximateNDTMapping
     flags : [ no_init_update ]
     vars  :
     - name      : resolution
@@ -4181,7 +4224,7 @@ params :
 
   - name  : ssd
     topic : /config/ssd
-    msg   : ConfigSsd
+    msg   : ConfigSSD
     vars  :
     - name  : score_threshold
       desc  : score_threshold desc sample
@@ -4519,6 +4562,15 @@ params :
       min       : -500
       max       : 500
       v         : 0.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : grid_position_z
+      desc      : grid position z [meter]
+      label     : Grid Position z [m]
+      min       : -5
+      max       : 5
+      v         : -2.0
       cmd_param :
         dash      : ''
         delim     : ':='
@@ -5375,11 +5427,11 @@ params :
   - name  : naive_motion_predict_param
     vars  :
     - name  : input_topic
-      desc  : input tppic
+      desc  : input topic
       label : input_topic
       kind  : topic
       topic_type : autoware_msgs/DetectedObjectArray
-      v     : /detection/lidar_tracker/objects
+      v     : /detection/objects
       cmd_param :
         dash      : ''
         delim     : ':='
