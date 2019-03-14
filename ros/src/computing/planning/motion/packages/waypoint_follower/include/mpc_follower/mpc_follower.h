@@ -60,6 +60,7 @@ private:
   double ctrl_period_;              // deside control frequency
   bool use_path_smoothing_;         // flag for path smoothing
   int path_filter_moving_ave_num_;  // path smoothing moving average number
+  int path_smoothing_times_;        // number of times of applying smoothing filter
   int curvature_smoothing_num_;     // for smoothing curvature calculation
   double traj_resample_dist_;       // path resample distance span
   double steering_lpf_cutoff_hz_;   // for steering command smoothing
@@ -86,7 +87,6 @@ private:
     std_msgs::Header header;
     geometry_msgs::Pose pose;
     geometry_msgs::Twist twist;
-    std::string frame_id_pos;
     double tire_angle_rad;
   };
   VehicleStatus vehicle_status_; // updated by topic callback

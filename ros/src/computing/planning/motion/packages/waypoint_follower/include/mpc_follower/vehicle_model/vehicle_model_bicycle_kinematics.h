@@ -19,8 +19,8 @@ class KinematicsBicycleModel : public VehicleModelInterface
     
     void calculateReferenceInput(Eigen::MatrixXd &Uref, const double &curvature);
     void setParams(double &wheelbase, double &steer_tau, double &steer_lim_deg);
-    void setVel(double &vel);
-    void setCurvature(double &curvature);
+    void setVel(const double &vel);
+    void setCurvature(const double &curvature);
 
   private:
     double wheelbase_;

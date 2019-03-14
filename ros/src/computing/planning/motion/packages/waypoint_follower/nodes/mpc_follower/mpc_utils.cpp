@@ -17,8 +17,8 @@ void MPCUtils::convertEulerAngleToMonotonic(std::vector<double> &a)
 }
 
 void MPCUtils::fillIncrease(std::vector<double>::iterator first,
-                   std::vector<double>::iterator last, double init,
-                   double diff)
+                            std::vector<double>::iterator last, double init,
+                            double diff)
 {
   double value = init;
   while (first != last)
@@ -28,7 +28,8 @@ void MPCUtils::fillIncrease(std::vector<double>::iterator first,
   }
 }
 
-geometry_msgs::Quaternion MPCUtils::getQuaternionFromYaw(const double &yaw) {
+geometry_msgs::Quaternion MPCUtils::getQuaternionFromYaw(const double &yaw)
+{
   tf2::Quaternion q;
   q.setRPY(0, 0, yaw);
   return tf2::toMsg(q);
@@ -36,8 +37,8 @@ geometry_msgs::Quaternion MPCUtils::getQuaternionFromYaw(const double &yaw) {
 
 // 1D interpolation
 bool MPCUtils::interp1d(const std::vector<double> &index,
-              const std::vector<double> &values, const double &ref,
-              double &ret)
+                        const std::vector<double> &values, const double &ref,
+                        double &ret)
 {
   ret = 0.0;
   if (!(index.size() == values.size()))
@@ -84,8 +85,8 @@ bool MPCUtils::interp1d(const std::vector<double> &index,
 }
 
 bool MPCUtils::interp1d(const Eigen::VectorXd &index,
-              const Eigen::VectorXd &values, const double &ref,
-              double &ret)
+                        const Eigen::VectorXd &values, const double &ref,
+                        double &ret)
 {
   ret = 0.0;
   if (!(index.size() == values.size()))
@@ -131,8 +132,98 @@ bool MPCUtils::interp1d(const Eigen::VectorXd &index,
   return true;
 }
 
+// 1D interpolation
+bool MPCUtils::interp1dMPCTraj(const std::vector<double> &index, const MPCTrajectory &values,
+                               const std::vector<double> &ref, MPCTrajectory &ret)
+{
+  if (!(index.size() == values.size()))
+  {
+    printf("index and values must have same size, return false.\n");
+    return false;
+  }
+  if (index.size() == 1)
+  {
+    printf("index size is 1, too short. return false.\n");
+    return false;
+  }
+
+  for (unsigned int i = 1; i < index.size(); ++i)
+  {
+    if (!(index[i] > index[i - 1]))
+    {
+      printf("index must be monotonically increasing, return false. index[i] = %f, but index[i - 1] = %f\n", index[i], index[i - 1]);
+      return false;
+    }
+  }
+
+  for (unsigned int i = 1; i < ref.size(); ++i)
+  {
+    if (!(ref[i] > ref[i - 1]))
+    {
+      printf("index must be monotonically increasing, return false. ref[i] = %f, but ref[i - 1] = %f\n", ref[i], ref[i - 1]);
+      return false;
+    }
+  }
+
+  ret.clear();
+  unsigned int i = 1;
+  for (unsigned int j = 0; j < ref.size(); ++j)
+  {
+    double a, d_index;
+    if (ref[j] > index.back())
+    {
+      a = 1.0;
+      d_index = 1.0;
+      i = index.size() - 1;
+    }
+    else if (ref[j] < index.front())
+    {
+      a = 0.0;
+      d_index = 1.0;
+      i = 1;
+    }
+    else
+    {
+      while (ref[j] > index[i])
+      {
+        ++i;
+      }
+      a = ref[j] - index[i - 1];
+      d_index = index[i] - index[i - 1];
+    }
+    const double x = ((d_index - a) * values.x[i - 1] + a * values.x[i]) / d_index;
+    const double y = ((d_index - a) * values.y[i - 1] + a * values.y[i]) / d_index;
+    const double z = ((d_index - a) * values.z[i - 1] + a * values.z[i]) / d_index;
+    const double yaw = ((d_index - a) * values.yaw[i - 1] + a * values.yaw[i]) / d_index;
+    const double vx = ((d_index - a) * values.vx[i - 1] + a * values.vx[i]) / d_index;
+    const double k = ((d_index - a) * values.k[i - 1] + a * values.k[i]) / d_index;
+    const double t = ref[j];
+    ret.push_back(x, y, z, yaw, vx, k, t);
+  }
+  return true;
+}
+
+void MPCUtils::calcTrajectoryYawFromXY(MPCTrajectory &traj)
+{
+  if (traj.yaw.size() == 0)
+    return;
+
+  for (unsigned int i = 1; i < traj.yaw.size() - 1; ++i)
+  {
+    const double dx = traj.x[i + 1] - traj.x[i - 1];
+    const double dy = traj.y[i + 1] - traj.y[i - 1];
+    traj.yaw[i] = std::atan2(dy, dx);
+  }
+  if (traj.yaw.size() > 1)
+  {
+    traj.yaw[0] = traj.yaw[1];
+    traj.yaw.back() = traj.yaw[traj.yaw.size() - 2];
+  }
+}
+
 void MPCUtils::calcTrajectoryCurvature(MPCTrajectory &traj, int curvature_smoothing_num)
 {
+  unsigned int traj_k_size = traj.x.size();
   traj.k.clear();
 
   auto dist = [](const geometry_msgs::Point &a, const geometry_msgs::Point &b) {
@@ -141,7 +232,7 @@ void MPCUtils::calcTrajectoryCurvature(MPCTrajectory &traj, int curvature_smooth
 
   /* calculate curvature by circle fitting from three points */
   geometry_msgs::Point p1, p2, p3;
-  for (uint i = curvature_smoothing_num; i < traj.x.size() - curvature_smoothing_num; ++i)
+  for (unsigned int i = curvature_smoothing_num; i < traj_k_size - curvature_smoothing_num; ++i)
   {
     p1.x = traj.x[i - curvature_smoothing_num];
     p2.x = traj.x[i];
@@ -164,7 +255,7 @@ void MPCUtils::calcTrajectoryCurvature(MPCTrajectory &traj, int curvature_smooth
 }
 
 void MPCUtils::resamplePathToTrajByDistance(const autoware_msgs::Lane &path, const std::vector<double> &time,
-                                  const double &dl, MPCTrajectory &ref_traj)
+                                            const double &dl, MPCTrajectory &ref_traj)
 {
 
   ref_traj.clear();
@@ -183,7 +274,7 @@ void MPCUtils::resamplePathToTrajByDistance(const autoware_msgs::Lane &path, con
   double l = 0.0;
   while (l < dists.back())
   {
-    uint j = 1;
+    unsigned int j = 1;
     while (l > dists.at(j))
     {
       ++j;
@@ -219,7 +310,7 @@ void MPCUtils::resamplePathToTrajByDistance(const autoware_msgs::Lane &path, con
 }
 
 void MPCUtils::resamplePathToTrajByTime(const autoware_msgs::Lane &path, const std::vector<double> &time,
-                              const double &dt, MPCTrajectory &ref_traj_)
+                                        const double &dt, MPCTrajectory &ref_traj_)
 {
 
   ref_traj_.clear();
@@ -284,8 +375,8 @@ void MPCUtils::calcPathRelativeTime(const autoware_msgs::Lane &path, std::vector
   }
 }
 
-void MPCUtils::calcNearestPose(const MPCTrajectory &traj, const geometry_msgs::Pose &self_pose, geometry_msgs::Pose &nearest_pose, 
-    unsigned int &nearest_index, double &min_dist_error, double &nearest_yaw_error, double &nearest_time)
+void MPCUtils::calcNearestPose(const MPCTrajectory &traj, const geometry_msgs::Pose &self_pose, geometry_msgs::Pose &nearest_pose,
+                               unsigned int &nearest_index, double &min_dist_error, double &nearest_yaw_error, double &nearest_time)
 {
   nearest_index = 0;
   nearest_yaw_error = std::numeric_limits<double>::max();
@@ -318,8 +409,8 @@ void MPCUtils::calcNearestPose(const MPCTrajectory &traj, const geometry_msgs::P
   nearest_pose.orientation = getQuaternionFromYaw(traj.yaw[nearest_index]);
 };
 
-void MPCUtils::calcNearestPoseInterp(const MPCTrajectory &traj, const geometry_msgs::Pose &self_pose, geometry_msgs::Pose &nearest_pose, 
-    unsigned int &nearest_index, double &min_dist_error, double &nearest_yaw_error, double &nearest_time)
+void MPCUtils::calcNearestPoseInterp(const MPCTrajectory &traj, const geometry_msgs::Pose &self_pose, geometry_msgs::Pose &nearest_pose,
+                                     unsigned int &nearest_index, double &min_dist_error, double &nearest_yaw_error, double &nearest_time)
 {
 
   if (traj.size() == 0)

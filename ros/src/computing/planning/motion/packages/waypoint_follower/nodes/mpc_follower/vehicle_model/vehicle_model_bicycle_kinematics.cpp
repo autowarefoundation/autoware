@@ -46,5 +46,5 @@ void KinematicsBicycleModel::setParams(double &wheelbase, double &steer_tau, dou
     steer_tau_ = steer_tau;
     steer_lim_deg_ = steer_lim_deg;
 }
-void KinematicsBicycleModel::setVel(double &vel) { vel_ = vel; };
-void KinematicsBicycleModel::setCurvature(double &curvature) { curvature_ = curvature; };
+void KinematicsBicycleModel::setVel(const double &vel) { vel_ = vel; };
+void KinematicsBicycleModel::setCurvature(const double &curvature) { curvature_ = curvature; };

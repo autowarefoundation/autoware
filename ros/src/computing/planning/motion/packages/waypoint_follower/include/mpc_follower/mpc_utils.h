@@ -31,6 +31,11 @@ geometry_msgs::Quaternion getQuaternionFromYaw(const double &yaw);
 /* 1D interpolation */
 bool interp1d(const std::vector<double> &index, const std::vector<double> &values, const double &ref, double &ret);
 bool interp1d(const Eigen::VectorXd &index, const Eigen::VectorXd &values, const double &ref, double &ret);
+bool interp1dMPCTraj(const std::vector<double> &index, const MPCTrajectory &values,
+                     const std::vector<double> &ref, MPCTrajectory &ret);
+
+/* calculate path yaw angle from xy vector*/
+void calcTrajectoryYawFromXY(MPCTrajectory &traj);
 
 /* Calculate path curvature by 3-points circle fitting with smoothing num (use nearest 3 points when "num = 1") */
 void calcTrajectoryCurvature(MPCTrajectory &traj, int curvature_smoothing_num);

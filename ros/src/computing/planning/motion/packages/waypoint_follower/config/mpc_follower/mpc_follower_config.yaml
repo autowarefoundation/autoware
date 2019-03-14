@@ -24,6 +24,9 @@ use_path_smoothing: true
 # path smoothing low pass filler, moving average number
 path_filter_moving_ave_num: 40
 
+# Number of times tof applying path smoothing filter
+path_smoothing_times: 1
+
 # curvature calculation smoothing, larger makes smoother
 #   curvature is calculated from three points: p(i-num), p(i), p(i+num)
 curvature_smoothing_num: 40
