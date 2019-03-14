@@ -72,7 +72,7 @@ For example, you can add ndt matching as following.
       - {target: args.use_odom, widget: basic.bool}
       ...
 ```
-1. Add new plugin path to parent plugin file by text editor (e.g. autoware_launcher/plugins/refs/ndt_matching.yaml).
+1. Add new plugin path to parent plugin file by text editor (e.g. autoware_launcher/plugins/node/localization.yaml).
 ```
     format: Autoware Launcher Plugin Version 0.1
     rules:
