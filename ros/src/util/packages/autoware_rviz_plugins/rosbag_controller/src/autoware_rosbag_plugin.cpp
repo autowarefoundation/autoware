@@ -165,7 +165,7 @@ void Autoware_Rosbag_Plugin::on_button_record_start_clicked()
 
   /* Caculate max split size */
   if (split_size != 0 && ui->checkBox_split_size->isChecked())
-    recoParam.max_size = ceil(split_size * 1000 * 1000 * 1000);
+    recoParam.max_size = uint64_t(split_size * 1048576 * 1024);
   else
     recoParam.max_size = 0;
 
