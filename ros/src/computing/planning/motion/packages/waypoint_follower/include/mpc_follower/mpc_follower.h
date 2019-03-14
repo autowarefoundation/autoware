@@ -112,4 +112,10 @@ private:
   ros::Publisher pub_debug_filtered_traj_, pub_debug_predicted_traj_, pub_debug_values_;
   ros::Subscriber sub_ndt_twist_;
   void convertTrajToMarker(const MPCTrajectory &traj, visualization_msgs::Marker &markers, std::string ns, double r, double g, double b);
+
+  geometry_msgs::TwistStamped estimate_twist_;
+  ros::Subscriber sub_estimate_twist_;
+  void callbackEstimateTwist(const geometry_msgs::TwistStamped &msg) {
+    estimate_twist_ = msg;
+  }
 };

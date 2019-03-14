@@ -73,6 +73,7 @@ MPCFollower::MPCFollower()
   pub_debug_filtered_traj_ = pnh_.advertise<visualization_msgs::Marker>("debug/filtered_traj", 1);
   pub_debug_predicted_traj_ = pnh_.advertise<visualization_msgs::Marker>("debug/predicted_traj", 1);
   pub_debug_values_ = pnh_.advertise<std_msgs::Float64MultiArray>("debug/debug_values", 1);
+  sub_estimate_twist_ = nh_.subscribe("/estimate_twist", 1, &MPCFollower::callbackEstimateTwist, this);
 };
 
 void MPCFollower::timerCallback(const ros::TimerEvent &te)
@@ -203,9 +204,9 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
   std::vector<double> mpc_time_v;
   double mpc_time_tmp = mpc_start_time;
   for (int i = 0;i < N; ++i) {
-    mpc_time_tmp += mpc_param_.dt;
     mpc_time_v.push_back(mpc_time_tmp);
     MPC_T[i] = mpc_time_tmp;
+    mpc_time_tmp += mpc_param_.dt;
   }
   if (!MPCUtils::interp1dMPCTraj(ref_traj_.relative_time, ref_traj_, mpc_time_v, mpc_resampled_ref_traj)) {
     ROS_WARN("[calculateMPC] mpc resample error, stop mpc calculation. check code!");
@@ -340,6 +341,8 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
 
   /* publish debug values */
   const double input_curvature = tan(steer_cmd) / wheelbase_;
+  const double nearest_wz = nearest_ref_k * vehicle_status_.twist.linear.x;
+  const double input_wz = input_curvature * vehicle_status_.twist.linear.x;
   std_msgs::Float64MultiArray debug_values;
   debug_values.data.clear();
   debug_values.data.push_back(u_sat);
@@ -347,8 +350,11 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd)
   debug_values.data.push_back(err_lat);
   debug_values.data.push_back(err_yaw);
   debug_values.data.push_back(steer);
-  debug_values.data.push_back(nearest_ref_k);
-  debug_values.data.push_back(input_curvature);
+  // debug_values.data.push_back(nearest_ref_k);
+  // debug_values.data.push_back(input_curvature);
+  debug_values.data.push_back(nearest_wz);
+  debug_values.data.push_back(input_wz);
+  debug_values.data.push_back(estimate_twist_.twist.angular.z);
   debug_values.data.push_back(MPCUtils::intoSemicircle(current_yaw));
   debug_values.data.push_back(MPCUtils::intoSemicircle(sp_yaw));
   pub_debug_values_.publish(debug_values);
@@ -439,7 +445,7 @@ void MPCFollower::callbackRefPath(const autoware_msgs::Lane::ConstPtr &msg)
   }
 
   /* calculate yaw angle */
-  // MPCUtils::calcTrajectoryYawFromXY(traj);
+  MPCUtils::calcTrajectoryYawFromXY(traj);
 
   /* calculate curvature */
   MPCUtils::calcTrajectoryCurvature(traj, curvature_smoothing_num_);
@@ -448,7 +454,7 @@ void MPCFollower::callbackRefPath(const autoware_msgs::Lane::ConstPtr &msg)
   /* add end point with vel=0 on traj for mpc prediction */
   const double mpc_predict_time_length = mpc_param_.n * mpc_param_.dt;
   const double end_velocity = 0.0;
-  traj.vx.back() = 0.0; // also for end point
+  traj.vx.back() = end_velocity; // also for end point
   traj.push_back(traj.x.back(), traj.y.back(), traj.z.back(), traj.yaw.back(),
                  end_velocity, traj.k.back(), traj.relative_time.back() + mpc_predict_time_length);
 
