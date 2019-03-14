@@ -24,7 +24,7 @@ NaiveMotionPredict::NaiveMotionPredict() :
   private_nh_.param<double>("interval_sec", interval_sec_, 0.1);
   private_nh_.param<int>("num_prediction", num_prediction_, 10);
   private_nh_.param<double>("sensor_height_", sensor_height_, 2.0);
-  private_nh_.param<double>("filter_out_close_object_threshold", filter_out_close_object_threshold_, 0.1);
+  private_nh_.param<double>("filter_out_close_object_threshold", filter_out_close_object_threshold_, 1.5);
 
   predicted_objects_pub_ = nh_.advertise<autoware_msgs::DetectedObjectArray>("/prediction/motion_predictor/objects", 1);
   predicted_paths_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("/prediction/motion_predictor/path_markers", 1);

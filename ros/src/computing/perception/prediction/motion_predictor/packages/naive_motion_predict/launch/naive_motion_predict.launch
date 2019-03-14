@@ -3,7 +3,7 @@
     <arg name="interval_sec" default="0.1"/>
     <arg name="num_prediction" default="10"/>
     <arg name="sensor_height" default="2.0"/>
-    <arg name="filter_out_close_object_threshold" default="0.1"/>
+    <arg name="filter_out_close_object_threshold" default="1.5"/>
     <arg name="input_topic" default="/detection/objects"/>
 
     <node pkg="naive_motion_predict" type="naive_motion_predict" name="naive_motion_predict">
