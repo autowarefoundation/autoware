@@ -53,7 +53,6 @@ private:
   // ros
   ros::NodeHandle nh_, private_nh_;
   ros::Publisher safety_waypoints_pub_;
-  ros::Publisher state_cmd_pub_;
   ros::Subscriber costmap_sub_;
   ros::Subscriber current_pose_sub_;
   ros::Subscriber current_velocity_sub_;
@@ -69,7 +68,6 @@ private:
   double update_rate_;          // publishing rate [Hz]
 
   bool enable_avoidance_;           // enable avoidance mode
-  bool use_decision_state_;         // use avoidance state by decision maker
   double avoid_waypoints_velocity_; // constant velocity on planned waypoints [km/h]
   double avoid_start_velocity_;     // self velocity for staring avoidance behavior [km/h]
   double replan_interval_;          // replan interval for avoidance planning [Hz]
@@ -87,7 +85,6 @@ private:
   // variables
   bool terminate_thread_;
   bool found_avoid_path_;
-  bool stop_check_avoidance_;
   int closest_waypoint_index_;
   int obstacle_waypoint_index_;
   nav_msgs::OccupancyGrid costmap_;
@@ -112,14 +109,12 @@ private:
   void baseWaypointsCallback(const autoware_msgs::Lane& msg);
   void closestWaypointCallback(const std_msgs::Int32& msg);
   void obstacleWaypointCallback(const std_msgs::Int32& msg);
-  void stateCallback(const std_msgs::StringConstPtr& msg);
 
   // functions
   bool checkInitialized();
   bool planAvoidWaypoints(int& end_of_avoid_index);
   void mergeAvoidWaypoints(const nav_msgs::Path& path, const int& end_of_avoid_index);
   void publishWaypoints();
-  void publishStateCmd(const std::string& str);
   tf::Transform getTransform(const std::string& from, const std::string& to);
 };
 
