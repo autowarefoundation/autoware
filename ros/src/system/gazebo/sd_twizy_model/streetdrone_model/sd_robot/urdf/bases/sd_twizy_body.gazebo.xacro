@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+
+<!--
+  Copyright (c) 2019 StreetDrone Limited
+  Author:  Efimia Panagiotaki
+
+  All rights reserved
+-->
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+   <gazebo>
+        <plugin name="p3d" filename="libgazebo_ros_p3d.so">
+            <bodyName>base_link</bodyName>
+            <topicName>base_pose_ground_truth</topicName>
+            <frameName>map</frameName>
+            <updateRate>100.0</updateRate>
+        </plugin>
+    </gazebo>
+
+  <!-- ros control plugin -->
+  <xacro:macro name="ros_control">
+    <gazebo>
+            <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+                <robotNamespace>/sd_twizy</robotNamespace>
+                <controlPeriod>0.001</controlPeriod>
+                <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+                <legacyModeNS>true</legacyModeNS>
+            </plugin>
+        </gazebo>
+    </xacro:macro>
+
+    <gazebo reference="base_link">-->
+        <material>Gazebo/Green</material>
+    </gazebo>
+
+</robot>

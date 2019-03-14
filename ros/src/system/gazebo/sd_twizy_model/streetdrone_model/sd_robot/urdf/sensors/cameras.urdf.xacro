@@ -1,0 +1,108 @@
+<?xml version="1.0"?>
+
+<!--
+  Copyright (c) 2019 StreetDrone Limited
+  Author:  Efimia Panagiotaki
+
+  All rights reserved
+-->
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="sekonix_camera">
+    <xacro:macro name="sekonix_camera" params="frlr_prefix lrc_prefix *origin">
+
+        <joint name="${frlr_prefix}_${lrc_prefix}_camera_joint" type="fixed">
+            <axis xyz="0 1 0" />
+            <xacro:insert_block name="origin"/>
+            <parent link="base_link"/>
+            <child link="${frlr_prefix}_${lrc_prefix}_camera_link"/>
+        </joint>
+
+        <!-- Camera -->
+        <link name="${frlr_prefix}_${lrc_prefix}_camera_link">
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <box size="0.026 0.026 0.0203"/>
+                </geometry>
+            </collision>
+
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <box size="0.026 0.026 0.0203"/>
+                </geometry>
+                <material name="red"/>
+            </visual>
+
+            <inertial>
+                <mass value="1e-5" />
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+            </inertial>
+        </link>
+
+        <!-- generate an optical frame http://www.ros.org/reps/rep-0103.html#suffix-frames
+            so that ros and opencv can operate on the camera frame correctly -->
+        <joint name="${frlr_prefix}_${lrc_prefix}_camera_optical_joint" type="fixed">
+            <!-- these values have to be these values otherwise the gazebo camera image
+                won't be aligned properly with the frame it is supposedly originating from -->
+            <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>
+            <parent link="${frlr_prefix}_${lrc_prefix}_camera_link"/>
+            <child link="${frlr_prefix}_${lrc_prefix}_camera_link_optical"/>
+        </joint>
+
+        <link name="${frlr_prefix}_${lrc_prefix}_camera_link_optical"/>
+
+        <gazebo reference="${frlr_prefix}_${lrc_prefix}_camera_link">
+            <mu1>0.2</mu1>
+            <mu2>0.2</mu2>
+            <material>Gazebo/Red</material>
+            <sensor type="camera" name="${frlr_prefix}_${lrc_prefix}_camera">
+                <update_rate>30.0</update_rate>
+                <camera name="head">
+                    <horizontal_fov>2.09</horizontal_fov>
+                    <image>
+                        <width>1928</width>
+                        <height>1208</height>
+                        <format>R8G8B8</format>
+                    </image>
+                    <clip>
+                        <near>0.1</near>
+                        <far>30</far>
+                    </clip>
+                    <noise>
+                        <type>gaussian</type>
+                        <!-- Noise is sampled independently per pixel on each frame.
+                             That pixel's noise value is added to each of its color
+                             channels, which at that point lie in the range [0,1]. -->
+                        <mean>0.0</mean>
+                        <stddev>0.007</stddev>
+                    </noise>
+                </camera>
+                <plugin name="${frlr_prefix}_${lrc_prefix}_camera_controller" filename="libgazebo_ros_camera.so">
+                    <alwaysOn>true</alwaysOn>
+                    <updateRate>0.0</updateRate>
+                    <cameraName>sd_twizy/${frlr_prefix}_${lrc_prefix}_camera</cameraName>
+                    <imageTopicName>image_raw</imageTopicName>
+                    <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+                    <frameName>${frlr_prefix}_${lrc_prefix}_camera_link_optical</frameName>
+                    <!-- setting hackBaseline to anything but 0.0 will cause a misalignment
+                        between the gazebo sensor image and the frame it is supposed to
+                        be attached to -->
+                    <hackBaseline>0.0</hackBaseline>
+                    <distortionK1>0.0</distortionK1>
+                    <distortionK2>0.0</distortionK2>
+                    <distortionK3>0.0</distortionK3>
+                    <distortionT1>0.0</distortionT1>
+                    <distortionT2>0.0</distortionT2>
+                    <CxPrime>0</CxPrime>
+                    <Cx>0.0</Cx>
+                    <Cy>0.0</Cy>
+                    <focalLength>0.0</focalLength>
+                </plugin>
+            </sensor>
+        </gazebo>
+
+    </xacro:macro>
+</robot>
+

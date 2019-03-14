@@ -1,0 +1,273 @@
+<?xml version="1.0"?>
+
+<!--
+  Copyright (c) 2019 StreetDrone Limited
+  Author:  Efimia Panagiotaki
+
+  All rights reserved
+-->
+
+<robot name="wheel" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:property name = "rear_tyre_radius" value="0.281"/>
+    <xacro:property name = "rear_wheel_mass" value="10.08"/>
+    <xacro:property name = "rear_tyre_width" value="0.145"/>
+
+    <xacro:property name = "front_tyre_radius" value="0.265"/>
+    <xacro:property name = "front_wheel_mass" value="9.14"/>
+    <xacro:property name = "front_tyre_width" value="0.125"/>
+
+    <xacro:property name = "friction_dry_mu" value="0.85"/>
+    <xacro:property name = "friction_wet_mu" value="0.4"/>
+
+    <xacro:property name = "degrees_90" value="1.57079633"/>
+    <xacro:property name = "degrees_180" value="3.14159265"/>
+
+    <xacro:property name = "wheelbase" value="1.686"/>
+    <xacro:property name = "track" value="1.08"/>
+
+    <gazebo reference="front_left_wheel">
+        <mu1 value="${friction_dry_mu}"/>
+        <mu2 value="${friction_dry_mu}"/>
+        <minDepth>0.005</minDepth>
+        <kp>1e8</kp>
+        <material>Gazebo/Black</material>
+    </gazebo>
+
+    <gazebo reference="front_right_wheel">
+        <mu1 value="${friction_dry_mu}"/>
+        <mu2 value="${friction_dry_mu}"/>
+        <minDepth>0.005</minDepth>
+        <kp>1e8</kp>
+        <material>Gazebo/Black</material>
+    </gazebo>
+
+    <gazebo reference="rear_left_wheel">
+        <mu1 value="${friction_dry_mu}"/>
+        <mu2 value="${friction_dry_mu}"/>
+        <minDepth>0.005</minDepth>
+        <kp>1e8</kp>
+        <material>Gazebo/Black</material>
+    </gazebo>
+
+    <gazebo reference="rear_right_wheel">
+        <mu1 value="${friction_dry_mu}"/>
+        <mu2 value="${friction_dry_mu}"/>
+        <minDepth>0.005</minDepth>
+        <kp>1e8</kp>
+        <material>Gazebo/Black</material>
+    </gazebo>
+
+    <link name="front_left_axle">
+        <inertial>
+            <mass value="1"/>
+            <origin xyz="0 0 0"/>
+            <inertia ixx="0.004" ixy="0.0" ixz="0.0" iyy="0.004" iyz="0.0" izz="0.004"/>
+        </inertial>
+    </link>
+
+    <link name="front_right_axle">
+        <inertial>
+            <mass value="1"/>
+            <origin xyz="0 0 0"/>
+            <inertia ixx="0.004" ixy="0.0" ixz="0.0" iyy="0.004" iyz="0.0" izz="0.004"/>
+        </inertial>
+    </link>
+
+    <link name="front_left_wheel">
+        <inertial>
+            <mass value="${front_wheel_mass}"/>
+            <origin xyz="0 0 0"/>
+            <inertia ixx="${(1 / 12)*front_wheel_mass*(3*(front_tyre_radius*front_tyre_radius)+ front_tyre_width * front_tyre_width)}" ixy="0.0" ixz="0.0"
+                     iyy="${(1 / 12)*front_wheel_mass*(3*(front_tyre_radius*front_tyre_radius)+ front_tyre_width * front_tyre_width)}" iyz="0.0"
+                     izz="${(1/2)*front_wheel_mass*front_tyre_radius*front_tyre_radius}"/>
+        </inertial>
+        <collision name="front_left_wheel_collision">
+            <geometry>
+                <cylinder radius="${front_tyre_radius}" length="${front_tyre_width}"/>
+            </geometry>
+        </collision>
+        <visual>
+            <geometry>
+                <cylinder radius="${front_tyre_radius}" length="${front_tyre_width}"/>
+            </geometry>
+            <material name="tire_mat"/>
+        </visual>
+    </link>
+
+    <link name="front_right_wheel">
+        <inertial>
+            <mass value="${front_wheel_mass}"/>
+            <origin xyz="0 0 0"/>
+            <inertia ixx="${(1 / 12)*front_wheel_mass*(3*(front_tyre_radius*front_tyre_radius)+ front_tyre_width * front_tyre_width)}" ixy="0.0" ixz="0.0"
+                     iyy="${(1 / 12)*front_wheel_mass*(3*(front_tyre_radius*front_tyre_radius)+ front_tyre_width * front_tyre_width)}" iyz="0.0"
+                     izz="${(1/2)*front_wheel_mass*front_tyre_radius*front_tyre_radius}"/>
+        </inertial>
+        <collision name="front_right_wheel_collision">
+            <geometry>
+                <cylinder radius="${front_tyre_radius}" length="${front_tyre_width}"/>
+            </geometry>
+        </collision>
+        <visual>
+            <geometry>
+                <cylinder radius="${front_tyre_radius}" length="${front_tyre_width}"/>
+            </geometry>
+            <material name="tire_mat"/>
+        </visual>
+    </link>
+
+    <link name="rear_left_wheel">
+        <inertial>
+            <mass value="${rear_wheel_mass}"/>
+            <origin xyz="0 0 0"/>
+            <inertia ixx="${(1 / 12)*rear_wheel_mass*(3*(rear_tyre_radius*rear_tyre_radius)+ rear_tyre_width * rear_tyre_width)}" ixy="0.0" ixz="0.0"
+                     iyy="${(1 / 12)*rear_wheel_mass*(3*(rear_tyre_radius*rear_tyre_radius)+ rear_tyre_width * rear_tyre_width)}" iyz="0.0"
+                     izz="${(1/2)*rear_wheel_mass*rear_tyre_radius*rear_tyre_radius}"/>
+        </inertial>
+        <collision name="rear_left_wheel_collision">
+            <geometry>
+                <cylinder radius="${rear_tyre_radius}" length="${rear_tyre_width}"/>
+            </geometry>
+        </collision>
+        <visual>
+            <geometry>
+                <cylinder radius="${rear_tyre_radius}" length="${rear_tyre_width}"/>
+            </geometry>
+            <material name="tire_mat"/>
+        </visual>
+    </link>
+
+    <link name="rear_right_wheel">
+        <inertial>
+            <mass value="${rear_wheel_mass}"/>
+            <origin xyz="0 0 0"/>
+            <inertia ixx="${(1 / 12)*rear_wheel_mass*(3*(rear_tyre_radius*rear_tyre_radius)+ rear_tyre_width * rear_tyre_width)}" ixy="0.0" ixz="0.0"
+                     iyy="${(1 / 12)*rear_wheel_mass*(3*(rear_tyre_radius*rear_tyre_radius)+ rear_tyre_width * rear_tyre_width)}" iyz="0.0"
+                     izz="${(1/2)*rear_wheel_mass*rear_tyre_radius*rear_tyre_radius}"/>
+        </inertial>
+        <collision name="rear_right_wheel_collision">
+            <geometry>
+                <cylinder radius="${rear_tyre_radius}" length="${rear_tyre_width}"/>
+            </geometry>
+        </collision>
+        <visual>
+            <geometry>
+                <cylinder radius="${rear_tyre_radius}" length="${rear_tyre_width}"/>
+            </geometry>
+            <material name="tire_mat"/>
+        </visual>
+    </link>
+
+    <xacro:macro name="FL_wheel">
+        <joint name="front_left_steer_joint" type="revolute">
+            <parent link="base_link"/>
+            <child link="front_left_axle"/>
+            <origin xyz="${wheelbase / 2} ${-(track / 2)} 0" rpy="${degrees_90} 0 ${degrees_180}"/>
+            <axis xyz="0 1 0"/>
+            <limit lower="-0.785398" upper="0.785398" effort="500000" velocity="250"/>
+        </joint>
+
+        <joint name="front_left_wheel_joint" type="continuous">
+            <parent link="front_left_axle"/>
+            <child link="front_left_wheel"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <axis xyz="0 0 -1"/>
+        </joint>
+
+        <transmission name="front_left_steer_joint_trans">
+            <type>transmission_interface/SimpleTransmission</type>
+            <joint name="front_left_steer_joint">
+                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            </joint>
+            <actuator name="front_left_steer_joint_act">
+                <mechanicalReduction>1</mechanicalReduction>
+            </actuator>
+        </transmission>
+
+        <transmission name="front_left_rear_axle_trans">
+            <type>transmission_interface/SimpleTransmission</type>
+            <joint name="front_left_wheel_joint">
+                <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+            </joint>
+            <actuator name="front_left_rear_axle_act">
+                <mechanicalReduction>1</mechanicalReduction>
+            </actuator>
+        </transmission>
+    </xacro:macro>
+
+    <xacro:macro name="FR_wheel">
+        <joint name="front_right_steer_joint" type="revolute">
+            <parent link="base_link"/>
+            <child link="front_right_axle"/>
+            <origin xyz="${wheelbase / 2} ${(track / 2)} 0" rpy="${degrees_90} 0 ${degrees_180}"/>
+            <axis xyz="0 1 0"/>
+            <limit lower="-0.785398" upper="0.785398" effort="500000" velocity="250"/>
+        </joint>
+
+        <joint name="front_right_wheel_joint" type="continuous">
+            <parent link="front_right_axle"/>
+            <child link="front_right_wheel"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <axis xyz="0 0 -1"/>
+        </joint>
+
+        <transmission name="front_right_steer_joint_trans">
+            <type>transmission_interface/SimpleTransmission</type>
+            <joint name="front_right_steer_joint">
+                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            </joint>
+            <actuator name="front_right_steer_joint_act">
+                <mechanicalReduction>1</mechanicalReduction>
+            </actuator>
+        </transmission>
+
+        <transmission name="front_right_rear_axle_trans">
+            <type>transmission_interface/SimpleTransmission</type>
+            <joint name="front_right_wheel_joint">
+                <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+            </joint>
+            <actuator name="front_right_rear_axle_act">
+                <mechanicalReduction>1</mechanicalReduction>
+            </actuator>
+        </transmission>
+    </xacro:macro>
+
+    <xacro:macro name="RL_wheel">
+        <joint name="rear_left_wheel_joint" type="continuous">
+            <parent link="base_link"/>
+            <child link="rear_left_wheel"/>
+            <origin xyz="${-wheelbase / 2} ${-(track / 2)} 0" rpy="${degrees_90} 0 ${degrees_180}"/>
+            <axis xyz="0 0 -1"/>
+        </joint>
+
+        <transmission name="rear_left_rear_axle_trans">
+            <type>transmission_interface/SimpleTransmission</type>
+            <joint name="rear_left_wheel_joint">
+                <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+            </joint>
+            <actuator name="rear_left_rear_axle_act">
+                <mechanicalReduction>1</mechanicalReduction>
+            </actuator>
+        </transmission>
+    </xacro:macro>
+
+    <xacro:macro name="RR_wheel">
+        <joint name="rear_right_wheel_joint" type="continuous">
+            <parent link="base_link"/>
+            <child link="rear_right_wheel"/>
+            <origin xyz="${-wheelbase / 2} ${(track / 2)} 0" rpy="${degrees_90} 0 ${degrees_180}"/>
+            <axis xyz="0 0 -1"/>
+        </joint>
+
+        <transmission name="rear_right_rear_axle_trans">
+            <type>transmission_interface/SimpleTransmission</type>
+            <joint name="rear_right_wheel_joint">
+                <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+            </joint>
+            <actuator name="rear_right_rear_axle_act">
+                <mechanicalReduction>1</mechanicalReduction>
+            </actuator>
+        </transmission>
+    </xacro:macro>
+
+</robot>

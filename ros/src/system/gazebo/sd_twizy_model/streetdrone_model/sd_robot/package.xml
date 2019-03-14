@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>sd_robot</name>
+  <version>0.1.0</version>
+  <description>The sd_robot package</description>
+
+  <maintainer email="efimia@streetdrone.com">Efimia Panagiotaki</maintainer>
+
+  <license>Apache 2</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>urdf</build_depend>
+  <build_depend>rviz</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>xacro</build_depend>
+  <build_depend>gazebo_ros</build_depend>
+
+  <build_export_depend>roscpp</build_export_depend>
+  <build_export_depend>xacro</build_export_depend>
+  <build_export_depend>rviz</build_export_depend>
+  <build_export_depend>tf</build_export_depend>
+  <build_export_depend>urdf</build_export_depend>
+
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>rviz</exec_depend>
+  <exec_depend>urdf</exec_depend>
+  <exec_depend>xacro</exec_depend>
+  <exec_depend>tf</exec_depend>
+  <exec_depend>velodyne-simulator</exec_depend>
+  <exec_depend>effort-controller</exec_depend>
+  <exec_depend>velocity-controllers</exec_depend>
+  <exec_depend>joint-state-controller</exec_depend>
+  <exec_depend>gazebo-ros-control</exec_depend>
+  <exec_depend>controller-manager</exec_depend>
+
+  <export>
+  </export>
+</package>

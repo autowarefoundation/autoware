@@ -1,0 +1,34 @@
+sd_twizy:
+  front_right_steer_joint_controller:
+    type: effort_controllers/JointPositionController
+    joint: front_right_steer_joint
+    pid: {p: 500.0, i: 10.0, d: 100.0}
+
+  front_right_wheel_joint_controller:
+    type: velocity_controllers/JointVelocityController
+    joint: front_right_wheel_joint
+    pid: {p: 1500.0, i: 100.0, d: 750.0}
+
+  front_left_steer_joint_controller:
+    type: effort_controllers/JointPositionController
+    joint: front_left_steer_joint
+    pid: {p: 500.0, i: 10.0, d: 100.0}
+    
+  rear_left_wheel_joint_controller:
+    type: velocity_controllers/JointVelocityController
+    joint: rear_left_wheel_joint
+    pid: {p: 1500.0, i: 100.0, d: 750.0}
+
+  rear_right_wheel_joint_controller:
+    type: velocity_controllers/JointVelocityController
+    joint: rear_right_wheel_joint
+    pid: {p: 1500.0, i: 100.0, d: 750.0}
+
+  front_left_wheel_joint_controller:
+    type: velocity_controllers/JointVelocityController
+    joint: front_left_wheel_joint
+    pid: {p: 1500.0, i: 100.0, d: 750.0}
+        
+  joint_read_state_controller:
+    type: joint_state_controller/JointStateController
+    publish_rate: 100.0

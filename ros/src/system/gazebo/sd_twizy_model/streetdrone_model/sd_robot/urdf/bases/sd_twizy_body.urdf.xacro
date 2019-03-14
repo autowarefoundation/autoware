@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+
+<!--
+  Copyright (c) 2019 StreetDrone Limited
+  Author:  Efimia Panagiotaki
+
+  All rights reserved
+-->
+
+<robot name="sd_twizy" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:include filename="$(find sd_robot)/urdf/bases/sd_twizy_body.gazebo.xacro" />
+
+    <xacro:macro name="sd_twizy_base" params="name">
+        <xacro:property name="depth" value="2.352"/>
+        <xacro:property name="height" value="1.7"/>
+        <xacro:property name="width" value="1.431"/>
+        <xacro:property name="base_mass" value="435"/>
+        <xacro:property name="clearance" value="0.582"/>
+
+        <link name="vehicle_base">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <box size="0.001 0.001 0.001" />
+                </geometry>
+            </visual>
+        </link>
+
+        <joint name="vehicle_base_joint" type="fixed">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <parent link="vehicle_base"/>
+            <child link="base_link"/>
+        </joint>
+
+        <link name="base_link">
+            <inertial>
+                <mass value="${base_mass}"/>
+                <origin xyz="0 0 0"/>
+                <inertia ixx="243.175" ixy="0" ixz="0" iyy="430.166" iyz="0" izz="430.166"/>
+            </inertial>
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 1.57"/>
+                <geometry>
+                    <mesh filename="file:///$(find sd_robot)/meshes/SDTwizy.stl" scale="0.01 0.01 0.01"/>
+		        </geometry>
+            </visual>
+            <collision>
+                <origin xyz="0 0 ${clearance}" rpy="-0.0135 0 1.57"/>
+                <geometry>
+                    <box size="${width} ${depth} ${height}"/>
+                </geometry>
+            </collision>
+        </link>
+    </xacro:macro>
+
+</robot>

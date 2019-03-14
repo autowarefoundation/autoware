@@ -1,0 +1,34 @@
+<launch>
+    <env name="GAZEBO_MODEL_PATH" value="$(find sd_robot)"/>
+    <env name="GAZEBO_RESOURCE_PATH" value="$(find sd_robot)"/>
+    <arg name="namespace" default="sd_twizy"/>
+    <arg name="debug" default="false"/>
+    <arg name="gui" default="true"/>
+    <arg name="cmd_timeout" default="0.5"/>
+    <!--Pose-->
+    <arg name="x" default="0"/>
+    <arg name="y" default="0"/>
+    <arg name="z" default="0"/>
+    <arg name="roll" default="0"/>
+    <arg name="pitch" default="0"/>
+    <arg name="yaw" default="0"/>
+    <param name="use_sim_time"  value="true" />
+
+    <arg name="rvizconfig" default="$(find sd_robot)/config/sd_twizy_rviz.rviz"/>
+
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="debug" value="$(arg debug)"/>
+        <arg name="gui" value="$(arg gui)"/>
+        <arg name="paused" value="false"/>
+        <arg name="use_sim_time" value="true"/>
+        <arg name="headless" value="false"/>
+    </include>
+
+    <param command="$(find xacro)/xacro '$(find sd_robot)/urdf/sd_twizy.urdf.xacro' --inorder" name="robot_description"/>
+    <node args="-urdf -model sd_twizy -param robot_description -x $(arg x) -y $(arg y) -z $(arg z) -R $(arg roll) -P $(arg pitch) -Y $(arg yaw)"
+          name="urdf_spawner" output="screen" pkg="gazebo_ros" respawn="false" type="spawn_model"/>
+
+    <include file = "$(find sd_control)/launch/sd_twizy_control.launch"/>
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+
+</launch>

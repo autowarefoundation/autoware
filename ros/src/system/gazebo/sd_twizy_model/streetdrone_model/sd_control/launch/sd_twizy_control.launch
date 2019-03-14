@@ -1,0 +1,27 @@
+<launch>
+    <!-- Load joint controller configurations from YAML file to parameter server -->
+    <rosparam file="$(find sd_control)/config/sd_twizy_control.yaml"/>
+
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+          output="screen" ns="/sd_twizy" args="--shutdown-time 1 --namespace=/sd_twizy  front_right_steer_joint_controller  front_right_wheel_joint_controller  front_left_steer_joint_controller  rear_left_wheel_joint_controller
+           rear_right_wheel_joint_controller  front_left_wheel_joint_controller   joint_read_state_controller" />
+
+    <!-- convert joint states to TF transforms for rviz, etc -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+          respawn="false" output="screen">
+        <remap from="/joint_states" to="/sd_twizy/joint_states" />
+    </node>
+    <node pkg="sd_control" name="Twist_to_Ackermann" type="Twist_to_Ackermann.py" args="Twist_to_Ackermann:=sd_control/teleop_vel_out" />
+
+    <node name="sd_control" pkg="sd_control" type="sd_control_node" output="screen">
+        <remap from="joint_states" to="/sd_twizy/joint_states"/>
+        <param name="model" value="sd_twizy"/>
+        <param name="publish_odom_tf" value="false"/>
+        <param name="wheelbase" value="1.686"/>
+        <param name="wheel_diameter" value="0.505"/>
+        <param name="max_speed" value="10.0"/>
+        <param name="max_steering" value="0.523599"/>
+    </node>
+
+</launch>
+	
