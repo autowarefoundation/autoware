@@ -1649,7 +1649,7 @@ params :
       desc  : Costmap topic for avoidance planning
       label : Costmap Topic
       kind  : str
-      v     : grid_map_filter_visualization/dist_wayarea
+      v     : semantics/costmap_generator/occupancy_grid
       cmd_param:
         dash  : ''
         delim : ':='
@@ -2545,7 +2545,7 @@ params :
       desc  : Costmap topic for planning
       label : Costmap Topic
       kind  : str
-      v     : grid_map_filter_visualization/dist_wayarea
+      v     : semantics/costmap_generator/occupancy_grid
       cmd_param :
         dash  : ''
         delim : ':='

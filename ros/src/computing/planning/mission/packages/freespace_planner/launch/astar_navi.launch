@@ -1,7 +1,7 @@
 <launch>
 
   <!-- Navi configurations -->
-  <arg name="costmap_topic" default="grid_map_filter_visualization/dist_wayarea" />
+  <arg name="costmap_topic" default="semantics/costmap_generator/occupancy_grid" />
   <arg name="waypoints_velocity" default="5.0" />
   <arg name="update_rate" default="1.0" />
 

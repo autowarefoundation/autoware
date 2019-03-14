@@ -9,8 +9,7 @@ Waypoint planner package provides the local planner nodes that dynamically plan 
 - Relay mode: Not avoid planning and just publishing waypoints from self pose.
 - Avoidance mode: Avoiding obstacles by Hybrid-A* search algorithm in `astar_search` package with internal state transition
 
-*NOTE* : If you have `wayarea` in your ADAS map, it's possible to limit search area and realize more safety planning by set `grid_map_filter_visualization/dist_wayarea` to `costmap_topic` and enabling `Use Wayarea` in `grid_map_filter`. Please see the results in below demo videos.
-If there is no wayarea, you can use `grid_map_filter_visualization/distance_transform` instead of it.
+*NOTE* : If you have `wayarea` in your ADAS map, it's possible to limit search area and realize more safety planning by enabling `Use Wayarea` in `costmap_generator` node. Please see the results in below demo videos.
 
 Please see also: mission/packages/freespace_planner/README.md
 
@@ -31,7 +30,7 @@ Parameters can be set in both Launch file and Runtime manager:
 | Parameter in RM | Parameter in Launch | Type | Description | Default |
 | --- | --- | --- | --- | --- |
 | `Enable Avoidance` | `enable_avoidance` | *Bool* | Enable avoidance mode | `false` |
-| `Costmap Topic` | `costmap_topic` | *String* | Costmap topic for Hybrid-A* search | `grid_map_filter_visualization/dist_wayarea` |
+| `Costmap Topic` | `costmap_topic` | *String* | Costmap topic for Hybrid-A* search | `semantics/costmap_generator/occupancy_grid` |
 | `Waypoint Velocity` | `avoid_waypoints_velocity` | *Double* | Constant velocity on planned waypoints [km/h] | `10.0` |
 | `Avoidance Start Velocity` | `avoid_start_velocity` | *Double* | Self velocity for staring avoidance behavior [km/h] | `5.0` |
 | `Replan Interval` | `replan_interval` | *Double* | Replan interval for avoidance planning [Hz] | `2.0` |
@@ -52,7 +51,7 @@ Subscriptions:
  * /closest_waypoint [std_msgs/Int32]
  * /current_pose [geometry_msgs/PoseStamped]
  * /current_velocity [geometry_msgs/TwistStamped]
- * /grid_map_filter_visualization/dist_wayarea [nav_msgs/OccupancyGrid]
+ * /semantics/costmap_generator/occupancy_grid [nav_msgs/OccupancyGrid]
  * /obstacle_waypoint [std_msgs/Int32]
  * /tf [tf2_msgs/TFMessage]
  * /tf_static [tf2_msgs/TFMessage]

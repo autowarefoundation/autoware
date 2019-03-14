@@ -27,7 +27,7 @@ Parameters can be set in both Launch file and Runtime manager:
 | Parameter in RM | Parameter in Launch | Type | Description | Default |
 | --- | --- | --- | --- | --- |
 | `Use Reverse Motion` | `use_back` | *Bool* | Enable backward motion in Hybrid A* search | `true` |
-| `Costmap Topic` | `costmap_topic` | *String* | Costmap topic for Hybrid-A* search | `grid_map_filter_visualization/dist_wayarea` |
+| `Costmap Topic` | `costmap_topic` | *String* | Costmap topic for Hybrid-A* search | `semantics/costmap_generator/occupancy_grid` |
 | `Waypoint Velocity` | `waypoints_velocity` | *Double* | Constant velocity on planned waypoints [km/h] | 5.0 |
 | `Update Rate` | `update_rate` | *Double* | Replanning and publishing rate [Hz] | 1.0 |
 
@@ -43,7 +43,7 @@ Subscriptions:
  * /closest_waypoint [std_msgs/Int32]
  * /current_pose [geometry_msgs/PoseStamped]
  * /current_velocity [geometry_msgs/TwistStamped]
- * /grid_map_filter_visualization/dist_wayarea [nav_msgs/OccupancyGrid]
+ * /semantics/costmap_generator/occupancy_grid [nav_msgs/OccupancyGrid]
  * /obstacle_waypoint [std_msgs/Int32]
  * /tf [tf2_msgs/TFMessage]
  * /tf_static [tf2_msgs/TFMessage]
