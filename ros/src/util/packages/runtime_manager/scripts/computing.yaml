@@ -5364,6 +5364,15 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
+    - name  : filter_out_close_object_threshold
+      desc  : Filtering out an object whithin this threshold
+      label : filter_out_close_object_threshold
+      min     : 0.0
+      max     : 10.0
+      v       : 1.5
+      cmd_param :
+        dash      : ''
+        delim     : ':='
 
   - name  : costmap_generator_param
     vars  :

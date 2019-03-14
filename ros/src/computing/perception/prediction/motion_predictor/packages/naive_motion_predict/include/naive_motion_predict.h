@@ -54,6 +54,7 @@ private:
   double interval_sec_;
   int num_prediction_;
   double sensor_height_;
+  double filter_out_close_object_threshold_;
 
   void objectsCallback(const autoware_msgs::DetectedObjectArray& input);
 

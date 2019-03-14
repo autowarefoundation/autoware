@@ -24,6 +24,7 @@ NaiveMotionPredict::NaiveMotionPredict() :
   private_nh_.param<double>("interval_sec", interval_sec_, 0.1);
   private_nh_.param<int>("num_prediction", num_prediction_, 10);
   private_nh_.param<double>("sensor_height_", sensor_height_, 2.0);
+  private_nh_.param<double>("filter_out_close_object_threshold", filter_out_close_object_threshold_, 1.5);
 
   predicted_objects_pub_ = nh_.advertise<autoware_msgs::DetectedObjectArray>("/prediction/motion_predictor/objects", 1);
   predicted_paths_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("/prediction/motion_predictor/path_markers", 1);
@@ -207,6 +208,8 @@ void NaiveMotionPredict::objectsCallback(const autoware_msgs::DetectedObjectArra
 
 bool NaiveMotionPredict::isObjectValid(const autoware_msgs::DetectedObject &in_object)
 {
+  double distance = std::sqrt(std::pow(in_object.pose.position.x,2)+
+                              std::pow(in_object.pose.position.y,2));
   if (!in_object.valid ||
       std::isnan(in_object.pose.orientation.x) ||
       std::isnan(in_object.pose.orientation.y) ||
@@ -215,8 +218,7 @@ bool NaiveMotionPredict::isObjectValid(const autoware_msgs::DetectedObject &in_o
       std::isnan(in_object.pose.position.x) ||
       std::isnan(in_object.pose.position.y) ||
       std::isnan(in_object.pose.position.z) ||
-      (in_object.pose.position.x <= 0) ||
-      (in_object.pose.position.y <= 0) ||
+      (distance <=  filter_out_close_object_threshold_)||
       (in_object.dimensions.x <= 0) ||
       (in_object.dimensions.y <= 0) ||
       (in_object.dimensions.z <= 0)
