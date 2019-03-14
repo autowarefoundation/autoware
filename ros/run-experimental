@@ -3,7 +3,7 @@
 import subprocess
 
 roscore_command = "roscore"
-manager_command = "rosrun autoware_launcher main"
+manager_command = "rosrun autoware_launcher main --profile quickstart"
 
 def gnome_terminal(command):
     return ["gnome-terminal", "--command", command]
