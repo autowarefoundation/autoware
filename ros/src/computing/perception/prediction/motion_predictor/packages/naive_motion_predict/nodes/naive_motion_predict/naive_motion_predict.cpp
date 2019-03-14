@@ -215,8 +215,6 @@ bool NaiveMotionPredict::isObjectValid(const autoware_msgs::DetectedObject &in_o
       std::isnan(in_object.pose.position.x) ||
       std::isnan(in_object.pose.position.y) ||
       std::isnan(in_object.pose.position.z) ||
-      (in_object.pose.position.x <= 0) ||
-      (in_object.pose.position.y <= 0) ||
       (in_object.dimensions.x <= 0) ||
       (in_object.dimensions.y <= 0) ||
       (in_object.dimensions.z <= 0)
