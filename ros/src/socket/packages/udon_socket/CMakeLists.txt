@@ -33,3 +33,8 @@ target_link_libraries(udon_sender udon ${catkin_LIBRARIES})
 add_dependencies(udon_sender
         ${catkin_EXPORTED_TARGETS}
         )
+
+install(TARGETS udon  udon_receiver udon_sender
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

@@ -1,7 +1,0 @@
-<!-- -->
-<launch>
-
-	<node pkg="decision_maker" type="planner_selector_node" name="planner_selector_node" output="screen">
-	</node>
-	
-</launch>

@@ -1,0 +1,8 @@
+- name: /obstacle_avoid
+  publish: [/astar_path, /safety_waypoints, /astar_debug_poses, /astar_footprint]
+  subscribe: [/grid_map_visualization/distance_transform, /current_pose, /move_base_simple/goal]
+- name: /velocity_set
+  publish: [/detection_range, /obstacle, /obstacle_waypoint, /astar/final_waypoints,
+    /final_waypoints]
+  subscribe: [/safety_waypoints, /current_velocity, /config/velocity_set, /points_no_ground,
+    /localizer_pose, /current_pose, /state/stopline_wpid, /vector_map_info/*]

@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
         sensor_msgs
         std_msgs
         tf
+        autoware_msgs
         )
 
 catkin_package(CATKIN_DEPENDS
@@ -60,3 +61,7 @@ install(TARGETS beyond_track_lib vision_beyond_track
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)

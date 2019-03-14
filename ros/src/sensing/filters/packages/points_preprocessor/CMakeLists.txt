@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
         cv_bridge
         velodyne_pointcloud
         tf
+        autoware_health_checker
         )
 
 catkin_package(CATKIN_DEPENDS
@@ -26,6 +27,7 @@ catkin_package(CATKIN_DEPENDS
         velodyne_pointcloud
         autoware_config_msgs
         tf
+        autoware_health_checker
         )
 
 find_package(Qt5Core REQUIRED)
@@ -188,7 +190,14 @@ add_dependencies(compare_map_filter ${catkin_EXPORTED_TARGETS})
 #endif ()
 
 
-install(TARGETS cloud_transformer points_concat_filter ray_ground_filter ring_ground_filter space_filter compare_map_filter
+install(TARGETS
+            cloud_transformer
+            points_concat_filter
+            ray_ground_filter_lib
+            ray_ground_filter
+            ring_ground_filter
+            space_filter
+            compare_map_filter
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -198,3 +207,6 @@ install(DIRECTORY include/
         DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
         PATTERN ".svn" EXCLUDE
         )
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)

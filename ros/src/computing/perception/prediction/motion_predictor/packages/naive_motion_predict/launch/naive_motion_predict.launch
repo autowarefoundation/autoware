@@ -3,12 +3,14 @@
     <arg name="interval_sec" default="0.1"/>
     <arg name="num_prediction" default="10"/>
     <arg name="sensor_height" default="2.0"/>
+    <arg name="filter_out_close_object_threshold" default="1.5"/>
     <arg name="input_topic" default="/detection/objects"/>
 
     <node pkg="naive_motion_predict" type="naive_motion_predict" name="naive_motion_predict">
         <param name="interval_sec" value="$(arg interval_sec)"/>
         <param name="num_prediction" value="$(arg num_prediction)"/>
         <param name="sensor_height" value="$(arg sensor_height)"/>
+        <param name="filter_out_close_object_threshold" value="$(arg filter_out_close_object_threshold)"/>
     </node>
 
     <remap from="/detection/objects" to="$(arg input_topic)"/>

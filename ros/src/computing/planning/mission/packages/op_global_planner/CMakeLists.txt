@@ -52,3 +52,14 @@ include_directories(
 target_link_libraries(op_global_planner ${catkin_LIBRARIES} )
 
 add_dependencies(op_global_planner ${catkin_EXPORTED_TARGETS})
+
+install(TARGETS
+        op_global_planner
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
+        
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)

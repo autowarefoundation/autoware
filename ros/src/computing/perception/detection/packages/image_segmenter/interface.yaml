@@ -1,3 +1,0 @@
-- name: /image_segmenter_enet
-  publish: [/image_segmented, /image_segmented_blended]
-  subscribe: [/image_raw]

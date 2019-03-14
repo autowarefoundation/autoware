@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <gazebo reference="steering_left_front_link">
+    <material>Gazebo/Red</material>
+    <mu1 value="0.6" />
+    <mu2 value="0.5" />
+    <kp value="1000000" />
+    <kd value="0.1" />
+    <minDepth value="0.01"/>
+    <maxVel value="10.0" />
+  </gazebo>
+  <gazebo reference="steering_right_front_link">
+    <material>Gazebo/Red</material>
+    <mu1 value="0.6" />
+    <mu2 value="0.5" />
+    <kp value="1000000" />
+    <kd value="0.1" />
+    <minDepth value="0.01"/>
+    <maxVel value="10.0" />
+  </gazebo>
+</robot>

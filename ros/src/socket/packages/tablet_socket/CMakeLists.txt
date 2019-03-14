@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   gnss
   autoware_can_msgs
   geometry_msgs
+  autoware_msgs
   )
 
 set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -39,3 +40,8 @@ add_dependencies(tablet_receiver ${catkin_EXPORTED_TARGETS})
 add_executable(tablet_sender nodes/tablet_sender/tablet_sender.cpp)
 target_link_libraries(tablet_sender ${catkin_LIBRARIES})
 add_dependencies(tablet_sender ${catkin_EXPORTED_TARGETS})
+
+install(TARGETS tablet_receiver tablet_sender
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

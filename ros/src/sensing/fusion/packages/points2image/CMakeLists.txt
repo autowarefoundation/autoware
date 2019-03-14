@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
         tf
         pcl_ros
         pcl_conversions
+        autoware_msgs
         )
 
 find_package(OpenCV REQUIRED)

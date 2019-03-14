@@ -1,0 +1,2 @@
+format: Autoware Launcher Plugin Version 0.1
+rosxml: $(find astar_planner)/launch/obstacle_avoid.launch

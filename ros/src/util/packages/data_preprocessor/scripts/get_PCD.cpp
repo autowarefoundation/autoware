@@ -3,7 +3,6 @@
 
 static void check_arguments(int argc, char* argv[])
 {
-  cout << "Fuck you" << endl;
   if (argc != 3){
     cout << "Please set arguments like below\n'rosrun data_preprocessor get_PCD save_dir topic_name'\n";
     exit(EXIT_FAILURE);
