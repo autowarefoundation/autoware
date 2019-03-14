@@ -22,6 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
         autoware_config_msgs
         tablet_socket_msgs
         autoware_health_checker
+        gazebo_msgs
         )
 
 ################################################
@@ -46,6 +47,7 @@ catkin_package(
         sensor_msgs
         tablet_socket_msgs
         autoware_health_checker
+        gazebo_msgs
 )
 
 ###########
@@ -110,6 +112,14 @@ add_executable(mpc_waypoints_converter nodes/mpc_follower/mpc_waypoints_converte
 add_dependencies(mpc_waypoints_converter ${catkin_EXPORTED_TARGETS})
 target_link_libraries(mpc_waypoints_converter ${catkin_LIBRARIES})
 
+add_executable(twist_pub nodes/mpc_follower/twist_pub.cpp)
+add_dependencies(twist_pub ${catkin_EXPORTED_TARGETS})
+target_link_libraries(twist_pub ${catkin_LIBRARIES})
+
+
+add_executable(gazebo_twist_calculator nodes/mpc_follower/gazebo_twist_calculator.cpp)
+add_dependencies(gazebo_twist_calculator ${catkin_EXPORTED_TARGETS})
+target_link_libraries(gazebo_twist_calculator ${catkin_LIBRARIES})
 
 ## Install executables and/or libraries
 install(TARGETS libwaypoint_follower pure_pursuit wf_simulator twist_filter twist_gate mpc_follower mpc_waypoints_converter
