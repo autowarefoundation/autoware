@@ -96,6 +96,78 @@ TEST(TestSuite, TestYawQuaternion){
     ASSERT_DOUBLE_EQ(1.0, q.w);
 }
 
+TEST(TestSuite, TestCalcTrajectoryYawFromXY) {
+
+    MPCTrajectory traj;
+    /*              x    y    z   yaw   vx   k  time */
+    traj.push_back(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    traj.push_back(1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0);
+    traj.push_back(2.0, 2.0, 0.0, 0.0, 1.0, 0.0, 2.0);
+    MPCUtils::calcTrajectoryYawFromXY(traj);
+    ASSERT_DOUBLE_EQ(M_PI / 4.0, traj.yaw[0]);
+    ASSERT_DOUBLE_EQ(M_PI / 4.0, traj.yaw[1]);
+    ASSERT_DOUBLE_EQ(M_PI / 4.0, traj.yaw[2]);
+
+    traj.clear();
+    /*              x    y    z   yaw   vx   k  time */
+    traj.push_back(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    traj.push_back(0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0);
+    traj.push_back(0.0, 2.0, 0.0, 0.0, 1.0, 0.0, 2.0);
+    MPCUtils::calcTrajectoryYawFromXY(traj);
+    ASSERT_DOUBLE_EQ(M_PI / 2.0, traj.yaw[0]);
+    ASSERT_DOUBLE_EQ(M_PI / 2.0, traj.yaw[1]);
+    ASSERT_DOUBLE_EQ(M_PI / 2.0, traj.yaw[2]);
+
+    traj.clear();
+    /*              x    y    z   yaw   vx   k  time */
+    traj.push_back(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    traj.push_back(0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0);
+    traj.push_back(0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 2.0);
+    MPCUtils::calcTrajectoryYawFromXY(traj);
+    ASSERT_DOUBLE_EQ(0.0, traj.yaw[0]);
+    ASSERT_DOUBLE_EQ(0.0, traj.yaw[1]);
+    ASSERT_DOUBLE_EQ(0.0, traj.yaw[2]);
+}
+
+TEST(TestSuite, TestCalcTrajectoryCurvature)
+{
+    MPCTrajectory traj;
+    double radius = 0.5;
+    for (double theta = 0; theta < M_PI; theta += 0.1)
+    {
+        double x = radius * std::cos(theta);
+        double y = radius * std::sin(theta);
+        traj.push_back(x, y, 0, 0, 0, 0, theta);
+    }
+    MPCUtils::calcTrajectoryCurvature(traj, 1);
+    ASSERT_NEAR(1 / radius, traj.k[0], 1.0E-5);
+    ASSERT_NEAR(1 / radius, traj.k[5], 1.0E-5);
+    ASSERT_NEAR(1 / radius, traj.k.back(), 1.0E-5);
+
+    MPCUtils::calcTrajectoryCurvature(traj, 3);
+    ASSERT_NEAR(1 / radius, traj.k[0], 1.0E-5);
+    ASSERT_NEAR(1 / radius, traj.k[5], 1.0E-5);
+    ASSERT_NEAR(1 / radius, traj.k.back(), 1.0E-5);
+
+    traj.clear();
+    radius = 10.0;
+    for (double theta = 0; theta < M_PI; theta += 0.1)
+    {
+        double x = radius * std::cos(theta);
+        double y = radius * std::sin(theta);
+        traj.push_back(x, y, 0, 0, 0, 0, theta);
+    }
+
+    MPCUtils::calcTrajectoryCurvature(traj, 1);
+    ASSERT_NEAR(1 / radius, traj.k[0], 1.0E-5);
+    ASSERT_NEAR(1 / radius, traj.k[5], 1.0E-5);
+    ASSERT_NEAR(1 / radius, traj.k.back(), 1.0E-5);
+
+    MPCUtils::calcTrajectoryCurvature(traj, 3);
+    ASSERT_NEAR(1 / radius, traj.k[0], 1.0E-5);
+    ASSERT_NEAR(1 / radius, traj.k[5], 1.0E-5);
+    ASSERT_NEAR(1 / radius, traj.k.back(), 1.0E-5);
+}
 
 TEST(TestSuite, TestCalcNearestPose){
 
