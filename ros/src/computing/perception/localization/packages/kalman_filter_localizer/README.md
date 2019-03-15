@@ -34,7 +34,7 @@ The subscribed data is saved and used for *update* of kalman filter in timer cal
 
 # Parameter description
 
-they are set in `config/kalman_filter_localizer.config`
+they are set in `config/kalman_filter_localizer.config` 
 
 
 ## for Node
