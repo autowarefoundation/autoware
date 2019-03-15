@@ -1,6 +1,10 @@
 #! /usr/bin/env python
 
 import subprocess
+import time
+
+print("This feature is experimental and may change in the future.")
+time.sleep(2.0)
 
 roscore_command = "roscore"
 manager_command = "rosrun autoware_launcher main --profile quickstart"
