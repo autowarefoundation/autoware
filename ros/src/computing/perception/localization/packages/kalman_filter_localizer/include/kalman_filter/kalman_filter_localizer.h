@@ -52,10 +52,11 @@ private:
 
   /* parameters */
   bool show_debug_info_;
-  double kf_rate_;   // kalman filter predict rate
-  double kf_dt_;     // = 1 / kf_rate_
-  double tf_rate_;   // tf publish rate
-  double wheelbase_; // to convert steering angle to angular velocity
+  double kf_rate_;                  // kalman filter predict rate
+  double kf_dt_;                    // = 1 / kf_rate_
+  double tf_rate_;                  // tf publish rate
+  bool enable_yaw_bias_estimation_; // for LiDAR mount error. if true, publish /estimate_yaw_bias
+  double wheelbase_;                // to convert steering angle to angular velocity
 
   int dim_x_;             // dimension of kalman state
   int extend_state_step_; // for time delay compensation

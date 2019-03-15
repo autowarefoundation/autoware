@@ -26,6 +26,7 @@ KalmanFilterNode::KalmanFilterNode() : nh_(""), pnh_("~"), dim_x_(6 /* x, y, yaw
   pnh_.param("predict_frequency", kf_rate_, double(100.0));
   kf_dt_ = 1.0 / std::max(kf_rate_, 0.1);
   pnh_.param("tf_rate", tf_rate_, double(10.0));
+  pnh_.param("enable_yaw_bias_estimation", enable_yaw_bias_estimation_, int(100));
   pnh_.param("extend_state_step", extend_state_step_, int(100));
   pnh_.param("wheelbase", wheelbase_, double(2.79));
 
@@ -51,6 +52,9 @@ KalmanFilterNode::KalmanFilterNode() : nh_(""), pnh_("~"), dim_x_(6 /* x, y, yaw
   pnh_.param("stddev_proc_yaw_bias_c", stddev_proc_yaw_bias_c, double(0.001));
   pnh_.param("stddev_proc_vx_c", stddev_proc_vx_c, double(10.0));
   pnh_.param("stddev_proc_wz_c", stddev_proc_wz_c, double(10.0));
+  if (!enable_yaw_bias_estimation_) {
+    stddev_proc_yaw_bias_c = 0.0;
+  }
 
   /* convert to continuous to discrete */
   cov_proc_vx_d_ = std::pow(stddev_proc_vx_c * kf_dt_, 2.0);
@@ -205,6 +209,7 @@ void KalmanFilterNode::callbackVehicleStatus(const autoware_msgs::VehicleStatus 
   twist_stamped.twist.angular.z = twist_stamped.twist.linear.x * tan(msg.angle) / wheelbase_;
   current_twist_ptr_ = std::make_shared<geometry_msgs::TwistStamped>(twist_stamped);
 };
+
 /*
  * callbackNDTPose
  */
@@ -212,7 +217,6 @@ void KalmanFilterNode::callbackNDTPose(const geometry_msgs::PoseStamped::ConstPt
 {
   current_ndt_pose_ptr_ = std::make_shared<geometry_msgs::PoseStamped>(*msg);
 };
-
 
 /*
  * callbackTwist
@@ -228,7 +232,7 @@ void KalmanFilterNode::initKalmanFilter()
 {
   Eigen::MatrixXd X = Eigen::MatrixXd::Zero(dim_x_, 1);
   Eigen::MatrixXd P = Eigen::MatrixXd::Identity(dim_x_, dim_x_) * 1.0E3;
-  P(IDX::YAWB, IDX::YAWB) = 1.0E-5; // for yaw bias
+  P(IDX::YAWB, IDX::YAWB) = cov_proc_yaw_bias_d_; // for yaw bias
 
   kf_.init(X, P, extend_state_step_);
 }

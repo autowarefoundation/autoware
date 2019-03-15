@@ -45,6 +45,7 @@ they are set in `config/kalman_filter_localizer.config`
 |predict_frequency|double|filtering and publish frequency [Hz]|
 |tf_rate|double|frqcuency for tf broadcasting [Hz]|
 |extend_state_step|int|extend state dimension [-]: The maximum sensor delay that can be taken into account is (extend_state_step / predict_frequency) seconds. Larger values require more computation time |
+|enable_yaw_bias_estimation| bool |enable yaw bias estimation for LiDAR mount error|
 
 ## for NDT measurement
 
