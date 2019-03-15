@@ -26,9 +26,8 @@ KalmanFilterNode::KalmanFilterNode() : nh_(""), pnh_("~"), dim_x_(6 /* x, y, yaw
   pnh_.param("predict_frequency", kf_rate_, double(100.0));
   kf_dt_ = 1.0 / std::max(kf_rate_, 0.1);
   pnh_.param("tf_rate", tf_rate_, double(10.0));
-  pnh_.param("enable_yaw_bias_estimation", enable_yaw_bias_estimation_, int(100));
+  pnh_.param("enable_yaw_bias_estimation", enable_yaw_bias_estimation_, bool(true));
   pnh_.param("extend_state_step", extend_state_step_, int(100));
-  pnh_.param("wheelbase", wheelbase_, double(2.79));
 
   /* NDT measurement */
   pnh_.param("ndt_additional_delay", ndt_additional_delay_, double(0.15));
@@ -83,7 +82,6 @@ KalmanFilterNode::KalmanFilterNode() : nh_(""), pnh_("~"), dim_x_(6 /* x, y, yaw
   initKalmanFilter();
 
   /* debug */
-  sub_vehicle_status_ = nh_.subscribe("/vehicle_status", 1, &KalmanFilterNode::callbackVehicleStatus, this);
   pub_debug_ = pnh_.advertise<std_msgs::Float64MultiArray>("debug2", 1);
   pub_ndt_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("/my_ndt_pose", 1);
 };
@@ -197,20 +195,6 @@ void KalmanFilterNode::callbackInitialPose(const geometry_msgs::PoseWithCovarian
 };
 
 /*
- * callbackVehicleStatus
- */
-void KalmanFilterNode::callbackVehicleStatus(const autoware_msgs::VehicleStatus &msg)
-{
-  const double kmph2mps = 1000.0 / 3600.0;
-  // current_vehicle_status_ = msg;
-  geometry_msgs::TwistStamped twist_stamped;
-  twist_stamped.header = msg.header;
-  twist_stamped.twist.linear.x = msg.speed * kmph2mps;
-  twist_stamped.twist.angular.z = twist_stamped.twist.linear.x * tan(msg.angle) / wheelbase_;
-  current_twist_ptr_ = std::make_shared<geometry_msgs::TwistStamped>(twist_stamped);
-};
-
-/*
  * callbackNDTPose
  */
 void KalmanFilterNode::callbackNDTPose(const geometry_msgs::PoseStamped::ConstPtr &msg)
@@ -221,8 +205,9 @@ void KalmanFilterNode::callbackNDTPose(const geometry_msgs::PoseStamped::ConstPt
 /*
  * callbackTwist
  */
-void KalmanFilterNode::callbackTwist(const geometry_msgs::TwistStamped::ConstPtr &msg){
-    // current_twist_ptr_ = std::make_shared<geometry_msgs::TwistStamped>(*msg);
+void KalmanFilterNode::callbackTwist(const geometry_msgs::TwistStamped::ConstPtr &msg)
+{
+  current_twist_ptr_ = std::make_shared<geometry_msgs::TwistStamped>(*msg);
 };
 
 /*

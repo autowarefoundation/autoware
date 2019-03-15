@@ -56,7 +56,6 @@ private:
   double kf_dt_;                    // = 1 / kf_rate_
   double tf_rate_;                  // tf publish rate
   bool enable_yaw_bias_estimation_; // for LiDAR mount error. if true, publish /estimate_yaw_bias
-  double wheelbase_;                // to convert steering angle to angular velocity
 
   int dim_x_;             // dimension of kalman state
   int extend_state_step_; // for time delay compensation
@@ -106,7 +105,6 @@ private:
   void callbackNDTPose(const geometry_msgs::PoseStamped::ConstPtr &msg);
   void callbackTwist(const geometry_msgs::TwistStamped::ConstPtr &msg);
   void callbackInitialPose(const geometry_msgs::PoseWithCovarianceStamped &msg);
-  void callbackVehicleStatus(const autoware_msgs::VehicleStatus &msg);
 
   void initKalmanFilter();
   void predictKinematicsModel();

@@ -38,6 +38,3 @@ stddev_proc_yaw_c: 0.005
 stddev_proc_yaw_bias_c: 0.001
 stddev_proc_vx_c: 10.0
 stddev_proc_wz_c: 10.0
-
-# used to calculate angluar velocity from vehicle_status: removed soon
-wheelbase: 2.79
