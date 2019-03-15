@@ -444,10 +444,8 @@ bool KalmanFilterNode::mahalanobisGate(const double &dist_max, const Eigen::Matr
   {
     return false;
   }
-  else
-  {
-    return true;
-  }
+
+  return true;
 }
 
 /*
