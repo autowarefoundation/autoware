@@ -61,7 +61,8 @@ This node includes
 |show_debug_info|bool|display debug info|
 |ctrl_period|double|control period [s]|
 |traj_resample_dist|double|length for resampling trajectory [m]|
-|use_path_smoothing|bool|path smoothing flug. should be true when uses path resampling to reduce resampling noise.|
+|enable_path_smoothing|bool|path smoothing flug. should be true when uses path resampling to reduce resampling noise.|
+|enable_yaw_recalculation|bool|recalculate yaw angle after resampling. Set true if yaw in received waypoints has noise.|
 |path_filter_moving_ave_num|double|for path smoothing filter, moving average number|
 |path_smoothing_times|int|Number of times tof applying path smoothing filter|
 |curvature_smoothing_num|double|curvature is calculated from three points: p(i-num), p(i), p(i+num). larger num makes less noisy values.|

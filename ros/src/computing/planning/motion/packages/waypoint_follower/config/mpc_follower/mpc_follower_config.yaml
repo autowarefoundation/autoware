@@ -19,7 +19,10 @@ traj_resample_dist: 0.1
 
 
 # path smoothing flug, must true except debugging
-use_path_smoothing: true
+enable_path_smoothing: true
+
+# recalculate yaw angle after resampling
+enable_yaw_recalculation: true
 
 # path smoothing low pass filler, moving average number
 path_filter_moving_ave_num: 40

@@ -58,7 +58,8 @@ private:
 
   /* parameters */
   double ctrl_period_;              // deside control frequency
-  bool use_path_smoothing_;         // flag for path smoothing
+  bool enable_path_smoothing_;      // flag for path smoothing
+  bool enable_yaw_recalculation_;   // recalculate yaw angle after resampling
   int path_filter_moving_ave_num_;  // path smoothing moving average number
   int path_smoothing_times_;        // number of times of applying smoothing filter
   int curvature_smoothing_num_;     // for smoothing curvature calculation
