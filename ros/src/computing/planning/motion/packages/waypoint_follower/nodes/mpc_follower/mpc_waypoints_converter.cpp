@@ -16,6 +16,7 @@
 
 #include <iostream>
 #include <ros/ros.h>
+#include <std_msgs/Int32.h>
 #include <autoware_msgs/Lane.h>
 
 class MPCWaypointsConverter
@@ -61,7 +62,7 @@ private:
 
     if ((int)base_waypoints_.waypoints.size() - 1 < closest_idx_)
     {
-      ROS_WARN("base_waypoints_.waypoints.size() - 1 = %d, closest_idx_ = %d\n", (int)base_waypoints_.waypoints.size(), closest_idx_);
+      ROS_WARN("base_waypoints_.waypoints.size() - 1 = %d, closest_idx_ = %d", (int)base_waypoints_.waypoints.size(), closest_idx_);
       return;
     }
 
