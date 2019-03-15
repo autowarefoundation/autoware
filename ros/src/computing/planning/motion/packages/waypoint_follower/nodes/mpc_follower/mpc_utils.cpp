@@ -104,7 +104,7 @@ template bool MPCUtils::interp1dX<Eigen::VectorXd, Eigen::VectorXd>(const Eigen:
 
 // 1D interpolation
 bool MPCUtils::interp1dMPCTraj(const std::vector<double> &index, const MPCTrajectory &values,
-                               const std::vector<double> &ref, MPCTrajectory &ret)
+                               const std::vector<double> &ref_time, MPCTrajectory &ret)
 {
   if (!(index.size() == values.size()))
   {
@@ -126,27 +126,27 @@ bool MPCUtils::interp1dMPCTraj(const std::vector<double> &index, const MPCTrajec
     }
   }
 
-  for (unsigned int i = 1; i < ref.size(); ++i)
+  for (unsigned int i = 1; i < ref_time.size(); ++i)
   {
-    if (!(ref[i] > ref[i - 1]))
+    if (!(ref_time[i] > ref_time[i - 1]))
     {
-      printf("index must be monotonically increasing, return false. ref[i] = %f, but ref[i - 1] = %f\n", ref[i], ref[i - 1]);
+      printf("reference point must be monotonically increasing, return false. ref_time[i] = %f, but ref_time[i - 1] = %f\n", ref_time[i], ref_time[i - 1]);
       return false;
     }
   }
 
   ret.clear();
   unsigned int i = 1;
-  for (unsigned int j = 0; j < ref.size(); ++j)
+  for (unsigned int j = 0; j < ref_time.size(); ++j)
   {
     double a, d_index;
-    if (ref[j] > index.back())
+    if (ref_time[j] > index.back())
     {
       a = 1.0;
       d_index = 1.0;
       i = index.size() - 1;
     }
-    else if (ref[j] < index.front())
+    else if (ref_time[j] < index.front())
     {
       a = 0.0;
       d_index = 1.0;
@@ -154,11 +154,11 @@ bool MPCUtils::interp1dMPCTraj(const std::vector<double> &index, const MPCTrajec
     }
     else
     {
-      while (ref[j] > index[i])
+      while (ref_time[j] > index[i])
       {
         ++i;
       }
-      a = ref[j] - index[i - 1];
+      a = ref_time[j] - index[i - 1];
       d_index = index[i] - index[i - 1];
     }
     const double x = ((d_index - a) * values.x[i - 1] + a * values.x[i]) / d_index;
@@ -167,7 +167,7 @@ bool MPCUtils::interp1dMPCTraj(const std::vector<double> &index, const MPCTrajec
     const double yaw = ((d_index - a) * values.yaw[i - 1] + a * values.yaw[i]) / d_index;
     const double vx = ((d_index - a) * values.vx[i - 1] + a * values.vx[i]) / d_index;
     const double k = ((d_index - a) * values.k[i - 1] + a * values.k[i]) / d_index;
-    const double t = ref[j];
+    const double t = ref_time[j];
     ret.push_back(x, y, z, yaw, vx, k, t);
   }
   return true;
