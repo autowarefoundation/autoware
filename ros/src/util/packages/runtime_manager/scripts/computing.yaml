@@ -79,7 +79,15 @@ subs :
         param: icp
         gui  :
           dialog_height : 400
-
+    - name : fusion_localizer
+      desc : fusion_localizer desc sample
+      subs :
+      - name : kalman_filter
+        desc : kalman_filter desc sample
+        cmd  : roslaunch kalman_filter_localizer kalman_filter_localizer.launch
+        param : kalman_filter_localizer_param
+        gui  :
+          dialog_height : 400
     - name : autoware_connector
       desc : autoware_connector desc sample
       subs :
@@ -5604,3 +5612,31 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+  - name : kalman_filter_localizer_param
+    vars : 
+    - name      : enable_yaw_bias_estimation
+      desc      : enable yaw bias estimation for LiDAR mount error
+      label     : Baselink support
+      kind      : checkbox
+      v         : True
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : ndt_additional_delay
+      desc  : delay time added as NDT delay
+      label : NDT additional delay [s]
+      min   : 0.0
+      max   : 1.0
+      v     : 0.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : twist_additional_delay
+      desc  : delay time added as twist delay
+      label : twist additional delay [s]
+      min   : 0.0
+      max   : 1.0
+      v     : 0.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
