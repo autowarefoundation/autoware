@@ -16,7 +16,6 @@ class AwBaseTree(object):
 
     def dump(self):
         for name in sorted(self.nodes.keys()):
-            print "=================================================="
             self.nodes[name].dump()
 
 

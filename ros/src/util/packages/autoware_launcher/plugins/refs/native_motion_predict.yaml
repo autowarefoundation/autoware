@@ -1,2 +1,15 @@
 format: Autoware Launcher Plugin Version 0.1
 rosxml: $(find naive_motion_predict)/launch/naive_motion_predict.launch
+args:
+- {name: interval_sec, type: real, default: 0.1}
+- {name: num_prediction, type: int, default: 10}
+- {name: sensor_height, type: real, default: 2.0}
+- {name: input_topic, type: str, default: /detection/objects}
+
+panel:
+  widget: node.panel
+  frames:
+  - {target: args.interval_sec, widget: basic.real}
+  - {target: args.num_prediction, widget: basic.int}
+  - {target: args.sensor_height, widget: basic.real}
+  - {target: args.input_topic, widget: basic.text}
