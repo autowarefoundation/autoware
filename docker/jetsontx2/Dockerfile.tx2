@@ -173,7 +173,7 @@ RUN /bin/bash -c " \
        -DCUDA_ARCH_BIN=6.2 \
        -DCUDA_ARCH_PTX="" \
        ../; \
-      make -j6; \
+      make -j1; \
       sudo make install; \
       sudo ldconfig" 
 
@@ -193,7 +193,7 @@ RUN /bin/bash -c " \
       cd ~; \
       git clone https://github.com/CPFL/Autoware.git --recurse-submodules; \
       cd Autoware; \
-      git checkout develop; \
+      git checkout e9c9bab2471524c14303f645ca6983d6c9113d3c; \
       cd ros/src; \
       rm -rf driveworks; \
       cd ~/Autoware/ros/src/computing/perception/localization/lib/ndt_gpu/include/ndt_gpu; \
@@ -202,13 +202,6 @@ RUN /bin/bash -c " \
       sed -i \"s/4/2/g\" common.h; \
    # Change sm_52 to sm_62
       find ~/Autoware/ros/src -type f -exec sed -i \"s/sm_52/sm_62/g\" {} \;; \
-   # Install YOLO2   ** NOT NEEDED ANYMORE **
-   #   cd ~; \
-   #   git clone https://github.com/pjreddie/darknet.git; \
-   #   cd darknet; \
-   #   git checkout 56d69e73aba37283ea7b9726b81afd2f79cd1134; \
-   #   cd data; \
-   #   wget https://pjreddie.com/media/files/yolo.weights; \
    # Add YOLO3 and YOLO3 tiny
       cd ~/Autoware/ros/src/computing/perception/detection/vision_detector/packages/vision_darknet_detect/darknet; \
       mkdir data; \
