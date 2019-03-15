@@ -1,11 +1,19 @@
 <launch>
 
+	<arg name="enable_yaw_bias_estimation" default="True"/>
+	<arg name="ndt_additional_delay"       default="0.0"/>
+  <arg name="twist_additional_delay"     default="0.0"/>
+
   <node pkg="kalman_filter_localizer" type="kalman_filter_localizer" name="kalman_filter_localizer" output="screen">
     <rosparam command="load" file="$(find kalman_filter_localizer)/config/kalman_filter_localizer.yaml" />
-    <param name="input_ndt_pose_name" 	value="/ndt_pose"/>
-    <param name="input_twist_name" 	value="/can_twist"/>
-    <param name="output_pose_name" 	value="/kf_pose"/>
-    <param name="output_twist_name" 	value="/kf_twist"/>
+    <param name="enable_yaw_bias_estimation"             value="$(arg enable_yaw_bias_estimation)"/>
+    <param name="ndt_additional_delay"                   value="$(arg ndt_additional_delay)"/>
+    <param name="twist_additional_delay"                 value="$(arg twist_additional_delay)"/>
+    <param name="input_ndt_pose_name" 	                 value="/ndt_pose"/>
+    <param name="input_twist_name"                       value="/can_twist"/>
+    <param name="output_pose_name" 	                     value="/kf_pose"/>
+    <param name="output_pose_with_covariance_name" 	     value="/kf_pose_with_covariance"/>
+    <param name="output_twist_name"                      value="/kf_twist"/>
    </node>
 
 </launch>

@@ -56,6 +56,7 @@ private:
   double kf_dt_;                    // = 1 / kf_rate_
   double tf_rate_;                  // tf publish rate
   bool enable_yaw_bias_estimation_; // for LiDAR mount error. if true, publish /estimate_yaw_bias
+  std::string pose_frame_id_;
 
   int dim_x_;             // dimension of kalman state
   int extend_state_step_; // for time delay compensation

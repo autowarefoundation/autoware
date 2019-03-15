@@ -28,6 +28,7 @@ KalmanFilterNode::KalmanFilterNode() : nh_(""), pnh_("~"), dim_x_(6 /* x, y, yaw
   pnh_.param("tf_rate", tf_rate_, double(10.0));
   pnh_.param("enable_yaw_bias_estimation", enable_yaw_bias_estimation_, bool(true));
   pnh_.param("extend_state_step", extend_state_step_, int(100));
+  pnh_.param("pose_frame_id", pose_frame_id_, std::string("map"));
 
   /* NDT measurement */
   pnh_.param("ndt_additional_delay", ndt_additional_delay_, double(0.15));
@@ -62,17 +63,18 @@ KalmanFilterNode::KalmanFilterNode() : nh_(""), pnh_("~"), dim_x_(6 /* x, y, yaw
   cov_proc_yaw_bias_d_ = std::pow(stddev_proc_yaw_bias_c * kf_dt_, 2.0);
 
   /* initialize ros system */
-  std::string in_ndt_pose, in_twist, out_pose, out_twist;
+  std::string in_ndt_pose, in_twist, out_pose, out_twist, out_pose_with_covariance;
   pnh_.param("input_ndt_pose_name", in_ndt_pose, std::string("/ndt_pose"));
   pnh_.param("input_twist_name", in_twist, std::string("/can_twist"));
   pnh_.param("output_pose_name", out_pose, std::string("/kf_pose"));
   pnh_.param("output_twist_name", out_twist, std::string("/kf_twist"));
+  pnh_.param("output_pose_with_covariance_name", out_pose_with_covariance, std::string("/kf_pose_with_covariance"));
   timer_control_ = nh_.createTimer(ros::Duration(kf_dt_), &KalmanFilterNode::timerCallback, this);
   timer_tf_ = nh_.createTimer(ros::Duration(1.0 / tf_rate_), &KalmanFilterNode::timerTFCallback, this);
   pub_pose_ = nh_.advertise<geometry_msgs::PoseStamped>(out_pose, 1);
-  pub_pose_cov_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("/kf_pose_with_covariance", 1);
+  pub_pose_cov_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>(out_pose_with_covariance, 1);
   pub_twist_ = nh_.advertise<geometry_msgs::TwistStamped>(out_twist, 1);
-  pub_yaw_bias_ = pnh_.advertise<geometry_msgs::TwistStamped>("estimated_yaw_bias", 1);
+  pub_yaw_bias_ = pnh_.advertise<std_msgs::Float64>("estimated_yaw_bias", 1);
   sub_initialpose_ = nh_.subscribe("/initialpose", 1, &KalmanFilterNode::callbackInitialPose, this);
   sub_ndt_pose_ = nh_.subscribe(in_ndt_pose, 1, &KalmanFilterNode::callbackNDTPose, this);
   sub_twist_ = nh_.subscribe(in_twist, 1, &KalmanFilterNode::callbackTwist, this);
@@ -82,8 +84,8 @@ KalmanFilterNode::KalmanFilterNode() : nh_(""), pnh_("~"), dim_x_(6 /* x, y, yaw
   initKalmanFilter();
 
   /* debug */
-  pub_debug_ = pnh_.advertise<std_msgs::Float64MultiArray>("debug2", 1);
-  pub_ndt_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("/my_ndt_pose", 1);
+  pub_debug_ = pnh_.advertise<std_msgs::Float64MultiArray>("debug", 1);
+  pub_ndt_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("my_ndt_pose", 1);
 };
 
 KalmanFilterNode::~KalmanFilterNode(){};
@@ -93,14 +95,6 @@ KalmanFilterNode::~KalmanFilterNode(){};
  */
 void KalmanFilterNode::timerCallback(const ros::TimerEvent &e)
 {
-  /* check flags */
-  if (current_twist_ptr_ == nullptr || current_ndt_pose_ptr_ == nullptr)
-  {
-    ROS_WARN_DELAYED_THROTTLE(1.0, "waiting topic... twist:%d, selfpose:%d",
-                              current_twist_ptr_ != nullptr, current_ndt_pose_ptr_ != nullptr);
-    return;
-  }
-
   DEBUG_INFO("===== timer called =====");
 
   /* predict model in kalman filter */
@@ -111,19 +105,25 @@ void KalmanFilterNode::timerCallback(const ros::TimerEvent &e)
   DEBUG_INFO("[kalman filter] predictKinematicsModel calculation time = %f [ms]", elapsed * 1.0e-6);
   DEBUG_INFO("----- end prediction -----\n");
 
-  DEBUG_INFO("----- start NDT -----");
-  start = std::chrono::system_clock::now();
-  measurementUpdateNDTPose(*current_ndt_pose_ptr_);
-  elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - start).count();
-  DEBUG_INFO("[kalman filter] measurementUpdateNDTPose calculation time = %f [ms]", elapsed * 1.0e-6);
-  DEBUG_INFO("----- end NDT -----\n");
+  if (current_ndt_pose_ptr_ != nullptr)
+  {
+    DEBUG_INFO("----- start NDT -----");
+    start = std::chrono::system_clock::now();
+    measurementUpdateNDTPose(*current_ndt_pose_ptr_);
+    elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - start).count();
+    DEBUG_INFO("[kalman filter] measurementUpdateNDTPose calculation time = %f [ms]", elapsed * 1.0e-6);
+    DEBUG_INFO("----- end NDT -----\n");
+  }
 
-  DEBUG_INFO("----- start twist -----");
-  start = std::chrono::system_clock::now();
-  measurementUpdateTwist(*current_twist_ptr_);
-  elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - start).count();
-  DEBUG_INFO("[kalman filter] measurementUpdateTwist calculation time = %f [ms]", elapsed * 1.0e-6);
-  DEBUG_INFO("----- end twist -----\n");
+  if (current_twist_ptr_ != nullptr)
+  {
+    DEBUG_INFO("----- start twist -----");
+    start = std::chrono::system_clock::now();
+    measurementUpdateTwist(*current_twist_ptr_);
+    elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - start).count();
+    DEBUG_INFO("[kalman filter] measurementUpdateTwist calculation time = %f [ms]", elapsed * 1.0e-6);
+    DEBUG_INFO("----- end twist -----\n");
+  }
 
   /* set current pose, twist */
   setCurrentResult();
@@ -133,20 +133,30 @@ void KalmanFilterNode::timerCallback(const ros::TimerEvent &e)
 
 void KalmanFilterNode::setCurrentResult()
 {
-  current_kf_pose_.header.frame_id = current_ndt_pose_ptr_->header.frame_id;
+
+  current_kf_pose_.header.frame_id = "world";
   current_kf_pose_.header.stamp = ros::Time::now();
   current_kf_pose_.pose.position.x = kf_.getXelement(IDX::X);
   current_kf_pose_.pose.position.y = kf_.getXelement(IDX::Y);
-  current_kf_pose_.pose.position.z = current_ndt_pose_ptr_->pose.position.z;
+  double yaw = kf_.getXelement(IDX::YAW) + kf_.getXelement(IDX::YAWB);
 
-  /* use NDT pitch and roll */
-  double roll, pitch, yaw;
-  tf::Quaternion q_tf;
-  quaternionMsgToTF(current_ndt_pose_ptr_->pose.orientation, q_tf);
-  tf::Matrix3x3(q_tf).getRPY(roll, pitch, yaw);
-  yaw = kf_.getXelement(IDX::YAW) + kf_.getXelement(IDX::YAWB);
+  double roll, pitch;
+  if (current_ndt_pose_ptr_ != nullptr)
+  {
+    current_kf_pose_.pose.position.z = current_ndt_pose_ptr_->pose.position.z;
+    tf::Quaternion q_tf;
+    quaternionMsgToTF(current_ndt_pose_ptr_->pose.orientation, q_tf); /* use NDT pitch and roll */
+    tf::Matrix3x3(q_tf).getRPY(roll, pitch, yaw);
+  }
+  else
+  {
+    current_kf_pose_.pose.position.z = 0.0;
+    roll = 0;
+    pitch = 0;
+  }
   current_kf_pose_.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(roll, pitch, yaw);
-  current_kf_twist_.header.frame_id = current_twist_ptr_->header.frame_id;
+
+  current_kf_twist_.header.frame_id = "base_link";
   current_kf_twist_.header.stamp = ros::Time::now();
   current_kf_twist_.twist.linear.x = kf_.getXelement(IDX::VX);
   current_kf_twist_.twist.angular.z = kf_.getXelement(IDX::WZ);
@@ -317,7 +327,7 @@ int KalmanFilterNode::getDelayStep(const double &delay_time, const int &extend_s
   if (delay_step > extend_state_step - 1)
   {
     delay_step = extend_state_step - 1;
-    ROS_WARN("delay time: %f[s] exceeds the allowable limit: extend_state_step * kf_dt = %f [s]", delay_time, extend_state_step * kf_dt);
+    ROS_WARN_DELAYED_THROTTLE(5.0, "delay time: %f[s] exceeds the allowable limit: extend_state_step * kf_dt = %f [s]", delay_time, extend_state_step * kf_dt);
   }
 
   return delay_step;
@@ -359,7 +369,7 @@ void KalmanFilterNode::measurementUpdateNDTPose(const geometry_msgs::PoseStamped
   P_y = P_curr.block(0, 0, dim_y, dim_y);
   if (!mahalanobisGate(ndt_gate_dist_, y_kf, y, P_y))
   {
-    ROS_WARN("[kalman filter] measurement update, mahalanobis distance is larger than limit. ignore NDT measurement data.");
+    ROS_WARN_DELAYED_THROTTLE(2.0, "[kalman filter] measurement update, mahalanobis distance is larger than limit. ignore NDT measurement data.");
     return;
   }
 
@@ -371,9 +381,11 @@ void KalmanFilterNode::measurementUpdateNDTPose(const geometry_msgs::PoseStamped
 
   /* Set measurement noise covariancs : NOTE this should be set by NDT reliability */
   const double kf_yaw = kf_.getXelement(IDX::YAW);
-  const double cov_pos_x = std::pow(ndt_measure_uncertainty_time_ * current_twist_ptr_->twist.linear.x * cos(kf_yaw), 2);
-  const double cov_pos_y = std::pow(ndt_measure_uncertainty_time_ * current_twist_ptr_->twist.linear.x * sin(kf_yaw), 2);
-  const double cov_yaw = std::pow(ndt_measure_uncertainty_time_ * current_twist_ptr_->twist.angular.z, 2);
+  const double vx = kf_.getXelement(IDX::VX);
+  const double wz = kf_.getXelement(IDX::WZ);
+  const double cov_pos_x = std::pow(ndt_measure_uncertainty_time_ * vx * cos(kf_yaw), 2.0);
+  const double cov_pos_y = std::pow(ndt_measure_uncertainty_time_ * vx * sin(kf_yaw), 2.0);
+  const double cov_yaw = std::pow(ndt_measure_uncertainty_time_ * wz, 2.0);
   Eigen::MatrixXd R = Eigen::MatrixXd::Zero(dim_y, dim_y);
   R(0, 0) = std::pow(ndt_stddev_x_, 2) + cov_pos_x; // pos_x
   R(1, 1) = std::pow(ndt_stddev_y_, 2) + cov_pos_y; // pos_y
@@ -412,7 +424,7 @@ void KalmanFilterNode::measurementUpdateTwist(const geometry_msgs::TwistStamped 
   kf_.getCurrentP(P_curr);
   if (!mahalanobisGate(ndt_gate_dist_, y_kf, y, P_curr.block(4, 4, dim_y, dim_y)))
   {
-    ROS_WARN("[kalman filter] twist measurement update, mahalanobis distance is larger than limit. ignore twist measurement data.");
+    ROS_WARN_DELAYED_THROTTLE(2.0, "[kalman filter] twist measurement update, mahalanobis distance is larger than limit. ignore twist measurement data.");
     return;
   }
 
@@ -490,19 +502,24 @@ void KalmanFilterNode::publishEstimatedPose()
   pub_yaw_bias_.publish(yawb);
 
   /* debug my ndt */
-  geometry_msgs::PoseStamped p;
-  p = *current_ndt_pose_ptr_;
-  p.header.stamp = ros::Time::now();
-  pub_ndt_pose_.publish(p);
+  if (current_ndt_pose_ptr_ != nullptr)
+  {
+    geometry_msgs::PoseStamped p;
+    p = *current_ndt_pose_ptr_;
+    p.header.stamp = ros::Time::now();
+    pub_ndt_pose_.publish(p);
+  }
 
   /* debug publish */
   double RAD2DEG = 180.0 / 3.141592;
+  double ndt_yaw = 0.0;
+  if (current_ndt_pose_ptr_ != nullptr)
+    ndt_yaw = tf::getYaw(current_ndt_pose_ptr_->pose.orientation) * RAD2DEG;
+  
   std_msgs::Float64MultiArray msg;
-  msg.data.push_back(current_twist_ptr_->twist.linear.x);                            // [0] vx
-  msg.data.push_back(current_twist_ptr_->twist.angular.z);                           // [1] wz (omega)
-  msg.data.push_back(X(IDX::YAW) * RAD2DEG);                                         // [2] yaw angle
-  msg.data.push_back(tf::getYaw(current_ndt_pose_ptr_->pose.orientation) * RAD2DEG); // [3] NDT yaw angle
-  msg.data.push_back(X(IDX::YAWB) * RAD2DEG);                                        // [4] yaw bias
+  msg.data.push_back(X(IDX::YAW) * RAD2DEG);  // [0] yaw angle
+  msg.data.push_back(ndt_yaw);                // [1] NDT yaw angle
+  msg.data.push_back(X(IDX::YAWB) * RAD2DEG); // [2] yaw bias
   pub_debug_.publish(msg);
 }
 

@@ -83,11 +83,11 @@ subs :
       desc : fusion_localizer desc sample
       subs :
       - name : kalman_filter
-        desc : kalman_filter desc sample
+        desc : pose and twist fusion for robust localization 
         cmd  : roslaunch kalman_filter_localizer kalman_filter_localizer.launch
         param : kalman_filter_localizer_param
         gui  :
-          dialog_height : 400
+          dialog_height : 200
     - name : autoware_connector
       desc : autoware_connector desc sample
       subs :
@@ -5616,7 +5616,7 @@ params :
     vars : 
     - name      : enable_yaw_bias_estimation
       desc      : enable yaw bias estimation for LiDAR mount error
-      label     : Baselink support
+      label     : Yaw bias estimation
       kind      : checkbox
       v         : True
       cmd_param :
@@ -5626,7 +5626,7 @@ params :
       desc  : delay time added as NDT delay
       label : NDT additional delay [s]
       min   : 0.0
-      max   : 1.0
+      max   : 0.5
       v     : 0.0
       cmd_param :
         dash      : ''
@@ -5635,7 +5635,7 @@ params :
       desc  : delay time added as twist delay
       label : twist additional delay [s]
       min   : 0.0
-      max   : 1.0
+      max   : 0.5
       v     : 0.0
       cmd_param :
         dash      : ''
