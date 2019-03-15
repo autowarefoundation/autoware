@@ -23,10 +23,10 @@
 KalmanFilterNode::KalmanFilterNode() : nh_(""), pnh_("~"), dim_x_(6 /* x, y, yaw, yaw_bias, vx, wz */)
 {
   pnh_.param("show_debug_info", show_debug_info_, bool(false));
-  pnh_.param("predict_frequency", kf_rate_, double(50.0));
+  pnh_.param("predict_frequency", kf_rate_, double(100.0));
   kf_dt_ = 1.0 / std::max(kf_rate_, 0.1);
   pnh_.param("tf_rate", tf_rate_, double(10.0));
-  pnh_.param("extend_state_step", extend_state_step_, int(50));
+  pnh_.param("extend_state_step", extend_state_step_, int(100));
   pnh_.param("wheelbase", wheelbase_, double(2.79));
 
   /* NDT measurement */
