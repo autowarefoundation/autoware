@@ -278,8 +278,6 @@ void KalmanFilterNode::predictKinematicsModel()
   const double wz = X_curr(IDX::WZ);
   const double dt = kf_dt_;
 
-  DEBUG_INFO("prediction: X_curr = %f, %f, %f, %f, %f, %f", X_curr(0), X_curr(1), X_curr(2), X_curr(3), X_curr(4), X_curr(5));
-
   /* Update for latest state */
   X_next(IDX::X) = X_curr(IDX::X) + vx * cos(yaw + yaw_bias) * dt; // dx = v * cos(yaw)
   X_next(IDX::Y) = X_curr(IDX::Y) + vx * sin(yaw + yaw_bias) * dt; // dy = v * sin(yaw)
@@ -292,8 +290,6 @@ void KalmanFilterNode::predictKinematicsModel()
   {
     X_next(IDX::YAW) -= 2.0 * M_PI * ((X_next(IDX::YAW) > 0) - (X_next(IDX::YAW) < 0));
   }
-  DEBUG_INFO("prediction: X_next = %f, %f, %f, %f, %f, %f", X_next(0), X_next(1), X_next(2), X_next(3), X_next(4), X_next(5));
-  DEBUG_INFO("prediction: X_diff = %f, %f, %f, %f, %f, %f", X_next(0) - X_curr(0), X_next(1) - X_curr(1), X_next(2) - X_curr(2), X_next(3) - X_curr(3), X_next(4) - X_curr(4), X_next(5) - X_curr(5));
 
   /* Set A matrix for latest state */
   Eigen::MatrixXd A = Eigen::MatrixXd::Identity(dim_x_, dim_x_);
@@ -338,8 +334,6 @@ int KalmanFilterNode::getDelayStep(const double &delay_time, const int &extend_s
     delay_step = extend_state_step - 1;
     ROS_WARN("delay time: %f[s] exceeds the allowable limit: extend_state_step * kf_dt = %f [s]", delay_time, extend_state_step * kf_dt);
   }
-
-  DEBUG_INFO("measurement update: kf_dt = %f, delay_time = %f, delay_step = %d, extend_state_step = %d", kf_dt, delay_time, delay_step, extend_state_step);
 
   return delay_step;
 }
@@ -403,23 +397,7 @@ void KalmanFilterNode::measurementUpdateNDTPose(const geometry_msgs::PoseStamped
   /* In order to avoid a large change at the time of updating, measuremeent update is performed by dividing at every step. */
   R *= (kf_rate_ / ndt_rate_);
 
-  Eigen::MatrixXd X_before, X_after;
-  if (show_debug_info_)
-    kf_.getCurrentX(X_before);
-
   kf_.updateWithDelay(y, C, R, delay_step);
-
-  if (show_debug_info_)
-  {
-    kf_.getCurrentX(X_after);
-    DEBUG_INFO("measurement update: y_ndt    = %f, %f, %f", y(0), y(1), y(2));
-    DEBUG_INFO("measurement update: y_kf     = %f, %f, %f", kf_.getXelement(delay_step * dim_x_), kf_.getXelement(delay_step * dim_x_ + 1), kf_.getXelement(delay_step * dim_x_ + 2));
-    DEBUG_INFO("measurement update: y_diff   = %f, %f, %f", kf_.getXelement(delay_step * dim_x_) - y(0), kf_.getXelement(delay_step * dim_x_ + 1) - y(1), kf_.getXelement(delay_step * dim_x_ + 2) - y(2));
-    DEBUG_INFO("measurement update: X_before = %f, %f, %f, %f", X_before(0), X_before(1), X_before(2), X_before(3));
-    DEBUG_INFO("measurement update: X_after  = %f, %f, %f, %f", X_after(0), X_after(1), X_after(2), X_after(3));
-    Eigen::MatrixXd X_diff = X_after - X_before;
-    DEBUG_INFO("measurement update: X_diff   = %f, %f, %f, %f", X_diff(0), X_diff(1), X_diff(2), X_diff(3));
-  }
 }
 
 /*
@@ -466,23 +444,7 @@ void KalmanFilterNode::measurementUpdateTwist(const geometry_msgs::TwistStamped 
   /* In order to avoid a large change by update, measurement update is performed by dividing at every step. */
   R *= (kf_rate_ / twist_rate_);
 
-  Eigen::MatrixXd X_before, X_after;
-  if (show_debug_info_)
-    kf_.getCurrentX(X_before);
-
   kf_.updateWithDelay(y, C, R, delay_step);
-
-  if (show_debug_info_)
-  {
-    kf_.getCurrentX(X_after);
-    DEBUG_INFO("twist measurement update: y_twist  = %f, %f", y(0), y(1));
-    DEBUG_INFO("twist measurement update: y_kf     = %f, %f", kf_.getXelement(delay_step * dim_x_ + IDX::VX), kf_.getXelement(delay_step * dim_x_ + IDX::WZ));
-    DEBUG_INFO("twist measurement update: y_diff   = %f, %f", kf_.getXelement(delay_step * dim_x_ + IDX::VX) - y(0), kf_.getXelement(delay_step * dim_x_ + IDX::WZ) - y(1));
-    DEBUG_INFO("twist measurement update: X_before = %f, %f, %f, %f, %f, %f", X_before(0), X_before(1), X_before(2), X_before(3), X_before(4), X_before(5));
-    DEBUG_INFO("twist measurement update: X_after  = %f, %f, %f, %f, %f, %f", X_after(0), X_after(1), X_after(2), X_after(3), X_after(4), X_after(5));
-    Eigen::MatrixXd X_diff = X_after - X_before;
-    DEBUG_INFO("twist measurement update: X_diff   = %f, %f, %f, %f, %f, %f", X_diff(0), X_diff(1), X_diff(2), X_diff(3), X_diff(4), X_diff(5));
-  }
 };
 
 /*
