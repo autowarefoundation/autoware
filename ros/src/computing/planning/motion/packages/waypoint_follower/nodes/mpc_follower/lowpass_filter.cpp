@@ -25,7 +25,7 @@ void Butterworth2dFilter::initialize(const double &dt, const double &f_cutoff_hz
   b2_ = b0_;
 }
 
-double Butterworth2dFilter::filter(double &u0)
+double Butterworth2dFilter::filter(const double &u0)
 {
   double y0 = (b2_ * u2_ + b1_ * u1_ + b0_ * u0 - a2_ * y2_ - a1_ * y1_) / a0_;
   y2_ = y1_;

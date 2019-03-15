@@ -30,18 +30,19 @@ TEST(TestSuite, InterpolationTest){
     double ret = 0.0;
     
     std::vector<double> idx_bad = {0.0, 1.0, 0.0, 3.0};
-    ASSERT_EQ(MPCUtils::interp1d(idx_bad, value, ref, ret), false);
+    bool res = MPCUtils::interp1dX<std::vector<double>, std::vector<double>>(idx_bad, value, ref, ret);
+    ASSERT_EQ(res, false);
 
     ref = -10.0;
-    MPCUtils::interp1d(idx, value, ref, ret);
+    MPCUtils::interp1dX<std::vector<double>, std::vector<double>>(idx, value, ref, ret);
     ASSERT_EQ(ret, -2.0);
 
     ref = 10.0;
-    MPCUtils::interp1d(idx, value, ref, ret);
+    MPCUtils::interp1dX<std::vector<double>, std::vector<double>>(idx, value, ref, ret);
     ASSERT_EQ(ret, 4.0);
 
     ref = 0.3;
-    MPCUtils::interp1d(idx, value, ref, ret);
+    MPCUtils::interp1dX<std::vector<double>, std::vector<double>>(idx, value, ref, ret);
     ASSERT_EQ(ret, -1.4);
 
 }

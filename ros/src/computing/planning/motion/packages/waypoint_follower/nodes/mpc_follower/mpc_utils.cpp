@@ -35,110 +35,13 @@ geometry_msgs::Quaternion MPCUtils::getQuaternionFromYaw(const double &yaw)
   return tf2::toMsg(q);
 }
 
-// 1D interpolation
-bool MPCUtils::interp1d(const std::vector<double> &index,
-                        const std::vector<double> &values, const double &ref,
-                        double &ret)
-{
-  ret = 0.0;
-  if (!(index.size() == values.size()))
-  {
-    printf("index and values must have same size, return false.\n");
-    return false;
-  }
-  if (index.size() == 1)
-  {
-    printf("index size is 1, too short. return false.\n");
-    return false;
-  }
-  if (ref < index.front())
-  {
-    ret = values.front();
-    // printf("ref point is out of index (low), return false.\n");
-    return true;
-  }
-  if (index.back() < ref)
-  {
-    ret = values.back();
-    // printf("ref point is out of index (high), return false.\n");
-    return true;
-  }
-
-  for (unsigned int i = 1; i < index.size(); ++i)
-  {
-    if (!(index[i] > index[i - 1]))
-    {
-      printf("index must be monotonically increasing, return false. index[i] = %f, but index[i - 1] = %f\n", index[i], index[i - 1]);
-      return false;
-    }
-  }
-
-  unsigned int i = 1;
-  while (ref > index[i])
-  {
-    ++i;
-  }
-  const double a = ref - index[i - 1];
-  const double d_index = index[i] - index[i - 1];
-  ret = ((d_index - a) * values[i - 1] + a * values[i]) / d_index;
-  return true;
-}
-
-bool MPCUtils::interp1d(const Eigen::VectorXd &index,
-                        const Eigen::VectorXd &values, const double &ref,
-                        double &ret)
-{
-  ret = 0.0;
-  if (!(index.size() == values.size()))
-  {
-    printf("index and values must have same size, return false.\n");
-    return false;
-  }
-  if (index.size() == 1)
-  {
-    printf("index size is 1, too short. return false.\n");
-    return false;
-  }
-  unsigned int end = index.size() - 1;
-  if (ref < index[0])
-  {
-    ret = values[0];
-    // printf("ref point is out of index (low), return false.\n");
-    return true;
-  }
-  if (index[end] < ref)
-  {
-    ret = values[end];
-    // printf("ref point is out of index (high), return false.\n");
-    return true;
-  }
-
-  for (unsigned int i = 1; i < index.size(); ++i)
-  {
-    if (!(index[i] > index[i - 1]))
-    {
-      printf("index must be monotonically increasing, return false. index[i] = %f, but index[i - 1] = %f\n", index[i], index[i - 1]);
-      return false;
-    }
-  }
-  unsigned int i = 1;
-  while (ref > index[i])
-  {
-    ++i;
-  }
-  const double a = ref - index[i - 1];
-  const double d_index = index[i] - index[i - 1];
-  ret = ((d_index - a) * values[i - 1] + a * values[i]) / d_index;
-  return true;
-}
-
 template <typename T1, typename T2>
 bool MPCUtils::interp1dX(const T1 &index, const T2 &values, const double &ref, double &ret)
 {
   ret = 0.0;
   if (!((int)index.size() == (int)values.size()))
   {
-    printf("index and values must have same size, return false.\n");
+    printf("index and values must have same size, return false. size : idx = %d, values = %d\n", (int)index.size(), (int)values.size());
     return false;
   }
   if (index.size() == 1)
@@ -291,9 +194,8 @@ void MPCUtils::calcTrajectoryCurvature(MPCTrajectory &traj, int curvature_smooth
     p1.y = traj.y[i - curvature_smoothing_num];
     p2.y = traj.y[i];
     p3.y = traj.y[i + curvature_smoothing_num];
-    const double curvature =
-        2.0 * ((p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x)) /
-        (dist(p1, p2) * dist(p2, p3) * dist(p3, p1));
+    double den = std::max(dist(p1, p2) * dist(p2, p3) * dist(p3, p1), 0.0001);
+    const double curvature = 2.0 * ((p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x)) / den;
     traj.k.push_back(curvature);
   }
 
@@ -305,10 +207,9 @@ void MPCUtils::calcTrajectoryCurvature(MPCTrajectory &traj, int curvature_smooth
   }
 }
 
-void MPCUtils::resamplePathToTrajByDistance(const autoware_msgs::Lane &path, const std::vector<double> &time,
-                                            const double &dl, MPCTrajectory &ref_traj)
+void MPCUtils::convertWaypointsToMPCTrajWithDistanceResample(const autoware_msgs::Lane &path, const std::vector<double> &time,
+                                                             const double &dl, MPCTrajectory &ref_traj)
 {
-
   ref_traj.clear();
   double dist = 0.0;
   std::vector<double> dists;
@@ -322,84 +223,63 @@ void MPCUtils::resamplePathToTrajByDistance(const autoware_msgs::Lane &path, con
     dists.push_back(dist);
   }
 
-  double l = 0.0;
-  while (l < dists.back())
-  {
-    unsigned int j = 1;
-    while (l > dists.at(j))
-    {
-      ++j;
-      if (j > dists.size() - 1)
-      {
-        ROS_ERROR("[resamplePathToTraj] sampling time is not monotonically increasing");
-        ROS_ERROR("l = %f, dists.at(j-1)=%f", l, dists.at(j - 1));
-        return;
-      }
-    }
-
-    const double a = l - dists.at(j - 1);
-    const double path_dl_j = dists.at(j) - dists.at(j - 1);
-    const geometry_msgs::Pose pos0 = path.waypoints.at(j - 1).pose.pose;
-    const geometry_msgs::Pose pos1 = path.waypoints.at(j).pose.pose;
-    const geometry_msgs::Twist twist0 = path.waypoints.at(j - 1).twist.twist;
-    const geometry_msgs::Twist twist1 = path.waypoints.at(j).twist.twist;
-    const double x = ((path_dl_j - a) * pos0.position.x + a * pos1.position.x) / path_dl_j;
-    const double y = ((path_dl_j - a) * pos0.position.y + a * pos1.position.y) / path_dl_j;
-    const double z = ((path_dl_j - a) * pos0.position.z + a * pos1.position.z) / path_dl_j;
-
-    /* for singular point of euler angle */
-    const double yaw0 = tf2::getYaw(pos0.orientation);
-    const double dyaw = intoSemicircle(tf2::getYaw(pos1.orientation) - yaw0);
-    const double yaw1 = yaw0 + dyaw;
-    const double yaw = ((path_dl_j - a) * yaw0 + a * yaw1) / path_dl_j;
-    const double vx = ((path_dl_j - a) * twist0.linear.x + a * twist1.linear.x) / path_dl_j;
-    const double curvature_tmp = 0.0;
-    const double t = ((path_dl_j - a) * time.at(j - 1) + a * time.at(j)) / path_dl_j;
-    ref_traj.push_back(x, y, z, yaw, vx, curvature_tmp, t);
-    l += dl;
-  }
+  convertWaypointsToMPCTrajWithResample(path, time, dists, dl, ref_traj);
 }
 
-void MPCUtils::resamplePathToTrajByTime(const autoware_msgs::Lane &path, const std::vector<double> &time,
-                                        const double &dt, MPCTrajectory &ref_traj_)
+
+void MPCUtils::convertWaypointsToMPCTrajWithTimeResample(const autoware_msgs::Lane &path, const std::vector<double> &time,
+                                                         const double &dt, MPCTrajectory &ref_traj)
 {
+  ref_traj.clear();
+  convertWaypointsToMPCTrajWithResample(path, time, time, dt, ref_traj);
+}
 
-  ref_traj_.clear();
-  double t = 0.0;
+void MPCUtils::convertWaypointsToMPCTrajWithResample(const autoware_msgs::Lane &path, const std::vector<double> &time,
+                                                     const std::vector<double> &ref_index, const double &d_index, MPCTrajectory &ref_traj)
+{
+  if (ref_index.size() == 0) {
+    return;
+  }
 
-  while (t < time.back())
+  for (unsigned int i = 1; i < ref_index.size(); ++i)
   {
-    uint j = 1;
-    while (t > time.at(j))
+    if (ref_index[i] < ref_index[i - 1])
+    {
+      ROS_ERROR("[convertWaypointsToMPCTrajWithResample] resampling index must be monotonically increasing. idx[%d] = %f, idx[%d+1] = %f",
+                i, ref_index[i], i, ref_index[i + 1]);
+      return;
+    }
+  }
+
+  double point = ref_index[0];
+  while (point < ref_index.back())
+  {
+    unsigned int j = 1;
+    while (point > ref_index.at(j))
     {
       ++j;
-      if (j > time.size() - 1)
-      {
-        ROS_ERROR("[resamplePathToTraj] sampling time is not monotonically increasing");
-        ROS_ERROR("t = %f, time.at(j-1)=%f\n", t, time.at(j - 1));
-        return;
-      }
     }
 
-    const double a = t - time.at(j - 1);
-    const double path_dt_j = time.at(j) - time.at(j - 1);
+    const double a = point - ref_index.at(j - 1);
+    const double ref_index_dist = ref_index.at(j) - ref_index.at(j - 1);
     const geometry_msgs::Pose pos0 = path.waypoints.at(j - 1).pose.pose;
     const geometry_msgs::Pose pos1 = path.waypoints.at(j).pose.pose;
     const geometry_msgs::Twist twist0 = path.waypoints.at(j - 1).twist.twist;
     const geometry_msgs::Twist twist1 = path.waypoints.at(j).twist.twist;
-    const double x = ((path_dt_j - a) * pos0.position.x + a * pos1.position.x) / path_dt_j;
-    const double y = ((path_dt_j - a) * pos0.position.y + a * pos1.position.y) / path_dt_j;
-    const double z = ((path_dt_j - a) * pos0.position.z + a * pos1.position.z) / path_dt_j;
+    const double x = ((ref_index_dist - a) * pos0.position.x + a * pos1.position.x) / ref_index_dist;
+    const double y = ((ref_index_dist - a) * pos0.position.y + a * pos1.position.y) / ref_index_dist;
+    const double z = ((ref_index_dist - a) * pos0.position.z + a * pos1.position.z) / ref_index_dist;
 
     /* for singular point of euler angle */
     const double yaw0 = tf2::getYaw(pos0.orientation);
     const double dyaw = intoSemicircle(tf2::getYaw(pos1.orientation) - yaw0);
     const double yaw1 = yaw0 + dyaw;
-    const double yaw = ((path_dt_j - a) * yaw0 + a * yaw1) / path_dt_j;
-    const double vx = ((path_dt_j - a) * twist0.linear.x + a * twist1.linear.x) / path_dt_j;
+    const double yaw = ((ref_index_dist - a) * yaw0 + a * yaw1) / ref_index_dist;
+    const double vx = ((ref_index_dist - a) * twist0.linear.x + a * twist1.linear.x) / ref_index_dist;
     const double curvature_tmp = 0.0;
-    ref_traj_.push_back(x, y, z, yaw, vx, curvature_tmp, t);
-    t += dt;
+    const double t = ((ref_index_dist - a) * time.at(j - 1) + a * time.at(j)) / ref_index_dist;
+    ref_traj.push_back(x, y, z, yaw, vx, curvature_tmp, t);
+    point += d_index;
   }
 }
 

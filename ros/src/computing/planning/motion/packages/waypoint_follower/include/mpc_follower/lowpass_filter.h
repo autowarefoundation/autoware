@@ -12,7 +12,7 @@ public:
   Butterworth2dFilter(double dt = 0.1, double f_cutoff_hz = 10.0);
   ~Butterworth2dFilter();
   void initialize(const double &dt, const double &f_cutoff_hz);
-  double filter(double &u0);
+  double filter(const double &u0);
   void filt_vector(const std::vector<double> &t, std::vector<double> &u);
   void filtfilt_vector(const std::vector<double> &t, std::vector<double> &u); // filtering forward and backward direction
 };

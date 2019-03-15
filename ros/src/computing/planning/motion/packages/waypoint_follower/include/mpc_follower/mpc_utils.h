@@ -29,13 +29,11 @@ void fillIncrease(std::vector<double>::iterator first, std::vector<double>::iter
 geometry_msgs::Quaternion getQuaternionFromYaw(const double &yaw);
 
 /* 1D interpolation */
-bool interp1d(const std::vector<double> &index, const std::vector<double> &values, const double &ref, double &ret);
-bool interp1d(const Eigen::VectorXd &index, const Eigen::VectorXd &values, const double &ref, double &ret);
-bool interp1dMPCTraj(const std::vector<double> &index, const MPCTrajectory &values,
-                     const std::vector<double> &ref, MPCTrajectory &ret);
-
 template <typename T1, typename T2>
 bool interp1dX(const T1 &index, const T2 &values, const double &ref, double &ret);
+
+bool interp1dMPCTraj(const std::vector<double> &index, const MPCTrajectory &values,
+                     const std::vector<double> &ref, MPCTrajectory &ret);
 
 /* calculate path yaw angle from xy vector*/
 void calcTrajectoryYawFromXY(MPCTrajectory &traj);
@@ -43,13 +41,13 @@ void calcTrajectoryYawFromXY(MPCTrajectory &traj);
 /* Calculate path curvature by 3-points circle fitting with smoothing num (use nearest 3 points when "num = 1") */
 void calcTrajectoryCurvature(MPCTrajectory &traj, int curvature_smoothing_num);
 
-/* Resample path with constant distance */
-void resamplePathToTrajByDistance(const autoware_msgs::Lane &path, const std::vector<double> &time,
-                                  const double &dl, MPCTrajectory &ref_traj);
-
-/* Resample path with constant time */
-void resamplePathToTrajByTime(const autoware_msgs::Lane &path, const std::vector<double> &time,
-                              const double &dt, MPCTrajectory &ref_traj_);
+/* convert path with resampling */
+void convertWaypointsToMPCTrajWithResample(const autoware_msgs::Lane &path, const std::vector<double> &time,
+                                           const std::vector<double> &ref_index, const double &d_index, MPCTrajectory &ref_traj);
+void convertWaypointsToMPCTrajWithDistanceResample(const autoware_msgs::Lane &path, const std::vector<double> &time,
+                                                   const double &dl, MPCTrajectory &ref_traj);
+void convertWaypointsToMPCTrajWithTimeResample(const autoware_msgs::Lane &path, const std::vector<double> &time,
+                                               const double &dt, MPCTrajectory &ref_traj_);
 /* Insert time into path with velocity */
 void calcPathRelativeTime(const autoware_msgs::Lane &path, std::vector<double> &path_time);
 
