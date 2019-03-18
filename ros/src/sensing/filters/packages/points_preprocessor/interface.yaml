@@ -14,5 +14,5 @@
   publish: [/points_clipped]
   subscribe: [/points_raw]
 - name: /compare_map_filter
-  publish: [/match_points, /unmatch_points]
-  subscribe: [/points_raw, /points_map]
+  publish: [/points_ground, /points_no_ground]
+  subscribe: [/config/compare_map_filter, /points_raw, /points_map]
