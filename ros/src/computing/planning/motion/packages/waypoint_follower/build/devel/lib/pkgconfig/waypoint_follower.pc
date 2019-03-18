@@ -1,0 +1,8 @@
+prefix=/home/yutaka/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/build/devel
+
+Name: waypoint_follower
+Description: Description of waypoint_follower
+Version: 1.10.0
+Cflags: -I/home/yutaka/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/include
+Libs: -L/home/yutaka/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/build/devel/lib -llibwaypoint_follower
+Requires: roscpp std_msgs tf tf2 geometry_msgs autoware_msgs autoware_config_msgs pcl_ros pcl_conversions sensor_msgs tablet_socket_msgs autoware_health_checker

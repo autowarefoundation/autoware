@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/yutaka/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/build/devel/setup.sh

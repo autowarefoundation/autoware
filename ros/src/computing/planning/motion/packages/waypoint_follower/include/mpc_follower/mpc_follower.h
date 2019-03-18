@@ -1,19 +1,3 @@
-/*
- * Copyright 2018-2019 Autoware Foundation. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 #pragma once
 #include <vector>
 #include <iostream>
@@ -44,6 +28,7 @@
 #include "mpc_follower/lowpass_filter.h"
 #include "mpc_follower/vehicle_model/vehicle_model_bicycle_kinematics.h"
 #include "mpc_follower/qp_solver/qp_solver.h"
+#include "qpOASES.hpp"
 
 class MPCFollower
 {
@@ -74,10 +59,8 @@ private:
 
   /* parameters */
   double ctrl_period_;              // deside control frequency
-  bool enable_path_smoothing_;      // flag for path smoothing
-  bool enable_yaw_recalculation_;   // recalculate yaw angle after resampling
+  bool use_path_smoothing_;         // flag for path smoothing
   int path_filter_moving_ave_num_;  // path smoothing moving average number
-  int path_smoothing_times_;        // number of times of applying smoothing filter
   int curvature_smoothing_num_;     // for smoothing curvature calculation
   double traj_resample_dist_;       // path resample distance span
   double steering_lpf_cutoff_hz_;   // for steering command smoothing
@@ -85,6 +68,7 @@ private:
   double admisible_yaw_error_deg_;  // stop mpc calculation when yaw error is large than this value.
   double steer_lim_deg_;            // steering command limit [rad]
   double wheelbase_;                // only used to convert steering to twist
+  qpOASES::SQProblem solverqpOases;
 
   struct MPCParam
   {
@@ -104,6 +88,7 @@ private:
     std_msgs::Header header;
     geometry_msgs::Pose pose;
     geometry_msgs::Twist twist;
+    std::string frame_id_pos;
     double tire_angle_rad;
   };
   VehicleStatus vehicle_status_; // updated by topic callback
@@ -122,17 +107,11 @@ private:
   void publishAsTwist(const double &vel_cmd, const double &omega_cmd);
   void publishSteerAndVel(const double &vel_cmd, const double &steer_cmd);
 
-  bool calculateMPC(double &vel_cmd, double &steer_cmd);
+  bool calculateMPC(double &vel_cmd, double &steer_cmd, int count);
 
   /* debug */
   bool show_debug_info_;
   ros::Publisher pub_debug_filtered_traj_, pub_debug_predicted_traj_, pub_debug_values_;
   ros::Subscriber sub_ndt_twist_;
   void convertTrajToMarker(const MPCTrajectory &traj, visualization_msgs::Marker &markers, std::string ns, double r, double g, double b);
-
-  geometry_msgs::TwistStamped estimate_twist_;
-  ros::Subscriber sub_estimate_twist_;
-  void callbackEstimateTwist(const geometry_msgs::TwistStamped &msg) {
-    estimate_twist_ = msg;
-  }
 };

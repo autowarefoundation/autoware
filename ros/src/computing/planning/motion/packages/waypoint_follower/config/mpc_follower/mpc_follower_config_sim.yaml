@@ -2,7 +2,7 @@
 # debug option
 #---------------------------------------------------------------------
 
-show_debug_info: true
+show_debug_info: false
 
 
 #---------------------------------------------------------------------
@@ -19,19 +19,14 @@ traj_resample_dist: 0.1
 
 
 # path smoothing flug, must true except debugging
-enable_path_smoothing: true
-
-# recalculate yaw angle after resampling
+use_path_smoothing: true
 
 # path smoothing low pass filler, moving average number
-path_filter_moving_ave_num: 30
-
-# Number of times tof applying path smoothing filter
-path_smoothing_times: 1
+path_filter_moving_ave_num: 25
 
 # curvature calculation smoothing, larger makes smoother
 #   curvature is calculated from three points: p(i-num), p(i), p(i+num)
-curvature_smoothing_num: 30
+curvature_smoothing_num: 10
 
 # low pass filter for steering output command [Hz]
 steering_lpf_cutoff_hz: 3.0
@@ -55,22 +50,22 @@ mpc_dt: 0.1
 
 # weight parameters
 mpc_weight_lat_error: 1.0      # for Q[0,0]
-mpc_weight_heading_error: 0.0  # for Q[1,1]
-mpc_weight_steering_input: 40.0 # for R[0,0]
+mpc_weight_heading_error: 1.0  # for Q[1,1]
+mpc_weight_steering_input: 10.0 # for R[0,0]
 mpc_weight_steering_input_vel_coeff: 0.0 # for R[0,0] = a + b * v
 
 # time delay compensation
 mpc_delay_compensation_time: 0.0 #[s]
 
 # To reduce path noise effect, reference curvature is set to zeto when it is smaller than this valuse
-mpc_zero_curvature_range: 0.0
+mpc_zero_curvature_range: 0.02
 
 #---------------------------------------------------------------------
 # vehicle model parameters
 #---------------------------------------------------------------------
 
 # steering dynamics time constant (1d approzimation) [s]
-vehicle_model_steer_tau: 0.2 # lexus: 0.2 + LPF delay
+vehicle_model_steer_tau: 0.05 # lexus: 0.2 + LPF delay
 
 # wheel base length [m]
 vehicle_model_wheelbase: 2.9 # lexus: 2.79, Estima: 2.9

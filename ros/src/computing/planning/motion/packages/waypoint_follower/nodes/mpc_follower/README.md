@@ -61,10 +61,8 @@ This node includes
 |show_debug_info|bool|display debug info|
 |ctrl_period|double|control period [s]|
 |traj_resample_dist|double|length for resampling trajectory [m]|
-|enable_path_smoothing|bool|path smoothing flug. should be true when uses path resampling to reduce resampling noise.|
-|enable_yaw_recalculation|bool|recalculate yaw angle after resampling. Set true if yaw in received waypoints has noise.|
+|use_path_smoothing|bool|path smoothing flug. should be true when uses path resampling to reduce resampling noise.|
 |path_filter_moving_ave_num|double|for path smoothing filter, moving average number|
-|path_smoothing_times|int|Number of times tof applying path smoothing filter|
 |curvature_smoothing_num|double|curvature is calculated from three points: p(i-num), p(i), p(i+num). larger num makes less noisy values.|
 |steering_lpf_cutoff_hz|double| cutoff frequency [hz] of butterworth-2D lowpass filter for steering output command |
 |admisible_position_error|double| stop vehicle when following position error is larger than this value [m].|

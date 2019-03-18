@@ -19,16 +19,10 @@ traj_resample_dist: 0.1
 
 
 # path smoothing flug, must true except debugging
-enable_path_smoothing: true
-
-# recalculate yaw angle after resampling
-enable_yaw_recalculation: true
+use_path_smoothing: true
 
 # path smoothing low pass filler, moving average number
 path_filter_moving_ave_num: 40
-
-# Number of times tof applying path smoothing filter
-path_smoothing_times: 1
 
 # curvature calculation smoothing, larger makes smoother
 #   curvature is calculated from three points: p(i-num), p(i), p(i+num)

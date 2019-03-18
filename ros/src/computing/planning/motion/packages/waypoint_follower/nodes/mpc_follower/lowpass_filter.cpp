@@ -1,19 +1,3 @@
-/*
- * Copyright 2018-2019 Autoware Foundation. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 #include "mpc_follower/lowpass_filter.h"
 
 Butterworth2dFilter::Butterworth2dFilter(double dt, double f_cutoff_hz)
@@ -41,7 +25,7 @@ void Butterworth2dFilter::initialize(const double &dt, const double &f_cutoff_hz
   b2_ = b0_;
 }
 
-double Butterworth2dFilter::filter(const double &u0)
+double Butterworth2dFilter::filter(double &u0)
 {
   double y0 = (b2_ * u2_ + b1_ * u1_ + b0_ * u0 - a2_ * y2_ - a1_ * y1_) / a0_;
   y2_ = y1_;
