@@ -106,7 +106,7 @@ public:
             case Yolo3::KEYBOARD: return "keyboard";
             case Yolo3::CELL_PHONE: return "cellphone";
             case Yolo3::MICROWAVE: return "microwave";
-            case Yolo3::OVEN: return "over";
+            case Yolo3::OVEN: return "oven";
             case Yolo3::TOASTER: return "toaster";
             case Yolo3::SINK: return "sink";
             case Yolo3::REFRIGERATOR: return "refrigerator";

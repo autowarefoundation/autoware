@@ -271,7 +271,7 @@ Changelog for package waypoint_maker
 
 1.3.0 (2017-07-14)
 ------------------
-* Add obstacle avoid feature in astar_planner
+* Add obstacle avoid feature in waypoint_planner
 * convert to autoware_msgs
 * Contributors: TomohitoAndo, YamatoAndo
 

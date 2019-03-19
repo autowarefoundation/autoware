@@ -394,7 +394,7 @@ Visualization Manager:
       Draw Behind: true
       Enabled: true
       Name: Occupancy Grid Map
-      Topic: /grid_map_visualization/distance_transform
+      Topic: /grid_map_filter_visualization/distance_transform
       Unreliable: false
       Use Timestamp: false
       Value: true
