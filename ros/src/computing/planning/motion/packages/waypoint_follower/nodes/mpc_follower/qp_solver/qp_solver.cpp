@@ -50,9 +50,10 @@ bool solveQpoases(const Eigen::MatrixXd &Hmat, const Eigen::MatrixXd &fvec, Eige
 
      int index = 0;
 
+
      for(int r=0; r<Hmat.rows(); ++r)
      {
-          g_matrix[r] = fvec(r, 0);
+          g_matrix[r] = fvec(r, 0); // fvecは横ベクトル
           for (int c=0; c<Hmat.cols(); ++c)
           {
                h_matrix[index++] = Hmat(r, c);
@@ -76,7 +77,6 @@ bool solveQpoases(const Eigen::MatrixXd &Hmat, const Eigen::MatrixXd &fvec, Eige
      {
           U(i) = result[i];
      }
-     printf("output will be %f\n", U(0));
 
      return true;
 }
@@ -118,31 +118,30 @@ bool solveByHotstart(qpOASES::SQProblem& solver, const Eigen::MatrixXd &Hmat, co
 
      for(int i=0; i<mpc_n; ++i)
      {
+          // ここで制約条件を決めている
           lower_bound[i] = -60*M_PI/180;
           upper_bound[i] = 60*M_PI/180;
      }
 
-     printf("Count Number is %d\n", count);
      if(count == 0 )
      {
+          // 1回目は初期化するのでinit
           auto ret = solver.init(h_matrix, g_matrix, a_constraint_matirx, lower_bound, upper_bound, lower_bound, upper_bound, nWSR);
           if(ret != SUCCESSFUL_RETURN)
                return false;
      }
      else
      {
+          //2回目以降はhotstartで解くのでhotstart
           auto ret = solver.hotstart(h_matrix, g_matrix, a_constraint_matirx, lower_bound, upper_bound, lower_bound, upper_bound, nWSR);
           if(ret != SUCCESSFUL_RETURN)
                return false;
      }
 
+     // Get the Result
      solver.getPrimalSolution(result);
-
      for(int i=0; i<mpc_n; ++i)
-     {
           U(i) = result[i];
-     }
-     printf("output will be %f\n", U(0));
 
      return true;
 }

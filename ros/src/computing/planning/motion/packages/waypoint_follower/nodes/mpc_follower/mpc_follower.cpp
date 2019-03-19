@@ -35,7 +35,7 @@ MPCFollower::MPCFollower()
 
   /* qpoases */
   solverqpOases = qpOASES::SQProblem(50, 50);
-  //solverqpOases.setPrintLevel(qpOASES::PL_NONE);
+  //solverqpOases.setPrintLevel(qpOASES-3.2.1::PL_NONE);
 
   /* set control command interface */
   std::string ctrl_cmd_interface_string;
@@ -302,18 +302,18 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd, int count)
 
   Eigen::MatrixXd H = (Cex * Bex).transpose() * Qex * Cex * Bex + Rex;
   Eigen::MatrixXd f = (Cex * (Aex * x0 + Wex)).transpose() * Qex * Cex * Bex - Urefex.transpose() * Rex;
-  Eigen::MatrixXd f2 = f.transpose();
   Eigen::VectorXd Uex;
   Eigen::VectorXd Uex2;
 
   auto start = std::chrono::system_clock::now();
-  if (!qpsolver::solveByHotstart(this->solverqpOases, H, f2, Uex2, count)){
+  if (!qpsolver::solveByHotstart(this->solverqpOases, H, f.transpose(), Uex, count)){
     ROS_WARN("qp solver error");
     return false;
   }
   double elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - start).count();
-  qpsolver::solveEigenLeastSquareLLT(H, f, Uex);
-  printf("最小二乗法の解 %f\n", Uex(0));
+  qpsolver::solveEigenLeastSquareLLT(H, f, Uex2);
+  printf("qpOASESの解 %f\n", Uex(0));
+  printf("最小二乗法の解 %f\n", Uex2(0));
   printf("[calculateMPC] qp solver calculation time = %f [ms]", elapsed * 1.0e-6);
 
   /* time delay compensation, look ahead delay_compensation_time for optimized input vector*/

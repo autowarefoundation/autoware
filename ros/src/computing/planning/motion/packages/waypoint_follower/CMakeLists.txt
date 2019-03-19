@@ -103,11 +103,16 @@ set(MPC_FOLLOWER_SRC
 add_executable(mpc_follower 
         nodes/mpc_follower/mpc_follower.cpp 
         ${MPC_FOLLOWER_SRC})
-FILE(GLOB SRC /home/yutaka/qpOASES-3.2.1/src/*.cpp)
-ADD_LIBRARY(qpOASES ${SRC})
+
+#########
+#qpOASES-3.2.1#
+#########
+file(GLOB SRC $ENV{HOME}/qpOASES-3.2.1/src/*.cpp)
+add_library(qpOASES ${SRC})
+
 
 add_dependencies(mpc_follower ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(mpc_follower qpOASES ${catkin_LIBRARIES})
+target_link_libraries(mpc_follower ${catkin_LIBRARIES} qpOASES)
 
 add_executable(mpc_waypoints_converter nodes/mpc_follower/mpc_waypoints_converter.cpp)
 add_dependencies(mpc_waypoints_converter ${catkin_EXPORTED_TARGETS})
