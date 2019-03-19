@@ -46,7 +46,7 @@ add_dependencies(g30esli_interface
 
 target_link_libraries(g30esli_interface
   ${catkin_LIBRARIES}
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/libymc_can_${LIB_ARCH}.a
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/libymc_can${LIB_ARCH}.a
 )
 
 install(TARGETS g30esli_interface
