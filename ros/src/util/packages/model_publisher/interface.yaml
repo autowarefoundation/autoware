@@ -1,2 +1,0 @@
-- name: model_publisher
-  publish: [/vehicle_model]

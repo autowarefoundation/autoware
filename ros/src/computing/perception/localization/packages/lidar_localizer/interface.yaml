@@ -1,0 +1,19 @@
+- name: local2global
+  publish: [/current_pose, /ndt_map]
+  subscribe: [/config/ndt, /gnss_pose, /points_map]
+- name: ndt_mapping
+  publish: [/ndt_map, /current_pose]
+  subscribe: [/config/ndt_mapping, /config/ndt_mapping_output, /points_raw]
+- name: queue_counter
+  publish: []
+  subscribe: [/points_raw, /ndt_map]
+- name: ndt_matching
+  publish: [/predict_pose, /ndt_pose, /localizer_pose,
+    /estimate_twist, /estimated_vel_mps, /estimated_vel_kmph, /estimated_vel, /time_ndt_matching,
+    /ndt_stat, /ndt_reliability]
+  subscribe: [/config/ndt, /gnss_pose, /points_map, /initialpose, /filtered_points]
+- name: icp_matching
+  publish: [/predict_pose, /icp_pose, /localizer_pose,
+    /estimate_twist, /estimated_vel_mps, /estimated_vel_kmph, /estimated_vel, /time_icp_matching,
+    /icp_stat]
+  subscribe: [/config/icp, /gnss_pose, /points_map, /initialpose, /filtered_points]

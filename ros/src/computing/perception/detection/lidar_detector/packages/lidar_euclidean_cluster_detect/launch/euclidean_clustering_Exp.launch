@@ -1,0 +1,47 @@
+<!-- -->
+<launch>
+  <arg name="points_node" default="/velodyne16/baselink_velodyne_points" /><!--CHANGE THIS TO READ WHETHER FROM VSCAN OR POINTS_RAW -->
+  <arg name="remove_ground" default="true" />
+  <arg name="downsample_cloud" default="false" /> <!-- Apply VoxelGrid Filter with the value given by "leaf_size"-->
+  <arg name="leaf_size" default="0.1" /><!-- Voxel Grid Filter leaf size-->
+  <arg name="cluster_size_min" default="20" /><!-- Minimum number of points to consider a cluster as valid-->
+  <arg name="cluster_size_max" default="10000" /><!-- Maximum number of points to allow inside a cluster-->
+  <arg name="sync" default="false" />
+  <arg name="use_diffnormals" default="false" />
+  <arg name="pose_estimation" default="true" />
+  <arg name="clip_min_height" default="-0.3" />
+  <arg name="clip_max_height" default="0.5" />
+
+  <arg name="keep_lanes" default="false" />
+  <arg name="keep_lane_left_distance" default="3" />
+  <arg name="keep_lane_right_distance" default="3" />
+  <arg name="max_boundingbox_side" default="10" />
+  <arg name="output_frame" default="map" />
+
+  <arg name="remove_points_upto" default="0.0" />
+
+  <!-- rosrun lidar_tracker vscan_filling -->
+  <!-- <node pkg="lidar_tracker" type="vscan_filling" name="vscan_filling" /> -->
+
+  <!-- rosrun lidar_tracker euclidean_cluster _points_node:="" -->
+  <node pkg="lidar_euclidean_cluster_detect" type="lidar_euclidean_cluster_detect" name="lidar_euclidean_cluster_detect" output="screen">
+    <param name="points_node" value="$(arg points_node)" /> <!-- Can be used to select which pointcloud node will be used as input for the clustering -->
+    <param name="remove_ground" value="$(arg remove_ground)" />
+    <param name="downsample_cloud" value="$(arg downsample_cloud)" />
+    <param name="leaf_size" value="$(arg leaf_size)" />
+    <param name="cluster_size_min" value="$(arg cluster_size_min)" />
+    <param name="cluster_size_max" value="$(arg cluster_size_max)" />
+    <param name="use_diffnormals" value="$(arg use_diffnormals)" />
+    <param name="pose_estimation" value="$(arg pose_estimation)" />
+    <param name="keep_lanes" value="$(arg keep_lanes)" />
+    <param name="keep_lane_left_distance" value="$(arg keep_lane_left_distance)" />
+    <param name="keep_lane_right_distance" value="$(arg keep_lane_right_distance)" />
+    <param name="max_boundingbox_side" value="$(arg max_boundingbox_side)" />
+    <param name="clip_min_height" value="$(arg clip_min_height)" />
+    <param name="clip_max_height" value="$(arg clip_max_height)" />
+    <param name="output_frame" value="$(arg output_frame)" />
+    <param name="remove_points_upto" value="$(arg remove_points_upto)" />
+    <remap from="/points_raw" to="/sync_drivers/points_raw" if="$(arg sync)" />
+  </node>
+
+</launch>

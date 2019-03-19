@@ -1,32 +1,18 @@
 /*
-// *  Copyright (c) 2016, Nagoya University
- *  All rights reserved.
+ * Copyright 2016-2019 Autoware Foundation. All rights reserved.
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  * Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name of Autoware nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #ifndef dp_planner_CORE_H
 #define dp_planner_CORE_H
@@ -48,7 +34,7 @@
 #include <std_msgs/Int32.h>
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "autoware_msgs/LaneArray.h"
-#include "autoware_msgs/CanInfo.h"
+#include "autoware_can_msgs/CANInfo.h"
 
 #include "autoware_msgs/CloudCluster.h"
 #include "autoware_msgs/CloudClusterArray.h"
@@ -56,13 +42,12 @@
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
 
-#include "RoadNetwork.h"
-#include "MappingHelpers.h"
-#include "PlanningHelpers.h"
-//#include "CarState.h"
-#include "LocalPlannerH.h"
-#include "RosHelpers.h"
-#include "SimpleTracker.h"
+#include "op_planner/RoadNetwork.h"
+#include "op_planner/MappingHelpers.h"
+#include "op_planner/PlanningHelpers.h"
+#include "op_planner/LocalPlannerH.h"
+#include "ROSHelpers.h"
+#include "op_simu/SimpleTracker.h"
 
 #include <opencv/cv.h>
 #include <cv_bridge/cv_bridge.h>
@@ -79,7 +64,6 @@
 namespace PlannerXNS
 {
 
-#define _DATASET_GENERATION_BLOCK
 #define SIMU_OBSTACLE_WIDTH 3.5
 #define SIMU_OBSTACLE_HEIGHT 0.5
 #define SIMU_OBSTACLE_LENGTH 2.0
@@ -103,7 +87,6 @@ protected:
 
 protected:
 	SimulationNS::SimpleTracker m_ObstacleTracking;
-	//SimulationNS::CarState m_State;
 	PlannerHNS::LocalPlannerH m_LocalPlanner;
 
 	geometry_msgs::Pose m_OriginPos;
@@ -144,7 +127,6 @@ protected:
 	//Planning Related variables
 	PlannerHNS::BehaviorState m_CurrentBehavior;
 	PlannerHNS::BehaviorState m_PrevBehavior;
-	//PlannerHNS::WayPoint m_CurrentGoal;
 	struct timespec m_PlanningTimer;
 	AutowareRoadNetwork m_AwMap;
   	PlannerHNS::RoadNetwork m_Map;
@@ -187,21 +169,21 @@ protected:
 	ros::Publisher pub_SimuBoxPose;
 
 	// define subscribers.
-	ros::Subscriber sub_initialpose			;
-	ros::Subscriber sub_current_pose 		;
-	ros::Subscriber sub_current_velocity	;
-	ros::Subscriber sub_cluster_cloud		;
-	ros::Subscriber sub_bounding_boxs		;
+	ros::Subscriber sub_initialpose;
+	ros::Subscriber sub_current_pose;
+	ros::Subscriber sub_current_velocity;
+	ros::Subscriber sub_cluster_cloud;
+	ros::Subscriber sub_bounding_boxs;
 	ros::Subscriber sub_vehicle_simu_status ;
-	ros::Subscriber sub_robot_odom			;
-	ros::Subscriber sub_can_info			;
-	ros::Subscriber sub_EmergencyStop		;
-	ros::Subscriber sub_TrafficLight		;
-	ros::Subscriber sub_OutsideControl		;
-	ros::Subscriber sub_AStarPath			;
-	ros::Subscriber sub_WayPlannerPaths		;
+	ros::Subscriber sub_robot_odom;
+	ros::Subscriber sub_can_info;
+	ros::Subscriber sub_EmergencyStop;
+	ros::Subscriber sub_TrafficLight;
+	ros::Subscriber sub_OutsideControl;
+	ros::Subscriber sub_AStarPath;
+	ros::Subscriber sub_WayPlannerPaths;
 
-	ros::Subscriber sub_CostMap				;
+	ros::Subscriber sub_CostMap;
 
 	//vector map subscription
 	ros::Subscriber sub_map_points;
@@ -218,7 +200,7 @@ protected:
 	void callbackGetCloudClusters(const autoware_msgs::CloudClusterArrayConstPtr& msg);
 	void callbackGetBoundingBoxes(const jsk_recognition_msgs::BoundingBoxArrayConstPtr& msg);
 	void callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg);
-	void callbackGetCanInfo(const autoware_msgs::CanInfoConstPtr &msg);
+	void callbackGetCANInfo(const autoware_can_msgs::CANInfoConstPtr &msg);
 	void callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg);
 	void callbackGetEmergencyStop(const std_msgs::Int8& msg);
 	void callbackGetTrafficLight(const std_msgs::Int8& msg);
@@ -249,34 +231,6 @@ protected:
   void UpdatePlanningParams();
 
   autoware_msgs::CloudCluster GenerateSimulatedObstacleCluster(const double& x_rand, const double& y_rand, const double& z_rand, const int& nPoints, const geometry_msgs::PointStamped& centerPose);
-
-#ifdef DATASET_GENERATION_BLOCK
-private:
-  struct DataPairs
-  {
-	  cv::Mat image;
-	  PlannerHNS::VehicleState vehicleState;
-	  PlannerHNS::WayPoint currentPos;
-	  std::vector<PlannerHNS::WayPoint> path;
-	  std::vector< std::vector<PlannerHNS::WayPoint> > predictedPaths;
-  };
-
-  int m_iRecordNumber;
-  cv::Mat m_CurrImage;
-  std::vector<DataPairs> m_DrivePoints;
-
-  //tf::TransformListener m_Transformation;
-  std::ofstream m_ImagesVectors;
-  std::ofstream m_TrajVectors;
-
-  ros::Subscriber sub_image_reader;
-  void callbackReadImage(const sensor_msgs::ImageConstPtr& msg);
-  void ExtractPathFromDriveData(double max_extraction = 50);
-  void WritePathCSV(const std::string& fName, std::vector<PlannerHNS::WayPoint>& path);
-  void WriteImageAndPathCSV(cv::Mat img, std::vector<PlannerHNS::WayPoint>& path);
-
-#endif
-
 };
 
 }

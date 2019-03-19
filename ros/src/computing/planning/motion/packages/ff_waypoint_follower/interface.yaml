@@ -1,0 +1,5 @@
+- name: /ff_waypoint_follower
+  publish: [/twist_raw, /wf_stat, /curr_simu_pose, /follow_pose, /sim_pose, /sim_velocity,
+    /twist_cmd, /ControlBoxOdom, /linear_velocity_viz]
+  subscribe: [/initialpose, /current_pose, /odom, /current_velocity, /current_behavior,
+    /final_waypoints, /usb_controller_r_signal]

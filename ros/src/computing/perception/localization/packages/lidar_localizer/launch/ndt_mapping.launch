@@ -1,0 +1,22 @@
+<!-- -->
+<launch>
+
+  <arg name="method_type" default="0" /> <!-- pcl_generic=0, pcl_anh=1, pcl_anh_gpu=2, pcl_openmp=3 -->
+  <arg name="use_odom" default="false" />
+  <arg name="use_imu" default="false" />
+  <arg name="imu_upside_down" default="false" />
+  <arg name="imu_topic" default="/imu_raw" />
+  <arg name="incremental_voxel_update" default="false" />
+
+  <!-- rosrun lidar_localizer ndt_mapping  -->
+  <node pkg="lidar_localizer" type="queue_counter" name="queue_counter" output="screen"/>
+  <node pkg="lidar_localizer" type="ndt_mapping" name="ndt_mapping" output="screen">
+    <param name="method_type" value="$(arg method_type)" />
+    <param name="use_imu" value="$(arg use_imu)" />
+    <param name="use_odom" value="$(arg use_odom)" />
+    <param name="imu_upside_down" value="$(arg imu_upside_down)" />
+    <param name="imu_topic" value="$(arg imu_topic)" />
+    <param name="incremental_voxel_update" value="$(arg incremental_voxel_update)" />
+  </node>
+
+</launch>

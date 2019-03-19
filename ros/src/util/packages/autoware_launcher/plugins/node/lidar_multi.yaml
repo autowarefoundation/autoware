@@ -1,0 +1,4 @@
+format: Autoware Launcher Plugin Version 0.1
+rules:
+- { name: concat, plugin: node/lidar_merge }
+- { name: lidars, plugin: node/lidar_group }

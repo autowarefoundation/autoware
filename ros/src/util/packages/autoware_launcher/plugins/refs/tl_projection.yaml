@@ -1,0 +1,2 @@
+format: Autoware Launcher Plugin Version 0.1
+rosxml: $(find trafficlight_recognizer)/launch/feat_proj.launch

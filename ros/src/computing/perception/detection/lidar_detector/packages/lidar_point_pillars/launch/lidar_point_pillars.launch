@@ -1,0 +1,24 @@
+<launch>
+  <arg name="input_topic" default="/points_raw" />
+  <arg name="baselink_support" default="true" />
+  <arg name="reproduce_result_mode" default="true" />
+  <arg name="score_threshold" default="0.5" />
+  <arg name="nms_overlap_threshold" default="0.5" />
+  <arg name="pfe_onnx_file"/>
+  <arg name="rpn_onnx_file"/>
+  <node pkg="lidar_point_pillars" type="lidar_point_pillars"
+    name="lidar_point_pillars" output="screen" >
+    <remap from="/points_raw" to="$(arg input_topic)"/>
+
+    <param name="baselink_support"            value="$(arg baselink_support)" />
+    <param name="reproduce_result_mode"        value="$(arg reproduce_result_mode)" />
+    <param name="score_threshold"   value="$(arg score_threshold)" />
+    <param name="nms_overlap_threshold"         value="$(arg nms_overlap_threshold)" />
+    <param name="pfe_onnx_file"   value="$(arg pfe_onnx_file)" />
+    <param name="rpn_onnx_file"   value="$(arg rpn_onnx_file)" />
+  </node>
+
+  <node pkg="detected_objects_visualizer" type="visualize_detected_objects" name="point_pillars_visualization_01"
+        output="screen" ns="/detection/lidar_detector" />
+
+</launch>

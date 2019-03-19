@@ -1,0 +1,18 @@
+- name: /cloud_transformer
+  publish: [/points_transformed]
+  subscribe: [/points_raw]
+- name: /points_concat_filter
+  publish: [/points_concat]
+  subscribe: [/config/points_concat_filter, /lidar*/points_raw]
+- name: /ray_ground_filter
+  publish: [/points_no_ground, /points_ground]
+  subscribe: [/points_raw, /config/ray_ground_filter]
+- name: /ring_ground_filter
+  publish: [/points_no_ground, /points_ground]
+  subscribe: [/config/ring_ground_filter, /points_raw]
+- name: /space_filter
+  publish: [/points_clipped]
+  subscribe: [/points_raw]
+- name: /compare_map_filter
+  publish: [/points_ground, /points_no_ground]
+  subscribe: [/config/compare_map_filter, /points_raw, /points_map]

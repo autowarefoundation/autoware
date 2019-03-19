@@ -1,16 +1,14 @@
-/*
- * CarState.cpp
- *
- *  Created on: Jun 20, 2016
- *      Author: hatem
- */
+/// \file LocalPlannerH.cpp
+/// \brief OpenPlanner's local planing functions combines in one process, used in simulation vehicle and OpenPlanner old implementation like dp_planner node.
+/// \author Hatem Darweesh
+/// \date Dec 14, 2016
 
-#include "LocalPlannerH.h"
-#include "UtilityH.h"
-#include "PlanningHelpers.h"
-#include "MappingHelpers.h"
-#include "MatrixOperations.h"
-#include "PlannerH.h"
+#include "op_planner/LocalPlannerH.h"
+#include "op_utility/UtilityH.h"
+#include "op_planner/PlanningHelpers.h"
+#include "op_planner/MappingHelpers.h"
+#include "op_planner/MatrixOperations.h"
+#include "op_planner/PlannerH.h"
 
 using namespace UtilityHNS;
 
@@ -267,7 +265,6 @@ void LocalPlannerH::ReInitializePlanner(const WayPoint& start_pose)
 		 double d = hypot(trafficLights.at(i).pos.y - state.pos.y, trafficLights.at(i).pos.x - state.pos.x);
 		 if(d <= trafficLights.at(i).stoppingDistance)
 		 {
-			 //double a = UtilityH::FixNegativeAngle(atan2(trafficLights.at(i).pos.y - state.pos.y, trafficLights.at(i).pos.x - state.pos.x));
 			 double a_diff = UtilityH::AngleBetweenTwoAnglesPositive(UtilityH::FixNegativeAngle(trafficLights.at(i).pos.a) , UtilityH::FixNegativeAngle(state.pos.a));
 
 			 if(a_diff < M_PI_2 && trafficLights.at(i).id != prevTrafficLightId)
@@ -289,7 +286,6 @@ void LocalPlannerH::ReInitializePlanner(const WayPoint& start_pose)
  	PreCalculatedConditions* pValues = m_pCurrentBehaviorState->GetCalcParams();
 
  	double critical_long_front_distance =  m_CarInfo.wheel_base/2.0 + m_CarInfo.length/2.0 + m_params.verticalSafetyDistance;
-	//double critical_long_back_distance =  m_CarInfo.length/2.0 + m_params.verticalSafetyDistance - m_CarInfo.wheel_base/2.0;
 
  	pValues->minStoppingDistance = -pow(car_state.speed, 2)/(m_CarInfo.max_deceleration);
 
@@ -305,7 +301,6 @@ void LocalPlannerH::ReInitializePlanner(const WayPoint& start_pose)
  	pValues->currentVelocity 		= car_state.speed;
  	pValues->bTrafficIsRed 			= false;
  	pValues->currentTrafficLightID 	= -1;
-// 	pValues->currentStopSignID		= -1;
  	pValues->bRePlan 				= false;
  	pValues->bFullyBlock 			= false;
 
@@ -338,12 +333,6 @@ void LocalPlannerH::ReInitializePlanner(const WayPoint& start_pose)
  	m_iSafeTrajectory = pValues->iCurrSafeTrajectory;
  	m_iCurrentTotalPathId = pValues->iCurrSafeLane;
 
-
-// 	if(bestTrajectory.index == -1 && pValues->distanceToNext < m_pCurrentBehaviorState->m_pParams->minFollowingDistance)
-// 		pValues->bFullyBlock = true;
-
-
-
  	int stopLineID = -1;
  	int stopSignID = -1;
  	int trafficLightID = -1;
@@ -351,7 +340,7 @@ void LocalPlannerH::ReInitializePlanner(const WayPoint& start_pose)
  	bool bGreenTrafficLight = true;
 
  	if(m_TotalPath.size()>0)
- 		distanceToClosestStopLine = PlanningHelpers::GetDistanceToClosestStopLineAndCheck(m_TotalPath.at(pValues->iCurrSafeLane), state, stopLineID, stopSignID, trafficLightID) - critical_long_front_distance;
+ 		distanceToClosestStopLine = PlanningHelpers::GetDistanceToClosestStopLineAndCheck(m_TotalPath.at(pValues->iCurrSafeLane), state, 0, stopLineID, stopSignID, trafficLightID) - critical_long_front_distance;
 
  	if(distanceToClosestStopLine > 0 && distanceToClosestStopLine < pValues->minStoppingDistance)
  	{
@@ -501,21 +490,25 @@ void LocalPlannerH::ReInitializePlanner(const WayPoint& start_pose)
 	PlannerHNS::PreCalculatedConditions *preCalcPrams = m_pCurrentBehaviorState->GetCalcParams();
 
 	m_pCurrentBehaviorState = m_pCurrentBehaviorState->GetNextState();
+	if(m_pCurrentBehaviorState==0)
+		m_pCurrentBehaviorState = m_pInitState;
+
 	PlannerHNS::BehaviorState currentBehavior;
 
 	currentBehavior.state = m_pCurrentBehaviorState->m_Behavior;
 	currentBehavior.followDistance = preCalcPrams->distanceToNext;
 
-	if(preCalcPrams->bUpcomingRight)
-		currentBehavior.indicator = PlannerHNS::INDICATOR_RIGHT;
-	else if(preCalcPrams->bUpcomingLeft)
-		currentBehavior.indicator = PlannerHNS::INDICATOR_LEFT;
-	else
-		currentBehavior.indicator = PlannerHNS::INDICATOR_NONE;
 
 	currentBehavior.minVelocity		= 0;
 	currentBehavior.stopDistance 	= preCalcPrams->distanceToStop();
 	currentBehavior.followVelocity 	= preCalcPrams->velocityOfNext;
+
+	double average_braking_distance = -pow(vehicleState.speed, 2)/(m_CarInfo.max_deceleration) + m_params.additionalBrakingDistance;
+
+	if(average_braking_distance  < 15)
+		average_braking_distance = 15;
+
+	currentBehavior.indicator = PlanningHelpers::GetIndicatorsFromPath(m_Path, state, average_braking_distance );
 
 	return currentBehavior;
  }
@@ -762,6 +755,7 @@ void LocalPlannerH::ReInitializePlanner(const WayPoint& start_pose)
 		const std::vector<TrafficLight>& trafficLight,
 		const bool& bLive)
 {
+	 PlannerHNS::BehaviorState beh;
 
 	 m_params.minFollowingDistance = m_InitialFollowingDistance + vehicleState.speed*1.5;
 
@@ -775,7 +769,6 @@ void LocalPlannerH::ReInitializePlanner(const WayPoint& start_pose)
 
 
 	m_PredictedTrajectoryObstacles = obj_list;
-	//m_TrajectoryPredictionForMovingObstacles.DoOneStep(map, vehicleState, state, m_TotalPath.at(m_iCurrentTotalPathId), m_PredictedTrajectoryObstacles, m_params.minFollowingDistance);
 
 	timespec t;
 	UtilityH::GetTickCount(t);
@@ -785,21 +778,14 @@ void LocalPlannerH::ReInitializePlanner(const WayPoint& start_pose)
 	m_CostCalculationTime = UtilityH::GetTimeDiffNow(t);
 
 
-
-
 	UtilityH::GetTickCount(t);
 	CalculateImportantParameterForDecisionMaking(vehicleState, goalID, bEmergencyStop, trafficLight, tc);
 
-
-
-	PlannerHNS::BehaviorState beh = GenerateBehaviorState(vehicleState);
+	beh = GenerateBehaviorState(vehicleState);
 	m_BehaviorGenTime = UtilityH::GetTimeDiffNow(t);
-
 
 	UtilityH::GetTickCount(t);
 	beh.bNewPlan = SelectSafeTrajectoryAndSpeedProfile(vehicleState);
-
-
 
 	m_RollOutsGenerationTime = UtilityH::GetTimeDiffNow(t);
 

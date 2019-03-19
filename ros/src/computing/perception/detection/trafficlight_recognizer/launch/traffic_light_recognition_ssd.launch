@@ -1,0 +1,20 @@
+<launch>
+  <!-- argument list -->
+  <arg name="camera_id" default="/" />
+  <arg name="image_src" default="/image_raw" />
+  <arg name="network_definition_file" default="$(find trafficlight_recognizer)/data/deploy.prototxt" />
+  <arg name="pretrained_model_file" default="$(find trafficlight_recognizer)/data/Autoware_tlr_SSD_300x300_iter_60000.caffemodel" />
+  <arg name="use_gpu" default="true" />
+  <arg name="gpu_device_id" default="0" />
+
+
+  <!-- run region_tlr_ssd node -->
+  <!-- <node pkg="trafficlight_recognizer" name="region_tlr_ssd" type="region_tlr_ssd" launch-prefix="xterm -e gdb -args"> -->
+  <node pkg="trafficlight_recognizer" name="region_tlr_ssd" type="region_tlr_ssd" output="log">
+    <param name="image_raw_topic" type="str" value="$(arg camera_id)$(arg image_src)" />
+    <param name="network_definition_file" type="str" value="$( arg network_definition_file)" />
+    <param name="pretrained_model_file" type="str" value="$(arg pretrained_model_file)" />
+    <param name="use_gpu" type="bool" value="$(arg use_gpu)" />
+    <param name="gpu_id" type="int" value="$(arg gpu_device_id)" />
+  </node>
+</launch>

@@ -1,0 +1,3 @@
+- name: /kitti_box_publisher
+  publish: [/kitti_box, /obj_car/image_obj, /kitti_3d_labels, /points_cluster]
+  subscribe: [/kitti_player/hdl64e]

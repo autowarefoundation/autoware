@@ -1,12 +1,10 @@
-/*
- * PolygonGenerator.cpp
- *
- *  Created on: Nov 2, 2016
- *      Author: ai-driver
- */
+/// \file  PolygonGenerator.cpp
+/// \brief Generate convex hull from point cloud cluster of detected object
+/// \author Hatem Darweesh
+/// \date Nov 2, 2016
 
-#include "PolygonGenerator.h"
-#include "PlanningHelpers.h"
+#include "op_ros_helpers/PolygonGenerator.h"
+#include "op_planner/PlanningHelpers.h"
 
 namespace PlannerHNS
 {

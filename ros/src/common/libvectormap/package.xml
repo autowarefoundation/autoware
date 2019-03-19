@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package>
+    <name>libvectormap</name>
+    <version>1.10.0</version>
+    <description>Common Library to Read Vector Map</description>
+    <maintainer email="sujiwo@ertl.jp">sujiwo</maintainer>
+    <license>Apache 2</license>
+    <buildtool_depend>catkin</buildtool_depend>
+    <buildtool_depend>autoware_build_flags</buildtool_depend>
+
+    <build_depend>vector_map</build_depend>
+    <build_depend>vector_map_msgs</build_depend>
+    <build_depend>cmake_modules</build_depend>
+    <build_depend>eigen</build_depend>
+
+    <run_depend>cmake_modules</run_depend>
+    <run_depend>vector_map</run_depend>
+    <run_depend>vector_map_msgs</run_depend>
+    <run_depend>eigen</run_depend>
+
+    <export></export>
+</package>

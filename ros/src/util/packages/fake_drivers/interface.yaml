@@ -1,2 +1,0 @@
-- name: fake_camera
-  publish: [/image_raw]

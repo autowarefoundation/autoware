@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package>
+    <name>ndt_cpu</name>
+    <version>1.10.0</version>
+    <description>The ndt_cpu package</description>
+    <maintainer email="yuki@ertl.jp">Yuki Kitsukawa</maintainer>
+    <maintainer email="anh@ertl.jp">Anh Viet Nguyen</maintainer>
+    <license>Apache 2</license>
+    <buildtool_depend>catkin</buildtool_depend>
+
+    <build_depend>libpcl-all-dev</build_depend>
+
+    <run_depend>libpcl-all</run_depend>
+
+</package>

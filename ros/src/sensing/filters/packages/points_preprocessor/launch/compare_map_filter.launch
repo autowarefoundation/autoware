@@ -1,0 +1,22 @@
+<launch>
+	<arg name="input_point_topic" default="/points_raw" />
+	<arg name="input_map_topic" default="/points_map" />
+	<arg name="output_match_topic" default="/points_ground" />
+	<arg name="output_unmatch_topic" default="/points_no_ground" />
+
+	<arg name="distance_threshold" default="0.3" />
+	<arg name="min_clipping_height" default="-2.0" />
+	<arg name="max_clipping_height" default="0.5" />
+
+	<node pkg="points_preprocessor" type="compare_map_filter" name="compare_map_filter">
+		<remap from="/points_raw" to="$(arg input_point_topic)"/>
+		<remap from="/points_map" to="$(arg input_map_topic)"/>
+		<remap from="/points_ground" to="$(arg output_match_topic)"/>
+		<remap from="/points_no_ground" to="$(arg output_unmatch_topic)"/>
+
+		<param name="distance_threshold" value="$(arg distance_threshold)" />
+		<param name="min_clipping_height" value="$(arg min_clipping_height)" />
+		<param name="max_clipping_height" value="$(arg max_clipping_height)" />
+	</node>
+
+</launch>

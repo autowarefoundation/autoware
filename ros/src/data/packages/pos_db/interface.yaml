@@ -1,4 +1,6 @@
-- name: pos_downloader
-  publish: [/mo_marker]
-- name: pos_uploader
-  subscribe: [/obj_X/obj_pose, /current_pose]
+- name: /pos_downloader
+  publish: [/mo_pictograms]
+  subscribe: []
+- name: /pos_uploader
+  publish: []
+  subscribe: [/*/obj_pose, /current_pose]

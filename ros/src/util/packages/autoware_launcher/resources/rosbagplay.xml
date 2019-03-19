@@ -1,0 +1,5 @@
+<launch>
+    <arg name="options"/>
+    <arg name="bagfile"/>
+    <node pkg="rosbag" type="play" name="$(anon play)" output="screen" args="$(arg options) $(arg bagfile)"/>
+</launch>

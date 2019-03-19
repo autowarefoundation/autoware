@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<package>
+    <name>pcl_omp_registration</name>
+    <version>1.10.0</version>
+    <description>The pcl_omp_registration package</description>
+    <maintainer email="yuki@ertl.jp">Yuki Kitsukawa</maintainer>
+    <license>Apache 2</license>
+    <buildtool_depend>catkin</buildtool_depend>
+    <export>
+    </export>
+</package>

@@ -1,0 +1,3 @@
+- name: /g30esli_interface
+  publish: [/ymc_current_twist]
+  subscribe: [/twist_cmd, /current_velocity]

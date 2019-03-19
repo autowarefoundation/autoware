@@ -1,6 +1,6 @@
 exec_time :
   localization :
-    /ndt_stat.ndt_stat.exe_time :
+    /NDTStat.ndt_stat.exe_time :
   detection :
     /topic1 :
     /topic2 :
@@ -70,8 +70,7 @@ buttons :
 
   rviz_qs :
     desc : rviz_qs desc sample
-    #run : rosrun rviz rviz
-    run  : sh -c '$(rospack find runtime_manager)/../../../.config/rviz/cmd.sh'
+    run : rosrun rviz rviz
     gui  :
       flags : [ kill_children ]
 

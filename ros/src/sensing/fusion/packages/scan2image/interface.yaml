@@ -1,3 +1,0 @@
-- name: scan2image
-  publish: [/scan_image]
-  subscribe: [/scan, /projection_matrix, /camera/camera_info]

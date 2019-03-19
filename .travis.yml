@@ -1,0 +1,20 @@
+language: generic
+services:
+  - docker
+cache:
+  directories:
+    - $HOME/.ccache
+env:
+  global:
+    - CCACHE_DIR=$HOME/.ccache
+  matrix:
+    - ROS_DISTRO="kinetic" _GUARD_INTERVAL=10 CATKIN_PARALLEL_JOBS='-p2' ROS_PARALLEL_JOBS='-j2' NOT_TEST_BUILD='true' NOT_TEST_INSTALL='true'
+    - ROS_DISTRO="melodic" _GUARD_INTERVAL=10 CATKIN_PARALLEL_JOBS='-p2' ROS_PARALLEL_JOBS='-j2' NOT_TEST_BUILD='true' NOT_TEST_INSTALL='true'
+matrix:
+  allow_failures:
+    - env: ROS_DISTRO="melodic" _GUARD_INTERVAL=10 CATKIN_PARALLEL_JOBS='-p2' ROS_PARALLEL_JOBS='-j2' NOT_TEST_BUILD='true' NOT_TEST_INSTALL='true'
+
+install:
+  - git clone --quiet --depth 1 https://github.com/ros-industrial/industrial_ci.git .industrial_ci
+script:
+  - .industrial_ci/travis.sh

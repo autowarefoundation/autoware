@@ -1,32 +1,18 @@
 /*
-// *  Copyright (c) 2015, Nagoya University
- *  All rights reserved.
+ * Copyright 2015-2019 Autoware Foundation. All rights reserved.
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  * Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name of Autoware nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #ifndef WAYPOINT_LOADER_CORE_H
 #define WAYPOINT_LOADER_CORE_H
@@ -38,6 +24,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <std_msgs/Bool.h>
 #include <tf/transform_datatypes.h>
 #include <unordered_map>
 
@@ -45,14 +32,13 @@
 
 namespace waypoint_maker
 {
-
 const std::string MULTI_LANE_CSV = "/tmp/driving_lane.csv";
 
 enum class FileFormat : int32_t
 {
-  ver1,  //x,y,z,(velocity)
-  ver2,  //x,y,z,yaw,(velocity)
-  ver3,  //first line consists on explanation of values
+  ver1,  // x,y,z,(velocity)
+  ver2,  // x,y,z,yaw,(velocity)
+  ver3,  // first line consists on explanation of values
 
   unknown = -1,
 };
@@ -71,52 +57,44 @@ inline double mps2kmph(double velocity_mps)
 class WaypointLoaderNode
 {
 public:
-
   WaypointLoaderNode();
   ~WaypointLoaderNode();
-
-  void publishLaneArray();
+  void run();
 
 private:
-
   // handle
   ros::NodeHandle nh_;
   ros::NodeHandle private_nh_;
 
-  // publisher
+  // publisher & subscriber
   ros::Publisher lane_pub_;
+  ros::Subscriber config_sub_;
 
   // variables
   std::string multi_lane_csv_;
-  double decelerate_;
-  bool disableDecisionMaker_;
-  bool disableVelocitySmoothing_;
+  std::vector<std::string> multi_file_path_;
+  autoware_msgs::LaneArray output_lane_array_;
 
   // initializer
-  void initPublisher();
-  void initParameter();
+  void initPubSub();
 
   // functions
+  void createLaneWaypoint(const std::string& file_path, autoware_msgs::Lane* lane);
+  void createLaneArray(const std::vector<std::string>& paths, autoware_msgs::LaneArray* lane_array);
 
-  void createLaneWaypoint(const std::string &file_path, autoware_msgs::lane *lane);
-  void createLaneArray(const std::vector<std::string> &paths, autoware_msgs::LaneArray *lane_array);
-
-  FileFormat checkFileFormat(const char *filename);
-  bool verifyFileConsistency(const char *filename);
-  void loadWaypointsForVer1(const char *filename, std::vector<autoware_msgs::waypoint> *wps);
-  void parseWaypointForVer1(const std::string &line, autoware_msgs::waypoint *wp);
-  void loadWaypointsForVer2(const char *filename, std::vector<autoware_msgs::waypoint> *wps);
-  void parseWaypointForVer2(const std::string &line, autoware_msgs::waypoint *wp);
-  void loadWaypoints(const char *filename, std::vector<autoware_msgs::waypoint> *wps);
-  void parseWaypoint(const std::string &line, const std::vector<std::string> &contents,
-                            autoware_msgs::waypoint *wp);
-  void planningVelocity(std::vector<autoware_msgs::waypoint> *wps);
-  double decelerate(geometry_msgs::Point p1, geometry_msgs::Point p2, double original_velocity_mps);
-
+  FileFormat checkFileFormat(const char* filename);
+  bool verifyFileConsistency(const char* filename);
+  void loadWaypointsForVer1(const char* filename, std::vector<autoware_msgs::Waypoint>* wps);
+  void parseWaypointForVer1(const std::string& line, autoware_msgs::Waypoint* wp);
+  void loadWaypointsForVer2(const char* filename, std::vector<autoware_msgs::Waypoint>* wps);
+  void parseWaypointForVer2(const std::string& line, autoware_msgs::Waypoint* wp);
+  void loadWaypointsForVer3(const char* filename, std::vector<autoware_msgs::Waypoint>* wps);
+  void parseWaypointForVer3(const std::string& line, const std::vector<std::string>& contents,
+                            autoware_msgs::Waypoint* wp);
 };
 
-void parseColumns(const std::string &line, std::vector<std::string> *columns);
+const std::string addFileSuffix(std::string file_path, std::string suffix);
+void parseColumns(const std::string& line, std::vector<std::string>* columns);
 size_t countColumns(const std::string& line);
-
 }
 #endif  // WAYPOINT_LOADER_CORE_H

@@ -1,31 +1,17 @@
 /*
- *  Copyright (c) 2015, Nagoya University
- *  All rights reserved.
+ * Copyright 2015-2019 Autoware Foundation. All rights reserved.
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  * Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name of Autoware nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include <ros/ros.h>
@@ -43,10 +29,10 @@
 #include <std_msgs/String.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/Int32.h>
-#include "autoware_msgs/ConfigLatticeVelocitySet.h"
+#include "autoware_config_msgs/ConfigLatticeVelocitySet.h"
 #include <iostream>
 
-#include "autoware_msgs/lane.h"
+#include "autoware_msgs/Lane.h"
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "libvelocity_set.h"
 
@@ -97,7 +83,7 @@ WayPoints g_path_dk;
 class PathVset : public WayPoints
 {
 private:
-  autoware_msgs::lane temporal_waypoints_;
+  autoware_msgs::Lane temporal_waypoints_;
 
 public:
   void changeWaypoints(int stop_waypoint);
@@ -106,7 +92,7 @@ public:
   void setDeceleration();
   bool checkWaypoint(int num, const char *name) const;
   void setTemporalWaypoints();
-  autoware_msgs::lane getTemporalWaypoints() const
+  autoware_msgs::Lane getTemporalWaypoints() const
   {
     return temporal_waypoints_;
   }
@@ -138,7 +124,7 @@ void PathVset::setTemporalWaypoints()
   temporal_waypoints_.header = current_waypoints_.header;
   temporal_waypoints_.increment = current_waypoints_.increment;
   // push current pose
-  autoware_msgs::waypoint current_point;
+  autoware_msgs::Waypoint current_point;
 
   current_point.pose = g_control_pose;
   current_point.twist = current_waypoints_.waypoints[g_closest_waypoint].twist;
@@ -279,7 +265,7 @@ void PathVset::changeWaypoints(int stop_waypoint)
 
     changed_vel = sqrt(2.0 * g_decel * (interval * i));  // sqrt(2*a*x)
 
-    autoware_msgs::waypoint initial_waypoint = g_path_dk.getCurrentWaypoints().waypoints[num];
+    autoware_msgs::Waypoint initial_waypoint = g_path_dk.getCurrentWaypoints().waypoints[num];
     if (changed_vel > initial_waypoint.twist.twist.linear.x)
     {  // avoid acceleration
       current_waypoints_.waypoints[num].twist.twist.linear.x = initial_waypoint.twist.twist.linear.x;
@@ -312,7 +298,7 @@ void PathVset::changeWaypoints(int stop_waypoint)
 //          Callback
 //===============================
 
-void configCallback(const autoware_msgs::ConfigLatticeVelocitySetConstPtr &config)
+void configCallback(const autoware_config_msgs::ConfigLatticeVelocitySetConstPtr &config)
 {
   g_others_distance = config->others_distance;
   g_detection_range = config->detection_range;
@@ -330,7 +316,7 @@ void currentVelCallback(const geometry_msgs::TwistStampedConstPtr &msg)
   g_current_vel = msg->twist.linear.x;
 }
 
-void baseWaypointCallback(const autoware_msgs::laneConstPtr &msg)
+void baseWaypointCallback(const autoware_msgs::LaneConstPtr &msg)
 {
   g_path_dk.setPath(*msg);
   g_path_change.setPath(*msg);
@@ -838,7 +824,7 @@ int main(int argc, char **argv)
 
   g_range_pub = nh.advertise<visualization_msgs::MarkerArray>("detection_range", 0);
   g_sound_pub = nh.advertise<std_msgs::String>("sound_player", 10);
-  g_temporal_waypoints_pub = nh.advertise<autoware_msgs::lane>("temporal_waypoints", 1000, true);
+  g_temporal_waypoints_pub = nh.advertise<autoware_msgs::Lane>("temporal_waypoints", 1000, true);
   ros::Publisher closest_waypoint_pub;
   closest_waypoint_pub = nh.advertise<std_msgs::Int32>("closest_waypoint", 1000);
   g_obstacle_pub = nh.advertise<visualization_msgs::Marker>("obstacle", 0);

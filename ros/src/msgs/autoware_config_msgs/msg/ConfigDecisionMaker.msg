@@ -1,0 +1,11 @@
+Header header
+bool auto_mission_reload
+bool auto_engage
+bool auto_mission_change
+bool use_fms
+bool disuse_vector_map
+uint32 num_of_steer_behind
+float64 change_threshold_dist
+float64 change_threshold_angle
+float64 goal_threshold_dist
+float64 goal_threshold_vel

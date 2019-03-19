@@ -1,31 +1,17 @@
 /*
- *  Copyright (c) 2015, Nagoya University
- *  All rights reserved.
+ * Copyright 2015-2019 Autoware Foundation. All rights reserved.
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  * Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name of Autoware nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include <ros/ros.h>
@@ -49,8 +35,8 @@
 
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "autoware_msgs/LaneArray.h"
-#include "autoware_msgs/ConfigLaneStop.h"
-#include "autoware_msgs/traffic_light.h"
+#include "autoware_config_msgs/ConfigLaneStop.h"
+#include "autoware_msgs/TrafficLight.h"
 
 class WaypointVelocityVisualizer
 {
@@ -66,7 +52,7 @@ private:
   ros::NodeHandle node_handle_;
   ros::NodeHandle private_node_handle_;
 
-  ros::Subscriber base_waypoints_sub_;
+  ros::Subscriber lane_waypoints_array_sub_;
   ros::Subscriber final_waypoints_sub_;
   message_filters::Subscriber<geometry_msgs::PoseStamped>* current_pose_sub_;
   message_filters::Subscriber<geometry_msgs::TwistStamped>* current_twist_sub_;
@@ -76,7 +62,7 @@ private:
   ros::Publisher velocity_marker_pub_;
 
   visualization_msgs::MarkerArray velocity_marker_array_;
-  visualization_msgs::MarkerArray base_waypoints_marker_array_;
+  visualization_msgs::MarkerArray lane_waypoints_array_marker_array_;
   visualization_msgs::MarkerArray final_waypoints_marker_array_;
   visualization_msgs::MarkerArray current_twist_marker_array_;
   visualization_msgs::MarkerArray command_twist_marker_array_;
@@ -88,12 +74,12 @@ private:
   double plot_height_ratio_ = 1.0;
   double plot_height_shift_ = 0.2;
   double plot_metric_interval_ = 1.0;
-  std::vector<double> base_waypoints_rgba_ = { 1.0, 1.0, 1.0, 0.5 };
+  std::vector<double> lane_waypoints_array_rgba_ = { 1.0, 1.0, 1.0, 0.5 };
   std::vector<double> final_waypoints_rgba_ = { 0.0, 1.0, 0.0, 0.5 };
   std::vector<double> current_twist_rgba_ = { 0.0, 0.0, 1.0, 0.5 };
   std::vector<double> command_twist_rgba_ = { 1.0, 0.0, 0.0, 0.5 };
 
-  std_msgs::ColorRGBA base_waypoints_color_;
+  std_msgs::ColorRGBA lane_waypoints_array_color_;
   std_msgs::ColorRGBA final_waypoints_color_;
   std_msgs::ColorRGBA current_twist_color_;
   std_msgs::ColorRGBA command_twist_color_;
@@ -107,8 +93,8 @@ private:
   void deleteMarkers();
   void resetBuffers();
 
-  void baseWaypointsCallback(const autoware_msgs::lane::ConstPtr& msg);
-  void finalWaypointsCallback(const autoware_msgs::lane::ConstPtr& msg);
+  void laneWaypointsArrayCallback(const autoware_msgs::LaneArray::ConstPtr& msg);
+  void finalWaypointsCallback(const autoware_msgs::Lane::ConstPtr& msg);
   void controlCallback(const geometry_msgs::PoseStamped::ConstPtr& current_pose_msg,
                        const geometry_msgs::TwistStamped::ConstPtr& current_twist_msg,
                        const geometry_msgs::TwistStamped::ConstPtr& command_twist_msg);
@@ -117,7 +103,7 @@ private:
 
   void createVelocityMarker(const std::vector<nav_msgs::Odometry> waypoints, const std::string& ns,
                             const std_msgs::ColorRGBA& color, visualization_msgs::MarkerArray& markers);
-  void createVelocityMarker(const autoware_msgs::lane& lane, const std::string& ns, const std_msgs::ColorRGBA& color,
+  void createVelocityMarker(const autoware_msgs::Lane& lane, const std::string& ns, const std_msgs::ColorRGBA& color,
                             visualization_msgs::MarkerArray& markers);
   void createVelocityMarker(const boost::circular_buffer<geometry_msgs::PoseStamped>& poses,
                             const boost::circular_buffer<geometry_msgs::TwistStamped>& twists, const std::string& ns,
@@ -142,13 +128,13 @@ WaypointVelocityVisualizer::WaypointVelocityVisualizer() : node_handle_(), priva
   private_node_handle_.param<double>("plot_height_shift", plot_height_shift_, plot_height_shift_);
   private_node_handle_.param<double>("plot_metric_interval", plot_metric_interval_, plot_metric_interval_);
 
-  private_node_handle_.param<std::vector<double> >("base_waypoints_rgba", base_waypoints_rgba_, base_waypoints_rgba_);
+  private_node_handle_.param<std::vector<double> >("lane_waypoints_array_rgba", lane_waypoints_array_rgba_, lane_waypoints_array_rgba_);
   private_node_handle_.param<std::vector<double> >("final_waypoints_rgba", final_waypoints_rgba_,
                                                    final_waypoints_rgba_);
   private_node_handle_.param<std::vector<double> >("current_twist_rgba", current_twist_rgba_, current_twist_rgba_);
   private_node_handle_.param<std::vector<double> >("command_twist_rgba", command_twist_rgba_, command_twist_rgba_);
 
-  base_waypoints_color_ = vector2color(base_waypoints_rgba_);
+  lane_waypoints_array_color_ = vector2color(lane_waypoints_array_rgba_);
   final_waypoints_color_ = vector2color(final_waypoints_rgba_);
   current_twist_color_ = vector2color(current_twist_rgba_);
   command_twist_color_ = vector2color(command_twist_rgba_);
@@ -159,8 +145,8 @@ WaypointVelocityVisualizer::WaypointVelocityVisualizer() : node_handle_(), priva
   current_twist_buf_.set_capacity(control_buffer_size_);
   command_twist_buf_.set_capacity(control_buffer_size_);
 
-  base_waypoints_sub_ =
-      node_handle_.subscribe("base_waypoints", 1, &WaypointVelocityVisualizer::baseWaypointsCallback, this);
+  lane_waypoints_array_sub_ =
+      node_handle_.subscribe("lane_waypoints_array", 1, &WaypointVelocityVisualizer::laneWaypointsArrayCallback, this);
   final_waypoints_sub_ =
       node_handle_.subscribe("final_waypoints", 1, &WaypointVelocityVisualizer::finalWaypointsCallback, this);
 
@@ -209,14 +195,18 @@ void WaypointVelocityVisualizer::resetBuffers()
   command_twist_buf_.clear();
 }
 
-void WaypointVelocityVisualizer::baseWaypointsCallback(const autoware_msgs::lane::ConstPtr& msg)
+void WaypointVelocityVisualizer::laneWaypointsArrayCallback(const autoware_msgs::LaneArray::ConstPtr& msg)
 {
-  base_waypoints_marker_array_.markers.clear();
-  createVelocityMarker(*msg, "base_waypoints", base_waypoints_color_, base_waypoints_marker_array_);
+  lane_waypoints_array_marker_array_.markers.clear();
+  for (size_t i = 0; i < msg->lanes.size(); ++i)
+  {
+    std::string ns = "lane_waypoints_" + std::to_string(i);
+    createVelocityMarker(msg->lanes[i], ns, lane_waypoints_array_color_, lane_waypoints_array_marker_array_);
+  }
   publishVelocityMarker();
 }
 
-void WaypointVelocityVisualizer::finalWaypointsCallback(const autoware_msgs::lane::ConstPtr& msg)
+void WaypointVelocityVisualizer::finalWaypointsCallback(const autoware_msgs::Lane::ConstPtr& msg)
 {
   final_waypoints_marker_array_.markers.clear();
   createVelocityMarker(*msg, "final_waypoints", final_waypoints_color_, final_waypoints_marker_array_);
@@ -262,8 +252,8 @@ void WaypointVelocityVisualizer::publishVelocityMarker()
 {
   velocity_marker_array_.markers.clear();
   velocity_marker_array_.markers.insert(velocity_marker_array_.markers.end(),
-                                        base_waypoints_marker_array_.markers.begin(),
-                                        base_waypoints_marker_array_.markers.end());
+                                        lane_waypoints_array_marker_array_.markers.begin(),
+                                        lane_waypoints_array_marker_array_.markers.end());
   velocity_marker_array_.markers.insert(velocity_marker_array_.markers.end(),
                                         final_waypoints_marker_array_.markers.begin(),
                                         final_waypoints_marker_array_.markers.end());
@@ -288,7 +278,7 @@ void WaypointVelocityVisualizer::createVelocityMarker(const std::vector<nav_msgs
     createVelocityTextMarker(waypoints, ns, color, markers);
 }
 
-void WaypointVelocityVisualizer::createVelocityMarker(const autoware_msgs::lane& lane, const std::string& ns,
+void WaypointVelocityVisualizer::createVelocityMarker(const autoware_msgs::Lane& lane, const std::string& ns,
                                                       const std_msgs::ColorRGBA& color,
                                                       visualization_msgs::MarkerArray& markers)
 {

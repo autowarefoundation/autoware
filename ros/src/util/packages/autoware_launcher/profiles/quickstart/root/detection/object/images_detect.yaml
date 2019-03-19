@@ -1,0 +1,11 @@
+children: []
+config:
+  args.camera_id: ''
+  args.gpu_device_id: 0
+  args.image_src: /image_raw
+  args.names_file: $(find vision_darknet_detect)/darknet/cfg/coco.names
+  args.network_definition_file: $(find vision_darknet_detect)/darknet/cfg/yolov3.cfg
+  args.nms_threshold: 0.45
+  args.pretrained_model_file: $(find vision_darknet_detect)/darknet/data/yolov3.weights
+  args.score_threshold: 0.5
+plugin: refs/yolov3

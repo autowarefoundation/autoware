@@ -1,0 +1,10 @@
+- name: /op_data_logger
+  subscribe: [/predicted_objects, /current_behavior, /simu_car_path_beh_i,/sim_box_pose_i]
+
+- name: /op_pose2tf
+  publish: [/reset_time, tf]
+  subscribe: [/ndt_pose]
+	
+- name: /op_bag_player
+  publish: [/ndt_pose, /points_raw, /image_raw]
+

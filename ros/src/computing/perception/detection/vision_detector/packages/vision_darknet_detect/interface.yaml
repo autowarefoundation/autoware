@@ -1,0 +1,3 @@
+- name: vision_darknet_detect
+  publish: [/detected_objects]
+  subscribe: [/config/Yolo3, /image_raw]

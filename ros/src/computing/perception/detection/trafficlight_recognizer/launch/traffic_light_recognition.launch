@@ -1,0 +1,18 @@
+<launch>
+  <arg name="camera_id" default="/"/>
+  <arg name="image_src" default="/image_raw"/>
+  <arg name="light_src" default="/light_color" />
+  <arg name="camera_light_src" default="/camera_light_color" />
+  <arg name="ams_light_src" default="/ams_light_color" />
+
+  <node pkg="trafficlight_recognizer" type="region_tlr" name="traffic_light_recognition" output="log">
+    <param name="image_raw_topic" type="str" value="$(arg camera_id)$(arg image_src)"/>
+    <param name="camera_light_color_topic" type="str" value="$(arg camera_id)$(arg camera_light_src)"/>
+  </node>
+
+  <node pkg="trafficlight_recognizer" type="tl_switch" name="tl_switch" output="log">
+    <param name="light_color_topic" type="str" value="$(arg light_src)"/>
+    <param name="camera_light_color_topic" type="str" value="$(arg camera_id)$(arg camera_light_src)"/>
+    <param name="ams_light_color_topic" type="str" value="$(arg ams_light_src)"/>
+  </node>
+</launch>

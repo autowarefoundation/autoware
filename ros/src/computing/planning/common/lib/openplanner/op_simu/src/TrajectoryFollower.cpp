@@ -1,12 +1,10 @@
-/*
- * TrajectoryFollower.cpp
- *
- *  Created on: Jun 18, 2016
- *      Author: hatem
- */
+/// \file TrajectoryFollower.cpp
+/// \brief PID based trajectory follower
+/// \author Hatem Darweesh
+/// \date Jun 18, 2016
 
-#include "TrajectoryFollower.h"
-#include "PlanningHelpers.h"
+#include "op_simu/TrajectoryFollower.h"
+#include "op_planner/PlanningHelpers.h"
 #include <cmath>
 #include <stdlib.h>
 #include <iostream>
@@ -287,9 +285,6 @@ int TrajectoryFollower::VeclocityControllerUpdate(const double& dt, const Planne
 		desiredVelocity = m_VehicleInfo.max_speed_forward;
 	else if (desiredVelocity < 0)
 		desiredVelocity = 0;
-	//desiredVelocity = 2.0;
-
-
 
 	desiredShift = PlannerHNS::SHIFT_POS_DD;
 	if(m_bEnableLog)

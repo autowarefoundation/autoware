@@ -1,13 +1,11 @@
-/*
- * HelperFunctions.cpp
- *
- *  Created on: May 14, 2016
- *      Author: hatem
- */
+/// \file PlannerH.cpp
+/// \brief Main functions for path generation (global and local)
+/// \author Hatem Darweesh
+/// \date Dec 14, 2016
 
-#include "PlannerH.h"
-#include "PlanningHelpers.h"
-#include "MappingHelpers.h"
+#include "op_planner/PlannerH.h"
+#include "op_planner/PlanningHelpers.h"
+#include "op_planner/MappingHelpers.h"
 #include <iostream>
 
 using namespace std;
@@ -23,17 +21,6 @@ PlannerH::PlannerH()
 PlannerH::~PlannerH()
 {
 }
-
-double PlannerH::PlanUsingReedShepp(const WayPoint& start, const WayPoint& goal, vector<WayPoint>& generatedPath, const double pathDensity, const double smoothFactor)
- {
- 	RSPlanner rs_planner(smoothFactor);
- 	int numero = 0;
- 	double t=0, u=0 , v=0;
- 	rs_planner.PATHDENSITY = pathDensity;
- 	double length = rs_planner.min_length_rs(start.pos.x, start.pos.y, start.pos.a, goal.pos.x, goal.pos.y, goal.pos.a, numero, t , u , v);
- 	rs_planner.constRS(numero, t, u , v, start.pos.x, start.pos.y, start.pos.a, rs_planner.PATHDENSITY, generatedPath);
- 	return length;
- }
 
 void PlannerH::GenerateRunoffTrajectory(const std::vector<std::vector<WayPoint> >& referencePaths,const WayPoint& carPos, const bool& bEnableLaneChange, const double& speed, const double& microPlanDistance,
 		const double& maxSpeed,const double& minSpeed, const double&  carTipMargin, const double& rollInMargin,
@@ -178,18 +165,11 @@ double PlannerH::PlanUsingDP(const WayPoint& start,
 
 	if(fabs(start_info.perp_distance) > START_POINT_MAX_DISTANCE)
 	{
-		//if(fabs(start_info.perp_distance) > 20)
-		{
-			GPSPoint sp = start.pos;
-			cout << endl << "Error: PlannerH -> Start Distance to Lane is: " << start_info.perp_distance
-					<< ", Pose: " << sp.ToString() << ", LanePose:" << start_info.perp_point.pos.ToString()
-					<< ", LaneID: " << pStart->pLane->id << " -> Check origin and vector map. " << endl;
-			return 0;
-		}
-		// 		else
-		// 		{
-		// 			//PlanUsingReedShepp(start, *pStart, start_path, 1.0, 1);
-		// 		}
+		GPSPoint sp = start.pos;
+		cout << endl << "Error: PlannerH -> Start Distance to Lane is: " << start_info.perp_distance
+				<< ", Pose: " << sp.ToString() << ", LanePose:" << start_info.perp_point.pos.ToString()
+				<< ", LaneID: " << pStart->pLane->id << " -> Check origin and vector map. " << endl;
+		return 0;
 	}
 
 	if(fabs(goal_info.perp_distance) > GOAL_POINT_MAX_DISTANCE)
@@ -295,7 +275,7 @@ double PlannerH::PlanUsingDP(const WayPoint& start,
 	return totalPlanningDistance;
 }
 
-double PlannerH::PredictPlanUsingDP(Lane* l, const WayPoint& start, const double& maxPlanningDistance, std::vector<std::vector<WayPoint> >& paths)
+double PlannerH::PredictPlanUsingDP(PlannerHNS::Lane* l, const WayPoint& start, const double& maxPlanningDistance, std::vector<std::vector<WayPoint> >& paths)
 {
 	if(!l)
 	{
@@ -350,7 +330,7 @@ double PlannerH::PredictPlanUsingDP(Lane* l, const WayPoint& start, const double
 	return totalPlanDistance;
 }
 
-double PlannerH::PredictTrajectoriesUsingDP(const WayPoint& startPose, std::vector<WayPoint*> closestWPs, const double& maxPlanningDistance, std::vector<std::vector<WayPoint> >& paths, const bool& bFindBranches , const bool bDirectionBased)
+double PlannerH::PredictTrajectoriesUsingDP(const WayPoint& startPose, std::vector<WayPoint*> closestWPs, const double& maxPlanningDistance, std::vector<std::vector<WayPoint> >& paths, const bool& bFindBranches , const bool bDirectionBased, const bool pathDensity)
 {
 	vector<vector<WayPoint> > tempCurrentForwardPathss;
 	vector<WayPoint*> all_cell_to_delete;
@@ -390,8 +370,12 @@ double PlannerH::PredictTrajectoriesUsingDP(const WayPoint& startPose, std::vect
 				if(!bDirectionBased)
 					path.at(0).pos.a = path.at(1).pos.a;
 
-				PlanningHelpers::FixPathDensity(path, 1.0);
-				PlanningHelpers::SmoothPath(path, 0.3 , 0.3,0.1);
+				path.at(0).beh_state = path.at(1).beh_state = PlannerHNS::BEH_FORWARD_STATE;
+				path.at(0).laneId = path.at(1).laneId;
+
+				PlanningHelpers::FixPathDensity(path, pathDensity);
+				PlanningHelpers::SmoothPath(path,0.4,0.3,0.1);
+				PlanningHelpers::CalcAngleAndCost(path);
 				paths.push_back(path);
 			}
 		}
@@ -405,14 +389,24 @@ double PlannerH::PredictTrajectoriesUsingDP(const WayPoint& startPose, std::vect
 		else
 			p2 = p1 = startPose;
 
-		p2.pos.y = p1.pos.y + maxPlanningDistance*0.5*sin(p1.pos.a);
-		p2.pos.x = p1.pos.x + maxPlanningDistance*0.5*cos(p1.pos.a);
+		double branch_length = maxPlanningDistance*0.5;
+
+		p2.pos.y = p1.pos.y + branch_length*0.4*sin(p1.pos.a);
+		p2.pos.x = p1.pos.x + branch_length*0.4*cos(p1.pos.a);
 
 		vector<WayPoint> l_branch;
 		vector<WayPoint> r_branch;
 
-		PlanningHelpers::CreateManualBranchFromTwoPoints(p1, p2, maxPlanningDistance*0.75, FORWARD_RIGHT_DIR,r_branch);
-		PlanningHelpers::CreateManualBranchFromTwoPoints(p1, p2, maxPlanningDistance*0.75, FORWARD_LEFT_DIR, l_branch);
+		PlanningHelpers::CreateManualBranchFromTwoPoints(p1, p2, branch_length, FORWARD_RIGHT_DIR,r_branch);
+		PlanningHelpers::CreateManualBranchFromTwoPoints(p1, p2, branch_length, FORWARD_LEFT_DIR, l_branch);
+
+		PlanningHelpers::FixPathDensity(l_branch, pathDensity);
+		PlanningHelpers::SmoothPath(l_branch,0.4,0.3,0.1);
+		PlanningHelpers::CalcAngleAndCost(l_branch);
+
+		PlanningHelpers::FixPathDensity(r_branch, pathDensity);
+		PlanningHelpers::SmoothPath(r_branch,0.4,0.3,0.1);
+		PlanningHelpers::CalcAngleAndCost(r_branch);
 
 		paths.push_back(l_branch);
 		paths.push_back(r_branch);
@@ -420,7 +414,7 @@ double PlannerH::PredictTrajectoriesUsingDP(const WayPoint& startPose, std::vect
 
 	DeleteWaypoints(all_cell_to_delete);
 
-	return 1;
+	return paths.size();
 }
 
 double PlannerH::PredictPlanUsingDP(const WayPoint& startPose, WayPoint* closestWP, const double& maxPlanningDistance, std::vector<std::vector<WayPoint> >& paths, const bool& bFindBranches)

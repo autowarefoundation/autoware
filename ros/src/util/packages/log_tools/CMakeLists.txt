@@ -3,16 +3,16 @@ project(log_tools)
 
 add_compile_options(-std=c++11)
 
-find_package(catkin REQUIRED)
 
-catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES log_tools
-#  CATKIN_DEPENDS other_catkin_pkg
-#  DEPENDS system_lib
-)
+find_package(autoware_build_flags REQUIRED)
+find_package(catkin REQUIRED COMPONENTS
+    )
 
-include_directories(
-# include
-# ${catkin_INCLUDE_DIRS}
-)
+catkin_package()
+
+catkin_install_python(PROGRAMS
+        scripts/autologger/client.py
+        scripts/autologger/common.py
+        scripts/autologger/recorder.py
+        scripts/autologger/server.py
+        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

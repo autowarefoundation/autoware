@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package>
+  <name>state_machine_lib</name>
+  <version>1.10.0</version>
+  <description>The libstate package</description>
+
+  <maintainer email="yusuke.fujii@tier4.jp">Yusuke FUJII</maintainer>
+  <license>Apache 2</license>
+  <author email="yusuke.fujii@tier4.jp">Yusuke FUJII</author>
+  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>autoware_build_flags</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>autoware_msgs</build_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>autoware_msgs</run_depend>
+  <export>
+  </export>
+</package>
