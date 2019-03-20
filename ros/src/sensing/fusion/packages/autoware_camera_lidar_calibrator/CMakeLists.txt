@@ -70,3 +70,7 @@ catkin_install_python(PROGRAMS
 install(DIRECTORY launch/
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
         PATTERN ".svn" EXCLUDE)
+
+install(DIRECTORY docs/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/docs
+        PATTERN ".svn" EXCLUDE)
