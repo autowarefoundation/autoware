@@ -2,6 +2,11 @@
 Changelog for package ndt_gpu
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix license notice in corresponding package.xml
+* Contributors: amc-nu
+
 1.10.0 (2019-01-17)
 -------------------
 

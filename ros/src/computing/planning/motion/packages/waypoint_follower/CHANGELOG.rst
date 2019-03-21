@@ -2,6 +2,19 @@
 Changelog for package waypoint_follower
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [Feature] Rebuild decision maker (`#1609 <https://github.com/kfunaoka/Autoware/issues/1609>`_)
+* Revert "Fix/health checker (`#2012 <https://github.com/kfunaoka/Autoware/issues/2012>`_)" (`#2037 <https://github.com/kfunaoka/Autoware/issues/2037>`_)
+  This reverts commit e4187a7138eb90ad6f119eb35f824b16465aefda.
+  Reverts `#2012 <https://github.com/kfunaoka/Autoware/issues/2012>`_
+  Merged without adequate description of the bug or fixes made
+* Fix/health checker (`#2012 <https://github.com/kfunaoka/Autoware/issues/2012>`_)
+* Feature/autoware health checker (`#1943 <https://github.com/kfunaoka/Autoware/issues/1943>`_)
+* Fix license notice in corresponding package.xml
+* [Fix] negative max_v values for negative omega (`#1880 <https://github.com/kfunaoka/Autoware/issues/1880>`_)
+* Contributors: Geoffrey Biggs, Masaya Kataoka, Sneha Ganesh, amc-nu, s-azumi
+
 1.10.0 (2019-01-17)
 -------------------
 * Fixes for catkin_make

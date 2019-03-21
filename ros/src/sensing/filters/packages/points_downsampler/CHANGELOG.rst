@@ -2,6 +2,64 @@
 Changelog for package points_downsampler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Feature/update autoware launcher (`#2056 <https://github.com/kfunaoka/Autoware/issues/2056>`_)
+  * Add prototype of plugin file editor
+  * Change logger level
+  * Support command line options
+  * Update gazebo simulator panel
+  * Add plugin edit tool and update plugins
+  * Fix a bug of transform edit
+  * Fix setup.py to install all packages
+  * Update the code for compatibility with python3
+  * Update the code for colcon build
+  * updated plugin for lane_rule, lane_stop, and voxel_grid_filter
+  * Fix that the plugin_description is not installed
+  * Fix launch file error
+  * Fix test failed
+  * Skip test of unbuilt packages
+  * Add run script
+  * Add profile description
+  * Fix launch file install path of point_downsampler
+  * Update README file
+  * Update README file for plugin file
+  * Fix README file
+  * Add notice to run script
+* [fix] Install commands for all the packages (`#1861 <https://github.com/kfunaoka/Autoware/issues/1861>`_)
+  * Initial fixes to detection, sensing, semantics and utils
+  * fixing wrong filename on install command
+  * Fixes to install commands
+  * Hokuyo fix name
+  * Fix obj db
+  * Obj db include fixes
+  * End of final cleaning sweep
+  * Incorrect command order in runtime manager
+  * Param tempfile not required by runtime_manager
+  * * Fixes to runtime manager install commands
+  * Remove devel directory from catkin, if any
+  * Updated launch files for robosense
+  * Updated robosense
+  * Fix/add missing install (`#1977 <https://github.com/kfunaoka/Autoware/issues/1977>`_)
+  * Added launch install to lidar_kf_contour_track
+  * Added install to op_global_planner
+  * Added install to way_planner
+  * Added install to op_local_planner
+  * Added install to op_simulation_package
+  * Added install to op_utilities
+  * Added install to sync
+  * * Improved installation script for pointgrey packages
+  * Fixed nodelet error for gmsl cameras
+  * USe install space in catkin as well
+  * add install to catkin
+  * Fix install directives (`#1990 <https://github.com/kfunaoka/Autoware/issues/1990>`_)
+  * Fixed installation path
+  * Fixed params installation path
+  * Fixed cfg installation path
+  * Delete cache on colcon_release
+* Fix license notice in corresponding package.xml
+* Contributors: Abraham Monrroy Cano, amc-nu, isamu-takagi
+
 1.10.0 (2019-01-17)
 -------------------
 * Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/kfunaoka/Autoware/issues/1741>`_)

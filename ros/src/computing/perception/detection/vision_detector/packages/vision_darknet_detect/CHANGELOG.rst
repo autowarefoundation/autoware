@@ -2,6 +2,17 @@
 Changelog for package vision_yolo3_detect
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Removing CUDA dependencies for Darknet Yolov3 (`#1784 <https://github.com/kfunaoka/Autoware/issues/1784>`_)
+  * Removing CUDA dependencies for Darknet yolov3
+  If the host machine does not have CUDA, this will build the vision_darknet_detect package based on a pre-built darknet directory (which doesn't require CUDA as there are no CUDA dependencies for yolov3).
+  * Update ros/src/computing/perception/detection/vision_detector/packages/vision_darknet_detect/CMakeLists.txt
+  Co-Authored-By: K1504296 <greytrt@gmail.com>
+* Fix license notice in corresponding package.xml
+* Initial release of object filter
+* Contributors: Abraham Monrroy, Theodore, amc-nu
+
 1.10.0 (2019-01-17)
 -------------------
 * Fixes for catkin_make

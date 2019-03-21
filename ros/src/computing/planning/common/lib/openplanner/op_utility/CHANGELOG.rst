@@ -2,6 +2,11 @@
 Changelog for package op_utility
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix license notice in corresponding package.xml
+* Contributors: amc-nu
+
 1.10.0 (2019-01-17)
 -------------------
 * Use colcon as the build tool (`#1704 <https://github.com/kfunaoka/Autoware/issues/1704>`_)

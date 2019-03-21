@@ -2,6 +2,12 @@
 Changelog for package state
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [Feature] Rebuild decision maker (`#1609 <https://github.com/kfunaoka/Autoware/issues/1609>`_)
+* Fix license notice in corresponding package.xml
+* Contributors: amc-nu, s-azumi
+
 1.10.0 (2019-01-17)
 -------------------
 * Fixes for catkin_make

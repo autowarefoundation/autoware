@@ -2,6 +2,25 @@
 Changelog for package as
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [Feature] Improve AS vehicle interface (`#1945 <https://github.com/kfunaoka/Autoware/issues/1945>`_)
+  * Rename and modify as_interface for drive-by-wire
+  * Fix dependences
+  * Rename as_interface -> ssc_interface, refactored
+  * Fix launch
+  * Modify source of desired values to vehicle_cmd
+  * Apply clang-format
+  * Add vehicle_status topic based on feedback topics
+  * Add rear wheel speed mode, using pacmod/parsed_tx/wheel_speed_rpt instead of as/velocity_accel
+  * Add emergency stop mode, occured by vehicle_cmd.emergency and timeout
+  * Add adaptive gear ratio mode, for more accurate steering angle
+  * Remove unsued definition
+  * Updated cross-build image date
+  * Fix zero division
+* Fix license notice in corresponding package.xml
+* Contributors: Akihito Ohsato, amc-nu
+
 1.10.0 (2019-01-17)
 -------------------
 * Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/kfunaoka/Autoware/issues/1741>`_)

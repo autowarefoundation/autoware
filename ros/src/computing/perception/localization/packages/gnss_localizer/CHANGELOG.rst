@@ -2,6 +2,11 @@
 Changelog for package gnss_localizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix license notice in corresponding package.xml
+* Contributors: amc-nu
+
 1.10.0 (2019-01-17)
 -------------------
 * Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/kfunaoka/Autoware/issues/1741>`_)

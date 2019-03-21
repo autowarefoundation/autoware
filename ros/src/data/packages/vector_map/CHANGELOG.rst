@@ -2,6 +2,12 @@
 Changelog for package vector_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix license notice in corresponding package.xml
+* Make VectorMap::hasSubscribed public (`#1821 <https://github.com/kfunaoka/Autoware/issues/1821>`_)
+* Contributors: Kenji Funaoka, amc-nu
+
 1.10.0 (2019-01-17)
 -------------------
 * Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/kfunaoka/Autoware/issues/1741>`_)
