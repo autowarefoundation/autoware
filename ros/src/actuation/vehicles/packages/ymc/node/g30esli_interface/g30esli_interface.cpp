@@ -23,6 +23,7 @@ G30esliInterface::G30esliInterface() : nh_(), private_nh_("~")
   private_nh_.param<bool>("use_ds4", use_ds4_, false);
   private_nh_.param<double>("steering_offset_deg", steering_offset_deg_, 0.0);
   private_nh_.param<double>("command_timeout", command_timeout_, 1000);
+  private_nh_.param<double>("brake_threshold", brake_threshold_, 0.1);
 
   // engaged at startup
   private_nh_.param<bool>("engaged", engage_, true);
@@ -66,7 +67,7 @@ G30esliInterface::~G30esliInterface()
 // generate command by autoware
 void G30esliInterface::vehicleCmdCallback(const autoware_msgs::VehicleCmdConstPtr& msg)
 {
-  g30esli_ros_.updateCommand(*msg, engage_, steering_offset_deg_);
+  g30esli_ros_.updateAutoCommand(*msg, engage_, steering_offset_deg_, brake_threshold_);
 }
 
 // engaging by topic
@@ -91,7 +92,7 @@ void G30esliInterface::engageCallback(const std_msgs::BoolConstPtr& msg)
 // generate command by ds4 joystick
 void G30esliInterface::ds4Callback(const ds4_msgs::DS4ConstPtr& msg)
 {
-  g30esli_ros_.updateCommand(*msg, engage_, steering_offset_deg_);
+  g30esli_ros_.updateJoystickCommand(*msg, engage_, steering_offset_deg_);
 
   // joystick override = use JOYSTICK mode
   if ((msg->square || msg->cross) && mode_ != MODE::JOYSTICK)

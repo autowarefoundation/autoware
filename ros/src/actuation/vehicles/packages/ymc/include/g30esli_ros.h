@@ -71,8 +71,9 @@ public:
   void receiveStatus(const double& steering_offset_deg);
   void sendCommand(const MODE& mode);
 
-  void updateCommand(const autoware_msgs::VehicleCmd& msg, const bool& engage, const double& steering_offset_deg);
-  void updateCommand(const ds4_msgs::DS4& msg, const bool& engage, const double& steering_offset_deg);
+  void updateAutoCommand(const autoware_msgs::VehicleCmd& msg, const bool& engage, const double& steering_offset_deg,
+                         const double& brake_threshold);
+  void updateJoystickCommand(const ds4_msgs::DS4& msg, const bool& engage, const double& steering_offset_deg);
   void updateAliveCounter();
 
   bool checkOverride();

@@ -29,8 +29,8 @@ bool G30esliROS::openDevice(const std::string& device)
   return g30esli_.openDevice(device);
 }
 
-void G30esliROS::updateCommand(const autoware_msgs::VehicleCmd& msg, const bool& engage,
-                               const double& steering_offset_deg)
+void G30esliROS::updateAutoCommand(const autoware_msgs::VehicleCmd& msg, const bool& engage,
+                                   const double& steering_offset_deg, const double& brake_threshold)
 {
   Command& cmd = commands_[(int)MODE::AUTO];
 
@@ -49,7 +49,18 @@ void G30esliROS::updateCommand(const autoware_msgs::VehicleCmd& msg, const bool&
   cmd.command.mode = engage ? G30ESLI_MODE_AUTO : G30ESLI_MODE_MANUAL;
 
   // brake
-  cmd.command.brake = (msg.emergency == 1) ? G30ESLI_BRAKE_SEMIEMG : G30ESLI_BRAKE_NONE;
+  if (msg.emergency == 1)
+  {
+    cmd.command.brake = G30ESLI_BRAKE_SEMIEMG;
+  }
+  else if (cmd.command.speed < brake_threshold)
+  {
+    cmd.command.brake = G30ESLI_BRAKE_SMOOTH;
+  }
+  else
+  {
+    cmd.command.brake = G30ESLI_BRAKE_NONE;
+  }
 
   // shift
   if (msg.gear == 1)
@@ -84,7 +95,7 @@ void G30esliROS::updateCommand(const autoware_msgs::VehicleCmd& msg, const bool&
   }
 }
 
-void G30esliROS::updateCommand(const ds4_msgs::DS4& msg, const bool& engage, const double& steering_offset_deg)
+void G30esliROS::updateJoystickCommand(const ds4_msgs::DS4& msg, const bool& engage, const double& steering_offset_deg)
 {
   Command& cmd = commands_[(int)MODE::JOYSTICK];
 
