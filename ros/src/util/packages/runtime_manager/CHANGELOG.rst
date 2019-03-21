@@ -2,8 +2,8 @@
 Changelog for package runtime_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.0 (2019-03-21)
+-------------------
 * [fix] not predicting objects at x<=0 or y<=0 (`#2122 <https://github.com/CPFL/Autoware/issues/2122>`_)
 * [Feature] Improve Hybrid A* planner (`#1594 <https://github.com/CPFL/Autoware/issues/1594>`_)
   * Delete obstacle_sim from astar_planner package, replaced to lidar_fake_perception

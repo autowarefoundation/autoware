@@ -2,8 +2,8 @@
 Changelog for package vehicle_model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.0 (2019-03-21)
+-------------------
 * fixed bug (wrong package.xml of gazebo simulator)
 * cosmetic change
 * modify sensor position

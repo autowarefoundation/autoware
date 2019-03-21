@@ -2,8 +2,8 @@
 Changelog for package amathutils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.0 (2019-03-21)
+-------------------
 * [Feature] Rebuild decision maker (`#1609 <https://github.com/CPFL/Autoware/issues/1609>`_)
 * Fix license notice in corresponding package.xml
 * Contributors: amc-nu, s-azumi

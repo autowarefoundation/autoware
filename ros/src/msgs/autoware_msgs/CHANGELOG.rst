@@ -2,8 +2,8 @@
 Changelog for package autoware_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.0 (2019-03-21)
+-------------------
 * [Feature] Rebuild decision maker (`#1609 <https://github.com/CPFL/Autoware/issues/1609>`_)
 * Fix license notice in corresponding package.xml
 * Cleanup WaypointState.msg and add sttering_state=STR_BACK (`#1822 <https://github.com/CPFL/Autoware/issues/1822>`_)

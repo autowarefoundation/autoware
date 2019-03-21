@@ -2,8 +2,8 @@
 Changelog for package astar_search
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.0 (2019-03-21)
+-------------------
 * [Feature] Improve Hybrid A* planner (`#1594 <https://github.com/CPFL/Autoware/issues/1594>`_)
   * Delete obstacle_sim from astar_planner package, replaced to lidar_fake_perception
   * Modify package name, astar_planner -> waypoint_planner, and create astar_planner library package

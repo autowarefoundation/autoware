@@ -2,8 +2,8 @@
 Changelog for package autoware_health_checker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.0 (2019-03-21)
+-------------------
 * fix thread handling of node_status_publisher. (`#2058 <https://github.com/CPFL/Autoware/issues/2058>`_)
 * Revert "Fix/health checker (`#2012 <https://github.com/CPFL/Autoware/issues/2012>`_)" (`#2037 <https://github.com/CPFL/Autoware/issues/2037>`_)
   This reverts commit e4187a7138eb90ad6f119eb35f824b16465aefda.

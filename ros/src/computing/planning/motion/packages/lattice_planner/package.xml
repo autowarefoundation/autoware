@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>lattice_planner</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>The lattice_planner package</description>
 
     <maintainer email="mokelly@seas.upenn.edu">mokelly</maintainer>

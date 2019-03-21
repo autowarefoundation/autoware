@@ -2,8 +2,8 @@
 Changelog for package vision_yolo3_detect
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.0 (2019-03-21)
+-------------------
 * Removing CUDA dependencies for Darknet Yolov3 (`#1784 <https://github.com/CPFL/Autoware/issues/1784>`_)
   * Removing CUDA dependencies for Darknet yolov3
   If the host machine does not have CUDA, this will build the vision_darknet_detect package based on a pre-built darknet directory (which doesn't require CUDA as there are no CUDA dependencies for yolov3).

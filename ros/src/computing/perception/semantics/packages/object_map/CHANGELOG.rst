@@ -2,8 +2,8 @@
 Changelog for package object_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.0 (2019-03-21)
+-------------------
 * [Feature] costmap generator (`#1774 <https://github.com/CPFL/Autoware/issues/1774>`_)
   * * Initial commit for visualization package
   * Removal of all visualization messages from perception nodes

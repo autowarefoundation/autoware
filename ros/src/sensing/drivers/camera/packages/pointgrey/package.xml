@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>autoware_pointgrey_drivers</name>
-  <version>1.10.0</version>
+  <version>1.11.0</version>
   <description>The autoware_pointgrey_drivers package</description>
   <maintainer email="kondoh@axe-inc.co.jp">Masao KONDOH</maintainer>
   <maintainer email="abrahammonrroy@yahoo.com">Abraham Monrroy</maintainer>

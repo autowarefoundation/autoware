@@ -2,8 +2,8 @@
 Changelog for package trafficlight_recognizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.0 (2019-03-21)
+-------------------
 * [fix] Install commands for all the packages (`#1861 <https://github.com/CPFL/Autoware/issues/1861>`_)
   * Initial fixes to detection, sensing, semantics and utils
   * fixing wrong filename on install command

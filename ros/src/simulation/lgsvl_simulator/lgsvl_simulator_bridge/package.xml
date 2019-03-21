@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>lgsvl_simulator_bridge</name>
-  <version>1.10.0</version>
+  <version>1.11.0</version>
   <description>The lgsvl_simulator_bridge package</description>
 
   <maintainer email="masaya.kataoka@tier4.jp">Masaya Kataoka</maintainer>

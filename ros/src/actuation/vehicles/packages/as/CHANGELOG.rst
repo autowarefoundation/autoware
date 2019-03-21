@@ -2,8 +2,8 @@
 Changelog for package as
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.0 (2019-03-21)
+-------------------
 * [Feature] Improve AS vehicle interface (`#1945 <https://github.com/CPFL/Autoware/issues/1945>`_)
   * Rename and modify as_interface for drive-by-wire
   * Fix dependences

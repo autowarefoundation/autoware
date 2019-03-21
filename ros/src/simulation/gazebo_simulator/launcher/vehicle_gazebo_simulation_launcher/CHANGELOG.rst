@@ -2,8 +2,8 @@
 Changelog for package vehicle_gazebo_simulation_launcher
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.0 (2019-03-21)
+-------------------
 * remove controller manager in CMakeLists.txt
 * fixed gazebo bug with colcon
 * cosmetic change

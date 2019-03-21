@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>lidar_euclidean_cluster_detect</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>The lidar_euclidean_cluster_detect package</description>
 
     <maintainer email="abrahammonrroy@yahoo.com">amc</maintainer>

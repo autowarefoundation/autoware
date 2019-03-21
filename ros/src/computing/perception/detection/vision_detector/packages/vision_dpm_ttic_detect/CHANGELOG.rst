@@ -2,8 +2,8 @@
 Changelog for package vision_dpm_ttic_detect
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.0 (2019-03-21)
+-------------------
 * Fix/colcon build (`#2000 <https://github.com/CPFL/Autoware/issues/2000>`_)
   * Added lcuda link
 * [fix] Install commands for all the packages (`#1861 <https://github.com/CPFL/Autoware/issues/1861>`_)

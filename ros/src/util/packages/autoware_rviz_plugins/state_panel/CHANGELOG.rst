@@ -2,8 +2,8 @@
 Changelog for package autoware_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.0 (2019-03-21)
+-------------------
 * [Feature] Rebuild decision maker (`#1609 <https://github.com/CPFL/Autoware/issues/1609>`_)
 * [Feature] Autoware Launcher (`#1950 <https://github.com/CPFL/Autoware/issues/1950>`_)
   [Feature] Release Autoware Launcher (`#1637 <https://github.com/CPFL/Autoware/issues/1637>`_)

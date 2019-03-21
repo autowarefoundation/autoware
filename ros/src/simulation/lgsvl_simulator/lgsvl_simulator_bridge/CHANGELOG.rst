@@ -2,8 +2,8 @@
 Changelog for package lgsvl_simulator_bridge
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.0 (2019-03-21)
+-------------------
 * Change LGSVL simulator dir (`#2023 <https://github.com/CPFL/Autoware/issues/2023>`_)
 * Contributors: Yukihiro Saito
 

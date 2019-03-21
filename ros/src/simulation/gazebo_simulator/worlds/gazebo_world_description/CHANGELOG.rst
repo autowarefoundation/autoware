@@ -2,8 +2,8 @@
 Changelog for package gazebo_world_description
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.0 (2019-03-21)
+-------------------
 * remove copy script and use symlink
 * remove gitignore
 * add gitignore for gazebo model dir

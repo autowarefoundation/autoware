@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>kitti_box_publisher</name>
-  <version>1.10.0</version>
+  <version>1.11.0</version>
   <description>The kitti_box_publisher package</description>
   <maintainer email="hoshika@todo.todo">hoshika</maintainer>
   <maintainer email="abrahammonrroy@yahoo.com">amc-nu</maintainer>

@@ -2,8 +2,8 @@
 Changelog for package gnss
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.0 (2019-03-21)
+-------------------
 * add constructor (`#1913 <https://github.com/CPFL/Autoware/issues/1913>`_)
 * Fix license notice in corresponding package.xml
 * Contributors: YamatoAndo, amc-nu

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>data_preprocessor</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>The data_preprocessor package</description>
 
     <maintainer email="katou01@todo.todo">katou01</maintainer>

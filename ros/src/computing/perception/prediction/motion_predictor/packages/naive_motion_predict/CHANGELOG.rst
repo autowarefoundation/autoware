@@ -2,8 +2,8 @@
 Changelog for package naive_motion_predict
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.0 (2019-03-21)
+-------------------
 * [fix] not predicting objects at x<=0 or y<=0 (`#2122 <https://github.com/CPFL/Autoware/issues/2122>`_)
 * [Feature] costmap generator (`#1774 <https://github.com/CPFL/Autoware/issues/1774>`_)
   * * Initial commit for visualization package

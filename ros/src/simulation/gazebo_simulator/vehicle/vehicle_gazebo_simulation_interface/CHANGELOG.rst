@@ -2,8 +2,8 @@
 Changelog for package vehicle_gazebo_simulation_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.0 (2019-03-21)
+-------------------
 * cosmetic change
 * update for can odometry
 * fixed bug and typo

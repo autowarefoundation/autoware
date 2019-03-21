@@ -2,8 +2,8 @@
 Changelog for package points_downsampler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.0 (2019-03-21)
+-------------------
 * Feature/update autoware launcher (`#2056 <https://github.com/CPFL/Autoware/issues/2056>`_)
   * Add prototype of plugin file editor
   * Change logger level

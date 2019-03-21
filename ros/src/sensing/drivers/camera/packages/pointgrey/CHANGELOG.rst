@@ -2,8 +2,8 @@
 Changelog for package autoware_pointgrey_drivers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.0 (2019-03-21)
+-------------------
 * Include app name in log message
 * To allow FPS to be set, it requires first to disable FrameRateAuto property
 * fix framerate check

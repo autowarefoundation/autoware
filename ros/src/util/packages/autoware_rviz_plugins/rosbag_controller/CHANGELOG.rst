@@ -2,8 +2,8 @@
 Changelog for package rosbag_controller
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.0 (2019-03-21)
+-------------------
 * Feature/rosbag_controller_split (`#2046 <https://github.com/CPFL/Autoware/issues/2046>`_)
   * new feature: split and warning
   * fix bugs; add absolute path with default filename

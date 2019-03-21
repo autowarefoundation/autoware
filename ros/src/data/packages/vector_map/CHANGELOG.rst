@@ -2,8 +2,8 @@
 Changelog for package vector_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.11.0 (2019-03-21)
+-------------------
 * Fix license notice in corresponding package.xml
 * Make VectorMap::hasSubscribed public (`#1821 <https://github.com/CPFL/Autoware/issues/1821>`_)
 * Contributors: Kenji Funaoka, amc-nu
