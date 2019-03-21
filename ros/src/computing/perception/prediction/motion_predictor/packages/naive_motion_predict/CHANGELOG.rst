@@ -4,8 +4,8 @@ Changelog for package naive_motion_predict
 
 Forthcoming
 -----------
-* [fix] not predicting objects at x<=0 or y<=0 (`#2122 <https://github.com/kfunaoka/Autoware/issues/2122>`_)
-* [Feature] costmap generator (`#1774 <https://github.com/kfunaoka/Autoware/issues/1774>`_)
+* [fix] not predicting objects at x<=0 or y<=0 (`#2122 <https://github.com/CPFL/Autoware/issues/2122>`_)
+* [Feature] costmap generator (`#1774 <https://github.com/CPFL/Autoware/issues/1774>`_)
   * * Initial commit for visualization package
   * Removal of all visualization messages from perception nodes
   * Visualization dependency removal
@@ -94,7 +94,7 @@ Forthcoming
   * Updated include
   * Re-strutured include folders
   * Generic folder name
-  * Fix/costmap generator (`#2077 <https://github.com/kfunaoka/Autoware/issues/2077>`_)
+  * Fix/costmap generator (`#2077 <https://github.com/CPFL/Autoware/issues/2077>`_)
   * segmentation fault in  CheckAssignPoints2GridCell
   * Remove redundant codes in test
   * Add some variables in SetUp
@@ -104,7 +104,7 @@ Forthcoming
   * Add scription in SetUp
   * Remove unnecesary in_object
   * Refactor test codes
-* [fix] Install commands for all the packages (`#1861 <https://github.com/kfunaoka/Autoware/issues/1861>`_)
+* [fix] Install commands for all the packages (`#1861 <https://github.com/CPFL/Autoware/issues/1861>`_)
   * Initial fixes to detection, sensing, semantics and utils
   * fixing wrong filename on install command
   * Fixes to install commands
@@ -118,7 +118,7 @@ Forthcoming
   * Remove devel directory from catkin, if any
   * Updated launch files for robosense
   * Updated robosense
-  * Fix/add missing install (`#1977 <https://github.com/kfunaoka/Autoware/issues/1977>`_)
+  * Fix/add missing install (`#1977 <https://github.com/CPFL/Autoware/issues/1977>`_)
   * Added launch install to lidar_kf_contour_track
   * Added install to op_global_planner
   * Added install to way_planner
@@ -130,7 +130,7 @@ Forthcoming
   * Fixed nodelet error for gmsl cameras
   * USe install space in catkin as well
   * add install to catkin
-  * Fix install directives (`#1990 <https://github.com/kfunaoka/Autoware/issues/1990>`_)
+  * Fix install directives (`#1990 <https://github.com/CPFL/Autoware/issues/1990>`_)
   * Fixed installation path
   * Fixed params installation path
   * Fixed cfg installation path
@@ -142,7 +142,7 @@ Forthcoming
 1.10.0 (2019-01-17)
 -------------------
 * Fixes for catkin_make
-* Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/kfunaoka/Autoware/issues/1741>`_)
+* Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/CPFL/Autoware/issues/1741>`_)
   * Switch to Apache 2
   * Replace BSD-3 license header with Apache 2 and reassign copyright to the
   Autoware Foundation.
@@ -150,7 +150,7 @@ Forthcoming
   * Update copyright years
   * Add #ifndef/define _POINTS_IMAGE_H\_
   * Updated license comment
-* Use colcon as the build tool (`#1704 <https://github.com/kfunaoka/Autoware/issues/1704>`_)
+* Use colcon as the build tool (`#1704 <https://github.com/CPFL/Autoware/issues/1704>`_)
   * Switch to colcon as the build tool instead of catkin
   * Added cmake-target
   * Added note about the second colcon call
@@ -160,7 +160,7 @@ Forthcoming
   * Update Docker image tags
   * Message packages fixes
   * Fix missing dependency
-* Feature/perception visualization cleanup (`#1648 <https://github.com/kfunaoka/Autoware/issues/1648>`_)
+* Feature/perception visualization cleanup (`#1648 <https://github.com/CPFL/Autoware/issues/1648>`_)
   * * Initial commit for visualization package
   * Removal of all visualization messages from perception nodes
   * Visualization dependency removal

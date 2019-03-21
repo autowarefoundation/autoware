@@ -4,8 +4,8 @@ Changelog for package runtime_manager
 
 Forthcoming
 -----------
-* [fix] not predicting objects at x<=0 or y<=0 (`#2122 <https://github.com/kfunaoka/Autoware/issues/2122>`_)
-* [Feature] Improve Hybrid A* planner (`#1594 <https://github.com/kfunaoka/Autoware/issues/1594>`_)
+* [fix] not predicting objects at x<=0 or y<=0 (`#2122 <https://github.com/CPFL/Autoware/issues/2122>`_)
+* [Feature] Improve Hybrid A* planner (`#1594 <https://github.com/CPFL/Autoware/issues/1594>`_)
   * Delete obstacle_sim from astar_planner package, replaced to lidar_fake_perception
   * Modify package name, astar_planner -> waypoint_planner, and create astar_planner library package
   * Delete obstacle_avoid/astar* and modify its dependency to astar_planner library
@@ -23,7 +23,7 @@ Forthcoming
   * Fix package/code names
   * Update runtime_manager
   * Improve astar_avoid to execute avoidance behavior by state transition (by rebuild decision maker)
-  * Fix PascalCase message names by `#1408 <https://github.com/kfunaoka/Autoware/issues/1408>`_
+  * Fix PascalCase message names by `#1408 <https://github.com/CPFL/Autoware/issues/1408>`_
   * Remove obstacle_avoid directory
   * Fix default parameter for costmap topic
   * Fix warning and initialize condition
@@ -67,7 +67,7 @@ Forthcoming
   * Fix the condition to judge reaching goal
   * Add 'use_decision state' mode to transit avoidance state by decision_maker
   * Fix calcDiffOfRadian (if diff > 2pi)
-  * Feature/test astar planner (`#1753 <https://github.com/kfunaoka/Autoware/issues/1753>`_)
+  * Feature/test astar planner (`#1753 <https://github.com/CPFL/Autoware/issues/1753>`_)
   * Restructured folders
   * Added unit test base
   * Removed remaining folder
@@ -81,7 +81,7 @@ Forthcoming
   * Revert use_state_decision mode (94af7b6)
   * Fix costmap topic names by merging costmap_generator
 * Add exec permission to shell scripts in runtime manager
-* [Feature] costmap generator (`#1774 <https://github.com/kfunaoka/Autoware/issues/1774>`_)
+* [Feature] costmap generator (`#1774 <https://github.com/CPFL/Autoware/issues/1774>`_)
   * * Initial commit for visualization package
   * Removal of all visualization messages from perception nodes
   * Visualization dependency removal
@@ -170,7 +170,7 @@ Forthcoming
   * Updated include
   * Re-strutured include folders
   * Generic folder name
-  * Fix/costmap generator (`#2077 <https://github.com/kfunaoka/Autoware/issues/2077>`_)
+  * Fix/costmap generator (`#2077 <https://github.com/CPFL/Autoware/issues/2077>`_)
   * segmentation fault in  CheckAssignPoints2GridCell
   * Remove redundant codes in test
   * Add some variables in SetUp
@@ -180,9 +180,9 @@ Forthcoming
   * Add scription in SetUp
   * Remove unnecesary in_object
   * Refactor test codes
-* [Feature] Rebuild decision maker (`#1609 <https://github.com/kfunaoka/Autoware/issues/1609>`_)
-* [Feature]PointPillars (`#2029 <https://github.com/kfunaoka/Autoware/issues/2029>`_)
-* Feature/spinnaker (`#1984 <https://github.com/kfunaoka/Autoware/issues/1984>`_)
+* [Feature] Rebuild decision maker (`#1609 <https://github.com/CPFL/Autoware/issues/1609>`_)
+* [Feature]PointPillars (`#2029 <https://github.com/CPFL/Autoware/issues/2029>`_)
+* Feature/spinnaker (`#1984 <https://github.com/CPFL/Autoware/issues/1984>`_)
   * add spinnaker driver
   * modified for multithreading
   * fix CMakeLists.txt
@@ -205,7 +205,7 @@ Forthcoming
   check device type and set DeviceLinkThroughputLimit
   * Check pointers' validity
   * applied clang format
-* [feature] Baidu's CNN based LiDAR segmentation (`#1800 <https://github.com/kfunaoka/Autoware/issues/1800>`_)
+* [feature] Baidu's CNN based LiDAR segmentation (`#1800 <https://github.com/CPFL/Autoware/issues/1800>`_)
   * Add build caffe
   * add include apollo files
   * add apollo cnn
@@ -226,7 +226,7 @@ Forthcoming
   * Updated readme
   * Added extra instructions
   * Fix markdown
-* [fix] Install commands for all the packages (`#1861 <https://github.com/kfunaoka/Autoware/issues/1861>`_)
+* [fix] Install commands for all the packages (`#1861 <https://github.com/CPFL/Autoware/issues/1861>`_)
   * Initial fixes to detection, sensing, semantics and utils
   * fixing wrong filename on install command
   * Fixes to install commands
@@ -240,7 +240,7 @@ Forthcoming
   * Remove devel directory from catkin, if any
   * Updated launch files for robosense
   * Updated robosense
-  * Fix/add missing install (`#1977 <https://github.com/kfunaoka/Autoware/issues/1977>`_)
+  * Fix/add missing install (`#1977 <https://github.com/CPFL/Autoware/issues/1977>`_)
   * Added launch install to lidar_kf_contour_track
   * Added install to op_global_planner
   * Added install to way_planner
@@ -252,24 +252,24 @@ Forthcoming
   * Fixed nodelet error for gmsl cameras
   * USe install space in catkin as well
   * add install to catkin
-  * Fix install directives (`#1990 <https://github.com/kfunaoka/Autoware/issues/1990>`_)
+  * Fix install directives (`#1990 <https://github.com/CPFL/Autoware/issues/1990>`_)
   * Fixed installation path
   * Fixed params installation path
   * Fixed cfg installation path
   * Delete cache on colcon_release
-* Fix/remove velodyne subtree (`#1966 <https://github.com/kfunaoka/Autoware/issues/1966>`_)
+* Fix/remove velodyne subtree (`#1966 <https://github.com/CPFL/Autoware/issues/1966>`_)
   * Removed subtree
   * Add rtm launchfiles
   * Launch files adapted to upstream driver
   * Added install commands for runtiume manager velodyne launch files
-  * Fix remapping VLP-32C topic name (`#1967 <https://github.com/kfunaoka/Autoware/issues/1967>`_)
-  * Updated cross-build image date (`#1975 <https://github.com/kfunaoka/Autoware/issues/1975>`_)
-* [Feature] waypoint replanner and extractor (`#1951 <https://github.com/kfunaoka/Autoware/issues/1951>`_)
-* Changed Autoware/ros/run from being dependent on gksu to using sudo (`#1918 <https://github.com/kfunaoka/Autoware/issues/1918>`_)
+  * Fix remapping VLP-32C topic name (`#1967 <https://github.com/CPFL/Autoware/issues/1967>`_)
+  * Updated cross-build image date (`#1975 <https://github.com/CPFL/Autoware/issues/1975>`_)
+* [Feature] waypoint replanner and extractor (`#1951 <https://github.com/CPFL/Autoware/issues/1951>`_)
+* Changed Autoware/ros/run from being dependent on gksu to using sudo (`#1918 <https://github.com/CPFL/Autoware/issues/1918>`_)
   * Changed Autoware/ros/run from being dependent on gksu to using sudo
   addressing https://github.com/CPFL/Autoware/issues/1917
 * refactoring gazebo launch
-* [fix] Remove obsolete entries from UI (`#1879 <https://github.com/kfunaoka/Autoware/issues/1879>`_)
+* [fix] Remove obsolete entries from UI (`#1879 <https://github.com/CPFL/Autoware/issues/1879>`_)
   * Removed lidar_kf_track ui entry
   * Removed lidar_svm_detect ui entry
   * Removed obj_fusion ui entry
@@ -285,32 +285,32 @@ Forthcoming
   * * Removed obsolete calibration button, vscan
 * launch gazebo from runtimemanager
 * Fix license notice in corresponding package.xml
-* Feature/lgsvl sim configurator (`#1893 <https://github.com/kfunaoka/Autoware/issues/1893>`_)
-* Restablished/Moved calibration_publisher node (`#1897 <https://github.com/kfunaoka/Autoware/issues/1897>`_)
+* Feature/lgsvl sim configurator (`#1893 <https://github.com/CPFL/Autoware/issues/1893>`_)
+* Restablished/Moved calibration_publisher node (`#1897 <https://github.com/CPFL/Autoware/issues/1897>`_)
   * Restablished/Moved calibration_publisher node
   * Added license notice to src
 * * Fixed launch file link on rtm
   * display boxes when pose is reliable
 * * Added Readme
   * Fixed RTM launch command
-* Fix/remove obsolete range fusion (`#1884 <https://github.com/kfunaoka/Autoware/issues/1884>`_)
+* Fix/remove obsolete range fusion (`#1884 <https://github.com/CPFL/Autoware/issues/1884>`_)
   * Remove obsolete range_fusion
   * Removed range_fusion ui entry
   * Remove obsolete lidar_tracker_libs_fusion
   * Removed fusion dependency from vision_ssd_detect package
-* Fix/remove obsolete lidar pf track (`#1885 <https://github.com/kfunaoka/Autoware/issues/1885>`_)
+* Fix/remove obsolete lidar pf track (`#1885 <https://github.com/CPFL/Autoware/issues/1885>`_)
   * Remove obsolete lidar_pf_track
   * Removed lidar_pf_track ui entry
-* Remove obsolete state_machine (`#1876 <https://github.com/kfunaoka/Autoware/issues/1876>`_)
-* [Fix] rosbag split size in runtime manager (`#1817 <https://github.com/kfunaoka/Autoware/issues/1817>`_)
-* Feature/vehicle description (`#1848 <https://github.com/kfunaoka/Autoware/issues/1848>`_)
+* Remove obsolete state_machine (`#1876 <https://github.com/CPFL/Autoware/issues/1876>`_)
+* [Fix] rosbag split size in runtime manager (`#1817 <https://github.com/CPFL/Autoware/issues/1817>`_)
+* Feature/vehicle description (`#1848 <https://github.com/CPFL/Autoware/issues/1848>`_)
 * add shape_estimation in runtime manager
 * Adaptation of Object Filter with new perception workflow
 * Contributors: Abraham Monrroy Cano, Akihito Ohsato, Kosuke Murakami, LukeAI, Masaya Kataoka, Servando, Yukihiro SAITO, Yuma Nihei, amc-nu, mitsudome-r, s-azumi, wep21
 
 1.10.0 (2019-01-17)
 -------------------
-* Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/kfunaoka/Autoware/issues/1741>`_)
+* Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/CPFL/Autoware/issues/1741>`_)
   * Switch to Apache 2
   * Replace BSD-3 license header with Apache 2 and reassign copyright to the
   Autoware Foundation.
@@ -318,7 +318,7 @@ Forthcoming
   * Update copyright years
   * Add #ifndef/define _POINTS_IMAGE_H\_
   * Updated license comment
-* Use colcon as the build tool (`#1704 <https://github.com/kfunaoka/Autoware/issues/1704>`_)
+* Use colcon as the build tool (`#1704 <https://github.com/CPFL/Autoware/issues/1704>`_)
   * Switch to colcon as the build tool instead of catkin
   * Added cmake-target
   * Added note about the second colcon call
@@ -328,11 +328,11 @@ Forthcoming
   * Update Docker image tags
   * Message packages fixes
   * Fix missing dependency
-* [Fix] Disable forced termination when it can not write log data in ndt_matching (`#1824 <https://github.com/kfunaoka/Autoware/issues/1824>`_)
-* [feature] Initial integration of Boson FLIR ADK camera driver for Autoware (`#1809 <https://github.com/kfunaoka/Autoware/issues/1809>`_)
+* [Fix] Disable forced termination when it can not write log data in ndt_matching (`#1824 <https://github.com/CPFL/Autoware/issues/1824>`_)
+* [feature] Initial integration of Boson FLIR ADK camera driver for Autoware (`#1809 <https://github.com/CPFL/Autoware/issues/1809>`_)
   * Initial integration of Boson FLIR ADK camera driver for Autoware
   * Added README description for Boson FLIR ADK
-* Feature/lgsvl sim (`#1795 <https://github.com/kfunaoka/Autoware/issues/1795>`_)
+* Feature/lgsvl sim (`#1795 <https://github.com/CPFL/Autoware/issues/1795>`_)
   * add bridge package
   * add setup script
   * add getPath
@@ -357,7 +357,7 @@ Forthcoming
   * update CMakeLists.txt
   * update README.md
   * update README.md
-* Feature/perception visualization cleanup (`#1648 <https://github.com/kfunaoka/Autoware/issues/1648>`_)
+* Feature/perception visualization cleanup (`#1648 <https://github.com/CPFL/Autoware/issues/1648>`_)
   * * Initial commit for visualization package
   * Removal of all visualization messages from perception nodes
   * Visualization dependency removal
@@ -440,7 +440,7 @@ Forthcoming
   * Naming change for matching the perception component graph
   * * Added 3D Models for different classes in visualization
   * 2D Rect node visualize_rects added to visualization_package
-* Feature/ouster (`#1748 <https://github.com/kfunaoka/Autoware/issues/1748>`_)
+* Feature/ouster (`#1748 <https://github.com/CPFL/Autoware/issues/1748>`_)
   * Added Ouster OS1 LiDAR driver for Autoware as submodule.
   * Modified sensing tab to support Ouster OS1 LiDAR configuration and launching from runtime manager.
   * Updated the UI for Ouster OS1 LiDAR to support individual frame and topic names for cloud and imu, renamed some labels, changed default values of IP addresses

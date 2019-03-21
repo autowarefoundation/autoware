@@ -4,8 +4,8 @@ Changelog for package autoware_msgs
 
 Forthcoming
 -----------
-* [Feature] Rebuild decision maker (`#1609 <https://github.com/kfunaoka/Autoware/issues/1609>`_)
-* [Feature] waypoint replanner and extractor (`#1951 <https://github.com/kfunaoka/Autoware/issues/1951>`_)
+* [Feature] Rebuild decision maker (`#1609 <https://github.com/CPFL/Autoware/issues/1609>`_)
+* [Feature] waypoint replanner and extractor (`#1951 <https://github.com/CPFL/Autoware/issues/1951>`_)
 * Fix license notice in corresponding package.xml
 * Contributors: Yuma Nihei, amc-nu, s-azumi
 

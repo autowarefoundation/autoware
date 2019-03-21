@@ -4,16 +4,16 @@ Changelog for package lgsvl_simulator_bridge
 
 Forthcoming
 -----------
-* Change LGSVL simulator dir (`#2023 <https://github.com/kfunaoka/Autoware/issues/2023>`_)
+* Change LGSVL simulator dir (`#2023 <https://github.com/CPFL/Autoware/issues/2023>`_)
 * Contributors: Yukihiro Saito
 
 1.10.0 (2019-01-17)
 -------------------
-* [fix] CMake error & warning fixes on develop (`#1808 <https://github.com/kfunaoka/Autoware/issues/1808>`_)
+* [fix] CMake error & warning fixes on develop (`#1808 <https://github.com/CPFL/Autoware/issues/1808>`_)
   * CMake fixes
   * CMake updated to remove unnecessary dependencies when the package is not built
   * added autoware flags
-* Feature/lgsvl sim (`#1795 <https://github.com/kfunaoka/Autoware/issues/1795>`_)
+* Feature/lgsvl sim (`#1795 <https://github.com/CPFL/Autoware/issues/1795>`_)
   * add bridge package
   * add setup script
   * add getPath

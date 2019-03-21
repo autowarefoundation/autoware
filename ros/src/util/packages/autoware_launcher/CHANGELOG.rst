@@ -4,7 +4,7 @@ Changelog for package autoware_launcher
 
 Forthcoming
 -----------
-* Feature/update autoware launcher (`#2056 <https://github.com/kfunaoka/Autoware/issues/2056>`_)
+* Feature/update autoware launcher (`#2056 <https://github.com/CPFL/Autoware/issues/2056>`_)
   * Add prototype of plugin file editor
   * Change logger level
   * Support command line options
@@ -26,6 +26,6 @@ Forthcoming
   * Update README file for plugin file
   * Fix README file
   * Add notice to run script
-* [Feature] Autoware Launcher (`#1950 <https://github.com/kfunaoka/Autoware/issues/1950>`_)
-  [Feature] Release Autoware Launcher (`#1637 <https://github.com/kfunaoka/Autoware/issues/1637>`_)
+* [Feature] Autoware Launcher (`#1950 <https://github.com/CPFL/Autoware/issues/1950>`_)
+  [Feature] Release Autoware Launcher (`#1637 <https://github.com/CPFL/Autoware/issues/1637>`_)
 * Contributors: isamu-takagi

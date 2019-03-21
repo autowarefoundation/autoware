@@ -4,7 +4,7 @@ Changelog for package lidar_apollo_cnn_seg_detect
 
 Forthcoming
 -----------
-* [feature] Baidu's CNN based LiDAR segmentation (`#1800 <https://github.com/kfunaoka/Autoware/issues/1800>`_)
+* [feature] Baidu's CNN based LiDAR segmentation (`#1800 <https://github.com/CPFL/Autoware/issues/1800>`_)
   * Add build caffe
   * add include apollo files
   * add apollo cnn

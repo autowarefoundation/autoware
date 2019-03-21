@@ -4,7 +4,7 @@ Changelog for package waypoint_planner
 
 Forthcoming
 -----------
-* [Feature] Improve Hybrid A* planner (`#1594 <https://github.com/kfunaoka/Autoware/issues/1594>`_)
+* [Feature] Improve Hybrid A* planner (`#1594 <https://github.com/CPFL/Autoware/issues/1594>`_)
   * Delete obstacle_sim from astar_planner package, replaced to lidar_fake_perception
   * Modify package name, astar_planner -> waypoint_planner, and create astar_planner library package
   * Delete obstacle_avoid/astar* and modify its dependency to astar_planner library
@@ -22,7 +22,7 @@ Forthcoming
   * Fix package/code names
   * Update runtime_manager
   * Improve astar_avoid to execute avoidance behavior by state transition (by rebuild decision maker)
-  * Fix PascalCase message names by `#1408 <https://github.com/kfunaoka/Autoware/issues/1408>`_
+  * Fix PascalCase message names by `#1408 <https://github.com/CPFL/Autoware/issues/1408>`_
   * Remove obstacle_avoid directory
   * Fix default parameter for costmap topic
   * Fix warning and initialize condition
@@ -66,7 +66,7 @@ Forthcoming
   * Fix the condition to judge reaching goal
   * Add 'use_decision state' mode to transit avoidance state by decision_maker
   * Fix calcDiffOfRadian (if diff > 2pi)
-  * Feature/test astar planner (`#1753 <https://github.com/kfunaoka/Autoware/issues/1753>`_)
+  * Feature/test astar planner (`#1753 <https://github.com/CPFL/Autoware/issues/1753>`_)
   * Restructured folders
   * Added unit test base
   * Removed remaining folder
@@ -83,7 +83,7 @@ Forthcoming
 
 1.10.0 (2019-01-17)
 -------------------
-* Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/kfunaoka/Autoware/issues/1741>`_)
+* Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/CPFL/Autoware/issues/1741>`_)
   * Switch to Apache 2
   * Replace BSD-3 license header with Apache 2 and reassign copyright to the
   Autoware Foundation.
@@ -91,7 +91,7 @@ Forthcoming
   * Update copyright years
   * Add #ifndef/define _POINTS_IMAGE_H\_
   * Updated license comment
-* Use colcon as the build tool (`#1704 <https://github.com/kfunaoka/Autoware/issues/1704>`_)
+* Use colcon as the build tool (`#1704 <https://github.com/CPFL/Autoware/issues/1704>`_)
   * Switch to colcon as the build tool instead of catkin
   * Added cmake-target
   * Added note about the second colcon call

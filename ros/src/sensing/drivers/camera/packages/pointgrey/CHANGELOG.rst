@@ -7,7 +7,7 @@ Forthcoming
 * Include app name in log message
 * To allow FPS to be set, it requires first to disable FrameRateAuto property
 * fix framerate check
-* Feature/spinnaker (`#1984 <https://github.com/kfunaoka/Autoware/issues/1984>`_)
+* Feature/spinnaker (`#1984 <https://github.com/CPFL/Autoware/issues/1984>`_)
   * add spinnaker driver
   * modified for multithreading
   * fix CMakeLists.txt
@@ -30,7 +30,7 @@ Forthcoming
   check device type and set DeviceLinkThroughputLimit
   * Check pointers' validity
   * applied clang format
-* [fix] Install commands for all the packages (`#1861 <https://github.com/kfunaoka/Autoware/issues/1861>`_)
+* [fix] Install commands for all the packages (`#1861 <https://github.com/CPFL/Autoware/issues/1861>`_)
   * Initial fixes to detection, sensing, semantics and utils
   * fixing wrong filename on install command
   * Fixes to install commands
@@ -44,7 +44,7 @@ Forthcoming
   * Remove devel directory from catkin, if any
   * Updated launch files for robosense
   * Updated robosense
-  * Fix/add missing install (`#1977 <https://github.com/kfunaoka/Autoware/issues/1977>`_)
+  * Fix/add missing install (`#1977 <https://github.com/CPFL/Autoware/issues/1977>`_)
   * Added launch install to lidar_kf_contour_track
   * Added install to op_global_planner
   * Added install to way_planner
@@ -56,7 +56,7 @@ Forthcoming
   * Fixed nodelet error for gmsl cameras
   * USe install space in catkin as well
   * add install to catkin
-  * Fix install directives (`#1990 <https://github.com/kfunaoka/Autoware/issues/1990>`_)
+  * Fix install directives (`#1990 <https://github.com/CPFL/Autoware/issues/1990>`_)
   * Fixed installation path
   * Fixed params installation path
   * Fixed cfg installation path
@@ -66,7 +66,7 @@ Forthcoming
 
 1.10.0 (2019-01-17)
 -------------------
-* Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/kfunaoka/Autoware/issues/1741>`_)
+* Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/CPFL/Autoware/issues/1741>`_)
   * Switch to Apache 2
   * Replace BSD-3 license header with Apache 2 and reassign copyright to the
   Autoware Foundation.
@@ -74,7 +74,7 @@ Forthcoming
   * Update copyright years
   * Add #ifndef/define _POINTS_IMAGE_H\_
   * Updated license comment
-* [feature] Initial integration of Boson FLIR ADK camera driver for Autoware (`#1809 <https://github.com/kfunaoka/Autoware/issues/1809>`_)
+* [feature] Initial integration of Boson FLIR ADK camera driver for Autoware (`#1809 <https://github.com/CPFL/Autoware/issues/1809>`_)
   * Initial integration of Boson FLIR ADK camera driver for Autoware
   * Added README description for Boson FLIR ADK
 * Fix Ros/ROS naming convention

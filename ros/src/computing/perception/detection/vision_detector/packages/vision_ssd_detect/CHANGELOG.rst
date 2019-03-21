@@ -4,7 +4,7 @@ Changelog for package vision_ssd_detect
 
 Forthcoming
 -----------
-* [fix] Install commands for all the packages (`#1861 <https://github.com/kfunaoka/Autoware/issues/1861>`_)
+* [fix] Install commands for all the packages (`#1861 <https://github.com/CPFL/Autoware/issues/1861>`_)
   * Initial fixes to detection, sensing, semantics and utils
   * fixing wrong filename on install command
   * Fixes to install commands
@@ -18,7 +18,7 @@ Forthcoming
   * Remove devel directory from catkin, if any
   * Updated launch files for robosense
   * Updated robosense
-  * Fix/add missing install (`#1977 <https://github.com/kfunaoka/Autoware/issues/1977>`_)
+  * Fix/add missing install (`#1977 <https://github.com/CPFL/Autoware/issues/1977>`_)
   * Added launch install to lidar_kf_contour_track
   * Added install to op_global_planner
   * Added install to way_planner
@@ -30,13 +30,13 @@ Forthcoming
   * Fixed nodelet error for gmsl cameras
   * USe install space in catkin as well
   * add install to catkin
-  * Fix install directives (`#1990 <https://github.com/kfunaoka/Autoware/issues/1990>`_)
+  * Fix install directives (`#1990 <https://github.com/CPFL/Autoware/issues/1990>`_)
   * Fixed installation path
   * Fixed params installation path
   * Fixed cfg installation path
   * Delete cache on colcon_release
 * Fix license notice in corresponding package.xml
-* Fix/remove obsolete range fusion (`#1884 <https://github.com/kfunaoka/Autoware/issues/1884>`_)
+* Fix/remove obsolete range fusion (`#1884 <https://github.com/CPFL/Autoware/issues/1884>`_)
   * Remove obsolete range_fusion
   * Removed range_fusion ui entry
   * Remove obsolete lidar_tracker_libs_fusion
@@ -47,13 +47,13 @@ Forthcoming
 1.10.0 (2019-01-17)
 -------------------
 * Fixes for catkin_make
-* [fix] SSD detector, cmake colcon (`#1837 <https://github.com/kfunaoka/Autoware/issues/1837>`_)
+* [fix] SSD detector, cmake colcon (`#1837 <https://github.com/CPFL/Autoware/issues/1837>`_)
   * Fixes for new colcon script on ssd cuda based node
   * Fixed to RTM and darknet launch files
   * catkin_fix
   * * catkin & colcon build successfully
   * reverted back run to devel space (for the time being)
-* Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/kfunaoka/Autoware/issues/1741>`_)
+* Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/CPFL/Autoware/issues/1741>`_)
   * Switch to Apache 2
   * Replace BSD-3 license header with Apache 2 and reassign copyright to the
   Autoware Foundation.
@@ -61,7 +61,7 @@ Forthcoming
   * Update copyright years
   * Add #ifndef/define _POINTS_IMAGE_H\_
   * Updated license comment
-* Use colcon as the build tool (`#1704 <https://github.com/kfunaoka/Autoware/issues/1704>`_)
+* Use colcon as the build tool (`#1704 <https://github.com/CPFL/Autoware/issues/1704>`_)
   * Switch to colcon as the build tool instead of catkin
   * Added cmake-target
   * Added note about the second colcon call
@@ -71,7 +71,7 @@ Forthcoming
   * Update Docker image tags
   * Message packages fixes
   * Fix missing dependency
-* Feature/perception visualization cleanup (`#1648 <https://github.com/kfunaoka/Autoware/issues/1648>`_)
+* Feature/perception visualization cleanup (`#1648 <https://github.com/CPFL/Autoware/issues/1648>`_)
   * * Initial commit for visualization package
   * Removal of all visualization messages from perception nodes
   * Visualization dependency removal

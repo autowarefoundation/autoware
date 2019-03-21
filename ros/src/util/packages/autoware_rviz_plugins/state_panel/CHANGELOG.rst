@@ -4,10 +4,10 @@ Changelog for package autoware_rviz_plugins
 
 Forthcoming
 -----------
-* [Feature] Rebuild decision maker (`#1609 <https://github.com/kfunaoka/Autoware/issues/1609>`_)
-* [Feature] Autoware Launcher (`#1950 <https://github.com/kfunaoka/Autoware/issues/1950>`_)
-  [Feature] Release Autoware Launcher (`#1637 <https://github.com/kfunaoka/Autoware/issues/1637>`_)
-* [fix] Install commands for all the packages (`#1861 <https://github.com/kfunaoka/Autoware/issues/1861>`_)
+* [Feature] Rebuild decision maker (`#1609 <https://github.com/CPFL/Autoware/issues/1609>`_)
+* [Feature] Autoware Launcher (`#1950 <https://github.com/CPFL/Autoware/issues/1950>`_)
+  [Feature] Release Autoware Launcher (`#1637 <https://github.com/CPFL/Autoware/issues/1637>`_)
+* [fix] Install commands for all the packages (`#1861 <https://github.com/CPFL/Autoware/issues/1861>`_)
   * Initial fixes to detection, sensing, semantics and utils
   * fixing wrong filename on install command
   * Fixes to install commands
@@ -21,7 +21,7 @@ Forthcoming
   * Remove devel directory from catkin, if any
   * Updated launch files for robosense
   * Updated robosense
-  * Fix/add missing install (`#1977 <https://github.com/kfunaoka/Autoware/issues/1977>`_)
+  * Fix/add missing install (`#1977 <https://github.com/CPFL/Autoware/issues/1977>`_)
   * Added launch install to lidar_kf_contour_track
   * Added install to op_global_planner
   * Added install to way_planner
@@ -33,12 +33,12 @@ Forthcoming
   * Fixed nodelet error for gmsl cameras
   * USe install space in catkin as well
   * add install to catkin
-  * Fix install directives (`#1990 <https://github.com/kfunaoka/Autoware/issues/1990>`_)
+  * Fix install directives (`#1990 <https://github.com/CPFL/Autoware/issues/1990>`_)
   * Fixed installation path
   * Fixed params installation path
   * Fixed cfg installation path
   * Delete cache on colcon_release
-* Feature/RosbagController (`#1791 <https://github.com/kfunaoka/Autoware/issues/1791>`_)
+* Feature/RosbagController (`#1791 <https://github.com/CPFL/Autoware/issues/1791>`_)
   * add rviz plugin RosbagController
   * add rosbag_controller
   * refine core and add specify the license
@@ -49,7 +49,7 @@ Forthcoming
 
 1.10.0 (2019-01-17)
 -------------------
-* Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/kfunaoka/Autoware/issues/1741>`_)
+* Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/CPFL/Autoware/issues/1741>`_)
   * Switch to Apache 2
   * Replace BSD-3 license header with Apache 2 and reassign copyright to the
   Autoware Foundation.
@@ -57,7 +57,7 @@ Forthcoming
   * Update copyright years
   * Add #ifndef/define _POINTS_IMAGE_H\_
   * Updated license comment
-* Use colcon as the build tool (`#1704 <https://github.com/kfunaoka/Autoware/issues/1704>`_)
+* Use colcon as the build tool (`#1704 <https://github.com/CPFL/Autoware/issues/1704>`_)
   * Switch to colcon as the build tool instead of catkin
   * Added cmake-target
   * Added note about the second colcon call

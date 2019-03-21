@@ -4,7 +4,7 @@ Changelog for package freespace_planner
 
 Forthcoming
 -----------
-* [Feature] Improve Hybrid A* planner (`#1594 <https://github.com/kfunaoka/Autoware/issues/1594>`_)
+* [Feature] Improve Hybrid A* planner (`#1594 <https://github.com/CPFL/Autoware/issues/1594>`_)
   * Delete obstacle_sim from astar_planner package, replaced to lidar_fake_perception
   * Modify package name, astar_planner -> waypoint_planner, and create astar_planner library package
   * Delete obstacle_avoid/astar* and modify its dependency to astar_planner library
@@ -22,7 +22,7 @@ Forthcoming
   * Fix package/code names
   * Update runtime_manager
   * Improve astar_avoid to execute avoidance behavior by state transition (by rebuild decision maker)
-  * Fix PascalCase message names by `#1408 <https://github.com/kfunaoka/Autoware/issues/1408>`_
+  * Fix PascalCase message names by `#1408 <https://github.com/CPFL/Autoware/issues/1408>`_
   * Remove obstacle_avoid directory
   * Fix default parameter for costmap topic
   * Fix warning and initialize condition
@@ -66,7 +66,7 @@ Forthcoming
   * Fix the condition to judge reaching goal
   * Add 'use_decision state' mode to transit avoidance state by decision_maker
   * Fix calcDiffOfRadian (if diff > 2pi)
-  * Feature/test astar planner (`#1753 <https://github.com/kfunaoka/Autoware/issues/1753>`_)
+  * Feature/test astar planner (`#1753 <https://github.com/CPFL/Autoware/issues/1753>`_)
   * Restructured folders
   * Added unit test base
   * Removed remaining folder
@@ -79,7 +79,7 @@ Forthcoming
   * Added default constructor to WaveFront struct
   * Revert use_state_decision mode (94af7b6)
   * Fix costmap topic names by merging costmap_generator
-* [fix] Install commands for all the packages (`#1861 <https://github.com/kfunaoka/Autoware/issues/1861>`_)
+* [fix] Install commands for all the packages (`#1861 <https://github.com/CPFL/Autoware/issues/1861>`_)
   * Initial fixes to detection, sensing, semantics and utils
   * fixing wrong filename on install command
   * Fixes to install commands
@@ -93,7 +93,7 @@ Forthcoming
   * Remove devel directory from catkin, if any
   * Updated launch files for robosense
   * Updated robosense
-  * Fix/add missing install (`#1977 <https://github.com/kfunaoka/Autoware/issues/1977>`_)
+  * Fix/add missing install (`#1977 <https://github.com/CPFL/Autoware/issues/1977>`_)
   * Added launch install to lidar_kf_contour_track
   * Added install to op_global_planner
   * Added install to way_planner
@@ -105,7 +105,7 @@ Forthcoming
   * Fixed nodelet error for gmsl cameras
   * USe install space in catkin as well
   * add install to catkin
-  * Fix install directives (`#1990 <https://github.com/kfunaoka/Autoware/issues/1990>`_)
+  * Fix install directives (`#1990 <https://github.com/CPFL/Autoware/issues/1990>`_)
   * Fixed installation path
   * Fixed params installation path
   * Fixed cfg installation path
@@ -116,7 +116,7 @@ Forthcoming
 1.10.0 (2019-01-17)
 -------------------
 * Fixes for catkin_make
-* Use colcon as the build tool (`#1704 <https://github.com/kfunaoka/Autoware/issues/1704>`_)
+* Use colcon as the build tool (`#1704 <https://github.com/CPFL/Autoware/issues/1704>`_)
   * Switch to colcon as the build tool instead of catkin
   * Added cmake-target
   * Added note about the second colcon call

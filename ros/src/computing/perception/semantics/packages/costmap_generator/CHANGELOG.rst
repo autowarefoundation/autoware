@@ -4,7 +4,7 @@ Changelog for package costmap_generator
 
 Forthcoming
 -----------
-* [Feature] costmap generator (`#1774 <https://github.com/kfunaoka/Autoware/issues/1774>`_)
+* [Feature] costmap generator (`#1774 <https://github.com/CPFL/Autoware/issues/1774>`_)
   * * Initial commit for visualization package
   * Removal of all visualization messages from perception nodes
   * Visualization dependency removal
@@ -93,7 +93,7 @@ Forthcoming
   * Updated include
   * Re-strutured include folders
   * Generic folder name
-  * Fix/costmap generator (`#2077 <https://github.com/kfunaoka/Autoware/issues/2077>`_)
+  * Fix/costmap generator (`#2077 <https://github.com/CPFL/Autoware/issues/2077>`_)
   * segmentation fault in  CheckAssignPoints2GridCell
   * Remove redundant codes in test
   * Add some variables in SetUp

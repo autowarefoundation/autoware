@@ -4,7 +4,7 @@ Changelog for package vision_yolo3_detect
 
 Forthcoming
 -----------
-* Removing CUDA dependencies for Darknet Yolov3 (`#1784 <https://github.com/kfunaoka/Autoware/issues/1784>`_)
+* Removing CUDA dependencies for Darknet Yolov3 (`#1784 <https://github.com/CPFL/Autoware/issues/1784>`_)
   * Removing CUDA dependencies for Darknet yolov3
   If the host machine does not have CUDA, this will build the vision_darknet_detect package based on a pre-built darknet directory (which doesn't require CUDA as there are no CUDA dependencies for yolov3).
   * Update ros/src/computing/perception/detection/vision_detector/packages/vision_darknet_detect/CMakeLists.txt
@@ -16,13 +16,13 @@ Forthcoming
 1.10.0 (2019-01-17)
 -------------------
 * Fixes for catkin_make
-* [fix] SSD detector, cmake colcon (`#1837 <https://github.com/kfunaoka/Autoware/issues/1837>`_)
+* [fix] SSD detector, cmake colcon (`#1837 <https://github.com/CPFL/Autoware/issues/1837>`_)
   * Fixes for new colcon script on ssd cuda based node
   * Fixed to RTM and darknet launch files
   * catkin_fix
   * * catkin & colcon build successfully
   * reverted back run to devel space (for the time being)
-* Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/kfunaoka/Autoware/issues/1741>`_)
+* Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/CPFL/Autoware/issues/1741>`_)
   * Switch to Apache 2
   * Replace BSD-3 license header with Apache 2 and reassign copyright to the
   Autoware Foundation.
@@ -30,7 +30,7 @@ Forthcoming
   * Update copyright years
   * Add #ifndef/define _POINTS_IMAGE_H\_
   * Updated license comment
-* Use colcon as the build tool (`#1704 <https://github.com/kfunaoka/Autoware/issues/1704>`_)
+* Use colcon as the build tool (`#1704 <https://github.com/CPFL/Autoware/issues/1704>`_)
   * Switch to colcon as the build tool instead of catkin
   * Added cmake-target
   * Added note about the second colcon call
@@ -40,7 +40,7 @@ Forthcoming
   * Update Docker image tags
   * Message packages fixes
   * Fix missing dependency
-* Feature/perception visualization cleanup (`#1648 <https://github.com/kfunaoka/Autoware/issues/1648>`_)
+* Feature/perception visualization cleanup (`#1648 <https://github.com/CPFL/Autoware/issues/1648>`_)
   * * Initial commit for visualization package
   * Removal of all visualization messages from perception nodes
   * Visualization dependency removal
