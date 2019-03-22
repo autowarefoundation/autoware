@@ -82,6 +82,7 @@ install(TARGETS
         waypoint_replanner
         waypoint_saver
         waypoint_clicker
+        waypoint_extractor
         waypoint_marker_publisher
         waypoint_velocity_visualizer
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
