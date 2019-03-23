@@ -69,6 +69,7 @@ public:
       std::string filename;
       std::vector<std::string> topics;
       int max_duration;
+      uint64_t max_size;
     } RecordParam;
 
 protected:
@@ -90,6 +91,11 @@ protected Q_SLOTS:
     void on_botton_topic_refresh_clicked();
     void on_button_record_configure_clicked();
 
+    void on_checkBox_split_size_stateChanged(int arg1);
+    void on_checkBox_split_duration_stateChanged(int arg1);
+    void on_lineEdit_duration_textEdited(const QString &arg1);
+    void on_lineEdit_size_textEdited(const QString &arg1);
+
 private:
 
     static const QString DEFAULT_SAVE_PATH;
@@ -102,6 +108,9 @@ private:
     std::string record_filepath_;
     std::string record_filename_;
     std::vector<std::string> record_topics_;
+    double split_size;
+    double split_duration;
+
     bool record_status_;
 
     ros::Time record_time_start_;

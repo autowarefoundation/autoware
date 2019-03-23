@@ -1,0 +1,5 @@
+<launch>
+
+  <test test-name="test-lane_select" pkg="lane_planner" type="test-lane_select" name="test"/>
+
+</launch>

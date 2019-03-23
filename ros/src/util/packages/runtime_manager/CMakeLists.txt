@@ -18,7 +18,7 @@ catkin_install_python(PROGRAMS
         scripts/test_srv.py
         DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
-install(FILES
+install(PROGRAMS
         scripts/3dm_gx5_15.sh
         scripts/add_perm.sh
         scripts/adis16470.sh
@@ -26,7 +26,9 @@ install(FILES
         scripts/gazebo.sh
         scripts/mti300.sh
         scripts/vg440.sh
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/scripts)
 
+install(FILES
         scripts/computing.yaml
         scripts/data.yaml
         scripts/empty.yaml
