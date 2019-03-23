@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>mqtt_socket</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>The mqtt_socket package</description>
     <maintainer email="yuki.iida@tier4.jp">yuki-iida</maintainer>
     <license>Apache 2</license>

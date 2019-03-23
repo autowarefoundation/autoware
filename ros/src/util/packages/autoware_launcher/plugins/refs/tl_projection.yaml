@@ -1,0 +1,13 @@
+format: Autoware Launcher Plugin Version 0.1
+rosxml: $(find trafficlight_recognizer)/launch/feat_proj.launch
+args:
+- {name: camera_id, type: str, default: /}
+- {name: camera_info_src, type: str, default: /camera_info}
+- {name: use_path_info, type: bool, default: false}
+
+panel:
+  widget: node.panel
+  frames:
+  - {target: args.camera_id, widget: basic.text}
+  - {target: args.camera_info_src, widget: basic.text}
+  - {target: args.use_path_info, widget: basic.bool}

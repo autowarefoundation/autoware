@@ -55,7 +55,7 @@ from autoware_config_msgs.msg import ConfigDistanceFilter
 from autoware_config_msgs.msg import ConfigRandomFilter
 from autoware_config_msgs.msg import ConfigRingGroundFilter
 from autoware_config_msgs.msg import ConfigRayGroundFilter
-from autoware_config_msgs.msg import ConfigWaypointLoader
+from autoware_config_msgs.msg import ConfigWaypointReplanner
 from autoware_config_msgs.msg import ConfigWaypointFollower
 from autoware_config_msgs.msg import ConfigTwistFilter
 from autoware_config_msgs.msg import ConfigVelocitySet
@@ -2717,32 +2717,6 @@ class MyDialogNDTMapping(rtmgr.MyDialogNDTMapping):
 		self.panel.detach_func()
 		self.EndModal(0)
 
-class MyDialogWaypointLoader(rtmgr.MyDialogWaypointLoader):
-	def __init__(self, *args, **kwds):
-		self.pdic = kwds.pop('pdic')
-		self.pdic_bak = self.pdic.copy()
-		self.gdic = kwds.pop('gdic')
-		self.prm = kwds.pop('prm')
-		rtmgr.MyDialogWaypointLoader.__init__(self, *args, **kwds)
-		set_size_gdic(self)
-
-		parent = self.panel_v
-		frame = self.GetParent()
-		self.panel = ParamPanel(parent, frame=frame, pdic=self.pdic, gdic=self.gdic, prm=self.prm)
-		sizer_wrap((self.panel,), wx.VERTICAL, 1, wx.EXPAND, 0, parent)
-
-		self.klass_msg = Bool
-		self.pub = rospy.Publisher('/config/waypoint_loader_output', self.klass_msg, queue_size=10)
-
-	def OnCsvOutput(self, event):
-		msg = self.klass_msg()
-		msg.data = True
-		self.pub.publish(msg)
-
-	def OnOk(self, event):
-		self.panel.detach_func()
-		self.EndModal(0)
-
 class InfoBarLabel(wx.BoxSizer):
 	def __init__(self, parent, btm_txt=None, lmt_bar_prg=90, bar_orient=wx.VERTICAL):
 		wx.BoxSizer.__init__(self, orient=wx.VERTICAL)
@@ -2988,7 +2962,7 @@ class MyDialogROSbagRecord(rtmgr.MyDialogROSbagRecord):
 			mb = 0
 		if mb <= 0:
 			tc.SetValue('')
-		return [ '--size=' + str(int(mb * 1024 * 1024)) ] if mb > 0 else []
+		return [ '--size=' + str(int(mb)) ] if mb > 0 else []
 
 def set_size_gdic(dlg, gdic={}):
 	(w, h) = dlg.GetSize()

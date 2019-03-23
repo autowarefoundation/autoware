@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>road_occupancy_processor</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>Road Occupancy Grid Processor</description>
     <maintainer email="abraham.monrroy@tier4.com">Abraham Monrroy</maintainer>
     <license>Apache 2</license>

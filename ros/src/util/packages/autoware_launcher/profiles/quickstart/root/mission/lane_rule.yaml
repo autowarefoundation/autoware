@@ -1,0 +1,8 @@
+children: []
+config:
+  args.acceleration: 1.0
+  args.number_of_smoothing_count: 0.0
+  args.number_of_zeros_ahead: 0.0
+  args.number_of_zeros_behind: 0.0
+  args.stopline_search_radius: 1.0
+plugin: leaf/lane_rule

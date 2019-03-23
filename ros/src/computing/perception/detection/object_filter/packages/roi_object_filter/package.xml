@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<package>
+    <name>roi_object_filter</name>
+    <version>1.11.0</version>
+    <description>Object Sanitizer filters detected objects</description>
+
+    <maintainer email="abrahammonrroy@yahoo.com">amc</maintainer>
+    <license>Apache</license>
+
+    <buildtool_depend>catkin</buildtool_depend>
+    <buildtool_depend>autoware_build_flags</buildtool_depend>
+
+    <build_depend>roscpp</build_depend>
+    <build_depend>sensor_msgs</build_depend>
+    <build_depend>autoware_msgs</build_depend>
+    <build_depend>grid_map_ros</build_depend>
+    <build_depend>grid_map_cv</build_depend>
+    <build_depend>grid_map_msgs</build_depend>
+    <build_depend>geometry_msgs</build_depend>
+    <build_depend>tf</build_depend>
+    <build_depend>rostest</build_depend>
+    <build_depend>rosunit</build_depend>
+
+    <run_depend>roscpp</run_depend>
+    <run_depend>sensor_msgs</run_depend>
+    <run_depend>autoware_msgs</run_depend>
+    <run_depend>grid_map_ros</run_depend>
+    <run_depend>grid_map_cv</run_depend>
+    <run_depend>grid_map_msgs</run_depend>
+    <run_depend>geometry_msgs</run_depend>
+    <run_depend>tf</run_depend>
+
+    <export></export>
+</package>

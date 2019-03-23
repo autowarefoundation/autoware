@@ -1,10 +1,11 @@
 <?xml version="1.0"?>
 <package>
     <name>decision_maker</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>The decision maker package for autoware</description>
-    <maintainer email="yusuke.fujii@tier4.jp">Yusuke Fujii</maintainer>
+    <maintainer email="azumi.suzuki@tier4.jp">Yusuke Fujii</maintainer>
     <author email="yusuke.fujii@tier4.jp">Yusuke Fujii</author>
+    <author email="azumi.suzuki@tier4.jp">Yusuke Fujii</author>
 
     <license>Apache 2</license>
     <buildtool_depend>catkin</buildtool_depend>
@@ -21,6 +22,8 @@
     <build_depend>dynamic_reconfigure</build_depend>
     <build_depend>amathutils_lib</build_depend>
     <build_depend>state_machine_lib</build_depend>
+    <build_depend>rostest</build_depend>
+    <build_depend>rosunit</build_depend>
 
     <run_depend>roscpp</run_depend>
     <run_depend>std_msgs</run_depend>

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>sick_ldmrs_msgs</name>
-  <version>1.10.0</version>
+  <version>1.11.0</version>
   <description>Messages and PCL point types for SICK LD-MRS.</description>
 
   <maintainer email="martin.guenther@dfki.de">Martin Günther</maintainer>

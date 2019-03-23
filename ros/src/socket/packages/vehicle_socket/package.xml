@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>vehicle_socket</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>The vehicle_socket package</description>
     <maintainer email="h_ohta@ertl.jp">h_ohta</maintainer>
     <license>Apache 2</license>

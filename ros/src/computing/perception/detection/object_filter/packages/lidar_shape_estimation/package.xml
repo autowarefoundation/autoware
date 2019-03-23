@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>lidar_shape_estimation</name>
+  <version>1.11.0</version>
+  <description>This package implements an L-Shaped PointCloud pose estimation</description>
+
+  <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>
+
+  <license>Apache</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>autoware_build_flags</build_depend>
+  <build_depend>autoware_msgs</build_depend>
+  <build_depend>pcl_ros</build_depend>
+  <build_depend>tf2</build_depend>
+  <build_depend>tf2_geometry_msgs</build_depend>
+  <build_depend>rostest</build_depend>
+  <build_depend>rosunit</build_depend>
+
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>autoware_build_flags</exec_depend>
+  <exec_depend>autoware_msgs</exec_depend>
+  <exec_depend>pcl_ros</exec_depend>
+  <exec_depend>tf2</exec_depend>
+  <exec_depend>tf2_geometry_msgs</exec_depend>
+
+
+  <export>
+  </export>
+</package>

@@ -1,0 +1,13 @@
+children: []
+config:
+  args.camera_info_src: /camera_info
+  args.detected_objects_range: /detection/lidar_detector/objects
+  args.detected_objects_vision: /detection/image_detector/objects
+  args.min_car_dimensions: '[3,2,2]'
+  args.min_person_dimensions: '[1,2,1]'
+  args.min_truck_dimensions: '[4,2,2]'
+  args.namespace: /detection/fusion_tools
+  args.overlap_threshold: 0.6
+  args.sync_topics: false
+  args.use_vector_map: false
+plugin: refs/range_vision_fusion

@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package format="2">
+
+  <name>autoware_launcher_rviz</name>
+  <version>1.11.0</version>
+  <description>The autoware_launcher_rviz package</description>
+  <license>Apache 2.0</license>
+
+  <maintainer email="isamu-takagi@tier4.jp">Isamu Takagi</maintainer>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>autoware_build_flags</buildtool_depend>
+  <build_depend>rosconsole</build_depend>
+  <build_depend>rviz</build_depend>
+  <build_depend>qtbase5-dev</build_depend>
+  <exec_depend>rosconsole</exec_depend>
+  <exec_depend>rviz</exec_depend>
+  <exec_depend>libqt5-core</exec_depend>
+  <exec_depend>libqt5-widgets</exec_depend>
+
+  <export>
+    <rviz plugin="${prefix}/plugin_description.xml"/>
+  </export>
+
+</package>

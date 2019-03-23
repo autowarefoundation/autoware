@@ -1,0 +1,8 @@
+children: []
+config:
+  args.ams_light_src: /ams_light_color
+  args.camera_id: /
+  args.camera_light_src: /camera_light_color
+  args.image_src: /image_raw
+  args.light_src: /light_color
+plugin: refs/tl_recognition

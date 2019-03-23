@@ -30,8 +30,13 @@ VisualizeDetectedObjects::VisualizeDetectedObjects() : arrow_height_(0.5), label
     ros_namespace_.erase(ros_namespace_.begin());
   }
 
-  std::string object_src_topic = ros_namespace_ + "/objects";
   std::string markers_out_topic = ros_namespace_ + "/objects_markers";
+
+  std::string object_src_topic;
+  private_nh_.param<std::string>("objects_src_topic", object_src_topic, "/objects");
+  object_src_topic = ros_namespace_ + object_src_topic;
+
+  ROS_INFO("[%s] objects_src_topic: %s", __APP_NAME__, object_src_topic.c_str());
 
   private_nh_.param<double>("object_speed_threshold", object_speed_threshold_, 0.1);
   ROS_INFO("[%s] object_speed_threshold: %.2f", __APP_NAME__, object_speed_threshold_);
@@ -204,7 +209,7 @@ VisualizeDetectedObjects::ObjectsToBoxes(const autoware_msgs::DetectedObjectArra
   for (auto const &object: in_objects.objects)
   {
     if (IsObjectValid(object) &&
-       object.label != "unknown" &&
+      (object.pose_reliable || object.label != "unknown") &&
         (object.dimensions.x + object.dimensions.y + object.dimensions.z) < object_max_linear_size_)
     {
       visualization_msgs::Marker box;

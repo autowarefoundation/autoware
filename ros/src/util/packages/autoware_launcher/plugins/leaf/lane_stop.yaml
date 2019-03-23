@@ -1,0 +1,7 @@
+format: Autoware Launcher Plugin Version 0.1
+args:
+- {name: use_traffic_light_result, type: bool, default: false}
+panel:
+  widget: node.panel
+  frames:
+  - {target: args.use_traffic_light_result, widget: basic.bool}

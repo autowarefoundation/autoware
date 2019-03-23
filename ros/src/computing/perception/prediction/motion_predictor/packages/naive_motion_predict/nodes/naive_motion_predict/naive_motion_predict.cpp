@@ -16,11 +16,15 @@
 
 #include "naive_motion_predict.h"
 
-NaiveMotionPredict::NaiveMotionPredict() : nh_(), private_nh_("~")
+NaiveMotionPredict::NaiveMotionPredict() :
+  nh_(),
+  private_nh_("~"),
+  MAX_PREDICTION_SCORE_(1.0)
 {
   private_nh_.param<double>("interval_sec", interval_sec_, 0.1);
   private_nh_.param<int>("num_prediction", num_prediction_, 10);
   private_nh_.param<double>("sensor_height_", sensor_height_, 2.0);
+  private_nh_.param<double>("filter_out_close_object_threshold", filter_out_close_object_threshold_, 1.5);
 
   predicted_objects_pub_ = nh_.advertise<autoware_msgs::DetectedObjectArray>("/prediction/motion_predictor/objects", 1);
   predicted_paths_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("/prediction/motion_predictor/path_markers", 1);
@@ -56,14 +60,17 @@ void NaiveMotionPredict::initializeROSmarker(const std_msgs::Header& header, con
 }
 
 void NaiveMotionPredict::makePrediction(const autoware_msgs::DetectedObject& object,
-                                        std::vector<autoware_msgs::DetectedObject>& predicted_objects,
+                                        std::vector<autoware_msgs::DetectedObject>& predicted_objects_vec,
                                         visualization_msgs::Marker& predicted_line)
 {
   autoware_msgs::DetectedObject target_object = object;
+  target_object.score = MAX_PREDICTION_SCORE_;
   initializeROSmarker(object.header, object.pose.position, object.id, predicted_line);
-  for (int i = 0; i < num_prediction_; i++)
+  for (int ith_prediction = 0; ith_prediction < num_prediction_; ith_prediction++)
   {
     autoware_msgs::DetectedObject predicted_object = generatePredictedObject(target_object);
+    predicted_object.score = (-1/(interval_sec_*num_prediction_))*ith_prediction*interval_sec_ + MAX_PREDICTION_SCORE_;
+    predicted_objects_vec.push_back(predicted_object);
     target_object = predicted_object;
 
     geometry_msgs::Point p;
@@ -174,28 +181,50 @@ void NaiveMotionPredict::objectsCallback(const autoware_msgs::DetectedObjectArra
 {
   autoware_msgs::DetectedObjectArray output;
   visualization_msgs::MarkerArray predicted_lines;
-  output.header = input.header;
+  output = input;
 
   for (const auto &object : input.objects)
   {
     std::vector<autoware_msgs::DetectedObject> predicted_objects_vec;
     visualization_msgs::Marker predicted_line;
-    makePrediction(object, predicted_objects_vec, predicted_line);
-
-    // concate to output object array
-    output.objects.insert(output.objects.end(), predicted_objects_vec.begin(), predicted_objects_vec.end());
-
-    // visualize only stably tracked objects
-    if (!object.pose_reliable)
+    if (isObjectValid(object))
     {
-      continue;
+      makePrediction(object, predicted_objects_vec, predicted_line);
+
+      // concate to output object array
+      output.objects.insert(output.objects.end(), predicted_objects_vec.begin(), predicted_objects_vec.end());
+
+      // visualize only stably tracked objects
+      if (!object.pose_reliable)
+      {
+        continue;
+      }
+      predicted_lines.markers.push_back(predicted_line);
     }
-    predicted_lines.markers.push_back(predicted_line);
-  }
-  for (auto &object : output.objects)
-  {
-    object.valid = true;
   }
   predicted_objects_pub_.publish(output);
   predicted_paths_pub_.publish(predicted_lines);
 }
+
+bool NaiveMotionPredict::isObjectValid(const autoware_msgs::DetectedObject &in_object)
+{
+  double distance = std::sqrt(std::pow(in_object.pose.position.x,2)+
+                              std::pow(in_object.pose.position.y,2));
+  if (!in_object.valid ||
+      std::isnan(in_object.pose.orientation.x) ||
+      std::isnan(in_object.pose.orientation.y) ||
+      std::isnan(in_object.pose.orientation.z) ||
+      std::isnan(in_object.pose.orientation.w) ||
+      std::isnan(in_object.pose.position.x) ||
+      std::isnan(in_object.pose.position.y) ||
+      std::isnan(in_object.pose.position.z) ||
+      (distance <=  filter_out_close_object_threshold_)||
+      (in_object.dimensions.x <= 0) ||
+      (in_object.dimensions.y <= 0) ||
+      (in_object.dimensions.z <= 0)
+    )
+  {
+    return false;
+  }
+  return true;
+}//end IsObjectValid

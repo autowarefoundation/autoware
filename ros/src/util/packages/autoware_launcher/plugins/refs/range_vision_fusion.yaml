@@ -1,0 +1,27 @@
+format: Autoware Launcher Plugin Version 0.1
+rosxml: $(find range_vision_fusion)/launch/range_vision_fusion.launch
+args:
+- {name: detected_objects_range, type: str, default: /detection/lidar_detector/objects}
+- {name: detected_objects_vision, type: str, default: /detection/image_detector/objects}
+- {name: camera_info_src, type: str, default: /camera_info}
+- {name: min_car_dimensions, type: str, default: '[3,2,2]'}
+- {name: min_person_dimensions, type: str, default: '[1,2,1]'}
+- {name: min_truck_dimensions, type: str, default: '[4,2,2]'}
+- {name: sync_topics, type: bool, default: false}
+- {name: overlap_threshold, type: real, default: 0.6}
+- {name: use_vector_map, type: bool, default: false}
+- {name: namespace, type: str, default: /detection/fusion_tools}
+
+panel:
+  widget: node.panel
+  frames:
+  - {target: args.detected_objects_range, widget: basic.text}
+  - {target: args.detected_objects_vision, widget: basic.text}
+  - {target: args.camera_info_src, widget: basic.text}
+  - {target: args.min_car_dimensions, widget: basic.text}
+  - {target: args.min_person_dimensions, widget: basic.text}
+  - {target: args.min_truck_dimensions, widget: basic.text}
+  - {target: args.sync_topics, widget: basic.bool}
+  - {target: args.overlap_threshold, widget: basic.real}
+  - {target: args.use_vector_map, widget: basic.bool}
+  - {target: args.namespace, widget: basic.text}

@@ -1,0 +1,41 @@
+format: Autoware Launcher Plugin Version 0.1
+rosxml: $(find imm_ukf_pda_track)/launch/imm_ukf_pda_track.launch
+args:
+- {name: gating_thres, type: real, default: 9.22}
+- {name: gate_probability, type: real, default: 0.99}
+- {name: detection_probability, type: real, default: 0.9}
+- {name: life_time_thres, type: int, default: 8}
+- {name: static_velocity_thres, type: real, default: 0.5}
+- {name: static_num_history_thres, type: int, default: 3}
+- {name: prevent_explosion_thres, type: int, default: 1000}
+- {name: lane_direction_chi_thres, type: real, default: 2.71}
+- {name: nearest_lane_distance_thres, type: real, default: 1.0}
+- {name: tracker_input_topic, type: str, default: /detection/fusion_tools/objects}
+- {name: tracker_output_topic, type: str, default: /detection/object_tracker/objects}
+- {name: use_sukf, type: str, default: use_sukf}
+- {name: use_vectormap, type: bool, default: false}
+- {name: tracking_frame, type: str, default: /world}
+- {name: lane_frame, type: str, default: /map}
+- {name: merge_distance_threshold, type: real, default: 0.5}
+- {name: namespace, type: str, default: /detection/object_tracker/}
+
+panel:
+  widget: node.panel
+  frames:
+  - {target: args.gating_thres, widget: basic.real}
+  - {target: args.gate_probability, widget: basic.real}
+  - {target: args.detection_probability, widget: basic.real}
+  - {target: args.life_time_thres, widget: basic.int}
+  - {target: args.static_velocity_thres, widget: basic.real}
+  - {target: args.static_num_history_thres, widget: basic.int}
+  - {target: args.prevent_explosion_thres, widget: basic.int}
+  - {target: args.lane_direction_chi_thres, widget: basic.real}
+  - {target: args.nearest_lane_distance_thres, widget: basic.real}
+  - {target: args.tracker_input_topic, widget: basic.text}
+  - {target: args.tracker_output_topic, widget: basic.text}
+  - {target: args.use_sukf, widget: basic.text}
+  - {target: args.use_vectormap, widget: basic.bool}
+  - {target: args.tracking_frame, widget: basic.text}
+  - {target: args.lane_frame, widget: basic.text}
+  - {target: args.merge_distance_threshold, widget: basic.real}
+  - {target: args.namespace, widget: basic.text}

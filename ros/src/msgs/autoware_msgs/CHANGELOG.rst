@@ -2,9 +2,17 @@
 Changelog for package autoware_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.11.0 (2019-03-21)
+-------------------
+* [Feature] Rebuild decision maker (`#1609 <https://github.com/CPFL/Autoware/issues/1609>`_)
+* Fix license notice in corresponding package.xml
+* Cleanup WaypointState.msg and add sttering_state=STR_BACK (`#1822 <https://github.com/CPFL/Autoware/issues/1822>`_)
+* Initial release of object filter
+* Contributors: Abraham Monrroy, Kenji Funaoka, amc-nu, s-azumi
+
 1.10.0 (2019-01-17)
 -------------------
-* Feature/perception visualization cleanup (`#1648 <https://github.com/kfunaoka/Autoware/issues/1648>`_)
+* Feature/perception visualization cleanup (`#1648 <https://github.com/CPFL/Autoware/issues/1648>`_)
   * * Initial commit for visualization package
   * Removal of all visualization messages from perception nodes
   * Visualization dependency removal

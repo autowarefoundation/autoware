@@ -1,0 +1,15 @@
+children: []
+config:
+  args.clipping_height: 0.2
+  args.concentric_divider_distance: 0.01
+  args.general_max_slope: 5
+  args.ground_point_topic: /points_ground
+  args.input_point_topic: /points_raw
+  args.local_max_slope: 8
+  args.min_height_threshold: 0.5
+  args.min_point_distance: 1.85
+  args.no_ground_point_topic: /points_no_ground
+  args.radial_divider_angle: 0.08
+  args.reclass_distance_threshold: 0.2
+  args.sensor_height: 1.8
+plugin: refs/ray_ground_filter

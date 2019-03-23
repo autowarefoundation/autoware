@@ -1,0 +1,7 @@
+children:
+- lidar
+- camera
+- gnss
+config:
+  exts.description: Default
+plugin: node/sensing

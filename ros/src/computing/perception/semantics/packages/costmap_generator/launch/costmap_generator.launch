@@ -1,0 +1,47 @@
+<launch>
+  <!-- node parameters -->
+  <arg name="lidar_frame" default="velodyne" />
+  <arg name="map_frame" default="map" />
+  <arg name="grid_min_value" default="0.0" />
+  <arg name="grid_max_value" default="1.0" />
+  <arg name="grid_resolution" default="0.2" />
+  <arg name="grid_length_x" default="50" />
+  <arg name="grid_length_y" default="30" />
+  <arg name="grid_position_x" default="20" />
+  <arg name="grid_position_y" default="0" />
+  <arg name="maximum_lidar_height_thres" default="0.3" />
+  <arg name="minimum_lidar_height_thres" default="-2.2" />
+  <arg name="expand_polygon_size" default="1.0" />
+  <arg name="size_of_expansion_kernel" default="9" />
+  <arg name="use_objects_box" default="false" />
+  <arg name="use_objects_convex_hull" default="true" />
+  <arg name="use_points" default="true" />
+  <arg name="use_wayarea" default="true" />
+
+  <arg name="objects_input" default="/prediction/motion_predictor/objects" />
+  <arg name="points_input" default="/points_no_ground" />
+
+  <!-- Launch node -->
+  <node pkg="costmap_generator" type="costmap_generator" name="costmap_generator" output="screen">
+    <param name="lidar_frame" value="$(arg lidar_frame)" />
+    <param name="map_frame" value="$(arg map_frame)" />
+    <param name="grid_min_value" value="$(arg grid_min_value)" />
+    <param name="grid_max_value" value="$(arg grid_max_value)" />
+    <param name="grid_resolution" value="$(arg grid_resolution)" />
+    <param name="grid_length_x" value="$(arg grid_length_x)" />
+    <param name="grid_length_y" value="$(arg grid_length_y)" />
+    <param name="grid_position_x" value="$(arg grid_position_x)" />
+    <param name="grid_position_y" value="$(arg grid_position_y)" />
+    <param name="maximum_lidar_height_thres" value="$(arg maximum_lidar_height_thres)" />
+    <param name="minimum_lidar_height_thres" value="$(arg minimum_lidar_height_thres)" />
+    <param name="expand_polygon_size" value="$(arg expand_polygon_size)" />
+    <param name="size_of_expansion_kernel" value="$(arg size_of_expansion_kernel)" />
+    <param name="use_objects_box" value="$(arg use_objects_box)" />
+    <param name="use_objects_convex_hull" value="$(arg use_objects_convex_hull)" />
+    <param name="use_points" value="$(arg use_points)" />
+    <param name="use_wayarea" value="$(arg use_wayarea)" />
+
+    <remap from="/prediction/motion_predictor/objects"  to="$(arg objects_input)" />
+    <remap from="/points_no_ground"                     to="$(arg points_input)" />
+  </node>
+</launch>

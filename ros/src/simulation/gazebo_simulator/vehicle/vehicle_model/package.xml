@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>vehicle_model</name>
+  <version>1.11.0</version>
+  <description>The vehicle_model package</description>
+
+
+  <maintainer email="yukky.saito@gmail.com">yukihiro saito</maintainer>
+
+  <license>Apache 2</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>autoware_build_flags</buildtool_depend>
+  <exec_depend>gazebo_ros_control</exec_depend>
+  <exec_depend>position_controllers</exec_depend>
+  <exec_depend>transmission_interface</exec_depend>
+  <exec_depend>velocity_controllers</exec_depend>
+  <exec_depend>effort_controllers</exec_depend>
+  <exec_depend>gazebo_camera_description</exec_depend>
+  <exec_depend>gazebo_imu_description</exec_depend>
+  <exec_depend>velodyne_description</exec_depend>
+  <exec_depend>velodyne_gazebo_plugins</exec_depend>
+  <export>
+  </export>
+</package>

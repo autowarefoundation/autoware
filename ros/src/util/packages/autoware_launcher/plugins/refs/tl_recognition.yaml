@@ -1,0 +1,17 @@
+format: Autoware Launcher Plugin Version 0.1
+rosxml: $(find trafficlight_recognizer)/launch/traffic_light_recognition.launch
+args:
+- {name: camera_id, type: str, default: /}
+- {name: image_src, type: str, default: /image_raw}
+- {name: light_src, type: str, default: /light_color}
+- {name: camera_light_src, type: str, default: /camera_light_color}
+- {name: ams_light_src, type: str, default: /ams_light_color}
+
+panel:
+  widget: node.panel
+  frames:
+  - {target: args.camera_id, widget: basic.text}
+  - {target: args.image_src, widget: basic.text}
+  - {target: args.light_src, widget: basic.text}
+  - {target: args.camera_light_src, widget: basic.text}
+  - {target: args.ams_light_src, widget: basic.text}

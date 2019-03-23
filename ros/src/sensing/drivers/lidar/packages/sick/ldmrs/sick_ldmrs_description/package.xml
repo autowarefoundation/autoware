@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>sick_ldmrs_description</name>
-  <version>1.10.0</version>
+  <version>1.11.0</version>
   <description>
     This package contains an URDF description of the SICK LD-MRS scanner and all supporting mesh files.
   </description>

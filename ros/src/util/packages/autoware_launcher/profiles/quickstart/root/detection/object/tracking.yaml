@@ -1,0 +1,20 @@
+children: []
+config:
+  args.detection_probability: 0.9
+  args.gate_probability: 0.99
+  args.gating_thres: 9.22
+  args.lane_direction_chi_thres: 2.71
+  args.lane_frame: /map
+  args.life_time_thres: 8
+  args.merge_distance_threshold: 0.5
+  args.namespace: /detection/object_tracker/
+  args.nearest_lane_distance_thres: 1.0
+  args.prevent_explosion_thres: 1000
+  args.static_num_history_thres: 3
+  args.static_velocity_thres: 0.5
+  args.tracker_input_topic: /detection/fusion_tools/objects
+  args.tracker_output_topic: /detection/object_tracker/objects
+  args.tracking_frame: /world
+  args.use_sukf: use_sukf
+  args.use_vectormap: false
+plugin: refs/imm_ukf_pda_track
