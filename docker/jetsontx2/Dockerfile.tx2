@@ -193,6 +193,9 @@ RUN /bin/bash -c " \
       cd ~; \
       git clone https://github.com/CPFL/Autoware.git --recurse-submodules; \
       cd Autoware; \
+   # Worked with these two commits:
+   # e9c9bab2471524c14303f645ca6983d6c9113d3c
+   # 276073b87d26a085d437ff54b003919e0ce5c65b
       git checkout e9c9bab2471524c14303f645ca6983d6c9113d3c; \
       cd ros/src; \
       rm -rf driveworks; \
