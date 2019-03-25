@@ -18,7 +18,7 @@
 #include <iostream>
 
 // headers in local files
-#include "point_pillars_ros.h"
+#include "lidar_point_pillars/point_pillars_ros.h"
 
 int main(int argc, char** argv)
 {

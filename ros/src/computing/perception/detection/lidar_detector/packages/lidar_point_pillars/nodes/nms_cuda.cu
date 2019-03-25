@@ -6,7 +6,7 @@
 
 
 //headers in local files
-#include "nms_cuda.h"
+#include "lidar_point_pillars/nms_cuda.h"
 
 
 __device__ inline float devIoU(float const *const a, float const *const b)
@@ -21,36 +21,36 @@ __device__ inline float devIoU(float const *const a, float const *const b)
 }
 
 __global__ void nms_kernel(const int n_boxes, const float nms_overlap_thresh,
-                           const float *dev_boxes, unsigned long long *dev_mask)
+                           const float *dev_boxes, unsigned long long *dev_mask,
+                           const int NUM_BOX_CORNERS)
 {
   const int row_start = blockIdx.y;
   const int col_start = blockIdx.x;
 
-  // if (row_start > col_start) return;
   const int block_threads = blockDim.x;
 
   const int row_size =
       min(n_boxes - row_start * block_threads, block_threads);
   const int col_size =
       min(n_boxes - col_start * block_threads, block_threads);
-  //Only can initialize with figures, not by variables
-  __shared__ float block_boxes[64 * 4];
+
+  __shared__ float block_boxes[NUM_THREADS_MACRO * NUM_2D_BOX_CORNERS_MACRO];
   if (threadIdx.x < col_size)
   {
-    block_boxes[threadIdx.x * 4 + 0] = dev_boxes[(block_threads * col_start + threadIdx.x) * 4 + 0];
-    block_boxes[threadIdx.x * 4 + 1] = dev_boxes[(block_threads * col_start + threadIdx.x) * 4 + 1];
-    block_boxes[threadIdx.x * 4 + 2] = dev_boxes[(block_threads * col_start + threadIdx.x) * 4 + 2];
-    block_boxes[threadIdx.x * 4 + 3] = dev_boxes[(block_threads * col_start + threadIdx.x) * 4 + 3];
+    block_boxes[threadIdx.x * NUM_BOX_CORNERS + 0] = dev_boxes[(block_threads * col_start + threadIdx.x) * NUM_BOX_CORNERS + 0];
+    block_boxes[threadIdx.x * NUM_BOX_CORNERS + 1] = dev_boxes[(block_threads * col_start + threadIdx.x) * NUM_BOX_CORNERS + 1];
+    block_boxes[threadIdx.x * NUM_BOX_CORNERS + 2] = dev_boxes[(block_threads * col_start + threadIdx.x) * NUM_BOX_CORNERS + 2];
+    block_boxes[threadIdx.x * NUM_BOX_CORNERS + 3] = dev_boxes[(block_threads * col_start + threadIdx.x) * NUM_BOX_CORNERS + 3];
   }
   __syncthreads();
 
   if (threadIdx.x < row_size)
   {
     const int cur_box_idx = block_threads * row_start + threadIdx.x;
-    const float cur_box[4] = {dev_boxes[cur_box_idx*4 + 0],
-                              dev_boxes[cur_box_idx*4 + 1],
-                              dev_boxes[cur_box_idx*4 + 2],
-                              dev_boxes[cur_box_idx*4 + 3]};
+    const float cur_box[NUM_2D_BOX_CORNERS_MACRO] = {dev_boxes[cur_box_idx*NUM_BOX_CORNERS + 0],
+                                                     dev_boxes[cur_box_idx*NUM_BOX_CORNERS + 1],
+                                                     dev_boxes[cur_box_idx*NUM_BOX_CORNERS + 2],
+                                                     dev_boxes[cur_box_idx*NUM_BOX_CORNERS + 3]};
     unsigned long long t = 0;
     int start = 0;
     if (row_start == col_start)
@@ -59,7 +59,7 @@ __global__ void nms_kernel(const int n_boxes, const float nms_overlap_thresh,
     }
     for (int i = start; i < col_size; i++)
     {
-      if (devIoU(cur_box, block_boxes + i * 4) > nms_overlap_thresh)
+      if (devIoU(cur_box, block_boxes + i * NUM_BOX_CORNERS) > nms_overlap_thresh)
       {
         t |= 1ULL << i;
       }
@@ -69,8 +69,9 @@ __global__ void nms_kernel(const int n_boxes, const float nms_overlap_thresh,
   }
 }
 
-NMSCuda::NMSCuda(const int NUM_THREADS, const float nms_overlap_threshold):
+NMSCuda::NMSCuda(const int NUM_THREADS, const int NUM_BOX_CORNERS ,const float nms_overlap_threshold):
 NUM_THREADS_(NUM_THREADS),
+NUM_BOX_CORNERS_(NUM_BOX_CORNERS),
 nms_overlap_threshold_(nms_overlap_threshold)
 {
 }
@@ -84,7 +85,7 @@ void NMSCuda::doNMSCuda(const int host_filter_count, float* dev_sorted_box_for_n
   unsigned long long *dev_mask = NULL;
   GPU_CHECK(cudaMalloc(&dev_mask, host_filter_count * col_blocks * sizeof(unsigned long long)));
 
-  nms_kernel<<<blocks, threads>>>(host_filter_count, nms_overlap_threshold_, dev_sorted_box_for_nms, dev_mask);
+  nms_kernel<<<blocks, threads>>>(host_filter_count, nms_overlap_threshold_, dev_sorted_box_for_nms, dev_mask, NUM_BOX_CORNERS_);
 
   // postprocess for nms output
   std::vector<unsigned long long> host_mask(host_filter_count * col_blocks);

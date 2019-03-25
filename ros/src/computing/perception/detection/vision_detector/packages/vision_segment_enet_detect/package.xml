@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>vision_segment_enet_detect</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>Image Segmentation</description>
     <maintainer email="abrahammonrroy@yahoo.com">Abraham Monrroy</maintainer>
     <license>Apache 2</license>

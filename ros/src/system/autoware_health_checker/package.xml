@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>autoware_health_checker</name>
-  <version>0.0.0</version>
+  <version>1.11.0</version>
   <description>The autoware_health_checker package</description>
 
   <maintainer email="masaya.kataoka@tier4.jp">MasayaKataoka</maintainer>

@@ -1,6 +1,6 @@
 <package>
   <name>vlg22c_cam</name>
-  <version>1.10.0</version>
+  <version>1.11.0</version>
   <description>A ROS Driver for VLG-22C Camera</description>
 
   <maintainer email="abrahammonrroy@yahoo.com">amc-nu</maintainer>

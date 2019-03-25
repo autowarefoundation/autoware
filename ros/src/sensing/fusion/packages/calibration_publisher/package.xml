@@ -2,7 +2,7 @@
 
 <package format="2">
   <name>calibration_publisher</name>
-  <version>1.10.0</version>
+  <version>1.11.0</version>
   <description>
     Autoware instrinsic and extrinsic calibration publisher
   </description>

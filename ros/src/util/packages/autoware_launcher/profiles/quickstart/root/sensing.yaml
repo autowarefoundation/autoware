@@ -3,5 +3,5 @@ children:
 - camera
 - gnss
 config:
-  exts.description: ''
+  exts.description: Default
 plugin: node/sensing

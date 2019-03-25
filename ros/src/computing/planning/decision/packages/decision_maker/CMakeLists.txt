@@ -44,12 +44,11 @@ catkin_package(
         vector_map_msgs
         vector_map
         jsk_recognition_msgs
-        vector_map_msgs
         amathutils_lib
         state_machine_lib
 )
 include_directories(
-        include
+        include/decision_maker
         ${catkin_INCLUDE_DIRS}
         ${vector_map_INCLUDE_DIRS}
         ${autoware_config_msgs_INCLUDE_DIRS}
@@ -80,10 +79,22 @@ install(TARGETS decision_maker_node
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
 
-install(DIRECTORY launch
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}/launch/
+## Install project namespaced headers
+install(DIRECTORY include/${PROJECT_NAME}/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
         PATTERN ".svn" EXCLUDE
         )
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE
+        )
+
+install(FILES
+        autoware_state_drive.yaml
+        autoware_state_mission.yaml
+        autoware_state_vehicle.yaml
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)

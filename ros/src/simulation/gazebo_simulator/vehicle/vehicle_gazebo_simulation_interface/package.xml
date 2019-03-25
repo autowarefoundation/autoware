@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>vehicle_gazebo_simulation_interface</name>
-  <version>0.0.0</version>
+  <version>1.11.0</version>
   <description>The vehicle_gazebo_simulation_interface package</description>
   <maintainer email="yukky.saito@gmail.com">yukihiro saito</maintainer>
 

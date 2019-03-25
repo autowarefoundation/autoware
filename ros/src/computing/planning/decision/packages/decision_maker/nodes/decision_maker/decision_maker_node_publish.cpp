@@ -5,6 +5,7 @@ namespace decision_maker
 void DecisionMakerNode::publishLampCmd(const E_Lamp& status)
 {
   autoware_msgs::LampCmd lamp_msg;
+  lamp_msg.header.stamp = ros::Time::now();
 
   switch (status)
   {

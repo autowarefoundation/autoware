@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>vision_ssd_detect</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>The vision_ssd_detect package</description>
     <maintainer email="abrahammonrroy@yahoo.com">amc</maintainer>
     <license>Apache 2</license>

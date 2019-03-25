@@ -1,6 +1,7 @@
 # Decision Maker
 
 ## Overview
+**This feature is experimental.**</br>
 Autoware package that manages the Vehicle status, given Mission(waypoints) status, and Driving(Motion) status.
 Each status is managed by state machine.
 <!-- Autoware package that visualize internal state and publish some commands. -->

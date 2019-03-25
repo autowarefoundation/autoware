@@ -1,0 +1,95 @@
+#
+# Install ROS packages used by Autoware.
+#
+ARG ROS_DISTRO
+FROM ros:$ROS_DISTRO
+
+#
+# Install tools and libraries required by Autoware
+#
+RUN apt-get update && apt-get install -y \
+        cmake-curses-gui \
+        cmake-qt-gui \
+        dbus-x11 \
+        dmz-cursor-theme \
+        fonts-dejavu \
+        gconf2 \
+        gnome-terminal \
+        gstreamer0.10-plugins-good \
+        language-pack-en \
+        libarmadillo-dev \
+        libcanberra-gtk-module \
+        libcanberra-gtk3-0 \
+        libcanberra-gtk3-module \
+        libdbus-glib-1-2 \
+        libgflags-dev \
+        libglew-dev \
+        libgoogle-glog-dev \
+        libgoogle-perftools-dev \
+        libgsl0-dev \
+        libmosquitto-dev \
+        libopencv-dev \
+        libopenni2-dev \
+        libpcap-dev \
+        libssh2-1-dev \
+        locales \
+        pulseaudio \
+        python-flask \
+        python-requests \
+        python3-colcon-common-extensions \
+        python3-pip \
+        python3-setuptools \
+        sudo \
+        tmux \
+        v4l-utils \
+        vim \
+        wget && \
+        pip3 install -U setuptools && \
+        rm -rf /var/lib/apt/lists/*
+
+#
+# Configure environmet
+#
+
+RUN update-locale LANG=en_US.UTF-8 LC_MESSAGES=POSIX
+
+# Add user
+ENV USERNAME autoware
+ARG USER_ID=1000
+ARG GROUP_ID=15214
+ENV PULSE_SERVER /run/pulse/native
+
+RUN groupadd --gid $GROUP_ID $USERNAME && \
+        useradd --gid $GROUP_ID -m $USERNAME && \
+        echo "$USERNAME:$USERNAME" | chpasswd && \
+        usermod --shell /bin/bash $USERNAME && \
+        usermod -aG sudo $USERNAME && \
+        usermod  --uid $USER_ID $USERNAME && \
+        echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/$USERNAME && \
+        chmod 0440 /etc/sudoers.d/$USERNAME
+
+# Startup scripts
+ENV LANG="en_US.UTF-8"
+RUN echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> /etc/profile.d/ros.sh && \
+        # Fix for QT and X server errors
+        echo "export QT_X11_NO_MITSHM=1" >> /etc/profile.d/autoware.sh && \
+        # Set defaut language
+        echo "export LANG=\"en_US.UTF-8\"" >> /etc/profile.d/autoware.sh
+
+#
+# Install ROS packages used by Autoware
+#
+COPY ./docker/generic/dependencies /tmp/dependencies
+RUN apt-get update && \
+    sed "s/\$ROS_DISTRO/$ROS_DISTRO/g" "/tmp/dependencies" | xargs apt-get install -y && \
+    rm -rf /var/lib/apt/lists/* 
+
+RUN su -c "rosdep update" autoware
+
+# Configure terminal colors
+RUN su -c "gconftool-2 --set \"/apps/gnome-terminal/profiles/Default/use_theme_background\" --type bool false" autoware && \
+    su -c "gconftool-2 --set \"/apps/gnome-terminal/profiles/Default/use_theme_colors\" --type bool false" autoware && \
+    su -c "gconftool-2 --set \"/apps/gnome-terminal/profiles/Default/background_color\" --type string \"#000000\"" autoware
+
+COPY ./docker/generic/entrypoint.sh /tmp
+ENTRYPOINT ["/tmp/entrypoint.sh"]

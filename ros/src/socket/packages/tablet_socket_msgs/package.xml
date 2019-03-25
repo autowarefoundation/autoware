@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>tablet_socket_msgs</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>The tablet_socket_msgs package</description>
     <maintainer email="fujii.shohei@gmail.com">Shohei Fujii</maintainer>
     <license>Apache 2</license>

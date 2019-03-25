@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>gnss</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>The gnss package</description>
     <maintainer email="tomo@axe.bz">Tomomi HORII</maintainer>
     <license>Apache 2</license>

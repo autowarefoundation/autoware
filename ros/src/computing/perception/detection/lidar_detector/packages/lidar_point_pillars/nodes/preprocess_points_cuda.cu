@@ -18,8 +18,8 @@
 #include <iostream>
 
 //headers in local files
-#include "common.h"
-#include "preprocess_points_cuda.h"
+#include "lidar_point_pillars/common.h"
+#include "lidar_point_pillars/preprocess_points_cuda.h"
 
 __global__ void make_pillar_histo_kernel(
                                      const float* dev_points,
@@ -38,7 +38,8 @@ __global__ void make_pillar_histo_kernel(
                                      const float MIN_Z_RANGE,
                                      const float PILLAR_X_SIZE,
                                      const float PILLAR_Y_SIZE,
-                                     const float PILLAR_Z_SIZE
+                                     const float PILLAR_Z_SIZE,
+                                     const int NUM_BOX_CORNERS
                                    )
 {
   int th_i = threadIdx.x + blockIdx.x * blockDim.x;
@@ -46,9 +47,9 @@ __global__ void make_pillar_histo_kernel(
   {
     return;
   }
-  int y_coor = floor((dev_points[th_i*4 + 1] - MIN_Y_RANGE)/PILLAR_Y_SIZE);
-  int x_coor = floor((dev_points[th_i*4 + 0] - MIN_X_RANGE)/PILLAR_X_SIZE);
-  int z_coor = floor((dev_points[th_i*4 + 2] - MIN_Z_RANGE)/PILLAR_Z_SIZE);
+  int y_coor = floor((dev_points[th_i*NUM_BOX_CORNERS + 1] - MIN_Y_RANGE)/PILLAR_Y_SIZE);
+  int x_coor = floor((dev_points[th_i*NUM_BOX_CORNERS + 0] - MIN_X_RANGE)/PILLAR_X_SIZE);
+  int z_coor = floor((dev_points[th_i*NUM_BOX_CORNERS + 2] - MIN_Z_RANGE)/PILLAR_Z_SIZE);
 
   if(x_coor >= 0 && x_coor < GRID_X_SIZE &&
      y_coor >= 0 && y_coor < GRID_Y_SIZE &&
@@ -58,10 +59,10 @@ __global__ void make_pillar_histo_kernel(
     if(count < max_points_per_pillar)
     {
       int ind = y_coor*GRID_X_SIZE*max_points_per_pillar + x_coor*max_points_per_pillar + count;
-      dev_pillar_x_in_coors[ind] = dev_points[th_i*4 + 0];
-      dev_pillar_y_in_coors[ind] = dev_points[th_i*4 + 1];
-      dev_pillar_z_in_coors[ind] = dev_points[th_i*4 + 2];
-      dev_pillar_i_in_coors[ind] = dev_points[th_i*4 + 3];
+      dev_pillar_x_in_coors[ind] = dev_points[th_i*NUM_BOX_CORNERS + 0];
+      dev_pillar_y_in_coors[ind] = dev_points[th_i*NUM_BOX_CORNERS + 1];
+      dev_pillar_z_in_coors[ind] = dev_points[th_i*NUM_BOX_CORNERS + 2];
+      dev_pillar_i_in_coors[ind] = dev_points[th_i*NUM_BOX_CORNERS + 3];
     }
   }
 }
@@ -107,14 +108,14 @@ __global__ void make_pillar_index_kernel(
     dev_x_coors[count] = x;
     dev_y_coors[count] = y;
 
-    //TODO Need to be modified after making properly trained model
+    //TODO Need to be modified after making properly trained weight
+    // Will be modified in ver 1.1
     // x_offset = self.vx / 2 + pc_range[0]
     // y_offset = self.vy / 2 + pc_range[1]
     // x_sub = coors_x.unsqueeze(1) * 0.16 + x_offset
     // y_sub = coors_y.unsqueeze(1) * 0.16 + y_offset
-
-    dev_x_coors_for_sub[count] =  x*  PILLAR_X_SIZE + 0.1;
-    dev_y_coors_for_sub[count] =  y*  PILLAR_Y_SIZE + -39.9;
+    dev_x_coors_for_sub[count] =  x*  PILLAR_X_SIZE + 0.1f;
+    dev_y_coors_for_sub[count] =  y*  PILLAR_Y_SIZE + -39.9f;
     dev_sparse_pillar_map[y*NUM_INDS_FOR_SCAN + x] = 1;
   }
 }
@@ -194,7 +195,8 @@ PreprocessPointsCuda::PreprocessPointsCuda(const int NUM_THREADS,
                                            const float PILLAR_Z_SIZE,
                                            const float MIN_X_RANGE,
                                            const float MIN_Y_RANGE,
-                                           const float MIN_Z_RANGE)
+                                           const float MIN_Z_RANGE,
+                                           const int NUM_BOX_CORNERS)
 :
 NUM_THREADS_(NUM_THREADS),
 MAX_NUM_PILLARS_(MAX_NUM_PILLARS),
@@ -208,7 +210,8 @@ PILLAR_Y_SIZE_(PILLAR_Y_SIZE),
 PILLAR_Z_SIZE_(PILLAR_Z_SIZE),
 MIN_X_RANGE_(MIN_X_RANGE),
 MIN_Y_RANGE_(MIN_Y_RANGE),
-MIN_Z_RANGE_(MIN_Z_RANGE)
+MIN_Z_RANGE_(MIN_Z_RANGE),
+NUM_BOX_CORNERS_(NUM_BOX_CORNERS)
 {
   GPU_CHECK(cudaMalloc((void**)&dev_pillar_x_in_coors_, GRID_Y_SIZE_*GRID_X_SIZE_*MAX_NUM_POINTS_PER_PILLAR_* sizeof(float)));
   GPU_CHECK(cudaMalloc((void**)&dev_pillar_y_in_coors_, GRID_Y_SIZE_*GRID_X_SIZE_*MAX_NUM_POINTS_PER_PILLAR_* sizeof(float)));
@@ -265,7 +268,8 @@ void PreprocessPointsCuda::doPreprocessPointsCuda(const float* dev_points, const
                                         MIN_Z_RANGE_,
                                         PILLAR_X_SIZE_,
                                         PILLAR_Y_SIZE_,
-                                        PILLAR_Z_SIZE_);
+                                        PILLAR_Z_SIZE_,
+                                        NUM_BOX_CORNERS_);
 
 
   make_pillar_index_kernel<<<GRID_X_SIZE_, GRID_Y_SIZE_>>>(

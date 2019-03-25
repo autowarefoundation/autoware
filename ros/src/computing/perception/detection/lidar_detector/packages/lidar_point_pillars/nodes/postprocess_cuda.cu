@@ -20,7 +20,7 @@
 #include <thrust/sort.h>
 
 //headers in local files
-#include "postprocess_cuda.h"
+#include "lidar_point_pillars/postprocess_cuda.h"
 
 __global__ void filter_kernel(const float* box_preds, const float* cls_preds, const float* dir_preds, const int* anchor_mask,
                               const float* dev_anchors_px, const float* dev_anchors_py, const float* dev_anchors_pz,
@@ -72,15 +72,14 @@ __global__ void filter_kernel(const float* box_preds, const float* cls_preds, co
 
     //convrt normal box(normal boxes: x, y, z, w, l, h, r) to box(xmin, ymin, xmax, ymax) for nms calculation
     //First: dx, dy -> box(x0y0, x0y1, x1y0, x1y1)
-    float corners[2*4] = {float(-0.5*box_dx), float(-0.5*box_dy),
+    float corners[NUM_3D_BOX_CORNERS_MACRO] = {float(-0.5*box_dx), float(-0.5*box_dy),
                                         float(-0.5*box_dx), float( 0.5*box_dy),
                                         float( 0.5*box_dx), float( 0.5*box_dy),
                                         float( 0.5*box_dx), float(-0.5*box_dy)};
 
     //Second: Rotate, Offset and convert to point(xmin. ymin, xmax, ymax)
-    //cannot use variable initialization since "error: expression must have a constant value"
-    float rotated_corners[2*4];
-    float offset_corners[2*4];
+    float rotated_corners[NUM_3D_BOX_CORNERS_MACRO];
+    float offset_corners[NUM_3D_BOX_CORNERS_MACRO];
     float sin_yaw = sinf(box_ro);
     float cos_yaw = cosf(box_ro);
     float xmin = FLOAT_MAX;
@@ -152,6 +151,7 @@ NUM_OUTPUT_BOX_FEATURE_(NUM_OUTPUT_BOX_FEATURE)
 {
   nms_cuda_ptr_.reset(new NMSCuda(
     NUM_THREADS,
+    NUM_BOX_CORNERS,
     nms_overlap_threshold));
 }
 

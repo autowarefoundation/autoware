@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>autoware_rviz_plugins</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>The autoware_rviz_plugins package</description>
 
     <maintainer email="yusuke.fujii@tier4.jp">Yusuke FUJII</maintainer>

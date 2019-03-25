@@ -6,15 +6,19 @@ Autoware package for Point Pillars.  [Referenced paper](https://arxiv.org/abs/18
 
 CUDA Toolkit v9.0 or v10.0
 
+CUDNN: Tested with v7.3.1
+
 TensorRT: Tested with 5.0.2 -> [How to install](https://docs.nvidia.com/deeplearning/sdk/tensorrt-install-guide/index.html#installing)
 
 ## How to setup
 
 1. Install CUDA from this [website](https://developer.nvidia.com/cuda-downloads)
 
-2. [Download](https://docs.nvidia.com/deeplearning/sdk/tensorrt-install-guide/index.html#downloading) the TensorRT local repo file that matches the Ubuntu version you are using.
+2. Install CUDNN
 
-3. Install TensorRT from the Debian local repo package.
+3. [Download](https://docs.nvidia.com/deeplearning/sdk/tensorrt-install-guide/index.html#downloading) the TensorRT local repo file that matches the Ubuntu version you are using.
+
+4. Install TensorRT from the Debian local repo package.
 
 ```
 $ sudo dpkg -i  

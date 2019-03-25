@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>sick_ldmrs_laser</name>
-  <version>1.10.0</version>
+  <version>1.11.0</version>
   <description>
     A ROS driver for the SICK LD-MRS series of laser scanners.
   </description>

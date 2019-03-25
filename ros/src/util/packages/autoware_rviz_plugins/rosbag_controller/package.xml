@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>rosbag_controller</name>
-  <version>0.0.0</version>
+  <version>1.11.0</version>
   <description>The RosbagController package</description>
 
   <maintainer email="tu.chenxi@g.sp.m.is.nagoya-u.ac.jp">tu</maintainer>

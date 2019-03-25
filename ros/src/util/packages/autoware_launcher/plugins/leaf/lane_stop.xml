@@ -1,6 +1,6 @@
 <launch>
+
     <arg name="use_traffic_light_result" default="false" />
-    <arg name="manual_detection" default="true" />
 
     <group if="$(arg use_traffic_light_result)">
       <node pkg="rostopic" type="rostopic" name="config_lane_stop" ns="autoware_launcher"
@@ -24,4 +24,6 @@
     </group>
 
     <node pkg="lane_planner" type="lane_stop" name="lane_stop"/>
+
 </launch>
+

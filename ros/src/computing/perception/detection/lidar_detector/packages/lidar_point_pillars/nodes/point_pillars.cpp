@@ -19,7 +19,7 @@
 #include <iostream>
 
 // headers in local files
-#include "point_pillars.h"
+#include "lidar_point_pillars/point_pillars.h"
 
 // clang-format off
 PointPillars::PointPillars(const bool reproduce_result_mode, const float score_threshold,
@@ -44,22 +44,22 @@ PointPillars::PointPillars(const bool reproduce_result_mode, const float score_t
   , RPN_BOX_OUTPUT_SIZE_(NUM_ANCHOR_ * 7)
   , RPN_CLS_OUTPUT_SIZE_(NUM_ANCHOR_)
   , RPN_DIR_OUTPUT_SIZE_(NUM_ANCHOR_ * 2)
-  , PILLAR_X_SIZE_(0.16)
-  , PILLAR_Y_SIZE_(0.16)
-  , PILLAR_Z_SIZE_(4.0)
-  , MIN_X_RANGE_(0.0)
-  , MIN_Y_RANGE_(-39.68)
-  , MIN_Z_RANGE_(-3.0)
-  , MAX_X_RANGE_(69.12)
-  , MAX_Y_RANGE_(39.68)
+  , PILLAR_X_SIZE_(0.16f)
+  , PILLAR_Y_SIZE_(0.16f)
+  , PILLAR_Z_SIZE_(4.0f)
+  , MIN_X_RANGE_(0.0f)
+  , MIN_Y_RANGE_(-39.68f)
+  , MIN_Z_RANGE_(-3.0f)
+  , MAX_X_RANGE_(69.12f)
+  , MAX_Y_RANGE_(39.68f)
   , MAX_Z_RANGE_(1)
   , BATCH_SIZE_(1)
   , NUM_INDS_FOR_SCAN_(512)
-  , NUM_THREADS_(64) // if you change NUM_THREADS_, need to modify nms_kernel's shared memory size
-  , SENSOR_HEIGHT_(1.73)
-  , ANCHOR_DX_SIZE_(1.6)
-  , ANCHOR_DY_SIZE_(3.9)
-  , ANCHOR_DZ_SIZE_(1.56)
+  , NUM_THREADS_(64) // if you change NUM_THREADS_, need to modify NUM_THREADS_MACRO in common.h
+  , SENSOR_HEIGHT_(1.73f)
+  , ANCHOR_DX_SIZE_(1.6f)
+  , ANCHOR_DY_SIZE_(3.9f)
+  , ANCHOR_DZ_SIZE_(1.56f)
   , NUM_BOX_CORNERS_(4)
   , NUM_OUTPUT_BOX_FEATURE_(7)
 {
@@ -74,7 +74,7 @@ PointPillars::PointPillars(const bool reproduce_result_mode, const float score_t
   {
     preprocess_points_cuda_ptr_.reset(new PreprocessPointsCuda(
         NUM_THREADS_, MAX_NUM_PILLARS_, MAX_NUM_POINTS_PER_PILLAR_, NUM_INDS_FOR_SCAN_, GRID_X_SIZE_, GRID_Y_SIZE_,
-        GRID_Z_SIZE_, PILLAR_X_SIZE_, PILLAR_Y_SIZE_, PILLAR_Z_SIZE_, MIN_X_RANGE_, MIN_Y_RANGE_, MIN_Z_RANGE_));
+        GRID_Z_SIZE_, PILLAR_X_SIZE_, PILLAR_Y_SIZE_, PILLAR_Z_SIZE_, MIN_X_RANGE_, MIN_Y_RANGE_, MIN_Z_RANGE_, NUM_BOX_CORNERS_));
   }
 
   anchor_mask_cuda_ptr_.reset(new AnchorMaskCuda(NUM_INDS_FOR_SCAN_, NUM_ANCHOR_X_INDS_, NUM_ANCHOR_Y_INDS_,
@@ -232,7 +232,7 @@ void PointPillars::deviceMemoryMalloc()
   GPU_CHECK(cudaMalloc(&rpn_buffers_[3], RPN_DIR_OUTPUT_SIZE_ * sizeof(float)));
 
   // for scatter kernel
-  GPU_CHECK(cudaMalloc((void**)&dev_scattered_feature_, 64 * GRID_Y_SIZE_ * GRID_X_SIZE_ * sizeof(float)));
+  GPU_CHECK(cudaMalloc((void**)&dev_scattered_feature_, NUM_THREADS_ * GRID_Y_SIZE_ * GRID_X_SIZE_ * sizeof(float)));
 
   // for filter
   GPU_CHECK(cudaMalloc((void**)&dev_anchors_px_, NUM_ANCHOR_ * sizeof(float)));
@@ -263,7 +263,7 @@ void PointPillars::initAnchors()
   box_anchors_min_y_ = new float[NUM_ANCHOR_];
   box_anchors_max_x_ = new float[NUM_ANCHOR_];
   box_anchors_max_y_ = new float[NUM_ANCHOR_];
-  // deallocate these memory in deconstructor
+  // deallocate these memories in deconstructor
 
   generateAnchors(anchors_px_, anchors_py_, anchors_pz_, anchors_dx_, anchors_dy_, anchors_dz_, anchors_ro_);
 
@@ -292,8 +292,8 @@ void PointPillars::generateAnchors(float* anchors_px_, float* anchors_py_, float
     box_anchors_max_y_[i] = 0;
   }
 
-  float x_stride = PILLAR_X_SIZE_ * 2;
-  float y_stride = PILLAR_Y_SIZE_ * 2;
+  float x_stride = PILLAR_X_SIZE_ * 2.0f;
+  float y_stride = PILLAR_Y_SIZE_ * 2.0f;
   float x_offset = MIN_X_RANGE_ + PILLAR_X_SIZE_;
   float y_offset = MIN_Y_RANGE_ + PILLAR_Y_SIZE_;
 
@@ -352,7 +352,7 @@ void PointPillars::convertAnchors2BoxAnchors(float* anchors_px, float* anchors_p
                                              float* box_anchors_min_x_, float* box_anchors_min_y_,
                                              float* box_anchors_max_x_, float* box_anchors_max_y_)
 {
-  // flip box's dimension when the third axis == 1
+  // flipping box's dimension
   float flipped_anchors_dx[NUM_ANCHOR_] = { 0 };
   float flipped_anchors_dy[NUM_ANCHOR_] = { 0 };
   for (size_t x = 0; x < NUM_ANCHOR_X_INDS_; x++)
@@ -373,10 +373,10 @@ void PointPillars::convertAnchors2BoxAnchors(float* anchors_px, float* anchors_p
       for (size_t r = 0; r < NUM_ANCHOR_R_INDS_; r++)
       {
         int ind = x * NUM_ANCHOR_Y_INDS_ * NUM_ANCHOR_R_INDS_ + y * NUM_ANCHOR_R_INDS_ + r;
-        box_anchors_min_x_[ind] = anchors_px[ind] - flipped_anchors_dx[ind] / 2;
-        box_anchors_min_y_[ind] = anchors_py[ind] - flipped_anchors_dy[ind] / 2;
-        box_anchors_max_x_[ind] = anchors_px[ind] + flipped_anchors_dx[ind] / 2;
-        box_anchors_max_y_[ind] = anchors_py[ind] + flipped_anchors_dy[ind] / 2;
+        box_anchors_min_x_[ind] = anchors_px[ind] - flipped_anchors_dx[ind] / 2.0f;
+        box_anchors_min_y_[ind] = anchors_py[ind] - flipped_anchors_dy[ind] / 2.0f;
+        box_anchors_max_x_[ind] = anchors_px[ind] + flipped_anchors_dx[ind] / 2.0f;
+        box_anchors_max_y_[ind] = anchors_py[ind] + flipped_anchors_dy[ind] / 2.0f;
       }
     }
   }

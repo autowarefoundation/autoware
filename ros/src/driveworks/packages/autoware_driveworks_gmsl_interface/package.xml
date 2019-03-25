@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>autoware_driveworks_gmsl_interface</name>
-  <version>1.10.0</version>
+  <version>1.11.0</version>
   <description>
     A collection of node(let)s that publish images from one or multiple gmsl cameras
   </description>
