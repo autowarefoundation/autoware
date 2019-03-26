@@ -4,12 +4,9 @@
   <version>0.0.0</version>
   <description>The kalman_filter package</description>
 
-
   <maintainer email="takamasa.horibe@tier4.jp">horibe</maintainer>
 
-
-  <license>Appache2</license>
-
+  <license>Apache 2.0</license>
 
   <depend>roscpp</depend>
   <depend>std_msgs</depend>
