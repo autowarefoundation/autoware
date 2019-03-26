@@ -1,0 +1,40 @@
+
+# display debug info
+show_debug_info: false
+
+# filtering frequency [Hz]
+predict_frequency: 50
+
+# tf publish rate [Hz]
+tf_rate: 10
+
+# extend state dimension: upto (extend_state_step / predict_frequency) [s] time delay can be taken into account
+extend_state_step: 50
+
+# ----------- NDT measurement ---------------
+# ndt_additional_delay: 0.15 # added to time delay compensation [s] (set in Runtime Manager)
+ndt_measure_uncertainty_time: 0.01 # used for covariance calculation [s]
+ndt_rate: 10 # used for covariance calculation [Hz]
+ndt_gate_dist: 100 # measuremented value is ignored if the measurement mahalanobis distance over this limit
+
+# for covariance calculation
+ndt_stddev_x: 0.05
+ndt_stddev_y: 0.05
+ndt_stddev_yaw: 0.025
+
+# ----------- twist measurement ---------------
+# twist_additional_delay: 0.0 # added to time delay compensation [s] (set in Runtime Manager)
+twist_rate: 10.0 # used for covariance calculation [Hz]
+twist_gate_dist: 100.0 # measuremented value is ignored if the measurement mahalanobis distance over this limit
+
+# for covariance calculation
+twist_stddev_vx: 0.3
+twist_stddev_wz: 0.3
+
+
+# ----------- process noise ---------------
+# position covariance is automatically calculated, not defined here.
+stddev_proc_yaw_c: 0.005
+stddev_proc_yaw_bias_c: 0.001
+stddev_proc_vx_c: 10.0
+stddev_proc_wz_c: 10.0

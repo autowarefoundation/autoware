@@ -1,0 +1,5 @@
+<launch>
+
+  <test test-name="test-kalman_filter" pkg="kalman_filter_localizer" type="test-kalman_filter" name="test"/>
+
+</launch>
