@@ -372,7 +372,7 @@ void KalmanFilterNode::measurementUpdateNDTPose(const geometry_msgs::PoseStamped
                               ndt_pose.header.frame_id.c_str(), pose_frame_id_.c_str());
   }
 
-  const int dim_y = 3; // pos_x, pos_y, yaw, depending on NDT output
+  constexpr int dim_y = 3; // pos_x, pos_y, yaw, depending on NDT output
   const ros::Time t_curr = ros::Time::now();
 
   /* Calculate delay step */
@@ -447,7 +447,7 @@ void KalmanFilterNode::measurementUpdateTwist(const geometry_msgs::TwistStamped 
     ROS_WARN_DELAYED_THROTTLE(2.0, "twist frame_id must be base_link");
   }
 
-  const int dim_y = 2; // vx, wz
+  constexpr int dim_y = 2; // vx, wz
   const ros::Time t_curr = ros::Time::now();
 
   /* Calculate delay step */
