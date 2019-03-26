@@ -16,6 +16,7 @@
   <depend>autoware_msgs</depend>
   <depend>autoware_build_flags</depend>
   <depend>sensor_msgs</depend>
+  <depend>amathutils_lib</depend>
 
   <buildtool_depend>catkin</buildtool_depend>
 
