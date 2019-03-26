@@ -35,6 +35,7 @@
 #include <autoware_msgs/TrafficLight.h>
 #include <autoware_msgs/VehicleCmd.h>
 #include <autoware_msgs/Waypoint.h>
+#include <autoware_msgs/WaypointState.h>
 #include <vector_map/vector_map.h>
 
 #include <amathutils_lib/amathutils.hpp>

@@ -75,7 +75,7 @@ uint8_t DecisionMakerNode::getEventStateFromWaypoint(void)
 
     state = current_status_.finalwaypoints.waypoints.at(idx).wpstate.event_state;
 
-    if (state && distance >= distance_to_target)
+    if (state || distance >= distance_to_target)
     {
       break;
     }

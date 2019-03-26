@@ -1,7 +1,8 @@
 
 <launch>
   <arg name="state_mission_file_name" default="autoware_state_mission.yaml" />
-  <arg name="state_drive_file_name" default="autoware_state_drive.yaml" />
+  <arg name="state_behavior_file_name" default="autoware_state_behavior.yaml" />
+  <arg name="state_motion_file_name" default="autoware_state_motion.yaml" />
   <arg name="state_vehicle_file_name" default="autoware_state_vehicle.yaml" />
   <arg name="auto_mission_reload" default="false" />
   <arg name="auto_engage" default="false" />
@@ -17,7 +18,8 @@
 
   <test test-name="test-decision_maker" pkg="decision_maker" type="test-decision_maker" name="test">
     <param name ="state_mission_file_name" value="$(find decision_maker)/$(arg state_mission_file_name)"/>
-    <param name ="state_drive_file_name" value="$(find decision_maker)/$(arg state_drive_file_name)"/>
+    <param name ="state_behavior_file_name" value="$(find decision_maker)/$(arg state_behavior_file_name)"/>
+    <param name ="state_motion_file_name" value="$(find decision_maker)/$(arg state_motion_file_name)"/>
     <param name ="state_vehicle_file_name" value="$(find decision_maker)/$(arg state_vehicle_file_name)"/>
     <param name="auto_mission_reload" value="$(arg auto_mission_reload)"/>
     <param name="auto_engage" value="$(arg auto_engage)"/>
