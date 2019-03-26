@@ -43,6 +43,12 @@ subs :
         probe:
         run  : roslaunch autoware_pointgrey_drivers ladybug.launch
         param: ladybug_params
+      
+      - name : PointGrey Spinnaker
+        desc : PointGrey Spinnaker desc sample
+        probe:
+        run  : roslaunch autoware_pointgrey_drivers spinnaker.launch
+        param: spinnaker_params
 
       - name : USB Generic
         desc : USB Generic desc sample
@@ -140,7 +146,7 @@ subs :
       - name : Velodyne HDL-64E-S2
         desc : Launches the driver for the selected Velodyne sensor and publishes the pointcloud in points_raw. To select a custom calibration file press the [config] button.
         probe: 'ifconfig eth0 | grep "192.168.1.105" > /dev/null'
-        run  : roslaunch velodyne_pointcloud velodyne_hdl64e_s2.launch
+        run  : roslaunch runtime_manager velodyne_hdl64e_s2.launch
         param: calibration_path
         gui  :
           flags : [ SIGTERM, kill_children ]
@@ -150,7 +156,7 @@ subs :
       - name : Velodyne HDL-64E-S3
         desc : Launches the driver for the selected Velodyne sensor and publishes the pointcloud in points_raw. To select a custom calibration file press the [config] button.
         probe: 'ifconfig eth0 | grep "192.168.1.105" > /dev/null'
-        run  : roslaunch velodyne_pointcloud velodyne_hdl64e_s3.launch
+        run  : roslaunch runtime_manager velodyne_hdl64e_s3.launch
         param: calibration_path
         gui  :
           flags : [ SIGTERM, kill_children ]
@@ -160,7 +166,7 @@ subs :
       - name : Velodyne HDL-32E
         desc : Launches the driver for the selected Velodyne sensor and publishes the pointcloud in points_raw. To select a custom calibration file press the [config] button.
         probe: 'ping -c 1 -W 1 192.168.1.201 > /dev/null'
-        run  : roslaunch velodyne_pointcloud velodyne_hdl32e.launch
+        run  : roslaunch runtime_manager velodyne_hdl32e.launch
         param: calibration_path
         gui  :
           flags : [ SIGTERM, kill_children ]
@@ -170,7 +176,7 @@ subs :
       - name : Velodyne VLP-32C
         desc : Launches the driver for the selected Velodyne sensor and publishes the pointcloud in points_raw. To select a custom calibration file press the [config] button.
         probe: 'ping -c 1 -W 1 192.168.1.201 > /dev/null'
-        run  : roslaunch velodyne_pointcloud velodyne_vlp32c.launch
+        run  : roslaunch runtime_manager velodyne_vlp32c.launch
         param: calibration_path
         gui  :
           flags : [ SIGTERM, kill_children ]
@@ -180,7 +186,7 @@ subs :
       - name : Velodyne VLP-16
         desc : Launches the driver for the selected Velodyne sensor and publishes the pointcloud in points_raw. To select a custom calibration file press the [config] button.
         probe:
-        run  : roslaunch velodyne_pointcloud velodyne_vlp16.launch
+        run  : roslaunch runtime_manager velodyne_vlp16.launch
         param: calibration_path
         gui  :
           flags : [ SIGTERM, kill_children ]
@@ -190,7 +196,7 @@ subs :
       - name : Velodyne VLP-16 Hi-Res
         desc : Launches the driver for the selected Velodyne sensor and publishes the pointcloud in points_raw. To select a custom calibration file press the [config] button.
         probe:
-        run  : roslaunch velodyne_pointcloud velodyne_vlp16_hires.launch
+        run  : roslaunch runtime_manager velodyne_vlp16_hires.launch
         param: calibration_path
         gui  :
           flags : [ SIGTERM, kill_children ]
@@ -225,11 +231,11 @@ subs :
 
       - name : Robosense RS32
         desc : Launches the driver for the selected RoboSense LiDAR sensor and publishes the pointcloud in rslidar_points.
-        run  : roslaunch rslidar_pointcloud cloud_nodelet_32.launch
+        run  : roslaunch rslidar_pointcloud rs_cloud_nodelet_32.launch
 
       - name : Robosense RS16
         desc : Launches the driver for the selected RoboSense LiDAR sensor and publishes the pointcloud in rslidar_points.
-        run  : roslaunch rslidar_pointcloud cloud_nodelet_16.launch
+        run  : roslaunch rslidar_pointcloud rs_cloud_nodelet_16.launch
 
       - name : Ouster OS1
         desc : Launches the driver for the Ouster OS1 LiDAR and publishes the pointcloud as points_raw.
@@ -1405,7 +1411,7 @@ params :
       label : distance_threshold
       min   : 0.01
       max   : 100
-      v     : 0.2
+      v     : 0.3
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -1682,6 +1688,38 @@ params :
       desc  : Camera Frame to register in TF (Default flir_adk)
       kind  : str
       v     : flir_adk
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+  - name  : spinnaker_params
+    vars  :
+    - name  : fps
+      label : fps
+      desc  : FPS Acquisition (Default 60)
+      min   : 1
+      max   : 100
+      v     : 60
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : width
+      label : width
+      desc  : Image Width (Default 1440)
+      v     : 1440
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : height
+      label : height
+      desc  : Image Height (Default 1080)
+      v     : 1080
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : dltl
+      label : dltl
+      desc  : DeviceLinkThroughputLimit (Default 1568000)
+      v     : 1568000
       cmd_param :
         dash        : ''
         delim       : ':='

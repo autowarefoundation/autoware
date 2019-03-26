@@ -6,20 +6,10 @@ MY_PATH=$(readlink -f  $(dirname $0))
 OPTION_WORKING_DIR='--working-directory'
 OPTION_CORE_GEOMETRY='--geometry=50x10+0+0'
 OPTION_RM_GEOMETRY='--geometry=50x10+500+0'
+OPTION_TITLE='--title'
 OPTION_COMMAND='--command'
 
-
-MASTER_DISPLAY_OPTION="${OPTION_CORE_GEOMETRY} ${OPTION_TITLE}\=\"roscore\""
-RUNMGR_DISPLAY_OPTION="${OPTION_RM_GEOMETRY} ${OPTION_TITLE}\=\"runtime_manager\""
-
-if [ $(which gnome-terminal) ]; then
-    TERMINAL=gnome-terminal
-    GNOME_VERSION=$(gnome-terminal --version | cut -d '.' -f 2)
-    if [ ${GNOME_VERSION} -ge 14 ]; then
-	MASTER_DISPLAY_OPTION=''
-	RUNMGR_DISPLAY_OPTION=''
-    fi
-elif [ $(which mate-terminal) ]; then
+if [ $(which mate-terminal) ]; then
     TERMINAL=mate-terminal
 elif [ $(which xfce4-terminal) ]; then
     TERMINAL=xfce4-terminal
@@ -35,18 +25,29 @@ elif [ $(which konsole) ]; then
     OPTION_TITLE='-T'
 fi
 
+MASTER_DISPLAY_OPTION="${OPTION_CORE_GEOMETRY} ${OPTION_TITLE}=\"roscore\""
+RUNMGR_DISPLAY_OPTION="${OPTION_RM_GEOMETRY} ${OPTION_TITLE}=\"runtime_manager\""
+
+if [ $(which gnome-terminal) ]; then
+    TERMINAL=gnome-terminal
+    GNOME_VERSION=$(gnome-terminal --version | cut -d '.' -f 2)
+    if [ ${GNOME_VERSION} -ge 14 ]; then
+	MASTER_DISPLAY_OPTION=''
+	RUNMGR_DISPLAY_OPTION=''
+    fi
+fi
+
 echo "Process Manager"
 
-gksudo --message "Please input password for launching process manager" \
-       -- $MY_PATH/run_proc_manager &
+sudo bash -c "$MY_PATH/run_proc_manager &"
 
 ADDR=$($MY_PATH/src/.config/rviz/subnet_chk.py -)
 if [ "$?" == "0" ]; then
   export ROS_IP=$ADDR
 fi
 
-# boot ros-master
-${TERMINAL} ${MASTER_DISPLAY_OPTION} ${OPTION_WORKING_DIR}=${MY_PATH} ${OPTION_COMMAND}="bash -c 'source ./devel/setup.bash; roscore'"&
+# boot ros-master & health_checker
+${TERMINAL} ${MASTER_DISPLAY_OPTION} ${OPTION_WORKING_DIR}=${MY_PATH} ${OPTION_COMMAND}="bash -c 'source ./install/setup.bash; roscore'"&
 
 # boot runtime_manager
-${TERMINAL} ${RUNMGR_DISPLAY_OPTION} ${OPTION_WORKING_DIR}=${MY_PATH} ${OPTION_COMMAND}="bash -c 'source ./devel/setup.bash; rosrun runtime_manager runtime_manager_dialog.py'"
+${TERMINAL} ${RUNMGR_DISPLAY_OPTION} ${OPTION_WORKING_DIR}=${MY_PATH} ${OPTION_COMMAND}="bash -c 'source ./install/setup.bash; rosrun runtime_manager runtime_manager_dialog.py'"

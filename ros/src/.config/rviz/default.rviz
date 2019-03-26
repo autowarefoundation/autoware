@@ -6,14 +6,20 @@ Panels:
       Expanded:
         - /Global Options1
         - /Camera1/Visibility1
+        - /Points Raw1
         - /Points Raw1/Status1
         - /Local Waypoints1/Status1
         - /Vector Map CenterLines1/Namespaces1
         - /Global Path1/Namespaces1
         - /Local Rollouts1/Namespaces1
         - /GlobalPathAnimation1/Status1
+        - /OverlayImage1
+        - /OK1
+        - /WARN1
+        - /ERROR1
+        - /FATAL1
       Splitter Ratio: 0.695804
-    Tree Height: 667
+    Tree Height: 1903
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -22,7 +28,7 @@ Panels:
       - /2D Nav Goal1
       - /Publish Point1
     Name: Tool Properties
-    Splitter Ratio: 0.588679
+    Splitter Ratio: 0.588679016
   - Class: rviz/Views
     Expanded:
       - /Current View1
@@ -42,7 +48,7 @@ Visualization Manager:
       Color: 160; 160; 164
       Enabled: false
       Line Style:
-        Line Width: 0.03
+        Line Width: 0.0299999993
         Value: Lines
       Name: Grid
       Normal Cell Count: 0
@@ -65,11 +71,7 @@ Visualization Manager:
           Value: true
         map:
           Value: true
-        mobility:
-          Value: true
         velodyne:
-          Value: true
-        world:
           Value: true
       Marker Scale: 5
       Name: TF
@@ -77,18 +79,15 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        world:
-          map:
-            base_link:
-              velodyne:
-                {}
-            gps:
+        map:
+          base_link:
+            velodyne:
               {}
-            mobility:
-              {}
+          gps:
+            {}
       Update Interval: 0
       Value: true
-    - Alpha: 0.05
+    - Alpha: 0.0500000007
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
         Max Value: 10
@@ -111,7 +110,7 @@ Visualization Manager:
       Queue Size: 10
       Selectable: true
       Size (Pixels): 2
-      Size (m): 0.01
+      Size (m): 0.00999999978
       Style: Points
       Topic: /points_map
       Unreliable: false
@@ -123,19 +122,9 @@ Visualization Manager:
       Marker Topic: /vector_map
       Name: Vector Map
       Namespaces:
-        cross_walk: true
-        curb: true
-        gutter: true
-        road_edge: true
-        road_mark: true
-        road_pole: true
-        road_sign: true
         signal: true
         stop_line: true
-        street_light: true
-        utility_pole: true
         white_line: true
-        zebra_zone: true
       Queue Size: 100
       Value: true
     - Class: rviz/Camera
@@ -143,26 +132,32 @@ Visualization Manager:
       Image Rendering: overlay
       Image Topic: /image_raw
       Name: Camera
-      Overlay Alpha: 0.4
+      Overlay Alpha: 0.400000006
       Queue Size: 10
       Transport Hint: raw
       Unreliable: false
       Value: false
       Visibility:
-        "": true
         A* Sim Obstacle: true
         Behavior State: true
         Control Pose: true
         Current Pose: true
         Detection Range: true
+        ERROR: true
+        FATAL: true
         Global Path: true
         Global Waypoints: true
         GlobalPathAnimation: true
         Grid: true
+        Image: true
         Local Rollouts: true
         Local Waypoints: true
+        MarkerArray: true
         Next Waypoint Mark: true
+        OK: true
         Occupancy Grid Map: true
+        OverlayImage: true
+        OverlayText: true
         PP Trajectory Mark: true
         Points Cluster: true
         Points Map: true
@@ -178,19 +173,20 @@ Visualization Manager:
         Vehicle Model: true
         Velocity (km/h): true
         Vscan Points: true
+        WARN: true
         Waypoint Guide: true
       Zoom Factor: 1
-    - Alpha: 0.5
+    - Alpha: 0.300000012
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
+        Max Value: 11.8534737
+        Min Value: 9.73868942
         Value: true
       Axis: Z
       Channel Name: intensity
       Class: rviz/PointCloud2
       Color: 255; 255; 255
-      Color Transformer: Intensity
+      Color Transformer: AxisColor
       Decay Time: 0
       Enabled: true
       Invert Rainbow: false
@@ -202,8 +198,8 @@ Visualization Manager:
       Position Transformer: XYZ
       Queue Size: 10
       Selectable: true
-      Size (Pixels): 1
-      Size (m): 0.01
+      Size (Pixels): 5
+      Size (m): 0.00999999978
       Style: Points
       Topic: /points_raw
       Unreliable: false
@@ -233,7 +229,7 @@ Visualization Manager:
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.01
+      Size (m): 0.00999999978
       Style: Points
       Topic: /vscan_points
       Unreliable: false
@@ -242,7 +238,7 @@ Visualization Manager:
       Value: false
     - Alpha: 1
       Axes Length: 1
-      Axes Radius: 0.1
+      Axes Radius: 0.100000001
       Class: rviz/Pose
       Color: 255; 25; 0
       Enabled: false
@@ -257,7 +253,7 @@ Visualization Manager:
       Value: false
     - Alpha: 1
       Axes Length: 1
-      Axes Radius: 0.1
+      Axes Radius: 0.100000001
       Class: rviz/Pose
       Color: 255; 170; 255
       Enabled: false
@@ -275,7 +271,10 @@ Visualization Manager:
       Marker Topic: /detection_range
       Name: Detection Range
       Namespaces:
-        {}
+        Crosswalk Detection: true
+        Decelerate Detection: true
+        Stop Detection: true
+        Stop Line: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -283,7 +282,7 @@ Visualization Manager:
       Marker Topic: /next_target_mark
       Name: Next Waypoint Mark
       Namespaces:
-        {}
+        next_target_marker: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -291,7 +290,7 @@ Visualization Manager:
       Marker Topic: /trajectory_circle_mark
       Name: PP Trajectory Mark
       Namespaces:
-        {}
+        trajectory_circle_marker: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -312,6 +311,11 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
       Name: Vehicle Model
       Robot Description: robot_description
       TF Prefix: ""
@@ -341,7 +345,7 @@ Visualization Manager:
       Queue Size: 10
       Selectable: true
       Size (Pixels): 5
-      Size (m): 0.01
+      Size (m): 0.00999999978
       Style: Points
       Topic: /points_cluster
       Unreliable: false
@@ -353,7 +357,9 @@ Visualization Manager:
       Marker Topic: /local_waypoints_mark
       Name: Local Waypoints
       Namespaces:
-        {}
+        local_path_marker: true
+        local_point_marker: true
+        local_waypoint_velocity: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -361,7 +367,9 @@ Visualization Manager:
       Marker Topic: /global_waypoints_mark
       Name: Global Waypoints
       Namespaces:
-        {}
+        global_change_flag_lane_1: true
+        global_lane_waypoint_orientation_marker_1: true
+        global_velocity_lane_1: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -380,14 +388,15 @@ Visualization Manager:
         {}
       Queue Size: 100
       Value: true
-    - Alpha: 0.7
+    - Alpha: 0.699999988
       Class: rviz/Map
       Color Scheme: map
       Draw Behind: true
       Enabled: true
       Name: Occupancy Grid Map
-      Topic: /grid_map_visualization/distance_transform
+      Topic: /grid_map_filter_visualization/distance_transform
       Unreliable: false
+      Use Timestamp: false
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
@@ -451,10 +460,10 @@ Visualization Manager:
       Topic: /dp_planner_tracked_boxes
       Unreliable: false
       Value: true
-      alpha: 0.8
+      alpha: 0.800000012
       color: 25; 255; 0
       coloring: Value
-      line width: 0.01
+      line width: 0.00999999978
       only edge: false
       show coords: false
     - Buffer length: 100
@@ -469,7 +478,7 @@ Visualization Manager:
       background color: 0; 0; 0
       backround alpha: 0
       border: true
-      foreground alpha: 0.7
+      foreground alpha: 0.699999988
       foreground color: 85; 255; 0
       height: 80
       left: 40
@@ -480,13 +489,13 @@ Visualization Manager:
       show caption: true
       text size: 8
       top: 30
-      update interval: 0.04
+      update interval: 0.0399999991
       width: 80
-    - Background Alpha: 0.8
+    - Background Alpha: 0.800000012
       Background Color: 0; 0; 0
       Class: jsk_rviz_plugin/OverlayText
       Enabled: true
-      Foreground Alpha: 0.8
+      Foreground Alpha: 0.800000012
       Foreground Color: 25; 255; 240
       Name: OverlayText
       Overtake Color Properties: false
@@ -500,10 +509,114 @@ Visualization Manager:
       text size: 12
       top: 0
       width: 128
+    - Class: rviz/Image
+      Enabled: false
+      Image Topic: /image_raw
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: Image
+      Normalize Range: true
+      Queue Size: 2
+      Transport Hint: raw
+      Unreliable: false
+      Value: false
+    - Class: jsk_rviz_plugin/OverlayImage
+      Enabled: false
+      Name: OverlayImage
+      Topic: /image_raw
+      Value: false
+      alpha: 0.800000012
+      height: 128
+      keep aspect ratio: true
+      left: 128
+      top: 128
+      width: 640
+    - Background Alpha: 0.800000012
+      Background Color: 0; 0; 0
+      Class: jsk_rviz_plugin/OverlayText
+      Enabled: true
+      Foreground Alpha: 0.800000012
+      Foreground Color: 25; 255; 240
+      Name: OK
+      Overtake Color Properties: false
+      Overtake Position Properties: false
+      Topic: /health_aggregator/ok_text
+      Value: true
+      font: DejaVu Sans Mono
+      height: 128
+      left: 0
+      line width: 2
+      text size: 12
+      top: 0
+      width: 128
+    - Background Alpha: 0.800000012
+      Background Color: 0; 0; 0
+      Class: jsk_rviz_plugin/OverlayText
+      Enabled: true
+      Foreground Alpha: 0.800000012
+      Foreground Color: 25; 255; 240
+      Name: WARN
+      Overtake Color Properties: false
+      Overtake Position Properties: false
+      Topic: /health_aggregator/warn_text
+      Value: true
+      font: DejaVu Sans Mono
+      height: 128
+      left: 0
+      line width: 2
+      text size: 12
+      top: 0
+      width: 128
+    - Background Alpha: 0.800000012
+      Background Color: 0; 0; 0
+      Class: jsk_rviz_plugin/OverlayText
+      Enabled: true
+      Foreground Alpha: 0.800000012
+      Foreground Color: 25; 255; 240
+      Name: ERROR
+      Overtake Color Properties: false
+      Overtake Position Properties: false
+      Topic: /health_aggregator/error_text
+      Value: true
+      font: DejaVu Sans Mono
+      height: 128
+      left: 0
+      line width: 2
+      text size: 12
+      top: 0
+      width: 128
+    - Background Alpha: 0.800000012
+      Background Color: 0; 0; 0
+      Class: jsk_rviz_plugin/OverlayText
+      Enabled: true
+      Foreground Alpha: 0.800000012
+      Foreground Color: 25; 255; 240
+      Name: FATAL
+      Overtake Color Properties: false
+      Overtake Position Properties: false
+      Topic: /health_aggregator/fatal_text
+      Value: true
+      font: DejaVu Sans Mono
+      height: 128
+      left: 0
+      line width: 2
+      text size: 12
+      top: 0
+      width: 128
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /waypoint_saver_marker
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: world
+    Default Light: true
+    Fixed Frame: map
     Frame Rate: 30
   Name: root
   Tools:
@@ -526,27 +639,30 @@ Visualization Manager:
       Angle: 0
       Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
-        Stereo Eye Separation: 0.06
+        Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
+      Invert Z Axis: false
       Name: Current View
-      Near Clip Distance: 0.01
-      Scale: 3.97317
-      Target Frame: <Fixed Frame>
+      Near Clip Distance: 0.00999999978
+      Scale: 19.7382278
+      Target Frame: base_link
       Value: TopDownOrtho (rviz)
-      X: -27.0383
-      Y: 47.1504
+      X: 0
+      Y: 0
     Saved: ~
 Window Geometry:
   Camera:
     collapsed: false
   Displays:
-    collapsed: false
-  Height: 900
-  Hide Left Dock: false
+    collapsed: true
+  Height: 2136
+  Hide Left Dock: true
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd00000004000000000000016a000002dcfc020000000dfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afc00000028000002dc000000dd00fffffffa000000020100000003fb0000000a0049006d0061006700650000000000ffffffff0000000000000000fb0000000c00430061006d0065007200610000000000ffffffff0000006500fffffffb000000100044006900730070006c0061007900730100000000000001360000016a00fffffffb0000000a0049006d006100670065010000028e000000d20000000000000000fb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb000000120049006d006100670065005f0072006100770000000000ffffffff0000000000000000fb0000000c00430061006d006500720061000000024e000001710000000000000000fb000000120049006d00610067006500200052006100770100000421000000160000000000000000fb0000000a0049006d00610067006501000002f4000000cb00000000000000000000000100000163000002dcfc0200000003fb0000000a005600690065007700730100000028000002dc000000b000fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000020000073f000000a8fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000006400000005cfc0100000002fb0000000800540069006d0065010000000000000640000002f600fffffffb0000000800540069006d0065010000000000000450000000000000000000000367000002dc00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Image:
+    collapsed: false
+  QMainWindow State: 000000ff00000000fd000000040000000000000454000007b0fc020000000efb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006100fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afc00000028000007b00000000000fffffffaffffffff0100000003fb0000000a0049006d0061006700650000000000ffffffff0000005c00fffffffb0000000c00430061006d0065007200610000000000ffffffff0000006700fffffffb000000100044006900730070006c0061007900730000000000000001360000016a00fffffffb0000000a0049006d006100670065010000028e000000d20000000000000000fb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb000000120049006d006100670065005f0072006100770000000000ffffffff0000000000000000fb0000000c00430061006d006500720061000000024e000001710000000000000000fb000000120049006d00610067006500200052006100770100000421000000160000000000000000fb0000000a0049006d00610067006501000002f4000000cb0000000000000000fb0000000a0049006d006100670065010000056c0000026c00000000000000000000000100000163000007b0fc0200000003fb0000000a005600690065007700730100000028000007b0000000ad00fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000020000073f000000a8fc0100000001fb0000000a00560069006500770073030000004e00000080000002e1000001970000000300000ebf0000005cfc0100000002fb0000000800540069006d0065010000000000000ebf0000030000fffffffb0000000800540069006d0065010000000000000450000000000000000000000d56000007b000000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -555,6 +671,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1600
-  X: 43
-  Y: 174
+  Width: 3775
+  X: 65
+  Y: 24

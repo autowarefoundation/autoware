@@ -1,6 +1,7 @@
 [submodule "ros/src/sensing/drivers/lidar/packages/robosense"]
 	path = ros/src/sensing/drivers/lidar/packages/robosense
 	url = https://github.com/CPFL/robosense
+	branch = develop-curves-function
 [submodule "ros/src/msgs/lgsvl_msgs"]
 	path = ros/src/msgs/lgsvl_msgs
 	url = https://github.com/lgsvl/lgsvl_msgs.git
@@ -8,3 +9,9 @@
 	path = ros/src/sensing/drivers/lidar/packages/ouster
 	url = https://github.com/CPFL/ouster
 	branch = autoware_branch
+[submodule "ros/src/simulation/gazebo_simulator/worlds/external/osrf_citysim"]
+	path = ros/src/simulation/gazebo_simulator/worlds/external/osrf_citysim
+	url = https://github.com/CPFL/osrf_citysim.git
+[submodule "ros/src/simulation/gazebo_simulator/worlds/external/car_demo"]
+	path = ros/src/simulation/gazebo_simulator/worlds/external/car_demo
+	url = https://github.com/CPFL/car_demo.git

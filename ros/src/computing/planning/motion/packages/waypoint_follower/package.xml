@@ -18,6 +18,9 @@
     <build_depend>pcl_conversions</build_depend>
     <build_depend>sensor_msgs</build_depend>
     <build_depend>tablet_socket_msgs</build_depend>
+    <build_depend>autoware_health_checker</build_depend>
+    <build_depend>rostest</build_depend>
+    <build_depend>rosunit</build_depend>
 
     <run_depend>roscpp</run_depend>
     <run_depend>std_msgs</run_depend>
@@ -29,7 +32,7 @@
     <run_depend>pcl_conversions</run_depend>
     <run_depend>sensor_msgs</run_depend>
     <run_depend>tablet_socket_msgs</run_depend>
-
+    <run_depend>autoware_health_checker</run_depend>
     <export>
     </export>
 </package>

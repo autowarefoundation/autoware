@@ -1,0 +1,19 @@
+<!-- -->
+<launch>
+  <arg name="use_crosswalk_detection" default="true" />
+  <arg name="points_topic" default="points_no_ground" />
+  <arg name="velocity_offset" default="1.2" />
+  <arg name="decelerate_vel_min" default="1.3" />
+  <arg name="remove_points_upto" default="2.3" />
+  <arg name="enable_multiple_crosswalk_detection" default="true" />
+
+  <node pkg="waypoint_planner" type="velocity_set" name="velocity_set" output="screen">
+    <param name="use_crosswalk_detection" value="$(arg use_crosswalk_detection)" />
+    <param name="enable_multiple_crosswalk_detection" value="$(arg enable_multiple_crosswalk_detection)" />
+    <param name="points_topic" value="$(arg points_topic)" />
+    <param name="velocity_offset" value="$(arg velocity_offset)" />
+    <param name="decelerate_vel_min" value="$(arg decelerate_vel_min)" />
+    <param name="remove_points_upto" value="$(arg remove_points_upto)" />
+  </node>
+
+</launch>

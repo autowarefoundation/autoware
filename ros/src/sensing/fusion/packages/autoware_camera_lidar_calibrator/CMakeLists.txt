@@ -66,3 +66,11 @@ catkin_install_python(PROGRAMS
     scripts/tarfile_calibration.py
     DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)
+
+install(DIRECTORY docs/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/docs
+        PATTERN ".svn" EXCLUDE)

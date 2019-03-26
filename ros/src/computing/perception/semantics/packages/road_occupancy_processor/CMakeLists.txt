@@ -41,7 +41,7 @@ set(CMAKE_CXX_FLAGS "-O3 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 #Road Occupancy Processor Library
 add_library(road_occupancy_processor_lib SHARED
-    include/road_occupancy_processor.h
+        include/road_occupancy_processor/road_occupancy_processor.h
     src/road_occupancy_processor.cpp
 )
 
@@ -87,10 +87,13 @@ target_include_directories(road_occupancy_processor PRIVATE
 target_link_libraries(road_occupancy_processor
     road_occupancy_processor_lib)
 
-install(TARGETS road_occupancy_processor
+install(TARGETS road_occupancy_processor road_occupancy_processor_lib
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+install(DIRECTORY include/${PROJECT_NAME}/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
 install(DIRECTORY launch/
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch

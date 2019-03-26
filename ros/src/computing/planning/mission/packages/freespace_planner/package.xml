@@ -3,7 +3,10 @@
   <name>freespace_planner</name>
   <version>1.10.0</version>
   <description>The freespace_planner package</description>
-  <maintainer email="antm678@ertl.jp">Tomohito ANDO</maintainer>
+  <maintainer email="aohsato@gmail.com">Akihito OHSATO</maintainer>
+
+  <author email="aohsato@gmail.com">Akihito OHSATO</author>
+  <author email="antm678@ertl.jp">Tomohito ANDO</author>
 
   <license>Apache 2</license>
 
@@ -11,17 +14,20 @@
   <buildtool_depend>autoware_build_flags</buildtool_depend>
 
   <build_depend>roscpp</build_depend>
-  <build_depend>autoware_msgs</build_depend>
   <build_depend>tf</build_depend>
   <build_depend>nav_msgs</build_depend>
   <build_depend>geometry_msgs</build_depend>
+  <build_depend>visualization_msgs</build_depend>
+  <build_depend>autoware_msgs</build_depend>
+  <build_depend>astar_search</build_depend>
 
   <run_depend>roscpp</run_depend>
-  <run_depend>autoware_msgs</run_depend>
   <run_depend>tf</run_depend>
   <run_depend>nav_msgs</run_depend>
   <run_depend>geometry_msgs</run_depend>
-
+  <run_depend>visualization_msgs</run_depend>
+  <run_depend>autoware_msgs</run_depend>
+  <run_depend>astar_search</run_depend>
 
   <export>
   </export>

@@ -14,7 +14,8 @@ find_package(catkin REQUIRED COMPONENTS
         tf
         gnss
         waypoint_follower
-        astar_planner
+        vector_map
+        waypoint_planner
         autoware_can_msgs
         )
 
@@ -42,7 +43,7 @@ catkin_package(
         gnss
         waypoint_follower
         vector_map
-        astar_planner
+        waypoint_planner
         autoware_can_msgs
 )
 
@@ -78,3 +79,16 @@ target_link_libraries(path_select ${catkin_LIBRARIES})
 add_dependencies(path_select
         ${catkin_EXPORTED_TARGETS})
 
+install(TARGETS
+            libtraj_gen
+            lattice_trajectory_gen
+            lattice_twist_convert
+            lattice_velocity_set
+            path_select
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)

@@ -299,7 +299,7 @@ else ()                          # if(EXISTS "${SSD_CAFFE_PATH}")
 endif ()                         # if(EXISTS "${SSD_CAFFE_PATH}")
 
 
-install(TARGETS region_tlr feat_proj tlr_tuner roi_extractor label_maker
+install(TARGETS region_tlr feat_proj tlr_tuner roi_extractor label_maker libcontext tl_switch
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

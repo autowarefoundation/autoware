@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:macro name="body_macro" params="suffix parent wheel_radius wheel_base vehicle_mass vehicle_mass_height vehicle_width vehicle_length vehicle_height">
+  <xacro:property name="pi" value="3.1415926835897931" />
+    <joint name="${suffix}_joint" type="fixed">
+      <parent link="${parent}"/>
+      <origin rpy="0 0 0" xyz="0 0 ${wheel_radius}"/>
+      <child  link="${suffix}_link"/>
+    </joint>  
+    <link name="${suffix}_link">
+      <inertial>
+        <origin xyz="${wheel_base/2} 0 0" rpy="0 0 0"/>
+        <mass value="${vehicle_mass}"/>
+        <inertia ixx="${(vehicle_width*vehicle_width+vehicle_mass_height*vehicle_mass_height)*vehicle_mass/12.0}" ixy="0.0" ixz="0.0" 
+                 iyy="${(vehicle_length*vehicle_length+vehicle_mass_height*vehicle_mass_height)*vehicle_mass/12.0}" iyz="0.0" 
+                 izz="${(vehicle_width*vehicle_width+vehicle_length*vehicle_length)*vehicle_mass/12.0}"/>
+      </inertial>
+      <visual>
+        <!-- <origin xyz="${wheel_base/2} 0 ${vehicle_height/2}" rpy="0 0 0"/>
+        <geometry>
+          <box size="${vehicle_length} 0.9 ${vehicle_height}"/>
+        </geometry> -->
+        <!-- <origin xyz="${wheel_base/2} 0 ${vehicle_height/2}" rpy="0 ${-pi/2} ${pi/2}"/> -->
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://vehicle_model/mesh/body.dae" scale="${wheel_base/2.85} 1 1"/>
+        </geometry>
+        <material name="black">
+            <color rgba="0.1 0.1 0.1 0.5"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="${wheel_base/2} 0 ${vehicle_height/2}" rpy="0 0 0"/>
+        <geometry>
+          <box size="${vehicle_length} 0.9 ${vehicle_height}"/>
+        </geometry>
+      </collision>
+    </link>
+  </xacro:macro>  
+</robot>
