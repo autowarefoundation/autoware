@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "kalman_filter/kalman_filter.h"
+#include "amathutils_lib/kalman_filter.hpp"
 
 KalmanFilter::KalmanFilter() {}
 KalmanFilter::KalmanFilter(const Eigen::MatrixXd &x, const Eigen::MatrixXd &A,

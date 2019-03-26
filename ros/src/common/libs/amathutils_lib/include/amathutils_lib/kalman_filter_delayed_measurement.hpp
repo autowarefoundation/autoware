@@ -18,7 +18,7 @@
 
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/LU>
-#include "kalman_filter/kalman_filter.h"
+#include "amathutils_lib/kalman_filter.hpp"
 
 class KalmanFilterDelayedMeasurement : public KalmanFilter
 {

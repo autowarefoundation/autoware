@@ -33,8 +33,8 @@
 
 #include <autoware_msgs/VehicleStatus.h>
 
-#include "kalman_filter/kalman_filter.h"
-#include "kalman_filter/kalman_filter_delayed_measurement.h"
+#include "amathutils_lib/kalman_filter.hpp"
+#include "amathutils_lib/kalman_filter_delayed_measurement.hpp"
 
 class KalmanFilterNode
 {
