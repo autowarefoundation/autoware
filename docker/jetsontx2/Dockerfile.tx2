@@ -193,10 +193,6 @@ RUN /bin/bash -c " \
       cd ~; \
       git clone https://github.com/CPFL/Autoware.git --recurse-submodules; \
       cd Autoware; \
-   # Worked with these two commits:
-   # e9c9bab2471524c14303f645ca6983d6c9113d3c
-   # 276073b87d26a085d437ff54b003919e0ce5c65b
-      git checkout e9c9bab2471524c14303f645ca6983d6c9113d3c; \
       cd ros/src; \
       rm -rf driveworks; \
       cd ~/Autoware/ros/src/computing/perception/localization/lib/ndt_gpu/include/ndt_gpu; \
@@ -212,7 +208,6 @@ RUN /bin/bash -c " \
       wget https://pjreddie.com/media/files/yolov3.weights; \
       wget https://pjreddie.com/media/files/yolov3-tiny.weights; \
       cd ~/Autoware/ros/src/computing/perception/detection/vision_detector/packages/vision_darknet_detect/darknet/cfg; \
-   #   wget https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3-tiny.cfg; \  
    # Install Autoware
       source ~/.bashrc; \
       source /opt/ros/kinetic/setup.bash; \
@@ -224,8 +219,11 @@ RUN /bin/bash -c " \
       rosdep update; \
       rosdep install -y --from-paths src --ignore-src --rosdistro kinetic; \
       cd ~/Autoware/ros; \
-      catkin_make clean; \
-      source devel/setup.bash; \
-      export LIBRARY_PATH=/usr/lib/OpenNI2/Drivers:$LIBRARY_PATH; \
-      catkin_make -DCMAKE_BUILD_TYPE=Release -j1; \
-      sed -i 's/<arg\ name=\"use_gnss\"\ default=\"1\"\ \/>/<arg\ name=\"use_gnss\"\ default=\"0\"\ \/>/g' ~/Autoware/ros/src/computing/perception/localization/packages/lidar_localizer/launch/ndt_matching.launch"
+   # Build Autoware
+      sudo apt-get update; \
+      sudo apt-get install -y python-pip python3-pip; \
+      sudo -H python3 -m pip install -U setuptools; \
+      sudo apt install -y python3-colcon-common-extensions; \
+      source /opt/ros/kinetic/setup.bash; \
+      echo \"source /opt/ros/kinetic/setup.bash\" >> ~/.bashrc; \
+      ./colcon_release"      
