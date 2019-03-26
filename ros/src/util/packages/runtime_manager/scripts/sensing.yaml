@@ -1411,7 +1411,7 @@ params :
       label : distance_threshold
       min   : 0.01
       max   : 100
-      v     : 0.2
+      v     : 0.3
       cmd_param :
         dash        : ''
         delim       : ':='
