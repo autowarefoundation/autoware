@@ -47,7 +47,3 @@ repositories:
     type: git
     url: https://github.com/CPFL/car_demo.git
     version: e364448fad421cb6244c9f828f978d8d877dcbf9
-  lgsvl/lgsvl_msgs:
-    type: git
-    url: https://github.com/lgsvl/lgsvl_msgs.git
-    version: da97879fb78e1df3b84a60572d90faa6aea4189b
