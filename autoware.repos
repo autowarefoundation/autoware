@@ -33,7 +33,7 @@ repositories:
     version: master
   autoware/visualisation:
     type: git
-    url: https://github.com/autowarefoundation/visualisation.git
+    url: https://github.com/autowarefoundation/visualization.git
     version: master
   drivers:
     type: git
