@@ -129,7 +129,7 @@ void DecisionMakerNode::updateGoState(cstring_t& state_name, int status)
 
 void DecisionMakerNode::updateWaitState(cstring_t& state_name, int status)
 {
-  publishStoplineWaypointIdx(current_status_.closest_waypoint + 1);
+  publishStoplineWaypointIdx(current_status_.finalwaypoints.waypoints.at(2).gid);
 }
 
 void DecisionMakerNode::entryStopState(cstring_t& state_name, int status)
@@ -137,7 +137,7 @@ void DecisionMakerNode::entryStopState(cstring_t& state_name, int status)
 }
 void DecisionMakerNode::updateStopState(cstring_t& state_name, int status)
 {
-  publishStoplineWaypointIdx(current_status_.closest_waypoint + 1);
+  publishStoplineWaypointIdx(current_status_.finalwaypoints.waypoints.at(2).gid);
 }
 void DecisionMakerNode::exitStopState(cstring_t& state_name, int status)
 {
