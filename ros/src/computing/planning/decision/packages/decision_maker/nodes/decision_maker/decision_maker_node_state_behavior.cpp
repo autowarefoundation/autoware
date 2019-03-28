@@ -109,7 +109,15 @@ void DecisionMakerNode::updateCruiseState(cstring_t& state_name, int status)
     return;
   }
 
-  if (current_status_.change_flag == enumToInteger<E_ChangeFlags>(E_ChangeFlags::STRAIGHT))
+  if (current_status_.change_flag == enumToInteger<E_ChangeFlags>(E_ChangeFlags::LEFT))
+  {
+    tryNextState("lane_change_left");
+  }
+  else if (current_status_.change_flag == enumToInteger<E_ChangeFlags>(E_ChangeFlags::RIGHT))
+  {
+    tryNextState("lane_change_right");
+  }
+  else
   {
     switch (getSteeringStateFromWaypoint())
     {
@@ -126,17 +134,7 @@ void DecisionMakerNode::updateCruiseState(cstring_t& state_name, int status)
         break;
     }
   }
-  else
-  {
-    if (current_status_.change_flag == enumToInteger<E_ChangeFlags>(E_ChangeFlags::LEFT))
-    {
-      tryNextState("lane_change_left");
-    }
-    else if (current_status_.change_flag == enumToInteger<E_ChangeFlags>(E_ChangeFlags::RIGHT))
-    {
-      tryNextState("lane_change_right");
-    }
-  }
+
 }
 
 void DecisionMakerNode::entryTurnState(cstring_t& state_name, int status)
