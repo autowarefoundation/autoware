@@ -247,6 +247,8 @@ void DecisionMakerNode::initVectorMap(void)
     return;
   }
 
+  intersects.clear();
+
   for (const auto& cross_road : crossroads)
   {
     geometry_msgs::Point _prev_point;

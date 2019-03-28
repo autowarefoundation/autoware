@@ -61,7 +61,7 @@ void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_
   ROS_WARN("%s is not implemented", __func__);
 }
 
-void DecisionMakerNode::insertPointWithinCrossRoad(const std::vector<CrossRoadArea>& _intersects,
+void DecisionMakerNode::insertPointWithinCrossRoad(std::vector<CrossRoadArea>* _intersects,
                                                    autoware_msgs::LaneArray& lane_array)
 {
   for (auto& lane : lane_array.lanes)
@@ -73,22 +73,22 @@ void DecisionMakerNode::insertPointWithinCrossRoad(const std::vector<CrossRoadAr
       pp.y = wp.pose.pose.position.y;
       pp.z = wp.pose.pose.position.z;
 
-      for (auto& area : intersects)
+      for (int i=0; i<_intersects->size(); i++)
       {
-        if (CrossRoadArea::isInsideArea(&area, pp))
+        if (CrossRoadArea::isInsideArea(&_intersects->at(i), pp))
         {
           // area's
-          if (area.insideLanes.empty() || wp.gid != area.insideLanes.back().waypoints.back().gid + 1)
+          if (_intersects->at(i).insideLanes.empty() || wp.gid != _intersects->at(i).insideLanes.back().waypoints.back().gid + 1)
           {
             autoware_msgs::Lane nlane;
-            area.insideLanes.push_back(nlane);
-            area.bbox.pose.orientation = wp.pose.pose.orientation;
+            _intersects->at(i).insideLanes.push_back(nlane);
+            _intersects->at(i).bbox.pose.orientation = wp.pose.pose.orientation;
           }
-          area.insideLanes.back().waypoints.push_back(wp);
-          area.insideWaypoint_points.push_back(pp);  // geometry_msgs::point
-          // area.insideLanes.Waypoints.push_back(wp);//autoware_msgs::Waypoint
+          _intersects->at(i).insideLanes.back().waypoints.push_back(wp);
+          _intersects->at(i).insideWaypoint_points.push_back(pp);  // geometry_msgs::point
+
           // lane's wp
-          wp.wpstate.aid = area.area_id;
+          wp.wpstate.aid = _intersects->at(i).area_id;
         }
       }
     }
@@ -97,10 +97,12 @@ void DecisionMakerNode::insertPointWithinCrossRoad(const std::vector<CrossRoadAr
 
 void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
 {
-  // intersects.clear();
-  insertPointWithinCrossRoad(intersects, lane_array);
+  // reset intersects
+  std::vector<CrossRoadArea> intersects_local = intersects;
+  insertPointWithinCrossRoad(&intersects_local, lane_array);
+
   // STR
-  for (auto& area : intersects)
+  for (auto& area : intersects_local)
   {
     for (auto& laneinArea : area.insideLanes)
     {

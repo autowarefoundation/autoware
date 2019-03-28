@@ -34,9 +34,6 @@ void DecisionMakerNode::exitWaitOrderState(cstring_t& state_name, int status)
 
 void DecisionMakerNode::entryMissionCheckState(cstring_t& state_name, int status)
 {
-  intersects.clear();
-  initVectorMap();
-
   publishOperatorHelpMessage("Received mission, checking now...");
   setEventFlag("received_back_state_waypoint", false);
 

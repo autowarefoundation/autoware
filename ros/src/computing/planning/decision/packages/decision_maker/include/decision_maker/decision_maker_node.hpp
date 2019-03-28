@@ -178,7 +178,7 @@ private:
   void tryNextState(cstring_t& key);
   bool isArrivedGoal(void);
   bool isLocalizationConvergence(const geometry_msgs::Point& _current_point);
-  void insertPointWithinCrossRoad(const std::vector<CrossRoadArea>& _intersects, autoware_msgs::LaneArray& lane_array);
+  void insertPointWithinCrossRoad(std::vector<CrossRoadArea>* _intersects, autoware_msgs::LaneArray& lane_array);
   void setWaypointState(autoware_msgs::LaneArray& lane_array);
   bool waitForEvent(cstring_t& key, const bool& flag);
   bool waitForEvent(cstring_t& key, const bool& flag, const double& timeout);
