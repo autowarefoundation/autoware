@@ -18,7 +18,16 @@ catkin_package(
 set(CMAKE_C_FLAGS "-O2 -g -Wall -Wno-unused-result ${CMAKE_C_FLAGS}")
 set(CMAKE_CXX_FLAGS "-O2 -g -Wall -Wno-unused-result ${CMAKE_CXX_FLAGS}")
 
-if(CUDA_FOUND)
+####### Melodic Checks
+SET (CPU_ONLY FALSE)
+if (CUDA_FOUND AND "$ENV{ROS_DISTRO}" STREQUAL "melodic" )
+    if(${CMAKE_VERSION} VERSION_LESS "3.12.3")
+        message("GPU support on Melodic requires CMake version>= 3.12.3")
+        SET (CPU_ONLY TRUE)
+    endif()
+endif()
+####### End Melodic Checks
+if (NOT CPU_ONLY AND ${CUDA_FOUND})
     include_directories(
             include
             ${catkin_INCLUDE_DIRS}

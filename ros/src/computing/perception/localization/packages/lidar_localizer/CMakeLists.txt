@@ -14,13 +14,27 @@ if (OPENMP_FOUND)
 endif ()
 
 find_package(CUDA)
+find_package(Eigen3 QUIET)
 
-if (CUDA_FOUND)
+####### Melodic Checks
+SET (CPU_ONLY FALSE)
+if (CUDA_FOUND AND "$ENV{ROS_DISTRO}" STREQUAL "melodic" )
+    if(${CMAKE_VERSION} VERSION_LESS "3.12.3")
+        message("GPU support on Melodic requires CMake version>= 3.12.3")
+        SET (CPU_ONLY TRUE)
+    else()
+        if (${EIGEN3_VERSION_STRING} VERSION_LESS "3.3.5")
+            message("GPU support on Melodic requires Eigen version>= 3.3.5")
+            SET (CPU_ONLY TRUE)
+        endif()
+    endif()
+endif()
+####### End Melodic Checks
+
+if (NOT CPU_ONLY AND CUDA_FOUND)
     add_definitions(-DCUDA_FOUND)
     list(APPEND PCL_OPENMP_PACKAGES ndt_gpu)
 endif ()
-
-find_package(Eigen3 QUIET)
 
 if (NOT EIGEN3_FOUND)
     # Fallback to cmake_modules
