@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>kitti_player</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>
         This node aims to play the kitti data into ROS. This repository is a
         catkin upgrade from the original work by Francesco Sacchi

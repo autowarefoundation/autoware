@@ -1,0 +1,13 @@
+<launch>
+    <arg name="voxel_leaf_size"      default="2.0"/>
+    <arg name="measurement_range"     default="200.0"/>
+
+    <include file="$(find points_downsampler)/launch/points_downsample.launch"/>
+
+    <node pkg="rostopic" type="rostopic" name="config_voxel_grid_filter" ns="autoware_launcher"
+      args="pub --latch --once /config/voxel_grid_filter autoware_config_msgs/ConfigVoxelGridFilter '{
+        voxel_leaf_size:  $(arg voxel_leaf_size),
+        measurement_range:  $(arg measurement_range)
+     }'"/>
+
+</launch>

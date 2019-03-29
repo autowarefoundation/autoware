@@ -73,13 +73,11 @@ Autoware is provided under the [Apache 2 License](https://github.com/CPFL/Autowa
 
 ## Contact
 
-Autoware Developers Slack Team (https://autoware.herokuapp.com/)
+[Autoware Developers Slack Team](https://autoware.herokuapp.com/)
 
-Autoware Developers (<autoware@googlegroups.com>)
+[Autoware Discourse](https://discourse.ros.org/c/autoware)
 
-To subscribe to the Autoware Developers mailing list,
-- If you have a Google account, go to https://groups.google.com/d/forum/autoware, and click the **Apply to Join Group** button.
-- If you don't have a Google account, send an email to autoware+subscribe@googlegroups.com.
+Please see the [Support Guidelines](https://github.com/CPFL/Autoware/wiki/Support-guidelines) for more details about getting help.
 
 ***
 <div align="center"><img src="docs/images/autoware_logo_1.png" width="400"/></div>

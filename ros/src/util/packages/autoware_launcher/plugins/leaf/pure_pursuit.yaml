@@ -1,0 +1,24 @@
+format: Autoware Launcher Plugin Version 0.1
+args:
+- {name: is_linear_interpolation, type: bool, default: true}
+- {name: publishes_for_steering_robot, type: bool, default: false}
+- {name: param_flag, type: int, default: 0}
+- {name: velocity, type: real, default: 5.0}
+- {name: lookahead_distance, type: real, default: 4.0}
+- {name: lookahead_ratio, type: real, default: 2.0}
+- {name: minimum_lookahead_distance, type: real, default: 6.0}
+- {name: displacement_threshold, type: real, default: 0.0}
+- {name: relative_angle_threshold, type: real, default: 0.0}
+
+panel:
+  widget: node.panel
+  frames:
+  - {target: args.is_linear_interpolation, widget: basic.bool}
+  - {target: args.publishes_for_steering_robot, widget: basic.bool}
+  - {target: args.param_flag, widget: basic.int}
+  - {target: args.velocity, widget: basic.real}
+  - {target: args.lookahead_distance, widget: basic.real}
+  - {target: args.lookahead_ratio, widget: basic.real}
+  - {target: args.minimum_lookahead_distance, widget: basic.real}
+  - {target: args.displacement_threshold, widget: basic.real}
+  - {target: args.relative_angle_threshold, widget: basic.real}

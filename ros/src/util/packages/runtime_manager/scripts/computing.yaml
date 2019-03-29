@@ -172,65 +172,6 @@ subs :
           camera_info_src :
             flags  : [ nl ]
 
-      - name : vision_klt_track
-        desc : vision_klt_track desc sample
-        cmd  : roslaunch vision_klt_track vision_klt_track.launch
-        param: car_kf
-        gui  :
-          dialog_width  : 600
-          dialog_height : 350
-          flags : [ need_camera_info ]
-          sel_cam_dialog_only : [ camera_id ]
-          sel_cam_dialog_allow: [ camera_id ]
-          camera_id :
-            border : 16
-            flags : [ all ]
-          sync :
-            func : self.button_synchronization.GetValue()
-
-      - name : vision_kf_track
-        desc : vision_kf_track desc sample
-        cmd  : roslaunch vision_kf_track vision_kf_track.launch
-        param: car_kf
-        gui  :
-          flags                  : [ open_dialog, need_camera_info ]
-          config_dialog          : MyDialogCarPedestrian
-          car_pedestrian_obj_key : { car : car_kf, pedestrian : pedestrian_kf }
-          config_dialog_only     :
-            - initial_lifespan
-            - default_lifespan
-            - noise_covariance
-            - measurement_noise_covariance
-            - error_estimate_covariance
-            - percentage_of_overlapping
-            - orb_features
-            - use_orb
-          open_dialog_only       : [ car, pedestrian ]
-          open_dialog_ok_label   : Start
-          car :
-            user_category : Detection Target
-          pedestrian :
-            border : 16
-            flags  : [ left ]
-          sel_cam_dialog_only : [ camera_id ]
-          sel_cam_dialog_allow: [ camera_id ]
-          camera_id :
-            border : 16
-            flags : [ all ]
-          sync :
-            func : self.button_synchronization.GetValue()
-
-      - name : vision_dummy_track
-        desc : vision_dummy_track desc sample
-        cmd  : roslaunch vision_dummy_track vision_dummy_track.launch
-        gui  :
-          flags : [ need_camera_info ]
-          sel_cam_dialog_only : [ camera_id ]
-          sel_cam_dialog_allow: [ camera_id ]
-          camera_id :
-            border : 16
-            flags : [ all ]
-
     - name : lidar_detector
       desc : lidar_detector desc sample
       subs :
@@ -247,6 +188,14 @@ subs :
             flags : [nl ]
           sync :
             func : self.button_synchronization.GetValue()
+      - name : lidar_cnn_baidu_detect
+        desc : lidar_cnn_segmentation_baidu_detect. Requires Caffe framework
+        cmd  : roslaunch lidar_apollo_cnn_seg_detect lidar_apollo_cnn_seg_detect.launch
+        param: lidar_cnn_baidu_params
+      - name : lidar_point_pillars
+        desc : lidar_point_pillars. Requires CUDA and TensorRT
+        cmd  : roslaunch lidar_point_pillars lidar_point_pillars.launch
+        param: lidar_point_pillars_params
       - name : lidar_naive_l_shape_detect
         desc : lidar_naive_l_shape_detect desc sample
         cmd  : roslaunch lidar_naive_l_shape_detect lidar_naive_l_shape_detect.launch
@@ -254,10 +203,10 @@ subs :
         gui  :
           sync :
             func : self.button_synchronization.GetValue()
-      - name : lidar_svm_detect
-        desc : lidar_svm_detect desc sample
-        cmd  : roslaunch lidar_svm_detect lidar_svm_detect.launch
-        param: lidar_svm_detect
+      - name : lidar_shape_estimation
+        desc : lidar_shape_estimation desc sample
+        cmd  : roslaunch lidar_shape_estimation shape_estimation_clustering.launch
+        param: lidar_shape_estimation_param
         gui  :
           sync :
             func : self.button_synchronization.GetValue()
@@ -266,10 +215,6 @@ subs :
         cmd  : roslaunch lidar_fake_perception lidar_fake_perception.launch
         param: lidar_fake_perception_param
         gui  :
-          dialog_width  : 600
-          dialog_height : 450
-          real_points_topic :
-            flags : [nl ]
           sync :
             func : self.button_synchronization.GetValue()
 
@@ -300,95 +245,6 @@ subs :
     - name : lidar_tracker
       desc : lidar_tracker desc sample
       subs :
-      - name : lidar_kf_track
-        desc : lidar_kf_track desc sample
-        cmd  : roslaunch lidar_kf_track lidar_kf_track.launch
-        param: lidar_kf_track
-        gui  :
-          sync :
-            func : self.button_synchronization.GetValue()
-      - name : lidar_pf_track
-        desc : lidar_pf_track desc sample
-        cmd  : roslaunch lidar_pf_track lidar_pf_track.launch
-        param: lidar_pf_track
-        gui  :
-          sync :
-            func : self.button_synchronization.GetValue()
-      - name : lidar_euclidean_track
-        desc : lidar_euclidean_track desc sample
-        cmd  : roslaunch lidar_euclidean_track lidar_euclidean_track.launch
-        param: lidar_euclidean_track
-        gui  :
-          sync :
-            func : self.button_synchronization.GetValue()
-
-      - name : lidar_kf_contour_track
-        desc : part of open planner perception package
-        cmd  : roslaunch lidar_kf_contour_track lidar_kf_contour_track.launch
-        param: lidar_kf_contour_track_param
-        gui  :
-          dialog_width  : 650
-          dialog_height : 450
-          sync :
-            func : self.button_synchronization.GetValue()
-
-      - name : range_fusion
-        desc : range_fusion desc sample
-        cmd  : roslaunch range_fusion range_fusion.launch
-        param: car_fusion
-        gui  :
-          flags                  : [ open_dialog ]
-          config_dialog          : MyDialogCarPedestrian
-          car_pedestrian_obj_key : { car : car_fusion, pedestrian : pedestrian_fusion }
-          config_dialog_only     : [ min_low_height, max_low_height, max_height, min_points, dispersion ]
-          open_dialog_only       : [ car, pedestrian ]
-          open_dialog_ok_label   : Start
-          car :
-            user_category : Detection Target
-          pedestrian :
-            border : 16
-            flags  : [ left ]
-          sync :
-            func : self.button_synchronization.GetValue()
-
-      - name : obj_reproj
-        desc : obj_reproj desc sample
-        cmd  : roslaunch obj_reproj obj_reproj.launch
-        param: obj_reproj
-        gui  :
-          flags                : [ open_dialog, no_link, need_camera_info ]
-          open_dialog_ok_label : Start
-          car :
-            user_category : Detection Target
-          pedestrian :
-            border : 16
-            flags  : [ left ]
-          sel_cam_dialog_only : [ camera_id ]
-          sel_cam_dialog_allow: [ camera_id ]
-          camera_id :
-            border : 16
-            flags : [ all ]
-          sync :
-            func : self.button_synchronization.GetValue()
-      - name : obj_fusion
-        desc : obj_fusion desc sample
-        cmd  : roslaunch obj_fusion obj_fusion.launch
-        param: obj_fusion
-        gui  :
-          flags                : [ open_dialog, no_link ]
-          open_dialog_ok_label : Start
-          car :
-            user_category : Detection Target
-          pedestrian :
-            border : 16
-            flags  : [ left ]
-          sync :
-            func : self.button_synchronization.GetValue()
-
-
-    - name : object_tracker
-      desc : object_tracker desc sample
-      subs :
         - name : imm_ukf_pda_track
           desc : imm_ukf_pda_track desc sample
           cmd  : roslaunch imm_ukf_pda_track imm_ukf_pda_track.launch
@@ -403,6 +259,13 @@ subs :
             sync :
               func : self.button_synchronization.GetValue()
 
+        - name : lidar_kf_contour_track
+          desc : part of open planner perception package
+          cmd  : roslaunch lidar_kf_contour_track lidar_kf_contour_track.launch
+          param: lidar_kf_contour_track_param
+          gui  :
+            dialog_width  : 650
+            dialog_height : 450
 
     - name : trafficlight_recognizer
       desc : trafficlight_recognizer desc sample
@@ -454,79 +317,6 @@ subs :
           camera_id :
             border : 16
             flags : [ all ]
-
-    - name : viewers
-      desc : viewers desc sample
-      subs :
-      - name : image_viewer
-        desc : image_viewer desc sample
-        cmd  : roslaunch viewers viewers.launch viewer_type:=image_viewer
-        param: viewer_sel_cam
-        gui  :
-          flags : [ need_camera_info ]
-          sel_cam_dialog_only : [ camera_id ]
-          sel_cam_dialog_allow: [ camera_id ]
-          camera_id :
-            border : 16
-            flags : [ all ]
-      - name : image_d_viewer
-        desc : image_d_viewer desc sample
-        cmd  : roslaunch viewers viewers.launch viewer_type:=image_d_viewer
-        param: viewer_sel_cam
-        gui  :
-          flags : [ need_camera_info ]
-          sel_cam_dialog_only : [ camera_id ]
-          sel_cam_dialog_allow: [ camera_id ]
-          camera_id :
-            border : 16
-            flags : [ all ]
-      - name : points_image_viewer
-        desc : points_image_viewer desc sample
-        cmd  : roslaunch viewers viewers.launch viewer_type:=points_image_viewer
-        param: viewer_sel_cam
-        gui  :
-          flags : [ need_camera_info ]
-          sel_cam_dialog_only : [ camera_id ]
-          sel_cam_dialog_allow: [ camera_id ]
-          camera_id :
-            border : 16
-            flags : [ all ]
-      - name : points_image_d_viewer
-        desc : points_image_d_viewer desc sample
-        cmd  : roslaunch viewers viewers.launch viewer_type:=points_image_d_viewer
-        param: viewer_sel_cam
-        gui  :
-          flags : [ need_camera_info ]
-          sel_cam_dialog_only : [ camera_id ]
-          sel_cam_dialog_allow: [ camera_id ]
-          camera_id :
-            border : 16
-            flags : [ all ]
-      - name : vscan_image_viewer
-        desc : vscan_image_viewer desc sample
-        cmd  : roslaunch viewers viewers.launch viewer_type:=vscan_image_viewer
-        param: viewer_sel_cam
-        gui  :
-          flags : [ need_camera_info ]
-          sel_cam_dialog_only : [ camera_id ]
-          sel_cam_dialog_allow: [ camera_id ]
-          camera_id :
-            border : 16
-            flags : [ all ]
-      - name : vscan_image_d_viewer
-        desc : vscan_image_d_viewer desc sample
-        cmd  : roslaunch viewers viewers.launch viewer_type:=vscan_image_d_viewer
-        param: viewer_sel_cam
-        gui  :
-          flags : [ need_camera_info ]
-          sel_cam_dialog_only : [ camera_id ]
-          sel_cam_dialog_allow: [ camera_id ]
-          camera_id :
-            border : 16
-            flags : [ all ]
-      - name : traffic_light_viewer
-        desc : traffic_light_viewer desc sample
-        cmd  : roslaunch viewers viewers.launch viewer_type:=traffic_light_viewer
 
   - name : Semantics
     desc : Semantics desc sample
@@ -586,6 +376,16 @@ subs :
         sync :
           func : self.button_synchronization.GetValue()
 
+    - name : costmap_generator
+      desc : costmap_generator desc sample
+      cmd  : roslaunch costmap_generator costmap_generator.launch
+      param: costmap_generator_param
+      gui  :
+        dialog_width  : 400
+        dialog_height : 400
+        sync :
+          func : self.button_synchronization.GetValue()
+
   - name : Prediction
     desc : Prediction desc sample
     subs :
@@ -631,7 +431,7 @@ subs :
       - name : astar_navi
         desc : astar_navi desc sample
         cmd  : roslaunch freespace_planner astar_navi.launch
-        param: astar_navi
+        param: astar_navi_param
 #    - name : way_planner (OpenPlanner - old ver)
 #      desc : Global planner for OpenPlanner
 #      subs :
@@ -662,6 +462,164 @@ subs :
 #        desc : Feedforward PID waypoint follower
 #        cmd  : roslaunch ff_waypoint_follower ffwaypointfollower_car.launch
 #        param: ff_waypoint_follower
+
+    - name : waypoint_maker
+      desc : waypoint_maker desc sample
+      subs :
+       - name : waypoint_loader
+         desc : waypoint_loader desc sample
+         cmd  : roslaunch waypoint_maker waypoint_loader.launch
+         param: waypoint_loader
+         gui  :
+           dialog_width  : 600
+           dialog_height : 450
+           multi_lane_csv :
+             depend      : load_csv
+             depend_bool : 'lambda v : v == 1'
+             prop  : 1
+           realtime_tuning_mode:
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+             flags : [ nl ]
+           resample_mode :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+           resample_interval :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+             flags : [ nl ]
+           replan_curve_mode :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+           overwrite_vmax_mode :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+           replan_endpoint_mode :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+             flags : [ nl ]
+           velocity_max :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+             flags : [ nl ]
+           radius_thresh :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+             flags : [ nl ]
+           radius_min :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+             flags : [ nl ]
+           velocity_min :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+             flags : [ nl ]
+           accel_limit :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+             flags : [ nl ]
+           decel_limit :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+             flags : [ nl ]
+           velocity_offset :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+             flags : [ nl ]
+           end_point_offset :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+             flags : [ nl ]
+           braking_distance :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+             flags : [ nl ]
+
+       - name : waypoint_saver
+         desc : waypoint_saver desc sample
+         cmd  : roslaunch waypoint_maker waypoint_saver.launch
+         param: waypoint_saver
+         gui  :
+           input_type    :
+             flags       : [ nl ]
+           save_filename :
+             prop        : 1
+             flags       : [ nl ]
+           save_velocity :
+             depend      : input_type
+             depend_bool : 'lambda v : v == 0'
+           interval      :
+             depend      : input_type
+             depend_bool : 'lambda v : v == 0'
+             flags       : [ nl ]
+           lane_topic    :
+             depend      : input_type
+             depend_bool : 'lambda v : v == 1'
+       - name : waypoint_clicker
+         desc : waypoint_clicker desc sample
+         cmd  : rosrun waypoint_maker waypoint_clicker
+         param: waypoint_clicker
+       - name : waypoint_velocity_visualizer
+         desc : waypoint_velocity_visualizer desc sample
+         cmd  : roslaunch waypoint_maker waypoint_velocity_visualizer.launch
+         param: waypoint_velocity_visualizer
+
+    - name : waypoint_planner
+      desc : waypoint_planner desc sample
+      subs :
+      - name : astar_avoid
+        desc : astar_avoid desc sample
+        cmd  : roslaunch waypoint_planner astar_avoid.launch
+        param: astar_avoid_param
+      - name : velocity_set
+        desc : velocity_set desc sample
+        cmd  : roslaunch waypoint_planner velocity_set.launch
+        param: velocity_set
+        gui  :
+          use_crosswalk_detection : { border : 4, flags : [ all ] }
+          enable_multiple_crosswalk_detection : { border : 4, flags : [ all ] }
+          dialog_width  : 800
+          dialog_height : 450
+
+    - name : waypoint_follower
+      desc : waypoint_follower desc sample
+      subs :
+       - name : pure_pursuit
+         desc : pure_pursuit desc sample
+         cmd  : roslaunch waypoint_follower pure_pursuit.launch
+         param: waypoint_follower
+         gui  :
+           dialog_width  : 600
+           dialog_height : 450
+           velocity:
+             depend : param_flag
+             depend_bool : 'lambda v : v == 1'
+           lookahead_distance:
+             depend : param_flag
+             depend_bool : 'lambda v : v == 1'
+           minimum_lookahead_distance:
+             depend : param_flag
+             depend_bool : 'lambda v : v == 0'
+           lookahead_ratio:
+             depend : param_flag
+             depend_bool : 'lambda v : v == 0'
+           stat_topic : [ lf ]
+       - name : twist_filter
+         desc : twist_filter desc sample
+         cmd  : roslaunch waypoint_follower twist_filter.launch
+         param: twist_filter
+       - name : wf_simulator
+         desc : wf_simulator desc sample
+         cmd  : roslaunch waypoint_follower wf_simulator.launch
+         param: wf_simulator
+         gui  :
+           initialize_source :
+             flags : [ nl ]
+           accel_rate :
+             flags : [ nl ]
+           position_error :
+             flags : [ nl ]
+
     - name : OpenPlanner - Local planning
       desc : Local Planner for OpenPlanner
       subs :
@@ -717,22 +675,6 @@ subs :
         gui  :
           dialog_width  : 600
           dialog_height : 550
-    - name : astar_planner
-      desc : astar_planner desc sample
-      subs :
-      - name : obstacle_avoid
-        desc : obstacle_avoid desc sample
-        cmd  : roslaunch astar_planner obstacle_avoid.launch
-        param: obstacle_avoid
-      - name : velocity_set
-        desc : velocity_set desc sample
-        cmd  : roslaunch astar_planner velocity_set.launch
-        param: velocity_set
-        gui  :
-          use_crosswalk_detection : { border : 4, flags : [ all ] }
-          enable_multiple_crosswalk_detection : { border : 4, flags : [ all ] }
-          dialog_width  : 800
-          dialog_height : 450
     - name : lattice_planner
       desc : lattice_planner desc sample
       subs :
@@ -771,134 +713,30 @@ subs :
         desc : lattice_twist_convert desc sample
         cmd  : rosrun lattice_planner lattice_twist_convert
 
-    - name : waypoint_maker
-      desc : waypoint_maker desc sample
-      subs :
-       - name : waypoint_loader
-         desc : waypoint_loader desc sample
-         cmd  : roslaunch waypoint_maker waypoint_loader.launch
-         param: waypoint_loader
-         gui  :
-           dialog_width  : 700
-           dialog_height : 550
-           multi_lane_csv :
-             prop  : 1
-           replanning_mode :
-             flags : [ nl ]
-           resample_mode :
-             depend      : replanning_mode
-             depend_bool : 'lambda v : v == 1'
-           resample_interval :
-             depend      : replanning_mode
-             depend_bool : 'lambda v : v == 1'
-             flags : [ nl ]
-           velocity_max :
-             depend      : replanning_mode
-             depend_bool : 'lambda v : v == 1'
-             flags : [ nl ]
-           radius_thresh :
-             depend      : replanning_mode
-             depend_bool : 'lambda v : v == 1'
-             flags : [ nl ]
-           radius_min :
-             depend      : replanning_mode
-             depend_bool : 'lambda v : v == 1'
-             flags : [ nl ]
-           velocity_min :
-             depend      : replanning_mode
-             depend_bool : 'lambda v : v == 1'
-             flags : [ nl ]
-           accel_limit :
-             depend      : replanning_mode
-             depend_bool : 'lambda v : v == 1'
-             flags : [ nl ]
-           decel_limit :
-             depend      : replanning_mode
-             depend_bool : 'lambda v : v == 1'
-             flags : [ nl ]
-           velocity_offset :
-             depend      : replanning_mode
-             depend_bool : 'lambda v : v == 1'
-             flags : [ nl ]
-           end_point_offset :
-             depend      : replanning_mode
-             depend_bool : 'lambda v : v == 1'
-             flags : [ nl ]
-           dialog : MyDialogWaypointLoader
-       - name : waypoint_saver
-         desc : waypoint_saver desc sample
-         cmd  : roslaunch waypoint_maker waypoint_saver.launch
-         param: waypoint_saver
-         gui  :
-           save_filename :
-             prop  : 1
-           save_velocity :
-             flags : [ nl ]
-       - name : waypoint_clicker
-         desc : waypoint_clicker desc sample
-         cmd  : rosrun waypoint_maker waypoint_clicker
-         param: waypoint_clicker
-       - name : waypoint_velocity_visualizer
-         desc : waypoint_velocity_visualizer desc sample
-         cmd  : roslaunch waypoint_maker waypoint_velocity_visualizer.launch
-         param: waypoint_velocity_visualizer
-    - name : waypoint_follower
-      desc : waypoint_follower desc sample
-      subs :
-       - name : pure_pursuit
-         desc : pure_pursuit desc sample
-         cmd  : roslaunch waypoint_follower pure_pursuit.launch
-         param: waypoint_follower
-         gui  :
-           dialog_width  : 600
-           dialog_height : 450
-           velocity:
-             depend : param_flag
-             depend_bool : 'lambda v : v == 1'
-           lookahead_distance:
-             depend : param_flag
-             depend_bool : 'lambda v : v == 1'
-           minimum_lookahead_distance:
-             depend : param_flag
-             depend_bool : 'lambda v : v == 0'
-           lookahead_ratio:
-             depend : param_flag
-             depend_bool : 'lambda v : v == 0'
-           stat_topic : [ lf ]
-       - name : twist_filter
-         desc : twist_filter desc sample
-         cmd  : roslaunch waypoint_follower twist_filter.launch
-         param: twist_filter
-       - name : wf_simulator
-         desc : wf_simulator desc sample
-         cmd  : roslaunch waypoint_follower wf_simulator.launch
-         param: wf_simulator
-         gui  :
-           initialize_source :
-             flags : [ nl ]
-           accel_rate :
-             flags : [ nl ]
-           position_error :
-             flags : [ nl ]
-
   - name : Decision
     desc : decision groups
     subs :
     - name : state_machine(old)
       desc : state_machine desc sample
       cmd  : roslaunch state_machine state_machine.launch
-    - name : decision_maker
+    - name : decision_maker(experimental)
       desc : decision_maker desc sample
       cmd  : roslaunch decision_maker decision_maker.launch
       param: decision_maker
       gui  :
           dialog_width  : 400
-          dialog_height : 620
-
-    - name : planner_selector
-      desc : planner_selector desc sample
-      cmd  : roslaunch planner_selector planner_selector.launch
-      param: planner_selector
+          dialog_height : 600
+          use_fms:
+            flags : [ nl ]
+          auto_mission_reload:
+            depend : use_fms
+            depend_bool : 'lambda v : v == 0'
+          auto_engage:
+            depend : use_fms
+            depend_bool : 'lambda v : v == 0'
+          auto_mission_change:
+            depend : use_fms
+            depend_bool : 'lambda v : v == 0'
 
 
 
@@ -1173,7 +1011,7 @@ params :
       label   : 'output topic'
       kind    : topic
       topic_type : autoware_msgs/DetectedObjectArray
-      v       : /detection/objects
+      v       : /detection/object_tracker/objects
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -1796,34 +1634,51 @@ params :
         dash        : ''
         delim       : ':='
 
-  - name  : obstacle_avoid
+  - name  : astar_avoid_param
     vars  :
-    - name  : avoidance
-      desc  : if not checked, decide if we avoid by reading the current state
-      label : Avoidance
+    - name  : enable_avoidance
+      desc  : Enable avoidance mode
+      label : Enable Avoidance
       kind  : checkbox
       v     : False
       cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name      : avoid_distance
-      desc      : Avoid distance from the obstacle
-      label     : Avoid Distance (m)
-      min       : 0.0
-      max       : 50.0
-      v         : 13.0
+        dash  : ''
+        delim : ':='
+    - name  : avoid_waypoints_velocity
+      desc  : Velocity on avoiding waypoints
+      label : Waypoint Velocity [km/h]
+      min   : 0.0
+      max   : 40.0
+      v     : 10.0
       cmd_param :
-        dash      : ''
-        delim     : ':='
-    - name      : avoid_velocity_limit_mps
-      desc      : if the current velocity exceeds this value, we do not avoid
-      label     : Avoid Velocity Limit (m/s)
-      min       : 0.0
-      max       : 20.0
-      v         : 4.0
+        dash  : ''
+        delim : ':='
+    - name  : avoid_start_velocity
+      desc  : Self velocity for staring avoidance behavior
+      label : Avoidance Start Velocity [km/h]
+      min   : 0.0
+      max   : 20.0
+      v     : 3.0
       cmd_param :
-        dash      : ''
-        delim     : ':='
+        dash  : ''
+        delim : ':='
+    - name  : replan_interval
+      desc  : Replan interval for avoidance planning
+      label : Replan Interval [s]
+      min   : 0.0
+      max   : 10.0
+      v     : 2.0
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name  : costmap_topic
+      desc  : Costmap topic for avoidance planning
+      label : Costmap Topic
+      kind  : str
+      v     : semantics/costmap_generator/occupancy_grid
+      cmd_param:
+        dash  : ''
+        delim : ':='
 
   - name  : velocity_set
     topic : /config/velocity_set
@@ -1919,15 +1774,6 @@ params :
       min   : 0
       max   : 150
       v     : 100.0
-
-    - name : enablePlannerDynamicSwitch
-      desc : Enable Planner dynamical switch
-      label: Enable Planner dynamical switch
-      kind : checkbox
-      v    : False
-      cmd_param:
-        dash     : ''
-        delim    : ':='
 
   - name  : lattice_velocity_set
     topic : /config/lattice_velocity_set
@@ -2118,131 +1964,94 @@ params :
         dash        : ''
         delim       : ':='
 
-  - name  : planner_selector
-    topic : /config/PlannerSelector
-    msg   : ConfigPlannerSelector
-    vars  :
-    - name : latency_num
-      desc : latency_num
-      label: latency_num
-      min  : 0
-      max  : 200
-      v    : 10
-    - name : waypoints_num
-      desc : waypoints_num
-      label: waypoints_num
-      min  : 0
-      max  : 30
-      v    : 8
-    - name : convergence_num
-      desc : convergence_num
-      label: convergence_num
-      min  : 0.0
-      max  : 30.0
-      v    : 2.0
-
   - name  : decision_maker
     topic : /config/decision_maker
     msg   : ConfigDecisionMaker
     vars  :
-    - name : enable_force_state_change
-      desc : enable force state change flag
-      label: enable_force_state_change
-      kind : checkbox
-      v    : False
-    - name : enable_display_marker
-      desc : enable display marker flag
-      label: enable_display_marker
-      kind : checkbox
-      v    : False
-    - name : convergence_threshold
-      desc : Convergence threshold to DRIVE_STATE from LOCATE_VEHICLE_STATE.(Meter)
-      label: convergence_threshold
-      min  : 0.0
-      max  : 10.0
-      v    : 0.01
-    - name : convergence_count
-      desc : Number of values used for convergence determination
-      label: convergence_count
-      min  : 1
-      max  : 30
-      v    : 5
-    - name : target_waypoint
-      desc : decision maker load wp_state except stopline by target_waypoint
-      label: target_waypoint
-      min  : 0
-      max  : 50
-      v    : 14
-    - name : stopline_target_waypoint
-      desc : stopline
-      label: stopline_target_waypoint
-      min  : 0
-      max  : 50
-      v    : 10
-    - name : stopline_target_ratio
-      desc : stopline
-      label: stopline_target_ratio
-      min  : 0.0
-      max  : 0.99
-      v    : 0.0
-    - name : shift_width
-      desc : lane shift width
-      label: shift_width
-      min  : -5.0
-      max  : 5.0
-      v    : 1.0
-    - name : detection_area_rate
-      desc : detection_area_rate
-      label: detection_area_rate
-      min  : 0.0
-      max  : 3.0
-      v    : 1.0
-    - name : crawl_velocity
-      desc : crawl_velocity
-      label: crawl_velocity
-      min  : 0.0
-      max  : 10.0
-      v    : 4.0
-    - name : detection_area_x1
-      desc : detection_area_x1
-      label: detection_area_x1
-      min  : -200.0
-      max  : 200.0
-      v    : 80.0
-    - name : detection_area_x2
-      desc : detection_area_x2
-      label: detection_area_x2
-      min  : -200.0
-      max  : 200.0
-      v    : 0.0
-    - name : detection_area_y1
-      desc : detection_area_y1
-      label: detection_area_y1
-      min  : -200.0
-      max  : 200.0
-      v    : 50.0
-    - name : detection_area_y2
-      desc : detection_area_y2
-      label: detection_area_y2
-      min  : -200.0
-      max  : 200.0
-      v    : -50.0
-
-    - name : points_topic
-      desc : points_topic
-      kind  : topic
-      topic_type : sensor_msgs/PointCloud2
-      v    : /points_lanes
-      cmd_param:
+    - name  : disuse_vector_map
+      desc  : If this is enabled, the state passes through the MapInit state without vectormap.
+      label : disuse_vector_map
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : num_of_steer_behind
+      desc  : e
+      label : num_of_steer_behind
+      min   : 0
+      max   : 50
+      v     : 20
+    - name  : goal_threshold_dist
+      desc  : Threshold for transitioning to the MissionComplete state(distance between the vehicle and the end of waypoints).
+      label : goal_threshold_dist[m]
+      min   : 0.1
+      max   : 5.0
+      v     : 3.0
+    - name  : goal_threshold_vel
+      desc  : Threshold for transitioning to the MissionComplete state(velocity of the vehicle).
+      label : goal_threshold_vel[km/h]
+      min   : 0.0
+      max   : 0.1
+      v     : 0.1
+    - name  : change_threshold_dist
+      desc  : Distance threashold for DrivingMissionChange state, between current pose and new closest waypoit.
+      label : change_threshold_dist[m]
+      min   : 0.0
+      max   : 10.0
+      v     : 1.0
+    - name  : change_threshold_angle
+      desc  : Angle threashold for DrivingMissionChange state, between current pose and new closest waypoint.
+      label : change_threshold_angle[deg]
+      min   : 0.0
+      max   : 90.0
+      v     : 15.0
+    - name  : points_topic
+      desc  : points_topic
+      kind  : str
+      v     : /points_lanes
+      cmd_param :
               dash : ''
               delim: ':='
-    - name : baselink_tf
-      desc : baselnk_tf
-      kind : str
-      v    : base_link
-      cmd_param:
+    - name  : baselink_tf
+      desc  : baselnk_tf
+      kind  : str
+      v     : base_link
+      cmd_param :
               dash : ''
               delim: ':='
+    - name  : use_fms
+      desc  : If this is disbled, part of state transitions are automatically executed.
+      label : use_fms
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : auto_mission_reload
+      desc  : If this is enabled, the mission will be automatically reloaded after the MissionComplete state.
+      label : auto_mission_reload
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : auto_engage
+      desc  : Automatically engage after load the mission.
+      label : auto_engage
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : auto_mission_change
+      desc  : The state transitions to DrivingMissionChange state automatically when load the mission while Driving state.
+      label : auto_mission_change
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
 
 
   - name  : car_kf
@@ -2298,7 +2107,7 @@ params :
       max   : 1
       v     : 0
 
-    - name     : car
+    - name     : carHEAD
       desc     : car desc sample
       label    : Car
       kind     : checkbox
@@ -2675,16 +2484,8 @@ params :
       min       : 1.0
       max       : 50
       v         : 10.0
-    - name : enablePlannerDynamicSwitch
-      desc : Enable Planner dynamical switch
-      label: Enable Planner dynamical switch
-      kind : checkbox
-      v    : False
-      cmd_param:
-        dash     : ''
-        delim    : ':='
 
-  - name  : astar_navi
+  - name  : astar_navi_param
     vars  :
     - name  : use_back
       desc  : Use reverse motion for planning
@@ -2692,17 +2493,34 @@ params :
       kind  : checkbox
       v     : False
       cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name      : waypoint_velocity_kmph
-      desc      : Velocity of planned waypoints
-      label     : Waypoint Velocity
-      min       : 0.0
-      max       : 40.0
-      v         : 5.0
+        dash  : ''
+        delim : ':='
+    - name  : waypoints_velocity
+      desc  : Velocity on planned waypoints
+      label : Waypoint Velocity [km/h]
+      min   : 0.0
+      max   : 40.0
+      v     : 5.0
       cmd_param :
-        dash      : ''
-        delim     : ':='
+        dash  : ''
+        delim : ':='
+    - name  : update_rate
+      desc  : Replanning rate
+      label : Update Rate [Hz]
+      min   : 0.0
+      max   : 10.0
+      v     : 0.5
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name  : costmap_topic
+      desc  : Costmap topic for planning
+      label : Costmap Topic
+      kind  : str
+      v     : semantics/costmap_generator/occupancy_grid
+      cmd_param :
+        dash  : ''
+        delim : ':='
 
   - name  : way_planner
     vars  :
@@ -3057,14 +2875,6 @@ params :
       - custom read from folder
       - custom read from kml file
       v   : 0
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name : enablePlannerDynamicSwitch
-      desc : Enable Planner dynamical switch
-      label: Enable Planner dynamical switch
-      kind : checkbox
-      v    : False
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -3728,6 +3538,20 @@ params :
         var_name    : save_finename
         dash        : ''
         delim       : ':='
+    - name      : input_type
+      desc      : input type
+      label     : Input Type
+      kind      : radio_box
+      choices   :
+      - VehicleFootprint
+      - LaneArrayTopic
+      descs     :
+      - save vehicle footprint as waypoints.csv
+      - save autoware_msgs/LaneArray topic as waypoints.
+      v         : 0
+      cmd_param :
+        dash     : ''
+        delim    : ':='
     - name  : save_velocity
       descs : When you save the velocity in each waypoints, Please check if /current_velocity is publishing
       label : Save /current_velocity
@@ -3743,6 +3567,15 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name      : lane_topic
+      desc      : subscribed LaneArray topic name
+      label     : lane topic
+      v         : /lane_waypoints_array
+      kind  : topic
+      topic_type : autoware_msgs/LaneArray
+      cmd_param :
+        dash      : ''
+        delim     : ':='
 
   - name  : waypoint_clicker
     vars  :
@@ -3762,9 +3595,17 @@ params :
       rosparam  : /waypoint_clicker/output_file
 
   - name  : waypoint_loader
-    topic : /config/waypoint_loader
-    msg   : ConfigWaypointLoader
+    topic : /config/waypoint_replanner
+    msg   : ConfigWaypointReplanner
     vars  :
+    - name      : load_csv
+      desc      : launch waypoint_loader
+      label     : load csv
+      kind      : checkbox
+      v         : true
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name      : multi_lane_csv
       desc      : driving_lane_csv desc sample
       label     : 'multi_lane'
@@ -3777,6 +3618,14 @@ params :
     - name      : replanning_mode
       desc      : Enable velocity replanning mode
       label     : 'replanning_mode'
+      kind      : checkbox
+      v         : false
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : realtime_tuning_mode
+      desc      : Enable realtime tuning mode
+      label     : realtime_tuning_mode
       kind      : checkbox
       v         : false
       cmd_param :
@@ -3797,11 +3646,35 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name      : replan_curve_mode
+      desc      : Enable replan curve mode
+      label     : replan curve mode
+      kind      : checkbox
+      v         : false
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : overwrite_vmax_mode
+      desc      : Enavle overwrite velocity max mode
+      label     : overwrite velocity max mode
+      kind      : checkbox
+      v         : false
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : replan_endpoint_mode
+      desc      : Enable replan endpoint mode
+      label     : replan endpoint mode
+      kind      : checkbox
+      v         : true
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name      : velocity_max
       desc      : All velocities are limited under Vmax [km/h]
       label     : Velocity Max Limit - Vmax [km/h]
-      min       : 10.0
-      max       : 60.0
+      min       : 0.1
+      max       : 100.0
       v         : 20.0
       cmd_param :
         dash        : ''
@@ -3838,7 +3711,7 @@ params :
       label     : Acceleration Limit - Accel limit [m/s^2]
       min       : 0.0
       max       : 5.0
-      v         : 0.98
+      v         : 0.5
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -3847,7 +3720,7 @@ params :
       label     : Deceleration Limit - Decel limit [m/s^2]
       min       : 0.0
       max       : 5.0
-      v         : 0.98
+      v         : 0.3
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -3860,20 +3733,21 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name      : end_point_offset
-      desc      : Expanded end points (v = 0) for safe stopping
-      label     : End Point Offset
+    - name      : braking_distance
+      desc      : braking distance (v = vmin) for safe stopping
+      label     : Braking Distance
       min       : 0
-      max       : 30
+      max       : 10
       v         : 5
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name      : disable_decision_maker
-      desc      : if you not check this, you have to run a decisionmaker node.
-      label     : 'disable_decision_maker'
-      kind      : checkbox
-      v         : true
+    - name      : end_point_offset
+      desc      : Expanded end points (v = 0) for safe stopping
+      label     : End Point Offset
+      min       : 0
+      max       : 2
+      v         : 1
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -5143,6 +5017,26 @@ params :
         dash        : ''
         delim       : ':='
 
+  - name  : lidar_shape_estimation_param
+    vars  :
+    - name    : input
+      desc    : input topic desc sample
+      label   : 'input topic'
+      kind  : topic
+      topic_type : autoware_msgs/DetectedObjectArray
+      v       : /detection/lidar_detector/objects
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : output
+      desc    : output topic desc sample
+      label   : 'output topic'
+      kind    : str
+      v       : /detection/shape_estimation/objects
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
   - name  : lidar_fake_perception_param
     vars  :
     - name    : initial_pose_topic
@@ -5394,6 +5288,14 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
+    - name  : use_vector_map
+      desc  : Use ROI Filter to remove objects outside of the drivable area
+      label : use_vector_map
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
 
   - name  : vision_beyond_track_params
     vars  :
@@ -5462,3 +5364,294 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
+    - name  : filter_out_close_object_threshold
+      desc  : Filtering out an object whithin this threshold
+      label : filter_out_close_object_threshold
+      min     : 0.0
+      max     : 10.0
+      v       : 1.5
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+
+  - name  : costmap_generator_param
+    vars  :
+    - name  : use_objects_box
+      desc  : use bouding box from DetectedObjectArray
+      label : use_objects_box
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : use_objects_convex_hull
+      desc  : use convex hull from DetectedObjectArray
+      label : use_objects_convex_hull
+      kind  : checkbox
+      v     : True
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : use_points
+      desc  : use sensor_msgs::PointCloud2 or not
+      label : use_points
+      kind  : checkbox
+      v     : True
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : use_wayarea
+      desc  : use vector_map wayarea or not
+      label : use_wayarea
+      kind  : checkbox
+      v     : True
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : objects_input
+      desc  : autoware_msgs::DetectedObjectArray
+      label : objects_input
+      kind  : topic
+      topic_type : autoware_msgs/DetectedObjectArray
+      v     : /prediction/motion_predictor/objects
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : points_input
+      desc  : sensor_msgs::PointCloud2
+      label : points_input
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
+      v     : /points_no_ground
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name    : lidar_frame
+      desc    : lidar frame
+      label   : lidar_frame
+      kind    : str
+      v       : /velodyne
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name    : map_frame
+      desc    : map frame
+      label   : map_frame
+      kind    : str
+      v       : /map
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name  : grid_min_value
+      desc  : minimum value for costmap
+      label : grid_min_value
+      min     : 0.00
+      max     : 10.0
+      v       : 0.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : grid_max_value
+      desc  : maximum value for costmap
+      label : grid_max_value
+      min     : 1.0
+      max     : 255.0
+      v       : 1.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : grid_resolution
+      desc  : grid resolution for costmap
+      label : grid_resolution
+      min     : 0.0
+      max     : 10.0
+      v       : 0.2
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : grid_length_x
+      desc  : grid lengh for x coordinate
+      label : grid_length_x
+      min     : 0.0
+      max     : 100.0
+      v       : 50.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : grid_length_y
+      desc  : grid lengh for y coordinate
+      label : grid_length_y
+      min     : 0.0
+      max     : 100.0
+      v       : 30.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : grid_position_x
+      desc  : grid position for x coordinate
+      label : grid_position_x
+      min     : 0.0
+      max     : 100.0
+      v       : 20.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : grid_position_y
+      desc  : grid position for y coordinate
+      label : grid_position_y
+      min     : 0.0
+      max     : 100.0
+      v       : 0.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : maximum_lidar_height_thres
+      desc  : Maximum z for lidar points
+      label : maximum_lidar_height_thres
+      min     : 0.0
+      max     : 10.0
+      v       : 0.3
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : minimum_lidar_height_thres
+      desc  : Minimum z for lidar points
+      label : minimum_lidar_height_thres
+      min     : -10.0
+      max     : 2.0
+      v       : -2.2
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : expand_polygon_size
+      desc  : Expand oberct's costmap polygon
+      label : expand_polygon_size
+      min     : 0.0
+      max     : 10.0
+      v       : 1.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : size_of_expansion_kernel
+      desc  : Size of expansion window(kernel)
+      label : size_of_expansion_kernel(odd number)
+      min     : 0
+      max     : 30
+      v       : 9
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+  - name  : lidar_cnn_baidu_params
+    vars  :
+    - name      : points_src
+      desc      : PointCloud topic to be fed to the network for detection
+      label     : image_src
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
+      v         : /points_raw
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : score_threshold
+      desc  : Detections with a confidence value larger than this value will be displayed.
+      label : Score Threshold
+      min   : 0.0
+      max   : 1.0
+      v     : 0.7
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name     : network_definition_file
+      desc     : Configuration file defining the network
+      label    : 'network_definition (cfg)'
+      kind     : path
+      v        : ''
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : pretrained_model_file
+      desc     : Pre-trained  model
+      label    : 'pre_trained_model (weights)'
+      kind     : path
+      v        : ''
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name      : use_gpu
+      desc      : Whether to use GPU to process the CNN
+      label     : use_gpu
+      kind      : checkbox
+      v         : True
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : gpu_device_id
+      desc      : gpu_device_id
+      label     : gpu_device_id
+      min       : 0
+      max       : 10
+      v         : 0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+  - name  : lidar_point_pillars_params
+    vars  :
+    - name      : input_topic
+      desc      : PointCloud topic to be fed to the network for detection.
+      label     : Input topic
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
+      v         : /points_raw
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : baselink_support
+      desc      : Whether to use baselink to adujust current sensor setup.
+      label     : Baselink support
+      kind      : checkbox
+      v         : True
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : reproduce_result_mode
+      desc      : Whether to enable reproducible result at the cost of the runtime.
+      label     : reproduce_result_mode
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : score_threshold
+      desc  : Detections with a confidence value larger than this value will be displayed.
+      label : Score threshold
+      min   : 0.0
+      max   : 1.0
+      v     : 0.5
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : nms_overlap_threshold
+      desc  : Lower IOU than this value will be filtered.
+      label : NMS overlap threshold
+      min   : 0.0
+      max   : 1.0
+      v     : 0.5
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name     : pfe_onnx_file
+      desc     : Pillar Feature Extractor onnx file.
+      label    : 'PFE ONNX file'
+      kind     : path
+      v        : ''
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : rpn_onnx_file
+      desc     : Region Proposal Network onnx file.
+      label    : 'RPN ONNX file'
+      kind     : path
+      v        : ''
+      cmd_param:
+        dash     : ''
+        delim    : ':='

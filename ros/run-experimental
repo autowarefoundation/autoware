@@ -1,0 +1,22 @@
+#! /usr/bin/env python
+
+import subprocess
+import time
+
+print("This feature is experimental and may change in the future.")
+time.sleep(2.0)
+
+roscore_command = "roscore"
+manager_command = "rosrun autoware_launcher main --profile quickstart"
+
+def gnome_terminal(command):
+    return ["gnome-terminal", "--command", command]
+
+# Add source command
+roscore_command = "bash -c 'source ./install/setup.bash; {}'".format(roscore_command)
+manager_command = "bash -c 'source ./install/setup.bash; {}'".format(manager_command)
+
+# Launch terminals
+subprocess.call(gnome_terminal(roscore_command))
+subprocess.call(gnome_terminal(manager_command))
+

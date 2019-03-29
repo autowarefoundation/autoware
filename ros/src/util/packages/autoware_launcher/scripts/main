@@ -1,0 +1,21 @@
+#! /usr/bin/env python
+
+import logging
+import sys
+import argparse
+
+from autoware_launcher.core import AwLaunchServer
+from autoware_launcher.gui  import AwQtGuiClient
+
+parser = argparse.ArgumentParser(description='Autoware Launcher')
+parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", help="show debug log message")
+parser.add_argument("-p", "--profile", dest="profile", action="store", help="name of profile")
+parser.add_argument("-s", "--skin", dest="skin", action="store", help="name of style sheet")
+args = parser.parse_args()
+
+loglevel = logging.INFO if not args.verbose else logging.DEBUG
+logging.basicConfig(level=loglevel, format="%(levelname)-5s: %(name)s: %(message)s")
+
+server = AwLaunchServer(sys.argv)
+client = AwQtGuiClient(sys.argv, server)
+sys.exit(client.start(profile=args.profile, skin=args.skin))

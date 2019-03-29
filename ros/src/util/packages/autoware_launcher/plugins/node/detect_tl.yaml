@@ -1,0 +1,4 @@
+format: Autoware Launcher Plugin Version 0.1
+rules:
+  - { name: projection,  plugin: refs/tl_projection  }
+  - { name: recognition, plugin: [refs/tl_recognition, refs/tl_mxnet] }

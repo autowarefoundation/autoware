@@ -1,0 +1,18 @@
+QCheckBox::indicator
+{
+    width:  20px;
+    height: 20px;
+}
+
+#FrameHeader
+{
+    border-top: 1px solid #000000;
+}
+
+#FrameHeader, #FrameWidget
+{
+    padding: 5px;
+    border-bottom: 1px solid #000000;
+    border-left:   1px solid #000000;
+    border-right:  1px solid #000000;
+}

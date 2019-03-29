@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package format="2">
+
+  <name>autoware_launcher</name>
+  <version>1.11.0</version>
+  <description>The tool for easily launching Autoware</description>
+
+  <maintainer email="isamu.takagi@tier4.jp">Isamu Takagi</maintainer>
+  <license>Apache 2.0</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>python_qt_binding</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>python-rospkg</build_depend>
+  <build_export_depend>python_qt_binding</build_export_depend>
+  <build_export_depend>rospy</build_export_depend>
+  <build_export_depend>python-rospkg</build_export_depend>
+  <exec_depend>python_qt_binding</exec_depend>
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>python-rospkg</exec_depend>
+  <test_depend>rostest</test_depend>
+  <test_depend>python-nose</test_depend>
+
+  <export></export>
+
+</package>

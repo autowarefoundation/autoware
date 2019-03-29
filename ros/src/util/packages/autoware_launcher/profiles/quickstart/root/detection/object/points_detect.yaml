@@ -1,0 +1,28 @@
+children: []
+config:
+  args.clip_max_height: 0.5
+  args.clip_min_height: '-1.3'
+  args.cluster_merge_threshold: 1.5
+  args.cluster_size_max: 100000
+  args.cluster_size_min: 20
+  args.clustering_distance: 0.75
+  args.clustering_distances: '[0.5,1.1,1.6,2.1,2.6]'
+  args.clustering_ranges: '[15,30,45,60]'
+  args.downsample_cloud: false
+  args.keep_lane_left_distance: 5
+  args.keep_lane_right_distance: 5
+  args.keep_lanes: false
+  args.leaf_size: 0.1
+  args.max_boundingbox_side: 10
+  args.output_frame: velodyne
+  args.points_node: /points_raw
+  args.pose_estimation: true
+  args.remove_ground: true
+  args.remove_points_upto: 0.0
+  args.sync: false
+  args.use_diffnormals: false
+  args.use_gpu: true
+  args.use_multiple_thres: false
+  args.use_vector_map: false
+  args.wayarea_gridmap_layer: wayarea
+plugin: refs/euclidean_cluster

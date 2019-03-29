@@ -1,0 +1,21 @@
+children: []
+config:
+  args.accel_limit: 0.5
+  args.braking_distance: 5
+  args.decel_limit: 0.3
+  args.end_point_offset: 1
+  args.load_csv: true
+  args.multi_lane_csv: $(env HOME)/.autoware/data/path/moriyama_path.txt
+  args.overwrite_vmax_mode: false
+  args.radius_min: 6.0
+  args.radius_thresh: 20.0
+  args.realtime_tuning_mode: false
+  args.replan_curve_mode: false
+  args.replan_endpoint_mode: true
+  args.replanning_mode: false
+  args.resample_interval: 1.0
+  args.resample_mode: true
+  args.velocity_max: 20.0
+  args.velocity_min: 4.0
+  args.velocity_offset: 4
+plugin: leaf/waypoint_loader

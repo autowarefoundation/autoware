@@ -2,6 +2,12 @@
 Changelog for package autoware_can_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.11.0 (2019-03-21)
+-------------------
+* Fix license notice in corresponding package.xml
+* JSK messages not needed for autoware_can_msgs. (`#1840 <https://github.com/CPFL/Autoware/issues/1840>`_)
+* Contributors: Esteve Fernandez, amc-nu
+
 1.10.0 (2019-01-17)
 -------------------
 

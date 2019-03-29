@@ -1,0 +1,9 @@
+format: Autoware Launcher Plugin Version 0.1
+args:
+- {name: voxel_leaf_size, type: real, default: 2.0}
+- {name: measurement_range, type: real, default: 200.0}
+panel:
+  widget: node.panel
+  frames:
+  - {target: args.voxel_leaf_size, widget: basic.real}
+  - {target: args.measurement_range, widget: basic.real}

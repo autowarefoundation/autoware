@@ -1,0 +1,57 @@
+format: Autoware Launcher Plugin Version 0.1
+rosxml: $(find lidar_euclidean_cluster_detect)/launch/lidar_euclidean_cluster_detect.launch
+args:
+- {name: points_node, type: str, default: /points_raw}
+- {name: remove_ground, type: bool, default: true}
+- {name: downsample_cloud, type: bool, default: false}
+- {name: leaf_size, type: real, default: 0.1}
+- {name: cluster_size_min, type: int, default: 20}
+- {name: cluster_size_max, type: int, default: 100000}
+- {name: sync, type: bool, default: false}
+- {name: use_diffnormals, type: bool, default: false}
+- {name: pose_estimation, type: bool, default: true}
+- {name: clip_min_height, type: str, default: '-1.3'}
+- {name: clip_max_height, type: real, default: 0.5}
+- {name: keep_lanes, type: bool, default: false}
+- {name: keep_lane_left_distance, type: int, default: 5}
+- {name: keep_lane_right_distance, type: int, default: 5}
+- {name: max_boundingbox_side, type: int, default: 10}
+- {name: cluster_merge_threshold, type: real, default: 1.5}
+- {name: clustering_distance, type: real, default: 0.75}
+- {name: use_vector_map, type: bool, default: false}
+- {name: wayarea_gridmap_layer, type: str, default: wayarea}
+- {name: output_frame, type: str, default: velodyne}
+- {name: remove_points_upto, type: real, default: 0.0}
+- {name: use_gpu, type: bool, default: true}
+- {name: use_multiple_thres, type: bool, default: false}
+- {name: clustering_ranges, type: str, default: '[15,30,45,60]'}
+- {name: clustering_distances, type: str, default: '[0.5,1.1,1.6,2.1,2.6]'}
+
+panel:
+  widget: node.panel
+  frames:
+  - {target: args.points_node, widget: basic.text}
+  - {target: args.remove_ground, widget: basic.bool}
+  - {target: args.downsample_cloud, widget: basic.bool}
+  - {target: args.leaf_size, widget: basic.real}
+  - {target: args.cluster_size_min, widget: basic.int}
+  - {target: args.cluster_size_max, widget: basic.int}
+  - {target: args.sync, widget: basic.bool}
+  - {target: args.use_diffnormals, widget: basic.bool}
+  - {target: args.pose_estimation, widget: basic.bool}
+  - {target: args.clip_min_height, widget: basic.text}
+  - {target: args.clip_max_height, widget: basic.real}
+  - {target: args.keep_lanes, widget: basic.bool}
+  - {target: args.keep_lane_left_distance, widget: basic.int}
+  - {target: args.keep_lane_right_distance, widget: basic.int}
+  - {target: args.max_boundingbox_side, widget: basic.int}
+  - {target: args.cluster_merge_threshold, widget: basic.real}
+  - {target: args.clustering_distance, widget: basic.real}
+  - {target: args.use_vector_map, widget: basic.bool}
+  - {target: args.wayarea_gridmap_layer, widget: basic.text}
+  - {target: args.output_frame, widget: basic.text}
+  - {target: args.remove_points_upto, widget: basic.real}
+  - {target: args.use_gpu, widget: basic.bool}
+  - {target: args.use_multiple_thres, widget: basic.bool}
+  - {target: args.clustering_ranges, widget: basic.text}
+  - {target: args.clustering_distances, widget: basic.text}

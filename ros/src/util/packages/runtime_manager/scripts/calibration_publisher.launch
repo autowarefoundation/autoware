@@ -10,7 +10,7 @@
     <arg name="camera_info_topic" default="/camera_info"/>
     <arg name="projection_matrix_topic" default="/projection_matrix"/>
 
-    <node pkg="calibration_camera_lidar" type="calibration_publisher" name="calibration_publisher" ns="$(arg camera_id)"
+    <node pkg="calibration_publisher" type="calibration_publisher" name="calibration_publisher" ns="$(arg camera_id)"
           output="screen">
         <param name="register_lidar2camera_tf" type="bool" value="$(arg register_lidar2camera_tf)"/>
         <param name="publish_extrinsic_mat" type="bool" value="$(arg publish_extrinsic_mat)"/>

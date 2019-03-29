@@ -1,145 +1,151 @@
 #ifndef __STATE_HPP__
 #define __STATE_HPP__
 
+#include <cassert>
 #include <functional>
 #include <iostream>
 #include <memory>
-#include <state_machine_lib/state_flags.hpp>
 #include <vector>
+
+#include <yaml-cpp/yaml.h>
+#include <state_machine_lib/state_common.hpp>
+#include <state_machine_lib/state_flags.hpp>
 
 namespace state_machine
 {
-class StartState;
-class InitialState;
-class LocateVehicleState;
-
-class DriveState;
-// Accel/Brake subState
-class DriveAccAccelerationState;
-class DriveAccDecelerationState;
-class DriveAccKeepState;
-class DriveAccStopState;
-// Steering subState
-class DriveStrStraightState;
-class DriveStrLeftTurnState;
-class DriveStrRightTurnState;
-
-// Behavior subState
-class DriveBehaviorLaneChangeLeftState;
-class DriveBehaviorLaneChangeRightState;
-class DriveBehaviorObstacleAvoidanceState;
-
-// Perception subState
-class DriveDetectObstacleState;
-class DriveDetectStoplineState;
-class DriveDetectTrafficlightRedState;
-
-class MissionCompleteState;
-class EmergencyState;
-
-// base class
-class BaseState
+class State
 {
-protected:
-  BaseState()
-  {
-  }
+private:
+  std::shared_ptr<State> child_state_;
+
+  std::string state_name_;
+  uint64_t state_id_;
+
+  std::shared_ptr<State> parent_state_;
+
+  std::function<void(const std::string&)> CallbackUpdateFunc;
+  std::function<void(const std::string&)> CallbackEntryFunc;
+  std::function<void(const std::string&)> CallbackExitFunc;
+
+  std::map<std::string, uint64_t> transition_map_;
+
+  std::string entered_key_;
+
+  void parseChildState(YAML::Node& node);
 
 public:
-  virtual void update(void) = 0;
-  virtual void inState(void) = 0;
-  virtual void outState(void) = 0;
-  virtual void showStateName(void) = 0;
-  virtual uint64_t getStateTransMask(void) = 0;
-  virtual uint64_t getStateNum(void) = 0;
-  virtual std::string getStateName(void) = 0;
-  virtual uint8_t getStateKind(void) = 0;
-  virtual void setCallbackUpdateFunc(std::function<void(void)> _f) = 0;
-  virtual void setCallbackInFunc(std::function<void(void)> _f) = 0;
-  virtual void setCallbackOutFunc(std::function<void(void)> _f) = 0;
-};
-
-// Interface
-template <class T>
-class State : public BaseState
-{
-protected:
-  std::string StateName = "Base";
-  uint64_t StateNum;
-  uint64_t StateTransMask;
-  uint8_t StateKind;
-
-  std::function<void(void)> StateCallbackUpdateFunc;
-  std::function<void(void)> StateCallbackInFunc;
-  std::function<void(void)> StateCallbackOutFunc;
-
-  State()
+  State(std::string _state_name, uint64_t _state_id, std::shared_ptr<State> _parent_state = NULL)
+    : child_state_(NULL), state_name_(_state_name), state_id_(_state_id), parent_state_(_parent_state), entered_key_("")
   {
-    StateNum = 0;
-    StateTransMask = (uint64_t)STATE_END - 1;
-    StateKind = UNKNOWN_STATE;
+#if 0
+    CallbackUpdateFunc =
+        [&](const std::string &arg) { /*DEBUG_PRINT("[%s]:%s is not registered\n", state_name_.c_str(), "update");*/ };
+    CallbackEntryFunc =
+        [&](const std::string &arg) { /*DEBUG_PRINT("[%s]:%s is not registered\n", state_name_.c_str(), "entry");*/ };
+    CallbackExitFunc =
+        [&](const std::string &arg) { /*DEBUG_PRINT("[%s]:%s is not registered\n", state_name_.c_str(), "exit");*/ };
+#endif
+  }
+  ~State()
+  {
   }
 
-public:
-  virtual void update(void)
+  void onUpdate(void)
   {
-    if (StateCallbackUpdateFunc)
-      StateCallbackUpdateFunc();
+    if (child_state_)
+      child_state_->onUpdate();
+
+    if (CallbackUpdateFunc)
+      CallbackUpdateFunc(state_name_);
   }
 
-  virtual void inState(void)
+  void onEntry(void)
   {
-    if (StateCallbackInFunc)
-      StateCallbackInFunc();
+    DEBUG_PRINT("[%s:Entry]\n", state_name_.c_str());
+
+    if (CallbackEntryFunc)
+      CallbackEntryFunc(state_name_);
   }
-  virtual void outState(void)
+  void onExit(void)
   {
-    if (StateCallbackOutFunc)
-      StateCallbackOutFunc();
+    DEBUG_PRINT("[%s:Exit]\n", state_name_.c_str());
+    if (child_state_)
+      child_state_->onExit();
+
+    setChild(nullptr);
+
+    if (CallbackExitFunc)
+      CallbackExitFunc(state_name_);
   }
-  virtual void setCallbackUpdateFunc(std::function<void(void)> _f)
+  void setCallbackUpdate(std::function<void(const std::string&)> _f)
   {
-    StateCallbackUpdateFunc = _f;
+    CallbackUpdateFunc = _f;
+  }
+  void setCallbackEntry(std::function<void(const std::string&)> _f)
+  {
+    CallbackEntryFunc = _f;
   }
 
-  virtual void setCallbackOutFunc(std::function<void(void)> _f)
+  void setCallbackExit(std::function<void(const std::string&)> _f)
   {
-    StateCallbackOutFunc = _f;
-  }
-
-  virtual void setCallbackInFunc(std::function<void(void)> _f)
-  {
-    StateCallbackInFunc = _f;
+    CallbackExitFunc = _f;
   }
 
   void showStateName(void)
   {
-    std::cout << StateName << "-";
+    std::cout << state_name_ << "-";
   }
-
-  static T* getInstance(void)
+  void setParent(std::shared_ptr<State> _parent)
   {
-    static T singleton;
-    return &singleton;
+    assert(this != _parent.get());
+    parent_state_ = _parent;
   }
 
+  void setChild(std::shared_ptr<State> _child)
+  {
+    assert(this != _child.get());
+    child_state_ = _child;
+  }
+
+  std::shared_ptr<State> getParent()
+  {
+    return parent_state_;
+  }
+  std::shared_ptr<State> getChild()
+  {
+    return child_state_;
+  }
   std::string getStateName(void)
   {
-    return std::string(StateName);
+    return std::string(state_name_);
   }
 
-  uint8_t getStateKind(void)
+  void addTransition(const std::string key, const uint64_t val)
   {
-    return StateKind;
+    transition_map_[key] = val;
   }
 
-  uint64_t getStateTransMask(void)
+  uint64_t getTansitionVal(std::string key) const
   {
-    return StateTransMask;
+    return transition_map_.at(key);
   }
-  uint64_t getStateNum(void)
+
+  const std::map<std::string, uint64_t>& getTransitionMap(void)
   {
-    return StateNum;
+    return transition_map_;
+  }
+
+  uint64_t getStateID(void)
+  {
+    return state_id_;
+  }
+  void setEnteredKey(const std::string& key)
+  {
+    entered_key_ = key;
+  }
+  std::string getEnteredKey(void)
+  {
+    return entered_key_;
   }
 };
 }

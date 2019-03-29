@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>range_vision_fusion</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>Range-Vision fusion node</description>
     <maintainer email="abraham.monrroy@tier4.jp">Abraham Monrroy</maintainer>
     <license>Apache 2</license>

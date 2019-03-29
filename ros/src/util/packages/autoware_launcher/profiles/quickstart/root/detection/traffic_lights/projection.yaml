@@ -1,0 +1,6 @@
+children: []
+config:
+  args.camera_id: /
+  args.camera_info_src: /camera_info
+  args.use_path_info: false
+plugin: refs/tl_projection

@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<package>
+  <name>rosbag_controller</name>
+  <version>1.11.0</version>
+  <description>The RosbagController package</description>
+
+  <maintainer email="tu.chenxi@g.sp.m.is.nagoya-u.ac.jp">tu</maintainer>
+  <license>Apache 2.0</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <build_depend>boost</build_depend>
+  <build_depend>cpp_common</build_depend>
+  <build_depend>python-imaging</build_depend>
+  <build_depend>rosbag_storage</build_depend>
+  <build_depend>rosconsole</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>roscpp_serialization</build_depend>
+  <build_depend>topic_tools</build_depend>
+  <build_depend>xmlrpcpp</build_depend>
+  <build_depend>rviz</build_depend>
+  
+  <run_depend>boost</run_depend>
+  <run_depend>genmsg</run_depend>
+  <run_depend>genpy</run_depend>
+  <run_depend>python-rospkg</run_depend>
+  <run_depend>rosbag_storage</run_depend>
+  <run_depend>rosconsole</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>roslib</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>topic_tools</run_depend>
+  <run_depend>xmlrpcpp</run_depend>
+  <run_depend>rviz</run_depend>
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+    <rviz plugin="${prefix}/plugin_description.xml"/>
+  </export>
+</package>

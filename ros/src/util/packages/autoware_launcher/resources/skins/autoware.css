@@ -1,0 +1,30 @@
+*
+{
+    color: #000000;
+    background-color: #FFFFFF;
+}
+
+QPushButton
+{
+    color: #FFFFFF;
+    background-color: #223A70;
+}
+
+QCheckBox::indicator
+{
+    width:  20px;
+    height: 20px;
+}
+
+#FrameHeader
+{
+    border-top: 1px solid #223A70;
+}
+
+#FrameHeader, #FrameWidget
+{
+    padding: 5px;
+    border-bottom: 1px solid #223A70;
+    border-left:   1px solid #223A70;
+    border-right:  1px solid #223A70;
+}

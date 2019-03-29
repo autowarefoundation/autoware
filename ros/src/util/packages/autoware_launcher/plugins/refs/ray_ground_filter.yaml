@@ -1,0 +1,31 @@
+format: Autoware Launcher Plugin Version 0.1
+rosxml: $(find points_preprocessor)/launch/ray_ground_filter.launch
+args:
+- {name: input_point_topic, type: str, default: /points_raw}
+- {name: sensor_height, type: real, default: 1.8}
+- {name: clipping_height, type: real, default: 0.2}
+- {name: min_point_distance, type: real, default: 1.85}
+- {name: radial_divider_angle, type: real, default: 0.08}
+- {name: concentric_divider_distance, type: real, default: 0.01}
+- {name: local_max_slope, type: int, default: 8}
+- {name: general_max_slope, type: int, default: 5}
+- {name: min_height_threshold, type: real, default: 0.5}
+- {name: reclass_distance_threshold, type: real, default: 0.2}
+- {name: no_ground_point_topic, type: str, default: /points_no_ground}
+- {name: ground_point_topic, type: str, default: /points_ground}
+
+panel:
+  widget: node.panel
+  frames:
+  - {target: args.input_point_topic, widget: basic.text}
+  - {target: args.sensor_height, widget: basic.real}
+  - {target: args.clipping_height, widget: basic.real}
+  - {target: args.min_point_distance, widget: basic.real}
+  - {target: args.radial_divider_angle, widget: basic.real}
+  - {target: args.concentric_divider_distance, widget: basic.real}
+  - {target: args.local_max_slope, widget: basic.int}
+  - {target: args.general_max_slope, widget: basic.int}
+  - {target: args.min_height_threshold, widget: basic.real}
+  - {target: args.reclass_distance_threshold, widget: basic.real}
+  - {target: args.no_ground_point_topic, widget: basic.text}
+  - {target: args.ground_point_topic, widget: basic.text}

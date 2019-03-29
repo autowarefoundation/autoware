@@ -1,0 +1,15 @@
+format: Autoware Launcher Plugin Version 0.1
+args:
+- {name: acceleration, type: real, default: 1.0}
+- {name: stopline_search_radius, type: real, default: 1.0}
+- {name: number_of_zeros_ahead, type: real, default: 0.0}
+- {name: number_of_zeros_behind, type: real, default: 0.0}
+- {name: number_of_smoothing_count, type: real, default: 0.0}
+panel:
+  widget: node.panel
+  frames:
+  - {target: args.acceleration, widget: basic.real}
+  - {target: args.stopline_search_radius, widget: basic.real}
+  - {target: args.number_of_zeros_ahead, widget: basic.real}
+  - {target: args.number_of_zeros_behind, widget: basic.real}
+  - {target: args.number_of_smoothing_count, widget: basic.real}

@@ -1,6 +1,6 @@
 <package>
   <name>custom_msgs</name>
-  <version>1.10.0</version>
+  <version>1.11.0</version>
   <description>
     This package defines custom Xsens sensor sample format message to be
     used only with the MTdata2 format.

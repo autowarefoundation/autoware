@@ -1,0 +1,12 @@
+children: []
+config:
+  args.displacement_threshold: 0.0
+  args.is_linear_interpolation: true
+  args.lookahead_distance: 4.0
+  args.lookahead_ratio: 2.0
+  args.minimum_lookahead_distance: 6.0
+  args.param_flag: 0
+  args.publishes_for_steering_robot: false
+  args.relative_angle_threshold: 0.0
+  args.velocity: 5.0
+plugin: leaf/pure_pursuit

@@ -1,0 +1,21 @@
+format: Autoware Launcher Plugin Version 0.1
+rosxml: $(find astar_planner)/launch/velocity_set.launch
+args:
+- {name: use_crosswalk_detection, type: bool, default: true}
+- {name: points_topic, type: str, default: points_no_ground}
+- {name: velocity_offset, type: real, default: 1.2}
+- {name: decelerate_vel_min, type: real, default: 1.3}
+- {name: remove_points_upto, type: real, default: 2.3}
+- {name: enable_multiple_crosswalk_detection, type: bool, default: true}
+- {name: enablePlannerDynamicSwitch, type: bool, default: false}
+
+panel:
+  widget: node.panel
+  frames:
+  - {target: args.use_crosswalk_detection, widget: basic.bool}
+  - {target: args.points_topic, widget: basic.text}
+  - {target: args.velocity_offset, widget: basic.real}
+  - {target: args.decelerate_vel_min, widget: basic.real}
+  - {target: args.remove_points_upto, widget: basic.real}
+  - {target: args.enable_multiple_crosswalk_detection, widget: basic.bool}
+  - {target: args.enablePlannerDynamicSwitch, widget: basic.bool}

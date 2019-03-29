@@ -1,0 +1,7 @@
+children: []
+config:
+  args.input_topic: /detection/objects
+  args.interval_sec: 0.1
+  args.num_prediction: 10
+  args.sensor_height: 2.0
+plugin: refs/native_motion_predict

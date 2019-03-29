@@ -1,0 +1,33 @@
+children: []
+config:
+  args.angle_size: 42
+  args.avoid_distance: 13
+  args.avoid_velocity_limit_mps: 4.5
+  args.avoidance: true
+  args.base2back: 0.8
+  args.curve_weight: 1.0
+  args.distance_heuristic_weight: 1.0
+  args.goal_angle_range: 48.0
+  args.lateral_goal_range: 0.5
+  args.longitudinal_goal_range: 2.0
+  args.map_frame: map
+  args.minimum_turning_radius: 5.5
+  args.obstacle_detect_count: 8
+  args.obstacle_frame: /velodyne
+  args.obstacle_height: 1.0
+  args.obstacle_threshold: 70
+  args.obstacle_width: 1.0
+  args.points_interval: 0.1
+  args.potential_weight: 10.0
+  args.publish_marker: true
+  args.reverse_weight: 2.5
+  args.robot_length: 5.0
+  args.robot_width: 4.0
+  args.switch_path: true
+  args.time_limit: 5.0
+  args.upper_bound_ratio: 1.2
+  args.use_2dnav_goal: false
+  args.use_back: false
+  args.use_potential_heuristic: true
+  args.use_wavefront_heuristic: false
+plugin: refs/obstacle_avoid

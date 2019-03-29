@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package>
+    <name>decision_maker_panel</name>
+    <version>1.11.0</version>
+    <description>The decision_maker_panel package</description>
+
+    <maintainer email="azumi.suzuki@tier4.jp">Azumi Suzuki</maintainer>
+    <author>Yusuke FUJII</author>
+    <author>h_ohta</author>
+
+    <license>Apache 2</license>
+
+    <buildtool_depend>catkin</buildtool_depend>
+    <buildtool_depend>autoware_build_flags</buildtool_depend>
+    <build_depend>rviz</build_depend>
+    <build_depend>std_msgs</build_depend>
+    <build_depend>autoware_msgs</build_depend>
+    <build_depend>qtbase5-dev</build_depend>
+
+    <run_depend>rviz</run_depend>
+    <run_depend>std_msgs</run_depend>
+    <run_depend>autoware_msgs</run_depend>
+    <run_depend>libqt5-core</run_depend>
+    <run_depend>libqt5-widgets</run_depend>
+
+    <export>
+        <rviz plugin="${prefix}/plugin_description.xml"/>
+    </export>
+</package>

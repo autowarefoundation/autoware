@@ -1,0 +1,29 @@
+<launch>
+
+    <arg name="use_traffic_light_result" default="false" />
+
+    <group if="$(arg use_traffic_light_result)">
+      <node pkg="rostopic" type="rostopic" name="config_lane_stop" ns="autoware_launcher"
+        args="pub --latch --once /config/lane_stop autoware_config_msgs/ConfigLaneStop '{
+          header: {
+           seq: 0,
+           stamp: {secs: 0, nsecs: 0},
+          frame_id: '' },
+          manual_detection: false
+        }'"/>
+    </group>
+    <group unless="$(arg use_traffic_light_result)">
+      <node pkg="rostopic" type="rostopic" name="config_lane_stop" ns="autoware_launcher"
+        args="pub --latch --once /config/lane_stop autoware_config_msgs/ConfigLaneStop '{
+          header: {
+           seq: 0,
+           stamp: {secs: 0, nsecs: 0},
+          frame_id: '' },
+          manual_detection: true
+        }'"/>
+    </group>
+
+    <node pkg="lane_planner" type="lane_stop" name="lane_stop"/>
+
+</launch>
+

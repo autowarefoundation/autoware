@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>integrated_viewer</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>The integrated_viewer package</description>
 
     <maintainer email="hirabayashi@ertl.jp">hirabayashi</maintainer>

@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>gazebo_imu_description</name>
+  <version>1.11.0</version>
+  <description>The gazebo_imu_description package</description>
+
+  <maintainer email="yukky.saito@gmail.com">yukihiro saito</maintainer>
+
+  <license>Apache 2</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <export>
+  </export>
+</package>

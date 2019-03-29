@@ -1,10 +1,12 @@
 <?xml version="1.0"?>
 <package>
   <name>autoware_pointgrey_drivers</name>
-  <version>1.10.0</version>
+  <version>1.11.0</version>
   <description>The autoware_pointgrey_drivers package</description>
   <maintainer email="kondoh@axe-inc.co.jp">Masao KONDOH</maintainer>
   <maintainer email="abrahammonrroy@yahoo.com">Abraham Monrroy</maintainer>
+  <maintainer email="border_goldenmarket@yahoo.com">Daisuke Nishimatsu</maintainer>
+
   <license>Apache 2</license>
   <buildtool_depend>catkin</buildtool_depend>
   <buildtool_depend>autoware_build_flags</buildtool_depend>
@@ -14,12 +16,14 @@
   <build_depend>message_generation</build_depend>
   <build_depend>tf</build_depend>
   <build_depend>cv_bridge</build_depend>
+  <build_depend>image_transport</build_depend>
 
   <run_depend>roscpp</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>message_generation</run_depend>
   <run_depend>tf</run_depend>
   <run_depend>cv_bridge</run_depend>
+  <run_depend>image_transport</run_depend>
 
   <run_depend>v4l-utils</run_depend>
   <run_depend>gstreamer0.10-plugins-good</run_depend>

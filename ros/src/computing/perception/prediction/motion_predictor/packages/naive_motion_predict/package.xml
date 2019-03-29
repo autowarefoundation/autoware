@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>naive_motion_predict</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>The naive_motion_predict package</description>
 
     <maintainer email="cirpue49@yahoo.co.jp">Kosuke Murakami</maintainer>

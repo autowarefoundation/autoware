@@ -1,0 +1,13 @@
+children: []
+config:
+  args.calibration_file: $(env HOME)/.autoware/data/calibration/calibration.yml
+  args.camera_frame: camera
+  args.camera_id: /
+  args.camera_info_topic: /camera_info
+  args.image_topic_src: /image_raw
+  args.projection_matrix_topic: /projection_matrix
+  args.publish_camera_info: true
+  args.publish_extrinsic_mat: true
+  args.register_lidar2camera_tf: true
+  args.target_frame: velodyne
+plugin: leaf/calibration

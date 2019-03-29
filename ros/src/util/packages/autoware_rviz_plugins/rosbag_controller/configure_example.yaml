@@ -1,0 +1,6 @@
+topics : [
+/velodyne_packets, 
+/velodyne_points,
+/tf
+]
+

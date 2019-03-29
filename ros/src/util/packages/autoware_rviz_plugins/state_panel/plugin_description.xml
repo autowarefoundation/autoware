@@ -1,0 +1,11 @@
+<library path="lib/libautoware_rviz_plugins">
+
+  <class name="autoware_rviz_plugins/State" type="autoware_rviz_plugins::StatePanel" base_class_type="rviz::Panel">
+    <description>State Panel on rviz</description>
+  </class>
+
+  <class name="autoware_sim_object/OpFlag" type="autoware_sim_object::AutowareSimObjTool" base_class_type="rviz::Tool">
+    <description> Tool for sim_obj flags on the ground plane in rviz. </description>
+  </class>
+
+</library>

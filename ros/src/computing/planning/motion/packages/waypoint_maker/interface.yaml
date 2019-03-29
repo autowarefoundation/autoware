@@ -3,8 +3,11 @@
   subscribe: [/clicked_point, /vector_map_info/point, /vector_map_info/lane,
     /vector_map_info/node]
 - name: /waypoint_loader
-  publish: [/lane_waypoint_array]
+  publish: [/based/lane_waypoint_raw]
   subscribe: []
+- name: /waypoint_replanner
+  publish: [/based/lane_waypoint_array, /lane_waypoints_array]
+  subscribe: [/based/lane_waypoint_raw]
 - name: /waypoints_marker_publisher
   publish: [/local_waypoints_mark, /global_waypoints_mark]
   subscribe: [/light_color, /light_color_managed, /lane_waypoints_array,

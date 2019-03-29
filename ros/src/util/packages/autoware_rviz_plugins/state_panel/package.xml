@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package>
+    <name>autoware_rviz_plugins</name>
+    <version>1.11.0</version>
+    <description>The autoware_rviz_plugins package</description>
+
+    <maintainer email="yusuke.fujii@tier4.jp">Yusuke FUJII</maintainer>
+    <author>Yusuke FUJII</author>
+    <author>h_ohta</author>
+
+    <license>Apache 2</license>
+
+    <buildtool_depend>catkin</buildtool_depend>
+    <buildtool_depend>autoware_build_flags</buildtool_depend>
+    <build_depend>rviz</build_depend>
+    <build_depend>std_msgs</build_depend>
+    <build_depend>qtbase5-dev</build_depend>
+
+    <run_depend>rviz</run_depend>
+    <run_depend>std_msgs</run_depend>
+    <run_depend>libqt5-core</run_depend>
+    <run_depend>libqt5-widgets</run_depend>
+
+
+    <!-- The export tag contains other, unspecified, tags -->
+    <export>
+        <rviz plugin="${prefix}/plugin_description.xml"/>
+    </export>
+</package>

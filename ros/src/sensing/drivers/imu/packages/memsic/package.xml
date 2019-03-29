@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>memsic_imu</name>
-  <version>1.10.0</version>
+  <version>1.11.0</version>
   <description>The memsic_imu package</description>
   <maintainer email="yuki@ertl.jp">kitsukawa</maintainer>
 

@@ -31,70 +31,20 @@ WaypointLoaderNode::~WaypointLoaderNode()
 
 void WaypointLoaderNode::initPubSub()
 {
-  private_nh_.param<bool>("disable_decision_maker", disable_decision_maker_, true);
+  private_nh_.param<std::string>("multi_lane_csv", multi_lane_csv_, "/tmp/driving_lane.csv");
   // setup publisher
-  if (disable_decision_maker_)
-  {
-    lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>("/lane_waypoints_array", 10, true);
-  }
-  else
-  {
-    lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>("/based/lane_waypoints_array", 10, true);
-  }
-  config_sub_ = nh_.subscribe("/config/waypoint_loader", 1, &WaypointLoaderNode::configCallback, this);
-  output_cmd_sub_ =
-      nh_.subscribe("/config/waypoint_loader_output", 1, &WaypointLoaderNode::outputCommandCallback, this);
+  lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>("/based/lane_waypoints_raw", 10, true);
 }
 
-void WaypointLoaderNode::initParameter(const autoware_config_msgs::ConfigWaypointLoader::ConstPtr& conf)
+void WaypointLoaderNode::run()
 {
-  // parameter settings
-  replanning_mode_ = conf->replanning_mode;
-  multi_lane_csv_ = conf->multi_lane_csv;
-}
-
-void WaypointLoaderNode::configCallback(const autoware_config_msgs::ConfigWaypointLoader::ConstPtr& conf)
-{
-  initParameter(conf);
-  replanner_.initParameter(conf);
-
   multi_file_path_.clear();
   parseColumns(multi_lane_csv_, &multi_file_path_);
   autoware_msgs::LaneArray lane_array;
   createLaneArray(multi_file_path_, &lane_array);
   lane_pub_.publish(lane_array);
   output_lane_array_ = lane_array;
-}
-
-void WaypointLoaderNode::outputCommandCallback(const std_msgs::Bool::ConstPtr& output_cmd)
-{
-  std::vector<std::string> dst_multi_file_path = multi_file_path_;
-  for (auto& el : dst_multi_file_path)
-  {
-    el = addFileSuffix(el, "_replanned");
-  }
-  saveLaneArray(dst_multi_file_path, output_lane_array_);
-}
-
-const std::string addFileSuffix(std::string file_path, std::string suffix)
-{
-  std::string output_file_path, tmp;
-  std::string directory_path, filename, extension;
-
-  tmp = file_path;
-  const std::string::size_type idx_slash = tmp.find_last_of("/");
-  if (idx_slash != std::string::npos)
-  {
-    tmp.erase(0, idx_slash);
-  }
-  const std::string::size_type idx_dot = tmp.find_last_of(".");
-  const std::string::size_type idx_dot_allpath = file_path.find_last_of(".");
-  if (idx_dot != std::string::npos && idx_dot != tmp.size() - 1)
-  {
-    file_path.erase(idx_dot_allpath, file_path.size() - 1);
-  }
-  file_path += suffix + ".csv";
-  return file_path;
+  ros::spin();
 }
 
 void WaypointLoaderNode::createLaneArray(const std::vector<std::string>& paths, autoware_msgs::LaneArray* lane_array)
@@ -103,31 +53,7 @@ void WaypointLoaderNode::createLaneArray(const std::vector<std::string>& paths, 
   {
     autoware_msgs::Lane lane;
     createLaneWaypoint(el, &lane);
-    if (replanning_mode_)
-    {
-      replanner_.replanLaneWaypointVel(&lane);
-    }
-    lane_array->lanes.push_back(lane);
-  }
-}
-
-void WaypointLoaderNode::saveLaneArray(const std::vector<std::string>& paths,
-                                       const autoware_msgs::LaneArray& lane_array)
-{
-  unsigned long idx = 0;
-  for (const auto& file_path : paths)
-  {
-    std::ofstream ofs(file_path.c_str());
-    ofs << "x,y,z,yaw,velocity,change_flag,steering_flag,accel_flag,stop_flag,event_flag" << std::endl;
-    for (const auto& el : lane_array.lanes[idx].waypoints)
-    {
-      ofs << std::fixed << std::setprecision(4) << el.pose.pose.position.x << "," << el.pose.pose.position.y << ","
-          << el.pose.pose.position.z << "," << tf::getYaw(el.pose.pose.orientation) << ","
-          << mps2kmph(el.twist.twist.linear.x) << "," << (int)el.change_flag << "," << (int)el.wpstate.steering_state
-          << "," << (int)el.wpstate.accel_state << "," << (int)el.wpstate.stopline_state << ","
-          << (int)el.wpstate.event_state << std::endl;
-    }
-    idx++;
+    lane_array->lanes.emplace_back(lane);
   }
 }
 
@@ -175,7 +101,7 @@ void WaypointLoaderNode::loadWaypointsForVer1(const char* filename, std::vector<
   {
     autoware_msgs::Waypoint wp;
     parseWaypointForVer1(line, &wp);
-    wps->push_back(wp);
+    wps->emplace_back(wp);
   }
 
   size_t last = wps->size() - 1;
@@ -221,7 +147,7 @@ void WaypointLoaderNode::loadWaypointsForVer2(const char* filename, std::vector<
   {
     autoware_msgs::Waypoint wp;
     parseWaypointForVer2(line, &wp);
-    wps->push_back(wp);
+    wps->emplace_back(wp);
   }
 }
 
@@ -256,7 +182,7 @@ void WaypointLoaderNode::loadWaypointsForVer3(const char* filename, std::vector<
   {
     autoware_msgs::Waypoint wp;
     parseWaypointForVer3(line, contents, &wp);
-    wps->push_back(wp);
+    wps->emplace_back(wp);
   }
 }
 
@@ -279,7 +205,7 @@ void WaypointLoaderNode::parseWaypointForVer3(const std::string& line, const std
   wp->change_flag = std::stoi(map["change_flag"]);
   wp->wpstate.steering_state = (map.find("steering_flag") != map.end()) ? std::stoi(map["steering_flag"]) : 0;
   wp->wpstate.accel_state = (map.find("accel_flag") != map.end()) ? std::stoi(map["accel_flag"]) : 0;
-  wp->wpstate.stopline_state = (map.find("stop_flag") != map.end()) ? std::stoi(map["stop_flag"]) : 0;
+  wp->wpstate.stop_state = (map.find("stop_flag") != map.end()) ? std::stoi(map["stop_flag"]) : 0;
   wp->wpstate.event_state = (map.find("event_flag") != map.end()) ? std::stoi(map["event_flag"]) : 0;
 }
 
@@ -371,7 +297,7 @@ void parseColumns(const std::string& line, std::vector<std::string>* columns)
     }
     if (!column.empty())
     {
-      columns->push_back(column);
+      columns->emplace_back(column);
     }
   }
 }

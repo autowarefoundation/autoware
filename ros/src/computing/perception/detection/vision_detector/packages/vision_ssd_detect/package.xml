@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>vision_ssd_detect</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>The vision_ssd_detect package</description>
     <maintainer email="abrahammonrroy@yahoo.com">amc</maintainer>
     <license>Apache 2</license>
@@ -18,7 +18,6 @@
     <build_depend>autoware_msgs</build_depend>
     <build_depend>autoware_config_msgs</build_depend>
     <build_depend>libdpm_ttic</build_depend>
-    <build_depend>fusion</build_depend>
     <build_depend>tf</build_depend>
     <build_depend>gnss</build_depend>
     <build_depend>libopencv-dev</build_depend>
@@ -32,7 +31,6 @@
     <run_depend>autoware_msgs</run_depend>
     <run_depend>autoware_config_msgs</run_depend>
     <run_depend>libdpm_ttic</run_depend>
-    <run_depend>fusion</run_depend>
     <run_depend>tf</run_depend>
     <run_depend>gnss</run_depend>
     <run_depend>libopencv-dev</run_depend>

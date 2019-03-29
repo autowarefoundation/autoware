@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>vector_map_server</name>
-  <version>1.10.0</version>
+  <version>1.11.0</version>
   <description>The vector_map_server package</description>
   <maintainer email="syouji@axe.bz">syouji</maintainer>
   <license>Apache 2</license>

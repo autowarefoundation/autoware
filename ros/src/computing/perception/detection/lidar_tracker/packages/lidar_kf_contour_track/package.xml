@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>lidar_kf_contour_track</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>lidar_kf_contour_track package</description>
 
     <maintainer email="abrahammonrroy@yahoo.com">amc</maintainer>

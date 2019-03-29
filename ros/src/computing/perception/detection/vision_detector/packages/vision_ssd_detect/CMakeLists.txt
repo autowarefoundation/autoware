@@ -85,11 +85,18 @@ if (EXISTS "${SSD_CAFFE_PATH}")
             ${catkin_EXPORTED_TARGETS}
             )
 
+    install(DIRECTORY include/
+            DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+
     install(TARGETS vision_ssd_detect
             ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
             LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
             RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
             )
+    install(DIRECTORY launch/
+            DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+            PATTERN ".svn" EXCLUDE)
+
 else ()
     message("'SSD/Caffe' is not installed. 'ssd_unc' will not be built.")
 endif ()
