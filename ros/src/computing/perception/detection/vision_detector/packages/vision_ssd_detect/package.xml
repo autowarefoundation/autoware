@@ -17,7 +17,6 @@
     <build_depend>std_msgs</build_depend>
     <build_depend>autoware_msgs</build_depend>
     <build_depend>autoware_config_msgs</build_depend>
-    <build_depend>libdpm_ttic</build_depend>
     <build_depend>tf</build_depend>
     <build_depend>gnss</build_depend>
     <build_depend>libopencv-dev</build_depend>
@@ -30,7 +29,6 @@
     <run_depend>std_msgs</run_depend>
     <run_depend>autoware_msgs</run_depend>
     <run_depend>autoware_config_msgs</run_depend>
-    <run_depend>libdpm_ttic</run_depend>
     <run_depend>tf</run_depend>
     <run_depend>gnss</run_depend>
     <run_depend>libopencv-dev</run_depend>

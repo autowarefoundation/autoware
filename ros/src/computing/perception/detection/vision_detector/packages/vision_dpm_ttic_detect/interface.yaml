@@ -1,3 +1,0 @@
-- name: dpm_ttic
-  publish: [/obj_X/image_obj]
-  subscribe: [/config/obj_X/dpm, /image_raw]
