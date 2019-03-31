@@ -31,6 +31,15 @@ INCLUDE_DIRECTORIES(
 ##############################ENet's CAFFE FORK NEEDS TO BE PREVIOUSLY COMPILED####################
 set(ENET_CAFFE_PATH "$ENV{HOME}/ENet/caffe-enet/distribute")
 ####################################################################################################
+####### Melodic Checks
+SET (CPU_ONLY FALSE)
+if (NOT CPU_ONLY AND CUDA_FOUND AND "$ENV{ROS_DISTRO}" STREQUAL "melodic" )
+    if(${CMAKE_VERSION} VERSION_LESS "3.12.3")
+        message("GPU support on Melodic requires CMake version>= 3.12.3")
+        SET (CPU_ONLY TRUE)
+    endif()
+endif()
+####### End Melodic Checks
 if (EXISTS "${ENET_CAFFE_PATH}" AND ${CUDA_FOUND})
 
     ADD_EXECUTABLE(vision_segment_enet_detect
