@@ -105,7 +105,7 @@ add_executable(ndt_mapping nodes/ndt_mapping/ndt_mapping.cpp)
 target_link_libraries(ndt_mapping ${catkin_LIBRARIES})
 add_dependencies(ndt_mapping ${catkin_EXPORTED_TARGETS})
 
-if (CUDA_FOUND)
+if (NOT CPU_ONLY AND CUDA_FOUND)
     target_include_directories(ndt_matching PRIVATE ${CUDA_INCLUDE_DIRS})
     target_include_directories(ndt_mapping PRIVATE ${CUDA_INCLUDE_DIRS})
 endif ()
