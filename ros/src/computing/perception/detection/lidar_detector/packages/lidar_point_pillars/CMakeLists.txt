@@ -4,13 +4,24 @@ project(lidar_point_pillars)
 # set flags for CUDA availability
 option(CUDA_AVAIL "CUDA available" OFF)
 find_package(CUDA)
-if (CUDA_FOUND)
+
+####### Melodic Checks
+SET (CPU_ONLY FALSE)
+if (NOT CPU_ONLY AND CUDA_FOUND AND "$ENV{ROS_DISTRO}" STREQUAL "melodic" )
+    if(${CMAKE_VERSION} VERSION_LESS "3.12.3")
+        message("GPU support on Melodic requires CMake version>= 3.12.3")
+        SET (CPU_ONLY TRUE)
+    endif()
+endif()
+####### End Melodic Checks
+
+if (NOT CPU_ONLY AND CUDA_FOUND)
   message("CUDA is available!")
   message("CUDA Libs: ${CUDA_LIBRARIES}")
   message("CUDA Headers: ${CUDA_INCLUDE_DIRS}")
   set(CUDA_AVAIL ON)
 else()
-  message("CUDA NOT FOUND")
+  message("CUDA NOT FOUND OR INCOMPATIBLE CMAKE VERSION FOUND")
   set(CUDA_AVAIL OFF)
 endif (CUDA_FOUND)
 
