@@ -1,0 +1,49 @@
+repositories:
+  autoware/autoware:
+    type: git
+    url: https://github.com/autowarefoundation/autoware.git
+    version: master
+  autoware/core_control:
+    type: git
+    url: https://github.com/autowarefoundation/core_control.git
+    version: master
+  autoware/core_perception:
+    type: git
+    url: https://github.com/autowarefoundation/core_perception.git
+    version: master
+  autoware/core_planning:
+    type: git
+    url: https://github.com/autowarefoundation/core_planning.git
+    version: master
+  autoware/documentation:
+    type: git
+    url: https://github.com/autowarefoundation/documentation.git
+    version: master
+  autoware/messages:
+    type: git
+    url: https://github.com/autowarefoundation/messages.git
+    version: master
+  autoware/simulation:
+    type: git
+    url: https://github.com/autowarefoundation/simulation.git
+    version: master
+  autoware/utilities:
+    type: git
+    url: https://github.com/autowarefoundation/utilities.git
+    version: master
+  autoware/visualization:
+    type: git
+    url: https://github.com/autowarefoundation/visualization.git
+    version: master
+  drivers:
+    type: git
+    url: https://github.com/autowarefoundation/drivers.git
+    version: master
+  citysim:
+    type: git
+    url: https://github.com/CPFL/osrf_citysim.git
+    version: 53b8483d098999298498854f3795a9f01c5e8828
+  car_demo:
+    type: git
+    url: https://github.com/CPFL/car_demo.git
+    version: e364448fad421cb6244c9f828f978d8d877dcbf9
