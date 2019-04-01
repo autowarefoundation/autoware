@@ -31,7 +31,7 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/utilities.git
     version: master
-  autoware/visualisation:
+  autoware/visualization:
     type: git
     url: https://github.com/autowarefoundation/visualization.git
     version: master
