@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="sd" type="sd_twizy_interface_node" name="sd_twizy_interface_node" output = "screen"/>
+  <node pkg="sd" type="socketcan_bridge_node" name="socketcan_bridge_node" output = "screen"/>
+</launch>

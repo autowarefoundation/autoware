@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>sd</name>
+  <version>0.3.0</version>
+  <description>The sd_twizy_interface package</description>
+
+  <maintainer email="efimia@streetdrone.com">EfimiaPanagiotaki-StreetDrone</maintainer>
+
+  <license>Apache 2</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>autoware_build_flags</buildtool_depend>
+  <build_depend>autoware_msgs</build_depend>
+  <build_depend>can_msgs</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>rosconsole</build_depend>
+  <build_depend>socketcan_bridge</build_depend>
+  <build_depend>socketcan_interface</build_depend>
+
+  <build_depend>std_msgs</build_depend>
+  <build_export_depend>autoware_msgs</build_export_depend>
+  <build_export_depend>can_msgs</build_export_depend>
+  <build_export_depend>roscpp</build_export_depend>
+  <build_export_depend>socketcan_bridge</build_export_depend>
+  <build_export_depend>socketcan_interface</build_export_depend>
+  <build_export_depend>std_msgs</build_export_depend>
+
+  <exec_depend>autoware_msgs</exec_depend>
+  <exec_depend>can_msgs</exec_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>socketcan_bridge</exec_depend>
+  <exec_depend>socketcan_interface</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>rosconsole</exec_depend>
+
+
+</package>

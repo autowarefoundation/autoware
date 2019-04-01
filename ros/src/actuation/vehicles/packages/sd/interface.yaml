@@ -1,0 +1,3 @@
+- name: /sd_twizy_interface
+  publish: [/sent_messages], [/sd_current_twist]
+  subscribe: [/received_messages], [/twist_cmd], [/current_velocity]
