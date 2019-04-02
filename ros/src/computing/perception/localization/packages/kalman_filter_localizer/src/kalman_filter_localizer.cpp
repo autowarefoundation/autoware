@@ -271,7 +271,7 @@ void KalmanFilterNode::callbackTwist(const geometry_msgs::TwistStamped::ConstPtr
 void KalmanFilterNode::initKalmanFilter()
 {
   Eigen::MatrixXd X = Eigen::MatrixXd::Zero(dim_x_, 1);
-  Eigen::MatrixXd P = Eigen::MatrixXd::Identity(dim_x_, dim_x_) * 1.0E3;
+  Eigen::MatrixXd P = Eigen::MatrixXd::Identity(dim_x_, dim_x_) * 1.0E15;
   P(IDX::YAWB, IDX::YAWB) = cov_proc_yaw_bias_d_; // for yaw bias
 
   kf_.init(X, P, extend_state_step_);
