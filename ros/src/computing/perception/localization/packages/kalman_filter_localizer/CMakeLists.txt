@@ -44,7 +44,7 @@ include_directories(
 
 add_executable(kalman_filter_localizer src/kalman_filter_localizer.cpp)
 add_dependencies(kalman_filter_localizer ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(kalman_filter_localizer ${catkin_LIBRARIES} amathutils_lib)
+target_link_libraries(kalman_filter_localizer ${catkin_LIBRARIES})
 
 #############
 ## Install ##
