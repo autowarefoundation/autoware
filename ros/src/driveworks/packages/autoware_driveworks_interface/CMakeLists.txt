@@ -18,8 +18,11 @@ find_package(CUDA)
 catkin_package(
         CATKIN_DEPENDS std_msgs sensor_msgs autoware_msgs
 )
-
-if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64" AND CUDA_FOUND)
+find_library(DRIVEWORKS_FOUND NAMES driveworks)
+if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64"
+        AND CUDA_FOUND
+        AND DRIVEWORKS_FOUND
+)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
       set(DRIVEWORKS_LINKER_FLAGS "-Wl,--unresolved-symbols=ignore-in-object-files -Wl,--allow-shlib-undefined")
     elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
