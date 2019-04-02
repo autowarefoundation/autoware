@@ -21,12 +21,15 @@ variables:
     - apt-get install -y dpkg
     - apt-get install -y python-catkin-pkg python-rosdep python-wstool ros-${ROS_DISTRO}-catkin
     - apt-get install -y python3-pip python3-setuptools
+    - apt-get install -y python3-vcstool
     # Update setuptools from PyPI because the version Ubuntu ships with is too old
     - pip3 install -U setuptools
     - source /opt/ros/${ROS_DISTRO}/setup.bash
     - rosdep init
     - rosdep update
-    - cd ros/src
+    - mkdir -p $CI_PROJECT_DIR/../autoware.ai/src
+    - cd $CI_PROJECT_DIR/../autoware.ai
+    - vcs import src < $CI_PROJECT_DIR/autoware.repos
     - wstool init
     - test -f "${ROSINSTALL_FILE}" && wstool merge "${ROSINSTALL_FILE}"
     - wstool up
