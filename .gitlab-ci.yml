@@ -33,7 +33,6 @@ variables:
     - wstool init
     - test -f "${ROSINSTALL_FILE}" && wstool merge "${ROSINSTALL_FILE}"
     - wstool up
-    - cd ..
     - rosdep install -y --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} 
     
 
