@@ -1,20 +1,20 @@
-# ICURO Santa Clara, CA
-# Authors: Jeremiah Liou, Arun Sunil, Cody Heiner
+ICURO Santa Clara, CA <br>
+Authors: Jeremiah Liou, Arun Sunil, Cody Heiner
 
-# Autoware Docker
+## Autoware Docker
 To use the Autoware Docker, first make sure the Docker is properly installed.
 
 [Docker installation](https://devtalk.nvidia.com/default/topic/1000224/jetson-tx2/docker-on-the-tx2/3): Post by merdzan
 
-## How to Build
+### How to Build
 ```
-$ cd Autoware/docker/tx2
+$ cd Autoware/docker/jetsontx2
 
 # Ubuntu 16.04 (Kinetic)
 $ sh build
 ```
 
-## How to Run
+### How to Run
 ```
 # Default shared directory path is /home/$USER/shared_dir
 
