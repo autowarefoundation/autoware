@@ -34,8 +34,11 @@ NdtSlamPCLOMP<PointSource, PointTarget>::NdtSlamPCLOMP() {
 template <class PointSource, class PointTarget>
 NdtSlamPCLOMP<PointSource, PointTarget>::NdtSlamPCLOMP()
     : ndt_ptr_(
-          new pcl_omp::NormalDistributionsTransform<PointSource, PointTarget>),
-      swap_ndt_ptr_(ndt_ptr_) {}
+          new pclomp::NormalDistributionsTransform<PointSource, PointTarget>),
+      swap_ndt_ptr_(ndt_ptr_) {
+  ndt_ptr_->setNumThreads(4);
+  ndt_ptr_->setNeighborhoodSearchMethod(pclomp::DIRECT7);
+}
 
 template <class PointSource, class PointTarget>
 void NdtSlamPCLOMP<PointSource, PointTarget>::setTransformationEpsilon(
@@ -122,9 +125,11 @@ void NdtSlamPCLOMP<PointSource, PointTarget>::buildMap(
   const auto max_iter = getMaximumIterations();
 
   boost::shared_ptr<
-      pcl_omp::NormalDistributionsTransform<PointSource, PointTarget>>
+      pclomp::NormalDistributionsTransform<PointSource, PointTarget>>
       tmp_ndt_ptr(
-          new pcl_omp::NormalDistributionsTransform<PointSource, PointTarget>);
+          new pclomp::NormalDistributionsTransform<PointSource, PointTarget>);
+  tmp_ndt_ptr->setNumThreads(1);
+  tmp_ndt_ptr->setNeighborhoodSearchMethod(pclomp::DIRECT7);
   tmp_ndt_ptr->setTransformationEpsilon(trans_estimation);
   tmp_ndt_ptr->setStepSize(step_size);
   tmp_ndt_ptr->setResolution(resolution);

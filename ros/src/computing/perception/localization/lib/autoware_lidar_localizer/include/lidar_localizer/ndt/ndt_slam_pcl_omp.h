@@ -35,7 +35,7 @@ public:
 #include <pcl/io/io.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
-#include <pcl_omp_registration/ndt.h>
+#include <pclomp/ndt_omp.h>
 
 template <class PointSource, class PointTarget>
 class NdtSlamPCLOMP : public NdtSlamBase<PointSource, PointTarget> {
@@ -68,10 +68,10 @@ protected:
 
 private:
   boost::shared_ptr<
-      pcl_omp::NormalDistributionsTransform<PointSource, PointTarget>>
+      pclomp::NormalDistributionsTransform<PointSource, PointTarget>>
       ndt_ptr_;
   boost::shared_ptr<
-      pcl_omp::NormalDistributionsTransform<PointSource, PointTarget>>
+      pclomp::NormalDistributionsTransform<PointSource, PointTarget>>
       swap_ndt_ptr_;
 };
 

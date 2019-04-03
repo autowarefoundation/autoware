@@ -9,11 +9,13 @@
 
   <build_depend>pcl_ros</build_depend>
   <build_depend>pcl_omp_registration</build_depend>
+  <build_depend>ndt_omp</build_depend>
   <build_depend>ndt_cpu</build_depend>
   <build_depend>ndt_gpu</build_depend>
 
   <run_depend>pcl_ros</run_depend>
   <run_depend>pcl_omp_registration</run_depend>
+  <run_depend>ndt_omp</run_depend>
   <run_depend>ndt_cpu</run_depend>
   <run_depend>ndt_gpu</run_depend>
 
