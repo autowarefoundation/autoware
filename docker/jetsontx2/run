@@ -28,6 +28,7 @@ echo "Shared directory: ${HOST_DIR}"
     --volume=$HOST_DIR:$SHARED_DIR:rw \
     --env="XAUTHORITY=${XAUTH}" \
     --env="DISPLAY=${DISPLAY}" \
+    --ipc=host \ #Do this for gazebo or have to disable MIT-SHM somehow
     -u autoware \
     --privileged -v /tmp:/tmp \
     --device=/dev/video0:/dev/video0:rw \
