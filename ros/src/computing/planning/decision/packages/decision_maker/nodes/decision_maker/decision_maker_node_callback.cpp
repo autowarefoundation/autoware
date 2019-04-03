@@ -54,6 +54,7 @@ void DecisionMakerNode::callbackFromConfig(const autoware_config_msgs::ConfigDec
   goal_threshold_dist_ = msg.goal_threshold_dist;
   goal_threshold_vel_ = msg.goal_threshold_vel;
   disuse_vector_map_ = msg.disuse_vector_map;
+  check_vehicle_info_ = msg.check_vehicle_info;
 }
 
 void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_msgs::TrafficLight const>& event)
@@ -310,6 +311,7 @@ void DecisionMakerNode::callbackFromCurrentPose(const geometry_msgs::PoseStamped
 void DecisionMakerNode::callbackFromCurrentVelocity(const geometry_msgs::TwistStamped& msg)
 {
   current_status_.velocity = amathutils::mps2kmph(msg.twist.linear.x);
+  setEventFlag("received_current_velocity", true);
 }
 
 void DecisionMakerNode::callbackFromObstacleWaypoint(const std_msgs::Int32& msg)

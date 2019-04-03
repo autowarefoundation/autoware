@@ -113,6 +113,8 @@ void DecisionMakerNode::entryPlanningInitState(cstring_t& state_name, int status
 
 void DecisionMakerNode::updatePlanningInitState(cstring_t& state_name, int status)
 {
+  setEventFlag("received_current_velocity", false);
+
   tryNextState("planning_is_ready");
 }
 
@@ -123,9 +125,17 @@ void DecisionMakerNode::entryVehicleInitState(cstring_t& state_name, int status)
 
 void DecisionMakerNode::updateVehicleInitState(cstring_t& state_name, int status)
 {
-  if (true /*isEventFlagTrue("received_vehicle_status")*/)
+  if ((!check_vehicle_info_ || isVehicleInfoAvailable())
+      && isEventFlagTrue("received_current_velocity"))
   {
     tryNextState("vehicle_is_ready");
+  }
+  else
+  {
+    if (!isEventFlagTrue("received_current_velocity"))
+      publishOperatorHelpMessage("Current Velocity has not arrived.");
+    if (check_vehicle_info_ && !isVehicleInfoAvailable())
+      publishOperatorHelpMessage("Vehicle Info is not loaded.");
   }
 }
 

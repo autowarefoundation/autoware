@@ -105,6 +105,19 @@ bool DecisionMakerNode::isLocalizationConvergence(const geometry_msgs::Point& _c
   prev_point = _current_point;
   return ret;
 }
+
+bool DecisionMakerNode::isVehicleInfoAvailable()
+{
+  bool ret = false;
+
+  if(nh_.hasParam("/vehicle_info/wheel_base")
+      && nh_.hasParam("/vehicle_info/minimum_turning_radius")
+      && nh_.hasParam("/vehicle_info/maximum_steering_angle"))
+    ret = true;
+
+  return ret;
+}
+
 bool DecisionMakerNode::isArrivedGoal()
 {
   const auto goal_point = current_status_.finalwaypoints.waypoints.back().pose.pose.position;

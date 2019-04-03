@@ -1976,6 +1976,14 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name  : check_vehicle_info
+      desc  : If this is enabled, check the vehicle_info param has loaded or not in VehicleInit state.
+      label : check_vehicle_info
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name  : num_of_steer_behind
       desc  : e
       label : num_of_steer_behind

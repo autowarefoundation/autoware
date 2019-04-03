@@ -149,6 +149,7 @@ private:
   bool auto_mission_change_;
   bool use_fms_;
   bool disuse_vector_map_;
+  bool check_vehicle_info_;
   int param_num_of_steer_behind_;
   double change_threshold_dist_;
   double change_threshold_angle_;
@@ -178,6 +179,7 @@ private:
   void tryNextState(cstring_t& key);
   bool isArrivedGoal(void);
   bool isLocalizationConvergence(const geometry_msgs::Point& _current_point);
+  bool isVehicleInfoAvailable(void);
   void insertPointWithinCrossRoad(std::vector<CrossRoadArea>* _intersects, autoware_msgs::LaneArray& lane_array);
   void setWaypointState(autoware_msgs::LaneArray& lane_array);
   bool waitForEvent(cstring_t& key, const bool& flag);
@@ -341,6 +343,7 @@ public:
     , auto_mission_change_(false)
     , use_fms_(false)
     , disuse_vector_map_(false)
+    , check_vehicle_info_(false)
     , param_num_of_steer_behind_(30)
     , change_threshold_dist_(1.0)
     , change_threshold_angle_(15)
@@ -369,6 +372,7 @@ public:
     private_nh_.getParam("auto_mission_change", auto_mission_change_);
     private_nh_.getParam("use_fms", use_fms_);
     private_nh_.getParam("disuse_vector_map", disuse_vector_map_);
+    private_nh_.getParam("check_vehicle_info_", check_vehicle_info_);
     private_nh_.getParam("param_num_of_steer_behind", param_num_of_steer_behind_);
     private_nh_.getParam("change_threshold_dist", change_threshold_dist_);
     private_nh_.getParam("change_threshold_angle", change_threshold_angle_);
