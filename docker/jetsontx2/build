@@ -5,6 +5,7 @@
 
 USERID="$(id -u)"
 sed -i "s/1000/$USERID/g" Dockerfile.tx2
+bash links.sh
 docker build --no-cache -t autoware-tx2 -f Dockerfile.tx2 .
 sed -i "s/$USERID/1000/g" Dockerfile.tx2
 

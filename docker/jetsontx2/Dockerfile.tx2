@@ -43,22 +43,6 @@ RUN /bin/bash -c " \
    # Fix PATH, add KERNEL rule
       echo \"export LD_LIBRARY_PATH=/usr/local/cuda-9.0/lib64:/usr/lib/aarch64-linux-gnu/tegra:\" >> /root/.bashrc; \
       echo KERNEL==\"i2c-[0-7]\",MODE=\"0666\" > /etc/udev/rules.d/90-i2c.rules; \
-   # Add links for GPU usage
-      ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvidia-ptxjitcompiler.so.28.2.1 /usr/lib/aarch64-linux-gnu/tegra/libnvidia-ptxjitcompiler.so; \
-      ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvidia-ptxjitcompiler.so.28.2.1 /usr/lib/aarch64-linux-gnu/tegra/libnvidia-ptxjitcompiler.so.1; \
-      ln -sf /usr/lib/aarch64-linux-gnu/tegra/libGL.so /usr/lib/aarch64-linux-gnu/libGL.so; \
-      ln -s /usr/lib/aarch64-linux-gnu/libcuda.so /usr/lib/aarch64-linux-gnu/libcuda.so.1; \
-      ln -s /usr/lib/aarch64-linux-gnu/tegra/libGLX.so.0 /usr/lib/aarch64-linux-gnu/libGLX.so.0; \
-      ln -s /usr/lib/aarch64-linux-gnu/tegra/libGLdispatch.so.0 /usr/lib/aarch64-linux-gnu/libGLdispatch.so.0; \
-      ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvll.so /usr/lib/aarch64-linux-gnu/; \
-      ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvrm.so /usr/lib/aarch64-linux-gnu/; \
-      ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvrm_graphics.so /usr/lib/aarch64-linux-gnu/; \
-      ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvdc.so /usr/lib/aarch64-linux-gnu/; \
-      ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvos.so /usr/lib/aarch64-linux-gnu/; \
-      ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvimp.so /usr/lib/aarch64-linux-gnu/; \
-      ln -sf /usr/lib/aarch64-linux-gnu/tegra/libGL.so.1 /usr/lib/aarch64-linux-gnu/libGL.so.1; \
-      ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvrm_gpu.so /usr/lib/aarch64-linux-gnu/; \
-      ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvidia-fatbinaryloader.so.28.2.1 /usr/lib/aarch64-linux-gnu/; \
       echo \"source /opt/ros/kinetic/setup.bash\" >> ~/.bashrc"
 
 ############################################################
@@ -119,6 +103,28 @@ RUN sudo /bin/bash -c " \
       echo \"export QT_X11_NOMITSHM=1\" >> ~/.bashrc"
 
 ############################################################
+################# Fix Symbolic Links #######################
+############################################################
+
+RUN /bin/bash -c " \
+   # Add links for GPU and GUI usage
+      sudo ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvidia-ptxjitcompiler.so.28.2.1 /usr/lib/aarch64-linux-gnu/tegra/libnvidia-ptxjitcompiler.so; \
+      sudo ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvidia-ptxjitcompiler.so.28.2.1 /usr/lib/aarch64-linux-gnu/tegra/libnvidia-ptxjitcompiler.so.1; \
+      sudo ln -s /usr/lib/aarch64-linux-gnu/libcuda.so /usr/lib/aarch64-linux-gnu/libcuda.so.1; \
+      sudo ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvll.so /usr/lib/aarch64-linux-gnu/; \
+      sudo ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvrm.so /usr/lib/aarch64-linux-gnu/; \
+      sudo ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvrm_graphics.so /usr/lib/aarch64-linux-gnu/; \
+      sudo ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvdc.so /usr/lib/aarch64-linux-gnu/; \
+      sudo ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvos.so /usr/lib/aarch64-linux-gnu/; \
+      sudo ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvimp.so /usr/lib/aarch64-linux-gnu/; \
+      sudo ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvrm_gpu.so /usr/lib/aarch64-linux-gnu/; \
+      sudo ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvidia-fatbinaryloader.so.28.2.1 /usr/lib/aarch64-linux-gnu/; \
+      sudo ln -sf /usr/lib/aarch64-linux-gnu/tegra/libGL.so /usr/lib/aarch64-linux-gnu/libGL.so; \
+      sudo ln -s /usr/lib/aarch64-linux-gnu/tegra/libGLX.so.0 /usr/lib/aarch64-linux-gnu/libGLX.so.0; \
+      sudo ln -s /usr/lib/aarch64-linux-gnu/tegra/libGLdispatch.so.0 /usr/lib/aarch64-linux-gnu/libGLdispatch.so.0; \
+      sudo ln -s /usr/lib/aarch64-linux-gnu/tegra/libGL.so.1 /usr/lib/aarch64-linux-gnu/libGL.so.1"
+
+############################################################
 ################## Install OpenCV ##########################
 ############################################################
 
@@ -173,7 +179,7 @@ RUN /bin/bash -c " \
        -DCUDA_ARCH_BIN=6.2 \
        -DCUDA_ARCH_PTX="" \
        ../; \
-      make -j1; \
+      make -j6; \
       sudo make install; \
       sudo ldconfig" 
 
@@ -226,4 +232,5 @@ RUN /bin/bash -c " \
       sudo apt install -y python3-colcon-common-extensions; \
       source /opt/ros/kinetic/setup.bash; \
       echo \"source /opt/ros/kinetic/setup.bash\" >> ~/.bashrc; \
-      ./colcon_release"      
+      ./colcon_release"
+
