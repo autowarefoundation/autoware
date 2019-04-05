@@ -44,6 +44,7 @@
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <std_msgs/Float32.h>
+#include <std_msgs/Float64.h>
 
 #include <lidar_localizer/map_manager/map_manager.h>
 #include <lidar_localizer/ndt/ndt_slam_pcl.h>
@@ -102,6 +103,7 @@ private:
 
   ros::Publisher points_map_pub_;
   ros::Publisher ndt_pose_pub_;
+  ros::Publisher ndt_pose_with_covariance_pub_;
   ros::Publisher localizer_pose_pub_;
   ros::Publisher estimate_twist_pub_;
 

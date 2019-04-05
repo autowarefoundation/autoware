@@ -163,6 +163,7 @@ NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
 
   points_map_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("ndt_map", 10);
   ndt_pose_pub_ = nh_.advertise<geometry_msgs::PoseStamped>("ndt_pose", 10);
+  ndt_pose_with_covariance_pub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("ndt_pose_with_covariance", 10);
   localizer_pose_pub_ = nh_.advertise<geometry_msgs::PoseStamped>("localizer_pose", 10);
   estimate_twist_pub_ = nh_.advertise<geometry_msgs::TwistStamped>("estimate_twist", 10);
 
@@ -518,17 +519,28 @@ void NdtSlam::publishPosition(const ros::Time &time_stamp) {
   common_header.stamp = time_stamp;
 
   const auto mapTF_localizer_pose = localizer_ptr_->getLocalizerPose();
-  const auto targetTF_localizer_pose =
-      transformToPose(mapTF_localizer_pose, tf_ttom_); //TODO check
-  const auto localizer_pose_msg =
-      convertToROSMsg(common_header, targetTF_localizer_pose);
+  const auto targetTF_localizer_pose = transformToPose(mapTF_localizer_pose, tf_ttom_); //TODO check
+  const auto localizer_pose_msg = convertToROSMsg(common_header, targetTF_localizer_pose);
   localizer_pose_pub_.publish(localizer_pose_msg);
 
-  const auto targetTF_base_link_pose =
-      transformToPose(targetTF_localizer_pose, tf_btol_.inverse());
-  const auto base_link_pose_msg =
-      convertToROSMsg(common_header, targetTF_base_link_pose);
+  const auto targetTF_base_link_pose = transformToPose(targetTF_localizer_pose, tf_btol_.inverse());
+  const auto base_link_pose_msg = convertToROSMsg(common_header, targetTF_base_link_pose);
   ndt_pose_pub_.publish(base_link_pose_msg);
+
+  double fitness_score = localizer_ptr_->getFitnessScore();
+  std::cout << "fitness_score: " << fitness_score << std::endl;
+  double coeff_cov = 0.2;
+
+  geometry_msgs::PoseWithCovarianceStamped targetTF_base_link_pose_cov;
+  targetTF_base_link_pose_cov.header = common_header;
+  targetTF_base_link_pose_cov.pose.pose = base_link_pose_msg.pose;
+  targetTF_base_link_pose_cov.pose.covariance[0] = 0.05 + fitness_score * coeff_cov;
+  targetTF_base_link_pose_cov.pose.covariance[6 + 1] = 0.05 + fitness_score * coeff_cov;
+  targetTF_base_link_pose_cov.pose.covariance[6*2 + 2] = 0.05 + fitness_score * coeff_cov;
+  targetTF_base_link_pose_cov.pose.covariance[6*3 + 3] = 0.025 + fitness_score * coeff_cov;
+  targetTF_base_link_pose_cov.pose.covariance[6*4 + 4] = 0.025 + fitness_score * coeff_cov;
+  targetTF_base_link_pose_cov.pose.covariance[6*5 + 5] = 0.025 + fitness_score * coeff_cov;
+  ndt_pose_with_covariance_pub_.publish(targetTF_base_link_pose_cov);
 }
 
 void NdtSlam::publishVelocity(const ros::Time &time_stamp) {
