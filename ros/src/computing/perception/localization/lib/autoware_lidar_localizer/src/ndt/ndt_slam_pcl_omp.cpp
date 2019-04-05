@@ -37,7 +37,7 @@ NdtSlamPCLOMP<PointSource, PointTarget>::NdtSlamPCLOMP()
           new pclomp::NormalDistributionsTransform<PointSource, PointTarget>),
       swap_ndt_ptr_(ndt_ptr_) {
   ndt_ptr_->setNumThreads(4);
-  ndt_ptr_->setNeighborhoodSearchMethod(pclomp::DIRECT7);
+  ndt_ptr_->setNeighborhoodSearchMethod(pclomp::KDTREE);
 }
 
 template <class PointSource, class PointTarget>
@@ -128,8 +128,8 @@ void NdtSlamPCLOMP<PointSource, PointTarget>::buildMap(
       pclomp::NormalDistributionsTransform<PointSource, PointTarget>>
       tmp_ndt_ptr(
           new pclomp::NormalDistributionsTransform<PointSource, PointTarget>);
-  tmp_ndt_ptr->setNumThreads(1);
-  tmp_ndt_ptr->setNeighborhoodSearchMethod(pclomp::DIRECT7);
+  tmp_ndt_ptr->setNumThreads(4);
+  tmp_ndt_ptr->setNeighborhoodSearchMethod(pclomp::KDTREE);
   tmp_ndt_ptr->setTransformationEpsilon(trans_estimation);
   tmp_ndt_ptr->setStepSize(step_size);
   tmp_ndt_ptr->setResolution(resolution);
