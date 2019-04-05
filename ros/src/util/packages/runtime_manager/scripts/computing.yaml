@@ -117,6 +117,8 @@ subs :
              depend      : with_mapping
              depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
+          use_nn_point_z_when_initial_pose :
+             flags : [ nl ]
 
     - name : autoware_connector
       desc : autoware_connector desc sample
@@ -1760,6 +1762,14 @@ params :
     - name  : use_nn_point_z_when_initial_pose
       desc  : use_nn_point_z_when_initial_pose
       label : Use NN Point Z When Initial Pose
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : use_fusion_localizer_feedback
+      desc  : use_fusion_localizer_feedback
+      label : Use Fusion Localizer Feedback
       kind  : checkbox
       v     : False
       cmd_param :

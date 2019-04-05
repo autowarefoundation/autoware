@@ -59,6 +59,11 @@ class NdtSlam {
       message_filters::sync_policies::ApproximateTime<sensor_msgs::PointCloud2,
                                                       sensor_msgs::PointCloud2>;
 
+  using SyncPolicyPointsAndPose =
+      message_filters::sync_policies::ApproximateTime<sensor_msgs::PointCloud2,
+                                                      sensor_msgs::PointCloud2,
+                                                      geometry_msgs::PoseStamped>;
+
   enum class MethodType {
     PCL_GENERIC = 0,
     PCL_ANH = 1,
@@ -71,21 +76,20 @@ public:
   ~NdtSlam();
 
 private:
-  void configCallback(
-      const autoware_config_msgs::ConfigNDTSlam::ConstPtr &config_msg_ptr);
-  void pointsMapUpdatedCallback(
-      const sensor_msgs::PointCloud2::ConstPtr &pointcloud2_msg_ptr);
-  void
-  initialPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr
-                          &pose_conv_msg_ptr);
-  void
-  staticPoseCallback(const geometry_msgs::PoseStamped::ConstPtr &pose_msg_ptr);
+  void configCallback(const autoware_config_msgs::ConfigNDTSlam::ConstPtr &config_msg_ptr);
+  void pointsMapUpdatedCallback(const sensor_msgs::PointCloud2::ConstPtr &pointcloud2_msg_ptr);
+  void initialPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &pose_conv_msg_ptr);
+  void staticPoseCallback(const geometry_msgs::PoseStamped::ConstPtr &pose_msg_ptr);
   void mappingAndLocalizingPointsCallback(
       const sensor_msgs::PointCloud2::ConstPtr &mapping_points_msg_ptr,
       const sensor_msgs::PointCloud2::ConstPtr &localizing_points_msg_ptr);
 
-  void mapping(const boost::shared_ptr<pcl::PointCloud<PointTarget>>
-                   &mapping_points_ptr);
+  void mappingAndLocalizingPointsAndCurrentPoseCallback(
+      const sensor_msgs::PointCloud2::ConstPtr &mapping_points_msg_ptr,
+      const sensor_msgs::PointCloud2::ConstPtr &localizing_points_msg_ptr,
+      const geometry_msgs::PoseStamped::ConstPtr &current_pose_msg_ptr);
+
+  void mapping(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &mapping_points_ptr);
   // TODO const ros::Time time_stamp
   void publishPosition(const ros::Time &time_stamp);
   void publishVelocity(const ros::Time &time_stamp);
@@ -106,12 +110,11 @@ private:
   ros::Subscriber initial_pose_sub_;
   ros::Subscriber static_pose_sub_;
 
-  std::unique_ptr<message_filters::Subscriber<sensor_msgs::PointCloud2>>
-      mapping_points_sub_;
-  std::unique_ptr<message_filters::Subscriber<sensor_msgs::PointCloud2>>
-      localizing_points_sub_;
-  std::unique_ptr<message_filters::Synchronizer<SyncPolicyPoints>>
-      points_synchronizer_;
+  std::unique_ptr<message_filters::Subscriber<sensor_msgs::PointCloud2>> mapping_points_sub_;
+  std::unique_ptr<message_filters::Subscriber<sensor_msgs::PointCloud2>> localizing_points_sub_;
+  std::unique_ptr<message_filters::Subscriber<geometry_msgs::PoseStamped>> current_pose_sub_;
+  std::unique_ptr<message_filters::Synchronizer<SyncPolicyPoints>> points_synchronizer_;
+  std::unique_ptr<message_filters::Synchronizer<SyncPolicyPointsAndPose>> points_and_pose_synchronizer_;
 
   tf::TransformBroadcaster tf_broadcaster_;
   tf::TransformListener tf_listener_;

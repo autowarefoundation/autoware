@@ -102,17 +102,16 @@ NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
   private_nh_.getParam("separate_map_size", separate_map_size);
   map_manager_.setSaveMapLeafSize(save_map_leaf_size);
   map_manager_.setSaveSeparateMapSize(separate_map_size);
-  ROS_INFO("with_mapping: %d, save_map_leaf_size: %lf, min_scan_range: %lf, "
-           "max_scan_range: %lf, min_add_scan_shift: %lf",
-           with_mapping_, save_map_leaf_size, min_scan_range_, max_scan_range_,
-           min_add_scan_shift_);
-  ROS_INFO("separate_mapping: %d, separate_map_size: %lf", separate_mapping_,
-           separate_map_size);
+  ROS_INFO("with_mapping: %d, save_map_leaf_size: %lf, min_scan_range: %lf, max_scan_range: %lf, min_add_scan_shift: %lf",
+           with_mapping_, save_map_leaf_size, min_scan_range_, max_scan_range_, min_add_scan_shift_);
+  ROS_INFO("separate_mapping: %d, separate_map_size: %lf", separate_mapping_, separate_map_size);
 
-  private_nh_.getParam("use_nn_point_z_when_initial_pose",
-                       use_nn_point_z_when_initial_pose_);
-  ROS_INFO("use_nn_point_z_when_initial_pose: %d",
-           use_nn_point_z_when_initial_pose_);
+  private_nh_.getParam("use_nn_point_z_when_initial_pose", use_nn_point_z_when_initial_pose_);
+  ROS_INFO("use_nn_point_z_when_initial_pose: %d", use_nn_point_z_when_initial_pose_);
+
+  bool use_fusion_localizer_feedback = false;
+  private_nh_.getParam("use_fusion_localizer_feedback", use_fusion_localizer_feedback);
+  ROS_INFO("use_fusion_localizer_feedback: %d", use_fusion_localizer_feedback);
 
   const std::time_t now = std::time(NULL);
   const std::tm *pnow = std::localtime(&now);
@@ -164,29 +163,26 @@ NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
 
   points_map_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("ndt_map", 10);
   ndt_pose_pub_ = nh_.advertise<geometry_msgs::PoseStamped>("ndt_pose", 10);
-  localizer_pose_pub_ =
-      nh_.advertise<geometry_msgs::PoseStamped>("localizer_pose", 10);
-  estimate_twist_pub_ =
-      nh_.advertise<geometry_msgs::TwistStamped>("estimate_twist", 10);
+  localizer_pose_pub_ = nh_.advertise<geometry_msgs::PoseStamped>("localizer_pose", 10);
+  estimate_twist_pub_ = nh_.advertise<geometry_msgs::TwistStamped>("estimate_twist", 10);
 
-  config_sub_ =
-      nh_.subscribe("/config/ndtslam", 1, &NdtSlam::configCallback, this);
-  points_map_sub_ =
-      nh_.subscribe("/points_map", 1, &NdtSlam::pointsMapUpdatedCallback, this);
-  initial_pose_sub_ = nh_.subscribe("/initialpose", points_queue_size * 100,
-                                    &NdtSlam::initialPoseCallback, this);
+  config_sub_ = nh_.subscribe("/config/ndtslam", 1, &NdtSlam::configCallback, this);
+  points_map_sub_ = nh_.subscribe("/points_map", 1, &NdtSlam::pointsMapUpdatedCallback, this);
+  initial_pose_sub_ = nh_.subscribe("/initialpose", points_queue_size * 100, &NdtSlam::initialPoseCallback, this);
 
-  mapping_points_sub_.reset(
-      new message_filters::Subscriber<sensor_msgs::PointCloud2>(
-          nh_, "/points_raw", points_queue_size));
-  localizing_points_sub_.reset(
-      new message_filters::Subscriber<sensor_msgs::PointCloud2>(
-          nh_, "/filtered_points", points_queue_size));
-  points_synchronizer_.reset(
-      new message_filters::Synchronizer<SyncPolicyPoints>(
-          SyncPolicyPoints(10), *mapping_points_sub_, *localizing_points_sub_));
-  points_synchronizer_->registerCallback(
-      boost::bind(&NdtSlam::mappingAndLocalizingPointsCallback, this, _1, _2));
+  mapping_points_sub_.reset(new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_, "/points_raw", points_queue_size));
+  localizing_points_sub_.reset(new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_, "/filtered_points", points_queue_size));
+  current_pose_sub_.reset(new message_filters::Subscriber<geometry_msgs::PoseStamped>(nh_, "/kf_pose", points_queue_size*1000));
+
+  if(use_fusion_localizer_feedback) {
+      points_and_pose_synchronizer_.reset(new message_filters::Synchronizer<SyncPolicyPointsAndPose>(SyncPolicyPointsAndPose(points_queue_size*1000), *mapping_points_sub_, *localizing_points_sub_, *current_pose_sub_));
+      points_and_pose_synchronizer_->registerCallback(boost::bind(&NdtSlam::mappingAndLocalizingPointsAndCurrentPoseCallback, this, _1, _2, _3));
+  }
+  else {
+      points_synchronizer_.reset(new message_filters::Synchronizer<SyncPolicyPoints>(SyncPolicyPoints(10), *mapping_points_sub_, *localizing_points_sub_));
+      points_synchronizer_->registerCallback(boost::bind(&NdtSlam::mappingAndLocalizingPointsCallback, this, _1, _2));
+  }
+
 }
 
 NdtSlam::~NdtSlam() {
@@ -402,6 +398,69 @@ void NdtSlam::mappingAndLocalizingPointsCallback(
   std::cout << "------------------------------------------------" << std::endl;
   std::cout << "base_link_pose " << base_link_pose << std::endl;
   std::cout << "velocity: " << pose_interpolator_.getVelocity() << std::endl;
+  std::cout << "align_time: " << localizer_ptr_->getAlignTime() << "ms"
+            << std::endl;
+}
+
+
+void NdtSlam::mappingAndLocalizingPointsAndCurrentPoseCallback(
+    const sensor_msgs::PointCloud2::ConstPtr &mapping_points_msg_ptr,
+    const sensor_msgs::PointCloud2::ConstPtr &localizing_points_msg_ptr,
+    const geometry_msgs::PoseStamped::ConstPtr &current_pose_msg_ptr)
+{
+
+  //TODO trans current_pose, current_pose_ptr->header.frame_id -> map_frame
+
+  const auto current_base_link_pose = convertFromROSMsg(*current_pose_msg_ptr);
+
+  const double current_time_sec = localizing_points_msg_ptr->header.stamp.toSec();
+
+  static bool is_first_call = true;
+  if (is_first_call && with_mapping_ && map_manager_.getMap() == nullptr) {
+    is_first_call = false;
+    boost::shared_ptr<pcl::PointCloud<PointTarget>> mapping_points_ptr(new pcl::PointCloud<PointTarget>);
+    pcl::fromROSMsg(*mapping_points_msg_ptr, *mapping_points_ptr);
+    boost::shared_ptr<pcl::PointCloud<PointTarget>> mapping_points_limilt_range(new pcl::PointCloud<PointTarget>);
+    limitPointCloudRange(mapping_points_ptr, mapping_points_limilt_range, min_scan_range_, max_scan_range_);
+
+    const auto localizer_pose = transformToPose(current_base_link_pose, tf_btol_);
+    const auto eigen_pose = convertToEigenMatrix4f(localizer_pose);
+    pcl::transformPointCloud(*mapping_points_limilt_range, *mapping_points_limilt_range, eigen_pose);
+
+    map_manager_.setMap(mapping_points_limilt_range);
+  }
+
+  if (map_manager_.getMap() == nullptr) {
+    ROS_WARN("received points. But map is not loaded");
+    return;
+  }
+
+  localizer_ptr_->updatePointsMap(map_manager_.getMap());
+
+  const Pose predict_localizer_pose = transformToPose(current_base_link_pose, tf_btol_);
+
+  pcl::PointCloud<PointSource> localizing_points;
+  pcl::fromROSMsg(*localizing_points_msg_ptr, localizing_points);
+  const bool align_succeed = localizer_ptr_->alignMap(localizing_points.makeShared(), predict_localizer_pose);
+  if (align_succeed == false) {
+    return;
+  }
+
+  const auto localizer_pose = localizer_ptr_->getLocalizerPose();
+  const auto base_link_pose = transformToPose(localizer_pose, tf_btol_.inverse());
+
+  if (with_mapping_) {
+    boost::shared_ptr<pcl::PointCloud<PointTarget>> mapping_points_ptr(new pcl::PointCloud<PointTarget>);
+    pcl::fromROSMsg(*mapping_points_msg_ptr, *mapping_points_ptr);
+    mapping(mapping_points_ptr);
+    publishPointsMap(mapping_points_msg_ptr->header.stamp);
+  }
+
+  publishPosition(localizing_points_msg_ptr->header.stamp);
+  publishTF(localizing_points_msg_ptr->header.stamp);
+
+  std::cout << "------------------------------------------------" << std::endl;
+  std::cout << "base_link_pose " << base_link_pose << std::endl;
   std::cout << "align_time: " << localizer_ptr_->getAlignTime() << "ms"
             << std::endl;
 }

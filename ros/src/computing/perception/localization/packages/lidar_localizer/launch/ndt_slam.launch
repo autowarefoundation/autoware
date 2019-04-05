@@ -33,6 +33,7 @@
   <arg name="separate_map_size" default="100.0" />
 
   <arg name="use_nn_point_z_when_initial_pose" default="false" />
+  <arg name="use_fusion_localizer_feedback" default="false" />
 
 
   <!-- rosrun lidar_localizer ndt_mapping  -->
@@ -69,6 +70,7 @@
     <param name="separate_map_size" value="$(arg separate_map_size)" />
 
     <param name="use_nn_point_z_when_initial_pose" value="$(arg use_nn_point_z_when_initial_pose)" />
+    <param name="use_fusion_localizer_feedback" value="$(arg use_fusion_localizer_feedback)" />
   </node>
 
 </launch>
