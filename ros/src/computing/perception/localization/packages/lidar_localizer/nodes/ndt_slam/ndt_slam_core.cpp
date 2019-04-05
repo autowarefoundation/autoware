@@ -28,11 +28,11 @@
 #include <boost/filesystem.hpp>
 
 NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
-    : nh_(nh), private_nh_(private_nh), method_type_(MethodType::PCL_GENERIC),
-      with_mapping_(false), separate_mapping_(false),
-      use_nn_point_z_when_initial_pose_(false), sensor_frame_("/velodyne"),
-      base_link_frame_("/base_link"), map_frame_("/map"), min_scan_range_(5.0),
-      max_scan_range_(200.0), min_add_scan_shift_(1.0)
+    : nh_(nh), private_nh_(private_nh), tf2_listener_(tf2_buffer_),
+      method_type_(MethodType::PCL_GENERIC), with_mapping_(false), separate_mapping_(false),
+      use_nn_point_z_when_initial_pose_(false), sensor_frame_("velodyne"),
+      base_link_frame_("base_link"), map_frame_("map"), target_frame_("world"),
+      min_scan_range_(5.0), max_scan_range_(200.0), min_add_scan_shift_(1.0)
 
 {
   int method_type_tmp = 0;
@@ -64,8 +64,9 @@ NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
   private_nh_.getParam("sensor_frame", sensor_frame_);
   private_nh_.getParam("base_link_frame", base_link_frame_);
   private_nh_.getParam("map_frame", map_frame_);
-  ROS_INFO("sensor_frame_id: %s, base_link_frame_id: %s, map_frame_id: %s",
-           sensor_frame_.c_str(), base_link_frame_.c_str(), map_frame_.c_str());
+  private_nh_.getParam("target_frame", target_frame_);
+  ROS_INFO("sensor_frame_id: %s, base_link_frame_id: %s, map_frame_id: %s, target_frame_id: %s",
+           sensor_frame_.c_str(), base_link_frame_.c_str(), map_frame_.c_str(), target_frame_.c_str());
 
   private_nh_.getParam("init_x", init_pose_stamped_.pose.x);
   private_nh_.getParam("init_y", init_pose_stamped_.pose.y);
@@ -127,29 +128,39 @@ NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
   boost::filesystem::create_directories(boost::filesystem::path(map_file_path));
   map_manager_.setFileDirectoryPath(map_file_path);
 
-  Pose tf_pose;
-  try {
-    tf::StampedTransform tf_base_link_to_sensor;
-    ros::Duration(0.1).sleep(); // wait for tf. especially use sim_time
-    tf_listener_.waitForTransform(base_link_frame_, sensor_frame_, ros::Time(0),
-                                  ros::Duration(1.0));
-    tf_listener_.lookupTransform(base_link_frame_, sensor_frame_, ros::Time(0),
-                                 tf_base_link_to_sensor);
-    tf_pose.x = tf_base_link_to_sensor.getOrigin().x();
-    tf_pose.y = tf_base_link_to_sensor.getOrigin().y();
-    tf_pose.z = tf_base_link_to_sensor.getOrigin().z();
-    tf::Matrix3x3(tf_base_link_to_sensor.getRotation())
-        .getRPY(tf_pose.roll, tf_pose.pitch, tf_pose.yaw);
-  } catch (tf::TransformException ex) {
-    ROS_ERROR("%s", ex.what());
-    ROS_ERROR("Please publish TF %s to %s", base_link_frame_.c_str(),
-              sensor_frame_.c_str());
-  }
 
-  ROS_INFO("tf(x, y, z, roll, pitch, yaw): %lf, %lf, %lf, %lf, %lf, %lf",
-           tf_pose.x, tf_pose.y, tf_pose.z, tf_pose.roll, tf_pose.pitch,
-           tf_pose.yaw);
-  tf_btol_ = convertToEigenMatrix4f(tf_pose);
+  auto convertToPose = [](const geometry_msgs::TransformStamped &trans)
+  {
+      Pose pose;
+      pose.x = trans.transform.translation.x;
+      pose.y = trans.transform.translation.y;
+      pose.z = trans.transform.translation.z;
+      tf::Quaternion q(trans.transform.rotation.x, trans.transform.rotation.y, trans.transform.rotation.z, trans.transform.rotation.w);
+      tf::Matrix3x3(q).getRPY(pose.roll, pose.pitch, pose.yaw);
+      return pose;
+  };
+
+  geometry_msgs::TransformStamped::Ptr trans_base_link_to_sensor_ptr(new geometry_msgs::TransformStamped);
+  bool succeeded = getTransform(base_link_frame_, sensor_frame_, trans_base_link_to_sensor_ptr);
+  if(!succeeded) {
+      exit(1); //TODO
+  }
+  Pose base_link_to_sensor_pose = convertToPose(*trans_base_link_to_sensor_ptr);
+  ROS_INFO("base_link_to_sensor_pose(x, y, z, roll, pitch, yaw): %lf, %lf, %lf, %lf, %lf, %lf",
+           base_link_to_sensor_pose.x, base_link_to_sensor_pose.y, base_link_to_sensor_pose.z,
+           base_link_to_sensor_pose.roll, base_link_to_sensor_pose.pitch, base_link_to_sensor_pose.yaw);
+  tf_btol_ = convertToEigenMatrix4f(base_link_to_sensor_pose);
+
+  geometry_msgs::TransformStamped::Ptr trans_map_to_target_ptr(new geometry_msgs::TransformStamped);
+  succeeded = getTransform(target_frame_, map_frame_, trans_map_to_target_ptr);
+  if(!succeeded) {
+      exit(1); //TODO
+  }
+  Pose target_to_map_pose = convertToPose(*trans_map_to_target_ptr);
+  ROS_INFO("target_to_map_pose(x, y, z, roll, pitch, yaw): %lf, %lf, %lf, %lf, %lf, %lf",
+           target_to_map_pose.x, target_to_map_pose.y, target_to_map_pose.z,
+           target_to_map_pose.roll, target_to_map_pose.pitch, target_to_map_pose.yaw);
+  tf_ttom_ = convertToEigenMatrix4f(target_to_map_pose);
 
   points_map_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("ndt_map", 10);
   ndt_pose_pub_ = nh_.advertise<geometry_msgs::PoseStamped>("ndt_pose", 10);
@@ -188,6 +199,34 @@ NdtSlam::~NdtSlam() {
       map_manager_.saveSingleMapThread();
     }
   }
+}
+
+bool NdtSlam::getTransform(const std::string &target_frame, const std::string &source_frame, const geometry_msgs::TransformStamped::Ptr &transform_stamped_ptr)
+{
+    if(target_frame == source_frame) {
+        transform_stamped_ptr->header.stamp = ros::Time::now();
+        transform_stamped_ptr->header.frame_id = target_frame;
+        transform_stamped_ptr->child_frame_id = source_frame;
+        transform_stamped_ptr->transform.translation.x = 0.0;
+        transform_stamped_ptr->transform.translation.y = 0.0;
+        transform_stamped_ptr->transform.translation.z = 0.0;
+        transform_stamped_ptr->transform.rotation.x = 0.0;
+        transform_stamped_ptr->transform.rotation.y = 0.0;
+        transform_stamped_ptr->transform.rotation.z = 0.0;
+        transform_stamped_ptr->transform.rotation.w = 1.0;
+        return true;
+    }
+
+    try {
+      ros::Duration(0.1).sleep(); // wait for tf. especially use sim_time
+      *transform_stamped_ptr = tf2_buffer_.lookupTransform(target_frame, source_frame, ros::Time(0), ros::Duration(1.0));
+    }
+    catch (tf2::TransformException &ex) {
+      ROS_WARN("%s", ex.what());
+      ROS_ERROR("Please publish TF %s to %s", source_frame.c_str(), target_frame.c_str());
+      return false;
+    }
+    return true;
 }
 
 void NdtSlam::configCallback(
@@ -416,24 +455,26 @@ void NdtSlam::mapping(
 
 void NdtSlam::publishPosition(const ros::Time &time_stamp) {
   std_msgs::Header common_header;
-  common_header.frame_id = map_frame_;
+  common_header.frame_id = target_frame_;
   common_header.stamp = time_stamp;
 
-  const auto localizer_pose = localizer_ptr_->getLocalizerPose();
+  const auto mapTF_localizer_pose = localizer_ptr_->getLocalizerPose();
+  const auto targetTF_localizer_pose =
+      transformToPose(mapTF_localizer_pose, tf_ttom_); //TODO check
   const auto localizer_pose_msg =
-      convertToROSMsg(common_header, localizer_pose);
+      convertToROSMsg(common_header, targetTF_localizer_pose);
   localizer_pose_pub_.publish(localizer_pose_msg);
 
-  const auto base_link_pose =
-      transformToPose(localizer_pose, tf_btol_.inverse());
+  const auto targetTF_base_link_pose =
+      transformToPose(targetTF_localizer_pose, tf_btol_.inverse());
   const auto base_link_pose_msg =
-      convertToROSMsg(common_header, base_link_pose);
+      convertToROSMsg(common_header, targetTF_base_link_pose);
   ndt_pose_pub_.publish(base_link_pose_msg);
 }
 
 void NdtSlam::publishVelocity(const ros::Time &time_stamp) {
   std_msgs::Header common_header;
-  common_header.frame_id = map_frame_;
+  common_header.frame_id = target_frame_;
   common_header.stamp = time_stamp;
 
   const auto base_link_velocity = pose_interpolator_.getVelocity();
@@ -458,6 +499,7 @@ void NdtSlam::publishVelocity(const ros::Time &time_stamp) {
   estimate_twist_pub_.publish(estimate_twist_msg);
 }
 
+//TODO remove
 void NdtSlam::publishTF(const ros::Time &time_stamp) {
   const auto localizer_pose = localizer_ptr_->getLocalizerPose();
   const auto base_link_pose =

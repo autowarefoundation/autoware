@@ -44,6 +44,9 @@ find_package(catkin REQUIRED COMPONENTS
         roscpp
         message_filters
         tf
+        tf2
+        tf2_ros
+        tf2_sensor_msgs
         std_msgs
         nav_msgs
         sensor_msgs

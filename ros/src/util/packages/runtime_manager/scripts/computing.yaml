@@ -90,7 +90,7 @@ subs :
             flags : [ nl ]
           points_queue_size :
             flags : [ nl ]
-          map_frame :
+          target_frame :
             flags : [ nl ]
           init_x  :
             user_category : ''
@@ -1589,7 +1589,7 @@ params :
     - name      : sensor_frame
       desc      : sensor_frame desc sample
       label     : Sensor Frame
-      v         : /velodyne
+      v         : velodyne
       kind      : str
       cmd_param :
         dash      : ''
@@ -1597,7 +1597,7 @@ params :
     - name      : base_link_frame
       desc      : base_link desc sample
       label     : Base Link Frame
-      v         : /base_link
+      v         : base_link
       kind      : str
       cmd_param :
         dash      : ''
@@ -1605,7 +1605,15 @@ params :
     - name      : map_frame
       desc      : map_frame desc sample
       label     : Map Frame
-      v         : /map
+      v         : map
+      kind      : str
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : target_frame
+      desc      : target_frame desc sample
+      label     : Target Frame
+      v         : world
       kind      : str
       cmd_param :
         dash      : ''

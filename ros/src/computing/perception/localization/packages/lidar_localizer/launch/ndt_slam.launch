@@ -7,9 +7,10 @@
   <arg name="localizing_points_topic" default="/filtered_points" />
   <arg name="points_queue_size" default="1" />
 
-  <arg name="sensor_frame" default="/velodyne" />
-  <arg name="base_link_frame" default="/base_link" />
-  <arg name="map_frame" default="/map" />
+  <arg name="sensor_frame" default="velodyne" />
+  <arg name="base_link_frame" default="base_link" />
+  <arg name="map_frame" default="map" />
+  <arg name="target_frame" default="world" />
 
   <arg name="init_x" default="0.0" />
   <arg name="init_y" default="0.0" />
@@ -45,6 +46,7 @@
     <param name="sensor_frame" value="$(arg sensor_frame)" />
     <param name="base_link_frame" value="$(arg base_link_frame)" />
     <param name="map_frame" value="$(arg map_frame)" />
+    <param name="target_frame" value="$(arg target_frame)" />
 
     <param name="init_x" value="$(arg init_x)" />
     <param name="init_y" value="$(arg init_y)" />

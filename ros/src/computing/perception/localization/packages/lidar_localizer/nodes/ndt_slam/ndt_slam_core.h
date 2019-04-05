@@ -32,6 +32,11 @@
 #include <tf/transform_datatypes.h>
 #include <tf/transform_listener.h>
 
+#include <tf2/transform_datatypes.h>
+#include <tf2_ros/transform_listener.h>
+#include <tf2_sensor_msgs/tf2_sensor_msgs.h>
+
+
 #include <autoware_config_msgs/ConfigNDTSlam.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
@@ -86,6 +91,7 @@ private:
   void publishVelocity(const ros::Time &time_stamp);
   void publishPointsMap(const ros::Time &time_stamp);
   void publishTF(const ros::Time &time_stamp);
+  bool getTransform(const std::string &target_frame, const std::string &source_frame, const geometry_msgs::TransformStamped::Ptr &transform_stamped_ptr);
 
   ros::NodeHandle nh_;
   ros::NodeHandle private_nh_;
@@ -110,18 +116,23 @@ private:
   tf::TransformBroadcaster tf_broadcaster_;
   tf::TransformListener tf_listener_;
 
+  tf2_ros::Buffer tf2_buffer_;
+  tf2_ros::TransformListener tf2_listener_;
+
   std::unique_ptr<NdtSlamBase<PointSource, PointTarget>> localizer_ptr_;
   MapManager<PointTarget> map_manager_;
   PoseLinearInterpolator pose_interpolator_;
 
   MethodType method_type_;
   Eigen::Matrix4f tf_btol_;
+  Eigen::Matrix4f tf_ttom_;
   bool with_mapping_;
   bool separate_mapping_;
   bool use_nn_point_z_when_initial_pose_;
   std::string sensor_frame_;
   std::string base_link_frame_;
   std::string map_frame_;
+  std::string target_frame_;  //TODO rename??
   std::string log_file_directory_path_;
   double min_scan_range_;
   double max_scan_range_;
