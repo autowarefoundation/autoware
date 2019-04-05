@@ -1,4 +1,0 @@
-Header header
-float32 lateral_accel_limit
-float32 lowpass_gain_linear_x
-float32 lowpass_gain_angular_z

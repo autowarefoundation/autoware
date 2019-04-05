@@ -1,1 +1,0 @@
-autoware_system_msgs/DiagnosticStatus[] status
