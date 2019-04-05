@@ -326,10 +326,6 @@ void KalmanFilterNode::predictKinematicsModel()
   X_next(IDX::VX) = vx;
   X_next(IDX::WZ) = wz;
 
-  // while (std::fabs(X_next(IDX::YAW)) > M_PI)
-  // {
-  //   X_next(IDX::YAW) -= 2.0 * M_PI * ((X_next(IDX::YAW) > 0) - (X_next(IDX::YAW) < 0));
-  // }
   X_next(IDX::YAW) = std::atan2(std::sin(X_next(IDX::YAW)), std::cos(X_next(IDX::YAW)));
 
 
@@ -393,10 +389,7 @@ void KalmanFilterNode::measurementUpdateNDTPose(const geometry_msgs::PoseStamped
   /* Set yaw */
   const double yaw_curr = kf_.getXelement((unsigned int)(delay_step * dim_x_ + IDX::YAW));
   double yaw = tf2::getYaw(ndt_pose.pose.orientation);
-  while (std::fabs(yaw - yaw_curr) > M_PI)
-  {
-    yaw -= 2.0 * M_PI * ((yaw > yaw_curr) - (yaw < yaw_curr));
-  }
+  yaw = std::atan2(std::sin(yaw), std::cos(yaw));
 
   /* Set measurement matrix */
   Eigen::MatrixXd y(dim_y, 1);
