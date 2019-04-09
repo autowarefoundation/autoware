@@ -19,6 +19,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <pcl/point_types.h>
 
 struct Pose {
   double x;
@@ -374,5 +375,21 @@ struct Accel {
     return tmp_a;
   }
 };
+
+template<class PointType>
+struct PointWithDistance
+{
+    PointWithDistance()
+        : distance(0.0)
+    {
+    };
+
+    PointType point;
+    double distance;
+};
+
+template struct PointWithDistance<pcl::PointXYZ>;
+template struct PointWithDistance<pcl::PointXYZI>;
+template struct PointWithDistance<pcl::PointXYZRGB>;
 
 #endif

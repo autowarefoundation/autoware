@@ -47,6 +47,8 @@
 #include <std_msgs/Float64.h>
 
 #include <lidar_localizer/map_manager/map_manager.h>
+#include <lidar_localizer/matching_score/matching_score.h>
+#include <lidar_localizer/matching_score/matching_score_histogram.h>
 #include <lidar_localizer/ndt/ndt_slam_pcl.h>
 #include <lidar_localizer/ndt/ndt_slam_pcl_anh.h>
 #include <lidar_localizer/ndt/ndt_slam_pcl_anh_gpu.h>
@@ -91,11 +93,11 @@ private:
       const geometry_msgs::PoseStamped::ConstPtr &current_pose_msg_ptr);
 
   void mapping(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &mapping_points_ptr);
-  // TODO const ros::Time time_stamp
   void publishPosition(const ros::Time &time_stamp);
   void publishVelocity(const ros::Time &time_stamp);
   void publishPointsMap(const ros::Time &time_stamp);
   void publishTF(const ros::Time &time_stamp);
+  void publishMatchingScore(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &mapping_points_ptr);
   bool getTransform(const std::string &target_frame, const std::string &source_frame, const geometry_msgs::TransformStamped::Ptr &transform_stamped_ptr);
 
   ros::NodeHandle nh_;
@@ -103,9 +105,15 @@ private:
 
   ros::Publisher points_map_pub_;
   ros::Publisher ndt_pose_pub_;
+  ros::Publisher predict_pose_pub_;
   ros::Publisher ndt_pose_with_covariance_pub_;
   ros::Publisher localizer_pose_pub_;
   ros::Publisher estimate_twist_pub_;
+  ros::Publisher matching_score_pub_;
+  ros::Publisher matching_score_histogram_pub_;
+  ros::Publisher matching_points_pub_;
+  ros::Publisher unmatching_points_pub_;
+  ros::Publisher time_ndt_matching_pub_;
 
   ros::Subscriber config_sub_;
   ros::Subscriber points_map_sub_;
@@ -126,6 +134,7 @@ private:
 
   std::unique_ptr<NdtSlamBase<PointSource, PointTarget>> localizer_ptr_;
   MapManager<PointTarget> map_manager_;
+  MatchingScore<PointTarget> matching_score_class_; //TODO
   PoseLinearInterpolator pose_interpolator_;
 
   MethodType method_type_;
@@ -134,6 +143,7 @@ private:
   bool with_mapping_;
   bool separate_mapping_;
   bool use_nn_point_z_when_initial_pose_;
+  bool publish_tf_;
   std::string sensor_frame_;
   std::string base_link_frame_;
   std::string map_frame_;
@@ -142,6 +152,7 @@ private:
   double min_scan_range_;
   double max_scan_range_;
   double min_add_scan_shift_;
+  double matching_score_; //TODO
 
   PoseStamped init_pose_stamped_;
 };

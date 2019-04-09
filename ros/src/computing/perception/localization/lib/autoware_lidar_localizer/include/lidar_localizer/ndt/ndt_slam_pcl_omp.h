@@ -47,32 +47,33 @@ public:
   void setStepSize(double step_size) override;
   void setResolution(float res) override;
   void setMaximumIterations(int max_iter) override;
+  void setNumThreads(int n);
+  void setNeighborhoodSearchMethod(pclomp::NeighborSearchMethod method);
 
   double getTransformationEpsilon() override;
   double getStepSize() const override;
   float getResolution() const override;
   int getMaximumIterations() override;
   double getTransformationProbability() const override;
+  int getNumThreads() const;
+  int getMaxThreads() const;
+  pclomp::NeighborSearchMethod getNeighborhoodSearchMethod() const;
 
 protected:
   void align(const Pose &predict_pose) override;
   double getFitnessScore() override;
-  void setInputTarget(
-      const boost::shared_ptr<pcl::PointCloud<PointSource>> &map_ptr) override;
-  void setInputSource(
-      const boost::shared_ptr<pcl::PointCloud<PointTarget>> &scan_ptr) override;
+  void setInputTarget(const boost::shared_ptr<pcl::PointCloud<PointSource>> &map_ptr) override;
+  void setInputSource(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &scan_ptr) override;
   Pose getFinalPose() override;
-  void buildMap(
-      const boost::shared_ptr<pcl::PointCloud<PointTarget>> &map_ptr) override;
+  void buildMap(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &map_ptr) override;
   void swapInstance() override;
 
 private:
-  boost::shared_ptr<
-      pclomp::NormalDistributionsTransform<PointSource, PointTarget>>
-      ndt_ptr_;
-  boost::shared_ptr<
-      pclomp::NormalDistributionsTransform<PointSource, PointTarget>>
-      swap_ndt_ptr_;
+  boost::shared_ptr<pclomp::NormalDistributionsTransform<PointSource, PointTarget>> ndt_ptr_;
+  boost::shared_ptr<pclomp::NormalDistributionsTransform<PointSource, PointTarget>> swap_ndt_ptr_;
+
+  int num_threads_;
+  pclomp::NeighborSearchMethod search_method_;
 };
 
 #endif
