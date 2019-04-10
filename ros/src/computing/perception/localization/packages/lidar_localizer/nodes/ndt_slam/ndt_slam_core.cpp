@@ -125,6 +125,15 @@ NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
            with_mapping_, save_map_leaf_size, min_scan_range_, max_scan_range_, min_add_scan_shift_);
   ROS_INFO("separate_mapping: %d, separate_map_size: %lf", separate_mapping_, separate_map_size);
 
+  double matching_score_kT = matching_score_class_.getFermikT();
+  private_nh.getParam("matching_score_kT", matching_score_kT);
+  matching_score_class_.setFermikT(matching_score_kT);
+
+  double matching_score_mu = matching_score_class_.getFermiMu();
+  private_nh.getParam("matching_score_mu", matching_score_mu);
+  matching_score_class_.setFermiMu(matching_score_mu);
+
+
   private_nh_.getParam("use_nn_point_z_when_initial_pose", use_nn_point_z_when_initial_pose_);
   ROS_INFO("use_nn_point_z_when_initial_pose: %d", use_nn_point_z_when_initial_pose_);
 

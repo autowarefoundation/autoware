@@ -37,6 +37,9 @@
   <arg name="separate_mapping" default="false" />
   <arg name="separate_map_size" default="100.0" />
 
+  <arg name="matching_score_kT" default="0.05" />
+  <arg name="matching_score_mu" default="0.25" />
+
   <arg name="use_nn_point_z_when_initial_pose" default="false" />
   <arg name="use_fusion_localizer_feedback" default="false" />
   <arg name="publish_tf" default="true" />
@@ -77,6 +80,9 @@
     <param name="min_add_scan_shift" value="$(arg min_add_scan_shift)" />
     <param name="separate_mapping" value="$(arg separate_mapping)" />
     <param name="separate_map_size" value="$(arg separate_map_size)" />
+
+    <param name="matching_score_kT" value="$(arg matching_score_kT)" />
+    <param name="matching_score_mu" value="$(arg matching_score_mu)" />
 
     <param name="use_nn_point_z_when_initial_pose" value="$(arg use_nn_point_z_when_initial_pose)" />
     <param name="use_fusion_localizer_feedback" value="$(arg use_fusion_localizer_feedback)" />
