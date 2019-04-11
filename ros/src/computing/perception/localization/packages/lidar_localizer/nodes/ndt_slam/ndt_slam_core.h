@@ -82,7 +82,6 @@ private:
   void configCallback(const autoware_config_msgs::ConfigNDTSlam::ConstPtr &config_msg_ptr);
   void pointsMapUpdatedCallback(const sensor_msgs::PointCloud2::ConstPtr &pointcloud2_msg_ptr);
   void initialPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &pose_conv_msg_ptr);
-  void staticPoseCallback(const geometry_msgs::PoseStamped::ConstPtr &pose_msg_ptr);
   void mappingAndLocalizingPointsCallback(
       const sensor_msgs::PointCloud2::ConstPtr &mapping_points_msg_ptr,
       const sensor_msgs::PointCloud2::ConstPtr &localizing_points_msg_ptr);
@@ -118,7 +117,6 @@ private:
   ros::Subscriber config_sub_;
   ros::Subscriber points_map_sub_;
   ros::Subscriber initial_pose_sub_;
-  ros::Subscriber static_pose_sub_;
 
   std::unique_ptr<message_filters::Subscriber<sensor_msgs::PointCloud2>> mapping_points_sub_;
   std::unique_ptr<message_filters::Subscriber<sensor_msgs::PointCloud2>> localizing_points_sub_;

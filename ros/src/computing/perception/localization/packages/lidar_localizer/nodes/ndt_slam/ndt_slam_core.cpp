@@ -351,14 +351,6 @@ void NdtSlam::initialPoseCallback(
   pose_interpolator_.clearPoseStamped();
 }
 
-void NdtSlam::staticPoseCallback(
-    const geometry_msgs::PoseStamped::ConstPtr &pose_msg_ptr) {
-  const auto base_link_pose = convertFromROSMsg(*pose_msg_ptr);
-  const double current_time_sec = pose_msg_ptr->header.stamp.toSec();
-  init_pose_stamped_ = PoseStamped(base_link_pose, current_time_sec);
-  pose_interpolator_.clearPoseStamped();
-}
-
 void NdtSlam::mappingAndLocalizingPointsCallback(
     const sensor_msgs::PointCloud2::ConstPtr &mapping_points_msg_ptr,
     const sensor_msgs::PointCloud2::ConstPtr &localizing_points_msg_ptr)
@@ -597,7 +589,7 @@ void NdtSlam::publishPosition(const ros::Time &time_stamp) {
 
   double cov = 0;
   if(matching_score_ < 0.75) {
-      cov = 100;
+      cov = 100.0;
   }
 
   geometry_msgs::PoseWithCovarianceStamped targetTF_base_link_pose_cov;
