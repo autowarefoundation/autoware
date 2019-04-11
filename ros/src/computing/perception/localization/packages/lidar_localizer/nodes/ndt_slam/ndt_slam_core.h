@@ -97,7 +97,7 @@ private:
   void publishVelocity(const ros::Time &time_stamp);
   void publishPointsMap(const ros::Time &time_stamp);
   void publishTF(const ros::Time &time_stamp);
-  void publishMatchingScore(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &mapping_points_ptr);
+  void publishMatchingScore(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &points_ptr);
   bool getTransform(const std::string &target_frame, const std::string &source_frame, const geometry_msgs::TransformStamped::Ptr &transform_stamped_ptr);
 
   ros::NodeHandle nh_;

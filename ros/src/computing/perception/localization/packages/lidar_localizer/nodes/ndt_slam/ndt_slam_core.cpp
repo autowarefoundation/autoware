@@ -422,7 +422,7 @@ void NdtSlam::mappingAndLocalizingPointsCallback(
     publishPointsMap(mapping_points_msg_ptr->header.stamp);
   }
 
-  publishMatchingScore(mapping_points_ptr);
+  publishMatchingScore(localizing_points.makeShared());
 
   publishPosition(localizing_points_msg_ptr->header.stamp);
   publishVelocity(localizing_points_msg_ptr->header.stamp);
@@ -507,7 +507,7 @@ void NdtSlam::mappingAndLocalizingPointsAndCurrentPoseCallback(
     publishPointsMap(mapping_points_msg_ptr->header.stamp);
   }
 
-  publishMatchingScore(mapping_points_ptr);
+  publishMatchingScore(localizing_points.makeShared());
 
   publishPosition(localizing_points_msg_ptr->header.stamp);
   publishVelocity(localizing_points_msg_ptr->header.stamp);
@@ -555,9 +555,9 @@ void NdtSlam::mapping(
 
   if (separate_mapping_) {
     const int map_x =
-        std::floor(localizer_pose.x / map_manager_.getSaveSeparateMapSize());
+        std::floor(localizer_pose.x / map_manager_.getSaveSeparateMapSize()); // TODO check 0
     const int map_y =
-        std::floor(localizer_pose.y / map_manager_.getSaveSeparateMapSize());
+        std::floor(localizer_pose.y / map_manager_.getSaveSeparateMapSize()); // TODO check 0
     static int prev_map_x = map_x;
     static int prev_map_y = map_x;
 
@@ -687,37 +687,37 @@ void NdtSlam::publishPointsMap(const ros::Time &time_stamp) {
   points_map_pub_.publish(map_msg);
 }
 
-void NdtSlam::publishMatchingScore(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &mapping_points_ptr) {
+void NdtSlam::publishMatchingScore(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &points_ptr) {
+    pcl::PointCloud<PointTarget>::Ptr points_baselinkTF_ptr(new pcl::PointCloud<PointTarget>);
+    pcl::transformPointCloud(*points_ptr, *points_baselinkTF_ptr, tf_btol_);
+    pcl::PointCloud<PointTarget>::Ptr points_baselinkTF_cuttoff_ptr(new pcl::PointCloud<PointTarget>);
 
-    pcl::PointCloud<PointTarget>::Ptr mapping_points_baselinkTF_ptr(new pcl::PointCloud<PointTarget>);
-    pcl::transformPointCloud(*mapping_points_ptr, *mapping_points_baselinkTF_ptr, tf_btol_);
-    pcl::PointCloud<PointTarget>::Ptr mapping_points_baselinkTF_cuttoff_ptr(new pcl::PointCloud<PointTarget>);
-
-    size_t step_size = 50;
+    size_t target_points_num = 300;
+    size_t step_size = target_points_num != 0 ? points_ptr->points.size() / target_points_num : 1;
     double cutoff_lower_limit_z = 0.2;
     double cutoff_upper_limit_z = 2.0;
     double cutoff_lower_limit_range = 5.0;
     double cutoff_upper_limit_range = 100.0;
 
     size_t points_num = 0;
-    for(const auto point : mapping_points_baselinkTF_ptr->points) {
+    for(const auto point : points_baselinkTF_ptr->points) {
         const double range = std::sqrt(point.x*point.x + point.y*point.y + point.z*point.z);
         if ((point.z > cutoff_upper_limit_z || point.z < cutoff_lower_limit_z)
           &&(range > cutoff_lower_limit_range && range < cutoff_upper_limit_range)) {
 
             //random downsample
             if(++points_num % step_size == 0) {
-                mapping_points_baselinkTF_cuttoff_ptr->push_back(point);
+                points_baselinkTF_cuttoff_ptr->push_back(point);
             }
         }
     }
-    pcl::PointCloud<PointTarget>::Ptr mapping_points_mapTF_cuttoff_ptr(new pcl::PointCloud<PointTarget>);
+    pcl::PointCloud<PointTarget>::Ptr points_mapTF_cuttoff_ptr(new pcl::PointCloud<PointTarget>);
     const auto localizer_pose = localizer_ptr_->getLocalizerPose();
     const auto eigen_pose = convertToEigenMatrix4f(localizer_pose);
-    pcl::transformPointCloud(*mapping_points_baselinkTF_cuttoff_ptr, *mapping_points_mapTF_cuttoff_ptr, eigen_pose * tf_btol_.inverse());
+    pcl::transformPointCloud(*points_baselinkTF_cuttoff_ptr, *points_mapTF_cuttoff_ptr, eigen_pose * tf_btol_.inverse());
 
     matching_score_class_.setInputTarget(map_manager_.getMap());
-    matching_score_ = matching_score_class_.calcMatchingScore(mapping_points_mapTF_cuttoff_ptr);
+    matching_score_ = matching_score_class_.calcMatchingScore(points_mapTF_cuttoff_ptr);
 
     std_msgs::Float32 matching_score_msg;
     matching_score_msg.data = matching_score_;

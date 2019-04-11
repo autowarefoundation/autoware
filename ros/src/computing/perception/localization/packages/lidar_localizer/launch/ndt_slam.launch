@@ -45,7 +45,7 @@
   <arg name="publish_tf" default="true" />
 
   <!-- rosrun lidar_localizer ndt_mapping  -->
-  <node pkg="ndt_slam" type="ndt_slam" name="ndt_slam" output="screen">
+  <node pkg="lidar_localizer" type="ndt_slam" name="ndt_slam" output="screen">
     <param name="method_type" value="$(arg method_type)" />
 
     <param name="omp_neighborhood_search_method" value="$(arg omp_neighborhood_search_method)" />
