@@ -61,6 +61,7 @@ add_dependencies(autoware_camera_lidar_calibration_node ${catkin_EXPORTED_TARGET
 catkin_python_setup()
 
 catkin_install_python(PROGRAMS
+    nodes/cameracalibrator_automatic.py
     nodes/cameracalibrator.py
     nodes/cameracheck.py
     scripts/tarfile_calibration.py
