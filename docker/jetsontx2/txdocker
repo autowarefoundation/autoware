@@ -25,8 +25,7 @@
 # Check docker run command
 if [[ $# -ge 2 && $1 == "run" ]]; then
     # Let Docker find CUDA and CUDNN
-    LIB_MAPS="/usr/lib/aarch64-linux-gnu \
-              /usr/local/cuda \
+    LIB_MAPS="/usr/local/cuda \
               /usr/local/cuda/lib64"
 
     # Let Docker find CUDA Devices
