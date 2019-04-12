@@ -17,6 +17,7 @@
 #ifndef NDT_SLAM_CORE_H
 #define NDT_SLAM_CORE_H
 
+#include <array>
 #include <deque>
 #include <memory>
 #include <string>
@@ -91,12 +92,25 @@ private:
       const sensor_msgs::PointCloud2::ConstPtr &localizing_points_msg_ptr,
       const geometry_msgs::PoseStamped::ConstPtr &current_pose_msg_ptr);
 
-  void mapping(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &mapping_points_ptr);
-  void publishPosition(const ros::Time &time_stamp);
-  void publishVelocity(const ros::Time &time_stamp);
-  void publishPointsMap(const ros::Time &time_stamp);
-  void publishTF(const ros::Time &time_stamp);
-  void publishMatchingScore(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &points_ptr);
+  Pose getPredictPose();
+  void mapping(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &mapping_points_ptr, const Pose &localizer_pose);
+  void processMatchingScore(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &points_ptr);
+  void updateMatchingScore(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &points_ptr);
+  void getMatchAndUnmatchPoints(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &match_points_ptr,
+                                const boost::shared_ptr<pcl::PointCloud<PointTarget>> &unmatch_points_ptr);
+  std::array<double, 32> createCovariance(const double score);
+  void estimateVelocity(const Pose &localizer_pose);
+  Velocity transformBaseLinkTFVelocity(const Velocity& velocity, const bool is_move_forward);
+
+  void publish(const ros::Publisher &publisher, const double value);
+  void publish(const ros::Publisher &publisher, const std::string frame_id, const Pose &pose);
+  void publish(const ros::Publisher &publisher, const std::string frame_id, const Pose &pose, const std::array<double, 32> cov);
+  void publish(const ros::Publisher &publisher, const std::string frame_id, const Velocity &velocity);
+  void publish(const ros::Publisher &publisher, const std::string frame_id, const std::vector<HistogramWithRangeBin> &histogram_bin_array);
+  template<class PointType>
+  void publish(const ros::Publisher &publisher, const std::string frame_id, const boost::shared_ptr<pcl::PointCloud<PointType>> &points_ptr);
+  void publishTF(const std::string &frame_id, const std::string &child_frame_id, const Pose &pose);
+
   bool getTransform(const std::string &target_frame, const std::string &source_frame, const geometry_msgs::TransformStamped::Ptr &transform_stamped_ptr);
 
   ros::NodeHandle nh_;
@@ -150,9 +164,10 @@ private:
   double min_scan_range_;
   double max_scan_range_;
   double min_add_scan_shift_;
-  double matching_score_; //TODO
+  double matching_score_;
 
   PoseStamped init_pose_stamped_;
+  ros::Time current_scan_time_;
 };
 
 #endif

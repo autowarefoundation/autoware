@@ -16,13 +16,6 @@
 
 #include "lidar_localizer/util/convert_ros_msgs.h"
 
-#include <geometry_msgs/Pose.h>
-#include <geometry_msgs/PoseStamped.h>
-#include <geometry_msgs/PoseWithCovarianceStamped.h>
-#include <geometry_msgs/TwistStamped.h>
-
-#include "lidar_localizer/util/data_structs.h"
-
 geometry_msgs::PoseStamped convertToROSMsg(const std_msgs::Header &header,
                                            const Pose &pose) {
   tf::Quaternion q;
@@ -61,6 +54,27 @@ convertToROSMsg(const std_msgs::Header &header, const Pose &pose,
   return msg;
 }
 
+geometry_msgs::PoseWithCovarianceStamped convertToROSMsg(const std_msgs::Header &header,
+                                           const Pose &pose, const std::array<double, 32> cov_array) {
+  tf::Quaternion q;
+  q.setRPY(pose.roll, pose.pitch, pose.yaw);
+
+  geometry_msgs::PoseWithCovarianceStamped msg;
+  msg.header = header;
+  msg.pose.pose.position.x = pose.x;
+  msg.pose.pose.position.y = pose.y;
+  msg.pose.pose.position.z = pose.z;
+  msg.pose.pose.orientation.x = q.x();
+  msg.pose.pose.orientation.y = q.y();
+  msg.pose.pose.orientation.z = q.z();
+  msg.pose.pose.orientation.w = q.w();
+
+  for(size_t i = 0; i < cov_array.size(); ++i) {
+      msg.pose.covariance[i] = cov_array[i];
+  }
+  return msg;
+}
+
 geometry_msgs::TwistStamped convertToROSMsg(const std_msgs::Header &header,
                                             const Velocity &velocity) {
   geometry_msgs::TwistStamped msg;
@@ -71,6 +85,20 @@ geometry_msgs::TwistStamped convertToROSMsg(const std_msgs::Header &header,
   msg.twist.angular.x = velocity.angular.x;
   msg.twist.angular.y = velocity.angular.y;
   msg.twist.angular.z = velocity.angular.z;
+  return msg;
+}
+
+jsk_recognition_msgs::HistogramWithRange convertToROSMsg(const std_msgs::Header &header,
+                                                         const std::vector<HistogramWithRangeBin> &histogram_bin_array) {
+  jsk_recognition_msgs::HistogramWithRange msg;
+  msg.header = header;
+  for(const auto& bin : histogram_bin_array) {
+      jsk_recognition_msgs::HistogramWithRangeBin bin_msg;
+      bin_msg.min_value = bin.min_value;
+      bin_msg.max_value = bin.max_value;
+      bin_msg.count = bin.count;
+      msg.bins.push_back(bin_msg);
+  }
   return msg;
 }
 

@@ -392,4 +392,18 @@ template struct PointWithDistance<pcl::PointXYZ>;
 template struct PointWithDistance<pcl::PointXYZI>;
 template struct PointWithDistance<pcl::PointXYZRGB>;
 
+struct HistogramWithRangeBin
+{
+    HistogramWithRangeBin()
+        : min_value(0.0)
+        , max_value(0.0)
+        , count(0)
+    {
+    };
+
+    double min_value;
+    double max_value;
+    size_t count;
+};
+
 #endif

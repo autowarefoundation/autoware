@@ -18,8 +18,6 @@
 #ifndef MATCHING_SCORE_HISTOGRAM_H
 #define MATCHING_SCORE_HISTOGRAM_H
 
-#include <jsk_recognition_msgs/HistogramWithRange.h>
-
 #include "lidar_localizer/util/data_structs.h"
 
 class MatchingScoreHistogram
@@ -29,7 +27,7 @@ class MatchingScoreHistogram
         ~MatchingScoreHistogram() = default;
 
         template<class PointType>
-        jsk_recognition_msgs::HistogramWithRange createHistogramWithRangeMsg(const std::vector< PointWithDistance<PointType> >& point_with_distance_array);
+        std::vector<HistogramWithRangeBin> createHistogramWithRangeBinArray(const std::vector< PointWithDistance<PointType> >& point_with_distance_array);
 
         void setNumberOfBins(const size_t number_of_bins)
         {
@@ -49,7 +47,7 @@ class MatchingScoreHistogram
     private:
         void initHistogram();
 
-        jsk_recognition_msgs::HistogramWithRange histogram_msg_;
+        std::vector<HistogramWithRangeBin> histgram_bin_array_;
         size_t number_of_bins_;
         double bin_width_;
         double bin_max_height_;

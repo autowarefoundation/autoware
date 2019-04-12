@@ -4,9 +4,9 @@
   <arg name="method_type" default="0" /> <!-- pcl_generic=0, pcl_anh=1, pcl_anh_gpu=2, pcl_openmp=3 -->
 
   <!-- if method_type is pcl_openmp -->
-  <arg name="omp_neighborhood_search_method" default="0" />  <!-- KDTREE=0, DIRECT26=1, DIRECT7=2, DIRECT1=3 -->
+  <arg name="omp_neighborhood_search_method" default="2" />  <!-- KDTREE=0, DIRECT26=1, DIRECT7=2, DIRECT1=3 -->
   <arg name="omp_use_max_threads" default="false" />
-  <arg name="omp_num_threads" default="1" /> <!-- if omp_use_max_threads is true, this parameter is ignored -->
+  <arg name="omp_num_threads" default="4" /> <!-- if omp_use_max_threads is true, this parameter is ignored -->
 
   <arg name="mapping_points_topic" default="/points_raw" />
   <arg name="localizing_points_topic" default="/filtered_points" />

@@ -235,34 +235,6 @@ NdtSlam::~NdtSlam() {
   }
 }
 
-bool NdtSlam::getTransform(const std::string &target_frame, const std::string &source_frame, const geometry_msgs::TransformStamped::Ptr &transform_stamped_ptr)
-{
-    if(target_frame == source_frame) {
-        transform_stamped_ptr->header.stamp = ros::Time::now();
-        transform_stamped_ptr->header.frame_id = target_frame;
-        transform_stamped_ptr->child_frame_id = source_frame;
-        transform_stamped_ptr->transform.translation.x = 0.0;
-        transform_stamped_ptr->transform.translation.y = 0.0;
-        transform_stamped_ptr->transform.translation.z = 0.0;
-        transform_stamped_ptr->transform.rotation.x = 0.0;
-        transform_stamped_ptr->transform.rotation.y = 0.0;
-        transform_stamped_ptr->transform.rotation.z = 0.0;
-        transform_stamped_ptr->transform.rotation.w = 1.0;
-        return true;
-    }
-
-    try {
-      ros::Duration(0.1).sleep(); // wait for tf. especially use sim_time
-      *transform_stamped_ptr = tf2_buffer_.lookupTransform(target_frame, source_frame, ros::Time(0), ros::Duration(1.0));
-    }
-    catch (tf2::TransformException &ex) {
-      ROS_WARN("%s", ex.what());
-      ROS_ERROR("Please publish TF %s to %s", source_frame.c_str(), target_frame.c_str());
-      return false;
-    }
-    return true;
-}
-
 void NdtSlam::configCallback(
     const autoware_config_msgs::ConfigNDTSlam::ConstPtr &config_msg_ptr) {
 
@@ -355,21 +327,27 @@ void NdtSlam::mappingAndLocalizingPointsCallback(
     const sensor_msgs::PointCloud2::ConstPtr &mapping_points_msg_ptr,
     const sensor_msgs::PointCloud2::ConstPtr &localizing_points_msg_ptr)
 {
-
   const auto exe_start_time = std::chrono::system_clock::now();
 
-  const double current_time_sec = localizing_points_msg_ptr->header.stamp.toSec();
+  current_scan_time_ = localizing_points_msg_ptr->header.stamp;
+
+  const Pose predict_base_link_pose = getPredictPose(); //TODO
+  const Pose predict_localizer_pose = transformToPose(predict_base_link_pose, tf_btol_);
 
   boost::shared_ptr<pcl::PointCloud<PointTarget>> mapping_points_ptr(new pcl::PointCloud<PointTarget>);
   pcl::fromROSMsg(*mapping_points_msg_ptr, *mapping_points_ptr);
 
+  boost::shared_ptr<pcl::PointCloud<PointSource>> localizing_points_ptr(new pcl::PointCloud<PointSource>);
+  pcl::fromROSMsg(*localizing_points_msg_ptr, *localizing_points_ptr);
+
+
   static bool is_first_call = true;
   if (is_first_call && with_mapping_ && map_manager_.getMap() == nullptr) {
     is_first_call = false;
+
     boost::shared_ptr<pcl::PointCloud<PointTarget>> mapping_points_limilt_range(new pcl::PointCloud<PointTarget>);
     limitPointCloudRange(mapping_points_ptr, mapping_points_limilt_range, min_scan_range_, max_scan_range_);
-
-    const auto localizer_pose = transformToPose(init_pose_stamped_.pose, tf_btol_);
+    const auto localizer_pose = transformToPose(predict_base_link_pose, tf_btol_);
     const auto eigen_pose = convertToEigenMatrix4f(localizer_pose);
     pcl::transformPointCloud(*mapping_points_limilt_range, *mapping_points_limilt_range, eigen_pose);
 
@@ -383,62 +361,53 @@ void NdtSlam::mappingAndLocalizingPointsCallback(
 
   localizer_ptr_->updatePointsMap(map_manager_.getMap());
 
-  Pose predict_base_link_pose;
-  if (pose_interpolator_.isNotSetPoseStamped()) {
-    predict_base_link_pose = init_pose_stamped_.pose;
-  } else {
-    predict_base_link_pose =
-        pose_interpolator_.getInterpolatePoseStamped(current_time_sec).pose;
-  }
-  const Pose predict_localizer_pose = transformToPose(predict_base_link_pose, tf_btol_);
 
-  pcl::PointCloud<PointSource> localizing_points;
-  pcl::fromROSMsg(*localizing_points_msg_ptr, localizing_points);
-  const bool align_succeed = localizer_ptr_->alignMap(localizing_points.makeShared(), predict_localizer_pose);
+  const bool align_succeed = localizer_ptr_->alignMap(localizing_points_ptr, predict_localizer_pose);
   if (align_succeed == false) {
     return;
   }
 
-  const auto localizer_pose = localizer_ptr_->getLocalizerPose();
-  const auto base_link_pose = transformToPose(localizer_pose, tf_btol_.inverse());
-  PoseStamped base_link_pose_stamped(base_link_pose, current_time_sec);
-  if (pose_interpolator_.isNotSetPoseStamped()) {
-    pose_interpolator_.pushbackPoseStamped(base_link_pose_stamped);
-    pose_interpolator_.pushbackPoseStamped(base_link_pose_stamped);
-  } else {
-    pose_interpolator_.pushbackPoseStamped(base_link_pose_stamped);
-  }
-
+  const auto mapTF_localizer_pose = localizer_ptr_->getLocalizerPose();
   if (with_mapping_) {
-    mapping(mapping_points_ptr);
-    publishPointsMap(mapping_points_msg_ptr->header.stamp);
+    mapping(mapping_points_ptr, mapTF_localizer_pose);
   }
 
-  publishMatchingScore(localizing_points.makeShared());
+  const auto mapTF_localizer_eigen = convertToEigenMatrix4f(mapTF_localizer_pose);
+  const auto targetTF_localizer_eigen = tf_ttom_ * mapTF_localizer_eigen;
+  const auto targetTF_localizer_pose = convertToPose(targetTF_localizer_eigen);
 
-  publishPosition(localizing_points_msg_ptr->header.stamp);
-  publishVelocity(localizing_points_msg_ptr->header.stamp);
-  publishTF(localizing_points_msg_ptr->header.stamp);
+  const auto mapTF_base_link_pose = transformToPose(mapTF_localizer_pose, tf_btol_.inverse());
+  const auto targetTF_base_link_pose = transformToPose(targetTF_localizer_pose, tf_btol_.inverse());
 
-  std_msgs::Header common_header;
-  common_header.frame_id = target_frame_;
-  common_header.stamp = localizing_points_msg_ptr->header.stamp;
-  const auto predict_pose_msg = convertToROSMsg(common_header, predict_base_link_pose);
-  predict_pose_pub_.publish(predict_pose_msg);
+  if ( matching_score_pub_.getNumSubscribers() > 0 || matching_score_histogram_pub_.getNumSubscribers() > 0
+    || matching_points_pub_.getNumSubscribers() > 0 || unmatching_points_pub_.getNumSubscribers() > 0
+    || ndt_pose_with_covariance_pub_.getNumSubscribers() > 0) {
+
+        processMatchingScore(localizing_points_ptr);
+        const auto cov = createCovariance(matching_score_);
+        publish(ndt_pose_with_covariance_pub_, target_frame_, targetTF_base_link_pose, cov);
+    }
+
+  publish(localizer_pose_pub_, target_frame_, targetTF_localizer_pose);
+  publish(ndt_pose_pub_, target_frame_, targetTF_base_link_pose);
+  publish(predict_pose_pub_, target_frame_, predict_base_link_pose); //TODO trans targetTF
+
+  estimateVelocity(mapTF_base_link_pose);
+
+  if(publish_tf_) {
+      publishTF(map_frame_, base_link_frame_, mapTF_base_link_pose);
+  }
 
   const auto exe_end_time = std::chrono::system_clock::now();
   const double exe_time = std::chrono::duration_cast<std::chrono::microseconds>(exe_end_time - exe_start_time).count() / 1000.0;
-  std_msgs::Float32 time_ndt_matching;
-  time_ndt_matching.data = exe_time;
-  time_ndt_matching_pub_.publish(time_ndt_matching);
+  publish(time_ndt_matching_pub_, exe_time);
 
   std::cout << "------------------------------------------------" << std::endl;
-  std::cout << "base_link_pose " << base_link_pose << std::endl;
+  std::cout << "base_link_pose " << mapTF_base_link_pose << std::endl;
   std::cout << "velocity: " << pose_interpolator_.getVelocity() << std::endl;
   std::cout << "align_time: " << localizer_ptr_->getAlignTime() << "ms" << std::endl;
   std::cout << "exe_time: " << exe_time << "ms" << std::endl;
 }
-
 
 void NdtSlam::mappingAndLocalizingPointsAndCurrentPoseCallback(
     const sensor_msgs::PointCloud2::ConstPtr &mapping_points_msg_ptr,
@@ -447,21 +416,26 @@ void NdtSlam::mappingAndLocalizingPointsAndCurrentPoseCallback(
 {
   const auto exe_start_time = std::chrono::system_clock::now();
 
-  //TODO trans current_pose, current_pose_ptr->header.frame_id -> map_frame
-  const auto current_base_link_pose = convertFromROSMsg(*current_pose_msg_ptr);
+  current_scan_time_ = localizing_points_msg_ptr->header.stamp;
 
-  const double current_time_sec = localizing_points_msg_ptr->header.stamp.toSec();
+  //TODO trans current_pose, current_pose_ptr->header.frame_id -> map_frame
+  const auto predict_base_link_pose = convertFromROSMsg(*current_pose_msg_ptr);  //TODO
+  const Pose predict_localizer_pose = transformToPose(predict_base_link_pose, tf_btol_);
 
   boost::shared_ptr<pcl::PointCloud<PointTarget>> mapping_points_ptr(new pcl::PointCloud<PointTarget>);
   pcl::fromROSMsg(*mapping_points_msg_ptr, *mapping_points_ptr);
 
+  boost::shared_ptr<pcl::PointCloud<PointSource>> localizing_points_ptr(new pcl::PointCloud<PointSource>);
+  pcl::fromROSMsg(*localizing_points_msg_ptr, *localizing_points_ptr);
+
+
   static bool is_first_call = true;
   if (is_first_call && with_mapping_ && map_manager_.getMap() == nullptr) {
     is_first_call = false;
+
     boost::shared_ptr<pcl::PointCloud<PointTarget>> mapping_points_limilt_range(new pcl::PointCloud<PointTarget>);
     limitPointCloudRange(mapping_points_ptr, mapping_points_limilt_range, min_scan_range_, max_scan_range_);
-
-    const auto localizer_pose = transformToPose(current_base_link_pose, tf_btol_);
+    const auto localizer_pose = transformToPose(predict_base_link_pose, tf_btol_);
     const auto eigen_pose = convertToEigenMatrix4f(localizer_pose);
     pcl::transformPointCloud(*mapping_points_limilt_range, *mapping_points_limilt_range, eigen_pose);
 
@@ -475,81 +449,82 @@ void NdtSlam::mappingAndLocalizingPointsAndCurrentPoseCallback(
 
   localizer_ptr_->updatePointsMap(map_manager_.getMap());
 
-  const Pose predict_localizer_pose = transformToPose(current_base_link_pose, tf_btol_);
 
-  pcl::PointCloud<PointSource> localizing_points;
-  pcl::fromROSMsg(*localizing_points_msg_ptr, localizing_points);
-  const bool align_succeed = localizer_ptr_->alignMap(localizing_points.makeShared(), predict_localizer_pose);
+  const bool align_succeed = localizer_ptr_->alignMap(localizing_points_ptr, predict_localizer_pose);
   if (align_succeed == false) {
     return;
   }
 
-  const auto localizer_pose = localizer_ptr_->getLocalizerPose();
-  const auto base_link_pose = transformToPose(localizer_pose, tf_btol_.inverse());
-  PoseStamped base_link_pose_stamped(base_link_pose, current_time_sec);
-  if (pose_interpolator_.isNotSetPoseStamped()) {
-    pose_interpolator_.pushbackPoseStamped(base_link_pose_stamped);
-    pose_interpolator_.pushbackPoseStamped(base_link_pose_stamped);
-  } else {
-    pose_interpolator_.pushbackPoseStamped(base_link_pose_stamped);
-  }
-
+  const auto mapTF_localizer_pose = localizer_ptr_->getLocalizerPose();
   if (with_mapping_) {
-    mapping(mapping_points_ptr);
-    publishPointsMap(mapping_points_msg_ptr->header.stamp);
+    mapping(mapping_points_ptr, mapTF_localizer_pose);
   }
 
-  publishMatchingScore(localizing_points.makeShared());
+  const auto mapTF_localizer_eigen = convertToEigenMatrix4f(mapTF_localizer_pose);
+  const auto targetTF_localizer_eigen = tf_ttom_ * mapTF_localizer_eigen;
+  const auto targetTF_localizer_pose = convertToPose(targetTF_localizer_eigen);
 
-  publishPosition(localizing_points_msg_ptr->header.stamp);
-  publishVelocity(localizing_points_msg_ptr->header.stamp);
-  publishTF(localizing_points_msg_ptr->header.stamp);
+  const auto mapTF_base_link_pose = transformToPose(mapTF_localizer_pose, tf_btol_.inverse());
+  const auto targetTF_base_link_pose = transformToPose(targetTF_localizer_pose, tf_btol_.inverse());
 
-  std_msgs::Header common_header;
-  common_header.frame_id = target_frame_;
-  common_header.stamp = localizing_points_msg_ptr->header.stamp;
-  const auto predict_pose_msg = convertToROSMsg(common_header, current_base_link_pose);
-  predict_pose_pub_.publish(predict_pose_msg);
+  if ( matching_score_pub_.getNumSubscribers() > 0 || matching_score_histogram_pub_.getNumSubscribers() > 0
+    || matching_points_pub_.getNumSubscribers() > 0 || unmatching_points_pub_.getNumSubscribers() > 0
+    || ndt_pose_with_covariance_pub_.getNumSubscribers() > 0) {
+
+        processMatchingScore(localizing_points_ptr);
+        const auto cov = createCovariance(matching_score_);
+        publish(ndt_pose_with_covariance_pub_, target_frame_, targetTF_base_link_pose, cov);
+    }
+
+  publish(localizer_pose_pub_, target_frame_, targetTF_localizer_pose);
+  publish(ndt_pose_pub_, target_frame_, targetTF_base_link_pose);
+  publish(predict_pose_pub_, target_frame_, predict_base_link_pose); //TODO trans targetTF
+
+  estimateVelocity(mapTF_base_link_pose);
+
+  if(publish_tf_) {
+      publishTF(map_frame_, base_link_frame_, mapTF_base_link_pose);
+  }
 
   const auto exe_end_time = std::chrono::system_clock::now();
   const double exe_time = std::chrono::duration_cast<std::chrono::microseconds>(exe_end_time - exe_start_time).count() / 1000.0;
-  std_msgs::Float32 time_ndt_matching;
-  time_ndt_matching.data = exe_time;
-  time_ndt_matching_pub_.publish(time_ndt_matching);
+  publish(time_ndt_matching_pub_, exe_time);
 
   std::cout << "------------------------------------------------" << std::endl;
-  std::cout << "base_link_pose " << base_link_pose << std::endl;
+  std::cout << "base_link_pose " << mapTF_base_link_pose << std::endl;
   std::cout << "velocity: " << pose_interpolator_.getVelocity() << std::endl;
   std::cout << "align_time: " << localizer_ptr_->getAlignTime() << "ms" << std::endl;
   std::cout << "exe_time: " << exe_time << "ms" << std::endl;
 }
 
-void NdtSlam::mapping(
-    const boost::shared_ptr<pcl::PointCloud<PointTarget>> &mapping_points_ptr) {
-  const auto localizer_pose = localizer_ptr_->getLocalizerPose();
+Pose NdtSlam::getPredictPose() {
+    Pose predict_pose;
+    if (pose_interpolator_.isNotSetPoseStamped()) {
+      predict_pose = init_pose_stamped_.pose;
+    } else {
+      predict_pose = pose_interpolator_.getInterpolatePoseStamped(current_scan_time_.toSec()).pose;
+    }
+    return predict_pose;
+}
+
+void NdtSlam::mapping(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &mapping_points_ptr, const Pose &localizer_pose) {
+
   static auto added_pose = localizer_pose;
-  const double add_scan_shift_meter =
-      std::sqrt(std::pow(localizer_pose.x - added_pose.x, 2.0) +
-                std::pow(localizer_pose.y - added_pose.y, 2.0) +
-                std::pow(localizer_pose.z - added_pose.z, 2.0));
+  const double add_scan_shift_meter = std::sqrt(std::pow(localizer_pose.x - added_pose.x, 2.0) +
+                                                std::pow(localizer_pose.y - added_pose.y, 2.0) +
+                                                std::pow(localizer_pose.z - added_pose.z, 2.0));
   if (add_scan_shift_meter >= min_add_scan_shift_) {
     added_pose = localizer_pose;
-    const boost::shared_ptr<pcl::PointCloud<PointTarget>>
-        mapping_points_limilt_range(new pcl::PointCloud<PointTarget>);
-    limitPointCloudRange(mapping_points_ptr, mapping_points_limilt_range,
-                         min_scan_range_, max_scan_range_);
-    const auto localizer_pose = localizer_ptr_->getLocalizerPose();
+    const boost::shared_ptr<pcl::PointCloud<PointTarget>> mapping_points_limilt_range(new pcl::PointCloud<PointTarget>);
+    limitPointCloudRange(mapping_points_ptr, mapping_points_limilt_range, min_scan_range_, max_scan_range_);
     const auto eigen_pose = convertToEigenMatrix4f(localizer_pose);
-    pcl::transformPointCloud(*mapping_points_limilt_range,
-                             *mapping_points_limilt_range, eigen_pose);
+    pcl::transformPointCloud(*mapping_points_limilt_range, *mapping_points_limilt_range, eigen_pose);
     map_manager_.addPointCloudMapThread(mapping_points_limilt_range);
   }
 
   if (separate_mapping_) {
-    const int map_x =
-        std::floor(localizer_pose.x / map_manager_.getSaveSeparateMapSize()); // TODO check 0
-    const int map_y =
-        std::floor(localizer_pose.y / map_manager_.getSaveSeparateMapSize()); // TODO check 0
+    const int map_x = std::floor(localizer_pose.x / map_manager_.getSaveSeparateMapSize()); // TODO check 0
+    const int map_y = std::floor(localizer_pose.y / map_manager_.getSaveSeparateMapSize()); // TODO check 0
     static int prev_map_x = map_x;
     static int prev_map_y = map_x;
 
@@ -565,121 +540,46 @@ void NdtSlam::mapping(
 
   const int loop_count_donw_map_max = 300;
   static int loop_count_donw_map = 0;
+  //TODO more clever
   if (++loop_count_donw_map >= loop_count_donw_map_max) {
     loop_count_donw_map = 0;
     map_manager_.downsampleMapThread();
   }
-}
 
-void NdtSlam::publishPosition(const ros::Time &time_stamp) {
-  std_msgs::Header common_header;
-  common_header.frame_id = target_frame_;
-  common_header.stamp = time_stamp;
-
-  const auto mapTF_localizer_pose = localizer_ptr_->getLocalizerPose();
-  const auto mapTF_localizer_eigen = convertToEigenMatrix4f(mapTF_localizer_pose);
-  const auto targetTF_localizer_eigen = tf_ttom_ * mapTF_localizer_eigen;
-  const auto targetTF_localizer_pose = convertToPose(targetTF_localizer_eigen);
-  const auto localizer_pose_msg = convertToROSMsg(common_header, targetTF_localizer_pose);
-  localizer_pose_pub_.publish(localizer_pose_msg);
-
-  const auto targetTF_base_link_pose = transformToPose(targetTF_localizer_pose, tf_btol_.inverse());
-  const auto base_link_pose_msg = convertToROSMsg(common_header, targetTF_base_link_pose);
-  ndt_pose_pub_.publish(base_link_pose_msg);
-
-  double cov = 0;
-  if(matching_score_ < 0.75) {
-      cov = 100.0;
+  if (points_map_pub_.getNumSubscribers() > 0) {
+      const int loop_count_max = 30;
+      static int loop_count = 0;
+      if (++loop_count > loop_count_max) {
+          loop_count = 0;
+          publish(points_map_pub_, map_frame_, map_manager_.getMap());
+      }
   }
 
-  geometry_msgs::PoseWithCovarianceStamped targetTF_base_link_pose_cov;
-  targetTF_base_link_pose_cov.header = common_header;
-  targetTF_base_link_pose_cov.pose.pose = base_link_pose_msg.pose;
-  targetTF_base_link_pose_cov.pose.covariance[0] = std::pow(0.05 + cov, 2.0);
-  targetTF_base_link_pose_cov.pose.covariance[6 + 1] = std::pow(0.05 + cov, 2.0);
-  targetTF_base_link_pose_cov.pose.covariance[6*2 + 2] = std::pow(0.05 + cov, 2.0);
-  targetTF_base_link_pose_cov.pose.covariance[6*3 + 3] = std::pow(0.025 + cov, 2.0);
-  targetTF_base_link_pose_cov.pose.covariance[6*4 + 4] = std::pow(0.025 + cov, 2.0);
-  targetTF_base_link_pose_cov.pose.covariance[6*5 + 5] = std::pow(0.025 + cov, 2.0);
-  ndt_pose_with_covariance_pub_.publish(targetTF_base_link_pose_cov);
 }
 
-void NdtSlam::publishVelocity(const ros::Time &time_stamp) {
-  std_msgs::Header common_header;
-  common_header.frame_id = target_frame_;
-  common_header.stamp = time_stamp;
+void NdtSlam::processMatchingScore(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &points_ptr) {
 
-  const auto base_link_velocity = pose_interpolator_.getVelocity();
-  const auto trans_current_pose = convertPoseIntoRelativeCoordinate(
-      pose_interpolator_.getCurrentPoseStamped().pose,
-      pose_interpolator_.getPrevPoseStamped().pose);
-  double v = std::sqrt(std::pow(base_link_velocity.linear.x, 2.0) +
-                       std::pow(base_link_velocity.linear.y, 2.0) +
-                       std::pow(base_link_velocity.linear.z, 2.0));
-  v = trans_current_pose.x >= 0 ? v : -v;
-  double w = base_link_velocity.angular.z;
+    updateMatchingScore(points_ptr);
+    publish(matching_score_pub_, matching_score_);
 
-  geometry_msgs::TwistStamped estimate_twist_msg;
-  estimate_twist_msg.header = common_header;
-  estimate_twist_msg.header.frame_id = base_link_frame_;
-  estimate_twist_msg.twist.linear.x = v;
-  estimate_twist_msg.twist.linear.y = 0;
-  estimate_twist_msg.twist.linear.z = 0;
-  estimate_twist_msg.twist.angular.x = 0;
-  estimate_twist_msg.twist.angular.y = 0;
-  estimate_twist_msg.twist.angular.z = w;
-  estimate_twist_pub_.publish(estimate_twist_msg);
+    if(matching_score_histogram_pub_.getNumSubscribers() > 0){
+        MatchingScoreHistogram matching_score_histogram;
+        const auto point_with_distance_array = matching_score_class_.getPointWithDistanceArray();
+        const auto histogram_bin_array = matching_score_histogram.createHistogramWithRangeBinArray(point_with_distance_array);
+        publish(matching_score_histogram_pub_, map_frame_, histogram_bin_array);
+    }
+
+    if(matching_points_pub_.getNumSubscribers() > 0 || unmatching_points_pub_.getNumSubscribers() > 0) {
+        const boost::shared_ptr<pcl::PointCloud<PointTarget>> match_points_ptr(new pcl::PointCloud<PointTarget>);
+        const boost::shared_ptr<pcl::PointCloud<PointTarget>> unmatch_points_ptr(new pcl::PointCloud<PointTarget>);
+        getMatchAndUnmatchPoints(match_points_ptr, unmatch_points_ptr);
+        publish(matching_score_histogram_pub_, map_frame_, match_points_ptr);
+        publish(matching_score_histogram_pub_, map_frame_, unmatch_points_ptr);
+    }
+
 }
 
-//TODO remove
-void NdtSlam::publishTF(const ros::Time &time_stamp) {
-
-  if(!publish_tf_) {
-      return;
-  }
-
-  const auto localizer_pose = localizer_ptr_->getLocalizerPose();
-  const auto base_link_pose =
-      transformToPose(localizer_pose, tf_btol_.inverse());
-
-
-  tf::Transform transform;
-  transform.setOrigin(
-      tf::Vector3(base_link_pose.x, base_link_pose.y, base_link_pose.z));
-  tf::Quaternion tf_quaternion;
-  tf_quaternion.setRPY(base_link_pose.roll, base_link_pose.pitch,
-                       base_link_pose.yaw);
-  transform.setRotation(tf_quaternion);
-  tf_broadcaster_.sendTransform(tf::StampedTransform(
-      transform, time_stamp, map_frame_, base_link_frame_));
-}
-
-void NdtSlam::publishPointsMap(const ros::Time &time_stamp) {
-  if (points_map_pub_.getNumSubscribers() <= 0) {
-    return;
-  }
-
-  const int loop_count_max = 30;
-  static int loop_count = 0;
-  if (++loop_count < loop_count_max) {
-    return;
-  }
-  loop_count = 0;
-
-  const auto map_ptr = map_manager_.getMap();
-  if (map_ptr == nullptr || map_ptr->points.size() == 0) {
-    return;
-  }
-
-  sensor_msgs::PointCloud2 map_msg;
-  pcl::toROSMsg(*map_ptr, map_msg);
-
-  map_msg.header.frame_id = map_frame_;
-  map_msg.header.stamp = time_stamp;
-  points_map_pub_.publish(map_msg);
-}
-
-void NdtSlam::publishMatchingScore(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &points_ptr) {
+void NdtSlam::updateMatchingScore(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &points_ptr) {
     pcl::PointCloud<PointTarget>::Ptr points_baselinkTF_ptr(new pcl::PointCloud<PointTarget>);
     pcl::transformPointCloud(*points_ptr, *points_baselinkTF_ptr, tf_btol_);
     pcl::PointCloud<PointTarget>::Ptr points_baselinkTF_cuttoff_ptr(new pcl::PointCloud<PointTarget>);
@@ -708,50 +608,162 @@ void NdtSlam::publishMatchingScore(const boost::shared_ptr<pcl::PointCloud<Point
     const auto eigen_pose = convertToEigenMatrix4f(localizer_pose);
     pcl::transformPointCloud(*points_baselinkTF_cuttoff_ptr, *points_mapTF_cuttoff_ptr, eigen_pose * tf_btol_.inverse());
 
-    matching_score_class_.setInputTarget(map_manager_.getMap());
+    matching_score_class_.setInputTarget(map_manager_.getMap()); //TODO
+    //matching_score_class_.setSearchMethodTarget(localizer_ptr_->getSearchMethodTarget()); //TODO
     matching_score_ = matching_score_class_.calcMatchingScore(points_mapTF_cuttoff_ptr);
+}
 
-    std_msgs::Float32 matching_score_msg;
-    matching_score_msg.data = matching_score_;
-    matching_score_pub_.publish(matching_score_msg);
 
-    if(matching_score_histogram_pub_.getNumSubscribers() > 0)
-    {
-        MatchingScoreHistogram matching_score_histogram;
-        const auto point_with_distance_array = matching_score_class_.getPointWithDistanceArray();
-        auto matching_score_histogram_msg = matching_score_histogram.createHistogramWithRangeMsg(point_with_distance_array);
-        matching_score_histogram_msg.header.stamp = ros::Time::now(); // TODO
-        matching_score_histogram_pub_.publish(matching_score_histogram_msg);
-    }
-    if(matching_points_pub_.getNumSubscribers() > 0 || unmatching_points_pub_.getNumSubscribers() > 0)
-    {
-        pcl::PointCloud<PointTarget>::Ptr matching_points_ptr(new pcl::PointCloud<PointTarget>);
-        pcl::PointCloud<PointTarget>::Ptr unmatching_points_ptr(new pcl::PointCloud<PointTarget>);
+void NdtSlam::getMatchAndUnmatchPoints(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &match_points_ptr,
+                                       const boost::shared_ptr<pcl::PointCloud<PointTarget>> &unmatch_points_ptr) {
 
-        const auto point_with_distance_array = matching_score_class_.getPointWithDistanceArray();
-        for(const auto& point_with_distance : point_with_distance_array)
-        {
-            //more than score 50%
-            if(point_with_distance.distance < matching_score_class_.getFermiMu())
-            {
-                matching_points_ptr->points.push_back(point_with_distance.point);
-            }
-            else
-            {
-                unmatching_points_ptr->points.push_back(point_with_distance.point);
-            }
+    const auto point_with_distance_array = matching_score_class_.getPointWithDistanceArray();
+    for(const auto& point_with_distance : point_with_distance_array) {
+        //more than score 50%
+        if(point_with_distance.distance < matching_score_class_.getFermiMu()) {
+            match_points_ptr->points.push_back(point_with_distance.point);
         }
-
-        sensor_msgs::PointCloud2 matching_points_msg;
-        pcl::toROSMsg(*matching_points_ptr, matching_points_msg);
-        matching_points_msg.header.frame_id = map_frame_;
-        matching_points_msg.header.stamp = ros::Time::now(); // TODO
-        matching_points_pub_.publish(matching_points_msg);
-
-        sensor_msgs::PointCloud2 unmatching_points_msg;
-        pcl::toROSMsg(*unmatching_points_ptr, unmatching_points_msg);
-        unmatching_points_msg.header.frame_id = map_frame_;
-        unmatching_points_msg.header.stamp = ros::Time::now(); // TODO
-        unmatching_points_pub_.publish(unmatching_points_msg);
+        else {
+            unmatch_points_ptr->points.push_back(point_with_distance.point);
+        }
     }
+}
+
+std::array<double, 32> NdtSlam::createCovariance(const double score) {
+
+    std::array<double, 32> cov_array;
+
+    double cov = 0;
+    //TODO
+    if(score < 0.75) {
+        cov = 100.0;
+    }
+
+    cov_array[0] = std::pow(0.05 + cov, 2.0);
+    cov_array[6 + 1] = std::pow(0.05 + cov, 2.0);
+    cov_array[6*2 + 2] = std::pow(0.05 + cov, 2.0);
+    cov_array[6*3 + 3] = std::pow(0.025 + cov, 2.0);
+    cov_array[6*4 + 4] = std::pow(0.025 + cov, 2.0);
+    cov_array[6*5 + 5] = std::pow(0.025 + cov, 2.0);
+
+    return cov_array;
+}
+
+void NdtSlam::estimateVelocity(const Pose &pose) {
+    PoseStamped pose_stamped(pose, current_scan_time_.toSec());
+    if (pose_interpolator_.isNotSetPoseStamped()) {
+      pose_interpolator_.pushbackPoseStamped(pose_stamped);
+      pose_interpolator_.pushbackPoseStamped(pose_stamped);
+    }
+    else {
+      pose_interpolator_.pushbackPoseStamped(pose_stamped);
+    }
+    const auto velocity = pose_interpolator_.getVelocity();
+    const auto trans_current_pose = convertPoseIntoRelativeCoordinate(pose_interpolator_.getCurrentPoseStamped().pose,
+                                                                      pose_interpolator_.getPrevPoseStamped().pose);
+    const bool is_move_forward = trans_current_pose.x >= 0;
+    const auto base_linkTF_velocity = transformBaseLinkTFVelocity(velocity, is_move_forward);
+    publish(estimate_twist_pub_, base_link_frame_, base_linkTF_velocity);
+}
+
+Velocity NdtSlam::transformBaseLinkTFVelocity(const Velocity& velocity, const bool is_move_forward) {
+    Velocity base_linkTF_velocity;
+    double v = std::sqrt(std::pow(velocity.linear.x, 2.0) +
+                         std::pow(velocity.linear.y, 2.0) +
+                         std::pow(velocity.linear.z, 2.0));
+    base_linkTF_velocity.linear.x = is_move_forward ? v : -v;
+    base_linkTF_velocity.angular.z = velocity.angular.z;
+    return base_linkTF_velocity;
+}
+
+
+//TODO template
+void NdtSlam::publish(const ros::Publisher &publisher, const double value) {
+    std_msgs::Float32 msg;
+    msg.data = value;
+    publisher.publish(msg);
+}
+
+void NdtSlam::publish(const ros::Publisher &publisher, const std::string frame_id, const Pose &pose) {
+    std_msgs::Header header;
+    header.frame_id = frame_id;
+    header.stamp = current_scan_time_;
+    const auto msg = convertToROSMsg(header, pose);
+    publisher.publish(msg);
+}
+
+void NdtSlam::publish(const ros::Publisher &publisher, const std::string frame_id, const Pose &pose, const std::array<double, 32> cov) {
+    std_msgs::Header header;
+    header.frame_id = frame_id;
+    header.stamp = current_scan_time_;
+    const auto msg = convertToROSMsg(header, pose, cov);
+    publisher.publish(msg);
+}
+
+void NdtSlam::publish(const ros::Publisher &publisher, const std::string frame_id, const Velocity &velocity) {
+    std_msgs::Header header;
+    header.frame_id = frame_id;
+    header.stamp = current_scan_time_;
+    const auto msg = convertToROSMsg(header, velocity);
+    publisher.publish(msg);
+}
+
+void NdtSlam::publish(const ros::Publisher &publisher, const std::string frame_id, const std::vector<HistogramWithRangeBin> &histogram_bin_array) {
+    std_msgs::Header header;
+    header.frame_id = frame_id;
+    header.stamp = current_scan_time_;
+    const auto msg = convertToROSMsg(header, histogram_bin_array);
+    publisher.publish(msg);
+}
+
+template<class PointType>
+void NdtSlam::publish(const ros::Publisher &publisher, const std::string frame_id, const boost::shared_ptr<pcl::PointCloud<PointType>> &points_ptr) {
+
+    if (points_ptr == nullptr || points_ptr->points.size() == 0) {
+      return;
+    }
+
+    sensor_msgs::PointCloud2 msg;
+    pcl::toROSMsg(*points_ptr, msg);
+    msg.header.frame_id = frame_id;
+    msg.header.stamp = current_scan_time_;
+    publisher.publish(msg);
+}
+
+void NdtSlam::publishTF(const std::string &frame_id, const std::string &child_frame_id, const Pose &pose) {
+
+  tf::Transform transform;
+  transform.setOrigin(tf::Vector3(pose.x, pose.y, pose.z));
+  tf::Quaternion tf_quaternion;
+  tf_quaternion.setRPY(pose.roll, pose.pitch, pose.yaw);
+  transform.setRotation(tf_quaternion);
+  tf_broadcaster_.sendTransform(tf::StampedTransform(transform, current_scan_time_, frame_id, child_frame_id));
+}
+
+bool NdtSlam::getTransform(const std::string &target_frame, const std::string &source_frame, const geometry_msgs::TransformStamped::Ptr &transform_stamped_ptr)
+{
+    if(target_frame == source_frame) {
+        transform_stamped_ptr->header.stamp = ros::Time::now();
+        transform_stamped_ptr->header.frame_id = target_frame;
+        transform_stamped_ptr->child_frame_id = source_frame;
+        transform_stamped_ptr->transform.translation.x = 0.0;
+        transform_stamped_ptr->transform.translation.y = 0.0;
+        transform_stamped_ptr->transform.translation.z = 0.0;
+        transform_stamped_ptr->transform.rotation.x = 0.0;
+        transform_stamped_ptr->transform.rotation.y = 0.0;
+        transform_stamped_ptr->transform.rotation.z = 0.0;
+        transform_stamped_ptr->transform.rotation.w = 1.0;
+        return true;
+    }
+
+    try {
+      ros::Duration(0.1).sleep(); // wait for tf. especially use sim_time
+      *transform_stamped_ptr = tf2_buffer_.lookupTransform(target_frame, source_frame, ros::Time(0), ros::Duration(1.0));
+    }
+    catch (tf2::TransformException &ex) {
+      ROS_WARN("%s", ex.what());
+      ROS_ERROR("Please publish TF %s to %s", source_frame.c_str(), target_frame.c_str());
+      return false;
+    }
+    return true;
 }

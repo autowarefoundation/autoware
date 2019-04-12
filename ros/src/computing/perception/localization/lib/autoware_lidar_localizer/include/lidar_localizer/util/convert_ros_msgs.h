@@ -24,6 +24,7 @@
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <jsk_recognition_msgs/HistogramWithRange.h>
 
 #include "data_structs.h"
 
@@ -33,8 +34,15 @@ geometry_msgs::PoseStamped
 convertToROSMsg(const std_msgs::Header &header, const Pose &pose,
                 const tf::Transform &local_transform);
 
+geometry_msgs::PoseWithCovarianceStamped convertToROSMsg(const std_msgs::Header &header,
+                                                         const Pose &pose,
+                                                         const std::array<double, 32> cov_array);
+
 geometry_msgs::TwistStamped convertToROSMsg(const std_msgs::Header &header,
                                             const Velocity &velocity);
+
+jsk_recognition_msgs::HistogramWithRange convertToROSMsg(const std_msgs::Header &header,
+                                                         const std::vector<HistogramWithRangeBin> &histogram_bin_array);
 
 Pose convertFromROSMsg(const geometry_msgs::Pose &msg);
 Pose convertFromROSMsg(const geometry_msgs::PoseStamped &msg);
