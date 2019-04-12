@@ -332,8 +332,9 @@ void NdtSlam::mappingAndLocalizingPointsCallback(
 
   current_scan_time_ = localizing_points_msg_ptr->header.stamp;
 
-  const auto predict_base_link_pose = getPredictPose(); //TODO
-  const auto predict_localizer_pose = transformToPose(predict_base_link_pose, tf_btol_);
+  const auto mapTF_predict_base_link_pose = getPredictPose(); //TODO
+  const auto mapTF_predict_localizer_pose = mapTF_predict_base_link_pose + convertToPose(tf_btol_);
+  const auto targetTF_pridict_base_link_pose = transformToPose(mapTF_predict_base_link_pose, tf_ttom_);
 
   boost::shared_ptr<pcl::PointCloud<PointTarget>> mapping_points_ptr(new pcl::PointCloud<PointTarget>);
   pcl::fromROSMsg(*mapping_points_msg_ptr, *mapping_points_ptr);
@@ -348,8 +349,7 @@ void NdtSlam::mappingAndLocalizingPointsCallback(
 
     boost::shared_ptr<pcl::PointCloud<PointTarget>> mapping_points_limilt_range(new pcl::PointCloud<PointTarget>);
     limitPointCloudRange(mapping_points_ptr, mapping_points_limilt_range, min_scan_range_, max_scan_range_);
-    const auto localizer_pose = transformToPose(predict_base_link_pose, tf_btol_);
-    const auto eigen_pose = convertToEigenMatrix4f(localizer_pose);
+    const auto eigen_pose = convertToEigenMatrix4f(mapTF_predict_localizer_pose);
     pcl::transformPointCloud(*mapping_points_limilt_range, *mapping_points_limilt_range, eigen_pose);
 
     map_manager_.setMap(mapping_points_limilt_range);
@@ -363,7 +363,7 @@ void NdtSlam::mappingAndLocalizingPointsCallback(
   localizer_ptr_->updatePointsMap(map_manager_.getMap());
 
 
-  const bool align_succeed = localizer_ptr_->alignMap(localizing_points_ptr, predict_localizer_pose);
+  const bool align_succeed = localizer_ptr_->alignMap(localizing_points_ptr, mapTF_predict_localizer_pose);
   if (align_succeed == false) {
     return;
   }
@@ -373,12 +373,10 @@ void NdtSlam::mappingAndLocalizingPointsCallback(
     mapping(mapping_points_ptr, mapTF_localizer_pose);
   }
 
-  const auto mapTF_localizer_eigen = convertToEigenMatrix4f(mapTF_localizer_pose);
-  const auto targetTF_localizer_eigen = tf_ttom_ * mapTF_localizer_eigen;
-  const auto targetTF_localizer_pose = convertToPose(targetTF_localizer_eigen);
+  const auto targetTF_localizer_pose = transformToPose(mapTF_localizer_pose, tf_ttom_);
 
-  const auto mapTF_base_link_pose = transformToPose(mapTF_localizer_pose, tf_btol_.inverse());
-  const auto targetTF_base_link_pose = transformToPose(targetTF_localizer_pose, tf_btol_.inverse());
+  const auto mapTF_base_link_pose = mapTF_localizer_pose - convertToPose(tf_btol_);
+  const auto targetTF_base_link_pose = targetTF_localizer_pose - convertToPose(tf_btol_);
 
   if ( matching_score_pub_.getNumSubscribers() > 0 || matching_score_histogram_pub_.getNumSubscribers() > 0
     || matching_points_pub_.getNumSubscribers() > 0 || unmatching_points_pub_.getNumSubscribers() > 0
@@ -391,7 +389,7 @@ void NdtSlam::mappingAndLocalizingPointsCallback(
 
   publish(localizer_pose_pub_, target_frame_, targetTF_localizer_pose);
   publish(ndt_pose_pub_, target_frame_, targetTF_base_link_pose);
-  publish(predict_pose_pub_, target_frame_, predict_base_link_pose);
+  publish(predict_pose_pub_, target_frame_, targetTF_pridict_base_link_pose);
 
   estimateVelocity(mapTF_base_link_pose);
 
@@ -423,8 +421,10 @@ void NdtSlam::mappingAndLocalizingPointsAndCurrentPoseCallback(
   getTransform(map_frame_, current_pose_msg_ptr->header.frame_id, trans_map_to_current_pose_ptr);
   geometry_msgs::PoseStamped mapTF_current_pose_msg;
   tf2::doTransform(*current_pose_msg_ptr, mapTF_current_pose_msg, *trans_map_to_current_pose_ptr);
-  const auto predict_base_link_pose = convertFromROSMsg(mapTF_current_pose_msg);  //TODO
-  const auto predict_localizer_pose = transformToPose(predict_base_link_pose, tf_btol_);
+
+  const auto mapTF_predict_base_link_pose = convertFromROSMsg(mapTF_current_pose_msg);
+  const auto mapTF_predict_localizer_pose = mapTF_predict_base_link_pose + convertToPose(tf_btol_);
+  const auto targetTF_pridict_base_link_pose = transformToPose(mapTF_predict_base_link_pose, tf_ttom_);
 
   boost::shared_ptr<pcl::PointCloud<PointTarget>> mapping_points_ptr(new pcl::PointCloud<PointTarget>);
   pcl::fromROSMsg(*mapping_points_msg_ptr, *mapping_points_ptr);
@@ -439,8 +439,7 @@ void NdtSlam::mappingAndLocalizingPointsAndCurrentPoseCallback(
 
     boost::shared_ptr<pcl::PointCloud<PointTarget>> mapping_points_limilt_range(new pcl::PointCloud<PointTarget>);
     limitPointCloudRange(mapping_points_ptr, mapping_points_limilt_range, min_scan_range_, max_scan_range_);
-    const auto localizer_pose = transformToPose(predict_base_link_pose, tf_btol_);
-    const auto eigen_pose = convertToEigenMatrix4f(localizer_pose);
+    const auto eigen_pose = convertToEigenMatrix4f(mapTF_predict_localizer_pose);
     pcl::transformPointCloud(*mapping_points_limilt_range, *mapping_points_limilt_range, eigen_pose);
 
     map_manager_.setMap(mapping_points_limilt_range);
@@ -454,7 +453,7 @@ void NdtSlam::mappingAndLocalizingPointsAndCurrentPoseCallback(
   localizer_ptr_->updatePointsMap(map_manager_.getMap());
 
 
-  const bool align_succeed = localizer_ptr_->alignMap(localizing_points_ptr, predict_localizer_pose);
+  const bool align_succeed = localizer_ptr_->alignMap(localizing_points_ptr, mapTF_predict_localizer_pose);
   if (align_succeed == false) {
     return;
   }
@@ -464,12 +463,10 @@ void NdtSlam::mappingAndLocalizingPointsAndCurrentPoseCallback(
     mapping(mapping_points_ptr, mapTF_localizer_pose);
   }
 
-  const auto mapTF_localizer_eigen = convertToEigenMatrix4f(mapTF_localizer_pose);
-  const auto targetTF_localizer_eigen = tf_ttom_ * mapTF_localizer_eigen;
-  const auto targetTF_localizer_pose = convertToPose(targetTF_localizer_eigen);
+  const auto targetTF_localizer_pose = transformToPose(mapTF_localizer_pose, tf_ttom_);
 
-  const auto mapTF_base_link_pose = transformToPose(mapTF_localizer_pose, tf_btol_.inverse());
-  const auto targetTF_base_link_pose = transformToPose(targetTF_localizer_pose, tf_btol_.inverse());
+  const auto mapTF_base_link_pose = mapTF_localizer_pose - convertToPose(tf_btol_);
+  const auto targetTF_base_link_pose = targetTF_localizer_pose - convertToPose(tf_btol_);
 
   if ( matching_score_pub_.getNumSubscribers() > 0 || matching_score_histogram_pub_.getNumSubscribers() > 0
     || matching_points_pub_.getNumSubscribers() > 0 || unmatching_points_pub_.getNumSubscribers() > 0
@@ -482,7 +479,7 @@ void NdtSlam::mappingAndLocalizingPointsAndCurrentPoseCallback(
 
   publish(localizer_pose_pub_, target_frame_, targetTF_localizer_pose);
   publish(ndt_pose_pub_, target_frame_, targetTF_base_link_pose);
-  publish(predict_pose_pub_, target_frame_, predict_base_link_pose); //TODO trans targetTF
+  publish(predict_pose_pub_, target_frame_, targetTF_pridict_base_link_pose);
 
   estimateVelocity(mapTF_base_link_pose);
 
@@ -610,7 +607,7 @@ void NdtSlam::updateMatchingScore(const boost::shared_ptr<pcl::PointCloud<PointT
     pcl::PointCloud<PointTarget>::Ptr points_mapTF_cuttoff_ptr(new pcl::PointCloud<PointTarget>);
     const auto localizer_pose = localizer_ptr_->getLocalizerPose();
     const auto eigen_pose = convertToEigenMatrix4f(localizer_pose);
-    pcl::transformPointCloud(*points_baselinkTF_cuttoff_ptr, *points_mapTF_cuttoff_ptr, eigen_pose * tf_btol_.inverse());
+    pcl::transformPointCloud(*points_baselinkTF_cuttoff_ptr, *points_mapTF_cuttoff_ptr, eigen_pose + tf_btol_.inverse());
 
     matching_score_class_.setInputTarget(map_manager_.getMap()); //TODO
     //matching_score_class_.setSearchMethodTarget(localizer_ptr_->getSearchMethodTarget()); //TODO

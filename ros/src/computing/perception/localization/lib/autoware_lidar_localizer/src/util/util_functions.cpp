@@ -59,7 +59,7 @@ Pose convertToPose(const Eigen::Matrix4f &m) {
 
 Pose transformToPose(const Pose &pose, const Eigen::Matrix4f &m) {
   Eigen::Matrix4f eigen_pose = convertToEigenMatrix4f(pose);
-  Eigen::Matrix4f trans_pose = eigen_pose * m;
+  Eigen::Matrix4f trans_pose = m * eigen_pose;
 
   return convertToPose(trans_pose);
 }
