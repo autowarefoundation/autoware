@@ -17,6 +17,7 @@
 #include "ndt_slam_core.h"
 
 #include <iomanip>
+
 #include <pcl_conversions/pcl_conversions.h>
 
 #include <lidar_localizer/util/convert_ros_msgs.h>
@@ -331,8 +332,8 @@ void NdtSlam::mappingAndLocalizingPointsCallback(
 
   current_scan_time_ = localizing_points_msg_ptr->header.stamp;
 
-  const Pose predict_base_link_pose = getPredictPose(); //TODO
-  const Pose predict_localizer_pose = transformToPose(predict_base_link_pose, tf_btol_);
+  const auto predict_base_link_pose = getPredictPose(); //TODO
+  const auto predict_localizer_pose = transformToPose(predict_base_link_pose, tf_btol_);
 
   boost::shared_ptr<pcl::PointCloud<PointTarget>> mapping_points_ptr(new pcl::PointCloud<PointTarget>);
   pcl::fromROSMsg(*mapping_points_msg_ptr, *mapping_points_ptr);
@@ -390,7 +391,7 @@ void NdtSlam::mappingAndLocalizingPointsCallback(
 
   publish(localizer_pose_pub_, target_frame_, targetTF_localizer_pose);
   publish(ndt_pose_pub_, target_frame_, targetTF_base_link_pose);
-  publish(predict_pose_pub_, target_frame_, predict_base_link_pose); //TODO trans targetTF
+  publish(predict_pose_pub_, target_frame_, predict_base_link_pose);
 
   estimateVelocity(mapTF_base_link_pose);
 
@@ -418,9 +419,12 @@ void NdtSlam::mappingAndLocalizingPointsAndCurrentPoseCallback(
 
   current_scan_time_ = localizing_points_msg_ptr->header.stamp;
 
-  //TODO trans current_pose, current_pose_ptr->header.frame_id -> map_frame
-  const auto predict_base_link_pose = convertFromROSMsg(*current_pose_msg_ptr);  //TODO
-  const Pose predict_localizer_pose = transformToPose(predict_base_link_pose, tf_btol_);
+  geometry_msgs::TransformStamped::Ptr trans_map_to_current_pose_ptr(new geometry_msgs::TransformStamped);
+  getTransform(map_frame_, current_pose_msg_ptr->header.frame_id, trans_map_to_current_pose_ptr);
+  geometry_msgs::PoseStamped mapTF_current_pose_msg;
+  tf2::doTransform(*current_pose_msg_ptr, mapTF_current_pose_msg, *trans_map_to_current_pose_ptr);
+  const auto predict_base_link_pose = convertFromROSMsg(mapTF_current_pose_msg);  //TODO
+  const auto predict_localizer_pose = transformToPose(predict_base_link_pose, tf_btol_);
 
   boost::shared_ptr<pcl::PointCloud<PointTarget>> mapping_points_ptr(new pcl::PointCloud<PointTarget>);
   pcl::fromROSMsg(*mapping_points_msg_ptr, *mapping_points_ptr);
