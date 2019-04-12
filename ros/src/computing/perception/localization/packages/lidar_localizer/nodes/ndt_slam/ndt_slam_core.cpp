@@ -207,7 +207,7 @@ NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
 
   config_sub_ = nh_.subscribe("/config/ndtslam", 1, &NdtSlam::configCallback, this);
   points_map_sub_ = nh_.subscribe("/points_map", 1, &NdtSlam::pointsMapUpdatedCallback, this);
-  initial_pose_sub_ = nh_.subscribe("/initialpose", points_queue_size * 100, &NdtSlam::initialPoseCallback, this);
+  initial_pose_sub_ = nh_.subscribe("/initialpose", 1, &NdtSlam::initialPoseCallback, this);
 
   mapping_points_sub_.reset(new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_, "/points_raw", points_queue_size));
   localizing_points_sub_.reset(new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_, "/filtered_points", points_queue_size));
