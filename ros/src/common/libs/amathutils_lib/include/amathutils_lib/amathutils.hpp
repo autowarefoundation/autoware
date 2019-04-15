@@ -56,6 +56,7 @@ double find_distance(const geometry_msgs::Pose &_from, const geometry_msgs::Pose
 double find_angle(const geometry_msgs::Point &_from, const geometry_msgs::Point &_to);
 bool isIntersectLine(const geometry_msgs::Point &_l1_p1, const geometry_msgs::Point &_l1_p2,
                      const geometry_msgs::Point &_l2_p1, const geometry_msgs::Point &_l2_p2);
+double distanceFromSegment(double l1x, double l1y, double l2x, double l2y, double px,double py);
 int isPointLeftFromLine(const geometry_msgs::Point &_target, const geometry_msgs::Point &_line_p1,
                         const geometry_msgs::Point &_line_p2);
 double getPoseYawAngle(const geometry_msgs::Pose &_pose);

@@ -45,6 +45,24 @@ double find_angle(const geometry_msgs::Point &_from, const geometry_msgs::Point 
   return _angle * 360 / (2 * M_PI);
 }
 
+double distanceFromSegment(double l1x, double l1y, double l2x, double l2y, double px,double py)
+{
+  double a = l2x - l1x;
+  double b = l2y - l1y;
+  double a2 = a * a;
+  double b2 = b * b;
+  double r2 = a2 + b2;
+  double tt = -(a*(l1x-px)+b*(l1y-py));
+  if( tt < 0){
+    return std::hypot(l1x - px, l1y - py);//(l1x-px)*(l1x-px) + (l1y-py)*(l1y-py);
+  }
+  if( tt > r2 ){
+    return std::hypot(l2x - px, l2y - py);//(x2-px)*(x2-px) + (y2-y0)*(y2-y0);
+  }
+  double f1 = a*(l1y-py)-b*(l1x-px);
+  return sqrt((f1*f1)/r2);
+}
+
 bool isIntersectLine(const geometry_msgs::Point &_l1_p1, const geometry_msgs::Point &_l1_p2,
                      const geometry_msgs::Point &_l2_p1, const geometry_msgs::Point &_l2_p2)
 {

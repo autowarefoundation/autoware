@@ -15,3 +15,9 @@
 [submodule "ros/src/simulation/gazebo_simulator/worlds/external/car_demo"]
 	path = ros/src/simulation/gazebo_simulator/worlds/external/car_demo
 	url = https://github.com/CPFL/car_demo.git
+[submodule "ros/src/common/cmake/mrt_cmake_modules"]
+	path = ros/src/common/cmake/mrt_cmake_modules
+	url = https://github.com/KIT-MRT/mrt_cmake_modules
+[submodule "ros/src/data/packages/Lanelet2"]
+	path = ros/src/data/packages/Lanelet2
+	url = https://github.com/fzi-forschungszentrum-informatik/Lanelet2
