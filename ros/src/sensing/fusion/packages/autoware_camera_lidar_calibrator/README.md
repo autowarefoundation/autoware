@@ -77,6 +77,9 @@ Parameter | Type | Default | Description |
 
 If you can use localization result as TF (e.g. by `ndt_matching`), `transform` mode in `trigger_method` can collect images distributed uniformly in 3D space so more suitable for SFM than `timer` mode. With only camera, please use `timer` mode.
 
+### Demo movie
+[![](https://img.youtube.com/vi/sb5aflpkjyA/0.jpg)](https://www.youtube.com/watch?v=sb5aflpkjyA)
+
 ---
 
 ## Camera-LiDAR extrinsic calibration
