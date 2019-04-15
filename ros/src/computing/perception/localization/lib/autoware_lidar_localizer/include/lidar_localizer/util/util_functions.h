@@ -26,7 +26,10 @@
 
 Eigen::Matrix4f convertToEigenMatrix4f(const Pose &pose);
 Pose convertToPose(const Eigen::Matrix4f &m);
-Pose transformToPose(const Pose &pose, const Eigen::Matrix4f &m);
+Pose transformToPose(const Eigen::Matrix4f &rotation_m, const Eigen::Matrix4f &base_m);
+Pose transformToPose(const Eigen::Matrix4f &rotation_m, const Pose &base_pose);
+Pose transformToPose(const Pose &rotation_pose, const Eigen::Matrix4f &base_m);
+Pose transformToPose(const Pose &rotation_pose, const Pose &base_pose);
 Pose convertPoseIntoRelativeCoordinate(const Pose &target_pose,
                                        const Pose &reference_pose);
 

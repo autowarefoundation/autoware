@@ -94,13 +94,13 @@ private:
       const geometry_msgs::PoseStamped::ConstPtr &current_pose_msg_ptr);
 
   Pose getPredictPose();
-  void mapping(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &mapping_points_ptr, const Pose &localizer_pose);
+  void mapping(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &mapping_points_ptr, const Pose &sensor_pose);
   void processMatchingScore(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &points_ptr);
   void updateMatchingScore(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &points_ptr);
   void getMatchAndUnmatchPoints(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &match_points_ptr,
                                 const boost::shared_ptr<pcl::PointCloud<PointTarget>> &unmatch_points_ptr);
   std::array<double, 32> createCovariance(const double score);
-  void estimateVelocity(const Pose &localizer_pose);
+  void estimateVelocity(const Pose &pose);
   Velocity transformBaseLinkTFVelocity(const Velocity& velocity, const bool is_move_forward);
 
   void publish(const ros::Publisher &publisher, const double value);
@@ -121,7 +121,7 @@ private:
   ros::Publisher ndt_pose_pub_;
   ros::Publisher predict_pose_pub_;
   ros::Publisher ndt_pose_with_covariance_pub_;
-  ros::Publisher localizer_pose_pub_;
+  ros::Publisher sensor_pose_pub_;
   ros::Publisher estimate_twist_pub_;
   ros::Publisher matching_score_pub_;
   ros::Publisher matching_score_histogram_pub_;
@@ -151,8 +151,10 @@ private:
   PoseLinearInterpolator pose_interpolator_;
 
   MethodType method_type_;
-  Eigen::Matrix4f tf_btol_;
-  Eigen::Matrix4f tf_ttom_;
+  Eigen::Matrix4f base_link_to_sensor_matrix_;
+  Eigen::Matrix4f target_to_map_matrix_;
+  Pose base_link_to_sensor_pose_;
+  Pose target_to_map_pose_;
   bool with_mapping_;
   bool separate_mapping_;
   bool use_nn_point_z_when_initial_pose_;
