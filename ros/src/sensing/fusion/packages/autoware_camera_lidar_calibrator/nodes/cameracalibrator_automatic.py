@@ -33,7 +33,7 @@ class CameraCalibratorAutomatic:
         self.trigger_method         = rospy.get_param("~trigger_method", "transform")
         self.parent_frame           = rospy.get_param("~parent_frame", "world")
         self.child_frame            = rospy.get_param("~child_frame", "base_link")
-        self.correct_image_number   = rospy.get_param("~correct_image_number", 50)
+        self.collect_image_number   = rospy.get_param("~collect_image_number", 50)
         self.delta_distance         = rospy.get_param("~delta_distance", 5.0)
         self.delta_rotation         = rospy.get_param("~delta_rotation", 3.0)
         self.delta_time             = rospy.get_param("~delta_time", 1.0)
@@ -131,10 +131,10 @@ class CameraCalibratorAutomatic:
                 image_path = "{}/{:0>5}.png".format(self.temporary_directory, self.image_counter)
                 self.image_paths.append(image_path)
                 cv2.imwrite(image_path, image)
-                rospy.loginfo("Correcting image %d / %d -> %s", self.image_counter, self.correct_image_number, image_path)
+                rospy.loginfo("Correcting image %d / %d -> %s", self.image_counter, self.collect_image_number, image_path)
                 self.image_counter += 1
 
-                if self.image_counter > self.correct_image_number:
+                if self.image_counter > self.collect_image_number:
                     self.image_sub.unregister()
                     success = self.calibration(self.camera_name, self.image_paths, self.image_size)
                     sys.exit(0 if success else -1)
