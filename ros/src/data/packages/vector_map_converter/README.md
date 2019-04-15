@@ -2,11 +2,10 @@
 This package contains converters to convert different map formats into Vector Map information used by Autoware.
 
 ## Installation
-1. Install Lanelet  <br>
-   follow installation instruction in https://github.com/fzi-forschungszentrum-informatik/Lanelet2
-2. copy vector\_map\_converter and dependency_packages under ~/catkin\_ws/src/
-3. cd ~/catkin_ws
-4. catkin_make
+1. cd Autoware/
+2. git submodule update --init --recursive
+3. cd ros/
+4. ./colcon_release
 
 ## autowaremap2vectormap node
 This node converts Autoware Map Format into vector map csv files:
