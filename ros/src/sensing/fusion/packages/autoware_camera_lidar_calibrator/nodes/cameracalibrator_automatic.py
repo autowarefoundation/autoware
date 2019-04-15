@@ -23,24 +23,22 @@ import numpy as np
 import tf.transformations as tfm
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
+from autoware_camera_calibration.calibrator import MonoCalibrator
 from autoware_camera_calibration.colmap import Colmap
 
 class CameraCalibratorAutomatic:
     def __init__(self):
+        self.camera_name            = rospy.get_param("~camera_name", "autoware_camera_calibration")
         self.calibration_method     = rospy.get_param("~calibration_method", "colmap")
         self.trigger_method         = rospy.get_param("~trigger_method", "transform")
         self.parent_frame           = rospy.get_param("~parent_frame", "world")
         self.child_frame            = rospy.get_param("~child_frame", "base_link")
-        self.correct_image_num      = rospy.get_param("~correct_image_num", 50)
+        self.correct_image_number   = rospy.get_param("~correct_image_number", 50)
         self.delta_distance         = rospy.get_param("~delta_distance", 5.0)
         self.delta_rotation         = rospy.get_param("~delta_rotation", 3.0)
         self.delta_time             = rospy.get_param("~delta_time", 1.0)
-        self.output_directory       = rospy.get_param("~output_directory", os.path.expanduser("~"))
 
-        self.tf_listener = tf.TransformListener()
-        self.image_sub = rospy.Subscriber("image_raw", Image, self.image_callback, queue_size=10)
-        self.cv_bridge = CvBridge()
-
+        self.image_size = [-1, -1]
         self.image_paths = []
         self.image_counter = 0
         self.prev_translation = None
@@ -49,8 +47,6 @@ class CameraCalibratorAutomatic:
 
         datetime_name = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
         self.temporary_directory = "{}/cameracalibrator_{}".format(tempfile.gettempdir(), datetime_name)
-        self.output_yaml_path = "{}/{}_autoware_camera_calibration.yaml"
-        self.output_yaml_path = self.output_yaml_path.format(os.path.normpath(self.output_directory), datetime_name)
 
         if self.calibration_method == "colmap":
             self.sfm = Colmap(self.temporary_directory)
@@ -71,6 +67,10 @@ class CameraCalibratorAutomatic:
             sys.exit(-1)
 
         os.mkdir(self.temporary_directory)
+
+        self.tf_listener = tf.TransformListener()
+        self.image_sub = rospy.Subscriber("image_raw", Image, self.image_callback, queue_size=10)
+        self.cv_bridge = CvBridge()
 
     def transform_trigger(self):
         try:
@@ -100,13 +100,16 @@ class CameraCalibratorAutomatic:
             else:
                 self.prev_translation = translation
                 self.prev_rotation = rotation
+
             return True
+
         except Exception as e:
             rospy.logerr("%s", e)
             return False
 
     def timer_trigger(self):
         now = rospy.Time.now()
+
         if self.prev_time is not None:
             if (now - self.prev_time).to_sec() > self.delta_time:
                 self.prev_time = now
@@ -120,24 +123,39 @@ class CameraCalibratorAutomatic:
     def image_callback(self, msg):
         try:
             image = self.cv_bridge.imgmsg_to_cv2(msg, "bgr8")
+
+            if self.image_counter == 0:
+                self.image_size = (image.shape[1], image.shape[0])
+
             if self.trigger():
                 image_path = "{}/{:0>5}.png".format(self.temporary_directory, self.image_counter)
                 self.image_paths.append(image_path)
                 cv2.imwrite(image_path, image)
-                rospy.loginfo("Correcting image %d / %d -> %s", self.image_counter, self.correct_image_num, image_path)
+                rospy.loginfo("Correcting image %d / %d -> %s", self.image_counter, self.correct_image_number, image_path)
                 self.image_counter += 1
-                if self.image_counter > self.correct_image_num:
+
+                if self.image_counter > self.correct_image_number:
                     self.image_sub.unregister()
-                    success = self.calibration()
+                    success = self.calibration(self.camera_name, self.image_paths, self.image_size)
                     sys.exit(0 if success else -1)
+
         except Exception as e:
             rospy.logerr("%s", e)
 
-    def calibration(self):
-        (success, camera_matrix, dist_coeffs) = self.sfm.execute_sfm(self.image_paths)
-        print camera_matrix
-        print dist_coeffs
-        return success
+    def calibration(self, camera_name, image_paths, image_size):
+        (success, camera_matrix, dist_coeffs) = self.sfm.execute_sfm(image_paths)
+
+        if not success:
+            rospy.logerr("Failed to exectute Structure from Motion. Please see README.")
+            return False
+
+        try:
+            MonoCalibrator.dump_autoware_cv_yaml(camera_name, image_size, camera_matrix, dist_coeffs, 0.0)
+        except Exception as e:
+            rospy.logerr("%s", e)
+            return False
+
+        return True
 
 if __name__ == "__main__":
     rospy.init_node("cameracalibrator_automatic", anonymous=True)

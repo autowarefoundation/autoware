@@ -883,14 +883,8 @@ class MonoCalibrator(Calibrator):
             taradd('ost.yaml', self.yaml())
             taradd('ost.txt', self.ost())
 
-    def do_autoware_cv_yaml(self):
-        # params to be written
-        camera_name = self.name
-        distortion = self.distortion
-        intrinsics = self.intrinsics
-        reproj_error = 0.0      # until we have an alternative..
-
-        # write file
+    @staticmethod
+    def dump_autoware_cv_yaml(camera_name, size, intrinsics, distortion, reproj_error):
         now = datetime.datetime.now()
         fn = path.join(path.expanduser("~"), now.strftime("%Y%m%d_%H%M_") + camera_name + '.yaml')
         f = cv2.FileStorage(fn, flags=1)
@@ -899,10 +893,21 @@ class MonoCalibrator(Calibrator):
         f.write(name="DistCoeff", val=distortion)
         f.release()
         with open(fn, 'a') as f:
-            f.write("ImageSize: [" + str(self.size[0]) + ", " + str(self.size[1]) + "]\n")
+            f.write("ImageSize: [" + str(size[0]) + ", " + str(size[1]) + "]\n")
             f.write("Reprojection Error: " + str(reproj_error) + "\n")
             f.write("DistModel: plumb_bob")
         print("Wrote Autoware Calibration file in: " + fn)
+
+    def do_autoware_cv_yaml(self):
+        # params to be written
+        camera_name = self.name
+        distortion = self.distortion
+        intrinsics = self.intrinsics
+        reproj_error = 0.0      # until we have an alternative..
+
+        # write file
+        self.dump_autoware_cv_yaml(camera_name, self.size, intrinsics, distortion, reproj_error)
+
 
     def do_tarfile_calibration(self, filename):
         archive = tarfile.open(filename, 'r')
