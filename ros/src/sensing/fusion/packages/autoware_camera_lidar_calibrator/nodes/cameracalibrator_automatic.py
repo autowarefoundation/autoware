@@ -78,12 +78,20 @@ class CameraCalibratorAutomatic:
             (translation, rotation) = self.tf_listener.lookupTransform(self.child_frame, self.parent_frame, rospy.Time(0))
             translation = np.array(translation)
             rotation = np.array(rotation)
+
+            def diff_translation(t1, t2):
+                return np.linalg.norm(t1 - t2)
+
+            def diff_rotation(r1, r2):
+                dq = tfm.quaternion_multiply(rotation, tfm.quaternion_inverse(self.prev_rotation))
+                return abs(tfm.euler_from_quaternion(dq)[2])
+
             if self.prev_translation is not None and self.prev_rotation is not None:
-                dd = np.linalg.norm(translation - self.prev_translation)
-                dr = tfm.euler_from_quaternion(tfm.quaternion_multiply(rotation, tfm.quaternion_inverse(self.prev_rotation)))[2]
-                dtrig = (dd > self.delta_distance)
-                rtrig = (abs(dr) > math.radians(self.delta_rotation))
-                if dtrig or rtrig:
+                dt = diff_translation(self.prev_translation, translation)
+                dr = diff_rotation(self.prev_rotation, rotation)
+                ttrig = (dt > self.delta_distance)
+                rtrig = (dr > math.radians(self.delta_rotation))
+                if ttrig or rtrig:
                     self.prev_translation = translation
                     self.prev_rotation = rotation
                     return True
