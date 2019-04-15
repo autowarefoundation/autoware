@@ -1,7 +1,7 @@
 <launch>
 
   <!-- Vehicle Contorl -->
-  <include file="$(find runtime_manager)/scripts/vehicle_socket.launch"/>
+  <include file="$(find runtime_manager)/launch_files/vehicle_socket.launch"/>
 
   <!-- obstacle_avoid -->
   <include file="$(find astar_planner)/launch/obstacle_avoid.launch"/>
