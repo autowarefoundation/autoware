@@ -1,6 +1,6 @@
 <package>
   <name>xsens_driver</name>
-  <version>1.10.0</version>
+  <version>1.11.0</version>
   <description>
   ROS Driver for publishing mti sensor sample messages (MTi-1/10/100, MTi-G-700 and FMT devices).
   </description>

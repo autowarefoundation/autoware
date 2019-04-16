@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>vision_lane_detect</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>The vision_lane_detect package</description>
     <maintainer email="syoshida@axe.bz">Syoeh YOSHIDA</maintainer>
     <license>Apache 2</license>

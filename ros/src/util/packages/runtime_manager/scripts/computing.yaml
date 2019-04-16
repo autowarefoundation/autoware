@@ -1011,7 +1011,7 @@ params :
       label   : 'output topic'
       kind    : topic
       topic_type : autoware_msgs/DetectedObjectArray
-      v       : /detection/objects
+      v       : /detection/object_tracker/objects
       cmd_param :
         dash        : ''
         delim       : ':='

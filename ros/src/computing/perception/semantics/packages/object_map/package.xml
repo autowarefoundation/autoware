@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>object_map</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>The object_map package</description>
     <maintainer email="antm678@ertl.jp">ando</maintainer>
     <maintainer email="abrahammonrroy@yahoo.com">amc</maintainer>

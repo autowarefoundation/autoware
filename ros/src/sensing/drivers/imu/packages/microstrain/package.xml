@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>microstrain_driver</name>
-  <version>1.10.0</version>
+  <version>1.11.0</version>
   <description>The microstrain_driver package</description>
 
   <author email="briansbingham@gmail.com">Brian Bingham</author>

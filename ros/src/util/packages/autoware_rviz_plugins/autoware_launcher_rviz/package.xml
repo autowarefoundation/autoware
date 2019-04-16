@@ -2,7 +2,7 @@
 <package format="2">
 
   <name>autoware_launcher_rviz</name>
-  <version>0.0.0</version>
+  <version>1.11.0</version>
   <description>The autoware_launcher_rviz package</description>
   <license>Apache 2.0</license>
 

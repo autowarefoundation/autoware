@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>lidar_naive_l_shape_detect</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>lidar_naive_l_shape_detect package</description>
 
     <maintainer email="cirpue49@yahoo.co.jp">Kosuke Murakami</maintainer>

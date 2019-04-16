@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>hokuyo</name>
-  <version>1.10.0</version>
+  <version>1.11.0</version>
   <description>The hokuyo package</description>
   <maintainer email="kondoh@todo.todo">kondoh</maintainer>
   <license>BSD</license>

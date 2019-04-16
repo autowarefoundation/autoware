@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>sick_ldmrs_tools</name>
-  <version>1.10.0</version>
+  <version>1.11.0</version>
   <description>Examples how to use the sick_ldmrs</description>
 
   <maintainer email="martin.guenther@dfki.de">Martin Günther</maintainer>

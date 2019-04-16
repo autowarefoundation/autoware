@@ -2,10 +2,23 @@
 Changelog for package waypoint_follower
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.11.0 (2019-03-21)
+-------------------
+* [Feature] Rebuild decision maker (`#1609 <https://github.com/CPFL/Autoware/issues/1609>`_)
+* Revert "Fix/health checker (`#2012 <https://github.com/CPFL/Autoware/issues/2012>`_)" (`#2037 <https://github.com/CPFL/Autoware/issues/2037>`_)
+  This reverts commit e4187a7138eb90ad6f119eb35f824b16465aefda.
+  Reverts `#2012 <https://github.com/CPFL/Autoware/issues/2012>`_
+  Merged without adequate description of the bug or fixes made
+* Fix/health checker (`#2012 <https://github.com/CPFL/Autoware/issues/2012>`_)
+* Feature/autoware health checker (`#1943 <https://github.com/CPFL/Autoware/issues/1943>`_)
+* Fix license notice in corresponding package.xml
+* [Fix] negative max_v values for negative omega (`#1880 <https://github.com/CPFL/Autoware/issues/1880>`_)
+* Contributors: Geoffrey Biggs, Masaya Kataoka, Sneha Ganesh, amc-nu, s-azumi
+
 1.10.0 (2019-01-17)
 -------------------
 * Fixes for catkin_make
-* Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/kfunaoka/Autoware/issues/1741>`_)
+* Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/CPFL/Autoware/issues/1741>`_)
   * Switch to Apache 2
   * Replace BSD-3 license header with Apache 2 and reassign copyright to the
   Autoware Foundation.
@@ -13,7 +26,7 @@ Changelog for package waypoint_follower
   * Update copyright years
   * Add #ifndef/define _POINTS_IMAGE_H\_
   * Updated license comment
-* Use colcon as the build tool (`#1704 <https://github.com/kfunaoka/Autoware/issues/1704>`_)
+* Use colcon as the build tool (`#1704 <https://github.com/CPFL/Autoware/issues/1704>`_)
   * Switch to colcon as the build tool instead of catkin
   * Added cmake-target
   * Added note about the second colcon call

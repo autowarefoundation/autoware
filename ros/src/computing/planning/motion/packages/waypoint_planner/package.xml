@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>waypoint_planner</name>
-  <version>1.10.0</version>
+  <version>1.11.0</version>
   <description>The waypoint_planner package</description>
 
   <maintainer email="aohsato@gmail.com">Akihito OHSATO</maintainer>

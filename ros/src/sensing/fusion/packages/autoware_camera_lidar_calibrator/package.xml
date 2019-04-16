@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
     <name>autoware_camera_lidar_calibrator</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>Autoware CameraLidarCalibration tools, this package includes work from
         http://www.ros.org/wiki/camera_calibration
     </description>
