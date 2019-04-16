@@ -93,6 +93,11 @@ private:
       const sensor_msgs::PointCloud2::ConstPtr &localizing_points_msg_ptr,
       const geometry_msgs::PoseStamped::ConstPtr &current_pose_msg_ptr);
 
+  void mainLoop(
+      const boost::shared_ptr<pcl::PointCloud<PointTarget>> &mapping_points_ptr,
+      const boost::shared_ptr<pcl::PointCloud<PointSource>> &localizing_points_ptr,
+      const Pose &mapTF_predict_base_link_pose);
+
   Pose getPredictPose();
   void mapping(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &mapping_points_ptr, const Pose &sensor_pose);
   void processMatchingScore(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &points_ptr);
