@@ -1,3 +1,0 @@
-<launch>
-    <node pkg="map_tf_generator" type="map_tf_generator" name="world_to_map" />
-</launch>
