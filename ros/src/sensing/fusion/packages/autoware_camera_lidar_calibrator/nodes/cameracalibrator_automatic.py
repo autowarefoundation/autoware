@@ -83,7 +83,7 @@ class CameraCalibratorAutomatic:
                 return np.linalg.norm(t1 - t2)
 
             def diff_rotation(r1, r2):
-                dq = tfm.quaternion_multiply(rotation, tfm.quaternion_inverse(self.prev_rotation))
+                dq = tfm.quaternion_multiply(r2, tfm.quaternion_inverse(r1))
                 return abs(tfm.euler_from_quaternion(dq)[2])
 
             if self.prev_translation is not None and self.prev_rotation is not None:
