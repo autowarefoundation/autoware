@@ -1,2 +1,0 @@
-- name: /vectacam
-  publish: [/camera/image_raw, /image_raw]
