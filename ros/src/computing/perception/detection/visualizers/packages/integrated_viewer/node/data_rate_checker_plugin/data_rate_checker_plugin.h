@@ -62,7 +62,6 @@ namespace integrated_viewer
     // Variables for message timing
     unsigned int window_size_ = 10000;
     double last_message_time_ = -1;
-    double last_printed_time_ = -1;
     std::deque<double> times_;
 
     // Save and load overrides
