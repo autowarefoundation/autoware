@@ -1,3 +1,0 @@
-<launch>
-    <include file="$(find lidar_localizer)/launch/ndt_matching.launch"/>
-</launch>

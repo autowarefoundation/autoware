@@ -1,4 +1,0 @@
-children: []
-config:
-  args.use_traffic_light_result: false
-plugin: leaf/lane_stop

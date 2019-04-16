@@ -1,5 +1,0 @@
-children: []
-config:
-  args.measurement_range: 200.0
-  args.voxel_leaf_size: 2.0
-plugin: leaf/voxel_grid_filter

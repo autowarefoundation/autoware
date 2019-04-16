@@ -1,5 +1,0 @@
-children:
-- object
-- traffic_lights
-config: {}
-plugin: node/detection

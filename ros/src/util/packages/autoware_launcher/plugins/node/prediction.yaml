@@ -1,3 +1,0 @@
-format: Autoware Launcher Plugin Version 0.1
-rules:
-- { name: native_motion_predict, plugin: refs/native_motion_predict }

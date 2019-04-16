@@ -1,5 +1,0 @@
-children:
-- projection
-- recognition
-config: {}
-plugin: node/detect_tl
