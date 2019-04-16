@@ -1,3 +1,0 @@
-- name: /occupancy_processor_01
-  publish: [/gridmap_road_status, /occupancy_road_status]
-  subscribe: [/grid_map_wayarea]
