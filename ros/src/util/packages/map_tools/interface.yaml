@@ -1,3 +1,0 @@
-- name: /map_extender
-  publish: [/extended_map]
-  subscribe: [/points_map, /initialpose]
