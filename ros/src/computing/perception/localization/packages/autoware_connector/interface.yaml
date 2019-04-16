@@ -1,3 +1,0 @@
-- name: /can_info_translator
-  publish: [/can_velocity, /linear_velocity_viz, /odom_pose]
-  subscribe: [/can_info]
