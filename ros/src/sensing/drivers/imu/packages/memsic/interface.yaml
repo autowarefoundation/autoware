@@ -1,2 +1,0 @@
-- name: /vg440_node
-  publish: [/imu_raw]
