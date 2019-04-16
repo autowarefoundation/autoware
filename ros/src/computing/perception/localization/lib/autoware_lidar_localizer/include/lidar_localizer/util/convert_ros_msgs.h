@@ -36,7 +36,7 @@ convertToROSMsg(const std_msgs::Header &header, const Pose &pose,
 
 geometry_msgs::PoseWithCovarianceStamped convertToROSMsg(const std_msgs::Header &header,
                                                          const Pose &pose,
-                                                         const std::array<double, 32> cov_array);
+                                                         const std::array<double, 36> cov_array);
 
 geometry_msgs::TwistStamped convertToROSMsg(const std_msgs::Header &header,
                                             const Velocity &velocity);

@@ -174,6 +174,11 @@ void NdtSlamPCLOMP<PointSource, PointTarget>::swapInstance() {
   ndt_ptr_ = swap_ndt_ptr_;
 }
 
+template <class PointSource, class PointTarget>
+Eigen::Matrix<double, 6, 6> NdtSlamPCLOMP<PointSource, PointTarget>::getHessian() const {
+    return ndt_ptr_->getHessian();
+}
+
 #endif
 
 template class NdtSlamPCLOMP<pcl::PointXYZ, pcl::PointXYZ>;

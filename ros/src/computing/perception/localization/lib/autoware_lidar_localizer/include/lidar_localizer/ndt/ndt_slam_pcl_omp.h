@@ -59,6 +59,8 @@ public:
   int getMaxThreads() const;
   pclomp::NeighborSearchMethod getNeighborhoodSearchMethod() const;
 
+  Eigen::Matrix<double, 6, 6> getHessian() const override;
+
 protected:
   void align(const Pose &predict_pose) override;
   double getFitnessScore() override;

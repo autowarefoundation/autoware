@@ -38,6 +38,9 @@ public:
   virtual double getTransformationProbability() const = 0;
 
   virtual double getFitnessScore() = 0;
+  virtual Eigen::Matrix<double, 6, 6> getHessian() const {
+      return Eigen::Matrix<double, 6, 6>::Identity();
+  };
 
   virtual std::stringstream logFileContent() const override;
 };

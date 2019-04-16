@@ -55,7 +55,7 @@ convertToROSMsg(const std_msgs::Header &header, const Pose &pose,
 }
 
 geometry_msgs::PoseWithCovarianceStamped convertToROSMsg(const std_msgs::Header &header,
-                                           const Pose &pose, const std::array<double, 32> cov_array) {
+                                           const Pose &pose, const std::array<double, 36> cov_array) {
   tf::Quaternion q;
   q.setRPY(pose.roll, pose.pitch, pose.yaw);
 

@@ -99,13 +99,13 @@ private:
   void updateMatchingScore(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &points_ptr);
   void getMatchAndUnmatchPoints(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &match_points_ptr,
                                 const boost::shared_ptr<pcl::PointCloud<PointTarget>> &unmatch_points_ptr);
-  std::array<double, 32> createCovariance(const double score);
+  std::array<double, 36> createCovariance();
   void estimateVelocity(const Pose &pose);
   Velocity transformBaseLinkTFVelocity(const Velocity& velocity, const bool is_move_forward);
 
   void publish(const ros::Publisher &publisher, const double value);
   void publish(const ros::Publisher &publisher, const std::string frame_id, const Pose &pose);
-  void publish(const ros::Publisher &publisher, const std::string frame_id, const Pose &pose, const std::array<double, 32> cov);
+  void publish(const ros::Publisher &publisher, const std::string frame_id, const Pose &pose, const std::array<double, 36> cov);
   void publish(const ros::Publisher &publisher, const std::string frame_id, const Velocity &velocity);
   void publish(const ros::Publisher &publisher, const std::string frame_id, const std::vector<HistogramWithRangeBin> &histogram_bin_array);
   template<class PointType>

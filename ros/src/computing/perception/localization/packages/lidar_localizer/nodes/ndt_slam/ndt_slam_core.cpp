@@ -16,7 +16,9 @@
 
 #include "ndt_slam_core.h"
 
+#include <cmath>
 #include <iomanip>
+#include <algorithm>
 
 #include <pcl_conversions/pcl_conversions.h>
 
@@ -373,23 +375,18 @@ void NdtSlam::mappingAndLocalizingPointsCallback(
     mapping(mapping_points_ptr, mapTF_sensor_pose);
   }
 
+  processMatchingScore(localizing_points_ptr);
+
   const auto targetTF_sensor_pose = transformToPose(target_to_map_matrix_, mapTF_sensor_pose);
 
   const auto mapTF_base_link_pose = transformToPose(mapTF_sensor_pose, base_link_to_sensor_matrix_.inverse());
   const auto targetTF_base_link_pose = transformToPose(targetTF_sensor_pose, base_link_to_sensor_matrix_.inverse());
 
-  if ( matching_score_pub_.getNumSubscribers() > 0 || matching_score_histogram_pub_.getNumSubscribers() > 0
-    || matching_points_pub_.getNumSubscribers() > 0 || unmatching_points_pub_.getNumSubscribers() > 0
-    || ndt_pose_with_covariance_pub_.getNumSubscribers() > 0) {
-
-        processMatchingScore(localizing_points_ptr);
-        const auto cov = createCovariance(matching_score_);
-        publish(ndt_pose_with_covariance_pub_, target_frame_, targetTF_base_link_pose, cov);
-    }
-
   publish(sensor_pose_pub_, target_frame_, targetTF_sensor_pose);
   publish(ndt_pose_pub_, target_frame_, targetTF_base_link_pose);
   publish(predict_pose_pub_, target_frame_, targetTF_pridict_base_link_pose);
+  const auto cov = createCovariance();
+  publish(ndt_pose_with_covariance_pub_, target_frame_, targetTF_base_link_pose, cov);
 
   estimateVelocity(mapTF_base_link_pose);
 
@@ -406,6 +403,8 @@ void NdtSlam::mappingAndLocalizingPointsCallback(
   std::cout << "velocity: " << pose_interpolator_.getVelocity() << std::endl;
   std::cout << "align_time: " << localizer_ptr_->getAlignTime() << "ms" << std::endl;
   std::cout << "exe_time: " << exe_time << "ms" << std::endl;
+  std::cout << "hessian: " << std::endl << localizer_ptr_->getHessian() << std::endl;
+  std::cout << "hessian inverse: " << std::endl << localizer_ptr_->getHessian().inverse()*2.0*200*-1.0 << std::endl;
 }
 
 void NdtSlam::mappingAndLocalizingPointsAndCurrentPoseCallback(
@@ -463,23 +462,18 @@ void NdtSlam::mappingAndLocalizingPointsAndCurrentPoseCallback(
     mapping(mapping_points_ptr, mapTF_sensor_pose);
   }
 
+  processMatchingScore(localizing_points_ptr);
+
   const auto targetTF_sensor_pose = transformToPose(target_to_map_matrix_, mapTF_sensor_pose);
 
   const auto mapTF_base_link_pose = transformToPose(mapTF_sensor_pose, base_link_to_sensor_matrix_.inverse());
   const auto targetTF_base_link_pose = transformToPose(targetTF_sensor_pose, base_link_to_sensor_matrix_.inverse());
 
-  if ( matching_score_pub_.getNumSubscribers() > 0 || matching_score_histogram_pub_.getNumSubscribers() > 0
-    || matching_points_pub_.getNumSubscribers() > 0 || unmatching_points_pub_.getNumSubscribers() > 0
-    || ndt_pose_with_covariance_pub_.getNumSubscribers() > 0) {
-
-        processMatchingScore(localizing_points_ptr);
-        const auto cov = createCovariance(matching_score_);
-        publish(ndt_pose_with_covariance_pub_, target_frame_, targetTF_base_link_pose, cov);
-    }
-
   publish(sensor_pose_pub_, target_frame_, targetTF_sensor_pose);
   publish(ndt_pose_pub_, target_frame_, targetTF_base_link_pose);
   publish(predict_pose_pub_, target_frame_, targetTF_pridict_base_link_pose);
+  const auto cov = createCovariance();
+  publish(ndt_pose_with_covariance_pub_, target_frame_, targetTF_base_link_pose, cov);
 
   estimateVelocity(mapTF_base_link_pose);
 
@@ -560,24 +554,27 @@ void NdtSlam::mapping(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &map
 
 void NdtSlam::processMatchingScore(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &points_ptr) {
 
-    updateMatchingScore(points_ptr);
-    publish(matching_score_pub_, matching_score_);
+    if ( matching_score_pub_.getNumSubscribers() > 0 || matching_score_histogram_pub_.getNumSubscribers() > 0
+      || matching_points_pub_.getNumSubscribers() > 0 || unmatching_points_pub_.getNumSubscribers() > 0) {
 
-    if(matching_score_histogram_pub_.getNumSubscribers() > 0){
-        MatchingScoreHistogram matching_score_histogram;
-        const auto point_with_distance_array = matching_score_class_.getPointWithDistanceArray();
-        const auto histogram_bin_array = matching_score_histogram.createHistogramWithRangeBinArray(point_with_distance_array);
-        publish(matching_score_histogram_pub_, map_frame_, histogram_bin_array);
+        updateMatchingScore(points_ptr);
+        publish(matching_score_pub_, matching_score_);
+
+        if(matching_score_histogram_pub_.getNumSubscribers() > 0){
+            MatchingScoreHistogram matching_score_histogram;
+            const auto point_with_distance_array = matching_score_class_.getPointWithDistanceArray();
+            const auto histogram_bin_array = matching_score_histogram.createHistogramWithRangeBinArray(point_with_distance_array);
+            publish(matching_score_histogram_pub_, map_frame_, histogram_bin_array);
+        }
+
+        if(matching_points_pub_.getNumSubscribers() > 0 || unmatching_points_pub_.getNumSubscribers() > 0) {
+            const boost::shared_ptr<pcl::PointCloud<PointTarget>> match_points_ptr(new pcl::PointCloud<PointTarget>);
+            const boost::shared_ptr<pcl::PointCloud<PointTarget>> unmatch_points_ptr(new pcl::PointCloud<PointTarget>);
+            getMatchAndUnmatchPoints(match_points_ptr, unmatch_points_ptr);
+            publish(matching_points_pub_, map_frame_, match_points_ptr);
+            publish(unmatching_points_pub_, map_frame_, unmatch_points_ptr);
+        }
     }
-
-    if(matching_points_pub_.getNumSubscribers() > 0 || unmatching_points_pub_.getNumSubscribers() > 0) {
-        const boost::shared_ptr<pcl::PointCloud<PointTarget>> match_points_ptr(new pcl::PointCloud<PointTarget>);
-        const boost::shared_ptr<pcl::PointCloud<PointTarget>> unmatch_points_ptr(new pcl::PointCloud<PointTarget>);
-        getMatchAndUnmatchPoints(match_points_ptr, unmatch_points_ptr);
-        publish(matching_points_pub_, map_frame_, match_points_ptr);
-        publish(unmatching_points_pub_, map_frame_, unmatch_points_ptr);
-    }
-
 }
 
 void NdtSlam::updateMatchingScore(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &points_ptr) {
@@ -587,6 +584,7 @@ void NdtSlam::updateMatchingScore(const boost::shared_ptr<pcl::PointCloud<PointT
 
     size_t target_points_num = 300;
     size_t step_size = target_points_num != 0 ? points_ptr->points.size() / target_points_num : 1;
+    step_size = std::max(step_size, static_cast<size_t>(1));
     double cutoff_lower_limit_z = 0.2;
     double cutoff_upper_limit_z = 2.0;
     double cutoff_lower_limit_range = 5.0;
@@ -599,7 +597,7 @@ void NdtSlam::updateMatchingScore(const boost::shared_ptr<pcl::PointCloud<PointT
           &&(range > cutoff_lower_limit_range && range < cutoff_upper_limit_range)) {
 
             //random downsample
-            if(++points_num % step_size == 0) {
+            if(step_size == 0 || ++points_num % step_size == 0) {
                 points_baselinkTF_cuttoff_ptr->push_back(point);
             }
         }
@@ -631,22 +629,18 @@ void NdtSlam::getMatchAndUnmatchPoints(const boost::shared_ptr<pcl::PointCloud<P
     }
 }
 
-std::array<double, 32> NdtSlam::createCovariance(const double score) {
+std::array<double, 36> NdtSlam::createCovariance() {
 
-    std::array<double, 32> cov_array;
+    std::array<double, 36> cov_array = {};
 
-    double cov = 0;
-    //TODO
-    if(score < 0.75) {
-        cov = 100.0;
+    for(size_t i = 0; i < 6; ++i) {
+        double coffe = i<3 ? 2.0*200*-1.0 : 2.0*200000*-1.0;
+        for(size_t j = 0; j < 6; ++j) {
+            double v = localizer_ptr_->getHessian().inverse()(i,j);
+            v = (!std::isnan(v)&&!std::isinf(v)) ? v : 100;
+            cov_array[6*i + j] = v*coffe;
+        }
     }
-
-    cov_array[0] = std::pow(0.05 + cov, 2.0);
-    cov_array[6 + 1] = std::pow(0.05 + cov, 2.0);
-    cov_array[6*2 + 2] = std::pow(0.05 + cov, 2.0);
-    cov_array[6*3 + 3] = std::pow(0.025 + cov, 2.0);
-    cov_array[6*4 + 4] = std::pow(0.025 + cov, 2.0);
-    cov_array[6*5 + 5] = std::pow(0.025 + cov, 2.0);
 
     return cov_array;
 }
@@ -694,7 +688,7 @@ void NdtSlam::publish(const ros::Publisher &publisher, const std::string frame_i
     publisher.publish(msg);
 }
 
-void NdtSlam::publish(const ros::Publisher &publisher, const std::string frame_id, const Pose &pose, const std::array<double, 32> cov) {
+void NdtSlam::publish(const ros::Publisher &publisher, const std::string frame_id, const Pose &pose, const std::array<double, 36> cov) {
     std_msgs::Header header;
     header.frame_id = frame_id;
     header.stamp = current_scan_time_;
