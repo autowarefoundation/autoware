@@ -1,2 +1,0 @@
-- name: /hokuyo_3d
-  publish: [/points_raw, /imu, /mag]
