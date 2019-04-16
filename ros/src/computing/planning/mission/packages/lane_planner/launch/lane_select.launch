@@ -2,5 +2,4 @@
 <launch>
 
 <node pkg="lane_planner" type="lane_select" name="lane_select" output="log"></node>
-
 </launch>
