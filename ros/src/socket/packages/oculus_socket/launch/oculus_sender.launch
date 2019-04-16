@@ -1,3 +1,0 @@
-<launch>
-	 <node pkg="oculus_socket" name="oculus_sender" type="oculus_sender" args="$(arg ip)" output="screen"/>
-</launch>
