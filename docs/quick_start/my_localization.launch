@@ -4,7 +4,7 @@
   <arg name="get_height" value="true" />
 
   <!-- Setup -->
-  <include file="$(find runtime_manager)/scripts/setup_tf.launch">
+  <include file="$(find runtime_manager)/launch_files/setup_tf.launch">
     <arg name="x" value="1.2" />
     <arg name="y" value="0.0" />
     <arg name="z" value="2.0" />

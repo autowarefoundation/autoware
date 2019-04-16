@@ -5,7 +5,7 @@
   <arg name="camera_calib" default="$(env HOME)/.autoware/data/calibration/camera_lidar_3d/prius/nic-150407.yml"/>
 
   <!-- HDL-32e -->
-  <include file="$(find velodyne_pointcloud)/launch/velodyne_hdl32e.launch">
+  <include file="$(find runtime_manager)/launch_files/velodyne_hdl32e.launch">
     <arg name="calibration" value="$(arg velodyne_calib)"/>
   </include>
 
