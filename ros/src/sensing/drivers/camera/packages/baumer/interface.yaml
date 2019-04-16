@@ -1,3 +1,0 @@
-- name: /vlg22c
-  publish: [/camera/*/image_raw]
-  subscribe: []
