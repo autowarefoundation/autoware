@@ -1,7 +1,0 @@
-sudo: required
-dist: trusty
-language: cpp
-script:
-  - mkdir build && cd build
-  - cmake ..
-  - sudo make install
