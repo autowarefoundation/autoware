@@ -1,8 +1,0 @@
-'start'        : ~/Autoware/ros/src/util/packages/sound_player/wavs/start.wav
-'stop'         : ~/Autoware/ros/src/util/packages/sound_player/wavs/stop.wav
-'red signal'   : ~/Autoware/ros/src/util/packages/sound_player/wavs/red.wav
-'green signal' : ~/Autoware/ros/src/util/packages/sound_player/wavs/green.wav
-'pedestrian'   : ~/Autoware/ros/src/util/packages/sound_player/wavs/pede.wav
-'ndt warning'   : ~/Autoware/ros/src/util/packages/sound_player/wavs/ndt_warning.wav
-'deceleration'   : ~/Autoware/ros/src/util/packages/sound_player/wavs/deceleration.wav
-'return to normal run'   : ~/Autoware/ros/src/util/packages/sound_player/wavs/return_normal.wav

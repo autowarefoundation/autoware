@@ -1,2 +1,0 @@
-- name: /sound_player
-  subscribe: [/sound_player]
