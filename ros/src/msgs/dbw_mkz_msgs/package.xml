@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>dbw_mkz_msgs</name>
-  <version>1.10.0</version>
+  <version>1.11.0</version>
   <description>
     Drive-by-wire messages for the Lincoln MKZ
   </description>

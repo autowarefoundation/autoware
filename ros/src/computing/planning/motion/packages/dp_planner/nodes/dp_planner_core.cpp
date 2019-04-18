@@ -71,7 +71,6 @@ PlannerX::PlannerX()
 	m_ObstacleTracking.m_dt = 0.12;
 	m_ObstacleTracking.m_bUseCenterOnly = true;
 
-
 	int iSource = 0;
 	nh.getParam("/dp_planner/mapSource", iSource);
 	if(iSource == 0)
@@ -765,7 +764,6 @@ void PlannerX::PlannerMainLoop()
 
 		ROSHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(m_LocalPlanner.m_Path, m_LocalPlanner.m_RollOuts, m_LocalPlanner, all_rollOuts);
 		pub_LocalTrajectoriesRviz.publish(all_rollOuts);
-
 
 		if(m_CurrentBehavior.bNewPlan)
 		{

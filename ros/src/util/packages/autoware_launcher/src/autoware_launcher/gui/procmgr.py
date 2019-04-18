@@ -17,6 +17,9 @@ class AwProcessPanel(QtWidgets.QStackedWidget):
         self.__dummy = QtWidgets.QLabel("This is node")
         self.addWidget(self.__dummy)
 
+        self.__tmpdir = "/tmp/autoware_launcher"
+        myutils.makedirs(self.__tmpdir, mode=0o700, exist_ok=True)
+
     def profile_ui_cleared(self):
         for key in self.__items.keys():
             self.__items.pop(key).deleteLater()
@@ -38,7 +41,7 @@ class AwProcessPanel(QtWidgets.QStackedWidget):
         self.setCurrentWidget(item)
 
     def roslaunch(self, lpath, xtext):
-        xpath = myutils.package() + "/runner/" + lpath.replace("/", "-") + ".xml"
+        xpath = self.__tmpdir + "/" + lpath.replace("/", "-") + ".xml"
         with open(xpath, mode="w") as fp:
             fp.write(xtext)
         self.__items[lpath].proc.start("roslaunch {}".format(xpath))

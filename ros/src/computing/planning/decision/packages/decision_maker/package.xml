@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>decision_maker</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>The decision maker package for autoware</description>
     <maintainer email="azumi.suzuki@tier4.jp">Yusuke Fujii</maintainer>
     <author email="yusuke.fujii@tier4.jp">Yusuke Fujii</author>
