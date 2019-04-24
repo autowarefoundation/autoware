@@ -30,6 +30,7 @@
   <arg name="max_iterations" default="30.0" />
 
   <arg name="with_mapping" default="false" />
+  <arg name="save_added_map" default="false" />
   <arg name="save_map_leaf_size" default="0.2" />
   <arg name="min_scan_range" default="5.0" />
   <arg name="max_scan_range" default="200.0" />
@@ -74,6 +75,7 @@
     <param name="max_iterations" value="$(arg max_iterations)" />
 
     <param name="with_mapping" value="$(arg with_mapping)" />
+    <param name="save_added_map" value="$(arg save_added_map)" />
     <param name="save_map_leaf_size" value="$(arg save_map_leaf_size)" />
     <param name="min_scan_range" value="$(arg min_scan_range)" />
     <param name="max_scan_range" value="$(arg max_scan_range)" />

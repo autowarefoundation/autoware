@@ -123,7 +123,7 @@ void NdtSlamPCL<PointSource, PointTarget>::buildMap(
 
 template <class PointSource, class PointTarget>
 void NdtSlamPCL<PointSource, PointTarget>::swapInstance() {
-  ndt_ptr_ = swap_ndt_ptr_;
+  ndt_ptr_ = swap_ndt_ptr_; //TODO 2ms~3ms
 }
 
 template class NdtSlamPCL<pcl::PointXYZ, pcl::PointXYZ>;

@@ -109,10 +109,7 @@ bool LidarLocalizer<PointSource, PointTarget>::alignMap(
   const auto align_start = std::chrono::system_clock::now();
   align(predict_pose);
   const auto align_end = std::chrono::system_clock::now();
-  align_time_ = std::chrono::duration_cast<std::chrono::microseconds>(
-                    align_end - align_start)
-                    .count() /
-                1000.0;
+  align_time_ = std::chrono::duration_cast<std::chrono::microseconds>(align_end - align_start).count() / 1000.0;
 
   localizer_pose_ = getFinalPose();
 
