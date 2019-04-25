@@ -15,6 +15,4 @@
 [submodule "ros/src/simulation/gazebo_simulator/worlds/external/car_demo"]
 	path = ros/src/simulation/gazebo_simulator/worlds/external/car_demo
 	url = https://github.com/CPFL/car_demo.git
-[submodule "ros/src/computing/perception/localization/lib/ndt_omp"]
-	path = ros/src/computing/perception/localization/lib/ndt_omp
-	url = https://github.com/koide3/ndt_omp.git
+
