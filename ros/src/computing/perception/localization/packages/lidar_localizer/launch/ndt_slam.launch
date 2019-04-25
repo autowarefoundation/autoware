@@ -38,6 +38,11 @@
   <arg name="separate_mapping" default="false" />
   <arg name="separate_map_size" default="100.0" />
 
+  <arg name="matching_score_use_points_num" default="300" />
+  <arg name="matching_score_cutoff_lower_limit_z" default="0.2" />
+  <arg name="matching_score_cutoff_upper_limit_z" default="2.0" />
+  <arg name="matching_score_cutoff_lower_limit_range" default="5.0" />
+  <arg name="matching_score_cutoff_upper_limit_range" default="100.0" />
   <arg name="matching_score_kT" default="0.05" />
   <arg name="matching_score_mu" default="0.25" />
 
@@ -83,6 +88,11 @@
     <param name="separate_mapping" value="$(arg separate_mapping)" />
     <param name="separate_map_size" value="$(arg separate_map_size)" />
 
+    <param name="matching_score_use_points_num" value="$(arg matching_score_use_points_num)" />
+    <param name="matching_score_cutoff_lower_limit_z" value="$(arg matching_score_cutoff_lower_limit_z)" />
+    <param name="matching_score_cutoff_upper_limit_z" value="$(arg matching_score_cutoff_upper_limit_z)" />
+    <param name="matching_score_cutoff_lower_limit_range" value="$(arg matching_score_cutoff_lower_limit_range)" />
+    <param name="matching_score_cutoff_upper_limit_range" value="$(arg matching_score_cutoff_upper_limit_range)" />
     <param name="matching_score_kT" value="$(arg matching_score_kT)" />
     <param name="matching_score_mu" value="$(arg matching_score_mu)" />
 

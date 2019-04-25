@@ -35,7 +35,10 @@ NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
       method_type_(MethodType::PCL_GENERIC), with_mapping_(false), separate_mapping_(false),
       use_nn_point_z_when_initial_pose_(false), publish_tf_(true), sensor_frame_("velodyne"),
       base_link_frame_("base_link"), map_frame_("map"), target_frame_("world"),
-      min_scan_range_(5.0), max_scan_range_(200.0), min_add_scan_shift_(1.0), matching_score_(0.0)
+      min_scan_range_(5.0), max_scan_range_(200.0), min_add_scan_shift_(1.0),
+      matching_score_use_points_num_(300), matching_score_cutoff_lower_limit_z_(0.2),
+      matching_score_cutoff_upper_limit_z_(2.0), matching_score_cutoff_lower_limit_range_(5.0),
+      matching_score_cutoff_upper_limit_range_(100.0), matching_score_(0.0)
 
 {
   int method_type_tmp = 0;
@@ -130,6 +133,15 @@ NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
   ROS_INFO("with_mapping: %d, save_added_map: %d, save_map_leaf_size: %lf, min_scan_range: %lf, max_scan_range: %lf, min_add_scan_shift: %lf",
             with_mapping_,    save_added_map,     save_map_leaf_size,      min_scan_range_,     max_scan_range_,     min_add_scan_shift_);
   ROS_INFO("separate_mapping: %d, separate_map_size: %lf", separate_mapping_, separate_map_size);
+
+
+  private_nh.getParam("matching_score_use_points_num", matching_score_use_points_num_);
+  private_nh.getParam("matching_score_cutoff_lower_limit_z", matching_score_cutoff_lower_limit_z_);
+  private_nh.getParam("matching_score_cutoff_upper_limit_z", matching_score_cutoff_upper_limit_z_);
+  private_nh.getParam("matching_score_cutoff_lower_limit_range", matching_score_cutoff_lower_limit_range_);
+  private_nh.getParam("matching_score_cutoff_upper_limit_range", matching_score_cutoff_upper_limit_range_);
+  ROS_INFO("matching_score_use_points_num: %d, matching_score_cutoff_lower_limit_z: %lf, matching_score_cutoff_upper_limit_z: %lf, matching_score_cutoff_lower_limit_range: %lf, matching_score_cutoff_upper_limit_range: %lf",
+            matching_score_use_points_num_,    matching_score_cutoff_lower_limit_z_,     matching_score_cutoff_upper_limit_z_,     matching_score_cutoff_lower_limit_range_,     matching_score_cutoff_upper_limit_range_);
 
   double matching_score_kT = matching_score_class_.getFermikT();
   private_nh.getParam("matching_score_kT", matching_score_kT);
@@ -530,19 +542,14 @@ void NdtSlam::updateMatchingScore(const boost::shared_ptr<pcl::PointCloud<PointT
     pcl::transformPointCloud(*points_ptr, *points_baselinkTF_ptr, base_link_to_sensor_matrix_);
     pcl::PointCloud<PointTarget>::Ptr points_baselinkTF_cuttoff_ptr(new pcl::PointCloud<PointTarget>);
 
-    size_t target_points_num = 300;
-    size_t step_size = target_points_num != 0 ? points_ptr->points.size() / target_points_num : 1;
+    size_t step_size = matching_score_use_points_num_ != 0 ? points_ptr->points.size() / matching_score_use_points_num_ : 1;
     step_size = std::max(step_size, static_cast<size_t>(1));
-    double cutoff_lower_limit_z = 0.2;
-    double cutoff_upper_limit_z = 2.0;
-    double cutoff_lower_limit_range = 5.0;
-    double cutoff_upper_limit_range = 100.0;
 
     size_t points_num = 0;
     for(const auto point : points_baselinkTF_ptr->points) {
         const double range = std::sqrt(point.x*point.x + point.y*point.y + point.z*point.z);
-        if ((point.z > cutoff_upper_limit_z || point.z < cutoff_lower_limit_z)
-          &&(range > cutoff_lower_limit_range && range < cutoff_upper_limit_range)) {
+        if ((point.z > matching_score_cutoff_upper_limit_z_ || point.z < matching_score_cutoff_lower_limit_z_)
+          &&(range > matching_score_cutoff_lower_limit_range_ && range < matching_score_cutoff_upper_limit_range_)) {
 
             //random downsample
             if(step_size == 0 || ++points_num % step_size == 0) {

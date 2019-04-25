@@ -172,6 +172,11 @@ private:
   double min_scan_range_;
   double max_scan_range_;
   double min_add_scan_shift_;
+  int matching_score_use_points_num_;
+  double matching_score_cutoff_lower_limit_z_;
+  double matching_score_cutoff_upper_limit_z_;
+  double matching_score_cutoff_lower_limit_range_;
+  double matching_score_cutoff_upper_limit_range_;
 
   PoseStamped init_pose_stamped_;
   ros::Time current_scan_time_;
