@@ -44,36 +44,25 @@ template <class PointSource, class PointTarget> class LidarLocalizer {
 public:
   LidarLocalizer();
   virtual ~LidarLocalizer();
-  void initPointsMap(
-      const boost::shared_ptr<pcl::PointCloud<PointTarget>> &pointcloud_ptr);
-  void updatePointsMap(
-      const boost::shared_ptr<pcl::PointCloud<PointTarget>> &pointcloud_ptr);
+  void initPointsMap(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &pointcloud_ptr);
+  void updatePointsMap(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &pointcloud_ptr);
 
-  bool alignMap(
-      const boost::shared_ptr<pcl::PointCloud<PointSource>> &pointcloud_ptr,
-      const Pose &predict_pose);
-  void writeLogFile(const std::string &log_file_directory_path);
+  bool alignMap(const boost::shared_ptr<pcl::PointCloud<PointSource>> &pointcloud_ptr, const Pose &predict_pose);
 
   Pose getLocalizerPose() const;
   double getAlignTime() const;
 
 protected:
   virtual void align(const Pose &predict_pose) = 0;
-  virtual void setInputTarget(
-      const boost::shared_ptr<pcl::PointCloud<PointTarget>> &map_ptr) = 0;
-  virtual void setInputSource(
-      const boost::shared_ptr<pcl::PointCloud<PointSource>> &scan_ptr) = 0;
+  virtual void setInputTarget(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &map_ptr) = 0;
+  virtual void setInputSource(const boost::shared_ptr<pcl::PointCloud<PointSource>> &scan_ptr) = 0;
   virtual Pose getFinalPose() = 0;
 
-  virtual void
-  buildMap(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &map_ptr) = 0;
+  virtual void buildMap(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &map_ptr) = 0;
   virtual void swapInstance() = 0;
 
-  virtual std::stringstream logFileContent() const;
-
 private:
-  void buildMapThread(
-      const boost::shared_ptr<pcl::PointCloud<PointTarget>> &map_ptr);
+  void buildMapThread(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &map_ptr);
   bool swapMap();
 
   Pose localizer_pose_;

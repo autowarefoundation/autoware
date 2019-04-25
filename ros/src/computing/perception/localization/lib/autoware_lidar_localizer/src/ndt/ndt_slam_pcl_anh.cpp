@@ -131,14 +131,5 @@ void NdtSlamPCLANH<PointSource, PointTarget>::swapInstance() {
   ndt_ptr_ = swap_ndt_ptr_;
 }
 
-template <class PointSource, class PointTarget>
-std::stringstream
-NdtSlamPCLANH<PointSource, PointTarget>::logFileContent() const {
-  std::stringstream content =
-      NdtSlamBase<PointSource, PointTarget>::logFileContent();
-  content << "," << score;
-  return content;
-}
-
 template class NdtSlamPCLANH<pcl::PointXYZ, pcl::PointXYZ>;
 template class NdtSlamPCLANH<pcl::PointXYZI, pcl::PointXYZI>;

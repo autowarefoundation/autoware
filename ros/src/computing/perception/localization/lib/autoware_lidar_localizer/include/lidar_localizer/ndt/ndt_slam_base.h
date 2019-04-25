@@ -42,7 +42,6 @@ public:
       return Eigen::Matrix<double, 6, 6>::Identity();
   };
 
-  virtual std::stringstream logFileContent() const override;
 };
 
 #endif

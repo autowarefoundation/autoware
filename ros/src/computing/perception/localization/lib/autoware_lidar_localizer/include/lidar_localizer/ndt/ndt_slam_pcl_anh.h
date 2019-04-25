@@ -40,7 +40,6 @@ public:
   float getResolution() const override;
   int getMaximumIterations() override;
   double getTransformationProbability() const override;
-  virtual std::stringstream logFileContent() const override;
 
 protected:
   void align(const Pose &predict_pose) override;

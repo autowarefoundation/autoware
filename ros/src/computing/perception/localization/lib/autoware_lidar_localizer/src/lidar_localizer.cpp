@@ -117,36 +117,6 @@ bool LidarLocalizer<PointSource, PointTarget>::alignMap(
 }
 
 template <class PointSource, class PointTarget>
-void LidarLocalizer<PointSource, PointTarget>::writeLogFile(
-    const std::string &log_file_directory_path) {
-  static std::ofstream log_file_stream;
-  static bool is_first_call = true;
-  if (is_first_call) {
-    const std::string filename = log_file_directory_path + "/log.csv";
-    log_file_stream.open(filename.c_str(), std::ios::app);
-    is_first_call = false;
-  }
-  if (!log_file_stream) {
-    std::cerr << "Could not open log file." << std::endl;
-    return;
-    // exit(1);
-  }
-
-  log_file_stream << logFileContent().str() << std::endl;
-}
-
-template <class PointSource, class PointTarget>
-std::stringstream
-LidarLocalizer<PointSource, PointTarget>::logFileContent() const {
-  std::stringstream content;
-  content << localizer_pose_.x << "," << localizer_pose_.y << ","
-          << localizer_pose_.z << "," << localizer_pose_.roll << ","
-          << localizer_pose_.pitch << "," << localizer_pose_.yaw << ","
-          << align_time_;
-  return content;
-}
-
-template <class PointSource, class PointTarget>
 Pose LidarLocalizer<PointSource, PointTarget>::getLocalizerPose() const {
   return localizer_pose_;
 }
