@@ -430,7 +430,7 @@ void NdtSlam::mainLoop(
     std::cout << "align_time: " << localizer_ptr_->getAlignTime() << "ms" << std::endl;
     std::cout << "exe_time: " << exe_time << "ms" << std::endl;
     std::cout << "hessian: " << std::endl << localizer_ptr_->getHessian() << std::endl;
-    std::cout << "hessian inverse: " << std::endl << localizer_ptr_->getHessian().inverse()*2.0*200*-1.0 << std::endl;
+    std::cout << "hessian inverse: " << std::endl << localizer_ptr_->getHessian().inverse()*-1.0 << std::endl;
 }
 
 Pose NdtSlam::getPredictPose() {

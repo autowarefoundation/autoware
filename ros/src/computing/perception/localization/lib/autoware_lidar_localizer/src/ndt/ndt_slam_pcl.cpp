@@ -18,7 +18,7 @@
 
 template <class PointSource, class PointTarget>
 NdtSlamPCL<PointSource, PointTarget>::NdtSlamPCL()
-    : ndt_ptr_(new pcl::NormalDistributionsTransform<PointSource, PointTarget>),
+    : ndt_ptr_(new pcl::NormalDistributionsTransformModified<PointSource, PointTarget>),
       swap_ndt_ptr_(ndt_ptr_) {}
 
 template <class PointSource, class PointTarget>
@@ -98,16 +98,14 @@ Pose NdtSlamPCL<PointSource, PointTarget>::getFinalPose() {
 }
 
 template <class PointSource, class PointTarget>
-void NdtSlamPCL<PointSource, PointTarget>::buildMap(
-    const boost::shared_ptr<pcl::PointCloud<PointTarget>> &map_ptr) {
+void NdtSlamPCL<PointSource, PointTarget>::buildMap(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &map_ptr) {
   const auto trans_estimation = getTransformationEpsilon();
   const auto step_size = getStepSize();
   const auto resolution = getResolution();
   const auto max_iter = getMaximumIterations();
 
-  boost::shared_ptr<pcl::NormalDistributionsTransform<PointSource, PointTarget>>
-      tmp_ndt_ptr(
-          new pcl::NormalDistributionsTransform<PointSource, PointTarget>);
+  boost::shared_ptr<pcl::NormalDistributionsTransformModified<PointSource, PointTarget>>
+      tmp_ndt_ptr(new pcl::NormalDistributionsTransformModified<PointSource, PointTarget>);
   tmp_ndt_ptr->setTransformationEpsilon(trans_estimation);
   tmp_ndt_ptr->setStepSize(step_size);
   tmp_ndt_ptr->setResolution(resolution);
@@ -124,6 +122,11 @@ void NdtSlamPCL<PointSource, PointTarget>::buildMap(
 template <class PointSource, class PointTarget>
 void NdtSlamPCL<PointSource, PointTarget>::swapInstance() {
   ndt_ptr_ = swap_ndt_ptr_; //TODO 2ms~3ms
+}
+
+template <class PointSource, class PointTarget>
+Eigen::Matrix<double, 6, 6> NdtSlamPCL<PointSource, PointTarget>::getHessian() const {
+    return ndt_ptr_->getHessian();
 }
 
 template class NdtSlamPCL<pcl::PointXYZ, pcl::PointXYZ>;

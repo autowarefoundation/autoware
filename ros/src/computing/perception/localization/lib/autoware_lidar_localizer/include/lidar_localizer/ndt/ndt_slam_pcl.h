@@ -22,7 +22,8 @@
 #include <pcl/io/io.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
-#include <pcl/registration/ndt.h>
+//#include <pcl/registration/ndt.h>
+#include <pcl_registration/ndt.h>
 
 template <class PointSource, class PointTarget>
 class NdtSlamPCL : public NdtSlamBase<PointSource, PointTarget> {
@@ -41,24 +42,21 @@ public:
   int getMaximumIterations() override;
   double getTransformationProbability() const override;
 
+  Eigen::Matrix<double, 6, 6> getHessian() const override;
+
 protected:
   void align(const Pose &predict_pose) override;
   double getFitnessScore() override;
-  void setInputTarget(
-      const boost::shared_ptr<pcl::PointCloud<PointTarget>> &map_ptr) override;
-  void setInputSource(
-      const boost::shared_ptr<pcl::PointCloud<PointSource>> &scan_ptr) override;
+  void setInputTarget(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &map_ptr) override;
+  void setInputSource(const boost::shared_ptr<pcl::PointCloud<PointSource>> &scan_ptr) override;
   Pose getFinalPose() override;
 
-  void buildMap(
-      const boost::shared_ptr<pcl::PointCloud<PointTarget>> &map_ptr) override;
+  void buildMap(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &map_ptr) override;
   void swapInstance() override;
 
 private:
-  boost::shared_ptr<pcl::NormalDistributionsTransform<PointSource, PointTarget>>
-      ndt_ptr_;
-  boost::shared_ptr<pcl::NormalDistributionsTransform<PointSource, PointTarget>>
-      swap_ndt_ptr_;
+  boost::shared_ptr<pcl::NormalDistributionsTransformModified<PointSource, PointTarget>> ndt_ptr_;
+  boost::shared_ptr<pcl::NormalDistributionsTransformModified<PointSource, PointTarget>> swap_ndt_ptr_;
 };
 
 #endif
