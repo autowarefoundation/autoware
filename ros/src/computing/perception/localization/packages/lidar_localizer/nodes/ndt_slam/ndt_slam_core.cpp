@@ -429,8 +429,7 @@ void NdtSlam::mainLoop(
     std::cout << "velocity: " << pose_interpolator_.getVelocity() << std::endl;
     std::cout << "align_time: " << localizer_ptr_->getAlignTime() << "ms" << std::endl;
     std::cout << "exe_time: " << exe_time << "ms" << std::endl;
-    std::cout << "hessian: " << std::endl << localizer_ptr_->getHessian() << std::endl;
-    std::cout << "hessian inverse: " << std::endl << localizer_ptr_->getHessian().inverse()*-1.0 << std::endl;
+    std::cout << "covariance: " << std::endl << localizer_ptr_->getHessian().inverse()*-1.0 << std::endl;
 }
 
 Pose NdtSlam::getPredictPose() {
@@ -583,10 +582,10 @@ std::array<double, 36> NdtSlam::createCovariance() {
     std::array<double, 36> cov_array = {};
 
     for(size_t i = 0; i < 6; ++i) {
-        double coffe = i<3 ? 2.0*200*-1.0 : 2.0*200000*-1.0;
+        double coffe = -1.0;
         for(size_t j = 0; j < 6; ++j) {
             double v = localizer_ptr_->getHessian().inverse()(i,j);
-            v = (!std::isnan(v)&&!std::isinf(v)) ? v : 100;
+            v = (!std::isnan(v)&&!std::isinf(v)) ? v : 100; //TODO
             cov_array[6*i + j] = v*coffe;
         }
     }
