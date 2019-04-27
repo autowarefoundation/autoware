@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>trafficlight_recognizer</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>The trafficlight_recognizer package</description>
     <maintainer email="hirabayashi@ertl.jp">Manato HIRABAYASHI</maintainer>
     <license>Apache 2</license>

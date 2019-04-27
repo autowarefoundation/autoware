@@ -1,10 +1,26 @@
 format: Autoware Launcher Plugin Version 0.1
 args:
-- name: calibration_file
-  type: str
+- {name: calibration_file, type: str}
+- {name: register_lidar2camera_tf, type: bool, default: true}
+- {name: publish_extrinsic_mat, type: bool, default: true}
+- {name: publish_camera_info, type: bool, default: true}
+- {name: camera_id, type: str, default: /}
+- {name: target_frame, type: str, default: velodyne}
+- {name: camera_frame, type: str, default: camera}
+- {name: image_topic_src, type: str, default: /image_raw}
+- {name: camera_info_topic, type: str, default: /camera_info}
+- {name: projection_matrix_topic, type: str, default: /projection_matrix}
 
 panel:
   widget: node.panel
   frames:
-  - target: args.calibration_file
-    widget: basic.file
+  - {target: args.calibration_file, widget: basic.text}
+  - {target: args.register_lidar2camera_tf, widget: basic.bool}
+  - {target: args.publish_extrinsic_mat, widget: basic.bool}
+  - {target: args.publish_camera_info, widget: basic.bool}
+  - {target: args.camera_id, widget: basic.text}
+  - {target: args.target_frame, widget: basic.text}
+  - {target: args.camera_frame, widget: basic.text}
+  - {target: args.image_topic_src, widget: basic.text}
+  - {target: args.camera_info_topic, widget: basic.text}
+  - {target: args.projection_matrix_topic, widget: basic.text}

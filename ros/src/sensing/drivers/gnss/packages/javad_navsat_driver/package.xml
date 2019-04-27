@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>javad_navsat_driver</name>
-  <version>1.10.0</version>
+  <version>1.11.0</version>
   <description>
     Package to parse NMEA strings and publish a very simple GPS message. Does not require the GPSD deamon.
   </description>

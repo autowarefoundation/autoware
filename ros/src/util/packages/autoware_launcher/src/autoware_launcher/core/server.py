@@ -25,11 +25,11 @@ class AwLaunchServerIF(object):
     #def runner_stderred
 
 class AwLaunchClientIF(object):
-    def profile_updated(self):               logger.error("Not implemented: profile_updated in " + self.__class__.__name__)
-    def node_updated   (self, lpath):        logger.error("Not implemented: node_updated in " + self.__class__.__name__)
-    def node_created   (self, lpath):        logger.error("Not implemented: node_created in " + self.__class__.__name__) 
-    def node_removed   (self, lpath):        logger.error("Not implemented: node_removed in " + self.__class__.__name__)
-    def status_updated (self, lpath, state): logger.error("Not implemented: status_updated in " + self.__class__.__name__)
+    def profile_updated(self):               logger.debug("Not implemented: profile_updated in " + self.__class__.__name__)
+    def node_updated   (self, lpath):        logger.debug("Not implemented: node_updated in " + self.__class__.__name__)
+    def node_created   (self, lpath):        logger.debug("Not implemented: node_created in " + self.__class__.__name__)
+    def node_removed   (self, lpath):        logger.debug("Not implemented: node_removed in " + self.__class__.__name__)
+    def status_updated (self, lpath, state): logger.debug("Not implemented: status_updated in " + self.__class__.__name__)
 
 
 class AwLaunchServer(AwLaunchServerIF):
@@ -47,31 +47,31 @@ class AwLaunchServer(AwLaunchServerIF):
         self.__clients.append(client)
 
     def make_profile(self, ppath):
-        logger.info("make_profile: " + ppath)
+        logger.debug("make_profile: " + ppath)
         self.__profile = AwLaunchTree(self, self.__plugins)
         self.__profile.make(ppath, self.__plugins)
         for client in self.__clients: client.profile_updated()
 
     def load_profile(self, fpath):
-        logger.info("load_profile: " + fpath)
+        logger.debug("load_profile: " + fpath)
         self.__profile = AwLaunchTree(self, self.__plugins)
         self.__profile.load(myutils.profile(fpath), self.__plugins)
         for client in self.__clients: client.profile_updated()
 
     def save_profile(self, fpath):
-        logger.info("save_profile: " + fpath)
+        logger.debug("save_profile: " + fpath)
         self.__profile.save(myutils.profile(fpath))
 
     def export_profile(self, fpath):
-        logger.info("export_profile: " + fpath)
+        logger.debug("export_profile: " + fpath)
         self.__profile.export(fpath)
 
     def list_node(self):
-        logger.info("list_node: ")
+        logger.debug("list_node: ")
         return map(lambda node: node.nodepath(), self.__profile.listnode(False))
 
     def find_node(self, lpath):
-        logger.info("find_node: " + lpath)
+        logger.debug("find_node: " + lpath)
         return self.__profile.find(lpath)
 
     def update_node(self, lpath, ldata):
@@ -90,7 +90,7 @@ class AwLaunchServer(AwLaunchServerIF):
         pass
 
     def launch_node(self, lpath, xmode): # ToDo: update ancestors status
-        logger.info("launch_node: " + lpath + " " + str(xmode))
+        logger.debug("launch_node: " + lpath + " " + str(xmode))
         difflist = []
         execlist = []
         nodelist = self.__profile.find(lpath).listnode(True)
@@ -99,8 +99,8 @@ class AwLaunchServer(AwLaunchServerIF):
             isdiff, isexec = node.launch(xmode)
             if isdiff: difflist.append(node.nodepath())
             if isexec: execlist.append(node.nodepath())
-        logger.info("Update:" + str(difflist))
-        logger.info("Launch:" + str(execlist))
+        logger.debug("Update:" + str(difflist))
+        logger.debug("Launch:" + str(execlist))
         for lpath in difflist:
             state = self.__profile.find(lpath).status
             for client in self.__clients: client.status_updated(lpath, state)
@@ -121,7 +121,7 @@ class AwLaunchServer(AwLaunchServerIF):
         except:
             return yaml.safe_dump({"error": "failed to load json"})
 
-        logger.info(request)
+        logger.debug(request)
         if request["command"] == "launch":
             self.launch_node(request["path"], True)
             return yaml.safe_dump({"error": None})

@@ -66,6 +66,9 @@ class AwDefaultNodePanel(widgets.AwAbstructPanel):
         elif event.key() == QtCore.Qt.Key_F:
             self.debug2.setVisible(not self.debug2.isVisible())
             event.accept()
+        elif event.key() == QtCore.Qt.Key_I:
+            self.node.update({"config": self.node.plugin().default_config()})
+            event.accept()
         else:
             super(AwDefaultNodePanel, self).keyPressEvent(event)
 

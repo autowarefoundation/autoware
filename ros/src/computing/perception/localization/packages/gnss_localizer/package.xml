@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>gnss_localizer</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>The gnss_localizer package</description>
     <maintainer email="h_ohta@ertl.jp">h_ohta</maintainer>
     <license>Apache 2</license>

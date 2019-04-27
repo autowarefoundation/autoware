@@ -139,8 +139,6 @@ protected:
 
   	std::vector<std::string>    m_LogData;
 
-	bool  enablePlannerDynamicSwitch;
-
 protected:
 	//ROS messages (topics)
 

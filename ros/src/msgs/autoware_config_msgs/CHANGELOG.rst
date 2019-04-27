@@ -2,6 +2,13 @@
 Changelog for package autoware_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.11.0 (2019-03-21)
+-------------------
+* [Feature] Rebuild decision maker (`#1609 <https://github.com/CPFL/Autoware/issues/1609>`_)
+* [Feature] waypoint replanner and extractor (`#1951 <https://github.com/CPFL/Autoware/issues/1951>`_)
+* Fix license notice in corresponding package.xml
+* Contributors: Yuma Nihei, amc-nu, s-azumi
+
 1.10.0 (2019-01-17)
 -------------------
 * Fix Kf/KF naming convention
