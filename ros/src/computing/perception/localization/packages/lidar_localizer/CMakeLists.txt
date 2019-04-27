@@ -14,13 +14,27 @@ if (OPENMP_FOUND)
 endif ()
 
 find_package(CUDA)
+find_package(Eigen3 QUIET)
 
-if (CUDA_FOUND)
+####### Melodic Checks
+SET (CPU_ONLY FALSE)
+if (CUDA_FOUND AND "$ENV{ROS_DISTRO}" STREQUAL "melodic" )
+    if(${CMAKE_VERSION} VERSION_LESS "3.12.3")
+        message("GPU support on Melodic requires CMake version>= 3.12.3")
+        SET (CPU_ONLY TRUE)
+    else()
+        if (${EIGEN3_VERSION_STRING} VERSION_LESS "3.3.5")
+            message("GPU support on Melodic requires Eigen version>= 3.3.5")
+            SET (CPU_ONLY TRUE)
+        endif()
+    endif()
+endif()
+####### End Melodic Checks
+
+if (NOT CPU_ONLY AND CUDA_FOUND)
     add_definitions(-DCUDA_FOUND)
     list(APPEND PCL_OPENMP_PACKAGES ndt_gpu)
 endif ()
-
-find_package(Eigen3 QUIET)
 
 if (NOT EIGEN3_FOUND)
     # Fallback to cmake_modules
@@ -91,7 +105,7 @@ add_executable(ndt_mapping nodes/ndt_mapping/ndt_mapping.cpp)
 target_link_libraries(ndt_mapping ${catkin_LIBRARIES})
 add_dependencies(ndt_mapping ${catkin_EXPORTED_TARGETS})
 
-if (CUDA_FOUND)
+if (NOT CPU_ONLY AND CUDA_FOUND)
     target_include_directories(ndt_matching PRIVATE ${CUDA_INCLUDE_DIRS})
     target_include_directories(ndt_mapping PRIVATE ${CUDA_INCLUDE_DIRS})
 endif ()

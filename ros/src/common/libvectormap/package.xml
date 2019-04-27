@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>libvectormap</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>Common Library to Read Vector Map</description>
     <maintainer email="sujiwo@ertl.jp">sujiwo</maintainer>
     <license>Apache 2</license>

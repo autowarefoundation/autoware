@@ -9,10 +9,23 @@ catkin_package(
   CATKIN_DEPENDS python_qt_binding
 )
 
-catkin_install_python(PROGRAMS scripts/main
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-
 if(CATKIN_ENABLE_TESTING)
   catkin_add_nosetests(tests)
 endif()
+
+catkin_install_python(
+  PROGRAMS scripts/main scripts/tool
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY resources/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/resources
+)
+
+install(DIRECTORY plugins/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/plugins
+)
+
+install(DIRECTORY profiles/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/profiles
+)

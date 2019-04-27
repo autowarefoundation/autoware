@@ -1,0 +1,23 @@
+format: Autoware Launcher Plugin Version 0.1
+rosxml: $(find trafficlight_recognizer)/launch/traffic_light_recognition_mxnet.launch
+args:
+- {name: camera_id, type: str, default: /}
+- {name: image_src, type: str, default: /image_raw}
+- {name: network_definition_file, type: str, default: /tmp/mxnet-network.json}
+- {name: pretrained_model_file, type: str, default: /tmp/mxnet-network.params}
+- {name: use_gpu, type: bool, default: true}
+- {name: gpu_device_id, type: int, default: 0}
+- {name: score_threshold, type: real, default: 0.8}
+- {name: change_state_threshold, type: int, default: 2}
+
+panel:
+  widget: node.panel
+  frames:
+  - {target: args.camera_id, widget: basic.text}
+  - {target: args.image_src, widget: basic.text}
+  - {target: args.network_definition_file, widget: basic.text}
+  - {target: args.pretrained_model_file, widget: basic.text}
+  - {target: args.use_gpu, widget: basic.bool}
+  - {target: args.gpu_device_id, widget: basic.int}
+  - {target: args.score_threshold, widget: basic.real}
+  - {target: args.change_state_threshold, widget: basic.int}

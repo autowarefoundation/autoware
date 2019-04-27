@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>garmin</name>
-  <version>1.10.0</version>
+  <version>1.11.0</version>
   <description>The Garmin GPS driver</description>
   <maintainer email="dillenberger@uni-koblenz.de">Denis Dillenberger</maintainer>
   <maintainer email="yuki@ertl.jp">Yuki Kitsukawa</maintainer>

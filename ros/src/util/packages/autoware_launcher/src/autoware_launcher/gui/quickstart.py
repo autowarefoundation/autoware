@@ -56,7 +56,7 @@ class AwLaunchFrame(QtWidgets.QWidget):
         guimgr.frame_setup(self)
 
         self.title.setText(node.name().capitalize())
-        guimgr.frame_add_text_widget(self, node.get_config("info.title", "No Description"))
+        guimgr.frame_add_text_widget(self, node.get_config("exts.description", "No Description"))
 
         self.button = QtWidgets.QPushButton(self.states[0])
         self.button.clicked.connect(self.onclicked)

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>costmap_generator</name>
-    <version>1.9.1</version>
+    <version>1.11.0</version>
     <description>The costmap_generator package</description>
     <maintainer email="cirpue49@yahoo.co.jp">ando</maintainer>
 

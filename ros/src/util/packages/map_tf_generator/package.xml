@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>map_tf_generator</name>
-  <version>1.10.0</version>
+  <version>1.11.0</version>
   <description>The map_tf_generator package</description>
 
   <maintainer email="azumi.suzuki@tier4.jp">azumi-suzuki</maintainer>

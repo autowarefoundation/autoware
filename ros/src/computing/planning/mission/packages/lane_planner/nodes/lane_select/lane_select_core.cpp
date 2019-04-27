@@ -59,7 +59,6 @@ void LaneSelectNode::initForROS()
 
   pub1_ = nh_.advertise<autoware_msgs::Lane>("base_waypoints", 1);
   pub2_ = nh_.advertise<std_msgs::Int32>("closest_waypoint", 1);
-
   pub3_ = nh_.advertise<std_msgs::Int32>("change_flag", 1);
   pub4_ = nh_.advertise<std_msgs::Int32>("/current_lane_id", 1);
   pub5_ = nh_.advertise<autoware_msgs::VehicleLocation>("vehicle_location", 1);
