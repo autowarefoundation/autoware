@@ -42,21 +42,28 @@ include_directories(
         ${catkin_INCLUDE_DIRS}
 )
 
-IF (CUDA_FOUND)
-    include_directories(${CUDA_INCLUDE_DIRS})
-
-    IF ("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "^arm")
-        link_directories(/usr/lib/arm-linux-gnueabihf/tegra)
-    endif ()
-ENDIF ()
-
 
 #####SSD########
 ##############################SSD'sFORK of CAFFE NEEDS TO BE PREVIOUSLY COMPILED####################
 set(SSD_CAFFE_PATH "$ENV{HOME}/ssdcaffe/distribute")
 ####################################################################################################
-if (EXISTS "${SSD_CAFFE_PATH}")
 
+####### Melodic Checks
+SET (CPU_ONLY FALSE)
+if (CUDA_FOUND AND "$ENV{ROS_DISTRO}" STREQUAL "melodic" )
+    if(${CMAKE_VERSION} VERSION_LESS "3.12.3")
+        message("GPU support on Melodic requires CMake version>= 3.12.3")
+        SET (CPU_ONLY TRUE)
+    endif()
+endif()
+####### End Melodic Checks
+
+if (NOT CPU_ONLY AND ${CUDA_FOUND} AND EXISTS "${SSD_CAFFE_PATH}")
+    include_directories(${CUDA_INCLUDE_DIRS})
+
+    IF ("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "^arm")
+        link_directories(/usr/lib/arm-linux-gnueabihf/tegra)
+    endif ()
     add_executable(vision_ssd_detect
             src/vision_ssd_detect.cpp
             src/vision_ssd_detect_node.cpp

@@ -33,7 +33,16 @@ catkin_package(CATKIN_DEPENDS
 
 set(CMAKE_CXX_FLAGS "-O3 -g -Wall ${CMAKE_CXX_FLAGS}")
 
-IF (CUDA_FOUND)
+####### Melodic Checks
+SET (CPU_ONLY FALSE)
+if (CUDA_FOUND AND "$ENV{ROS_DISTRO}" STREQUAL "melodic" )
+    if(${CMAKE_VERSION} VERSION_LESS "3.12.3")
+        message("GPU support on Melodic requires CMake version>= 3.12.3")
+        SET (CPU_ONLY TRUE)
+    endif()
+endif()
+####### End Melodic Checks
+if (NOT CPU_ONLY AND ${CUDA_FOUND})
     list(APPEND CUDA_NVCC_FLAGS "--std=c++11 -I$${PROJECT_SOURCE_DIR}/darknet/src -I${PROJECT_SOURCE_DIR}/src -DGPU")
     SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
 

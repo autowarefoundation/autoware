@@ -64,7 +64,22 @@ add_executable(lidar_euclidean_cluster_detect
         nodes/lidar_euclidean_cluster_detect/cluster.cpp)
 
 find_package(CUDA)
-if (${CUDA_FOUND})
+find_package(Eigen3 QUIET)
+####### Melodic Checks
+SET (CPU_ONLY FALSE)
+if (CUDA_FOUND AND "$ENV{ROS_DISTRO}" STREQUAL "melodic" )
+    if(${CMAKE_VERSION} VERSION_LESS "3.12.3")
+        message("GPU support on Melodic requires CMake version>= 3.12.3")
+        SET (CPU_ONLY TRUE)
+    else()
+        if (${EIGEN3_VERSION_STRING} VERSION_LESS "3.3.5")
+            message("GPU support on Melodic requires Eigen version>= 3.3.5")
+            SET (CPU_ONLY TRUE)
+        endif()
+    endif()
+endif()
+####### End Melodic Checks
+if (NOT CPU_ONLY AND ${CUDA_FOUND})
     INCLUDE(FindCUDA)
     message("-- USING ACCELERATED CLUSTERING --")
     message("Version: " ${CUDA_VERSION})
