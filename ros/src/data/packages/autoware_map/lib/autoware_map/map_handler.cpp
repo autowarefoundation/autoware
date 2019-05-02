@@ -239,142 +239,223 @@ std::vector<WaypointSignalRelation> AutowareMapHandler::findByFilter(const Filte
 
 void AutowareMapHandler::resolveRelations()
 {
-    for (auto relation : lane_attribute_relations_)
+    for  (auto relation : lane_attribute_relations_)
     {
-        std::shared_ptr<Lane> lane = lanes_.at(relation->lane_id);
-        lane->lane_attribute_relations.push_back(relation);
-        if(relation->area_id != 0) {
-            std::shared_ptr<Area> area = areas_.at(relation->area_id);
-            relation->area = area;
+        try {
+            std::shared_ptr<Lane> lane = lanes_.at(relation->lane_id);
+            lane->lane_attribute_relations.push_back(relation);
+            if(relation->area_id != 0)
+            {
+                std::shared_ptr<Area> area = areas_.at(relation->area_id);
+                relation->area = area;
+            }
+            relation->lane = lane;
+
         }
-        relation->lane = lane;
-    }
-
-    for (auto relation : lane_change_relations_)
-    {
-        std::shared_ptr<Lane> lane = lanes_.at(relation->lane_id);
-        std::shared_ptr<Lane> next_lane = lanes_.at(relation->next_lane_id);
-        lane->lane_change_relations.push_back(relation);
-    }
-
-    for (auto relation : lane_relations_)
-    {
-        std::shared_ptr<Lane> lane = lanes_.at(relation->lane_id);
-        std::shared_ptr<Lane> next_lane = lanes_.at(relation->next_lane_id);
-        relation->next_lane = next_lane;
-        relation->lane = lane;
-        lane->lane_relations.push_back(relation);
-    }
-
-    for (auto relation : lane_signal_light_relations_)
-    {
-        std::shared_ptr<Lane> lane = lanes_.at(relation->lane_id);
-        std::shared_ptr<SignalLight> signal_light = signal_lights_.at(relation->signal_light_id);
-        relation->lane = lane;
-        relation->signal_light = signal_light;
-        lane->signal_light_relations.push_back(relation);
-        signal_light->signal_light_relations.push_back(relation);
-    }
-
-    for (auto relation : opposite_lane_relations_)
-    {
-        std::shared_ptr<Lane> lane = lanes_.at(relation->lane_id);
-        std::shared_ptr<Lane> opposite_lane = lanes_.at(relation->opposite_lane_id);
-        lane->opposite_lane_relations.push_back(relation);
-        opposite_lane->opposite_lane_relations.push_back(relation);
-        relation->lane = lane;
-        relation->opposite_lane = opposite_lane;
-    }
-
-    for (auto relation : waypoint_lane_relations_)
-    {
-        std::shared_ptr<Lane> lane = lanes_.at(relation->lane_id);
-        std::shared_ptr<Waypoint> waypoint = waypoints_.at(relation->waypoint_id);
-        waypoint->waypoint_lane_relations.push_back(relation);
-        lane->waypoint_lane_relations.push_back(relation);
-        relation->lane = lane;
-        relation->waypoint = waypoint;
-    }
-
-    for( auto relation : waypoint_relations_)
-    {
-        std::shared_ptr<Waypoint> waypoint = waypoints_.at(relation->waypoint_id);
-        std::shared_ptr<Waypoint> next_waypoint = waypoints_.at(relation->next_waypoint_id);
-        waypoint->waypoint_relations.push_back(relation);
-        next_waypoint->waypoint_relations.push_back(relation);
-        relation->waypoint = waypoint;
-        relation->next_waypoint = next_waypoint;
-    }
-
-    for(auto relation : waypoint_signal_relations_)
-    {
-        std::shared_ptr<Waypoint> waypoint = waypoints_.at(relation->waypoint_id);
-        std::shared_ptr<Signal> signal = signals_.at(relation->signal_id);
-        waypoint->waypoint_signal_relations.push_back(relation);
-        signal->waypoint_signal_relations.push_back(relation);
-        relation->waypoint = waypoint;
-        relation->signal = signal;
-    }
-
-    for(auto item : areas_)
-    {
-        std::shared_ptr<Area> area = item.second;
-        for(auto id : area->point_ids )
-        {
-            area->points.push_back(points_.at(id));
+        catch (std::out_of_range& ex) {
+            std::cout << "out of range" << ex.what() << std::endl;
         }
     }
 
-    for (auto item : lanes_)
+    for  (auto relation : lane_change_relations_)
     {
-        std::shared_ptr<Lane> lane = item.second;
-        lane->start_waypoint = waypoints_.at(lane->start_waypoint_id);
-        lane->end_waypoint = waypoints_.at(lane->end_waypoint_id);
-        auto waypoint = lane->start_waypoint.lock();
-        while(waypoint->id != lane->end_waypoint_id) {
+        try {
+            std::shared_ptr<Lane> lane = lanes_.at(relation->lane_id);
+            std::shared_ptr<Lane> next_lane = lanes_.at(relation->next_lane_id);
+            lane->lane_change_relations.push_back(relation);
+
+        }
+        catch (std::out_of_range& ex) {
+            std::cout << "out of range" << ex.what() << std::endl;
+        }
+    }
+
+    for  (auto relation : lane_relations_)
+    {
+        try {
+            std::shared_ptr<Lane> lane = lanes_.at(relation->lane_id);
+            std::shared_ptr<Lane> next_lane = lanes_.at(relation->next_lane_id);
+            relation->next_lane = next_lane;
+            relation->lane = lane;
+            lane->lane_relations.push_back(relation);
+
+        }
+        catch (std::out_of_range& ex) {
+            std::cout << "out of range" << ex.what() << std::endl;
+        }
+    }
+
+    for  (auto relation : lane_signal_light_relations_)
+    {
+        try {
+            std::shared_ptr<Lane> lane = lanes_.at(relation->lane_id);
+            std::shared_ptr<SignalLight> signal_light = signal_lights_.at(relation->signal_light_id);
+            relation->lane = lane;
+            relation->signal_light = signal_light;
+            lane->signal_light_relations.push_back(relation);
+            signal_light->signal_light_relations.push_back(relation);
+
+        }
+        catch (std::out_of_range& ex) {
+            std::cout << "out of range" << ex.what() << std::endl;
+        }
+    }
+
+    for  (auto relation : opposite_lane_relations_)
+    {
+        try {
+            std::shared_ptr<Lane> lane = lanes_.at(relation->lane_id);
+            std::shared_ptr<Lane> opposite_lane = lanes_.at(relation->opposite_lane_id);
+            lane->opposite_lane_relations.push_back(relation);
+            opposite_lane->opposite_lane_relations.push_back(relation);
+            relation->lane = lane;
+            relation->opposite_lane = opposite_lane;
+
+        }
+        catch (std::out_of_range& ex) {
+            std::cout << "out of range" << ex.what() << std::endl;
+        }
+    }
+
+    for  (auto relation : waypoint_lane_relations_)
+    {
+        try {
+            std::shared_ptr<Lane> lane = lanes_.at(relation->lane_id);
+            std::shared_ptr<Waypoint> waypoint = waypoints_.at(relation->waypoint_id);
+            waypoint->waypoint_lane_relations.push_back(relation);
+            lane->waypoint_lane_relations.push_back(relation);
+            relation->lane = lane;
+            relation->waypoint = waypoint;
+
+        }
+        catch (std::out_of_range& ex) {
+            std::cout << "out of range" << ex.what() << std::endl;
+        }
+    }
+
+    for ( auto relation : waypoint_relations_)
+    {
+        try {
+            std::shared_ptr<Waypoint> waypoint = waypoints_.at(relation->waypoint_id);
+            std::shared_ptr<Waypoint> next_waypoint = waypoints_.at(relation->next_waypoint_id);
+            waypoint->waypoint_relations.push_back(relation);
+            next_waypoint->waypoint_relations.push_back(relation);
+            relation->waypoint = waypoint;
+            relation->next_waypoint = next_waypoint;
+
+        }
+        catch (std::out_of_range& ex) {
+            std::cout << "out of range" << ex.what() << std::endl;
+        }
+    }
+
+    for (auto relation : waypoint_signal_relations_)
+    {
+        try {
+            std::shared_ptr<Waypoint> waypoint = waypoints_.at(relation->waypoint_id);
+            std::shared_ptr<Signal> signal = signals_.at(relation->signal_id);
+            waypoint->waypoint_signal_relations.push_back(relation);
+            signal->waypoint_signal_relations.push_back(relation);
+            relation->waypoint = waypoint;
+            relation->signal = signal;
+
+        }
+        catch (std::out_of_range& ex) {
+            std::cout << "out of range" << ex.what() << std::endl;
+        }
+    }
+
+    for (auto item : areas_)
+    {
+        try {
+            std::shared_ptr<Area> area = item.second;
+            for(auto id : area->point_ids )
+            {
+                area->points.push_back(points_.at(id));
+            }
+
+        }
+        catch (std::out_of_range& ex) {
+            std::cout << "out of range" << ex.what() << std::endl;
+        }
+    }
+
+    for  (auto item : lanes_)
+    {
+        try {
+            std::shared_ptr<Lane> lane = item.second;
+            lane->start_waypoint = waypoints_.at(lane->start_waypoint_id);
+            lane->end_waypoint = waypoints_.at(lane->end_waypoint_id);
+            auto waypoint = lane->start_waypoint.lock();
+            while(waypoint->id != lane->end_waypoint_id) {
+                lane->waypoints.push_back(waypoint);
+                //break if it fails to find next waypoint
+                if( waypoint->id == waypoint->getNextWaypoint(lane->id)->id) break;
+
+                waypoint = waypoint->getNextWaypoint(lane->id);
+            }
             lane->waypoints.push_back(waypoint);
-            waypoint = waypoint->getNextWaypoint(lane->id);
+
         }
-        lane->waypoints.push_back(waypoint);
+        catch (std::out_of_range& ex) {
+            std::cout << "out of range" << ex.what() << std::endl;
+        }
+    }
+    for  ( auto item : signal_lights_)
+    {
+        try {
+            std::shared_ptr<SignalLight> signal_light = item.second;
+            std::shared_ptr<Signal> signal= signals_.at(signal_light->signal_id);
+            signal->signal_lights.push_back(signal_light);
+            signal_light->signal = signal;
+
+        }
+        catch (std::out_of_range& ex) {
+            std::cout << "out of range" << ex.what() << std::endl;
+        }
     }
 
-    for ( auto item : signal_lights_)
+    for  ( auto item : wayareas_)
     {
-        std::shared_ptr<SignalLight> signal_light = item.second;
-        std::shared_ptr<Signal> signal= signals_.at(signal_light->signal_id);
-        signal->signal_lights.push_back(signal_light);
-        signal_light->signal = signal;
+        try {
+            std::shared_ptr<Wayarea> wayarea = item.second;
+            wayarea->area = areas_.at(wayarea->area_id);
+
+        }
+        catch (std::out_of_range& ex) {
+            std::cout << "out of range" << ex.what() << std::endl;
+        }
     }
 
-    for ( auto item : wayareas_)
+    for  ( auto item : waypoints_)
     {
-        std::shared_ptr<Wayarea> wayarea = item.second;
-        wayarea->area = areas_.at(wayarea->area_id);
-    }
+        try {
+            std::shared_ptr<Waypoint> waypoint = item.second;
+            waypoint->point = points_.at(waypoint->point_id);
 
-    for ( auto item : waypoints_)
-    {
-        std::shared_ptr<Waypoint> waypoint = item.second;
-        waypoint->point = points_.at(waypoint->point_id);
+        }
+        catch (std::out_of_range& ex) {
+            std::cout << "out of range" << ex.what() << std::endl;
+        }
     }
 }
 
 void AutowareMapHandler::setFromAutowareMapMsgs(const std::vector<autoware_map_msgs::Area> areas,
-                                        const std::vector<autoware_map_msgs::Lane> lanes,
-                                        const std::vector<autoware_map_msgs::LaneAttributeRelation> lane_attribute_relations,
-                                        const std::vector<autoware_map_msgs::LaneChangeRelation> lane_change_relations,
-                                        const std::vector<autoware_map_msgs::LaneRelation> lane_relations,
-                                        const std::vector<autoware_map_msgs::LaneSignalLightRelation> lane_signal_light_relations,
-                                        const std::vector<autoware_map_msgs::OppositeLaneRelation> opposite_lane_relations,
-                                        const std::vector<autoware_map_msgs::Point> points,
-                                        const std::vector<autoware_map_msgs::Signal> signals,
-                                        const std::vector<autoware_map_msgs::SignalLight> signal_lights,
-                                        const std::vector<autoware_map_msgs::Wayarea> wayareas,
-                                        const std::vector<autoware_map_msgs::Waypoint> waypoints,
-                                        const std::vector<autoware_map_msgs::WaypointLaneRelation> waypoint_lane_relations,
-                                        const std::vector<autoware_map_msgs::WaypointRelation> waypoint_relations,
-                                        const std::vector<autoware_map_msgs::WaypointSignalRelation> waypoint_signal_relations
-                                        )
+                                                const std::vector<autoware_map_msgs::Lane> lanes,
+                                                const std::vector<autoware_map_msgs::LaneAttributeRelation> lane_attribute_relations,
+                                                const std::vector<autoware_map_msgs::LaneChangeRelation> lane_change_relations,
+                                                const std::vector<autoware_map_msgs::LaneRelation> lane_relations,
+                                                const std::vector<autoware_map_msgs::LaneSignalLightRelation> lane_signal_light_relations,
+                                                const std::vector<autoware_map_msgs::OppositeLaneRelation> opposite_lane_relations,
+                                                const std::vector<autoware_map_msgs::Point> points,
+                                                const std::vector<autoware_map_msgs::Signal> signals,
+                                                const std::vector<autoware_map_msgs::SignalLight> signal_lights,
+                                                const std::vector<autoware_map_msgs::Wayarea> wayareas,
+                                                const std::vector<autoware_map_msgs::Waypoint> waypoints,
+                                                const std::vector<autoware_map_msgs::WaypointLaneRelation> waypoint_lane_relations,
+                                                const std::vector<autoware_map_msgs::WaypointRelation> waypoint_relations,
+                                                const std::vector<autoware_map_msgs::WaypointSignalRelation> waypoint_signal_relations
+                                                )
 {
     //Objects
     for (auto area : areas)

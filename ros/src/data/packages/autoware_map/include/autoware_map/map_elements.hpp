@@ -503,6 +503,7 @@ public:
       }
     }
     //return itself if there is not next waypoint
+    ROS_WARN_STREAM("failed to find next waypoint from waypoint " << id << " in lane " << lane_id);
     return std::make_shared<Waypoint>(*this);
   }
 };
