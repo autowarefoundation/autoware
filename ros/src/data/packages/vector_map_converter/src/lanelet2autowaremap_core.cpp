@@ -948,12 +948,13 @@ void convertLanelet2AutowareMap(LaneletMapPtr map,
 
   //remove overlapping waypoints
   //i.e. end of lane and beginning of following lane
-  std::remove_if(waypoints.begin(), waypoints.end(),
+  auto result = std::remove_if(waypoints.begin(), waypoints.end(),
                  [&](autoware_map_msgs::Waypoint wp){
                    auto iter = waypoint_id_correction.find(wp.waypoint_id);
                    return iter != waypoint_id_correction.end();
                  });
-
+  waypoints.erase(result, waypoints.end());
+  
   for( auto &point : points)
   {
     fixPointCoordinate(point);
