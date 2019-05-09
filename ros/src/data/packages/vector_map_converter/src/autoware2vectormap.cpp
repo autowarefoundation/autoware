@@ -155,6 +155,12 @@ int main(int argc, char **argv)
     std::string save_dir;
     pnh.param<std::string>("save_dir", save_dir, "./");
 
+    bool create_whitelines;
+    bool wayareas_from_lanes;
+    pnh.param<bool>("create_whitelines", create_whitelines, false);
+    pnh.param<bool>("wayareas_from_lanes", wayareas_from_lanes, false);
+
+
     std::vector<autoware_map_msgs::Point> points;
     std::vector<autoware_map_msgs::Lane> lanes;
     std::vector<autoware_map_msgs::LaneAttributeRelation> lane_attribute_relations;
@@ -244,6 +250,16 @@ int main(int argc, char **argv)
                       vmap_way_areas,
                       vmap_white_lines
                       );
+
+   if( create_whitelines )
+   {
+      createWayAreasFromLanes(map_handler, vmap_way_areas, vmap_areas, vmap_lines, vmap_points);
+   }
+
+   if( wayareas_from_lanes )
+   {
+      createWhitelines(map_handler, vmap_points, vmap_lines, vmap_white_lines);
+   }
 
     writeVectorMapMsgs( save_dir,
                         vmap_areas,
