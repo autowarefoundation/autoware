@@ -68,8 +68,17 @@ find_package(catkin REQUIRED COMPONENTS
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-        CATKIN_DEPENDS std_msgs velodyne_pointcloud autoware_msgs autoware_config_msgs ndt_tku ndt_cpu ${PCL_OPENMP_PACKAGES}
-        DEPENDS PCL autoware_lidar_localizer
+        CATKIN_DEPENDS std_msgs
+                       tf2_ros
+                       tf2_sensor_msgs
+                       tf2_geometry_msgs
+                       velodyne_pointcloud
+                       autoware_msgs
+                       autoware_config_msgs
+                       ndt_tku ndt_cpu
+                       autoware_lidar_localizer
+                       ${PCL_OPENMP_PACKAGES}
+        DEPENDS PCL
 )
 
 ###########
@@ -162,6 +171,7 @@ install(TARGETS
             approximate_ndt_mapping
             ndt_mapping_tku
             mapping
+            ndt_slam
             ndt_matching_monitor_lib
             ndt_matching_monitor
             icp_matching

@@ -15,19 +15,19 @@ execute_process(
 
 find_package(PCL REQUIRED)
 
-IF(NOT (PCL_VERSION VERSION_LESS "1.7.2"))
-SET(PCL_LIBRARY_PACKAGES pcl_registration pcl_omp_registration ndt_cpu ndt_gpu ndt_omp)
-ENDIF(NOT (PCL_VERSION VERSION_LESS "1.7.2"))
+set(PCL_LIBRARY_PACKAGES pcl_registration ndt_cpu)
 
 find_package( OpenMP )
 if (OPENMP_FOUND)
     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    list(APPEND PCL_LIBRARY_PACKAGES pcl_omp_registration ndt_omp)
     add_definitions(-DOPENMP_FOUND)
 endif()
 
 find_package(CUDA)
 if(CUDA_FOUND)
+   list(APPEND PCL_LIBRARY_PACKAGES ndt_gpu)
    add_definitions(-DCUDA_FOUND)
 endif()
 
@@ -42,9 +42,8 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
    INCLUDE_DIRS include
    LIBRARIES ${LIB_NAME}
-   CATKIN_DEPENDS ${PCL_LIBRARY_PACKAGES}
-#  DEPENDS ndt_tku
-#  DEPENDS system_lib
+   CATKIN_DEPENDS pcl_ros ${PCL_LIBRARY_PACKAGES}
+#  DEPENDS
 )
 
 ###########
@@ -75,3 +74,14 @@ target_include_directories(${LIB_NAME} PRIVATE ${CUDA_INCLUDE_DIRS})
 endif()
 
 target_link_libraries(${LIB_NAME} ${catkin_LIBRARIES})
+
+install(DIRECTORY include/${PROJECT_NAME}/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        )
+
+
+install(TARGETS ${LIB_NAME}
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
