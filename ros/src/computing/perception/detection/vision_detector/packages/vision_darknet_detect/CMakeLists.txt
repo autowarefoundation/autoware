@@ -36,9 +36,9 @@ set(CMAKE_CXX_FLAGS "-O3 -g -Wall ${CMAKE_CXX_FLAGS}")
 ####### Melodic Checks
 SET (CPU_ONLY FALSE)
 if (CUDA_FOUND AND "$ENV{ROS_DISTRO}" STREQUAL "melodic" )
-    if(${CMAKE_VERSION} VERSION_LESS "3.12.3")
-        message("GPU support on Melodic requires CMake version>= 3.12.3")
-        SET (CPU_ONLY TRUE)
+    if(${CUDA_VERSION} VERSION_GREATER "9.1" AND ${CMAKE_VERSION} VERSION_LESS "3.12.3")
+        unset(CUDA_cublas_device_LIBRARY CACHE)
+        set(CUDA_CUBLAS_LIBRARIES ${CUDA_cublas_LIBRARY})
     endif()
 endif()
 ####### End Melodic Checks
