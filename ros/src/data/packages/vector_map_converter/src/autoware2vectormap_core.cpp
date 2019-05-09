@@ -227,9 +227,9 @@ void getVectorMapMsgs(
   createSignals(map_handler, vmap_signals, vmap_vectors,vmap_dummy_poles);
   createStopLines(map_handler, vmap_lines, vmap_points, vmap_stop_lines, vmap_road_signs, vmap_vectors, vmap_dummy_poles);
   createWayAreas(map_handler, vmap_way_areas);
-  createWayAreasFromLanes(map_handler, vmap_way_areas, vmap_areas, vmap_lines, vmap_points);
+  // createWayAreasFromLanes(map_handler, vmap_way_areas, vmap_areas, vmap_lines, vmap_points);
   createDummyUtilityPoles(vmap_dummy_poles, vmap_dummy_utility_poles);
-  // createWhitelines(map_handler, vmap_points, vmap_lines, vmap_white_lines);
+//  createWhitelines(map_handler, vmap_points, vmap_lines, vmap_white_lines);
 }
 
 void createAreas(const autoware_map::AutowareMapHandler &map_handler, std::vector<vector_map_msgs::Area> &vmap_areas, std::vector<vector_map_msgs::Line> &vmap_lines)
@@ -516,14 +516,24 @@ void createDTLanes(const autoware_map::AutowareMapHandler &awmap,
     vmap_lane.bnid = awmap_waypoint.point_id;
     vmap_lane.fnid = awmap_next_waypoint.point_id;
     vmap_lane.span =  awmap_waypoint_relation.distance;
-
-    auto awmap_lane = *(awmap_waypoint.getBelongingLanes().front());
-    vmap_lane.lcnt = awmap_lane.num_of_lanes;
     vmap_lane.lanetype = awmap_waypoint_relation.blinker;
-    vmap_lane.limitvel = awmap_lane.speed_limit;
     vmap_lane.refvel = awmap_waypoint.velocity;
+
+    //find lane that both current and next waypoint belongs to
+    autoware_map_msgs::Lane awmap_lane;
+    for( auto candidate : awmap_waypoint.getBelongingLanes()){
+      if( awmap_next_waypoint.belongLane(candidate->lane_id))
+      {
+        awmap_lane = *candidate;
+        break;
+      }
+    }
+
+    vmap_lane.lcnt = awmap_lane.num_of_lanes;
+    vmap_lane.limitvel = awmap_lane.speed_limit;
     vmap_lane.lanecfgfg = (vmap_lane.lcnt > 1) ? 1 : 0;
     vmap_lane.lno = awmap_lane.lane_number;
+
     vmap_lane.roadsecid = 0;
     vmap_lane.linkwaid = 0;
     vmap_lanes.push_back(vmap_lane);
@@ -667,6 +677,7 @@ void createCrossWalks(const autoware_map::AutowareMapHandler &awmap, std::vector
     {
       for (double y = min.y - resolution; y < max.y + resolution; y += resolution / 2)
       {
+        if( vertices.empty() ) continue;
         if( isWithinArea(x,y,vertices) )
         {
           int area_id;
@@ -821,13 +832,12 @@ void createStopLines( const autoware_map::AutowareMapHandler &awmap,
   {
 
     autoware_map::Point awmap_pt = *(wp.getPointPtr());
-    if(wp.getNextWaypoints().size() == 0) continue;
+    if(wp.getNextWaypoints().empty()) continue;
     autoware_map::Waypoint next_wp = *(wp.getNextWaypoints().front());
     autoware_map::Point awmap_next_pt = *(next_wp.getPointPtr());
     auto next_waypoint_relation = std::find_if(awmap_waypoint_relations.begin(),
                                                awmap_waypoint_relations.end(),
                                                [&](autoware_map_msgs::WaypointRelation wr){return wr.waypoint_id == wp.waypoint_id; });
-
 
     double yaw = atan2(awmap_next_pt.y - awmap_pt.y, awmap_next_pt.x - awmap_pt.x);
     double angle_left, angle_right;
@@ -1287,6 +1297,9 @@ double convertDecimalToDDMMSS(const double decimal)
 
 void getMinMax(autoware_map_msgs::Point &min, autoware_map_msgs::Point &max, const std::vector<autoware_map_msgs::Point>points)
 {
+  if(points.empty()){
+    ROS_ERROR_STREAM("No points to calculate min/max point!");
+  }
   min = max = points.front();
   for (auto pt : points)
   {
