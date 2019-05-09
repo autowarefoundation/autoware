@@ -46,10 +46,12 @@ int main(int argc, char **argv)
     std::string save_dir;
     double origin_lat;
     double origin_lon;
+    bool wayareas_from_lanes;
     pnh.param<std::string>("map_file", map_file_path, "");
     pnh.param<std::string>("save_dir", save_dir, "./");
     pnh.param<double>("origin_lat", origin_lat, 0.0);
     pnh.param<double>("origin_lon", origin_lon,0.0);
+    pnh.param<bool>("wayareas_from_lanes", wayareas_from_lanes, false);
 
 
     std::vector<autoware_map_msgs::Point> points;
@@ -165,6 +167,11 @@ int main(int argc, char **argv)
                         vmap_vectors,
                         vmap_white_lines
                         );
+
+    if( wayareas_from_lanes )
+    {
+       createWayAreasFromLanes(map_handler, vmap_way_areas, vmap_areas, vmap_lines, vmap_points);
+    }
 
     writeVectorMapMsgs( save_dir,
                         vmap_areas,

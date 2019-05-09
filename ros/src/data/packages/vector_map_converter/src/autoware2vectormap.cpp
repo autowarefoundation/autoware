@@ -253,12 +253,12 @@ int main(int argc, char **argv)
 
    if( create_whitelines )
    {
-      createWayAreasFromLanes(map_handler, vmap_way_areas, vmap_areas, vmap_lines, vmap_points);
+     createWhitelines(map_handler, vmap_points, vmap_lines, vmap_white_lines);
    }
 
    if( wayareas_from_lanes )
    {
-      createWhitelines(map_handler, vmap_points, vmap_lines, vmap_white_lines);
+     createWayAreasFromLanes(map_handler, vmap_way_areas, vmap_areas, vmap_lines, vmap_points);
    }
 
     writeVectorMapMsgs( save_dir,
