@@ -1,7 +1,5 @@
 # Overview
-kalman filter for pose and twist estimation.
-
-Integrate multiple measurement values and calculate self position/speed considering vehicle dynamics.
+This package generates robust self_pose/twist integrating pose and twist messages with vehicle model.
 
 Some other features include
  - time delay compensation : for sensor delay, predict current position from vehicle dynamics. The delay is usually calculated by comparing the header time stamp with the current time, but additional delay time can be set with the parameter.
@@ -77,12 +75,6 @@ they are set in `config/kalman_filter_localizer.config`
 |stddev_proc_wz_c|double|standard deviation of process noise in time differentiation expression of angular velocity z|
 
 note: process noise for position is calculated automatically from above values.
-
-# Add new measurement
-
-1. create subscriber and related callback function to save measured data.
-2. create measurementUpdateXXX() function, which should include *time delay calculate*, *gate*, and *kalman-filter update*.
-3. call measurementUpdateXXX() in timerCallback() function.
 
 # kalman filter model
 
