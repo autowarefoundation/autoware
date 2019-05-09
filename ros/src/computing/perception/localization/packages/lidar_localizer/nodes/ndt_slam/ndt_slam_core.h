@@ -96,8 +96,9 @@ private:
   void mainLoop(
       const boost::shared_ptr<pcl::PointCloud<PointTarget>> &mapping_points_ptr,
       const boost::shared_ptr<pcl::PointCloud<PointSource>> &localizing_points_ptr,
-      const Pose &mapTF_predict_base_link_pose);
+      const Pose &mapTF_predict_target_pose);
 
+  void updateTransforms();
   Pose getPredictPose();
   void mapping(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &mapping_points_ptr, const Pose &sensor_pose);
   void processMatchingScore(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &points_ptr);
@@ -156,18 +157,18 @@ private:
   PoseLinearInterpolator pose_interpolator_;
 
   MethodType method_type_;
-  Eigen::Matrix4f base_link_to_sensor_matrix_;
-  Eigen::Matrix4f target_to_map_matrix_;
-  Pose base_link_to_sensor_pose_;
+  Eigen::Matrix4f target_to_sensor_matrix_;
+  Eigen::Matrix4f world_to_map_matrix_;
+  Pose target_to_sensor_pose_;
   Pose target_to_map_pose_;
   bool with_mapping_;
   bool separate_mapping_;
   bool use_nn_point_z_when_initial_pose_;
   bool publish_tf_;
   std::string sensor_frame_;
-  std::string base_link_frame_;
+  std::string target_frame_;
   std::string map_frame_;
-  std::string target_frame_;  //TODO rename??
+  std::string world_frame_;
   std::string log_file_directory_path_;
   double min_scan_range_;
   double max_scan_range_;
