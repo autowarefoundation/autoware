@@ -568,7 +568,7 @@ int main(int argc, char** argv)
   ros::Publisher obstacle_waypoint_pub = nh.advertise<std_msgs::Int32>("obstacle_waypoint", 1, true);
 
   ros::Publisher final_waypoints_pub;
-  final_waypoints_pub = nh.advertise<autoware_msgs::Lane>("final_waypoints", 1, true);
+	final_waypoints_pub = nh.advertise<autoware_msgs::Lane>("final_waypoints", 1, true);
 
   ros::Rate loop_rate(LOOP_RATE);
   while (ros::ok())

@@ -107,7 +107,7 @@ PlannerX::PlannerX()
 	pub_DetectedPolygonsRviz = nh.advertise<visualization_msgs::MarkerArray>("detected_polygons", 1, true);
 	pub_TrackedObstaclesRviz = nh.advertise<jsk_recognition_msgs::BoundingBoxArray>("dp_planner_tracked_boxes", 1);
 	pub_LocalTrajectoriesRviz = nh.advertise<visualization_msgs::MarkerArray>("local_trajectories", 1);
-
+	
 	pub_TestLineRviz	= nh.advertise<visualization_msgs::MarkerArray>("testing_line", 1);
 	pub_BehaviorStateRviz = nh.advertise<visualization_msgs::Marker>("behavior_state", 1);
 	pub_SafetyBorderRviz  = nh.advertise<visualization_msgs::Marker>("safety_border", 1);
@@ -761,7 +761,7 @@ void PlannerX::PlannerMainLoop()
 		pub_LocalPath.publish(current_trajectory);
 		visualization_msgs::MarkerArray all_rollOuts;
 
-
+	
 		ROSHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(m_LocalPlanner.m_Path, m_LocalPlanner.m_RollOuts, m_LocalPlanner, all_rollOuts);
 		pub_LocalTrajectoriesRviz.publish(all_rollOuts);
 
