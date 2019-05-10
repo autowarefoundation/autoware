@@ -18,7 +18,7 @@
 #ifndef MATCHING_SCORE_H
 #define MATCHING_SCORE_H
 
-#include <pcl/kdtree/kdtree_flann.h>
+#include <pcl/search/kdtree.h>
 
 #include "lidar_localizer/util/data_structs.h"
 
@@ -30,6 +30,7 @@ class MatchingScore
         MatchingScore();
         ~MatchingScore() = default;
         void setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointType> const>& pointcloud_ptr);
+        void setSearchMethodTarget(const boost::shared_ptr<pcl::search::KdTree<PointType> >& tree_ptr);
         double calcMatchingScore(const boost::shared_ptr< pcl::PointCloud<PointType> const>& pointcloud_ptr);
 
         void setFermikT(const double fermi_kT)
@@ -60,7 +61,7 @@ class MatchingScore
     private:
         std::vector< PointWithDistance<PointType> > convertPointWithDistance(const boost::shared_ptr< pcl::PointCloud<PointType> const>& pointcloud_ptr);
         double calcFermiDistributionFunction(const double x, const double kT, const double mu);
-        pcl::KdTreeFLANN<PointType> tree_;
+        boost::shared_ptr<pcl::search::KdTree<PointType>> tree_ptr_;
         std::vector< PointWithDistance<PointType> > point_with_distance_array_;
 
         double fermi_kT_;

@@ -30,9 +30,15 @@ void MatchingScore<PointType>::setInputTarget(const boost::shared_ptr< pcl::Poin
 {
     static size_t points_size = 0;
     if (points_size != pointcloud_ptr->points.size()) {
-        tree_.setInputCloud(pointcloud_ptr);
+        tree_ptr_->setInputCloud(pointcloud_ptr);
         points_size = pointcloud_ptr->points.size();
     }
+}
+
+template<class PointType>
+void MatchingScore<PointType>::setSearchMethodTarget(const boost::shared_ptr<pcl::search::KdTree<PointType> >& tree_ptr)
+{
+    tree_ptr_ = tree_ptr;
 }
 
 template<class PointType>
@@ -66,7 +72,7 @@ std::vector< PointWithDistance<PointType> > MatchingScore<PointType>::convertPoi
     std::vector<float> nn_dists(1);
     for (const auto& point : pointcloud_ptr->points) {
         PointWithDistance<PointType> point_with_distance;
-        tree_.nearestKSearch(point, 1, nn_indices, nn_dists);
+        tree_ptr_->nearestKSearch(point, 1, nn_indices, nn_dists);
         point_with_distance.point = point;
         point_with_distance.distance = std::sqrt(nn_dists[0]);
         point_with_distance_array.push_back(point_with_distance);

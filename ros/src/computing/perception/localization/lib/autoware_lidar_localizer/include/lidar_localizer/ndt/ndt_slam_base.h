@@ -19,6 +19,8 @@
 
 #include "lidar_localizer/lidar_localizer.h"
 
+#include <pcl/search/kdtree.h>
+
 template <class PointSource, class PointTarget>
 class NdtSlamBase : public LidarLocalizer<PointSource, PointTarget> {
 public:
@@ -38,8 +40,15 @@ public:
   virtual double getTransformationProbability() const = 0;
 
   virtual double getFitnessScore() = 0;
+
+  //TODO
   virtual Eigen::Matrix<double, 6, 6> getHessian() const {
       return Eigen::Matrix<double, 6, 6>::Identity();
+  };
+
+  //TODO
+  virtual boost::shared_ptr<pcl::search::KdTree<PointTarget>> getSearchMethodTarget() const {
+      return boost::make_shared<pcl::search::KdTree<PointTarget>>();
   };
 
 };

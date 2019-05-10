@@ -553,8 +553,8 @@ void NdtSlam::updateMatchingScore(const boost::shared_ptr<pcl::PointCloud<PointT
     const auto map_to_target_matrix = convertToEigenMatrix4f(mapTF_target_pose);
     pcl::transformPointCloud(*points_baselinkTF_cuttoff_ptr, *points_mapTF_cuttoff_ptr, map_to_target_matrix);
 
-    matching_score_class_.setInputTarget(map_manager_.getMapPtr()); //TODO
-    //matching_score_class_.setSearchMethodTarget(localizer_ptr_->getSearchMethodTarget()); //TODO
+    //matching_score_class_.setInputTarget(map_manager_.getMapPtr()); //TODO
+    matching_score_class_.setSearchMethodTarget(localizer_ptr_->getSearchMethodTarget()); //TODO
     matching_score_ = matching_score_class_.calcMatchingScore(points_mapTF_cuttoff_ptr);
 }
 

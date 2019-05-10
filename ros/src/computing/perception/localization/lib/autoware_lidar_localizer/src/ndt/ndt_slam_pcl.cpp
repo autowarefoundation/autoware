@@ -129,5 +129,10 @@ Eigen::Matrix<double, 6, 6> NdtSlamPCL<PointSource, PointTarget>::getHessian() c
     return ndt_ptr_->getHessian();
 }
 
+template <class PointSource, class PointTarget>
+boost::shared_ptr<pcl::search::KdTree<PointTarget>> NdtSlamPCL<PointSource, PointTarget>::getSearchMethodTarget() const {
+    return ndt_ptr_->getSearchMethodTarget();
+}
+
 template class NdtSlamPCL<pcl::PointXYZ, pcl::PointXYZ>;
 template class NdtSlamPCL<pcl::PointXYZI, pcl::PointXYZI>;

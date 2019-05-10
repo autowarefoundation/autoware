@@ -43,6 +43,7 @@ public:
   double getTransformationProbability() const override;
 
   Eigen::Matrix<double, 6, 6> getHessian() const override;
+  boost::shared_ptr<pcl::search::KdTree<PointTarget>> getSearchMethodTarget() const override;
 
 protected:
   void align(const Pose &predict_pose) override;
