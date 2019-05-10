@@ -1,6 +1,10 @@
 <!-- -->
 <launch>
 
+  <arg name="use_anonymous_node_name" default="false" />
+  <arg name="node_name" value="ndt_slam" unless="$(arg use_anonymous_node_name)" />
+  <arg name="node_name" value="$(anon ndt_slam)" if="$(arg use_anonymous_node_name)" />
+
   <arg name="method_type" default="0" /> <!-- pcl_generic=0, pcl_anh=1, pcl_anh_gpu=2, pcl_openmp=3 -->
 
   <!-- if method_type is pcl_openmp -->
@@ -50,8 +54,7 @@
   <arg name="use_fusion_localizer_feedback" default="false" />
   <arg name="publish_tf" default="true" />
 
-  <!-- rosrun lidar_localizer ndt_mapping  -->
-  <node pkg="lidar_localizer" type="ndt_slam" name="ndt_slam" output="screen">
+  <node pkg="lidar_localizer" type="ndt_slam" name="$(arg node_name)" output="screen">
     <param name="method_type" value="$(arg method_type)" />
 
     <param name="omp_neighborhood_search_method" value="$(arg omp_neighborhood_search_method)" />
