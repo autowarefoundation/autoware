@@ -74,6 +74,11 @@ void NdtSlamPCLOMP<PointSource, PointTarget>::setNeighborhoodSearchMethod(pclomp
 }
 
 template <class PointSource, class PointTarget>
+void NdtSlamPCLOMP<PointSource, PointTarget>::setNeighborhoodSearchMethod(int method) {
+  ndt_ptr_->setNeighborhoodSearchMethod(static_cast<pclomp::NeighborSearchMethod>(method));
+}
+
+template <class PointSource, class PointTarget>
 double NdtSlamPCLOMP<PointSource, PointTarget>::getTransformationEpsilon() {
   return ndt_ptr_->getTransformationEpsilon();
 }

@@ -49,6 +49,7 @@ public:
   void setMaximumIterations(int max_iter) override;
   void setNumThreads(int n);
   void setNeighborhoodSearchMethod(pclomp::NeighborSearchMethod method);
+  void setNeighborhoodSearchMethod(int method);
 
   double getTransformationEpsilon() override;
   double getStepSize() const override;

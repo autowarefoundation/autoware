@@ -54,9 +54,9 @@ NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
 
     std::unique_ptr<NdtSlamPCLOMP<PointSource, PointTarget>> ndt_omp_ptr(new NdtSlamPCLOMP<PointSource, PointTarget>);
 
-    int search_method = 0; //TODO
+    int search_method = 0;
     private_nh_.getParam("omp_neighborhood_search_method", search_method);
-    ndt_omp_ptr->setNeighborhoodSearchMethod(static_cast<pclomp::NeighborSearchMethod>(search_method)); //TODO
+    ndt_omp_ptr->setNeighborhoodSearchMethod(search_method);
 
     bool use_max_threads = false;
     int num_threads = ndt_omp_ptr->getMaxThreads();
