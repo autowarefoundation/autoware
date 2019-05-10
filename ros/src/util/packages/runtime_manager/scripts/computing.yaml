@@ -82,10 +82,10 @@ subs :
     - name : fusion_localizer
       desc : fusion_localizer desc sample
       subs :
-      - name : kalman_filter
+      - name : ekf_localizer
         desc : pose and twist fusion for robust localization 
-        cmd  : roslaunch kalman_filter_localizer kalman_filter_localizer.launch
-        param : kalman_filter_localizer_param
+        cmd  : roslaunch ekf_localizer ekf_localizer.launch
+        param : ekf_localizer_param
         gui  :
           dialog_height : 200
     - name : autoware_connector
@@ -5663,7 +5663,7 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
-  - name : kalman_filter_localizer_param
+  - name : ekf_localizer_param
     vars : 
     - name      : enable_yaw_bias_estimation
       desc      : enable yaw bias estimation for LiDAR mount error

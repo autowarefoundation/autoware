@@ -36,11 +36,11 @@
 #include "amathutils_lib/kalman_filter.hpp"
 #include "amathutils_lib/kalman_filter_delayed_measurement.hpp"
 
-class KalmanFilterNode
+class EKFNode
 {
 public:
-  KalmanFilterNode();
-  ~KalmanFilterNode();
+  EKFNode();
+  ~EKFNode();
 
 private:
   ros::NodeHandle nh_, pnh_;
@@ -49,19 +49,19 @@ private:
   ros::Timer timer_control_, timer_tf_;
   tf2_ros::TransformBroadcaster tf_br_;
 
-  KalmanFilterDelayedMeasurement kf_;
+  KalmanFilterDelayedMeasurement ekf_;
 
   /* parameters */
   bool show_debug_info_;
-  double kf_rate_;                  // kalman filter predict rate
-  double kf_dt_;                    // = 1 / kf_rate_
+  double ekf_rate_;                  // EKF predict rate
+  double ekf_dt_;                    // = 1 / ekf_rate_
   double tf_rate_;                  // tf publish rate
   bool enable_yaw_bias_estimation_; // for LiDAR mount error. if true, publish /estimate_yaw_bias
   std::string pose_frame_id_;
 
-  int dim_x_;             // dimension of kalman state
+  int dim_x_;             // dimension of EKF state
   int extend_state_step_; // for time delay compensation
-  int dim_x_ex_;          // dimension of extended kalman state (dim_x_ * extended_state_step)
+  int dim_x_ex_;          // dimension of extended EKF state (dim_x_ * extended_state_step)
 
   /* NDT */
   double ndt_additional_delay_;         // compensated ndt delay time = (ndt.header.stamp - now) + additional_delay [s]
@@ -98,8 +98,8 @@ private:
   /* for model prediction */
   std::shared_ptr<geometry_msgs::TwistStamped> current_twist_ptr_;
   std::shared_ptr<geometry_msgs::PoseStamped> current_ndt_pose_ptr_;
-  geometry_msgs::PoseStamped current_kf_pose_;
-  geometry_msgs::TwistStamped current_kf_twist_;
+  geometry_msgs::PoseStamped current_ekf_pose_;
+  geometry_msgs::TwistStamped current_ekf_twist_;
 
   void timerCallback(const ros::TimerEvent &e);
   void timerTFCallback(const ros::TimerEvent &e);
@@ -107,7 +107,7 @@ private:
   void callbackTwist(const geometry_msgs::TwistStamped::ConstPtr &msg);
   void callbackInitialPose(const geometry_msgs::PoseWithCovarianceStamped &msg);
 
-  void initKalmanFilter();
+  void initEKF();
   void predictKinematicsModel();
   void measurementUpdateNDTPose(const geometry_msgs::PoseStamped &ndt_pose);
   void measurementUpdateTwist(const geometry_msgs::TwistStamped &twist);
