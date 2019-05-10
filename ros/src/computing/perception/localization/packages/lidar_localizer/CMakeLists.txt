@@ -75,7 +75,8 @@ catkin_package(
                        velodyne_pointcloud
                        autoware_msgs
                        autoware_config_msgs
-                       ndt_tku ndt_cpu
+                       ndt_tku
+                       ndt_cpu
                        autoware_lidar_localizer
                        ${PCL_OPENMP_PACKAGES}
         DEPENDS PCL
