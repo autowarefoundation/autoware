@@ -36,16 +36,16 @@
 #include "amathutils_lib/kalman_filter.hpp"
 #include "amathutils_lib/kalman_filter_delayed_measurement.hpp"
 
-class EKFNode
+class EKFLocalizer
 {
 public:
-  EKFNode();
-  ~EKFNode();
+  EKFLocalizer();
+  ~EKFLocalizer();
 
 private:
   ros::NodeHandle nh_, pnh_;
   ros::Publisher pub_pose_, pub_pose_cov_, pub_twist_, pub_debug_, pub_ndt_pose_, pub_yaw_bias_;
-  ros::Subscriber sub_initialpose_, sub_ndt_pose_, sub_vehicle_status_, sub_twist_;
+  ros::Subscriber sub_initialpose_, sub_ndt_pose_, sub_vehicle_status_, sub_twist_, sub_ndt_pose_with_cov_;
   ros::Timer timer_control_, timer_tf_;
   tf2_ros::TransformBroadcaster tf_br_;
 
@@ -71,6 +71,7 @@ private:
   double ndt_stddev_x_;
   double ndt_stddev_y_;
   double ndt_stddev_yaw_;
+  bool use_ndt_pose_with_covariance_;
 
   /* twist */
   double twist_additional_delay_; // compensated delay time = (twist.header.stamp - now) + additional_delay [s]
@@ -100,12 +101,15 @@ private:
   std::shared_ptr<geometry_msgs::PoseStamped> current_ndt_pose_ptr_;
   geometry_msgs::PoseStamped current_ekf_pose_;
   geometry_msgs::TwistStamped current_ekf_twist_;
+  boost::array<double, 36ul> current_ndt_pose_covariance_;
 
   void timerCallback(const ros::TimerEvent &e);
   void timerTFCallback(const ros::TimerEvent &e);
   void callbackNDTPose(const geometry_msgs::PoseStamped::ConstPtr &msg);
   void callbackTwist(const geometry_msgs::TwistStamped::ConstPtr &msg);
+  void callbackNDTPoseWithCovariance(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg);
   void callbackInitialPose(const geometry_msgs::PoseWithCovarianceStamped &msg);
+  
 
   void initEKF();
   void predictKinematicsModel();
