@@ -35,6 +35,8 @@
   <arg name="min_add_scan_shift" default="1.0" />
   <arg name="separate_mapping" default="false" />
   <arg name="separate_map_size" default="100.0" />
+  <arg name="mapping_file_directory_path" default="/tmp/Autoware/log/ndt_slam" />
+
 
   <arg name="matching_score_use_points_num" default="300" />
   <arg name="matching_score_cutoff_lower_limit_z" default="0.2" />
@@ -83,6 +85,7 @@
     <param name="min_add_scan_shift" value="$(arg min_add_scan_shift)" />
     <param name="separate_mapping" value="$(arg separate_mapping)" />
     <param name="separate_map_size" value="$(arg separate_map_size)" />
+    <param name="mapping_file_directory_path" value="$(arg mapping_file_directory_path)" />
 
     <param name="matching_score_use_points_num" value="$(arg matching_score_use_points_num)" />
     <param name="matching_score_cutoff_lower_limit_z" value="$(arg matching_score_cutoff_lower_limit_z)" />

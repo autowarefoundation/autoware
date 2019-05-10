@@ -161,16 +161,18 @@ NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
   private_nh_.getParam("publish_tf", publish_tf_);
   ROS_INFO("publish_tf: %d", publish_tf_);
 
+  std::string mapping_file_directory_path = "/tmp/Autoware/log/ndt_slam";
+  private_nh_.getParam("mapping_file_directory_path", mapping_file_directory_path);
+  ROS_INFO("mapping_file_directory_path: %s", mapping_file_directory_path.c_str());
+
   const std::time_t now = std::time(NULL);
   const std::tm *pnow = std::localtime(&now);
   char buffer[80];
   std::strftime(buffer, 80, "%Y%m%d_%H%M%S", pnow);
 
-  log_file_directory_path_ = "/tmp/Autoware/log/ndt_slam/" + std::string(buffer);
-  boost::filesystem::create_directories(boost::filesystem::path(log_file_directory_path_));
-
-  std::string map_file_path = log_file_directory_path_+"/map";
-  map_manager_.setFileDirectoryPath(map_file_path);
+  mapping_file_directory_path += std::string("/") + std::string(buffer);
+  boost::filesystem::create_directories(boost::filesystem::path(mapping_file_directory_path));
+  map_manager_.setFileDirectoryPath(mapping_file_directory_path);
 
   points_map_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("ndt_map", 10);
   ndt_pose_pub_ = nh_.advertise<geometry_msgs::PoseStamped>("ndt_pose", 10);
