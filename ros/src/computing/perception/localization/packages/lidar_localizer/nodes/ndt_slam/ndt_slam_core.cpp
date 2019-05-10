@@ -19,6 +19,7 @@
 #include <cmath>
 #include <iomanip>
 #include <algorithm>
+#include <thread>
 
 #include <pcl_conversions/pcl_conversions.h>
 
@@ -483,8 +484,10 @@ void NdtSlam::mapping(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &map
       static int loop_count = 0;
       if (++loop_count > loop_count_max) {
           loop_count = 0;
-          std::cout << "Publish Map" << std::endl;
-          publish(points_map_pub_, map_frame_, map_manager_.getMapPtr());
+          std::thread map_publish_thread([this]() {
+              publish(points_map_pub_, map_frame_, map_manager_.getMapPtr());
+          });
+          map_publish_thread.detach();
       }
   }
 
