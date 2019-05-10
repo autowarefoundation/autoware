@@ -88,6 +88,15 @@ subs :
         param : ekf_localizer_param
         gui  :
           dialog_height : 200
+    - name : twist_generator
+      desc : twist_generator desc sample
+      subs :
+      - name : twist_generator
+        desc : twist generator from vehicle_status 
+        cmd  : roslaunch twist_generator twist_generator.launch
+        param : twist_generator_param
+        gui  :
+          dialog_height : 200
     - name : autoware_connector
       desc : autoware_connector desc sample
       subs :
@@ -5688,6 +5697,25 @@ params :
       min   : 0.0
       max   : 0.5
       v     : 0.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+  - name : twist_generator_param
+    vars : 
+    - name      : enable_adaptive_estimate
+      desc      : enable adaptive coefficient estimation with ndt's /estimate_twist by recursive least square method
+      label     : enable_adaptive_estimate
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : wheelbase
+      desc  : wheelbase of vehicle
+      label : wheelbase
+      min   : 0.1
+      max   : 10.0
+      v     : 2.9
       cmd_param :
         dash      : ''
         delim     : ':='
