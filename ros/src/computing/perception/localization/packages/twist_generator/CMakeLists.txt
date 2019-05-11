@@ -10,6 +10,7 @@ project(twist_generator)
 find_package(catkin REQUIRED
         autoware_build_flags
         roscpp
+        std_msgs
         geometry_msgs    
         autoware_msgs
 )
@@ -29,6 +30,7 @@ catkin_package(
  CATKIN_DEPENDS 
         autoware_build_flags
         roscpp
+        std_msgs
         geometry_msgs    
         autoware_msgs
 #  DEPENDS system_lib
@@ -46,16 +48,16 @@ ${catkin_INCLUDE_DIRS}
 )
 # 
 
-add_executable(twist_generator src/twist_generator.cpp)
-add_dependencies(twist_generator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(twist_generator ${catkin_LIBRARIES})
+add_executable(vehicle_status_converter src/vehicle_status_converter.cpp)
+add_dependencies(vehicle_status_converter ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(vehicle_status_converter ${catkin_LIBRARIES})
 
 #############
 ## Install ##
 #############
 
 ## Install executables and/or libraries
-install(TARGETS twist_generator
+install(TARGETS vehicle_status_converter
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
