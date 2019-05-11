@@ -87,14 +87,14 @@ subs :
         cmd  : roslaunch ekf_localizer ekf_localizer.launch
         param : ekf_localizer_param
         gui  :
-          dialog_height : 200
+          dialog_height : 600
     - name : twist_generator
-      desc : twist_generator desc sample
+      desc : twist_generator
       subs :
-      - name : twist_generator
+      - name : vehicle_status_converter
         desc : twist generator from vehicle_status 
-        cmd  : roslaunch twist_generator twist_generator.launch
-        param : twist_generator_param
+        cmd  : roslaunch twist_generator vehicle_status_converter.launch
+        param : vehicle_status_converter_param
         gui  :
           dialog_height : 200
     - name : autoware_connector
@@ -5674,6 +5674,14 @@ params :
         delim    : ':='
   - name : ekf_localizer_param
     vars : 
+    - name      : show_debug_info
+      desc      : show_debug_info
+      label     : show_debug_info
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
     - name      : enable_yaw_bias_estimation
       desc      : enable yaw bias estimation for LiDAR mount error
       label     : Yaw bias estimation
@@ -5682,12 +5690,86 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
+
+    - name  : predict_frequency
+      desc  : predict_frequency
+      label : predict_frequency
+      min   : 0
+      max   : 100
+      v     : 50
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : extend_state_step
+      desc  : extend_state_step
+      label : extend_state_step
+      min   : 1
+      max   : 100
+      v     : 50
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+
     - name  : ndt_additional_delay
       desc  : delay time added as NDT delay
       label : NDT additional delay [s]
       min   : 0.0
       max   : 0.5
       v     : 0.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : ndt_measure_uncertainty_time
+      desc  : ndt_measure_uncertainty_time
+      label : ndt_measure_uncertainty_time
+      min   : 0.0
+      max   : 0.5
+      v     : 0.01
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : ndt_rate
+      desc  : ndt_rate
+      label : ndt_rate
+      min   : 0.1
+      max   : 20.0
+      v     : 10.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : ndt_gate_dist
+      desc  : ndt_gate_dist
+      label : ndt_gate_dist
+      min   : 0.1
+      max   : 100000.0
+      v     : 10000.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : ndt_stddev_x
+      desc  : ndt_stddev_x
+      label : ndt_stddev_x
+      min   : 0.001
+      max   : 0.5
+      v     : 0.05
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : ndt_stddev_y
+      desc  : ndt_stddev_y
+      label : ndt_stddev_y
+      min   : 0.001
+      max   : 0.5
+      v     : 0.05
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : ndt_stddev_yaw
+      desc  : ndt_stddev_yaw
+      label : ndt_stddev_yaw
+      min   : 0.001
+      max   : 0.5
+      v     : 0.025
       cmd_param :
         dash      : ''
         delim     : ':='
@@ -5700,7 +5782,79 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
-  - name : twist_generator_param
+    - name  : twist_rate
+      desc  : twist_rate
+      label : twist_rate
+      min   : 0.1
+      max   : 100.0
+      v     : 10.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : twist_gate_dist
+      desc  : twist_gate_dist
+      label : twist_gate_dist
+      min   : 0.1
+      max   : 100000.0
+      v     : 10000.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : twist_stddev_vx
+      desc  : twist_stddev_vx
+      label : twist_stddev_vx
+      min   : 0.1
+      max   : 100.0
+      v     : 10.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : twist_stddev_wz
+      desc  : twist_stddev_wz
+      label : twist_stddev_wz
+      min   : 0.1
+      max   : 10.0
+      v     : 1.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : stddev_proc_yaw_c
+      desc  : stddev_proc_yaw_c
+      label : stddev_proc_yaw_c
+      min   : 0.001
+      max   : 0.1
+      v     : 0.005
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : stddev_proc_yaw_bias_c
+      desc  : stddev_proc_yaw_bias_c
+      label : stddev_proc_yaw_bias_c
+      min   : 0.0
+      max   : 0.1
+      v     : 0.001
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : stddev_proc_vx_c
+      desc  : stddev_proc_vx_c
+      label : stddev_proc_vx_c
+      min   : 0.1
+      max   : 100.0
+      v     : 1.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : stddev_proc_wz_c
+      desc  : stddev_proc_wz_c
+      label : stddev_proc_wz_c
+      min   : 0.1
+      max   : 100.0
+      v     : 1.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+  - name : vehicle_status_converter_param
     vars : 
     - name      : enable_adaptive_estimate
       desc      : enable adaptive coefficient estimation with ndt's /estimate_twist by recursive least square method
@@ -5716,6 +5870,15 @@ params :
       min   : 0.1
       max   : 10.0
       v     : 2.9
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : steering_gear_ratio
+      desc  : tire to handle angle gear ratio
+      label : steering_gear_ratio
+      min   : 0.1
+      max   : 50.0
+      v     : 13.5
       cmd_param :
         dash      : ''
         delim     : ':='

@@ -117,7 +117,11 @@ private:
   void measurementUpdateTwist(const geometry_msgs::TwistStamped &twist);
   bool mahalanobisGate(const double &dist_max, const Eigen::MatrixXd &x, const Eigen::MatrixXd &obj_x, const Eigen::MatrixXd &cov);
   bool getTransformFromTF(std::string parent_frame, std::string child_frame, geometry_msgs::TransformStamped& transform);
+  double normalizeYaw(const double &yaw);
 
   void setCurrentResult();
   void publishEstimatedPose();
+
+  // debug
+  void showCurrentX();
 };
