@@ -21,8 +21,8 @@ Some other features include
 # Functions
 
 
-## timer callback
-Calculate *predict* and *update* at constant intervals in timer callback. The purpose of perform *update* at timer callback is to avoid large position (or velocity) changes due to low period measurement, such as NDT matching. If the callback period is faster than the sensor period, the same value is used for update, but because the algorithm can deal with sensor time, so there is no lack of consistency. 
+## in timer callback with *predict_frequency*
+Calculate *predict* and *update* at constant intervals in timer callback. The purpose of perform *update* at timer callback is to avoid large position (or velocity) changes due to low period measurement, such as NDT matching. If the callback period is faster than the sensor period, the same sensor value is used for update. Note that since the algorithm can deal with sensor time delay, there is no lack of consistency in using the same sensor data. 
 
 
 ## measurement data callback
@@ -32,7 +32,7 @@ The subscribed data is saved and used for *update* of kalman filter in timer cal
 
 # Parameter description
 
-they are set in `config/kalman_filter_localizer.config` 
+they are set in `launch/ekf_localizer.launch` 
 
 
 ## for Node
@@ -74,7 +74,7 @@ they are set in `config/kalman_filter_localizer.config`
 |stddev_proc_vx_c|double|standard deviation of process noise in time differentiation expression of linear velocity x|
 |stddev_proc_wz_c|double|standard deviation of process noise in time differentiation expression of angular velocity z|
 
-note: process noise for position is calculated automatically from above values.
+note: process noise for position x & y are calculated automatically dealing with nonlinear equation.
 
 # kalman filter model
 
