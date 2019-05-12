@@ -59,10 +59,10 @@ EKFLocalizer::EKFLocalizer() : nh_(""), pnh_("~"), dim_x_(6 /* x, y, yaw, yaw_bi
   }
 
   /* convert to continuous to discrete */
-  cov_proc_vx_d_ = std::pow(stddev_proc_vx_c * ekf_dt_, 2.0);
-  cov_proc_wz_d_ = std::pow(stddev_proc_wz_c * ekf_dt_, 2.0);
-  cov_proc_yaw_d_ = std::pow(stddev_proc_yaw_c * ekf_dt_, 2.0);
-  cov_proc_yaw_bias_d_ = std::pow(stddev_proc_yaw_bias_c * ekf_dt_, 2.0);
+  cov_proc_vx_d_ = std::pow(stddev_proc_vx_c, 2.0) * ekf_dt_;
+  cov_proc_wz_d_ = std::pow(stddev_proc_wz_c, 2.0) * ekf_dt_;
+  cov_proc_yaw_d_ = std::pow(stddev_proc_yaw_c, 2.0) * ekf_dt_;
+  cov_proc_yaw_bias_d_ = std::pow(stddev_proc_yaw_bias_c, 2.0) * ekf_dt_;
 
   /* initialize ros system */
   std::string in_ndt_pose, in_ndt_pose_with_cov, in_twist, out_pose, out_twist, out_pose_with_covariance;
@@ -373,15 +373,18 @@ void EKFLocalizer::predictKinematicsModel()
   A(IDX::YAW, IDX::WZ) = dt;
 
   /* Set covariance matrix Q for process noise. Calc Q by velocity and yaw angle covariance :
-     dx = Ax + J*w -> Q = J*w_cov*J'          */
-  Eigen::MatrixXd J(2, 2); // coeff of deviation of vx & yaw
-  J << cos(yaw), -vx * sin(yaw),
-      sin(yaw), vx * cos(yaw);
+     dx = Ax + Jp*w -> Q = Jp*w_cov*Jp'          */
+  Eigen::MatrixXd Jp = Eigen::MatrixXd::Zero(2, 2); // coeff of deviation of vx & yaw
+  Jp << cos(yaw), -vx * sin(yaw),
+        sin(yaw), vx * cos(yaw);
   Eigen::MatrixXd Q_vx_yaw = Eigen::MatrixXd::Zero(2, 2); // cov of vx and yaw
-  Q_vx_yaw(0, 0) = P_curr(IDX::VX, IDX::VX) * dt * dt;    // covariance of vx
-  Q_vx_yaw(1, 1) = P_curr(IDX::YAW, IDX::YAW) * dt * dt;  // covariance of yaw
+  Q_vx_yaw(0, 0) = P_curr(IDX::VX, IDX::VX) * dt;         // covariance of vx - vx
+  Q_vx_yaw(1, 1) = P_curr(IDX::YAW, IDX::YAW) * dt;       // covariance of yaw - yaw
+  Q_vx_yaw(0, 1) = P_curr(IDX::VX, IDX::YAW) * dt;        // covariance of vx - yaw
+  Q_vx_yaw(1, 0) = P_curr(IDX::YAW, IDX::VX) * dt;        // covariance of yaw - vx
+
   Eigen::MatrixXd Q = Eigen::MatrixXd::Zero(dim_x_, dim_x_);
-  Q.block(0, 0, 2, 2) = J * Q_vx_yaw * J.transpose(); // for pos_x & pos_y
+  Q.block(0, 0, 2, 2) = Jp * Q_vx_yaw * Jp.transpose(); // for pos_x & pos_y
   Q(IDX::YAW, IDX::YAW) = cov_proc_yaw_d_;            // for yaw
   Q(IDX::YAWB, IDX::YAWB) = cov_proc_yaw_bias_d_;     // for yaw bias
   Q(IDX::VX, IDX::VX) = cov_proc_vx_d_;               // for vx
@@ -557,8 +560,8 @@ void EKFLocalizer::measurementUpdateTwist(const geometry_msgs::TwistStamped &twi
 
   /* Set measurement noise covariancs */
   Eigen::MatrixXd R = Eigen::MatrixXd::Zero(dim_y, dim_y);
-  R(0, 0) = twist_stddev_vx_ * twist_stddev_vx_ * ekf_dt_ * ekf_dt_; // for vx
-  R(1, 1) = twist_stddev_wz_ * twist_stddev_wz_ * ekf_dt_ * ekf_dt_; // for wz
+  R(0, 0) = twist_stddev_vx_ * twist_stddev_vx_ * ekf_dt_; // for vx
+  R(1, 1) = twist_stddev_wz_ * twist_stddev_wz_ * ekf_dt_; // for wz
 
   /* In order to avoid a large change by update, measurement update is performed by dividing at every step. */
   R *= (ekf_rate_ / twist_rate_);
