@@ -30,7 +30,6 @@
 
 
   <node pkg="ekf_localizer" type="ekf_localizer" name="ekf_localizer" output="screen">
-    <!-- <rosparam command="load" file="$(find ekf_localizer)/config/ekf_localizer.yaml" /> -->
 
     <param name="pose_frame_id" value="/map"/>
     <param name="input_ndt_pose_name" value="/ndt_pose"/>
