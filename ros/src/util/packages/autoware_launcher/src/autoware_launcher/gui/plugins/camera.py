@@ -79,7 +79,7 @@ class AwCameraCalibFrame(AwFileSelect):
         filename, filetype = QtWidgets.QFileDialog.getOpenFileName(self, "Select File", os.path.expanduser("~"))
         if filename:
             self.intrinsic_file.setText(filename)
-      
+
     def calibrate_intrinsic(self, checked):
         if checked:
             command = "rosrun autoware_camera_lidar_calibrator cameracalibrator.py --square {} --size {}x{} image:={}"

@@ -101,7 +101,7 @@ class AwRosbagSimulatorWidget(QtWidgets.QWidget):
         self.rosbag_play_proc.write(" ")
 
     def rosbag_output(self):
-        #print self.rosbag_play_proc.readAllStandardOutput().data().decode('utf-8')
+        #print(self.rosbag_play_proc.readAllStandardOutput().data().decode("utf-8"))
         stdout = str(self.rosbag_play_proc.readAllStandardOutput()).split("\r")
         if 2 <= len(stdout):
             self.rosbag_state.setText(stdout[-2])

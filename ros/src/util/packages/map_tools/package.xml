@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>map_tools</name>
-  <version>1.10.0</version>
+  <version>1.11.0</version>
   <description>The map_tools package</description>
   <maintainer email="yuki@ertl.jp">kitsukawa</maintainer>
   <license>Apache 2</license>

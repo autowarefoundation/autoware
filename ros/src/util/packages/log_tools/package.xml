@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>log_tools</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>The log_tools package</description>
     <maintainer email="akihito.ohsato@tier4.jp">Akihito Ohsato</maintainer>
     <license>Apache 2</license>

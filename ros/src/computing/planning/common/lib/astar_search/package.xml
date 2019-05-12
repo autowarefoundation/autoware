@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>astar_search</name>
-  <version>0.0.0</version>
+  <version>1.11.0</version>
   <description>The astar_search package</description>
 
   <maintainer email="aohsato@gmail.com">Akihito Ohsato</maintainer>

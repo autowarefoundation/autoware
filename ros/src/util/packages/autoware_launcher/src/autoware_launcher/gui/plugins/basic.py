@@ -153,7 +153,7 @@ class AwTransformFrame(widgets.AwAbstructFrame):
         widget = QtWidgets.QWidget()
         widget.setLayout(QtWidgets.QHBoxLayout())
         for idx, txt in enumerate(["Tx", "Ty", "Tz", "Rx", "Ry", "Rz"]):
-            field = AwTextField(self.node.get_config(self.view.target[idx]))
+            field = AwRealField(self.node.get_config(self.view.target[idx]))
             field.target = self.view.target[idx]
             field.value_updated.connect(self.apply)
             widget.layout().addWidget(QtWidgets.QLabel(txt + ":"))
