@@ -5693,7 +5693,7 @@ params :
 
     - name  : predict_frequency
       desc  : predict_frequency
-      label : predict_frequency
+      label : EKF predict frequency [Hz]
       min   : 0
       max   : 100
       v     : 50
@@ -5701,7 +5701,7 @@ params :
         dash      : ''
         delim     : ':='
     - name  : extend_state_step
-      desc  : extend_state_step
+      desc  : EKF state extend dimension for time delay compensation
       label : extend_state_step
       min   : 1
       max   : 100
@@ -5711,8 +5711,8 @@ params :
         delim     : ':='
 
     - name  : ndt_additional_delay
-      desc  : delay time added as NDT delay
-      label : NDT additional delay [s]
+      desc  : delay time added to NDT delay
+      label : ndt additional delay [s]
       min   : 0.0
       max   : 0.5
       v     : 0.0
@@ -5720,8 +5720,8 @@ params :
         dash      : ''
         delim     : ':='
     - name  : ndt_measure_uncertainty_time
-      desc  : ndt_measure_uncertainty_time
-      label : ndt_measure_uncertainty_time
+      desc  : ndt measurement time uncertainty used for covariance calculation
+      label : ndt measurement time uncertainty [s]
       min   : 0.0
       max   : 0.5
       v     : 0.01
@@ -5729,8 +5729,8 @@ params :
         dash      : ''
         delim     : ':='
     - name  : ndt_rate
-      desc  : ndt_rate
-      label : ndt_rate
+      desc  : ndt_rate used for covariance calculation
+      label : ndt_rate [Hz]
       min   : 0.1
       max   : 20.0
       v     : 10.0
@@ -5738,8 +5738,8 @@ params :
         dash      : ''
         delim     : ':='
     - name  : ndt_gate_dist
-      desc  : ndt_gate_dist
-      label : ndt_gate_dist
+      desc  : ndt mahalanobis distance threshold
+      label : ndt mahalanobis distance threshold
       min   : 0.1
       max   : 100000.0
       v     : 10000.0
@@ -5747,8 +5747,8 @@ params :
         dash      : ''
         delim     : ':='
     - name  : ndt_stddev_x
-      desc  : ndt_stddev_x
-      label : ndt_stddev_x
+      desc  : standard deviation of measurement noise for ndt x
+      label : ndt_stddev_x [m]
       min   : 0.00
       max   : 0.5
       v     : 0.05
@@ -5756,8 +5756,8 @@ params :
         dash      : ''
         delim     : ':='
     - name  : ndt_stddev_y
-      desc  : ndt_stddev_y
-      label : ndt_stddev_y
+      desc  : standard deviation of measurement noise for ndt y
+      label : ndt_stddev_y [m]
       min   : 0.00
       max   : 0.5
       v     : 0.05
@@ -5765,8 +5765,8 @@ params :
         dash      : ''
         delim     : ':='
     - name  : ndt_stddev_yaw
-      desc  : ndt_stddev_yaw
-      label : ndt_stddev_yaw
+      desc  : standard deviation of measurement noise for ndt yaw
+      label : ndt_stddev_yaw [rad]
       min   : 0.00
       max   : 0.5
       v     : 0.025
@@ -5774,7 +5774,7 @@ params :
         dash      : ''
         delim     : ':='
     - name  : twist_additional_delay
-      desc  : delay time added as twist delay
+      desc  : delay time added to twist
       label : twist additional delay [s]
       min   : 0.0
       max   : 0.5
@@ -5783,8 +5783,8 @@ params :
         dash      : ''
         delim     : ':='
     - name  : twist_rate
-      desc  : twist_rate
-      label : twist_rate
+      desc  : twist_rate used for covariance calculation
+      label : twist_rate [Hz]
       min   : 0.1
       max   : 100.0
       v     : 10.0
@@ -5792,8 +5792,8 @@ params :
         dash      : ''
         delim     : ':='
     - name  : twist_gate_dist
-      desc  : twist_gate_dist
-      label : twist_gate_dist
+      desc  : twist mahalanobis distance threshold
+      label : twist mahalanobis distance threshold
       min   : 0.1
       max   : 100000.0
       v     : 10000.0
@@ -5801,8 +5801,8 @@ params :
         dash      : ''
         delim     : ':='
     - name  : twist_stddev_vx
-      desc  : twist_stddev_vx
-      label : twist_stddev_vx
+      desc  : standard deviation of measurement noise for vx
+      label : twist_stddev_vx [m/s]
       min   : 0.0
       max   : 10.0
       v     : 0.2
@@ -5810,8 +5810,8 @@ params :
         dash      : ''
         delim     : ':='
     - name  : twist_stddev_wz
-      desc  : twist_stddev_wz
-      label : twist_stddev_wz
+      desc  : standard deviation of measurement noise for wz
+      label : twist_stddev_wz [rad/s]
       min   : 0.0
       max   : 1.0
       v     : 0.03
@@ -5819,8 +5819,8 @@ params :
         dash      : ''
         delim     : ':='
     - name  : stddev_proc_yaw_c
-      desc  : stddev_proc_yaw_c
-      label : stddev_proc_yaw_c
+      desc  : standard deviation of process noise for d(yaw)/dt = wz
+      label : stddev_proc_yaw
       min   : 0.000
       max   : 1.0
       v     : 0.005
@@ -5828,8 +5828,8 @@ params :
         dash      : ''
         delim     : ':='
     - name  : stddev_proc_yaw_bias_c
-      desc  : stddev_proc_yaw_bias_c
-      label : stddev_proc_yaw_bias_c
+      desc  : standard deviation of process noise for d(yaw_bias)/dt = 0
+      label : stddev_proc_yaw_bias
       min   : 0.0
       max   : 0.1
       v     : 0.001
@@ -5837,8 +5837,8 @@ params :
         dash      : ''
         delim     : ':='
     - name  : stddev_proc_vx_c
-      desc  : stddev_proc_vx_c
-      label : stddev_proc_vx_c
+      desc  : standard deviation of process noise for d(vx)/dt = 0
+      label : stddev_proc_vx 
       min   : 0.0
       max   : 10.0
       v     : 0.1
@@ -5846,8 +5846,8 @@ params :
         dash      : ''
         delim     : ':='
     - name  : stddev_proc_wz_c
-      desc  : stddev_proc_wz_c
-      label : stddev_proc_wz_c
+      desc  : standard deviation of process noise for d(wz)/dt = 0
+      label : stddev_proc_wz
       min   : 0.0
       max   : 10.0
       v     : 0.05
@@ -5860,7 +5860,7 @@ params :
       desc      : enable adaptive coefficient estimation with ndt's /estimate_twist by recursive least square method
       label     : enable_adaptive_estimate
       kind      : checkbox
-      v         : False
+      v         : true
       cmd_param :
         dash      : ''
         delim     : ':='
