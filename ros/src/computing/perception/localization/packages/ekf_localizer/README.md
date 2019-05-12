@@ -69,10 +69,10 @@ they are set in `launch/ekf_localizer.launch`
 ## for process noise
 |Name|Type|Description|
 |:---|:---|:---|
-|stddev_proc_yaw_c|double|standard deviation of process noise in time differentiation expression of yaw |
-|stddev_proc_yaw_bias_c|double|standard deviation of process noise in time differentiation expression of yaw_bias|
-|stddev_proc_vx_c|double|standard deviation of process noise in time differentiation expression of linear velocity x|
-|stddev_proc_wz_c|double|standard deviation of process noise in time differentiation expression of angular velocity z|
+|stddev_proc_yaw_c|double|standard deviation of process noise in time differentiation expression of yaw, noise for d_yaw = omege |
+|stddev_proc_yaw_bias_c|double|standard deviation of process noise in time differentiation expression of yaw_bias, noise for d_yaw_bias = 0|
+|stddev_proc_vx_c|double|standard deviation of process noise in time differentiation expression of linear velocity x, noise for d_vx = 0|
+|stddev_proc_wz_c|double|standard deviation of process noise in time differentiation expression of angular velocity z, noise for d_wz = 0|
 
 note: process noise for position x & y are calculated automatically dealing with nonlinear equation.
 

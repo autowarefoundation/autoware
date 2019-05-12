@@ -80,7 +80,7 @@ private:
 
     geometry_msgs::TwistStamped twist_stamped;
     twist_stamped.header.stamp = msg.header.stamp;
-    twist_stamped.header.frame_id = "/base_link";
+    twist_stamped.header.frame_id = "base_link";
     twist_stamped.twist.linear.x = vel_mps;
     twist_stamped.twist.angular.z = vel_mps * std::tan(steer_rad) / wheelbase_;
     if (enable_adaptive_estimate_)
