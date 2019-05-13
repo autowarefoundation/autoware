@@ -1,0 +1,14 @@
+<launch>
+	<node pkg="waypoint_follower" type="mpc_waypoints_converter" name="mpc_waypoints_converter" output="screen"/>
+	
+	<node pkg="waypoint_follower" type="mpc_follower" name="mpc_follower" output="screen">
+		<param name="use_sim_time" value="true"/>
+		<param name="ctrl_cmd_interface" value="all"/>
+		<param name="in_waypoints_name" value="/mpc_waypoints"/>
+		<param name="in_vehicle_status_name" value="/vehicle_status"/>
+		<param name="in_selfpose_name" value="/current_pose"/>
+		<param name="out_twist_name" value="/twist_raw"/>
+		<param name="out_vehicle_cmd_name" value="/vehicle_cmdss"/>
+		<rosparam command="load" file="$(find waypoint_follower)/config/mpc_follower/mpc_follower_config_sim.yaml" />
+	</node>
+</launch>

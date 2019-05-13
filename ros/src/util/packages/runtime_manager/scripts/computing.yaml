@@ -604,6 +604,17 @@ subs :
              depend : param_flag
              depend_bool : 'lambda v : v == 0'
            stat_topic : [ lf ]
+       - name : mpc_follower
+         desc : model predictive control based path following
+         cmd  : roslaunch waypoint_follower mpc_follower.launch
+         param: mpc_follower
+         gui  :
+           dialog_width  : 600
+           dialog_height : 800
+           show_debug_info :
+             flags : [ nl ]
+           qp_solver_type :
+             flags : [ nl ]
        - name : twist_filter
          desc : twist_filter desc sample
          cmd  : roslaunch waypoint_follower twist_filter.launch
@@ -1634,6 +1645,206 @@ params :
         dash        : ''
         delim       : ':='
 
+  - name  : mpc_follower
+    vars  :
+    - name    : show_debug_info
+      desc    : show_debug_info
+      label   : 'show_debug_info '
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : mpc_vehicle_model_type
+      desc    : vehicle model for mpc predioction
+      label   : vehicle_model_type
+      kind    : radio_box
+      choices : ['kinematics','kinematics_no_delay','dynamics']
+      descs   : ['kinematics','kinematics_no_delay','dynamics']
+      choices_type : str
+      v       : kinematics
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : mpc_qp_solver_type
+      desc  : QP solver for mpc optimization
+      label : qp_solver_type
+      kind  : radio_box
+      choices:
+      - unconstraint
+      - unconstraint_fast
+      - qpoases_hotstart
+      descs :
+      - unconstraint least square 
+      - unconstraint least square (fast, but low accuracy)
+      - constraint with QPOASES hotstart
+      choices_type : str
+      v       : unconstraint_fast
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : mpc_n
+      desc  : mpc_n
+      label : mpc_n
+      min   : 1
+      max   : 200
+      v     : 50
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : mpc_dt
+      desc  : mpc_dt
+      label : mpc_dt
+      min   : 0.01
+      max   : 1.0
+      v     : 0.1
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : mpc_weight_lat_error
+      desc  : mpc_weight_lat_error
+      label : lateral error weight
+      min   : 0.0
+      max   : 10.0
+      v     : 0.1
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : mpc_weight_heading_error
+      desc  : mpc_weight_heading_error
+      label : heading error weight
+      min   : 0.0
+      max   : 10.0
+      v     : 0.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : mpc_weight_heading_error_squared_vel_coeff
+      desc  : mpc_weight_heading_error_squared_vel_coeff
+      label : heading error vel coeff weight
+      min   : 0.0
+      max   : 10.0
+      v     : 0.3
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : mpc_weight_steering_input
+      desc  : mpc_weight_steering_input
+      label : steering input weight
+      min   : 0.0
+      max   : 10.0
+      v     : 1.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : mpc_weight_steering_input_squared_vel_coeff
+      desc  : mpc_weight_steering_input_squared_vel_coeff
+      label : steering input vel coeff weight
+      min   : 0.0
+      max   : 10.0
+      v     : 0.25
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : mpc_weight_lat_jerk
+      desc  : mpc_weight_lat_jerk
+      label : lateral jerk weight
+      min   : 0.0
+      max   : 10.0
+      v     : 0.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : mpc_weight_endpoint_Q_scale
+      desc  : mpc_weight_endpoint_Q_scale
+      label : endpoint Q weight scale
+      min   : 0.0
+      max   : 100.0
+      v     : 5.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : mpc_zero_ff_steer_deg
+      desc  : ignore feedforward when it is smaller than this value
+      label : zero feedforward steer angle [deg]
+      min   : 0.0
+      max   : 10.0
+      v     : 2.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : enable_path_smoothing
+      desc    : enable_path_smoothing
+      label   : 'enable_path_smoothing'
+      kind    : checkbox
+      v       : True
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : path_filter_moving_ave_num
+      desc  : moving average number for path smoothing
+      label : path_filter_moving_ave_num
+      min   : 1
+      max   : 50
+      v     : 35
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : curvature_smoothing_num
+      desc  : index number distance for curvature calculation
+      label : curvature_smoothing_num
+      min   : 1
+      max   : 50
+      v     : 35
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : path_filter_moving_ave_num
+      desc  : moving average number for path smoothing
+      label : moving average number for path smoothing
+      min   : 1
+      max   : 50
+      v     : 35
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : steering_lpf_cutoff_hz
+      desc  : steering_lpf_cutoff_hz
+      label : steering_lpf_cutoff_hz
+      min   : 0.1
+      max   : 10.0
+      v     : 2.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : vehicle_model_steer_tau
+      desc  : vehicle_model_steer_tau
+      label : steering delay time constant
+      min   : 0.001
+      max   : 5.0
+      v     : 0.3
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : vehicle_model_wheelbase
+      desc  : vehicle_model_wheelbase
+      label : vehicle wheelbase
+      min   : 0.1
+      max   : 10.0
+      v     : 2.9
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : steer_lim_deg
+      desc  : steer_lim_deg
+      label : steering angle limit [deg]
+      min   : 10.0
+      max   : 45.0
+      v     : 35.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
   - name  : astar_avoid_param
     vars  :
     - name  : enable_avoidance
@@ -1960,6 +2171,14 @@ params :
       desc      :
       label   : 'angle_error(degree) :'
       v         : 0.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : use_ctrl_cmd
+      desc      :
+      label   : 'use_ctrl_cmd :'
+      kind    : checkbox
+      v       : False
       cmd_param :
         dash        : ''
         delim       : ':='
