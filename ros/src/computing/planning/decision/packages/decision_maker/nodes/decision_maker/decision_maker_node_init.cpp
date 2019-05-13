@@ -90,149 +90,101 @@ void DecisionMakerNode::setupStateCallback(void)
   ctx_mission->setCallback(state_machine::CallbackType::UPDATE, "MissionAborted",
                            std::bind(&DecisionMakerNode::updateMissionAbortedState, this, std::placeholders::_1, 0));
 
-  /*** state drive ***/
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "WaitEngage",
-                         std::bind(&DecisionMakerNode::updateWaitEngageState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::ENTRY, "Drive",
-                         std::bind(&DecisionMakerNode::entryDriveState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "Drive",
-                         std::bind(&DecisionMakerNode::updateDriveState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "LaneArea",
-                         std::bind(&DecisionMakerNode::updateLaneAreaState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "FreeArea",
+  /*** state behavior ***/
+  ctx_behavior->setCallback(state_machine::CallbackType::UPDATE, "Stopping",
+                         std::bind(&DecisionMakerNode::updateStoppingState, this, std::placeholders::_1, 0));
+  ctx_behavior->setCallback(state_machine::CallbackType::UPDATE, "BehaviorEmergency",
+                         std::bind(&DecisionMakerNode::updateBehaviorEmergencyState, this, std::placeholders::_1, 0));
+  ctx_behavior->setCallback(state_machine::CallbackType::EXIT, "BehaviorEmergency",
+                         std::bind(&DecisionMakerNode::exitBehaviorEmergencyState, this, std::placeholders::_1, 0));
+  ctx_behavior->setCallback(state_machine::CallbackType::UPDATE, "Moving",
+                         std::bind(&DecisionMakerNode::updateMovingState, this, std::placeholders::_1, 0));
+  ctx_behavior->setCallback(state_machine::CallbackType::UPDATE, "FreeArea",
                          std::bind(&DecisionMakerNode::updateFreeAreaState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "Cruise",
-                         std::bind(&DecisionMakerNode::updateCruiseState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "BusStop",
-                         std::bind(&DecisionMakerNode::updateBusStopState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "Parking",
-                         std::bind(&DecisionMakerNode::updateParkingState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::ENTRY, "DriveEmergency",
-                         std::bind(&DecisionMakerNode::entryDriveEmergencyState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "DriveEmergency",
-                         std::bind(&DecisionMakerNode::updateDriveEmergencyState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::EXIT, "DriveEmergency",
-                         std::bind(&DecisionMakerNode::exitDriveEmergencyState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::ENTRY, "LeftTurn",
-                         std::bind(&DecisionMakerNode::entryTurnState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "LeftTurn",
-                         std::bind(&DecisionMakerNode::updateLeftTurnState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::ENTRY, "RightTurn",
-                         std::bind(&DecisionMakerNode::entryTurnState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "RightTurn",
-                         std::bind(&DecisionMakerNode::updateRightTurnState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::ENTRY, "Straight",
-                         std::bind(&DecisionMakerNode::entryTurnState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "Straight",
-                         std::bind(&DecisionMakerNode::updateStraightState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::ENTRY, "Back",
-                         std::bind(&DecisionMakerNode::entryTurnState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "Back",
-                         std::bind(&DecisionMakerNode::updateBackState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::ENTRY, "LeftLaneChange",
-                         std::bind(&DecisionMakerNode::entryLaneChangeState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "LeftLaneChange",
-                         std::bind(&DecisionMakerNode::updateLeftLaneChangeState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::ENTRY, "RightLaneChange",
-                         std::bind(&DecisionMakerNode::entryLaneChangeState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "RightLaneChange",
-                         std::bind(&DecisionMakerNode::updateRightLaneChangeState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "PullIn",
-                         std::bind(&DecisionMakerNode::updatePullInState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "PullOut",
-                         std::bind(&DecisionMakerNode::updatePullOutState, this, std::placeholders::_1, 0));
+  ctx_behavior->setCallback(state_machine::CallbackType::UPDATE, "LaneArea",
+                         std::bind(&DecisionMakerNode::updateLaneAreaState, this, std::placeholders::_1, 0));
 
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "CheckLeftLane",
+  ctx_behavior->setCallback(state_machine::CallbackType::UPDATE, "Cruise",
+                         std::bind(&DecisionMakerNode::updateCruiseState, this, std::placeholders::_1, 0));
+  ctx_behavior->setCallback(state_machine::CallbackType::ENTRY, "LeftTurn",
+                         std::bind(&DecisionMakerNode::entryTurnState, this, std::placeholders::_1, 0));
+  ctx_behavior->setCallback(state_machine::CallbackType::UPDATE, "LeftTurn",
+                         std::bind(&DecisionMakerNode::updateLeftTurnState, this, std::placeholders::_1, 0));
+  ctx_behavior->setCallback(state_machine::CallbackType::ENTRY, "RightTurn",
+                         std::bind(&DecisionMakerNode::entryTurnState, this, std::placeholders::_1, 0));
+  ctx_behavior->setCallback(state_machine::CallbackType::UPDATE, "RightTurn",
+                         std::bind(&DecisionMakerNode::updateRightTurnState, this, std::placeholders::_1, 0));
+  ctx_behavior->setCallback(state_machine::CallbackType::ENTRY, "Straight",
+                         std::bind(&DecisionMakerNode::entryTurnState, this, std::placeholders::_1, 0));
+  ctx_behavior->setCallback(state_machine::CallbackType::UPDATE, "Straight",
+                         std::bind(&DecisionMakerNode::updateStraightState, this, std::placeholders::_1, 0));
+  ctx_behavior->setCallback(state_machine::CallbackType::ENTRY, "Back",
+                         std::bind(&DecisionMakerNode::entryTurnState, this, std::placeholders::_1, 0));
+  ctx_behavior->setCallback(state_machine::CallbackType::UPDATE, "Back",
+                         std::bind(&DecisionMakerNode::updateBackState, this, std::placeholders::_1, 0));
+
+  ctx_behavior->setCallback(state_machine::CallbackType::ENTRY, "LeftLaneChange",
+                         std::bind(&DecisionMakerNode::entryLaneChangeState, this, std::placeholders::_1, 0));
+  ctx_behavior->setCallback(state_machine::CallbackType::UPDATE, "LeftLaneChange",
+                         std::bind(&DecisionMakerNode::updateLeftLaneChangeState, this, std::placeholders::_1, 0));
+  ctx_behavior->setCallback(state_machine::CallbackType::UPDATE, "CheckLeftLane",
                          std::bind(&DecisionMakerNode::updateCheckLeftLaneState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "CheckRightLane",
-                         std::bind(&DecisionMakerNode::updateCheckRightLaneState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "ChangeToLeft",
+  ctx_behavior->setCallback(state_machine::CallbackType::UPDATE, "ChangeToLeft",
                          std::bind(&DecisionMakerNode::updateChangeToLeftState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "ChangeToRight",
+  ctx_behavior->setCallback(state_machine::CallbackType::ENTRY, "RightLaneChange",
+                         std::bind(&DecisionMakerNode::entryLaneChangeState, this, std::placeholders::_1, 0));
+  ctx_behavior->setCallback(state_machine::CallbackType::UPDATE, "RightLaneChange",
+                         std::bind(&DecisionMakerNode::updateRightLaneChangeState, this, std::placeholders::_1, 0));
+  ctx_behavior->setCallback(state_machine::CallbackType::UPDATE, "CheckRightLane",
+                         std::bind(&DecisionMakerNode::updateCheckRightLaneState, this, std::placeholders::_1, 0));
+  ctx_behavior->setCallback(state_machine::CallbackType::UPDATE, "ChangeToRight",
                          std::bind(&DecisionMakerNode::updateChangeToRightState, this, std::placeholders::_1, 0));
 
-  ctx_drive->setCallback(state_machine::CallbackType::ENTRY, "Go",
+  ctx_behavior->setCallback(state_machine::CallbackType::UPDATE, "BusStop",
+                         std::bind(&DecisionMakerNode::updateBusStopState, this, std::placeholders::_1, 0));
+  ctx_behavior->setCallback(state_machine::CallbackType::UPDATE, "PullIn",
+                         std::bind(&DecisionMakerNode::updatePullInState, this, std::placeholders::_1, 0));
+  ctx_behavior->setCallback(state_machine::CallbackType::UPDATE, "PullOut",
+                         std::bind(&DecisionMakerNode::updatePullOutState, this, std::placeholders::_1, 0));
+
+  ctx_behavior->setCallback(state_machine::CallbackType::UPDATE, "Parking",
+                         std::bind(&DecisionMakerNode::updateParkingState, this, std::placeholders::_1, 0));
+
+  /*** state motion ***/
+  ctx_motion->setCallback(state_machine::CallbackType::UPDATE, "WaitDriveReady",
+                         std::bind(&DecisionMakerNode::updateWaitDriveReadyState, this, std::placeholders::_1, 0));
+  ctx_motion->setCallback(state_machine::CallbackType::UPDATE, "WaitEngage",
+                         std::bind(&DecisionMakerNode::updateWaitEngageState, this, std::placeholders::_1, 0));
+  ctx_motion->setCallback(state_machine::CallbackType::UPDATE, "MotionEmergency",
+                         std::bind(&DecisionMakerNode::updateMotionEmergencyState, this, std::placeholders::_1, 0));
+  ctx_motion->setCallback(state_machine::CallbackType::ENTRY, "Drive",
+                         std::bind(&DecisionMakerNode::entryDriveState, this, std::placeholders::_1, 0));
+  ctx_motion->setCallback(state_machine::CallbackType::UPDATE, "Drive",
+                         std::bind(&DecisionMakerNode::updateDriveState, this, std::placeholders::_1, 0));
+
+  ctx_motion->setCallback(state_machine::CallbackType::ENTRY, "Go",
                          std::bind(&DecisionMakerNode::entryGoState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::ENTRY, "L_Go",
-                         std::bind(&DecisionMakerNode::entryGoState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::ENTRY, "R_Go",
-                         std::bind(&DecisionMakerNode::entryGoState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::ENTRY, "B_Go",
-                         std::bind(&DecisionMakerNode::entryGoState, this, std::placeholders::_1, 0));
-
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "Go",
+  ctx_motion->setCallback(state_machine::CallbackType::UPDATE, "Go",
                          std::bind(&DecisionMakerNode::updateGoState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "L_Go",
-                         std::bind(&DecisionMakerNode::updateGoState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "R_Go",
-                         std::bind(&DecisionMakerNode::updateGoState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "B_Go",
-                         std::bind(&DecisionMakerNode::updateGoState, this, std::placeholders::_1, 0));
-
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "Wait",
+  ctx_motion->setCallback(state_machine::CallbackType::UPDATE, "Wait",
                          std::bind(&DecisionMakerNode::updateWaitState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "L_Wait",
-                         std::bind(&DecisionMakerNode::updateWaitState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "R_Wait",
-                         std::bind(&DecisionMakerNode::updateWaitState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "B_Wait",
-                         std::bind(&DecisionMakerNode::updateWaitState, this, std::placeholders::_1, 0));
-
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "StopLine",
-                         std::bind(&DecisionMakerNode::updateStoplineState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "L_StopLine",
-                         std::bind(&DecisionMakerNode::updateStoplineState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "R_StopLine",
-                         std::bind(&DecisionMakerNode::updateStoplineState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "B_StopLine",
-                         std::bind(&DecisionMakerNode::updateStoplineState, this, std::placeholders::_1, 0));
-
-  ctx_drive->setCallback(state_machine::CallbackType::ENTRY, "Stop",
+  ctx_motion->setCallback(state_machine::CallbackType::EXIT, "Wait",
+                         std::bind(&DecisionMakerNode::exitStopState, this, std::placeholders::_1, 0));
+  ctx_motion->setCallback(state_machine::CallbackType::ENTRY, "Stop",
                          std::bind(&DecisionMakerNode::entryStopState, this, std::placeholders::_1, 1));
-  ctx_drive->setCallback(state_machine::CallbackType::ENTRY, "L_Stop",
-                         std::bind(&DecisionMakerNode::entryStopState, this, std::placeholders::_1, 1));
-  ctx_drive->setCallback(state_machine::CallbackType::ENTRY, "R_Stop",
-                         std::bind(&DecisionMakerNode::entryStopState, this, std::placeholders::_1, 1));
-  ctx_drive->setCallback(state_machine::CallbackType::ENTRY, "B_Stop",
-                         std::bind(&DecisionMakerNode::entryStopState, this, std::placeholders::_1, 1));
-
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "Stop",
+  ctx_motion->setCallback(state_machine::CallbackType::UPDATE, "Stop",
                          std::bind(&DecisionMakerNode::updateStopState, this, std::placeholders::_1, 1));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "L_Stop",
-                         std::bind(&DecisionMakerNode::updateStopState, this, std::placeholders::_1, 1));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "R_Stop",
-                         std::bind(&DecisionMakerNode::updateStopState, this, std::placeholders::_1, 1));
-  ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "B_Stop",
-                         std::bind(&DecisionMakerNode::updateStopState, this, std::placeholders::_1, 1));
-
-  ctx_drive->setCallback(state_machine::CallbackType::EXIT, "Wait",
+  ctx_motion->setCallback(state_machine::CallbackType::EXIT, "Stop",
                          std::bind(&DecisionMakerNode::exitStopState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::EXIT, "L_Wait",
+  ctx_motion->setCallback(state_machine::CallbackType::UPDATE, "StopLine",
+                         std::bind(&DecisionMakerNode::updateStoplineState, this, std::placeholders::_1, 0));
+  ctx_motion->setCallback(state_machine::CallbackType::EXIT, "StopLine",
                          std::bind(&DecisionMakerNode::exitStopState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::EXIT, "R_Wait",
-                         std::bind(&DecisionMakerNode::exitStopState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::EXIT, "B_Wait",
-                         std::bind(&DecisionMakerNode::exitStopState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::EXIT, "StopLine",
-                         std::bind(&DecisionMakerNode::exitStopState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::EXIT, "L_StopLine",
-                         std::bind(&DecisionMakerNode::exitStopState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::EXIT, "R_StopLine",
-                         std::bind(&DecisionMakerNode::exitStopState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::EXIT, "B_StopLine",
-                         std::bind(&DecisionMakerNode::exitStopState, this, std::placeholders::_1, 0));
-  ctx_drive->setCallback(state_machine::CallbackType::EXIT, "Stop",
-                         std::bind(&DecisionMakerNode::exitStopState, this, std::placeholders::_1, 1));
-  ctx_drive->setCallback(state_machine::CallbackType::EXIT, "L_Stop",
-                         std::bind(&DecisionMakerNode::exitStopState, this, std::placeholders::_1, 1));
-  ctx_drive->setCallback(state_machine::CallbackType::EXIT, "R_Stop",
-                         std::bind(&DecisionMakerNode::exitStopState, this, std::placeholders::_1, 1));
-  ctx_drive->setCallback(state_machine::CallbackType::EXIT, "B_Stop",
-                         std::bind(&DecisionMakerNode::exitStopState, this, std::placeholders::_1, 1));
 
   ctx_vehicle->nextState("started");
   ctx_mission->nextState("started");
-  ctx_drive->nextState("started");
+  ctx_behavior->nextState("started");
+  ctx_motion->nextState("started");
 }
 
 void DecisionMakerNode::createSubscriber(void)

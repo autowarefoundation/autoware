@@ -27,7 +27,8 @@ void DecisionMakerNode::tryNextState(const std::string& key)
 {
   ctx_vehicle->nextState(key);
   ctx_mission->nextState(key);
-  ctx_drive->nextState(key);
+  ctx_behavior->nextState(key);
+  ctx_motion->nextState(key);
 }
 
 void DecisionMakerNode::update(void)
@@ -37,8 +38,10 @@ void DecisionMakerNode::update(void)
     ctx_vehicle->onUpdate();
   if (ctx_mission)
     ctx_mission->onUpdate();
-  if (ctx_drive)
-    ctx_drive->onUpdate();
+  if (ctx_behavior)
+    ctx_behavior->onUpdate();
+  if (ctx_motion)
+    ctx_motion->onUpdate();
 }
 
 void DecisionMakerNode::run(void)
