@@ -44,8 +44,8 @@ public:
 
 private:
   ros::NodeHandle nh_, pnh_;
-  ros::Publisher pub_pose_, pub_pose_cov_, pub_twist_, pub_debug_, pub_ndt_pose_, pub_yaw_bias_;
-  ros::Subscriber sub_initialpose_, sub_ndt_pose_, sub_vehicle_status_, sub_twist_, sub_ndt_pose_with_cov_;
+  ros::Publisher pub_pose_, pub_pose_cov_, pub_twist_, pub_debug_, pub_measured_pose_, pub_yaw_bias_;
+  ros::Subscriber sub_initialpose_, sub_pose_, sub_vehicle_status_, sub_twist_, sub_pose_with_cov_;
   ros::Timer timer_control_, timer_tf_;
   tf2_ros::TransformBroadcaster tf_br_;
 
@@ -53,8 +53,8 @@ private:
 
   /* parameters */
   bool show_debug_info_;
-  double ekf_rate_;                  // EKF predict rate
-  double ekf_dt_;                    // = 1 / ekf_rate_
+  double ekf_rate_;                 // EKF predict rate
+  double ekf_dt_;                   // = 1 / ekf_rate_
   double tf_rate_;                  // tf publish rate
   bool enable_yaw_bias_estimation_; // for LiDAR mount error. if true, publish /estimate_yaw_bias
   std::string pose_frame_id_;
@@ -63,15 +63,15 @@ private:
   int extend_state_step_; // for time delay compensation
   int dim_x_ex_;          // dimension of extended EKF state (dim_x_ * extended_state_step)
 
-  /* NDT */
-  double ndt_additional_delay_;         // compensated ndt delay time = (ndt.header.stamp - now) + additional_delay [s]
-  double ndt_measure_uncertainty_time_; // added for measurement covariance
-  double ndt_rate_;                     // ndt rate [s], used for covariance calculation
-  double ndt_gate_dist_;                // ndt measurement is ignored if the maharanobis distance is larger than this value.
-  double ndt_stddev_x_;
-  double ndt_stddev_y_;
-  double ndt_stddev_yaw_;
-  bool use_ndt_pose_with_covariance_;
+  /* Pose */
+  double pose_additional_delay_;         // compensated pose delay time = (pose.header.stamp - now) + additional_delay [s]
+  double pose_measure_uncertainty_time_; // added for measurement covariance
+  double pose_rate_;                     // pose rate [s], used for covariance calculation
+  double pose_gate_dist_;                // pose measurement is ignored if the maharanobis distance is larger than this value.
+  double pose_stddev_x_;
+  double pose_stddev_y_;
+  double pose_stddev_yaw_;
+  bool use_pose_with_covariance_;
 
   /* twist */
   double twist_additional_delay_; // compensated delay time = (twist.header.stamp - now) + additional_delay [s]
@@ -98,25 +98,24 @@ private:
 
   /* for model prediction */
   std::shared_ptr<geometry_msgs::TwistStamped> current_twist_ptr_;
-  std::shared_ptr<geometry_msgs::PoseStamped> current_ndt_pose_ptr_;
+  std::shared_ptr<geometry_msgs::PoseStamped> current_pose_ptr_;
   geometry_msgs::PoseStamped current_ekf_pose_;
   geometry_msgs::TwistStamped current_ekf_twist_;
-  boost::array<double, 36ul> current_ndt_pose_covariance_;
+  boost::array<double, 36ul> current_pose_covariance_;
 
   void timerCallback(const ros::TimerEvent &e);
   void timerTFCallback(const ros::TimerEvent &e);
-  void callbackNDTPose(const geometry_msgs::PoseStamped::ConstPtr &msg);
+  void callbackPose(const geometry_msgs::PoseStamped::ConstPtr &msg);
   void callbackTwist(const geometry_msgs::TwistStamped::ConstPtr &msg);
-  void callbackNDTPoseWithCovariance(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg);
+  void callbackPoseWithCovariance(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg);
   void callbackInitialPose(const geometry_msgs::PoseWithCovarianceStamped &msg);
-  
 
   void initEKF();
   void predictKinematicsModel();
-  void measurementUpdateNDTPose(const geometry_msgs::PoseStamped &ndt_pose);
+  void measurementUpdatePose(const geometry_msgs::PoseStamped &pose);
   void measurementUpdateTwist(const geometry_msgs::TwistStamped &twist);
   bool mahalanobisGate(const double &dist_max, const Eigen::MatrixXd &x, const Eigen::MatrixXd &obj_x, const Eigen::MatrixXd &cov);
-  bool getTransformFromTF(std::string parent_frame, std::string child_frame, geometry_msgs::TransformStamped& transform);
+  bool getTransformFromTF(std::string parent_frame, std::string child_frame, geometry_msgs::TransformStamped &transform);
   double normalizeYaw(const double &yaw);
 
   void setCurrentResult();

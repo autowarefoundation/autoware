@@ -5710,63 +5710,63 @@ params :
         dash      : ''
         delim     : ':='
 
-    - name  : ndt_additional_delay
-      desc  : delay time added to NDT delay
-      label : ndt additional delay [s]
+    - name  : pose_additional_delay
+      desc  : delay time added to pose delay
+      label : pose additional delay [s]
       min   : 0.0
       max   : 0.5
       v     : 0.0
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name  : ndt_measure_uncertainty_time
-      desc  : ndt measurement time uncertainty used for covariance calculation
-      label : ndt measurement time uncertainty [s]
+    - name  : pose_measure_uncertainty_time
+      desc  : pose measurement time uncertainty used for covariance calculation
+      label : pose measurement time uncertainty [s]
       min   : 0.0
       max   : 0.5
       v     : 0.01
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name  : ndt_rate
-      desc  : ndt_rate used for covariance calculation
-      label : ndt_rate [Hz]
+    - name  : pose_rate
+      desc  : pose_rate used for covariance calculation
+      label : pose_rate [Hz]
       min   : 0.1
       max   : 20.0
       v     : 10.0
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name  : ndt_gate_dist
-      desc  : ndt mahalanobis distance threshold
-      label : ndt mahalanobis distance threshold
+    - name  : pose_gate_dist
+      desc  : pose mahalanobis distance threshold
+      label : pose mahalanobis distance threshold
       min   : 0.1
       max   : 100000.0
       v     : 10000.0
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name  : ndt_stddev_x
-      desc  : standard deviation of measurement noise for ndt x
-      label : ndt_stddev_x [m]
+    - name  : pose_stddev_x
+      desc  : standard deviation of measurement noise for pose x
+      label : pose_stddev_x [m]
       min   : 0.00
       max   : 0.5
       v     : 0.05
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name  : ndt_stddev_y
-      desc  : standard deviation of measurement noise for ndt y
-      label : ndt_stddev_y [m]
+    - name  : pose_stddev_y
+      desc  : standard deviation of measurement noise for pose y
+      label : pose_stddev_y [m]
       min   : 0.00
       max   : 0.5
       v     : 0.05
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name  : ndt_stddev_yaw
-      desc  : standard deviation of measurement noise for ndt yaw
-      label : ndt_stddev_yaw [rad]
+    - name  : pose_stddev_yaw
+      desc  : standard deviation of measurement noise for pose yaw
+      label : pose_stddev_yaw [rad]
       min   : 0.00
       max   : 0.5
       v     : 0.025
@@ -5857,7 +5857,7 @@ params :
   - name : vehicle_status_converter_param
     vars : 
     - name      : enable_adaptive_estimate
-      desc      : enable adaptive coefficient estimation with ndt's /estimate_twist by recursive least square method
+      desc      : enable adaptive coefficient estimation with /estimate_twist by recursive least square method
       label     : enable_adaptive_estimate
       kind      : checkbox
       v         : true

@@ -9,8 +9,8 @@ Some other features include
 
 # Input and Output
 - input
-    - NDT pose (geometry_msgs::PoseStamped) : as a pose measurement
-    - CAN twist (geometry_msgs::TwistStamped) : as a twist measurement
+    - geometry_msgs::PoseStamped ego_pose (default: `/ndt_pose`)
+    - geometry_msgs::TwistStamped ego_twist (default: `/can_twist`))
     
 - output
     - tf base_link : broadcasted with *tf_rate* [Hz]
@@ -45,17 +45,17 @@ they are set in `launch/ekf_localizer.launch`
 |extend_state_step|int|extend state dimension [-]: The maximum sensor delay that can be taken into account is (extend_state_step / predict_frequency) seconds. Larger values require more computation time |
 |enable_yaw_bias_estimation| bool |enable yaw bias estimation for LiDAR mount error|
 
-## for NDT measurement
+## for pose measurement
 
 |Name|Type|Description|
 |:---|:---|:---|
-|ndt_additional_delay|double|Additional delay time for NDT [s]|
-|ndt_measure_uncertainty_time|double|Used for covariance calculation [s]|
-|ndt_rate|double|used for covariance calculation [Hz]|
-|ndt_gate_dist|double|limit of Mahalanobis distance used for outliers detection|
-|ndt_stddev_x|double|standard deviation for ndt position x [m]|
-|ndt_stddev_y|double|standard deviation for ndt position y [m]|
-|ndt_stddev_yaw|double|standard deviation for ndt yaw angle [rad]|
+|pose_additional_delay|double|Additional delay time for pose measurement [s]|
+|pose_measure_uncertainty_time|double|Used for covariance calculation [s]|
+|pose_rate|double|used for covariance calculation [Hz]|
+|pose_gate_dist|double|limit of Mahalanobis distance used for outliers detection|
+|pose_stddev_x|double|standard deviation for pose position x [m]|
+|pose_stddev_y|double|standard deviation for pose position y [m]|
+|pose_stddev_yaw|double|standard deviation for pose yaw angle [rad]|
 
 ## for twist measurement
 |Name|Type|Description|

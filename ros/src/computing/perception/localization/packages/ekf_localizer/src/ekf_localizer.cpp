@@ -31,15 +31,15 @@ EKFLocalizer::EKFLocalizer() : nh_(""), pnh_("~"), dim_x_(6 /* x, y, yaw, yaw_bi
   pnh_.param("extend_state_step", extend_state_step_, int(100));
   pnh_.param("pose_frame_id", pose_frame_id_, std::string("/map"));
 
-  /* NDT measurement */
-  pnh_.param("ndt_additional_delay", ndt_additional_delay_, double(0.15));
-  pnh_.param("ndt_measure_uncertainty_time", ndt_measure_uncertainty_time_, double(0.01));
-  pnh_.param("ndt_rate", ndt_rate_, double(10.0));             // used for covariance calculation
-  pnh_.param("ndt_gate_dist", ndt_gate_dist_, double(10000.0)); // Mahalanobis limit
-  pnh_.param("ndt_stddev_x", ndt_stddev_x_, double(0.05));
-  pnh_.param("ndt_stddev_y", ndt_stddev_y_, double(0.05));
-  pnh_.param("ndt_stddev_yaw", ndt_stddev_yaw_, double(0.035));
-  pnh_.param("use_ndt_pose_with_covariance", use_ndt_pose_with_covariance_, bool(false));
+  /* pose measurement */
+  pnh_.param("pose_additional_delay", pose_additional_delay_, double(0.15));
+  pnh_.param("pose_measure_uncertainty_time", pose_measure_uncertainty_time_, double(0.01));
+  pnh_.param("pose_rate", pose_rate_, double(10.0));             // used for covariance calculation
+  pnh_.param("pose_gate_dist", pose_gate_dist_, double(10000.0)); // Mahalanobis limit
+  pnh_.param("pose_stddev_x", pose_stddev_x_, double(0.05));
+  pnh_.param("pose_stddev_y", pose_stddev_y_, double(0.05));
+  pnh_.param("pose_stddev_yaw", pose_stddev_yaw_, double(0.035));
+  pnh_.param("use_pose_with_covariance", use_pose_with_covariance_, bool(false));
 
   /* twist measurement */
   pnh_.param("twist_additional_delay", twist_additional_delay_, double(0.0));
@@ -65,9 +65,9 @@ EKFLocalizer::EKFLocalizer() : nh_(""), pnh_("~"), dim_x_(6 /* x, y, yaw, yaw_bi
   cov_proc_yaw_bias_d_ = std::pow(stddev_proc_yaw_bias_c, 2.0) * ekf_dt_;
 
   /* initialize ros system */
-  std::string in_ndt_pose, in_ndt_pose_with_cov, in_twist, out_pose, out_twist, out_pose_with_covariance;
-  pnh_.param("input_ndt_pose_name", in_ndt_pose, std::string("/ndt_pose"));
-  pnh_.param("input_ndt_pose_with_cov_name", in_ndt_pose_with_cov, std::string("/ndt_pose_with_covariance"));
+  std::string in_pose, in_pose_with_cov, in_twist, out_pose, out_twist, out_pose_with_covariance;
+  pnh_.param("input_pose_name", in_pose, std::string("/ndt_pose"));
+  pnh_.param("input_pose_with_cov_name", in_pose_with_cov, std::string("/ndt_pose_with_covariance"));
   pnh_.param("input_twist_name", in_twist, std::string("/can_twist"));
   pnh_.param("output_pose_name", out_pose, std::string("/ekf_pose"));
   pnh_.param("output_twist_name", out_twist, std::string("/ekf_twist"));
@@ -79,8 +79,8 @@ EKFLocalizer::EKFLocalizer() : nh_(""), pnh_("~"), dim_x_(6 /* x, y, yaw, yaw_bi
   pub_twist_ = nh_.advertise<geometry_msgs::TwistStamped>(out_twist, 1);
   pub_yaw_bias_ = pnh_.advertise<std_msgs::Float64>("estimated_yaw_bias", 1);
   sub_initialpose_ = nh_.subscribe("/initialpose", 1, &EKFLocalizer::callbackInitialPose, this);
-  sub_ndt_pose_ = nh_.subscribe(in_ndt_pose, 1, &EKFLocalizer::callbackNDTPose, this);
-  sub_ndt_pose_with_cov_ = nh_.subscribe(in_ndt_pose_with_cov, 1, &EKFLocalizer::callbackNDTPoseWithCovariance, this);
+  sub_pose_ = nh_.subscribe(in_pose, 1, &EKFLocalizer::callbackPose, this);
+  sub_pose_with_cov_ = nh_.subscribe(in_pose_with_cov, 1, &EKFLocalizer::callbackPoseWithCovariance, this);
   sub_twist_ = nh_.subscribe(in_twist, 1, &EKFLocalizer::callbackTwist, this);
 
   dim_x_ex_ = dim_x_ * extend_state_step_;
@@ -89,7 +89,7 @@ EKFLocalizer::EKFLocalizer() : nh_(""), pnh_("~"), dim_x_(6 /* x, y, yaw, yaw_bi
 
   /* debug */
   pub_debug_ = pnh_.advertise<std_msgs::Float64MultiArray>("debug", 1);
-  pub_ndt_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("my_ndt_pose", 1);
+  pub_measured_pose_ = pnh_.advertise<geometry_msgs::PoseStamped>("my_ndt_pose", 1);
 };
 
 EKFLocalizer::~EKFLocalizer(){};
@@ -109,14 +109,14 @@ void EKFLocalizer::timerCallback(const ros::TimerEvent &e)
   DEBUG_INFO("[EKF] predictKinematicsModel calculation time = %f [ms]", elapsed * 1.0e-6);
   DEBUG_INFO("------------------------- end prediction -------------------------\n");
 
-  if (current_ndt_pose_ptr_ != nullptr)
+  if (current_pose_ptr_ != nullptr)
   {
-    DEBUG_INFO("------------------------- start NDT -------------------------");
+    DEBUG_INFO("------------------------- start Pose -------------------------");
     start = std::chrono::system_clock::now();
-    measurementUpdateNDTPose(*current_ndt_pose_ptr_);
+    measurementUpdatePose(*current_pose_ptr_);
     elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - start).count();
-    DEBUG_INFO("[EKF] measurementUpdateNDTPose calculation time = %f [ms]", elapsed * 1.0e-6);
-    DEBUG_INFO("------------------------- end NDT -------------------------\n");
+    DEBUG_INFO("[EKF] measurementUpdatePose calculation time = %f [ms]", elapsed * 1.0e-6);
+    DEBUG_INFO("------------------------- end Pose -------------------------\n");
   }
 
   if (current_twist_ptr_ != nullptr)
@@ -157,10 +157,10 @@ void EKFLocalizer::setCurrentResult()
 
   tf2::Quaternion q_tf;
   double roll, pitch, yaw;
-  if (current_ndt_pose_ptr_ != nullptr)
+  if (current_pose_ptr_ != nullptr)
   {
-    current_ekf_pose_.pose.position.z = current_ndt_pose_ptr_->pose.position.z;
-    tf2::fromMsg(current_ndt_pose_ptr_->pose.orientation, q_tf); /* use NDT pitch and roll */
+    current_ekf_pose_.pose.position.z = current_pose_ptr_->pose.position.z;
+    tf2::fromMsg(current_pose_ptr_->pose.orientation, q_tf); /* use Pose pitch and roll */
     tf2::Matrix3x3(q_tf).getRPY(roll, pitch, yaw);
   }
   else
@@ -264,28 +264,28 @@ void EKFLocalizer::callbackInitialPose(const geometry_msgs::PoseWithCovarianceSt
 };
 
 /*
- * callbackNDTPose
+ * callbackPose
  */
-void EKFLocalizer::callbackNDTPose(const geometry_msgs::PoseStamped::ConstPtr &msg)
+void EKFLocalizer::callbackPose(const geometry_msgs::PoseStamped::ConstPtr &msg)
 {
-  if (use_ndt_pose_with_covariance_ == false)
+  if (use_pose_with_covariance_ == false)
   {
-    current_ndt_pose_ptr_ = std::make_shared<geometry_msgs::PoseStamped>(*msg);
+    current_pose_ptr_ = std::make_shared<geometry_msgs::PoseStamped>(*msg);
   }
 };
 
 /*
- * callbackNDTPoseWithCovariance
+ * callbackPoseWithCovariance
  */
-void EKFLocalizer::callbackNDTPoseWithCovariance(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg)
+void EKFLocalizer::callbackPoseWithCovariance(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg)
 {
-  if (use_ndt_pose_with_covariance_ == true)
+  if (use_pose_with_covariance_ == true)
   {
-    geometry_msgs::PoseStamped ndt_pose;
-    ndt_pose.header = msg->header;
-    ndt_pose.pose = msg->pose.pose;
-    current_ndt_pose_ptr_ = std::make_shared<geometry_msgs::PoseStamped>(ndt_pose);
-    current_ndt_pose_covariance_ = msg->pose.covariance;
+    geometry_msgs::PoseStamped pose;
+    pose.header = msg->header;
+    pose.pose = msg->pose.pose;
+    current_pose_ptr_ = std::make_shared<geometry_msgs::PoseStamped>(pose);
+    current_pose_covariance_ = msg->pose.covariance;
   }
 };
 
@@ -401,33 +401,33 @@ void EKFLocalizer::predictKinematicsModel()
 }
 
 /*
- * measurementUpdateNDTPose
+ * measurementUpdatePose
  */
-void EKFLocalizer::measurementUpdateNDTPose(const geometry_msgs::PoseStamped &ndt_pose)
+void EKFLocalizer::measurementUpdatePose(const geometry_msgs::PoseStamped &pose)
 {
-  if (ndt_pose.header.frame_id != pose_frame_id_)
+  if (pose.header.frame_id != pose_frame_id_)
   {
-    ROS_WARN_DELAYED_THROTTLE(2, "ndt_pose frame_id is %s, but pose_frame is set as %s. They must be same.",
-                              ndt_pose.header.frame_id.c_str(), pose_frame_id_.c_str());
+    ROS_WARN_DELAYED_THROTTLE(2, "pose frame_id is %s, but pose_frame is set as %s. They must be same.",
+                              pose.header.frame_id.c_str(), pose_frame_id_.c_str());
   }
   Eigen::MatrixXd X_curr(dim_x_, 1); // curent state
   ekf_.getLatestX(X_curr);
   DEBUG_PRINT_MAT(X_curr.transpose());
 
-  constexpr int dim_y = 3; // pos_x, pos_y, yaw, depending on NDT output
+  constexpr int dim_y = 3; // pos_x, pos_y, yaw, depending on Pose output
   const ros::Time t_curr = ros::Time::now();
 
   /* Calculate delay step */
-  double delay_time = (t_curr - ndt_pose.header.stamp).toSec() + ndt_additional_delay_;
+  double delay_time = (t_curr - pose.header.stamp).toSec() + pose_additional_delay_;
   if (delay_time < 0.0)
   {
     delay_time = 0.0;
-    ROS_WARN_DELAYED_THROTTLE(1.0, "NDT time stamp is inappropriate, set delay to 0[s]. delay = %f", delay_time);
+    ROS_WARN_DELAYED_THROTTLE(1.0, "Pose time stamp is inappropriate, set delay to 0[s]. delay = %f", delay_time);
   }
   int delay_step = std::roundf(delay_time / ekf_dt_);
   if (delay_step > extend_state_step_ - 1)
   {
-    ROS_WARN_DELAYED_THROTTLE(1.0, "NDT delay exceeds the compensation limit, ignored. delay: %f[s], limit = extend_state_step * ekf_dt : %f [s]",
+    ROS_WARN_DELAYED_THROTTLE(1.0, "Pose delay exceeds the compensation limit, ignored. delay: %f[s], limit = extend_state_step * ekf_dt : %f [s]",
                               delay_time, extend_state_step_ * ekf_dt_);
     return;
   }
@@ -435,7 +435,7 @@ void EKFLocalizer::measurementUpdateNDTPose(const geometry_msgs::PoseStamped &nd
 
   /* Set yaw */
   const double yaw_curr = ekf_.getXelement((unsigned int)(delay_step * dim_x_ + IDX::YAW));
-  double yaw = tf2::getYaw(ndt_pose.pose.orientation);
+  double yaw = tf2::getYaw(pose.pose.orientation);
   const double ekf_yaw = ekf_.getXelement(delay_step * dim_x_ + IDX::YAW);
   const double yaw_error = normalizeYaw(yaw - ekf_yaw); // normalize the error not to exceed 2 pi
   yaw = yaw_error + ekf_yaw;
@@ -443,7 +443,7 @@ void EKFLocalizer::measurementUpdateNDTPose(const geometry_msgs::PoseStamped &nd
 
   /* Set measurement matrix */
   Eigen::MatrixXd y(dim_y, 1);
-  y << ndt_pose.pose.position.x, ndt_pose.pose.position.y, yaw;
+  y << pose.pose.position.x, pose.pose.position.y, yaw;
 
   /* Gate */
   Eigen::MatrixXd y_ekf(dim_y, 1);
@@ -451,9 +451,9 @@ void EKFLocalizer::measurementUpdateNDTPose(const geometry_msgs::PoseStamped &nd
   Eigen::MatrixXd P_curr, P_y;
   ekf_.getLatestP(P_curr);
   P_y = P_curr.block(0, 0, dim_y, dim_y);
-  if (!mahalanobisGate(ndt_gate_dist_, y_ekf, y, P_y))
+  if (!mahalanobisGate(pose_gate_dist_, y_ekf, y, P_y))
   {
-    ROS_WARN_DELAYED_THROTTLE(2.0, "[EKF] NDT measurement update, mahalanobis distance is over limit. ignore measurement data.");
+    ROS_WARN_DELAYED_THROTTLE(2.0, "[EKF] Pose measurement update, mahalanobis distance is over limit. ignore measurement data.");
     return;
   }
 
@@ -471,27 +471,27 @@ void EKFLocalizer::measurementUpdateNDTPose(const geometry_msgs::PoseStamped &nd
 
   /* Set measurement noise covariancs */
   Eigen::MatrixXd R = Eigen::MatrixXd::Zero(dim_y, dim_y);
-  if (use_ndt_pose_with_covariance_)
+  if (use_pose_with_covariance_)
   {
-    R(0, 0) = current_ndt_pose_covariance_.at(0 /* x-x */);
-    R(1, 1) = current_ndt_pose_covariance_.at(7 /* y-y */);
-    R(2, 2) = current_ndt_pose_covariance_.at(35 /* yaw-yaw */);
+    R(0, 0) = current_pose_covariance_.at(0 /* x-x */);
+    R(1, 1) = current_pose_covariance_.at(7 /* y-y */);
+    R(2, 2) = current_pose_covariance_.at(35 /* yaw-yaw */);
   }
   else
   {
     const double ekf_yaw = ekf_.getXelement(IDX::YAW);
     const double vx = ekf_.getXelement(IDX::VX);
     const double wz = ekf_.getXelement(IDX::WZ);
-    const double cov_pos_x = std::pow(ndt_measure_uncertainty_time_ * vx * cos(ekf_yaw), 2.0);
-    const double cov_pos_y = std::pow(ndt_measure_uncertainty_time_ * vx * sin(ekf_yaw), 2.0);
-    const double cov_yaw = std::pow(ndt_measure_uncertainty_time_ * wz, 2.0);
-    R(0, 0) = std::pow(ndt_stddev_x_, 2) + cov_pos_x; // pos_x
-    R(1, 1) = std::pow(ndt_stddev_y_, 2) + cov_pos_y; // pos_y
-    R(2, 2) = std::pow(ndt_stddev_yaw_, 2) + cov_yaw; // yaw
+    const double cov_pos_x = std::pow(pose_measure_uncertainty_time_ * vx * cos(ekf_yaw), 2.0);
+    const double cov_pos_y = std::pow(pose_measure_uncertainty_time_ * vx * sin(ekf_yaw), 2.0);
+    const double cov_yaw = std::pow(pose_measure_uncertainty_time_ * wz, 2.0);
+    R(0, 0) = std::pow(pose_stddev_x_, 2) + cov_pos_x; // pos_x
+    R(1, 1) = std::pow(pose_stddev_y_, 2) + cov_pos_y; // pos_y
+    R(2, 2) = std::pow(pose_stddev_yaw_, 2) + cov_yaw; // yaw
   }
 
   /* In order to avoid a large change at the time of updating, measuremeent update is performed by dividing at every step. */
-  R *= (ekf_rate_ / ndt_rate_);
+  R *= (ekf_rate_ / pose_rate_);
 
   ekf_.updateWithDelay(y, C, R, delay_step);
 
@@ -543,7 +543,7 @@ void EKFLocalizer::measurementUpdateTwist(const geometry_msgs::TwistStamped &twi
   y_ekf << ekf_.getXelement(delay_step * dim_x_ + IDX::VX), ekf_.getXelement(delay_step * dim_x_ + IDX::WZ);
   Eigen::MatrixXd P_curr;
   ekf_.getLatestP(P_curr);
-  if (!mahalanobisGate(ndt_gate_dist_, y_ekf, y, P_curr.block(4, 4, dim_y, dim_y)))
+  if (!mahalanobisGate(pose_gate_dist_, y_ekf, y, P_curr.block(4, 4, dim_y, dim_y)))
   {
     ROS_WARN_DELAYED_THROTTLE(2.0, "[EKF] Twist measurement update, mahalanobis distance is over limit. ignore measurement data.");
     return;
@@ -633,24 +633,24 @@ void EKFLocalizer::publishEstimatedPose()
   yawb.data = X(IDX::YAWB);
   pub_yaw_bias_.publish(yawb);
 
-  /* debug my ndt */
-  if (current_ndt_pose_ptr_ != nullptr)
+  /* debug measured pose */
+  if (current_pose_ptr_ != nullptr)
   {
     geometry_msgs::PoseStamped p;
-    p = *current_ndt_pose_ptr_;
+    p = *current_pose_ptr_;
     p.header.stamp = current_time;
-    pub_ndt_pose_.publish(p);
+    pub_measured_pose_.publish(p);
   }
 
   /* debug publish */
   double RAD2DEG = 180.0 / 3.141592;
-  double ndt_yaw = 0.0;
-  if (current_ndt_pose_ptr_ != nullptr)
-    ndt_yaw = tf2::getYaw(current_ndt_pose_ptr_->pose.orientation) * RAD2DEG;
-  
+  double pose_yaw = 0.0;
+  if (current_pose_ptr_ != nullptr)
+    pose_yaw = tf2::getYaw(current_pose_ptr_->pose.orientation) * RAD2DEG;
+
   std_msgs::Float64MultiArray msg;
-  msg.data.push_back(X(IDX::YAW) * RAD2DEG);  // [0] yaw angle
-  msg.data.push_back(ndt_yaw);                // [1] NDT yaw angle
+  msg.data.push_back(X(IDX::YAW) * RAD2DEG);  // [0] ekf yaw angle
+  msg.data.push_back(pose_yaw);               // [1] measurement yaw angle
   msg.data.push_back(X(IDX::YAWB) * RAD2DEG); // [2] yaw bias
   pub_debug_.publish(msg);
 }
