@@ -1673,11 +1673,9 @@ params :
       choices:
       - unconstraint
       - unconstraint_fast
-      - qpoases_hotstart
       descs :
       - unconstraint least square 
       - unconstraint least square (fast, but low accuracy)
-      - constraint with QPOASES hotstart
       choices_type : str
       v       : unconstraint_fast
       cmd_param :

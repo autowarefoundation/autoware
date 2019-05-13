@@ -105,13 +105,11 @@ set(MPC_FOLLOWER_SRC
         nodes/mpc_follower/vehicle_model/vehicle_model_bicycle_kinematics_no_delay.cpp
         nodes/mpc_follower/qp_solver/qp_solver_unconstr.cpp
         nodes/mpc_follower/qp_solver/qp_solver_unconstr_fast.cpp
-        nodes/mpc_follower/qp_solver/qp_solver_qpoases.cpp
 )
 
 add_executable(mpc_follower nodes/mpc_follower/mpc_follower.cpp ${MPC_FOLLOWER_SRC})
 add_dependencies(mpc_follower ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-# target_link_libraries(mpc_follower ${catkin_LIBRARIES})
-target_link_libraries(mpc_follower ${catkin_LIBRARIES} /usr/local/lib/libqpOASES.a) #qpOASES-3.2.1#
+target_link_libraries(mpc_follower ${catkin_LIBRARIES})
 
 add_executable(mpc_waypoints_converter nodes/mpc_follower/mpc_waypoints_converter.cpp)
 add_dependencies(mpc_waypoints_converter ${catkin_EXPORTED_TARGETS})
@@ -143,5 +141,5 @@ if (CATKIN_ENABLE_TESTING)
 
     add_rostest_gtest(test-mpc test/test_mpc.test test/src/test_mpc.cpp ${MPC_FOLLOWER_SRC})
     add_dependencies(test-mpc ${catkin_EXPORTED_TARGETS})
-    target_link_libraries(test-mpc ${catkin_LIBRARIES} /usr/local/lib/libqpOASES.a)
+    target_link_libraries(test-mpc ${catkin_LIBRARIES})
 endif ()
