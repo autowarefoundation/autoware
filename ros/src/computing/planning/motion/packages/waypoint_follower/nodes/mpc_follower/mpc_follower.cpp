@@ -47,6 +47,7 @@ MPCFollower::MPCFollower()
   pnh_.param("mpc_zero_ff_steer_deg", mpc_param_.zero_ff_steer_deg, double(2.0));
 
   pnh_.param("steer_lim_deg", steer_lim_deg_, double(35.0));
+  pnh_.param("steering_gear_ratio", steering_gear_ratio_, double(19.0));
   pnh_.param("vehicle_model_wheelbase", wheelbase_, double(2.9));
 
   /* vehicle model setup */
@@ -642,8 +643,10 @@ void MPCFollower::callbackPose(const geometry_msgs::PoseStamped::ConstPtr &msg)
 
 void MPCFollower::callbackVehicleStatus(const autoware_msgs::VehicleStatus &msg)
 {
-  vehicle_status_.tire_angle_rad = msg.angle;
-  vehicle_status_.twist.linear.x = msg.speed;
+  static const double DEG2RAD = 3.141592 / 180.0;
+  static const double KMPH2MPS = 1000.0 / 3600.0;
+  vehicle_status_.tire_angle_rad = msg.angle * DEG2RAD / steering_gear_ratio_;
+  vehicle_status_.twist.linear.x = msg.speed * KMPH2MPS;
   my_steering_ok_ = true;
   my_velocity_ok_ = true;
 };

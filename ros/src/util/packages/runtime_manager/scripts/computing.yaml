@@ -1842,7 +1842,15 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-
+    - name  : steering_gear_ratio
+      desc  : steering_gear_ratio
+      label : steering_gear_ratio
+      min   : 0.0
+      max   : 100.0
+      v     : 20.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
   - name  : astar_avoid_param
     vars  :
     - name  : enable_avoidance

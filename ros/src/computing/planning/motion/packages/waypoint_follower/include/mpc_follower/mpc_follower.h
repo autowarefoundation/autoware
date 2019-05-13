@@ -77,6 +77,7 @@ private:
   double admisible_yaw_error_deg_;  // stop mpc calculation when yaw error is large than this value.
   double steer_lim_deg_;            // steering command limit [rad]
   double wheelbase_;                // only used to convert steering to twist
+  double steering_gear_ratio_;
 
   /* parameters for path smoothing */
   bool enable_path_smoothing_;     // flag for path smoothing

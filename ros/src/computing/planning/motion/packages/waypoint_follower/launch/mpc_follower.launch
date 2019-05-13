@@ -76,6 +76,10 @@
 	<!-- steering angle limit [deg] -->
 	<arg name="steer_lim_deg" default="40.0"/>
 
+	<!-- steering gear ratio -->
+	<arg name="steering_gear_ratio" default="20.0"/>
+	
+
 
 
 
@@ -88,7 +92,7 @@
 			<param name="publish_debug_values" value="true"/>
 			<param name="ctrl_cmd_interface" value="all"/>
 			<param name="in_waypoints_name" value="/mpc_waypoints"/>
-			<param name="in_vehicle_status_name" value="/sim_vehicle_status"/>
+			<param name="in_vehicle_status_name" value="/vehicle_status"/>
 			<param name="in_selfpose_name" value="/current_pose"/>
 			<param name="out_twist_name" value="/twist_raw"/>
 			<param name="out_vehicle_cmd_name" value="/ctrl_cmd"/>
@@ -122,6 +126,7 @@
 			<param name="vehicle_model_steer_tau" value="$(arg vehicle_model_steer_tau)"/>
 			<param name="vehicle_model_wheelbase" value="$(arg vehicle_model_wheelbase)"/>
 			<param name="steer_lim_deg" value="$(arg steer_lim_deg)"/>
+			<param name="steering_gear_ratio" value="$(arg steering_gear_ratio)"/>
 		</node>
 
 	</group>
