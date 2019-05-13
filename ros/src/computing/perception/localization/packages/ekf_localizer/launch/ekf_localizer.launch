@@ -19,14 +19,14 @@
   <arg name="twist_additional_delay" default="0.0"/>
   <arg name="twist_rate" default="10.0"/>
   <arg name="twist_gate_dist" default="10000.0"/>
-  <arg name="twist_stddev_vx" default="10.0"/>
-  <arg name="twist_stddev_wz" default="1.0"/>
+  <arg name="twist_stddev_vx" default="0.2"/>
+  <arg name="twist_stddev_wz" default="0.03"/>
 
   <!-- for process model -->
   <arg name="stddev_proc_yaw_c" default="0.005"/>
   <arg name="stddev_proc_yaw_bias_c" default="0.001"/>
-  <arg name="stddev_proc_vx_c" default="1.0"/>
-  <arg name="stddev_proc_wz_c" default="1.0"/>
+  <arg name="stddev_proc_vx_c" default="0.1"/>
+  <arg name="stddev_proc_wz_c" default="0.05"/>
 
 
   <node pkg="ekf_localizer" type="ekf_localizer" name="ekf_localizer" output="screen">
