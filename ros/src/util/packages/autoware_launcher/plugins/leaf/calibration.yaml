@@ -14,7 +14,7 @@ args:
 panel:
   widget: node.panel
   frames:
-  - {target: args.calibration_file, widget: basic.text}
+  - {target: args.calibration_file, widget: basic.file}
   - {target: args.register_lidar2camera_tf, widget: basic.bool}
   - {target: args.publish_extrinsic_mat, widget: basic.bool}
   - {target: args.publish_camera_info, widget: basic.bool}

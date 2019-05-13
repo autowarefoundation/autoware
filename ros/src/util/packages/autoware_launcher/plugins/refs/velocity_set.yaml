@@ -1,5 +1,5 @@
 format: Autoware Launcher Plugin Version 0.1
-rosxml: $(find astar_planner)/launch/velocity_set.launch
+rosxml: $(find waypoint_planner)/launch/velocity_set.launch
 args:
 - {name: use_crosswalk_detection, type: bool, default: true}
 - {name: points_topic, type: str, default: points_no_ground}

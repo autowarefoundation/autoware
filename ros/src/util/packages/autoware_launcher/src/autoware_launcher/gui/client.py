@@ -33,15 +33,11 @@ class AwQtGuiClient(object):
         self.__server = server
         self.__server.register_client(self)
 
-
-
     def guimgr(self):
         return self.__guimgr
 
     def select_config(self, lpath): # ToDo: consider moving to guimgr
         self.__treeview.select_config(lpath)
-
-
 
     def start(self, profile=None, skin=None):
 
@@ -119,10 +115,8 @@ class AwQtGuiClient(object):
                 mainwidget.setCurrentWidget(self.__quickstart)
         window.addViewMenu("Develop Mode", switch_develop_mode)
 
-        # Debug
-        #mainwidget.setCurrentWidget(self.__develop)
         simulations.hide()
-        self.__sim_rosbag.rosbag_file.path.setText(myutils.userhome(".autoware/log/20150324.bag"))
+        self.__sim_rosbag.rosbag_file.path.setText(myutils.userhome(".autoware/sample_moriyama_150324.bag"))
 
         # connect objects
         self.__server.register_runner(self.__process)
@@ -146,8 +140,6 @@ class AwQtGuiClient(object):
             self.__server.make_profile("root/default")
 
         return application.exec_()
-
-
 
     def profile_updated(self):
         self.__mirror.clear()
@@ -206,6 +198,3 @@ class AwQtGuiClient(object):
 
     def update_node(self, lpath, ldata):
         return self.__server.update_node(lpath, ldata)
-
-
-
