@@ -26,11 +26,9 @@ public:
   MPCWaypointsConverter()
   {
     pub_waypoints_ = nh_.advertise<autoware_msgs::Lane>("/mpc_waypoints", 1);
-    pub_vehicle_status_ = nh_.advertise<autoware_msgs::VehicleStatus>("/vehicle_status", 1);
     sub_closest_waypoint_ = nh_.subscribe("/closest_waypoint", 1, &MPCWaypointsConverter::callbackClosestWaypoints, this);
     sub_base_waypoints_ = nh_.subscribe("/base_waypoints", 1, &MPCWaypointsConverter::callbackBaseWaypoints, this);
     sub_final_waypoints_ = nh_.subscribe("/final_waypoints", 1, &MPCWaypointsConverter::callbackFinalWaypoints, this);
-    sub_current_velocity_ = nh_.subscribe("/current_velocity", 1, &MPCWaypointsConverter::callbackCurrentVelocity, this);
 
     closest_idx_ = 0;
     back_waypoints_num_ = 10;
@@ -40,31 +38,13 @@ public:
 
 private:
   ros::NodeHandle nh_, pnh_;
-  ros::Publisher pub_waypoints_, pub_vehicle_status_;
+  ros::Publisher pub_waypoints_;
   ros::Subscriber sub_closest_waypoint_, sub_base_waypoints_, sub_final_waypoints_, sub_current_velocity_;
 
   autoware_msgs::Lane base_waypoints_;
   int closest_idx_;
   int back_waypoints_num_;
   int front_waypoints_num_;
-
-  void callbackCurrentVelocity(const geometry_msgs::TwistStamped &msg) {
-    double wheelbase = 2.79;
-    static double steer_rad = 0.0;
-    
-    if (std::fabs(msg.twist.linear.x) > 0.1) {
-      steer_rad = std::atan2(wheelbase * msg.twist.angular.z, msg.twist.linear.x);
-    }
-    
-    autoware_msgs::VehicleStatus vs;
-    vs.header = msg.header;
-    vs.speed = msg.twist.linear.x;
-    vs.angle = steer_rad;
-
-    pub_vehicle_status_.publish(vs);
-
-
-  }
 
   void callbackClosestWaypoints(const std_msgs::Int32 msg)
   {
