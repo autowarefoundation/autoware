@@ -49,42 +49,42 @@ private:
   ros::Timer timer_control_, timer_tf_;
   tf2_ros::TransformBroadcaster tf_br_;
 
-  TimeDelayKalmanFilter ekf_;
+  TimeDelayKalmanFilter ekf_; //!< @brief  extended kalman filter instance.
 
   /* parameters */
   bool show_debug_info_;
-  double ekf_rate_;                 // EKF predict rate
-  double ekf_dt_;                   // = 1 / ekf_rate_
-  double tf_rate_;                  // tf publish rate
-  bool enable_yaw_bias_estimation_; // for LiDAR mount error. if true, publish /estimate_yaw_bias
+  double ekf_rate_;                 //!< @brief  EKF predict rate
+  double ekf_dt_;                   //!< @brief  = 1 / ekf_rate_
+  double tf_rate_;                  //!< @brief  tf publish rate
+  bool enable_yaw_bias_estimation_; //!< @brief  for LiDAR mount error. if true, publish /estimate_yaw_bias
   std::string pose_frame_id_;
 
-  int dim_x_;             // dimension of EKF state
-  int extend_state_step_; // for time delay compensation
-  int dim_x_ex_;          // dimension of extended EKF state (dim_x_ * extended_state_step)
+  int dim_x_;             //!< @brief  dimension of EKF state
+  int extend_state_step_; //!< @brief  for time delay compensation
+  int dim_x_ex_;          //!< @brief  dimension of extended EKF state (dim_x_ * extended_state_step)
 
   /* Pose */
-  double pose_additional_delay_;         // compensated pose delay time = (pose.header.stamp - now) + additional_delay [s]
-  double pose_measure_uncertainty_time_; // added for measurement covariance
-  double pose_rate_;                     // pose rate [s], used for covariance calculation
-  double pose_gate_dist_;                // pose measurement is ignored if the maharanobis distance is larger than this value.
-  double pose_stddev_x_;
-  double pose_stddev_y_;
-  double pose_stddev_yaw_;
-  bool use_pose_with_covariance_;
+  double pose_additional_delay_;         //!< @brief  compensated pose delay time = (pose.header.stamp - now) + additional_delay [s]
+  double pose_measure_uncertainty_time_; //!< @brief  added for measurement covariance
+  double pose_rate_;                     //!< @brief  pose rate [s], used for covariance calculation
+  double pose_gate_dist_;                //!< @brief  pose measurement is ignored if the maharanobis distance is larger than this value.
+  double pose_stddev_x_;                 //!< @brief  standard deviation for pose position x [m]
+  double pose_stddev_y_;                 //!< @brief  standard deviation for pose position y [m]
+  double pose_stddev_yaw_;               //!< @brief  standard deviation for pose position yaw [rad]
+  bool use_pose_with_covariance_;        //!< @brief  use covariance in pose_with_covarianve message
 
   /* twist */
-  double twist_additional_delay_; // compensated delay time = (twist.header.stamp - now) + additional_delay [s]
-  double twist_rate_;             // rate [s], used for covariance calculation
-  double twist_gate_dist_;        // measurement is ignored if the maharanobis distance is larger than this value.
-  double twist_stddev_vx_;        // standard deviation for linear vx
-  double twist_stddev_wz_;        // standard deviation for angular wx
+  double twist_additional_delay_; //!< @brief  compensated delay time = (twist.header.stamp - now) + additional_delay [s]
+  double twist_rate_;             //!< @brief  rate [s], used for covariance calculation
+  double twist_gate_dist_;        //!< @brief  measurement is ignored if the maharanobis distance is larger than this value.
+  double twist_stddev_vx_;        //!< @brief  standard deviation for linear vx
+  double twist_stddev_wz_;        //!< @brief  standard deviation for angular wx
 
   /* process noise variance for discrete model */
-  double cov_proc_yaw_d_;      // discrete yaw process noise
-  double cov_proc_yaw_bias_d_; // discrete yaw bias process noise
-  double cov_proc_vx_d_;
-  double cov_proc_wz_d_;
+  double cov_proc_yaw_d_;      //!< @brief  discrete yaw process noise
+  double cov_proc_yaw_bias_d_; //!< @brief  discrete yaw bias process noise
+  double cov_proc_vx_d_;       //!< @brief  discrete process noise in d_vx=0
+  double cov_proc_wz_d_;       //!< @brief  discrete process noise in d_wz=0
 
   enum IDX
   {
@@ -97,30 +97,98 @@ private:
   };
 
   /* for model prediction */
-  std::shared_ptr<geometry_msgs::TwistStamped> current_twist_ptr_;
-  std::shared_ptr<geometry_msgs::PoseStamped> current_pose_ptr_;
-  geometry_msgs::PoseStamped current_ekf_pose_;
-  geometry_msgs::TwistStamped current_ekf_twist_;
+  std::shared_ptr<geometry_msgs::TwistStamped> current_twist_ptr_; //!< @brief current measured twist
+  std::shared_ptr<geometry_msgs::PoseStamped> current_pose_ptr_;   //!< @brief current measured pose
+  geometry_msgs::PoseStamped current_ekf_pose_;                    //!< @brief current estimated pose
+  geometry_msgs::TwistStamped current_ekf_twist_;                  //!< @brief current estimated twist
   boost::array<double, 36ul> current_pose_covariance_;
 
+  /**
+   * @brief computes update & prediction of EKF for each ekf_dt_[s] time
+   */
   void timerCallback(const ros::TimerEvent &e);
+
+  /**
+   * @brief publish tf for tf_rate [Hz]
+   */
   void timerTFCallback(const ros::TimerEvent &e);
+
+   /**
+   * @brief set pose measurement
+   */ 
   void callbackPose(const geometry_msgs::PoseStamped::ConstPtr &msg);
+
+   /**
+   * @brief set twist measurement
+   */ 
   void callbackTwist(const geometry_msgs::TwistStamped::ConstPtr &msg);
+
+   /**
+   * @brief set poseWithCovariance measurement
+   */ 
   void callbackPoseWithCovariance(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg);
+
+   /**
+   * @brief set initial_pose to current EKF pose
+   */ 
   void callbackInitialPose(const geometry_msgs::PoseWithCovarianceStamped &msg);
 
+  /**
+   * @brief initialization of EKF
+   */
   void initEKF();
+
+  /**
+   * @brief compute EKF prediction 
+   */
   void predictKinematicsModel();
+
+  /**
+   * @brief compute EKF update with pose measurement
+   * @param pose measurement value
+   */
   void measurementUpdatePose(const geometry_msgs::PoseStamped &pose);
+
+  /**
+   * @brief compute EKF update with pose measurement
+   * @param twist measurement value
+   */
   void measurementUpdateTwist(const geometry_msgs::TwistStamped &twist);
-  bool mahalanobisGate(const double &dist_max, const Eigen::MatrixXd &x, const Eigen::MatrixXd &obj_x, const Eigen::MatrixXd &cov);
+
+  /**
+   * @brief check whether a measurement value falls within the mahalanobis distance threshold
+   * @param dist_max mahalanobis distance threshold
+   * @param estimated current estimated state
+   * @param measured measured state
+   * @param estimated_cov current estimation covariance
+   * @return whether it falls within the mahalanobis distance threshold
+   */
+  bool mahalanobisGate(const double &dist_max, const Eigen::MatrixXd &estimated, const Eigen::MatrixXd &measured, const Eigen::MatrixXd &estimated_cov);
+
+  /**
+   * @brief get transform from frame_id
+   */
   bool getTransformFromTF(std::string parent_frame, std::string child_frame, geometry_msgs::TransformStamped &transform);
+
+  /**
+   * @brief normalize yaw angle
+   * @param yaw yaw angle
+   * @return normalized yaw
+   */
   double normalizeYaw(const double &yaw);
 
+  /**
+   * @brief set current EKF estimation result to current_ekf_pose_ & current_ekf_twist_
+   */
   void setCurrentResult();
+
+  /**
+   * @brief get transform from frame_id
+   */
   void publishEstimatedPose();
 
-  // debug
+  /**
+   * @brief for debug
+   */
   void showCurrentX();
 };
