@@ -27,8 +27,6 @@
 #include <lidar_localizer/util/data_structs.h>
 #include <lidar_localizer/util/util_functions.h>
 
-#include <visualization_msgs/MarkerArray.h>
-
 #include <boost/filesystem.hpp>
 
 NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)

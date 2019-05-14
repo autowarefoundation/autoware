@@ -16,6 +16,9 @@
 
 #include "lidar_localizer/lidar_localizer.h"
 
+#include <iostream>
+#include <thread>
+
 template <class PointSource, class PointTarget>
 LidarLocalizer<PointSource, PointTarget>::LidarLocalizer()
     : is_init_map_(false), map_point_size_(0), align_time_(0),
