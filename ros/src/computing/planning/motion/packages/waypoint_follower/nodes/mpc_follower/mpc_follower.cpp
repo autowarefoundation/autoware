@@ -158,7 +158,7 @@ MPCFollower::MPCFollower()
 void MPCFollower::timerCallback(const ros::TimerEvent &te)
 {
 
-  /* check flags */
+  /* guard */
   if (vehicle_model_ptr_ == nullptr || qpsolver_ptr_ == nullptr)
   {
     DEBUG_INFO("[MPC] vehicle_model = %d, qp_solver = %d", !(vehicle_model_ptr_ == nullptr), !(qpsolver_ptr_ == nullptr));
@@ -184,6 +184,7 @@ void MPCFollower::timerCallback(const ros::TimerEvent &te)
   double elapsed_ms = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - start).count() * 1.0e-6;
   DEBUG_INFO("[MPC] timerCallback: MPC calculating time = %f [ms]\n", elapsed_ms);
 
+  /* publish computing time */
   std_msgs::Float32 mpc_calc_time_msg;
   mpc_calc_time_msg.data = elapsed_ms;
   pub_debug_mpc_calc_time_.publish(mpc_calc_time_msg);
@@ -414,17 +415,17 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &acc_cmd, double &steer_c
   H.triangularView<Eigen::Upper>() += Rex;
   H.triangularView<Eigen::Lower>() = H.transpose();
   Eigen::MatrixXd f = (Cex * (Aex * x0 + Wex)).transpose() * QCB - Urefex.transpose() * Rex;
-  Eigen::VectorXd Uex;
-
+  
   /* constraint matrix : lb < U < ub, lbA < A*U < ubA */
   const double u_lim = steer_lim_deg_ * DEG2RAD;
   Eigen::MatrixXd A = Eigen::MatrixXd::Zero(DIM_U * N, DIM_U * N);
   Eigen::MatrixXd lbA = Eigen::MatrixXd::Zero(DIM_U * N, 1);
   Eigen::MatrixXd ubA = Eigen::MatrixXd::Zero(DIM_U * N, 1);
-  Eigen::VectorXd lb = Eigen::VectorXd::Constant(DIM_U * N, -u_lim);
-  Eigen::VectorXd ub = Eigen::VectorXd::Constant(DIM_U * N, u_lim);
+  Eigen::VectorXd lb = Eigen::VectorXd::Constant(DIM_U * N, -u_lim); // min steering angle
+  Eigen::VectorXd ub = Eigen::VectorXd::Constant(DIM_U * N, u_lim);  // max steering angle
 
   auto start = std::chrono::system_clock::now();
+  Eigen::VectorXd Uex;
   if (!qpsolver_ptr_->solve(H, f.transpose(), A, lb, ub, lbA, ubA, Uex))
   {
     ROS_WARN("[MPC] qp solver error");
@@ -454,12 +455,11 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &acc_cmd, double &steer_c
 
   steer_cmd_prev_ = steer_cmd;
 
-
-  ////////////////// DEBUG ///////////////////
-
   DEBUG_INFO("[MPC] calculateMPC: mpc steer command raw = %f, filtered = %f, steer_vel_cmd = %f", Uex(0, 0), u_filtered, steer_vel_cmd);
   DEBUG_INFO("[MPC] calculateMPC: mpc vel command = %f, acc_cmd = %f", vel_cmd, acc_cmd);
 
+
+  ////////////////// DEBUG ///////////////////
 
   /* calculate predicted trajectory */
   Eigen::VectorXd Xex = Aex * x0 + Bex * Uex + Wex;

@@ -93,13 +93,13 @@ private:
     double dt;                                      // prediction horizon period
     double weight_lat_error;                        // for weight matrix Q
     double weight_heading_error;                    // for weight matrix Q
-    double weight_heading_error_squared_vel_coeff;  //
+    double weight_heading_error_squared_vel_coeff;  // for weight matrix Q
     double weight_steering_input;                   // for weight matrix R
-    double weight_steering_input_squared_vel_coeff; //
-    double weight_lat_jerk;                         //
-    double weight_terminal_lat_error;
-    double weight_terminal_heading_error;
-    double zero_ff_steer_deg;                    // set reference curvature to zero when the value is smaller than this.
+    double weight_steering_input_squared_vel_coeff; // for weight matrix R
+    double weight_lat_jerk;                         // for weight matrix R
+    double weight_terminal_lat_error;               // for weight matrix Q
+    double weight_terminal_heading_error;           // for weight matrix Q
+    double zero_ff_steer_deg;                       // set reference curvature to zero when the value is smaller than this.
   };
   MPCParam mpc_param_; // for mpc design
 
