@@ -16,6 +16,9 @@
   <arg name="localizing_points_topic" default="/filtered_points" />
   <arg name="points_queue_size" default="1" />
 
+  <arg name="use_fusion_localizer_feedback" default="false" />
+  <arg name="current_pose_topic" default="/ekf_pose" />
+
   <arg name="target_frame" default="base_link" />
   <arg name="world_frame" default="map" />
 
@@ -51,7 +54,6 @@
   <arg name="matching_score_mu" default="0.25" />
 
   <arg name="use_nn_point_z_when_initial_pose" default="false" />
-  <arg name="use_fusion_localizer_feedback" default="false" />
   <arg name="publish_tf" default="true" />
 
   <node pkg="lidar_localizer" type="ndt_slam" name="$(arg node_name)" output="screen">
@@ -64,6 +66,9 @@
     <remap from="/points_raw" to="$(arg mapping_points_topic)" />
     <remap from="/filtered_points" to="$(arg localizing_points_topic)" />
     <param name="points_queue_size" value="$(arg points_queue_size)" />
+
+    <param name="use_fusion_localizer_feedback" value="$(arg use_fusion_localizer_feedback)" />
+    <remap from="/ekf_pose" to="$(arg current_pose_topic)" />
 
     <param name="target_frame" value="$(arg target_frame)" />
     <param name="world_frame" value="$(arg world_frame)" />
@@ -99,7 +104,6 @@
     <param name="matching_score_mu" value="$(arg matching_score_mu)" />
 
     <param name="use_nn_point_z_when_initial_pose" value="$(arg use_nn_point_z_when_initial_pose)" />
-    <param name="use_fusion_localizer_feedback" value="$(arg use_fusion_localizer_feedback)" />
     <param name="publish_tf" value="$(arg publish_tf)" />
   </node>
 

@@ -192,7 +192,7 @@ NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
 
   mapping_points_sub_.reset(new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_, "/points_raw", points_queue_size));
   localizing_points_sub_.reset(new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_, "/filtered_points", points_queue_size));
-  current_pose_sub_.reset(new message_filters::Subscriber<geometry_msgs::PoseStamped>(nh_, "/kf_pose", points_queue_size*1000));
+  current_pose_sub_.reset(new message_filters::Subscriber<geometry_msgs::PoseStamped>(nh_, "/ekf_pose", points_queue_size*1000));
 
   if(use_fusion_localizer_feedback) {
       points_and_pose_synchronizer_.reset(new message_filters::Synchronizer<SyncPolicyPointsAndPose>(SyncPolicyPointsAndPose(points_queue_size*1000), *mapping_points_sub_, *localizing_points_sub_, *current_pose_sub_));

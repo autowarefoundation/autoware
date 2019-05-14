@@ -90,6 +90,10 @@ subs :
             flags : [ nl ]
           points_queue_size :
             flags : [ nl ]
+          current_pose_topic :
+            flags : [ nl ]
+            depend      : use_fusion_localizer_feedback
+            depend_bool : 'lambda v : v == 1'
           world_frame :
             flags : [ nl ]
           init_x  :
@@ -1588,6 +1592,23 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
+    - name  : use_fusion_localizer_feedback
+      desc  : use_fusion_localizer_feedback
+      label : Use Fusion Localizer Feedback
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : current_pose_topic
+      desc      : current_pose_topic
+      label     : Current Pose Topic
+      v         : /ekf_pose
+      kind      : topic
+      topic_type: geometry_msgs/PoseStamped
+      cmd_param :
+        dash      : ''
+        delim     : ':='
     - name      : target_frame
       desc      : target_frame desc sample
       label     : Target Frame
@@ -1746,14 +1767,6 @@ params :
     - name  : use_nn_point_z_when_initial_pose
       desc  : use_nn_point_z_when_initial_pose
       label : Use NN Point Z When Initial Pose
-      kind  : checkbox
-      v     : False
-      cmd_param :
-        dash      : ''
-        delim     : ':='
-    - name  : use_fusion_localizer_feedback
-      desc  : use_fusion_localizer_feedback
-      label : Use Fusion Localizer Feedback
       kind  : checkbox
       v     : False
       cmd_param :
