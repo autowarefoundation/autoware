@@ -100,7 +100,7 @@ bool MoveAverageFilter::filt_vector(const int num, std::vector<double> &u)
     return false;
   }
   std::vector<double> filtered_u(u);
-  for (int i = 0; i < u.size(); ++i)
+  for (int i = 0; i < (int)u.size(); ++i)
   {
     double tmp = 0.0;
     int num_tmp = 0;

@@ -4,10 +4,10 @@
 Waypoints follower based on model predictive control (MPC) for accurate path tracking.
 
 There are 2 nodes related to MPC path follower.
- - `/mpc_waypoint_converter` : converts `/final_waypoints` to `/mpc_waypoints` which includes waypoints behind the self position.
+ - `/mpc_waypoint_converter` : converts `/final_waypoints` to `/mpc_waypoints` which includes waypoints behind the self position. This is to solve temporary conflict of planning system and mpc, and may be removed in a future release.
  - `/mpc_follower` : generates control command (`/twist_raw` or/and `/ctrl_cmd`) to follow `/mpc_waypoints`.
 
- Why mpc_waypoints? : The current pure_pursuit and other nodes expect `/final_waypoint[0]` to be the closest point of the self position. While, mpc requires a path behind its own position to improve accuracy. The `/mpc_waypoints_converter` is to solve this temporary conflict, and will be removed in the future.
+The `/mpc_waypoints_converter` is to solve temporary conflict, and will be removed in the future.
 
 Simulation video [youtube](https://www.youtube.com/watch?v=4IO1zxsY4wU&t=18s) : comparison of pure_pursuit and mpc_follower with gazebo simulation. 
 
