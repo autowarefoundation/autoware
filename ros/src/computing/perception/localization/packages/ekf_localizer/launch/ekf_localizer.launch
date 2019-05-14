@@ -7,6 +7,7 @@
   <arg name="extend_state_step" default="50"/>
 
   <!-- for Pose measurement -->
+  <arg name="use_pose_with_covariance" default="false"/>
   <arg name="pose_additional_delay" default="0.0"/>
   <arg name="pose_measure_uncertainty_time" default="0.01"/>
   <arg name="pose_rate" default="10.0"/>
@@ -45,7 +46,7 @@
     <param name="tf_rate" value="$(arg tf_rate)"/>
     <param name="extend_state_step" value="$(arg extend_state_step)"/>
 
-
+    <param name="use_pose_with_covariance" value="$(arg use_pose_with_covariance)"/>
     <param name="pose_additional_delay" value="$(arg pose_additional_delay)"/>
     <param name="pose_measure_uncertainty_time" value="$(arg pose_measure_uncertainty_time)"/>
     <param name="pose_rate" value="$(arg pose_rate)"/>

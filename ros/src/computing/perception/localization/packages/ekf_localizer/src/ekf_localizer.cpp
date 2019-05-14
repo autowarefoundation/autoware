@@ -610,10 +610,6 @@ void EKFLocalizer::publishEstimatedPose()
   pose_cov.header.stamp = current_time;
   pose_cov.header.frame_id = current_ekf_pose_.header.frame_id;
   pose_cov.pose.pose = current_ekf_pose_.pose;
-  for (int i = 0; i < 36; ++i)
-  {
-    pose_cov.pose.covariance[i] = 0.0;
-  }
   pose_cov.pose.covariance[0] = P(IDX::X, IDX::X);      // x, x
   pose_cov.pose.covariance[1] = P(IDX::X, IDX::Y);      // x, y
   pose_cov.pose.covariance[5] = P(IDX::X, IDX::YAW);    // x, yaw

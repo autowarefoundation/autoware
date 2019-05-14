@@ -5709,7 +5709,14 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
-
+    - name      : use_pose_with_covariance
+      desc      : use_pose_with_covariance
+      label     : use covariance in pose_with_covariance message
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
     - name  : pose_additional_delay
       desc  : delay time added to pose delay
       label : pose additional delay [s]
