@@ -415,8 +415,8 @@ void NdtSlam::updateTransforms() {
         pose.x = trans.transform.translation.x;
         pose.y = trans.transform.translation.y;
         pose.z = trans.transform.translation.z;
-        tf::Quaternion q(trans.transform.rotation.x, trans.transform.rotation.y, trans.transform.rotation.z, trans.transform.rotation.w);
-        tf::Matrix3x3(q).getRPY(pose.roll, pose.pitch, pose.yaw);
+        tf2::Quaternion q(trans.transform.rotation.x, trans.transform.rotation.y, trans.transform.rotation.z, trans.transform.rotation.w);
+        tf2::Matrix3x3(q).getRPY(pose.roll, pose.pitch, pose.yaw);
         return pose;
     };
 
@@ -673,12 +673,19 @@ void NdtSlam::publish(const ros::Publisher &publisher, const std::string frame_i
 
 void NdtSlam::publishTF(const std::string &frame_id, const std::string &child_frame_id, const Pose &pose) {
 
-  tf::Transform transform;
-  transform.setOrigin(tf::Vector3(pose.x, pose.y, pose.z));
-  tf::Quaternion tf_quaternion;
+  geometry_msgs::TransformStamped transform_stamped;
+  transform_stamped.header.frame_id = frame_id;
+  transform_stamped.child_frame_id = child_frame_id;
+  transform_stamped.transform.translation.x = pose.x;
+  transform_stamped.transform.translation.y = pose.y;
+  transform_stamped.transform.translation.z = pose.z;
+  tf2::Quaternion tf_quaternion;
   tf_quaternion.setRPY(pose.roll, pose.pitch, pose.yaw);
-  transform.setRotation(tf_quaternion);
-  tf_broadcaster_.sendTransform(tf::StampedTransform(transform, current_scan_time_, frame_id, child_frame_id));
+  transform_stamped.transform.rotation.x = tf_quaternion.x();
+  transform_stamped.transform.rotation.y = tf_quaternion.y();
+  transform_stamped.transform.rotation.z = tf_quaternion.z();
+  transform_stamped.transform.rotation.w = tf_quaternion.w();
+  tf2_broadcaster_.sendTransform(transform_stamped);
 }
 
 bool NdtSlam::getTransform(const std::string &target_frame, const std::string &source_frame, const geometry_msgs::TransformStamped::Ptr &transform_stamped_ptr)

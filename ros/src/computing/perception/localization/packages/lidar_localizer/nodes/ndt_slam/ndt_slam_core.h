@@ -28,13 +28,9 @@
 #include <message_filters/sync_policies/approximate_time.h>
 #include <message_filters/synchronizer.h>
 
-#include <tf/tf.h>
-#include <tf/transform_broadcaster.h>
-#include <tf/transform_datatypes.h>
-#include <tf/transform_listener.h>
-
 #include <tf2/transform_datatypes.h>
 #include <tf2_ros/transform_listener.h>
+#include <tf2_ros/transform_broadcaster.h>
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
@@ -145,11 +141,9 @@ private:
   std::unique_ptr<message_filters::Synchronizer<SyncPolicyPoints>> points_synchronizer_;
   std::unique_ptr<message_filters::Synchronizer<SyncPolicyPointsAndPose>> points_and_pose_synchronizer_;
 
-  tf::TransformBroadcaster tf_broadcaster_;
-  tf::TransformListener tf_listener_;
-
   tf2_ros::Buffer tf2_buffer_;
   tf2_ros::TransformListener tf2_listener_;
+  tf2_ros::TransformBroadcaster tf2_broadcaster_;
 
   std::unique_ptr<NdtSlamBase<PointSource, PointTarget>> localizer_ptr_;
   MapManager<PointTarget> map_manager_;
