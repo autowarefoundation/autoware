@@ -41,34 +41,34 @@ TEST_F(KalmanFilterTestSuite, updateCase)
     Eigen::MatrixXd R = Eigen::MatrixXd::Identity(3, 3);
     Eigen::MatrixXd y_pred = y;
 
-    ASSERT_EQ(false, kf.update(y)) << "uninitialized, should be return false";
-    ASSERT_EQ(false, kf.update(y, C, R)) << "uninitialized, should be return false";
-    ASSERT_EQ(false, kf.update(y, y_pred, C, R)) << "uninitialized, should be return false";
+    ASSERT_EQ(false, kf.update(y)) << "uninitialized, false expected";
+    ASSERT_EQ(false, kf.update(y, C, R)) << "uninitialized, false expected";
+    ASSERT_EQ(false, kf.update(y, y_pred, C, R)) << "uninitialized, false expected";
 
     kf.init(x, P);
     Eigen::MatrixXd no_initialized;
-    ASSERT_EQ(false, kf.update(no_initialized)) << "inappropriate argument, should be return false";
+    ASSERT_EQ(false, kf.update(no_initialized)) << "inappropriate argument, false expected";
 
     Eigen::MatrixXd R0 = Eigen::MatrixXd::Zero(3, 3);
     Eigen::MatrixXd P0 = Eigen::MatrixXd::Zero(3, 3);
     kf.init(x, P0);
-    ASSERT_EQ(false, kf.update(y, y_pred, C, R0)) << "R0 inverse problem, should return false";
+    ASSERT_EQ(false, kf.update(y, y_pred, C, R0)) << "R0 inverse problem, false expected";
 
     kf.init(x, P);
     Eigen::MatrixXd R_bad_dim = Eigen::MatrixXd::Identity(4, 4);
-    ASSERT_EQ(false, kf.update(y, y_pred, C, R_bad_dim)) << "R dimension problem, should return false";
+    ASSERT_EQ(false, kf.update(y, y_pred, C, R_bad_dim)) << "R dimension problem, false expected";
 
     Eigen::MatrixXd y_bad_dim = Eigen::MatrixXd::Identity(4, 1);
-    ASSERT_EQ(false, kf.update(y, y_bad_dim, C, R_bad_dim)) << "y_pred dimension problem, should return false";
-    ASSERT_EQ(false, kf.update(y_bad_dim, y_pred, C, R_bad_dim)) << "y dimension problem, should return false";
+    ASSERT_EQ(false, kf.update(y, y_bad_dim, C, R_bad_dim)) << "y_pred dimension problem, false expected";
+    ASSERT_EQ(false, kf.update(y_bad_dim, y_pred, C, R_bad_dim)) << "y dimension problem, false expected";
 
     Eigen::MatrixXd C_bad_dim = Eigen::MatrixXd::Identity(2, 2);
-    ASSERT_EQ(false, kf.update(y, y_pred, C_bad_dim, R_bad_dim)) << "C dimension problem, should return false";
-    ASSERT_EQ(false, kf.update(y, y_pred, C_bad_dim)) << "C dimension problem, should return false";
+    ASSERT_EQ(false, kf.update(y, y_pred, C_bad_dim, R_bad_dim)) << "C dimension problem, false expected";
+    ASSERT_EQ(false, kf.update(y, y_pred, C_bad_dim)) << "C dimension problem, false expected";
 
     kf.init(x, P);
-    ASSERT_EQ(true, kf.update(y, y_pred, C, R)) << "normal process, should be true";
-    ASSERT_EQ(true, kf.update(y, C, R)) << "normal process, should be true";
+    ASSERT_EQ(true, kf.update(y, y_pred, C, R)) << "normal process, true expected";
+    ASSERT_EQ(true, kf.update(y, C, R)) << "normal process, true expected";
 
     kf.init(x, P);
     y << 1.0, 1.0, 1.0;
@@ -93,26 +93,26 @@ TEST_F(KalmanFilterTestSuite, predictCase)
     Eigen::MatrixXd C = Eigen::MatrixXd::Identity(3, 3);
     Eigen::MatrixXd Q = Eigen::MatrixXd::Identity(3, 3);
 
-    ASSERT_EQ(false, kf.predict(u)) << "uninitialized, should be return false";
-    ASSERT_EQ(false, kf.predict(x_next, A)) << "uninitialized, should be return false";
+    ASSERT_EQ(false, kf.predict(u)) << "uninitialized, false expected";
+    ASSERT_EQ(false, kf.predict(x_next, A)) << "uninitialized, false expected";
 
     kf.init(x, P);
     Eigen::MatrixXd no_initialized;
-    ASSERT_EQ(false, kf.predict(no_initialized, A, Q)) << "inappropriate argument, should be return false";
-    ASSERT_EQ(false, kf.predict(x_next, no_initialized, Q)) << "inappropriate argument, should be return false";
-    ASSERT_EQ(false, kf.predict(x_next, A, no_initialized)) << "inappropriate argument, should be return false";
-    ASSERT_EQ(false, kf.predict(no_initialized, no_initialized, no_initialized)) << "inappropriate argument, should be return false";
-    ASSERT_EQ(false, kf.init(x, no_initialized)) << "inappropriate argument, should be return false";
+    ASSERT_EQ(false, kf.predict(no_initialized, A, Q)) << "inappropriate argument, false expected";
+    ASSERT_EQ(false, kf.predict(x_next, no_initialized, Q)) << "inappropriate argument, false expected";
+    ASSERT_EQ(false, kf.predict(x_next, A, no_initialized)) << "inappropriate argument, false expected";
+    ASSERT_EQ(false, kf.predict(no_initialized, no_initialized, no_initialized)) << "inappropriate argument, false expected";
+    ASSERT_EQ(false, kf.init(x, no_initialized)) << "inappropriate argument, false expected";
 
     Eigen::MatrixXd A_bad_dim = Eigen::MatrixXd::Zero(4, 4);
-    ASSERT_EQ(false, kf.predict(x_next, A_bad_dim, Q)) << "A dimension problem, should be return false";
+    ASSERT_EQ(false, kf.predict(x_next, A_bad_dim, Q)) << "A dimension problem, false expected";
     Eigen::MatrixXd Q_bad_dim = Eigen::MatrixXd::Zero(4, 4);
-    ASSERT_EQ(false, kf.predict(x_next, A, Q_bad_dim)) << "Q dimension problem, should be return false";
+    ASSERT_EQ(false, kf.predict(x_next, A, Q_bad_dim)) << "Q dimension problem, false expected";
     Eigen::MatrixXd x_bad_dim = Eigen::MatrixXd::Zero(4, 1);
-    ASSERT_EQ(false, kf.predict(x_bad_dim, A, Q)) << "x dimension problem, should be return false";
+    ASSERT_EQ(false, kf.predict(x_bad_dim, A, Q)) << "x dimension problem, false expected";
 
-    ASSERT_EQ(true, kf.predict(x_next, A, Q)) << "normal process, should be true";
-    ASSERT_EQ(true, kf.predict(u, A, B, Q)) << "normal process, should be true";
+    ASSERT_EQ(true, kf.predict(x_next, A, Q)) << "normal process, true expected";
+    ASSERT_EQ(true, kf.predict(u, A, B, Q)) << "normal process, true expected";
 
     kf.init(x, P);
     A = Eigen::MatrixXd::Identity(3, 3);
