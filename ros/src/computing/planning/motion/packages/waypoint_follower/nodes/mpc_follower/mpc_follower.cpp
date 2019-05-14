@@ -43,7 +43,8 @@ MPCFollower::MPCFollower()
   pnh_.param("mpc_weight_steering_input", mpc_param_.weight_steering_input, double(1.0));
   pnh_.param("mpc_weight_steering_input_squared_vel_coeff", mpc_param_.weight_steering_input_squared_vel_coeff, double(0.0));
   pnh_.param("mpc_weight_lat_jerk", mpc_param_.weight_lat_jerk, double(0.0));
-  pnh_.param("mpc_weight_endpoint_Q_scale", mpc_param_.weight_endpoint_Q_scale, double(1.0));
+  pnh_.param("mpc_weight_terminal_lat_error", mpc_param_.weight_terminal_lat_error, double(5.0));
+  pnh_.param("mpc_weight_terminal_heading_error", mpc_param_.weight_terminal_heading_error, double(5.0));
   pnh_.param("mpc_zero_ff_steer_deg", mpc_param_.zero_ff_steer_deg, double(2.0));
 
   pnh_.param("steer_lim_deg", steer_lim_deg_, double(35.0));
@@ -338,12 +339,14 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &acc_cmd, double &steer_c
 
     Q_adaptive = Q;
     R_adaptive = R;
-    Q_adaptive(1, 1) += ref_vx_squared * mpc_param_.weight_heading_error_squared_vel_coeff;
-    R_adaptive(0, 0) += ref_vx_squared * mpc_param_.weight_steering_input_squared_vel_coeff;
     if (i == N - 1)
     {
-      Q_adaptive *= mpc_param_.weight_endpoint_Q_scale;
+        Q_adaptive(0, 0) = mpc_param_.weight_terminal_lat_error;
+        Q_adaptive(1, 1) = mpc_param_.weight_terminal_heading_error;
     }
+    Q_adaptive(1, 1) += ref_vx_squared * mpc_param_.weight_heading_error_squared_vel_coeff;
+    R_adaptive(0, 0) += ref_vx_squared * mpc_param_.weight_steering_input_squared_vel_coeff;
+
 
     /* update mpc matrix */
     int idx_x_i = i * DIM_X;
@@ -412,11 +415,6 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &acc_cmd, double &steer_c
   H.triangularView<Eigen::Lower>() = H.transpose();
   Eigen::MatrixXd f = (Cex * (Aex * x0 + Wex)).transpose() * QCB - Urefex.transpose() * Rex;
   Eigen::VectorXd Uex;
-
-  /* add lateral jerk : weight for (v0 * {u(0) - u_prev} )^2 */
-  const double lateral_jerk_weitht_0 = mpc_resampled_ref_traj.vx[0] * mpc_resampled_ref_traj.vx[0] * mpc_param_.weight_lat_jerk;
-  H(0, 0) += lateral_jerk_weitht_0;
-  f(0, 0) -= lateral_jerk_weitht_0 * steer_cmd_prev_;
 
   /* constraint matrix : lb < U < ub, lbA < A*U < ubA */
   const double u_lim = steer_lim_deg_ * DEG2RAD;

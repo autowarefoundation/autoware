@@ -97,7 +97,8 @@ private:
     double weight_steering_input;                   // for weight matrix R
     double weight_steering_input_squared_vel_coeff; //
     double weight_lat_jerk;                         //
-    double weight_endpoint_Q_scale;
+    double weight_terminal_lat_error;
+    double weight_terminal_heading_error;
     double zero_ff_steer_deg;                    // set reference curvature to zero when the value is smaller than this.
   };
   MPCParam mpc_param_; // for mpc design

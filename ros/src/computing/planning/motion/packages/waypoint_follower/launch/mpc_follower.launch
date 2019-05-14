@@ -62,7 +62,11 @@
 	<arg name="mpc_weight_lat_jerk" default="0.0"/>
 
 	<!-- endpoint error weight to improve mpc stability -->
-	<arg name="mpc_weight_endpoint_Q_scale" default="5.0"/>
+	<arg name="mpc_weight_terminal_lat_error" default="10.0"/>
+	<arg name="mpc_weight_terminal_heading_error" default="1.0"/>
+	
+
+	
 
 	<!-- To reduce path noise, feedforward angle is set to zero when it is smaller than this value. -->
 	<arg name="mpc_zero_ff_steer_deg" default="2.0"/>
@@ -121,7 +125,8 @@
 			<param name="mpc_weight_steering_input" value="$(arg mpc_weight_steering_input)"/>
 			<param name="mpc_weight_steering_input_squared_vel_coeff" value="$(arg mpc_weight_steering_input_squared_vel_coeff)"/>
 			<param name="mpc_weight_lat_jerk" value="$(arg mpc_weight_lat_jerk)"/>
-			<param name="mpc_weight_endpoint_Q_scale" value="$(arg mpc_weight_endpoint_Q_scale)"/>
+			<param name="mpc_weight_terminal_lat_error" value="$(arg mpc_weight_terminal_lat_error)"/>
+			<param name="mpc_weight_terminal_heading_error" value="$(arg mpc_weight_terminal_heading_error)"/>
 			<param name="mpc_zero_ff_steer_deg" value="$(arg mpc_zero_ff_steer_deg)"/>
 			<param name="vehicle_model_steer_tau" value="$(arg vehicle_model_steer_tau)"/>
 			<param name="vehicle_model_wheelbase" value="$(arg vehicle_model_wheelbase)"/>
