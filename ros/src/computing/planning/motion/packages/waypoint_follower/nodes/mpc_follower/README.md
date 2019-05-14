@@ -66,7 +66,7 @@ The default parameters are adjusted to the Autonomoustuff Lexus RX 450h with und
 |weight_lat_jerk|double|weight for lateral jerk (steer(i) - steer(i-1)) * velocity for MPC|0.0|
 |weight_terminal_lat_error|double|terminal cost weight of lateral error|1.0|
 |weight_terminal_heading_error|double|terminal cost weight of heading error|0.0|
-|zero_ff_steer_deg|double|feedforward angle is set to zero when it is smaller than this value, for reference path noise|
+|zero_ff_steer_deg|double|feedforward angle is set to zero when it is smaller than this value, for reference path noise|2.0|
 
 ## vehicle
 
