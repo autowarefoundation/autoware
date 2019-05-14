@@ -34,6 +34,7 @@
 #include <autoware_msgs/State.h>
 #include <autoware_msgs/TrafficLight.h>
 #include <autoware_msgs/VehicleCmd.h>
+#include <autoware_msgs/VehicleLocation.h>
 #include <autoware_msgs/Waypoint.h>
 #include <autoware_msgs/WaypointState.h>
 #include <vector_map/vector_map.h>
@@ -103,8 +104,10 @@ struct AutowareStatus
 
   int found_stopsign_idx;
   int prev_stopped_wpidx;
+  int ordered_stop_idx;
+  int prev_ordered_idx;
 
-  AutowareStatus(void) : closest_waypoint(-1), obstacle_waypoint(-1), velocity(0), found_stopsign_idx(-1), prev_stopped_wpidx(-1)
+  AutowareStatus(void) : closest_waypoint(-1), obstacle_waypoint(-1), velocity(0), found_stopsign_idx(-1), prev_stopped_wpidx(-1), ordered_stop_idx(-1), prev_ordered_idx(-1)
   {
   }
 
@@ -154,6 +157,7 @@ private:
   double change_threshold_angle_;
   double goal_threshold_dist_;
   double goal_threshold_vel_;
+  double stopped_vel_;
   int stopline_reset_count_;
 
   // initialization method
@@ -185,6 +189,8 @@ private:
   bool drivingMissionCheck(void);
 
   double calcIntersectWayAngle(const autoware_msgs::Lane& laneinArea);
+  double getDistToWaypointIdx(int wpidx);
+  double calcRequiredDistForStop(void);
 
   uint8_t getSteeringStateFromWaypoint(void);
   uint8_t getEventStateFromWaypoint(void);
@@ -285,7 +291,6 @@ private:
   // entry callback
   void entryDriveState(cstring_t& state_name, int status);
   void entryGoState(cstring_t& state_name, int status);
-  void entryStopState(cstring_t& state_name, int status);
   // update callback
   void updateWaitDriveReadyState(cstring_t& state_name, int status);
   void updateWaitEngageState(cstring_t& state_name, int status);
@@ -295,9 +300,13 @@ private:
   void updateWaitState(cstring_t& state_name, int status);
   void updateStopState(cstring_t& state_name, int status);
   void updateStoplineState(cstring_t& state_name, int status);
+  void updateOrderedStopState(cstring_t& state_name, int status);
+  void updateReservedStopState(cstring_t& state_name, int status);
   // exit callback
   void exitWaitState(cstring_t& state_name, int status);
   void exitStopState(cstring_t& state_name, int status);
+  void exitOrderedStopState(cstring_t& state_name, int status);
+  void exitReservedStopState(cstring_t& state_name, int status);
 
   // callback by topic subscribing
   void callbackFromFilteredPoints(const sensor_msgs::PointCloud2::ConstPtr& msg);
@@ -312,6 +321,8 @@ private:
   void callbackFromConfig(const autoware_config_msgs::ConfigDecisionMaker& msg);
   void callbackFromStateCmd(const std_msgs::String& msg);
   void callbackFromObstacleWaypoint(const std_msgs::Int32& msg);
+  void callbackFromStopOrder(const std_msgs::Int32& msg);
+  void callbackFromClearOrder(const std_msgs::Int32& msg);
 
   void setEventFlag(cstring_t& key, const bool& value)
   {
@@ -346,6 +357,7 @@ public:
     , change_threshold_angle_(15)
     , goal_threshold_dist_(3.0)
     , goal_threshold_vel_(0.1)
+    , stopped_vel_(0.1)
     , stopline_reset_count_(20)
   {
     std::string file_name_mission;
@@ -374,6 +386,7 @@ public:
     private_nh_.getParam("change_threshold_angle", change_threshold_angle_);
     private_nh_.getParam("goal_threshold_dist", goal_threshold_dist_);
     private_nh_.getParam("goal_threshold_vel", goal_threshold_vel_);
+    private_nh_.getParam("stopped_vel", stopped_vel_);
     private_nh_.getParam("stopline_reset_count", stopline_reset_count_);
     current_status_.prev_stopped_wpidx = -1;
   }
