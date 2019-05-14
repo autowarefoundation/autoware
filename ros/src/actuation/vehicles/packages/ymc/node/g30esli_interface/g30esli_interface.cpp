@@ -238,6 +238,9 @@ void G30esliInterface::run()
       g30esli_ros_.emergencyStop(mode);
     }
 
+    // reset speed command when restarting
+    g30esli_ros_.checkRestart(mode);
+
     // send command
     g30esli_ros_.sendCommand(mode);
 

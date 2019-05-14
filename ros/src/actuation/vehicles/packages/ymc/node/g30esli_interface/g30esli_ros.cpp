@@ -16,7 +16,8 @@
 
 #include "g30esli_ros.h"
 
-G30esliROS::G30esliROS() : alive_(0)
+G30esliROS::G30esliROS()
+  : alive_(0), reset_command_(false), stop_keep_secs_(1.0), reset_keep_secs_(0.6), disable_reset_secs_(3.0)
 {
 }
 
@@ -39,7 +40,7 @@ void G30esliROS::updateAutoCommand(const autoware_msgs::VehicleCmd& msg, const b
 
   // speed
   double speed_kmph = msg.ctrl_cmd.linear_velocity * 3.6;  // [m/s] -> [km/h]
-  cmd.command.speed = engage ? speed_kmph : 0.0;
+  cmd.command.speed = (engage && !reset_command_) ? speed_kmph : 0.0;
 
   // steer
   double steering_angle_deg = msg.ctrl_cmd.steering_angle / M_PI * 180.0;  // [rad] -> [deg]
@@ -163,7 +164,7 @@ void G30esliROS::receiveStatus(const double& steering_offset_deg)
 
   // update twist
   double lv = status_.status.speed.actual / 3.6;                                    // [km/h] -> [m/s]
-  double th = (-status_.status.steer.actual + steering_offset_deg) * M_PI / 180.0;  // [deg] -> [rad]
+  double th = (-status_.status.steer.actual - steering_offset_deg) * M_PI / 180.0;  // [deg] -> [rad]
   double az = std::tan(th) * lv / G30ESLI_WHEEL_BASE;                               // [rad] -> [rad/s]
   current_twist_.header.frame_id = "base_link";
   current_twist_.header.stamp = now;
@@ -203,13 +204,13 @@ void G30esliROS::receiveStatus(const double& steering_offset_deg)
   vehicle_status_.speed = status_.status.speed.actual;  // [kmph]
 
   // drivepedal
-  vehicle_status_.drivepedal = status_.status.override.accel;  // TODO: scaling
+  vehicle_status_.drivepedal = status_.status.override.accel;  // [-]
 
   // brakepedal
-  vehicle_status_.brakepedal = status_.status.override.brake;  // TODO: scaling
+  vehicle_status_.brakepedal = status_.status.override.brake;  // [-]
 
   // angle
-  vehicle_status_.angle = -status_.status.steer.actual;  // [deg]
+  vehicle_status_.angle = -status_.status.steer.actual - steering_offset_deg;  // [deg]
 
   // lamp
   if (status_.status.override.flasher == G30ESLI_FLASHER_NONE)
@@ -244,6 +245,58 @@ bool G30esliROS::checkTimeout(const MODE& mode, const double& timeout)
   double dtms = (ros::Time::now() - cmd.time).toSec() * 1000;
   bool timeouted = (dtms > timeout);
   return (cmd.received && timeouted);
+}
+
+void G30esliROS::checkRestart(const MODE& mode)
+{
+  static bool initialize = false;
+  static double stop_keep_dt = 0.0;
+  static ros::Time prev_time, start_reset_time, end_reset_time;
+
+  ros::Time curr_time = ros::Time::now();
+
+  if (!initialize)
+  {
+    prev_time = curr_time;
+    initialize = true;
+    return;
+  }
+
+  Command& cmd = commands_[(int)mode];
+  bool is_positive_command = (cmd.command.speed > 0.0);
+  bool is_stopped = (vehicle_status_.speed < 0.01);
+
+  if (!reset_command_)
+  {
+    if (!((curr_time - end_reset_time).toSec() > disable_reset_secs_))
+    {
+      if (is_positive_command && is_stopped)
+      {
+        stop_keep_dt += (curr_time - prev_time).toSec();
+      }
+      else
+      {
+        stop_keep_dt = 0.0;
+      }
+      if (stop_keep_dt > stop_keep_secs_)
+      {
+        reset_command_ = true;
+        start_reset_time = curr_time;
+        stop_keep_dt = 0.0;
+      }
+    }
+  }
+  else
+  {
+    double reset_keep_dt = (curr_time - start_reset_time).toSec();
+    if (reset_keep_dt > reset_keep_secs_)
+    {
+      reset_command_ = false;
+      end_reset_time = curr_time;
+    }
+  }
+
+  prev_time = curr_time;
 }
 
 bool G30esliROS::emergencyStop(const MODE& mode)

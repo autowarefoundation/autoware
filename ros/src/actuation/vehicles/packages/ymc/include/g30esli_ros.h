@@ -63,6 +63,9 @@ private:
   geometry_msgs::TwistStamped current_twist_;
   autoware_msgs::VehicleStatus vehicle_status_;
 
+  bool reset_command_;
+  const double stop_keep_secs_, reset_keep_secs_, disable_reset_secs_;
+
 public:
   G30esliROS();
   ~G30esliROS();
@@ -77,6 +80,7 @@ public:
   void updateAliveCounter();
 
   bool checkOverride();
+  void checkRestart(const MODE& mode);
   bool checkTimeout(const MODE& mode, const double& timeout);
   bool emergencyStop(const MODE& mode);
 
