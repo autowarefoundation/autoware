@@ -1681,6 +1681,30 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name  : ctrl_period
+      desc  : ctrl_period
+      label : ctrl_period [s]
+      min   : 0.001
+      max   : 0.1
+      v     : 0.03
+    - name  : admisible_position_error
+      desc  : stop vehicle if tracking error exceeds this limit
+      label : admisible position error [m]
+      min   : 1.0
+      max   : 100.0
+      v     : 5.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : admisible_yaw_error_deg
+      desc  : stop vehicle if tracking error exceeds this limit
+      label : admisible yaw error [deg]
+      min   : 1.0
+      max   : 360.0
+      v     : 90.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name  : mpc_n
       desc  : mpc_n
       label : prediction holizon [-]
@@ -1788,12 +1812,12 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name  : path_filter_moving_ave_num
-      desc  : moving average number for path smoothing
-      label : path smoothing moving average number
-      min   : 1
-      max   : 50
-      v     : 35
+    - name  : path_smoothing_times
+      desc  : path_smoothing_times
+      label : path smoothing number of times
+      min   : 0
+      max   : 3
+      v     : 1
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -1826,7 +1850,7 @@ params :
         delim       : ':='
     - name  : vehicle_model_steer_tau
       desc  : vehicle_model_steer_tau
-      label : steering delay time constant
+      label : steering tau
       min   : 0.001
       max   : 5.0
       v     : 0.3
@@ -1835,7 +1859,7 @@ params :
         delim       : ':='
     - name  : vehicle_model_wheelbase
       desc  : vehicle_model_wheelbase
-      label : vehicle wheelbase [m]
+      label : wheelbase [m]
       min   : 0.1
       max   : 10.0
       v     : 2.9
