@@ -34,7 +34,7 @@
 #include <autoware_msgs/VehicleStatus.h>
 
 #include "amathutils_lib/kalman_filter.hpp"
-#include "amathutils_lib/kalman_filter_delayed_measurement.hpp"
+#include "amathutils_lib/time_delay_kalman_filter.hpp"
 
 class EKFLocalizer
 {
@@ -49,7 +49,7 @@ private:
   ros::Timer timer_control_, timer_tf_;
   tf2_ros::TransformBroadcaster tf_br_;
 
-  KalmanFilterDelayedMeasurement ekf_;
+  TimeDelayKalmanFilter ekf_;
 
   /* parameters */
   bool show_debug_info_;

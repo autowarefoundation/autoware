@@ -27,7 +27,7 @@ include_directories(amathutils_lib
 add_library(amathutils_lib
         src/Amathutils.cpp
         src/kalman_filter.cpp
-        src/kalman_filter_delayed_measurement.cpp
+        src/time_delay_kalman_filter.cpp
         )
 target_link_libraries(amathutils_lib
         ${catkin_LIBRARIES}
@@ -56,6 +56,6 @@ if(CATKIN_ENABLE_TESTING)
                     test/test_kalman_filter.test
                     test/src/test_kalman_filter.cpp
                     src/kalman_filter.cpp
-                    src/kalman_filter_delayed_measurement.cpp)
+                    src/time_delay_kalman_filter.cpp)
   target_link_libraries(test-kalman_filter ${catkin_LIBRARIES})
 endif()

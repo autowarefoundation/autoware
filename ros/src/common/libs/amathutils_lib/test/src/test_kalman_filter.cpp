@@ -19,7 +19,7 @@
 #include <tf/transform_datatypes.h>
 
 #include "amathutils_lib/kalman_filter.hpp"
-#include "amathutils_lib/kalman_filter_delayed_measurement.hpp"
+#include "amathutils_lib/time_delay_kalman_filter.hpp"
 
 class KalmanFilterTestSuite : public ::testing::Test
 {
@@ -126,7 +126,7 @@ TEST_F(KalmanFilterTestSuite, predictCase)
 
 TEST_F(KalmanFilterTestSuite, delayedMeasurement)
 {
-    KalmanFilterDelayedMeasurement kfdm;
+    TimeDelayKalmanFilter tdkf;
     Eigen::MatrixXd x = Eigen::MatrixXd::Zero(3, 1);
     Eigen::MatrixXd x_next = Eigen::MatrixXd::Zero(3, 1);
     Eigen::MatrixXd y = Eigen::MatrixXd::Zero(3, 1);
@@ -137,22 +137,22 @@ TEST_F(KalmanFilterTestSuite, delayedMeasurement)
     Eigen::MatrixXd R = Eigen::MatrixXd::Identity(3, 3);
     int max_delay_step = 5;
 
-    kfdm.init(x, P, max_delay_step);
+    tdkf.init(x, P, max_delay_step);
 
     x_next << 1.0, 2.0, 3.0;
-    kfdm.predictWithDelay(x_next, A, Q);
+    tdkf.predictWithDelay(x_next, A, Q);
     Eigen::MatrixXd x_curr;
-    kfdm.getLatestX(x_curr);
+    tdkf.getLatestX(x_curr);
     ASSERT_TRUE((x_next - x_curr).norm() < 1.0E-6);
 
     int delay_step = max_delay_step - 1;
-    ASSERT_EQ(true, kfdm.updateWithDelay(y, C, R, delay_step));
+    ASSERT_EQ(true, tdkf.updateWithDelay(y, C, R, delay_step));
 
     delay_step = max_delay_step;
-    ASSERT_EQ(false, kfdm.updateWithDelay(y, C, R, delay_step));
+    ASSERT_EQ(false, tdkf.updateWithDelay(y, C, R, delay_step));
 
     delay_step = max_delay_step + 1;
-    ASSERT_EQ(false, kfdm.updateWithDelay(y, C, R, delay_step));
+    ASSERT_EQ(false, tdkf.updateWithDelay(y, C, R, delay_step));
 }
 
 int main(int argc, char **argv)

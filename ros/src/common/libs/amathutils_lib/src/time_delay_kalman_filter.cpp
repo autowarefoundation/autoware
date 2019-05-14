@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-#include "amathutils_lib/kalman_filter_delayed_measurement.hpp"
+#include "amathutils_lib/time_delay_kalman_filter.hpp"
 
-KalmanFilterDelayedMeasurement::KalmanFilterDelayedMeasurement() {}
+TimeDelayKalmanFilter::TimeDelayKalmanFilter() {}
 
-void KalmanFilterDelayedMeasurement::init(const Eigen::MatrixXd &x, const Eigen::MatrixXd &P0,
-                                          const int max_delay_step)
+void TimeDelayKalmanFilter::init(const Eigen::MatrixXd &x, const Eigen::MatrixXd &P0,
+                                 const int max_delay_step)
 {
   max_delay_step_ = max_delay_step;
   dim_x_ = x.rows();
@@ -35,11 +35,11 @@ void KalmanFilterDelayedMeasurement::init(const Eigen::MatrixXd &x, const Eigen:
   }
 };
 
-void KalmanFilterDelayedMeasurement::getLatestX(Eigen::MatrixXd &x) { x = x_.block(0, 0, dim_x_, 1); };
-void KalmanFilterDelayedMeasurement::getLatestP(Eigen::MatrixXd &P) { P = P_.block(0, 0, dim_x_, dim_x_); };
+void TimeDelayKalmanFilter::getLatestX(Eigen::MatrixXd &x) { x = x_.block(0, 0, dim_x_, 1); };
+void TimeDelayKalmanFilter::getLatestP(Eigen::MatrixXd &P) { P = P_.block(0, 0, dim_x_, dim_x_); };
 
-bool KalmanFilterDelayedMeasurement::predictWithDelay(const Eigen::MatrixXd &x_next, const Eigen::MatrixXd &A,
-                                                      const Eigen::MatrixXd &Q)
+bool TimeDelayKalmanFilter::predictWithDelay(const Eigen::MatrixXd &x_next, const Eigen::MatrixXd &A,
+                                             const Eigen::MatrixXd &Q)
 {
   const int d_dim_x = dim_x_ex_ - dim_x_;
 
@@ -65,8 +65,8 @@ bool KalmanFilterDelayedMeasurement::predictWithDelay(const Eigen::MatrixXd &x_n
   return true;
 };
 
-bool KalmanFilterDelayedMeasurement::updateWithDelay(const Eigen::MatrixXd &y, const Eigen::MatrixXd &C,
-                                                     const Eigen::MatrixXd &R, const int delay_step)
+bool TimeDelayKalmanFilter::updateWithDelay(const Eigen::MatrixXd &y, const Eigen::MatrixXd &C,
+                                            const Eigen::MatrixXd &R, const int delay_step)
 {
   if (delay_step >= max_delay_step_)
   {
