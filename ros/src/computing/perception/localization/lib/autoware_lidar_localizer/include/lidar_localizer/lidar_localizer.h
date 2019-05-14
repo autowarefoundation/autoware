@@ -18,12 +18,7 @@
 #define LIDAR_LOCALIZER_H
 
 #include <chrono>
-#include <fstream>
-#include <iostream>
-#include <sstream>
 #include <string>
-#include <sys/stat.h>
-#include <thread>
 
 #include <pcl/common/transforms.h>
 #include <pcl/filters/voxel_grid.h>

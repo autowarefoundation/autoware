@@ -18,7 +18,6 @@
 #define NDT_SLAM_CORE_H
 
 #include <array>
-#include <deque>
 #include <memory>
 #include <string>
 
