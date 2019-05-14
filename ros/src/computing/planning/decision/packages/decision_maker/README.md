@@ -138,9 +138,11 @@ WaitEngage|-|Waits for engage button in DecisionMakerPanel to be pressed|No impl
 MotionEmergency|-|Vehicle is stopping due to emergency |No implementation.
 Drive|/closest_waypoint </br> /final_waypoints|Vehicle drives according to the waypoint|mission_aborted key if waypoint is far from the vehicle.(i.e. vehicle moves out of the waypoint) Throws arrived_goal key if vehicle is near the end of the waypoints.  
 Go|-|Vehicle is moving|Throws found_stopline if stopline is nearby. Throws completely_stopped if vehicle stops due to obstacle.
-Stop|-|vehicle is stopping since stop signal is sent from other nodes (e.g. by stop button on decisionMakerPanel)|Publishes /state/stopline_wpidx with the index = closest_waypoint + 1.
 Wait|-|Vehilce is waiting (e.g. due to safety reason)|Publishes /state/stopline_wpidx with the index = closest_waypoint + 1.
+Stop|-|Vehicle stops in the middle of the waypoints|Throws found_stopline, found_reserved_stop, received_stop_order, clear key depending on waypoint state and /state/stop_order_wpidx topic.
 StopLine|/vector_map_info/stop_line|Vehicle is stopping due to stop line|Throws clear key after vehicle stops for 0.5 seconds.
+OrderedStop|/state/stop_order_wpidx|Vehicle is stopping at the index of required topic|Throws clear key if the topic was updated with an invalid index.
+ReservedStop|-|Vehicle is stopping at the waypoint which includs stop_flag is 2|Wait for clear key after the vehicle stops.
 
 ## Basic Usage in Autoware
 
