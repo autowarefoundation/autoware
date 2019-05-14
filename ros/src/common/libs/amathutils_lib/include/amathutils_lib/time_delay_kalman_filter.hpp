@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <iostream>
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/LU>
 #include "amathutils_lib/kalman_filter.hpp"
