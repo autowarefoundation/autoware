@@ -43,11 +43,11 @@
 #include <std_msgs/Float32.h>
 #include <std_msgs/Float64.h>
 
-#include <lidar_localizer/map_manager/map_manager.h>
-#include <lidar_localizer/matching_score/matching_score.h>
-#include <lidar_localizer/matching_score/matching_score_histogram.h>
-#include <lidar_localizer/ndt/ndt_slam_pcl.h>
-#include <lidar_localizer/pose_linear_interpolator/pose_linear_interpolator.h>
+#include <autoware_lidar_localizer/map_manager/map_manager.h>
+#include <autoware_lidar_localizer/matching_score/matching_score.h>
+#include <autoware_lidar_localizer/matching_score/matching_score_histogram.h>
+#include <autoware_lidar_localizer/ndt/ndt_slam_pcl.h>
+#include <autoware_lidar_localizer/pose_linear_interpolator/pose_linear_interpolator.h>
 
 class NdtSlam {
   using PointSource = pcl::PointXYZI;

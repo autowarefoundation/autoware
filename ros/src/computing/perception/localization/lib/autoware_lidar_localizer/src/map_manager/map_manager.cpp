@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "lidar_localizer/map_manager/map_manager.h"
+#include "autoware_lidar_localizer/map_manager/map_manager.h"
 
 #include <boost/filesystem.hpp>
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "lidar_localizer/util/data_structs.h"
+#include "autoware_lidar_localizer/util/data_structs.h"
 
 #include <pcl/filters/voxel_grid.h>
 

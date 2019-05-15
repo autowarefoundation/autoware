@@ -18,7 +18,7 @@
 #ifndef MATCHING_SCORE_HISTOGRAM_H
 #define MATCHING_SCORE_HISTOGRAM_H
 
-#include "lidar_localizer/util/data_structs.h"
+#include "autoware_lidar_localizer/util/data_structs.h"
 
 class MatchingScoreHistogram
 {

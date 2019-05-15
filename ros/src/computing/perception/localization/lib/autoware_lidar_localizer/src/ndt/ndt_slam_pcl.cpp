@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "lidar_localizer/ndt/ndt_slam_pcl.h"
+#include "autoware_lidar_localizer/ndt/ndt_slam_pcl.h"
 
 template <class PointSource, class PointTarget>
 NdtSlamPCL<PointSource, PointTarget>::NdtSlamPCL()

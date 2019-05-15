@@ -17,7 +17,7 @@
 #ifndef NDT_SLAM_BASE_H
 #define NDT_SLAM_BASE_H
 
-#include "lidar_localizer/lidar_localizer.h"
+#include "autoware_lidar_localizer/lidar_localizer.h"
 
 #include <pcl/search/kdtree.h>
 

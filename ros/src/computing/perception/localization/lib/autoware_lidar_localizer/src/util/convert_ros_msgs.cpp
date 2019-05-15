@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "lidar_localizer/util/convert_ros_msgs.h"
+#include "autoware_lidar_localizer/util/convert_ros_msgs.h"
 
 geometry_msgs::PoseStamped convertToROSMsg(const std_msgs::Header &header,
                                            const Pose &pose) {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "lidar_localizer/matching_score/matching_score_histogram.h"
+#include "autoware_lidar_localizer/matching_score/matching_score_histogram.h"
 
 #include <pcl/point_types.h>
 

@@ -17,7 +17,7 @@
 #ifndef POSE_LINEAR_INTERPOLATOR_H
 #define POSE_LINEAR_INTERPOLATOR_H
 
-#include "lidar_localizer/util/data_structs.h"
+#include "autoware_lidar_localizer/util/data_structs.h"
 
 PoseStamped interpolatePose(const PoseStamped &pose_a,
                             const PoseStamped &pose_b, const double time_stamp);

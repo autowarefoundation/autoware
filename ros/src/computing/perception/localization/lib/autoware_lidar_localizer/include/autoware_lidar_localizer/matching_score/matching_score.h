@@ -20,7 +20,7 @@
 
 #include <pcl/search/kdtree.h>
 
-#include "lidar_localizer/util/data_structs.h"
+#include "autoware_lidar_localizer/util/data_structs.h"
 
 
 template<class PointType>

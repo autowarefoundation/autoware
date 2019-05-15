@@ -17,7 +17,7 @@
 #ifndef NDT_SLAM_PCL_H
 #define NDT_SLAM_PCL_H
 
-#include "lidar_localizer/ndt/ndt_slam_base.h"
+#include "autoware_lidar_localizer/ndt/ndt_slam_base.h"
 
 #include <pcl/io/io.h>
 #include <pcl/io/pcd_io.h>

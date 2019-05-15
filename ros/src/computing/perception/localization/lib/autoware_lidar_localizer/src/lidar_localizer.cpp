@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "lidar_localizer/lidar_localizer.h"
+#include "autoware_lidar_localizer/lidar_localizer.h"
 
 #include <iostream>
 #include <thread>

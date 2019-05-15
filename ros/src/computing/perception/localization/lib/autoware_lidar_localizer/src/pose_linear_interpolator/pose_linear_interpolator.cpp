@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "lidar_localizer/pose_linear_interpolator/pose_linear_interpolator.h"
+#include "autoware_lidar_localizer/pose_linear_interpolator/pose_linear_interpolator.h"
 
 PoseStamped interpolatePose(const PoseStamped &pose_a,
                             const PoseStamped &pose_b,

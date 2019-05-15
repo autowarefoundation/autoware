@@ -27,8 +27,8 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 
-#include "lidar_localizer/util/data_structs.h"
-#include "lidar_localizer/util/util_functions.h"
+#include "autoware_lidar_localizer/util/data_structs.h"
+#include "autoware_lidar_localizer/util/util_functions.h"
 
 template <class PointTarget> class MapManager {
 public:
