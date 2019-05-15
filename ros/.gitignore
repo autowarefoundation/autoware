@@ -12,6 +12,8 @@ catkin_generated/
 /build/
 /devel/
 /install/
+/log/
+/coverage_/
 /gtest/
 /build-*
 /devel-*

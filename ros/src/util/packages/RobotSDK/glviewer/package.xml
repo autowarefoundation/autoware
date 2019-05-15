@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>glviewer</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>The glviewer package</description>
     <maintainer email="syoshida@axe.bz">Syohei YOSHIDA</maintainer>
     <license>Apache 2</license>

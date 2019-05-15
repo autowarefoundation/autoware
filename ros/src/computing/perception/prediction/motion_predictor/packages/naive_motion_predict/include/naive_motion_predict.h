@@ -40,6 +40,9 @@ private:
   ros::NodeHandle nh_;
   ros::NodeHandle private_nh_;
 
+  // max prediction score
+  const double MAX_PREDICTION_SCORE_;
+
   // ros publisher
   ros::Publisher predicted_objects_pub_;
   ros::Publisher predicted_paths_pub_;
@@ -51,6 +54,7 @@ private:
   double interval_sec_;
   int num_prediction_;
   double sensor_height_;
+  double filter_out_close_object_threshold_;
 
   void objectsCallback(const autoware_msgs::DetectedObjectArray& input);
 

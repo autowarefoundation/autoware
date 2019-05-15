@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>vision_beyond_track</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>object tracker based on beyond pixel</description>
     <maintainer email="yukitsuji020832@gmail.com">Yuki Tsuji</maintainer>
     <license>Apache 2</license>

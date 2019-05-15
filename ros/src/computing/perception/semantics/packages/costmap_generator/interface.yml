@@ -1,0 +1,3 @@
+- name: /costmap_generator
+  publish: [/semantics/costmap]
+  subscribe: [/points_no_ground, /vector_map, /prediction/moving_predictor/objects]

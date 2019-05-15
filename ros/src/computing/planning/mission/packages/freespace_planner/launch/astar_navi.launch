@@ -1,42 +1,54 @@
 <launch>
 
-    <arg name="use_2dnav_goal" default="true" />
-    <arg name="path_frame" default="map" />
-    <arg name="angle_size" default="40" />
-    <arg name="minimum_turning_radius" default="5.5" />
-    <arg name="obstacle_threshold" default="15" />
-    <arg name="goal_radius" default="0.25" /> <!-- meter-->
-    <arg name="goal_angle" default="6.0" /> <!-- degree-->
-    <arg name="robot_length" default="4.5" />
-    <arg name="robot_width" default="2.7" />
-    <arg name="base2back" default="0.8" />
-    <arg name="curve_weight" default="1.04" />
-    <arg name="reverse_weight" default="2.50" />
-    <arg name="use_back" default="false" />
-    <arg name="use_wavefront_heuristic" default="true" />
-    <arg name="waypoint_velocity_kmph" default="5.0" />
-    <arg name="map_topic" default="ring_ogm" />
+  <!-- Navi configurations -->
+  <arg name="costmap_topic" default="semantics/costmap_generator/occupancy_grid" />
+  <arg name="waypoints_velocity" default="5.0" />
+  <arg name="update_rate" default="1.0" />
+
+  <!-- A* search configurations -->
+  <arg name="use_back" default="true" />
+  <arg name="use_potential_heuristic" default="true" />
+  <arg name="use_wavefront_heuristic" default="false" />
+  <arg name="time_limit" default="5000.0" />
+  <arg name="robot_length" default="4.5" />
+  <arg name="robot_width" default="1.75" />
+  <arg name="robot_base2back" default="1.0" />
+  <arg name="minimum_turning_radius" default="6.0" />
+  <arg name="theta_size" default="48" />
+  <arg name="curve_weight" default="1.2" />
+  <arg name="reverse_weight" default="2.00" />
+  <arg name="lateral_goal_range" default="0.5" />
+  <arg name="longitudinal_goal_range" default="2.0" />
+  <arg name="angle_goal_range" default="6.0" />
+  <arg name="obstacle_threshold" default="100" />
+  <arg name="potential_weight" default="10.0" />
+  <arg name="distance_heuristic_weight" default="1.0" />
 
 	<node pkg="freespace_planner" type="astar_navi" name="astar_navi" output="screen">
-          <param name="use_2dnav_goal" value="$(arg use_2dnav_goal)" />
-          <param name="path_frame" value="$(arg path_frame)" />
-          <param name="angle_size" value="$(arg angle_size)" />
-          <param name="minimum_turning_radius" value="$(arg minimum_turning_radius)" />
-          <param name="obstacle_threshold" value="$(arg obstacle_threshold)" />
-          <param name="goal_radius" value="$(arg goal_radius)" />
-          <param name="goal_angle" value="$(arg goal_angle)" />
-          <param name="use_back" value="$(arg use_back)" />
-          <param name="robot_length" value="$(arg robot_length)" />
-          <param name="robot_width" value="$(arg robot_width)" />
-          <param name="base2back" value="$(arg base2back)" />
-          <param name="curve_weight" value="$(arg curve_weight)" />
-          <param name="reverse_weight" value="$(arg reverse_weight)" />
-          <param name="use_wavefront_heuristic" value="$(arg use_wavefront_heuristic)" />
-          <param name="waypoint_velocity_kmph" value="$(arg waypoint_velocity_kmph)" />
-          <param name="map_topic" value="$(arg map_topic)" />
+    <remap from="costmap" to="$(arg costmap_topic)" />
+    <param name="waypoints_velocity" value="$(arg waypoints_velocity)" />
+    <param name="update_rate" value="$(arg update_rate)" />
+
+    <param name="use_back" value="$(arg use_back)" />
+    <param name="use_potential_heuristic" value="$(arg use_potential_heuristic)" />
+    <param name="use_wavefront_heuristic" value="$(arg use_wavefront_heuristic)" />
+    <param name="time_limit" value="$(arg time_limit)" />
+    <param name="robot_length" value="$(arg robot_length)" />
+    <param name="robot_width" value="$(arg robot_width)" />
+    <param name="robot_base2back" value="$(arg robot_base2back)" />
+    <param name="minimum_turning_radius" value="$(arg minimum_turning_radius)" />
+    <param name="theta_size" value="$(arg theta_size)" />
+    <param name="angle_goal_range" value="$(arg angle_goal_range)" />
+    <param name="curve_weight" value="$(arg curve_weight)" />
+    <param name="reverse_weight" value="$(arg reverse_weight)" />
+    <param name="lateral_goal_range" value="$(arg lateral_goal_range)" />
+    <param name="longitudinal_goal_range" value="$(arg longitudinal_goal_range)" />
+    <param name="obstacle_threshold" value="$(arg obstacle_threshold)" />
+    <param name="potential_weight" value="$(arg potential_weight)" />
+    <param name="distance_heuristic_weight" value="$(arg distance_heuristic_weight)" />
 	</node>
 
 	<!-- Visualization node-->
-	<node pkg="waypoint_maker" type="waypoint_marker_publisher" name="waypoint_marker_publisher"/>
+	<node pkg="waypoint_maker" type="waypoint_marker_publisher" name="waypoint_marker_publisher" />
 
 </launch>

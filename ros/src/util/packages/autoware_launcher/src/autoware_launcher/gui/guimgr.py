@@ -19,13 +19,11 @@ class AwQtGuiManager(object):
         self.__client  = client
         self.__widgets = {}
 
-        for filepath in os.listdir(myutils.package("src/autoware_launcher/gui/plugins")):
-            fkey, fext = os.path.splitext(os.path.basename(filepath))
-            if (fkey != "__init__") and (fext == ".py"):
-                logger.info("load plugin module: " + fkey)
-                module = importlib.import_module("autoware_launcher.gui.plugins." + fkey)
-                for wkey, wcls in module.plugin_widgets().items():
-                     self.__widgets[fkey + "." + wkey] = wcls
+        import autoware_launcher.gui.plugins as plugins
+        for modkey, modcls in plugins.modules.items():
+            for guikey, guicls in modcls.plugin_widgets().items():
+                logger.debug("load plugin module: " + modkey + "." + guikey)
+                self.__widgets[modkey + "." + guikey] = guicls
 
     def client(self):
         return self.__client

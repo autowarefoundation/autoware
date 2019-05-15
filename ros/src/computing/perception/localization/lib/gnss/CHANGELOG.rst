@@ -2,9 +2,15 @@
 Changelog for package gnss
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.11.0 (2019-03-21)
+-------------------
+* add constructor (`#1913 <https://github.com/CPFL/Autoware/issues/1913>`_)
+* Fix license notice in corresponding package.xml
+* Contributors: YamatoAndo, amc-nu
+
 1.10.0 (2019-01-17)
 -------------------
-* Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/kfunaoka/Autoware/issues/1741>`_)
+* Switch to Apache 2 license (develop branch) (`#1741 <https://github.com/CPFL/Autoware/issues/1741>`_)
   * Switch to Apache 2
   * Replace BSD-3 license header with Apache 2 and reassign copyright to the
   Autoware Foundation.

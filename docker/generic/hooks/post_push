@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -e
+
+. ./hooks/env
+
+if [[ "${LATEST_TAG}" =~ "ON" ]]; then
+  # Tag and push image for latest tag
+  docker tag $BASE ${DOCKER_REPO}:latest-$ROS_DISTRO-base
+  docker push ${DOCKER_REPO}:latest-$ROS_DISTRO-base
+  
+  docker tag $BASE_CUDA ${DOCKER_REPO}:latest-$ROS_DISTRO-base-cuda
+  docker push ${DOCKER_REPO}:latest-$ROS_DISTRO-base-cuda
+  
+  docker tag $IMAGE_NAME ${DOCKER_REPO}:latest-$ROS_DISTRO-cuda
+  docker push ${DOCKER_REPO}:latest-$ROS_DISTRO-cuda
+fi

@@ -59,6 +59,8 @@ Autoware_Rosbag_Plugin::Autoware_Rosbag_Plugin(QWidget *parent) :
 {
   record_filepath_.clear();
   record_filename_.clear();
+  split_duration = 0;
+  split_size = 0;
 
   ui->setupUi(this);
   ui_timer_ = new QTimer();
@@ -67,8 +69,6 @@ Autoware_Rosbag_Plugin::Autoware_Rosbag_Plugin(QWidget *parent) :
 
   ui->button_record_start->setDisabled(true);
   ui->button_record_stop->setDisabled(true);
-
-
 }
 
 Autoware_Rosbag_Plugin::~Autoware_Rosbag_Plugin()
@@ -82,7 +82,7 @@ PLUGINLIB_EXPORT_CLASS(Autoware_Rosbag_Plugin, rviz::Panel)
 
 void Autoware_Rosbag_Plugin::on_edit_record_filename_textChanged(const QString &arg1)
 {
-  if( !arg1.isEmpty() )
+  if (!arg1.isEmpty())
   {
     record_filename_ = arg1.toStdString();
     ui->button_record_start->setEnabled(true);
@@ -92,14 +92,18 @@ void Autoware_Rosbag_Plugin::on_edit_record_filename_textChanged(const QString &
 
 void Autoware_Rosbag_Plugin::on_button_record_save_clicked()
 {
+  /* set default filename */
+  QDateTime now = QDateTime::currentDateTime();
+  QString timestamp = now.toString(QLatin1String("yyyyMMddhhmmss"));
+  QString initial_filename = "autoware-" + timestamp + ".bag";
+
   /* open dialog */
   QString pathInfo =
       QFileDialog::getSaveFileName(
               this,
-              tr("path of saving bag"),
-              DEFAULT_SAVE_PATH);
+              tr("path of saving bag"), DEFAULT_SAVE_PATH + initial_filename);
 
-  if( ! pathInfo.isEmpty() )
+  if (!pathInfo.isEmpty())
   {
     QString filepath, filename, strTemp;
 
@@ -124,7 +128,7 @@ void Autoware_Rosbag_Plugin::on_button_record_save_clicked()
     }
 
     record_filepath_ = filepath.toStdString();
-    ui->edit_record_filename->setText(filename);
+    ui->edit_record_filename->setText(filepath + filename);
 
   }
 }
@@ -135,25 +139,21 @@ void Autoware_Rosbag_Plugin::on_button_record_start_clicked()
 
   record_topics_.clear();
 
-  /* Set topics parameter from configure file */
-  std::vector<std::string>::iterator ite = conf_topics_.begin();
-  while( ite != conf_topics_.end() )
-  {
-    record_topics_.push_back(*ite);
-    ite++;
-  }
-
   /* Set topics parameter from checkboxes */
   QList<QCheckBox *> list_checkboxes = ui->scrollAreaWidgetContents->findChildren<QCheckBox *>();
+  string topic_name;
   for (int i = 0; i < list_checkboxes.size(); ++i) {
-      if ((list_checkboxes.at(i)->isChecked()) &&
-          ((std::find(conf_topics_.begin(), conf_topics_.end(), list_checkboxes.at(i)->text().toStdString()) == conf_topics_.end())))
+      if (list_checkboxes.at(i)->isChecked())
       {
-        record_topics_.push_back(list_checkboxes.at(i)->text().toStdString());
+        topic_name = list_checkboxes.at(i)->text().toStdString();
+        if (topic_name.find("!") == string::npos)
+          record_topics_.push_back(topic_name);
+        else
+          record_topics_.push_back(topic_name.substr(0, topic_name.length() - strlen("(Not published!!)")));
       }
   }
 
-  ite = record_topics_.begin();
+  std::vector<std::string>::iterator ite = record_topics_.begin();
   while( ite != record_topics_.end() )
   {
     recoParam.topics.push_back(*ite);
@@ -161,7 +161,19 @@ void Autoware_Rosbag_Plugin::on_button_record_start_clicked()
   }
 
   /* Set filename parameter */
-  recoParam.filename = record_filepath_ + record_filename_;
+  recoParam.filename = record_filename_;
+
+  /* Caculate max split size */
+  if (split_size != 0 && ui->checkBox_split_size->isChecked())
+    recoParam.max_size = ceil(split_size * 1000 * 1000 * 1000);
+  else
+    recoParam.max_size = 0;
+
+  /* Caculate max split size */
+  if (split_duration != 0 && ui->checkBox_split_duration->isChecked())
+    recoParam.max_duration = ceil(split_duration * 60);
+  else
+    recoParam.max_duration = -1.0;
 
   /* Start record */
   recordReq(recoParam);
@@ -187,15 +199,22 @@ int Autoware_Rosbag_Plugin::recordReq( RecordParam &recoParam )
   recorder_opts_->min_space     = 1 * 1073741824ull;
   recorder_opts_->min_space_str = "1G";
 
+  /* Set max split size MB */
+  if (recoParam.max_size != 0)
+  {
+    recorder_opts_->split = true;
+    recorder_opts_->max_size = recoParam.max_size;
+  }
+
   /* Set max duration Sec */
-  if( recoParam.max_duration != 0 )
+  if (recoParam.max_duration != -1.0)
   {
     recorder_opts_->split = true;
     recorder_opts_->max_duration = ros::Duration(recoParam.max_duration);
   }
 
   /* No specified topics then record all */
-  if( recoParam.topics.empty() )
+  if (recoParam.topics.empty())
   {
     recorder_opts_->record_all = true;
   }
@@ -203,7 +222,7 @@ int Autoware_Rosbag_Plugin::recordReq( RecordParam &recoParam )
   {
     /* Give specified topics to request */
     std::vector<std::string>::iterator ite = recoParam.topics.begin();
-    while(ite < recoParam.topics.end() )
+    while (ite < recoParam.topics.end())
     {
       recorder_opts_->topics.push_back( *ite );
       ite++;
@@ -224,8 +243,8 @@ int Autoware_Rosbag_Plugin::recordReq( RecordParam &recoParam )
   ROS_INFO("%s L.%d -   chunk_size      [%d]", __FUNCTION__, __LINE__, recorder_opts_->chunk_size);
   ROS_INFO("%s L.%d -   limit           [%d]", __FUNCTION__, __LINE__, recorder_opts_->limit);
   ROS_INFO("%s L.%d -   split           [%d]", __FUNCTION__, __LINE__, recorder_opts_->split);
-  ROS_INFO("%s L.%d -   max_size        [%d]", __FUNCTION__, __LINE__, recorder_opts_->max_size);
-  ROS_INFO("%s L.%d -   max_duration    [%lf]", __FUNCTION__, __LINE__, recorder_opts_->max_duration.toSec() );
+  ROS_INFO("%s L.%d -   max_size        [%.2fGB]", __FUNCTION__, __LINE__, recorder_opts_->max_size / 1000.0 / 1000.0 / 1000.0);
+  ROS_INFO("%s L.%d -   max_duration    [%.1fmin]", __FUNCTION__, __LINE__, recorder_opts_->max_duration.toSec() / 60.0 );
   ROS_INFO("%s L.%d -   node            [%s]", __FUNCTION__, __LINE__, recorder_opts_->node.c_str() );
   ROS_INFO("%s L.%d -   min_space       [%d]", __FUNCTION__, __LINE__, recorder_opts_->min_space );
   ROS_INFO("%s L.%d -   min_space_str   [%s]", __FUNCTION__, __LINE__, recorder_opts_->min_space_str.c_str() );
@@ -247,7 +266,7 @@ int Autoware_Rosbag_Plugin::doRecord( rosbag_controller::RecorderOptions &opt )
 
   record_time_start_ = ros::Time::now();
 
-  if( recorder_->start() == 0 )
+  if (recorder_->start() == 0)
   {
 //    ROS_INFO("Start now!!!");
   }
@@ -320,25 +339,56 @@ void Autoware_Rosbag_Plugin::on_botton_topic_refresh_clicked()
   QVBoxLayout *lay = new QVBoxLayout(ui->scrollAreaWidgetContents);
   int topic_num = 0;
 
-  /* Scan current topics and build checkboxs */
+  /* Scan current topics */
   std::vector<std::string> current_topic;
   for (ros::master::V_TopicInfo::iterator it = master_topics.begin() ; it != master_topics.end(); it++) {
     const ros::master::TopicInfo& info = *it;
     current_topic.push_back(info.name);
   }
 
+  /* Soft topics */
   std::sort(current_topic.begin(),current_topic.end());
 
-  std::vector<std::string>::iterator ite = current_topic.begin();
-  while( ite != current_topic.end() )
+  /* Build checkboxs for configure file */
+  if (!conf_topics_.empty())
   {
-    QCheckBox *dynamic = new QCheckBox(QString::fromStdString(*ite));
-    dynamic->setChecked (false);
-    lay->addWidget(dynamic);
-    topic_num++;
-    ite++;
+    std::vector<std::string>::iterator ite = conf_topics_.begin();
+    while (ite != conf_topics_.end())
+    {
+      if (std::find(current_topic.begin(), current_topic.end(), *ite) == current_topic.end())
+      {
+        QCheckBox *dynamic = new QCheckBox(QString::fromStdString(*ite + "(Not published!!)"));
+        dynamic->setChecked (true);
+        dynamic->setStyleSheet("color: red;"
+                               "background-color: yellow;");
+        lay->addWidget(dynamic);
+        topic_num++;
+        ite++;
+      }
+      else
+      {
+        QCheckBox *dynamic = new QCheckBox(QString::fromStdString(*ite));
+        dynamic->setChecked (true);
+        lay->addWidget(dynamic);
+        topic_num++;
+        ite++;
+      }
+    }
   }
 
+  /* Build checkboxs for current topics */
+  std::vector<std::string>::iterator ite = current_topic.begin();
+  while (ite != current_topic.end())
+  {
+    if (std::find(conf_topics_.begin(), conf_topics_.end(), *ite) == conf_topics_.end())
+    {
+      QCheckBox *dynamic = new QCheckBox(QString::fromStdString(*ite));
+      dynamic->setChecked (false);
+      lay->addWidget(dynamic);
+      topic_num++;
+    }
+    ite++;
+  }
   ui->scrollAreaWidgetContents->setLayout(lay);
 }
 
@@ -351,14 +401,14 @@ void Autoware_Rosbag_Plugin::on_button_record_configure_clicked()
               tr("path of record configure file"),
               DEFAULT_CONFIGURE_PATH);
 
-  if( ! configureInfo.isEmpty() )
+  if (!configureInfo.isEmpty())
   {
     QString filepath, filename, strTemp;
 
     strTemp = configureInfo;
     int idx = strTemp.lastIndexOf('/');
 
-    if( idx != -1 )
+    if (idx != -1)
     {
       filepath = strTemp.left(idx+1);
       filename = strTemp.remove(0, idx+1);
@@ -370,7 +420,7 @@ void Autoware_Rosbag_Plugin::on_button_record_configure_clicked()
     }
 
     idx = filename.lastIndexOf(".yaml");
-    if(idx == -1)
+    if (idx == -1)
     {
       ROS_ERROR("Need .yaml file!!");
       return;
@@ -393,3 +443,44 @@ void Autoware_Rosbag_Plugin::on_button_record_configure_clicked()
   }
 }
 
+void Autoware_Rosbag_Plugin::on_checkBox_split_size_stateChanged(int arg1)
+{
+  if (ui->checkBox_split_size->isChecked())
+  {
+    ui->checkBox_split_duration->setDisabled(true);
+    ui->lineEdit_duration->setDisabled(true);
+    ui->lineEdit_size->setEnabled(true);
+  }
+  else
+  {
+    ui->checkBox_split_duration->setEnabled(true);
+    ui->lineEdit_duration->setDisabled(true);
+    ui->lineEdit_size->setDisabled(true);
+  }
+}
+
+void Autoware_Rosbag_Plugin::on_checkBox_split_duration_stateChanged(int arg1)
+{
+  if (ui->checkBox_split_duration->isChecked())
+  {
+    ui->checkBox_split_size->setDisabled(true);
+    ui->lineEdit_size->setDisabled(true);
+    ui->lineEdit_duration->setEnabled(true);
+  }
+  else
+  {
+    ui->checkBox_split_size->setEnabled(true);
+    ui->lineEdit_size->setDisabled(true);
+    ui->lineEdit_duration->setDisabled(true);
+  }
+}
+
+void Autoware_Rosbag_Plugin::on_lineEdit_duration_textEdited(const QString &arg1)
+{
+    split_duration = arg1.toDouble();
+}
+
+void Autoware_Rosbag_Plugin::on_lineEdit_size_textEdited(const QString &arg1)
+{
+    split_size = arg1.toDouble();
+}

@@ -5,37 +5,32 @@
 namespace decision_maker
 {
 #define TARGET_WAYPOINTS_NUM 15  // need to change rosparam
-CrossRoadArea *CrossRoadArea::findClosestCrossRoad(const autoware_msgs::Lane &_finalwaypoints,
-                                                   std::vector<CrossRoadArea> &intersects)
+CrossRoadArea* CrossRoadArea::findClosestCrossRoad(const autoware_msgs::Lane& _finalwaypoints,
+                                                   std::vector<CrossRoadArea>& intersects)
 {
-  CrossRoadArea *_area = nullptr;
+  CrossRoadArea* _area = nullptr;
 
-  amathutils::point _pa;
-  amathutils::point _pb;
+  geometry_msgs::Point pa;
+  geometry_msgs::Point pb;
 
   double _min_distance = DBL_MAX;
 
   if (!_finalwaypoints.waypoints.empty())
   {
-    _pa.x = _finalwaypoints.waypoints[TARGET_WAYPOINTS_NUM].pose.pose.position.x;
-    _pa.y = _finalwaypoints.waypoints[TARGET_WAYPOINTS_NUM].pose.pose.position.y;
-    _pa.z = 0.0;
+    pa = _finalwaypoints.waypoints[TARGET_WAYPOINTS_NUM].pose.pose.position;
   }
 
   for (size_t i = 0; i < intersects.size(); i++)
   {
-    _pb.x = intersects[i].bbox.pose.position.x;
-    _pb.y = intersects[i].bbox.pose.position.y;
+    pb = intersects[i].bbox.pose.position;
 
-    _pb.z = 0.0;
-
-    double __temp_dis = amathutils::find_distance(&_pa, &_pb);
+    const double range_of_waypoint_and_intersection = amathutils::find_distance(pa, pb);
 
     intersects[i].bbox.label = 0;
-    if (_min_distance >= __temp_dis)
+    if (_min_distance >= range_of_waypoint_and_intersection)
     {
       _area = &intersects[i];
-      _min_distance = __temp_dis;  //
+      _min_distance = range_of_waypoint_and_intersection;  //
     }
   }
 
@@ -47,12 +42,12 @@ CrossRoadArea *CrossRoadArea::findClosestCrossRoad(const autoware_msgs::Lane &_f
   return _area;
 }
 
-std::vector<geometry_msgs::Point> convhull(const CrossRoadArea *_TargetArea)
+std::vector<geometry_msgs::Point> convhull(const CrossRoadArea* _TargetArea)
 {
   std::vector<int> enablePoints;
 
-  if(_TargetArea->points.size() < 3)
-	  return {};
+  if (_TargetArea->points.size() < 3)
+    return {};
 
   // Jarvis's March algorithm
   size_t l = 0;
@@ -87,7 +82,7 @@ std::vector<geometry_msgs::Point> convhull(const CrossRoadArea *_TargetArea)
   std::vector<geometry_msgs::Point> point_arrays;
   for (auto p = begin(_TargetArea->points); p != end(_TargetArea->points); p++)
   {
-    for (auto &en : enablePoints)
+    for (auto& en : enablePoints)
     {
       if (std::distance(begin(_TargetArea->points), p) == en)
       {
@@ -98,7 +93,7 @@ std::vector<geometry_msgs::Point> convhull(const CrossRoadArea *_TargetArea)
   return point_arrays;
 }
 
-bool CrossRoadArea::isInsideArea(const CrossRoadArea *_TargetArea, geometry_msgs::Point pt)
+bool CrossRoadArea::isInsideArea(const CrossRoadArea* _TargetArea, geometry_msgs::Point pt)
 {
   std::vector<geometry_msgs::Point> point_arrays = convhull(_TargetArea);
 

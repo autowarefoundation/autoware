@@ -1,0 +1,9 @@
+<library path="lib/libdecision_maker_panel">
+    <class name="autoware_rviz_debug/DecisionMakerPanel"
+           type="autoware_rviz_debug::DecisionMakerPanel"
+           base_class_type="rviz::Panel">
+        <description>
+          A panel widget to order state_cmd for decision_maekr.
+        </description>
+    </class>
+</library>

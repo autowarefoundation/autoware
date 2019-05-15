@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>lidar_fake_perception</name>
-  <version>1.10.0</version>
+  <version>1.11.0</version>
   <description>The lidar_fake_percetion package</description>
 
   <maintainer email="aohsato@gmail.com">Akihito Ohsato</maintainer>

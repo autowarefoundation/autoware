@@ -2,6 +2,11 @@
 Changelog for package ndt_cpu
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.11.0 (2019-03-21)
+-------------------
+* Fix license notice in corresponding package.xml
+* Contributors: amc-nu
+
 1.10.0 (2019-01-17)
 -------------------
 

@@ -1,0 +1,5 @@
+<launch>
+
+  <test test-name="test-amathutils" pkg="amathutils_lib" type="amathutils-test" name="test"/>
+
+</launch>

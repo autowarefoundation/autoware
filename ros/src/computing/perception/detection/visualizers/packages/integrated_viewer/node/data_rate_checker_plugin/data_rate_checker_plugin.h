@@ -6,7 +6,6 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <rviz/panel.h>
-#include <chrono>
 #include <string>
 #include <map>
 
@@ -56,17 +55,14 @@ namespace integrated_viewer
 
     // The ROS subscriber
     ros::Subscriber topic_sub_;
+
     // The ROS timer
     ros::WallTimer timer_;
 
     // Variables for message timing
-    unsigned int window_size_ = 10;
-
-    unsigned int message_count_ = 0;
+    unsigned int window_size_ = 10000;
+    double last_message_time_ = -1;
     std::deque<double> times_;
-    std::chrono::system_clock::time_point last_;
-
-    unsigned int status_count_ = 0;
 
     // Save and load overrides
     virtual void save(rviz::Config config) const;

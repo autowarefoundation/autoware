@@ -1,0 +1,5 @@
+<launch>
+
+  <test test-name="test-twist_gate" pkg="waypoint_follower" type="test-twist_gate" name="test"/>
+
+</launch>
