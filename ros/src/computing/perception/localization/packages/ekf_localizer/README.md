@@ -79,9 +79,12 @@ note: process noise for position x & y are calculated automatically dealing with
 
 # How to turn EKF parameters
 
-0. Confirm header time in pose and twist message is set to sensor time appropriatelly, because time delay is calculated from this value. If it is difficult to set appropriate time due to timer synchronization problem, use `twist_additional_delay` and `pose_additional_delay` to correct time.
+0. Preliminaries
+ - Check header time in pose and twist message is set to sensor time appropriatelly, because time delay is calculated from this value. If it is difficult to set appropriate time due to timer synchronization problem, use `twist_additional_delay` and `pose_additional_delay` to correct the time.
+ - Check the relation between measurement pose and twist is appropriate (whether the derivative of pose has similar value to twist). This discrepancy is caused mainly by unit error (such as radian-degree) or bias noise, and it causes large estimation errors. If you are using `/ndt_pose` from `ndt_matching` as a pose measurement, you can use `/estimate_twist` (derivative of `/ndt_pose`) to compare to twist measurement.
 
-1. Set sensor parameters which can be set to appropriate value from the basic information of the sensor. Default values are set as pose measurement with ndt matching with LiDAR, and twist measurement with CAN info.
+
+1. Set sensor parameters (sensor-rate, standard-deviation) which can be set to appropriate value from the basic information of the sensor. Default values are set as pose measurement with ndt matching with LiDAR, and twist measurement with CAN info. The `pose_measure_uncertainty_time` is for noise of header timestamp data.
 
  - `pose_measure_uncertainty_time`
  - `pose_rate`
