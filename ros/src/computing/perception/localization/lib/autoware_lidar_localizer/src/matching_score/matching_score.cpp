@@ -49,7 +49,7 @@ double MatchingScore<PointType>::calcMatchingScore(const boost::shared_ptr< pcl:
     double score_sum = 0;
     for(const auto point_with_distance : point_with_distance_array_) {
         const double s = calcFermiDistributionFunction(point_with_distance.distance, fermi_kT_, fermi_mu_);
-        score_sum += s / s0; //TODO check 0
+        score_sum += s / s0;
     }
     const double score = point_with_distance_array_.empty()
                      ? 0

@@ -1,10 +1,6 @@
 <!-- -->
 <launch>
 
-  <arg name="use_anonymous_node_name" default="false" />
-  <arg name="node_name" value="ndt_slam" unless="$(arg use_anonymous_node_name)" />
-  <arg name="node_name" value="$(anon ndt_slam)" if="$(arg use_anonymous_node_name)" />
-
   <arg name="method_type" default="0" /> <!-- pcl_generic=0, pcl_anh=1, pcl_anh_gpu=2, pcl_openmp=3 -->
 
   <!-- if method_type is pcl_openmp -->
@@ -12,12 +8,20 @@
   <arg name="omp_use_max_threads" default="false" />
   <arg name="omp_num_threads" default="4" /> <!-- if omp_use_max_threads is true, this parameter is ignored -->
 
-  <arg name="mapping_points_topic" default="/points_raw" />
-  <arg name="localizing_points_topic" default="/filtered_points" />
+  <arg name="input_mapping_points_topic" default="/points_raw" />
+  <arg name="input_localizing_points_topic" default="/filtered_points" />
   <arg name="points_queue_size" default="1" />
 
   <arg name="use_fusion_localizer_feedback" default="false" />
-  <arg name="current_pose_topic" default="/ekf_pose" />
+  <arg name="input_current_pose_topic" default="/ekf_pose" />
+
+  <arg name="input_initial_pose_topic" default="/initialpose" />
+  <arg name="input_points_map_topic" default="/points_map" />
+
+  <arg name="output_points_map_topic" default="ndt_map" />
+  <arg name="output_pose_topic" default="ndt_pose" />
+  <arg name="output_pose_with_covariance_topic" default="ndt_pose_with_covariance" />
+  <arg name="output_estimate_twist_topic" default="estimate_twist" />
 
   <arg name="target_frame" default="base_link" />
   <arg name="world_frame" default="map" />
@@ -44,7 +48,6 @@
   <arg name="separate_map_size" default="100.0" />
   <arg name="mapping_file_directory_path" default="/tmp/Autoware/log/ndt_slam" />
 
-
   <arg name="matching_score_use_points_num" default="300" />
   <arg name="matching_score_cutoff_lower_limit_z" default="0.2" />
   <arg name="matching_score_cutoff_upper_limit_z" default="2.0" />
@@ -56,6 +59,11 @@
   <arg name="use_nn_point_z_when_initial_pose" default="false" />
   <arg name="publish_tf" default="true" />
 
+
+  <arg name="use_anonymous_node_name" default="false" />
+  <arg name="node_name" value="ndt_slam" unless="$(arg use_anonymous_node_name)" />
+  <arg name="node_name" value="$(anon ndt_slam)" if="$(arg use_anonymous_node_name)" />
+
   <node pkg="lidar_localizer" type="ndt_slam" name="$(arg node_name)" output="screen">
     <param name="method_type" value="$(arg method_type)" />
 
@@ -63,9 +71,9 @@
     <param name="omp_use_max_threads" value="$(arg omp_use_max_threads)" />
     <param name="omp_num_threads" value="$(arg omp_num_threads)" />
 
-    <remap from="/points_raw" to="$(arg mapping_points_topic)" />
-    <remap from="/filtered_points" to="$(arg localizing_points_topic)" />
-    <param name="points_queue_size" value="$(arg points_queue_size)" />
+    <remap from="/points_raw" to="$(arg input_mapping_points_topic)" />
+    <remap from="/filtered_points" to="$(arg input_localizing_points_topic)" />
+    <param name="points_queue_size" value="$(arg input_points_queue_size)" />
 
     <param name="use_fusion_localizer_feedback" value="$(arg use_fusion_localizer_feedback)" />
     <remap from="/ekf_pose" to="$(arg current_pose_topic)" />

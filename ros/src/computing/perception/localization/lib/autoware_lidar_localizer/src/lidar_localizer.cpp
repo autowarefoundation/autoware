@@ -45,7 +45,8 @@ void LidarLocalizer<PointSource, PointTarget>::updatePointsMap(
 
   if (map_point_size_ == 0) {
     initPointsMap(pointcloud_ptr);
-  } else if (map_point_size_ != pointcloud_ptr->points.size()) {
+  }
+  else if (map_point_size_ != pointcloud_ptr->points.size()) {
     buildMapThread(pointcloud_ptr);
   }
 }
@@ -75,10 +76,7 @@ bool LidarLocalizer<PointSource, PointTarget>::swapMap() {
   // if it takes a lot of time to generate map, wait for thread
   auto thread_now_time = std::chrono::system_clock::now();
   auto thread_processing_time_msec =
-      std::chrono::duration_cast<std::chrono::microseconds>(thread_now_time -
-                                                            thread_begin_time_)
-          .count() /
-      1000.0;
+      std::chrono::duration_cast<std::chrono::microseconds>(thread_now_time - thread_begin_time_).count() /1000.0;
   const double time_threshold_msec = 1000.0;
   if (thread_status_ == ThreadStatus::Running &&
       thread_processing_time_msec > time_threshold_msec) {
@@ -88,7 +86,8 @@ bool LidarLocalizer<PointSource, PointTarget>::swapMap() {
     while (thread_status_ != ThreadStatus::Finished) {
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
-  } else if (thread_status_ != ThreadStatus::Finished) {
+  }
+  else if (thread_status_ != ThreadStatus::Finished) {
     return false;
   }
 

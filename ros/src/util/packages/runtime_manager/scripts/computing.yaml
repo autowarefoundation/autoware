@@ -90,7 +90,7 @@ subs :
             flags : [ nl ]
           points_queue_size :
             flags : [ nl ]
-          current_pose_topic :
+          input_current_pose_topic :
             flags : [ nl ]
             depend      : use_fusion_localizer_feedback
             depend_bool : 'lambda v : v == 1'
@@ -1545,7 +1545,7 @@ params :
         only_enable : True
 
   - name  : ndt_slam
-    topic : /config/ndtslam
+    topic : /config/ndt_slam
     msg   : ConfigNDTSlam
     vars  :
     - name  : method_type
@@ -1566,18 +1566,18 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
-    - name      : mapping_points_topic
-      desc      : mappping_points_topic
-      label     : Mapping Points Topic
+    - name      : input_mapping_points_topic
+      desc      : input_mappping_points_topic
+      label     : Input Mapping Points Topic
       v         : /points_raw
       kind      : topic
       topic_type: sensor_msgs/PointCloud2
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name      : localizing_points_topic
-      desc      : localizing_points_topic
-      label     : Localizing Points Topic
+    - name      : input_localizing_points_topic
+      desc      : input_localizing_points_topic
+      label     : Input Localizing Points Topic
       v         : /filtered_points
       kind      : topic
       topic_type: sensor_msgs/PointCloud2
@@ -1600,9 +1600,9 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name      : current_pose_topic
-      desc      : current_pose_topic
-      label     : Current Pose Topic
+    - name      : input_current_pose_topic
+      desc      : input_current_pose_topic
+      label     : Input Current Pose Topic
       v         : /ekf_pose
       kind      : topic
       topic_type: geometry_msgs/PoseStamped

@@ -38,11 +38,13 @@ Pose convertToPose(const Eigen::Matrix4f &m) {
     if (m(2, 0) < 0) {
       pose.pitch = M_PI / 2.0;
       pose.roll = std::atan2(m(0, 1), m(0, 2));
-    } else {
+    }
+    else {
       pose.pitch = -M_PI / 2.0;
       pose.roll = std::atan2(-m(0, 1), -m(0, 2));
     }
-  } else {
+  }
+  else {
     pose.pitch = -std::asin(m(2, 0));
     pose.roll = std::atan2(m(2, 1) / std::cos(pose.pitch),
                            m(2, 2) / std::cos(pose.pitch));

@@ -47,7 +47,8 @@ NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
   if (method_type_ == MethodType::PCL_GENERIC) {
     ROS_INFO("use NDT SLAM PCL GENERIC version");
     localizer_ptr_.reset(new NdtSlamPCL<PointSource, PointTarget>);
-  } else if (method_type_ == MethodType::PCL_OPENMP) {
+  }
+  else if (method_type_ == MethodType::PCL_OPENMP) {
     ROS_INFO("use NDT SLAM PCL OPENMP version");
 
     std::unique_ptr<NdtSlamPCLOMP<PointSource, PointTarget>> ndt_omp_ptr(new NdtSlamPCLOMP<PointSource, PointTarget>);
@@ -67,15 +68,18 @@ NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
 
     ROS_INFO("omp_neighborhood_search_method: %d, omp_use_max_threads %d, omp_num_threads %d", search_method, use_max_threads, num_threads);
 
-    localizer_ptr_.reset(ndt_omp_ptr.release()); //TODO release? get? move?
+    localizer_ptr_.reset(ndt_omp_ptr.release());
 
-  } else if (method_type_ == MethodType::PCL_ANH) {
+  }
+  else if (method_type_ == MethodType::PCL_ANH) {
     ROS_INFO("use NDT SLAM PCL ANH version");
     localizer_ptr_.reset(new NdtSlamPCLANH<PointSource, PointTarget>);
-  } else if (method_type_ == MethodType::PCL_ANH_GPU) {
+  }
+  else if (method_type_ == MethodType::PCL_ANH_GPU) {
     ROS_INFO("use NDT SLAM PCL ANH GPU version");
     localizer_ptr_.reset(new NdtSlamPCLANHGPU<PointSource, PointTarget>);
-  } else {
+  }
+  else {
     ROS_INFO("unkonwn method_type. use NDT SLAM PCL GENERIC version");
     localizer_ptr_.reset(new NdtSlamPCL<PointSource, PointTarget>);
   }
@@ -97,10 +101,10 @@ NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
   private_nh_.getParam("init_pitch", init_pose_stamped_.pose.pitch);
   private_nh_.getParam("init_yaw", init_pose_stamped_.pose.yaw);
 
-  double trans_epsilon = 0.01;
-  double step_size = 0.1;
-  double resolution = 1.0;
-  int max_iterations = 30;
+  double trans_epsilon = localizer_ptr_->getTransformationEpsilon();
+  double step_size = localizer_ptr_->getStepSize();
+  double resolution = localizer_ptr_->getResolution();
+  int max_iterations = localizer_ptr_->getMaximumIterations();
   private_nh_.getParam("trans_epsilon", trans_epsilon);
   private_nh_.getParam("step_size", step_size);
   private_nh_.getParam("resolution", resolution);
@@ -109,9 +113,8 @@ NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
   localizer_ptr_->setStepSize(step_size);
   localizer_ptr_->setResolution(resolution);
   localizer_ptr_->setMaximumIterations(max_iterations);
-  ROS_INFO(
-      "trans_epsilon: %lf, step_size: %lf, resolution: %lf, max_iterations: %d",
-       trans_epsilon, step_size, resolution, max_iterations);
+  ROS_INFO("trans_epsilon: %lf, step_size: %lf, resolution: %lf, max_iterations: %d",
+            trans_epsilon, step_size, resolution, max_iterations);
 
   double save_map_leaf_size = map_manager_.getSaveMapLeafSize();
   double separate_map_size = map_manager_.getSaveSeparateMapSize();
@@ -174,17 +177,17 @@ NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
 
   points_map_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("ndt_map", 10);
   ndt_pose_pub_ = nh_.advertise<geometry_msgs::PoseStamped>("ndt_pose", 10);
-  predict_pose_pub_ = nh_.advertise<geometry_msgs::PoseStamped>("predict_pose", 10);
   ndt_pose_with_covariance_pub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("ndt_pose_with_covariance", 10);
+  predict_pose_pub_ = nh_.advertise<geometry_msgs::PoseStamped>("predict_pose", 10);
   sensor_pose_pub_ = nh_.advertise<geometry_msgs::PoseStamped>("localizer_pose", 10);
   estimate_twist_pub_ = nh_.advertise<geometry_msgs::TwistStamped>("estimate_twist", 10);
   matching_score_pub_ = nh.advertise<std_msgs::Float32>("matching_score", 10);
   matching_score_histogram_pub_ = nh.advertise<jsk_recognition_msgs::HistogramWithRange>("nearest_points_histogram", 10);
   matching_points_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("matching_points", 10);
   unmatching_points_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("unmatching_points", 10);
-  time_ndt_matching_pub_ = nh.advertise<std_msgs::Float32>("time_ndt_matching", 10); //TODO rename
+  time_ndt_matching_pub_ = nh.advertise<std_msgs::Float32>("time_ndt_matching", 10);
 
-  config_sub_ = nh_.subscribe("/config/ndtslam", 1, &NdtSlam::configCallback, this);
+  config_sub_ = nh_.subscribe("/config/ndt_slam", 1, &NdtSlam::configCallback, this);
   points_map_sub_ = nh_.subscribe("/points_map", 1, &NdtSlam::pointsMapUpdatedCallback, this);
   initial_pose_sub_ = nh_.subscribe("/initialpose", 1, &NdtSlam::initialPoseCallback, this);
 
@@ -207,7 +210,8 @@ NdtSlam::~NdtSlam() {
   if (with_mapping_) {
     if (separate_mapping_) {
       map_manager_.saveSeparateMapThread();
-    } else {
+    }
+    else {
       map_manager_.saveSingleMapThread();
     }
   }
@@ -234,7 +238,8 @@ void NdtSlam::configCallback(const autoware_config_msgs::ConfigNDTSlam::ConstPtr
       map_manager_.saveSeparateMap();
       map_manager_.loadAroundMap(localizer_ptr_->getLocalizerPose());
     }
-  } else if (config_msg_ptr->with_mapping == false && with_mapping_ == true) {
+  }
+  else if (config_msg_ptr->with_mapping == false && with_mapping_ == true) {
     if (separate_mapping_) {
       map_manager_.saveSeparateMapThread();
     }
@@ -306,7 +311,7 @@ void NdtSlam::mappingAndLocalizingPointsCallback(
   boost::shared_ptr<pcl::PointCloud<PointSource>> localizing_points_ptr(new pcl::PointCloud<PointSource>);
   pcl::fromROSMsg(*localizing_points_msg_ptr, *localizing_points_ptr);
 
-  const auto mapTF_predict_target_pose = getPredictPose(); //TODO
+  const auto mapTF_predict_target_pose = getPredictPose();
 
   mainLoop(mapping_points_ptr, localizing_points_ptr, mapTF_predict_target_pose);
 }
@@ -434,7 +439,8 @@ Pose NdtSlam::getPredictPose() {
     Pose predict_pose;
     if (pose_interpolator_.isNotSetPoseStamped()) {
       predict_pose = init_pose_stamped_.pose;
-    } else {
+    }
+    else {
       predict_pose = pose_interpolator_.getInterpolatePoseStamped(current_scan_time_.toSec()).pose;
     }
     return predict_pose;
@@ -456,8 +462,8 @@ void NdtSlam::mapping(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &map
   }
 
   if (separate_mapping_) {
-    const int map_x = std::floor(sensor_pose.x / map_manager_.getSaveSeparateMapSize()); // TODO check 0
-    const int map_y = std::floor(sensor_pose.y / map_manager_.getSaveSeparateMapSize()); // TODO check 0
+    const int map_x = std::floor(sensor_pose.x / map_manager_.getSaveSeparateMapSize());
+    const int map_y = std::floor(sensor_pose.y / map_manager_.getSaveSeparateMapSize());
     static int prev_map_x = map_x;
     static int prev_map_y = map_x;
 
@@ -473,7 +479,6 @@ void NdtSlam::mapping(const boost::shared_ptr<pcl::PointCloud<PointTarget>> &map
 
   const int loop_count_donw_map_max = 300;
   static int loop_count_donw_map = 0;
-  //TODO more clever
   if (++loop_count_donw_map >= loop_count_donw_map_max) {
     loop_count_donw_map = 0;
     map_manager_.downsampleMapThread();
@@ -551,8 +556,7 @@ void NdtSlam::updateMatchingScore(const boost::shared_ptr<pcl::PointCloud<PointT
     const auto map_to_target_matrix = convertToEigenMatrix4f(mapTF_target_pose);
     pcl::transformPointCloud(*points_baselinkTF_cuttoff_ptr, *points_mapTF_cuttoff_ptr, map_to_target_matrix);
 
-    //matching_score_class_.setInputTarget(map_manager_.getMapPtr()); //TODO
-    matching_score_class_.setSearchMethodTarget(localizer_ptr_->getSearchMethodTarget()); //TODO
+    matching_score_class_.setSearchMethodTarget(localizer_ptr_->getSearchMethodTarget());
     matching_score_ = matching_score_class_.calcMatchingScore(points_mapTF_cuttoff_ptr);
 }
 
@@ -616,7 +620,6 @@ Velocity NdtSlam::transformBaseLinkTFVelocity(const Velocity& velocity, const bo
 }
 
 
-//TODO template
 void NdtSlam::publish(const ros::Publisher &publisher, const double value) {
     std_msgs::Float32 msg;
     msg.data = value;
