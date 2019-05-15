@@ -17,3 +17,6 @@
     /estimate_twist, /estimated_vel_mps, /estimated_vel_kmph, /estimated_vel, /time_icp_matching,
     /icp_stat]
   subscribe: [/config/icp, /gnss_pose, /points_map, /initialpose, /filtered_points]
+- name: ndt_slam
+  publish: [/ndt_map, /ndt_pose, /localizer_pose, /estimate_twist]
+  subscribe: [/config/ndt_slam, /points_map, /initialpose, /points_raw ,/filtered_points]

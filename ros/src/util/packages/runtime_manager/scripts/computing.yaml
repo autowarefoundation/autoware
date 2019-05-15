@@ -79,7 +79,48 @@ subs :
         param: icp
         gui  :
           dialog_height : 400
-
+      - name : ndt_slam
+        desc : ndt_slam
+        cmd  : roslaunch lidar_localizer ndt_slam.launch
+        param: ndt_slam
+        gui  :
+          dialog_width  : 700
+          dialog_height : 550
+          points_queue_size :
+            flags : [ nl ]
+          input_current_pose_topic :
+            flags : [ nl ]
+            depend      : use_fusion_localizer_feedback
+            depend_bool : 'lambda v : v == 1'
+          world_frame :
+            flags : [ nl ]
+          init_x  :
+            user_category : ''
+          init_yaw:
+            flags : [ nl ]
+          max_iterations:
+            flags : [ nl ]
+          save_map_leaf_size :
+             depend      : with_mapping
+             depend_bool : 'lambda v : v == 1'
+          min_scan_range :
+             depend      : with_mapping
+             depend_bool : 'lambda v : v == 1'
+          max_scan_range :
+             depend      : with_mapping
+             depend_bool : 'lambda v : v == 1'
+          min_add_scan_shift:
+             depend      : with_mapping
+             depend_bool : 'lambda v : v == 1'
+          separate_mapping :
+             depend      : with_mapping
+             depend_bool : 'lambda v : v == 1'
+          separate_map_size :
+             depend      : with_mapping
+             depend_bool : 'lambda v : v == 1'
+             flags : [ nl ]
+          use_nn_point_z_when_initial_pose :
+             flags : [ nl ]
     - name : autoware_connector
       desc : autoware_connector desc sample
       subs :
@@ -1534,6 +1575,217 @@ params :
         dash        : ''
         delim       : ':='
         only_enable : True
+
+  - name  : ndt_slam
+    topic : /config/ndt_slam
+    msg   : ConfigNDTSlam
+    vars  :
+    - name      : input_mapping_points_topic
+      desc      : input_mappping_points_topic
+      label     : Input Mapping Points Topic
+      v         : /points_raw
+      kind      : topic
+      topic_type: sensor_msgs/PointCloud2
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : input_localizing_points_topic
+      desc      : input_localizing_points_topic
+      label     : Input Localizing Points Topic
+      v         : /filtered_points
+      kind      : topic
+      topic_type: sensor_msgs/PointCloud2
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : points_queue_size
+      desc      : points_queue_size
+      label     : Points Queue Size
+      kind      : num
+      v         : 1
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : use_fusion_localizer_feedback
+      desc  : use_fusion_localizer_feedback
+      label : Use Fusion Localizer Feedback
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : input_current_pose_topic
+      desc      : input_current_pose_topic
+      label     : Input Current Pose Topic
+      v         : /ekf_pose
+      kind      : topic
+      topic_type: geometry_msgs/PoseStamped
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : target_frame
+      desc      : target_frame desc sample
+      label     : Target Frame
+      v         : base_link
+      kind      : str
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : world_frame
+      desc      : world_frame desc sample
+      label     : World Frame
+      v         : map
+      kind      : str
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : init_x
+      desc      : x desc sample
+      label     : 'x:'
+      v         : 0.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : init_y
+      desc      : y desc sample
+      label     : 'y:'
+      v         : 0.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : init_z
+      desc      : z desc sample
+      label     : 'z:'
+      v         : 0.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : init_roll
+      desc      : roll desc sample
+      label     : 'roll:'
+      v         : 0.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : init_pitch
+      desc      : pitch desc sample
+      label     : 'pitch:'
+      v         : 0.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : init_yaw
+      desc      : yaw desc sample
+      label     : 'yaw:'
+      v         : 0.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : resolution
+      desc  : resolution desc sample
+      label : Resolution
+      min   : 0
+      max   : 10
+      v     : 1.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : step_size
+      desc  : step_size desc sample
+      label : Step Size
+      min   : 0
+      max   : 1
+      v     : 0.1
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : trans_epsilon
+      desc  : trans_epsilon desc sample
+      label : Transformation Epsilon
+      min   : 0
+      max   : 0.1
+      v     : 0.01
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : max_iterations
+      desc  : max_iterations desc sample
+      label : Maximum Iterations
+      min   : 1
+      max   : 300
+      v     : 30
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : with_mapping
+      desc  : with mapping
+      label : With Mapping
+      kind  : checkbox
+      v     : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : save_map_leaf_size
+      desc  : save_map_leaf_size
+      label : Save Map Leaf Size
+      min   : 0.0
+      max   : 10.0
+      v     : 0.2
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : min_scan_range
+      desc  : Ignore points closer than this value (meters) (default 5.0)
+      label : Min Scan Range
+      min   : 0.0
+      max   : 30.0
+      v     : 5.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : max_scan_range
+      desc  : max_scan_range
+      label : Max Scan Range
+      min   : 0.0
+      max   : 200.0
+      v     : 200.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : min_add_scan_shift
+      desc  : Minimum distance between points to be added to the final map (default 1.0)
+      label : Min Add Scan Shift
+      min   : 0.0
+      max   : 10.0
+      v     : 1.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : separate_mapping
+      desc  : separate_mapping
+      label : Separate Mapping
+      kind  : checkbox
+      v     : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : separate_map_size
+      desc  : separate_map_size
+      label : Separate Map Size
+      min   : 0.0
+      max   : 200.0
+      v     : 100.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : use_nn_point_z_when_initial_pose
+      desc  : use_nn_point_z_when_initial_pose
+      label : Use NN Point Z When Initial Pose
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
 
   - name  : vel_pose_connect
     vars  :

@@ -1,0 +1,106 @@
+<!-- -->
+<launch>
+
+  <arg name="input_mapping_points_topic" default="/points_raw" />
+  <arg name="input_localizing_points_topic" default="/filtered_points" />
+  <arg name="points_queue_size" default="1" />
+
+  <arg name="use_fusion_localizer_feedback" default="false" />
+  <arg name="input_current_pose_topic" default="/ekf_pose" />
+
+  <arg name="input_initial_pose_topic" default="/initialpose" />
+  <arg name="input_points_map_topic" default="/points_map" />
+
+  <arg name="output_points_map_topic" default="ndt_map" />
+  <arg name="output_pose_topic" default="ndt_pose" />
+  <arg name="output_pose_with_covariance_topic" default="ndt_pose_with_covariance" />
+  <arg name="output_estimate_twist_topic" default="estimate_twist" />
+
+  <arg name="target_frame" default="base_link" />
+  <arg name="world_frame" default="map" />
+
+  <arg name="init_x" default="0.0" />
+  <arg name="init_y" default="0.0" />
+  <arg name="init_z" default="0.0" />
+  <arg name="init_roll" default="0.0" />
+  <arg name="init_pitch" default="0.0" />
+  <arg name="init_yaw" default="0.0" />
+
+  <arg name="trans_epsilon" default="0.01" />
+  <arg name="step_size" default="0.1" />
+  <arg name="resolution" default="1.0" />
+  <arg name="max_iterations" default="30.0" />
+
+  <arg name="with_mapping" default="false" />
+  <arg name="save_added_map" default="false" />
+  <arg name="save_map_leaf_size" default="0.2" />
+  <arg name="min_scan_range" default="5.0" />
+  <arg name="max_scan_range" default="200.0" />
+  <arg name="min_add_scan_shift" default="1.0" />
+  <arg name="separate_mapping" default="false" />
+  <arg name="separate_map_size" default="100.0" />
+  <arg name="mapping_file_directory_path" default="/tmp/Autoware/log/ndt_slam" />
+
+  <arg name="matching_score_use_points_num" default="300" />
+  <arg name="matching_score_cutoff_lower_limit_z" default="0.2" />
+  <arg name="matching_score_cutoff_upper_limit_z" default="2.0" />
+  <arg name="matching_score_cutoff_lower_limit_range" default="5.0" />
+  <arg name="matching_score_cutoff_upper_limit_range" default="100.0" />
+  <arg name="matching_score_kT" default="0.05" />
+  <arg name="matching_score_mu" default="0.25" />
+
+  <arg name="use_nn_point_z_when_initial_pose" default="false" />
+  <arg name="publish_tf" default="true" />
+
+
+  <arg name="use_anonymous_node_name" default="false" />
+  <arg name="node_name" value="ndt_slam" unless="$(arg use_anonymous_node_name)" />
+  <arg name="node_name" value="$(anon ndt_slam)" if="$(arg use_anonymous_node_name)" />
+
+  <node pkg="lidar_localizer" type="ndt_slam" name="$(arg node_name)" output="screen">
+
+    <remap from="/points_raw" to="$(arg input_mapping_points_topic)" />
+    <remap from="/filtered_points" to="$(arg input_localizing_points_topic)" />
+    <param name="points_queue_size" value="$(arg points_queue_size)" />
+
+    <param name="use_fusion_localizer_feedback" value="$(arg use_fusion_localizer_feedback)" />
+    <remap from="/ekf_pose" to="$(arg input_current_pose_topic)" />
+
+    <param name="target_frame" value="$(arg target_frame)" />
+    <param name="world_frame" value="$(arg world_frame)" />
+
+    <param name="init_x" value="$(arg init_x)" />
+    <param name="init_y" value="$(arg init_y)" />
+    <param name="init_z" value="$(arg init_z)" />
+    <param name="init_roll" value="$(arg init_roll)" />
+    <param name="init_pitch" value="$(arg init_pitch)" />
+    <param name="init_yaw" value="$(arg init_yaw)" />
+
+    <param name="trans_epsilon" value="$(arg trans_epsilon)" />
+    <param name="step_size" value="$(arg step_size)" />
+    <param name="resolution" value="$(arg resolution)" />
+    <param name="max_iterations" value="$(arg max_iterations)" />
+
+    <param name="with_mapping" value="$(arg with_mapping)" />
+    <param name="save_added_map" value="$(arg save_added_map)" />
+    <param name="save_map_leaf_size" value="$(arg save_map_leaf_size)" />
+    <param name="min_scan_range" value="$(arg min_scan_range)" />
+    <param name="max_scan_range" value="$(arg max_scan_range)" />
+    <param name="min_add_scan_shift" value="$(arg min_add_scan_shift)" />
+    <param name="separate_mapping" value="$(arg separate_mapping)" />
+    <param name="separate_map_size" value="$(arg separate_map_size)" />
+    <param name="mapping_file_directory_path" value="$(arg mapping_file_directory_path)" />
+
+    <param name="matching_score_use_points_num" value="$(arg matching_score_use_points_num)" />
+    <param name="matching_score_cutoff_lower_limit_z" value="$(arg matching_score_cutoff_lower_limit_z)" />
+    <param name="matching_score_cutoff_upper_limit_z" value="$(arg matching_score_cutoff_upper_limit_z)" />
+    <param name="matching_score_cutoff_lower_limit_range" value="$(arg matching_score_cutoff_lower_limit_range)" />
+    <param name="matching_score_cutoff_upper_limit_range" value="$(arg matching_score_cutoff_upper_limit_range)" />
+    <param name="matching_score_kT" value="$(arg matching_score_kT)" />
+    <param name="matching_score_mu" value="$(arg matching_score_mu)" />
+
+    <param name="use_nn_point_z_when_initial_pose" value="$(arg use_nn_point_z_when_initial_pose)" />
+    <param name="publish_tf" value="$(arg publish_tf)" />
+  </node>
+
+</launch>

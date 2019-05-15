@@ -48,6 +48,7 @@ from autoware_config_msgs.msg import ConfigNDT
 from autoware_config_msgs.msg import ConfigNDTMapping
 from autoware_config_msgs.msg import ConfigApproximateNDTMapping
 from autoware_config_msgs.msg import ConfigNDTMappingOutput
+from autoware_config_msgs.msg import ConfigNDTSlam
 from autoware_config_msgs.msg import ConfigICP
 from autoware_config_msgs.msg import ConfigVoxelGridFilter
 from autoware_config_msgs.msg import ConfigRingFilter

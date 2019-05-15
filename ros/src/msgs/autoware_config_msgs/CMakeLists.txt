@@ -26,6 +26,7 @@ add_message_files(
   ConfigLatticeVelocitySet.msg
   ConfigNDTMapping.msg
   ConfigNDTMappingOutput.msg
+  ConfigNDTSlam.msg
   ConfigNDT.msg
   ConfigPedestrianDPM.msg
   ConfigPedestrianFusion.msg

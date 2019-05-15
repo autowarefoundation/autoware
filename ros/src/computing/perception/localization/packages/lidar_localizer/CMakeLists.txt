@@ -11,6 +11,7 @@ find_package(OpenMP)
 if (OPENMP_FOUND)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    add_definitions(-DOPENMP_FOUND)
 endif ()
 
 find_package(CUDA)
@@ -41,15 +42,22 @@ find_package(autoware_msgs REQUIRED)
 find_package(autoware_config_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         roscpp
+        message_filters
+        tf
+        tf2
+        tf2_ros
+        tf2_sensor_msgs
+        tf2_geometry_msgs
         std_msgs
         nav_msgs
-        tf
-        pcl_ros
         sensor_msgs
         pcl_conversions
         velodyne_pointcloud
+        pcl_ros
+        pcl_conversions
         ndt_tku
         ndt_cpu
+        autoware_lidar_localizer
         autoware_health_checker
         ${PCL_OPENMP_PACKAGES}
         autoware_msgs
@@ -60,7 +68,17 @@ find_package(catkin REQUIRED COMPONENTS
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-        CATKIN_DEPENDS std_msgs velodyne_pointcloud autoware_msgs autoware_config_msgs ndt_tku ndt_cpu ${PCL_OPENMP_PACKAGES}
+        CATKIN_DEPENDS std_msgs
+                       tf2_ros
+                       tf2_sensor_msgs
+                       tf2_geometry_msgs
+                       velodyne_pointcloud
+                       autoware_msgs
+                       autoware_config_msgs
+                       ndt_tku
+                       ndt_cpu
+                       autoware_lidar_localizer
+                       ${PCL_OPENMP_PACKAGES}
         DEPENDS PCL
 )
 
@@ -115,6 +133,17 @@ add_executable(mapping nodes/ndt_mapping_tku/mapping.cpp)
 target_link_libraries(mapping ${catkin_LIBRARIES})
 add_dependencies(mapping ${catkin_EXPORTED_TARGETS})
 
+add_executable(ndt_slam
+  nodes/ndt_slam/ndt_slam_node.cpp
+  nodes/ndt_slam/ndt_slam_core.cpp
+)
+if(CUDA_FOUND)
+target_include_directories(ndt_slam PRIVATE ${CUDA_INCLUDE_DIRS})
+endif()
+target_link_libraries(ndt_slam ${catkin_LIBRARIES})
+add_dependencies(ndt_slam autoware_msgs_generate_messages_cpp)
+
+
 add_library(ndt_matching_monitor_lib SHARED
         nodes/ndt_matching_monitor/ndt_matching_monitor.h
         nodes/ndt_matching_monitor/ndt_matching_monitor.cpp
@@ -143,6 +172,7 @@ install(TARGETS
             approximate_ndt_mapping
             ndt_mapping_tku
             mapping
+            ndt_slam
             ndt_matching_monitor_lib
             ndt_matching_monitor
             icp_matching
