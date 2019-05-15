@@ -144,16 +144,66 @@ StopLine|/vector_map_info/stop_line|Vehicle is stopping due to stop line|Throws 
 
 ## Basic Usage in Autoware
 
-### Start Driving
-1. Launch Autoware and localization on real vehicle or wf_simulator
-2. Launch `decision_maker` and lane_planner, astar_planner, waypoint_follower
-3. When `VehicleReady` and `WaitOrder` state, launch `waypoint_loader`
-4. On `DriveReady` state, push `Engage` button on DecisionMakerPannel
-5. When the vehicle reaches the end of waypoint and stops, state Mission state transits to `WaitOrder` via the `MissionComplete`
-6. You can repeat from 3. with other waypoint
+### Preparations
+
+- For state visualization, please add OverlayText type displays on rviz and select topics `decision_maker/operator_help_text`, `decision_maker/state_overlay`.  
+<img src="docs/state_overlay.png" width=800>
+
+
+- For publish `/state_cmd` topic by buttons, plese add DecisionMakerPanel plugin from `Panels -> Add New Panel` on rviz.  
+<img src="docs/decision_maker_panel.png" width=800>
+
+### Start Driving with simulation
+1. Open run time manager and rviz
+2. In Computing tab, launch `Decision -> decision_maker(experimental)` and check the state.  
+The state at that time:
+> Init  
+> SensorInit  
+> WaitVehicleReady  
+> Stopping  
+> WaitDriveReady  
+3. In Computing tab, launch `Motion Planning -> waypoint_follower -> wf_simulator`.  
+Then the state changes:
+> Init  
+> **MapInit**  
+> WaitVehicleReady  
+> Stopping  
+> WaitDriveReady  
+4. In Map tab, load Vector Map and TF files you use(Point Cloud is optional).  
+Then the state changes:  
+> Init  
+> **LocalizationInit**  
+> WaitVehicleReady  
+> Stopping  
+> WaitDriveReady  
+5. In Computing tab, launch `Localization -> autoware_connector -> vel_pose_connect` with Simulation Mode option in [ app ], and publish `/initialpose` topic using `2D Pose Estimate` tool in rviz.  
+Then the state changes:  
+> **VehicleReady**  
+> **WaitOrder**  
+> Stopping  
+> WaitDriveReady
+6. In Computing tab, launch `Mission Planning -> lane_planner -> lane_rule`, `-> lane_stop`, `-> lane_select`, `Motion Planning -> waypoint_planner -> astar_avoid`, `-> velocity_set`, `Motion Planning -> waypoint_follower -> pure_pursuit`, `-> twist_filter`.
+7. In Computing tab, launch `Motion Planning -> waypoint_maker -> waypoint_loader` with waypoint file(s) you want to use.  
+Then the state changes:  
+> VehicleReady  
+> **DriveReady**  
+> Stopping  
+> **WaitEngage**  
+
+ If the state is `MissionCheck` instead of `DriveReady`, please set the position near the waypoint by `2D Pose Estimate` tool.
+8. Push `Engage` button in `DecisionMakerPanel`.  
+The vehicle start to drive, and the state changes as follows for example:
+> VehicleReady  
+> **Driving**  
+> **Moving**  
+> **LaneArea**  
+> **Cruise**  
+> **Straight**  
+> **Drive**  
+> **Go**
 
 ### Lane change
-  1. Start Normal driving with waypoint files necessary for lane change
+  1. Start driving with waypoint files necessary for lane change
   2. On `CheckLeft` or `RightLane` state, push `Execute LaneChange` button on DecisionMakerPannel
   3. The vehicle start lane change
 
