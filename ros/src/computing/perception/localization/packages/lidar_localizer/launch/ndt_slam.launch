@@ -1,13 +1,6 @@
 <!-- -->
 <launch>
 
-  <arg name="method_type" default="0" /> <!-- pcl_generic=0, pcl_anh=1, pcl_anh_gpu=2, pcl_openmp=3 -->
-
-  <!-- if method_type is pcl_openmp -->
-  <arg name="omp_neighborhood_search_method" default="2" />  <!-- KDTREE=0, DIRECT26=1, DIRECT7=2, DIRECT1=3 -->
-  <arg name="omp_use_max_threads" default="false" />
-  <arg name="omp_num_threads" default="4" /> <!-- if omp_use_max_threads is true, this parameter is ignored -->
-
   <arg name="input_mapping_points_topic" default="/points_raw" />
   <arg name="input_localizing_points_topic" default="/filtered_points" />
   <arg name="points_queue_size" default="1" />
@@ -65,11 +58,6 @@
   <arg name="node_name" value="$(anon ndt_slam)" if="$(arg use_anonymous_node_name)" />
 
   <node pkg="lidar_localizer" type="ndt_slam" name="$(arg node_name)" output="screen">
-    <param name="method_type" value="$(arg method_type)" />
-
-    <param name="omp_neighborhood_search_method" value="$(arg omp_neighborhood_search_method)" />
-    <param name="omp_use_max_threads" value="$(arg omp_use_max_threads)" />
-    <param name="omp_num_threads" value="$(arg omp_num_threads)" />
 
     <remap from="/points_raw" to="$(arg input_mapping_points_topic)" />
     <remap from="/filtered_points" to="$(arg input_localizing_points_topic)" />

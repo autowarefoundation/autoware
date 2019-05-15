@@ -47,9 +47,6 @@
 #include <lidar_localizer/matching_score/matching_score.h>
 #include <lidar_localizer/matching_score/matching_score_histogram.h>
 #include <lidar_localizer/ndt/ndt_slam_pcl.h>
-#include <lidar_localizer/ndt/ndt_slam_pcl_anh.h>
-#include <lidar_localizer/ndt/ndt_slam_pcl_anh_gpu.h>
-#include <lidar_localizer/ndt/ndt_slam_pcl_omp.h>
 #include <lidar_localizer/pose_linear_interpolator/pose_linear_interpolator.h>
 
 class NdtSlam {
@@ -63,13 +60,6 @@ class NdtSlam {
       message_filters::sync_policies::ApproximateTime<sensor_msgs::PointCloud2,
                                                       sensor_msgs::PointCloud2,
                                                       geometry_msgs::PoseStamped>;
-
-  enum class MethodType {
-    PCL_GENERIC = 0,
-    PCL_ANH = 1,
-    PCL_ANH_GPU = 2,
-    PCL_OPENMP = 3,
-  };
 
 public:
   NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh);
@@ -149,7 +139,6 @@ private:
   MatchingScore<PointTarget> matching_score_class_; //TODO
   PoseLinearInterpolator pose_interpolator_;
 
-  MethodType method_type_;
   Eigen::Matrix4f target_to_sensor_matrix_;
   Eigen::Matrix4f world_to_map_matrix_;
   Pose target_to_sensor_pose_;

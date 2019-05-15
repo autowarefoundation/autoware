@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 2.8.3)
 project(autoware_lidar_localizer)
 
 SET(LIB_NAME "autoware_lidar_localizer")
-add_definitions(-std=c++11 -msse -msse2 -msse3 -msse4 -msse4.1 -msse4.2)
-set(CMAKE_CXX_FLAGS "-std=c++11 -msse -msse2 -msse3 -msse4 -msse4.1 -msse4.2")
 
 # pcl 1.7 causes a segfault when it is built with debug mode
 set(CMAKE_BUILD_TYPE "RELEASE")
@@ -15,21 +13,7 @@ execute_process(
 
 find_package(PCL REQUIRED)
 
-set(PCL_LIBRARY_PACKAGES pcl_registration ndt_cpu)
-
-find_package( OpenMP )
-if (OPENMP_FOUND)
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    list(APPEND PCL_LIBRARY_PACKAGES pcl_omp_registration ndt_omp)
-    add_definitions(-DOPENMP_FOUND)
-endif()
-
-find_package(CUDA)
-if(CUDA_FOUND)
-   list(APPEND PCL_LIBRARY_PACKAGES ndt_gpu)
-   add_definitions(-DCUDA_FOUND)
-endif()
+set(PCL_LIBRARY_PACKAGES pcl_registration)
 
 find_package(catkin REQUIRED COMPONENTS
   pcl_ros
@@ -56,11 +40,7 @@ SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 add_library(${LIB_NAME}
   src/lidar_localizer.cpp
   src/ndt/ndt_slam_base.cpp
-  src/ndt/ndt_slam_dummy.cpp
   src/ndt/ndt_slam_pcl.cpp
-  src/ndt/ndt_slam_pcl_omp.cpp
-  src/ndt/ndt_slam_pcl_anh.cpp
-  src/ndt/ndt_slam_pcl_anh_gpu.cpp
   src/map_manager/map_manager.cpp
   src/matching_score/matching_score.cpp
   src/matching_score/matching_score_histogram.cpp

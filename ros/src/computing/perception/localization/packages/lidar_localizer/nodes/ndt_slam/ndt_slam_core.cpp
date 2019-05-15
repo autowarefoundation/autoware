@@ -31,7 +31,7 @@
 
 NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
     : nh_(nh), private_nh_(private_nh), tf2_listener_(tf2_buffer_),
-      method_type_(MethodType::PCL_GENERIC), with_mapping_(false), separate_mapping_(false),
+      with_mapping_(false), separate_mapping_(false),
       use_nn_point_z_when_initial_pose_(false), publish_tf_(true), sensor_frame_("velodyne"),
       target_frame_("base_link"), map_frame_("map"), world_frame_("world"),
       min_scan_range_(5.0), max_scan_range_(200.0), min_add_scan_shift_(1.0),
@@ -40,49 +40,8 @@ NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
       matching_score_cutoff_upper_limit_range_(100.0), matching_score_(0.0)
 
 {
-  int method_type_tmp = 0;
-  private_nh.getParam("method_type", method_type_tmp);
-  method_type_ = static_cast<MethodType>(method_type_tmp);
-
-  if (method_type_ == MethodType::PCL_GENERIC) {
-    ROS_INFO("use NDT SLAM PCL GENERIC version");
-    localizer_ptr_.reset(new NdtSlamPCL<PointSource, PointTarget>);
-  }
-  else if (method_type_ == MethodType::PCL_OPENMP) {
-    ROS_INFO("use NDT SLAM PCL OPENMP version");
-
-    std::unique_ptr<NdtSlamPCLOMP<PointSource, PointTarget>> ndt_omp_ptr(new NdtSlamPCLOMP<PointSource, PointTarget>);
-
-    int search_method = 0;
-    private_nh_.getParam("omp_neighborhood_search_method", search_method);
-    ndt_omp_ptr->setNeighborhoodSearchMethod(search_method);
-
-    bool use_max_threads = false;
-    int num_threads = ndt_omp_ptr->getMaxThreads();
-    private_nh_.getParam("omp_use_max_threads", use_max_threads);
-    if(!use_max_threads) {
-        private_nh_.getParam("omp_num_threads", num_threads);
-        num_threads = std::min(num_threads, ndt_omp_ptr->getMaxThreads());
-    }
-    ndt_omp_ptr->setNumThreads(num_threads);
-
-    ROS_INFO("omp_neighborhood_search_method: %d, omp_use_max_threads %d, omp_num_threads %d", search_method, use_max_threads, num_threads);
-
-    localizer_ptr_.reset(ndt_omp_ptr.release());
-
-  }
-  else if (method_type_ == MethodType::PCL_ANH) {
-    ROS_INFO("use NDT SLAM PCL ANH version");
-    localizer_ptr_.reset(new NdtSlamPCLANH<PointSource, PointTarget>);
-  }
-  else if (method_type_ == MethodType::PCL_ANH_GPU) {
-    ROS_INFO("use NDT SLAM PCL ANH GPU version");
-    localizer_ptr_.reset(new NdtSlamPCLANHGPU<PointSource, PointTarget>);
-  }
-  else {
-    ROS_INFO("unkonwn method_type. use NDT SLAM PCL GENERIC version");
-    localizer_ptr_.reset(new NdtSlamPCL<PointSource, PointTarget>);
-  }
+  ROS_INFO("use NDT SLAM PCL GENERIC version");
+  localizer_ptr_.reset(new NdtSlamPCL<PointSource, PointTarget>);
 
   int points_queue_size = 1;
   private_nh_.getParam("points_queue_size", points_queue_size);
