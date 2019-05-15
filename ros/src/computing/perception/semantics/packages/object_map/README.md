@@ -7,40 +7,9 @@ The processed result is published as GridMaps (grid_map) and/or occupancy grids(
 
 ## Nodes in the Package
 
-### points2costmap
-
-This node reads PointCloud data and creates an occupancy grid based on the data contained in it.
-
-The subscribed PointCloud topic should be a processed PointCloud with the ground previously removed.
-The default input is set as the output PointCloud result from the node `euclidean_clustering` of the `lidar_tracker` package. However, another option might be the output of the `ray_ground_filter` or `ring_ground_filter`, both belonging to the `points_preprocessor` in the *Sensing* package.
-
-The values contained within the OccupancyGrid range from 0-100, representing a probability percentage where 0 represents free space and 100 represents occupied space.
-
-#### Input topics
-Default: `/points_lanes` (PointCloud) from euclidean cluster. It contains filtered points with the ground removed. Another possible option is `/points_no_ground`.
-
-#### Output topics
-`/realtime_cost_map` (nav_msgs::OccupancyGrid) is the output OccupancyGrid, with values ranging from 0-100.
-
-##### How to launch
-It can be launched as follows:
- 1. Using the Runtime Manager by clicking the `points2costmap` checkbox under the *Semantics* section in the Computing tab.
- 2. From a sourced terminal executing: `roslaunch object_map points2costmap.launch`.
-
-##### Parameters available in roslaunch and rosrun
-* `resolution` defines the equivalent value of a cell in the grid in meters. Smaller values result in better accuracy at the expense of memory and computing cost (default value: 0.1).
-* `cell_width` represents the width in meters of the OccupancyGrid around the origin of the PointCloud (default: 150).
-* `cell_height` represents the height in meters of the OccupancyGrid around the origin of the PointCloud (default: 150).
-* `offset_x` indicates if the center of the OccupancyGrid will be shifted by this distance, to the left(-) or right(+) (default: 25).
-* `offset_y` indicates if the center of the OccupancyGrid will be shifted by this distance, to the back(-) or front(+)  (default: 0).
-* `offset_z` indicates if the center of the OccupancyGrid will be shifted by this distance, below(-) or above(+) (dDefault: 0).
-* `points_topic` is the PointCloud topic source.
-
----
-
 ### laserscan2costmap
 
-This node performs the same function as `points2costmap` but uses 2D LaserScan messages to generate the OccupancyGrid.
+This node uses 2D LaserScan messages to generate the OccupancyGrid.
 
 #### Input topics
 Default: `/scan` (sensor_msgs::LaserScan) from vscan.
@@ -99,7 +68,7 @@ This node can combine sensor, map, and perception data as well as other Occupanc
 #### Input topics
 `/vector_map` (vector_map_msgs::WayArea) from the VectorMap publisher.
 `/tf` to obtain the transform between the vector map (grid_frame) and the sensor (sensor_frame).
-`/realtime_cost_map` (nav_msgs::OccupancyGrid) calculated by `points2costmap` in this package.
+`/semantics/costmap_generator/occupancy_grid` (nav_msgs::OccupancyGrid) calculated by `costmap_generator` package.
 
 #### Output topics
 `/filtered_grid_map` (grid_map::GridMap) which contains 3 layers and is also published as in regular OccupancyGrid messages.
