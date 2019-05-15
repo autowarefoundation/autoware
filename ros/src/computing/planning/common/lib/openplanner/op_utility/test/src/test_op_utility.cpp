@@ -93,6 +93,34 @@ TEST(TestSuite, UtilityH_getSign) {
   ASSERT_EQ(-1, UtilityHNS::UtilityH::GetSign(-1e-20));
 }
 
+TEST(TestSuite, UtilityH_getTimeDiff) {
+  ASSERT_EQ(0.0, UtilityHNS::UtilityH::GetTimeDiff(timespec{0, 0}, timespec{0, 0}));
+  ASSERT_EQ(1.0, UtilityHNS::UtilityH::GetTimeDiff(timespec{0, 0}, timespec{1, 0}));
+  ASSERT_EQ(-1.0, UtilityHNS::UtilityH::GetTimeDiff(timespec{1, 0}, timespec{0, 0}));
+  ASSERT_EQ(1.0e-9, UtilityHNS::UtilityH::GetTimeDiff(timespec{0, 0}, timespec{0, 1}));
+  ASSERT_EQ(1.0e-6, UtilityHNS::UtilityH::GetTimeDiff(timespec{0, 0}, timespec{0, 1000}));
+  ASSERT_EQ(1.0e-3, UtilityHNS::UtilityH::GetTimeDiff(timespec{0, 0}, timespec{0, 1000000}));
+}
+
+TEST(TestSuite, UtilityH_tsCompare) {
+  // Clear cases
+  ASSERT_EQ(0, UtilityHNS::UtilityH::tsCompare(timespec{0, 0}, timespec{0, 0}));
+  ASSERT_EQ(1, UtilityHNS::UtilityH::tsCompare(timespec{1, 0}, timespec{0, 0}));
+  ASSERT_EQ(-1, UtilityHNS::UtilityH::tsCompare(timespec{0, 0}, timespec{1, 0}));
+
+  // Just within tolerance
+  ASSERT_EQ(0, UtilityHNS::UtilityH::tsCompare(timespec{0, 0}, timespec{0, 10}, 10));
+  ASSERT_EQ(0, UtilityHNS::UtilityH::tsCompare(timespec{0, 10}, timespec{0, 0}, 10));
+  ASSERT_EQ(0, UtilityHNS::UtilityH::tsCompare(timespec{0, 999999990}, timespec{1, 0}, 10));
+  ASSERT_EQ(0, UtilityHNS::UtilityH::tsCompare(timespec{1, 0}, timespec{0, 999999990}, 10));
+
+  // Just outside of tolerance
+  ASSERT_EQ(-1, UtilityHNS::UtilityH::tsCompare(timespec{0, 0}, timespec{0, 11}, 10));
+  ASSERT_EQ(1, UtilityHNS::UtilityH::tsCompare(timespec{0, 11}, timespec{0, 0}, 10));
+  ASSERT_EQ(-1, UtilityHNS::UtilityH::tsCompare(timespec{0, 999999989}, timespec{1, 0}, 10));
+  ASSERT_EQ(1, UtilityHNS::UtilityH::tsCompare(timespec{1, 0}, timespec{0, 999999989}, 10));
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
