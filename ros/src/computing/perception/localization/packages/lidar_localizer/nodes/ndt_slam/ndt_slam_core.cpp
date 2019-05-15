@@ -33,7 +33,7 @@ NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
     : nh_(nh), private_nh_(private_nh), tf2_listener_(tf2_buffer_),
       with_mapping_(false), separate_mapping_(false),
       use_nn_point_z_when_initial_pose_(false), publish_tf_(true), sensor_frame_("velodyne"),
-      target_frame_("base_link"), map_frame_("map"), world_frame_("world"),
+      target_frame_("base_link"), map_frame_("map"), world_frame_("map"),
       min_scan_range_(5.0), max_scan_range_(200.0), min_add_scan_shift_(1.0),
       matching_score_use_points_num_(300), matching_score_cutoff_lower_limit_z_(0.2),
       matching_score_cutoff_upper_limit_z_(2.0), matching_score_cutoff_lower_limit_range_(5.0),
