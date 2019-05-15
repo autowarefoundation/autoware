@@ -61,10 +61,10 @@
 
     <remap from="/points_raw" to="$(arg input_mapping_points_topic)" />
     <remap from="/filtered_points" to="$(arg input_localizing_points_topic)" />
-    <param name="points_queue_size" value="$(arg input_points_queue_size)" />
+    <param name="points_queue_size" value="$(arg points_queue_size)" />
 
     <param name="use_fusion_localizer_feedback" value="$(arg use_fusion_localizer_feedback)" />
-    <remap from="/ekf_pose" to="$(arg current_pose_topic)" />
+    <remap from="/ekf_pose" to="$(arg input_current_pose_topic)" />
 
     <param name="target_frame" value="$(arg target_frame)" />
     <param name="world_frame" value="$(arg world_frame)" />
