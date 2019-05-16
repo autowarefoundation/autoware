@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ndt_gpu)
 
-find_package(catkin REQUIRED
+find_package(catkin REQUIRED COMPONENTS
         autoware_build_flags)
 find_package(PCL REQUIRED)
 find_package(CUDA)
