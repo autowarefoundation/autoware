@@ -204,6 +204,34 @@ The vehicle start to drive, and the state changes as follows for example:
 > **Drive**  
 > **Go**
 
+### Stop line function
+There are two ways to enable stop line function as follows.
+
+##### Use waypoint flag
+1. Open waypoint file and modify stop_flag column of index that you want to stop.  
+Details of stop_flag's value:
+```
+0: None
+1: Stopline(automatically resume driving after stop)
+2: Stop(stop only, wait for command)
+```
+Example image:  
+<img src="docs/stop_flag.png" width=800>
+
+2. Start driving with the modified waypoint file.
+
+
+##### Use vector map
+- The stopline, roadsign and the vector map files that accompany them are required.
+
+
+1. Open stopline file and change the value of SignID column that you want to stop to the roadsign's ID to be linked.
+2. Open the roadsign file and change the value in the Type column for the ID linked in the previous step. Details of the Type are same as stop_flag.  
+Example image:  
+<img src="docs/stopline_vectormap.png" width=800>
+
+3. Start driving with the modified vector map.
+
 ### Lane change
   1. Start driving with waypoint files necessary for lane change
   2. On `CheckLeft` or `RightLane` state, push `Execute LaneChange` button on DecisionMakerPannel
