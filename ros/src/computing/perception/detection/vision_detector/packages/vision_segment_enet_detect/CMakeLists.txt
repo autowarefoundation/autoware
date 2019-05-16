@@ -6,6 +6,7 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
         image_transport
         roscpp
         sensor_msgs
+        autoware_build_flags
         )
 FIND_PACKAGE(CUDA)
 FIND_PACKAGE(OpenCV REQUIRED)
