@@ -42,7 +42,7 @@ include_directories(
         ${EIGEN3_INCLUDE_DIR}
 )
 
-add_executable(ekf_localizer src/ekf_localizer.cpp)
+add_executable(ekf_localizer src/ekf_localizer_node.cpp src/ekf_localizer.cpp)
 add_dependencies(ekf_localizer ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(ekf_localizer ${catkin_LIBRARIES})
 
@@ -63,3 +63,12 @@ install(DIRECTORY include/ekf_localizer/
 install(DIRECTORY launch/
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
         PATTERN ".svn" EXCLUDE)
+
+        
+if(CATKIN_ENABLE_TESTING)
+        find_package(rostest REQUIRED)
+        add_rostest_gtest(ekf_localizer-test test/test_ekf_localizer.test 
+                        test/src/test_ekf_localizer.cpp 
+                        src/ekf_localizer.cpp)
+        target_link_libraries(ekf_localizer-test ${catkin_LIBRARIES})
+endif()

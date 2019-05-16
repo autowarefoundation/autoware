@@ -70,10 +70,10 @@ they are set in `launch/ekf_localizer.launch`
 ## for process noise
 |Name|Type|Description|Default value|
 |:---|:---|:---|:---|
-|stddev_proc_vx_c|double|standard deviation of process noise in time differentiation expression of linear velocity x, noise for d_vx = 0|0.2|
-|stddev_proc_wz_c|double|standard deviation of process noise in time differentiation expression of angular velocity z, noise for d_wz = 0|0.03|
-|stddev_proc_yaw_c|double|standard deviation of process noise in time differentiation expression of yaw, noise for d_yaw = omege |0.005|
-|stddev_proc_yaw_bias_c|double|standard deviation of process noise in time differentiation expression of yaw_bias, noise for d_yaw_bias = 0|0.001|
+|proc_stddev_vx_c|double|standard deviation of process noise in time differentiation expression of linear velocity x, noise for d_vx = 0|2.0|
+|proc_stddev_wz_c|double|standard deviation of process noise in time differentiation expression of angular velocity z, noise for d_wz = 0|0.2|
+|proc_stddev_yaw_c|double|standard deviation of process noise in time differentiation expression of yaw, noise for d_yaw = omege |0.005|
+|proc_stddev_yaw_bias_c|double|standard deviation of process noise in time differentiation expression of yaw_bias, noise for d_yaw_bias = 0|0.001|
 
 note: process noise for position x & y are calculated automatically dealing with nonlinear equation.
 
@@ -98,10 +98,10 @@ note: process noise for position x & y are calculated automatically dealing with
 2. Set process model parameters as follows.
 
 
- - `stddev_proc_vx_c` : set to maximum linear acceleration
- - `stddev_proc_wz_c` : set to maximum angular acceleration
- - `stddev_proc_yaw_c` : This parameter relates estimation between yaw and yaw-speed. Large value means yaw transition does not related to yaw-speed. If set this to 0, it means yaw differential is equal to yaw angle speed. If the relation of "differentiation of yaw measurement value = measurement value of yaw-speed" includes any modeling error other than measurement noise based on normal distribution (such as angular velocity bias), increase this value.
- - `stddev_proc_yaw_bias_c` : This parameter is related to the rate of change of yaw angle bias. In most cases, yaw bias is constant, so it can be very small. If there is a yaw angle bias, not to set zero. (Zero means bias is constant with initial value, which is set to zero)
+ - `proc_stddev_vx_c` : set to maximum linear acceleration
+ - `proc_stddev_wz_c` : set to maximum angular acceleration
+ - `proc_stddev_yaw_c` : This parameter relates estimation between yaw and yaw-speed. Large value means yaw transition does not related to yaw-speed. If set this to 0, it means yaw differential is equal to yaw angle speed. If the relation of "differentiation of yaw measurement value = measurement value of yaw-speed" includes any modeling error other than measurement noise based on normal distribution (such as angular velocity bias), increase this value.
+ - `proc_stddev_yaw_bias_c` : This parameter is related to the rate of change of yaw angle bias. In most cases, yaw bias is constant, so it can be very small. If there is a yaw angle bias, not to set zero. (Zero means bias is constant with initial value, which is set to zero)
 
  3. Turn sensor standard deviation parameters of sensor with rosbag simulation.
  

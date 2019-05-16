@@ -81,10 +81,10 @@ private:
   double twist_stddev_wz_;        //!< @brief  standard deviation for angular wx
 
   /* process noise variance for discrete model */
-  double cov_proc_yaw_d_;      //!< @brief  discrete yaw process noise
-  double cov_proc_yaw_bias_d_; //!< @brief  discrete yaw bias process noise
-  double cov_proc_vx_d_;       //!< @brief  discrete process noise in d_vx=0
-  double cov_proc_wz_d_;       //!< @brief  discrete process noise in d_wz=0
+  double proc_cov_yaw_d_;      //!< @brief  discrete yaw process noise
+  double proc_cov_yaw_bias_d_; //!< @brief  discrete yaw bias process noise
+  double proc_cov_vx_d_;       //!< @brief  discrete process noise in d_vx=0
+  double proc_cov_wz_d_;       //!< @brief  discrete process noise in d_wz=0
 
   enum IDX
   {
@@ -191,4 +191,6 @@ private:
    * @brief for debug
    */
   void showCurrentX();
+
+  friend class EKFLocalizerTestSuite; // for test code
 };

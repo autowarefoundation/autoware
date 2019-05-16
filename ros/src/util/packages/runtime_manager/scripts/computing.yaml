@@ -5755,39 +5755,39 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name  : stddev_proc_yaw_c
+    - name  : proc_stddev_yaw_c
       desc  : standard deviation of process noise for d(yaw)/dt = wz
-      label : stddev_proc_yaw
+      label : proc_stddev_yaw
       min   : 0.000
       max   : 1.0
       v     : 0.005
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name  : stddev_proc_yaw_bias_c
+    - name  : proc_stddev_yaw_bias_c
       desc  : standard deviation of process noise for d(yaw_bias)/dt = 0
-      label : stddev_proc_yaw_bias
+      label : proc_stddev_yaw_bias
       min   : 0.0
       max   : 0.1
       v     : 0.001
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name  : stddev_proc_vx_c
+    - name  : proc_stddev_vx_c
       desc  : standard deviation of process noise for d(vx)/dt = 0
-      label : stddev_proc_vx 
+      label : proc_stddev_vx 
       min   : 0.0
       max   : 10.0
-      v     : 0.1
+      v     : 2.0
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name  : stddev_proc_wz_c
+    - name  : proc_stddev_wz_c
       desc  : standard deviation of process noise for d(wz)/dt = 0
-      label : stddev_proc_wz
+      label : proc_stddev_wz
       min   : 0.0
       max   : 10.0
-      v     : 0.05
+      v     : 0.2
       cmd_param :
         dash      : ''
         delim     : ':='

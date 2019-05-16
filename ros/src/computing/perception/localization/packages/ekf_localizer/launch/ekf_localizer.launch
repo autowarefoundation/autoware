@@ -24,10 +24,10 @@
   <arg name="twist_stddev_wz" default="0.03"/>
 
   <!-- for process model -->
-  <arg name="stddev_proc_yaw_c" default="0.005"/>
-  <arg name="stddev_proc_yaw_bias_c" default="0.001"/>
-  <arg name="stddev_proc_vx_c" default="0.1"/>
-  <arg name="stddev_proc_wz_c" default="0.05"/>
+  <arg name="proc_stddev_yaw_c" default="0.005"/>
+  <arg name="proc_stddev_yaw_bias_c" default="0.001"/>
+  <arg name="proc_stddev_vx_c" default="0.1"/>
+  <arg name="proc_stddev_wz_c" default="0.05"/>
 
 
   <node pkg="ekf_localizer" type="ekf_localizer" name="ekf_localizer" output="screen">
@@ -61,10 +61,10 @@
     <param name="twist_stddev_vx" value="$(arg twist_stddev_vx)"/>
     <param name="twist_stddev_wz" value="$(arg twist_stddev_wz)"/>
 
-    <param name="stddev_proc_yaw_c" value="$(arg stddev_proc_yaw_c)"/>
-    <param name="stddev_proc_yaw_bias_c" value="$(arg stddev_proc_yaw_bias_c)"/>
-    <param name="stddev_proc_vx_c" value="$(arg stddev_proc_vx_c)"/>
-    <param name="stddev_proc_wz_c" value="$(arg stddev_proc_wz_c)"/>
+    <param name="proc_stddev_yaw_c" value="$(arg proc_stddev_yaw_c)"/>
+    <param name="proc_stddev_yaw_bias_c" value="$(arg proc_stddev_yaw_bias_c)"/>
+    <param name="proc_stddev_vx_c" value="$(arg proc_stddev_vx_c)"/>
+    <param name="proc_stddev_wz_c" value="$(arg proc_stddev_wz_c)"/>
 
   </node>
 
