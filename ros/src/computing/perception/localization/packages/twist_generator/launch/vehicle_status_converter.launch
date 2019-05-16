@@ -1,0 +1,14 @@
+<launch>
+
+  <arg name="wheelbase" default="2.9"/>
+  <arg name="steering_gear_ratio" default="20.0"/>
+  <arg name="enable_adaptive_estimate" default="True"/>
+
+  <node pkg="twist_generator" type="vehicle_status_converter" name="vehicle_status_converter" output="screen">
+    <param name="wheelbase" value="$(arg wheelbase)"/>
+    <param name="steering_gear_ratio" value="$(arg steering_gear_ratio)"/>
+    <param name="enable_adaptive_estimate" value="$(arg enable_adaptive_estimate)"/>
+    <param name="output_twist_name" value="/can_twist"/>
+  </node>
+
+</launch>
