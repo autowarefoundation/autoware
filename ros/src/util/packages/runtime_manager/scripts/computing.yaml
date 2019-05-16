@@ -79,7 +79,24 @@ subs :
         param: icp
         gui  :
           dialog_height : 400
-
+    - name : fusion_localizer
+      desc : fusion_localizer desc sample
+      subs :
+      - name : ekf_localizer
+        desc : pose and twist fusion for robust localization 
+        cmd  : roslaunch ekf_localizer ekf_localizer.launch
+        param : ekf_localizer_param
+        gui  :
+          dialog_height : 600
+    - name : twist_generator
+      desc : twist_generator
+      subs :
+      - name : vehicle_status_converter
+        desc : twist generator from vehicle_status 
+        cmd  : roslaunch twist_generator vehicle_status_converter.launch
+        param : vehicle_status_converter_param
+        gui  :
+          dialog_height : 200
     - name : autoware_connector
       desc : autoware_connector desc sample
       subs :
@@ -5585,3 +5602,220 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+  - name : ekf_localizer_param
+    vars : 
+    - name      : show_debug_info
+      desc      : show_debug_info
+      label     : show_debug_info
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : enable_yaw_bias_estimation
+      desc      : enable yaw bias estimation for LiDAR mount error
+      label     : Yaw bias estimation
+      kind      : checkbox
+      v         : True
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+
+    - name  : predict_frequency
+      desc  : predict_frequency
+      label : EKF predict frequency [Hz]
+      min   : 0
+      max   : 100
+      v     : 50
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : extend_state_step
+      desc  : EKF state extend dimension for time delay compensation
+      label : extend_state_step
+      min   : 1
+      max   : 100
+      v     : 50
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : use_pose_with_covariance
+      desc      : use_pose_with_covariance
+      label     : use covariance in pose_with_covariance message
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : pose_additional_delay
+      desc  : delay time added to pose delay
+      label : pose additional delay [s]
+      min   : 0.0
+      max   : 0.5
+      v     : 0.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : pose_measure_uncertainty_time
+      desc  : pose measurement time uncertainty used for covariance calculation
+      label : pose measurement time uncertainty [s]
+      min   : 0.0
+      max   : 0.5
+      v     : 0.01
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : pose_rate
+      desc  : pose_rate used for covariance calculation
+      label : pose_rate [Hz]
+      min   : 0.1
+      max   : 20.0
+      v     : 10.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : pose_gate_dist
+      desc  : pose mahalanobis distance threshold
+      label : pose mahalanobis distance threshold
+      min   : 0.1
+      max   : 100000.0
+      v     : 10000.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : pose_stddev_x
+      desc  : standard deviation of measurement noise for pose x
+      label : pose_stddev_x [m]
+      min   : 0.00
+      max   : 0.5
+      v     : 0.05
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : pose_stddev_y
+      desc  : standard deviation of measurement noise for pose y
+      label : pose_stddev_y [m]
+      min   : 0.00
+      max   : 0.5
+      v     : 0.05
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : pose_stddev_yaw
+      desc  : standard deviation of measurement noise for pose yaw
+      label : pose_stddev_yaw [rad]
+      min   : 0.00
+      max   : 0.5
+      v     : 0.025
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : twist_additional_delay
+      desc  : delay time added to twist
+      label : twist additional delay [s]
+      min   : 0.0
+      max   : 0.5
+      v     : 0.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : twist_rate
+      desc  : twist_rate used for covariance calculation
+      label : twist_rate [Hz]
+      min   : 0.1
+      max   : 100.0
+      v     : 10.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : twist_gate_dist
+      desc  : twist mahalanobis distance threshold
+      label : twist mahalanobis distance threshold
+      min   : 0.1
+      max   : 100000.0
+      v     : 10000.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : twist_stddev_vx
+      desc  : standard deviation of measurement noise for vx
+      label : twist_stddev_vx [m/s]
+      min   : 0.0
+      max   : 10.0
+      v     : 0.2
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : twist_stddev_wz
+      desc  : standard deviation of measurement noise for wz
+      label : twist_stddev_wz [rad/s]
+      min   : 0.0
+      max   : 1.0
+      v     : 0.03
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : proc_stddev_yaw_c
+      desc  : standard deviation of process noise for d(yaw)/dt = wz
+      label : proc_stddev_yaw
+      min   : 0.000
+      max   : 1.0
+      v     : 0.005
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : proc_stddev_yaw_bias_c
+      desc  : standard deviation of process noise for d(yaw_bias)/dt = 0
+      label : proc_stddev_yaw_bias
+      min   : 0.0
+      max   : 0.1
+      v     : 0.001
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : proc_stddev_vx_c
+      desc  : standard deviation of process noise for d(vx)/dt = 0
+      label : proc_stddev_vx 
+      min   : 0.0
+      max   : 10.0
+      v     : 2.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : proc_stddev_wz_c
+      desc  : standard deviation of process noise for d(wz)/dt = 0
+      label : proc_stddev_wz
+      min   : 0.0
+      max   : 10.0
+      v     : 0.2
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+  - name : vehicle_status_converter_param
+    vars : 
+    - name      : enable_adaptive_estimate
+      desc      : enable adaptive coefficient estimation with /estimate_twist by recursive least square method
+      label     : enable_adaptive_estimate
+      kind      : checkbox
+      v         : true
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : wheelbase
+      desc  : wheelbase of vehicle
+      label : wheelbase
+      min   : 0.1
+      max   : 10.0
+      v     : 2.9
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : steering_gear_ratio
+      desc  : tire to handle angle gear ratio
+      label : steering_gear_ratio
+      min   : 0.1
+      max   : 50.0
+      v     : 13.5
+      cmd_param :
+        dash      : ''
+        delim     : ':='
