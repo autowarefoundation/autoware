@@ -76,6 +76,7 @@ from tablet_socket_msgs.msg import Waypoint
 from tablet_socket_msgs.msg import route_cmd
 from geometry_msgs.msg import TwistStamped
 from geometry_msgs.msg import Vector3
+from autoware_msgs.msg import NDTStat
 from autoware_msgs.msg import AccelCmd
 from autoware_msgs.msg import SteerCmd
 from autoware_msgs.msg import BrakeCmd
@@ -137,6 +138,7 @@ class MyFrame(rtmgr.MyFrame):
 				msg = msg if msg else std_msgs.msg.Float32
 				attr = attr if attr else 'data'
 				rospy.Subscriber(topic, msg, self.exec_time_callback, callback_args=(key, attr))
+				print 'Subscribe[{}] topic={}, key={}'.format(nm, topic, key) 
 
 		#
 		# for Setup tab
