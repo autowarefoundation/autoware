@@ -31,16 +31,6 @@ catkin_package(
 ###CAFFE
 set(CAFFE_PATH "$ENV{HOME}/caffe/distribute")
 
-####### Melodic Checks
-SET (CPU_ONLY FALSE)
-if (CUDA_FOUND AND "$ENV{ROS_DISTRO}" STREQUAL "melodic" )
-    if(${CMAKE_VERSION} VERSION_LESS "3.12.3")
-        message("GPU support on Melodic requires CMake version>= 3.12.3")
-        SET (CPU_ONLY TRUE)
-    endif()
-endif()
-####### End Melodic Checks
-
 if (NOT CPU_ONLY AND ${CUDA_FOUND} AND EXISTS "${CAFFE_PATH}")
     include_directories(${CUDA_INCLUDE_DIRS})
 
