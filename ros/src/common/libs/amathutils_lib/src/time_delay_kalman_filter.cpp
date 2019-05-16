@@ -41,6 +41,23 @@ void TimeDelayKalmanFilter::getLatestP(Eigen::MatrixXd &P) { P = P_.block(0, 0, 
 bool TimeDelayKalmanFilter::predictWithDelay(const Eigen::MatrixXd &x_next, const Eigen::MatrixXd &A,
                                              const Eigen::MatrixXd &Q)
 {
+
+
+/*
+ * time delay model:
+ * 
+ *     [A   0   0]      [P11   P12   P13]      [Q   0   0]
+ * A = [I   0   0], P = [P21   P22   P23], Q = [0   0   0]
+ *     [0   I   0]      [P31   P32   P33]      [0   0   0]
+ * 
+ * covariance calculation in prediction : P = A * P * A' + Q
+ *
+ *     [A*P11*A'*+Q  A*P11  A*P12]
+ * P = [     P11*A'    P11    P12]
+ *     [     P21*A'    P21    P22]
+ */
+
+
   const int d_dim_x = dim_x_ex_ - dim_x_;
 
   /* slide states in the time direction */
@@ -49,17 +66,12 @@ bool TimeDelayKalmanFilter::predictWithDelay(const Eigen::MatrixXd &x_next, cons
   x_tmp.block(dim_x_, 0, d_dim_x, 1) = x_.block(0, 0, d_dim_x, 1);
   x_ = x_tmp;
 
-  /* set extended Q matrix */
-  Eigen::MatrixXd Q_ex = Eigen::MatrixXd::Zero(dim_x_ex_, dim_x_ex_);
-  Q_ex.block(0, 0, dim_x_, dim_x_) = Q;
-
   /* update P with delayed measurement A matrix structure */
   Eigen::MatrixXd P_tmp = Eigen::MatrixXd::Zero(dim_x_ex_, dim_x_ex_);
-  P_tmp.block(0, 0, dim_x_, dim_x_) = A * P_.block(0, 0, dim_x_, dim_x_) * A.transpose();
+  P_tmp.block(0, 0, dim_x_, dim_x_) = A * P_.block(0, 0, dim_x_, dim_x_) * A.transpose() + Q;
   P_tmp.block(0, dim_x_, dim_x_, d_dim_x) = A * P_.block(0, 0, dim_x_, d_dim_x);
   P_tmp.block(dim_x_, 0, d_dim_x, dim_x_) = P_.block(0, 0, d_dim_x, dim_x_) * A.transpose();
   P_tmp.block(dim_x_, dim_x_, d_dim_x, d_dim_x) = P_.block(0, 0, d_dim_x, d_dim_x);
-  P_tmp += Q_ex;
   P_ = P_tmp;
 
   return true;
