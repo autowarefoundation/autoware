@@ -55,6 +55,7 @@ Topic|Type|Objective
 /final_waypoints|autoware_msgs/Lane|resultant waypoints from planner nodes, e.g. from velocity_set node.
 /obstacle_waypoint|std_msgs/Int32|Obstacle waypoint index. Used in "Go" state.
 /state_cmd|std_msgs/String|Decision_maker will try to transit state according to the key given through this topic.
+/state/stop_order_wpidx|std_msgs/Int32|Vehicle will try to stop at this index of waypoint. Used in "OrderedStop" state.
 /vector_map_info/area|vector_map_msgs/AreaArray|Area information from vector map. <br>This is ignored unless area, cross_road, line, point, road_sign, stop_line, and vector are subscribed.
 /vector_map_info/cross_road|vector_map_msgs/CrossRoadArray|Cross road information from vector map. <br>This is ignored unless area, cross_road, line, point, road_sign, stop_line, and vector are subscribed.
 /vector_map_info/line|vector_map_msgs/LineArray|Line information from vector map. <br>This is ignored unless area, cross_road, line, point, road_sign, stop_line, and vector are subscribed.
@@ -222,15 +223,19 @@ Example image:
 
 
 ##### Use vector map
-- The stopline, roadsign and the vector map files that accompany them are required.
-
-
+The stopline, roadsign and the vector map files that accompany them are required.
 1. Open stopline file and change the value of SignID column that you want to stop to the roadsign's ID to be linked.
 2. Open the roadsign file and change the value in the Type column for the ID linked in the previous step. Details of the Type are same as stop_flag.  
 Example image:  
 <img src="docs/stopline_vectormap.png" width=800>
 
 3. Start driving with the modified vector map.
+
+##### Publish topic
+You need to know in advance the index of the waypoint you want to stop.
+The index is `gid` of waypoint.
+1. Publihsh `state/stop_order_wpidx` topic with the index you want to stop.
+2. After the vehicle has stopped, publish `/state_cmd` topic with `clear` key and then the vehicle will resume driving.
 
 ### Lane change
   1. Start driving with waypoint files necessary for lane change
