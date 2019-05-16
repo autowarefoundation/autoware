@@ -123,11 +123,21 @@ void DecisionMakerNode::updateGoState(cstring_t& state_name, int status)
   if (get_stopsign.first != 0)
   {
     current_status_.found_stopsign_idx = get_stopsign.second;
+  }
 
-    int obstacle_waypoint_gid = current_status_.obstacle_waypoint + current_status_.closest_waypoint;
-    if((current_status_.found_stopsign_idx != -1
-        && (current_status_.obstacle_waypoint == -1 || current_status_.found_stopsign_idx <= obstacle_waypoint_gid))
-    || (current_status_.ordered_stop_idx != -1 && calcRequiredDistForStop() > getDistToWaypointIdx(current_status_.ordered_stop_idx)))
+  int obstacle_waypoint_gid = current_status_.obstacle_waypoint + current_status_.closest_waypoint;
+
+  if (get_stopsign.first != 0 && current_status_.found_stopsign_idx != -1)
+  {
+    if (current_status_.obstacle_waypoint == -1 || current_status_.found_stopsign_idx <= obstacle_waypoint_gid)
+    {
+      tryNextState("found_stop_decision");
+    }
+  }
+
+  if (current_status_.ordered_stop_idx != -1 && calcRequiredDistForStop() > getDistToWaypointIdx(current_status_.ordered_stop_idx))
+  {
+    if (current_status_.obstacle_waypoint == -1 || current_status_.ordered_stop_idx <= obstacle_waypoint_gid)
     {
       tryNextState("found_stop_decision");
     }
@@ -148,32 +158,33 @@ void DecisionMakerNode::updateStopState(cstring_t& state_name, int status)
     current_status_.found_stopsign_idx = get_stopsign.second;
   }
 
-  if (current_status_.found_stopsign_idx != -1 && current_status_.ordered_stop_idx != -1)
+  if (get_stopsign.first != 0 && current_status_.found_stopsign_idx != -1)
   {
-    if (current_status_.found_stopsign_idx < current_status_.ordered_stop_idx)
-      tryNextState("found_stopline");
-    else
-      tryNextState("received_stop_order");
-  }
-  else if (current_status_.found_stopsign_idx != -1)
-  {
-    switch (get_stopsign.first) {
-      case autoware_msgs::WaypointState::TYPE_STOPLINE:
-        tryNextState("found_stopline");
-        break;
-      case autoware_msgs::WaypointState::TYPE_STOP:
-        tryNextState("found_reserved_stop");
-        break;
-      default:
-        break;
+    if (current_status_.ordered_stop_idx == -1 || current_status_.found_stopsign_idx < current_status_.ordered_stop_idx)
+    {
+      switch (get_stopsign.first) {
+        case autoware_msgs::WaypointState::TYPE_STOPLINE:
+          tryNextState("found_stopline");
+          break;
+        case autoware_msgs::WaypointState::TYPE_STOP:
+          tryNextState("found_reserved_stop");
+          break;
+        default:
+          break;
+      }
+      return;
     }
   }
-  else if (current_status_.ordered_stop_idx != -1)
+
+  if (current_status_.ordered_stop_idx != -1)
   {
-    tryNextState("received_stop_order");
+    if (current_status_.found_stopsign_idx == -1 || current_status_.ordered_stop_idx <= current_status_.found_stopsign_idx)
+    {
+      tryNextState("received_stop_order");
+      return;
+    }
   }
-  else
-    tryNextState("clear");
+
 }
 
 void DecisionMakerNode::updateStoplineState(cstring_t& state_name, int status)
@@ -205,7 +216,7 @@ void DecisionMakerNode::updateStoplineState(cstring_t& state_name, int status)
 
 void DecisionMakerNode::updateOrderedStopState(cstring_t& state_name, int status)
 {
-  if (current_status_.ordered_stop_idx == -1 || current_status_.prev_ordered_idx != -1)
+  if (current_status_.ordered_stop_idx == -1 || current_status_.closest_waypoint > current_status_.ordered_stop_idx)
   {
     tryNextState("clear");
   }
@@ -217,12 +228,10 @@ void DecisionMakerNode::updateOrderedStopState(cstring_t& state_name, int status
 
 void DecisionMakerNode::exitOrderedStopState(cstring_t& state_name, int status)
 {
-  if (current_status_.closest_waypoint > current_status_.ordered_stop_idx)
+  if (current_status_.found_stopsign_idx == -1 || current_status_.ordered_stop_idx < current_status_.found_stopsign_idx)
   {
     current_status_.ordered_stop_idx = -1;
   }
-
-  current_status_.prev_ordered_idx = -1;
 }
 
 void DecisionMakerNode::updateReservedStopState(cstring_t& state_name, int status)
@@ -232,6 +241,7 @@ void DecisionMakerNode::updateReservedStopState(cstring_t& state_name, int statu
 void DecisionMakerNode::exitReservedStopState(cstring_t& state_name, int status)
 {
   current_status_.prev_stopped_wpidx = current_status_.found_stopsign_idx;
+  current_status_.found_stopsign_idx = -1;
 }
 
 }
