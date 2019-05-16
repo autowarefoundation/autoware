@@ -14,6 +14,13 @@
  * limitations under the License.
  */
 
+/**
+ * @file qp_solver_unconstr.h
+ * @brief qp solver with Eigen
+ * @author Takamasa Horibe
+ * @date 2019.05.01
+ */
+
 #pragma once
 
 #include <eigen3/Eigen/Core>
@@ -25,8 +32,28 @@
 class QPSolverEigenLeastSquare : public QPSolverInterface
 {
 public:
+  /**
+   * @brief constructor
+   */
   QPSolverEigenLeastSquare();
+
+  /**
+   * @brief destructor
+   */
   ~QPSolverEigenLeastSquare();
+
+  /**
+   * @brief solve QP problem : minimize J = U' * Hmat * U + fvec' * U without constraint
+   * @param [in] Hmat parameter matrix in object function
+   * @param [in] fvec parameter matrix in object function
+   * @param [in] A parameter matrix for constraint lbA < A*U < ubA (not used here)
+   * @param [in] lb parameter matrix for constraint lb < U < ub (not used here)
+   * @param [in] up parameter matrix for constraint lb < U < ub (not used here)
+   * @param [in] lbA parameter matrix for constraint lbA < A*U < ubA (not used here)
+   * @param [in] ubA parameter matrix for constraint lbA < A*U < ubA (not used here)
+   * @param [out] U optimal variable vector
+   * @return bool to check the problem is solved
+   */
   bool solve(const Eigen::MatrixXd &Hmat, const Eigen::MatrixXd &fvec, const Eigen::MatrixXd &A,
              const Eigen::VectorXd &lb, const Eigen::VectorXd &ub, const Eigen::MatrixXd &lbA,
              const Eigen::MatrixXd &ubA, Eigen::VectorXd &U) override;

@@ -14,26 +14,51 @@
  * limitations under the License.
  */
 
+/**
+ * @file vehicle_model_bicycle_dynamics_no_delay.h
+ * @brief vehicle model class of bicycle kinematics without steering delay
+ * @author Takamasa Horibe
+ * @date 2019.05.01
+ */
+
 #pragma once
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/LU>
 #include "mpc_follower/vehicle_model/vehicle_model_interface.h"
 
-/* 
-   The trajectory following error dynamics of the vehicle.
-   This is valid in the vicinity of the target trajectory.
-*/
-
 class KinematicsBicycleModelNoDelay : public VehicleModelInterface
 {
 public:
+  /**
+   * @brief constructor with parameter initialization
+   * @param wheelbase wheelbase length [m]
+   * @param steer_lim_deg steering angle limit [deg]
+   */
   KinematicsBicycleModelNoDelay(const double &wheelbase, const double &steer_lim_deg);
+
+  /**
+   * @brief destructor
+   */
   ~KinematicsBicycleModelNoDelay();
-  
-  void calculateDiscreteMatrix(Eigen::MatrixXd &Ad, Eigen::MatrixXd &Bd, Eigen::MatrixXd &Cd, Eigen::MatrixXd &Wd, double &dt) override;
+
+  /**
+   * @brief calculate discrete model matrix of x_k+1 = Ad * xk + Bd * uk + Wd, yk = Cd * xk 
+   * @param Ad coefficient matrix
+   * @param Bd coefficient matrix
+   * @param Cd coefficient matrix
+   * @param Wd coefficient matrix
+   * @param dt Discretization time
+   */
+  void calculateDiscreteMatrix(Eigen::MatrixXd &Ad, Eigen::MatrixXd &Bd,
+                               Eigen::MatrixXd &Cd, Eigen::MatrixXd &Wd, double &dt) override;
+
+  /**
+   * @brief calculate reference input
+   * @param [out] reference input
+   */
   void calculateReferenceInput(Eigen::MatrixXd &Uref) override;
 
 private:
-  double wheelbase_;
-  double steer_lim_deg_;
+  double wheelbase_;     //!< @brief wheelbase length [m]
+  double steer_lim_deg_; //!< @brief steering angle limit [deg]
 };

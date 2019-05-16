@@ -140,18 +140,18 @@ MPCFollower::MPCFollower()
   pub_debug_mpc_calc_time_ = pnh_.advertise<std_msgs::Float32>("debug/mpc_calc_time", 1);
   sub_estimate_twist_ = nh_.subscribe("/estimate_twist", 1, &MPCFollower::callbackEstimateTwist, this);
 
-  pub_steer_cmd_ = pnh_.advertise<std_msgs::Float32>("debug/steer_cmd", 1);
-  pub_steer_cmd_ff_ = pnh_.advertise<std_msgs::Float32>("debug/steer_cmd_ff", 1);
-  pub_steer_cmd_raw_ = pnh_.advertise<std_msgs::Float32>("debug/steer_cmd_raw", 1);
-  pub_steer_ = pnh_.advertise<std_msgs::Float32>("debug/steer", 1);
-  pub_laterr_ = pnh_.advertise<std_msgs::Float32>("debug/laterr", 1);
-  pub_yawerr_ = pnh_.advertise<std_msgs::Float32>("debug/yawerr", 1);
-  pub_current_vel_ = pnh_.advertise<std_msgs::Float32>("debug/current_vel", 1);
-  pub_vel_cmd_ = pnh_.advertise<std_msgs::Float32>("debug/vel_cmd", 1);
-  pub_angvel_cmd_ = pnh_.advertise<std_msgs::Float32>("debug/angvel_cmd", 1);
-  pub_angvel_steer_ = pnh_.advertise<std_msgs::Float32>("debug/angvel_from_steer", 1);
-  pub_angvel_cmd_ff_ = pnh_.advertise<std_msgs::Float32>("debug/angvel_cmd_ff", 1);
-  pub_angvel_estimatetwist_ = pnh_.advertise<std_msgs::Float32>("debug/angvel_estimatetwist", 1);
+  pub_debug_steer_cmd_ = pnh_.advertise<std_msgs::Float32>("debug/steer_cmd", 1);
+  pub_debug_steer_cmd_ff_ = pnh_.advertise<std_msgs::Float32>("debug/steer_cmd_ff", 1);
+  pub_debug_steer_cmd_raw_ = pnh_.advertise<std_msgs::Float32>("debug/steer_cmd_raw", 1);
+  pub_debug_steer_ = pnh_.advertise<std_msgs::Float32>("debug/steer", 1);
+  pub_debug_laterr_ = pnh_.advertise<std_msgs::Float32>("debug/laterr", 1);
+  pub_debug_yawerr_ = pnh_.advertise<std_msgs::Float32>("debug/yawerr", 1);
+  pub_debug_current_vel_ = pnh_.advertise<std_msgs::Float32>("debug/current_vel", 1);
+  pub_debug_vel_cmd_ = pnh_.advertise<std_msgs::Float32>("debug/vel_cmd", 1);
+  pub_debug_angvel_cmd_ = pnh_.advertise<std_msgs::Float32>("debug/angvel_cmd", 1);
+  pub_debug_angvel_steer_ = pnh_.advertise<std_msgs::Float32>("debug/angvel_from_steer", 1);
+  pub_debug_angvel_cmd_ff_ = pnh_.advertise<std_msgs::Float32>("debug/angvel_cmd_ff", 1);
+  pub_debug_angvel_estimatetwist_ = pnh_.advertise<std_msgs::Float32>("debug/angvel_estimatetwist", 1);
 
 };
 
@@ -484,52 +484,52 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &acc_cmd, double &steer_c
   {
     std_msgs::Float32 steer_cmd_msg; // final steering command (MPC + LPF)
     steer_cmd_msg.data = steer_cmd;
-    pub_steer_cmd_.publish(steer_cmd_msg);
+    pub_debug_steer_cmd_.publish(steer_cmd_msg);
 
     std_msgs::Float32 steer_cmd_raw_msg; // mpc calculation result
     steer_cmd_raw_msg.data = u_sat;
-    pub_steer_cmd_raw_.publish(steer_cmd_raw_msg);
+    pub_debug_steer_cmd_raw_.publish(steer_cmd_raw_msg);
 
     std_msgs::Float32 steer_cmd_ff_msg; // feedforward steering value
     steer_cmd_ff_msg.data = Urefex(0);
-    pub_steer_cmd_ff_.publish(steer_cmd_ff_msg);
+    pub_debug_steer_cmd_ff_.publish(steer_cmd_ff_msg);
 
     std_msgs::Float32 steer_act_msg; // current steering angle
     steer_act_msg.data = steer;
-    pub_steer_.publish(steer_act_msg);
+    pub_debug_steer_.publish(steer_act_msg);
 
     std_msgs::Float32 err_lat_msg; // lateral error
     err_lat_msg.data = err_lat;
-    pub_laterr_.publish(err_lat_msg);
+    pub_debug_laterr_.publish(err_lat_msg);
 
     std_msgs::Float32 err_yaw_msg; // yaw error
     err_yaw_msg.data = yaw_err;
-    pub_yawerr_.publish(err_yaw_msg);
+    pub_debug_yawerr_.publish(err_yaw_msg);
 
     std_msgs::Float32 current_vel_msg; //current velocity
     current_vel_msg.data = estimate_twist_.twist.angular.z;
-    pub_current_vel_.publish(current_vel_msg);
+    pub_debug_current_vel_.publish(current_vel_msg);
 
     std_msgs::Float32 vel_cmd_msg; // velocity command
     vel_cmd_msg.data = vel_cmd;
-    pub_vel_cmd_.publish(vel_cmd_msg);
+    pub_debug_vel_cmd_.publish(vel_cmd_msg);
 
     std_msgs::Float32 angvel_converted_from_steer_cmd_msg; // angular velocity calculated by steering command with kinematics model
     angvel_converted_from_steer_cmd_msg.data = vehicle_status_.twist.linear.x * tan(steer_cmd) / wheelbase_;
-    pub_angvel_cmd_.publish(angvel_converted_from_steer_cmd_msg);
+    pub_debug_angvel_cmd_.publish(angvel_converted_from_steer_cmd_msg);
 
     std_msgs::Float32 angvel_converted_from_steer_act_msg; // angular velocity calculated by current steering with kinematics model
     angvel_converted_from_steer_act_msg.data = vehicle_status_.twist.linear.x * tan(steer) / wheelbase_;
-    pub_angvel_steer_.publish(angvel_converted_from_steer_act_msg);
+    pub_debug_angvel_steer_.publish(angvel_converted_from_steer_act_msg);
 
     std_msgs::Float32 angvel_ff_msg; // angular velocity calculated by steering feedforward with kinematics model
     const double nearest_curvature = mpc_resampled_ref_traj.k[0];
     angvel_ff_msg.data = nearest_curvature * vehicle_status_.twist.linear.x;
-    pub_angvel_cmd_ff_.publish(angvel_ff_msg);
+    pub_debug_angvel_cmd_ff_.publish(angvel_ff_msg);
 
     std_msgs::Float32 angvel_estimatetwist_msg; // estimate twist angular velocity
     angvel_estimatetwist_msg.data = estimate_twist_.twist.angular.z;
-    pub_angvel_estimatetwist_.publish(angvel_estimatetwist_msg);
+    pub_debug_angvel_estimatetwist_.publish(angvel_estimatetwist_msg);
   }
 
   return true;
