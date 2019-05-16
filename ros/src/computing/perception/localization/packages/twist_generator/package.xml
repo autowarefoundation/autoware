@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>twist_generator</name>
+  <version>0.0.0</version>
+  <description>The twist_generator package</description>
+
+  <maintainer email="takamasa.horibe@tier4.jp">horibe</maintainer>
+
+  <license>Apache 2.0</license>
+
+  <depend>roscpp</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>autoware_msgs</depend>
+  <depend>autoware_build_flags</depend>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+
+  </export>
+</package>
