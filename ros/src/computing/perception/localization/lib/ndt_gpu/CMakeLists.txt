@@ -1,26 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ndt_gpu)
 
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags)
 find_package(PCL REQUIRED)
 find_package(CUDA)
 
 find_package(Eigen3 QUIET)
-
-####### Melodic Checks
-SET (CPU_ONLY FALSE)
-if (CUDA_FOUND AND "$ENV{ROS_DISTRO}" STREQUAL "melodic" )
-    if(${CMAKE_VERSION} VERSION_LESS "3.12.3")
-        message("GPU support on Melodic requires CMake version>= 3.12.3")
-        SET (CPU_ONLY TRUE)
-    else()
-        if (${EIGEN3_VERSION_STRING} VERSION_LESS "3.3.5")
-            message("GPU support on Melodic requires Eigen version>= 3.3.5")
-            SET (CPU_ONLY TRUE)
-        endif()
-    endif()
-endif()
-####### End Melodic Checks
 
 if (NOT EIGEN3_FOUND)
     # Fallback to cmake_modules
@@ -33,7 +19,7 @@ else ()
     set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
 endif ()
 
-if (NOT CPU_ONLY AND CUDA_FOUND)
+if (ENABLE_CUDA AND CUDA_FOUND)
     set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "")
 
     if(CMAKE_CROSSCOMPILING)
