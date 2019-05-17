@@ -51,7 +51,7 @@ subs :
         param: ndt
         gui  :
           dialog_height : 550
-          stat_topic : [ /NDTStat.ndt_stat.exe_time ]
+          stat_topic : [ /ndt_stat.NDTStat.exe_time ]
           x  :
             user_category : ''
           yaw:
