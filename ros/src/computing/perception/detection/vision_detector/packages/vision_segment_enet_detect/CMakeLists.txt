@@ -32,7 +32,7 @@ INCLUDE_DIRECTORIES(
 ##############################ENet's CAFFE FORK NEEDS TO BE PREVIOUSLY COMPILED####################
 set(ENET_CAFFE_PATH "$ENV{HOME}/ENet/caffe-enet/distribute")
 ####################################################################################################
-if (NOT CPU_ONLY AND EXISTS "${ENET_CAFFE_PATH}" AND ${CUDA_FOUND})
+if (ENABLE_CUDA AND EXISTS "${ENET_CAFFE_PATH}" AND ${CUDA_FOUND})
 
     ADD_EXECUTABLE(vision_segment_enet_detect
             nodes/vision_segment_enet_detect/vision_segment_enet_detect_node.cpp

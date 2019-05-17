@@ -5,7 +5,7 @@ project(lidar_point_pillars)
 option(CUDA_AVAIL "CUDA available" OFF)
 find_package(CUDA)
 
-if (NOT CPU_ONLY AND CUDA_FOUND)
+if (ENABLE_CUDA AND CUDA_FOUND)
   message("CUDA is available!")
   message("CUDA Libs: ${CUDA_LIBRARIES}")
   message("CUDA Headers: ${CUDA_INCLUDE_DIRS}")

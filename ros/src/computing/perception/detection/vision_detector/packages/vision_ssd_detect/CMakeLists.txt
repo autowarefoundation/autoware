@@ -48,7 +48,7 @@ include_directories(
 set(SSD_CAFFE_PATH "$ENV{HOME}/ssdcaffe/distribute")
 ####################################################################################################
 
-if (NOT CPU_ONLY AND ${CUDA_FOUND} AND EXISTS "${SSD_CAFFE_PATH}")
+if (ENABLE_CUDA AND ${CUDA_FOUND} AND EXISTS "${SSD_CAFFE_PATH}")
     include_directories(${CUDA_INCLUDE_DIRS})
 
     IF ("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "^arm")

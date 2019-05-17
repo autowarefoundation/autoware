@@ -250,7 +250,7 @@ target_link_libraries(label_maker
 ##############################SSD'sFORK of CAFFE NEEDS TO BE PREVIOUSLY COMPILED####################
 set(SSD_CAFFE_PATH "$ENV{HOME}/ssdcaffe/distribute")
 ####################################################################################################
-if (NOT CPU_ONLY AND EXISTS "${SSD_CAFFE_PATH}")
+if (ENABLE_CUDA AND EXISTS "${SSD_CAFFE_PATH}")
 
     find_package(CUDA REQUIRED)
 
@@ -312,7 +312,7 @@ install(DIRECTORY launch/
 #############Please follow README file for instructions#############################################
 set(MXNET_PATH "$ENV{HOME}/mxnet/")
 ####################################################################################################
-if (NOT CPU_ONLY AND EXISTS "${MXNET_PATH}")
+if (ENABLE_CUDA AND EXISTS "${MXNET_PATH}")
 
     find_package(CUDA REQUIRED)
 
