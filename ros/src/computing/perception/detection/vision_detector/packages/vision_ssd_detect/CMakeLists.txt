@@ -48,17 +48,7 @@ include_directories(
 set(SSD_CAFFE_PATH "$ENV{HOME}/ssdcaffe/distribute")
 ####################################################################################################
 
-####### Melodic Checks
-SET (CPU_ONLY FALSE)
-if (CUDA_FOUND AND "$ENV{ROS_DISTRO}" STREQUAL "melodic" )
-    if(${CMAKE_VERSION} VERSION_LESS "3.12.3")
-        message("GPU support on Melodic requires CMake version>= 3.12.3")
-        SET (CPU_ONLY TRUE)
-    endif()
-endif()
-####### End Melodic Checks
-
-if (NOT CPU_ONLY AND ${CUDA_FOUND} AND EXISTS "${SSD_CAFFE_PATH}")
+if (ENABLE_CUDA AND ${CUDA_FOUND} AND EXISTS "${SSD_CAFFE_PATH}")
     include_directories(${CUDA_INCLUDE_DIRS})
 
     IF ("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "^arm")
