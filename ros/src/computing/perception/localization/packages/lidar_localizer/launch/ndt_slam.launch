@@ -57,7 +57,7 @@
   <arg name="node_name" value="ndt_slam" unless="$(arg use_anonymous_node_name)" />
   <arg name="node_name" value="$(anon ndt_slam)" if="$(arg use_anonymous_node_name)" />
 
-  <node pkg="lidar_localizer" type="ndt_slam" name="$(arg node_name)" output="screen">
+  <node pkg="lidar_localizer" type="ndt_slam" name="$(arg node_name)" output="log">
 
     <remap from="/points_raw" to="$(arg input_mapping_points_topic)" />
     <remap from="/filtered_points" to="$(arg input_localizing_points_topic)" />
