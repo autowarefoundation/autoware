@@ -55,7 +55,7 @@ And then, your car should move by joystick controller. For controlling by `vehic
 | R1 | Reverse shift |
 | L1 | Neutral shift |
 | R2 | Change speed linearly ( v = 16 * R2 + 3 [km/h] ) |
-| L2 | Change max steering linearly ( theta = (17 * L2 + 20) * ANALOG_L [rad] ) |
+| L2 | Change max steering linearly ( theta = (17 * L2 + 20) * ANALOG_L [deg] ) |
 | ANALOG_L | Steering angle ( -37 <= theta <= +37 [deg] ) |
 | DIGITAL_UP / LEFT / RIGHT / DOWN | Blinker clear / left / right / hazard |
 | SHARE | Engage vehicle |
