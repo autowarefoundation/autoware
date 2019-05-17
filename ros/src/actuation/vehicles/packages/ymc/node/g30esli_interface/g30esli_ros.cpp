@@ -268,7 +268,7 @@ void G30esliROS::checkRestart(const MODE& mode)
 
   if (!reset_command_)
   {
-    if (!((curr_time - end_reset_time).toSec() > disable_reset_secs_))
+    if ((curr_time - end_reset_time).toSec() > disable_reset_secs_)
     {
       if (is_positive_command && is_stopped)
       {
@@ -324,6 +324,6 @@ std::string G30esliROS::dumpDebug(const MODE& mode)
   Command& cmd = commands_[(int)mode];
   std::stringstream ss;
   ss << "Status[" << (int)cmd.command.alive << "]\n" << ymc::G30esli::dumpStatus(status_.status);
-  ss << "Command[" << (int)cmd.command.alive << "]\n" << ymc::G30esli::dumpCommand(cmd.command);
+  ss << "\nCommand[" << (int)cmd.command.alive << "]\n" << ymc::G30esli::dumpCommand(cmd.command);
   return ss.str();
 }

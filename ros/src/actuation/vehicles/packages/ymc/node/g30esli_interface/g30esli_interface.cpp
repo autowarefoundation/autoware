@@ -248,7 +248,7 @@ void G30esliInterface::run()
     g30esli_ros_.updateAliveCounter();
 
     // debug
-    ROS_DEBUG("%s", g30esli_ros_.dumpDebug(mode).c_str());
+    ROS_DEBUG("\n%s", g30esli_ros_.dumpDebug(mode).c_str());
 
     // loop sleep
     rate.sleep();
