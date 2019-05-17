@@ -41,15 +41,9 @@ public:
 
   virtual double getFitnessScore() = 0;
 
-  //TODO
-  virtual Eigen::Matrix<double, 6, 6> getHessian() const {
-      return Eigen::Matrix<double, 6, 6>::Identity();
-  };
+  virtual Eigen::Matrix<double, 6, 6> getHessian() const = 0;
 
-  //TODO
-  virtual boost::shared_ptr<pcl::search::KdTree<PointTarget>> getSearchMethodTarget() const {
-      return boost::make_shared<pcl::search::KdTree<PointTarget>>();
-  };
+  virtual boost::shared_ptr<pcl::search::KdTree<PointTarget>> getSearchMethodTarget() const = 0;
 
 };
 
