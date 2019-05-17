@@ -18,5 +18,6 @@
     /icp_stat]
   subscribe: [/config/icp, /gnss_pose, /points_map, /initialpose, /filtered_points]
 - name: ndt_slam
-  publish: [/ndt_map, /ndt_pose, /localizer_pose, /estimate_twist]
-  subscribe: [/config/ndt_slam, /points_map, /initialpose, /points_raw ,/filtered_points]
+  publish: [/ndt_map, /ndt_pose, /ndt_pose_with_covariance, /predict_pose, /localizer_pose,
+     /estimate_twist, /matching_score, /nearest_points_histogram, /matching_points, /unmatching_points, /time_ndt_matching]
+  subscribe: [/config/ndt_slam, /points_map, /initialpose, /points_raw ,/filtered_points, /ekf_pose]
