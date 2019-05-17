@@ -50,7 +50,7 @@ unsigned int MPCTrajectory::size() const
   }
   else
   {
-    std::cout << "[MPC trajectory] trajectory size is inappropriate" << std::endl;
+    std::cerr << "[MPC trajectory] trajectory size is inappropriate" << std::endl;
     return 0;
   }
 }

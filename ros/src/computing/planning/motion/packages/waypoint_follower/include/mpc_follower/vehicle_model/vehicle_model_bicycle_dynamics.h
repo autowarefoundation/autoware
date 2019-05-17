@@ -26,6 +26,10 @@
 #include <eigen3/Eigen/LU>
 #include "mpc_follower/vehicle_model/vehicle_model_interface.h"
 
+/** 
+ * @class vehicle model class of bicycle dynamics
+ * @brief calculate model-related values
+ */
 class DynamicsBicycleModel : public VehicleModelInterface
 {
 public:
@@ -57,7 +61,7 @@ public:
    * @param dt Discretization time
    */
   void calculateDiscreteMatrix(Eigen::MatrixXd &Ad, Eigen::MatrixXd &Bd,
-                               Eigen::MatrixXd &Wd, Eigen::MatrixXd &Cd, double &dt) override;
+                               Eigen::MatrixXd &Wd, Eigen::MatrixXd &Cd, const double &dt) override;
 
   /**
    * @brief calculate reference input

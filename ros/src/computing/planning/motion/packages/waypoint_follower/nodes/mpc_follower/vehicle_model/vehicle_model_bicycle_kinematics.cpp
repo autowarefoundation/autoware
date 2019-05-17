@@ -26,7 +26,7 @@ KinematicsBicycleModel::KinematicsBicycleModel(const double &wheelbase, const do
 KinematicsBicycleModel::~KinematicsBicycleModel(){};
 
 void KinematicsBicycleModel::calculateDiscreteMatrix(Eigen::MatrixXd &Ad, Eigen::MatrixXd &Bd,
-                                                     Eigen::MatrixXd &Cd, Eigen::MatrixXd &Wd, double &dt)
+                                                     Eigen::MatrixXd &Cd, Eigen::MatrixXd &Wd, const double &dt)
 {
     auto sign = [](double x) { return (x > 0.0) - (x < 0.0); };
     static const double DEG2RAD = M_PI / 180.0;

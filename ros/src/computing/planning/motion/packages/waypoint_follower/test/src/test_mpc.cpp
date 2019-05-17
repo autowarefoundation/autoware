@@ -50,14 +50,6 @@ TEST(TestSuite, TestConvertEulerAngleToMonotonic){
     ASSERT_DOUBLE_EQ(-M_PI + diff, yaw.back());
 }
 
-TEST(TestSuite, TestFillIncrease){
-    std::vector<double> vec(10, 3.14);
-    MPCUtils::fillIncrease(vec.begin(), vec.end(), 0.0, 0.1);
-    ASSERT_DOUBLE_EQ(0.0, vec[0]);
-    ASSERT_DOUBLE_EQ(0.1, vec[1]);
-    ASSERT_DOUBLE_EQ(0.8, vec[8]);
-    ASSERT_DOUBLE_EQ(0.9, vec[9]);
-}
 
 
 TEST(TestSuite, InterpolationTest){
@@ -69,19 +61,19 @@ TEST(TestSuite, InterpolationTest){
     double ret = 0.0;
     
     std::vector<double> idx_bad = {0.0, 1.0, 0.0, 3.0};
-    bool res = MPCUtils::interp1dX<std::vector<double>, std::vector<double>>(idx_bad, value, ref, ret);
+    bool res = MPCUtils::interp1d<std::vector<double>, std::vector<double>>(idx_bad, value, ref, ret);
     ASSERT_EQ(false, res);
 
     ref = -10.0;
-    MPCUtils::interp1dX<std::vector<double>, std::vector<double>>(idx, value, ref, ret);
+    MPCUtils::interp1d<std::vector<double>, std::vector<double>>(idx, value, ref, ret);
     ASSERT_DOUBLE_EQ(-2.0, ret);
 
     ref = 10.0;
-    MPCUtils::interp1dX<std::vector<double>, std::vector<double>>(idx, value, ref, ret);
+    MPCUtils::interp1d<std::vector<double>, std::vector<double>>(idx, value, ref, ret);
     ASSERT_DOUBLE_EQ(4.0, ret);
 
     ref = 0.3;
-    MPCUtils::interp1dX<std::vector<double>, std::vector<double>>(idx, value, ref, ret);
+    MPCUtils::interp1d<std::vector<double>, std::vector<double>>(idx, value, ref, ret);
     ASSERT_DOUBLE_EQ(-1.4, ret);
 }
 

@@ -10,14 +10,14 @@
 	<arg name="enable_path_smoothing" default="true" doc="flag for path smoothing"/>
 	<arg name="path_smoothing_times" default="1" doc="number of times of applying path smoothing filter"/>
 	<arg name="path_filter_moving_ave_num" default="35" doc="param of moving average filter for path smoothing "/>
-	<arg name="curvature_smoothing_num" default="35" doc="point-to-point index distance used in curvature calculation"/> <!-- curvature is calculated from three points: p(i-num), p(i), p(i+num) -->
+	<arg name="curvature_smoothing_num" default="35" doc="point-to-point index distance used in curvature calculation : curvature is calculated from three points p(i-num), p(i), p(i+num)"/>
 	<arg name="steering_lpf_cutoff_hz" default="2.0" doc="cutoff frequency of lowpass filter for steering command [Hz]"/>
 	<arg name="mpc_qp_solver_type" default="unconstraint_fast" doc="optimization solver type. option is unconstraint_fast, unconstraint, and qpoases_hotstart"/>
 	<arg name="mpc_vehicle_model_type" default="kinematics" doc="vehicle model type for mpc prediction. option is kinematics, kinematics_no_delay, and dynamics"/>
-	
+
 	<!-- MPC design parameters -->
-	<arg name="mpc_n" default="70" doc="prediction horizon step"/>
-	<arg name="mpc_dt" default="0.1" doc="prediction horizon period [s]"/>
+	<arg name="mpc_prediction_holizon" default="70" doc="prediction horizon step"/>
+	<arg name="mpc_prediction_sampling_time" default="0.1" doc="prediction horizon period [s]"/>
 	<arg name="mpc_weight_lat_error" default="0.1" doc="lateral error weight in matrix Q"/>
 	<arg name="mpc_weight_heading_error" default="0.0" doc="heading error weight in matrix Q"/>
 	<arg name="mpc_weight_heading_error_squared_vel_coeff" default="0.3" doc="heading error * velocity weight in matrix Q"/>
@@ -32,7 +32,7 @@
 	<arg name="vehicle_model_wheelbase" default="2.9" doc="wheel base length [m]"/>
 	<arg name="steer_lim_deg" default="40.0" doc="steering angle limit [deg]"/>
 	<arg name="steering_gear_ratio" default="20.0" doc="steering gear ratio"/>
-	
+
 
 
 
@@ -42,7 +42,7 @@
 		<node pkg="waypoint_follower" type="mpc_waypoints_converter" name="mpc_waypoints_converter" output="screen"/>
 
 		<node pkg="waypoint_follower" type="mpc_follower" name="mpc_follower" output="screen">
-		
+
 			<!-- system -->
 			<param name="publish_debug_values" value="true"/>
 			<param name="ctrl_cmd_interface" value="all"/>
@@ -66,8 +66,8 @@
 			<param name="steering_lpf_cutoff_hz" value="$(arg steering_lpf_cutoff_hz)"/>
 			<param name="qp_solver_type" value="$(arg mpc_qp_solver_type)"/>
 			<param name="vehicle_model_type" value="$(arg mpc_vehicle_model_type)"/>
-			<param name="mpc_n" value="$(arg mpc_n)"/>
-			<param name="mpc_dt" value="$(arg mpc_dt)"/>
+			<param name="mpc_mpc_prediction_holizonn" value="$(arg mpc_prediction_holizon)"/>
+			<param name="mpc_prediction_sampling_time" value="$(arg mpc_prediction_sampling_time)"/>
 			<param name="mpc_weight_lat_error" value="$(arg mpc_weight_lat_error)"/>
 			<param name="mpc_weight_heading_error" value="$(arg mpc_weight_heading_error)"/>
 			<param name="mpc_weight_heading_error_squared_vel_coeff" value="$(arg mpc_weight_heading_error_squared_vel_coeff)"/>

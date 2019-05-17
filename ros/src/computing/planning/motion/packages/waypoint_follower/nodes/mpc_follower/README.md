@@ -31,7 +31,7 @@ Simulation video [youtube](https://www.youtube.com/watch?v=4IO1zxsY4wU&t=18s) : 
 # Parameter description
 
 ## Notation
-The default parameters are adjusted to the Autonomoustuff Lexus RX 450h with under 40 km/h.
+The default parameters are adjusted to the Autonomoustuff Lexus RX 450h for under 40 km/h driving.
 
 
 ## overall 
@@ -56,7 +56,7 @@ The default parameters are adjusted to the Autonomoustuff Lexus RX 450h with und
 |:---|:---|:---|:---|
 |qp_solver_type|string|QP solver option. described below in detail.|unconstraint_fast|
 |vehicle_model_type|string|vehicle model option. described below in detail.|kinematics|
-|prediction_holizon|int|total prediction step for MPC|50|
+|prediction_holizon|int|total prediction step for MPC|70|
 |prediction_sampling_time|double|prediction period for one step [s] for MPC|0.1|
 |weight_lat_error|double|weight for lateral error for MPC|0.1|
 |weight_heading_error|double|weight for heading error for MPC|0.0|

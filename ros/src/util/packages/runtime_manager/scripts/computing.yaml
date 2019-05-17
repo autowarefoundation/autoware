@@ -1718,17 +1718,17 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name  : mpc_n
-      desc  : mpc_n
+    - name  : mpc_prediction_holizon
+      desc  : mpc_prediction_holizon
       label : prediction holizon [-]
       min   : 1
-      max   : 200
-      v     : 50
+      max   : 300
+      v     : 70
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name  : mpc_dt
-      desc  : mpc_dt
+    - name  : mpc_prediction_sampling_time
+      desc  : mpc_prediction_sampling_time
       label : prediction sampling time [s]
       min   : 0.01
       max   : 1.0

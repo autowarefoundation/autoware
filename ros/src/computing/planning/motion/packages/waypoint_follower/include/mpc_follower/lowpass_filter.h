@@ -14,29 +14,99 @@
  * limitations under the License.
  */
 
+/**
+ * @file lowpass_filter.h
+ * @brief vehicle model interface class
+ * @author Takamasa Horibe
+ * @date 2019.05.01
+ */
+
 #pragma once
 #include <cmath>
 #include <vector>
 #include <algorithm>
 
+/** 
+ * @class 2nd-order Butterworth Filter
+ * @brief filtering values
+ */
 class Butterworth2dFilter
 {
 private:
-  double y1_, y2_, u1_, u2_, a0_, a1_, a2_, b0_, b1_, b2_; // weight parameters set by dt & cutoff_hz
+  double y1_; //!< @brief filter coefficient calculated with cutoff frequency and sampling time
+  double y2_; //!< @brief filter coefficient calculated with cutoff frequency and sampling time
+  double u1_; //!< @brief filter coefficient calculated with cutoff frequency and sampling time
+  double u2_; //!< @brief filter coefficient calculated with cutoff frequency and sampling time
+  double a0_; //!< @brief filter coefficient calculated with cutoff frequency and sampling time
+  double a1_; //!< @brief filter coefficient calculated with cutoff frequency and sampling time
+  double a2_; //!< @brief filter coefficient calculated with cutoff frequency and sampling time
+  double b0_; //!< @brief filter coefficient calculated with cutoff frequency and sampling time
+  double b1_; //!< @brief filter coefficient calculated with cutoff frequency and sampling time
+  double b2_; //!< @brief filter coefficient calculated with cutoff frequency and sampling time
 
 public:
+  /**
+   * @brief constructor with initialization
+   * @param dt sampling time
+   * @param f_cutoff_hz cutoff frequency [Hz]
+   */
   Butterworth2dFilter(double dt = 0.1, double f_cutoff_hz = 10.0);
+
+  /**
+   * @brief destructor
+   */
   ~Butterworth2dFilter();
+
+  /**
+   * @brief constructor
+   * @param dt sampling time
+   * @param f_cutoff_hz cutoff frequency [Hz]
+   */
   void initialize(const double &dt, const double &f_cutoff_hz);
-  double filter(const double &u0);
+
+  /**
+   * @brief filtering (call this function at each sampling time with input)
+   * @param u scalar input for filter
+   * @return filtered scalar value
+   */
+  double filter(const double &u);
+
+  /**
+   * @brief filtering for time-series data
+   * @param t time-series data for input vector
+   * @param u object vector
+   */
   void filt_vector(const std::vector<double> &t, std::vector<double> &u);
+
+  /**
+   * @brief filtering for time-series data from both forward-backward direction for zero phase delay
+   * @param t time-series data for input vector
+   * @param u object vector
+   */
   void filtfilt_vector(const std::vector<double> &t, std::vector<double> &u); // filtering forward and backward direction
 };
 
+/** 
+ * @class Move Average Filter
+ * @brief filtering values
+ */
 class MoveAverageFilter
 {
 public:
+  /**
+   * @brief constructor
+   */
   MoveAverageFilter();
+
+  /**
+   * @brief destructor
+   */
   ~MoveAverageFilter();
+
+  /**
+   * @brief filtering vector
+   * @param num index distance for moving average filter
+   * @param u object vector
+   */
   static bool filt_vector(const int num, std::vector<double> &u);
 };

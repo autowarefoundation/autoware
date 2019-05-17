@@ -38,7 +38,7 @@ void DynamicsBicycleModel::calculateDiscreteMatrix(Eigen::MatrixXd &Ad,
                                                    Eigen::MatrixXd &Bd,
                                                    Eigen::MatrixXd &Cd,
                                                    Eigen::MatrixXd &Wd,
-                                                   double &dt)
+                                                   const double &dt)
 {
     /*
     dx/dt = Ad*x + B1*u + B2*r

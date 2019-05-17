@@ -24,6 +24,10 @@
 #pragma once
 #include <eigen3/Eigen/Core>
 
+/** 
+ * @class vehicle model class
+ * @brief calculate model-related values
+ */
 class VehicleModelInterface
 {
 protected:
@@ -81,7 +85,7 @@ public:
    * @param dt Discretization time
    */
   virtual void calculateDiscreteMatrix(Eigen::MatrixXd &Ad, Eigen::MatrixXd &Bd, Eigen::MatrixXd &Cd,
-                                       Eigen::MatrixXd &Wd, double &dt) = 0;
+                                       Eigen::MatrixXd &Wd, const double &dt) = 0;
 
   /**
    * @brief calculate reference input

@@ -32,18 +32,6 @@ void MPCUtils::convertEulerAngleToMonotonic(std::vector<double> &a)
   }
 }
 
-void MPCUtils::fillIncrease(std::vector<double>::iterator first,
-                            std::vector<double>::iterator last, double init,
-                            double diff)
-{
-  double value = init;
-  while (first != last)
-  {
-    *first++ = value;
-    value += diff;
-  }
-}
-
 geometry_msgs::Quaternion MPCUtils::getQuaternionFromYaw(const double &yaw)
 {
   tf2::Quaternion q;
@@ -52,7 +40,7 @@ geometry_msgs::Quaternion MPCUtils::getQuaternionFromYaw(const double &yaw)
 }
 
 template <typename T1, typename T2>
-bool MPCUtils::interp1dX(const T1 &index, const T2 &values, const double &ref, double &ret)
+bool MPCUtils::interp1d(const T1 &index, const T2 &values, const double &ref, double &ret)
 {
   ret = 0.0;
   if (!((int)index.size() == (int)values.size()))
@@ -97,10 +85,10 @@ bool MPCUtils::interp1dX(const T1 &index, const T2 &values, const double &ref, d
   ret = ((d_index - a) * values[i - 1] + a * values[i]) / d_index;
   return true;
 }
-template bool MPCUtils::interp1dX<std::vector<double>, std::vector<double>>(const std::vector<double> &, const std::vector<double> &, const double &, double &);
-template bool MPCUtils::interp1dX<std::vector<double>, Eigen::VectorXd>(const std::vector<double> &, const Eigen::VectorXd &, const double &, double &);
-template bool MPCUtils::interp1dX<Eigen::VectorXd, std::vector<double>>(const Eigen::VectorXd &, const std::vector<double> &, const double &, double &);
-template bool MPCUtils::interp1dX<Eigen::VectorXd, Eigen::VectorXd>(const Eigen::VectorXd &, const Eigen::VectorXd &, const double &, double &);
+template bool MPCUtils::interp1d<std::vector<double>, std::vector<double>>(const std::vector<double> &, const std::vector<double> &, const double &, double &);
+template bool MPCUtils::interp1d<std::vector<double>, Eigen::VectorXd>(const std::vector<double> &, const Eigen::VectorXd &, const double &, double &);
+template bool MPCUtils::interp1d<Eigen::VectorXd, std::vector<double>>(const Eigen::VectorXd &, const std::vector<double> &, const double &, double &);
+template bool MPCUtils::interp1d<Eigen::VectorXd, Eigen::VectorXd>(const Eigen::VectorXd &, const Eigen::VectorXd &, const double &, double &);
 
 // 1D interpolation
 bool MPCUtils::interp1dMPCTraj(const std::vector<double> &index, const MPCTrajectory &values,
@@ -239,7 +227,7 @@ void MPCUtils::convertWaypointsToMPCTraj(const autoware_msgs::Lane &lane, MPCTra
   }
 }
 
-void MPCUtils::convertWaypointsToMPCTrajWithDistanceResample(const autoware_msgs::Lane &path, const std::vector<double> &time,
+void MPCUtils::convertWaypointsToMPCTrajWithDistanceResample(const autoware_msgs::Lane &path, const std::vector<double> &path_time,
                                                              const double &dl, MPCTrajectory &ref_traj)
 {
   ref_traj.clear();
@@ -247,7 +235,7 @@ void MPCUtils::convertWaypointsToMPCTrajWithDistanceResample(const autoware_msgs
   std::vector<double> dists;
   dists.push_back(0.0);
 
-  for (int i = 1; i < (int)time.size(); ++i)
+  for (int i = 1; i < (int)path_time.size(); ++i)
   {
     double dx = path.waypoints.at(i).pose.pose.position.x - path.waypoints.at(i - 1).pose.pose.position.x;
     double dy = path.waypoints.at(i).pose.pose.position.y - path.waypoints.at(i - 1).pose.pose.position.y;
@@ -255,19 +243,19 @@ void MPCUtils::convertWaypointsToMPCTrajWithDistanceResample(const autoware_msgs
     dists.push_back(dist);
   }
 
-  convertWaypointsToMPCTrajWithResample(path, time, dists, dl, ref_traj);
+  convertWaypointsToMPCTrajWithResample(path, path_time, dists, dl, ref_traj);
 }
 
 
-void MPCUtils::convertWaypointsToMPCTrajWithTimeResample(const autoware_msgs::Lane &path, const std::vector<double> &time,
+void MPCUtils::convertWaypointsToMPCTrajWithTimeResample(const autoware_msgs::Lane &path, const std::vector<double> &path_time,
                                                          const double &dt, MPCTrajectory &ref_traj)
 {
   ref_traj.clear();
-  convertWaypointsToMPCTrajWithResample(path, time, time, dt, ref_traj);
+  convertWaypointsToMPCTrajWithResample(path, path_time, path_time, dt, ref_traj);
 }
 
-void MPCUtils::convertWaypointsToMPCTrajWithResample(const autoware_msgs::Lane &path, const std::vector<double> &time,
-                                                     const std::vector<double> &ref_index, const double &d_index, MPCTrajectory &ref_traj)
+void MPCUtils::convertWaypointsToMPCTrajWithResample(const autoware_msgs::Lane &path, const std::vector<double> &path_time,
+                                                     const std::vector<double> &ref_index, const double &d_ref_index, MPCTrajectory &ref_traj)
 {
   if (ref_index.size() == 0) {
     return;
@@ -309,9 +297,9 @@ void MPCUtils::convertWaypointsToMPCTrajWithResample(const autoware_msgs::Lane &
     const double yaw = ((ref_index_dist - a) * yaw0 + a * yaw1) / ref_index_dist;
     const double vx = ((ref_index_dist - a) * twist0.linear.x + a * twist1.linear.x) / ref_index_dist;
     const double curvature_tmp = 0.0;
-    const double t = ((ref_index_dist - a) * time.at(j - 1) + a * time.at(j)) / ref_index_dist;
+    const double t = ((ref_index_dist - a) * path_time.at(j - 1) + a * path_time.at(j)) / ref_index_dist;
     ref_traj.push_back(x, y, z, yaw, vx, curvature_tmp, t);
-    point += d_index;
+    point += d_ref_index;
   }
 }
 
@@ -503,6 +491,7 @@ bool MPCUtils::calcNearestPoseInterp(const MPCTrajectory &traj, const geometry_m
   return true;
 }
 
+/*
 MPCUtils::SplineInterpolateXY::SplineInterpolateXY(){};
 MPCUtils::SplineInterpolateXY::SplineInterpolateXY(const std::vector<double> &x)
 {
@@ -570,3 +559,4 @@ void MPCUtils::SplineInterpolateXY::getValueVector(const std::vector<double> &s_
     value_v.push_back(getValue(s_v[i]));
   }
 }
+*/

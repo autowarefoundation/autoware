@@ -55,11 +55,15 @@
 #include "mpc_follower/qp_solver/qp_solver_unconstr.h"
 #include "mpc_follower/qp_solver/qp_solver_unconstr_fast.h"
 
+/** 
+ * @class MPC-based waypoints follower class
+ * @brief calculate control command to follow reference waypoints
+ */
 class MPCFollower
 {
 public:
   /**
-   * @brief No initialization constructor.
+   * @brief constructor
    */
   MPCFollower();
 
@@ -79,14 +83,14 @@ private:
   ros::Timer timer_control_;              //!< @brief timer for control command computation
 
   MPCTrajectory ref_traj_;                                   //!< @brief reference trajectory to be followed
-  Butterworth2dFilter lpf_steering_cmd_;                     //!< @brief lowpass filter for steering command 
+  Butterworth2dFilter lpf_steering_cmd_;                     //!< @brief lowpass filter for steering command
   Butterworth2dFilter lpf_lateral_error_;                    //!< @brief lowpass filter for lateral error to calculate derivatie
   Butterworth2dFilter lpf_yaw_error_;                        //!< @brief lowpass filter for heading error to calculate derivatie
   autoware_msgs::Lane current_waypoints_;                    //!< @brief current waypoints to be followed
   std::shared_ptr<VehicleModelInterface> vehicle_model_ptr_; //!< @brief vehicle model for MPC
   std::string vehicle_model_type_;                           //!< @brief vehicle model type for MPC
   std::shared_ptr<QPSolverInterface> qpsolver_ptr_;          //!< @brief qp solver for MPC
-  std::string output_interface_;                             //!< @brief output command type 
+  std::string output_interface_;                             //!< @brief output command type
 
   /* parameters for control*/
   double ctrl_period_;              //!< @brief control frequency [s]
@@ -100,15 +104,15 @@ private:
   /* parameters for path smoothing */
   bool enable_path_smoothing_;     //< @brief flag for path smoothing
   bool enable_yaw_recalculation_;  //< @brief flag for recalculation of yaw angle after resampling
-  int path_filter_moving_ave_num_; //< @brief param of moving average filter for path smoothing 
+  int path_filter_moving_ave_num_; //< @brief param of moving average filter for path smoothing
   int path_smoothing_times_;       //< @brief number of times of applying path smoothing filter
   int curvature_smoothing_num_;    //< @brief point-to-point index distance used in curvature calculation
   double traj_resample_dist_;      //< @brief path resampling interval [m]
 
   struct MPCParam
   {
-    int n;                                          //< @brief prediction horizon step
-    double dt;                                      //< @brief prediction horizon period
+    int prediction_holizon;                         //< @brief prediction horizon step
+    double prediction_sampling_time;                //< @brief prediction horizon period
     double weight_lat_error;                        //< @brief lateral error weight in matrix Q
     double weight_heading_error;                    //< @brief heading error weight in matrix Q
     double weight_heading_error_squared_vel_coeff;  //< @brief heading error * velocity weight in matrix Q
