@@ -636,6 +636,7 @@ void NdtSlam::publishTF(const std::string &frame_id, const std::string &child_fr
   geometry_msgs::TransformStamped transform_stamped;
   transform_stamped.header.frame_id = frame_id;
   transform_stamped.child_frame_id = child_frame_id;
+  transform_stamped.header.stamp = current_scan_time_;
   transform_stamped.transform.translation.x = pose.x;
   transform_stamped.transform.translation.y = pose.y;
   transform_stamped.transform.translation.z = pose.z;
