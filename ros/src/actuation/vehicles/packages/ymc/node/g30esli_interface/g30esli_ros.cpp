@@ -251,7 +251,7 @@ void G30esliROS::checkRestart(const MODE& mode)
 {
   static bool initialize = false;
   static double stop_keep_dt = 0.0;
-  static ros::Time prev_time, start_reset_time, end_reset_time;
+  static ros::Time prev_time(0), start_reset_time(0), end_reset_time(0);
 
   ros::Time curr_time = ros::Time::now();
 
