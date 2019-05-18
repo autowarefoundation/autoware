@@ -39,14 +39,14 @@ The default parameters are adjusted to the Autonomoustuff Lexus RX 450h for unde
 |Name|Type|Description|Default value|
 |:---|:---|:---|:---|
 |show_debug_info|bool|display debug info|false|
-|ctrl_period|double|control period [s]|0.1|
+|ctrl_period|double|control period [s]|0.03|
 |traj_resample_dist|double|distance of waypoints in resampling [m]|0.1|
 |enable_path_smoothing|bool|path smoothing flag. This should be true when uses path resampling to reduce resampling noise.|true|
 |enable_yaw_recalculation|bool|recalculate yaw angle after resampling. Set true if yaw in received waypoints is noisy.|false|
 |path_filter_moving_ave_num|int|number of data points moving average filter for path smoothing|35|
 |path_smoothing_times|int|number of times of applying path smoothing filter|1|
 |curvature_smoothing_num|double|index distance of points used in curvature calculation: p(i-num), p(i), p(i+num). larger num makes less noisy values.|35|
-|steering_lpf_cutoff_hz|double| cutoff frequency of lowpass filter for steering output command [hz]|2.0|
+|steering_lpf_cutoff_hz|double| cutoff frequency of lowpass filter for steering output command [hz]|3.0|
 |admisible_position_error|double| stop vehicle when following position error is larger than this value [m].|5.0|
 |admisible_yaw_error_deg|double|stop vehicle when following yaw angle error is larger than this value [deg].|90.0|
 
@@ -60,12 +60,12 @@ The default parameters are adjusted to the Autonomoustuff Lexus RX 450h for unde
 |prediction_sampling_time|double|prediction period for one step [s]|0.1|
 |weight_lat_error|double|weight for lateral error|0.1|
 |weight_heading_error|double|weight for heading error|0.0|
-|weight_heading_error_squared_vel_coeff|double|weight for heading error * velocity|10.0|
+|weight_heading_error_squared_vel_coeff|double|weight for heading error * velocity|5.0|
 |weight_steering_input|double|weight for steering error (steer command - reference steer)|1.0|
 |weight_steering_input_squared_vel_coeff|double|weight for steering error (steer command - reference steer) * velocity|0.25|
 |weight_lat_jerk|double|weight for lateral jerk (steer(i) - steer(i-1)) * velocity|0.0|
 |weight_terminal_lat_error|double|terminal cost weight for lateral error|1.0|
-|weight_terminal_heading_error|double|terminal cost weight for heading error|0.0|
+|weight_terminal_heading_error|double|terminal cost weight for heading error|0.1|
 |zero_ff_steer_deg|double|threshold of feedforward angle [deg]. feedforward angle smaller than this value is set to zero.|2.0|
 
 ## vehicle

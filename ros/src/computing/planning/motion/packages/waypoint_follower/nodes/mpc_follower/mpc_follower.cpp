@@ -23,28 +23,28 @@ MPCFollower::MPCFollower()
 {
   pnh_.param("show_debug_info", show_debug_info_, bool(false));
   pnh_.param("publish_debug_values", publish_debug_values_, bool(true));
-  pnh_.param("ctrl_period", ctrl_period_, double(0.1));
+  pnh_.param("ctrl_period", ctrl_period_, double(0.03));
   pnh_.param("enable_path_smoothing", enable_path_smoothing_, bool(true));
-  pnh_.param("enable_yaw_recalculation", enable_yaw_recalculation_, bool(true));
-  pnh_.param("path_filter_moving_ave_num", path_filter_moving_ave_num_, int(5));
+  pnh_.param("enable_yaw_recalculation", enable_yaw_recalculation_, bool(false));
+  pnh_.param("path_filter_moving_ave_num", path_filter_moving_ave_num_, int(35));
   pnh_.param("path_smoothing_times", path_smoothing_times_, int(1));
-  pnh_.param("curvature_smoothing_num", curvature_smoothing_num_, int(10));
+  pnh_.param("curvature_smoothing_num", curvature_smoothing_num_, int(35));
   pnh_.param("traj_resample_dist", traj_resample_dist_, double(0.1)); // [m]
   pnh_.param("admisible_position_error", admisible_position_error_, double(5.0));
-  pnh_.param("admisible_yaw_error_deg", admisible_yaw_error_deg_, double(45.0));
+  pnh_.param("admisible_yaw_error_deg", admisible_yaw_error_deg_, double(90.0));
   pnh_.param("output_interface", output_interface_, std::string("all"));
 
   /* mpc parameters */
   pnh_.param("mpc_prediction_holizon", mpc_param_.prediction_holizon, int(70));
   pnh_.param("mpc_prediction_sampling_time", mpc_param_.prediction_sampling_time, double(0.1));
   pnh_.param("mpc_weight_lat_error", mpc_param_.weight_lat_error, double(1.0));
-  pnh_.param("mpc_weight_heading_error", mpc_param_.weight_heading_error, double(1.0));
-  pnh_.param("mpc_weight_heading_error_squared_vel_coeff", mpc_param_.weight_heading_error_squared_vel_coeff, double(0.0));
+  pnh_.param("mpc_weight_heading_error", mpc_param_.weight_heading_error, double(0.0));
+  pnh_.param("mpc_weight_heading_error_squared_vel_coeff", mpc_param_.weight_heading_error_squared_vel_coeff, double(0.3));
   pnh_.param("mpc_weight_steering_input", mpc_param_.weight_steering_input, double(1.0));
-  pnh_.param("mpc_weight_steering_input_squared_vel_coeff", mpc_param_.weight_steering_input_squared_vel_coeff, double(0.0));
+  pnh_.param("mpc_weight_steering_input_squared_vel_coeff", mpc_param_.weight_steering_input_squared_vel_coeff, double(0.25));
   pnh_.param("mpc_weight_lat_jerk", mpc_param_.weight_lat_jerk, double(0.0));
-  pnh_.param("mpc_weight_terminal_lat_error", mpc_param_.weight_terminal_lat_error, double(5.0));
-  pnh_.param("mpc_weight_terminal_heading_error", mpc_param_.weight_terminal_heading_error, double(5.0));
+  pnh_.param("mpc_weight_terminal_lat_error", mpc_param_.weight_terminal_lat_error, double(1.0));
+  pnh_.param("mpc_weight_terminal_heading_error", mpc_param_.weight_terminal_heading_error, double(0.1));
   pnh_.param("mpc_zero_ff_steer_deg", mpc_param_.zero_ff_steer_deg, double(2.0));
 
   pnh_.param("steer_lim_deg", steer_lim_deg_, double(35.0));
