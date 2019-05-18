@@ -51,7 +51,7 @@ subs :
         param: ndt
         gui  :
           dialog_height : 550
-          stat_topic : [ /NDTStat.ndt_stat.exe_time ]
+          stat_topic : [ /ndt_stat.NDTStat.exe_time ]
           x  :
             user_category : ''
           yaw:
@@ -1744,7 +1744,7 @@ params :
       label : Deceleration Range (m)
       min   : 0
       max   : 10
-      v     : 0
+      v     : 0.0
     - name  : threshold_points
       desc  : threshold_points desc sample
       label : Points Threshold
