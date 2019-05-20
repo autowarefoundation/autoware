@@ -120,7 +120,7 @@ private:
                              std::vector<autoware_msgs::DetectedObject>& object_vec, std::vector<bool>& matching_vec);
   autoware_msgs::DetectedObject getNearestObject(UKF& target,
                                                  const std::vector<autoware_msgs::DetectedObject>& object_vec);
-  void updateBehaviorState(const UKF& target, autoware_msgs::DetectedObject& object);
+  void updateBehaviorState(const UKF& target, const bool use_sukf, autoware_msgs::DetectedObject& object);
 
   void initTracker(const autoware_msgs::DetectedObjectArray& input, double timestamp);
   void secondInit(UKF& target, const std::vector<autoware_msgs::DetectedObject>& object_vec, double dt);
