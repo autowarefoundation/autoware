@@ -17,7 +17,7 @@
 #include "g30esli_ros.h"
 
 G30esliROS::G30esliROS()
-  : alive_(0), reset_command_(false), stop_keep_secs_(1.0), reset_keep_secs_(0.6), disable_reset_secs_(3.0)
+  : alive_(0), reset_command_(false), stop_keep_secs_(2.0), reset_keep_secs_(0.6), disable_reset_secs_(3.0)
 {
 }
 
