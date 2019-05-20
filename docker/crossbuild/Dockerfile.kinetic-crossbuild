@@ -54,10 +54,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-kinetic-camera-info-manager \
     ros-kinetic-catkin \
     ros-kinetic-cmake-modules \
+    ros-kinetic-controller-manager \
     ros-kinetic-cv-bridge \
     ros-kinetic-diagnostic-msgs \
     ros-kinetic-diagnostic-updater \
     ros-kinetic-dynamic-reconfigure \
+    ros-kinetic-effort-controllers \ 
+    ros-kinetic-gazebo-msgs \ 
+    ros-kinetic-gazebo-ros \ 
+    ros-kinetic-gazebo-ros-control \ 
     ros-kinetic-geometry-msgs \
     ros-kinetic-gps-common \
     ros-kinetic-grid-map-cv \
@@ -67,6 +72,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-kinetic-image-transport \
     ros-kinetic-imu-filter-madgwick \
     ros-kinetic-imu-tools \
+    ros-kinetic-joint-state-controller \
     ros-kinetic-jsk-recognition-msgs \
     ros-kinetic-jsk-rviz-plugins \
     ros-kinetic-message-filters \
@@ -76,10 +82,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-kinetic-nlopt \
     ros-kinetic-nmea-msgs \
     ros-kinetic-nodelet \
+    ros-kinetic-pacmod-msgs \
     ros-kinetic-pcl-conversions \
     ros-kinetic-pcl-msgs \
     ros-kinetic-pcl-ros \
     ros-kinetic-pluginlib \
+    ros-kinetic-position-controllers \ 
+    ros-kinetic-robot-state-publisher \
+    ros-kinetic-rosbridge-server \
     ros-kinetic-rosconsole \
     ros-kinetic-roscpp \
     ros-kinetic-roslaunch \
@@ -99,21 +109,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-kinetic-tf \
     ros-kinetic-tf2 \
     ros-kinetic-tf2-ros \
-    ros-kinetic-visualization-msgs \
-    ros-kinetic-xacro \
-    ros-kinetic-rosbridge-server \
-    ros-kinetic-gazebo-ros \ 
-    ros-kinetic-gazebo-msgs \ 
-    ros-kinetic-gazebo-ros-control \ 
-    ros-kinetic-urdf \ 
-    ros-kinetic-xacro \ 
-    ros-kinetic-position-controllers \ 
     ros-kinetic-transmission-interface \ 
+    ros-kinetic-urdf \ 
     ros-kinetic-velocity-controllers \ 
-    ros-kinetic-effort-controllers \ 
-    ros-kinetic-controller-manager \
-    ros-kinetic-robot-state-publisher \
-    ros-kinetic-joint-state-controller
+    ros-kinetic-velodyne \
+    ros-kinetic-visualization-msgs \
+    ros-kinetic-xacro
 
 RUN find / -depth -xdev -type l -lname '/*' -exec sh -c 'linkpath="$(readlink {})" && rm -f {} && ln -frsv "$linkpath" "{}"' \;
 
