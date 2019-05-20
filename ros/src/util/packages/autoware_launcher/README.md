@@ -1,6 +1,6 @@
 # Autoware Launcher
 
-Autoware Launcher is a tool to launch Autoware easily. Developers can save the nodes and their parameters as profile. Users can use same configuration by loading profile.
+Autoware Launcher is designed to help users and developers to launch sets of nodes and its parameters. The profiles are stored in files that can be shared with other users, or used to quickly launch different set-ups in a breeze.
 
 <img src="./documents/demos/images/rosbag02.png" style="width:42%;">
 <img src="./documents/demos/images/rosbag05.png" style="width:56%;">
