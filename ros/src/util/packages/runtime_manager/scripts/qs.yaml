@@ -1,6 +1,6 @@
 exec_time :
   localization :
-    /NDTStat.ndt_stat.exe_time :
+    /ndt_stat.NDTStat.exe_time :  # [Topic].[Message Type].[attr]
   detection :
     /topic1 :
     /topic2 :
