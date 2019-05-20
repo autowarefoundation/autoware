@@ -112,7 +112,8 @@ void G30esliROS::updateJoystickCommand(const ds4_msgs::DS4& msg, const bool& eng
   }
 
   // speed
-  cmd.command.speed = msg.cross ? 16.0 * msg.r2 + 3.0 : 0.0;
+  bool send_speed = msg.cross && engage && !reset_command_;
+  cmd.command.speed = send_speed ? 16.0 * msg.r2 + 3.0 : 0.0;
 
   // steer
   cmd.command.steer = -((17.0 * msg.l2 + 20.0) * msg.left_y + steering_offset_deg);
