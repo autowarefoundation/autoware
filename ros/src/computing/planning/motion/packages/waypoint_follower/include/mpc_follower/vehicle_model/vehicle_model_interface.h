@@ -40,9 +40,9 @@ protected:
 public:
   /**
    * @brief constructor
-   * @param dim_x dimension of state x
-   * @param dim_u dimension of input u
-   * @param dim_y dimension of output y
+   * @param [in] dim_x dimension of state x
+   * @param [in] dim_u dimension of input u
+   * @param [in] dim_y dimension of output y
    */
   VehicleModelInterface(int dim_x, int dim_u, int dim_y);
 
@@ -66,23 +66,23 @@ public:
 
   /**
    * @brief set velocity
-   * @param vehicle velocity
+   * @param [in] vehicle velocity
    */
   void setVelocity(const double &velocity);
 
   /**
    * @brief set curvature
-   * @param curvature curvature on the linearized point on path
+   * @param [in] curvature curvature on the linearized point on path
    */
   void setCurvature(const double &curvature);
 
   /**
    * @brief calculate discrete model matrix of x_k+1 = Ad * xk + Bd * uk + Wd, yk = Cd * xk 
-   * @param Ad coefficient matrix
-   * @param Bd coefficient matrix
-   * @param Cd coefficient matrix
-   * @param Wd coefficient matrix
-   * @param dt Discretization time
+   * @param [out] Ad coefficient matrix
+   * @param [out] Bd coefficient matrix
+   * @param [out] Cd coefficient matrix
+   * @param [out] Wd coefficient matrix
+   * @param [in] dt Discretization time
    */
   virtual void calculateDiscreteMatrix(Eigen::MatrixXd &Ad, Eigen::MatrixXd &Bd, Eigen::MatrixXd &Cd,
                                        Eigen::MatrixXd &Wd, const double &dt) = 0;

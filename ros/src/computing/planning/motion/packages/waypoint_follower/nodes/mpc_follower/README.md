@@ -1,7 +1,6 @@
 # MPC follower description
 
 ## Overview
-
 A waypoint follower based on model predictive control (MPC) for accurate path tracking. This can be used as a waypoint_follower, as well as other path following nodes like pure_pursuit.
 
 
@@ -56,7 +55,7 @@ The default parameters are adjusted to the Autonomoustuff Lexus RX 450h for unde
 |:---|:---|:---|:---|
 |qp_solver_type|string|QP solver option. described below in detail.|unconstraint_fast|
 |vehicle_model_type|string|vehicle model option. described below in detail.|kinematics|
-|prediction_holizon|int|total prediction step for MPC|70|
+|prediction_horizon|int|total prediction step for MPC|70|
 |prediction_sampling_time|double|prediction period for one step [s]|0.1|
 |weight_lat_error|double|weight for lateral error|0.1|
 |weight_heading_error|double|weight for heading error|0.0|
@@ -67,6 +66,7 @@ The default parameters are adjusted to the Autonomoustuff Lexus RX 450h for unde
 |weight_terminal_lat_error|double|terminal cost weight for lateral error|1.0|
 |weight_terminal_heading_error|double|terminal cost weight for heading error|0.1|
 |zero_ff_steer_deg|double|threshold of feedforward angle [deg]. feedforward angle smaller than this value is set to zero.|2.0|
+
 
 ## vehicle
 
@@ -95,14 +95,12 @@ currently, the options are
 
 1. Set appropriate vehicle kinematics parameters `wheelbase`, `steering_gear_ratio`, and `steer_lim_deg`. These values give a vehicle information to the controller for path following. Errors in these values cause fundamental tracking error. Whether these values are correct can be confirmed by compareing the angular velocity obtained from the model (`/mpc_follower/debug/angvel_from_steer`) and the actual angular velocity (such as `/estimate_twist/angular/z`).
 
-
-
 2. Set appropriate vehicle dynamics parameters of `steering_tau`, which is approximated delay from steering angle command to actual steering angle.
 
 3. Set `weight_steering_input` = 1.0, `weight_lat_error` = 0.1, and other weights to 0. If the vehicle oscillates when driving with low speed, set `weight_lat_error` smaller.
 
 4. Adjust other weights. One of the simple way for turning is to increase `weight_lat_error` until oscillation occurs. If the vehicle is unstable with very small `weight_lat_error`, increase terminal weight :  `weight_terminal_lat_error` and `weight_terminal_heading_error` to improve tracking stability.
- Larger `prediction_holizon` and smaller `prediction_sampling_time` is effective for tracking performance, but it is a trade-off between computational costs.
+ Larger `prediction_horizon` and smaller `prediction_sampling_time` is effective for tracking performance, but it is a trade-off between computational costs.
 Other parameters can be adjusted like below.
  - `weight_lat_error`: Reduce lateral tracking error. This acts like P gain in PID.
  - `weight_heading_error`: Make a drive straight. This acts like D gain in PID.

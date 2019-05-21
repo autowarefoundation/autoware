@@ -35,14 +35,14 @@ class DynamicsBicycleModel : public VehicleModelInterface
 public:
   /**
    * @brief constructor with parameter initialization
-   * @param wheelbase wheelbase length [m]
-   * @param steer_lim_deg steering angle limit [deg]
-   * @param mass_fl mass applied to front left tire [kg]
-   * @param mass_fr mass applied to front right tire [kg]
-   * @param mass_rl mass applied to rear left tire [kg]
-   * @param mass_rr mass applied to rear right tire [kg]
-   * @param cf front cornering power
-   * @param cr rear cornering power
+   * @param [in] wheelbase wheelbase length [m]
+   * @param [in] steer_lim_deg steering angle limit [deg]
+   * @param [in] mass_fl mass applied to front left tire [kg]
+   * @param [in] mass_fr mass applied to front right tire [kg]
+   * @param [in] mass_rl mass applied to rear left tire [kg]
+   * @param [in] mass_rr mass applied to rear right tire [kg]
+   * @param [in] cf front cornering power
+   * @param [in] cr rear cornering power
    */
   DynamicsBicycleModel(double &wheelbase, double &steer_lim_deg, double &mass_fl, double &mass_fr,
                        double &mass_rl, double &mass_rr, double &cf, double &cr);
@@ -54,11 +54,11 @@ public:
 
   /**
    * @brief calculate discrete model matrix of x_k+1 = Ad * xk + Bd * uk + Wd, yk = Cd * xk 
-   * @param Ad coefficient matrix
-   * @param Bd coefficient matrix
-   * @param Cd coefficient matrix
-   * @param Wd coefficient matrix
-   * @param dt Discretization time
+   * @param [in] Ad coefficient matrix
+   * @param [in] Bd coefficient matrix
+   * @param [in] Cd coefficient matrix
+   * @param [in] Wd coefficient matrix
+   * @param [in] dt Discretization time
    */
   void calculateDiscreteMatrix(Eigen::MatrixXd &Ad, Eigen::MatrixXd &Bd,
                                Eigen::MatrixXd &Wd, Eigen::MatrixXd &Cd, const double &dt) override;

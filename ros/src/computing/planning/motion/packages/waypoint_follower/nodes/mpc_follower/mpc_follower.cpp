@@ -35,7 +35,7 @@ MPCFollower::MPCFollower()
   pnh_.param("output_interface", output_interface_, std::string("all"));
 
   /* mpc parameters */
-  pnh_.param("mpc_prediction_holizon", mpc_param_.prediction_holizon, int(70));
+  pnh_.param("mpc_prediction_horizon", mpc_param_.prediction_horizon, int(70));
   pnh_.param("mpc_prediction_sampling_time", mpc_param_.prediction_sampling_time, double(0.1));
   pnh_.param("mpc_weight_lat_error", mpc_param_.weight_lat_error, double(1.0));
   pnh_.param("mpc_weight_heading_error", mpc_param_.weight_heading_error, double(0.0));
@@ -136,22 +136,25 @@ MPCFollower::MPCFollower()
   /* for debug */
   pub_debug_filtered_traj_ = pnh_.advertise<visualization_msgs::Marker>("debug/filtered_traj", 1);
   pub_debug_predicted_traj_ = pnh_.advertise<visualization_msgs::Marker>("debug/predicted_traj", 1);
-  pub_debug_values_ = pnh_.advertise<std_msgs::Float64MultiArray>("debug/debug_values", 1);
-  pub_debug_mpc_calc_time_ = pnh_.advertise<std_msgs::Float32>("debug/mpc_calc_time", 1);
-  sub_estimate_twist_ = nh_.subscribe("/estimate_twist", 1, &MPCFollower::callbackEstimateTwist, this);
 
-  pub_debug_steer_cmd_ = pnh_.advertise<std_msgs::Float32>("debug/steer_cmd", 1);
-  pub_debug_steer_cmd_ff_ = pnh_.advertise<std_msgs::Float32>("debug/steer_cmd_ff", 1);
-  pub_debug_steer_cmd_raw_ = pnh_.advertise<std_msgs::Float32>("debug/steer_cmd_raw", 1);
-  pub_debug_steer_ = pnh_.advertise<std_msgs::Float32>("debug/steer", 1);
-  pub_debug_laterr_ = pnh_.advertise<std_msgs::Float32>("debug/laterr", 1);
-  pub_debug_yawerr_ = pnh_.advertise<std_msgs::Float32>("debug/yawerr", 1);
-  pub_debug_current_vel_ = pnh_.advertise<std_msgs::Float32>("debug/current_vel", 1);
-  pub_debug_vel_cmd_ = pnh_.advertise<std_msgs::Float32>("debug/vel_cmd", 1);
-  pub_debug_angvel_cmd_ = pnh_.advertise<std_msgs::Float32>("debug/angvel_cmd", 1);
-  pub_debug_angvel_steer_ = pnh_.advertise<std_msgs::Float32>("debug/angvel_from_steer", 1);
-  pub_debug_angvel_cmd_ff_ = pnh_.advertise<std_msgs::Float32>("debug/angvel_cmd_ff", 1);
-  pub_debug_angvel_estimatetwist_ = pnh_.advertise<std_msgs::Float32>("debug/angvel_estimatetwist", 1);
+  if (publish_debug_values_)
+  {
+    pub_debug_values_ = pnh_.advertise<std_msgs::Float64MultiArray>("debug/debug_values", 1);
+    pub_debug_mpc_calc_time_ = pnh_.advertise<std_msgs::Float32>("debug/mpc_calc_time", 1);
+    sub_estimate_twist_ = nh_.subscribe("/estimate_twist", 1, &MPCFollower::callbackEstimateTwist, this);
+    pub_debug_steer_cmd_ = pnh_.advertise<std_msgs::Float32>("debug/steer_cmd", 1);
+    pub_debug_steer_cmd_ff_ = pnh_.advertise<std_msgs::Float32>("debug/steer_cmd_ff", 1);
+    pub_debug_steer_cmd_raw_ = pnh_.advertise<std_msgs::Float32>("debug/steer_cmd_raw", 1);
+    pub_debug_steer_ = pnh_.advertise<std_msgs::Float32>("debug/steer", 1);
+    pub_debug_laterr_ = pnh_.advertise<std_msgs::Float32>("debug/laterr", 1);
+    pub_debug_yawerr_ = pnh_.advertise<std_msgs::Float32>("debug/yawerr", 1);
+    pub_debug_current_vel_ = pnh_.advertise<std_msgs::Float32>("debug/current_vel", 1);
+    pub_debug_vel_cmd_ = pnh_.advertise<std_msgs::Float32>("debug/vel_cmd", 1);
+    pub_debug_angvel_cmd_ = pnh_.advertise<std_msgs::Float32>("debug/angvel_cmd", 1);
+    pub_debug_angvel_steer_ = pnh_.advertise<std_msgs::Float32>("debug/angvel_from_steer", 1);
+    pub_debug_angvel_cmd_ff_ = pnh_.advertise<std_msgs::Float32>("debug/angvel_cmd_ff", 1);
+    pub_debug_angvel_estimatetwist_ = pnh_.advertise<std_msgs::Float32>("debug/angvel_estimatetwist", 1);
+  }
 };
 
 void MPCFollower::timerCallback(const ros::TimerEvent &te)
@@ -202,9 +205,7 @@ void MPCFollower::timerCallback(const ros::TimerEvent &te)
 
 bool MPCFollower::calculateMPC(double &vel_cmd, double &acc_cmd, double &steer_cmd, double &steer_vel_cmd)
 {
-  static const double RAD2DEG = 180.0 / M_PI;
-  static const double DEG2RAD = M_PI / 180.0;
-  const int N = mpc_param_.prediction_holizon;
+  const int N = mpc_param_.prediction_horizon;
   const double DT = mpc_param_.prediction_sampling_time;
   const int DIM_X = vehicle_model_ptr_->getDimX();
   const int DIM_U = vehicle_model_ptr_->getDimU();
@@ -223,10 +224,10 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &acc_cmd, double &steer_c
   };
 
   /* check if lateral error is not too large */
-  if (dist_err > admisible_position_error_ || std::fabs(yaw_err) > admisible_yaw_error_deg_ * DEG2RAD)
+  if (dist_err > admisible_position_error_ || std::fabs(yaw_err) > amathutils::deg2rad(admisible_yaw_error_deg_ ))
   {
     ROS_WARN("[MPC] error is over limit, stop mpc. (pos: error = %f[m], limit: %f[m], yaw: error = %f[deg], limit %f[deg])",
-             dist_err, admisible_position_error_, yaw_err * RAD2DEG, admisible_yaw_error_deg_);
+             dist_err, admisible_position_error_, amathutils::rad2deg(yaw_err), admisible_yaw_error_deg_);
     return false;
   }
 
@@ -375,7 +376,7 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &acc_cmd, double &steer_c
 
     /* get reference input (feed-forward) */
     vehicle_model_ptr_->calculateReferenceInput(Uref);
-    if (std::fabs(Uref(0, 0)) < mpc_param_.zero_ff_steer_deg * DEG2RAD)
+    if (std::fabs(Uref(0, 0)) < amathutils::deg2rad(mpc_param_.zero_ff_steer_deg))
     {
       Uref(0, 0) = 0.0; // ignore curvature noise
     }
@@ -415,7 +416,7 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &acc_cmd, double &steer_c
   Eigen::MatrixXd f = (Cex * (Aex * x0 + Wex)).transpose() * QCB - Urefex.transpose() * Rex;
 
   /* constraint matrix : lb < U < ub, lbA < A*U < ubA */
-  const double u_lim = steer_lim_deg_ * DEG2RAD;
+  const double u_lim = amathutils::deg2rad(steer_lim_deg_);
   Eigen::MatrixXd A = Eigen::MatrixXd::Zero(DIM_U * N, DIM_U * N);
   Eigen::MatrixXd lbA = Eigen::MatrixXd::Zero(DIM_U * N, 1);
   Eigen::MatrixXd ubA = Eigen::MatrixXd::Zero(DIM_U * N, 1);
@@ -581,7 +582,7 @@ void MPCFollower::callbackRefPath(const autoware_msgs::Lane::ConstPtr &msg)
   DEBUG_INFO("[MPC] path callback: trajectory curvature : max_k = %f, min_k = %f", max_k, min_k);
 
   /* add end point with vel=0 on traj for mpc prediction */
-  const double mpc_predict_time_length = (mpc_param_.prediction_holizon + 1) * mpc_param_.prediction_sampling_time;
+  const double mpc_predict_time_length = (mpc_param_.prediction_horizon + 1) * mpc_param_.prediction_sampling_time;
   const double end_velocity = 0.0;
   traj.vx.back() = end_velocity; // also for end point
   traj.push_back(traj.x.back(), traj.y.back(), traj.z.back(), traj.yaw.back(),
@@ -639,10 +640,8 @@ void MPCFollower::callbackPose(const geometry_msgs::PoseStamped::ConstPtr &msg)
 
 void MPCFollower::callbackVehicleStatus(const autoware_msgs::VehicleStatus &msg)
 {
-  static const double DEG2RAD = 3.141592 / 180.0;
-  static const double KMPH2MPS = 1000.0 / 3600.0;
-  vehicle_status_.tire_angle_rad = msg.angle * DEG2RAD / steering_gear_ratio_;
-  vehicle_status_.twist.linear.x = msg.speed * KMPH2MPS;
+  vehicle_status_.tire_angle_rad = amathutils::deg2rad(msg.angle) / steering_gear_ratio_;
+  vehicle_status_.twist.linear.x = amathutils::kmph2mps(msg.speed);
   my_steering_ok_ = true;
   my_velocity_ok_ = true;
 };

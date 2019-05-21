@@ -35,9 +35,9 @@ class KinematicsBicycleModel : public VehicleModelInterface
 public:
   /**
    * @brief constructor with parameter initialization
-   * @param wheelbase wheelbase length [m]
-   * @param steer_lim_deg steering angle limit [deg]
-   * @param steer_tau steering time constant for 1d-model
+   * @param [in] wheelbase wheelbase length [m]
+   * @param [in] steer_lim_deg steering angle limit [deg]
+   * @param [in] steer_tau steering time constant for 1d-model
    */
   KinematicsBicycleModel(const double &wheelbase_, const double &steer_lim_deg, const double &steer_tau);
 
@@ -48,11 +48,11 @@ public:
 
   /**
    * @brief calculate discrete model matrix of x_k+1 = Ad * xk + Bd * uk + Wd, yk = Cd * xk 
-   * @param Ad coefficient matrix
-   * @param Bd coefficient matrix
-   * @param Cd coefficient matrix
-   * @param Wd coefficient matrix
-   * @param dt Discretization time
+   * @param [out] Ad coefficient matrix
+   * @param [out] Bd coefficient matrix
+   * @param [out] Cd coefficient matrix
+   * @param [out] Wd coefficient matrix
+   * @param [in] dt Discretization time
    */
   void calculateDiscreteMatrix(Eigen::MatrixXd &Ad, Eigen::MatrixXd &Bd,
                                Eigen::MatrixXd &Cd, Eigen::MatrixXd &Wd, const double &dt) override;

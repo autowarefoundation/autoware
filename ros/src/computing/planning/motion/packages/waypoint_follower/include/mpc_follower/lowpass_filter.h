@@ -47,8 +47,8 @@ private:
 public:
   /**
    * @brief constructor with initialization
-   * @param dt sampling time
-   * @param f_cutoff_hz cutoff frequency [Hz]
+   * @param [in] dt sampling time
+   * @param [in] f_cutoff_hz cutoff frequency [Hz]
    */
   Butterworth2dFilter(double dt = 0.1, double f_cutoff_hz = 10.0);
 
@@ -59,29 +59,29 @@ public:
 
   /**
    * @brief constructor
-   * @param dt sampling time
-   * @param f_cutoff_hz cutoff frequency [Hz]
+   * @param [in] dt sampling time
+   * @param [in] f_cutoff_hz cutoff frequency [Hz]
    */
   void initialize(const double &dt, const double &f_cutoff_hz);
 
   /**
    * @brief filtering (call this function at each sampling time with input)
-   * @param u scalar input for filter
+   * @param [in] u scalar input for filter
    * @return filtered scalar value
    */
   double filter(const double &u);
 
   /**
    * @brief filtering for time-series data
-   * @param t time-series data for input vector
-   * @param u object vector
+   * @param [in] t time-series data for input vector
+   * @param [out] u object vector
    */
   void filt_vector(const std::vector<double> &t, std::vector<double> &u);
 
   /**
    * @brief filtering for time-series data from both forward-backward direction for zero phase delay
-   * @param t time-series data for input vector
-   * @param u object vector
+   * @param [in] t time-series data for input vector
+   * @param [out] u object vector
    */
   void filtfilt_vector(const std::vector<double> &t, std::vector<double> &u); // filtering forward and backward direction
 };
@@ -105,8 +105,8 @@ public:
 
   /**
    * @brief filtering vector
-   * @param num index distance for moving average filter
-   * @param u object vector
+   * @param [in] num index distance for moving average filter
+   * @param [out] u object vector
    */
   static bool filt_vector(const int num, std::vector<double> &u);
 };

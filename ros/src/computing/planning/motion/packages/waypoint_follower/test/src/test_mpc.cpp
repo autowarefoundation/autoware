@@ -18,6 +18,7 @@
 #include <ros/ros.h>
 #include <cmath>
 #include <gtest/gtest.h>
+#include <amathutils_lib/amathutils.hpp>
 #include "mpc_follower/mpc_utils.h"
 
 class TestSuite: public ::testing::Test {
@@ -26,19 +27,11 @@ public:
 	~TestSuite(){}
 };
 
-TEST(TestSuite, TestNormalizeAngle){
-    ASSERT_DOUBLE_EQ(0.0, MPCUtils::normalizeAngle(0.0));
-    ASSERT_DOUBLE_EQ(0.5, MPCUtils::normalizeAngle(0.5));
-    ASSERT_DOUBLE_EQ(-0.5, MPCUtils::normalizeAngle(-0.5));
-    ASSERT_DOUBLE_EQ(0.0, MPCUtils::normalizeAngle(2.0 * M_PI));
-    ASSERT_DOUBLE_EQ(M_PI, MPCUtils::normalizeAngle(M_PI));
-    ASSERT_DOUBLE_EQ(-M_PI, MPCUtils::normalizeAngle(-M_PI));
-}
 
 TEST(TestSuite, TestConvertEulerAngleToMonotonic){
     std::vector<double> yaw;
     for (int i = -5; i < 5; ++i) {
-        double tmp = MPCUtils::normalizeAngle((double)i * M_PI);
+        double tmp = amathutils::normalizeRadian((double)i * M_PI);
         yaw.push_back(tmp);
     }
     ASSERT_DOUBLE_EQ(-M_PI, yaw.front());
@@ -77,16 +70,6 @@ TEST(TestSuite, InterpolationTest){
     ASSERT_DOUBLE_EQ(-1.4, ret);
 }
 
-
-TEST(TestSuite, TestYawQuaternion){
-
-    geometry_msgs::Quaternion q;
-    q = MPCUtils::getQuaternionFromYaw(0.0);
-    ASSERT_DOUBLE_EQ(0.0, q.x);
-    ASSERT_DOUBLE_EQ(0.0, q.y);
-    ASSERT_DOUBLE_EQ(0.0, q.z);
-    ASSERT_DOUBLE_EQ(1.0, q.w);
-}
 
 TEST(TestSuite, TestCalcTrajectoryYawFromXY) {
 
@@ -177,7 +160,7 @@ TEST(TestSuite, TestCalcNearestPose){
     self_pose.position.x = 0.3;
     self_pose.position.y = 0.3;
     self_pose.position.z = 0.0;
-    self_pose.orientation = MPCUtils::getQuaternionFromYaw(M_PI / 3.0);
+    self_pose.orientation = amathutils::getQuaternionFromYaw(M_PI / 3.0);
     MPCUtils::calcNearestPose(traj, self_pose, nearest_pose, nearest_index, min_dist_error, nearest_yaw_error, nearest_time);
     ASSERT_EQ(0, nearest_index);
     ASSERT_DOUBLE_EQ(std::sqrt(0.3 * 0.3 + 0.3 * 0.3), min_dist_error);
@@ -187,7 +170,7 @@ TEST(TestSuite, TestCalcNearestPose){
     self_pose.position.x = 0.0;
     self_pose.position.y = 0.0;
     self_pose.position.z = 0.1;
-    self_pose.orientation = MPCUtils::getQuaternionFromYaw(M_PI / 4.0);
+    self_pose.orientation = amathutils::getQuaternionFromYaw(M_PI / 4.0);
     MPCUtils::calcNearestPose(traj, self_pose, nearest_pose, nearest_index, min_dist_error, nearest_yaw_error, nearest_time);
     ASSERT_EQ(0, nearest_index);
     ASSERT_DOUBLE_EQ(0.0, min_dist_error);
@@ -198,7 +181,7 @@ TEST(TestSuite, TestCalcNearestPose){
     self_pose.position.x = 0.3;
     self_pose.position.y = 0.3;
     self_pose.position.z = 0.0;
-    self_pose.orientation = MPCUtils::getQuaternionFromYaw(M_PI / 4.0);
+    self_pose.orientation = amathutils::getQuaternionFromYaw(M_PI / 4.0);
     MPCUtils::calcNearestPoseInterp(traj, self_pose, nearest_pose, nearest_index, min_dist_error, nearest_yaw_error, nearest_time);
     ASSERT_EQ(0, nearest_index);
     ASSERT_DOUBLE_EQ(0.0, min_dist_error);
@@ -208,7 +191,7 @@ TEST(TestSuite, TestCalcNearestPose){
     self_pose.position.x = 0.3;
     self_pose.position.y = 0.3;
     self_pose.position.z = 0.0;
-    self_pose.orientation = MPCUtils::getQuaternionFromYaw(M_PI / 4.0);
+    self_pose.orientation = amathutils::getQuaternionFromYaw(M_PI / 4.0);
     MPCUtils::calcNearestPoseInterp(traj, self_pose, nearest_pose, nearest_index, min_dist_error, nearest_yaw_error, nearest_time);
     ASSERT_EQ(0, nearest_index);
     ASSERT_DOUBLE_EQ(0.0, min_dist_error) << "min_dist_error = " << min_dist_error;
@@ -218,7 +201,7 @@ TEST(TestSuite, TestCalcNearestPose){
     self_pose.position.x = -1.0;
     self_pose.position.y = 0.0;
     self_pose.position.z = 0.0;
-    self_pose.orientation = MPCUtils::getQuaternionFromYaw(M_PI / 4.0);
+    self_pose.orientation = amathutils::getQuaternionFromYaw(M_PI / 4.0);
     MPCUtils::calcNearestPoseInterp(traj, self_pose, nearest_pose, nearest_index, min_dist_error, nearest_yaw_error, nearest_time);
     ASSERT_EQ(0, nearest_index);
     ASSERT_EQ(true, std::fabs(min_dist_error - sqrt(2.0)/2.0) < 1.0E-5) << "min_dist_error = " << min_dist_error;

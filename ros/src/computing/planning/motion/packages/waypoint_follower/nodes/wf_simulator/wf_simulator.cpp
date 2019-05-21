@@ -164,7 +164,7 @@ void publishOdometry()
   static geometry_msgs::Pose pose;
   static double th = 0;
   static tf::TransformBroadcaster tf_broadcaster;
-  static double steerng_angle = 0.0;
+  static double steering_angle = 0.0;
 
   if (!pose_set_)
   {
@@ -244,9 +244,9 @@ void publishOdometry()
   vs.speed = vx * 3.6; // [m/s] to [km/h]
   if (std::fabs(vx) > 1.0E-2)
   {
-    steerng_angle = std::atan(vth * wheel_base_ / vx) * 180.0 / 3.141592; // [rad] to [deg]
+    steering_angle = std::atan(vth * wheel_base_ / vx) * 180.0 / 3.141592; // [rad] to [deg]
   }
-  vs.angle = steerng_angle;
+  vs.angle = steering_angle;
 
   // publish the message
   odometry_publisher_.publish(ps);

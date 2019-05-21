@@ -2,6 +2,7 @@
 
 	<arg name="ns" default="/"/>
 	<arg name="show_debug_info" default="false" doc="flag to display debug info" />
+	<arg name="publish_debug_values" default="false" doc="publish debug topics" />
 	<arg name="ctrl_period" default="0.03" doc="control period [s]"/>
 	<arg name="traj_resample_dist" default="0.1" doc="ath resampling interval [m]"/>
 	<arg name="enable_yaw_recalculation" default="true" doc="flag for recalculation of yaw angle after resampling"/>
@@ -16,7 +17,7 @@
 	<arg name="mpc_vehicle_model_type" default="kinematics" doc="vehicle model type for mpc prediction. option is kinematics, kinematics_no_delay, and dynamics"/>
 
 	<!-- MPC design parameters -->
-	<arg name="mpc_prediction_holizon" default="70" doc="prediction horizon step"/>
+	<arg name="mpc_prediction_horizon" default="70" doc="prediction horizon step"/>
 	<arg name="mpc_prediction_sampling_time" default="0.1" doc="prediction horizon period [s]"/>
 	<arg name="mpc_weight_lat_error" default="0.1" doc="lateral error weight in matrix Q"/>
 	<arg name="mpc_weight_heading_error" default="0.0" doc="heading error weight in matrix Q"/>
@@ -44,7 +45,7 @@
 		<node pkg="waypoint_follower" type="mpc_follower" name="mpc_follower" output="screen">
 
 			<!-- system -->
-			<param name="publish_debug_values" value="true"/>
+			<param name="publish_debug_values" value="$(arg publish_debug_values)"/>
 			<param name="ctrl_cmd_interface" value="all"/>
 			<param name="in_waypoints_name" value="/mpc_waypoints"/>
 			<param name="in_vehicle_status_name" value="/vehicle_status"/>
@@ -66,7 +67,7 @@
 			<param name="steering_lpf_cutoff_hz" value="$(arg steering_lpf_cutoff_hz)"/>
 			<param name="qp_solver_type" value="$(arg mpc_qp_solver_type)"/>
 			<param name="vehicle_model_type" value="$(arg mpc_vehicle_model_type)"/>
-			<param name="mpc_mpc_prediction_holizonn" value="$(arg mpc_prediction_holizon)"/>
+			<param name="mpc_prediction_horizon" value="$(arg mpc_prediction_horizon)"/>
 			<param name="mpc_prediction_sampling_time" value="$(arg mpc_prediction_sampling_time)"/>
 			<param name="mpc_weight_lat_error" value="$(arg mpc_weight_lat_error)"/>
 			<param name="mpc_weight_heading_error" value="$(arg mpc_weight_heading_error)"/>

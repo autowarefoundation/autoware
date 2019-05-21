@@ -623,11 +623,17 @@ subs :
          param: mpc_follower
          gui  :
            dialog_width  : 600
-           dialog_height : 800
+           dialog_height : 900
            show_debug_info :
              flags : [ nl ]
            qp_solver_type :
              flags : [ nl ]
+           path_smoothing_times:
+             depend : enable_path_smoothing
+             depend_bool : 'lambda v : v == True'
+           path_filter_moving_ave_num:
+             depend : enable_path_smoothing
+             depend_bool : 'lambda v : v == True'
        - name : twist_filter
          desc : twist_filter desc sample
          cmd  : roslaunch waypoint_follower twist_filter.launch
@@ -1668,6 +1674,14 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name    : publish_debug_values
+      desc    : publish_debug_values
+      label   : 'publish_debug_values'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name    : mpc_vehicle_model_type
       desc    : vehicle model for mpc predioction
       label   : vehicle_model_type
@@ -1718,9 +1732,9 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name  : mpc_prediction_holizon
-      desc  : mpc_prediction_holizon
-      label : prediction holizon [-]
+    - name  : mpc_prediction_horizon
+      desc  : mpc_prediction_horizon
+      label : prediction horizon [-]
       min   : 1
       max   : 300
       v     : 70
@@ -1745,6 +1759,15 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name  : mpc_weight_terminal_lat_error
+      desc  : mpc_weight_terminal_lat_error
+      label : weight terminal lateral error
+      min   : 0.0
+      max   : 100.0
+      v     : 10.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name  : mpc_weight_heading_error
       desc  : mpc_weight_heading_error
       label : weight heading error
@@ -1754,12 +1777,12 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name  : mpc_weight_terminal_lat_error
-      desc  : mpc_weight_terminal_lat_error
-      label : weight terminal lateral error
+    - name  : mpc_weight_heading_error_squared_vel_coeff
+      desc  : mpc_weight_heading_error_squared_vel_coeff
+      label : weight heading error vel squared coeff
       min   : 0.0
-      max   : 100.0
-      v     : 1.0
+      max   : 10.0
+      v     : 0.3
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -1772,12 +1795,12 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name  : mpc_weight_heading_error_squared_vel_coeff
-      desc  : mpc_weight_heading_error_squared_vel_coeff
-      label : weight heading error vel squared coeff
+    - name  : mpc_weight_lat_jerk
+      desc  : mpc_weight_lat_jerk
+      label : weight lateral jerk
       min   : 0.0
       max   : 10.0
-      v     : 0.3
+      v     : 0.0
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -1796,15 +1819,6 @@ params :
       min   : 0.0
       max   : 10.0
       v     : 0.25
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name  : mpc_weight_lat_jerk
-      desc  : mpc_weight_lat_jerk
-      label : weight lateral jerk
-      min   : 0.0
-      max   : 10.0
-      v     : 0.0
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -1834,18 +1848,18 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name  : curvature_smoothing_num
-      desc  : index number distance for curvature calculation
-      label : curvature smoothing number
+    - name  : path_filter_moving_ave_num
+      desc  : moving average number for path smoothing
+      label : moving average number for path smoothing
       min   : 1
       max   : 50
       v     : 35
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name  : path_filter_moving_ave_num
-      desc  : moving average number for path smoothing
-      label : moving average number for path smoothing
+    - name  : curvature_smoothing_num
+      desc  : index number distance for curvature calculation
+      label : curvature smoothing number
       min   : 1
       max   : 50
       v     : 35

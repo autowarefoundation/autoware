@@ -16,27 +16,13 @@
 
 #include "mpc_follower/mpc_utils.h"
 
-double MPCUtils::normalizeAngle(const double a)
-{
-  double b = fmod(a, 2.0 * M_PI);
-  b -= 2.0 * M_PI * ((b > M_PI) - (b < -M_PI));
-  return b;
-}
-
 void MPCUtils::convertEulerAngleToMonotonic(std::vector<double> &a)
 {
   for (unsigned int i = 1; i < a.size(); ++i)
   {
     const double da = a[i] - a[i - 1];
-    a[i] = a[i - 1] + normalizeAngle(da);
+    a[i] = a[i - 1] + amathutils::normalizeRadian(da);
   }
-}
-
-geometry_msgs::Quaternion MPCUtils::getQuaternionFromYaw(const double &yaw)
-{
-  tf2::Quaternion q;
-  q.setRPY(0, 0, yaw);
-  return tf2::toMsg(q);
 }
 
 template <typename T1, typename T2>
@@ -292,7 +278,7 @@ void MPCUtils::convertWaypointsToMPCTrajWithResample(const autoware_msgs::Lane &
 
     /* for singular point of euler angle */
     const double yaw0 = tf2::getYaw(pos0.orientation);
-    const double dyaw = normalizeAngle(tf2::getYaw(pos1.orientation) - yaw0);
+    const double dyaw = amathutils::normalizeRadian(tf2::getYaw(pos1.orientation) - yaw0);
     const double yaw1 = yaw0 + dyaw;
     const double yaw = ((ref_index_dist - a) * yaw0 + a * yaw1) / ref_index_dist;
     const double vx = ((ref_index_dist - a) * twist0.linear.x + a * twist1.linear.x) / ref_index_dist;
@@ -339,7 +325,7 @@ bool MPCUtils::calcNearestPose(const MPCTrajectory &traj, const geometry_msgs::P
     const double dist_squared = dx * dx + dy * dy;
 
     /* ignore when yaw error is large, for crossing path */
-    const double err_yaw = normalizeAngle(tf2::getYaw(self_pose.orientation) - traj.yaw[i]);
+    const double err_yaw = amathutils::normalizeRadian(tf2::getYaw(self_pose.orientation) - traj.yaw[i]);
     if (fabs(err_yaw) < (M_PI / 3.0))
     {
       if (dist_squared < min_dist_squared)
@@ -363,7 +349,7 @@ bool MPCUtils::calcNearestPose(const MPCTrajectory &traj, const geometry_msgs::P
   nearest_time = traj.relative_time[nearest_index];
   nearest_pose.position.x = traj.x[nearest_index];
   nearest_pose.position.y = traj.y[nearest_index];
-  nearest_pose.orientation = getQuaternionFromYaw(traj.yaw[nearest_index]);
+  nearest_pose.orientation = amathutils::getQuaternionFromYaw(traj.yaw[nearest_index]);
   return true;
 };
 
@@ -389,7 +375,7 @@ bool MPCUtils::calcNearestPoseInterp(const MPCTrajectory &traj, const geometry_m
     const double dist_squared = dx * dx + dy * dy;
 
     /* ignore when yaw error is large, for crossing path */
-    const double err_yaw = normalizeAngle(my_yaw - traj.yaw[i]);
+    const double err_yaw = amathutils::normalizeRadian(my_yaw - traj.yaw[i]);
     if (fabs(err_yaw) < (M_PI / 3.0))
     {
       if (dist_squared < min_dist_squared)
@@ -417,7 +403,7 @@ bool MPCUtils::calcNearestPoseInterp(const MPCTrajectory &traj, const geometry_m
     nearest_pose.orientation = tf2::toMsg(q);
     nearest_time = traj.relative_time[nearest_index];
     min_dist_error = std::sqrt(min_dist_squared);
-    nearest_yaw_error = normalizeAngle(my_yaw - traj.yaw[nearest_index]);
+    nearest_yaw_error = amathutils::normalizeRadian(my_yaw - traj.yaw[nearest_index]);
     return true;
   }
 
@@ -464,7 +450,7 @@ bool MPCUtils::calcNearestPoseInterp(const MPCTrajectory &traj, const geometry_m
     nearest_pose.orientation = tf2::toMsg(q);
     nearest_time = traj.relative_time[nearest_index];
     min_dist_error = std::sqrt(min_dist_squared);
-    nearest_yaw_error = normalizeAngle(my_yaw - traj.yaw[nearest_index]);
+    nearest_yaw_error = amathutils::normalizeRadian(my_yaw - traj.yaw[nearest_index]);
     return true;
   }
 
@@ -487,76 +473,6 @@ bool MPCUtils::calcNearestPoseInterp(const MPCTrajectory &traj, const geometry_m
   nearest_pose.orientation = tf2::toMsg(q);
   nearest_time = alpha * traj.relative_time[nearest_index] + (1 - alpha) * traj.relative_time[second_nearest_index];
   min_dist_error = std::sqrt(b_sq - c_sq * alpha * alpha);
-  nearest_yaw_error = normalizeAngle(my_yaw - nearest_yaw);
+  nearest_yaw_error = amathutils::normalizeRadian(my_yaw - nearest_yaw);
   return true;
 }
-
-/*
-MPCUtils::SplineInterpolateXY::SplineInterpolateXY(){};
-MPCUtils::SplineInterpolateXY::SplineInterpolateXY(const std::vector<double> &x)
-{
-  generateSpline(x);
-};
-MPCUtils::SplineInterpolateXY::~SplineInterpolateXY(){};
-void MPCUtils::SplineInterpolateXY::generateSpline(const std::vector<double> &x)
-{
-  int N = x.size();
-
-  a_.clear();
-  b_.clear();
-  c_.clear();
-  d_.clear();
-
-  a_ = x;
-
-  c_.push_back(0.0);
-  for (int i = 1; i < N - 1; i++)
-    c_.push_back(3.0 * (a_[i - 1] - 2.0 * a_[i] + a_[i + 1]));
-  c_.push_back(0.0);
-
-  std::vector<double> w_;
-  w_.push_back(0.0);
-
-  double tmp;
-  for (int i = 1; i < N - 1; i++)
-  {
-    tmp = 1.0 / (4.0 - w_[i - 1]);
-    c_[i] = (c_[i] - c_[i - 1]) * tmp;
-    w_.push_back(tmp);
-  }
-
-  for (int i = N - 2; i > 0; i--)
-    c_[i] = c_[i] - c_[i + 1] * w_[i];
-
-  for (int i = 0; i < N - 1; i++)
-  {
-    d_.push_back((c_[i + 1] - c_[i]) / 3.0);
-    b_.push_back(a_[i + 1] - a_[i] - c_[i] - d_[i]);
-  }
-  d_.push_back(0.0);
-  b_.push_back(0.0);
-
-  initialized_ = true;
-};
-
-double MPCUtils::SplineInterpolateXY::getValue(const double &s)
-{
-  if (!initialized_)
-    return 0.0;
-
-  int j = std::max(std::min(int(std::floor(s)), (int)a_.size() - 1), 0);
-  const double ds = s - j;
-  return a_[j] + (b_[j] + (c_[j] + d_[j] * ds) * ds) * ds;
-}
-
-void MPCUtils::SplineInterpolateXY::getValueVector(const std::vector<double> &s_v, std::vector<double> &value_v)
-{
-  if (!initialized_)
-    return;
-  value_v.clear();
-  for (int i = 0; i < (int)s_v.size(); ++i)
-  {
-    value_v.push_back(getValue(s_v[i]));
-  }
-}
-*/

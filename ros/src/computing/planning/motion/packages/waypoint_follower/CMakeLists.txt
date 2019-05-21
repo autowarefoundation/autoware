@@ -20,6 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
         sensor_msgs
         autoware_msgs
         autoware_config_msgs
+        amathutils_lib
         tablet_socket_msgs
         autoware_health_checker
         rostest
@@ -43,6 +44,7 @@ catkin_package(
         geometry_msgs
         autoware_msgs
         autoware_config_msgs
+        amathutils_lib
         pcl_ros
         pcl_conversions
         sensor_msgs

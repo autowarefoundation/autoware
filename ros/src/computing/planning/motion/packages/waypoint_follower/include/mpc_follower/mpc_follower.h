@@ -111,7 +111,7 @@ private:
 
   struct MPCParam
   {
-    int prediction_holizon;                         //< @brief prediction horizon step
+    int prediction_horizon;                         //< @brief prediction horizon step
     double prediction_sampling_time;                //< @brief prediction horizon period
     double weight_lat_error;                        //< @brief lateral error weight in matrix Q
     double weight_heading_error;                    //< @brief heading error weight in matrix Q
@@ -165,26 +165,26 @@ private:
 
   /**
    * @brief publish control command calculated by MPC
-   * @param vel_cmd velocity command [m/s] for vehicle control
-   * @param acc_cmd acceleration command [m/s2] for vehicle control
-   * @param steer_cmd steering angle command [rad] for vehicle control
-   * @param steer_vel_cmd steering angle speed [rad/s] for vehicle control
+   * @param [in] vel_cmd velocity command [m/s] for vehicle control
+   * @param [in] acc_cmd acceleration command [m/s2] for vehicle control
+   * @param [in] steer_cmd steering angle command [rad] for vehicle control
+   * @param [in] steer_vel_cmd steering angle speed [rad/s] for vehicle control
    */
   void publishControlCommands(const double &vel_cmd, const double &acc_cmd,
                               const double &steer_cmd, const double &steer_vel_cmd);
 
   /**
    * @brief publish control command as geometry_msgs/TwistStamped type
-   * @param vel_cmd velocity command [m/s] for vehicle control
-   * @param omega_cmd angular velocity command [rad/s] for vehicle control
+   * @param [in] vel_cmd velocity command [m/s] for vehicle control
+   * @param [in] omega_cmd angular velocity command [rad/s] for vehicle control
    */
   void publishTwist(const double &vel_cmd, const double &omega_cmd);
 
   /**
    * @brief publish control command as autoware_msgs/ControlCommand type
-   * @param vel_cmd velocity command [m/s] for vehicle control
-   * @param acc_cmd acceleration command [m/s2] for vehicle control
-   * @param steer_cmd steering angle command [rad] for vehicle control
+   * @param [in] vel_cmd velocity command [m/s] for vehicle control
+   * @param [in] acc_cmd acceleration command [m/s2] for vehicle control
+   * @param [in] steer_cmd steering angle command [rad] for vehicle control
    */
   void publishCtrlCmd(const double &vel_cmd, const double &acc_cmd, const double &steer_cmd);
 

@@ -8,10 +8,18 @@
   <author email="yusuke.fujii@tier4.jp">Yusuke FUJII</author>
   <buildtool_depend>catkin</buildtool_depend>
   <buildtool_depend>autoware_build_flags</buildtool_depend>
+  <buildtool_depend>tf</buildtool_depend>
+  <buildtool_depend>tf2</buildtool_depend>
+
   <build_depend>roscpp</build_depend>
   <build_depend>autoware_msgs</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>tf2</build_depend>
+
   <run_depend>roscpp</run_depend>
   <run_depend>autoware_msgs</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>tf2</run_depend>
   <export>
   </export>
 </package>

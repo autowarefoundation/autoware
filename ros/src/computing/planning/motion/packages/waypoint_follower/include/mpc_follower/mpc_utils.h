@@ -26,6 +26,7 @@
 #include <std_msgs/Float64MultiArray.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
+#include <amathutils_lib/amathutils.hpp>
 
 #include "mpc_follower/mpc_trajectory.h"
 
@@ -33,25 +34,11 @@ namespace MPCUtils
 {
 
 /**
- * @brief normalize angle into [-pi to pi]
- * @param a input angle
- * @return normalized angle
- */
-double normalizeAngle(const double a);
-
-/**
  * @brief convert eular angle vector including +-2pi to 0 jump to continuous series data 
  * @param a input angle vector
  */
 void convertEulerAngleToMonotonic(std::vector<double> &a);
 
-
-/**
- * @brief convert from yaw to ros-Quaternion
- * @param yaw input yaw angle
- * @return quaternion
- */
-geometry_msgs::Quaternion getQuaternionFromYaw(const double &yaw);
 
 /**
  * @brief interpolate value vector at reference index
@@ -159,22 +146,5 @@ bool calcNearestPose(const MPCTrajectory &traj, const geometry_msgs::Pose &self_
  */
 bool calcNearestPoseInterp(const MPCTrajectory &traj, const geometry_msgs::Pose &self_pose, geometry_msgs::Pose &nearest_pose,
                            unsigned int &nearest_index, double &min_dist_error, double &nearest_yaw_error, double &nearest_time);
-
-// class SplineInterpolateXY
-// {
-//   bool initialized_;
-//   std::vector<double> a_; //!< @brief temporal vector for calculation
-//   std::vector<double> b_; //!< @brief temporal vector for calculation
-//   std::vector<double> c_; //!< @brief temporal vector for calculation
-//   std::vector<double> d_; //!< @brief temporal vector for calculation
-
-// public:
-//   SplineInterpolateXY();
-//   SplineInterpolateXY(const std::vector<double> &x);
-//   ~SplineInterpolateXY();
-//   void generateSpline(const std::vector<double> &x);
-//   double getValue(const double &s);
-//   void getValueVector(const std::vector<double> &s_v, std::vector<double> &value_v);
-// };
 
 }; // namespace MPCUtils
