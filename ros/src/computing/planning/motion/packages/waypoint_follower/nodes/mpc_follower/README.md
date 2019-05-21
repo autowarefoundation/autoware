@@ -90,7 +90,6 @@ currently, the options are
 - kinematics_no_delay : kinematics model without steering delay
 - dynamics : dynamics model considering slip angle
 
-
 # how to tune MPC parameters
 
 1. Set appropriate vehicle kinematics parameters `wheelbase`, `steering_gear_ratio`, and `steer_lim_deg`. These values give a vehicle information to the controller for path following. Errors in these values cause fundamental tracking error. Whether these values are correct can be confirmed by compareing the angular velocity obtained from the model (`/mpc_follower/debug/angvel_from_steer`) and the actual angular velocity (such as `/estimate_twist/angular/z`).
@@ -110,3 +109,7 @@ Other parameters can be adjusted like below.
  - `weight_lat_jerk`: Reduce lateral jerk.
  - `weight_terminal_lat_error`: Preferable to set a higher value than normal lateral weight `weight_lat_error` for stability.
  - `weight_terminal_heading_error`: Preferable to set a higher value than normal heading weight `weight_heading_error` for stability.
+
+ # reference 
+
+ [1] Jarrod M. Snider, "Automatic Steering Methods for Autonomous Automobile Path Tracking", Robotics Institute, Carnegie Mellon University, February 2009.
