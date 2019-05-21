@@ -82,7 +82,7 @@ docker build \
     --rm \
     --tag $BASE \
     --build-arg ROS_DISTRO=$ROS_DISTRO \
-    --file generic/Dockerfile.base ./../..
+    --file generic/Dockerfile.base ./..
 
 CUDA_SUFFIX=""
 if [ $CUDA == "on" ]; then
@@ -91,7 +91,7 @@ if [ $CUDA == "on" ]; then
         --rm \
         --tag $BASE$CUDA_SUFFIX \
         --build-arg FROM_ARG=$BASE \
-        --file generic/Dockerfile.cuda .
+        --file generic/Dockerfile.cuda ./generic
 fi
 
 if [ "$BASE_ONLY" == "true" ]; then
@@ -104,4 +104,4 @@ docker build \
     --tag $IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO$CUDA_SUFFIX \
     --build-arg FROM_ARG=$BASE$CUDA_SUFFIX \
     --build-arg ROS_DISTRO=$ROS_DISTRO \
-    --file generic/Dockerfile ./../..
+    --file generic/Dockerfile ./..
