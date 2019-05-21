@@ -17,8 +17,6 @@
 #ifndef CONVERT_ROS_MSGS_H
 #define CONVERT_ROS_MSGS_H
 
-#include <tf/tf.h>
-
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
@@ -30,9 +28,6 @@
 
 geometry_msgs::PoseStamped convertToROSMsg(const std_msgs::Header &header,
                                            const Pose &pose);
-geometry_msgs::PoseStamped
-convertToROSMsg(const std_msgs::Header &header, const Pose &pose,
-                const tf::Transform &local_transform);
 
 geometry_msgs::PoseWithCovarianceStamped convertToROSMsg(const std_msgs::Header &header,
                                                          const Pose &pose,

@@ -16,6 +16,7 @@ find_package(PCL REQUIRED)
 set(PCL_LIBRARY_PACKAGES pcl_registration)
 
 find_package(catkin REQUIRED COMPONENTS
+  tf2_geometry_msgs
   pcl_ros
   ${PCL_LIBRARY_PACKAGES}
 )
@@ -26,7 +27,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
    INCLUDE_DIRS include
    LIBRARIES ${LIB_NAME}
-   CATKIN_DEPENDS pcl_ros ${PCL_LIBRARY_PACKAGES}
+   CATKIN_DEPENDS pcl_ros tf2_geometry_msgs ${PCL_LIBRARY_PACKAGES}
 #  DEPENDS
 )
 

@@ -16,9 +16,11 @@
 
 #include "autoware_lidar_localizer/util/convert_ros_msgs.h"
 
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+
 geometry_msgs::PoseStamped convertToROSMsg(const std_msgs::Header &header,
                                            const Pose &pose) {
-  tf::Quaternion q;
+  tf2::Quaternion q;
   q.setRPY(pose.roll, pose.pitch, pose.yaw);
 
   geometry_msgs::PoseStamped msg;
@@ -33,30 +35,9 @@ geometry_msgs::PoseStamped convertToROSMsg(const std_msgs::Header &header,
   return msg;
 }
 
-geometry_msgs::PoseStamped
-convertToROSMsg(const std_msgs::Header &header, const Pose &pose,
-                const tf::Transform &local_transform) {
-  tf::Quaternion q;
-  q.setRPY(pose.roll, pose.pitch, pose.yaw);
-
-  tf::Vector3 v(pose.x, pose.y, pose.z);
-  tf::Transform transform(q, v);
-
-  geometry_msgs::PoseStamped msg;
-  msg.header = header;
-  msg.pose.position.x = (local_transform * transform).getOrigin().getX();
-  msg.pose.position.y = (local_transform * transform).getOrigin().getY();
-  msg.pose.position.z = (local_transform * transform).getOrigin().getZ();
-  msg.pose.orientation.x = (local_transform * transform).getRotation().x();
-  msg.pose.orientation.y = (local_transform * transform).getRotation().y();
-  msg.pose.orientation.z = (local_transform * transform).getRotation().z();
-  msg.pose.orientation.w = (local_transform * transform).getRotation().w();
-  return msg;
-}
-
 geometry_msgs::PoseWithCovarianceStamped convertToROSMsg(const std_msgs::Header &header,
                                            const Pose &pose, const std::array<double, 36> cov_array) {
-  tf::Quaternion q;
+  tf2::Quaternion q;
   q.setRPY(pose.roll, pose.pitch, pose.yaw);
 
   geometry_msgs::PoseWithCovarianceStamped msg;
@@ -104,9 +85,8 @@ jsk_recognition_msgs::HistogramWithRange convertToROSMsg(const std_msgs::Header 
 
 Pose convertFromROSMsg(const geometry_msgs::Pose &msg) {
   double roll, pitch, yaw;
-  tf::Quaternion orientation;
-  tf::quaternionMsgToTF(msg.orientation, orientation);
-  tf::Matrix3x3(orientation).getRPY(roll, pitch, yaw);
+  tf2::Quaternion orientation(msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w);
+  tf2::Matrix3x3(orientation).getRPY(roll, pitch, yaw);
 
   Pose pose;
   pose.x = msg.position.x;
