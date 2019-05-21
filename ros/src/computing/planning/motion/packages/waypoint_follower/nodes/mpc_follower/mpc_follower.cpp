@@ -57,12 +57,13 @@ MPCFollower::MPCFollower()
   {
     double steer_tau;
     pnh_.param("vehicle_model_steer_tau", steer_tau, double(0.1));
-    vehicle_model_ptr_ = std::make_shared<KinematicsBicycleModel>(wheelbase_, steer_lim_deg_, steer_tau);
+
+    vehicle_model_ptr_ = std::make_shared<KinematicsBicycleModel>(wheelbase_, amathutils::deg2rad(steer_lim_deg_), steer_tau);
     ROS_INFO("[MPC] set vehicle_model = kinematics");
   }
   else if (vehicle_model_type_ == "kinematics_no_delay")
   {
-    vehicle_model_ptr_ = std::make_shared<KinematicsBicycleModelNoDelay>(wheelbase_, steer_lim_deg_);
+    vehicle_model_ptr_ = std::make_shared<KinematicsBicycleModelNoDelay>(wheelbase_, amathutils::deg2rad(steer_lim_deg_));
     ROS_INFO("[MPC] set vehicle_model = kinematics_no_delay");
   }
   else if (vehicle_model_type_ == "dynamics")
@@ -75,7 +76,7 @@ MPCFollower::MPCFollower()
     pnh_.param("cf", cf, double(155494.663));
     pnh_.param("cr", cr, double(155494.663));
 
-    vehicle_model_ptr_ = std::make_shared<DynamicsBicycleModel>(wheelbase_, steer_lim_deg_, mass_fl, mass_fr, mass_rl, mass_rr, cf, cr);
+    vehicle_model_ptr_ = std::make_shared<DynamicsBicycleModel>(wheelbase_, mass_fl, mass_fr, mass_rl, mass_rr, cf, cr);
     ROS_INFO("[MPC] set vehicle_model = dynamics");
   }
   else

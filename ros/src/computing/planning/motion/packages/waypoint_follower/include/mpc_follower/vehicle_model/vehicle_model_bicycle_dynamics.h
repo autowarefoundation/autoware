@@ -36,7 +36,6 @@ public:
   /**
    * @brief constructor with parameter initialization
    * @param [in] wheelbase wheelbase length [m]
-   * @param [in] steer_lim_deg steering angle limit [deg]
    * @param [in] mass_fl mass applied to front left tire [kg]
    * @param [in] mass_fr mass applied to front right tire [kg]
    * @param [in] mass_rl mass applied to rear left tire [kg]
@@ -44,7 +43,7 @@ public:
    * @param [in] cf front cornering power
    * @param [in] cr rear cornering power
    */
-  DynamicsBicycleModel(double &wheelbase, double &steer_lim_deg, double &mass_fl, double &mass_fr,
+  DynamicsBicycleModel(double &wheelbase, double &mass_fl, double &mass_fr,
                        double &mass_rl, double &mass_rr, double &cf, double &cr);
 
   /**
@@ -70,12 +69,11 @@ public:
   void calculateReferenceInput(Eigen::MatrixXd &Uref) override;
 
 private:
-  double wheelbase_;     //!< @brief wheelbase length [m]
-  double lf_;            //!< @brief length from centor of mass to front wheel [m]
-  double lr_;            //!< @brief length from centor of mass to rear wheel [m]
-  double steer_lim_deg_; //!< @brief steering angle limit [deg]
-  double mass_;          //!< @brief total mass of vehicle [kg]
-  double iz_;            //!< @brief moment of inertia [kg * m2]
-  double cf_;            //!< @brief front cornering power [N/rad]
-  double cr_;            //!< @brief rear cornering power [N/rad]
+  double wheelbase_; //!< @brief wheelbase length [m]
+  double lf_;        //!< @brief length from centor of mass to front wheel [m]
+  double lr_;        //!< @brief length from centor of mass to rear wheel [m]
+  double mass_;      //!< @brief total mass of vehicle [kg]
+  double iz_;        //!< @brief moment of inertia [kg * m2]
+  double cf_;        //!< @brief front cornering power [N/rad]
+  double cr_;        //!< @brief rear cornering power [N/rad]
 };

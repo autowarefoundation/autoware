@@ -13,8 +13,8 @@
 	<arg name="path_filter_moving_ave_num" default="35" doc="param of moving average filter for path smoothing "/>
 	<arg name="curvature_smoothing_num" default="35" doc="point-to-point index distance used in curvature calculation : curvature is calculated from three points p(i-num), p(i), p(i+num)"/>
 	<arg name="steering_lpf_cutoff_hz" default="3.0" doc="cutoff frequency of lowpass filter for steering command [Hz]"/>
-	<arg name="mpc_qp_solver_type" default="unconstraint_fast" doc="optimization solver type. option is unconstraint_fast, unconstraint, and qpoases_hotstart"/>
-	<arg name="mpc_vehicle_model_type" default="kinematics" doc="vehicle model type for mpc prediction. option is kinematics, kinematics_no_delay, and dynamics"/>
+	<arg name="qp_solver_type" default="unconstraint_fast" doc="optimization solver type. option is unconstraint_fast, unconstraint, and qpoases_hotstart"/>
+	<arg name="vehicle_model_type" default="kinematics" doc="vehicle model type for mpc prediction. option is kinematics, kinematics_no_delay, and dynamics"/>
 
 	<!-- MPC design parameters -->
 	<arg name="mpc_prediction_horizon" default="70" doc="prediction horizon step"/>
@@ -65,8 +65,8 @@
 			<param name="path_filter_moving_ave_num" value="$(arg path_filter_moving_ave_num)"/>
 			<param name="curvature_smoothing_num" value="$(arg curvature_smoothing_num)"/>
 			<param name="steering_lpf_cutoff_hz" value="$(arg steering_lpf_cutoff_hz)"/>
-			<param name="qp_solver_type" value="$(arg mpc_qp_solver_type)"/>
-			<param name="vehicle_model_type" value="$(arg mpc_vehicle_model_type)"/>
+			<param name="qp_solver_type" value="$(arg qp_solver_type)"/>
+			<param name="vehicle_model_type" value="$(arg vehicle_model_type)"/>
 			<param name="mpc_prediction_horizon" value="$(arg mpc_prediction_horizon)"/>
 			<param name="mpc_prediction_sampling_time" value="$(arg mpc_prediction_sampling_time)"/>
 			<param name="mpc_weight_lat_error" value="$(arg mpc_weight_lat_error)"/>

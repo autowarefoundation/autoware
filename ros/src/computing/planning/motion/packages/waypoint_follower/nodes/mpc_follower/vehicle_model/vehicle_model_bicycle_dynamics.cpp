@@ -16,12 +16,11 @@
 
 #include "mpc_follower/vehicle_model/vehicle_model_bicycle_dynamics.h"
 
-DynamicsBicycleModel::DynamicsBicycleModel(double &wheelbase, double &steer_lim_deg, double &mass_fl, double &mass_fr,
+DynamicsBicycleModel::DynamicsBicycleModel(double &wheelbase, double &mass_fl, double &mass_fr,
                                            double &mass_rl, double &mass_rr, double &cf, double &cr)
     : VehicleModelInterface(/* dim_x */ 4, /* dim_u */ 1, /* dim_y */ 2)
 {
     wheelbase_ = wheelbase;
-    steer_lim_deg_ = steer_lim_deg;
 
     const double mass_front = mass_fl + mass_fr;
     const double mass_rear = mass_rl + mass_rr;
@@ -30,6 +29,8 @@ DynamicsBicycleModel::DynamicsBicycleModel(double &wheelbase, double &steer_lim_
     lf_ = wheelbase_ * (1.0 - mass_front / mass_);
     lr_ = wheelbase_ * (1.0 - mass_rear / mass_);
     iz_ = lf_ * lf_ * mass_front + lr_ * lr_ * mass_rear;
+    cf_ = cf;
+    cr_ = cr;
 };
 
 DynamicsBicycleModel::~DynamicsBicycleModel(){};

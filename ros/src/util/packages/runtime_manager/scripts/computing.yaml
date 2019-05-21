@@ -1682,7 +1682,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : mpc_vehicle_model_type
+    - name    : vehicle_model_type
       desc    : vehicle model for mpc predioction
       label   : vehicle_model_type
       kind    : radio_box
@@ -1693,7 +1693,7 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
-    - name  : mpc_qp_solver_type
+    - name  : qp_solver_type
       desc  : QP solver for mpc optimization
       label : qp_solver_type
       kind  : radio_box

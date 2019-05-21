@@ -36,9 +36,9 @@ public:
   /**
    * @brief constructor with parameter initialization
    * @param [in] wheelbase wheelbase length [m]
-   * @param [in] steer_lim_deg steering angle limit [deg]
+   * @param [in] steer_lim steering angle limit [rad]
    */
-  KinematicsBicycleModelNoDelay(const double &wheelbase, const double &steer_lim_deg);
+  KinematicsBicycleModelNoDelay(const double &wheelbase, const double &steer_lim);
 
   /**
    * @brief destructor
@@ -63,6 +63,6 @@ public:
   void calculateReferenceInput(Eigen::MatrixXd &Uref) override;
 
 private:
-  double wheelbase_;     //!< @brief wheelbase length [m]
-  double steer_lim_deg_; //!< @brief steering angle limit [deg]
+  double wheelbase_; //!< @brief wheelbase length [m]
+  double steer_lim_; //!< @brief steering angle limit [rad]
 };

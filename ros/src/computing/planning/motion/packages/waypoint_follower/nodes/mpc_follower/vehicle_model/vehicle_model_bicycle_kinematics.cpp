@@ -16,11 +16,11 @@
 
 #include "mpc_follower/vehicle_model/vehicle_model_bicycle_kinematics.h"
 
-KinematicsBicycleModel::KinematicsBicycleModel(const double &wheelbase, const double &steer_lim_deg, const double &steer_tau)
+KinematicsBicycleModel::KinematicsBicycleModel(const double &wheelbase, const double &steer_lim, const double &steer_tau)
     : VehicleModelInterface(/* dim_x */ 3, /* dim_u */ 1, /* dim_y */ 2)
 {
     wheelbase_ = wheelbase;
-    steer_lim_deg_ = steer_lim_deg;
+    steer_lim_ = steer_lim;
     steer_tau_ = steer_tau;
 };
 KinematicsBicycleModel::~KinematicsBicycleModel(){};
@@ -29,12 +29,11 @@ void KinematicsBicycleModel::calculateDiscreteMatrix(Eigen::MatrixXd &Ad, Eigen:
                                                      Eigen::MatrixXd &Cd, Eigen::MatrixXd &Wd, const double &dt)
 {
     auto sign = [](double x) { return (x > 0.0) - (x < 0.0); };
-    static const double DEG2RAD = M_PI / 180.0;
 
     /* Linearize delta around delta_r (referece delta) */
     double delta_r = atan(wheelbase_ * curvature_);
-    if (abs(delta_r) >= steer_lim_deg_ * DEG2RAD)
-        delta_r = (steer_lim_deg_ * DEG2RAD) * (double)sign(delta_r);
+    if (abs(delta_r) >= steer_lim_)
+        delta_r = steer_lim_ * (double)sign(delta_r);
     double cos_delta_r_squared_inv = 1 / (cos(delta_r) * cos(delta_r));
 
     Ad << 0.0, velocity_, 0.0,
