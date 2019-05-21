@@ -44,7 +44,6 @@ add_library(${LIB_NAME}
   src/ndt/ndt_slam_pcl.cpp
   src/map_manager/map_manager.cpp
   src/matching_score/matching_score.cpp
-  src/matching_score/matching_score_histogram.cpp
   src/pose_linear_interpolator/pose_linear_interpolator.cpp
   src/util/convert_ros_msgs.cpp
   src/util/util_functions.cpp

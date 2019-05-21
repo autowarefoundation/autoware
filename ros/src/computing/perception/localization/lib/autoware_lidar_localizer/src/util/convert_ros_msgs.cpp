@@ -69,20 +69,6 @@ geometry_msgs::TwistStamped convertToROSMsg(const std_msgs::Header &header,
   return msg;
 }
 
-jsk_recognition_msgs::HistogramWithRange convertToROSMsg(const std_msgs::Header &header,
-                                                         const std::vector<HistogramWithRangeBin> &histogram_bin_array) {
-  jsk_recognition_msgs::HistogramWithRange msg;
-  msg.header = header;
-  for(const auto& bin : histogram_bin_array) {
-      jsk_recognition_msgs::HistogramWithRangeBin bin_msg;
-      bin_msg.min_value = bin.min_value;
-      bin_msg.max_value = bin.max_value;
-      bin_msg.count = bin.count;
-      msg.bins.push_back(bin_msg);
-  }
-  return msg;
-}
-
 Pose convertFromROSMsg(const geometry_msgs::Pose &msg) {
   double roll, pitch, yaw;
   tf2::Quaternion orientation(msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w);

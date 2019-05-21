@@ -35,7 +35,6 @@ Computing Tab -> lidar_localizer -> `ndt_slam`
 |`localizer_pose`|`geometry_msgs/PoseStamped`| Estimated sensor position.|
 |`estimate_twist`|`geometry_msgs/TwistStamped`| Estimated Twist.|
 |`matching_score`|`std_msgs/Float32`| Calculated from the nearest distance between map point cloud and LiDAR point cloud. Range of 0.0 to 1.0.|
-|`nearest_points_histogram`|`jsk_recognition_msgs/HistogramWithRange`| Histogram of nearest point. use for debug.|
 |`matching_points`|`sensor_msgs/PointCloud2`|Comparing LiDAR PointCloud and PointCloud Map, topic of the PointCloud which matched.|
 |`unmatching_points`|`sensor_msgs/PointCloud2`|Comparing LiDAR PointCloud and PointCloud Map, topic of the PointCloud which unmatched.|
 |`time_ndt_matching`|`std_msgs/Float32`| processing time. use for debug.|

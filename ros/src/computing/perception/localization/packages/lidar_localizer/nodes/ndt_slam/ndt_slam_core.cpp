@@ -141,7 +141,6 @@ NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
   sensor_pose_pub_ = nh_.advertise<geometry_msgs::PoseStamped>("localizer_pose", 10);
   estimate_twist_pub_ = nh_.advertise<geometry_msgs::TwistStamped>("estimate_twist", 10);
   matching_score_pub_ = nh.advertise<std_msgs::Float32>("matching_score", 10);
-  matching_score_histogram_pub_ = nh.advertise<jsk_recognition_msgs::HistogramWithRange>("nearest_points_histogram", 10);
   matching_points_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("matching_points", 10);
   unmatching_points_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("unmatching_points", 10);
   time_ndt_matching_pub_ = nh.advertise<std_msgs::Float32>("time_ndt_matching", 10);
@@ -465,18 +464,11 @@ void NdtSlam::processMatchingScore(const boost::shared_ptr<pcl::PointCloud<Point
     }
 
 
-    if ( matching_score_pub_.getNumSubscribers() > 0 || matching_score_histogram_pub_.getNumSubscribers() > 0
+    if ( matching_score_pub_.getNumSubscribers() > 0
       || matching_points_pub_.getNumSubscribers() > 0 || unmatching_points_pub_.getNumSubscribers() > 0) {
 
         updateMatchingScore(points_ptr);
         publish(matching_score_pub_, matching_score_);
-
-        if(matching_score_histogram_pub_.getNumSubscribers() > 0){
-            MatchingScoreHistogram matching_score_histogram;
-            const auto point_with_distance_array = matching_score_class_.getPointWithDistanceArray();
-            const auto histogram_bin_array = matching_score_histogram.createHistogramWithRangeBinArray(point_with_distance_array);
-            publish(matching_score_histogram_pub_, map_frame_, histogram_bin_array);
-        }
 
         if(matching_points_pub_.getNumSubscribers() > 0 || unmatching_points_pub_.getNumSubscribers() > 0) {
             const boost::shared_ptr<pcl::PointCloud<PointTarget>> match_points_ptr(new pcl::PointCloud<PointTarget>);
@@ -606,14 +598,6 @@ void NdtSlam::publish(const ros::Publisher &publisher, const std::string frame_i
     header.frame_id = frame_id;
     header.stamp = current_scan_time_;
     const auto msg = convertToROSMsg(header, velocity);
-    publisher.publish(msg);
-}
-
-void NdtSlam::publish(const ros::Publisher &publisher, const std::string frame_id, const std::vector<HistogramWithRangeBin> &histogram_bin_array) {
-    std_msgs::Header header;
-    header.frame_id = frame_id;
-    header.stamp = current_scan_time_;
-    const auto msg = convertToROSMsg(header, histogram_bin_array);
     publisher.publish(msg);
 }
 

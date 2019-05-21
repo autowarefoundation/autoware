@@ -45,7 +45,6 @@
 
 #include <autoware_lidar_localizer/map_manager/map_manager.h>
 #include <autoware_lidar_localizer/matching_score/matching_score.h>
-#include <autoware_lidar_localizer/matching_score/matching_score_histogram.h>
 #include <autoware_lidar_localizer/ndt/ndt_slam_pcl.h>
 #include <autoware_lidar_localizer/pose_linear_interpolator/pose_linear_interpolator.h>
 
@@ -98,7 +97,6 @@ private:
   void publish(const ros::Publisher &publisher, const std::string frame_id, const Pose &pose);
   void publish(const ros::Publisher &publisher, const std::string frame_id, const Pose &pose, const std::array<double, 36> cov);
   void publish(const ros::Publisher &publisher, const std::string frame_id, const Velocity &velocity);
-  void publish(const ros::Publisher &publisher, const std::string frame_id, const std::vector<HistogramWithRangeBin> &histogram_bin_array);
   template<class PointType>
   void publish(const ros::Publisher &publisher, const std::string frame_id, const boost::shared_ptr<pcl::PointCloud<PointType>> &points_ptr);
   void publishTF(const std::string &frame_id, const std::string &child_frame_id, const Pose &pose);
@@ -115,7 +113,6 @@ private:
   ros::Publisher sensor_pose_pub_;
   ros::Publisher estimate_twist_pub_;
   ros::Publisher matching_score_pub_;
-  ros::Publisher matching_score_histogram_pub_;
   ros::Publisher matching_points_pub_;
   ros::Publisher unmatching_points_pub_;
   ros::Publisher time_ndt_matching_pub_;
