@@ -6,7 +6,7 @@
 
   <!-- Tablet UI -->
   <!--
-  <include file="$(find runtime_manager)/scripts/tablet_socket.launch"/>
+  <include file="$(find runtime_manager)/launch_files/tablet_socket.launch"/>
   -->
 
   <!-- vel_pose_mux -->
@@ -17,7 +17,7 @@
 
   <!-- waypoint_loader -->
   <node pkg="rostopic" type="rostopic" name="config_waypoint_loader_rostopic"
-        args="pub -l /config/waypoint_loader autoware_msgs/ConfigWaypointLoader
+        args="pub -l /config/waypoint_loader autoware_config_msgs/ConfigWaypointReplanner
         '{multi_lane_csv: '$(env HOME)/.autoware/data/path/moriyama_path.txt', replanning_mode: false, velocity_max: 20.0, velocity_min: 4.0, accel_limit: 0.98, decel_limit: 0.98, radius_thresh: 20.0, radius_min: 6.0, resample_mode: true, resample_interval: 1.0, velocity_offset: 4, end_point_offset: 5}' "
   />
   <include file="$(find waypoint_maker)/launch/waypoint_loader.launch" />

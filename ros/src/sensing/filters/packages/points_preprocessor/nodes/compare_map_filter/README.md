@@ -26,7 +26,7 @@ Launch file available parameters:
 |`input_map_topic`|*String*|PointCloud Map topic. Default `/points_map`.|
 |`output_match_topic`|*String*|Comparing LiDAR PointCloud and PointCloud Map, topic of the PointCloud which matched. Default `/match_points`.|
 |`output_unmatch_topic`|*String*|Comparing LiDAR PointCloud and PointCloud Map, topic of the PointCloud which unmatched. Default `/unmatch_points`.|
-|`distance_threshold`|*Double*|Threshold for comparing LiDAR PointCloud and PointCloud Map. Euclidean distance (mether).  Default `0.2`.|
+|`distance_threshold`|*Double*|Threshold for comparing LiDAR PointCloud and PointCloud Map. Euclidean distance (mether).  Default `0.3`.|
 |`min_clipping_height`|*Double*|Remove the points where the height is lower than the threshold. (Based on sensor coordinates). Default `-2.0`.|
 |`max_clipping_height`|*Double*|Remove the points where the height is higher than the threshold. (Based on sensor coordinates). Default `0.5`.|
 

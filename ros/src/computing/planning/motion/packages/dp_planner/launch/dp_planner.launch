@@ -88,8 +88,6 @@
 		<param name="mapSource" 					value="$(arg mapSource)" />
 		<param name="mapFileName" 					value="$(arg mapFileName)" />
 
-		<param name="enablePlannerDynamicSwitch"		value="$(arg enablePlannerDynamicSwitch)"/>
-
 	</node>
 
 </launch>

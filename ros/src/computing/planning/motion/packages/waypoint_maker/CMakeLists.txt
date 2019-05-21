@@ -84,6 +84,7 @@ install(TARGETS
         waypoint_clicker
         waypoint_marker_publisher
         waypoint_velocity_visualizer
+        waypoint_extractor
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

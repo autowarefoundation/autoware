@@ -69,7 +69,7 @@ public:
       std::string filename;
       std::vector<std::string> topics;
       int max_duration;
-      uint32_t max_size;
+      uint64_t max_size;
     } RecordParam;
 
 protected:

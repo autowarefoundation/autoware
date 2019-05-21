@@ -165,7 +165,7 @@ void Autoware_Rosbag_Plugin::on_button_record_start_clicked()
 
   /* Caculate max split size */
   if (split_size != 0 && ui->checkBox_split_size->isChecked())
-    recoParam.max_size = ceil(split_size * 1048576 * 1024);
+    recoParam.max_size = ceil(split_size * 1000 * 1000 * 1000);
   else
     recoParam.max_size = 0;
 
@@ -243,7 +243,7 @@ int Autoware_Rosbag_Plugin::recordReq( RecordParam &recoParam )
   ROS_INFO("%s L.%d -   chunk_size      [%d]", __FUNCTION__, __LINE__, recorder_opts_->chunk_size);
   ROS_INFO("%s L.%d -   limit           [%d]", __FUNCTION__, __LINE__, recorder_opts_->limit);
   ROS_INFO("%s L.%d -   split           [%d]", __FUNCTION__, __LINE__, recorder_opts_->split);
-  ROS_INFO("%s L.%d -   max_size        [%.2fGB]", __FUNCTION__, __LINE__, recorder_opts_->max_size / 1048576.0 / 1024.0);
+  ROS_INFO("%s L.%d -   max_size        [%.2fGB]", __FUNCTION__, __LINE__, recorder_opts_->max_size / 1000.0 / 1000.0 / 1000.0);
   ROS_INFO("%s L.%d -   max_duration    [%.1fmin]", __FUNCTION__, __LINE__, recorder_opts_->max_duration.toSec() / 60.0 );
   ROS_INFO("%s L.%d -   node            [%s]", __FUNCTION__, __LINE__, recorder_opts_->node.c_str() );
   ROS_INFO("%s L.%d -   min_space       [%d]", __FUNCTION__, __LINE__, recorder_opts_->min_space );

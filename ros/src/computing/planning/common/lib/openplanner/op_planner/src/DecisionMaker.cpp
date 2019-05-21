@@ -381,7 +381,7 @@ void DecisionMaker::InitBehaviorStates()
 
 		double deceleration_critical = 0;
 		double inv_time = 2.0*((beh.followDistance- (critical_long_front_distance+m_params.additionalBrakingDistance))-CurrStatus.speed);
-		if(inv_time == 0)
+		if(inv_time <= 0)
 			deceleration_critical = m_CarInfo.max_deceleration;
 		else
 			deceleration_critical = CurrStatus.speed*CurrStatus.speed/inv_time;
