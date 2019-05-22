@@ -166,7 +166,7 @@ build_melodic_cross:
     - docker:dind
   variables:
     ROS_DISTRO: melodic
-    AUTOWARE_DOCKER_DATE: "20190306"
+    AUTOWARE_DOCKER_DATE: "20190521"
     <<: *build_cross_vars
   <<: *build_cross_script
 
