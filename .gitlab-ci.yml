@@ -74,7 +74,6 @@ variables:
                     -DCMAKE_FIND_ROOT_PATH=${AUTOWARE_INSTALL_PATH}
                   "
                   '
-  retry: 1
 
 build_kinetic:
   stage: build
@@ -112,7 +111,6 @@ build_kinetic:
     - tar -czvf coverage.tar.gz $COVERAGE_FOLDER_NAME
     - mv coverage.tar.gz $CI_PROJECT_DIR/coverage.tar.gz
     - ls $CI_PROJECT_DIR
-  retry: 1
   artifacts:
     paths:
       - $CI_PROJECT_DIR/coverage.tar.gz
@@ -150,7 +148,6 @@ build_melodic:
     - tar -czvf coverage.tar.gz $COVERAGE_FOLDER_NAME
     - mv coverage.tar.gz $CI_PROJECT_DIR/coverage.tar.gz
     - ls $CI_PROJECT_DIR
-  retry: 1
   artifacts:
     paths:
       - $CI_PROJECT_DIR/coverage.tar.gz

@@ -2,7 +2,7 @@ from distutils.core import setup
 from catkin_pkg.python_setup import generate_distutils_setup
 
 setup_args = generate_distutils_setup(
-    package_dir={"autoware_launcher": "src/autoware_launcher"},
+    package_dir={"": "src"},
     packages=[
         "autoware_launcher",
         "autoware_launcher.tool",
