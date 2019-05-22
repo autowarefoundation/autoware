@@ -21,6 +21,34 @@
  * @date 2019.05.01
  */
 
+
+/*
+ *    Representation
+ * e      : lateral error
+ * th     : heading angle error 
+ * steer  : steering angle
+ * steer_d: desired steering agle (input)
+ * v      : velocity 
+ * W      : wheelbase length
+ * tau    : time constant for steering dynamics
+ * 
+ *    State & Input
+ * x = [e, th, steer]^T
+ * u = steer_d
+ * 
+ *    Nonlinear model
+ * dx1/dt = v * sin(x2)
+ * dx2/dt = v * tan(x3) / W
+ * dx3/dt = -(x3 - u) / tau
+ * 
+ *    Linearized model around reference point (v = v_r, th = th_r, steer = steer_r)
+ *         [0,  vr,                   0]       [    0]       [                           0]
+ * dx/dt = [0,   0, vr/W/cos(steer_r)^2] * x + [    0] * u + [-vr*steer_r/W/cos(steer_r)^2]
+ *         [0,   0,               1/tau]       [1/tau]       [                           0]
+ * 
+ */
+
+
 #pragma once
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/LU>

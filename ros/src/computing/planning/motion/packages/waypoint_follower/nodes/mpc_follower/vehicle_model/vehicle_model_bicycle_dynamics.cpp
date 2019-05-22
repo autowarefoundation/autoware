@@ -42,8 +42,8 @@ void DynamicsBicycleModel::calculateDiscreteMatrix(Eigen::MatrixXd &Ad,
                                                    const double &dt)
 {
     /*
-    dx/dt = Ad*x + B1*u + B2*r
-    */
+     * x[k+1] = Ad*x[k] + Bd*u + Wd
+     */
 
     const double vel = std::max(velocity_, 0.01);
 

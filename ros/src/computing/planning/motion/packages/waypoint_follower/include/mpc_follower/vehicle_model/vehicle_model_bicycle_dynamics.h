@@ -21,6 +21,35 @@
  * @date 2019.05.01
  */
 
+/*
+ *    Representation
+ * e      : lateral error
+ * de     : derivative of lateral error
+ * th     : heading angle error 
+ * dth    : derivative of heading angle error 
+ * steer  : steering angle (input)
+ * v      : velocity 
+ * m      : mass
+ * Iz     : inertia
+ * lf     : length from center to front tire
+ * lr     : length from center to rear tire
+ * cf     : front tire cornering power
+ * cr     : rear tire cornering power
+ * k      : curvature on reference trajectory point
+ * 
+ *    State & Input
+ * x = [e, de, th, dth]^T
+ * u = steer
+ * 
+ *    Linearized model around reference point (v=vr)
+ *          [0,                   1,                0,                        0]       [       0]       [                          0]
+ *  dx/dt = [0,       -(cf+cr)/m/vr,        (cf+cr)/m,       (lr*cr-lf*cf)/m/vr] * x + [    cf/m] * u + [(lr*cr-lf*cf)/m/vr*k - vr*k]
+ *          [0,                   0,                0,                        1]       [       0]       [                          0]
+ *          [0, (lr*cr-lf*cf)/Iz/vr, (lf*cf-lr*cr)/Iz, -(lf^2*cf+lr^2*cr)/Iz/vr]       [lf*cf/Iz]       [   -(lf^2*cf+lr^2*cr)/Iz/vr]
+ * 
+ * Reference : Jarrod M. Snider, "Automatic Steering Methods for Autonomous Automobile Path Tracking", Robotics Institute, Carnegie Mellon University, February 2009.
+ */
+
 #pragma once
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/LU>
