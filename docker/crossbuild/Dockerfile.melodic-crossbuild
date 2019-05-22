@@ -105,7 +105,4 @@ ENV CXX /usr/bin/${AUTOWARE_TARGET_ARCH}-linux-gnu-g++
 ENV AR /usr/bin/${AUTOWARE_TARGET_ARCH}-linux-gnu-ar
 ENV CPP /usr/bin/${AUTOWARE_TARGET_ARCH}-linux-gnu-cpp
 
-RUN ln -s ${AUTOWARE_SYSROOT}/opt/ros/melodic/include /opt/ros/melodic/include
-RUN ln -s ${AUTOWARE_SYSROOT}/opt/ros/melodic/share/orocos_kdl /opt/ros/melodic/share/orocos_kdl
-
 CMD . /opt/ros/melodic/setup.sh && /bin/bash

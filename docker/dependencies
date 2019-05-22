@@ -23,7 +23,6 @@ ros-$ROS_DISTRO-pacmod-msgs
 ros-$ROS_DISTRO-position-controllers
 ros-$ROS_DISTRO-rosbridge-server
 ros-$ROS_DISTRO-sound-play
-ros-$ROS_DISTRO-tf-conversions
 ros-$ROS_DISTRO-transmission-interface
 ros-$ROS_DISTRO-velocity-controllers
 ros-$ROS_DISTRO-velodyne
