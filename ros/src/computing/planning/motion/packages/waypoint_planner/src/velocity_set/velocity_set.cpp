@@ -580,7 +580,7 @@ int main(int argc, char** argv)
     if (crosswalk.loaded_all && !crosswalk.set_points)
       crosswalk.setCrossWalkPoints();
 
-    if (!vs_info.getSetPose() || !vs_path.getSetPath())
+    if (!vs_info.getSetPose() || !vs_path.getSetPath() || vs_path.getPrevWaypointsSize() == 0)
     {
       loop_rate.sleep();
       continue;
