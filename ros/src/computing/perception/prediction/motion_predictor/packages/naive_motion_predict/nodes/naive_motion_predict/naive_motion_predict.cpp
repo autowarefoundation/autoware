@@ -107,6 +107,25 @@ autoware_msgs::DetectedObject NaiveMotionPredict::generatePredictedObject(const 
   return predicted_object;
 }
 
+geometry_msgs::PolygonStamped NaiveMotionPredict::getPredictedConvexHull(
+  const geometry_msgs::PolygonStamped& in_polygon, 
+  const double delta_x, 
+  const double delta_y)
+{
+  geometry_msgs::PolygonStamped out_polygon;
+  out_polygon.header = in_polygon.header;
+  for(auto point: in_polygon.polygon.points)
+  {
+    geometry_msgs::Point32 out_point;
+    out_point.x = point.x + delta_x;
+    out_point.y = point.y + delta_y; 
+    out_point.z = point.z;
+    out_polygon.polygon.points.push_back(out_point);
+  }
+  return out_polygon;
+}
+
+
 autoware_msgs::DetectedObject NaiveMotionPredict::moveConstantVelocity(const autoware_msgs::DetectedObject& object)
 {
   autoware_msgs::DetectedObject predicted_object;
@@ -116,12 +135,17 @@ autoware_msgs::DetectedObject NaiveMotionPredict::moveConstantVelocity(const aut
   double velocity = object.velocity.linear.x;
   double yaw = generateYawFromQuaternion(object.pose.orientation);
 
+  double delta_x = velocity * cos(yaw) * interval_sec_;
+  double delta_y = velocity * sin(yaw) * interval_sec_;
+
   // predicted state values
-  double prediction_px = px + velocity * cos(yaw) * interval_sec_;
-  double prediction_py = py + velocity * sin(yaw) * interval_sec_;
+  double prediction_px = px + delta_x;
+  double prediction_py = py + delta_y;
 
   predicted_object.pose.position.x = prediction_px;
   predicted_object.pose.position.y = prediction_py;
+  
+  predicted_object.convex_hull = getPredictedConvexHull(object.convex_hull, delta_x, delta_y);
 
   return predicted_object;
 }
@@ -138,18 +162,22 @@ NaiveMotionPredict::moveConstantTurnRateVelocity(const autoware_msgs::DetectedOb
   double yawd = object.acceleration.linear.y;
 
   // predicted state values
-  double prediction_px, prediction_py;
+  double prediction_px, prediction_py, delta_x, delta_y;
 
   // avoid division by zero
   if (fabs(yawd) > 0.001)
   {
-    prediction_px = px + velocity / yawd * (sin(yaw + yawd * interval_sec_) - sin(yaw));
-    prediction_py = py + velocity / yawd * (cos(yaw) - cos(yaw + yawd * interval_sec_));
+    delta_x = velocity / yawd * (sin(yaw + yawd * interval_sec_) - sin(yaw));
+    delta_y = velocity / yawd * (cos(yaw) - cos(yaw + yawd * interval_sec_));
+    prediction_px = px + delta_x;
+    prediction_py = py + delta_y;
   }
   else
   {
-    prediction_px = px + velocity * interval_sec_ * cos(yaw);
-    prediction_py = py + velocity * interval_sec_ * sin(yaw);
+    delta_x = velocity * interval_sec_ * cos(yaw);
+    delta_y = velocity * interval_sec_ * sin(yaw);
+    prediction_px = px + delta_x;
+    prediction_py = py + delta_y;
   }
   double prediction_yaw = yaw + yawd * interval_sec_;
 
@@ -165,6 +193,9 @@ NaiveMotionPredict::moveConstantTurnRateVelocity(const autoware_msgs::DetectedOb
   predicted_object.pose.orientation.y = q[1];
   predicted_object.pose.orientation.z = q[2];
   predicted_object.pose.orientation.w = q[3];
+  
+  predicted_object.convex_hull = getPredictedConvexHull(object.convex_hull, delta_x, delta_y);
+  
   return predicted_object;
 }
 
