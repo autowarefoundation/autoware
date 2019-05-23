@@ -58,13 +58,16 @@ COPY --from=sysroot /usr/share/OpenCV ${AUTOWARE_SYSROOT}/usr/share/OpenCV
 COPY --from=sysroot /usr/share/pkgconfig ${AUTOWARE_SYSROOT}/usr/share/pkgconfig
 COPY --from=sysroot /opt ${AUTOWARE_SYSROOT}/opt
 COPY --from=sysroot /etc/alternatives ${AUTOWARE_SYSROOT}/etc/alternatives
+
 RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     tzdata
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gnupg
+
 RUN echo "deb http://packages.ros.org/ros/ubuntu bionic main" | tee /etc/apt/sources.list.d/ros-latest.list
 RUN apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     cython \
     crossbuild-essential-arm64 \
@@ -73,6 +76,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     qt5-qmake \
     qtbase5-dev-tools \
     ros-melodic-catkin
+
 RUN find ${AUTOWARE_SYSROOT}/opt/ros/melodic/share/ -name "*.cmake" -type f -exec sed -i -e "s#/opt/ros/melodic/include#${AUTOWARE_SYSROOT}/opt/ros/melodic/include#g" {} \;
 RUN find ${AUTOWARE_SYSROOT}/opt/ros/melodic/share/ -name "*.cmake" -type f -exec sed -i -e "s#/opt/ros/melodic/lib#${AUTOWARE_SYSROOT}/opt/ros/melodic/lib#g" {} \;
 RUN find ${AUTOWARE_SYSROOT}/opt/ros/melodic/share/ -name "*.cmake" -type f -exec sed -i -e "s#/opt/ros/melodic/share#${AUTOWARE_SYSROOT}/opt/ros/melodic/share#g" {} \;
