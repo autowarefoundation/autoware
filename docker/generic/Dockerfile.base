@@ -79,7 +79,7 @@ RUN echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> /etc/profile.d/ros.sh && \
 #
 # Install ROS packages used by Autoware
 #
-COPY ./docker/generic/dependencies /tmp/dependencies
+COPY ./docker/dependencies /tmp/dependencies
 RUN apt-get update && \
     sed "s/\$ROS_DISTRO/$ROS_DISTRO/g" "/tmp/dependencies" | xargs apt-get install -y && \
     rm -rf /var/lib/apt/lists/* 
