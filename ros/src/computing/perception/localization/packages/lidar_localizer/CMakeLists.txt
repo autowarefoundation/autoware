@@ -15,8 +15,13 @@ endif ()
 
 find_package(CUDA)
 find_package(Eigen3 QUIET)
+find_package(autoware_build_flags REQUIRED)
+find_package(autoware_msgs REQUIRED)
+find_package(autoware_config_msgs REQUIRED)
 
-if (ENABLE_CUDA)
+AW_CHECK_CUDA()
+
+if (USE_CUDA)
     add_definitions(-DCUDA_FOUND)
     list(APPEND PCL_OPENMP_PACKAGES ndt_gpu)
 endif ()
@@ -32,12 +37,6 @@ else ()
     set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
 endif ()
 
-
-find_package(autoware_build_flags REQUIRED)
-
-find_package(autoware_msgs REQUIRED)
-
-find_package(autoware_config_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         roscpp
         std_msgs
@@ -90,7 +89,7 @@ add_executable(ndt_mapping nodes/ndt_mapping/ndt_mapping.cpp)
 target_link_libraries(ndt_mapping ${catkin_LIBRARIES})
 add_dependencies(ndt_mapping ${catkin_EXPORTED_TARGETS})
 
-if (ENABLE_CUDA)
+if (USE_CUDA)
     target_include_directories(ndt_matching PRIVATE ${CUDA_INCLUDE_DIRS})
     target_include_directories(ndt_mapping PRIVATE ${CUDA_INCLUDE_DIRS})
 endif ()

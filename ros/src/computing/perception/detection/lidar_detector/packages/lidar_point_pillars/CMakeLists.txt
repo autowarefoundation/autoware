@@ -4,8 +4,11 @@ project(lidar_point_pillars)
 # set flags for CUDA availability
 option(CUDA_AVAIL "CUDA available" OFF)
 find_package(CUDA)
+find_package(autoware_build_flags REQUIRED)
 
-if (ENABLE_CUDA)
+AW_CHECK_CUDA()
+
+if (USE_CUDA)
   message("CUDA is available!")
   message("CUDA Libs: ${CUDA_LIBRARIES}")
   message("CUDA Headers: ${CUDA_INCLUDE_DIRS}")
@@ -51,7 +54,6 @@ endif()
 
 if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
 
-  find_package(autoware_build_flags REQUIRED)
   find_package(catkin REQUIRED COMPONENTS
    roscpp
    roslib
