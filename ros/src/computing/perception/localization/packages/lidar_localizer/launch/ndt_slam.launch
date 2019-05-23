@@ -1,61 +1,60 @@
 <!-- -->
 <launch>
 
-  <arg name="input_mapping_points_topic" default="/points_raw" />
-  <arg name="input_localizing_points_topic" default="/filtered_points" />
-  <arg name="points_queue_size" default="1" />
+  <arg name="input_mapping_points_topic" default="/points_raw" doc="PointCloud topic use for mapping"/>
+  <arg name="input_localizing_points_topic" default="/filtered_points" doc="PointCloud topic use for localizing" />
+  <arg name="points_queue_size" default="1" doc="Subscriber queue size of mapping_points_topic and localizing_points_topic" />
 
-  <arg name="use_fusion_localizer_feedback" default="false" />
-  <arg name="input_current_pose_topic" default="/ekf_pose" />
+  <arg name="use_fusion_localizer_feedback" default="false" doc="If True, input_current_pose_topic is calculated as the initial position" />
+  <arg name="input_current_pose_topic" default="/ekf_pose" doc="calculated as the initial position when use fusion_localizer feedback" />
 
-  <arg name="input_initial_pose_topic" default="/initialpose" />
-  <arg name="input_points_map_topic" default="/points_map" />
+  <arg name="input_initial_pose_topic" default="/initialpose" doc="Initial position. Get from RViz's 2D Pose Estimate" />
+  <arg name="input_points_map_topic" default="/points_map" doc="	PointCloud Map topic" />
 
-  <arg name="output_points_map_topic" default="ndt_map" />
-  <arg name="output_pose_topic" default="ndt_pose" />
-  <arg name="output_pose_with_covariance_topic" default="ndt_pose_with_covariance" />
-  <arg name="output_estimate_twist_topic" default="estimate_twist" />
+  <arg name="output_points_map_topic" default="ndt_map" doc="Mapping PointCloud" />
+  <arg name="output_pose_topic" default="ndt_pose" doc="Estimated self position" />
+  <arg name="output_pose_with_covariance_topic" default="ndt_pose_with_covariance" doc="Estimated self position with covariance" />
+  <arg name="output_estimate_twist_topic" default="estimate_twist" doc="Estimated Twist" />
 
-  <arg name="target_frame" default="base_link" />
-  <arg name="world_frame" default="map" />
+  <arg name="target_frame" default="base_link" doc="Location of output results (ndt_pose, ndt_pose_with_covariance, predict_pose, estimate_twist ...)" />
+  <arg name="world_frame" default="map" doc="Coordinate system of output result (ndt_pose, ndt_pose_with_covariance, predict_pose, estimate_twist ...)." />
 
-  <arg name="init_x" default="0.0" />
-  <arg name="init_y" default="0.0" />
-  <arg name="init_z" default="0.0" />
-  <arg name="init_roll" default="0.0" />
-  <arg name="init_pitch" default="0.0" />
-  <arg name="init_yaw" default="0.0" />
+  <arg name="init_x" default="0.0" doc="Initial x position at initialization." />
+  <arg name="init_y" default="0.0" doc="Initial y position at initialization." />
+  <arg name="init_z" default="0.0" doc="Initial z position at initialization." />
+  <arg name="init_roll" default="0.0" doc="Initial roll position at initialization." />
+  <arg name="init_pitch" default="0.0" doc="Initial pitch position at initialization." />
+  <arg name="init_yaw" default="0.0" doc="Initial yaw position at initialization." />
 
-  <arg name="trans_epsilon" default="0.01" />
-  <arg name="step_size" default="0.1" />
-  <arg name="resolution" default="1.0" />
-  <arg name="max_iterations" default="30.0" />
+  <arg name="trans_epsilon" default="0.01" doc="The maximum difference between two consecutive transformations in order to consider convergence" />
+  <arg name="step_size" default="0.1" doc="The newton line search maximum step length" />
+  <arg name="resolution" default="1.0" doc="The ND voxel grid resolution" />
+  <arg name="max_iterations" default="30.0" doc="The number of iterations required to calculate alignment" />
 
-  <arg name="with_mapping" default="false" />
-  <arg name="save_added_map" default="false" />
-  <arg name="save_map_leaf_size" default="0.2" />
-  <arg name="min_scan_range" default="5.0" />
-  <arg name="max_scan_range" default="200.0" />
-  <arg name="min_add_scan_shift" default="1.0" />
-  <arg name="separate_mapping" default="false" />
-  <arg name="separate_map_size" default="100.0" />
-  <arg name="mapping_file_directory_path" default="/tmp/Autoware/log/ndt_slam" />
+  <arg name="with_mapping" default="false" doc="If True, mapping simultaneously with position estimation" />
+  <arg name="save_added_map" default="false" doc="If True, save the map with only additional points" />
+  <arg name="save_map_leaf_size" default="0.2" doc="The downsampling size of map" />
+  <arg name="min_scan_range" default="5.0" doc="Minimum value of distance of LiDAR pointcloud used for mapping" />
+  <arg name="max_scan_range" default="200.0" doc="Maxmum value of distance of LiDAR pointcloud used for mapping" />
+  <arg name="min_add_scan_shift" default="1.0" doc="Threshold that add pointcloud to the map if self-location moves more than this param" />
+  <arg name="separate_mapping" default="false" doc="If True, the map is divided and mapped to improve processing speed" />
+  <arg name="separate_map_size" default="100.0" doc="Map split size." />
+  <arg name="mapping_file_directory_path" default="/tmp/Autoware/log/ndt_slam" doc="Map storage location" />
 
-  <arg name="matching_score_use_points_num" default="300" />
-  <arg name="matching_score_cutoff_lower_limit_z" default="0.2" />
-  <arg name="matching_score_cutoff_upper_limit_z" default="2.0" />
-  <arg name="matching_score_cutoff_lower_limit_range" default="5.0" />
-  <arg name="matching_score_cutoff_upper_limit_range" default="100.0" />
-  <arg name="matching_score_kT" default="0.05" />
-  <arg name="matching_score_mu" default="0.25" />
+  <arg name="matching_score_use_points_num" default="300" doc="Maximum number of pointcloud used for score calculation" />
+  <arg name="matching_score_cutoff_lower_limit_z" default="0.2" doc="Use a point cloud less than this value for score calculation" />
+  <arg name="matching_score_cutoff_upper_limit_z" default="2.0" doc="Use a pointcloud higher than this value for score calculation" />
+  <arg name="matching_score_cutoff_lower_limit_range" default="5.0" doc="The minimum distance between pointcloud used for score calculation" />
+  <arg name="matching_score_cutoff_upper_limit_range" default="100.0" doc="The maxmum distance between pointcloud used for score calculation" />
+  <arg name="matching_score_kT" default="0.05" doc="kT of Fermi distribution function used for score calculation" />
+  <arg name="matching_score_mu" default="0.25" doc="mu of Fermi distribution function used for score calculation" />
 
-  <arg name="use_nn_point_z_when_initial_pose" default="false" />
-  <arg name="publish_tf" default="true" />
+  <arg name="use_nn_point_z_when_initial_pose" default="false" doc="If True, the height value at the 2D Pose Estimate of RViz is complemented by the value of z at the nearest point of the map" />
+  <arg name="publish_tf" default="true" doc="If true, publish TF of map_frame <-> target_frame." />
 
-
-  <arg name="use_anonymous_node_name" default="false" />
-  <arg name="node_name" value="ndt_slam" unless="$(arg use_anonymous_node_name)" />
-  <arg name="node_name" value="$(anon ndt_slam)" if="$(arg use_anonymous_node_name)" />
+  <arg name="use_anonymous_node_name" default="false" doc="If True, launch with anonymous option" />
+  <arg name="node_name" value="ndt_slam" unless="$(arg use_anonymous_node_name)" doc="Not use anonymous option" />
+  <arg name="node_name" value="$(anon ndt_slam)" if="$(arg use_anonymous_node_name)" doc="Use anonymous option" />
 
   <node pkg="lidar_localizer" type="ndt_slam" name="$(arg node_name)" output="log">
 
