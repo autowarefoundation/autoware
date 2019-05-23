@@ -125,7 +125,7 @@ subs :
       desc : fusion_localizer desc sample
       subs :
       - name : ekf_localizer
-        desc : pose and twist fusion for robust localization
+        desc : pose and twist fusion for robust localization 
         cmd  : roslaunch ekf_localizer ekf_localizer.launch
         param : ekf_localizer_param
         gui  :
@@ -134,7 +134,7 @@ subs :
       desc : twist_generator
       subs :
       - name : vehicle_status_converter
-        desc : twist generator from vehicle_status
+        desc : twist generator from vehicle_status 
         cmd  : roslaunch twist_generator vehicle_status_converter.launch
         param : vehicle_status_converter_param
         gui  :
@@ -5856,7 +5856,7 @@ params :
         dash     : ''
         delim    : ':='
   - name : ekf_localizer_param
-    vars :
+    vars : 
     - name      : show_debug_info
       desc      : show_debug_info
       label     : show_debug_info
@@ -6028,7 +6028,7 @@ params :
         delim     : ':='
     - name  : proc_stddev_vx_c
       desc  : standard deviation of process noise for d(vx)/dt = 0
-      label : proc_stddev_vx
+      label : proc_stddev_vx 
       min   : 0.0
       max   : 10.0
       v     : 2.0
@@ -6045,7 +6045,7 @@ params :
         dash      : ''
         delim     : ':='
   - name : vehicle_status_converter_param
-    vars :
+    vars : 
     - name      : enable_adaptive_estimate
       desc      : enable adaptive coefficient estimation with /estimate_twist by recursive least square method
       label     : enable_adaptive_estimate
