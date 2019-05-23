@@ -60,6 +60,7 @@ variables:
                     --merge-install
                     --build-base ${AUTOWARE_BUILD_PATH}
                     --install-base ${AUTOWARE_INSTALL_PATH}
+                    --packages-skip citysim
                     --cmake-args
                     -DPYTHON_EXECUTABLE=/usr/bin/python3
                     -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH}
