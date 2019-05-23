@@ -75,11 +75,14 @@ echo -e "\tBase only: $BASE_ONLY"
 
 BASE=$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-base
 
+# Move up a level to include the dependencies file in the build context
+cd ..
+
 docker build \
     --rm \
     --tag $BASE \
     --build-arg ROS_DISTRO=$ROS_DISTRO \
-    --file Dockerfile.base ./../..
+    --file generic/Dockerfile.base ./..
 
 CUDA_SUFFIX=""
 if [ $CUDA == "on" ]; then
@@ -88,7 +91,7 @@ if [ $CUDA == "on" ]; then
         --rm \
         --tag $BASE$CUDA_SUFFIX \
         --build-arg FROM_ARG=$BASE \
-        --file Dockerfile.cuda .
+        --file generic/Dockerfile.cuda ./generic
 fi
 
 if [ "$BASE_ONLY" == "true" ]; then
@@ -101,4 +104,4 @@ docker build \
     --tag $IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO$CUDA_SUFFIX \
     --build-arg FROM_ARG=$BASE$CUDA_SUFFIX \
     --build-arg ROS_DISTRO=$ROS_DISTRO \
-    --file Dockerfile ./../..
+    --file generic/Dockerfile ./..
