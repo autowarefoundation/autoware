@@ -80,7 +80,7 @@ subs :
         gui  :
           dialog_height : 400
       - name : ndt_slam
-        desc : ndt_slam
+        desc : Localization and Mapping using NDT matching method
         cmd  : roslaunch lidar_localizer ndt_slam.launch
         param: ndt_slam
         gui  :
