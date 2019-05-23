@@ -27,6 +27,7 @@ variables:
     - rosdep init
     - rosdep update
     - cd ros/src
+    - git clone https://gitlab.com/autowarefoundation/autoware.ai/messages.git
     - wstool init
     - test -f "${ROSINSTALL_FILE}" && wstool merge "${ROSINSTALL_FILE}"
     - wstool up
@@ -115,6 +116,8 @@ build_cross:
                   "
                   '
   retry: 1
+  only:
+    - random_name_so_the_cross_ci_is_not_triggered
 
 pages:
   stage: deploy
