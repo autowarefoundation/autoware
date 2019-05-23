@@ -74,7 +74,6 @@ variables:
                     -DCMAKE_FIND_ROOT_PATH=${AUTOWARE_INSTALL_PATH}
                   "
                   '
-  retry: 1
 
 build_kinetic:
   stage: build
@@ -93,11 +92,11 @@ build_kinetic:
     - cd ..
     - rm -r lcov
   # We first build the entire workspace normally
-    - colcon build --cmake-args -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_BUILD_TYPE=Debug -DPYTHON_EXECUTABLE=/usr/bin/python3
+    - colcon build --cmake-args -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_BUILD_TYPE=Debug
   # And then build the tests target. catkin (ROS1) packages add their tests to the tests target
   # which is not the standard target for CMake projects. We need to trigger the tests target so that
   # tests are built and any fixtures are set up.
-    - colcon build --cmake-target tests --cmake-args -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_BUILD_TYPE=Debug -DPYTHON_EXECUTABLE=/usr/bin/python3
+    - colcon build --cmake-target tests --cmake-args -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_BUILD_TYPE=Debug
     - lcov --initial --directory build --capture --output-file lcov.base
     - colcon test
     - colcon test-result --verbose
@@ -112,7 +111,6 @@ build_kinetic:
     - tar -czvf coverage.tar.gz $COVERAGE_FOLDER_NAME
     - mv coverage.tar.gz $CI_PROJECT_DIR/coverage.tar.gz
     - ls $CI_PROJECT_DIR
-  retry: 1
   artifacts:
     paths:
       - $CI_PROJECT_DIR/coverage.tar.gz
@@ -150,7 +148,6 @@ build_melodic:
     - tar -czvf coverage.tar.gz $COVERAGE_FOLDER_NAME
     - mv coverage.tar.gz $CI_PROJECT_DIR/coverage.tar.gz
     - ls $CI_PROJECT_DIR
-  retry: 1
   artifacts:
     paths:
       - $CI_PROJECT_DIR/coverage.tar.gz
