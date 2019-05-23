@@ -16,7 +16,7 @@ if (USE_CUDA)
 else()
   message("CUDA NOT FOUND OR INCOMPATIBLE CMAKE VERSION FOUND")
   set(CUDA_AVAIL OFF)
-endif (CUDA_FOUND)
+endif ()
 
 # set flags for TensorRT availability
 option(TRT_AVAIL "TensorRT available" OFF)
