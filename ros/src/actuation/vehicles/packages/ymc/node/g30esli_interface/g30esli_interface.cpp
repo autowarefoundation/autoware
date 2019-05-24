@@ -14,213 +14,271 @@
  * limitations under the License.
  */
 
-#include <cmath>
-#include <thread>
+#include "g30esli_interface.h"
 
-#include <ros/ros.h>
-#include <geometry_msgs/TwistStamped.h>
-#include <autoware_msgs/VehicleCmd.h>
-
-#include "g30esli_interface_util.h"
-#include "can_utils/cansend.h"
-#include "can_utils/cansend_util.h"
-#include "can_utils/ymc_can.h"
-
-namespace
+G30esliInterface::G30esliInterface() : nh_(), private_nh_("~")
 {
-// ros param
-int g_mode;
-int g_loop_rate;
-int g_stop_time_sec;
-double g_wheel_base;
-std::string g_device;
+  // rosparam
+  private_nh_.param<std::string>("device", device_, "can0");
+  private_nh_.param<bool>("use_ds4", use_ds4_, false);
+  private_nh_.param<double>("steering_offset_deg", steering_offset_deg_, 0.0);
+  private_nh_.param<double>("command_timeout", command_timeout_, 1000);
+  private_nh_.param<double>("brake_threshold", brake_threshold_, 0.1);
 
-// ros publisher
-ros::Publisher g_current_twist_pub;
+  // engaged at startup
+  private_nh_.param<bool>("engaged", engage_, true);
 
-// variables
-uint16_t g_target_velocity_ui16;
-int16_t g_steering_angle_deg_i16;
-double g_current_vel_kmph = 0.0;
-bool g_terminate_thread = false;
-double g_steering_offset_deg = 0.0;
+  // subscriber
+  vehicle_cmd_sub_ =
+      nh_.subscribe<autoware_msgs::VehicleCmd>("vehicle_cmd", 1, &G30esliInterface::vehicleCmdCallback, this);
+  engage_sub_ = nh_.subscribe<std_msgs::Bool>("vehicle/engage", 1, &G30esliInterface::engageCallback, this);
 
-// cansend tool
-mycansend::CanSender g_cansender;
+  if (!use_ds4_)
+  {
+    mode_ = MODE::AUTO;  // use vehicle_cmd at startup
+  }
+  else
+  {
+    ds4_sub_ = nh_.subscribe<ds4_msgs::DS4>("ds4", 1, &G30esliInterface::ds4Callback, this);
+    mode_ = MODE::JOYSTICK;  // use ds4 at startup
+  }
 
-void vehicle_cmd_callback(const autoware_msgs::VehicleCmdConstPtr& msg)
-{
-  // TODO: use steer angle, shift, turn signal
-  double target_velocity = msg->twist_cmd.twist.linear.x * 3.6;  // [m/s] -> [km/h]
-  double target_steering_angle_deg = ymc::computeTargetSteeringAngleDegree(msg->twist_cmd.twist.angular.z,
-                                                                           msg->twist_cmd.twist.linear.x, g_wheel_base);
-  target_steering_angle_deg += g_steering_offset_deg;
+  // publisher
+  vehicle_status_pub_ = nh_.advertise<autoware_msgs::VehicleStatus>("vehicle_status", 10);
+  current_twist_pub_ = nh_.advertise<geometry_msgs::TwistStamped>("vehicle/twist", 10);
+  battery_pub_ = nh_.advertise<std_msgs::Float32>("vehicle/battery", 10);
 
-  // factor
-  target_velocity *= 10.0;
-  target_steering_angle_deg *= 10.0;
-
-  g_target_velocity_ui16 = target_velocity;
-  g_steering_angle_deg_i16 = target_steering_angle_deg * -1.0;
+  terminate_thread_ = false;
 }
 
-void current_vel_callback(const geometry_msgs::TwistStampedConstPtr& msg)
+G30esliInterface::~G30esliInterface()
 {
-  g_current_vel_kmph = msg->twist.linear.x * 3.6;
+  terminate_thread_ = true;
+
+  thread_read_status_->join();
+  thread_read_keyboard_->join();
+  thread_publish_status_->join();
+
+  delete thread_read_status_;
+  delete thread_read_keyboard_;
+  delete thread_publish_status_;
+}
+
+// generate command by autoware
+void G30esliInterface::vehicleCmdCallback(const autoware_msgs::VehicleCmdConstPtr& msg)
+{
+  g30esli_ros_.updateAutoCommand(*msg, engage_, steering_offset_deg_, brake_threshold_);
+}
+
+// engaging by topic
+void G30esliInterface::engageCallback(const std_msgs::BoolConstPtr& msg)
+{
+  bool engaging = msg->data;
+  engage_mutex_.lock();
+  if (!engage_ && engaging)
+  {
+    engage_ = true;
+    engage_start_ = ros::Time::now();
+    ROS_INFO("TOPIC: Engaged");
+  }
+  else if (engage_ && !engaging)
+  {
+    engage_ = false;
+    ROS_WARN("TOPIC: Disengaged");
+  }
+  engage_mutex_.unlock();
+}
+
+// generate command by ds4 joystick
+void G30esliInterface::ds4Callback(const ds4_msgs::DS4ConstPtr& msg)
+{
+  g30esli_ros_.updateJoystickCommand(*msg, engage_, steering_offset_deg_);
+
+  // joystick override = use JOYSTICK mode
+  if ((msg->square || msg->cross) && mode_ != MODE::JOYSTICK)
+  {
+    ROS_INFO("JOYSTICK: Joystick Manual Mode");
+    mode_ = MODE::JOYSTICK;
+  }
+
+  // autonomous drive mode = use AUTO mode
+  if (msg->ps && mode_ == MODE::JOYSTICK)
+  {
+    ROS_INFO("JOYSTICK: Autonomous Driving Mode");
+    mode_ = MODE::AUTO;
+  }
+
+  // engage vehicle
+  engage_mutex_.lock();
+  if (msg->option && !engage_)
+  {
+    engage_ = true;
+    engage_start_ = ros::Time::now();
+    ROS_INFO("JOYSTICK: Engaged");
+  }
+  if (msg->share && engage_)
+  {
+    engage_ = false;
+    ROS_WARN("JOYSTICK: Disengaged");
+  }
+  engage_mutex_.unlock();
+}
+
+// read vehicle status
+void G30esliInterface::readStatus()
+{
+  while (!terminate_thread_)
+  {
+    g30esli_ros_.receiveStatus(steering_offset_deg_);
+
+    // accel/brake override, switch to manual mode
+    engage_mutex_.lock();
+    double dt = (ros::Time::now() - engage_start_).toSec();
+    if (g30esli_ros_.checkOverride() && engage_ && (dt > 0.3))  // 300ms wait
+    {
+      engage_ = false;
+      ROS_WARN("OVERRIDE: Disengaged");
+    }
+    engage_mutex_.unlock();
+  }
 }
 
 // receive input from keyboard
 // change the mode to manual mode or auto drive mode
-void changeMode()
+void G30esliInterface::readKeyboard()
 {
-  while (!g_terminate_thread)
+  ros::Rate rate = ros::Rate(100);
+  while (!terminate_thread_)
   {
-    if (ymc::kbhit())
+    if (kbhit())
     {
       char c = getchar();
-      if (c == ' ')
+      if (c == 's')
       {
-        g_mode = 3;
+        engage_mutex_.lock();
+        if (!engage_)
+        {
+          engage_ = true;
+          engage_start_ = ros::Time::now();
+          ROS_INFO("KEYBOARD: Engaged");
+        }
+        engage_mutex_.unlock();
+
+        if (mode_ == MODE::JOYSTICK)
+        {
+          mode_ = MODE::AUTO;
+          ROS_INFO("KEYBOARD: Autonomous Driving Mode");
+        }
       }
-      else if (c == 's')
+      else if (c == ' ')
       {
-        g_mode = 8;
+        engage_mutex_.lock();
+        if (engage_)
+        {
+          engage_ = false;
+          ROS_WARN("KEYBOARD: Disengaged");
+        }
+        engage_mutex_.unlock();
+
+        if (mode_ == MODE::JOYSTICK)
+        {
+          mode_ = MODE::AUTO;
+          ROS_INFO("KEYBOARD: Autonomous Driving Mode");
+        }
       }
     }
-    usleep(20000);  // sleep 20msec
+    rate.sleep();
   }
 }
 
-// read can data from the vehicle
-void readCanData(FILE* fp)
+// publish vehicle status
+void G30esliInterface::publishStatus()
 {
-  char buf[64];
-  while (fgets(buf, sizeof(buf), fp) != NULL && !g_terminate_thread)
+  ros::Rate rate = ros::Rate(100);
+  std_msgs::Float32 battery;
+  while (!terminate_thread_)
   {
-    std::string raw_data = std::string(buf);
-    std::cout << "received data: " << raw_data << std::endl;
-
-    // check if the data is valid
-    if (raw_data.size() > 0)
-    {
-      // split data to strings
-      // data format is like this
-      // can0  200   [8]  08 00 00 00 01 00 01 29
-      std::vector<std::string> parsed_data = ymc::splitString(raw_data);
-
-      // delete first 3 elements
-      std::vector<std::string> data = parsed_data;
-      data.erase(data.begin(), data.begin() + 3);
-
-      int id = std::stoi(parsed_data.at(1), nullptr, 10);
-      double _current_vel_mps = ymc::translateCanData(id, data, &g_mode);
-      if (_current_vel_mps != RET_NO_PUBLISH)
-      {
-        geometry_msgs::TwistStamped ts;
-        ts.header.frame_id = "base_link";
-        ts.header.stamp = ros::Time::now();
-        ts.twist.linear.x = _current_vel_mps;
-        g_current_twist_pub.publish(ts);
-      }
-    }
+    battery.data = g30esli_ros_.getBatteryCharge();
+    vehicle_status_pub_.publish(g30esli_ros_.getVehicleStatus());
+    current_twist_pub_.publish(g30esli_ros_.getCurrentTwist());
+    battery_pub_.publish(battery);
+    rate.sleep();
   }
 }
 
-}  // namespace
-
-int main(int argc, char* argv[])
+// main loop
+void G30esliInterface::run()
 {
-  // ROS initialization
-  ros::init(argc, argv, "g30esli_interface");
-  ros::NodeHandle n;
-  ros::NodeHandle private_nh("~");
+  // open can device
+  if (!g30esli_ros_.openDevice(device_))
+  {
+    ROS_ERROR("Cannot open device: %s", device_.c_str());
+    return;
+  }
 
-  private_nh.param<double>("wheel_base", g_wheel_base, 2.4);
-  private_nh.param<int>("mode", g_mode, 8);
-  private_nh.param<std::string>("device", g_device, "can0");
-  private_nh.param<int>("loop_rate", g_loop_rate, 100);
-  private_nh.param<int>("stop_time_sec", g_stop_time_sec, 1);
-  private_nh.param<double>("steering_offset_deg", g_steering_offset_deg, 0.0);
+  // start threads
+  thread_read_status_ = new std::thread(&G30esliInterface::readStatus, this);
+  thread_read_keyboard_ = new std::thread(&G30esliInterface::readKeyboard, this);
+  thread_publish_status_ = new std::thread(&G30esliInterface::publishStatus, this);
 
-  // init cansend tool
-  g_cansender.init(g_device);
+  ros::Rate rate(100);
 
-  // subscriber
-  ros::Subscriber vehicle_cmd_sub = n.subscribe<autoware_msgs::VehicleCmd>("vehicle_cmd", 1, vehicle_cmd_callback);
-  ros::Subscriber current_vel_sub =
-      n.subscribe<geometry_msgs::TwistStamped>("current_velocity", 1, current_vel_callback);
-
-  // publisher
-  g_current_twist_pub = n.advertise<geometry_msgs::TwistStamped>("ymc_current_twist", 10);
-
-  // read can data from candump
-  FILE* fp = popen("candump can0", "r");
-
-  // create threads
-  std::thread t1(changeMode);
-  std::thread t2(readCanData, fp);
-
-  ros::Rate loop_rate = g_loop_rate;
-  bool stopping_flag = true;
   while (ros::ok())
   {
-    // data
-    unsigned char mode = static_cast<unsigned char>(g_mode);
-    unsigned char shift = 0;
-    uint16_t target_velocity_ui16 = g_target_velocity_ui16;
-    int16_t steering_angle_deg_i16 = g_steering_angle_deg_i16;
-    static unsigned char brake = 1;
-    static unsigned char heart_beat = 0;
+    const MODE& mode = mode_;
 
-    // change to STOP MODE...
-    if (target_velocity_ui16 == 0 || g_mode == 3)
-      stopping_flag = true;
+    // update subscribers
+    ros::spinOnce();
 
-    // STOPPING
-    static int stop_count = 0;
-    if (stopping_flag && g_mode == 8)
+    // check command
+    if (g30esli_ros_.checkTimeout(mode, command_timeout_))
     {
-      // TODO: change steering angle according to current velocity ?
-      target_velocity_ui16 = 0;
-      brake = 1;
-
-      // vehicle is stopping or not
-      double stopping_threshold = 1.0;
-      g_current_vel_kmph < stopping_threshold ? stop_count++ : stop_count = 0;
-
-      std::cout << "stop count: " << stop_count << std::endl;
-      // vehicle has stopped, so we can restart
-      if (stop_count > g_loop_rate * g_stop_time_sec)
-      {
-        brake = 0;
-        stop_count = 0;
-        stopping_flag = false;
-      }
+      // semi-emergency stop if timeout occured
+      ROS_ERROR("Emergency stop by timeout...");
+      g30esli_ros_.emergencyStop(mode);
     }
 
-    // Insert data to 8 byte array
-    unsigned char data[8] = {};
-    ymc::setCanData(data, mode, shift, target_velocity_ui16, steering_angle_deg_i16, brake, heart_beat);
+    // reset speed command when restarting
+    g30esli_ros_.checkRestart(mode);
 
-    // send can data
-    std::string send_id("200");
-    size_t data_size = sizeof(data) / sizeof(data[0]);
-    char can_cmd[256];
-    std::strcpy(can_cmd, mycansend::makeCmdArgument(data, data_size, send_id).c_str());
-    g_cansender.send(can_cmd);
+    // send command
+    g30esli_ros_.sendCommand(mode);
 
-    // wait for callbacks
-    ros::spinOnce();
-    loop_rate.sleep();
+    // update heart beat
+    g30esli_ros_.updateAliveCounter();
 
-    heart_beat += 1;
+    // debug
+    ROS_DEBUG("\n%s", g30esli_ros_.dumpDebug(mode).c_str());
+
+    // loop sleep
+    rate.sleep();
+  }
+}
+
+// detect hit of keyboard
+bool G30esliInterface::kbhit()
+{
+  struct termios oldt, newt;
+  int ch;
+  int oldf;
+
+  tcgetattr(STDIN_FILENO, &oldt);
+  newt = oldt;
+  newt.c_lflag &= ~(ICANON | ECHO);
+  tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+  oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
+  fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
+
+  ch = getchar();
+
+  tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+  fcntl(STDIN_FILENO, F_SETFL, oldf);
+
+  if (ch != EOF)
+  {
+    ungetc(ch, stdin);
+    return true;
   }
 
-  g_terminate_thread = true;
-  t1.join();
-  t2.join();
-
-  pclose(fp);
-
-  return 0;
+  return false;
 }
