@@ -43,7 +43,7 @@
     <remap from="/fake_objects" to="$(arg fake_objects_topic)"/>
     <remap from="/fake_points" to="$(arg fake_points_topic)"/>
 
-    <param name="publish_object" value="$(arg publish_object)"/>
+    <param name="publish_objects" value="$(arg publish_objects)"/>
     <param name="publish_points" value="$(arg publish_points)"/>
     <param name="publish_rate" value="$(arg publish_rate)"/>
     <param name="object_length" value="$(arg object_length)"/>
