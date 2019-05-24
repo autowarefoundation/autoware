@@ -47,7 +47,7 @@ If you want to use your launch file. Create the plugin file. For example, you ca
 
 ## Plugin File Directories
 
-The directories under plugins directorie means:
+The directories under plugins directory means:
 
 | Directory | Description |
 |-----------|-------------|
