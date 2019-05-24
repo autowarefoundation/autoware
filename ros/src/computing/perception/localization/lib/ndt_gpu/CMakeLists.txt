@@ -19,7 +19,9 @@ else ()
     set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
 endif ()
 
-if (ENABLE_CUDA AND CUDA_FOUND)
+AW_CHECK_CUDA()
+
+if (USE_CUDA)
     set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "")
 
     if(CMAKE_CROSSCOMPILING)

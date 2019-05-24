@@ -38,6 +38,7 @@ then
 -e AUTOWARE_CUDA_ARCH=sm_61
 END
 )
+        AUTOWARE_CUDA_ARCH=sm_61
     else
         AUTOWARE_TOOLCHAIN_FILE=cross_toolchain.cmake
     fi

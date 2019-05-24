@@ -31,7 +31,9 @@ catkin_package(
 ###CAFFE
 set(CAFFE_PATH "$ENV{HOME}/caffe/distribute")
 
-if (ENABLE_CUDA AND ${CUDA_FOUND} AND EXISTS "${CAFFE_PATH}")
+AW_CHECK_CUDA()
+
+if (USE_CUDA AND EXISTS "${CAFFE_PATH}")
     include_directories(${CUDA_INCLUDE_DIRS})
 
     IF ("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "^arm")

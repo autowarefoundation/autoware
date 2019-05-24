@@ -66,7 +66,9 @@ add_executable(lidar_euclidean_cluster_detect
 find_package(CUDA)
 find_package(Eigen3 QUIET)
 
-if (ENABLE_CUDA AND ${CUDA_FOUND})
+AW_CHECK_CUDA()
+
+if (USE_CUDA)
     message("-- USING ACCELERATED CLUSTERING --")
     message("Version: " ${CUDA_VERSION})
     message("Library: " ${CUDA_CUDA_LIBRARY})
