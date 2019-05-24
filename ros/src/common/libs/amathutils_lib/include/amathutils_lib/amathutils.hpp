@@ -72,7 +72,7 @@ geometry_msgs::Quaternion getQuaternionFromYaw(const double &_yaw);
  * @param [in] _angle input angle
  * @return normalized angle
  */
-double normalizeRadian(double _angle);
+double normalizeRadian(const double _angle);
 
 double calcPosesAngleDiffRaw(const geometry_msgs::Pose &p_from, const geometry_msgs::Pose &_p_to);
 double calcPosesAngleDiffDeg(const geometry_msgs::Pose &_p_from, const geometry_msgs::Pose &_p_to);

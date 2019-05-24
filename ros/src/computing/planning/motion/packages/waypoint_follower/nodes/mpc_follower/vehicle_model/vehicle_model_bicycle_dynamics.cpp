@@ -55,7 +55,7 @@ void DynamicsBicycleModel::calculateDiscreteMatrix(Eigen::MatrixXd &Ad,
     Ad(2, 3) = 1.0;
     Ad(3, 1) = (lr_ * cr_ - lf_ * cf_) / (iz_ * vel);
     Ad(3, 2) = (lf_ * cf_ - lr_ * cr_) / iz_;
-    Ad(3, 3) = -1.0 * (lf_ * lf_ * cf_ + lr_ * lr_ * cr_) / iz_;
+    Ad(3, 3) = -(lf_ * lf_ * cf_ + lr_ * lr_ * cr_) / (iz_ * vel);
 
     Eigen::MatrixXd I = Eigen::MatrixXd::Identity(dim_x_, dim_x_);
     Eigen::MatrixXd Ad_inverse = (I - dt * 0.5 * Ad).inverse();

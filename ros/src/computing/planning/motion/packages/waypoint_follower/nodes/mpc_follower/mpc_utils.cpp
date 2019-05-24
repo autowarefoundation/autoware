@@ -170,10 +170,6 @@ void MPCUtils::calcTrajectoryCurvature(MPCTrajectory &traj, int curvature_smooth
   unsigned int traj_k_size = traj.x.size();
   traj.k.clear();
 
-  auto dist = [](const geometry_msgs::Point &a, const geometry_msgs::Point &b) {
-    return std::sqrt((b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y));
-  };
-
   /* calculate curvature by circle fitting from three points */
   geometry_msgs::Point p1, p2, p3;
   for (unsigned int i = curvature_smoothing_num; i < traj_k_size - curvature_smoothing_num; ++i)
@@ -184,7 +180,7 @@ void MPCUtils::calcTrajectoryCurvature(MPCTrajectory &traj, int curvature_smooth
     p1.y = traj.y[i - curvature_smoothing_num];
     p2.y = traj.y[i];
     p3.y = traj.y[i + curvature_smoothing_num];
-    double den = std::max(dist(p1, p2) * dist(p2, p3) * dist(p3, p1), 0.0001);
+    double den = std::max(amathutils::find_distance(p1, p2) * amathutils::find_distance(p2, p3) * amathutils::find_distance(p3, p1), 0.0001);
     const double curvature = 2.0 * ((p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x)) / den;
     traj.k.push_back(curvature);
   }
