@@ -44,3 +44,14 @@ If you want to use your launch file. Create the plugin file. For example, you ca
     - { name: localizer,        plugin: refs/ndt_matching }
     - { name: vel_pose_connect, plugin: refs/vel_pose_connect }
     ```
+
+## Plugin File Directories
+
+The directories under plugins directorie means:
+
+| Directory | Description |
+|-----------|-------------|
+| root | for plugin tree root files |
+| node | for plugin tree node files (refers other plugin node or leaf) |
+| leaf | for plugin tree leaf files (refers launch file in same directory) |
+| refs | for plugin tree leaf files (refers launch file in other package) |
