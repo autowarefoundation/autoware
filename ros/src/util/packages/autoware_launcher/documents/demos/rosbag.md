@@ -1,6 +1,6 @@
 # Rosbag Demo
 
-## Demo Data
+## Example Data
 1. Download the following files from https://drive.google.com/open?id=1ZwNQIJolJ2ogzpNprh89jCj6NocLi78f.<br>
     * sample_moriyama_data.tar.gz
     * sample_moriyama_150324.tar.gz
@@ -15,16 +15,17 @@
 
 ## Demo Run
 1. Start the Autoware Launcher.<br>
-    ```
-    $ cd Autoware/ros
-    $ ./run-experimental
-    ```
+```
+$ cd Autoware/ros
+$ ./run-experimental
+```
 ![rosbag01](./images/rosbag01.png)
-1. If you have a previously created profile, you can load it selecting *Load Profile* from the *File* menu.<br>
-1. Show simulation panel by selecting *Simulation* from the *View* menu.<br>
-1. Play rosbag.<br>
-Switch on "Simulation Mode" check box,q then, push "Play" button.<br>
-1. Select launch buttons: "Map", "Vehicle", "Sensing", and "Visualization".<br>
+1. If you previously created a profile, you can load it selecting *Load Profile* from the *File* menu.<br>
+1. Open the simulation panel selecting *Simulation* from the *View* menu.<br>
+1. To play the rosbag, click the *Simulation Mode* check box,<br>
+1. Press the *Browse* Button, and select the previously downloaded example rosbag.<br>
+1. Once loaded, press the *Play* button<br>
+1. Press the buttons labeled as *Launch* to the right of the "Map", "Vehicle", "Sensing", and "Visualization" sections.<br>
 ![rosbag02](./images/rosbag02.png)
 1. Select "Localization" button on rviz plugin and check the estimated vehicle pose.<br>
 ![rosbag03](./images/rosbag03.png)
