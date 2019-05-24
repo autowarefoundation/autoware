@@ -47,11 +47,15 @@ If you want to use your launch file. Create the plugin file. For example, you ca
 
 ## Plugin File Directories
 
-The directories under plugins directory means:
+The subdirectories contained under the `plugins` directory have the following applications:
 
 | Directory | Description |
 |-----------|-------------|
-| root | for plugin tree root files |
-| node | for plugin tree node files (refers other plugin node or leaf) |
+| root | for plugin tree node files (refers other plugin tree node or leaf)  |
+| node | for plugin tree node files (refers other plugin tree node or leaf) |
 | leaf | for plugin tree leaf files (refers launch file in same directory) |
 | refs | for plugin tree leaf files (refers launch file in other package) |
+
+Autoware Launcher constructs a plugin tree from the file under the `root` subdirectory.
+Files other than root can be placed anywhere under the `plugins` directory.
+It is recommended to follow this table for maintainability.
