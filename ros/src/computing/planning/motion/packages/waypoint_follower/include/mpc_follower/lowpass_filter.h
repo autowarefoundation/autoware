@@ -30,6 +30,11 @@
  * @class 2nd-order Butterworth Filter
  * @brief filtering values
  */
+
+/*
+ * reference : S. Butterworth, "On the Theory of Filter Amplifier", Experimental wireless, 1930.
+ */
+
 class Butterworth2dFilter
 {
 private:
@@ -50,7 +55,7 @@ public:
    * @param [in] dt sampling time
    * @param [in] f_cutoff_hz cutoff frequency [Hz]
    */
-  Butterworth2dFilter(double dt = 0.1, double f_cutoff_hz = 10.0);
+  Butterworth2dFilter(double dt = 0.01, double f_cutoff_hz = 5.0);
 
   /**
    * @brief destructor
@@ -84,6 +89,12 @@ public:
    * @param [out] u object vector
    */
   void filtfilt_vector(const std::vector<double> &t, std::vector<double> &u); // filtering forward and backward direction
+
+  /**
+   * @brief get filter coefficients
+   * @param [out] coeffs coefficients of filter [a0, a1, a2, b0, b1, b2].
+   */
+  void getCoefficients(std::vector<double> &coeffs);
 };
 
 /** 

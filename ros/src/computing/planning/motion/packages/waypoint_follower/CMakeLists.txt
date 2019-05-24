@@ -144,4 +144,8 @@ if (CATKIN_ENABLE_TESTING)
     add_rostest_gtest(test-mpc_follower test/test_mpc_follower.test test/src/test_mpc_follower.cpp nodes/mpc_follower/mpc_follower_core.cpp ${MPC_FOLLOWER_SRC})
     add_dependencies(test-mpc_follower ${catkin_EXPORTED_TARGETS})
     target_link_libraries(test-mpc_follower ${catkin_LIBRARIES})
+
+    add_rostest_gtest(test-mpc_lowpass_filter test/test_mpc_lowpass_filter.test test/src/test_mpc_lowpass_filter.cpp nodes/mpc_follower/lowpass_filter.cpp)
+    add_dependencies(test-mpc_lowpass_filter ${catkin_EXPORTED_TARGETS})
+    target_link_libraries(test-mpc_lowpass_filter ${catkin_LIBRARIES})
 endif ()

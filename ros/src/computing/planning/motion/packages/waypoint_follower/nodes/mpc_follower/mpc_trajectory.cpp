@@ -42,11 +42,10 @@ void MPCTrajectory::clear()
 
 unsigned int MPCTrajectory::size() const
 {
-  unsigned int a = x.size();
-  if (a == y.size() && a == z.size() && a == yaw.size() && a == vx.size() &&
-      a == k.size() && a == relative_time.size())
+  if (x.size() == y.size() && x.size() == z.size() && x.size() == yaw.size() &&
+      x.size() == vx.size() && x.size() == k.size() && x.size() == relative_time.size())
   {
-    return a;
+    return x.size();
   }
   else
   {

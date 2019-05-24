@@ -91,6 +91,18 @@ void Butterworth2dFilter::filtfilt_vector(const std::vector<double> &t, std::vec
   }
 }
 
+void Butterworth2dFilter::getCoefficients(std::vector<double> &coeffs)
+{
+  coeffs.clear();
+  coeffs.push_back(a0_);
+  coeffs.push_back(a1_);
+  coeffs.push_back(a2_);
+  coeffs.push_back(b0_);
+  coeffs.push_back(b1_);
+  coeffs.push_back(b2_);
+  return;
+}
+
 bool MoveAverageFilter::filt_vector(const int num, std::vector<double> &u)
 {
 
