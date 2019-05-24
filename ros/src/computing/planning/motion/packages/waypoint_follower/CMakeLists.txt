@@ -109,7 +109,7 @@ set(MPC_FOLLOWER_SRC
         nodes/mpc_follower/qp_solver/qp_solver_unconstr_fast.cpp
 )
 
-add_executable(mpc_follower nodes/mpc_follower/mpc_follower.cpp ${MPC_FOLLOWER_SRC})
+add_executable(mpc_follower nodes/mpc_follower/mpc_follower_node.cpp nodes/mpc_follower/mpc_follower_core.cpp ${MPC_FOLLOWER_SRC})
 add_dependencies(mpc_follower ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(mpc_follower ${catkin_LIBRARIES})
 
@@ -137,7 +137,11 @@ if (CATKIN_ENABLE_TESTING)
     add_dependencies(test-twist_gate ${catkin_EXPORTED_TARGETS})
     target_link_libraries(test-twist_gate ${catkin_LIBRARIES})
 
-    add_rostest_gtest(test-mpc test/test_mpc.test test/src/test_mpc.cpp ${MPC_FOLLOWER_SRC})
-    add_dependencies(test-mpc ${catkin_EXPORTED_TARGETS})
-    target_link_libraries(test-mpc ${catkin_LIBRARIES})
+    add_rostest_gtest(test-mpc_utils test/test_mpc_utils.test test/src/test_mpc_utils.cpp ${MPC_FOLLOWER_SRC})
+    add_dependencies(test-mpc_utils ${catkin_EXPORTED_TARGETS})
+    target_link_libraries(test-mpc_utils ${catkin_LIBRARIES})
+
+    add_rostest_gtest(test-mpc_follower test/test_mpc_follower.test test/src/test_mpc_follower.cpp nodes/mpc_follower/mpc_follower_core.cpp ${MPC_FOLLOWER_SRC})
+    add_dependencies(test-mpc_follower ${catkin_EXPORTED_TARGETS})
+    target_link_libraries(test-mpc_follower ${catkin_LIBRARIES})
 endif ()

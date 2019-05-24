@@ -275,6 +275,16 @@ TEST(TestSuite, TestInterp1dMPCTraj){
     ASSERT_EQ(false, MPCUtils::interp1dMPCTraj(bad_traj.relative_time, traj, bad_index_time, traj_result));
 }
 
+TEST(TestSuite, TestMPCTrajSize)
+{
+    MPCTrajectory traj;
+    traj.push_back(0.0, 0.0, 0.0, 0.2, 0.0, 0.0, 0.0);
+    ASSERT_EQ(1, traj.size()) << "invalid size, zero expected";
+
+    traj.z.push_back(0.0);
+    ASSERT_EQ(0, traj.size()) << "invalid size, zero expected";
+}
+
 int main(int argc, char **argv) {
 	testing::InitGoogleTest(&argc, argv);
 	ros::init(argc, argv, "TestNode");
