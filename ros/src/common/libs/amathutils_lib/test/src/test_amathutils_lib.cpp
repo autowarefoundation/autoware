@@ -260,18 +260,19 @@ TEST(TestSuite, TestYawQuaternion){
 }
 
 
-TEST(TestSuite, TestNormalizeRadian){
+TEST(TestSuite, TestNormalizeRadian)
+{
     ASSERT_DOUBLE_EQ(0.0, amathutils::normalizeRadian(0.0));
     ASSERT_DOUBLE_EQ(0.5, amathutils::normalizeRadian(0.5));
     ASSERT_DOUBLE_EQ(-0.5, amathutils::normalizeRadian(-0.5));
     ASSERT_DOUBLE_EQ(0.0, amathutils::normalizeRadian(2.0 * M_PI));
-	ASSERT_DOUBLE_EQ(0.3, amathutils::normalizeRadian(2.0 * M_PI + 0.3));
-	ASSERT_DOUBLE_EQ(M_PI, amathutils::normalizeRadian(3.0 * M_PI));
-	ASSERT_DOUBLE_EQ(0.0, amathutils::normalizeRadian(4.0 * M_PI));
-	ASSERT_DOUBLE_EQ(0.0, amathutils::normalizeRadian(-2.0 * M_PI));
-	ASSERT_DOUBLE_EQ(0.3, amathutils::normalizeRadian(-2.0 * M_PI + 0.3));
-	ASSERT_DOUBLE_EQ(-M_PI, amathutils::normalizeRadian(-3.0 * M_PI));
-	ASSERT_DOUBLE_EQ(0.0, amathutils::normalizeRadian(-4.0 * M_PI));
+    ASSERT_DOUBLE_EQ(0.3, amathutils::normalizeRadian(2.0 * M_PI + 0.3));
+    ASSERT_DOUBLE_EQ(M_PI, amathutils::normalizeRadian(3.0 * M_PI));
+    ASSERT_DOUBLE_EQ(0.0, amathutils::normalizeRadian(4.0 * M_PI));
+    ASSERT_DOUBLE_EQ(0.0, amathutils::normalizeRadian(-2.0 * M_PI));
+    ASSERT_DOUBLE_EQ(0.3, amathutils::normalizeRadian(-2.0 * M_PI + 0.3));
+    ASSERT_DOUBLE_EQ(-M_PI, amathutils::normalizeRadian(-3.0 * M_PI));
+    ASSERT_DOUBLE_EQ(0.0, amathutils::normalizeRadian(-4.0 * M_PI));
     ASSERT_DOUBLE_EQ(M_PI, amathutils::normalizeRadian(M_PI));
     ASSERT_DOUBLE_EQ(-M_PI, amathutils::normalizeRadian(-M_PI));
 }
