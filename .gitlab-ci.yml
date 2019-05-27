@@ -1,7 +1,7 @@
 stages:
   - build
   - deploy
-
+  
 variables:
   ROS_CI_DESKTOP: "`lsb_release -cs`"
   CI_SOURCE_PATH: $CI_PROJECT_DIR
