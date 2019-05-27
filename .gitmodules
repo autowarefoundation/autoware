@@ -5,10 +5,6 @@
 [submodule "ros/src/msgs/lgsvl_msgs"]
 	path = ros/src/msgs/lgsvl_msgs
 	url = https://github.com/lgsvl/lgsvl_msgs.git
-[submodule "ros/src/sensing/drivers/lidar/packages/ouster"]
-	path = ros/src/sensing/drivers/lidar/packages/ouster
-	url = https://github.com/CPFL/ouster
-	branch = autoware_branch
 [submodule "ros/src/simulation/gazebo_simulator/worlds/external/osrf_citysim"]
 	path = ros/src/simulation/gazebo_simulator/worlds/external/osrf_citysim
 	url = https://github.com/CPFL/osrf_citysim.git
