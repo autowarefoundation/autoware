@@ -25,7 +25,6 @@ variables:
     # Update setuptools from PyPI because the version Ubuntu ships with is too old
     - pip3 install -U setuptools
     - source /opt/ros/${ROS_DISTRO}/setup.bash
-    - rosdep init
     - rosdep update
     - cd ros/src
     - wstool init
