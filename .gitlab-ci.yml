@@ -15,9 +15,7 @@ variables:
     - apt-get update
     # Use UTC for tzdata
     - DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata
-    - apt-get install -y gnupg2
-    - apt-get install -y lsb-release
-    - apt-get install -y gcc g++
+    - apt-get install -y gnupg2 lsb-release gcc g++
     - sh -c "echo \"deb http://packages.ros.org/ros/ubuntu $ROS_CI_DESKTOP main\" > /etc/apt/sources.list.d/ros-latest.list"
     - apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
     - apt-get update
@@ -72,7 +70,7 @@ variables:
 
 build_kinetic:
   stage: build
-  image: ubuntu:xenial
+  image: ros:kinetic-perception
   variables:
     ROS_DISTRO: kinetic
   <<: *build_common
@@ -114,7 +112,7 @@ build_kinetic:
 
 build_melodic:
   stage: build
-  image: ubuntu:bionic
+  image: ros:melodic-perception
   variables:
     ROS_DISTRO: melodic
   <<: *build_common
