@@ -50,7 +50,7 @@
   <arg name="matching_score_mu" default="0.25" doc="mu of Fermi distribution function used for score calculation" />
 
   <arg name="use_nn_point_z_when_initial_pose" default="false" doc="If True, the height value at the 2D Pose Estimate of RViz is complemented by the value of z at the nearest point of the map" />
-  <arg name="publish_tf" default="true" doc="If true, publish TF of map_frame <-> target_frame." />
+  <arg name="publish_tf" default="true" doc="If true, publish TF of map_frame to target_frame." />
 
   <arg name="use_anonymous_node_name" default="false" doc="If True, launch with anonymous option" />
   <arg name="node_name" value="ndt_slam" unless="$(arg use_anonymous_node_name)" doc="Not use anonymous option" />
