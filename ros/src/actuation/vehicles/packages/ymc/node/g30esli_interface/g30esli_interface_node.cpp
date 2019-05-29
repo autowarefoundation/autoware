@@ -14,21 +14,11 @@
  * limitations under the License.
  */
 
-#ifndef YMC_CAN_H
-#define YMC_CAN_H
+#include "g30esli_interface.h"
 
-#include <iostream>
-#include <cstring>
-#include <vector>
-
-#define RET_NO_PUBLISH (double)-1.0
-
-namespace ymc
+int main(int argc, char* argv[])
 {
-
-void setCanData(unsigned char* data, unsigned char d1, unsigned char d2, uint16_t d3, int16_t d4, unsigned char d5, unsigned char d6);
-double translateCanData(const int id, const std::vector<std::string>& data, int* mode);
-
+  ros::init(argc, argv, "g30esli_interface");
+  G30esliInterface node;
+  node.run();
 }
-
-#endif
