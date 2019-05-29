@@ -28,34 +28,9 @@
     <arg name="use_gpu" value="$(arg is_use_gpu)" />
   </include>
 
-  <!-- range_fusion -->
-  <include file="$(find range_fusion)/launch/range_fusion.launch">
-    <arg name="car" value="$(arg car_detection)" />
-    <arg name="pedestrian" value="$(arg pedestrian_detection)" />
-  </include>
-
-  <!-- vision_klt_track -->
-  <include file="$(find vision_klt_track)/launch/vision_klt_track.launch">
-    <arg name="car" value="$(arg car_detection)" />
-    <arg name="pedestrian" value="$(arg pedestrian_detection)" />
-  </include>
-
-  <!-- obj_reproj -->
-  <include file="$(find obj_reproj)/launch/obj_reproj.launch">
-    <arg name="car" value="$(arg car_detection)" />
-    <arg name="pedestrian" value="$(arg pedestrian_detection)" />
-  </include>
-
   <!-- lidar_euclidean_cluster_detect -->
   <include file="$(find lidar_euclidean_cluster_detect)/launch/lidar_euclidean_cluster_detect.launch">
   </include>
-
-  <!-- obj_fusion -->
-  <include file="$(find obj_fusion)/launch/obj_fusion.launch">
-    <arg name="car" value="$(arg car_detection)" />
-    <arg name="pedestrian" value="$(arg pedestrian_detection)" />
-  </include>
-
 
   <!-- traffic light recognition -->
   <!-- feat_proj -->
