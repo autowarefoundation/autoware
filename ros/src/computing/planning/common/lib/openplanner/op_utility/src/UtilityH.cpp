@@ -59,53 +59,47 @@ UtilityH::UtilityH()
 
  double UtilityH::FixNegativeAngle(const double& a)
 {
-   double angle = 0;
-   if (a < -2.0*M_PI || a > 2.0*M_PI)
-	{
-	   angle = fmod(a, 2.0*M_PI);
-	}
-   else
-	   angle = a;
+  double angle = 0;
+  if (a < -2.0 * M_PI || a >= 2.0 * M_PI) {
+    angle = fmod(a, 2.0 * M_PI);
+  } else {
+    angle = a;
+  }
 
+  if(angle < 0) {
+    angle = 2.0 * M_PI + angle;
+  }
 
-   if(angle < 0)
-   {
-	   angle = 2.0*M_PI + angle;
-   }
-
-   return angle;
+  return angle;
 }
 
  double UtilityH::SplitPositiveAngle(const double& a)
 {
-	 double angle = a;
+  double angle = a;
 
-	if (a < -2.0*M_PI || a > 2.0*M_PI)
-	{
-		angle = fmod(a, 2.0*M_PI);
-	}
+  if (a < -2.0 * M_PI || a >= 2.0 * M_PI) {
+    angle = fmod(a, 2.0 * M_PI);
+  }
 
-	if (angle > M_PI)
-	{
-		angle -= 2.0*M_PI;
-	}
-	else if (angle < -M_PI)
-	{
-		angle += 2.0*M_PI;
-	}
-
-	return angle;
+  if (angle >= M_PI) {
+    angle -= 2.0 * M_PI;
+  } else if (angle < -M_PI) {
+    angle += 2.0 * M_PI;
+  }
+  
+  return angle;
 }
 
 double UtilityH::InverseAngle(const double& a)
 {
 
    double angle = 0;
-   if(a <= M_PI)
-		angle =  a + M_PI;
-	else
-		angle = a - M_PI;
-
+   if(a < M_PI) {
+     angle =  a + M_PI;
+   } else {
+     angle = a - M_PI;
+   }
+   
    return angle;
 }
 
@@ -201,20 +195,17 @@ string UtilityH::GetDateTimeStr()
 
 int  UtilityH::tsCompare (struct  timespec  time1,   struct  timespec  time2, int micro_tolerance)
 {
-
-    if (time1.tv_sec < time2.tv_sec)
-        return (-1) ;				/* Less than. */
-    else if (time1.tv_sec > time2.tv_sec)
-        return (1) ;				/* Greater than. */
-
-    long diff = time1.tv_nsec - time2.tv_nsec;
-    if (diff < -micro_tolerance)
-        return (-1) ;				/* Less than. */
-    else if (diff > micro_tolerance)
-        return (1) ;				/* Greater than. */
-    else
-        return (0) ;				/* Equal. */
-
+  long nanoDiff =
+    (time1.tv_sec * 1000000000 + time1.tv_nsec) - 
+    (time2.tv_sec * 1000000000 + time2.tv_nsec);
+  
+  if (nanoDiff < -micro_tolerance) {
+    return -1;  // time1 is less than time2
+  } else if (nanoDiff > micro_tolerance) {
+    return 1;  // time1 is greater than time2
+  } else {
+    return 0;  // time1 is equal to time2
+  }
 }
 
 timespec UtilityH::GetTimeSpec(const time_t& srcT)
