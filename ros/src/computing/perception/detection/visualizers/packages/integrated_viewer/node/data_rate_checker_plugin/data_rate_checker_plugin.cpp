@@ -1,8 +1,4 @@
 #include <ros/ros.h>
-// #include <cmath>
-// #include <deque>
-// #include <iostream>
-// #include <string>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -25,8 +21,8 @@ namespace integrated_viewer {
 
         // Set minimum frequency parameter
         ui_.min_frequency_spin_box_->setMinimum(1);
+        ui_.min_frequency_spin_box_->setMaximum(10000);
         ui_.min_frequency_spin_box_->setValue(5);
-
         ui_.topic_frequency_lcd_->setMinimumWidth(ui_.topic_frequency_lcd_->width()+2);
 
         UpdateTopicList();
@@ -91,8 +87,8 @@ namespace integrated_viewer {
           ui_.status_text_->setText(QString("No topic selected"));
           ui_.topic_frequency_lcd_->setStyleSheet("QLCDNumber {color: #b3b3b3;}");
           ui_.topic_frequency_lcd_->display(0.0);
-          message_count_ = 0;
           times_.clear();
+          last_message_time_ = -1;
         }
     } // DataRateCheckerPlugin::UpdateTopicList
 
@@ -107,14 +103,15 @@ namespace integrated_viewer {
             ui_.status_text_->setText(QString("No topic selected"));
             ui_.topic_frequency_lcd_->setStyleSheet("QLCDNumber {color: #b3b3b3;}");
             ui_.topic_frequency_lcd_->display(0.0);
-            message_count_ = 0;
             times_.clear();
+            last_message_time_ = -1;
             return;
         }
-
+        times_.clear();
+        last_message_time_ = -1;
         // If selected topic is not blank or empty, start callback functions
         topic_sub_ = node_handle_.subscribe(selected_topic,
-                                            1,
+                                            1000,
                                             &DataRateCheckerPlugin::MessageCallback,
                                             this);
 
@@ -125,18 +122,25 @@ namespace integrated_viewer {
     } // DataRateCheckerPlugin::on_topic_combo_box__activated
 
     void DataRateCheckerPlugin::MessageCallback(const DummyMsg &msg) {
+
       // Record time message arrives
-      auto time = std::chrono::system_clock::now();
-      double diff = std::chrono::duration<double>(time - last_).count();
-      last_ = time;
+      ros::Time ros_message_time = ros::Time::now();
 
-      message_count_++;
-
-      if (message_count_ < 2) {
+      if (ros_message_time.is_zero()) {
+        times_.clear();
+        last_message_time_ = -1;
         return;
       }
 
-      times_.push_back(diff);
+      double message_time = ros_message_time.toSec();
+
+      if (last_message_time_ < 0 || last_message_time_ > message_time) {
+        times_.clear();
+        last_message_time_ = message_time;
+        return;
+      }
+      times_.push_back(message_time - last_message_time_);
+      last_message_time_ = message_time;
 
       if (times_.size() + 1 > window_size_) {
         times_.pop_front();
@@ -146,15 +150,15 @@ namespace integrated_viewer {
     void DataRateCheckerPlugin::TimerCallback(const ros::WallTimerEvent &event) {
 
       // Warn if no new messages have arrived
-      if (status_count_ == message_count_ || times_.size() < 2) {
+      if (last_message_time_ == -1 || times_.size() == 0) {
         ui_.status_icon_->setStyleSheet("QLabel {color: #ff0000}");
         ui_.status_text_->setText(QString("No incoming messages"));
         ui_.topic_frequency_lcd_->setStyleSheet("QLCDNumber {color: #ff0000;}");
         ui_.topic_frequency_lcd_->display(0.0);
 
         // Clear the statistics buffer
-        message_count_ = 0;
         times_.clear();
+        last_message_time_ = -1;
         return;
       }
 
@@ -168,7 +172,6 @@ namespace integrated_viewer {
         ui_.status_text_->setText(QString("Message rate is too low"));
         ui_.topic_frequency_lcd_->setStyleSheet("QLCDNumber {color: #ff0000;}");
         ui_.topic_frequency_lcd_->display(frequency);
-        status_count_ = message_count_;
         return;
       }
 
@@ -178,7 +181,6 @@ namespace integrated_viewer {
         ui_.status_text_->setText(QString ("Message rate is OK"));
         ui_.topic_frequency_lcd_->setStyleSheet("QLCDNumber {color: #00ff00;}");
         ui_.topic_frequency_lcd_->display(frequency);
-        status_count_ = message_count_;
         return;
       }
     } // DataRateCheckerPlugin::TimerCallback
@@ -218,9 +220,11 @@ namespace integrated_viewer {
             ui_.topic_combo_box_->addItems(dummy_topic_list);
             topic_index = ui_.topic_combo_box_->findText(topic);
           }
+          times_.clear();
+          last_message_time_ = -1;
           ui_.topic_combo_box_->setCurrentIndex(topic_index);
           topic_sub_ = node_handle_.subscribe(selected_topic,
-                                              1,
+                                              1000,
                                               &DataRateCheckerPlugin::MessageCallback,
                                               this);
 
@@ -236,11 +240,9 @@ namespace integrated_viewer {
 
 } // End namespace integrated_viewer
 
-
 // Tell pluginlib about this class.  Every class which should be
 // loadable by pluginlib::ClassLoader must have these two lines
 // compiled in its .cpp file, outside of any namespace scope.
 #include <pluginlib/class_list_macros.h>
 
 PLUGINLIB_EXPORT_CLASS(integrated_viewer::DataRateCheckerPlugin, rviz::Panel)
-// END_TUTORIAL

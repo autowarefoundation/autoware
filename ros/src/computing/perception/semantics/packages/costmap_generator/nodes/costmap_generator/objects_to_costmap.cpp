@@ -42,7 +42,7 @@ ObjectsToCostmap::ObjectsToCostmap() :
 NUMBER_OF_POINTS(4),
 NUMBER_OF_DIMENSIONS(2),
 OBJECTS_COSTMAP_LAYER_("objects_costmap"),
-EXPANDED_OBJECTS_COSTMAP_LAYER_("expanded_objects_costmap")
+BLURRED_OBJECTS_COSTMAP_LAYER_("blurred_objects_costmap")
 {
 }
 
@@ -147,38 +147,35 @@ grid_map::Matrix ObjectsToCostmap::makeCostmapFromObjects(const grid_map::GridMa
 {
   grid_map::GridMap objects_costmap = costmap;
   objects_costmap.add(OBJECTS_COSTMAP_LAYER_, 0);
-  objects_costmap.add(EXPANDED_OBJECTS_COSTMAP_LAYER_, 0);
+  objects_costmap.add(BLURRED_OBJECTS_COSTMAP_LAYER_, 0);
 
-  const double not_expand_polygon_size = 0;
   for (const auto& object : in_objects->objects)
   {
     grid_map::Polygon polygon, expanded_polygon;
     if(use_objects_convex_hull)
     {
-      polygon = makePolygonFromObjectConvexHull(object, not_expand_polygon_size);
       expanded_polygon = makePolygonFromObjectConvexHull(object, expand_polygon_size);
     }
     else
     {
-      polygon = makePolygonFromObjectBox(object, not_expand_polygon_size);
       expanded_polygon = makePolygonFromObjectBox(object, expand_polygon_size);
     }
-    setCostInPolygon(polygon, OBJECTS_COSTMAP_LAYER_, object.score, objects_costmap);
-    setCostInPolygon(expanded_polygon, EXPANDED_OBJECTS_COSTMAP_LAYER_, object.score, objects_costmap);
+    setCostInPolygon(expanded_polygon, OBJECTS_COSTMAP_LAYER_, object.score, objects_costmap);
+    setCostInPolygon(expanded_polygon, BLURRED_OBJECTS_COSTMAP_LAYER_, object.score, objects_costmap);
   }
   // Applying mean filter to expanded gridmap
   const grid_map::SlidingWindowIterator::EdgeHandling edge_handling =
       grid_map::SlidingWindowIterator::EdgeHandling::CROP;
-  for (grid_map::SlidingWindowIterator iterator(objects_costmap, EXPANDED_OBJECTS_COSTMAP_LAYER_, edge_handling,
+  for (grid_map::SlidingWindowIterator iterator(objects_costmap, BLURRED_OBJECTS_COSTMAP_LAYER_, edge_handling,
                                                 size_of_expansion_kernel);
        !iterator.isPastEnd(); ++iterator)
   {
-    objects_costmap.at(EXPANDED_OBJECTS_COSTMAP_LAYER_, *iterator) =
+    objects_costmap.at(BLURRED_OBJECTS_COSTMAP_LAYER_, *iterator) =
         iterator.getData().meanOfFinites();  // Blurring.
   }
 
   objects_costmap[OBJECTS_COSTMAP_LAYER_] =
-      objects_costmap[OBJECTS_COSTMAP_LAYER_].cwiseMax(objects_costmap[EXPANDED_OBJECTS_COSTMAP_LAYER_]);
+      objects_costmap[OBJECTS_COSTMAP_LAYER_].cwiseMax(objects_costmap[BLURRED_OBJECTS_COSTMAP_LAYER_]);
 
   return objects_costmap[OBJECTS_COSTMAP_LAYER_];
 }

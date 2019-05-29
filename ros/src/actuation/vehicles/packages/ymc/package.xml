@@ -3,20 +3,28 @@
   <name>ymc</name>
   <version>1.11.0</version>
   <description>The ymc package</description>
-  <maintainer email="antm678@ertl.jp">T.Ando</maintainer>
+  <maintainer email="aohsato@gmail.com">Akihito Ohsato</maintainer>
   <license>Apache 2</license>
+  <author email="aohsato@gmail.com">Akihito Ohsato</author>
+  <author email="antm678@ertl.jp">T.Ando</author>
+  
   <buildtool_depend>catkin</buildtool_depend>
   <buildtool_depend>autoware_build_flags</buildtool_depend>
 
   <build_depend>roscpp</build_depend>
   <build_depend>rosconsole</build_depend>
+  <build_depend>std_msgs</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>autoware_msgs</build_depend>
+  <build_depend>ds4_msgs</build_depend>
 
   <run_depend>roscpp</run_depend>
   <run_depend>rosconsole</run_depend>
+  <run_depend>std_msgs</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>autoware_msgs</run_depend>
+  <run_depend>ds4_msgs</run_depend>
+  <run_depend>can-utils</run_depend>
 
   <export>
   </export>
