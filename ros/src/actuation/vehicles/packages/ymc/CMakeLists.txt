@@ -1,18 +1,14 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ymc)
 
-set(CMAKE_CXX_FLAGS "-Wall ${CMAKE_CXX_FLAGS}")
-
-find_package(autoware_build_flags REQUIRED)
-
-find_package(autoware_msgs REQUIRED)
-
 find_package(
   catkin REQUIRED COMPONENTS
+  autoware_build_flags
   roscpp
   geometry_msgs
   rosconsole
   autoware_msgs
+  ds4_msgs
 )
 
 catkin_package(
@@ -21,28 +17,18 @@ catkin_package(
   geometry_msgs
   rosconsole
   autoware_msgs
+  ds4_msgs
 )
-
-IF ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64")
-  set(LIB_ARCH _aarch64)
-ELSE ()
-  unset(LIB_ARCH)
-ENDIF ()
 
 include_directories(
-  ${autoware_msgs_INCLUDE_DIRS}
-  ${catkin_INCLUDE_DIRS}
   include
+  ${catkin_INCLUDE_DIRS}
 )
 
-IF (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.1)
-  set(LIB_VERSION 2.0) # _GLIBCXX_USE_CXX11_ABI is 1
-ELSE ()
-  set(LIB_VERSION 1.0) # _GLIBCXX_USE_CXX11_ABI is 0
-ENDIF ()
-
 add_executable(g30esli_interface
+  node/g30esli_interface/g30esli_ros.cpp
   node/g30esli_interface/g30esli_interface.cpp
+  node/g30esli_interface/g30esli_interface_node.cpp
 )
 
 add_dependencies(g30esli_interface
@@ -51,7 +37,7 @@ add_dependencies(g30esli_interface
 
 target_link_libraries(g30esli_interface
   ${catkin_LIBRARIES}
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/libymc_can_${LIB_VERSION}${LIB_ARCH}.a
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/libg30esli.a
 )
 
 install(TARGETS g30esli_interface
@@ -61,4 +47,9 @@ install(TARGETS g30esli_interface
 
 install(DIRECTORY launch/
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)
+
+install(DIRECTORY scripts/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/scripts
+        USE_SOURCE_PERMISSIONS
         PATTERN ".svn" EXCLUDE)

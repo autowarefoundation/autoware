@@ -74,6 +74,10 @@ private:
   double generateYawFromQuaternion(const geometry_msgs::Quaternion& quaternion);
 
   bool isObjectValid(const autoware_msgs::DetectedObject &in_object);
+  
+  geometry_msgs::PolygonStamped getPredictedConvexHull(const geometry_msgs::PolygonStamped& in_polygon, 
+                                                       const double delta_x,
+                                                       const double delta_y);
 
 public:
   NaiveMotionPredict();
