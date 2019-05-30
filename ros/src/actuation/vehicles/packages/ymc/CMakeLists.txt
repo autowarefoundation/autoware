@@ -1,13 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ymc)
 
-
-set(CMAKE_CXX_FLAGS "-Wall ${CMAKE_CXX_FLAGS}")
-
-find_package(autoware_build_flags REQUIRED)
-
-find_package(autoware_msgs REQUIRED)
-
 find_package(
   catkin REQUIRED COMPONENTS
   autoware_build_flags
@@ -60,4 +53,3 @@ install(DIRECTORY scripts/
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/scripts
         USE_SOURCE_PERMISSIONS
         PATTERN ".svn" EXCLUDE)
-
