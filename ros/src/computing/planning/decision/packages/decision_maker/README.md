@@ -162,7 +162,7 @@ The state at that time:
 > WaitVehicleReady  
 > Stopping  
 > WaitDriveReady  
-3. In Computing tab, launch `Motion Planning -> waypoint_follower -> wf_simulator`.  
+3. In Computing tab, click [app] next to `Motion Planning -> waypoint_follower -> wf_simulator` and set the value of accele_rate to `5`, and launch `Motion Planning -> waypoint_follower -> wf_simulator`.  
 Then the state changes:
 > Init  
 > **MapInit**  
@@ -182,7 +182,15 @@ Then the state changes:
 > **WaitOrder**  
 > Stopping  
 > WaitDriveReady
-6. In Computing tab, launch `Mission Planning -> lane_planner -> lane_rule`, `-> lane_stop`, `-> lane_select`, `Motion Planning -> waypoint_planner -> astar_avoid`, `-> velocity_set`, `Motion Planning -> waypoint_follower -> pure_pursuit`, `-> twist_filter`.
+6. In Computing tab, click [app] next to `Motion Planning -> waypoint_follower -> pure_pursuit` and change setting from `Dialog` to `Waypoint`.  
+And launch nodes below.  
+`Mission Planning -> lane_planner -> lane_rule`  
+`Mission Planning -> lane_planner -> lane_stop`  
+`Mission Planning -> lane_planner -> lane_select`  
+`Motion Planning -> waypoint_planner -> astar_avoid`  
+`Motion Planning -> waypoint_planner -> velocity_set`  
+`Motion Planning -> waypoint_follower -> pure_pursuit`  
+`Motion Planning -> waypoint_follower -> twist_filter`
 7. In Computing tab, launch `Motion Planning -> waypoint_maker -> waypoint_loader` with waypoint file(s) you want to use.  
 Then the state changes:  
 > VehicleReady  
