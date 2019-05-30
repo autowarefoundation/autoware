@@ -1,7 +1,7 @@
 stages:
   - build
   - deploy
-  
+
 variables:
   ROS_CI_DESKTOP: "`lsb_release -cs`"
   CI_SOURCE_PATH: $CI_PROJECT_DIR
@@ -57,7 +57,7 @@ variables:
                     --merge-install
                     --build-base ${AUTOWARE_BUILD_PATH}
                     --install-base ${AUTOWARE_INSTALL_PATH}
-                    --packages-skip citysim ymc
+                    --packages-skip citysim
                     --cmake-args
                     -DPYTHON_EXECUTABLE=/usr/bin/python3
                     -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH}
@@ -184,4 +184,4 @@ pages:
       - public
   only:
     - master
-    - develop
+- develop
