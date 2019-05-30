@@ -53,8 +53,18 @@ autoware_states_vehicle:
     StateName: VehicleReady
     Transition:
       -
+        Key: charge_start
+        Target: BatteryCharging
+      -
         Key: emergency
         Target: VehicleEmergency
+    Parent: ~
+  -
+    StateName: BatteryCharging
+    Transition:
+      -
+        Key: charge_end
+        Target: VehicleReady
     Parent: ~
   -
     StateName: VehicleEmergency

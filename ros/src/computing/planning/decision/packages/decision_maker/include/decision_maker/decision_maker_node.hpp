@@ -223,6 +223,7 @@ private:
   void updatePlanningInitState(cstring_t& state_name, int status);
   void updateVehicleInitState(cstring_t& state_name, int status);
   void updateVehicleReadyState(cstring_t& state_name, int status);
+  void updateBatteryChargingState(cstring_t& state_name, int status);
   void updateVehicleEmergencyState(cstring_t& state_name, int status);
   // exit callback
 
