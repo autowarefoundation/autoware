@@ -5,13 +5,13 @@ autoware_states_mission:
     Transition:
       -
         Key: started
-        Target: WaitVehicleReady
+        Target: MissionInit
     Parent: ~
   -
-    StateName: WaitVehicleReady
+    StateName: MissionInit
     Transition:
       -
-        Key: vehicle_is_ready
+        Key: state_mission_initialized
         Target: WaitOrder
     Parent: ~
   -
@@ -102,7 +102,7 @@ autoware_states_mission:
         Target: WaitOrder
       -
         Key: return_from_emergency
-        Target: WaitVehicleReady
+        Target: MissionInit
       -
         Key: return_to_ready
         Target: DriveReady
