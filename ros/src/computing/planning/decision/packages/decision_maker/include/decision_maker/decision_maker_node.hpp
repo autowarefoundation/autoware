@@ -223,12 +223,13 @@ private:
   void updatePlanningInitState(cstring_t& state_name, int status);
   void updateVehicleInitState(cstring_t& state_name, int status);
   void updateVehicleReadyState(cstring_t& state_name, int status);
+  void updateBatteryChargingState(cstring_t& state_name, int status);
   void updateVehicleEmergencyState(cstring_t& state_name, int status);
   // exit callback
 
   /*** state mission ***/
   // entry callback
-  void entryWaitVehicleReadyState(cstring_t& state_name, int status);
+  void entryMissionInitState(cstring_t& state_name, int status);
   void entryWaitOrderState(cstring_t& state_name, int status);
   void entryMissionCheckState(cstring_t& state_name, int status);
   void entryDriveReadyState(cstring_t& state_name, int status);
@@ -237,7 +238,7 @@ private:
   void entryMissionAbortedState(cstring_t& state_name, int status);
   void entryMissionCompleteState(cstring_t& state_name, int status);
   // update callback
-  void updateWaitVehicleReadyState(cstring_t& state_name, int status);
+  void updateMissionInitState(cstring_t& state_name, int status);
   void updateWaitOrderState(cstring_t& state_name, int status);
   void updateMissionCheckState(cstring_t& state_name, int status);
   void updateDriveReadyState(cstring_t& state_name, int status);
