@@ -1,0 +1,161 @@
+---
+autoware_states_behavior:
+  -
+    StateName: Start
+    Transition:
+      -
+        Key: started
+        Target: Stopping
+    Parent: ~
+  -
+    StateName: Stopping
+    Transition:
+      -
+        Key: operation_start
+        Target: Moving
+      -
+        Key: emergency
+        Target: BehaviorEmergency
+    Parent: ~
+  -
+    StateName: BehaviorEmergency
+    Transition:
+      -
+        Key: return_from_emergency
+        Target: Stopping
+      -
+        Key: return_to_ready
+        Target: Stopping
+    Parent: ~
+  -
+    StateName: Moving
+    Transition:
+      -
+        Key: on_lane_area
+        Target: LaneArea
+      -
+        Key: on_free_area
+        Target: FreeArea
+      -
+        Key: operation_end
+        Target: Stopping
+      -
+        Key: mission_reloaded
+        Target: Stopping
+      -
+        Key: emergency
+        Target: BehaviorEmergency
+    Parent: ~
+  -
+    StateName: LaneArea
+    Transition:
+      -
+        Key: on_cruise
+        Target: Cruise
+      -
+        Key: on_bus_stop
+        Target: BusStop
+    Parent: Moving
+  -
+    StateName: BusStop
+    Transition:
+      -
+        Key: on_pull_in
+        Target: PullIn
+      -
+        Key: on_pull_out
+        Target: PullOut
+    Parent: LaneArea
+  -
+    StateName: PullIn
+    Transition: []
+    Parent: BusStop
+  -
+    StateName: PullOut
+    Transition: []
+    Parent: BusStop
+  -
+    StateName: Cruise
+    Transition:
+      -
+        Key: on_left_turn
+        Target: LeftTurn
+      -
+        Key: on_right_turn
+        Target: RightTurn
+      -
+        Key: on_straight
+        Target: Straight
+      -
+        Key: on_back
+        Target: Back
+      -
+        Key: lane_change_left
+        Target: LeftLaneChange
+      -
+        Key: lane_change_right
+        Target: RightLaneChange
+    Parent: LaneArea
+  -
+    StateName: LeftTurn
+    Transition: []
+    Parent: Cruise
+  -
+    StateName: RightTurn
+    Transition: []
+    Parent: Cruise
+  -
+    StateName: Straight
+    Transition: []
+    Parent: Cruise
+  -
+    StateName: Back
+    Transition: []
+    Parent: Cruise
+  -
+    StateName: LeftLaneChange
+    Transition:
+      -
+        Key: check_target_lane
+        Target: CheckLeftLane
+    Parent: Cruise
+  -
+    StateName: CheckLeftLane
+    Transition:
+      -
+        Key: execute_lane_change
+        Target: ChangeToLeft
+    Parent: LeftLaneChange
+  -
+    StateName: ChangeToLeft
+    Transition: []
+    Parent: LeftLaneChange
+  -
+    StateName: RightLaneChange
+    Transition:
+      -
+        Key: check_target_lane
+        Target: CheckRightLane
+    Parent: Cruise
+  -
+    StateName: CheckRightLane
+    Transition:
+      -
+        Key: execute_lane_change
+        Target: ChangeToRight
+    Parent: RightLaneChange
+  -
+    StateName: ChangeToRight
+    Transition: []
+    Parent: RightLaneChange
+  -
+    StateName: FreeArea
+    Transition:
+      -
+        Key: on_parking
+        Target: Parking
+    Parent: Moving
+  -
+    StateName: Parking
+    Transition: []
+    Parent: FreeArea
