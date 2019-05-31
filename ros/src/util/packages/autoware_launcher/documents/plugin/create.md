@@ -51,10 +51,10 @@ The subdirectories contained under the `plugins` directory have the following ap
 
 | Directory | Description |
 |-----------|-------------|
-| root | for plugin tree node files (refers other plugin tree node or leaf)  |
-| node | for plugin tree node files (refers other plugin tree node or leaf) |
-| leaf | for plugin tree leaf files (refers launch file in same directory) |
-| refs | for plugin tree leaf files (refers launch file in other package) |
+| root | Contains the first level entries of the sub-tree. These might be either `node` (another subtree), or `leaf` (final entry)  |
+| node | Contains the entries for plugin tree node files (another plugin tree node or leaf) |
+| leaf | Contains the plugin leaf files (entries calling a ros launch file contained in the same directory) |
+| refs | Contains plugin leaf files referencing entries on other packages (entries calling launch files contained in other package in the workspace) |
 
 Autoware Launcher constructs a plugin tree from the file under the `root` subdirectory.
 Files other than root can be placed anywhere under the `plugins` directory.
