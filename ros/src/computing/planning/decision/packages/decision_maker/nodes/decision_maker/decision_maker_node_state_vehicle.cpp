@@ -135,10 +135,6 @@ void DecisionMakerNode::entryVehicleReadyState(cstring_t& state_name, int status
 
 void DecisionMakerNode::updateVehicleReadyState(cstring_t& state_name, int status)
 {
-  if (isEventFlagTrue("emergency_flag"))
-  {
-    tryNextState("emergency");
-  }
 }
 
 void DecisionMakerNode::updateBatteryChargingState(cstring_t& state_name, int status)

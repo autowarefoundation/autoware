@@ -2,7 +2,7 @@
 
 ## Overview
 **This feature is experimental.**</br>
-Autoware package that manages the Vehicle status, given Mission(waypoints) status, and Driving(Motion) status.
+Autoware package that manages the Vehicle status, given Mission(waypoints) status, Behavior and Motion status.
 Each status is managed by state machine.
 <!-- Autoware package that visualize internal state and publish some commands. -->
 ### Vehicle
@@ -11,8 +11,11 @@ Each status is managed by state machine.
 ### Mission
 <img src="docs/MissionStates.jpg" width=600>
 
-### Driving
-<img src="docs/DriveStates.jpg" width=800>
+### Behavior
+<img src="docs/BehaviorStates.jpg" width=800>
+
+### Motion
+<img src="docs/MotionStates.jpg" width=800>
 
 ## Runtime Manager Parameters
 Parameter|Type|Description
@@ -34,7 +37,8 @@ Parameter|Type|Description
 --|---|--
 state_vehicle_file_name|string|file that defines vehicle state transition
 state_mission_file_name|string|file that defines mission state transition
-state_drive_file_name|string|file that defines drive state transition
+state_behavior_file_name|string|file that defines behavior state transition
+state_motion_file_name|string|file that defines motion state transition
 stopline_reset_count|int|This parameter is used if the vehicle stops at the stop line and moves backward without crossing the stop line. When the vehicle moves backward by this count of the waypoints, the stop line is recognized again.
 
 
@@ -103,35 +107,18 @@ MissionChangeFailed|-|New waypoints are NOT compatible and vehicle will continue
 MissionComplete|-|Vehicle has reached the goal.|If use_fms is false and auto_mission_reload is true, go to MissionCheck state. Otherwise, got to WaitOrder state after 1 second.
 MissionAborted|-|Mission is aborted by other nodes(e.g. by AMS). | Throws operation_end to Drving State Machine. Then, go to wait order automatically if use_fms is false, otherwise waits until goto_wait_order key is given by management system.
 
-### Driving States
+### Behavior States
 State name|Required topic|Description|Implementation
 --|--|---|--
-WaitReady|-|Waits until vehicle setup is done|Waits until vehicle_is_ready key is given from Vehicle State Machine
-WaitEngage|-|Waits for engage button in DecisionMakerPanel to be pressed|Waits until engage key is given by DecisionMakerPanel
-DriveEmergency|-|Vehicle is stopping due to emergency |Throws mission_aborted key
-Drive|/closest_waypoint|Vehicle drives according to the waypoint|mission_aborted key if waypoint is far from the vehicle.(i.e. vehicle moves out of the waypoint) Throws arrived_goal key if vehicle is near the end of the waypoints.  
+Stopping|-|Waits for engage button in DecisionMakerPanel to be pressed|Waits until operation_start key is given from Mission State Machine
+BehaviorEmergency|-|Vehicle is stopping due to emergency |publish /lamp_cmd to hazard blinkers
+Moving|-|Vehicle drives according to the waypoint|Throws on_lane_area key if the vehicle on lane area, otherwise, throws on_free_area key.(FreeArea has not supported yet)
 LaneArea|/final_waypoints|Vehicle is driving within lanes| Throws on_bus_stop key if waypoint state has bus stop event, otherwise, throws on_cruise key.
 Cruise|-|Vehicle Drives along the waypoint|Throws on_left_turn, on_right_turn, on_straight, lane_change_left, or lane_change_right key depending on waypoint state and change flags.
 Straight|-|Vehicle is driving along lane (i.e. not turning at intersection)| publish /lamp_cmd to clear blinkers
-Stop|-|vehicle is stopping since stop signal is sent from other nodes (e.g. by stop button on decisionMakerPanel)|Publishes /state/stopline_wpidx with the index = closest_waypoint + 1.
-Wait|-|Vehilce is waiting (e.g. due to safety reason)|Publishes /state/stopline_wpidx with the index = closest_waypoint + 1.
-Go|-|Vehicle is moving|Throws found_stopline if stopline is nearby. Throws completely_stopped if vehicle stops due to obstacle.
-StopLine|/vector_map_info/stop_line|Vehicle is stopping due to stop line|Throws clear key after vehicle stops for 0.5 seconds.
 LeftTurn|-|Vehicle is turning left at intersection. Change blinker to left. | Publish /lamp_cmd to change blinker.
-L_Stop|-|Same as Stop State|Same as Stop State
-L_Wait|-|Same as Wait State|Same as Wait State
-L_Go|-|Same as Go State|Same as Go State
-L_StopLine|-|Same as StopLine State|Same as StopLine State
 RightTurn|-|Vehicle is turning right at intersection. Change blinker to right. | Publish /lamp_cmd to change blinker.
-R_Stop|-|Same as Stop State|Same as Stop State
-R_Wait|-|Same as Wait State|Same as Wait State
-R_Go|-|Same as Go State|Same as Go State
-R_StopLine|-|Same as StopLine State|Same as StopLine State  
 Back|-|Vehicle is moving backwards|Publish /lamp_cmd to clear blinkers
-B_Stop|-|Same as Stop State|Same as Stop State
-B_Wait|-|Same as Wait State|Same as Wait State
-B_Go|-|Same as Go State|Same as Go State
-B_StopLine|-|Same as StopLine State|Same as StopLine State
 LeftLaneChange|-|Vehicle is switching to left lane|publish /lamp_cmd to change blinker to left.
 CheckLeftLane|-|Check if it is safe to change lane to left|No implementation.
 ChangeToLeft|-|Change to left lane|No implementation.
@@ -142,21 +129,90 @@ BusStop|-|Vehicle is approaching to bus stop(not supported yet)| No implementati
 PullIn|-|Vehicle is pulling in to bus stop| publish /lamp_cmd to change blinker to left.
 PullOut|-|Vehicle is pulling out from bus stop|publish /lamp_cmd to change blinker to right.
 FreeArea|-|Vehicle is driving in free space(e.g. parking area)(not supported yet)|No implementation.
-Parking|-|Vehicle is parking|Publish /lamp_cmd to change blinker to hazard.  
+Parking|-|Vehicle is parking|Publish /lamp_cmd to change blinker to hazard.
 
+### Motion States
+State name|Required topic|Description|Implementation
+--|--|---|--
+WaitDriveReady|-|Waits until vehicle setup is done|No implementation.
+WaitEngage|-|Waits for engage button in DecisionMakerPanel to be pressed|No implementation.
+MotionEmergency|-|Vehicle is stopping due to emergency |No implementation.
+Drive|/closest_waypoint </br> /final_waypoints|Vehicle drives according to the waypoint|mission_aborted key if waypoint is far from the vehicle.(i.e. vehicle moves out of the waypoint) Throws arrived_goal key if vehicle is near the end of the waypoints.  
+Go|-|Vehicle is moving|Throws found_stopline if stopline is nearby. Throws completely_stopped if vehicle stops due to obstacle.
+Stop|-|vehicle is stopping since stop signal is sent from other nodes (e.g. by stop button on decisionMakerPanel)|Publishes /state/stopline_wpidx with the index = closest_waypoint + 1.
+Wait|-|Vehilce is waiting (e.g. due to safety reason)|Publishes /state/stopline_wpidx with the index = closest_waypoint + 1.
+StopLine|/vector_map_info/stop_line|Vehicle is stopping due to stop line|Throws clear key after vehicle stops for 0.5 seconds.
 
 ## Basic Usage in Autoware
 
-### Start Driving
-1. Launch Autoware and localization on real vehicle or wf_simulator
-2. Launch `decision_maker` and lane_planner, astar_planner, waypoint_follower
-3. When `VehicleReady` and `WaitOrder` state, launch `waypoint_loader`
-4. On `DriveReady` state, push `Engage` button on DecisionMakerPannel
-5. When the vehicle reaches the end of waypoint and stops, state Mission state transits to `WaitOrder` via the `MissionComplete`
-6. You can repeat from 3. with other waypoint
+### Preparations
+
+- For state visualization, please add OverlayText type displays on rviz and select topics `decision_maker/operator_help_text`, `decision_maker/state_overlay`.  
+<img src="docs/state_overlay.png" width=800>
+
+
+- For publish `/state_cmd` topic by buttons, plese add DecisionMakerPanel plugin from `Panels -> Add New Panel` on rviz.  
+<img src="docs/decision_maker_panel.png" width=800>
+
+### Start Driving with simulation
+1. Open run time manager and rviz
+2. In Computing tab, launch `Decision -> decision_maker(experimental)` and check the state.  
+The state at that time:
+> Init  
+> SensorInit  
+> WaitVehicleReady  
+> Stopping  
+> WaitDriveReady  
+3. In Computing tab, click [app] next to `Motion Planning -> waypoint_follower -> wf_simulator` and set the value of accele_rate to `5`, and launch `Motion Planning -> waypoint_follower -> wf_simulator`.  
+Then the state changes:
+> Init  
+> **MapInit**  
+> WaitVehicleReady  
+> Stopping  
+> WaitDriveReady  
+4. In Map tab, load Vector Map and TF files you use(Point Cloud is optional).  
+Then the state changes:  
+> Init  
+> **LocalizationInit**  
+> WaitVehicleReady  
+> Stopping  
+> WaitDriveReady  
+5. In Computing tab, launch `Localization -> autoware_connector -> vel_pose_connect` with Simulation Mode option in [ app ], and publish `/initialpose` topic using `2D Pose Estimate` tool in rviz.  
+Then the state changes:  
+> **VehicleReady**  
+> **WaitOrder**  
+> Stopping  
+> WaitDriveReady
+6. In Computing tab, click [app] next to `Motion Planning -> waypoint_follower -> pure_pursuit` and change setting from `Dialog` to `Waypoint`.  
+And launch nodes below.  
+`Mission Planning -> lane_planner -> lane_rule`  
+`Mission Planning -> lane_planner -> lane_stop`  
+`Mission Planning -> lane_planner -> lane_select`  
+`Motion Planning -> waypoint_planner -> astar_avoid`  
+`Motion Planning -> waypoint_planner -> velocity_set`  
+`Motion Planning -> waypoint_follower -> pure_pursuit`  
+`Motion Planning -> waypoint_follower -> twist_filter`
+7. In Computing tab, launch `Motion Planning -> waypoint_maker -> waypoint_loader` with waypoint file(s) you want to use.  
+Then the state changes:  
+> VehicleReady  
+> **DriveReady**  
+> Stopping  
+> **WaitEngage**  
+
+ If the state is `MissionCheck` instead of `DriveReady`, please set the position near the waypoint by `2D Pose Estimate` tool.
+8. Push `Engage` button in `DecisionMakerPanel`.  
+The vehicle start to drive, and the state changes as follows for example:
+> VehicleReady  
+> **Driving**  
+> **Moving**  
+> **LaneArea**  
+> **Cruise**  
+> **Straight**  
+> **Drive**  
+> **Go**
 
 ### Lane change
-  1. Start Normal driving with waypoint files necessary for lane change
+  1. Start driving with waypoint files necessary for lane change
   2. On `CheckLeft` or `RightLane` state, push `Execute LaneChange` button on DecisionMakerPannel
   3. The vehicle start lane change
 
