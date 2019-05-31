@@ -78,7 +78,7 @@ Topic|Type|Objective
 /decision_maker/state_overlay|jsk_rviz_plugins/OverlayText|Current state as overlay_txt.
 /state/stopline_wpidx|std_msgs/Int32|Index of waypoint for the vehicle to stop.
 /decision_maker/target_velocity_array|std_msgs/Float64MultiArray| Array of target velocity obtained from final_waypoints.
-/stop_location|autoware_msgs/VehicleLocation|Feedback to fms on the `/state_stop_order_wpidx` topic. It contains the index that the vehicle sill stop and the id of the lane_array that the vehicle is using at the time.
+/stop_location|autoware_msgs/VehicleLocation|Feedback to fms on the `/state_stop_order_wpidx` topic. It contains the index that the vehicle will stop and the id of the lane_array that the vehicle is using at the time.
 
 
 ## State Description
