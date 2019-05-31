@@ -91,7 +91,13 @@ void DecisionMakerNode::update_msgs(void)
     static std_msgs::String state_msg;
     state_msg.data = text_vehicle_state + text_mission_state + text_behavior_state + text_motion_state;
     Pubs["state"].publish(state_msg);
-    Pubs["state_overlay"].publish(createOverlayText(state_msg.data, 1));
+
+    static std::string overlay_text;
+    overlay_text = "> Vehicle:\n" + text_vehicle_state +
+                   "\n> Mission:\n" + text_mission_state +
+                   "\n> Behavior:\n" + text_behavior_state +
+                   "\n> Motion:\n" + text_motion_state;
+    Pubs["state_overlay"].publish(createOverlayText(overlay_text, 1));
 
     static autoware_msgs::State state_array_msg;
     state_array_msg.header.stamp = ros::Time::now();
