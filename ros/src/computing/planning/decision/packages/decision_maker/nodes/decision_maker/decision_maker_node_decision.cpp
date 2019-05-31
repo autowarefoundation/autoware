@@ -74,7 +74,7 @@ double DecisionMakerNode::calcIntersectWayAngle(const autoware_msgs::Lane& lanei
   return diff;
 }
 
-double DecisionMakerNode::getDistToWaypointIdx(int wpidx)
+double DecisionMakerNode::getDistToWaypointIdx(const int wpidx) const
 {
   double distance = 0.0;
   geometry_msgs::Pose prev_pose = current_status_.pose;
@@ -94,7 +94,7 @@ double DecisionMakerNode::getDistToWaypointIdx(int wpidx)
   return distance;
 }
 
-double DecisionMakerNode::calcRequiredDistForStop(void)
+double DecisionMakerNode::calcRequiredDistForStop(void) const
 {
   static const double mu = 0.7;  // dry ground/ asphalt/ normal tire
   static const double g = 9.80665;
@@ -109,7 +109,7 @@ double DecisionMakerNode::calcRequiredDistForStop(void)
   return distance_to_target;
 }
 
-bool DecisionMakerNode::isLocalizationConvergence(const geometry_msgs::Point& _current_point)
+bool DecisionMakerNode::isLocalizationConvergence(const geometry_msgs::Point& _current_point) const
 {
   static std::vector<double> distances;
   static uint32_t distances_count = 0;
@@ -140,7 +140,7 @@ bool DecisionMakerNode::isLocalizationConvergence(const geometry_msgs::Point& _c
   prev_point = _current_point;
   return ret;
 }
-bool DecisionMakerNode::isArrivedGoal()
+bool DecisionMakerNode::isArrivedGoal() const
 {
   const auto goal_point = current_status_.finalwaypoints.waypoints.back().pose.pose.position;
 

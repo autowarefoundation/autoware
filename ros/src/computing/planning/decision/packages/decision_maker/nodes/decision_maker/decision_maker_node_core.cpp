@@ -23,7 +23,7 @@
 
 namespace decision_maker
 {
-void DecisionMakerNode::tryNextState(const std::string& key)
+void DecisionMakerNode::tryNextState(cstring_t& key)
 {
   ctx_vehicle->nextState(key);
   ctx_mission->nextState(key);

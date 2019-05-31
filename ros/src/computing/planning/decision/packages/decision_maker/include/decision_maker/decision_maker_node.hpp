@@ -173,15 +173,15 @@ private:
 
   void publishToVelocityArray();
 
-  void publishOperatorHelpMessage(cstring_t& message);
+  void publishOperatorHelpMessage(const cstring_t& message);
   void publishLampCmd(const E_Lamp& status);
-  void publishStoplineWaypointIdx(int wp_idx);
-  void publishLightColor(int status);
+  void publishStoplineWaypointIdx(const int wp_idx);
+  void publishLightColor(const int status);
 
   /* decision */
   void tryNextState(cstring_t& key);
-  bool isArrivedGoal(void);
-  bool isLocalizationConvergence(const geometry_msgs::Point& _current_point);
+  bool isArrivedGoal(void) const;
+  bool isLocalizationConvergence(const geometry_msgs::Point& _current_point) const;
   void insertPointWithinCrossRoad(const std::vector<CrossRoadArea>& _intersects, autoware_msgs::LaneArray& lane_array);
   void setWaypointState(autoware_msgs::LaneArray& lane_array);
   bool waitForEvent(cstring_t& key, const bool& flag);
@@ -189,8 +189,8 @@ private:
   bool drivingMissionCheck(void);
 
   double calcIntersectWayAngle(const autoware_msgs::Lane& laneinArea);
-  double getDistToWaypointIdx(int wpidx);
-  double calcRequiredDistForStop(void);
+  double getDistToWaypointIdx(const int wpidx) const;
+  double calcRequiredDistForStop(void) const;
 
   uint8_t getSteeringStateFromWaypoint(void);
   uint8_t getEventStateFromWaypoint(void);
