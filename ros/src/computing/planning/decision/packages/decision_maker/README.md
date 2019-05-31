@@ -91,12 +91,13 @@ LocalizationInit|/current_pose|Waits until localizer is ready | Waits until curr
 PlanningInit|/closest_waypoint|Waits unil planners are ready | Subscriber is set for /closest_waypoint.
 VehicleInit|-|Waits until vehicle is ready for departure.|No implementation goes directly to vehilce ready state.
 VehicleReady|-|Vehicle is ready to move.|Exits to VehicleEmergency when `emergency` key is given by state_cmd from other states, or if `emergency_flag` is set true by other states.
+BatteryCharging|-|Charging the battery|Waits until `charging_end` key by state_cmd from other nodes(e.g. by AMS).
 VehicleEmergency|-|Emergency is detected somewhere in the system. |Waits until `return_from_emergency` or `return_to_ready`  key is by /state_cmd (e.g. by DecisionMakerPanel)
 
 ### Mission States
 State name|Required topic|Description|Implementation
 --|--|---|--
-WaitVehicleReady|-|Waits until vehicle setup is done|Waits until vehicle_is_ready key is given from Vehicle State Machine
+MissionInit|-|Initialization state of Mission State Machine.|Throws state_mission_initialized key if use_fms is set false.
 WaitOrder|/based_lane_array|wayits until mission is given. | waits until base_lane_array is received.
 MissionCheck|/final_waypoints<br> /current_waypoint|Waits until all the planners are ready. |Waits until /final_waypoints (from planner nodes) and /current_waypoint are received.
 DriveReady|-|Given Mission is approved and vehicle is ready to move. |Waits until engage or mission_canceled key is given.
