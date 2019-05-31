@@ -78,6 +78,7 @@ Topic|Type|Objective
 /decision_maker/state_overlay|jsk_rviz_plugins/OverlayText|Current state as overlay_txt.
 /state/stopline_wpidx|std_msgs/Int32|Index of waypoint for the vehicle to stop.
 /decision_maker/target_velocity_array|std_msgs/Float64MultiArray| Array of target velocity obtained from final_waypoints.
+/stop_location|autoware_msgs/VehicleLocation|Feedback to fms on the `/state_stop_order_wpidx` topic. It contains the index that the vehicle sill stop and the id of the lane_array that the vehicle is using at the time.
 
 
 ## State Description
@@ -143,7 +144,7 @@ Go|-|Vehicle is moving|Throws found_stopline if stopline is nearby. Throws compl
 Wait|-|Vehilce is waiting (e.g. due to safety reason)|Publishes /state/stopline_wpidx with the index = closest_waypoint + 1.
 Stop|-|Vehicle stops in the middle of the waypoints|Throws found_stopline, found_reserved_stop, received_stop_order, clear key depending on waypoint state and /state/stop_order_wpidx topic.
 StopLine|/vector_map_info/stop_line|Vehicle is stopping due to stop line|Throws clear key after vehicle stops for 0.5 seconds.
-OrderedStop|/state/stop_order_wpidx|Vehicle is stopping at the index of required topic|Throws clear key if the topic was updated with an invalid index.
+OrderedStop|/state/stop_order_wpidx|Vehicle is stopping at the index of required topic|Throws clear key if the topic was updated with an invalid index. The index from the vehicle position to the end of the waypoint is valid.
 ReservedStop|-|Vehicle is stopping at the waypoint which includs stop_flag is 2|Wait for clear key after the vehicle stops.
 
 ## Basic Usage in Autoware
@@ -235,7 +236,7 @@ Example image:
 ##### Publish topic
 You need to know in advance the index of the waypoint you want to stop.
 The index is `gid` of waypoint.
-1. Publihsh `state/stop_order_wpidx` topic with the index you want to stop.
+1. Publish `state/stop_order_wpidx` topic with the index you want to stop.
 2. After the vehicle has stopped, publish `/state_cmd` topic with `clear` key and then the vehicle will resume driving.
 
 ### Lane change
