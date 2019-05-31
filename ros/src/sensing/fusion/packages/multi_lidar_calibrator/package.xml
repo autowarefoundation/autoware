@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
     <name>multi_lidar_calibrator</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>The multi_lidar_calibrator package allows to obtain the extrinsic calibration between two lidar sensors</description>
 
     <maintainer email="abrahammonrroy@yahoo.com">amc-nu</maintainer>

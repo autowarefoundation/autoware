@@ -1,19 +1,11 @@
 Header header
-bool enable_force_state_change
-bool enable_display_marker
-float64 convergence_threshold
-uint32 convergence_count
-uint32 target_waypoint
-uint32 stopline_target_waypoint
-float64 stopline_target_ratio
-float64 shift_width
-
-float64 crawl_velocity
-float64 detection_area_rate
-
-string baselink_tf
-
-float64 detection_area_x1
-float64 detection_area_x2
-float64 detection_area_y1
-float64 detection_area_y2
+bool auto_mission_reload
+bool auto_engage
+bool auto_mission_change
+bool use_fms
+bool disuse_vector_map
+uint32 num_of_steer_behind
+float64 change_threshold_dist
+float64 change_threshold_angle
+float64 goal_threshold_dist
+float64 goal_threshold_vel

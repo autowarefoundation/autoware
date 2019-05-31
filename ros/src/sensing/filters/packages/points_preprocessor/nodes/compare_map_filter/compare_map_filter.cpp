@@ -79,7 +79,7 @@ CompareMapFilter::CompareMapFilter()
   : nh_()
   , nh_private_("~")
   , tf_listener_(new tf::TransformListener)
-  , distance_threshold_(0.2)
+  , distance_threshold_(0.3)
   , min_clipping_height_(-2.0)
   , max_clipping_height_(0.5)
   , map_frame_("/map")
@@ -196,10 +196,12 @@ void CompareMapFilter::searchMatchingCloud(const pcl::PointCloud<pcl::PointXYZI>
 
   std::vector<int> nn_indices(1);
   std::vector<float> nn_dists(1);
+  const double squared_distance_threshold = distance_threshold_ * distance_threshold_;
+
   for (size_t i = 0; i < in_cloud_ptr->points.size(); ++i)
   {
     tree_.nearestKSearch(in_cloud_ptr->points[i], 1, nn_indices, nn_dists);
-    if (nn_dists[0] <= distance_threshold_)
+    if (nn_dists[0] <= squared_distance_threshold)
     {
       match_cloud_ptr->points.push_back(in_cloud_ptr->points[i]);
     }

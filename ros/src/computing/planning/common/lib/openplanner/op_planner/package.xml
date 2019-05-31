@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>op_planner</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>The libopenplanner_planner package</description>
     <maintainer email="yusuke.fujii@tier4.jp">Yusuke FUJII</maintainer>
     <author email="hatem.darweesh@g.sp.m.is.nagoya-u.ac.jp">Hatem Darweesh</author>

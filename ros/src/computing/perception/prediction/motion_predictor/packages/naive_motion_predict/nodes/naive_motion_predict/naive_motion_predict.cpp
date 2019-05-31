@@ -16,11 +16,15 @@
 
 #include "naive_motion_predict.h"
 
-NaiveMotionPredict::NaiveMotionPredict() : nh_(), private_nh_("~")
+NaiveMotionPredict::NaiveMotionPredict() :
+  nh_(),
+  private_nh_("~"),
+  MAX_PREDICTION_SCORE_(1.0)
 {
   private_nh_.param<double>("interval_sec", interval_sec_, 0.1);
   private_nh_.param<int>("num_prediction", num_prediction_, 10);
   private_nh_.param<double>("sensor_height_", sensor_height_, 2.0);
+  private_nh_.param<double>("filter_out_close_object_threshold", filter_out_close_object_threshold_, 1.5);
 
   predicted_objects_pub_ = nh_.advertise<autoware_msgs::DetectedObjectArray>("/prediction/motion_predictor/objects", 1);
   predicted_paths_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("/prediction/motion_predictor/path_markers", 1);
@@ -56,14 +60,17 @@ void NaiveMotionPredict::initializeROSmarker(const std_msgs::Header& header, con
 }
 
 void NaiveMotionPredict::makePrediction(const autoware_msgs::DetectedObject& object,
-                                        std::vector<autoware_msgs::DetectedObject>& predicted_objects,
+                                        std::vector<autoware_msgs::DetectedObject>& predicted_objects_vec,
                                         visualization_msgs::Marker& predicted_line)
 {
   autoware_msgs::DetectedObject target_object = object;
+  target_object.score = MAX_PREDICTION_SCORE_;
   initializeROSmarker(object.header, object.pose.position, object.id, predicted_line);
-  for (int i = 0; i < num_prediction_; i++)
+  for (int ith_prediction = 0; ith_prediction < num_prediction_; ith_prediction++)
   {
     autoware_msgs::DetectedObject predicted_object = generatePredictedObject(target_object);
+    predicted_object.score = (-1/(interval_sec_*num_prediction_))*ith_prediction*interval_sec_ + MAX_PREDICTION_SCORE_;
+    predicted_objects_vec.push_back(predicted_object);
     target_object = predicted_object;
 
     geometry_msgs::Point p;
@@ -100,6 +107,25 @@ autoware_msgs::DetectedObject NaiveMotionPredict::generatePredictedObject(const 
   return predicted_object;
 }
 
+geometry_msgs::PolygonStamped NaiveMotionPredict::getPredictedConvexHull(
+  const geometry_msgs::PolygonStamped& in_polygon, 
+  const double delta_x, 
+  const double delta_y)
+{
+  geometry_msgs::PolygonStamped out_polygon;
+  out_polygon.header = in_polygon.header;
+  for(auto point: in_polygon.polygon.points)
+  {
+    geometry_msgs::Point32 out_point;
+    out_point.x = point.x + delta_x;
+    out_point.y = point.y + delta_y; 
+    out_point.z = point.z;
+    out_polygon.polygon.points.push_back(out_point);
+  }
+  return out_polygon;
+}
+
+
 autoware_msgs::DetectedObject NaiveMotionPredict::moveConstantVelocity(const autoware_msgs::DetectedObject& object)
 {
   autoware_msgs::DetectedObject predicted_object;
@@ -109,12 +135,17 @@ autoware_msgs::DetectedObject NaiveMotionPredict::moveConstantVelocity(const aut
   double velocity = object.velocity.linear.x;
   double yaw = generateYawFromQuaternion(object.pose.orientation);
 
+  double delta_x = velocity * cos(yaw) * interval_sec_;
+  double delta_y = velocity * sin(yaw) * interval_sec_;
+
   // predicted state values
-  double prediction_px = px + velocity * cos(yaw) * interval_sec_;
-  double prediction_py = py + velocity * sin(yaw) * interval_sec_;
+  double prediction_px = px + delta_x;
+  double prediction_py = py + delta_y;
 
   predicted_object.pose.position.x = prediction_px;
   predicted_object.pose.position.y = prediction_py;
+  
+  predicted_object.convex_hull = getPredictedConvexHull(object.convex_hull, delta_x, delta_y);
 
   return predicted_object;
 }
@@ -131,18 +162,22 @@ NaiveMotionPredict::moveConstantTurnRateVelocity(const autoware_msgs::DetectedOb
   double yawd = object.acceleration.linear.y;
 
   // predicted state values
-  double prediction_px, prediction_py;
+  double prediction_px, prediction_py, delta_x, delta_y;
 
   // avoid division by zero
   if (fabs(yawd) > 0.001)
   {
-    prediction_px = px + velocity / yawd * (sin(yaw + yawd * interval_sec_) - sin(yaw));
-    prediction_py = py + velocity / yawd * (cos(yaw) - cos(yaw + yawd * interval_sec_));
+    delta_x = velocity / yawd * (sin(yaw + yawd * interval_sec_) - sin(yaw));
+    delta_y = velocity / yawd * (cos(yaw) - cos(yaw + yawd * interval_sec_));
+    prediction_px = px + delta_x;
+    prediction_py = py + delta_y;
   }
   else
   {
-    prediction_px = px + velocity * interval_sec_ * cos(yaw);
-    prediction_py = py + velocity * interval_sec_ * sin(yaw);
+    delta_x = velocity * interval_sec_ * cos(yaw);
+    delta_y = velocity * interval_sec_ * sin(yaw);
+    prediction_px = px + delta_x;
+    prediction_py = py + delta_y;
   }
   double prediction_yaw = yaw + yawd * interval_sec_;
 
@@ -158,6 +193,9 @@ NaiveMotionPredict::moveConstantTurnRateVelocity(const autoware_msgs::DetectedOb
   predicted_object.pose.orientation.y = q[1];
   predicted_object.pose.orientation.z = q[2];
   predicted_object.pose.orientation.w = q[3];
+  
+  predicted_object.convex_hull = getPredictedConvexHull(object.convex_hull, delta_x, delta_y);
+  
   return predicted_object;
 }
 
@@ -174,7 +212,7 @@ void NaiveMotionPredict::objectsCallback(const autoware_msgs::DetectedObjectArra
 {
   autoware_msgs::DetectedObjectArray output;
   visualization_msgs::MarkerArray predicted_lines;
-  output.header = input.header;
+  output = input;
 
   for (const auto &object : input.objects)
   {
@@ -201,6 +239,8 @@ void NaiveMotionPredict::objectsCallback(const autoware_msgs::DetectedObjectArra
 
 bool NaiveMotionPredict::isObjectValid(const autoware_msgs::DetectedObject &in_object)
 {
+  double distance = std::sqrt(std::pow(in_object.pose.position.x,2)+
+                              std::pow(in_object.pose.position.y,2));
   if (!in_object.valid ||
       std::isnan(in_object.pose.orientation.x) ||
       std::isnan(in_object.pose.orientation.y) ||
@@ -209,8 +249,7 @@ bool NaiveMotionPredict::isObjectValid(const autoware_msgs::DetectedObject &in_o
       std::isnan(in_object.pose.position.x) ||
       std::isnan(in_object.pose.position.y) ||
       std::isnan(in_object.pose.position.z) ||
-      (in_object.pose.position.x <= 0) ||
-      (in_object.pose.position.y <= 0) ||
+      (distance <=  filter_out_close_object_threshold_)||
       (in_object.dimensions.x <= 0) ||
       (in_object.dimensions.y <= 0) ||
       (in_object.dimensions.z <= 0)

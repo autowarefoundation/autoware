@@ -146,7 +146,7 @@ class AwLaunchTree(AwBaseTree):
             with open(xpath, mode="w") as fp: fp.write(xtext)
 
     def create(self, lpath, ppath):
-        logger.info("Tree Create: " + lpath + ", " + ppath)
+        logger.debug("Tree Create: " + lpath + ", " + ppath)
         parent = self.find(os.path.dirname(lpath))
         if not parent:
             return "parent is not found"

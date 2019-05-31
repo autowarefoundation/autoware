@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>oculus_socket</name>
-  <version>1.10.0</version>
+  <version>1.11.0</version>
   <description>The oculus_socket package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 

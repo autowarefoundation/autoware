@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>sound_player</name>
-  <version>1.10.0</version>
+  <version>1.11.0</version>
   <description>The sound_player package</description>
   <maintainer email="kondoh@axe-inc.co.jp">Masao KONDOH</maintainer>
   <license>Apache 2</license>

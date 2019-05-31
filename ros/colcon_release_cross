@@ -38,6 +38,7 @@ then
 -e AUTOWARE_CUDA_ARCH=sm_61
 END
 )
+        AUTOWARE_CUDA_ARCH=sm_61
     else
         AUTOWARE_TOOLCHAIN_FILE=cross_toolchain.cmake
     fi
@@ -53,7 +54,7 @@ END
     echo "Using toolchain file: '${AUTOWARE_TOOLCHAIN_FILE_PATH}''"
     AUTOWARE_SYSROOT=/sysroot/${AUTOWARE_TARGET_PLATFORM}
 
-    AUTOWARE_DOCKER_DATE=20190306
+    AUTOWARE_DOCKER_DATE=20190521
 
     docker container run \
         -it \

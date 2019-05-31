@@ -326,9 +326,13 @@ void ImmUkfPda::updateTargetWithAssociatedObject(const std::vector<autoware_msgs
   }
 }
 
-void ImmUkfPda::updateBehaviorState(const UKF& target, autoware_msgs::DetectedObject& object)
+void ImmUkfPda::updateBehaviorState(const UKF& target, const bool use_sukf, autoware_msgs::DetectedObject& object)
 {
-  if (target.mode_prob_cv_ > target.mode_prob_ctrv_ && target.mode_prob_cv_ > target.mode_prob_rm_)
+  if(use_sukf)
+  {
+    object.behavior_state = MotionModel::CTRV;
+  }
+  else if (target.mode_prob_cv_ > target.mode_prob_ctrv_ && target.mode_prob_cv_ > target.mode_prob_rm_)
   {
     object.behavior_state = MotionModel::CV;
   }
@@ -702,7 +706,7 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
       if (!std::isnan(q[3]))
         dd.pose.orientation.w = q[3];
     }
-    updateBehaviorState(targets_[i], dd);
+    updateBehaviorState(targets_[i], use_sukf_, dd);
 
     if (targets_[i].is_stable_ || (targets_[i].tracking_num_ >= TrackingState::Init &&
                                    targets_[i].tracking_num_ < TrackingState::Stable))

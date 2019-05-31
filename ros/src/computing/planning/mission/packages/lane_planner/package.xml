@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>lane_planner</name>
-    <version>1.10.0</version>
+    <version>1.11.0</version>
     <description>The lane_planner package</description>
     <maintainer email="tomo@axe-inc.co.jp">Tomomi HORII</maintainer>
     <license>Apache 2</license>
@@ -15,6 +15,8 @@
     <build_depend>vector_map</build_depend>
     <build_depend>gnss</build_depend>
     <build_depend>autoware_msgs</build_depend>
+    <build_depend>rostest</build_depend>
+    <build_depend>rosunit</build_depend>
 
     <run_depend>roscpp</run_depend>
     <run_depend>std_msgs</run_depend>

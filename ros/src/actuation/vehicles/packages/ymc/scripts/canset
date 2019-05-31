@@ -1,0 +1,29 @@
+#!/bin/bash
+
+function usage() {
+  echo "Usage: $ rosrun ymc canset <up/down> <device>"
+  echo "  e.g. $ rosrun ymc canset up"
+  echo "  e.g. $ rosrun ymc canset down can0"
+}
+
+if [ $# -ge 1 ]; then
+  CMD=$1
+  if [ $CMD != "up" ] && [ $CMD != "down" ]; then
+    usage
+    exit -1
+  fi
+  CAN="can0"
+  if [ $# -eq 2 ]; then
+    CAN=$2
+  fi
+  echo "Set: $CMD $CAN"
+else
+  usage
+  exit -1
+fi
+
+if [ $CMD = "up" ]; then
+  sudo ip link set $CAN type can bitrate 500000
+fi
+
+sudo ip link set $CAN $CMD

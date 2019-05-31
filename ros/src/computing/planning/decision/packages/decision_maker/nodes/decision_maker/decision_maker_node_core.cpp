@@ -14,8 +14,8 @@
 
 #include <autoware_msgs/Lane.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
-#include <random>
 #include <visualization_msgs/MarkerArray.h>
+#include <random>
 
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Pose.h>
@@ -23,34 +23,31 @@
 
 namespace decision_maker
 {
+void DecisionMakerNode::tryNextState(const std::string& key)
+{
+  ctx_vehicle->nextState(key);
+  ctx_mission->nextState(key);
+  ctx_drive->nextState(key);
+}
+
 void DecisionMakerNode::update(void)
 {
   update_msgs();
-  if (ctx)
-    ctx->update();
+  if (ctx_vehicle)
+    ctx_vehicle->onUpdate();
+  if (ctx_mission)
+    ctx_mission->onUpdate();
+  if (ctx_drive)
+    ctx_drive->onUpdate();
 }
 
 void DecisionMakerNode::run(void)
 {
-  ros::Rate loop_rate(1);
+  ros::Rate loop_rate(5);
 
-  // for subscribe callback function
-  ros::AsyncSpinner spinner(3);
-  spinner.start();
   while (ros::ok())
   {
-    ros::Time begin = ros::Time::now();
     update();
-    if (enableDisplayMarker)
-      displayMarker();
-
-#ifdef DEBUG_PRINT
-    // debug status
-    ros::Duration exec_time = ros::Time::now() - begin;
-    std_msgs::Float64 exec_time_sec;
-    exec_time_sec.data = exec_time.toSec();
-    Pubs["exectime"].publish(exec_time_sec);
-#endif
 
     loop_rate.sleep();
   }

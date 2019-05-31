@@ -23,17 +23,21 @@ namespace autoware_health_checker {
 NodeStatusPublisher::NodeStatusPublisher(ros::NodeHandle nh,
                                          ros::NodeHandle pnh) {
   node_activated_ = false;
+  ros_ok_ = true;
   nh_ = nh;
   pnh_ = pnh;
   status_pub_ =
       nh_.advertise<autoware_system_msgs::NodeStatus>("node_status", 10);
 }
 
-NodeStatusPublisher::~NodeStatusPublisher() {}
+NodeStatusPublisher::~NodeStatusPublisher() {
+  ros_ok_ = false;
+  publish_thread_.join();
+}
 
 void NodeStatusPublisher::publishStatus() {
   ros::Rate rate = ros::Rate(autoware_health_checker::UPDATE_RATE);
-  while (ros::ok()) {
+  while (ros_ok_) {
     mtx_.lock();
     autoware_system_msgs::NodeStatus status;
     status.node_activated = node_activated_;
@@ -70,8 +74,7 @@ void NodeStatusPublisher::publishStatus() {
 }
 
 void NodeStatusPublisher::ENABLE() {
-  boost::thread publish_thread(
-      boost::bind(&NodeStatusPublisher::publishStatus, this));
+  publish_thread_ = boost::thread(boost::bind(&NodeStatusPublisher::publishStatus, this));
   return;
 }
 

@@ -1,19 +1,23 @@
 <launch>
-  <arg name="wheel_base" default="2.4"/>
-  <arg name="mode" default="8"/>
+  <arg name="engaged" default="true"/>
   <arg name="device" default="can0"/>
-  <arg name="loop_rate" default="100"/>
-  <arg name="stop_time_sec" default="2"/>
   <arg name="steering_offset_deg" default="0.0"/>
+  <arg name="command_timeout" default="1000"/>
 
-  <!-- Execute Autoware communicator -->
-  <node pkg="ymc" name="g30esli_interface" type="g30esli_interface" output="log">
-    <param name="wheel_base" value="$(arg wheel_base)"/>
-    <param name="mode" value="$(arg mode)"/>
+  <arg name="use_ds4" default="false"/>
+  <arg name="ds4_wired" default="false"/>
+  <arg name="ds4_timeout" default="1000"/>
+
+  <node pkg="ymc" name="g30esli_interface" type="g30esli_interface" output="screen">
+    <param name="engaged" value="$(arg engaged)"/>
     <param name="device" value="$(arg device)"/>
-    <param name="loop_rate" value="$(arg loop_rate)"/>
-    <param name="stop_time_sec" value="$(arg stop_time_sec)"/>
+    <param name="use_ds4" value="$(arg use_ds4)"/>
     <param name="steering_offset_deg" value="$(arg steering_offset_deg)"/>
+    <param name="command_timeout" value="$(arg command_timeout)"/>
   </node>
 
+  <include file="$(find ds4_driver)/launch/ds4_driver.launch" if="$(arg use_ds4)">
+    <arg name="wired" value="$(arg ds4_wired)" />
+    <arg name="timeout" value="$(arg ds4_timeout)" />
+  </include>
 </launch>

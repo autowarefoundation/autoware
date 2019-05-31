@@ -10,128 +10,69 @@
 #include <unordered_map>
 #include <utility>
 
-#include "state.hpp"
-#include "state_drive.hpp"
-#include "state_emg.hpp"
-#include "state_main.hpp"
+#include <state_machine_lib/state.hpp>
 
 namespace state_machine
 {
 class StateContext
 {
 private:
-  std::map<uint8_t, uint64_t> HolderMap;
-  std::unordered_map<uint64_t, BaseState *> StateStores;
+  std::shared_ptr<State> root_state_;
+  std::map<uint64_t, std::shared_ptr<State>> state_map_;
+  std::mutex change_state_mutex_;
 
-  bool enableForceSetState;
-  std::queue<uint64_t> ChangeStateFlags;
-  std::atomic<bool> thread_loop;
-
-  std::thread *thr_state_dec;
-  std::mutex change_state_mutex;
-
-  void showStateMove(uint64_t _state_num)
+  void showStateMove(uint64_t _state_id)
   {
-    std::cout << "State will be [" << StateStores[_state_num]->getStateName() << "]" << std::endl;
+    std::cout << "State will be [" << state_map_[_state_id]->getStateName() << "]" << std::endl;
   }
-  bool setCurrentState(BaseState *state);
+  bool setCurrentState(State* state);
+
+  void setParent(uint64_t child, uint64_t parent)
+  {
+    state_map_[child]->setParent(state_map_[parent]);
+  }
+  uint64_t parseChildState(const YAML::Node& node, uint64_t _id_counter, uint64_t _parent_id);
+  int32_t getStateIDbyName(std::string _name);
+  void setTransitionMap(const YAML::Node& node, const std::shared_ptr<State>& _state);
+
+  std::shared_ptr<State> getStatePtr(const YAML::Node& node);
+  std::shared_ptr<State> getStatePtr(const std::string& _state_name);
+  std::shared_ptr<State> getStatePtr(const uint64_t& _state_id);
+
+  bool isCurrentState(const std::string& state_name);
+
+  std::string dot_output_name;
 
 public:
-  StateContext(void)
+  StateContext(const std::string& file_name, const std::string& msg_name)
   {
-    StateStores[START_STATE] = StartState::getInstance();
-    StateStores[INITIAL_STATE] = InitialState::getInstance();
-    StateStores[INITIAL_LOCATEVEHICLE_STATE] = LocateVehicleState::getInstance();
-    StateStores[DRIVE_STATE] = DriveState::getInstance();
-    StateStores[DRIVE_ACC_ACCELERATION_STATE] = DriveAccAccelerationState::getInstance();
-    StateStores[DRIVE_ACC_DECELERATION_STATE] = DriveAccDecelerationState::getInstance();
-    StateStores[DRIVE_ACC_KEEP_STATE] = DriveAccKeepState::getInstance();
-    StateStores[DRIVE_ACC_STOP_STATE] = DriveAccStopState::getInstance();
-    StateStores[DRIVE_ACC_STOPLINE_STATE] = DriveAccStopLineState::getInstance();
-    StateStores[DRIVE_ACC_CRAWL_STATE] = DriveAccCrawlState::getInstance();
-    StateStores[DRIVE_STR_STRAIGHT_STATE] = DriveStrStraightState::getInstance();
-    StateStores[DRIVE_STR_LEFT_STATE] = DriveStrLeftState::getInstance();
-    StateStores[DRIVE_STR_RIGHT_STATE] = DriveStrRightState::getInstance();
-    StateStores[DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE] = DriveBehaviorLaneChangeLeftState::getInstance();
-    StateStores[DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE] = DriveBehaviorLaneChangeRightState::getInstance();
-    StateStores[DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE] = DriveBehaviorTrafficLightRedState::getInstance();
-    StateStores[DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE] = DriveBehaviorTrafficLightGreenState::getInstance();
-    StateStores[DRIVE_BEHAVIOR_OBSTACLE_AVOIDANCE_STATE] = DriveBehaviorObstacleAvoidanceState::getInstance();
-    StateStores[DRIVE_BEHAVIOR_STOPLINE_PLAN_STATE] = DriveBehaviorStoplinePlanState::getInstance();
-    StateStores[DRIVE_BEHAVIOR_ACCEPT_LANECHANGE_STATE] = DriveBehaviorAcceptLanechangeState::getInstance();
-    StateStores[MISSION_COMPLETE_STATE] = MissionCompleteState::getInstance();
-    StateStores[EMERGENCY_STATE] = EmergencyState::getInstance();
-
-    HolderMap[MAIN_STATE] = 0ULL;
-    HolderMap[ACC_STATE] = 0ULL;
-    HolderMap[STR_STATE] = 0ULL;
-    HolderMap[BEHAVIOR_STATE] = 0ULL;
-    HolderMap[PERCEPTION_STATE] = 0ULL;
-    HolderMap[OTHER_STATE] = 0ULL;
-
-    thread_loop = true;
-
-    this->InitContext();
+    createStateMap(file_name, msg_name);
+    root_state_ = getStartState();
+    dot_output_name = "/tmp/" + msg_name + ".dot";
+    createDOTGraph(dot_output_name);
   }
 
   ~StateContext()
   {
-    thread_loop = false;
   }
 
-  void update(void);
-  void inState(uint8_t _kind, uint64_t _prev_state_num);
-  void OutState(uint8_t _kind);
-  void stateDecider(void);
+  void createStateMap(std::string _state_file_name, std::string _msg_name);
+  std::shared_ptr<State> getStartState(void);
 
-  bool isState(BaseState *base, uint64_t _state_num);
-  bool isCurrentState(uint64_t _state_num);
-  bool isCurrentState(uint8_t _state_kind, uint64_t _state_num);
-  bool isDifferentState(uint64_t _state_a, uint64_t _state_b);
+  void onUpdate(void);
 
-  bool setCurrentState(uint64_t flag);
-  bool disableCurrentState(uint64_t);
+  bool setCallback(const CallbackType& _type, const std::string& _state_name,
+                   const std::function<void(const std::string&)>& _f);
 
-  BaseState *getStateObject(const uint64_t &_state_num);
-  std::string getStateName(const uint64_t &_state_num);
-  uint8_t getStateKind(const uint64_t &_state_num);
+  // visualize
+  void createGraphTransitionList(std::ofstream& outputfile, int idx,
+                                 std::map<uint64_t, std::vector<uint64_t>>& sublist);
+  void createDOTGraph(std::string _file_name);
 
-  BaseState *getCurrentMainState(void);
-  BaseState *getCurrentState(void);
-  std::string getCurrentStateName(void);
-  std::string getStateName(void);
-
-  std::vector<BaseState *> getMultipleStates(uint64_t _state_num_set);
-
-  bool setCallbackInFunc(const uint64_t &_state_num, const std::function<void(void)> &_f);
-  bool setCallbackOutFunc(const uint64_t &_state_num, const std::function<void(void)> &_f);
-  bool setCallbackUpdateFunc(const uint64_t &_state_num, const std::function<void(void)> &_f);
-
-  BaseState **getCurrentStateHolderPtr(uint8_t _kind);
-  BaseState **getCurrentStateHolderPtr(uint64_t _state_num);
-  BaseState **getCurrentStateHolderPtr(BaseState *_state);
-  void showCurrentStateName(void);
-  std::string createStateMessageText(void);
-
-  uint64_t getStateNum(BaseState *_state);
-  uint64_t getStateTransMask(BaseState *_state);
-  bool isEmptyMainState(void);
-  uint8_t getStateKind(BaseState *_state);
-  bool isMainState(BaseState *_state);
-
-  std::string getCurrentStateName(uint8_t kind);
-
-  bool setEnableForceSetState(bool force_flag);
-  void InitContext(void);
-
-  bool TFInitialized(void);
-
-  void handleTrafficLight(uint32_t _light_color);
-  bool handleCurrentPose(double x, double y, double z, double roll, double pitch, double yaw);
-  bool handlePointsRaw(bool _hasLidarData);
-
-  bool handleIntersection(bool _hasIntersection, double _angle);
-  bool handleTwistCmd(bool _hasTwistCmd);
+  std::string getStateText();
+  std::string getAvailableTransition(void);
+  void showStateName();
+  void nextState(const std::string& transition_key);
 };
 }
 

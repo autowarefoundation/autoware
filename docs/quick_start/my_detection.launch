@@ -10,7 +10,7 @@
   <arg name="camera_calib" default="$(env HOME)/.autoware/data/calibration/camera_lidar_3d/prius/nic-150407.yml"/>
 
   <!-- calibration_publisher -->
-  <include file="$(find runtime_manager)/scripts/calibration_publisher.launch">
+  <include file="$(find runtime_manager)/launch_files/calibration_publisher.launch">
     <arg name="file" value="$(arg camera_calib)" />
     <arg name="register_lidar2camera_tf" value="$(arg is_register_lidar2camera_tf)" />
     <arg name="publish_extrinsic_mat" value="$(arg is_publish_projection_matrix)" />

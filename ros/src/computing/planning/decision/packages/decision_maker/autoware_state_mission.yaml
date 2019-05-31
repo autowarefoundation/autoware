@@ -1,0 +1,109 @@
+---
+autoware_states_mission:
+  -
+    StateName: Start
+    Transition:
+      -
+        Key: started
+        Target: MissionInit
+    Parent: ~
+  -
+    StateName: MissionInit
+    Transition:
+      -
+        Key: state_mission_initialized
+        Target: WaitOrder
+    Parent: ~
+  -
+    StateName: WaitOrder
+    Transition:
+      -
+        Key: received_mission_order
+        Target: MissionCheck
+    Parent: ~
+  -
+    StateName: MissionCheck
+    Transition:
+      -
+        Key: mission_is_compatible
+        Target: DriveReady
+      -
+        Key: mission_aborted
+        Target: MissionAborted
+    Parent: ~
+  -
+    StateName: DriveReady
+    Transition:
+      -
+        Key: engage
+        Target: Driving
+      -
+        Key: mission_canceled
+        Target: MissionAborted
+      -
+        Key: emergency
+        Target: MissionAborted
+    Parent: ~
+  -
+    StateName: Driving
+    Transition:
+      -
+        Key: arrived_goal
+        Target: MissionComplete
+      -
+        Key: mission_aborted
+        Target: MissionAborted
+      -
+        Key: emergency
+        Target: MissionAborted
+      -
+        Key: request_mission_change
+        Target: DrivingMissionChange
+    Parent: ~
+  -
+    StateName: DrivingMissionChange
+    Transition:
+      -
+        Key: mission_is_compatible
+        Target: MissionChangeSucceeded
+      -
+        Key: mission_is_conflicting
+        Target: MissionChangeFailed
+    Parent: ~
+  -
+    StateName: MissionChangeSucceeded
+    Transition:
+      -
+        Key: return_to_driving
+        Target: Driving
+    Parent: ~
+  -
+    StateName: MissionChangeFailed
+    Transition:
+      -
+        Key: return_to_driving
+        Target: Driving
+    Parent: ~
+  -
+    StateName: MissionComplete
+    Transition:
+      -
+        Key: goto_wait_order
+        Target: WaitOrder
+      -
+        Key: re_enter_mission
+        Target: DriveReady
+    Parent: ~
+  -
+    StateName: MissionAborted
+    Transition:
+      -
+        Key: goto_wait_order
+        Target: WaitOrder
+      -
+        Key: return_from_emergency
+        Target: MissionInit
+      -
+        Key: return_to_ready
+        Target: DriveReady
+    Parent: ~

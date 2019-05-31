@@ -33,6 +33,8 @@ if (OPENMP_FOUND)
 endif ()
 
 catkin_package(
+        INCLUDE_DIRS include
+        LIBRARIES object_map_utils_lib
         CATKIN_DEPENDS
         roscpp
         pcl_ros
@@ -54,8 +56,8 @@ include_directories(
 )
 ### object_map_utils ###
 add_library(object_map_utils_lib
-        include/object_map_utils.cpp
-        include/object_map_utils.hpp
+        include/object_map/object_map_utils.cpp
+        include/object_map/object_map_utils.hpp
         )
 target_link_libraries(object_map_utils_lib
         ${vector_map_LIBRARIES}
@@ -71,13 +73,6 @@ target_link_libraries(laserscan2costmap
         ${catkin_LIBRARIES}
         )
 
-### points2costmap ###
-add_executable(points2costmap
-        nodes/points2costmap/points2costmap.cpp
-        )
-target_link_libraries(points2costmap
-        ${catkin_LIBRARIES}
-        )
 
 ### potential_field ###
 add_executable(potential_field
@@ -94,7 +89,7 @@ target_link_libraries(potential_field
 ### grid_map_filter ###
 add_library(grid_map_filter_lib
         nodes/grid_map_filter/grid_map_filter.h
-        include/object_map_utils.hpp
+        include/object_map/object_map_utils.hpp
         nodes/grid_map_filter/grid_map_filter.cpp
         )
 target_link_libraries(grid_map_filter_lib
@@ -114,7 +109,7 @@ target_link_libraries(grid_map_filter
 ### wayarea2grid ###
 add_library(wayarea2grid_lib
         nodes/wayarea2grid/wayarea2grid.h
-        include/object_map_utils.hpp
+        include/object_map/object_map_utils.hpp
         nodes/wayarea2grid/wayarea2grid.cpp
         )
 target_link_libraries(wayarea2grid_lib
@@ -138,7 +133,6 @@ install(TARGETS
             grid_map_filter_lib
             grid_map_filter
             potential_field
-            points2costmap
             laserscan2costmap
             object_map_utils_lib
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
@@ -148,6 +142,11 @@ install(TARGETS
 install(DIRECTORY launch/
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
         PATTERN ".svn" EXCLUDE)
+        
+install(DIRECTORY include/${PROJECT_NAME}/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        PATTERN ".svn" EXCLUDE
+        )
 
 install(DIRECTORY config/
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/config
