@@ -4,15 +4,19 @@ project(lidar_point_pillars)
 # set flags for CUDA availability
 option(CUDA_AVAIL "CUDA available" OFF)
 find_package(CUDA)
-if (CUDA_FOUND)
+find_package(autoware_build_flags REQUIRED)
+
+AW_CHECK_CUDA()
+
+if (USE_CUDA)
   message("CUDA is available!")
   message("CUDA Libs: ${CUDA_LIBRARIES}")
   message("CUDA Headers: ${CUDA_INCLUDE_DIRS}")
   set(CUDA_AVAIL ON)
 else()
-  message("CUDA NOT FOUND")
+  message("CUDA NOT FOUND OR INCOMPATIBLE CMAKE VERSION FOUND")
   set(CUDA_AVAIL OFF)
-endif (CUDA_FOUND)
+endif ()
 
 # set flags for TensorRT availability
 option(TRT_AVAIL "TensorRT available" OFF)
@@ -50,7 +54,6 @@ endif()
 
 if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
 
-  find_package(autoware_build_flags REQUIRED)
   find_package(catkin REQUIRED COMPONENTS
    roscpp
    roslib

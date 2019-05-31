@@ -6,6 +6,7 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
         image_transport
         roscpp
         sensor_msgs
+        autoware_build_flags
         )
 FIND_PACKAGE(CUDA)
 FIND_PACKAGE(OpenCV REQUIRED)
@@ -31,7 +32,9 @@ INCLUDE_DIRECTORIES(
 ##############################ENet's CAFFE FORK NEEDS TO BE PREVIOUSLY COMPILED####################
 set(ENET_CAFFE_PATH "$ENV{HOME}/ENet/caffe-enet/distribute")
 ####################################################################################################
-if (EXISTS "${ENET_CAFFE_PATH}" AND ${CUDA_FOUND})
+AW_CHECK_CUDA()
+
+if (USE_CUDA AND EXISTS "${ENET_CAFFE_PATH}")
 
     ADD_EXECUTABLE(vision_segment_enet_detect
             nodes/vision_segment_enet_detect/vision_segment_enet_detect_node.cpp

@@ -1,13 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(trafficlight_recognizer)
-execute_process(
-        COMMAND rosversion -d
-        OUTPUT_VARIABLE ROS_VERSION
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
-set(ROS_VERSION $ENV{ROS_DISTRO})
-
 
 find_package(autoware_build_flags REQUIRED)
 
@@ -258,7 +250,9 @@ target_link_libraries(label_maker
 ##############################SSD'sFORK of CAFFE NEEDS TO BE PREVIOUSLY COMPILED####################
 set(SSD_CAFFE_PATH "$ENV{HOME}/ssdcaffe/distribute")
 ####################################################################################################
-if (EXISTS "${SSD_CAFFE_PATH}")
+AW_CHECK_CUDA()
+
+if (USE_CUDA AND EXISTS "${SSD_CAFFE_PATH}")
 
     find_package(CUDA REQUIRED)
 
@@ -320,7 +314,9 @@ install(DIRECTORY launch/
 #############Please follow README file for instructions#############################################
 set(MXNET_PATH "$ENV{HOME}/mxnet/")
 ####################################################################################################
-if (EXISTS "${MXNET_PATH}")
+AW_CHECK_CUDA()
+
+if (USE_CUDA AND EXISTS "${MXNET_PATH}")
 
     find_package(CUDA REQUIRED)
 

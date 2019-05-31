@@ -26,7 +26,6 @@
   <run_depend>image_transport</run_depend>
 
   <run_depend>v4l-utils</run_depend>
-  <run_depend>gstreamer0.10-plugins-good</run_depend>
   <run_depend>gscam</run_depend>
 
   <export>

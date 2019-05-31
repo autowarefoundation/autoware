@@ -32,6 +32,7 @@ find_package(catkin REQUIRED COMPONENTS
         vector_map_msgs
         rostest
         rosunit
+        jsk_rviz_plugins
         )
 
 catkin_package(
@@ -46,6 +47,7 @@ catkin_package(
         jsk_recognition_msgs
         amathutils_lib
         state_machine_lib
+        jsk_rviz_plugins
 )
 include_directories(
         include/decision_maker

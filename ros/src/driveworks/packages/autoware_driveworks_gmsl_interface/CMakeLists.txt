@@ -2,8 +2,13 @@ cmake_minimum_required(VERSION 2.8.3)
 project(autoware_driveworks_gmsl_interface)
 
 find_package(CUDA)
-
-if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64" AND CUDA_FOUND)
+find_library(DRIVEWORKS_FOUND NAMES driveworks)
+find_library(NVMEDIA_FOUND NAMES nvmedia)
+if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64"
+        AND CUDA_FOUND
+        AND DRIVEWORKS_FOUND
+        AND NVMEDIA_FOUND
+)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
       set(DRIVEWORKS_LINKER_FLAGS "-Wl,--unresolved-symbols=ignore-in-object-files -Wl,--allow-shlib-undefined")
     elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")

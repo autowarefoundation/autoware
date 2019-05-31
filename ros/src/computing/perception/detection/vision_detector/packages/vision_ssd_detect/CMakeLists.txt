@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(vision_ssd_detect)
 
-set(ROS_VERSION $ENV{ROS_DISTRO})
-
 include(FindPkgConfig)
 
 find_package(autoware_build_flags REQUIRED)
@@ -44,21 +42,20 @@ include_directories(
         ${catkin_INCLUDE_DIRS}
 )
 
-IF (CUDA_FOUND)
-    include_directories(${CUDA_INCLUDE_DIRS})
-
-    IF ("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "^arm")
-        link_directories(/usr/lib/arm-linux-gnueabihf/tegra)
-    endif ()
-ENDIF ()
-
 
 #####SSD########
 ##############################SSD'sFORK of CAFFE NEEDS TO BE PREVIOUSLY COMPILED####################
 set(SSD_CAFFE_PATH "$ENV{HOME}/ssdcaffe/distribute")
 ####################################################################################################
-if (EXISTS "${SSD_CAFFE_PATH}")
 
+AW_CHECK_CUDA()
+
+if (USE_CUDA AND EXISTS "${SSD_CAFFE_PATH}")
+    include_directories(${CUDA_INCLUDE_DIRS})
+
+    IF ("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "^arm")
+        link_directories(/usr/lib/arm-linux-gnueabihf/tegra)
+    endif ()
     add_executable(vision_ssd_detect
             src/vision_ssd_detect.cpp
             src/vision_ssd_detect_node.cpp
