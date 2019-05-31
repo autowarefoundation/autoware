@@ -1,0 +1,138 @@
+FROM nvidia/cuda:8.0-devel-ubuntu16.04
+MAINTAINER Yuki Iida <yuki.iida@tier4.jp>
+
+# Develop
+RUN apt-get update && apt-get install -y \
+        cmake \
+        cmake-curses-gui \
+        curl \
+        git \
+        libboost-all-dev \
+        libeigen3-dev \
+        libflann-dev \
+        libgoogle-perftools-dev \
+        libgsl0-dev \
+        software-properties-common \
+        wget
+
+# Intall some basic GUI and sound libs
+RUN apt-get update && apt-get install -y \
+        dbus-x11 \
+        dmz-cursor-theme \
+        file \
+        fonts-dejavu \
+        fonts-liberation \
+        hicolor-icon-theme \
+        language-pack-en \
+        libasound2 \
+        libcanberra-gtk-module \
+        libcanberra-gtk3-0 \
+        libcanberra-gtk3-module \
+        libdbus-glib-1-2 \
+        libexif12 \
+        libgl1-mesa-dri \
+        libgl1-mesa-glx \
+        libgtk2.0-0 \
+        libxt6 \
+        locales \
+        pulseaudio \
+        xz-utils
+RUN update-locale LANG=en_US.UTF-8 LC_MESSAGES=POSIX
+
+# Intall some basic GUI tools
+RUN apt-get update && apt-get install -y \
+        cmake-qt-gui \
+        gnome-terminal
+
+# Intall ROS
+RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
+RUN apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
+RUN apt-get update && apt-get install -y \
+        ros-kinetic-desktop-full \
+        ros-kinetic-gps-common \
+        ros-kinetic-grid-map \
+        ros-kinetic-jsk-visualization \
+        ros-kinetic-nmea-msgs \
+        ros-kinetic-nmea-navsat-driver \
+        ros-kinetic-sound-play
+RUN apt-get update && apt-get install -y \
+        ros-kinetic-automotive-platform-msgs \
+        ros-kinetic-controller-manager \
+        ros-kinetic-gazebo-ros-control \
+        ros-kinetic-joystick-drivers \
+        ros-kinetic-ros-control \
+        ros-kinetic-ros-controllers
+RUN apt-get update && apt-get install -y \
+        freeglut3-dev \
+        gksu \
+        libarmadillo-dev \
+        libgl1-mesa-dev \
+        libglew-dev \
+        libmosquitto-dev \
+        libnlopt-dev \
+        libpcap-dev \
+        libqt5opengl5-dev \
+        libssh2-1-dev \
+        libyaml-cpp-dev \
+        python-flask \
+        python-requests \
+        python-wxgtk3.0 \
+        qtbase5-dev \
+        software-properties-common
+
+# Add basic user
+ENV USERNAME autoware
+ENV PULSE_SERVER /run/pulse/native
+RUN useradd -m $USERNAME && \
+        echo "$USERNAME:$USERNAME" | chpasswd && \
+        usermod --shell /bin/bash $USERNAME && \
+        usermod -aG sudo $USERNAME && \
+        echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/$USERNAME && \
+        chmod 0440 /etc/sudoers.d/$USERNAME && \
+        # Replace 1000 with your user/group id
+        usermod  --uid 1000 $USERNAME && \
+        groupmod --gid 1000 $USERNAME
+
+# Setup .bashrc for ROS
+RUN echo "source /opt/ros/kinetic/setup.bash" >> /home/$USERNAME/.bashrc && \
+        #Fix for qt and X server errors
+        echo "export QT_X11_NO_MITSHM=1" >> /home/$USERNAME/.bashrc && \
+        # cd to home on login
+        echo "cd" >> /home/$USERNAME/.bashrc
+
+# Install colcon
+RUN apt-get install -y python3-pip python3-setuptools
+RUN pip3 install -U setuptools
+RUN apt-get install -y python3-colcon-common-extensions
+
+# Change user
+USER autoware
+
+RUN sudo rosdep init \
+        && rosdep update \
+        && echo "source /opt/ros/kinetic/setup.bash" >> ~/.bashrc
+
+# Setting
+RUN sudo ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1
+ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64/stubs/:$LD_LIBRARY_PATH"
+
+# Install Autoware
+RUN cd && mkdir /home/$USERNAME/Autoware
+COPY --chown=autoware ./ /home/$USERNAME/Autoware/
+RUN /bin/bash -c 'source /opt/ros/kinetic/setup.bash; cd /home/$USERNAME/Autoware/ros/src; git submodule update --init --recursive; cd ../; ./colcon_release'
+RUN echo "source /home/$USERNAME/Autoware/ros/devel/setup.bash" >> /home/$USERNAME/.bashrc
+
+# Setting
+ENV LANG="en_US.UTF-8"
+RUN echo "export LANG=\"en_US.UTF-8\"" >> /home/$USERNAME/.bashrc
+
+# Install dev tools
+RUN sudo apt-get -y install vim tmux
+
+# Change Terminal Color
+RUN gconftool-2 --set "/apps/gnome-terminal/profiles/Default/use_theme_background" --type bool false
+RUN gconftool-2 --set "/apps/gnome-terminal/profiles/Default/use_theme_colors" --type bool false
+RUN gconftool-2 --set "/apps/gnome-terminal/profiles/Default/background_color" --type string "#000000"
+
+# Default CMD
+CMD ["/bin/bash"]

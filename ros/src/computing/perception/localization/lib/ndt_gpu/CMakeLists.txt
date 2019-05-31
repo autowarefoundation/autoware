@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ndt_gpu)
 
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags)
 find_package(PCL REQUIRED)
 find_package(CUDA)
 
@@ -18,7 +19,9 @@ else ()
     set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
 endif ()
 
-if (CUDA_FOUND)
+AW_CHECK_CUDA()
+
+if (USE_CUDA)
     set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "")
 
     if(CMAKE_CROSSCOMPILING)

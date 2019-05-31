@@ -28,17 +28,17 @@ catkin_package(
         autoware_msgs
 )
 
-IF (CUDA_FOUND)
+###CAFFE
+set(CAFFE_PATH "$ENV{HOME}/caffe/distribute")
+
+AW_CHECK_CUDA()
+
+if (USE_CUDA AND EXISTS "${CAFFE_PATH}")
     include_directories(${CUDA_INCLUDE_DIRS})
 
     IF ("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "^arm")
         link_directories(/usr/lib/arm-linux-gnueabihf/tegra)
     endif ()
-ENDIF ()
-###CAFFE
-set(CAFFE_PATH "$ENV{HOME}/caffe/distribute")
-
-if (EXISTS "${CAFFE_PATH}")
 
     include_directories(
             include
