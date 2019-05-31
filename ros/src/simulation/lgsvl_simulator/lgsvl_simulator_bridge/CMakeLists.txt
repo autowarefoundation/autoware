@@ -38,7 +38,7 @@ foreach (programs)
             )
 endforeach (programs)
 
-foreach (dir launch rviz config media)
+foreach (dir launch rviz config media resource)
     install(DIRECTORY ${dir}/
             DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${dir})
 endforeach (dir)
@@ -52,3 +52,7 @@ foreach(scripts ${PYTHON_SCRIPTS})
         catkin_install_python(PROGRAMS ${scripts}
         DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 endforeach(scripts)
+
+install(FILES plugin.xml
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)

@@ -141,6 +141,10 @@ void DecisionMakerNode::updateVehicleReadyState(cstring_t& state_name, int statu
   }
 }
 
+void DecisionMakerNode::updateBatteryChargingState(cstring_t& state_name, int status)
+{
+ }
+
 void DecisionMakerNode::entryVehicleEmergencyState(cstring_t& state_name, int status)
 {
 }
