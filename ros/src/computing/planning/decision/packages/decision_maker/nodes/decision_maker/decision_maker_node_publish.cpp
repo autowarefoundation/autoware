@@ -80,28 +80,36 @@ void DecisionMakerNode::publishOperatorHelpMessage(cstring_t& message)
 void DecisionMakerNode::update_msgs(void)
 {
 #if 1
-  if (ctx_vehicle && ctx_mission && ctx_drive)
+  if (ctx_vehicle && ctx_mission && ctx_behavior && ctx_motion)
   {
-    static std::string text_vehicle_state, text_mission_state, text_drive_state;
+    static std::string text_vehicle_state, text_mission_state, text_behavior_state, text_motion_state;
     text_vehicle_state = ctx_vehicle->getStateText();
     text_mission_state = ctx_mission->getStateText();
-    text_drive_state = ctx_drive->getStateText();
+    text_behavior_state = ctx_behavior->getStateText();
+    text_motion_state = ctx_motion->getStateText();
 
     static std_msgs::String state_msg;
-    state_msg.data = text_vehicle_state + text_mission_state + text_drive_state;
+    state_msg.data = text_vehicle_state + text_mission_state + text_behavior_state + text_motion_state;
     Pubs["state"].publish(state_msg);
-    Pubs["state_overlay"].publish(createOverlayText(state_msg.data, 1));
+
+    static std::string overlay_text;
+    overlay_text = "> Vehicle:\n" + text_vehicle_state +
+                   "\n> Mission:\n" + text_mission_state +
+                   "\n> Behavior:\n" + text_behavior_state +
+                   "\n> Motion:\n" + text_motion_state;
+    Pubs["state_overlay"].publish(createOverlayText(overlay_text, 1));
 
     static autoware_msgs::State state_array_msg;
     state_array_msg.header.stamp = ros::Time::now();
     state_array_msg.vehicle_state = text_vehicle_state;
     state_array_msg.mission_state = text_mission_state;
-    state_array_msg.drive_state = text_drive_state;
+    state_array_msg.behavior_state = text_behavior_state;
+    state_array_msg.motion_state = text_motion_state;
     Pubs["state_msg"].publish(state_array_msg);
 
     static std_msgs::String transition_msg;
-    transition_msg.data = ctx_vehicle->getAvailableTransition() + ctx_mission->getAvailableTransition() +
-                          ctx_drive->getAvailableTransition();
+    transition_msg.data = ctx_vehicle->getAvailableTransition() + "\n" + ctx_mission->getAvailableTransition() + "\n" +
+                          ctx_behavior->getAvailableTransition() + "\n" + ctx_motion->getAvailableTransition();
 
     Pubs["available_transition"].publish(transition_msg);
   }

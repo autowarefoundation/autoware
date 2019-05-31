@@ -2,11 +2,15 @@
 
 namespace decision_maker
 {
-void DecisionMakerNode::entryWaitVehicleReadyState(cstring_t& state_name, int status)
+void DecisionMakerNode::entryMissionInitState(cstring_t& state_name, int status)
 {
 }
-void DecisionMakerNode::updateWaitVehicleReadyState(cstring_t& state_name, int status)
+void DecisionMakerNode::updateMissionInitState(cstring_t& state_name, int status)
 {
+  if (!use_fms_)
+  {
+    tryNextState("state_mission_initialized");
+  }
 }
 
 void DecisionMakerNode::entryWaitOrderState(cstring_t& state_name, int status)
@@ -134,21 +138,10 @@ void DecisionMakerNode::entryDrivingState(cstring_t& state_name, int status)
 {
   setEventFlag("received_based_lane_waypoint", false);
 
-  if (isEventFlagTrue("emergency_flag"))
-  {
-    tryNextState("mission_aborted");
-    return;
-  }
-
   tryNextState("operation_start");
 }
 void DecisionMakerNode::updateDrivingState(cstring_t& state_name, int status)
 {
-  if (isEventFlagTrue("emergency_flag"))
-  {
-    tryNextState("mission_aborted");
-  }
-
   if (!use_fms_ && auto_mission_change_ && isEventFlagTrue("received_based_lane_waypoint"))
   {
     tryNextState("request_mission_change");
@@ -204,7 +197,11 @@ void DecisionMakerNode::updateMissionChangeFailedState(cstring_t& state_name, in
 void DecisionMakerNode::entryMissionCompleteState(cstring_t& state_name, int status)
 {
   setEventFlag("received_based_lane_waypoint", false);
-  tryNextState("operation_end");
+
+  if (!use_fms_ && auto_mission_reload_)
+    tryNextState("mission_reloaded");
+  else
+    tryNextState("operation_end");
 }
 void DecisionMakerNode::updateMissionCompleteState(cstring_t& state_name, int status)
 {

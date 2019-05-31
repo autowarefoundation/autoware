@@ -3,8 +3,6 @@ project(op_utility)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-set(ROS_VERSION $ENV{ROS_DISTRO})
-
 find_package(autoware_build_flags REQUIRED)
 
 find_package(vector_map_msgs REQUIRED)
@@ -58,3 +56,13 @@ install(TARGETS op_utility
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
+
+if (CATKIN_ENABLE_TESTING)
+    find_package(rostest REQUIRED)
+    add_rostest_gtest(test-op_utility
+      test/test_op_utility.test
+      test/src/test_op_utility.cpp
+    )
+    add_dependencies(test-op_utility ${catkin_EXPORTED_TARGETS})
+    target_link_libraries(test-op_utility ${catkin_LIBRARIES} ${PROJECT_NAME})
+endif ()

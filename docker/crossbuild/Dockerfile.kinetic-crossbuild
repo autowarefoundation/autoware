@@ -7,9 +7,6 @@ ARG AUTOWARE_TARGET_ARCH
 
 COPY --from=bootstrap /usr/bin/qemu-${AUTOWARE_TARGET_ARCH}-static /usr/bin/qemu-${AUTOWARE_TARGET_ARCH}-static
 
-RUN echo "deb http://packages.ros.org/ros/ubuntu xenial main" | tee /etc/apt/sources.list.d/ros-latest.list
-RUN apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
-
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     lsb-release \
@@ -47,8 +44,9 @@ COPY --from=sysroot /usr/share/pkgconfig ${AUTOWARE_SYSROOT}/usr/share/pkgconfig
 COPY --from=sysroot /opt ${AUTOWARE_SYSROOT}/opt
 COPY --from=sysroot /etc/alternatives ${AUTOWARE_SYSROOT}/etc/alternatives
 RUN echo "deb http://packages.ros.org/ros/ubuntu xenial main" | tee /etc/apt/sources.list.d/ros-latest.list
-RUN apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
+RUN apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    cython \
     crossbuild-essential-arm64 \
     pkg-config \
     python-rospkg \
@@ -73,6 +71,9 @@ RUN sed -i -e "s#set(imported_location \"\${_qt5Core_install_prefix}/lib/${AUTOW
 RUN sed -i -e "s#define ARMA_SUPERLU_INCLUDE_DIR /usr/include/superlu/#define ARMA_SUPERLU_INCLUDE_DIR ${AUTOWARE_SYSROOT}/usr/include/superlu/#g" \
     ${AUTOWARE_SYSROOT}/usr/include/armadillo_bits/config.hpp
 
+RUN apt-get install -y python-numpy
+RUN apt-get install -y python-pip python-setuptools
+RUN pip install -U setuptools
 RUN apt-get install -y python3-pip python3-setuptools
 RUN pip3 install -U setuptools
 RUN apt-get install -y python3-colcon-common-extensions

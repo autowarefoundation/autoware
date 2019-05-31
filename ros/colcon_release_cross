@@ -34,6 +34,8 @@ then
 -e CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda
 -e NVIDIA_TENSORRT_ROOT_DIR=/usr/local/tensorrt
 -e DRIVE_T186REF_LINUX_ROOT_DIR=/usr/local/drive-t186ref-linux
+-e AUTOWARE_CYTHON_EXECUTABLE=/usr/bin/cython
+-e AUTOWARE_CUDA_ARCH=sm_61
 END
 )
         AUTOWARE_CUDA_ARCH=sm_61
@@ -52,7 +54,7 @@ END
     echo "Using toolchain file: '${AUTOWARE_TOOLCHAIN_FILE_PATH}''"
     AUTOWARE_SYSROOT=/sysroot/${AUTOWARE_TARGET_PLATFORM}
 
-    AUTOWARE_DOCKER_DATE=20190211
+    AUTOWARE_DOCKER_DATE=20190521
 
     docker container run \
         -it \
@@ -71,6 +73,7 @@ END
             --build-base ${AUTOWARE_BUILD_PATH} \
             --install-base ${AUTOWARE_INSTALL_PATH} \
             --cmake-args \
+            -DCYTHON_EXECUTABLE=/usr/bin/cython \
             -DCUDA_ARCH=${AUTOWARE_CUDA_ARCH} \
             -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH} \
             -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH} \

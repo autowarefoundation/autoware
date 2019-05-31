@@ -32,6 +32,7 @@ find_package(catkin REQUIRED COMPONENTS
         vector_map_msgs
         rostest
         rosunit
+        jsk_rviz_plugins
         )
 
 catkin_package(
@@ -46,6 +47,7 @@ catkin_package(
         jsk_recognition_msgs
         amathutils_lib
         state_machine_lib
+        jsk_rviz_plugins
 )
 include_directories(
         include/decision_maker
@@ -62,8 +64,9 @@ add_executable(decision_maker_node
         nodes/decision_maker/decision_maker_node_init.cpp
         nodes/decision_maker/decision_maker_node_callback.cpp
         nodes/decision_maker/decision_maker_node_state_vehicle.cpp
-        nodes/decision_maker/decision_maker_node_state_drive.cpp
         nodes/decision_maker/decision_maker_node_state_mission.cpp
+        nodes/decision_maker/decision_maker_node_state_behavior.cpp
+        nodes/decision_maker/decision_maker_node_state_motion.cpp
         nodes/decision_maker/decision_maker_node_publish.cpp
         nodes/decision_maker/cross_road_area.cpp
         )
@@ -91,7 +94,8 @@ install(DIRECTORY launch/
         )
 
 install(FILES
-        autoware_state_drive.yaml
+        autoware_state_behavior.yaml
+        autoware_state_motion.yaml
         autoware_state_mission.yaml
         autoware_state_vehicle.yaml
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
@@ -108,7 +112,8 @@ if(CATKIN_ENABLE_TESTING)
     nodes/decision_maker/decision_maker_node_init.cpp
     nodes/decision_maker/decision_maker_node_callback.cpp
     nodes/decision_maker/decision_maker_node_state_vehicle.cpp
-    nodes/decision_maker/decision_maker_node_state_drive.cpp
+    nodes/decision_maker/decision_maker_node_state_behavior.cpp
+    nodes/decision_maker/decision_maker_node_state_motion.cpp
     nodes/decision_maker/decision_maker_node_state_mission.cpp
     nodes/decision_maker/decision_maker_node_publish.cpp
     nodes/decision_maker/cross_road_area.cpp)
