@@ -1,7 +1,7 @@
 stages:
   - build
   - deploy
-  
+
 variables:
   ROS_CI_DESKTOP: "`lsb_release -cs`"
   CI_SOURCE_PATH: $CI_PROJECT_DIR
@@ -13,8 +13,9 @@ variables:
 .build: &build_common
   before_script:
     - apt-get update
-    - apt-get install -y lsb-release
-    - apt-get install -y gcc g++
+    # Use UTC for tzdata
+    - DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata
+    - apt-get install -y gnupg2 lsb-release gcc g++
     - sh -c "echo \"deb http://packages.ros.org/ros/ubuntu $ROS_CI_DESKTOP main\" > /etc/apt/sources.list.d/ros-latest.list"
     - apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
     - apt-get update
@@ -24,19 +25,51 @@ variables:
     # Update setuptools from PyPI because the version Ubuntu ships with is too old
     - pip3 install -U setuptools
     - source /opt/ros/${ROS_DISTRO}/setup.bash
-    - rosdep init
     - rosdep update
     - cd ros/src
     - wstool init
     - test -f "${ROSINSTALL_FILE}" && wstool merge "${ROSINSTALL_FILE}"
     - wstool up
     - cd ..
-    - rosdep install -y --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} 
-    
+    - rosdep install -y --from-paths src --ignore-src --rosdistro ${ROS_DISTRO}
+
+.build_cross_vars: &build_cross_vars
+    AUTOWARE_HOME: $CI_PROJECT_DIR
+    AUTOWARE_TARGET_ARCH: aarch64
+    AUTOWARE_TARGET_PLATFORM: generic-aarch64
+    AUTOWARE_BUILD_PATH: $CI_PROJECT_DIR/ros/build-${AUTOWARE_TARGET_PLATFORM}
+    AUTOWARE_INSTALL_PATH: $CI_PROJECT_DIR/ros/install-${AUTOWARE_TARGET_PLATFORM}
+    AUTOWARE_TOOLCHAIN_FILE_PATH: $CI_PROJECT_DIR/ros/cross_toolchain.cmake
+    AUTOWARE_SYSROOT: /sysroot/${AUTOWARE_TARGET_PLATFORM}
+
+.build_cross_script: &build_cross_script
+  script:
+    - 'docker run
+          -e AUTOWARE_SYSROOT=${AUTOWARE_SYSROOT}
+          --rm
+          -v ${AUTOWARE_HOME}:${AUTOWARE_HOME}
+          -w ${AUTOWARE_HOME}/ros
+          autoware/build:${AUTOWARE_TARGET_PLATFORM}-${ROS_DISTRO}-${AUTOWARE_DOCKER_DATE}
+          bash
+            -c "
+                source ${AUTOWARE_SYSROOT}/opt/ros/${ROS_DISTRO}/setup.bash &&
+                colcon build
+                    --merge-install
+                    --build-base ${AUTOWARE_BUILD_PATH}
+                    --install-base ${AUTOWARE_INSTALL_PATH}
+                    --packages-skip citysim ymc
+                    --cmake-args
+                    -DPYTHON_EXECUTABLE=/usr/bin/python3
+                    -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH}
+                    -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH}
+                    -DCMAKE_PREFIX_PATH=\"${AUTOWARE_SYSROOT}/opt/ros/${ROS_DISTRO};${AUTOWARE_INSTALL_PATH}\"
+                    -DCMAKE_FIND_ROOT_PATH=${AUTOWARE_INSTALL_PATH}
+                  "
+                  '
 
 build_kinetic:
   stage: build
-  image: ubuntu:xenial
+  image: ros:kinetic-perception
   variables:
     ROS_DISTRO: kinetic
   <<: *build_common
@@ -47,7 +80,7 @@ build_kinetic:
     - git clone https://github.com/linux-test-project/lcov.git
     - cd lcov
     - git checkout v1.13
-    - make install 
+    - make install
     - cd ..
     - rm -r lcov
   # We first build the entire workspace normally
@@ -58,7 +91,7 @@ build_kinetic:
     - colcon build --cmake-target tests --cmake-args -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_BUILD_TYPE=Debug
     - lcov --initial --directory build --capture --output-file lcov.base
     - colcon test
-    - colcon test-result
+    - colcon test-result --verbose
     - lcov --directory build --capture --output-file lcov.test
     - lcov -a lcov.base -a lcov.test -o lcov.total
     - lcov -r lcov.total '*/tests/*' '*/test/*' '*/build/*' '*/devel/*' '/usr/*' '/opt/*' '*/CMakeCCompilerId.c' '*/CMakeCXXCompilerId.cpp' -o lcov.total.filtered
@@ -69,58 +102,78 @@ build_kinetic:
     - genhtml -p "$PWD" --legend --demangle-cpp lcov.total.filtered -o $COVERAGE_FOLDER_NAME
     - tar -czvf coverage.tar.gz $COVERAGE_FOLDER_NAME
     - mv coverage.tar.gz $CI_PROJECT_DIR/coverage.tar.gz
-    - ls $CI_PROJECT_DIR 
-  retry: 1
+    - ls $CI_PROJECT_DIR
   artifacts:
     paths:
       - $CI_PROJECT_DIR/coverage.tar.gz
     expire_in: 48 hrs
   coverage: /\s*lines.*:\s(\d+\.\d+\%\s\(\d+\sof\s\d+.*\))/
-    
-build_cross:
+
+build_melodic:
+  stage: build
+  image: ros:melodic-perception
+  variables:
+    ROS_DISTRO: melodic
+  <<: *build_common
+  script:
+  # colcon as a Debian package is only available in Kinetic and up
+    - apt-get install -y python3-colcon-common-extensions
+  # Install lcov ffrom the Ubuntu package. We need 1.13 at least.
+    - apt-get install -y lcov
+  # We first build the entire workspace normally
+    - colcon build --cmake-args -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_BUILD_TYPE=Debug -DPYTHON_EXECUTABLE=/usr/bin/python3
+  # And then build the tests target. catkin (ROS1) packages add their tests to the tests target
+  # which is not the standard target for CMake projects. We need to trigger the tests target so that
+  # tests are built and any fixtures are set up.
+    - colcon build --cmake-target tests --cmake-args -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_BUILD_TYPE=Debug -DPYTHON_EXECUTABLE=/usr/bin/python3
+    - lcov --initial --directory build --capture --output-file lcov.base
+    - colcon test
+    - colcon test-result --verbose
+    - lcov --directory build --capture --output-file lcov.test
+    - lcov -a lcov.base -a lcov.test -o lcov.total
+    - lcov -r lcov.total '*/tests/*' '*/test/*' '*/build/*' '*/devel/*' '/usr/*' '/opt/*' '*/CMakeCCompilerId.c' '*/CMakeCXXCompilerId.cpp' -o lcov.total.filtered
+    # BRANCH_NAME: gets branch name from CI_COMMIT_REF_NAME variable substituting / with _ (feature/test_this_lib becomes feature_test_this_lib)
+    # CI_COMMIT_REF_NAME: (from https://docs.gitlab.com/ee/ci/variables/) The branch or tag name for which project is built
+    - BRANCH_NAME="$(echo $CI_COMMIT_REF_NAME | sed 's/\//_/g')"
+    - COVERAGE_FOLDER_NAME="coverage_$BRANCH_NAME"
+    - genhtml -p "$PWD" --legend --demangle-cpp lcov.total.filtered -o $COVERAGE_FOLDER_NAME
+    - tar -czvf coverage.tar.gz $COVERAGE_FOLDER_NAME
+    - mv coverage.tar.gz $CI_PROJECT_DIR/coverage.tar.gz
+    - ls $CI_PROJECT_DIR
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/coverage.tar.gz
+    expire_in: 48 hrs
+  coverage: /\s*lines.*:\s(\d+\.\d+\%\s\(\d+\sof\s\d+.*\))/
+
+build_kinetic_cross:
   stage: build
   image: docker
   services:
     - docker:dind
   variables:
     ROS_DISTRO: kinetic
-    AUTOWARE_DOCKER_DATE: 20190521
-    AUTOWARE_HOME: $CI_PROJECT_DIR
-    AUTOWARE_TARGET_ARCH: aarch64
-    AUTOWARE_TARGET_PLATFORM: generic-aarch64
-    AUTOWARE_BUILD_PATH: $CI_PROJECT_DIR/ros/build-${AUTOWARE_TARGET_PLATFORM}
-    AUTOWARE_INSTALL_PATH: $CI_PROJECT_DIR/ros/install-${AUTOWARE_TARGET_PLATFORM}
-    AUTOWARE_TOOLCHAIN_FILE_PATH: $CI_PROJECT_DIR/ros/cross_toolchain.cmake
-    AUTOWARE_SYSROOT: /sysroot/${AUTOWARE_TARGET_PLATFORM}
-  script:
-    # - ${AUTOWARE_HOME}/docker/crossbuild/build_cross_image.sh
-    - 'docker run
-          -e AUTOWARE_SYSROOT=${AUTOWARE_SYSROOT}
-          --rm
-          -v ${AUTOWARE_HOME}:${AUTOWARE_HOME}
-          -w ${AUTOWARE_HOME}/ros
-          autoware/build:${AUTOWARE_TARGET_PLATFORM}-kinetic-${AUTOWARE_DOCKER_DATE}
-          bash
-            -c "
-                source ${AUTOWARE_SYSROOT}/opt/ros/kinetic/setup.bash &&
-                colcon build
-                    --merge-install
-                    --build-base ${AUTOWARE_BUILD_PATH}
-                    --install-base ${AUTOWARE_INSTALL_PATH}
-                    --cmake-args
-                    -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH}
-                    -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH}
-                    -DCMAKE_PREFIX_PATH=\"${AUTOWARE_SYSROOT}/opt/ros/kinetic;${AUTOWARE_INSTALL_PATH}\"
-                    -DCMAKE_FIND_ROOT_PATH=${AUTOWARE_INSTALL_PATH}
-                  "
-                  '
-  retry: 1
+    AUTOWARE_DOCKER_DATE: "20190521"
+    <<: *build_cross_vars
+  <<: *build_cross_script
+
+build_melodic_cross:
+  stage: build
+  image: docker
+  services:
+    - docker:dind
+  variables:
+    ROS_DISTRO: melodic
+    AUTOWARE_DOCKER_DATE: "20190521"
+    <<: *build_cross_vars
+  <<: *build_cross_script
 
 pages:
   stage: deploy
   image: alpine
   dependencies:
     - build_kinetic
+    - build_melodic
   script:
     - BRANCH_NAME="$(echo $CI_COMMIT_REF_NAME | sed 's/\//_/g')"
     - COVERAGE_FOLDER_NAME="coverage_$BRANCH_NAME"
@@ -132,4 +185,3 @@ pages:
   only:
     - master
     - develop
-

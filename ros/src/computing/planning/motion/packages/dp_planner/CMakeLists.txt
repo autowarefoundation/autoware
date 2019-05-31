@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(dp_planner)
-set(ROS_VERSION $ENV{ROS_DISTRO})
 
 find_package(autoware_build_flags REQUIRED)
 
@@ -54,9 +53,6 @@ catkin_package(
 ###########
 
 SET(CMAKE_CXX_FLAGS "-O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
-if ("${ROS_VERSION}" MATCHES "(kinetic)")
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DROS_KINETIC")
-endif ()
 
 include_directories(
         include include/plannerh

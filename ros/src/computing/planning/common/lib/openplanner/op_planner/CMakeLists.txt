@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(op_planner)
 
-# Get a ros version
-set(ROS_VERSION $ENV{ROS_DISTRO})
-
 find_package(catkin REQUIRED COMPONENTS
 		autoware_build_flags
 		cmake_modules

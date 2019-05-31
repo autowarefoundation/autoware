@@ -4,12 +4,13 @@ args:
 - {name: interval_sec, type: real, default: 0.1}
 - {name: num_prediction, type: int, default: 10}
 - {name: sensor_height, type: real, default: 2.0}
+- {name: filter_out_close_object_threshold, type: real, default: 1.5}
 - {name: input_topic, type: str, default: /detection/objects}
-
 panel:
   widget: node.panel
   frames:
   - {target: args.interval_sec, widget: basic.real}
   - {target: args.num_prediction, widget: basic.int}
   - {target: args.sensor_height, widget: basic.real}
+  - {target: args.filter_out_close_object_threshold, widget: basic.real}
   - {target: args.input_topic, widget: basic.text}

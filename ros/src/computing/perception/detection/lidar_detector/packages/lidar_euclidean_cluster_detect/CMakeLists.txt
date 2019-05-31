@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
         grid_map_cv
         grid_map_msgs
         autoware_msgs
+        jsk_rviz_plugins
         )
 
 find_package(OpenMP)
@@ -37,6 +38,7 @@ catkin_package(
         grid_map_ros
         grid_map_cv
         grid_map_msgs
+        jsk_rviz_plugins
         INCLUDE_DIRS include
 )
 
@@ -62,13 +64,15 @@ add_executable(lidar_euclidean_cluster_detect
         nodes/lidar_euclidean_cluster_detect/cluster.cpp)
 
 find_package(CUDA)
-if (${CUDA_FOUND})
-    INCLUDE(FindCUDA)
+find_package(Eigen3 QUIET)
+
+AW_CHECK_CUDA()
+
+if (USE_CUDA)
     message("-- USING ACCELERATED CLUSTERING --")
     message("Version: " ${CUDA_VERSION})
     message("Library: " ${CUDA_CUDA_LIBRARY})
     message("Runtime: " ${CUDA_CUDART_LIBRARY})
-    set(ROS_VERSION $ENV{ROS_DISTRO})
     target_compile_definitions(lidar_euclidean_cluster_detect PRIVATE
             GPU_CLUSTERING=1
             )

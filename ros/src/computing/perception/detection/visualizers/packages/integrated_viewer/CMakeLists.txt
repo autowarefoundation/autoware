@@ -131,5 +131,6 @@ install(FILES
 
 add_dependencies(${PROJECT_NAME}
         ${catkin_EXPORTED_TARGETS}
+        autoware_msgs_generate_messages_cpp
         )
 #endif()
