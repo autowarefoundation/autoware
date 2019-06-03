@@ -30,4 +30,4 @@ config:
   args.use_back: false
   args.use_potential_heuristic: true
   args.use_wavefront_heuristic: false
-plugin: refs/obstacle_avoid
+plugin: refs/astar_avoid

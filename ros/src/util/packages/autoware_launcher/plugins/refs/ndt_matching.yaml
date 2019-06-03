@@ -1,0 +1,30 @@
+format: Autoware Launcher Plugin Version 0.1
+rosxml: $(find lidar_localizer)/launch/ndt_matching.launch
+args:
+- {name: method_type, type: int, default: 0}
+- {name: use_gnss, type: int, default: 1}
+- {name: use_odom, type: bool, default: false}
+- {name: use_imu, type: bool, default: false}
+- {name: imu_upside_down, type: bool, default: false}
+- {name: imu_topic, type: str, default: /imu_raw}
+- {name: queue_size, type: int, default: 1}
+- {name: offset, type: str, default: linear}
+- {name: get_height, type: bool, default: false}
+- {name: use_local_transform, type: bool, default: false}
+- {name: sync, type: bool, default: false}
+- {name: output_log_data, type: bool, default: false}
+panel:
+  widget: node.panel
+  frames:
+  - {target: args.method_type, widget: basic.int}
+  - {target: args.use_gnss, widget: basic.int}
+  - {target: args.use_odom, widget: basic.bool}
+  - {target: args.use_imu, widget: basic.bool}
+  - {target: args.imu_upside_down, widget: basic.bool}
+  - {target: args.imu_topic, widget: basic.text}
+  - {target: args.queue_size, widget: basic.int}
+  - {target: args.offset, widget: basic.text}
+  - {target: args.get_height, widget: basic.bool}
+  - {target: args.use_local_transform, widget: basic.bool}
+  - {target: args.sync, widget: basic.bool}
+  - {target: args.output_log_data, widget: basic.bool}

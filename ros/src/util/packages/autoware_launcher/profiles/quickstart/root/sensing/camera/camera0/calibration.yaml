@@ -1,6 +1,6 @@
 children: []
 config:
-  args.calibration_file: $(env HOME)/.autoware/data/calibration/calibration.yml
+  args.calibration_file: $(env HOME)/.autoware/data/calibration/camera_lidar_3d/prius/nic-150407.yml
   args.camera_frame: camera
   args.camera_id: /
   args.camera_info_topic: /camera_info

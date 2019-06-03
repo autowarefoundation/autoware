@@ -23,7 +23,7 @@ panel:
   widget: node.panel
   frames:
   - {target: args.load_csv, widget: basic.bool}
-  - {target: args.multi_lane_csv, widget: basic.text}
+  - {target: args.multi_lane_csv, widget: basic.file}
   - {target: args.replanning_mode, widget: basic.bool}
   - {target: args.velocity_max, widget: basic.real}
   - {target: args.velocity_min, widget: basic.real}
