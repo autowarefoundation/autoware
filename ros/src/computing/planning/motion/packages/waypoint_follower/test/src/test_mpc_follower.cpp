@@ -160,150 +160,165 @@ public:
 };
 
 
-TEST_F(TestSuite, TestMPCFollowerInvalidPath)
+TEST_F(TestSuite, TestMPCFollower)
 {
-    MPCFollower mpc_follower;
+    /* TestMPCFollowerInvalidPath */
+    { 
+        MPCFollower mpc_follower;
 
-    publishEstimateTwist();
+        publishEstimateTwist();
 
-    geometry_msgs::PoseStamped current_pose;
-    current_pose.pose.position.y = 1.0;
-    current_pose.pose.orientation.w = 1.0;
+        geometry_msgs::PoseStamped current_pose;
+        current_pose.pose.position.y = 1.0;
+        current_pose.pose.orientation.w = 1.0;
 
-    autoware_msgs::VehicleStatus vs;
-    vs.speed = 0.0;
-    vs.angle = 0.0;
+        autoware_msgs::VehicleStatus vs;
+        vs.speed = 0.0;
+        vs.angle = 0.0;
 
-    // autoware_msgs::Lane lane;
-    const double vx = 1.0;
-    const double wz = 0.1;
-    const double dt = 1.0;
-    double x(0.0), y(0.0), yaw(0.0);
+        // autoware_msgs::Lane lane;
+        const double vx = 1.0;
+        const double wz = 0.1;
+        const double dt = 1.0;
+        double x(0.0), y(0.0), yaw(0.0);
 
-    // first publish valid values
-    publishMsgs(current_pose, vs, vx, wz, dt, x, y, yaw);
+        // first publish valid values
+        publishMsgs(current_pose, vs, vx, wz, dt, x, y, yaw);
 
-    // then, publish invalid path 
-    autoware_msgs::Lane empty_lane;
-    for (int i = 0; i < spin_loopnum_; ++i)
-    {
-        pub_lane_.publish(empty_lane);
-        ros::spinOnce();
-        ros::Duration(spin_duration_).sleep();
-    }
-
-    ASSERT_TRUE(std::isfinite(twist_raw_.twist.linear.x)) << "expected keepping old path and publish finite values";
-    ASSERT_TRUE(std::isfinite(twist_raw_.twist.angular.z)) << "expected keepping old path and publish finite values";
-    ASSERT_TRUE(std::isfinite(ctrl_cmd_.cmd.linear_velocity)) << "expected keepping old path and publish finite values";
-    ASSERT_TRUE(std::isfinite(ctrl_cmd_.cmd.steering_angle)) << "expected keepping old path and publish finite values";
-}
-
-TEST_F(TestSuite, TestMPCFollowerInvalidPose)
-{
-    MPCFollower mpc_follower;
-
-    geometry_msgs::PoseStamped current_pose;
-    current_pose.pose.position.y = 1.0; // first publish valid value
-    current_pose.pose.orientation.w = 1.0;
-
-    autoware_msgs::VehicleStatus vs;
-    vs.speed = 0.0; 
-    vs.angle = 0.0;
-
-    // autoware_msgs::Lane lane;
-    const double vx = 1.0;
-    const double wz = 0.1;
-    const double dt = 1.0;
-    double x(0.0), y(0.0), yaw(0.0);
-
-    // first publish valid values
-    publishMsgs(current_pose, vs, vx, wz, dt, x, y, yaw);
-    ASSERT_GT(twist_raw_.twist.linear.x, 0.1);
-
-    // then publish invalid pose
-    current_pose.pose.position.y = NAN;
-    vs.speed = 0.0;
-    publishMsgs(current_pose, vs, vx, wz, dt, x, y, yaw);
-    ASSERT_DOUBLE_EQ(0.0, twist_raw_.twist.linear.x) << "emergency stop, zero speed command is expected";
-    ASSERT_DOUBLE_EQ(0.0, ctrl_cmd_.cmd.linear_velocity) << "emergency stop, zero speed command is expected";
-
-}
-
-TEST_F(TestSuite, TestMPCFollowerInvalidVehicleStatus)
-{
-    pnh_.setParam("vehicle_model_type", "kinematics"); // set as default. kinematics_no_delay & dynamics does not use vehicle status.
-    pnh_.setParam("qp_solver_type", "unconstraint_fast");
-
-    MPCFollower mpc_follower;
-
-    geometry_msgs::PoseStamped current_pose;
-    current_pose.pose.position.y = 1.0; 
-    current_pose.pose.orientation.w = 1.0;
-
-    autoware_msgs::VehicleStatus vs;
-    vs.speed = 0.0; 
-    vs.angle = 0.0; // first publish valid value
-
-    // autoware_msgs::Lane lane;
-    const double vx = 3.28;
-    const double wz = 0.1;
-    const double dt = 1.0;
-    double x(0.0), y(0.0), yaw(0.0);
-
-    // first publish valid values
-    publishMsgs(current_pose, vs, vx, wz, dt, x, y, yaw);
-    ASSERT_GT(twist_raw_.twist.linear.x, 0.1);
-
-    // then publish invalid vehicle status
-    current_pose.pose.position.y = 1.0;
-    vs.angle = NAN;
-    publishMsgs(current_pose, vs, vx, wz, dt, x, y, yaw);
-    ASSERT_DOUBLE_EQ(0.0, twist_raw_.twist.linear.x) << "emergency stop, zero speed command is expected";
-    ASSERT_DOUBLE_EQ(0.0, ctrl_cmd_.cmd.linear_velocity) << "emergency stop, zero speed command is expected";
-}
-
-TEST_F(TestSuite, TestMPCFollowerNoMessageCase)
-{
-    MPCFollower mpc_follower;
-    for (int i = 0; i < spin_loopnum_; ++i)
-    {
-        ros::spinOnce();
-        ros::Duration(spin_duration_).sleep();
-    }
-    ASSERT_DOUBLE_EQ(0.0, twist_raw_.twist.linear.x) << "no messages published, zero speed command is expected";
-    ASSERT_DOUBLE_EQ(0.0, twist_raw_.twist.angular.z) << "no messages published, zero speed command is expected";
-    ASSERT_DOUBLE_EQ(0.0, ctrl_cmd_.cmd.linear_velocity) << "no messages published, zero speed command is expected";
-    ASSERT_DOUBLE_EQ(0.0, ctrl_cmd_.cmd.steering_angle) << "no messages published, zero speed command is expected";
-}
-
-TEST_F(TestSuite, TestMPCFollowerAlgorithmOptions)
-{
-    std::string vehicle_mode_type_array[] = {"kinematics", "kinematics_no_delay", "dynamics"};
-    std::string qp_solver_type_array[] = {"unconstraint", "unconstraint_fast"};
-
-    for (const auto vehicle_model_type : vehicle_mode_type_array)
-    {
-        for (const auto qp_solver_type : qp_solver_type_array)
+        // then, publish invalid path 
+        autoware_msgs::Lane empty_lane;
+        for (int i = 0; i < spin_loopnum_; ++i)
         {
-            // ROS_ERROR("%s, %s", vehicle_model_type.c_str(), qp_solver_type.c_str());
-            pnh_.setParam("vehicle_model_type", vehicle_model_type);
-            pnh_.setParam("qp_solver_type", qp_solver_type);
-            testTurningRight();
-            testTurningLeft();
+            pub_lane_.publish(empty_lane);
+            ros::spinOnce();
+            ros::Duration(spin_duration_).sleep();
         }
+
+        ASSERT_TRUE(std::isfinite(twist_raw_.twist.linear.x)) << "expected keepping old path and publish finite values";
+        ASSERT_TRUE(std::isfinite(twist_raw_.twist.angular.z)) << "expected keepping old path and publish finite values";
+        ASSERT_TRUE(std::isfinite(ctrl_cmd_.cmd.linear_velocity)) << "expected keepping old path and publish finite values";
+        ASSERT_TRUE(std::isfinite(ctrl_cmd_.cmd.steering_angle)) << "expected keepping old path and publish finite values";
     }
+
+
+    /*  == TestMPCFollowerInvalidPose == */
+    {
+        MPCFollower mpc_follower;
+
+        geometry_msgs::PoseStamped current_pose;
+        current_pose.pose.position.y = 1.0; // first publish valid value
+        current_pose.pose.orientation.w = 1.0;
+
+        autoware_msgs::VehicleStatus vs;
+        vs.speed = 0.0; 
+        vs.speed = 0.0; 
+        vs.speed = 0.0; 
+        vs.angle = 0.0;
+
+        // autoware_msgs::Lane lane;
+        const double vx = 1.0;
+        const double wz = 0.1;
+        const double dt = 1.0;
+        double x(0.0), y(0.0), yaw(0.0);
+
+        // first publish valid values
+        twist_raw_.twist.linear.x = -9.99;
+        publishMsgs(current_pose, vs, vx, wz, dt, x, y, yaw);
+
+        ASSERT_GT(twist_raw_.twist.linear.x, 0.1);
+
+
+        // then publish invalid pose
+        current_pose.pose.position.y = NAN;
+        vs.speed = 0.0;
+        publishMsgs(current_pose, vs, vx, wz, dt, x, y, yaw);
+        ASSERT_DOUBLE_EQ(0.0, twist_raw_.twist.linear.x) << "emergency stop, zero speed command is expected";
+        ASSERT_DOUBLE_EQ(0.0, ctrl_cmd_.cmd.linear_velocity) << "emergency stop, zero speed command is expected";
+    }
+
+    /* == TestMPCFollowerInvalidVehicleStatus == */
+    {
+        pnh_.setParam("vehicle_model_type", "kinematics"); // set as default. kinematics_no_delay & dynamics does not use vehicle status.
+        pnh_.setParam("qp_solver_type", "unconstraint_fast");
+
+        MPCFollower mpc_follower;
+
+        geometry_msgs::PoseStamped current_pose;
+        current_pose.pose.position.y = 1.0; 
+        current_pose.pose.position.y = 1.0; 
+        current_pose.pose.position.y = 1.0; 
+        current_pose.pose.orientation.w = 1.0;
+
+        autoware_msgs::VehicleStatus vs;
+        vs.speed = 0.0; 
+        vs.speed = 0.0; 
+        vs.speed = 0.0; 
+        vs.angle = 0.0; // first publish valid value
+
+        // autoware_msgs::Lane lane;
+        const double vx = 3.28;
+        const double wz = 0.1;
+        const double dt = 1.0;
+        double x(0.0), y(0.0), yaw(0.0);
+
+        // first publish valid values
+        publishMsgs(current_pose, vs, vx, wz, dt, x, y, yaw);
+        ASSERT_GT(twist_raw_.twist.linear.x, 0.1);
+
+        // then publish invalid vehicle status
+        current_pose.pose.position.y = 1.0;
+        vs.angle = NAN;
+        publishMsgs(current_pose, vs, vx, wz, dt, x, y, yaw);
+        ASSERT_DOUBLE_EQ(0.0, twist_raw_.twist.linear.x) << "emergency stop, zero speed command is expected";
+        ASSERT_DOUBLE_EQ(0.0, ctrl_cmd_.cmd.linear_velocity) << "emergency stop, zero speed command is expected";
+    }
+
+    /* == TestMPCFollowerNoMessageCase == */
+    {
+        MPCFollower mpc_follower;
+        for (int i = 0; i < spin_loopnum_; ++i)
+        {
+            ros::spinOnce();
+            ros::Duration(spin_duration_).sleep();
+        }
+        ASSERT_DOUBLE_EQ(0.0, twist_raw_.twist.linear.x) << "no messages published, zero speed command is expected";
+        ASSERT_DOUBLE_EQ(0.0, twist_raw_.twist.angular.z) << "no messages published, zero speed command is expected";
+        ASSERT_DOUBLE_EQ(0.0, ctrl_cmd_.cmd.linear_velocity) << "no messages published, zero speed command is expected";
+        ASSERT_DOUBLE_EQ(0.0, ctrl_cmd_.cmd.steering_angle) << "no messages published, zero speed command is expected";
+    }
+
+    /* == TestMPCFollowerAlgorithmOptions == */
+    {
+        std::string vehicle_mode_type_array[] = {"kinematics", "kinematics_no_delay", "dynamics"};
+        std::string qp_solver_type_array[] = {"unconstraint", "unconstraint_fast"};
+
+        for (const auto vehicle_model_type : vehicle_mode_type_array)
+        {
+            for (const auto qp_solver_type : qp_solver_type_array)
+            {
+                // ROS_ERROR("%s, %s", vehicle_model_type.c_str(), qp_solver_type.c_str());
+                pnh_.setParam("vehicle_model_type", vehicle_model_type);
+                pnh_.setParam("qp_solver_type", qp_solver_type);
+                testTurningRight();
+                testTurningLeft();
+            }
+        } 
+    }
+
+    /* == TestMPCFollowerDebugOptions == */
+    {
+        pnh_.setParam("show_debug_info", true);
+        pnh_.setParam("publish_debug_values", true);
+        testTurningRight();
+
+        pnh_.setParam("show_debug_info", false);
+        pnh_.setParam("publish_debug_values", false);
+        testTurningRight();
+    }
+
+
 }
 
-TEST_F(TestSuite, TestMPCFollowerDebugOptions)
-{
-    pnh_.setParam("show_debug_info", true);
-    pnh_.setParam("publish_debug_values", true);
-    testTurningRight();
-
-    pnh_.setParam("show_debug_info", false);
-    pnh_.setParam("publish_debug_values", false);
-    testTurningRight();
-}
 
 
 int main(int argc, char **argv)
