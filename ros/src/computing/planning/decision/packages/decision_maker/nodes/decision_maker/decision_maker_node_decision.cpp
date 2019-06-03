@@ -74,7 +74,42 @@ double DecisionMakerNode::calcIntersectWayAngle(const autoware_msgs::Lane& lanei
   return diff;
 }
 
-bool DecisionMakerNode::isLocalizationConvergence(const geometry_msgs::Point& _current_point)
+double DecisionMakerNode::getDistToWaypointIdx(const int wpidx) const
+{
+  double distance = 0.0;
+  geometry_msgs::Pose prev_pose = current_status_.pose;
+
+  for (unsigned int idx = 0; idx < current_status_.finalwaypoints.waypoints.size() - 1; idx++)
+  {
+    distance += amathutils::find_distance(prev_pose, current_status_.finalwaypoints.waypoints.at(idx).pose.pose);
+
+    if (current_status_.finalwaypoints.waypoints.at(idx).gid == wpidx)
+    {
+      break;
+    }
+
+    prev_pose = current_status_.finalwaypoints.waypoints.at(idx).pose.pose;
+  }
+
+  return distance;
+}
+
+double DecisionMakerNode::calcRequiredDistForStop(void) const
+{
+  static const double mu = 0.7;  // dry ground/ asphalt/ normal tire
+  static const double g = 9.80665;
+  static const double margin = 5;
+  static const double reaction_time = 0.3 + margin;  // system delay(sec)
+  const double velocity = amathutils::kmph2mps(current_status_.velocity);
+
+  const double free_running_distance = reaction_time * velocity;
+  const double braking_distance = velocity * velocity / (2 * g * mu);
+  const double distance_to_target = (free_running_distance + braking_distance) * 2 /* safety margin*/;
+
+  return distance_to_target;
+}
+
+bool DecisionMakerNode::isLocalizationConvergence(const geometry_msgs::Point& _current_point) const
 {
   static std::vector<double> distances;
   static uint32_t distances_count = 0;
@@ -105,17 +140,16 @@ bool DecisionMakerNode::isLocalizationConvergence(const geometry_msgs::Point& _c
   prev_point = _current_point;
   return ret;
 }
-bool DecisionMakerNode::isArrivedGoal()
+bool DecisionMakerNode::isArrivedGoal() const
 {
   const auto goal_point = current_status_.finalwaypoints.waypoints.back().pose.pose.position;
 
-  if (amathutils::find_distance(goal_point, current_status_.pose.position) < goal_threshold_dist_)
+  if (amathutils::find_distance(goal_point, current_status_.pose.position) < goal_threshold_dist_
+      && fabs(current_status_.velocity) <= goal_threshold_vel_)
   {
-    if (current_status_.velocity <= goal_threshold_vel_)
-    {
-      return true;
-    }
+    return true;
   }
+
   return false;
 }
 }

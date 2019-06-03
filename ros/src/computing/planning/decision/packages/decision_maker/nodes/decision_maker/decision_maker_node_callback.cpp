@@ -53,6 +53,7 @@ void DecisionMakerNode::callbackFromConfig(const autoware_config_msgs::ConfigDec
   change_threshold_angle_ = msg.change_threshold_angle;
   goal_threshold_dist_ = msg.goal_threshold_dist;
   goal_threshold_vel_ = msg.goal_threshold_vel;
+  stopped_vel_ = msg.stopped_vel;
   disuse_vector_map_ = msg.disuse_vector_map;
 }
 
@@ -221,7 +222,8 @@ bool DecisionMakerNode::drivingMissionCheck()
       wp.wpstate.aid = 0;
       wp.wpstate.steering_state = autoware_msgs::WaypointState::NULLSTATE;
       wp.wpstate.accel_state = autoware_msgs::WaypointState::NULLSTATE;
-      wp.wpstate.stop_state = autoware_msgs::WaypointState::NULLSTATE;
+      if (wp.wpstate.stop_state != autoware_msgs::WaypointState::TYPE_STOPLINE && wp.wpstate.stop_state != autoware_msgs::WaypointState::TYPE_STOP)
+        wp.wpstate.stop_state = autoware_msgs::WaypointState::NULLSTATE;
       wp.wpstate.lanechange_state = autoware_msgs::WaypointState::NULLSTATE;
       wp.wpstate.event_state = 0;
       wp.gid = gid++;
@@ -313,4 +315,26 @@ void DecisionMakerNode::callbackFromObstacleWaypoint(const std_msgs::Int32& msg)
 {
   current_status_.obstacle_waypoint = msg.data;
 }
+
+void DecisionMakerNode::callbackFromStopOrder(const std_msgs::Int32& msg)
+{
+  autoware_msgs::VehicleLocation pub_msg;
+  pub_msg.header.stamp = ros::Time::now();
+  pub_msg.lane_array_id = current_status_.using_lane_array.id;
+  pub_msg.waypoint_index = -1;
+
+  if (current_status_.closest_waypoint < msg.data && msg.data < current_status_.using_lane_array.lanes.back().waypoints.back().gid)
+  {
+    current_status_.prev_ordered_idx = current_status_.ordered_stop_idx;
+    current_status_.ordered_stop_idx = msg.data;
+    pub_msg.waypoint_index = msg.data;
+  }
+  else
+  {
+    current_status_.ordered_stop_idx = -1;
+  }
+
+  Pubs["stop_cmd_location"].publish(pub_msg);
+}
+
 }

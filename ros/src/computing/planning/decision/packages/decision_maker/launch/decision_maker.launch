@@ -14,6 +14,7 @@
   <arg name="change_threshold_angle" default="15" />
   <arg name="goal_threshold_dist" default="3.0" />
   <arg name="goal_threshold_vel" default="0.1" />
+  <arg name="stopped_vel" default="0.1" />
   <arg name="stopline_reset_count" default="20" />
 
   <node pkg="decision_maker" type="decision_maker_node" name="decision_maker" output="screen">
@@ -31,6 +32,7 @@
     <param name="change_threshold_angle" value="$(arg change_threshold_angle)"/>
     <param name="goal_threshold_dist" value="$(arg goal_threshold_dist)"/>
     <param name="goal_threshold_vel" value="$(arg goal_threshold_vel)"/>
+    <param name="stopped_vel" value="$(arg stopped_vel)"/>
     <param name ="stopline_reset_count" value="$(arg stopline_reset_count)"/>
 	</node>
 
