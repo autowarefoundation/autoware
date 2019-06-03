@@ -1,5 +1,5 @@
 children:
-- obstacle_avoid
+- astar_avoid
 - velocity_set
 - waypoint_loader
 - pure_pursuit

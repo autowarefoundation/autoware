@@ -1,0 +1,58 @@
+format: Autoware Launcher Plugin Version 0.1
+rosxml: $(find waypoint_planner)/launch/astar_avoid.launch
+args:
+- {name: safety_waypoints_size, type: int, default: 100}
+- {name: update_rate, type: int, default: 10}
+- {name: costmap_topic, type: str, default: semantics/costmap_generator/occupancy_grid}
+- {name: enable_avoidance, type: bool, default: false}
+- {name: avoid_waypoints_velocity, type: real, default: 10.0}
+- {name: avoid_start_velocity, type: real, default: 3.0}
+- {name: replan_interval, type: real, default: 2.0}
+- {name: search_waypoints_size, type: int, default: 50}
+- {name: search_waypoints_delta, type: int, default: 2}
+- {name: use_back, type: bool, default: false}
+- {name: use_potential_heuristic, type: bool, default: true}
+- {name: use_wavefront_heuristic, type: bool, default: false}
+- {name: time_limit, type: real, default: 1000.0}
+- {name: robot_length, type: real, default: 4.5}
+- {name: robot_width, type: real, default: 1.75}
+- {name: robot_base2back, type: real, default: 1.0}
+- {name: minimum_turning_radius, type: real, default: 6.0}
+- {name: theta_size, type: int, default: 48}
+- {name: curve_weight, type: real, default: 1.2}
+- {name: reverse_weight, type: real, default: 2.0}
+- {name: lateral_goal_range, type: real, default: 0.5}
+- {name: longitudinal_goal_range, type: real, default: 2.0}
+- {name: angle_goal_range, type: real, default: 6.0}
+- {name: obstacle_threshold, type: int, default: 100}
+- {name: potential_weight, type: real, default: 10.0}
+- {name: distance_heuristic_weight, type: real, default: 1.0}
+panel:
+  widget: node.panel
+  frames:
+  - {target: args.safety_waypoints_size, widget: basic.int}
+  - {target: args.update_rate, widget: basic.int}
+  - {target: args.costmap_topic, widget: basic.text}
+  - {target: args.enable_avoidance, widget: basic.bool}
+  - {target: args.avoid_waypoints_velocity, widget: basic.real}
+  - {target: args.avoid_start_velocity, widget: basic.real}
+  - {target: args.replan_interval, widget: basic.real}
+  - {target: args.search_waypoints_size, widget: basic.int}
+  - {target: args.search_waypoints_delta, widget: basic.int}
+  - {target: args.use_back, widget: basic.bool}
+  - {target: args.use_potential_heuristic, widget: basic.bool}
+  - {target: args.use_wavefront_heuristic, widget: basic.bool}
+  - {target: args.time_limit, widget: basic.real}
+  - {target: args.robot_length, widget: basic.real}
+  - {target: args.robot_width, widget: basic.real}
+  - {target: args.robot_base2back, widget: basic.real}
+  - {target: args.minimum_turning_radius, widget: basic.real}
+  - {target: args.theta_size, widget: basic.int}
+  - {target: args.curve_weight, widget: basic.real}
+  - {target: args.reverse_weight, widget: basic.real}
+  - {target: args.lateral_goal_range, widget: basic.real}
+  - {target: args.longitudinal_goal_range, widget: basic.real}
+  - {target: args.angle_goal_range, widget: basic.real}
+  - {target: args.obstacle_threshold, widget: basic.int}
+  - {target: args.potential_weight, widget: basic.real}
+  - {target: args.distance_heuristic_weight, widget: basic.real}
