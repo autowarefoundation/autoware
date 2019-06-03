@@ -55,6 +55,7 @@ Topic|Type|Objective
 /final_waypoints|autoware_msgs/Lane|resultant waypoints from planner nodes, e.g. from velocity_set node.
 /obstacle_waypoint|std_msgs/Int32|Obstacle waypoint index. Used in "Go" state.
 /state_cmd|std_msgs/String|Decision_maker will try to transit state according to the key given through this topic.
+/state/stop_order_wpidx|std_msgs/Int32|Vehicle will try to stop at this index of waypoint. Used in "OrderedStop" state.
 /vector_map_info/area|vector_map_msgs/AreaArray|Area information from vector map. <br>This is ignored unless area, cross_road, line, point, road_sign, stop_line, and vector are subscribed.
 /vector_map_info/cross_road|vector_map_msgs/CrossRoadArray|Cross road information from vector map. <br>This is ignored unless area, cross_road, line, point, road_sign, stop_line, and vector are subscribed.
 /vector_map_info/line|vector_map_msgs/LineArray|Line information from vector map. <br>This is ignored unless area, cross_road, line, point, road_sign, stop_line, and vector are subscribed.
@@ -77,6 +78,7 @@ Topic|Type|Objective
 /decision_maker/state_overlay|jsk_rviz_plugins/OverlayText|Current state as overlay_txt.
 /state/stopline_wpidx|std_msgs/Int32|Index of waypoint for the vehicle to stop.
 /decision_maker/target_velocity_array|std_msgs/Float64MultiArray| Array of target velocity obtained from final_waypoints.
+/stop_location|autoware_msgs/VehicleLocation|Feedback to fms on the `/state_stop_order_wpidx` topic. It contains the index that the vehicle will stop and the id of the lane_array that the vehicle is using at the time.
 
 
 ## State Description
@@ -139,9 +141,11 @@ WaitEngage|-|Waits for engage button in DecisionMakerPanel to be pressed|No impl
 MotionEmergency|-|Vehicle is stopping due to emergency |No implementation.
 Drive|/closest_waypoint </br> /final_waypoints|Vehicle drives according to the waypoint|mission_aborted key if waypoint is far from the vehicle.(i.e. vehicle moves out of the waypoint) Throws arrived_goal key if vehicle is near the end of the waypoints.  
 Go|-|Vehicle is moving|Throws found_stopline if stopline is nearby. Throws completely_stopped if vehicle stops due to obstacle.
-Stop|-|vehicle is stopping since stop signal is sent from other nodes (e.g. by stop button on decisionMakerPanel)|Publishes /state/stopline_wpidx with the index = closest_waypoint + 1.
 Wait|-|Vehilce is waiting (e.g. due to safety reason)|Publishes /state/stopline_wpidx with the index = closest_waypoint + 1.
+Stop|-|Vehicle stops in the middle of the waypoints|Throws found_stopline, found_reserved_stop, received_stop_order, clear key depending on waypoint state and /state/stop_order_wpidx topic.
 StopLine|/vector_map_info/stop_line|Vehicle is stopping due to stop line|Throws clear key after vehicle stops for 0.5 seconds.
+OrderedStop|/state/stop_order_wpidx|Vehicle is stopping at the index of required topic|Throws clear key if the topic was updated with an invalid index. The index from the vehicle position to the end of the waypoint is valid.
+ReservedStop|-|Vehicle is stopping at the waypoint which includs stop_flag is 2|Wait for clear key after the vehicle stops.
 
 ## Basic Usage in Autoware
 
@@ -210,6 +214,38 @@ The vehicle start to drive, and the state changes as follows for example:
 > **Straight**  
 > **Drive**  
 > **Go**
+
+### Stop line function
+There are two ways to enable stop line function as follows.
+
+##### Use waypoint flag
+1. Open waypoint file and modify stop_flag column of index that you want to stop.  
+Details of stop_flag's value:
+```
+0: None
+1: Stopline(automatically resume driving after stop)
+2: Stop(stop only, wait for command)
+```
+Example image:  
+<img src="docs/stop_flag.png" width=800>
+
+2. Start driving with the modified waypoint file.
+
+
+##### Use vector map
+The stopline, roadsign and the vector map files that accompany them are required.
+1. Open stopline file and change the value of SignID column that you want to stop to the roadsign's ID to be linked.
+2. Open the roadsign file and change the value in the Type column for the ID linked in the previous step. Details of the Type are same as stop_flag.  
+Example image:  
+<img src="docs/stopline_vectormap.png" width=800>
+
+3. Start driving with the modified vector map.
+
+##### Publish topic
+You need to know in advance the index of the waypoint you want to stop.
+The index is `gid` of waypoint.
+1. Publish `state/stop_order_wpidx` topic with the index you want to stop.
+2. After the vehicle has stopped, publish `/state_cmd` topic with `clear` key and then the vehicle will resume driving.
 
 ### Lane change
   1. Start driving with waypoint files necessary for lane change

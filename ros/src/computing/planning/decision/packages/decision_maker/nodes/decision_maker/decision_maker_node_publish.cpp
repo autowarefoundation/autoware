@@ -57,7 +57,7 @@ jsk_rviz_plugins::OverlayText createOverlayText(cstring_t& data, const int colum
   return ret;
 }
 
-void DecisionMakerNode::publishOperatorHelpMessage(cstring_t& message)
+void DecisionMakerNode::publishOperatorHelpMessage(const cstring_t& message)
 {
   static std::vector<std::string> msg_log;
   static const size_t log_size = 10;
@@ -120,14 +120,14 @@ void DecisionMakerNode::update_msgs(void)
 #endif
 }
 
-void DecisionMakerNode::publishLightColor(int status)
+void DecisionMakerNode::publishLightColor(const int status)
 {
   autoware_msgs::TrafficLight msg;
   msg.traffic_light = status;
   Pubs["light_color"].publish(msg);
 }
 
-void DecisionMakerNode::publishStoplineWaypointIdx(int wp_idx)
+void DecisionMakerNode::publishStoplineWaypointIdx(const int wp_idx)
 {
   std_msgs::Int32 msg;
   msg.data = wp_idx;

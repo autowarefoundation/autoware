@@ -53,7 +53,8 @@ void DecisionMakerNode::entryMissionCheckState(cstring_t& state_name, int status
       wp.wpstate.aid = 0;
       wp.wpstate.steering_state = autoware_msgs::WaypointState::NULLSTATE;
       wp.wpstate.accel_state = autoware_msgs::WaypointState::NULLSTATE;
-      wp.wpstate.stop_state = autoware_msgs::WaypointState::NULLSTATE;
+      if (wp.wpstate.stop_state != autoware_msgs::WaypointState::TYPE_STOPLINE && wp.wpstate.stop_state != autoware_msgs::WaypointState::TYPE_STOP)
+        wp.wpstate.stop_state = autoware_msgs::WaypointState::NULLSTATE;
       wp.wpstate.lanechange_state = autoware_msgs::WaypointState::NULLSTATE;
       wp.wpstate.event_state = 0;
       wp.gid = gid++;
@@ -87,6 +88,10 @@ void DecisionMakerNode::entryMissionCheckState(cstring_t& state_name, int status
   {
     Subs["final_waypoints"] =
         nh_.subscribe("final_waypoints", 1, &DecisionMakerNode::callbackFromFinalWaypoint, this);
+  }
+  if (!isSubscriberRegistered("stop_order_idx"))
+  {
+    Subs["stop_order_idx"] = nh_.subscribe("/state/stop_order_wpidx", 1, &DecisionMakerNode::callbackFromStopOrder, this);
   }
 }
 void DecisionMakerNode::updateMissionCheckState(cstring_t& state_name, int status)
