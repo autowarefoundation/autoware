@@ -89,7 +89,7 @@ DecisionMakerPanel::DecisionMakerPanel(QWidget* parent) : rviz::Panel(parent)
   buttons_def["engage"] = new QPushButton("\nEngage\n");
   signalMapper->setMapping(buttons_def["engage"], QString("engage"));
   buttons_def["stop"] = new QPushButton("\nStop\n");
-  signalMapper->setMapping(buttons_def["stop"], QString("found_obstacle_in_stopped_area"));
+  signalMapper->setMapping(buttons_def["stop"], QString("wait"));
   buttons_def["go"] = new QPushButton("\nGo\n");
   signalMapper->setMapping(buttons_def["go"], QString("clear"));
   // execute

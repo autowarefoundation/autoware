@@ -170,18 +170,19 @@ void DecisionMakerNode::setupStateCallback(void)
                          std::bind(&DecisionMakerNode::updateGoState, this, std::placeholders::_1, 0));
   ctx_motion->setCallback(state_machine::CallbackType::UPDATE, "Wait",
                          std::bind(&DecisionMakerNode::updateWaitState, this, std::placeholders::_1, 0));
-  ctx_motion->setCallback(state_machine::CallbackType::EXIT, "Wait",
-                         std::bind(&DecisionMakerNode::exitStopState, this, std::placeholders::_1, 0));
-  ctx_motion->setCallback(state_machine::CallbackType::ENTRY, "Stop",
-                         std::bind(&DecisionMakerNode::entryStopState, this, std::placeholders::_1, 1));
   ctx_motion->setCallback(state_machine::CallbackType::UPDATE, "Stop",
                          std::bind(&DecisionMakerNode::updateStopState, this, std::placeholders::_1, 1));
-  ctx_motion->setCallback(state_machine::CallbackType::EXIT, "Stop",
-                         std::bind(&DecisionMakerNode::exitStopState, this, std::placeholders::_1, 0));
+
   ctx_motion->setCallback(state_machine::CallbackType::UPDATE, "StopLine",
                          std::bind(&DecisionMakerNode::updateStoplineState, this, std::placeholders::_1, 0));
-  ctx_motion->setCallback(state_machine::CallbackType::EXIT, "StopLine",
-                         std::bind(&DecisionMakerNode::exitStopState, this, std::placeholders::_1, 0));
+  ctx_motion->setCallback(state_machine::CallbackType::UPDATE, "OrderedStop",
+                         std::bind(&DecisionMakerNode::updateOrderedStopState, this, std::placeholders::_1, 1));
+  ctx_motion->setCallback(state_machine::CallbackType::EXIT, "OrderedStop",
+                         std::bind(&DecisionMakerNode::exitOrderedStopState, this, std::placeholders::_1, 1));
+  ctx_motion->setCallback(state_machine::CallbackType::UPDATE, "ReservedStop",
+                         std::bind(&DecisionMakerNode::updateReservedStopState, this, std::placeholders::_1, 1));
+  ctx_motion->setCallback(state_machine::CallbackType::EXIT, "ReservedStop",
+                         std::bind(&DecisionMakerNode::exitReservedStopState, this, std::placeholders::_1, 1));
 
   ctx_vehicle->nextState("started");
   ctx_mission->nextState("started");
@@ -219,6 +220,7 @@ void DecisionMakerNode::createPublisher(void)
   Pubs["state_msg"] = private_nh_.advertise<autoware_msgs::State>("state_msg", 1, true);
   Pubs["state_overlay"] = private_nh_.advertise<jsk_rviz_plugins::OverlayText>("state_overlay", 1);
   Pubs["available_transition"] = private_nh_.advertise<std_msgs::String>("available_transition", 1, true);
+  Pubs["stop_cmd_location"] = private_nh_.advertise<autoware_msgs::VehicleLocation>("stop_location", 1, true);
 
   // for debug
   Pubs["target_velocity_array"] = nh_.advertise<std_msgs::Float64MultiArray>("target_velocity_array", 1);
