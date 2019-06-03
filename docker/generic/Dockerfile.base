@@ -15,7 +15,6 @@ RUN apt-get update && apt-get install -y \
         fonts-dejavu \
         gconf2 \
         gnome-terminal \
-        gstreamer0.10-plugins-good \
         language-pack-en \
         libarmadillo-dev \
         libcanberra-gtk-module \
