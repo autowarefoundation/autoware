@@ -97,7 +97,7 @@ if [ $CUDA == "on" ]; then
         --rm \
         --tag $BASE$CUDA_SUFFIX \
         --build-arg FROM_ARG=$BASE \
-        --file generic/Dockerfile.cuda ./generic
+        --file generic/Dockerfile.cuda.$ROS_DISTRO ./generic
 fi
 
 if [ "$BASE_ONLY" == "true" ]; then
