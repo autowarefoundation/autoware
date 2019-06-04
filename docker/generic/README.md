@@ -48,6 +48,12 @@ dependencies or build the project themselves. Default image:
 _autoware/autoware:latest-kinetic-cuda_
 
 ```
+$ ./run.sh -ros-distro melodic
+```
+Same as above, but with ROS Melodic and Ubuntu 18.04. Default image:
+_autoware/autoware:latest-melodic-cuda_
+
+```
 $ ./run.sh --base
 ```
 Will start a container with the base image (without pre-built Autoware). The
@@ -58,6 +64,12 @@ Docker as their development environment. Default docker image:
 _autoware/autoware:latest-kinetic-base-cuda_
 
 ```
+$ ./run.sh --ros-distro melodic --base
+```
+Same as above but with ROS Melodic and Ubuntu 18.04. Default image:
+_autoware/autoware:latest-melodic-base-cuda_
+
+```
 $ ./run.sh --base --cuda off
 ```
 Same as previous example, but Cuda support is disabled. This is useful if you
@@ -66,11 +78,23 @@ Cuda will not be built or will execute on CPU. Default image:
 _autoware/autoware:latest-kinetic-base_
 
 ```
+$ ./run.sh --ros-distro melodic --base --cuda off
+```
+Same as above but with ROS Melodic and Ubuntu 18.04. Default image:
+_autoware/autoware:latest-melodic-base_
+
+```
 ./run.sh --tag-prefix local --base
 ```
 Will start a container with the tag prefix _local_. Note that _local_ is the
 default tag prefix when using the **build.sh** tool. Image name:
 _autoware/autoware:local-kinetic-base-cuda_
+
+```
+./run.sh --ros-distro melodic --tag-prefix local --base
+```
+Same as above but with ROS Melodic and Ubuntu 18.04. Image name:
+_autoware/autoware:local-melodic-base-cuda_
 
 For details on all parameters available and their default value, try:
 ```
