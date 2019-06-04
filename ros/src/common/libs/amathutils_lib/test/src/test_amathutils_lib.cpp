@@ -249,6 +249,34 @@ TEST(TestSuite, PointOnTheLine){
 	ASSERT_EQ(amathutils::isPointLeftFromLine(p1, line_p1, line_p2), ONLINE) << "Point is on the line ";
 }
 
+TEST(TestSuite, TestYawQuaternion){
+
+    geometry_msgs::Quaternion q;
+    q = amathutils::getQuaternionFromYaw(0.0);
+    ASSERT_DOUBLE_EQ(0.0, q.x);
+    ASSERT_DOUBLE_EQ(0.0, q.y);
+    ASSERT_DOUBLE_EQ(0.0, q.z);
+    ASSERT_DOUBLE_EQ(1.0, q.w);
+}
+
+
+TEST(TestSuite, TestNormalizeRadian)
+{
+    ASSERT_DOUBLE_EQ(0.0, amathutils::normalizeRadian(0.0));
+    ASSERT_DOUBLE_EQ(0.5, amathutils::normalizeRadian(0.5));
+    ASSERT_DOUBLE_EQ(-0.5, amathutils::normalizeRadian(-0.5));
+    ASSERT_DOUBLE_EQ(0.0, amathutils::normalizeRadian(2.0 * M_PI));
+    ASSERT_DOUBLE_EQ(0.3, amathutils::normalizeRadian(2.0 * M_PI + 0.3));
+    ASSERT_DOUBLE_EQ(M_PI, amathutils::normalizeRadian(3.0 * M_PI));
+    ASSERT_DOUBLE_EQ(0.0, amathutils::normalizeRadian(4.0 * M_PI));
+    ASSERT_DOUBLE_EQ(0.0, amathutils::normalizeRadian(-2.0 * M_PI));
+    ASSERT_DOUBLE_EQ(0.3, amathutils::normalizeRadian(-2.0 * M_PI + 0.3));
+    ASSERT_DOUBLE_EQ(-M_PI, amathutils::normalizeRadian(-3.0 * M_PI));
+    ASSERT_DOUBLE_EQ(0.0, amathutils::normalizeRadian(-4.0 * M_PI));
+    ASSERT_DOUBLE_EQ(M_PI, amathutils::normalizeRadian(M_PI));
+    ASSERT_DOUBLE_EQ(-M_PI, amathutils::normalizeRadian(-M_PI));
+}
+
 int main(int argc, char **argv) {
 	testing::InitGoogleTest(&argc, argv);
 	ros::init(argc, argv, "TestNode");

@@ -8,8 +8,8 @@
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Pose.h>
 #include <tf/tf.h>
-
-using namespace std;
+#include <tf2/utils.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 namespace amathutils
 {
@@ -17,11 +17,11 @@ namespace amathutils
 
 inline double rad2deg(double _angle)
 {
-  return _angle * 180 / M_PI;
+  return _angle * 180.0 / M_PI;
 }
 inline double deg2rad(double _angle)
 {
-  return _angle / 180 * M_PI;
+  return _angle / 180.0 * M_PI;
 }
 
 inline double mps2kmph(double _mpsval)
@@ -31,7 +31,7 @@ inline double mps2kmph(double _mpsval)
 
 inline double kmph2mps(double _kmphval)
 {
-  return (_kmphval * 1000 / 60 / 60);  // kmph * 1000m / 60sec / 60sec
+  return (_kmphval * 1000.0 / 60.0 / 60.0);  // kmph * 1000m / 60sec / 60sec
 }
 
 inline double getGravityAcceleration(double _acceleration_mpss)
@@ -41,7 +41,7 @@ inline double getGravityAcceleration(double _acceleration_mpss)
 
 inline double getAcceleration(double _v0, double _v, double _x)
 {
-  return (_v * _v - _v0 * _v0) / 2 / _x;
+  return (_v * _v - _v0 * _v0) / 2.0 / _x;
 }
 
 inline double getTimefromAcceleration(double _v0, double _v, double _a)
@@ -59,8 +59,22 @@ bool isIntersectLine(const geometry_msgs::Point &_l1_p1, const geometry_msgs::Po
 int isPointLeftFromLine(const geometry_msgs::Point &_target, const geometry_msgs::Point &_line_p1,
                         const geometry_msgs::Point &_line_p2);
 double getPoseYawAngle(const geometry_msgs::Pose &_pose);
+
+/**
+ * @brief convert from yaw to ros-Quaternion
+ * @param [in] yaw input yaw angle
+ * @return quaternion
+ */
+geometry_msgs::Quaternion getQuaternionFromYaw(const double &_yaw);
+
+/**
+ * @brief normalize angle into [-pi to pi]
+ * @param [in] _angle input angle
+ * @return normalized angle
+ */
+double normalizeRadian(const double _angle);
+
 double calcPosesAngleDiffRaw(const geometry_msgs::Pose &p_from, const geometry_msgs::Pose &_p_to);
-double radianNormalize(double _angle);
 double calcPosesAngleDiffDeg(const geometry_msgs::Pose &_p_from, const geometry_msgs::Pose &_p_to);
 double calcPosesAngleDiffRad(const geometry_msgs::Pose &_p_from, const geometry_msgs::Pose &_p_to);
 }

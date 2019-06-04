@@ -13,12 +13,14 @@ find_package(catkin REQUIRED COMPONENTS
         roscpp
         std_msgs
         tf
+        tf2
         geometry_msgs
         pcl_ros
         pcl_conversions
         sensor_msgs
         autoware_msgs
         autoware_config_msgs
+        amathutils_lib
         tablet_socket_msgs
         autoware_health_checker
         rostest
@@ -38,14 +40,17 @@ catkin_package(
         CATKIN_DEPENDS roscpp
         std_msgs
         tf
+        tf2
         geometry_msgs
         autoware_msgs
         autoware_config_msgs
+        amathutils_lib
         pcl_ros
         pcl_conversions
         sensor_msgs
         tablet_socket_msgs
         autoware_health_checker
+        gazebo_msgs
 )
 
 ###########
@@ -94,8 +99,28 @@ add_dependencies(twist_gate
         ${catkin_EXPORTED_TARGETS}
         autoware_msgs_generate_messages_cpp)
 
+set(MPC_FOLLOWER_SRC
+        nodes/mpc_follower/mpc_utils.cpp
+        nodes/mpc_follower/mpc_trajectory.cpp
+        nodes/mpc_follower/lowpass_filter.cpp
+        nodes/mpc_follower/vehicle_model/vehicle_model_interface.cpp
+        nodes/mpc_follower/vehicle_model/vehicle_model_bicycle_kinematics.cpp
+        nodes/mpc_follower/vehicle_model/vehicle_model_bicycle_dynamics.cpp
+        nodes/mpc_follower/vehicle_model/vehicle_model_bicycle_kinematics_no_delay.cpp
+        nodes/mpc_follower/qp_solver/qp_solver_unconstr.cpp
+        nodes/mpc_follower/qp_solver/qp_solver_unconstr_fast.cpp
+)
+
+add_executable(mpc_follower nodes/mpc_follower/mpc_follower_node.cpp nodes/mpc_follower/mpc_follower_core.cpp ${MPC_FOLLOWER_SRC})
+add_dependencies(mpc_follower ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(mpc_follower ${catkin_LIBRARIES})
+
+add_executable(mpc_waypoints_converter nodes/mpc_follower/mpc_waypoints_converter.cpp)
+add_dependencies(mpc_waypoints_converter ${catkin_EXPORTED_TARGETS})
+target_link_libraries(mpc_waypoints_converter ${catkin_LIBRARIES})
+
 ## Install executables and/or libraries
-install(TARGETS libwaypoint_follower pure_pursuit wf_simulator twist_filter twist_gate
+install(TARGETS libwaypoint_follower pure_pursuit wf_simulator twist_filter twist_gate mpc_follower mpc_waypoints_converter
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
@@ -110,13 +135,19 @@ install(DIRECTORY launch/
 
 if (CATKIN_ENABLE_TESTING)
     find_package(rostest REQUIRED)
-    add_rostest_gtest(test-twist_gate
-      test/test_twist_gate.test
-      test/src/test_twist_gate.cpp
-      nodes/twist_gate/twist_gate.cpp
-    )
-    add_dependencies(test-twist_gate
-      ${catkin_EXPORTED_TARGETS})
-    target_link_libraries(test-twist_gate
-      ${catkin_LIBRARIES})
+    add_rostest_gtest(test-twist_gate test/test_twist_gate.test test/src/test_twist_gate.cpp  nodes/twist_gate/twist_gate.cpp)
+    add_dependencies(test-twist_gate ${catkin_EXPORTED_TARGETS})
+    target_link_libraries(test-twist_gate ${catkin_LIBRARIES})
+
+    add_rostest_gtest(test-mpc_utils test/test_mpc_utils.test test/src/test_mpc_utils.cpp ${MPC_FOLLOWER_SRC})
+    add_dependencies(test-mpc_utils ${catkin_EXPORTED_TARGETS})
+    target_link_libraries(test-mpc_utils ${catkin_LIBRARIES})
+
+    add_rostest_gtest(test-mpc_follower test/test_mpc_follower.test test/src/test_mpc_follower.cpp nodes/mpc_follower/mpc_follower_core.cpp ${MPC_FOLLOWER_SRC})
+    add_dependencies(test-mpc_follower ${catkin_EXPORTED_TARGETS})
+    target_link_libraries(test-mpc_follower ${catkin_LIBRARIES})
+
+    add_rostest_gtest(test-mpc_lowpass_filter test/test_mpc_lowpass_filter.test test/src/test_mpc_lowpass_filter.cpp nodes/mpc_follower/lowpass_filter.cpp)
+    add_dependencies(test-mpc_lowpass_filter ${catkin_EXPORTED_TARGETS})
+    target_link_libraries(test-mpc_lowpass_filter ${catkin_LIBRARIES})
 endif ()
