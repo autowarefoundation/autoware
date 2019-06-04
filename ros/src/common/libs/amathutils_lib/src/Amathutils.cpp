@@ -89,12 +89,19 @@ double getPoseYawAngle(const geometry_msgs::Pose &_pose)
   return y;
 }
 
+geometry_msgs::Quaternion getQuaternionFromYaw(const double &_yaw)
+{
+  tf2::Quaternion q;
+  q.setRPY(0, 0, _yaw);
+  return tf2::toMsg(q);
+}
+
 double calcPosesAngleDiffRaw(const geometry_msgs::Pose &p_from, const geometry_msgs::Pose &_p_to)
 {
   return getPoseYawAngle(p_from) - getPoseYawAngle(_p_to);
 }
 
-double radianNormalize(double _angle)
+double normalizeRadian(const double _angle)
 {
   double n_angle = std::fmod(_angle, 2 * M_PI);
   n_angle = n_angle > M_PI ? n_angle - 2 * M_PI : n_angle < -M_PI ? 2 * M_PI + n_angle : n_angle;
@@ -107,12 +114,12 @@ double radianNormalize(double _angle)
 double calcPosesAngleDiffDeg(const geometry_msgs::Pose &_p_from, const geometry_msgs::Pose &_p_to)
 {
   // convert to [-pi : pi]
-  return rad2deg(radianNormalize(calcPosesAngleDiffRaw(_p_from, _p_to)));
+  return rad2deg(normalizeRadian(calcPosesAngleDiffRaw(_p_from, _p_to)));
 }
 
 double calcPosesAngleDiffRad(const geometry_msgs::Pose &_p_from, const geometry_msgs::Pose &_p_to)
 {
   // convert to [-pi : pi]
-  return radianNormalize(calcPosesAngleDiffRaw(_p_from, _p_to));
+  return normalizeRadian(calcPosesAngleDiffRaw(_p_from, _p_to));
 }
 }

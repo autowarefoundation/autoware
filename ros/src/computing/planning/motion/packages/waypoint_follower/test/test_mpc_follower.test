@@ -1,0 +1,5 @@
+<launch>
+
+  <test test-name="test-mpc_follower" pkg="waypoint_follower" type="test-mpc_follower" name="test"/>
+
+</launch>

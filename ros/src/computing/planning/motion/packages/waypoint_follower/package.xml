@@ -11,9 +11,11 @@
     <build_depend>roscpp</build_depend>
     <build_depend>std_msgs</build_depend>
     <build_depend>tf</build_depend>
+    <build_depend>tf2</build_depend>
     <build_depend>geometry_msgs</build_depend>
     <build_depend>autoware_msgs</build_depend>
     <build_depend>autoware_config_msgs</build_depend>
+    <build_depend>amathutils_lib</build_depend>
     <build_depend>pcl_ros</build_depend>
     <build_depend>pcl_conversions</build_depend>
     <build_depend>sensor_msgs</build_depend>
@@ -25,14 +27,17 @@
     <run_depend>roscpp</run_depend>
     <run_depend>std_msgs</run_depend>
     <run_depend>tf</run_depend>
+    <run_depend>tf2</run_depend>
     <run_depend>geometry_msgs</run_depend>
     <run_depend>autoware_msgs</run_depend>
     <run_depend>autoware_config_msgs</run_depend>
+    <run_depend>amathutils_lib</run_depend>
     <run_depend>pcl_ros</run_depend>
     <run_depend>pcl_conversions</run_depend>
     <run_depend>sensor_msgs</run_depend>
     <run_depend>tablet_socket_msgs</run_depend>
     <run_depend>autoware_health_checker</run_depend>
+    <run_depend>gazebo_msgs</run_depend>
     <export>
     </export>
 </package>

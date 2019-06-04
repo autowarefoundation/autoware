@@ -8,6 +8,8 @@ find_package(Eigen3 REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         roscpp
         autoware_msgs
+        tf
+        tf2
         )
 
 set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -16,6 +18,8 @@ catkin_package(
         INCLUDE_DIRS include
         LIBRARIES amathutils_lib
         CATKIN_DEPENDS roscpp autoware_msgs
+        tf
+        tf2
 )
 
 include_directories(amathutils_lib
