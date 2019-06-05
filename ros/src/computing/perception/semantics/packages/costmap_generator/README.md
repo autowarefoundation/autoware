@@ -11,7 +11,7 @@ This node reads `PointCloud` and/or `DetectedObjectArray` and creates an `Occupa
 #### Input topics
 `/points_no_ground` (sensor_msgs::PointCloud2) : from ray_ground_filter or compare map filter. It contains filtered points with the ground removed.
 
-`/prediction/moving_predictor/objects` (autoware_msgs::DetectedObjectArray): predicted objects from naive_motion_predict.
+`/prediction/moving_predictor/objects` (autoware_msgs::DetectedObjectArray): predicted objects from naive_motion_predict. Assuming `autoware_msgs::DetectedObject`'s `score` ranges from 0.0 to 1.0. 
 
 `/vector_map`: from the VectorMap publisher. `/tf` to obtain the transform between the vector map(map_frame) and the sensor(sensor_frame) .
 
