@@ -5642,24 +5642,6 @@ params :
       cmd_param :
         dash  : ''
         delim : ':='
-    - name  : grid_min_value
-      desc  : minimum value for costmap
-      label : grid_min_value
-      min     : 0.00
-      max     : 10.0
-      v       : 0.0
-      cmd_param :
-        dash      : ''
-        delim     : ':='
-    - name  : grid_max_value
-      desc  : maximum value for costmap
-      label : grid_max_value
-      min     : 1.0
-      max     : 255.0
-      v       : 1.0
-      cmd_param :
-        dash      : ''
-        delim     : ':='
     - name  : grid_resolution
       desc  : grid resolution for costmap
       label : grid_resolution
@@ -5690,7 +5672,7 @@ params :
     - name  : grid_position_x
       desc  : grid position for x coordinate
       label : grid_position_x
-      min     : 0.0
+      min     : -100.0
       max     : 100.0
       v       : 20.0
       cmd_param :
@@ -5699,7 +5681,7 @@ params :
     - name  : grid_position_y
       desc  : grid position for y coordinate
       label : grid_position_y
-      min     : 0.0
+      min     : -100.0
       max     : 100.0
       v       : 0.0
       cmd_param :
