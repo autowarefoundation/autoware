@@ -1,5 +1,8 @@
 <!-- -->
 <launch>
+	<arg name="search_closest_waypoint_minimum_dt" default="5" doc="Minimum number of lookahead waypoints when searching closest_waypoint"/>
 
-<node pkg="lane_planner" type="lane_select" name="lane_select" output="log"></node>
+	<node pkg="lane_planner" type="lane_select" name="lane_select" output="log">
+		<param name="search_closest_waypoint_minimum_dt" value="$(arg search_closest_waypoint_minimum_dt)" />
+	</node>
 </launch>

@@ -16,6 +16,8 @@
 
 #include "lane_select_core.h"
 
+#include <algorithm>
+
 namespace lane_planner
 {
 // Constructor
@@ -35,6 +37,7 @@ LaneSelectNode::LaneSelectNode()
   , lane_change_target_ratio_(2.0)
   , lane_change_target_minimum_(5.0)
   , vlength_hermite_curve_(10)
+  , search_closest_waypoint_minimum_dt_(5)
   , current_state_("UNKNOWN")
 {
   initForROS();
@@ -68,6 +71,7 @@ void LaneSelectNode::initForROS()
   // get from rosparam
   private_nh_.param<double>("lane_change_interval", lane_change_interval_, double(2));
   private_nh_.param<double>("distance_threshold", distance_threshold_, double(3.0));
+  private_nh_.param<int>("search_closest_waypoint_minimum_dt", search_closest_waypoint_minimum_dt_, int(5));
 }
 
 bool LaneSelectNode::isAllTopicsSubscribed()
@@ -159,7 +163,7 @@ void LaneSelectNode::processing()
       changeLane();
       std::get<1>(lane_for_change_) =
           getClosestWaypointNumber(std::get<0>(lane_for_change_), current_pose_.pose, current_velocity_.twist,
-                                   std::get<1>(lane_for_change_), distance_threshold_);
+                                   std::get<1>(lane_for_change_), distance_threshold_, search_closest_waypoint_minimum_dt_);
       std::get<2>(lane_for_change_) = static_cast<ChangeFlag>(
           std::get<0>(lane_for_change_).waypoints.at(std::get<1>(lane_for_change_)).change_flag);
       ROS_INFO("closest: %d", std::get<1>(lane_for_change_));
@@ -320,7 +324,7 @@ bool LaneSelectNode::getClosestWaypointNumberForEachLanes()
   for (auto &el : tuple_vec_)
   {
     std::get<1>(el) = getClosestWaypointNumber(std::get<0>(el), current_pose_.pose, current_velocity_.twist,
-                                               std::get<1>(el), distance_threshold_);
+                                               std::get<1>(el), distance_threshold_, search_closest_waypoint_minimum_dt_);
     ROS_INFO("closest: %d", std::get<1>(el));
   }
 
@@ -772,7 +776,7 @@ double getRelativeAngle(const geometry_msgs::Pose &waypoint_pose, const geometry
 // get closest waypoint from current pose
 int32_t getClosestWaypointNumber(const autoware_msgs::Lane &current_lane, const geometry_msgs::Pose &current_pose,
                                  const geometry_msgs::Twist &current_velocity, const int32_t previous_number,
-                                 const double distance_threshold)
+                                 const double distance_threshold, const int search_closest_waypoint_minimum_dt)
 {
   if (current_lane.waypoints.empty())
     return -1;
@@ -801,8 +805,7 @@ int32_t getClosestWaypointNumber(const autoware_msgs::Lane &current_lane, const 
     }
 
     double ratio = 3;
-    double minimum_dt = 2.0;
-    double dt = current_velocity.linear.x * ratio > minimum_dt ? current_velocity.linear.x * ratio : minimum_dt;
+    double dt = std::max(current_velocity.linear.x * ratio, static_cast<double>(search_closest_waypoint_minimum_dt));
 
     auto range_max = static_cast<uint32_t>(previous_number + dt) < current_lane.waypoints.size() ?
                          static_cast<uint32_t>(previous_number + dt) :

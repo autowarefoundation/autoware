@@ -2750,6 +2750,15 @@ params :
       min       : 1.0
       max       : 50
       v         : 10.0
+    - name      : search_closest_waypoint_minimum_dt
+      desc      : Minimum number of lookahead waypoints when searching closest_waypoint
+      label     : Search Closest Waypoint Minimum Lookahead Number
+      min       : 1
+      max       : 100
+      v         : 5
+      cmd_param:
+        dash  : ''
+        delim : ':='
 
   - name  : astar_navi_param
     vars  :

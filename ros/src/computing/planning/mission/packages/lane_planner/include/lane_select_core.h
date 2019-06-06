@@ -90,6 +90,7 @@ private:
   // parameter from runtime manager
   double distance_threshold_, lane_change_interval_, lane_change_target_ratio_, lane_change_target_minimum_,
       vlength_hermite_curve_;
+  int search_closest_waypoint_minimum_dt_;
 
   // topics
   geometry_msgs::PoseStamped current_pose_;
@@ -144,7 +145,7 @@ private:
 
 int32_t getClosestWaypointNumber(const autoware_msgs::Lane& current_lane, const geometry_msgs::Pose& current_pose,
                                  const geometry_msgs::Twist& current_velocity, const int32_t previous_number,
-                                 const double distance_threshold);
+                                 const double distance_threshold, const int search_closest_waypoint_minimum_dt);
 
 double getTwoDimensionalDistance(const geometry_msgs::Point& target1, const geometry_msgs::Point& target2);
 
