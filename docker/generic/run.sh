@@ -20,6 +20,8 @@ function usage() {
     echo "                                 Default:$IMAGE_NAME"
     echo "    -p,--pre-release <on|off>    Use pre-release image."
     echo "                                 Default:$PRE_RELEASE"
+    echo "    -r,--ros-distro <name>       Set ROS distribution name."
+    echo "                                 Default:$ROS_DISTRO"
     echo "    -t,--tag-prefix <tag>        Tag prefix use for the docker images."
     echo "                                 Default:$TAG_PREFIX"
 }
@@ -35,8 +37,8 @@ function abspath() {
     popd > /dev/null
 }
 
-OPTS=`getopt --options bc:hi:p:t: \
-         --long base-only,cuda:,help,image-name:,pre-release:,tag-prefix: \
+OPTS=`getopt --options bc:hi:p:r:t: \
+         --long base-only,cuda:,help,image-name:,pre-release:,ros-distro:,tag-prefix: \
          --name "$0" -- "$@"`
 eval set -- "$OPTS"
 
@@ -68,6 +70,10 @@ while true; do
         "on"|"off") PRE_RELEASE="${param}" ;;
         *) echo "Invalid pre-release option: $2"; exit 1 ;;
       esac
+      shift 2
+      ;;
+    -r|--ros-distro)
+      ROS_DISTRO="$2"
       shift 2
       ;;
     -t|--tag-prefix)

@@ -9,19 +9,21 @@ BASE_ONLY="false"
 
 function usage() {
     echo "Usage: $0 [OPTIONS]"
-    echo "    -b,--base-only        Build the base image(s) only."
-    echo "                          Default:$BASE_ONLY"
-    echo "    -c,--cuda <on|off>    Enable Cuda support in the Docker."
-    echo "                          Default:$CUDA"
-    echo "    -h,--help             Display the usage and exit."
-    echo "    -i,--image <name>     Set docker images name."
-    echo "                          Default:$IMAGE_NAME"
-    echo "    -t,--tag-prefix <tag> Tag prefix use for the docker images."
-    echo "                          Default:$TAG_PREFIX"
+    echo "    -b,--base-only         Build the base image(s) only."
+    echo "                           Default:$BASE_ONLY"
+    echo "    -c,--cuda <on|off>     Enable Cuda support in the Docker."
+    echo "                           Default:$CUDA"
+    echo "    -h,--help              Display the usage and exit."
+    echo "    -i,--image <name>      Set docker images name."
+    echo "                           Default:$IMAGE_NAME"
+    echo "    -r,--ros-distro <name> Set ROS distribution name."
+    echo "                           Default:$ROS_DISTRO"
+    echo "    -t,--tag-prefix <tag>  Tag prefix use for the docker images."
+    echo "                           Default:$TAG_PREFIX"
 }
 
-OPTS=`getopt --options bc:hi:t: \
-         --long base-only,cuda:,help,image-name:,tag-prefix: \
+OPTS=`getopt --options bc:hi:r:t: \
+         --long base-only,cuda:,help,image-name:,ros-distro:,tag-prefix: \
          --name "$0" -- "$@"`
 eval set -- "$OPTS"
 
@@ -45,6 +47,10 @@ while true; do
       ;;
     -i|--image-name)
       IMAGE_NAME="$2"
+      shift 2
+      ;;
+    -r|--ros-distro)
+      ROS_DISTRO="$2"
       shift 2
       ;;
     -t|--tag-prefix)
@@ -91,7 +97,7 @@ if [ $CUDA == "on" ]; then
         --rm \
         --tag $BASE$CUDA_SUFFIX \
         --build-arg FROM_ARG=$BASE \
-        --file generic/Dockerfile.cuda ./generic
+        --file generic/Dockerfile.cuda.$ROS_DISTRO ./generic
 fi
 
 if [ "$BASE_ONLY" == "true" ]; then
