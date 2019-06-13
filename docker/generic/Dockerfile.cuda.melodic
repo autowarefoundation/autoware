@@ -1,0 +1,97 @@
+ARG FROM_ARG
+FROM ${FROM_ARG}
+USER root
+
+# From nvidia cuda 10.0 base: https://gitlab.com/nvidia/cuda/tree/ubuntu18.04/10.0/base/Dockerfile
+
+RUN apt-get update && apt-get install -y --no-install-recommends gnupg2 curl ca-certificates && \
+    curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub | apt-key add - && \
+    echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /" > /etc/apt/sources.list.d/cuda.list && \
+    echo "deb https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /" > /etc/apt/sources.list.d/nvidia-ml.list && \
+    rm -rf /var/lib/apt/lists/*
+
+ENV CUDA_VERSION 10.0.130
+
+ENV CUDA_PKG_VERSION 10-0=$CUDA_VERSION-1
+
+# For libraries in the cuda-compat-* package: https://docs.nvidia.com/cuda/eula/index.html#attachment-a
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        cuda-cudart-$CUDA_PKG_VERSION \
+        cuda-compat-10-0 && \
+    ln -s cuda-10.0 /usr/local/cuda && \
+    rm -rf /var/lib/apt/lists/*
+
+# Required for nvidia-docker v1
+RUN echo "/usr/local/nvidia/lib" >> /etc/ld.so.conf.d/nvidia.conf && \
+    echo "/usr/local/nvidia/lib64" >> /etc/ld.so.conf.d/nvidia.conf
+
+ENV PATH /usr/local/nvidia/bin:/usr/local/cuda/bin:${PATH}
+ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64
+
+# nvidia-container-runtime
+ENV NVIDIA_VISIBLE_DEVICES all
+ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
+ENV NVIDIA_REQUIRE_CUDA "cuda>=10.0 brand=tesla,driver>=384,driver<385 brand=tesla,driver>=410,driver<411"
+
+
+# From nvidia cuda 10.0 runtime: https://gitlab.com/nvidia/cuda/blob/ubuntu18.04/10.0/runtime/Dockerfile
+
+ENV NCCL_VERSION 2.4.2
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        cuda-libraries-$CUDA_PKG_VERSION \
+        cuda-nvtx-$CUDA_PKG_VERSION \
+        libnccl2=$NCCL_VERSION-1+cuda10.0 && \
+    apt-mark hold libnccl2 && \
+    rm -rf /var/lib/apt/lists/*
+
+# From nvidia cuda 10.0 devel: https://gitlab.com/nvidia/cuda/blob/ubuntu18.04/10.0/devel/Dockerfile
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        cuda-libraries-dev-$CUDA_PKG_VERSION \
+        cuda-nvml-dev-$CUDA_PKG_VERSION \
+        cuda-minimal-build-$CUDA_PKG_VERSION \
+        cuda-command-line-tools-$CUDA_PKG_VERSION \
+        libnccl-dev=$NCCL_VERSION-1+cuda10.0 && \
+    rm -rf /var/lib/apt/lists/*
+
+ENV LIBRARY_PATH /usr/local/cuda/lib64/stubs
+
+# Fix bug with CUDA and Eigen <= 3.3.7
+
+RUN cd /tmp && \
+    curl -sL -o eigen-3.3.7.tar.gz http://bitbucket.org/eigen/eigen/get/3.3.7.tar.gz && \
+    tar xf eigen-3.3.7.tar.gz && \
+    cd eigen-eigen-* && \
+    mkdir build && \
+    cd build && \
+    cmake .. && \
+    make install
+
+# Support for Nvidia docker v2
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        pkg-config \
+        libxau-dev \
+        libxdmcp-dev \
+        libxcb1-dev \
+        libxext-dev \
+        libx11-dev && \
+    rm -rf /var/lib/apt/lists/*
+COPY --from=nvidia/opengl:1.0-glvnd-runtime-ubuntu18.04 \
+  /usr/lib/x86_64-linux-gnu \
+  /usr/lib/x86_64-linux-gnu
+COPY --from=nvidia/opengl:1.0-glvnd-runtime-ubuntu18.04 \
+  /usr/share/glvnd/egl_vendor.d/10_nvidia.json \
+  /usr/share/glvnd/egl_vendor.d/10_nvidia.json
+RUN echo '/usr/lib/x86_64-linux-gnu' >> /etc/ld.so.conf.d/glvnd.conf && \
+    ldconfig
+RUN apt-get update
+# nvidia-container-runtime
+ENV NVIDIA_VISIBLE_DEVICES \
+    ${NVIDIA_VISIBLE_DEVICES:-all}
+ENV NVIDIA_DRIVER_CAPABILITIES \
+    ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
+ENV AUTOWARE_COMPILE_WITH_CUDA ON
+
+ENTRYPOINT ["/tmp/entrypoint.sh"]
