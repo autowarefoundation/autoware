@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-<robot xmlns:xacro="http://ros.org/wiki/xacro"
-  name="sick_ldmrs">
-
-  <xacro:include filename="$(find sick_ldmrs_description)/urdf/sick_ldmrs_macros.urdf.xacro" />
-  <xacro:sick_ldmrs name="ldmrs" />
-</robot>

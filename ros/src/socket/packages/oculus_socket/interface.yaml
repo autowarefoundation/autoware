@@ -1,3 +1,0 @@
-- name: /oculus_sender
-  publish: []
-  subscribe: [/current_pose, /*/obj_pose]

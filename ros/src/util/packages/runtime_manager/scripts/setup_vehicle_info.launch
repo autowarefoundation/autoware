@@ -1,7 +1,0 @@
-<launch>
-
-<arg name="info_path" default="$(find runtime_manager)/empty.yaml"/>
-
-<rosparam command="load" file="$(arg info_path)"/>
-
-</launch>

@@ -1,4 +1,0 @@
-geometry_msgs/PoseStamped pose
-autoware_msgs/Lane waypoints
----
-vector_map_msgs/CurbArray objects

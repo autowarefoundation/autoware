@@ -1,2 +1,0 @@
-Header header
-Point[] data

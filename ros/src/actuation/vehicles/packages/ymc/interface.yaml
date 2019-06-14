@@ -1,3 +1,0 @@
-- name: /g30esli_interface
-  publish: [/vehicle/battery, /vehicle/twist, /vehicle_status]
-  subscribe: [/vehicle/engage, /vehicle_cmd]

@@ -1,4 +1,0 @@
-<launch>
-  <arg name="area" default="1x1" />
-  <node name="points_map_loader" pkg="map_file" type="points_map_loader" args="$(arg area) download" />
-</launch>

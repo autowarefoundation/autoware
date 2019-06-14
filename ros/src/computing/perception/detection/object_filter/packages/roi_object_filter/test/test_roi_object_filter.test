@@ -1,5 +1,0 @@
-<launch>
-
-  <test test-name="test-roi_object_filter" pkg="roi_object_filter" type="test-roi_object_filter" name="test"/>
-
-</launch>

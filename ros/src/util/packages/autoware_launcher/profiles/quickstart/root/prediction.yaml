@@ -1,4 +1,0 @@
-children:
-- native_motion_predict
-config: {}
-plugin: node/prediction

@@ -1,5 +1,0 @@
-- name: /points_map_loader
-  publish: [/points_map, /pmap_stat]
-  subscribe: [/gnss_pose, /current_pose, /initialpose, /traffic_waypoints_array]
-- name: /vector_map_loader
-  publish: [/vector_map, /vmap_stat, /vector_map_info/*]

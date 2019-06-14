@@ -1,5 +1,0 @@
-<launch>
-  <arg name="file" default="" />
-  <node pkg="trafficlight_recognizer" type="feat_proj" name="feat_proj" args="$(arg file)" />
-  <node pkg="trafficlight_recognizer" type="region_tlr" name="region_tlr" />
-</launch>

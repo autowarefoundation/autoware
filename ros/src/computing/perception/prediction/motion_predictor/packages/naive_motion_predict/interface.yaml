@@ -1,3 +1,0 @@
-- name: naive_motion_predict
-  publish: [/prediction/objects]
-  subscribe: [/detection/objects]

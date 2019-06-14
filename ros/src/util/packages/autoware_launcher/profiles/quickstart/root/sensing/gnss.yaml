@@ -1,4 +1,0 @@
-children: []
-config:
-  args.plane: 7
-plugin: refs/nmea2tfpose

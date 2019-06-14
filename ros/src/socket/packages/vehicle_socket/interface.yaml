@@ -1,6 +1,0 @@
-- name: /vehicle_receiver
-  publish: [/can_info, /mode_info]
-  subscribe: []
-- name: /vehicle_sender
-  publish: []
-  subscribe: [/vehicle_cmd]

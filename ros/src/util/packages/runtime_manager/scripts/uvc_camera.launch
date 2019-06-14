@@ -1,4 +1,0 @@
-<launch>
-  <node pkg="topic_tools" type="relay" name="relay_image_raw" args="/image_raw /camera0/image_raw"/>
-  <node pkg="uvc_camera" type="uvc_camera_node" name="uvc_camera_node"/>
-</launch>

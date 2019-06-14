@@ -1,4 +1,0 @@
-children:
-- camera0
-config: {}
-plugin: node/camera_group
