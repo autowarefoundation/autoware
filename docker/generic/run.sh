@@ -9,7 +9,7 @@ BASE_ONLY="false"
 PRE_RELEASE="off"
 AUTOWARE_GROUP_ID=15214
 
-function usage() {
+usage() {
     echo "Usage: $0 [OPTIONS]"
     echo "    -b,--base-only               Run the base image only."
     echo "                                 Default:$BASE_ONLY"
@@ -25,7 +25,7 @@ function usage() {
 }
 
 # Convert a relative directory path to absolute
-function abspath() {
+abspath() {
     local path=$1
     if [ ! -d $path ]; then
 	exit 1
