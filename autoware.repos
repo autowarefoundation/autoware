@@ -1,57 +1,53 @@
 repositories:
-  autoware/autoware:
+  autoware/common:
     type: git
-    url: https://github.com/autowarefoundation/autoware.git
+    url: https://gitlab.com/autowarefoundation/autoware.ai/common.git
     version: master
   autoware/core_control:
     type: git
-    url: https://github.com/autowarefoundation/core_control.git
+    url: https://gitlab.com/autowarefoundation/autoware.ai/core_control.git
     version: master
   autoware/core_perception:
     type: git
-    url: https://github.com/autowarefoundation/core_perception.git
+    url: https://gitlab.com/autowarefoundation/autoware.ai/core_perception.git
     version: master
   autoware/core_planning:
     type: git
-    url: https://github.com/autowarefoundation/core_planning.git
+    url: https://gitlab.com/autowarefoundation/autoware.ai/core_planning.git
     version: master
   autoware/documentation:
     type: git
-    url: https://github.com/autowarefoundation/documentation.git
+    url: https://gitlab.com/autowarefoundation/autoware.ai/documentation.git
     version: master
   autoware/messages:
     type: git
-    url: https://github.com/autowarefoundation/messages.git
+    url: https://gitlab.com/autowarefoundation/autoware.ai/messages.git
     version: master
   autoware/simulation:
     type: git
-    url: https://github.com/autowarefoundation/simulation.git
+    url: https://gitlab.com/autowarefoundation/autoware.ai/simulation.git
     version: master
   autoware/utilities:
     type: git
-    url: https://github.com/autowarefoundation/utilities.git
+    url: https://gitlab.com/autowarefoundation/autoware.ai/utilities.git
     version: master
   autoware/visualization:
     type: git
-    url: https://github.com/autowarefoundation/visualization.git
+    url: https://gitlab.com/autowarefoundation/autoware.ai/visualization.git
     version: master
-  drivers:
+  drivers/awf_drivers:
     type: git
-    url: https://github.com/autowarefoundation/drivers.git
+    url: https://gitlab.com/autowarefoundation/autoware.ai/drivers.git
     version: master
   citysim:
     type: git
     url: https://github.com/CPFL/osrf_citysim.git
-    version: 53b8483d098999298498854f3795a9f01c5e8828
+    version: master
   car_demo:
     type: git
     url: https://github.com/CPFL/car_demo.git
-    version: e364448fad421cb6244c9f828f978d8d877dcbf9
-  mrt_cmake_modules:
-    type: git
-    url: https://github.com/KIT-MRT/mrt_cmake_modules.git
     version: master
-  lanelet2:
+  drivers/ds4:
     type: git
-    url: https://github.com/fzi-forschungszentrum-informatik/Lanelet2.git
+    url: https://github.com/tier4/ds4.git
     version: master
