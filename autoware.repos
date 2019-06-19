@@ -47,11 +47,3 @@ repositories:
     type: git
     url: https://github.com/CPFL/car_demo.git
     version: e364448fad421cb6244c9f828f978d8d877dcbf9
-  mrt_cmake_modules:
-    type: git
-    url: https://github.com/KIT-MRT/mrt_cmake_modules.git
-    version: master
-  lanelet2:
-    type: git
-    url: https://github.com/fzi-forschungszentrum-informatik/Lanelet2.git
-    version: master
