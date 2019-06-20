@@ -8,6 +8,7 @@ variables:
   ROSINSTALL_FILE: $CI_SOURCE_PATH/dependencies.rosinstall
   CATKIN_OPTIONS: $CI_SOURCE_PATH/catkin.options
   GIT_SUBMODULE_STRATEGY: recursive
+  VCS_FILE: autoware.ai.repos
   #CI_DEBUG_TRACE: "true"
 
 .build: &build_common
@@ -16,22 +17,14 @@ variables:
     # Use UTC for tzdata
     - DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata
     - apt-get install -y gnupg2 lsb-release gcc g++
-    - sh -c "echo \"deb http://packages.ros.org/ros/ubuntu $ROS_CI_DESKTOP main\" > /etc/apt/sources.list.d/ros-latest.list"
-    - apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
-    - apt-get update
-    - apt-get install -y dpkg
-    - apt-get install -y python-catkin-pkg python-rosdep python-wstool ros-${ROS_DISTRO}-catkin
-    - apt-get install -y python3-pip python3-setuptools
+    - apt-get install -y python3-vcstool #VCS Tool
+    - apt-get install -y dpkg python-catkin-pkg python-rosdep python-wstool ros-${ROS_DISTRO}-catkin python3-pip python3-setuptools
     # Update setuptools from PyPI because the version Ubuntu ships with is too old
     - pip3 install -U setuptools
-    - source /opt/ros/${ROS_DISTRO}/setup.bash
+    - vcs validate < $VCS_FILE
+    - vcs import < $VCS_FILE
     - rosdep update
-    - cd ros/src
-    - wstool init
-    - test -f "${ROSINSTALL_FILE}" && wstool merge "${ROSINSTALL_FILE}"
-    - wstool up
-    - cd ..
-    - rosdep install -y --from-paths src --ignore-src --rosdistro ${ROS_DISTRO}
+    - rosdep install -y --from-paths . --ignore-src --rosdistro ${ROS_DISTRO}
 
 .build_cross_vars: &build_cross_vars
     AUTOWARE_HOME: $CI_PROJECT_DIR
@@ -46,12 +39,17 @@ variables:
   script:
     - 'docker run
           -e AUTOWARE_SYSROOT=${AUTOWARE_SYSROOT}
+          -e VCS_FILE=${VCS_FILE}
           --rm
           -v ${AUTOWARE_HOME}:${AUTOWARE_HOME}
-          -w ${AUTOWARE_HOME}/ros
+          -w ${AUTOWARE_HOME}
           autoware/build:${AUTOWARE_TARGET_PLATFORM}-${ROS_DISTRO}-${AUTOWARE_DOCKER_DATE}
           bash
             -c "
+                apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654 &&
+                apt-get update && apt-get install -y python3-vcstool git build-essential &&
+                vcs validate < $VCS_FILE &&
+                vcs import < $VCS_FILE &&
                 source ${AUTOWARE_SYSROOT}/opt/ros/${ROS_DISTRO}/setup.bash &&
                 colcon build
                     --merge-install
@@ -101,7 +99,6 @@ build_kinetic:
     - COVERAGE_FOLDER_NAME="coverage_$BRANCH_NAME"
     - genhtml -p "$PWD" --legend --demangle-cpp lcov.total.filtered -o $COVERAGE_FOLDER_NAME
     - tar -czvf coverage.tar.gz $COVERAGE_FOLDER_NAME
-    - mv coverage.tar.gz $CI_PROJECT_DIR/coverage.tar.gz
     - ls $CI_PROJECT_DIR
   artifacts:
     paths:
@@ -138,7 +135,6 @@ build_melodic:
     - COVERAGE_FOLDER_NAME="coverage_$BRANCH_NAME"
     - genhtml -p "$PWD" --legend --demangle-cpp lcov.total.filtered -o $COVERAGE_FOLDER_NAME
     - tar -czvf coverage.tar.gz $COVERAGE_FOLDER_NAME
-    - mv coverage.tar.gz $CI_PROJECT_DIR/coverage.tar.gz
     - ls $CI_PROJECT_DIR
   artifacts:
     paths:
@@ -184,4 +180,3 @@ pages:
       - public
   only:
     - master
-    - develop
