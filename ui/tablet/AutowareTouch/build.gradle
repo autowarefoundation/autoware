@@ -1,7 +1,0 @@
-buildscript {
-    apply from: "https://github.com/rosjava/android_core/raw/indigo/buildscript.gradle"
-}
-
-subprojects {
-    apply plugin: 'ros-android'
-}

@@ -1,3 +1,0 @@
-ofxNetwork
-ofxAssimpModelLoader
-ofxOculusDK2
