@@ -47,3 +47,6 @@ ENV/
 *.csv
 
 /.metadata/
+
+# VCS-populated Folders
+src/

@@ -5,8 +5,6 @@ stages:
 variables:
   ROS_CI_DESKTOP: "`lsb_release -cs`"
   CI_SOURCE_PATH: $CI_PROJECT_DIR
-  ROSINSTALL_FILE: $CI_SOURCE_PATH/dependencies.rosinstall
-  CATKIN_OPTIONS: $CI_SOURCE_PATH/catkin.options
   GIT_SUBMODULE_STRATEGY: recursive
   VCS_FILE: autoware.ai.repos
   #CI_DEBUG_TRACE: "true"
@@ -16,15 +14,15 @@ variables:
     - apt-get update
     # Use UTC for tzdata
     - DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata
-    - apt-get install -y gnupg2 lsb-release gcc g++
-    - apt-get install -y python3-vcstool #VCS Tool
-    - apt-get install -y dpkg python-catkin-pkg python-rosdep python-wstool ros-${ROS_DISTRO}-catkin python3-pip python3-setuptools
+    - apt-get install -y gnupg2 lsb-release gcc g++ dpkg python-rosdep
+    - apt-get install -y python3-pip python3-setuptools python3-vcstool python3-colcon-common-extensions
     # Update setuptools from PyPI because the version Ubuntu ships with is too old
     - pip3 install -U setuptools
+    - mkdir src
     - vcs validate < $VCS_FILE
-    - vcs import < $VCS_FILE
+    - vcs import src < $VCS_FILE
     - rosdep update
-    - rosdep install -y --from-paths . --ignore-src --rosdistro ${ROS_DISTRO}
+    - rosdep install -y --from-paths src --ignore-src --rosdistro ${ROS_DISTRO}
 
 .build_cross_vars: &build_cross_vars
     AUTOWARE_HOME: $CI_PROJECT_DIR
@@ -48,8 +46,9 @@ variables:
             -c "
                 apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654 &&
                 apt-get update && apt-get install -y python3-vcstool git build-essential &&
+                mkdir src &&
                 vcs validate < $VCS_FILE &&
-                vcs import < $VCS_FILE &&
+                vcs import src < $VCS_FILE &&
                 source ${AUTOWARE_SYSROOT}/opt/ros/${ROS_DISTRO}/setup.bash &&
                 colcon build
                     --merge-install
@@ -72,8 +71,6 @@ build_kinetic:
     ROS_DISTRO: kinetic
   <<: *build_common
   script:
-  # colcon as a Debian package is only available in Kinetic and up
-    - apt-get install -y python3-colcon-common-extensions
   # Install lcov from source as binary installation errors when appending files
     - git clone https://github.com/linux-test-project/lcov.git
     - cd lcov
@@ -113,8 +110,6 @@ build_melodic:
     ROS_DISTRO: melodic
   <<: *build_common
   script:
-  # colcon as a Debian package is only available in Kinetic and up
-    - apt-get install -y python3-colcon-common-extensions
   # Install lcov ffrom the Ubuntu package. We need 1.13 at least.
     - apt-get install -y lcov
   # We first build the entire workspace normally
