@@ -1,4 +1,4 @@
-[![Autoware](https://www.autoware.ai/static/img/autoware_web_img.png)](https://www.autoware.ai)
+[![Autoware](autoware_web_img.png)](https://www.autoware.ai)
 
 [Autoware](https://www.autoware.ai) is the world's first "all-in-one" open-source software for self-driving vehicles.
 
