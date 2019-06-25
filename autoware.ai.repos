@@ -3,10 +3,6 @@ repositories:
     type: git
     url: https://gitlab.com/autowarefoundation/autoware.ai/common.git
     version: master
-  autoware/core_control:
-    type: git
-    url: https://gitlab.com/autowarefoundation/autoware.ai/core_control.git
-    version: master
   autoware/core_perception:
     type: git
     url: https://gitlab.com/autowarefoundation/autoware.ai/core_perception.git
