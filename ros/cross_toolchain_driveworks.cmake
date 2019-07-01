@@ -3,7 +3,8 @@ set(CMAKE_SYSTEM_VERSION 1)
 set(CMAKE_SYSTEM_PROCESSOR aarch64)
 set(CMAKE_CROSSCOMPILING ON)
 set(CMAKE_SYSROOT $ENV{AUTOWARE_SYSROOT})
-set(CMAKE_PREFIX_PATH "${CMAKE_SYSROOT}/opt/ros/kinetic")
+set(ROS_DISTRO $ENV{ROS_DISTRO})
+set(CMAKE_PREFIX_PATH "${CMAKE_SYSROOT}/opt/ros/${ROS_DISTRO}")
 
 # specify the cross compiler
 set(CMAKE_C_COMPILER "/usr/bin/${CMAKE_SYSTEM_PROCESSOR}-linux-gnu-gcc")
@@ -14,8 +15,8 @@ list(APPEND _pkgconfig_paths "${CMAKE_SYSROOT}/usr/lib/${CMAKE_SYSTEM_PROCESSOR}
 list(APPEND _pkgconfig_paths "${CMAKE_SYSROOT}/usr/lib/openmpi/lib/pkgconfig")
 list(APPEND _pkgconfig_paths "${CMAKE_SYSROOT}/usr/lib/pkgconfig")
 list(APPEND _pkgconfig_paths "${CMAKE_SYSROOT}/usr/share/pkgconfig")
-list(APPEND _pkgconfig_paths "${CMAKE_SYSROOT}/opt/ros/kinetic/lib/${CMAKE_SYSTEM_PROCESSOR}-linux-gnu/pkgconfig")
-list(APPEND _pkgconfig_paths "${CMAKE_SYSROOT}/opt/ros/kinetic/lib/pkgconfig")
+list(APPEND _pkgconfig_paths "${CMAKE_SYSROOT}/opt/ros/${ROS_DISTRO}/lib/${CMAKE_SYSTEM_PROCESSOR}-linux-gnu/pkgconfig")
+list(APPEND _pkgconfig_paths "${CMAKE_SYSROOT}/opt/ros/${ROS_DISTRO}/lib/pkgconfig")
 string(REPLACE ";" ":" _pkgconfig_paths "${_pkgconfig_paths}")
 set(ENV{PKG_CONFIG_PATH} "${_pkgconfig_paths}")
 

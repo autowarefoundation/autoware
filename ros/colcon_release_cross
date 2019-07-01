@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 set -e
 
-if [ "$1" = "synquacer" ] || [ "$1" = "driveworks" ] || [ "$1" = "generic-aarch64" ]
+if [[ ("$1" = "kinetic" || "$1" = "melodic" ) && ("$2" = "synquacer" || "$2" = "driveworks" || "$2" = "generic-aarch64") ]]
 then
     AUTOWARE_TARGET_ARCH=aarch64
-    AUTOWARE_TARGET_PLATFORM=$1
-    shift
+    AUTOWARE_TARGET_ROS_DISTRO=$1
+    AUTOWARE_TARGET_PLATFORM=$2
+    shift 2
 
    if [[ -d build-${AUTOWARE_TARGET_PLATFORM} ]]; then
        rm -rf build-${AUTOWARE_TARGET_PLATFORM}
@@ -54,7 +55,7 @@ END
     echo "Using toolchain file: '${AUTOWARE_TOOLCHAIN_FILE_PATH}''"
     AUTOWARE_SYSROOT=/sysroot/${AUTOWARE_TARGET_PLATFORM}
 
-    AUTOWARE_DOCKER_DATE=20190521
+    AUTOWARE_DOCKER_DATE="latest"
 
     docker container run \
         -it \
@@ -64,26 +65,27 @@ END
         -v ${PWD}/../:${AUTOWARE_HOME} \
         -w ${AUTOWARE_HOME}/ros \
         -u ${UID}:${UID} \
-        autoware/build:${AUTOWARE_TARGET_PLATFORM}-kinetic-${AUTOWARE_DOCKER_DATE} \
+        autoware/build:${AUTOWARE_TARGET_PLATFORM}-${AUTOWARE_TARGET_ROS_DISTRO}-${AUTOWARE_DOCKER_DATE} \
         bash \
         -c "\
-        source ${AUTOWARE_SYSROOT}/opt/ros/kinetic/setup.bash && \
+        source ${AUTOWARE_SYSROOT}/opt/ros/${AUTOWARE_TARGET_ROS_DISTRO}/setup.bash && \
         colcon build \
             --merge-install \
             --build-base ${AUTOWARE_BUILD_PATH} \
             --install-base ${AUTOWARE_INSTALL_PATH} \
+            --packages-skip ymc \
             --cmake-args \
             -DCYTHON_EXECUTABLE=/usr/bin/cython \
             -DCUDA_ARCH=${AUTOWARE_CUDA_ARCH} \
             -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH} \
             -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH} \
-            -DCMAKE_PREFIX_PATH='${AUTOWARE_SYSROOT}/opt/ros/kinetic;${AUTOWARE_INSTALL_PATH}' \
+            -DCMAKE_PREFIX_PATH='${AUTOWARE_SYSROOT}/opt/ros/${AUTOWARE_TARGET_ROS_DISTRO};${AUTOWARE_INSTALL_PATH}' \
             -DCMAKE_FIND_ROOT_PATH=${AUTOWARE_INSTALL_PATH} \
             -DCMAKE_BUILD_TYPE=Release $*
         "
 
     find install-${AUTOWARE_TARGET_PLATFORM}/ -type f -exec grep -Iq . {} \; -and -exec sed -i -e "s#${AUTOWARE_SYSROOT}##g" {} \;
 else
-    echo "Select target platform: synquacer, driveworks, generic-aarch64"
+  echo "Select target ROS distribution (kinetic, melodic) and target platform (synquacer, driveworks, generic-aarch64)"
 fi
 

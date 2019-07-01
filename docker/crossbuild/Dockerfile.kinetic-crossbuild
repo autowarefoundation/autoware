@@ -13,21 +13,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python-rosdep \
     sudo
 
-# Install ROS packages used by Autoware
+# Install dependent packages used by Autoware
 COPY ./dependencies /tmp/dependencies
 RUN apt-get update && \
-    sed "s/\$ROS_DISTRO/$ROS_DISTRO/g" "/tmp/dependencies" | xargs apt-get install -y
-
-# Autoware dependencies
-RUN apt-get install -y --no-install-recommends \
-    libarmadillo-dev \
-    libgflags-dev \
-    libglew-dev \
-    libgoogle-glog-dev \
-    libnlopt-dev \
-    libopencv-dev \
-    libssh2-1 \
-    python-flask && \
+    sed "s/\$ROS_DISTRO/$ROS_DISTRO/g" "/tmp/dependencies" | xargs apt-get install -y && \
     rm -rf /var/lib/apt/lists/*
 
 RUN find / -depth -xdev -type l -lname '/*' -exec sh -c 'linkpath="$(readlink {})" && rm -f {} && ln -frsv "$linkpath" "{}"' \;
@@ -43,8 +32,10 @@ COPY --from=sysroot /usr/share/OGRE ${AUTOWARE_SYSROOT}/usr/share/OGRE
 COPY --from=sysroot /usr/share/pkgconfig ${AUTOWARE_SYSROOT}/usr/share/pkgconfig
 COPY --from=sysroot /opt ${AUTOWARE_SYSROOT}/opt
 COPY --from=sysroot /etc/alternatives ${AUTOWARE_SYSROOT}/etc/alternatives
+
 RUN echo "deb http://packages.ros.org/ros/ubuntu xenial main" | tee /etc/apt/sources.list.d/ros-latest.list
 RUN apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     cython \
     crossbuild-essential-arm64 \
@@ -53,6 +44,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     qt5-qmake \
     qtbase5-dev-tools \
     ros-kinetic-catkin
+
 RUN find ${AUTOWARE_SYSROOT}/opt/ros/kinetic/share/ -name "*.cmake" -type f -exec sed -i -e "s#/opt/ros/kinetic/include#${AUTOWARE_SYSROOT}/opt/ros/kinetic/include#g" {} \;
 RUN find ${AUTOWARE_SYSROOT}/opt/ros/kinetic/share/ -name "*.cmake" -type f -exec sed -i -e "s#/opt/ros/kinetic/lib#${AUTOWARE_SYSROOT}/opt/ros/kinetic/lib#g" {} \;
 RUN find ${AUTOWARE_SYSROOT}/opt/ros/kinetic/share/ -name "*.cmake" -type f -exec sed -i -e "s#/usr/include#${AUTOWARE_SYSROOT}/usr/include#g" {} \;
@@ -71,16 +63,16 @@ RUN sed -i -e "s#set(imported_location \"\${_qt5Core_install_prefix}/lib/${AUTOW
 RUN sed -i -e "s#define ARMA_SUPERLU_INCLUDE_DIR /usr/include/superlu/#define ARMA_SUPERLU_INCLUDE_DIR ${AUTOWARE_SYSROOT}/usr/include/superlu/#g" \
     ${AUTOWARE_SYSROOT}/usr/include/armadillo_bits/config.hpp
 
-RUN apt-get install -y python-numpy
-RUN apt-get install -y python-pip python-setuptools
-RUN pip install -U setuptools
-RUN apt-get install -y python3-pip python3-setuptools
-RUN pip3 install -U setuptools
-RUN apt-get install -y python3-colcon-common-extensions
+RUN apt-get install -y python3-numpy \
+    python3-pip \
+    python3-setuptools \
+    python3-colcon-common-extensions && \
+    pip3 install -U setuptools
 
 ENV ROS_DISTRO kinetic
 ENV CC /usr/bin/${AUTOWARE_TARGET_ARCH}-linux-gnu-gcc
 ENV CXX /usr/bin/${AUTOWARE_TARGET_ARCH}-linux-gnu-g++
 ENV AR /usr/bin/${AUTOWARE_TARGET_ARCH}-linux-gnu-ar
 ENV CPP /usr/bin/${AUTOWARE_TARGET_ARCH}-linux-gnu-cpp
+
 CMD . /opt/ros/kinetic/setup.sh && /bin/bash
