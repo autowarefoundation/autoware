@@ -38,6 +38,7 @@ RUN apt-get update && apt-get install -y \
         python3-colcon-common-extensions \
         python3-pip \
         python3-setuptools \
+        python3-vcstool \
         sudo \
         tmux \
         v4l-utils \
