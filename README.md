@@ -2,7 +2,7 @@
 
 [Autoware](https://www.autoware.ai) is the world's first "all-in-one" open-source software for self-driving vehicles. The capabilities of Autoware are primarily well-suited for urban cities, but highways, freeways, mesomountaineous regions, and geofenced areas can be also covered. The code base of Autoware is protected by the Apache 2 License. Please use it at your own discretion. For safe use, we provide a ROSBAG-based simulation environment for those who do not own real autonomous vehicles. If you plan to use Autoware with real autonomous vehicles, **please formulate safety measures and assessment of risk before field testing.**
 
-You may refer to [Autoware Wiki](https://github.com/CPFL/Autoware/wiki) for **Users Guide** and **Developers Guide**.
+You may refer to [Autoware Wiki](https://gitlab.com/autowarefoundation/autoware.ai/autoware/wikis/home) for **Users Guide** and **Developers Guide**.
 
 ## What Is Autoware
 
@@ -24,19 +24,19 @@ Free manuals can be also found at [Autoware-Manuals](https://github.com/CPFL/Aut
 
 ### Users Guide
 
-1. [Installation](https://github.com/CPFL/Autoware/wiki/Installation)
-    1. [Docker](https://github.com/CPFL/Autoware/wiki/Docker)
-    1. [Source](https://github.com/CPFL/Autoware/wiki/Source-Build)
-1. [Demo](https://github.com/CPFL/Autoware/wiki/Demo)
-1. [Field Test](https://github.com/CPFL/Autoware/wiki/Field-Test)
-1. [Simulation Test](https://github.com/CPFL/Autoware/wiki/Simulation-Test)
-1. [Videos](https://github.com/CPFL/Autoware/wiki/videos)
+1. [Installation](https://gitlab.com/autowarefoundation/autoware.ai/autoware/wikis/Installation)
+    1. [Docker](https://gitlab.com/autowarefoundation/autoware.ai/autoware/wikis/Docker)
+    1. [Source](https://gitlab.com/autowarefoundation/autoware.ai/autoware/wikis/Source-Build)
+1. [Demo](https://gitlab.com/autowarefoundation/autoware.ai/autoware/wikis/ROSBAG-Demo)
+1. [Field Test](https://gitlab.com/autowarefoundation/autoware.ai/autoware/wikis/Field-Test)
+1. [Simulation Test](https://gitlab.com/autowarefoundation/autoware.ai/autoware/wikis/Simulation-Demo)
+1. [Videos](https://gitlab.com/autowarefoundation/autoware.ai/autoware/wikis/Videos)
 
 ### Developers Guide
 
-1. [Contribution Rules](https://github.com/CPFL/Autoware/wiki/Contribution-Rules) (**Must Read**)
-1. [Overview](https://github.com/CPFL/Autoware/wiki/Overview)
-1. [Specification](https://github.com/CPFL/Autoware/wiki/Specification)
+1. [Contribution Rules](https://gitlab.com/autowarefoundation/autoware.ai/autoware/wikis/Contributing-to-Autoware) (**Must Read**)
+1. [Overview](https://gitlab.com/autowarefoundation/autoware.ai/autoware/wikis/Overvieww)
+1. [Specification](https://gitlab.com/autowarefoundation/autoware.ai/autoware/wikis/Specification)
 
 
 ## Research Papers for Citation
@@ -65,15 +65,15 @@ You may create 3D map data through Tier IV's [Map Tools](https://maptools.tier4.
 
 ## License
 
-Autoware is provided under the [Apache 2 License](https://github.com/CPFL/Autoware/blob/master/LICENSE).
+Autoware is provided under the [Apache 2 License](https://gitlab.com/autowarefoundation/autoware.ai/autoware/blob/master/LICENSE).
 
 ## Contact
 
-[Autoware Developers Slack Team](https://autoware.herokuapp.com/)
-
 [Autoware Discourse](https://discourse.ros.org/c/autoware)
 
-Please see the [Support Guidelines](https://github.com/CPFL/Autoware/wiki/Support-guidelines) for more details about getting help.
+[Autoware Developers Slack Team](https://autoware.herokuapp.com/)
+
+Please see the [Support Guidelines](https://gitlab.com/autowarefoundation/autoware.ai/autoware/wikis/Support-guidelines) for more details about getting help.
 
 ***
 <div align="center"><img src="docs/images/autoware_logo_1.png" width="400"/></div>
