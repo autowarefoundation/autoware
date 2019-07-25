@@ -1,11 +1,4 @@
-stages:
-  - build
-  - deploy
-
 variables:
-  ROS_CI_DESKTOP: "`lsb_release -cs`"
-  CI_SOURCE_PATH: $CI_PROJECT_DIR
-  GIT_SUBMODULE_STRATEGY: recursive
   VCS_FILE: autoware.ai.repos
   #CI_DEBUG_TRACE: "true"
   AUTOWARE_DOCKER_DATE: "latest"
@@ -25,6 +18,16 @@ variables:
     - vcs import src < $VCS_FILE
     - rosdep update
     - rosdep install -y --from-paths src --ignore-src --rosdistro ${ROS_DISTRO}
+  script:
+    # We first build the entire workspace normally
+    - source /opt/ros/${ROS_DISTRO}/setup.bash
+    - colcon build --cmake-args -DCMAKE_BUILD_TYPE=Debug -DPYTHON_EXECUTABLE=/usr/bin/python3
+    # And then build the tests target. catkin (ROS1) packages add their tests to the tests target
+    # which is not the standard target for CMake projects. We need to trigger the tests target so that
+    # tests are built and any fixtures are set up.
+    - colcon build --cmake-target tests --cmake-args -DCMAKE_BUILD_TYPE=Debug -DPYTHON_EXECUTABLE=/usr/bin/python3
+    - colcon test
+    - colcon test-result --verbose
 
 .build_cross_vars: &build_cross_vars
     AUTOWARE_TARGET_ARCH: aarch64
@@ -54,39 +57,6 @@ build_kinetic:
   variables:
     ROS_DISTRO: kinetic
   <<: *build_common
-  script:
-    # Install lcov from source as binary installation errors when appending files
-    - git clone https://github.com/linux-test-project/lcov.git
-    - cd lcov
-    - git checkout v1.13
-    - sudo make install
-    - cd ..
-    - rm -r lcov
-    # We first build the entire workspace normally
-    - source /opt/ros/${ROS_DISTRO}/setup.bash
-    - colcon build --cmake-args -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_BUILD_TYPE=Debug
-    # And then build the tests target. catkin (ROS1) packages add their tests to the tests target
-    # which is not the standard target for CMake projects. We need to trigger the tests target so that
-    # tests are built and any fixtures are set up.
-    - colcon build --cmake-target tests --cmake-args -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_BUILD_TYPE=Debug
-    - lcov --initial --directory build --capture --output-file lcov.base
-    - colcon test
-    - colcon test-result --verbose
-    - lcov --directory build --capture --output-file lcov.test
-    - lcov -a lcov.base -a lcov.test -o lcov.total
-    - lcov -r lcov.total '*/tests/*' '*/test/*' '*/build/*' '*/devel/*' '/usr/*' '/opt/*' '*/CMakeCCompilerId.c' '*/CMakeCXXCompilerId.cpp' -o lcov.total.filtered
-    # BRANCH_NAME: gets branch name from CI_COMMIT_REF_NAME variable substituting / with _ (feature/test_this_lib becomes feature_test_this_lib)
-    # CI_COMMIT_REF_NAME: (from https://docs.gitlab.com/ee/ci/variables/) The branch or tag name for which project is built
-    - BRANCH_NAME="$(echo $CI_COMMIT_REF_NAME | sed 's/\//_/g')"
-    - COVERAGE_FOLDER_NAME="coverage_$BRANCH_NAME"
-    - genhtml -p "$PWD" --legend --demangle-cpp lcov.total.filtered -o $COVERAGE_FOLDER_NAME
-    - tar -czvf coverage.tar.gz $COVERAGE_FOLDER_NAME
-    - ls $CI_PROJECT_DIR
-  artifacts:
-    paths:
-      - $CI_PROJECT_DIR/coverage.tar.gz
-    expire_in: 48 hrs
-  coverage: /\s*lines.*:\s(\d+\.\d+\%\s\(\d+\sof\s\d+.*\))/
 
 build_melodic:
   stage: build
@@ -94,34 +64,6 @@ build_melodic:
   variables:
     ROS_DISTRO: melodic
   <<: *build_common
-  script:
-    # Install lcov from the Ubuntu package. We need 1.13 at least.
-    - sudo apt-get install -y lcov
-    # We first build the entire workspace normally
-    - source /opt/ros/${ROS_DISTRO}/setup.bash
-    - colcon build --cmake-args -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_BUILD_TYPE=Debug -DPYTHON_EXECUTABLE=/usr/bin/python3
-    # And then build the tests target. catkin (ROS1) packages add their tests to the tests target
-    # which is not the standard target for CMake projects. We need to trigger the tests target so that
-    # tests are built and any fixtures are set up.
-    - colcon build --cmake-target tests --cmake-args -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_BUILD_TYPE=Debug -DPYTHON_EXECUTABLE=/usr/bin/python3
-    - lcov --initial --directory build --capture --output-file lcov.base
-    - colcon test
-    - colcon test-result --verbose
-    - lcov --directory build --capture --output-file lcov.test
-    - lcov -a lcov.base -a lcov.test -o lcov.total
-    - lcov -r lcov.total '*/tests/*' '*/test/*' '*/build/*' '*/devel/*' '/usr/*' '/opt/*' '*/CMakeCCompilerId.c' '*/CMakeCXXCompilerId.cpp' -o lcov.total.filtered
-    # BRANCH_NAME: gets branch name from CI_COMMIT_REF_NAME variable substituting / with _ (feature/test_this_lib becomes feature_test_this_lib)
-    # CI_COMMIT_REF_NAME: (from https://docs.gitlab.com/ee/ci/variables/) The branch or tag name for which project is built
-    - BRANCH_NAME="$(echo $CI_COMMIT_REF_NAME | sed 's/\//_/g')"
-    - COVERAGE_FOLDER_NAME="coverage_$BRANCH_NAME"
-    - genhtml -p "$PWD" --legend --demangle-cpp lcov.total.filtered -o $COVERAGE_FOLDER_NAME
-    - tar -czvf coverage.tar.gz $COVERAGE_FOLDER_NAME
-    - ls $CI_PROJECT_DIR
-  artifacts:
-    paths:
-      - $CI_PROJECT_DIR/coverage.tar.gz
-    expire_in: 48 hrs
-  coverage: /\s*lines.*:\s(\d+\.\d+\%\s\(\d+\sof\s\d+.*\))/
 
 build_kinetic_cross:
   stage: build
@@ -138,20 +80,3 @@ build_melodic_cross:
     ROS_DISTRO: melodic
     <<: *build_cross_vars
   <<: *build_cross_script
-
-pages:
-  stage: deploy
-  image: alpine
-  dependencies:
-    - build_kinetic
-    - build_melodic
-  script:
-    - BRANCH_NAME="$(echo $CI_COMMIT_REF_NAME | sed 's/\//_/g')"
-    - COVERAGE_FOLDER_NAME="coverage_$BRANCH_NAME"
-    - tar -xzvf coverage.tar.gz
-    - mv $COVERAGE_FOLDER_NAME public
-  artifacts:
-    paths:
-      - public
-  only:
-    - master
