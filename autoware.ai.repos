@@ -47,3 +47,7 @@ repositories:
     type: git
     url: https://github.com/tier4/ds4.git
     version: master
+  vendor/qpoases:
+    type: git
+    url: https://gitlab.com/autowarefoundation/autoware.ai/qpoases_vendor.git
+    version: master
