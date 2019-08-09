@@ -20,11 +20,11 @@ variables:
   script:
     # We first build the entire workspace normally
     - source /opt/ros/${ROS_DISTRO}/setup.bash
-    - colcon build --cmake-args -DCMAKE_BUILD_TYPE=Debug -DPYTHON_EXECUTABLE=/usr/bin/python3
+    - colcon build --cmake-args -DCMAKE_BUILD_TYPE=Debug
     # And then build the tests target. catkin (ROS1) packages add their tests to the tests target
     # which is not the standard target for CMake projects. We need to trigger the tests target so that
     # tests are built and any fixtures are set up.
-    - colcon build --cmake-target tests --cmake-args -DCMAKE_BUILD_TYPE=Debug -DPYTHON_EXECUTABLE=/usr/bin/python3
+    - colcon build --cmake-target tests --cmake-args -DCMAKE_BUILD_TYPE=Debug
     - colcon test
     - colcon test-result --verbose
 
@@ -44,7 +44,6 @@ variables:
         --merge-install
         --packages-skip citysim
         --cmake-args
-        -DPYTHON_EXECUTABLE=/usr/bin/python3
         -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH}
         -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH}
         -DCMAKE_PREFIX_PATH="${AUTOWARE_SYSROOT}/opt/ros/${ROS_DISTRO};${CI_PROJECT_DIR}/install"
