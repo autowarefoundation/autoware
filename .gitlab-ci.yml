@@ -63,6 +63,16 @@ build_melodic:
     ROS_DISTRO: melodic
   <<: *build_common
 
+build_kinetic_cuda:
+  stage: build
+  image: autoware/autoware:bleedingedge-kinetic-base-cuda
+  <<: *build_common
+
+build_melodic_cuda:
+  stage: build
+  image: autoware/autoware:bleedingedge-melodic-base-cuda
+  <<: *build_common
+
 build_kinetic_cross:
   stage: build
   image: autoware/build:${AUTOWARE_CROSS_TARGET_PLATFORM}-kinetic-bleedingedge
