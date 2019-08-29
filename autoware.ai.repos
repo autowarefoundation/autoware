@@ -15,10 +15,6 @@ repositories:
     type: git
     url: https://gitlab.com/autowarefoundation/autoware.ai/documentation.git
     version: master
-  autoware/messages:
-    type: git
-    url: https://gitlab.com/autowarefoundation/autoware.ai/messages.git
-    version: master
   autoware/simulation:
     type: git
     url: https://gitlab.com/autowarefoundation/autoware.ai/simulation.git
