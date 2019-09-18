@@ -15,6 +15,10 @@ repositories:
     type: git
     url: https://gitlab.com/autowarefoundation/autoware.ai/documentation.git
     version: master
+  autoware/messages:
+    type: git
+    url: https://gitlab.com/autowarefoundation/autoware.ai/messages.git
+    version: master
   autoware/simulation:
     type: git
     url: https://gitlab.com/autowarefoundation/autoware.ai/simulation.git
@@ -46,11 +50,11 @@ repositories:
   vendor/lanelet2:
     type: git
     url: https://github.com/fzi-forschungszentrum-informatik/Lanelet2.git
-    version: master
+    version: d13cf9c86b9f01821a7242ef6652c0daed5a7d84
   vendor/mrt_cmake_modules:
     type: git
     url: https://github.com/KIT-MRT/mrt_cmake_modules.git
-    version: master
+    version: 67a93bcfee4f7e9e39e79f138ecadbba5c8392b7
   vendor/qpoases:
     type: git
     url: https://gitlab.com/autowarefoundation/autoware.ai/qpoases_vendor.git
