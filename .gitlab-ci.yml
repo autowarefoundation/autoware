@@ -46,7 +46,7 @@ variables:
         --cmake-args
         -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH}
         -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH}
-        -DCMAKE_PREFIX_PATH="${AUTOWARE_SYSROOT}/opt/ros/${ROS_DISTRO};${CI_PROJECT_DIR}/install"
+        -DCMAKE_PREFIX_PATH="${CI_PROJECT_DIR}/install;${AUTOWARE_SYSROOT}/opt/ros/${ROS_DISTRO}"
         -DCMAKE_FIND_ROOT_PATH=${CI_PROJECT_DIR}/install
 
 build_kinetic:
