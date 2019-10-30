@@ -49,13 +49,6 @@ variables:
         -DCMAKE_PREFIX_PATH="${CI_PROJECT_DIR}/install;${AUTOWARE_SYSROOT}/opt/ros/${ROS_DISTRO}"
         -DCMAKE_FIND_ROOT_PATH=${CI_PROJECT_DIR}/install
 
-build_kinetic:
-  stage: build
-  image: autoware/autoware:bleedingedge-kinetic-base
-  variables:
-    ROS_DISTRO: kinetic
-  <<: *build_common
-
 build_melodic:
   stage: build
   image: autoware/autoware:bleedingedge-melodic-base
@@ -63,23 +56,10 @@ build_melodic:
     ROS_DISTRO: melodic
   <<: *build_common
 
-build_kinetic_cuda:
-  stage: build
-  image: autoware/autoware:bleedingedge-kinetic-base-cuda
-  <<: *build_common
-
 build_melodic_cuda:
   stage: build
   image: autoware/autoware:bleedingedge-melodic-base-cuda
   <<: *build_common
-
-build_kinetic_cross:
-  stage: build
-  image: autoware/build:${AUTOWARE_CROSS_TARGET_PLATFORM}-kinetic-bleedingedge
-  variables:
-    ROS_DISTRO: kinetic
-    <<: *build_cross_vars
-  <<: *build_cross_script
 
 build_melodic_cross:
   stage: build
