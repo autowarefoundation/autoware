@@ -34,6 +34,3 @@ set(Numpy_INCLUDE_DIRS "${CMAKE_SYSROOT}/usr/lib/python2.7/dist-packages/numpy/c
 
 set(CYTHON_EXECUTABLE $ENV{AUTOWARE_CYTHON_EXECUTABLE})
 set(CUDA_ARCH $ENV{AUTOWARE_CUDA_ARCH})
-
-# Required for mrt_cmake_modules
-set(MRT_ARCH "armv8-a")
