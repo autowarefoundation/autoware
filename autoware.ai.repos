@@ -55,7 +55,3 @@ repositories:
     type: git
     url: https://github.com/KIT-MRT/mrt_cmake_modules.git
     version: 67a93bcfee4f7e9e39e79f138ecadbba5c8392b7
-  vendor/qpoases:
-    type: git
-    url: https://gitlab.com/autowarefoundation/autoware.ai/qpoases_vendor.git
-    version: master
