@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <color name="circular_progress_default_progress">#bada55</color>
-	<color name="circular_progress_default_background">#787878</color>
-	<color name="circular_progress_default_title">#bada55</color>
-	<color name="circular_progress_default_subtitle">#D1D1D1</color>
-</resources>
