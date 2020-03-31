@@ -1,6 +1,1 @@
 .git*
-ros/build*
-ros/devel*
-ros/install*
-ros/log*
-ros/coverage_*
