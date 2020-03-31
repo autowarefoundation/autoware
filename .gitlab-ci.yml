@@ -30,12 +30,13 @@ variables:
 
 .build_cross_vars: &build_cross_vars
     AUTOWARE_TARGET_ARCH: aarch64
-    AUTOWARE_TOOLCHAIN_FILE_PATH: $CI_PROJECT_DIR/ros/cross_toolchain.cmake
+    AUTOWARE_TOOLCHAIN_FILE_PATH: $CI_PROJECT_DIR/cross_toolchain.cmake
     AUTOWARE_SYSROOT: /sysroot/${AUTOWARE_CROSS_TARGET_PLATFORM}
 
 .build_cross_script: &build_cross_script
   script:
-    - apt-get update && apt-get install -y python3-vcstool git build-essential
+    - apt-get update && apt-get install -y python3-vcstool git wget build-essential
+    - wget https://gitlab.com/autowarefoundation/autoware.ai/docker/raw/master/crossbuild/cross_toolchain.cmake
     - mkdir src
     - vcs validate < $VCS_FILE
     - vcs import src < $VCS_FILE
