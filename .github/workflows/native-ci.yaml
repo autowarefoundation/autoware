@@ -1,0 +1,45 @@
+name: Native CI workflow
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+
+  build-melodic:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest] #[ubuntu-latest, self-hosted]
+      fail-fast: false
+
+    container:
+      image: autoware/autoware:bleedingedge-melodic-base
+      env:
+        VCS_FILE: autoware.ai.repos
+        ROS_DISTRO: melodic
+      options: --user 1001
+
+    steps:
+
+    - name: Checkout repo
+      uses: actions/checkout@v2
+
+    - name: Prepare repo
+      run: |
+        mkdir src
+        vcs validate < $VCS_FILE
+        vcs import src/ < $VCS_FILE
+        rosdep update
+        rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO
+
+    - name: Build and test repo
+      run: |
+        bash -c 'source /opt/ros/$ROS_DISTRO/setup.bash; \
+        colcon build --cmake-args -DCMAKE_BUILD_TYPE=Debug; \
+        colcon build --cmake-target tests --cmake-args -DCMAKE_BUILD_TYPE=Debug; \
+        colcon test; \
+        colcon test-result --verbose'
