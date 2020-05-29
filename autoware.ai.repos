@@ -1,39 +1,39 @@
 repositories:
   autoware/common:
     type: git
-    url: https://gitlab.com/autowarefoundation/autoware.ai/common.git
+    url: https://github.com/Autoware-AI/common.git
     version: master
   autoware/core_perception:
     type: git
-    url: https://gitlab.com/autowarefoundation/autoware.ai/core_perception.git
+    url: https://github.com/Autoware-AI/core_perception.git
     version: master
   autoware/core_planning:
     type: git
-    url: https://gitlab.com/autowarefoundation/autoware.ai/core_planning.git
+    url: https://github.com/Autoware-AI/core_planning.git
     version: master
   autoware/documentation:
     type: git
-    url: https://gitlab.com/autowarefoundation/autoware.ai/documentation.git
+    url: https://github.com/Autoware-AI/documentation.git
     version: master
   autoware/messages:
     type: git
-    url: https://gitlab.com/autowarefoundation/autoware.ai/messages.git
+    url: https://github.com/Autoware-AI/messages.git
     version: master
   autoware/simulation:
     type: git
-    url: https://gitlab.com/autowarefoundation/autoware.ai/simulation.git
+    url: https://github.com/Autoware-AI/simulation.git
     version: master
   autoware/utilities:
     type: git
-    url: https://gitlab.com/autowarefoundation/autoware.ai/utilities.git
+    url: https://github.com/Autoware-AI/utilities.git
     version: master
   autoware/visualization:
     type: git
-    url: https://gitlab.com/autowarefoundation/autoware.ai/visualization.git
+    url: https://github.com/Autoware-AI/visualization.git
     version: master
   drivers/awf_drivers:
     type: git
-    url: https://gitlab.com/autowarefoundation/autoware.ai/drivers.git
+    url: https://github.com/Autoware-AI/drivers.git
     version: master
   citysim:
     type: git
