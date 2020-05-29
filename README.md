@@ -66,7 +66,7 @@ You may create 3D map data through Tier IV's [Map Tools](https://maptools.tier4.
 
 ## License
 
-Autoware is provided under the [Apache 2 License](https://github.com/Autoware-AI/autoware.ai/autoware/blob/master/LICENSE).
+Autoware is provided under the [Apache 2 License](https://github.com/Autoware-AI/autoware.ai/blob/master/LICENSE).
 
 ## Contact
 
