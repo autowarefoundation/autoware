@@ -1,0 +1,49 @@
+name: Cross CI workflow
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+
+  build-cross:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+      fail-fast: false
+
+    env:
+      VCS_FILE: autoware.ai.repos
+      ROS_DISTRO: melodic
+      AUTOWARE_CROSS_TARGET_PLATFORM: generic-aarch64
+      AUTOWARE_TARGET_ARCH: aarch64
+      AUTOWARE_TOOLCHAIN_FILE_PATH: ${{ github.workspace }}/cross_toolchain.cmake
+      AUTOWARE_SYSROOT: /sysroot/generic-aarch64
+
+    container:
+      image: autoware/build:generic-aarch64-melodic-bleedingedge
+
+    steps:
+
+    - name: Checkout repo
+      uses: actions/checkout@v2
+
+    - name: Build repo
+      run: |
+        mkdir -p src_tmp/ && mv `find -maxdepth 1 -not -name . -not -name src_tmp -not -name $VCS_FILE` src_tmp/ && mv src_tmp/ src/
+        sudo apt-get update -qq && sudo apt-get install -y python3-vcstool gcc git wget
+        wget https://raw.githubusercontent.com/Autoware-AI/docker/master/crossbuild/cross_toolchain.cmake
+        vcs validate < $VCS_FILE
+        vcs import src/ < $VCS_FILE
+        bash -c 'source $AUTOWARE_SYSROOT/opt/ros/${ROS_DISTRO}/setup.bash; \
+        colcon build --merge-install \
+          --packages-skip citysim \
+          --cmake-args \
+          -DCMAKE_TOOLCHAIN_FILE=$AUTOWARE_TOOLCHAIN_FILE_PATH \
+          -DCMAKE_SYSTEM_PROCESSOR=$AUTOWARE_TARGET_ARCH \
+          -DCMAKE_PREFIX_PATH="$(pwd)/install;${AUTOWARE_SYSROOT}/opt/ros/${ROS_DISTRO}" \
+          -DCMAKE_FIND_ROOT_PATH=$(pwd)/install/;'

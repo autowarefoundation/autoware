@@ -1,5 +1,7 @@
 [![Autoware](https://www.autoware.ai/static/img/autoware_web_img.png)](https://www.autoware.ai)
 
+![Native CI workflow](https://github.com/Autoware-AI/autoware.ai/workflows/Native%20CI%20workflow/badge.svg) ![CUDA CI workflow](https://github.com/Autoware-AI/autoware.ai/workflows/CUDA%20CI%20workflow/badge.svg) ![Cross CI workflow](https://github.com/Autoware-AI/autoware.ai/workflows/Cross%20CI%20workflow/badge.svg)
+
 [Autoware](https://www.autoware.ai) is the world's first "all-in-one" open-source software for self-driving vehicles. The capabilities of Autoware are primarily well-suited for urban cities, but highways, freeways, mesomountaineous regions, and geofenced areas can be also covered. The code base of Autoware is protected by the Apache 2 License. Please use it at your own discretion. For safe use, we provide a ROSBAG-based simulation environment for those who do not own real autonomous vehicles. If you plan to use Autoware with real autonomous vehicles, **please formulate safety measures and assessment of risk before field testing.**
 
 You may refer to [Autoware Wiki](https://github.com/Autoware-AI/autoware.ai/wiki/home) for **Users Guide** and **Developers Guide**.
@@ -58,7 +60,7 @@ You may annotate and train your ROSBAG data using your web browser through [Auto
 
 ### ROSBAG STORE
 
-You may download a number of test and simulation data sets from Tier IV's [ROSBAG STORE](https://rosbag.tier4.jp). Note that free accounts would not allow you to access image data due to privacy matters. 
+You may download a number of test and simulation data sets from Tier IV's [ROSBAG STORE](https://rosbag.tier4.jp). Note that free accounts would not allow you to access image data due to privacy matters.
 
 ### Map Tools
 

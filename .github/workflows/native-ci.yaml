@@ -21,7 +21,7 @@ jobs:
       env:
         VCS_FILE: autoware.ai.repos
         ROS_DISTRO: melodic
-      options: --user 1001
+      options: --user root
 
     steps:
 
@@ -33,7 +33,7 @@ jobs:
         mkdir src
         vcs validate < $VCS_FILE
         vcs import src/ < $VCS_FILE
-        rosdep update
+        rosdep update && apt-get update -qqq
         rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO
 
     - name: Build and test repo

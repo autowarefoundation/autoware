@@ -47,11 +47,3 @@ repositories:
     type: git
     url: https://github.com/tier4/ds4.git
     version: master
-  vendor/lanelet2:
-    type: git
-    url: https://github.com/fzi-forschungszentrum-informatik/Lanelet2.git
-    version: d13cf9c86b9f01821a7242ef6652c0daed5a7d84
-  vendor/mrt_cmake_modules:
-    type: git
-    url: https://github.com/KIT-MRT/mrt_cmake_modules.git
-    version: 9ddefc00303983b8d84fc2e050a2c568a34d0ecd
