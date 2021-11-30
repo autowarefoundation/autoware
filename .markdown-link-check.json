@@ -1,0 +1,6 @@
+{
+  "aliveStatusCodes": [200, 206, 403],
+  "ignorePatterns": [],
+  "retryOn429": true,
+  "retryCount": 10
+}

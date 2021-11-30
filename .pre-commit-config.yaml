@@ -1,0 +1,81 @@
+ci:
+  autofix_commit_msg: "ci(pre-commit): autofix"
+  autoupdate_commit_msg: "ci(pre-commit): autoupdate"
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: check-xml
+      - id: check-yaml
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.30.0
+    hooks:
+      - id: markdownlint
+        args: ["-c", ".markdownlint.yaml", "--fix"]
+
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v2.5.0
+    hooks:
+      - id: prettier
+
+  - repo: https://github.com/tier4/pre-commit-hooks-ros
+    rev: v0.4.0
+    hooks:
+      - id: prettier-package-xml
+      - id: sort-package-xml
+
+  - repo: https://github.com/gruntwork-io/pre-commit
+    rev: v0.1.17
+    hooks:
+      - id: shellcheck
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.10.1
+    hooks:
+      - id: isort
+
+  - repo: https://github.com/psf/black
+    rev: 21.11b1
+    hooks:
+      - id: black
+        args: ["--line-length=100"]
+
+  - repo: https://github.com/PyCQA/flake8
+    rev: 4.0.1
+    hooks:
+      - id: flake8
+        additional_dependencies:
+          [
+            "flake8-blind-except",
+            "flake8-builtins",
+            "flake8-class-newline",
+            "flake8-comprehensions",
+            "flake8-deprecated",
+            "flake8-docstrings",
+            "flake8-import-order",
+            "flake8-quotes",
+          ]
+
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v12.0.1
+    hooks:
+      - id: clang-format
+
+  - repo: https://github.com/cpplint/cpplint
+    rev: 1.5.5
+    hooks:
+      - id: cpplint
+        args: ["--quiet"]
+        exclude: ".cu"
+
+exclude: ".svg"
