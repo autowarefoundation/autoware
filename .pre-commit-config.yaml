@@ -39,6 +39,11 @@ repos:
     hooks:
       - id: shellcheck
 
+  - repo: https://github.com/scop/pre-commit-shfmt
+    rev: v3.4.1-1
+    hooks:
+      - id: shfmt-docker
+
   - repo: https://github.com/pycqa/isort
     rev: 5.10.1
     hooks:
