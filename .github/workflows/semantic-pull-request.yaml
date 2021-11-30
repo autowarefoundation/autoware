@@ -1,0 +1,14 @@
+name: semantic-pull-request
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - edited
+      - synchronize
+
+jobs:
+  semantic-pull-request:
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-semantic-pull-request.yaml@tier4/proposal
+    secrets:
+      token: ${{ secrets.GITHUB_TOKEN }}
