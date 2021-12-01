@@ -1,0 +1,10 @@
+uint8 UNKNOWN=0
+uint8 RED=1
+uint8 GREEN=2
+uint8 YELLOW=3
+uint8 LEFT=4
+uint8 RIGHT=5
+uint8 UP=6
+uint8 DOWN=7
+uint32 type
+float32 confidence

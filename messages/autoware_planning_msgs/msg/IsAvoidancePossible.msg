@@ -1,0 +1,2 @@
+builtin_interfaces/Time stamp
+bool is_avoidance_possible

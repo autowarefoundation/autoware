@@ -1,0 +1,7 @@
+std_msgs/Header header
+
+bool is_module_running
+
+autoware_perception_msgs/TrafficLightStateWithJudge perception
+autoware_perception_msgs/TrafficLightStateWithJudge external
+autoware_perception_msgs/TrafficLightStateWithJudge final
