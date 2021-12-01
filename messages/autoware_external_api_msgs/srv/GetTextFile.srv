@@ -1,0 +1,3 @@
+---
+autoware_external_api_msgs/ResponseStatus status
+autoware_external_api_msgs/TextFile file

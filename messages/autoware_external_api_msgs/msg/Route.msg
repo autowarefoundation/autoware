@@ -1,0 +1,2 @@
+geometry_msgs/PoseStamped goal_pose
+autoware_external_api_msgs/RouteSection[] route_sections
