@@ -1,0 +1,33 @@
+name: build-and-test-pr
+
+on:
+  pull_request:
+
+jobs:
+  get-modified-packages:
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-get-modified-packages.yaml@tier4/proposal
+    with:
+      script-ref: tier4/proposal
+
+  get-modified-source-files:
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-get-modified-source-files.yaml@tier4/proposal
+
+  build-and-test:
+    needs: get-modified-packages
+    if: ${{ needs.get-modified-packages.outputs.modified-packages != '' }}
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-colcon-build-and-test.yaml@tier4/proposal
+    with:
+      rosdistro: galactic
+      build-depends-repos: build_depends.repos
+      target-packages: ${{ needs.get-modified-packages.outputs.modified-packages }}
+
+  clang-tidy:
+    needs: [get-modified-source-files, build-and-test]
+    if: ${{ needs.get-modified-source-files.outputs.modified-source-files != '' }}
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-clang-tidy.yaml@tier4/proposal
+    with:
+      script-ref: tier4/proposal
+      rosdistro: galactic
+      build-depends-repos: build_depends.repos
+      target-files: ${{ needs.get-modified-source-files.outputs.modified-source-files }}
+      compile-commands-hash: ${{ needs.build-and-test.outputs.compile-commands-hash }}
