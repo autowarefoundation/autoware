@@ -1,4 +1,8 @@
 repositories:
+  common/autoware_lint_common:
+    type: git
+    url: https://github.com/tier4/tier4_ament_lint
+    version: main
   messages/autoware_auto_msgs:
     type: git
     url: https://github.com/tier4/autoware_auto_msgs.git
