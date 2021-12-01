@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>shift_decider</name>
+  <version>0.1.0</version>
+  <description>The shift_decider package</description>
+  <maintainer email="horibe.takamasa@gmail.com">Takamasa Horibe</maintainer>
+  <author email="horibe.takamasa@gmail.com">Takamasa Horibe</author>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>autoware_auto_control_msgs</depend>
+  <depend>autoware_auto_vehicle_msgs</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+
+  <test_depend>ament_cmake_cppcheck</test_depend>
+  <test_depend>ament_cmake_cpplint</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+
+</package>

@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="shift_decider" exec="shift_decider" name="shift_decider" output="screen">
+    <remap from="input/control_cmd" to="/control/trajectory_follower/control_cmd" />
+    <remap from="output/gear_cmd" to="/control/shift_decider/gear_cmd" />
+  </node>
+</launch>
