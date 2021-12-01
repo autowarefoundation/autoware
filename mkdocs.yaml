@@ -9,23 +9,25 @@ theme:
   name: material
   features:
     - navigation.expand
+    - navigation.indexes
     - navigation.instant
     - navigation.sections
     - navigation.tabs
     - navigation.tabs.sticky
     - navigation.top
-  favicon: assets/images/autoware-foundation.png
+  favicon: docs/assets/images/autoware-foundation.png
   icon:
     logo: fontawesome/solid/car
     repo: fontawesome/brands/github
   language: en
   palette:
-    - primary: white
     - scheme: default
+      primary: white
       toggle:
         icon: material/weather-sunny
         name: Switch to dark mode
     - scheme: slate
+      primary: grey
       toggle:
         icon: material/weather-night
         name: Switch to light mode
@@ -34,8 +36,11 @@ extra:
   font:
     text: Roboto
     code: Roboto Mono
+  version:
+    provider: mike
 
 extra_css:
+  - docs/assets/css/extra.css
   - https://use.fontawesome.com/releases/v5.15.4/css/all.css
 
 extra_javascript:
