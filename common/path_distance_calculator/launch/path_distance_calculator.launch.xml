@@ -1,0 +1,8 @@
+<launch>
+  <arg name="path" default="/planning/scenario_planning/lane_driving/behavior_planning/path" />
+  <arg name="distance" default="~/distance" />
+  <node pkg="path_distance_calculator" exec="path_distance_calculator_node" name="path_distance_calculator">
+    <remap from="~/input/path" to="$(var path)" />
+    <remap from="~/output/distance" to="$(var distance)" />
+  </node>
+</launch>
