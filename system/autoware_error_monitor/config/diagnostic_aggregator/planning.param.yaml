@@ -1,0 +1,47 @@
+/**:
+  ros__parameters:
+    planning:
+      type: diagnostic_aggregator/AnalyzerGroup
+      path: planning
+      analyzers:
+        node_alive_monitoring:
+          type: diagnostic_aggregator/AnalyzerGroup
+          path: node_alive_monitoring
+          analyzers:
+            topic_status:
+              type: diagnostic_aggregator/GenericAnalyzer
+              path: topic_status
+              contains: [": planning_topic_status"]
+              timeout: 1.0
+
+        performance_monitoring:
+          type: diagnostic_aggregator/AnalyzerGroup
+          path: performance_monitoring
+          analyzers:
+            trajectory_validation:
+              type: diagnostic_aggregator/AnalyzerGroup
+              path: trajectory_validation
+              analyzers:
+                trajectory_finite_value:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: trajectory_point_validation
+                  contains: [": trajectory_point_validation"]
+                  timeout: 1.0
+
+                trajectory_interval:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: trajectory_interval_validation
+                  contains: [": trajectory_interval_validation"]
+                  timeout: 1.0
+
+                trajectory_curvature:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: trajectory_curvature_validation
+                  contains: [": trajectory_curvature_validation"]
+                  timeout: 1.0
+
+                trajectory_sharp_angle:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: trajectory_relative_angle_validation
+                  contains: [": trajectory_relative_angle_validation"]
+                  timeout: 1.0

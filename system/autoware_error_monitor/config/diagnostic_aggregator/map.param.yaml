@@ -1,0 +1,32 @@
+/**:
+  ros__parameters:
+    map:
+      type: diagnostic_aggregator/AnalyzerGroup
+      path: map
+      analyzers:
+        node_alive_monitoring:
+          type: diagnostic_aggregator/AnalyzerGroup
+          path: node_alive_monitoring
+          analyzers:
+            topic_status:
+              type: diagnostic_aggregator/GenericAnalyzer
+              path: topic_status
+              contains: [": map_topic_status"]
+              timeout: 1.0
+
+        map_validation:
+          type: diagnostic_aggregator/AnalyzerGroup
+          path: map_validation
+          analyzers:
+            map_version:
+              type: diagnostic_aggregator/GenericAnalyzer
+              path: map_version
+              contains: [": map_version"]
+              timeout: 0.0
+
+        # TODO(Tier IV): Support this diagnostics
+        # route_validation:
+        #   type: diagnostic_aggregator/GenericAnalyzer
+        #   path: route_validation
+        #   contains: [": route_validation"]
+        #   timeout: 0.0

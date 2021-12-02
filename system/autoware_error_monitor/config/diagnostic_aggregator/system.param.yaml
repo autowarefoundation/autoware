@@ -1,0 +1,141 @@
+/**:
+  ros__parameters:
+    system:
+      type: diagnostic_aggregator/AnalyzerGroup
+      path: system
+      analyzers:
+        node_alive_monitoring:
+          type: diagnostic_aggregator/AnalyzerGroup
+          path: node_alive_monitoring
+          analyzers:
+            topic_status:
+              type: diagnostic_aggregator/GenericAnalyzer
+              path: topic_status
+              contains: [": system_topic_status"]
+              timeout: 1.0
+
+        emergency_stop_operation:
+          type: diagnostic_aggregator/GenericAnalyzer
+          path: emergency_stop_operation
+          contains: [": emergency_stop_operation"]
+          timeout: 1.0
+
+        driving_recorder:
+          type: diagnostic_aggregator/AnalyzerGroup
+          path: driving_recorder
+          analyzers:
+            storage_error:
+              type: diagnostic_aggregator/GenericAnalyzer
+              path: storage_error
+              contains: ["bagkeeper"]
+              timeout: 3.0
+
+        debug_data_logger:
+          type: diagnostic_aggregator/AnalyzerGroup
+          path: debug_data_logger
+          analyzers:
+            storage_error:
+              type: diagnostic_aggregator/GenericAnalyzer
+              path: storage_error
+              contains: ["bagpacker"]
+              timeout: 3.0
+
+        resource_monitoring:
+          type: diagnostic_aggregator/AnalyzerGroup
+          path: resource_monitoring
+          analyzers:
+            clock:
+              type: diagnostic_aggregator/AnalyzerGroup
+              path: clock
+              analyzers:
+                clock_offset:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: clock_offset
+                  contains: [": NTP Offset"]
+                  timeout: 10.0
+
+            cpu:
+              type: diagnostic_aggregator/AnalyzerGroup
+              path: cpu
+              analyzers:
+                temperature:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: temperature
+                  contains: [": CPU Temperature"]
+                  timeout: 3.0
+
+                usage:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: usage
+                  contains: [": CPU Usage"]
+                  timeout: 3.0
+
+                thermal_throttling:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: thermal_throttling
+                  contains: [": CPU Thermal Throttling"]
+                  timeout: 3.0
+
+            gpu:
+              type: diagnostic_aggregator/AnalyzerGroup
+              path: gpu
+              analyzers:
+                temperature:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: temperature
+                  contains: [": GPU Temperature"]
+                  timeout: 3.0
+
+                usage:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: gpu_usage
+                  contains: [": GPU Usage"]
+                  timeout: 3.0
+
+                memory_usage:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: memory_usage
+                  contains: [": GPU Memory Usage"]
+                  timeout: 3.0
+
+                thermal_throttling:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: thermal_throttling
+                  contains: [": GPU Thermal Throttling"]
+                  timeout: 3.0
+
+            memory:
+              type: diagnostic_aggregator/AnalyzerGroup
+              path: memory
+              analyzers:
+                usage:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: usage
+                  contains: [": Memory Usage"]
+                  timeout: 3.0
+
+            network:
+              type: diagnostic_aggregator/AnalyzerGroup
+              path: network
+              analyzers:
+                network_usage:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: network_usage
+                  contains: [": Network Usage"]
+                  timeout: 3.0
+
+            storage:
+              type: diagnostic_aggregator/AnalyzerGroup
+              path: storage
+              analyzers:
+                temperature:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: temperature
+                  contains: [": HDD Temperature"]
+                  timeout: 3.0
+
+                usage:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: usage
+                  contains: [": HDD Usage"]
+                  timeout: 3.0
