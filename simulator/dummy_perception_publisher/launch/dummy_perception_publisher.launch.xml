@@ -1,0 +1,97 @@
+<?xml version="1.0" ?>
+
+<launch>
+  <!-- dummy detection and sensor data -->
+  <arg name="visible_range" default="300.0" />
+  <arg name="real" default="true" />
+  <arg name="use_object_recognition" default="true" />
+  <arg name="use_traffic_light_recognition" default="false" />
+
+  <group>
+    <push-ros-namespace namespace="simulation"/>
+    <group if="$(var real)">
+      <node pkg="dummy_perception_publisher" exec="dummy_perception_publisher_node" name="dummy_perception_publisher" output="screen">
+        <remap from="output/dynamic_object" to="/perception/object_recognition/detection/labeled_clusters" />
+        <remap from="output/objects_pose" to="debug/object_pose" />
+        <remap from="output/points_raw" to="/perception/obstacle_segmentation/pointcloud" />
+        <remap from="input/object" to="dummy_perception_publisher/object_info" />
+        <remap from="input/reset" to="input/reset" />
+        <param name="visible_range" value="$(var visible_range)" />
+        <param name="detection_successful_rate" value="0.999" />
+        <param name="enable_ray_tracing" value="true" />
+        <param name="use_object_recognition" value="$(var use_object_recognition)" />
+      </node>
+      <include file="$(find-pkg-share shape_estimation)/launch/shape_estimation.launch.xml">
+        <arg name="input/objects" value="/perception/object_recognition/detection/labeled_clusters" />
+        <arg name="output/objects" value="/perception/object_recognition/detection/objects_with_feature" />
+      </include>
+    </group>
+    <group unless="$(var real)">
+      <node pkg="dummy_perception_publisher" exec="dummy_perception_publisher_node" name="dummy_perception_publisher" output="screen">
+        <remap from="output/dynamic_object" to="/perception/object_recognition/detection/objects_with_feature" />
+        <remap from="output/objects_pose" to="debug/object_pose" />
+        <remap from="output/points_raw" to="/perception/obstacle_segmentation/pointcloud" />
+        <remap from="input/object" to="dummy_perception_publisher/object_info" />
+        <remap from="input/reset" to="input/reset" />
+        <param name="visible_range" value="$(var visible_range)" />
+        <param name="detection_successful_rate" value="1.0" />
+        <param name="enable_ray_tracing" value="false" />
+        <param name="use_object_recognition" value="$(var use_object_recognition)" />
+      </node>
+    </group>
+
+    <!-- convert DynamicObjectsWithFeatureArray to DynamicObjects -->
+    <include file="$(find-pkg-share detected_object_feature_remover)/launch/detected_object_feature_remover.launch.xml">
+      <arg name="input" value="/perception/object_recognition/detection/objects_with_feature" />
+      <arg name="output" value="/perception/object_recognition/detection/objects" />
+    </include>
+
+  </group>
+
+  <!-- perception module -->
+  <group>
+    <push-ros-namespace namespace="perception"/>
+    <!-- object segmentation module -->
+    <group>
+      <push-ros-namespace namespace="obstacle_segmentation"/>
+      <!-- Occupancy Grid -->
+      <include file="$(find-pkg-share laserscan_to_occupancy_grid_map)/launch/laserscan_to_occupancy_grid_map.launch.py">
+        <arg name="input_obstacle_pointcloud" value="true" />
+        <arg name="input_obstacle_and_raw_pointcloud" value="false" />
+        <arg name="input/obstacle_pointcloud" value="/perception/obstacle_segmentation/pointcloud" />
+      </include>
+    </group>
+
+    <!-- object recognition module -->
+    <group if="$(var use_object_recognition)">
+      <push-ros-namespace namespace="object_recognition"/>
+      <!-- detection module -->
+      <!-- tracking module -->
+      <group>
+        <push-ros-namespace namespace="tracking"/>
+        <include file="$(find-pkg-share perception_launch)/launch/object_recognition/tracking/tracking.launch.xml">
+        </include>
+      </group>
+      <!-- prediction module -->
+      <group>
+        <push-ros-namespace namespace="prediction"/>
+        <include file="$(find-pkg-share perception_launch)/launch/object_recognition/prediction/prediction.launch.xml">
+          <arg name="use_vector_map" value="true" />
+        </include>
+      </group>
+    </group>
+
+    <group unless="$(var use_object_recognition)">
+      <push-ros-namespace namespace="object_recognition"/>
+      <node pkg="dummy_perception_publisher" exec="empty_objects_publisher" name="empty_objects_publisher" output="screen">
+        <remap from="~/output/objects" to="/perception/object_recognition/objects" />
+      </node>
+    </group>
+
+    <!-- traffic light module -->
+    <group if="$(var use_traffic_light_recognition)">
+      <push-ros-namespace namespace="traffic_light_recognition"/>
+      <include file="$(find-pkg-share perception_launch)/launch/traffic_light_recognition/traffic_light.launch.xml"></include>
+    </group>
+  </group>
+</launch>
