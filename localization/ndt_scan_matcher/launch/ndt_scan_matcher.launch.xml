@@ -1,0 +1,29 @@
+<launch>
+  <arg name="param_file" default="$(find-pkg-share ndt_scan_matcher)/config/ndt_scan_matcher.param.yaml" />
+
+  <!-- Topics -->
+  <arg name="input_sensor_points_topic" default="/points_raw" description="Sensor points topic" />
+  <arg name="input_initial_pose_topic" default="/ekf_pose_with_covariance" description="Initial position topic to align" />
+  <arg name="input_map_points_topic" default="/pointcloud_map" description="Map points topic" />
+
+  <arg name="output_pose_topic" default="ndt_pose" description="Estimated self position" />
+  <arg name="output_pose_with_covariance_topic" default="ndt_pose_with_covariance" description="Estimated self position with covariance" />
+  <arg name="output_diagnostics_topic" default="/diagnostics" description="Diagnostic topic" />
+
+
+  <arg name="node_name" default="ndt_scan_matcher" description="Use a different name for this node" />
+
+  <node pkg="ndt_scan_matcher" exec="ndt_scan_matcher" name="$(var node_name)" output="log">
+    <remap from="points_raw" to="$(var input_sensor_points_topic)" />
+
+    <remap from="ekf_pose_with_covariance" to="$(var input_initial_pose_topic)" />
+    <remap from="pointcloud_map" to="$(var input_map_points_topic)" />
+
+    <remap from="ndt_pose" to="$(var output_pose_topic)" />
+    <remap from="ndt_pose_with_covariance" to="$(var output_pose_with_covariance_topic)" />
+    <remap from="diagnostics" to="$(var output_diagnostics_topic)" />
+
+    <param from="$(var param_file)" />
+  </node>
+
+</launch>

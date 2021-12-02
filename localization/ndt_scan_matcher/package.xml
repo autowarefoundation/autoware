@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>ndt_scan_matcher</name>
+  <version>0.1.0</version>
+  <description>The ndt_scan_matcher package</description>
+  <maintainer email="yamato.ando@gmail.com">Yamato Ando</maintainer>
+  <license>Apache License 2.0</license>
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <depend>autoware_debug_msgs</depend>
+  <depend>autoware_localization_msgs</depend>
+  <depend>autoware_utils</depend>
+  <depend>diagnostic_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>ndt</depend>
+  <depend>ndt_omp</depend>
+  <depend>ndt_pcl_modified</depend>
+  <depend>pcl_conversions</depend>
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf2_sensor_msgs</depend>
+  <depend>visualization_msgs</depend>
+
+  <test_depend>ament_cmake_cppcheck</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
