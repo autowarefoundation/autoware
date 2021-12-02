@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>topic_state_monitor</name>
+  <version>0.1.0</version>
+  <description>The topic_state_monitor package</description>
+  <maintainer email="kenji.miyake@tier4.jp">Kenji Miyake</maintainer>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <depend>ament_index_cpp</depend>
+  <depend>diagnostic_updater</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
