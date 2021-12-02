@@ -1,0 +1,13 @@
+<launch>
+  <arg name="input_map_points_topic" default="/map/pointcloud_map" />
+
+  <arg name="map_frame" default="map" />
+  <arg name="viewer_frame" default="viewer" />
+
+  <node pkg="map_tf_generator" exec="map_tf_generator" name="map_tf_generator">
+    <remap from="pointcloud_map" to="$(var input_map_points_topic)" />
+
+    <param name="map_frame" value="$(var map_frame)" />
+    <param name="viewer_frame" value="$(var viewer_frame)" />
+  </node>
+</launch>

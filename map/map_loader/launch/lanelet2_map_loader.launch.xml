@@ -1,0 +1,22 @@
+<launch>
+  <arg name="lanelet2_map_path" />
+  <arg name="lanelet2_map_topic" default="vector_map"/>
+  <arg name="lanelet2_map_marker_topic" default="vector_map_marker"/>
+  <arg name="center_line_resolution" default="5.0"/>
+
+  <node pkg="map_loader" exec="map_hash_generator" name="map_hash_generator">
+    <param name="lanelet2_map_path" value="$(var lanelet2_map_path)" />
+  </node>
+
+  <node pkg="map_loader" exec="lanelet2_map_loader" name="lanelet2_map_loader">
+    <remap from="output/lanelet2_map" to="$(var lanelet2_map_topic)" />
+    <param name="center_line_resolution" value="$(var center_line_resolution)" />
+    <param name="lanelet2_map_path" value="$(var lanelet2_map_path)" />
+  </node>
+
+  <node pkg="map_loader" exec="lanelet2_map_visualization" name="lanelet2_map_visualization">
+    <remap from="input/lanelet2_map" to="$(var lanelet2_map_topic)" />
+    <remap from="output/lanelet2_map_marker" to="$(var lanelet2_map_marker_topic)" />
+  </node>
+
+</launch>

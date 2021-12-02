@@ -1,0 +1,8 @@
+<launch>
+  <arg name="pointcloud_map_path" />
+
+  <node pkg="map_loader" exec="pointcloud_map_loader" name="pointcloud_map_loader" output="screen">
+    <remap from="output/pointcloud_map" to="/map/pointcloud_map" />
+    <param name="pcd_paths_or_directory" value="[$(var pointcloud_map_path)]" />
+  </node>
+</launch>
