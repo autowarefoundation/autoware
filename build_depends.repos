@@ -3,6 +3,10 @@ repositories:
     type: git
     url: https://github.com/tier4/tier4_ament_lint
     version: main
+  common/autoware_auto_dependencies:
+    type: git
+    url: https://github.com/tier4/AutowareArchitectureProposal.iv.git
+    version: only-autoware-auto-dependencies
   messages/autoware_auto_msgs:
     type: git
     url: https://github.com/tier4/autoware_auto_msgs.git
