@@ -1,0 +1,11 @@
+<launch>
+  <arg name="input_vehicle_velocity_topic" default="velocity_status"/>
+  <arg name="output_twist_with_covariance" default="twist_with_covariance"/>
+  <arg name="config_file" default="$(find-pkg-share vehicle_velocity_converter)/config/vehicle_velocity_converter.yaml"/>
+
+  <node pkg="vehicle_velocity_converter" exec="vehicle_velocity_converter" name="vehicle_velocity_converter_node" output="screen">
+    <param from="$(var config_file)"/>
+    <remap from="velocity_status" to="$(var input_vehicle_velocity_topic)"/>
+    <remap from="twist_with_covariance" to="$(var output_twist_with_covariance)"/>
+  </node>
+</launch>
