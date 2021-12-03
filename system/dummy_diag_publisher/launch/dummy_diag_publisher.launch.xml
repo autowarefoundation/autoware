@@ -1,0 +1,67 @@
+<launch>
+  <arg name="launch_rqt_reconfigure" default="true"/>
+  <arg name="launch_rqt_runtime_monitor" default="true"/>
+  <arg name="launch_rqt_robot_monitor" default="true"/>
+  <arg name="launch_rqt_runtime_monitor_err" default="true"/>
+
+  <group if="$(var launch_rqt_reconfigure)">
+    <node pkg="rqt_reconfigure" exec="rqt_reconfigure" name="rqt_reconfigure"/>
+  </group>
+
+  <group if="$(var launch_rqt_runtime_monitor)">
+    <node pkg="rqt_runtime_monitor" exec="rqt_runtime_monitor" name="rqt_runtime_monitor"/>
+  </group>
+
+  <group if="$(var launch_rqt_robot_monitor)">
+    <node pkg="rqt_robot_monitor" exec="rqt_robot_monitor" name="rqt_robot_monitor"/>
+  </group>
+
+  <group if="$(var launch_rqt_runtime_monitor_err)">
+    <node pkg="rqt_runtime_monitor" exec="rqt_runtime_monitor" name="rqt_runtime_monitor_err">
+      <remap from="/diagnostics" to="/diagnostics_err" />
+    </node>
+  </group>
+
+  <!-- velodyne -->
+  <include file="$(find-pkg-share dummy_diag_publisher)/launch/dummy_diag_publisher_node.launch.xml">
+    <arg name="diag_name" value="velodyne_connection"/>
+  </include>
+  <include file="$(find-pkg-share dummy_diag_publisher)/launch/dummy_diag_publisher_node.launch.xml">
+    <arg name="diag_name" value="velodyne_temperature"/>
+  </include>
+
+  <!-- livox -->
+  <include file="$(find-pkg-share dummy_diag_publisher)/launch/dummy_diag_publisher_node.launch.xml">
+    <arg name="diag_name" value="livox_ptp_signal"/>
+  </include>
+
+  <!-- camera -->
+  <include file="$(find-pkg-share dummy_diag_publisher)/launch/dummy_diag_publisher_node.launch.xml">
+    <arg name="diag_name" value="camera_connection"/>
+  </include>
+
+  <!-- lane departure -->
+  <include file="$(find-pkg-share dummy_diag_publisher)/launch/dummy_diag_publisher_node.launch.xml">
+    <arg name="diag_name" value="lane_departure"/>
+  </include>
+
+  <!-- obstacle crash -->
+  <include file="$(find-pkg-share dummy_diag_publisher)/launch/dummy_diag_publisher_node.launch.xml">
+    <arg name="diag_name" value="obstacle_crash"/>
+  </include>
+
+  <!-- vehicle -->
+  <include file="$(find-pkg-share dummy_diag_publisher)/launch/dummy_diag_publisher_node.launch.xml">
+    <arg name="diag_name" value="vehicle_errors"/>
+  </include>
+
+  <!-- CAN -->
+  <include file="$(find-pkg-share dummy_diag_publisher)/launch/dummy_diag_publisher_node.launch.xml">
+    <arg name="diag_name" value="can_bus_connection"/>
+  </include>
+
+  <!-- speaker (in order to check if correctly ignored) -->
+  <include file="$(find-pkg-share dummy_diag_publisher)/launch/dummy_diag_publisher_node.launch.xml">
+    <arg name="diag_name" value="speaker"/>
+  </include>
+</launch>
