@@ -1,0 +1,17 @@
+@startuml
+(*) --> "Subscribe trajectory"
+"Subscribe trajectory" --> "Check data"
+"Check data" --> "Get distance to nearest object"
+
+if "Is stop required?" then
+  -->[yes] "Change state to State::STOP"
+else
+  ->[no] "Change state to State::PASS"
+endif
+
+"Change state to State::PASS" --> "Publish trajectory, stop reason and debug data"
+"Change state to State::STOP" --> "Insert stop point"
+"Insert stop point" --> "Create debug data"
+"Create debug data" --> "Publish trajectory, stop reason and debug data"
+"Publish trajectory, stop reason and debug data" --> (*)
+@enduml
