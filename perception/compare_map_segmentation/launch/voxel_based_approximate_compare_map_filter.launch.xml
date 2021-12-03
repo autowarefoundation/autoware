@@ -1,0 +1,11 @@
+<launch>
+  <arg name="input" default="/input" description="input topic name" />
+  <arg name="input_map" default="/map" description="input map topic name" />
+  <arg name="output" default="/output" description="output topic name" />
+
+  <node pkg="compare_map_segmentation" exec="voxel_based_approximate_compare_map_filter_node" name="voxel_based_approximate_compare_map_filter_node" output="screen">
+    <remap from="input" to="$(var input)"/>
+    <remap from="map" to="$(var input_map)"/>
+    <remap from="output" to="$(var output)"/>
+  </node>
+</launch>

@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>ground_segmentation</name>
+  <version>0.1.0</version>
+  <description>The ROS2 ground_segmentation package</description>
+
+  <maintainer email="abrahammonrroy@yahoo.com">amc-nu</maintainer>
+  <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>
+  <license>Apache License 2.0</license>
+
+  <author>Open Perception</author>
+  <author email="julius@kammerl.de">Julius Kammerl</author>
+  <author email="william@osrfoundation.org">William Woodall</author>
+  <maintainer email="paul@bovbel.com">Paul Bovbel</maintainer>
+  <maintainer email="www.kentaro.wada@gmail.com">Kentaro Wada</maintainer>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <depend>libopencv-dev</depend>
+  <depend>pcl_conversions</depend>
+  <depend>pcl_ros</depend>
+  <depend>pointcloud_preprocessor</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_eigen</depend>
+  <depend>tf2_ros</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

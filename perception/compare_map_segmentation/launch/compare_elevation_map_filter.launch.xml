@@ -1,0 +1,11 @@
+<launch>
+  <arg name="input" default="/input" description="input topic name" />
+  <arg name="input_elevation_map" default="/input/elevation_map" description="input elevation_map topic name" />
+  <arg name="output" default="/output" description="output topic name" />
+
+  <node pkg="compare_map_segmentation" exec="compare_elevation_map_filter_node" name="compare_elevation_map_filter_node" output="screen">
+    <remap from="input" to="$(var input)"/>
+    <remap from="input/elevation_map" to="$(var input_elevation_map)"/>
+    <remap from="output" to="$(var output)"/>
+  </node>
+</launch>
