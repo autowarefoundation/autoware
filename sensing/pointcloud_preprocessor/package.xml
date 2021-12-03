@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>pointcloud_preprocessor</name>
+  <version>0.1.0</version>
+  <description>The ROS2 pointcloud_preprocessor package</description>
+
+  <maintainer email="abrahammonrroy@yahoo.com">amc-nu</maintainer>
+  <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>
+  <license>Apache License 2.0</license>
+
+  <author>Open Perception</author>
+  <author email="julius@kammerl.de">Julius Kammerl</author>
+  <author email="william@osrfoundation.org">William Woodall</author>
+  <maintainer email="paul@bovbel.com">Paul Bovbel</maintainer>
+  <maintainer email="www.kentaro.wada@gmail.com">Kentaro Wada</maintainer>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <depend>autoware_auto_vehicle_msgs</depend>
+  <depend>autoware_debug_msgs</depend>
+  <depend>autoware_utils</depend>
+  <depend>diagnostic_updater</depend>
+  <depend>image_transport</depend>
+  <depend>lanelet2_extension</depend>
+  <depend>libopencv-dev</depend>
+  <depend>libpcl-all-dev</depend>
+  <depend>message_filters</depend>
+  <depend>nav_msgs</depend>
+  <depend>pcl_conversions</depend>
+  <depend>pcl_msgs</depend>
+  <depend>pcl_ros</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_eigen</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>tier4_pcl_extensions</depend>
+  <depend>vehicle_info_util</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

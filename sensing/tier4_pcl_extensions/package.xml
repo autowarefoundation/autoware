@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>tier4_pcl_extensions</name>
+  <version>0.1.0</version>
+  <description>The tier4_pcl_extensions package</description>
+  <maintainer email="ryu.yamamoto@tier4.jp">Ryu Yamamoto</maintainer>
+  <license>Apache License 2.0</license>
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>eigen3_cmake_module</buildtool_depend>
+
+  <buildtool_export_depend>eigen3_cmake_module</buildtool_export_depend>
+
+  <build_depend>eigen</build_depend>
+  <build_export_depend>eigen</build_export_depend>
+
+  <depend>libpcl-all-dev</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

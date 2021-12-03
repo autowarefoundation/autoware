@@ -1,0 +1,30 @@
+<launch>
+  <arg name="input" description="input topic name" />
+  <arg name="output" description="output topic name" />
+
+  <!--
+    bit 0~1: Point property based on spatial position
+      00: Normal
+      01: High confidence level of the noise
+      10: Moderate confidence level of the noise
+      11: Low confidence level of the noise
+    bit 2~3: Point property based on intensity
+      00: Normal
+      01: High confidence level of the noise
+      10: Moderate confidence level of the noise
+      11: Reserved
+    bit 4~5: Return number
+      00: return 0
+      01: return 1
+      10: return 2
+      11: return 3
+    bit 6~7: Reserved
+  -->
+  <arg name="ignore_tags" description="tags to be ignored(see comments in livox_tag_filter.launch.xml for more details)" />
+
+  <node pkg="livox_tag_filter" exec="livox_tag_filter_node" name="livox_tag_filter_node" output="screen">
+    <remap from="input" to="$(var input)"/>
+    <remap from="output" to="$(var output)"/>
+    <param name="ignore_tags" value="$(var ignore_tags)"/>
+  </node>
+</launch>
