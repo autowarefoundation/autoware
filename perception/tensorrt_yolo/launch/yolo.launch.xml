@@ -1,0 +1,45 @@
+<launch>
+  <arg name="image_raw0" default="/image_raw0"/>
+  <arg name="image_raw1" default=""/>
+  <arg name="image_raw2" default=""/>
+  <arg name="image_raw3" default=""/>
+  <arg name="image_raw4" default=""/>
+  <arg name="image_raw5" default=""/>
+  <arg name="image_raw6" default=""/>
+  <arg name="image_raw7" default=""/>
+  <arg name="image_number" default="1"/>
+  <arg name="output_topic" default="rois"/>
+
+  <include if="$(eval &quot;'$(var image_number)'>='1'&quot;)" file="$(find-pkg-share tensorrt_yolo)/launch/tensorrt_yolo.launch.xml">
+    <arg name="input_topic" value="$(var image_raw0)"/>
+    <arg name="output_topic" value="rois0"/>
+  </include>
+  <include if="$(eval &quot;'$(var image_number)'>='2'&quot;)" file="$(find-pkg-share tensorrt_yolo)/launch/tensorrt_yolo.launch.xml">
+    <arg name="input_topic" value="$(var image_raw1)"/>
+    <arg name="output_topic" value="rois1"/>
+  </include>
+  <include if="$(eval &quot;'$(var image_number)'>='3'&quot;)" file="$(find-pkg-share tensorrt_yolo)/launch/tensorrt_yolo.launch.xml">
+    <arg name="input_topic" value="$(var image_raw2)"/>
+    <arg name="output_topic" value="rois2"/>
+  </include>
+  <include if="$(eval &quot;'$(var image_number)'>='4'&quot;)" file="$(find-pkg-share tensorrt_yolo)/launch/tensorrt_yolo.launch.xml">
+    <arg name="input_topic" value="$(var image_raw3)"/>
+    <arg name="output_topic" value="rois3"/>
+  </include>
+  <include if="$(eval &quot;'$(var image_number)'>='5'&quot;)" file="$(find-pkg-share tensorrt_yolo)/launch/tensorrt_yolo.launch.xml">
+    <arg name="input_topic" value="$(var image_raw4)"/>
+    <arg name="output_topic" value="rois4"/>
+  </include>
+  <include if="$(eval &quot;'$(var image_number)'>='6'&quot;)" file="$(find-pkg-share tensorrt_yolo)/launch/tensorrt_yolo.launch.xml">
+    <arg name="input_topic" value="$(var image_raw5)"/>
+    <arg name="output_topic" value="rois5"/>
+  </include>
+  <include if="$(eval &quot;'$(var image_number)'>='7'&quot;)" file="$(find-pkg-share tensorrt_yolo)/launch/tensorrt_yolo.launch.xml">
+    <arg name="input_topic" value="$(var image_raw6)"/>
+    <arg name="output_topic" value="rois6"/>
+  </include>
+  <include if="$(eval &quot;'$(var image_number)'>='8'&quot;)" file="$(find-pkg-share tensorrt_yolo)/launch/tensorrt_yolo.launch.xml">
+    <arg name="input_topic" value="$(var image_raw7)"/>
+    <arg name="output_topic" value="rois7"/>
+  </include>
+</launch>

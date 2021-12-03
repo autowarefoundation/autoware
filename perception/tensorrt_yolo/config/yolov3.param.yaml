@@ -1,0 +1,10 @@
+/**:
+  ros__parameters:
+    num_anchors: 3
+    anchors: [116.0, 90.0, 156.0, 198.0, 373.0, 326.0, 30.0, 61.0, 62.0, 45.0, 59.0, 119.0, 10.0, 13.0, 16.0, 30.0, 33.0, 23.0]
+    scale_x_y: [1.0, 1.0, 1.0]
+    score_threshold: 0.1
+    iou_thresh: 0.45
+    detections_per_im: 100
+    use_darknet_layer: true
+    ignore_thresh: 0.5

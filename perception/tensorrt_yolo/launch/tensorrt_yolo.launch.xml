@@ -1,0 +1,20 @@
+<launch>
+  <arg name="yolo_type" default="yolov3"/>
+  <arg name="label_file" default="coco.names"/>
+  <arg name="input_topic" default="/image_raw"/>
+  <arg name="output_topic" default="rois"/>
+  <arg name="calib_image_directory" default="$(find-pkg-share tensorrt_yolo)/calib_image/"/>
+  <arg name="mode" default="FP32"/>
+  <node pkg="tensorrt_yolo" exec="tensorrt_yolo_node" name="$(anon tensorrt_yolo)" output="screen">
+    <remap from="in/image" to="$(var input_topic)" />
+    <remap from="out/objects" to="$(var output_topic)" />
+    <remap from="out/image" to="$(var output_topic)/debug/image" />
+    <param name="onnx_file" type="str" value="$(find-pkg-share tensorrt_yolo)/data/$(var yolo_type).onnx" />
+    <param name="engine_file" type="str" value="$(find-pkg-share tensorrt_yolo)/data/$(var yolo_type).engine" />
+    <param name="label_file" type="str" value="$(find-pkg-share tensorrt_yolo)/data/$(var label_file)"/>
+    <param name="calib_image_directory" type="str" value="$(var calib_image_directory)"/>
+    <param name="calib_cache_file" type="str" value="$(find-pkg-share tensorrt_yolo)/data/$(var yolo_type).cache" />
+    <param name="mode" type="str" value="$(var mode)"/>
+    <param from="$(find-pkg-share tensorrt_yolo)/config/$(var yolo_type).param.yaml"/>
+  </node>
+</launch>
