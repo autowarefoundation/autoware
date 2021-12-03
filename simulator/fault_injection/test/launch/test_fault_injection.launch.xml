@@ -1,0 +1,6 @@
+<launch>
+  <include file="$(find-pkg-share fault_injection)/launch/fault_injection.launch.xml">
+    <arg name="log-level" value="debug"/>
+    <arg name="config_file" value="$(find-pkg-share fault_injection)/config/test_event_diag.param.yaml"/>
+  </include>
+</launch>

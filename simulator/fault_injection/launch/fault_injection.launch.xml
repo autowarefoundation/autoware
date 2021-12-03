@@ -1,0 +1,10 @@
+<launch>
+  <arg name="input/simulation_events" default="/simulation/events"/>
+  <arg name="config_file" default="$(find-pkg-share fault_injection)/config/fault_injection.param.yaml" />
+  <arg name="log-level" default="info"/>
+
+  <node pkg="fault_injection" exec="fault_injection_node" name="fault_injection" output="screen" args="--ros-args --log-level fault_injection:=$(var log-level)">
+    <remap from="~/input/simulation_events" to="$(var input/simulation_events)"/>
+    <param from="$(var config_file)" />
+  </node>
+</launch>
