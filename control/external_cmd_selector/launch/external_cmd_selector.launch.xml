@@ -1,0 +1,49 @@
+<launch>
+
+  <!-- settings -->
+  <arg name="initial_selector_mode" default="local" description="local, remote" />
+
+  <!-- service -->
+  <arg name="service/select_external_command" default="~/select_external_command" />
+
+  <!-- input local -->
+  <arg name="input/local/control_cmd" default="/api/external/set/command/local/control" />
+  <arg name="input/local/shift_cmd" default="/api/external/set/command/local/shift" />
+  <arg name="input/local/turn_signal_cmd" default="/api/external/set/command/local/turn_signal" />
+  <arg name="input/local/heartbeat" default="/api/external/set/command/local/heartbeat" />
+
+  <!-- input remote -->
+  <arg name="input/remote/control_cmd" default="/api/external/set/command/remote/control" />
+  <arg name="input/remote/shift_cmd" default="/api/external/set/command/remote/shift" />
+  <arg name="input/remote/turn_signal_cmd" default="/api/external/set/command/remote/turn_signal" />
+  <arg name="input/remote/heartbeat" default="/api/external/set/command/remote/heartbeat" />
+
+  <!-- output -->
+  <arg name="output/control_cmd" default="/external/selected/external_control_cmd" />
+  <arg name="output/gear_cmd" default="/external/selected/gear_cmd" />
+  <arg name="output/turn_indicators_cmd" default="/external/selected/turn_indicators_cmd" />
+  <arg name="output/hazard_lights_cmd" default="/external/selected/hazard_lights_cmd" />
+  <arg name="output/heartbeat" default="/external/selected/heartbeat" />
+  <arg name="output/current_selector_mode" default="~/current_selector_mode" />
+
+  <!-- node -->
+  <node pkg="external_cmd_selector" exec="external_cmd_selector" name="external_cmd_selector" output="screen">
+    <remap from="~/service/select_external_command" to="$(var service/select_external_command)" />
+    <remap from="~/input/local/control_cmd" to="$(var input/local/control_cmd)" />
+    <remap from="~/input/local/shift_cmd" to="$(var input/local/shift_cmd)" />
+    <remap from="~/input/local/turn_signal_cmd" to="$(var input/local/turn_signal_cmd)" />
+    <remap from="~/input/local/heartbeat" to="$(var input/local/heartbeat)" />
+    <remap from="~/input/remote/control_cmd" to="$(var input/remote/control_cmd)" />
+    <remap from="~/input/remote/shift_cmd" to="$(var input/remote/shift_cmd)" />
+    <remap from="~/input/remote/turn_signal_cmd" to="$(var input/remote/turn_signal_cmd)" />
+    <remap from="~/input/remote/heartbeat" to="$(var input/remote/heartbeat)" />
+    <remap from="~/output/control_cmd" to="$(var output/control_cmd)" />
+    <remap from="~/output/gear_cmd" to="$(var output/gear_cmd)" />
+    <remap from="~/output/turn_indicators_cmd" to="$(var output/turn_indicators_cmd)" />
+    <remap from="~/output/hazard_lights_cmd" to="$(var output/hazard_lights_cmd)" />
+    <remap from="~/output/heartbeat" to="$(var output/heartbeat)" />
+    <remap from="~/output/current_selector_mode" to="$(var output/current_selector_mode)" />
+    <param name="initial_selector_mode" value="$(var initial_selector_mode)" />
+  </node>
+
+</launch>
