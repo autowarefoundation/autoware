@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="converter_param_path" default="$(find-pkg-share raw_vehicle_cmd_converter)/config/converter.param.yaml" />
+  <arg name="csv_path_accel_map" default="$(find-pkg-share raw_vehicle_cmd_converter)/data/default/accel_map.csv" />
+  <arg name="csv_path_brake_map" default="$(find-pkg-share raw_vehicle_cmd_converter)/data/default/brake_map.csv" />
+  <arg name="csv_path_steer_map" default="$(find-pkg-share raw_vehicle_cmd_converter)/data/default/steer_map.csv" />
+
+  <arg name="max_throttle" default="0.4" />
+  <arg name="max_brake" default="0.8" />
+  <arg name="max_steer" default="10.0" />
+  <arg name="min_steer" default="-10.0" />
+  <arg name="convert_accel_cmd" default="true" />
+  <arg name="convert_brake_cmd" default="true" />
+  <arg name="convert_steer_cmd" default="true" />
+  <arg name="input_control_cmd" default="/control/command/control_cmd" />
+  <arg name="input_odometry" default="/localization/kinematic_state" />
+  <arg name="input_steering" default="/vehicle/status/steering_status" />
+  <arg name="output_actuation_cmd" default="/control/command/actuation_cmd" />
+
+  <node pkg="raw_vehicle_cmd_converter" exec="raw_vehicle_cmd_converter_node" name="raw_vehicle_cmd_converter" output="screen">
+    <param from="$(var converter_param_path)" />
+    <param name="csv_path_accel_map" value="$(var csv_path_accel_map)" />
+    <param name="csv_path_brake_map" value="$(var csv_path_brake_map)" />
+    <param name="csv_path_steer_map" value="$(var csv_path_steer_map)" />
+    <param name="max_throttle" value="$(var max_throttle)" />
+    <param name="max_brake" value="$(var max_brake)" />
+    <param name="max_steer" value="$(var max_steer)" />
+    <param name="min_steer" value="$(var min_steer)" />
+    <param name="convert_accel_cmd" value="$(var convert_accel_cmd)" />
+    <param name="convert_brake_cmd" value="$(var convert_brake_cmd)" />
+    <param name="convert_steer_cmd" value="$(var convert_steer_cmd)" />
+    <remap from="~/input/control_cmd" to="$(var input_control_cmd)" />
+    <remap from="~/input/odometry" to="$(var input_odometry)" />
+    <remap from="~/input/steering" to="$(var input_steering)" />
+    <remap from="~/output/actuation_cmd" to="$(var output_actuation_cmd)" />
+  </node>
+</launch>

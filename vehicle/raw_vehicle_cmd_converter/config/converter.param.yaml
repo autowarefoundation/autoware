@@ -1,0 +1,18 @@
+/**:
+  ros__parameters:
+    use_steer_ff: true
+    use_steer_fb: true
+    is_debugging: false
+    steer_pid:
+      kp: 150.0
+      ki: 15.0
+      kd: 0.0
+      max: 8.0
+      min: -8.0
+      max_p: 8.0
+      min_p: -8.0
+      max_i: 8.0
+      min_i: -8.0
+      max_d: 0.0
+      min_d: 0.0
+      invalid_integration_decay: 0.97
