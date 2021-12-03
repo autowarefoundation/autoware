@@ -1,0 +1,17 @@
+<launch>
+  <arg name="input/pose_with_cov" default="/localization/pose_with_covariance" />
+  <arg name="scale" default="3.0" />
+  <arg name="error_ellipse_size" default="1.0" />
+  <arg name="warn_ellipse_size" default="0.8" />
+  <arg name="error_ellipse_size_lateral_direction" default="0.3" />
+  <arg name="warn_ellipse_size_lateral_direction" default="0.2" />
+
+  <node name="localization_error_monitor" exec="localization_error_monitor" pkg="localization_error_monitor" output="screen">
+    <remap from="input/pose_with_cov" to="$(var input/pose_with_cov)" />
+    <param name="scale" value="$(var scale)" />
+    <param name="error_ellipse_size" value="$(var error_ellipse_size)" />
+    <param name="warn_ellipse_size" value="$(var warn_ellipse_size)" />
+    <param name="error_ellipse_size_lateral_direction" value="$(var error_ellipse_size_lateral_direction)" />
+    <param name="warn_ellipse_size_lateral_direction" value="$(var warn_ellipse_size_lateral_direction)" />
+  </node>
+</launch>
