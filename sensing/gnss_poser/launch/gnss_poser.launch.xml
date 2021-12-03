@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<launch>
+
+  <arg name="input_topic_fix" default="/fix" />
+  <arg name="input_topic_navpvt" default="/navpvt" />
+
+  <arg name="output_topic_gnss_pose" default="gnss_pose" />
+  <arg name="output_topic_gnss_pose_cov" default="gnss_pose_cov" />
+  <arg name="output_topic_gnss_fixed" default="gnss_fixed" />
+
+  <arg name="base_frame" default="base_link" />
+  <arg name="gnss_base_frame" default="gnss_base_link" />
+  <arg name="gnss_frame" default="gnss" />
+  <arg name="map_frame" default="map" />
+
+  <arg name="coordinate_system" default="1" description="0:UTM, 1:MGRS, 2:PLANE" />
+  <arg name="buff_epoch" default="1" />
+  <arg name="use_ublox_receiver" default="false" />
+  <arg name="plane_zone" default="9" />
+
+  <node pkg="gnss_poser" exec="gnss_poser" name="gnss_poser" output="screen">
+
+    <remap from="fix" to="$(var input_topic_fix)" />
+    <remap from="navpvt" to="$(var input_topic_navpvt)" />
+
+    <remap from="gnss_pose" to="$(var output_topic_gnss_pose)" />
+    <remap from="gnss_pose_cov" to="$(var output_topic_gnss_pose_cov)" />
+    <remap from="gnss_fixed" to="$(var output_topic_gnss_fixed)" />
+
+    <param name="base_frame" value="$(var base_frame)" />
+    <param name="gnss_base_frame" value="$(var gnss_base_frame)" />
+    <param name="gnss_frame" value="$(var gnss_frame)" />
+    <param name="map_frame" value="$(var map_frame)" />
+
+    <param name="coordinate_system" value="$(var coordinate_system)" />
+    <param name="buff_epoch" value="$(var buff_epoch)" />
+    <param name="use_ublox_receiver" value="$(var use_ublox_receiver)" />
+    <param name="plane_zone" value="$(var plane_zone)" />
+
+  </node>
+
+</launch>

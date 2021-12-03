@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="input_topic_fix" default="/ublox/fix" />
+  <arg name="input_topic_navpvt" default="/ublox/navpvt" />
+
+  <include file="$(find-pkg-share gnss_poser)/launch/gnss_poser.launch.xml">
+    <arg name="input_topic_fix" value="$(var input_topic_fix)" />
+    <arg name="input_topic_navpvt" value="$(var input_topic_navpvt)" />
+    <!-- coordinate_system="0:UTM, 1:MGRS, 2:PLANE" -->
+    <arg name="coordinate_system" value="1" />
+    <arg name="use_ublox_receiver" value="true" />
+  </include>
+</launch>
