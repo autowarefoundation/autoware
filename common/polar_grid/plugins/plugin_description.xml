@@ -1,0 +1,6 @@
+<library path="polar_grid">
+  <class name="rviz_plugins/PolarGridDisplay"
+         type="rviz_plugins::PolarGridDisplay"
+         base_class_type="rviz_common::Display">
+  </class>
+</library>

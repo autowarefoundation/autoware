@@ -83,4 +83,4 @@ repos:
         args: ["--quiet"]
         exclude: ".cu"
 
-exclude: ".svg"
+exclude: ".svg|common/autoware_auto_perception_rviz_plugin"

@@ -1,0 +1,26 @@
+<library path="autoware_auto_perception_rviz_plugin">
+
+  <!-- Displays plugins -->
+
+  <class name="autoware_auto_perception_rviz_plugin/PredictedObjects" type="autoware::rviz_plugins::object_detection::PredictedObjectsDisplay" base_class_type="rviz_common::Display">
+    <description>
+      Convert a PredictedObjects to markers and display them.
+    </description>
+    <message_type>autoware_auto_perception_msgs/msg/PredictedObjects</message_type>
+  </class>
+
+  <class name="autoware_auto_perception_rviz_plugin/TrackedObjects" type="autoware::rviz_plugins::object_detection::TrackedObjectsDisplay" base_class_type="rviz_common::Display">
+    <description>
+      Convert a TrackedObjects to markers and display them.
+    </description>
+    <message_type>autoware_auto_perception_msgs/msg/TrackedObjects</message_type>
+  </class>
+
+  <class name="autoware_auto_perception_rviz_plugin/DetectedObjects" type="autoware::rviz_plugins::object_detection::DetectedObjectsDisplay" base_class_type="rviz_common::Display">
+    <description>
+            Convert a DetectedObjects to markers and display them.
+    </description>
+    <message_type>autoware_auto_perception_msgs/msg/DetectedObjects</message_type>
+  </class>
+
+</library>
