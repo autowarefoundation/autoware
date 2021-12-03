@@ -83,4 +83,4 @@ repos:
         args: ["--quiet"]
         exclude: ".cu"
 
-exclude: ".svg|common/autoware_auto_perception_rviz_plugin"
+exclude: ".svg|control/trajectory_follower|control/trajectory_follower_nodes|common/autoware_auto_dependencies|common/autoware_auto_perception_rviz_plugin|common/osqp_interface|simulator/simple_planning_simulator|planning/freespace_planner|planning/astar_search|planning/costmap_generator"
