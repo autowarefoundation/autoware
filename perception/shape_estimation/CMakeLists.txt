@@ -1,0 +1,78 @@
+cmake_minimum_required(VERSION 3.5)
+project(shape_estimation)
+
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  set(CMAKE_CXX_EXTENSIONS OFF)
+endif()
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic -Werror)
+endif()
+
+find_package(ament_cmake_auto REQUIRED)
+ament_auto_find_build_dependencies()
+
+find_package(PCL REQUIRED COMPONENTS common)
+find_package(pcl_conversions REQUIRED)
+
+find_package(OpenCV REQUIRED)
+find_package(Eigen3 REQUIRED)
+
+
+set(SHAPE_ESTIMATION_DEPENDENCIES
+  PCL
+  OpenCV
+  Eigen3
+)
+
+ament_auto_add_library(shape_estimation_lib SHARED
+  lib/shape_estimator.cpp
+  lib/model/bounding_box.cpp
+  lib/model/convex_hull.cpp
+  lib/model/cylinder.cpp
+  lib/filter/car_filter.cpp
+  lib/filter/bus_filter.cpp
+  lib/filter/truck_filter.cpp
+  lib/filter/no_filter.cpp
+  lib/filter/utils.cpp
+  lib/corrector/car_corrector.cpp
+  lib/corrector/bus_corrector.cpp
+  lib/corrector/truck_corrector.cpp
+  lib/corrector/no_corrector.cpp
+  lib/corrector/utils.cpp
+)
+
+ament_target_dependencies(shape_estimation_lib ${SHAPE_ESTIMATION_DEPENDENCIES})
+
+ament_auto_add_library(shape_estimation_node SHARED
+  src/node.cpp
+)
+
+target_include_directories(shape_estimation_node
+    PUBLIC
+        $<INSTALL_INTERFACE:include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+ament_target_dependencies(shape_estimation_node ${SHAPE_ESTIMATION_DEPENDENCIES})
+
+target_link_libraries(shape_estimation_node
+  shape_estimation_lib
+)
+
+rclcpp_components_register_node(shape_estimation_node
+  PLUGIN "ShapeEstimationNode"
+  EXECUTABLE shape_estimation
+)
+
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
+endif()
+
+ament_auto_package(INSTALL_TO_SHARE
+  launch
+)
