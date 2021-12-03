@@ -1,0 +1,62 @@
+.menu {
+  position: absolute;
+  float: left;
+  left: 3%;
+  top: 50pt;
+}
+
+.time {
+  font-size: small;
+}
+
+.contents {
+  position: absolute;
+  left: 200pt;
+  right: 10%;
+  float: right;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+#wrapper {
+  width: 80%;
+  margin: 0 auto 0 20px;
+}
+
+h1 {
+  height: auto;
+  margin: 40px 0 10px 20px;
+  padding: 0;
+  color: #444444;
+  font-size: 30px;
+  font-weight: bold;
+  border-top: 0;
+  line-height: 1.5;
+}
+
+h2 {
+  margin: 60px 0 10px 0;
+  padding: 0 0 0 15px;
+  font-size: 26px;
+  font-weight: bold;
+  border-width: 0 0 0 4px;
+  border-style: solid;
+  border-color: #0f5296;
+}
+
+h3 {
+  padding: 20px 0 5px 0px;
+  font-size: 22px;
+  font-weight: bold;
+  border-width: 0 0 1px 0;
+  border-style: solid;
+  border-color: #e6e6e6;
+}
+
+form {
+  display: inline-block;
+  margin: 0 5px;
+}

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <!-- Web Controller -->
+
+  <executable cmd="python3 -m http.server 8085" cwd="$(find-pkg-share autoware_web_controller)/www" name="web_server"/>
+  <node pkg="rosbridge_server" exec="rosbridge_websocket" name="rosbridge_server_node">
+  </node>
+</launch>
