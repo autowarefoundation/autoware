@@ -1,0 +1,16 @@
+<launch>
+  <arg name="vx_threshold" default="0.01" description="[m/s]"/>
+  <arg name="wz_threshold" default="0.01" description="[rad/s]"/>
+  <arg name="input_odom_name" default="ekf_odom"/>
+  <arg name="output_odom_name" default="stop_filter_odom"/>
+  <arg name="debug_stop_flag" default="debug/stop_flag"/>
+  <node pkg="stop_filter" exec="stop_filter" name="stop_filter" output="screen">
+    <remap from="input/odom" to="$(var input_odom_name)"/>
+
+    <remap from="output/odom" to="$(var output_odom_name)"/>
+    <remap from="debug/stop_flag" to="$(var debug_stop_flag)"/>
+
+    <param name="vx_threshold" value="$(var vx_threshold)"/>
+    <param name="wz_threshold" value="$(var wz_threshold)"/>
+  </node>
+</launch>
