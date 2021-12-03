@@ -1,0 +1,10 @@
+<library path="lib/libtraffic_light_ssd_fine_detector_nodelet">
+
+  <class name="traffic_light/traffic_light_ssd_fine_detector"
+         type="traffic_light::TrafficLightSSDFineDetectorNodelet"
+         base_class_type="nodelet::Nodelet">
+    <description>
+    </description>
+  </class>
+
+</library>

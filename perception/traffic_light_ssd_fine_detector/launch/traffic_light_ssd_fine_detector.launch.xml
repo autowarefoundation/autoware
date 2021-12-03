@@ -1,0 +1,37 @@
+<launch>
+
+  <arg name="onnx_file" default="$(find-pkg-share traffic_light_ssd_fine_detector)/data/mb2-ssd-lite-tlr.onnx"/>
+  <arg name="label_file" default="$(find-pkg-share traffic_light_ssd_fine_detector)/data/voc_labels_tl.txt"/>
+  <arg name="mode" default="FP32"/>
+  <arg name="input/image" default="/image_raw"/>
+  <arg name="input/rois" default="/traffic_light_map_based_detector/output/rois" />
+  <arg name="output/rois" default="~/output/rois" />
+  <arg name="score_thresh" default="0.7"/>
+  <arg name="max_batch_size" default="8"/>
+  <arg name="approximate_sync" default="false"/>
+  <arg name="mean" default="[0.5, 0.5, 0.5]"/>
+  <arg name="std" default="[0.5, 0.5, 0.5]"/>
+  <arg name="save_rough_roi_image" default="false"/>
+  <arg name="manager" default="traffic_light_recognition_nodelet_manager"/>
+
+  <node pkg="traffic_light_ssd_fine_detector" exec="traffic_light_ssd_fine_detector_node" name="traffic_light_ssd_fine_detector">
+    <remap from="~/input/image" to="$(var input/image)" />
+    <remap from="~/input/rois" to="$(var input/rois)" />
+    <remap from="~/output/rois" to="$(var output/rois)" />
+    <param name="onnx_file" type="str" value="$(var onnx_file)"/>
+    <param name="label_file" type="str" value="$(var label_file)"/>
+    <param name="mode" type="str" value="$(var mode)"/>
+    <param name="score_thresh" value="$(var score_thresh)"/>
+    <param name="max_batch_size" value="$(var max_batch_size)"/>
+    <param name="approximate_sync" value="$(var approximate_sync)"/>
+    <param name="mean" value="$(var mean)" />
+    <param name="std" value="$(var std)" />
+  </node>
+
+  <node if="$(var save_rough_roi_image)" pkg="roi_image_saver" exec="traffic_light_roi_image_saver_node" name="$(anon traffic_light_roi_image_saver)" output="screen">
+    <remap from="input/image" to="$(var input/image)"/>
+    <remap from="input/rois" to="$(var input/rois)"/>
+    <param name="save_dir" value="$(find-pkg-share roi_image_saver)/train_image"/>
+    <param name="save_rate" value="1.0"/>
+  </node>
+</launch>
