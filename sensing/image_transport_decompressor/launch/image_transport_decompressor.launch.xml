@@ -1,0 +1,9 @@
+<launch>
+    <arg name="input_topic_name" default="/input/compressed_image" />
+    <arg name="output_topic_name" default="/output/raw_image" />
+
+    <node pkg="image_transport_decompressor" exec="image_transport_decompressor_node" name="image_transport_decompressor_node">
+      <remap from="input" to="$(var input_topic_name)" />
+      <remap from="output" to="$(var output_topic_name)" />
+    </node>
+  </launch>
