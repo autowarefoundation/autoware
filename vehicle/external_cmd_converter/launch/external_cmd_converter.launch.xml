@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- map file -->
+  <arg name="csv_path_accel_map" default="$(find-pkg-share raw_vehicle_cmd_converter)/data/default/accel_map.csv"/>
+  <arg name="csv_path_brake_map" default="$(find-pkg-share raw_vehicle_cmd_converter)/data/default/brake_map.csv"/>
+
+  <!-- settings -->
+  <arg name="ref_vel_gain" default="3.0"/>
+  <arg name="wait_for_first_topic" default="true"/>
+  <arg name="control_command_timeout" default="1.0"/>
+  <arg name="emergency_stop_timeout" default="3.0"/>
+
+  <!-- input -->
+  <arg name="in/external_control_cmd" default="/external/selected/external_control_cmd" />
+  <arg name="in/shift_cmd" default="/external/selected/gear_cmd" />
+  <arg name="in/emergency_stop" default="/external/selected/heartbeat" />
+  <arg name="in/current_gate_mode" default="/control/current_gate_mode" />
+  <arg name="in/odometry" default="/localization/kinematic_state" />
+
+  <!-- output -->
+  <arg name="out/control_cmd" default="/external/selected/control_cmd" />
+  <arg name="out/latest_external_control_cmd" default="/api/external/get/command/selected/control" />
+
+  <!-- node -->
+  <node pkg="external_cmd_converter" exec="external_cmd_converter_node" name="external_cmd_converter" output="screen">
+    <param name="csv_path_accel_map" value="$(var csv_path_accel_map)" />
+    <param name="csv_path_brake_map" value="$(var csv_path_brake_map)" />
+    <param name="ref_vel_gain" value="$(var ref_vel_gain)" />
+    <param name="wait_for_first_topic" value="$(var wait_for_first_topic)" />
+    <param name="control_command_timeout" value="$(var control_command_timeout)" />
+    <param name="emergency_stop_timeout" value="$(var emergency_stop_timeout)" />
+    <remap from="in/external_control_cmd" to="$(var in/external_control_cmd)" />
+    <remap from="in/shift_cmd" to="$(var in/shift_cmd)" />
+    <remap from="in/emergency_stop" to="$(var in/emergency_stop)" />
+    <remap from="in/current_gate_mode" to="$(var in/current_gate_mode)" />
+    <remap from="in/odometry" to="$(var in/odometry)" />
+    <remap from="out/control_cmd" to="$(var out/control_cmd)" />
+    <remap from="out/latest_external_control_cmd" to="$(var out/latest_external_control_cmd)" />
+  </node>
+</launch>

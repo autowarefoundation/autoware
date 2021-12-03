@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>external_cmd_converter</name>
+  <version>0.1.0</version>
+  <description>The external_cmd_converter package</description>
+  <maintainer email="horibe.takamasa@gmail.com">Horibe Takamasa</maintainer>
+  <author email="horibe.takamasa@gmail.com">Horibe Takamasa</author>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <depend>autoware_auto_control_msgs</depend>
+  <depend>autoware_auto_vehicle_msgs</depend>
+  <depend>autoware_control_msgs</depend>
+  <depend>autoware_external_api_msgs</depend>
+  <depend>autoware_system_msgs</depend>
+  <depend>diagnostic_updater</depend>
+  <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>raw_vehicle_cmd_converter</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>std_msgs</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
