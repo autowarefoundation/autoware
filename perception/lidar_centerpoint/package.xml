@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>lidar_centerpoint</name>
+  <version>1.0.0</version>
+  <description>The lidar_centerpoint package</description>
+
+  <maintainer email="yusuke.muramatsu@tier4.jp">Yusuke Muramatsu</maintainer>
+
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <depend>autoware_auto_perception_msgs</depend>
+  <depend>autoware_utils</depend>
+  <depend>pcl_ros</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>tf2_geometry_msgs</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

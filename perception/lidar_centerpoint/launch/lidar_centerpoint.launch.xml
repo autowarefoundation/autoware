@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="input/pointcloud" default="/sensing/lidar/top/rectified/pointcloud"/>
+    <arg name="output/objects" default="objects"/>
+    <arg name="model_name" default="default" description="options: `default` or `aip_x2`"/>
+    <arg name="model_path" default="$(find-pkg-share lidar_centerpoint)/data"/>
+    <arg name="model_param_path" default="$(find-pkg-share lidar_centerpoint)/config/$(var model_name).param.yaml"/>
+
+    <node pkg="lidar_centerpoint" exec="lidar_centerpoint_node"
+          name="lidar_centerpoint" output="screen">
+      <remap from="~/input/pointcloud" to="$(var input/pointcloud)"/>
+      <remap from="~/output/objects" to="$(var output/objects)"/>
+      <param name="score_threshold" value="0.45"/>
+      <param name="densification_base_frame" value="map"/>
+      <param name="densification_past_frames" value="1"/>
+      <param name="use_head_trt" value="true"/>
+      <param name="trt_precision" value="fp16"/>
+      <param name="encoder_pt_path" value="$(var model_path)/pts_voxel_encoder_$(var model_name).pt"/>
+      <param name="head_onnx_path" value="$(var model_path)/pts_backbone_neck_head_$(var model_name).onnx"/>
+      <param name="head_engine_path" value="$(var model_path)/pts_backbone_neck_head_$(var model_name).engine"/>
+      <param from="$(var model_param_path)"/>
+    </node>
+</launch>

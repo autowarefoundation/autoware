@@ -1,0 +1,4 @@
+/**:
+  ros__parameters:
+    class_names: ["CAR", "PEDESTRIAN", "BICYCLE"]
+    rename_car_to_truck_and_bus: true
