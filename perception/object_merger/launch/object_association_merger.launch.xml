@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="input/object0" default="object0"/>
+  <arg name="input/object1" default="object1"/>
+  <arg name="output/object" default="merged_object"/>
+
+  <node pkg="object_merger" exec="object_association_merger_node" name="object_association_merger" output="screen">
+    <remap from="input/object0" to="$(var input/object0)"/>
+    <remap from="input/object1" to="$(var input/object1)"/>
+    <remap from="output/object" to="$(var output/object)"/>
+  </node>
+
+</launch>
