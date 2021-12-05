@@ -1,0 +1,14 @@
+/**:
+  ros__parameters:
+    # Node
+    update_rate: 10.0
+    visualize_lanelet: false
+
+    # Core
+    footprint_margin_scale: 1.0
+    resample_interval: 0.3
+    max_deceleration: 2.8
+    delay_time: 1.3
+    max_lateral_deviation: 2.0
+    max_longitudinal_deviation: 2.0
+    max_yaw_deviation_deg: 60.0
