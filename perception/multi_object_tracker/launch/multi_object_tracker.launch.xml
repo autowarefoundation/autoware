@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<launch>
+  <arg name="input" default="/perception/object_recognition/detection/objects"/>
+  <arg name="output" default="objects"/>
+  <arg name="world_frame_id" default="map"/>
+  <arg name="publish_rate" default="10.0"/>
+  <arg name="data_association_matrix_path" default="$(find-pkg-share multi_object_tracker)/config/data_association_matrix.param.yaml" />
+
+  <node pkg="multi_object_tracker" exec="multi_object_tracker" name="multi_object_tracker" output="screen">
+    <remap from="input" to="$(var input)"/>
+    <remap from="output" to="$(var output)"/>
+    <param name="world_frame_id" value="$(var world_frame_id)" />
+    <param name="publish_rate" value="$(var publish_rate)" />
+    <param from="$(var data_association_matrix_path)" />
+  </node>
+</launch>
