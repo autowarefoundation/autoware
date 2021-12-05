@@ -1,0 +1,29 @@
+<launch>
+  <arg name="input_hazard_status" default="/system/emergency/hazard_status" />
+  <!-- To be replaced by ControlCommand -->
+  <arg name="input_prev_control_command" default="/control/command/control_cmd" />
+  <arg name="input_odometry" default="/localization/kinematic_state" />
+  <arg name="input_control_mode" default="/vehicle/status/control_mode" />
+
+  <arg name="output_control_command" default="/system/emergency/control_cmd" />
+  <arg name="output_gear" default="/system/emergency/gear_cmd" />
+  <arg name="output_hazard" default="/system/emergency/hazard_lights_cmd" />
+  <arg name="output_emergency_state" default="/system/emergency/emergency_state" />
+
+  <arg name="config_file" default="$(find-pkg-share emergency_handler)/config/emergency_handler.param.yaml" />
+
+  <!-- emergency_handler -->
+  <node pkg="emergency_handler" exec="emergency_handler" name="emergency_handler" output="screen">
+    <remap from="~/input/hazard_status" to="$(var input_hazard_status)"/>
+    <remap from="~/input/prev_control_command" to="$(var input_prev_control_command)"/>
+    <remap from="~/input/odometry" to="$(var input_odometry)"/>
+    <remap from="~/input/control_mode" to="$(var input_control_mode)"/>
+
+    <remap from="~/output/control_command" to="$(var output_control_command)"/>
+    <remap from="~/output/gear" to="$(var output_gear)"/>
+    <remap from="~/output/hazard" to="$(var output_hazard)"/>
+    <remap from="~/output/emergency_state" to="$(var output_emergency_state)"/>
+
+    <param from="$(var config_file)" />
+  </node>
+</launch>
