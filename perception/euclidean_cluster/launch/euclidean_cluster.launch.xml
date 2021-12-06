@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="input_pointcloud" default="/perception/obstacle_segmentation/pointcloud"/>
+  <arg name="input_map" default="/map/pointcloud_map" />
+  <arg name="output_clusters" default="clusters"/>
+  <arg name="use_pointcloud_map" default="false"/>
+  <arg name="voxel_grid_param_path" default="$(find-pkg-share euclidean_cluster)/config/voxel_grid.param.yaml" />
+  <arg name="euclidean_param_path" default="$(find-pkg-share euclidean_cluster)/config/euclidean_cluster.param.yaml" />
+
+  <include file="$(find-pkg-share euclidean_cluster)/launch/euclidean_cluster.launch.py">
+    <arg name="input_points_raw_list" value="$(var input_pointcloud)" />
+    <arg name="input_map" value="$(var input_map)" />
+    <arg name="output_clusters" value="$(var output_clusters)" />
+    <arg name="use_pointcloud_map" value="$(var use_pointcloud_map)" />
+    <arg name="voxel_grid_param_path" value="$(var voxel_grid_param_path)" />
+    <arg name="euclidean_param_path" value="$(var euclidean_param_path)" />
+  </include>
+
+</launch>

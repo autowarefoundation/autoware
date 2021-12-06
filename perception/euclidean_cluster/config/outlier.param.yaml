@@ -1,0 +1,8 @@
+/**:
+  ros__parameters:
+    input_frame: base_link
+    output_frame: base_link
+    voxel_size_x: 0.3
+    voxel_size_y: 0.3
+    voxel_size_z: 100.0
+    voxel_points_threshold: 3

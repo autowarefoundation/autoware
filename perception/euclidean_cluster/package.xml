@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>euclidean_cluster</name>
+  <version>0.1.0</version>
+  <description>The euclidean_cluster package</description>
+
+  <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <depend>autoware_auto_perception_msgs</depend>
+  <depend>autoware_perception_msgs</depend>
+  <depend>compare_map_segmentation</depend>
+  <depend>geometry_msgs</depend>
+  <depend>libpcl-all-dev</depend>
+  <depend>pcl_conversions</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>sensor_msgs</depend>
+
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
