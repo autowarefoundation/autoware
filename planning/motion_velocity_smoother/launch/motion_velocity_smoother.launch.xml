@@ -1,0 +1,28 @@
+<launch>
+  <!-- common param -->
+  <arg name="common_param_path" default="$(find-pkg-share motion_velocity_smoother)/config/default_common.param.yaml"/>
+
+  <!-- input/output -->
+  <arg name="input_trajectory" default="/planning/scenario_planning/scenario_selector/trajectory"/>
+  <arg name="output_trajectory" default="/planning/scenario_planning/trajectory"/>
+
+  <!-- debug flags -->
+  <arg name="publish_debug_trajs" default="true"/>
+  <arg name="smoother_type" default="JerkFiltered"/> <!-- Analytical, JerkFiltered, L2, or Linf -->
+
+  <arg name="param_path" default="$(find-pkg-share motion_velocity_smoother)/config/default_motion_velocity_smoother.param.yaml" />
+  <arg name="smoother_param_path" default="$(find-pkg-share motion_velocity_smoother)/config/$(var smoother_type).param.yaml" />
+
+  <node pkg="motion_velocity_smoother" exec="motion_velocity_smoother" name="motion_velocity_smoother" output="screen">
+    <param from="$(var common_param_path)" />
+    <param from="$(var param_path)" />
+    <param from="$(var smoother_param_path)" />
+    <param name="publish_debug_trajs" value="$(var publish_debug_trajs)"/>
+    <param name="algorithm_type" value="$(var smoother_type)" />
+    <remap from="~/input/trajectory" to="$(var input_trajectory)"/>
+    <remap from="~/output/trajectory" to="$(var output_trajectory)"/>
+    <remap from="~/input/external_velocity_limit_mps" to="/planning/scenario_planning/max_velocity"/> <!-- Topic for setting maximum speed from the outside (input topic) -->
+    <remap from="~/output/current_velocity_limit_mps" to="/planning/scenario_planning/current_max_velocity"/> <!-- Topic for displaying the set maximum speed (output topic) -->
+  </node>
+
+</launch>

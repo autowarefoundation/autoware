@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>motion_velocity_smoother</name>
+  <version>0.1.0</version>
+  <description>The motion_velocity_smoother package</description>
+
+  <maintainer email="horibe.takamasa@gmail.com">Takamasa Horibe</maintainer>
+  <maintainer email="fumiya.watanabe@tier4.jp">Fumiya Watanabe</maintainer>
+  <maintainer email="yutaka.shimizu@tier4.jp">Yutaka Shimizu</maintainer>
+
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>eigen3_cmake_module</buildtool_depend>
+
+  <depend>autoware_auto_planning_msgs</depend>
+  <depend>autoware_debug_msgs</depend>
+  <depend>autoware_planning_msgs</depend>
+  <depend>autoware_utils</depend>
+  <depend>geometry_msgs</depend>
+  <depend>interpolation</depend>
+  <depend>libboost-dev</depend>
+  <depend>nav_msgs</depend>
+  <depend>osqp_interface</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
