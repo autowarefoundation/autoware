@@ -1,0 +1,25 @@
+/**:
+  ros__parameters:
+    stop_planner:
+      stop_margin: 5.0 # stop margin distance from obstacle on the path [m]
+      min_behavior_stop_margin: 2.0 # stop margin distance when any other stop point is inserted in stop margin [m]
+      step_length: 1.0 # step length for pointcloud search range [m]
+      extend_distance: 0.0 # extend trajectory to consider after goal obstacle in the extend_distance
+      expand_stop_range: 0.0 # margin of vehicle footprint [m]
+
+    slow_down_planner:
+      # slow down planner parameters
+      forward_margin: 5.0 # margin distance from slow down point to vehicle front [m]
+      backward_margin: 5.0 # margin distance from slow down point to vehicle rear [m]
+      expand_slow_down_range: 1.0 # offset from vehicle side edge for expanding the search area of the surrounding point cloud [m]
+      max_slow_down_vel: 1.38 # max slow down velocity [m/s]
+      min_slow_down_vel: 0.28 # min slow down velocity [m/s]
+
+      # slow down constraint parameters
+      consider_constraints: False # set "True", if no decel plan found under jerk/dec constrains, relax target slow down vel
+      forward_margin_min: 1.0 # min margin for relaxing slow down margin [m/s]
+      forward_margin_span: -0.1 # fineness param for relaxing slow down margin [m/s]
+      jerk_min_slow_down: -0.3 # min slow down jerk constraint [m/sss]
+      jerk_span: -0.01 # fineness param for planning deceleration jerk [m/sss]
+      jerk_start: -0.1 # init jerk used for deceleration planning [m/sss]
+      slow_down_vel: 1.38 # target slow down velocity [m/s]

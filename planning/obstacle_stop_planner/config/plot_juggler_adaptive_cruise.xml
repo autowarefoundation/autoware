@@ -1,0 +1,133 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root version="2.3.8">
+ <tabbed_widget parent="main_window" name="Main Window">
+  <Tab containers="1" tab_name="tab1">
+   <Container>
+    <DockSplitter orientation="-" count="1" sizes="1">
+     <DockSplitter orientation="|" count="2" sizes="0.5;0.5">
+      <DockSplitter orientation="-" count="2" sizes="0.500286;0.499714">
+       <DockArea name="Estimated Object Velocity">
+        <plot mode="TimeSeries" style="Lines">
+         <range bottom="2.587438" top="3.256721" left="48.265130" right="51.387770"/>
+         <limitY/>
+         <curve name="" color="" />
+         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug_values/data.0" color="#1f77b4">
+          <transform alias="pcl-based obj vel" name="Scale/Offset">
+           <options value_offset="0" value_scale="1.0" time_offset="0"/>
+          </transform>
+         </curve>
+         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug_values/data.1" color="#d62728">
+         <transform alias="dynamic-obj-based obj vel" name="Scale/Offset">
+           <options value_offset="0" value_scale="1.0" time_offset="0"/>
+          </transform>
+         </curve>
+         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug_values/data.2" color="#1ac938">
+         <transform alias="final estimated obj vel" name="Scale/Offset">
+           <options value_offset="0" value_scale="1.0" time_offset="0"/>
+          </transform>
+         </curve>
+        </plot>
+       </DockArea>
+       <DockArea name="Distance To Forward Object">
+        <plot mode="TimeSeries" style="Lines">
+         <range bottom="21.768126" top="22.395437" left="48.265130" right="51.387770"/>
+         <limitY/>
+         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug_values/data.3" color="#ff7f0e">
+         <transform alias="dist" name="Scale/Offset">
+           <options value_offset="0" value_scale="1.0" time_offset="0"/>
+          </transform>
+         </curve>
+        </plot>
+       </DockArea>
+      </DockSplitter>
+      <DockSplitter orientation="-" count="2" sizes="0.500286;0.499714">
+       <DockArea name="Ego Velocity">
+        <plot mode="TimeSeries" style="Lines">
+         <range bottom="-0.045951" top="1.884001" left="45.299350" right="51.387770"/>
+         <limitY/>
+         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug_values/data.4" color="#f14cc1">
+         <transform alias="Current Velocity" name="Scale/Offset">
+           <options value_offset="0" value_scale="1.0" time_offset="0"/>
+          </transform>
+         </curve>
+         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug_values/data.8" color="#9467bd">
+         <transform alias="Raw Upper Velocity" name="Scale/Offset">
+           <options value_offset="0" value_scale="1.0" time_offset="0"/>
+          </transform>
+         </curve>
+         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug_values/data.9" color="#17becf">
+         <transform alias="Upper Velocity" name="Scale/Offset">
+           <options value_offset="0" value_scale="1.0" time_offset="0"/>
+          </transform>
+         </curve>
+         <curve name="/control/trajectory_follower/velocity_controller/debug_values/data.2" color="#bcbd22">
+         <transform alias="Target Velocity" name="Scale/Offset">
+           <options value_offset="0" value_scale="1.0" time_offset="0"/>
+          </transform>
+         </curve>
+         <curve name="/control/trajectory_follower/velocity_controller/debug_values/data.4" color="#1f77b4">
+         <transform alias="Closest Velocity" name="Scale/Offset">
+           <options value_offset="0" value_scale="1.0" time_offset="0"/>
+          </transform>
+         </curve>
+        </plot>
+       </DockArea>
+       <DockArea name="Accel">
+        <plot mode="TimeSeries" style="Lines">
+         <range bottom="-0.002602" top="0.106692" left="45.299350" right="49.966869"/>
+         <limitY/>
+         <curve name="/control/trajectory_follower/velocity_controller/debug_values/data.25" color="#d62728">
+         <transform alias="Current Accel" name="Scale/Offset">
+           <options value_offset="0" value_scale="1.0" time_offset="0"/>
+          </transform>
+         </curve>
+         <curve name="/control/trajectory_follower/velocity_controller/debug_values/data.3" color="#1ac938">
+         <transform alias="Target Accel" name="Scale/Offset">
+           <options value_offset="0" value_scale="1.0" time_offset="0"/>
+          </transform>
+         </curve>
+        </plot>
+       </DockArea>
+      </DockSplitter>
+     </DockSplitter>
+    </DockSplitter>
+   </Container>
+  </Tab>
+  <currentTabIndex index="0"/>
+ </tabbed_widget>
+ <use_relative_time_offset enabled="1"/>
+ <!-- - - - - - - - - - - - - - - -->
+ <!-- - - - - - - - - - - - - - - -->
+ <Plugins>
+  <plugin ID="DataLoad CSV">
+   <default time_axis=""/>
+  </plugin>
+  <plugin ID="DataLoad ROS2 bags">
+   <use_header_stamp value="false"/>
+   <discard_large_arrays value="true"/>
+   <max_array_size value="100"/>
+  </plugin>
+  <plugin ID="DataLoad ULog"/>
+  <plugin ID="MQTT Subscriber"/>
+  <plugin ID="ROS2 Topic Subscriber">
+   <use_header_stamp value="false"/>
+   <discard_large_arrays value="true"/>
+   <max_array_size value="true"/>
+   <selected_topics>
+    <topic name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug_values"/>
+    <topic name="/control/trajectory_follower/velocity_controller/debug_values"/>
+   </selected_topics>
+  </plugin>
+  <plugin ID="UDP Server"/>
+  <plugin ID="WebSocket Server"/>
+  <plugin ID="ZMQ Subscriber"/>
+  <plugin status="idle" ID="ROS2 Topic Re-Publisher"/>
+ </Plugins>
+ <!-- - - - - - - - - - - - - - - -->
+ <previouslyLoaded_Datafiles/>
+ <previouslyLoaded_Streamer name="ROS2 Topic Subscriber"/>
+ <!-- - - - - - - - - - - - - - - -->
+ <customMathEquations/>
+ <snippets/>
+ <!-- - - - - - - - - - - - - - - -->
+</root>

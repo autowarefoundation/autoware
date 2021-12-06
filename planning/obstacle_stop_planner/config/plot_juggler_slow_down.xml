@@ -1,0 +1,93 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root version="2.3.8">
+ <tabbed_widget name="Main Window" parent="main_window">
+  <Tab containers="1" tab_name="tab1">
+   <Container>
+    <DockSplitter sizes="0.503972;0.496028" orientation="-" count="2">
+     <DockArea name="...">
+      <plot mode="TimeSeries" style="Lines">
+       <range top="8.000000" bottom="-2.500000" left="96.194865" right="196.174884"/>
+       <limitY min="-2.5" max="8"/>
+       <curve name="/planning/scenario_planning/motion_velocity_smoother/closest_acceleration/data" color="#fff700"/>
+       <curve name="/planning/scenario_planning/motion_velocity_smoother/closest_jerk/data" color="#ffffff"/>
+       <curve name="/planning/scenario_planning/motion_velocity_smoother/closest_velocity/data" color="#6117cf"/>
+       <curve name="/planning/scenario_planning/motion_velocity_smoother/closest_max_velocity/data" color="#949cfe"/>
+       <curve name="/localization/twist/twist/linear/x" color="#1f77b4"/>
+       <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug/debug_values/data.1" color="#d62728"/>
+       <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug/debug_values/data.4" color="#1ac938"/>
+       <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug/debug_values/data.5" color="#ff7f0e"/>
+       <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug/debug_values/data.7" color="#abfff2"/>
+       <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug/debug_values/data.6" color="#10001f"/>
+      </plot>
+     </DockArea>
+     <DockSplitter sizes="0.5;0.5" orientation="|" count="2">
+      <DockSplitter sizes="0.500891;0.499109" orientation="-" count="2">
+       <DockArea name="...">
+        <plot mode="TimeSeries" style="Dots">
+         <range top="46.453422" bottom="-2.151529" left="96.202174" right="196.174082"/>
+         <limitY/>
+         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug/debug_values/data.3" color="#17becf"/>
+        </plot>
+       </DockArea>
+       <DockArea name="...">
+        <plot mode="TimeSeries" style="Lines">
+         <range top="0.100000" bottom="-0.100000" left="96.202174" right="196.174082"/>
+         <limitY/>
+         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug/debug_values/data.2" color="#bcbd22"/>
+        </plot>
+       </DockArea>
+      </DockSplitter>
+      <DockArea name="...">
+       <plot mode="XYPlot" style="Dots">
+        <range top="10.000000" bottom="0.000000" left="-2.151529" right="46.453422"/>
+        <limitY min="0" max="10"/>
+        <curve curve_y="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug/debug_values/data.0" name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug/debug_values/data.[3;0]" curve_x="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug/debug_values/data.3" color="#5dff5f"/>
+       </plot>
+      </DockArea>
+     </DockSplitter>
+    </DockSplitter>
+   </Container>
+  </Tab>
+  <currentTabIndex index="0"/>
+ </tabbed_widget>
+ <use_relative_time_offset enabled="1"/>
+ <!-- - - - - - - - - - - - - - - -->
+ <!-- - - - - - - - - - - - - - - -->
+ <Plugins>
+  <plugin ID="DataLoad CSV">
+   <default time_axis=""/>
+  </plugin>
+  <plugin ID="DataLoad ROS2 bags">
+   <use_header_stamp value="false"/>
+   <discard_large_arrays value="true"/>
+   <max_array_size value="100"/>
+  </plugin>
+  <plugin ID="DataLoad ULog"/>
+  <plugin ID="ROS2 Topic Subscriber">
+   <use_header_stamp value="false"/>
+   <discard_large_arrays value="false"/>
+   <max_array_size value="true"/>
+   <selected_topics>
+    <topic name="/planning/scenario_planning/max_velocity"/>
+    <topic name="/planning/scenario_planning/motion_velocity_smoother/closest_acceleration"/>
+    <topic name="/planning/scenario_planning/motion_velocity_smoother/closest_jerk"/>
+    <topic name="/planning/scenario_planning/motion_velocity_smoother/closest_max_velocity"/>
+    <topic name="/planning/scenario_planning/motion_velocity_smoother/closest_velocity"/>
+    <topic name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug/debug_values"/>
+    <topic name="/localization/twist"/>
+   </selected_topics>
+  </plugin>
+  <plugin ID="UDP Server"/>
+  <plugin ID="WebSocket Server"/>
+  <plugin ID="ZMQ Subscriber"/>
+  <plugin ID="CSV Exporter" status="idle"/>
+  <plugin ID="ROS2 Topic Re-Publisher" status="idle"/>
+ </Plugins>
+ <!-- - - - - - - - - - - - - - - -->
+ <previouslyLoaded_Datafiles/>
+ <previouslyLoaded_Streamer name="ROS2 Topic Subscriber"/>
+ <!-- - - - - - - - - - - - - - - -->
+ <customMathEquations/>
+ <snippets/>
+ <!-- - - - - - - - - - - - - - - -->
+</root>
