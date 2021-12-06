@@ -34,15 +34,15 @@ repos:
       - id: prettier-package-xml
       - id: sort-package-xml
 
-  - repo: https://github.com/gruntwork-io/pre-commit
-    rev: v0.1.17
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.8.0.1
     hooks:
       - id: shellcheck
 
   - repo: https://github.com/scop/pre-commit-shfmt
     rev: v3.4.1-1
     hooks:
-      - id: shfmt-docker
+      - id: shfmt
 
   - repo: https://github.com/pycqa/isort
     rev: 5.10.1
