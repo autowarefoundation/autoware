@@ -1,0 +1,75 @@
+<launch>
+  <arg name="input/rois_number" default="1"/>
+  <arg name="input/rois0" default="rois0"/>
+  <arg name="input/camera_info0" default="/camera_info0"/>
+  <arg name="input/rois1" default="rois1"/>
+  <arg name="input/camera_info1" default="/camera_info1"/>
+  <arg name="input/rois2" default="rois2"/>
+  <arg name="input/camera_info2" default="/camera_info2"/>
+  <arg name="input/rois3" default="rois3"/>
+  <arg name="input/camera_info3" default="/camera_info3"/>
+  <arg name="input/rois4" default="rois4"/>
+  <arg name="input/camera_info4" default="/camera_info4"/>
+  <arg name="input/rois5" default="rois5"/>
+  <arg name="input/camera_info5" default="/camera_info5"/>
+  <arg name="input/rois6" default="rois6"/>
+  <arg name="input/camera_info6" default="/camera_info6"/>
+  <arg name="input/rois7" default="rois7"/>
+  <arg name="input/camera_info7" default="/camera_info7"/>
+  <arg name="input/clusters" default="clusters"/>
+  <arg name="output" default="labeled_clusters"/>
+
+  <!-- for eval variable-->
+  <arg name="input_rois_number" default="$(var input/rois_number)"/>
+
+  <!-- debug -->
+  <arg name="debug_mode" default="false"/>
+  <arg name="input/image0" default="/image_raw0"/>
+  <arg name="input/image1" default="/image_raw1"/>
+  <arg name="input/image2" default="/image_raw2"/>
+  <arg name="input/image3" default="/image_raw3"/>
+  <arg name="input/image4" default="/image_raw4"/>
+  <arg name="input/image5" default="/image_raw5"/>
+  <arg name="input/image6" default="/image_raw6"/>
+  <arg name="input/image7" default="/image_raw7"/>
+  <group>
+    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '1' &quot;)" from="input/rois0" to="$(var input/rois0)"/>
+    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '1' &quot;)" from="input/camera_info0" to="$(var input/camera_info0)"/>
+    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '2' &quot;)" from="input/rois1" to="$(var input/rois1)"/>
+    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '2' &quot;)" from="input/camera_info1" to="$(var input/camera_info1)"/>
+    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '3' &quot;)" from="input/rois2" to="$(var input/rois2)"/>
+    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '3' &quot;)" from="input/camera_info2" to="$(var input/camera_info2)"/>
+    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '4' &quot;)" from="input/rois3" to="$(var input/rois3)"/>
+    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '4' &quot;)" from="input/camera_info3" to="$(var input/camera_info3)"/>
+    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '5' &quot;)" from="input/rois4" to="$(var input/rois4)"/>
+    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '5' &quot;)" from="input/camera_info4" to="$(var input/camera_info4)"/>
+    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '6' &quot;)" from="input/rois5" to="$(var input/rois5)"/>
+    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '6' &quot;)" from="input/camera_info5" to="$(var input/camera_info5)"/>
+    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '7' &quot;)" from="input/rois6" to="$(var input/rois6)"/>
+    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '7' &quot;)" from="input/camera_info6" to="$(var input/camera_info6)"/>
+    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '8' &quot;)" from="input/rois7" to="$(var input/rois7)"/>
+    <set_remap if="$(eval &quot;'$(var input_rois_number)' >= '8' &quot;)" from="input/camera_info7" to="$(var input/camera_info7)"/>
+
+    <set_remap if="$(eval &quot; '$(var input_rois_number)' >= '1' &quot;)" from="input/image_raw0" to="$(var input/image0)"/>
+    <set_remap if="$(eval &quot; '$(var input_rois_number)' >= '2' &quot;)" from="input/image_raw1" to="$(var input/image1)"/>
+    <set_remap if="$(eval &quot; '$(var input_rois_number)' >= '3' &quot;)" from="input/image_raw2" to="$(var input/image2)"/>
+    <set_remap if="$(eval &quot; '$(var input_rois_number)' >= '4' &quot;)" from="input/image_raw3" to="$(var input/image3)"/>
+    <set_remap if="$(eval &quot; '$(var input_rois_number)' >= '5' &quot;)" from="input/image_raw4" to="$(var input/image4)"/>
+    <set_remap if="$(eval &quot; '$(var input_rois_number)' >= '6' &quot;)" from="input/image_raw5" to="$(var input/image5)"/>
+    <set_remap if="$(eval &quot; '$(var input_rois_number)' >= '7' &quot;)" from="input/image_raw6" to="$(var input/image6)"/>
+    <set_remap if="$(eval &quot; '$(var input_rois_number)' >= '8' &quot;)" from="input/image_raw7" to="$(var input/image7)"/>
+
+    <node pkg="roi_cluster_fusion" exec="roi_cluster_fusion_node" name="roi_cluster_fusion">
+      <param name="use_iou" value="true"/>
+      <param name="use_iou_x" value="false"/>
+      <param name="use_iou_y" value="false"/>
+      <param name="iou_threshold" value="0.35"/>
+      <remap from="clusters" to="$(var input/clusters)"/>
+      <remap from="output/labeled_clusters" to="$(var output)"/>
+      <param name="rois_number" value="$(var input/rois_number)" />
+
+      <!-- debug -->
+      <param name="debug_mode" value="$(var debug_mode)"/>
+    </node>
+  </group>
+</launch>
