@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="input/object" default="object"/>
+  <arg name="output/long_range_object" default="long_range_object"/>
+  <arg name="output/short_range_object" default="short_range_object"/>
+  <arg name="split_range" default="30.0"/>
+
+  <node pkg="object_range_splitter" exec="object_range_splitter_node" name="object_range_splitter" output="screen">
+    <remap from="input/object" to="$(var input/object)"/>
+    <remap from="output/long_range_object" to="$(var output/long_range_object)"/>
+    <remap from="output/short_range_object" to="$(var output/short_range_object)"/>
+    <param name="split_range" value="$(var split_range)" />
+  </node>
+
+</launch>
