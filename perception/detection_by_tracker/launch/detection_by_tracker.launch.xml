@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<launch>
+  <arg name="input/tracked_objects" default="/perception/object_recognition/tracking/objects"/>
+  <arg name="input/clusters" default="/perception/object_recognition/detection/clustering/clusters"/>
+  <arg name="output" default="objects"/>
+
+  <group>
+    <include file="$(find-pkg-share shape_estimation)/launch/shape_estimation.launch.xml">
+      <arg name="input/objects" value="$(var input/clusters)"/>
+      <arg name="output/objects" value="initial_objects" />
+      <arg name="node_name" value="initial_cluster_shape_estimation"/>
+    </include>
+  </group>
+
+  <node pkg="detection_by_tracker" exec="detection_by_tracker" name="detection_by_tracker_node" output="screen">
+    <remap from="~/input/tracked_objects" to="$(var input/tracked_objects)"/>
+    <remap from="~/input/initial_objects" to="initial_objects"/>
+    <remap from="~/output" to="$(var output)"/>
+  </node>
+</launch>

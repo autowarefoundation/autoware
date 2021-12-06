@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>detection_by_tracker</name>
+  <version>1.0.0</version>
+  <description>The ROS2 detection_by_tracker package</description>
+  <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>eigen3_cmake_module</buildtool_depend>
+
+  <depend>autoware_perception_msgs</depend>
+  <depend>autoware_utils</depend>
+  <depend>eigen</depend>
+  <depend>euclidean_cluster</depend>
+  <depend>libpcl-all-dev</depend>
+  <depend>pcl_conversions</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>shape_estimation</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
