@@ -41,8 +41,7 @@ public:
     const typename ServiceT::Request::SharedPtr & request,
     const std::chrono::nanoseconds & timeout = std::chrono::seconds(2))
   {
-    RCLCPP_INFO(
-      logger_, "client request: \n%s", rosidl_generator_traits::to_yaml(*request).c_str());
+    RCLCPP_INFO(logger_, "client request");
 
     if (!client_->service_is_ready()) {
       RCLCPP_INFO(logger_, "client available");
@@ -55,8 +54,7 @@ public:
       return {response_error("Internal service has timed out."), nullptr};
     }
 
-    RCLCPP_INFO(
-      logger_, "client response: \n%s", rosidl_generator_traits::to_yaml(future.get()).c_str());
+    RCLCPP_INFO(logger_, "client response");
     return {response_success(), future.get()};
   }
 

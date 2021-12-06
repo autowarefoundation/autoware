@@ -1,0 +1,12 @@
+/**:
+  ros__parameters:
+    vehicle:
+      cg_to_front_m: 1.228
+      cg_to_rear_m: 1.5618
+      front_corner_stiffness: 17000.0
+      rear_corner_stiffness: 20000.0
+      mass_kg: 1460.0
+      yaw_inertia_kgm2: 2170.0
+      width_m: 2.0
+      front_overhang_m: 0.5
+      rear_overhang_m: 0.5

@@ -33,11 +33,9 @@ public:
     auto wrapped_callback = [logger, callback](
                               typename ServiceT::Request::SharedPtr request,
                               typename ServiceT::Response::SharedPtr response) {
-      RCLCPP_INFO(
-        logger, "service request: \n%s", rosidl_generator_traits::to_yaml(*request).c_str());
+      RCLCPP_INFO(logger, "service request");
       callback(request, response);
-      RCLCPP_INFO(
-        logger, "service response: \n%s", rosidl_generator_traits::to_yaml(*response).c_str());
+      RCLCPP_INFO(logger, "service response");
     };
     return wrapped_callback;
   }

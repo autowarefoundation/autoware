@@ -1,0 +1,21 @@
+simulation:
+  simple_planning_simulator:
+    ros__parameters:
+      simulated_frame_id: "base_link"
+      origin_frame_id: "map"
+      vehicle_model_type: "DELAY_STEER_ACC_GEARED"
+      initialize_source: "INITIAL_POSE_TOPIC"
+      timer_sampling_time_ms: 25
+      add_measurement_noise: False
+      vel_lim: 30.0
+      vel_rate_lim: 30.0
+      steer_lim: 0.6
+      steer_rate_lim: 6.28
+      acc_time_delay: 0.1
+      acc_time_constant: 0.1
+      steer_time_delay: 0.1
+      steer_time_constant: 0.1
+      x_stddev: 0.0001 # x standard deviation for dummy covariance in map coordinate
+      y_stddev: 0.0001 # y standard deviation for dummy covariance in map coordinate
+
+# Note: vehicle characteristics parameters (e.g. wheelbase) are defined in a separate file.
