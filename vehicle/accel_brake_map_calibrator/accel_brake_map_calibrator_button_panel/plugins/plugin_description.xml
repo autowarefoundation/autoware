@@ -1,0 +1,9 @@
+<library path="accel_brake_map_calibrator_button_panel">
+  <class name="autoware_calibration_rviz_plugin/AccelBrakeMapCalibratorButtonPanel"
+          type="autoware_calibration_rviz_plugin::AccelBrakeMapCalibratorButtonPanel"
+          base_class_type="rviz_common::Panel">
+      <description>
+        execution button of accel brake map calibration.
+      </description>
+  </class>
+</library>

@@ -1,0 +1,19 @@
+accel_brake_map_calibrator:
+  ros__parameters:
+    update_hz: 10.0
+    initial_covariance: 0.05
+    velocity_min_threshold: 0.1
+    velocity_diff_threshold: 0.556
+    pedal_diff_threshold: 0.03
+    max_steer_threshold: 0.2
+    max_pitch_threshold: 0.02
+    max_jerk_threshold: 0.7
+    pedal_velocity_thresh: 0.15
+    map_update_gain: 0.02
+    pedal_to_accel_delay: 0.3
+    max_accel: 5.0
+    min_accel: -5.0
+    max_data_count: 100
+    update_method: "update_offset_each_cell" # or "update_offset_each_cell", "update_offset_total"
+    update_suggest_thresh: 0.7 # threshold of rmse rate that update suggest flag becomes true. ( rmse_rate: [rmse of update map] / [rmse of original map] )
+    progress_file_output: false # flag to output log file
