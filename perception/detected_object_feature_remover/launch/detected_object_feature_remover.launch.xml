@@ -1,0 +1,10 @@
+<launch>
+  <arg name="input" />
+  <arg name="output" />
+
+  <node pkg="detected_object_feature_remover" exec="detected_object_feature_remover" name="detected_object_feature_remover" output="screen">
+    <remap from="~/input" to="$(var input)"/>
+    <remap from="~/output" to="$(var output)"/>
+  </node>
+
+</launch>
