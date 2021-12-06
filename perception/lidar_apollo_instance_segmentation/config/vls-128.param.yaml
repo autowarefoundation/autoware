@@ -1,0 +1,8 @@
+/**:
+    ros__parameters:
+      score_threshold: 0.1
+      range: 90
+      width: 864
+      height: 864
+      use_intensity_feature: false
+      use_constant_feature: false
