@@ -1,0 +1,34 @@
+<?xml version="1.0" ?>
+
+<launch>
+  <arg name="prediction_time_horizon" default="10.0" />
+  <arg name="prediction_sampling_delta_time" default="0.5" />
+  <arg name="min_velocity_for_map_based_prediction" default="1.0" />
+  <arg name="dist_threshold_for_searching_lanelet" default="3.0" />
+  <arg name="delta_yaw_threshold_for_searching_lanelet" default="0.785" />
+  <arg name="sigma_lateral_offset" default="0.5" /> <!-- [m]-->
+  <arg name="sigma_yaw_angle" default="5.0" /> <!-- [angle degree] -->
+  <arg name="history_time_length" default="1.0" /> <!-- [s] -->
+  <arg name="dist_ratio_threshold_to_left_bound" default="-0.5" /> <!-- [ratio] -->
+  <arg name="dist_ratio_threshold_to_right_bound" default="0.5" /> <!-- [ratio] -->
+  <arg name="diff_dist_threshold_to_left_bound" default="0.29" /> <!-- [m] -->
+  <arg name="diff_dist_threshold_to_right_bound" default="-0.29" /> <!-- [m] -->
+  <arg name="vector_map_topic" default="/map/vector_map" />
+  <arg name="output_topic" default="objects"/>
+  <node pkg="map_based_prediction" exec="map_based_prediction" name="map_based_prediction" output="screen">
+    <param name="perception_time_horizon" value="$(var prediction_time_horizon)" />
+    <param name="prediction_sampling_delta_time" value="$(var prediction_sampling_delta_time)" />
+    <param name="min_velocity_for_map_based_prediction" value="$(var min_velocity_for_map_based_prediction)" />
+    <param name="dist_threshold_for_searching_lanelet" value="$(var dist_threshold_for_searching_lanelet)" />
+    <param name="delta_yaw_threshold_for_searching_lanelet" value="$(var delta_yaw_threshold_for_searching_lanelet)" />
+    <param name="sigma_lateral_offset" value="$(var sigma_lateral_offset)" />
+    <param name="sigma_yaw_angle" value="$(var sigma_yaw_angle)" />
+    <param name="history_time_length" value="$(var history_time_length)" />
+    <param name="dist_ratio_threshold_to_left_bound" value="$(var dist_ratio_threshold_to_left_bound)" />
+    <param name="dist_ratio_threshold_to_right_bound" value="$(var dist_ratio_threshold_to_right_bound)" />
+    <param name="diff_dist_threshold_to_left_bound" value="$(var diff_dist_threshold_to_left_bound)" />
+    <param name="diff_dist_threshold_to_right_bound" value="$(var diff_dist_threshold_to_right_bound)" />
+    <remap from="/vector_map" to="$(var vector_map_topic)"/>
+    <remap from="objects" to="$(var output_topic)"/>
+  </node>
+</launch>
