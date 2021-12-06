@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>freespace_planner</name>
+  <version>0.1.0</version>
+  <description>The freespace_planner package</description>
+  <maintainer email="kenji.miyake@tier4.jp">Kenji Miyake</maintainer>
+  <maintainer email="aohsato@gmail.com">Akihito OHSATO</maintainer>
+  <license>Apache License 2.0</license>
+  <author email="aohsato@gmail.com">Akihito OHSATO</author>
+  <author email="antm678@ertl.jp">Tomohito ANDO</author>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <depend>autoware_auto_planning_msgs</depend>
+  <depend>autoware_planning_msgs</depend>
+  <depend>autoware_utils</depend>
+  <depend>freespace_planning_algorithms</depend>
+  <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>tf2</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>vehicle_info_util</depend>
+  <depend>visualization_msgs</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
