@@ -63,8 +63,7 @@ protected:
 
   char hostname_[HOST_NAME_MAX + 1];  //!< @brief host name
 
-  float usage_warn_;   //!< @brief Memory usage(%) to generate warning
-  float usage_error_;  //!< @brief Memory usage(%) to generate error
+  size_t available_size_;  //!< @brief Memory available size to generate error
 
   /**
    * @brief Memory usage status messages

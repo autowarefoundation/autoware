@@ -1,4 +1,5 @@
 /**:
   ros__parameters:
     devices: ["*"]
-    usage_warn: 0.95
+    traffic_reader_port: 7636
+    monitor_program: "greengrass"

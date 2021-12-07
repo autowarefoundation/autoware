@@ -78,6 +78,15 @@ protected:
     diagnostic_updater::DiagnosticStatusWrapper & stat);  // NOLINT(runtime/references)
 
   /**
+   * @brief monitor traffic
+   * @param [out] stat diagnostic message passed directly to diagnostic publish calls
+   * @note NOLINT syntax is needed since diagnostic_updater asks for a non-const reference
+   * to pass diagnostic message updated in this function to diagnostic publish calls.
+   */
+  void monitorTraffic(
+    diagnostic_updater::DiagnosticStatusWrapper & stat);  // NOLINT(runtime/references)
+
+  /**
    * @brief get wireless speed
    * @param [in] ifa_name interface name
    * @return wireless speed
@@ -92,7 +101,9 @@ protected:
   std::vector<std::string> device_params_;  //!< @brief list of devices
   NL80211 nl80211_;                         // !< @brief 802.11 netlink-based interface
 
-  float usage_warn_;  //!< @brief Memory usage(%) to generate warning
+  std::string monitor_program_;  //!< @brief nethogs monitor program name
+  bool nethogs_all_;             //!< @brief nethogs result all mode
+  int traffic_reader_port_;      //!< @brief port number to connect to traffic_reader
 
   /**
    * @brief Network usage status messages

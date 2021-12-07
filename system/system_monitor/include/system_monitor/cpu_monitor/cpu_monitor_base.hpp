@@ -98,6 +98,14 @@ protected:
     diagnostic_updater::DiagnosticStatusWrapper & stat);  // NOLINT(runtime/references)
 
   /**
+   * @brief convert Cpu Usage To diagnostic Level
+   * @param [cpu_name] mpstat cpu name
+   * @param [usage] cpu usage value
+   * @return DiagStatus::OK or WARN or ERROR
+   */
+  virtual int CpuUsageToLevel(const std::string & cpu_name, float usage);
+
+  /**
    * @brief check CPU load average
    * @param [out] stat diagnostic message passed directly to diagnostic publish calls
    * @note NOLINT syntax is needed since diagnostic_updater asks for a non-const reference
@@ -128,12 +136,12 @@ protected:
   int num_cores_;                     //!< @brief number of cores
   std::vector<cpu_temp_info> temps_;  //!< @brief CPU list for temperature
   std::vector<cpu_freq_info> freqs_;  //!< @brief CPU list for frequency
+  std::vector<int> usage_check_cnt_;  //!< @brief CPU list for usage over check counter
   bool mpstat_exists_;                //!< @brief flag if mpstat exists
 
-  float temp_warn_;    //!< @brief CPU temperature(DegC) to generate warning
-  float temp_error_;   //!< @brief CPU temperature(DegC) to generate error
   float usage_warn_;   //!< @brief CPU usage(%) to generate warning
   float usage_error_;  //!< @brief CPU usage(%) to generate error
+  int usage_count_;    //!< @brief CPU usage(%) usage over continuous count
   bool usage_avg_;     //!< @brief Check CPU usage calculated as averages among all processors
 
   /**

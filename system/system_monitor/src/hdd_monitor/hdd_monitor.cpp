@@ -221,7 +221,7 @@ void HDDMonitor::checkUsage(diagnostic_updater::DiagnosticStatusWrapper & stat)
     bp::ipstream is_err;
     // Invoke shell to use shell wildcard expansion
     bp::child c(
-      "/bin/sh", "-c", fmt::format("df -Pht ext4 {}*", itr->first.c_str()), bp::std_out > is_out,
+      "/bin/sh", "-c", fmt::format("df -Pm {}*", itr->first.c_str()), bp::std_out > is_out,
       bp::std_err > is_err);
     c.wait();
 
@@ -239,7 +239,7 @@ void HDDMonitor::checkUsage(diagnostic_updater::DiagnosticStatusWrapper & stat)
     std::string line;
     int index = 0;
     std::vector<std::string> list;
-    float usage;
+    int avail;
 
     while (std::getline(is_out, line) && !line.empty()) {
       // Skip header
@@ -250,22 +250,36 @@ void HDDMonitor::checkUsage(diagnostic_updater::DiagnosticStatusWrapper & stat)
 
       boost::split(list, line, boost::is_space(), boost::token_compress_on);
 
-      usage = std::atof(boost::trim_copy_if(list[4], boost::is_any_of("%")).c_str()) * 1e-2;
+      try {
+        avail = std::stoi(list[3].c_str());
+      } catch (std::exception & e) {
+        avail = -1;
+        error_str = e.what();
+        stat.add(fmt::format("HDD {}: status", hdd_index), "avail string error");
+      }
 
-      level = DiagStatus::OK;
-      if (usage >= itr->second.usage_error_) {
+      if (avail <= itr->second.free_error_) {
         level = DiagStatus::ERROR;
-      } else if (usage >= itr->second.usage_warn_) {
+      } else if (avail <= itr->second.free_warn_) {
         level = DiagStatus::WARN;
+      } else {
+        level = DiagStatus::OK;
       }
 
       stat.add(fmt::format("HDD {}: status", hdd_index), usage_dict_.at(level));
       stat.add(fmt::format("HDD {}: filesystem", hdd_index), list[0].c_str());
-      stat.add(fmt::format("HDD {}: size", hdd_index), list[1].c_str());
-      stat.add(fmt::format("HDD {}: used", hdd_index), list[2].c_str());
-      stat.add(fmt::format("HDD {}: avail", hdd_index), list[3].c_str());
+      stat.add(fmt::format("HDD {}: size (MB)", hdd_index), list[1].c_str());
+      stat.add(fmt::format("HDD {}: used (MB)", hdd_index), list[2].c_str());
+      stat.add(fmt::format("HDD {}: avail (MB)", hdd_index), list[3].c_str());
       stat.add(fmt::format("HDD {}: use", hdd_index), list[4].c_str());
-      stat.add(fmt::format("HDD {}: mounted on", hdd_index), list[5].c_str());
+      std::string mounted_ = list[5];
+      if (list.size() > 6) {
+        std::string::size_type pos = line.find("% /");
+        if (pos != std::string::npos) {
+          mounted_ = line.substr(pos + 2);  // 2 is "% " length
+        }
+      }
+      stat.add(fmt::format("HDD {}: mounted on", hdd_index), mounted_.c_str());
 
       whole_level = std::max(whole_level, level);
       ++index;
@@ -290,8 +304,8 @@ void HDDMonitor::getHDDParams()
     HDDParam param;
     param.temp_warn_ = declare_parameter<float>(prefix + ".temp_warn");
     param.temp_error_ = declare_parameter<float>(prefix + ".temp_error");
-    param.usage_warn_ = declare_parameter<float>(prefix + ".usage_warn");
-    param.usage_error_ = declare_parameter<float>(prefix + ".usage_error");
+    param.free_warn_ = declare_parameter<int>(prefix + ".free_warn");
+    param.free_error_ = declare_parameter<int>(prefix + ".free_error");
     const auto name = declare_parameter<std::string>(prefix + ".name");
 
     hdd_params_[name] = param;

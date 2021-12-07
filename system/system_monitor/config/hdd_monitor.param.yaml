@@ -4,8 +4,8 @@
     num_disks: 1
     disks: # Until multi type lists are allowed, name N the disks as disk0...disk{N-1}
       disk0:
-        name: /dev/sda
+        name: /dev/sda3
         temp_warn: 55.0
         temp_error: 70.0
-        usage_warn: 0.95
-        usage_error: 0.99
+        free_warn: 5120 # MB(8hour)
+        free_error: 100 # MB(last 1 minute)

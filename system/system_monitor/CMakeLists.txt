@@ -127,6 +127,10 @@ ament_auto_add_executable(hdd_reader
   reader/hdd_reader/hdd_reader.cpp
 )
 
+ament_auto_add_executable(traffic_reader
+  reader/traffic_reader/traffic_reader.cpp
+)
+
 find_library(NL3 nl-3 REQUIRED)
 find_library(NLGENL3 nl-genl-3 REQUIRED)
 list(APPEND NL_LIBS ${NL3} ${NLGENL3})
@@ -148,6 +152,7 @@ target_link_libraries(process_monitor_lib ${LIBRARIES})
 target_link_libraries(gpu_monitor_lib ${GPU_LIBRARY} ${Boost_LIBRARIES} ${LIBRARIES})
 target_link_libraries(msr_reader ${Boost_LIBRARIES} ${LIBRARIES})
 target_link_libraries(hdd_reader ${Boost_LIBRARIES} ${LIBRARIES})
+target_link_libraries(traffic_reader ${Boost_LIBRARIES} ${LIBRARIES})
 
 rclcpp_components_register_node(cpu_monitor_lib
   PLUGIN "CPUMonitor"

@@ -45,14 +45,14 @@ CPUMonitorBase::CPUMonitorBase(const std::string & node_name, const rclcpp::Node
   temps_(),
   freqs_(),
   mpstat_exists_(false),
-  temp_warn_(declare_parameter<float>("temp_warn", 90.0)),
-  temp_error_(declare_parameter<float>("temp_error", 95.0)),
-  usage_warn_(declare_parameter<float>("usage_warn", 0.90)),
+  usage_warn_(declare_parameter<float>("usage_warn", 0.96)),
   usage_error_(declare_parameter<float>("usage_error", 1.00)),
+  usage_count_(declare_parameter<int>("usage_count", 2)),
   usage_avg_(declare_parameter<bool>("usage_avg", true))
 {
   gethostname(hostname_, sizeof(hostname_));
   num_cores_ = boost::thread::hardware_concurrency();
+  usage_check_cnt_.resize(num_cores_ + 2);  // 2 = all + dummy
 
   // Check if command exists
   fs::path p = bp::search_path("mpstat");
@@ -96,12 +96,6 @@ void CPUMonitorBase::checkTemp(diagnostic_updater::DiagnosticStatusWrapper & sta
     ifs.close();
     temp /= 1000;
     stat.addf(itr->label_, "%.1f DegC", temp);
-
-    if (temp >= temp_error_) {
-      level = std::max(level, static_cast<int>(DiagStatus::ERROR));
-    } else if (temp >= temp_warn_) {
-      level = std::max(level, static_cast<int>(DiagStatus::WARN));
-    }
   }
 
   if (!error_str.empty()) {
@@ -144,6 +138,7 @@ void CPUMonitorBase::checkUsage(diagnostic_updater::DiagnosticStatusWrapper & st
   float usr{0.0};
   float nice{0.0};
   float sys{0.0};
+  float iowait{0.0};
   float idle{0.0};
   float usage{0.0};
   float total{0.0};
@@ -163,9 +158,10 @@ void CPUMonitorBase::checkUsage(diagnostic_updater::DiagnosticStatusWrapper & st
 
         for (const pt::ptree::value_type & child3 : statistics.get_child("cpu-load")) {
           const pt::ptree & cpu_load = child3.second;
-
+          bool get_cpu_name = false;
           if (boost::optional<std::string> v = cpu_load.get_optional<std::string>("cpu")) {
             cpu_name = v.get();
+            get_cpu_name = true;
           }
           if (boost::optional<float> v = cpu_load.get_optional<float>("usr")) {
             usr = v.get();
@@ -180,14 +176,12 @@ void CPUMonitorBase::checkUsage(diagnostic_updater::DiagnosticStatusWrapper & st
             idle = v.get();
           }
 
-          total = usr + nice + sys;
+          total = 100.0 - iowait - idle;
           usage = total * 1e-2;
-
-          level = DiagStatus::OK;
-          if (usage >= usage_error_) {
-            level = DiagStatus::ERROR;
-          } else if (usage >= usage_warn_) {
-            level = DiagStatus::WARN;
+          if (get_cpu_name) {
+            level = CpuUsageToLevel(cpu_name, usage);
+          } else {
+            level = CpuUsageToLevel(std::string("err"), usage);
           }
 
           stat.add(fmt::format("CPU {}: status", cpu_name), load_dict_.at(level));
@@ -210,6 +204,7 @@ void CPUMonitorBase::checkUsage(diagnostic_updater::DiagnosticStatusWrapper & st
   } catch (const std::exception & e) {
     stat.summary(DiagStatus::ERROR, "mpstat exception");
     stat.add("mpstat", e.what());
+    std::fill(usage_check_cnt_.begin(), usage_check_cnt_.end(), 0);
     return;
   }
 
@@ -217,6 +212,46 @@ void CPUMonitorBase::checkUsage(diagnostic_updater::DiagnosticStatusWrapper & st
 
   // Measure elapsed time since start time and report
   SystemMonitorUtility::stopMeasurement(t_start, stat);
+}
+
+int CPUMonitorBase::CpuUsageToLevel(const std::string & cpu_name, float usage)
+{
+  // cpu name to counter index
+  int idx;
+  try {
+    int num = std::stoi(cpu_name);
+    if (num > num_cores_ || num < 0) {
+      num = num_cores_;
+    }
+    idx = num + 1;
+  } catch (std::exception &) {
+    if (cpu_name == std::string("all")) {  // mpstat output "all"
+      idx = 0;
+    } else {
+      idx = num_cores_ + 1;
+    }
+  }
+
+  // convert CPU usage to level
+  int level;
+  if (usage >= usage_error_) {
+    usage_check_cnt_[idx] = usage_count_;
+    level = DiagStatus::ERROR;
+  } else if (usage >= usage_warn_) {
+    if (usage_check_cnt_[idx] < usage_count_) {
+      usage_check_cnt_[idx]++;
+    }
+    if (usage_check_cnt_[idx] >= usage_count_) {
+      level = DiagStatus::ERROR;
+    } else {
+      level = DiagStatus::WARN;
+    }
+  } else {
+    usage_check_cnt_[idx] = 0;
+    level = DiagStatus::OK;
+  }
+
+  return level;
 }
 
 void CPUMonitorBase::checkLoad(diagnostic_updater::DiagnosticStatusWrapper & stat)

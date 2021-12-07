@@ -33,8 +33,7 @@ namespace bp = boost::process;
 MemMonitor::MemMonitor(const rclcpp::NodeOptions & options)
 : Node("mem_monitor", options),
   updater_(this),
-  usage_warn_(declare_parameter<float>("usage_warn", 0.95)),
-  usage_error_(declare_parameter<float>("usage_error", 0.99))
+  available_size_(declare_parameter<int>("available_size", 1024) * 1024 * 1024)
 {
   gethostname(hostname_, sizeof(hostname_));
   updater_.setHardwareID(hostname_);
@@ -61,11 +60,14 @@ void MemMonitor::checkUsage(diagnostic_updater::DiagnosticStatusWrapper & stat)
     return;
   }
 
-  int level = DiagStatus::OK;
   std::string line;
   int index = 0;
   std::vector<std::string> list;
   float usage;
+  size_t mem_total = 0;
+  size_t mem_shared = 0;
+  size_t mem_available = 0;
+  size_t used_plus = 0;
 
   /*
    Output example of `free -tb`
@@ -87,16 +89,13 @@ void MemMonitor::checkUsage(diagnostic_updater::DiagnosticStatusWrapper & stat)
 
     // Physical memory
     if (index == 1) {
+      mem_total = std::atoll(list[1].c_str());
+      mem_shared = std::atoll(list[4].c_str());
+      mem_available = std::atoll(list[6].c_str());
+
       // available divided by total is available memory including calculation for buff/cache,
       // so the subtraction of this from 1 gives real usage.
-      usage = 1.0f - std::atof(list[6].c_str()) / std::atof(list[1].c_str());
-
-      if (usage >= usage_error_) {
-        level = DiagStatus::ERROR;
-      } else if (usage >= usage_warn_) {
-        level = DiagStatus::WARN;
-      }
-
+      usage = 1.0f - static_cast<double>(mem_available) / mem_total;
       stat.addf(fmt::format("{} usage", list[0]), "%.2f%%", usage * 1e+2);
     }
 
@@ -109,8 +108,24 @@ void MemMonitor::checkUsage(diagnostic_updater::DiagnosticStatusWrapper & stat)
       stat.add(fmt::format("{} shared", list[0]), toHumanReadable(list[4]));
       stat.add(fmt::format("{} buff/cache", list[0]), toHumanReadable(list[5]));
       stat.add(fmt::format("{} available", list[0]), toHumanReadable(list[6]));
+    } else if (index == 3) {
+      // Total:used + Mem:shared
+      used_plus = std::atoll(list[2].c_str()) + mem_shared;
+      double giga = static_cast<double>(used_plus) / (1024 * 1024 * 1024);
+      stat.add(fmt::format("{} used+", list[0]), fmt::format("{:.1f}{}", giga, "G"));
+    } else {
+      /* nothing */
     }
     ++index;
+  }
+
+  int level;
+  if (mem_total > used_plus) {
+    level = DiagStatus::OK;
+  } else if (mem_available >= available_size_) {
+    level = DiagStatus::WARN;
+  } else {
+    level = DiagStatus::ERROR;
   }
 
   stat.summary(level, usage_dict_.at(level));
@@ -129,7 +144,7 @@ std::string MemMonitor::toHumanReadable(const std::string & str)
     size /= 1024;
     ++count;
   }
-  const char * format = (size > 0 && size < 10) ? "{:.1f}{}" : "{:.0f}{}";
+  const char * format = (count >= 3 || (size > 0 && size < 10)) ? "{:.1f}{}" : "{:.0f}{}";
   return fmt::format(format, size, units[count]);
 }
 

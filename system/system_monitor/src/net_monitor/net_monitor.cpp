@@ -21,7 +21,11 @@
 
 #include "system_monitor/system_monitor_utility.hpp"
 
+#include <traffic_reader/traffic_reader.hpp>
+
+#include <boost/archive/text_iarchive.hpp>
 #include <boost/range/algorithm.hpp>
+// #include <boost/algorithm/string.hpp>   // workaround for build errors
 
 #include <fmt/format.h>
 #include <ifaddrs.h>
@@ -29,6 +33,7 @@
 #include <linux/if_link.h>
 #include <linux/sockios.h>
 #include <net/if.h>
+#include <netinet/in.h>
 #include <sys/ioctl.h>
 
 #include <algorithm>
@@ -41,11 +46,20 @@ NetMonitor::NetMonitor(const rclcpp::NodeOptions & options)
   last_update_time_{0, 0, this->get_clock()->get_clock_type()},
   device_params_(
     declare_parameter<std::vector<std::string>>("devices", std::vector<std::string>())),
-  usage_warn_(declare_parameter<float>("usage_warn", 0.95))
+  monitor_program_(declare_parameter<std::string>("monitor_program", "greengrass")),
+  traffic_reader_port_(declare_parameter<int>("traffic_reader_port", TRAFFIC_READER_PORT))
 {
+  if (monitor_program_.empty()) {
+    monitor_program_ = GET_ALL_STR;
+    nethogs_all_ = true;
+  } else {
+    nethogs_all_ = false;
+  }
+
   gethostname(hostname_, sizeof(hostname_));
   updater_.setHardwareID(hostname_);
   updater_.add("Network Usage", this, &NetMonitor::checkUsage);
+  updater_.add("Network Traffic", this, &NetMonitor::monitorTraffic);
 
   nl80211_.init();
 }
@@ -169,9 +183,6 @@ void NetMonitor::checkUsage(diagnostic_updater::DiagnosticStatusWrapper & stat)
       tx_traffic = toMbit(stats->tx_bytes - bytes_[ifa->ifa_name].tx_bytes) / duration.seconds();
       rx_usage = rx_traffic / speed;
       tx_usage = tx_traffic / speed;
-      if (rx_usage >= usage_warn_ || tx_usage > usage_warn_) {
-        level = std::max(level, static_cast<int>(DiagStatus::WARN));
-      }
     }
 
     stat.add(fmt::format("Network {}: status", index), usage_dict_.at(level));
@@ -192,7 +203,7 @@ void NetMonitor::checkUsage(diagnostic_updater::DiagnosticStatusWrapper & stat)
 
     bytes_[ifa->ifa_name].rx_bytes = stats->rx_bytes;
     bytes_[ifa->ifa_name].tx_bytes = stats->tx_bytes;
-    whole_level = std::max(whole_level, level);
+
     ++index;
 
     interface_names.push_back(ifa->ifa_name);
@@ -224,6 +235,138 @@ void NetMonitor::checkUsage(diagnostic_updater::DiagnosticStatusWrapper & stat)
   }
 
   last_update_time_ = this->now();
+
+  // Measure elapsed time since start time and report
+  SystemMonitorUtility::stopMeasurement(t_start, stat);
+}
+
+#include <boost/algorithm/string.hpp>  // workaround for build errors
+
+void NetMonitor::monitorTraffic(diagnostic_updater::DiagnosticStatusWrapper & stat)
+{
+  // Remember start time to measure elapsed time
+  const auto t_start = SystemMonitorUtility::startMeasurement();
+
+  // Create a new socket
+  int sock = socket(AF_INET, SOCK_STREAM, 0);
+  if (sock < 0) {
+    stat.summary(DiagStatus::ERROR, "socket error");
+    stat.add("socket", strerror(errno));
+    return;
+  }
+
+  // Specify the receiving timeouts until reporting an error
+  struct timeval tv;
+  tv.tv_sec = 10;
+  tv.tv_usec = 0;
+  int ret = setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+  if (ret < 0) {
+    stat.summary(DiagStatus::ERROR, "setsockopt error");
+    stat.add("setsockopt", strerror(errno));
+    close(sock);
+    return;
+  }
+
+  // Connect the socket referred to by the file descriptor
+  sockaddr_in addr;
+  memset(&addr, 0, sizeof(sockaddr_in));
+  addr.sin_family = AF_INET;
+  addr.sin_port = htons(traffic_reader_port_);
+  addr.sin_addr.s_addr = htonl(INADDR_ANY);
+  ret = connect(sock, (struct sockaddr *)&addr, sizeof(addr));
+  if (ret < 0) {
+    stat.summary(DiagStatus::ERROR, "connect error");
+    stat.add("connect", strerror(errno));
+    close(sock);
+    return;
+  }
+
+  // Write list of devices to FD
+  ret = write(sock, monitor_program_.c_str(), monitor_program_.length());
+  if (ret < 0) {
+    stat.summary(DiagStatus::ERROR, "write error");
+    stat.add("write", strerror(errno));
+    RCLCPP_ERROR(get_logger(), "write error");
+    close(sock);
+    return;
+  }
+
+  // Receive messages from a socket
+  std::string rcv_str;
+  char buf[16 * 1024 + 1];
+  do {
+    ret = recv(sock, buf, sizeof(buf) - 1, 0);
+    if (ret < 0) {
+      stat.summary(DiagStatus::ERROR, "recv error");
+      stat.add("recv", strerror(errno));
+      close(sock);
+      return;
+    }
+    if (ret > 0) {
+      buf[ret] = '\0';
+      rcv_str += std::string(buf);
+    }
+  } while (ret > 0);
+
+  // Close the file descriptor FD
+  ret = close(sock);
+  if (ret < 0) {
+    stat.summary(DiagStatus::ERROR, "close error");
+    stat.add("close", strerror(errno));
+    return;
+  }
+
+  // No data received
+  if (rcv_str.length() == 0) {
+    stat.summary(DiagStatus::ERROR, "recv error");
+    stat.add("recv", "No data received");
+    return;
+  }
+
+  // Restore  information list
+  TrafficReaderResult result;
+  try {
+    std::istringstream iss(rcv_str);
+    boost::archive::text_iarchive oa(iss);
+    oa >> result;
+  } catch (const std::exception & e) {
+    stat.summary(DiagStatus::ERROR, "recv error");
+    stat.add("recv", e.what());
+    return;
+  }
+
+  // traffic_reader result to output
+  if (result.error_code_ != 0) {
+    stat.summary(DiagStatus::ERROR, "traffic_reader error");
+    stat.add("error", result.str_);
+  } else {
+    stat.summary(DiagStatus::OK, "OK");
+
+    if (result.str_.length() == 0) {
+      stat.add("nethogs: result", "nothing");
+    } else if (nethogs_all_) {
+      stat.add("nethogs: all (KB/sec):", result.str_);
+    } else {
+      std::stringstream lines{result.str_};
+      std::string line;
+      std::vector<std::string> list;
+      int idx = 0;
+      while (std::getline(lines, line)) {
+        if (line.empty()) {
+          continue;
+        }
+        boost::split(list, line, boost::is_any_of("\t"), boost::token_compress_on);
+        if (list.size() >= 3) {
+          stat.add(fmt::format("nethogs {}: PROGRAM", idx), list[0].c_str());
+          stat.add(fmt::format("nethogs {}: SENT (KB/sec)", idx), list[1].c_str());
+          stat.add(fmt::format("nethogs {}: RECEIVED (KB/sec)", idx), list[2].c_str());
+        } else {
+          stat.add(fmt::format("nethogs {}: result", idx), line);
+        }
+        idx++;
+      }  // while
+    }
+  }
 
   // Measure elapsed time since start time and report
   SystemMonitorUtility::stopMeasurement(t_start, stat);

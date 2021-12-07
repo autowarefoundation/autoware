@@ -1,4 +1,3 @@
 /**:
   ros__parameters:
-    usage_warn: 0.95
-    usage_error: 0.99
+    available_size: 1024 # MB

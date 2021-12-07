@@ -32,12 +32,12 @@
  */
 struct HDDParam
 {
-  float temp_warn_;    //!< @brief HDD temperature(DegC) to generate warning
-  float temp_error_;   //!< @brief HDD temperature(DegC) to generate error
-  float usage_warn_;   //!< @brief HDD usage(%) to generate warning
-  float usage_error_;  //!< @brief HDD usage(%) to generate error
+  float temp_warn_;   //!< @brief HDD temperature(DegC) to generate warning
+  float temp_error_;  //!< @brief HDD temperature(DegC) to generate error
+  int free_warn_;     //!< @brief HDD free space(MB) to generate warning
+  int free_error_;    //!< @brief HDD free space(MB) to generate error
 
-  HDDParam() : temp_warn_(55.0), temp_error_(70.0), usage_warn_(0.95), usage_error_(0.99) {}
+  HDDParam() : temp_warn_(55.0), temp_error_(70.0), free_warn_(5120), free_error_(100) {}
 };
 
 class HDDMonitor : public rclcpp::Node
@@ -73,6 +73,13 @@ protected:
    */
   void checkUsage(
     diagnostic_updater::DiagnosticStatusWrapper & stat);  // NOLINT(runtime/references)
+
+  /**
+   * @brief human readable size string to MB
+   * @param [in] human readable size string
+   * @return Megabyte
+   */
+  int HumanReadableToMegaByte(const std::string & str);
 
   /**
    * @brief get HDD parameters
