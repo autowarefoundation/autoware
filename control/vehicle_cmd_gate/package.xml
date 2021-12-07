@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>vehicle_cmd_gate</name>
+  <version>0.1.0</version>
+  <description>The vehicle_cmd_gate package</description>
+  <maintainer email="h_ohta@ertl.jp">h_ohta</maintainer>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>autoware_api_utils</depend>
+  <depend>autoware_auto_control_msgs</depend>
+  <depend>autoware_auto_system_msgs</depend>
+  <depend>autoware_auto_vehicle_msgs</depend>
+  <depend>autoware_control_msgs</depend>
+  <depend>autoware_debug_msgs</depend>
+  <depend>autoware_external_api_msgs</depend>
+  <depend>diagnostic_updater</depend>
+  <depend>geometry_msgs</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>std_srvs</depend>
+  <depend>vehicle_info_util</depend>
+　<depend>autoware_vehicle_msgs</depend>
+
+  <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

@@ -1,0 +1,50 @@
+<launch>
+  <arg name="config_file" default="$(find-pkg-share vehicle_cmd_gate)/config/vehicle_cmd_gate.param.yaml" />
+  <arg name="use_emergency_handling" default="false" />
+  <arg name="use_external_emergency_stop" default="true" />
+  <arg name="use_start_request" default="false" />
+
+  <node pkg="vehicle_cmd_gate" exec="vehicle_cmd_gate" name="vehicle_cmd_gate" output="screen">
+    <remap from="input/steering" to="/vehicle/status/steering_status"/>
+
+    <remap from="input/auto/control_cmd" to="trajectory_follower/control_cmd"/>
+    <remap from="input/auto/turn_indicators_cmd" to="/planning/turn_indicators_cmd"/>
+    <remap from="input/auto/hazard_lights_cmd" to="/planning/hazard_lights_cmd"/>
+    <remap from="input/auto/gear_cmd" to="/control/shift_decider/gear_cmd"/>
+
+    <remap from="input/external/control_cmd" to="/external/selected/control_cmd"/>
+    <remap from="input/external/turn_indicators_cmd" to="/external/selected/turn_indicators_cmd"/>
+    <remap from="input/external/hazard_lights_cmd" to="/external/selected/hazard_lights_cmd"/>
+    <remap from="input/external/gear_cmd" to="/external/selected/gear_cmd"/>
+    <remap from="input/external_emergency_stop_heartbeat" to="/external/selected/heartbeat"/>
+    <remap from="input/gate_mode" to="/control/gate_mode_cmd"/>
+
+    <remap from="input/emergency_state" to="/system/emergency/emergency_state"/>
+    <remap from="input/emergency/control_cmd" to="/system/emergency/control_cmd"/>
+    <remap from="input/emergency/hazard_lights_cmd" to="/system/emergency/hazard_lights_cmd"/>
+    <remap from="input/emergency/gear_cmd" to="/system/emergency/gear_cmd"/>
+
+    <remap from="output/vehicle_cmd_emergency" to="/control/command/emergency_cmd"/>
+    <remap from="output/control_cmd" to="/control/command/control_cmd"/>
+    <remap from="output/gear_cmd" to="/control/command/gear_cmd"/>
+    <remap from="output/turn_indicators_cmd" to="/control/command/turn_indicators_cmd"/>
+    <remap from="output/hazard_lights_cmd" to="/control/command/hazard_lights_cmd"/>
+    <remap from="output/gate_mode" to="/control/current_gate_mode"/>
+    <remap from="output/engage" to="/api/autoware/get/engage"/>
+    <remap from="output/external_emergency" to="/api/autoware/get/emergency"/>
+
+    <remap from="~/service/engage" to="/api/autoware/set/engage"/>
+    <remap from="~/service/external_emergency" to="/api/autoware/set/emergency"/>
+
+    <!-- TODO(Takagi, Isamu): deprecated -->
+    <remap from="input/engage" to="/autoware/engage"/>
+    <remap from="~/service/external_emergency_stop" to="~/external_emergency_stop"/>
+    <remap from="~/service/clear_external_emergency_stop" to="~/clear_external_emergency_stop"/>
+
+    <param from="$(var config_file)" />
+    <param name="use_emergency_handling" value="$(var use_emergency_handling)" />
+    <param name="use_external_emergency_stop" value="$(var use_external_emergency_stop)" />
+    <param name="use_start_request" value="$(var use_start_request)" />
+  </node>
+
+</launch>
