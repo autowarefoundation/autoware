@@ -1,0 +1,16 @@
+<launch>
+  <arg name="input_topic" default="/pacmod/can_tx"/>
+  <arg name="output_topic" default="/pacmod/debug"/>
+  <arg name="output_accel_cal_topic" default="/pacmod/accel_cal_rpt"/>
+  <arg name="output_brake_cal_topic" default="/pacmod/brake_cal_rpt"/>
+  <arg name="output_steer_cal_topic" default="/pacmod/steer_cal_rpt"/>
+  <arg name="calibration_active" default="false"/>
+  <node pkg="pacmod_interface" exec="pacmod_additional_debug_publisher" name="pacmod_additional_debug_publisher" output="screen">
+    <remap from="input/can_tx" to="$(var input_topic)" />
+    <remap from="output/debug" to="$(var output_topic)" />
+    <remap from="output/accel_cal_rpt" to="$(var output_accel_cal_topic)" />
+    <remap from="output/brake_cal_rpt" to="$(var output_brake_cal_topic)" />
+    <remap from="output/steer_cal_rpt" to="$(var output_steer_cal_topic)" />
+    <param name="calibration_active" value="$(var calibration_active)" />
+  </node>
+</launch>

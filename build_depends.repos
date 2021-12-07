@@ -47,3 +47,7 @@ repositories:
     type: git
     url: https://github.com/tier4/pointcloud_to_laserscan.git
     version: tier4/main
+  vendor/pacmod3_msgs:
+    type: git
+    url: https://github.com/astuff/pacmod3_msgs
+    version: main

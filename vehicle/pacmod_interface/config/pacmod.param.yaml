@@ -1,0 +1,19 @@
+/**:
+  ros__parameters:
+    base_frame_id: "base_link"
+    command_timeout_ms: 1000
+    loop_rate: 30.0
+    emergency_brake: 0.7
+    max_throttle: 0.4
+    max_brake: 0.8
+    max_steering_wheel: 11.0
+    min_steering_wheel: -11.0
+    max_steering_wheel_rate: 5.0
+    min_steering_wheel_rate: 3.0
+    steering_offset: 0.0
+    enable_steering_rate_control: false
+    vgr_coef_a: 15.713
+    vgr_coef_b: 0.053
+    vgr_coef_c: 0.042
+    accel_pedal_offset: 0.0
+    brake_pedal_offset: 0.0

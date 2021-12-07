@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>pacmod_interface</name>
+  <version>0.1.0</version>
+  <description>AutonomouStuff pacmod interface as a ROS 2 node</description>
+  <maintainer email="aohsato@gmail.com">Akihito Ohsato</maintainer>
+  <license>Apache License 2.0</license>
+
+  <author email="aohsato@gmail.com">Akihito Ohsato</author>
+  <author email="antm678@ertl.jp">T.Ando</author>
+  <author email="horibe.takamasa@gmail.com">Horibe Takamasa</author>
+
+  <depend>autoware_auto_control_msgs</depend>
+  <depend>autoware_auto_vehicle_msgs</depend>
+  <depend>autoware_debug_msgs</depend>
+  <depend>autoware_vehicle_msgs</depend>
+  <depend>can_msgs</depend>
+  <depend>diagnostic_updater</depend>
+  <depend>message_filters</depend>
+  <depend>pacmod3_msgs</depend>
+  <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
+  <depend>vehicle_info_util</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
