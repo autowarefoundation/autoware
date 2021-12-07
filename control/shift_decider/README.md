@@ -43,9 +43,9 @@ stop
 
 ### Output
 
-| Name                | Type                                           | Description                        |
-| ------------------- | ---------------------------------------------- | ---------------------------------- |
-| `~output/shift_cmd` | `autoware_auto_vehicle_msgs::msg::GearCommand` | Gear for drive forward / backward. |
+| Name               | Type                                           | Description                        |
+| ------------------ | ---------------------------------------------- | ---------------------------------- |
+| `~output/gear_cmd` | `autoware_auto_vehicle_msgs::msg::GearCommand` | Gear for drive forward / backward. |
 
 ## Parameters
 
