@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "pointcloud_preprocessor/outlier_filter/occupancy_grid_map_outlier_filter_nodelet.hpp"
+#include "occupancy_grid_map_outlier_filter/occupancy_grid_map_outlier_filter_nodelet.hpp"
 
 #include <autoware_utils/autoware_utils.hpp>
 #include <pcl_ros/transforms.hpp>
@@ -42,8 +42,7 @@ bool transformPointcloud(
       target_frame, input.header.frame_id, input.header.stamp, rclcpp::Duration::from_seconds(0.5));
   } catch (const tf2::TransformException & ex) {
     RCLCPP_WARN_THROTTLE(
-      rclcpp::get_logger("pointcloud_processor").get_child("occupancy_grid_map_outlier_filter"),
-      clock, 5000, "%s", ex.what());
+      rclcpp::get_logger("occupancy_grid_map_outlier_filter"), clock, 5000, "%s", ex.what());
     return false;
   }
   // transform pointcloud
@@ -65,8 +64,7 @@ geometry_msgs::msg::PoseStamped getPoseStamped(
       tf2.lookupTransform(target_frame_id, src_frame_id, time, rclcpp::Duration::from_seconds(0.5));
   } catch (const tf2::TransformException & ex) {
     RCLCPP_WARN_THROTTLE(
-      rclcpp::get_logger("pointcloud_processor").get_child("occupancy_grid_map_outlier_filter"),
-      clock, 5000, "%s", ex.what());
+      rclcpp::get_logger("occupancy_grid_map_outlier_filter"), clock, 5000, "%s", ex.what());
   }
   return autoware_utils::transform2pose(tf_stamped);
 }
@@ -96,7 +94,7 @@ boost::optional<char> getCost(
 
 }  // namespace
 
-namespace pointcloud_preprocessor
+namespace occupancy_grid_map_outlier_filter
 {
 RadiusSearch2dfilter::RadiusSearch2dfilter(rclcpp::Node & node)
 {
@@ -319,7 +317,8 @@ void OccupancyGridMapOutlierFilterComponent::Debugger::transformToBaseLink(
   transformPointcloud(ros_input, *(node_.tf2_), node_.base_link_frame_, output);
 }
 
-}  // namespace pointcloud_preprocessor
+}  // namespace occupancy_grid_map_outlier_filter
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(pointcloud_preprocessor::OccupancyGridMapOutlierFilterComponent)
+RCLCPP_COMPONENTS_REGISTER_NODE(
+  occupancy_grid_map_outlier_filter::OccupancyGridMapOutlierFilterComponent)

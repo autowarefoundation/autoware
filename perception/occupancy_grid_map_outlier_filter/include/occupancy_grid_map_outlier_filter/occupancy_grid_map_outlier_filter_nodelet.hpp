@@ -12,8 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef POINTCLOUD_PREPROCESSOR__OUTLIER_FILTER__OCCUPANCY_GRID_MAP_OUTLIER_FILTER_NODELET_HPP_
-#define POINTCLOUD_PREPROCESSOR__OUTLIER_FILTER__OCCUPANCY_GRID_MAP_OUTLIER_FILTER_NODELET_HPP_
+#ifndef OCCUPANCY_GRID_MAP_OUTLIER_FILTER__OCCUPANCY_GRID_MAP_OUTLIER_FILTER_NODELET_HPP_
+#define OCCUPANCY_GRID_MAP_OUTLIER_FILTER__OCCUPANCY_GRID_MAP_OUTLIER_FILTER_NODELET_HPP_
+
+#include "pointcloud_preprocessor/filter.hpp"
 
 #include <pcl/common/impl/common.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -36,7 +38,7 @@
 #include <memory>
 #include <string>
 
-namespace pointcloud_preprocessor
+namespace occupancy_grid_map_outlier_filter
 {
 using geometry_msgs::msg::Pose;
 using nav_msgs::msg::OccupancyGrid;
@@ -121,6 +123,6 @@ private:
   std::string base_link_frame_;
   int cost_threshold_;
 };
-}  // namespace pointcloud_preprocessor
+}  // namespace occupancy_grid_map_outlier_filter
 
-#endif  // POINTCLOUD_PREPROCESSOR__OUTLIER_FILTER__OCCUPANCY_GRID_MAP_OUTLIER_FILTER_NODELET_HPP_
+#endif  // OCCUPANCY_GRID_MAP_OUTLIER_FILTER__OCCUPANCY_GRID_MAP_OUTLIER_FILTER_NODELET_HPP_
