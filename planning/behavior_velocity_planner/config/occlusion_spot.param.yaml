@@ -1,0 +1,25 @@
+/**:
+  ros__parameters:
+    occlusion_spot:
+      pedestrian_vel: 1.0                  # [m/s] assume pedestrian is dashing from occlusion at this velocity
+      safety_time_buffer: 0.1                  # [m/s] assume pedestrian is dashing from occlusion at this velocity
+      threshold:
+        detection_area_length: 200.0        # [m] the length of path to consider occlusion spot
+        stuck_vehicle_vel: 1.0              # [m/s] velocity below this value is assumed to stop
+        lateral_distance: 1.5               # [m] maximum lateral distance to consider hidden collision
+      # road type parameters
+      public_road:
+        min_velocity: 2.78                  # [m/s] minimum velocity to ignore occlusion spot
+        ebs_decel: -6.0                     # [m/s^2] maximum deceleration to assume for emergency stops.
+        pbs_decel: -1.0                     # [m/s^2] deceleration to assume for predictive braking stops
+      private_road:
+        min_velocity: 1.5                   # [m/s] minimum velocity to ignore occlusion spot
+        ebs_decel: -4.0                     # [m/s^2] maximum deceleration to assume for emergency stops.
+        pbs_decel: -0.5                     # [m/s^2] deceleration to assume for predictive braking stops.
+      sidewalk:
+        min_occlusion_spot_size: 1.0     # [m] occupancy grid must contain an UNKNOWN area of at least size NxN to be considered a hidden obstacle.
+        slice_size: 0.5     # [m] size of sidewalk slices in both length and distance relative to the ego trajectory.
+        focus_range: 2.5            # [m] buffer around the ego path used to build the sidewalk area.
+      grid:
+        free_space_max: 40  # maximum value of a free space cell in the occupancy grid
+        occupied_min: 60   # minimum value of an occupied cell in the occupancy grid

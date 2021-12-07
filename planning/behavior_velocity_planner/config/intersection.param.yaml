@@ -1,0 +1,19 @@
+/**:
+  ros__parameters:
+    intersection:
+      state_transit_margin_time: 0.5
+      decel_velocity: 8.33 # 8.33m/s = 30.0km/h
+      stop_line_margin: 3.0
+      stuck_vehicle_detect_dist: 3.0 # this should be the length between cars when they are stopped. The actual stuck vehicle detection length will be this value + vehicle_length.
+      stuck_vehicle_ignore_dist: 7.0 # obstacle stop max distance(5.0m) + stuck vehicle size / 2 (0.0m-)
+      stuck_vehicle_vel_thr: 0.833 # 0.833m/s = 3.0km/h
+      intersection_velocity: 2.778 # 2.778m/s = 10.0km/h
+      intersection_max_accel: 0.5 # m/ss
+      detection_area_margin: 0.5 # [m]
+      detection_area_length: 200.0 # [m]
+      min_predicted_path_confidence: 0.05
+      collision_start_margin_time: 5.0 # [s]
+      collision_end_margin_time: 2.0 # [s]
+
+    merge_from_private_road:
+      stop_duration_sec: 1.0

@@ -1,0 +1,8 @@
+/**:
+  ros__parameters:
+    traffic_light:
+      stop_margin: 0.0
+      tl_state_timeout: 1.0
+      external_tl_state_timeout: 1.0
+      yellow_lamp_period: 2.75
+      enable_pass_judge: true

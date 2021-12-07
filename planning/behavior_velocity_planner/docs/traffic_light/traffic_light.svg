@@ -1,0 +1,166 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1369" height="988"
+    viewBox="-.5 -.5 1369 988">
+    <path d="M400 13v921M920 323H571q-10 0-10-10V3" fill="none" stroke="#000" stroke-width="3" stroke-miterlimit="10"
+        pointer-events="stroke" />
+    <path d="M481 923l1-920" fill="none" stroke="#bfbfbf" stroke-width="3" stroke-miterlimit="10" stroke-dasharray="9 9"
+        pointer-events="stroke" />
+    <path fill="#d5e8d4" stroke="#82b366" pointer-events="all" d="M476.01.43V918h-70V.43z" />
+    <path d="M919 483.01H570q-10 0-10 10V923" fill="none" stroke="#000" stroke-width="3" stroke-miterlimit="10"
+        pointer-events="stroke" />
+    <path d="M1120 373v270h240V389.37" fill="none" pointer-events="stroke" />
+    <path d="M1360 384.12l3.5 7-3.5-1.75-3.5 1.75z" fill="none" pointer-events="all" />
+    <path d="M560.07 404.07L920 402" fill="none" stroke="#bfbfbf" stroke-width="3" stroke-miterlimit="10"
+        stroke-dasharray="9 9" pointer-events="stroke" />
+    <switch transform="translate(-.5 -.5)">
+        <foreignObject style="text-align:left" pointer-events="none" width="100%" height="100%"
+            requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" overflow="visible">
+            <div xmlns="http://www.w3.org/1999/xhtml"
+                style="align-items:unsafe center;justify-content:unsafe center;width:128px;height:1px;padding-top:628px;margin-left:1px"
+                display="flex">
+                <div style="box-sizing:border-box;text-align:center" font-size="0">
+                    <div style="line-height:1.2;white-space:normal;word-wrap:normal" display="inline-block"
+                        font-size="12" font-family="Helvetica" color="#000" pointer-events="none">
+                        <font font-size="17">Dead Point</font>
+                    </div>
+                </div>
+            </div>
+        </foreignObject><text x="65" y="632" font-family="Helvetica" font-size="12" text-anchor="middle">Dead
+            Point</text>
+    </switch>
+    <path d="M130 728l259.95-27.92" fill="none" stroke="#000" stroke-width="3" stroke-miterlimit="10"
+        pointer-events="none" />
+    <path d="M396.67 699.36l-8.47 5.43 1.75-4.71-2.71-4.23z" stroke="#000" stroke-width="3" stroke-miterlimit="10"
+        pointer-events="none" />
+    <path d="M500 699.55h5q5 0 5 10v26.73q0 10 5 10h0-2.5q-2.5 0-2.5 10V783q0 10-5 10h-5" fill="none" stroke="#1c1c1c"
+        stroke-width="3" stroke-miterlimit="10" pointer-events="none" />
+    <path d="M680 778l-150.25-29.42" fill="none" stroke="#1c1c1c" stroke-width="4" stroke-miterlimit="10"
+        pointer-events="none" />
+    <path d="M522.39 747.13l10.77-2.98-3.41 4.43 1.49 5.38z" fill="#1c1c1c" stroke="#1c1c1c" stroke-width="4"
+        stroke-miterlimit="10" pointer-events="none" />
+    <switch transform="translate(-.5 -.5)">
+        <foreignObject style="text-align:left" pointer-events="none" width="100%" height="100%"
+            requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" overflow="visible">
+            <div xmlns="http://www.w3.org/1999/xhtml"
+                style="align-items:unsafe flex-start;justify-content:unsafe flex-start;width:388px;height:1px;padding-top:710px;margin-left:682px"
+                display="flex">
+                <div style="box-sizing:border-box;text-align:left" font-size="0">
+                    <div style="line-height:1.2;white-space:normal;word-wrap:normal" display="inline-block"
+                        font-size="12" font-family="Helvetica" color="#000" pointer-events="none"><span font-size="17">
+                            <font>
+                                <p dir="ltr" style="line-height:1.2;margin-top:0;margin-bottom:0"><span
+                                        style="background-color:transparent;vertical-align:baseline" font-family="arial"
+                                        color="#000" font-weight="400" font-style="normal" font-variant="normal"
+                                        text-decoration="none">default parameter</span></p>
+                                <p dir="ltr" style="line-height:1.2;margin-top:0;margin-bottom:0"><span
+                                        style="background-color:transparent;vertical-align:baseline" font-family="arial"
+                                        color="#000" font-weight="400" font-style="normal" font-variant="normal"
+                                        text-decoration="none">jerk_max = -5.0 [m/sss]</span></p>
+                            </font>
+                        </span></div>
+                </div>
+            </div>
+        </foreignObject><text x="682" y="722" font-family="Helvetica" font-size="12">Distance between pass judge point
+            and stop point is calculated by...</text>
+    </switch>
+    <path
+        d="M433.933 911.468c-.28-.045-.613-.149-1.056-.341l-15.022-18.31-.652-37.365c-.065-.87.326-1.346.8-1.764l12.26-12.696 4.042-27.395c.333-.386.657-.772 1.501-1.096l9.37-.104c1.51.564 1.317.977 1.545 1.423l.092 5.26c-12.739.222-12.366 19.248.332 19.027l.846 48.512c-12.768.223-12.418 19.11.33 18.887l.075 4.31c-.057.72-.68 1.142-1.424 1.505l-13.039.147zm-1.3-40.093l-.452-25.886c-.407-.983-.999-1.093-1.702-.68l-8.996 9.468c-.176.213-.423.387-.357.746l.289 16.548 11.218-.196zm.468 26.806l-.414-23.737-11.229.196.243 13.918c-.053.361.2.527.383.734l8.138 7.839c1.133.72 2.669 2.174 2.879 1.05zm6.178-69.499c-.075-4.269 3.315-7.789 7.574-7.863 4.25-.074 7.759 3.315 7.834 7.594.074 4.27-3.315 7.79-7.564 7.864-4.26.074-7.77-3.335-7.844-7.595zm10.948-.19c-.031-1.8-1.517-3.245-3.306-3.213a3.254 3.254 0 00-3.193 3.326 3.25 3.25 0 003.307 3.193 3.256 3.256 0 003.192-3.307zm-9.77 67.7c-.074-4.26 3.315-7.789 7.574-7.863 4.25-.074 7.76 3.325 7.834 7.594.075 4.28-3.315 7.78-7.564 7.853a7.71 7.71 0 01-7.844-7.584zm10.949-.191a3.258 3.258 0 00-3.307-3.203 3.246 3.246 0 00-3.192 3.316 3.252 3.252 0 003.306 3.203 3.258 3.258 0 003.193-3.316z"
+        pointer-events="none" />
+    <rect x="340" y="253" width="129.55" height="39.93" rx="5.99" ry="5.99" fill="#bac8d3" stroke="#23445d"
+        pointer-events="none" />
+    <circle cx="362.59" cy="272.96" fill="#008a00" stroke="#005700" pointer-events="none" r="12.834" />
+    <circle cx="402.23" cy="272.96" fill="#e3c800" stroke="#b09500" pointer-events="none" r="12.834" />
+    <circle cx="442.45" cy="272.96" fill="#e51400" stroke="#b20000" pointer-events="none" r="12.834" />
+    <circle cx="438.28" cy="629.28" fill="#0c0" pointer-events="none" r="6.275" />
+    <path d="M405 603h68" fill="none" stroke="#1c1c1c" stroke-width="7" stroke-miterlimit="10" pointer-events="none" />
+    <circle cx="438.28" cy="693.28" fill="#c00" pointer-events="none" r="6.275" />
+    <circle cx="439.28" cy="803.28" fill="#06c" pointer-events="none" r="6.275" />
+    <path d="M672 623.5l-142.18 22.62" fill="none" stroke="#1c1c1c" stroke-width="4" stroke-miterlimit="10"
+        pointer-events="none" />
+    <path d="M522.42 647.3l9.09-6.51-1.69 5.33 3.26 4.54z" fill="#1c1c1c" stroke="#1c1c1c" stroke-width="4"
+        stroke-miterlimit="10" pointer-events="none" />
+    <switch transform="translate(-.5 -.5)">
+        <foreignObject style="text-align:left" pointer-events="none" width="100%" height="100%"
+            requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" overflow="visible">
+            <div xmlns="http://www.w3.org/1999/xhtml"
+                style="align-items:unsafe flex-start;justify-content:unsafe flex-start;width:286px;height:1px;padding-top:610px;margin-left:674px"
+                display="flex">
+                <div style="box-sizing:border-box;text-align:left" font-size="0">
+                    <div style="line-height:1.2;white-space:normal;word-wrap:normal" display="inline-block"
+                        font-size="12" font-family="Helvetica" color="#000" pointer-events="none"><span>
+                            <p dir="ltr" style="line-height:1.2;margin-top:0;margin-bottom:0" font-size="17">
+                                <font font-weight="700" font-style="italic">l</font>
+                                <font font-weight="700" font-style="italic">[m] :</font>base link to front
+                            </p>
+                        </span></div>
+                </div>
+            </div>
+        </foreignObject><text x="674" y="622" font-family="Helvetica" font-size="12">l [m] : base link to front</text>
+    </switch>
+    <path d="M500 603h5q5 0 5 10v25q0 10 5 10h0-2.5q-2.5 0-2.5 10v25q0 10-5 10h-5" fill="none" stroke="#1c1c1c"
+        stroke-width="3" stroke-miterlimit="10" pointer-events="none" />
+    <path fill="#1c1c1c" pointer-events="none"
+        d="M390 496h20v80h-20zM430 496h20v80h-20zM470 496h20v80h-20zM510 496h20v80h-20zM550 496h20v80h-20z" />
+    <path d="M150 814.55l269.9-11.13" fill="none" stroke="#000" stroke-width="3" stroke-miterlimit="10"
+        pointer-events="none" />
+    <path d="M426.65 803.14l-8.81 4.87 2.06-4.59-2.43-4.41z" stroke="#000" stroke-width="3" stroke-miterlimit="10"
+        pointer-events="none" />
+    <path d="M142 525l250.27 70.27" fill="none" stroke="#000" stroke-width="3" stroke-miterlimit="10"
+        pointer-events="none" />
+    <path d="M398.77 597.09l-9.88 1.9 3.38-3.72-.95-4.94z" stroke="#000" stroke-width="3" stroke-miterlimit="10"
+        pointer-events="none" />
+    <switch transform="translate(-.5 -.5)">
+        <foreignObject style="text-align:left" pointer-events="none" width="100%" height="100%"
+            requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" overflow="visible">
+            <div xmlns="http://www.w3.org/1999/xhtml"
+                style="align-items:unsafe center;justify-content:unsafe center;width:128px;height:1px;padding-top:513px;margin-left:1px"
+                display="flex">
+                <div style="box-sizing:border-box;text-align:center" font-size="0">
+                    <div style="line-height:1.2;white-space:normal;word-wrap:normal" display="inline-block"
+                        font-size="12" font-family="Helvetica" color="#000" pointer-events="none">
+                        <font font-size="17">Stop Line</font>
+                    </div>
+                </div>
+            </div>
+        </foreignObject><text x="65" y="517" font-family="Helvetica" font-size="12" text-anchor="middle">Stop
+            Line</text>
+    </switch>
+    <path d="M120 628.78h289.9" fill="none" stroke="#000" stroke-width="3" stroke-miterlimit="10"
+        pointer-events="none" />
+    <path d="M416.65 628.78l-9 4.5 2.25-4.5-2.25-4.5z" stroke="#000" stroke-width="3" stroke-miterlimit="10"
+        pointer-events="none" />
+    <switch transform="translate(-.5 -.5)">
+        <foreignObject style="text-align:left" pointer-events="none" width="100%" height="100%"
+            requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" overflow="visible">
+            <div xmlns="http://www.w3.org/1999/xhtml"
+                style="align-items:unsafe center;justify-content:unsafe center;width:148px;height:1px;padding-top:820px;margin-left:1px"
+                display="flex">
+                <div style="box-sizing:border-box;text-align:center" font-size="0">
+                    <div style="line-height:1.2;white-space:normal;word-wrap:normal" display="inline-block"
+                        font-size="12" font-family="Helvetica" color="#000" pointer-events="none">
+                        <font font-size="17">Pass Judge Point</font>
+                    </div>
+                </div>
+            </div>
+        </foreignObject><text x="75" y="823" font-family="Helvetica" font-size="12" text-anchor="middle">Pass Judge
+            Point</text>
+    </switch>
+    <switch transform="translate(-.5 -.5)">
+        <foreignObject style="text-align:left" pointer-events="none" width="100%" height="100%"
+            requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility" overflow="visible">
+            <div xmlns="http://www.w3.org/1999/xhtml"
+                style="align-items:unsafe center;justify-content:unsafe center;width:128px;height:1px;padding-top:733px;margin-left:1px"
+                display="flex">
+                <div style="box-sizing:border-box;text-align:center" font-size="0">
+                    <div style="line-height:1.2;white-space:normal;word-wrap:normal" display="inline-block"
+                        font-size="12" font-family="Helvetica" color="#000" pointer-events="none">
+                        <font font-size="17">Stop Point</font>
+                    </div>
+                </div>
+            </div>
+        </foreignObject><text x="65" y="737" font-family="Helvetica" font-size="12" text-anchor="middle">Stop
+            Point</text>
+    </switch>
+    <switch><a transform="translate(0 -5)" xlink:href="https://www.diagrams.net/doc/faq/svg-export-text-problems"
+            target="_blank"><text text-anchor="middle" font-size="10" x="50%" y="100%">Viewer does not support full SVG
+                1.1</text></a></switch>
+</svg>

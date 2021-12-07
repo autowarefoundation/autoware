@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<launch>
+  <include file="$(find-pkg-share autoware_global_parameter_loader)/launch/global_params.launch.py"/>
+
+  <arg name="input_route_topic_name" default="/planning/mission_planning/route" />
+  <arg name="input_traffic_light_topic_name" default="/perception/traffic_light_recognition/traffic_signals" />
+  <arg name="external_traffic_light_topic_name" default="/external/traffic_light_recognition/traffic_signals" />
+  <arg name="virtual_traffic_light_topic_name" default="/awapi/tmp/virtual_traffic_light_states" />
+  <arg name="map_topic_name" default="/map/vector_map" />
+
+  <arg name="launch_stop_line" default="true" />
+  <arg name="launch_crosswalk" default="true" />
+  <arg name="launch_traffic_light" default="true" />
+  <arg name="launch_intersection" default="true" />
+  <arg name="launch_blind_spot" default="true" />
+  <arg name="launch_detection_area" default="true" />
+  <arg name="launch_virtual_traffic_light" default="true" />
+  <arg name="launch_occlusion_spot" default="true" />
+  <arg name="launch_no_stopping_area" default="true" />
+
+  <arg name="forward_path_length" default="1000.0" />
+  <arg name="backward_path_length" default="5.0" />
+
+  <arg name="max_accel" default="-3.0" />
+  <arg name="max_jerk" default="-5.0" />
+  <arg name="delay_response_time" default="0.50" />
+
+  <node pkg="behavior_velocity_planner" exec="behavior_velocity_planner_node" name="behavior_velocity_planner" output="screen">
+    <param from="$(find-pkg-share behavior_velocity_planner)/config/blind_spot.param.yaml" />
+    <param from="$(find-pkg-share behavior_velocity_planner)/config/crosswalk.param.yaml" />
+    <param from="$(find-pkg-share behavior_velocity_planner)/config/detection_area.param.yaml" />
+    <param from="$(find-pkg-share behavior_velocity_planner)/config/intersection.param.yaml" />
+    <param from="$(find-pkg-share behavior_velocity_planner)/config/stop_line.param.yaml" />
+    <param from="$(find-pkg-share behavior_velocity_planner)/config/traffic_light.param.yaml" />
+    <param from="$(find-pkg-share behavior_velocity_planner)/config/virtual_traffic_light.param.yaml" />
+    <param from="$(find-pkg-share behavior_velocity_planner)/config/occlusion_spot.param.yaml" />
+    <param from="$(find-pkg-share behavior_velocity_planner)/config/no_stopping_area.param.yaml" />
+
+    <remap from="~/input/path_with_lane_id" to="path_with_lane_id" />
+    <remap from="~/input/vector_map" to="$(var map_topic_name)" />
+    <remap from="~/input/vehicle_odometry" to="/localization/kinematic_state" />
+    <remap from="~/input/dynamic_objects" to="/perception/object_recognition/objects" />
+    <remap from="~/input/no_ground_pointcloud" to="/perception/obstacle_segmentation/pointcloud" />
+    <remap from="~/input/traffic_signals" to="$(var input_traffic_light_topic_name)" />
+    <remap from="~/input/external_traffic_signals" to="$(var external_traffic_light_topic_name)" />
+    <remap from="~/input/virtual_traffic_light_states" to="$(var virtual_traffic_light_topic_name)" />
+    <remap from="~/input/occupancy_grid" to="/sensing/lidar/occupancy_grid" />
+    <remap from="~/output/path" to="path" />
+    <remap from="~/output/stop_reasons" to="/planning/scenario_planning/status/stop_reasons" />
+    <remap from="~/output/infrastructure_commands" to="/planning/scenario_planning/status/infrastructure_commands" />
+    <remap from="~/output/traffic_signal" to="debug/traffic_signal" />
+
+    <param name="launch_stop_line" value="$(var launch_stop_line)" />
+    <param name="launch_crosswalk" value="$(var launch_crosswalk)" />
+    <param name="launch_traffic_light" value="$(var launch_traffic_light)" />
+    <param name="launch_intersection" value="$(var launch_intersection)" />
+    <param name="launch_blind_spot" value="$(var launch_blind_spot)" />
+    <param name="launch_detection_area" value="$(var launch_detection_area)" />
+    <param name="launch_virtual_traffic_light" value="$(var launch_virtual_traffic_light)" />
+    <param name="launch_occlusion_spot" value="$(var launch_occlusion_spot)" />
+    <param name="launch_no_stopping_area" value="$(var launch_no_stopping_area)" />
+
+    <param name="forward_path_length" value="$(var forward_path_length)" />
+    <param name="backward_path_length" value="$(var backward_path_length)" />
+    <param name="max_jerk" value="$(var max_jerk)" />
+    <param name="max_accel" value="$(var max_accel)" />
+    <param name="delay_response_time" value="$(var delay_response_time)" />
+  </node>
+</launch>

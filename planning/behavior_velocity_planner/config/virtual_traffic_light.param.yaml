@@ -1,0 +1,4 @@
+/**:
+  ros__parameters:
+    virtual_traffic_light:
+      max_delay_sec: 3.0
