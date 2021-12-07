@@ -1,0 +1,110 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <Fallback>
+            <ReactiveSequence>
+                <Condition ID="PullOver_Request"/>
+                <Condition ID="PullOver_Ready"/>
+                <Action ID="PullOver_Plan" output="{output}"/>
+            </ReactiveSequence>
+            <ReactiveSequence>
+                <Condition ID="PullOut_Request"/>
+                <Condition ID="PullOut_Ready"/>
+                <Action ID="PullOut_Plan" output="{output}"/>
+            </ReactiveSequence>
+            <ReactiveSequence>
+                <Condition ID="SideShift_Request"/>
+                <Condition ID="SideShift_Ready"/>
+                <Action ID="SideShift_Plan" output="{output}"/>
+            </ReactiveSequence>
+            <ReactiveSequence>
+                <Condition ID="LaneChange_Request"/>
+                <Fallback>
+                    <Condition ID="LaneChange_Ready"/>
+                    <Condition ID="ForceLaneChange_ForceApproval"/>
+                </Fallback>
+                <Action ID="LaneChange_Plan" output="{output}"/>
+            </ReactiveSequence>
+            <ReactiveSequence>
+                <Condition ID="Avoidance_Request"/>
+                <Condition ID="Avoidance_Ready"/>
+                <Action ID="Avoidance_Plan" output="{output}"/>
+            </ReactiveSequence>
+            <Action ID="LaneFollowing_Plan" output="{output}"/>
+        </Fallback>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <BehaviorTree ID="a">
+        <ReactiveFallback>
+            <Condition ID="LaneChange_CheckApproval"/>
+            <KeepRunningUntilFailure>
+                <Action ID="LaneChange_PlanCandidate" output="{output}"/>
+            </KeepRunningUntilFailure>
+        </ReactiveFallback>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <BehaviorTree ID="b">
+        <ReactiveFallback>
+            <Condition ID="Avoidance_CheckApproval"/>
+            <KeepRunningUntilFailure>
+                <Action ID="Avoidance_PlanCandidate" output="{output}"/>
+            </KeepRunningUntilFailure>
+        </ReactiveFallback>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Condition ID="Avoidance_CheckApproval"/>
+        <Action ID="Avoidance_Plan">
+            <output_port name="output" type="behavior_path_planner::BehaviorModuleOutput">desc</output_port>
+        </Action>
+        <Action ID="Avoidance_PlanCandidate">
+            <output_port name="output" type="behavior_path_planner::BehaviorModuleOutput">desc</output_port>
+        </Action>
+        <Condition ID="Avoidance_Ready"/>
+        <Condition ID="Avoidance_Request"/>
+        <Condition ID="ExternalApproval"/>
+        <Condition ID="ForceApproval"/>
+        <Condition ID="ForceLaneChange_ForceApproval"/>
+        <Condition ID="LaneChange_CheckApproval"/>
+        <Action ID="LaneChange_Plan">
+            <output_port name="output" type="behavior_path_planner::BehaviorModuleOutput">desc</output_port>
+        </Action>
+        <Action ID="LaneChange_PlanCandidate">
+            <output_port name="output" type="behavior_path_planner::BehaviorModuleOutput">desc</output_port>
+        </Action>
+        <Condition ID="LaneChange_Ready"/>
+        <Condition ID="LaneChange_Request"/>
+        <Action ID="LaneFollowing_Plan">
+            <output_port name="output" type="boost::optional&lt;autoware_planning_msgs::PathWithLaneId_&lt;std::allocator&lt;void&gt; &gt; &gt;">desc</output_port>
+        </Action>
+        <Action ID="LaneFollowing_PlanCandidate">
+            <output_port name="output_candidate" type="boost::optional&lt;autoware_planning_msgs::PathWithLaneId_&lt;std::allocator&lt;void&gt; &gt; &gt;">desc</output_port>
+        </Action>
+        <Condition ID="LaneFollowing_Ready"/>
+        <Condition ID="LaneFollowing_Request"/>
+        <Action ID="PullOut_Plan">
+            <output_port name="output"/>
+        </Action>
+        <Condition ID="PullOut_Ready"/>
+        <Condition ID="PullOut_Request"/>
+        <Action ID="PullOver_Plan">
+            <output_port name="output" type="behavior_path_planner::BehaviorModuleOutput">desc</output_port>
+        </Action>
+        <Condition ID="PullOver_Ready"/>
+        <Condition ID="PullOver_Request"/>
+        <Condition ID="SideShift_CheckApproval"/>
+        <Action ID="SideShift_Plan">
+            <output_port name="output" type="behavior_path_planner::BehaviorModuleOutput">desc</output_port>
+        </Action>
+        <Action ID="SideShift_PlanCandidate">
+            <output_port name="output" type="behavior_path_planner::BehaviorModuleOutput">desc</output_port>
+        </Action>
+        <Condition ID="SideShift_Ready"/>
+        <Condition ID="SideShift_Request"/>
+        <SubTree ID="SubTree"/>
+        <SubTree ID="a"/>
+        <SubTree ID="b"/>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>

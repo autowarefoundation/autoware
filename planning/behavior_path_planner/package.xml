@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>behavior_path_planner</name>
+  <version>0.1.0</version>
+  <description>The behavior_path_planner package</description>
+
+  <maintainer email="takamasa.horibe@tier4.jp">Takamasa Horibe</maintainer>
+
+  <author email="takamasa.horibe@tier4.jp">Takamasa Horibe</author>
+  <author email="ryohsuke.mitsudome@tier4.jp">mitsudome-r</author>
+  <author email="fumiya.watanabe@tier4.jp">Fumiya Watanabe</author>
+
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <depend>autoware_auto_perception_msgs</depend>
+  <depend>autoware_auto_planning_msgs</depend>
+  <depend>autoware_auto_vehicle_msgs</depend>
+  <depend>autoware_lanelet2_msgs</depend>
+  <depend>autoware_planning_msgs</depend>
+  <depend>autoware_utils</depend>
+  <depend>behaviortree_cpp_v3</depend>
+  <depend>geometry_msgs</depend>
+  <depend>interpolation</depend>
+  <depend>lanelet2_extension</depend>
+  <depend>libboost-dev</depend>
+  <depend>libopencv-dev</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>route_handler</depend>
+  <depend>sensor_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>vehicle_info_util</depend>
+  <depend>visualization_msgs</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

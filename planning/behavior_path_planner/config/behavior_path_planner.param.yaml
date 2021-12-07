@@ -1,0 +1,11 @@
+/**:
+  ros__parameters:
+    backward_path_length: 5.0
+    forward_path_length: 200.0
+    backward_length_buffer_for_end_of_lane: 5.0
+    minimum_lane_change_length: 12.0
+    drivable_area_resolution: 0.1
+    drivable_area_width: 100.0
+    drivable_area_height: 50.0
+    refine_goal_search_radius_range: 7.5
+    intersection_search_distance: 30.0
