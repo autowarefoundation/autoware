@@ -1,0 +1,276 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root version="2.3.8">
+ <tabbed_widget name="Main Window" parent="main_window">
+  <Tab containers="1" tab_name="Lateral Controller">
+   <Container>
+    <DockSplitter orientation="-" count="2" sizes="0.502237;0.497763">
+     <DockSplitter orientation="|" count="3" sizes="0.333333;0.333333;0.333333">
+      <DockArea name="Lateral Controller Info">
+       <plot mode="TimeSeries" style="Lines">
+        <range bottom="-1.152264" top="1.022526" right="118.796638" left="76.172500"/>
+        <limitY/>
+        <curve name="/control/trajectory_follower/lateral/diagnostic/diag_array/data.5" color="#1f77b4">
+         <transform alias="lateral error" name="Scale/Offset">
+          <options value_scale="1.0" time_offset="0" value_offset="0"/>
+         </transform>
+        </curve>
+        <curve name="/control/trajectory_follower/lateral/diagnostic/diag_array/data.8" color="#d62728">
+         <transform alias="yaw error" name="Scale/Offset">
+          <options value_scale="1.0" time_offset="0" value_offset="0"/>
+         </transform>
+        </curve>
+        <curve name="/control/trajectory_follower/lateral/diagnostic/diag_array/data.0" color="#1ac938">
+         <transform alias="steer cmd (final)" name="Scale/Offset">
+          <options value_scale="1.0" time_offset="0" value_offset="0"/>
+         </transform>
+        </curve>
+        <curve name="/control/trajectory_follower/lateral/diagnostic/diag_array/data.2" color="#ff7f0e">
+         <transform alias="steer cmd (FF-filtered)" name="Scale/Offset">
+          <options value_scale="1.0" time_offset="0" value_offset="0"/>
+         </transform>
+        </curve>
+        <curve name="/control/trajectory_follower/lateral/diagnostic/diag_array/data.3" color="#f14cc1">
+         <transform alias="steer cmd (FF-raw)" name="Scale/Offset">
+          <options value_scale="1.0" time_offset="0" value_offset="0"/>
+         </transform>
+        </curve>
+        <curve name="/control/trajectory_follower/lateral/diagnostic/diag_array/data.4" color="#9467bd">
+         <transform alias="steer measured" name="Scale/Offset">
+          <options value_scale="1.0" time_offset="0" value_offset="0"/>
+         </transform>
+        </curve>
+        <curve name="/control/trajectory_follower/lateral/diagnostic/diag_array/data.1" color="#17becf">
+         <transform alias="steer cmd (mpc-raw)" name="Scale/Offset">
+          <options value_scale="1.0" time_offset="0" value_offset="0"/>
+         </transform>
+        </curve>
+       </plot>
+      </DockArea>
+      <DockArea name="Velocity">
+       <plot mode="TimeSeries" style="Lines">
+        <range bottom="-0.069444" top="2.847222" right="118.796638" left="76.172500"/>
+        <limitY/>
+        <curve name="/control/trajectory_follower/lateral/diagnostic/diag_array/data.9" color="#1f77b4">
+         <transform alias="trajectory velocity" name="Scale/Offset">
+          <options value_scale="1.0" time_offset="0" value_offset="0"/>
+         </transform>
+        </curve>
+        <curve name="/control/trajectory_follower/lateral/diagnostic/diag_array/data.10" color="#d62728">
+         <transform alias="current velocity" name="Scale/Offset">
+          <options value_scale="1.0" time_offset="0" value_offset="0"/>
+         </transform>
+        </curve>
+       </plot>
+      </DockArea>
+      <DockArea name="path curvature">
+       <plot mode="TimeSeries" style="Lines">
+        <range bottom="-0.460804" top="0.984813" right="118.796638" left="76.172500"/>
+        <limitY/>
+        <curve name="/control/trajectory_follower/lateral/diagnostic/diag_array/data.14" color="#d62728">
+         <transform alias="smoothed" name="Scale/Offset">
+          <options value_scale="1.0" time_offset="0" value_offset="0"/>
+         </transform>
+        </curve>
+        <curve name="/control/trajectory_follower/lateral/diagnostic/diag_array/data.15" color="#1f77b4">
+         <transform alias="raw" name="Scale/Offset">
+          <options value_scale="1.0" time_offset="0" value_offset="0"/>
+         </transform>
+        </curve>
+       </plot>
+      </DockArea>
+     </DockSplitter>
+     <DockSplitter orientation="|" count="3" sizes="0.33211;0.33578;0.33211">
+      <DockArea name="angular-velocity converted from">
+       <plot mode="TimeSeries" style="Lines">
+        <range bottom="-0.045019" top="1.491571" right="118.796638" left="76.172500"/>
+        <limitY/>
+        <curve name="/control/trajectory_follower/lateral/diagnostic/diag_array/data.11" color="#1ac938">
+         <transform alias="steering cmd" name="Scale/Offset">
+          <options value_scale="1.0" time_offset="0" value_offset="0"/>
+         </transform>
+        </curve>
+        <curve name="/control/trajectory_follower/lateral/diagnostic/diag_array/data.12" color="#ff7f0e">
+         <transform alias="steering measured " name="Scale/Offset">
+          <options value_scale="1.0" time_offset="0" value_offset="0"/>
+         </transform>
+        </curve>
+        <curve name="/control/trajectory_follower/lateral/diagnostic/diag_array/data.13" color="#d62728">
+         <transform alias="path curvature (smoothed)" name="Scale/Offset">
+          <options value_scale="1.0" time_offset="0" value_offset="0"/>
+         </transform>
+        </curve>
+        <curve name="/control/trajectory_follower/lateral/diagnostic/diag_array/data.17" color="#1f77b4">
+         <transform alias="steering predicted" name="Scale/Offset">
+          <options value_scale="1.0" time_offset="0" value_offset="0"/>
+         </transform>
+        </curve>
+       </plot>
+      </DockArea>
+      <DockArea name="yaw">
+       <plot mode="TimeSeries" style="Lines">
+        <range bottom="-3.295688" top="3.281428" right="118.796638" left="76.172500"/>
+        <limitY/>
+        <curve name="/control/trajectory_follower/lateral/diagnostic/diag_array/data.7" color="#1ac938">
+         <transform alias="desired yaw" name="Scale/Offset">
+          <options value_scale="1.0" time_offset="0" value_offset="0"/>
+         </transform>
+        </curve>
+        <curve name="/control/trajectory_follower/lateral/diagnostic/diag_array/data.6" color="#ff7f0e">
+         <transform alias="current yaw" name="Scale/Offset">
+          <options value_scale="1.0" time_offset="0" value_offset="0"/>
+         </transform>
+        </curve>
+       </plot>
+      </DockArea>
+      <DockArea name="control mode (1: Auto, 2: Manual, 3: Disengaged, 4: Not Ready)">
+       <plot mode="TimeSeries" style="Lines">
+        <range bottom="0.900000" top="1.100000" right="118.791728" left="76.166273"/>
+        <limitY/>
+        <curve name="/vehicle/state_report/mode" color="#1f77b4"/>
+       </plot>
+      </DockArea>
+     </DockSplitter>
+    </DockSplitter>
+   </Container>
+  </Tab>
+  <Tab containers="1" tab_name="Longitudinal Controller">
+   <Container>
+    <DockSplitter orientation="-" count="2" sizes="0.502237;0.497763">
+     <DockSplitter orientation="|" count="2" sizes="0.498778;0.501222">
+      <DockArea name="Longitudinal Controller Info">
+       <plot mode="TimeSeries" style="Lines">
+        <range bottom="-46.710209" top="91.855136" right="109.929097" left="76.129089"/>
+        <limitY/>
+        <curve name="/control/trajectory_follower/longitudinal/diagnostic/diag_array/data.3" color="#1ac938">
+         <transform alias="FF" name="Scale/Offset">
+          <options value_scale="1.0" time_offset="0" value_offset="0"/>
+         </transform>
+        </curve>
+        <curve name="/control/trajectory_follower/longitudinal/diagnostic/diag_array/data.14" color="#ff7f0e">
+         <transform alias="FF+FB" name="Scale/Offset">
+          <options value_scale="1.0" time_offset="0" value_offset="0"/>
+         </transform>
+        </curve>
+        <curve name="/control/trajectory_follower/longitudinal/diagnostic/diag_array/data.19" color="#f14cc1">
+         <transform alias="FB-P" name="Scale/Offset">
+          <options value_scale="1.0" time_offset="0" value_offset="0"/>
+         </transform>
+        </curve>
+        <curve name="/control/trajectory_follower/longitudinal/diagnostic/diag_array/data.20" color="#9467bd">
+         <transform alias="FB-I" name="Scale/Offset">
+          <options value_scale="1.0" time_offset="0" value_offset="0"/>
+         </transform>
+        </curve>
+        <curve name="/control/trajectory_follower/longitudinal/diagnostic/diag_array/data.21" color="#17becf">
+         <transform alias="FB-D" name="Scale/Offset">
+          <options value_scale="1.0" time_offset="0" value_offset="0"/>
+         </transform>
+        </curve>
+        <curve name="/control/trajectory_follower/longitudinal/diagnostic/diag_array/data.15" color="#bcbd22">
+         <transform alias="acc filtered" name="Scale/Offset">
+          <options value_scale="1.0" time_offset="0" value_offset="0"/>
+         </transform>
+        </curve>
+        <curve name="/control/trajectory_follower/longitudinal/diagnostic/diag_array/data.16" color="#1f77b4">
+         <transform alias="jerk filtered" name="Scale/Offset">
+          <options value_scale="1.0" time_offset="0" value_offset="0"/>
+         </transform>
+        </curve>
+        <curve name="/control/trajectory_follower/longitudinal/diagnostic/diag_array/data.17" color="#d62728">
+         <transform alias="slope added" name="Scale/Offset">
+          <options value_scale="1.0" time_offset="0" value_offset="0"/>
+         </transform>
+        </curve>
+        <curve name="/control/trajectory_follower/longitudinal/diagnostic/diag_array/data.18" color="#1ac938">
+         <transform alias="final" name="Scale/Offset">
+          <options value_scale="1.0" time_offset="0" value_offset="0"/>
+         </transform>
+        </curve>
+        <curve name="/control/trajectory_follower/longitudinal/diagnostic/diag_array/data.25" color="#ff7f0e">
+         <transform alias="calculated" name="Scale/Offset">
+          <options value_scale="1.0" time_offset="0" value_offset="0"/>
+         </transform>
+        </curve>
+       </plot>
+      </DockArea>
+      <DockArea name="State">
+       <plot mode="TimeSeries" style="Lines">
+        <range bottom="-0.050000" top="2.050000" right="109.929097" left="76.129089"/>
+        <limitY/>
+        <curve name="/control/trajectory_follower/longitudinal/diagnostic/diag_array/data.13" color="#d62728">
+         <transform alias="0:Drive 1:Stopping 2:Stopped 3:Emergency" name="Scale/Offset">
+          <options value_scale="1.0" time_offset="0" value_offset="0"/>
+         </transform>
+        </curve>
+       </plot>
+      </DockArea>
+     </DockSplitter>
+     <DockArea name="Velocity">
+      <plot mode="TimeSeries" style="Lines">
+       <range bottom="-0.070625" top="2.895625" right="109.929097" left="76.129089"/>
+       <limitY/>
+       <curve name="/control/trajectory_follower/longitudinal/diagnostic/diag_array/data.2" color="#17becf">
+        <transform alias="target" name="Scale/Offset">
+         <options value_scale="1.0" time_offset="0" value_offset="0"/>
+        </transform>
+       </curve>
+       <curve name="/control/trajectory_follower/longitudinal/diagnostic/diag_array/data.1" color="#9467bd">
+        <transform alias="current" name="Scale/Offset">
+         <options value_scale="1.0" time_offset="0" value_offset="0"/>
+        </transform>
+       </curve>
+       <curve name="/control/trajectory_follower/longitudinal/diagnostic/diag_array/data.4" color="#bcbd22">
+        <transform alias="closest" name="Scale/Offset">
+         <options value_scale="1.0" time_offset="0" value_offset="0"/>
+        </transform>
+       </curve>
+       <curve name="/control/trajectory_follower/longitudinal/diagnostic/diag_array/data.24" color="#1f77b4">
+        <transform alias="predicted" name="Scale/Offset">
+         <options value_scale="1.0" time_offset="0" value_offset="0"/>
+        </transform>
+       </curve>
+      </plot>
+     </DockArea>
+    </DockSplitter>
+   </Container>
+  </Tab>
+  <currentTabIndex index="0"/>
+ </tabbed_widget>
+ <use_relative_time_offset enabled="1"/>
+ <!-- - - - - - - - - - - - - - - -->
+ <!-- - - - - - - - - - - - - - - -->
+ <Plugins>
+  <plugin ID="DataLoad CSV">
+   <default time_axis=""/>
+  </plugin>
+  <plugin ID="DataLoad ROS2 bags">
+   <use_header_stamp value="false"/>
+   <discard_large_arrays value="true"/>
+   <max_array_size value="99"/>
+  </plugin>
+  <plugin ID="DataLoad ULog"/>
+  <plugin ID="ROS2 Topic Subscriber">
+   <use_header_stamp value="false"/>
+   <discard_large_arrays value="false"/>
+   <max_array_size value="true"/>
+   <selected_topics>
+    <topic name="/control/trajectory_follower/longitudinal/diagnostic"/>
+    <topic name="/control/trajectory_follower/lateral/diagnostic"/>
+    <topic name="/vehicle/state_report"/>
+   </selected_topics>
+  </plugin>
+  <plugin ID="UDP Server"/>
+  <plugin ID="WebSocket Server"/>
+  <plugin ID="ZMQ Subscriber"/>
+  <plugin status="idle" ID="CSV Exporter"/>
+  <plugin status="idle" ID="ROS2 Topic Re-Publisher"/>
+ </Plugins>
+ <!-- - - - - - - - - - - - - - - -->
+ <previouslyLoaded_Datafiles/>
+ <previouslyLoaded_Streamer name="ROS2 Topic Subscriber"/>
+ <!-- - - - - - - - - - - - - - - -->
+ <customMathEquations/>
+ <snippets/>
+ <!-- - - - - - - - - - - - - - - -->
+</root>
+
