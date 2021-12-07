@@ -1,24 +1,22 @@
-# box_crop_filter
+# crop_box_filter
 
 ## Purpose
 
-The `box_crop_filter` is a node that removes points with in a given box region. This filter is used to remove the points that hit the vehicle itself.
+The `crop_box_filter` is a node that removes points with in a given box region. This filter is used to remove the points that hit the vehicle itself.
 
 ## Inner-workings / Algorithms
 
+`pcl::CropBox` is used, which filters all points inside a given box.
+
 ## Inputs / Outputs
 
-| Name             | Type                            | Description      |
-| ---------------- | ------------------------------- | ---------------- |
-| `~/input/points` | `sensor_msgs::msg::PointCloud2` | reference points |
-
-### Output
-
-| Name              | Type                            | Description     |
-| ----------------- | ------------------------------- | --------------- |
-| `~/output/points` | `sensor_msgs::msg::PointCloud2` | filtered points |
+This implementation inherit `pointcloud_preprocessor::Filter` class, please refer [README](../README.md).
 
 ## Parameters
+
+### Node Parameters
+
+This implementation inherit `pointcloud_preprocessor::Filter` class, please refer [README](../README.md).
 
 ### Core Parameters
 
