@@ -1,0 +1,5 @@
+/**:
+  ros__parameters:
+    # -- publishing period --
+    control_period: 0.033
+    double curvature_interval_length_: 5.0
