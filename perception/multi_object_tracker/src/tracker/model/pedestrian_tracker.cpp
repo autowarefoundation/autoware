@@ -401,9 +401,15 @@ bool PedestrianTracker::getTrackedObject(
     P(IDX::WZ, IDX::WZ);
 
   // set shape
-  object.shape.dimensions.x = bounding_box_.width;
-  object.shape.dimensions.y = bounding_box_.length;
-  object.shape.dimensions.z = bounding_box_.height;
+  if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {
+    object.shape.dimensions.x = bounding_box_.width;
+    object.shape.dimensions.y = bounding_box_.length;
+    object.shape.dimensions.z = bounding_box_.height;
+  } else if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::CYLINDER) {
+    object.shape.dimensions.x = cylinder_.width;
+    object.shape.dimensions.y = cylinder_.width;
+    object.shape.dimensions.z = cylinder_.height;
+  }
 
   return true;
 }
