@@ -1,0 +1,15 @@
+<launch>
+    <!--select run mode for analyze trajectory-->
+  <arg name="run_mode" default="final_output" description="options: final_output, avoidance,surround_obstacle,obstacle_stop"/>
+  <arg name="input/trajectory" default="/planning/scenario_planning/trajectory" />
+  <let name="input/trajectory" value="/planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner/trajectory" if="$(eval &quot;'$(var run_mode)'=='avoidance'&quot;)"/>
+  <let name="input/trajectory" value="/planning/scenario_planning/lane_driving/motion_planning/surround_obstacle_checker/trajectory" if="$(eval &quot;'$(var run_mode)'=='surround_obstacle'&quot;)"/>
+  <let name="input/trajectory" value="/planning/scenario_planning/lane_driving/trajectory" if="$(eval &quot;'$(var run_mode)'=='obstacle_stop'&quot;)"/>
+  <node name="planning_error_monitor" exec="planning_error_monitor" pkg="planning_error_monitor" output="screen">
+    <remap from="~/input/trajectory" to="$(var input/trajectory)" />
+    <param name="error_interval" value="100.0" />
+    <param name="error_curvature" value="2.0" />
+    <param name="error_sharp_angle" value="0.785398"/>
+    <param name="ignore_too_close_points" value="0.01" />
+  </node>
+</launch>

@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>planning_error_monitor</name>
+  <version>0.1.0</version>
+  <description>ros node for monitoring planning error </description>
+
+  <maintainer email="yutaka.shimizu@tier4.jp">Yutaka Shimizu</maintainer>
+
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <depend>autoware_auto_planning_msgs</depend>
+  <depend>autoware_utils</depend>
+  <depend>diagnostic_updater</depend>
+  <depend>geometry_msgs</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
+  <depend>visualization_msgs</depend>
+
+  <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
