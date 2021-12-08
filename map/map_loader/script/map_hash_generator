@@ -31,11 +31,15 @@ class MapHashGenerator(Node):
         super().__init__("map_hash_generator")
         self.lanelet_path = self.declare_parameter("lanelet2_map_path", "").value
         self.lanelet_text = self.load_lanelet_text(self.lanelet_path)
-        self.lanelet_hash = self.generate_file_hash(self.lanelet_text)
+        self.lanelet_hash = self.generate_lanelet_file_hash(self.lanelet_text)
+
+        self.pcd_map_path = self.declare_parameter("pointcloud_map_path", "").value
+        self.pcd_map_hash = self.generate_pcd_file_hash(self.pcd_map_path)
 
         qos_profile = QoSProfile(depth=1, durability=QoSDurabilityPolicy.TRANSIENT_LOCAL)
         msg = MapHash()
         msg.lanelet = self.lanelet_hash
+        msg.pcd = self.pcd_map_hash
         self.pub = self.create_publisher(MapHash, "/api/autoware/get/map/info/hash", qos_profile)
         self.pub.publish(msg)
 
@@ -54,8 +58,43 @@ class MapHashGenerator(Node):
         return path.read_text() if path.is_file() else ""
 
     @staticmethod
-    def generate_file_hash(data):
+    def generate_lanelet_file_hash(data):
         return hashlib.sha256(data.encode()).hexdigest() if data else ""
+
+    def update_hash(self, m, path):
+        try:
+            with open(path, "rb") as pcd_file:
+                m.update(pcd_file.read())
+        except FileNotFoundError as e:
+            self.get_logger().error(e)
+            return False
+        return True
+
+    def generate_pcd_file_hash(self, path):
+        path = pathlib.Path(path)
+        if path.is_file():
+            if not path.suffix == ".pcd":
+                self.get_logger().error(f"[{path}] is not pcd file")
+                return ""
+            m = hashlib.sha256()
+            if not self.update_hash(m, path):
+                return ""
+            return m.hexdigest()
+
+        if path.is_dir():
+            m = hashlib.sha256()
+            for pcd_file_path in sorted(path.iterdir()):
+                if not pcd_file_path.suffix == ".pcd":
+                    continue
+                if not self.update_hash(m, pcd_file_path):
+                    return ""
+            if m.hexdigest() == hashlib.sha256().hexdigest():
+                self.get_logger().error(f"there are no pcd files in [{path}]")
+                return ""
+            return m.hexdigest()
+
+        self.get_logger().error(f"[{path}] is neither file nor directory")
+        return ""
 
 
 def main(args=None):
