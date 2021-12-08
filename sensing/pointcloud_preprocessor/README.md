@@ -55,10 +55,14 @@ Detail description of each filter's algorithm is in the following links.
 
 ## Assumptions / Known limits
 
+`pointcloud_preprocessor::Filter` is implemented based on pcl_perception [1] because of [this issue](https://github.com/ros-perception/perception_pcl/issues/9).
+
 ## (Optional) Error detection and handling
 
 ## (Optional) Performance characterization
 
-## (Optional) References/External links
+## References/External links
+
+[1] <https://github.com/ros-perception/perception_pcl/blob/ros2/pcl_ros/src/pcl_ros/filters/filter.cpp>
 
 ## (Optional) Future extensions / Unimplemented parts
