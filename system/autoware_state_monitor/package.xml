@@ -25,7 +25,6 @@
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2_ros</depend>
 
-  <exec_depend>autoware_lanelet2_msgs</exec_depend>
   <exec_depend>autoware_perception_msgs</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
 

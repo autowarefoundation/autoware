@@ -1,4 +1,0 @@
-std_msgs/Header header
-autoware_control_msgs/ControlCommand control
-autoware_vehicle_msgs/Shift shift
-int32 emergency

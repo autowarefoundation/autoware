@@ -18,8 +18,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ActuationStatus.msg"
   "msg/ActuationStatusStamped.msg"
   "msg/BatteryStatus.msg"
-  "msg/Engage.msg"
-  "msg/VehicleCommand.msg"
   "msg/Shift.msg"
   "msg/ShiftStamped.msg"
   "msg/ControlMode.msg"
@@ -27,8 +25,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Steering.msg"
   "msg/SteeringWheelStatusStamped.msg"
   "msg/VehicleEmergencyStamped.msg"
-  "msg/RawVehicleCommand.msg"
-  "msg/RawControlCommand.msg"
   "srv/UpdateAccelBrakeMap.srv"
   DEPENDENCIES std_msgs geometry_msgs autoware_control_msgs
 )

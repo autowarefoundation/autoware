@@ -22,7 +22,7 @@ pointcloud_map_loader loads PointCloud file and publishes the map data as sensor
 
 ### Feature
 
-lanelet2_map_loader loads Lanelet2 file and publishes the map data as autoware_lanelet2_msgs/MapBin message.
+lanelet2_map_loader loads Lanelet2 file and publishes the map data as autoware_auto_mapping_msgs/HADMapBin message.
 The node projects lan/lon coordinates into MGRS coordinates.
 
 ### How to run
@@ -31,7 +31,7 @@ The node projects lan/lon coordinates into MGRS coordinates.
 
 ### Published Topics
 
-- ~output/lanelet2_map (autoware_lanelet2_msgs/MapBin) : Binary data of loaded Lanelet2 Map
+- ~output/lanelet2_map (autoware_auto_mapping_msgs/HADMapBin) : Binary data of loaded Lanelet2 Map
 
 ---
 
@@ -39,7 +39,7 @@ The node projects lan/lon coordinates into MGRS coordinates.
 
 ### Feature
 
-lanelet2_map_visualization visualizes autoware_lanelet2_msgs/MapBin messages into visualization_msgs/MarkerArray.
+lanelet2_map_visualization visualizes autoware_auto_mapping_msgs/HADMapBin messages into visualization_msgs/MarkerArray.
 
 ### How to Run
 
@@ -47,7 +47,7 @@ lanelet2_map_visualization visualizes autoware_lanelet2_msgs/MapBin messages int
 
 ### Subscribed Topics
 
-- ~input/lanelet2_map (autoware_lanelet2_msgs/MapBin) : binary data of Lanelet2 Map
+- ~input/lanelet2_map (autoware_auto_mapping_msgs/HADMapBin) : binary data of Lanelet2 Map
 
 ### Published Topics
 
