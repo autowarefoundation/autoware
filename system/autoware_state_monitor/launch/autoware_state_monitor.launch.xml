@@ -19,6 +19,7 @@
   <!-- Parameter -->
   <arg name="update_rate" default="10.0" />
   <arg name="th_arrived_distance_m" default="1.0" />
+  <arg name="th_arrived_angle_deg" default="45.0" />
   <arg name="th_stopped_time_sec" default="1.0" />
   <arg name="th_stopped_velocity_mps" default="0.01" />
   <arg name="disengage_on_route" default="true" />

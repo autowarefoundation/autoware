@@ -32,6 +32,16 @@ double calcDistance2d(const geometry_msgs::msg::Pose & p1, const geometry_msgs::
   return calcDistance2d(p1.position, p2.position);
 }
 
+bool isValidAngle(
+  const geometry_msgs::msg::Pose & current_pose, const geometry_msgs::msg::Pose & ref_pose,
+  const double th_angle_rad)
+{
+  const double yaw_curr = tf2::getYaw(current_pose.orientation);
+  const double yaw_ref = tf2::getYaw(ref_pose.orientation);
+  const double yaw_diff = autoware_utils::normalizeRadian(yaw_curr - yaw_ref);
+  return std::fabs(yaw_diff) < th_angle_rad;
+}
+
 bool isNearGoal(
   const geometry_msgs::msg::Pose & current_pose, const geometry_msgs::msg::Pose & goal_pose,
   const double th_dist)
@@ -175,12 +185,14 @@ bool StateMachine::isOverridden() const { return !isEngaged(); }
 
 bool StateMachine::hasArrivedGoal() const
 {
+  const auto is_valid_goal_angle = isValidAngle(
+    state_input_.current_pose->pose, *state_input_.goal_pose, state_param_.th_arrived_angle);
   const auto is_near_goal = isNearGoal(
     state_input_.current_pose->pose, *state_input_.goal_pose, state_param_.th_arrived_distance_m);
   const auto is_stopped =
     isStopped(state_input_.odometry_buffer, state_param_.th_stopped_velocity_mps);
 
-  if (is_near_goal && is_stopped) {
+  if (is_valid_goal_angle && is_near_goal && is_stopped) {
     return true;
   }
 

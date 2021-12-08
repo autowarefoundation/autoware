@@ -18,6 +18,8 @@
 #include "autoware_state_monitor/autoware_state.hpp"
 #include "autoware_state_monitor/config.hpp"
 #include "autoware_state_monitor/module_name.hpp"
+#include "autoware_utils/math/normalization.hpp"
+#include "autoware_utils/math/unit_conversion.hpp"
 
 #include <rclcpp/time.hpp>
 
@@ -28,6 +30,8 @@
 #include <autoware_auto_vehicle_msgs/msg/engage.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
+
+#include <tf2/utils.h>
 
 #include <deque>
 #include <string>
@@ -56,6 +60,7 @@ struct StateInput
 struct StateParam
 {
   double th_arrived_distance_m;
+  double th_arrived_angle;
   double th_stopped_time_sec;
   double th_stopped_velocity_mps;
 };

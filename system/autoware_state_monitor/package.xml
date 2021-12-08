@@ -13,6 +13,7 @@
   <depend>autoware_auto_planning_msgs</depend>
   <depend>autoware_auto_system_msgs</depend>
   <depend>autoware_auto_vehicle_msgs</depend>
+  <depend>autoware_utils</depend>
   <depend>diagnostic_updater</depend>
   <depend>fmt</depend>
   <depend>geometry_msgs</depend>
