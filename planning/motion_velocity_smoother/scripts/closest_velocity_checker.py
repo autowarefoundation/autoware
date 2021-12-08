@@ -23,6 +23,7 @@ from autoware_auto_planning_msgs.msg import Trajectory
 from autoware_auto_vehicle_msgs.msg import Engage
 from autoware_auto_vehicle_msgs.msg import VelocityReport
 from autoware_debug_msgs.msg import Float32MultiArrayStamped
+from autoware_debug_msgs.msg import Float32Stamped
 from autoware_planning_msgs.msg import VelocityLimit
 from geometry_msgs.msg import Pose
 from nav_msgs.msg import Odometry
@@ -57,6 +58,7 @@ class VelocityChecker(Node):
         self.vehicle_engage = None
         self.external_v_lim = np.nan
         self.localization_twist_vx = np.nan
+        self.distance_to_stopline = np.nan
         self.vehicle_twist_vx = np.nan
         self.self_pose = Pose()
         self.data_arr = [np.nan] * DATA_NUM
@@ -132,6 +134,14 @@ class VelocityChecker(Node):
             VelocityReport, "/vehicle/status/velocity_status", self.CallBackVehicleTwist, 1
         )
 
+        # distance_to_stopline
+        self.pub12 = self.create_subscription(
+            Float32Stamped,
+            scenario + "/motion_velocity_smoother/distance_to_stopline",
+            self.CallBackDistanceToStopline,
+            1,
+        )
+
         # publish data
         self.pub_v_arr = self.create_publisher(Float32MultiArrayStamped, "closest_speeds", 1)
 
@@ -147,9 +157,10 @@ class VelocityChecker(Node):
             self.get_logger().info(
                 "| Map Limit | Behavior | Obs Avoid | Obs Stop | External Lim | LatAcc Filtered "
                 "| Optimized | Control VelCmd | Control AccCmd | Vehicle VelCmd | Vehicle AccCmd "
-                "| AW Engage | VC Engage | Localization Vel | Vehicle Vel | [km/h]"
+                "| AW Engage | VC Engage | Localization Vel | Vehicle Vel | [km/h] | Distance [m] "
             )  # noqa: E501
         mps2kmph = 3.6
+        distance_to_stopline = self.distance_to_stopline
         vel_map_lim = self.data_arr[LANE_CHANGE] * mps2kmph
         vel_behavior = self.data_arr[BEHAVIOR_VELOCITY] * mps2kmph
         vel_obs_avoid = self.data_arr[OBSTACLE_AVOID] * mps2kmph
@@ -176,7 +187,7 @@ class VelocityChecker(Node):
         self.get_logger().info(
             "| {0: 9.2f} | {1: 8.2f} | {2: 9.2f} | {3: 8.2f} | {4: 12.2f} "
             "| {5: 15.2f} | {6: 9.2f} | {7: 14.2f} | {8: 14.2f} | {9: 14.2f} | {10: 14.2f} "
-            "| {11:>9s} | {12:>9s} | {13: 16.2f} | {14: 11.2f} |".format(  # noqa: E501
+            "| {11:>9s} | {12:>9s} | {13: 16.2f} | {14: 11.2f} |        | {15: 10.2f}".format(  # noqa: E501
                 vel_map_lim,
                 vel_behavior,
                 vel_obs_avoid,
@@ -192,6 +203,7 @@ class VelocityChecker(Node):
                 vehicle_engage,
                 vel_localization,
                 vel_vehicle,
+                distance_to_stopline,
             )
         )
         self.count += 1
@@ -216,6 +228,9 @@ class VelocityChecker(Node):
 
     def CallBackVehicleTwist(self, msg):
         self.vehicle_twist_vx = msg.longitudinal_velocity
+
+    def CallBackDistanceToStopline(self, msg):
+        self.distance_to_stopline = msg.data
 
     def CallBackBehaviorPathWLid(self, msg):
         # self.get_logger().info('LANE_CHANGE called')
