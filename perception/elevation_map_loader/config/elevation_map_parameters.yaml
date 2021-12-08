@@ -26,3 +26,5 @@ pcl_grid_map_extraction:
   grid_map:
     min_num_points_per_cell: 3
     resolution: 0.3
+    height_type: 1
+    height_thresh: 1.0

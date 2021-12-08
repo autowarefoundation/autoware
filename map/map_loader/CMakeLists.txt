@@ -26,16 +26,6 @@ rclcpp_components_register_node(pointcloud_map_loader_node
   EXECUTABLE pointcloud_map_loader
 )
 
-ament_auto_add_library(elevation_map_loader_node SHARED
-  src/elevation_map_loader/elevation_map_loader_node.cpp
-)
-target_link_libraries(elevation_map_loader_node ${PCL_LIBRARIES})
-
-rclcpp_components_register_node(elevation_map_loader_node
-  PLUGIN "ElevationMapLoaderNode"
-  EXECUTABLE elevation_map_loader
-)
-
 ament_auto_add_library(lanelet2_map_loader_node SHARED
   src/lanelet2_map_loader/lanelet2_map_loader_node.cpp
 )
@@ -66,6 +56,4 @@ endif()
 
 ament_auto_package(INSTALL_TO_SHARE
   launch
-  config
-  data
 )

@@ -1,27 +1,28 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>map_loader</name>
+  <name>elevation_map_loader</name>
   <version>0.1.0</version>
   <description>The map_loader package</description>
-  <maintainer email="ryohsuke.mitsudome@tier4.jp">mitsudome-r</maintainer>
-  <maintainer email="kenji.miyake@tier4.jp">Kenji Miyake</maintainer>
+  <maintainer email="kosuke.takeuchi@tier4.jp">Kosuke Takeuchi</maintainer>
+  <maintainer email="taichi.higashide@tier4.jp">Taichi Higashide</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
   <depend>autoware_auto_mapping_msgs</depend>
+  <depend>autoware_external_api_msgs</depend>
   <depend>autoware_utils</depend>
-  <depend>geometry_msgs</depend>
+  <depend>grid_map_cv</depend>
+  <depend>grid_map_pcl</depend>
+  <depend>grid_map_ros</depend>
   <depend>lanelet2_extension</depend>
   <depend>libpcl-all-dev</depend>
   <depend>pcl_conversions</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
-  <depend>std_msgs</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2_ros</depend>
-  <depend>visualization_msgs</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>
