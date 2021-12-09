@@ -7,11 +7,11 @@ on:
 
 jobs:
   get-self-packages:
-    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-get-self-packages.yaml@tier4/proposal
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-get-self-packages.yaml@6a086d5eac5effbed9876049233213f5cd358914
 
   build-and-test:
     needs: get-self-packages
-    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-colcon-build-and-test.yaml@tier4/proposal
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-colcon-build-and-test.yaml@6a086d5eac5effbed9876049233213f5cd358914
     with:
       rosdistro: galactic
       build-depends-repos: build_depends.repos
@@ -19,7 +19,7 @@ jobs:
 
   build-and-test-arm64:
     needs: get-self-packages
-    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-colcon-build-and-test.yaml@tier4/proposal
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-colcon-build-and-test.yaml@6a086d5eac5effbed9876049233213f5cd358914
     with:
       os: ARM64
       rosdistro: galactic

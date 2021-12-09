@@ -5,16 +5,16 @@ on:
 
 jobs:
   get-modified-packages:
-    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-get-modified-packages.yaml@tier4/proposal
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-get-modified-packages.yaml@6a086d5eac5effbed9876049233213f5cd358914
     with:
-      script-ref: tier4/proposal
+      script-ref: 6a086d5eac5effbed9876049233213f5cd358914
 
   get-modified-source-files:
-    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-get-modified-source-files.yaml@tier4/proposal
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-get-modified-source-files.yaml@6a086d5eac5effbed9876049233213f5cd358914
 
   build-and-test:
     needs: get-modified-packages
-    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-colcon-build-and-test.yaml@tier4/proposal
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-colcon-build-and-test.yaml@6a086d5eac5effbed9876049233213f5cd358914
     with:
       rosdistro: galactic
       build-depends-repos: build_depends.repos
@@ -22,9 +22,9 @@ jobs:
 
   clang-tidy:
     needs: [get-modified-source-files, build-and-test]
-    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-clang-tidy.yaml@tier4/proposal
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-clang-tidy.yaml@6a086d5eac5effbed9876049233213f5cd358914
     with:
-      script-ref: tier4/proposal
+      script-ref: 6a086d5eac5effbed9876049233213f5cd358914
       rosdistro: galactic
       build-depends-repos: build_depends.repos
       target-files: ${{ needs.get-modified-source-files.outputs.modified-source-files }}

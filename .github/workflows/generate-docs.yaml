@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - tier4/proposal
+      - 6a086d5eac5effbed9876049233213f5cd358914
     paths:
       - "mkdocs.yaml"
       - "**/*.md"
@@ -21,13 +21,13 @@ on:
 
 jobs:
   get-docs-version-name:
-    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-get-docs-version-name.yaml@tier4/proposal
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-get-docs-version-name.yaml@6a086d5eac5effbed9876049233213f5cd358914
 
   generate-docs:
-    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-generate-docs.yaml@tier4/proposal
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-generate-docs.yaml@6a086d5eac5effbed9876049233213f5cd358914
     needs: get-docs-version-name
     with:
-      script-ref: tier4/proposal
+      script-ref: 6a086d5eac5effbed9876049233213f5cd358914
       mkdocs-yaml: mkdocs.yaml
       version-name: ${{ needs.get-docs-version-name.outputs.version-name }}
     secrets:

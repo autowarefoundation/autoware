@@ -9,6 +9,6 @@ on:
 
 jobs:
   semantic-pull-request:
-    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-semantic-pull-request.yaml@tier4/proposal
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-semantic-pull-request.yaml@6a086d5eac5effbed9876049233213f5cd358914
     secrets:
       token: ${{ secrets.GITHUB_TOKEN }}
