@@ -588,8 +588,9 @@ bool isInLanelet(
   const geometry_msgs::msg::Pose & current_pose, const lanelet::ConstLanelet & lanelet,
   const double radius)
 {
+  constexpr double eps = 1.0e-9;
   const lanelet::BasicPoint2d p(current_pose.position.x, current_pose.position.y);
-  if (boost::geometry::distance(p, lanelet.polygon2d().basicPolygon()) < radius) {
+  if (boost::geometry::distance(p, lanelet.polygon2d().basicPolygon()) < radius + eps) {
     return true;
   }
   return false;
