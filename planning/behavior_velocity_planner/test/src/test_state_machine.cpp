@@ -70,7 +70,7 @@ TEST(state_machine, set_state_go_with_margin_time)
     if (state_machine.getDuration() > margin_time) {
       std::cerr << "stop duration is larger than margin time" << std::endl;
     }
-    EXPECT_TRUE(state_machine.getDuration() < margin_time);
+    EXPECT_FALSE(state_machine.getDuration() > margin_time);
     state_machine.setStateWithMarginTime(State::GO, logger, current_time);
     loop_counter++;
   }
