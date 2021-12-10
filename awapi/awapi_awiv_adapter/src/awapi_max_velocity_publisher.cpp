@@ -22,12 +22,12 @@ AutowareIvMaxVelocityPublisher::AutowareIvMaxVelocityPublisher(
 {
   // publisher
   pub_state_ =
-    node.create_publisher<autoware_planning_msgs::msg::VelocityLimit>("output/max_velocity", 1);
+    node.create_publisher<tier4_planning_msgs::msg::VelocityLimit>("output/max_velocity", 1);
 }
 
 void AutowareIvMaxVelocityPublisher::statePublisher(const AutowareInfo & aw_info)
 {
-  autoware_planning_msgs::msg::VelocityLimit max_velocity;
+  tier4_planning_msgs::msg::VelocityLimit max_velocity;
   if (calcMaxVelocity(
         aw_info.max_velocity_ptr, aw_info.temporary_stop_ptr,
         &max_velocity.max_velocity))  // publish info
@@ -37,9 +37,8 @@ void AutowareIvMaxVelocityPublisher::statePublisher(const AutowareInfo & aw_info
 }
 
 bool AutowareIvMaxVelocityPublisher::calcMaxVelocity(
-  const autoware_api_msgs::msg::VelocityLimit::ConstSharedPtr & max_velocity_ptr,
-  const autoware_api_msgs::msg::StopCommand::ConstSharedPtr & temporary_stop_ptr,
-  float * max_velocity)
+  const tier4_api_msgs::msg::VelocityLimit::ConstSharedPtr & max_velocity_ptr,
+  const tier4_api_msgs::msg::StopCommand::ConstSharedPtr & temporary_stop_ptr, float * max_velocity)
 {
   if (!max_velocity_ptr && !temporary_stop_ptr) {
     // receive no max velocity information

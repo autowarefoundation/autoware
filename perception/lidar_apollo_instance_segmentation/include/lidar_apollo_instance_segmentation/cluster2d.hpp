@@ -49,9 +49,9 @@
 #include "disjoint_set.hpp"
 #include "util.hpp"
 
-#include <autoware_perception_msgs/msg/detected_object_with_feature.hpp>
-#include <autoware_perception_msgs/msg/detected_objects_with_feature.hpp>
 #include <std_msgs/msg/header.hpp>
+#include <tier4_perception_msgs/msg/detected_object_with_feature.hpp>
+#include <tier4_perception_msgs/msg/detected_objects_with_feature.hpp>
 
 #include <pcl/PointIndices.h>
 #include <pcl/point_cloud.h>
@@ -103,10 +103,10 @@ public:
 
   void getObjects(
     const float confidence_thresh, const float height_thresh, const int min_pts_num,
-    autoware_perception_msgs::msg::DetectedObjectsWithFeature & objects,
+    tier4_perception_msgs::msg::DetectedObjectsWithFeature & objects,
     const std_msgs::msg::Header & in_header);
 
-  autoware_perception_msgs::msg::DetectedObjectWithFeature obstacleToObject(
+  tier4_perception_msgs::msg::DetectedObjectWithFeature obstacleToObject(
     const Obstacle & in_obstacle, const std_msgs::msg::Header & in_header);
 
 private:

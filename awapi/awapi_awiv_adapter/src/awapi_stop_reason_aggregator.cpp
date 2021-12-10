@@ -28,9 +28,9 @@ AutowareIvStopReasonAggregator::AutowareIvStopReasonAggregator(
 {
 }
 
-autoware_planning_msgs::msg::StopReasonArray::ConstSharedPtr
+tier4_planning_msgs::msg::StopReasonArray::ConstSharedPtr
 AutowareIvStopReasonAggregator::updateStopReasonArray(
-  const autoware_planning_msgs::msg::StopReasonArray::ConstSharedPtr & msg_ptr,
+  const tier4_planning_msgs::msg::StopReasonArray::ConstSharedPtr & msg_ptr,
   const AutowareInfo & aw_info)
 {
   applyUpdate(msg_ptr, aw_info);
@@ -39,7 +39,7 @@ AutowareIvStopReasonAggregator::updateStopReasonArray(
 }
 
 void AutowareIvStopReasonAggregator::applyUpdate(
-  const autoware_planning_msgs::msg::StopReasonArray::ConstSharedPtr & msg_ptr,
+  const tier4_planning_msgs::msg::StopReasonArray::ConstSharedPtr & msg_ptr,
   [[maybe_unused]] const AutowareInfo & aw_info)
 {
   /* remove old stop_reason that matches reason with received msg */
@@ -64,8 +64,8 @@ void AutowareIvStopReasonAggregator::applyUpdate(
 }
 
 bool AutowareIvStopReasonAggregator::checkMatchingReason(
-  const autoware_planning_msgs::msg::StopReasonArray::ConstSharedPtr & msg_stop_reason_array,
-  const autoware_planning_msgs::msg::StopReasonArray & stop_reason_array)
+  const tier4_planning_msgs::msg::StopReasonArray::ConstSharedPtr & msg_stop_reason_array,
+  const tier4_planning_msgs::msg::StopReasonArray & stop_reason_array)
 {
   for (const auto & msg_stop_reason : msg_stop_reason_array->stop_reasons) {
     for (const auto & stop_reason : stop_reason_array.stop_reasons) {
@@ -101,8 +101,8 @@ void AutowareIvStopReasonAggregator::applyTimeOut()
 }
 
 void AutowareIvStopReasonAggregator::appendStopReasonToArray(
-  const autoware_planning_msgs::msg::StopReason & stop_reason,
-  autoware_planning_msgs::msg::StopReasonArray * stop_reason_array, const AutowareInfo & aw_info)
+  const tier4_planning_msgs::msg::StopReason & stop_reason,
+  tier4_planning_msgs::msg::StopReasonArray * stop_reason_array, const AutowareInfo & aw_info)
 {
   // calculate dist_to_stop_pose
   const auto stop_reason_with_dist = inputStopDistToStopReason(stop_reason, aw_info);
@@ -129,10 +129,10 @@ void AutowareIvStopReasonAggregator::appendStopReasonToArray(
   stop_reason_array->stop_reasons.emplace_back(near_stop_reason);
 }
 
-autoware_planning_msgs::msg::StopReasonArray::ConstSharedPtr
+tier4_planning_msgs::msg::StopReasonArray::ConstSharedPtr
 AutowareIvStopReasonAggregator::makeStopReasonArray(const AutowareInfo & aw_info)
 {
-  autoware_planning_msgs::msg::StopReasonArray stop_reason_array_msg;
+  tier4_planning_msgs::msg::StopReasonArray stop_reason_array_msg;
   // input header
   stop_reason_array_msg.header.frame_id = "map";
   stop_reason_array_msg.header.stamp = clock_->now();
@@ -143,11 +143,11 @@ AutowareIvStopReasonAggregator::makeStopReasonArray(const AutowareInfo & aw_info
       appendStopReasonToArray(stop_reason, &stop_reason_array_msg, aw_info);
     }
   }
-  return std::make_shared<autoware_planning_msgs::msg::StopReasonArray>(stop_reason_array_msg);
+  return std::make_shared<tier4_planning_msgs::msg::StopReasonArray>(stop_reason_array_msg);
 }
 
-autoware_planning_msgs::msg::StopReason AutowareIvStopReasonAggregator::inputStopDistToStopReason(
-  const autoware_planning_msgs::msg::StopReason & stop_reason, const AutowareInfo & aw_info)
+tier4_planning_msgs::msg::StopReason AutowareIvStopReasonAggregator::inputStopDistToStopReason(
+  const tier4_planning_msgs::msg::StopReason & stop_reason, const AutowareInfo & aw_info)
 {
   if (!aw_info.autoware_planning_traj_ptr || !aw_info.current_pose_ptr) {
     // pass through all stop reason
@@ -164,15 +164,15 @@ autoware_planning_msgs::msg::StopReason AutowareIvStopReasonAggregator::inputSto
   return stop_reason_with_dist;
 }
 
-autoware_planning_msgs::msg::StopReason AutowareIvStopReasonAggregator::getNearStopReason(
-  const autoware_planning_msgs::msg::StopReason & stop_reason, const AutowareInfo & aw_info)
+tier4_planning_msgs::msg::StopReason AutowareIvStopReasonAggregator::getNearStopReason(
+  const tier4_planning_msgs::msg::StopReason & stop_reason, const AutowareInfo & aw_info)
 {
   if (!aw_info.autoware_planning_traj_ptr || !aw_info.current_pose_ptr) {
     // pass through all stop reason
     return stop_reason;
   }
 
-  autoware_planning_msgs::msg::StopReason near_stop_reason;
+  tier4_planning_msgs::msg::StopReason near_stop_reason;
   near_stop_reason.reason = stop_reason.reason;
   for (const auto & stop_factor : stop_reason.stop_factors) {
     if (stop_factor.dist_to_stop_pose < thresh_dist_to_stop_pose_) {

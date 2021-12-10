@@ -14,7 +14,7 @@ Only position and orientation of trajectory are calculated in this module, and v
 | `~/input/path`                                                         | autoware_auto_planning_msgs/Path               | Reference path and the corresponding drivable area |
 | `~/input/objects`                                                      | autoware_auto_perception_msgs/PredictedObjects | Recognized objects around the vehicle              |
 | `/localization/kinematic_state`                                        | nav_msgs/Odometry                              | Current Velocity of ego vehicle                    |
-| `/planning/scenario_planning/lane_driving/obstacle_avoidance_approval` | autoware_planning_msgs/EnableAvoidance         | Approval to execute obstacle avoidance             |
+| `/planning/scenario_planning/lane_driving/obstacle_avoidance_approval` | tier4_planning_msgs/EnableAvoidance            | Approval to execute obstacle avoidance             |
 
 ### output
 

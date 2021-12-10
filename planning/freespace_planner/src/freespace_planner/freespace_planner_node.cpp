@@ -44,7 +44,7 @@ namespace
 using autoware_auto_planning_msgs::msg::Trajectory;
 using autoware_auto_planning_msgs::msg::TrajectoryPoint;
 using TrajectoryPoints = std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint>;
-using autoware_planning_msgs::msg::Scenario;
+using tier4_planning_msgs::msg::Scenario;
 using freespace_planning_algorithms::AstarSearch;
 using freespace_planning_algorithms::PlannerWaypoint;
 using freespace_planning_algorithms::PlannerWaypoints;

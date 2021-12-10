@@ -12,8 +12,6 @@
 
   <depend>autoware_auto_perception_msgs</depend>
   <depend>autoware_auto_planning_msgs</depend>
-  <depend>autoware_debug_msgs</depend>
-  <depend>autoware_planning_msgs</depend>
   <depend>autoware_utils</depend>
   <depend>diagnostic_msgs</depend>
   <depend>nav_msgs</depend>
@@ -28,6 +26,8 @@
   <depend>tf2_eigen</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2_ros</depend>
+  <depend>tier4_debug_msgs</depend>
+  <depend>tier4_planning_msgs</depend>
   <depend>vehicle_info_util</depend>
   <depend>visualization_msgs</depend>
 

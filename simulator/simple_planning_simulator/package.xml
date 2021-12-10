@@ -16,7 +16,7 @@
   <depend>autoware_auto_vehicle_msgs</depend>
   <depend>autoware_auto_tf2</depend>
   <depend>autoware_auto_common</depend>
-  <depend>autoware_external_api_msgs</depend>
+  <depend>tier4_external_api_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>vehicle_info_util</depend>

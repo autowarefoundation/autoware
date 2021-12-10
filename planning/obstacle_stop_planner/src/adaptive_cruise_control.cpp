@@ -179,8 +179,8 @@ AdaptiveCruiseController::AdaptiveCruiseController(
   param_.rough_velocity_rate = node_->declare_parameter(acc_ns + "rough_velocity_rate", 0.9);
 
   /* publisher */
-  pub_debug_ = node_->create_publisher<autoware_debug_msgs::msg::Float32MultiArrayStamped>(
-    "~/debug_values", 1);
+  pub_debug_ =
+    node_->create_publisher<tier4_debug_msgs::msg::Float32MultiArrayStamped>("~/debug_values", 1);
 }
 
 void AdaptiveCruiseController::insertAdaptiveCruiseVelocity(

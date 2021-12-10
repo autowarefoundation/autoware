@@ -30,10 +30,10 @@ Jocher, G., et al. (2021). ultralytics/yolov5: v6.0 - YOLOv5n 'Nano' models, Rob
 
 ### Output
 
-| Name          | Type                                                  | Description                                        |
-| ------------- | ----------------------------------------------------- | -------------------------------------------------- |
-| `out/objects` | `autoware_perception_msgs/DetectedObjectsWithFeature` | The detected objects with 2D bounding boxes        |
-| `out/image`   | `sensor_msgs/Image`                                   | The image with 2D bounding boxes for visualization |
+| Name          | Type                                               | Description                                        |
+| ------------- | -------------------------------------------------- | -------------------------------------------------- |
+| `out/objects` | `tier4_perception_msgs/DetectedObjectsWithFeature` | The detected objects with 2D bounding boxes        |
+| `out/image`   | `sensor_msgs/Image`                                | The image with 2D bounding boxes for visualization |
 
 ## Parameters
 

@@ -24,9 +24,9 @@
 
 #include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
 #include <autoware_auto_perception_msgs/msg/tracked_objects.hpp>
-#include <autoware_perception_msgs/msg/detected_objects_with_feature.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
+#include <tier4_perception_msgs/msg/detected_objects_with_feature.hpp>
 
 #include <tf2/LinearMath/Transform.h>
 #include <tf2/convert.h>
@@ -60,7 +60,7 @@ public:
 private:
   rclcpp::Publisher<autoware_auto_perception_msgs::msg::DetectedObjects>::SharedPtr objects_pub_;
   rclcpp::Subscription<autoware_auto_perception_msgs::msg::TrackedObjects>::SharedPtr trackers_sub_;
-  rclcpp::Subscription<autoware_perception_msgs::msg::DetectedObjectsWithFeature>::SharedPtr
+  rclcpp::Subscription<tier4_perception_msgs::msg::DetectedObjectsWithFeature>::SharedPtr
     initial_objects_sub_;
 
   tf2_ros::Buffer tf_buffer_;
@@ -71,24 +71,24 @@ private:
   std::shared_ptr<euclidean_cluster::EuclideanClusterInterface> cluster_;
 
   void onObjects(
-    const autoware_perception_msgs::msg::DetectedObjectsWithFeature::ConstSharedPtr input_msg);
+    const tier4_perception_msgs::msg::DetectedObjectsWithFeature::ConstSharedPtr input_msg);
 
   void divideUnderSegmentedObjects(
     const autoware_auto_perception_msgs::msg::DetectedObjects & tracked_objects,
-    const autoware_perception_msgs::msg::DetectedObjectsWithFeature & in_objects,
+    const tier4_perception_msgs::msg::DetectedObjectsWithFeature & in_objects,
     autoware_auto_perception_msgs::msg::DetectedObjects & out_no_found_tracked_objects,
-    autoware_perception_msgs::msg::DetectedObjectsWithFeature & out_objects);
+    tier4_perception_msgs::msg::DetectedObjectsWithFeature & out_objects);
 
   float optimizeUnderSegmentedObject(
     const autoware_auto_perception_msgs::msg::DetectedObject & target_object,
     const sensor_msgs::msg::PointCloud2 & under_segmented_cluster,
-    autoware_perception_msgs::msg::DetectedObjectWithFeature & output);
+    tier4_perception_msgs::msg::DetectedObjectWithFeature & output);
 
   void mergeOverSegmentedObjects(
     const autoware_auto_perception_msgs::msg::DetectedObjects & tracked_objects,
-    const autoware_perception_msgs::msg::DetectedObjectsWithFeature & in_objects,
+    const tier4_perception_msgs::msg::DetectedObjectsWithFeature & in_objects,
     autoware_auto_perception_msgs::msg::DetectedObjects & out_no_found_tracked_objects,
-    autoware_perception_msgs::msg::DetectedObjectsWithFeature & out_objects);
+    tier4_perception_msgs::msg::DetectedObjectsWithFeature & out_objects);
 };
 
 #endif  // DETECTION_BY_TRACKER__DETECTION_BY_TRACKER_CORE_HPP_

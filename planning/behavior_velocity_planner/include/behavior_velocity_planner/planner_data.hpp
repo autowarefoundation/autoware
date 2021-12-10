@@ -17,18 +17,18 @@
 
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
-#include <autoware_api_msgs/msg/crosswalk_status.hpp>
-#include <autoware_api_msgs/msg/intersection_status.hpp>
 #include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_auto_perception_msgs/msg/traffic_signal_array.hpp>
 #include <autoware_auto_perception_msgs/msg/traffic_signal_stamped.hpp>
-#include <autoware_v2x_msgs/msg/virtual_traffic_light_state_array.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <std_msgs/msg/header.hpp>
+#include <tier4_api_msgs/msg/crosswalk_status.hpp>
+#include <tier4_api_msgs/msg/intersection_status.hpp>
+#include <tier4_v2x_msgs/msg/virtual_traffic_light_state_array.hpp>
 
 #include <boost/optional.hpp>
 
@@ -82,10 +82,9 @@ struct PlannerData
   // external data
   std::map<int, autoware_auto_perception_msgs::msg::TrafficSignalStamped>
     external_traffic_light_id_map;
-  boost::optional<autoware_api_msgs::msg::CrosswalkStatus> external_crosswalk_status_input;
-  boost::optional<autoware_api_msgs::msg::IntersectionStatus> external_intersection_status_input;
-  autoware_v2x_msgs::msg::VirtualTrafficLightStateArray::ConstSharedPtr
-    virtual_traffic_light_states;
+  boost::optional<tier4_api_msgs::msg::CrosswalkStatus> external_crosswalk_status_input;
+  boost::optional<tier4_api_msgs::msg::IntersectionStatus> external_intersection_status_input;
+  tier4_v2x_msgs::msg::VirtualTrafficLightStateArray::ConstSharedPtr virtual_traffic_light_states;
 
   // parameters
   vehicle_info_util::VehicleInfo vehicle_info_;

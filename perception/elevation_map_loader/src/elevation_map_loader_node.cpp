@@ -82,7 +82,7 @@ ElevationMapLoaderNode::ElevationMapLoaderNode(const rclcpp::NodeOptions & optio
   }
 
   using std::placeholders::_1;
-  sub_map_hash_ = create_subscription<autoware_external_api_msgs::msg::MapHash>(
+  sub_map_hash_ = create_subscription<tier4_external_api_msgs::msg::MapHash>(
     "/api/autoware/get/map/info/hash", durable_qos,
     std::bind(&ElevationMapLoaderNode::onMapHash, this, _1));
   sub_pointcloud_map_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
@@ -120,7 +120,7 @@ void ElevationMapLoaderNode::publish()
 }
 
 void ElevationMapLoaderNode::onMapHash(
-  const autoware_external_api_msgs::msg::MapHash::SharedPtr map_hash)
+  const tier4_external_api_msgs::msg::MapHash::SharedPtr map_hash)
 {
   RCLCPP_INFO(this->get_logger(), "subscribe map_hash");
   const auto elevation_map_hash = map_hash->pcd;

@@ -8,7 +8,6 @@
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
-  <depend>autoware_perception_msgs</depend>
   <depend>cv_bridge</depend>
   <depend>image_transport</depend>
   <depend>message_filters</depend>
@@ -20,6 +19,7 @@
   <depend>tf2</depend>
   <depend>tf2_ros</depend>
   <depend>tf2_sensor_msgs</depend>
+  <depend>tier4_perception_msgs</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
 

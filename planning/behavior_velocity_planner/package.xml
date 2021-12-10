@@ -11,13 +11,10 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>eigen3_cmake_module</buildtool_depend>
 
-  <depend>autoware_api_msgs</depend>
   <depend>autoware_auto_mapping_msgs</depend>
   <depend>autoware_auto_perception_msgs</depend>
   <depend>autoware_auto_planning_msgs</depend>
-  <depend>autoware_planning_msgs</depend>
   <depend>autoware_utils</depend>
-  <depend>autoware_v2x_msgs</depend>
   <depend>diagnostic_msgs</depend>
   <depend>eigen</depend>
   <depend>geometry_msgs</depend>
@@ -36,6 +33,9 @@
   <depend>tf2_eigen</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2_ros</depend>
+  <depend>tier4_api_msgs</depend>
+  <depend>tier4_planning_msgs</depend>
+  <depend>tier4_v2x_msgs</depend>
   <depend>vehicle_info_util</depend>
   <depend>visualization_msgs</depend>
 

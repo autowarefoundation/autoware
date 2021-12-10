@@ -21,7 +21,7 @@ The `gnss_poser` is a node that subscribes gnss sensing messages and calculates 
 | ------------------------ | ----------------------------------------------- | -------------------------------------------------------------- |
 | `~/output/pose`          | `geometry_msgs::msg::PoseStamped`               | vehicle pose calculated from gnss sensing data                 |
 | `~/output/gnss_pose_cov` | `geometry_msgs::msg::PoseWithCovarianceStamped` | vehicle pose with covariance calculated from gnss sensing data |
-| `~/output/gnss_fixed`    | `autoware_debug_msgs::msg::BoolStamped`         | gnss fix status                                                |
+| `~/output/gnss_fixed`    | `tier4_debug_msgs::msg::BoolStamped`            | gnss fix status                                                |
 
 ## Parameters
 

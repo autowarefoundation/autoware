@@ -20,8 +20,8 @@
 #include <scene_module/crosswalk/scene_walkway.hpp>
 #include <scene_module/scene_module_interface.hpp>
 
-#include <autoware_api_msgs/msg/crosswalk_status.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
+#include <tier4_api_msgs/msg/crosswalk_status.hpp>
 
 #include <functional>
 #include <memory>

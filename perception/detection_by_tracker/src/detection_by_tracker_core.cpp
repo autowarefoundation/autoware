@@ -76,7 +76,7 @@ bool transformTrackedObjects(
 
 void setClusterInObjectWithFeature(
   const std_msgs::msg::Header & header, const pcl::PointCloud<pcl::PointXYZ> & cluster,
-  autoware_perception_msgs::msg::DetectedObjectWithFeature & feature_object)
+  tier4_perception_msgs::msg::DetectedObjectWithFeature & feature_object)
 {
   sensor_msgs::msg::PointCloud2 ros_pointcloud;
   pcl::toROSMsg(cluster, ros_pointcloud);
@@ -195,7 +195,7 @@ DetectionByTracker::DetectionByTracker(const rclcpp::NodeOptions & node_options)
     "~/input/tracked_objects", rclcpp::QoS{1},
     std::bind(&TrackerHandler::onTrackedObjects, &tracker_handler_, std::placeholders::_1));
   initial_objects_sub_ =
-    create_subscription<autoware_perception_msgs::msg::DetectedObjectsWithFeature>(
+    create_subscription<tier4_perception_msgs::msg::DetectedObjectsWithFeature>(
       "~/input/initial_objects", rclcpp::QoS{1},
       std::bind(&DetectionByTracker::onObjects, this, std::placeholders::_1));
   objects_pub_ = create_publisher<autoware_auto_perception_msgs::msg::DetectedObjects>(
@@ -207,7 +207,7 @@ DetectionByTracker::DetectionByTracker(const rclcpp::NodeOptions & node_options)
 }
 
 void DetectionByTracker::onObjects(
-  const autoware_perception_msgs::msg::DetectedObjectsWithFeature::ConstSharedPtr input_msg)
+  const tier4_perception_msgs::msg::DetectedObjectsWithFeature::ConstSharedPtr input_msg)
 {
   autoware_auto_perception_msgs::msg::DetectedObjects detected_objects;
   detected_objects.header = input_msg->header;
@@ -231,13 +231,13 @@ void DetectionByTracker::onObjects(
   tracked_objects_dt = toDetectedObjects(tracked_objects);
 
   // merge over segmented objects
-  autoware_perception_msgs::msg::DetectedObjectsWithFeature merged_objects;
+  tier4_perception_msgs::msg::DetectedObjectsWithFeature merged_objects;
   autoware_auto_perception_msgs::msg::DetectedObjects no_found_tracked_objects;
   mergeOverSegmentedObjects(
     tracked_objects_dt, *input_msg, no_found_tracked_objects, merged_objects);
 
   // divide under segmented objects
-  autoware_perception_msgs::msg::DetectedObjectsWithFeature divided_objects;
+  tier4_perception_msgs::msg::DetectedObjectsWithFeature divided_objects;
   autoware_auto_perception_msgs::msg::DetectedObjects temp_no_found_tracked_objects;
   divideUnderSegmentedObjects(
     no_found_tracked_objects, *input_msg, temp_no_found_tracked_objects, divided_objects);
@@ -255,9 +255,9 @@ void DetectionByTracker::onObjects(
 
 void DetectionByTracker::divideUnderSegmentedObjects(
   const autoware_auto_perception_msgs::msg::DetectedObjects & tracked_objects,
-  const autoware_perception_msgs::msg::DetectedObjectsWithFeature & in_cluster_objects,
+  const tier4_perception_msgs::msg::DetectedObjectsWithFeature & in_cluster_objects,
   autoware_auto_perception_msgs::msg::DetectedObjects & out_no_found_tracked_objects,
-  autoware_perception_msgs::msg::DetectedObjectsWithFeature & out_objects)
+  tier4_perception_msgs::msg::DetectedObjectsWithFeature & out_objects)
 {
   constexpr float recall_min_threshold = 0.4;
   constexpr float precision_max_threshold = 0.5;
@@ -268,7 +268,7 @@ void DetectionByTracker::divideUnderSegmentedObjects(
   out_no_found_tracked_objects.header = tracked_objects.header;
 
   for (const auto & tracked_object : tracked_objects.objects) {
-    std::optional<autoware_perception_msgs::msg::DetectedObjectWithFeature>
+    std::optional<tier4_perception_msgs::msg::DetectedObjectWithFeature>
       highest_score_divided_object = std::nullopt;
     float highest_score = 0.0;
 
@@ -289,7 +289,7 @@ void DetectionByTracker::divideUnderSegmentedObjects(
         continue;
       }
       // optimize clustering
-      autoware_perception_msgs::msg::DetectedObjectWithFeature divided_object;
+      tier4_perception_msgs::msg::DetectedObjectWithFeature divided_object;
       float score = optimizeUnderSegmentedObject(
         tracked_object, initial_object.feature.cluster, divided_object);
       if (score < min_score_threshold) {
@@ -312,7 +312,7 @@ void DetectionByTracker::divideUnderSegmentedObjects(
 float DetectionByTracker::optimizeUnderSegmentedObject(
   const autoware_auto_perception_msgs::msg::DetectedObject & target_object,
   const sensor_msgs::msg::PointCloud2 & under_segmented_cluster,
-  autoware_perception_msgs::msg::DetectedObjectWithFeature & output)
+  tier4_perception_msgs::msg::DetectedObjectWithFeature & output)
 {
   constexpr float iter_rate = 0.8;
   constexpr int iter_max_count = 5;
@@ -331,7 +331,7 @@ float DetectionByTracker::optimizeUnderSegmentedObject(
 
   // iterate to find best fit divided object
   float highest_iou = 0.0;
-  autoware_perception_msgs::msg::DetectedObjectWithFeature highest_iou_object;
+  tier4_perception_msgs::msg::DetectedObjectWithFeature highest_iou_object;
   for (int iter_count = 0; iter_count < iter_max_count;
        ++iter_count, cluster_range *= iter_rate, voxel_size *= iter_rate) {
     // divide under segmented cluster
@@ -342,7 +342,7 @@ float DetectionByTracker::optimizeUnderSegmentedObject(
 
     // find highest iou object in divided clusters
     float highest_iou_in_current_iter = 0.0f;
-    autoware_perception_msgs::msg::DetectedObjectWithFeature highest_iou_object_in_current_iter;
+    tier4_perception_msgs::msg::DetectedObjectWithFeature highest_iou_object_in_current_iter;
     highest_iou_object_in_current_iter.object.classification = target_object.classification;
     for (const auto & divided_cluster : divided_clusters) {
       bool is_shape_estimated = shape_estimator_->estimateShapeAndPose(
@@ -381,9 +381,9 @@ float DetectionByTracker::optimizeUnderSegmentedObject(
 
 void DetectionByTracker::mergeOverSegmentedObjects(
   const autoware_auto_perception_msgs::msg::DetectedObjects & tracked_objects,
-  const autoware_perception_msgs::msg::DetectedObjectsWithFeature & in_cluster_objects,
+  const tier4_perception_msgs::msg::DetectedObjectsWithFeature & in_cluster_objects,
   autoware_auto_perception_msgs::msg::DetectedObjects & out_no_found_tracked_objects,
-  autoware_perception_msgs::msg::DetectedObjectsWithFeature & out_objects)
+  tier4_perception_msgs::msg::DetectedObjectsWithFeature & out_objects)
 {
   constexpr float precision_threshold = 0.5;
   constexpr float max_search_range = 5.0;
@@ -421,7 +421,7 @@ void DetectionByTracker::mergeOverSegmentedObjects(
     }
 
     // build output clusters
-    autoware_perception_msgs::msg::DetectedObjectWithFeature feature_object;
+    tier4_perception_msgs::msg::DetectedObjectWithFeature feature_object;
     feature_object.object.existence_probability = 0.1f;
     feature_object.object.classification = tracked_object.classification;
 

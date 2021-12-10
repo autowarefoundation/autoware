@@ -16,8 +16,8 @@
 
 # TODO(kosuke murakami): write ros2 visualizer
 # import rospy
-# from autoware_planning_msgs.msg import Trajectory
-# from autoware_planning_msgs.msg import TrajectoryPoint
+# from tier4_planning_msgs.msg import Trajectory
+# from tier4_planning_msgs.msg import TrajectoryPoint
 # import matplotlib.pyplot as plt
 # import numpy as np
 # import tf

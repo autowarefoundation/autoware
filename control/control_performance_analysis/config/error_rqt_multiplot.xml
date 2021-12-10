@@ -632,7 +632,7 @@
                                         <type>0</type>
                                     </scale>
                                     <topic>/control/trajectory_follower/control_cmd</topic>
-                                    <type>autoware_control_msgs/ControlCommandStamped</type>
+                                    <type>tier4_control_msgs/ControlCommandStamped</type>
                                 </x_axis>
                                 <y_axis>
                                     <field>control/steering_angle</field>
@@ -645,7 +645,7 @@
                                         <type>0</type>
                                     </scale>
                                     <topic>/control/trajectory_follower/control_cmd</topic>
-                                    <type>autoware_control_msgs/ControlCommandStamped</type>
+                                    <type>tier4_control_msgs/ControlCommandStamped</type>
                                 </y_axis>
                             </axes>
                             <color>
@@ -683,7 +683,7 @@
                                         <type>0</type>
                                     </scale>
                                     <topic>/vehicle/status/steering_status</topic>
-                                    <type>autoware_vehicle_msgs/Steering</type>
+                                    <type>tier4_vehicle_msgs/Steering</type>
                                 </x_axis>
                                 <y_axis>
                                     <field>data</field>
@@ -696,7 +696,7 @@
                                         <type>0</type>
                                     </scale>
                                     <topic>/vehicle/status/steering_status</topic>
-                                    <type>autoware_vehicle_msgs/Steering</type>
+                                    <type>tier4_vehicle_msgs/Steering</type>
                                 </y_axis>
                             </axes>
                             <color>

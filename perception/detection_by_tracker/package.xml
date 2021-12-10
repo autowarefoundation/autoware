@@ -9,7 +9,6 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>eigen3_cmake_module</buildtool_depend>
 
-  <depend>autoware_perception_msgs</depend>
   <depend>autoware_utils</depend>
   <depend>eigen</depend>
   <depend>euclidean_cluster</depend>
@@ -20,6 +19,7 @@
   <depend>shape_estimation</depend>
   <depend>tf2</depend>
   <depend>tf2_ros</depend>
+  <depend>tier4_perception_msgs</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>

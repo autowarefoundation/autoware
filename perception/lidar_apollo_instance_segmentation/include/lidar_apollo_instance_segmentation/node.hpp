@@ -16,8 +16,8 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_perception_msgs/msg/detected_objects_with_feature.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
+#include <tier4_perception_msgs/msg/detected_objects_with_feature.hpp>
 
 #include <memory>
 
@@ -28,14 +28,14 @@ public:
   virtual ~LidarInstanceSegmentationInterface() {}
   virtual bool detectDynamicObjects(
     const sensor_msgs::msg::PointCloud2 & input,
-    autoware_perception_msgs::msg::DetectedObjectsWithFeature & output) = 0;
+    tier4_perception_msgs::msg::DetectedObjectsWithFeature & output) = 0;
 };
 
 class LidarInstanceSegmentationNode : public rclcpp::Node
 {
 private:
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr pointcloud_sub_;
-  rclcpp::Publisher<autoware_perception_msgs::msg::DetectedObjectsWithFeature>::SharedPtr
+  rclcpp::Publisher<tier4_perception_msgs::msg::DetectedObjectsWithFeature>::SharedPtr
     dynamic_objects_pub_;
   std::shared_ptr<LidarInstanceSegmentationInterface> detector_ptr_;
   std::shared_ptr<Debugger> debugger_ptr_;

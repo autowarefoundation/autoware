@@ -66,10 +66,10 @@
         <Condition ID="LaneChange_Ready"/>
         <Condition ID="LaneChange_Request"/>
         <Action ID="LaneFollowing_Plan">
-            <output_port name="output" type="boost::optional&lt;autoware_planning_msgs::PathWithLaneId_&lt;std::allocator&lt;void&gt; &gt; &gt;">desc</output_port>
+            <output_port name="output" type="boost::optional&lt;tier4_planning_msgs::PathWithLaneId_&lt;std::allocator&lt;void&gt; &gt; &gt;">desc</output_port>
         </Action>
         <Action ID="LaneFollowing_PlanCandidate">
-            <output_port name="output_candidate" type="boost::optional&lt;autoware_planning_msgs::PathWithLaneId_&lt;std::allocator&lt;void&gt; &gt; &gt;">desc</output_port>
+            <output_port name="output_candidate" type="boost::optional&lt;tier4_planning_msgs::PathWithLaneId_&lt;std::allocator&lt;void&gt; &gt; &gt;">desc</output_port>
         </Action>
         <Condition ID="LaneFollowing_Ready"/>
         <Condition ID="LaneFollowing_Request"/>

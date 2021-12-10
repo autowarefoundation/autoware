@@ -23,8 +23,8 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_auto_planning_msgs/msg/trajectory.hpp>
-#include <autoware_debug_msgs/msg/float32_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
+#include <tier4_debug_msgs/msg/float32_stamped.hpp>
 
 class LateralErrorPublisher : public rclcpp::Node
 {
@@ -50,11 +50,11 @@ private:
     sub_vehicle_pose_;  //!< @brief subscription for vehicle pose
   rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr
     sub_ground_truth_pose_;  //!< @brief subscription for gnss pose
-  rclcpp::Publisher<autoware_debug_msgs::msg::Float32Stamped>::SharedPtr
+  rclcpp::Publisher<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr
     pub_control_lateral_error_;  //!< @brief publisher for control lateral error
-  rclcpp::Publisher<autoware_debug_msgs::msg::Float32Stamped>::SharedPtr
+  rclcpp::Publisher<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr
     pub_localization_lateral_error_;  //!< @brief publisher for localization lateral error
-  rclcpp::Publisher<autoware_debug_msgs::msg::Float32Stamped>::SharedPtr
+  rclcpp::Publisher<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr
     pub_lateral_error_;  //!< @brief publisher for lateral error (control + localization)
 
   /**

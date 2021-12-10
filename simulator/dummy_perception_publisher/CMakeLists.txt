@@ -15,7 +15,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(autoware_auto_perception_msgs REQUIRED)
-find_package(autoware_perception_msgs REQUIRED)
+find_package(tier4_perception_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(unique_identifier_msgs REQUIRED)
@@ -23,7 +23,7 @@ find_package(unique_identifier_msgs REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/InitialState.msg"
   "msg/Object.msg"
-  DEPENDENCIES autoware_auto_perception_msgs autoware_perception_msgs geometry_msgs std_msgs unique_identifier_msgs
+  DEPENDENCIES autoware_auto_perception_msgs tier4_perception_msgs geometry_msgs std_msgs unique_identifier_msgs
 )
 
 # See ndt_omp package for documentation on why PCL is special
@@ -33,7 +33,7 @@ ament_auto_find_build_dependencies()
 
 set(${PROJECT_NAME}_DEPENDENCIES
   autoware_auto_perception_msgs
-  autoware_perception_msgs
+  tier4_perception_msgs
   pcl_conversions
   rclcpp
   sensor_msgs

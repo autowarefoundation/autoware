@@ -1,0 +1,3 @@
+std_msgs/Header header
+bool obstacle_avoidance_ready
+tier4_planning_msgs/Trajectory candidate_path

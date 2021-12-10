@@ -28,9 +28,9 @@ namespace
 using autoware_joy_controller::GateModeType;
 using autoware_joy_controller::GearShiftType;
 using autoware_joy_controller::TurnSignalType;
-using GearShift = autoware_external_api_msgs::msg::GearShift;
-using TurnSignal = autoware_external_api_msgs::msg::TurnSignal;
-using GateMode = autoware_control_msgs::msg::GateMode;
+using GearShift = tier4_external_api_msgs::msg::GearShift;
+using TurnSignal = tier4_external_api_msgs::msg::TurnSignal;
+using GateMode = tier4_control_msgs::msg::GateMode;
 
 GearShiftType getUpperShift(const GearShiftType & shift)
 {
@@ -124,7 +124,7 @@ const char * getTurnSignalName(const TurnSignalType & turn_signal)
 
 const char * getGateModeName(const GateModeType & gate_mode)
 {
-  using autoware_control_msgs::msg::GateMode;
+  using tier4_control_msgs::msg::GateMode;
 
   if (gate_mode == GateMode::AUTO) {
     return "AUTO";
@@ -283,7 +283,7 @@ void AutowareJoyControllerNode::publishControlCommand()
 
 void AutowareJoyControllerNode::publishExternalControlCommand()
 {
-  autoware_external_api_msgs::msg::ControlCommandStamped cmd_stamped;
+  tier4_external_api_msgs::msg::ControlCommandStamped cmd_stamped;
   cmd_stamped.stamp = this->now();
   {
     auto & cmd = cmd_stamped.control;
@@ -301,7 +301,7 @@ void AutowareJoyControllerNode::publishExternalControlCommand()
 
 void AutowareJoyControllerNode::publishShift()
 {
-  autoware_external_api_msgs::msg::GearShiftStamped gear_shift;
+  tier4_external_api_msgs::msg::GearShiftStamped gear_shift;
   gear_shift.stamp = this->now();
 
   if (joy_->shift_up()) {
@@ -328,7 +328,7 @@ void AutowareJoyControllerNode::publishShift()
 
 void AutowareJoyControllerNode::publishTurnSignal()
 {
-  autoware_external_api_msgs::msg::TurnSignalStamped turn_signal;
+  tier4_external_api_msgs::msg::TurnSignalStamped turn_signal;
   turn_signal.stamp = this->now();
 
   if (joy_->turn_signal_left() && joy_->turn_signal_right()) {
@@ -350,7 +350,7 @@ void AutowareJoyControllerNode::publishTurnSignal()
 
 void AutowareJoyControllerNode::publishGateMode()
 {
-  autoware_control_msgs::msg::GateMode gate_mode;
+  tier4_control_msgs::msg::GateMode gate_mode;
 
   if (prev_gate_mode_ == GateMode::AUTO) {
     gate_mode.data = GateMode::EXTERNAL;
@@ -368,7 +368,7 @@ void AutowareJoyControllerNode::publishGateMode()
 
 void AutowareJoyControllerNode::publishHeartbeat()
 {
-  autoware_external_api_msgs::msg::Heartbeat heartbeat;
+  tier4_external_api_msgs::msg::Heartbeat heartbeat;
   heartbeat.stamp = this->now();
   pub_heartbeat_->publish(heartbeat);
 }
@@ -377,12 +377,12 @@ void AutowareJoyControllerNode::sendEmergencyRequest(bool emergency)
 {
   RCLCPP_INFO(get_logger(), "%s emergency stop", emergency ? "Set" : "Clear");
 
-  auto request = std::make_shared<autoware_external_api_msgs::srv::SetEmergency::Request>();
+  auto request = std::make_shared<tier4_external_api_msgs::srv::SetEmergency::Request>();
   request->emergency = emergency;
 
   client_emergency_stop_->async_send_request(
     request, [this, emergency](
-               rclcpp::Client<autoware_external_api_msgs::srv::SetEmergency>::SharedFuture result) {
+               rclcpp::Client<tier4_external_api_msgs::srv::SetEmergency>::SharedFuture result) {
       auto response = result.get();
       if (autoware_api_utils::is_success(response->status)) {
         RCLCPP_INFO(get_logger(), "service succeeded");
@@ -394,7 +394,7 @@ void AutowareJoyControllerNode::sendEmergencyRequest(bool emergency)
 
 void AutowareJoyControllerNode::publishAutowareEngage()
 {
-  auto req = std::make_shared<autoware_external_api_msgs::srv::Engage::Request>();
+  auto req = std::make_shared<tier4_external_api_msgs::srv::Engage::Request>();
   if (joy_->autoware_engage()) {
     req->engage = true;
     RCLCPP_INFO(get_logger(), "Autoware Engage");
@@ -411,7 +411,7 @@ void AutowareJoyControllerNode::publishAutowareEngage()
   }
 
   client_autoware_engage_->async_send_request(
-    req, [this](rclcpp::Client<autoware_external_api_msgs::srv::Engage>::SharedFuture result) {
+    req, [this](rclcpp::Client<tier4_external_api_msgs::srv::Engage>::SharedFuture result) {
       RCLCPP_INFO(
         get_logger(), "%s: %d, %s", client_autoware_engage_->get_service_name(),
         result.get()->status.code, result.get()->status.message.c_str());
@@ -487,21 +487,20 @@ AutowareJoyControllerNode::AutowareJoyControllerNode(const rclcpp::NodeOptions &
     this->create_publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>(
       "output/control_command", 1);
   pub_external_control_command_ =
-    this->create_publisher<autoware_external_api_msgs::msg::ControlCommandStamped>(
+    this->create_publisher<tier4_external_api_msgs::msg::ControlCommandStamped>(
       "output/external_control_command", 1);
   pub_shift_ =
-    this->create_publisher<autoware_external_api_msgs::msg::GearShiftStamped>("output/shift", 1);
-  pub_turn_signal_ = this->create_publisher<autoware_external_api_msgs::msg::TurnSignalStamped>(
+    this->create_publisher<tier4_external_api_msgs::msg::GearShiftStamped>("output/shift", 1);
+  pub_turn_signal_ = this->create_publisher<tier4_external_api_msgs::msg::TurnSignalStamped>(
     "output/turn_signal", 1);
-  pub_gate_mode_ =
-    this->create_publisher<autoware_control_msgs::msg::GateMode>("output/gate_mode", 1);
+  pub_gate_mode_ = this->create_publisher<tier4_control_msgs::msg::GateMode>("output/gate_mode", 1);
   pub_heartbeat_ =
-    this->create_publisher<autoware_external_api_msgs::msg::Heartbeat>("output/heartbeat", 1);
+    this->create_publisher<tier4_external_api_msgs::msg::Heartbeat>("output/heartbeat", 1);
   pub_vehicle_engage_ =
     this->create_publisher<autoware_auto_vehicle_msgs::msg::Engage>("output/vehicle_engage", 1);
 
   // Service Client
-  client_emergency_stop_ = this->create_client<autoware_external_api_msgs::srv::SetEmergency>(
+  client_emergency_stop_ = this->create_client<tier4_external_api_msgs::srv::SetEmergency>(
     "service/emergency_stop", rmw_qos_profile_services_default, callback_group_services_);
   while (!client_emergency_stop_->wait_for_service(std::chrono::seconds(1))) {
     if (!rclcpp::ok()) {
@@ -512,7 +511,7 @@ AutowareJoyControllerNode::AutowareJoyControllerNode(const rclcpp::NodeOptions &
     RCLCPP_INFO(get_logger(), "Waiting for emergency_stop service connection...");
   }
 
-  client_autoware_engage_ = this->create_client<autoware_external_api_msgs::srv::Engage>(
+  client_autoware_engage_ = this->create_client<tier4_external_api_msgs::srv::Engage>(
     "service/autoware_engage", rmw_qos_profile_services_default);
 
   // Timer

@@ -9,9 +9,9 @@
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
-  <depend>autoware_planning_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
+  <depend>tier4_planning_msgs</depend>
 
   <exec_depend>ros2cli</exec_depend>
   <exec_depend>topic_tools</exec_depend>

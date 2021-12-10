@@ -95,12 +95,11 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode(const rclcpp::NodeOptio
     this->create_subscription<autoware_auto_perception_msgs::msg::TrafficSignalArray>(
       "~/input/traffic_signals", 10,
       std::bind(&BehaviorVelocityPlannerNode::onTrafficSignals, this, _1));
-  sub_external_crosswalk_states_ =
-    this->create_subscription<autoware_api_msgs::msg::CrosswalkStatus>(
-      "~/input/external_crosswalk_states", 10,
-      std::bind(&BehaviorVelocityPlannerNode::onExternalCrosswalkStates, this, _1));
+  sub_external_crosswalk_states_ = this->create_subscription<tier4_api_msgs::msg::CrosswalkStatus>(
+    "~/input/external_crosswalk_states", 10,
+    std::bind(&BehaviorVelocityPlannerNode::onExternalCrosswalkStates, this, _1));
   sub_external_intersection_states_ =
-    this->create_subscription<autoware_api_msgs::msg::IntersectionStatus>(
+    this->create_subscription<tier4_api_msgs::msg::IntersectionStatus>(
       "~/input/external_intersection_states", 10,
       std::bind(&BehaviorVelocityPlannerNode::onExternalIntersectionStates, this, _1));
   sub_external_traffic_signals_ =
@@ -108,7 +107,7 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode(const rclcpp::NodeOptio
       "~/input/external_traffic_signals", 10,
       std::bind(&BehaviorVelocityPlannerNode::onExternalTrafficSignals, this, _1));
   sub_virtual_traffic_light_states_ =
-    this->create_subscription<autoware_v2x_msgs::msg::VirtualTrafficLightStateArray>(
+    this->create_subscription<tier4_v2x_msgs::msg::VirtualTrafficLightStateArray>(
       "~/input/virtual_traffic_light_states", 10,
       std::bind(&BehaviorVelocityPlannerNode::onVirtualTrafficLightStates, this, _1));
   sub_occupancy_grid_ = this->create_subscription<nav_msgs::msg::OccupancyGrid>(
@@ -291,13 +290,13 @@ void BehaviorVelocityPlannerNode::onTrafficSignals(
 }
 
 void BehaviorVelocityPlannerNode::onExternalCrosswalkStates(
-  const autoware_api_msgs::msg::CrosswalkStatus::ConstSharedPtr msg)
+  const tier4_api_msgs::msg::CrosswalkStatus::ConstSharedPtr msg)
 {
   planner_data_.external_crosswalk_status_input = *msg;
 }
 
 void BehaviorVelocityPlannerNode::onExternalIntersectionStates(
-  const autoware_api_msgs::msg::IntersectionStatus::ConstSharedPtr msg)
+  const tier4_api_msgs::msg::IntersectionStatus::ConstSharedPtr msg)
 {
   planner_data_.external_intersection_status_input = *msg;
 }
@@ -314,7 +313,7 @@ void BehaviorVelocityPlannerNode::onExternalTrafficSignals(
 }
 
 void BehaviorVelocityPlannerNode::onVirtualTrafficLightStates(
-  const autoware_v2x_msgs::msg::VirtualTrafficLightStateArray::ConstSharedPtr msg)
+  const tier4_v2x_msgs::msg::VirtualTrafficLightStateArray::ConstSharedPtr msg)
 {
   planner_data_.virtual_traffic_light_states = msg;
 }

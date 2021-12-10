@@ -9,17 +9,11 @@
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
-  <depend>autoware_api_msgs</depend>
   <depend>autoware_auto_control_msgs</depend>
   <depend>autoware_auto_planning_msgs</depend>
   <depend>autoware_auto_system_msgs</depend>
   <depend>autoware_auto_vehicle_msgs</depend>
-  <depend>autoware_control_msgs</depend>
-  <depend>autoware_external_api_msgs</depend>
   <depend>autoware_iv_auto_msgs_converter</depend>
-  <depend>autoware_planning_msgs</depend>
-  <depend>autoware_v2x_msgs</depend>
-  <depend>autoware_vehicle_msgs</depend>
   <depend>diagnostic_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>nav_msgs</depend>
@@ -29,9 +23,15 @@
   <depend>std_msgs</depend>
   <depend>tf2</depend>
   <depend>tf2_geometry_msgs</depend>
+  <depend>tier4_api_msgs</depend>
+  <depend>tier4_control_msgs</depend>
+  <depend>tier4_external_api_msgs</depend>
+  <depend>tier4_planning_msgs</depend>
+  <depend>tier4_v2x_msgs</depend>
+  <depend>tier4_vehicle_msgs</depend>
 
   <exec_depend>autoware_auto_perception_msgs</exec_depend>
-  <exec_depend>autoware_perception_msgs</exec_depend>
+  <exec_depend>tier4_perception_msgs</exec_depend>
   <exec_depend>topic_tools</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>

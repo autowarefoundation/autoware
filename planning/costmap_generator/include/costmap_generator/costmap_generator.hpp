@@ -55,7 +55,7 @@
 
 #include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
-#include <autoware_planning_msgs/msg/scenario.hpp>
+#include <tier4_planning_msgs/msg/scenario.hpp>
 
 #include <grid_map_msgs/msg/grid_map.h>
 #include <message_filters/subscriber.h>
@@ -111,7 +111,7 @@ private:
   rclcpp::Subscription<autoware_auto_perception_msgs::msg::PredictedObjects>::SharedPtr
     sub_objects_;
   rclcpp::Subscription<autoware_auto_mapping_msgs::msg::HADMapBin>::SharedPtr sub_lanelet_bin_map_;
-  rclcpp::Subscription<autoware_planning_msgs::msg::Scenario>::SharedPtr sub_scenario_;
+  rclcpp::Subscription<tier4_planning_msgs::msg::Scenario>::SharedPtr sub_scenario_;
 
   rclcpp::TimerBase::SharedPtr timer_;
 
@@ -123,7 +123,7 @@ private:
   PointsToCostmap points2costmap_;
   ObjectsToCostmap objects2costmap_;
 
-  autoware_planning_msgs::msg::Scenario::ConstSharedPtr scenario_;
+  tier4_planning_msgs::msg::Scenario::ConstSharedPtr scenario_;
 
   struct LayerName
   {
@@ -149,7 +149,7 @@ private:
   /// by default
   void onPoints(const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg);
 
-  void onScenario(const autoware_planning_msgs::msg::Scenario::ConstSharedPtr msg);
+  void onScenario(const tier4_planning_msgs::msg::Scenario::ConstSharedPtr msg);
 
   void onTimer();
 

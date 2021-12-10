@@ -11,12 +11,12 @@
 
   <depend>autoware_auto_system_msgs</depend>
   <depend>autoware_auto_vehicle_msgs</depend>
-  <depend>autoware_control_msgs</depend>
   <depend>autoware_utils</depend>
   <depend>diagnostic_msgs</depend>
   <depend>fmt</depend>
   <depend>rclcpp</depend>
   <depend>std_srvs</depend>
+  <depend>tier4_control_msgs</depend>
 
   <exec_depend>diagnostic_aggregator</exec_depend>
   <exec_depend>rqt_robot_monitor</exec_depend>

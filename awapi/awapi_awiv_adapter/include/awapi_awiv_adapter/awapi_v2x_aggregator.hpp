@@ -17,8 +17,8 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_v2x_msgs/msg/infrastructure_command_array.hpp>
-#include <autoware_v2x_msgs/msg/virtual_traffic_light_state_array.hpp>
+#include <tier4_v2x_msgs/msg/infrastructure_command_array.hpp>
+#include <tier4_v2x_msgs/msg/virtual_traffic_light_state_array.hpp>
 
 #include <map>
 #include <string>
@@ -26,10 +26,10 @@
 
 namespace autoware_api
 {
-using Command = autoware_v2x_msgs::msg::InfrastructureCommand;
-using CommandArray = autoware_v2x_msgs::msg::InfrastructureCommandArray;
-using State = autoware_v2x_msgs::msg::VirtualTrafficLightState;
-using StateArray = autoware_v2x_msgs::msg::VirtualTrafficLightStateArray;
+using Command = tier4_v2x_msgs::msg::InfrastructureCommand;
+using CommandArray = tier4_v2x_msgs::msg::InfrastructureCommandArray;
+using State = tier4_v2x_msgs::msg::VirtualTrafficLightState;
+using StateArray = tier4_v2x_msgs::msg::VirtualTrafficLightStateArray;
 
 class AutowareIvV2XAggregator
 {

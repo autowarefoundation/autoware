@@ -15,8 +15,8 @@
   | `/control/command/turn_indicators_cmd` | autoware_auto_vehicle_msgs::msg::TurnIndicatorsCommand   | turn indicators command                               |
   | `/control/command/hazard_lights_cmd`   | autoware_auto_vehicle_msgs::msg::HazardLightsCommand     | hazard lights command                                 |
   | `/vehicle/engage`                      | autoware_auto_vehicle_msgs::msg::Engage                  | engage command                                        |
-  | `/vehicle/command/actuation_cmd`       | autoware_vehicle_msgs::msg::ActuationCommandStamped      | actuation (accel/brake pedal, steering wheel) command |
-  | `/control/command/emergency_cmd`       | autoware_vehicle_msgs::msg::VehicleEmergencyStamped      | emergency command                                     |
+  | `/vehicle/command/actuation_cmd`       | tier4_vehicle_msgs::msg::ActuationCommandStamped         | actuation (accel/brake pedal, steering wheel) command |
+  | `/control/command/emergency_cmd`       | tier4_vehicle_msgs::msg::VehicleEmergencyStamped         | emergency command                                     |
 
 - From Pacmod
 

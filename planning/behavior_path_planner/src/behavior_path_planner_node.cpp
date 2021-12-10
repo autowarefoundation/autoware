@@ -32,7 +32,7 @@
 
 namespace behavior_path_planner
 {
-using autoware_planning_msgs::msg::PathChangeModuleId;
+using tier4_planning_msgs::msg::PathChangeModuleId;
 using vehicle_info_util::VehicleInfoUtil;
 
 BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & node_options)

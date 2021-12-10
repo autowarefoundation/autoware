@@ -1,0 +1,16 @@
+std_msgs/Header header
+geometry_msgs/Pose pose
+tier4_api_msgs/Euler eulerangle
+geographic_msgs/GeoPoint geo_point
+float64 velocity
+float64 acceleration
+float64 steering
+float64 steering_velocity
+float64 angular_velocity
+int32 gear
+float32 energy_level
+int32 turn_signal
+float64 target_velocity
+float64 target_acceleration
+float64 target_steering
+float64 target_steering_velocity

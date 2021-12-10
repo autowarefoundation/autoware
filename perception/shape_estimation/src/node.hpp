@@ -20,12 +20,12 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
-#include <autoware_perception_msgs/msg/detected_objects_with_feature.hpp>
+#include <tier4_perception_msgs/msg/detected_objects_with_feature.hpp>
 
 #include <memory>
 
 using autoware_auto_perception_msgs::msg::DetectedObjects;
-using autoware_perception_msgs::msg::DetectedObjectsWithFeature;
+using tier4_perception_msgs::msg::DetectedObjectsWithFeature;
 class ShapeEstimationNode : public rclcpp::Node
 {
 private:

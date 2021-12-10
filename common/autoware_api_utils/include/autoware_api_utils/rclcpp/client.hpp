@@ -29,7 +29,7 @@ class Client
 public:
   RCLCPP_SMART_PTR_DEFINITIONS(Client)
 
-  using ResponseStatus = autoware_external_api_msgs::msg::ResponseStatus;
+  using ResponseStatus = tier4_external_api_msgs::msg::ResponseStatus;
   using AutowareServiceResult = std::pair<ResponseStatus, typename ServiceT::Response::SharedPtr>;
 
   Client(typename rclcpp::Client<ServiceT>::SharedPtr client, rclcpp::Logger logger)

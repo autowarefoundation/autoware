@@ -17,59 +17,59 @@
 
 #include "rclcpp/rclcpp.hpp"
 
-#include "autoware_external_api_msgs/msg/response_status.hpp"
+#include "tier4_external_api_msgs/msg/response_status.hpp"
 
 #include <string>
 
 namespace autoware_api_utils
 {
-using ResponseStatus = autoware_external_api_msgs::msg::ResponseStatus;
+using ResponseStatus = tier4_external_api_msgs::msg::ResponseStatus;
 
-inline bool is_success(const autoware_external_api_msgs::msg::ResponseStatus & status)
+inline bool is_success(const tier4_external_api_msgs::msg::ResponseStatus & status)
 {
-  return status.code == autoware_external_api_msgs::msg::ResponseStatus::SUCCESS;
+  return status.code == tier4_external_api_msgs::msg::ResponseStatus::SUCCESS;
 }
 
-inline bool is_ignored(const autoware_external_api_msgs::msg::ResponseStatus & status)
+inline bool is_ignored(const tier4_external_api_msgs::msg::ResponseStatus & status)
 {
-  return status.code == autoware_external_api_msgs::msg::ResponseStatus::IGNORED;
+  return status.code == tier4_external_api_msgs::msg::ResponseStatus::IGNORED;
 }
 
-inline bool is_warn(const autoware_external_api_msgs::msg::ResponseStatus & status)
+inline bool is_warn(const tier4_external_api_msgs::msg::ResponseStatus & status)
 {
-  return status.code == autoware_external_api_msgs::msg::ResponseStatus::WARN;
+  return status.code == tier4_external_api_msgs::msg::ResponseStatus::WARN;
 }
 
-inline bool is_error(const autoware_external_api_msgs::msg::ResponseStatus & status)
+inline bool is_error(const tier4_external_api_msgs::msg::ResponseStatus & status)
 {
-  return status.code == autoware_external_api_msgs::msg::ResponseStatus::ERROR;
+  return status.code == tier4_external_api_msgs::msg::ResponseStatus::ERROR;
 }
 
 inline ResponseStatus response_success(const std::string & message = "")
 {
-  return autoware_external_api_msgs::build<autoware_external_api_msgs::msg::ResponseStatus>()
-    .code(autoware_external_api_msgs::msg::ResponseStatus::SUCCESS)
+  return tier4_external_api_msgs::build<tier4_external_api_msgs::msg::ResponseStatus>()
+    .code(tier4_external_api_msgs::msg::ResponseStatus::SUCCESS)
     .message(message);
 }
 
 inline ResponseStatus response_ignored(const std::string & message = "")
 {
-  return autoware_external_api_msgs::build<autoware_external_api_msgs::msg::ResponseStatus>()
-    .code(autoware_external_api_msgs::msg::ResponseStatus::IGNORED)
+  return tier4_external_api_msgs::build<tier4_external_api_msgs::msg::ResponseStatus>()
+    .code(tier4_external_api_msgs::msg::ResponseStatus::IGNORED)
     .message(message);
 }
 
 inline ResponseStatus response_warn(const std::string & message = "")
 {
-  return autoware_external_api_msgs::build<autoware_external_api_msgs::msg::ResponseStatus>()
-    .code(autoware_external_api_msgs::msg::ResponseStatus::WARN)
+  return tier4_external_api_msgs::build<tier4_external_api_msgs::msg::ResponseStatus>()
+    .code(tier4_external_api_msgs::msg::ResponseStatus::WARN)
     .message(message);
 }
 
 inline ResponseStatus response_error(const std::string & message = "")
 {
-  return autoware_external_api_msgs::build<autoware_external_api_msgs::msg::ResponseStatus>()
-    .code(autoware_external_api_msgs::msg::ResponseStatus::ERROR)
+  return tier4_external_api_msgs::build<tier4_external_api_msgs::msg::ResponseStatus>()
+    .code(tier4_external_api_msgs::msg::ResponseStatus::ERROR)
     .message(message);
 }
 

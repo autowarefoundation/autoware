@@ -19,7 +19,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_api_msgs/msg/awapi_vehicle_status.hpp>
+#include <tier4_api_msgs/msg/awapi_vehicle_status.hpp>
 
 #include <memory>
 
@@ -33,36 +33,36 @@ public:
 
 private:
   // publisher
-  rclcpp::Publisher<autoware_api_msgs::msg::AwapiVehicleStatus>::SharedPtr pub_state_;
+  rclcpp::Publisher<tier4_api_msgs::msg::AwapiVehicleStatus>::SharedPtr pub_state_;
 
-  autoware_api_msgs::msg::AwapiVehicleStatus initVehicleStatus();
+  tier4_api_msgs::msg::AwapiVehicleStatus initVehicleStatus();
   void getPoseInfo(
     const std::shared_ptr<geometry_msgs::msg::PoseStamped> & pose_ptr,
-    autoware_api_msgs::msg::AwapiVehicleStatus * status);
+    tier4_api_msgs::msg::AwapiVehicleStatus * status);
   void getSteerInfo(
     const autoware_auto_vehicle_msgs::msg::SteeringReport::ConstSharedPtr & steer_ptr,
-    autoware_api_msgs::msg::AwapiVehicleStatus * status);
+    tier4_api_msgs::msg::AwapiVehicleStatus * status);
   void getVehicleCmdInfo(
     const autoware_auto_control_msgs::msg::AckermannControlCommand::ConstSharedPtr &
       vehicle_cmd_ptr,
-    autoware_api_msgs::msg::AwapiVehicleStatus * status);
+    tier4_api_msgs::msg::AwapiVehicleStatus * status);
   void getTurnSignalInfo(
     const autoware_auto_vehicle_msgs::msg::TurnIndicatorsReport::ConstSharedPtr &
       turn_indicators_ptr,
     const autoware_auto_vehicle_msgs::msg::HazardLightsReport::ConstSharedPtr & hazard_lights_ptr,
-    autoware_api_msgs::msg::AwapiVehicleStatus * status);
+    tier4_api_msgs::msg::AwapiVehicleStatus * status);
   void getTwistInfo(
     const nav_msgs::msg::Odometry::ConstSharedPtr & odometry_ptr,
-    autoware_api_msgs::msg::AwapiVehicleStatus * status);
+    tier4_api_msgs::msg::AwapiVehicleStatus * status);
   void getGearInfo(
     const autoware_auto_vehicle_msgs::msg::GearReport::ConstSharedPtr & gear_ptr,
-    autoware_api_msgs::msg::AwapiVehicleStatus * status);
+    tier4_api_msgs::msg::AwapiVehicleStatus * status);
   void getBatteryInfo(
-    const autoware_vehicle_msgs::msg::BatteryStatus::ConstSharedPtr & battery_ptr,
-    autoware_api_msgs::msg::AwapiVehicleStatus * status);
+    const tier4_vehicle_msgs::msg::BatteryStatus::ConstSharedPtr & battery_ptr,
+    tier4_api_msgs::msg::AwapiVehicleStatus * status);
   void getGpsInfo(
     const sensor_msgs::msg::NavSatFix::ConstSharedPtr & nav_sat_ptr,
-    autoware_api_msgs::msg::AwapiVehicleStatus * status);
+    tier4_api_msgs::msg::AwapiVehicleStatus * status);
 
   rclcpp::Logger logger_;
   rclcpp::Clock::SharedPtr clock_;

@@ -24,12 +24,12 @@ AutowareIvLaneChangeStatePublisher::AutowareIvLaneChangeStatePublisher(rclcpp::N
 {
   // publisher
   pub_state_ =
-    node.create_publisher<autoware_api_msgs::msg::LaneChangeStatus>("output/lane_change_status", 1);
+    node.create_publisher<tier4_api_msgs::msg::LaneChangeStatus>("output/lane_change_status", 1);
 }
 
 void AutowareIvLaneChangeStatePublisher::statePublisher(const AutowareInfo & aw_info)
 {
-  autoware_api_msgs::msg::LaneChangeStatus status;
+  tier4_api_msgs::msg::LaneChangeStatus status;
 
   // input header
   status.header.frame_id = "base_link";
@@ -45,8 +45,8 @@ void AutowareIvLaneChangeStatePublisher::statePublisher(const AutowareInfo & aw_
 }
 
 void AutowareIvLaneChangeStatePublisher::getLaneChangeAvailableInfo(
-  const autoware_planning_msgs::msg::LaneChangeStatus::ConstSharedPtr & available_ptr,
-  autoware_api_msgs::msg::LaneChangeStatus * status)
+  const tier4_planning_msgs::msg::LaneChangeStatus::ConstSharedPtr & available_ptr,
+  tier4_api_msgs::msg::LaneChangeStatus * status)
 {
   if (!available_ptr) {
     RCLCPP_DEBUG_STREAM_THROTTLE(
@@ -59,8 +59,8 @@ void AutowareIvLaneChangeStatePublisher::getLaneChangeAvailableInfo(
 }
 
 void AutowareIvLaneChangeStatePublisher::getLaneChangeReadyInfo(
-  const autoware_planning_msgs::msg::LaneChangeStatus::ConstSharedPtr & ready_ptr,
-  autoware_api_msgs::msg::LaneChangeStatus * status)
+  const tier4_planning_msgs::msg::LaneChangeStatus::ConstSharedPtr & ready_ptr,
+  tier4_api_msgs::msg::LaneChangeStatus * status)
 {
   if (!ready_ptr) {
     RCLCPP_DEBUG_STREAM_THROTTLE(logger_, *clock_, 5000 /* ms */, "lane change ready is nullptr");
@@ -73,7 +73,7 @@ void AutowareIvLaneChangeStatePublisher::getLaneChangeReadyInfo(
 
 void AutowareIvLaneChangeStatePublisher::getCandidatePathInfo(
   const autoware_auto_planning_msgs::msg::Path::ConstSharedPtr & path_ptr,
-  autoware_api_msgs::msg::LaneChangeStatus * status)
+  tier4_api_msgs::msg::LaneChangeStatus * status)
 {
   if (!path_ptr) {
     RCLCPP_DEBUG_STREAM_THROTTLE(

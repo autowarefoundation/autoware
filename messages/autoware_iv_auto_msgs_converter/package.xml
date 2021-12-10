@@ -13,9 +13,9 @@
   <depend>autoware_auto_planning_msgs</depend>
   <depend>autoware_auto_system_msgs</depend>
   <depend>autoware_auto_vehicle_msgs</depend>
-  <depend>autoware_planning_msgs</depend>
-  <depend>autoware_system_msgs</depend>
-  <depend>autoware_vehicle_msgs</depend>
+  <depend>tier4_planning_msgs</depend>
+  <depend>tier4_system_msgs</depend>
+  <depend>tier4_vehicle_msgs</depend>
 
   <test_depend>ament_lint_auto</test_depend>
 

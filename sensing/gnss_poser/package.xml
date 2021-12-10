@@ -9,7 +9,6 @@
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
-  <depend>autoware_debug_msgs</depend>
   <depend>geo_pos_conv</depend>
   <depend>geographiclib</depend>
   <depend>geometry_msgs</depend>
@@ -17,6 +16,7 @@
   <depend>tf2</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2_ros</depend>
+  <depend>tier4_debug_msgs</depend>
   <depend>ublox_msgs</depend>
 
   <exec_depend>rclcpp</exec_depend>

@@ -53,7 +53,7 @@ DualReturnOutlierFilterComponent::DualReturnOutlierFilterComponent(
 
   image_pub_ =
     image_transport::create_publisher(this, "/dual_return_outlier_filter/frequency_image");
-  visibility_pub_ = create_publisher<autoware_debug_msgs::msg::Float32Stamped>(
+  visibility_pub_ = create_publisher<tier4_debug_msgs::msg::Float32Stamped>(
     "/dual_return_outlier_filter/visibility", rclcpp::SensorDataQoS());
   noise_cloud_pub_ = create_publisher<sensor_msgs::msg::PointCloud2>(
     "/dual_return_outlier_filter/pointcloud_noise", rclcpp::SensorDataQoS());
@@ -236,7 +236,7 @@ void DualReturnOutlierFilterComponent::filter(
 
   // Publish histogram image
   image_pub_.publish(frequency_image_msg);
-  autoware_debug_msgs::msg::Float32Stamped visibility_msg;
+  tier4_debug_msgs::msg::Float32Stamped visibility_msg;
   visibility_msg.data = (1.0f - filled);
   visibility_msg.stamp = now();
   visibility_pub_->publish(visibility_msg);

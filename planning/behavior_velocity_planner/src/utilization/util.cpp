@@ -244,16 +244,16 @@ double calcJudgeLineDistWithJerkLimit(
   return std::max(0.0, x1 + x2 + x3);
 }
 
-autoware_planning_msgs::msg::StopReason initializeStopReason(const std::string & stop_reason)
+tier4_planning_msgs::msg::StopReason initializeStopReason(const std::string & stop_reason)
 {
-  autoware_planning_msgs::msg::StopReason stop_reason_msg;
+  tier4_planning_msgs::msg::StopReason stop_reason_msg;
   stop_reason_msg.reason = stop_reason;
   return stop_reason_msg;
 }
 
 void appendStopReason(
-  const autoware_planning_msgs::msg::StopFactor stop_factor,
-  autoware_planning_msgs::msg::StopReason * stop_reason)
+  const tier4_planning_msgs::msg::StopFactor stop_factor,
+  tier4_planning_msgs::msg::StopReason * stop_reason)
 {
   stop_reason->stop_factors.emplace_back(stop_factor);
 }

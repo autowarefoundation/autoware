@@ -1,2 +1,0 @@
-builtin_interfaces/Time stamp
-autoware_external_api_msgs/VehicleCommand command

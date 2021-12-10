@@ -21,8 +21,6 @@
 #include <autoware_auto_planning_msgs/msg/path_point.hpp>
 #include <autoware_auto_planning_msgs/msg/trajectory.hpp>
 #include <autoware_auto_planning_msgs/msg/trajectory_point.hpp>
-#include <autoware_planning_msgs/msg/enable_avoidance.hpp>
-#include <autoware_planning_msgs/msg/is_avoidance_possible.hpp>
 #include <geometry_msgs/msg/point.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/twist.hpp>
@@ -30,6 +28,8 @@
 #include <nav_msgs/msg/map_meta_data.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
 #include <nav_msgs/msg/odometry.hpp>
+#include <tier4_planning_msgs/msg/enable_avoidance.hpp>
+#include <tier4_planning_msgs/msg/is_avoidance_possible.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
 #include <boost/optional/optional_fwd.hpp>
@@ -111,7 +111,7 @@ private:
   rclcpp::Publisher<autoware_auto_planning_msgs::msg::Trajectory>::SharedPtr avoiding_traj_pub_;
   rclcpp::Publisher<autoware_auto_planning_msgs::msg::Trajectory>::SharedPtr
     debug_smoothed_points_pub_;
-  rclcpp::Publisher<autoware_planning_msgs::msg::IsAvoidancePossible>::SharedPtr
+  rclcpp::Publisher<tier4_planning_msgs::msg::IsAvoidancePossible>::SharedPtr
     is_avoidance_possible_pub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr debug_markers_pub_;
   rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr debug_clearance_map_pub_;
@@ -121,13 +121,13 @@ private:
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
   rclcpp::Subscription<autoware_auto_perception_msgs::msg::PredictedObjects>::SharedPtr
     objects_sub_;
-  rclcpp::Subscription<autoware_planning_msgs::msg::EnableAvoidance>::SharedPtr is_avoidance_sub_;
+  rclcpp::Subscription<tier4_planning_msgs::msg::EnableAvoidance>::SharedPtr is_avoidance_sub_;
 
   // callback functions
   void pathCallback(const autoware_auto_planning_msgs::msg::Path::SharedPtr);
   void odomCallback(const nav_msgs::msg::Odometry::SharedPtr);
   void objectsCallback(const autoware_auto_perception_msgs::msg::PredictedObjects::SharedPtr);
-  void enableAvoidanceCallback(const autoware_planning_msgs::msg::EnableAvoidance::SharedPtr);
+  void enableAvoidanceCallback(const tier4_planning_msgs::msg::EnableAvoidance::SharedPtr);
 
   void initialize();
 

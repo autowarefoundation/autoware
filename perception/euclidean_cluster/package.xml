@@ -10,7 +10,6 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
   <depend>autoware_auto_perception_msgs</depend>
-  <depend>autoware_perception_msgs</depend>
   <depend>compare_map_segmentation</depend>
   <depend>geometry_msgs</depend>
   <depend>libpcl-all-dev</depend>
@@ -18,6 +17,7 @@
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>sensor_msgs</depend>
+  <depend>tier4_perception_msgs</depend>
 
   <test_depend>autoware_lint_common</test_depend>
 

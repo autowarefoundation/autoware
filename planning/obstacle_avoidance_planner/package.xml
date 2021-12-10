@@ -12,7 +12,6 @@
 
   <depend>autoware_auto_perception_msgs</depend>
   <depend>autoware_auto_planning_msgs</depend>
-  <depend>autoware_planning_msgs</depend>
   <depend>autoware_utils</depend>
   <depend>geometry_msgs</depend>
   <depend>interpolation</depend>
@@ -22,6 +21,7 @@
   <depend>rclcpp_components</depend>
   <depend>std_msgs</depend>
   <depend>tf2_ros</depend>
+  <depend>tier4_planning_msgs</depend>
   <depend>vehicle_info_util</depend>
   <depend>visualization_msgs</depend>
 

@@ -68,7 +68,7 @@ void InitialPoseButtonPanel::onInitialize()
     topic_edit_->text().toStdString(), 10,
     std::bind(&InitialPoseButtonPanel::callbackPoseCov, this, std::placeholders::_1));
 
-  client_ = raw_node->create_client<autoware_localization_msgs::srv::PoseWithCovarianceStamped>(
+  client_ = raw_node->create_client<tier4_localization_msgs::srv::PoseWithCovarianceStamped>(
     "/localization/util/initialize_pose");
 }
 
@@ -101,15 +101,13 @@ void InitialPoseButtonPanel::pushInitializeButton()
   status_label_->setText("Initializing...");
 
   std::thread thread([this] {
-    auto req =
-      std::make_shared<autoware_localization_msgs::srv::PoseWithCovarianceStamped::Request>();
+    auto req = std::make_shared<tier4_localization_msgs::srv::PoseWithCovarianceStamped::Request>();
     req->pose_with_covariance = pose_cov_msg_;
 
     client_->async_send_request(
       req,
-      [this](
-        rclcpp::Client<autoware_localization_msgs::srv::PoseWithCovarianceStamped>::SharedFuture
-          result) {
+      [this](rclcpp::Client<tier4_localization_msgs::srv::PoseWithCovarianceStamped>::SharedFuture
+               result) {
         status_label_->setStyleSheet("QLabel { background-color : lightgreen;}");
         status_label_->setText("OK!!!");
 

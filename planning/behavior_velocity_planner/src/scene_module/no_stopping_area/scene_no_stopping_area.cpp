@@ -177,7 +177,7 @@ boost::optional<LineString2d> NoStoppingAreaModule::getStopLineGeometry2d(
 
 bool NoStoppingAreaModule::modifyPathVelocity(
   autoware_auto_planning_msgs::msg::PathWithLaneId * path,
-  autoware_planning_msgs::msg::StopReason * stop_reason)
+  tier4_planning_msgs::msg::StopReason * stop_reason)
 {
   // Store original path
   const auto original_path = *path;
@@ -190,7 +190,7 @@ bool NoStoppingAreaModule::modifyPathVelocity(
   debug_data_ = DebugData();
   debug_data_.base_link2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
   *stop_reason =
-    planning_utils::initializeStopReason(autoware_planning_msgs::msg::StopReason::NO_STOPPING_AREA);
+    planning_utils::initializeStopReason(tier4_planning_msgs::msg::StopReason::NO_STOPPING_AREA);
   // Get stop line geometry
   const auto stop_line = getStopLineGeometry2d(original_path, planner_param_.stop_line_margin);
   if (!stop_line) {
@@ -249,7 +249,7 @@ bool NoStoppingAreaModule::modifyPathVelocity(
 
     // Create StopReason
     {
-      autoware_planning_msgs::msg::StopFactor stop_factor;
+      tier4_planning_msgs::msg::StopFactor stop_factor;
       stop_factor.stop_pose = stop_point->second;
       stop_factor.stop_factor_points = debug_data_.stuck_points;
       planning_utils::appendStopReason(stop_factor, stop_reason);

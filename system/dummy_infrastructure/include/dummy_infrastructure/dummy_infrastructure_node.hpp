@@ -17,8 +17,8 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_v2x_msgs/msg/infrastructure_command_array.hpp>
-#include <autoware_v2x_msgs/msg/virtual_traffic_light_state_array.hpp>
+#include <tier4_v2x_msgs/msg/infrastructure_command_array.hpp>
+#include <tier4_v2x_msgs/msg/virtual_traffic_light_state_array.hpp>
 
 #include <chrono>
 #include <memory>
@@ -27,10 +27,10 @@
 
 namespace dummy_infrastructure
 {
-using autoware_v2x_msgs::msg::InfrastructureCommand;
-using autoware_v2x_msgs::msg::InfrastructureCommandArray;
-using autoware_v2x_msgs::msg::VirtualTrafficLightState;
-using autoware_v2x_msgs::msg::VirtualTrafficLightStateArray;
+using tier4_v2x_msgs::msg::InfrastructureCommand;
+using tier4_v2x_msgs::msg::InfrastructureCommandArray;
+using tier4_v2x_msgs::msg::VirtualTrafficLightState;
+using tier4_v2x_msgs::msg::VirtualTrafficLightStateArray;
 
 class DummyInfrastructureNode : public rclcpp::Node
 {

@@ -17,11 +17,11 @@ The `twist.angular` is calculated as `d_roll / dt`, `d_pitch / dt` and `d_yaw / 
 
 ### Output
 
-| Name      | Type                                     | Description                                   |
-| --------- | ---------------------------------------- | --------------------------------------------- |
-| twist     | geometry_msgs::msg::TwistStamped         | twist calculated from the input pose history. |
-| linear_x  | autoware_debug_msgs::msg::Float32Stamped | linear-x field of the output twist.           |
-| angular_z | autoware_debug_msgs::msg::Float32Stamped | angular-z field of the output twist.          |
+| Name      | Type                                  | Description                                   |
+| --------- | ------------------------------------- | --------------------------------------------- |
+| twist     | geometry_msgs::msg::TwistStamped      | twist calculated from the input pose history. |
+| linear_x  | tier4_debug_msgs::msg::Float32Stamped | linear-x field of the output twist.           |
+| angular_z | tier4_debug_msgs::msg::Float32Stamped | angular-z field of the output twist.          |
 
 ## Parameters
 

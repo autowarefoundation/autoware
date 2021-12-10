@@ -19,7 +19,7 @@
 
 | Name                 | Type                                    | Description                                    |
 | -------------------- | --------------------------------------- | ---------------------------------------------- |
-| `~output/scenario`   | autoware_planning_msgs::Scenario        | current scenario and scenarios to be activated |
+| `~output/scenario`   | tier4_planning_msgs::Scenario           | current scenario and scenarios to be activated |
 | `~output/trajectory` | autoware_auto_planning_msgs::Trajectory | trajectory to be followed                      |
 
 ### Output TFs

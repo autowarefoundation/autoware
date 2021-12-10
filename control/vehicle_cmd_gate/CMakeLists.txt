@@ -36,7 +36,7 @@ if(BUILD_TESTING)
   )
   ament_target_dependencies(test_vehicle_cmd_gate
     rclcpp
-    autoware_control_msgs
+    tier4_control_msgs
   )
   target_link_libraries(test_vehicle_cmd_gate
     vehicle_cmd_gate_node

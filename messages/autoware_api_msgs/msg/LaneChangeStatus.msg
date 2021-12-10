@@ -1,4 +1,0 @@
-std_msgs/Header header
-bool force_lane_change_available
-bool lane_change_ready
-autoware_planning_msgs/Path candidate_path

@@ -101,7 +101,7 @@ TensorrtYoloNodelet::TensorrtYoloNodelet(const rclcpp::NodeOptions & options)
 
   std::lock_guard<std::mutex> lock(connect_mutex_);
 
-  objects_pub_ = this->create_publisher<autoware_perception_msgs::msg::DetectedObjectsWithFeature>(
+  objects_pub_ = this->create_publisher<tier4_perception_msgs::msg::DetectedObjectsWithFeature>(
     "out/objects", 1);
   image_pub_ = image_transport::create_publisher(this, "out/image");
 
@@ -130,7 +130,7 @@ void TensorrtYoloNodelet::callback(const sensor_msgs::msg::Image::ConstSharedPtr
 {
   using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
 
-  autoware_perception_msgs::msg::DetectedObjectsWithFeature out_objects;
+  tier4_perception_msgs::msg::DetectedObjectsWithFeature out_objects;
 
   cv_bridge::CvImagePtr in_image_ptr;
   try {
@@ -150,7 +150,7 @@ void TensorrtYoloNodelet::callback(const sensor_msgs::msg::Image::ConstSharedPtr
     if (out_scores_[i] < yolo_config_.ignore_thresh) {
       break;
     }
-    autoware_perception_msgs::msg::DetectedObjectWithFeature object;
+    tier4_perception_msgs::msg::DetectedObjectWithFeature object;
     object.feature.roi.x_offset = out_boxes_[4 * i] * width;
     object.feature.roi.y_offset = out_boxes_[4 * i + 1] * height;
     object.feature.roi.width = out_boxes_[4 * i + 2] * width;

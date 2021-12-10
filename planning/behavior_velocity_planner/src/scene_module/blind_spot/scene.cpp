@@ -58,11 +58,11 @@ BlindSpotModule::BlindSpotModule(
 
 bool BlindSpotModule::modifyPathVelocity(
   autoware_auto_planning_msgs::msg::PathWithLaneId * path,
-  autoware_planning_msgs::msg::StopReason * stop_reason)
+  tier4_planning_msgs::msg::StopReason * stop_reason)
 {
   debug_data_ = DebugData();
   *stop_reason =
-    planning_utils::initializeStopReason(autoware_planning_msgs::msg::StopReason::BLIND_SPOT);
+    planning_utils::initializeStopReason(tier4_planning_msgs::msg::StopReason::BLIND_SPOT);
 
   const auto input_path = *path;
   debug_data_.path_raw = input_path;
@@ -138,7 +138,7 @@ bool BlindSpotModule::modifyPathVelocity(
     util::setVelocityFrom(stop_line_idx, stop_vel, path);
 
     /* get stop point and stop factor */
-    autoware_planning_msgs::msg::StopFactor stop_factor;
+    tier4_planning_msgs::msg::StopFactor stop_factor;
     stop_factor.stop_pose = debug_data_.stop_point_pose;
     stop_factor.stop_factor_points = planning_utils::toRosPoints(debug_data_.conflicting_targets);
     planning_utils::appendStopReason(stop_factor, stop_reason);

@@ -19,7 +19,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_api_msgs/msg/obstacle_avoidance_status.hpp>
+#include <tier4_api_msgs/msg/obstacle_avoidance_status.hpp>
 
 namespace autoware_api
 {
@@ -34,14 +34,14 @@ private:
   rclcpp::Clock::SharedPtr clock_;
 
   // publisher
-  rclcpp::Publisher<autoware_api_msgs::msg::ObstacleAvoidanceStatus>::SharedPtr pub_state_;
+  rclcpp::Publisher<tier4_api_msgs::msg::ObstacleAvoidanceStatus>::SharedPtr pub_state_;
 
   void getObstacleAvoidReadyInfo(
-    const autoware_planning_msgs::msg::IsAvoidancePossible::ConstSharedPtr & ready_ptr,
-    autoware_api_msgs::msg::ObstacleAvoidanceStatus * status);
+    const tier4_planning_msgs::msg::IsAvoidancePossible::ConstSharedPtr & ready_ptr,
+    tier4_api_msgs::msg::ObstacleAvoidanceStatus * status);
   void getCandidatePathInfo(
     const autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr & path_ptr,
-    autoware_api_msgs::msg::ObstacleAvoidanceStatus * status);
+    tier4_api_msgs::msg::ObstacleAvoidanceStatus * status);
 };
 
 }  // namespace autoware_api

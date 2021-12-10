@@ -77,7 +77,7 @@ void TrafficLightModuleManager::modifyPathVelocity(
   autoware_auto_planning_msgs::msg::PathWithLaneId * path)
 {
   visualization_msgs::msg::MarkerArray debug_marker_array;
-  autoware_planning_msgs::msg::StopReasonArray stop_reason_array;
+  tier4_planning_msgs::msg::StopReasonArray stop_reason_array;
   autoware_auto_perception_msgs::msg::LookingTrafficSignal tl_state;
 
   tl_state.header.stamp = path->header.stamp;
@@ -88,7 +88,7 @@ void TrafficLightModuleManager::modifyPathVelocity(
   first_stop_path_point_index_ = static_cast<int>(path->points.size() - 1);
   first_ref_stop_path_point_index_ = static_cast<int>(path->points.size() - 1);
   for (const auto & scene_module : scene_modules_) {
-    autoware_planning_msgs::msg::StopReason stop_reason;
+    tier4_planning_msgs::msg::StopReason stop_reason;
     std::shared_ptr<TrafficLightModule> traffic_light_scene_module(
       std::dynamic_pointer_cast<TrafficLightModule>(scene_module));
     traffic_light_scene_module->setPlannerData(planner_data_);

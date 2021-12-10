@@ -17,13 +17,13 @@
 import hashlib
 import pathlib
 
-from autoware_external_api_msgs.msg import MapHash
-from autoware_external_api_msgs.msg import ResponseStatus
-from autoware_external_api_msgs.srv import GetTextFile
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSDurabilityPolicy
 from rclpy.qos import QoSProfile
+from tier4_external_api_msgs.msg import MapHash
+from tier4_external_api_msgs.msg import ResponseStatus
+from tier4_external_api_msgs.srv import GetTextFile
 
 
 class MapHashGenerator(Node):

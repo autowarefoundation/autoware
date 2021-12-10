@@ -30,8 +30,8 @@
 #include "rviz_common/properties/ros_topic_property.hpp"
 #endif
 
-#include "autoware_vehicle_msgs/srv/update_accel_brake_map.hpp"
 #include "std_msgs/msg/bool.hpp"
+#include "tier4_vehicle_msgs/srv/update_accel_brake_map.hpp"
 
 namespace autoware_calibration_rviz_plugin
 {
@@ -50,7 +50,7 @@ public Q_SLOTS:
 
 protected:
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr update_suggest_sub_;
-  rclcpp::Client<autoware_vehicle_msgs::srv::UpdateAccelBrakeMap>::SharedPtr client_;
+  rclcpp::Client<tier4_vehicle_msgs::srv::UpdateAccelBrakeMap>::SharedPtr client_;
 
   bool after_calib_ = false;
 

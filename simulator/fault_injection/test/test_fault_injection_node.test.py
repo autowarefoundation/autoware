@@ -17,8 +17,6 @@ import time
 import unittest
 
 from ament_index_python.packages import get_package_share_directory
-from autoware_simulation_msgs.msg import FaultInjectionEvent
-from autoware_simulation_msgs.msg import SimulationEvents
 from diagnostic_msgs.msg import DiagnosticArray
 from diagnostic_msgs.msg import DiagnosticStatus
 import launch
@@ -28,6 +26,8 @@ from launch.logging import get_logger
 import launch_testing
 import pytest
 import rclpy
+from tier4_simulation_msgs.msg import FaultInjectionEvent
+from tier4_simulation_msgs.msg import SimulationEvents
 
 logger = get_logger(__name__)
 

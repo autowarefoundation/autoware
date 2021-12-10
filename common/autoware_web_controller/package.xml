@@ -11,10 +11,10 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <exec_depend>autoware_auto_system_msgs</exec_depend>
-  <exec_depend>autoware_control_msgs</exec_depend>
-  <exec_depend>autoware_planning_msgs</exec_depend>
   <exec_depend>rosbridge_server</exec_depend>
   <exec_depend>std_msgs</exec_depend>
+  <exec_depend>tier4_control_msgs</exec_depend>
+  <exec_depend>tier4_planning_msgs</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

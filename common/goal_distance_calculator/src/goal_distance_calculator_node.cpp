@@ -18,7 +18,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/timer.hpp>
 
-#include <autoware_debug_msgs/msg/float64_stamped.hpp>
+#include <tier4_debug_msgs/msg/float64_stamped.hpp>
 
 #include <chrono>
 #include <functional>
@@ -115,13 +115,12 @@ void GoalDistanceCalculatorNode::onTimer()
     using autoware_utils::rad2deg;
     const auto & deviation = output_.goal_deviation;
 
-    debug_publisher_.publish<autoware_debug_msgs::msg::Float64Stamped>(
+    debug_publisher_.publish<tier4_debug_msgs::msg::Float64Stamped>(
       "deviation/lateral", deviation.lateral);
-    debug_publisher_.publish<autoware_debug_msgs::msg::Float64Stamped>(
+    debug_publisher_.publish<tier4_debug_msgs::msg::Float64Stamped>(
       "deviation/longitudinal", deviation.longitudinal);
-    debug_publisher_.publish<autoware_debug_msgs::msg::Float64Stamped>(
-      "deviation/yaw", deviation.yaw);
-    debug_publisher_.publish<autoware_debug_msgs::msg::Float64Stamped>(
+    debug_publisher_.publish<tier4_debug_msgs::msg::Float64Stamped>("deviation/yaw", deviation.yaw);
+    debug_publisher_.publish<tier4_debug_msgs::msg::Float64Stamped>(
       "deviation/yaw_deg", rad2deg(deviation.yaw));
     RCLCPP_INFO_THROTTLE(
       this->get_logger(), *this->get_clock(), 1000,

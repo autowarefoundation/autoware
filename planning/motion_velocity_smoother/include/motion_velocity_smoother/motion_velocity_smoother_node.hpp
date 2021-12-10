@@ -32,10 +32,10 @@
 
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
-#include "autoware_debug_msgs/msg/float32_stamped.hpp"         // temporary
-#include "autoware_planning_msgs/msg/stop_speed_exceeded.hpp"  // temporary
-#include "autoware_planning_msgs/msg/velocity_limit.hpp"       // temporary
 #include "nav_msgs/msg/odometry.hpp"
+#include "tier4_debug_msgs/msg/float32_stamped.hpp"         // temporary
+#include "tier4_planning_msgs/msg/stop_speed_exceeded.hpp"  // temporary
+#include "tier4_planning_msgs/msg/velocity_limit.hpp"       // temporary
 
 #include <iostream>
 #include <memory>
@@ -54,12 +54,12 @@ namespace motion_velocity_smoother
 using autoware_auto_planning_msgs::msg::Trajectory;
 using autoware_auto_planning_msgs::msg::TrajectoryPoint;
 using TrajectoryPoints = std::vector<TrajectoryPoint>;
-using autoware_debug_msgs::msg::Float32Stamped;        // temporary
-using autoware_planning_msgs::msg::StopSpeedExceeded;  // temporary
-using autoware_planning_msgs::msg::VelocityLimit;      // temporary
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::PoseStamped;
 using nav_msgs::msg::Odometry;
+using tier4_debug_msgs::msg::Float32Stamped;        // temporary
+using tier4_planning_msgs::msg::StopSpeedExceeded;  // temporary
+using tier4_planning_msgs::msg::VelocityLimit;      // temporary
 
 class MotionVelocitySmootherNode : public rclcpp::Node
 {

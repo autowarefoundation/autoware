@@ -24,7 +24,7 @@ SurroundObstacleCheckerDebugNode::SurroundObstacleCheckerDebugNode(
 {
   debug_viz_pub_ = node.create_publisher<visualization_msgs::msg::MarkerArray>("~/debug/marker", 1);
   stop_reason_pub_ =
-    node.create_publisher<autoware_planning_msgs::msg::StopReasonArray>("~/output/stop_reasons", 1);
+    node.create_publisher<tier4_planning_msgs::msg::StopReasonArray>("~/output/stop_reasons", 1);
 }
 
 bool SurroundObstacleCheckerDebugNode::pushPose(
@@ -154,7 +154,7 @@ visualization_msgs::msg::MarkerArray SurroundObstacleCheckerDebugNode::makeVisua
   return msg;
 }
 
-autoware_planning_msgs::msg::StopReasonArray SurroundObstacleCheckerDebugNode::makeStopReasonArray()
+tier4_planning_msgs::msg::StopReasonArray SurroundObstacleCheckerDebugNode::makeStopReasonArray()
 {
   // create header
   std_msgs::msg::Header header;
@@ -162,9 +162,9 @@ autoware_planning_msgs::msg::StopReasonArray SurroundObstacleCheckerDebugNode::m
   header.stamp = this->clock_->now();
 
   // create stop reason stamped
-  autoware_planning_msgs::msg::StopReason stop_reason_msg;
-  stop_reason_msg.reason = autoware_planning_msgs::msg::StopReason::SURROUND_OBSTACLE_CHECK;
-  autoware_planning_msgs::msg::StopFactor stop_factor;
+  tier4_planning_msgs::msg::StopReason stop_reason_msg;
+  stop_reason_msg.reason = tier4_planning_msgs::msg::StopReason::SURROUND_OBSTACLE_CHECK;
+  tier4_planning_msgs::msg::StopFactor stop_factor;
 
   if (stop_pose_ptr_ != nullptr) {
     stop_factor.stop_pose = *stop_pose_ptr_;
@@ -175,7 +175,7 @@ autoware_planning_msgs::msg::StopReasonArray SurroundObstacleCheckerDebugNode::m
   }
 
   // create stop reason array
-  autoware_planning_msgs::msg::StopReasonArray stop_reason_array;
+  tier4_planning_msgs::msg::StopReasonArray stop_reason_array;
   stop_reason_array.header = header;
   stop_reason_array.stop_reasons.emplace_back(stop_reason_msg);
   return stop_reason_array;

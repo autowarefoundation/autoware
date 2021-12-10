@@ -28,35 +28,35 @@ class AutowareIvStopReasonAggregator
 public:
   AutowareIvStopReasonAggregator(
     rclcpp::Node & node, const double timeout, const double thresh_dist_to_stop_pose);
-  autoware_planning_msgs::msg::StopReasonArray::ConstSharedPtr updateStopReasonArray(
-    const autoware_planning_msgs::msg::StopReasonArray::ConstSharedPtr & msg_ptr,
+  tier4_planning_msgs::msg::StopReasonArray::ConstSharedPtr updateStopReasonArray(
+    const tier4_planning_msgs::msg::StopReasonArray::ConstSharedPtr & msg_ptr,
     const AutowareInfo & aw_info);
 
 private:
   void applyUpdate(
-    const autoware_planning_msgs::msg::StopReasonArray::ConstSharedPtr & msg_ptr,
+    const tier4_planning_msgs::msg::StopReasonArray::ConstSharedPtr & msg_ptr,
     const AutowareInfo & aw_info);
   bool checkMatchingReason(
-    const autoware_planning_msgs::msg::StopReasonArray::ConstSharedPtr & msg_stop_reason_array,
-    const autoware_planning_msgs::msg::StopReasonArray & stop_reason_array);
+    const tier4_planning_msgs::msg::StopReasonArray::ConstSharedPtr & msg_stop_reason_array,
+    const tier4_planning_msgs::msg::StopReasonArray & stop_reason_array);
   void applyTimeOut();
   void appendStopReasonToArray(
-    const autoware_planning_msgs::msg::StopReason & stop_reason,
-    autoware_planning_msgs::msg::StopReasonArray * stop_reason_array, const AutowareInfo & aw_info);
-  autoware_planning_msgs::msg::StopReasonArray::ConstSharedPtr makeStopReasonArray(
+    const tier4_planning_msgs::msg::StopReason & stop_reason,
+    tier4_planning_msgs::msg::StopReasonArray * stop_reason_array, const AutowareInfo & aw_info);
+  tier4_planning_msgs::msg::StopReasonArray::ConstSharedPtr makeStopReasonArray(
     const AutowareInfo & aw_info);
-  autoware_planning_msgs::msg::StopReason inputStopDistToStopReason(
-    const autoware_planning_msgs::msg::StopReason & stop_reason, const AutowareInfo & aw_info);
+  tier4_planning_msgs::msg::StopReason inputStopDistToStopReason(
+    const tier4_planning_msgs::msg::StopReason & stop_reason, const AutowareInfo & aw_info);
   double calcStopDistToStopFactor(
-    const autoware_planning_msgs::msg::StopFactor & stop_factor, const AutowareInfo & aw_info);
-  autoware_planning_msgs::msg::StopReason getNearStopReason(
-    const autoware_planning_msgs::msg::StopReason & stop_reason, const AutowareInfo & aw_info);
+    const tier4_planning_msgs::msg::StopFactor & stop_factor, const AutowareInfo & aw_info);
+  tier4_planning_msgs::msg::StopReason getNearStopReason(
+    const tier4_planning_msgs::msg::StopReason & stop_reason, const AutowareInfo & aw_info);
 
   rclcpp::Logger logger_;
   rclcpp::Clock::SharedPtr clock_;
   double timeout_;
   double thresh_dist_to_stop_pose_;
-  std::vector<autoware_planning_msgs::msg::StopReasonArray> stop_reason_array_vec_;
+  std::vector<tier4_planning_msgs::msg::StopReasonArray> stop_reason_array_vec_;
 };
 
 }  // namespace autoware_api

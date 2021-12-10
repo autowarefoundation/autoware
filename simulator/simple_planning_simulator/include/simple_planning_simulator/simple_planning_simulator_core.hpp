@@ -50,7 +50,7 @@
 #include "common/types.hpp"
 
 #include "autoware_api_utils/autoware_api_utils.hpp"
-#include "autoware_external_api_msgs/srv/initialize_pose.hpp"
+#include "tier4_external_api_msgs/srv/initialize_pose.hpp"
 
 #include "simple_planning_simulator/vehicle_model/sim_model_interface.hpp"
 
@@ -76,7 +76,7 @@ using autoware_auto_vehicle_msgs::msg::HazardLightsReport;
 using autoware_auto_vehicle_msgs::msg::SteeringReport;
 using autoware_auto_vehicle_msgs::msg::VehicleControlCommand;
 using autoware_auto_vehicle_msgs::msg::VelocityReport;
-using autoware_external_api_msgs::srv::InitializePose;
+using tier4_external_api_msgs::srv::InitializePose;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::PoseStamped;
 using geometry_msgs::msg::PoseWithCovarianceStamped;

@@ -24,9 +24,9 @@
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <autoware_auto_planning_msgs/msg/trajectory.hpp>
 #include <autoware_auto_planning_msgs/msg/trajectory_point.hpp>
-#include <autoware_planning_msgs/msg/stop_reason.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/quaternion.hpp>
+#include <tier4_planning_msgs/msg/stop_reason.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 
 #include <boost/geometry.hpp>
@@ -126,11 +126,11 @@ double calcJudgeLineDistWithJerkLimit(
   const double velocity, const double acceleration, const double max_stop_acceleration,
   const double max_stop_jerk, const double delay_response_time);
 
-autoware_planning_msgs::msg::StopReason initializeStopReason(const std::string & stop_reason);
+tier4_planning_msgs::msg::StopReason initializeStopReason(const std::string & stop_reason);
 
 void appendStopReason(
-  const autoware_planning_msgs::msg::StopFactor stop_factor,
-  autoware_planning_msgs::msg::StopReason * stop_reason);
+  const tier4_planning_msgs::msg::StopFactor stop_factor,
+  tier4_planning_msgs::msg::StopReason * stop_reason);
 
 std::vector<geometry_msgs::msg::Point> toRosPoints(
   const autoware_auto_perception_msgs::msg::PredictedObjects & object);

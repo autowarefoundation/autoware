@@ -57,12 +57,12 @@ Stop condition の項で述べたように、状態によって障害物判定�
 
 ### Output
 
-| Name                       | Type                                           | Description              |
-| -------------------------- | ---------------------------------------------- | ------------------------ |
-| `~/output/trajectory`      | `autoware_auto_planning_msgs/Trajectory`       | Modified trajectory      |
-| `~/output/no_start_reason` | `diagnostic_msgs::msg::DiagnosticStatus`       | No start reason          |
-| `~/output/stop_reasons`    | `autoware_planning_msgs::msg::StopReasonArray` | Stop reasons             |
-| `~/debug/marker`           | `visualization_msgs::msg::MarkerArray`         | Marker for visualization |
+| Name                       | Type                                        | Description              |
+| -------------------------- | ------------------------------------------- | ------------------------ |
+| `~/output/trajectory`      | `autoware_auto_planning_msgs/Trajectory`    | Modified trajectory      |
+| `~/output/no_start_reason` | `diagnostic_msgs::msg::DiagnosticStatus`    | No start reason          |
+| `~/output/stop_reasons`    | `tier4_planning_msgs::msg::StopReasonArray` | Stop reasons             |
+| `~/debug/marker`           | `visualization_msgs::msg::MarkerArray`      | Marker for visualization |
 
 ## Parameters
 

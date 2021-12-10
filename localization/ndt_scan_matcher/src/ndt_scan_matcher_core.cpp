@@ -33,18 +33,18 @@
 #include <iomanip>
 #include <thread>
 
-autoware_debug_msgs::msg::Float32Stamped makeFloat32Stamped(
+tier4_debug_msgs::msg::Float32Stamped makeFloat32Stamped(
   const builtin_interfaces::msg::Time & stamp, const float data)
 {
-  using T = autoware_debug_msgs::msg::Float32Stamped;
-  return autoware_debug_msgs::build<T>().stamp(stamp).data(data);
+  using T = tier4_debug_msgs::msg::Float32Stamped;
+  return tier4_debug_msgs::build<T>().stamp(stamp).data(data);
 }
 
-autoware_debug_msgs::msg::Int32Stamped makeInt32Stamped(
+tier4_debug_msgs::msg::Int32Stamped makeInt32Stamped(
   const builtin_interfaces::msg::Time & stamp, const int32_t data)
 {
-  using T = autoware_debug_msgs::msg::Int32Stamped;
-  return autoware_debug_msgs::build<T>().stamp(stamp).data(data);
+  using T = tier4_debug_msgs::msg::Int32Stamped;
+  return tier4_debug_msgs::build<T>().stamp(stamp).data(data);
 }
 
 geometry_msgs::msg::TransformStamped identityTransformStamped(
@@ -197,20 +197,18 @@ NDTScanMatcher::NDTScanMatcher()
   initial_pose_with_covariance_pub_ =
     this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
       "initial_pose_with_covariance", 10);
-  exe_time_pub_ =
-    this->create_publisher<autoware_debug_msgs::msg::Float32Stamped>("exe_time_ms", 10);
+  exe_time_pub_ = this->create_publisher<tier4_debug_msgs::msg::Float32Stamped>("exe_time_ms", 10);
   transform_probability_pub_ =
-    this->create_publisher<autoware_debug_msgs::msg::Float32Stamped>("transform_probability", 10);
+    this->create_publisher<tier4_debug_msgs::msg::Float32Stamped>("transform_probability", 10);
   iteration_num_pub_ =
-    this->create_publisher<autoware_debug_msgs::msg::Int32Stamped>("iteration_num", 10);
+    this->create_publisher<tier4_debug_msgs::msg::Int32Stamped>("iteration_num", 10);
   initial_to_result_distance_pub_ =
-    this->create_publisher<autoware_debug_msgs::msg::Float32Stamped>(
-      "initial_to_result_distance", 10);
+    this->create_publisher<tier4_debug_msgs::msg::Float32Stamped>("initial_to_result_distance", 10);
   initial_to_result_distance_old_pub_ =
-    this->create_publisher<autoware_debug_msgs::msg::Float32Stamped>(
+    this->create_publisher<tier4_debug_msgs::msg::Float32Stamped>(
       "initial_to_result_distance_old", 10);
   initial_to_result_distance_new_pub_ =
-    this->create_publisher<autoware_debug_msgs::msg::Float32Stamped>(
+    this->create_publisher<tier4_debug_msgs::msg::Float32Stamped>(
       "initial_to_result_distance_new", 10);
   ndt_marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("ndt_marker", 10);
   ndt_monte_carlo_initial_pose_marker_pub_ =
@@ -219,7 +217,7 @@ NDTScanMatcher::NDTScanMatcher()
   diagnostics_pub_ =
     this->create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10);
 
-  service_ = this->create_service<autoware_localization_msgs::srv::PoseWithCovarianceStamped>(
+  service_ = this->create_service<tier4_localization_msgs::srv::PoseWithCovarianceStamped>(
     "ndt_align_srv",
     std::bind(&NDTScanMatcher::serviceNDTAlign, this, std::placeholders::_1, std::placeholders::_2),
     rclcpp::ServicesQoS().get_rmw_qos_profile(), main_callback_group);
@@ -280,8 +278,8 @@ void NDTScanMatcher::timerDiagnostic()
 }
 
 void NDTScanMatcher::serviceNDTAlign(
-  const autoware_localization_msgs::srv::PoseWithCovarianceStamped::Request::SharedPtr req,
-  autoware_localization_msgs::srv::PoseWithCovarianceStamped::Response::SharedPtr res)
+  const tier4_localization_msgs::srv::PoseWithCovarianceStamped::Request::SharedPtr req,
+  tier4_localization_msgs::srv::PoseWithCovarianceStamped::Response::SharedPtr res)
 {
   // get TF from pose_frame to map_frame
   auto TF_pose_to_map_ptr = std::make_shared<geometry_msgs::msg::TransformStamped>();

@@ -22,9 +22,6 @@ from autoware_auto_planning_msgs.msg import PathWithLaneId
 from autoware_auto_planning_msgs.msg import Trajectory
 from autoware_auto_vehicle_msgs.msg import Engage
 from autoware_auto_vehicle_msgs.msg import VelocityReport
-from autoware_debug_msgs.msg import Float32MultiArrayStamped
-from autoware_debug_msgs.msg import Float32Stamped
-from autoware_planning_msgs.msg import VelocityLimit
 from geometry_msgs.msg import Pose
 from nav_msgs.msg import Odometry
 import numpy as np
@@ -33,6 +30,9 @@ from rclpy.node import Node
 from tf2_ros import LookupException
 from tf2_ros.buffer import Buffer
 from tf2_ros.transform_listener import TransformListener
+from tier4_debug_msgs.msg import Float32MultiArrayStamped
+from tier4_debug_msgs.msg import Float32Stamped
+from tier4_planning_msgs.msg import VelocityLimit
 
 REF_LINK = "map"
 SELF_LINK = "base_link"

@@ -124,7 +124,7 @@ bool LidarApolloInstanceSegmentation::transformCloud(
 
 bool LidarApolloInstanceSegmentation::detectDynamicObjects(
   const sensor_msgs::msg::PointCloud2 & input,
-  autoware_perception_msgs::msg::DetectedObjectsWithFeature & output)
+  tier4_perception_msgs::msg::DetectedObjectsWithFeature & output)
 {
   // move up pointcloud z_offset in z axis
   sensor_msgs::msg::PointCloud2 transformed_cloud;

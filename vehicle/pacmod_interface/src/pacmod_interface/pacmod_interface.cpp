@@ -82,7 +82,7 @@ PacmodInterface::PacmodInterface()
   actuation_cmd_sub_ = create_subscription<ActuationCommandStamped>(
     "/control/command/actuation_cmd", 1,
     std::bind(&PacmodInterface::callbackActuationCmd, this, _1));
-  emergency_sub_ = create_subscription<autoware_vehicle_msgs::msg::VehicleEmergencyStamped>(
+  emergency_sub_ = create_subscription<tier4_vehicle_msgs::msg::VehicleEmergencyStamped>(
     "/control/command/emergency_cmd", 1,
     std::bind(&PacmodInterface::callbackEmergencyCmd, this, _1));
 
@@ -166,7 +166,7 @@ void PacmodInterface::callbackActuationCmd(const ActuationCommandStamped::ConstS
 }
 
 void PacmodInterface::callbackEmergencyCmd(
-  const autoware_vehicle_msgs::msg::VehicleEmergencyStamped::ConstSharedPtr msg)
+  const tier4_vehicle_msgs::msg::VehicleEmergencyStamped::ConstSharedPtr msg)
 {
   is_emergency_ = msg->emergency;
 }

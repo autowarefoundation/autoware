@@ -17,12 +17,12 @@ This node publishes deviation of self-pose from goal pose.
 
 ### Output
 
-| Name                     | Type                                       | Description                                                   |
-| ------------------------ | ------------------------------------------ | ------------------------------------------------------------- |
-| `deviation/lateral`      | `autoware_debug_msgs::msg::Float64Stamped` | publish lateral deviation of self-pose from goal pose[m]      |
-| `deviation/longitudinal` | `autoware_debug_msgs::msg::Float64Stamped` | publish longitudinal deviation of self-pose from goal pose[m] |
-| `deviation/yaw`          | `autoware_debug_msgs::msg::Float64Stamped` | publish yaw deviation of self-pose from goal pose[rad]        |
-| `deviation/yaw_deg`      | `autoware_debug_msgs::msg::Float64Stamped` | publish yaw deviation of self-pose from goal pose[deg]        |
+| Name                     | Type                                    | Description                                                   |
+| ------------------------ | --------------------------------------- | ------------------------------------------------------------- |
+| `deviation/lateral`      | `tier4_debug_msgs::msg::Float64Stamped` | publish lateral deviation of self-pose from goal pose[m]      |
+| `deviation/longitudinal` | `tier4_debug_msgs::msg::Float64Stamped` | publish longitudinal deviation of self-pose from goal pose[m] |
+| `deviation/yaw`          | `tier4_debug_msgs::msg::Float64Stamped` | publish yaw deviation of self-pose from goal pose[rad]        |
+| `deviation/yaw_deg`      | `tier4_debug_msgs::msg::Float64Stamped` | publish yaw deviation of self-pose from goal pose[deg]        |
 
 ## Parameters
 

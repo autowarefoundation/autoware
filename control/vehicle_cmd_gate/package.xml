@@ -12,16 +12,16 @@
   <depend>autoware_auto_control_msgs</depend>
   <depend>autoware_auto_system_msgs</depend>
   <depend>autoware_auto_vehicle_msgs</depend>
-  <depend>autoware_control_msgs</depend>
-  <depend>autoware_debug_msgs</depend>
-  <depend>autoware_external_api_msgs</depend>
   <depend>diagnostic_updater</depend>
   <depend>geometry_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>std_srvs</depend>
+  <depend>tier4_control_msgs</depend>
+  <depend>tier4_debug_msgs</depend>
+  <depend>tier4_external_api_msgs</depend>
   <depend>vehicle_info_util</depend>
-　<depend>autoware_vehicle_msgs</depend>
+　<depend>tier4_vehicle_msgs</depend>
 
   <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_lint_auto</test_depend>

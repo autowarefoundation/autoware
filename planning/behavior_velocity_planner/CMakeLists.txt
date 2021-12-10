@@ -23,10 +23,10 @@ find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
 set(BEHAVIOR_VELOCITY_PLANNER_DEPENDENCIES
-  autoware_api_msgs
+  tier4_api_msgs
   autoware_auto_perception_msgs
   autoware_auto_planning_msgs
-  autoware_planning_msgs
+  tier4_planning_msgs
   autoware_utils
   Boost
   Eigen3

@@ -153,10 +153,10 @@ bool isStopped(
 autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr
 ScenarioSelectorNode::getScenarioTrajectory(const std::string & scenario)
 {
-  if (scenario == autoware_planning_msgs::msg::Scenario::LANEDRIVING) {
+  if (scenario == tier4_planning_msgs::msg::Scenario::LANEDRIVING) {
     return lane_driving_trajectory_;
   }
-  if (scenario == autoware_planning_msgs::msg::Scenario::PARKING) {
+  if (scenario == tier4_planning_msgs::msg::Scenario::PARKING) {
     return parking_trajectory_;
   }
   RCLCPP_ERROR_STREAM(this->get_logger(), "invalid scenario argument: " << scenario);
@@ -169,28 +169,28 @@ std::string ScenarioSelectorNode::selectScenarioByPosition()
   const auto is_goal_in_lane = isInLane(lanelet_map_ptr_, route_->goal_pose.position);
   const auto is_in_parking_lot = isInParkingLot(lanelet_map_ptr_, current_pose_->pose);
 
-  if (current_scenario_ == autoware_planning_msgs::msg::Scenario::EMPTY) {
+  if (current_scenario_ == tier4_planning_msgs::msg::Scenario::EMPTY) {
     if (is_in_lane && is_goal_in_lane) {
-      return autoware_planning_msgs::msg::Scenario::LANEDRIVING;
+      return tier4_planning_msgs::msg::Scenario::LANEDRIVING;
     } else if (is_in_parking_lot) {
-      return autoware_planning_msgs::msg::Scenario::PARKING;
+      return tier4_planning_msgs::msg::Scenario::PARKING;
     } else {
-      return autoware_planning_msgs::msg::Scenario::LANEDRIVING;
+      return tier4_planning_msgs::msg::Scenario::LANEDRIVING;
     }
   }
 
-  if (current_scenario_ == autoware_planning_msgs::msg::Scenario::LANEDRIVING) {
+  if (current_scenario_ == tier4_planning_msgs::msg::Scenario::LANEDRIVING) {
     if (is_in_parking_lot && !is_goal_in_lane) {
-      return autoware_planning_msgs::msg::Scenario::PARKING;
+      return tier4_planning_msgs::msg::Scenario::PARKING;
     }
   }
 
-  if (current_scenario_ == autoware_planning_msgs::msg::Scenario::PARKING) {
+  if (current_scenario_ == tier4_planning_msgs::msg::Scenario::PARKING) {
     bool is_parking_completed;
     this->get_parameter<bool>("is_parking_completed", is_parking_completed);
     if (is_parking_completed && is_in_lane) {
       this->set_parameter(rclcpp::Parameter("is_parking_completed", false));
-      return autoware_planning_msgs::msg::Scenario::LANEDRIVING;
+      return tier4_planning_msgs::msg::Scenario::LANEDRIVING;
     }
   }
 
@@ -229,7 +229,7 @@ void ScenarioSelectorNode::onRoute(
   const autoware_auto_planning_msgs::msg::HADMapRoute::ConstSharedPtr msg)
 {
   route_ = msg;
-  current_scenario_ = autoware_planning_msgs::msg::Scenario::EMPTY;
+  current_scenario_ = tier4_planning_msgs::msg::Scenario::EMPTY;
 }
 
 void ScenarioSelectorNode::onOdom(const nav_msgs::msg::Odometry::ConstSharedPtr msg)
@@ -264,15 +264,15 @@ void ScenarioSelectorNode::onTimer()
   }
 
   // Initialize Scenario
-  if (current_scenario_ == autoware_planning_msgs::msg::Scenario::EMPTY) {
+  if (current_scenario_ == tier4_planning_msgs::msg::Scenario::EMPTY) {
     current_scenario_ = selectScenarioByPosition();
   }
 
   updateCurrentScenario();
-  autoware_planning_msgs::msg::Scenario scenario;
+  tier4_planning_msgs::msg::Scenario scenario;
   scenario.current_scenario = current_scenario_;
 
-  if (current_scenario_ == autoware_planning_msgs::msg::Scenario::PARKING) {
+  if (current_scenario_ == tier4_planning_msgs::msg::Scenario::PARKING) {
     scenario.activating_scenarios.push_back(current_scenario_);
   }
 
@@ -284,7 +284,7 @@ void ScenarioSelectorNode::onLaneDrivingTrajectory(
 {
   lane_driving_trajectory_ = msg;
 
-  if (current_scenario_ != autoware_planning_msgs::msg::Scenario::LANEDRIVING) {
+  if (current_scenario_ != tier4_planning_msgs::msg::Scenario::LANEDRIVING) {
     return;
   }
 
@@ -296,7 +296,7 @@ void ScenarioSelectorNode::onParkingTrajectory(
 {
   parking_trajectory_ = msg;
 
-  if (current_scenario_ != autoware_planning_msgs::msg::Scenario::PARKING) {
+  if (current_scenario_ != tier4_planning_msgs::msg::Scenario::PARKING) {
     return;
   }
 
@@ -322,7 +322,7 @@ ScenarioSelectorNode::ScenarioSelectorNode(const rclcpp::NodeOptions & node_opti
 : Node("scenario_selector", node_options),
   tf_buffer_(this->get_clock()),
   tf_listener_(tf_buffer_),
-  current_scenario_(autoware_planning_msgs::msg::Scenario::EMPTY),
+  current_scenario_(tier4_planning_msgs::msg::Scenario::EMPTY),
   update_rate_(this->declare_parameter<double>("update_rate", 10.0)),
   th_max_message_delay_sec_(this->declare_parameter<double>("th_max_message_delay_sec", 1.0)),
   th_arrived_distance_m_(this->declare_parameter<double>("th_arrived_distance_m", 1.0)),
@@ -353,8 +353,8 @@ ScenarioSelectorNode::ScenarioSelectorNode(const rclcpp::NodeOptions & node_opti
     std::bind(&ScenarioSelectorNode::onOdom, this, std::placeholders::_1));
 
   // Output
-  pub_scenario_ = this->create_publisher<autoware_planning_msgs::msg::Scenario>(
-    "output/scenario", rclcpp::QoS{1});
+  pub_scenario_ =
+    this->create_publisher<tier4_planning_msgs::msg::Scenario>("output/scenario", rclcpp::QoS{1});
   pub_trajectory_ = this->create_publisher<autoware_auto_planning_msgs::msg::Trajectory>(
     "output/trajectory", rclcpp::QoS{1});
 

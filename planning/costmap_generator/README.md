@@ -11,7 +11,7 @@ This node reads `PointCloud` and/or `DynamicObjectArray` and creates an `Occupan
 | `~input/objects`          | autoware_auto_perception_msgs::PredictedObjects | predicted objects, for obstacles areas                                       |
 | `~input/points_no_ground` | sensor_msgs::PointCloud2                        | ground-removed points, for obstacle areas which can't be detected as objects |
 | `~input/vector_map`       | autoware_auto_mapping_msgs::HADMapBin           | vector map, for drivable areas                                               |
-| `~input/scenario`         | autoware_planning_msgs::Scenario                | scenarios to be activated, for node activation                               |
+| `~input/scenario`         | tier4_planning_msgs::Scenario                | scenarios to be activated, for node activation                               |
 
 ### Output topics
 

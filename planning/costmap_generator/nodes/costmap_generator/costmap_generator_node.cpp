@@ -61,7 +61,7 @@
 
 namespace
 {
-bool isActive(const autoware_planning_msgs::msg::Scenario::ConstSharedPtr scenario)
+bool isActive(const tier4_planning_msgs::msg::Scenario::ConstSharedPtr scenario)
 {
   if (!scenario) {
     return false;
@@ -69,7 +69,7 @@ bool isActive(const autoware_planning_msgs::msg::Scenario::ConstSharedPtr scenar
 
   const auto & s = scenario->activating_scenarios;
   if (
-    std::find(std::begin(s), std::end(s), autoware_planning_msgs::msg::Scenario::PARKING) !=
+    std::find(std::begin(s), std::end(s), tier4_planning_msgs::msg::Scenario::PARKING) !=
     std::end(s)) {
     return true;
   }
@@ -153,7 +153,7 @@ CostmapGenerator::CostmapGenerator(const rclcpp::NodeOptions & node_options)
   sub_lanelet_bin_map_ = this->create_subscription<autoware_auto_mapping_msgs::msg::HADMapBin>(
     "~/input/vector_map", rclcpp::QoS{1}.transient_local(),
     std::bind(&CostmapGenerator::onLaneletMapBin, this, _1));
-  sub_scenario_ = this->create_subscription<autoware_planning_msgs::msg::Scenario>(
+  sub_scenario_ = this->create_subscription<tier4_planning_msgs::msg::Scenario>(
     "~/input/scenario", 1, std::bind(&CostmapGenerator::onScenario, this, _1));
 
   // Publishers
@@ -237,7 +237,7 @@ void CostmapGenerator::onPoints(const sensor_msgs::msg::PointCloud2::ConstShared
   points_ = msg;
 }
 
-void CostmapGenerator::onScenario(const autoware_planning_msgs::msg::Scenario::ConstSharedPtr msg)
+void CostmapGenerator::onScenario(const tier4_planning_msgs::msg::Scenario::ConstSharedPtr msg)
 {
   scenario_ = msg;
 }

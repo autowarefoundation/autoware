@@ -19,7 +19,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_api_msgs/msg/awapi_autoware_status.hpp>
+#include <tier4_api_msgs/msg/awapi_autoware_status.hpp>
 
 #include <set>
 #include <string>
@@ -37,7 +37,7 @@ private:
   rclcpp::Logger logger_;
   rclcpp::Clock::SharedPtr clock_;
   // publisher
-  rclcpp::Publisher<autoware_api_msgs::msg::AwapiAutowareStatus>::SharedPtr pub_state_;
+  rclcpp::Publisher<tier4_api_msgs::msg::AwapiAutowareStatus>::SharedPtr pub_state_;
 
   // parameter
 
@@ -47,31 +47,30 @@ private:
 
   void getAutowareStateInfo(
     const autoware_auto_system_msgs::msg::AutowareState::ConstSharedPtr & autoware_state_ptr,
-    autoware_api_msgs::msg::AwapiAutowareStatus * status);
+    tier4_api_msgs::msg::AwapiAutowareStatus * status);
   void getControlModeInfo(
     const autoware_auto_vehicle_msgs::msg::ControlModeReport::ConstSharedPtr & control_mode_ptr,
-    autoware_api_msgs::msg::AwapiAutowareStatus * status);
+    tier4_api_msgs::msg::AwapiAutowareStatus * status);
   void getGateModeInfo(
-    const autoware_control_msgs::msg::GateMode::ConstSharedPtr & gate_mode_ptr,
-    autoware_api_msgs::msg::AwapiAutowareStatus * status);
+    const tier4_control_msgs::msg::GateMode::ConstSharedPtr & gate_mode_ptr,
+    tier4_api_msgs::msg::AwapiAutowareStatus * status);
   void getEmergencyStateInfo(
     const autoware_auto_system_msgs::msg::EmergencyState::ConstSharedPtr & emergency_state_ptr,
-    autoware_api_msgs::msg::AwapiAutowareStatus * status);
+    tier4_api_msgs::msg::AwapiAutowareStatus * status);
   void getCurrentMaxVelInfo(
-    const autoware_planning_msgs::msg::VelocityLimit::ConstSharedPtr & current_max_velocity_ptr,
-    autoware_api_msgs::msg::AwapiAutowareStatus * status);
+    const tier4_planning_msgs::msg::VelocityLimit::ConstSharedPtr & current_max_velocity_ptr,
+    tier4_api_msgs::msg::AwapiAutowareStatus * status);
   void getHazardStatusInfo(
-    const AutowareInfo & aw_info, autoware_api_msgs::msg::AwapiAutowareStatus * status);
+    const AutowareInfo & aw_info, tier4_api_msgs::msg::AwapiAutowareStatus * status);
   void getStopReasonInfo(
-    const autoware_planning_msgs::msg::StopReasonArray::ConstSharedPtr & stop_reason_ptr,
-    autoware_api_msgs::msg::AwapiAutowareStatus * status);
-  void getDiagInfo(
-    const AutowareInfo & aw_info, autoware_api_msgs::msg::AwapiAutowareStatus * status);
+    const tier4_planning_msgs::msg::StopReasonArray::ConstSharedPtr & stop_reason_ptr,
+    tier4_api_msgs::msg::AwapiAutowareStatus * status);
+  void getDiagInfo(const AutowareInfo & aw_info, tier4_api_msgs::msg::AwapiAutowareStatus * status);
   void getErrorDiagInfo(
-    const AutowareInfo & aw_info, autoware_api_msgs::msg::AwapiAutowareStatus * status);
+    const AutowareInfo & aw_info, tier4_api_msgs::msg::AwapiAutowareStatus * status);
   void getGlobalRptInfo(
     const pacmod3_msgs::msg::GlobalRpt::ConstSharedPtr & global_rpt_ptr,
-    autoware_api_msgs::msg::AwapiAutowareStatus * status);
+    tier4_api_msgs::msg::AwapiAutowareStatus * status);
 
   bool isGoal(const autoware_auto_system_msgs::msg::AutowareState::ConstSharedPtr & autoware_state);
 };

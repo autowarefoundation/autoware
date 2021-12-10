@@ -48,7 +48,7 @@ public:
   {
     std::string instrument_type{};
     std::string instrument_id{};
-    std::vector<autoware_v2x_msgs::msg::KeyValue> custom_tags{};
+    std::vector<tier4_v2x_msgs::msg::KeyValue> custom_tags{};
     autoware_utils::Point3d instrument_center{};
     boost::optional<autoware_utils::LineString3d> stop_line{};
     autoware_utils::LineString3d start_line{};
@@ -76,7 +76,7 @@ public:
 
   bool modifyPathVelocity(
     autoware_auto_planning_msgs::msg::PathWithLaneId * path,
-    autoware_planning_msgs::msg::StopReason * stop_reason) override;
+    tier4_planning_msgs::msg::StopReason * stop_reason) override;
 
   visualization_msgs::msg::MarkerArray createDebugMarkerArray() override;
 
@@ -86,15 +86,14 @@ private:
   const lanelet::ConstLanelet lane_;
   const PlannerParam planner_param_;
   State state_{State::NONE};
-  autoware_v2x_msgs::msg::InfrastructureCommand command_;
+  tier4_v2x_msgs::msg::InfrastructureCommand command_;
   MapData map_data_;
   ModuleData module_data_;
 
   void updateInfrastructureCommand();
 
   void setStopReason(
-    const geometry_msgs::msg::Pose & stop_pose,
-    autoware_planning_msgs::msg::StopReason * stop_reason);
+    const geometry_msgs::msg::Pose & stop_pose, tier4_planning_msgs::msg::StopReason * stop_reason);
 
   bool isBeforeStartLine();
 
@@ -104,19 +103,19 @@ private:
 
   bool isNearAnyEndLine();
 
-  boost::optional<autoware_v2x_msgs::msg::VirtualTrafficLightState> findCorrespondingState();
+  boost::optional<tier4_v2x_msgs::msg::VirtualTrafficLightState> findCorrespondingState();
 
-  bool isStateTimeout(const autoware_v2x_msgs::msg::VirtualTrafficLightState & state);
+  bool isStateTimeout(const tier4_v2x_msgs::msg::VirtualTrafficLightState & state);
 
-  bool hasRightOfWay(const autoware_v2x_msgs::msg::VirtualTrafficLightState & state);
+  bool hasRightOfWay(const tier4_v2x_msgs::msg::VirtualTrafficLightState & state);
 
   void insertStopVelocityAtStopLine(
     autoware_auto_planning_msgs::msg::PathWithLaneId * path,
-    autoware_planning_msgs::msg::StopReason * stop_reason);
+    tier4_planning_msgs::msg::StopReason * stop_reason);
 
   void insertStopVelocityAtEndLine(
     autoware_auto_planning_msgs::msg::PathWithLaneId * path,
-    autoware_planning_msgs::msg::StopReason * stop_reason);
+    tier4_planning_msgs::msg::StopReason * stop_reason);
 };
 }  // namespace behavior_velocity_planner
 #endif  // SCENE_MODULE__VIRTUAL_TRAFFIC_LIGHT__SCENE_HPP_

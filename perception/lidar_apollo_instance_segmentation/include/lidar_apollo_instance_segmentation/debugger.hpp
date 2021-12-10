@@ -16,7 +16,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_perception_msgs/msg/detected_objects_with_feature.hpp>
+#include <tier4_perception_msgs/msg/detected_objects_with_feature.hpp>
 
 class Debugger
 {
@@ -24,7 +24,7 @@ public:
   explicit Debugger(rclcpp::Node * node);
   ~Debugger() {}
   void publishColoredPointCloud(
-    const autoware_perception_msgs::msg::DetectedObjectsWithFeature & input);
+    const tier4_perception_msgs::msg::DetectedObjectsWithFeature & input);
 
 private:
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr instance_pointcloud_pub_;

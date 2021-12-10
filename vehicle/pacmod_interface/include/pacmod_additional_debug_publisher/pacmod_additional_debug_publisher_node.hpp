@@ -17,25 +17,22 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_debug_msgs/msg/float32_multi_array_stamped.hpp>
 #include <can_msgs/msg/frame.hpp>
+#include <tier4_debug_msgs/msg/float32_multi_array_stamped.hpp>
 
 class PacmodAdditionalDebugPublisherNode : public rclcpp::Node
 {
 private:
-  rclcpp::Publisher<autoware_debug_msgs::msg::Float32MultiArrayStamped>::SharedPtr debug_pub_;
-  rclcpp::Publisher<autoware_debug_msgs::msg::Float32MultiArrayStamped>::SharedPtr
-    accel_cal_rpt_pub_;
-  rclcpp::Publisher<autoware_debug_msgs::msg::Float32MultiArrayStamped>::SharedPtr
-    brake_cal_rpt_pub_;
-  rclcpp::Publisher<autoware_debug_msgs::msg::Float32MultiArrayStamped>::SharedPtr
-    steer_cal_rpt_pub_;
+  rclcpp::Publisher<tier4_debug_msgs::msg::Float32MultiArrayStamped>::SharedPtr debug_pub_;
+  rclcpp::Publisher<tier4_debug_msgs::msg::Float32MultiArrayStamped>::SharedPtr accel_cal_rpt_pub_;
+  rclcpp::Publisher<tier4_debug_msgs::msg::Float32MultiArrayStamped>::SharedPtr brake_cal_rpt_pub_;
+  rclcpp::Publisher<tier4_debug_msgs::msg::Float32MultiArrayStamped>::SharedPtr steer_cal_rpt_pub_;
 
   rclcpp::Subscription<can_msgs::msg::Frame>::SharedPtr sub_;
-  autoware_debug_msgs::msg::Float32MultiArrayStamped debug_value_;
-  autoware_debug_msgs::msg::Float32MultiArrayStamped accel_cal_rpt_;
-  autoware_debug_msgs::msg::Float32MultiArrayStamped brake_cal_rpt_;
-  autoware_debug_msgs::msg::Float32MultiArrayStamped steer_cal_rpt_;
+  tier4_debug_msgs::msg::Float32MultiArrayStamped debug_value_;
+  tier4_debug_msgs::msg::Float32MultiArrayStamped accel_cal_rpt_;
+  tier4_debug_msgs::msg::Float32MultiArrayStamped brake_cal_rpt_;
+  tier4_debug_msgs::msg::Float32MultiArrayStamped steer_cal_rpt_;
   bool calibration_active_;
   void canTxCallback(const can_msgs::msg::Frame::ConstSharedPtr msg);
 

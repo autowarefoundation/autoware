@@ -81,7 +81,7 @@
           # This topic could have two different types depending on the launch flags used.
           # The implementation of subscriptions in ROS2 does not allow for multiple types
           # to be defined for a topic. By default this is set to not use have features.
-          # type: ["autoware_perception_msgs/msg/DynamicObjectArray", "autoware_perception_msgs/msg/DynamicObjectWithFeatureArray"]
+          # type: ["tier4_perception_msgs/msg/DynamicObjectArray", "tier4_perception_msgs/msg/DynamicObjectWithFeatureArray"]
 
         /planning/mission_planning/route:
           module: "planning"

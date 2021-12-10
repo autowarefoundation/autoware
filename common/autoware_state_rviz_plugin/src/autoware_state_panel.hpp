@@ -24,9 +24,9 @@
 
 #include <autoware_auto_system_msgs/msg/autoware_state.hpp>
 #include <autoware_auto_vehicle_msgs/msg/gear_report.hpp>
-#include <autoware_control_msgs/msg/gate_mode.hpp>
-#include <autoware_external_api_msgs/msg/engage_status.hpp>
-#include <autoware_external_api_msgs/srv/engage.hpp>
+#include <tier4_control_msgs/msg/gate_mode.hpp>
+#include <tier4_external_api_msgs/msg/engage_status.hpp>
+#include <tier4_external_api_msgs/srv/engage.hpp>
 
 namespace rviz_plugins
 {
@@ -42,19 +42,19 @@ public Q_SLOTS:
   void onClickAutowareEngage();
 
 protected:
-  void onGateMode(const autoware_control_msgs::msg::GateMode::ConstSharedPtr msg);
+  void onGateMode(const tier4_control_msgs::msg::GateMode::ConstSharedPtr msg);
   void onAutowareState(const autoware_auto_system_msgs::msg::AutowareState::ConstSharedPtr msg);
   void onShift(const autoware_auto_vehicle_msgs::msg::GearReport::ConstSharedPtr msg);
-  void onEngageStatus(const autoware_external_api_msgs::msg::EngageStatus::ConstSharedPtr msg);
+  void onEngageStatus(const tier4_external_api_msgs::msg::EngageStatus::ConstSharedPtr msg);
 
   rclcpp::Node::SharedPtr raw_node_;
-  rclcpp::Subscription<autoware_control_msgs::msg::GateMode>::SharedPtr sub_gate_mode_;
+  rclcpp::Subscription<tier4_control_msgs::msg::GateMode>::SharedPtr sub_gate_mode_;
   rclcpp::Subscription<autoware_auto_system_msgs::msg::AutowareState>::SharedPtr
     sub_autoware_state_;
   rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::GearReport>::SharedPtr sub_gear_;
-  rclcpp::Subscription<autoware_external_api_msgs::msg::EngageStatus>::SharedPtr sub_engage_;
+  rclcpp::Subscription<tier4_external_api_msgs::msg::EngageStatus>::SharedPtr sub_engage_;
 
-  rclcpp::Client<autoware_external_api_msgs::srv::Engage>::SharedPtr client_engage_;
+  rclcpp::Client<tier4_external_api_msgs::srv::Engage>::SharedPtr client_engage_;
 
   QLabel * gate_mode_label_ptr_;
   QLabel * autoware_state_label_ptr_;

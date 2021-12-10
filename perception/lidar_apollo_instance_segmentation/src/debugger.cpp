@@ -28,7 +28,7 @@ Debugger::Debugger(rclcpp::Node * node)
 }
 
 void Debugger::publishColoredPointCloud(
-  const autoware_perception_msgs::msg::DetectedObjectsWithFeature & input)
+  const tier4_perception_msgs::msg::DetectedObjectsWithFeature & input)
 {
   using autoware_auto_perception_msgs::msg::ObjectClassification;
   pcl::PointCloud<pcl::PointXYZRGB> colored_pointcloud;

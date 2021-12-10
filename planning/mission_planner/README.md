@@ -26,7 +26,7 @@ In current Autoware.universe, only Lanelet2 map format is supported.
 | --------------- | --------------------------------------- | --------------------------- |
 | `~output/route` | autoware_auto_planning_msgs/HADMapRoute | route from ego pose to goal |
 
-`autoware_planning_msgs/Route` consists of route sections and goal pose.
+`tier4_planning_msgs/Route` consists of route sections and goal pose.
 
 ![route_sections](./media/route_sections.svg)
 

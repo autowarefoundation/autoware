@@ -27,16 +27,16 @@
 
 #include "autoware_auto_vehicle_msgs/msg/steering_report.hpp"
 #include "autoware_auto_vehicle_msgs/msg/velocity_report.hpp"
-#include "autoware_debug_msgs/msg/float32_multi_array_stamped.hpp"
-#include "autoware_debug_msgs/msg/float32_stamped.hpp"
-#include "autoware_vehicle_msgs/msg/actuation_status_stamped.hpp"
-#include "autoware_vehicle_msgs/srv/update_accel_brake_map.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "nav_msgs/msg/occupancy_grid.hpp"
 #include "std_msgs/msg/bool.hpp"
 #include "std_msgs/msg/float32_multi_array.hpp"
 #include "std_msgs/msg/multi_array_dimension.hpp"
 #include "std_msgs/msg/string.hpp"
+#include "tier4_debug_msgs/msg/float32_multi_array_stamped.hpp"
+#include "tier4_debug_msgs/msg/float32_stamped.hpp"
+#include "tier4_vehicle_msgs/msg/actuation_status_stamped.hpp"
+#include "tier4_vehicle_msgs/srv/update_accel_brake_map.hpp"
 
 #include <fstream>
 #include <iomanip>
@@ -67,25 +67,24 @@ private:
   rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr update_map_occ_pub_;
   rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr original_map_raw_pub_;
   rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr update_map_raw_pub_;
-  rclcpp::Publisher<autoware_debug_msgs::msg::Float32MultiArrayStamped>::SharedPtr debug_pub_;
+  rclcpp::Publisher<tier4_debug_msgs::msg::Float32MultiArrayStamped>::SharedPtr debug_pub_;
   rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr data_count_pub_;
   rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr data_count_with_self_pose_pub_;
   rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr data_ave_pub_;
   rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr data_std_pub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr index_pub_;
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr update_suggest_pub_;
-  rclcpp::Publisher<autoware_debug_msgs::msg::Float32Stamped>::SharedPtr current_map_error_pub_;
-  rclcpp::Publisher<autoware_debug_msgs::msg::Float32Stamped>::SharedPtr updated_map_error_pub_;
-  rclcpp::Publisher<autoware_debug_msgs::msg::Float32Stamped>::SharedPtr map_error_ratio_pub_;
+  rclcpp::Publisher<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr current_map_error_pub_;
+  rclcpp::Publisher<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr updated_map_error_pub_;
+  rclcpp::Publisher<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr map_error_ratio_pub_;
 
   rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::VelocityReport>::SharedPtr velocity_sub_;
   rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::SteeringReport>::SharedPtr steer_sub_;
-  rclcpp::Subscription<autoware_vehicle_msgs::msg::ActuationStatusStamped>::SharedPtr
+  rclcpp::Subscription<tier4_vehicle_msgs::msg::ActuationStatusStamped>::SharedPtr
     actuation_status_sub_;
 
   // Service
-  rclcpp::Service<autoware_vehicle_msgs::srv::UpdateAccelBrakeMap>::SharedPtr
-    update_map_dir_server_;
+  rclcpp::Service<tier4_vehicle_msgs::srv::UpdateAccelBrakeMap>::SharedPtr update_map_dir_server_;
 
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::TimerBase::SharedPtr timer_output_csv_;
@@ -206,13 +205,13 @@ private:
     const double map_acc);
   void updateTotalMapOffset(const double measured_acc, const double map_acc);
   void callbackActuationStatus(
-    const autoware_vehicle_msgs::msg::ActuationStatusStamped::ConstSharedPtr msg);
+    const tier4_vehicle_msgs::msg::ActuationStatusStamped::ConstSharedPtr msg);
   void callbackVelocity(const autoware_auto_vehicle_msgs::msg::VelocityReport::ConstSharedPtr msg);
   void callbackSteer(const autoware_auto_vehicle_msgs::msg::SteeringReport::ConstSharedPtr msg);
   bool callbackUpdateMapService(
     const std::shared_ptr<rmw_request_id_t> request_header,
-    autoware_vehicle_msgs::srv::UpdateAccelBrakeMap::Request::SharedPtr req,
-    autoware_vehicle_msgs::srv::UpdateAccelBrakeMap::Response::SharedPtr res);
+    tier4_vehicle_msgs::srv::UpdateAccelBrakeMap::Request::SharedPtr req,
+    tier4_vehicle_msgs::srv::UpdateAccelBrakeMap::Response::SharedPtr res);
   bool getAccFromMap(const double velocity, const double pedal);
   double lowpass(const double original, const double current, const double gain = 0.8);
   double getPedalSpeed(
@@ -285,7 +284,7 @@ private:
     const double steer, const double jerk, const double full_original_accel_mse,
     const double part_original_accel_mse, const double new_accel_mse);
 
-  mutable autoware_debug_msgs::msg::Float32MultiArrayStamped debug_values_;
+  mutable tier4_debug_msgs::msg::Float32MultiArrayStamped debug_values_;
   enum DBGVAL {
     CURRENT_SPEED = 0,
     CURRENT_ACCEL_PEDAL = 1,

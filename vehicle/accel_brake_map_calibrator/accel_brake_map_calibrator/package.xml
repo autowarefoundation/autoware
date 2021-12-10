@@ -10,9 +10,7 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
   <depend>autoware_auto_vehicle_msgs</depend>
-  <depend>autoware_debug_msgs</depend>
   <depend>autoware_utils</depend>
-  <depend>autoware_vehicle_msgs</depend>
   <depend>diagnostic_updater</depend>
   <depend>geometry_msgs</depend>
   <depend>raw_vehicle_cmd_converter</depend>
@@ -20,6 +18,8 @@
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
   <depend>tf2_ros</depend>
+  <depend>tier4_debug_msgs</depend>
+  <depend>tier4_vehicle_msgs</depend>
   <depend>visualization_msgs</depend>
 
   <exec_depend>python3-matplotlib</exec_depend>

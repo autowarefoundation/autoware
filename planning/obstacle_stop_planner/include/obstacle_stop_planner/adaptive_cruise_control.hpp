@@ -19,8 +19,8 @@
 
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_auto_planning_msgs/msg/trajectory.hpp>
-#include <autoware_debug_msgs/msg/float32_multi_array_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
+#include <tier4_debug_msgs/msg/float32_multi_array_stamped.hpp>
 
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
@@ -48,7 +48,7 @@ public:
     TrajectoryPoints * output_trajectory, const std_msgs::msg::Header trajectory_header);
 
 private:
-  rclcpp::Publisher<autoware_debug_msgs::msg::Float32MultiArrayStamped>::SharedPtr pub_debug_;
+  rclcpp::Publisher<tier4_debug_msgs::msg::Float32MultiArrayStamped>::SharedPtr pub_debug_;
 
   rclcpp::Node * node_;
   /*
@@ -204,7 +204,7 @@ private:
   void registerQueToVelocity(const double vel, const rclcpp::Time & vel_time);
 
   /* Debug */
-  mutable autoware_debug_msgs::msg::Float32MultiArrayStamped debug_values_;
+  mutable tier4_debug_msgs::msg::Float32MultiArrayStamped debug_values_;
   enum DBGVAL {
     ESTIMATED_VEL_PCL = 0,
     ESTIMATED_VEL_OBJ = 1,

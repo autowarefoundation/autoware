@@ -15,7 +15,7 @@
 
   <depend>autoware_auto_mapping_msgs</depend>
   <depend>autoware_auto_perception_msgs</depend>
-  <depend>autoware_planning_msgs</depend>
+  <depend>tier4_planning_msgs</depend>
   <depend>grid_map_ros</depend>
   <depend>lanelet2_extension</depend>
   <depend>libpcl-all-dev</depend>

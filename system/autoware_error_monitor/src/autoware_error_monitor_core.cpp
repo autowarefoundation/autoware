@@ -161,10 +161,10 @@ autoware_auto_system_msgs::msg::HazardStatus createTimeoutHazardStatus()
 
 int isInNoFaultCondition(
   const autoware_auto_system_msgs::msg::AutowareState & autoware_state,
-  const autoware_control_msgs::msg::GateMode & current_gate_mode)
+  const tier4_control_msgs::msg::GateMode & current_gate_mode)
 {
   using autoware_auto_system_msgs::msg::AutowareState;
-  using autoware_control_msgs::msg::GateMode;
+  using tier4_control_msgs::msg::GateMode;
 
   const auto is_in_autonomous_ignore_state =
     (autoware_state.state == AutowareState::INITIALIZING) ||
@@ -214,7 +214,7 @@ AutowareErrorMonitor::AutowareErrorMonitor()
   // Subscriber
   sub_diag_array_ = create_subscription<diagnostic_msgs::msg::DiagnosticArray>(
     "input/diag_array", rclcpp::QoS{1}, std::bind(&AutowareErrorMonitor::onDiagArray, this, _1));
-  sub_current_gate_mode_ = create_subscription<autoware_control_msgs::msg::GateMode>(
+  sub_current_gate_mode_ = create_subscription<tier4_control_msgs::msg::GateMode>(
     "~/input/current_gate_mode", rclcpp::QoS{1},
     std::bind(&AutowareErrorMonitor::onCurrentGateMode, this, _1));
   sub_autoware_state_ = create_subscription<autoware_auto_system_msgs::msg::AutowareState>(
@@ -334,7 +334,7 @@ void AutowareErrorMonitor::onDiagArray(
 }
 
 void AutowareErrorMonitor::onCurrentGateMode(
-  const autoware_control_msgs::msg::GateMode::ConstSharedPtr msg)
+  const tier4_control_msgs::msg::GateMode::ConstSharedPtr msg)
 {
   current_gate_mode_ = msg;
 }
@@ -388,7 +388,7 @@ void AutowareErrorMonitor::onTimer()
     return;
   }
 
-  current_mode_ = current_gate_mode_->data == autoware_control_msgs::msg::GateMode::AUTO
+  current_mode_ = current_gate_mode_->data == tier4_control_msgs::msg::GateMode::AUTO
                     ? KeyName::autonomous_driving
                     : KeyName::external_control;
 

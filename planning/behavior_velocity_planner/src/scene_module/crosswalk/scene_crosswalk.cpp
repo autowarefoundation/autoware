@@ -40,13 +40,13 @@ CrosswalkModule::CrosswalkModule(
 
 bool CrosswalkModule::modifyPathVelocity(
   autoware_auto_planning_msgs::msg::PathWithLaneId * path,
-  autoware_planning_msgs::msg::StopReason * stop_reason)
+  tier4_planning_msgs::msg::StopReason * stop_reason)
 {
   debug_data_ = DebugData();
   debug_data_.base_link2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
   first_stop_path_point_index_ = static_cast<int>(path->points.size()) - 1;
   *stop_reason =
-    planning_utils::initializeStopReason(autoware_planning_msgs::msg::StopReason::CROSSWALK);
+    planning_utils::initializeStopReason(tier4_planning_msgs::msg::StopReason::CROSSWALK);
 
   const auto input = *path;
 
@@ -87,7 +87,7 @@ bool CrosswalkModule::modifyPathVelocity(
 
     if (insert_stop) {
       /* get stop point and stop factor */
-      autoware_planning_msgs::msg::StopFactor stop_factor;
+      tier4_planning_msgs::msg::StopFactor stop_factor;
       stop_factor.stop_pose = debug_data_.first_stop_pose;
       stop_factor.stop_factor_points = debug_data_.stop_factor_points;
       planning_utils::appendStopReason(stop_factor, stop_reason);
@@ -107,10 +107,10 @@ bool CrosswalkModule::checkStopArea(
   bool pedestrian_found = false;
   bool object_found = false;
   const bool external_slowdown =
-    isTargetExternalInputStatus(autoware_api_msgs::msg::CrosswalkStatus::SLOWDOWN);
+    isTargetExternalInputStatus(tier4_api_msgs::msg::CrosswalkStatus::SLOWDOWN);
   const bool external_stop =
-    isTargetExternalInputStatus(autoware_api_msgs::msg::CrosswalkStatus::STOP);
-  const bool external_go = isTargetExternalInputStatus(autoware_api_msgs::msg::CrosswalkStatus::GO);
+    isTargetExternalInputStatus(tier4_api_msgs::msg::CrosswalkStatus::STOP);
+  const bool external_go = isTargetExternalInputStatus(tier4_api_msgs::msg::CrosswalkStatus::GO);
   rclcpp::Time current_time = clock_->now();
 
   // create stop area
@@ -229,10 +229,10 @@ bool CrosswalkModule::checkSlowArea(
   output = input;
   bool pedestrian_found = false;
   const bool external_slowdown =
-    isTargetExternalInputStatus(autoware_api_msgs::msg::CrosswalkStatus::SLOWDOWN);
+    isTargetExternalInputStatus(tier4_api_msgs::msg::CrosswalkStatus::SLOWDOWN);
   const bool external_stop =
-    isTargetExternalInputStatus(autoware_api_msgs::msg::CrosswalkStatus::STOP);
-  const bool external_go = isTargetExternalInputStatus(autoware_api_msgs::msg::CrosswalkStatus::GO);
+    isTargetExternalInputStatus(tier4_api_msgs::msg::CrosswalkStatus::STOP);
+  const bool external_go = isTargetExternalInputStatus(tier4_api_msgs::msg::CrosswalkStatus::GO);
 
   Polygon slowdown_polygon;
   if (!createVehiclePathPolygonInCrosswalk(output, crosswalk_polygon, 4.0, slowdown_polygon)) {

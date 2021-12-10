@@ -32,10 +32,9 @@ Pose2Twist::Pose2Twist() : Node("pose2twist_core")
     "pose", queue_size, std::bind(&Pose2Twist::callbackPose, this, _1));
 
   twist_pub_ = create_publisher<geometry_msgs::msg::TwistStamped>("twist", durable_qos);
-  linear_x_pub_ =
-    create_publisher<autoware_debug_msgs::msg::Float32Stamped>("linear_x", durable_qos);
+  linear_x_pub_ = create_publisher<tier4_debug_msgs::msg::Float32Stamped>("linear_x", durable_qos);
   angular_z_pub_ =
-    create_publisher<autoware_debug_msgs::msg::Float32Stamped>("angular_z", durable_qos);
+    create_publisher<tier4_debug_msgs::msg::Float32Stamped>("angular_z", durable_qos);
 }
 
 double calcDiffForRadian(const double lhs_rad, const double rhs_rad)
@@ -116,12 +115,12 @@ void Pose2Twist::callbackPose(geometry_msgs::msg::PoseStamped::SharedPtr pose_ms
   twist_msg.header.frame_id = "base_link";
   twist_pub_->publish(twist_msg);
 
-  autoware_debug_msgs::msg::Float32Stamped linear_x_msg;
+  tier4_debug_msgs::msg::Float32Stamped linear_x_msg;
   linear_x_msg.stamp = this->now();
   linear_x_msg.data = twist_msg.twist.linear.x;
   linear_x_pub_->publish(linear_x_msg);
 
-  autoware_debug_msgs::msg::Float32Stamped angular_z_msg;
+  tier4_debug_msgs::msg::Float32Stamped angular_z_msg;
   angular_z_msg.stamp = this->now();
   angular_z_msg.data = twist_msg.twist.angular.z;
   angular_z_pub_->publish(angular_z_msg);

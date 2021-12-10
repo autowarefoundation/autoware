@@ -29,7 +29,7 @@ PathDistanceCalculator::PathDistanceCalculator(const rclcpp::NodeOptions & optio
     "~/input/path", rclcpp::QoS(1),
     [this](const autoware_auto_planning_msgs::msg::Path::SharedPtr msg) { path_ = msg; });
   pub_dist_ =
-    create_publisher<autoware_debug_msgs::msg::Float64Stamped>("~/output/distance", rclcpp::QoS(1));
+    create_publisher<tier4_debug_msgs::msg::Float64Stamped>("~/output/distance", rclcpp::QoS(1));
 
   auto timer_callback = [this]() {
     const auto path = path_;
@@ -49,7 +49,7 @@ PathDistanceCalculator::PathDistanceCalculator(const rclcpp::NodeOptions & optio
     const double distance = autoware_utils::calcSignedArcLength(
       path->points, pose->pose.position, path->points.size() - 1);
 
-    autoware_debug_msgs::msg::Float64Stamped msg;
+    tier4_debug_msgs::msg::Float64Stamped msg;
     msg.stamp = pose->header.stamp;
     msg.data = distance;
     pub_dist_->publish(msg);

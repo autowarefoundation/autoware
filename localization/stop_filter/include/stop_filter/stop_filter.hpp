@@ -17,10 +17,10 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_debug_msgs/msg/bool_stamped.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
+#include <tier4_debug_msgs/msg/bool_stamped.hpp>
 
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/utils.h>
@@ -41,7 +41,7 @@ public:
 
 private:
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub_odom_;  //!< @brief odom publisher
-  rclcpp::Publisher<autoware_debug_msgs::msg::BoolStamped>::SharedPtr
+  rclcpp::Publisher<tier4_debug_msgs::msg::BoolStamped>::SharedPtr
     pub_stop_flag_;  //!< @brief stop flag publisher
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr
     sub_odom_;  //!< @brief measurement odometry subscriber

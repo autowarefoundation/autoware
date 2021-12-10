@@ -24,14 +24,14 @@
 #include <ndt/pcl_modified.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_debug_msgs/msg/float32_stamped.hpp>
-#include <autoware_debug_msgs/msg/int32_stamped.hpp>
-#include <autoware_localization_msgs/srv/pose_with_covariance_stamped.hpp>
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
+#include <tier4_debug_msgs/msg/float32_stamped.hpp>
+#include <tier4_debug_msgs/msg/int32_stamped.hpp>
+#include <tier4_localization_msgs/srv/pose_with_covariance_stamped.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
 #include <fmt/format.h>
@@ -93,8 +93,8 @@ public:
 
 private:
   void serviceNDTAlign(
-    const autoware_localization_msgs::srv::PoseWithCovarianceStamped::Request::SharedPtr req,
-    autoware_localization_msgs::srv::PoseWithCovarianceStamped::Response::SharedPtr res);
+    const tier4_localization_msgs::srv::PoseWithCovarianceStamped::Request::SharedPtr req,
+    tier4_localization_msgs::srv::PoseWithCovarianceStamped::Response::SharedPtr res);
 
   void callbackMapPoints(sensor_msgs::msg::PointCloud2::ConstSharedPtr pointcloud2_msg_ptr);
   void callbackSensorPoints(sensor_msgs::msg::PointCloud2::ConstSharedPtr pointcloud2_msg_ptr);
@@ -125,21 +125,21 @@ private:
     ndt_pose_with_covariance_pub_;
   rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr
     initial_pose_with_covariance_pub_;
-  rclcpp::Publisher<autoware_debug_msgs::msg::Float32Stamped>::SharedPtr exe_time_pub_;
-  rclcpp::Publisher<autoware_debug_msgs::msg::Float32Stamped>::SharedPtr transform_probability_pub_;
-  rclcpp::Publisher<autoware_debug_msgs::msg::Int32Stamped>::SharedPtr iteration_num_pub_;
-  rclcpp::Publisher<autoware_debug_msgs::msg::Float32Stamped>::SharedPtr
+  rclcpp::Publisher<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr exe_time_pub_;
+  rclcpp::Publisher<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr transform_probability_pub_;
+  rclcpp::Publisher<tier4_debug_msgs::msg::Int32Stamped>::SharedPtr iteration_num_pub_;
+  rclcpp::Publisher<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr
     initial_to_result_distance_pub_;
-  rclcpp::Publisher<autoware_debug_msgs::msg::Float32Stamped>::SharedPtr
+  rclcpp::Publisher<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr
     initial_to_result_distance_old_pub_;
-  rclcpp::Publisher<autoware_debug_msgs::msg::Float32Stamped>::SharedPtr
+  rclcpp::Publisher<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr
     initial_to_result_distance_new_pub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr ndt_marker_pub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr
     ndt_monte_carlo_initial_pose_marker_pub_;
   rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagnostics_pub_;
 
-  rclcpp::Service<autoware_localization_msgs::srv::PoseWithCovarianceStamped>::SharedPtr service_;
+  rclcpp::Service<tier4_localization_msgs::srv::PoseWithCovarianceStamped>::SharedPtr service_;
 
   tf2_ros::Buffer tf2_buffer_;
   tf2_ros::TransformListener tf2_listener_;

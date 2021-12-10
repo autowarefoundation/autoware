@@ -18,7 +18,6 @@ import argparse
 import math
 import sys
 
-from autoware_planning_msgs.msg import StopReasonArray
 from case_converter import pascal2snake
 from geometry_msgs.msg import PoseStamped
 import numpy as np
@@ -26,6 +25,7 @@ import rclpy
 from rclpy.node import Node
 from rtree import index
 from self_pose_listener import SelfPoseListener
+from tier4_planning_msgs.msg import StopReasonArray
 
 
 class StopReason2PoseNode(Node):

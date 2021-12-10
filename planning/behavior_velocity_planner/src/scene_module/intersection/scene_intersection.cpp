@@ -65,16 +65,15 @@ IntersectionModule::IntersectionModule(
 
 bool IntersectionModule::modifyPathVelocity(
   autoware_auto_planning_msgs::msg::PathWithLaneId * path,
-  autoware_planning_msgs::msg::StopReason * stop_reason)
+  tier4_planning_msgs::msg::StopReason * stop_reason)
 {
-  const bool external_go =
-    isTargetExternalInputStatus(autoware_api_msgs::msg::IntersectionStatus::GO);
+  const bool external_go = isTargetExternalInputStatus(tier4_api_msgs::msg::IntersectionStatus::GO);
   const bool external_stop =
-    isTargetExternalInputStatus(autoware_api_msgs::msg::IntersectionStatus::STOP);
+    isTargetExternalInputStatus(tier4_api_msgs::msg::IntersectionStatus::STOP);
   RCLCPP_DEBUG(logger_, "===== plan start =====");
   debug_data_ = DebugData();
   *stop_reason =
-    planning_utils::initializeStopReason(autoware_planning_msgs::msg::StopReason::INTERSECTION);
+    planning_utils::initializeStopReason(tier4_planning_msgs::msg::StopReason::INTERSECTION);
 
   const auto input_path = *path;
   debug_data_.path_raw = input_path;
@@ -182,7 +181,7 @@ bool IntersectionModule::modifyPathVelocity(
       debug_data_.judge_point_pose = path->points.at(pass_judge_line_idx).point.pose;
 
       /* get stop point and stop factor */
-      autoware_planning_msgs::msg::StopFactor stop_factor;
+      tier4_planning_msgs::msg::StopFactor stop_factor;
       stop_factor.stop_pose = debug_data_.stop_point_pose;
       const auto stop_factor_conflict =
         planning_utils::toRosPoints(debug_data_.conflicting_targets);

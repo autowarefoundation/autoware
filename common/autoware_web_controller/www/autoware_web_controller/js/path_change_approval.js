@@ -19,7 +19,7 @@ if (!PathChangeApprovalPublisher) {
       var pub = new ROSLIB.Topic({
         ros: this.ros,
         name: "/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/path_change_approval",
-        messageType: "autoware_planning_msgs/msg/Approval",
+        messageType: "tier4_planning_msgs/msg/Approval",
       });
       var str = new ROSLIB.Message({
         stamp: {
@@ -58,7 +58,7 @@ if (!PathChangeApprovalStateSubscriber) {
       var sub = new ROSLIB.Topic({
         ros: this.ros,
         name: "/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/path_change_approval",
-        messageType: "autoware_planning_msgs/msg/Approval",
+        messageType: "tier4_planning_msgs/msg/Approval",
       });
       sub.subscribe(function (message) {
         const div = document.getElementById("path_change_approval_status");

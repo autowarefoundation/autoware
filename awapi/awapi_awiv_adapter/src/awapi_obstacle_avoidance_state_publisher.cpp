@@ -24,13 +24,13 @@ AutowareIvObstacleAvoidanceStatePublisher::AutowareIvObstacleAvoidanceStatePubli
   clock_(node.get_clock())
 {
   // publisher
-  pub_state_ = node.create_publisher<autoware_api_msgs::msg::ObstacleAvoidanceStatus>(
+  pub_state_ = node.create_publisher<tier4_api_msgs::msg::ObstacleAvoidanceStatus>(
     "output/obstacle_avoid_status", 1);
 }
 
 void AutowareIvObstacleAvoidanceStatePublisher::statePublisher(const AutowareInfo & aw_info)
 {
-  autoware_api_msgs::msg::ObstacleAvoidanceStatus status;
+  tier4_api_msgs::msg::ObstacleAvoidanceStatus status;
 
   // input header
   status.header.frame_id = "base_link";
@@ -45,8 +45,8 @@ void AutowareIvObstacleAvoidanceStatePublisher::statePublisher(const AutowareInf
 }
 
 void AutowareIvObstacleAvoidanceStatePublisher::getObstacleAvoidReadyInfo(
-  const autoware_planning_msgs::msg::IsAvoidancePossible::ConstSharedPtr & ready_ptr,
-  autoware_api_msgs::msg::ObstacleAvoidanceStatus * status)
+  const tier4_planning_msgs::msg::IsAvoidancePossible::ConstSharedPtr & ready_ptr,
+  tier4_api_msgs::msg::ObstacleAvoidanceStatus * status)
 {
   if (!ready_ptr) {
     RCLCPP_DEBUG_STREAM_THROTTLE(
@@ -59,7 +59,7 @@ void AutowareIvObstacleAvoidanceStatePublisher::getObstacleAvoidReadyInfo(
 
 void AutowareIvObstacleAvoidanceStatePublisher::getCandidatePathInfo(
   const autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr & path_ptr,
-  autoware_api_msgs::msg::ObstacleAvoidanceStatus * status)
+  tier4_api_msgs::msg::ObstacleAvoidanceStatus * status)
 {
   if (!path_ptr) {
     RCLCPP_DEBUG_STREAM_THROTTLE(

@@ -22,8 +22,8 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_auto_planning_msgs/msg/route.hpp>
-#include <autoware_debug_msgs/msg/float64_stamped.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
+#include <tier4_debug_msgs/msg/float64_stamped.hpp>
 
 #include <tf2_ros/transform_listener.h>
 

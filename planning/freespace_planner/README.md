@@ -18,7 +18,7 @@ In other words, the output trajectory doesn't include both forward and backward 
 | `~input/route`          | autoware_auto_planning_msgs::Route | route and goal pose                                       |
 | `~input/occupancy_grid` | nav_msgs::OccupancyGrid            | costmap, for drivable areas                               |
 | `~input/odometry`       | nav_msgs::Odometry                 | vehicle velocity, for checking whether vehicle is stopped |
-| `~input/scenario`       | autoware_planning_msgs::Scenario   | scenarios to be activated, for node activation            |
+| `~input/scenario`       | tier4_planning_msgs::Scenario   | scenarios to be activated, for node activation            |
 
 ### Output topics
 

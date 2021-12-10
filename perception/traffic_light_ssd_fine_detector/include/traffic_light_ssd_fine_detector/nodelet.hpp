@@ -23,9 +23,9 @@
 #include <trt_ssd.hpp>
 
 #include <autoware_auto_perception_msgs/msg/traffic_light_roi_array.hpp>
-#include <autoware_debug_msgs/msg/float32_stamped.hpp>
 #include <sensor_msgs/image_encodings.hpp>
 #include <sensor_msgs/msg/image.hpp>
+#include <tier4_debug_msgs/msg/float32_stamped.hpp>
 
 #include <cv_bridge/cv_bridge.h>
 #include <message_filters/subscriber.h>
@@ -78,7 +78,7 @@ private:
   std::mutex connect_mutex_;
   rclcpp::Publisher<autoware_auto_perception_msgs::msg::TrafficLightRoiArray>::SharedPtr
     output_roi_pub_;
-  rclcpp::Publisher<autoware_debug_msgs::msg::Float32Stamped>::SharedPtr exe_time_pub_;
+  rclcpp::Publisher<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr exe_time_pub_;
   rclcpp::TimerBase::SharedPtr timer_;
 
   typedef message_filters::sync_policies::ExactTime<

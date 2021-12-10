@@ -243,13 +243,13 @@ void Cluster2D::classify(const std::shared_ptr<float> & inferred_data)
   }
 }
 
-autoware_perception_msgs::msg::DetectedObjectWithFeature Cluster2D::obstacleToObject(
+tier4_perception_msgs::msg::DetectedObjectWithFeature Cluster2D::obstacleToObject(
   const Obstacle & in_obstacle, const std_msgs::msg::Header & in_header)
 {
   using autoware_auto_perception_msgs::msg::DetectedObjectKinematics;
   using autoware_auto_perception_msgs::msg::ObjectClassification;
 
-  autoware_perception_msgs::msg::DetectedObjectWithFeature resulting_object;
+  tier4_perception_msgs::msg::DetectedObjectWithFeature resulting_object;
   // pcl::PointCloud<pcl::PointXYZI> in_cluster = *(in_obstacle.cloud_ptr);
 
   resulting_object.object.classification.emplace_back(
@@ -337,7 +337,7 @@ autoware_perception_msgs::msg::DetectedObjectWithFeature Cluster2D::obstacleToOb
 
 void Cluster2D::getObjects(
   const float confidence_thresh, const float height_thresh, const int min_pts_num,
-  autoware_perception_msgs::msg::DetectedObjectsWithFeature & objects,
+  tier4_perception_msgs::msg::DetectedObjectsWithFeature & objects,
   const std_msgs::msg::Header & in_header)
 {
   for (size_t i = 0; i < point2grid_.size(); ++i) {
@@ -364,7 +364,7 @@ void Cluster2D::getObjects(
     if (static_cast<int>(obs->cloud_ptr->size()) < min_pts_num) {
       continue;
     }
-    autoware_perception_msgs::msg::DetectedObjectWithFeature out_obj =
+    tier4_perception_msgs::msg::DetectedObjectWithFeature out_obj =
       obstacleToObject(*obs, in_header);
     objects.feature_objects.push_back(out_obj);
   }

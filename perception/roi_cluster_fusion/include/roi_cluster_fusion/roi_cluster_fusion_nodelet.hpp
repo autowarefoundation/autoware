@@ -21,8 +21,8 @@
 #include <image_transport/image_transport.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_perception_msgs/msg/detected_objects_with_feature.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
+#include <tier4_perception_msgs/msg/detected_objects_with_feature.hpp>
 
 #include <boost/circular_buffer.hpp>
 
@@ -67,15 +67,15 @@ public:
 
 private:
   void fusionCallback(
-    autoware_perception_msgs::msg::DetectedObjectsWithFeature::ConstSharedPtr input_cluster_msg,
-    autoware_perception_msgs::msg::DetectedObjectsWithFeature::ConstSharedPtr input_roi0_msg,
-    autoware_perception_msgs::msg::DetectedObjectsWithFeature::ConstSharedPtr input_roi1_msg,
-    autoware_perception_msgs::msg::DetectedObjectsWithFeature::ConstSharedPtr input_roi2_msg,
-    autoware_perception_msgs::msg::DetectedObjectsWithFeature::ConstSharedPtr input_roi3_msg,
-    autoware_perception_msgs::msg::DetectedObjectsWithFeature::ConstSharedPtr input_roi4_msg,
-    autoware_perception_msgs::msg::DetectedObjectsWithFeature::ConstSharedPtr input_roi5_msg,
-    autoware_perception_msgs::msg::DetectedObjectsWithFeature::ConstSharedPtr input_roi6_msg,
-    autoware_perception_msgs::msg::DetectedObjectsWithFeature::ConstSharedPtr input_roi7_msg);
+    tier4_perception_msgs::msg::DetectedObjectsWithFeature::ConstSharedPtr input_cluster_msg,
+    tier4_perception_msgs::msg::DetectedObjectsWithFeature::ConstSharedPtr input_roi0_msg,
+    tier4_perception_msgs::msg::DetectedObjectsWithFeature::ConstSharedPtr input_roi1_msg,
+    tier4_perception_msgs::msg::DetectedObjectsWithFeature::ConstSharedPtr input_roi2_msg,
+    tier4_perception_msgs::msg::DetectedObjectsWithFeature::ConstSharedPtr input_roi3_msg,
+    tier4_perception_msgs::msg::DetectedObjectsWithFeature::ConstSharedPtr input_roi4_msg,
+    tier4_perception_msgs::msg::DetectedObjectsWithFeature::ConstSharedPtr input_roi5_msg,
+    tier4_perception_msgs::msg::DetectedObjectsWithFeature::ConstSharedPtr input_roi6_msg,
+    tier4_perception_msgs::msg::DetectedObjectsWithFeature::ConstSharedPtr input_roi7_msg);
   void cameraInfoCallback(
     const sensor_msgs::msg::CameraInfo::ConstSharedPtr input_camera_info_msg, const int id);
   double calcIoU(
@@ -88,33 +88,31 @@ private:
     const sensor_msgs::msg::RegionOfInterest & roi_1,
     const sensor_msgs::msg::RegionOfInterest & roi_2);
 
-  rclcpp::Publisher<autoware_perception_msgs::msg::DetectedObjectsWithFeature>::SharedPtr
+  rclcpp::Publisher<tier4_perception_msgs::msg::DetectedObjectsWithFeature>::SharedPtr
     labeled_cluster_pub_;
   std::vector<rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr> v_camera_info_sub_;
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_ptr_;
-  message_filters::Subscriber<autoware_perception_msgs::msg::DetectedObjectsWithFeature>
-    cluster_sub_;
+  message_filters::Subscriber<tier4_perception_msgs::msg::DetectedObjectsWithFeature> cluster_sub_;
   std::vector<std::shared_ptr<
-    message_filters::Subscriber<autoware_perception_msgs::msg::DetectedObjectsWithFeature>>>
+    message_filters::Subscriber<tier4_perception_msgs::msg::DetectedObjectsWithFeature>>>
     v_roi_sub_;
-  message_filters::PassThrough<autoware_perception_msgs::msg::DetectedObjectsWithFeature>
-    passthrough_;
+  message_filters::PassThrough<tier4_perception_msgs::msg::DetectedObjectsWithFeature> passthrough_;
   typedef message_filters::sync_policies::ApproximateTime<
-    autoware_perception_msgs::msg::DetectedObjectsWithFeature,
-    autoware_perception_msgs::msg::DetectedObjectsWithFeature,
-    autoware_perception_msgs::msg::DetectedObjectsWithFeature,
-    autoware_perception_msgs::msg::DetectedObjectsWithFeature,
-    autoware_perception_msgs::msg::DetectedObjectsWithFeature,
-    autoware_perception_msgs::msg::DetectedObjectsWithFeature,
-    autoware_perception_msgs::msg::DetectedObjectsWithFeature,
-    autoware_perception_msgs::msg::DetectedObjectsWithFeature,
-    autoware_perception_msgs::msg::DetectedObjectsWithFeature>
+    tier4_perception_msgs::msg::DetectedObjectsWithFeature,
+    tier4_perception_msgs::msg::DetectedObjectsWithFeature,
+    tier4_perception_msgs::msg::DetectedObjectsWithFeature,
+    tier4_perception_msgs::msg::DetectedObjectsWithFeature,
+    tier4_perception_msgs::msg::DetectedObjectsWithFeature,
+    tier4_perception_msgs::msg::DetectedObjectsWithFeature,
+    tier4_perception_msgs::msg::DetectedObjectsWithFeature,
+    tier4_perception_msgs::msg::DetectedObjectsWithFeature,
+    tier4_perception_msgs::msg::DetectedObjectsWithFeature>
     SyncPolicy;
   typedef message_filters::Synchronizer<SyncPolicy> Sync;
   std::shared_ptr<Sync> sync_ptr_;
   inline void dummyCallback(
-    autoware_perception_msgs::msg::DetectedObjectsWithFeature::ConstSharedPtr input)
+    tier4_perception_msgs::msg::DetectedObjectsWithFeature::ConstSharedPtr input)
   {
     auto dummy = input;
     passthrough_.add(dummy);

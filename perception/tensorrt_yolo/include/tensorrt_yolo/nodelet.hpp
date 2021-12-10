@@ -22,10 +22,10 @@
 #include <rclcpp/rclcpp.hpp>
 #include <trt_yolo.hpp>
 
-#include <autoware_perception_msgs/msg/detected_objects_with_feature.hpp>
 #include <sensor_msgs/image_encodings.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <std_msgs/msg/header.hpp>
+#include <tier4_perception_msgs/msg/detected_objects_with_feature.hpp>
 
 #include <cv_bridge/cv_bridge.h>
 
@@ -50,8 +50,7 @@ private:
   std::mutex connect_mutex_;
 
   image_transport::Publisher image_pub_;
-  rclcpp::Publisher<autoware_perception_msgs::msg::DetectedObjectsWithFeature>::SharedPtr
-    objects_pub_;
+  rclcpp::Publisher<tier4_perception_msgs::msg::DetectedObjectsWithFeature>::SharedPtr objects_pub_;
 
   image_transport::Subscriber image_sub_;
 

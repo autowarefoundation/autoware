@@ -283,7 +283,7 @@ TrafficLightModule::TrafficLightModule(
 
 bool TrafficLightModule::modifyPathVelocity(
   autoware_auto_planning_msgs::msg::PathWithLaneId * path,
-  autoware_planning_msgs::msg::StopReason * stop_reason)
+  tier4_planning_msgs::msg::StopReason * stop_reason)
 {
   looking_tl_state_ = initializeTrafficSignal(path->header.stamp);
   debug_data_ = DebugData();
@@ -291,7 +291,7 @@ bool TrafficLightModule::modifyPathVelocity(
   first_stop_path_point_index_ = static_cast<int>(path->points.size()) - 1;
   first_ref_stop_path_point_index_ = static_cast<int>(path->points.size()) - 1;
   *stop_reason =
-    planning_utils::initializeStopReason(autoware_planning_msgs::msg::StopReason::TRAFFIC_LIGHT);
+    planning_utils::initializeStopReason(tier4_planning_msgs::msg::StopReason::TRAFFIC_LIGHT);
 
   const auto input_path = *path;
 
@@ -537,7 +537,7 @@ bool TrafficLightModule::getHighestConfidenceTrafficSignal(
 autoware_auto_planning_msgs::msg::PathWithLaneId TrafficLightModule::insertStopPose(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & input,
   const size_t & insert_target_point_idx, const Eigen::Vector2d & target_point,
-  autoware_planning_msgs::msg::StopReason * stop_reason)
+  tier4_planning_msgs::msg::StopReason * stop_reason)
 {
   autoware_auto_planning_msgs::msg::PathWithLaneId modified_path;
   modified_path = input;
@@ -564,7 +564,7 @@ autoware_auto_planning_msgs::msg::PathWithLaneId TrafficLightModule::insertStopP
   }
 
   // Get stop point and stop factor
-  autoware_planning_msgs::msg::StopFactor stop_factor;
+  tier4_planning_msgs::msg::StopFactor stop_factor;
   stop_factor.stop_pose = debug_data_.first_stop_pose;
   stop_factor.stop_factor_points =
     std::vector<geometry_msgs::msg::Point>{debug_data_.highest_confidence_traffic_light_point};

@@ -24,7 +24,7 @@ Based on the camera image and the global ROI array detected by `map_based_detect
 | Name                  | Type                                                       | Description                  |
 | --------------------- | ---------------------------------------------------------- | ---------------------------- |
 | `~/output/rois`       | `autoware_auto_perception_msgs::msg::TrafficLightRoiArray` | The detected accurate rois   |
-| `~/debug/exe_time_ms` | `autoware_debug_msgs::msg::Float32Stamped`                 | The time taken for inference |
+| `~/debug/exe_time_ms` | `tier4_debug_msgs::msg::Float32Stamped`                    | The time taken for inference |
 
 ## Parameters
 

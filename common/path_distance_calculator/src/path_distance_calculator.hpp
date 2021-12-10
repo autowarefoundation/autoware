@@ -19,7 +19,7 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <autoware_auto_planning_msgs/msg/path.hpp>
-#include <autoware_debug_msgs/msg/float64_stamped.hpp>
+#include <tier4_debug_msgs/msg/float64_stamped.hpp>
 
 class PathDistanceCalculator : public rclcpp::Node
 {
@@ -28,7 +28,7 @@ public:
 
 private:
   rclcpp::Subscription<autoware_auto_planning_msgs::msg::Path>::SharedPtr sub_path_;
-  rclcpp::Publisher<autoware_debug_msgs::msg::Float64Stamped>::SharedPtr pub_dist_;
+  rclcpp::Publisher<tier4_debug_msgs::msg::Float64Stamped>::SharedPtr pub_dist_;
   rclcpp::TimerBase::SharedPtr timer_;
   autoware_utils::SelfPoseListener self_pose_listener_;
   autoware_auto_planning_msgs::msg::Path::SharedPtr path_;

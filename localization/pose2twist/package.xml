@@ -8,10 +8,10 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <depend>autoware_debug_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>rclcpp</depend>
   <depend>tf2_geometry_msgs</depend>
+  <depend>tier4_debug_msgs</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>

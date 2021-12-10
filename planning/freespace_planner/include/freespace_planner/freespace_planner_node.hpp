@@ -37,7 +37,7 @@
 
 #include <autoware_auto_planning_msgs/msg/had_map_route.hpp>
 #include <autoware_auto_planning_msgs/msg/trajectory.hpp>
-#include <autoware_planning_msgs/msg/scenario.hpp>
+#include <tier4_planning_msgs/msg/scenario.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
 #include <nav_msgs/msg/odometry.hpp>
@@ -56,7 +56,7 @@ namespace freespace_planner
 {
 using autoware_auto_planning_msgs::msg::HADMapRoute;
 using autoware_auto_planning_msgs::msg::Trajectory;
-using autoware_planning_msgs::msg::Scenario;
+using tier4_planning_msgs::msg::Scenario;
 using freespace_planning_algorithms::AbstractPlanningAlgorithm;
 using freespace_planning_algorithms::AstarParam;
 using freespace_planning_algorithms::PlannerCommonParam;

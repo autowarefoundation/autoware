@@ -131,7 +131,7 @@ public:
    */
   bool modifyPathVelocity(
     autoware_auto_planning_msgs::msg::PathWithLaneId * path,
-    autoware_planning_msgs::msg::StopReason * stop_reason) override;
+    tier4_planning_msgs::msg::StopReason * stop_reason) override;
 
   visualization_msgs::msg::MarkerArray createDebugMarkerArray() override;
 
@@ -247,8 +247,8 @@ private:
     const geometry_msgs::msg::Pose & predicted_pose) const;
 
   /**
-   * @brief Whether target autoware_api_msgs::Intersection::status is valid or not
-   * @param target_status target autoware_api_msgs::Intersection::status
+   * @brief Whether target tier4_api_msgs::Intersection::status is valid or not
+   * @param target_status target tier4_api_msgs::Intersection::status
    * @return rue if the object has a target type
    */
   bool isTargetExternalInputStatus(const int target_status);

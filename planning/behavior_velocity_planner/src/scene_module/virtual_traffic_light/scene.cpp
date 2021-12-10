@@ -16,7 +16,7 @@
 #include <scene_module/virtual_traffic_light/scene.hpp>
 #include <utilization/util.hpp>
 
-#include <autoware_v2x_msgs/msg/key_value.hpp>
+#include <tier4_v2x_msgs/msg/key_value.hpp>
 
 #include <algorithm>
 #include <string>
@@ -41,9 +41,9 @@ struct SegmentIndexWithOffset
   double offset;
 };
 
-autoware_v2x_msgs::msg::KeyValue createKeyValue(const std::string & key, const std::string & value)
+tier4_v2x_msgs::msg::KeyValue createKeyValue(const std::string & key, const std::string & value)
 {
-  return autoware_v2x_msgs::build<autoware_v2x_msgs::msg::KeyValue>().key(key).value(value);
+  return tier4_v2x_msgs::build<tier4_v2x_msgs::msg::KeyValue>().key(key).value(value);
 }
 
 autoware_utils::LineString3d toAutowarePoints(const lanelet::ConstLineString3d & line_string)
@@ -341,12 +341,12 @@ VirtualTrafficLightModule::VirtualTrafficLightModule(
 
 bool VirtualTrafficLightModule::modifyPathVelocity(
   autoware_auto_planning_msgs::msg::PathWithLaneId * path,
-  autoware_planning_msgs::msg::StopReason * stop_reason)
+  tier4_planning_msgs::msg::StopReason * stop_reason)
 {
   // Initialize
   setInfrastructureCommand({});
   *stop_reason = planning_utils::initializeStopReason(
-    autoware_planning_msgs::msg::StopReason::VIRTUAL_TRAFFIC_LIGHT);
+    tier4_planning_msgs::msg::StopReason::VIRTUAL_TRAFFIC_LIGHT);
   module_data_ = {};
 
   // Copy data
@@ -434,9 +434,9 @@ void VirtualTrafficLightModule::updateInfrastructureCommand()
 }
 
 void VirtualTrafficLightModule::setStopReason(
-  const geometry_msgs::msg::Pose & stop_pose, autoware_planning_msgs::msg::StopReason * stop_reason)
+  const geometry_msgs::msg::Pose & stop_pose, tier4_planning_msgs::msg::StopReason * stop_reason)
 {
-  autoware_planning_msgs::msg::StopFactor stop_factor;
+  tier4_planning_msgs::msg::StopFactor stop_factor;
   stop_factor.stop_pose = stop_pose;
   stop_factor.stop_factor_points.push_back(toMsg(map_data_.instrument_center));
   planning_utils::appendStopReason(stop_factor, stop_reason);
@@ -511,7 +511,7 @@ bool VirtualTrafficLightModule::isNearAnyEndLine()
   return std::abs(signed_arc_length) < near_distance;
 }
 
-boost::optional<autoware_v2x_msgs::msg::VirtualTrafficLightState>
+boost::optional<tier4_v2x_msgs::msg::VirtualTrafficLightState>
 VirtualTrafficLightModule::findCorrespondingState()
 {
   // No message
@@ -529,7 +529,7 @@ VirtualTrafficLightModule::findCorrespondingState()
 }
 
 bool VirtualTrafficLightModule::isStateTimeout(
-  const autoware_v2x_msgs::msg::VirtualTrafficLightState & state)
+  const tier4_v2x_msgs::msg::VirtualTrafficLightState & state)
 {
   const auto delay = (clock_->now() - rclcpp::Time(state.stamp)).seconds();
   if (delay > planner_param_.max_delay_sec) {
@@ -541,14 +541,14 @@ bool VirtualTrafficLightModule::isStateTimeout(
 }
 
 bool VirtualTrafficLightModule::hasRightOfWay(
-  const autoware_v2x_msgs::msg::VirtualTrafficLightState & state)
+  const tier4_v2x_msgs::msg::VirtualTrafficLightState & state)
 {
   return state.approval;
 }
 
 void VirtualTrafficLightModule::insertStopVelocityAtStopLine(
   autoware_auto_planning_msgs::msg::PathWithLaneId * path,
-  autoware_planning_msgs::msg::StopReason * stop_reason)
+  tier4_planning_msgs::msg::StopReason * stop_reason)
 {
   const auto collision = findCollision(path->points, *map_data_.stop_line);
 
@@ -572,7 +572,7 @@ void VirtualTrafficLightModule::insertStopVelocityAtStopLine(
 
 void VirtualTrafficLightModule::insertStopVelocityAtEndLine(
   autoware_auto_planning_msgs::msg::PathWithLaneId * path,
-  autoware_planning_msgs::msg::StopReason * stop_reason)
+  tier4_planning_msgs::msg::StopReason * stop_reason)
 {
   const auto collision = findCollision(path->points, map_data_.end_lines);
 

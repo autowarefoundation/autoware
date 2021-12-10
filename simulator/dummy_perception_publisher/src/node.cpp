@@ -39,7 +39,7 @@ DummyPerceptionPublisherNode::DummyPerceptionPublisherNode()
   rclcpp::QoS qos{1};
   qos.transient_local();
   detected_object_with_feature_pub_ =
-    this->create_publisher<autoware_perception_msgs::msg::DetectedObjectsWithFeature>(
+    this->create_publisher<tier4_perception_msgs::msg::DetectedObjectsWithFeature>(
       "output/dynamic_object", qos);
   pointcloud_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("output/points_raw", qos);
   object_sub_ = this->create_subscription<dummy_perception_publisher::msg::Object>(
@@ -57,7 +57,7 @@ DummyPerceptionPublisherNode::DummyPerceptionPublisherNode()
 void DummyPerceptionPublisherNode::timerCallback()
 {
   // output msgs
-  autoware_perception_msgs::msg::DetectedObjectsWithFeature output_dynamic_object_msg;
+  tier4_perception_msgs::msg::DetectedObjectsWithFeature output_dynamic_object_msg;
   geometry_msgs::msg::PoseStamped output_moved_object_pose;
   sensor_msgs::msg::PointCloud2 output_pointcloud_msg;
   std_msgs::msg::Header header;
@@ -137,7 +137,7 @@ void DummyPerceptionPublisherNode::timerCallback()
     tf2::Transform tf_base_link2noised_moved_object;
     tf_base_link2noised_moved_object =
       tf_base_link2map * tf_map2moved_object * tf_moved_object2noised_moved_object;
-    autoware_perception_msgs::msg::DetectedObjectWithFeature feature_object;
+    tier4_perception_msgs::msg::DetectedObjectWithFeature feature_object;
     feature_object.object.classification.push_back(objects_.at(i).classification);
     feature_object.object.kinematics.pose_with_covariance =
       objects_.at(i).initial_state.pose_covariance;

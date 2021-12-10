@@ -30,12 +30,12 @@ AutowareIvAutowareStatePublisher::AutowareIvAutowareStatePublisher(rclcpp::Node 
 {
   // publisher
   pub_state_ =
-    node.create_publisher<autoware_api_msgs::msg::AwapiAutowareStatus>("output/autoware_status", 1);
+    node.create_publisher<tier4_api_msgs::msg::AwapiAutowareStatus>("output/autoware_status", 1);
 }
 
 void AutowareIvAutowareStatePublisher::statePublisher(const AutowareInfo & aw_info)
 {
-  autoware_api_msgs::msg::AwapiAutowareStatus status;
+  tier4_api_msgs::msg::AwapiAutowareStatus status;
 
   // input header
   status.header.frame_id = "base_link";
@@ -59,7 +59,7 @@ void AutowareIvAutowareStatePublisher::statePublisher(const AutowareInfo & aw_in
 
 void AutowareIvAutowareStatePublisher::getAutowareStateInfo(
   const autoware_auto_system_msgs::msg::AutowareState::ConstSharedPtr & autoware_state_ptr,
-  autoware_api_msgs::msg::AwapiAutowareStatus * status)
+  tier4_api_msgs::msg::AwapiAutowareStatus * status)
 {
   if (!autoware_state_ptr) {
     RCLCPP_DEBUG_STREAM_THROTTLE(logger_, *clock_, 5000 /* ms */, "autoware_state is nullptr");
@@ -74,7 +74,7 @@ void AutowareIvAutowareStatePublisher::getAutowareStateInfo(
 
 void AutowareIvAutowareStatePublisher::getControlModeInfo(
   const autoware_auto_vehicle_msgs::msg::ControlModeReport::ConstSharedPtr & control_mode_ptr,
-  autoware_api_msgs::msg::AwapiAutowareStatus * status)
+  tier4_api_msgs::msg::AwapiAutowareStatus * status)
 {
   if (!control_mode_ptr) {
     RCLCPP_DEBUG_STREAM_THROTTLE(logger_, *clock_, 5000 /* ms */, "control mode is nullptr");
@@ -87,8 +87,8 @@ void AutowareIvAutowareStatePublisher::getControlModeInfo(
 }
 
 void AutowareIvAutowareStatePublisher::getGateModeInfo(
-  const autoware_control_msgs::msg::GateMode::ConstSharedPtr & gate_mode_ptr,
-  autoware_api_msgs::msg::AwapiAutowareStatus * status)
+  const tier4_control_msgs::msg::GateMode::ConstSharedPtr & gate_mode_ptr,
+  tier4_api_msgs::msg::AwapiAutowareStatus * status)
 {
   if (!gate_mode_ptr) {
     RCLCPP_DEBUG_STREAM_THROTTLE(logger_, *clock_, 5000 /* ms */, "gate mode is nullptr");
@@ -101,7 +101,7 @@ void AutowareIvAutowareStatePublisher::getGateModeInfo(
 
 void AutowareIvAutowareStatePublisher::getEmergencyStateInfo(
   const autoware_auto_system_msgs::msg::EmergencyState::ConstSharedPtr & emergency_state_ptr,
-  autoware_api_msgs::msg::AwapiAutowareStatus * status)
+  tier4_api_msgs::msg::AwapiAutowareStatus * status)
 {
   if (!emergency_state_ptr) {
     RCLCPP_DEBUG_STREAM_THROTTLE(logger_, *clock_, 5000 /* ms */, "emergency_state is nullptr");
@@ -116,8 +116,8 @@ void AutowareIvAutowareStatePublisher::getEmergencyStateInfo(
 }
 
 void AutowareIvAutowareStatePublisher::getCurrentMaxVelInfo(
-  const autoware_planning_msgs::msg::VelocityLimit::ConstSharedPtr & current_max_velocity_ptr,
-  autoware_api_msgs::msg::AwapiAutowareStatus * status)
+  const tier4_planning_msgs::msg::VelocityLimit::ConstSharedPtr & current_max_velocity_ptr,
+  tier4_api_msgs::msg::AwapiAutowareStatus * status)
 {
   if (!current_max_velocity_ptr) {
     RCLCPP_DEBUG_STREAM_THROTTLE(
@@ -131,7 +131,7 @@ void AutowareIvAutowareStatePublisher::getCurrentMaxVelInfo(
 }
 
 void AutowareIvAutowareStatePublisher::getHazardStatusInfo(
-  const AutowareInfo & aw_info, autoware_api_msgs::msg::AwapiAutowareStatus * status)
+  const AutowareInfo & aw_info, tier4_api_msgs::msg::AwapiAutowareStatus * status)
 {
   if (!aw_info.autoware_state_ptr) {
     RCLCPP_DEBUG_STREAM_THROTTLE(
@@ -170,8 +170,8 @@ void AutowareIvAutowareStatePublisher::getHazardStatusInfo(
 }
 
 void AutowareIvAutowareStatePublisher::getStopReasonInfo(
-  const autoware_planning_msgs::msg::StopReasonArray::ConstSharedPtr & stop_reason_ptr,
-  autoware_api_msgs::msg::AwapiAutowareStatus * status)
+  const tier4_planning_msgs::msg::StopReasonArray::ConstSharedPtr & stop_reason_ptr,
+  tier4_api_msgs::msg::AwapiAutowareStatus * status)
 {
   if (!stop_reason_ptr) {
     RCLCPP_DEBUG_STREAM_THROTTLE(logger_, *clock_, 5000 /* ms */, "stop reason is nullptr");
@@ -182,7 +182,7 @@ void AutowareIvAutowareStatePublisher::getStopReasonInfo(
 }
 
 void AutowareIvAutowareStatePublisher::getDiagInfo(
-  const AutowareInfo & aw_info, autoware_api_msgs::msg::AwapiAutowareStatus * status)
+  const AutowareInfo & aw_info, tier4_api_msgs::msg::AwapiAutowareStatus * status)
 {
   if (!aw_info.diagnostic_ptr) {
     RCLCPP_DEBUG_STREAM_THROTTLE(
@@ -197,7 +197,7 @@ void AutowareIvAutowareStatePublisher::getDiagInfo(
 // This function is tentative and should be replaced with getHazardStatusInfo.
 // TODO(Kenji Miyake): Make getErrorDiagInfo users to use getHazardStatusInfo.
 void AutowareIvAutowareStatePublisher::getErrorDiagInfo(
-  const AutowareInfo & aw_info, autoware_api_msgs::msg::AwapiAutowareStatus * status)
+  const AutowareInfo & aw_info, tier4_api_msgs::msg::AwapiAutowareStatus * status)
 {
   using autoware_auto_system_msgs::msg::AutowareState;
   using autoware_auto_vehicle_msgs::msg::ControlModeReport;
@@ -262,7 +262,7 @@ void AutowareIvAutowareStatePublisher::getErrorDiagInfo(
 
 void AutowareIvAutowareStatePublisher::getGlobalRptInfo(
   const pacmod3_msgs::msg::GlobalRpt::ConstSharedPtr & global_rpt_ptr,
-  autoware_api_msgs::msg::AwapiAutowareStatus * status)
+  tier4_api_msgs::msg::AwapiAutowareStatus * status)
 {
   if (!global_rpt_ptr) {
     RCLCPP_DEBUG_STREAM_THROTTLE(logger_, *clock_, 5000 /* ms */, "global_rpt is nullptr");

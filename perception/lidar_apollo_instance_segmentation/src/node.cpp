@@ -27,14 +27,14 @@ LidarInstanceSegmentationNode::LidarInstanceSegmentationNode(
     "input/pointcloud", rclcpp::SensorDataQoS().keep_last(1),
     std::bind(&LidarInstanceSegmentationNode::pointCloudCallback, this, _1));
   dynamic_objects_pub_ =
-    this->create_publisher<autoware_perception_msgs::msg::DetectedObjectsWithFeature>(
+    this->create_publisher<tier4_perception_msgs::msg::DetectedObjectsWithFeature>(
       "output/labeled_clusters", rclcpp::QoS{1});
 }
 
 void LidarInstanceSegmentationNode::pointCloudCallback(
   const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg)
 {
-  autoware_perception_msgs::msg::DetectedObjectsWithFeature output_msg;
+  tier4_perception_msgs::msg::DetectedObjectsWithFeature output_msg;
   detector_ptr_->detectDynamicObjects(*msg, output_msg);
   dynamic_objects_pub_->publish(output_msg);
   debugger_ptr_->publishColoredPointCloud(output_msg);

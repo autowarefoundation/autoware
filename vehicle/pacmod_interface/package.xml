@@ -13,14 +13,14 @@
 
   <depend>autoware_auto_control_msgs</depend>
   <depend>autoware_auto_vehicle_msgs</depend>
-  <depend>autoware_debug_msgs</depend>
-  <depend>autoware_vehicle_msgs</depend>
   <depend>can_msgs</depend>
   <depend>diagnostic_updater</depend>
   <depend>message_filters</depend>
   <depend>pacmod3_msgs</depend>
   <depend>rclcpp</depend>
   <depend>std_msgs</depend>
+  <depend>tier4_debug_msgs</depend>
+  <depend>tier4_vehicle_msgs</depend>
   <depend>vehicle_info_util</depend>
 
   <test_depend>ament_lint_auto</test_depend>

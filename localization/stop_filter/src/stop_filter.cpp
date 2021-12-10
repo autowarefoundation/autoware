@@ -40,12 +40,12 @@ StopFilter::StopFilter(const std::string & node_name, const rclcpp::NodeOptions 
     "input/odom", 1, std::bind(&StopFilter::callbackOdometry, this, _1));
 
   pub_odom_ = create_publisher<nav_msgs::msg::Odometry>("output/odom", 1);
-  pub_stop_flag_ = create_publisher<autoware_debug_msgs::msg::BoolStamped>("debug/stop_flag", 1);
+  pub_stop_flag_ = create_publisher<tier4_debug_msgs::msg::BoolStamped>("debug/stop_flag", 1);
 }
 
 void StopFilter::callbackOdometry(const nav_msgs::msg::Odometry::SharedPtr msg)
 {
-  autoware_debug_msgs::msg::BoolStamped stop_flag_msg;
+  tier4_debug_msgs::msg::BoolStamped stop_flag_msg;
   stop_flag_msg.stamp = msg->header.stamp;
   stop_flag_msg.data = false;
 

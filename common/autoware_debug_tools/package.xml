@@ -9,12 +9,12 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
   <depend>autoware_auto_planning_msgs</depend>
-  <depend>autoware_debug_msgs</depend>
   <depend>autoware_utils</depend>
   <depend>geometry_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>tf2_ros</depend>
+  <depend>tier4_debug_msgs</depend>
 
   <exec_depend>launch_ros</exec_depend>
   <exec_depend>rclpy</exec_depend>

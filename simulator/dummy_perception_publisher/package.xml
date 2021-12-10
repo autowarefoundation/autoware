@@ -18,7 +18,6 @@
   <test_depend>autoware_lint_common</test_depend>
 
   <depend>autoware_auto_perception_msgs</depend>
-  <depend>autoware_perception_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>libpcl-all-dev</depend>
   <depend>pcl_conversions</depend>
@@ -28,6 +27,7 @@
   <depend>tf2</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2_ros</depend>
+  <depend>tier4_perception_msgs</depend>
   <depend>unique_identifier_msgs</depend>
 
   <member_of_group>rosidl_interface_packages</member_of_group>

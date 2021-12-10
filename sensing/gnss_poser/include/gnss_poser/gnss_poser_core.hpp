@@ -19,10 +19,10 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_debug_msgs/msg/bool_stamped.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
+#include <tier4_debug_msgs/msg/bool_stamped.hpp>
 #include <ublox_msgs/msg/nav_pvt.hpp>
 
 #include <boost/circular_buffer.hpp>
@@ -76,7 +76,7 @@ private:
 
   rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pose_pub_;
   rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pose_cov_pub_;
-  rclcpp::Publisher<autoware_debug_msgs::msg::BoolStamped>::SharedPtr fixed_pub_;
+  rclcpp::Publisher<tier4_debug_msgs::msg::BoolStamped>::SharedPtr fixed_pub_;
 
   CoordinateSystem coordinate_system_;
   std::string base_frame_;

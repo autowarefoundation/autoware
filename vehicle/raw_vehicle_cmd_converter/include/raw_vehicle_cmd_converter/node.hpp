@@ -24,10 +24,10 @@
 
 #include <autoware_auto_control_msgs/msg/ackermann_control_command.hpp>
 #include <autoware_auto_vehicle_msgs/msg/steering_report.hpp>
-#include <autoware_debug_msgs/msg/float32_multi_array_stamped.hpp>
-#include <autoware_vehicle_msgs/msg/actuation_command_stamped.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
+#include <tier4_debug_msgs/msg/float32_multi_array_stamped.hpp>
+#include <tier4_vehicle_msgs/msg/actuation_command_stamped.hpp>
 
 #include <memory>
 #include <string>
@@ -36,8 +36,8 @@
 namespace raw_vehicle_cmd_converter
 {
 using AckermannControlCommand = autoware_auto_control_msgs::msg::AckermannControlCommand;
-using autoware_debug_msgs::msg::Float32MultiArrayStamped;
-using autoware_vehicle_msgs::msg::ActuationCommandStamped;
+using tier4_debug_msgs::msg::Float32MultiArrayStamped;
+using tier4_vehicle_msgs::msg::ActuationCommandStamped;
 using TwistStamped = geometry_msgs::msg::TwistStamped;
 using Odometry = nav_msgs::msg::Odometry;
 using Steering = autoware_auto_vehicle_msgs::msg::SteeringReport;

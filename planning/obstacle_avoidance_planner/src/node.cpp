@@ -65,7 +65,7 @@ ObstacleAvoidancePlanner::ObstacleAvoidancePlanner(const rclcpp::NodeOptions & n
     durable_qos);
   debug_smoothed_points_pub_ = create_publisher<autoware_auto_planning_msgs::msg::Trajectory>(
     "~/debug/smoothed_points", durable_qos);
-  is_avoidance_possible_pub_ = create_publisher<autoware_planning_msgs::msg::IsAvoidancePossible>(
+  is_avoidance_possible_pub_ = create_publisher<tier4_planning_msgs::msg::IsAvoidancePossible>(
     "/planning/scenario_planning/lane_driving/obstacle_avoidance_ready", durable_qos);
   debug_markers_pub_ =
     create_publisher<visualization_msgs::msg::MarkerArray>("~/debug/marker", durable_qos);
@@ -85,7 +85,7 @@ ObstacleAvoidancePlanner::ObstacleAvoidancePlanner(const rclcpp::NodeOptions & n
   objects_sub_ = create_subscription<autoware_auto_perception_msgs::msg::PredictedObjects>(
     "~/input/objects", rclcpp::QoS{10},
     std::bind(&ObstacleAvoidancePlanner::objectsCallback, this, std::placeholders::_1));
-  is_avoidance_sub_ = create_subscription<autoware_planning_msgs::msg::EnableAvoidance>(
+  is_avoidance_sub_ = create_subscription<tier4_planning_msgs::msg::EnableAvoidance>(
     "/planning/scenario_planning/lane_driving/obstacle_avoidance_approval", rclcpp::QoS{10},
     std::bind(&ObstacleAvoidancePlanner::enableAvoidanceCallback, this, std::placeholders::_1));
 
@@ -332,7 +332,7 @@ void ObstacleAvoidancePlanner::objectsCallback(
 }
 
 void ObstacleAvoidancePlanner::enableAvoidanceCallback(
-  const autoware_planning_msgs::msg::EnableAvoidance::SharedPtr msg)
+  const tier4_planning_msgs::msg::EnableAvoidance::SharedPtr msg)
 {
   enable_avoidance_ = msg->enable_avoidance;
 }
@@ -605,7 +605,7 @@ void ObstacleAvoidancePlanner::publishingDebugData(
   debug_smoothed_points.header = path.header;
   debug_smoothed_points_pub_->publish(debug_smoothed_points);
 
-  autoware_planning_msgs::msg::IsAvoidancePossible is_avoidance_possible;
+  tier4_planning_msgs::msg::IsAvoidancePossible is_avoidance_possible;
   is_avoidance_possible.is_avoidance_possible = debug_data.foa_data.is_avoidance_possible;
   is_avoidance_possible_pub_->publish(is_avoidance_possible);
 

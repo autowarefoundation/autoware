@@ -17,8 +17,6 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_api_msgs/msg/stop_command.hpp>
-#include <autoware_api_msgs/msg/velocity_limit.hpp>
 #include <autoware_auto_control_msgs/msg/ackermann_control_command.hpp>
 #include <autoware_auto_planning_msgs/msg/path.hpp>
 #include <autoware_auto_planning_msgs/msg/trajectory.hpp>
@@ -30,20 +28,22 @@
 #include <autoware_auto_vehicle_msgs/msg/hazard_lights_report.hpp>
 #include <autoware_auto_vehicle_msgs/msg/steering_report.hpp>
 #include <autoware_auto_vehicle_msgs/msg/turn_indicators_report.hpp>
-#include <autoware_control_msgs/msg/gate_mode.hpp>
-#include <autoware_planning_msgs/msg/is_avoidance_possible.hpp>
-#include <autoware_planning_msgs/msg/lane_change_status.hpp>
-#include <autoware_planning_msgs/msg/stop_reason_array.hpp>
-#include <autoware_planning_msgs/msg/velocity_limit.hpp>
-#include <autoware_v2x_msgs/msg/infrastructure_command_array.hpp>
-#include <autoware_v2x_msgs/msg/virtual_traffic_light_state_array.hpp>
-#include <autoware_vehicle_msgs/msg/battery_status.hpp>
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <pacmod3_msgs/msg/global_rpt.hpp>
 #include <pacmod3_msgs/msg/system_rpt_int.hpp>
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
+#include <tier4_api_msgs/msg/stop_command.hpp>
+#include <tier4_api_msgs/msg/velocity_limit.hpp>
+#include <tier4_control_msgs/msg/gate_mode.hpp>
+#include <tier4_planning_msgs/msg/is_avoidance_possible.hpp>
+#include <tier4_planning_msgs/msg/lane_change_status.hpp>
+#include <tier4_planning_msgs/msg/stop_reason_array.hpp>
+#include <tier4_planning_msgs/msg/velocity_limit.hpp>
+#include <tier4_v2x_msgs/msg/infrastructure_command_array.hpp>
+#include <tier4_v2x_msgs/msg/virtual_traffic_light_state_array.hpp>
+#include <tier4_vehicle_msgs/msg/battery_status.hpp>
 
 #include <tf2/utils.h>
 #include <tf2_ros/transform_broadcaster.h>
@@ -63,26 +63,26 @@ struct AutowareInfo
   autoware_auto_vehicle_msgs::msg::HazardLightsReport::ConstSharedPtr hazard_lights_ptr;
   nav_msgs::msg::Odometry::ConstSharedPtr odometry_ptr;
   autoware_auto_vehicle_msgs::msg::GearReport::ConstSharedPtr gear_ptr;
-  autoware_vehicle_msgs::msg::BatteryStatus::ConstSharedPtr battery_ptr;
+  tier4_vehicle_msgs::msg::BatteryStatus::ConstSharedPtr battery_ptr;
   sensor_msgs::msg::NavSatFix::ConstSharedPtr nav_sat_ptr;
   autoware_auto_system_msgs::msg::AutowareState::ConstSharedPtr autoware_state_ptr;
   autoware_auto_vehicle_msgs::msg::ControlModeReport::ConstSharedPtr control_mode_ptr;
-  autoware_control_msgs::msg::GateMode::ConstSharedPtr gate_mode_ptr;
+  tier4_control_msgs::msg::GateMode::ConstSharedPtr gate_mode_ptr;
   autoware_auto_system_msgs::msg::EmergencyState::ConstSharedPtr emergency_state_ptr;
   autoware_auto_system_msgs::msg::HazardStatusStamped::ConstSharedPtr hazard_status_ptr;
-  autoware_planning_msgs::msg::StopReasonArray::ConstSharedPtr stop_reason_ptr;
-  autoware_v2x_msgs::msg::InfrastructureCommandArray::ConstSharedPtr v2x_command_ptr;
-  autoware_v2x_msgs::msg::VirtualTrafficLightStateArray::ConstSharedPtr v2x_state_ptr;
+  tier4_planning_msgs::msg::StopReasonArray::ConstSharedPtr stop_reason_ptr;
+  tier4_v2x_msgs::msg::InfrastructureCommandArray::ConstSharedPtr v2x_command_ptr;
+  tier4_v2x_msgs::msg::VirtualTrafficLightStateArray::ConstSharedPtr v2x_state_ptr;
   diagnostic_msgs::msg::DiagnosticArray::ConstSharedPtr diagnostic_ptr;
   pacmod3_msgs::msg::GlobalRpt::ConstSharedPtr global_rpt_ptr;
-  autoware_planning_msgs::msg::LaneChangeStatus::ConstSharedPtr lane_change_available_ptr;
-  autoware_planning_msgs::msg::LaneChangeStatus::ConstSharedPtr lane_change_ready_ptr;
+  tier4_planning_msgs::msg::LaneChangeStatus::ConstSharedPtr lane_change_available_ptr;
+  tier4_planning_msgs::msg::LaneChangeStatus::ConstSharedPtr lane_change_ready_ptr;
   autoware_auto_planning_msgs::msg::Path::ConstSharedPtr lane_change_candidate_ptr;
-  autoware_planning_msgs::msg::IsAvoidancePossible::ConstSharedPtr obstacle_avoid_ready_ptr;
+  tier4_planning_msgs::msg::IsAvoidancePossible::ConstSharedPtr obstacle_avoid_ready_ptr;
   autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr obstacle_avoid_candidate_ptr;
-  autoware_api_msgs::msg::VelocityLimit::ConstSharedPtr max_velocity_ptr;
-  autoware_planning_msgs::msg::VelocityLimit::ConstSharedPtr current_max_velocity_ptr;
-  autoware_api_msgs::msg::StopCommand::ConstSharedPtr temporary_stop_ptr;
+  tier4_api_msgs::msg::VelocityLimit::ConstSharedPtr max_velocity_ptr;
+  tier4_planning_msgs::msg::VelocityLimit::ConstSharedPtr current_max_velocity_ptr;
+  tier4_api_msgs::msg::StopCommand::ConstSharedPtr temporary_stop_ptr;
   autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr autoware_planning_traj_ptr;
   pacmod3_msgs::msg::SystemRptInt::ConstSharedPtr door_state_ptr;
 };

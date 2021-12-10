@@ -21,9 +21,9 @@ launch_test test/test_fault_injection_node.test.py
 
 ### Input
 
-| Name                        | Type                                              | Description       |
-| --------------------------- | ------------------------------------------------- | ----------------- |
-| `~/input/simulation_events` | `autoware_simulation_msgs::msg::SimulationEvents` | simulation events |
+| Name                        | Type                                           | Description       |
+| --------------------------- | ---------------------------------------------- | ----------------- |
+| `~/input/simulation_events` | `tier4_simulation_msgs::msg::SimulationEvents` | simulation events |
 
 ### Output
 

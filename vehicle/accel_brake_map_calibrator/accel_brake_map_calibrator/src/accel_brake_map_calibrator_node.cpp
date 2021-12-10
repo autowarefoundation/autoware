@@ -166,13 +166,13 @@ AccelBrakeMapCalibrator::AccelBrakeMapCalibrator(const rclcpp::NodeOptions & nod
     "/accel_brake_map_calibrator/debug/original_raw_map", durable_qos);
   update_map_raw_pub_ = create_publisher<std_msgs::msg::Float32MultiArray>(
     "/accel_brake_map_calibrator/output/update_raw_map", durable_qos);
-  debug_pub_ = create_publisher<autoware_debug_msgs::msg::Float32MultiArrayStamped>(
+  debug_pub_ = create_publisher<tier4_debug_msgs::msg::Float32MultiArrayStamped>(
     "/accel_brake_map_calibrator/output/debug_values", durable_qos);
-  current_map_error_pub_ = create_publisher<autoware_debug_msgs::msg::Float32Stamped>(
+  current_map_error_pub_ = create_publisher<tier4_debug_msgs::msg::Float32Stamped>(
     "/accel_brake_map_calibrator/output/current_map_error", durable_qos);
-  updated_map_error_pub_ = create_publisher<autoware_debug_msgs::msg::Float32Stamped>(
+  updated_map_error_pub_ = create_publisher<tier4_debug_msgs::msg::Float32Stamped>(
     "/accel_brake_map_calibrator/output/updated_map_error", durable_qos);
-  map_error_ratio_pub_ = create_publisher<autoware_debug_msgs::msg::Float32Stamped>(
+  map_error_ratio_pub_ = create_publisher<tier4_debug_msgs::msg::Float32Stamped>(
     "/accel_brake_map_calibrator/output/map_error_ratio", durable_qos);
 
   // subscriber
@@ -185,12 +185,12 @@ AccelBrakeMapCalibrator::AccelBrakeMapCalibrator(const rclcpp::NodeOptions & nod
     std::bind(&AccelBrakeMapCalibrator::callbackVelocity, this, _1));
   steer_sub_ = create_subscription<autoware_auto_vehicle_msgs::msg::SteeringReport>(
     "~/input/steer", queue_size, std::bind(&AccelBrakeMapCalibrator::callbackSteer, this, _1));
-  actuation_status_sub_ = create_subscription<autoware_vehicle_msgs::msg::ActuationStatusStamped>(
+  actuation_status_sub_ = create_subscription<tier4_vehicle_msgs::msg::ActuationStatusStamped>(
     "~/input/actuation_status", queue_size,
     std::bind(&AccelBrakeMapCalibrator::callbackActuationStatus, this, _1));
 
   // Service
-  update_map_dir_server_ = create_service<autoware_vehicle_msgs::srv::UpdateAccelBrakeMap>(
+  update_map_dir_server_ = create_service<tier4_vehicle_msgs::srv::UpdateAccelBrakeMap>(
     "~/input/update_map_dir",
     std::bind(&AccelBrakeMapCalibrator::callbackUpdateMapService, this, _1, _2, _3));
 
@@ -490,7 +490,7 @@ void AccelBrakeMapCalibrator::callbackSteer(
 }
 
 void AccelBrakeMapCalibrator::callbackActuationStatus(
-  const autoware_vehicle_msgs::msg::ActuationStatusStamped::ConstSharedPtr msg)
+  const tier4_vehicle_msgs::msg::ActuationStatusStamped::ConstSharedPtr msg)
 {
   // get accel data
   accel_pedal_ptr_ =
@@ -529,8 +529,8 @@ void AccelBrakeMapCalibrator::callbackActuationStatus(
 
 bool AccelBrakeMapCalibrator::callbackUpdateMapService(
   [[maybe_unused]] const std::shared_ptr<rmw_request_id_t> request_header,
-  autoware_vehicle_msgs::srv::UpdateAccelBrakeMap::Request::SharedPtr req,
-  autoware_vehicle_msgs::srv::UpdateAccelBrakeMap::Response::SharedPtr res)
+  tier4_vehicle_msgs::srv::UpdateAccelBrakeMap::Request::SharedPtr req,
+  tier4_vehicle_msgs::srv::UpdateAccelBrakeMap::Response::SharedPtr res)
 {
   // if req.path is input, use this as the directory to set updated maps
   std::string update_map_dir = req->path.empty() ? csv_default_map_dir_ : req->path;
@@ -1173,7 +1173,7 @@ void AccelBrakeMapCalibrator::publishMap(
 
 void AccelBrakeMapCalibrator::publishFloat32(const std::string publish_type, const double val)
 {
-  autoware_debug_msgs::msg::Float32Stamped msg;
+  tier4_debug_msgs::msg::Float32Stamped msg;
   msg.stamp = this->now();
   msg.data = val;
   if (publish_type == "current_map_error") {

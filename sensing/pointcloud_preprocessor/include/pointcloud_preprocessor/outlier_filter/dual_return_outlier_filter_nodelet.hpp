@@ -22,9 +22,9 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_debug_msgs/msg/float32_stamped.hpp>
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
+#include <tier4_debug_msgs/msg/float32_stamped.hpp>
 
 #include <cv_bridge/cv_bridge.h>
 #include <pcl/filters/voxel_grid.h>
@@ -60,7 +60,7 @@ protected:
   /** \brief Parameter service callback */
   rcl_interfaces::msg::SetParametersResult paramCallback(const std::vector<rclcpp::Parameter> & p);
   image_transport::Publisher image_pub_;
-  rclcpp::Publisher<autoware_debug_msgs::msg::Float32Stamped>::SharedPtr visibility_pub_;
+  rclcpp::Publisher<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr visibility_pub_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr noise_cloud_pub_;
 
 private:

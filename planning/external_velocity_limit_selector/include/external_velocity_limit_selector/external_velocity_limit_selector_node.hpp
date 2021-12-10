@@ -17,17 +17,17 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_planning_msgs/msg/velocity_limit.hpp>
-#include <autoware_planning_msgs/msg/velocity_limit_clear_command.hpp>
+#include <tier4_planning_msgs/msg/velocity_limit.hpp>
+#include <tier4_planning_msgs/msg/velocity_limit_clear_command.hpp>
 
 #include <deque>
 #include <memory>
 #include <string>
 #include <unordered_map>
 
-using autoware_planning_msgs::msg::VelocityLimit;
-using autoware_planning_msgs::msg::VelocityLimitClearCommand;
-using autoware_planning_msgs::msg::VelocityLimitConstraints;
+using tier4_planning_msgs::msg::VelocityLimit;
+using tier4_planning_msgs::msg::VelocityLimitClearCommand;
+using tier4_planning_msgs::msg::VelocityLimitConstraints;
 
 class ExternalVelocityLimitSelectorNode : public rclcpp::Node
 {

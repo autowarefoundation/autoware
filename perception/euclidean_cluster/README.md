@@ -28,10 +28,10 @@ This package has two clustering methods: `euclidean_cluster` and `voxel_grid_bas
 
 ### Output
 
-| Name             | Type                                                        | Description                                  |
-| ---------------- | ----------------------------------------------------------- | -------------------------------------------- |
-| `output`         | `autoware_perception_msgs::msg::DetectedObjectsWithFeature` | cluster pointcloud                           |
-| `debug/clusters` | `sensor_msgs::msg::PointCloud2`                             | colored cluster pointcloud for visualization |
+| Name             | Type                                                     | Description                                  |
+| ---------------- | -------------------------------------------------------- | -------------------------------------------- |
+| `output`         | `tier4_perception_msgs::msg::DetectedObjectsWithFeature` | cluster pointcloud                           |
+| `debug/clusters` | `sensor_msgs::msg::PointCloud2`                          | colored cluster pointcloud for visualization |
 
 ## Parameters
 

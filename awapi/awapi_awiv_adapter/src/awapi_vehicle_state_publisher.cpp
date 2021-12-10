@@ -28,12 +28,12 @@ AutowareIvVehicleStatePublisher::AutowareIvVehicleStatePublisher(rclcpp::Node & 
 {
   // publisher
   pub_state_ =
-    node.create_publisher<autoware_api_msgs::msg::AwapiVehicleStatus>("output/vehicle_status", 1);
+    node.create_publisher<tier4_api_msgs::msg::AwapiVehicleStatus>("output/vehicle_status", 1);
 }
 
 void AutowareIvVehicleStatePublisher::statePublisher(const AutowareInfo & aw_info)
 {
-  autoware_api_msgs::msg::AwapiVehicleStatus status = initVehicleStatus();
+  tier4_api_msgs::msg::AwapiVehicleStatus status = initVehicleStatus();
 
   // input header
   status.header.frame_id = "base_link";
@@ -53,9 +53,9 @@ void AutowareIvVehicleStatePublisher::statePublisher(const AutowareInfo & aw_inf
   pub_state_->publish(status);
 }
 
-autoware_api_msgs::msg::AwapiVehicleStatus AutowareIvVehicleStatePublisher::initVehicleStatus()
+tier4_api_msgs::msg::AwapiVehicleStatus AutowareIvVehicleStatePublisher::initVehicleStatus()
 {
-  autoware_api_msgs::msg::AwapiVehicleStatus status;
+  tier4_api_msgs::msg::AwapiVehicleStatus status;
   // set default value
   if (std::numeric_limits<float>::has_quiet_NaN) {
     status.energy_level = std::numeric_limits<float>::quiet_NaN();
@@ -65,7 +65,7 @@ autoware_api_msgs::msg::AwapiVehicleStatus AutowareIvVehicleStatePublisher::init
 
 void AutowareIvVehicleStatePublisher::getPoseInfo(
   const std::shared_ptr<geometry_msgs::msg::PoseStamped> & pose_ptr,
-  autoware_api_msgs::msg::AwapiVehicleStatus * status)
+  tier4_api_msgs::msg::AwapiVehicleStatus * status)
 {
   if (!pose_ptr) {
     RCLCPP_DEBUG_STREAM_THROTTLE(logger_, *clock_, 5000 /* ms */, "current pose is nullptr");
@@ -85,7 +85,7 @@ void AutowareIvVehicleStatePublisher::getPoseInfo(
 
 void AutowareIvVehicleStatePublisher::getSteerInfo(
   const autoware_auto_vehicle_msgs::msg::SteeringReport::ConstSharedPtr & steer_ptr,
-  autoware_api_msgs::msg::AwapiVehicleStatus * status)
+  tier4_api_msgs::msg::AwapiVehicleStatus * status)
 {
   if (!steer_ptr) {
     RCLCPP_DEBUG_STREAM_THROTTLE(logger_, *clock_, 5000 /* ms */, "steer is nullptr");
@@ -114,7 +114,7 @@ void AutowareIvVehicleStatePublisher::getSteerInfo(
 }
 void AutowareIvVehicleStatePublisher::getVehicleCmdInfo(
   const autoware_auto_control_msgs::msg::AckermannControlCommand::ConstSharedPtr & vehicle_cmd_ptr,
-  autoware_api_msgs::msg::AwapiVehicleStatus * status)
+  tier4_api_msgs::msg::AwapiVehicleStatus * status)
 {
   if (!vehicle_cmd_ptr) {
     RCLCPP_DEBUG_STREAM_THROTTLE(logger_, *clock_, 5000 /* ms */, "vehicle cmd is nullptr");
@@ -131,7 +131,7 @@ void AutowareIvVehicleStatePublisher::getVehicleCmdInfo(
 void AutowareIvVehicleStatePublisher::getTurnSignalInfo(
   const autoware_auto_vehicle_msgs::msg::TurnIndicatorsReport::ConstSharedPtr & turn_indicators_ptr,
   const autoware_auto_vehicle_msgs::msg::HazardLightsReport::ConstSharedPtr & hazard_lights_ptr,
-  autoware_api_msgs::msg::AwapiVehicleStatus * status)
+  tier4_api_msgs::msg::AwapiVehicleStatus * status)
 {
   if (!turn_indicators_ptr) {
     RCLCPP_DEBUG_STREAM_THROTTLE(logger_, *clock_, 5000 /* ms */, "turn indicators is nullptr");
@@ -150,7 +150,7 @@ void AutowareIvVehicleStatePublisher::getTurnSignalInfo(
 
 void AutowareIvVehicleStatePublisher::getTwistInfo(
   const nav_msgs::msg::Odometry::ConstSharedPtr & odometry_ptr,
-  autoware_api_msgs::msg::AwapiVehicleStatus * status)
+  tier4_api_msgs::msg::AwapiVehicleStatus * status)
 {
   if (!odometry_ptr) {
     RCLCPP_DEBUG_STREAM_THROTTLE(logger_, *clock_, 5000 /* ms */, "odometry is nullptr");
@@ -183,7 +183,7 @@ void AutowareIvVehicleStatePublisher::getTwistInfo(
 
 void AutowareIvVehicleStatePublisher::getGearInfo(
   const autoware_auto_vehicle_msgs::msg::GearReport::ConstSharedPtr & gear_ptr,
-  autoware_api_msgs::msg::AwapiVehicleStatus * status)
+  tier4_api_msgs::msg::AwapiVehicleStatus * status)
 {
   if (!gear_ptr) {
     RCLCPP_DEBUG_STREAM_THROTTLE(logger_, *clock_, 5000 /* ms */, "gear is nullptr");
@@ -196,8 +196,8 @@ void AutowareIvVehicleStatePublisher::getGearInfo(
 }
 
 void AutowareIvVehicleStatePublisher::getBatteryInfo(
-  const autoware_vehicle_msgs::msg::BatteryStatus::ConstSharedPtr & battery_ptr,
-  autoware_api_msgs::msg::AwapiVehicleStatus * status)
+  const tier4_vehicle_msgs::msg::BatteryStatus::ConstSharedPtr & battery_ptr,
+  tier4_api_msgs::msg::AwapiVehicleStatus * status)
 {
   if (!battery_ptr) {
     RCLCPP_DEBUG_STREAM_THROTTLE(logger_, *clock_, 5000 /* ms */, "battery is nullptr");
@@ -210,7 +210,7 @@ void AutowareIvVehicleStatePublisher::getBatteryInfo(
 
 void AutowareIvVehicleStatePublisher::getGpsInfo(
   const sensor_msgs::msg::NavSatFix::ConstSharedPtr & nav_sat_ptr,
-  autoware_api_msgs::msg::AwapiVehicleStatus * status)
+  tier4_api_msgs::msg::AwapiVehicleStatus * status)
 {
   if (!nav_sat_ptr) {
     RCLCPP_DEBUG_STREAM_THROTTLE(logger_, *clock_, 5000 /* ms */, "nav_sat(gps) is nullptr");

@@ -19,7 +19,7 @@ if (!VelocityLimitPublisher) {
       var pub = new ROSLIB.Topic({
         ros: this.ros,
         name: "/planning/scenario_planning/max_velocity_default",
-        messageType: "autoware_planning_msgs/VelocityLimit",
+        messageType: "tier4_planning_msgs/VelocityLimit",
       });
       var str = new ROSLIB.Message({
         stamp: {
@@ -58,7 +58,7 @@ if (!VelocityLimitSubscriber) {
       var sub = new ROSLIB.Topic({
         ros: this.ros,
         name: "/planning/scenario_planning/max_velocity_default",
-        messageType: "autoware_planning_msgs/VelocityLimit",
+        messageType: "tier4_planning_msgs/VelocityLimit",
       });
       sub.subscribe(function (message) {
         const div = document.getElementById("velocity_limit_status");

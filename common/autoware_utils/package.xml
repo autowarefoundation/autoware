@@ -10,7 +10,6 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
   <depend>autoware_auto_planning_msgs</depend>
-  <depend>autoware_debug_msgs</depend>
   <depend>builtin_interfaces</depend>
   <depend>diagnostic_msgs</depend>
   <depend>geometry_msgs</depend>
@@ -18,6 +17,7 @@
   <depend>rclcpp</depend>
   <depend>tf2</depend>
   <depend>tf2_geometry_msgs</depend>
+  <depend>tier4_debug_msgs</depend>
   <depend>visualization_msgs</depend>
 
   <test_depend>ament_cmake_gtest</test_depend>

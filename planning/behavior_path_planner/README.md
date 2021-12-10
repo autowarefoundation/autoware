@@ -37,9 +37,9 @@ The following modules are currently supported:
 - path_candidate [`autoware_auto_planning_msgs/Path`] : The path the module is about to take. To be executed as soon as external approval is obtained.
 - turn_indicators_cmd [`autoware_auto_vehicle_msgs/TurnIndicatorsCommand`] : Turn indicators command.
 - hazard_lights_cmd [`autoware_auto_vehicle_msgs/HazardLightsCommand`] : Hazard lights command.
-- force_available [`autoware_planning_msgs/PathChangeModuleArray`] : (For remote control) modules that are force-executable.
-- ready_module [`autoware_planning_msgs/PathChangeModule`] : (For remote control) modules that are ready to be executed.
-- running_modules [`autoware_planning_msgs/PathChangeModuleArray`] : (For remote control) Current running module.
+- force_available [`tier4_planning_msgs/PathChangeModuleArray`] : (For remote control) modules that are force-executable.
+- ready_module [`tier4_planning_msgs/PathChangeModule`] : (For remote control) modules that are ready to be executed.
+- running_modules [`tier4_planning_msgs/PathChangeModuleArray`] : (For remote control) Current running module.
 
 ### input
 
@@ -49,7 +49,7 @@ The following modules are currently supported:
 - /tf [`tf2_msgs/TFMessage`] : For ego-pose.
 - /localization/kinematic_state [`nav_msgs/Odometry] : For ego-velocity.
 - path_change_approval [`std_msgs::Bool`] : (For remote control)
-- path_change_force [`autoware_planning_msgs::PathChangeModule`] : (For remote control)
+- path_change_force [`tier4_planning_msgs::PathChangeModule`] : (For remote control)
 
 ## Inner-workings / Algorithms
 

@@ -20,14 +20,14 @@
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <autoware_simulation_msgs/msg/simulation_events.hpp>
+#include <tier4_simulation_msgs/msg/simulation_events.hpp>
 
 #include <string>
 #include <vector>
 
 namespace fault_injection
 {
-using autoware_simulation_msgs::msg::SimulationEvents;
+using tier4_simulation_msgs::msg::SimulationEvents;
 
 class FaultInjectionNode : public rclcpp::Node
 {

@@ -74,7 +74,7 @@ void AccelBrakeMapCalibratorButtonPanel::onInitialize()
     std::bind(
       &AccelBrakeMapCalibratorButtonPanel::callbackUpdateSuggest, this, std::placeholders::_1));
 
-  client_ = raw_node->create_client<autoware_vehicle_msgs::srv::UpdateAccelBrakeMap>(
+  client_ = raw_node->create_client<tier4_vehicle_msgs::srv::UpdateAccelBrakeMap>(
     "/vehicle/calibration/accel_brake_map_calibrator/update_map_dir");
 }
 
@@ -118,12 +118,14 @@ void AccelBrakeMapCalibratorButtonPanel::pushCalibrationButton()
   status_label_->setText("executing calibration...");
 
   std::thread thread([this] {
-    auto req = std::make_shared<autoware_vehicle_msgs::srv::UpdateAccelBrakeMap::Request>();
+    auto req = std::make_shared<tier4_vehicle_msgs::srv::UpdateAccelBrakeMap::Request>();
     req->path = "";
 
     client_->async_send_request(
-      req, [this]([[maybe_unused]] rclcpp::Client<
-                  autoware_vehicle_msgs::srv::UpdateAccelBrakeMap>::SharedFuture result) {
+      req,
+      [this](
+        [[maybe_unused]] rclcpp::Client<tier4_vehicle_msgs::srv::UpdateAccelBrakeMap>::SharedFuture
+          result) {
         status_label_->setStyleSheet("QLabel { background-color : lightgreen;}");
         status_label_->setText("OK!!!");
 

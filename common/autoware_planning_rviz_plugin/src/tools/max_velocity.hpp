@@ -34,7 +34,7 @@
 #include <rviz_common/tool.hpp>
 #include <rviz_common/validate_floats.hpp>
 
-#include <autoware_planning_msgs/msg/velocity_limit.hpp>
+#include <tier4_planning_msgs/msg/velocity_limit.hpp>
 
 #include <OgreBillboardSet.h>
 #include <OgreManualObject.h>
@@ -63,7 +63,7 @@ private Q_SLOTS:
   void updateVisualization();
 
 protected:
-  void processMessage(const autoware_planning_msgs::msg::VelocityLimit::ConstSharedPtr msg_ptr);
+  void processMessage(const tier4_planning_msgs::msg::VelocityLimit::ConstSharedPtr msg_ptr);
   jsk_rviz_plugins::OverlayObject::Ptr overlay_;
   rviz_common::properties::ColorProperty * property_text_color_;
   rviz_common::properties::IntProperty * property_left_;
@@ -73,8 +73,8 @@ protected:
   rviz_common::properties::FloatProperty * property_value_scale_;
 
 private:
-  rclcpp::Subscription<autoware_planning_msgs::msg::VelocityLimit>::SharedPtr max_vel_sub_;
-  autoware_planning_msgs::msg::VelocityLimit::ConstSharedPtr last_msg_ptr_;
+  rclcpp::Subscription<tier4_planning_msgs::msg::VelocityLimit>::SharedPtr max_vel_sub_;
+  tier4_planning_msgs::msg::VelocityLimit::ConstSharedPtr last_msg_ptr_;
 };
 
 }  // namespace rviz_plugins
