@@ -164,15 +164,29 @@ NDTScanMatcher::NDTScanMatcher()
   converged_param_transform_probability_ = this->declare_parameter(
     "converged_param_transform_probability", converged_param_transform_probability_);
 
+  rclcpp::CallbackGroup::SharedPtr initial_pose_callback_group;
+  initial_pose_callback_group =
+    this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+
+  rclcpp::CallbackGroup::SharedPtr main_callback_group;
+  main_callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+
+  auto initial_pose_sub_opt = rclcpp::SubscriptionOptions();
+  initial_pose_sub_opt.callback_group = initial_pose_callback_group;
+
+  auto main_sub_opt = rclcpp::SubscriptionOptions();
+  main_sub_opt.callback_group = main_callback_group;
+
   initial_pose_sub_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
     "ekf_pose_with_covariance", 100,
-    std::bind(&NDTScanMatcher::callbackInitialPose, this, std::placeholders::_1));
+    std::bind(&NDTScanMatcher::callbackInitialPose, this, std::placeholders::_1),
+    initial_pose_sub_opt);
   map_points_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
     "pointcloud_map", rclcpp::QoS{1}.transient_local(),
-    std::bind(&NDTScanMatcher::callbackMapPoints, this, std::placeholders::_1));
+    std::bind(&NDTScanMatcher::callbackMapPoints, this, std::placeholders::_1), main_sub_opt);
   sensor_points_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
     "points_raw", rclcpp::SensorDataQoS().keep_last(points_queue_size),
-    std::bind(&NDTScanMatcher::callbackSensorPoints, this, std::placeholders::_1));
+    std::bind(&NDTScanMatcher::callbackSensorPoints, this, std::placeholders::_1), main_sub_opt);
 
   sensor_aligned_pose_pub_ =
     this->create_publisher<sensor_msgs::msg::PointCloud2>("points_aligned", 10);
@@ -207,8 +221,8 @@ NDTScanMatcher::NDTScanMatcher()
 
   service_ = this->create_service<autoware_localization_msgs::srv::PoseWithCovarianceStamped>(
     "ndt_align_srv",
-    std::bind(
-      &NDTScanMatcher::serviceNDTAlign, this, std::placeholders::_1, std::placeholders::_2));
+    std::bind(&NDTScanMatcher::serviceNDTAlign, this, std::placeholders::_1, std::placeholders::_2),
+    rclcpp::ServicesQoS().get_rmw_qos_profile(), main_callback_group);
 
   diagnostic_thread_ = std::thread(&NDTScanMatcher::timerDiagnostic, this);
   diagnostic_thread_.detach();
@@ -304,6 +318,8 @@ void NDTScanMatcher::serviceNDTAlign(
 void NDTScanMatcher::callbackInitialPose(
   const geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr initial_pose_msg_ptr)
 {
+  // lock mutex for initial pose
+  std::lock_guard<std::mutex> initial_pose_array_lock(initial_pose_array_mtx_);
   // if rosbag restart, clear buffer
   if (!initial_pose_msg_ptr_array_.empty()) {
     const builtin_interfaces::msg::Time & t_front =
@@ -394,6 +410,8 @@ void NDTScanMatcher::callbackSensorPoints(
     *sensor_points_sensorTF_ptr, *sensor_points_baselinkTF_ptr, base_to_sensor_matrix);
   ndt_ptr_->setInputSource(sensor_points_baselinkTF_ptr);
 
+  // start of critical section for initial_pose_msg_ptr_array_
+  std::unique_lock<std::mutex> initial_pose_array_lock(initial_pose_array_mtx_);
   // check
   if (initial_pose_msg_ptr_array_.size() <= 1) {
     RCLCPP_WARN_STREAM_THROTTLE(this->get_logger(), *this->get_clock(), 1, "No Pose!");
@@ -409,6 +427,8 @@ void NDTScanMatcher::callbackSensorPoints(
   // TODO(Tier IV): check pose_timestamp - sensor_ros_time
   const auto initial_pose_msg =
     interpolatePose(*initial_pose_old_msg_ptr, *initial_pose_new_msg_ptr, sensor_ros_time);
+  // enf of critical section for initial_pose_msg_ptr_array_
+  initial_pose_array_lock.unlock();
 
   geometry_msgs::msg::PoseWithCovarianceStamped initial_pose_cov_msg;
   initial_pose_cov_msg.header = initial_pose_msg.header;

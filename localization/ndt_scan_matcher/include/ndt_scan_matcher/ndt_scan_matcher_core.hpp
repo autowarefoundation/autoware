@@ -159,6 +159,7 @@ private:
   std::deque<geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr>
     initial_pose_msg_ptr_array_;
   std::mutex ndt_map_mtx_;
+  std::mutex initial_pose_array_mtx_;
 
   OMPParams omp_params_;
 

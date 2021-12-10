@@ -19,7 +19,10 @@
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<NDTScanMatcher>());
+  auto ndt_scan_matcher = std::make_shared<NDTScanMatcher>();
+  rclcpp::executors::MultiThreadedExecutor exec;
+  exec.add_node(ndt_scan_matcher);
+  exec.spin();
   rclcpp::shutdown();
   return 0;
 }
