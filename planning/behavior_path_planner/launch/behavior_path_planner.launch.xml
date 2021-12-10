@@ -2,6 +2,9 @@
   <arg name="input_route_topic_name" default="/planning/mission_planning/route" />
   <arg name="map_topic_name" default="/map/vector_map" />
 
+  <!-- vehicle info -->
+  <arg name="vehicle_info_param_file" default="$(find-pkg-share vehicle_info_util)/config/vehicle_info.param.yaml" />
+
   <node pkg="behavior_path_planner" exec="behavior_path_planner" name="behavior_path_planner" output="screen">
     <remap from="~/input/route" to="$(var input_route_topic_name)" />
     <remap from="~/input/vector_map" to="$(var map_topic_name)" />
@@ -11,5 +14,6 @@
 
     <param from="$(find-pkg-share behavior_path_planner)/config/side_shift/side_shift.param.yaml" />
     <param name="bt_tree_config_path" value="$(find-pkg-share behavior_path_planner)/config/behavior_path_planner_tree.xml" />
+    <param from="$(var vehicle_info_param_file)" />
   </node>
 </launch>

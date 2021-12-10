@@ -13,6 +13,8 @@ Add the following lines to the launch file of the node in which you want to get 
   </include>
 ```
 
+The vehicle model parameter is read from `config/vehicle_info.param.yaml` in `vehicle_model`\_description package.
+
 ## Assumptions / Known limits
 
 Currently only vehicle_info is loaded by this launcher.

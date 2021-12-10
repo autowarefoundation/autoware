@@ -8,6 +8,9 @@
 
   <arg name="param_file" default="$(find-pkg-share freespace_planner)/config/freespace_planner.param.yaml"/>
 
+  <!-- vehicle info -->
+  <arg name="vehicle_info_param_file" default="$(find-pkg-share vehicle_info_util)/config/vehicle_info.param.yaml" />
+
   <node pkg="freespace_planner" exec="freespace_planner" name="freespace_planner" output="screen">
     <remap from="~/input/route" to="$(var input_route)" />
     <remap from="~/input/occupancy_grid" to="$(var input_occupancy_grid)" />
@@ -16,5 +19,6 @@
     <remap from="~/output/trajectory" to="$(var output_trajectory)" />
     <remap from="is_completed" to="$(var is_completed)" />
     <param from="$(var param_file)"/>
+    <param from="$(var vehicle_info_param_file)" />
   </node>
 </launch>

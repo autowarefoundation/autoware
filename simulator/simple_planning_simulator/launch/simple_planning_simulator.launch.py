@@ -35,6 +35,16 @@ def generate_launch_description():
         description='Path to config file for vehicle characteristics'
     )
 
+    default_vehicle_info_param = os.path.join(
+        get_package_share_directory('vehicle_info_util'),
+        'config/vehicle_info.param.yaml')
+
+    vehicle_info_param = DeclareLaunchArgument(
+        'vehicle_info_param_file',
+        default_value=default_vehicle_info_param,
+        description='Path to config file for vehicle information'
+    )
+
     simple_planning_simulator_node = launch_ros.actions.Node(
         package='simple_planning_simulator',
         executable='simple_planning_simulator_exe',
@@ -48,6 +58,7 @@ def generate_launch_description():
                 )
             ),
             LaunchConfiguration('vehicle_characteristics_param_file'),
+            LaunchConfiguration('vehicle_info_param_file')
         ],
         remappings=[
             ('input/ackermann_control_command', '/control/command/control_cmd'),
@@ -75,6 +86,7 @@ def generate_launch_description():
 
     ld = launch.LaunchDescription([
         vehicle_characteristics_param,
+        vehicle_info_param,
         simple_planning_simulator_node,
         map_to_odom_tf_publisher
     ])

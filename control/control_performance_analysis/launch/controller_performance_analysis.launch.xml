@@ -8,10 +8,11 @@
   <arg name="output/error_stamped" default="/control_performance/performance_vars" />
 
   <!-- vehicle info -->
-  <include file="$(find-pkg-share autoware_launch)/launch/global_params.launch.py" />
+  <arg name="vehicle_info_param_file" default="$(find-pkg-share vehicle_info_util)/config/vehicle_info.param.yaml" />
 
   <node pkg="control_performance_analysis" exec="control_performance_analysis" name="control_performance_analysis" output="screen">
     <param from="$(var control_performance_analysis_param_path)" />
+    <param from="$(var vehicle_info_param_file)" />
 
     <remap from="~/input/reference_trajectory" to="$(var input/reference_trajectory)" />
     <remap from="~/input/control_raw" to="$(var input/control_raw)" />

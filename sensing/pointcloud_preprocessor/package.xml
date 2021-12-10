@@ -39,7 +39,6 @@
   <depend>tf2_ros</depend>
   <depend>tier4_debug_msgs</depend>
   <depend>tier4_pcl_extensions</depend>
-  <depend>vehicle_info_util</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>

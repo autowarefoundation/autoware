@@ -6,6 +6,9 @@
   <arg name="input/predicted_trajectory" default="/control/trajectory_follower/predicted_trajectory" />
   <arg name="config_file" default="$(find-pkg-share lane_departure_checker)/config/lane_departure_checker.param.yaml" />
 
+  <!-- vehicle info -->
+  <arg name="vehicle_info_param_file" default="$(find-pkg-share vehicle_info_util)/config/vehicle_info.param.yaml" />
+
   <node pkg="lane_departure_checker" exec="lane_departure_checker_node" name="lane_departure_checker_node" output="screen">
     <remap from="~/input/odometry" to="$(var input/odometry)"/>
     <remap from="~/input/lanelet_map_bin" to="$(var input/lanelet_map_bin)"/>
@@ -13,5 +16,6 @@
     <remap from="~/input/reference_trajectory" to="$(var input/reference_trajectory)"/>
     <remap from="~/input/predicted_trajectory" to="$(var input/predicted_trajectory)"/>
     <param from="$(var config_file)" />
+    <param from="$(var vehicle_info_param_file)" />
   </node>
 </launch>

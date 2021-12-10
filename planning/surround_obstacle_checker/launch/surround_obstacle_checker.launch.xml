@@ -1,6 +1,9 @@
 <launch>
   <arg name="param_path" default="$(find-pkg-share surround_obstacle_checker)/config/surround_obstacle_checker.param.yaml" />
 
+  <!-- vehicle info -->
+  <arg name="vehicle_info_param_file" default="$(find-pkg-share vehicle_info_util)/config/vehicle_info.param.yaml" />
+
   <arg name="input_trajectory" default="input/trajectory" />
   <arg name="input_objects" default="/perception/object_recognition/objects" />
   <arg name="input_odometry" default="/localization/kinematic_state" />
@@ -9,6 +12,7 @@
 
   <node pkg="surround_obstacle_checker" exec="surround_obstacle_checker_node" name="surround_obstacle_checker" output="screen">
     <param from="$(var param_path)" />
+    <param from="$(var vehicle_info_param_file)" />
     <remap from="~/output/no_start_reason" to="/planning/scenario_planning/status/no_start_reason" />
     <remap from="~/output/stop_reasons" to="/planning/scenario_planning/status/stop_reasons" />
     <remap from="~/output/trajectory" to="$(var output_trajectory)" />

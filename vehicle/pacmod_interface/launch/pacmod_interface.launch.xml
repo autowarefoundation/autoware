@@ -4,10 +4,13 @@
   <arg name="pacmod_param_path" default="$(find-pkg-share pacmod_interface)/config/pacmod.param.yaml"/>
   <arg name="pacmod_extra_param_path" default="$(find-pkg-share pacmod_interface)/config/pacmod_extra.param.yaml"/>
 
+  <!-- vehicle info -->
+  <arg name="vehicle_info_param_file" default="$(find-pkg-share vehicle_info_util)/config/vehicle_info.param.yaml" />
 
   <!-- pacmod interface -->
   <node pkg="pacmod_interface" exec="pacmod_interface" name="pacmod_interface" output="screen">
     <param from="$(var pacmod_param_path)" />
+    <param from="$(var vehicle_info_param_file)" />
   </node>
 
   <!-- pacmod diagnostics publisher -->

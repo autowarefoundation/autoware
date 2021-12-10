@@ -12,19 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
+from ament_index_python.packages import get_package_share_directory
 import launch
 from launch.actions import DeclareLaunchArgument
+from launch.actions import GroupAction
+from launch.actions import OpaqueFunction
 from launch.conditions import LaunchConfigurationEquals
 from launch.conditions import LaunchConfigurationNotEquals
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import ComposableNodeContainer
 from launch_ros.actions import LoadComposableNodes
 from launch_ros.descriptions import ComposableNode
+import yaml
 
 
-def generate_launch_description():
-    def add_launch_arg(name: str, default_value=None):
-        return DeclareLaunchArgument(name, default_value=default_value)
+def launch_setup(context, *args, **kwargs):
+    vehicle_info_param_path = LaunchConfiguration("vehicle_info_param_file").perform(context)
+    with open(vehicle_info_param_path, "r") as f:
+        vehicle_info_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
     nodes = [
         ComposableNode(
@@ -41,7 +48,8 @@ def generate_launch_description():
                     "local_slope_max_angle_deg": 30.0,
                     "split_points_distance_tolerance": 0.2,
                     "split_height_distance": 0.2,
-                }
+                },
+                vehicle_info_param,
             ],
         ),
     ]
@@ -62,12 +70,36 @@ def generate_launch_description():
         condition=LaunchConfigurationEquals("container", ""),
     )
 
-    return launch.LaunchDescription(
+    group = GroupAction(
         [
-            add_launch_arg("container", ""),
-            add_launch_arg("input/pointcloud", "pointcloud"),
-            add_launch_arg("output/pointcloud", "no_ground/pointcloud"),
             container,
             loader,
         ]
+    )
+
+    return [group]
+
+
+def generate_launch_description():
+    def add_launch_arg(name: str, default_value=None):
+        return DeclareLaunchArgument(name, default_value=default_value)
+
+    default_vehicle_info_param = os.path.join(
+        get_package_share_directory("vehicle_info_util"), "config/vehicle_info.param.yaml"
+    )
+
+    vehicle_info_param = DeclareLaunchArgument(
+        "vehicle_info_param_file",
+        default_value=default_vehicle_info_param,
+        description="Path to config file for vehicle information",
+    )
+
+    return launch.LaunchDescription(
+        [
+            vehicle_info_param,
+            add_launch_arg("container", ""),
+            add_launch_arg("input/pointcloud", "pointcloud"),
+            add_launch_arg("output/pointcloud", "no_ground/pointcloud"),
+        ]
+        + [OpaqueFunction(function=launch_setup)]
     )

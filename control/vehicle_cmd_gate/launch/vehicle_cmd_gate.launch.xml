@@ -4,6 +4,9 @@
   <arg name="use_external_emergency_stop" default="true" />
   <arg name="use_start_request" default="false" />
 
+  <!-- vehicle info -->
+  <arg name="vehicle_info_param_file" default="$(find-pkg-share vehicle_info_util)/config/vehicle_info.param.yaml" />
+
   <node pkg="vehicle_cmd_gate" exec="vehicle_cmd_gate" name="vehicle_cmd_gate" output="screen">
     <remap from="input/steering" to="/vehicle/status/steering_status"/>
 
@@ -42,6 +45,7 @@
     <remap from="~/service/clear_external_emergency_stop" to="~/clear_external_emergency_stop"/>
 
     <param from="$(var config_file)" />
+    <param from="$(var vehicle_info_param_file)" />
     <param name="use_emergency_handling" value="$(var use_emergency_handling)" />
     <param name="use_external_emergency_stop" value="$(var use_external_emergency_stop)" />
     <param name="use_start_request" value="$(var use_start_request)" />
