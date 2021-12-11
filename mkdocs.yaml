@@ -50,7 +50,8 @@ plugins:
   - awesome-pages
   - exclude:
       regex:
-        - '^.*\.(?!(.*\.)?md|(.*\.)?svg|(.*\.)?png|(.*\.)?jpg|(.*\.)?css).*$'
+        - '^(?!(.*/)?assets/).*\.(?!(.*\.)?md|(.*\.)?svg|(.*\.)?png|(.*\.)?jpg).*$'
+        - "^(.*/)?[^.]*$"
   - same-dir
   - search
 

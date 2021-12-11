@@ -6,22 +6,21 @@ on:
   workflow_dispatch:
 
 jobs:
-  get-self-packages:
-    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-get-self-packages.yaml@6a086d5eac5effbed9876049233213f5cd358914
+  build-and-test-scheduled:
+    runs-on: ${{ matrix.os }}
+    container: ros:galactic
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ARM64]
+    steps:
+      - name: Get self packages
+        id: get-self-packages
+        uses: autowarefoundation/autoware-github-actions/get-self-packages@tier4/proposal
 
-  build-and-test:
-    needs: get-self-packages
-    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-colcon-build-and-test.yaml@6a086d5eac5effbed9876049233213f5cd358914
-    with:
-      rosdistro: galactic
-      build-depends-repos: build_depends.repos
-      target-packages: ${{ needs.get-self-packages.outputs.self-packages }}
-
-  build-and-test-arm64:
-    needs: get-self-packages
-    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-colcon-build-and-test.yaml@6a086d5eac5effbed9876049233213f5cd358914
-    with:
-      os: ARM64
-      rosdistro: galactic
-      build-depends-repos: build_depends.repos
-      target-packages: ${{ needs.get-self-packages.outputs.self-packages }}
+      - name: Build and test
+        uses: autowarefoundation/autoware-github-actions/colcon-build-and-test@tier4/proposal
+        with:
+          rosdistro: galactic
+          build-depends-repos: build_depends.repos
+          target-packages: ${{ steps.get-self-packages.outputs.self-packages }}

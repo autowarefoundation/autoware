@@ -4,28 +4,40 @@ on:
   pull_request:
 
 jobs:
-  get-modified-packages:
-    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-get-modified-packages.yaml@6a086d5eac5effbed9876049233213f5cd358914
-    with:
-      script-ref: 6a086d5eac5effbed9876049233213f5cd358914
-
-  get-modified-source-files:
-    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-get-modified-source-files.yaml@6a086d5eac5effbed9876049233213f5cd358914
-
   build-and-test:
-    needs: get-modified-packages
-    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-colcon-build-and-test.yaml@6a086d5eac5effbed9876049233213f5cd358914
-    with:
-      rosdistro: galactic
-      build-depends-repos: build_depends.repos
-      target-packages: ${{ needs.get-modified-packages.outputs.modified-packages }}
+    runs-on: ubuntu-latest
+    container: ros:galactic
+    steps:
+      - name: Cancel previous runs
+        uses: styfle/cancel-workflow-action@0.9.1
+
+      - name: Get modified packages
+        id: get-modified-packages
+        uses: autowarefoundation/autoware-github-actions/get-modified-packages@tier4/proposal
+
+      - name: Build and test
+        if: ${{ steps.get-modified-packages.outputs.modified-packages != '' }}
+        id: build-and-test
+        uses: autowarefoundation/autoware-github-actions/colcon-build-and-test@tier4/proposal
+        with:
+          rosdistro: galactic
+          target-packages: ${{ steps.get-modified-packages.outputs.modified-packages }}
+          build-depends-repos: build_depends.repos
 
   clang-tidy:
-    needs: [get-modified-source-files, build-and-test]
-    uses: autowarefoundation/autoware-github-actions/.github/workflows/reusable-clang-tidy.yaml@6a086d5eac5effbed9876049233213f5cd358914
-    with:
-      script-ref: 6a086d5eac5effbed9876049233213f5cd358914
-      rosdistro: galactic
-      build-depends-repos: build_depends.repos
-      target-files: ${{ needs.get-modified-source-files.outputs.modified-source-files }}
-      compile-commands-hash: ${{ needs.build-and-test.outputs.compile-commands-hash }}
+    runs-on: ubuntu-latest
+    container: ros:galactic
+    needs: build-and-test
+    steps:
+      - name: Get modified packages
+        id: get-modified-packages
+        uses: autowarefoundation/autoware-github-actions/get-modified-packages@tier4/proposal
+
+      - name: Run clang-tidy
+        if: ${{ steps.get-modified-packages.outputs.modified-packages != '' }}
+        uses: autowarefoundation/autoware-github-actions/clang-tidy@tier4/proposal
+        with:
+          rosdistro: galactic
+          target-packages: ${{ steps.get-modified-packages.outputs.modified-packages }}
+          clang-tidy-config-url: https://raw.githubusercontent.com/autowarefoundation/autoware-github-actions/tier4/proposal/.clang-tidy
+          build-depends-repos: build_depends.repos
