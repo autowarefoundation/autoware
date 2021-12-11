@@ -2,7 +2,7 @@ name: delete-closed-pr-docs
 
 on:
   schedule:
-    - cron: "0 19 * * 0" # run at 4 AM JST on Sundays
+    - cron: "0 19 * * *" # run at 4 AM JST
   workflow_dispatch:
 
 jobs:

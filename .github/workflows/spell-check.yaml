@@ -1,4 +1,4 @@
-name: spell-check-pr
+name: spell-check
 
 on:
   pull_request:

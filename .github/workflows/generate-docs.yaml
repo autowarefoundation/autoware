@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - 6a086d5eac5effbed9876049233213f5cd358914
+      - tier4/proposal
     paths:
       - "mkdocs.yaml"
       - "**/*.md"

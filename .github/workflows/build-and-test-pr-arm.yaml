@@ -1,0 +1,24 @@
+name: build-and-test-pr-arm
+
+on:
+  pull_request:
+    types:
+      - labeled
+
+jobs:
+  build-and-test:
+    if: ${{ github.event.label.name == 'ARM64' }}
+    runs-on: [self-hosted, linux, ARM64]
+    container: ros:galactic
+    steps:
+      - name: Get modified packages
+        id: get-modified-packages
+        uses: autowarefoundation/autoware-github-actions/get-modified-packages@tier4/proposal
+
+      - name: Build and test
+        id: build-and-test
+        uses: autowarefoundation/autoware-github-actions/colcon-build-and-test@tier4/proposal
+        with:
+          rosdistro: galactic
+          build-depends-repos: build_depends.repos
+          target-packages: ${{ steps.get-modified-packages.outputs.modified-packages }}

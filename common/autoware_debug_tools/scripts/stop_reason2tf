@@ -3,8 +3,8 @@
 stop_reason_name="$1"
 
 if [ -z "${stop_reason_name}" ]; then
-	echo "Please input stop_reason_name as the 1st argument."
-	exit 1
+    echo "Please input stop_reason_name as the 1st argument."
+    exit 1
 fi
 
 ros2 run autoware_debug_tools stop_reason2pose.py /planning/scenario_planning/status/stop_reasons >/dev/null 2>&1 &

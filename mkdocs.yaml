@@ -48,6 +48,9 @@ extra_javascript:
 
 plugins:
   - awesome-pages
+  - exclude:
+      regex:
+        - '^.*\.(?!(.*\.)?md|(.*\.)?svg|(.*\.)?png|(.*\.)?jpg|(.*\.)?css).*$'
   - same-dir
   - search
 
