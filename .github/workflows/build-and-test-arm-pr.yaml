@@ -1,13 +1,13 @@
 name: build-and-test-arm-pr
 
 on:
-  issue_comment:
+  pull_request:
     types:
-      - created
+      - labeled
 
 jobs:
   build-and-test-arm:
-    if: ${{ github.event.pull_request && contains(github.event.comment.body, '/arm') }}
+    if: ${{ github.event.label.name == 'ARM64' }}
     runs-on: [self-hosted, linux, ARM64]
     container: ros:galactic
     steps:

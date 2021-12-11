@@ -11,16 +11,16 @@ on:
       - "**/*.svg"
       - "**/*.png"
       - "**/*.jpg"
-  issue_comment:
+  pull_request:
     types:
-      - created
+      - labeled
 
 jobs:
   deploy-docs:
     runs-on: ubuntu-latest
     steps:
       - name: Deploy docs
-        if: ${{ github.event.push || contains(github.event.comment.body, '/docs') }}
+        if: ${{ github.event.push || github.event.label.name == 'documentation' }}
         uses: autowarefoundation/autoware-github-actions/deploy-docs@tier4/proposal
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
