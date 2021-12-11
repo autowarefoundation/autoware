@@ -9,6 +9,11 @@ jobs:
   delete-closed-pr-docs:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
       - name: Delete closed PR docs
         uses: autowarefoundation/autoware-github-actions/delete-closed-pr-docs@tier4/proposal
         with:

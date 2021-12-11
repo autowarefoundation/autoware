@@ -11,16 +11,26 @@ on:
       - "**/*.svg"
       - "**/*.png"
       - "**/*.jpg"
-  pull_request:
-    types:
-      - labeled
+  pull_request_target:
+  workflow_dispatch:
 
 jobs:
   deploy-docs:
     runs-on: ubuntu-latest
     steps:
+      - name: Check label
+        if: ${{ github.event.pull_request && !contains(github.event.pull_request.labels.*.name, 'documentation') }}
+        run: |
+          echo "Please add a proper label to run this workflow."
+          exit 1
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
       - name: Deploy docs
-        if: ${{ github.event.push || github.event.label.name == 'documentation' }}
         uses: autowarefoundation/autoware-github-actions/deploy-docs@tier4/proposal
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

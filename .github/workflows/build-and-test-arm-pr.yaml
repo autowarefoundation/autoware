@@ -2,23 +2,32 @@ name: build-and-test-arm-pr
 
 on:
   pull_request:
-    types:
-      - labeled
+  workflow_dispatch:
 
 jobs:
   build-and-test-arm:
-    if: ${{ github.event.label.name == 'ARM64' }}
     runs-on: [self-hosted, linux, ARM64]
     container: ros:galactic
     steps:
+      - name: Check label
+        if: ${{ github.event.pull_request && !contains(github.event.pull_request.labels.*.name, 'ARM64') }}
+        run: |
+          echo "Please add a proper label to run this workflow."
+          exit 1
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
       - name: Get modified packages
         id: get-modified-packages
         uses: autowarefoundation/autoware-github-actions/get-modified-packages@tier4/proposal
 
       - name: Build and test
-        id: build-and-test
+        if: ${{ steps.get-modified-packages.outputs.modified-packages != '' }}
         uses: autowarefoundation/autoware-github-actions/colcon-build-and-test@tier4/proposal
         with:
           rosdistro: galactic
-          build-depends-repos: build_depends.repos
           target-packages: ${{ steps.get-modified-packages.outputs.modified-packages }}
+          build-depends-repos: build_depends.repos

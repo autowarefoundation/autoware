@@ -14,6 +14,9 @@ jobs:
       matrix:
         os: [ubuntu-latest, ARM64]
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
       - name: Get self packages
         id: get-self-packages
         uses: autowarefoundation/autoware-github-actions/get-self-packages@tier4/proposal
@@ -22,5 +25,5 @@ jobs:
         uses: autowarefoundation/autoware-github-actions/colcon-build-and-test@tier4/proposal
         with:
           rosdistro: galactic
-          build-depends-repos: build_depends.repos
           target-packages: ${{ steps.get-self-packages.outputs.self-packages }}
+          build-depends-repos: build_depends.repos
