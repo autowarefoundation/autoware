@@ -1,0 +1,3 @@
+/**:
+  ros__parameters:
+    timeout_thr_sec: 0.5 # [s] Time limit after which input messages are discarded.
