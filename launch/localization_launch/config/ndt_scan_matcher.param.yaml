@@ -1,0 +1,34 @@
+/**:
+  ros__parameters:
+    # Vehicle reference frame
+    base_frame: "base_link"
+
+    # Subscriber queue size
+    input_sensor_points_queue_size: 1
+
+    # NDT implementation type
+    # 0=PCL_GENERIC, 1=PCL_MODIFIED, 2=OMP
+    ndt_implement_type: 2
+
+    # The maximum difference between two consecutive
+    # transformations in order to consider convergence
+    trans_epsilon: 0.01
+
+    # The newton line search maximum step length
+    step_size: 0.1
+
+    # The ND voxel grid resolution
+    resolution: 2.0
+
+    # The number of iterations required to calculate alignment
+    max_iterations: 30
+
+    # Threshold for deciding whether to trust the estimation result
+    converged_param_transform_probability: 3.0
+
+    # neighborhood search method in OMP
+    # 0=KDTREE, 1=DIRECT26, 2=DIRECT7, 3=DIRECT1
+    omp_neighborhood_search_method: 0
+
+    # Number of threads used for parallel computing
+    omp_num_threads: 4

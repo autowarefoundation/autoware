@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+  <include file="$(find-pkg-share vehicle_velocity_converter)/launch/vehicle_velocity_converter.launch.xml">
+    <arg name="input_vehicle_velocity_topic" value="/vehicle/status/velocity_status"/>
+    <arg name="output_twist_with_covariance" value="/localization/twist_estimator/vehicle_velocity_converter/twist_with_covariance"/>
+  </include>
+  <include file="$(find-pkg-share gyro_odometer)/launch/gyro_odometer.launch.xml">
+    <arg name="input_vehicle_twist_with_covariance_topic" value="/localization/twist_estimator/vehicle_velocity_converter/twist_with_covariance"/>
+    <arg name="output_twist_with_covariance_topic" value="/localization/twist_estimator/twist_with_covariance" />
+  </include>
+</launch>

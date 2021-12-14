@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- localization module -->
+  <group>
+    <push-ros-namespace namespace="localization"/>
+    <!-- util module -->
+    <group>
+      <push-ros-namespace namespace="util"/>
+      <include file="$(find-pkg-share localization_launch)/launch/util/util.launch.xml">
+      </include>
+    </group>
+    <!-- pose_estimator module -->
+    <group>
+      <push-ros-namespace namespace="pose_estimator"/>
+      <include file="$(find-pkg-share localization_launch)/launch/pose_estimator/pose_estimator.launch.xml">
+      </include>
+    </group>
+    <!-- twist_estimator module -->
+    <group>
+      <push-ros-namespace namespace="twist_estimator"/>
+      <include file="$(find-pkg-share localization_launch)/launch/twist_estimator/twist_estimator.launch.xml">
+      </include>
+    </group>
+    <!-- pose_twist_fusion_filter module -->
+    <group>
+      <push-ros-namespace namespace="pose_twist_fusion_filter"/>
+      <include file="$(find-pkg-share localization_launch)/launch/pose_twist_fusion_filter/pose_twist_fusion_filter.launch.xml">
+      </include>
+    </group>
+    <!-- localization_error_monitor_module -->
+    <include file="$(find-pkg-share localization_launch)/launch/localization_error_monitor/localization_error_monitor.launch.xml">
+    </include>
+  </group>
+</launch>

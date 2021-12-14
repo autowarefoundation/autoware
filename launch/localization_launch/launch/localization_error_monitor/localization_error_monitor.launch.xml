@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+    <include file="$(find-pkg-share localization_error_monitor)/launch/localization_error_monitor.launch.xml">
+      <arg name="input/pose_with_cov" value="/localization/pose_with_covariance" />
+      <arg name="scale" value="3.0" />
+      <arg name="error_ellipse_size" value="1.0" />
+      <arg name="warn_ellipse_size" value="0.8" />
+      <arg name="error_ellipse_size_lateral_direction" value="1.0" />
+      <arg name="warn_ellipse_size_lateral_direction" value="0.8" />
+    </include>
+</launch>
