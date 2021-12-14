@@ -12,53 +12,49 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import ament_index_python
-import launch
-import launch_ros.actions
-
-from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration
-from ament_index_python import get_package_share_directory
-
 import os
 
+from ament_index_python.packages import get_package_share_directory
+import launch
+from launch.actions import DeclareLaunchArgument
+from launch.actions import GroupAction
+from launch.actions import IncludeLaunchDescription
+from launch.actions import OpaqueFunction
+from launch.actions import SetLaunchConfiguration
+from launch.conditions import IfCondition
+from launch.conditions import UnlessCondition
+from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import ComposableNodeContainer
+from launch_ros.actions import LoadComposableNodes
+from launch_ros.actions import Node
+from launch_ros.descriptions import ComposableNode
+from launch_ros.substitutions import FindPackageShare
+import yaml
 
-def generate_launch_description():
+def launch_setup(context, *args, **kwargs):
+    # vehicle information param path
+    vehicle_info_param_path = LaunchConfiguration("vehicle_info_param_file").perform(context)
+    with open(vehicle_info_param_path, "r") as f:
+        vehicle_info_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
-    default_vehicle_characteristics_param = os.path.join(
-        get_package_share_directory('simple_planning_simulator'),
-        'param/vehicle_characteristics.param.yaml')
+    vehicle_characteristics_param_path = LaunchConfiguration("vehicle_characteristics_param_file").perform(context)
+    with open(vehicle_characteristics_param_path, "r") as f:
+        vehicle_characteristics_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
-    vehicle_characteristics_param = DeclareLaunchArgument(
-        'vehicle_characteristics_param_file',
-        default_value=default_vehicle_characteristics_param,
-        description='Path to config file for vehicle characteristics'
-    )
+    simultor_model_param_path = LaunchConfiguration("simulator_model_param_file").perform(context)
+    with open(simultor_model_param_path, "r") as f:
+        simulator_model_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
-    default_vehicle_info_param = os.path.join(
-        get_package_share_directory('vehicle_info_util'),
-        'config/vehicle_info.param.yaml')
-
-    vehicle_info_param = DeclareLaunchArgument(
-        'vehicle_info_param_file',
-        default_value=default_vehicle_info_param,
-        description='Path to config file for vehicle information'
-    )
-
-    simple_planning_simulator_node = launch_ros.actions.Node(
+    simple_planning_simulator_node = Node(
         package='simple_planning_simulator',
         executable='simple_planning_simulator_exe',
         name='simple_planning_simulator',
         namespace='simulation',
         output='screen',
         parameters=[
-            "{}/param/simple_planning_simulator_default.param.yaml".format(
-                ament_index_python.get_package_share_directory(
-                    "simple_planning_simulator"
-                )
-            ),
-            LaunchConfiguration('vehicle_characteristics_param_file'),
-            LaunchConfiguration('vehicle_info_param_file')
+            vehicle_info_param,
+            vehicle_characteristics_param,
+            simulator_model_param,
         ],
         remappings=[
             ('input/ackermann_control_command', '/control/command/control_cmd'),
@@ -77,17 +73,61 @@ def generate_launch_description():
         ]
     )
 
-    map_to_odom_tf_publisher = launch_ros.actions.Node(
+    map_to_odom_tf_publisher = Node(
         package='tf2_ros',
         executable='static_transform_publisher',
         name='static_map_to_odom_tf_publisher',
         output='screen',
         arguments=['0.0', '0.0', '0.0', '0', '0', '0', 'map', 'odom'])
 
-    ld = launch.LaunchDescription([
-        vehicle_characteristics_param,
-        vehicle_info_param,
-        simple_planning_simulator_node,
-        map_to_odom_tf_publisher
-    ])
-    return ld
+    group = GroupAction(
+        [
+            simple_planning_simulator_node,
+            map_to_odom_tf_publisher
+        ]
+    )
+
+    return [group]
+
+
+def generate_launch_description():
+    launch_arguments = []
+
+    def add_launch_arg(name: str, default_value=None, description=None):
+        launch_arguments.append(
+            DeclareLaunchArgument(name, default_value=default_value, description=description)
+        )
+
+    add_launch_arg(
+        "vehicle_info_param_file",
+        [
+            FindPackageShare("vehicle_info_util"),
+            "/config/vehicle_info.param.yaml",
+        ],
+        "path to the parameter file of vehicle information",
+    )
+
+    add_launch_arg(
+        "vehicle_characteristics_param_file",
+        [
+            FindPackageShare("simple_planning_simulator"),
+            "/param/vehicle_characteristics.param.yaml",
+        ],
+        "path to config file for vehicle characteristics",
+    )
+
+    add_launch_arg(
+        "simulator_model_param_file",
+        [
+            FindPackageShare("simple_planning_simulator"),
+            "/param/simple_planning_simulator_default.param.yaml",
+        ],
+        "path to config file for simulator_model",
+    )
+
+
+
+    return launch.LaunchDescription(
+        launch_arguments
+        + [OpaqueFunction(function=launch_setup)]
+    )
