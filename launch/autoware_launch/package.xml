@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>autoware_launch</name>
+  <version>0.1.0</version>
+  <description>The autoware_launch package</description>
+
+  <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <exec_depend>control_launch</exec_depend>
+  <exec_depend>global_parameter_loader</exec_depend>
+  <exec_depend>localization_launch</exec_depend>
+  <exec_depend>map_launch</exec_depend>
+  <exec_depend>perception_launch</exec_depend>
+  <exec_depend>planning_launch</exec_depend>
+  <exec_depend>python3-bson</exec_depend>
+  <exec_depend>python3-tornado</exec_depend>
+  <exec_depend>rviz2</exec_depend>
+  <exec_depend>sensing_launch</exec_depend>
+  <exec_depend>simulator_launch</exec_depend>
+  <exec_depend>system_launch</exec_depend>
+  <exec_depend>vehicle_launch</exec_depend>
+  <exec_depend>web_controller</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

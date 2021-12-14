@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+  <!-- Essential parameters -->
+  <arg name="map_path" description="point cloud and lanelet2 map directory path"/>
+  <arg name="vehicle_model" description="vehicle model name"/>
+  <arg name="sensor_model" description="sensor model name"/>
+  <arg name="vehicle_id" default="$(env VEHICLE_ID default)" description="vehicle specific ID"/>
+
+  <!-- Optional parameters -->
+  <arg name="vehicle" default="true" description="launch vehicle" />
+  <arg name="system" default="true" description="launch system" />
+  <arg name="map" default="true" description="launch map" />
+  <arg name="sensing" default="true" description="launch sensing" />
+  <arg name="localization" default="true" description="launch localization" />
+  <arg name="perception" default="true" description="launch perception" />
+  <arg name="planning" default="true" description="launch planning" />
+  <arg name="control" default="true" description="launch control" />
+  <arg name="rviz" default="true" description="launch rviz" />
+  <arg name="lanelet2_map_file" default="lanelet2_map.osm" description="lanelet2 map file name"/>
+  <arg name="pointcloud_map_file" default="pointcloud_map.pcd" description="pointcloud map file name"/>
+  <arg name="vehicle_simulation" default="false" description="use vehicle simulation"/>
+  <arg name="use_pointcloud_container" default="true" description="launch pointcloud container"/>
+  <arg name="pointcloud_container_name" default="pointcloud_container"/>
+  <!-- Optional parameters for scenario simulation -->
+  <arg name="scenario_simulation" default="false" description="use scenario simulation"/>
+
+  <!-- Global parameters -->
+  <include file="$(find-pkg-share global_parameter_loader)/launch/global_params.launch.py">
+    <arg name="use_sim_time" value="true" />
+    <arg name="vehicle_model" value="$(var vehicle_model)"/>
+  </include>
+
+  <!-- Pointcloud container -->
+  <include file="$(find-pkg-share autoware_launch)/launch/pointcloud_container.launch.py" if="$(var use_pointcloud_container)">
+    <arg name="use_multithread" value="true" />
+    <arg name="container_name" value="$(var pointcloud_container_name)"/>
+  </include>
+
+  <!-- Vehicle -->
+  <group>
+    <include file="$(find-pkg-share vehicle_launch)/launch/vehicle.launch.xml" if="$(var vehicle)">
+      <arg name="vehicle_model" value="$(var vehicle_model)"/>
+      <arg name="sensor_model" value="$(var sensor_model)"/>
+      <arg name="vehicle_id" value="$(var vehicle_id)"/>
+      <arg name="simulation" value="$(var vehicle_simulation)"/>
+    </include>
+  </group>
+
+  <!-- System -->
+  <group>
+    <include file="$(find-pkg-share system_launch)/launch/system.launch.xml" if="$(var system)">
+      <arg name="run_mode" value="online"/>
+      <arg name="sensor_model" value="$(var sensor_model)"/>
+    </include>
+  </group>
+
+  <!-- Map -->
+  <group>
+    <include file="$(find-pkg-share map_launch)/launch/map.launch.py" if="$(var map)">
+      <arg name="lanelet2_map_path" value="$(var map_path)/$(var lanelet2_map_file)" />
+      <arg name="pointcloud_map_path" value="$(var map_path)/$(var pointcloud_map_file)"/>
+    </include>
+  </group>
+
+  <!-- Sensing -->
+  <group>
+    <include file="$(find-pkg-share sensing_launch)/launch/sensing.launch.xml" if="$(var sensing)">
+      <arg name="launch_driver" value="false"/>
+      <arg name="sensor_model" value="$(var sensor_model)"/>
+      <arg name="vehicle_param_file" value="$(find-pkg-share $(var vehicle_model)_description)/config/vehicle_info.param.yaml"/>
+      <arg name="vehicle_mirror_param_file" value="$(find-pkg-share $(var vehicle_model)_description)/config/mirror.param.yaml"/>
+      <arg name="use_pointcloud_container" value="$(var use_pointcloud_container)" />
+      <arg name="pointcloud_container_name" value="$(var pointcloud_container_name)"/>
+    </include>
+  </group>
+
+  <!-- Localization -->
+  <group>
+    <include file="$(find-pkg-share localization_launch)/launch/localization.launch.xml" if="$(var localization)">
+    </include>
+  </group>
+
+  <!-- Perception -->
+  <group>
+    <include file="$(find-pkg-share perception_launch)/launch/perception.launch.xml" if="$(var perception)">
+      <!-- options for mode: camera_lidar_fusion, lidar, camera -->
+      <arg name="mode" value="camera_lidar_fusion" />
+      <arg name="vehicle_param_file" value="$(find-pkg-share $(var vehicle_model)_description)/config/vehicle_info.param.yaml"/>
+      <arg name="use_pointcloud_container" value="$(var use_pointcloud_container)" />
+      <arg name="pointcloud_container_name" value="$(var pointcloud_container_name)"/>
+    </include>
+  </group>
+
+  <!-- Planning -->
+  <group>
+    <include file="$(find-pkg-share planning_launch)/launch/planning.launch.xml" if="$(var planning)">
+      <arg name="vehicle_info_param_file" value="$(find-pkg-share $(var vehicle_model)_description)/config/vehicle_info.param.yaml"/>
+    </include>
+  </group>
+
+  <!-- Control -->
+  <group>
+    <include file="$(find-pkg-share control_launch)/launch/control.launch.py" if="$(var control)">
+      <!-- options for lateral_controller_mode: mpc_follower, pure_pursuit -->
+      <arg name="lateral_controller_mode" value="mpc_follower" />
+      <arg name="vehicle_info_param_file" value="$(find-pkg-share $(var vehicle_model)_description)/config/vehicle_info.param.yaml"/>
+    </include>
+  </group>
+
+  <!-- Rviz -->
+  <node pkg="rviz2" exec="rviz2" name="rviz2" output="screen" args="-d $(find-pkg-share autoware_launch)/rviz/autoware.rviz -s $(find-pkg-share autoware_launch)/rviz/image/autoware.png" if="$(var rviz)">
+  </node>
+
+  <!-- Web Controller -->
+  <group>
+    <include file="$(find-pkg-share web_controller)/launch/web_controller.launch.xml" />
+  </group>
+
+  <!-- Simulator -->
+  <include file="$(find-pkg-share simulator_launch)/launch/simulator.launch.xml">
+    <arg name="scenario_simulation" value="$(var scenario_simulation)"/>
+    <arg name="vehicle_simulation" value="false"/>
+    <arg name="vehicle_model" value="$(var vehicle_model)"/>
+    <arg name="vehicle_info_param_file" value="$(find-pkg-share $(var vehicle_model)_description)/config/vehicle_info.param.yaml"/>
+  </include>
+</launch>
