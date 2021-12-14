@@ -1,0 +1,23 @@
+/**:
+  ros__parameters:
+    additional_lidars: []
+    ransac_input_topics: []
+    use_single_frame_filter: False
+    use_time_series_filter: True
+
+    common_crop_box_filter:
+      parameters:
+        min_x: -50.0
+        max_x: 100.0
+        min_y: -50.0
+        max_y: 50.0
+        negative: False
+
+    common_ground_filter:
+      plugin: "ground_segmentation::ScanGroundFilterComponent"
+      parameters:
+        global_slope_max_angle_deg: 10.0
+        local_slope_max_angle_deg: 30.0
+        split_points_distance_tolerance: 0.2
+        split_height_distance: 0.2
+        use_virtual_ground_point: False

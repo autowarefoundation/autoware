@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+
+<launch>
+  <include file="$(find-pkg-share multi_object_tracker)/launch/multi_object_tracker.launch.xml">
+    <arg name="data_association_matrix_path" value="$(find-pkg-share perception_launch)/config/object_recognition/tracking/multi_object_tracker/data_association_matrix.param.yaml" />
+  </include>
+</launch>

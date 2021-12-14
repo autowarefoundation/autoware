@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="use_vector_map" default="false" description="use vector map in prediction"/>
+
+  <group if="$(var use_vector_map)">
+    <set_remap from="objects" to="/perception/object_recognition/objects"/>
+    <include file="$(find-pkg-share map_based_prediction)/launch/map_based_prediction.launch.xml">
+      <arg name="output_topic" value="/perception/object_recognition/objects"/>
+    </include>
+  </group>
+  <group unless="$(var use_vector_map)">
+    <include file="$(find-pkg-share naive_path_prediction)/launch/naive_path_prediction.launch.xml">
+    </include>
+  </group>
+</launch>

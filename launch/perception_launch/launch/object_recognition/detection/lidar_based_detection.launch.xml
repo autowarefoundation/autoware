@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="use_vector_map" default="true" description="use vector map in prediction"/>
+  <arg name="lidar_detection_model" default="centerpoint" description="options: `centerpoint`, `apollo`"/>
+
+  <!-- Clustering -->
+  <group>
+    <include file="$(find-pkg-share euclidean_cluster)/launch/voxel_grid_based_euclidean_cluster.launch.xml">
+      <arg name="output_clusters" value="clusters"/>
+      <arg name="use_pointcloud_map" value="false"/>
+    </include>
+  </group>
+
+  <!-- DetectionByTracker -->
+  <group>
+    <push-ros-namespace namespace="detection_by_tracker"/>
+    <include file="$(find-pkg-share detection_by_tracker)/launch/detection_by_tracker.launch.xml">
+    </include>
+  </group>
+
+  <!-- CenterPoint -->
+  <group if="$(eval &quot;'$(var lidar_detection_model)'=='centerpoint'&quot;)">
+    <push-ros-namespace namespace="centerpoint"/>
+    <group>
+      <include file="$(find-pkg-share lidar_centerpoint)/launch/lidar_centerpoint.launch.xml" />
+    </group>
+  </group>
+
+  <!-- Lidar Apollo Instance Segmentation -->
+  <group if="$(eval &quot;'$(var lidar_detection_model)'=='apollo'&quot;)">
+    <push-ros-namespace namespace="apollo"/>
+    <group>
+      <include file="$(find-pkg-share lidar_apollo_instance_segmentation)/launch/lidar_apollo_instance_segmentation.launch.xml" />
+      <include file="$(find-pkg-share shape_estimation)/launch/shape_estimation.launch.xml">
+        <arg name="output/objects" value="objects_with_feature"/>
+        <arg name="use_map_current" value="$(var use_vector_map)"/>
+      </include>
+      <!-- convert DynamicObjectsWithFeatureArray to DynamicObjects -->
+      <include file="$(find-pkg-share detected_object_feature_remover)/launch/detected_object_feature_remover.launch.xml">
+        <arg name="input" value="objects_with_feature" />
+        <arg name="output" value="objects" />
+      </include>
+    </group>
+  </group>
+
+  <!-- Merger -->
+  <group>
+    <include file="$(find-pkg-share object_merger)/launch/object_association_merger.launch.xml">
+      <arg name="input/object0" value="$(var lidar_detection_model)/objects"/>
+      <arg name="input/object1" value="detection_by_tracker/objects"/>
+      <arg name="output/object" value="objects"/>
+    </include>
+  </group>
+</launch>
