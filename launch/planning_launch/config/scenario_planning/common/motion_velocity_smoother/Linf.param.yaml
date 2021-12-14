@@ -1,0 +1,5 @@
+/**:
+  ros__parameters:
+    pseudo_jerk_weight: 200.0 # weight for "smoothness" cost
+    over_v_weight: 100000.0   # weight for "over speed limit" cost
+    over_a_weight: 5000.0     # weight for "over accel limit" cost

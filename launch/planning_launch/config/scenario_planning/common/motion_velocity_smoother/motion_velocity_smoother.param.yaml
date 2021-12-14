@@ -1,0 +1,50 @@
+/**:
+  ros__parameters:
+    # motion state constraints
+    max_velocity: 20.0      # max velocity limit [m/s]
+
+    # external velocity limit parameter
+    margin_to_insert_external_velocity_limit: 0.3   #  margin distance to insert external velocity limit [m]
+
+    # curve parameters
+    max_lateral_accel: 0.8             # max lateral acceleration limit [m/ss]
+    min_curve_velocity: 2.74           # min velocity at lateral acceleration limit [m/ss]
+    decel_distance_before_curve: 3.5   # slow speed distance before a curve for lateral acceleration limit
+    decel_distance_after_curve: 2.0    # slow speed distance after a curve for lateral acceleration limit
+
+    # engage & replan parameters
+    replan_vel_deviation: 5.53         # velocity deviation to replan initial velocity [m/s]
+    engage_velocity: 0.25              # engage velocity threshold [m/s] (if the trajectory velocity is higher than this value, use this velocity for engage vehicle speed)
+    engage_acceleration: 0.1           # engage acceleration [m/ss] (use this acceleration when engagement)
+    engage_exit_ratio: 0.5             # exit engage sequence to normal velocity planning when the velocity exceeds engage_exit_ratio x engage_velocity.
+    stop_dist_to_prohibit_engage: 0.5  # if the stop point is in this distance, the speed is set to 0 not to move the vehicle [m]
+
+    # stop velocity
+    stopping_velocity: 2.778  # change target velocity to this value before v=0 point [m/s]
+    stopping_distance: 0.0    # distance for the stopping_velocity [m]. 0 means the stopping velocity is not applied.
+
+    # path extraction parameters
+    extract_ahead_dist: 200.0         # forward trajectory distance used for planning [m]
+    extract_behind_dist: 5.0          # backward trajectory distance used for planning [m]
+    delta_yaw_threshold: 1.0472       # Allowed delta yaw between ego pose and trajectory pose [radian]
+
+    # resampling parameters for optimization
+    max_trajectory_length: 200.0        # max trajectory length for resampling [m]
+    min_trajectory_length: 150.0        # min trajectory length for resampling [m]
+    resample_time: 5.0                 # resample total time for dense sampling [s]
+    dense_dt: 0.1                       # resample time interval for dense sampling [s]
+    dense_min_interval_distance: 0.1    # minimum points-interval length for dense sampling [m]
+    sparse_dt: 0.5                      # resample time interval for sparse sampling [s]
+    sparse_min_interval_distance: 4.0   # minimum points-interval length for sparse sampling [m]
+
+    # resampling parameters for post process
+    post_max_trajectory_length: 300.0        # max trajectory length for resampling [m]
+    post_min_trajectory_length: 30.0         # min trajectory length for resampling [m]
+    post_resample_time: 10.0                  # resample total time for dense sampling [s]
+    post_dense_dt: 0.1                       # resample time interval for dense sampling [s]
+    post_dense_min_interval_distance: 0.1    # minimum points-interval length for dense sampling [m]
+    post_sparse_dt: 0.1                      # resample time interval for sparse sampling [s]
+    post_sparse_min_interval_distance: 1.0   # minimum points-interval length for sparse sampling [m]
+
+    # system
+    over_stop_velocity_warn_thr: 1.389  # used to check if the optimization exceeds the input velocity on the stop point

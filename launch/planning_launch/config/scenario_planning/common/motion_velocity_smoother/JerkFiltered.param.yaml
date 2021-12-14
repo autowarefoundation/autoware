@@ -1,0 +1,7 @@
+/**:
+  ros__parameters:
+    jerk_weight: 0.1         # weight for "smoothness" cost for jerk
+    over_v_weight: 10000.0   # weight for "over speed limit" cost
+    over_a_weight: 500.0     # weight for "over accel limit" cost
+    over_j_weight: 200.0     # weight for "over jerk limit" cost
+    jerk_filter_ds: 0.1      # resampling ds for jerk filter

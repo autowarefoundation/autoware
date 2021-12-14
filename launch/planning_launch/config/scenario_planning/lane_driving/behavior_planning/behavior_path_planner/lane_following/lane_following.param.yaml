@@ -1,0 +1,7 @@
+/**:
+  ros__parameters:
+    lane_following:
+      expand_drivable_area: false
+      right_bound_offset: 0.5
+      left_bound_offset: 0.5
+      lane_change_prepare_duration: 2.0

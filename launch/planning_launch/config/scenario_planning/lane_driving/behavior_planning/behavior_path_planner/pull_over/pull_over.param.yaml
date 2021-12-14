@@ -1,0 +1,25 @@
+/**:
+  ros__parameters:
+    pull_over:
+      min_stop_distance: 5.0
+      stop_time: 2.0
+      hysteresis_buffer_distance: 2.0
+      pull_over_prepare_duration: 4.0
+      pull_over_duration: 2.0
+      pull_over_finish_judge_buffer: 3.0
+      minimum_pull_over_velocity: 3.0
+      prediction_duration: 30.0
+      prediction_time_resolution: 0.5
+      static_obstacle_velocity_thresh: 1.5
+      maximum_deceleration: 1.0
+      enable_collision_check_at_prepare_phase: false
+      use_predicted_path_outside_lanelet: false
+      use_all_predicted_path: false
+      enable_blocked_by_obstacle: false
+      pull_over_search_distance: 30.0
+      after_pull_over_straight_distance: 5.0
+      before_pull_over_straight_distance: 5.0
+      margin_from_boundary: 0.5
+      maximum_lateral_jerk: 2.0
+      minimum_lateral_jerk: 0.5
+      deceleration_interval: 15.0

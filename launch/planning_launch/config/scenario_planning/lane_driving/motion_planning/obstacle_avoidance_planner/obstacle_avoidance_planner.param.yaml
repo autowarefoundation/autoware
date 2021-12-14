@@ -1,0 +1,90 @@
+/**:
+  ros__parameters:
+    # trajectory total/fixing length
+    trajectory_length: 300 # total trajectory length[m]
+    forward_fixing_distance: 5.0 # forward fixing length from base_link[m]
+    backward_fixing_distance: 3.0 # backward fixing length from base_link[m]
+
+    # clearance(distance) when generating trajectory
+    clearance_from_road: 0.2 # clearance from road boundary[m]
+    clearance_from_object: 1.0 # clearance from object[m]
+    min_object_clearance_for_joint: 3.2 # minimum clearance from object[m] when judging is_including_only_smooth_range
+    extra_desired_clearance_from_road: 0.0 # extra desired clearance from road
+
+    # clearance for unique points
+    clearance_for_straight_line: 0.05 # minimum optimizing range around straight points
+    clearance_for_joint: 0.1 # minimum optimizing range around joint points
+    clearance_for_only_smoothing: 0.1 # minimum optimizing range when applying only smoothing
+    range_for_extend_joint: 0.1 # minimum optimizing range around joint points for extending
+    clearance_from_object_for_straight: 10.0 # minimum clearance from object when judging straight line
+
+    # avoiding param
+    max_avoiding_objects_velocity_ms: 0.5 # maximum velocity for avoiding objects[m/s]
+    max_avoiding_ego_velocity_ms: 6.0 # maximum ego velocity when avoiding objects[m/s]
+    center_line_width: 1.7 # replaced with /vehicle_info/vehicle_width when is_using_vehicle_config is true, center line width around path points used for judging that object is required to avoid or not
+    acceleration_for_non_deceleration_range: 1.0 # assumed acceleration for calculating non deceleration range
+
+    # solving quadratic programming
+    qp_max_iteration: 10000 # max iteration when solving QP
+    qp_eps_abs: 1.0e-8 # eps abs when solving OSQP
+    qp_eps_rel: 1.0e-11 # eps rel when solving OSQP
+    qp_eps_abs_for_extending: 1.0e-8 # eps abs when solving OSQP for extending
+    qp_eps_rel_for_extending: 1.0e-9 # eps rel when solving OSQP for extending
+    qp_eps_abs_for_visualizing: 1.0e-6 # eps abs when solving OSQP for visualizing
+    qp_eps_rel_for_visualizing: 1.0e-8 # eps rel when solving OSQP for visualizing
+
+    # constrain space
+    is_getting_constraints_close2path_points: true # generate trajectory closer to path points
+    max_x_constrain_search_range: 0.0 # maximum x search range in local coordinate
+    coef_x_constrain_search_resolution: 1.0 # coef for fine sampling when exploring x direction
+    coef_y_constrain_search_resolution: 0.5 # coef for fine sampling when exploring y direction
+    keep_space_shape_x: 0.2 # keep space for x direction from base_link[m]
+    keep_space_shape_y: 0.1 # replaced with /vehicle_info/vehicle_width when is_using_vehicle_config is true, keep space for y direction from base_link[m]
+    max_lon_space_for_driveable_constraint: 0.5 # maximum lon(x) space when optimizing point[m]
+
+    is_publishing_clearance_map: true # publish clearance map as nav_msgs::OccupancyGrid
+    is_publishing_area_with_objects: true # publish occupancy map as nav_msgs::OccupancyGrid
+    enable_avoidance: true # enable avoidance function
+    is_using_vehicle_config: true # use vehicle config
+    num_sampling_points: 100 # number of optimizing points
+    num_joint_buffer_points: 3 # number of joint buffer points
+    num_joint_buffer_points_for_extending: 6 # number of joint buffer points for extending
+    num_offset_for_begin_idx: 2 # number of shifting points for beginning non-fix idx
+    num_fix_points_for_extending: 50 # number of fixing points when extending
+    delta_arc_length_for_optimization: 1.0 # delta arc length when optimizing[m]
+    delta_arc_length_for_trajectory: 0.1 # delta arc length for trajectory[m]
+    delta_dist_threshold_for_closest_point: 3.0 # delta dist thres for closest point[m]
+    delta_yaw_threshold_for_closest_point: 1.046 #M_PI/3.0, delta yaw thres for closest point
+    delta_yaw_threshold_for_straight: 0.02 # delta dist thres for straight point
+
+    # mpt param
+    # vehicle param for mpt
+    max_steer_deg: 40.0 # max steering angle [deg]
+    steer_tau: 0.1 # steering dynamics time constant (1d approximation) [s]
+
+    # trajectory param for mpt
+    num_curvature_sampling_points: 5 # number of sampling points when calculating curvature
+    delta_arc_length_for_mpt_points: 0.5 # delta arc length when generating mpt[m]
+    forward_fixing_mpt_distance: 10 # number of fixing points around ego vehicle
+
+    # optimization param for mpt
+    is_hard_fixing_terminal_point: false # hard fixing terminal point
+    base_point_weight: 2000.0 # slack weight for lateral error around base_link
+    top_point_weight: 1000.0 # slack weight for lateral error around vehicle-top point
+    mid_point_weight: 1000.0 # slack weight for lateral error around the middle point
+    lat_error_weight: 10.0 # weight for lateral error
+    yaw_error_weight: 0.0 # weight for yaw error
+    steer_input_weight: 0.01 # weight for steering input
+    steer_rate_weight: 1.0 # weight for steering rate
+    steer_acc_weight: 0.000001 # weight for steering acceleration
+    terminal_lat_error_weight: 0.0 # weight for lateral error at terminal point
+    terminal_yaw_error_weight: 100.0 # weight for yaw error at terminal point
+    terminal_path_lat_error_weight: 1000.0 # weight for lateral error at path end point
+    terminal_path_yaw_error_weight: 1000.0 # weight for yaw error at path end point
+    zero_ff_steer_angle: 0.5 # threshold that feed-forward angle becomes zero
+
+    # replanning & trimming trajectory param outside algorithm
+    min_delta_dist_for_replan: 10.0 # minimum delta dist thres for replan[m]
+    min_delta_time_sec_for_replan: 1.0 # minimum delta time for replan[second]
+    max_dist_for_extending_end_point: 5.0 # minimum delta dist thres for extending last point[m]
+    distance_for_path_shape_change_detection: 2.0 # minimum delta dist thres for detecting path shape change

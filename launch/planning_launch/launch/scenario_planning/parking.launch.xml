@@ -1,0 +1,29 @@
+<launch>
+
+  <arg name="vehicle_info_param_file" />
+
+  <!-- parking scenario -->
+  <group>
+    <push-ros-namespace namespace="parking"/>
+    <include file="$(find-pkg-share costmap_generator)/launch/costmap_generator.launch.xml">
+      <arg name="input_objects" value="/perception/object_recognition/objects"/>
+      <arg name="input_points_no_ground" value="/perception/obstacle_segmentation/pointcloud"/>
+      <arg name="input_lanelet_map" value="/map/vector_map"/>
+      <arg name="input_scenario" value="/planning/scenario_planning/scenario"/>
+      <arg name="output_grid_map" value="costmap_generator/grid_map"/>
+      <arg name="output_occupancy_grid" value="costmap_generator/occupancy_grid"/>
+      <arg name="vehicle_info_param_file" value="$(var vehicle_info_param_file)" />
+    </include>
+
+    <include file="$(find-pkg-share freespace_planner)/launch/freespace_planner.launch.xml">
+      <arg name="input_route" value="/planning/mission_planning/route" />
+      <arg name="input_occupancy_grid" value="costmap_generator/occupancy_grid" />
+      <arg name="input_scenario" value="/planning/scenario_planning/scenario" />
+      <arg name="input_odometry" value="/localization/kinematic_state" />
+      <arg name="output_trajectory" value="/planning/scenario_planning/parking/trajectory" />
+      <arg name="is_completed" value="/planning/scenario_planning/parking/is_completed" />
+      <arg name="param_file" value="$(find-pkg-share planning_launch)/config/scenario_planning/parking/freespace_planner/freespace_planner.param.yaml" />
+      <arg name="vehicle_info_param_file" value="$(var vehicle_info_param_file)" />
+    </include>
+  </group>
+</launch>
