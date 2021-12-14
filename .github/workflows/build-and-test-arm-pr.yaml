@@ -2,19 +2,24 @@ name: build-and-test-arm-pr
 
 on:
   pull_request:
+    types:
+      - opened
+      - synchronize
+      - labeled
   workflow_dispatch:
 
 jobs:
+  prevent-no-label-execution:
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/prevent-no-label-execution.yaml@tier4/proposal
+    with:
+      label: ARM64
+
   build-and-test-arm:
+    needs: prevent-no-label-execution
+    if: ${{ needs.prevent-no-label-execution.outputs.run == 'true' }}
     runs-on: [self-hosted, linux, ARM64]
     container: ros:galactic
     steps:
-      - name: Check label
-        if: ${{ github.event.pull_request && !contains(github.event.pull_request.labels.*.name, 'ARM64') }}
-        run: |
-          echo "Please add a proper label to run this workflow."
-          exit 1
-
       - name: Checkout repository
         uses: actions/checkout@v2
         with:

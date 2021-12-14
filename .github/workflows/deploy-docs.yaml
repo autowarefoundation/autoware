@@ -12,18 +12,23 @@ on:
       - "**/*.png"
       - "**/*.jpg"
   pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - labeled
   workflow_dispatch:
 
 jobs:
+  prevent-no-label-execution:
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/prevent-no-label-execution.yaml@tier4/proposal
+    with:
+      label: documentation
+
   deploy-docs:
+    needs: prevent-no-label-execution
+    if: ${{ needs.prevent-no-label-execution.outputs.run == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Check label
-        if: ${{ github.event.pull_request && !contains(github.event.pull_request.labels.*.name, 'documentation') }}
-        run: |
-          echo "Please add a proper label to run this workflow."
-          exit 1
-
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
