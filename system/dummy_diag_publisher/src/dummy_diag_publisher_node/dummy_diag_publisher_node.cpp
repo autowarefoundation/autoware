@@ -14,8 +14,8 @@
 
 #include "dummy_diag_publisher/dummy_diag_publisher_node.hpp"
 
-#include <autoware_utils/ros/update_param.hpp>
 #include <rclcpp/create_timer.hpp>
+#include <tier4_autoware_utils/ros/update_param.hpp>
 
 #include <memory>
 #include <string>
@@ -32,9 +32,9 @@ rcl_interfaces::msg::SetParametersResult DummyDiagPublisherNode::paramCallback(
   DummyDiagPublisherConfig config = config_;
   try {
     int status = static_cast<int>(config.status);
-    autoware_utils::updateParam(parameters, "status", status);
+    tier4_autoware_utils::updateParam(parameters, "status", status);
     config.status = Status(status);
-    autoware_utils::updateParam(parameters, "is_active", config.is_active);
+    tier4_autoware_utils::updateParam(parameters, "is_active", config.is_active);
     config_ = config;
   } catch (const rclcpp::exceptions::InvalidParameterTypeException & e) {
     result.successful = false;

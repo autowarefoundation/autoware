@@ -184,9 +184,9 @@ std::vector<LaneChangePath> getLaneChangePaths(
       shift_point.length = lane_change_start_on_self_lane_arc.distance;
       shift_point.start = lane_change_start_on_self_lane;
       shift_point.end = lane_change_end_on_target_lane;
-      shift_point.start_idx = autoware_utils::findNearestIndex(
+      shift_point.start_idx = tier4_autoware_utils::findNearestIndex(
         target_lane_reference_path.points, lane_change_start_on_self_lane.position);
-      shift_point.end_idx = autoware_utils::findNearestIndex(
+      shift_point.end_idx = tier4_autoware_utils::findNearestIndex(
         target_lane_reference_path.points, lane_change_end_on_target_lane.position);
     }
 
@@ -202,7 +202,7 @@ std::vector<LaneChangePath> getLaneChangePaths(
         rclcpp::get_logger("behavior_path_planner").get_child("lane_change").get_child("util"),
         "failed to generate shifted path.");
     }
-    const auto lanechange_end_idx = autoware_utils::findNearestIndex(
+    const auto lanechange_end_idx = tier4_autoware_utils::findNearestIndex(
       shifted_path.path.points, reference_path2.points.front().point.pose);
     if (lanechange_end_idx) {
       for (size_t i = 0; i < shifted_path.path.points.size(); ++i) {
@@ -224,7 +224,7 @@ std::vector<LaneChangePath> getLaneChangePaths(
           static_cast<float>(
             std::max(lane_change_distance / lane_changing_duration, minimum_lane_change_velocity)));
         const auto nearest_idx =
-          autoware_utils::findNearestIndex(reference_path2.points, point.point.pose);
+          tier4_autoware_utils::findNearestIndex(reference_path2.points, point.point.pose);
         point.lane_ids = reference_path2.points.at(*nearest_idx).lane_ids;
       }
 

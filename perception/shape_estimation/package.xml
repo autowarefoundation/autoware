@@ -11,7 +11,6 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>autoware_auto_perception_msgs</depend>
-  <depend>autoware_utils</depend>
   <depend>builtin_interfaces</depend>
   <depend>eigen</depend>
   <depend>libopencv-dev</depend>
@@ -22,6 +21,7 @@
   <depend>tf2</depend>
   <depend>tf2_eigen</depend>
   <depend>tf2_geometry_msgs</depend>
+  <depend>tier4_autoware_utils</depend>
   <depend>tier4_perception_msgs</depend>
 
   <test_depend>ament_lint_auto</test_depend>

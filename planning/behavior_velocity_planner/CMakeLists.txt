@@ -27,7 +27,7 @@ set(BEHAVIOR_VELOCITY_PLANNER_DEPENDENCIES
   autoware_auto_perception_msgs
   autoware_auto_planning_msgs
   tier4_planning_msgs
-  autoware_utils
+  tier4_autoware_utils
   Boost
   Eigen3
   diagnostic_msgs

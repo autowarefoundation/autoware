@@ -23,7 +23,7 @@
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-#include <autoware_utils/autoware_utils.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 UnknownTracker::UnknownTracker(
   const rclcpp::Time & time, const autoware_auto_perception_msgs::msg::DetectedObject & object)
@@ -36,16 +36,16 @@ UnknownTracker::UnknownTracker(
 
   // initialize params
   ekf_params_.use_measurement_covariance = false;
-  float q_stddev_x = 0.0;                              // [m/s]
-  float q_stddev_y = 0.0;                              // [m/s]
-  float q_stddev_vx = autoware_utils::kmph2mps(0.1);   // [m/(s*s)]
-  float q_stddev_vy = autoware_utils::kmph2mps(0.1);   // [m/(s*s)]
-  float r_stddev_x = 0.4;                              // [m]
-  float r_stddev_y = 0.4;                              // [m]
-  float p0_stddev_x = 1.0;                             // [m/s]
-  float p0_stddev_y = 1.0;                             // [m/s]
-  float p0_stddev_vx = autoware_utils::kmph2mps(0.1);  // [m/(s*s)]
-  float p0_stddev_vy = autoware_utils::kmph2mps(0.1);  // [m/(s*s)]
+  float q_stddev_x = 0.0;                                    // [m/s]
+  float q_stddev_y = 0.0;                                    // [m/s]
+  float q_stddev_vx = tier4_autoware_utils::kmph2mps(0.1);   // [m/(s*s)]
+  float q_stddev_vy = tier4_autoware_utils::kmph2mps(0.1);   // [m/(s*s)]
+  float r_stddev_x = 0.4;                                    // [m]
+  float r_stddev_y = 0.4;                                    // [m]
+  float p0_stddev_x = 1.0;                                   // [m/s]
+  float p0_stddev_y = 1.0;                                   // [m/s]
+  float p0_stddev_vx = tier4_autoware_utils::kmph2mps(0.1);  // [m/(s*s)]
+  float p0_stddev_vy = tier4_autoware_utils::kmph2mps(0.1);  // [m/(s*s)]
   ekf_params_.q_cov_x = std::pow(q_stddev_x, 2.0);
   ekf_params_.q_cov_y = std::pow(q_stddev_y, 2.0);
   ekf_params_.q_cov_vx = std::pow(q_stddev_vx, 2.0);
@@ -56,8 +56,8 @@ UnknownTracker::UnknownTracker(
   ekf_params_.p0_cov_y = std::pow(p0_stddev_y, 2.0);
   ekf_params_.p0_cov_vx = std::pow(p0_stddev_vx, 2.0);
   ekf_params_.p0_cov_vy = std::pow(p0_stddev_vy, 2.0);
-  max_vx_ = autoware_utils::kmph2mps(5);  // [m/s]
-  max_vy_ = autoware_utils::kmph2mps(5);  // [m/s]
+  max_vx_ = tier4_autoware_utils::kmph2mps(5);  // [m/s]
+  max_vy_ = tier4_autoware_utils::kmph2mps(5);  // [m/s]
 
   // initialize X matrix
   Eigen::MatrixXd X(ekf_params_.dim_x, 1);

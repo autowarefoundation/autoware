@@ -10,7 +10,6 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>autoware_auto_planning_msgs</depend>
-  <depend>autoware_utils</depend>
   <depend>boost</depend>
   <depend>diagnostic_updater</depend>
   <depend>eigen</depend>
@@ -24,6 +23,7 @@
   <depend>tf2_eigen</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2_ros</depend>
+  <depend>tier4_autoware_utils</depend>
   <depend>vehicle_info_util</depend>
 
   <test_depend>ament_lint_auto</test_depend>

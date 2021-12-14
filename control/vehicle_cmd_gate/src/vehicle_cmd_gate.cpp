@@ -14,8 +14,8 @@
 
 #include "vehicle_cmd_gate/vehicle_cmd_gate.hpp"
 
-#include <autoware_api_utils/autoware_api_utils.hpp>
 #include <rclcpp/logging.hpp>
+#include <tier4_api_utils/tier4_api_utils.hpp>
 
 #include <chrono>
 #include <functional>
@@ -577,7 +577,7 @@ void VehicleCmdGate::onEngageService(
   const tier4_external_api_msgs::srv::Engage::Response::SharedPtr response)
 {
   is_engaged_ = request->engage;
-  response->status = autoware_api_utils::response_success();
+  response->status = tier4_api_utils::response_success();
 }
 
 void VehicleCmdGate::onSteering(autoware_auto_vehicle_msgs::msg::SteeringReport::ConstSharedPtr msg)
@@ -613,9 +613,9 @@ void VehicleCmdGate::onExternalEmergencyStopService(
   }
 
   if (res->success) {
-    response->status = autoware_api_utils::response_success(res->message);
+    response->status = tier4_api_utils::response_success(res->message);
   } else {
-    response->status = autoware_api_utils::response_error(res->message);
+    response->status = tier4_api_utils::response_error(res->message);
   }
 }
 

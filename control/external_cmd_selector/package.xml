@@ -10,12 +10,12 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
   <depend>autoware_auto_vehicle_msgs</depend>
-  <depend>autoware_iv_auto_msgs_converter</depend>
   <depend>diagnostic_updater</depend>
   <depend>geometry_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>std_msgs</depend>
+  <depend>tier4_auto_msgs_converter</depend>
   <depend>tier4_control_msgs</depend>
   <depend>tier4_external_api_msgs</depend>
 

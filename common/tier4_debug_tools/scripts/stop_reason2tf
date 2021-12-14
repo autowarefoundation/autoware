@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+stop_reason_name="$1"
+
+if [ -z "${stop_reason_name}" ]; then
+    echo "Please input stop_reason_name as the 1st argument."
+    exit 1
+fi
+
+ros2 run tier4_debug_tools stop_reason2pose.py /planning/scenario_planning/status/stop_reasons >/dev/null 2>&1 &
+ros2 run tier4_debug_tools pose2tf.py /tier4_debug_tools/stop_reason2pose/"${stop_reason_name}" "${stop_reason_name}" >/dev/null 2>&1 &
+ros2 run tier4_debug_tools tf2pose.py "${stop_reason_name}" base_link 100 >/dev/null 2>&1 &
+ros2 run tf2_ros tf2_echo "${stop_reason_name}" base_link 100 2>/dev/null
+
+wait

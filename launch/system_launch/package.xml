@@ -10,9 +10,9 @@
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
-  <exec_depend>autoware_error_monitor</exec_depend>
-  <exec_depend>autoware_state_monitor</exec_depend>
+  <exec_depend>ad_service_state_monitor</exec_depend>
   <exec_depend>emergency_handler</exec_depend>
+  <exec_depend>system_error_monitor</exec_depend>
   <exec_depend>system_monitor</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>

@@ -12,30 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <autoware_utils/autoware_utils.hpp>
 #include <scene_module/virtual_traffic_light/scene.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
-using autoware_utils::appendMarkerArray;
-using autoware_utils::createDefaultMarker;
-using autoware_utils::createMarkerColor;
-using autoware_utils::createMarkerOrientation;
-using autoware_utils::createMarkerPosition;
-using autoware_utils::createMarkerScale;
-using autoware_utils::createStopVirtualWallMarker;
-using autoware_utils::toMsg;
+using tier4_autoware_utils::appendMarkerArray;
+using tier4_autoware_utils::createDefaultMarker;
+using tier4_autoware_utils::createMarkerColor;
+using tier4_autoware_utils::createMarkerOrientation;
+using tier4_autoware_utils::createMarkerPosition;
+using tier4_autoware_utils::createMarkerScale;
+using tier4_autoware_utils::createStopVirtualWallMarker;
+using tier4_autoware_utils::toMsg;
 using namespace std::literals::string_literals;
 
 namespace behavior_velocity_planner
 {
 namespace
 {
-[[maybe_unused]] autoware_utils::LinearRing3d createCircle(
-  const autoware_utils::Point3d & p, const double radius, const size_t num_points = 50)
+[[maybe_unused]] tier4_autoware_utils::LinearRing3d createCircle(
+  const tier4_autoware_utils::Point3d & p, const double radius, const size_t num_points = 50)
 {
-  autoware_utils::LinearRing3d ring;  // clockwise and closed
+  tier4_autoware_utils::LinearRing3d ring;  // clockwise and closed
 
   for (size_t i = 0; i < num_points; ++i) {
-    const double theta = i * (2 * autoware_utils::pi / num_points);
+    const double theta = i * (2 * tier4_autoware_utils::pi / num_points);
     const double x = p.x() + radius * std::sin(theta);
     const double y = p.y() + radius * std::cos(theta);
     ring.emplace_back(x, y, p.z());

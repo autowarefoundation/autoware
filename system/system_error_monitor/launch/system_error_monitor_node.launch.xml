@@ -1,0 +1,32 @@
+<launch>
+  <arg name="config_file" default="$(find-pkg-share system_error_monitor)/config/system_error_monitor.param.yaml" />
+  <arg name="ignore_missing_diagnostics" />
+  <arg name="add_leaf_diagnostics" />
+  <arg name="data_ready_timeout" />
+  <arg name="diag_timeout_sec" />
+  <arg name="hazard_recovery_timeout" />
+  <arg name="use_emergency_hold" />
+  <arg name="use_emergency_hold_in_manual_driving" />
+
+  <arg name="emergency_hazard_level" default="2" description="1: Safe Fault, 2: Latent Fault, 3: Single Point Fault" />
+
+  <node pkg="system_error_monitor" exec="system_error_monitor" name="system_error_monitor" output="screen">
+    <remap from="input/diag_array" to="/diagnostics_agg" />
+    <remap from="~/input/autoware_state" to="/autoware/state"/>
+    <remap from="~/input/current_gate_mode" to="/control/current_gate_mode"/>
+    <remap from="~/input/control_mode" to="/vehicle/status/control_mode"/>
+    <remap from="~/output/hazard_status" to="/system/emergency/hazard_status"/>
+    <remap from="~/output/diagnostics_err" to="/diagnostics_err"/>
+    <remap from="service/clear_emergency" to="/system/clear_emergency"/>
+
+    <param from="$(var config_file)" />
+    <param name="ignore_missing_diagnostics" value="$(var ignore_missing_diagnostics)" />
+    <param name="add_leaf_diagnostics" value="$(var add_leaf_diagnostics)" />
+    <param name="data_ready_timeout" value="$(var data_ready_timeout)" />
+    <param name="diag_timeout_sec" value="$(var diag_timeout_sec)" />
+    <param name="hazard_recovery_timeout" value="$(var hazard_recovery_timeout)" />
+    <param name="use_emergency_hold" value="$(var use_emergency_hold)" />
+    <param name="use_emergency_hold_in_manual_driving" value="$(var use_emergency_hold_in_manual_driving)" />
+    <param name="emergency_hazard_level" value="$(var emergency_hazard_level)" />
+  </node>
+</launch>

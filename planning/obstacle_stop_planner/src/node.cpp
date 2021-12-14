@@ -34,12 +34,12 @@
 
 namespace motion_planning
 {
-using autoware_utils::calcAzimuthAngle;
-using autoware_utils::calcDistance2d;
-using autoware_utils::calcSignedArcLength;
-using autoware_utils::createPoint;
-using autoware_utils::findNearestIndex;
-using autoware_utils::getRPY;
+using tier4_autoware_utils::calcAzimuthAngle;
+using tier4_autoware_utils::calcDistance2d;
+using tier4_autoware_utils::calcSignedArcLength;
+using tier4_autoware_utils::createPoint;
+using tier4_autoware_utils::findNearestIndex;
+using tier4_autoware_utils::getRPY;
 
 namespace
 {
@@ -566,11 +566,11 @@ void ObstacleStopPlannerNode::pathCallback(const Trajectory::ConstSharedPtr inpu
 
   Trajectory output_trajectory = *input_msg;
   TrajectoryPoints output_trajectory_points =
-    autoware_utils::convertToTrajectoryPointArray(*input_msg);
+    tier4_autoware_utils::convertToTrajectoryPointArray(*input_msg);
 
   // trim trajectory from self pose
   const auto base_trajectory = trimTrajectoryWithIndexFromSelfPose(
-    autoware_utils::convertToTrajectoryPointArray(*input_msg), planner_data.current_pose,
+    tier4_autoware_utils::convertToTrajectoryPointArray(*input_msg), planner_data.current_pose,
     planner_data.trajectory_trim_index);
   // extend trajectory to consider obstacles after the goal
   const auto extend_trajectory = extendTrajectory(base_trajectory, stop_param_.extend_distance);
@@ -590,7 +590,7 @@ void ObstacleStopPlannerNode::pathCallback(const Trajectory::ConstSharedPtr inpu
     resetExternalVelocityLimit();
   }
 
-  auto trajectory = autoware_utils::convertToTrajectory(output_trajectory_points);
+  auto trajectory = tier4_autoware_utils::convertToTrajectory(output_trajectory_points);
   trajectory.header = input_msg->header;
   path_pub_->publish(trajectory);
   publishDebugData(planner_data);

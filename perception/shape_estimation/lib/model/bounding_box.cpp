@@ -50,8 +50,8 @@ bool BoundingBoxShapeModel::estimate(
 {
   float min_angle, max_angle;
   if (reference_yaw_) {
-    min_angle = reference_yaw_.get() - autoware_utils::deg2rad(3);
-    max_angle = reference_yaw_.get() + autoware_utils::deg2rad(3);
+    min_angle = reference_yaw_.get() - tier4_autoware_utils::deg2rad(3);
+    max_angle = reference_yaw_.get() + tier4_autoware_utils::deg2rad(3);
   } else {
     min_angle = 0.0;
     max_angle = M_PI / 2.0;

@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <autoware_utils/autoware_utils.hpp>
 #include <cubic_spline.hpp>
 #include <map_based_prediction.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <tf2/utils.h>
 
@@ -43,7 +43,7 @@ bool MapBasedPrediction::doPrediction(
       std::vector<geometry_msgs::msg::Pose> path = object_with_lanes.lanes.at(path_id);
       for (size_t i = 0; i < path.size(); i++) {
         if (i > 0) {
-          double dist = autoware_utils::calcDistance2d(path.at(i), path.at(i - 1));
+          double dist = tier4_autoware_utils::calcDistance2d(path.at(i), path.at(i - 1));
           if (dist < interpolating_resolution_) {
             continue;
           }
@@ -73,18 +73,18 @@ bool MapBasedPrediction::doPrediction(
         object_with_lanes.object.kinematics.pose_with_covariance.pose.position;
 
       const size_t nearest_segment_idx =
-        autoware_utils::findNearestSegmentIndex(interpolated_points, object_point);
-      const double l = autoware_utils::calcLongitudinalOffsetToSegment(
+        tier4_autoware_utils::findNearestSegmentIndex(interpolated_points, object_point);
+      const double l = tier4_autoware_utils::calcLongitudinalOffsetToSegment(
         interpolated_points, nearest_segment_idx, object_point);
       const double current_s_position =
-        autoware_utils::calcSignedArcLength(interpolated_points, 0, nearest_segment_idx) + l;
+        tier4_autoware_utils::calcSignedArcLength(interpolated_points, 0, nearest_segment_idx) + l;
       if (current_s_position > spline2d.s.back()) {
         continue;
       }
       std::array<double, 2> s_point = spline2d.calc_position(current_s_position);
       geometry_msgs::msg::Point nearest_point =
-        autoware_utils::createPoint(s_point[0], s_point[1], object_point.z);
-      double current_d_position = autoware_utils::calcDistance2d(nearest_point, object_point);
+        tier4_autoware_utils::createPoint(s_point[0], s_point[1], object_point.z);
+      double current_d_position = tier4_autoware_utils::calcDistance2d(nearest_point, object_point);
       const double lane_yaw = spline2d.calc_yaw(current_s_position);
       const std::vector<double> origin_v = {std::cos(lane_yaw), std::sin(lane_yaw)};
       const std::vector<double> object_v = {
@@ -114,7 +114,7 @@ bool MapBasedPrediction::doPrediction(
       for (const auto & prev_path : tmp_object.kinematics.predicted_paths) {
         const auto prev_path_end = prev_path.path.back().position;
         const auto current_path_end = predicted_path.path.back().position;
-        const double dist = autoware_utils::calcDistance2d(prev_path_end, current_path_end);
+        const double dist = tier4_autoware_utils::calcDistance2d(prev_path_end, current_path_end);
         if (dist < CLOSE_PATH_THRESHOLD) {
           duplicate_flag = true;
           break;

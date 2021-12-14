@@ -17,13 +17,13 @@
 
 #include "obstacle_collision_checker/obstacle_collision_checker.hpp"
 
-#include <autoware_utils/geometry/geometry.hpp>
-#include <autoware_utils/ros/debug_publisher.hpp>
-#include <autoware_utils/ros/processing_time_publisher.hpp>
-#include <autoware_utils/ros/self_pose_listener.hpp>
-#include <autoware_utils/ros/transform_listener.hpp>
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <tier4_autoware_utils/ros/debug_publisher.hpp>
+#include <tier4_autoware_utils/ros/processing_time_publisher.hpp>
+#include <tier4_autoware_utils/ros/self_pose_listener.hpp>
+#include <tier4_autoware_utils/ros/transform_listener.hpp>
 
 #include <autoware_auto_planning_msgs/msg/trajectory.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
@@ -48,8 +48,8 @@ public:
 
 private:
   // Subscriber
-  std::shared_ptr<autoware_utils::SelfPoseListener> self_pose_listener_;
-  std::shared_ptr<autoware_utils::TransformListener> transform_listener_;
+  std::shared_ptr<tier4_autoware_utils::SelfPoseListener> self_pose_listener_;
+  std::shared_ptr<tier4_autoware_utils::TransformListener> transform_listener_;
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr sub_obstacle_pointcloud_;
   rclcpp::Subscription<autoware_auto_planning_msgs::msg::Trajectory>::SharedPtr
     sub_reference_trajectory_;
@@ -72,8 +72,8 @@ private:
   void onOdom(const nav_msgs::msg::Odometry::SharedPtr msg);
 
   // Publisher
-  std::shared_ptr<autoware_utils::DebugPublisher> debug_publisher_;
-  std::shared_ptr<autoware_utils::ProcessingTimePublisher> time_publisher_;
+  std::shared_ptr<tier4_autoware_utils::DebugPublisher> debug_publisher_;
+  std::shared_ptr<tier4_autoware_utils::ProcessingTimePublisher> time_publisher_;
 
   // Timer
   rclcpp::TimerBase::SharedPtr timer_;

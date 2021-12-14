@@ -14,8 +14,8 @@
 
 #include "ekf_localizer/ekf_localizer.hpp"
 
-#include <autoware_utils/math/unit_conversion.hpp>
 #include <rclcpp/logging.hpp>
+#include <tier4_autoware_utils/math/unit_conversion.hpp>
 
 #include <algorithm>
 #include <functional>
@@ -185,11 +185,12 @@ void EKFLocalizer::setCurrentResult()
     tf2::Matrix3x3(q_tf).getRPY(roll, pitch, yaw_tmp);
   }
   double yaw = ekf_.getXelement(IDX::YAW) + ekf_.getXelement(IDX::YAWB);
-  current_ekf_pose_.pose.orientation = autoware_utils::createQuaternionFromRPY(roll, pitch, yaw);
+  current_ekf_pose_.pose.orientation =
+    tier4_autoware_utils::createQuaternionFromRPY(roll, pitch, yaw);
 
   current_ekf_pose_no_yawbias_ = current_ekf_pose_;
   current_ekf_pose_no_yawbias_.pose.orientation =
-    autoware_utils::createQuaternionFromRPY(roll, pitch, ekf_.getXelement(IDX::YAW));
+    tier4_autoware_utils::createQuaternionFromRPY(roll, pitch, ekf_.getXelement(IDX::YAW));
 
   current_ekf_twist_.header.frame_id = "base_link";
   current_ekf_twist_.header.stamp = this->now();
@@ -705,9 +706,9 @@ void EKFLocalizer::publishEstimateResult()
 
   tier4_debug_msgs::msg::Float64MultiArrayStamped msg;
   msg.stamp = current_time;
-  msg.data.push_back(autoware_utils::rad2deg(X(IDX::YAW)));   // [0] ekf yaw angle
-  msg.data.push_back(autoware_utils::rad2deg(pose_yaw));      // [1] measurement yaw angle
-  msg.data.push_back(autoware_utils::rad2deg(X(IDX::YAWB)));  // [2] yaw bias
+  msg.data.push_back(tier4_autoware_utils::rad2deg(X(IDX::YAW)));   // [0] ekf yaw angle
+  msg.data.push_back(tier4_autoware_utils::rad2deg(pose_yaw));      // [1] measurement yaw angle
+  msg.data.push_back(tier4_autoware_utils::rad2deg(X(IDX::YAWB)));  // [2] yaw bias
   pub_debug_->publish(msg);
 }
 

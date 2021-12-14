@@ -285,7 +285,7 @@ bool IntersectionModule::checkCollision(
 
   lanelet::ConstLanelets ego_lane_with_next_lane = getEgoLaneWithNextLane(lanelet_map_ptr, path);
   const auto closest_arc_coords = getArcCoordinates(
-    ego_lane_with_next_lane, autoware_utils::getPose(path.points.at(closest_idx).point));
+    ego_lane_with_next_lane, tier4_autoware_utils::getPose(path.points.at(closest_idx).point));
   const double distance_until_intersection =
     calcDistanceUntilIntersectionLanelet(lanelet_map_ptr, path, closest_idx);
   const double base_link2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
@@ -390,10 +390,10 @@ Polygon2d IntersectionModule::generateEgoIntersectionLanePolygon(
   lanelet::ConstLanelets ego_lane_with_next_lane = getEgoLaneWithNextLane(lanelet_map_ptr, path);
 
   const auto start_arc_coords = getArcCoordinates(
-    ego_lane_with_next_lane, autoware_utils::getPose(path.points.at(start_idx).point));
+    ego_lane_with_next_lane, tier4_autoware_utils::getPose(path.points.at(start_idx).point));
 
   const auto closest_arc_coords = getArcCoordinates(
-    ego_lane_with_next_lane, autoware_utils::getPose(path.points.at(closest_idx).point));
+    ego_lane_with_next_lane, tier4_autoware_utils::getPose(path.points.at(closest_idx).point));
 
   const double start_arc_length = start_arc_coords.length + ignore_dist < closest_arc_coords.length
                                     ? closest_arc_coords.length
@@ -609,7 +609,7 @@ bool IntersectionModule::checkAngleForTargetLanelets(
     }
     const double ll_angle = lanelet::utils::getLaneletAngle(ll, pose.position);
     const double pose_angle = tf2::getYaw(pose.orientation);
-    const double angle_diff = autoware_utils::normalizeRadian(ll_angle - pose_angle);
+    const double angle_diff = tier4_autoware_utils::normalizeRadian(ll_angle - pose_angle);
     if (std::fabs(angle_diff) < planner_param_.detection_area_angle_thr) {
       return true;
     }

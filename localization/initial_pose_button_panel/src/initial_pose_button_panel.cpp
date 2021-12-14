@@ -27,7 +27,7 @@
 #include <thread>
 #include <vector>
 
-namespace autoware_localization_rviz_plugin
+namespace tier4_localization_rviz_plugin
 {
 InitialPoseButtonPanel::InitialPoseButtonPanel(QWidget * parent) : rviz_common::Panel(parent)
 {
@@ -119,7 +119,6 @@ void InitialPoseButtonPanel::pushInitializeButton()
   thread.detach();
 }
 
-}  // end namespace autoware_localization_rviz_plugin
+}  // end namespace tier4_localization_rviz_plugin
 
-PLUGINLIB_EXPORT_CLASS(
-  autoware_localization_rviz_plugin::InitialPoseButtonPanel, rviz_common::Panel)
+PLUGINLIB_EXPORT_CLASS(tier4_localization_rviz_plugin::InitialPoseButtonPanel, rviz_common::Panel)

@@ -13,7 +13,6 @@
   <depend>autoware_auto_control_msgs</depend>
   <depend>autoware_auto_planning_msgs</depend>
   <depend>autoware_auto_vehicle_msgs</depend>
-  <depend>autoware_utils</depend>
   <depend>geometry_msgs</depend>
   <depend>libboost-dev</depend>
   <depend>nav_msgs</depend>
@@ -23,9 +22,10 @@
   <depend>tf2</depend>
   <depend>tf2_eigen</depend>
   <depend>tf2_ros</depend>
+  <depend>tier4_autoware_utils</depend>
   <depend>vehicle_info_util</depend>
 
-  <exec_depend>autoware_global_parameter_loader</exec_depend>
+  <exec_depend>global_parameter_loader</exec_depend>
   <exec_depend>rosidl_default_runtime</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>

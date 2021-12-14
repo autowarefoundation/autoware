@@ -20,7 +20,7 @@
 
 #include "multi_object_tracker/utils/utils.hpp"
 
-#include <autoware_utils/autoware_utils.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <bits/stdc++.h>
 #include <tf2/LinearMath/Matrix3x3.h>
@@ -43,19 +43,19 @@ PedestrianTracker::PedestrianTracker(
 
   // initialize params
   ekf_params_.use_measurement_covariance = false;
-  float q_stddev_x = 0.0;                               // [m/s]
-  float q_stddev_y = 0.0;                               // [m/s]
-  float q_stddev_yaw = autoware_utils::deg2rad(20);     // [rad/s]
-  float q_stddev_vx = autoware_utils::kmph2mps(5);      // [m/(s*s)]
-  float q_stddev_wz = autoware_utils::deg2rad(20);      // [rad/(s*s)]
-  float r_stddev_x = 0.4;                               // [m]
-  float r_stddev_y = 0.4;                               // [m]
-  float r_stddev_yaw = autoware_utils::deg2rad(30);     // [rad]
-  float p0_stddev_x = 1.0;                              // [m/s]
-  float p0_stddev_y = 1.0;                              // [m/s]
-  float p0_stddev_yaw = autoware_utils::deg2rad(1000);  // [rad/s]
-  float p0_stddev_vx = autoware_utils::kmph2mps(5);     // [m/(s*s)]
-  float p0_stddev_wz = autoware_utils::deg2rad(10);     // [rad/(s*s)]
+  float q_stddev_x = 0.0;                                     // [m/s]
+  float q_stddev_y = 0.0;                                     // [m/s]
+  float q_stddev_yaw = tier4_autoware_utils::deg2rad(20);     // [rad/s]
+  float q_stddev_vx = tier4_autoware_utils::kmph2mps(5);      // [m/(s*s)]
+  float q_stddev_wz = tier4_autoware_utils::deg2rad(20);      // [rad/(s*s)]
+  float r_stddev_x = 0.4;                                     // [m]
+  float r_stddev_y = 0.4;                                     // [m]
+  float r_stddev_yaw = tier4_autoware_utils::deg2rad(30);     // [rad]
+  float p0_stddev_x = 1.0;                                    // [m/s]
+  float p0_stddev_y = 1.0;                                    // [m/s]
+  float p0_stddev_yaw = tier4_autoware_utils::deg2rad(1000);  // [rad/s]
+  float p0_stddev_vx = tier4_autoware_utils::kmph2mps(5);     // [m/(s*s)]
+  float p0_stddev_wz = tier4_autoware_utils::deg2rad(10);     // [rad/(s*s)]
   ekf_params_.q_cov_x = std::pow(q_stddev_x, 2.0);
   ekf_params_.q_cov_y = std::pow(q_stddev_y, 2.0);
   ekf_params_.q_cov_yaw = std::pow(q_stddev_yaw, 2.0);
@@ -69,8 +69,8 @@ PedestrianTracker::PedestrianTracker(
   ekf_params_.p0_cov_yaw = std::pow(p0_stddev_yaw, 2.0);
   ekf_params_.p0_cov_vx = std::pow(p0_stddev_vx, 2.0);
   ekf_params_.p0_cov_wz = std::pow(p0_stddev_wz, 2.0);
-  max_vx_ = autoware_utils::kmph2mps(10);  // [m/s]
-  max_wz_ = autoware_utils::deg2rad(30);   // [rad/s]
+  max_vx_ = tier4_autoware_utils::kmph2mps(10);  // [m/s]
+  max_wz_ = tier4_autoware_utils::deg2rad(30);   // [rad/s]
 
   // initialize X matrix
   Eigen::MatrixXd X(ekf_params_.dim_x, 1);
@@ -218,7 +218,7 @@ bool PedestrianTracker::measureWithPose(
 {
   constexpr int dim_y = 2;  // pos x, pos y depending on Pose output
   // double measurement_yaw =
-  //   autoware_utils::normalizeRadian(tf2::getYaw(object.state.pose_covariance.pose.orientation));
+  //   tier4_autoware_utils::normalizeRadian(tf2::getYaw(object.state.pose_covariance.pose.orientation));
   // {
   //   Eigen::MatrixXd X_t(ekf_params_.dim_x, 1);
   //   ekf_.getX(X_t);
@@ -231,7 +231,7 @@ bool PedestrianTracker::measureWithPose(
   //   float theta = std::acos(
   //     std::cos(X_t(IDX::YAW)) * std::cos(measurement_yaw) +
   //     std::sin(X_t(IDX::YAW)) * std::sin(measurement_yaw));
-  //   if (autoware_utils::deg2rad(60) < std::fabs(theta)) return false;
+  //   if (tier4_autoware_utils::deg2rad(60) < std::fabs(theta)) return false;
   // }
 
   /* Set measurement matrix */
@@ -277,7 +277,7 @@ bool PedestrianTracker::measureWithPose(
     Eigen::MatrixXd P_t(ekf_params_.dim_x, ekf_params_.dim_x);
     ekf_.getX(X_t);
     ekf_.getP(P_t);
-    X_t(IDX::YAW) = autoware_utils::normalizeRadian(X_t(IDX::YAW));
+    X_t(IDX::YAW) = tier4_autoware_utils::normalizeRadian(X_t(IDX::YAW));
     if (!(-max_vx_ <= X_t(IDX::VX) && X_t(IDX::VX) <= max_vx_)) {
       X_t(IDX::VX) = X_t(IDX::VX) < 0 ? -max_vx_ : max_vx_;
     }

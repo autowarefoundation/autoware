@@ -17,10 +17,10 @@
 #include "behavior_path_planner/path_shifter/path_shifter.hpp"
 #include "behavior_path_planner/path_utilities.hpp"
 
-#include <autoware_utils/geometry/boost_geometry.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
 #include <boost/geometry/algorithms/dispatch/distance.hpp>
 
@@ -227,14 +227,14 @@ std::vector<PullOverPath> getPullOverPaths(
       continue;
     }
 
-    const auto shift_end_idx = autoware_utils::findNearestIndex(
+    const auto shift_end_idx = tier4_autoware_utils::findNearestIndex(
       shifted_path.path.points, reference_path2.points.front().point.pose);
 
     const auto goal_idx =
-      autoware_utils::findNearestIndex(shifted_path.path.points, route_handler.getGoalPose());
+      tier4_autoware_utils::findNearestIndex(shifted_path.path.points, route_handler.getGoalPose());
 
     if (shift_end_idx && goal_idx) {
-      const auto distance_pull_over_end_to_goal = autoware_utils::calcDistance2d(
+      const auto distance_pull_over_end_to_goal = tier4_autoware_utils::calcDistance2d(
         shifted_path.path.points.at(*shift_end_idx).point.pose,
         shifted_path.path.points.at(*goal_idx).point.pose);
       for (size_t i = 0; i < shifted_path.path.points.size(); ++i) {
@@ -251,7 +251,7 @@ std::vector<PullOverPath> getPullOverPaths(
           continue;
         }
         // set velocity between shift end and goal. decelerate linearly from shift end to 0
-        auto distance_to_goal = autoware_utils::calcDistance2d(
+        auto distance_to_goal = tier4_autoware_utils::calcDistance2d(
           point.point.pose, shifted_path.path.points.at(*goal_idx).point.pose);
         point.point.longitudinal_velocity_mps = std::min(
           minimum_pull_over_velocity,
@@ -261,10 +261,10 @@ std::vector<PullOverPath> getPullOverPaths(
       }
       candidate_path.path = combineReferencePath(reference_path1, shifted_path.path);
       candidate_path.shifted_path = shifted_path;
-      shift_point.start_idx =
-        autoware_utils::findNearestIndex(shifted_path.path.points, shift_point.start.position);
+      shift_point.start_idx = tier4_autoware_utils::findNearestIndex(
+        shifted_path.path.points, shift_point.start.position);
       shift_point.end_idx =
-        autoware_utils::findNearestIndex(shifted_path.path.points, shift_point.end.position);
+        tier4_autoware_utils::findNearestIndex(shifted_path.path.points, shift_point.end.position);
       candidate_path.shift_point = shift_point;
       // candidate_path.acceleration = acceleration;
       candidate_path.preparation_length = straight_distance;

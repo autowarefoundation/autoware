@@ -18,7 +18,6 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
   <depend>autoware_auto_vehicle_msgs</depend>
-  <depend>autoware_utils</depend>
   <depend>diagnostic_updater</depend>
   <depend>image_transport</depend>
   <depend>lanelet2_extension</depend>
@@ -38,6 +37,7 @@
   <depend>tf2_eigen</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2_ros</depend>
+  <depend>tier4_autoware_utils</depend>
   <depend>tier4_debug_msgs</depend>
   <depend>tier4_pcl_extensions</depend>
 

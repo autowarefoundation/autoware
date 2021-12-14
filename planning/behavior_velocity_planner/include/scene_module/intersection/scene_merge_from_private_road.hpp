@@ -15,10 +15,10 @@
 #ifndef SCENE_MODULE__INTERSECTION__SCENE_MERGE_FROM_PRIVATE_ROAD_HPP_
 #define SCENE_MODULE__INTERSECTION__SCENE_MERGE_FROM_PRIVATE_ROAD_HPP_
 
-#include <autoware_utils/autoware_utils.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <scene_module/intersection/scene_intersection.hpp>
 #include <scene_module/scene_module_interface.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 #include <utilization/boost_geometry_helper.hpp>
 
 #include <autoware_auto_perception_msgs/msg/predicted_object.hpp>

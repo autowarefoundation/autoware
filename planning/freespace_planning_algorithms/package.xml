@@ -11,12 +11,12 @@
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
-  <depend>autoware_utils</depend>
   <depend>geometry_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>std_msgs</depend>
   <depend>tf2</depend>
   <depend>tf2_geometry_msgs</depend>
+  <depend>tier4_autoware_utils</depend>
 
   <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_lint_auto</test_depend>

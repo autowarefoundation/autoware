@@ -29,13 +29,13 @@ boost::optional<TrajectoryPoints> resampleTrajectory(
   const double front_arclength_value = trajectory_utils::calcArcLength(input, 0, closest_id);
 
   // Get the nearest point where velocity is zero
-  auto zero_vel_id = autoware_utils::searchZeroVelocityIndex(input, closest_id, input.size());
+  auto zero_vel_id = tier4_autoware_utils::searchZeroVelocityIndex(input, closest_id, input.size());
   // Arc length from the closest point to the point where velocity is zero
   double zero_vel_arclength_value = param.max_trajectory_length;
   if (zero_vel_id) {
     zero_vel_arclength_value = std::min(
       zero_vel_arclength_value,
-      autoware_utils::calcSignedArcLength(input, closest_id, *zero_vel_id));
+      tier4_autoware_utils::calcSignedArcLength(input, closest_id, *zero_vel_id));
   }
 
   // Get the resample size from the closest point
@@ -132,7 +132,7 @@ boost::optional<TrajectoryPoints> resampleTrajectory(
   // add end point directly to consider the endpoint velocity.
   if (is_endpoint_included) {
     constexpr double ep_dist = 1.0E-3;
-    if (autoware_utils::calcDistance2d(output->back(), input.back()) < ep_dist) {
+    if (tier4_autoware_utils::calcDistance2d(output->back(), input.back()) < ep_dist) {
       output->back() = input.back();
     } else {
       output->push_back(input.back());
@@ -151,12 +151,12 @@ boost::optional<TrajectoryPoints> resampleTrajectory(
 
   // Get the nearest point where velocity is zero
   // to avoid getting closest_id as a stop point, search zero velocity index from closest_id + 1.
-  auto stop_id = autoware_utils::searchZeroVelocityIndex(input, closest_id + 1, input.size());
+  auto stop_id = tier4_autoware_utils::searchZeroVelocityIndex(input, closest_id + 1, input.size());
   // Arc length from the closest point to the point where velocity is zero
   double stop_arclength_value = param.max_trajectory_length;
   if (stop_id) {
     stop_arclength_value = std::min(
-      stop_arclength_value, autoware_utils::calcSignedArcLength(input, closest_id, *stop_id));
+      stop_arclength_value, tier4_autoware_utils::calcSignedArcLength(input, closest_id, *stop_id));
   }
 
   // Do dense resampling before the stop line(3[m] ahead of the stop line)
@@ -252,7 +252,7 @@ boost::optional<TrajectoryPoints> resampleTrajectory(
   // add end point directly to consider the endpoint velocity.
   if (is_endpoint_included) {
     constexpr double ep_dist = 1.0E-3;
-    if (autoware_utils::calcDistance2d(output->back(), input.back()) < ep_dist) {
+    if (tier4_autoware_utils::calcDistance2d(output->back(), input.back()) < ep_dist) {
       output->back() = input.back();
     } else {
       output->push_back(input.back());

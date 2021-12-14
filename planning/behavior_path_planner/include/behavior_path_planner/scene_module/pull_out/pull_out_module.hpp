@@ -125,7 +125,7 @@ private:
   void updatePullOutStatus();
   bool isInLane(
     const lanelet::ConstLanelet & candidate_lanelet,
-    const autoware_utils::LinearRing2d & vehicle_footprint) const;
+    const tier4_autoware_utils::LinearRing2d & vehicle_footprint) const;
   bool isLongEnough(const lanelet::ConstLanelets & lanelets) const;
   bool isSafe() const;
   bool isNearEndOfLane() const;

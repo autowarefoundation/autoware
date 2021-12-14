@@ -14,7 +14,7 @@
 
 #include "freespace_planning_algorithms/astar_search.hpp"
 
-#include <autoware_utils/autoware_utils.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <tf2/utils.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -34,7 +34,7 @@ double calcReedsSheppDistance(
 
 void setYaw(geometry_msgs::msg::Quaternion * orientation, const double yaw)
 {
-  *orientation = autoware_utils::createQuaternionFromYaw(yaw);
+  *orientation = tier4_autoware_utils::createQuaternionFromYaw(yaw);
 }
 
 geometry_msgs::msg::Pose calcRelativePose(
@@ -61,7 +61,7 @@ geometry_msgs::msg::Pose node2pose(const AstarNode & node)
   pose_local.position.x = node.x;
   pose_local.position.y = node.y;
   pose_local.position.z = 0;
-  pose_local.orientation = autoware_utils::createQuaternionFromYaw(node.theta);
+  pose_local.orientation = tier4_autoware_utils::createQuaternionFromYaw(node.theta);
 
   return pose_local;
 }
@@ -208,8 +208,8 @@ double AstarSearch::estimateCost(const geometry_msgs::msg::Pose & pose)
     total_cost +=
       calcReedsSheppDistance(pose, goal_pose_, radius) * astar_param_.distance_heuristic_weight;
   } else {
-    total_cost +=
-      autoware_utils::calcDistance2d(pose, goal_pose_) * astar_param_.distance_heuristic_weight;
+    total_cost += tier4_autoware_utils::calcDistance2d(pose, goal_pose_) *
+                  astar_param_.distance_heuristic_weight;
   }
   return total_cost;
 }
@@ -336,7 +336,8 @@ bool AstarSearch::isGoal(const AstarNode & node)
 {
   const double lateral_goal_range = planner_common_param_.lateral_goal_range / 2.0;
   const double longitudinal_goal_range = planner_common_param_.longitudinal_goal_range / 2.0;
-  const double goal_angle = autoware_utils::deg2rad(planner_common_param_.angle_goal_range / 2.0);
+  const double goal_angle =
+    tier4_autoware_utils::deg2rad(planner_common_param_.angle_goal_range / 2.0);
 
   const auto relative_pose = calcRelativePose(goal_pose_, node2pose(node));
 
@@ -351,7 +352,8 @@ bool AstarSearch::isGoal(const AstarNode & node)
     return false;
   }
 
-  const auto angle_diff = autoware_utils::normalizeRadian(tf2::getYaw(relative_pose.orientation));
+  const auto angle_diff =
+    tier4_autoware_utils::normalizeRadian(tf2::getYaw(relative_pose.orientation));
   if (std::abs(angle_diff) > goal_angle) {
     return false;
   }

@@ -17,4 +17,4 @@ Please see `<exec_depend>` in `package.xml`.
   </include>
 ```
 
-The sensing configuration parameters used in autoware_error_monitor are loaded from "config/diagnostic_aggregator/sensor_kit.param.yaml" in the "`SENSOR_MODEL`\_description" package.
+The sensing configuration parameters used in system_error_monitor are loaded from "config/diagnostic_aggregator/sensor_kit.param.yaml" in the "`SENSOR_MODEL`\_description" package.

@@ -8,7 +8,6 @@
   <license>Apache License 2.0</license>
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <depend>autoware_api_utils</depend>
   <depend>geometry_msgs</depend>
   <depend>libpcl-all-dev</depend>
   <depend>pcl_conversions</depend>
@@ -18,6 +17,7 @@
   <depend>tf2</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2_ros</depend>
+  <depend>tier4_api_utils</depend>
   <depend>tier4_external_api_msgs</depend>
   <depend>tier4_localization_msgs</depend>
 

@@ -14,7 +14,7 @@
 
 #include "awapi_awiv_adapter/awapi_obstacle_avoidance_state_publisher.hpp"
 
-#include "autoware_iv_auto_msgs_converter/autoware_iv_auto_msgs_converter.hpp"
+#include "tier4_auto_msgs_converter/tier4_auto_msgs_converter.hpp"
 
 namespace autoware_api
 {
@@ -67,7 +67,7 @@ void AutowareIvObstacleAvoidanceStatePublisher::getCandidatePathInfo(
     return;
   }
 
-  using autoware_iv_auto_msgs_converter::convert;
+  using tier4_auto_msgs_converter::convert;
   status->candidate_path = convert(*path_ptr);
 }
 

@@ -15,8 +15,8 @@
 #ifndef UTILIZATION__ARC_LANE_UTIL_HPP_
 #define UTILIZATION__ARC_LANE_UTIL_HPP_
 
-#include <autoware_utils/geometry/geometry.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <utilization/boost_geometry_helper.hpp>
 
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
@@ -103,7 +103,7 @@ boost::optional<PathIndexWithOffset> findForwardOffsetSegment(
 {
   double sum_length = 0.0;
   for (size_t i = base_idx; i < path.points.size() - 1; ++i) {
-    sum_length += autoware_utils::calcDistance2d(path.points.at(i), path.points.at(i + 1));
+    sum_length += tier4_autoware_utils::calcDistance2d(path.points.at(i), path.points.at(i + 1));
 
     // If it's over offset point, return front index and remain offset length
     if (sum_length >= offset_length) {
@@ -122,7 +122,7 @@ boost::optional<PathIndexWithOffset> findBackwardOffsetSegment(
   double sum_length = 0.0;
   const auto start = static_cast<std::int32_t>(base_idx) - 1;
   for (std::int32_t i = start; i >= 0; --i) {
-    sum_length += autoware_utils::calcDistance2d(path.points.at(i), path.points.at(i + 1));
+    sum_length += tier4_autoware_utils::calcDistance2d(path.points.at(i), path.points.at(i + 1));
 
     // If it's over offset point, return front index and remain offset length
     if (sum_length >= offset_length) {
@@ -177,8 +177,8 @@ geometry_msgs::msg::Pose calcTargetPose(const T & path, const PathIndexWithOffse
   target_pose.position.x = target_point_2d.x();
   target_pose.position.y = target_point_2d.y();
   target_pose.position.z = interpolated_z;
-  const double yaw = autoware_utils::calcAzimuthAngle(p_front, p_back);
-  target_pose.orientation = autoware_utils::createQuaternionFromYaw(yaw);
+  const double yaw = tier4_autoware_utils::calcAzimuthAngle(p_front, p_back);
+  target_pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(yaw);
   return target_pose;
 }
 

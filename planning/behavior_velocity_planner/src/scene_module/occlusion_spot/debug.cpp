@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <autoware_utils/ros/marker_helper.hpp>
 #include <scene_module/occlusion_spot/occlusion_spot_utils.hpp>
 #include <scene_module/occlusion_spot/scene_occlusion_spot_in_private_road.hpp>
 #include <scene_module/occlusion_spot/scene_occlusion_spot_in_public_road.hpp>
+#include <tier4_autoware_utils/ros/marker_helper.hpp>
 #include <utilization/marker_helper.hpp>
 #include <utilization/util.hpp>
 
@@ -34,9 +34,9 @@ visualization_msgs::msg::Marker makeArrowMarker(
   debug_marker.ns = "occlusion spot arrow";
   debug_marker.id = id;
   debug_marker.type = visualization_msgs::msg::Marker::ARROW;
-  debug_marker.pose.orientation = autoware_utils::createMarkerOrientation(0, 0, 0, 1.0);
-  debug_marker.scale = autoware_utils::createMarkerScale(0.05, 0.2, 0.5);
-  debug_marker.color = autoware_utils::createMarkerColor(0.1, 0.1, 0.1, 0.5);
+  debug_marker.pose.orientation = tier4_autoware_utils::createMarkerOrientation(0, 0, 0, 1.0);
+  debug_marker.scale = tier4_autoware_utils::createMarkerScale(0.05, 0.2, 0.5);
+  debug_marker.color = tier4_autoware_utils::createMarkerColor(0.1, 0.1, 0.1, 0.5);
   debug_marker.lifetime = rclcpp::Duration::from_seconds(0.5);
   geometry_msgs::msg::Point obs_point, intersection_point{};
   obs_point = possible_collision.obstacle_info.position;
@@ -62,8 +62,8 @@ std::vector<visualization_msgs::msg::Marker> makeSlowDownMarkers(
   // cylinder at collision point
   wall_marker.pose = possible_collision.intersection_pose;
   wall_marker.pose.position.z += 1.0;
-  wall_marker.scale = autoware_utils::createMarkerScale(0.1, 5.0, 2.0);
-  wall_marker.color = autoware_utils::createMarkerColor(1.0, 1.0, 0.0, 0.5);
+  wall_marker.scale = tier4_autoware_utils::createMarkerScale(0.1, 5.0, 2.0);
+  wall_marker.color = tier4_autoware_utils::createMarkerColor(1.0, 1.0, 0.0, 0.5);
 
   wall_marker.lifetime = rclcpp::Duration::from_seconds(0.5);
   debug_markers.emplace_back(wall_marker);
@@ -77,11 +77,11 @@ std::vector<visualization_msgs::msg::Marker> makeSlowDownMarkers(
   slowdown_reason_marker.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
   slowdown_reason_marker.action = visualization_msgs::msg::Marker::ADD;
   slowdown_reason_marker.pose = possible_collision.intersection_pose;
-  slowdown_reason_marker.scale = autoware_utils::createMarkerScale(0.0, 0.0, 1.0);
-  slowdown_reason_marker.color = autoware_utils::createMarkerColor(1.0, 1.0, 1.0, 0.999);
+  slowdown_reason_marker.scale = tier4_autoware_utils::createMarkerScale(0.0, 0.0, 1.0);
+  slowdown_reason_marker.color = tier4_autoware_utils::createMarkerColor(1.0, 1.0, 1.0, 0.999);
   slowdown_reason_marker.text = "occlusion spot";
   debug_markers.emplace_back(slowdown_reason_marker);
-  slowdown_reason_marker.scale = autoware_utils::createMarkerScale(0.0, 0.0, 0.5);
+  slowdown_reason_marker.scale = tier4_autoware_utils::createMarkerScale(0.0, 0.0, 0.5);
   slowdown_reason_marker.id = id + 100;
   slowdown_reason_marker.text = "\n \n" + road_type;
   debug_markers.emplace_back(slowdown_reason_marker);
@@ -100,8 +100,8 @@ std::vector<visualization_msgs::msg::Marker> makeCollisionMarkers(
   // cylinder at collision_point point
   debug_marker.type = visualization_msgs::msg::Marker::CYLINDER;
   debug_marker.pose = possible_collision.collision_path_point.pose;
-  debug_marker.scale = autoware_utils::createMarkerScale(1.0, 1.0, 0.5);
-  debug_marker.color = autoware_utils::createMarkerColor(1.0, 0.0, 0.0, 0.5);
+  debug_marker.scale = tier4_autoware_utils::createMarkerScale(1.0, 1.0, 0.5);
+  debug_marker.color = tier4_autoware_utils::createMarkerColor(1.0, 0.0, 0.0, 0.5);
 
   debug_marker.lifetime = rclcpp::Duration::from_seconds(0.5);
   debug_markers.push_back(debug_marker);
@@ -109,8 +109,8 @@ std::vector<visualization_msgs::msg::Marker> makeCollisionMarkers(
   debug_marker.ns = "obstacle";
   debug_marker.type = visualization_msgs::msg::Marker::CYLINDER;
   debug_marker.pose.position = possible_collision.obstacle_info.position;
-  debug_marker.color = autoware_utils::createMarkerColor(0.5, 0.5, 0.5, 0.5);
-  debug_marker.scale = autoware_utils::createMarkerScale(1.0, 1.0, 1.0);
+  debug_marker.color = tier4_autoware_utils::createMarkerColor(0.5, 0.5, 0.5, 0.5);
+  debug_marker.scale = tier4_autoware_utils::createMarkerScale(1.0, 1.0, 1.0);
   debug_markers.push_back(debug_marker);
   if (show_text) {
     // info text at obstacle point
@@ -118,7 +118,7 @@ std::vector<visualization_msgs::msg::Marker> makeCollisionMarkers(
     debug_marker.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
     debug_marker.pose = possible_collision.collision_path_point.pose;
     debug_marker.scale.z = 1.0;
-    debug_marker.color = autoware_utils::createMarkerColor(1.0, 1.0, 0.0, 1.0);
+    debug_marker.color = tier4_autoware_utils::createMarkerColor(1.0, 1.0, 0.0, 1.0);
     std::ostringstream string_stream;
     string_stream << "(s,d,v)=(" << possible_collision.arc_lane_dist_at_collision.length << " , "
                   << possible_collision.arc_lane_dist_at_collision.distance << " , "
@@ -138,14 +138,14 @@ std::vector<visualization_msgs::msg::Marker> makePolygonMarker(
   debug_marker.id = id;
   debug_marker.type = visualization_msgs::msg::Marker::LINE_STRIP;
   debug_marker.action = visualization_msgs::msg::Marker::ADD;
-  debug_marker.pose.position = autoware_utils::createMarkerPosition(0.0, 0.0, z);
-  debug_marker.pose.orientation = autoware_utils::createMarkerOrientation(0, 0, 0, 1.0);
-  debug_marker.scale = autoware_utils::createMarkerScale(0.05, 0.05, 0.05);
-  debug_marker.color = autoware_utils::createMarkerColor(1.0, 0.0, 1.0, 0.3);
+  debug_marker.pose.position = tier4_autoware_utils::createMarkerPosition(0.0, 0.0, z);
+  debug_marker.pose.orientation = tier4_autoware_utils::createMarkerOrientation(0, 0, 0, 1.0);
+  debug_marker.scale = tier4_autoware_utils::createMarkerScale(0.05, 0.05, 0.05);
+  debug_marker.color = tier4_autoware_utils::createMarkerColor(1.0, 0.0, 1.0, 0.3);
   debug_marker.lifetime = rclcpp::Duration::from_seconds(0.1);
   debug_marker.ns = "sidewalk";
   for (const auto & p : polygon) {
-    geometry_msgs::msg::Point point = autoware_utils::createMarkerPosition(p.x(), p.y(), 0.0);
+    geometry_msgs::msg::Point point = tier4_autoware_utils::createMarkerPosition(p.x(), p.y(), 0.0);
     debug_marker.points.push_back(point);
   }
   debug_markers.push_back(debug_marker);

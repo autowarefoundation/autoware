@@ -14,8 +14,8 @@
 
 #include "awapi_awiv_adapter/awapi_autoware_state_publisher.hpp"
 
-#include "autoware_iv_auto_msgs_converter/autoware_iv_auto_msgs_converter.hpp"
 #include "awapi_awiv_adapter/diagnostics_filter.hpp"
+#include "tier4_auto_msgs_converter/tier4_auto_msgs_converter.hpp"
 
 #include <regex>
 #include <string>
@@ -67,7 +67,7 @@ void AutowareIvAutowareStatePublisher::getAutowareStateInfo(
   }
 
   // get autoware_state
-  using autoware_iv_auto_msgs_converter::convert;
+  using tier4_auto_msgs_converter::convert;
   status->autoware_state = convert(*autoware_state_ptr).state;
   status->arrived_goal = isGoal(autoware_state_ptr);
 }
@@ -82,7 +82,7 @@ void AutowareIvAutowareStatePublisher::getControlModeInfo(
   }
 
   // get control mode
-  using autoware_iv_auto_msgs_converter::convert;
+  using tier4_auto_msgs_converter::convert;
   status->control_mode = convert(*control_mode_ptr).data;
 }
 
@@ -155,7 +155,7 @@ void AutowareIvAutowareStatePublisher::getHazardStatusInfo(
   }
 
   // get emergency
-  using autoware_iv_auto_msgs_converter::convert;
+  using tier4_auto_msgs_converter::convert;
   status->hazard_status = convert(*aw_info.hazard_status_ptr);
 
   // filter leaf diagnostics

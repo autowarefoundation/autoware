@@ -23,16 +23,16 @@
     </group>
 
     <!-- State Monitor -->
-    <let name="config_file" value="$(find-pkg-share autoware_state_monitor)/config/autoware_state_monitor.param.yaml" if="$(eval &quot;'$(var run_mode)'=='online'&quot;)"/>
-    <let name="config_file" value="$(find-pkg-share autoware_state_monitor)/config/autoware_state_monitor.planning_simulation.param.yaml" if="$(eval &quot;'$(var run_mode)'=='planning_simulation'&quot;)"/>
-    <include file="$(find-pkg-share autoware_state_monitor)/launch/autoware_state_monitor.launch.xml">
+    <let name="config_file" value="$(find-pkg-share ad_service_state_monitor)/config/ad_service_state_monitor.param.yaml" if="$(eval &quot;'$(var run_mode)'=='online'&quot;)"/>
+    <let name="config_file" value="$(find-pkg-share ad_service_state_monitor)/config/ad_service_state_monitor.planning_simulation.param.yaml" if="$(eval &quot;'$(var run_mode)'=='planning_simulation'&quot;)"/>
+    <include file="$(find-pkg-share ad_service_state_monitor)/launch/ad_service_state_monitor.launch.xml">
       <arg name="config_file" value="$(var config_file)" />
     </include>
 
     <!-- Error Monitor -->
-    <let name="config_file" value="$(find-pkg-share autoware_error_monitor)/config/autoware_error_monitor.param.yaml" if="$(eval &quot;'$(var run_mode)'=='online'&quot;)"/>
-    <let name="config_file" value="$(find-pkg-share autoware_error_monitor)/config/autoware_error_monitor.planning_simulation.param.yaml" if="$(eval &quot;'$(var run_mode)'=='planning_simulation'&quot;)"/>
-    <include file="$(find-pkg-share autoware_error_monitor)/launch/autoware_error_monitor.launch.xml">
+    <let name="config_file" value="$(find-pkg-share system_error_monitor)/config/system_error_monitor.param.yaml" if="$(eval &quot;'$(var run_mode)'=='online'&quot;)"/>
+    <let name="config_file" value="$(find-pkg-share system_error_monitor)/config/system_error_monitor.planning_simulation.param.yaml" if="$(eval &quot;'$(var run_mode)'=='planning_simulation'&quot;)"/>
+    <include file="$(find-pkg-share system_error_monitor)/launch/system_error_monitor.launch.xml">
       <arg name="config_file" value="$(var config_file)" />
       <arg name="extra_agg_config_file_sensing" value="$(var sensor_launch_pkg)/config/diagnostic_aggregator/sensor_kit.param.yaml" />
       <arg name="extra_agg_config_file_vehicle" value="$(find-pkg-share system_launch)/config/diagnostic_aggregator/vehicle.param.yaml" />

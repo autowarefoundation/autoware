@@ -115,7 +115,7 @@ bool JerkFilteredSmoother::apply(
 
   // to avoid getting 0 as a stop point, search zero velocity index from 1.
   // the size of the resampled trajectory must not be less than 2.
-  const auto zero_vel_id = autoware_utils::searchZeroVelocityIndex(
+  const auto zero_vel_id = tier4_autoware_utils::searchZeroVelocityIndex(
     *opt_resampled_trajectory, 1, opt_resampled_trajectory->size());
 
   if (!zero_vel_id) {
@@ -374,7 +374,7 @@ TrajectoryPoints JerkFilteredSmoother::forwardJerkFilter(
   output.front().longitudinal_velocity_mps = current_vel;
   output.front().acceleration_mps2 = current_acc;
   for (size_t i = 1; i < input.size(); ++i) {
-    const double ds = autoware_utils::calcDistance2d(input.at(i), input.at(i - 1));
+    const double ds = tier4_autoware_utils::calcDistance2d(input.at(i), input.at(i - 1));
     const double max_dt = std::pow(6.0 * ds / j_max, 1.0 / 3.0);  // assuming v0 = a0 = 0.
     const double dt = std::min(ds / std::max(current_vel, 1.0e-6), max_dt);
 
@@ -430,7 +430,7 @@ TrajectoryPoints JerkFilteredSmoother::mergeFilteredTrajectory(
       merged.at(i).acceleration_mps2 = current_acc;
 
       const double ds =
-        autoware_utils::calcDistance2d(forward_filtered.at(i + 1), forward_filtered.at(i));
+        tier4_autoware_utils::calcDistance2d(forward_filtered.at(i + 1), forward_filtered.at(i));
       const double max_dt =
         std::pow(6.0 * ds / std::fabs(j_min), 1.0 / 3.0);  // assuming v0 = a0 = 0.
       const double dt = std::min(ds / std::max(current_vel, 1.0e-6), max_dt);

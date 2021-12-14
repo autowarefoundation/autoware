@@ -1,0 +1,9 @@
+<library path="tier4_localization_rviz_plugin">
+
+  <class
+    type="rviz_plugins::PoseHistory"
+    base_class_type="rviz_common::Display">
+    <description>Display pose history</description>
+  </class>
+
+</library>

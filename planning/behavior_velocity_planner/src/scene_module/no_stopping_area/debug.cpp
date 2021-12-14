@@ -16,7 +16,7 @@
 #include "utilization/marker_helper.hpp"
 #include "utilization/util.hpp"
 
-#include <autoware_utils/planning/planning_marker_helper.hpp>
+#include <tier4_autoware_utils/planning/planning_marker_helper.hpp>
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
@@ -72,7 +72,7 @@ visualization_msgs::msg::MarkerArray createMarkerArray(
     tf2::Transform tf_map2front = tf_map2base_link * tf_base_link2front;
     geometry_msgs::msg::Pose pose;
     tf2::toMsg(tf_map2front, pose);
-    msg = autoware_utils::createStopVirtualWallMarker(pose, "no_stopping_area", now, uid + j);
+    msg = tier4_autoware_utils::createStopVirtualWallMarker(pose, "no_stopping_area", now, uid + j);
   }
   return msg;
 }

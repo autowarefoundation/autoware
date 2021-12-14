@@ -1,0 +1,31 @@
+<library path="tier4_plannnig_rviz_plugin">
+  <class name="rviz_plugins/Path"
+    type="rviz_plugins::AutowarePathDisplay"
+    base_class_type="rviz_common::Display">
+    <description>Display autoware_auto_planning_msgs::Path</description>
+  </class>
+  <class name="rviz_plugins/PathFootprint"
+    type="rviz_plugins::AutowarePathFootprintDisplay"
+    base_class_type="rviz_common::Display">
+    <description>Display autoware_auto_planning_msgs::PathFootprint</description>
+  </class>
+  <class name="rviz_plugins/Trajectory"
+    type="rviz_plugins::AutowareTrajectoryDisplay"
+    base_class_type="rviz_common::Display">
+    <description>Display autoware_auto_planning_msgs::Trajectory</description>
+  </class>
+  <class name="rviz_plugins/TrajectoryFootprint"
+    type="rviz_plugins::AutowareTrajectoryFootprintDisplay"
+    base_class_type="rviz_common::Display">
+    <description>Display autoware_auto_planning_msgs::TrajectoryFootprint</description>
+  </class>
+  <class name="rviz_plugins/MaxVelocity"
+    type="rviz_plugins::MaxVelocityDisplay"
+    base_class_type="rviz_common::Display">
+    <description>Display external max velocity limit</description>
+  </class>
+  <class name="rviz_plugins/MissionCheckpointTool"
+    type="rviz_plugins::MissionCheckpointTool"
+    base_class_type="rviz_common::Tool">
+  </class>
+</library>

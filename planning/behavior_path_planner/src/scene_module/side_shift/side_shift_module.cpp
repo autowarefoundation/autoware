@@ -177,7 +177,7 @@ bool SideShiftModule::addShiftPoint()
   auto shift_points = path_shifter_.getShiftPoints();
 
   const auto calcLongitudinal = [this](const auto & sp) {
-    return autoware_utils::calcSignedArcLength(
+    return tier4_autoware_utils::calcSignedArcLength(
       reference_path_->points, getEgoPose().pose.position, sp.start.position);
   };
 
@@ -333,7 +333,7 @@ double SideShiftModule::getClosestShiftLength() const
   }
 
   const auto ego_point = planner_data_->self_pose->pose.position;
-  const auto closest = autoware_utils::findNearestIndex(prev_output_.path.points, ego_point);
+  const auto closest = tier4_autoware_utils::findNearestIndex(prev_output_.path.points, ego_point);
   return prev_output_.shift_length.at(closest);
 }
 
@@ -364,7 +364,7 @@ PoseStamped SideShiftModule::getUnshiftedEgoPose(const ShiftedPath & prev_path) 
 
   // un-shifted fot current ideal pose
   const auto closest =
-    autoware_utils::findNearestIndex(prev_path.path.points, ego_pose.pose.position);
+    tier4_autoware_utils::findNearestIndex(prev_path.path.points, ego_pose.pose.position);
 
   PoseStamped unshifted_pose{};
   unshifted_pose.header = ego_pose.header;
@@ -388,7 +388,7 @@ PathWithLaneId SideShiftModule::calcCenterLinePath(
   const auto longest_dist_to_shift_point = [&]() {
     double max_dist = 0.0;
     for (const auto & pnt : path_shifter_.getShiftPoints()) {
-      max_dist = std::max(max_dist, autoware_utils::calcDistance2d(getEgoPose(), pnt.start));
+      max_dist = std::max(max_dist, tier4_autoware_utils::calcDistance2d(getEgoPose(), pnt.start));
     }
     return max_dist;
   }();

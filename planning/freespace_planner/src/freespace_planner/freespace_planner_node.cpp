@@ -30,7 +30,7 @@
 
 #include "freespace_planner/freespace_planner_node.hpp"
 
-#include <autoware_utils/autoware_utils.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <algorithm>
 #include <deque>
@@ -138,8 +138,8 @@ Trajectory getPartialTrajectory(
 
 double calcDistance2d(const Trajectory & trajectory, const Pose & pose)
 {
-  const auto idx = autoware_utils::findNearestIndex(trajectory.points, pose.position);
-  return autoware_utils::calcDistance2d(trajectory.points.at(idx), pose);
+  const auto idx = tier4_autoware_utils::findNearestIndex(trajectory.points, pose.position);
+  return tier4_autoware_utils::calcDistance2d(trajectory.points.at(idx), pose);
 }
 
 Pose transformPose(const Pose & pose, const TransformStamped & transform)
@@ -352,7 +352,7 @@ bool FreespacePlannerNode::isPlanRequired()
     algo_->setMap(*occupancy_grid_);
 
     const size_t nearest_index_partial =
-      autoware_utils::findNearestIndex(partial_trajectory_.points, current_pose_.pose.position);
+      tier4_autoware_utils::findNearestIndex(partial_trajectory_.points, current_pose_.pose.position);
     const size_t end_index_partial = partial_trajectory_.points.size() - 1;
 
     const auto forward_trajectory =
@@ -381,7 +381,7 @@ bool FreespacePlannerNode::isPlanRequired()
 void FreespacePlannerNode::updateTargetIndex()
 {
   const auto is_near_target =
-    autoware_utils::calcDistance2d(trajectory_.points.at(target_index_), current_pose_) <
+    tier4_autoware_utils::calcDistance2d(trajectory_.points.at(target_index_), current_pose_) <
     node_param_.th_arrived_distance_m;
 
   const auto is_stopped = isStopped(odom_buffer_, node_param_.th_stopped_velocity_mps);
@@ -423,7 +423,7 @@ void FreespacePlannerNode::onTimer()
   // Get current pose
   constexpr const char * vehicle_frame = "base_link";
   current_pose_ =
-    autoware_utils::transform2pose(getTransform(occupancy_grid_->header.frame_id, vehicle_frame));
+    tier4_autoware_utils::transform2pose(getTransform(occupancy_grid_->header.frame_id, vehicle_frame));
   if (current_pose_.header.frame_id == "") {
     return;
   }

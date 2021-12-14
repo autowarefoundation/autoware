@@ -14,7 +14,7 @@
 
 #include "fault_injection/fault_injection_node.hpp"
 
-#include <autoware_utils/ros/update_param.hpp>
+#include <tier4_autoware_utils/ros/update_param.hpp>
 
 #include <memory>
 #include <string>
@@ -92,7 +92,7 @@ rcl_interfaces::msg::SetParametersResult FaultInjectionNode::onSetParam(
 
   try {
     double value;
-    if (autoware_utils::updateParam(params, "diagnostic_updater.period", value)) {
+    if (tier4_autoware_utils::updateParam(params, "diagnostic_updater.period", value)) {
       updater_.setPeriod(value);
     }
   } catch (const rclcpp::exceptions::InvalidParameterTypeException & e) {

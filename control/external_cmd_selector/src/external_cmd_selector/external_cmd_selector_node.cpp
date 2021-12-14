@@ -14,7 +14,7 @@
 
 #include "external_cmd_selector/external_cmd_selector_node.hpp"
 
-#include <autoware_iv_auto_msgs_converter/autoware_iv_auto_msgs_converter.hpp>
+#include <tier4_auto_msgs_converter/tier4_auto_msgs_converter.hpp>
 
 #include <chrono>
 #include <memory>
@@ -130,7 +130,7 @@ void ExternalCmdSelector::onLocalTurnSignalCmd(const ExternalTurnSignal::ConstSh
   if (current_selector_mode_.data != CommandSourceMode::LOCAL) {
     return;
   }
-  auto light_signal = autoware_iv_auto_msgs_converter::convert(*msg);
+  auto light_signal = tier4_auto_msgs_converter::convert(*msg);
   pub_turn_signal_cmd_->publish(light_signal.turn_signal);
   pub_hazard_signal_cmd_->publish(light_signal.hazard_signal);
 }
@@ -164,7 +164,7 @@ void ExternalCmdSelector::onRemoteTurnSignalCmd(const ExternalTurnSignal::ConstS
   if (current_selector_mode_.data != CommandSourceMode::REMOTE) {
     return;
   }
-  auto light_signal = autoware_iv_auto_msgs_converter::convert(*msg);
+  auto light_signal = tier4_auto_msgs_converter::convert(*msg);
   pub_turn_signal_cmd_->publish(light_signal.turn_signal);
   pub_hazard_signal_cmd_->publish(light_signal.hazard_signal);
 }
@@ -192,7 +192,7 @@ void ExternalCmdSelector::onTimer() { pub_current_selector_mode_->publish(curren
 ExternalCmdSelector::InternalGearShift ExternalCmdSelector::convert(
   const ExternalGearShift & command)
 {
-  return autoware_iv_auto_msgs_converter::convert(command);
+  return tier4_auto_msgs_converter::convert(command);
 }
 
 ExternalCmdSelector::InternalHeartbeat ExternalCmdSelector::convert(

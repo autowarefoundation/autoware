@@ -15,9 +15,9 @@
 #ifndef ROUTE_HANDLER__ROUTE_HANDLER_HPP_
 #define ROUTE_HANDLER__ROUTE_HANDLER_HPP_
 
-#include <autoware_utils/autoware_utils.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
 #include <autoware_auto_mapping_msgs/msg/had_map_segment.hpp>

@@ -32,11 +32,11 @@
 
 #include "traffic_light_map_based_detector/node.hpp"
 
-#include <autoware_utils/autoware_utils.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <lanelet2_extension/visualization/visualization.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <autoware_auto_perception_msgs/msg/traffic_light_roi.hpp>
 
@@ -139,7 +139,7 @@ void MapBasedDetector::cameraInfoCallback(
       "map", input_msg->header.frame_id, input_msg->header.stamp,
       rclcpp::Duration::from_seconds(0.2));
     camera_pose_stamped.header = input_msg->header;
-    camera_pose_stamped.pose = autoware_utils::transform2pose(transform.transform);
+    camera_pose_stamped.pose = tier4_autoware_utils::transform2pose(transform.transform);
   } catch (tf2::TransformException & ex) {
     RCLCPP_WARN_THROTTLE(
       get_logger(), *get_clock(), 5000, "cannot get transform from map frame to camera frame");
@@ -345,12 +345,12 @@ void MapBasedDetector::getVisibleTrafficLights(
     }
 
     // check angle range
-    const double tl_yaw = autoware_utils::normalizeRadian(
+    const double tl_yaw = tier4_autoware_utils::normalizeRadian(
       std::atan2(
         tl_right_down_point.y() - tl_left_down_point.y(),
         tl_right_down_point.x() - tl_left_down_point.x()) +
       M_PI_2);
-    constexpr double max_angle_range = autoware_utils::deg2rad(40.0);
+    constexpr double max_angle_range = tier4_autoware_utils::deg2rad(40.0);
 
     // get direction of z axis
     tf2::Vector3 camera_z_dir(0, 0, 1);
@@ -359,7 +359,7 @@ void MapBasedDetector::getVisibleTrafficLights(
       camera_pose.orientation.w));
     camera_z_dir = camera_rotation_matrix * camera_z_dir;
     double camera_yaw = std::atan2(camera_z_dir.y(), camera_z_dir.x());
-    camera_yaw = autoware_utils::normalizeRadian(camera_yaw);
+    camera_yaw = tier4_autoware_utils::normalizeRadian(camera_yaw);
     if (!isInAngleRange(tl_yaw, camera_yaw, max_angle_range)) {
       continue;
     }

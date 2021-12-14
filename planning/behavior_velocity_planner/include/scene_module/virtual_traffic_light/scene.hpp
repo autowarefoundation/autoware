@@ -15,13 +15,13 @@
 #ifndef SCENE_MODULE__VIRTUAL_TRAFFIC_LIGHT__SCENE_HPP_
 #define SCENE_MODULE__VIRTUAL_TRAFFIC_LIGHT__SCENE_HPP_
 
-#include <autoware_utils/geometry/boost_geometry.hpp>
 #include <lanelet2_extension/regulatory_elements/virtual_traffic_light.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <nlohmann/json.hpp>
 #include <rclcpp/clock.hpp>
 #include <rclcpp/logger.hpp>
 #include <scene_module/scene_module_interface.hpp>
+#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 #include <vehicle_info_util/vehicle_info.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
@@ -49,10 +49,10 @@ public:
     std::string instrument_type{};
     std::string instrument_id{};
     std::vector<tier4_v2x_msgs::msg::KeyValue> custom_tags{};
-    autoware_utils::Point3d instrument_center{};
-    boost::optional<autoware_utils::LineString3d> stop_line{};
-    autoware_utils::LineString3d start_line{};
-    std::vector<autoware_utils::LineString3d> end_lines{};
+    tier4_autoware_utils::Point3d instrument_center{};
+    boost::optional<tier4_autoware_utils::LineString3d> stop_line{};
+    tier4_autoware_utils::LineString3d start_line{};
+    std::vector<tier4_autoware_utils::LineString3d> end_lines{};
   };
 
   struct ModuleData

@@ -15,7 +15,7 @@
 #ifndef SHAPE_ESTIMATION__MODEL__MODEL_INTERFACE_HPP_
 #define SHAPE_ESTIMATION__MODEL__MODEL_INTERFACE_HPP_
 
-#include <autoware_utils/autoware_utils.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <autoware_auto_perception_msgs/msg/shape.hpp>
 #include <geometry_msgs/msg/pose.hpp>

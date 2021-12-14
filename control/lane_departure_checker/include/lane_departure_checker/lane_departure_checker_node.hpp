@@ -17,12 +17,12 @@
 
 #include "lane_departure_checker/lane_departure_checker.hpp"
 
-#include <autoware_utils/ros/debug_publisher.hpp>
-#include <autoware_utils/ros/processing_time_publisher.hpp>
-#include <autoware_utils/ros/self_pose_listener.hpp>
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <tier4_autoware_utils/ros/debug_publisher.hpp>
+#include <tier4_autoware_utils/ros/processing_time_publisher.hpp>
+#include <tier4_autoware_utils/ros/self_pose_listener.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
@@ -56,7 +56,7 @@ public:
 
 private:
   // Subscriber
-  autoware_utils::SelfPoseListener self_pose_listener_{this};
+  tier4_autoware_utils::SelfPoseListener self_pose_listener_{this};
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr sub_odom_;
   rclcpp::Subscription<HADMapBin>::SharedPtr sub_lanelet_map_bin_;
   rclcpp::Subscription<HADMapRoute>::SharedPtr sub_route_;
@@ -84,8 +84,8 @@ private:
   void onPredictedTrajectory(const Trajectory::ConstSharedPtr msg);
 
   // Publisher
-  autoware_utils::DebugPublisher debug_publisher_{this, "~/debug"};
-  autoware_utils::ProcessingTimePublisher processing_time_publisher_{this};
+  tier4_autoware_utils::DebugPublisher debug_publisher_{this, "~/debug"};
+  tier4_autoware_utils::ProcessingTimePublisher processing_time_publisher_{this};
 
   // Timer
   rclcpp::TimerBase::SharedPtr timer_;

@@ -18,8 +18,8 @@
 #include "control_performance_analysis/control_performance_analysis_core.hpp"
 #include "control_performance_analysis/msg/error_stamped.hpp"
 
-#include <autoware_utils/ros/self_pose_listener.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <tier4_autoware_utils/ros/self_pose_listener.hpp>
 
 #include <autoware_auto_control_msgs/msg/ackermann_lateral_command.hpp>
 #include <autoware_auto_planning_msgs/msg/trajectory.hpp>
@@ -65,7 +65,7 @@ private:
   rclcpp::Subscription<SteeringReport>::SharedPtr sub_vehicle_steering_;
 
   // Self Pose listener.
-  autoware_utils::SelfPoseListener self_pose_listener_{this};  // subscribe to pose listener.
+  tier4_autoware_utils::SelfPoseListener self_pose_listener_{this};  // subscribe to pose listener.
 
   // Publishers
   rclcpp::Publisher<ErrorStamped>::SharedPtr pub_error_msg_;  // publish error message

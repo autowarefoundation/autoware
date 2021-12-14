@@ -28,7 +28,7 @@
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-#include <autoware_utils/autoware_utils.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 NormalVehicleTracker::NormalVehicleTracker(
   const rclcpp::Time & time, const autoware_auto_perception_msgs::msg::DetectedObject & object)
@@ -41,19 +41,19 @@ NormalVehicleTracker::NormalVehicleTracker(
 
   // initialize params
   ekf_params_.use_measurement_covariance = false;
-  float q_stddev_x = 0.0;                               // object coordinate [m/s]
-  float q_stddev_y = 0.0;                               // object coordinate [m/s]
-  float q_stddev_yaw = autoware_utils::deg2rad(20);     // map coordinate[rad/s]
-  float q_stddev_vx = autoware_utils::kmph2mps(10);     // object coordinate [m/(s*s)]
-  float q_stddev_wz = autoware_utils::deg2rad(20);      // object coordinate [rad/(s*s)]
-  float r_stddev_x = 1.0;                               // object coordinate [m]
-  float r_stddev_y = 0.3;                               // object coordinate [m]
-  float r_stddev_yaw = autoware_utils::deg2rad(30);     // map coordinate [rad]
-  float p0_stddev_x = 1.0;                              // object coordinate [m/s]
-  float p0_stddev_y = 0.3;                              // object coordinate [m/s]
-  float p0_stddev_yaw = autoware_utils::deg2rad(30);    // map coordinate [rad]
-  float p0_stddev_vx = autoware_utils::kmph2mps(1000);  // object coordinate [m/s]
-  float p0_stddev_wz = autoware_utils::deg2rad(10);     // object coordinate [rad/s]
+  float q_stddev_x = 0.0;                                     // object coordinate [m/s]
+  float q_stddev_y = 0.0;                                     // object coordinate [m/s]
+  float q_stddev_yaw = tier4_autoware_utils::deg2rad(20);     // map coordinate[rad/s]
+  float q_stddev_vx = tier4_autoware_utils::kmph2mps(10);     // object coordinate [m/(s*s)]
+  float q_stddev_wz = tier4_autoware_utils::deg2rad(20);      // object coordinate [rad/(s*s)]
+  float r_stddev_x = 1.0;                                     // object coordinate [m]
+  float r_stddev_y = 0.3;                                     // object coordinate [m]
+  float r_stddev_yaw = tier4_autoware_utils::deg2rad(30);     // map coordinate [rad]
+  float p0_stddev_x = 1.0;                                    // object coordinate [m/s]
+  float p0_stddev_y = 0.3;                                    // object coordinate [m/s]
+  float p0_stddev_yaw = tier4_autoware_utils::deg2rad(30);    // map coordinate [rad]
+  float p0_stddev_vx = tier4_autoware_utils::kmph2mps(1000);  // object coordinate [m/s]
+  float p0_stddev_wz = tier4_autoware_utils::deg2rad(10);     // object coordinate [rad/s]
   ekf_params_.q_cov_x = std::pow(q_stddev_x, 2.0);
   ekf_params_.q_cov_y = std::pow(q_stddev_y, 2.0);
   ekf_params_.q_cov_yaw = std::pow(q_stddev_yaw, 2.0);
@@ -67,8 +67,8 @@ NormalVehicleTracker::NormalVehicleTracker(
   ekf_params_.p0_cov_yaw = std::pow(p0_stddev_yaw, 2.0);
   ekf_params_.p0_cov_vx = std::pow(p0_stddev_vx, 2.0);
   ekf_params_.p0_cov_wz = std::pow(p0_stddev_wz, 2.0);
-  max_vx_ = autoware_utils::kmph2mps(100);  // [m/s]
-  max_wz_ = autoware_utils::deg2rad(30);    // [rad/s]
+  max_vx_ = tier4_autoware_utils::kmph2mps(100);  // [m/s]
+  max_wz_ = tier4_autoware_utils::deg2rad(30);    // [rad/s]
 
   // initialize X matrix
   Eigen::MatrixXd X(ekf_params_.dim_x, 1);
@@ -231,7 +231,7 @@ bool NormalVehicleTracker::measureWithPose(
   }
 
   constexpr int dim_y = 3;  // pos x, pos y, yaw, depending on Pose output
-  double measurement_yaw = autoware_utils::normalizeRadian(
+  double measurement_yaw = tier4_autoware_utils::normalizeRadian(
     tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation));
   {
     Eigen::MatrixXd X_t(ekf_params_.dim_x, 1);
@@ -292,7 +292,7 @@ bool NormalVehicleTracker::measureWithPose(
     Eigen::MatrixXd P_t(ekf_params_.dim_x, ekf_params_.dim_x);
     ekf_.getX(X_t);
     ekf_.getP(P_t);
-    X_t(IDX::YAW) = autoware_utils::normalizeRadian(X_t(IDX::YAW));
+    X_t(IDX::YAW) = tier4_autoware_utils::normalizeRadian(X_t(IDX::YAW));
     if (!(-max_vx_ <= X_t(IDX::VX) && X_t(IDX::VX) <= max_vx_)) {
       X_t(IDX::VX) = X_t(IDX::VX) < 0 ? -max_vx_ : max_vx_;
     }

@@ -14,11 +14,11 @@
 
 #include "lane_departure_checker/lane_departure_checker_node.hpp"
 
-#include <autoware_utils/math/unit_conversion.hpp>
-#include <autoware_utils/ros/marker_helper.hpp>
-#include <autoware_utils/system/stop_watch.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/visualization/visualization.hpp>
+#include <tier4_autoware_utils/math/unit_conversion.hpp>
+#include <tier4_autoware_utils/ros/marker_helper.hpp>
+#include <tier4_autoware_utils/system/stop_watch.hpp>
 
 #include <autoware_auto_mapping_msgs/msg/had_map_segment.hpp>
 
@@ -28,7 +28,7 @@
 #include <utility>
 #include <vector>
 
-using autoware_utils::rad2deg;
+using tier4_autoware_utils::rad2deg;
 
 namespace
 {
@@ -277,7 +277,7 @@ bool LaneDepartureCheckerNode::isDataValid()
 void LaneDepartureCheckerNode::onTimer()
 {
   std::map<std::string, double> processing_time_map;
-  autoware_utils::StopWatch<std::chrono::milliseconds> stop_watch;
+  tier4_autoware_utils::StopWatch<std::chrono::milliseconds> stop_watch;
   stop_watch.tic("Total");
 
   current_pose_ = self_pose_listener_.getCurrentPose();
@@ -427,9 +427,9 @@ void LaneDepartureCheckerNode::checkTrajectoryDeviation(
 
 visualization_msgs::msg::MarkerArray LaneDepartureCheckerNode::createMarkerArray() const
 {
-  using autoware_utils::createDefaultMarker;
-  using autoware_utils::createMarkerColor;
-  using autoware_utils::createMarkerScale;
+  using tier4_autoware_utils::createDefaultMarker;
+  using tier4_autoware_utils::createMarkerColor;
+  using tier4_autoware_utils::createMarkerScale;
 
   visualization_msgs::msg::MarkerArray marker_array;
 

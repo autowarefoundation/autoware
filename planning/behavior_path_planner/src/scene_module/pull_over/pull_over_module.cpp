@@ -21,10 +21,10 @@
 #include "behavior_path_planner/scene_module/pull_over/util.hpp"
 #include "behavior_path_planner/utilities.hpp"
 
-#include <autoware_utils/autoware_utils.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <algorithm>
 #include <limits>
@@ -89,7 +89,7 @@ bool PullOverModule::isExecutionRequested() const
       const auto lane_yaw =
         lanelet::utils::getLaneletAngle(closest_shoulder_lanelet, goal_pose.position);
       const auto goal_yaw = tf2::getYaw(goal_pose.orientation);
-      const auto angle_diff = autoware_utils::normalizeRadian(lane_yaw - goal_yaw);
+      const auto angle_diff = tier4_autoware_utils::normalizeRadian(lane_yaw - goal_yaw);
       constexpr double th_angle = M_PI / 4;
       if (std::abs(angle_diff) < th_angle) {
         goal_is_in_shoulder_lane = true;

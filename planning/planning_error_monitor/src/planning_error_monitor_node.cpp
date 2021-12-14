@@ -14,7 +14,7 @@
 
 #include "planning_error_monitor/planning_error_monitor_node.hpp"
 
-#include <autoware_utils/autoware_utils.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <memory>
 #include <string>
@@ -22,9 +22,9 @@
 
 namespace planning_diagnostics
 {
-using autoware_utils::calcCurvature;
-using autoware_utils::calcDistance2d;
 using diagnostic_msgs::msg::DiagnosticStatus;
+using tier4_autoware_utils::calcCurvature;
+using tier4_autoware_utils::calcDistance2d;
 
 PlanningErrorMonitorNode::PlanningErrorMonitorNode(const rclcpp::NodeOptions & node_options)
 : Node("planning_error_monitor", node_options)

@@ -15,11 +15,11 @@
 #ifndef EKF_LOCALIZER__EKF_LOCALIZER_HPP_
 #define EKF_LOCALIZER__EKF_LOCALIZER_HPP_
 
-#include <autoware_utils/geometry/geometry.hpp>
-#include <autoware_utils/system/stop_watch.hpp>
 #include <kalman_filter/kalman_filter.hpp>
 #include <kalman_filter/time_delay_kalman_filter.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <tier4_autoware_utils/system/stop_watch.hpp>
 
 #include <geometry_msgs/msg/pose_array.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
@@ -227,7 +227,7 @@ private:
    */
   void showCurrentX();
 
-  autoware_utils::StopWatch<std::chrono::milliseconds> stop_watch_;
+  tier4_autoware_utils::StopWatch<std::chrono::milliseconds> stop_watch_;
 
   friend class EKFLocalizerTestSuite;  // for test code
 };

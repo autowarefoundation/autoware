@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <autoware_utils/geometry/geometry.hpp>
-#include <autoware_utils/math/normalization.hpp>
 #include <interpolation/spline_interpolation.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <scene_module/occlusion_spot/occlusion_spot_utils.hpp>
+#include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <tier4_autoware_utils/math/normalization.hpp>
 #include <utilization/interpolate.hpp>
 #include <utilization/path_utilization.hpp>
 #include <utilization/util.hpp>
@@ -180,7 +180,7 @@ void calcSlowDownPointsForPossibleCollision(
     const double dist_to_col =
       possible_collisions.at(collision_index).arc_lane_dist_at_collision.length;
     dist_along_next_path_point +=
-      autoware_utils::calcDistance2d(p_prev.pose.position, p_next.pose.position);
+      tier4_autoware_utils::calcDistance2d(p_prev.pose.position, p_next.pose.position);
     // process if nearest possible collision is between current and next path point
     if (dist_along_path_point < dist_to_col) {
       for (; collision_index < possible_collisions.size(); collision_index++) {
@@ -368,7 +368,7 @@ void createPossibleCollisionBehindParkedVehicle(
     double path_angle = lanelet::utils::getLaneletAngle(path_lanelet, search_point);
     // ignore if angle is more different than 10[degree]
     double obj_angle = tf2::getYaw(q);
-    const double diff_angle = autoware_utils::normalizeRadian(path_angle - obj_angle);
+    const double diff_angle = tier4_autoware_utils::normalizeRadian(path_angle - obj_angle);
     if (std::abs(diff_angle) > param.angle_thr) {
       continue;
     }
@@ -406,7 +406,7 @@ bool extractTargetRoad(
     if (!found_target && i < src_path.points.size() - 1) {
       const auto & curr_p = src_path.points[i].point.pose.position;
       const auto & next_p = src_path.points[i + 1].point.pose.position;
-      offset_from_closest_to_target += autoware_utils::calcDistance2d(curr_p, next_p);
+      offset_from_closest_to_target += tier4_autoware_utils::calcDistance2d(curr_p, next_p);
     }
   }
   return found_target;

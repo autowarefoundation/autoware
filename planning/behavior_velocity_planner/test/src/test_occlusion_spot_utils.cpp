@@ -163,7 +163,7 @@ TEST(createPossibleCollisionBehindParkedVehicle, TooManyPathPointsAndObstacles)
   obj.shape.dimensions.x = 0.0;
   obj.shape.dimensions.y = 0.0;
   obj.kinematics.initial_pose_with_covariance.pose.orientation =
-    autoware_utils::createQuaternionFromYaw(0.0);
+    tier4_autoware_utils::createQuaternionFromYaw(0.0);
   obj.kinematics.initial_twist_with_covariance.twist.linear.x = 0;
   obj.classification.push_back(autoware_auto_perception_msgs::msg::ObjectClassification{});
 
@@ -186,7 +186,7 @@ TEST(createPossibleCollisionBehindParkedVehicle, TooManyPathPointsAndObstacles)
   obj.kinematics.initial_pose_with_covariance.pose.position.x = 4.5;
   obj.kinematics.initial_pose_with_covariance.pose.position.y = 2.0;
   obj.kinematics.initial_pose_with_covariance.pose.orientation =
-    autoware_utils::createQuaternionFromYaw(M_PI);
+    tier4_autoware_utils::createQuaternionFromYaw(M_PI);
   obj.classification.at(0).label = autoware_auto_perception_msgs::msg::ObjectClassification::BUS;
   obj_arr.objects.emplace_back(obj);
 

@@ -15,10 +15,10 @@
 #ifndef CENTERPOINT_TRT_HPP_
 #define CENTERPOINT_TRT_HPP_
 
-#include <autoware_utils/math/constants.hpp>
 #include <config.hpp>
 #include <cuda_utils.hpp>
 #include <network_trt.hpp>
+#include <tier4_autoware_utils/math/constants.hpp>
 #include <voxel_generator.hpp>
 
 #include <sensor_msgs/msg/point_cloud2.hpp>

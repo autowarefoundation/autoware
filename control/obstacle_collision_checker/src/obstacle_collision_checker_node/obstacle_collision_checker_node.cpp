@@ -16,9 +16,9 @@
 
 #include "obstacle_collision_checker/util/create_vehicle_footprint.hpp"
 
-#include <autoware_utils/geometry/geometry.hpp>
-#include <autoware_utils/math/unit_conversion.hpp>
-#include <autoware_utils/ros/marker_helper.hpp>
+#include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <tier4_autoware_utils/math/unit_conversion.hpp>
+#include <tier4_autoware_utils/ros/marker_helper.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <memory>
@@ -67,8 +67,8 @@ ObstacleCollisionCheckerNode::ObstacleCollisionCheckerNode(const rclcpp::NodeOpt
   obstacle_collision_checker_->setParam(param_);
 
   // Subscriber
-  self_pose_listener_ = std::make_shared<autoware_utils::SelfPoseListener>(this);
-  transform_listener_ = std::make_shared<autoware_utils::TransformListener>(this);
+  self_pose_listener_ = std::make_shared<tier4_autoware_utils::SelfPoseListener>(this);
+  transform_listener_ = std::make_shared<tier4_autoware_utils::TransformListener>(this);
 
   sub_obstacle_pointcloud_ = create_subscription<sensor_msgs::msg::PointCloud2>(
     "input/obstacle_pointcloud", 1,
@@ -83,8 +83,8 @@ ObstacleCollisionCheckerNode::ObstacleCollisionCheckerNode(const rclcpp::NodeOpt
     "input/odometry", 1, std::bind(&ObstacleCollisionCheckerNode::onOdom, this, _1));
 
   // Publisher
-  debug_publisher_ = std::make_shared<autoware_utils::DebugPublisher>(this, "debug/marker");
-  time_publisher_ = std::make_shared<autoware_utils::ProcessingTimePublisher>(this);
+  debug_publisher_ = std::make_shared<tier4_autoware_utils::DebugPublisher>(this, "debug/marker");
+  time_publisher_ = std::make_shared<tier4_autoware_utils::ProcessingTimePublisher>(this);
 
   // Diagnostic Updater
   updater_.setHardwareID("obstacle_collision_checker");
@@ -266,9 +266,9 @@ void ObstacleCollisionCheckerNode::checkLaneDeparture(
 
 visualization_msgs::msg::MarkerArray ObstacleCollisionCheckerNode::createMarkerArray() const
 {
-  using autoware_utils::createDefaultMarker;
-  using autoware_utils::createMarkerColor;
-  using autoware_utils::createMarkerScale;
+  using tier4_autoware_utils::createDefaultMarker;
+  using tier4_autoware_utils::createMarkerColor;
+  using tier4_autoware_utils::createMarkerScale;
 
   visualization_msgs::msg::MarkerArray marker_array;
 

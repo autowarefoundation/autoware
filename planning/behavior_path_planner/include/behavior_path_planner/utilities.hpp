@@ -19,10 +19,10 @@
 #include "behavior_path_planner/scene_module/lane_change/lane_change_path.hpp"
 #include "behavior_path_planner/scene_module/pull_out/pull_out_path.hpp"
 
-#include <autoware_utils/autoware_utils.hpp>
 #include <opencv2/opencv.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <route_handler/route_handler.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <autoware_auto_perception_msgs/msg/object_classification.hpp>
 #include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
@@ -52,7 +52,7 @@
 #include <string>
 #include <vector>
 
-namespace autoware_utils
+namespace tier4_autoware_utils
 {
 template <>
 inline geometry_msgs::msg::Pose getPose(
@@ -60,7 +60,7 @@ inline geometry_msgs::msg::Pose getPose(
 {
   return p.point.pose;
 }
-}  // namespace autoware_utils
+}  // namespace tier4_autoware_utils
 
 namespace tf2
 {
@@ -115,9 +115,6 @@ using autoware_auto_perception_msgs::msg::PredictedPath;
 using autoware_auto_planning_msgs::msg::Path;
 using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
-using autoware_utils::LineString2d;
-using autoware_utils::Point2d;
-using autoware_utils::Polygon2d;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::PoseArray;
@@ -126,6 +123,9 @@ using geometry_msgs::msg::Twist;
 using geometry_msgs::msg::Vector3;
 using nav_msgs::msg::OccupancyGrid;
 using route_handler::RouteHandler;
+using tier4_autoware_utils::LineString2d;
+using tier4_autoware_utils::Point2d;
+using tier4_autoware_utils::Polygon2d;
 
 struct FrenetCoordinate3d
 {
@@ -204,7 +204,7 @@ double getDistanceBetweenPredictedPathAndObject(
 
 double getDistanceBetweenPredictedPathAndObjectPolygon(
   const PredictedObject & object, const PullOutPath & ego_path,
-  const autoware_utils::LinearRing2d & vehicle_footprint, double distance_resolution,
+  const tier4_autoware_utils::LinearRing2d & vehicle_footprint, double distance_resolution,
   const lanelet::ConstLanelets & road_lanes);
 
 /**

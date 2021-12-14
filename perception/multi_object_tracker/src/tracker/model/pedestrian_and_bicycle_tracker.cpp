@@ -18,7 +18,7 @@
 
 #include "multi_object_tracker/tracker/model/pedestrian_and_bicycle_tracker.hpp"
 
-#include <autoware_utils/autoware_utils.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 PedestrianAndBicycleTracker::PedestrianAndBicycleTracker(
   const rclcpp::Time & time, const autoware_auto_perception_msgs::msg::DetectedObject & object)

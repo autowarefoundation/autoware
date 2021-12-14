@@ -165,7 +165,7 @@ MergeFromPrivateRoadModule::extractPathNearExitOfPrivateRoad(
     if (prev_has_target_lane_id) {
       // extend path to the front
       private_path.points.emplace_back(path.points.at(i));
-      sum_dist += autoware_utils::calcDistance2d(
+      sum_dist += tier4_autoware_utils::calcDistance2d(
         path.points.at(i).point.pose, path.points.at(i + 1).point.pose);
       if (sum_dist > extend_length) {
         break;

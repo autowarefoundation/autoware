@@ -59,8 +59,9 @@ double getFormedYawAngle(
   const geometry_msgs::msg::Quaternion & measurement_quat,
   const geometry_msgs::msg::Quaternion & tracker_quat, const bool distinguish_front_or_back = true)
 {
-  const double measurement_yaw = autoware_utils::normalizeRadian(tf2::getYaw(measurement_quat));
-  const double tracker_yaw = autoware_utils::normalizeRadian(tf2::getYaw(tracker_quat));
+  const double measurement_yaw =
+    tier4_autoware_utils::normalizeRadian(tf2::getYaw(measurement_quat));
+  const double tracker_yaw = tier4_autoware_utils::normalizeRadian(tf2::getYaw(tracker_quat));
   const double angle_range = distinguish_front_or_back ? M_PI : M_PI_2;
   const double angle_step = distinguish_front_or_back ? 2.0 * M_PI : M_PI;
   // Fixed measurement_yaw to be in the range of +-90 or 180 degrees of X_t(IDX::YAW)

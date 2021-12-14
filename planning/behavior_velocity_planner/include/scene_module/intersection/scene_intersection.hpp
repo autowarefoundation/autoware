@@ -15,9 +15,9 @@
 #ifndef SCENE_MODULE__INTERSECTION__SCENE_INTERSECTION_HPP_
 #define SCENE_MODULE__INTERSECTION__SCENE_INTERSECTION_HPP_
 
-#include <autoware_utils/autoware_utils.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <scene_module/scene_module_interface.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 #include <utilization/boost_geometry_helper.hpp>
 
 #include <autoware_auto_perception_msgs/msg/predicted_object.hpp>

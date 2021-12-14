@@ -49,7 +49,7 @@
 #include "autoware_auto_geometry_msgs/msg/complex32.hpp"
 #include "common/types.hpp"
 
-#include "autoware_api_utils/autoware_api_utils.hpp"
+#include "tier4_api_utils/tier4_api_utils.hpp"
 #include "tier4_external_api_msgs/srv/initialize_pose.hpp"
 
 #include "simple_planning_simulator/vehicle_model/sim_model_interface.hpp"
@@ -142,7 +142,7 @@ private:
   rclcpp::Subscription<Trajectory>::SharedPtr sub_trajectory_;
 
   rclcpp::CallbackGroup::SharedPtr group_api_service_;
-  autoware_api_utils::Service<InitializePose>::SharedPtr srv_set_pose_;
+  tier4_api_utils::Service<InitializePose>::SharedPtr srv_set_pose_;
 
   uint32_t timer_sampling_time_ms_;  //!< @brief timer sampling time
   rclcpp::TimerBase::SharedPtr on_timer_;  //!< @brief timer for simulation

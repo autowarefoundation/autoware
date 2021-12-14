@@ -1,0 +1,41 @@
+<launch>
+  <arg name="joy_type" default="DS4" description="options: DS4, G29"/>
+  <arg name="external_cmd_source" default="remote" description="options: local, remote"/>
+
+  <arg name="input_joy" default="/joy" />
+  <arg name="input_odometry" default="/localization/kinematic_state" />
+
+  <arg name="output_control_command" default="/external/$(var external_cmd_source)/joy/control_cmd" />
+  <arg name="output_external_control_command" default="/api/external/set/command/$(var external_cmd_source)/control" />
+  <arg name="output_shift" default="/api/external/set/command/$(var external_cmd_source)/shift" />
+  <arg name="output_turn_signal" default="/api/external/set/command/$(var external_cmd_source)/turn_signal" />
+  <arg name="output_heartbeat" default="/api/external/set/command/$(var external_cmd_source)/heartbeat" />
+  <arg name="output_gate_mode" default="/control/gate_mode_cmd" />
+  <arg name="output_vehicle_engage" default="/vehicle/engage" />
+
+  <arg name="config_file" default="$(find-pkg-share joy_controller)/config/joy_controller.param.yaml" />
+
+  <node pkg="joy_controller" exec="joy_controller" name="joy_controller" output="screen">
+    <remap from="input/joy" to="$(var input_joy)"/>
+    <remap from="input/odometry" to="$(var input_odometry)"/>
+
+    <remap from="output/control_command" to="$(var output_control_command)"/>
+    <remap from="output/external_control_command" to="$(var output_external_control_command)"/>
+    <remap from="output/shift" to="$(var output_shift)"/>
+    <remap from="output/turn_signal" to="$(var output_turn_signal)"/>
+    <remap from="output/gate_mode" to="$(var output_gate_mode)"/>
+    <remap from="output/heartbeat" to="$(var output_heartbeat)"/>
+    <remap from="output/vehicle_engage" to="$(var output_vehicle_engage)"/>
+
+    <remap from="service/emergency_stop" to="/api/autoware/set/emergency"/>
+    <remap from="service/autoware_engage" to="/api/external/set/engage"/>
+
+    <param from="$(var config_file)" />
+    <param name="joy_type" value="$(var joy_type)" />
+  </node>
+
+  <node pkg="joy" exec="joy_node" name="joy_node" output="screen">
+    <param name="autorepeat_rate" value="1.0" />
+    <param name="deadzone" value="0.0" />
+  </node>
+</launch>

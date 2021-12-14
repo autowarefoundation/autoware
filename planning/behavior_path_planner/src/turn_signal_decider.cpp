@@ -16,7 +16,7 @@
 
 #include "behavior_path_planner/utilities.hpp"
 
-#include <autoware_utils/autoware_utils.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <limits>
 #include <string>
@@ -69,7 +69,8 @@ std::pair<TurnIndicatorsCommand, double> TurnSignalDecider::getIntersectionTurnS
   auto prev_point = path.points.front();
   auto prev_lane_id = lanelet::InvalId;
   for (const auto & path_point : path.points) {
-    accumulated_distance += autoware_utils::calcDistance3d(prev_point.point, path_point.point);
+    accumulated_distance +=
+      tier4_autoware_utils::calcDistance3d(prev_point.point, path_point.point);
     prev_point = path_point;
     const double distance_from_vehicle_front =
       accumulated_distance - vehicle_pose_frenet.length - base_link2front_;

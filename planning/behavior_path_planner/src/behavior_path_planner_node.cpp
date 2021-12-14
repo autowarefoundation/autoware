@@ -22,7 +22,7 @@
 #include "behavior_path_planner/scene_module/side_shift/side_shift_module.hpp"
 #include "behavior_path_planner/utilities.hpp"
 
-#include <autoware_utils/autoware_utils.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <memory>
@@ -280,7 +280,7 @@ LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
   p.use_all_predicted_path = dp("use_all_predicted_path", false);
   p.abort_lane_change_velocity_thresh = dp("abort_lane_change_velocity_thresh", 0.5);
   p.abort_lane_change_angle_thresh =
-    dp("abort_lane_change_angle_thresh", autoware_utils::deg2rad(10.0));
+    dp("abort_lane_change_angle_thresh", tier4_autoware_utils::deg2rad(10.0));
   p.abort_lane_change_distance_thresh = dp("abort_lane_change_distance_thresh", 0.3);
   p.enable_blocked_by_obstacle = dp("enable_blocked_by_obstacle", false);
   p.lane_change_search_distance = dp("lane_change_search_distance", 30.0);
@@ -601,7 +601,7 @@ void BehaviorPathPlannerNode::publishDebugMarker(const std::vector<MarkerArray> 
 {
   MarkerArray msg{};
   for (const auto & markers : debug_markers) {
-    autoware_utils::appendMarkerArray(markers, &msg);
+    tier4_autoware_utils::appendMarkerArray(markers, &msg);
   }
   debug_marker_publisher_->publish(msg);
 }

@@ -14,11 +14,11 @@
 
 #include "behavior_path_planner/utilities.hpp"
 
-#include <autoware_utils/autoware_utils.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <opencv2/opencv.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <algorithm>
 #include <limits>
@@ -65,7 +65,7 @@ bool convertToFrenetCoordinate3d(
     return false;
   }
 
-  const auto search_pt = autoware_utils::fromMsg(search_point_geom);
+  const auto search_pt = tier4_autoware_utils::fromMsg(search_point_geom);
   bool found = false;
   double min_distance = std::numeric_limits<double>::max();
 
@@ -76,11 +76,11 @@ bool convertToFrenetCoordinate3d(
 
     for (std::size_t i = 0; i < linestring.size(); i++) {
       const auto geom_pt = linestring.at(i);
-      const auto current_pt = autoware_utils::fromMsg(geom_pt);
+      const auto current_pt = tier4_autoware_utils::fromMsg(geom_pt);
       const auto current2search_pt = (search_pt - current_pt);
       // update accumulated length
       if (i != 0) {
-        const auto p1 = autoware_utils::fromMsg(linestring.at(i - 1));
+        const auto p1 = tier4_autoware_utils::fromMsg(linestring.at(i - 1));
         const auto p2 = current_pt;
         accumulated_length += (p2 - p1).norm();
       }
@@ -101,8 +101,8 @@ bool convertToFrenetCoordinate3d(
     auto prev_geom_pt = linestring.front();
     double accumulated_length = 0;
     for (const auto & geom_pt : linestring) {
-      const auto start_pt = autoware_utils::fromMsg(prev_geom_pt);
-      const auto end_pt = autoware_utils::fromMsg(geom_pt);
+      const auto start_pt = tier4_autoware_utils::fromMsg(prev_geom_pt);
+      const auto end_pt = tier4_autoware_utils::fromMsg(geom_pt);
 
       const auto line_segment = end_pt - start_pt;
       const double line_segment_length = line_segment.norm();
@@ -269,7 +269,7 @@ Point lerpByLength(const std::vector<Point> & point_array, const double length)
   Point prev_pt = point_array.front();
   double accumulated_length = 0;
   for (const auto & pt : point_array) {
-    const double distance = autoware_utils::calcDistance3d(prev_pt, pt);
+    const double distance = tier4_autoware_utils::calcDistance3d(prev_pt, pt);
     if (accumulated_length + distance > length) {
       return lerpByPoint(prev_pt, pt, (length - accumulated_length) / distance);
     }
@@ -371,7 +371,7 @@ double getDistanceBetweenPredictedPaths(
     if (!lerpByTimeStamp(ego_path, t, &ego_pose)) {
       continue;
     }
-    double distance = autoware_utils::calcDistance3d(object_pose, ego_pose);
+    double distance = tier4_autoware_utils::calcDistance3d(object_pose, ego_pose);
     if (distance < min_distance) {
       min_distance = distance;
     }
@@ -410,7 +410,7 @@ double getDistanceBetweenPredictedPathAndObject(
 
 double getDistanceBetweenPredictedPathAndObjectPolygon(
   const PredictedObject & object, const PullOutPath & ego_path,
-  const autoware_utils::LinearRing2d & vehicle_footprint, double distance_resolution,
+  const tier4_autoware_utils::LinearRing2d & vehicle_footprint, double distance_resolution,
   const lanelet::ConstLanelets & road_lanes)
 {
   double min_distance = std::numeric_limits<double>::max();
@@ -432,7 +432,7 @@ double getDistanceBetweenPredictedPathAndObjectPolygon(
       continue;
     }
     const auto vehicle_footprint_on_path =
-      transformVector(vehicle_footprint, autoware_utils::pose2transform(ego_pose));
+      transformVector(vehicle_footprint, tier4_autoware_utils::pose2transform(ego_pose));
     Point2d ego_point{ego_pose.position.x, ego_pose.position.y};
     for (const auto & vehicle_footprint : vehicle_footprint_on_path) {
       double distance = boost::geometry::distance(obj_polygon, vehicle_footprint);
@@ -654,7 +654,9 @@ PathWithLaneId removeOverlappingPoints(const PathWithLaneId & input_path)
     }
 
     constexpr double min_dist = 0.001;
-    if (autoware_utils::calcDistance3d(filtered_path.points.back().point, pt.point) < min_dist) {
+    if (
+      tier4_autoware_utils::calcDistance3d(filtered_path.points.back().point, pt.point) <
+      min_dist) {
       filtered_path.points.back().lane_ids.push_back(pt.lane_ids.front());
       filtered_path.points.back().point.longitudinal_velocity_mps = std::min(
         pt.point.longitudinal_velocity_mps,
@@ -688,12 +690,12 @@ bool setGoal(
     PathPointWithLaneId refined_goal{};
     {  // NOTE: goal does not have valid z, that will be calculated by interpolation here
       const size_t closest_seg_idx =
-        autoware_utils::findNearestSegmentIndex(input.points, goal.position);
-      const double closest_to_goal_dist = autoware_utils::calcSignedArcLength(
+        tier4_autoware_utils::findNearestSegmentIndex(input.points, goal.position);
+      const double closest_to_goal_dist = tier4_autoware_utils::calcSignedArcLength(
         input.points, input.points.at(closest_seg_idx).point.pose.position,
         goal.position);  // TODO(murooka) implement calcSignedArcLength(points, idx, point)
-      const double seg_dist =
-        autoware_utils::calcSignedArcLength(input.points, closest_seg_idx, closest_seg_idx + 1);
+      const double seg_dist = tier4_autoware_utils::calcSignedArcLength(
+        input.points, closest_seg_idx, closest_seg_idx + 1);
       const double closest_z = input.points.at(closest_seg_idx).point.pose.position.z;
       const double next_z = input.points.at(closest_seg_idx + 1).point.pose.position.z;
       const double goal_z = std::abs(seg_dist) < 1e-6
@@ -722,12 +724,12 @@ bool setGoal(
     pre_refined_goal.point.pose.orientation = goal.orientation;
 
     {  // NOTE: interpolate z and velocity of pre_refined_goal
-      const size_t closest_seg_idx =
-        autoware_utils::findNearestSegmentIndex(input.points, pre_refined_goal.point.pose.position);
-      const double closest_to_pre_goal_dist = autoware_utils::calcSignedArcLength(
+      const size_t closest_seg_idx = tier4_autoware_utils::findNearestSegmentIndex(
+        input.points, pre_refined_goal.point.pose.position);
+      const double closest_to_pre_goal_dist = tier4_autoware_utils::calcSignedArcLength(
         input.points, input.points.at(closest_seg_idx).point.pose.position,
         pre_refined_goal.point.pose.position);
-      const double seg_dist = autoware_utils::calcSignedArcLength(
+      const double seg_dist = tier4_autoware_utils::calcSignedArcLength(
         input.points, closest_seg_idx,
         closest_seg_idx + 1);  // TODO(murooka) implement calcSignedArcLength(points, idx, point)
 
@@ -750,7 +752,7 @@ bool setGoal(
 
     // find min_dist_index whose distance to goal is shorter than search_radius_range
     const auto min_dist_index_opt =
-      autoware_utils::findNearestIndex(input.points, goal, search_radius_range);
+      tier4_autoware_utils::findNearestIndex(input.points, goal, search_radius_range);
     if (!min_dist_index_opt) {
       return false;
     }
@@ -762,7 +764,7 @@ bool setGoal(
     {
       // NOTE: type of i must be int since i will be -1 even if the condition is 0<=i
       for (int i = min_dist_index; 0 <= i; --i) {
-        const double dist = autoware_utils::calcDistance2d(input.points.at(i).point, goal);
+        const double dist = tier4_autoware_utils::calcDistance2d(input.points.at(i).point, goal);
         min_dist_out_of_circle_index = i;
         if (search_radius_range < dist) {
           break;
@@ -933,7 +935,7 @@ OccupancyGrid generateDrivableArea(
       std::vector<cv::Point> cv_polygon;
       for (const auto & p : lane_poly) {
         const double z = lane.polygon3d().basicPolygon().at(0).z();
-        Point geom_pt = autoware_utils::createPoint(p.x(), p.y(), z);
+        Point geom_pt = tier4_autoware_utils::createPoint(p.x(), p.y(), z);
         Point transformed_geom_pt;
         tf2::doTransform(geom_pt, transformed_geom_pt, geom_tf_map2grid);
         cv_polygon.push_back(toCVPoint(transformed_geom_pt, width, height, resolution));
@@ -1156,7 +1158,7 @@ PathPointWithLaneId insertStopPoint(double length, PathWithLaneId * path)
   for (size_t i = 1; i < path->points.size(); i++) {
     const auto prev_pose = path->points.at(i - 1).point.pose;
     const auto curr_pose = path->points.at(i).point.pose;
-    const double segment_length = autoware_utils::calcDistance3d(prev_pose, curr_pose);
+    const double segment_length = tier4_autoware_utils::calcDistance3d(prev_pose, curr_pose);
     accumulated_length += segment_length;
     if (accumulated_length > length) {
       insert_idx = i;

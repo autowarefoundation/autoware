@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <autoware_utils/math/constants.hpp>
 #include <centerpoint_trt.hpp>
 #include <heatmap_utils.hpp>
+#include <tier4_autoware_utils/math/constants.hpp>
 
 #include <ATen/cuda/CUDAContext.h>
 #include <NvOnnxParser.h>
@@ -275,7 +275,7 @@ at::Tensor CenterPointTRT::generatePredictedBoxes()
                  Config::pointcloud_range_ymin;
   dim_poi = torch::exp(dim_poi);
   at::Tensor rot = torch::atan2(rot_poi.slice(2, 0, 1), rot_poi.slice(2, 1, 2));
-  rot = -rot - autoware_utils::pi / 2;
+  rot = -rot - tier4_autoware_utils::pi / 2;
 
   at::Tensor boxes3d =
     torch::cat(

@@ -15,7 +15,7 @@
 #include "simple_planning_simulator/simple_planning_simulator_core.hpp"
 
 #include "autoware_auto_tf2/tf2_autoware_auto_msgs.hpp"
-#include "autoware_utils/ros/update_param.hpp"
+#include "tier4_autoware_utils/ros/update_param.hpp"
 #include "common/types.hpp"
 #include "motion_common/motion_common.hpp"
 #include "rclcpp_components/register_node_macro.hpp"
@@ -124,7 +124,7 @@ SimplePlanningSimulator::SimplePlanningSimulator(const rclcpp::NodeOptions & opt
     std::chrono::milliseconds(timer_sampling_time_ms_),
     std::bind(&SimplePlanningSimulator::on_timer, this));
 
-  autoware_api_utils::ServiceProxyNodeInterface proxy(this);
+  tier4_api_utils::ServiceProxyNodeInterface proxy(this);
   group_api_service_ = create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   srv_set_pose_ = proxy.create_service<tier4_external_api_msgs::srv::InitializePose>(
     "/api/simulator/set/pose", std::bind(&SimplePlanningSimulator::on_set_pose, this, _1, _2),
@@ -212,8 +212,8 @@ rcl_interfaces::msg::SetParametersResult SimplePlanningSimulator::on_parameter(
   result.reason = "success";
 
   try {
-    autoware_utils::updateParam(parameters, "x_stddev", x_stddev_);
-    autoware_utils::updateParam(parameters, "y_stddev", y_stddev_);
+    tier4_autoware_utils::updateParam(parameters, "x_stddev", x_stddev_);
+    tier4_autoware_utils::updateParam(parameters, "y_stddev", y_stddev_);
   } catch (const rclcpp::exceptions::InvalidParameterTypeException & e) {
     result.successful = false;
     result.reason = e.what();
@@ -285,7 +285,7 @@ void SimplePlanningSimulator::on_set_pose(
   initial_pose.header = request->pose.header;
   initial_pose.pose = request->pose.pose.pose;
   set_initial_state_with_transform(initial_pose, initial_twist);
-  response->status = autoware_api_utils::response_success();
+  response->status = tier4_api_utils::response_success();
 }
 
 void SimplePlanningSimulator::on_ackermann_cmd(

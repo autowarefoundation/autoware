@@ -14,10 +14,10 @@
 
 #include "ground_segmentation/scan_ground_filter_nodelet.hpp"
 
-#include <autoware_utils/geometry/geometry.hpp>
-#include <autoware_utils/math/normalization.hpp>
-#include <autoware_utils/math/unit_conversion.hpp>
 #include <pcl_ros/transforms.hpp>
+#include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <tier4_autoware_utils/math/normalization.hpp>
+#include <tier4_autoware_utils/math/unit_conversion.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <memory>
@@ -26,10 +26,10 @@
 
 namespace ground_segmentation
 {
-using autoware_utils::calcDistance3d;
-using autoware_utils::deg2rad;
-using autoware_utils::normalizeRadian;
 using pointcloud_preprocessor::get_param;
+using tier4_autoware_utils::calcDistance3d;
+using tier4_autoware_utils::deg2rad;
+using tier4_autoware_utils::normalizeRadian;
 using vehicle_info_util::VehicleInfoUtil;
 
 ScanGroundFilterComponent::ScanGroundFilterComponent(const rclcpp::NodeOptions & options)

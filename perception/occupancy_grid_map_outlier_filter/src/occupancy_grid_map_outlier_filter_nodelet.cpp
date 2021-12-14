@@ -14,8 +14,8 @@
 
 #include "occupancy_grid_map_outlier_filter/occupancy_grid_map_outlier_filter_nodelet.hpp"
 
-#include <autoware_utils/autoware_utils.hpp>
 #include <pcl_ros/transforms.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <boost/optional.hpp>
 
@@ -66,7 +66,7 @@ geometry_msgs::msg::PoseStamped getPoseStamped(
     RCLCPP_WARN_THROTTLE(
       rclcpp::get_logger("occupancy_grid_map_outlier_filter"), clock, 5000, "%s", ex.what());
   }
-  return autoware_utils::transform2pose(tf_stamped);
+  return tier4_autoware_utils::transform2pose(tf_stamped);
 }
 
 boost::optional<char> getCost(

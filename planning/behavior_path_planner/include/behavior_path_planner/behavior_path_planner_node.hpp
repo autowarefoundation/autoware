@@ -25,8 +25,8 @@
 #include "behavior_path_planner/scene_module/side_shift/side_shift_module.hpp"
 #include "behavior_path_planner/turn_signal_decider.hpp"
 
-#include <autoware_utils/ros/self_pose_listener.hpp>
 #include <route_handler/route_handler.hpp>
+#include <tier4_autoware_utils/ros/self_pose_listener.hpp>
 
 #include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
@@ -92,7 +92,7 @@ private:
 
   std::shared_ptr<PlannerData> planner_data_;
   std::shared_ptr<BehaviorTreeManager> bt_manager_;
-  autoware_utils::SelfPoseListener self_pose_listener_{this};
+  tier4_autoware_utils::SelfPoseListener self_pose_listener_{this};
 
   std::string prev_ready_module_name_ = "NONE";
 

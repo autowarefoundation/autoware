@@ -19,10 +19,10 @@
 #include "behavior_path_planner/scene_module/avoidance/debug.hpp"
 #include "behavior_path_planner/utilities.hpp"
 
-#include <autoware_utils/autoware_utils.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <opencv2/opencv.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <algorithm>
 #include <iomanip>
@@ -40,11 +40,11 @@
 
 namespace behavior_path_planner
 {
-using autoware_utils::calcDistance2d;
-using autoware_utils::calcLateralDeviation;
-using autoware_utils::calcSignedArcLength;
-using autoware_utils::createPoint;
-using autoware_utils::findNearestIndex;
+using tier4_autoware_utils::calcDistance2d;
+using tier4_autoware_utils::calcLateralDeviation;
+using tier4_autoware_utils::calcSignedArcLength;
+using tier4_autoware_utils::createPoint;
+using tier4_autoware_utils::findNearestIndex;
 
 AvoidanceModule::AvoidanceModule(
   const std::string & name, rclcpp::Node & node, const AvoidanceParameters & parameters)
@@ -573,7 +573,7 @@ AvoidPointArray AvoidanceModule::combineRawShiftPointsWithUniqueCheck(
 {
   // TODO(Horibe) parametrize
   const auto isSimilar = [](const AvoidPoint & a, const AvoidPoint & b) {
-    using autoware_utils::calcDistance2d;
+    using tier4_autoware_utils::calcDistance2d;
     if (calcDistance2d(a.start, b.start) > 1.0) {
       return false;
     }
@@ -1700,7 +1700,7 @@ PathWithLaneId AvoidanceModule::calcCenterLinePath(
 
   // for debug: check if the path backward distance is same as the desired length.
   // {
-  //   const auto back_to_ego = autoware_utils::calcSignedArcLength(
+  //   const auto back_to_ego = tier4_autoware_utils::calcSignedArcLength(
   //     centerline_path.points, centerline_path.points.front().point.pose.position,
   //     getEgoPosition());
   //   RCLCPP_INFO(getLogger(), "actual back_to_ego distance = %f", back_to_ego);
@@ -2349,7 +2349,7 @@ void AvoidanceModule::setDebugData(const PathShifter & shifter, const DebugData 
   debug_marker_.markers.clear();
 
   const auto add = [this](const MarkerArray & added) {
-    autoware_utils::appendMarkerArray(added, &debug_marker_);
+    tier4_autoware_utils::appendMarkerArray(added, &debug_marker_);
   };
 
   const auto addAvoidPoint =

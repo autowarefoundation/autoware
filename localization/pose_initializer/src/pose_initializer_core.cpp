@@ -162,7 +162,7 @@ void PoseInitializer::serviceInitializePoseAuto(
 {
   RCLCPP_INFO(this->get_logger(), "Called Pose Initialize Service");
   enable_gnss_callback_ = true;
-  res->status = autoware_api_utils::response_success();
+  res->status = tier4_api_utils::response_success();
 }
 
 void PoseInitializer::callbackPoseInitializationRequest(

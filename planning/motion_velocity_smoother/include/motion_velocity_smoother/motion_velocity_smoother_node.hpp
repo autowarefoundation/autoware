@@ -15,12 +15,6 @@
 #ifndef MOTION_VELOCITY_SMOOTHER__MOTION_VELOCITY_SMOOTHER_NODE_HPP_
 #define MOTION_VELOCITY_SMOOTHER__MOTION_VELOCITY_SMOOTHER_NODE_HPP_
 
-#include "autoware_utils/geometry/geometry.hpp"
-#include "autoware_utils/math/unit_conversion.hpp"
-#include "autoware_utils/ros/self_pose_listener.hpp"
-#include "autoware_utils/system/stop_watch.hpp"
-#include "autoware_utils/trajectory/tmp_conversion.hpp"
-#include "autoware_utils/trajectory/trajectory.hpp"
 #include "motion_velocity_smoother/resample.hpp"
 #include "motion_velocity_smoother/smoother/jerk_filtered_smoother.hpp"
 #include "motion_velocity_smoother/smoother/l2_pseudo_jerk_smoother.hpp"
@@ -29,6 +23,12 @@
 #include "rclcpp/rclcpp.hpp"
 #include "tf2/utils.h"
 #include "tf2_ros/transform_listener.h"
+#include "tier4_autoware_utils/geometry/geometry.hpp"
+#include "tier4_autoware_utils/math/unit_conversion.hpp"
+#include "tier4_autoware_utils/ros/self_pose_listener.hpp"
+#include "tier4_autoware_utils/system/stop_watch.hpp"
+#include "tier4_autoware_utils/trajectory/tmp_conversion.hpp"
+#include "tier4_autoware_utils/trajectory/trajectory.hpp"
 
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
@@ -90,7 +90,7 @@ private:
   boost::optional<TrajectoryPoint> prev_closest_point_{};  // previous trajectory point
                                                            // closest to ego vehicle
 
-  autoware_utils::SelfPoseListener self_pose_listener_{this};
+  tier4_autoware_utils::SelfPoseListener self_pose_listener_{this};
 
   enum class AlgorithmType {
     INVALID = 0,
@@ -208,7 +208,7 @@ private:
   void initAnalyticalJerkConstrainedSmootherParam();
 
   // debug
-  autoware_utils::StopWatch<std::chrono::milliseconds> stop_watch_;
+  tier4_autoware_utils::StopWatch<std::chrono::milliseconds> stop_watch_;
   std::shared_ptr<rclcpp::Time> prev_time_;
   double prev_acc_;
   rclcpp::Publisher<Float32Stamped>::SharedPtr pub_dist_to_stopline_;

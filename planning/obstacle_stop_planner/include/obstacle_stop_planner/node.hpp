@@ -18,14 +18,14 @@
 #include "obstacle_stop_planner/adaptive_cruise_control.hpp"
 #include "obstacle_stop_planner/debug_marker.hpp"
 
-#include <autoware_utils/autoware_utils.hpp>
-#include <autoware_utils/trajectory/tmp_conversion.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <pcl_ros/transforms.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <signal_processing/lowpass_filter_1d.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
+#include <tier4_autoware_utils/trajectory/tmp_conversion.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
@@ -63,8 +63,8 @@ using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_planning_msgs::msg::Trajectory;
 using autoware_auto_planning_msgs::msg::TrajectoryPoint;
 using TrajectoryPoints = std::vector<TrajectoryPoint>;
-using autoware_utils::Point2d;
-using autoware_utils::Polygon2d;
+using tier4_autoware_utils::Point2d;
+using tier4_autoware_utils::Polygon2d;
 using tier4_debug_msgs::msg::BoolStamped;
 using tier4_debug_msgs::msg::Float32MultiArrayStamped;
 using tier4_debug_msgs::msg::Float32Stamped;

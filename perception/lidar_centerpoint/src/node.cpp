@@ -14,9 +14,9 @@
 
 #include "lidar_centerpoint/node.hpp"
 
-#include <autoware_utils/geometry/geometry.hpp>
 #include <config.hpp>
 #include <pcl_ros/transforms.hpp>
+#include <tier4_autoware_utils/geometry/geometry.hpp>
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
@@ -117,11 +117,11 @@ void LidarCenterPointNode::pointCloudCallback(
 
     obj.classification.emplace_back(classification);
 
-    obj.kinematics.pose_with_covariance.pose.position = autoware_utils::createPoint(x, y, z);
+    obj.kinematics.pose_with_covariance.pose.position = tier4_autoware_utils::createPoint(x, y, z);
     obj.kinematics.pose_with_covariance.pose.orientation =
-      autoware_utils::createQuaternionFromYaw(yaw);
+      tier4_autoware_utils::createQuaternionFromYaw(yaw);
     obj.shape.type = autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX;
-    obj.shape.dimensions = autoware_utils::createTranslation(l, w, h);
+    obj.shape.dimensions = tier4_autoware_utils::createTranslation(l, w, h);
 
     geometry_msgs::msg::Twist twist;
     twist.linear.x = std::sqrt(std::pow(vel_x, 2) + std::pow(vel_y, 2));

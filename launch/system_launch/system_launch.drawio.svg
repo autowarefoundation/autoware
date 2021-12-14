@@ -200,11 +200,11 @@
                     <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 428px; height: 1px; padding-top: 380px; margin-left: 511px;">
                         <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
                             <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-                                autoware_state_monitor.launch.xml
+                                ad_service_state_monitor.launch.xml
                                 <br/>
                                 <br/>
                                 <div style="text-align: left">
-                                    package: autoware_state_monitor
+                                    package: ad_service_state_monitor
                                 </div>
                                 <div style="text-align: left">
                                     <br/>
@@ -212,7 +212,7 @@
                                 <div style="text-align: left">
                                     args: config_file =
                                     <font color="#ff0000">
-                                        autoware_state_monitor.param.yaml
+                                        ad_service_state_monitor.param.yaml
                                     </font>
                                 </div>
                             </div>
@@ -220,7 +220,7 @@
                     </div>
                 </foreignObject>
                 <text x="725" y="384" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">
-                    autoware_state_monitor.launch.xml...
+                    ad_service_state_monitor.launch.xml...
                 </text>
             </switch>
         </g>
@@ -231,11 +231,11 @@
                     <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 431px; height: 1px; padding-top: 530px; margin-left: 508px;">
                         <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
                             <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-                                autoware_state_monitor.launch.xml
+                                ad_service_state_monitor.launch.xml
                                 <br/>
                                 <br/>
                                 <div style="text-align: left">
-                                    package: autoware_state_monitor
+                                    package: ad_service_state_monitor
                                 </div>
                                 <div style="text-align: left">
                                     <br/>
@@ -243,7 +243,7 @@
                                 <div style="text-align: left">
                                     args: config_file =
                                     <font color="#ff0000">
-                                        autoware_state_monitor.planning_simulation.param.yaml
+                                        ad_service_state_monitor.planning_simulation.param.yaml
                                     </font>
                                 </div>
                             </div>
@@ -251,7 +251,7 @@
                     </div>
                 </foreignObject>
                 <text x="724" y="534" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">
-                    autoware_state_monitor.launch.xml...
+                    ad_service_state_monitor.launch.xml...
                 </text>
             </switch>
         </g>
@@ -317,11 +317,11 @@
                     <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 428px; height: 1px; padding-top: 680px; margin-left: 511px;">
                         <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
                             <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-                                autoware_error_monitor.launch.xml
+                                system_error_monitor.launch.xml
                                 <br/>
                                 <br/>
                                 <div style="text-align: left">
-                                    package: autoware_error_monitor
+                                    package: system_error_monitor
                                 </div>
                                 <div style="text-align: left">
                                     <br/>
@@ -329,7 +329,7 @@
                                 <div style="text-align: left">
                                     args: config_file =
                                     <font color="#ff0000">
-                                        autoware_error_monitor.param.yaml
+                                        system_error_monitor.param.yaml
                                     </font>
                                 </div>
                             </div>
@@ -337,7 +337,7 @@
                     </div>
                 </foreignObject>
                 <text x="725" y="684" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">
-                    autoware_error_monitor.launch.xml...
+                    system_error_monitor.launch.xml...
                 </text>
             </switch>
         </g>
@@ -348,11 +348,11 @@
                     <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 431px; height: 1px; padding-top: 830px; margin-left: 508px;">
                         <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
                             <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-                                autoware_error_monitor.launch.xml
+                                system_error_monitor.launch.xml
                                 <br/>
                                 <br/>
                                 <div style="text-align: left">
-                                    package: autoware_error_monitor
+                                    package: system_error_monitor
                                 </div>
                                 <div style="text-align: left">
                                     <br/>
@@ -360,7 +360,7 @@
                                 <div style="text-align: left">
                                     args: config_file =
                                     <font color="#ff0000">
-                                        autoware_error_monitor.planning_simulation.param.yaml
+                                        system_error_monitor.planning_simulation.param.yaml
                                     </font>
                                 </div>
                             </div>
@@ -368,7 +368,7 @@
                     </div>
                 </foreignObject>
                 <text x="724" y="834" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">
-                    autoware_error_monitor.launch.xml...
+                    system_error_monitor.launch.xml...
                 </text>
             </switch>
         </g>

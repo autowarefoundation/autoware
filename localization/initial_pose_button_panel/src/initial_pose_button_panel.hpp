@@ -32,7 +32,7 @@
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <tier4_localization_msgs/srv/pose_with_covariance_stamped.hpp>
 
-namespace autoware_localization_rviz_plugin
+namespace tier4_localization_rviz_plugin
 {
 class InitialPoseButtonPanel : public rviz_common::Panel
 {
@@ -60,6 +60,6 @@ protected:
   geometry_msgs::msg::PoseWithCovarianceStamped pose_cov_msg_;
 };
 
-}  // end namespace autoware_localization_rviz_plugin
+}  // end namespace tier4_localization_rviz_plugin
 
 #endif  // INITIAL_POSE_BUTTON_PANEL_HPP_

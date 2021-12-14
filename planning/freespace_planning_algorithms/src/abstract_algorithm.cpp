@@ -14,14 +14,14 @@
 
 #include "freespace_planning_algorithms/abstract_algorithm.hpp"
 
-#include <autoware_utils/autoware_utils.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <vector>
 
 namespace freespace_planning_algorithms
 {
-using autoware_utils::createQuaternionFromYaw;
-using autoware_utils::normalizeRadian;
+using tier4_autoware_utils::createQuaternionFromYaw;
+using tier4_autoware_utils::normalizeRadian;
 
 geometry_msgs::msg::Pose transformPose(
   const geometry_msgs::msg::Pose & pose, const geometry_msgs::msg::TransformStamped & transform)

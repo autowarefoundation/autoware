@@ -33,7 +33,7 @@ inline void convertEulerAngleToMonotonic(std::vector<double> & a)
 {
   for (unsigned int i = 1; i < a.size(); ++i) {
     const double da = a[i] - a[i - 1];
-    a[i] = a[i - 1] + autoware_utils::normalizeRadian(da);
+    a[i] = a[i - 1] + tier4_autoware_utils::normalizeRadian(da);
   }
 }
 
@@ -76,7 +76,7 @@ TrajectoryPoint calcInterpolatedTrajectoryPoint(
   }
 
   const size_t segment_idx =
-    autoware_utils::findNearestSegmentIndex(trajectory, target_pose.position);
+    tier4_autoware_utils::findNearestSegmentIndex(trajectory, target_pose.position);
 
   auto v1 = getTransVector3(trajectory.at(segment_idx).pose, trajectory.at(segment_idx + 1).pose);
   auto v2 = getTransVector3(trajectory.at(segment_idx).pose, target_pose);
@@ -112,7 +112,7 @@ boost::optional<TrajectoryPoints> extractPathAroundIndex(
   {
     double dist_sum = 0.0;
     for (size_t i = index; i < trajectory.size() - 1; ++i) {
-      dist_sum += autoware_utils::calcDistance2d(trajectory.at(i), trajectory.at(i + 1));
+      dist_sum += tier4_autoware_utils::calcDistance2d(trajectory.at(i), trajectory.at(i + 1));
       if (dist_sum > ahead_length) {
         ahead_index = i + 1;
         break;
@@ -125,7 +125,7 @@ boost::optional<TrajectoryPoints> extractPathAroundIndex(
   {
     double dist_sum{0.0};
     for (size_t i = index; i != 0; --i) {
-      dist_sum += autoware_utils::calcDistance2d(trajectory.at(i), trajectory[i - 1]);
+      dist_sum += tier4_autoware_utils::calcDistance2d(trajectory.at(i), trajectory[i - 1]);
       if (dist_sum > behind_length) {
         behind_index = i - 1;
         break;
@@ -161,7 +161,7 @@ double calcArcLength(const TrajectoryPoints & path, const int idx1, const int id
   const int idx_to = std::max(idx1, idx2);
   double dist_sum = 0.0;
   for (int i = idx_from; i < idx_to; ++i) {
-    dist_sum += autoware_utils::calcDistance2d(path.at(i), path.at(i + 1));
+    dist_sum += tier4_autoware_utils::calcDistance2d(path.at(i), path.at(i + 1));
   }
   return dist_sum;
 }
@@ -175,7 +175,7 @@ std::vector<double> calcArclengthArray(const TrajectoryPoints & trajectory)
   for (unsigned int i = 1; i < trajectory.size(); ++i) {
     const TrajectoryPoint tp = trajectory.at(i);
     const TrajectoryPoint tp_prev = trajectory.at(i - 1);
-    dist += autoware_utils::calcDistance2d(tp.pose, tp_prev.pose);
+    dist += tier4_autoware_utils::calcDistance2d(tp.pose, tp_prev.pose);
     arclength.push_back(dist);
   }
   return arclength;
@@ -187,7 +187,7 @@ std::vector<double> calcTrajectoryIntervalDistance(const TrajectoryPoints & traj
   for (unsigned int i = 1; i < trajectory.size(); ++i) {
     const TrajectoryPoint tp = trajectory.at(i);
     const TrajectoryPoint tp_prev = trajectory.at(i - 1);
-    const double dist = autoware_utils::calcDistance2d(tp.pose, tp_prev.pose);
+    const double dist = tier4_autoware_utils::calcDistance2d(tp.pose, tp_prev.pose);
     intervals.push_back(dist);
   }
   return intervals;
@@ -216,8 +216,8 @@ boost::optional<std::vector<double>> calcTrajectoryCurvatureFrom3Points(
     p2.y = trajectory.at(i).pose.position.y;
     p3.y = trajectory.at(i + idx_dist).pose.position.y;
     double den = std::max(
-      autoware_utils::calcDistance2d(p1, p2) * autoware_utils::calcDistance2d(p2, p3) *
-        autoware_utils::calcDistance2d(p3, p1),
+      tier4_autoware_utils::calcDistance2d(p1, p2) * tier4_autoware_utils::calcDistance2d(p2, p3) *
+        tier4_autoware_utils::calcDistance2d(p3, p1),
       0.0001);
     double curvature = 2.0 * ((p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x)) / den;
     k_arr.push_back(curvature);
@@ -325,7 +325,7 @@ boost::optional<TrajectoryPoints> applyLinearInterpolation(
     point.pose.position.x = px_p->at(i);
     point.pose.position.y = py_p->at(i);
     point.pose.position.z = pz_p->at(i);
-    point.pose.orientation = autoware_utils::createQuaternionFromYaw(pyaw_p->at(i));
+    point.pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(pyaw_p->at(i));
 
     point.longitudinal_velocity_mps = tlx_p->at(i);
     point.heading_rate_rps = taz_p->at(i);

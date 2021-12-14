@@ -630,13 +630,13 @@ std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> alignVelocityWith
     const T truncated_points(first, last);
 
     const size_t closest_seg_idx =
-      autoware_utils::findNearestSegmentIndex(truncated_points, traj_points[i].pose.position);
+      tier4_autoware_utils::findNearestSegmentIndex(truncated_points, traj_points[i].pose.position);
     // TODO(murooka) implement calcSignedArcLength(points, idx, point)
-    const double closest_to_target_dist = autoware_utils::calcSignedArcLength(
+    const double closest_to_target_dist = tier4_autoware_utils::calcSignedArcLength(
       truncated_points, truncated_points.at(closest_seg_idx).pose.position,
       traj_points[i].pose.position);
-    const double seg_dist =
-      autoware_utils::calcSignedArcLength(truncated_points, closest_seg_idx, closest_seg_idx + 1);
+    const double seg_dist = tier4_autoware_utils::calcSignedArcLength(
+      truncated_points, closest_seg_idx, closest_seg_idx + 1);
 
     // interpolate 1st-nearest (v1) value and 2nd-nearest value (v2)
     const auto lerp = [&](const double v1, const double v2, const double ratio) {

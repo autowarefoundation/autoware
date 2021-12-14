@@ -93,7 +93,7 @@ void SurroundObstacleCheckerNode::pathCallback(
 
   // parameter description
   TrajectoryPoints output_trajectory_points =
-    autoware_utils::convertToTrajectoryPointArray(*input_msg);
+    tier4_autoware_utils::convertToTrajectoryPointArray(*input_msg);
 
   diagnostic_msgs::msg::DiagnosticStatus no_start_reason_diag;
 
@@ -140,7 +140,7 @@ void SurroundObstacleCheckerNode::pathCallback(
   }
 
   // publish trajectory and debug info
-  auto output_msg = autoware_utils::convertToTrajectory(output_trajectory_points);
+  auto output_msg = tier4_autoware_utils::convertToTrajectory(output_trajectory_points);
   output_msg.header = input_msg->header;
   path_pub_->publish(output_msg);
   stop_reason_diag_pub_->publish(no_start_reason_diag);

@@ -14,7 +14,7 @@
 
 #include "awapi_awiv_adapter/awapi_vehicle_state_publisher.hpp"
 
-#include "autoware_iv_auto_msgs_converter/autoware_iv_auto_msgs_converter.hpp"
+#include "tier4_auto_msgs_converter/tier4_auto_msgs_converter.hpp"
 
 #include <limits>
 #include <memory>
@@ -93,7 +93,7 @@ void AutowareIvVehicleStatePublisher::getSteerInfo(
   }
 
   // get steer
-  using autoware_iv_auto_msgs_converter::convert;
+  using tier4_auto_msgs_converter::convert;
   status->steering = convert(*steer_ptr).data;
 
   // get steer vel
@@ -144,7 +144,7 @@ void AutowareIvVehicleStatePublisher::getTurnSignalInfo(
   }
 
   // get turn signal
-  using autoware_iv_auto_msgs_converter::convert;
+  using tier4_auto_msgs_converter::convert;
   status->turn_signal = convert(*turn_indicators_ptr, *hazard_lights_ptr).data;
 }
 
@@ -191,7 +191,7 @@ void AutowareIvVehicleStatePublisher::getGearInfo(
   }
 
   // get gear (shift)
-  using autoware_iv_auto_msgs_converter::convert;
+  using tier4_auto_msgs_converter::convert;
   status->gear = convert(*gear_ptr).shift.data;
 }
 

@@ -15,14 +15,14 @@
 #ifndef OBSTACLE_COLLISION_CHECKER__UTIL__CREATE_VEHICLE_FOOTPRINT_HPP_
 #define OBSTACLE_COLLISION_CHECKER__UTIL__CREATE_VEHICLE_FOOTPRINT_HPP_
 
-#include <autoware_utils/geometry/geometry.hpp>
+#include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
-inline autoware_utils::LinearRing2d createVehicleFootprint(
+inline tier4_autoware_utils::LinearRing2d createVehicleFootprint(
   const vehicle_info_util::VehicleInfo & vehicle_info, const double margin = 0.0)
 {
-  using autoware_utils::LinearRing2d;
-  using autoware_utils::Point2d;
+  using tier4_autoware_utils::LinearRing2d;
+  using tier4_autoware_utils::Point2d;
 
   const auto & i = vehicle_info;
 

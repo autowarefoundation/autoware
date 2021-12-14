@@ -16,9 +16,9 @@
 #include "behavior_path_planner/scene_module/avoidance/avoidance_module.hpp"
 #include "behavior_path_planner/utilities.hpp"
 
-#include <autoware_utils/autoware_utils.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <algorithm>
 #include <iomanip>
@@ -128,14 +128,15 @@ void clipByMinStartIdx(const AvoidPointArray & shift_points, PathWithLaneId & pa
 double calcDistanceToClosestFootprintPoint(
   const PathWithLaneId & path, const PredictedObject & object, const Point & ego_pos)
 {
-  autoware_utils::Polygon2d object_poly{};
+  tier4_autoware_utils::Polygon2d object_poly{};
   util::calcObjectPolygon(object, &object_poly);
 
-  double distance = autoware_utils::calcSignedArcLength(
+  double distance = tier4_autoware_utils::calcSignedArcLength(
     path.points, ego_pos, object.kinematics.initial_pose_with_covariance.pose.position);
   for (const auto & p : object_poly.outer()) {
-    const auto point = autoware_utils::createPoint(p.x(), p.y(), 0.0);
-    distance = std::min(distance, autoware_utils::calcSignedArcLength(path.points, ego_pos, point));
+    const auto point = tier4_autoware_utils::createPoint(p.x(), p.y(), 0.0);
+    distance =
+      std::min(distance, tier4_autoware_utils::calcSignedArcLength(path.points, ego_pos, point));
   }
   return distance;
 }
@@ -144,12 +145,12 @@ double calcOverhangDistance(const ObjectData & object_data, const Pose & base_po
 {
   double largest_overhang = isOnRight(object_data) ? -100.0 : 100.0;  // large number
 
-  autoware_utils::Polygon2d object_poly{};
+  tier4_autoware_utils::Polygon2d object_poly{};
   util::calcObjectPolygon(object_data.object, &object_poly);
 
   for (const auto & p : object_poly.outer()) {
-    const auto point = autoware_utils::createPoint(p.x(), p.y(), 0.0);
-    const auto lateral = autoware_utils::calcLateralDeviation(base_pose, point);
+    const auto point = tier4_autoware_utils::createPoint(p.x(), p.y(), 0.0);
+    const auto lateral = tier4_autoware_utils::calcLateralDeviation(base_pose, point);
     largest_overhang = isOnRight(object_data) ? std::max(largest_overhang, lateral)
                                               : std::min(largest_overhang, lateral);
   }

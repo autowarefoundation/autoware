@@ -15,8 +15,8 @@
 #ifndef UTILIZATION__PATH_UTILIZATION_HPP_
 #define UTILIZATION__PATH_UTILIZATION_HPP_
 
-#include <autoware_utils/geometry/geometry.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <tier4_autoware_utils/geometry/geometry.hpp>
 
 #include <autoware_auto_planning_msgs/msg/path.hpp>
 

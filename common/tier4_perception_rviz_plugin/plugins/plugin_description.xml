@@ -1,0 +1,18 @@
+<library path="tier4_perception_rviz_plugin">
+  <class name="rviz_plugins/PedestrianInitialPoseTool"
+         type="rviz_plugins::PedestrianInitialPoseTool"
+         base_class_type="rviz_common::Tool">
+  </class>
+  <class name="rviz_plugins/CarInitialPoseTool"
+         type="rviz_plugins::CarInitialPoseTool"
+         base_class_type="rviz_common::Tool">
+  </class>
+  <class name="rviz_plugins/UnknownInitialPoseTool"
+         type="rviz_plugins::UnknownInitialPoseTool"
+         base_class_type="rviz_common::Tool">
+  </class>
+  <class name="rviz_plugins/DeleteAllObjectsTool"
+         type="rviz_plugins::DeleteAllObjectsTool"
+         base_class_type="rviz_common::Tool">
+  </class>
+</library>

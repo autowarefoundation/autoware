@@ -15,9 +15,9 @@
 #ifndef LANE_DEPARTURE_CHECKER__LANE_DEPARTURE_CHECKER_HPP_
 #define LANE_DEPARTURE_CHECKER__LANE_DEPARTURE_CHECKER_HPP_
 
-#include <autoware_utils/geometry/boost_geometry.hpp>
-#include <autoware_utils/geometry/pose_deviation.hpp>
 #include <rosidl_runtime_cpp/message_initialization.hpp>
+#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
+#include <tier4_autoware_utils/geometry/pose_deviation.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_auto_planning_msgs/msg/had_map_route.hpp>
@@ -42,8 +42,8 @@ namespace lane_departure_checker
 using autoware_auto_planning_msgs::msg::HADMapRoute;
 using autoware_auto_planning_msgs::msg::Trajectory;
 using autoware_auto_planning_msgs::msg::TrajectoryPoint;
-using autoware_utils::LinearRing2d;
-using autoware_utils::PoseDeviation;
+using tier4_autoware_utils::LinearRing2d;
+using tier4_autoware_utils::PoseDeviation;
 using TrajectoryPoints = std::vector<TrajectoryPoint>;
 
 struct Param

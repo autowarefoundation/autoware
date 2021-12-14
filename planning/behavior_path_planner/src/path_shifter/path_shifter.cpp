@@ -17,9 +17,9 @@
 #include "behavior_path_planner/path_utilities.hpp"
 #include "behavior_path_planner/utilities.hpp"
 
-#include <autoware_utils/autoware_utils.hpp>
 #include <interpolation/spline_interpolation.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <limits>
 #include <string>
@@ -260,7 +260,7 @@ bool PathShifter::calcShiftPointFromArcLength(
     return false;
   }
 
-  const auto origin_idx = autoware_utils::findNearestIndex(path.points, origin);
+  const auto origin_idx = tier4_autoware_utils::findNearestIndex(path.points, origin);
   const auto arclength_from_origin = util::calcPathArcLengthArray(path, origin_idx);
 
   if (dist_to_end > arclength_from_origin.back()) {
@@ -311,8 +311,8 @@ bool PathShifter::calcShiftPointFromArcLength(
 void PathShifter::updateShiftPointIndices()
 {
   for (auto & p : shift_points_) {
-    p.start_idx = autoware_utils::findNearestIndex(reference_path_.points, p.start.position);
-    p.end_idx = autoware_utils::findNearestIndex(reference_path_.points, p.end.position);
+    p.start_idx = tier4_autoware_utils::findNearestIndex(reference_path_.points, p.start.position);
+    p.end_idx = tier4_autoware_utils::findNearestIndex(reference_path_.points, p.end.position);
   }
   is_index_aligned_ = true;
 }
@@ -381,7 +381,7 @@ bool PathShifter::sortShiftPointsAlongPath([[maybe_unused]] const PathWithLaneId
 
 void PathShifter::removeBehindShiftPointAndSetBaseOffset(const Point & base_point)
 {
-  const auto base_idx = autoware_utils::findNearestIndex(reference_path_.points, base_point);
+  const auto base_idx = tier4_autoware_utils::findNearestIndex(reference_path_.points, base_point);
 
   // If shift_point.end is behind the base_point, remove the shift_point and
   // set its shift_length to the base_offset.

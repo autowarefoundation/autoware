@@ -16,8 +16,8 @@
 
 #include "map_based_prediction.hpp"
 
-#include <autoware_utils/autoware_utils.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <unique_identifier_msgs/msg/uuid.hpp>
 
@@ -122,27 +122,27 @@ double MapBasedPredictionROS::calculateLikelihood(
 {
   // We compute the confidence value based on the object current position and angle
   // Calculate path length
-  const double path_len = autoware_utils::calcArcLength(path);
-  const size_t nearest_segment_idx = autoware_utils::findNearestSegmentIndex(
+  const double path_len = tier4_autoware_utils::calcArcLength(path);
+  const size_t nearest_segment_idx = tier4_autoware_utils::findNearestSegmentIndex(
     path, object.kinematics.pose_with_covariance.pose.position);
-  const double l = autoware_utils::calcLongitudinalOffsetToSegment(
+  const double l = tier4_autoware_utils::calcLongitudinalOffsetToSegment(
     path, nearest_segment_idx, object.kinematics.pose_with_covariance.pose.position);
   const double current_s_position =
-    autoware_utils::calcSignedArcLength(path, 0, nearest_segment_idx) + l;
+    tier4_autoware_utils::calcSignedArcLength(path, 0, nearest_segment_idx) + l;
   // If the obstacle is ahead of this path, we assume the confidence for this path is 0
   if (current_s_position > path_len) {
     return 0.0;
   }
 
   // Euclid Lateral Distance
-  const double abs_d = std::fabs(
-    autoware_utils::calcLateralOffset(path, object.kinematics.pose_with_covariance.pose.position));
+  const double abs_d = std::fabs(tier4_autoware_utils::calcLateralOffset(
+    path, object.kinematics.pose_with_covariance.pose.position));
 
   // Yaw Difference between obstacle and lane angle
   const double lane_yaw = tf2::getYaw(path.at(nearest_segment_idx).orientation);
   const double object_yaw = getObjectYaw(object);
   const double delta_yaw = object_yaw - lane_yaw;
-  const double abs_norm_delta_yaw = std::fabs(autoware_utils::normalizeRadian(delta_yaw));
+  const double abs_norm_delta_yaw = std::fabs(tier4_autoware_utils::normalizeRadian(delta_yaw));
 
   // Compute Chi-squared distributed (Equation (8) in the paper)
   const double sigma_d = sigma_lateral_offset_;  // Standard Deviation for lateral position
@@ -339,7 +339,8 @@ bool MapBasedPredictionROS::updateObjectBuffer(
     single_object_data.future_possible_lanelets = current_lanelets;
     single_object_data.pose = current_object_pose;
     const double object_yaw = getObjectYaw(object);
-    single_object_data.pose.pose.orientation = autoware_utils::createQuaternionFromYaw(object_yaw);
+    single_object_data.pose.pose.orientation =
+      tier4_autoware_utils::createQuaternionFromYaw(object_yaw);
 
     std::deque<ObjectData> object_data;
     object_data.push_back(single_object_data);
@@ -355,7 +356,8 @@ bool MapBasedPredictionROS::updateObjectBuffer(
     single_object_data.future_possible_lanelets = current_lanelets;
     single_object_data.pose = current_object_pose;
     const double object_yaw = getObjectYaw(object);
-    single_object_data.pose.pose.orientation = autoware_utils::createQuaternionFromYaw(object_yaw);
+    single_object_data.pose.pose.orientation =
+      tier4_autoware_utils::createQuaternionFromYaw(object_yaw);
 
     // push new object data
     object_data.push_back(single_object_data);
@@ -417,10 +419,10 @@ double MapBasedPredictionROS::calcRightLateralOffset(
   for (size_t i = 0; i < bound_path.size(); ++i) {
     const double x = bound_line[i].x();
     const double y = bound_line[i].y();
-    bound_path[i] = autoware_utils::createPoint(x, y, 0.0);
+    bound_path[i] = tier4_autoware_utils::createPoint(x, y, 0.0);
   }
 
-  return std::fabs(autoware_utils::calcLateralOffset(bound_path, search_pose.position));
+  return std::fabs(tier4_autoware_utils::calcLateralOffset(bound_path, search_pose.position));
 }
 
 double MapBasedPredictionROS::calcLeftLateralOffset(
@@ -468,7 +470,7 @@ Maneuver MapBasedPredictionROS::detectLaneChange(
   for (const auto & lanelet : prev_lanelets) {
     const double lane_yaw = lanelet::utils::getLaneletAngle(lanelet, prev_pose.pose.position);
     const double delta_yaw = tf2::getYaw(prev_pose.pose.orientation) - lane_yaw;
-    const double normalized_delta_yaw = autoware_utils::normalizeRadian(delta_yaw);
+    const double normalized_delta_yaw = tier4_autoware_utils::normalizeRadian(delta_yaw);
     if (normalized_delta_yaw < closest_prev_yaw) {
       closest_prev_yaw = normalized_delta_yaw;
       prev_lanelet = lanelet;
@@ -477,7 +479,7 @@ Maneuver MapBasedPredictionROS::detectLaneChange(
 
   // Step4. Check if the vehicle has changed lane
   const auto current_pose = object.kinematics.pose_with_covariance.pose;
-  const double dist = autoware_utils::calcDistance2d(prev_pose, current_pose);
+  const double dist = tier4_autoware_utils::calcDistance2d(prev_pose, current_pose);
   lanelet::routing::LaneletPaths possible_paths =
     routing_graph_ptr_->possiblePaths(prev_lanelet, dist + 2.0, 0, false);
   bool has_lane_changed = true;
@@ -686,7 +688,7 @@ void MapBasedPredictionROS::objectsCallback(
           // Prevent from inserting same points
           if (!tmp_path.empty()) {
             const auto prev_pose = tmp_path.back();
-            const double tmp_dist = autoware_utils::calcDistance2d(prev_pose, tmp_pose);
+            const double tmp_dist = tier4_autoware_utils::calcDistance2d(prev_pose, tmp_pose);
             if (tmp_dist < 1e-6) {
               continue;
             }

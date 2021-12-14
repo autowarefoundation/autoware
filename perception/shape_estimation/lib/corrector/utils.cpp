@@ -230,9 +230,9 @@ bool correctVehicleBoundingBox(
 
   // correct to set long length is x, short length is y
   if (shape_output.dimensions.x < shape_output.dimensions.y) {
-    geometry_msgs::msg::Vector3 rpy = autoware_utils::getRPY(pose_output.orientation);
+    geometry_msgs::msg::Vector3 rpy = tier4_autoware_utils::getRPY(pose_output.orientation);
     rpy.z = rpy.z + M_PI_2;
-    pose_output.orientation = autoware_utils::createQuaternionFromRPY(rpy.x, rpy.y, rpy.z);
+    pose_output.orientation = tier4_autoware_utils::createQuaternionFromRPY(rpy.x, rpy.y, rpy.z);
     double temp = shape_output.dimensions.x;
     shape_output.dimensions.x = shape_output.dimensions.y;
     shape_output.dimensions.y = temp;

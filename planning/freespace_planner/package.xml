@@ -14,7 +14,7 @@
 
   <depend>autoware_auto_planning_msgs</depend>
   <depend>tier4_planning_msgs</depend>
-  <depend>autoware_utils</depend>
+  <depend>tier4_autoware_utils</depend>
   <depend>freespace_planning_algorithms</depend>
   <depend>geometry_msgs</depend>
   <depend>nav_msgs</depend>

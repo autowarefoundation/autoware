@@ -177,9 +177,9 @@ bool TrackerHandler::estimateTrackedObjects(
     estimated_object.kinematics.pose_with_covariance.pose.position.y =
       y + vx * std::sin(yaw) * dt.seconds();
     estimated_object.kinematics.pose_with_covariance.pose.position.z = z;
-    const float yaw_hat = autoware_utils::normalizeRadian(yaw + wz * dt.seconds());
+    const float yaw_hat = tier4_autoware_utils::normalizeRadian(yaw + wz * dt.seconds());
     estimated_object.kinematics.pose_with_covariance.pose.orientation =
-      autoware_utils::createQuaternionFromYaw(yaw_hat);
+      tier4_autoware_utils::createQuaternionFromYaw(yaw_hat);
     output.objects.push_back(estimated_object);
   }
   return true;
@@ -274,7 +274,7 @@ void DetectionByTracker::divideUnderSegmentedObjects(
 
     for (const auto & initial_object : in_cluster_objects.feature_objects) {
       // search near object
-      const float distance = autoware_utils::calcDistance2d(
+      const float distance = tier4_autoware_utils::calcDistance2d(
         tracked_object.kinematics.pose_with_covariance.pose,
         initial_object.object.kinematics.pose_with_covariance.pose);
       if (max_search_range < distance) {
@@ -397,7 +397,7 @@ void DetectionByTracker::mergeOverSegmentedObjects(
 
     pcl::PointCloud<pcl::PointXYZ> pcl_merged_cluster;
     for (const auto & initial_object : in_cluster_objects.feature_objects) {
-      const float distance = autoware_utils::calcDistance2d(
+      const float distance = tier4_autoware_utils::calcDistance2d(
         tracked_object.kinematics.pose_with_covariance.pose,
         initial_object.object.kinematics.pose_with_covariance.pose);
 

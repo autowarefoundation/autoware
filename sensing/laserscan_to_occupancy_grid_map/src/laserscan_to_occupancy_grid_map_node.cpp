@@ -16,8 +16,8 @@
 
 #include "laserscan_to_occupancy_grid_map/cost_value.hpp"
 
-#include <autoware_utils/autoware_utils.hpp>
 #include <pcl_ros/transforms.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <nav_msgs/msg/occupancy_grid.hpp>
 
@@ -97,7 +97,7 @@ geometry_msgs::msg::Pose getPose(
   geometry_msgs::msg::TransformStamped tf_stamped;
   tf_stamped = tf2.lookupTransform(
     target_frame, source_header.frame_id, source_header.stamp, rclcpp::Duration::from_seconds(0.5));
-  pose = autoware_utils::transform2pose(tf_stamped.transform);
+  pose = tier4_autoware_utils::transform2pose(tf_stamped.transform);
   return pose;
 }
 }  // namespace

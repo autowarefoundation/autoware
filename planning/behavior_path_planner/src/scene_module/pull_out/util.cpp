@@ -18,10 +18,10 @@
 #include "behavior_path_planner/path_utilities.hpp"
 #include "behavior_path_planner/util/create_vehicle_footprint.hpp"
 
-#include <autoware_utils/geometry/boost_geometry.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 
 #include <boost/geometry/algorithms/dispatch/distance.hpp>
 
@@ -194,14 +194,14 @@ std::vector<PullOutPath> getPullOutPaths(
       continue;
     }
 
-    const auto pull_out_end_idx = autoware_utils::findNearestIndex(
+    const auto pull_out_end_idx = tier4_autoware_utils::findNearestIndex(
       shifted_path.path.points, reference_path2.points.front().point.pose);
 
     const auto goal_idx =
-      autoware_utils::findNearestIndex(shifted_path.path.points, route_handler.getGoalPose());
+      tier4_autoware_utils::findNearestIndex(shifted_path.path.points, route_handler.getGoalPose());
 
     if (pull_out_end_idx && goal_idx) {
-      const auto distance_pull_out_end_to_goal = autoware_utils::calcDistance2d(
+      const auto distance_pull_out_end_to_goal = tier4_autoware_utils::calcDistance2d(
         shifted_path.path.points.at(*pull_out_end_idx).point.pose,
         shifted_path.path.points.at(*goal_idx).point.pose);
       for (size_t i = 0; i < shifted_path.path.points.size(); ++i) {
@@ -216,7 +216,7 @@ std::vector<PullOutPath> getPullOutPaths(
           continue;
         }
 
-        auto distance_to_goal = autoware_utils::calcDistance2d(
+        auto distance_to_goal = tier4_autoware_utils::calcDistance2d(
           point.point.pose, shifted_path.path.points.at(*goal_idx).point.pose);
         point.point.longitudinal_velocity_mps = std::min(
           minimum_pull_out_velocity,
@@ -340,7 +340,7 @@ bool selectSafePath(
   const PredictedObjects::ConstSharedPtr & dynamic_objects,
   [[maybe_unused]] const Pose & current_pose, [[maybe_unused]] const Twist & current_twist,
   [[maybe_unused]] const double vehicle_width, const PullOutParameters & ros_parameters,
-  const autoware_utils::LinearRing2d & local_vehicle_footprint, PullOutPath * selected_path)
+  const tier4_autoware_utils::LinearRing2d & local_vehicle_footprint, PullOutPath * selected_path)
 {
   const bool use_dynamic_object = ros_parameters.use_dynamic_object;
   for (const auto & path : paths) {
@@ -399,7 +399,7 @@ bool isPullOutPathSafe(
   const lanelet::ConstLanelets & shoulder_lanes,
   const PredictedObjects::ConstSharedPtr & dynamic_objects,
   const PullOutParameters & ros_parameters,
-  const autoware_utils::LinearRing2d & local_vehicle_footprint, const bool use_buffer,
+  const tier4_autoware_utils::LinearRing2d & local_vehicle_footprint, const bool use_buffer,
   const bool use_dynamic_object)
 {
   // TODO(sugahara) check road lanes safety and output road lanes safety

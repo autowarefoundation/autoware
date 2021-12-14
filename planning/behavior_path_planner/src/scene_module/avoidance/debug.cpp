@@ -49,9 +49,9 @@ MarkerArray createShiftLengthMarkerArray(
   marker.ns = ns;
   marker.lifetime = rclcpp::Duration::from_seconds(0.2);
   marker.action = Marker::ADD;
-  marker.pose.orientation = autoware_utils::createMarkerOrientation(0, 0, 0, 1.0);
-  marker.scale = autoware_utils::createMarkerScale(0.1, 0.0, 0.0);
-  marker.color = autoware_utils::createMarkerColor(r, g, b, 0.9);
+  marker.pose.orientation = tier4_autoware_utils::createMarkerOrientation(0, 0, 0, 1.0);
+  marker.scale = tier4_autoware_utils::createMarkerScale(0.1, 0.0, 0.0);
+  marker.color = tier4_autoware_utils::createMarkerColor(r, g, b, 0.9);
   marker.type = Marker::LINE_STRIP;
 
   for (size_t i = 0; i < shift_distance.size(); ++i) {
@@ -85,9 +85,9 @@ MarkerArray createAvoidPointMarkerArray(
     marker.ns = ns;
     marker.lifetime = rclcpp::Duration::from_seconds(0.2);
     marker.action = Marker::ADD;
-    marker.pose.orientation = autoware_utils::createMarkerOrientation(0, 0, 0, 1.0);
-    marker.scale = autoware_utils::createMarkerScale(0.5, 0.5, 0.5);
-    marker.color = autoware_utils::createMarkerColor(r, g, b, 0.9);
+    marker.pose.orientation = tier4_autoware_utils::createMarkerOrientation(0, 0, 0, 1.0);
+    marker.scale = tier4_autoware_utils::createMarkerScale(0.5, 0.5, 0.5);
+    marker.color = tier4_autoware_utils::createMarkerColor(r, g, b, 0.9);
     {
       marker.type = Marker::CUBE;
 
@@ -110,7 +110,7 @@ MarkerArray createAvoidPointMarkerArray(
       auto marker_l = marker;
       marker_l.id = id++;
       marker_l.type = Marker::LINE_STRIP;
-      marker_l.scale = autoware_utils::createMarkerScale(w, 0.0, 0.0);
+      marker_l.scale = tier4_autoware_utils::createMarkerScale(w, 0.0, 0.0);
       marker_l.points.push_back(marker_s.pose.position);
       marker_l.points.push_back(marker_e.pose.position);
       msg.markers.push_back(marker_l);
@@ -144,9 +144,9 @@ MarkerArray createShiftPointMarkerArray(
     marker.ns = ns;
     marker.lifetime = rclcpp::Duration::from_seconds(0.2);
     marker.action = Marker::ADD;
-    marker.pose.orientation = autoware_utils::createMarkerOrientation(0, 0, 0, 1.0);
-    marker.scale = autoware_utils::createMarkerScale(0.5, 0.5, 0.5);
-    marker.color = autoware_utils::createMarkerColor(r, g, b, 0.5);
+    marker.pose.orientation = tier4_autoware_utils::createMarkerOrientation(0, 0, 0, 1.0);
+    marker.scale = tier4_autoware_utils::createMarkerScale(0.5, 0.5, 0.5);
+    marker.color = tier4_autoware_utils::createMarkerColor(r, g, b, 0.5);
     {
       marker.type = Marker::CUBE;
 
@@ -168,7 +168,7 @@ MarkerArray createShiftPointMarkerArray(
       auto marker_l = marker;
       marker_l.id = id++;
       marker_l.type = Marker::LINE_STRIP;
-      marker_l.scale = autoware_utils::createMarkerScale(w, 0.0, 0.0);
+      marker_l.scale = tier4_autoware_utils::createMarkerScale(w, 0.0, 0.0);
       marker_l.points.push_back(marker_s.pose.position);
       marker_l.points.push_back(marker_e.pose.position);
       msg.markers.push_back(marker_l);
@@ -196,9 +196,9 @@ MarkerArray createLaneletsAreaMarkerArray(
     marker.lifetime = rclcpp::Duration::from_seconds(0.2);
     marker.type = Marker::LINE_STRIP;
     marker.action = Marker::ADD;
-    marker.pose.orientation = autoware_utils::createMarkerOrientation(0, 0, 0, 1.0);
-    marker.scale = autoware_utils::createMarkerScale(0.1, 0.0, 0.0);
-    marker.color = autoware_utils::createMarkerColor(r, g, b, 0.999);
+    marker.pose.orientation = tier4_autoware_utils::createMarkerOrientation(0, 0, 0, 1.0);
+    marker.scale = tier4_autoware_utils::createMarkerScale(0.1, 0.0, 0.0);
+    marker.color = tier4_autoware_utils::createMarkerColor(r, g, b, 0.999);
     for (const auto & p : lanelet.polygon3d()) {
       Point point;
       point.x = p.x();
@@ -234,9 +234,9 @@ MarkerArray createLaneletPolygonsMarkerArray(
     marker.lifetime = rclcpp::Duration::from_seconds(0.2);
     marker.type = Marker::LINE_STRIP;
     marker.action = Marker::ADD;
-    marker.pose.orientation = autoware_utils::createMarkerOrientation(0, 0, 0, 1.0);
-    marker.scale = autoware_utils::createMarkerScale(0.1, 0.0, 0.0);
-    marker.color = autoware_utils::createMarkerColor(0.0, 1.0, 0.0, 0.999);
+    marker.pose.orientation = tier4_autoware_utils::createMarkerOrientation(0, 0, 0, 1.0);
+    marker.scale = tier4_autoware_utils::createMarkerScale(0.1, 0.0, 0.0);
+    marker.color = tier4_autoware_utils::createMarkerColor(0.0, 1.0, 0.0, 0.999);
     for (const auto & p : polygon) {
       Point point;
       point.x = p.x();
@@ -269,9 +269,9 @@ MarkerArray createPolygonMarkerArray(
   marker.lifetime = rclcpp::Duration::from_seconds(0.2);
   marker.type = Marker::LINE_STRIP;
   marker.action = Marker::ADD;
-  marker.pose.orientation = autoware_utils::createMarkerOrientation(0, 0, 0, 1.0);
-  marker.scale = autoware_utils::createMarkerScale(0.3, 0.0, 0.0);
-  marker.color = autoware_utils::createMarkerColor(r, g, b, 0.8);
+  marker.pose.orientation = tier4_autoware_utils::createMarkerOrientation(0, 0, 0, 1.0);
+  marker.scale = tier4_autoware_utils::createMarkerScale(0.3, 0.0, 0.0);
+  marker.color = tier4_autoware_utils::createMarkerColor(r, g, b, 0.8);
   for (const auto & p : polygon.points) {
     Point point;
     point.x = p.x;
@@ -307,8 +307,8 @@ MarkerArray createObjectsMarkerArray(
     marker.type = Marker::CUBE;
     marker.action = Marker::ADD;
     marker.pose = object.kinematics.initial_pose_with_covariance.pose;
-    marker.scale = autoware_utils::createMarkerScale(3.0, 1.0, 1.0);
-    marker.color = autoware_utils::createMarkerColor(r, g, b, 0.8);
+    marker.scale = tier4_autoware_utils::createMarkerScale(3.0, 1.0, 1.0);
+    marker.color = tier4_autoware_utils::createMarkerColor(r, g, b, 0.8);
     msg.markers.push_back(marker);
   }
 
@@ -326,8 +326,8 @@ MarkerArray createAvoidanceObjectsMarkerArray(
   marker.header.stamp = current_time;
   marker.ns = ns;
 
-  const auto normal_color = autoware_utils::createMarkerColor(0.9, 0.0, 0.0, 0.8);
-  const auto disappearing_color = autoware_utils::createMarkerColor(0.9, 0.5, 0.9, 0.6);
+  const auto normal_color = tier4_autoware_utils::createMarkerColor(0.9, 0.0, 0.0, 0.8);
+  const auto disappearing_color = tier4_autoware_utils::createMarkerColor(0.9, 0.5, 0.9, 0.6);
 
   int32_t i = 0;
   for (const auto & object : objects) {
@@ -336,7 +336,7 @@ MarkerArray createAvoidanceObjectsMarkerArray(
     marker.type = Marker::CUBE;
     marker.action = Marker::ADD;
     marker.pose = object.object.kinematics.initial_pose_with_covariance.pose;
-    marker.scale = autoware_utils::createMarkerScale(3.0, 1.5, 1.5);
+    marker.scale = tier4_autoware_utils::createMarkerScale(3.0, 1.5, 1.5);
     marker.color = object.lost_count == 0 ? normal_color : disappearing_color;
     msg.markers.push_back(marker);
   }
@@ -364,8 +364,8 @@ MarkerArray createPathMarkerArray(
     marker.type = Marker::ARROW;
     marker.action = Marker::ADD;
     marker.pose = p.point.pose;
-    marker.scale = autoware_utils::createMarkerScale(0.2, 0.1, 0.3);
-    marker.color = autoware_utils::createMarkerColor(r, g, b, 0.999);
+    marker.scale = tier4_autoware_utils::createMarkerScale(0.2, 0.1, 0.3);
+    marker.color = tier4_autoware_utils::createMarkerColor(r, g, b, 0.999);
     msg.markers.push_back(marker);
     if (idx % 10 == 0) {
       auto marker_text = marker;
@@ -374,7 +374,7 @@ MarkerArray createPathMarkerArray(
       std::stringstream ss;
       ss << std::fixed << std::setprecision(1) << "i=" << idx << "\ns=" << arclength.at(idx);
       marker_text.text = ss.str();
-      marker_text.color = autoware_utils::createMarkerColor(1, 1, 1, 0.999);
+      marker_text.color = tier4_autoware_utils::createMarkerColor(1, 1, 1, 0.999);
       msg.markers.push_back(marker_text);
     }
     ++idx;
@@ -398,8 +398,8 @@ MarkerArray createVirtualWallMarkerArray(
   marker_virtual_wall.action = Marker::ADD;
   marker_virtual_wall.pose = pose;
   marker_virtual_wall.pose.position.z += 1.0;
-  marker_virtual_wall.scale = autoware_utils::createMarkerScale(0.1, 5.0, 2.0);
-  marker_virtual_wall.color = autoware_utils::createMarkerColor(1.0, 0.0, 0.0, 0.5);
+  marker_virtual_wall.scale = tier4_autoware_utils::createMarkerScale(0.1, 5.0, 2.0);
+  marker_virtual_wall.color = tier4_autoware_utils::createMarkerColor(1.0, 0.0, 0.0, 0.5);
   msg.markers.push_back(marker_virtual_wall);
 
   Marker marker_factor_text{};
@@ -412,8 +412,8 @@ MarkerArray createVirtualWallMarkerArray(
   marker_factor_text.action = Marker::ADD;
   marker_factor_text.pose = pose;
   marker_factor_text.pose.position.z += 2.0;
-  marker_factor_text.scale = autoware_utils::createMarkerScale(0.0, 0.0, 1.0);
-  marker_factor_text.color = autoware_utils::createMarkerColor(1.0, 1.0, 1.0, 0.999);
+  marker_factor_text.scale = tier4_autoware_utils::createMarkerScale(0.0, 0.0, 1.0);
+  marker_factor_text.color = tier4_autoware_utils::createMarkerColor(1.0, 1.0, 1.0, 0.999);
   marker_factor_text.text = stop_factor;
   msg.markers.push_back(marker_factor_text);
 
@@ -435,9 +435,9 @@ MarkerArray createPoseLineMarkerArray(
   marker_line.lifetime = rclcpp::Duration::from_seconds(0.2);
   marker_line.type = Marker::LINE_STRIP;
   marker_line.action = Marker::ADD;
-  marker_line.pose.orientation = autoware_utils::createMarkerOrientation(0, 0, 0, 1.0);
-  marker_line.scale = autoware_utils::createMarkerScale(0.1, 0.0, 0.0);
-  marker_line.color = autoware_utils::createMarkerColor(r, g, b, 0.999);
+  marker_line.pose.orientation = tier4_autoware_utils::createMarkerOrientation(0, 0, 0, 1.0);
+  marker_line.scale = tier4_autoware_utils::createMarkerScale(0.1, 0.0, 0.0);
+  marker_line.color = tier4_autoware_utils::createMarkerColor(r, g, b, 0.999);
 
   const double yaw = tf2::getYaw(pose.orientation);
 
@@ -475,8 +475,8 @@ MarkerArray createPoseMarkerArray(
   marker.type = Marker::ARROW;
   marker.action = Marker::ADD;
   marker.pose = pose;
-  marker.scale = autoware_utils::createMarkerScale(0.7, 0.3, 0.3);
-  marker.color = autoware_utils::createMarkerColor(r, g, b, 0.999);
+  marker.scale = tier4_autoware_utils::createMarkerScale(0.7, 0.3, 0.3);
+  marker.color = tier4_autoware_utils::createMarkerColor(r, g, b, 0.999);
   msg.markers.push_back(marker);
 
   return msg;

@@ -16,12 +16,12 @@
 
 #include "behavior_path_planner/utilities.hpp"
 
-#include <autoware_utils/autoware_utils.hpp>
 #include <interpolation/spline_interpolation.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <opencv2/opencv.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <tf2/utils.h>
 
@@ -49,7 +49,8 @@ std::vector<double> calcPathArcLengthArray(
   end = std::min(end, path.points.size());
 
   for (size_t i = start; i < end; ++i) {
-    sum += autoware_utils::calcDistance2d(path.points.at(i).point, path.points.at(i - 1).point);
+    sum +=
+      tier4_autoware_utils::calcDistance2d(path.points.at(i).point, path.points.at(i - 1).point);
     out.push_back(sum);
   }
   return out;
@@ -76,7 +77,8 @@ double calcPathArcLength(const PathWithLaneId & path, size_t start, size_t end)
 
   double sum = 0.0;
   for (size_t i = start; i < end; ++i) {
-    sum += autoware_utils::calcDistance2d(path.points.at(i).point, path.points.at(i - 1).point);
+    sum +=
+      tier4_autoware_utils::calcDistance2d(path.points.at(i).point, path.points.at(i - 1).point);
   }
 
   return is_negative_direction ? -sum : sum;
@@ -88,7 +90,7 @@ double calcPathArcLength(const PathWithLaneId & path, size_t start, size_t end)
 PathWithLaneId resamplePathWithSpline(const PathWithLaneId & path, double interval)
 {
   const auto base_points = calcPathArcLengthArray(path);
-  const auto sampling_points = autoware_utils::arange(0.0, base_points.back(), interval);
+  const auto sampling_points = tier4_autoware_utils::arange(0.0, base_points.back(), interval);
 
   if (base_points.empty() || sampling_points.empty()) {
     return path;
@@ -114,7 +116,7 @@ PathWithLaneId resamplePathWithSpline(const PathWithLaneId & path, double interv
   for (size_t i = 0; i < sampling_points.size(); ++i) {
     PathPointWithLaneId p{};
     p.point.pose.position =
-      autoware_utils::createPoint(resampled_x.at(i), resampled_y.at(i), resampled_z.at(i));
+      tier4_autoware_utils::createPoint(resampled_x.at(i), resampled_y.at(i), resampled_z.at(i));
     resampled_path.points.push_back(p);
   }
 
@@ -153,7 +155,7 @@ PathWithLaneId resamplePathWithSpline(const PathWithLaneId & path, double interv
     const auto & p1 = resampled_path.points.at(i + 1).point.pose.position;
     const double yaw = std::atan2(p1.y - p0.y, p1.x - p0.x);
     resampled_path.points.at(i).point.pose.orientation =
-      autoware_utils::createQuaternionFromYaw(yaw);
+      tier4_autoware_utils::createQuaternionFromYaw(yaw);
   }
   if (resampled_path.points.size() > 2) {
     resampled_path.points.back().point.pose.orientation =
@@ -181,9 +183,9 @@ size_t getIdxByArclength(const PathWithLaneId & path, const Point & origin, cons
     throw std::runtime_error("[getIdxByArclength] path points must be > 0");
   }
 
-  const auto closest_idx = autoware_utils::findNearestIndex(path.points, origin);
+  const auto closest_idx = tier4_autoware_utils::findNearestIndex(path.points, origin);
 
-  using autoware_utils::calcDistance2d;
+  using tier4_autoware_utils::calcDistance2d;
   double sum_length = 0.0;
   if (signed_arc >= 0.0) {
     for (size_t i = closest_idx; i < path.points.size() - 1; ++i) {

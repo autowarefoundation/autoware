@@ -1,0 +1,9 @@
+<library path="tier4_state_rviz_plugin">
+
+  <class
+    type="rviz_plugins::AutowareStatePanel"
+    base_class_type="rviz_common::Panel">
+    <description>AutowareStatePanel</description>
+  </class>
+
+</library>

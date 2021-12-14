@@ -22,10 +22,10 @@
 #include "behavior_path_planner/util/create_vehicle_footprint.hpp"
 #include "behavior_path_planner/utilities.hpp"
 
-#include <autoware_utils/autoware_utils.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 #include <vehicle_info_util/vehicle_info.hpp>
 
 #include <algorithm>
@@ -92,7 +92,8 @@ bool PullOutModule::isExecutionRequested() const
     const auto vehicle_info = getVehicleInfo(planner_data_->parameters);
     const auto local_vehicle_footprint = createVehicleFootprint(vehicle_info);
     const auto vehicle_footprint = transformVector(
-      local_vehicle_footprint, autoware_utils::pose2transform(planner_data_->self_pose->pose));
+      local_vehicle_footprint,
+      tier4_autoware_utils::pose2transform(planner_data_->self_pose->pose));
     const auto road_lanes = getCurrentLanes();
 
     // check if goal pose is in shoulder lane and distance is long enough for pull out
@@ -475,7 +476,7 @@ std::pair<bool, bool> PullOutModule::getSafeRetreatPath(
   const auto shoulder_line_path = route_handler->getCenterLinePath(
     pull_out_lanes, arc_position_pose.length - pull_out_lane_length_,
     arc_position_pose.length + pull_out_lane_length_);
-  const auto idx = autoware_utils::findNearestIndex(shoulder_line_path.points, current_pose);
+  const auto idx = tier4_autoware_utils::findNearestIndex(shoulder_line_path.points, current_pose);
   const auto yaw_shoulder_lane =
     tf2::getYaw(shoulder_line_path.points.at(*idx).point.pose.orientation);
 
@@ -552,7 +553,8 @@ bool PullOutModule::getBackDistance(
     const auto shoulder_line_path = route_handler->getCenterLinePath(
       pull_out_lanes, arc_position_pose.length - pull_out_lane_length_,
       arc_position_pose.length + pull_out_lane_length_);
-    const auto idx = autoware_utils::findNearestIndex(shoulder_line_path.points, current_pose);
+    const auto idx =
+      tier4_autoware_utils::findNearestIndex(shoulder_line_path.points, current_pose);
     yaw_shoulder_lane = tf2::getYaw(shoulder_line_path.points.at(*idx).point.pose.orientation);
   }
 
@@ -603,7 +605,7 @@ bool PullOutModule::getBackDistance(
 
 bool PullOutModule::isInLane(
   const lanelet::ConstLanelet & candidate_lanelet,
-  const autoware_utils::LinearRing2d & vehicle_footprint) const
+  const tier4_autoware_utils::LinearRing2d & vehicle_footprint) const
 {
   for (const auto & point : vehicle_footprint) {
     if (boost::geometry::within(point, candidate_lanelet.polygon2d().basicPolygon())) {
@@ -678,7 +680,7 @@ bool PullOutModule::hasFinishedBack() const
   // check ego car is close enough to goal pose
   const auto current_pose = planner_data_->self_pose->pose;
   const auto backed_pose = status_.backed_pose;
-  const auto distance = autoware_utils::calcDistance2d(current_pose, backed_pose);
+  const auto distance = tier4_autoware_utils::calcDistance2d(current_pose, backed_pose);
 
   return distance < 1;
 }
@@ -690,7 +692,7 @@ TurnSignalInfo PullOutModule::calcTurnSignalInfo(const ShiftPoint & shift_point)
   if (status_.is_retreat_path_valid && !status_.back_finished) {
     turn_signal.hazard_signal.command = HazardLightsCommand::ENABLE;
     turn_signal.signal_distance =
-      autoware_utils::calcDistance2d(status_.backed_pose, planner_data_->self_pose->pose);
+      tier4_autoware_utils::calcDistance2d(status_.backed_pose, planner_data_->self_pose->pose);
     return turn_signal;
   }
 

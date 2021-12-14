@@ -15,8 +15,8 @@
 #ifndef MOTION_VELOCITY_SMOOTHER__TRAJECTORY_UTILS_HPP_
 #define MOTION_VELOCITY_SMOOTHER__TRAJECTORY_UTILS_HPP_
 
-#include "autoware_utils/geometry/geometry.hpp"
-#include "autoware_utils/trajectory/trajectory.hpp"
+#include "tier4_autoware_utils/geometry/geometry.hpp"
+#include "tier4_autoware_utils/trajectory/trajectory.hpp"
 
 #include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
 #include "geometry_msgs/msg/pose.hpp"

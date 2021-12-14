@@ -1,0 +1,18 @@
+<library path="tier4_vehicle_rviz_plugin">
+  <class name="rviz_plugins/SteeringAngle"
+         type="rviz_plugins::SteeringAngleDisplay"
+         base_class_type="rviz_common::Display">
+  </class>
+  <class name="rviz_plugins/ConsoleMeter"
+         type="rviz_plugins::ConsoleMeterDisplay"
+         base_class_type="rviz_common::Display">
+  </class>
+  <class name="rviz_plugins/TurnSignal"
+         type="rviz_plugins::TurnSignalDisplay"
+         base_class_type="rviz_common::Display">
+  </class>
+  <class name="rviz_plugins/VelocityHistory"
+         type="rviz_plugins::VelocityHistoryDisplay"
+         base_class_type="rviz_common::Display">
+  </class>
+</library>

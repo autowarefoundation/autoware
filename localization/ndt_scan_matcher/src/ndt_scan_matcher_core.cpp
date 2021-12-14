@@ -19,8 +19,8 @@
 #include "ndt_scan_matcher/particle.hpp"
 #include "ndt_scan_matcher/util_func.hpp"
 
-#include <autoware_utils/geometry/geometry.hpp>
-#include <autoware_utils/ros/marker_helper.hpp>
+#include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <tier4_autoware_utils/ros/marker_helper.hpp>
 
 #include <boost/shared_ptr.hpp>
 
@@ -55,8 +55,8 @@ geometry_msgs::msg::TransformStamped identityTransformStamped(
   transform.header.stamp = timestamp;
   transform.header.frame_id = header_frame_id;
   transform.child_frame_id = child_frame_id;
-  transform.transform.rotation = autoware_utils::createQuaternion(0.0, 0.0, 0.0, 1.0);
-  transform.transform.translation = autoware_utils::createTranslation(0.0, 0.0, 0.0);
+  transform.transform.rotation = tier4_autoware_utils::createQuaternion(0.0, 0.0, 0.0, 1.0);
+  transform.transform.translation = tier4_autoware_utils::createTranslation(0.0, 0.0, 0.0);
   return transform;
 }
 
@@ -543,7 +543,7 @@ void NDTScanMatcher::callbackSensorPoints(
   marker.header.frame_id = map_frame_;
   marker.type = visualization_msgs::msg::Marker::ARROW;
   marker.action = visualization_msgs::msg::Marker::ADD;
-  marker.scale = autoware_utils::createMarkerScale(0.3, 0.1, 0.1);
+  marker.scale = tier4_autoware_utils::createMarkerScale(0.3, 0.1, 0.1);
   int i = 0;
   marker.ns = "result_pose_matrix_array";
   marker.action = visualization_msgs::msg::Marker::ADD;
@@ -627,7 +627,7 @@ geometry_msgs::msg::PoseWithCovarianceStamped NDTScanMatcher::alignUsingMonteCar
     Particle particle(initial_pose, result_pose, transform_probability, num_iteration);
     particle_array.push_back(particle);
     const auto marker_array = makeDebugMarkers(
-      this->now(), map_frame_, autoware_utils::createMarkerScale(0.3, 0.1, 0.1), particle, i);
+      this->now(), map_frame_, tier4_autoware_utils::createMarkerScale(0.3, 0.1, 0.1), particle, i);
     ndt_monte_carlo_initial_pose_marker_pub_->publish(marker_array);
 
     auto sensor_points_mapTF_ptr = std::make_shared<pcl::PointCloud<PointSource>>();
@@ -656,7 +656,7 @@ geometry_msgs::msg::PoseWithCovarianceStamped NDTScanMatcher::alignUsingMonteCar
 void NDTScanMatcher::publishTF(
   const std::string & child_frame_id, const geometry_msgs::msg::PoseStamped & pose_msg)
 {
-  tf2_broadcaster_.sendTransform(autoware_utils::pose2transform(pose_msg, child_frame_id));
+  tf2_broadcaster_.sendTransform(tier4_autoware_utils::pose2transform(pose_msg, child_frame_id));
 }
 
 bool NDTScanMatcher::getTransform(

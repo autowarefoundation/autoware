@@ -15,8 +15,8 @@
 #ifndef SURROUND_OBSTACLE_CHECKER__NODE_HPP_
 #define SURROUND_OBSTACLE_CHECKER__NODE_HPP_
 
-#include "autoware_utils/trajectory/tmp_conversion.hpp"
 #include "surround_obstacle_checker/debug_marker.hpp"
+#include "tier4_autoware_utils/trajectory/tmp_conversion.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>

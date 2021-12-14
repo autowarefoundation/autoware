@@ -28,9 +28,9 @@
 #include <autoware_auto_vehicle_msgs/msg/hazard_lights_command.hpp>
 
 // ROS2 core
-#include <autoware_utils/system/heartbeat_checker.hpp>
 #include <rclcpp/create_timer.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <tier4_autoware_utils/system/heartbeat_checker.hpp>
 
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
 #include <nav_msgs/msg/odometry.hpp>
