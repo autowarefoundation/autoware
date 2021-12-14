@@ -1,4 +1,8 @@
 repositories:
+  launch/aip_launcher:
+    type: git
+    url: https://github.com/tier4/AutowareArchitectureProposal_aip_launcher.git
+    version: use-autoware-auto-msgs
   common/autoware_lint_common:
     type: git
     url: https://github.com/tier4/tier4_ament_lint
@@ -51,3 +55,15 @@ repositories:
     type: git
     url: https://github.com/astuff/pacmod3_msgs
     version: main
+  vendor/tamagawa_imu_driver:
+    type: git
+    url: https://github.com/tier4/tamagawa_imu_driver.git
+    version: ros2
+  vendor/livox-driver:
+    type: git
+    url: https://github.com/tier4/livox_ros2_driver.git
+    version: tier4/master
+  vendor/velodyne_vls:
+    type: git
+    url: https://github.com/tier4/velodyne_vls.git
+    version: use-autoware-auto-msgs

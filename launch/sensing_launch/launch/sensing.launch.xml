@@ -1,0 +1,26 @@
+<launch>
+
+  <arg name="launch_driver" default="true" description="do launch driver"/>
+  <arg name="sensor_model" default="aip_xx1" description="sensor model name"/>
+  <arg name="vehicle_param_file" default="$(find-pkg-share vehicle_info_util)/config/vehicle_info.param.yaml" description="path to the file of vehicle info yaml"/>
+  <arg name="vehicle_mirror_param_file" default="$(find-pkg-share vehicle_info_util)/config/vehicle_mirror.param.yaml" description="path to the file of vehicle mirror position yaml"/>
+  <arg name="use_pointcloud_container" default="false" description="launch pointcloud container"/>
+  <arg name="pointcloud_container_name" default="pointcloud_container"/>
+
+  <let name="sensor_launch_pkg" value="$(find-pkg-share $(var sensor_model)_launch)"/>
+
+  <group>
+    <push-ros-namespace namespace="sensing"/>
+
+    <!-- Driver -->
+    <include file="$(var sensor_launch_pkg)/launch/sensing.launch.xml">
+      <arg name="launch_driver" value="$(var launch_driver)" />
+      <arg name="vehicle_param_file" value="$(var vehicle_param_file)" />
+      <arg name="vehicle_mirror_param_file" value="$(var vehicle_mirror_param_file)" />
+      <arg name="use_pointcloud_container" value="$(var use_pointcloud_container)" />
+      <arg name="pointcloud_container_name" value="$(var pointcloud_container_name)"/>
+    </include>
+
+  </group>
+
+</launch>
