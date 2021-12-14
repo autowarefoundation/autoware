@@ -1,0 +1,11 @@
+/**:
+  ros__parameters:
+    vehicle:
+      type: diagnostic_aggregator/AnalyzerGroup
+      path: vehicle
+      analyzers:
+        vehicle_errors:
+          type: diagnostic_aggregator/GenericAnalyzer
+          path: vehicle_errors
+          contains: [": vehicle_errors"]
+          timeout: 1.0
