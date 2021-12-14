@@ -55,7 +55,7 @@ ElevationMapLoaderNode::ElevationMapLoaderNode(const rclcpp::NodeOptions & optio
   inpaint_radius_ = this->declare_parameter("inpaint_radius", 0.3);
   use_elevation_map_cloud_publisher_ =
     this->declare_parameter("use_elevation_map_cloud_publisher", false);
-
+  elevation_map_directory_ = this->declare_parameter("elevation_map_directory", "path_default");
   const bool use_lane_filter = this->declare_parameter("use_lane_filter", false);
   data_manager_.use_lane_filter_ = use_lane_filter;
 
@@ -124,10 +124,8 @@ void ElevationMapLoaderNode::onMapHash(
 {
   RCLCPP_INFO(this->get_logger(), "subscribe map_hash");
   const auto elevation_map_hash = map_hash->pcd;
-  const std::string elevation_map_directory =
-    this->declare_parameter("elevation_map_directory", "path_default");
   data_manager_.elevation_map_path_ = std::make_unique<std::filesystem::path>(
-    std::filesystem::path(elevation_map_directory) / elevation_map_hash);
+    std::filesystem::path(elevation_map_directory_) / elevation_map_hash);
   if (data_manager_.isInitialized()) {
     publish();
   }

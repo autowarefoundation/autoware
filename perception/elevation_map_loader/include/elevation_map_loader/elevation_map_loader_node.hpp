@@ -93,6 +93,7 @@ private:
   grid_map::GridMap elevation_map_;
   std::string layer_name_;
   std::string map_frame_;
+  std::string elevation_map_directory_;
   bool use_inpaint_;
   float inpaint_radius_;
   bool use_elevation_map_cloud_publisher_;
