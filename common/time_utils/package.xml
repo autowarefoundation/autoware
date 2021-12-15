@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="2">
+  <name>time_utils</name>
+  <version>1.0.0</version>
+  <description>
+    Simple conversion methods to/from std::chrono to simplify algorithm development
+  </description>
+  <maintainer email="christopherj.ho@gmail.com">Christopher Ho</maintainer>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>autoware_auto_cmake</buildtool_depend>
+  <buildtool_export_depend>autoware_auto_cmake</buildtool_export_depend>
+
+  <build_depend>builtin_interfaces</build_depend>
+
+  <test_depend>ament_cmake_gtest</test_depend>
+  <!-- <test_depend>ament_lint_auto</test_depend> -->
+  <!-- <test_depend>ament_lint_common</test_depend> -->
+
+  <export><build_type>ament_cmake</build_type></export>
+</package>

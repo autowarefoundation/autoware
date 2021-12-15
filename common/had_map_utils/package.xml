@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+    <name>had_map_utils</name>
+    <version>1.0.0</version>
+    <description>Common utility functions and classes for HAD maps</description>
+    <maintainer email="simon.thompson@tier4.jp">TierIV, Inc.</maintainer>
+    <license>Apache 2.0</license>
+
+    <buildtool_depend>ament_cmake_auto</buildtool_depend>
+    <buildtool_depend>autoware_auto_cmake</buildtool_depend>
+    <build_depend>rclcpp</build_depend>
+    <build_depend>sensor_msgs</build_depend>
+
+    <depend>cgal</depend>
+    <depend>lanelet2_core</depend>
+    <depend>lanelet2_io</depend>
+    <depend>lanelet2</depend>
+    
+    <depend>autoware_auto_mapping_msgs</depend>
+    <depend>autoware_auto_planning_msgs</depend>
+    <depend>autoware_auto_common</depend>
+    <depend>visualization_msgs</depend>
+    <depend>geometry_msgs</depend>
+
+    <test_depend>ament_cmake_gtest</test_depend>
+    <test_depend>ament_lint_auto</test_depend>
+    <test_depend>ament_lint_common</test_depend>
+
+    <export>
+        <build_type>ament_cmake</build_type>
+    </export>
+</package>

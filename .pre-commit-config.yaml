@@ -90,4 +90,4 @@ repos:
         args: [--quiet]
         exclude: .cu
 
-exclude: .svg|control/trajectory_follower|control/trajectory_follower_nodes|common/autoware_auto_dependencies|common/autoware_auto_perception_rviz_plugin|common/osqp_interface|simulator/simple_planning_simulator|planning/freespace_planner|planning/astar_search|planning/costmap_generator
+exclude: .svg|control/trajectory_follower|control/trajectory_follower_nodes|common/autoware_auto_cmake|common/autoware_auto_common|common/autoware_auto_geometry|common/autoware_auto_tf2|common/autoware_testing|common/fake_test_node|common/had_map_utils|common/motion_common|common/motion_testing|common/time_utils|common/vehicle_constants_manager|common/autoware_auto_perception_rviz_plugin|common/osqp_interface|simulator/simple_planning_simulator|planning/freespace_planner|planning/astar_search|planning/costmap_generator

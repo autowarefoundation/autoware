@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+    <name>autoware_auto_tf2</name>
+    <version>1.0.0</version>
+    <description>Transform related utilites for different msg types</description>
+    <maintainer email="jit.ray.c@gmail.com">Jit Ray Chowdhury</maintainer>
+    <license>Apache 2</license>
+
+    <buildtool_depend>ament_cmake</buildtool_depend>
+    <buildtool_depend>autoware_auto_cmake</buildtool_depend>
+
+    <depend>autoware_auto_perception_msgs</depend>
+    <depend>autoware_auto_geometry_msgs</depend>
+    <depend>autoware_auto_system_msgs</depend>
+    <depend>autoware_auto_common</depend>
+    <depend>geometry_msgs</depend>
+    <depend>tf2</depend>
+    <depend>tf2_ros</depend>
+    <depend>orocos_kdl</depend>
+
+    <test_depend>ament_cmake_gtest</test_depend>
+    <!-- <test_depend>ament_lint_auto</test_depend> -->
+    <!-- <test_depend>ament_lint_common</test_depend> -->
+
+    <export><build_type>ament_cmake</build_type></export>
+</package>
