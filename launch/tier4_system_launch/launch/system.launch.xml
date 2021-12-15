@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="run_mode" default="online" description="options: online, planning_simulation"/>
+  <arg name="sensor_model" description="sensor model name"/>
+
+  <let name="sensor_launch_pkg" value="$(find-pkg-share $(var sensor_model)_launch)"/>
+
+  <group>
+    <push-ros-namespace namespace="/system"/>
+
+    <!-- System Monitor -->
+    <group>
+      <push-ros-namespace namespace="system_monitor"/>
+      <include file="$(find-pkg-share system_monitor)/launch/system_monitor.launch.py">
+        <arg name="cpu_monitor_config_file" value="$(find-pkg-share tier4_system_launch)/config/system_monitor/cpu_monitor.param.yaml"/>
+        <arg name="hdd_monitor_config_file" value="$(find-pkg-share tier4_system_launch)/config/system_monitor/hdd_monitor.param.yaml"/>
+        <arg name="mem_monitor_config_file" value="$(find-pkg-share tier4_system_launch)/config/system_monitor/mem_monitor.param.yaml"/>
+        <arg name="net_monitor_config_file" value="$(find-pkg-share tier4_system_launch)/config/system_monitor/net_monitor.param.yaml"/>
+        <arg name="ntp_monitor_config_file" value="$(find-pkg-share tier4_system_launch)/config/system_monitor/ntp_monitor.param.yaml"/>
+        <arg name="process_monitor_config_file" value="$(find-pkg-share tier4_system_launch)/config/system_monitor/process_monitor.param.yaml"/>
+        <arg name="gpu_monitor_config_file" value="$(find-pkg-share tier4_system_launch)/config/system_monitor/gpu_monitor.param.yaml"/>
+      </include>
+    </group>
+
+    <!-- State Monitor -->
+    <let name="config_file" value="$(find-pkg-share ad_service_state_monitor)/config/ad_service_state_monitor.param.yaml" if="$(eval &quot;'$(var run_mode)'=='online'&quot;)"/>
+    <let name="config_file" value="$(find-pkg-share ad_service_state_monitor)/config/ad_service_state_monitor.planning_simulation.param.yaml" if="$(eval &quot;'$(var run_mode)'=='planning_simulation'&quot;)"/>
+    <include file="$(find-pkg-share ad_service_state_monitor)/launch/ad_service_state_monitor.launch.xml">
+      <arg name="config_file" value="$(var config_file)" />
+    </include>
+
+    <!-- Error Monitor -->
+    <let name="config_file" value="$(find-pkg-share system_error_monitor)/config/system_error_monitor.param.yaml" if="$(eval &quot;'$(var run_mode)'=='online'&quot;)"/>
+    <let name="config_file" value="$(find-pkg-share system_error_monitor)/config/system_error_monitor.planning_simulation.param.yaml" if="$(eval &quot;'$(var run_mode)'=='planning_simulation'&quot;)"/>
+    <include file="$(find-pkg-share system_error_monitor)/launch/system_error_monitor.launch.xml">
+      <arg name="config_file" value="$(var config_file)" />
+      <arg name="extra_agg_config_file_sensing" value="$(var sensor_launch_pkg)/config/diagnostic_aggregator/sensor_kit.param.yaml" />
+      <arg name="extra_agg_config_file_vehicle" value="$(find-pkg-share tier4_system_launch)/config/diagnostic_aggregator/vehicle.param.yaml" />
+      <arg name="use_emergency_hold" value="false" />
+    </include>
+
+    <!-- Emergency Handler -->
+    <include file="$(find-pkg-share emergency_handler)/launch/emergency_handler.launch.xml">
+      <arg name="config_file" value="$(find-pkg-share emergency_handler)/config/emergency_handler.param.yaml" />
+    </include>
+
+  </group>
+</launch>

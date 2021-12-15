@@ -69,13 +69,13 @@
       <!-- tracking module -->
       <group>
         <push-ros-namespace namespace="tracking"/>
-        <include file="$(find-pkg-share perception_launch)/launch/object_recognition/tracking/tracking.launch.xml">
+        <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/tracking/tracking.launch.xml">
         </include>
       </group>
       <!-- prediction module -->
       <group>
         <push-ros-namespace namespace="prediction"/>
-        <include file="$(find-pkg-share perception_launch)/launch/object_recognition/prediction/prediction.launch.xml">
+        <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/prediction/prediction.launch.xml">
           <arg name="use_vector_map" value="true" />
         </include>
       </group>
@@ -91,7 +91,7 @@
     <!-- traffic light module -->
     <group if="$(var use_traffic_light_recognition)">
       <push-ros-namespace namespace="traffic_light_recognition"/>
-      <include file="$(find-pkg-share perception_launch)/launch/traffic_light_recognition/traffic_light.launch.xml"></include>
+      <include file="$(find-pkg-share tier4_perception_launch)/launch/traffic_light_recognition/traffic_light.launch.xml"></include>
     </group>
   </group>
 </launch>

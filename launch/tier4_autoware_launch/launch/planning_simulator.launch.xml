@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <!-- Essential parameters -->
+  <arg name="map_path" description="point cloud and lanelet2 map directory path"/>
+  <arg name="vehicle_model" description="vehicle model name"/>
+  <arg name="sensor_model" description="sensor model name"/>
+  <!-- Optional parameters -->
+  <arg name="rviz" default="true" description="launch rviz"/>
+  <arg name="rviz_config" default="$(find-pkg-share tier4_autoware_launch)/rviz/autoware.rviz" description="rviz config"/>
+  <arg name="lanelet2_map_file" default="lanelet2_map.osm" description="lanelet2 map file name"/>
+  <arg name="pointcloud_map_file" default="pointcloud_map.pcd" description="pointcloud map file name"/>
+  <!-- Optional parameters for scenario simulation -->
+  <arg name="initial_engage_state" default="true" description="/vehicle/engage state after starting Autoware"/>
+  <arg name="perception/enable_detection_failure" default="true" description="enable to simulate detection failure when using dummy perception"/>
+  <arg name="perception/enable_object_recognition" default="true" description="enable object recognition when using dummy perception"/>
+  <arg name="sensing/visible_range" default="300.0" description="visible range when using dummy perception"/>
+  <arg name="scenario_simulation" default="false" description="use scenario simulation"/>
+  <!-- Optional parameters for vcu emulation -->
+  <arg name="vehicle_simulation" default="true" description="use vehicle simulation"/>
+
+  <!-- Global parameters -->
+  <include file="$(find-pkg-share global_parameter_loader)/launch/global_params.launch.py">
+    <arg name="vehicle_model" value="$(var vehicle_model)"/>
+  </include>
+
+  <!-- Vehicle -->
+  <include file="$(find-pkg-share tier4_vehicle_launch)/launch/vehicle.launch.xml">
+    <arg name="vehicle_model" value="$(var vehicle_model)"/>
+    <arg name="sensor_model" value="$(var sensor_model)"/>
+    <arg name="simulation" value="$(var vehicle_simulation)"/>
+  </include>
+
+  <!-- System -->
+  <include file="$(find-pkg-share tier4_system_launch)/launch/system.launch.xml">
+    <arg name="run_mode" value="planning_simulation"/>
+    <arg name="sensor_model" value="$(var sensor_model)"/>
+  </include>
+
+  <!-- Map -->
+  <include file="$(find-pkg-share tier4_map_launch)/launch/map.launch.py">
+    <arg name="lanelet2_map_path" value="$(var map_path)/$(var lanelet2_map_file)" />
+    <arg name="pointcloud_map_path" value="$(var map_path)/$(var pointcloud_map_file)"/>
+  </include>
+
+  <!-- Planning -->
+  <include file="$(find-pkg-share tier4_planning_launch)/launch/planning.launch.xml">
+    <arg name="vehicle_info_param_file" value="$(find-pkg-share $(var vehicle_model)_description)/config/vehicle_info.param.yaml"/>
+  </include>
+
+  <!-- Control -->
+  <include file="$(find-pkg-share tier4_control_launch)/launch/control.launch.py">
+    <!-- options for lateral_controller_mode: mpc_follower, pure_pursuit -->
+    <arg name="lateral_controller_mode" value="mpc_follower" />
+    <arg name="vehicle_info_param_file" value="$(find-pkg-share $(var vehicle_model)_description)/config/vehicle_info.param.yaml"/>
+  </include>
+
+  <!-- Initial Pose Relay -->
+    <node pkg="topic_tools" exec="relay" name="initial_pose_2d">
+      <param name="input_topic" value="/initialpose"/>
+      <param name="output_topic" value="/initialpose2d"/>
+      <param name="type" value="geometry_msgs/msg/PoseWithCovarianceStamped"/>
+    </node>
+
+  <!-- Rviz -->
+  <node pkg="rviz2" exec="rviz2" name="rviz2" output="screen" args="-d $(var rviz_config) -s $(find-pkg-share tier4_autoware_launch)/rviz/image/autoware.png" if="$(var rviz)"/>
+
+  <!-- Web Controller -->
+  <include file="$(find-pkg-share web_controller)/launch/web_controller.launch.xml" unless="$(var scenario_simulation)"/>
+
+  <!-- Simulator -->
+  <include file="$(find-pkg-share tier4_simulator_launch)/launch/simulator.launch.xml">
+    <arg name="scenario_simulation" value="$(var scenario_simulation)"/>
+    <arg name="perception/enable_detection_failure" value="$(var perception/enable_detection_failure)"/>
+    <arg name="perception/enable_object_recognition" value="$(var perception/enable_object_recognition)"/>
+    <arg name="sensing/visible_range" value="$(var sensing/visible_range)"/>
+    <arg name="vehicle_simulation" value="$(var vehicle_simulation)"/>
+    <arg name="vehicle_model" value="$(var vehicle_model)"/>
+    <arg name="initial_engage_state" value="$(var initial_engage_state)"/>
+    <arg name="vehicle_info_param_file" value="$(find-pkg-share $(var vehicle_model)_description)/config/vehicle_info.param.yaml"/>
+  </include>
+</launch>

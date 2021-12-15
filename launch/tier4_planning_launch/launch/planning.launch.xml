@@ -1,0 +1,30 @@
+<launch>
+  <!-- planning module -->
+
+  <arg name="vehicle_info_param_file" />
+
+  <group>
+    <push-ros-namespace namespace="planning"/>
+    <!-- mission planning module -->
+    <group>
+      <push-ros-namespace namespace="mission_planning"/>
+      <include file="$(find-pkg-share tier4_planning_launch)/launch/mission_planning/mission_planning.launch.py">
+      </include>
+    </group>
+
+    <!-- scenario planning module -->
+    <group>
+      <push-ros-namespace namespace="scenario_planning"/>
+      <include file="$(find-pkg-share tier4_planning_launch)/launch/scenario_planning/scenario_planning.launch.xml">
+        <arg name="vehicle_info_param_file" value="$(var vehicle_info_param_file)" />
+      </include>
+    </group>
+
+    <!-- planning error monitor -->
+    <group>
+      <push-ros-namespace namespace="planning_diagnostics"/>
+      <include file="$(find-pkg-share tier4_planning_launch)/launch/planning_diagnostics/planning_error_monitor.launch.xml">
+      </include>
+    </group>
+  </group>
+</launch>

@@ -1,0 +1,50 @@
+<launch>
+  <!-- common param -->
+  <arg name="common_param_path" default="$(find-pkg-share tier4_planning_launch)/config/scenario_planning/common/common.param.yaml"/>
+  <arg name="vehicle_info_param_file" />
+
+  <!-- scenario selector -->
+  <include file="$(find-pkg-share scenario_selector)/launch/scenario_selector.launch.xml">
+    <arg name="input_lane_driving_trajectory" value="/planning/scenario_planning/lane_driving/trajectory"/>
+    <arg name="input_parking_trajectory" value="/planning/scenario_planning/parking/trajectory"/>
+    <arg name="input_lanelet_map" value="/map/vector_map"/>
+    <arg name="input_route" value="/planning/mission_planning/route"/>
+    <arg name="input_odometry" value="/localization/kinematic_state"/>
+    <arg name="output_scenario" value="/planning/scenario_planning/scenario"/>
+    <arg name="output_trajectory" value="/planning/scenario_planning/scenario_selector/trajectory"/>
+    <arg name="is_parking_completed" value="/planning/scenario_planning/parking/is_completed"/>
+  </include>
+
+  <!-- velocity planning with max velocity, acceleration, jerk, stop point constraint -->
+  <group>
+    <arg name="param_path" default="$(find-pkg-share tier4_planning_launch)/config/scenario_planning/common/motion_velocity_smoother/motion_velocity_smoother.param.yaml"/>
+    <!-- external velocity limit selector -->
+    <include file="$(find-pkg-share external_velocity_limit_selector)/launch/external_velocity_limit_selector.launch.xml">
+      <arg name="common_param_path" value="$(var common_param_path)"/>
+      <arg name="param_path" value="$(var param_path)"/>
+    </include>
+    <!-- motion velocity smoother -->
+    <arg name="smoother_type" default="JerkFiltered" />
+    <set_remap from="~/input/trajectory" to="/planning/scenario_planning/scenario_selector/trajectory" />
+    <set_remap from="~/output/trajectory" to="/planning/scenario_planning/trajectory" />
+    <include file="$(find-pkg-share motion_velocity_smoother)/launch/motion_velocity_smoother.launch.xml">
+      <arg name="smoother_type" value="$(var smoother_type)" />
+      <arg name="common_param_path" value="$(var common_param_path)"/>
+      <arg name="param_path" value="$(var param_path)"/>
+      <arg name="smoother_param_path" value="$(find-pkg-share tier4_planning_launch)/config/scenario_planning/common/motion_velocity_smoother/$(var smoother_type).param.yaml"/>
+    </include>
+  </group>
+
+  <!-- scenarios-->
+  <group>
+    <!-- lane driving -->
+    <include file="$(find-pkg-share tier4_planning_launch)/launch/scenario_planning/lane_driving.launch.xml">
+      <arg name="common_param_path" value="$(var common_param_path)"/>
+      <arg name="vehicle_info_param_file" value="$(var vehicle_info_param_file)" />
+    </include>
+    <!-- parking -->
+    <include file="$(find-pkg-share tier4_planning_launch)/launch/scenario_planning/parking.launch.py">
+      <arg name="vehicle_info_param_file" value="$(var vehicle_info_param_file)" />
+    </include>
+  </group>
+</launch>

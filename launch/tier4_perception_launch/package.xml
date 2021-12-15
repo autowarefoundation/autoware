@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>tier4_perception_launch</name>
+  <version>0.1.0</version>
+  <description>The tier4_perception_launch package</description>
+
+  <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <exec_depend>compare_map_segmentation</exec_depend>
+  <exec_depend>euclidean_cluster</exec_depend>
+  <exec_depend>ground_segmentation</exec_depend>
+  <exec_depend>image_transport_decompressor</exec_depend>
+  <exec_depend>lidar_apollo_instance_segmentation</exec_depend>
+  <exec_depend>map_based_prediction</exec_depend>
+  <exec_depend>multi_object_tracker</exec_depend>
+  <exec_depend>object_merger</exec_depend>
+  <exec_depend>object_range_splitter</exec_depend>
+  <exec_depend>occupancy_grid_map_outlier_filter</exec_depend>
+  <exec_depend>pointcloud_preprocessor</exec_depend>
+  <exec_depend>pointcloud_to_laserscan</exec_depend>
+  <exec_depend>roi_cluster_fusion</exec_depend>
+  <exec_depend>shape_estimation</exec_depend>
+  <exec_depend>tensorrt_yolo</exec_depend>
+  <exec_depend>traffic_light_classifier</exec_depend>
+  <exec_depend>traffic_light_map_based_detector</exec_depend>
+  <exec_depend>traffic_light_ssd_fine_detector</exec_depend>
+  <exec_depend>traffic_light_visualization</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

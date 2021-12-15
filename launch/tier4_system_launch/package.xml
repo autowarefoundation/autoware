@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>tier4_system_launch</name>
+  <version>0.1.0</version>
+  <description>The tier4_system_launch package</description>
+
+  <maintainer email="kenji.miyake@tier4.jp">Kenji Miyake</maintainer>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <exec_depend>ad_service_state_monitor</exec_depend>
+  <exec_depend>emergency_handler</exec_depend>
+  <exec_depend>system_error_monitor</exec_depend>
+  <exec_depend>system_monitor</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

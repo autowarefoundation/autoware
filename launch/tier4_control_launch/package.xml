@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>tier4_control_launch</name>
+  <version>0.1.0</version>
+  <description>The tier4_control_launch package</description>
+
+  <maintainer email="horibe.takamasa@gmail.com">Takamasa Horibe</maintainer>
+
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <exec_depend>external_cmd_converter</exec_depend>
+  <exec_depend>lane_departure_checker</exec_depend>
+  <exec_depend>shift_decider</exec_depend>
+  <exec_depend>trajectory_follower</exec_depend>
+  <exec_depend>trajectory_follower_nodes</exec_depend>
+  <exec_depend>vehicle_cmd_gate</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

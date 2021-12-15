@@ -1,0 +1,27 @@
+<launch>
+  <!-- common param -->
+  <arg name="common_param_path"/>
+  <arg name="vehicle_info_param_file" />
+
+  <!-- lane_driving scenario -->
+  <group>
+    <push-ros-namespace namespace="lane_driving"/>
+    <!-- behavior planning module -->
+    <group>
+      <push-ros-namespace namespace="behavior_planning"/>
+      <include file="$(find-pkg-share tier4_planning_launch)/launch/scenario_planning/lane_driving/behavior_planning/behavior_planning.launch.py">
+        <arg name="vehicle_info_param_file" value="$(var vehicle_info_param_file)" />
+        <arg name="use_multithread" value="true" />
+      </include>
+    </group>
+
+    <!-- motion planning module -->
+    <group>
+      <push-ros-namespace namespace="motion_planning"/>
+      <include file="$(find-pkg-share tier4_planning_launch)/launch/scenario_planning/lane_driving/motion_planning/motion_planning.launch.py">
+        <arg name="vehicle_info_param_file" value="$(var vehicle_info_param_file)" />
+        <arg name="use_multithread" value="true" />
+      </include>
+    </group>
+  </group>
+</launch>

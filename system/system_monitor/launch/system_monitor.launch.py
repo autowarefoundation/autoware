@@ -119,7 +119,7 @@ def launch_setup(context, *args, **kwargs):
 
 def generate_launch_description():
     system_monitor_path = os.path.join(
-        get_package_share_directory("system_launch"), "config", "system_monitor"
+        get_package_share_directory("tier4_system_launch"), "config", "system_monitor"
     )
     return launch.LaunchDescription(
         [

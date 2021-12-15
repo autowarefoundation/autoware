@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="vehicle_model" description="vehicle model name"/>
+  <arg name="sensor_model" description="sensor model name"/>
+  <arg name="vehicle_id" description="vehicle specific ID"/>
+
+
+  <!-- tf publisher -->
+  <arg name="model" default="$(find-pkg-share tier4_vehicle_launch)/urdf/vehicle.xacro" description="path to the file of model settings (*.xacro)"/>
+  <arg name="config_dir" default="$(find-pkg-share individual_params)/config/$(var vehicle_id)/$(var sensor_model)" description="path to the directory of calibration parameters"/>
+  <node name="robot_state_publisher" pkg="robot_state_publisher" exec="robot_state_publisher">
+    <param name="robot_description" value="$(command 'xacro $(var model) vehicle_model:=$(var vehicle_model) sensor_model:=$(var sensor_model) config_dir:=$(var config_dir)')"/>
+  </node>
+
+</launch>
