@@ -21,12 +21,18 @@ repos:
     rev: v0.30.0
     hooks:
       - id: markdownlint
-        args: ["-c", ".markdownlint.yaml", "--fix"]
+        args: [-c, .markdownlint.yaml, --fix]
 
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v2.5.0
     hooks:
       - id: prettier
+
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.26.3
+    hooks:
+      - id: yamllint
+        exclude: .*.param.yaml
 
   - repo: https://github.com/tier4/pre-commit-hooks-ros
     rev: v0.4.0
@@ -54,7 +60,7 @@ repos:
     rev: 21.11b1
     hooks:
       - id: black
-        args: ["--line-length=100"]
+        args: [--line-length=100]
 
   - repo: https://github.com/PyCQA/flake8
     rev: 4.0.1
@@ -62,14 +68,14 @@ repos:
       - id: flake8
         additional_dependencies:
           [
-            "flake8-blind-except",
-            "flake8-builtins",
-            "flake8-class-newline",
-            "flake8-comprehensions",
-            "flake8-deprecated",
-            "flake8-docstrings",
-            "flake8-import-order",
-            "flake8-quotes",
+            flake8-blind-except,
+            flake8-builtins,
+            flake8-class-newline,
+            flake8-comprehensions,
+            flake8-deprecated,
+            flake8-docstrings,
+            flake8-import-order,
+            flake8-quotes,
           ]
 
   - repo: https://github.com/pre-commit/mirrors-clang-format
@@ -81,7 +87,7 @@ repos:
     rev: 1.5.5
     hooks:
       - id: cpplint
-        args: ["--quiet"]
-        exclude: ".cu"
+        args: [--quiet]
+        exclude: .cu
 
-exclude: ".svg|control/trajectory_follower|control/trajectory_follower_nodes|common/autoware_auto_dependencies|common/autoware_auto_perception_rviz_plugin|common/osqp_interface|simulator/simple_planning_simulator|planning/freespace_planner|planning/astar_search|planning/costmap_generator"
+exclude: .svg|control/trajectory_follower|control/trajectory_follower_nodes|common/autoware_auto_dependencies|common/autoware_auto_perception_rviz_plugin|common/osqp_interface|simulator/simple_planning_simulator|planning/freespace_planner|planning/astar_search|planning/costmap_generator

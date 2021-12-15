@@ -3,7 +3,7 @@ site_url: https://autowarefoundation.github.io/autoware.universe
 repo_url: https://github.com/autowarefoundation/autoware.universe
 edit_uri: edit/main/
 docs_dir: .
-copyright: "Copyright &copy; 2021 The Autoware Foundation"
+copyright: Copyright &copy; 2021 The Autoware Foundation
 
 theme:
   name: material
@@ -50,22 +50,27 @@ plugins:
   - awesome-pages
   - exclude:
       regex:
-        - '^(?!(.*/)?assets/).*\.(?!(.*\.)?md|(.*\.)?svg|(.*\.)?png|(.*\.)?jpg).*$'
-        - "^(.*/)?[^.]*$"
+        - ^(?!(.*/)?assets/).*\.(?!(.*\.)?md|(.*\.)?svg|(.*\.)?png|(.*\.)?jpg).*$
+        - ^(.*/)?[^.]*$
   - same-dir
   - search
 
 markdown_extensions:
   - admonition
   - attr_list
-  - codehilite: { guess_lang: false }
+  - codehilite:
+      guess_lang: false
   - fontawesome_markdown
   - footnotes
   - mdx_math
-  - mdx_truly_sane_lists: { nested_indent: 2 }
+  - mdx_truly_sane_lists:
+      nested_indent: 2
   - mdx_unimoji
-  - plantuml_markdown: { server: "http://www.plantuml.com/plantuml", format: svg }
+  - plantuml_markdown:
+      server: http://www.plantuml.com/plantuml
+      format: svg
   - pymdownx.arithmatex
   - pymdownx.highlight
   - pymdownx.superfences
-  - toc: { permalink: "#" }
+  - toc:
+      permalink: "#"

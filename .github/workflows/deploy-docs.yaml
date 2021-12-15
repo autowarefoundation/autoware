@@ -6,7 +6,7 @@ on:
       - main
       - tier4/proposal
     paths:
-      - "mkdocs.yaml"
+      - mkdocs.yaml
       - "**/*.md"
       - "**/*.svg"
       - "**/*.png"

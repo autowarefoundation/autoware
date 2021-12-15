@@ -1,0 +1,12 @@
+extends: default
+
+rules:
+  comments:
+    min-spaces-from-content: 1 # To be compatible with C++ and Python
+  document-start:
+    present: false # Don't need document start markers
+  line-length: disable # Delegate to Prettier
+  truthy:
+    allowed-values: ["true", "false", "on"] # https://github.com/adrienverge/yamllint/issues/158#issuecomment-536735525
+  quoted-strings:
+    required: only-when-needed # To keep consistent style

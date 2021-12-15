@@ -2,7 +2,7 @@ name: build-and-test-scheduled
 
 on:
   schedule:
-    - cron: "0 19 * * *" # run at 4 AM JST
+    - cron: 0 19 * * * # run at 4 AM JST
   workflow_dispatch:
 
 jobs:
