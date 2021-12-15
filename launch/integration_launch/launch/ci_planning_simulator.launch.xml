@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <!-- TODO: add the appropriate vehicle and sensor model below. -->
+  <arg name="vehicle_model" default="" description="vehicle model name"/>
+  <arg name="sensor_model" default="" description="sensor model name"/>
+  <arg name="map_path" default="" description="path to the directory of point cloud and lanelet2 map"/>
+  <arg name="rviz" default="false" description="launch rviz"/>
+
+  <!-- autoware -->
+  <include file="$(find-pkg-share autoware_launch)/launch/planning_simulator.launch.xml">
+    <arg name="vehicle_model" value="$(var vehicle_model)" />
+    <arg name="sensor_model" value="$(var sensor_model)" />
+    <arg name="map_path" value="$(var map_path)"/>
+    <arg name="rviz" value="$(var rviz)" />
+    <arg name="initial_engage_state" value="false" />
+    <arg name="perception/enable_detection_failure" value="false" />
+    <arg name="sensing/visible_range" value="1000.0" />
+  </include>
+
+  <!-- ci  -->
+  <!-- TODO  -->
+
+</launch>
