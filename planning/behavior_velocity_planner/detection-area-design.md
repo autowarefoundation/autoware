@@ -6,9 +6,9 @@ If pointcloud is detected in a detection area defined on a map, the stop plannin
 
 ![brief](./docs/detection_area/detection_area.svg)
 
-#### Launch Timing
+#### Activation Timing
 
-Launches if there is a detection area on the target lane.
+This module is activated when there is a detection area on the target lane.
 
 ### Algorithm
 

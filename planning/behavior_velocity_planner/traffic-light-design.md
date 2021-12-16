@@ -13,9 +13,9 @@ In addition, the STOP/GO interface of behavior_velocity_planner allows external 
 
 This module allows developers to design STOP/GO in traffic light module using specific rules. Due to the property of rule-based planning, the algorithm is greatly depends on object detection and perception accuracy considering traffic light. Also, this module only handles STOP/Go at traffic light scene, so rushing or quick decision according to traffic condition is future work.
 
-#### Launch Timing
+#### Activation Timing
 
-Launches when there is traffic light in ego lane.
+This module is activated when there is traffic light in ego lane.
 
 #### Algorithm
 

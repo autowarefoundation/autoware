@@ -1,17 +1,30 @@
-### Stop Line
+## Stop Line
 
-#### Role
+### Role
 
 This module plans velocity so that the vehicle can stop right before stop lines and restart driving after stopped.
 
-#### Module Parameters
+![stop line](docs/stop_line/stop_line.svg)
+
+### Activation Timing
+
+This module is activated when there is a stop line in a target lane.
+
+### Inner-workings / Algorithms
+
+- Gets a stop line from map information.
+- insert a stop point on the path from the stop line defined in the map and the ego vehicle length.
+- Sets velocities of the path after the stop point to 0[m/s].
+- Release the inserted stop velocity when the vehicle stops within a radius of 2[m] from the stop point.
+
+### Module Parameters
 
 | Parameter         | Type   | Description                                                                                    |
 | ----------------- | ------ | ---------------------------------------------------------------------------------------------- |
 | `stop_margin`     | double | a margin that the vehicle tries to stop before stop_line                                       |
 | `stop_check_dist` | double | when the vehicle is within `stop_check_dist` from stop_line and stopped, move to STOPPED state |
 
-#### Flowchart
+### Flowchart
 
 ```plantuml
 @startuml
