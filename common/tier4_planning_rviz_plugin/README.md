@@ -1,6 +1,6 @@
 # tier4_planning_rviz_plugin
 
-This package is including jsk code.  
+This package is including jsk code.
 Note that jsk_overlay_utils.cpp and jsk_overlay_utils.hpp are BSD license.
 
 ## Purpose
@@ -29,13 +29,13 @@ This plugin displays the path, trajectory, and maximum speed.
 
 #### MissionCheckpoint
 
-| Name 　                  | Type   | Default Value        | Description                                        |
-| ------------------------ | ------ | -------------------- | -------------------------------------------------- |
-| `pose_topic_property_`　 | string | `mission_checkpoint` | The topic on which to publish checkpoint           |
-| `std_dev_x_` 　          | float  | 0.5                  | X standard deviation for checkpoint pose [m]       |
-| `std_dev_y_` 　          | float  | 0.5                  | Y standard deviation for checkpoint pose [m]       |
-| `std_dev_theta_` 　      | float  | M_PI / 12.0          | Theta standard deviation for checkpoint pose [rad] |
-| `position_z_` 　         | float  | 0.0                  | Z position for checkpoint pose [m]                 |
+| Name                   | Type   | Default Value        | Description                                        |
+| ---------------------- | ------ | -------------------- | -------------------------------------------------- |
+| `pose_topic_property_` | string | `mission_checkpoint` | The topic on which to publish checkpoint           |
+| `std_dev_x_`           | float  | 0.5                  | X standard deviation for checkpoint pose [m]       |
+| `std_dev_y_`           | float  | 0.5                  | Y standard deviation for checkpoint pose [m]       |
+| `std_dev_theta_`       | float  | M_PI / 12.0          | Theta standard deviation for checkpoint pose [rad] |
+| `position_z_`          | float  | 0.0                  | Z position for checkpoint pose [m]                 |
 
 #### Path
 
@@ -52,6 +52,14 @@ This plugin displays the path, trajectory, and maximum speed.
 | `property_velocity_color_view_` | bool   | false         | Use Constant Color or not    |
 | `property_velocity_color_`      | QColor | Qt::black     | Color of Velocity property   |
 | `property_vel_max_`             | float  | 3.0           | Max velocity [m/s]           |
+
+#### DrivableArea
+
+| Name                     | Type  | Default Value | Description                           |
+| ------------------------ | ----- | ------------- | ------------------------------------- |
+| `color_scheme_property_` | int   | 0             | Color scheme of DrivableArea property |
+| `alpha_property_`        | float | 0.2           | Alpha of DrivableArea property        |
+| `draw_under_property_`   | bool  | false         | Draw as background or not             |
 
 #### PathFootprint
 

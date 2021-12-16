@@ -1,23 +1,28 @@
 <library path="tier4_planning_rviz_plugin">
+  <class name="rviz_plugins/DrivableArea"
+    type="rviz_plugins::AutowareDrivableAreaDisplay"
+    base_class_type="rviz_common::Display">
+    <description>Display drivable area of autoware_auto_planning_msg::Path</description>
+  </class>
   <class name="rviz_plugins/Path"
     type="rviz_plugins::AutowarePathDisplay"
     base_class_type="rviz_common::Display">
-    <description>Display autoware_auto_planning_msgs::Path</description>
+    <description>Display path points of autoware_auto_planning_msg::Path</description>
   </class>
   <class name="rviz_plugins/PathFootprint"
     type="rviz_plugins::AutowarePathFootprintDisplay"
     base_class_type="rviz_common::Display">
-    <description>Display autoware_auto_planning_msgs::PathFootprint</description>
+    <description>Display footprint of autoware_auto_planning_msg::Path</description>
   </class>
   <class name="rviz_plugins/Trajectory"
     type="rviz_plugins::AutowareTrajectoryDisplay"
     base_class_type="rviz_common::Display">
-    <description>Display autoware_auto_planning_msgs::Trajectory</description>
+    <description>Display trajectory points of autoware_auto_planning_msg::Trajectory</description>
   </class>
   <class name="rviz_plugins/TrajectoryFootprint"
     type="rviz_plugins::AutowareTrajectoryFootprintDisplay"
     base_class_type="rviz_common::Display">
-    <description>Display autoware_auto_planning_msgs::TrajectoryFootprint</description>
+    <description>Display footprint of autoware_auto_planning_msg::Trajectory</description>
   </class>
   <class name="rviz_plugins/MaxVelocity"
     type="rviz_plugins::MaxVelocityDisplay"

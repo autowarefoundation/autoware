@@ -21,6 +21,8 @@ add_definitions(-DQT_NO_KEYWORDS)
 find_package(Eigen3 REQUIRED)
 
 ament_auto_add_library(tier4_planning_rviz_plugin SHARED
+  include/drivable_area/display.hpp
+  src/drivable_area/display.cpp
   include/path/display.hpp
   src/path/display.cpp
   include/path_footprint/display.hpp
