@@ -1,4 +1,4 @@
-<library path="tier4_plannnig_rviz_plugin">
+<library path="tier4_planning_rviz_plugin">
   <class name="rviz_plugins/Path"
     type="rviz_plugins::AutowarePathDisplay"
     base_class_type="rviz_common::Display">
