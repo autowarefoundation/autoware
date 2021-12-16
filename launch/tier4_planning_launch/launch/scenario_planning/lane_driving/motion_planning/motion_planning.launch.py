@@ -124,7 +124,7 @@ def launch_setup(context, *args, **kwargs):
             {
                 "input_topic": "obstacle_avoidance_planner/trajectory",
                 "output_topic": "surround_obstacle_checker/trajectory",
-                "type": "autoware_planning_msgs/msg/Trajectory",
+                "type": "autoware_auto_planning_msgs/msg/Trajectory",
             }
         ],
         extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],

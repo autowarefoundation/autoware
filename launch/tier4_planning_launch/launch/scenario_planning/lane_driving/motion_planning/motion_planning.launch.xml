@@ -32,7 +32,7 @@
     <node pkg="topic_tools" exec="relay" name="skip_surround_obstacle_check_relay" output="log">
       <param name="input_topic" value="obstacle_avoidance_planner/trajectory" />
       <param name="output_topic" value="surround_obstacle_checker/trajectory" />
-      <param name="type" value="autoware_planning_msgs/msg/Trajectory" />
+      <param name="type" value="autoware_auto_planning_msgs/msg/Trajectory" />
     </node>
   </group>
 
