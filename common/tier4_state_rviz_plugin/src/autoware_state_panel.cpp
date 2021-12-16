@@ -40,6 +40,15 @@ AutowareStatePanel::AutowareStatePanel(QWidget * parent) : rviz_common::Panel(pa
   gate_layout->addWidget(gate_prefix_label_ptr);
   gate_layout->addWidget(gate_mode_label_ptr_);
 
+  // Selector Mode
+  auto * selector_prefix_label_ptr = new QLabel("SELECT: ");
+  selector_prefix_label_ptr->setAlignment(Qt::AlignRight);
+  selector_mode_label_ptr_ = new QLabel("INIT");
+  selector_mode_label_ptr_->setAlignment(Qt::AlignCenter);
+  auto * selector_layout = new QHBoxLayout;
+  selector_layout->addWidget(selector_prefix_label_ptr);
+  selector_layout->addWidget(selector_mode_label_ptr_);
+
   // State
   auto * state_prefix_label_ptr = new QLabel("STATE: ");
   state_prefix_label_ptr->setAlignment(Qt::AlignRight);
@@ -73,6 +82,7 @@ AutowareStatePanel::AutowareStatePanel(QWidget * parent) : rviz_common::Panel(pa
 
   auto * v_layout = new QVBoxLayout;
   v_layout->addLayout(gate_layout);
+  v_layout->addLayout(selector_layout);
   v_layout->addLayout(state_layout);
   v_layout->addLayout(gear_layout);
   v_layout->addLayout(engage_status_layout);
@@ -86,6 +96,11 @@ void AutowareStatePanel::onInitialize()
 
   sub_gate_mode_ = raw_node_->create_subscription<tier4_control_msgs::msg::GateMode>(
     "/control/current_gate_mode", 10, std::bind(&AutowareStatePanel::onGateMode, this, _1));
+
+  sub_selector_mode_ =
+    raw_node_->create_subscription<tier4_control_msgs::msg::ExternalCommandSelectorMode>(
+      "/control/external_cmd_selector/current_selector_mode", 10,
+      std::bind(&AutowareStatePanel::onSelectorMode, this, _1));
 
   sub_autoware_state_ =
     raw_node_->create_subscription<autoware_auto_system_msgs::msg::AutowareState>(
@@ -117,6 +132,32 @@ void AutowareStatePanel::onGateMode(const tier4_control_msgs::msg::GateMode::Con
     default:
       gate_mode_label_ptr_->setText("UNKNOWN");
       gate_mode_label_ptr_->setStyleSheet("background-color: #FF0000;");
+      break;
+  }
+}
+
+void AutowareStatePanel::onSelectorMode(
+  const tier4_control_msgs::msg::ExternalCommandSelectorMode::ConstSharedPtr msg)
+{
+  switch (msg->data) {
+    case tier4_control_msgs::msg::ExternalCommandSelectorMode::REMOTE:
+      selector_mode_label_ptr_->setText("REMOTE");
+      selector_mode_label_ptr_->setStyleSheet("background-color: #00FF00;");
+      break;
+
+    case tier4_control_msgs::msg::ExternalCommandSelectorMode::LOCAL:
+      selector_mode_label_ptr_->setText("LOCAL");
+      selector_mode_label_ptr_->setStyleSheet("background-color: #FFFF00;");
+      break;
+
+    case tier4_control_msgs::msg::ExternalCommandSelectorMode::NONE:
+      selector_mode_label_ptr_->setText("NONE");
+      selector_mode_label_ptr_->setStyleSheet("background-color: #FF0000;");
+      break;
+
+    default:
+      selector_mode_label_ptr_->setText("UNKNOWN");
+      selector_mode_label_ptr_->setStyleSheet("background-color: #FF0000;");
       break;
   }
 }
@@ -170,13 +211,14 @@ void AutowareStatePanel::onShift(
 void AutowareStatePanel::onEngageStatus(
   const tier4_external_api_msgs::msg::EngageStatus::ConstSharedPtr msg)
 {
-  engage_status_label_ptr_->setText(QString::fromStdString(Bool2String(msg->engage)));
+  current_engage_ = msg->engage;
+  engage_status_label_ptr_->setText(QString::fromStdString(Bool2String(current_engage_)));
 }
 
 void AutowareStatePanel::onClickAutowareEngage()
 {
   auto req = std::make_shared<tier4_external_api_msgs::srv::Engage::Request>();
-  req->engage = true;
+  req->engage = current_engage_ ? false : true;
 
   RCLCPP_INFO(raw_node_->get_logger(), "client request");
 
