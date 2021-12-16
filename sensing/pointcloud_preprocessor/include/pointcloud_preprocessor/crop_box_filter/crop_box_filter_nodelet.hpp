@@ -72,8 +72,17 @@ protected:
   void publishCropBoxPolygon();
 
 private:
-  /** \brief The PCL filter implementation used. */
-  pcl::CropBox<pcl::PCLPointCloud2> impl_;
+  struct CropBoxParam
+  {
+    float min_x;
+    float max_x;
+    float min_y;
+    float max_y;
+    float min_z;
+    float max_z;
+    bool negative{false};
+  } param_;
+
   rclcpp::Publisher<geometry_msgs::msg::PolygonStamped>::SharedPtr crop_box_polygon_pub_;
 
   /** \brief Parameter service callback result : needed to be hold */

@@ -51,6 +51,8 @@
 
 #include "pointcloud_preprocessor/crop_box_filter/crop_box_filter_nodelet.hpp"
 
+#include <sensor_msgs/point_cloud2_iterator.hpp>
+
 #include <vector>
 
 namespace pointcloud_preprocessor
@@ -60,20 +62,14 @@ CropBoxFilterComponent::CropBoxFilterComponent(const rclcpp::NodeOptions & optio
 {
   // set initial parameters
   {
-    Eigen::Vector4f new_min_point = Eigen::Vector4f::Zero();
-    new_min_point(0) = static_cast<float>(declare_parameter("min_x", -1.0));
-    new_min_point(1) = static_cast<float>(declare_parameter("min_y", -1.0));
-    new_min_point(2) = static_cast<float>(declare_parameter("min_z", -1.0));
-    impl_.setMin(new_min_point);
-
-    Eigen::Vector4f new_max_point = Eigen::Vector4f::Zero();
-    new_max_point(0) = static_cast<float>(declare_parameter("max_x", 1.0));
-    new_max_point(1) = static_cast<float>(declare_parameter("max_y", 1.0));
-    new_max_point(2) = static_cast<float>(declare_parameter("max_z", 1.0));
-    impl_.setMax(new_max_point);
-
-    impl_.setKeepOrganized(static_cast<bool>(declare_parameter("keep_organized", false)));
-    impl_.setNegative(static_cast<bool>(declare_parameter("negative", false)));
+    auto & p = param_;
+    p.min_x = static_cast<float>(declare_parameter("min_x", -1.0));
+    p.min_y = static_cast<float>(declare_parameter("min_y", -1.0));
+    p.min_z = static_cast<float>(declare_parameter("min_z", -1.0));
+    p.max_x = static_cast<float>(declare_parameter("max_x", 1.0));
+    p.max_y = static_cast<float>(declare_parameter("max_y", 1.0));
+    p.max_z = static_cast<float>(declare_parameter("max_z", 1.0));
+    p.negative = static_cast<float>(declare_parameter("negative", false));
   }
 
   // set additional publishers
@@ -91,16 +87,49 @@ CropBoxFilterComponent::CropBoxFilterComponent(const rclcpp::NodeOptions & optio
 }
 
 void CropBoxFilterComponent::filter(
-  const PointCloud2ConstPtr & input, const IndicesPtr & indices, PointCloud2 & output)
+  const PointCloud2ConstPtr & input, [[maybe_unused]] const IndicesPtr & indices,
+  PointCloud2 & output)
 {
   boost::mutex::scoped_lock lock(mutex_);
-  pcl::PCLPointCloud2::Ptr pcl_input(new pcl::PCLPointCloud2);
-  pcl_conversions::toPCL(*(input), *(pcl_input));
-  impl_.setInputCloud(pcl_input);
-  impl_.setIndices(indices);
-  pcl::PCLPointCloud2 pcl_output;
-  impl_.filter(pcl_output);
-  pcl_conversions::moveFromPCL(pcl_output, output);
+
+  output.data.resize(input->data.size());
+  Eigen::Vector3f pt(Eigen::Vector3f::Zero());
+  size_t j = 0;
+  const auto data_size = input->data.size();
+  const auto point_step = input->point_step;
+  // If inside the cropbox
+  if (!param_.negative) {
+    for (size_t i = 0; i + point_step < data_size; i += point_step) {
+      memcpy(pt.data(), &input->data[i], sizeof(float) * 3);
+      if (
+        param_.min_z < pt.z() && pt.z() < param_.max_z && param_.min_y < pt.y() &&
+        pt.y() < param_.max_y && param_.min_x < pt.x() && pt.x() < param_.max_x) {
+        memcpy(&output.data[j], &input->data[i], point_step);
+        j += point_step;
+      }
+    }
+    // If outside the cropbox
+  } else {
+    for (size_t i = 0; i + point_step < data_size; i += point_step) {
+      memcpy(pt.data(), &input->data[i], sizeof(float) * 3);
+      if (
+        param_.min_z > pt.z() || pt.z() > param_.max_z || param_.min_y > pt.y() ||
+        pt.y() > param_.max_y || param_.min_x > pt.x() || pt.x() > param_.max_x) {
+        memcpy(&output.data[j], &input->data[i], point_step);
+        j += point_step;
+      }
+    }
+  }
+
+  output.data.resize(j);
+  output.header.frame_id = input->header.frame_id;
+  output.height = input->height;
+  output.fields = input->fields;
+  output.is_bigendian = input->is_bigendian;
+  output.point_step = input->point_step;
+  output.is_dense = input->is_dense;
+  output.width = static_cast<uint32_t>(output.data.size() / output.height / output.point_step);
+  output.row_step = static_cast<uint32_t>(output.data.size() / output.height);
 
   publishCropBoxPolygon();
 }
@@ -115,18 +144,18 @@ void CropBoxFilterComponent::publishCropBoxPolygon()
     return point;
   };
 
-  const double x1 = impl_.getMax()(0);
-  const double x2 = impl_.getMin()(0);
-  const double x3 = impl_.getMin()(0);
-  const double x4 = impl_.getMax()(0);
+  const double x1 = param_.max_x;
+  const double x2 = param_.min_x;
+  const double x3 = param_.min_x;
+  const double x4 = param_.max_x;
 
-  const double y1 = impl_.getMax()(1);
-  const double y2 = impl_.getMax()(1);
-  const double y3 = impl_.getMin()(1);
-  const double y4 = impl_.getMin()(1);
+  const double y1 = param_.max_y;
+  const double y2 = param_.max_y;
+  const double y3 = param_.min_y;
+  const double y4 = param_.min_y;
 
-  const double z1 = impl_.getMin()(2);
-  const double z2 = impl_.getMax()(2);
+  const double z1 = param_.min_z;
+  const double z2 = param_.max_z;
 
   geometry_msgs::msg::PolygonStamped polygon_msg;
   polygon_msg.header.frame_id = tf_input_frame_;
@@ -161,60 +190,28 @@ rcl_interfaces::msg::SetParametersResult CropBoxFilterComponent::paramCallback(
 {
   boost::mutex::scoped_lock lock(mutex_);
 
-  Eigen::Vector4f min_point, max_point;
-  min_point = impl_.getMin();
-  max_point = impl_.getMax();
+  CropBoxParam new_param{};
 
-  Eigen::Vector4f new_min_point = Eigen::Vector4f::Zero();
-  Eigen::Vector4f new_max_point = Eigen::Vector4f::Zero();
-
-  // Check the current values for minimum point
   if (
-    get_param(p, "min_x", new_min_point(0)) && get_param(p, "min_y", new_min_point(1)) &&
-    get_param(p, "min_z", new_min_point(2))) {
-    if (min_point != new_min_point) {
+    get_param(p, "min_x", new_param.min_x) && get_param(p, "min_y", new_param.min_y) &&
+    get_param(p, "min_z", new_param.min_z) && get_param(p, "max_x", new_param.max_x) &&
+    get_param(p, "max_y", new_param.max_y) && get_param(p, "max_z", new_param.max_z) &&
+    get_param(p, "negative", new_param.negative)) {
+    if (
+      param_.min_x != new_param.min_x || param_.max_x != new_param.max_x ||
+      param_.min_y != new_param.min_y || param_.max_y != new_param.max_y ||
+      param_.min_z != new_param.min_z || param_.max_z != new_param.max_z ||
+      param_.negative != new_param.negative) {
       RCLCPP_DEBUG(
         get_logger(), "[%s::paramCallback] Setting the minimum point to: %f %f %f.", get_name(),
-        new_min_point(0), new_min_point(1), new_min_point(2));
-      // Set the filter min point if different
-      impl_.setMin(new_min_point);
-    }
-  }
-
-  // Check the current values for the maximum point
-  if (
-    get_param(p, "max_x", new_max_point(0)) && get_param(p, "max_y", new_max_point(1)) &&
-    get_param(p, "max_z", new_max_point(2))) {
-    if (max_point != new_max_point) {
+        new_param.min_x, new_param.min_y, new_param.min_z);
       RCLCPP_DEBUG(
-        get_logger(), "[%s::paramCallback] Setting the maximum point to: %f %f %f.", get_name(),
-        new_max_point(0), new_max_point(1), new_max_point(2));
-      // Set the filter max point if different
-      impl_.setMax(new_max_point);
-    }
-  }
-
-  // Check the current value for keep_organized
-  bool keep_organized;
-  if (get_param(p, "keep_organized", keep_organized)) {
-    if (impl_.getKeepOrganized() != keep_organized) {
-      RCLCPP_DEBUG(
-        get_logger(), "[%s::paramCallback] Setting the filter keep_organized value to: %s.",
-        get_name(), keep_organized ? "true" : "false");
-      // Call the virtual method in the child
-      impl_.setKeepOrganized(keep_organized);
-    }
-  }
-
-  // Check the current value for the negative flag
-  bool negative;
-  if (get_param(p, "negative", negative)) {
-    if (impl_.getNegative() != negative) {
+        get_logger(), "[%s::paramCallback] Setting the minimum point to: %f %f %f.", get_name(),
+        new_param.max_x, new_param.max_y, new_param.max_z);
       RCLCPP_DEBUG(
         get_logger(), "[%s::paramCallback] Setting the filter negative flag to: %s.", get_name(),
-        negative ? "true" : "false");
-      // Call the virtual method in the child
-      impl_.setNegative(negative);
+        new_param.negative ? "true" : "false");
+      param_ = new_param;
     }
   }
 
