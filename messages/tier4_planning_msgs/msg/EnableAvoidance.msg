@@ -1,2 +1,0 @@
-builtin_interfaces/Time stamp
-bool enable_avoidance

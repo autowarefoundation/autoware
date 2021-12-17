@@ -1,3 +1,0 @@
-float64 accel_status
-float64 brake_status
-float64 steer_status

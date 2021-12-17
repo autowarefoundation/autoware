@@ -1,2 +1,0 @@
-builtin_interfaces/Time stamp
-tier4_simulation_msgs/FaultInjectionEvent[] fault_injection_events

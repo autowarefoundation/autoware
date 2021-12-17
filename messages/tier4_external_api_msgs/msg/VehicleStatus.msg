@@ -1,4 +1,0 @@
-geometry_msgs/Twist twist
-tier4_external_api_msgs/Steering steering
-tier4_external_api_msgs/TurnSignal turn_signal
-tier4_external_api_msgs/GearShift gear_shift

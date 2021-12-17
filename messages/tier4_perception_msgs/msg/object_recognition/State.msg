@@ -1,7 +1,0 @@
-geometry_msgs/PoseWithCovariance pose_covariance
-bool orientation_reliable
-geometry_msgs/TwistWithCovariance twist_covariance
-bool twist_reliable
-geometry_msgs/AccelWithCovariance acceleration_covariance
-bool acceleration_reliable
-PredictedPath[] predicted_paths

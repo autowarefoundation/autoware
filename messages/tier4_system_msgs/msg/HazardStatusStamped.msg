@@ -1,2 +1,0 @@
-std_msgs/Header header
-tier4_system_msgs/HazardStatus status
