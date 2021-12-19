@@ -13,7 +13,7 @@ repositories:
     version: tier4/main
   messages/tier4_msgs:
     type: git
-    url: https://github.com/tier4/AutowareArchitectureProposal_msgs/tree/tier4/universe
+    url: https://github.com/tier4/AutowareArchitectureProposal_msgs.git
     version: tier4/universe
   vendor/grid_map:
     type: git
