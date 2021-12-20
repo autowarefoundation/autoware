@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Set lanuage standard with variables instead of per target so even targets that
+# Set language standard with variables instead of per target so even targets that
 # don't use autoware_set_compile_options() have this set when importing
 # autoware_auto_cmake via ament_auto_find_build_dependencies()
 if(NOT CMAKE_C_STANDARD)

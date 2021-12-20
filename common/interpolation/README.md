@@ -91,7 +91,7 @@ $$
 
 ### Tridiagonal Matrix Algorithm
 
-We solve tridiagonal linear equation according to [this article](https://mathlang.hatenablog.com/entry/2018/10/14/232741) where variables of linear equation are expressed as follows in the implementation.
+We solve tridiagonal linear equation according to [this article](https://www.iist.ac.in/sites/default/files/people/tdma.pdf) where variables of linear equation are expressed as follows in the implementation.
 
 $$
 \begin{align}

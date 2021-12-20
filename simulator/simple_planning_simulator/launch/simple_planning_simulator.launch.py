@@ -41,8 +41,8 @@ def launch_setup(context, *args, **kwargs):
     with open(vehicle_characteristics_param_path, "r") as f:
         vehicle_characteristics_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
-    simultor_model_param_path = LaunchConfiguration("simulator_model_param_file").perform(context)
-    with open(simultor_model_param_path, "r") as f:
+    simulator_model_param_path = LaunchConfiguration("simulator_model_param_file").perform(context)
+    with open(simulator_model_param_path, "r") as f:
         simulator_model_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
     simple_planning_simulator_node = Node(
