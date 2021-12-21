@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>accel_brake_map_calibrator_button_panel</name>
+  <name>tier4_calibration_rviz_plugin</name>
   <version>0.1.0</version>
   <description>The accel_brake_map_calibrator_button_panel package</description>
 

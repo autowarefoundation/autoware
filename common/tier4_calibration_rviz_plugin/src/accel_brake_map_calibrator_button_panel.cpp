@@ -29,7 +29,7 @@
 #include <thread>
 #include <vector>
 
-namespace autoware_calibration_rviz_plugin
+namespace tier4_calibration_rviz_plugin
 {
 AccelBrakeMapCalibratorButtonPanel::AccelBrakeMapCalibratorButtonPanel(QWidget * parent)
 : rviz_common::Panel(parent)
@@ -142,7 +142,7 @@ void AccelBrakeMapCalibratorButtonPanel::pushCalibrationButton()
   thread.detach();
 }
 
-}  // namespace autoware_calibration_rviz_plugin
+}  // namespace tier4_calibration_rviz_plugin
 
 PLUGINLIB_EXPORT_CLASS(
-  autoware_calibration_rviz_plugin::AccelBrakeMapCalibratorButtonPanel, rviz_common::Panel)
+  tier4_calibration_rviz_plugin::AccelBrakeMapCalibratorButtonPanel, rviz_common::Panel)

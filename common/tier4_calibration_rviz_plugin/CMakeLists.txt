@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(accel_brake_map_calibrator_button_panel)
+project(tier4_calibration_rviz_plugin)
 
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)

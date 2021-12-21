@@ -33,7 +33,7 @@
 #include "std_msgs/msg/bool.hpp"
 #include "tier4_vehicle_msgs/srv/update_accel_brake_map.hpp"
 
-namespace autoware_calibration_rviz_plugin
+namespace tier4_calibration_rviz_plugin
 {
 class AccelBrakeMapCalibratorButtonPanel : public rviz_common::Panel
 {
@@ -62,6 +62,6 @@ protected:
   QLabel * status_label_;
 };
 
-}  // end namespace autoware_calibration_rviz_plugin
+}  // end namespace tier4_calibration_rviz_plugin
 
 #endif  // ACCEL_BRAKE_MAP_CALIBRATOR_BUTTON_PANEL_HPP_
