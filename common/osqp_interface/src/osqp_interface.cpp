@@ -88,6 +88,13 @@ void OSQPInterface::updateA(const Eigen::MatrixXd & A_new)
   return;
 }
 
+void OSQPInterface::updateQ(const std::vector<double> & q_new)
+{
+  std::vector<double> q_tmp(q_new.begin(), q_new.end());
+  double * q_dyn = q_tmp.data();
+  osqp_update_lin_cost(m_work, q_dyn);
+}
+
 void OSQPInterface::updateL(const std::vector<double> & l_new)
 {
   std::vector<double> l_tmp(l_new.begin(), l_new.end());
