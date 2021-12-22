@@ -675,10 +675,51 @@ bool exists(std::vector<T> vec, T element)
   return std::find(vec.begin(), vec.end(), element) != vec.end();
 }
 
+boost::optional<size_t> findNearestIndexToGoal(
+  const std::vector<autoware_auto_planning_msgs::msg::PathPointWithLaneId> & points,
+  const geometry_msgs::msg::Pose & goal, const int64_t goal_lane_id,
+  const double max_dist = std::numeric_limits<double>::max())
+{
+  if (points.empty()) {
+    return boost::none;
+  }
+
+  size_t min_dist_index;
+  double min_dist = std::numeric_limits<double>::max();
+  {
+    bool found = false;
+    for (size_t i = 0; i < points.size(); ++i) {
+      const double x = points.at(i).point.pose.position.x - goal.position.x;
+      const double y = points.at(i).point.pose.position.y - goal.position.y;
+      const double dist = std::hypot(x, y);
+      if (dist < max_dist && dist < min_dist && exists(points.at(i).lane_ids, goal_lane_id)) {
+        min_dist_index = i;
+        min_dist = dist;
+        found = true;
+      }
+    }
+    if (!found) {
+      return boost::none;
+    }
+  }
+
+  size_t min_dist_out_of_range_index = min_dist_index;
+  for (size_t i = min_dist_index; i != 0; --i) {
+    const double x = points.at(i).point.pose.position.x - goal.position.x;
+    const double y = points.at(i).point.pose.position.y - goal.position.y;
+    const double dist = std::hypot(x, y);
+    min_dist_out_of_range_index = i;
+    if (max_dist < dist) {
+      break;
+    }
+  }
+  return min_dist_out_of_range_index;
+}
+
 // goal does not have z
 bool setGoal(
   const double search_radius_range, [[maybe_unused]] const double search_rad_range,
-  const PathWithLaneId & input, const Pose & goal, [[maybe_unused]] const int64_t goal_lane_id,
+  const PathWithLaneId & input, const Pose & goal, const int64_t goal_lane_id,
   PathWithLaneId * output_ptr)
 {
   try {
@@ -752,7 +793,7 @@ bool setGoal(
 
     // find min_dist_index whose distance to goal is shorter than search_radius_range
     const auto min_dist_index_opt =
-      tier4_autoware_utils::findNearestIndex(input.points, goal, search_radius_range);
+      findNearestIndexToGoal(input.points, goal, goal_lane_id, search_radius_range);
     if (!min_dist_index_opt) {
       return false;
     }
