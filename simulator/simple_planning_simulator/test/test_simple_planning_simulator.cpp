@@ -67,14 +67,14 @@ public:
     pub_initialpose_ = create_publisher<PoseWithCovarianceStamped>(
       "/initialpose",
       rclcpp::QoS{1});
-    pub_state_cmd_ = create_publisher<VehicleStateCommand>(
+    pub_state_cmd_ = create_publisher<GearCommand>(
       "/input/vehicle_state_command",
       rclcpp::QoS{1});
   }
 
   rclcpp::Publisher<VehicleControlCommand>::SharedPtr pub_control_command_;
   rclcpp::Publisher<AckermannControlCommand>::SharedPtr pub_ackermann_command_;
-  rclcpp::Publisher<VehicleStateCommand>::SharedPtr pub_state_cmd_;
+  rclcpp::Publisher<GearCommand>::SharedPtr pub_state_cmd_;
   rclcpp::Publisher<PoseWithCovarianceStamped>::SharedPtr pub_initialpose_;
   rclcpp::Subscription<VehicleKinematicState>::SharedPtr kinematic_state_sub_;
 
@@ -137,7 +137,7 @@ void sendGear(
   uint8_t gear, rclcpp::Node::SharedPtr sim_node,
   std::shared_ptr<PubSubNode> pub_sub_node)
 {
-  VehicleStateCommand cmd;
+  GearCommand cmd;
   cmd.stamp = sim_node->now();
   cmd.gear = gear;
   for (int i = 0; i < 10; ++i) {
@@ -336,9 +336,9 @@ TEST(test_simple_planning_simulator, test_moving_ackermann)
     const float32_t target_steer = 0.2f;
 
     auto _resetInitialpose = [&]() {resetInitialpose(sim_node, pub_sub_node);};
-    auto _sendFwdGear = [&]() {sendGear(VehicleStateCommand::GEAR_DRIVE, sim_node, pub_sub_node);};
+    auto _sendFwdGear = [&]() {sendGear(GearCommand::DRIVE, sim_node, pub_sub_node);};
     auto _sendBwdGear =
-      [&]() {sendGear(VehicleStateCommand::GEAR_REVERSE, sim_node, pub_sub_node);};
+      [&]() {sendGear(GearCommand::REVERSE, sim_node, pub_sub_node);};
     auto _sendCommand = [&](const auto & _cmd) {
         sendCommand(_cmd, sim_node, pub_sub_node);
       };

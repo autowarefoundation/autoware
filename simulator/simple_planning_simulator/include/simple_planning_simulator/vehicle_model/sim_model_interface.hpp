@@ -16,7 +16,7 @@
 #define SIMPLE_PLANNING_SIMULATOR__VEHICLE_MODEL__SIM_MODEL_INTERFACE_HPP_
 
 #include "eigen3/Eigen/Core"
-#include "autoware_auto_vehicle_msgs/msg/vehicle_state_command.hpp"
+#include "autoware_auto_vehicle_msgs/msg/gear_command.hpp"
 #include "common/types.hpp"
 
 using autoware::common::types::float32_t;
@@ -35,8 +35,8 @@ protected:
   Eigen::VectorXd state_;  //!< @brief vehicle state vector
   Eigen::VectorXd input_;  //!< @brief vehicle input vector
 
-  //!< @brief gear command defined in autoware_auto_msgs/VehicleStateCommand
-  uint8_t gear_ = autoware_auto_vehicle_msgs::msg::VehicleStateCommand::GEAR_DRIVE;
+  //!< @brief gear command defined in autoware_auto_msgs/GearCommand
+  uint8_t gear_ = autoware_auto_vehicle_msgs::msg::GearCommand::DRIVE;
 
 public:
   /**
@@ -77,7 +77,7 @@ public:
 
   /**
    * @brief set gear
-   * @param [in] gear gear command defined in autoware_auto_msgs/VehicleStateCommand
+   * @param [in] gear gear command defined in autoware_auto_msgs/GearCommand
    */
   void setGear(const uint8_t gear);
 
