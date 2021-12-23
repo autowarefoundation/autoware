@@ -68,6 +68,8 @@ protected:
     nvinfer1::IBuilder & builder, nvinfer1::INetworkDefinition & network,
     nvinfer1::IBuilderConfig & config) = 0;
 
+  Logger logger_;
+
 private:
   bool parseONNX(
     const std::string & onnx_path, const std::string & engine_path, const std::string & precision,
@@ -79,7 +81,6 @@ private:
 
   bool createContext();
 
-  Logger logger_;
   unique_ptr<nvinfer1::IRuntime> runtime_ = nullptr;
   unique_ptr<nvinfer1::ICudaEngine> engine_ = nullptr;
 };

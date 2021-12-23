@@ -26,16 +26,17 @@
 #include <string>
 #include <vector>
 
-#define DEBUG_NAN 0
-
 namespace centerpoint
 {
 using torch::indexing::Slice;
 
 CenterPointTRT::CenterPointTRT(
-  const NetworkParam & encoder_param, const NetworkParam & head_param, const bool verbose)
+  const int num_class, const NetworkParam & encoder_param, const NetworkParam & head_param,
+  const DensificationParam & densification_param)
+: num_class_(num_class)
 {
-  vg_ptr_ = std::make_unique<VoxelGenerator>();
+  vg_ptr_ = std::make_unique<VoxelGenerator>(densification_param);
+  bool verbose = false;
 
   if (encoder_param.use_trt()) {
     encoder_trt_ptr_ = std::make_unique<VoxelEncoderTRT>(verbose);
@@ -46,7 +47,7 @@ CenterPointTRT::CenterPointTRT(
   }
 
   if (head_param.use_trt()) {
-    head_trt_ptr_ = std::make_unique<HeadTRT>(verbose);
+    head_trt_ptr_ = std::make_unique<HeadTRT>(num_class, verbose);
     head_trt_ptr_->init(
       head_param.onnx_path(), head_param.engine_path(), head_param.trt_precision());
     head_trt_ptr_->context_->setBindingDimensions(
@@ -84,24 +85,24 @@ bool CenterPointTRT::initPtr(const bool use_encoder_trt, const bool use_head_trt
       static_cast<int>(static_cast<float>(Config::grid_size_x) / Config::downsample_factor);
     const int downsample_grid_y =
       static_cast<int>(static_cast<float>(Config::grid_size_y) / Config::downsample_factor);
-    const int batch_size = 1;
     auto torch_options = torch::TensorOptions().device(device_).dtype(torch::kFloat);
     output_heatmap_t_ = torch::zeros(
-      {batch_size, Config::num_class, downsample_grid_y, downsample_grid_x}, torch_options);
+      {Config::batch_size, num_class_, downsample_grid_y, downsample_grid_x}, torch_options);
     output_offset_t_ = torch::zeros(
-      {batch_size, Config::num_output_offset_features, downsample_grid_y, downsample_grid_x},
+      {Config::batch_size, Config::num_output_offset_features, downsample_grid_y,
+       downsample_grid_x},
       torch_options);
     output_z_t_ = torch::zeros(
-      {batch_size, Config::num_output_z_features, downsample_grid_y, downsample_grid_x},
+      {Config::batch_size, Config::num_output_z_features, downsample_grid_y, downsample_grid_x},
       torch_options);
     output_dim_t_ = torch::zeros(
-      {batch_size, Config::num_output_dim_features, downsample_grid_y, downsample_grid_x},
+      {Config::batch_size, Config::num_output_dim_features, downsample_grid_y, downsample_grid_x},
       torch_options);
     output_rot_t_ = torch::zeros(
-      {batch_size, Config::num_output_rot_features, downsample_grid_y, downsample_grid_x},
+      {Config::batch_size, Config::num_output_rot_features, downsample_grid_y, downsample_grid_x},
       torch_options);
     output_vel_t_ = torch::zeros(
-      {batch_size, Config::num_output_vel_features, downsample_grid_y, downsample_grid_x},
+      {Config::batch_size, Config::num_output_vel_features, downsample_grid_y, downsample_grid_x},
       torch_options);
   }
 
@@ -109,7 +110,7 @@ bool CenterPointTRT::initPtr(const bool use_encoder_trt, const bool use_head_trt
 }
 
 std::vector<float> CenterPointTRT::detect(
-  const sensor_msgs::msg::PointCloud2 & input_pointcloud_msg)
+  const sensor_msgs::msg::PointCloud2 & input_pointcloud_msg, const tf2_ros::Buffer & tf_buffer)
 {
   voxels_t_ = torch::zeros(
     {Config::max_num_voxels, Config::max_num_points_per_voxel, Config::num_point_features},
@@ -120,8 +121,8 @@ std::vector<float> CenterPointTRT::detect(
   num_points_per_voxel_t_ = torch::zeros(
     {Config::max_num_voxels}, torch::TensorOptions().device(torch::kCPU).dtype(torch::kInt));
 
-  int num_voxels = vg_ptr_->pointsToVoxels(
-    input_pointcloud_msg, voxels_t_, coordinates_t_, num_points_per_voxel_t_);
+  vg_ptr_->pd_ptr_->enqueuePointCloud(input_pointcloud_msg, tf_buffer);
+  int num_voxels = vg_ptr_->pointsToVoxels(voxels_t_, coordinates_t_, num_points_per_voxel_t_);
   // Note: unlike python implementation, no slicing by num_voxels
   //       .s.t voxels_t_ = voxels_t_[:num_voxels].
   //       w/ slicing more GPU memories are allocated

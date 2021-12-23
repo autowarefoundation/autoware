@@ -15,107 +15,75 @@
 #include <pcl_ros/transforms.hpp>
 #include <pointcloud_densification.hpp>
 
+#include <boost/optional.hpp>
+
 #include <pcl_conversions/pcl_conversions.h>
 #include <tf2_eigen/tf2_eigen.h>
 
 #include <string>
 #include <utility>
 
+namespace
+{
+boost::optional<geometry_msgs::msg::Transform> getTransform(
+  const tf2_ros::Buffer & tf_buffer, const std::string & target_frame_id,
+  const std::string & source_frame_id, const rclcpp::Time & time)
+{
+  try {
+    geometry_msgs::msg::TransformStamped transform_stamped;
+    transform_stamped = tf_buffer.lookupTransform(
+      target_frame_id, source_frame_id, time, rclcpp::Duration::from_seconds(0.5));
+    return transform_stamped.transform;
+  } catch (tf2::TransformException & ex) {
+    RCLCPP_WARN_STREAM(rclcpp::get_logger("lidar_centerpoint"), ex.what());
+    return boost::none;
+  }
+}
+
+Eigen::Affine3f transformToEigen(const geometry_msgs::msg::Transform & t)
+{
+  Eigen::Affine3f a;
+  a.matrix() = tf2::transformToEigen(t).matrix().cast<float>();
+  return a;
+}
+
+}  // namespace
+
 namespace centerpoint
 {
-PointCloudDensification::PointCloudDensification(
-  std::string base_frame_id, const unsigned int pointcloud_cache_size,
-  rclcpp::Clock::SharedPtr clock)
-: base_frame_id_(std::move(base_frame_id)),
-  pointcloud_cache_size_(pointcloud_cache_size),
-  tf_buffer_(clock)
+PointCloudDensification::PointCloudDensification(const DensificationParam & param) : param_(param)
 {
 }
 
-sensor_msgs::msg::PointCloud2 PointCloudDensification::stackPointCloud(
-  const sensor_msgs::msg::PointCloud2 & input_pointcloud_msg)
+void PointCloudDensification::enqueuePointCloud(
+  const sensor_msgs::msg::PointCloud2 & pointcloud_msg, const tf2_ros::Buffer & tf_buffer)
 {
-  const double input_timestamp = rclcpp::Time(input_pointcloud_msg.header.stamp).seconds();
+  const auto header = pointcloud_msg.header;
 
-  auto transform_base2frame =
-    getTransformStamped(input_pointcloud_msg.header.frame_id, base_frame_id_);
-  Eigen::Matrix4f matrix_base2current =
-    tf2::transformToEigen(transform_base2frame.transform).matrix().cast<float>();
-
-  sensor_msgs::msg::PointCloud2 output_pointcloud_msg;
-  output_pointcloud_msg = input_pointcloud_msg;
-  setTimeLag(output_pointcloud_msg, 0);
-
-  // concat the current frame and past frames
-  auto pc_msg_iter = pointcloud_cache_.begin();
-  auto matrix_iter = matrix_past2base_cache_.begin();
-  for (; pc_msg_iter != pointcloud_cache_.end(); pc_msg_iter++, matrix_iter++) {
-    sensor_msgs::msg::PointCloud2 cached_pointcloud_msg = *pc_msg_iter;
-    sensor_msgs::msg::PointCloud2 transformed_pointcloud_msg;
-
-    Eigen::Affine3f affine_past2base;
-    affine_past2base.matrix() = *matrix_iter;
-    Eigen::Affine3f affine_base2current;
-    affine_base2current.matrix() = matrix_base2current;
-
-    pcl_ros::transformPointCloud(
-      (affine_base2current * affine_past2base).matrix(), cached_pointcloud_msg,
-      transformed_pointcloud_msg);
-    double diff_timestamp =
-      input_timestamp - rclcpp::Time(cached_pointcloud_msg.header.stamp).seconds();
-    setTimeLag(transformed_pointcloud_msg, static_cast<float>(diff_timestamp));
-
-    sensor_msgs::msg::PointCloud2 tmp_pointcloud_msg = output_pointcloud_msg;
-    pcl::concatenatePointCloud(
-      tmp_pointcloud_msg, transformed_pointcloud_msg, output_pointcloud_msg);
-  }
-
-  // add input pointcloud to cache
-  auto transform_frame2base =
-    getTransformStamped(base_frame_id_, input_pointcloud_msg.header.frame_id);
-  Eigen::Matrix4f matrix_past2base =
-    tf2::transformToEigen(transform_frame2base.transform).matrix().cast<float>();
-  pointcloud_cache_.push_front(input_pointcloud_msg);
-  matrix_past2base_cache_.push_front(matrix_past2base);
-  if (pointcloud_cache_.size() > pointcloud_cache_size_) {
-    pointcloud_cache_.pop_back();
-    matrix_past2base_cache_.pop_back();
-  }
-
-  return output_pointcloud_msg;
-}
-
-geometry_msgs::msg::TransformStamped PointCloudDensification::getTransformStamped(
-  const std::string & target_frame, const std::string & source_frame)
-{
-  geometry_msgs::msg::TransformStamped transform;
-  try {
-    transform = tf_buffer_.lookupTransform(target_frame, source_frame, rclcpp::Time(0));
-  } catch (tf2::TransformException & ex) {
-    RCLCPP_WARN(rclcpp::get_logger("PointCloudDensification"), "%s", ex.what());
-    return transform;
-  }
-  return transform;
-}
-
-void PointCloudDensification::setTimeLag(
-  sensor_msgs::msg::PointCloud2 & pointcloud_msg, const float diff_timestamp)
-{
-  // Note: pcl::fromROSMsg is very slow, so point values in ros message are changed directly.
-  // Note: intensity isn't used in this CenterPoint implementation.
-
-  const int intensity_idx = pcl::getFieldIndex(pointcloud_msg, "intensity");
-  if (intensity_idx == -1) {
+  auto transform_world2current =
+    getTransform(tf_buffer, header.frame_id, param_.world_frame_id(), header.stamp);
+  if (!transform_world2current) {
     return;
   }
+  auto affine_world2current = transformToEigen(transform_world2current.get());
 
-  const int width = pointcloud_msg.width;
-  const int point_step = pointcloud_msg.point_step;
-  const int offset = pointcloud_msg.fields[intensity_idx].offset;
-  for (int i = 0; i < width; i++) {
-    memcpy(
-      &pointcloud_msg.data[offset + point_step * i],
-      reinterpret_cast<const void *>(&diff_timestamp), sizeof(float));
+  enqueue(pointcloud_msg, affine_world2current);
+  dequeue();
+}
+
+void PointCloudDensification::enqueue(
+  const sensor_msgs::msg::PointCloud2 & msg, const Eigen::Affine3f & affine_world2current)
+{
+  affine_world2current_ = affine_world2current;
+  current_timestamp_ = rclcpp::Time(msg.header.stamp).seconds();
+  PointCloudWithTransform pointcloud = {msg, affine_world2current.inverse()};
+  pointcloud_cache_.push_front(pointcloud);
+}
+
+void PointCloudDensification::dequeue()
+{
+  if (pointcloud_cache_.size() > param_.pointcloud_cache_size()) {
+    pointcloud_cache_.pop_back();
   }
 }
 

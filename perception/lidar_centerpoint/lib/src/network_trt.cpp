@@ -38,6 +38,11 @@ bool VoxelEncoderTRT::setProfile(
   return true;
 }
 
+HeadTRT::HeadTRT(const int num_class, const bool verbose)
+: TensorRTWrapper(verbose), num_class_(num_class)
+{
+}
+
 bool HeadTRT::setProfile(
   nvinfer1::IBuilder & builder, nvinfer1::INetworkDefinition & network,
   nvinfer1::IBuilderConfig & config)
@@ -45,13 +50,14 @@ bool HeadTRT::setProfile(
   auto profile = builder.createOptimizationProfile();
   auto input_name = network.getInput(0)->getName();
   auto in_dims = nvinfer1::Dims4(
-    1, Config::num_encoder_output_features, Config::grid_size_y, Config::grid_size_x);
+    Config::batch_size, Config::num_encoder_output_features, Config::grid_size_y,
+    Config::grid_size_x);
   profile->setDimensions(input_name, nvinfer1::OptProfileSelector::kMIN, in_dims);
   profile->setDimensions(input_name, nvinfer1::OptProfileSelector::kOPT, in_dims);
   profile->setDimensions(input_name, nvinfer1::OptProfileSelector::kMAX, in_dims);
 
-  const int output_channels[Config::num_output_features] = {
-    Config::num_class,
+  std::array<int, Config::num_output_features> output_channels = {
+    num_class_,
     Config::num_output_offset_features,
     Config::num_output_z_features,
     Config::num_output_dim_features,

@@ -16,34 +16,44 @@
 #define VOXEL_GENERATOR_HPP_
 
 #include <config.hpp>
+#include <pointcloud_densification.hpp>
 
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
 #include <torch/torch.h>
+
+#include <memory>
 
 namespace centerpoint
 {
 class VoxelGeneratorTemplate
 {
 public:
+  explicit VoxelGeneratorTemplate(const DensificationParam & param);
+
   virtual int pointsToVoxels(
-    const sensor_msgs::msg::PointCloud2 & input_pointcloud_msg, at::Tensor & voxels,
-    at::Tensor & coordinates, at::Tensor & num_points_per_voxel) = 0;
+    at::Tensor & voxels, at::Tensor & coordinates, at::Tensor & num_points_per_voxel) = 0;
+
+  std::unique_ptr<PointCloudDensification> pd_ptr_{nullptr};
 
 protected:
-  float pointcloud_range_[6] = {Config::pointcloud_range_xmin, Config::pointcloud_range_ymin,
-                                Config::pointcloud_range_zmin, Config::pointcloud_range_xmax,
-                                Config::pointcloud_range_ymax, Config::pointcloud_range_zmax};
-  float voxel_size_[3] = {Config::voxel_size_x, Config::voxel_size_y, Config::voxel_size_z};
-  int grid_size_[3] = {Config::grid_size_x, Config::grid_size_y, Config::grid_size_z};
+  std::array<float, 6> pointcloud_range_{
+    Config::pointcloud_range_xmin, Config::pointcloud_range_ymin, Config::pointcloud_range_zmin,
+    Config::pointcloud_range_xmax, Config::pointcloud_range_ymax, Config::pointcloud_range_zmax};
+  std::array<float, 3> recip_voxel_size_{
+    1 / Config::voxel_size_x, 1 / Config::voxel_size_y, 1 / Config::voxel_size_z};
+  std::array<int, 3> grid_size_{Config::grid_size_x, Config::grid_size_y, Config::grid_size_z};
 };
 
 class VoxelGenerator : public VoxelGeneratorTemplate
 {
 public:
+  using VoxelGeneratorTemplate::VoxelGeneratorTemplate;
+
+  // explicit VoxelGenerator(const DensificationParam & param);
+
   int pointsToVoxels(
-    const sensor_msgs::msg::PointCloud2 & input_pointcloud_msg, at::Tensor & voxels,
-    at::Tensor & coordinates, at::Tensor & num_points_per_voxel) override;
+    at::Tensor & voxels, at::Tensor & coordinates, at::Tensor & num_points_per_voxel) override;
 };
 
 }  // namespace centerpoint

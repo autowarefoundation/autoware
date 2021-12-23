@@ -35,10 +35,14 @@ class HeadTRT : public TensorRTWrapper
 public:
   using TensorRTWrapper::TensorRTWrapper;
 
+  HeadTRT(const int num_class, const bool verbose);
+
 protected:
   bool setProfile(
     nvinfer1::IBuilder & builder, nvinfer1::INetworkDefinition & network,
     nvinfer1::IBuilderConfig & config) override;
+
+  int num_class_{0};
 };
 
 }  // namespace centerpoint

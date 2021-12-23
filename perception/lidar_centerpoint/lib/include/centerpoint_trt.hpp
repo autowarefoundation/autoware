@@ -66,11 +66,13 @@ class CenterPointTRT
 {
 public:
   explicit CenterPointTRT(
-    const NetworkParam & encoder_param, const NetworkParam & head_param, bool verbose);
+    const int num_class, const NetworkParam & encoder_param, const NetworkParam & head_param,
+    const DensificationParam & densification_param);
 
   ~CenterPointTRT();
 
-  std::vector<float> detect(const sensor_msgs::msg::PointCloud2 & input_pointcloud_msg);
+  std::vector<float> detect(
+    const sensor_msgs::msg::PointCloud2 &, const tf2_ros::Buffer & tf_buffer);
 
 private:
   bool initPtr(bool use_encoder_trt, bool use_head_trt);
@@ -93,6 +95,7 @@ private:
   c10::Device device_ = torch::kCUDA;
   cudaStream_t stream_ = nullptr;
 
+  int num_class_{0};
   at::Tensor voxels_t_;
   at::Tensor coordinates_t_;
   at::Tensor num_points_per_voxel_t_;

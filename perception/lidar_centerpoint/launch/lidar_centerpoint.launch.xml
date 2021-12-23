@@ -11,8 +11,8 @@
       <remap from="~/input/pointcloud" to="$(var input/pointcloud)"/>
       <remap from="~/output/objects" to="$(var output/objects)"/>
       <param name="score_threshold" value="0.45"/>
-      <param name="densification_base_frame" value="map"/>
-      <param name="densification_past_frames" value="1"/>
+      <param name="densification_world_frame_id" value="map"/>
+      <param name="densification_num_past_frames" value="1"/>
       <param name="use_head_trt" value="true"/>
       <param name="trt_precision" value="fp16"/>
       <param name="encoder_pt_path" value="$(var model_path)/pts_voxel_encoder_$(var model_name).pt"/>

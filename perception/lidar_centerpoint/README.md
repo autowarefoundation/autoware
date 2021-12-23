@@ -1,61 +1,112 @@
-# CenterPoint TensorRT
+# lidar_centerpoint
 
-This is a 3D object detection implementation of CenterPoint supporting TensorRT inference.
+## Purpose
 
-The object.existence_probability is stored the value of classification confidence of DNN, not probability.
+lidar_centerpoint is a package for detecting dynamic 3D objects.
+
+## Inner-workings / Algorithms
+
+In this implementation, CenterPoint [1] uses a PointPillars-based [2] network to inference with TensorRT.
+
+We trained the models using <https://github.com/open-mmlab/mmdetection3d>.
+
+## Inputs / Outputs
+
+### Input
+
+| Name                 | Type                            | Description      |
+| -------------------- | ------------------------------- | ---------------- |
+| `~/input/pointcloud` | `sensor_msgs::msg::PointCloud2` | input pointcloud |
+
+### Output
+
+| Name                               | Type                                                  | Description              |
+| ---------------------------------- | ----------------------------------------------------- | ------------------------ |
+| `~/output/objects`                 | `autoware_auto_perception_msgs::msg::DetectedObjects` | detected objects         |
+| `~/debug/pointcloud_densification` | `sensor_msgs::msg::PointCloud2`                       | densification pointcloud |
 
 ## Parameters
 
-### Input Topics
+### Core Parameters
 
-| Name             | Type        | Description                          |
-| ---------------- | ----------- | ------------------------------------ |
-| input/pointcloud | PointCloud2 | Point Clouds (x, y, z and intensity) |
+| Name                            | Type   | Default Value | Description                                                 |
+| ------------------------------- | ------ | ------------- | ----------------------------------------------------------- |
+| `score_threshold`               | float  | `0.4`         | detected objects with score less than threshold are ignored |
+| `densification_world_frame_id`  | string | `map`         | the world frame id to fuse multi-frame pointcloud           |
+| `densification_num_past_frames` | int    | `1`           | the number of past frames to fuse with the current frame    |
+| `use_encoder_trt`               | bool   | `false`       | use TensorRT VoxelFeatureEncoder                            |
+| `use_head_trt`                  | bool   | `true`        | use TensorRT DetectionHead                                  |
+| `trt_precision`                 | string | `fp16`        | TensorRT inference precision: `fp32` or `fp16`              |
+| `encoder_onnx_path`             | string | `""`          | path to VoxelFeatureEncoder ONNX file                       |
+| `encoder_engine_path`           | string | `""`          | path to VoxelFeatureEncoder TensorRT Engine file            |
+| `encoder_pt_path`               | string | `""`          | path to VoxelFeatureEncoder TorchScript file                |
+| `head_onnx_path`                | string | `""`          | path to DetectionHead ONNX file                             |
+| `head_engine_path`              | string | `""`          | path to DetectionHead TensorRT Engine file                  |
+| `head_pt_path`                  | string | `""`          | path to DetectionHead TorchScript file                      |
 
-### Output Topics
+## Assumptions / Known limits
 
-| Name                           | Type                          | Description            |
-| ------------------------------ | ----------------------------- | ---------------------- |
-| output/objects                 | DynamicObjectWithFeatureArray | 3D Bounding Box        |
-| debug/pointcloud_densification | PointCloud2                   | multi-frame pointcloud |
+- The `object.existence_probability` is stored the value of classification confidence of a DNN, not probability.
 
-### ROS Parameters
+- If you have an error like `'GOMP_4.5' not found`, replace the OpenMP library in libtorch.
 
-| Name                      | Type   | Description                                                 | Default |
-| ------------------------- | ------ | ----------------------------------------------------------- | ------- |
-| score_threshold           | float  | detected objects with score less than threshold are ignored | `0.4`   |
-| densification_base_frame  | string | the base frame id to fuse multi-frame pointcloud            | `map`   |
-| densification_past_frames | int    | the number of past frames to fuse with the current frame    | `1`     |
-| use_encoder_trt           | bool   | use TensorRT VoxelFeatureEncoder                            | `false` |
-| use_head_trt              | bool   | use TensorRT DetectionHead                                  | `true`  |
-| trt_precision             | string | TensorRT inference precision: `fp32` or `fp16`              | `fp16`  |
-| encoder_onnx_path         | string | path to VoxelFeatureEncoder ONNX file                       |         |
-| encoder_engine_path       | string | path to VoxelFeatureEncoder TensorRT Engine file            |         |
-| encoder_pt_path           | string | path to VoxelFeatureEncoder TorchScript file                |         |
-| head_onnx_path            | string | path to DetectionHead ONNX file                             |         |
-| head_engine_path          | string | path to DetectionHead TensorRT Engine file                  |         |
-| head_pt_path              | string | path to DetectionHead TorchScript file                      |         |
+  ```bash
+  sudo apt install libgomp1 -y
+  sudo rm /usr/local/libtorch/lib/libgomp-75eea7e8.so.1
+  sudo ln -s /usr/lib/x86_64-linux-gnu/libgomp.so.1 /usr/local/libtorch/lib/libgomp-75eea7e8.so.1
+  ```
 
-## For Developers
+- if `use_encoder_trt` is set `use_encoder_trt`, more GPU memory is allocated.
 
-If you have an error like `'GOMP_4.5' not found`, replace the OpenMP library in libtorch.
+## (Optional) Error detection and handling
 
-```bash
-sudo apt install libgomp1 -y
-rm /path/to/libtorch/lib/libgomp-75eea7e8.so.1
-ln -s /usr/lib/x86_64-linux-gnu/libgomp.so.1 /path/to/libtorch/lib/libgomp-75eea7e8.so.1
-```
+<!-- Write how to detect errors and how to recover from them.
 
-## Reference
+Example:
+  This package can handle up to 20 obstacles. If more obstacles found, this node will give up and raise diagnostic errors.
+-->
 
-Yin, Tianwei, Xingyi Zhou, and Philipp Krähenbühl. "Center-based 3d object detection and tracking." arXiv preprint arXiv:2006.11275 (2020).
+## (Optional) Performance characterization
 
-## Reference Repositories
+<!-- Write performance information like complexity. If it wouldn't be the bottleneck, not necessary.
 
-- <https://github.com/tianweiy/CenterPoint>
-- <https://github.com/open-mmlab/OpenPCDet>
-- <https://github.com/poodarchu/Det3D>
-- <https://github.com/xingyizhou/CenterNet>
-- <https://github.com/lzccccc/SMOKE>
-- <https://github.com/yukkysaito/autoware_perception>
-- <https://github.com/pytorch/pytorch>
+Example:
+  ### Complexity
+
+  This algorithm is O(N).
+
+  ### Processing time
+
+  ...
+-->
+
+## References/External links
+
+[1] Yin, Tianwei, Xingyi Zhou, and Philipp Krähenbühl. "Center-based 3d object detection and tracking." arXiv preprint arXiv:2006.11275 (2020).
+
+[2] Lang, Alex H., et al. "Pointpillars: Fast encoders for object detection from point clouds." Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition. 2019.
+
+[3] <https://github.com/tianweiy/CenterPoint>
+
+[4] <https://github.com/open-mmlab/mmdetection3d>
+
+[5] <https://github.com/open-mmlab/OpenPCDet>
+
+[6] <https://github.com/poodarchu/Det3D>
+
+[7] <https://github.com/xingyizhou/CenterNet>
+
+[8] <https://github.com/lzccccc/SMOKE>
+
+[9] <https://github.com/yukkysaito/autoware_perception>
+
+[10] <https://github.com/pytorch/pytorch>
+
+## (Optional) Future extensions / Unimplemented parts
+
+<!-- Write future extensions of this package.
+
+Example:
+  Currently, this package can't handle the chattering obstacles well. We plan to add some probabilistic filters in the perception layer to improve it.
+  Also, there are some parameters that should be global(e.g. vehicle size, max steering, etc.). These will be refactored and defined as global parameters so that we can share the same parameters between different nodes.
+-->

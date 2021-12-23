@@ -21,30 +21,60 @@
 
 #include <list>
 #include <string>
+#include <utility>
 
 namespace centerpoint
 {
+class DensificationParam
+{
+public:
+  DensificationParam(const std::string & world_frame_id, const unsigned int num_past_frames)
+  : world_frame_id_(std::move(world_frame_id)),
+    pointcloud_cache_size_(num_past_frames + /*current frame*/ 1)
+  {
+  }
+
+  std::string world_frame_id() const { return world_frame_id_; }
+  unsigned int pointcloud_cache_size() const { return pointcloud_cache_size_; }
+
+private:
+  std::string world_frame_id_;
+  unsigned int pointcloud_cache_size_{1};
+};
+
+struct PointCloudWithTransform
+{
+  sensor_msgs::msg::PointCloud2 pointcloud_msg;
+  Eigen::Affine3f affine_past2world;
+};
+
 class PointCloudDensification
 {
 public:
-  PointCloudDensification(
-    std::string base_frame_id, unsigned int pointcloud_cache_size, rclcpp::Clock::SharedPtr clock);
+  explicit PointCloudDensification(const DensificationParam & param);
 
-  sensor_msgs::msg::PointCloud2 stackPointCloud(
-    const sensor_msgs::msg::PointCloud2 & input_pointcloud_msg);
+  void enqueuePointCloud(
+    const sensor_msgs::msg::PointCloud2 & input_pointcloud_msg, const tf2_ros::Buffer & tf_buffer);
+
+  double getCurrentTimestamp() const { return current_timestamp_; }
+  Eigen::Affine3f getAffineWorldToCurrent() const { return affine_world2current_; }
+  std::list<PointCloudWithTransform>::iterator getPointCloudCacheIter()
+  {
+    return pointcloud_cache_.begin();
+  }
+  bool isCacheEnd(std::list<PointCloudWithTransform>::iterator iter)
+  {
+    return iter == pointcloud_cache_.end();
+  }
 
 private:
-  geometry_msgs::msg::TransformStamped getTransformStamped(
-    const std::string & target_frame, const std::string & source_frame);
+  void enqueue(const sensor_msgs::msg::PointCloud2 & msg, const Eigen::Affine3f & affine);
+  void dequeue();
 
-  static void setTimeLag(sensor_msgs::msg::PointCloud2 & pointcloud_msg, float diff_timestamp);
-
-  std::string base_frame_id_;
-  unsigned int pointcloud_cache_size_ = 0;
-  tf2_ros::Buffer tf_buffer_;
-  tf2_ros::TransformListener tf_listener_{tf_buffer_};
-  std::list<sensor_msgs::msg::PointCloud2> pointcloud_cache_;
-  std::list<Eigen::Matrix4f> matrix_past2base_cache_;
+  DensificationParam param_;
+  double current_timestamp_{0.0};
+  Eigen::Affine3f affine_world2current_;
+  std::list<PointCloudWithTransform> pointcloud_cache_;
 };
 
 }  // namespace centerpoint

@@ -16,6 +16,7 @@
 
 #include <config.hpp>
 #include <pcl_ros/transforms.hpp>
+#include <pointcloud_densification.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -27,11 +28,12 @@
 namespace centerpoint
 {
 LidarCenterPointNode::LidarCenterPointNode(const rclcpp::NodeOptions & node_options)
-: Node("lidar_center_point", node_options)
+: Node("lidar_center_point", node_options), tf_buffer_(this->get_clock())
 {
   score_threshold_ = this->declare_parameter("score_threshold", 0.4);
-  densification_base_frame_ = this->declare_parameter("densification_base_frame", "map");
-  densification_past_frames_ = this->declare_parameter("densification_past_frames", 1);
+  std::string densification_world_frame_id =
+    this->declare_parameter("densification_world_frame_id", "map");
+  int densification_num_past_frames = this->declare_parameter("densification_num_past_frames", 1);
   use_encoder_trt_ = this->declare_parameter("use_encoder_trt", false);
   use_head_trt_ = this->declare_parameter("use_head_trt", true);
   trt_precision_ = this->declare_parameter("trt_precision", "fp16");
@@ -48,9 +50,10 @@ LidarCenterPointNode::LidarCenterPointNode(const rclcpp::NodeOptions & node_opti
     encoder_onnx_path_, encoder_engine_path_, encoder_pt_path_, trt_precision_, use_encoder_trt_);
   NetworkParam head_param(
     head_onnx_path_, head_engine_path_, head_pt_path_, trt_precision_, use_head_trt_);
-  densification_ptr_ = std::make_unique<PointCloudDensification>(
-    densification_base_frame_, densification_past_frames_, this->get_clock());
-  detector_ptr_ = std::make_unique<CenterPointTRT>(encoder_param, head_param, /*verbose=*/false);
+  DensificationParam densification_param(
+    densification_world_frame_id, densification_num_past_frames);
+  detector_ptr_ = std::make_unique<CenterPointTRT>(
+    static_cast<int>(class_names_.size()), encoder_param, head_param, densification_param);
 
   pointcloud_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
     "~/input/pointcloud", rclcpp::SensorDataQoS{}.keep_last(1),
@@ -72,8 +75,7 @@ void LidarCenterPointNode::pointCloudCallback(
     return;
   }
 
-  auto stacked_pointcloud_msg = densification_ptr_->stackPointCloud(*input_pointcloud_msg);
-  std::vector<float> boxes3d_vec = detector_ptr_->detect(stacked_pointcloud_msg);
+  std::vector<float> boxes3d_vec = detector_ptr_->detect(*input_pointcloud_msg, tf_buffer_);
 
   autoware_auto_perception_msgs::msg::DetectedObjects output_msg;
   output_msg.header = input_pointcloud_msg->header;
@@ -136,7 +138,8 @@ void LidarCenterPointNode::pointCloudCallback(
     objects_pub_->publish(output_msg);
   }
   if (pointcloud_sub_count > 0) {
-    pointcloud_pub_->publish(stacked_pointcloud_msg);
+    // TODO(yukke42): change to densification pointcloud for debugging
+    pointcloud_pub_->publish(*input_pointcloud_msg);
   }
 }
 

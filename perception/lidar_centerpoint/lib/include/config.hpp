@@ -21,7 +21,6 @@ class Config
 {
 public:
   // input params
-  constexpr static int num_class = 3;           // car, bicycle and pedestrian
   constexpr static int num_point_dims = 3;      // x, y and z
   constexpr static int num_point_features = 4;  // x, y, z and timelag
   constexpr static int max_num_points_per_voxel = 32;
@@ -47,9 +46,10 @@ public:
 
   // output params
   constexpr static int num_box_features = 11;  // score, class, x, y, z, w, l, h, yaw, vel_x, vel_y
-  constexpr static int max_num_output_objects = 200;
+  constexpr static int max_num_output_objects = 500;
 
   // network params
+  constexpr static int batch_size = 1;
   constexpr static int downsample_factor = 2;
   constexpr static int num_encoder_input_features = 8;
   constexpr static int num_encoder_output_features = 32;
