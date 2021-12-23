@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>autoware_point_types</name>
+  <version>0.1.0</version>
+  <description>The point types definition to use point_cloud_msg_wrapper</description>
+  <maintainer email="taichi.higashide@tier4.jp">Taichi Higashide</maintainer>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake_core</buildtool_depend>
+  <buildtool_depend>ament_cmake_export_dependencies</buildtool_depend>
+  <buildtool_depend>ament_cmake_test</buildtool_depend>
+
+  <buildtool_export_depend>ament_cmake_core</buildtool_export_depend>
+  <buildtool_export_depend>ament_cmake_test</buildtool_export_depend>
+
+  <depend>ament_cmake_copyright</depend>
+  <depend>ament_cmake_cppcheck</depend>
+  <depend>ament_cmake_lint_cmake</depend>
+  <depend>ament_cmake_xmllint</depend>
+  <depend>point_cloud_msg_wrapper</depend>
+
+  <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+  <test_depend>point_cloud_msg_wrapper</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
