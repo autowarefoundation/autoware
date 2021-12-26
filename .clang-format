@@ -1,0 +1,43 @@
+# Modified from https://github.com/ament/ament_lint/blob/master/ament_clang_format/ament_clang_format/configuration/.clang-format
+Language: Cpp
+BasedOnStyle: Google
+
+AccessModifierOffset: -2
+AlignAfterOpenBracket: AlwaysBreak
+BraceWrapping:
+  AfterClass: true
+  AfterFunction: true
+  AfterNamespace: true
+  AfterStruct: true
+BreakBeforeBraces: Custom
+ColumnLimit: 100
+ConstructorInitializerIndentWidth: 0
+ContinuationIndentWidth: 2
+DerivePointerAlignment: false
+PointerAlignment: Middle
+ReflowComments: true
+IncludeCategories:
+  # C++ system headers
+  - Regex: <[a-z_]*>
+    Priority: 6
+    CaseSensitive: true
+  # C system headers
+  - Regex: <.*\.h>
+    Priority: 5
+    CaseSensitive: true
+  # Boost headers
+  - Regex: boost/.*
+    Priority: 4
+    CaseSensitive: true
+  # Message headers
+  - Regex: .*_msgs/.*
+    Priority: 3
+    CaseSensitive: true
+  # Other Package headers
+  - Regex: <.*>
+    Priority: 2
+    CaseSensitive: true
+  # Local package headers
+  - Regex: '".*"'
+    Priority: 1
+    CaseSensitive: true
