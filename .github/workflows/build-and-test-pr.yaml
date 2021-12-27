@@ -48,5 +48,5 @@ jobs:
         with:
           rosdistro: galactic
           target-packages: ${{ steps.get-modified-packages.outputs.modified-packages }}
-          clang-tidy-config-url: https://raw.githubusercontent.com/autowarefoundation/autoware-github-actions/tier4/proposal/.clang-tidy
+          clang-tidy-config-url: https://raw.githubusercontent.com/autowarefoundation/autoware/tier4/proposal/.clang-tidy
           build-depends-repos: build_depends.repos
