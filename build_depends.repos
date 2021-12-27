@@ -1,69 +1,31 @@
 repositories:
-  launch/aip_launcher:
+  # core
+  core/autoware_msgs:
     type: git
-    url: https://github.com/tier4/AutowareArchitectureProposal_aip_launcher.git
-    version: use-autoware-auto-msgs
-  common/autoware_lint_common:
-    type: git
-    url: https://github.com/tier4/tier4_ament_lint
-    version: main
-  messages/autoware_auto_msgs:
-    type: git
-    url: https://github.com/tier4/autoware_auto_msgs.git
+    url: https://github.com/tier4/autoware_auto_msgs.git # TODO(Tier IV): Move to autowarefoundation/autoware_msgs
     version: tier4/main
-  messages/tier4_msgs:
+  core/common:
     type: git
-    url: https://github.com/tier4/AutowareArchitectureProposal_msgs.git
+    url: https://github.com/autowarefoundation/autoware_common.git
+    version: tier4/proposal
+  core/autoware:
+    type: git
+    url: https://github.com/autowarefoundation/autoware.core.git
+    version: tier4/proposal
+  # universe
+  universe/tier4_autoware_msgs:
+    type: git
+    url: https://github.com/tier4/AutowareArchitectureProposal_msgs.git # TODO(Tier IV): Rename to tier4/tier4_autoware_msgs
     version: tier4/universe
-  vendor/grid_map:
+  universe/vendor/grid_map:
     type: git
     url: https://github.com/ANYbotics/grid_map.git
     version: ba2f9cb6e62f7ee9c5bac7401391a211e442e459
-  vendor/perception_pcl:
-    type: git
-    url: https://github.com/ros-perception/perception_pcl.git
-    version: foxy-devel
-  vendor/topic_tools:
-    type: git
-    url: https://github.com/tier4/topic_tools.git
-    version: tier4/main
-  vendor/rosbridge_suite:
-    type: git
-    url: https://github.com/RobotWebTools/rosbridge_suite.git
-    version: ros2
-  vendor/rosauth:
-    type: git
-    url: https://github.com/GT-RAIL/rosauth.git
-    version: ros2
-  vendor/ndt_omp:
-    type: git
-    url: https://github.com/tier4/ndt_omp.git
-    version: tier4/main
-  vendor/mussp:
+  universe/vendor/mussp:
     type: git
     url: https://github.com/tier4/muSSP.git
     version: tier4/main
-  vendor/hash_library_vendor:
+  universe/vendor/ndt_omp:
     type: git
-    url: https://github.com/tier4/hash_library_vendor.git
-    version: main
-  vendor/pointcloud_to_laserscan:
-    type: git
-    url: https://github.com/tier4/pointcloud_to_laserscan.git
+    url: https://github.com/tier4/ndt_omp.git
     version: tier4/main
-  vendor/pacmod3_msgs:
-    type: git
-    url: https://github.com/astuff/pacmod3_msgs
-    version: main
-  vendor/tamagawa_imu_driver:
-    type: git
-    url: https://github.com/tier4/tamagawa_imu_driver.git
-    version: ros2
-  vendor/livox-driver:
-    type: git
-    url: https://github.com/tier4/livox_ros2_driver.git
-    version: tier4/master
-  vendor/velodyne_vls:
-    type: git
-    url: https://github.com/tier4/velodyne_vls.git
-    version: use-autoware-auto-msgs

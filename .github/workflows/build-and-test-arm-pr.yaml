@@ -25,6 +25,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Remove exec_depend
+        uses: autowarefoundation/autoware-github-actions/remove-exec-depend@tier4/proposal
+
+      - name: Register AutonomouStuff repository
+        uses: autowarefoundation/autoware-github-actions/register-autonomoustuff-repository@tier4/proposal
+        with:
+          rosdistro: galactic
+
       - name: Get modified packages
         id: get-modified-packages
         uses: autowarefoundation/autoware-github-actions/get-modified-packages@tier4/proposal
