@@ -32,7 +32,6 @@ repos:
     rev: v1.26.3
     hooks:
       - id: yamllint
-        exclude: .*.param.yaml
 
   - repo: https://github.com/tier4/pre-commit-hooks-ros
     rev: v0.4.0

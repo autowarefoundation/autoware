@@ -5,7 +5,7 @@ pcl_grid_map_extraction:
       x: 0.0
       y: 0.0
       z: 0.0
-    rotation: #intrinsic rotation X-Y-Z (r-p-y)sequence
+    rotation: # intrinsic rotation X-Y-Z (r-p-y)sequence
       r: 0.0
       p: 0.0
       y: 0.0
