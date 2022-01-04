@@ -31,6 +31,7 @@ ament_auto_find_build_dependencies()
 
 include_directories(
   include
+  SYSTEM
   ${PCL_COMMON_INCLUDE_DIRS}
   ${PCL_INCLUDE_DIRS}
 )

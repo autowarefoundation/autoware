@@ -32,6 +32,7 @@ ament_auto_find_build_dependencies()
 
 include_directories(
   include
+  SYSTEM
   ${Boost_INCLUDE_DIRS}
   ${PCL_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}

@@ -94,7 +94,7 @@ rcl_interfaces::msg::SetParametersResult PassThroughFilterUInt16Component::param
   }
 
   // Check the current value for keep_organized
-  bool keep_organized;
+  bool keep_organized{get_parameter("keep_organized").as_bool()};
   get_param(p, "keep_organized", keep_organized);
   if (impl_.getKeepOrganized() != keep_organized) {
     RCLCPP_DEBUG(
@@ -105,7 +105,7 @@ rcl_interfaces::msg::SetParametersResult PassThroughFilterUInt16Component::param
   }
 
   // Check the current value for the negative flag
-  bool filter_limit_negative;
+  bool filter_limit_negative{get_parameter("filter_limit_negative").as_bool()};
   get_param(p, "filter_limit_negative", filter_limit_negative);
   if (impl_.getFilterLimitsNegative() != filter_limit_negative) {
     RCLCPP_DEBUG(

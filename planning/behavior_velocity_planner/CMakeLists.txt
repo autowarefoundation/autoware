@@ -57,6 +57,12 @@ ament_auto_add_library(scene_module_lib SHARED
 )
 
 target_include_directories(scene_module_lib
+  SYSTEM PUBLIC
+    ${BOOST_INCLUDE_DIRS}
+    ${tf2_geometry_msgs_INCLUDE_DIRS}
+)
+
+target_include_directories(scene_module_lib
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
