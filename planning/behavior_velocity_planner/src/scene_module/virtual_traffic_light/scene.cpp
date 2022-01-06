@@ -399,9 +399,9 @@ bool VirtualTrafficLightModule::modifyPathVelocity(
     return true;
   }
 
-  // Stop at stop_line if state is timeout before stop_line
-  if (isBeforeStopLine()) {
-    if (!isStateTimeout(*virtual_traffic_light_state)) {
+  // Stop at stop_line if state is timeout
+  if (isBeforeStopLine() || planner_param_.check_timeout_after_stop_line) {
+    if (isStateTimeout(*virtual_traffic_light_state)) {
       RCLCPP_DEBUG(logger_, "state is timeout");
       insertStopVelocityAtStopLine(path, stop_reason);
     }
@@ -472,7 +472,7 @@ bool VirtualTrafficLightModule::isBeforeStopLine()
   const auto signed_arc_length = tier4_autoware_utils::calcSignedArcLength(
     module_data_.path.points, module_data_.head_pose.position, collision->point);
 
-  return signed_arc_length > 0;
+  return signed_arc_length > -planner_param_.dead_line_margin;
 }
 
 bool VirtualTrafficLightModule::isAfterAnyEndLine()
@@ -493,8 +493,7 @@ bool VirtualTrafficLightModule::isAfterAnyEndLine()
   const auto signed_arc_length = tier4_autoware_utils::calcSignedArcLength(
     module_data_.path.points, module_data_.head_pose.position, collision->point);
 
-  constexpr double max_excess_distance = 3.0;
-  return signed_arc_length < -max_excess_distance;
+  return signed_arc_length < -planner_param_.dead_line_margin;
 }
 
 bool VirtualTrafficLightModule::isNearAnyEndLine()
@@ -508,8 +507,7 @@ bool VirtualTrafficLightModule::isNearAnyEndLine()
   const auto signed_arc_length = tier4_autoware_utils::calcSignedArcLength(
     module_data_.path.points, module_data_.head_pose.position, collision->point);
 
-  constexpr double near_distance = 1.0;
-  return std::abs(signed_arc_length) < near_distance;
+  return std::abs(signed_arc_length) < planner_param_.near_line_distance;
 }
 
 boost::optional<tier4_v2x_msgs::msg::VirtualTrafficLightState>
@@ -535,10 +533,10 @@ bool VirtualTrafficLightModule::isStateTimeout(
   const auto delay = (clock_->now() - rclcpp::Time(state.stamp)).seconds();
   if (delay > planner_param_.max_delay_sec) {
     RCLCPP_DEBUG(logger_, "delay=%f, max_delay=%f", delay, planner_param_.max_delay_sec);
-    return false;
+    return true;
   }
 
-  return true;
+  return false;
 }
 
 bool VirtualTrafficLightModule::hasRightOfWay(

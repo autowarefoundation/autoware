@@ -2,3 +2,6 @@
   ros__parameters:
     virtual_traffic_light:
       max_delay_sec: 3.0
+      near_line_distance: 1.0
+      dead_line_margin: 1.0
+      check_timeout_after_stop_line: true
