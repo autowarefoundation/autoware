@@ -38,6 +38,7 @@
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
 #include "autoware_auto_vehicle_msgs/msg/steering_report.hpp"
 #include "autoware_auto_vehicle_msgs/msg/control_mode_report.hpp"
+#include "autoware_auto_vehicle_msgs/msg/engage.hpp"
 #include "autoware_auto_vehicle_msgs/msg/gear_command.hpp"
 #include "autoware_auto_vehicle_msgs/msg/gear_report.hpp"
 #include "autoware_auto_vehicle_msgs/msg/turn_indicators_command.hpp"
@@ -67,6 +68,7 @@ using autoware_auto_control_msgs::msg::AckermannControlCommand;
 using autoware_auto_geometry_msgs::msg::Complex32;
 using autoware_auto_planning_msgs::msg::Trajectory;
 using autoware_auto_vehicle_msgs::msg::ControlModeReport;
+using autoware_auto_vehicle_msgs::msg::Engage;
 using autoware_auto_vehicle_msgs::msg::GearCommand;
 using autoware_auto_vehicle_msgs::msg::GearReport;
 using autoware_auto_vehicle_msgs::msg::TurnIndicatorsCommand;
@@ -140,6 +142,7 @@ private:
   rclcpp::Subscription<AckermannControlCommand>::SharedPtr sub_ackermann_cmd_;
   rclcpp::Subscription<PoseWithCovarianceStamped>::SharedPtr sub_init_pose_;
   rclcpp::Subscription<Trajectory>::SharedPtr sub_trajectory_;
+  rclcpp::Subscription<Engage>::SharedPtr sub_engage_;
 
   rclcpp::CallbackGroup::SharedPtr group_api_service_;
   tier4_api_utils::Service<InitializePose>::SharedPtr srv_set_pose_;
@@ -165,6 +168,7 @@ private:
   TurnIndicatorsCommand::ConstSharedPtr current_turn_indicators_cmd_ptr_;
   HazardLightsCommand::ConstSharedPtr current_hazard_lights_cmd_ptr_;
   Trajectory::ConstSharedPtr current_trajectory_ptr_;
+  bool current_engage_;
 
   /* frame_id */
   std::string simulated_frame_id_;  //!< @brief simulated vehicle frame id
@@ -238,6 +242,11 @@ private:
    * @brief subscribe trajectory for deciding self z position.
    */
   void on_trajectory(const Trajectory::ConstSharedPtr msg);
+
+  /**
+   * @brief subscribe autoware engage
+   */
+  void on_engage(const Engage::ConstSharedPtr msg);
 
   /**
    * @brief get z-position from trajectory

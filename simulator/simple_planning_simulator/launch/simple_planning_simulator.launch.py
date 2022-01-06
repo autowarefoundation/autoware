@@ -62,6 +62,7 @@ def launch_setup(context, *args, **kwargs):
             ('input/turn_indicators_command', '/control/command/turn_indicators_cmd'),
             ('input/hazard_lights_command', '/control/command/hazard_lights_cmd'),
             ('input/trajectory', '/planning/scenario_planning/trajectory'),
+            ('input/engage', '/vehicle/engage'),
             ('output/twist', '/vehicle/status/velocity_status'),
             ('output/odometry', '/localization/kinematic_state'),
             ('output/steering', '/vehicle/status/steering_status'),

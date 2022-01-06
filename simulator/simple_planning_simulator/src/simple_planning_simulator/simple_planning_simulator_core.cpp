@@ -76,7 +76,8 @@ namespace simple_planning_simulator
 SimplePlanningSimulator::SimplePlanningSimulator(const rclcpp::NodeOptions & options)
 : Node("simple_planning_simulator", options),
   tf_buffer_(get_clock()),
-  tf_listener_(tf_buffer_, std::shared_ptr<rclcpp::Node>(this, [](auto) {}), false)
+  tf_listener_(tf_buffer_, std::shared_ptr<rclcpp::Node>(this, [](auto) {}), false),
+  current_engage_(false)
 {
   simulated_frame_id_ = declare_parameter("simulated_frame_id", "base_link");
   origin_frame_id_ = declare_parameter("origin_frame_id", "odom");
@@ -101,6 +102,8 @@ SimplePlanningSimulator::SimplePlanningSimulator(const rclcpp::NodeOptions & opt
     std::bind(&SimplePlanningSimulator::on_hazard_lights_cmd, this, _1));
   sub_trajectory_ = create_subscription<Trajectory>(
     "input/trajectory", QoS{1}, std::bind(&SimplePlanningSimulator::on_trajectory, this, _1));
+  sub_engage_ = create_subscription<Engage>(
+    "input/engage", rclcpp::QoS{1}, std::bind(&SimplePlanningSimulator::on_engage, this, _1));
 
   pub_control_mode_report_ =
     create_publisher<ControlModeReport>("output/control_mode_report", QoS{1});
@@ -357,6 +360,11 @@ void SimplePlanningSimulator::on_trajectory(const Trajectory::ConstSharedPtr msg
   current_trajectory_ptr_ = msg;
 }
 
+void SimplePlanningSimulator::on_engage(const Engage::ConstSharedPtr msg)
+{
+  current_engage_ = msg->engage;
+}
+
 void SimplePlanningSimulator::add_measurement_noise(
   Odometry & odom, VelocityReport & vel, SteeringReport & steer) const
 {
@@ -489,7 +497,11 @@ void SimplePlanningSimulator::publish_control_mode_report()
 {
   ControlModeReport msg;
   msg.stamp = get_clock()->now();
-  msg.mode = ControlModeReport::AUTONOMOUS;
+  if (current_engage_) {
+    msg.mode = ControlModeReport::AUTONOMOUS;
+  } else {
+    msg.mode = ControlModeReport::MANUAL;
+  }
   pub_control_mode_report_->publish(msg);
 }
 
