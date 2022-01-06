@@ -23,6 +23,6 @@ This is the list of the prototype repositories and their roles.
   - Since Autoware has a lot of repositories in total, making CI scripts DRY is efficient.
 - [autowarefoundation/autoware-documentation](https://github.com/autowarefoundation/autoware-documentation)
   - This is a documentation repository for Autoware users and developers.
-  - Since Autoware Core/Unverse has multiple repositories, preparing a central documentation repository is more user-friendly than writing distributed documentation in each repository.
+  - Since Autoware Core/Universe has multiple repositories, preparing a central documentation repository is more user-friendly than writing distributed documentation in each repository.
 
 If you have any questions or ideas, please feel free to start a discussion on [GitHub Discussions in autowarefoundation/autoware](https://github.com/autowarefoundation/autoware/discussions).
