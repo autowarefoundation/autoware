@@ -60,6 +60,7 @@ The purpose of this simulator is for the integration test of planning and contro
  - `IDEAL_STEER_VEL`
  - `IDEAL_STEER_ACC`
  - `IDEAL_STEER_ACC_GEARED`
+ - `DELAY_STEER_VEL`
  - `DELAY_STEER_ACC`
  - `DELAY_STEER_ACC_GEARED`
 
@@ -68,16 +69,18 @@ The `IDEAL` model moves ideally as commanded, while the `DELAY` model moves base
 The table below shows which models correspond to what parameters. The model names are written in abbreviated form (e.g. IDEAL_STEER_VEL = I_ST_V).
 
 
-|Name|Type|Description|I_ST_V|I_ST_A|I_ST_A_G|D_ST_A|D_ST_A_G|Default value| unit |
-|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|
-|acc_time_delay         | double | dead time for the acceleration input                     | x | x | x | o | o | 0.1 | [s] |
-|steer_time_delay       | double | dead time for the steering input                         | x | x | x | o | o | 0.24| [s] |
-|acc_time_constant      | double | time constant of the 1st-order acceleration dynamics     | x | x | x | o | o | 0.1 | [s] |
-|steer_time_constant    | double | time constant of the 1st-order steering dynamics         | x | x | x | o | o | 0.27| [s] |
-|vel_lim                | double | limit of velocity                                        | x | x | x | o | o | 50.0| [m/s] |
-|vel_rate_lim           | double | limit of acceleration                                    | x | x | x | o | o | 7.0 | [m/ss] |
-|steer_lim              | double | limit of steering angle                                  | x | x | x | o | o | 1.0 | [rad] |
-|steer_rate_lim         | double | limit of steering angle change rate                      | x | x | x | o | o | 5.0 | [rad/s] |
+|Name|Type|Description|I_ST_V|I_ST_A|I_ST_A_G|D_ST_V|D_ST_A|D_ST_A_G|Default value| unit |
+|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|
+|acc_time_delay         | double | dead time for the acceleration input                     | x | x | x | x | o | o | 0.1 | [s] |
+|steer_time_delay       | double | dead time for the steering input                         | x | x | x | o | o | o | 0.24| [s] |
+|vel_time_delay         | double | dead time for the velocity input                         | x | x | x | o | x | x | 0.25| [s] |
+|acc_time_constant      | double | time constant of the 1st-order acceleration dynamics     | x | x | x | x | o | o | 0.1 | [s] |
+|steer_time_constant    | double | time constant of the 1st-order steering dynamics         | x | x | x | o | o | o | 0.27| [s] |
+|vel_time_constant      | double | time constant of the 1st-order velocity dynamics         | x | x | x | o | x | x | 0.5 | [s] |
+|vel_lim                | double | limit of velocity                                        | x | x | x | o | o | o | 50.0| [m/s] |
+|vel_rate_lim           | double | limit of acceleration                                    | x | x | x | o | o | o | 7.0 | [m/ss] |
+|steer_lim              | double | limit of steering angle                                  | x | x | x | o | o | o | 1.0 | [rad] |
+|steer_rate_lim         | double | limit of steering angle change rate                      | x | x | x | o | o | o | 5.0 | [rad/s] |
 <!-- |deadzone_delta_steer   | double | dead zone for the steering dynamics                      | x | x | x | o | o | 0.0 | [rad] | -->
 
 

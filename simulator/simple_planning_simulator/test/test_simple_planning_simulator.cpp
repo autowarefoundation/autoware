@@ -42,6 +42,7 @@ const std::vector<std::string> vehicle_model_type_vec = { // NOLINT
   "IDEAL_STEER_VEL",
   "IDEAL_STEER_ACC",
   "IDEAL_STEER_ACC_GEARED",
+  "DELAY_STEER_VEL",
   "DELAY_STEER_ACC",
   "DELAY_STEER_ACC_GEARED",
 };

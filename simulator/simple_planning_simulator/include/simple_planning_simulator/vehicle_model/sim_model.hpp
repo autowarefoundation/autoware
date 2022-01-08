@@ -21,6 +21,7 @@
 #include "simple_planning_simulator/vehicle_model/sim_model_ideal_steer_acc_geared.hpp"
 #include "simple_planning_simulator/vehicle_model/sim_model_delay_steer_acc.hpp"
 #include "simple_planning_simulator/vehicle_model/sim_model_delay_steer_acc_geared.hpp"
+#include "simple_planning_simulator/vehicle_model/sim_model_delay_steer_vel.hpp"
 
 
 #endif  // SIMPLE_PLANNING_SIMULATOR__VEHICLE_MODEL__SIM_MODEL_HPP_
