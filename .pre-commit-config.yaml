@@ -6,7 +6,7 @@ ci:
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
+    rev: v4.1.0
     hooks:
       - id: check-json
       - id: check-merge-conflict
@@ -26,7 +26,7 @@ repos:
         args: [-c, .markdownlint.yaml, --fix]
 
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v2.5.0
+    rev: v2.5.1
     hooks:
       - id: prettier
 
@@ -36,17 +36,17 @@ repos:
       - id: yamllint
 
   - repo: https://github.com/ansible/ansible-lint.git
-    rev: v5.3.1
+    rev: v5.3.2
     hooks:
       - id: ansible-lint
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.8.0.1
+    rev: v0.8.0.3
     hooks:
       - id: shellcheck
 
   - repo: https://github.com/scop/pre-commit-shfmt
-    rev: v3.4.1-1
+    rev: v3.4.2-1
     hooks:
       - id: shfmt
         args: [-w, -s, -i=4]
