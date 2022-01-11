@@ -66,7 +66,6 @@ bool convertToFrenetCoordinate3d(
   }
 
   const auto search_pt = tier4_autoware_utils::fromMsg(search_point_geom);
-  bool found = false;
   double min_distance = std::numeric_limits<double>::max();
 
   // get frenet coordinate based on points
@@ -88,15 +87,17 @@ bool convertToFrenetCoordinate3d(
 
       const double tmp_distance = current2search_pt.norm();
       if (tmp_distance < min_distance) {
-        found = true;
         min_distance = tmp_distance;
         frenet_coordinate->distance = tmp_distance;
         frenet_coordinate->length = accumulated_length;
+      } else {
+        break;
       }
     }
   }
 
   // get frenet coordinate based on lines
+  bool found_on_line = false;
   {
     auto prev_geom_pt = linestring.front();
     double accumulated_length = 0;
@@ -113,17 +114,26 @@ bool convertToFrenetCoordinate3d(
       if (tmp_length >= 0 && tmp_length <= line_segment_length) {
         double tmp_distance = direction.cross(start2search_pt).norm();
         if (tmp_distance < min_distance) {
-          found = true;
           min_distance = tmp_distance;
           frenet_coordinate->distance = tmp_distance;
           frenet_coordinate->length = accumulated_length + tmp_length;
+
+          if (found_on_line) {
+            break;
+          }
+
+          found_on_line = true;
+        } else if (found_on_line) {
+          break;
         }
+      } else if (found_on_line) {
+        break;
       }
       accumulated_length += line_segment_length;
       prev_geom_pt = geom_pt;
     }
   }
-  return found;
+  return found_on_line;
 }
 
 std::vector<Point> convertToGeometryPointArray(const PathWithLaneId & path)
