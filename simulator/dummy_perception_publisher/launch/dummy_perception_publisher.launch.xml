@@ -53,12 +53,13 @@
     <push-ros-namespace namespace="perception"/>
     <!-- object segmentation module -->
     <group>
-      <push-ros-namespace namespace="obstacle_segmentation"/>
+      <push-ros-namespace namespace="occupancy_grid_map"/>
       <!-- Occupancy Grid -->
       <include file="$(find-pkg-share laserscan_to_occupancy_grid_map)/launch/laserscan_to_occupancy_grid_map.launch.py">
         <arg name="input_obstacle_pointcloud" value="true" />
         <arg name="input_obstacle_and_raw_pointcloud" value="false" />
         <arg name="input/obstacle_pointcloud" value="/perception/obstacle_segmentation/pointcloud" />
+        <arg name="output" value="/perception/occupancy_grid_map/map" />
       </include>
     </group>
 
