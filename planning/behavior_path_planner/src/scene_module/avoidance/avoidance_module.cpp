@@ -164,9 +164,11 @@ ObjectDataArray AvoidanceModule::calcAvoidanceTargetObjects(
     *planner_data_->dynamic_object, parameters_.threshold_speed_object_is_stopped);
 
   // detection area filter
+  // when expanding lanelets, right_offset must be minus.
+  // This is because y axis is positive on the left.
   const auto expanded_lanelets = lanelet::utils::getExpandedLanelets(
     current_lanes, parameters_.detection_area_left_expand_dist,
-    parameters_.detection_area_right_expand_dist);
+    parameters_.detection_area_right_expand_dist * (-1.0));
   const auto lane_filtered_objects_index =
     util::filterObjectsByLanelets(objects_candidate, expanded_lanelets);
 
