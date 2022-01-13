@@ -103,7 +103,8 @@ MapBasedDetector::MapBasedDetector(const rclcpp::NodeOptions & node_options)
     "~/input/camera_info", rclcpp::SensorDataQoS(),
     std::bind(&MapBasedDetector::cameraInfoCallback, this, _1));
   route_sub_ = create_subscription<autoware_auto_planning_msgs::msg::HADMapRoute>(
-    "~/input/route", 1, std::bind(&MapBasedDetector::routeCallback, this, _1));
+    "~/input/route", rclcpp::QoS{1}.transient_local(),
+    std::bind(&MapBasedDetector::routeCallback, this, _1));
 
   // publishers
   roi_pub_ = this->create_publisher<autoware_auto_perception_msgs::msg::TrafficLightRoiArray>(
