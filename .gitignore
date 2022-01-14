@@ -1,0 +1,17 @@
+# Vim
+*.swp
+*.swo
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# colcon
+build/
+install/
+log/
+
+# Python
+*.pyc
+
+# Don't ignore src/ because full-text search won't work correctly.

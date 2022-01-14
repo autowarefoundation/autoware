@@ -1,0 +1,36 @@
+name: vcs-import
+
+on:
+  pull_request:
+    paths:
+      - autoware.repos
+  workflow_dispatch:
+
+jobs:
+  vcs-import:
+    runs-on: ubuntu-latest
+    container: ros:galactic
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install pip for rosdep
+        run: |
+          sudo apt-get -y update
+          sudo apt-get -y install python3-pip
+
+      - name: Register AutonomouStuff repository
+        uses: autowarefoundation/autoware-github-actions/register-autonomoustuff-repository@tier4/proposal
+        with:
+          rosdistro: galactic
+
+      - name: Run vcs import
+        run: |
+          mkdir src
+          vcs import src < autoware.repos
+
+      - name: Run rosdep install
+        run: |
+          sudo apt-get -y update
+          rosdep update
+          DEBIAN_FRONTEND=noninteractive rosdep install -y --from-paths src --ignore-src --rosdistro galactic

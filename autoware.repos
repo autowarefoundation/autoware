@@ -1,0 +1,83 @@
+repositories:
+  # core
+  core/autoware_msgs:
+    type: git
+    url: https://github.com/tier4/autoware_auto_msgs.git # TODO(Tier IV): Move to autowarefoundation/autoware_msgs
+    version: tier4/main
+  core/common:
+    type: git
+    url: https://github.com/autowarefoundation/autoware_common.git
+    version: tier4/proposal
+  core/autoware:
+    type: git
+    url: https://github.com/autowarefoundation/autoware.core.git
+    version: tier4/proposal
+  # universe
+  universe/autoware:
+    type: git
+    url: https://github.com/autowarefoundation/autoware.universe.git
+    version: tier4/proposal
+  universe/tier4_autoware_msgs:
+    type: git
+    url: https://github.com/tier4/AutowareArchitectureProposal_msgs.git # TODO(Tier IV): Rename to tier4/tier4_autoware_msgs
+    version: tier4/universe
+  universe/vendor/grid_map:
+    type: git
+    url: https://github.com/ANYbotics/grid_map.git
+    version: ba2f9cb6e62f7ee9c5bac7401391a211e442e459
+  universe/vendor/mussp:
+    type: git
+    url: https://github.com/tier4/muSSP.git
+    version: tier4/main
+  universe/vendor/ndt_omp:
+    type: git
+    url: https://github.com/tier4/ndt_omp.git
+    version: tier4/main
+  universe/vendor/pointcloud_to_laserscan:
+    type: git
+    url: https://github.com/tier4/pointcloud_to_laserscan.git
+    version: tier4/main
+  universe/vendor/topic_tools:
+    type: git
+    url: https://github.com/tier4/topic_tools.git
+    version: tier4/main
+  # sensor_component
+  sensor_component/tmp/velodyne_description: # TODO(Tier IV): Remove after https://github.com/ros/rosdistro/pull/31611 is released
+    type: git
+    url: https://github.com/tier4/velodyne_simulator.git
+    version: 7bca7039a1d9b0a37a268e7ced3e97b96fe9f5ee
+  sensor_component/sensor_component_description:
+    type: git
+    url: https://github.com/tier4/sensor_description.iv.git # TODO(Tier IV): Rename to tier4/sensor_component_description or so
+    version: main
+  sensor_component/livox-driver:
+    type: git
+    url: https://github.com/tier4/livox_ros2_driver.git
+    version: tier4/master
+  sensor_component/tamagawa_imu_driver:
+    type: git
+    url: https://github.com/tier4/tamagawa_imu_driver.git
+    version: ros2
+  sensor_component/velodyne_vls:
+    type: git
+    url: https://github.com/tier4/velodyne_vls.git
+    version: use-autoware-auto-msgs # TODO(Tier IV): Rename to tier4/universe or so
+  # sensor_kit
+  sensor_kit/tmp/tier4_sensor_kit_description:
+    type: git
+    url: https://github.com/tier4/aip_description.iv.git # TODO(Tier IV): Merge into tier4_sensor_kit_launch
+    version: main
+  sensor_kit/tier4_sensor_kit_launch:
+    type: git
+    url: https://github.com/tier4/AutowareArchitectureProposal_aip_launcher.git # TODO(Tier IV): Rename to tier4/tier4_sensor_kit_launch or so
+    version: use-autoware-auto-msgs # TODO(Tier IV): Rename to tier4/universe or so
+  # vehicle
+  vehicle/lexus_launch:
+    type: git
+    url: https://github.com/tier4/lexus_description.iv.git # TODO(Tier IV): Rename to lexus_launch
+    version: tier4/universe
+  # param
+  param/individual_vehicle_params:
+    type: git
+    url: https://github.com/tier4/autoware_individual_params.git # TODO(Tier IV): Copy to autowarefoundation/individual_vehicle_params or so and remove aip_* directory
+    version: main

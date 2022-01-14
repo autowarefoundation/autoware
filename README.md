@@ -26,3 +26,17 @@ This is the list of the prototype repositories and their roles.
   - Since Autoware Core/Universe has multiple repositories, preparing a central documentation repository is more user-friendly than writing distributed documentation in each repository.
 
 If you have any questions or ideas, please feel free to start a discussion on [GitHub Discussions in autowarefoundation/autoware](https://github.com/autowarefoundation/autoware/discussions).
+
+---
+
+> Note: Detailed setup documents will be put into [autowarefoundation/autoware-documentation](https://github.com/autowarefoundation/autoware-documentation) soon.
+
+## How to setup workspace
+
+```bash
+mkdir src
+vcs import src < autoware.repos
+colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
+source install/setup.bash
+ros2 launch tier4_autoware_launch planning_simulator.launch.xml vehicle_model:=lexus sensor_model:=aip_xx1 map_path:={path_to_your_map_dir}
+```
