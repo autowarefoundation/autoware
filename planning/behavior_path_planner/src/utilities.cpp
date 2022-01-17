@@ -594,9 +594,13 @@ bool calcObjectPolygon(const PredictedObject & object, Polygon2d * object_polygo
         obj_x + r * std::cos(2.0 * M_PI / N * i), obj_y + r * std::sin(2.0 * M_PI / N * i));
     }
   } else if (object.shape.type == Shape::POLYGON) {
+    tf2::Transform tf_map2obj;
+    tf2::fromMsg(object.kinematics.initial_pose_with_covariance.pose, tf_map2obj);
     const auto obj_points = object.shape.footprint.points;
     for (const auto & obj_point : obj_points) {
-      object_polygon->outer().emplace_back(obj_point.x, obj_point.y);
+      tf2::Vector3 obj(obj_point.x, obj_point.y, obj_point.z);
+      tf2::Vector3 tf_obj = tf_map2obj * obj;
+      object_polygon->outer().emplace_back(tf_obj.x(), tf_obj.y());
     }
   } else {
     RCLCPP_WARN(
