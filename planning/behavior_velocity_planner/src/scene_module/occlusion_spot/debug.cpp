@@ -194,6 +194,7 @@ visualization_msgs::msg::MarkerArray createMarkers(
     occlusion_spot_slowdown_markers.markers.insert(
       occlusion_spot_slowdown_markers.markers.end(), collision_markers.begin(),
       collision_markers.end());
+    break;
   }
 
   // draw slice if having sidewalk polygon

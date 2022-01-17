@@ -36,6 +36,7 @@
 
 namespace behavior_velocity_planner
 {
+using autoware_auto_planning_msgs::msg::PathWithLaneId;
 namespace occlusion_spot_utils
 {
 enum ROAD_TYPE { PRIVATE, PUBLIC, HIGHWAY, UNKNOWN };

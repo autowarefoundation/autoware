@@ -28,39 +28,24 @@ using test::grid_param;
 
 TEST(performances, many_sidewalk_occlusion_spots)
 {
+  using autoware_auto_planning_msgs::msg::PathWithLaneId;
+  using behavior_velocity_planner::occlusion_spot_utils::generatePossibleCollisions;
+  using behavior_velocity_planner::occlusion_spot_utils::PossibleCollisionInfo;
   using std::chrono::duration;
   using std::chrono::duration_cast;
   using std::chrono::high_resolution_clock;
   using std::chrono::microseconds;
 
-  using behavior_velocity_planner::occlusion_spot_utils::generatePossibleCollisions;
-  using behavior_velocity_planner::occlusion_spot_utils::PossibleCollisionInfo;
-
   std::vector<PossibleCollisionInfo> possible_collisions;
 
-  autoware_auto_planning_msgs::msg::PathWithLaneId trajectory =
-    test::generatePath(0.5, 0.5, 300.0, 0.5, 3000);
-  grid_map::GridMap grid = test::generateGrid(3000, 3000, 0.1);
+  PathWithLaneId path = test::generatePath(0.5, 0.5, 300.0, 0.5, 300);
+  grid_map::GridMap grid = test::generateGrid(300, 300, 0.1);
   for (int x = 0; x < grid.getSize().x(); ++x) {
     for (int y = 0; y < grid.getSize().x(); ++y) {
       grid.at("layer", grid_map::Index(x, y)) =
         behavior_velocity_planner::grid_utils::occlusion_cost_value::UNKNOWN;
     }
   }
-
-  // empty lanelet map
-  lanelet::LaneletMapPtr map = std::make_shared<lanelet::LaneletMap>();
-
-  // Make routing graph
-  lanelet::traffic_rules::TrafficRulesPtr traffic_rules{
-    lanelet::traffic_rules::TrafficRulesFactory::create(
-      lanelet::Locations::Germany, lanelet::Participants::Vehicle,
-      lanelet::traffic_rules::TrafficRules::Configuration())};
-  lanelet::routing::RoutingCostPtrs cost_ptrs{
-    std::make_shared<lanelet::routing::RoutingCostDistance>(
-      lanelet::routing::RoutingCostDistance{2.})};
-  lanelet::routing::RoutingGraphPtr routing_graph =
-    lanelet::routing::RoutingGraph::build(*map, *traffic_rules, cost_ptrs);
 
   // Set parameters: enable sidewalk obstacles
   behavior_velocity_planner::occlusion_spot_utils::PlannerParam parameters;
@@ -71,11 +56,11 @@ TEST(performances, many_sidewalk_occlusion_spots)
   parameters.grid = grid_param;
   const double offset_from_ego_to_closest = 0;
   const double offset_from_closest_to_target = 0;
-  std::vector<lanelet::BasicPolygon2d> to_remove;
+  std::vector<lanelet::BasicPolygon2d> debug;
   auto start_closest = high_resolution_clock::now();
   generatePossibleCollisions(
-    possible_collisions, trajectory, grid, offset_from_ego_to_closest,
-    offset_from_closest_to_target, parameters, to_remove);
+    possible_collisions, path, grid, offset_from_ego_to_closest, offset_from_closest_to_target,
+    parameters, debug);
   auto end_closest = high_resolution_clock::now();
   std::string ms = " (micro seconds) ";
   std::cout << "| only_closest : runtime (microseconds) \n"

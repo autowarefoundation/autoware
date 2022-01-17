@@ -32,6 +32,20 @@ namespace behavior_velocity_planner
 {
 namespace occlusion_spot_utils
 {
+lanelet::ConstLanelet toPathLanelet(const PathWithLaneId & path)
+{
+  lanelet::Points3d path_points;
+  path_points.reserve(path.points.size());
+  for (const auto & path_point : path.points) {
+    const auto & p = path_point.point.pose.position;
+    path_points.emplace_back(lanelet::InvalId, p.x, p.y, p.z);
+  }
+  lanelet::LineString3d centerline(lanelet::InvalId, path_points);
+  lanelet::Lanelet path_lanelet(lanelet::InvalId);
+  path_lanelet.setCenterline(centerline);
+  return lanelet::ConstLanelet(path_lanelet);
+}
+
 bool splineInterpolate(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & input, const double interval,
   autoware_auto_planning_msgs::msg::PathWithLaneId * output, const rclcpp::Logger logger)
@@ -419,7 +433,7 @@ void generatePossibleCollisions(
   const PlannerParam & param, std::vector<lanelet::BasicPolygon2d> & debug)
 {
   // NOTE : buildPathLanelet first index should always be zero because path is already limited
-  lanelet::ConstLanelet path_lanelet = buildPathLanelet(path);
+  lanelet::ConstLanelet path_lanelet = toPathLanelet(path);
   if (path_lanelet.centerline2d().empty()) {
     return;
   }
@@ -446,9 +460,10 @@ void generateSidewalkPossibleCollisions(
   } else {
     min_range = param.vehicle_info.baselink_to_front - offset_form_ego_to_target;
   }
-  std::vector<geometry::Slice> sidewalk_slices = geometry::buildSidewalkSlices(
-    path_lanelet, min_range, param.vehicle_info.vehicle_width * 0.5, param.sidewalk.slice_size,
-    param.sidewalk.focus_range);
+  std::vector<geometry::Slice> sidewalk_slices;
+  geometry::buildSidewalkSlices(
+    sidewalk_slices, path_lanelet, min_range, param.vehicle_info.vehicle_width * 0.5,
+    param.sidewalk.slice_size, param.sidewalk.focus_range);
   double length_lower_bound = std::numeric_limits<double>::max();
   double distance_lower_bound = std::numeric_limits<double>::max();
   std::sort(
