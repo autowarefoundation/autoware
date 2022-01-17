@@ -67,8 +67,9 @@ double norm(const geometry_msgs::msg::Point & p1, const geometry_msgs::msg::Poin
 }
 
 bool isLocalOptimalSolutionOscillation(
-  const std::vector<Eigen::Matrix4f> & result_pose_matrix_array, const float oscillation_threshold,
-  const float inversion_vector_threshold)
+  const std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> &
+    result_pose_matrix_array,
+  const float oscillation_threshold, const float inversion_vector_threshold)
 {
   bool prev_oscillation = false;
   int oscillation_cnt = 0;
@@ -450,8 +451,8 @@ void NDTScanMatcher::callbackSensorPoints(
   result_pose_affine.matrix() = result_pose_matrix.cast<double>();
   const geometry_msgs::msg::Pose result_pose_msg = tf2::toMsg(result_pose_affine);
 
-  const std::vector<Eigen::Matrix4f> result_pose_matrix_array =
-    ndt_ptr_->getFinalTransformationArray();
+  const std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>>
+    result_pose_matrix_array = ndt_ptr_->getFinalTransformationArray();
   std::vector<geometry_msgs::msg::Pose> result_pose_msg_array;
   for (const auto & pose_matrix : result_pose_matrix_array) {
     Eigen::Affine3d pose_affine;

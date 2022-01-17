@@ -138,10 +138,11 @@ NormalDistributionsTransformPCLGeneric<PointSource, PointTarget>::getFinalTransf
 }
 
 template <class PointSource, class PointTarget>
-std::vector<Eigen::Matrix4f> NormalDistributionsTransformPCLGeneric<
-  PointSource, PointTarget>::getFinalTransformationArray() const
+std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>>
+NormalDistributionsTransformPCLGeneric<PointSource, PointTarget>::getFinalTransformationArray()
+  const
 {
-  return std::vector<Eigen::Matrix4f>();
+  return std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>>();
 }
 
 template <class PointSource, class PointTarget>

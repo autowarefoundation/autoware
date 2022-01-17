@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(ndt_pcl_modified)
 
+add_compile_options(-march=native)
+
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)

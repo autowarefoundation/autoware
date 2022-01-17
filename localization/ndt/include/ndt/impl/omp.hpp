@@ -136,7 +136,7 @@ Eigen::Matrix4f NormalDistributionsTransformOMP<PointSource, PointTarget>::getFi
 }
 
 template <class PointSource, class PointTarget>
-std::vector<Eigen::Matrix4f>
+std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>>
 NormalDistributionsTransformOMP<PointSource, PointTarget>::getFinalTransformationArray() const
 {
   return ndt_ptr_->getFinalTransformationArray();

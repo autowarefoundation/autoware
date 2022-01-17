@@ -74,7 +74,8 @@ public:
 
   inline const Eigen::Matrix<double, 6, 6> getHessian() const { return hessian_; }
 
-  inline const std::vector<Eigen::Matrix4f> getFinalTransformationArray() const
+  inline const std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>>
+  getFinalTransformationArray() const
   {
     return transformation_array_;
   }
@@ -106,7 +107,7 @@ protected:
   using NormalDistributionsTransform<PointSource, PointTarget>::trans_probability_;
 
   Eigen::Matrix<double, 6, 6> hessian_;
-  std::vector<Eigen::Matrix4f> transformation_array_;
+  std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> transformation_array_;
 
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
