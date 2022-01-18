@@ -1,0 +1,46 @@
+- name: Get CUDA architecture name
+  ansible.builtin.shell: |
+    if [ "$(uname -m)" = "x86_64" ]; then
+      echo "x86_64"
+    else
+      echo "sbsa"
+    fi
+  register: cuda_architecture
+  changed_when: false
+
+- name: Download pin file
+  become: true
+  ansible.builtin.get_url:
+    url: https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/{{ cuda_architecture.stdout }}/cuda-ubuntu2004.pin
+    dest: /etc/apt/preferences.d/cuda-repository-pin-600
+
+- name: Add NVIDIA apt key
+  become: true
+  ansible.builtin.apt_key:
+    url: https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/{{ cuda_architecture.stdout }}/7fa2af80.pub
+
+- name: Add CUDA repository into sources.list
+  become: true
+  ansible.builtin.apt_repository:
+    repo: deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/{{ cuda_architecture.stdout }}/ /
+    state: present
+
+- name: Install cuda-{{ cuda_version }}
+  become: true
+  ansible.builtin.apt:
+    name: cuda-{{ cuda_version }}
+    update_cache: true
+
+- name: Add PATH to .bashrc
+  ansible.builtin.lineinfile:
+    dest: ~/.bashrc
+    line: export PATH="/usr/local/cuda/bin:$PATH"
+    state: present
+    create: true
+
+- name: Add LD_LIBRARY_PATH to bashrc
+  ansible.builtin.lineinfile:
+    dest: ~/.bashrc
+    line: export LD_LIBRARY_PATH="/usr/local/cuda/lib64:$LD_LIBRARY_PATH"
+    state: present
+    create: true

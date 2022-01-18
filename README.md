@@ -31,6 +31,20 @@ If you have any questions or ideas, please feel free to start a discussion on [G
 
 > Note: Detailed setup documents will be put into [autowarefoundation/autoware-documentation](https://github.com/autowarefoundation/autoware-documentation) soon.
 
+## How to setup development environment
+
+```bash
+./setup-dev-env.sh
+```
+
+This script will install the development environment for Autoware, which cannot be installed by `rosdep`.
+
+> Note: Please confirm the licenses before installing NVIDIA libraries.
+
+- [CUDA](https://docs.nvidia.com/cuda/eula/index.html)
+- [cuDNN](https://docs.nvidia.com/deeplearning/cudnn/sla/index.html)
+- [TensorRT](https://docs.nvidia.com/deeplearning/tensorrt/sla/index.html)
+
 ## How to setup workspace
 
 ```bash

@@ -1,0 +1,34 @@
+- name: Install cuDNN and TensorRT
+  become: true
+  ansible.builtin.apt:
+    name:
+      - libcudnn8={{ cudnn_version }}
+      - libcudnn8-dev={{ cudnn_version }}
+      - libnvinfer8={{ tensorrt_version }}
+      - libnvinfer-dev={{ tensorrt_version }}
+      - libnvinfer-plugin8={{ tensorrt_version }}
+      - libnvinfer-plugin-dev={{ tensorrt_version }}
+      - libnvonnxparsers8={{ tensorrt_version }}
+      - libnvonnxparsers-dev={{ tensorrt_version }}
+      - libnvparsers8={{ tensorrt_version }}
+      - libnvparsers-dev={{ tensorrt_version }}
+    allow_downgrade: true
+    update_cache: true
+
+# apt-mark hold
+- name: Prevent CUDA-related packages from upgrading
+  become: true
+  ansible.builtin.dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  with_items:
+    - libcudnn8
+    - libcudnn8-dev
+    - libnvinfer8
+    - libnvinfer-dev
+    - libnvinfer-plugin8
+    - libnvinfer-plugin-dev
+    - libnvonnxparsers8
+    - libnvonnxparsers-dev
+    - libnvparsers8
+    - libnvparsers-dev

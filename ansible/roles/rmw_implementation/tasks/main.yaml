@@ -1,0 +1,18 @@
+- name: Get kebab-case name
+  ansible.builtin.shell: bash -c 'sed -e "s/_/-/g" <<< $(echo {{ rmw_implementation }})'
+  register: kebab_case_name
+  changed_when: false
+
+- name: Install ros-{{ rosdistro }}-{{ kebab_case_name.stdout }}
+  become: true
+  ansible.builtin.apt:
+    name: ros-{{ rosdistro }}-{{ kebab_case_name.stdout }}
+    state: latest
+    update_cache: true
+
+- name: Add RMW_IMPLEMENTATION to .bashrc
+  ansible.builtin.lineinfile:
+    dest: ~/.bashrc
+    line: export RMW_IMPLEMENTATION={{ rmw_implementation }}
+    state: present
+    create: true

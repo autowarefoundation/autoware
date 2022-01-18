@@ -1,0 +1,37 @@
+- hosts: localhost
+  connection: local
+  vars:
+    - rosdistro: galactic
+    - rmw_implementation: rmw_cyclonedds_cpp
+    - cuda_version: 11-4
+    - cudnn_version: 8.2.2.26-1+cuda11.4
+    - tensorrt_version: 8.2.2-1+cuda11.4
+  vars_prompt:
+    - name: install_nvidia
+      prompt: |-
+        [Warning] Some components depend on NVIDIA libraries (CUDA, cuDNN, TensorRT), which require license agreements.
+        Did you confirm the licenses and are you sure to to install them? [y/N]
+      private: false
+  pre_tasks:
+    - name: Show warnings that NVIDIA libraries will not be installed
+      ansible.builtin.pause:
+        seconds: 10
+        prompt: |
+          [Warning] Skipping installation of NVIDIA libraries. Please manually install them if you use the depending components.
+      when: install_nvidia != 'y'
+  roles:
+    # Core
+    - role: autoware.dev_env.autoware_core
+    - role: autoware.dev_env.docker
+    - role: autoware.dev_env.pre_commit
+    - role: autoware.dev_env.ros2
+    - role: autoware.dev_env.ros2_dev_tools
+    - role: autoware.dev_env.rmw_implementation
+
+    # Universe
+    - role: autoware.dev_env.autoware_universe
+    - role: autoware.dev_env.cuda
+      when: install_nvidia == 'y'
+    - role: autoware.dev_env.pacmod
+    - role: autoware.dev_env.tensorrt
+      when: install_nvidia == 'y'

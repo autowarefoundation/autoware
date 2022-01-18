@@ -1,0 +1,38 @@
+name: build
+
+on:
+  schedule:
+    - cron: 0 19 * * 0 # run at 4 AM JST on Sundays
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    container: ubuntu:20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ARM64]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Run setup script
+        run: |
+          ./setup-dev-env.sh -y universe
+
+      - name: Run vcs import
+        run: |
+          mkdir src
+          vcs import src < autoware.repos
+
+      - name: Run rosdep install
+        run: |
+          sudo apt-get -y update
+          rosdep update
+          DEBIAN_FRONTEND=noninteractive rosdep install -y --from-paths src --ignore-src --rosdistro galactic
+
+      - name: Build
+        run: |
+          . /opt/ros/galactic/setup.sh
+          colcon build --event-handlers console_cohesion+ --cmake-args -DCMAKE_BUILD_TYPE=Release

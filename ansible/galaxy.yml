@@ -1,0 +1,20 @@
+# Required
+namespace: autoware
+name: dev_env
+version: 0.1.0
+readme: README.md
+authors:
+  - Kenji Miyake <kenji.miyake@tier4.jp>
+
+# Optional
+description: Set up development environment for Autoware
+license:
+  - Apache-2.0
+tags:
+  - autoware
+dependencies: {}
+repository: https://github.com/autowarefoundation/autoware
+documentation: https://autowarefoundation.github.io/autoware-documentation
+homepage: https://www.autoware.org/
+issues: https://github.com/autowarefoundation/autoware/issues
+build_ignore: []

@@ -1,1 +1,3 @@
 collections:
+  - source: ./ansible
+    type: dir

@@ -1,0 +1,29 @@
+- name: Install apt-transport-https
+  become: true
+  ansible.builtin.apt:
+    name: apt-transport-https
+    update_cache: true
+
+- name: Save result of 'lsb_release -sc'
+  ansible.builtin.command: lsb_release -sc
+  register: lsb_release
+  changed_when: false
+
+# echo "deb [trusted=yes] https://s3.amazonaws.com/autonomoustuff-repo/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/autonomoustuff-public.list
+- name: Add AutonomouStuff apt repository to source list
+  become: true
+  ansible.builtin.apt_repository:
+    repo: deb [trusted=yes] https://s3.amazonaws.com/autonomoustuff-repo/ {{ lsb_release.stdout }} main
+    filename: autonomoustuff-public
+    state: present
+    update_cache: true
+
+# echo "yaml https://s3.amazonaws.com/autonomoustuff-repo/autonomoustuff-public-$ROS_DISTRO.yaml $ROS_DISTRO" > /etc/ros/rosdep/sources.list.d/40-autonomoustuff-public-'$ROS_DISTRO'.list
+- name: Add AutonomouStuff rosdep yaml
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/ros/rosdep/sources.list.d/40-autonomoustuff-public-{{ rosdistro }}.list
+    line: yaml https://s3.amazonaws.com/autonomoustuff-repo/autonomoustuff-public-{{ rosdistro }}.yaml
+    state: present
+    create: true
+    mode: 0644
