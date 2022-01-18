@@ -20,6 +20,7 @@
 #include "lanelet2_extension/utility/utilities.hpp"
 
 #include <Eigen/Eigen>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <lanelet2_core/geometry/Lanelet.h>
 #include <lanelet2_routing/RoutingGraph.h>
@@ -37,11 +38,10 @@ namespace
 {
 double getAngleDifference(const double angle1, const double angle2)
 {
-  Eigen::Vector2d vec1, vec2;
-  vec1 << std::cos(angle1), std::sin(angle1);
-  vec2 << std::cos(angle2), std::sin(angle2);
-  const double diff_angle = std::acos(vec1.dot(vec2));
-  return std::fabs(diff_angle);
+  const double normalized_angle1 = tier4_autoware_utils::normalizeRadian(angle1);
+  const double normalized_angle2 = tier4_autoware_utils::normalizeRadian(angle2);
+  const double diff_angle = std::fabs(normalized_angle1 - normalized_angle2);
+  return diff_angle;
 }
 
 }  // namespace
@@ -732,10 +732,6 @@ bool query::getClosestLanelet(
         min_angle = angle_diff;
         *closest_lanelet_ptr = llt;
       }
-      /* else if ((segment_angle - pose_yaw) < 1e-04) {
-         min_angle = std::abs(segment_angle - pose_yaw);
-         *closest_lanelet_ptr = llt;
-       }*/
     }
   }
 

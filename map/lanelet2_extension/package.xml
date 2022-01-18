@@ -24,6 +24,7 @@
   <depend>pugixml-dev</depend>
   <depend>rclcpp</depend>
   <depend>tf2</depend>
+  <depend>tier4_autoware_utils</depend>
   <depend>visualization_msgs</depend>
 
   <test_depend>ament_cmake_gtest</test_depend>
