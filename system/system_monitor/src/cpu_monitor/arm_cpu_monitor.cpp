@@ -28,7 +28,7 @@ CPUMonitor::CPUMonitor(const rclcpp::NodeOptions & options) : CPUMonitorBase("cp
 {
 }
 
-void CPUMonitor::checkThrottling(diagnostic_updater::DiagnosticStatusWrapper & stat)
+void CPUMonitor::checkThrottling(diagnostic_updater::DiagnosticStatusWrapper & /* stat */)
 {
   // TODO(Fumihito Ito): implement me
 }
