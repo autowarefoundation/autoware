@@ -692,7 +692,7 @@ VehicleCmdGate::StartRequest::StartRequest(rclcpp::Node * node, bool use_start_r
   request_start_pub_ = node_->create_publisher<tier4_debug_msgs::msg::BoolStamped>(
     "/api/autoware/get/start_accepted", rclcpp::QoS(1));
   current_twist_sub_ = node_->create_subscription<nav_msgs::msg::Odometry>(
-    "/localization/twist", rclcpp::QoS(1),
+    "/localization/kinematic_state", rclcpp::QoS(1),
     std::bind(&VehicleCmdGate::StartRequest::onCurrentTwist, this, _1));
 }
 
