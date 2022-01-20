@@ -67,7 +67,7 @@ TEST(buildPathLanelet, nominal)
   std::cout << "path lanelet size: " << path_lanelet.centerline2d().size() << std::endl;
 }
 
-TEST(calcSlowDownPointsForPossibleCollision, TooManyPossibleCollisions)
+TEST(calcSlowDownPointsForPossibleCollision, ManyPossibleCollisions)
 {
   using behavior_velocity_planner::occlusion_spot_utils::calcSlowDownPointsForPossibleCollision;
   using behavior_velocity_planner::occlusion_spot_utils::PossibleCollisionInfo;
@@ -76,11 +76,12 @@ TEST(calcSlowDownPointsForPossibleCollision, TooManyPossibleCollisions)
   using std::chrono::high_resolution_clock;
   using std::chrono::microseconds;
   std::vector<PossibleCollisionInfo> possible_collisions;
+  size_t num = 2000;
   // make a path with 2000 points from x=0 to x=4
   autoware_auto_planning_msgs::msg::PathWithLaneId path =
-    test::generatePath(0.0, 3.0, 4.0, 3.0, 2000);
+    test::generatePath(0.0, 3.0, 4.0, 3.0, num);
   // make 2000 possible collision from x=0 to x=10
-  test::generatePossibleCollisions(possible_collisions, 0.0, 3.0, 4.0, 3.0, 2000);
+  test::generatePossibleCollisions(possible_collisions, 0.0, 3.0, 4.0, 3.0, num);
 
   /**
    * @brief too many possible collisions on path
@@ -94,9 +95,8 @@ TEST(calcSlowDownPointsForPossibleCollision, TooManyPossibleCollisions)
 
   auto end_naive = high_resolution_clock::now();
   // 2000 path * 2000 possible collisions
-  EXPECT_EQ(possible_collisions.size(), size_t{2000});
-  EXPECT_EQ(path.points.size(), size_t{2000});
-  EXPECT_TRUE(duration_cast<microseconds>(end_naive - start_naive).count() < 2000);
+  EXPECT_EQ(possible_collisions.size(), size_t{num});
+  EXPECT_EQ(path.points.size(), size_t{num});
   std::cout << " runtime (microsec) "
             << duration_cast<microseconds>(end_naive - start_naive).count() << std::endl;
 }
@@ -136,7 +136,7 @@ TEST(calcSlowDownPointsForPossibleCollision, ConsiderSignedOffset)
   EXPECT_EQ(possible_collisions[2].collision_path_point.longitudinal_velocity_mps, 6);
 }
 
-TEST(createPossibleCollisionBehindParkedVehicle, TooManyPathPointsAndObstacles)
+TEST(createPossibleCollisionBehindParkedVehicle, PathPointsAndObstacles)
 {
   using behavior_velocity_planner::occlusion_spot_utils::createPossibleCollisionBehindParkedVehicle;
   using std::chrono::duration;
@@ -171,7 +171,7 @@ TEST(createPossibleCollisionBehindParkedVehicle, TooManyPathPointsAndObstacles)
   obj.kinematics.initial_pose_with_covariance.pose.position.x = 2.5;
   obj.kinematics.initial_pose_with_covariance.pose.position.y = 4.0;
   obj.classification.at(0).label = autoware_auto_perception_msgs::msg::ObjectClassification::CAR;
-  const size_t num_car = 30;
+  const size_t num_car = 3;
   for (size_t i = 0; i < num_car; i++) {
     obj_arr.objects.emplace_back(obj);
   }

@@ -316,7 +316,6 @@ if(BUILD_TESTING)
     test/src/test_risk_predictive_braking.cpp
     test/src/test_geometry.cpp
     test/src/test_grid_utils.cpp
-    test/src/test_performances.cpp
   )
   target_link_libraries(occlusion_spot-test
     gtest_main
