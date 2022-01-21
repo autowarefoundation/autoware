@@ -165,6 +165,12 @@ NDTScanMatcher::NDTScanMatcher()
   converged_param_transform_probability_ = this->declare_parameter(
     "converged_param_transform_probability", converged_param_transform_probability_);
 
+  std::vector<double> output_pose_covariance =
+    this->declare_parameter<std::vector<double>>("output_pose_covariance");
+  for (std::size_t i = 0; i < output_pose_covariance.size(); ++i) {
+    output_pose_covariance_[i] = output_pose_covariance[i];
+  }
+
   rclcpp::CallbackGroup::SharedPtr initial_pose_callback_group;
   initial_pose_callback_group =
     this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
@@ -510,15 +516,7 @@ void NDTScanMatcher::callbackSensorPoints(
   result_pose_with_cov_msg.header.stamp = sensor_ros_time;
   result_pose_with_cov_msg.header.frame_id = map_frame_;
   result_pose_with_cov_msg.pose.pose = result_pose_msg;
-
-  // TODO(Tier IV): temporary value
-  Eigen::Map<RowMatrixXd> covariance(&result_pose_with_cov_msg.pose.covariance[0], 6, 6);
-  covariance(0, 0) = 0.025;
-  covariance(1, 1) = 0.025;
-  covariance(2, 2) = 0.025;
-  covariance(3, 3) = 0.000625;
-  covariance(4, 4) = 0.000625;
-  covariance(5, 5) = 0.000625;
+  result_pose_with_cov_msg.pose.covariance = output_pose_covariance_;
 
   if (is_converged) {
     ndt_pose_pub_->publish(result_pose_stamped_msg);

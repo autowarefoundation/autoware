@@ -32,3 +32,14 @@
 
     # Number of threads used for parallel computing
     omp_num_threads: 4
+
+    # The covariance of output pose
+    output_pose_covariance:
+      [
+        0.025, 0.0,   0.0,   0.0,      0.0,      0.0,
+        0.0,   0.025, 0.0,   0.0,      0.0,      0.0,
+        0.0,   0.0,   0.025, 0.0,      0.0,      0.0,
+        0.0,   0.0,   0.0,   0.000625, 0.0,      0.0,
+        0.0,   0.0,   0.0,   0.0,      0.000625, 0.0,
+        0.0,   0.0,   0.0,   0.0,      0.0,      0.000625,
+      ]

@@ -24,7 +24,7 @@
     # The number of iterations required to calculate alignment
     max_iterations: 30
 
-    # Threshold for deciding whetherto trust the estimation result
+    # Threshold for deciding whether to trust the estimation result
     converged_param_transform_probability: 3.0
 
     # neighborhood search method in OMP
@@ -33,3 +33,14 @@
 
     # Number of threads used for parallel computing
     omp_num_threads: 4
+
+    # The covariance of output pose
+    output_pose_covariance:
+      [
+        0.025, 0.0,   0.0,   0.0,      0.0,      0.0,
+        0.0,   0.025, 0.0,   0.0,      0.0,      0.0,
+        0.0,   0.0,   0.025, 0.0,      0.0,      0.0,
+        0.0,   0.0,   0.0,   0.000625, 0.0,      0.0,
+        0.0,   0.0,   0.0,   0.0,      0.000625, 0.0,
+        0.0,   0.0,   0.0,   0.0,      0.0,      0.000625,
+      ]
