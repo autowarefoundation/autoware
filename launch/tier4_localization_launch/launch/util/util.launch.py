@@ -55,7 +55,7 @@ def launch_setup(context, *args, **kwargs):
     )
     random_downsample_component = ComposableNode(
         package="pointcloud_preprocessor",
-        plugin="pointcloud_preprocessor::VoxelGridDownsampleFilterComponent",
+        plugin="pointcloud_preprocessor::RandomDownsampleFilterComponent",
         name="random_downsample_filter",
         remappings=[
             ("input", LaunchConfiguration("output_voxel_grid_downsample_sensor_points_topic")),
