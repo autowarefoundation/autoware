@@ -44,7 +44,7 @@ static geometry_msgs::msg::Pose getObjectPoseWithVelocityDirection(
   double yaw, pitch, roll;
   tf2::getEulerYPR(obj_pose.orientation, yaw, pitch, roll);
   tf2::Quaternion inv_q;
-  inv_q.setRPY(roll, pitch, -yaw);
+  inv_q.setRPY(roll, pitch, yaw + M_PI);
   obj_pose.orientation = tf2::toMsg(inv_q);
   return obj_pose;
 }
