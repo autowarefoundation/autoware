@@ -1,4 +1,7 @@
 <launch>
+
+  <arg name="config_file" default="$(find-pkg-share pose_initializer)/config/pose_initializer.param.yaml"/>
+
   <node pkg="pose_initializer" exec="pose_initializer" name="pose_initializer" output="log">
     <remap from="initialpose" to="/initialpose" />
     <remap from="initialpose3d" to="/initialpose3d" />
@@ -7,6 +10,8 @@
     <remap from="ndt_align_srv" to="/localization/pose_estimator/ndt_align_srv" />
     <remap from="service/initialize_pose" to="/localization/util/initialize_pose" />
     <remap from="service/initialize_pose_auto" to="/localization/util/initialize_pose_auto" />
+
+    <param from="$(var config_file)"/>
     <param name="enable_gnss_callback" value="true" />
   </node>
 </launch>

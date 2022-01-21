@@ -46,6 +46,30 @@ PoseInitializer::PoseInitializer()
 {
   enable_gnss_callback_ = this->declare_parameter("enable_gnss_callback", true);
 
+  std::vector<double> initialpose_particle_covariance =
+    this->declare_parameter<std::vector<double>>("initialpose_particle_covariance");
+  for (std::size_t i = 0; i < initialpose_particle_covariance.size(); ++i) {
+    initialpose_particle_covariance_[i] = initialpose_particle_covariance[i];
+  }
+
+  std::vector<double> gnss_particle_covariance =
+    this->declare_parameter<std::vector<double>>("gnss_particle_covariance");
+  for (std::size_t i = 0; i < gnss_particle_covariance.size(); ++i) {
+    gnss_particle_covariance_[i] = gnss_particle_covariance[i];
+  }
+
+  std::vector<double> service_particle_covariance =
+    this->declare_parameter<std::vector<double>>("service_particle_covariance");
+  for (std::size_t i = 0; i < service_particle_covariance.size(); ++i) {
+    service_particle_covariance_[i] = service_particle_covariance[i];
+  }
+
+  std::vector<double> output_pose_covariance =
+    this->declare_parameter<std::vector<double>>("output_pose_covariance");
+  for (std::size_t i = 0; i < output_pose_covariance.size(); ++i) {
+    output_pose_covariance_[i] = output_pose_covariance[i];
+  }
+
   // We can't use _1 because pcl leaks an alias to boost::placeholders::_1, so it would be ambiguous
   initial_pose_sub_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
     "initialpose", 10,
@@ -83,8 +107,6 @@ PoseInitializer::PoseInitializer()
                                         std::placeholders::_1, std::placeholders::_2));
 }
 
-PoseInitializer::~PoseInitializer() {}
-
 void PoseInitializer::callbackMapPoints(
   sensor_msgs::msg::PointCloud2::ConstSharedPtr map_points_msg_ptr)
 {
@@ -94,21 +116,15 @@ void PoseInitializer::callbackMapPoints(
 }
 
 void PoseInitializer::serviceInitializePose(
-  const std::shared_ptr<tier4_localization_msgs::srv::PoseWithCovarianceStamped::Request> req,
-  std::shared_ptr<tier4_localization_msgs::srv::PoseWithCovarianceStamped::Response> res)
+  const tier4_localization_msgs::srv::PoseWithCovarianceStamped::Request::SharedPtr req,
+  tier4_localization_msgs::srv::PoseWithCovarianceStamped::Response::SharedPtr res)
 {
   enable_gnss_callback_ = false;  // get only first topic
 
   auto add_height_pose_msg_ptr = std::make_shared<geometry_msgs::msg::PoseWithCovarianceStamped>();
   getHeight(req->pose_with_covariance, add_height_pose_msg_ptr);
 
-  // TODO(YamatoAndo)
-  add_height_pose_msg_ptr->pose.covariance[0] = 1.0;
-  add_height_pose_msg_ptr->pose.covariance[1 * 6 + 1] = 1.0;
-  add_height_pose_msg_ptr->pose.covariance[2 * 6 + 2] = 0.01;
-  add_height_pose_msg_ptr->pose.covariance[3 * 6 + 3] = 0.01;
-  add_height_pose_msg_ptr->pose.covariance[4 * 6 + 4] = 0.01;
-  add_height_pose_msg_ptr->pose.covariance[5 * 6 + 5] = 1.0;
+  add_height_pose_msg_ptr->pose.covariance = service_particle_covariance_;
 
   res->success = callAlignServiceAndPublishResult(add_height_pose_msg_ptr);
 }
@@ -121,13 +137,7 @@ void PoseInitializer::callbackInitialPose(
   auto add_height_pose_msg_ptr = std::make_shared<geometry_msgs::msg::PoseWithCovarianceStamped>();
   getHeight(*pose_cov_msg_ptr, add_height_pose_msg_ptr);
 
-  // TODO(YamatoAndo)
-  add_height_pose_msg_ptr->pose.covariance[0] = 2.0;
-  add_height_pose_msg_ptr->pose.covariance[1 * 6 + 1] = 2.0;
-  add_height_pose_msg_ptr->pose.covariance[2 * 6 + 2] = 0.01;
-  add_height_pose_msg_ptr->pose.covariance[3 * 6 + 3] = 0.01;
-  add_height_pose_msg_ptr->pose.covariance[4 * 6 + 4] = 0.01;
-  add_height_pose_msg_ptr->pose.covariance[5 * 6 + 5] = 0.3;
+  add_height_pose_msg_ptr->pose.covariance = initialpose_particle_covariance_;
 
   callAlignServiceAndPublishResult(add_height_pose_msg_ptr);
 }
@@ -145,21 +155,17 @@ void PoseInitializer::callbackGNSSPoseCov(
   auto add_height_pose_msg_ptr = std::make_shared<geometry_msgs::msg::PoseWithCovarianceStamped>();
   getHeight(*pose_cov_msg_ptr, add_height_pose_msg_ptr);
 
-  // TODO(YamatoAndo)
-  add_height_pose_msg_ptr->pose.covariance[0] = 1.0;
-  add_height_pose_msg_ptr->pose.covariance[1 * 6 + 1] = 1.0;
-  add_height_pose_msg_ptr->pose.covariance[2 * 6 + 2] = 0.01;
-  add_height_pose_msg_ptr->pose.covariance[3 * 6 + 3] = 0.01;
-  add_height_pose_msg_ptr->pose.covariance[4 * 6 + 4] = 0.01;
-  add_height_pose_msg_ptr->pose.covariance[5 * 6 + 5] = 3.14;
+  add_height_pose_msg_ptr->pose.covariance = gnss_particle_covariance_;
 
   callAlignServiceAndPublishResult(add_height_pose_msg_ptr);
 }
 
 void PoseInitializer::serviceInitializePoseAuto(
-  const std::shared_ptr<tier4_external_api_msgs::srv::InitializePoseAuto::Request> req,
-  std::shared_ptr<tier4_external_api_msgs::srv::InitializePoseAuto::Response> res)
+  const tier4_external_api_msgs::srv::InitializePoseAuto::Request::SharedPtr req,
+  tier4_external_api_msgs::srv::InitializePoseAuto::Response::SharedPtr res)
 {
+  (void)req;
+
   RCLCPP_INFO(this->get_logger(), "Called Pose Initialize Service");
   enable_gnss_callback_ = true;
   res->status = tier4_api_utils::response_success();
@@ -226,12 +232,7 @@ bool PoseInitializer::callAlignServiceAndPublishResult(
         // NOTE temporary cov
         geometry_msgs::msg::PoseWithCovarianceStamped & pose_with_covariance =
           result.get()->pose_with_covariance;
-        pose_with_covariance.pose.covariance[0] = 1.0;
-        pose_with_covariance.pose.covariance[1 * 6 + 1] = 1.0;
-        pose_with_covariance.pose.covariance[2 * 6 + 2] = 0.01;
-        pose_with_covariance.pose.covariance[3 * 6 + 3] = 0.01;
-        pose_with_covariance.pose.covariance[4 * 6 + 4] = 0.01;
-        pose_with_covariance.pose.covariance[5 * 6 + 5] = 0.2;
+        pose_with_covariance.pose.covariance = output_pose_covariance_;
         initial_pose_pub_->publish(pose_with_covariance);
         enable_gnss_callback_ = false;
       } else {
