@@ -1,0 +1,9 @@
+/**:
+  ros__parameters:
+    # -- system --
+    control_period: 0.033
+
+    # -- algorithm --
+    lookahead_distance_ratio: 2.2
+    min_lookahead_distance: 2.5
+    reverse_min_lookahead_distance: 7.0

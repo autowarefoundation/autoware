@@ -1,0 +1,16 @@
+<launch>
+
+  <arg name="pure_pursuit_param_path" default="$(find-pkg-share pure_pursuit)/config/pure_pursuit.param.yaml"/>
+
+  <arg name="input/reference_trajectory" default="/planning/scenario_planning/trajectory"/>
+  <arg name="input/current_odometry" default="/localization/kinematic_state"/>
+  <arg name="output/control_raw" default="lateral/control_cmd"/>
+
+  <node pkg="pure_pursuit" exec="pure_pursuit" name="pure_pursuit" output="screen">
+    <remap from="input/reference_trajectory" to="$(var input/reference_trajectory)"/>
+    <remap from="input/current_odometry" to="$(var input/current_odometry)"/>
+    <remap from="output/control_raw" to="$(var output/control_raw)"/>
+
+    <param from="$(var pure_pursuit_param_path)"/>
+  </node>
+</launch>
