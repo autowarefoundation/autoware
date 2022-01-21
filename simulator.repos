@@ -1,0 +1,17 @@
+repositories:
+  simulator/scenario_simulator:
+    type: git
+    url: https://github.com/tier4/scenario_simulator_v2.git
+    version: master
+  simulator/vendor/quaternion_operation:
+    type: git
+    url: https://github.com/OUXT-Polaris/quaternion_operation.git
+    version: f08cd28b357f9feede55f1fb485cb21964f5d594
+  simulator/tmp/tier4_autoware_msgs: # TODO(Tier IV): Remove depends from scenario_simulator
+    type: git
+    url: https://github.com/tier4/AutowareArchitectureProposal_msgs.git
+    version: main
+  simulator/tmp/api_adaptor: # TODO(Tier IV): Remove depends from scenario_simulator
+    type: git
+    url: https://github.com/tier4/AutowareArchitectureProposal_api_adaptor.git
+    version: tier4/universe
