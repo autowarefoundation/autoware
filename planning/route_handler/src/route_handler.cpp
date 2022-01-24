@@ -739,6 +739,11 @@ bool RouteHandler::getNextLaneletWithinRoute(
   return false;
 }
 
+lanelet::ConstLanelets RouteHandler::getNextLanelets(const lanelet::ConstLanelet & lanelet) const
+{
+  return routing_graph_ptr_->following(lanelet);
+}
+
 bool RouteHandler::getPreviousLaneletWithinRoute(
   const lanelet::ConstLanelet & lanelet, lanelet::ConstLanelet * prev_lanelet) const
 {
@@ -753,6 +758,11 @@ bool RouteHandler::getPreviousLaneletWithinRoute(
     }
   }
   return false;
+}
+
+lanelet::ConstLanelets RouteHandler::getLaneletsFromPoint(const lanelet::ConstPoint3d & point) const
+{
+  return lanelet::utils::findUsagesInLanelets(*lanelet_map_ptr_, point);
 }
 
 bool RouteHandler::getRightLaneletWithinRoute(
@@ -831,6 +841,20 @@ bool RouteHandler::isBijectiveConnection(
   return true;
 }
 
+boost::optional<lanelet::ConstLanelet> RouteHandler::getRightLanelet(
+  const lanelet::ConstLanelet & lanelet) const
+{
+  // routable lane
+  const auto & right_lane = routing_graph_ptr_->right(lanelet);
+  if (right_lane) {
+    return right_lane;
+  }
+
+  // non-routable lane (e.g. lane change infeasible)
+  const auto & adjacent_right_lane = routing_graph_ptr_->adjacentRight(lanelet);
+  return adjacent_right_lane;
+}
+
 bool RouteHandler::getLeftLaneletWithinRoute(
   const lanelet::ConstLanelet & lanelet, lanelet::ConstLanelet * left_lanelet) const
 {
@@ -841,6 +865,87 @@ bool RouteHandler::getLeftLaneletWithinRoute(
   } else {
     return false;
   }
+}
+
+boost::optional<lanelet::ConstLanelet> RouteHandler::getLeftLanelet(
+  const lanelet::ConstLanelet & lanelet) const
+{
+  // routable lane
+  const auto & left_lane = routing_graph_ptr_->left(lanelet);
+  if (left_lane) {
+    return left_lane;
+  }
+
+  // non-routable lane (e.g. lane change infeasible)
+  const auto & adjacent_left_lane = routing_graph_ptr_->adjacentLeft(lanelet);
+  return adjacent_left_lane;
+}
+
+lanelet::Lanelets RouteHandler::getRightOppositeLanelets(
+  const lanelet::ConstLanelet & lanelet) const
+{
+  return lanelet_map_ptr_->laneletLayer.findUsages(lanelet.rightBound().invert());
+}
+
+lanelet::Lanelets RouteHandler::getLeftOppositeLanelets(const lanelet::ConstLanelet & lanelet) const
+{
+  return lanelet_map_ptr_->laneletLayer.findUsages(lanelet.leftBound().invert());
+}
+
+lanelet::ConstLineString3d RouteHandler::getRightMostSameDirectionLinestring(
+  const lanelet::ConstLanelet & lanelet) const noexcept
+{
+  // recursively compute the width of the lanes
+  const auto & same = getRightLanelet(lanelet);
+
+  if (same) {
+    return getRightMostSameDirectionLinestring(same.get());
+  }
+  return lanelet.rightBound();
+}
+
+lanelet::ConstLineString3d RouteHandler::getRightMostLinestring(
+  const lanelet::ConstLanelet & lanelet) const noexcept
+{
+  const auto & same = getRightLanelet(lanelet);
+  const auto & opposite = getRightOppositeLanelets(lanelet);
+  if (!same && opposite.empty()) {
+    return lanelet.rightBound();
+  } else if (same) {
+    return getRightMostLinestring(same.get());
+  } else if (!opposite.empty()) {
+    return getLeftMostLinestring(lanelet::ConstLanelet(opposite.front()));
+  }
+  return {};
+}
+
+lanelet::ConstLineString3d RouteHandler::getLeftMostSameDirectionLinestring(
+  const lanelet::ConstLanelet & lanelet) const noexcept
+{
+  // recursively compute the width of the lanes
+  const auto & same = getLeftLanelet(lanelet);
+
+  if (same) {
+    return getLeftMostSameDirectionLinestring(same.get());
+  }
+  return lanelet.leftBound();
+}
+
+lanelet::ConstLineString3d RouteHandler::getLeftMostLinestring(
+  const lanelet::ConstLanelet & lanelet) const noexcept
+{
+  // recursively compute the width of the lanes
+  const auto & same = getLeftLanelet(lanelet);
+  const auto & opposite = getLeftOppositeLanelets(lanelet);
+
+  if (!same && opposite.empty()) {
+    return lanelet.leftBound();
+  } else if (same) {
+    return getLeftMostLinestring(same.get());
+  } else if (!opposite.empty()) {
+    return getRightMostLinestring(lanelet::ConstLanelet(opposite.front()));
+  }
+  return {};
 }
 
 bool RouteHandler::getLaneChangeTarget(
