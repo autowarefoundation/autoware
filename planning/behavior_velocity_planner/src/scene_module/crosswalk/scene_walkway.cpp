@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <scene_module/crosswalk/scene_walkway.hpp>
+#include <tier4_autoware_utils/trajectory/trajectory.hpp>
 #include <utilization/util.hpp>
 
 #include <cmath>
@@ -80,18 +81,21 @@ bool WalkwayModule::modifyPathVelocity(
     stop_factor.stop_factor_points.emplace_back(debug_data_.nearest_collision_point);
     planning_utils::appendStopReason(stop_factor, stop_reason);
 
-    // update state
-    const Point self_pose = {
-      planner_data_->current_pose.pose.position.x, planner_data_->current_pose.pose.position.y};
-    const Point stop_pose = {
-      debug_data_.first_stop_pose.position.x, debug_data_.first_stop_pose.position.y};
-    const double distance = bg::distance(stop_pose, self_pose);
+    // use arc length to identify if ego vehicle is in front of walkway stop or not.
+    const double signed_arc_dist_to_stop_point = tier4_autoware_utils::calcSignedArcLength(
+      path->points, planner_data_->current_pose.pose.position,
+      debug_data_.first_stop_pose.position);
     const double distance_threshold = 1.0;
     debug_data_.stop_judge_range = distance_threshold;
     if (
-      distance < distance_threshold &&
+      signed_arc_dist_to_stop_point < distance_threshold &&
       planner_data_->isVehicleStopped(planner_param_.stop_duration_sec)) {
+      // If ego vehicle is after walkway stop and stopped then move to stop state
       state_ = State::STOP;
+      if (signed_arc_dist_to_stop_point < -distance_threshold) {
+        RCLCPP_ERROR(
+          logger_, "Failed to stop near walkway but ego stopped. Change state to STOPPED");
+      }
     }
     return true;
   } else if (state_ == State::STOP) {

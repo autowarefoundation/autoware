@@ -120,13 +120,17 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(
       planning_utils::appendStopReason(stop_factor, stop_reason);
     }
 
-    const double distance =
-      planning_utils::calcDist2d(current_pose.pose, path->points.at(stop_line_idx).point.pose);
+    const double signed_arc_dist_to_stop_point = tier4_autoware_utils::calcSignedArcLength(
+      path->points, current_pose.pose.position, path->points.at(stop_line_idx).point.pose.position);
+
     constexpr double distance_threshold = 2.0;
     if (
-      distance < distance_threshold &&
+      signed_arc_dist_to_stop_point < distance_threshold &&
       planner_data_->isVehicleStopped(planner_param_.stop_duration_sec)) {
       state_machine_.setState(State::GO);
+      if (signed_arc_dist_to_stop_point < -distance_threshold) {
+        RCLCPP_ERROR(logger_, "Failed to stop near stop line but ego stopped. Change state to GO");
+      }
     }
 
     return true;

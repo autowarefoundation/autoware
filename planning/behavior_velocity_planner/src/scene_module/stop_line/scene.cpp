@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <scene_module/stop_line/scene.hpp>
+#include <tier4_autoware_utils/trajectory/trajectory.hpp>
 #include <utilization/util.hpp>
 
 #include <algorithm>
@@ -85,72 +86,6 @@ boost::optional<StopLineModule::SegmentIndexWithOffset> findBackwardOffsetSegmen
 
   // No enough path length
   return {};
-}
-
-StopLineModule::SegmentIndexWithOffset findNearestSegment(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-  const geometry_msgs::msg::Point & point)
-{
-  std::vector<double> distances;
-  distances.reserve(path.points.size());
-
-  std::transform(
-    path.points.cbegin(), path.points.cend(), std::back_inserter(distances),
-    [&point](const autoware_auto_planning_msgs::msg::PathPointWithLaneId & p) {
-      return planning_utils::calcDist2d(p.point.pose.position, point);
-    });
-
-  const auto min_itr = std::min_element(distances.cbegin(), distances.cend());
-  const auto min_idx = static_cast<size_t>(std::distance(distances.cbegin(), min_itr));
-
-  // Process boundary conditions
-  if (min_idx == 0 || min_idx == path.points.size() - 1) {
-    const size_t segment_idx = min_idx == 0 ? min_idx : min_idx - 1;
-
-    return StopLineModule::SegmentIndexWithOffset{
-      segment_idx, planning_utils::calcDist2d(path.points.at(segment_idx), point)};
-  }
-
-  // Process normal conditions(having previous and next points)
-  const auto & p_prev = path.points.at(min_idx - 1);
-  const auto d_prev = planning_utils::calcDist2d(p_prev, point);
-
-  const auto & p_next = path.points.at(min_idx + 1);
-  const auto d_next = planning_utils::calcDist2d(p_next, point);
-
-  const size_t segment_idx = (d_prev <= d_next) ? min_idx - 1 : min_idx;
-
-  return StopLineModule::SegmentIndexWithOffset{
-    segment_idx, planning_utils::calcDist2d(path.points.at(segment_idx), point)};
-}
-
-double calcSignedArcLength(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const size_t & idx_front,
-  const size_t & idx_back)
-{
-  // If flipped, reverse index and take negative
-  if (idx_front > idx_back) {
-    return -calcSignedArcLength(path, idx_back, idx_front);
-  }
-
-  double sum_length = 0.0;
-  for (size_t i = idx_front; i < idx_back; ++i) {
-    const auto & p1 = path.points.at(i).point.pose.position;
-    const auto & p2 = path.points.at(i + 1).point.pose.position;
-    sum_length += planning_utils::calcDist2d(p1, p2);
-  }
-
-  return sum_length;
-}
-
-double calcSignedArcLength(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-  const geometry_msgs::msg::Point & p1, const geometry_msgs::msg::Point & p2)
-{
-  const auto seg_1 = findNearestSegment(path, p1);
-  const auto seg_2 = findNearestSegment(path, p2);
-
-  return -seg_1.offset + calcSignedArcLength(path, seg_1.index, seg_2.index) + seg_2.offset;
 }
 
 }  // namespace
@@ -282,8 +217,8 @@ bool StopLineModule::modifyPathVelocity(
   const auto stop_pose_with_index = calcStopPose(*path, offset_segment);
 
   // Calc dist to stop pose
-  const double signed_arc_dist_to_stop_point = calcSignedArcLength(
-    *path, planner_data_->current_pose.pose.position, stop_pose_with_index->pose.position);
+  const double signed_arc_dist_to_stop_point = tier4_autoware_utils::calcSignedArcLength(
+    path->points, planner_data_->current_pose.pose.position, stop_pose_with_index->pose.position);
 
   if (state_ == State::APPROACH) {
     // Insert stop pose
@@ -291,10 +226,14 @@ bool StopLineModule::modifyPathVelocity(
 
     // Move to stopped state if stopped
     if (
-      std::abs(signed_arc_dist_to_stop_point) < planner_param_.stop_check_dist &&
+      signed_arc_dist_to_stop_point < planner_param_.stop_check_dist &&
       planner_data_->isVehicleStopped(planner_param_.stop_duration_sec)) {
       RCLCPP_INFO(logger_, "APPROACH -> STOPPED");
       state_ = State::STOPPED;
+      if (signed_arc_dist_to_stop_point < -planner_param_.stop_check_dist) {
+        RCLCPP_ERROR(
+          logger_, "Failed to stop near stop line but ego stopped. Change state to STOPPED");
+      }
     }
   } else if (state_ == State::STOPPED) {
     // Change state after vehicle departure
