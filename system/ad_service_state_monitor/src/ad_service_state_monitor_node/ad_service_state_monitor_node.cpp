@@ -398,8 +398,8 @@ AutowareStateMonitorNode::AutowareStateMonitorNode()
 
   // Parameter for StateMachine
   state_param_.th_arrived_distance_m = this->declare_parameter("th_arrived_distance_m", 1.0);
-  state_param_.th_arrived_angle =
-    this->declare_parameter("th_arrived_angle_deg", tier4_autoware_utils::deg2rad(45.0));
+  const auto th_arrived_angle_deg = this->declare_parameter("th_arrived_angle_deg", 45.0);
+  state_param_.th_arrived_angle = tier4_autoware_utils::deg2rad(th_arrived_angle_deg);
   state_param_.th_stopped_time_sec = this->declare_parameter("th_stopped_time_sec", 1.0);
   state_param_.th_stopped_velocity_mps = this->declare_parameter("th_stopped_velocity_mps", 0.01);
 

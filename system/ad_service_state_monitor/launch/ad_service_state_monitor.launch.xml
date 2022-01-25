@@ -41,6 +41,7 @@
 
     <param name="update_rate" value="$(var update_rate)" />
     <param name="th_arrived_distance_m" value="$(var th_arrived_distance_m)" />
+    <param name="th_arrived_angle_deg" value="$(var th_arrived_angle_deg)" />
     <param name="th_stopped_time_sec" value="$(var th_stopped_time_sec)" />
     <param name="th_stopped_velocity_mps" value="$(var th_stopped_velocity_mps)" />
     <param name="disengage_on_route" value="$(var disengage_on_route)" />
