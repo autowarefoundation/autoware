@@ -9,7 +9,6 @@
 
     <arg name="output_pose_topic" value="/localization/pose_estimator/pose"/>
     <arg name="output_pose_with_covariance_topic" value="/localization/pose_estimator/pose_with_covariance"/>
-    <arg name="output_diagnostics_topic" value="/localization/diagnostics"/>
 
     <arg name="param_file" value="$(find-pkg-share tier4_localization_launch)/config/ndt_scan_matcher.param.yaml" />
   </include>

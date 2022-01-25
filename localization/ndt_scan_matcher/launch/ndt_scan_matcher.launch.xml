@@ -8,7 +8,6 @@
 
   <arg name="output_pose_topic" default="ndt_pose" description="Estimated self position" />
   <arg name="output_pose_with_covariance_topic" default="ndt_pose_with_covariance" description="Estimated self position with covariance" />
-  <arg name="output_diagnostics_topic" default="/diagnostics" description="Diagnostic topic" />
 
 
   <arg name="node_name" default="ndt_scan_matcher" description="Use a different name for this node" />
@@ -21,7 +20,6 @@
 
     <remap from="ndt_pose" to="$(var output_pose_topic)" />
     <remap from="ndt_pose_with_covariance" to="$(var output_pose_with_covariance_topic)" />
-    <remap from="diagnostics" to="$(var output_diagnostics_topic)" />
 
     <param from="$(var param_file)" />
   </node>
