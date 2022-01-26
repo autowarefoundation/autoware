@@ -76,12 +76,12 @@ namespace simple_planning_simulator
 SimplePlanningSimulator::SimplePlanningSimulator(const rclcpp::NodeOptions & options)
 : Node("simple_planning_simulator", options),
   tf_buffer_(get_clock()),
-  tf_listener_(tf_buffer_, std::shared_ptr<rclcpp::Node>(this, [](auto) {}), false),
-  current_engage_(false)
+  tf_listener_(tf_buffer_, std::shared_ptr<rclcpp::Node>(this, [](auto) {}), false)
 {
   simulated_frame_id_ = declare_parameter("simulated_frame_id", "base_link");
   origin_frame_id_ = declare_parameter("origin_frame_id", "odom");
   add_measurement_noise_ = declare_parameter("add_measurement_noise", false);
+  current_engage_ = declare_parameter<bool>("initial_engage_state");
 
   using rclcpp::QoS;
   using std::placeholders::_1;
@@ -242,7 +242,10 @@ void SimplePlanningSimulator::on_timer()
   // update vehicle dynamics
   {
     const float64_t dt = delta_time_.get_dt(get_clock()->now());
-    vehicle_model_ptr_->update(dt);
+
+    if (current_engage_) {
+      vehicle_model_ptr_->update(dt);
+    }
   }
 
   // set current state
