@@ -53,7 +53,7 @@ bool splineInterpolate(
   *output = input;
 
   if (input.points.size() <= 1) {
-    RCLCPP_WARN(logger, "Do not interpolate because path size is 1.");
+    RCLCPP_DEBUG(logger, "Do not interpolate because path size is 1.");
     return false;
   }
 
