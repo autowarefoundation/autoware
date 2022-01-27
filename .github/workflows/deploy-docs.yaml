@@ -29,7 +29,7 @@ jobs:
     if: ${{ needs.prevent-no-label-execution.outputs.run == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Check out repository
         uses: actions/checkout@v2
         with:
           fetch-depth: 0

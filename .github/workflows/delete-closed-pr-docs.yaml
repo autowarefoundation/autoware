@@ -9,7 +9,7 @@ jobs:
   delete-closed-pr-docs:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Check out repository
         uses: actions/checkout@v2
         with:
           fetch-depth: 0

@@ -13,7 +13,7 @@ jobs:
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.9.1
 
-      - name: Checkout repository
+      - name: Check out repository
         uses: actions/checkout@v2
 
       - name: Remove exec_depend

@@ -11,7 +11,7 @@ jobs:
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.9.1
 
-      - name: Checkout repository
+      - name: Check out repository
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
@@ -41,7 +41,7 @@ jobs:
     container: ros:galactic
     needs: build-and-test
     steps:
-      - name: Checkout repository
+      - name: Check out repository
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
