@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Setup development environment for Autoware Core/Universe.
+# Set up development environment for Autoware Core/Universe.
 # Usage: setup-dev-env.sh <installation_type('core' or 'universe')> [-y] [-v] [--no-nvidia]
 # Note: -y option is only for CI.
 
@@ -44,10 +44,10 @@ ansible_args=()
 
 # Confirm to start installation
 if [ "$option_yes" = "true" ]; then
-    echo -e "\e[36mRun setup in non-interactive mode.\e[m"
+    echo -e "\e[36mRun the setup in non-interactive mode.\e[m"
 else
     echo -e "\e[33mSetting up the build environment take up to 1 hour.\e[m"
-    read -rp ">  Are you sure to run setup? [y/N] " answer
+    read -rp ">  Are you sure to run the setup? [y/N] " answer
 
     # Check whether to cancel
     if ! [[ ${answer:0:1} =~ y|Y ]]; then

@@ -7,7 +7,7 @@ jobs:
   pre-commit:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Check out repository
         uses: actions/checkout@v2
 
       # This can be removed if we'll manage ansible files in another repository.
