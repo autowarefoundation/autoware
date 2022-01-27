@@ -532,12 +532,16 @@ LongitudinalController::ControlState LongitudinalController::updateControlState(
     if (departure_condition_from_stopping) {
       m_pid_vel.reset();
       m_lpf_vel_error->reset(0.0);
+      // prevent the car from taking a long time to start to move
+      m_prev_ctrl_cmd.acc = std::max(0.0, m_prev_ctrl_cmd.acc);
       return ControlState::DRIVE;
     }
   } else if (current_control_state == ControlState::STOPPED) {
     if (departure_condition_from_stopped) {
       m_pid_vel.reset();
       m_lpf_vel_error->reset(0.0);
+      // prevent the car from taking a long time to start to move
+      m_prev_ctrl_cmd.acc = std::max(0.0, m_prev_ctrl_cmd.acc);
       return ControlState::DRIVE;
     }
   } else if (m_control_state == ControlState::EMERGENCY) {
