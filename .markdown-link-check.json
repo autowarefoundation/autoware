@@ -1,6 +1,10 @@
 {
   "aliveStatusCodes": [200, 206, 403],
-  "ignorePatterns": [],
+  "ignorePatterns": [
+    {
+      "pattern": "^http://localhost"
+    }
+  ],
   "retryOn429": true,
   "retryCount": 10
 }
