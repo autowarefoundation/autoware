@@ -1,4 +1,4 @@
-name: build-and-test-scheduled
+name: build-and-test-arm
 
 on:
   schedule:
@@ -6,15 +6,11 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-test-scheduled:
-    runs-on: ${{ matrix.os }}
+  build-and-test-arm:
+    runs-on: ARM64
     container: ros:galactic
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, ARM64]
     steps:
-      - name: Check out repository
+      - name: Checkout repository
         uses: actions/checkout@v2
 
       - name: Remove exec_depend
