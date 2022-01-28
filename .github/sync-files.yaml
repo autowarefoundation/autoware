@@ -1,0 +1,24 @@
+- repository: autowarefoundation/autoware
+  files:
+    - source: .github/dependabot.yaml
+    - source: .github/workflows/pre-commit-optional.yaml
+    - source: .github/workflows/semantic-pull-request.yaml
+    - source: .github/workflows/spell-check.yaml
+    - source: .clang-format
+    - source: .markdown-link-check.json
+    - source: .markdownlint.yaml
+    - source: .pre-commit-config-optional.yaml
+    - source: .prettierignore
+    - source: .prettierrc
+    - source: .yamllint.yaml
+    - source: CPPLINT.cfg
+    - source: setup.cfg
+
+- repository: autowarefoundation/autoware_common
+  files:
+    - source: .github/workflows/automatic-rebase.yaml
+    - source: .github/workflows/build-and-test-arm.yaml
+    - source: .github/workflows/build-and-test-arm-pr.yaml
+    - source: .github/workflows/build-and-test.yaml
+    - source: .github/workflows/build-and-test-pr.yaml
+    - source: .github/workflows/pre-commit.yaml

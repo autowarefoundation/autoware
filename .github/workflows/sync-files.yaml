@@ -1,0 +1,22 @@
+name: sync-files
+
+on:
+  schedule:
+    - cron: 0 19 * * * # run at 4 AM JST
+  workflow_dispatch:
+
+jobs:
+  sync-files:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate token
+        id: generate-token
+        uses: tibdex/github-app-token@v1
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.PRIVATE_KEY }}
+
+      - name: Run sync-files
+        uses: autowarefoundation/autoware-github-actions/sync-files@tier4/proposal
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
