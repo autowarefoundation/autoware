@@ -114,9 +114,9 @@ Execution time for varying the sparsity with matrix size 100.
 
 This package makes use of external code.
 
-| Name                                                           | License                                                             | Original Repository                  |
-| -------------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------ |
-| [muSSP](src/data_association/mu_successive_shortest_path/impl) | [Apache 2.0](src/data_association/mu_successive_shortest_path/impl) | <https://github.com/yu-lab-vt/muSSP> |
+| Name                                                      | License                                                   | Original Repository                  |
+| --------------------------------------------------------- | --------------------------------------------------------- | ------------------------------------ |
+| [muSSP](src/data_association/mu_successive_shortest_path) | [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0) | <https://github.com/yu-lab-vt/muSSP> |
 
 [1] C. Wang, Y. Wang, Y. Wang, C.-t. Wu, and G. Yu, “muSSP: Efficient
 Min-cost Flow Algorithm for Multi-object Tracking,” NeurIPS, 2019

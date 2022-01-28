@@ -2,7 +2,7 @@
 
 ## Structure
 
-![tier4_vehicle_launch](./tier4_vehicle_launch.drawio.svg)
+![tier4_vehicle_launch](./vehicle_launch.drawio.svg)
 
 ## Package Dependencies
 

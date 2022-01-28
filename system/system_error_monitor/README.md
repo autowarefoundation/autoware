@@ -90,12 +90,12 @@ endif
 
 ### Input
 
-| Name                         | Type                                                 | Description                                                                                                                                                                                 |
-| ---------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/diagnostics_agg`           | `diagnostic_msgs::msg::DiagnosticArray`              | Diagnostic information aggregated based [diagnostic_aggregator setting](https://github.com/tier4/autoware.iv/tree/main/system/system_error_monitor/config/diagnostic_aggregator) is used to |
-| `/autoware/state`            | `autoware_auto_system_msgs::msg::AutowareState`      | Required to ignore error during Route, Planning and Finalizing.                                                                                                                             |
-| `/control/current_gate_mode` | `tier4_control_msgs::msg::GateMode`                  | Required to select the appropriate module from `autonomous_driving` or `external_control`                                                                                                   |
-| `/vehicle/control_mode`      | `autoware_auto_vehicle_msgs::msg::ControlModeReport` | Required to not hold emergency during manual driving                                                                                                                                        |
+| Name                         | Type                                                 | Description                                                                                                        |
+| ---------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `/diagnostics_agg`           | `diagnostic_msgs::msg::DiagnosticArray`              | Diagnostic information aggregated based [diagnostic_aggregator setting](./config/diagnostic_aggregator) is used to |
+| `/autoware/state`            | `autoware_auto_system_msgs::msg::AutowareState`      | Required to ignore error during Route, Planning and Finalizing.                                                    |
+| `/control/current_gate_mode` | `tier4_control_msgs::msg::GateMode`                  | Required to select the appropriate module from `autonomous_driving` or `external_control`                          |
+| `/vehicle/control_mode`      | `autoware_auto_vehicle_msgs::msg::ControlModeReport` | Required to not hold emergency during manual driving                                                               |
 
 ### Output
 

@@ -13,7 +13,7 @@ It consists of several modules. Please refer to the links listed below for detai
 - [Stop Line](stop-line-design.md)
 - [Traffic Light](traffic-light-design.md)
 - [Occlusion Spot](occlusion-spot-design.md)
-- [No Stopping Area](no-stopping-area.design.md)
+- [No Stopping Area](no-stopping-area-design.md)
 
 When each module plans velocity, it considers based on `base_link`(center of rear-wheel axis) pose.
 So for example, in order to stop at a stop line with the vehicles' front on the stop line, it calculates `base_link` position from the distance between `base_link` to front and modifies path velocity from the `base_link` position.
