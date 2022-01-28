@@ -212,7 +212,7 @@ visualization_msgs::msg::MarkerArray createObstacleMarkerArray(
     auto marker = createDefaultMarker(
       "map", now, "obstacles", 0, visualization_msgs::msg::Marker::SPHERE,
       createMarkerColor(1.0, 0.0, 0.0, 0.999));
-    marker.scale = createMarkerScale(0.3, 0.3, 0.3);
+    marker.scale = createMarkerScale(0.6, 0.6, 0.6);
     marker.lifetime = rclcpp::Duration::from_seconds(0.5);
 
     for (size_t i = 0; i < obstacle_points.size(); ++i) {

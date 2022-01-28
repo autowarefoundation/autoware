@@ -391,6 +391,8 @@ std::vector<geometry_msgs::msg::Point> DetectionAreaModule::getObstaclePoints() 
     for (const auto p : points) {
       if (bg::within(Point2d{p.x, p.y}, lanelet::utils::to2D(detection_area).basicPolygon())) {
         obstacle_points.push_back(planning_utils::toRosPoint(p));
+        // get all obstacle point becomes high computation cost so skip if any point is found
+        break;
       }
     }
   }
