@@ -16,6 +16,7 @@
 #define UTILIZATION__UTIL_HPP_
 
 #include <lanelet2_extension/utility/query.hpp>
+#include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <utilization/boost_geometry_helper.hpp>
 
 #include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
@@ -40,6 +41,16 @@
 
 #include <string>
 #include <vector>
+
+namespace tier4_autoware_utils
+{
+template <>
+inline geometry_msgs::msg::Point getPoint(
+  const autoware_auto_planning_msgs::msg::PathPointWithLaneId & p)
+{
+  return p.point.pose.position;
+}
+}  // namespace tier4_autoware_utils
 
 namespace behavior_velocity_planner
 {
