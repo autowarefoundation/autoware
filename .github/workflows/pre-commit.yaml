@@ -1,0 +1,16 @@
+name: pre-commit
+
+on:
+  pull_request:
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Run pre-commit
+        uses: autowarefoundation/autoware-github-actions/pre-commit@tier4/proposal
+        with:
+          pre-commit-config: .pre-commit-config.yaml

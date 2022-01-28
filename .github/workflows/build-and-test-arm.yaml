@@ -10,7 +10,7 @@ jobs:
     runs-on: ARM64
     container: ros:galactic
     steps:
-      - name: Checkout repository
+      - name: Check out repository
         uses: actions/checkout@v2
 
       - name: Remove exec_depend
