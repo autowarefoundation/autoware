@@ -298,26 +298,13 @@ void PointCloudConcatenateDataSynchronizerComponent::publish()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void PointCloudConcatenateDataSynchronizerComponent::removeRADTFields(
+void PointCloudConcatenateDataSynchronizerComponent::convertToXYZICloud(
   const sensor_msgs::msg::PointCloud2 & input_cloud, sensor_msgs::msg::PointCloud2 & output_cloud)
 {
-  bool has_intensity = std::any_of(
-    input_cloud.fields.begin(), input_cloud.fields.end(),
-    [](auto & field) { return field.name == "intensity"; });
-
-  if (input_cloud.fields.size() == 3 || (input_cloud.fields.size() == 4 && has_intensity)) {
-    output_cloud = input_cloud;
-  } else if (has_intensity) {
-    pcl::PointCloud<PointXYZI> tmp_cloud;
-    pcl::fromROSMsg(input_cloud, tmp_cloud);
-    pcl::toROSMsg(tmp_cloud, output_cloud);
-    output_cloud.header = input_cloud.header;
-  } else {
-    pcl::PointCloud<pcl::PointXYZ> tmp_cloud;
-    pcl::fromROSMsg(input_cloud, tmp_cloud);
-    pcl::toROSMsg(tmp_cloud, output_cloud);
-    output_cloud.header = input_cloud.header;
-  }
+  pcl::PointCloud<PointXYZI> tmp_cloud;
+  pcl::fromROSMsg(input_cloud, tmp_cloud);
+  pcl::toROSMsg(tmp_cloud, output_cloud);
+  output_cloud.header = input_cloud.header;
 }
 
 void PointCloudConcatenateDataSynchronizerComponent::setPeriod(const int64_t new_period)
@@ -342,7 +329,7 @@ void PointCloudConcatenateDataSynchronizerComponent::cloud_callback(
   std::lock_guard<std::mutex> lock(mutex_);
 
   sensor_msgs::msg::PointCloud2 xyz_cloud;
-  removeRADTFields(*input_ptr, xyz_cloud);
+  convertToXYZICloud(*input_ptr, xyz_cloud);
   sensor_msgs::msg::PointCloud2::ConstSharedPtr xyz_input_ptr(
     new sensor_msgs::msg::PointCloud2(xyz_cloud));
 

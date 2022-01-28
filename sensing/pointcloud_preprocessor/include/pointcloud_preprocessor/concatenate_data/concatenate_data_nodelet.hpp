@@ -149,7 +149,7 @@ private:
     PointCloud2::SharedPtr & out);
   void publish();
 
-  void removeRADTFields(
+  void convertToXYZICloud(
     const sensor_msgs::msg::PointCloud2 & input_cloud,
     sensor_msgs::msg::PointCloud2 & output_cloud);
   void setPeriod(const int64_t new_period);
