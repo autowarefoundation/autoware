@@ -171,11 +171,13 @@ boost::optional<PathIndexWithOffset> findForwardOffsetSegment(
     const auto p_front = to_bg2d(path.points.at(i).point.pose.position);
     const auto p_back = to_bg2d(path.points.at(i + 1).point.pose.position);
 
-    sum_length += bg::distance(p_front, p_back);
+    const auto segment_length = bg::distance(p_front, p_back);
+    sum_length += segment_length;
 
     // If it's over offset point, return front index and remain offset length
     if (sum_length >= offset_length) {
-      return std::make_pair(i, sum_length - offset_length);
+      const auto remain_length = sum_length - offset_length;
+      return std::make_pair(i, segment_length - remain_length);
     }
   }
 
