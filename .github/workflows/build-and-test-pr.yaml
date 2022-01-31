@@ -41,7 +41,7 @@ jobs:
         uses: codecov/codecov-action@v2
         with:
           files: lcov/total_coverage.info,coveragepy/.coverage
-          fail_ci_if_error: true
+          fail_ci_if_error: false
           verbose: true
 
   clang-tidy:
