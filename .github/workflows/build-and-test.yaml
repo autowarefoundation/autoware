@@ -35,3 +35,10 @@ jobs:
           rosdistro: galactic
           target-packages: ${{ steps.get-self-packages.outputs.self-packages }}
           build-depends-repos: build_depends.repos
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          files: lcov/total_coverage.info,coveragepy/.coverage
+          fail_ci_if_error: true
+          verbose: true
