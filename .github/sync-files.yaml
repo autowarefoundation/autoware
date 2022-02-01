@@ -1,6 +1,7 @@
 - repository: autowarefoundation/autoware
   files:
     - source: .github/dependabot.yaml
+    - source: .github/workflows/automatic-rebase.yaml
     - source: .github/workflows/pre-commit-optional.yaml
     - source: .github/workflows/semantic-pull-request.yaml
     - source: .github/workflows/spell-check.yaml
@@ -16,7 +17,6 @@
 
 - repository: autowarefoundation/autoware_common
   files:
-    - source: .github/workflows/automatic-rebase.yaml
     - source: .github/workflows/build-and-test-arm.yaml
     - source: .github/workflows/build-and-test-arm-pr.yaml
     - source: .github/workflows/build-and-test.yaml
