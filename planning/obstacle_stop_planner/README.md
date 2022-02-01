@@ -207,18 +207,35 @@ The above method means that the smaller the lateral deviation of the pointcloud,
 
 ```plantuml
 @startuml
-title insertTargetVelocity
+title insertTargetVelocity()
 start
 
-:get obstacle pointcloud in detection area;
+:get target vehicle point (*1) in detection area ;
 
-if (estimate velocity of target pointcloud?) then (yes(success to estimate))
-else (no(fail to estimate))
+partition Estimate-Target-Velocity {
+
+if (Is there a DynamicObject on the target vehicle point?) then (yes)
+:use the DynamicObject velocity\nas a target vehicle point velocity (*2);
+else (no)
+
+  if (The target vehicle point is found in the previous step?) then (yes)
+  else (no (estimation failed))
   stop
+  endif
+
+  :estimate the target vehicle point velocity \nby the travel distance from the previous step;
+
+  if (The estimated velocity is valid?) then (yes)
+  else (no (estimation failed))
+  stop
+  endif
+
+  :use the estimated velocity\nas a target vehicle point velocity (*2);
+
 endif
+}
 
-
-if (the velocity of the pointcloud is fast enough?) then (yes)
+if (Is the target vehicle point velocity fast enough?) then (yes)
 else (no)
   stop
 endif
@@ -228,21 +245,33 @@ else (no)
   stop
 endif
 
-:calculate target velocity to insert;
+:calculate target velocity to be inserted in the trajectory;
 
 if (the target velocity is fast enough?) then (yes)
 else (no)
   stop
 endif
 
-:embed target velocity;
+:insert the target velocity;
 
 stop
 @enduml
 ```
 
-This module works only when the obstacle pointcloud is found in the detection area of the `Obstacle stop planner` module.
-At first, the velocity of the pointcloud is estimated. The velocity estimation uses the velocity information of dynamic objects, or the distance to the point cloud found in the previous step.
+(\*1) The target vehicle point is calculated as a closest obstacle PointCloud from ego along the trajectory.
+
+(\*2) The sources of velocity estimation can be changed by the following ROS parameters.
+
+- `adaptive_cruise_control.use_object_to_estimate_vel`
+- `adaptive_cruise_control.use_pcl_to_estimate_vel`
+
+This module works only when the target point is found in the detection area of the `Obstacle stop planner` module.
+
+The first process of this module is to estimate the velocity of the target vehicle point. The velocity estimation uses the velocity information of dynamic objects or the travel distance of the target vehicle point from the previous step. The dynamic object information is primal, and the travel distance estimation is used as a backup in case of the perception failure.
+If the target vehicle point is contained in the bounding box of a dynamic object geometrically, the velocity of the dynamic object is used as the target point velocity.
+Otherwise, the target point velocity is calculated by the travel distance of the target point from the previous step; that is `(current_position - previous_position) / dt`. Note that this travel distance based estimation fails when the target point is detected in the first time (it mainly happens in the cut-in situation). To improve the stability of the estimation, the median of the calculation result for several steps is used.
+
+If the calculated velocity is within the threshold range, it is used as the target point velocity.
 
 Only when the estimation is succeeded and the estimated velocity exceeds the value of `obstacle_stop_velocity_thresh_*`, the distance to the pointcloud from self-position is calculated. For prevent chattering in the mode transition, `obstacle_velocity_thresh_to_start_acc` is used for the threshold to start adaptive cruise, and `obstacle_velocity_thresh_to_stop_acc` is used for the threshold to stop adaptive cruise. When the calculated distance value exceeds the emergency distance $d\_{emergency}$ calculated by emergency_stop parameters, target velocity to insert is calculated.
 
