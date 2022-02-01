@@ -68,6 +68,7 @@ public:
     double max_delay_sec;
     double near_line_distance;
     double dead_line_margin;
+    double max_yaw_deviation_rad;
     bool check_timeout_after_stop_line;
   };
 

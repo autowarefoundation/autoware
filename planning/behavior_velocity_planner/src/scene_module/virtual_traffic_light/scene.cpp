@@ -19,8 +19,19 @@
 #include <tier4_v2x_msgs/msg/key_value.hpp>
 
 #include <algorithm>
+#include <limits>
 #include <string>
 #include <vector>
+
+namespace tier4_autoware_utils
+{
+template <>
+inline geometry_msgs::msg::Pose getPose(
+  const autoware_auto_planning_msgs::msg::PathPointWithLaneId & p)
+{
+  return p.point.pose;
+}
+}  // namespace tier4_autoware_utils
 
 namespace behavior_velocity_planner
 {
@@ -182,7 +193,7 @@ SegmentIndexWithOffset findBackwardOffsetSegment(
   const double offset_length)
 {
   double sum_length = 0.0;
-  for (size_t i = base_idx - 1; i > 0; --i) {
+  for (size_t i = base_idx; i > 0; --i) {
     const auto p_front = path.points.at(i - 1);
     const auto p_back = path.points.at(i);
 
@@ -399,10 +410,10 @@ bool VirtualTrafficLightModule::modifyPathVelocity(
     return true;
   }
 
-  // Stop at stop_line if state is timeout
-  if (isBeforeStopLine() || planner_param_.check_timeout_after_stop_line) {
+  // Stop at stop_line if state is timeout before stop_line
+  if (isBeforeStopLine()) {
     if (isStateTimeout(*virtual_traffic_light_state)) {
-      RCLCPP_DEBUG(logger_, "state is timeout");
+      RCLCPP_DEBUG(logger_, "state is timeout before stop line");
       insertStopVelocityAtStopLine(path, stop_reason);
     }
 
@@ -412,6 +423,15 @@ bool VirtualTrafficLightModule::modifyPathVelocity(
 
   // After stop_line
   state_ = State::PASSING;
+
+  // Check timeout after stop_line if the option is on
+  if (
+    planner_param_.check_timeout_after_stop_line && isStateTimeout(*virtual_traffic_light_state)) {
+    RCLCPP_DEBUG(logger_, "state is timeout after stop line");
+    insertStopVelocityAtStopLine(path, stop_reason);
+    updateInfrastructureCommand();
+    return true;
+  }
 
   // Stop at stop_line if finalization isn't completed
   if (!virtual_traffic_light_state->is_finalized) {
@@ -453,10 +473,12 @@ bool VirtualTrafficLightModule::isBeforeStartLine()
     return false;
   }
 
+  const double max_dist = std::numeric_limits<double>::max();
   const auto signed_arc_length = tier4_autoware_utils::calcSignedArcLength(
-    module_data_.path.points, module_data_.head_pose.position, collision->point);
+    module_data_.path.points, module_data_.head_pose, collision->point, max_dist,
+    planner_param_.max_yaw_deviation_rad);
 
-  return signed_arc_length > 0;
+  return *signed_arc_length > 0;
 }
 
 bool VirtualTrafficLightModule::isBeforeStopLine()
@@ -469,10 +491,12 @@ bool VirtualTrafficLightModule::isBeforeStopLine()
     return false;
   }
 
+  const double max_dist = std::numeric_limits<double>::max();
   const auto signed_arc_length = tier4_autoware_utils::calcSignedArcLength(
-    module_data_.path.points, module_data_.head_pose.position, collision->point);
+    module_data_.path.points, module_data_.head_pose, collision->point, max_dist,
+    planner_param_.max_yaw_deviation_rad);
 
-  return signed_arc_length > -planner_param_.dead_line_margin;
+  return *signed_arc_length > -planner_param_.dead_line_margin;
 }
 
 bool VirtualTrafficLightModule::isAfterAnyEndLine()
@@ -484,16 +508,18 @@ bool VirtualTrafficLightModule::isAfterAnyEndLine()
 
   const auto collision = findCollision(module_data_.path.points, map_data_.end_lines);
 
-  // Since the module is registered, a collision should be detected usually.
-  // Therefore if no collision found, vehicle's path is fully after the line.
+  // If the goal is set before the end line, collision will not be detected.
+  // Therefore if there is no collision, the ego vehicle is assumed to be before the end line.
   if (!collision) {
     return false;
   }
 
+  const double max_dist = std::numeric_limits<double>::max();
   const auto signed_arc_length = tier4_autoware_utils::calcSignedArcLength(
-    module_data_.path.points, module_data_.head_pose.position, collision->point);
+    module_data_.path.points, module_data_.head_pose, collision->point, max_dist,
+    planner_param_.max_yaw_deviation_rad);
 
-  return signed_arc_length < -planner_param_.dead_line_margin;
+  return *signed_arc_length < -planner_param_.dead_line_margin;
 }
 
 bool VirtualTrafficLightModule::isNearAnyEndLine()
@@ -504,10 +530,12 @@ bool VirtualTrafficLightModule::isNearAnyEndLine()
     return false;
   }
 
+  const double max_dist = std::numeric_limits<double>::max();
   const auto signed_arc_length = tier4_autoware_utils::calcSignedArcLength(
-    module_data_.path.points, module_data_.head_pose.position, collision->point);
+    module_data_.path.points, module_data_.head_pose, collision->point, max_dist,
+    planner_param_.max_yaw_deviation_rad);
 
-  return std::abs(signed_arc_length) < planner_param_.near_line_distance;
+  return std::abs(*signed_arc_length) < planner_param_.near_line_distance;
 }
 
 boost::optional<tier4_v2x_msgs::msg::VirtualTrafficLightState>

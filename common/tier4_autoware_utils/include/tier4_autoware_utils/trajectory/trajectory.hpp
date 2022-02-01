@@ -167,6 +167,44 @@ size_t findNearestSegmentIndex(const T & points, const geometry_msgs::msg::Point
 }
 
 /**
+ * @brief find nearest segment index to pose
+ *        segment is straight path between two continuous points of trajectory
+ *        When pose is on a trajectory point whose index is nearest_idx, return nearest_idx - 1
+ * @param points points of trajectory
+ * @param pose pose to which to find nearest segment index
+ * @param max_dist max distance to search
+ * @param max_yaw max yaw to search
+ * @return nearest index
+ */
+template <class T>
+boost::optional<size_t> findNearestSegmentIndex(
+  const T & points, const geometry_msgs::msg::Pose & pose,
+  const double max_dist = std::numeric_limits<double>::max(),
+  const double max_yaw = std::numeric_limits<double>::max())
+{
+  const auto nearest_idx = findNearestIndex(points, pose, max_dist, max_yaw);
+
+  if (!nearest_idx) {
+    return boost::none;
+  }
+
+  if (*nearest_idx == 0) {
+    return 0;
+  }
+  if (*nearest_idx == points.size() - 1) {
+    return points.size() - 2;
+  }
+
+  const double signed_length = calcLongitudinalOffsetToSegment(points, *nearest_idx, pose.position);
+
+  if (signed_length <= 0) {
+    return *nearest_idx - 1;
+  }
+
+  return *nearest_idx;
+}
+
+/**
  * @brief calculate lateral offset from p_target (length from p_target to trajectory)
  *        If seg_idx point is after that nearest point, length is negative
  * @param points points of trajectory, path, ...
@@ -259,6 +297,34 @@ double calcSignedArcLength(
   const double signed_length_on_traj = calcSignedArcLength(points, src_seg_idx, dst_seg_idx);
   const double signed_length_src_offset =
     calcLongitudinalOffsetToSegment(points, src_seg_idx, src_point);
+  const double signed_length_dst_offset =
+    calcLongitudinalOffsetToSegment(points, dst_seg_idx, dst_point);
+
+  return signed_length_on_traj - signed_length_src_offset + signed_length_dst_offset;
+}
+
+/**
+ * @brief calcSignedArcLength from pose to point
+ */
+template <class T>
+boost::optional<double> calcSignedArcLength(
+  const T & points, const geometry_msgs::msg::Pose & src_pose,
+  const geometry_msgs::msg::Point & dst_point,
+  const double max_dist = std::numeric_limits<double>::max(),
+  const double max_yaw = std::numeric_limits<double>::max())
+{
+  validateNonEmpty(points);
+
+  const auto src_seg_idx = findNearestSegmentIndex(points, src_pose, max_dist, max_yaw);
+  if (!src_seg_idx) {
+    return boost::none;
+  }
+
+  const size_t dst_seg_idx = findNearestSegmentIndex(points, dst_point);
+
+  const double signed_length_on_traj = calcSignedArcLength(points, *src_seg_idx, dst_seg_idx);
+  const double signed_length_src_offset =
+    calcLongitudinalOffsetToSegment(points, *src_seg_idx, src_pose.position);
   const double signed_length_dst_offset =
     calcLongitudinalOffsetToSegment(points, dst_seg_idx, dst_point);
 
