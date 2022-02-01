@@ -44,6 +44,7 @@ PacmodInterface::PacmodInterface()
   vgr_coef_c_ = declare_parameter("vgr_coef_c", 0.042);
   accel_pedal_offset_ = declare_parameter("accel_pedal_offset", 0.0);
   brake_pedal_offset_ = declare_parameter("brake_pedal_offset", 0.0);
+  tire_radius_scale_factor_ = declare_parameter("tire_radius_scale_factor", 1.0);
 
   /* parameters for limitter */
   max_throttle_ = declare_parameter("max_throttle", 0.2);
@@ -525,7 +526,7 @@ double PacmodInterface::calculateVehicleVelocity(
   const double sign = (shift_rpt.output == pacmod3_msgs::msg::SystemRptInt::SHIFT_REVERSE) ? -1 : 1;
   const double vel =
     (wheel_speed_rpt.rear_left_wheel_speed + wheel_speed_rpt.rear_right_wheel_speed) * 0.5 *
-    tire_radius_;
+    tire_radius_ * tire_radius_scale_factor_;
   return sign * vel;
 }
 

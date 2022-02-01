@@ -125,15 +125,16 @@ private:
   bool is_pacmod_enabled_ = false;
   bool is_clear_override_needed_ = false;
   bool prev_override_ = false;
-  double loop_rate_;           // [Hz]
-  double tire_radius_;         // [m]
-  double wheel_base_;          // [m]
-  double steering_offset_;     // [rad] def: measured = truth + offset
-  double vgr_coef_a_;          // variable gear ratio coeffs
-  double vgr_coef_b_;          // variable gear ratio coeffs
-  double vgr_coef_c_;          // variable gear ratio coeffs
-  double accel_pedal_offset_;  // offset of accel pedal value
-  double brake_pedal_offset_;  // offset of brake pedal value
+  double loop_rate_;                 // [Hz]
+  double tire_radius_;               // [m]
+  double wheel_base_;                // [m]
+  double steering_offset_;           // [rad] def: measured = truth + offset
+  double vgr_coef_a_;                // variable gear ratio coeffs
+  double vgr_coef_b_;                // variable gear ratio coeffs
+  double vgr_coef_c_;                // variable gear ratio coeffs
+  double accel_pedal_offset_;        // offset of accel pedal value
+  double brake_pedal_offset_;        // offset of brake pedal value
+  double tire_radius_scale_factor_;  // scale factor of tire radius
 
   double emergency_brake_;              // brake command when emergency [m/s^2]
   double max_throttle_;                 // max throttle [0~1]
