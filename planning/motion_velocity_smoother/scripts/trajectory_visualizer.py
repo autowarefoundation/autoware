@@ -390,7 +390,7 @@ class TrajectoryVisualizer(Node):
             p1 = traj.points[i]
             dx = p1.pose.position.x - p0.pose.position.x
             dy = p1.pose.position.y - p0.pose.position.y
-            ds = np.sqrt(dx ** 2 + dy ** 2)
+            ds = np.sqrt(dx**2 + dy**2)
             s_sum += ds
             s_arr.append(s_sum)
         return s_arr
@@ -408,7 +408,7 @@ class TrajectoryVisualizer(Node):
             p1 = traj.points[i].point
             dx = p1.pose.position.x - p0.pose.position.x
             dy = p1.pose.position.y - p0.pose.position.y
-            ds = np.sqrt(dx ** 2 + dy ** 2)
+            ds = np.sqrt(dx**2 + dy**2)
             s_sum += ds
             s_arr.append(s_sum)
         return s_arr
@@ -426,7 +426,7 @@ class TrajectoryVisualizer(Node):
             p1 = traj.points[i]
             dx = p1.pose.position.x - p0.pose.position.x
             dy = p1.pose.position.y - p0.pose.position.y
-            ds = np.sqrt(dx ** 2 + dy ** 2)
+            ds = np.sqrt(dx**2 + dy**2)
             s_sum += ds
             s_arr.append(s_sum)
         return s_arr
@@ -459,7 +459,7 @@ class TrajectoryVisualizer(Node):
             v = 0.5 * (v1 + v0)
             dx = p1.pose.position.x - p0.pose.position.x
             dy = p1.pose.position.y - p0.pose.position.y
-            ds = np.sqrt(dx ** 2 + dy ** 2)
+            ds = np.sqrt(dx**2 + dy**2)
             dt = ds / max(abs(v), 0.001)
             a = (v1 - v0) / dt
             a_arr.append(a)
@@ -480,11 +480,11 @@ class TrajectoryVisualizer(Node):
 
             dx0 = p1.pose.position.x - p0.pose.position.x
             dy0 = p1.pose.position.y - p0.pose.position.y
-            ds0 = np.sqrt(dx0 ** 2 + dy0 ** 2)
+            ds0 = np.sqrt(dx0**2 + dy0**2)
 
             dx1 = p2.pose.position.x - p1.pose.position.x
             dy1 = p2.pose.position.y - p1.pose.position.y
-            ds1 = np.sqrt(dx1 ** 2 + dy1 ** 2)
+            ds1 = np.sqrt(dx1**2 + dy1**2)
 
             dt0 = ds0 / max(abs(0.5 * (v1 + v0)), 0.001)
             dt1 = ds1 / max(abs(0.5 * (v2 + v1)), 0.001)
