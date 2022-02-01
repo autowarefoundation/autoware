@@ -349,6 +349,9 @@ VirtualTrafficLightModule::VirtualTrafficLightModule(
   command_.type = map_data_.instrument_type;
   command_.id = map_data_.instrument_id;
   command_.custom_tags = map_data_.custom_tags;
+
+  // Add instrument information to the logger
+  logger_ = logger_.get_child((map_data_.instrument_type + "_" + map_data_.instrument_id).c_str());
 }
 
 bool VirtualTrafficLightModule::modifyPathVelocity(
