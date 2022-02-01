@@ -1,4 +1,4 @@
-name: build
+name: build-arm
 
 on:
   schedule:
@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build-arm:
+    runs-on: [self-hosted, linux, ARM64]
     container: ubuntu:20.04
     steps:
       - name: Check out repository
