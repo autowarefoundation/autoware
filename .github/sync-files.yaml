@@ -1,5 +1,9 @@
 - repository: autowarefoundation/autoware
   files:
+    - source: CODE_OF_CONDUCT.md
+    - source: CONTRIBUTING.md
+    - source: DISCLAIMER.md
+    - source: LICENSE
     - source: .github/dependabot.yaml
     - source: .github/workflows/automatic-rebase.yaml
     - source: .github/workflows/pre-commit-optional.yaml
