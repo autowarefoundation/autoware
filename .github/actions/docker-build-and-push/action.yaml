@@ -15,10 +15,15 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Get branch name
+      id: get-branch-name
+      run: echo "::set-output name=branch::${GITHUB_REF#refs/heads/}"
+      shell: bash
+
     - name: Check branch of workflow_dispatch
-      if: ${{ github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' }}
+      if: ${{ github.event_name == 'workflow_dispatch' && steps.get-branch-name.outputs.branch != github.event.repository.default_branch }}
       run: |
-        echo "workflow_dispatch is allowed only with the branch 'refs/heads/main', '${{ github.ref }}' is not allowed."
+        echo "workflow_dispatch is allowed only with the branch '${{ github.event.repository.default_branch }}', '${{ steps.get-branch-name.outputs.branch }}' is not allowed."
         exit 1
       shell: bash
 
