@@ -5,6 +5,9 @@ ignore: |
   *.param.yaml
 
 rules:
+  braces:
+    level: error
+    max-spaces-inside: 1 # To format with Prettier
   comments:
     level: error
     min-spaces-from-content: 1 # To be compatible with C++ and Python
