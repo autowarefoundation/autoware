@@ -1,0 +1,35 @@
+name: docker-build-and-push-arm
+
+on:
+  push:
+    tags:
+      - v*
+  schedule:
+    - cron: 0 19 1,15 * * # run at 4 AM JST every two weeks
+  workflow_dispatch:
+
+jobs:
+  docker-build-and-push-arm:
+    runs-on: [self-hosted, linux, ARM64]
+    steps:
+      # https://github.com/actions/checkout/issues/211
+      - name: Change permission of workspace
+        run: |
+          sudo chown -R $USER:$USER ${{ github.workspace }}
+
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Free disk space
+        uses: ./.github/actions/free-disk-space
+
+      - name: Build 'autoware-universe'
+        uses: ./.github/actions/docker-build-and-push
+        with:
+          bake-target: autoware-universe
+          platforms: linux/arm64
+          tag-suffix: -arm64
+
+      - name: Show disk space
+        run: |
+          df -h

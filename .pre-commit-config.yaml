@@ -51,4 +51,9 @@ repos:
       - id: shfmt
         args: [-w, -s, -i=4]
 
+  - repo: https://github.com/AleksaC/hadolint-py
+    rev: v2.8.0
+    hooks:
+      - id: hadolint
+
 exclude: .svg

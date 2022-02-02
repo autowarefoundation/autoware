@@ -25,7 +25,7 @@ This is the list of the prototype repositories and their roles.
   - This is a documentation repository for Autoware users and developers.
   - Since Autoware Core/Universe has multiple repositories, preparing a central documentation repository is more user-friendly than writing distributed documentation in each repository.
 
-If you have any questions or ideas, please feel free to start a discussion on [GitHub Discussions in autowarefoundation/autoware](https://github.com/autowarefoundation/autoware/discussions).
+If you have any questions or ideas, feel free to start a discussion on [GitHub Discussions in autowarefoundation/autoware](https://github.com/autowarefoundation/autoware/discussions).
 
 ---
 
@@ -39,7 +39,7 @@ If you have any questions or ideas, please feel free to start a discussion on [G
 
 This script will install the development environment for Autoware, which cannot be installed by `rosdep`.
 
-> Note: Please confirm the licenses before installing NVIDIA libraries.
+> Note: Before installing NVIDIA libraries, confirm and agree with the licenses.
 
 - [CUDA](https://docs.nvidia.com/cuda/eula/index.html)
 - [cuDNN](https://docs.nvidia.com/deeplearning/cudnn/sla/index.html)

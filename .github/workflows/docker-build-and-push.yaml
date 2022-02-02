@@ -1,0 +1,30 @@
+name: docker-build-and-push
+
+on:
+  push:
+    tags:
+      - v*
+  schedule:
+    - cron: 0 19 1,15 * * # run at 4 AM JST every two weeks
+  workflow_dispatch:
+
+jobs:
+  docker-build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Free disk space
+        uses: ./.github/actions/free-disk-space
+
+      - name: Build 'autoware-universe'
+        uses: ./.github/actions/docker-build-and-push
+        with:
+          bake-target: autoware-universe
+          platforms: linux/amd64
+          tag-suffix: -amd64
+
+      - name: Show disk space
+        run: |
+          df -h
