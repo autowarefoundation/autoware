@@ -17,8 +17,7 @@
 VehicleVelocityConverter::VehicleVelocityConverter() : Node("vehicle_velocity_converter")
 {
   // set covariance value for twist with covariance msg
-  declare_parameter("twist_covariance");
-  std::vector<double> covariance = get_parameter("twist_covariance").as_double_array();
+  std::vector<double> covariance = declare_parameter<std::vector<double>>("twist_covariance");
   for (std::size_t i = 0; i < covariance.size(); ++i) {
     twist_covariance_[i] = covariance[i];
   }
