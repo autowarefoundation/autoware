@@ -162,8 +162,6 @@ bool ControlPerformanceAnalysisCore::isDataReady() const
 
 std::pair<bool, TargetPerformanceMsgVars> ControlPerformanceAnalysisCore::getPerformanceVars()
 {
-  constexpr double EPS = std::numeric_limits<double>::epsilon();
-
   // Check if data is ready.
   if (!isDataReady() || !idx_prev_wp_) {
     return std::make_pair(false, TargetPerformanceMsgVars{});
@@ -224,9 +222,6 @@ std::pair<bool, TargetPerformanceMsgVars> ControlPerformanceAnalysisCore::getPer
 
   target_vars.error_energy = error_vec.dot(error_vec);
   target_vars.value_approximation = error_vec.transpose() * lyap_P_ * error_vec;  // x'Px
-
-  double prev_value_approximation = prev_target_vars_->value_approximation;
-  double && value_decay = target_vars.value_approximation - prev_value_approximation;
 
   target_vars.curvature_estimate = curvature_est;
   target_vars.curvature_estimate_pp = curvature_est_pp;
@@ -400,8 +395,6 @@ double ControlPerformanceAnalysisCore::estimateCurvature()
   double ds_arc_length = std::hypot(
     front_axleWP_pose_prev.position.x - front_axleWP_pose.position.x,
     front_axleWP_pose_prev.position.y - front_axleWP_pose.position.y);
-
-  auto distance_to_traj0 = idx_prev_waypoint * ds_arc_length;
 
   // Define waypoints 10 meters behind the rear axle if exist.
   // If not exist, we will take the first point of the

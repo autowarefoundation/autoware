@@ -88,7 +88,6 @@ private:
 
   // Parameters
   Param param_{};  // wheelbase, control period and feedback coefficients.
-  TargetPerformanceMsgVars target_error_vars_{};
 
   // Subscriber Parameters
   Trajectory::ConstSharedPtr current_trajectory_ptr_;  // ConstPtr to local traj.
