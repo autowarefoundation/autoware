@@ -104,7 +104,6 @@ runs:
       uses: docker/bake-action@v1
       with:
         push: ${{ github.event_name != 'pull_request' }}
-        load: true
         files: |
           docker/${{ inputs.bake-target }}/docker-bake.hcl
           bake.json
