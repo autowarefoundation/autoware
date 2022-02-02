@@ -192,8 +192,8 @@ void MapBasedPrediction::normalizeLikelihood(
 bool MapBasedPrediction::getPredictedPath(
   const double height, const double current_d_position, const double current_d_velocity,
   const double current_s_position, const double current_s_velocity,
-  const std_msgs::msg::Header & origin_header, Spline2D & spline2d,
-  autoware_auto_perception_msgs::msg::PredictedPath & path)
+  [[maybe_unused]] const std_msgs::msg::Header & origin_header, Spline2D & spline2d,
+  autoware_auto_perception_msgs::msg::PredictedPath & path) const
 {
   // Quintic polynomial for d
   // A = np.array([[T**3, T**4, T**5],
@@ -269,7 +269,7 @@ bool MapBasedPrediction::getPredictedPath(
 
 void MapBasedPrediction::getLinearPredictedPath(
   const geometry_msgs::msg::Pose & object_pose, const geometry_msgs::msg::Twist & object_twist,
-  autoware_auto_perception_msgs::msg::PredictedPath & predicted_path)
+  autoware_auto_perception_msgs::msg::PredictedPath & predicted_path) const
 {
   const double & sampling_delta_time = sampling_delta_time_;
   const double & time_horizon = time_horizon_;

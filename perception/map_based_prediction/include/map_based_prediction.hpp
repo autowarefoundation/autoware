@@ -48,11 +48,11 @@ private:
     const double height, const double current_d_position, const double current_d_velocity,
     const double current_s_position, const double current_s_velocity,
     const std_msgs::msg::Header & origin_header, Spline2D & spline2d,
-    autoware_auto_perception_msgs::msg::PredictedPath & path);
+    autoware_auto_perception_msgs::msg::PredictedPath & path) const;
 
   void getLinearPredictedPath(
     const geometry_msgs::msg::Pose & object_pose, const geometry_msgs::msg::Twist & object_twist,
-    autoware_auto_perception_msgs::msg::PredictedPath & predicted_path);
+    autoware_auto_perception_msgs::msg::PredictedPath & predicted_path) const;
 
   void normalizeLikelihood(
     autoware_auto_perception_msgs::msg::PredictedObjectKinematics & predicted_object_kinematics);

@@ -557,7 +557,7 @@ void MapBasedPredictionROS::objectsCallback(
       "map",        // src
       rclcpp::Time(), rclcpp::Duration::from_seconds(0.1));
   } catch (tf2::TransformException & ex) {
-    RCLCPP_ERROR(get_logger(), ex.what());
+    RCLCPP_ERROR(get_logger(), "%s", ex.what());
     return;
   }
 
