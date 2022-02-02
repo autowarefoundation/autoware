@@ -86,13 +86,10 @@ ControlPerformanceAnalysisNode::ControlPerformanceAnalysisNode(
 
   // Timer
   {
-    auto on_timer = std::bind(&ControlPerformanceAnalysisNode::onTimer, this);
-    auto period = std::chrono::duration_cast<std::chrono::nanoseconds>(
+    const auto period_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
       std::chrono::duration<double>(param_.control_period));
-    timer_publish_ = std::make_shared<rclcpp::GenericTimer<decltype(on_timer)>>(
-      this->get_clock(), period, std::move(on_timer),
-      this->get_node_base_interface()->get_context());
-    this->get_node_timers_interface()->add_timer(timer_publish_, nullptr);
+    timer_publish_ = rclcpp::create_timer(
+      this, get_clock(), period_ns, std::bind(&ControlPerformanceAnalysisNode::onTimer, this));
   }
 
   // Wait for first self pose

@@ -28,12 +28,9 @@ public:
       this->create_publisher<autoware_auto_perception_msgs::msg::PredictedObjects>(
         "~/output/objects", 1);
 
-    auto timer_callback = std::bind(&EmptyObjectsPublisher::timerCallback, this);
-    const auto period = std::chrono::milliseconds(100);
-    timer_ = std::make_shared<rclcpp::GenericTimer<decltype(timer_callback)>>(
-      this->get_clock(), period, std::move(timer_callback),
-      this->get_node_base_interface()->get_context());
-    this->get_node_timers_interface()->add_timer(timer_, nullptr);
+    using std::chrono_literals::operator""ms;
+    timer_ = rclcpp::create_timer(
+      this, get_clock(), 100ms, std::bind(&EmptyObjectsPublisher::timerCallback, this));
   }
 
 private:

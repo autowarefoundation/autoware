@@ -56,14 +56,9 @@ GoalDistanceCalculatorNode::GoalDistanceCalculatorNode(const rclcpp::NodeOptions
   self_pose_listener_.waitForFirstPose();
 
   // Timer
-  double delta_time = 1.0 / static_cast<double>(node_param_.update_rate);
-  auto timer_callback_ = std::bind(&GoalDistanceCalculatorNode::onTimer, this);
-  const auto period_ns =
-    std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::duration<double>(delta_time));
-  timer_ = std::make_shared<rclcpp::GenericTimer<decltype(timer_callback_)>>(
-    this->get_clock(), period_ns, std::move(timer_callback_),
-    this->get_node_base_interface()->get_context());
-  this->get_node_timers_interface()->add_timer(timer_, nullptr);
+  const auto period_ns = rclcpp::Rate(node_param_.update_rate).period();
+  timer_ = rclcpp::create_timer(
+    this, get_clock(), period_ns, std::bind(&GoalDistanceCalculatorNode::onTimer, this));
   goal_distance_calculator_ = std::make_unique<GoalDistanceCalculator>();
 }
 

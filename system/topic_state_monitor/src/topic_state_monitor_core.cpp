@@ -79,14 +79,9 @@ TopicStateMonitorNode::TopicStateMonitorNode(const rclcpp::NodeOptions & node_op
   updater_.add(param_.diag_name, this, &TopicStateMonitorNode::checkTopicStatus);
 
   // Timer
-  auto timer_callback = std::bind(&TopicStateMonitorNode::onTimer, this);
-  auto period = std::chrono::duration_cast<std::chrono::nanoseconds>(
-    std::chrono::duration<double>(1.0 / node_param_.update_rate));
-
-  timer_ = std::make_shared<rclcpp::GenericTimer<decltype(timer_callback)>>(
-    this->get_clock(), period, std::move(timer_callback),
-    this->get_node_base_interface()->get_context());
-  this->get_node_timers_interface()->add_timer(timer_, nullptr);
+  const auto period_ns = rclcpp::Rate(node_param_.update_rate).period();
+  timer_ = rclcpp::create_timer(
+    this, get_clock(), period_ns, std::bind(&TopicStateMonitorNode::onTimer, this));
 }
 
 rcl_interfaces::msg::SetParametersResult TopicStateMonitorNode::onParameter(

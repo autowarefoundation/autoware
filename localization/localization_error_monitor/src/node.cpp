@@ -55,13 +55,9 @@ LocalizationErrorMonitor::LocalizationErrorMonitor()
     &LocalizationErrorMonitor::checkLocalizationAccuracyLateralDirection);
 
   // Set timer
-  auto timer_callback = std::bind(&LocalizationErrorMonitor::onTimer, this);
-  const auto period_ns =
-    std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::duration<double>(0.1));
-  timer_ = std::make_shared<rclcpp::GenericTimer<decltype(timer_callback)>>(
-    this->get_clock(), period_ns, std::move(timer_callback),
-    this->get_node_base_interface()->get_context());
-  this->get_node_timers_interface()->add_timer(timer_, nullptr);
+  using std::chrono_literals::operator""ms;
+  timer_ = rclcpp::create_timer(
+    this, get_clock(), 100ms, std::bind(&LocalizationErrorMonitor::onTimer, this));
 }
 
 void LocalizationErrorMonitor::onTimer() { updater_.force_update(); }

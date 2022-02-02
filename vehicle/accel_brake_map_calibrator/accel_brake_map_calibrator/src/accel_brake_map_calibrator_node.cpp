@@ -201,25 +201,19 @@ AccelBrakeMapCalibrator::AccelBrakeMapCalibrator(const rclcpp::NodeOptions & nod
 
 void AccelBrakeMapCalibrator::initOutputCSVTimer(double period_s)
 {
-  auto timer_output_csv_callback =
-    std::bind(&AccelBrakeMapCalibrator::timerCallbackOutputCSV, this);
   const auto period_ns =
     std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::duration<double>(period_s));
-  timer_output_csv_ = std::make_shared<rclcpp::GenericTimer<decltype(timer_output_csv_callback)>>(
-    this->get_clock(), period_ns, std::move(timer_output_csv_callback),
-    this->get_node_base_interface()->get_context());
-  this->get_node_timers_interface()->add_timer(timer_output_csv_, nullptr);
+  timer_output_csv_ = rclcpp::create_timer(
+    this, get_clock(), period_ns,
+    std::bind(&AccelBrakeMapCalibrator::timerCallbackOutputCSV, this));
 }
 
 void AccelBrakeMapCalibrator::initTimer(double period_s)
 {
-  auto timer_callback = std::bind(&AccelBrakeMapCalibrator::timerCallback, this);
   const auto period_ns =
     std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::duration<double>(period_s));
-  timer_ = std::make_shared<rclcpp::GenericTimer<decltype(timer_callback)>>(
-    this->get_clock(), period_ns, std::move(timer_callback),
-    this->get_node_base_interface()->get_context());
-  this->get_node_timers_interface()->add_timer(timer_, nullptr);
+  timer_ = rclcpp::create_timer(
+    this, get_clock(), period_ns, std::bind(&AccelBrakeMapCalibrator::timerCallback, this));
 }
 
 bool AccelBrakeMapCalibrator::getCurrentPitchFromTF(double * pitch)

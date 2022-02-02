@@ -151,12 +151,11 @@ PointCloudConcatenateDataSynchronizerComponent::PointCloudConcatenateDataSynchro
 
   // Set timer
   {
-    auto cb = std::bind(&PointCloudConcatenateDataSynchronizerComponent::timer_callback, this);
-    auto period = std::chrono::duration_cast<std::chrono::nanoseconds>(
+    const auto period_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
       std::chrono::duration<double>(timeout_sec_));
-    timer_ = std::make_shared<rclcpp::GenericTimer<decltype(cb)>>(
-      get_clock(), period, std::move(cb), get_node_base_interface()->get_context());
-    get_node_timers_interface()->add_timer(timer_, nullptr);
+    timer_ = rclcpp::create_timer(
+      this, get_clock(), period_ns,
+      std::bind(&PointCloudConcatenateDataSynchronizerComponent::timer_callback, this));
   }
 
   // Diagnostic Updater

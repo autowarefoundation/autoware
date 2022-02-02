@@ -395,14 +395,10 @@ const
 
 void LateralController::initTimer(float64_t period_s)
 {
-  auto timer_callback = std::bind(&LateralController::onTimer, this);
   const auto period_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
-    std::chrono::duration<float64_t>(
-      period_s));
-  m_timer = std::make_shared<rclcpp::GenericTimer<decltype(timer_callback)>>(
-    this->get_clock(), period_ns, std::move(timer_callback),
-    this->get_node_base_interface()->get_context());
-  this->get_node_timers_interface()->add_timer(m_timer, nullptr);
+    std::chrono::duration<float64_t>(period_s));
+  m_timer = rclcpp::create_timer(this, get_clock(), period_ns,
+    std::bind(&LateralController::onTimer, this));
 }
 
 void LateralController::declareMPCparameters()

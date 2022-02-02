@@ -31,7 +31,8 @@ PathDistanceCalculator::PathDistanceCalculator(const rclcpp::NodeOptions & optio
   pub_dist_ =
     create_publisher<tier4_debug_msgs::msg::Float64Stamped>("~/output/distance", rclcpp::QoS(1));
 
-  auto timer_callback = [this]() {
+  using std::chrono_literals::operator""s;
+  timer_ = rclcpp::create_timer(this, get_clock(), 1s, [this]() {
     const auto path = path_;
     const auto pose = self_pose_listener_.getCurrentPose();
     if (!pose) {
@@ -53,13 +54,7 @@ PathDistanceCalculator::PathDistanceCalculator(const rclcpp::NodeOptions & optio
     msg.stamp = pose->header.stamp;
     msg.data = distance;
     pub_dist_->publish(msg);
-  };
-
-  using namespace std::literals::chrono_literals;
-  timer_ = std::make_shared<rclcpp::GenericTimer<decltype(timer_callback)>>(
-    this->get_clock(), 1s, std::move(timer_callback),
-    this->get_node_base_interface()->get_context());
-  this->get_node_timers_interface()->add_timer(timer_, nullptr);
+  });
 }
 
 #include <rclcpp_components/register_node_macro.hpp>

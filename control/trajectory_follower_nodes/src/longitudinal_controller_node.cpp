@@ -188,13 +188,9 @@ LongitudinalController::LongitudinalController(const rclcpp::NodeOptions & node_
 
   // Timer
   {
-    auto timer_callback = std::bind(&LongitudinalController::callbackTimerControl, this);
-    auto period = std::chrono::duration_cast<std::chrono::nanoseconds>(
-      std::chrono::duration<float64_t>(1.0 / m_control_rate));
-    m_timer_control = std::make_shared<rclcpp::GenericTimer<decltype(timer_callback)>>(
-      this->get_clock(), period, std::move(timer_callback),
-      this->get_node_base_interface()->get_context());
-    this->get_node_timers_interface()->add_timer(m_timer_control, nullptr);
+    const auto period_ns = rclcpp::Rate(m_control_rate).period();
+    m_timer_control = rclcpp::create_timer(this, get_clock(), period_ns,
+      std::bind(&LongitudinalController::callbackTimerControl, this));
   }
 
   // set parameter callback

@@ -151,13 +151,9 @@ PacmodInterface::PacmodInterface()
     create_publisher<SteeringWheelStatusStamped>("/vehicle/status/steering_wheel_status", 1);
 
   // Timer
-  auto timer_callback = std::bind(&PacmodInterface::publishCommands, this);
-  auto period = std::chrono::duration_cast<std::chrono::nanoseconds>(
-    std::chrono::duration<double>(1.0 / loop_rate_));
-  timer_ = std::make_shared<rclcpp::GenericTimer<decltype(timer_callback)>>(
-    this->get_clock(), period, std::move(timer_callback),
-    this->get_node_base_interface()->get_context());
-  this->get_node_timers_interface()->add_timer(timer_, nullptr);
+  const auto period_ns = rclcpp::Rate(loop_rate_).period();
+  timer_ = rclcpp::create_timer(
+    this, get_clock(), period_ns, std::bind(&PacmodInterface::publishCommands, this));
 }
 
 void PacmodInterface::callbackActuationCmd(const ActuationCommandStamped::ConstSharedPtr msg)

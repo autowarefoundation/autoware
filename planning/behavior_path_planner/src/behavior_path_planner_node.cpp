@@ -131,12 +131,9 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
   // Start timer. This must be done after all data (e.g. vehicle pose, velocity) are ready.
   {
     const auto planning_hz = declare_parameter("planning_hz", 10.0);
-    const auto period = rclcpp::Rate(planning_hz).period();
-    auto on_timer = std::bind(&BehaviorPathPlannerNode::run, this);
-    timer_ = std::make_shared<rclcpp::GenericTimer<decltype(on_timer)>>(
-      this->get_clock(), period, std::move(on_timer),
-      this->get_node_base_interface()->get_context());
-    this->get_node_timers_interface()->add_timer(timer_, nullptr);
+    const auto period_ns = rclcpp::Rate(planning_hz).period();
+    timer_ = rclcpp::create_timer(
+      this, get_clock(), period_ns, std::bind(&BehaviorPathPlannerNode::run, this));
   }
 }
 

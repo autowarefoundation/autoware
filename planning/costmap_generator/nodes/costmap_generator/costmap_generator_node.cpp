@@ -162,12 +162,9 @@ CostmapGenerator::CostmapGenerator(const rclcpp::NodeOptions & node_options)
     this->create_publisher<nav_msgs::msg::OccupancyGrid>("~/output/occupancy_grid", 1);
 
   // Timer
-  auto timer_callback = std::bind(&CostmapGenerator::onTimer, this);
-  const auto period = rclcpp::Rate(update_rate_).period();
-  timer_ = std::make_shared<rclcpp::GenericTimer<decltype(timer_callback)>>(
-    this->get_clock(), period, std::move(timer_callback),
-    this->get_node_base_interface()->get_context());
-  this->get_node_timers_interface()->add_timer(timer_, nullptr);
+  const auto period_ns = rclcpp::Rate(update_rate_).period();
+  timer_ = rclcpp::create_timer(this, get_clock(), period_ns,
+    std::bind(&CostmapGenerator::onTimer, this));
 
   // Initialize
   initGridmap();

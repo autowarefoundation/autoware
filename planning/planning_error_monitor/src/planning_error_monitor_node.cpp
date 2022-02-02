@@ -50,10 +50,8 @@ PlanningErrorMonitorNode::PlanningErrorMonitorNode(const rclcpp::NodeOptions & n
     "trajectory_relative_angle_validation", this,
     &PlanningErrorMonitorNode::onTrajectoryRelativeAngleChecker);
 
-  auto on_timer_ = std::bind(&PlanningErrorMonitorNode::onTimer, this);
-  timer_ = std::make_shared<rclcpp::GenericTimer<decltype(on_timer_)>>(
-    this->get_clock(), 100ms, std::move(on_timer_), this->get_node_base_interface()->get_context());
-  this->get_node_timers_interface()->add_timer(timer_, nullptr);
+  timer_ = rclcpp::create_timer(
+    this, get_clock(), 100ms, std::bind(&PlanningErrorMonitorNode::onTimer, this));
 
   // Parameter
   error_interval_ = declare_parameter("error_interval", 100.0);

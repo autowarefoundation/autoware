@@ -359,14 +359,10 @@ ScenarioSelectorNode::ScenarioSelectorNode(const rclcpp::NodeOptions & node_opti
     "output/trajectory", rclcpp::QoS{1});
 
   // Timer Callback
-  auto timer_callback = std::bind(&ScenarioSelectorNode::onTimer, this);
-  auto period = std::chrono::duration_cast<std::chrono::nanoseconds>(
-    std::chrono::duration<double>(1.0 / static_cast<double>(update_rate_)));
+  const auto period_ns = rclcpp::Rate(static_cast<double>(update_rate_)).period();
 
-  timer_ = std::make_shared<rclcpp::GenericTimer<decltype(timer_callback)>>(
-    this->get_clock(), period, std::move(timer_callback),
-    this->get_node_base_interface()->get_context());
-  this->get_node_timers_interface()->add_timer(timer_, nullptr);
+  timer_ = rclcpp::create_timer(
+    this, get_clock(), period_ns, std::bind(&ScenarioSelectorNode::onTimer, this));
 
   // Wait for first tf
   while (rclcpp::ok()) {

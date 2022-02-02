@@ -243,14 +243,9 @@ AutowareErrorMonitor::AutowareErrorMonitor()
 
   // Timer
   initialized_time_ = this->now();
-  auto timer_callback = std::bind(&AutowareErrorMonitor::onTimer, this);
-  auto period = std::chrono::duration_cast<std::chrono::nanoseconds>(
-    std::chrono::duration<double>(1.0 / params_.update_rate));
-
-  timer_ = std::make_shared<rclcpp::GenericTimer<decltype(timer_callback)>>(
-    this->get_clock(), period, std::move(timer_callback),
-    this->get_node_base_interface()->get_context());
-  this->get_node_timers_interface()->add_timer(timer_, nullptr);
+  const auto period_ns = rclcpp::Rate(params_.update_rate).period();
+  timer_ = rclcpp::create_timer(
+    this, get_clock(), period_ns, std::bind(&AutowareErrorMonitor::onTimer, this));
 }
 
 void AutowareErrorMonitor::loadRequiredModules(const std::string & key)

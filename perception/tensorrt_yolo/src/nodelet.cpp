@@ -90,14 +90,9 @@ TensorrtYoloNodelet::TensorrtYoloNodelet(const rclcpp::NodeOptions & options)
       new yolo::Net(onnx_file, mode, 1, yolo_config_, calibration_images, calib_cache_file));
     net_ptr_->save(engine_file);
   }
-  auto timer_callback = std::bind(&TensorrtYoloNodelet::connectCb, this);
-  const auto period_s = 0.1;
-  const auto period_ns =
-    std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::duration<double>(period_s));
-  timer_ = std::make_shared<rclcpp::GenericTimer<decltype(timer_callback)>>(
-    this->get_clock(), period_ns, std::move(timer_callback),
-    this->get_node_base_interface()->get_context());
-  this->get_node_timers_interface()->add_timer(timer_, nullptr);
+  using std::chrono_literals::operator""ms;
+  timer_ = rclcpp::create_timer(
+    this, get_clock(), 100ms, std::bind(&TensorrtYoloNodelet::connectCb, this));
 
   std::lock_guard<std::mutex> lock(connect_mutex_);
 

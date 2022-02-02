@@ -71,21 +71,14 @@ EKFLocalizer::EKFLocalizer(const std::string & node_name, const rclcpp::NodeOpti
   proc_cov_yaw_bias_d_ = std::pow(proc_stddev_yaw_bias_c * ekf_dt_, 2.0);
 
   /* initialize ros system */
-  auto timer_control_callback = std::bind(&EKFLocalizer::timerCallback, this);
-  auto period_control =
+  auto period_control_ns =
     std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::duration<double>(ekf_dt_));
-  timer_control_ = std::make_shared<rclcpp::GenericTimer<decltype(timer_control_callback)>>(
-    get_clock(), period_control, std::move(timer_control_callback),
-    this->get_node_base_interface()->get_context());
-  this->get_node_timers_interface()->add_timer(timer_control_, nullptr);
+  timer_control_ = rclcpp::create_timer(
+    this, get_clock(), period_control_ns, std::bind(&EKFLocalizer::timerCallback, this));
 
-  auto timer_tf_callback = std::bind(&EKFLocalizer::timerTFCallback, this);
-  auto period_tf = std::chrono::duration_cast<std::chrono::nanoseconds>(
-    std::chrono::duration<double>(1.0 / tf_rate_));
-  timer_tf_ = std::make_shared<rclcpp::GenericTimer<decltype(timer_tf_callback)>>(
-    get_clock(), period_tf, std::move(timer_tf_callback),
-    this->get_node_base_interface()->get_context());
-  this->get_node_timers_interface()->add_timer(timer_tf_, nullptr);
+  const auto period_tf_ns = rclcpp::Rate(tf_rate_).period();
+  timer_tf_ = rclcpp::create_timer(
+    this, get_clock(), period_tf_ns, std::bind(&EKFLocalizer::timerTFCallback, this));
 
   pub_pose_ = create_publisher<geometry_msgs::msg::PoseStamped>("ekf_pose", 1);
   pub_pose_cov_ =

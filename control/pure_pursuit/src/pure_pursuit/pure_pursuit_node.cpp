@@ -89,13 +89,10 @@ PurePursuitNode::PurePursuitNode(const rclcpp::NodeOptions & node_options)
 
   // Timer
   {
-    auto timer_callback = std::bind(&PurePursuitNode::onTimer, this);
-    auto period = std::chrono::duration_cast<std::chrono::nanoseconds>(
+    const auto period_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
       std::chrono::duration<double>(param_.ctrl_period));
-    timer_ = std::make_shared<rclcpp::GenericTimer<decltype(timer_callback)>>(
-      this->get_clock(), period, std::move(timer_callback),
-      this->get_node_base_interface()->get_context());
-    this->get_node_timers_interface()->add_timer(timer_, nullptr);
+    timer_ = rclcpp::create_timer(
+      this, get_clock(), period_ns, std::bind(&PurePursuitNode::onTimer, this));
   }
 
   //  Wait for first current pose

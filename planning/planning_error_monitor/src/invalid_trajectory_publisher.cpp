@@ -33,10 +33,8 @@ InvalidTrajectoryPublisherNode::InvalidTrajectoryPublisherNode(
 
   traj_pub_ = create_publisher<Trajectory>("~/output/trajectory", 1);
 
-  auto on_timer_ = std::bind(&InvalidTrajectoryPublisherNode::onTimer, this);
-  timer_ = std::make_shared<rclcpp::GenericTimer<decltype(on_timer_)>>(
-    this->get_clock(), 100ms, std::move(on_timer_), this->get_node_base_interface()->get_context());
-  this->get_node_timers_interface()->add_timer(timer_, nullptr);
+  timer_ = rclcpp::create_timer(
+    this, get_clock(), 100ms, std::bind(&InvalidTrajectoryPublisherNode::onTimer, this));
 }
 
 void InvalidTrajectoryPublisherNode::onTimer()

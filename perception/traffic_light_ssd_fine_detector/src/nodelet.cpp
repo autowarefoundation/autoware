@@ -84,14 +84,9 @@ TrafficLightSSDFineDetectorNodelet::TrafficLightSSDFineDetectorNodelet(
   mean_ = toFloatVector(this->declare_parameter("mean", std::vector<double>({0.5, 0.5, 0.5})));
   std_ = toFloatVector(this->declare_parameter("std", std::vector<double>({0.5, 0.5, 0.5})));
 
-  auto timer_callback = std::bind(&TrafficLightSSDFineDetectorNodelet::connectCb, this);
-  const auto period_s = 0.1;
-  const auto period_ns =
-    std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::duration<double>(period_s));
-  timer_ = std::make_shared<rclcpp::GenericTimer<decltype(timer_callback)>>(
-    this->get_clock(), period_ns, std::move(timer_callback),
-    this->get_node_base_interface()->get_context());
-  this->get_node_timers_interface()->add_timer(timer_, nullptr);
+  using std::chrono_literals::operator""ms;
+  timer_ = rclcpp::create_timer(
+    this, get_clock(), 100ms, std::bind(&TrafficLightSSDFineDetectorNodelet::connectCb, this));
 
   std::lock_guard<std::mutex> lock(connect_mutex_);
   output_roi_pub_ =

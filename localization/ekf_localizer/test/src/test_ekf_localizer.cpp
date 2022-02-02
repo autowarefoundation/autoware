@@ -48,12 +48,9 @@ public:
     sub_pose = this->create_subscription<geometry_msgs::msg::PoseStamped>(
       "/ekf_pose", 1, std::bind(&TestEKFLocalizerNode::testCallbackPose, this, _1));
 
-    auto test_timer_callback = std::bind(&TestEKFLocalizerNode::testTimerCallback, this);
-    auto period = std::chrono::milliseconds(100);
-    test_timer_ = std::make_shared<rclcpp::GenericTimer<decltype(test_timer_callback)>>(
-      this->get_clock(), period, std::move(test_timer_callback),
-      this->get_node_base_interface()->get_context());
-    this->get_node_timers_interface()->add_timer(test_timer_, nullptr);
+    using std::chrono_literals::operator""ms;
+    test_timer_ = rclcpp::create_timer(
+      this, get_clock(), 100ms, std::bind(&TestEKFLocalizerNode::testTimerCallback, this));
   }
   ~TestEKFLocalizerNode() {}
 

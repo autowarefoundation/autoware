@@ -40,15 +40,9 @@ TrafficLightClassifierNodelet::TrafficLightClassifierNodelet(const rclcpp::NodeO
     this->create_publisher<autoware_auto_perception_msgs::msg::TrafficSignalArray>(
       "~/output/traffic_signals", rclcpp::QoS{1});
 
-  //
-  auto timer_callback = std::bind(&TrafficLightClassifierNodelet::connectCb, this);
-  const auto period_s = 0.1;
-  const auto period_ns =
-    std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::duration<double>(period_s));
-  timer_ = std::make_shared<rclcpp::GenericTimer<decltype(timer_callback)>>(
-    this->get_clock(), period_ns, std::move(timer_callback),
-    this->get_node_base_interface()->get_context());
-  this->get_node_timers_interface()->add_timer(timer_, nullptr);
+  using std::chrono_literals::operator""ms;
+  timer_ = rclcpp::create_timer(
+    this, get_clock(), 100ms, std::bind(&TrafficLightClassifierNodelet::connectCb, this));
 
   int classifier_type = this->declare_parameter(
     "classifier_type", static_cast<int>(TrafficLightClassifierNodelet::ClassifierType::HSVFilter));

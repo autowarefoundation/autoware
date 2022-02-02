@@ -67,13 +67,9 @@ EmergencyHandler::EmergencyHandler() : Node("emergency_handler")
     new autoware_auto_control_msgs::msg::AckermannControlCommand);
 
   // Timer
-  auto timer_callback = std::bind(&EmergencyHandler::onTimer, this);
   const auto update_period_ns = rclcpp::Rate(param_.update_rate).period();
-
-  timer_ = std::make_shared<rclcpp::GenericTimer<decltype(timer_callback)>>(
-    this->get_clock(), update_period_ns, std::move(timer_callback),
-    this->get_node_base_interface()->get_context());
-  this->get_node_timers_interface()->add_timer(timer_, nullptr);
+  timer_ = rclcpp::create_timer(
+    this, get_clock(), update_period_ns, std::bind(&EmergencyHandler::onTimer, this));
 }
 
 void EmergencyHandler::onHazardStatusStamped(

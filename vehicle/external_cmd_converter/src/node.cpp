@@ -50,13 +50,9 @@ ExternalCmdConverterNode::ExternalCmdConverterNode(const rclcpp::NodeOptions & n
   control_command_timeout_ = declare_parameter("control_command_timeout", 1.0);
   emergency_stop_timeout_ = declare_parameter("emergency_stop_timeout", 3.0);
 
-  auto timer_callback = std::bind(&ExternalCmdConverterNode::onTimer, this);
-  auto period = std::chrono::duration_cast<std::chrono::nanoseconds>(
-    std::chrono::duration<double>(1.0 / timer_rate));
-  rate_check_timer_ = std::make_shared<rclcpp::GenericTimer<decltype(timer_callback)>>(
-    this->get_clock(), period, std::move(timer_callback),
-    this->get_node_base_interface()->get_context());
-  this->get_node_timers_interface()->add_timer(rate_check_timer_, nullptr);
+  const auto period_ns = rclcpp::Rate(timer_rate).period();
+  rate_check_timer_ = rclcpp::create_timer(
+    this, get_clock(), period_ns, std::bind(&ExternalCmdConverterNode::onTimer, this));
 
   // Parameter for accel/brake map
   const std::string csv_path_accel_map = declare_parameter<std::string>("csv_path_accel_map");
