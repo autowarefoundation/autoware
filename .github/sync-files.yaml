@@ -10,7 +10,7 @@
     - source: .markdownlint.yaml
     - source: .pre-commit-config-optional.yaml
     - source: .prettierignore
-    - source: .prettierrc
+    - source: .prettierrc.yaml
     - source: .yamllint.yaml
     - source: CPPLINT.cfg
     - source: setup.cfg
