@@ -36,12 +36,21 @@ jobs:
           target-packages: ${{ steps.get-modified-packages.outputs.modified-packages }}
           build-depends-repos: build_depends.repos
 
-      - name: Upload coverage to Codecov
-        if: ${{ steps.get-modified-packages.outputs.modified-packages != '' }}
+      - name: Check the existence of coverage files
+        id: check-file-existence
+        uses: autowarefoundation/autoware-github-actions/check-file-existence@tier4/proposal
+        with:
+          files: |
+            lcov/total_coverage.info
+            coveragepy/.coverage
+          condition: or
+
+      - name: Upload coverage to CodeCov
+        if: ${{ steps.check-file-existence.outputs.exists == 'true' }}
         uses: codecov/codecov-action@v2
         with:
           files: lcov/total_coverage.info,coveragepy/.coverage
-          fail_ci_if_error: false
+          fail_ci_if_error: true
           verbose: true
 
   clang-tidy:

@@ -36,7 +36,17 @@ jobs:
           target-packages: ${{ steps.get-self-packages.outputs.self-packages }}
           build-depends-repos: build_depends.repos
 
-      - name: Upload coverage to Codecov
+      - name: Check the existence of coverage files
+        id: check-file-existence
+        uses: autowarefoundation/autoware-github-actions/check-file-existence@tier4/proposal
+        with:
+          files: |
+            lcov/total_coverage.info
+            coveragepy/.coverage
+          condition: or
+
+      - name: Upload coverage to CodeCov
+        if: ${{ steps.check-file-existence.outputs.exists == 'true' }}
         uses: codecov/codecov-action@v2
         with:
           files: lcov/total_coverage.info,coveragepy/.coverage
