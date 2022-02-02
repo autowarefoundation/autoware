@@ -105,9 +105,8 @@ void InitialPoseButtonPanel::pushInitializeButton()
     req->pose_with_covariance = pose_cov_msg_;
 
     client_->async_send_request(
-      req,
-      [this](rclcpp::Client<tier4_localization_msgs::srv::PoseWithCovarianceStamped>::SharedFuture
-               result) {
+      req, [this]([[maybe_unused]] rclcpp::Client<
+                  tier4_localization_msgs::srv::PoseWithCovarianceStamped>::SharedFuture result) {
         status_label_->setStyleSheet("QLabel { background-color : lightgreen;}");
         status_label_->setText("OK!!!");
 
