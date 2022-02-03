@@ -61,12 +61,16 @@
 #include <vector>
 
 // ROS includes
+#include "autoware_point_types/types.hpp"
+
 #include <diagnostic_updater/diagnostic_updater.hpp>
+#include <point_cloud_msg_wrapper/point_cloud_msg_wrapper.hpp>
 
 #include <autoware_auto_vehicle_msgs/msg/velocity_report.hpp>
 #include <diagnostic_msgs/msg/diagnostic_status.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
+#include <sensor_msgs/point_cloud2_iterator.hpp>
 #include <tier4_debug_msgs/msg/int32_stamped.hpp>
 #include <tier4_debug_msgs/msg/string_stamped.hpp>
 
@@ -75,12 +79,13 @@
 #include <message_filters/sync_policies/approximate_time.h>
 #include <message_filters/sync_policies/exact_time.h>
 #include <message_filters/synchronizer.h>
-#include <pcl_conversions/pcl_conversions.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 
 namespace pointcloud_preprocessor
 {
+using autoware_point_types::PointXYZI;
+using point_cloud_msg_wrapper::PointCloud2Modifier;
 /** \brief @b PointCloudConcatenateDataSynchronizerComponent is a special form of data
  * synchronizer: it listens for a set of input PointCloud messages on the same topic,
  * checks their timestamps, and concatenates their fields together into a single
@@ -150,29 +155,17 @@ private:
   void publish();
 
   void convertToXYZICloud(
-    const sensor_msgs::msg::PointCloud2 & input_cloud,
-    sensor_msgs::msg::PointCloud2 & output_cloud);
+    const sensor_msgs::msg::PointCloud2::SharedPtr & input_ptr,
+    sensor_msgs::msg::PointCloud2::SharedPtr & output_ptr);
   void setPeriod(const int64_t new_period);
   void cloud_callback(
-    const sensor_msgs::msg::PointCloud2::ConstSharedPtr & input_ptr,
-    const std::string & topic_name);
+    const sensor_msgs::msg::PointCloud2::SharedPtr & input_ptr, const std::string & topic_name);
   void twist_callback(const autoware_auto_vehicle_msgs::msg::VelocityReport::ConstSharedPtr input);
   void timer_callback();
 
   void checkConcatStatus(diagnostic_updater::DiagnosticStatusWrapper & stat);
 };
 
-struct PointXYZI
-{
-  PCL_ADD_POINT4D;
-  float intensity;
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-} EIGEN_ALIGN16;
-
 }  // namespace pointcloud_preprocessor
-
-POINT_CLOUD_REGISTER_POINT_STRUCT(
-  pointcloud_preprocessor::PointXYZI,
-  (float, x, x)(float, y, y)(float, z, z)(float, intensity, intensity))
 
 #endif  // POINTCLOUD_PREPROCESSOR__CONCATENATE_DATA__CONCATENATE_DATA_NODELET_HPP_
