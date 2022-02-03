@@ -36,14 +36,15 @@ runs:
         sudo apt-get -y install jq
       shell: bash
 
-    # workflow_dispatch: date
-    # scheduled: latest, date
+    # workflow_dispatch: latest, date
+    # schedule: latest, date
     # tag: semver
     - name: Set Docker tags
       id: set-docker-tags
       run: |
         tags=()
         if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          tags+=("latest")
           tags+=("{{date 'YYYYMMDD'}}")
         else
           tags+=("type=schedule,pattern=latest")
@@ -109,10 +110,3 @@ runs:
           bake.json
         set: |
           *.platform=${{ inputs.platforms }}
-
-    - name: Output published tags
-      if: ${{ github.event_name != 'pull_request' }}
-      id: output-published-tags
-      run: |
-        echo ::set-output name=published-tags::$(jq ".target[].tags[]" < bake.json)
-      shell: bash

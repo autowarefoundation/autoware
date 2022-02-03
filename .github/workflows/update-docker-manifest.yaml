@@ -22,7 +22,7 @@ jobs:
         run: |
           package_full_name=ghcr.io/${{ github.repository_owner }}/${{ env.PACKAGE_NAME }}
 
-          url="https://api.github.com/orgs/${{ github.repository_owner }}/packages/container/${{ matrix.package-name }}/versions"
+          url="https://api.github.com/orgs/${{ github.repository_owner }}/packages/container/${{ env.PACKAGE_NAME }}/versions"
 
           echo "url: $url"
           tags=$(curl -fsSL "$url" -H "Authorization: token ${{ github.token }}" | jq ".[].metadata.container.tags[]" | cut -d '"' -f 2)
