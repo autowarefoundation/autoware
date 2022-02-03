@@ -514,7 +514,7 @@ autoware_auto_control_msgs::msg::AckermannControlCommand VehicleCmdGate::createS
   const
 {
   autoware_auto_control_msgs::msg::AckermannControlCommand cmd;
-
+  cmd.stamp = this->now();
   cmd.lateral.steering_tire_angle = current_steer_;
   cmd.lateral.steering_tire_rotation_rate = 0.0;
   cmd.longitudinal.speed = 0.0;
