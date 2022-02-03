@@ -31,26 +31,115 @@ If you have any questions or ideas, feel free to start a discussion on [GitHub D
 
 > Note: Detailed setup documents will be put into [autowarefoundation/autoware-documentation](https://github.com/autowarefoundation/autoware-documentation) soon.
 
-## How to setup development environment
+## Installation
+
+### Prerequisite
+
+- [Ubuntu 20.04](https://releases.ubuntu.com/20.04/)
+- [Git](https://git-scm.com/)
+  - [Registering SSH keys to GitHub](https://github.com/settings/keys) is preferable.
 
 ```bash
-./setup-dev-env.sh
+sudo apt-get -y update
+sudo apt-get -y install git
 ```
 
-This script will install the development environment for Autoware, which cannot be installed by `rosdep`.
+### How to set up a development environment
 
-> Note: Before installing NVIDIA libraries, confirm and agree with the licenses.
+There are two ways of installation. Choose one depending on your preference.
 
-- [CUDA](https://docs.nvidia.com/cuda/eula/index.html)
-- [cuDNN](https://docs.nvidia.com/deeplearning/cudnn/sla/index.html)
-- [TensorRT](https://docs.nvidia.com/deeplearning/tensorrt/sla/index.html)
+1. Docker installation
 
-## How to setup workspace
+   [Docker](https://www.docker.com/) can ensure that all developers in a project have a common, consistent development environment.
+   It is recommended for beginners, light users, people who do not use Ubuntu.
 
-```bash
-mkdir src
-vcs import src < autoware.repos
-colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
-source install/setup.bash
-ros2 launch tier4_autoware_launch planning_simulator.launch.xml vehicle_model:=lexus sensor_model:=aip_xx1 map_path:={path_to_your_map_dir}
-```
+2. Source installation
+
+   Source installation is for the cases where more granular control of the installation environment is needed.
+   It is recommended for skilled users or people who want to customize the environment.
+
+   Note that some problems may occur depending on your local environment.
+
+#### Docker installation
+
+1. Clone `autowarefoundation/autoware` and move to the directory.
+
+   ```bash
+   git clone https://github.com/autowarefoundation/autoware.git
+   cd autoware
+   ```
+
+2. Install the dependencies.
+
+   ```bash
+   ./setup-dev-env.sh docker
+   ```
+
+See [docker/README.md](docker/README.md) for the usage.
+
+#### Source installation
+
+1. Clone `autowarefoundation/autoware` and move to the directory.
+
+   ```bash
+   git clone https://github.com/autowarefoundation/autoware.git
+   cd autoware
+   ```
+
+2. Install the dependencies.
+
+   > Note: Before installing NVIDIA libraries, confirm and agree with the licenses.
+
+   - [CUDA](https://docs.nvidia.com/cuda/eula/index.html)
+   - [cuDNN](https://docs.nvidia.com/deeplearning/cudnn/sla/index.html)
+   - [TensorRT](https://docs.nvidia.com/deeplearning/tensorrt/sla/index.html)
+
+   ```bash
+   ./setup-dev-env.sh
+   ```
+
+### How to set up a workspace
+
+Suppose that you've installed a development environment.
+
+1. Create the `src` directory and clone repositories into it.
+
+   ```bash
+   mkdir src
+   vcs import src < autoware.repos
+   ```
+
+2. Install dependent ROS packages.
+
+   ```bash
+   source /opt/ros/galactic/setup.bash
+   rosdep install --from-paths src --ignore-src --rosdistro $ROS_DISTRO
+   ```
+
+3. Build the workspace.
+
+   ```bash
+   colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
+   ```
+
+## Usage
+
+Suppose that you've set up a workspace.
+
+### How to run a closed-loop simulation
+
+1. Download a sample map [here](https://drive.google.com/file/d/197kgRfSomZzaSbRrjWTx614le2qN-oxx/view) and unzip it.
+
+   ```bash
+   cd ~/Downloads
+   unzip planning_simulator_sample_map.zip -d sample_map
+   ```
+
+2. Launch a simulation.
+
+   ```bash
+   source install/setup.bash
+   ros2 launch tier4_autoware_launch planning_simulator.launch.xml vehicle_model:=lexus sensor_model:=aip_xx1 map_path:=$HOME/Downloads/sample_map
+   ```
+
+> Note: More tutorials will be written [here](https://autowarefoundation.github.io/autoware-documentation/tier4-proposal/) soon.

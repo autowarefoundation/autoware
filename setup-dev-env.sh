@@ -28,14 +28,14 @@ while [ "$1" != "" ]; do
 done
 
 # Select installation type
-core_universe=universe # default
+installation_type=universe # default
 
 if [ ${#args[@]} -ge 1 ]; then
-    core_universe=${args[0]}
+    installation_type=${args[0]}
 fi
 
-if [ "$core_universe" != "core" ] && [ "$core_universe" != "universe" ]; then
-    echo -e "\e[31mPlease input a valid installation type 'core' or 'universe' as the 1st argument, or keep it empty to use the default.\e[m"
+if [ "$installation_type" != "core" ] && [ "$installation_type" != "universe" ] && [ "$installation_type" != "docker" ]; then
+    echo -e "\e[31mPlease input a valid installation type 'core', 'universe' or 'docker' as the 1st argument, or keep it empty to use the default.\e[m"
     exit 1
 fi
 
@@ -92,8 +92,8 @@ fi
 ansible-galaxy collection install -f -r "$SCRIPT_DIR/ansible-galaxy-requirements.yaml"
 
 # Run ansible
-echo Run ansible-playbook "autoware.dev_env.$core_universe" "${ansible_args[@]}"
-if ansible-playbook "autoware.dev_env.$core_universe" "${ansible_args[@]}"; then
+echo Run ansible-playbook "autoware.dev_env.$installation_type" "${ansible_args[@]}"
+if ansible-playbook "autoware.dev_env.$installation_type" "${ansible_args[@]}"; then
     echo -e "\e[32mCompleted.\e[0m"
     exit 0
 else

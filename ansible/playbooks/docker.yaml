@@ -1,0 +1,4 @@
+- hosts: localhost
+  connection: local
+  roles:
+    - role: autoware.dev_env.docker
