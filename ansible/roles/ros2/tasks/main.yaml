@@ -46,3 +46,4 @@
     line: source /opt/ros/{{ rosdistro }}/setup.bash
     state: present
     create: true
+    mode: 0644
