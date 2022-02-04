@@ -18,7 +18,7 @@ jobs:
     needs: prevent-no-label-execution
     if: ${{ needs.prevent-no-label-execution.outputs.run == 'true' }}
     runs-on: [self-hosted, linux, ARM64]
-    container: ros:galactic
+    container: ghcr.io/autowarefoundation/autoware-universe:latest
     steps:
       - name: Check out repository
         uses: actions/checkout@v2

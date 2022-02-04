@@ -8,7 +8,7 @@ on:
 jobs:
   build-and-test-arm:
     runs-on: ARM64
-    container: ros:galactic
+    container: ghcr.io/autowarefoundation/autoware-universe:latest
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
