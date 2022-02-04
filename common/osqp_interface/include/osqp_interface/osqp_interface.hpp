@@ -44,7 +44,7 @@ using autoware::common::types::float64_t;
 class OSQP_INTERFACE_PUBLIC OSQPInterface
 {
 private:
-  OSQPWorkspace * m_work = nullptr;
+  std::unique_ptr<OSQPWorkspace, std::function<void(OSQPWorkspace *)>> m_work;
   std::unique_ptr<OSQPSettings> m_settings;
   std::unique_ptr<OSQPData> m_data;
   // store last work info since work is cleaned up at every execution to prevent memory leak.
@@ -58,6 +58,8 @@ private:
 
   // Runs the solver on the stored problem.
   std::tuple<std::vector<float64_t>, std::vector<float64_t>, int64_t, int64_t> solve();
+
+  static void OSQPWorkspaceDeleter(OSQPWorkspace * ptr) noexcept;
 
 public:
   /// \brief Constructor without problem formulation
@@ -73,12 +75,11 @@ public:
   OSQPInterface(
     const Eigen::MatrixXd & P, const Eigen::MatrixXd & A, const std::vector<float64_t> & q,
     const std::vector<float64_t> & l, const std::vector<float64_t> & u, const c_float eps_abs);
-  ~OSQPInterface();
 
   /****************
    * OPTIMIZATION
    ****************/
-  /// \brief Solves the stored convec quadratic program (QP) problem using the OSQP solver.
+  /// \brief Solves the stored convex quadratic program (QP) problem using the OSQP solver.
   //
   /// \return The function returns a tuple containing the solution as two float vectors.
   /// \return The first element of the tuple contains the 'primal' solution.
