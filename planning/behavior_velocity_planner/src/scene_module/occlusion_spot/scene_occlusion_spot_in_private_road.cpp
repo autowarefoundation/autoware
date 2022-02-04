@@ -25,6 +25,11 @@
 
 namespace behavior_velocity_planner
 {
+using occlusion_spot_utils::ROAD_TYPE::PRIVATE;
+namespace bg = boost::geometry;
+namespace lg = lanelet::geometry;
+namespace utils = occlusion_spot_utils;
+
 OcclusionSpotInPrivateModule::OcclusionSpotInPrivateModule(
   const int64_t module_id, [[maybe_unused]] std::shared_ptr<const PlannerData> planner_data,
   const PlannerParam & planner_param, const rclcpp::Logger logger,
@@ -39,6 +44,7 @@ bool OcclusionSpotInPrivateModule::modifyPathVelocity(
   autoware_auto_planning_msgs::msg::PathWithLaneId * path,
   [[maybe_unused]] tier4_planning_msgs::msg::StopReason * stop_reason)
 {
+  debug_data_ = DebugData();
   if (path->points.size() < 2) {
     return true;
   }
@@ -54,53 +60,42 @@ bool OcclusionSpotInPrivateModule::modifyPathVelocity(
     return true;
   }
 
+  const double max_range = 50.0;
+  PathWithLaneId clipped_path;
+  utils::clipPathByLength(*path, clipped_path, max_range);
+  PathWithLaneId interp_path;
+  utils::splineInterpolate(clipped_path, 1.0, &interp_path, logger_);
   int closest_idx = -1;
-  if (!planning_utils::calcClosestIndex<autoware_auto_planning_msgs::msg::PathWithLaneId>(
-        *path, ego_pose, closest_idx, param_.dist_thr, param_.angle_thr)) {
+  if (!planning_utils::calcClosestIndex<PathWithLaneId>(
+        interp_path, ego_pose, closest_idx, param_.dist_thr, param_.angle_thr)) {
     return true;
   }
-
-  const auto target_road_type = occlusion_spot_utils::ROAD_TYPE::PRIVATE;
-  autoware_auto_planning_msgs::msg::PathWithLaneId limited_path;
-  double offset_from_ego_to_closest = 0;
-  double offset_from_closest_to_target = 0;
-  const double max_range = occ_grid_ptr->info.width * occ_grid_ptr->info.resolution;
-  {
-    // extract lanelet that includes target_road_type only
-    if (!behavior_velocity_planner::occlusion_spot_utils::extractTargetRoad(
-          closest_idx, lanelet_map_ptr, max_range, *path, offset_from_closest_to_target,
-          limited_path, target_road_type)) {
-      return true;
-    }
-    // use path point as origin for stability
-    offset_from_ego_to_closest =
-      -planning_utils::transformRelCoordinate2D(ego_pose, path->points[closest_idx].point.pose)
-         .position.x;
-  }
-  autoware_auto_planning_msgs::msg::PathWithLaneId interp_path;
-  occlusion_spot_utils::splineInterpolate(limited_path, 1.0, &interp_path, logger_);
-  if (interp_path.points.size() < 4) {
-    return true;
-  }
+  // return if ego is final point of interpolated path
+  if (closest_idx == static_cast<int>(interp_path.points.size()) - 1) return true;
+  DetectionAreaIdx focus_area =
+    extractTargetRoadArcLength(lanelet_map_ptr, max_range, *path, PRIVATE);
+  if (!focus_area) return true;
   nav_msgs::msg::OccupancyGrid occ_grid = *occ_grid_ptr;
   grid_map::GridMap grid_map;
   grid_utils::denoiseOccupancyGridCV(occ_grid, grid_map, param_.grid);
   if (param_.show_debug_grid) {
     publisher_->publish(occ_grid);
   }
-  std::vector<occlusion_spot_utils::PossibleCollisionInfo> possible_collisions;
-  const double offset_from_ego_to_target =
-    offset_from_ego_to_closest + offset_from_closest_to_target;
+  double offset_from_start_to_ego = utils::offsetFromStartToEgo(interp_path, ego_pose, closest_idx);
   RCLCPP_DEBUG_STREAM_THROTTLE(logger_, *clock_, 3000, "closest_idx : " << closest_idx);
   RCLCPP_DEBUG_STREAM_THROTTLE(
-    logger_, *clock_, 3000, "offset_from_ego_to_target : " << offset_from_ego_to_target);
-  occlusion_spot_utils::generatePossibleCollisions(
-    possible_collisions, interp_path, grid_map, offset_from_ego_to_closest,
-    offset_from_closest_to_target, param_, debug_data_.sidewalks);
+    logger_, *clock_, 3000, "offset_from_start_to_ego : " << offset_from_start_to_ego);
+  std::vector<utils::PossibleCollisionInfo> possible_collisions;
+  // Note: Don't consider offset from path start to ego here
+  utils::generateSidewalkPossibleCollisions(
+    possible_collisions, grid_map, interp_path, offset_from_start_to_ego, param_,
+    debug_data_.sidewalks);
+  utils::filterCollisionByRoadType(possible_collisions, focus_area);
   RCLCPP_DEBUG_STREAM_THROTTLE(
     logger_, *clock_, 3000, "num possible collision:" << possible_collisions.size());
-  behavior_velocity_planner::occlusion_spot_utils::calcSlowDownPointsForPossibleCollision(
-    closest_idx, *path, offset_from_ego_to_target, possible_collisions);
+  utils::calcSlowDownPointsForPossibleCollision(0, interp_path, 0.0, possible_collisions);
+  // Note: Consider offset from path start to ego here
+  utils::handleCollisionOffset(possible_collisions, offset_from_start_to_ego, 0.0);
   // apply safe velocity using ebs and pbs deceleration
   applySafeVelocityConsideringPossibleCollison(
     path, possible_collisions, ego_velocity, param_.private_road, param_);

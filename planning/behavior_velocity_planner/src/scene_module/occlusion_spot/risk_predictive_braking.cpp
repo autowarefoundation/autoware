@@ -37,7 +37,7 @@ void applySafeVelocityConsideringPossibleCollison(
   for (auto & possible_collision : possible_collisions) {
     const double dist_to_collision = possible_collision.arc_lane_dist_at_collision.length;
     const double original_vel = possible_collision.collision_path_point.longitudinal_velocity_mps;
-    const double d_obs = possible_collision.arc_lane_dist_at_collision.distance;
+    const double d_obs = std::abs(possible_collision.arc_lane_dist_at_collision.distance);
     const double v_obs = possible_collision.obstacle_info.max_velocity;
     // skip if obstacle velocity is below zero
     if (v_obs < 0) {
