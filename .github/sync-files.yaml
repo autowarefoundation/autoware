@@ -24,6 +24,7 @@
     - source: .github/workflows/build-and-test-arm-pr.yaml
     - source: .github/workflows/build-and-test.yaml
     - source: .github/workflows/build-and-test-pr.yaml
+    - source: .github/workflows/check-build-depends.yaml
     - source: .github/workflows/pre-commit.yaml
 
 - repository: autowarefoundation/autoware-documentation
