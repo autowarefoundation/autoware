@@ -25,3 +25,8 @@
     - source: .github/workflows/build-and-test.yaml
     - source: .github/workflows/build-and-test-pr.yaml
     - source: .github/workflows/pre-commit.yaml
+
+- repository: autowarefoundation/autoware-documentation
+  files:
+    - source: .github/workflows/deploy-docs.yaml
+    - source: .github/workflows/delete-closed-pr-docs.yaml
