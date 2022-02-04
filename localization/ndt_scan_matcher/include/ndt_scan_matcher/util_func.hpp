@@ -65,8 +65,7 @@ void popOldPose(
 Eigen::Affine3d fromRosPoseToEigen(const geometry_msgs::msg::Pose & ros_pose);
 
 std::vector<geometry_msgs::msg::Pose> createRandomPoseArray(
-  const geometry_msgs::msg::PoseWithCovarianceStamped & base_pose_with_cov,
-  const size_t particle_num);
+  const geometry_msgs::msg::PoseWithCovarianceStamped & base_pose_with_cov, const int particle_num);
 
 template <class T>
 T transform(const T & input, const geometry_msgs::msg::TransformStamped & transform)

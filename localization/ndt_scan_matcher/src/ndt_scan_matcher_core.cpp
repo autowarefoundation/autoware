@@ -103,6 +103,7 @@ NDTScanMatcher::NDTScanMatcher()
   ndt_base_frame_("ndt_base_link"),
   map_frame_("map"),
   converged_param_transform_probability_(4.5),
+  initial_estimate_particles_num_(100),
   inversion_vector_threshold_(-0.9),
   oscillation_threshold_(10)
 {
@@ -164,6 +165,9 @@ NDTScanMatcher::NDTScanMatcher()
 
   converged_param_transform_probability_ = this->declare_parameter(
     "converged_param_transform_probability", converged_param_transform_probability_);
+
+  initial_estimate_particles_num_ =
+    this->declare_parameter("initial_estimate_particles_num", initial_estimate_particles_num_);
 
   std::vector<double> output_pose_covariance =
     this->declare_parameter<std::vector<double>>("output_pose_covariance");
@@ -602,7 +606,8 @@ geometry_msgs::msg::PoseWithCovarianceStamped NDTScanMatcher::alignUsingMonteCar
   }
 
   // generateParticle
-  const auto initial_poses = createRandomPoseArray(initial_pose_with_cov, 100);
+  const auto initial_poses =
+    createRandomPoseArray(initial_pose_with_cov, initial_estimate_particles_num_);
 
   std::vector<Particle> particle_array;
   auto output_cloud = std::make_shared<pcl::PointCloud<PointSource>>();

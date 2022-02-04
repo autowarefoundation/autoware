@@ -153,6 +153,7 @@ private:
   std::string ndt_base_frame_;
   std::string map_frame_;
   double converged_param_transform_probability_;
+  int initial_estimate_particles_num_;
   float inversion_vector_threshold_;
   float oscillation_threshold_;
   std::array<double, 36> output_pose_covariance_;

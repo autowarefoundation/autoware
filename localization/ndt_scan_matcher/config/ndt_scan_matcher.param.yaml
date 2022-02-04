@@ -27,6 +27,9 @@
     # Threshold for deciding whether to trust the estimation result
     converged_param_transform_probability: 3.0
 
+    # The number of particles to estimate initial pose
+    initial_estimate_particles_num: 100
+
     # neighborhood search method in OMP
     # 0=KDTREE, 1=DIRECT26, 2=DIRECT7, 3=DIRECT1
     omp_neighborhood_search_method: 0
