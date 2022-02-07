@@ -48,6 +48,8 @@ public:
     std::string road_type = "private";
     std::vector<lanelet::BasicPolygon2d> sidewalks;
     std::vector<occlusion_spot_utils::PossibleCollisionInfo> possible_collisions;
+    PathWithLaneId path_raw;
+    PathWithLaneId interp_path;
   };
 
   OcclusionSpotInPrivateModule(

@@ -129,9 +129,9 @@ bool splineInterpolate(
     output->points.at(i).point.pose.orientation = planning_utils::getQuaternionFromYaw(yaw);
   }
   if (output->points.size() > 1) {
-    size_t l = resampled_s.size();
+    size_t l = output->points.size();
     output->points.front().point.pose.orientation = output->points.at(1).point.pose.orientation;
-    output->points.back().point.pose.orientation = output->points.at(l - 1).point.pose.orientation;
+    output->points.back().point.pose.orientation = output->points.at(l - 2).point.pose.orientation;
   }
   return true;
 }

@@ -140,7 +140,7 @@ visualization_msgs::msg::MarkerArray makePolygonMarker(
   debug_marker.action = visualization_msgs::msg::Marker::ADD;
   debug_marker.pose.position = tier4_autoware_utils::createMarkerPosition(0.0, 0.0, z);
   debug_marker.pose.orientation = tier4_autoware_utils::createMarkerOrientation(0, 0, 0, 1.0);
-  debug_marker.scale = tier4_autoware_utils::createMarkerScale(0.05, 0.05, 0.05);
+  debug_marker.scale = tier4_autoware_utils::createMarkerScale(0.1, 0.1, 0.1);
   debug_marker.color = tier4_autoware_utils::createMarkerColor(1.0, 0.0, 1.0, 0.3);
   debug_marker.lifetime = rclcpp::Duration::from_seconds(0.1);
   debug_marker.ns = "sidewalk";
@@ -151,8 +151,39 @@ visualization_msgs::msg::MarkerArray makePolygonMarker(
       debug_marker.points.push_back(point);
     }
     debug_markers.markers.push_back(debug_marker);
+    debug_marker.id++;
+    debug_marker.points.clear();
   }
   return debug_markers;
+}
+
+visualization_msgs::msg::MarkerArray createPathMarkerArray(
+  const PathWithLaneId & path, const std::string & ns, const int64_t lane_id, const double r,
+  const double g, const double b)
+{
+  visualization_msgs::msg::MarkerArray msg;
+  int32_t uid = planning_utils::bitShift(lane_id);
+  int32_t i = 0;
+  for (const auto & p : path.points) {
+    visualization_msgs::msg::Marker marker{};
+    marker.header.frame_id = "map";
+    marker.ns = ns;
+    marker.id = uid + i++;
+    marker.lifetime = rclcpp::Duration::from_seconds(0.3);
+    marker.type = visualization_msgs::msg::Marker::ARROW;
+    marker.action = visualization_msgs::msg::Marker::ADD;
+    marker.pose = p.point.pose;
+    marker.scale = createMarkerScale(0.6, 0.3, 0.3);
+    if (std::find(p.lane_ids.begin(), p.lane_ids.end(), lane_id) != p.lane_ids.end()) {
+      // if p.lane_ids has lane_id
+      marker.color = createMarkerColor(r, g, b, 0.999);
+    } else {
+      marker.color = createMarkerColor(0.5, 0.5, 0.5, 0.999);
+    }
+    msg.markers.push_back(marker);
+  }
+
+  return msg;
 }
 
 template <class T>
@@ -213,6 +244,12 @@ visualization_msgs::msg::MarkerArray OcclusionSpotInPrivateModule::createDebugMa
   appendMarkerArray(createMarkers(debug_data_, module_id_), current_time, &debug_marker_array);
   appendMarkerArray(
     makePolygonMarker(debug_data_.sidewalks, debug_data_.z), current_time, &debug_marker_array);
+  appendMarkerArray(
+    createPathMarkerArray(debug_data_.path_raw, "path_raw", 0, 0.0, 1.0, 1.0), current_time,
+    &debug_marker_array);
+  appendMarkerArray(
+    createPathMarkerArray(debug_data_.interp_path, "path_interp", 0, 0.0, 1.0, 1.0), current_time,
+    &debug_marker_array);
   return debug_marker_array;
 }
 }  // namespace behavior_velocity_planner
