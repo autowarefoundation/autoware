@@ -238,6 +238,148 @@ The shift points are modified by a filtering process in order to get the expecte
 - Similar gradient removal: Connect two shift points with a straight line, and remove the shift points in between if their shift amount is in the vicinity of the straight line.
 - Remove momentary returns: For shift points that reduce the avoidance width (for going back to the center line), if there is enough long distance in the longitudinal direction, remove them.
 
+#### Computing shift length (available as of develop/v0.25.0)
+
+**Note**: This feature is available as of develop/`v0.25.0`.
+
+The shift length is set as a constant value before the feature is implemented (develop/`v0.24.0` and below). Setting the shift length like this will cause the module to generate an avoidance path regardless of actual environmental properties. For example, the path might exceed the actual road boundary or go towards a wall. Therefore, to address this limitation, in addition to [how to decide the target obstacle](#how-to-decide-the-target-obstacles), the upgraded module also takes into account the following additional element
+
+- The obstacles' current lane and position.
+- The road shoulder with reference to the direction to avoid.
+  - Note: Lane direction is disregarded.
+
+These elements are used to compute the distance from the object to the road's shoulder (`(class ObjectData.to_road_shoulder_distance)`).
+
+![fig1](./image/obstacle_to_road_shoulder_distance.png)
+
+##### Computing shift length
+
+To compute the shift length, in addition to the vehicle's width and the parameterized `lateral_collision_margin`, the upgraded feature also adds two new parameters; `lateral_collision_safety_buffer` and `road_shoulder_safety_margin`.
+
+- The `lateral_collision_safety_buffer` parameter is used to set a safety gap that will act as the final line of defense when computing avoidance path.
+  - The rationale behind having this parameter is that the parameter `lateral_collision_margin` might be changed according to the situation for various reasons. Therefore, `lateral_collision_safety_buffer` will act as the final line of defense in case of the usage of `lateral_collision_margin` fails.
+  - It is recommended to set the value to more than half of the ego vehicle's width.
+- The `road_shoulder_safety_margin` will prevent the module from generating a path that might cause the vehicle to go too near the road shoulder.
+
+![fig1](./image/shift_length_parameters.png)
+
+The shift length is subjected to the following constraints.
+
+<!-- spell-checker:disable -->
+
+$$
+\text{shift_length}=\begin{cases}d_{lcsb}+d_{lcm}+\frac{1}{2}(W_{ego})&\text{if}&(d_{lcsb}+d_{lcm}+W_{ego}+d_{rssm})\lt d_{trsd}\\0 &\textrm{if}&\left(d_{lcsb}+d_{lcm}+W_{ego}+d_{rssm}\right)\geq d_{trsd}\end{cases}
+$$
+
+where
+
+- <img src="https://latex.codecogs.com/svg.latex?\inline&space;\large&space;d_{lcsb}" title="\large d_{lcsb}" /> = `lateral_collision_safety_buffer`
+- <img src="https://latex.codecogs.com/svg.latex?\inline&space;\large&space;d_{lcm}" title="\large d_{lcm}" /> = `lateral_collision_margin`
+- <img src="https://latex.codecogs.com/svg.latex?\inline&space;\large&space;W_{ego}" title="\large d_{W_{ego}}" /> = ego vehicle's width
+- <img src="https://latex.codecogs.com/svg.latex?\inline&space;\large&space;d_{rssm}" title="\large d_{rssm}" /> = `road_shoulder_safety_margin`
+- <img src="https://latex.codecogs.com/svg.latex?\inline&space;\large&space;d_{trsd}" title="\large d_{trsm}" /> = `(class ObjectData).to_road_shoulder_distance`
+
+```plantuml
+@startuml
+skinparam monochrome true
+skinparam defaultTextAlignment center
+skinparam noteTextAlignment left
+
+title avoidance path planning
+start
+partition calcAvoidanceTargetObjects() {
+:calcOverhangDistance;
+note right
+ - get overhang_pose
+end note
+
+:getClosestLaneletWithinRoute;
+note right
+ - obtain overhang_lanelet
+end note
+
+if(Is overhang_lanelet.id() exist?) then (no)
+stop
+else (\n yes)
+
+if(isOnRight(obstacle)?) then (yes)
+partition getLeftMostLineString() {
+repeat
+repeat
+:getLeftLanelet;
+note left
+ Check both
+ - lane-changeable lane
+ - non lane-changeable lane
+end note
+repeat while (Same direction Lanelet exist?) is (yes) not (no)
+:getLeftOppositeLanelet;
+repeat while (Opposite direction Lanelet exist?) is (yes) not (no)
+}
+:compute\n(class ObjectData).to_road_shoulder_distance;
+note left
+distance from overhang_pose
+to left most linestring
+end note
+else(\n no)
+partition getrightMostLineString() {
+repeat
+repeat
+:getRightLanelet;
+note right
+ Check both
+ - lane-changeable lane
+ - non lane-changeable lane
+end note
+repeat while (Same direction Lanelet exist?) is (yes) not (no)
+:getRightOppositeLanelet;
+repeat while (Opposite direction Lanelet exist?) is (yes) not (no)
+}
+:compute\n(class ObjectData).to_road_shoulder_distance;
+note right
+distance from overhang_pose
+to right most linestring
+end note
+endif
+endif
+}
+
+partition calcRawShiftPointsFromObjects() {
+:compute max_allowable_lateral_distance;
+note right
+The sum of
+- lat_collision_safety_buffer
+- lat_collision_margin
+- vehicle_width
+end note
+:compute max_shift_length;
+note right
+subtract
+- road_shoulder_safety_margin
+- 0.5 x vehicle_width
+from (class ObjectData).to_road_shoulder_margin
+end note
+if(isOnRight(object)?) then (yes)
+if((class ObjectData).to_road_shoulder_distance \n\l>\l\n max_allowable_lateral_distance ?) then (yes)
+:max_left_shift_limit = max_shift_length;
+else (\n No)
+:max_left_shift_limit = 0.0;
+endif
+else (\n No)
+if((class ObjectData).to_road_shoulder_distance \n\l>\l\n max_allowable_lateral_distance ?) then (yes)
+:max_right_shift_limit = -max_shift_length;
+else (\n No)
+:max_right_shift_limit = 0.0;
+endif
+endif
+:compute shift length;
+}
+stop
+@enduml
+```
+
+<!-- spell-checker:enable -->
+
 #### How to keep the consistency of the planning
 
 TODO
@@ -250,7 +392,8 @@ TODO
 | :----------------------------------------- | :----- | :----- | :---------------------------------------------------------------------------------------------------------- | :------------ |
 | resample_interval_for_planning             | [m]    | double | Path resample interval for avoidance planning path.                                                         | 0.3           |
 | resample_interval_for_output               | [m]    | double | Path resample interval for output path. Too short interval increases computational cost for latter modules. | 3.0           |
-| lateral_collision_margin                   | [m]    | double | The lateral distance between ego and avoidance targets.                                                     | 2.0           |
+| lateral_collision_margin                   | [m]    | double | The lateral distance between ego and avoidance targets.                                                     | 1.5           |
+| lateral_collision_safety_buffer            | [m]    | double | Creates an additional gap that will prevent the vehicle from getting to near to the obstacle                | 0.5           |
 | longitudinal_collision_margin_min_distance | [m]    | double | when complete avoidance motion, there is a distance margin with the object for longitudinal direction.      | 0.0           |
 | longitudinal_collision_margin_time         | [s]    | double | when complete avoidance motion, there is a time margin with the object for longitudinal direction.          | 0.0           |
 | prepare_time                               | [s]    | double | Avoidance shift starts from point ahead of this time x ego_speed to avoid sudden path change.               | 1.0           |
@@ -262,6 +405,7 @@ TODO
 | min_sharp_avoidance_speed                  | [m/s]  | double | Minimum speed for jerk calculation in a sharp situation (\*1).                                              | 1.0           |
 | max_right_shift_length                     | [m]    | double | Maximum shift length for right direction                                                                    | 5.0           |
 | max_left_shift_length                      | [m]    | double | Maximum shift length for left direction                                                                     | 5.0           |
+| road_shoulder_safety_margin                | [m]    | double | Prevents the generated path to come too close to the road shoulders.                                        | 0.5           |
 
 ### Speed limit modification
 

@@ -156,6 +156,10 @@ ObjectDataArray AvoidanceModule::calcAvoidanceTargetObjects(
   const lanelet::ConstLanelets & current_lanes, const PathWithLaneId & reference_path,
   DebugData & debug) const
 {
+  using lanelet::geometry::distance2d;
+  using lanelet::utils::getId;
+  using lanelet::utils::to2D;
+
   const auto & path_points = reference_path.points;
   const auto & ego_pos = getEgoPosition();
 
@@ -183,6 +187,8 @@ ObjectDataArray AvoidanceModule::calcAvoidanceTargetObjects(
       ? calcSignedArcLength(path_points, ego_pos, rh->getGoalPose().position)
       : std::numeric_limits<double>::max();
 
+  lanelet::ConstLineStrings3d debug_linestring;
+  debug_linestring.clear();
   // for filtered objects
   ObjectDataArray target_objects;
   for (const auto & i : lane_filtered_objects_index) {
@@ -221,18 +227,66 @@ ObjectDataArray AvoidanceModule::calcAvoidanceTargetObjects(
     const auto object_closest_pose = path_points.at(object_closest_index).point.pose;
     object_data.lateral = calcLateralDeviation(object_closest_pose, object_pos);
 
+    // Find the footprint point closest to the path, set to object_data.overhang_distance.
+    object_data.overhang_dist =
+      calcOverhangDistance(object_data, object_closest_pose, object_data.overhang_pose.position);
+
+    lanelet::ConstLanelet overhang_lanelet;
+    if (!rh->getClosestLaneletWithinRoute(object_closest_pose, &overhang_lanelet)) {
+      continue;
+    }
+
+    if (overhang_lanelet.id()) {
+      object_data.overhang_lanelet = overhang_lanelet;
+      lanelet::BasicPoint3d overhang_basic_pose(
+        object_data.overhang_pose.position.x, object_data.overhang_pose.position.y,
+        object_data.overhang_pose.position.z);
+      if (isOnRight(object_data)) {
+        const auto & target_left_line = [this, &rh, &overhang_lanelet]() {
+          if (
+            parameters_.enable_avoidance_over_same_direction &&
+            parameters_.enable_avoidance_over_opposite_direction) {
+            return rh->getLeftMostLinestring(overhang_lanelet);
+          } else if (
+            parameters_.enable_avoidance_over_same_direction &&
+            !parameters_.enable_avoidance_over_opposite_direction) {
+            return rh->getLeftMostSameDirectionLinestring(overhang_lanelet);
+          }
+          return overhang_lanelet.leftBound();
+        }();
+        object_data.to_road_shoulder_distance =
+          distance2d(to2D(overhang_basic_pose), to2D(target_left_line.basicLineString()));
+        debug_linestring.push_back(target_left_line);
+      } else {
+        const auto & target_right_line = [this, &rh, &overhang_lanelet]() {
+          if (
+            parameters_.enable_avoidance_over_same_direction &&
+            parameters_.enable_avoidance_over_opposite_direction) {
+            return rh->getRightMostLinestring(overhang_lanelet);
+          } else if (
+            parameters_.enable_avoidance_over_same_direction &&
+            !parameters_.enable_avoidance_over_opposite_direction) {
+            return rh->getRightMostSameDirectionLinestring(overhang_lanelet);
+          }
+          return overhang_lanelet.rightBound();
+        }();
+        object_data.to_road_shoulder_distance =
+          distance2d(to2D(overhang_basic_pose), to2D(target_right_line.basicLineString()));
+        debug_linestring.push_back(target_right_line);
+      }
+    }
+
+    DEBUG_PRINT(
+      "set object_data: longitudinal = %f, lateral = %f, largest_overhang = %f,"
+      "to_road_shoulder_distance = %f",
+      object_data.longitudinal, object_data.lateral, object_data.overhang_dist,
+      object_data.to_road_shoulder_distance);
+
     // Object is on center line -> ignore.
     if (std::abs(object_data.lateral) < parameters_.threshold_distance_object_is_on_center) {
       DEBUG_PRINT("Ignore object: (object is on center line)");
       continue;
     }
-
-    // Find the footprint point closest to the path, set to object_data.overhang_distance.
-    object_data.overhang_dist = calcOverhangDistance(object_data, object_closest_pose);
-
-    DEBUG_PRINT(
-      "set object_data: longitudinal = %f, lateral = %f, largest_overhang = %f",
-      object_data.longitudinal, object_data.lateral, object_data.overhang_dist);
 
     // set data
     target_objects.push_back(object_data);
@@ -240,6 +294,8 @@ ObjectDataArray AvoidanceModule::calcAvoidanceTargetObjects(
 
   // debug
   {
+    debug.farthest_linestring_from_overhang =
+      std::make_shared<lanelet::ConstLineStrings3d>(debug_linestring);
     debug.current_lanelets = std::make_shared<lanelet::ConstLanelets>(current_lanes);
     debug.expanded_lanelets = std::make_shared<lanelet::ConstLanelets>(expanded_lanelets);
   }
@@ -393,20 +449,42 @@ void AvoidanceModule::registerRawShiftPoints(const AvoidPointArray & future)
 AvoidPointArray AvoidanceModule::calcRawShiftPointsFromObjects(
   const ObjectDataArray & objects) const
 {
-  const auto avoid_margin =
-    parameters_.lateral_collision_margin + 0.5 * planner_data_->parameters.vehicle_width;
   const auto prepare_distance = getNominalPrepareDistance();
 
   // To be consistent with changes in the ego position, the current shift length is considered.
   const auto current_ego_shift = getCurrentShift();
+  // // implement lane detection here.
+  const auto & lat_collision_safety_buffer = parameters_.lateral_collision_safety_buffer;
+  const auto & lat_collision_margin = parameters_.lateral_collision_margin;
+  const auto & vehicle_width = planner_data_->parameters.vehicle_width;
+  const auto & road_shoulder_safety_margin = parameters_.road_shoulder_safety_margin;
+  const auto max_allowable_lateral_distance =
+    lat_collision_safety_buffer + lat_collision_margin + vehicle_width;
+
+  const auto avoid_margin =
+    lat_collision_safety_buffer + lat_collision_margin + 0.5 * vehicle_width;
 
   AvoidPointArray avoid_points;
   for (auto & o : objects) {
-    // calc shift length with margin and shift limit
-    const auto shift_length = isOnRight(o)
-                                ? std::min(o.overhang_dist + avoid_margin, getLeftShiftBound())
-                                : std::max(o.overhang_dist - avoid_margin, getRightShiftBound());
+    const auto max_shift_length =
+      o.to_road_shoulder_distance - road_shoulder_safety_margin - 0.5 * vehicle_width;
+    const auto max_left_shift_limit = [&o, &max_allowable_lateral_distance, &max_shift_length,
+                                       this]() noexcept {
+      const auto left_shift_constraint = std::min(getLeftShiftBound(), max_shift_length);
+      return (o.to_road_shoulder_distance > max_allowable_lateral_distance) ? left_shift_constraint
+                                                                            : 0.0;
+    };
 
+    const auto max_right_shift_limit = [&o, &max_allowable_lateral_distance, &max_shift_length,
+                                        this]() noexcept {
+      const auto right_shift_constraint = std::max(getRightShiftBound(), -max_shift_length);
+      return (o.to_road_shoulder_distance > max_allowable_lateral_distance) ? right_shift_constraint
+                                                                            : 0.0;
+    };
+
+    const auto shift_length = isOnRight(o)
+                                ? std::min(o.overhang_dist + avoid_margin, max_left_shift_limit())
+                                : std::max(o.overhang_dist - avoid_margin, max_right_shift_limit());
     const auto avoiding_shift = shift_length - current_ego_shift;
     const auto return_shift = shift_length;
 
@@ -1584,22 +1662,211 @@ double AvoidanceModule::getLeftShiftBound() const
   return parameters_.max_left_shift_length;
 }
 
-void AvoidanceModule::generateExtendedDrivableArea(ShiftedPath * shifted_path, double margin) const
+// TODO(murooka) judge when and which way to extend drivable area. current implementation is keep
+// extending during avoidance module
+// TODO(murooka) freespace during turning in intersection where there is no neighbour lanes
+// NOTE: Assume that there is no situation where there is an object in the middle lane of more than
+// two lanes since which way to avoid is not obvious
+void AvoidanceModule::generateExtendedDrivableArea(ShiftedPath * shifted_path) const
 {
-  const auto right_extend_elem =
-    std::min_element(shifted_path->shift_length.begin(), shifted_path->shift_length.end());
-  const auto left_extend_elem =
-    std::max_element(shifted_path->shift_length.begin(), shifted_path->shift_length.end());
+  const auto & route_handler = planner_data_->route_handler;
+  lanelet::ConstLanelets extended_lanelets = avoidance_data_.current_lanelets;
 
-  double right_extend = std::min(*right_extend_elem, 0.0);
-  double left_extend = std::max(*left_extend_elem, 0.0);
+  {
+    // 0. Extend to right/left of objects
+    for (const auto & obstacle : avoidance_data_.objects) {
+      auto object_lanelet = obstacle.overhang_lanelet;
+      if (isOnRight(obstacle)) {
+        auto lanelet_at_left = route_handler->getLeftLanelet(object_lanelet);
+        while (lanelet_at_left) {
+          extended_lanelets.push_back(lanelet_at_left.get());
+          lanelet_at_left = route_handler->getLeftLanelet(lanelet_at_left.get());
+        }
+        auto lanelet_at_right =
+          planner_data_->route_handler->getRightLanelet(lanelet_at_left.get());
+        while (lanelet_at_right) {
+          extended_lanelets.push_back(lanelet_at_right.get());
+          lanelet_at_right = route_handler->getRightLanelet(lanelet_at_right.get());
+        }
+      } else {
+        auto lanelet_at_right = route_handler->getRightLanelet(object_lanelet);
+        while (lanelet_at_right) {
+          extended_lanelets.push_back(lanelet_at_right.get());
+          lanelet_at_right = route_handler->getRightLanelet(lanelet_at_right.get());
+        }
+        auto lanelet_at_left = route_handler->getLeftLanelet(lanelet_at_right.get());
+        while (lanelet_at_left) {
+          extended_lanelets.push_back(lanelet_at_left.get());
+          lanelet_at_left = route_handler->getLeftLanelet(lanelet_at_left.get());
+        }
+      }
+    }
+  }
 
-  constexpr double THRESHOLD = 0.01;
-  right_extend -= (right_extend < -THRESHOLD) ? margin : 0.0;
-  left_extend += (left_extend > THRESHOLD) ? margin : 0.0;
+  for (const auto & lane : avoidance_data_.current_lanelets) {
+    {  // 1. extend to right/left or adjacent right/left (where lane_change tag = no, but not a
+       // problem to extend for avoidance) lane if it exists
+      // this can be available only if line string is shared
+      const auto opt_right_lane = route_handler->getRightLanelet(lane);
+      const auto opt_left_lane = route_handler->getLeftLanelet(lane);
 
-  const auto extended_lanelets = lanelet::utils::getExpandedLanelets(
-    avoidance_data_.current_lanelets, left_extend, right_extend);
+      if (opt_right_lane) {
+        extended_lanelets.push_back(opt_right_lane.get());
+        continue;
+      } else if (opt_left_lane) {
+        extended_lanelets.push_back(opt_left_lane.get());
+        continue;
+      }
+    }
+
+    {  // 2. when there are multiple turning lanes whose previous lanelet is the same in
+       // intersection
+      const bool update_extended_lanelets = [&]() {
+        // lanelet is not turning lane
+        const std::string turn_direction = lane.attributeOr("turn_direction", "none");
+        if (turn_direction != "right" && turn_direction != "left") {
+          return false;
+        }
+
+        // get previous lane, and return false if previous lane does not exist
+        lanelet::ConstLanelet prev_lane;
+        if (!route_handler->getPreviousLaneletWithinRoute(lane, &prev_lane)) {
+          return false;
+        }
+
+        // get next lanes from the previous lane, and return false if next lanes do not exist
+        const auto next_lanes = route_handler->getNextLanelets(lane);
+        if (next_lanes.empty()) {
+          return false;
+        }
+
+        // look for neighbour lane, where end line of the lane is connected to end line of the
+        // original lane
+        for (const auto & next_lane : next_lanes) {
+          if (lane.id() == next_lane.id()) {
+            continue;
+          }
+
+          const Eigen::Vector2d & next_left_back_point_2d =
+            next_lane.leftBound2d().back().basicPoint();
+          const Eigen::Vector2d & next_right_back_point_2d =
+            next_lane.rightBound2d().back().basicPoint();
+
+          const Eigen::Vector2d & orig_left_back_point_2d = lane.leftBound2d().back().basicPoint();
+          const Eigen::Vector2d & orig_right_back_point_2d =
+            lane.rightBound2d().back().basicPoint();
+
+          constexpr double epsilon = 1e-5;
+          const bool is_neighbour_lane =
+            (next_left_back_point_2d - orig_right_back_point_2d).norm() < epsilon ||
+            (next_right_back_point_2d - orig_left_back_point_2d).norm() < epsilon;
+          if (is_neighbour_lane) {
+            extended_lanelets.push_back(next_lane);
+            return true;
+          }
+        }
+
+        return false;
+      }();
+      if (update_extended_lanelets) {
+        continue;
+      }
+    }
+
+    {  // 3. deal with the problem that line string is not shared to neighbour lanelets in
+       // intersection (for left lane), assuming that points are shared
+      // this part will be removed when the map format is modified correctly wrt sharing line string
+      // since 1 works for this
+      bool update_extended_lanelets = false;
+      const auto & left_lane_candidates =
+        route_handler->getLaneletsFromPoint(lane.leftBound().front());
+      for (const auto & left_lane_candidate : left_lane_candidates) {
+        const Eigen::Vector2d & left_lane_right_back_point_2d =
+          left_lane_candidate.rightBound2d().back().basicPoint();
+        const Eigen::Vector2d & orig_lane_left_back_point_2d =
+          lane.leftBound2d().back().basicPoint();
+
+        const double epsilon = 1e-5;
+        const bool is_neighbour_lane =
+          (left_lane_right_back_point_2d - orig_lane_left_back_point_2d).norm() < epsilon;
+        if (is_neighbour_lane) {
+          extended_lanelets.push_back(left_lane_candidate);
+          update_extended_lanelets = true;
+          break;
+        }
+      }
+      if (update_extended_lanelets) {
+        continue;
+      }
+    }
+
+    {  // 4. deal with the problem that line string is not shared to neighbour lanelets in
+       // intersection (for right lane), assuming that points are shared
+      // this part will be removed if the map format is modified correctly wrt sharing line string
+      // since 1 works for this
+      bool update_extended_lanelets = false;
+      const auto & right_lane_candidates =
+        route_handler->getLaneletsFromPoint(lane.rightBound().front());
+      for (const auto & right_lane_candidate : right_lane_candidates) {
+        const Eigen::Vector2d & right_lane_left_back_point_2d =
+          right_lane_candidate.leftBound2d().back().basicPoint();
+        const Eigen::Vector2d & orig_lane_right_back_point_2d =
+          lane.rightBound2d().back().basicPoint();
+
+        const double epsilon = 1e-5;
+        const bool is_neighbour_lane =
+          (right_lane_left_back_point_2d - orig_lane_right_back_point_2d).norm() < epsilon;
+        if (is_neighbour_lane) {
+          extended_lanelets.push_back(right_lane_candidate);
+          update_extended_lanelets = true;
+          break;
+        }
+      }
+      if (update_extended_lanelets) {
+        continue;
+      }
+    }
+
+    {
+      // 5. if drivable area cannot be extended inside the same-direction lane, extend to even
+      // opposite lane
+      const auto opposite_lanes = route_handler->getRightOppositeLanelets(lane);
+
+      if (!opposite_lanes.empty()) {
+        for (const auto & opposite_lane : opposite_lanes) {
+          extended_lanelets.push_back(opposite_lane);
+        }
+        continue;
+      }
+    }
+
+    {  // 6. deal with the problem that line string is not shared to neighbour opposite lanelet,
+       // assuming that points are shared
+      // this part will be removed when the map format is modified correctly wrt sharing line string
+      // since 5 works for this
+      bool update_extended_lanelets = false;
+      const auto & opposite_lane_candidates =
+        route_handler->getLaneletsFromPoint(lane.rightBound().front());
+      for (const auto & opposite_lane_candidate : opposite_lane_candidates) {
+        const Eigen::Vector2d & opposite_lane_right_front_point_2d =
+          opposite_lane_candidate.rightBound2d().front().basicPoint();
+        const Eigen::Vector2d & orig_lane_right_back_point_2d =
+          lane.rightBound2d().back().basicPoint();
+
+        const double epsilon = 1e-5;
+        const bool is_neighbour_lane =
+          (opposite_lane_right_front_point_2d - orig_lane_right_back_point_2d).norm() < epsilon;
+        if (is_neighbour_lane) {
+          extended_lanelets.push_back(opposite_lane_candidate);
+          update_extended_lanelets = true;
+          break;
+        }
+      }
+      if (update_extended_lanelets) {
+        continue;
+      }
+    }
+  }
 
   {
     const auto & p = planner_data_->parameters;
@@ -1821,8 +2088,7 @@ BehaviorModuleOutput AvoidanceModule::plan()
   debug_data_.output_shift = avoidance_path.shift_length;
 
   // Drivable area generation.
-  constexpr double extend_margin = 0.5;
-  generateExtendedDrivableArea(&avoidance_path, extend_margin);
+  generateExtendedDrivableArea(&avoidance_path);
 
   // modify max speed to prevent acceleration in avoidance maneuver.
   modifyPathVelocityToPreventAccelerationOnAvoidance(avoidance_path);
@@ -2343,10 +2609,12 @@ void AvoidanceModule::setDebugData(const PathShifter & shifter, const DebugData 
   using marker_utils::createAvoidPointMarkerArray;
   using marker_utils::createLaneletsAreaMarkerArray;
   using marker_utils::createObjectsMarkerArray;
+  using marker_utils::createOvehangFurthestLineStringMarkerArray;
   using marker_utils::createPathMarkerArray;
   using marker_utils::createPoseMarkerArray;
   using marker_utils::createShiftLengthMarkerArray;
   using marker_utils::createShiftPointMarkerArray;
+  using marker_utils::makeOverhangToRoadShoulderMarkerArray;
 
   debug_marker_.markers.clear();
 
@@ -2373,6 +2641,9 @@ void AvoidanceModule::setDebugData(const PathShifter & shifter, const DebugData 
   add(createLaneletsAreaMarkerArray(*debug.current_lanelets, "current_lanelet", 0.0, 1.0, 0.0));
   add(createLaneletsAreaMarkerArray(*debug.expanded_lanelets, "expanded_lanelet", 0.8, 0.8, 0.0));
   add(createAvoidanceObjectsMarkerArray(avoidance_data_.objects, "avoidance_object"));
+  add(makeOverhangToRoadShoulderMarkerArray(avoidance_data_.objects));
+  add(createOvehangFurthestLineStringMarkerArray(
+    *debug.farthest_linestring_from_overhang, "farthest_linestring_from_overhang", 1.0, 0.0, 1.0));
 
   // parent object info
   addAvoidPoint(debug.registered_raw_shift, "p_registered_shift", 0.8, 0.8, 0.0);

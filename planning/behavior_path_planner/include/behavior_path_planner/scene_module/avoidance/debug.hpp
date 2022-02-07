@@ -90,6 +90,12 @@ MarkerArray createPoseMarkerArray(
   const Pose & pose, const std::string & ns, const int64_t id, const double r, const double g,
   const double b);
 
+MarkerArray makeOverhangToRoadShoulderMarkerArray(
+  const behavior_path_planner::ObjectDataArray & objects);
+
+MarkerArray createOvehangFurthestLineStringMarkerArray(
+  const lanelet::ConstLineStrings3d & linestrings, const std::string & ns, const double r,
+  const double g, const double b);
 }  // namespace marker_utils
 
 std::string toStrInfo(const behavior_path_planner::ShiftPointArray & sp_arr);

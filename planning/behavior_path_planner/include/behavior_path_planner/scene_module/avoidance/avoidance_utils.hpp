@@ -46,7 +46,8 @@ void clipByMinStartIdx(const AvoidPointArray & shift_points, PathWithLaneId & pa
 double calcDistanceToClosestFootprintPoint(
   const PathWithLaneId & path, const PredictedObject & object, const Point & ego_pos);
 
-double calcOverhangDistance(const ObjectData & object_data, const Pose & base_pose);
+double calcOverhangDistance(
+  const ObjectData & object_data, const Pose & base_pose, Point & overhang_pose);
 
 void setEndData(
   AvoidPoint & ap, const double length, const geometry_msgs::msg::Pose & end, const size_t end_idx,

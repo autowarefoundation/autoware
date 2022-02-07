@@ -52,6 +52,13 @@ struct AvoidanceParameters
   // lanelet expand length for left side to find avoidance target vehicles
   double detection_area_left_expand_dist = 1.0;
 
+  // enable avoidance to be perform only in lane with same direction
+  bool enable_avoidance_over_same_direction{true};
+
+  // enable avoidance to be perform in opposite lane direction
+  // to use this, enable_avoidance_over_same_direction need to be set to true.
+  bool enable_avoidance_over_opposite_direction{true};
+
   // Vehicles whose distance to the center of the path is
   // less than this will not be considered for avoidance.
   double threshold_distance_object_is_on_center;
@@ -67,6 +74,9 @@ struct AvoidanceParameters
 
   // we want to keep this lateral margin when avoiding
   double lateral_collision_margin;
+  // a buffer in case lateral_collision_margin is set to 0. Will throw error
+  // don't ever set this value to 0
+  double lateral_collision_safety_buffer{0.5};
 
   // when complete avoidance motion, there is a distance margin with the object
   // for longitudinal direction
@@ -95,6 +105,10 @@ struct AvoidanceParameters
   // minimum speed for jerk calculation in a tight situation, i.e. there is NOT an enough
   // distance for avoidance. Need a sharp avoidance path to avoid the object.
   double min_sharp_avoidance_speed;
+
+  // The margin is configured so that the generated avoidance trajectory does not come near to the
+  // road shoulder.
+  double road_shoulder_safety_margin{1.0};
 
   // Even if the obstacle is very large, it will not avoid more than this length for right direction
   double max_right_shift_length;
@@ -152,6 +166,15 @@ struct ObjectData  // avoidance target
 
   // count up when object disappeared. Removed when it exceeds threshold.
   int lost_count = 0;
+
+  // store the information of the lanelet which the object's overhang is currently occupying
+  lanelet::ConstLanelet overhang_lanelet;
+
+  // the position of the overhang
+  Pose overhang_pose;
+
+  // lateral distance from overhang to the road shoulder
+  double to_road_shoulder_distance{0.0};
 };
 using ObjectDataArray = std::vector<ObjectData>;
 
@@ -242,6 +265,7 @@ struct DebugData
 {
   std::shared_ptr<lanelet::ConstLanelets> expanded_lanelets;
   std::shared_ptr<lanelet::ConstLanelets> current_lanelets;
+  std::shared_ptr<lanelet::ConstLineStrings3d> farthest_linestring_from_overhang;
 
   AvoidPointArray current_shift_points;  // in path shifter
   AvoidPointArray new_shift_points;      // in path shifter

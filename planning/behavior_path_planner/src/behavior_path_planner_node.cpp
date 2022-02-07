@@ -204,12 +204,15 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
   p.resample_interval_for_output = dp("resample_interval_for_output", 3.0);
   p.detection_area_right_expand_dist = dp("detection_area_right_expand_dist", 0.0);
   p.detection_area_left_expand_dist = dp("detection_area_left_expand_dist", 1.0);
+  p.enable_avoidance_over_same_direction = dp("enable_avoidance_over_same_direction", true);
+  p.enable_avoidance_over_opposite_direction = dp("enable_avoidance_over_opposite_direction", true);
 
   p.threshold_distance_object_is_on_center = dp("threshold_distance_object_is_on_center", 1.0);
   p.threshold_speed_object_is_stopped = dp("threshold_speed_object_is_stopped", 1.0);
   p.object_check_forward_distance = dp("object_check_forward_distance", 150.0);
   p.object_check_backward_distance = dp("object_check_backward_distance", 2.0);
   p.lateral_collision_margin = dp("lateral_collision_margin", 2.0);
+  p.lateral_collision_safety_buffer = dp("lateral_collision_safety_buffer", 0.5);
 
   p.prepare_time = dp("prepare_time", 3.0);
   p.min_prepare_distance = dp("min_prepare_distance", 10.0);
@@ -217,6 +220,8 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
 
   p.min_nominal_avoidance_speed = dp("min_nominal_avoidance_speed", 5.0);
   p.min_sharp_avoidance_speed = dp("min_sharp_avoidance_speed", 1.0);
+
+  p.road_shoulder_safety_margin = dp("road_shoulder_safety_margin", 0.5);
 
   p.max_right_shift_length = dp("max_right_shift_length", 1.5);
   p.max_left_shift_length = dp("max_left_shift_length", 1.5);
