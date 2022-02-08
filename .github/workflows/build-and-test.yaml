@@ -2,15 +2,13 @@ name: build-and-test
 
 on:
   push:
-    branches:
-      - main
-      - tier4/proposal
   schedule:
     - cron: 0 19 * * * # run at 4 AM JST
   workflow_dispatch:
 
 jobs:
   build-and-test:
+    if: ${{ github.event_name != 'push' || github.ref_name == github.event.repository.default_branch }}
     runs-on: ubuntu-latest
     container: ghcr.io/autowarefoundation/autoware-universe:latest
     steps:
@@ -50,5 +48,5 @@ jobs:
         uses: codecov/codecov-action@v2
         with:
           files: lcov/total_coverage.info,coveragepy/.coverage
-          fail_ci_if_error: true
+          fail_ci_if_error: false
           verbose: true
