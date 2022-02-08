@@ -1,0 +1,85 @@
+name: build-and-test-differential
+
+on:
+  pull_request:
+
+jobs:
+  build-and-test-differential:
+    runs-on: ubuntu-latest
+    container: ghcr.io/autowarefoundation/autoware-universe:latest
+    steps:
+      - name: Cancel previous runs
+        uses: styfle/cancel-workflow-action@0.9.1
+
+      - name: Check out repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Remove exec_depend
+        uses: autowarefoundation/autoware-github-actions/remove-exec-depend@tier4/proposal
+
+      - name: Register AutonomouStuff repository
+        uses: autowarefoundation/autoware-github-actions/register-autonomoustuff-repository@tier4/proposal
+        with:
+          rosdistro: galactic
+
+      - name: Get modified packages
+        id: get-modified-packages
+        uses: autowarefoundation/autoware-github-actions/get-modified-packages@tier4/proposal
+
+      - name: Build and test
+        if: ${{ steps.get-modified-packages.outputs.modified-packages != '' }}
+        uses: autowarefoundation/autoware-github-actions/colcon-build-and-test@tier4/proposal
+        with:
+          rosdistro: galactic
+          target-packages: ${{ steps.get-modified-packages.outputs.modified-packages }}
+          build-depends-repos: build_depends.repos
+
+      - name: Check the existence of coverage files
+        id: check-file-existence
+        uses: autowarefoundation/autoware-github-actions/check-file-existence@tier4/proposal
+        with:
+          files: |
+            lcov/total_coverage.info
+            coveragepy/.coverage
+          condition: or
+
+      - name: Upload coverage to CodeCov
+        if: ${{ steps.check-file-existence.outputs.exists == 'true' }}
+        uses: codecov/codecov-action@v2
+        with:
+          files: lcov/total_coverage.info,coveragepy/.coverage
+          fail_ci_if_error: false
+          verbose: true
+
+  clang-tidy-differential:
+    runs-on: ubuntu-latest
+    container: ros:galactic
+    needs: build-and-test-differential
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Remove exec_depend
+        uses: autowarefoundation/autoware-github-actions/remove-exec-depend@tier4/proposal
+
+      - name: Register AutonomouStuff repository
+        uses: autowarefoundation/autoware-github-actions/register-autonomoustuff-repository@tier4/proposal
+        with:
+          rosdistro: galactic
+
+      - name: Get modified packages
+        id: get-modified-packages
+        uses: autowarefoundation/autoware-github-actions/get-modified-packages@tier4/proposal
+
+      - name: Run clang-tidy
+        if: ${{ steps.get-modified-packages.outputs.modified-packages != '' }}
+        uses: autowarefoundation/autoware-github-actions/clang-tidy@tier4/proposal
+        with:
+          rosdistro: galactic
+          target-packages: ${{ steps.get-modified-packages.outputs.modified-packages }}
+          clang-tidy-config-url: https://raw.githubusercontent.com/autowarefoundation/autoware/tier4/proposal/.clang-tidy
+          build-depends-repos: build_depends.repos
