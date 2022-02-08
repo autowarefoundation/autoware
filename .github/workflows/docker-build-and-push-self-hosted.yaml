@@ -1,4 +1,4 @@
-name: docker-build-and-push-arm
+name: docker-build-and-push-self-hosted
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  docker-build-and-push-arm:
+  docker-build-and-push-self-hosted:
     runs-on: [self-hosted, linux, ARM64]
     steps:
       # https://github.com/actions/checkout/issues/211

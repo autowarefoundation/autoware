@@ -1,10 +1,10 @@
-name: spell-check
+name: spell-check-differential
 
 on:
   pull_request:
 
 jobs:
-  spell-check:
+  spell-check-differential:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository

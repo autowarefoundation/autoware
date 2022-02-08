@@ -1,4 +1,4 @@
-name: build-arm
+name: build-self-hosted
 
 on:
   schedule:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-arm:
+  build-self-hosted:
     runs-on: [self-hosted, linux, ARM64]
     container: ubuntu:20.04
     steps:
