@@ -178,15 +178,15 @@ inline void generatePossibleCollisions(
     intersection_pose.position.x = y0 + y_step * i;
 
     // collision path point
-    autoware_auto_planning_msgs::msg::PathPoint collision_path_point{};
-    collision_path_point.pose.position.x = x0 + x_step * i + lon;
-    collision_path_point.pose.position.y = y0 + y_step * i;
+    autoware_auto_planning_msgs::msg::PathPoint collision_with_margin{};
+    collision_with_margin.pose.position.x = x0 + x_step * i + lon;
+    collision_with_margin.pose.position.y = y0 + y_step * i;
 
     lanelet::ArcCoordinates arc;
     arc.length = obstacle_info.position.x;
     arc.distance = obstacle_info.position.y;
 
-    PossibleCollisionInfo col(obstacle_info, collision_path_point, intersection_pose, arc);
+    PossibleCollisionInfo col(obstacle_info, collision_with_margin, intersection_pose, arc);
     possible_collisions.emplace_back(col);
   }
 }

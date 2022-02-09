@@ -19,6 +19,7 @@
 #include <utilization/marker_helper.hpp>
 #include <utilization/util.hpp>
 
+#include <cmath>
 #include <string>
 #include <vector>
 
@@ -97,13 +98,17 @@ std::vector<visualization_msgs::msg::Marker> makeCollisionMarkers(
   debug_marker.header.frame_id = "map";
   debug_marker.ns = "collision_point";
   debug_marker.id = id;
-  // cylinder at collision_point point
+  // cylinder at collision with margin point
   debug_marker.type = visualization_msgs::msg::Marker::CYLINDER;
-  debug_marker.pose = possible_collision.collision_path_point.pose;
-  debug_marker.scale = tier4_autoware_utils::createMarkerScale(1.0, 1.0, 0.5);
+  debug_marker.pose = possible_collision.collision_with_margin.pose;
+  debug_marker.scale = tier4_autoware_utils::createMarkerScale(0.5, 0.5, 0.5);
   debug_marker.color = tier4_autoware_utils::createMarkerColor(1.0, 0.0, 0.0, 0.5);
-
   debug_marker.lifetime = rclcpp::Duration::from_seconds(0.5);
+  debug_markers.push_back(debug_marker);
+  debug_marker.id++;
+  // cylinder at collision_point point
+  debug_marker.pose = possible_collision.collision_pose;
+  debug_marker.color = tier4_autoware_utils::createMarkerColor(1.0, 0.5, 0.0, 0.5);
   debug_markers.push_back(debug_marker);
   // cylinder at obstacle point
   debug_marker.ns = "obstacle";
@@ -116,13 +121,17 @@ std::vector<visualization_msgs::msg::Marker> makeCollisionMarkers(
     // info text at obstacle point
     debug_marker.ns = "info_obstacle";
     debug_marker.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
-    debug_marker.pose = possible_collision.collision_path_point.pose;
+    debug_marker.pose = possible_collision.collision_with_margin.pose;
     debug_marker.scale.z = 1.0;
     debug_marker.color = tier4_autoware_utils::createMarkerColor(1.0, 1.0, 0.0, 1.0);
     std::ostringstream string_stream;
-    string_stream << "(s,d,v)=(" << possible_collision.arc_lane_dist_at_collision.length << " , "
-                  << possible_collision.arc_lane_dist_at_collision.distance << " , "
-                  << possible_collision.collision_path_point.longitudinal_velocity_mps << ")";
+    auto r = [](const double v) { return std::round(v * 100.0) / 100.0; };
+    const double len = r(possible_collision.arc_lane_dist_at_collision.length);
+    const double dist = r(possible_collision.arc_lane_dist_at_collision.distance);
+    const double vel = r(possible_collision.obstacle_info.safe_motion.safe_velocity);
+    const double margin = r(possible_collision.obstacle_info.safe_motion.stop_dist);
+    string_stream << "(s,d,v,m)=(" << len << " , " << dist << " , " << vel << " , " << margin
+                  << " )";
     debug_marker.text = string_stream.str();
     debug_markers.push_back(debug_marker);
   }

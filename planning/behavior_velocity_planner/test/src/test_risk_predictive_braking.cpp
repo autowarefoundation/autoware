@@ -19,42 +19,57 @@
 
 #include <gtest/gtest.h>
 
+#include <cmath>
 #include <limits>
 
-TEST(calculatePredictiveBrakingVelocity, min_max)
+TEST(safeMotion, delay_jerk_acceleration)
 {
-  using behavior_velocity_planner::occlusion_spot_utils::calculatePredictiveBrakingVelocity;
-  const double inf = std::numeric_limits<double>::max();
-  std::cout << "PBS(v0,dist,pbs) of (10,2,-inf) --> 0[m/s]  \n";
-  // lower bound ego_vel
-  ASSERT_EQ(calculatePredictiveBrakingVelocity(0, 2, -inf), 0);
-  std::cout << "PBS(v0,dist,pbs) of (10,inf,0) --> 10[m/s]  \n";
-  // upper bound
-  ASSERT_EQ(calculatePredictiveBrakingVelocity(10, inf, 0), 10);
+  namespace utils = behavior_velocity_planner::occlusion_spot_utils;
+  using utils::calculateSafeMotion;
+  /**
+   * @brief check if calculation is correct in below parameter
+   * delay =  0.5 [s]
+   * a_max = -4.5 [m/s^2]
+   * j_max = -3.0 [m/s^3]
+   * case1 delay
+   * case2 delay + jerk
+   * case3 delay + jerk + acc
+   */
+  utils::Velocity v{1.0, -3.0, -4.5, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0};
+  double ttc = 0.0;
+  // case 1 delay
+  {
+    ttc = 0.5;
+    utils::SafeMotion sm = utils::calculateSafeMotion(v, ttc);
+    EXPECT_DOUBLE_EQ(sm.safe_velocity, 0.0);
+    EXPECT_DOUBLE_EQ(sm.stop_dist, 0.0);
+  }
+  // case 2 delay + jerk
+  {
+    ttc = 1.5;
+    utils::SafeMotion sm = utils::calculateSafeMotion(v, ttc);
+    EXPECT_DOUBLE_EQ(sm.safe_velocity, 1.5);
+    EXPECT_DOUBLE_EQ(sm.stop_dist, 1.25);
+  }
+  // case 3 delay + jerk + acc
+  {
+    ttc = 3.25;
+    utils::SafeMotion sm = utils::calculateSafeMotion(v, ttc);
+    EXPECT_DOUBLE_EQ(sm.safe_velocity, 9);
+    EXPECT_DOUBLE_EQ(std::round(sm.stop_dist * 100.0) / 100.0, 13.92);
+  }
 }
 
-TEST(calculateSafeRPBVelocity, min_max)
+TEST(calculateInsertVelocity, min_max)
 {
-  using behavior_velocity_planner::occlusion_spot_utils::calculateSafeRPBVelocity;
-  // lower bound ttc_vir = 0
-  const double t_buff = 0.5;
-  double d_obs = 0.5;
-  double v_obs = 1.0;
-  ASSERT_EQ(calculateSafeRPBVelocity(t_buff, d_obs, v_obs, -5.0), 0.0);
-  // lower bound ebs_decel = 0
-  ASSERT_EQ(calculateSafeRPBVelocity(1.0, 0.5, 0.5, 0), 0.0);
-}
-
-TEST(getPBSLimitedRPBVelocity, min_max)
-{
-  using behavior_velocity_planner::occlusion_spot_utils::getPBSLimitedRPBVelocity;
+  using behavior_velocity_planner::occlusion_spot_utils::calculateInsertVelocity;
   const double inf = std::numeric_limits<double>::max();
   // upper bound rpb_vel
-  ASSERT_EQ(getPBSLimitedRPBVelocity(inf, inf, inf, inf), inf);
+  ASSERT_EQ(calculateInsertVelocity(inf, inf, inf, inf), inf);
   // lower bound org_vel = 0
-  ASSERT_EQ(getPBSLimitedRPBVelocity(inf, inf, inf, 0), 0.0);
+  ASSERT_EQ(calculateInsertVelocity(inf, inf, inf, 0), 0.0);
   // lower bound min = 0
-  ASSERT_EQ(getPBSLimitedRPBVelocity(inf, inf, 0, inf), inf);
+  ASSERT_EQ(calculateInsertVelocity(inf, inf, 0, inf), inf);
 }
 
 TEST(insertSafeVelocityToPath, replace_original_at_too_close_case)

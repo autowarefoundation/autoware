@@ -48,11 +48,14 @@ bool OcclusionSpotInPrivateModule::modifyPathVelocity(
   if (path->points.size() < 2) {
     return true;
   }
-  param_.vehicle_info.baselink_to_front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
-  param_.vehicle_info.vehicle_width = planner_data_->vehicle_info_.vehicle_width_m;
-
+  // set planner data
+  {
+    param_.v.max_stop_jerk = planner_data_->max_stop_jerk_threshold;
+    param_.v.max_stop_accel = planner_data_->max_stop_acceleration_threshold;
+    param_.v.v_ego = planner_data_->current_velocity->twist.linear.x;
+    param_.v.a_ego = planner_data_->current_accel.get();
+  }
   const geometry_msgs::msg::Pose ego_pose = planner_data_->current_pose.pose;
-  const double ego_velocity = planner_data_->current_velocity->twist.linear.x;
   const auto & lanelet_map_ptr = planner_data_->lanelet_map;
   const auto & traffic_rules_ptr = planner_data_->traffic_rules;
   const auto & occ_grid_ptr = planner_data_->occupancy_grid;
@@ -98,8 +101,7 @@ bool OcclusionSpotInPrivateModule::modifyPathVelocity(
   // Note: Consider offset from path start to ego here
   utils::handleCollisionOffset(possible_collisions, offset_from_start_to_ego, 0.0);
   // apply safe velocity using ebs and pbs deceleration
-  applySafeVelocityConsideringPossibleCollison(
-    path, possible_collisions, ego_velocity, param_.private_road, param_);
+  utils::applySafeVelocityConsideringPossibleCollision(path, possible_collisions, param_);
   debug_data_.z = path->points.front().point.pose.position.z;
   debug_data_.possible_collisions = possible_collisions;
   debug_data_.path_raw = *path;

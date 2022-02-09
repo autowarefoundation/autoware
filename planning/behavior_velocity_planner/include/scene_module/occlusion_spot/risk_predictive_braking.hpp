@@ -26,51 +26,69 @@ namespace behavior_velocity_planner
 {
 namespace occlusion_spot_utils
 {
-void applySafeVelocityConsideringPossibleCollison(
-  autoware_auto_planning_msgs::msg::PathWithLaneId * inout_path,
-  std::vector<PossibleCollisionInfo> & possible_collisions, const double current_vel,
-  const EgoVelocity & ego, const PlannerParam & param);
+void applySafeVelocityConsideringPossibleCollision(
+  PathWithLaneId * inout_path, std::vector<PossibleCollisionInfo> & possible_collisions,
+  const PlannerParam & param);
 
 int insertSafeVelocityToPath(
   const geometry_msgs::msg::Pose & in_pose, const double safe_vel, const PlannerParam & param,
-  autoware_auto_planning_msgs::msg::PathWithLaneId * inout_path);
+  PathWithLaneId * inout_path);
 
 // @brief calculates the maximum velocity allowing to decelerate within the given distance
-inline double calculatePredictiveBrakingVelocity(
-  const double ego_vel, const double dist2col, const double pbs_decel)
+inline double calculateMinSlowDownVelocity(
+  const double v0, const double len, const double a_max, const double safe_vel)
 {
-  return std::sqrt(std::max(std::pow(ego_vel, 2.0) - 2.0 * std::abs(pbs_decel) * dist2col, 0.0));
+  // if target velocity is inserted backward return current velocity as limit
+  if (len < 0) return safe_vel;
+  return std::sqrt(std::max(std::pow(v0, 2.0) - 2.0 * std::abs(a_max) * len, 0.0));
 }
 
 /**
- * @param: safety_time: safety time buffer for reaction
- * @param: dist_to_obj: distance to virtual darting object
- * @param: v_obs: relative  velocity for virtual darting object
- * @param: ebs_decel: emergency brake
- * @return safe velocity considering rpb
+ * @param: sv: ego velocity config
+ * @param: ttc: time to collision
+ * @return safe motion
  **/
-inline double calculateSafeRPBVelocity(
-  const double safety_time, const double dist_to_obj, const double v_obs, const double ebs_decel)
+inline SafeMotion calculateSafeMotion(const Velocity & v, const double ttc)
 {
-  const double t_vir = dist_to_obj / v_obs;
-  // min safety time buffer is at least more than 0
-  const double ttc_virtual = std::max(t_vir - safety_time, 0.0);
-  // safe velocity consider emergency brake
-  const double v_safe = std::abs(ebs_decel) * ttc_virtual;
-  return v_safe;
+  SafeMotion sm;
+  const double j_max = v.safety_ratio * v.max_stop_jerk;
+  const double a_max = v.safety_ratio * v.max_stop_accel;
+  const double t1 = v.delay_time;
+  double t2 = a_max / j_max;
+  double & v_safe = sm.safe_velocity;
+  double & stop_dist = sm.stop_dist;
+  if (ttc <= t1) {
+    // delay
+    v_safe = 0;
+    stop_dist = 0;
+  } else if (ttc <= t2 + t1) {
+    // delay + const jerk
+    t2 = ttc - t1;
+    v_safe = -0.5 * j_max * t2 * t2;
+    stop_dist = v_safe * t1 - j_max * t2 * t2 * t2 / 6;
+  } else {
+    const double t3 = ttc - t2 - t1;
+    // delay + const jerk + const accel
+    const double v2 = -0.5 * j_max * t2 * t2;
+    v_safe = v2 - a_max * t3;
+    stop_dist = v_safe * t1 - j_max * t2 * t2 * t2 / 6 + v2 * t3 - 0.5 * a_max * t3 * t3;
+  }
+  stop_dist += v.safe_margin;
+  return sm;
 }
 
-inline double getPBSLimitedRPBVelocity(
-  const double pbs_vel, const double rpb_vel, const double min_vel, const double original_vel)
+inline double calculateInsertVelocity(
+  const double min_allowed_vel, const double safe_vel, const double min_vel,
+  const double original_vel)
 {
   const double max_vel_noise = 0.05;
   // ensure safe velocity doesn't exceed maximum allowed pbs deceleration
-  double rpb_pbs_limited_vel = std::max(pbs_vel + max_vel_noise, rpb_vel);
+  double cmp_safe_vel = std::max(min_allowed_vel + max_vel_noise, safe_vel);
   // ensure safe path velocity is also above ego min velocity
-  rpb_pbs_limited_vel = std::max(rpb_pbs_limited_vel, min_vel);
+  cmp_safe_vel = std::max(cmp_safe_vel, min_vel);
   // ensure we only lower the original velocity (and do not increase it)
-  rpb_pbs_limited_vel = std::min(rpb_pbs_limited_vel, original_vel);
-  return rpb_pbs_limited_vel;
+  cmp_safe_vel = std::min(cmp_safe_vel, original_vel);
+  return cmp_safe_vel;
 }
 
 }  // namespace occlusion_spot_utils

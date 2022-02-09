@@ -15,6 +15,7 @@
 #include <interpolation/spline_interpolation.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <scene_module/occlusion_spot/occlusion_spot_utils.hpp>
+#include <scene_module/occlusion_spot/risk_predictive_braking.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/math/normalization.hpp>
 #include <utilization/interpolate.hpp>
@@ -206,8 +207,9 @@ void calcSlowDownPointsForPossibleCollision(
         const double z = getInterpolatedValue(d0, p0.z, dist_to_col, d1, p1.z);
         // height is used to visualize marker correctly
         auto & col = possible_collisions.at(collision_index);
-        col.collision_path_point.longitudinal_velocity_mps = v;
-        col.collision_path_point.pose.position.z = z;
+        col.collision_with_margin.longitudinal_velocity_mps = v;
+        col.collision_with_margin.pose.position.z = z;
+        col.collision_pose.position.z = z;
         col.intersection_pose.position.z = z;
         col.obstacle_info.position.z = z;
         const double current_dist2col = col.arc_lane_dist_at_collision.length + offset;
@@ -317,11 +319,19 @@ PossibleCollisionInfo calculateCollisionPathPointFromOcclusionSpot(
    *             ------------------
    */
   PossibleCollisionInfo pc;
-  pc.arc_lane_dist_at_collision = arc_coord_occlusion_with_offset;
+  const double ttc = std::abs(arc_coord_occlusion_with_offset.distance / param.pedestrian_vel);
+  SafeMotion sm = calculateSafeMotion(param.v, ttc);
+  double distance_to_stop = arc_coord_occlusion_with_offset.length - sm.stop_dist;
+  const double eps = 0.1;
+  // avoid inserting path point behind original path
+  if (distance_to_stop < eps) distance_to_stop = eps;
+  pc.arc_lane_dist_at_collision = {distance_to_stop, arc_coord_occlusion_with_offset.distance};
+  pc.obstacle_info.safe_motion = sm;
+  pc.obstacle_info.ttc = ttc;
   pc.obstacle_info.position = setPose(path_lanelet, arc_coord_occlusion).position;
   pc.obstacle_info.max_velocity = param.pedestrian_vel;
-  pc.collision_path_point.pose =
-    setPose(path_lanelet, {arc_coord_occlusion_with_offset.length, 0.0});
+  pc.collision_pose = setPose(path_lanelet, {arc_coord_occlusion_with_offset.length, 0.0});
+  pc.collision_with_margin.pose = setPose(path_lanelet, {distance_to_stop, 0.0});
   pc.intersection_pose = setPose(path_lanelet, {arc_coord_occlusion.length, 0.0});
   return pc;
 }
@@ -332,14 +342,12 @@ std::vector<PossibleCollisionInfo> generatePossibleCollisionBehindParkedVehicle(
 {
   lanelet::ConstLanelet path_lanelet = toPathLanelet(path);
   std::vector<PossibleCollisionInfo> possible_collisions;
-  const double half_vehicle_width = 0.5 * param.vehicle_info.vehicle_width;
-  const double baselink_to_front = param.vehicle_info.baselink_to_front;
   auto ll = path_lanelet.centerline2d();
   for (const auto & dyn : dyn_objects) {
     ArcCoordinates arc_coord_occlusion = getOcclusionPoint(dyn, ll);
     ArcCoordinates arc_coord_occlusion_with_offset = {
-      arc_coord_occlusion.length - baselink_to_front,
-      calcSignedLateralDistanceWithOffset(arc_coord_occlusion.distance, half_vehicle_width)};
+      arc_coord_occlusion.length - param.baselink_to_front,
+      calcSignedLateralDistanceWithOffset(arc_coord_occlusion.distance, param.half_vehicle_width)};
     // ignore if collision is not avoidable by velocity control.
     if (
       arc_coord_occlusion_with_offset.length < offset_from_start_to_ego ||
@@ -418,8 +426,8 @@ void generateSidewalkPossibleCollisions(
   }
   std::vector<geometry::Slice> sidewalk_slices;
   geometry::buildSidewalkSlices(
-    sidewalk_slices, path_lanelet, 0.0, param.vehicle_info.vehicle_width * 0.5,
-    param.sidewalk.slice_size, param.sidewalk.focus_range);
+    sidewalk_slices, path_lanelet, 0.0, param.half_vehicle_width, param.sidewalk.slice_size,
+    param.sidewalk.focus_range);
   double length_lower_bound = std::numeric_limits<double>::max();
   double distance_lower_bound = std::numeric_limits<double>::max();
   // sort distance closest first to skip inferior collision
@@ -463,8 +471,8 @@ void generateSidewalkPossibleCollisionFromOcclusionSpot(
   const double offset_from_start_to_ego, const lanelet::ConstLanelet & path_lanelet,
   const PlannerParam & param)
 {
-  const double baselink_to_front = param.vehicle_info.baselink_to_front;
-  const double half_vehicle_width = param.vehicle_info.vehicle_width * 0.5;
+  const double baselink_to_front = param.baselink_to_front;
+  const double half_vehicle_width = param.half_vehicle_width;
   double distance_lower_bound = std::numeric_limits<double>::max();
   PossibleCollisionInfo candidate;
   bool has_collision = false;

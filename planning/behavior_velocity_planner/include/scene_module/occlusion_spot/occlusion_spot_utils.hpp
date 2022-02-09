@@ -71,24 +71,22 @@ struct Sidewalk
   double slice_size;               // [m] size of each slice
   double min_occlusion_spot_size;  // [m] minumum size to care about the occlusion spot
 };
-
-struct VehicleInfo
+struct Velocity
 {
-  double vehicle_width;      // [m]  vehicle_width from parameter server
-  double baselink_to_front;  // [m]  wheel_base + front_overhang
-};
-
-struct EgoVelocity
-{
-  double ebs_decel;     // [m/s^2] emergency braking system deceleration
-  double pbs_decel;     // [m/s^2] predictive braking system deceleration
-  double min_velocity;  // [m/s]   minimum allowed velocity not to stop
+  double safety_ratio;          // [-] safety margin for planning error
+  double max_stop_jerk;         // [m/s^3] emergency braking system jerk
+  double max_stop_accel;        // [m/s^2] emergency braking system deceleration
+  double max_slow_down_accel;   // [m/s^2] maximum allowed deceleration
+  double min_allowed_velocity;  // [m/s]   minimum allowed velocity not to stop
+  double a_ego;                 // [m/s^2] current ego acceleration
+  double v_ego;                 // [m/s]   current ego velocity
+  double delay_time;            // [s] safety time buffer for delay response
+  double safe_margin;           // [m] maximum safety distance for any error
 };
 
 struct PlannerParam
 {
   // parameters in yaml
-  double safety_time_buffer;     // [s]
   double detection_area_length;  // [m]
   double stuck_vehicle_vel;      // [m/s]
   double lateral_distance_thr;   // [m] lateral distance threshold to consider
@@ -98,17 +96,27 @@ struct PlannerParam
   double angle_thr;      // [rad]
   bool show_debug_grid;  // [-]
 
-  VehicleInfo vehicle_info;
-  EgoVelocity private_road;
-  EgoVelocity public_road;
+  // vehicle info
+  double half_vehicle_width;  // [m]  half vehicle_width from vehicle info
+  double baselink_to_front;   // [m]  wheel_base + front_overhang
+
+  Velocity v;
   Sidewalk sidewalk;
   grid_utils::GridParam grid;
 };
 
+struct SafeMotion
+{
+  double stop_dist;
+  double safe_velocity;
+};
+
 struct ObstacleInfo
 {
+  SafeMotion safe_motion;  // safe motion of velocity and stop point
   geometry_msgs::msg::Point position;
   double max_velocity;  // [m/s] Maximum velocity of the possible obstacle
+  double ttc;           // [s] time to collision with ego
 };
 
 /**
@@ -123,19 +131,17 @@ struct ObstacleInfo
  */
 struct PossibleCollisionInfo
 {
-  ObstacleInfo obstacle_info;  // For hidden obstacle
-  autoware_auto_planning_msgs::msg::PathPoint
-    collision_path_point;                              // For baselink at collision point
-  geometry_msgs::msg::Pose intersection_pose;          // For egp path and hidden obstacle
+  ObstacleInfo obstacle_info;                          // For hidden obstacle
+  PathPoint collision_with_margin;                     // For baselink at collision point
+  Pose collision_pose;                                 // only use this for debugging
+  Pose intersection_pose;                              // For egp path and hidden obstacle
   lanelet::ArcCoordinates arc_lane_dist_at_collision;  // For ego distance to obstacle in s-d
   PossibleCollisionInfo() = default;
   PossibleCollisionInfo(
-    const ObstacleInfo & obstacle_info,
-    const autoware_auto_planning_msgs::msg::PathPoint & collision_path_point,
-    const geometry_msgs::msg::Pose & intersection_pose,
-    const lanelet::ArcCoordinates & arc_lane_dist_to_occlusion)
+    const ObstacleInfo & obstacle_info, const PathPoint & collision_with_margin,
+    const Pose & intersection_pose, const lanelet::ArcCoordinates & arc_lane_dist_to_occlusion)
   : obstacle_info(obstacle_info),
-    collision_path_point(collision_path_point),
+    collision_with_margin(collision_with_margin),
     intersection_pose(intersection_pose),
     arc_lane_dist_at_collision(arc_lane_dist_to_occlusion)
   {
@@ -143,7 +149,6 @@ struct PossibleCollisionInfo
 };
 
 lanelet::ConstLanelet toPathLanelet(const PathWithLaneId & path);
-
 // Note : consider offset_from_start_to_ego and safety margin for collision here
 inline void handleCollisionOffset(
   std::vector<PossibleCollisionInfo> & possible_collisions, double offset, double margin)
