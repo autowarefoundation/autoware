@@ -32,10 +32,11 @@
  */
 struct HDDParam
 {
-  float temp_warn_;   //!< @brief HDD temperature(DegC) to generate warning
-  float temp_error_;  //!< @brief HDD temperature(DegC) to generate error
-  int free_warn_;     //!< @brief HDD free space(MB) to generate warning
-  int free_error_;    //!< @brief HDD free space(MB) to generate error
+  std::string device_;  //!< @brief device
+  float temp_warn_;     //!< @brief HDD temperature(DegC) to generate warning
+  float temp_error_;    //!< @brief HDD temperature(DegC) to generate error
+  int free_warn_;       //!< @brief HDD free space(MB) to generate warning
+  int free_error_;      //!< @brief HDD free space(MB) to generate error
 
   HDDParam() : temp_warn_(55.0), temp_error_(70.0), free_warn_(5120), free_error_(100) {}
 };
@@ -85,6 +86,13 @@ protected:
    * @brief get HDD parameters
    */
   void getHDDParams();
+
+  /**
+   * @brief get device name from mount point
+   * @param [in] mount_point mount point
+   * @return device name
+   */
+  std::string getDeviceFromMountPoint(const std::string & mount_point);
 
   diagnostic_updater::Updater updater_;  //!< @brief Updater class which advertises to /diagnostics
 
