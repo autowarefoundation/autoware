@@ -4,6 +4,6 @@ This role sets up the prerequisites to install pacmod3_msgs following [this page
 
 ## Inputs
 
-| Name      | Required | Description |
-| --------- | -------- | ----------- |
-| rosdistro | true     | ROS distro. |
+| Name      | Required | Description     |
+| --------- | -------- | --------------- |
+| rosdistro | true     | The ROS distro. |

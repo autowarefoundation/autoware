@@ -6,5 +6,5 @@ This role sets up ROS 2 RMW implementation following [this page](https://docs.ro
 
 | Name               | Required | Description         |
 | ------------------ | -------- | ------------------- |
-| rosdistro          | true     | ROS distro.         |
+| rosdistro          | true     | The ROS distro.     |
 | rmw_implementation | true     | RMW implementation. |
