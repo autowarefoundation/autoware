@@ -42,10 +42,6 @@ repositories:
     url: https://github.com/tier4/topic_tools.git
     version: tier4/main
   # sensor_component
-  sensor_component/tmp/velodyne_description: # TODO(Tier IV): Remove after https://github.com/ros/rosdistro/pull/31611 is released
-    type: git
-    url: https://github.com/tier4/velodyne_simulator.git
-    version: 7bca7039a1d9b0a37a268e7ced3e97b96fe9f5ee
   sensor_component/sensor_component_description:
     type: git
     url: https://github.com/tier4/sensor_description.iv.git # TODO(Tier IV): Rename to tier4/sensor_component_description or so
