@@ -5,6 +5,7 @@
     - source: DISCLAIMER.md
     - source: LICENSE
     - source: .github/dependabot.yaml
+    - source: .github/workflows/pre-commit.yaml
     - source: .github/workflows/pre-commit-optional.yaml
     - source: .github/workflows/semantic-pull-request.yaml
     - source: .github/workflows/spell-check-differential.yaml
@@ -25,7 +26,6 @@
     - source: .github/workflows/build-and-test-differential-self-hosted.yaml
     - source: .github/workflows/build-and-test-self-hosted.yaml
     - source: .github/workflows/check-build-depends.yaml
-    - source: .github/workflows/pre-commit.yaml
 
 - repository: autowarefoundation/autoware-documentation
   files:
