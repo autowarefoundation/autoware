@@ -26,6 +26,7 @@ jobs:
         uses: autowarefoundation/autoware-github-actions/get-self-packages@tier4/proposal
 
       - name: Build and test
+        if: ${{ steps.get-self-packages.outputs.self-packages != '' }}
         uses: autowarefoundation/autoware-github-actions/colcon-build-and-test@tier4/proposal
         with:
           rosdistro: galactic
