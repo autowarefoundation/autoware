@@ -1,8 +1,6 @@
 ci:
   autofix_commit_msg: "ci(pre-commit): autofix"
   autoupdate_commit_msg: "ci(pre-commit): autoupdate"
-  skip:
-    - ansible-lint # https://github.com/pre-commit-ci/issues/issues/42
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -34,11 +32,6 @@ repos:
     rev: v1.26.3
     hooks:
       - id: yamllint
-
-  - repo: https://github.com/ansible/ansible-lint.git
-    rev: v5.3.2
-    hooks:
-      - id: ansible-lint
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
     rev: v0.8.0.3

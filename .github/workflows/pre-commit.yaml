@@ -10,11 +10,6 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v2
 
-      # This can be removed if we'll manage ansible files in another repository.
-      - name: Install Ansible Galaxy depends for ansible-lint
-        run: |
-          ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml
-
       - name: Run pre-commit
         uses: autowarefoundation/autoware-github-actions/pre-commit@tier4/proposal
         with:

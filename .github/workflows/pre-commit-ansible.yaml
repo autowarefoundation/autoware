@@ -1,0 +1,20 @@
+name: pre-commit-ansible
+
+on:
+  pull_request:
+
+jobs:
+  pre-commit-ansible:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Install Ansible Galaxy depends for ansible-lint
+        run: |
+          ansible-galaxy collection install -f -r ansible-galaxy-requirements.yaml
+
+      - name: Run pre-commit
+        uses: autowarefoundation/autoware-github-actions/pre-commit@tier4/proposal
+        with:
+          pre-commit-config: .pre-commit-config-ansible.yaml
