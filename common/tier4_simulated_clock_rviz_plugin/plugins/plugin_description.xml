@@ -1,0 +1,9 @@
+<library path="tier4_simulated_clock_rviz_plugin">
+
+  <class
+    type="rviz_plugins::SimulatedClockPanel"
+    base_class_type="rviz_common::Panel">
+    <description>Panel that publishes a simulated clock to the /clock topic and provides an interface to pause the clock and modify its speed.</description>
+  </class>
+
+</library>
