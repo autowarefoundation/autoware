@@ -1,0 +1,52 @@
+name: clang-tidy-pr-comments
+
+on:
+  workflow_run:
+    workflows:
+      - build-and-test-differential
+    types:
+      - completed
+
+jobs:
+  clang-tidy-pr-comments:
+    if: ${{ github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Download analysis results
+        run: |
+          gh run download ${{ github.event.workflow_run.id }} -D /tmp
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set variables
+        id: set-variables
+        run: |
+          echo ::set-output name=pr-id::"$(cat /tmp/clang-tidy-result/pr-id.txt)"
+          echo ::set-output name=pr-head-repo::"$(cat /tmp/clang-tidy-result/pr-head-repo.txt)"
+          echo ::set-output name=pr-head-ref::"$(cat /tmp/clang-tidy-result/pr-head-ref.txt)"
+
+      - name: Check out PR head
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ steps.set-variables.outputs.pr-head-repo }}
+          ref: ${{ steps.set-variables.outputs.pr-head-ref }}
+          persist-credentials: false
+
+      - name: Replace paths in fixes.yaml
+        run: |
+          sed -i -e "s|/__w/|/home/runner/work/|g" /tmp/clang-tidy-result/fixes.yaml
+          cat /tmp/clang-tidy-result/fixes.yaml
+
+      - name: Copy fixes.yaml to access from Docker Container Action
+        run: |
+          cp /tmp/clang-tidy-result/fixes.yaml fixes.yaml
+
+      - name: Run clang-tidy-pr-comments action
+        uses: platisd/clang-tidy-pr-comments@1.1.6
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          clang_tidy_fixes: fixes.yaml
+          pull_request_id: ${{ steps.set-variables.outputs.pr-id }}
