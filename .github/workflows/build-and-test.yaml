@@ -27,27 +27,27 @@ jobs:
         id: get-self-packages
         uses: autowarefoundation/autoware-github-actions/get-self-packages@tier4/proposal
 
-      - name: Build and test
+      - name: Build
         if: ${{ steps.get-self-packages.outputs.self-packages != '' }}
-        uses: autowarefoundation/autoware-github-actions/colcon-build-and-test@tier4/proposal
+        uses: autowarefoundation/autoware-github-actions/colcon-build@tier4/proposal
         with:
           rosdistro: galactic
           target-packages: ${{ steps.get-self-packages.outputs.self-packages }}
           build-depends-repos: build_depends.repos
 
-      - name: Check the existence of coverage files
-        id: check-file-existence
-        uses: autowarefoundation/autoware-github-actions/check-file-existence@tier4/proposal
+      - name: Test
+        if: ${{ steps.get-self-packages.outputs.self-packages != '' }}
+        id: test
+        uses: autowarefoundation/autoware-github-actions/colcon-test@tier4/proposal
         with:
-          files: |
-            lcov/total_coverage.info
-            coveragepy/.coverage
-          condition: or
+          rosdistro: galactic
+          target-packages: ${{ steps.get-self-packages.outputs.self-packages }}
+          build-depends-repos: build_depends.repos
 
       - name: Upload coverage to CodeCov
-        if: ${{ steps.check-file-existence.outputs.exists == 'true' }}
+        if: ${{ steps.test.outputs.coverage-report-files != '' }}
         uses: codecov/codecov-action@v2
         with:
-          files: lcov/total_coverage.info,coveragepy/.coverage
+          files: ${{ steps.test.outputs.coverage-report-files }}
           fail_ci_if_error: false
           verbose: true
