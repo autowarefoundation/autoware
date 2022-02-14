@@ -87,9 +87,7 @@ std::pair<TurnIndicatorsCommand, double> TurnSignalDecider::getIntersectionTurnS
       if (
         lane.attributeOr("turn_signal_distance", std::numeric_limits<double>::max()) <
         distance_from_vehicle_front) {
-        if (1 < path_point.lane_ids.size() && lane.id() == path_point.lane_ids.back()) {
-          continue;
-        }
+        continue;
       }
       if (lane.attributeOr("turn_direction", std::string("none")) == "left") {
         turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
