@@ -60,6 +60,15 @@ OSQPInterface::OSQPInterface(
   initializeProblem(P, A, q, l, u);
 }
 
+OSQPInterface::OSQPInterface(
+  const CSC_Matrix & P, const CSC_Matrix & A, const std::vector<float64_t> & q,
+  const std::vector<float64_t> & l, const std::vector<float64_t> & u,
+  const c_float eps_abs)
+: OSQPInterface(eps_abs)
+{
+  initializeProblem(P, A, q, l, u);
+}
+
 void OSQPInterface::OSQPWorkspaceDeleter(OSQPWorkspace * ptr) noexcept
 {
   if (ptr != nullptr) {
@@ -82,6 +91,11 @@ void OSQPInterface::updateP(const Eigen::MatrixXd & P_new)
   osqp_update_P(m_work.get(), P_csc.m_vals.data(), OSQP_NULL, static_cast<c_int>(P_csc.m_vals.size()));
 }
 
+void OSQPInterface::updateCscP(const CSC_Matrix & P_csc)
+{
+  osqp_update_P(m_work.get(), P_csc.m_vals.data(), OSQP_NULL, static_cast<c_int>(P_csc.m_vals.size()));
+}
+
 void OSQPInterface::updateA(const Eigen::MatrixXd & A_new)
 {
   /*
@@ -94,6 +108,11 @@ void OSQPInterface::updateA(const Eigen::MatrixXd & A_new)
   CSC_Matrix A_csc = calCSCMatrix(A_new);
   osqp_update_A(m_work.get(), A_csc.m_vals.data(), OSQP_NULL, static_cast<c_int>(A_csc.m_vals.size()));
   return;
+}
+
+void OSQPInterface::updateCscA(const CSC_Matrix & A_csc)
+{
+  osqp_update_A(m_work.get(), A_csc.m_vals.data(), OSQP_NULL, static_cast<c_int>(A_csc.m_vals.size()));
 }
 
 void OSQPInterface::updateQ(const std::vector<double> & q_new)
@@ -184,11 +203,43 @@ int64_t OSQPInterface::initializeProblem(
   const Eigen::MatrixXd & P, const Eigen::MatrixXd & A, const std::vector<float64_t> & q,
   const std::vector<float64_t> & l, const std::vector<float64_t> & u)
 {
-  /*******************
-   * SET UP MATRICES
-   *******************/
+  // check if arguments are valid
+  std::stringstream ss;
+  if (P.rows() != P.cols()) {
+    ss << "P.rows() and P.cols() are not the same. P.rows() = " << P.rows()
+       << ", P.cols() = " << P.cols();
+    throw std::invalid_argument(ss.str());
+  }
+  if (P.rows() != static_cast<int>(q.size())) {
+    ss << "P.rows() and q.size() are not the same. P.rows() = " << P.rows()
+       << ", q.size() = " << q.size();
+    throw std::invalid_argument(ss.str());
+  }
+  if (P.rows() != A.cols()) {
+    ss << "P.rows() and A.cols() are not the same. P.rows() = " << P.rows()
+       << ", A.cols() = " << A.cols();
+    throw std::invalid_argument(ss.str());
+  }
+  if (A.rows() != static_cast<int>(l.size())) {
+    ss << "A.rows() and l.size() are not the same. A.rows() = " << A.rows()
+       << ", l.size() = " << l.size();
+    throw std::invalid_argument(ss.str());
+  }
+  if (A.rows() != static_cast<int>(u.size())) {
+    ss << "A.rows() and u.size() are not the same. A.rows() = " << A.rows()
+       << ", u.size() = " << u.size();
+    throw std::invalid_argument(ss.str());
+  }
+
   CSC_Matrix P_csc = calCSCMatrixTrapezoidal(P);
   CSC_Matrix A_csc = calCSCMatrix(A);
+  return initializeProblem(P_csc, A_csc, q, l, u);
+}
+
+int64_t OSQPInterface::initializeProblem(
+  CSC_Matrix P_csc, CSC_Matrix A_csc, const std::vector<float64_t> & q,
+  const std::vector<float64_t> & l, const std::vector<float64_t> & u)
+{
   // Dynamic float arrays
   std::vector<float64_t> q_tmp(q.begin(), q.end());
   std::vector<float64_t> l_tmp(l.begin(), l.end());
@@ -200,15 +251,12 @@ int64_t OSQPInterface::initializeProblem(
   /**********************
    * OBJECTIVE FUNCTION
    **********************/
-  // Number of constraints
-  c_int constr_m = A.rows();
-  // Number of parameters
-  m_param_n = P.rows();
+  m_param_n = static_cast<int>(q.size());
+  m_data->m = static_cast<int>(l.size());
 
   /*****************
    * POPULATE DATA
    *****************/
-  m_data->m = constr_m;
   m_data->n = m_param_n;
   m_data->P = csc_matrix(
     m_data->n, m_data->n, static_cast<c_int>(P_csc.m_vals.size()), P_csc.m_vals.data(),
@@ -229,7 +277,7 @@ int64_t OSQPInterface::initializeProblem(
   return m_exitflag;
 }
 
-std::tuple<std::vector<float64_t>, std::vector<float64_t>, int64_t, int64_t> OSQPInterface::solve()
+std::tuple<std::vector<float64_t>, std::vector<float64_t>, int64_t, int64_t, int64_t> OSQPInterface::solve()
 {
   // Solve Problem
   osqp_solve(m_work.get());
@@ -240,29 +288,30 @@ std::tuple<std::vector<float64_t>, std::vector<float64_t>, int64_t, int64_t> OSQ
   float64_t * sol_x = m_work->solution->x;
   float64_t * sol_y = m_work->solution->y;
   std::vector<float64_t> sol_primal(sol_x, sol_x + m_param_n);
-  std::vector<float64_t> sol_lagrange_multiplier(sol_y, sol_y + m_param_n);
-  // Solver polish status
+  std::vector<float64_t> sol_lagrange_multiplier(sol_y, sol_y + m_data->m);
+
   int64_t status_polish = m_work->info->status_polish;
-  // Solver solution status
   int64_t status_solution = m_work->info->status_val;
+  int64_t status_iteration = m_work->info->iter;
+
   // Result tuple
-  std::tuple<std::vector<float64_t>, std::vector<float64_t>, int64_t, int64_t> result =
-    std::make_tuple(sol_primal, sol_lagrange_multiplier, status_polish, status_solution);
+  std::tuple<std::vector<float64_t>, std::vector<float64_t>, int64_t, int64_t, int64_t> result =
+    std::make_tuple(sol_primal, sol_lagrange_multiplier, status_polish, status_solution, status_iteration);
 
   m_latest_work_info = *(m_work->info);
 
   return result;
 }
 
-std::tuple<std::vector<float64_t>, std::vector<float64_t>, int64_t, int64_t>
+std::tuple<std::vector<float64_t>, std::vector<float64_t>, int64_t, int64_t, int64_t>
 OSQPInterface::optimize()
 {
   // Run the solver on the stored problem representation.
-  std::tuple<std::vector<float64_t>, std::vector<float64_t>, int64_t, int64_t> result = solve();
+  std::tuple<std::vector<float64_t>, std::vector<float64_t>, int64_t, int64_t, int64_t> result = solve();
   return result;
 }
 
-std::tuple<std::vector<float64_t>, std::vector<float64_t>, int64_t, int64_t>
+std::tuple<std::vector<float64_t>, std::vector<float64_t>, int64_t, int64_t, int64_t>
 OSQPInterface::optimize(
   const Eigen::MatrixXd & P, const Eigen::MatrixXd & A, const std::vector<float64_t> & q,
   const std::vector<float64_t> & l, const std::vector<float64_t> & u)
@@ -271,7 +320,7 @@ OSQPInterface::optimize(
   initializeProblem(P, A, q, l, u);
 
   // Run the solver on the stored problem representation.
-  std::tuple<std::vector<float64_t>, std::vector<float64_t>, int64_t, int64_t> result = solve();
+  std::tuple<std::vector<float64_t>, std::vector<float64_t>, int64_t, int64_t, int64_t> result = solve();
 
   m_work.reset();
   m_work_initialized = false;

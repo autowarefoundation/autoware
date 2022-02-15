@@ -23,67 +23,109 @@
 namespace
 {
 using autoware::common::osqp::float64_t;
-/// Problem taken from https://github.com/osqp/osqp/blob/master/tests/basic_qp/generate_problem.py
+// Problem taken from https://github.com/osqp/osqp/blob/master/tests/basic_qp/generate_problem.py
+//
+// min  1/2 * x' * P * x  + q' * x
+// s.t. lb <= A * x <= ub
+//
+// P = [4, 1], q = [1], A = [1, 1], lb = [   1], ub = [1.0]
+//     [1, 2]      [1]      [1, 0]       [   0]       [0.7]
+//                          [0, 1]       [   0]       [0.7]
+//                          [0, 1]       [-inf]       [inf]
+//
+// The optimal solution is
+// x = [0.3, 0.7]'
+// y = [-2.9, 0.0, 0.2, 0.0]`
+// obj = 1.88
+
 // cppcheck-suppress syntaxError
 TEST(TestOsqpInterface, BasicQp) {
+  using autoware::common::osqp::CSC_Matrix;
+  using autoware::common::osqp::calCSCMatrix;
+  using autoware::common::osqp::calCSCMatrixTrapezoidal;
+
   auto check_result =
-    [](const std::tuple<std::vector<float64_t>, std::vector<float64_t>, int, int> & result) {
-      EXPECT_EQ(std::get<2>(result), 1);
-      EXPECT_EQ(std::get<3>(result), 1);
-      ASSERT_EQ(std::get<0>(result).size(), size_t(2));
-      ASSERT_EQ(std::get<1>(result).size(), size_t(2));
-      EXPECT_DOUBLE_EQ(std::get<0>(result)[0], 0.3);
-      EXPECT_DOUBLE_EQ(std::get<0>(result)[1], 0.7);
-      EXPECT_DOUBLE_EQ(std::get<1>(result)[0], -2.9);
-      EXPECT_NEAR(std::get<1>(result)[1], 0.2, 1e-6);
+    [](const std::tuple<std::vector<float64_t>, std::vector<float64_t>, int, int, int> & result) {
+      EXPECT_EQ(std::get<2>(result), 1);  // polish succeeded
+      EXPECT_EQ(std::get<3>(result), 1);  // solution succeeded
+
+      static const auto ep = 1.0e-8;
+
+      const auto prime_val = std::get<0>(result);
+      ASSERT_EQ(prime_val.size(), size_t(2));
+      EXPECT_NEAR(prime_val[0], 0.3, ep);
+      EXPECT_NEAR(prime_val[1], 0.7, ep);
+
+      const auto dual_val = std::get<1>(result);
+      ASSERT_EQ(dual_val.size(), size_t(4));
+      EXPECT_NEAR(dual_val[0], -2.9, ep);
+      EXPECT_NEAR(dual_val[1], 0.0, ep);
+      EXPECT_NEAR(dual_val[2], 0.2, ep);
+      EXPECT_NEAR(dual_val[3], 0.0, ep);
     };
+
+  const Eigen::MatrixXd P = (Eigen::MatrixXd(2, 2) << 4, 1, 1, 2).finished();
+  const Eigen::MatrixXd A = (Eigen::MatrixXd(4, 2) << 1, 1, 1, 0, 0, 1, 0, 1).finished();
+  const std::vector<float64_t> q = {1.0, 1.0};
+  const std::vector<float64_t> l = {1.0, 0.0, 0.0, -autoware::common::osqp::INF};
+  const std::vector<float64_t> u = {1.0, 0.7, 0.7, autoware::common::osqp::INF};
 
   {
     // Define problem during optimization
     autoware::common::osqp::OSQPInterface osqp;
-    Eigen::MatrixXd P(2, 2);
-    P << 4, 1, 1, 2;
-    Eigen::MatrixXd A(2, 4);
-    A << 1, 1, 1, 0, 0, 1, 0, 1;
-    std::vector<float64_t> q = {1.0, 1.0};
-    std::vector<float64_t> l = {1.0, 0.0, 0.0, -autoware::common::osqp::INF};
-    std::vector<float64_t> u = {1.0, 0.7, 0.7, autoware::common::osqp::INF};
-    std::tuple<std::vector<float64_t>, std::vector<float64_t>, int, int> result = osqp.optimize(
+    std::tuple<std::vector<float64_t>, std::vector<float64_t>, int, int, int> result = osqp.optimize(
       P, A, q, l, u);
     check_result(result);
   }
+
   {
     // Define problem during initialization
-    Eigen::MatrixXd P(2, 2);
-    P << 4, 1, 1, 2;
-    Eigen::MatrixXd A(2, 4);
-    A << 1, 1, 1, 0, 0, 1, 0, 1;
-    std::vector<float64_t> q = {1.0, 1.0};
-    std::vector<float64_t> l = {1.0, 0.0, 0.0, -autoware::common::osqp::INF};
-    std::vector<float64_t> u = {1.0, 0.7, 0.7, autoware::common::osqp::INF};
     autoware::common::osqp::OSQPInterface osqp(P, A, q, l, u, 1e-6);
-    std::tuple<std::vector<float64_t>, std::vector<float64_t>, int, int> result = osqp.optimize();
+    std::tuple<std::vector<float64_t>, std::vector<float64_t>, int, int, int> result = osqp.optimize();
     check_result(result);
   }
+
   {
-    std::tuple<std::vector<float64_t>, std::vector<float64_t>, int, int> result;
+    std::tuple<std::vector<float64_t>, std::vector<float64_t>, int, int, int> result;
     // Dummy initial problem
-    Eigen::MatrixXd P = Eigen::MatrixXd::Zero(2, 2);
-    Eigen::MatrixXd A = Eigen::MatrixXd::Zero(2, 4);
-    std::vector<float64_t> q(2, 0.0);
-    std::vector<float64_t> l(4, 0.0);
-    std::vector<float64_t> u(4, 0.0);
-    autoware::common::osqp::OSQPInterface osqp(P, A, q, l, u, 1e-6);
+    Eigen::MatrixXd P_ini = Eigen::MatrixXd::Zero(2, 2);
+    Eigen::MatrixXd A_ini = Eigen::MatrixXd::Zero(4, 2);
+    std::vector<float64_t> q_ini(2, 0.0);
+    std::vector<float64_t> l_ini(4, 0.0);
+    std::vector<float64_t> u_ini(4, 0.0);
+    autoware::common::osqp::OSQPInterface osqp(P_ini, A_ini, q_ini, l_ini, u_ini, 1e-6);
     osqp.optimize();
+
     // Redefine problem before optimization
-    Eigen::MatrixXd P_new(2, 2);
-    P_new << 4, 1, 1, 2;
-    Eigen::MatrixXd A_new(2, 4);
-    A_new << 1, 1, 1, 0, 0, 1, 0, 1;
-    std::vector<float64_t> q_new = {1.0, 1.0};
-    std::vector<float64_t> l_new = {1.0, 0.0, 0.0, -autoware::common::osqp::INF};
-    std::vector<float64_t> u_new = {1.0, 0.7, 0.7, autoware::common::osqp::INF};
-    osqp.initializeProblem(P_new, A_new, q_new, l_new, u_new);
+    osqp.initializeProblem(P, A, q, l, u);
+    result = osqp.optimize();
+    check_result(result);
+  }
+
+  {
+    // Define problem during initialization with csc matrix
+    CSC_Matrix P_csc = calCSCMatrixTrapezoidal(P);
+    CSC_Matrix A_csc = calCSCMatrix(A);
+    autoware::common::osqp::OSQPInterface osqp(P_csc, A_csc, q, l, u, 1e-6);
+    std::tuple<std::vector<float64_t>, std::vector<float64_t>, int, int, int> result = osqp.optimize();
+    check_result(result);
+  }
+
+  {
+    std::tuple<std::vector<float64_t>, std::vector<float64_t>, int, int, int> result;
+    // Dummy initial problem with csc matrix
+    CSC_Matrix P_ini_csc = calCSCMatrixTrapezoidal(Eigen::MatrixXd::Zero(2, 2));
+    CSC_Matrix A_ini_csc = calCSCMatrix(Eigen::MatrixXd::Zero(4, 2));
+    std::vector<float64_t> q_ini(2, 0.0);
+    std::vector<float64_t> l_ini(4, 0.0);
+    std::vector<float64_t> u_ini(4, 0.0);
+    autoware::common::osqp::OSQPInterface osqp(P_ini_csc, A_ini_csc, q_ini, l_ini, u_ini, 1e-6);
+    osqp.optimize();
+
+    // Redefine problem before optimization
+    CSC_Matrix P_csc = calCSCMatrixTrapezoidal(P);
+    CSC_Matrix A_csc = calCSCMatrix(A);
+    osqp.initializeProblem(P_csc, A_csc, q, l, u);
     result = osqp.optimize();
     check_result(result);
   }
