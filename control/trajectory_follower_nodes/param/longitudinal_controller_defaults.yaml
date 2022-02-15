@@ -70,13 +70,3 @@
     lpf_pitch_gain: 0.95
     max_pitch_rad: 0.1
     min_pitch_rad: -0.1
-
-    # vehicle parameters
-    vehicle:
-      mass_kg: 2400.0
-      mass_fl: 600.0
-      mass_fr: 600.0
-      mass_rl: 600.0
-      mass_rr: 600.0
-      cf: 155494.663
-      cr: 155494.663
