@@ -35,28 +35,76 @@ TEST(safeMotion, delay_jerk_acceleration)
    * case2 delay + jerk
    * case3 delay + jerk + acc
    */
-  utils::Velocity v{1.0, -3.0, -4.5, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0};
+  utils::Velocity v{};
+  v.safety_ratio = 1.0;
+  v.max_stop_jerk = -3.0;
+  v.max_stop_accel = -4.5;
+  v.delay_time = 0.5;
   double ttc = 0.0;
+  const double eps = 1e-3;
   // case 1 delay
   {
     ttc = 0.5;
     utils::SafeMotion sm = utils::calculateSafeMotion(v, ttc);
-    EXPECT_DOUBLE_EQ(sm.safe_velocity, 0.0);
-    EXPECT_DOUBLE_EQ(sm.stop_dist, 0.0);
+    EXPECT_NEAR(sm.safe_velocity, 0.0, eps);
+    EXPECT_NEAR(sm.stop_dist, 0.0, eps);
   }
   // case 2 delay + jerk
   {
     ttc = 1.5;
     utils::SafeMotion sm = utils::calculateSafeMotion(v, ttc);
-    EXPECT_DOUBLE_EQ(sm.safe_velocity, 1.5);
-    EXPECT_DOUBLE_EQ(sm.stop_dist, 1.25);
+    EXPECT_NEAR(sm.safe_velocity, 1.5, eps);
+    EXPECT_NEAR(sm.stop_dist, 1.25, eps);
   }
   // case 3 delay + jerk + acc
   {
     ttc = 3.25;
     utils::SafeMotion sm = utils::calculateSafeMotion(v, ttc);
-    EXPECT_DOUBLE_EQ(sm.safe_velocity, 9);
-    EXPECT_DOUBLE_EQ(std::round(sm.stop_dist * 100.0) / 100.0, 13.92);
+    EXPECT_NEAR(sm.safe_velocity, 9, eps);
+    EXPECT_NEAR(std::round(sm.stop_dist * 100.0) / 100.0, 13.92, eps);
+  }
+}
+
+TEST(detectionArea, calcLateralDistance)
+{
+  namespace utils = behavior_velocity_planner::occlusion_spot_utils;
+  using utils::calculateLateralDistanceFromTTC;
+  /**
+   * @brief check if calculation is correct in below parameter
+   * lateral distance is calculated from
+   * - ego velocity
+   * - min distance(safety margin)
+   * - max distance(ignore distance above this)
+   * - pedestrian velocity
+   * - min allowed velocity(not to stop)
+   */
+  utils::PlannerParam p;
+  p.half_vehicle_width = 2.0;
+  p.baselink_to_front = 3.0;
+  p.pedestrian_vel = 1.5;
+  p.detection_area.max_lateral_distance = 5.0;
+  p.v.min_allowed_velocity = 1.5;
+  p.v.v_ego = 5.0;
+  const double offset_from_ego_to_start = 0.0;
+  {
+    for (size_t i = 0; i <= 15; i += 5) {
+      // arc length in path point
+      const double l = i * 1.0;
+      const double s = l - offset_from_ego_to_start;
+      const double d = utils::calculateLateralDistanceFromTTC(s, p);
+      const double eps = 1e-3;
+      std::cout << "s: " << l << " v: " << p.v.v_ego << " d: " << d << std::endl;
+      if (i == 0)
+        EXPECT_NEAR(d, 2.5, eps);
+      else if (i == 5)
+        EXPECT_NEAR(d, 3.5, eps);
+      else if (i == 10)
+        EXPECT_NEAR(d, 5.0, eps);
+      else if (i == 15)
+        EXPECT_NEAR(d, 5.0, eps);
+      else
+        break;
+    }
   }
 }
 

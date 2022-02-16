@@ -16,13 +16,15 @@
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <scene_module/occlusion_spot/geometry.hpp>
+#include <scene_module/occlusion_spot/occlusion_spot_utils.hpp>
+#include <scene_module/occlusion_spot/risk_predictive_braking.hpp>
 
 #include <algorithm>
 #include <vector>
 
 namespace behavior_velocity_planner
 {
-namespace geometry
+namespace occlusion_spot_utils
 {
 using lanelet::BasicLineString2d;
 using lanelet::BasicPoint2d;
@@ -30,106 +32,102 @@ using lanelet::BasicPolygon2d;
 namespace bg = boost::geometry;
 namespace lg = lanelet::geometry;
 
-void createOffsetLineString(
-  const BasicLineString2d & in, const double offset, BasicLineString2d & offset_line_string)
+BasicPoint2d calculateLateralOffsetPoint(
+  const BasicPoint2d & p0, const BasicPoint2d & p1, const double offset)
 {
-  for (size_t i = 0; i < in.size() - 1; i++) {
-    const auto & p0 = in.at(i);
-    const auto & p1 = in.at(i + 1);
-    // translation
-    const double dy = p1[1] - p0[1];
-    const double dx = p1[0] - p0[0];
-    // rotation (use inverse matrix of rotation)
-    const double yaw = std::atan2(dy, dx);
-    // translation
-    const double offset_x = p0[0] - std::sin(yaw) * offset;
-    const double offset_y = p0[1] + std::cos(yaw) * offset;
-    offset_line_string.emplace_back(BasicPoint2d{offset_x, offset_y});
-    //! insert final offset linestring using prev vertical direction
-    if (i == in.size() - 2) {
-      const double offset_x = p1[0] - std::sin(yaw) * offset;
-      const double offset_y = p1[1] + std::cos(yaw) * offset;
-      offset_line_string.emplace_back(BasicPoint2d{offset_x, offset_y});
-    }
-  }
-  return;
+  // translation
+  const double dy = p1[1] - p0[1];
+  const double dx = p1[0] - p0[0];
+  // rotation (use inverse matrix of rotation)
+  const double yaw = std::atan2(dy, dx);
+  const double offset_x = p1[0] - std::sin(yaw) * offset;
+  const double offset_y = p1[1] + std::cos(yaw) * offset;
+  return BasicPoint2d{offset_x, offset_y};
 }
 
 void buildSlices(
-  std::vector<Slice> & slices, const lanelet::ConstLanelet & path_lanelet, const SliceRange & range,
-  const double slice_length, const double slice_width, const double resolution)
+  std::vector<Slice> & slices, const lanelet::ConstLanelet & path_lanelet, const double offset,
+  const bool is_on_right, const PlannerParam & param)
 {
-  const int num_lateral_slice =
-    static_cast<int>(std::abs(range.max_distance - range.min_distance) / slice_width);
+  BasicLineString2d center_line = path_lanelet.centerline2d().basicLineString();
+  const auto & p = param;
   /**
-   * @brief bounds
-   * +---------- outer bounds
-   * |   +------ inner bounds(original path)
-   * |   |
+   * @brief relationships for interpolated polygon
+   *
+   * +(min_length,max_distance)-+ - +---+(max_length,max_distance) = outer_polygons
+   * |                                  |
+   * +--------------------------+ - +---+(max_length,min_distance) = inner_polygons
    */
-  BasicLineString2d inner_bounds = path_lanelet.centerline2d().basicLineString();
-  BasicLineString2d outer_bounds;
-  if (inner_bounds.size() < 2) return;
-  createOffsetLineString(inner_bounds, range.max_distance, outer_bounds);
-  const double ratio_dist_start = std::abs(range.min_distance / range.max_distance);
-  const double ratio_dist_increment = std::min(1.0, slice_width / std::abs(range.max_distance));
-  lanelet::BasicPolygon2d poly;
-  const int num_step = static_cast<int>(slice_length / resolution);
+  const double min_length = offset;  // + p.baselink_to_front;
+  // Note: min_detection_area_length is for occlusion spot visualization but not effective for
+  // planning
+  const double min_detection_area_length = 10.0;
+  const double max_length = std::max(
+    min_detection_area_length, std::min(p.detection_area_max_length, p.detection_area_length));
+  const double min_distance = (is_on_right) ? -p.half_vehicle_width : p.half_vehicle_width;
+  const double slice_length = p.detection_area.slice_length;
+  const int num_step = static_cast<int>(slice_length);
   //! max index is the last index of path point
-  const int max_index = static_cast<int>(inner_bounds.size() - 1);
+  const int max_index = static_cast<int>(center_line.size() - 2);
+  int idx = 0;
+  /**
+   * Note: create polygon from path point is better than from ego offset to consider below
+   * - less computation cost and no need to recalculated interpolated point start from ego
+   * - less stable for localization noise
+   **/
   for (int s = 0; s < max_index; s += num_step) {
     const double length = s * slice_length;
-    const double next_length = (s + num_step) * resolution;
-    for (int d = 0; d < num_lateral_slice; d++) {
-      const double ratio_dist = ratio_dist_start + d * ratio_dist_increment;
-      const double next_ratio_dist = ratio_dist_start + (d + 1.0) * ratio_dist_increment;
-      Slice slice;
-      BasicLineString2d inner_polygons;
-      BasicLineString2d outer_polygons;
-      // build interpolated polygon for lateral
-      for (int i = 0; i <= num_step; i++) {
-        if (s + i >= max_index) continue;
-        inner_polygons.emplace_back(
-          lerp(inner_bounds.at(s + i), outer_bounds.at(s + i), ratio_dist));
-        outer_polygons.emplace_back(
-          lerp(inner_bounds.at(s + i), outer_bounds.at(s + i), next_ratio_dist));
-      }
-      // Build polygon
-      inner_polygons.insert(inner_polygons.end(), outer_polygons.rbegin(), outer_polygons.rend());
-      slice.polygon = lanelet::BasicPolygon2d(inner_polygons);
-      // add range info
-      slice.range.min_length = length;
-      slice.range.max_length = next_length;
-      slice.range.min_distance = ratio_dist * range.max_distance;
-      slice.range.max_distance = next_ratio_dist * range.max_distance;
-      slices.emplace_back(slice);
+    const double next_length = static_cast<double>(s + num_step);
+    /// if (max_length < length) continue;
+    Slice slice;
+    BasicLineString2d inner_polygons;
+    BasicLineString2d outer_polygons;
+    // build connected polygon for lateral
+    for (int i = 0; i <= num_step; i++) {
+      idx = s + i;
+      const double arc_length_from_ego = std::max(0.0, static_cast<double>(idx - min_length));
+      if (arc_length_from_ego > max_length) break;
+      if (idx >= max_index) break;
+      const auto & c0 = center_line.at(idx);
+      const auto & c1 = center_line.at(idx + 1);
+      /**
+       * @brief points
+       * +--outer point (lateral distance obstacle can reach)
+       * |
+       * +--inner point(min distance)
+       */
+      const BasicPoint2d inner_point = calculateLateralOffsetPoint(c0, c1, min_distance);
+      double lateral_distance = calculateLateralDistanceFromTTC(arc_length_from_ego, param);
+      if (is_on_right) lateral_distance *= -1;
+      const BasicPoint2d outer_point = calculateLateralOffsetPoint(c0, c1, lateral_distance);
+      inner_polygons.emplace_back(inner_point);
+      outer_polygons.emplace_back(outer_point);
     }
+    if (inner_polygons.empty()) continue;
+    //  connect invert point
+    inner_polygons.insert(inner_polygons.end(), outer_polygons.rbegin(), outer_polygons.rend());
+    slice.polygon = lanelet::BasicPolygon2d(inner_polygons);
+    // add range info
+    slice.range.min_length = length;
+    slice.range.max_length = next_length;
+    slices.emplace_back(slice);
   }
 }
 
-void buildSidewalkSlices(
-  std::vector<Slice> & slices, const lanelet::ConstLanelet & path_lanelet,
-  const double longitudinal_offset, const double lateral_offset, const double slice_size,
-  const double lateral_max_dist)
+void buildDetectionAreaPolygon(
+  std::vector<Slice> & slices, const PathWithLaneId & path, const double offset,
+  const PlannerParam & param)
 {
   std::vector<Slice> left_slices;
   std::vector<Slice> right_slices;
-  const double longitudinal_max_dist = lg::length2d(path_lanelet);
-  SliceRange left_slice_range = {
-    longitudinal_offset, longitudinal_max_dist, lateral_offset, lateral_offset + lateral_max_dist};
+  lanelet::ConstLanelet path_lanelet = toPathLanelet(path);
   // in most case lateral distance is much more effective for velocity planning
-  const double slice_length = 4.0 * slice_size;
-  const double slice_width = slice_size;
-  const double resolution = 1.0;
-  buildSlices(left_slices, path_lanelet, left_slice_range, slice_length, slice_width, resolution);
-  SliceRange right_slice_range = {
-    longitudinal_offset, longitudinal_max_dist, -lateral_offset,
-    -lateral_offset - lateral_max_dist};
-  buildSlices(right_slices, path_lanelet, right_slice_range, slice_length, slice_width, resolution);
+  buildSlices(left_slices, path_lanelet, offset, false /*is_on_right*/, param);
+  buildSlices(right_slices, path_lanelet, offset, true /*is_on_right*/, param);
   // Properly order lanelets from closest to furthest
   slices = left_slices;
   slices.insert(slices.end(), right_slices.begin(), right_slices.end());
   return;
 }
-}  // namespace geometry
+}  // namespace occlusion_spot_utils
 }  // namespace behavior_velocity_planner

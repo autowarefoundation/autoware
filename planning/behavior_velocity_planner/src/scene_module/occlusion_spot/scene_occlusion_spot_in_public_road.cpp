@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <lanelet2_extension/utility/utilities.hpp>
+#include <scene_module/occlusion_spot/geometry.hpp>
 #include <scene_module/occlusion_spot/occlusion_spot_utils.hpp>
 #include <scene_module/occlusion_spot/risk_predictive_braking.hpp>
 #include <scene_module/occlusion_spot/scene_occlusion_spot_in_public_road.hpp>
@@ -45,6 +46,7 @@ bool OcclusionSpotInPublicModule::modifyPathVelocity(
   [[maybe_unused]] tier4_planning_msgs::msg::StopReason * stop_reason)
 {
   debug_data_ = DebugData();
+  debug_data_.road_type = "public";
   if (path->points.size() < 2) {
     return true;
   }
@@ -54,6 +56,9 @@ bool OcclusionSpotInPublicModule::modifyPathVelocity(
     param_.v.max_stop_accel = planner_data_->max_stop_acceleration_threshold;
     param_.v.v_ego = planner_data_->current_velocity->twist.linear.x;
     param_.v.a_ego = planner_data_->current_accel.get();
+    param_.detection_area_max_length = planning_utils::calcJudgeLineDistWithJerkLimit(
+      param_.v.v_ego, param_.v.a_ego, param_.v.non_effective_accel, param_.v.non_effective_jerk,
+      0.0);
   }
   const geometry_msgs::msg::Pose ego_pose = planner_data_->current_pose.pose;
   const auto & lanelet_map_ptr = planner_data_->lanelet_map;
@@ -81,17 +86,26 @@ bool OcclusionSpotInPublicModule::modifyPathVelocity(
   std::vector<PredictedObject> obj =
     utils::getParkedVehicles(*dynamic_obj_arr_ptr, param_, debug_data_.parked_vehicle_point);
   double offset_from_start_to_ego = utils::offsetFromStartToEgo(interp_path, ego_pose, closest_idx);
+  using Slice = occlusion_spot_utils::Slice;
+  std::vector<Slice> detection_area_polygons;
+  utils::buildDetectionAreaPolygon(
+    detection_area_polygons, interp_path, offset_from_start_to_ego, param_);
+  const auto filtered_obj = utils::filterDynamicObjectByDetectionArea(obj, detection_area_polygons);
   // Note: Don't consider offset from path start to ego here
   std::vector<PossibleCollisionInfo> possible_collisions =
     utils::generatePossibleCollisionBehindParkedVehicle(
-      interp_path, param_, offset_from_start_to_ego, obj);
+      interp_path, param_, offset_from_start_to_ego, filtered_obj);
   utils::filterCollisionByRoadType(possible_collisions, focus_area);
   utils::calcSlowDownPointsForPossibleCollision(0, interp_path, 0.0, possible_collisions);
   // Note: Consider offset from path start to ego here
   utils::handleCollisionOffset(possible_collisions, offset_from_start_to_ego, 0.0);
   // apply safe velocity using ebs and pbs deceleration
   utils::applySafeVelocityConsideringPossibleCollision(path, possible_collisions, param_);
-
+  if (param_.debug) {
+    for (const auto & p : detection_area_polygons) {
+      debug_data_.detection_areas.emplace_back(p.polygon);
+    }
+  }
   debug_data_.possible_collisions = possible_collisions;
   return true;
 }

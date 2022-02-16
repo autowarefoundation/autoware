@@ -27,13 +27,15 @@ namespace behavior_velocity_planner
 {
 namespace
 {
+using builtin_interfaces::msg::Time;
+
 visualization_msgs::msg::Marker makeArrowMarker(
-  const occlusion_spot_utils::PossibleCollisionInfo & possible_collision, int id)
+  const occlusion_spot_utils::PossibleCollisionInfo & possible_collision, const int id)
 {
   visualization_msgs::msg::Marker debug_marker;
   debug_marker.header.frame_id = "map";
   debug_marker.ns = "occlusion spot arrow";
-  debug_marker.id = id;
+  debug_marker.id = planning_utils::bitShift(id);
   debug_marker.type = visualization_msgs::msg::Marker::ARROW;
   debug_marker.pose.orientation = tier4_autoware_utils::createMarkerOrientation(0, 0, 0, 1.0);
   debug_marker.scale = tier4_autoware_utils::createMarkerScale(0.05, 0.2, 0.5);
@@ -49,7 +51,7 @@ visualization_msgs::msg::Marker makeArrowMarker(
 
 std::vector<visualization_msgs::msg::Marker> makeSlowDownMarkers(
   const occlusion_spot_utils::PossibleCollisionInfo & possible_collision,
-  const std::string road_type, int id)
+  const std::string road_type, const int id)
 {
   // virtual wall
   std::vector<visualization_msgs::msg::Marker> debug_markers;
@@ -59,7 +61,7 @@ std::vector<visualization_msgs::msg::Marker> makeSlowDownMarkers(
   wall_marker.lifetime = rclcpp::Duration::from_seconds(0.5);
   wall_marker.type = visualization_msgs::msg::Marker::CUBE;
   wall_marker.action = visualization_msgs::msg::Marker::ADD;
-  wall_marker.id = id;
+  wall_marker.id = planning_utils::bitShift(id);
   // cylinder at collision point
   wall_marker.pose = possible_collision.intersection_pose;
   wall_marker.pose.position.z += 1.0;
@@ -73,7 +75,7 @@ std::vector<visualization_msgs::msg::Marker> makeSlowDownMarkers(
   visualization_msgs::msg::Marker slowdown_reason_marker;
   slowdown_reason_marker.header.frame_id = "map";
   slowdown_reason_marker.ns = "slow factor_text";
-  slowdown_reason_marker.id = id;
+  slowdown_reason_marker.id = planning_utils::bitShift(id);
   slowdown_reason_marker.lifetime = rclcpp::Duration::from_seconds(0.5);
   slowdown_reason_marker.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
   slowdown_reason_marker.action = visualization_msgs::msg::Marker::ADD;
@@ -91,13 +93,14 @@ std::vector<visualization_msgs::msg::Marker> makeSlowDownMarkers(
 }
 
 std::vector<visualization_msgs::msg::Marker> makeCollisionMarkers(
-  const occlusion_spot_utils::PossibleCollisionInfo & possible_collision, int id, bool show_text)
+  const occlusion_spot_utils::PossibleCollisionInfo & possible_collision, const int id,
+  const bool show_text)
 {
   std::vector<visualization_msgs::msg::Marker> debug_markers;
   visualization_msgs::msg::Marker debug_marker;
   debug_marker.header.frame_id = "map";
   debug_marker.ns = "collision_point";
-  debug_marker.id = id;
+  debug_marker.id = planning_utils::bitShift(id);
   // cylinder at collision with margin point
   debug_marker.type = visualization_msgs::msg::Marker::CYLINDER;
   debug_marker.pose = possible_collision.collision_with_margin.pose;
@@ -139,12 +142,13 @@ std::vector<visualization_msgs::msg::Marker> makeCollisionMarkers(
 }
 
 visualization_msgs::msg::MarkerArray makePolygonMarker(
-  const std::vector<lanelet::BasicPolygon2d> & polygons, double z)
+  const std::vector<lanelet::BasicPolygon2d> & polygons, const int id, const double z)
 {
   visualization_msgs::msg::MarkerArray debug_markers;
   visualization_msgs::msg::Marker debug_marker;
   debug_marker.header.frame_id = "map";
-  debug_marker.id = 0;
+  debug_marker.header.stamp = rclcpp::Time(0);
+  debug_marker.id = planning_utils::bitShift(id);
   debug_marker.type = visualization_msgs::msg::Marker::LINE_STRIP;
   debug_marker.action = visualization_msgs::msg::Marker::ADD;
   debug_marker.pose.position = tier4_autoware_utils::createMarkerPosition(0.0, 0.0, z);
@@ -152,7 +156,7 @@ visualization_msgs::msg::MarkerArray makePolygonMarker(
   debug_marker.scale = tier4_autoware_utils::createMarkerScale(0.1, 0.1, 0.1);
   debug_marker.color = tier4_autoware_utils::createMarkerColor(1.0, 0.0, 1.0, 0.3);
   debug_marker.lifetime = rclcpp::Duration::from_seconds(0.1);
-  debug_marker.ns = "sidewalk";
+  debug_marker.ns = "detection_area";
   for (const auto & poly : polygons) {
     for (const auto & p : poly) {
       geometry_msgs::msg::Point point =
@@ -196,23 +200,15 @@ visualization_msgs::msg::MarkerArray createPathMarkerArray(
 }
 
 template <class T>
-visualization_msgs::msg::MarkerArray createMarkers(
+visualization_msgs::msg::MarkerArray createPossibleCollisionMarkers(
   T & debug_data, [[maybe_unused]] const int64_t module_id_)
 {
   // add slow down markers for occlusion spot
   visualization_msgs::msg::MarkerArray occlusion_spot_slowdown_markers;
   auto & possible_collisions = debug_data.possible_collisions;
-  // sort collision
-  std::sort(
-    possible_collisions.begin(), possible_collisions.end(),
-    [](
-      occlusion_spot_utils::PossibleCollisionInfo pc1,
-      occlusion_spot_utils::PossibleCollisionInfo pc2) {
-      return pc1.arc_lane_dist_at_collision.length < pc2.arc_lane_dist_at_collision.length;
-    });
 
   // draw virtual wall markers
-  int id = 0;
+  int id = planning_utils::bitShift(module_id_);
   for (const auto & possible_collision : possible_collisions) {
     std::vector<visualization_msgs::msg::Marker> collision_markers =
       makeSlowDownMarkers(possible_collision, debug_data.road_type, id++);
@@ -222,7 +218,7 @@ visualization_msgs::msg::MarkerArray createMarkers(
   }
 
   // draw obstacle collision
-  id = 0;
+  id = planning_utils::bitShift(module_id_);
   for (const auto & possible_collision : possible_collisions) {
     // debug marker
     std::vector<visualization_msgs::msg::Marker> collision_markers =
@@ -235,6 +231,25 @@ visualization_msgs::msg::MarkerArray createMarkers(
   return occlusion_spot_slowdown_markers;
 }
 
+visualization_msgs::msg::MarkerArray createOcclusionMarkerArray(
+  const std::vector<geometry_msgs::msg::Point> & occlusion_points, const int64_t module_id)
+{
+  visualization_msgs::msg::MarkerArray msg;
+  {
+    const Time now = rclcpp::Time(0);
+    auto marker = createDefaultMarker(
+      "map", now, "occlusion", 0, visualization_msgs::msg::Marker::SPHERE,
+      createMarkerColor(1.0, 0.0, 0.0, 0.999));
+    marker.scale = createMarkerScale(0.5, 0.5, 0.5);
+    marker.lifetime = rclcpp::Duration::from_seconds(0.1);
+    for (size_t i = 0; i < occlusion_points.size(); ++i) {
+      marker.id = i + planning_utils::bitShift(module_id);
+      marker.pose.position = occlusion_points.at(i);
+      msg.markers.push_back(marker);
+    }
+  }
+  return msg;
+}
 }  // namespace
 
 visualization_msgs::msg::MarkerArray OcclusionSpotInPublicModule::createDebugMarkerArray()
@@ -242,7 +257,16 @@ visualization_msgs::msg::MarkerArray OcclusionSpotInPublicModule::createDebugMar
   const auto current_time = this->clock_->now();
 
   visualization_msgs::msg::MarkerArray debug_marker_array;
-  appendMarkerArray(createMarkers(debug_data_, module_id_), current_time, &debug_marker_array);
+  if (!debug_data_.possible_collisions.empty()) {
+    appendMarkerArray(
+      createPossibleCollisionMarkers(debug_data_, module_id_), current_time, &debug_marker_array);
+  }
+  if (!debug_data_.detection_areas.empty()) {
+    appendMarkerArray(
+      makePolygonMarker(debug_data_.detection_areas, module_id_, debug_data_.z), current_time,
+      &debug_marker_array);
+  }
+
   return debug_marker_array;
 }
 visualization_msgs::msg::MarkerArray OcclusionSpotInPrivateModule::createDebugMarkerArray()
@@ -250,15 +274,28 @@ visualization_msgs::msg::MarkerArray OcclusionSpotInPrivateModule::createDebugMa
   const auto current_time = this->clock_->now();
 
   visualization_msgs::msg::MarkerArray debug_marker_array;
-  appendMarkerArray(createMarkers(debug_data_, module_id_), current_time, &debug_marker_array);
-  appendMarkerArray(
-    makePolygonMarker(debug_data_.sidewalks, debug_data_.z), current_time, &debug_marker_array);
-  appendMarkerArray(
-    createPathMarkerArray(debug_data_.path_raw, "path_raw", 0, 0.0, 1.0, 1.0), current_time,
-    &debug_marker_array);
-  appendMarkerArray(
-    createPathMarkerArray(debug_data_.interp_path, "path_interp", 0, 0.0, 1.0, 1.0), current_time,
-    &debug_marker_array);
+  if (!debug_data_.possible_collisions.empty()) {
+    appendMarkerArray(
+      createPossibleCollisionMarkers(debug_data_, module_id_), current_time, &debug_marker_array);
+  }
+  if (!debug_data_.detection_areas.empty()) {
+    appendMarkerArray(
+      makePolygonMarker(debug_data_.detection_areas, module_id_, debug_data_.z), current_time,
+      &debug_marker_array);
+  }
+  if (!debug_data_.interp_path.points.empty()) {
+    appendMarkerArray(
+      createPathMarkerArray(debug_data_.path_raw, "path_raw", 0, 0.0, 1.0, 1.0), current_time,
+      &debug_marker_array);
+    appendMarkerArray(
+      createPathMarkerArray(debug_data_.interp_path, "path_interp", 0, 0.0, 1.0, 1.0), current_time,
+      &debug_marker_array);
+  }
+  if (!debug_data_.occlusion_points.empty()) {
+    appendMarkerArray(
+      createOcclusionMarkerArray(debug_data_.occlusion_points, module_id_), current_time,
+      &debug_marker_array);
+  }
   return debug_marker_array;
 }
 }  // namespace behavior_velocity_planner

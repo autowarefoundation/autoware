@@ -24,15 +24,22 @@ namespace grid_utils
 {
 bool isOcclusionSpotSquare(
   OcclusionSpotSquare & occlusion_spot, const grid_map::Matrix & grid_data,
-  const grid_map::Index & cell, int side_size, const grid_map::Size & grid_size)
+  const grid_map::Index & cell, int min_occlusion_size, const grid_map::Size & grid_size)
 {
+  const int offset = (min_occlusion_size != 1) ? (min_occlusion_size - 1) : min_occlusion_size;
+  const int cell_max_x = grid_size.x() - 1;
+  const int cell_max_y = grid_size.y() - 1;
   // Calculate ranges to check
-  int min_x;
-  int max_x;
-  int min_y;
-  int max_y;
+  int min_x = cell.x() - offset;
+  int max_x = cell.x() + offset;
+  int min_y = cell.y() - offset;
+  int max_y = cell.y() + offset;
+  if (min_x < 0) max_x += std::abs(min_x);
+  if (max_x > cell_max_x) min_x -= std::abs(max_x - cell_max_x);
+  if (min_y < 0) max_y += std::abs(min_y);
+  if (max_y > cell_max_y) min_y -= std::abs(max_y - cell_max_y);
   // No occlusion_spot with size 0
-  if (side_size == 0) {
+  if (min_occlusion_size == 0) {
     return false;
   }
   /**
@@ -41,25 +48,31 @@ bool isOcclusionSpotSquare(
    *        .               .
    *   (min_x,max_y)...(max_x,max_y)
    */
-  const int offset = side_size - 1;
-  min_x = cell.x();
-  max_x = cell.x() + offset;
-  min_y = cell.y() - offset;
-  max_y = cell.y();
   // Ensure we stay inside the grid
   min_x = std::max(0, min_x);
-  max_x = std::min(grid_size.x() - 1, max_x);
+  max_x = std::min(cell_max_x, max_x);
   min_y = std::max(0, min_y);
-  max_y = std::min(grid_size.y() - 1, max_y);
+  max_y = std::min(cell_max_y, max_y);
+  int not_unknown_count = 0;
+  if (grid_data(cell.x(), cell.y()) != grid_utils::occlusion_cost_value::UNKNOWN) {
+    return false;
+  }
   for (int x = min_x; x <= max_x; ++x) {
     for (int y = min_y; y <= max_y; ++y) {
       // if the value is not unknown value return false
       if (grid_data(x, y) != grid_utils::occlusion_cost_value::UNKNOWN) {
-        return false;
+        not_unknown_count++;
       }
+      /**
+       * @brief case pass o: unknown x: freespace or occupied
+       *   oxx oxo oox xxx oxo oxo
+       *   oox oxx oox ooo oox oxo ... etc
+       *   ooo ooo oox ooo xoo oxo
+       */
+      if (not_unknown_count > min_occlusion_size + 1) return false;
     }
   }
-  occlusion_spot.side_size = side_size;
+  occlusion_spot.min_occlusion_size = min_occlusion_size;
   occlusion_spot.index = cell;
   return true;
 }
@@ -112,12 +125,12 @@ void getCornerPositions(
   const OcclusionSpotSquare & occlusion_spot_square)
 {
   // Special case with size = 1: only one cell
-  if (occlusion_spot_square.side_size == 1) {
+  if (occlusion_spot_square.min_occlusion_size == 1) {
     corner_positions.emplace_back(occlusion_spot_square.position);
     return;
   }
   std::vector<grid_map::Index> corner_indexes;
-  const int offset = (occlusion_spot_square.side_size - 1) / 2;
+  const int offset = (occlusion_spot_square.min_occlusion_size - 1) / 2;
   /**
    * @brief relation of each grid position
    *    bl br

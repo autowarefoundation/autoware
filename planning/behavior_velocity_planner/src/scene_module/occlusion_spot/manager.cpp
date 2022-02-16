@@ -80,6 +80,7 @@ OcclusionSpotModuleManager::OcclusionSpotModuleManager(rclcpp::Node & node)
   // for crosswalk parameters
   auto & pp = planner_param_;
   // assume pedestrian coming out from occlusion spot with this velocity
+  pp.debug = node.declare_parameter(ns + ".debug", false);
   pp.pedestrian_vel = node.declare_parameter(ns + ".pedestrian_vel", 1.0);
   pp.detection_area_length = node.declare_parameter(ns + ".threshold.detection_area_length", 200.0);
   pp.stuck_vehicle_vel = node.declare_parameter(ns + ".threshold.stuck_vehicle_vel", 1.0);
@@ -87,19 +88,22 @@ OcclusionSpotModuleManager::OcclusionSpotModuleManager(rclcpp::Node & node)
 
   pp.dist_thr = node.declare_parameter(ns + ".threshold.search_dist", 10.0);
   pp.angle_thr = node.declare_parameter(ns + ".threshold.search_angle", M_PI / 5.0);
-  pp.show_debug_grid = node.declare_parameter(ns + ".show_debug_grid", false);
 
   // ego additional velocity config
   pp.v.safety_ratio = node.declare_parameter(ns + ".motion.safety_ratio", 1.0);
   pp.v.delay_time = node.declare_parameter(ns + ".motion.delay_time", 0.1);
   pp.v.safe_margin = node.declare_parameter(ns + ".motion.safe_margin", 1.0);
   pp.v.max_slow_down_accel = node.declare_parameter(ns + ".motion.max_slow_down_accel", -1.5);
+  pp.v.non_effective_jerk = node.declare_parameter(ns + ".motion.non_effective_jerk", -0.3);
+  pp.v.non_effective_accel =
+    node.declare_parameter(ns + ".motion.non_effective_acceleration", -1.0);
   pp.v.min_allowed_velocity = node.declare_parameter(ns + ".motion.min_allowed_velocity", 1.0);
-  // sidewalk param
-  pp.sidewalk.min_occlusion_spot_size =
-    node.declare_parameter(ns + ".sidewalk.min_occlusion_spot_size", 2.0);
-  pp.sidewalk.focus_range = node.declare_parameter(ns + ".sidewalk.focus_range", 4.0);
-  pp.sidewalk.slice_size = node.declare_parameter(ns + ".sidewalk.slice_size", 1.5);
+  // detection_area param
+  pp.detection_area.min_occlusion_spot_size =
+    node.declare_parameter(ns + ".detection_area.min_occlusion_spot_size", 2.0);
+  pp.detection_area.max_lateral_distance =
+    node.declare_parameter(ns + ".detection_area.max_lateral_distance", 4.0);
+  pp.detection_area.slice_length = node.declare_parameter(ns + ".detection_area.slice_length", 1.5);
   // occupancy grid param
   pp.grid.free_space_max = node.declare_parameter(ns + ".grid.free_space_max", 10);
   pp.grid.occupied_min = node.declare_parameter(ns + ".grid.occupied_min", 51);

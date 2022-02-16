@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <lanelet2_extension/utility/utilities.hpp>
+#include <scene_module/occlusion_spot/geometry.hpp>
 #include <scene_module/occlusion_spot/occlusion_spot_utils.hpp>
 #include <scene_module/occlusion_spot/risk_predictive_braking.hpp>
 #include <scene_module/occlusion_spot/scene_occlusion_spot_in_private_road.hpp>
@@ -45,6 +46,7 @@ bool OcclusionSpotInPrivateModule::modifyPathVelocity(
   [[maybe_unused]] tier4_planning_msgs::msg::StopReason * stop_reason)
 {
   debug_data_ = DebugData();
+  debug_data_.road_type = "private";
   if (path->points.size() < 2) {
     return true;
   }
@@ -54,6 +56,9 @@ bool OcclusionSpotInPrivateModule::modifyPathVelocity(
     param_.v.max_stop_accel = planner_data_->max_stop_acceleration_threshold;
     param_.v.v_ego = planner_data_->current_velocity->twist.linear.x;
     param_.v.a_ego = planner_data_->current_accel.get();
+    param_.detection_area_max_length = planning_utils::calcJudgeLineDistWithJerkLimit(
+      param_.v.v_ego, param_.v.a_ego, param_.v.non_effective_accel, param_.v.non_effective_jerk,
+      0.0);
   }
   const geometry_msgs::msg::Pose ego_pose = planner_data_->current_pose.pose;
   const auto & lanelet_map_ptr = planner_data_->lanelet_map;
@@ -67,6 +72,7 @@ bool OcclusionSpotInPrivateModule::modifyPathVelocity(
   PathWithLaneId clipped_path;
   utils::clipPathByLength(*path, clipped_path, max_range);
   PathWithLaneId interp_path;
+  //! never change this interpolation interval(will affect module accuracy)
   utils::splineInterpolate(clipped_path, 1.0, &interp_path, logger_);
   debug_data_.interp_path = interp_path;
   int closest_idx = -1;
@@ -82,18 +88,20 @@ bool OcclusionSpotInPrivateModule::modifyPathVelocity(
   nav_msgs::msg::OccupancyGrid occ_grid = *occ_grid_ptr;
   grid_map::GridMap grid_map;
   grid_utils::denoiseOccupancyGridCV(occ_grid, grid_map, param_.grid);
-  if (param_.show_debug_grid) {
-    publisher_->publish(occ_grid);
-  }
   double offset_from_start_to_ego = utils::offsetFromStartToEgo(interp_path, ego_pose, closest_idx);
+  using Slice = occlusion_spot_utils::Slice;
+  std::vector<Slice> detection_area_polygons;
+  utils::buildDetectionAreaPolygon(
+    detection_area_polygons, interp_path, offset_from_start_to_ego, param_);
   RCLCPP_DEBUG_STREAM_THROTTLE(logger_, *clock_, 3000, "closest_idx : " << closest_idx);
   RCLCPP_DEBUG_STREAM_THROTTLE(
     logger_, *clock_, 3000, "offset_from_start_to_ego : " << offset_from_start_to_ego);
   std::vector<utils::PossibleCollisionInfo> possible_collisions;
   // Note: Don't consider offset from path start to ego here
-  utils::generateSidewalkPossibleCollisions(
-    possible_collisions, grid_map, interp_path, offset_from_start_to_ego, param_,
-    debug_data_.sidewalks);
+  utils::createPossibleCollisionsInDetectionArea(
+    detection_area_polygons, possible_collisions, grid_map, interp_path, offset_from_start_to_ego,
+    param_, debug_data_.occlusion_points);
+  if (detection_area_polygons.empty()) return true;
   utils::filterCollisionByRoadType(possible_collisions, focus_area);
   RCLCPP_DEBUG_STREAM_THROTTLE(
     logger_, *clock_, 3000, "num possible collision:" << possible_collisions.size());
@@ -102,6 +110,15 @@ bool OcclusionSpotInPrivateModule::modifyPathVelocity(
   utils::handleCollisionOffset(possible_collisions, offset_from_start_to_ego, 0.0);
   // apply safe velocity using ebs and pbs deceleration
   utils::applySafeVelocityConsideringPossibleCollision(path, possible_collisions, param_);
+  // these debug topics needs computation resource
+  if (param_.debug) {
+    publisher_->publish(occ_grid);
+    for (const auto & p : detection_area_polygons) {
+      debug_data_.detection_areas.emplace_back(p.polygon);
+    }
+  } else {
+    debug_data_.occlusion_points.clear();
+  }
   debug_data_.z = path->points.front().point.pose.position.z;
   debug_data_.possible_collisions = possible_collisions;
   debug_data_.path_raw = *path;

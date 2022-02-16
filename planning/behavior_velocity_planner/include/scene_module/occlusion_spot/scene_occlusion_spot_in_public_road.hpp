@@ -44,10 +44,13 @@ public:
   struct DebugData
   {
     std::string road_type = "public";
-    double z;
-    std::vector<lanelet::BasicPolygon2d> sidewalks;
+    std::vector<lanelet::BasicPolygon2d> detection_areas;
     std::vector<geometry_msgs::msg::Point> parked_vehicle_point;
     std::vector<occlusion_spot_utils::PossibleCollisionInfo> possible_collisions;
+    std::vector<geometry_msgs::msg::Point> occlusion_points;
+    PathWithLaneId path_raw;
+    PathWithLaneId interp_path;
+    double z;
   };
 
   OcclusionSpotInPublicModule(

@@ -14,6 +14,7 @@
 
 #include <interpolation/spline_interpolation.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <scene_module/occlusion_spot/geometry.hpp>
 #include <scene_module/occlusion_spot/occlusion_spot_utils.hpp>
 #include <scene_module/occlusion_spot/risk_predictive_braking.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
@@ -33,6 +34,7 @@
 
 namespace behavior_velocity_planner
 {
+namespace bg = boost::geometry;
 namespace occlusion_spot_utils
 {
 lanelet::ConstLanelet toPathLanelet(const PathWithLaneId & path)
@@ -400,6 +402,23 @@ DetectionAreaIdx extractTargetRoadArcLength(
   return DetectionAreaIdx(std::make_pair(start_dist, dist_sum));
 }
 
+std::vector<PredictedObject> filterDynamicObjectByDetectionArea(
+  std::vector<PredictedObject> & objs, const std::vector<Slice> polys)
+{
+  std::vector<PredictedObject> filtered_obj;
+  // stuck points by predicted objects
+  for (const auto & object : objs) {
+    // check if the footprint is in the stuck detect area
+    const Polygon2d obj_footprint = planning_utils::toFootprintPolygon(object);
+    for (const auto & p : polys) {
+      if (!bg::disjoint(obj_footprint, p.polygon)) {
+        filtered_obj.emplace_back(object);
+      }
+    }
+  }
+  return filtered_obj;
+}
+
 void filterCollisionByRoadType(
   std::vector<PossibleCollisionInfo> & possible_collisions, const DetectionAreaIdx area)
 {
@@ -415,61 +434,45 @@ void filterCollisionByRoadType(
   }
 }
 
-void generateSidewalkPossibleCollisions(
+void createPossibleCollisionsInDetectionArea(
+  const std::vector<Slice> & detection_area_polygons,
   std::vector<PossibleCollisionInfo> & possible_collisions, const grid_map::GridMap & grid,
   const PathWithLaneId & path, const double offset_from_start_to_ego, const PlannerParam & param,
-  std::vector<lanelet::BasicPolygon2d> & debug)
+  std::vector<Point> & debug_points)
 {
   lanelet::ConstLanelet path_lanelet = toPathLanelet(path);
   if (path_lanelet.centerline2d().empty()) {
     return;
   }
-  std::vector<geometry::Slice> sidewalk_slices;
-  geometry::buildSidewalkSlices(
-    sidewalk_slices, path_lanelet, 0.0, param.half_vehicle_width, param.sidewalk.slice_size,
-    param.sidewalk.focus_range);
-  double length_lower_bound = std::numeric_limits<double>::max();
   double distance_lower_bound = std::numeric_limits<double>::max();
-  // sort distance closest first to skip inferior collision
-  std::sort(
-    sidewalk_slices.begin(), sidewalk_slices.end(),
-    [](const geometry::Slice & s1, const geometry::Slice & s2) {
-      return std::abs(s1.range.min_distance) < std::abs(s2.range.min_distance);
-    });
-
-  std::sort(
-    sidewalk_slices.begin(), sidewalk_slices.end(),
-    [](const geometry::Slice & s1, const geometry::Slice & s2) {
-      return s1.range.min_length < s2.range.min_length;
-    });
-
-  for (const geometry::Slice & sidewalk_slice : sidewalk_slices) {
-    debug.push_back(sidewalk_slice.polygon);
-    if ((sidewalk_slice.range.min_length < length_lower_bound ||
-         std::abs(sidewalk_slice.range.min_distance) < distance_lower_bound)) {
-      std::vector<grid_map::Position> occlusion_spot_positions;
-      grid_utils::findOcclusionSpots(
-        occlusion_spot_positions, grid, sidewalk_slice.polygon,
-        param.sidewalk.min_occlusion_spot_size);
-      generateSidewalkPossibleCollisionFromOcclusionSpot(
-        possible_collisions, grid, occlusion_spot_positions, offset_from_start_to_ego, path_lanelet,
-        param);
-      if (!possible_collisions.empty()) {
-        length_lower_bound = sidewalk_slice.range.min_length;
-        distance_lower_bound = std::abs(sidewalk_slice.range.min_distance);
-        possible_collisions.insert(
-          possible_collisions.end(), possible_collisions.begin(), possible_collisions.end());
-        debug.push_back(sidewalk_slice.polygon);
-      }
+  for (const Slice & detection_area_slice : detection_area_polygons) {
+    std::vector<grid_map::Position> occlusion_spot_positions;
+    grid_utils::findOcclusionSpots(
+      occlusion_spot_positions, grid, detection_area_slice.polygon,
+      param.detection_area.min_occlusion_spot_size);
+    Point p;
+    for (const auto & op : occlusion_spot_positions) {
+      p.x = op[0];
+      p.y = op[1];
+      debug_points.emplace_back(p);
     }
+    if (occlusion_spot_positions.empty()) continue;
+    // for each partition find nearest occlusion spot from polygon's origin
+    BasicPoint2d base_point = detection_area_slice.polygon.at(0);
+    const auto pc = generateOneNotableCollisionFromOcclusionSpot(
+      grid, occlusion_spot_positions, offset_from_start_to_ego, base_point, path_lanelet, param);
+    if (!pc) continue;
+    const double lateral_distance = std::abs(pc.get().arc_lane_dist_at_collision.distance);
+    if (lateral_distance > distance_lower_bound) continue;
+    distance_lower_bound = lateral_distance;
+    possible_collisions.emplace_back(pc.get());
   }
 }
 
-void generateSidewalkPossibleCollisionFromOcclusionSpot(
-  std::vector<PossibleCollisionInfo> & possible_collisions, const grid_map::GridMap & grid,
-  const std::vector<grid_map::Position> & occlusion_spot_positions,
-  const double offset_from_start_to_ego, const lanelet::ConstLanelet & path_lanelet,
-  const PlannerParam & param)
+boost::optional<PossibleCollisionInfo> generateOneNotableCollisionFromOcclusionSpot(
+  const grid_map::GridMap & grid, const std::vector<grid_map::Position> & occlusion_spot_positions,
+  const double offset_from_start_to_ego, const BasicPoint2d base_point,
+  const lanelet::ConstLanelet & path_lanelet, const PlannerParam & param)
 {
   const double baselink_to_front = param.baselink_to_front;
   const double half_vehicle_width = param.half_vehicle_width;
@@ -481,27 +484,34 @@ void generateSidewalkPossibleCollisionFromOcclusionSpot(
     lanelet::BasicPoint2d obstacle_point = {occlusion_spot_position[0], occlusion_spot_position[1]};
     lanelet::ArcCoordinates arc_coord_occlusion_point =
       lanelet::geometry::toArcCoordinates(path_lanelet.centerline2d(), obstacle_point);
+    const double dist =
+      std::hypot(base_point[0] - obstacle_point[0], base_point[1] - obstacle_point[1]);
+    // skip if absolute distance is larger
+    if (distance_lower_bound < dist) continue;
     const double length_to_col = arc_coord_occlusion_point.length - baselink_to_front;
-    ArcCoordinates arc_coord_collision_point = {
-      length_to_col,
-      calcSignedLateralDistanceWithOffset(arc_coord_occlusion_point.distance, half_vehicle_width)};
+    // skip if occlusion is behind ego bumper
     if (length_to_col < offset_from_start_to_ego) {
       continue;
     }
+    ArcCoordinates arc_coord_collision_point = {
+      length_to_col,
+      calcSignedLateralDistanceWithOffset(arc_coord_occlusion_point.distance, half_vehicle_width)};
     PossibleCollisionInfo pc = calculateCollisionPathPointFromOcclusionSpot(
       arc_coord_occlusion_point, arc_coord_collision_point, path_lanelet, param);
     const auto & ip = pc.intersection_pose.position;
     bool collision_free_at_intersection =
       grid_utils::isCollisionFree(grid, occlusion_spot_position, grid_map::Position(ip.x, ip.y));
-    // this is going to extract collision that is nearest to path
-    if (
-      collision_free_at_intersection && distance_lower_bound > arc_coord_collision_point.distance) {
-      distance_lower_bound = arc_coord_collision_point.distance;
-      candidate = {pc};
+    if (collision_free_at_intersection) {
+      distance_lower_bound = dist;
+      candidate = pc;
       has_collision = true;
     }
   }
-  if (has_collision) possible_collisions.emplace_back(candidate);
+  if (has_collision) {
+    return candidate;
+  } else {
+    return {};
+  }
 }
 
 }  // namespace occlusion_spot_utils

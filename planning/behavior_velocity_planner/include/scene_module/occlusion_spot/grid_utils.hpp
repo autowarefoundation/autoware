@@ -19,7 +19,6 @@
 #include <grid_map_core/iterators/LineIterator.hpp>
 #include <grid_map_core/iterators/PolygonIterator.hpp>
 #include <opencv2/opencv.hpp>
-#include <scene_module/occlusion_spot/geometry.hpp>
 
 #include <nav_msgs/msg/occupancy_grid.hpp>
 
@@ -51,7 +50,7 @@ struct OcclusionSpotSquare
 {
   grid_map::Index index;        // index of the anchor
   grid_map::Position position;  // position of the anchor
-  int side_size;                // number of cells for each side of the square
+  int min_occlusion_size;       // number of cells for each side of the square
 };
 // @brief structure representing a OcclusionSpot on the OccupancyGrid
 struct OcclusionSpot
@@ -64,7 +63,7 @@ struct OcclusionSpot
 // if the given cell is a occlusion_spot square of size min_size*min_size in the given grid
 bool isOcclusionSpotSquare(
   OcclusionSpotSquare & occlusion_spot, const grid_map::Matrix & grid_data,
-  const grid_map::Index & cell, const int side_size, const grid_map::Size & grid_size);
+  const grid_map::Index & cell, const int min_occlusion_size, const grid_map::Size & grid_size);
 //!< @brief Find all occlusion spots inside the given lanelet
 void findOcclusionSpots(
   std::vector<grid_map::Position> & occlusion_spot_positions, const grid_map::GridMap & grid,

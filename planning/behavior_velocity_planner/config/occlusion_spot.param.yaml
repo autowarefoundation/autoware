@@ -1,6 +1,7 @@
 /**:
   ros__parameters:
     occlusion_spot:
+      debug: false                         # [-] whether to publish debug markers. Note Default should be false for performance
       pedestrian_vel: 1.0                  # [m/s] assume pedestrian is dashing from occlusion at this velocity
       threshold:
         detection_area_length: 100.0        # [m] the length of path to consider perception range
@@ -9,13 +10,15 @@
       motion:
         safety_ratio: 0.8                   # [-] jerk/acceleration ratio for safety
         max_slow_down_acceleration: -1.5    # [m/s^2] minimum deceleration for safe deceleration.
-        min_allowed_velocity: 1.0       # [m/s] minimum velocity allowed
+        non_effective_jerk: -0.3            # [m/s^3] weak jerk for velocity planning.
+        non_effective_acceleration: -1.0    # [m/s^2] weak deceleration for velocity planning.
+        min_allowed_velocity: 1.0           # [m/s] minimum velocity allowed
         delay_time: 0.1                     # [s] safety time buffer for delay system response
         safe_margin: 1.0                    # [m] maximum safety distance for any error
-      sidewalk:
+      detection_area:
         min_occlusion_spot_size: 1.0     # [m] occupancy grid must contain an UNKNOWN area of at least size NxN to be considered a hidden obstacle.
-        slice_size: 1.5     # [m] size of sidewalk slices in both length and distance relative to the ego trajectory.
-        focus_range: 3.0            # [m] buffer around the ego path used to build the sidewalk area.
+        slice_length: 10.0                # [m] size of slices in both length and distance relative to the ego path.
+        max_lateral_distance: 4.0        # [m] buffer around the ego path used to build the detection area.
       grid:
-        free_space_max: 40  # maximum value of a free space cell in the occupancy grid
-        occupied_min: 60   # minimum value of an occupied cell in the occupancy grid
+        free_space_max: 40  # [-] maximum value of a free space cell in the occupancy grid
+        occupied_min: 60    # [-] minimum value of an occupied cell in the occupancy grid
