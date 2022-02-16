@@ -72,6 +72,10 @@ repositories:
     type: git
     url: https://github.com/tier4/lexus_description.iv.git # TODO(Tier IV): Rename to lexus_launch
     version: tier4/universe
+  vehicle/pacmod_interface:
+    type: git
+    url: https://github.com/tier4/pacmod_interface.git
+    version: main
   # param
   param/individual_vehicle_params:
     type: git
