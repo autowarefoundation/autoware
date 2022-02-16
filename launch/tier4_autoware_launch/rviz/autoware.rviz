@@ -354,7 +354,7 @@ Visualization Manager:
           Min Intensity: 0
           Name: PointCloudMap
           Position Transformer: XYZ
-          Selectable: true
+          Selectable: false
           Size (Pixels): 1
           Size (m): 0.02
           Style: Points
@@ -423,7 +423,7 @@ Visualization Manager:
               Min Intensity: 0
               Name: ConcatenatePointCloud
               Position Transformer: XYZ
-              Selectable: true
+              Selectable: false
               Size (Pixels): 1
               Size (m): 0.02
               Style: Points
@@ -598,7 +598,7 @@ Visualization Manager:
               Min Intensity: 0
               Name: Initial
               Position Transformer: XYZ
-              Selectable: true
+              Selectable: false
               Size (Pixels): 10
               Size (m): 0.02
               Style: Squares
@@ -631,7 +631,7 @@ Visualization Manager:
               Min Intensity: 0
               Name: Aligned
               Position Transformer: XYZ
-              Selectable: true
+              Selectable: false
               Size (Pixels): 10
               Size (m): 0.02
               Style: Squares
@@ -703,7 +703,7 @@ Visualization Manager:
               Min Intensity: -5
               Name: NoGroundPointCloud
               Position Transformer: XYZ
-              Selectable: true
+              Selectable: false
               Size (Pixels): 3
               Size (m): 0.02
               Style: Points
