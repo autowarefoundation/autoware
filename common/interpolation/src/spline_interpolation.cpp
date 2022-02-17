@@ -14,8 +14,6 @@
 
 #include "interpolation/spline_interpolation.hpp"
 
-#include "interpolation/interpolation_utils.hpp"
-
 #include <vector>
 
 namespace
@@ -43,7 +41,7 @@ struct TDMACoef
   std::vector<double> d;
 };
 
-std::vector<double> solveTridiagonalMatrixAlgorithm(const TDMACoef & tdma_coef)
+inline std::vector<double> solveTridiagonalMatrixAlgorithm(const TDMACoef & tdma_coef)
 {
   const auto & a = tdma_coef.a;
   const auto & b = tdma_coef.b;
@@ -79,10 +77,30 @@ std::vector<double> solveTridiagonalMatrixAlgorithm(const TDMACoef & tdma_coef)
 
   return x;
 }
+}  // namespace
 
-interpolation::MultiSplineCoef generateSplineCoefficients(
+namespace interpolation
+{
+std::vector<double> slerp(
+  const std::vector<double> & base_keys, const std::vector<double> & base_values,
+  const std::vector<double> & query_keys)
+{
+  SplineInterpolation interpolator;
+
+  // calculate spline coefficients
+  interpolator.calcSplineCoefficients(base_keys, base_values);
+
+  // interpolate base_keys at query_keys
+  return interpolator.getSplineInterpolatedValues(query_keys);
+}
+}  // namespace interpolation
+
+void SplineInterpolation::calcSplineCoefficients(
   const std::vector<double> & base_keys, const std::vector<double> & base_values)
 {
+  // throw exceptions for invalid arguments
+  interpolation_utils::validateKeysAndValues(base_keys, base_values);
+
   const size_t num_base = base_keys.size();  // N+1
 
   std::vector<double> diff_keys;    // N
@@ -115,55 +133,63 @@ interpolation::MultiSplineCoef generateSplineCoefficients(
   v.push_back(0.0);
 
   // calculate a, b, c, d of spline coefficients
-  interpolation::MultiSplineCoef multi_spline_coef(num_base - 1);  // N
+  multi_spline_coef_ = interpolation::MultiSplineCoef{num_base - 1};  // N
   for (size_t i = 0; i < num_base - 1; ++i) {
-    multi_spline_coef.a[i] = (v[i + 1] - v[i]) / 6.0 / diff_keys[i];
-    multi_spline_coef.b[i] = v[i] / 2.0;
-    multi_spline_coef.c[i] =
+    multi_spline_coef_.a[i] = (v[i + 1] - v[i]) / 6.0 / diff_keys[i];
+    multi_spline_coef_.b[i] = v[i] / 2.0;
+    multi_spline_coef_.c[i] =
       diff_values[i] / diff_keys[i] - diff_keys[i] * (2 * v[i] + v[i + 1]) / 6.0;
-    multi_spline_coef.d[i] = base_values[i];
+    multi_spline_coef_.d[i] = base_values[i];
   }
 
-  return multi_spline_coef;
+  base_keys_ = base_keys;
 }
 
-std::vector<double> getSplineInterpolatedValues(
-  const std::vector<double> & base_keys, const std::vector<double> & query_keys,
-  const interpolation::MultiSplineCoef & multi_spline_coef)
+std::vector<double> SplineInterpolation::getSplineInterpolatedValues(
+  const std::vector<double> & query_keys) const
 {
-  const auto & a = multi_spline_coef.a;
-  const auto & b = multi_spline_coef.b;
-  const auto & c = multi_spline_coef.c;
-  const auto & d = multi_spline_coef.d;
+  // throw exceptions for invalid arguments
+  interpolation_utils::validateKeys(base_keys_, query_keys);
+
+  const auto & a = multi_spline_coef_.a;
+  const auto & b = multi_spline_coef_.b;
+  const auto & c = multi_spline_coef_.c;
+  const auto & d = multi_spline_coef_.d;
 
   std::vector<double> res;
   size_t j = 0;
   for (const auto & query_key : query_keys) {
-    while (base_keys.at(j + 1) < query_key) {
+    while (base_keys_.at(j + 1) < query_key) {
       ++j;
     }
 
-    const double ds = query_key - base_keys.at(j);
+    const double ds = query_key - base_keys_.at(j);
     res.push_back(d.at(j) + (c.at(j) + (b.at(j) + a.at(j) * ds) * ds) * ds);
   }
 
   return res;
 }
-}  // namespace
 
-namespace interpolation
-{
-std::vector<double> slerp(
-  const std::vector<double> & base_keys, const std::vector<double> & base_values,
-  const std::vector<double> & query_keys)
+std::vector<double> SplineInterpolation::getSplineInterpolatedDiffValues(
+  const std::vector<double> & query_keys) const
 {
   // throw exceptions for invalid arguments
-  interpolation_utils::validateInput(base_keys, base_values, query_keys);
+  interpolation_utils::validateKeys(base_keys_, query_keys);
 
-  // calculate spline coefficients
-  const auto multi_spline_coef = generateSplineCoefficients(base_keys, base_values);
+  const auto & a = multi_spline_coef_.a;
+  const auto & b = multi_spline_coef_.b;
+  const auto & c = multi_spline_coef_.c;
 
-  // interpolate base_keys at query_keys
-  return getSplineInterpolatedValues(base_keys, query_keys, multi_spline_coef);
+  std::vector<double> res;
+  size_t j = 0;
+  for (const auto & query_key : query_keys) {
+    while (base_keys_.at(j + 1) < query_key) {
+      ++j;
+    }
+
+    const double ds = query_key - base_keys_.at(j);
+    res.push_back(c.at(j) + (2.0 * b.at(j) + 3.0 * a.at(j) * ds) * ds);
+  }
+
+  return res;
 }
-}  // namespace interpolation

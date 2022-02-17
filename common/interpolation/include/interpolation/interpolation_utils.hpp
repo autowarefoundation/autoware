@@ -51,20 +51,18 @@ inline bool isNotDecreasing(const std::vector<double> & x)
   return true;
 }
 
-inline void validateInput(
-  const std::vector<double> & base_keys, const std::vector<double> & base_values,
-  const std::vector<double> & query_keys)
+inline void validateKeys(
+  const std::vector<double> & base_keys, const std::vector<double> & query_keys)
 {
   // when vectors are empty
-  if (base_keys.empty() || base_values.empty() || query_keys.empty()) {
+  if (base_keys.empty() || query_keys.empty()) {
     throw std::invalid_argument("Points is empty.");
   }
 
   // when size of vectors are less than 2
-  if (base_keys.size() < 2 || base_values.size() < 2) {
+  if (base_keys.size() < 2) {
     throw std::invalid_argument(
-      "The size of points is less than 2. base_keys.size() = " + std::to_string(base_keys.size()) +
-      ", base_values.size() = " + std::to_string(base_values.size()));
+      "The size of points is less than 2. base_keys.size() = " + std::to_string(base_keys.size()));
   }
 
   // when indices are not sorted
@@ -75,6 +73,22 @@ inline void validateInput(
   // when query_keys is out of base_keys (This function does not allow exterior division.)
   if (query_keys.front() < base_keys.front() || base_keys.back() < query_keys.back()) {
     throw std::invalid_argument("query_keys is out of base_keys");
+  }
+}
+
+inline void validateKeysAndValues(
+  const std::vector<double> & base_keys, const std::vector<double> & base_values)
+{
+  // when vectors are empty
+  if (base_keys.empty() || base_values.empty()) {
+    throw std::invalid_argument("Points is empty.");
+  }
+
+  // when size of vectors are less than 2
+  if (base_keys.size() < 2 || base_values.size() < 2) {
+    throw std::invalid_argument(
+      "The size of points is less than 2. base_keys.size() = " + std::to_string(base_keys.size()) +
+      ", base_values.size() = " + std::to_string(base_values.size()));
   }
 
   // when sizes of indices and values are not same

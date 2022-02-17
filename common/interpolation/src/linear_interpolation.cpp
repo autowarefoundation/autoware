@@ -28,7 +28,8 @@ std::vector<double> lerp(
   const std::vector<double> & query_keys)
 {
   // throw exception for invalid arguments
-  interpolation_utils::validateInput(base_keys, base_values, query_keys);
+  interpolation_utils::validateKeys(base_keys, query_keys);
+  interpolation_utils::validateKeysAndValues(base_keys, base_values);
 
   // calculate linear interpolation
   std::vector<double> query_values;

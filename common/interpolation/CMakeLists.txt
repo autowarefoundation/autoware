@@ -15,6 +15,7 @@ ament_auto_find_build_dependencies()
 ament_auto_add_library(interpolation SHARED
   src/linear_interpolation.cpp
   src/spline_interpolation.cpp
+  src/spline_interpolation_points_2d.cpp
 )
 
 # Test
