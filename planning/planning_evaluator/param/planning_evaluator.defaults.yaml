@@ -1,0 +1,30 @@
+/**:
+  ros__parameters:
+    output_file: "" # if empty, metrics are not written to file
+    ego_frame: base_link # reference frame of ego
+
+    selected_metrics:
+      - curvature
+      - point_interval
+      - relative_angle
+      - length
+      - duration
+      - velocity
+      - acceleration
+      - jerk
+      - lateral_deviation
+      - yaw_deviation
+      - velocity_deviation
+      - stability
+      - stability_frechet
+      - obstacle_distance
+      - obstacle_ttc
+
+    trajectory:
+      min_point_dist_m: 0.1 # [m] minimum distance between two successive points to use for angle calculation
+      lookahead:
+        max_dist_m: 5.0 # [m] maximum distance from ego along the trajectory to use for calculation
+        max_time_s: 3.0 # [s] maximum time ahead of ego along the trajectory to use for calculation
+
+    obstacle:
+      dist_thr_m: 1.0 # [m] distance between ego and the obstacle below which a collision is considered
