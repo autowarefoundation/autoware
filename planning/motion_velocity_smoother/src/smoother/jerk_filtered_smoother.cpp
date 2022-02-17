@@ -424,8 +424,7 @@ TrajectoryPoints JerkFilteredSmoother::mergeFilteredTrajectory(
   if (getVx(backward_filtered, 0) < v0) {
     double current_vel = v0;
     double current_acc = a0;
-    while (getVx(backward_filtered, i) < current_vel && current_vel <= getVx(forward_filtered, i) &&
-           i < merged.size() - 1) {
+    while (getVx(backward_filtered, i) < current_vel && i < merged.size() - 1) {
       merged.at(i).longitudinal_velocity_mps = current_vel;
       merged.at(i).acceleration_mps2 = current_acc;
 
@@ -442,6 +441,10 @@ TrajectoryPoints JerkFilteredSmoother::mergeFilteredTrajectory(
       } else {
         current_vel = current_vel + current_acc * dt + 0.5 * j_min * dt * dt;
         current_acc = current_acc + j_min * dt;
+      }
+
+      if (current_vel > getVx(forward_filtered, i)) {
+        current_vel = getVx(forward_filtered, i);
       }
       ++i;
     }
