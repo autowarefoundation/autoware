@@ -9,7 +9,8 @@
         lateral_distance: 1.5               # [m] maximum lateral distance to consider hidden collision
       motion:
         safety_ratio: 0.8                   # [-] jerk/acceleration ratio for safety
-        max_slow_down_acceleration: -1.5    # [m/s^2] minimum deceleration for safe deceleration.
+        max_slow_down_jerk: -0.7            # [m/s^3] minimum jerk deceleration for safe brake.
+        max_slow_down_accel: -2.0           # [m/s^2] minimum accel deceleration for safe brake.
         non_effective_jerk: -0.3            # [m/s^3] weak jerk for velocity planning.
         non_effective_acceleration: -1.0    # [m/s^2] weak deceleration for velocity planning.
         min_allowed_velocity: 1.0           # [m/s] minimum velocity allowed

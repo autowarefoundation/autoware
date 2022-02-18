@@ -244,6 +244,92 @@ double calcJudgeLineDistWithJerkLimit(
   return std::max(0.0, x1 + x2 + x3);
 }
 
+double findReachTime(
+  const double jerk, const double accel, const double velocity, const double distance,
+  const double t_min, const double t_max)
+{
+  const double j = jerk;
+  const double a = accel;
+  const double v = velocity;
+  const double d = distance;
+  const double min = t_min;
+  const double max = t_max;
+  auto f = [](const double t, const double j, const double a, const double v, const double d) {
+    return j * t * t * t / 6.0 + a * t * t / 2.0 + v * t - d;
+  };
+  if (f(min, j, a, v, d) > 0 || f(max, j, a, v, d) < 0) {
+    std::logic_error("[behavior_velocity](findReachTime): search range is invalid");
+  }
+  const double eps = 1e-5;
+  const int warn_iter = 100;
+  double lower = min;
+  double upper = max;
+  double t;
+  int iter = 0;
+  for (int i = 0;; i++) {
+    t = 0.5 * (lower + upper);
+    const double fx = f(t, j, a, v, d);
+    // std::cout<<"fx: "<<fx<<" up: "<<upper<<" lo: "<<lower<<" t: "<<t<<std::endl;
+    if (std::abs(fx) < eps) {
+      break;
+    } else if (fx > 0.0) {
+      upper = t;
+    } else {
+      lower = t;
+    }
+    iter++;
+    if (iter > warn_iter)
+      std::cerr << "[behavior_velocity](findReachTime): current iter is over warning" << std::endl;
+  }
+  // std::cout<<"iter: "<<iter<<std::endl;
+  return t;
+}
+
+double calcDecelerationVelocityFromDistanceToTarget(
+  const double max_slowdown_jerk, const double max_slowdown_accel, const double current_accel,
+  const double current_velocity, const double distance_to_target)
+{
+  if (max_slowdown_jerk > 0 || max_slowdown_accel > 0) {
+    std::logic_error("max_slowdown_jerk and max_slowdown_accel should be negative");
+  }
+  // case0: distance to target is behind ego
+  if (distance_to_target <= 0) return current_velocity;
+  auto ft = [](const double t, const double j, const double a, const double v, const double d) {
+    return j * t * t * t / 6.0 + a * t * t / 2.0 + v * t - d;
+  };
+  auto vt = [](const double t, const double j, const double a, const double v) {
+    return j * t * t / 2.0 + a * t + v;
+  };
+  const double j_max = max_slowdown_jerk;
+  const double a0 = current_accel;
+  const double a_max = max_slowdown_accel;
+  const double v0 = current_velocity;
+  const double l = distance_to_target;
+  const double t_const_jerk = (a_max - a0) / j_max;
+  const double d_const_jerk_stop = ft(t_const_jerk, j_max, a0, v0, 0.0);
+  const double d_const_acc_stop = l - d_const_jerk_stop;
+
+  if (d_const_acc_stop < 0) {
+    // case0: distance to target is within constant jerk deceleration
+    // use binary search instead of solving cubic equation
+    const double t_jerk = findReachTime(j_max, a0, v0, l, 0, t_const_jerk);
+    const double velocity = vt(t_jerk, j_max, a0, v0);
+    return velocity;
+  } else {
+    const double v1 = vt(t_const_jerk, j_max, a0, v0);
+    const double discriminant_of_stop = 2.0 * a_max * d_const_acc_stop + v1 * v1;
+    // case3: distance to target is farther than distance to stop
+    if (discriminant_of_stop <= 0) {
+      return 0.0;
+    }
+    // case2: distance to target is within constant accel deceleration
+    // solve d = 0.5*a^2+v*t by t
+    const double t_acc = (-v1 + std::sqrt(discriminant_of_stop)) / a_max;
+    return vt(t_acc, 0.0, a_max, v1);
+  }
+  return current_velocity;
+}
+
 tier4_planning_msgs::msg::StopReason initializeStopReason(const std::string & stop_reason)
 {
   tier4_planning_msgs::msg::StopReason stop_reason_msg;

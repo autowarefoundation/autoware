@@ -137,6 +137,14 @@ double calcJudgeLineDistWithJerkLimit(
   const double velocity, const double acceleration, const double max_stop_acceleration,
   const double max_stop_jerk, const double delay_response_time);
 
+double calcDecelerationVelocityFromDistanceToTarget(
+  const double max_slowdown_jerk, const double max_slowdown_accel, const double current_accel,
+  const double current_velocity, const double distance_to_target);
+
+double findReachTime(
+  const double jerk, const double accel, const double velocity, const double distance,
+  const double t_min, const double t_max);
+
 tier4_planning_msgs::msg::StopReason initializeStopReason(const std::string & stop_reason);
 
 void appendStopReason(

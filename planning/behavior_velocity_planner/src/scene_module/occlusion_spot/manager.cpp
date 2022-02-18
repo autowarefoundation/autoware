@@ -93,7 +93,8 @@ OcclusionSpotModuleManager::OcclusionSpotModuleManager(rclcpp::Node & node)
   pp.v.safety_ratio = node.declare_parameter(ns + ".motion.safety_ratio", 1.0);
   pp.v.delay_time = node.declare_parameter(ns + ".motion.delay_time", 0.1);
   pp.v.safe_margin = node.declare_parameter(ns + ".motion.safe_margin", 1.0);
-  pp.v.max_slow_down_accel = node.declare_parameter(ns + ".motion.max_slow_down_accel", -1.5);
+  pp.v.max_slow_down_jerk = node.declare_parameter(ns + ".motion.max_slow_down_jerk", -0.7);
+  pp.v.max_slow_down_accel = node.declare_parameter(ns + ".motion.max_slow_down_accel", -2.5);
   pp.v.non_effective_jerk = node.declare_parameter(ns + ".motion.non_effective_jerk", -0.3);
   pp.v.non_effective_accel =
     node.declare_parameter(ns + ".motion.non_effective_acceleration", -1.0);

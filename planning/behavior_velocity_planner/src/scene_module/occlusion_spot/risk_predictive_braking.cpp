@@ -34,6 +34,8 @@ void applySafeVelocityConsideringPossibleCollision(
     return;
   }
   const double v0 = param.v.v_ego;
+  const double a0 = param.v.a_ego;
+  const double j_min = param.v.max_slow_down_jerk;
   const double a_min = param.v.max_slow_down_accel;
   const double v_min = param.v.min_allowed_velocity;
   for (auto & possible_collision : possible_collisions) {
@@ -44,9 +46,11 @@ void applySafeVelocityConsideringPossibleCollision(
     const double v_safe = possible_collision.obstacle_info.safe_motion.safe_velocity;
 
     // min allowed velocity : min allowed velocity consider maximum allowed braking
-    const double v_slow_down = calculateMinSlowDownVelocity(v0, l_obs, a_min, v_safe);
-
-    // coompare safe velocity consider EBS, minimum allowed velocity and original velocity
+    const double v_slow_down =
+      (l_obs < 0)
+        ? v_safe
+        : planning_utils::calcDecelerationVelocityFromDistanceToTarget(j_min, a_min, a0, v0, l_obs);
+    // compare safe velocity consider EBS, minimum allowed velocity and original velocity
     const double safe_velocity = calculateInsertVelocity(v_slow_down, v_safe, v_min, original_vel);
     possible_collision.obstacle_info.safe_motion.safe_velocity = safe_velocity;
     const auto & pose = possible_collision.collision_with_margin.pose;

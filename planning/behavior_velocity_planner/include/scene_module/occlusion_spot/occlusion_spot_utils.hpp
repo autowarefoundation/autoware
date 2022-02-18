@@ -77,6 +77,7 @@ struct Velocity
   double safety_ratio;          // [-] safety margin for planning error
   double max_stop_jerk;         // [m/s^3] emergency braking system jerk
   double max_stop_accel;        // [m/s^2] emergency braking system deceleration
+  double max_slow_down_jerk;    // [m/s^3] maximum allowed slowdown jerk
   double max_slow_down_accel;   // [m/s^2] maximum allowed deceleration
   double non_effective_jerk;    // [m/s^3] too weak jerk for velocity planning.
   double non_effective_accel;   // [m/s^2] too weak deceleration for velocity planning.

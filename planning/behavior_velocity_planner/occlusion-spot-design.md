@@ -51,7 +51,7 @@ This module considers any occlusion spot around ego path computed from the occup
 
 ##### The Concept of Safe Velocity
 
-Safe velocity is calculated from the below parameters of ego emergency braking system and time to collision.
+The safe slowdown velocity is calculated from the below parameters of ego emergency braking system and time to collision.
 
 - jerk limit[m/s^3]
 - deceleration limit[m/s2]
@@ -60,6 +60,17 @@ Safe velocity is calculated from the below parameters of ego emergency braking s
   with these parameters we can briefly define safe motion before occlusion spot for ideal environment.
   ![occupancy_grid](./docs/occlusion_spot/safe_motion.svg)
 
+##### Maximum Slowdown Velocity
+
+The maximum slowdown velocity is calculated from the below parameters of ego current velocity and acceleration with maximum slowdown jerk and maximum slowdown acceleration in order not to slowdown too much.
+
+- $j_{max}$ slowdown jerk limit[m/s^3]
+- $a_{max}$ slowdown deceleration limit[m/s2]
+- $v_{0}$ current velocity[m/s]
+- $a_{0}$ current acceleration[m/s]
+
+![brief](./docs/occlusion_spot/maximum_slowdown_velocity.svg)
+
 ##### Safe Behavior After Passing Safe Margin Point
 
 This module defines safe margin to consider ego distance to stop and collision path point geometrically.
@@ -67,7 +78,7 @@ While ego is cruising from safe margin to collision path point, ego vehicle keep
 
 ![brief](./docs/occlusion_spot/behavior_after_safe_margin.svg)
 
-##### Detection area polygon
+##### DetectionArea Polygon
 
 Occlusion spot computation: searching occlusion spots for all cells in the occupancy_grid inside "max lateral distance" requires a lot of computational cost, so this module use only one most notable occlusion spot for each partition. (currently offset is from baselink to front for safety)
 The maximum length of detection area depends on ego current vehicle velocity and acceleration.
@@ -86,13 +97,16 @@ The maximum length of detection area depends on ego current vehicle velocity and
 | `stuck_vehicle_vel`     | double | [m/s] velocity below this value is assumed to stop        |
 | `lateral_distance`      | double | [m] maximum lateral distance to consider hidden collision |
 
-| Parameter /motion     | Type   | Description                                                  |
-| --------------------- | ------ | ------------------------------------------------------------ |
-| `safety_ratio`        | double | [-] safety ratio for jerk and acceleration                   |
-| `max_slow_down_accel` | double | [m/s^2] deceleration to assume for predictive braking system |
-| `v_min`               | double | [m/s] minimum velocity not to stop                           |
-| `delay_time`          | double | [m/s] time buffer for the system delay                       |
-| `safe_margin`         | double | [m] maximum error to stop with emergency braking system.     |
+| Parameter /motion            | Type   | Description                                              |
+| ---------------------------- | ------ | -------------------------------------------------------- |
+| `safety_ratio`               | double | [-] safety ratio for jerk and acceleration               |
+| `max_slow_down_jerk`         | double | [m/s^3] jerk for safe brake                              |
+| `max_slow_down_accel`        | double | [m/s^2] deceleration for safe brake                      |
+| `non_effective_jerk`         | double | [m/s^3] weak jerk for velocity planning.                 |
+| `non_effective_acceleration` | double | [m/s^2] weak deceleration for velocity planning.         |
+| `min_allowed_velocity`       | double | [m/s] minimum velocity allowed                           |
+| `delay_time`                 | double | [m/s] time buffer for the system delay                   |
+| `safe_margin`                | double | [m] maximum error to stop with emergency braking system. |
 
 | Parameter /detection_area | Type   | Description                                                           |
 | ------------------------- | ------ | --------------------------------------------------------------------- |

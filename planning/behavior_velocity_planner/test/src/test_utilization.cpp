@@ -38,3 +38,38 @@ TEST(is_ahead_of, nominal)
   is_ahead = isAheadOf(target, origin);
   EXPECT_TRUE(is_ahead);
 }
+
+TEST(smoothDeceleration, calculateMaxSlowDownVelocity)
+{
+  using behavior_velocity_planner::planning_utils::calcDecelerationVelocityFromDistanceToTarget;
+  const double current_accel = 1.0;
+  const double current_velocity = 5.0;
+  const double max_slow_down_jerk = -1.0;
+  const double max_slow_down_accel = -2.0;
+  const double eps = 1e-3;
+  {
+    for (int i = -8; i <= 24; i += 8) {
+      // arc length in path point
+      const double l = i * 1.0;
+      const double v = calcDecelerationVelocityFromDistanceToTarget(
+        max_slow_down_jerk, max_slow_down_accel, current_accel, current_velocity, l);
+      // case 0 : behind ego
+      if (i == -8) EXPECT_NEAR(v, 5.0, eps);
+      // case 1 : const jerk
+      else if (i == 0)
+        EXPECT_NEAR(v, 5.0, eps);
+      // case 1 : const jerk
+      else if (i == 8)
+        EXPECT_NEAR(v, 5.380, eps);
+      // case 2 : const accel
+      else if (i == 16)
+        EXPECT_NEAR(v, 2.872, eps);
+      // case 3 : after stop
+      else if (i == 24)
+        EXPECT_NEAR(v, 0.00, eps);
+      else
+        continue;
+      std::cout << "s: " << l << " v: " << v << std::endl;
+    }
+  }
+}
