@@ -1,4 +1,4 @@
-accel_brake_map_calibrator:
+/**:
   ros__parameters:
     update_hz: 10.0
     initial_covariance: 0.05
