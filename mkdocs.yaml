@@ -3,7 +3,7 @@ site_url: https://autowarefoundation.github.io/autoware.universe
 repo_url: https://github.com/autowarefoundation/autoware.universe
 edit_uri: edit/main/
 docs_dir: .
-copyright: Copyright &copy; 2021 The Autoware Foundation
+copyright: Copyright &copy; 2022 The Autoware Foundation
 
 theme:
   name: material
@@ -71,6 +71,10 @@ markdown_extensions:
       format: svg
   - pymdownx.arithmatex
   - pymdownx.highlight
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - toc:
       permalink: "#"

@@ -11,6 +11,7 @@ repos:
       - id: check-toml
       - id: check-xml
       - id: check-yaml
+        args: [--unsafe]
       - id: detect-private-key
       - id: end-of-file-fixer
       - id: mixed-line-ending
