@@ -1,9 +1,8 @@
 <?xml version="1.0"?>
 
 <launch>
-  <arg name="mode" default="camera_lidar_fusion" description="options: `camera_lidar_fusion`, `lidar` or `camera`"/>
+  <arg name="mode" description="options: `camera_lidar_fusion`, `lidar` or `camera`"/>
   <arg name="lidar_detection_model" default="centerpoint" description="options: `centerpoint`, `apollo`"/>
-  <!-- "camera_lidar_fusion", "lidar" or "camera" -->
   <arg name="image_raw0" default="/image_raw" description="image raw topic name"/>
   <arg name="camera_info0" default="/camera_info" description="camera info topic name"/>
   <arg name="image_raw1" default=""/>

@@ -3,7 +3,7 @@
 <launch>
   <arg name="vehicle_param_file" default="$(find-pkg-share vehicle_info_util)/config/vehicle_info.param.yaml" description="path to the file of vehicle info yaml" />
   <!-- common parameters -->
-  <arg name="mode" default="camera_lidar_fusion" description="options: `camera_lidar_fusion`, `lidar` or `camera`"/>
+  <arg name="mode" description="options: `camera_lidar_fusion`, `lidar` or `camera`"/>
   <arg name="image_raw0" default="/sensing/camera/camera0/image_rect_color" description="image raw topic name"/>
   <arg name="camera_info0" default="/sensing/camera/camera0/camera_info" description="camera info topic name"/>
   <arg name="image_raw1" default="/sensing/camera/camera1/image_rect_color"/>
