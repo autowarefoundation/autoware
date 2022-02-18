@@ -17,7 +17,6 @@
 
 | Name                    | Type                                             | Description                     |
 | ----------------------- | ------------------------------------------------ | ------------------------------- |
-| `twist`                 | `geometry_msgs::msg::TwistStamped`               | estimated twist                 |
 | `twist_with_covariance` | `geometry_msgs::msg::TwistWithCovarianceStamped` | estimated twist with covariance |
 
 ## Parameters
@@ -28,4 +27,12 @@
 
 ## Assumptions / Known limits
 
-TBD.
+- [Assumption] The frame_id of input twist message must be set to base_link.
+
+- [Assumption] The covariance in the input messages must be properly assigned.
+
+- [Assumption] The angular velocity is set to zero if both the longitudinal vehicle velocity and the angular velocity around the yaw axis are sufficiently small. This is for suppression of the IMU angular velocity bias. Without this process, we misestimate the vehicle status when stationary.
+
+- [Limitation] The frequency of the output messages depends on the frequency of the input IMU message.
+
+- [Limitation] We cannot produce reliable values for the lateral and vertical velocities. Therefore we assign large values to the corresponding elements in the output covariance matrix.
