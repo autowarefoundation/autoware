@@ -58,17 +58,15 @@ void SimModelDelaySteerAccGeared::update(const float64_t & dt)
   delayed_input(IDX_U::STEER_DES) = steer_input_queue_.front();
   steer_input_queue_.pop_front();
 
-  const auto prev_vx = state_(IDX::VX);
-
+  const auto prev_state = state_;
   updateRungeKutta(dt, delayed_input);
 
   // take velocity limit explicitly
   state_(IDX::VX) = std::max(-vx_lim_, std::min(state_(IDX::VX), vx_lim_));
 
-  state_(IDX::VX) = calcVelocityWithGear(state_, gear_);
-
-  // calc acc directly after gear consideration
-  state_(IDX::ACCX) = (state_(IDX::VX) - prev_vx) / std::max(dt, 1.0e-5);
+  // consider gear
+  // update position and velocity first, and then acceleration is calculated naturally
+  updateStateWithGear(state_, prev_state, gear_, dt);
 }
 
 void SimModelDelaySteerAccGeared::initializeInputQueue(const float64_t & dt)
@@ -107,9 +105,8 @@ Eigen::VectorXd SimModelDelaySteerAccGeared::calcModel(
   return d_state;
 }
 
-
-float64_t SimModelDelaySteerAccGeared::calcVelocityWithGear(
-  const Eigen::VectorXd & state, const uint8_t gear) const
+void SimModelDelaySteerAccGeared::updateStateWithGear(
+  Eigen::VectorXd & state, const Eigen::VectorXd & prev_state, const uint8_t gear, const double dt)
 {
   using autoware_auto_vehicle_msgs::msg::GearCommand;
   if (
@@ -123,17 +120,29 @@ float64_t SimModelDelaySteerAccGeared::calcVelocityWithGear(
     gear == GearCommand::DRIVE_18 || gear == GearCommand::LOW || gear == GearCommand::LOW_2)
   {
     if (state(IDX::VX) < 0.0) {
-      return 0.0;
+      state(IDX::VX) = 0.0;
+      state(IDX::X) = prev_state(IDX::X);
+      state(IDX::Y) = prev_state(IDX::Y);
+      state(IDX::YAW) = prev_state(IDX::YAW);
     }
   } else if (gear == GearCommand::REVERSE || gear == GearCommand::REVERSE_2) {
     if (state(IDX::VX) > 0.0) {
-      return 0.0;
+      state(IDX::VX) = 0.0;
+      state(IDX::X) = prev_state(IDX::X);
+      state(IDX::Y) = prev_state(IDX::Y);
+      state(IDX::YAW) = prev_state(IDX::YAW);
     }
   } else if (gear == GearCommand::PARK) {
-    return 0.0;
+    state(IDX::VX) = 0.0;
+    state(IDX::X) = prev_state(IDX::X);
+    state(IDX::Y) = prev_state(IDX::Y);
+    state(IDX::YAW) = prev_state(IDX::YAW);
   } else {
-    return 0.0;
+    state(IDX::VX) = 0.0;
+    state(IDX::X) = prev_state(IDX::X);
+    state(IDX::Y) = prev_state(IDX::Y);
+    state(IDX::YAW) = prev_state(IDX::YAW);
   }
 
-  return state(IDX::VX);
+  state(IDX::ACCX) = (state(IDX::VX) - prev_state(IDX::VX)) / std::max(dt, 1.0e-5);
 }

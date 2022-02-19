@@ -142,11 +142,13 @@ private:
   Eigen::VectorXd calcModel(const Eigen::VectorXd & state, const Eigen::VectorXd & input) override;
 
   /**
-   * @brief calculate velocity with considering current velocity and gear
+   * @brief update state considering current gear
    * @param [in] state current state
+   * @param [in] prev_state previous state
    * @param [in] gear current gear (defined in autoware_auto_msgs/GearCommand)
+   * @param [in] dt delta time to update state
    */
-  float64_t calcVelocityWithGear(const Eigen::VectorXd & state, const uint8_t gear) const;
+  void updateStateWithGear(Eigen::VectorXd & state, const Eigen::VectorXd & prev_state, const uint8_t gear, const double dt);
 };
 
 #endif  // SIMPLE_PLANNING_SIMULATOR__VEHICLE_MODEL__SIM_MODEL_DELAY_STEER_ACC_GEARED_HPP_
