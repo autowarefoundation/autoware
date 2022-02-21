@@ -19,7 +19,7 @@ repositories:
     version: tier4/proposal
   universe/tier4_autoware_msgs:
     type: git
-    url: https://github.com/tier4/AutowareArchitectureProposal_msgs.git # TODO(Tier IV): Rename to tier4/tier4_autoware_msgs
+    url: https://github.com/tier4/tier4_autoware_msgs.git
     version: tier4/universe
   universe/vendor/grid_map:
     type: git
@@ -49,9 +49,9 @@ repositories:
   # sensor_component
   sensor_component/sensor_component_description:
     type: git
-    url: https://github.com/tier4/sensor_description.iv.git # TODO(Tier IV): Rename to tier4/sensor_component_description or so
+    url: https://github.com/tier4/sensor_component_description.git
     version: main
-  sensor_component/livox-driver:
+  sensor_component/livox_driver:
     type: git
     url: https://github.com/tier4/livox_ros2_driver.git
     version: tier4/master
@@ -62,21 +62,17 @@ repositories:
   sensor_component/velodyne_vls:
     type: git
     url: https://github.com/tier4/velodyne_vls.git
-    version: use-autoware-auto-msgs # TODO(Tier IV): Rename to tier4/universe or so
-  # sensor_kit
-  sensor_kit/tmp/tier4_sensor_kit_description:
-    type: git
-    url: https://github.com/tier4/aip_description.iv.git # TODO(Tier IV): Merge into tier4_sensor_kit_launch
-    version: main
-  sensor_kit/tier4_sensor_kit_launch:
-    type: git
-    url: https://github.com/tier4/AutowareArchitectureProposal_aip_launcher.git # TODO(Tier IV): Rename to tier4/tier4_sensor_kit_launch or so
-    version: use-autoware-auto-msgs # TODO(Tier IV): Rename to tier4/universe or so
-  # vehicle
-  vehicle/lexus_launch:
-    type: git
-    url: https://github.com/tier4/lexus_description.iv.git # TODO(Tier IV): Rename to lexus_launch
     version: tier4/universe
+  # sensor_kit
+  sensor_kit/sample_sensor_kit_launch:
+    type: git
+    url: https://github.com/autowarefoundation/sample_sensor_kit_launch.git
+    version: main
+  # vehicle
+  vehicle/sample_vehicle_launch:
+    type: git
+    url: https://github.com/autowarefoundation/sample_vehicle_launch.git
+    version: main
   vehicle/pacmod_interface:
     type: git
     url: https://github.com/tier4/pacmod_interface.git
