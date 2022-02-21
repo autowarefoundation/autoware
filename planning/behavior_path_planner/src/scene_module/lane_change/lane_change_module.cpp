@@ -134,18 +134,14 @@ BehaviorModuleOutput LaneChangeModule::plan()
   auto path = util::resamplePathWithSpline(status_.lane_change_path.path, RESAMPLE_INTERVAL);
   // Generate drivable area
   {
-    const auto & route_handler = planner_data_->route_handler;
     const auto common_parameters = planner_data_->parameters;
     lanelet::ConstLanelets lanes;
     lanes.insert(lanes.end(), status_.current_lanes.begin(), status_.current_lanes.end());
     lanes.insert(lanes.end(), status_.lane_change_lanes.begin(), status_.lane_change_lanes.end());
 
-    const double width = common_parameters.drivable_area_width;
-    const double height = common_parameters.drivable_area_height;
     const double resolution = common_parameters.drivable_area_resolution;
     path.drivable_area = util::generateDrivableArea(
-      lanes, *(planner_data_->self_pose), width, height, resolution,
-      common_parameters.vehicle_length, *route_handler);
+      lanes, resolution, common_parameters.vehicle_length, planner_data_);
   }
 
   if (isAbortConditionSatisfied()) {
@@ -255,9 +251,8 @@ PathWithLaneId LaneChangeModule::getReferencePath() const
     *route_handler, reference_path, current_lanes, parameters_.lane_change_prepare_duration,
     lane_change_buffer);
   reference_path.drivable_area = util::generateDrivableArea(
-    current_lanes, *planner_data_->self_pose, common_parameters.drivable_area_width,
-    common_parameters.drivable_area_height, common_parameters.drivable_area_resolution,
-    common_parameters.vehicle_length, *planner_data_->route_handler);
+    current_lanes, common_parameters.drivable_area_resolution, common_parameters.vehicle_length,
+    planner_data_);
 
   return reference_path;
 }

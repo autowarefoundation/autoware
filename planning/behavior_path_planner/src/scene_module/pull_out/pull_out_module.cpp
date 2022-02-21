@@ -209,7 +209,6 @@ PathWithLaneId PullOutModule::planCandidate() const
 BehaviorModuleOutput PullOutModule::planWaitingApproval()
 {
   BehaviorModuleOutput out;
-  const auto & route_handler = planner_data_->route_handler;
   const auto common_parameters = planner_data_->parameters;
   const auto current_lanes = getCurrentLanes();
   const auto shoulder_lanes = getPullOutLanes(current_lanes);
@@ -221,12 +220,9 @@ BehaviorModuleOutput PullOutModule::planWaitingApproval()
     lanelet::ConstLanelets lanes;
     lanes.insert(lanes.end(), current_lanes.begin(), current_lanes.end());
     lanes.insert(lanes.end(), shoulder_lanes.begin(), shoulder_lanes.end());
-    const double width = common_parameters.drivable_area_width;
-    const double height = common_parameters.drivable_area_height;
     const double resolution = common_parameters.drivable_area_resolution;
     candidatePath.drivable_area = util::generateDrivableArea(
-      lanes, *(planner_data_->self_pose), width, height, resolution,
-      common_parameters.vehicle_length, *route_handler);
+      lanes, resolution, common_parameters.vehicle_length, planner_data_);
   }
   for (size_t i = 1; i < candidatePath.points.size(); i++) {
     candidatePath.points.at(i).point.longitudinal_velocity_mps = 0.0;
@@ -297,12 +293,9 @@ void PullOutModule::updatePullOutStatus()
     lanes.insert(lanes.end(), current_lanes.begin(), current_lanes.end());
     lanes.insert(lanes.end(), pull_out_lanes.begin(), pull_out_lanes.end());
 
-    const double width = common_parameters.drivable_area_width;
-    const double height = common_parameters.drivable_area_height;
     const double resolution = common_parameters.drivable_area_resolution;
     status_.pull_out_path.path.drivable_area = util::generateDrivableArea(
-      lanes, *(planner_data_->self_pose), width, height, resolution,
-      common_parameters.vehicle_length, *route_handler);
+      lanes, resolution, common_parameters.vehicle_length, planner_data_);
   }
 
   const auto arclength_start =
@@ -341,10 +334,8 @@ PathWithLaneId PullOutModule::getReferencePath() const
     parameters_.deceleration_interval, goal_pose);
 
   reference_path.drivable_area = util::generateDrivableArea(
-    pull_out_lanes, *planner_data_->self_pose, common_parameters.drivable_area_width,
-    common_parameters.drivable_area_height, common_parameters.drivable_area_resolution,
-    common_parameters.vehicle_length, *planner_data_->route_handler);
-
+    pull_out_lanes, common_parameters.drivable_area_resolution, common_parameters.vehicle_length,
+    planner_data_);
   return reference_path;
 }
 

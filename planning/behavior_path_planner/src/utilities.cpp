@@ -26,6 +26,183 @@
 #include <string>
 #include <vector>
 
+namespace drivable_area_utils
+{
+double quantize(const double val, const double resolution)
+{
+  return std::round(val / resolution) * resolution;
+}
+
+void updateMinMaxPosition(
+  const Eigen::Vector2d & point, double & min_x, double & min_y, double & max_x, double & max_y)
+{
+  min_x = std::min(min_x, point.x());
+  min_y = std::min(min_y, point.y());
+  max_x = std::max(max_x, point.x());
+  max_y = std::max(max_y, point.y());
+}
+
+bool sumLengthFromTwoPoints(
+  const Eigen::Vector2d & base_point, const Eigen::Vector2d & target_point,
+  const double length_threshold, double & sum_length, double & min_x, double & min_y,
+  double & max_x, double & max_y)
+{
+  const double norm_length = (base_point - target_point).norm();
+  sum_length += norm_length;
+  if (length_threshold < sum_length) {
+    const double diff_length = norm_length - (sum_length - length_threshold);
+    const Eigen::Vector2d interpolated_point =
+      base_point + diff_length * (target_point - base_point).normalized();
+    updateMinMaxPosition(interpolated_point, min_x, min_y, max_x, max_y);
+
+    const bool is_end = true;
+    return is_end;
+  }
+
+  updateMinMaxPosition(target_point, min_x, min_y, max_x, max_y);
+  const bool is_end = false;
+  return is_end;
+}
+
+std::array<double, 4> getLaneletScope(
+  const lanelet::ConstLanelets & lanes, const size_t nearest_lane_idx,
+  const geometry_msgs::msg::Pose & current_pose, const double forward_lane_length,
+  const double backward_lane_length, const double lane_margin)
+{
+  // define functions to get right/left bounds as a vector
+  const auto get_bound_funcs =
+    std::vector<std::function<lanelet::ConstLineString2d(const lanelet::ConstLanelet & lane)>>{
+      [](const lanelet::ConstLanelet & lane) -> lanelet::ConstLineString2d {
+        return lane.rightBound2d();
+      },
+      [](const lanelet::ConstLanelet & lane) -> lanelet::ConstLineString2d {
+        return lane.leftBound2d();
+      }};
+
+  // calculate min/max x and y
+  double min_x = current_pose.position.x;
+  double min_y = current_pose.position.y;
+  double max_x = current_pose.position.x;
+  double max_y = current_pose.position.y;
+
+  for (const auto & get_bound_func : get_bound_funcs) {
+    // search nearest point index to current pose
+    const auto & nearest_bound = get_bound_func(lanes.at(nearest_lane_idx));
+    if (nearest_bound.empty()) {
+      continue;
+    }
+
+    std::vector<geometry_msgs::msg::Point> points;
+    for (const auto & point : nearest_bound) {
+      geometry_msgs::msg::Point p;
+      p.x = point.x();
+      p.y = point.y();
+      points.push_back(p);
+    }
+    const size_t nearest_point_idx =
+      tier4_autoware_utils::findNearestIndex(points, current_pose.position);
+
+    drivable_area_utils::updateMinMaxPosition(
+      nearest_bound[nearest_point_idx].basicPoint(), min_x, min_y, max_x, max_y);
+
+    // forward lanelet
+    double sum_length = 0.0;
+    size_t current_lane_idx = nearest_lane_idx;
+    auto current_lane = lanes.at(current_lane_idx);
+    size_t current_point_idx = nearest_point_idx;
+    while (true) {
+      const auto & bound = get_bound_func(current_lane);
+      if (current_point_idx != bound.size() - 1) {
+        const Eigen::Vector2d & current_point = bound[current_point_idx].basicPoint();
+        const Eigen::Vector2d & next_point = bound[current_point_idx + 1].basicPoint();
+        const bool is_end_lane = drivable_area_utils::sumLengthFromTwoPoints(
+          current_point, next_point, forward_lane_length + lane_margin, sum_length, min_x, min_y,
+          max_x, max_y);
+        if (is_end_lane) {
+          break;
+        }
+
+        ++current_point_idx;
+      } else {
+        const auto previous_lane = current_lane;
+        const size_t previous_point_idx = get_bound_func(previous_lane).size() - 1;
+        const auto & previous_bound = get_bound_func(previous_lane);
+        drivable_area_utils::updateMinMaxPosition(
+          previous_bound[previous_point_idx].basicPoint(), min_x, min_y, max_x, max_y);
+
+        if (current_lane_idx == lanes.size() - 1) {
+          break;
+        }
+
+        current_lane_idx += 1;
+        current_lane = lanes.at(current_lane_idx);
+        current_point_idx = 0;
+        const auto & current_bound = get_bound_func(current_lane);
+
+        const Eigen::Vector2d & prev_point =
+          get_bound_func(previous_lane)[previous_point_idx].basicPoint();
+        const Eigen::Vector2d & current_point =
+          get_bound_func(current_lane)[current_point_idx].basicPoint();
+        const bool is_end_lane = drivable_area_utils::sumLengthFromTwoPoints(
+          prev_point, current_point, forward_lane_length + lane_margin, sum_length, min_x, min_y,
+          max_x, max_y);
+        if (is_end_lane) {
+          break;
+        }
+      }
+    }
+
+    // backward lanelet
+    current_point_idx = nearest_point_idx;
+    sum_length = 0.0;
+    current_lane_idx = nearest_lane_idx;
+    current_lane = lanes.at(current_lane_idx);
+    while (true) {
+      const auto & bound = get_bound_func(current_lane);
+      if (current_point_idx != 0) {
+        const Eigen::Vector2d & current_point = bound[current_point_idx].basicPoint();
+        const Eigen::Vector2d & prev_point = bound[current_point_idx - 1].basicPoint();
+        const bool is_end_lane = drivable_area_utils::sumLengthFromTwoPoints(
+          current_point, prev_point, backward_lane_length + lane_margin, sum_length, min_x, min_y,
+          max_x, max_y);
+        if (is_end_lane) {
+          break;
+        }
+
+        --current_point_idx;
+      } else {
+        const auto next_lane = current_lane;
+        const size_t next_point_idx = 0;
+        const auto & next_bound = get_bound_func(next_lane);
+        drivable_area_utils::updateMinMaxPosition(
+          next_bound[next_point_idx].basicPoint(), min_x, min_y, max_x, max_y);
+
+        if (current_lane_idx == 0) {
+          break;
+        }
+
+        current_lane_idx -= 1;
+        current_lane = lanes.at(current_lane_idx);
+        const auto & current_bound = get_bound_func(current_lane);
+        current_point_idx = current_bound.size() - 1;
+
+        const Eigen::Vector2d & next_point = get_bound_func(next_lane)[next_point_idx].basicPoint();
+        const Eigen::Vector2d & current_point =
+          get_bound_func(current_lane)[current_point_idx].basicPoint();
+        const bool is_end_lane = drivable_area_utils::sumLengthFromTwoPoints(
+          next_point, current_point, backward_lane_length + lane_margin, sum_length, min_x, min_y,
+          max_x, max_y);
+        if (is_end_lane) {
+          break;
+        }
+      }
+    }
+  }
+
+  return {min_x, min_y, max_x, max_y};
+}
+}  // namespace drivable_area_utils
+
 namespace behavior_path_planner
 {
 namespace util
@@ -915,14 +1092,46 @@ bool containsGoal(const lanelet::ConstLanelets & lanes, const lanelet::Id & goal
 
 // input lanes must be in sequence
 OccupancyGrid generateDrivableArea(
-  const lanelet::ConstLanelets & lanes, const PoseStamped & current_pose, const double width,
-  const double height, const double resolution, const double vehicle_length,
-  const RouteHandler & route_handler)
+  const lanelet::ConstLanelets & lanes, const double resolution, const double vehicle_length,
+  const std::shared_ptr<const PlannerData> planner_data)
 {
-  // get drivable lanes
+  const auto & params = planner_data->parameters;
+  const auto route_handler = planner_data->route_handler;
+  const auto current_pose = planner_data->self_pose;
+
+  // search closest lanelet to current pose from given lanelets
+  const int nearest_lane_idx = [&]() -> int {
+    lanelet::ConstLanelet closest_lanelet;
+    if (lanelet::utils::query::getClosestLanelet(lanes, current_pose->pose, &closest_lanelet)) {
+      for (size_t i = 0; i < lanes.size(); ++i) {
+        if (lanes.at(i).id() == closest_lanelet.id()) {
+          return i;
+        }
+      }
+    }
+    return 0;
+  }();
+
+  // calculate min/max x and y
+  const auto lanelet_scope = drivable_area_utils::getLaneletScope(
+    lanes, nearest_lane_idx, current_pose->pose, params.drivable_lane_forward_length,
+    params.drivable_lane_backward_length, params.drivable_lane_margin);
+
+  const double min_x =
+    drivable_area_utils::quantize(lanelet_scope.at(0) - params.drivable_area_margin, resolution);
+  const double min_y =
+    drivable_area_utils::quantize(lanelet_scope.at(1) - params.drivable_area_margin, resolution);
+  const double max_x =
+    drivable_area_utils::quantize(lanelet_scope.at(2) + params.drivable_area_margin, resolution);
+  const double max_y =
+    drivable_area_utils::quantize(lanelet_scope.at(3) + params.drivable_area_margin, resolution);
+
+  const double width = max_x - min_x;
+  const double height = max_y - min_y;
+
   lanelet::ConstLanelets drivable_lanes = lanes;
-  if (containsGoal(lanes, route_handler.getGoalLaneId())) {
-    const auto lanes_after_goal = route_handler.getLanesAfterGoal(vehicle_length);
+  if (containsGoal(lanes, route_handler->getGoalLaneId())) {
+    const auto lanes_after_goal = route_handler->getLanesAfterGoal(vehicle_length);
     drivable_lanes.insert(drivable_lanes.end(), lanes_after_goal.begin(), lanes_after_goal.end());
   }
 
@@ -931,27 +1140,23 @@ OccupancyGrid generateDrivableArea(
 
   // calculate grid origin
   {
-    grid_origin.header = current_pose.header;
-    const double yaw = tf2::getYaw(current_pose.pose.orientation);
-    const double origin_offset_x_m = (-width / 4) * cos(yaw) - (-height / 2) * sin(yaw);
-    const double origin_offset_y_m = (-width / 4) * sin(yaw) + (-height / 2) * cos(yaw);
-    // Only current yaw should be considered as the orientation of grid_origin.
-    grid_origin.pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(yaw);
-    grid_origin.pose.position.x = current_pose.pose.position.x + origin_offset_x_m;
-    grid_origin.pose.position.y = current_pose.pose.position.y + origin_offset_y_m;
-    grid_origin.pose.position.z = current_pose.pose.position.z;
+    grid_origin.header = current_pose->header;
+
+    grid_origin.pose.position.x = min_x;
+    grid_origin.pose.position.y = min_y;
+    grid_origin.pose.position.z = current_pose->pose.position.z;
   }
 
   // header
   {
-    occupancy_grid.header.stamp = current_pose.header.stamp;
+    occupancy_grid.header.stamp = current_pose->header.stamp;
     occupancy_grid.header.frame_id = "map";
   }
 
   // info
   {
-    const int width_cell = width / resolution;
-    const int height_cell = height / resolution;
+    const int width_cell = std::round(width / resolution);
+    const int height_cell = std::round(height / resolution);
 
     occupancy_grid.info.map_load_time = occupancy_grid.header.stamp;
     occupancy_grid.info.resolution = resolution;
@@ -978,7 +1183,8 @@ OccupancyGrid generateDrivableArea(
 
       if (lane.hasAttribute("intersection_area")) {
         const std::string area_id = lane.attributeOr("intersection_area", "none");
-        const auto intersection_area = route_handler.getIntersectionAreaById(atoi(area_id.c_str()));
+        const auto intersection_area =
+          route_handler->getIntersectionAreaById(atoi(area_id.c_str()));
         const auto poly = lanelet::utils::to2D(intersection_area).basicPolygon();
         std::vector<lanelet::BasicPolygon2d> lane_polys{};
         if (boost::geometry::intersection(poly, lane_poly, lane_polys)) {
@@ -1398,8 +1604,7 @@ std::shared_ptr<PathWithLaneId> generateCenterLinePath(
   centerline_path->header = route_handler->getRouteHeader();
 
   centerline_path->drivable_area = util::generateDrivableArea(
-    current_lanes, *pose, p.drivable_area_width, p.drivable_area_height, p.drivable_area_resolution,
-    p.vehicle_length, *route_handler);
+    current_lanes, p.drivable_area_resolution, p.vehicle_length, planner_data);
 
   return centerline_path;
 }

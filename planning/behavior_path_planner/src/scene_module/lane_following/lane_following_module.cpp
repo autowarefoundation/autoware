@@ -127,8 +127,7 @@ PathWithLaneId LaneFollowingModule::getReferencePath() const
   }
 
   reference_path.drivable_area = util::generateDrivableArea(
-    current_lanes, *planner_data_->self_pose, p.drivable_area_width, p.drivable_area_height,
-    p.drivable_area_resolution, p.vehicle_length, *route_handler);
+    current_lanes, p.drivable_area_resolution, p.vehicle_length, planner_data_);
 
   return reference_path;
 }

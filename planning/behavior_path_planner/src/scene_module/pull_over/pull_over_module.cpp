@@ -227,12 +227,9 @@ void PullOverModule::updatePullOverStatus()
     lanes.insert(lanes.end(), current_lanes.begin(), current_lanes.end());
     lanes.insert(lanes.end(), pull_over_lanes.begin(), pull_over_lanes.end());
 
-    const double width = common_parameters.drivable_area_width;
-    const double height = common_parameters.drivable_area_height;
     const double resolution = common_parameters.drivable_area_resolution;
     status_.pull_over_path.path.drivable_area = util::generateDrivableArea(
-      lanes, *(planner_data_->self_pose), width, height, resolution,
-      common_parameters.vehicle_length, *route_handler);
+      lanes, resolution, common_parameters.vehicle_length, planner_data_);
   }
 
   const auto current_pose = planner_data_->self_pose->pose;
@@ -271,9 +268,8 @@ PathWithLaneId PullOverModule::getReferencePath() const
     parameters_.deceleration_interval, goal_pose);
 
   reference_path.drivable_area = util::generateDrivableArea(
-    current_lanes, *planner_data_->self_pose, common_parameters.drivable_area_width,
-    common_parameters.drivable_area_height, common_parameters.drivable_area_resolution,
-    common_parameters.vehicle_length, *planner_data_->route_handler);
+    current_lanes, common_parameters.drivable_area_resolution, common_parameters.vehicle_length,
+    planner_data_);
 
   return reference_path;
 }

@@ -8,7 +8,9 @@
     minimum_lane_change_length: 12.0
     minimum_pull_over_length: 16.0
     drivable_area_resolution: 0.1
-    drivable_area_width: 100.0
-    drivable_area_height: 50.0
+    drivable_lane_forward_length: 50.0
+    drivable_lane_backward_length:  5.0
+    drivable_lane_margin: 3.0
+    drivable_area_margin: 6.0
     refine_goal_search_radius_range: 7.5
     intersection_search_distance: 30.0
