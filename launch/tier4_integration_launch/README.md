@@ -6,7 +6,7 @@
 
 ## Package Dependencies
 
-- tier4_autoware_launch
+- autoware_launch
 
 ## Notes
 

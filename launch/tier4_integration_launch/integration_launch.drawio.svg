@@ -102,7 +102,7 @@
                                 <br/>
                                 <div style="text-align: left">
                                     <span>
-                                        package: tier4_autoware_launch
+                                        package: autoware_launch
                                     </span>
                                 </div>
                             </div>
@@ -202,7 +202,7 @@
                                 <br/>
                                 <div style="text-align: left">
                                     <span>
-                                        package: tier4_autoware_launch
+                                        package: autoware_launch
                                     </span>
                                 </div>
                             </div>
