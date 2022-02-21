@@ -77,3 +77,18 @@ TEST(linear_interpolation, lerp_vector)
     }
   }
 }
+
+TEST(linear_interpolation, lerp_scalar_query)
+{
+  {  // curve: query_keys is same as random
+    const std::vector<double> base_keys{-1.5, 1.0, 5.0, 10.0, 15.0, 20.0};
+    const std::vector<double> base_values{-1.2, 0.5, 1.0, 1.2, 2.0, 1.0};
+    const std::vector<double> query_keys{0.0, 8.0, 18.0};
+    const std::vector<double> ans{-0.18, 1.12, 1.4};
+
+    for (size_t i = 0; i < query_keys.size(); ++i) {
+      const auto query_value = interpolation::lerp(base_keys, base_values, query_keys.at(i));
+      EXPECT_NEAR(query_value, ans.at(i), epsilon);
+    }
+  }
+}

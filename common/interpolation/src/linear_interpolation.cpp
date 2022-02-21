@@ -50,4 +50,10 @@ std::vector<double> lerp(
 
   return query_values;
 }
+
+double lerp(
+  const std::vector<double> & base_keys, const std::vector<double> & base_values, double query_key)
+{
+  return lerp(base_keys, base_values, std::vector<double>{query_key}).front();
+}
 }  // namespace interpolation
