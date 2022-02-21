@@ -41,7 +41,8 @@ ObstacleStopPlannerDebugNode::ObstacleStopPlannerDebugNode(
     node_->create_publisher<visualization_msgs::msg::MarkerArray>("~/debug/marker", 1);
   stop_reason_pub_ =
     node_->create_publisher<tier4_planning_msgs::msg::StopReasonArray>("~/output/stop_reasons", 1);
-  pub_debug_values_ = node_->create_publisher<Float32MultiArrayStamped>("~/debug/debug_values", 1);
+  pub_debug_values_ =
+    node_->create_publisher<Float32MultiArrayStamped>("~/obstacle_stop/debug_values", 1);
 }
 
 bool ObstacleStopPlannerDebugNode::pushPolygon(

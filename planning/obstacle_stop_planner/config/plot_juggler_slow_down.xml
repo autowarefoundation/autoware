@@ -13,11 +13,11 @@
        <curve name="/planning/scenario_planning/motion_velocity_smoother/closest_velocity/data" color="#6117cf"/>
        <curve name="/planning/scenario_planning/motion_velocity_smoother/closest_max_velocity/data" color="#949cfe"/>
        <curve name="/localization/twist/twist/linear/x" color="#1f77b4"/>
-       <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug/debug_values/data.1" color="#d62728"/>
-       <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug/debug_values/data.4" color="#1ac938"/>
-       <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug/debug_values/data.5" color="#ff7f0e"/>
-       <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug/debug_values/data.7" color="#abfff2"/>
-       <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug/debug_values/data.6" color="#10001f"/>
+       <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/obstacle_stop/debug_values/data.1" color="#d62728"/>
+       <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/obstacle_stop/debug_values/data.4" color="#1ac938"/>
+       <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/obstacle_stop/debug_values/data.5" color="#ff7f0e"/>
+       <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/obstacle_stop/debug_values/data.7" color="#abfff2"/>
+       <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/obstacle_stop/debug_values/data.6" color="#10001f"/>
       </plot>
      </DockArea>
      <DockSplitter sizes="0.5;0.5" orientation="|" count="2">
@@ -26,14 +26,14 @@
         <plot mode="TimeSeries" style="Dots">
          <range top="46.453422" bottom="-2.151529" left="96.202174" right="196.174082"/>
          <limitY/>
-         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug/debug_values/data.3" color="#17becf"/>
+         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/obstacle_stop/debug_values/data.3" color="#17becf"/>
         </plot>
        </DockArea>
        <DockArea name="...">
         <plot mode="TimeSeries" style="Lines">
          <range top="0.100000" bottom="-0.100000" left="96.202174" right="196.174082"/>
          <limitY/>
-         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug/debug_values/data.2" color="#bcbd22"/>
+         <curve name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/obstacle_stop/debug_values/data.2" color="#bcbd22"/>
         </plot>
        </DockArea>
       </DockSplitter>
@@ -41,7 +41,7 @@
        <plot mode="XYPlot" style="Dots">
         <range top="10.000000" bottom="0.000000" left="-2.151529" right="46.453422"/>
         <limitY min="0" max="10"/>
-        <curve curve_y="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug/debug_values/data.0" name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug/debug_values/data.[3;0]" curve_x="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug/debug_values/data.3" color="#5dff5f"/>
+        <curve curve_y="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/obstacle_stop/debug_values/data.0" name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/obstacle_stop/debug_values/data.[3;0]" curve_x="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/obstacle_stop/debug_values/data.3" color="#5dff5f"/>
        </plot>
       </DockArea>
      </DockSplitter>
@@ -73,7 +73,7 @@
     <topic name="/planning/scenario_planning/motion_velocity_smoother/closest_jerk"/>
     <topic name="/planning/scenario_planning/motion_velocity_smoother/closest_max_velocity"/>
     <topic name="/planning/scenario_planning/motion_velocity_smoother/closest_velocity"/>
-    <topic name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug/debug_values"/>
+    <topic name="/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/obstacle_stop/debug_values"/>
     <topic name="/localization/twist"/>
    </selected_topics>
   </plugin>
