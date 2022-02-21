@@ -16,7 +16,6 @@
 #define RAW_VEHICLE_CMD_CONVERTER__BRAKE_MAP_HPP_
 
 #include "raw_vehicle_cmd_converter/csv_loader.hpp"
-#include "raw_vehicle_cmd_converter/interpolate.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 

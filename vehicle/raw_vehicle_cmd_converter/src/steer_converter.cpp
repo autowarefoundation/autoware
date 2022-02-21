@@ -14,6 +14,8 @@
 
 #include "raw_vehicle_cmd_converter/steer_converter.hpp"
 
+#include "interpolation/linear_interpolation.hpp"
+
 #include <string>
 #include <vector>
 
@@ -134,7 +136,6 @@ void SteerConverter::calcFFMap(double steer_vel, double vehicle_vel, double & ou
 {
   rclcpp::Clock clock{RCL_ROS_TIME};
 
-  LinearInterpolate linear_interp;
   std::vector<double> steer_angle_velocities_interp;
 
   if (vehicle_vel < vel_index_.front()) {
@@ -154,16 +155,14 @@ void SteerConverter::calcFFMap(double steer_vel, double vehicle_vel, double & ou
   }
 
   for (std::vector<double> steer_angle_velocities : steer_map_) {
-    double steer_angle_vel_interp;
-    linear_interp.interpolate(
-      vel_index_, steer_angle_velocities, vehicle_vel, steer_angle_vel_interp);
-    steer_angle_velocities_interp.push_back(steer_angle_vel_interp);
+    steer_angle_velocities_interp.push_back(
+      interpolation::lerp(vel_index_, steer_angle_velocities, vehicle_vel));
   }
   if (steer_vel < steer_angle_velocities_interp.front()) {
     steer_vel = steer_angle_velocities_interp.front();
   } else if (steer_angle_velocities_interp.back() < steer_vel) {
     steer_vel = steer_angle_velocities_interp.back();
   }
-  linear_interp.interpolate(steer_angle_velocities_interp, output_index_, steer_vel, output);
+  output = interpolation::lerp(steer_angle_velocities_interp, output_index_, steer_vel);
 }
 }  // namespace raw_vehicle_cmd_converter

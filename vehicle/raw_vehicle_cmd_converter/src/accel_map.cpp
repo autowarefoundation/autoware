@@ -14,6 +14,8 @@
 
 #include "raw_vehicle_cmd_converter/accel_map.hpp"
 
+#include "interpolation/linear_interpolation.hpp"
+
 #include <algorithm>
 #include <chrono>
 #include <string>
@@ -62,7 +64,6 @@ bool AccelMap::readAccelMapFromCSV(std::string csv_path)
 
 bool AccelMap::getThrottle(double acc, double vel, double & throttle)
 {
-  LinearInterpolate linear_interp;
   std::vector<double> accs_interpolated;
 
   if (vel < vel_index_.front()) {
@@ -83,9 +84,7 @@ bool AccelMap::getThrottle(double acc, double vel, double & throttle)
 
   // (throttle, vel, acc) map => (throttle, acc) map by fixing vel
   for (std::vector<double> accs : accel_map_) {
-    double acc_interpolated;
-    linear_interp.interpolate(vel_index_, accs, vel, acc_interpolated);
-    accs_interpolated.push_back(acc_interpolated);
+    accs_interpolated.push_back(interpolation::lerp(vel_index_, accs, vel));
   }
 
   // calculate throttle
@@ -97,14 +96,13 @@ bool AccelMap::getThrottle(double acc, double vel, double & throttle)
     throttle = throttle_index_.back();
     return true;
   }
-  linear_interp.interpolate(accs_interpolated, throttle_index_, acc, throttle);
+  throttle = interpolation::lerp(accs_interpolated, throttle_index_, acc);
 
   return true;
 }
 
 bool AccelMap::getAcceleration(double throttle, double vel, double & acc)
 {
-  LinearInterpolate linear_interp;
   std::vector<double> accs_interpolated;
 
   if (vel < vel_index_.front()) {
@@ -125,9 +123,7 @@ bool AccelMap::getAcceleration(double throttle, double vel, double & acc)
 
   // (throttle, vel, acc) map => (throttle, acc) map by fixing vel
   for (std::vector<double> accs : accel_map_) {
-    double acc_interpolated;
-    linear_interp.interpolate(vel_index_, accs, vel, acc_interpolated);
-    accs_interpolated.push_back(acc_interpolated);
+    accs_interpolated.push_back(interpolation::lerp(vel_index_, accs, vel));
   }
 
   // calculate throttle
@@ -141,7 +137,7 @@ bool AccelMap::getAcceleration(double throttle, double vel, double & acc)
     throttle = std::min(std::max(throttle, min_throttle), max_throttle);
   }
 
-  linear_interp.interpolate(throttle_index_, accs_interpolated, throttle, acc);
+  acc = interpolation::lerp(throttle_index_, accs_interpolated, throttle);
 
   return true;
 }

@@ -19,7 +19,6 @@ ament_auto_add_library(actuation_map_converter SHARED
   src/accel_map.cpp
   src/brake_map.cpp
   src/csv_loader.cpp
-  src/interpolate.cpp
   src/pid.cpp
   src/steer_converter.cpp
 )

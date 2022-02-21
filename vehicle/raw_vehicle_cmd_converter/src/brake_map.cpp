@@ -14,6 +14,8 @@
 
 #include "raw_vehicle_cmd_converter/brake_map.hpp"
 
+#include "interpolation/linear_interpolation.hpp"
+
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -63,7 +65,6 @@ bool BrakeMap::readBrakeMapFromCSV(std::string csv_path)
 
 bool BrakeMap::getBrake(double acc, double vel, double & brake)
 {
-  LinearInterpolate linear_interp;
   std::vector<double> accs_interpolated;
 
   if (vel < vel_index_.front()) {
@@ -84,9 +85,7 @@ bool BrakeMap::getBrake(double acc, double vel, double & brake)
 
   // (throttle, vel, acc) map => (throttle, acc) map by fixing vel
   for (std::vector<double> accs : brake_map_) {
-    double acc_interpolated;
-    linear_interp.interpolate(vel_index_, accs, vel, acc_interpolated);
-    accs_interpolated.push_back(acc_interpolated);
+    accs_interpolated.push_back(interpolation::lerp(vel_index_, accs, vel));
   }
 
   // calculate brake
@@ -106,14 +105,13 @@ bool BrakeMap::getBrake(double acc, double vel, double & brake)
   }
 
   std::reverse(std::begin(accs_interpolated), std::end(accs_interpolated));
-  linear_interp.interpolate(accs_interpolated, brake_index_rev_, acc, brake);
+  brake = interpolation::lerp(accs_interpolated, brake_index_rev_, acc);
 
   return true;
 }
 
 bool BrakeMap::getAcceleration(double brake, double vel, double & acc)
 {
-  LinearInterpolate linear_interp;
   std::vector<double> accs_interpolated;
 
   if (vel < vel_index_.front()) {
@@ -134,9 +132,7 @@ bool BrakeMap::getAcceleration(double brake, double vel, double & acc)
 
   // (throttle, vel, acc) map => (throttle, acc) map by fixing vel
   for (std::vector<double> accs : brake_map_) {
-    double acc_interpolated;
-    linear_interp.interpolate(vel_index_, accs, vel, acc_interpolated);
-    accs_interpolated.push_back(acc_interpolated);
+    accs_interpolated.push_back(interpolation::lerp(vel_index_, accs, vel));
   }
 
   // calculate brake
@@ -150,7 +146,7 @@ bool BrakeMap::getAcceleration(double brake, double vel, double & acc)
     brake = std::min(std::max(brake, min_brake), max_brake);
   }
 
-  linear_interp.interpolate(brake_index_, accs_interpolated, brake, acc);
+  acc = interpolation::lerp(brake_index_, accs_interpolated, brake);
 
   return true;
 }
