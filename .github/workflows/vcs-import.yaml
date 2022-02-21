@@ -2,8 +2,6 @@ name: vcs-import
 
 on:
   pull_request:
-    paths:
-      - autoware.repos
   workflow_dispatch:
 
 jobs:
