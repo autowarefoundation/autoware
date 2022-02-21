@@ -1,7 +1,7 @@
 <launch>
 
   <arg name="launch_driver" default="true" description="do launch driver"/>
-  <arg name="sensor_model" default="aip_xx1" description="sensor model name"/>
+  <arg name="sensor_model" default="sample_sensor_kit" description="sensor model name"/>
   <arg name="vehicle_param_file" default="$(find-pkg-share vehicle_info_util)/config/vehicle_info.param.yaml" description="path to the file of vehicle info yaml"/>
   <arg name="vehicle_mirror_param_file" default="$(find-pkg-share vehicle_info_util)/config/vehicle_mirror.param.yaml" description="path to the file of vehicle mirror position yaml"/>
   <arg name="use_pointcloud_container" default="false" description="launch pointcloud container"/>

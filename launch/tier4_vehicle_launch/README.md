@@ -13,8 +13,8 @@ Please see `<exec_depend>` in `package.xml`.
 You can include as follows in `*.launch.xml` to use `vehicle.launch.xml`.
 
 ```xml
-  <arg name="vehicle_model" default="lexus" description="vehicle model name"/>
-  <arg name="sensor_model" default="aip_xx1" description="sensor model name"/>
+  <arg name="vehicle_model" default="sample_vehicle" description="vehicle model name"/>
+  <arg name="sensor_model" default="sample_sensor_kit" description="sensor model name"/>
 
   <include file="$(find-pkg-share tier4_vehicle_launch)/launch/vehicle.launch.xml">
     <arg name="vehicle_model" value="$(var vehicle_model)"/>
@@ -50,8 +50,8 @@ ex.)
 You can write as follows in `*.launch.xml`.
 
 ```xml
-  <arg name="vehicle_model" default="lexus" description="vehicle model name"/>
-  <arg name="sensor_model" default="aip_xx1" description="sensor model name"/>
+  <arg name="vehicle_model" default="sample_vehicle" description="vehicle model name"/>
+  <arg name="sensor_model" default="sample_sensor_kit" description="sensor model name"/>
   <arg name="model" default="$(find-pkg-share tier4_vehicle_launch)/urdf/vehicle.xacro"/>
 
   <node name="robot_state_publisher" pkg="robot_state_publisher" exec="robot_state_publisher">
