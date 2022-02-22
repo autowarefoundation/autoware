@@ -12,15 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <vector>
-
-// *INDENT-OFF*
 #include "compare_map_segmentation/voxel_based_approximate_compare_map_filter_nodelet.hpp"
-// *INDENT-ON*
 
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/search/kdtree.h>
 #include <pcl/segmentation/segment_differences.h>
+
+#include <vector>
 
 namespace compare_map_segmentation
 {

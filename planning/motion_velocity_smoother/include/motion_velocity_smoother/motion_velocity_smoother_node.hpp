@@ -16,9 +16,12 @@
 #define MOTION_VELOCITY_SMOOTHER__MOTION_VELOCITY_SMOOTHER_NODE_HPP_
 
 #include "motion_velocity_smoother/resample.hpp"
+#include "motion_velocity_smoother/smoother/analytical_jerk_constrained_smoother/analytical_jerk_constrained_smoother.hpp"
 #include "motion_velocity_smoother/smoother/jerk_filtered_smoother.hpp"
 #include "motion_velocity_smoother/smoother/l2_pseudo_jerk_smoother.hpp"
 #include "motion_velocity_smoother/smoother/linf_pseudo_jerk_smoother.hpp"
+#include "motion_velocity_smoother/smoother/smoother_base.hpp"
+#include "motion_velocity_smoother/trajectory_utils.hpp"
 #include "osqp_interface/osqp_interface.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tf2/utils.h"
@@ -42,12 +45,6 @@
 #include <string>
 #include <tuple>
 #include <vector>
-
-// *INDENT-OFF*
-#include "motion_velocity_smoother/smoother/analytical_jerk_constrained_smoother/analytical_jerk_constrained_smoother.hpp"
-// *INDENT-ON*
-#include "motion_velocity_smoother/smoother/smoother_base.hpp"
-#include "motion_velocity_smoother/trajectory_utils.hpp"
 
 namespace motion_velocity_smoother
 {

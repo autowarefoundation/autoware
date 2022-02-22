@@ -12,15 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "motion_velocity_smoother/smoother/analytical_jerk_constrained_smoother/analytical_jerk_constrained_smoother.hpp"
+
 #include <algorithm>
 #include <string>
 #include <tuple>
 #include <utility>
 #include <vector>
-
-// *INDENT-OFF*
-#include "motion_velocity_smoother/smoother/analytical_jerk_constrained_smoother/analytical_jerk_constrained_smoother.hpp"
-// *INDENT-ON*
 
 namespace
 {
@@ -544,14 +542,12 @@ bool AnalyticalJerkConstrainedSmoother::calcEnoughDistForDecel(
   const double a0 = trajectory.at(start_index).acceleration_mps2;
   const double jerk_acc = std::abs(planning_jerk);
   const double jerk_dec = planning_jerk;
-  // *INDENT-OFF*
   auto calcMinAcc = [&params](const double planning_jerk) {
     if (planning_jerk < params.backward.min_jerk_mild_stop) {
       return params.backward.min_acc;
     }
     return params.backward.min_acc_mild_stop;
   };
-  // *INDENT-ON*
   const double min_acc = calcMinAcc(planning_jerk);
   type = 0;
   times.clear();
@@ -589,14 +585,12 @@ bool AnalyticalJerkConstrainedSmoother::applyDecelVelocityFilter(
   const double a0 = output_trajectory.at(decel_start_index).acceleration_mps2;
   const double jerk_acc = std::abs(planning_jerk);
   const double jerk_dec = planning_jerk;
-  // *INDENT-OFF*
   auto calcMinAcc = [&params](const double planning_jerk) {
     if (planning_jerk < params.backward.min_jerk_mild_stop) {
       return params.backward.min_acc;
     }
     return params.backward.min_acc_mild_stop;
   };
-  // *INDENT-ON*
   const double min_acc = calcMinAcc(planning_jerk);
 
   if (!analytical_velocity_planning_utils::calcStopVelocityWithConstantJerkAccLimit(

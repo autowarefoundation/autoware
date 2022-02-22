@@ -81,16 +81,13 @@ private:
 private:
   class Debugger
   {
-    // *INDENT-OFF*
   public:
-    // *INDENT-ON*
     explicit Debugger(OccupancyGridMapOutlierFilterComponent & node);
     void publishOutlier(const PclPointCloud & input, const Header & header);
     void publishHighConfidence(const PclPointCloud & input, const Header & header);
     void publishLowConfidence(const PclPointCloud & input, const Header & header);
-    // *INDENT-OFF*
+
   private:
-    // *INDENT-ON*
     void transformToBaseLink(
       const PclPointCloud & input, const Header & header, PointCloud2 & output);
     rclcpp::Publisher<PointCloud2>::SharedPtr outlier_pointcloud_pub_;
