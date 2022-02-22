@@ -78,6 +78,9 @@ private:
     sub_twist_with_cov_;
   //!< @brief time for ekf calculation callback
   rclcpp::TimerBase::SharedPtr timer_control_;
+  //!< @brief last predict time
+  std::shared_ptr<const rclcpp::Time> last_predict_time_;
+
   //!< @brief timer to send transform
   rclcpp::TimerBase::SharedPtr timer_tf_;
   //!< @brief tf broadcaster
@@ -112,6 +115,12 @@ private:
   double twist_rate_;              //!< @brief  rate [s], used for covariance calculation
   //!< @brief  measurement is ignored if the mahalanobis distance is larger than this value.
   double twist_gate_dist_;
+
+  /* process noise standard deviation */
+  double proc_stddev_yaw_c_;       //!< @brief  yaw process noise
+  double proc_stddev_yaw_bias_c_;  //!< @brief  yaw bias process noise
+  double proc_stddev_vx_c_;        //!< @brief  vx process noise
+  double proc_stddev_wz_c_;        //!< @brief  wz process noise
 
   /* process noise variance for discrete model */
   double proc_cov_yaw_d_;       //!< @brief  discrete yaw process noise
@@ -168,6 +177,11 @@ private:
    * @brief initialization of EKF
    */
   void initEKF();
+
+  /**
+   * @brief update predict frequency
+   */
+  void updatePredictFrequency();
 
   /**
    * @brief compute EKF prediction

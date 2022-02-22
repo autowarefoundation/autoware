@@ -55,20 +55,19 @@ EKFLocalizer::EKFLocalizer(const std::string & node_name, const rclcpp::NodeOpti
   twist_gate_dist_ = declare_parameter("twist_gate_dist", 10000.0);  // Mahalanobis limit
 
   /* process noise */
-  double proc_stddev_yaw_c, proc_stddev_yaw_bias_c, proc_stddev_vx_c, proc_stddev_wz_c;
-  proc_stddev_yaw_c = declare_parameter("proc_stddev_yaw_c", 0.005);
-  proc_stddev_yaw_bias_c = declare_parameter("proc_stddev_yaw_bias_c", 0.001);
-  proc_stddev_vx_c = declare_parameter("proc_stddev_vx_c", 5.0);
-  proc_stddev_wz_c = declare_parameter("proc_stddev_wz_c", 1.0);
+  proc_stddev_yaw_c_ = declare_parameter("proc_stddev_yaw_c", 0.005);
+  proc_stddev_yaw_bias_c_ = declare_parameter("proc_stddev_yaw_bias_c", 0.001);
+  proc_stddev_vx_c_ = declare_parameter("proc_stddev_vx_c", 5.0);
+  proc_stddev_wz_c_ = declare_parameter("proc_stddev_wz_c", 1.0);
   if (!enable_yaw_bias_estimation_) {
-    proc_stddev_yaw_bias_c = 0.0;
+    proc_stddev_yaw_bias_c_ = 0.0;
   }
 
   /* convert to continuous to discrete */
-  proc_cov_vx_d_ = std::pow(proc_stddev_vx_c * ekf_dt_, 2.0);
-  proc_cov_wz_d_ = std::pow(proc_stddev_wz_c * ekf_dt_, 2.0);
-  proc_cov_yaw_d_ = std::pow(proc_stddev_yaw_c * ekf_dt_, 2.0);
-  proc_cov_yaw_bias_d_ = std::pow(proc_stddev_yaw_bias_c * ekf_dt_, 2.0);
+  proc_cov_vx_d_ = std::pow(proc_stddev_vx_c_ * ekf_dt_, 2.0);
+  proc_cov_wz_d_ = std::pow(proc_stddev_wz_c_ * ekf_dt_, 2.0);
+  proc_cov_yaw_d_ = std::pow(proc_stddev_yaw_c_ * ekf_dt_, 2.0);
+  proc_cov_yaw_bias_d_ = std::pow(proc_stddev_yaw_bias_c_ * ekf_dt_, 2.0);
 
   /* initialize ros system */
   auto period_control_ns =
@@ -112,11 +111,33 @@ EKFLocalizer::EKFLocalizer(const std::string & node_name, const rclcpp::NodeOpti
 }
 
 /*
+ * updatePredictFrequency
+ */
+void EKFLocalizer::updatePredictFrequency()
+{
+  if (last_predict_time_) {
+    ekf_rate_ = 1.0 / (get_clock()->now() - *last_predict_time_).seconds();
+    DEBUG_INFO(get_logger(), "[EKF] update ekf_rate_ to %f hz", ekf_rate_);
+    ekf_dt_ = 1.0 / std::max(ekf_rate_, 0.1);
+
+    /* Update discrete proc_cov*/
+    proc_cov_vx_d_ = std::pow(proc_stddev_vx_c_ * ekf_dt_, 2.0);
+    proc_cov_wz_d_ = std::pow(proc_stddev_wz_c_ * ekf_dt_, 2.0);
+    proc_cov_yaw_d_ = std::pow(proc_stddev_yaw_c_ * ekf_dt_, 2.0);
+    proc_cov_yaw_bias_d_ = std::pow(proc_stddev_yaw_bias_c_ * ekf_dt_, 2.0);
+  }
+  last_predict_time_ = std::make_shared<const rclcpp::Time>(get_clock()->now());
+}
+
+/*
  * timerCallback
  */
 void EKFLocalizer::timerCallback()
 {
   DEBUG_INFO(get_logger(), "========================= timer called =========================");
+
+  /* update predict frequency with measured timer rate */
+  updatePredictFrequency();
 
   /* predict model in EKF */
   stop_watch_.tic();
