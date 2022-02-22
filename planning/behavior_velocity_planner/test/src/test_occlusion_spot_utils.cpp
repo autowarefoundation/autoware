@@ -30,30 +30,6 @@ using autoware_auto_planning_msgs::msg::Path;
 using autoware_auto_planning_msgs::msg::PathPoint;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 
-autoware_auto_planning_msgs::msg::Path toPath(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path_with_id)
-{
-  autoware_auto_planning_msgs::msg::Path path;
-  for (const auto & p : path_with_id.points) {
-    path.points.push_back(p.point);
-  }
-  return path;
-}
-
-TEST(spline, splineInterpolate)
-{
-  using std::chrono::duration;
-  using std::chrono::duration_cast;
-  using std::chrono::high_resolution_clock;
-  using std::chrono::microseconds;
-  autoware_auto_planning_msgs::msg::PathWithLaneId path = test::generatePath(0, 0.0, 6.0, 0.0, 7);
-  const auto path_interp = behavior_velocity_planner::interpolatePath(toPath(path), 100, 0.5);
-  for (const auto & p : path_interp.points) {
-    std::cout << "interp" << p.pose.position.x << std::endl;
-  }
-  ASSERT_EQ(path_interp.points.size(), path.points.size() * 2 - +1);
-}
-
 TEST(calcSlowDownPointsForPossibleCollision, TooManyPossibleCollisions)
 {
   using behavior_velocity_planner::occlusion_spot_utils::calcSlowDownPointsForPossibleCollision;

@@ -33,10 +33,6 @@ namespace util
 bool setVelocityFrom(
   const size_t idx, const double vel, autoware_auto_planning_msgs::msg::PathWithLaneId * input);
 
-bool splineInterpolate(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & input, const double interval,
-  autoware_auto_planning_msgs::msg::PathWithLaneId * output, const rclcpp::Logger logger);
-
 int insertPoint(
   const geometry_msgs::msg::Pose & in_pose,
   autoware_auto_planning_msgs::msg::PathWithLaneId * inout_path);

@@ -200,7 +200,7 @@ bool BlindSpotModule::generateStopLine(
 
   /* spline interpolation */
   autoware_auto_planning_msgs::msg::PathWithLaneId path_ip;
-  if (!util::splineInterpolate(*path, interval, &path_ip, logger_)) {
+  if (!interpolation::splineInterpolate(*path, interval, &path_ip, logger_)) {
     return false;
   }
   debug_data_.spline_path = path_ip;

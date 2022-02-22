@@ -15,6 +15,11 @@
 #ifndef UTILIZATION__INTERPOLATE_HPP_
 #define UTILIZATION__INTERPOLATE_HPP_
 
+#include <rclcpp/rclcpp.hpp>
+
+#include <autoware_auto_planning_msgs/msg/path_point_with_lane_id.hpp>
+#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
+
 #include <cmath>
 #include <vector>
 
@@ -22,8 +27,9 @@ namespace behavior_velocity_planner
 {
 namespace interpolation
 {
-// template <class T>
-// bool splineInterpolateWithFixInterval(const T & input, const double interval, T * output);
+bool splineInterpolate(
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & input, const double interval,
+  autoware_auto_planning_msgs::msg::PathWithLaneId * output, const rclcpp::Logger logger);
 
 class LinearInterpolate
 {
