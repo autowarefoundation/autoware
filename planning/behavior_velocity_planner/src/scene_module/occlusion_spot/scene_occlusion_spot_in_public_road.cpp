@@ -17,7 +17,7 @@
 #include <scene_module/occlusion_spot/occlusion_spot_utils.hpp>
 #include <scene_module/occlusion_spot/risk_predictive_braking.hpp>
 #include <scene_module/occlusion_spot/scene_occlusion_spot_in_public_road.hpp>
-#include <utilization/interpolate.hpp>
+#include <utilization/path_utilization.hpp>
 #include <utilization/util.hpp>
 
 #include <lanelet2_core/primitives/BasicRegulatoryElements.h>
@@ -73,7 +73,7 @@ bool OcclusionSpotInPublicModule::modifyPathVelocity(
   PathWithLaneId clipped_path;
   utils::clipPathByLength(*path, clipped_path, param_.detection_area_length);
   PathWithLaneId interp_path;
-  interpolation::splineInterpolate(clipped_path, 1.0, &interp_path, logger_);
+  splineInterpolate(clipped_path, 1.0, &interp_path, logger_);
   int closest_idx = -1;
   if (!planning_utils::calcClosestIndex<PathWithLaneId>(
         interp_path, ego_pose, closest_idx, param_.dist_thr, param_.angle_thr)) {

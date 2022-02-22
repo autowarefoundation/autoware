@@ -53,7 +53,6 @@ set(BEHAVIOR_VELOCITY_PLANNER_DEPENDENCIES
 ament_auto_add_library(scene_module_lib SHARED
   src/utilization/path_utilization.cpp
   src/utilization/util.cpp
-  src/utilization/interpolate.cpp
 )
 
 target_include_directories(scene_module_lib

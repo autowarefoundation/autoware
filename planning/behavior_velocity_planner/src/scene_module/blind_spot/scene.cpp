@@ -18,7 +18,7 @@
 #include <scene_module/blind_spot/scene.hpp>
 #include <scene_module/intersection/util.hpp>
 #include <utilization/boost_geometry_helper.hpp>
-#include <utilization/interpolate.hpp>
+#include <utilization/path_utilization.hpp>
 #include <utilization/util.hpp>
 
 #include <boost/geometry/algorithms/distance.hpp>
@@ -200,7 +200,7 @@ bool BlindSpotModule::generateStopLine(
 
   /* spline interpolation */
   autoware_auto_planning_msgs::msg::PathWithLaneId path_ip;
-  if (!interpolation::splineInterpolate(*path, interval, &path_ip, logger_)) {
+  if (!splineInterpolate(*path, interval, &path_ip, logger_)) {
     return false;
   }
   debug_data_.spline_path = path_ip;

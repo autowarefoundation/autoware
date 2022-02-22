@@ -18,7 +18,7 @@
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <scene_module/intersection/util.hpp>
-#include <utilization/interpolate.hpp>
+#include <utilization/path_utilization.hpp>
 #include <utilization/util.hpp>
 
 #include <lanelet2_core/geometry/Polygon.h>
@@ -185,7 +185,7 @@ bool generateStopLine(
 
   /* spline interpolation */
   autoware_auto_planning_msgs::msg::PathWithLaneId path_ip;
-  if (!interpolation::splineInterpolate(target_path, interval, &path_ip, logger)) {
+  if (!splineInterpolate(target_path, interval, &path_ip, logger)) {
     return false;
   }
 

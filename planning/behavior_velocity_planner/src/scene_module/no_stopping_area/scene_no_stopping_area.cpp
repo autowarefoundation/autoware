@@ -15,7 +15,6 @@
 #include "scene_module/no_stopping_area/scene_no_stopping_area.hpp"
 
 #include "utilization/arc_lane_util.hpp"
-#include "utilization/interpolate.hpp"
 #include "utilization/path_utilization.hpp"
 #include "utilization/util.hpp"
 
@@ -267,8 +266,7 @@ Polygon2d NoStoppingAreaModule::generateEgoNoStoppingAreaLanePolygon(
   const double interpolation_interval = 0.5;
   bool is_in_area = false;
   autoware_auto_planning_msgs::msg::PathWithLaneId interpolated_path;
-  if (!interpolation::splineInterpolate(
-        path, interpolation_interval, &interpolated_path, logger_)) {
+  if (!splineInterpolate(path, interpolation_interval, &interpolated_path, logger_)) {
     return ego_area;
   }
   auto & pp = interpolated_path.points;

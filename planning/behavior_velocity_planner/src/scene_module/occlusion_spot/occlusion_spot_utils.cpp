@@ -19,7 +19,6 @@
 #include <scene_module/occlusion_spot/risk_predictive_braking.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/math/normalization.hpp>
-#include <utilization/interpolate.hpp>
 #include <utilization/path_utilization.hpp>
 #include <utilization/util.hpp>
 
