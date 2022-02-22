@@ -37,6 +37,15 @@ rclcpp_components_register_node(${PROJECT_NAME}
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
+
+  ament_add_gtest(test_simple_planning_simulator
+    test/test_simple_planning_simulator.cpp
+    TIMEOUT 120
+  )
+
+  target_link_libraries(test_simple_planning_simulator
+    ${PROJECT_NAME}
+  )
 endif()
 
 
