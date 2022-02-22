@@ -484,7 +484,7 @@ bool lerpByTimeStamp(const PredictedPath & path, const double t_query, Pose * le
     return false;
   }
 
-  const double t_final = time_step.seconds() * static_cast<double>(path.path.size());
+  const double t_final = time_step.seconds() * static_cast<double>(path.path.size() - 1);
   if (t_query > t_final) {
     RCLCPP_DEBUG_STREAM(
       rclcpp::get_logger("behavior_path_planner").get_child("utilities"),
