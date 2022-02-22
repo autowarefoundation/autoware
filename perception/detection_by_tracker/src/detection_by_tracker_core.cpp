@@ -26,6 +26,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
+using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
 namespace
 {
 std::optional<geometry_msgs::msg::Transform> getTransform(
@@ -119,6 +120,16 @@ autoware_auto_perception_msgs::msg::DetectedObjects toDetectedObjects(
   return out_objects;
 }
 
+boost::optional<ReferenceYawInfo> getReferenceYawInfo(const uint8_t label, const float yaw)
+{
+  const bool is_vehicle =
+    Label::CAR == label || Label::TRUCK == label || Label::BUS == label || Label::TRAILER == label;
+  if (is_vehicle) {
+    return ReferenceYawInfo{yaw, tier4_autoware_utils::deg2rad(30)};
+  } else {
+    return boost::none;
+  }
+}
 }  // namespace
 
 void TrackerHandler::onTrackedObjects(
@@ -321,6 +332,8 @@ float DetectionByTracker::optimizeUnderSegmentedObject(
   constexpr float initial_voxel_size = initial_cluster_range / 2.0f;
   float voxel_size = initial_voxel_size;
 
+  const auto & label = target_object.classification.front().label;
+
   // initialize clustering parameters
   euclidean_cluster::VoxelGridBasedEuclideanCluster cluster(
     false, 4, 10000, initial_cluster_range, initial_voxel_size, 0);
@@ -346,8 +359,9 @@ float DetectionByTracker::optimizeUnderSegmentedObject(
     highest_iou_object_in_current_iter.object.classification = target_object.classification;
     for (const auto & divided_cluster : divided_clusters) {
       bool is_shape_estimated = shape_estimator_->estimateShapeAndPose(
-        target_object.classification.front().label, divided_cluster,
-        tf2::getYaw(target_object.kinematics.pose_with_covariance.pose.orientation),
+        label, divided_cluster,
+        getReferenceYawInfo(
+          label, tf2::getYaw(target_object.kinematics.pose_with_covariance.pose.orientation)),
         highest_iou_object_in_current_iter.object.shape,
         highest_iou_object_in_current_iter.object.kinematics.pose_with_covariance.pose);
       if (!is_shape_estimated) {
@@ -391,6 +405,7 @@ void DetectionByTracker::mergeOverSegmentedObjects(
   out_no_found_tracked_objects.header = tracked_objects.header;
 
   for (const auto & tracked_object : tracked_objects.objects) {
+    const auto & label = tracked_object.classification.front().label;
     // extend shape
     autoware_auto_perception_msgs::msg::DetectedObject extended_tracked_object = tracked_object;
     extended_tracked_object.shape = extendShape(tracked_object.shape, /*scale*/ 1.1);
@@ -426,8 +441,9 @@ void DetectionByTracker::mergeOverSegmentedObjects(
     feature_object.object.classification = tracked_object.classification;
 
     bool is_shape_estimated = shape_estimator_->estimateShapeAndPose(
-      tracked_object.classification.front().label, pcl_merged_cluster,
-      tf2::getYaw(tracked_object.kinematics.pose_with_covariance.pose.orientation),
+      label, pcl_merged_cluster,
+      getReferenceYawInfo(
+        label, tf2::getYaw(tracked_object.kinematics.pose_with_covariance.pose.orientation)),
       feature_object.object.shape, feature_object.object.kinematics.pose_with_covariance.pose);
     if (!is_shape_estimated) {
       out_no_found_tracked_objects.objects.push_back(tracked_object);

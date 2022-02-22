@@ -15,6 +15,7 @@
 #include "shape_estimation/shape_estimator.hpp"
 
 #include <node.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <autoware_auto_perception_msgs/msg/object_classification.hpp>
 
@@ -72,12 +73,14 @@ void ShapeEstimationNode::callback(const DetectedObjectsWithFeature::ConstShared
     // estimate shape and pose
     autoware_auto_perception_msgs::msg::Shape shape;
     geometry_msgs::msg::Pose pose;
-    boost::optional<float> yaw = boost::none;
+    boost::optional<ReferenceYawInfo> ref_yaw_info = boost::none;
     if (use_vehicle_reference_yaw_ && is_vehicle) {
-      yaw = tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation);
+      ref_yaw_info = ReferenceYawInfo{
+        static_cast<float>(tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation)),
+        tier4_autoware_utils::deg2rad(10)};
     }
     const bool estimated_success =
-      estimator_->estimateShapeAndPose(label, *cluster, yaw, shape, pose);
+      estimator_->estimateShapeAndPose(label, *cluster, ref_yaw_info, shape, pose);
 
     // If the shape estimation fails, ignore it.
     if (!estimated_success) {

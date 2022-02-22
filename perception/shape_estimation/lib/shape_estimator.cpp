@@ -30,13 +30,13 @@ ShapeEstimator::ShapeEstimator(bool use_corrector, bool use_filter)
 
 bool ShapeEstimator::estimateShapeAndPose(
   const uint8_t label, const pcl::PointCloud<pcl::PointXYZ> & cluster,
-  const boost::optional<float> & yaw, autoware_auto_perception_msgs::msg::Shape & shape_output,
-  geometry_msgs::msg::Pose & pose_output)
+  const boost::optional<ReferenceYawInfo> & ref_yaw_info,
+  autoware_auto_perception_msgs::msg::Shape & shape_output, geometry_msgs::msg::Pose & pose_output)
 {
   autoware_auto_perception_msgs::msg::Shape shape;
   geometry_msgs::msg::Pose pose;
   // estimate shape
-  if (!estimateShape(label, cluster, yaw, shape, pose)) {
+  if (!estimateOriginalShapeAndPose(label, cluster, ref_yaw_info, shape, pose)) {
     return false;
   }
 
@@ -49,7 +49,7 @@ bool ShapeEstimator::estimateShapeAndPose(
 
   // rule based corrector
   if (use_corrector_) {
-    bool use_reference_yaw = yaw ? true : false;
+    bool use_reference_yaw = ref_yaw_info ? true : false;
     if (!applyCorrector(label, use_reference_yaw, shape, pose)) {
       return false;
     }
@@ -60,23 +60,23 @@ bool ShapeEstimator::estimateShapeAndPose(
   return true;
 }
 
-bool ShapeEstimator::estimateShape(
+bool ShapeEstimator::estimateOriginalShapeAndPose(
   const uint8_t label, const pcl::PointCloud<pcl::PointXYZ> & cluster,
-  const boost::optional<float> & yaw, autoware_auto_perception_msgs::msg::Shape & shape_output,
-  geometry_msgs::msg::Pose & pose_output)
+  const boost::optional<ReferenceYawInfo> & ref_yaw_info,
+  autoware_auto_perception_msgs::msg::Shape & shape_output, geometry_msgs::msg::Pose & pose_output)
 {
   // estimate shape
   std::unique_ptr<ShapeEstimationModelInterface> model_ptr;
   if (
     label == Label::CAR || label == Label::TRUCK || label == Label::BUS ||
     label == Label::TRAILER) {
-    model_ptr.reset(new BoundingBoxShapeModel(yaw));
+    model_ptr.reset(new BoundingBoxShapeModel(ref_yaw_info));
   } else if (label == Label::PEDESTRIAN) {
     model_ptr.reset(new CylinderShapeModel());
   } else if (label == Label::MOTORCYCLE) {
-    model_ptr.reset(new BoundingBoxShapeModel(yaw));
+    model_ptr.reset(new BoundingBoxShapeModel(ref_yaw_info));
   } else if (label == Label::BICYCLE) {
-    model_ptr.reset(new BoundingBoxShapeModel(yaw));
+    model_ptr.reset(new BoundingBoxShapeModel(ref_yaw_info));
   } else {
     model_ptr.reset(new ConvexHullShapeModel());
   }
@@ -85,8 +85,8 @@ bool ShapeEstimator::estimateShape(
 }
 
 bool ShapeEstimator::applyFilter(
-  const uint8_t label, const autoware_auto_perception_msgs::msg::Shape & shape_output,
-  const geometry_msgs::msg::Pose & pose_output)
+  const uint8_t label, const autoware_auto_perception_msgs::msg::Shape & shape,
+  const geometry_msgs::msg::Pose & pose)
 {
   std::unique_ptr<ShapeEstimationFilterInterface> filter_ptr;
   if (label == Label::CAR) {
@@ -99,12 +99,12 @@ bool ShapeEstimator::applyFilter(
     filter_ptr.reset(new NoFilter);
   }
 
-  return filter_ptr->filter(shape_output, pose_output);
+  return filter_ptr->filter(shape, pose);
 }
 
 bool ShapeEstimator::applyCorrector(
   const uint8_t label, const bool use_reference_yaw,
-  autoware_auto_perception_msgs::msg::Shape & shape_output, geometry_msgs::msg::Pose & pose_output)
+  autoware_auto_perception_msgs::msg::Shape & shape, geometry_msgs::msg::Pose & pose)
 {
   std::unique_ptr<ShapeEstimationCorrectorInterface> corrector_ptr;
   if (label == Label::CAR) {
@@ -117,5 +117,5 @@ bool ShapeEstimator::applyCorrector(
     corrector_ptr.reset(new NoCorrector);
   }
 
-  return corrector_ptr->correct(shape_output, pose_output);
+  return corrector_ptr->correct(shape, pose);
 }

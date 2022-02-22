@@ -28,8 +28,7 @@ public:
   virtual ~ShapeEstimationCorrectorInterface() {}
 
   virtual bool correct(
-    autoware_auto_perception_msgs::msg::Shape & shape_output,
-    geometry_msgs::msg::Pose & pose_output) = 0;
+    autoware_auto_perception_msgs::msg::Shape & shape, geometry_msgs::msg::Pose & pose) = 0;
 };
 
 #endif  // SHAPE_ESTIMATION__CORRECTOR__CORRECTOR_INTERFACE_HPP_

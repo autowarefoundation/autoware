@@ -16,6 +16,7 @@
 #define SHAPE_ESTIMATION__MODEL__BOUNDING_BOX_HPP_
 
 #include "shape_estimation/model/model_interface.hpp"
+#include "shape_estimation/shape_estimator.hpp"
 
 #include <vector>
 
@@ -30,8 +31,8 @@ private:
 
 public:
   BoundingBoxShapeModel();
-  explicit BoundingBoxShapeModel(const boost::optional<float> & reference_yaw);
-  boost::optional<float> reference_yaw_;
+  explicit BoundingBoxShapeModel(const boost::optional<ReferenceYawInfo> & ref_yaw_info);
+  boost::optional<ReferenceYawInfo> ref_yaw_info_;
 
   ~BoundingBoxShapeModel() {}
 

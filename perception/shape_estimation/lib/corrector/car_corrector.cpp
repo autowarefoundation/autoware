@@ -15,10 +15,10 @@
 #include "shape_estimation/corrector/car_corrector.hpp"
 
 bool CarCorrector::correct(
-  autoware_auto_perception_msgs::msg::Shape & shape_output, geometry_msgs::msg::Pose & pose_output)
+  autoware_auto_perception_msgs::msg::Shape & shape, geometry_msgs::msg::Pose & pose)
 {
   if (use_reference_yaw_) {
-    return correctVehicleBoundingBoxWithReferenceYaw(params_, shape_output, pose_output);
+    return correctVehicleBoundingBoxWithReferenceYaw(params_, shape, pose);
   }
-  return correctVehicleBoundingBox(params_, shape_output, pose_output);
+  return correctVehicleBoundingBox(params_, shape, pose);
 }

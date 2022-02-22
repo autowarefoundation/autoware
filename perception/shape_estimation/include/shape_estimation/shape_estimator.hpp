@@ -27,20 +27,26 @@
 
 #include <string>
 
+struct ReferenceYawInfo
+{
+  float yaw;
+  float search_angle_range;
+};
+
 class ShapeEstimator
 {
 private:
-  bool estimateShape(
+  bool estimateOriginalShapeAndPose(
     const uint8_t label, const pcl::PointCloud<pcl::PointXYZ> & cluster,
-    const boost::optional<float> & yaw, autoware_auto_perception_msgs::msg::Shape & shape_output,
-    geometry_msgs::msg::Pose & pose_output);
-  bool applyFilter(
-    const uint8_t label, const autoware_auto_perception_msgs::msg::Shape & shape_output,
-    const geometry_msgs::msg::Pose & pose_output);
-  bool applyCorrector(
-    const uint8_t label, const bool use_reference_yaw,
+    const boost::optional<ReferenceYawInfo> & ref_yaw_info,
     autoware_auto_perception_msgs::msg::Shape & shape_output,
     geometry_msgs::msg::Pose & pose_output);
+  bool applyFilter(
+    const uint8_t label, const autoware_auto_perception_msgs::msg::Shape & shape,
+    const geometry_msgs::msg::Pose & pose);
+  bool applyCorrector(
+    const uint8_t label, const bool use_reference_yaw,
+    autoware_auto_perception_msgs::msg::Shape & shape, geometry_msgs::msg::Pose & pose);
 
   bool use_corrector_;
   bool use_filter_;
@@ -52,7 +58,8 @@ public:
 
   virtual bool estimateShapeAndPose(
     const uint8_t label, const pcl::PointCloud<pcl::PointXYZ> & cluster,
-    const boost::optional<float> & yaw, autoware_auto_perception_msgs::msg::Shape & shape_output,
+    const boost::optional<ReferenceYawInfo> & ref_yaw_info,
+    autoware_auto_perception_msgs::msg::Shape & shape_output,
     geometry_msgs::msg::Pose & pose_output);
 };
 

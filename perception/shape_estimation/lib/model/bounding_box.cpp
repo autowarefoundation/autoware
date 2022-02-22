@@ -37,10 +37,10 @@
 
 constexpr float epsilon = 0.001;
 
-BoundingBoxShapeModel::BoundingBoxShapeModel() : reference_yaw_(boost::none) {}
+BoundingBoxShapeModel::BoundingBoxShapeModel() : ref_yaw_info_(boost::none) {}
 
-BoundingBoxShapeModel::BoundingBoxShapeModel(const boost::optional<float> & reference_yaw)
-: reference_yaw_(reference_yaw)
+BoundingBoxShapeModel::BoundingBoxShapeModel(const boost::optional<ReferenceYawInfo> & ref_yaw_info)
+: ref_yaw_info_(ref_yaw_info)
 {
 }
 
@@ -49,12 +49,12 @@ bool BoundingBoxShapeModel::estimate(
   autoware_auto_perception_msgs::msg::Shape & shape_output, geometry_msgs::msg::Pose & pose_output)
 {
   float min_angle, max_angle;
-  if (reference_yaw_) {
-    min_angle = reference_yaw_.get() - tier4_autoware_utils::deg2rad(3);
-    max_angle = reference_yaw_.get() + tier4_autoware_utils::deg2rad(3);
+  if (ref_yaw_info_) {
+    min_angle = ref_yaw_info_.get().yaw - ref_yaw_info_.get().search_angle_range;
+    max_angle = ref_yaw_info_.get().yaw + ref_yaw_info_.get().search_angle_range;
   } else {
     min_angle = 0.0;
-    max_angle = M_PI / 2.0;
+    max_angle = M_PI * 0.5;
   }
   return fitLShape(cluster, min_angle, max_angle, shape_output, pose_output);
 }

@@ -30,14 +30,14 @@
 namespace utils
 {
 bool correctVehicleBoundingBox(
-  const CorrectionParameters & param, autoware_auto_perception_msgs::msg::Shape & shape_output,
-  geometry_msgs::msg::Pose & pose_output)
+  const CorrectionParameters & param, autoware_auto_perception_msgs::msg::Shape & shape,
+  geometry_msgs::msg::Pose & pose)
 {
   // TODO(Yukihiro Saito): refactor following code
 
   Eigen::Translation<double, 2> trans =
-    Eigen::Translation<double, 2>(pose_output.position.x, pose_output.position.y);
-  Eigen::Rotation2Dd rotate(tf2::getYaw(pose_output.orientation));
+    Eigen::Translation<double, 2>(pose.position.x, pose.position.y);
+  Eigen::Rotation2Dd rotate(tf2::getYaw(pose.orientation));
   Eigen::Affine2d affine_mat;
   affine_mat = trans * rotate.toRotationMatrix();
 
@@ -52,10 +52,10 @@ bool correctVehicleBoundingBox(
    *         |
    */
   std::vector<Eigen::Vector2d> v_point;
-  v_point.push_back(Eigen::Vector2d(shape_output.dimensions.x / 2.0, 0.0));
-  v_point.push_back(Eigen::Vector2d(0.0, shape_output.dimensions.y / 2.0));
-  v_point.push_back(Eigen::Vector2d(-shape_output.dimensions.x / 2.0, 0.0));
-  v_point.push_back(Eigen::Vector2d(0.0, -shape_output.dimensions.y / 2.0));
+  v_point.push_back(Eigen::Vector2d(shape.dimensions.x / 2.0, 0.0));
+  v_point.push_back(Eigen::Vector2d(0.0, shape.dimensions.y / 2.0));
+  v_point.push_back(Eigen::Vector2d(-shape.dimensions.x / 2.0, 0.0));
+  v_point.push_back(Eigen::Vector2d(0.0, -shape.dimensions.y / 2.0));
 
   // most distant index from base link
   size_t first_most_distant_index = 0;
@@ -223,27 +223,27 @@ bool correctVehicleBoundingBox(
     return false;
   }
 
-  shape_output.dimensions.x += std::abs(correction_vector.x()) * 2.0;
-  shape_output.dimensions.y += std::abs(correction_vector.y()) * 2.0;
-  pose_output.position.x += (rotate.toRotationMatrix() * correction_vector).x();
-  pose_output.position.y += (rotate.toRotationMatrix() * correction_vector).y();
+  shape.dimensions.x += std::abs(correction_vector.x()) * 2.0;
+  shape.dimensions.y += std::abs(correction_vector.y()) * 2.0;
+  pose.position.x += (rotate.toRotationMatrix() * correction_vector).x();
+  pose.position.y += (rotate.toRotationMatrix() * correction_vector).y();
 
   // correct to set long length is x, short length is y
-  if (shape_output.dimensions.x < shape_output.dimensions.y) {
-    geometry_msgs::msg::Vector3 rpy = tier4_autoware_utils::getRPY(pose_output.orientation);
+  if (shape.dimensions.x < shape.dimensions.y) {
+    geometry_msgs::msg::Vector3 rpy = tier4_autoware_utils::getRPY(pose.orientation);
     rpy.z = rpy.z + M_PI_2;
-    pose_output.orientation = tier4_autoware_utils::createQuaternionFromRPY(rpy.x, rpy.y, rpy.z);
-    double temp = shape_output.dimensions.x;
-    shape_output.dimensions.x = shape_output.dimensions.y;
-    shape_output.dimensions.y = temp;
+    pose.orientation = tier4_autoware_utils::createQuaternionFromRPY(rpy.x, rpy.y, rpy.z);
+    double temp = shape.dimensions.x;
+    shape.dimensions.x = shape.dimensions.y;
+    shape.dimensions.y = temp;
   }
 
   return true;
 }
 
 bool correctVehicleBoundingBoxWithReferenceYaw(
-  const CorrectionParameters & param, autoware_auto_perception_msgs::msg::Shape & shape_output,
-  geometry_msgs::msg::Pose & pose_output)
+  const CorrectionParameters & param, autoware_auto_perception_msgs::msg::Shape & shape,
+  geometry_msgs::msg::Pose & pose)
 {
   /*
     c1 is nearest point and other points are arranged like below
@@ -259,21 +259,18 @@ bool correctVehicleBoundingBoxWithReferenceYaw(
   Eigen::Vector3d c1, c2, c3, c4;
 
   Eigen::Affine3d base2obj_transform;
-  tf2::fromMsg(pose_output, base2obj_transform);
+  tf2::fromMsg(pose, base2obj_transform);
 
   std::vector<Eigen::Vector3d> v_point;
   v_point.push_back(
-    base2obj_transform *
-    Eigen::Vector3d(shape_output.dimensions.x * 0.5, shape_output.dimensions.y * 0.5, 0.0));
+    base2obj_transform * Eigen::Vector3d(shape.dimensions.x * 0.5, shape.dimensions.y * 0.5, 0.0));
+  v_point.push_back(
+    base2obj_transform * Eigen::Vector3d(-shape.dimensions.x * 0.5, shape.dimensions.y * 0.5, 0.0));
+  v_point.push_back(
+    base2obj_transform * Eigen::Vector3d(shape.dimensions.x * 0.5, -shape.dimensions.y * 0.5, 0.0));
   v_point.push_back(
     base2obj_transform *
-    Eigen::Vector3d(-shape_output.dimensions.x * 0.5, shape_output.dimensions.y * 0.5, 0.0));
-  v_point.push_back(
-    base2obj_transform *
-    Eigen::Vector3d(shape_output.dimensions.x * 0.5, -shape_output.dimensions.y * 0.5, 0.0));
-  v_point.push_back(
-    base2obj_transform *
-    Eigen::Vector3d(-shape_output.dimensions.x * 0.5, -shape_output.dimensions.y * 0.5, 0.0));
+    Eigen::Vector3d(-shape.dimensions.x * 0.5, -shape.dimensions.y * 0.5, 0.0));
 
   double distance = std::pow(24, 24);
   size_t nearest_idx = 0;
@@ -295,15 +292,14 @@ bool correctVehicleBoundingBoxWithReferenceYaw(
   Eigen::Vector3d e1 = (Eigen::Vector3d(0, -ey, 0) - local_c1).normalized();
   Eigen::Vector3d e2 = (Eigen::Vector3d(-ex, 0, 0) - local_c1).normalized();
   double length = 0;
-  if (
-    param.min_length < shape_output.dimensions.x && shape_output.dimensions.x < param.max_length) {
-    length = shape_output.dimensions.x;
+  if (param.min_length < shape.dimensions.x && shape.dimensions.x < param.max_length) {
+    length = shape.dimensions.x;
   } else {
     length = param.avg_length;
   }
   double width = 0;
-  if (param.min_width < shape_output.dimensions.y && shape_output.dimensions.y < param.max_width) {
-    width = shape_output.dimensions.y;
+  if (param.min_width < shape.dimensions.y && shape.dimensions.y < param.max_width) {
+    width = shape.dimensions.y;
   } else {
     width = param.avg_width;
   }
@@ -312,12 +308,12 @@ bool correctVehicleBoundingBoxWithReferenceYaw(
   c3 = c1 + base2obj_transform.rotation() * (e2 * width);
   c4 = c1 + (c2 - c1) + (c3 - c1);
 
-  shape_output.dimensions.x = (c2 - c1).norm();
-  shape_output.dimensions.y = (c3 - c1).norm();
+  shape.dimensions.x = (c2 - c1).norm();
+  shape.dimensions.y = (c3 - c1).norm();
   Eigen::Vector3d new_centroid = c1 + ((c4 - c1) * 0.5);
-  pose_output.position.x = new_centroid.x();
-  pose_output.position.y = new_centroid.y();
-  pose_output.position.z = new_centroid.z();
+  pose.position.x = new_centroid.x();
+  pose.position.y = new_centroid.y();
+  pose.position.z = new_centroid.z();
 
   return true;
 }

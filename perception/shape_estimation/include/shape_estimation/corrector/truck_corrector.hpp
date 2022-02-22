@@ -38,8 +38,7 @@ public:
   ~TruckCorrector() = default;
 
   bool correct(
-    autoware_auto_perception_msgs::msg::Shape & shape_output,
-    geometry_msgs::msg::Pose & pose_output) override;
+    autoware_auto_perception_msgs::msg::Shape & shape, geometry_msgs::msg::Pose & pose) override;
 };
 
 #endif  // SHAPE_ESTIMATION__CORRECTOR__TRUCK_CORRECTOR_HPP_
