@@ -78,7 +78,7 @@ repositories:
     url: https://github.com/tier4/pacmod_interface.git
     version: main
   # param
-  param/individual_vehicle_params:
+  param/individual_params:
     type: git
-    url: https://github.com/tier4/autoware_individual_params.git # TODO(Tier IV): Copy to autowarefoundation/individual_vehicle_params or so and remove aip_* directory
+    url: https://github.com/autowarefoundation/autoware_individual_params.git
     version: main
