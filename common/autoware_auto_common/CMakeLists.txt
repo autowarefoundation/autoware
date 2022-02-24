@@ -42,8 +42,6 @@ if(BUILD_TESTING)
     ${CMAKE_CURRENT_SOURCE_DIR}/test/*
   )
 
-  list(FILTER FILES_MINUS_SOME EXCLUDE REGEX ".*filesystem.hpp")
-
   # Re-enable cpplint
   find_package(ament_cmake_cpplint)
   ament_cpplint(${FILES_MINUS_SOME})
