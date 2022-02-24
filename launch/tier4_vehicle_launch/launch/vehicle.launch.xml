@@ -6,7 +6,7 @@
   <arg name="simulation" default="false" description="use simulation"/>
   <arg name="initial_engage_state" default="false" description="/vehicle/engage state after starting Autoware"/>
 
-  <let name="vehicle_model_pkg" value="$(find-pkg-share $(var vehicle_model)_description)"/>
+  <let name="vehicle_launch_pkg" value="$(find-pkg-share $(var vehicle_model)_launch)"/>
 
   <!-- vehicle description -->
   <group>
@@ -18,7 +18,7 @@
 
   <!-- vehicle interface -->
   <group unless="$(var simulation)">
-    <include file="$(var vehicle_model_pkg)/launch/vehicle_interface.launch.xml">
+    <include file="$(var vehicle_launch_pkg)/launch/vehicle_interface.launch.xml">
       <arg name="vehicle_id" value="$(var vehicle_id)"/>
       <arg name="initial_engage_state" value="$(var initial_engage_state)"/>
     </include>
