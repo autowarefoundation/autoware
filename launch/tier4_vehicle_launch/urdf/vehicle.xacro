@@ -1,7 +1,5 @@
 <?xml version="1.0"?>
-<robot name="vehicle"
-  xmlns:xacro="http://ros.org/wiki/xacro">
-
+<robot name="vehicle" xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:arg name="vehicle_model" default=""/>
   <xacro:arg name="sensor_model" default=""/>
 
@@ -12,5 +10,4 @@
   <!-- sensors -->
   <xacro:property name="sensor_model_property" value="$(arg sensor_model)"/>
   <xacro:include filename="$(find ${sensor_model_property}_description)/urdf/sensors.xacro"/>
-
 </robot>
