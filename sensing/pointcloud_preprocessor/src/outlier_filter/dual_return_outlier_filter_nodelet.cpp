@@ -87,11 +87,6 @@ void DualReturnOutlierFilterComponent::filter(
   PointCloud2 & output)
 {
   boost::mutex::scoped_lock lock(mutex_);
-  if (input->data.empty()) {
-    output.header = input->header;
-    RCLCPP_WARN(get_logger(), "input pointcloud is empty.");
-    return;
-  }
   pcl::PointCloud<return_type_cloud::PointXYZIRADT>::Ptr pcl_input(
     new pcl::PointCloud<return_type_cloud::PointXYZIRADT>);
   pcl::fromROSMsg(*input, *pcl_input);

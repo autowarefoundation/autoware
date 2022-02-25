@@ -39,10 +39,6 @@ void RingOutlierFilterComponent::filter(
   PointCloud2 & output)
 {
   boost::mutex::scoped_lock lock(mutex_);
-  output.header = input->header;
-  if (input->row_step < 1) {
-    return;
-  }
   std::unordered_map<uint16_t, std::vector<std::size_t>> input_ring_map;
   input_ring_map.reserve(128);
   sensor_msgs::msg::PointCloud2::SharedPtr input_ptr =
