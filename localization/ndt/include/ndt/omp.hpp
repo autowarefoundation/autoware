@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef NORMAL_DISTRIBUTIONS_TRANSFORM_OMP_H
-#define NORMAL_DISTRIBUTIONS_TRANSFORM_OMP_H
+#ifndef NDT__OMP_HPP_
+#define NDT__OMP_HPP_
 
 #include "ndt/base.hpp"
 
@@ -71,4 +71,4 @@ private:
 
 #include "ndt/impl/omp.hpp"
 
-#endif
+#endif  // NDT__OMP_HPP_

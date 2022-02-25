@@ -14,8 +14,8 @@
 //  limitations under the License.
 //
 
-#ifndef AUTOWARE_STATE_PANEL_HPP_
-#define AUTOWARE_STATE_PANEL_HPP_
+#ifndef SIMULATED_CLOCK_PANEL_HPP_
+#define SIMULATED_CLOCK_PANEL_HPP_
 
 #include <qt5/QtWidgets/QComboBox>
 #include <qt5/QtWidgets/QDoubleSpinBox>
@@ -73,4 +73,4 @@ protected:
 
 }  // namespace rviz_plugins
 
-#endif  // AUTOWARE_STATE_PANEL_HPP_
+#endif  // SIMULATED_CLOCK_PANEL_HPP_

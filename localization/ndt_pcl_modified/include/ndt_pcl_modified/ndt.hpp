@@ -51,8 +51,8 @@
  *
  */
 
-#ifndef PCL_REGISTRATION_NDT_MODIFIED_H_
-#define PCL_REGISTRATION_NDT_MODIFIED_H_
+#ifndef NDT_PCL_MODIFIED__NDT_HPP_
+#define NDT_PCL_MODIFIED__NDT_HPP_
 
 #include <unsupported/Eigen/NonLinearOptimization>
 
@@ -117,4 +117,4 @@ public:
 
 #include "ndt_pcl_modified/impl/ndt.hpp"
 
-#endif  // PCL_REGISTRATION_NDT_MODIFIED_H_
+#endif  // NDT_PCL_MODIFIED__NDT_HPP_

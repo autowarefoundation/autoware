@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AUTOWARE_POINT_TYPES__AUTOWARE_POINT_TYPES_HPP_
-#define AUTOWARE_POINT_TYPES__AUTOWARE_POINT_TYPES_HPP_
+#ifndef AUTOWARE_POINT_TYPES__TYPES_HPP_
+#define AUTOWARE_POINT_TYPES__TYPES_HPP_
 
 #include <point_cloud_msg_wrapper/point_cloud_msg_wrapper.hpp>
 
@@ -77,4 +77,4 @@ using PointXYZIRADRTGenerator = std::tuple<
 
 }  // namespace autoware_point_types
 
-#endif  // AUTOWARE_POINT_TYPES__AUTOWARE_POINT_TYPES_HPP_
+#endif  // AUTOWARE_POINT_TYPES__TYPES_HPP_

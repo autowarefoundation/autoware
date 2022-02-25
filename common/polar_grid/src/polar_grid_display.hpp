@@ -100,4 +100,4 @@ private:
 
 }  // namespace rviz_plugins
 
-#endif  //  POLAR_GRID_DISPLAY_HPP_
+#endif  // POLAR_GRID_DISPLAY_HPP_

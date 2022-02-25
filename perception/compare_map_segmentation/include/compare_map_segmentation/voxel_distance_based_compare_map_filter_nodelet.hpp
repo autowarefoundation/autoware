@@ -55,5 +55,5 @@ public:
 }  // namespace compare_map_segmentation
 
 // clang-format off
-#endif  // COMPARE_MAP_SEGMENTATION__VOXEL_DISTANCE_BASED_COMPARE_MAP_FILTER_NODELET_HPP_ // NOLINT
+#endif  // COMPARE_MAP_SEGMENTATION__VOXEL_DISTANCE_BASED_COMPARE_MAP_FILTER_NODELET_HPP_  // NOLINT
 // clang-format on

@@ -54,4 +54,6 @@ double integ_a(double a0, double j0, double t);
 }  // namespace analytical_velocity_planning_utils
 }  // namespace motion_velocity_smoother
 
-#endif
+// clang-format off
+#endif  // MOTION_VELOCITY_SMOOTHER__SMOOTHER__ANALYTICAL_JERK_CONSTRAINED_SMOOTHER__VELOCITY_PLANNING_UTILS_HPP_  // NOLINT
+// clang-format on

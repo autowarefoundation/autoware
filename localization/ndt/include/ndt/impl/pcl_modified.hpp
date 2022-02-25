@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef NORMAL_DISTRIBUTIONS_TRANSFORM_PCL_MODIFIED_HPP
-#define NORMAL_DISTRIBUTIONS_TRANSFORM_PCL_MODIFIED_HPP
+#ifndef NDT__IMPL__PCL_MODIFIED_HPP_
+#define NDT__IMPL__PCL_MODIFIED_HPP_
 
 #include "ndt/pcl_modified.hpp"
 
@@ -160,4 +160,4 @@ NormalDistributionsTransformPCLModified<PointSource, PointTarget>::getSearchMeth
   return ndt_ptr_->getSearchMethodTarget();
 }
 
-#endif  // NORMAL_DISTRIBUTIONS_TRANSFORM_PCL_MODIFIED_HPP
+#endif  // NDT__IMPL__PCL_MODIFIED_HPP_

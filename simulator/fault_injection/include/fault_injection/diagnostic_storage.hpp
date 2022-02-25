@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef FAULT_INJECTION__DIAGNOSTIC_STORAGE_HPP__
-#define FAULT_INJECTION__DIAGNOSTIC_STORAGE_HPP__
+#ifndef FAULT_INJECTION__DIAGNOSTIC_STORAGE_HPP_
+#define FAULT_INJECTION__DIAGNOSTIC_STORAGE_HPP_
 
 #include <diagnostic_aggregator/status_item.hpp>
 
@@ -67,4 +67,4 @@ private:
 
 }  // namespace fault_injection
 
-#endif  // FAULT_INJECTION__DIAGNOSTIC_STORAGE_HPP__
+#endif  // FAULT_INJECTION__DIAGNOSTIC_STORAGE_HPP_

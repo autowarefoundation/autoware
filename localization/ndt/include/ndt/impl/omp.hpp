@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef NORMAL_DISTRIBUTIONS_TRANSFORM_OMP_HPP
-#define NORMAL_DISTRIBUTIONS_TRANSFORM_OMP_HPP
+#ifndef NDT__IMPL__OMP_HPP_
+#define NDT__IMPL__OMP_HPP_
 
 #include "ndt/omp.hpp"
 
@@ -183,4 +183,4 @@ NormalDistributionsTransformOMP<PointSource, PointTarget>::getNeighborhoodSearch
   return ndt_ptr_->getNeighborhoodSearchMethod();
 }
 
-#endif  // NORMAL_DISTRIBUTIONS_TRANSFORM_OMP_HPP
+#endif  // NDT__IMPL__OMP_HPP_

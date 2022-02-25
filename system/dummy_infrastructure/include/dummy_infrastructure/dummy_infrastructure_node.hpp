@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DUMMY_INFRASTRUCTURE__DUMMY_INFRASTRUCTURE_NODE_HPP__
-#define DUMMY_INFRASTRUCTURE__DUMMY_INFRASTRUCTURE_NODE_HPP__
+#ifndef DUMMY_INFRASTRUCTURE__DUMMY_INFRASTRUCTURE_NODE_HPP_
+#define DUMMY_INFRASTRUCTURE__DUMMY_INFRASTRUCTURE_NODE_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -76,4 +76,4 @@ private:
 
 }  // namespace dummy_infrastructure
 
-#endif  // DUMMY_INFRASTRUCTURE__DUMMY_INFRASTRUCTURE_NODE_HPP__
+#endif  // DUMMY_INFRASTRUCTURE__DUMMY_INFRASTRUCTURE_NODE_HPP_

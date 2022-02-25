@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef NORMAL_DISTRIBUTIONS_TRANSFORM_PCL_GENERIC_H
-#define NORMAL_DISTRIBUTIONS_TRANSFORM_PCL_GENERIC_H
+#ifndef NDT__PCL_GENERIC_HPP_
+#define NDT__PCL_GENERIC_HPP_
 
 #include "ndt/base.hpp"
 
@@ -64,4 +64,4 @@ private:
 
 #include "ndt/impl/pcl_generic.hpp"
 
-#endif
+#endif  // NDT__PCL_GENERIC_HPP_

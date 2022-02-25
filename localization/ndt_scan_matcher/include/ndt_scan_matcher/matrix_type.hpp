@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef NDT_SCAN_MATCHER__MATRIX_TYPE_HPP__
-#define NDT_SCAN_MATCHER__MATRIX_TYPE_HPP__
+#ifndef NDT_SCAN_MATCHER__MATRIX_TYPE_HPP_
+#define NDT_SCAN_MATCHER__MATRIX_TYPE_HPP_
 
 #include <eigen3/Eigen/Core>
 
 using Matrix6d = Eigen::Matrix<double, 6, 6>;
 using RowMatrixXd = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
-#endif  // NDT_SCAN_MATCHER__MATRIX_TYPE_HPP__
+#endif  // NDT_SCAN_MATCHER__MATRIX_TYPE_HPP_

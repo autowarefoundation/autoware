@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef _VEHICLE_VELOCITY_CONVERTER_HPP_
-#define _VEHICLE_VELOCITY_CONVERTER_HPP_
+#ifndef VEHICLE_VELOCITY_CONVERTER__VEHICLE_VELOCITY_CONVERTER_HPP_
+#define VEHICLE_VELOCITY_CONVERTER__VEHICLE_VELOCITY_CONVERTER_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -44,4 +44,4 @@ private:
   std::array<double, 36> twist_covariance_;
 };
 
-#endif
+#endif  // VEHICLE_VELOCITY_CONVERTER__VEHICLE_VELOCITY_CONVERTER_HPP_

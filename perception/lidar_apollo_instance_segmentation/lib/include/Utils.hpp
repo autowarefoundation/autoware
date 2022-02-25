@@ -22,8 +22,8 @@
  * SOFTWARE.
  */
 
-#ifndef __TRT_UTILS_H_
-#define __TRT_UTILS_H_
+#ifndef UTILS_HPP_
+#define UTILS_HPP_
 
 #include <NvInferPlugin.h>
 #include <cudnn.h>
@@ -131,4 +131,4 @@ void read(const char *& buffer, T & val)
 }
 }  // namespace Tn
 
-#endif
+#endif  // UTILS_HPP_

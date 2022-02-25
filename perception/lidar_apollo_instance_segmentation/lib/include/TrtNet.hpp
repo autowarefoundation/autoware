@@ -21,8 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef __TRT_NET_H_
-#define __TRT_NET_H_
+#ifndef TRTNET_HPP_
+#define TRTNET_HPP_
 
 #include "Utils.hpp"
 
@@ -112,4 +112,4 @@ private:
 };
 }  // namespace Tn
 
-#endif  // __TRT_NET_H_
+#endif  // TRTNET_HPP_

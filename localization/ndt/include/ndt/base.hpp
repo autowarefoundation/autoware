@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef NORMAL_DISTRIBUTIONS_TRANSFORM_BASE_H
-#define NORMAL_DISTRIBUTIONS_TRANSFORM_BASE_H
+#ifndef NDT__BASE_HPP_
+#define NDT__BASE_HPP_
 
 #include <pcl/io/io.h>
 #include <pcl/io/pcd_io.h>
@@ -58,4 +58,4 @@ public:
 
 #include "ndt/impl/base.hpp"
 
-#endif
+#endif  // NDT__BASE_HPP_

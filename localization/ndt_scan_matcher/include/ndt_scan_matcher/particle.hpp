@@ -31,4 +31,4 @@ struct Particle
   int iteration;
 };
 
-#endif  // NDT_SCAN_MATCHER__DEBUG_HPP_
+#endif  // NDT_SCAN_MATCHER__PARTICLE_HPP_

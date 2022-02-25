@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TIER4_AUTOWARE_UTILS__TRAJECTORY__CONVERT_HPP_
-#define TIER4_AUTOWARE_UTILS__TRAJECTORY__CONVERT_HPP_
+#ifndef TIER4_AUTOWARE_UTILS__TRAJECTORY__TMP_CONVERSION_HPP_
+#define TIER4_AUTOWARE_UTILS__TRAJECTORY__TMP_CONVERSION_HPP_
 
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 #include "tier4_autoware_utils/geometry/pose_deviation.hpp"
@@ -66,4 +66,4 @@ std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> convertToTrajecto
 
 }  // namespace tier4_autoware_utils
 
-#endif  // TIER4_AUTOWARE_UTILS__TRAJECTORY__CONVERT_HPP_
+#endif  // TIER4_AUTOWARE_UTILS__TRAJECTORY__TMP_CONVERSION_HPP_

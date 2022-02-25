@@ -28,8 +28,8 @@
  * limitations under the License.
  *****************************************************************************/
 
-#ifndef MODULES_PERCEPTION_OBSTACLE_LIDAR_SEGMENTATION_CNNSEG_UTIL_H_
-#define MODULES_PERCEPTION_OBSTACLE_LIDAR_SEGMENTATION_CNNSEG_UTIL_H_
+#ifndef LIDAR_APOLLO_INSTANCE_SEGMENTATION__UTIL_HPP_
+#define LIDAR_APOLLO_INSTANCE_SEGMENTATION__UTIL_HPP_
 
 #include <cmath>
 #include <string>
@@ -56,4 +56,4 @@ inline float Pixel2Pc(int in_pixel, float in_size, float out_range)
   return out_range - (static_cast<float>(in_pixel) + 0.5f) * res;
 }
 
-#endif  // MODULES_PERCEPTION_OBSTACLE_LIDAR_SEGMENTATION_CNNSEG_UTIL_H_
+#endif  // LIDAR_APOLLO_INSTANCE_SEGMENTATION__UTIL_HPP_

@@ -14,8 +14,8 @@
  * limitations under the License.
  *****************************************************************************/
 
-#ifndef MODULES_PERCEPTION_OBSTACLE_COMMON_DISJOINT_SET_H_
-#define MODULES_PERCEPTION_OBSTACLE_COMMON_DISJOINT_SET_H_
+#ifndef LIDAR_APOLLO_INSTANCE_SEGMENTATION__DISJOINT_SET_HPP_
+#define LIDAR_APOLLO_INSTANCE_SEGMENTATION__DISJOINT_SET_HPP_
 
 template <class T>
 void DisjointSetMakeSet(T * x)
@@ -72,4 +72,4 @@ void DisjointSetUnion(T * x, T * y)
   }
 }
 
-#endif  // MODULES_PERCEPTION_OBSTACLE_COMMON_DISJOINT_SET_H_
+#endif  // LIDAR_APOLLO_INSTANCE_SEGMENTATION__DISJOINT_SET_HPP_

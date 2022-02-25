@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef FAULT_INJECTION__FAULT_INJECTION_NODE_HPP__
-#define FAULT_INJECTION__FAULT_INJECTION_NODE_HPP__
+#ifndef FAULT_INJECTION__FAULT_INJECTION_NODE_HPP_
+#define FAULT_INJECTION__FAULT_INJECTION_NODE_HPP_
 
 #include "fault_injection/diagnostic_storage.hpp"
 
@@ -59,4 +59,4 @@ private:
 
 }  // namespace fault_injection
 
-#endif  // FAULT_INJECTION__FAULT_INJECTION_NODE_HPP__
+#endif  // FAULT_INJECTION__FAULT_INJECTION_NODE_HPP_

@@ -56,4 +56,4 @@ TRAJECTORY_FOLLOWER_PUBLIC bool8_t linearInterpolate(
 }  // namespace control
 }  // namespace motion
 }  // namespace autoware
-#endif  // TRAJECTORY_FOLLOWER__INTERPOLATE_HPP__
+#endif  // TRAJECTORY_FOLLOWER__INTERPOLATE_HPP_

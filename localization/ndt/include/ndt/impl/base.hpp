@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef NORMAL_DISTRIBUTIONS_TRANSFORM_BASE_HPP
-#define NORMAL_DISTRIBUTIONS_TRANSFORM_BASE_HPP
+#ifndef NDT__IMPL__BASE_HPP_
+#define NDT__IMPL__BASE_HPP_
 
 #include "ndt/base.hpp"
 
@@ -22,4 +22,4 @@ NormalDistributionsTransformBase<PointSource, PointTarget>::NormalDistributionsT
 {
 }
 
-#endif  // NORMAL_DISTRIBUTIONS_TRANSFORM_BASE_HPP
+#endif  // NDT__IMPL__BASE_HPP_

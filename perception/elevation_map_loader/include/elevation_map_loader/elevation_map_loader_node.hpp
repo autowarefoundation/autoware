@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MAP_LOADER__ELEVATION_MAP_LOADER_NODE_HPP_
-#define MAP_LOADER__ELEVATION_MAP_LOADER_NODE_HPP_
+#ifndef ELEVATION_MAP_LOADER__ELEVATION_MAP_LOADER_NODE_HPP_
+#define ELEVATION_MAP_LOADER__ELEVATION_MAP_LOADER_NODE_HPP_
 
 #include <filters/filter_chain.hpp>
 #include <grid_map_core/GridMap.hpp>
@@ -113,4 +113,4 @@ private:
   LaneFilter lane_filter_;
 };
 
-#endif  // MAP_LOADER__ELEVATION_MAP_LOADER_NODE_HPP_
+#endif  // ELEVATION_MAP_LOADER__ELEVATION_MAP_LOADER_NODE_HPP_

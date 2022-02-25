@@ -51,8 +51,8 @@
  *
  */
 
-#ifndef PCL_REGISTRATION_NDT_MODIFIED_IMPL_H_
-#define PCL_REGISTRATION_NDT_MODIFIED_IMPL_H_
+#ifndef NDT_PCL_MODIFIED__IMPL__NDT_HPP_
+#define NDT_PCL_MODIFIED__IMPL__NDT_HPP_
 
 #include <algorithm>
 #include <vector>
@@ -373,4 +373,4 @@ double pcl::NormalDistributionsTransformModified<PointSource, PointTarget>::comp
   return a_t;
 }
 
-#endif  // PCL_REGISTRATION_NDT_IMPL_MODIFIED_H_
+#endif  // NDT_PCL_MODIFIED__IMPL__NDT_HPP_

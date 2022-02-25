@@ -35,10 +35,11 @@ repos:
       - id: yamllint
 
   - repo: https://github.com/tier4/pre-commit-hooks-ros
-    rev: v0.4.0
+    rev: v0.5.1
     hooks:
       - id: prettier-package-xml
       - id: sort-package-xml
+      - id: ros-include-guard
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
     rev: v0.8.0.3
