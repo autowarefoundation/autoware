@@ -217,7 +217,6 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
     ${NVINFER_PLUGIN}
     ${CUDA_LIBRARIES}
     ${CUBLAS_LIBRARIES}
-    ${CUDA_curand_LIBRARY}
     ${CUDNN_LIBRARY}
     mish_plugin
     yolo_layer_plugin
