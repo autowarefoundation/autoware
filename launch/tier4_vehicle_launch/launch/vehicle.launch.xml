@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
+  <arg name="launch_vehicle_interface"/>
   <arg name="vehicle_model" description="vehicle model name"/>
   <arg name="sensor_model" description="sensor model name"/>
   <arg name="vehicle_id" default="$(env VEHICLE_ID default)" description="vehicle specific ID"/>
-  <arg name="simulation" default="false" description="use simulation"/>
   <arg name="initial_engage_state" default="false" description="/vehicle/engage state after starting Autoware"/>
 
   <let name="vehicle_launch_pkg" value="$(find-pkg-share $(var vehicle_model)_launch)"/>
@@ -17,7 +17,7 @@
   </group>
 
   <!-- vehicle interface -->
-  <group unless="$(var simulation)">
+  <group if="$(var launch_vehicle_interface)">
     <include file="$(var vehicle_launch_pkg)/launch/vehicle_interface.launch.xml">
       <arg name="vehicle_id" value="$(var vehicle_id)"/>
       <arg name="initial_engage_state" value="$(var initial_engage_state)"/>

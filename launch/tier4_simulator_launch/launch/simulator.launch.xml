@@ -1,12 +1,12 @@
 <launch>
+  <arg name="launch_dummy_perception" />
+  <arg name="launch_dummy_vehicle"/>
   <arg name="vehicle_info_param_file" />
-  <arg name="scenario_simulation" default="" description="use scenario simulation"/>
 
   <arg name="perception/enable_detection_failure" default="true" description="enable to simulate detection failure when using dummy perception"/>
   <arg name="perception/enable_object_recognition" default="false" description="enable object recognition when using dummy perception"/>
   <arg name="sensing/visible_range" default="300.0" description="visible range when using dummy perception"/>
 
-  <arg name="vehicle_simulation" default="true" description="use vehicle simulation"/>
   <arg name="vehicle_model" description="vehicle model name"/>
   <arg name="initial_engage_state" default="true" description="/vehicle/engage state after starting Autoware"/>
 
@@ -17,7 +17,7 @@
   </group>
 
   <!-- Dummy Perception -->
-  <group unless="$(var scenario_simulation)">
+  <group if="$(var launch_dummy_perception)">
     <include file="$(find-pkg-share dummy_perception_publisher)/launch/dummy_perception_publisher.launch.xml">
       <arg name="real" value="$(var perception/enable_detection_failure)"/>
       <arg name="use_object_recognition" value="$(var perception/enable_object_recognition)"/>
@@ -26,15 +26,13 @@
   </group>
 
   <!-- Simulator model -->
-  <group if="$(var vehicle_simulation)">
-    <group unless="$(var scenario_simulation)">
+  <group if="$(var launch_dummy_vehicle)">
       <arg name="simulator_model" default="$(var vehicle_model_pkg)/config/simulator_model.param.yaml" description="path to the file of simulator model"/>
       <include file="$(find-pkg-share simple_planning_simulator)/launch/simple_planning_simulator.launch.py">
         <arg name="vehicle_info_param_file" value="$(var vehicle_info_param_file)" />
         <arg name="simulator_model_param_file" value="$(var simulator_model)"/>
         <arg name="initial_engage_state" value="$(var initial_engage_state)"/>
       </include>
-    </group>
   </group>
 
 </launch>
