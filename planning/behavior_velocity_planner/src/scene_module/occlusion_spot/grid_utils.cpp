@@ -16,6 +16,7 @@
 #include <scene_module/occlusion_spot/grid_utils.hpp>
 
 #include <algorithm>
+#include <stdexcept>
 #include <vector>
 
 namespace behavior_velocity_planner
@@ -181,13 +182,14 @@ void toQuantizedImage(
     for (int y = height - 1; y >= 0; y--) {
       const int idx = (height - 1 - y) + (width - 1 - x) * height;
       int8_t intensity = occupancy_grid.data.at(idx);
-      if (0 <= intensity && intensity < param.free_space_max) {
+      if (0 <= intensity && intensity <= param.free_space_max) {
         intensity = grid_utils::occlusion_cost_value::FREE_SPACE;
-      } else if (  // NOLINT
-        intensity == occlusion_cost_value::NO_INFORMATION || intensity < param.occupied_min) {
+      } else if (param.free_space_max < intensity && intensity < param.occupied_min) {
         intensity = grid_utils::occlusion_cost_value::UNKNOWN;
-      } else {
+      } else if (param.occupied_min <= intensity) {
         intensity = grid_utils::occlusion_cost_value::OCCUPIED;
+      } else {
+        std::logic_error("behavior_velocity[occlusion_spot_grid]: invalid if clause");
       }
       cv_image->at<unsigned char>(y, x) = intensity;
     }

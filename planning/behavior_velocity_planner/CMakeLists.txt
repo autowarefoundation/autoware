@@ -224,7 +224,7 @@ ament_auto_add_library(scene_module_occlusion_spot SHARED
   src/scene_module/occlusion_spot/manager.cpp
   src/scene_module/occlusion_spot/debug.cpp
   src/scene_module/occlusion_spot/scene_occlusion_spot_in_public_road.cpp
-  src/scene_module/occlusion_spot/scene_occlusion_spot_in_private_road.cpp
+  src/scene_module/occlusion_spot/scene_occlusion_spot.cpp
   src/scene_module/occlusion_spot/occlusion_spot_utils.cpp
   src/scene_module/occlusion_spot/risk_predictive_braking.cpp
 )

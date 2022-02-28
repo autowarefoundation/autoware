@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #include <scene_module/occlusion_spot/occlusion_spot_utils.hpp>
-#include <scene_module/occlusion_spot/scene_occlusion_spot_in_private_road.hpp>
+#include <scene_module/occlusion_spot/scene_occlusion_spot.hpp>
 #include <scene_module/occlusion_spot/scene_occlusion_spot_in_public_road.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
 #include <utilization/marker_helper.hpp>
@@ -269,7 +269,7 @@ visualization_msgs::msg::MarkerArray OcclusionSpotInPublicModule::createDebugMar
 
   return debug_marker_array;
 }
-visualization_msgs::msg::MarkerArray OcclusionSpotInPrivateModule::createDebugMarkerArray()
+visualization_msgs::msg::MarkerArray OcclusionSpotModule::createDebugMarkerArray()
 {
   const auto current_time = this->clock_->now();
 

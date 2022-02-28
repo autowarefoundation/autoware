@@ -17,7 +17,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <scene_module/occlusion_spot/occlusion_spot_utils.hpp>
-#include <scene_module/occlusion_spot/scene_occlusion_spot_in_private_road.hpp>
+#include <scene_module/occlusion_spot/scene_occlusion_spot.hpp>
 #include <scene_module/occlusion_spot/scene_occlusion_spot_in_public_road.hpp>
 #include <scene_module/scene_module_interface.hpp>
 
@@ -45,7 +45,7 @@ public:
   const char * getModuleName() override { return "occlusion_spot"; }
 
 private:
-  enum class ModuleID { PRIVATE, PUBLIC };
+  enum class ModuleID { OCCUPANCY, OBJECT };
   using PlannerParam = occlusion_spot_utils::PlannerParam;
 
   PlannerParam planner_param_;

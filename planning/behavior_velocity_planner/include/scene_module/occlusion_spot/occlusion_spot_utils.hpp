@@ -65,6 +65,7 @@ using DetectionAreaIdx = boost::optional<std::pair<double, double>>;
 namespace occlusion_spot_utils
 {
 enum ROAD_TYPE { PRIVATE, PUBLIC, HIGHWAY, UNKNOWN };
+enum METHOD { OCCUPANCY_GRID, PREDICTED_OBJECT };
 
 struct DetectionArea
 {
@@ -96,6 +97,7 @@ struct LatLon
 
 struct PlannerParam
 {
+  METHOD method;
   bool debug;  // [-]
   // parameters in yaml
   double detection_area_length;      // [m]

@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #include <scene_module/occlusion_spot/manager.hpp>
-#include <scene_module/occlusion_spot/scene_occlusion_spot_in_private_road.hpp>
+#include <scene_module/occlusion_spot/scene_occlusion_spot.hpp>
 #include <scene_module/occlusion_spot/scene_occlusion_spot_in_public_road.hpp>
 #include <utilization/util.hpp>
 
@@ -25,50 +25,7 @@
 
 namespace behavior_velocity_planner
 {
-namespace
-{
-std::vector<lanelet::ConstLanelet> getLaneletsOnPath(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-  const lanelet::LaneletMapPtr lanelet_map)
-{
-  std::vector<lanelet::ConstLanelet> lanelets;
-
-  for (const auto & p : path.points) {
-    const auto lane_id = p.lane_ids.at(0);
-    lanelets.push_back(lanelet_map->laneletLayer.get(lane_id));
-  }
-  return lanelets;
-}
-
-bool hasPublicRoadOnPath(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-  const lanelet::LaneletMapPtr lanelet_map)
-{
-  for (const auto & ll : getLaneletsOnPath(path, lanelet_map)) {
-    // Is public load ?
-    const std::string location = ll.attributeOr("location", "else");
-    if (location == "urban" || location == "public") {
-      return true;
-    }
-  }
-  return false;
-}
-
-bool hasPrivateRoadOnPath(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-  const lanelet::LaneletMapPtr lanelet_map)
-{
-  for (const auto & ll : getLaneletsOnPath(path, lanelet_map)) {
-    // Is private load ?
-    const std::string location = ll.attributeOr("location", "else");
-    if (location == "private") {
-      return true;
-    }
-  }
-  return false;
-}
-
-}  // namespace
+using occlusion_spot_utils::METHOD;
 
 OcclusionSpotModuleManager::OcclusionSpotModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterface(node, getModuleName())
@@ -80,6 +37,14 @@ OcclusionSpotModuleManager::OcclusionSpotModuleManager(rclcpp::Node & node)
   // for crosswalk parameters
   auto & pp = planner_param_;
   // assume pedestrian coming out from occlusion spot with this velocity
+  const std::string method = node.declare_parameter(ns + ".method", "occupancy_grid");
+  if (method == "occupancy_grid") {
+    pp.method = METHOD::OCCUPANCY_GRID;
+  } else if (method == "predicted_object") {
+    pp.method = METHOD::PREDICTED_OBJECT;
+  } else {
+    throw std::invalid_argument{"[behavior_velocity]: occlusion spot detection method is invalid"};
+  }
   pp.debug = node.declare_parameter(ns + ".debug", false);
   pp.pedestrian_vel = node.declare_parameter(ns + ".pedestrian_vel", 1.0);
   pp.detection_area_length = node.declare_parameter(ns + ".threshold.detection_area_length", 200.0);
@@ -117,19 +82,20 @@ OcclusionSpotModuleManager::OcclusionSpotModuleManager(rclcpp::Node & node)
 void OcclusionSpotModuleManager::launchNewModules(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
 {
-  const int64_t private_road_module_id = static_cast<int64_t>(ModuleID::PRIVATE);
-  const int64_t public_road_module_id = static_cast<int64_t>(ModuleID::PUBLIC);
-  // private
-  if (!isModuleRegistered(private_road_module_id)) {
-    if (hasPrivateRoadOnPath(path, planner_data_->lanelet_map)) {
-      registerModule(std::make_shared<OcclusionSpotInPrivateModule>(
-        private_road_module_id, planner_data_, planner_param_,
-        logger_.get_child("occlusion_spot_in_private_module"), clock_, pub_debug_occupancy_grid_));
+  if (path.points.empty()) return;
+  const int64_t module_id = static_cast<int64_t>(ModuleID::OCCUPANCY);
+  const int64_t public_road_module_id = static_cast<int64_t>(ModuleID::OBJECT);
+  // general
+  if (!isModuleRegistered(module_id)) {
+    if (planner_param_.method == METHOD::OCCUPANCY_GRID) {
+      registerModule(std::make_shared<OcclusionSpotModule>(
+        module_id, planner_data_, planner_param_, logger_.get_child("occlusion_spot_module"),
+        clock_, pub_debug_occupancy_grid_));
     }
   }
   // public
   if (!isModuleRegistered(public_road_module_id)) {
-    if (hasPublicRoadOnPath(path, planner_data_->lanelet_map)) {
+    if (planner_param_.method == METHOD::PREDICTED_OBJECT) {
       registerModule(std::make_shared<OcclusionSpotInPublicModule>(
         public_road_module_id, planner_data_, planner_param_,
         logger_.get_child("occlusion_spot_in_public_module"), clock_));
@@ -141,17 +107,8 @@ std::function<bool(const std::shared_ptr<SceneModuleInterface> &)>
 OcclusionSpotModuleManager::getModuleExpiredFunction(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
 {
-  const bool has_public_road = hasPublicRoadOnPath(path, planner_data_->lanelet_map);
-  const bool has_private_road = hasPrivateRoadOnPath(path, planner_data_->lanelet_map);
-  return [has_private_road,
-          has_public_road](const std::shared_ptr<SceneModuleInterface> & scene_module) {
-    if (scene_module->getModuleId() == static_cast<int64_t>(ModuleID::PRIVATE)) {
-      return !has_private_road;
-    }
-    if (scene_module->getModuleId() == static_cast<int64_t>(ModuleID::PUBLIC)) {
-      return !has_public_road;
-    }
-    return true;
+  return [path]([[maybe_unused]] const std::shared_ptr<SceneModuleInterface> & scene_module) {
+    return false;
   };
 }
 }  // namespace behavior_velocity_planner

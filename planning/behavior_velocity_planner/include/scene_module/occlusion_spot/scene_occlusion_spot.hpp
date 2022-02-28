@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SCENE_MODULE__OCCLUSION_SPOT__SCENE_OCCLUSION_SPOT_IN_PRIVATE_ROAD_HPP_
-#define SCENE_MODULE__OCCLUSION_SPOT__SCENE_OCCLUSION_SPOT_IN_PRIVATE_ROAD_HPP_
+#ifndef SCENE_MODULE__OCCLUSION_SPOT__SCENE_OCCLUSION_SPOT_HPP_
+#define SCENE_MODULE__OCCLUSION_SPOT__SCENE_OCCLUSION_SPOT_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 #include <scene_module/occlusion_spot/occlusion_spot_utils.hpp>
@@ -37,7 +37,7 @@
 
 namespace behavior_velocity_planner
 {
-class OcclusionSpotInPrivateModule : public SceneModuleInterface
+class OcclusionSpotModule : public SceneModuleInterface
 {
   using PlannerParam = occlusion_spot_utils::PlannerParam;
 
@@ -45,7 +45,7 @@ public:
   struct DebugData
   {
     double z;
-    std::string road_type = "private";
+    std::string road_type = "occupancy";
     std::vector<lanelet::BasicPolygon2d> detection_areas;
     std::vector<occlusion_spot_utils::PossibleCollisionInfo> possible_collisions;
     std::vector<geometry_msgs::msg::Point> occlusion_points;
@@ -53,7 +53,7 @@ public:
     PathWithLaneId interp_path;
   };
 
-  OcclusionSpotInPrivateModule(
+  OcclusionSpotModule(
     const int64_t module_id, std::shared_ptr<const PlannerData> planner_data,
     const PlannerParam & planner_param, const rclcpp::Logger logger,
     const rclcpp::Clock::SharedPtr clock,
@@ -82,4 +82,4 @@ protected:
 };
 }  // namespace behavior_velocity_planner
 
-#endif  // SCENE_MODULE__OCCLUSION_SPOT__SCENE_OCCLUSION_SPOT_IN_PRIVATE_ROAD_HPP_
+#endif  // SCENE_MODULE__OCCLUSION_SPOT__SCENE_OCCLUSION_SPOT_HPP_

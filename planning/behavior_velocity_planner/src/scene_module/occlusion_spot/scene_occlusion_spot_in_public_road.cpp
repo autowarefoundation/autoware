@@ -30,7 +30,6 @@
 namespace behavior_velocity_planner
 {
 using occlusion_spot_utils::PossibleCollisionInfo;
-using occlusion_spot_utils::ROAD_TYPE::PUBLIC;
 namespace utils = occlusion_spot_utils;
 
 OcclusionSpotInPublicModule::OcclusionSpotInPublicModule(
@@ -47,7 +46,6 @@ bool OcclusionSpotInPublicModule::modifyPathVelocity(
   [[maybe_unused]] tier4_planning_msgs::msg::StopReason * stop_reason)
 {
   debug_data_ = DebugData();
-  debug_data_.road_type = "public";
   if (path->points.size() < 2) {
     return true;
   }
@@ -81,9 +79,6 @@ bool OcclusionSpotInPublicModule::modifyPathVelocity(
   }
   // return if ego is final point of interpolated path
   if (closest_idx == static_cast<int>(interp_path.points.size()) - 1) return true;
-  DetectionAreaIdx focus_area =
-    extractTargetRoadArcLength(lanelet_map_ptr, param_.detection_area_length, *path, PUBLIC);
-  if (!focus_area) return true;
   std::vector<PredictedObject> obj =
     utils::getParkedVehicles(*dynamic_obj_arr_ptr, param_, debug_data_.parked_vehicle_point);
   double offset_from_start_to_ego = utils::offsetFromStartToEgo(interp_path, ego_pose, closest_idx);
@@ -96,7 +91,6 @@ bool OcclusionSpotInPublicModule::modifyPathVelocity(
   std::vector<PossibleCollisionInfo> possible_collisions =
     utils::generatePossibleCollisionBehindParkedVehicle(
       interp_path, param_, offset_from_start_to_ego, filtered_obj);
-  utils::filterCollisionByRoadType(possible_collisions, focus_area);
   utils::calcSlowDownPointsForPossibleCollision(0, interp_path, 0.0, possible_collisions);
   // Note: Consider offset from path start to ego here
   utils::handleCollisionOffset(possible_collisions, offset_from_start_to_ego, 0.0);

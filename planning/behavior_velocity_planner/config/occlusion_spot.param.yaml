@@ -1,6 +1,7 @@
 /**:
   ros__parameters:
     occlusion_spot:
+      method: "predicted_object"           # [-] candidate is "occupancy_grid" or "predicted_object"
       debug: false                         # [-] whether to publish debug markers. Note Default should be false for performance
       pedestrian_vel: 1.0                  # [m/s] assume pedestrian is dashing from occlusion at this velocity
       threshold:
@@ -18,7 +19,7 @@
         safe_margin: 1.0                    # [m] maximum safety distance for any error
       detection_area:
         min_occlusion_spot_size: 1.0     # [m] occupancy grid must contain an UNKNOWN area of at least size NxN to be considered a hidden obstacle.
-        slice_length: 10.0                # [m] size of slices in both length and distance relative to the ego path.
+        slice_length: 10.0               # [m] size of slices in both length and distance relative to the ego path.
         max_lateral_distance: 4.0        # [m] buffer around the ego path used to build the detection area.
       grid:
         free_space_max: 40  # [-] maximum value of a free space cell in the occupancy grid

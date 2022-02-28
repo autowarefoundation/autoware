@@ -43,7 +43,7 @@ class OcclusionSpotInPublicModule : public SceneModuleInterface
 public:
   struct DebugData
   {
-    std::string road_type = "public";
+    std::string road_type = "object";
     std::vector<lanelet::BasicPolygon2d> detection_areas;
     std::vector<geometry_msgs::msg::Point> parked_vehicle_point;
     std::vector<occlusion_spot_utils::PossibleCollisionInfo> possible_collisions;
