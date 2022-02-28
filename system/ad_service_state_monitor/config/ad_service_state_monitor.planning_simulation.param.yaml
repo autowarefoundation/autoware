@@ -1,4 +1,4 @@
-# Autoware State Monitor: Planning Simulator Parameters
+# AD Service State Monitor: Planning Simulator Parameters
 /**:
   ros__parameters:
     # modules_names: string array
