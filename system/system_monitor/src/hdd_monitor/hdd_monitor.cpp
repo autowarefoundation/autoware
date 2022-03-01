@@ -268,9 +268,9 @@ void HDDMonitor::checkUsage(diagnostic_updater::DiagnosticStatusWrapper & stat)
 
       stat.add(fmt::format("HDD {}: status", hdd_index), usage_dict_.at(level));
       stat.add(fmt::format("HDD {}: filesystem", hdd_index), list[0].c_str());
-      stat.add(fmt::format("HDD {}: size (MB)", hdd_index), list[1].c_str());
-      stat.add(fmt::format("HDD {}: used (MB)", hdd_index), list[2].c_str());
-      stat.add(fmt::format("HDD {}: avail (MB)", hdd_index), list[3].c_str());
+      stat.add(fmt::format("HDD {}: size", hdd_index), (list[1] + " MiB").c_str());
+      stat.add(fmt::format("HDD {}: used", hdd_index), (list[2] + " MiB").c_str());
+      stat.add(fmt::format("HDD {}: avail", hdd_index), (list[3] + " MiB").c_str());
       stat.add(fmt::format("HDD {}: use", hdd_index), list[4].c_str());
       std::string mounted_ = list[5];
       if (list.size() > 6) {
