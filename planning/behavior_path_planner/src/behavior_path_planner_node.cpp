@@ -673,8 +673,8 @@ PathWithLaneId BehaviorPathPlannerNode::modifyPathForSmoothGoalConnection(
   const PathWithLaneId & path) const
 {
   const auto goal = planner_data_->route_handler->getGoalPose();
-  const auto goal_lane_id = planner_data_->route_handler->getGoalLaneId();
   const auto is_approved = planner_data_->approval.is_approved.data;
+  auto goal_lane_id = planner_data_->route_handler->getGoalLaneId();
 
   Pose refined_goal{};
   {
@@ -685,6 +685,7 @@ PathWithLaneId BehaviorPathPlannerNode::modifyPathForSmoothGoalConnection(
       is_approved && planner_data_->route_handler->getPullOverTarget(
                        planner_data_->route_handler->getShoulderLanelets(), &pull_over_lane)) {
       refined_goal = planner_data_->route_handler->getPullOverGoalPose();
+      goal_lane_id = pull_over_lane.id();
     } else if (planner_data_->route_handler->getGoalLanelet(&goal_lanelet)) {
       refined_goal = util::refineGoal(goal, goal_lanelet);
     } else {
