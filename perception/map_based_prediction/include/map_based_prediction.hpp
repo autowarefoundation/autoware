@@ -22,9 +22,20 @@
 
 #include <vector>
 
+namespace map_based_prediction
+{
+using autoware_auto_perception_msgs::msg::ObjectClassification;
+using autoware_auto_perception_msgs::msg::PredictedObject;
+using autoware_auto_perception_msgs::msg::PredictedObjectKinematics;
+using autoware_auto_perception_msgs::msg::PredictedObjects;
+using autoware_auto_perception_msgs::msg::PredictedPath;
+using autoware_auto_perception_msgs::msg::TrackedObject;
+using autoware_auto_perception_msgs::msg::TrackedObjectKinematics;
+using autoware_auto_perception_msgs::msg::TrackedObjects;
+
 struct DynamicObjectWithLanes
 {
-  autoware_auto_perception_msgs::msg::TrackedObject object;
+  TrackedObject object;
   std::vector<std::vector<geometry_msgs::msg::Pose>> lanes;
   std::vector<double> confidence;
 };
@@ -47,33 +58,29 @@ private:
   bool getPredictedPath(
     const double height, const double current_d_position, const double current_d_velocity,
     const double current_s_position, const double current_s_velocity,
-    const std_msgs::msg::Header & origin_header, Spline2D & spline2d,
-    autoware_auto_perception_msgs::msg::PredictedPath & path) const;
+    const std_msgs::msg::Header & origin_header, Spline2D & spline2d, PredictedPath & path) const;
 
   void getLinearPredictedPath(
     const geometry_msgs::msg::Pose & object_pose, const geometry_msgs::msg::Twist & object_twist,
-    autoware_auto_perception_msgs::msg::PredictedPath & predicted_path) const;
+    PredictedPath & predicted_path) const;
 
-  void normalizeLikelihood(
-    autoware_auto_perception_msgs::msg::PredictedObjectKinematics & predicted_object_kinematics);
+  void normalizeLikelihood(PredictedObjectKinematics & predicted_object_kinematics);
 
-  autoware_auto_perception_msgs::msg::PredictedObjectKinematics convertToPredictedKinematics(
-    const autoware_auto_perception_msgs::msg::TrackedObjectKinematics & tracked_object);
+  PredictedObjectKinematics convertToPredictedKinematics(
+    const TrackedObjectKinematics & tracked_object);
 
 public:
   MapBasedPrediction(
     double interpolating_resolution, double time_horizon, double sampling_delta_time);
 
   bool doPrediction(
-    const DynamicObjectWithLanesArray & in_objects,
-    std::vector<autoware_auto_perception_msgs::msg::PredictedObject> & out_objects);
+    const DynamicObjectWithLanesArray & in_objects, std::vector<PredictedObject> & out_objects);
 
   bool doLinearPrediction(
-    const autoware_auto_perception_msgs::msg::PredictedObjects & in_objects,
-    std::vector<autoware_auto_perception_msgs::msg::PredictedObject> & out_objects);
+    const PredictedObjects & in_objects, std::vector<PredictedObject> & out_objects);
 
-  autoware_auto_perception_msgs::msg::PredictedObject convertToPredictedObject(
-    const autoware_auto_perception_msgs::msg::TrackedObject & tracked_object);
+  PredictedObject convertToPredictedObject(const TrackedObject & tracked_object);
 };
+}  // namespace map_based_prediction
 
 #endif  // MAP_BASED_PREDICTION_HPP_

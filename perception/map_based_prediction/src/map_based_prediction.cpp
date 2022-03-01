@@ -22,6 +22,8 @@
 #include <chrono>
 #include <vector>
 
+namespace map_based_prediction
+{
 MapBasedPrediction::MapBasedPrediction(
   double interpolating_resolution, double time_horizon, double sampling_delta_time)
 : interpolating_resolution_(interpolating_resolution),
@@ -31,11 +33,10 @@ MapBasedPrediction::MapBasedPrediction(
 }
 
 bool MapBasedPrediction::doPrediction(
-  const DynamicObjectWithLanesArray & in_objects,
-  std::vector<autoware_auto_perception_msgs::msg::PredictedObject> & out_objects)
+  const DynamicObjectWithLanesArray & in_objects, std::vector<PredictedObject> & out_objects)
 {
   for (auto & object_with_lanes : in_objects.objects) {
-    autoware_auto_perception_msgs::msg::PredictedObject tmp_object;
+    PredictedObject tmp_object;
     tmp_object = convertToPredictedObject(object_with_lanes.object);
     for (size_t path_id = 0; path_id < object_with_lanes.lanes.size(); ++path_id) {
       std::vector<double> tmp_x;
@@ -101,7 +102,7 @@ bool MapBasedPrediction::doPrediction(
         std::fabs(object_with_lanes.object.kinematics.twist_with_covariance.twist.linear.x);
 
       // Predict Path
-      autoware_auto_perception_msgs::msg::PredictedPath predicted_path;
+      PredictedPath predicted_path;
       getPredictedPath(
         object_point.z, current_d_position, current_d_velocity, current_s_position,
         current_s_velocity, in_objects.header, spline2d, predicted_path);
@@ -135,15 +136,14 @@ bool MapBasedPrediction::doPrediction(
 }
 
 bool MapBasedPrediction::doLinearPrediction(
-  const autoware_auto_perception_msgs::msg::PredictedObjects & in_objects,
-  std::vector<autoware_auto_perception_msgs::msg::PredictedObject> & out_objects)
+  const PredictedObjects & in_objects, std::vector<PredictedObject> & out_objects)
 {
   for (const auto & object : in_objects.objects) {
-    autoware_auto_perception_msgs::msg::PredictedPath path;
+    PredictedPath path;
     getLinearPredictedPath(
       object.kinematics.initial_pose_with_covariance.pose,
       object.kinematics.initial_twist_with_covariance.twist, path);
-    autoware_auto_perception_msgs::msg::PredictedObject tmp_object;
+    PredictedObject tmp_object;
     tmp_object = object;
     tmp_object.kinematics.predicted_paths.push_back(path);
     out_objects.push_back(tmp_object);
@@ -152,10 +152,9 @@ bool MapBasedPrediction::doLinearPrediction(
   return true;
 }
 
-autoware_auto_perception_msgs::msg::PredictedObject MapBasedPrediction::convertToPredictedObject(
-  const autoware_auto_perception_msgs::msg::TrackedObject & tracked_object)
+PredictedObject MapBasedPrediction::convertToPredictedObject(const TrackedObject & tracked_object)
 {
-  autoware_auto_perception_msgs::msg::PredictedObject output;
+  PredictedObject output;
   output.object_id = tracked_object.object_id;
   output.existence_probability = tracked_object.existence_probability;
   output.classification = tracked_object.classification;
@@ -164,11 +163,10 @@ autoware_auto_perception_msgs::msg::PredictedObject MapBasedPrediction::convertT
   return output;
 }
 
-autoware_auto_perception_msgs::msg::PredictedObjectKinematics
-MapBasedPrediction::convertToPredictedKinematics(
-  const autoware_auto_perception_msgs::msg::TrackedObjectKinematics & tracked_object)
+PredictedObjectKinematics MapBasedPrediction::convertToPredictedKinematics(
+  const TrackedObjectKinematics & tracked_object)
 {
-  autoware_auto_perception_msgs::msg::PredictedObjectKinematics output;
+  PredictedObjectKinematics output;
   output.initial_pose_with_covariance = tracked_object.pose_with_covariance;
   output.initial_twist_with_covariance = tracked_object.twist_with_covariance;
   output.initial_acceleration_with_covariance = tracked_object.acceleration_with_covariance;
@@ -176,7 +174,7 @@ MapBasedPrediction::convertToPredictedKinematics(
 }
 
 void MapBasedPrediction::normalizeLikelihood(
-  autoware_auto_perception_msgs::msg::PredictedObjectKinematics & predicted_object_kinematics)
+  PredictedObjectKinematics & predicted_object_kinematics)
 {
   // might not be the smartest way
   double sum_confidence = 0.0;
@@ -193,7 +191,7 @@ bool MapBasedPrediction::getPredictedPath(
   const double height, const double current_d_position, const double current_d_velocity,
   const double current_s_position, const double current_s_velocity,
   [[maybe_unused]] const std_msgs::msg::Header & origin_header, Spline2D & spline2d,
-  autoware_auto_perception_msgs::msg::PredictedPath & path) const
+  PredictedPath & path) const
 {
   // Quintic polynomial for d
   // A = np.array([[T**3, T**4, T**5],
@@ -269,7 +267,7 @@ bool MapBasedPrediction::getPredictedPath(
 
 void MapBasedPrediction::getLinearPredictedPath(
   const geometry_msgs::msg::Pose & object_pose, const geometry_msgs::msg::Twist & object_twist,
-  autoware_auto_perception_msgs::msg::PredictedPath & predicted_path) const
+  PredictedPath & predicted_path) const
 {
   const double & sampling_delta_time = sampling_delta_time_;
   const double & time_horizon = time_horizon_;
@@ -302,3 +300,4 @@ void MapBasedPrediction::getLinearPredictedPath(
   predicted_path.confidence = 1.0;
   predicted_path.time_step = rclcpp::Duration::from_seconds(sampling_delta_time);
 }
+}  // namespace map_based_prediction

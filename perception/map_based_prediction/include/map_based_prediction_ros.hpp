@@ -62,6 +62,15 @@ class TrafficRules;
 }  // namespace traffic_rules
 }  // namespace lanelet
 
+namespace map_based_prediction
+{
+using autoware_auto_mapping_msgs::msg::HADMapBin;
+using autoware_auto_perception_msgs::msg::ObjectClassification;
+using autoware_auto_perception_msgs::msg::PredictedObject;
+using autoware_auto_perception_msgs::msg::PredictedObjects;
+using autoware_auto_perception_msgs::msg::TrackedObject;
+using autoware_auto_perception_msgs::msg::TrackedObjects;
+
 struct ObjectData
 {
   lanelet::ConstLanelets current_lanelets;
@@ -95,9 +104,9 @@ private:
   double diff_dist_threshold_to_left_bound_;
   double diff_dist_threshold_to_right_bound_;
 
-  rclcpp::Subscription<autoware_auto_perception_msgs::msg::TrackedObjects>::SharedPtr sub_objects_;
-  rclcpp::Subscription<autoware_auto_mapping_msgs::msg::HADMapBin>::SharedPtr sub_map_;
-  rclcpp::Publisher<autoware_auto_perception_msgs::msg::PredictedObjects>::SharedPtr pub_objects_;
+  rclcpp::Subscription<TrackedObjects>::SharedPtr sub_objects_;
+  rclcpp::Subscription<HADMapBin>::SharedPtr sub_map_;
+  rclcpp::Publisher<PredictedObjects>::SharedPtr pub_objects_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pub_markers_;
 
   std::unordered_map<std::string, std::deque<ObjectData>> object_buffer_;
@@ -113,32 +122,28 @@ private:
   bool getSelfPose(geometry_msgs::msg::Pose & self_pose, const std_msgs::msg::Header & header);
   bool getSelfPoseInMap(geometry_msgs::msg::Pose & self_pose);
 
-  double getObjectYaw(const autoware_auto_perception_msgs::msg::TrackedObject & object);
+  double getObjectYaw(const TrackedObject & object);
   double calculateLikelihood(
-    const std::vector<geometry_msgs::msg::Pose> & path,
-    const autoware_auto_perception_msgs::msg::TrackedObject & object);
+    const std::vector<geometry_msgs::msg::Pose> & path, const TrackedObject & object);
 
   void addValidPath(
     const lanelet::routing::LaneletPaths & candidate_paths,
     lanelet::routing::LaneletPaths & valid_paths);
 
-  void objectsCallback(
-    const autoware_auto_perception_msgs::msg::TrackedObjects::ConstSharedPtr in_objects);
-  void mapCallback(const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr msg);
+  void objectsCallback(const TrackedObjects::ConstSharedPtr in_objects);
+  void mapCallback(const HADMapBin::ConstSharedPtr msg);
 
   bool getClosestLanelets(
-    const autoware_auto_perception_msgs::msg::TrackedObject & object,
-    const lanelet::LaneletMapPtr & lanelet_map_ptr, lanelet::ConstLanelets & closest_lanelets);
+    const TrackedObject & object, const lanelet::LaneletMapPtr & lanelet_map_ptr,
+    lanelet::ConstLanelets & closest_lanelets);
 
   bool checkCloseLaneletCondition(
-    const std::pair<double, lanelet::Lanelet> & lanelet,
-    const autoware_auto_perception_msgs::msg::TrackedObject & object,
+    const std::pair<double, lanelet::Lanelet> & lanelet, const TrackedObject & object,
     const lanelet::BasicPoint2d & search_point);
 
   void removeInvalidObject(const double current_time);
   bool updateObjectBuffer(
-    const std_msgs::msg::Header & header,
-    const autoware_auto_perception_msgs::msg::TrackedObject & object,
+    const std_msgs::msg::Header & header, const TrackedObject & object,
     lanelet::ConstLanelets & current_lanelets);
   void updatePossibleLanelets(
     const std::string object_id, const lanelet::routing::LaneletPaths & paths);
@@ -148,11 +153,12 @@ private:
   double calcLeftLateralOffset(
     const lanelet::ConstLineString2d & bound_line, const geometry_msgs::msg::Pose & search_pose);
   Maneuver detectLaneChange(
-    const autoware_auto_perception_msgs::msg::TrackedObject & object,
-    const lanelet::ConstLanelet & current_lanelet, const double current_time);
+    const TrackedObject & object, const lanelet::ConstLanelet & current_lanelet,
+    const double current_time);
 
 public:
   explicit MapBasedPredictionROS(const rclcpp::NodeOptions & node_options);
 };
+}  // namespace map_based_prediction
 
 #endif  // MAP_BASED_PREDICTION_ROS_HPP_

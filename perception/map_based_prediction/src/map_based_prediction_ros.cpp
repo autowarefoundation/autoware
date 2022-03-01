@@ -37,6 +37,8 @@
 #include <utility>
 #include <vector>
 
+namespace
+{
 std::string toHexString(const unique_identifier_msgs::msg::UUID & id)
 {
   std::stringstream ss;
@@ -45,7 +47,9 @@ std::string toHexString(const unique_identifier_msgs::msg::UUID & id)
   }
   return ss.str();
 }
-
+}  // namespace
+namespace map_based_prediction
+{
 MapBasedPredictionROS::MapBasedPredictionROS(const rclcpp::NodeOptions & node_options)
 : Node("map_based_prediction", node_options),
   interpolating_resolution_(0.5),
@@ -79,21 +83,19 @@ MapBasedPredictionROS::MapBasedPredictionROS(const rclcpp::NodeOptions & node_op
   map_based_prediction_ = std::make_shared<MapBasedPrediction>(
     interpolating_resolution_, prediction_time_horizon_, prediction_sampling_delta_time_);
 
-  sub_objects_ = this->create_subscription<autoware_auto_perception_msgs::msg::TrackedObjects>(
+  sub_objects_ = this->create_subscription<TrackedObjects>(
     "/perception/object_recognition/tracking/objects", 1,
     std::bind(&MapBasedPredictionROS::objectsCallback, this, std::placeholders::_1));
-  sub_map_ = this->create_subscription<autoware_auto_mapping_msgs::msg::HADMapBin>(
+  sub_map_ = this->create_subscription<HADMapBin>(
     "/vector_map", rclcpp::QoS{1}.transient_local(),
     std::bind(&MapBasedPredictionROS::mapCallback, this, std::placeholders::_1));
 
-  pub_objects_ = this->create_publisher<autoware_auto_perception_msgs::msg::PredictedObjects>(
-    "objects", rclcpp::QoS{1});
+  pub_objects_ = this->create_publisher<PredictedObjects>("objects", rclcpp::QoS{1});
   pub_markers_ = this->create_publisher<visualization_msgs::msg::MarkerArray>(
     "objects_path_markers", rclcpp::QoS{1});
 }
 
-double MapBasedPredictionROS::getObjectYaw(
-  const autoware_auto_perception_msgs::msg::TrackedObject & object)
+double MapBasedPredictionROS::getObjectYaw(const TrackedObject & object)
 {
   if (object.kinematics.orientation_availability) {
     return tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation);
@@ -117,8 +119,7 @@ double MapBasedPredictionROS::getObjectYaw(
 }
 
 double MapBasedPredictionROS::calculateLikelihood(
-  const std::vector<geometry_msgs::msg::Pose> & path,
-  const autoware_auto_perception_msgs::msg::TrackedObject & object)
+  const std::vector<geometry_msgs::msg::Pose> & path, const TrackedObject & object)
 {
   // We compute the confidence value based on the object current position and angle
   // Calculate path length
@@ -157,8 +158,7 @@ double MapBasedPredictionROS::calculateLikelihood(
 }
 
 bool MapBasedPredictionROS::checkCloseLaneletCondition(
-  const std::pair<double, lanelet::Lanelet> & lanelet,
-  const autoware_auto_perception_msgs::msg::TrackedObject & object,
+  const std::pair<double, lanelet::Lanelet> & lanelet, const TrackedObject & object,
   const lanelet::BasicPoint2d & search_point)
 {
   // Step1. If we only have one point in the centerline, we will ignore the lanelet
@@ -206,8 +206,8 @@ bool MapBasedPredictionROS::checkCloseLaneletCondition(
 }
 
 bool MapBasedPredictionROS::getClosestLanelets(
-  const autoware_auto_perception_msgs::msg::TrackedObject & object,
-  const lanelet::LaneletMapPtr & lanelet_map_ptr_, lanelet::ConstLanelets & closest_lanelets)
+  const TrackedObject & object, const lanelet::LaneletMapPtr & lanelet_map_ptr_,
+  lanelet::ConstLanelets & closest_lanelets)
 {
   std::chrono::high_resolution_clock::time_point begin = std::chrono::high_resolution_clock::now();
 
@@ -304,11 +304,10 @@ void MapBasedPredictionROS::removeInvalidObject(const double current_time)
 }
 
 bool MapBasedPredictionROS::updateObjectBuffer(
-  const std_msgs::msg::Header & header,
-  const autoware_auto_perception_msgs::msg::TrackedObject & object,
+  const std_msgs::msg::Header & header, const TrackedObject & object,
   lanelet::ConstLanelets & current_lanelets)
 {
-  using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
+  using Label = ObjectClassification;
   // Ignore non-vehicle object
   if (
     object.classification.front().label != Label::CAR &&
@@ -432,8 +431,8 @@ double MapBasedPredictionROS::calcLeftLateralOffset(
 }
 
 Maneuver MapBasedPredictionROS::detectLaneChange(
-  const autoware_auto_perception_msgs::msg::TrackedObject & object,
-  const lanelet::ConstLanelet & current_lanelet, const double current_time)
+  const TrackedObject & object, const lanelet::ConstLanelet & current_lanelet,
+  const double current_time)
 {
   // Step1. Check if we have the object in the buffer
   const std::string object_id = toHexString(object.object_id);
@@ -530,8 +529,7 @@ Maneuver MapBasedPredictionROS::detectLaneChange(
   return Maneuver::LANE_FOLLOW;
 }
 
-void MapBasedPredictionROS::objectsCallback(
-  const autoware_auto_perception_msgs::msg::TrackedObjects::ConstSharedPtr in_objects)
+void MapBasedPredictionROS::objectsCallback(const TrackedObjects::ConstSharedPtr in_objects)
 {
   debug_accumulated_time_ = 0.0;
   std::chrono::high_resolution_clock::time_point begin = std::chrono::high_resolution_clock::now();
@@ -570,7 +568,7 @@ void MapBasedPredictionROS::objectsCallback(
   /////////////////////////////////////////////////////////
   ///////////////////// Prediction ///////////////////////
   ///////////////////////////////////////////////////////
-  autoware_auto_perception_msgs::msg::PredictedObjects objects_without_map;
+  PredictedObjects objects_without_map;
   objects_without_map.header = in_objects->header;
   DynamicObjectWithLanesArray prediction_input;
   prediction_input.header = in_objects->header;
@@ -734,22 +732,21 @@ void MapBasedPredictionROS::objectsCallback(
   std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
   std::chrono::nanoseconds time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
 
-  std::vector<autoware_auto_perception_msgs::msg::PredictedObject> out_objects_in_map;
+  std::vector<PredictedObject> out_objects_in_map;
   map_based_prediction_->doPrediction(prediction_input, out_objects_in_map);
-  autoware_auto_perception_msgs::msg::PredictedObjects output;
+  PredictedObjects output;
   output.header = in_objects->header;
   output.header.frame_id = "map";
   output.objects = out_objects_in_map;
 
-  std::vector<autoware_auto_perception_msgs::msg::PredictedObject> out_objects_without_map;
+  std::vector<PredictedObject> out_objects_without_map;
   map_based_prediction_->doLinearPrediction(objects_without_map, out_objects_without_map);
   output.objects.insert(
     output.objects.begin(), out_objects_without_map.begin(), out_objects_without_map.end());
   pub_objects_->publish(output);
 }
 
-void MapBasedPredictionROS::mapCallback(
-  const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr msg)
+void MapBasedPredictionROS::mapCallback(const HADMapBin::ConstSharedPtr msg)
 {
   RCLCPP_INFO(get_logger(), "Start loading lanelet");
   lanelet_map_ptr_ = std::make_shared<lanelet::LaneletMap>();
@@ -757,6 +754,7 @@ void MapBasedPredictionROS::mapCallback(
     *msg, lanelet_map_ptr_, &traffic_rules_ptr_, &routing_graph_ptr_);
   RCLCPP_INFO(get_logger(), "Map is loaded");
 }
+}  // namespace map_based_prediction
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(MapBasedPredictionROS)
+RCLCPP_COMPONENTS_REGISTER_NODE(map_based_prediction::MapBasedPredictionROS)

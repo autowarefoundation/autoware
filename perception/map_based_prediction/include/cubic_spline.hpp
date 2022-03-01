@@ -30,6 +30,8 @@
 #include <string>
 #include <vector>
 
+namespace map_based_prediction
+{
 static std::vector<double> vec_diff(const std::vector<double> & input)
 {
   std::vector<double> output;
@@ -250,5 +252,6 @@ private:
     return out_s;
   }
 };
+}  // namespace map_based_prediction
 
 #endif  // CUBIC_SPLINE_HPP_

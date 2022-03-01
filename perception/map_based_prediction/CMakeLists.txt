@@ -21,7 +21,7 @@ ament_auto_add_library(map_based_prediction_node SHARED
 )
 
 rclcpp_components_register_node(map_based_prediction_node
-  PLUGIN "MapBasedPredictionROS"
+  PLUGIN "map_based_prediction::MapBasedPredictionROS"
   EXECUTABLE map_based_prediction
 )
 
