@@ -5,7 +5,6 @@
   <arg name="visible_range" default="300.0" />
   <arg name="real" default="true" />
   <arg name="use_object_recognition" default="true" />
-  <arg name="use_traffic_light_recognition" default="false" />
 
   <group>
     <push-ros-namespace namespace="simulation"/>
@@ -51,48 +50,12 @@
   <!-- perception module -->
   <group>
     <push-ros-namespace namespace="perception"/>
-    <!-- object segmentation module -->
-    <group>
-      <push-ros-namespace namespace="occupancy_grid_map"/>
-      <!-- Occupancy Grid -->
-      <include file="$(find-pkg-share tier4_perception_launch)/launch/occupancy_grid_map/occupancy_grid_map.launch.py">
-        <arg name="input_obstacle_pointcloud" value="true" />
-        <arg name="input_obstacle_and_raw_pointcloud" value="false" />
-        <arg name="input/obstacle_pointcloud" value="/perception/obstacle_segmentation/pointcloud" />
-        <arg name="output" value="/perception/occupancy_grid_map/map" />
-      </include>
-    </group>
-
-    <!-- object recognition module -->
-    <group if="$(var use_object_recognition)">
-      <push-ros-namespace namespace="object_recognition"/>
-      <!-- detection module -->
-      <!-- tracking module -->
-      <group>
-        <push-ros-namespace namespace="tracking"/>
-        <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/tracking/tracking.launch.xml">
-        </include>
-      </group>
-      <!-- prediction module -->
-      <group>
-        <push-ros-namespace namespace="prediction"/>
-        <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/prediction/prediction.launch.xml">
-          <arg name="use_vector_map" value="true" />
-        </include>
-      </group>
-    </group>
-
+    <!-- publish empty objects instead of object recognition module -->
     <group unless="$(var use_object_recognition)">
       <push-ros-namespace namespace="object_recognition"/>
       <node pkg="dummy_perception_publisher" exec="empty_objects_publisher" name="empty_objects_publisher" output="screen">
         <remap from="~/output/objects" to="/perception/object_recognition/objects" />
       </node>
-    </group>
-
-    <!-- traffic light module -->
-    <group if="$(var use_traffic_light_recognition)">
-      <push-ros-namespace namespace="traffic_light_recognition"/>
-      <include file="$(find-pkg-share tier4_perception_launch)/launch/traffic_light_recognition/traffic_light.launch.xml"></include>
     </group>
   </group>
 </launch>

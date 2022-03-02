@@ -4,7 +4,8 @@
   <arg name="vehicle_info_param_file" />
 
   <arg name="perception/enable_detection_failure" default="true" description="enable to simulate detection failure when using dummy perception"/>
-  <arg name="perception/enable_object_recognition" default="false" description="enable object recognition when using dummy perception"/>
+  <arg name="perception/enable_object_recognition" default="false" description="enable object recognition"/>
+  <arg name="perception/enable_traffic_light" default="false" description="enable traffic light"/>
   <arg name="sensing/visible_range" default="300.0" description="visible range when using dummy perception"/>
 
   <arg name="vehicle_model" description="vehicle model name"/>
@@ -23,6 +24,46 @@
       <arg name="use_object_recognition" value="$(var perception/enable_object_recognition)"/>
       <arg name="visible_range" value="$(var sensing/visible_range)"/>
     </include>
+  </group>
+
+  <!-- perception module -->
+  <group>
+    <push-ros-namespace namespace="perception"/>
+    <!-- object recognition -->
+    <group if="$(var perception/enable_object_recognition)">
+      <push-ros-namespace namespace="object_recognition"/>
+      <!-- tracking module -->
+      <group>
+        <push-ros-namespace namespace="tracking"/>
+        <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/tracking/tracking.launch.xml">
+        </include>
+      </group>
+      <!-- prediction module -->
+      <group>
+        <push-ros-namespace namespace="prediction"/>
+        <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/prediction/prediction.launch.xml">
+          <arg name="use_vector_map" value="true" />
+        </include>
+      </group>
+    </group>
+
+    <!-- object segmentation module -->
+    <group>
+      <push-ros-namespace namespace="occupancy_grid_map"/>
+      <!-- Occupancy Grid -->
+      <include file="$(find-pkg-share laserscan_to_occupancy_grid_map)/launch/laserscan_to_occupancy_grid_map.launch.py">
+        <arg name="input_obstacle_pointcloud" value="true" />
+        <arg name="input_obstacle_and_raw_pointcloud" value="false" />
+        <arg name="input/obstacle_pointcloud" value="/perception/obstacle_segmentation/pointcloud" />
+        <arg name="output" value="/perception/occupancy_grid_map/map" />
+      </include>
+    </group>
+
+    <!-- traffic light module -->
+    <group if="$(var perception/enable_traffic_light)">
+      <push-ros-namespace namespace="traffic_light_recognition"/>
+      <include file="$(find-pkg-share tier4_perception_launch)/launch/traffic_light_recognition/traffic_light.launch.xml"></include>
+    </group>
   </group>
 
   <!-- Simulator model -->
