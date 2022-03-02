@@ -24,7 +24,7 @@
       <arg name="param_path" value="$(var param_path)"/>
     </include>
     <!-- motion velocity smoother -->
-    <arg name="smoother_type" default="JerkFiltered" />
+    <arg name="smoother_type" default="JerkFiltered" description="options: JerkFiltered, L2, Analytical, Linf(Unstable)"/>
     <set_remap from="~/input/trajectory" to="/planning/scenario_planning/scenario_selector/trajectory" />
     <set_remap from="~/output/trajectory" to="/planning/scenario_planning/trajectory" />
     <include file="$(find-pkg-share motion_velocity_smoother)/launch/motion_velocity_smoother.launch.xml">
