@@ -7,6 +7,7 @@
   <arg name="output_twist_with_covariance_topic" default="gyro_twist_with_covariance" description="output twist with covariance topic name"/>
 
   <arg name="output_frame" default="base_link" description="output frame id"/>
+  <arg name="message_timeout_sec" default="0.2" description="delay tolerance time for message"/>
 
   <node pkg="gyro_odometer" exec="gyro_odometer" name="gyro_odometer" output="screen">
 
@@ -18,5 +19,6 @@
     <remap from="twist_with_covariance" to="$(var output_twist_with_covariance_topic)" />
 
     <param name="output_frame" value="$(var output_frame)" />
+    <param name="message_timeout_sec" value="$(var message_timeout_sec)" />
   </node>
 </launch>

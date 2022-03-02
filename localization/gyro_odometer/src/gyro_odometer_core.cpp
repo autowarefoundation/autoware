@@ -24,7 +24,8 @@ GyroOdometer::GyroOdometer()
 : Node("gyro_odometer"),
   tf_buffer_(this->get_clock()),
   tf_listener_(tf_buffer_),
-  output_frame_(declare_parameter("base_link", "base_link"))
+  output_frame_(declare_parameter("base_link", "base_link")),
+  message_timeout_sec_(declare_parameter("message_timeout_sec", 0.2))
 {
   vehicle_twist_with_cov_sub_ = create_subscription<geometry_msgs::msg::TwistWithCovarianceStamped>(
     "vehicle/twist_with_covariance", rclcpp::QoS{100},
@@ -47,25 +48,49 @@ void GyroOdometer::callbackTwistWithCovariance(
 {
   // TODO(YamatoAndo) trans from twist_with_cov_msg_ptr->header to base_frame
   twist_with_cov_msg_ptr_ = twist_with_cov_msg_ptr;
+
+  if (!imu_msg_ptr_) {
+    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "Imu msg is not subscribed");
+    return;
+  }
+  const double imu_dt = std::abs((this->now() - imu_msg_ptr_->header.stamp).seconds());
+  if (imu_dt > message_timeout_sec_) {
+    RCLCPP_ERROR_THROTTLE(
+      this->get_logger(), *this->get_clock(), 1000,
+      "Imu msg is timeout. imu_dt: %lf[sec], tolerance %lf[sec]", imu_dt, message_timeout_sec_);
+    return;
+  }
 }
 
 void GyroOdometer::callbackImu(const sensor_msgs::msg::Imu::ConstSharedPtr imu_msg_ptr)
 {
+  imu_msg_ptr_ = imu_msg_ptr;
+
   if (!twist_with_cov_msg_ptr_) {
+    RCLCPP_WARN_THROTTLE(
+      this->get_logger(), *this->get_clock(), 1000, "Twist msg is not subscribed");
+    return;
+  }
+
+  const double twist_dt = std::abs((this->now() - twist_with_cov_msg_ptr_->header.stamp).seconds());
+  if (twist_dt > message_timeout_sec_) {
+    RCLCPP_ERROR_THROTTLE(
+      this->get_logger(), *this->get_clock(), 1000,
+      "Twist msg is timeout. twist_dt: %lf[sec], tolerance %lf[sec]", twist_dt,
+      message_timeout_sec_);
     return;
   }
 
   geometry_msgs::msg::TransformStamped::SharedPtr tf_base2imu_ptr =
     std::make_shared<geometry_msgs::msg::TransformStamped>();
-  getTransform(output_frame_, imu_msg_ptr->header.frame_id, tf_base2imu_ptr);
+  getTransform(output_frame_, imu_msg_ptr_->header.frame_id, tf_base2imu_ptr);
 
   geometry_msgs::msg::Vector3Stamped angular_velocity;
-  angular_velocity.header = imu_msg_ptr->header;
-  angular_velocity.vector = imu_msg_ptr->angular_velocity;
+  angular_velocity.header = imu_msg_ptr_->header;
+  angular_velocity.vector = imu_msg_ptr_->angular_velocity;
 
   geometry_msgs::msg::Vector3Stamped transformed_angular_velocity;
   transformed_angular_velocity.header = tf_base2imu_ptr->header;
-
   tf2::doTransform(angular_velocity, transformed_angular_velocity, *tf_base2imu_ptr);
 
   // clear imu yaw bias if vehicle is stopped
@@ -77,14 +102,14 @@ void GyroOdometer::callbackImu(const sensor_msgs::msg::Imu::ConstSharedPtr imu_m
 
   // TODO(YamatoAndo) move code
   geometry_msgs::msg::TwistStamped twist;
-  twist.header.stamp = imu_msg_ptr->header.stamp;
+  twist.header.stamp = imu_msg_ptr_->header.stamp;
   twist.header.frame_id = output_frame_;
   twist.twist.linear = twist_with_cov_msg_ptr_->twist.twist.linear;
   twist.twist.angular.z = transformed_angular_velocity.vector.z;  // TODO(YamatoAndo) yaw_rate only
   twist_pub_->publish(twist);
 
   geometry_msgs::msg::TwistWithCovarianceStamped twist_with_covariance;
-  twist_with_covariance.header.stamp = imu_msg_ptr->header.stamp;
+  twist_with_covariance.header.stamp = imu_msg_ptr_->header.stamp;
   twist_with_covariance.header.frame_id = output_frame_;
   twist_with_covariance.twist.twist.linear = twist_with_cov_msg_ptr_->twist.twist.linear;
   twist_with_covariance.twist.twist.angular.z =
@@ -98,7 +123,7 @@ void GyroOdometer::callbackImu(const sensor_msgs::msg::Imu::ConstSharedPtr imu_m
   twist_with_covariance.twist.covariance[14] = 10000.0;
   twist_with_covariance.twist.covariance[21] = 10000.0;
   twist_with_covariance.twist.covariance[28] = 10000.0;
-  twist_with_covariance.twist.covariance[35] = imu_msg_ptr->angular_velocity_covariance[8];
+  twist_with_covariance.twist.covariance[35] = imu_msg_ptr_->angular_velocity_covariance[8];
 
   twist_with_covariance_pub_->publish(twist_with_covariance);
 }

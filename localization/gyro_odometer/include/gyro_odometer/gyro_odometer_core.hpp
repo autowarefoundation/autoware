@@ -54,7 +54,10 @@ private:
   tf2_ros::TransformListener tf_listener_;
 
   std::string output_frame_;
+  double message_timeout_sec_;
+
   geometry_msgs::msg::TwistWithCovarianceStamped::ConstSharedPtr twist_with_cov_msg_ptr_;
+  sensor_msgs::msg::Imu::ConstSharedPtr imu_msg_ptr_;
 };
 
 #endif  // GYRO_ODOMETER__GYRO_ODOMETER_CORE_HPP_
