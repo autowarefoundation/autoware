@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Run spell-check
         uses: autowarefoundation/autoware-github-actions/spell-check@tier4/proposal
