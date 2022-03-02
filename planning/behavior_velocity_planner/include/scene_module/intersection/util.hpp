@@ -52,7 +52,7 @@ bool hasDuplicatedPoint(
  */
 bool getObjectiveLanelets(
   lanelet::LaneletMapConstPtr lanelet_map_ptr, lanelet::routing::RoutingGraphPtr routing_graph_ptr,
-  const int lane_id, const IntersectionModule::PlannerParam & planner_param,
+  const int lane_id, const double detection_area_length,
   std::vector<lanelet::ConstLanelets> * conflicting_lanelets_result,
   std::vector<lanelet::ConstLanelets> * objective_lanelets_result, const rclcpp::Logger logger);
 
@@ -69,8 +69,7 @@ bool getObjectiveLanelets(
  */
 bool generateStopLine(
   const int lane_id, const std::vector<lanelet::CompoundPolygon3d> detection_areas,
-  const std::shared_ptr<const PlannerData> & planner_data,
-  const IntersectionModule::PlannerParam & planner_param,
+  const std::shared_ptr<const PlannerData> & planner_data, const double stop_line_margin,
   autoware_auto_planning_msgs::msg::PathWithLaneId * original_path,
   const autoware_auto_planning_msgs::msg::PathWithLaneId & target_path, int * stop_line_idx,
   int * pass_judge_line_idx, int * first_idx_inside_lane, const rclcpp::Logger logger);

@@ -37,6 +37,21 @@ public:
 
 private:
   IntersectionModule::PlannerParam intersection_param_;
+
+  void launchNewModules(const autoware_auto_planning_msgs::msg::PathWithLaneId & path) override;
+
+  std::function<bool(const std::shared_ptr<SceneModuleInterface> &)> getModuleExpiredFunction(
+    const autoware_auto_planning_msgs::msg::PathWithLaneId & path) override;
+};
+
+class MergeFromPrivateModuleManager : public SceneModuleManagerInterface
+{
+public:
+  explicit MergeFromPrivateModuleManager(rclcpp::Node & node);
+
+  const char * getModuleName() override { return "merge_from_private"; }
+
+private:
   MergeFromPrivateRoadModule::PlannerParam merge_from_private_area_param_;
 
   void launchNewModules(const autoware_auto_planning_msgs::msg::PathWithLaneId & path) override;

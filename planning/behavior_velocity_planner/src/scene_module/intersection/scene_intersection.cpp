@@ -93,8 +93,8 @@ bool IntersectionModule::modifyPathVelocity(
   std::vector<lanelet::ConstLanelets> conflicting_area_lanelets;
 
   util::getObjectiveLanelets(
-    lanelet_map_ptr, routing_graph_ptr, lane_id_, planner_param_, &conflicting_area_lanelets,
-    &detection_area_lanelets, logger_);
+    lanelet_map_ptr, routing_graph_ptr, lane_id_, planner_param_.detection_area_length,
+    &conflicting_area_lanelets, &detection_area_lanelets, logger_);
   std::vector<lanelet::CompoundPolygon3d> conflicting_areas = util::getPolygon3dFromLaneletsVec(
     conflicting_area_lanelets, planner_param_.detection_area_length);
   std::vector<lanelet::CompoundPolygon3d> detection_areas = util::getPolygon3dFromLaneletsVec(
@@ -115,8 +115,8 @@ bool IntersectionModule::modifyPathVelocity(
   int pass_judge_line_idx = -1;
   int first_idx_inside_lane = -1;
   if (!util::generateStopLine(
-        lane_id_, conflicting_areas, planner_data_, planner_param_, path, *path, &stop_line_idx,
-        &pass_judge_line_idx, &first_idx_inside_lane, logger_.get_child("util"))) {
+        lane_id_, conflicting_areas, planner_data_, planner_param_.stop_line_margin, path, *path,
+        &stop_line_idx, &pass_judge_line_idx, &first_idx_inside_lane, logger_.get_child("util"))) {
     RCLCPP_WARN_SKIPFIRST_THROTTLE(logger_, *clock_, 1000 /* ms */, "setStopLineIdx fail");
     RCLCPP_DEBUG(logger_, "===== plan end =====");
     return false;

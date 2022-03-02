@@ -69,10 +69,10 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(
   std::vector<lanelet::ConstLanelets> conflicting_area_lanelets;
 
   util::getObjectiveLanelets(
-    lanelet_map_ptr, routing_graph_ptr, lane_id_, planner_param_.intersection_param,
+    lanelet_map_ptr, routing_graph_ptr, lane_id_, planner_param_.detection_area_length,
     &conflicting_area_lanelets, &detection_area_lanelets, logger_);
   std::vector<lanelet::CompoundPolygon3d> conflicting_areas = util::getPolygon3dFromLaneletsVec(
-    conflicting_area_lanelets, planner_param_.intersection_param.detection_area_length);
+    conflicting_area_lanelets, planner_param_.detection_area_length);
   if (conflicting_areas.empty()) {
     RCLCPP_DEBUG(logger_, "no detection area. skip computation.");
     return true;
@@ -86,7 +86,7 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(
   const auto private_path =
     extractPathNearExitOfPrivateRoad(*path, planner_data_->vehicle_info_.vehicle_length_m);
   if (!util::generateStopLine(
-        lane_id_, conflicting_areas, planner_data_, planner_param_.intersection_param, path,
+        lane_id_, conflicting_areas, planner_data_, planner_param_.stop_line_margin, path,
         private_path, &stop_line_idx, &judge_line_idx, &first_idx_inside_lane,
         logger_.get_child("util"))) {
     RCLCPP_WARN_SKIPFIRST_THROTTLE(logger_, *clock_, 1000 /* ms */, "setStopLineIdx fail");
@@ -108,7 +108,7 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(
   /* set stop speed */
   if (state_machine_.getState() == State::STOP) {
     constexpr double stop_vel = 0.0;
-    const double decel_vel = planner_param_.intersection_param.decel_velocity;
+    const double decel_vel = planner_param_.decel_velocity;
     double v = (has_traffic_light_ && turn_direction_ == "straight") ? decel_vel : stop_vel;
     util::setVelocityFrom(stop_line_idx, v, path);
 

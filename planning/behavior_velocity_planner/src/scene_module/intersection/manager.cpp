@@ -83,13 +83,47 @@ IntersectionModuleManager::IntersectionModuleManager(rclcpp::Node & node)
   ip.external_input_timeout = node.declare_parameter(ns + ".walkway.external_input_timeout", 1.0);
   ip.collision_start_margin_time = node.declare_parameter(ns + ".collision_start_margin_time", 5.0);
   ip.collision_end_margin_time = node.declare_parameter(ns + ".collision_end_margin_time", 2.0);
+}
+
+MergeFromPrivateModuleManager::MergeFromPrivateModuleManager(rclcpp::Node & node)
+: SceneModuleManagerInterface(node, getModuleName())
+{
+  const std::string ns(getModuleName());
   auto & mp = merge_from_private_area_param_;
   mp.stop_duration_sec =
     node.declare_parameter(ns + ".merge_from_private_area.stop_duration_sec", 1.0);
-  mp.intersection_param = intersection_param_;
+  mp.decel_velocity = node.get_parameter("intersection.decel_velocity").as_double();
+  mp.detection_area_length = node.get_parameter("intersection.detection_area_length").as_double();
+  mp.stop_line_margin = node.get_parameter("intersection.stop_line_margin").as_double();
 }
 
 void IntersectionModuleManager::launchNewModules(
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
+{
+  const auto lanelets = getLaneletsOnPath(path, planner_data_->lanelet_map);
+  for (size_t i = 0; i < lanelets.size(); i++) {
+    const auto ll = lanelets.at(i);
+    const auto lane_id = ll.id();
+    const auto module_id = lane_id;
+
+    if (isModuleRegistered(module_id)) {
+      continue;
+    }
+
+    // Is intersection?
+    const std::string turn_direction = ll.attributeOr("turn_direction", "else");
+    const auto is_intersection =
+      turn_direction == "right" || turn_direction == "left" || turn_direction == "straight";
+    if (!is_intersection) {
+      continue;
+    }
+    registerModule(std::make_shared<IntersectionModule>(
+      module_id, lane_id, planner_data_, intersection_param_,
+      logger_.get_child("intersection_module"), clock_));
+  }
+}
+
+void MergeFromPrivateModuleManager::launchNewModules(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
 {
   const auto lanelets = getLaneletsOnPath(path, planner_data_->lanelet_map);
@@ -121,15 +155,21 @@ void IntersectionModuleManager::launchNewModules(
           logger_.get_child("merge_from_private_road_module"), clock_));
       }
     }
-
-    registerModule(std::make_shared<IntersectionModule>(
-      module_id, lane_id, planner_data_, intersection_param_,
-      logger_.get_child("intersection_module"), clock_));
   }
 }
 
 std::function<bool(const std::shared_ptr<SceneModuleInterface> &)>
 IntersectionModuleManager::getModuleExpiredFunction(
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
+{
+  const auto lane_id_set = getLaneIdSetOnPath(path);
+
+  return [lane_id_set](const std::shared_ptr<SceneModuleInterface> & scene_module) {
+    return lane_id_set.count(scene_module->getModuleId()) == 0;
+  };
+}
+std::function<bool(const std::shared_ptr<SceneModuleInterface> &)>
+MergeFromPrivateModuleManager::getModuleExpiredFunction(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
 {
   const auto lane_id_set = getLaneIdSetOnPath(path);

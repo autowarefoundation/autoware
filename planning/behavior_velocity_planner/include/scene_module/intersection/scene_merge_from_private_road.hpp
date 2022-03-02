@@ -99,7 +99,9 @@ public:
 public:
   struct PlannerParam
   {
-    IntersectionModule::PlannerParam intersection_param;
+    double decel_velocity;
+    double detection_area_length;
+    double stop_line_margin;
     double stop_duration_sec;
   };
 

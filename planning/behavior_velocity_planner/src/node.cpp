@@ -135,7 +135,9 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode(const rclcpp::NodeOptio
     planner_manager_.launchSceneModule(std::make_shared<TrafficLightModuleManager>(*this));
   }
   if (this->declare_parameter("launch_intersection", true)) {
+    // intersection module should be before merge from private to declare intersection parameters
     planner_manager_.launchSceneModule(std::make_shared<IntersectionModuleManager>(*this));
+    planner_manager_.launchSceneModule(std::make_shared<MergeFromPrivateModuleManager>(*this));
   }
   if (this->declare_parameter("launch_blind_spot", true)) {
     planner_manager_.launchSceneModule(std::make_shared<BlindSpotModuleManager>(*this));
