@@ -93,7 +93,7 @@ bool OcclusionSpotInPublicModule::modifyPathVelocity(
       interp_path, param_, offset_from_start_to_ego, filtered_obj);
   utils::calcSlowDownPointsForPossibleCollision(0, interp_path, 0.0, possible_collisions);
   // Note: Consider offset from path start to ego here
-  utils::handleCollisionOffset(possible_collisions, offset_from_start_to_ego, 0.0);
+  utils::handleCollisionOffset(possible_collisions, offset_from_start_to_ego);
   // apply safe velocity using ebs and pbs deceleration
   utils::applySafeVelocityConsideringPossibleCollision(path, possible_collisions, param_);
   if (param_.debug) {

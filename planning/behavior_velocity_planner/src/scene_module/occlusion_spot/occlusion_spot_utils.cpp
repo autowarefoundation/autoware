@@ -146,6 +146,52 @@ void calcSlowDownPointsForPossibleCollision(
   }
 }
 
+void handleCollisionOffset(std::vector<PossibleCollisionInfo> & possible_collisions, double offset)
+{
+  for (auto & pc : possible_collisions) {
+    pc.arc_lane_dist_at_collision.length -= offset;
+  }
+}
+
+void clipPathByLength(
+  const PathWithLaneId & path, PathWithLaneId & clipped, const double max_length)
+{
+  double length_sum = 0;
+  for (int i = 0; i < static_cast<int>(path.points.size()) - 1; i++) {
+    length_sum += tier4_autoware_utils::calcDistance2d(path.points.at(i), path.points.at(i + 1));
+    if (length_sum > max_length) return;
+    clipped.points.emplace_back(path.points.at(i));
+  }
+}
+
+bool isStuckVehicle(PredictedObject obj, const double min_vel)
+{
+  if (
+    obj.classification.at(0).label == ObjectClassification::CAR ||
+    obj.classification.at(0).label == ObjectClassification::TRUCK ||
+    obj.classification.at(0).label == ObjectClassification::BUS) {
+    if (std::abs(obj.kinematics.initial_twist_with_covariance.twist.linear.x) < min_vel) {
+      return true;
+    }
+  }
+  return false;
+}
+
+double offsetFromStartToEgo(
+  const PathWithLaneId & path, const Pose & ego_pose, const int closest_idx)
+{
+  double offset_from_ego_to_closest = 0;
+  for (int i = 0; i < closest_idx; i++) {
+    const auto & curr_p = path.points.at(i).point.pose.position;
+    const auto & next_p = path.points.at(i + 1).point.pose.position;
+    offset_from_ego_to_closest += tier4_autoware_utils::calcDistance2d(curr_p, next_p);
+  }
+  const double offset_from_closest_to_target =
+    -planning_utils::transformRelCoordinate2D(ego_pose, path.points[closest_idx].point.pose)
+       .position.x;
+  return offset_from_ego_to_closest + offset_from_closest_to_target;
+}
+
 std::vector<PredictedObject> getParkedVehicles(
   const PredictedObjects & dyn_objects, const PlannerParam & param,
   std::vector<Point> & debug_point)
@@ -335,21 +381,6 @@ std::vector<PredictedObject> filterDynamicObjectByDetectionArea(
     }
   }
   return filtered_obj;
-}
-
-void filterCollisionByRoadType(
-  std::vector<PossibleCollisionInfo> & possible_collisions, const DetectionAreaIdx area)
-{
-  std::pair<int, int> focus_length = area.get();
-  for (auto it = possible_collisions.begin(); it != possible_collisions.end();) {
-    const auto & pc_len = it->arc_lane_dist_at_collision.length;
-    if (focus_length.first < pc_len && pc_len < focus_length.second) {
-      it++;
-    } else {
-      // -----erase-----|start------target-------end|----erase---
-      it = possible_collisions.erase(it);
-    }
-  }
 }
 
 void createPossibleCollisionsInDetectionArea(
