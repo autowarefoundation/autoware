@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - tier4/proposal
     paths:
       - mkdocs.yaml
       - "**/*.md"
@@ -20,7 +19,7 @@ on:
 
 jobs:
   prevent-no-label-execution:
-    uses: autowarefoundation/autoware-github-actions/.github/workflows/prevent-no-label-execution.yaml@tier4/proposal
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/prevent-no-label-execution.yaml@v1
     with:
       label: documentation
 
@@ -36,6 +35,6 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Deploy docs
-        uses: autowarefoundation/autoware-github-actions/deploy-docs@tier4/proposal
+        uses: autowarefoundation/autoware-github-actions/deploy-docs@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

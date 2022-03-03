@@ -2,7 +2,7 @@ name: delete-closed-pr-docs
 
 on:
   schedule:
-    - cron: 0 19 * * * # run at 4 AM JST
+    - cron: 0 0 * * *
   workflow_dispatch:
 
 jobs:
@@ -15,6 +15,6 @@ jobs:
           fetch-depth: 0
 
       - name: Delete closed PR docs
-        uses: autowarefoundation/autoware-github-actions/delete-closed-pr-docs@tier4/proposal
+        uses: autowarefoundation/autoware-github-actions/delete-closed-pr-docs@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

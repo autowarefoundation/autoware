@@ -3,7 +3,7 @@ name: build-and-test
 on:
   push:
   schedule:
-    - cron: 0 19 * * * # run at 4 AM JST
+    - cron: 0 0 * * *
   workflow_dispatch:
 
 jobs:

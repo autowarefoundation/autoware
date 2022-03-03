@@ -2,7 +2,7 @@ name: build-and-test-self-hosted
 
 on:
   schedule:
-    - cron: 0 19 * * * # run at 4 AM JST
+    - cron: 0 0 * * *
   workflow_dispatch:
 
 jobs:

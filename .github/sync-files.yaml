@@ -27,6 +27,7 @@
     - source: .github/workflows/build-and-test-self-hosted.yaml
     - source: .github/workflows/check-build-depends.yaml
     - source: .github/workflows/clang-tidy-pr-comments.yaml
+    - source: .github/workflows/sync-files.yaml
 
 - repository: autowarefoundation/autoware-documentation
   files:
