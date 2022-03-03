@@ -17,7 +17,7 @@
         <remap from="input/reset" to="input/reset" />
         <param name="visible_range" value="$(var visible_range)" />
         <param name="detection_successful_rate" value="0.999" />
-        <param name="enable_ray_tracing" value="true" />
+        <param name="enable_ray_tracing" value="false" />
         <param name="use_object_recognition" value="$(var use_object_recognition)" />
       </node>
       <include file="$(find-pkg-share shape_estimation)/launch/shape_estimation.launch.xml">

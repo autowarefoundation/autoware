@@ -180,9 +180,7 @@ void DummyPerceptionPublisherNode::timerCallback()
       new pcl::PointCloud<pcl::PointXYZ>);
     pcl::VoxelGridOcclusionEstimation<pcl::PointXYZ> ray_tracing_filter;
     ray_tracing_filter.setInputCloud(merged_pointcloud_ptr);
-    // above this value raytrace won't be as expected
-    const double leaf_size = 0.02;
-    ray_tracing_filter.setLeafSize(leaf_size, leaf_size, leaf_size);
+    ray_tracing_filter.setLeafSize(0.25, 0.25, 0.25);
     ray_tracing_filter.initializeVoxelGrid();
     for (size_t i = 0; i < v_pointcloud.size(); ++i) {
       pcl::PointCloud<pcl::PointXYZ>::Ptr ray_traced_pointcloud_ptr(
