@@ -1733,8 +1733,8 @@ void AvoidanceModule::generateExtendedDrivableArea(ShiftedPath * shifted_path) c
         }
 
         // get previous lane, and return false if previous lane does not exist
-        lanelet::ConstLanelet prev_lane;
-        if (!route_handler->getPreviousLaneletWithinRoute(lane, &prev_lane)) {
+        lanelet::ConstLanelets prev_lanes;
+        if (!route_handler->getPreviousLaneletsWithinRoute(lane, &prev_lanes)) {
           return false;
         }
 
