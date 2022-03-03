@@ -18,7 +18,7 @@ jobs:
           sudo apt-get -y install python3-pip
 
       - name: Register AutonomouStuff repository
-        uses: autowarefoundation/autoware-github-actions/register-autonomoustuff-repository@tier4/proposal
+        uses: autowarefoundation/autoware-github-actions/register-autonomoustuff-repository@v1
         with:
           rosdistro: galactic
 

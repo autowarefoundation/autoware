@@ -11,6 +11,6 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Run pre-commit
-        uses: autowarefoundation/autoware-github-actions/pre-commit@tier4/proposal
+        uses: autowarefoundation/autoware-github-actions/pre-commit@v1
         with:
           pre-commit-config: .pre-commit-config.yaml
