@@ -10,7 +10,7 @@ on:
 
 jobs:
   prevent-no-label-execution:
-    uses: autowarefoundation/autoware-github-actions/.github/workflows/prevent-no-label-execution.yaml@tier4/proposal
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/prevent-no-label-execution.yaml@v1
     with:
       label: ARM64
 
@@ -26,15 +26,15 @@ jobs:
           fetch-depth: 0
 
       - name: Remove exec_depend
-        uses: autowarefoundation/autoware-github-actions/remove-exec-depend@tier4/proposal
+        uses: autowarefoundation/autoware-github-actions/remove-exec-depend@v1
 
       - name: Get modified packages
         id: get-modified-packages
-        uses: autowarefoundation/autoware-github-actions/get-modified-packages@tier4/proposal
+        uses: autowarefoundation/autoware-github-actions/get-modified-packages@v1
 
       - name: Build
         if: ${{ steps.get-modified-packages.outputs.modified-packages != '' }}
-        uses: autowarefoundation/autoware-github-actions/colcon-build@tier4/proposal
+        uses: autowarefoundation/autoware-github-actions/colcon-build@v1
         with:
           rosdistro: galactic
           target-packages: ${{ steps.get-modified-packages.outputs.modified-packages }}
@@ -42,7 +42,7 @@ jobs:
 
       - name: Test
         if: ${{ steps.get-modified-packages.outputs.modified-packages != '' }}
-        uses: autowarefoundation/autoware-github-actions/colcon-test@tier4/proposal
+        uses: autowarefoundation/autoware-github-actions/colcon-test@v1
         with:
           rosdistro: galactic
           target-packages: ${{ steps.get-modified-packages.outputs.modified-packages }}

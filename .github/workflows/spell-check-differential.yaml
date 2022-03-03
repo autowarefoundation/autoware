@@ -11,6 +11,6 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Run spell-check
-        uses: autowarefoundation/autoware-github-actions/spell-check@tier4/proposal
+        uses: autowarefoundation/autoware-github-actions/spell-check@v1
         with:
           cspell-json-url: https://raw.githubusercontent.com/tier4/autoware-spell-check-dict/main/.cspell.json
