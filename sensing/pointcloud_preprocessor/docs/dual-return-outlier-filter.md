@@ -57,7 +57,8 @@ This implementation inherits `pointcloud_preprocessor::Filter` class, please ref
 | `weak_first_distance_ratio`        | double | Threshold for ring_outlier_filter                                                                                         |
 | `general_distance_ratio`           | double | Threshold for ring_outlier_filter                                                                                         |
 | `weak_first_local_noise_threshold` | int    | The parameter for determining whether it is noise                                                                         |
-| `visibility_threshold`             | float  | When the percentage of white pixels in the binary histogram falls below this parameter the diagnostic status becomes WARN |
+| `visibility_error_threshold`       | float  | When the percentage of white pixels in the binary histogram falls below this parameter the diagnostic status becomes ERR  |
+| `visibility_warn_threshold`        | float  | When the percentage of white pixels in the binary histogram falls below this parameter the diagnostic status becomes WARN |
 | `roi_mode`                         | string | The name of ROI mode for switching                                                                                        |
 | `min_azimuth_deg`                  | float  | The left limit of azimuth for `Fixed_azimuth_ROI` mode                                                                    |
 | `max_azimuth_deg`                  | float  | The right limit of azimuth for `Fixed_azimuth_ROI` mode                                                                   |
