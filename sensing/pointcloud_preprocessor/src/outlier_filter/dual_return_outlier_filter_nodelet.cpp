@@ -34,6 +34,15 @@ DualReturnOutlierFilterComponent::DualReturnOutlierFilterComponent(
 {
   // set initial parameters
   {
+    x_max_ = static_cast<float>(declare_parameter("x_max", 18.0));
+    x_min_ = static_cast<float>(declare_parameter("x_min", -12.0));
+    y_max_ = static_cast<float>(declare_parameter("y_max", 2.0));
+    y_min_ = static_cast<float>(declare_parameter("y_min", -2.0));
+    z_max_ = static_cast<float>(declare_parameter("z_max", 10.0));
+    z_min_ = static_cast<float>(declare_parameter("z_min", 0.0));
+    min_azimuth_deg_ = static_cast<float>(declare_parameter("min_azimuth_deg", 135.0));
+    max_azimuth_deg_ = static_cast<float>(declare_parameter("max_azimuth_deg", 225.0));
+    max_distance_ = static_cast<float>(declare_parameter("max_distance", 12.0));
     vertical_bins_ = static_cast<int>(declare_parameter("vertical_bins", 128));
     max_azimuth_diff_ = static_cast<float>(declare_parameter("max_azimuth_diff", 50.0));
     weak_first_distance_ratio_ =
@@ -42,8 +51,9 @@ DualReturnOutlierFilterComponent::DualReturnOutlierFilterComponent(
       static_cast<double>(declare_parameter("general_distance_ratio", 1.03));
 
     weak_first_local_noise_threshold_ =
-      static_cast<int>(declare_parameter("weak_first_local_noise_threshold", 10));
+      static_cast<int>(declare_parameter("weak_first_local_noise_threshold", 2));
     visibility_threshold_ = static_cast<float>(declare_parameter("visibility_threshold", 0.5));
+    roi_mode_ = static_cast<std::string>(declare_parameter("roi_mode", "Fixed_xyz_ROI"));
   }
   updater_.setHardwareID("dual_return_outlier_filter");
   updater_.add(
@@ -93,6 +103,23 @@ void DualReturnOutlierFilterComponent::filter(
 
   uint32_t vertical_bins = vertical_bins_;
   uint32_t horizontal_bins = 36;
+  float max_azimuth = 36000.0f;
+  float min_azimuth = 0.0f;
+  switch (roi_mode_map_[roi_mode_]) {
+    case 2: {
+      max_azimuth = max_azimuth_deg_ * 100.0;
+      min_azimuth = min_azimuth_deg_ * 100.0;
+      break;
+    }
+
+    default: {
+      max_azimuth = 36000.0f;
+      min_azimuth = 0.0f;
+      break;
+    }
+  }
+
+  uint32_t horizontal_res = static_cast<uint32_t>((max_azimuth - min_azimuth) / horizontal_bins);
 
   pcl::PointCloud<return_type_cloud::PointXYZIRADT>::Ptr pcl_output(
     new pcl::PointCloud<return_type_cloud::PointXYZIRADT>);
@@ -124,7 +151,7 @@ void DualReturnOutlierFilterComponent::filter(
     if (weak_first_single_ring.points.size() < 2) {
       continue;
     }
-    std::vector<uint> deleted_azimuths;
+    std::vector<float> deleted_azimuths;
     std::vector<float> deleted_distances;
     pcl::PointCloud<return_type_cloud::PointXYZIRADT> temp_segment;
 
@@ -146,9 +173,35 @@ void DualReturnOutlierFilterComponent::filter(
         // Analyse segment points here
       } else {
         // Log the deleted azimuth and its distance for analysis
-        deleted_azimuths.push_back(iter->azimuth < 0.f ? 0.f : iter->azimuth);
-        deleted_distances.push_back(iter->distance);
-        noise_output->points.push_back(*iter);
+        switch (roi_mode_map_[roi_mode_]) {
+          case 1:  // base_link xyz-ROI
+          {
+            if (
+              iter->x > x_min_ && iter->x < x_max_ && iter->y > y_min_ && iter->y < y_max_ &&
+              iter->z > z_min_ && iter->z < z_max_) {
+              deleted_azimuths.push_back(iter->azimuth < 0.f ? 0.f : iter->azimuth);
+              deleted_distances.push_back(iter->distance);
+              noise_output->points.push_back(*iter);
+            }
+            break;
+          }
+          case 2: {
+            if (
+              iter->azimuth > min_azimuth && iter->azimuth < max_azimuth &&
+              iter->distance < max_distance_) {
+              deleted_azimuths.push_back(iter->azimuth < 0.f ? 0.f : iter->azimuth);
+              noise_output->points.push_back(*iter);
+              deleted_distances.push_back(iter->distance);
+            }
+            break;
+          }
+          default: {
+            deleted_azimuths.push_back(iter->azimuth < 0.f ? 0.f : iter->azimuth);
+            deleted_distances.push_back(iter->distance);
+            noise_output->points.push_back(*iter);
+            break;
+          }
+        }
       }
     }
     // Analyse last segment points here
@@ -160,27 +213,54 @@ void DualReturnOutlierFilterComponent::filter(
         continue;
       }
       while ((uint)deleted_azimuths[current_deleted_index] <
-               ((i + 1) * (36000 / horizontal_bins)) &&
+               ((i + static_cast<uint>(min_azimuth / horizontal_res) + 1) * horizontal_res) &&
              current_deleted_index < (deleted_azimuths.size() - 1)) {
         noise_frequency[i] = noise_frequency[i] + 1;
         current_deleted_index++;
       }
-      if (temp_segment.points.size() == 0) {
-        continue;
-      }
-      while ((temp_segment.points[current_temp_segment_index].azimuth < 0.f
-                ? 0.f
-                : temp_segment.points[current_temp_segment_index].azimuth) <
-               ((i + 1) * (36000 / horizontal_bins)) &&
-             current_temp_segment_index < (temp_segment.points.size() - 1)) {
-        if (noise_frequency[i] < weak_first_local_noise_threshold_) {
-          pcl_output->points.push_back(temp_segment.points[current_temp_segment_index]);
-        } else {
-          noise_frequency[i] = noise_frequency[i] + 1;
-          noise_output->points.push_back(temp_segment.points[current_temp_segment_index]);
+      if (temp_segment.points.size() > 0) {
+        while ((temp_segment.points[current_temp_segment_index].azimuth < 0.f
+                  ? 0.f
+                  : temp_segment.points[current_temp_segment_index].azimuth) <
+                 ((i + 1 + static_cast<uint>(min_azimuth / horizontal_res)) * horizontal_res) &&
+               current_temp_segment_index < (temp_segment.points.size() - 1)) {
+          if (noise_frequency[i] < weak_first_local_noise_threshold_) {
+            pcl_output->points.push_back(temp_segment.points[current_temp_segment_index]);
+          } else {
+            switch (roi_mode_map_[roi_mode_]) {
+              case 1: {
+                if (
+                  temp_segment.points[current_temp_segment_index].x < x_max_ &&
+                  temp_segment.points[current_temp_segment_index].x > x_min_ &&
+                  temp_segment.points[current_temp_segment_index].y > y_max_ &&
+                  temp_segment.points[current_temp_segment_index].y < y_min_ &&
+                  temp_segment.points[current_temp_segment_index].z < z_max_ &&
+                  temp_segment.points[current_temp_segment_index].z > z_min_) {
+                  noise_frequency[i] = noise_frequency[i] + 1;
+                  noise_output->points.push_back(temp_segment.points[current_temp_segment_index]);
+                }
+                break;
+              }
+              case 2: {
+                if (
+                  temp_segment.points[current_temp_segment_index].azimuth < max_azimuth &&
+                  temp_segment.points[current_temp_segment_index].azimuth > min_azimuth &&
+                  temp_segment.points[current_temp_segment_index].distance < max_distance_) {
+                  noise_frequency[i] = noise_frequency[i] + 1;
+                  noise_output->points.push_back(temp_segment.points[current_temp_segment_index]);
+                }
+                break;
+              }
+              default: {
+                noise_frequency[i] = noise_frequency[i] + 1;
+                noise_output->points.push_back(temp_segment.points[current_temp_segment_index]);
+                break;
+              }
+            }
+          }
+          current_temp_segment_index++;
+          frequency_image.at<uchar>(ring_id, i) = noise_frequency[i];
         }
-        current_temp_segment_index++;
-        frequency_image.at<uchar>(ring_id, i) = noise_frequency[i];
       }
     }
   }
@@ -217,6 +297,7 @@ void DualReturnOutlierFilterComponent::filter(
       pcl_output->points.push_back(tmp_p);
     }
   }
+
   // Threshold for diagnostics (tunable)
   cv::Mat binary_image;
   cv::inRange(frequency_image, weak_first_local_noise_threshold_, 255, binary_image);
@@ -230,7 +311,7 @@ void DualReturnOutlierFilterComponent::filter(
   cv::applyColorMap(frequency_image * 4, frequency_image_colorized, cv::COLORMAP_JET);
   sensor_msgs::msg::Image::SharedPtr frequency_image_msg =
     cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", frequency_image_colorized).toImageMsg();
-
+  frequency_image_msg->header = input->header;
   // Publish histogram image
   image_pub_.publish(frequency_image_msg);
   tier4_debug_msgs::msg::Float32Stamped visibility_msg;
