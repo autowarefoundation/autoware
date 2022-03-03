@@ -352,7 +352,7 @@ PredictedPath convertToPredictedPath(
 {
   PredictedPath predicted_path{};
   predicted_path.time_step = rclcpp::Duration::from_seconds(resolution);
-  predicted_path.path.reserve(path.points.size());
+  predicted_path.path.reserve(std::min(path.points.size(), static_cast<size_t>(100)));
   if (path.points.empty()) {
     return predicted_path;
   }
