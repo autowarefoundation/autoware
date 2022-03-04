@@ -17,6 +17,7 @@
 
 #include <lanelet2_extension/utility/query.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <tier4_autoware_utils/trajectory/trajectory.hpp>
 #include <utilization/boost_geometry_helper.hpp>
 
 #include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
@@ -25,6 +26,7 @@
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <autoware_auto_planning_msgs/msg/trajectory.hpp>
 #include <autoware_auto_planning_msgs/msg/trajectory_point.hpp>
+#include <geometry_msgs/msg/point.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/quaternion.hpp>
 #include <tier4_planning_msgs/msg/stop_reason.hpp>
@@ -39,6 +41,7 @@
 #include <pcl/point_types.h>
 #include <tf2/utils.h>
 
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -54,6 +57,17 @@ inline geometry_msgs::msg::Point getPoint(
 
 namespace behavior_velocity_planner
 {
+struct SearchRangeIndex
+{
+  size_t min_idx;
+  size_t max_idx;
+};
+struct PointWithSearchRangeIndex
+{
+  geometry_msgs::msg::Point point;
+  SearchRangeIndex index;
+};
+using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using Point2d = boost::geometry::model::d2::point_xy<double>;
 namespace planning_utils
 {
@@ -124,6 +138,88 @@ geometry_msgs::msg::Pose transformRelCoordinate2D(
   const geometry_msgs::msg::Pose & target, const geometry_msgs::msg::Pose & origin);
 geometry_msgs::msg::Pose transformAbsCoordinate2D(
   const geometry_msgs::msg::Pose & relative, const geometry_msgs::msg::Pose & origin);
+SearchRangeIndex getPathIndexRangeIncludeLaneId(
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const int64_t lane_id);
+/**
+ * @brief find nearest segment index with search range
+ */
+template <class T>
+size_t findNearestSegmentIndex(const T & points, const PointWithSearchRangeIndex & point_with_index)
+{
+  const auto & index = point_with_index.index;
+  const auto point = point_with_index.point;
+
+  tier4_autoware_utils::validateNonEmpty(points);
+
+  double min_dist = std::numeric_limits<double>::max();
+  size_t nearest_idx = 0;
+
+  for (size_t i = index.min_idx; i <= index.max_idx; ++i) {
+    const auto dist = tier4_autoware_utils::calcSquaredDistance2d(points.at(i), point);
+    if (dist < min_dist) {
+      min_dist = dist;
+      nearest_idx = i;
+    }
+  }
+
+  if (nearest_idx == 0) {
+    return 0;
+  }
+  if (nearest_idx == points.size() - 1) {
+    return points.size() - 2;
+  }
+
+  const double signed_length =
+    tier4_autoware_utils::calcLongitudinalOffsetToSegment(points, nearest_idx, point);
+
+  if (signed_length <= 0) {
+    return nearest_idx - 1;
+  }
+
+  return nearest_idx;
+}
+/**
+ * @brief find nearest segment index within distance threshold
+ */
+template <class T>
+PointWithSearchRangeIndex findFirstNearSearchRangeIndex(
+  const T & points, const geometry_msgs::msg::Point & point, const double distance_thresh = 9.0)
+{
+  tier4_autoware_utils::validateNonEmpty(points);
+
+  bool min_idx_found = false;
+  PointWithSearchRangeIndex point_with_range = {point, {static_cast<size_t>(0), points.size() - 1}};
+  for (size_t i = 0; i < points.size(); i++) {
+    const auto & p = points.at(i).point.pose.position;
+    const double dist = std::hypot(point.x - p.x, point.y - p.y);
+    if (dist < distance_thresh) {
+      if (!min_idx_found) {
+        point_with_range.index.min_idx = i;
+        min_idx_found = true;
+      }
+      point_with_range.index.max_idx = i;
+    }
+  }
+  return point_with_range;
+}
+/**
+ * @brief calcSignedArcLength from point to point with search range
+ */
+template <class T>
+double calcSignedArcLengthWithSearchIndex(
+  const T & points, const PointWithSearchRangeIndex & src_point_with_range,
+  const PointWithSearchRangeIndex & dst_point_with_range)
+{
+  tier4_autoware_utils::validateNonEmpty(points);
+  const size_t src_idx = planning_utils::findNearestSegmentIndex(points, src_point_with_range);
+  const size_t dst_idx = planning_utils::findNearestSegmentIndex(points, dst_point_with_range);
+  const double signed_length = tier4_autoware_utils::calcSignedArcLength(points, src_idx, dst_idx);
+  const double signed_length_src_offset = tier4_autoware_utils::calcLongitudinalOffsetToSegment(
+    points, src_idx, src_point_with_range.point);
+  const double signed_length_dst_offset = tier4_autoware_utils::calcLongitudinalOffsetToSegment(
+    points, dst_idx, dst_point_with_range.point);
+  return signed_length - signed_length_src_offset + signed_length_dst_offset;
+}
 Polygon2d toFootprintPolygon(const autoware_auto_perception_msgs::msg::PredictedObject & object);
 bool isAheadOf(const geometry_msgs::msg::Pose & target, const geometry_msgs::msg::Pose & origin);
 Polygon2d generatePathPolygon(

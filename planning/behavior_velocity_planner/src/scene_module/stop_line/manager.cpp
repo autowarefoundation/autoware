@@ -23,12 +23,13 @@ namespace behavior_velocity_planner
 {
 namespace
 {
-std::vector<lanelet::TrafficSignConstPtr> getTrafficSignRegElemsOnPath(
+using TrafficSignsWithLaneId = std::vector<std::pair<lanelet::TrafficSignConstPtr, int64_t>>;
+using StopLineWithLaneId = std::pair<lanelet::ConstLineString3d, int64_t>;
+TrafficSignsWithLaneId getTrafficSignRegElemsOnPath(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
   const lanelet::LaneletMapPtr lanelet_map)
 {
-  std::vector<lanelet::TrafficSignConstPtr> traffic_sign_reg_elems;
-
+  TrafficSignsWithLaneId traffic_signs_reg_elems_with_id;
   std::set<int64_t> unique_lane_ids;
   for (const auto & p : path.points) {
     unique_lane_ids.insert(p.lane_ids.at(0));  // should we iterate ids? keep as it was.
@@ -39,31 +40,34 @@ std::vector<lanelet::TrafficSignConstPtr> getTrafficSignRegElemsOnPath(
 
     const auto tss = ll.regulatoryElementsAs<const lanelet::TrafficSign>();
     for (const auto & ts : tss) {
-      traffic_sign_reg_elems.push_back(ts);
+      traffic_signs_reg_elems_with_id.push_back(std::make_pair(ts, lane_id));
     }
   }
 
-  return traffic_sign_reg_elems;
+  return traffic_signs_reg_elems_with_id;
 }
 
-std::vector<lanelet::ConstLineString3d> getStopLinesOnPath(
+std::vector<StopLineWithLaneId> getStopLinesWithLaneIdOnPath(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
   const lanelet::LaneletMapPtr lanelet_map)
 {
-  std::vector<lanelet::ConstLineString3d> stop_lines;
+  std::vector<StopLineWithLaneId> stop_lines_with_lane_id;
 
-  for (const auto & traffic_sign_reg_elem : getTrafficSignRegElemsOnPath(path, lanelet_map)) {
+  for (const auto & traffic_sign_reg_elem_with_id :
+       getTrafficSignRegElemsOnPath(path, lanelet_map)) {
+    const auto & traffic_sign_reg_elem = traffic_sign_reg_elem_with_id.first;
+    const int64_t lane_id = traffic_sign_reg_elem_with_id.second;
     // Is stop sign?
     if (traffic_sign_reg_elem->type() != "stop_sign") {
       continue;
     }
 
     for (const auto & stop_line : traffic_sign_reg_elem->refLines()) {
-      stop_lines.push_back(stop_line);
+      stop_lines_with_lane_id.push_back(std::make_pair(stop_line, lane_id));
     }
   }
 
-  return stop_lines;
+  return stop_lines_with_lane_id;
 }
 
 std::set<int64_t> getStopLineIdSetOnPath(
@@ -72,8 +76,8 @@ std::set<int64_t> getStopLineIdSetOnPath(
 {
   std::set<int64_t> stop_line_id_set;
 
-  for (const auto & stop_line : getStopLinesOnPath(path, lanelet_map)) {
-    stop_line_id_set.insert(stop_line.id());
+  for (const auto & stop_line_with_lane_id : getStopLinesWithLaneIdOnPath(path, lanelet_map)) {
+    stop_line_id_set.insert(stop_line_with_lane_id.first.id());
   }
 
   return stop_line_id_set;
@@ -94,12 +98,14 @@ StopLineModuleManager::StopLineModuleManager(rclcpp::Node & node)
 void StopLineModuleManager::launchNewModules(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
 {
-  for (const auto & stop_line :
-       getStopLinesOnPath(path, planner_data_->route_handler_->getLaneletMapPtr())) {
-    const auto module_id = stop_line.id();
+  for (const auto & stop_line_with_lane_id :
+       getStopLinesWithLaneIdOnPath(path, planner_data_->route_handler_->getLaneletMapPtr())) {
+    const auto module_id = stop_line_with_lane_id.first.id();
+    const auto lane_id = stop_line_with_lane_id.second;
     if (!isModuleRegistered(module_id)) {
       registerModule(std::make_shared<StopLineModule>(
-        module_id, stop_line, planner_param_, logger_.get_child("stop_line_module"), clock_));
+        module_id, lane_id, stop_line_with_lane_id.first, planner_param_,
+        logger_.get_child("stop_line_module"), clock_));
     }
   }
 }

@@ -17,6 +17,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #define EIGEN_MPL2_ONLY
@@ -26,6 +27,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <scene_module/scene_module_interface.hpp>
 #include <utilization/boost_geometry_helper.hpp>
+#include <utilization/util.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_routing/RoutingGraph.h>
@@ -34,6 +36,8 @@ namespace behavior_velocity_planner
 {
 class StopLineModule : public SceneModuleInterface
 {
+  using StopLineWithLaneId = std::pair<lanelet::ConstLineString3d, int64_t>;
+
 public:
   enum class State { APPROACH, STOPPED, START };
 
@@ -70,7 +74,7 @@ public:
 
 public:
   StopLineModule(
-    const int64_t module_id, const lanelet::ConstLineString3d & stop_line,
+    const int64_t module_id, const size_t lane_id, const lanelet::ConstLineString3d & stop_line,
     const PlannerParam & planner_param, const rclcpp::Logger logger,
     const rclcpp::Clock::SharedPtr clock);
 
@@ -86,7 +90,8 @@ private:
   geometry_msgs::msg::Point getCenterOfStopLine(const lanelet::ConstLineString3d & stop_line);
 
   boost::optional<StopLineModule::SegmentIndexWithPoint2d> findCollision(
-    const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const LineString2d & stop_line);
+    const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const LineString2d & stop_line,
+    const SearchRangeIndex & search_index);
 
   boost::optional<StopLineModule::SegmentIndexWithOffset> findOffsetSegment(
     const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
@@ -102,6 +107,7 @@ private:
     tier4_planning_msgs::msg::StopReason * stop_reason);
 
   lanelet::ConstLineString3d stop_line_;
+  int64_t lane_id_;
   State state_;
 
   // Parameter
