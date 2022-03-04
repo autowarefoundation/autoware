@@ -56,7 +56,8 @@ IntersectionModule::IntersectionModule(
 : SceneModuleInterface(module_id, logger, clock), lane_id_(lane_id)
 {
   planner_param_ = planner_param;
-  const auto & assigned_lanelet = planner_data->lanelet_map->laneletLayer.get(lane_id);
+  const auto & assigned_lanelet =
+    planner_data->route_handler_->getLaneletMapPtr()->laneletLayer.get(lane_id);
   turn_direction_ = assigned_lanelet.attributeOr("turn_direction", "else");
   has_traffic_light_ =
     !(assigned_lanelet.regulatoryElementsAs<const lanelet::TrafficLight>().empty());
@@ -85,8 +86,8 @@ bool IntersectionModule::modifyPathVelocity(
   geometry_msgs::msg::PoseStamped current_pose = planner_data_->current_pose;
 
   /* get lanelet map */
-  const auto lanelet_map_ptr = planner_data_->lanelet_map;
-  const auto routing_graph_ptr = planner_data_->routing_graph;
+  const auto lanelet_map_ptr = planner_data_->route_handler_->getLaneletMapPtr();
+  const auto routing_graph_ptr = planner_data_->route_handler_->getRoutingGraphPtr();
 
   /* get detection area and conflicting area */
   std::vector<lanelet::ConstLanelets> detection_area_lanelets;
@@ -603,7 +604,7 @@ bool IntersectionModule::checkAngleForTargetLanelets(
   const geometry_msgs::msg::Pose & pose, const std::vector<int> & target_lanelet_ids)
 {
   for (const int lanelet_id : target_lanelet_ids) {
-    const auto ll = planner_data_->lanelet_map->laneletLayer.get(lanelet_id);
+    const auto ll = planner_data_->route_handler_->getLaneletMapPtr()->laneletLayer.get(lanelet_id);
     if (!lanelet::utils::isInLanelet(pose, ll, planner_param_.detection_area_margin)) {
       continue;
     }

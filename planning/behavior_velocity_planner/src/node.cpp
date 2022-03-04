@@ -180,7 +180,10 @@ bool BehaviorVelocityPlannerNode::isDataReady()
   if (!d.no_ground_pointcloud) {
     return false;
   }
-  if (!d.lanelet_map) {
+  if (!d.route_handler_) {
+    return false;
+  }
+  if (!d.route_handler_->isMapMsgReady()) {
     return false;
   }
 
@@ -252,32 +255,7 @@ void BehaviorVelocityPlannerNode::onLaneletMap(
   const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr msg)
 {
   // Load map
-  planner_data_.lanelet_map = std::make_shared<lanelet::LaneletMap>();
-  lanelet::utils::conversion::fromBinMsg(
-    *msg, planner_data_.lanelet_map, &planner_data_.traffic_rules, &planner_data_.routing_graph);
-
-  // Build graph
-  {
-    using lanelet::Locations;
-    using lanelet::Participants;
-    using lanelet::routing::RoutingGraph;
-    using lanelet::routing::RoutingGraphConstPtr;
-    using lanelet::routing::RoutingGraphContainer;
-    using lanelet::traffic_rules::TrafficRulesFactory;
-
-    const auto traffic_rules =
-      TrafficRulesFactory::create(Locations::Germany, Participants::Vehicle);
-    const auto pedestrian_rules =
-      TrafficRulesFactory::create(Locations::Germany, Participants::Pedestrian);
-
-    RoutingGraphConstPtr vehicle_graph =
-      RoutingGraph::build(*planner_data_.lanelet_map, *traffic_rules);
-    RoutingGraphConstPtr pedestrian_graph =
-      RoutingGraph::build(*planner_data_.lanelet_map, *pedestrian_rules);
-    RoutingGraphContainer overall_graphs({vehicle_graph, pedestrian_graph});
-
-    planner_data_.overall_graphs = std::make_shared<const RoutingGraphContainer>(overall_graphs);
-  }
+  planner_data_.route_handler_ = std::make_shared<route_handler::RouteHandler>(*msg);
 }
 
 void BehaviorVelocityPlannerNode::onTrafficSignals(

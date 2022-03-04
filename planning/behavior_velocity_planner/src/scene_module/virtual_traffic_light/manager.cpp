@@ -81,8 +81,8 @@ VirtualTrafficLightModuleManager::VirtualTrafficLightModuleManager(rclcpp::Node 
 void VirtualTrafficLightModuleManager::launchNewModules(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
 {
-  for (const auto & m :
-       getRegElemMapOnPath<VirtualTrafficLight>(path, planner_data_->lanelet_map)) {
+  for (const auto & m : getRegElemMapOnPath<VirtualTrafficLight>(
+         path, planner_data_->route_handler_->getLaneletMapPtr())) {
     // Use lanelet_id to unregister module when the route is changed
     const auto module_id = m.second.id();
     if (!isModuleRegistered(module_id)) {
@@ -97,7 +97,8 @@ std::function<bool(const std::shared_ptr<SceneModuleInterface> &)>
 VirtualTrafficLightModuleManager::getModuleExpiredFunction(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
 {
-  const auto id_set = getLaneletIdSetOnPath(path, planner_data_->lanelet_map);
+  const auto id_set =
+    getLaneletIdSetOnPath(path, planner_data_->route_handler_->getLaneletMapPtr());
 
   return [id_set](const std::shared_ptr<SceneModuleInterface> & scene_module) {
     return id_set.count(scene_module->getModuleId()) == 0;

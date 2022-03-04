@@ -100,7 +100,7 @@ MergeFromPrivateModuleManager::MergeFromPrivateModuleManager(rclcpp::Node & node
 void IntersectionModuleManager::launchNewModules(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
 {
-  const auto lanelets = getLaneletsOnPath(path, planner_data_->lanelet_map);
+  const auto lanelets = getLaneletsOnPath(path, planner_data_->route_handler_->getLaneletMapPtr());
   for (size_t i = 0; i < lanelets.size(); i++) {
     const auto ll = lanelets.at(i);
     const auto lane_id = ll.id();
@@ -126,7 +126,7 @@ void IntersectionModuleManager::launchNewModules(
 void MergeFromPrivateModuleManager::launchNewModules(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
 {
-  const auto lanelets = getLaneletsOnPath(path, planner_data_->lanelet_map);
+  const auto lanelets = getLaneletsOnPath(path, planner_data_->route_handler_->getLaneletMapPtr());
   for (size_t i = 0; i < lanelets.size(); i++) {
     const auto ll = lanelets.at(i);
     const auto lane_id = ll.id();

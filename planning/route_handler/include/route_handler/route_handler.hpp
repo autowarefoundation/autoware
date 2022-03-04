@@ -73,7 +73,13 @@ public:
   bool isHandlerReady() const;
   lanelet::ConstPolygon3d getExtraDrivableAreaById(const lanelet::Id id) const;
   Header getRouteHeader() const;
-  lanelet::routing::RoutingGraphContainer getOverallGraph() const;
+
+  // for routing graph
+  bool isMapMsgReady() const;
+  lanelet::routing::RoutingGraphPtr getRoutingGraphPtr() const;
+  lanelet::traffic_rules::TrafficRulesPtr getTrafficRulesPtr() const;
+  std::shared_ptr<const lanelet::routing::RoutingGraphContainer> getOverallGraphPtr() const;
+  lanelet::LaneletMapPtr getLaneletMapPtr() const;
 
   // for routing
   bool planPathLaneletsBetweenCheckpoints(

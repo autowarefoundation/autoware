@@ -60,12 +60,9 @@ bool OcclusionSpotInPublicModule::modifyPathVelocity(
       0.0);
   }
   const geometry_msgs::msg::Pose ego_pose = planner_data_->current_pose.pose;
-  const auto & lanelet_map_ptr = planner_data_->lanelet_map;
-  const auto & routing_graph_ptr = planner_data_->routing_graph;
-  const auto & traffic_rules_ptr = planner_data_->traffic_rules;
   const auto & dynamic_obj_arr_ptr = planner_data_->predicted_objects;
 
-  if (!lanelet_map_ptr || !traffic_rules_ptr || !dynamic_obj_arr_ptr || !routing_graph_ptr) {
+  if (!dynamic_obj_arr_ptr) {
     return true;
   }
   PathWithLaneId clipped_path;

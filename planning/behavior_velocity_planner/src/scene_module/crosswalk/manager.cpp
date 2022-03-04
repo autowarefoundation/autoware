@@ -90,8 +90,9 @@ CrosswalkModuleManager::CrosswalkModuleManager(rclcpp::Node & node)
 void CrosswalkModuleManager::launchNewModules(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
 {
+  const auto rh = planner_data_->route_handler_;
   for (const auto & crosswalk :
-       getCrosswalksOnPath(path, planner_data_->lanelet_map, planner_data_->overall_graphs)) {
+       getCrosswalksOnPath(path, rh->getLaneletMapPtr(), rh->getOverallGraphPtr())) {
     const auto module_id = crosswalk.id();
     if (!isModuleRegistered(module_id)) {
       registerModule(std::make_shared<CrosswalkModule>(
@@ -112,8 +113,9 @@ std::function<bool(const std::shared_ptr<SceneModuleInterface> &)>
 CrosswalkModuleManager::getModuleExpiredFunction(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
 {
+  const auto rh = planner_data_->route_handler_;
   const auto crosswalk_id_set =
-    getCrosswalkIdSetOnPath(path, planner_data_->lanelet_map, planner_data_->overall_graphs);
+    getCrosswalkIdSetOnPath(path, rh->getLaneletMapPtr(), rh->getOverallGraphPtr());
 
   return [crosswalk_id_set](const std::shared_ptr<SceneModuleInterface> & scene_module) {
     return crosswalk_id_set.count(scene_module->getModuleId()) == 0;

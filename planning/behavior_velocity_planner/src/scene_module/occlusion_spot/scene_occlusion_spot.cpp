@@ -60,10 +60,8 @@ bool OcclusionSpotModule::modifyPathVelocity(
       0.0);
   }
   const geometry_msgs::msg::Pose ego_pose = planner_data_->current_pose.pose;
-  const auto & lanelet_map_ptr = planner_data_->lanelet_map;
-  const auto & traffic_rules_ptr = planner_data_->traffic_rules;
   const auto & occ_grid_ptr = planner_data_->occupancy_grid;
-  if (!lanelet_map_ptr || !traffic_rules_ptr || !occ_grid_ptr) {
+  if (!occ_grid_ptr) {
     return true;
   }
 

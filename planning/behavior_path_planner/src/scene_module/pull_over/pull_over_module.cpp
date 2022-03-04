@@ -353,8 +353,9 @@ std::pair<bool, bool> PullOverModule::getSafePath(
 
     // select valid path
     valid_paths = pull_over_utils::selectValidPaths(
-      pull_over_paths, current_lanes, check_lanes, route_handler->getOverallGraph(), current_pose,
-      route_handler->isInGoalRouteSection(current_lanes.back()), route_handler->getGoalPose());
+      pull_over_paths, current_lanes, check_lanes, *route_handler->getOverallGraphPtr(),
+      current_pose, route_handler->isInGoalRouteSection(current_lanes.back()),
+      route_handler->getGoalPose());
 
     if (valid_paths.empty()) {
       return std::make_pair(false, false);

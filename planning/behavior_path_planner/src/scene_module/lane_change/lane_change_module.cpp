@@ -338,8 +338,9 @@ std::pair<bool, bool> LaneChangeModule::getSafePath(
 
     // select valid path
     valid_paths = lane_change_utils::selectValidPaths(
-      lane_change_paths, current_lanes, check_lanes, route_handler->getOverallGraph(), current_pose,
-      route_handler->isInGoalRouteSection(current_lanes.back()), route_handler->getGoalPose());
+      lane_change_paths, current_lanes, check_lanes, *route_handler->getOverallGraphPtr(),
+      current_pose, route_handler->isInGoalRouteSection(current_lanes.back()),
+      route_handler->getGoalPose());
 
     if (valid_paths.empty()) {
       return std::make_pair(false, false);

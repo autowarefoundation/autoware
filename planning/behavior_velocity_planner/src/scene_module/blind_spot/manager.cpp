@@ -70,7 +70,8 @@ BlindSpotModuleManager::BlindSpotModuleManager(rclcpp::Node & node)
 void BlindSpotModuleManager::launchNewModules(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
 {
-  for (const auto & ll : getLaneletsOnPath(path, planner_data_->lanelet_map)) {
+  for (const auto & ll :
+       getLaneletsOnPath(path, planner_data_->route_handler_->getLaneletMapPtr())) {
     const auto lane_id = ll.id();
     const auto module_id = lane_id;
 

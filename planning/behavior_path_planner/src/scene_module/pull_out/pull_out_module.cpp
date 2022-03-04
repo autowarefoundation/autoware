@@ -422,7 +422,7 @@ std::pair<bool, bool> PullOutModule::getSafePath(
 
     // select valid path
     valid_paths = pull_out_utils::selectValidPaths(
-      pull_out_paths, road_lanes, check_lanes, route_handler->getOverallGraph(), current_pose,
+      pull_out_paths, road_lanes, check_lanes, *route_handler->getOverallGraphPtr(), current_pose,
       route_handler->isInGoalRouteSection(road_lanes.back()), route_handler->getGoalPose());
 
     if (valid_paths.empty()) {
@@ -493,7 +493,7 @@ std::pair<bool, bool> PullOutModule::getSafeRetreatPath(
 
     // select valid path
     valid_paths = pull_out_utils::selectValidPaths(
-      pull_out_paths, road_lanes, check_lanes, route_handler->getOverallGraph(), current_pose,
+      pull_out_paths, road_lanes, check_lanes, *route_handler->getOverallGraphPtr(), current_pose,
       route_handler->isInGoalRouteSection(road_lanes.back()), route_handler->getGoalPose());
 
     if (valid_paths.empty()) {
@@ -574,7 +574,7 @@ bool PullOutModule::getBackDistance(
 
       // select valid path
       valid_paths = pull_out_utils::selectValidPaths(
-        pull_out_paths, road_lanes, check_lanes, route_handler->getOverallGraph(), current_pose,
+        pull_out_paths, road_lanes, check_lanes, *route_handler->getOverallGraphPtr(), current_pose,
         route_handler->isInGoalRouteSection(road_lanes.back()), route_handler->getGoalPose());
 
       if (valid_paths.empty()) {

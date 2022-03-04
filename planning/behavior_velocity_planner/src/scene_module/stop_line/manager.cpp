@@ -94,7 +94,8 @@ StopLineModuleManager::StopLineModuleManager(rclcpp::Node & node)
 void StopLineModuleManager::launchNewModules(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
 {
-  for (const auto & stop_line : getStopLinesOnPath(path, planner_data_->lanelet_map)) {
+  for (const auto & stop_line :
+       getStopLinesOnPath(path, planner_data_->route_handler_->getLaneletMapPtr())) {
     const auto module_id = stop_line.id();
     if (!isModuleRegistered(module_id)) {
       registerModule(std::make_shared<StopLineModule>(
@@ -107,7 +108,8 @@ std::function<bool(const std::shared_ptr<SceneModuleInterface> &)>
 StopLineModuleManager::getModuleExpiredFunction(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
 {
-  const auto stop_line_id_set = getStopLineIdSetOnPath(path, planner_data_->lanelet_map);
+  const auto stop_line_id_set =
+    getStopLineIdSetOnPath(path, planner_data_->route_handler_->getLaneletMapPtr());
 
   return [stop_line_id_set](const std::shared_ptr<SceneModuleInterface> & scene_module) {
     return stop_line_id_set.count(scene_module->getModuleId()) == 0;

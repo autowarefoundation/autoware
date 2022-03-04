@@ -265,7 +265,8 @@ bool getStopPoseIndexFromMap(
   const std::shared_ptr<const PlannerData> & planner_data, int & stop_idx_ip, int dist_thr,
   const rclcpp::Logger logger)
 {
-  lanelet::ConstLanelet lanelet = planner_data->lanelet_map->laneletLayer.get(lane_id);
+  lanelet::ConstLanelet lanelet =
+    planner_data->route_handler_->getLaneletMapPtr()->laneletLayer.get(lane_id);
   const auto road_markings = lanelet.regulatoryElementsAs<lanelet::autoware::RoadMarking>();
   lanelet::ConstLineStrings3d stop_line;
   for (const auto & road_marking : road_markings) {
