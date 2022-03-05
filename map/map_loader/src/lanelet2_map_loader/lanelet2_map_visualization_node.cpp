@@ -95,6 +95,7 @@ void Lanelet2MapVisualizationNode::onMapBin(
   lanelet::ConstLanelets shoulder_lanelets = lanelet::utils::query::shoulderLanelets(all_lanelets);
   lanelet::ConstLanelets crosswalk_lanelets =
     lanelet::utils::query::crosswalkLanelets(all_lanelets);
+  lanelet::ConstLineStrings3d partitions = lanelet::utils::query::getAllPartitions(viz_lanelet_map);
   lanelet::ConstLineStrings3d pedestrian_markings =
     lanelet::utils::query::getAllPedestrianMarkings(viz_lanelet_map);
   lanelet::ConstLanelets walkway_lanelets = lanelet::utils::query::walkwayLanelets(all_lanelets);
@@ -114,12 +115,13 @@ void Lanelet2MapVisualizationNode::onMapBin(
   lanelet::ConstPolygons3d obstacle_polygons =
     lanelet::utils::query::getAllObstaclePolygons(viz_lanelet_map);
 
-  std_msgs::msg::ColorRGBA cl_road, cl_shoulder, cl_cross, cl_pedestrian_markings, cl_ll_borders,
-    cl_shoulder_borders, cl_stoplines, cl_trafficlights, cl_detection_areas, cl_parking_lots,
-    cl_parking_spaces, cl_lanelet_id, cl_obstacle_polygons, cl_no_stopping_areas;
+  std_msgs::msg::ColorRGBA cl_road, cl_shoulder, cl_cross, cl_partitions, cl_pedestrian_markings,
+    cl_ll_borders, cl_shoulder_borders, cl_stoplines, cl_trafficlights, cl_detection_areas,
+    cl_parking_lots, cl_parking_spaces, cl_lanelet_id, cl_obstacle_polygons, cl_no_stopping_areas;
   setColor(&cl_road, 0.27, 0.27, 0.27, 0.999);
   setColor(&cl_shoulder, 0.15, 0.15, 0.15, 0.999);
   setColor(&cl_cross, 0.27, 0.3, 0.27, 0.5);
+  setColor(&cl_partitions, 0.25, 0.25, 0.25, 0.999);
   setColor(&cl_pedestrian_markings, 0.5, 0.5, 0.5, 0.999);
   setColor(&cl_ll_borders, 0.5, 0.5, 0.5, 0.999);
   setColor(&cl_shoulder_borders, 0.2, 0.2, 0.2, 0.999);
@@ -137,6 +139,9 @@ void Lanelet2MapVisualizationNode::onMapBin(
   insertMarkerArray(
     &map_marker_array,
     lanelet::visualization::lineStringsAsMarkerArray(stop_lines, "stop_lines", cl_stoplines, 0.5));
+  insertMarkerArray(
+    &map_marker_array,
+    lanelet::visualization::lineStringsAsMarkerArray(partitions, "partitions", cl_partitions, 0.1));
   insertMarkerArray(
     &map_marker_array,
     lanelet::visualization::laneletDirectionAsMarkerArray(shoulder_lanelets, "shoulder_"));

@@ -241,6 +241,20 @@ lanelet::ConstPolygons3d query::getAllParkingLots(
   return parking_lots;
 }
 
+lanelet::ConstLineStrings3d query::getAllPartitions(
+  const lanelet::LaneletMapConstPtr & lanelet_map_ptr)
+{
+  lanelet::ConstLineStrings3d partitions;
+  for (const auto & ls : lanelet_map_ptr->lineStringLayer) {
+    const std::string type = ls.attributeOr(lanelet::AttributeName::Type, "none");
+    if (
+      type.compare("guard_rail") == 0 || type.compare("fence") == 0 || type.compare("wall") == 0) {
+      partitions.push_back(ls);
+    }
+  }
+  return partitions;
+}
+
 lanelet::ConstLineStrings3d query::getAllPedestrianMarkings(
   const lanelet::LaneletMapConstPtr & lanelet_map_ptr)
 {
