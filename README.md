@@ -142,4 +142,4 @@ Suppose that you've set up a workspace.
    ros2 launch autoware_launch planning_simulator.launch.xml vehicle_model:=sample_vehicle sensor_model:=sample_sensor_kit map_path:=$HOME/Downloads/sample_map
    ```
 
-> Note: More tutorials will be written [here](https://autowarefoundation.github.io/autoware-documentation/tier4-proposal/) soon.
+> Note: More tutorials will be written [here](https://autowarefoundation.github.io/autoware-documentation/) soon.
