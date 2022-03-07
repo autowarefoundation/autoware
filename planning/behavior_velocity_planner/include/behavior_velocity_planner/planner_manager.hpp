@@ -46,7 +46,7 @@ public:
     const std::shared_ptr<const PlannerData> & planner_data,
     const autoware_auto_planning_msgs::msg::PathWithLaneId & input_path_msg);
 
-  diagnostic_msgs::msg::DiagnosticStatus getStopReasonDiag();
+  diagnostic_msgs::msg::DiagnosticStatus getStopReasonDiag() const;
 
 private:
   std::vector<std::shared_ptr<SceneModuleManagerInterface>> scene_manager_ptrs_;
