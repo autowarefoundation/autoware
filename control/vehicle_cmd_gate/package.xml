@@ -20,8 +20,8 @@
   <depend>tier4_control_msgs</depend>
   <depend>tier4_debug_msgs</depend>
   <depend>tier4_external_api_msgs</depend>
+  <depend>tier4_vehicle_msgs</depend>
   <depend>vehicle_info_util</depend>
-　<depend>tier4_vehicle_msgs</depend>
 
   <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_lint_auto</test_depend>
