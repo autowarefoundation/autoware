@@ -342,7 +342,7 @@ void VehicleCmdGate::onTimer()
   } else {
     if (current_gate_mode_.data == tier4_control_msgs::msg::GateMode::AUTO) {
       turn_indicator = auto_commands_.turn_indicator;
-      hazard_light = emergency_commands_.hazard_light;
+      hazard_light = auto_commands_.hazard_light;
       gear = auto_commands_.gear;
 
       // Don't send turn signal when autoware is not engaged
