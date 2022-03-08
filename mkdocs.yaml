@@ -52,6 +52,7 @@ plugins:
       regex:
         - ^(?!(.*/)?assets/).*\.(?!(.*\.)?md|(.*\.)?svg|(.*\.)?png|(.*\.)?jpg).*$
         - ^(.*/)?[^.]*$
+  - macros
   - same-dir
   - search
 
