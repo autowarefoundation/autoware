@@ -32,8 +32,12 @@ private:
 
   rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_pub_;
 
+  double angular_velocity_offset_x_;
+  double angular_velocity_offset_y_;
   double angular_velocity_offset_z_;
 
+  double angular_velocity_stddev_xx_;
+  double angular_velocity_stddev_yy_;
   double angular_velocity_stddev_zz_;
 };
 }  // namespace imu_corrector

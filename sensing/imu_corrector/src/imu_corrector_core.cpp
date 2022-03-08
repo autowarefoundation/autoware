@@ -19,8 +19,12 @@ namespace imu_corrector
 ImuCorrector::ImuCorrector(const rclcpp::NodeOptions & node_options)
 : Node("imu_corrector", node_options)
 {
+  angular_velocity_offset_x_ = declare_parameter<double>("angular_velocity_offset_x", 0.0);
+  angular_velocity_offset_y_ = declare_parameter<double>("angular_velocity_offset_y", 0.0);
   angular_velocity_offset_z_ = declare_parameter<double>("angular_velocity_offset_z", 0.0);
 
+  angular_velocity_stddev_xx_ = declare_parameter<double>("angular_velocity_stddev_xx", 0.03);
+  angular_velocity_stddev_yy_ = declare_parameter<double>("angular_velocity_stddev_yy", 0.03);
   angular_velocity_stddev_zz_ = declare_parameter<double>("angular_velocity_stddev_zz", 0.03);
 
   imu_sub_ = create_subscription<sensor_msgs::msg::Imu>(
@@ -34,9 +38,15 @@ void ImuCorrector::callbackImu(const sensor_msgs::msg::Imu::ConstSharedPtr imu_m
   sensor_msgs::msg::Imu imu_msg;
   imu_msg = *imu_msg_ptr;
 
+  imu_msg.angular_velocity.x += angular_velocity_offset_x_;
+  imu_msg.angular_velocity.y += angular_velocity_offset_y_;
   imu_msg.angular_velocity.z += angular_velocity_offset_z_;
 
-  imu_msg.angular_velocity_covariance[8] =
+  imu_msg.angular_velocity_covariance[0 * 3 + 0] =
+    angular_velocity_stddev_xx_ * angular_velocity_stddev_xx_;
+  imu_msg.angular_velocity_covariance[1 * 3 + 1] =
+    angular_velocity_stddev_yy_ * angular_velocity_stddev_yy_;
+  imu_msg.angular_velocity_covariance[2 * 3 + 2] =
     angular_velocity_stddev_zz_ * angular_velocity_stddev_zz_;
 
   imu_pub_->publish(imu_msg);
