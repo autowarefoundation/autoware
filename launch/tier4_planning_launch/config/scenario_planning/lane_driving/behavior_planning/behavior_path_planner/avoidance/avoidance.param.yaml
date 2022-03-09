@@ -45,3 +45,6 @@
       # not enabled yet
       longitudinal_collision_margin_min_distance: 0.0          # [m]
       longitudinal_collision_margin_time: 0.0
+
+      # ---------- advanced parameters ----------
+      avoidance_execution_lateral_threshold: 0.499

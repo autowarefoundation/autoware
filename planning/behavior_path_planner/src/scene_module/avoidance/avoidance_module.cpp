@@ -2249,9 +2249,6 @@ boost::optional<AvoidPointArray> AvoidanceModule::findNewShiftPoint(
       ap.getRelativeLength(), ap.getRelativeLongitudinal(), getSharpAvoidanceEgoSpeed());
   };
 
-  // TODO(Horibe) maybe this value must be same with trimSmallShift's.
-  constexpr double NEW_POINT_THRESHOLD = 0.5 - 1.0e-3;
-
   for (size_t i = 0; i < candidates.size(); ++i) {
     const auto & candidate = candidates.at(i);
     std::stringstream ss;
@@ -2279,7 +2276,8 @@ boost::optional<AvoidPointArray> AvoidanceModule::findNewShiftPoint(
     // TODO(Horibe) test fails with this print. why?
     // DEBUG_PRINT("%s, shift current: %f, candidate: %f", pfx, current_shift, candidate.length);
 
-    if (std::abs(candidate.length - current_shift) > NEW_POINT_THRESHOLD) {
+    const auto new_point_threshold = parameters_.avoidance_execution_lateral_threshold;
+    if (std::abs(candidate.length - current_shift) > new_point_threshold) {
       DEBUG_PRINT(
         "%s, New shift point is found!!! shift change: %f -> %f", pfx, current_shift,
         candidate.length);

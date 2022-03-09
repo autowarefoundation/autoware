@@ -140,6 +140,12 @@ struct AvoidanceParameters
   // turn signal is not turned on.
   double avoidance_search_distance;
 
+  // The avoidance path generation is performed when the shift distance of the
+  // avoidance points is greater than this threshold.
+  // In multiple targets case: if there are multiple vehicles in a row to be avoided, no new
+  // avoidance path will be generated unless their lateral margin difference exceeds this value.
+  double avoidance_execution_lateral_threshold;
+
   // debug
   bool publish_debug_marker = false;
   bool print_debug_info = false;

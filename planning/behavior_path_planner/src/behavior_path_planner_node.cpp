@@ -244,6 +244,8 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
   p.publish_debug_marker = dp("publish_debug_marker", false);
   p.print_debug_info = dp("print_debug_info", false);
 
+  p.avoidance_execution_lateral_threshold = dp("avoidance_execution_lateral_threshold", 0.499);
+
   return p;
 }
 
