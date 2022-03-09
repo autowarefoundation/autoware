@@ -1,9 +1,8 @@
 # autoware
 
-This is one of the prototype repositories for Autoware Core/Universe that AWF agreed to create in the [TSC meeting on 2021/11/17](https://discourse.ros.org/t/technical-steering-committee-tsc-meeting-36-2021-11-17-minutes/23168).
-Tier IV and AWF members are working in `tier4/proposal` branch for showing the possibility of moving from GitLab to GitHub.
+This is one of the repositories for Autoware Core/Universe that AWF agreed in the [TSC meeting on 2021/11/17](https://discourse.ros.org/t/technical-steering-committee-tsc-meeting-36-2021-11-17-minutes/23168).
 
-This is the list of the prototype repositories and their roles.
+The following is the list of the repositories and their roles.
 
 - [autowarefoundation/autoware](https://github.com/autowarefoundation/autoware)
   - This is a meta-repository that contains `.repos` files to construct a workspace.
