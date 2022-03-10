@@ -106,6 +106,13 @@ bool splineInterpolate(
     output->points.front().point.pose.orientation = output->points.at(1).point.pose.orientation;
     output->points.back().point.pose.orientation = output->points.at(l - 2).point.pose.orientation;
   }
+
+  // insert final point on path if its position is not same point as interpolated
+  const auto & op = output->points.back().point.pose.position;
+  const auto & ip = input.points.back().point.pose.position;
+  if (std::hypot(op.x - ip.x, op.y - ip.y) > ep) {
+    output->points.emplace_back(input.points.back());
+  }
   return true;
 }
 

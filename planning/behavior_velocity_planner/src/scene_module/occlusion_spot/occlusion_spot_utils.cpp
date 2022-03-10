@@ -157,8 +157,9 @@ void clipPathByLength(
   const PathWithLaneId & path, PathWithLaneId & clipped, const double max_length)
 {
   double length_sum = 0;
-  for (int i = 0; i < static_cast<int>(path.points.size()) - 1; i++) {
-    length_sum += tier4_autoware_utils::calcDistance2d(path.points.at(i), path.points.at(i + 1));
+  clipped.points.emplace_back(path.points.front());
+  for (int i = 1; i < static_cast<int>(path.points.size()); i++) {
+    length_sum += tier4_autoware_utils::calcDistance2d(path.points.at(i - 1), path.points.at(i));
     if (length_sum > max_length) return;
     clipped.points.emplace_back(path.points.at(i));
   }
