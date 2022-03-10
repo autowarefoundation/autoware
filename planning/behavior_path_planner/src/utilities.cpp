@@ -34,18 +34,19 @@ double quantize(const double val, const double resolution)
 }
 
 void updateMinMaxPosition(
-  const Eigen::Vector2d & point, double & min_x, double & min_y, double & max_x, double & max_y)
+  const Eigen::Vector2d & point, boost::optional<double> & min_x, boost::optional<double> & min_y,
+  boost::optional<double> & max_x, boost::optional<double> & max_y)
 {
-  min_x = std::min(min_x, point.x());
-  min_y = std::min(min_y, point.y());
-  max_x = std::max(max_x, point.x());
-  max_y = std::max(max_y, point.y());
+  min_x = min_x ? std::min(min_x.get(), point.x()) : point.x();
+  min_y = min_y ? std::min(min_y.get(), point.y()) : point.y();
+  max_x = max_x ? std::max(max_x.get(), point.x()) : point.x();
+  max_y = max_y ? std::max(max_y.get(), point.y()) : point.y();
 }
 
 bool sumLengthFromTwoPoints(
   const Eigen::Vector2d & base_point, const Eigen::Vector2d & target_point,
-  const double length_threshold, double & sum_length, double & min_x, double & min_y,
-  double & max_x, double & max_y)
+  const double length_threshold, double & sum_length, boost::optional<double> & min_x,
+  boost::optional<double> & min_y, boost::optional<double> & max_x, boost::optional<double> & max_y)
 {
   const double norm_length = (base_point - target_point).norm();
   sum_length += norm_length;
@@ -80,10 +81,10 @@ std::array<double, 4> getLaneletScope(
       }};
 
   // calculate min/max x and y
-  double min_x = current_pose.position.x;
-  double min_y = current_pose.position.y;
-  double max_x = current_pose.position.x;
-  double max_y = current_pose.position.y;
+  boost::optional<double> min_x;
+  boost::optional<double> min_y;
+  boost::optional<double> max_x;
+  boost::optional<double> max_y;
 
   for (const auto & get_bound_func : get_bound_funcs) {
     // search nearest point index to current pose
@@ -199,7 +200,13 @@ std::array<double, 4> getLaneletScope(
     }
   }
 
-  return {min_x, min_y, max_x, max_y};
+  if (!min_x || !min_y || !max_x || !max_y) {
+    const double x = current_pose.position.x;
+    const double y = current_pose.position.y;
+    return {x, y, x, y};
+  }
+
+  return {min_x.get(), min_y.get(), max_x.get(), max_y.get()};
 }
 }  // namespace drivable_area_utils
 
