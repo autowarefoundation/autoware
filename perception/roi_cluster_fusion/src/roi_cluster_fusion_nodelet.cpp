@@ -47,7 +47,7 @@ Debugger::Debugger(rclcpp::Node * node, const int camera_num) : node_(node)
   for (int id = 0; id < camera_num; ++id) {
     auto sub = image_transport::create_subscription(
       node, "input/image_raw" + std::to_string(id),
-      boost::bind(&Debugger::imageCallback, this, _1, id), "raw");
+      boost::bind(&Debugger::imageCallback, this, _1, id), "raw", rmw_qos_profile_sensor_data);
     image_subs_.push_back(sub);
     if (node->has_parameter("format")) {
       node->undeclare_parameter("format");

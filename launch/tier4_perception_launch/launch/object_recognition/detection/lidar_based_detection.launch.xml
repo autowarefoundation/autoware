@@ -33,7 +33,7 @@
       <include file="$(find-pkg-share lidar_apollo_instance_segmentation)/launch/lidar_apollo_instance_segmentation.launch.xml" />
       <include file="$(find-pkg-share shape_estimation)/launch/shape_estimation.launch.xml">
         <arg name="output/objects" value="objects_with_feature"/>
-        <arg name="use_map_current" value="$(var use_vector_map)"/>
+        <arg name="use_vehicle_reference_yaw" value="true"/>
       </include>
       <!-- convert DynamicObjectsWithFeatureArray to DynamicObjects -->
       <include file="$(find-pkg-share detected_object_feature_remover)/launch/detected_object_feature_remover.launch.xml">
