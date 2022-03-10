@@ -3,6 +3,7 @@
     occlusion_spot:
       method: "predicted_object"           # [-] candidate is "occupancy_grid" or "predicted_object"
       debug: false                         # [-] whether to publish debug markers. Note Default should be false for performance
+      use_partition_lanelet: true          # [-] whether to use partition lanelet map data
       pedestrian_vel: 1.0                  # [m/s] assume pedestrian is dashing from occlusion at this velocity
       threshold:
         detection_area_length: 100.0        # [m] the length of path to consider perception range

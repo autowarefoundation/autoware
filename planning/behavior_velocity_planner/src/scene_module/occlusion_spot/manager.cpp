@@ -46,6 +46,7 @@ OcclusionSpotModuleManager::OcclusionSpotModuleManager(rclcpp::Node & node)
     throw std::invalid_argument{"[behavior_velocity]: occlusion spot detection method is invalid"};
   }
   pp.debug = node.declare_parameter(ns + ".debug", false);
+  pp.use_partition_lanelet = node.declare_parameter(ns + ".use_partition_lanelet", false);
   pp.pedestrian_vel = node.declare_parameter(ns + ".pedestrian_vel", 1.0);
   pp.detection_area_length = node.declare_parameter(ns + ".threshold.detection_area_length", 200.0);
   pp.stuck_vehicle_vel = node.declare_parameter(ns + ".threshold.stuck_vehicle_vel", 1.0);

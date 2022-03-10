@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <scene_module/occlusion_spot/geometry.hpp>
 #include <scene_module/occlusion_spot/occlusion_spot_utils.hpp>
 #include <scene_module/occlusion_spot/risk_predictive_braking.hpp>
 #include <scene_module/occlusion_spot/scene_occlusion_spot.hpp>
+#include <utilization/boost_geometry_helper.hpp>
 #include <utilization/path_utilization.hpp>
 #include <utilization/util.hpp>
 
@@ -39,13 +41,18 @@ OcclusionSpotModule::OcclusionSpotModule(
 : SceneModuleInterface(module_id, logger, clock), publisher_(publisher)
 {
   param_ = planner_param;
+  debug_data_.detection_type = "occupancy";
+  if (param_.use_partition_lanelet) {
+    const lanelet::LaneletMapConstPtr & ll = planner_data->route_handler_->getLaneletMapPtr();
+    planning_utils::getAllPartitionLanelets(ll, debug_data_.partition_lanelets);
+  }
 }
 
 bool OcclusionSpotModule::modifyPathVelocity(
   autoware_auto_planning_msgs::msg::PathWithLaneId * path,
   [[maybe_unused]] tier4_planning_msgs::msg::StopReason * stop_reason)
 {
-  debug_data_ = DebugData();
+  debug_data_.resetData();
   if (path->points.size() < 2) {
     return true;
   }
@@ -83,16 +90,13 @@ bool OcclusionSpotModule::modifyPathVelocity(
   grid_map::GridMap grid_map;
   grid_utils::denoiseOccupancyGridCV(occ_grid, grid_map, param_.grid);
   double offset_from_start_to_ego = utils::offsetFromStartToEgo(interp_path, ego_pose, closest_idx);
-  using Slice = occlusion_spot_utils::Slice;
-  std::vector<Slice> detection_area_polygons;
+  auto & detection_area_polygons = debug_data_.detection_area_polygons;
   utils::buildDetectionAreaPolygon(
     detection_area_polygons, interp_path, offset_from_start_to_ego, param_);
   std::vector<utils::PossibleCollisionInfo> possible_collisions;
   // Note: Don't consider offset from path start to ego here
   utils::createPossibleCollisionsInDetectionArea(
-    detection_area_polygons, possible_collisions, grid_map, interp_path, offset_from_start_to_ego,
-    param_, debug_data_.occlusion_points);
-  if (detection_area_polygons.empty()) return true;
+    possible_collisions, grid_map, interp_path, offset_from_start_to_ego, param_, debug_data_);
   RCLCPP_DEBUG_STREAM_THROTTLE(
     logger_, *clock_, 3000, "num possible collision:" << possible_collisions.size());
   utils::calcSlowDownPointsForPossibleCollision(0, interp_path, 0.0, possible_collisions);
@@ -103,11 +107,6 @@ bool OcclusionSpotModule::modifyPathVelocity(
   // these debug topics needs computation resource
   if (param_.debug) {
     publisher_->publish(occ_grid);
-    for (const auto & p : detection_area_polygons) {
-      debug_data_.detection_areas.emplace_back(p.polygon);
-    }
-  } else {
-    debug_data_.occlusion_points.clear();
   }
   debug_data_.z = path->points.front().point.pose.position.z;
   debug_data_.possible_collisions = possible_collisions;

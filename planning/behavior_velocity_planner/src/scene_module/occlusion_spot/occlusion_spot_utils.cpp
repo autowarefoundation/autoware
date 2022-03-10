@@ -337,38 +337,8 @@ std::vector<PossibleCollisionInfo> generatePossibleCollisionBehindParkedVehicle(
   return possible_collisions;
 }
 
-DetectionAreaIdx extractTargetRoadArcLength(
-  const lanelet::LaneletMapPtr lanelet_map_ptr, const double max_range, const PathWithLaneId & path,
-  const ROAD_TYPE & target_road_type)
-{
-  bool found_target = false;
-  double start_dist = 0.0;
-  double dist_sum = 0.0;
-  // search lanelet that includes target_road_type only
-  for (size_t i = 0; i < path.points.size() - 1; i++) {
-    ROAD_TYPE search_road_type = occlusion_spot_utils::getCurrentRoadType(
-      lanelet_map_ptr->laneletLayer.get(path.points[i].lane_ids[0]), lanelet_map_ptr);
-    if (found_target && search_road_type != target_road_type) {
-      break;
-    }
-    // ignore path farther than max range
-    if (dist_sum > max_range) {
-      break;
-    }
-    if (!found_target && search_road_type == target_road_type) {
-      start_dist = dist_sum;
-      found_target = true;
-    }
-    const auto & curr_p = path.points[i].point.pose.position;
-    const auto & next_p = path.points[i + 1].point.pose.position;
-    dist_sum += tier4_autoware_utils::calcDistance2d(curr_p, next_p);
-  }
-  if (!found_target) return {};
-  return DetectionAreaIdx(std::make_pair(start_dist, dist_sum));
-}
-
 std::vector<PredictedObject> filterDynamicObjectByDetectionArea(
-  std::vector<PredictedObject> & objs, const std::vector<Slice> polys)
+  std::vector<PredictedObject> & objs, const std::vector<Slice> & polys)
 {
   std::vector<PredictedObject> filtered_obj;
   // stuck points by predicted objects
@@ -385,32 +355,33 @@ std::vector<PredictedObject> filterDynamicObjectByDetectionArea(
 }
 
 void createPossibleCollisionsInDetectionArea(
-  const std::vector<Slice> & detection_area_polygons,
   std::vector<PossibleCollisionInfo> & possible_collisions, const grid_map::GridMap & grid,
   const PathWithLaneId & path, const double offset_from_start_to_ego, const PlannerParam & param,
-  std::vector<Point> & debug_points)
+  DebugData & debug_data)
 {
   lanelet::ConstLanelet path_lanelet = toPathLanelet(path);
   if (path_lanelet.centerline2d().empty()) {
     return;
   }
   double distance_lower_bound = std::numeric_limits<double>::max();
-  for (const Slice & detection_area_slice : detection_area_polygons) {
+  for (const Slice & detection_area_slice : debug_data.detection_area_polygons) {
     std::vector<grid_map::Position> occlusion_spot_positions;
     grid_utils::findOcclusionSpots(
       occlusion_spot_positions, grid, detection_area_slice.polygon,
       param.detection_area.min_occlusion_spot_size);
-    Point p;
-    for (const auto & op : occlusion_spot_positions) {
-      p.x = op[0];
-      p.y = op[1];
-      debug_points.emplace_back(p);
+    if (param.debug) {
+      for (const auto & op : occlusion_spot_positions) {
+        Point p =
+          tier4_autoware_utils::createPoint(op[0], op[1], path.points.at(0).point.pose.position.z);
+        debug_data.occlusion_points.emplace_back(p);
+      }
     }
     if (occlusion_spot_positions.empty()) continue;
     // for each partition find nearest occlusion spot from polygon's origin
     BasicPoint2d base_point = detection_area_slice.polygon.at(0);
     const auto pc = generateOneNotableCollisionFromOcclusionSpot(
-      grid, occlusion_spot_positions, offset_from_start_to_ego, base_point, path_lanelet, param);
+      grid, occlusion_spot_positions, offset_from_start_to_ego, base_point, path_lanelet, param,
+      debug_data);
     if (!pc) continue;
     const double lateral_distance = std::abs(pc.get().arc_lane_dist_at_collision.distance);
     if (lateral_distance > distance_lower_bound) continue;
@@ -419,25 +390,35 @@ void createPossibleCollisionsInDetectionArea(
   }
 }
 
+bool isNotBlockedByPartition(const LineString2d & direction, const BasicPolygons2d & partitions)
+{
+  for (const auto & p : partitions) {
+    if (bg::intersects(direction, p)) return false;
+  }
+  return true;
+}
+
 boost::optional<PossibleCollisionInfo> generateOneNotableCollisionFromOcclusionSpot(
   const grid_map::GridMap & grid, const std::vector<grid_map::Position> & occlusion_spot_positions,
   const double offset_from_start_to_ego, const BasicPoint2d base_point,
-  const lanelet::ConstLanelet & path_lanelet, const PlannerParam & param)
+  const lanelet::ConstLanelet & path_lanelet, const PlannerParam & param, DebugData & debug_data)
 {
   const double baselink_to_front = param.baselink_to_front;
   const double half_vehicle_width = param.half_vehicle_width;
   double distance_lower_bound = std::numeric_limits<double>::max();
   PossibleCollisionInfo candidate;
   bool has_collision = false;
-  for (grid_map::Position occlusion_spot_position : occlusion_spot_positions) {
+  const auto & partition_lanelets = debug_data.partition_lanelets;
+  for (const grid_map::Position & occlusion_spot_position : occlusion_spot_positions) {
     // arc intersection
-    lanelet::BasicPoint2d obstacle_point = {occlusion_spot_position[0], occlusion_spot_position[1]};
-    lanelet::ArcCoordinates arc_coord_occlusion_point =
-      lanelet::geometry::toArcCoordinates(path_lanelet.centerline2d(), obstacle_point);
+    const lanelet::BasicPoint2d obstacle_point = {
+      occlusion_spot_position[0], occlusion_spot_position[1]};
     const double dist =
       std::hypot(base_point[0] - obstacle_point[0], base_point[1] - obstacle_point[1]);
     // skip if absolute distance is larger
     if (distance_lower_bound < dist) continue;
+    lanelet::ArcCoordinates arc_coord_occlusion_point =
+      lanelet::geometry::toArcCoordinates(path_lanelet.centerline2d(), obstacle_point);
     const double length_to_col = arc_coord_occlusion_point.length - baselink_to_front;
     // skip if occlusion is behind ego bumper
     if (length_to_col < offset_from_start_to_ego) {
@@ -451,7 +432,13 @@ boost::optional<PossibleCollisionInfo> generateOneNotableCollisionFromOcclusionS
     const auto & ip = pc.intersection_pose.position;
     bool collision_free_at_intersection =
       grid_utils::isCollisionFree(grid, occlusion_spot_position, grid_map::Position(ip.x, ip.y));
-    if (collision_free_at_intersection) {
+    bool obstacle_not_blocked_by_partition = true;
+    if (param.use_partition_lanelet) {
+      const auto & op = obstacle_point;
+      const LineString2d obstacle_vec = {{op[0], op[1]}, {ip.x, ip.y}};
+      obstacle_not_blocked_by_partition = isNotBlockedByPartition(obstacle_vec, partition_lanelets);
+    }
+    if (collision_free_at_intersection && obstacle_not_blocked_by_partition) {
       distance_lower_bound = dist;
       candidate = pc;
       has_collision = true;
