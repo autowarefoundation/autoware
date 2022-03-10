@@ -215,6 +215,7 @@ DetectionByTracker::DetectionByTracker(const rclcpp::NodeOptions & node_options)
   shape_estimator_ = std::make_shared<ShapeEstimator>(true, true);
   cluster_ = std::make_shared<euclidean_cluster::VoxelGridBasedEuclideanCluster>(
     false, 10, 10000, 0.7, 0.3, 0);
+  debugger_ = std::make_shared<Debugger>(this);
 }
 
 void DetectionByTracker::onObjects(
@@ -224,34 +225,36 @@ void DetectionByTracker::onObjects(
   detected_objects.header = input_msg->header;
 
   // get objects from tracking module
-  autoware_auto_perception_msgs::msg::TrackedObjects tracked_objects;
+  autoware_auto_perception_msgs::msg::DetectedObjects tracked_objects;
   {
-    autoware_auto_perception_msgs::msg::TrackedObjects objects;
+    autoware_auto_perception_msgs::msg::TrackedObjects objects, transformed_objects;
     const bool available_trackers =
       tracker_handler_.estimateTrackedObjects(input_msg->header.stamp, objects);
     if (
       !available_trackers ||
-      !transformTrackedObjects(objects, input_msg->header.frame_id, tf_buffer_, tracked_objects)) {
+      !transformTrackedObjects(
+        objects, input_msg->header.frame_id, tf_buffer_, transformed_objects)) {
       objects_pub_->publish(detected_objects);
       return;
     }
+    // to simplify post processes, convert tracked_objects to DetectedObjects message.
+    tracked_objects = toDetectedObjects(transformed_objects);
   }
-
-  // to simplify post processes, convert tracked_objects to DetectedObjects message.
-  autoware_auto_perception_msgs::msg::DetectedObjects tracked_objects_dt;
-  tracked_objects_dt = toDetectedObjects(tracked_objects);
+  debugger_->publishInitialObjects(*input_msg);
+  debugger_->publishTrackedObjects(tracked_objects);
 
   // merge over segmented objects
   tier4_perception_msgs::msg::DetectedObjectsWithFeature merged_objects;
   autoware_auto_perception_msgs::msg::DetectedObjects no_found_tracked_objects;
-  mergeOverSegmentedObjects(
-    tracked_objects_dt, *input_msg, no_found_tracked_objects, merged_objects);
+  mergeOverSegmentedObjects(tracked_objects, *input_msg, no_found_tracked_objects, merged_objects);
+  debugger_->publishMergedObjects(merged_objects);
 
   // divide under segmented objects
   tier4_perception_msgs::msg::DetectedObjectsWithFeature divided_objects;
   autoware_auto_perception_msgs::msg::DetectedObjects temp_no_found_tracked_objects;
   divideUnderSegmentedObjects(
     no_found_tracked_objects, *input_msg, temp_no_found_tracked_objects, divided_objects);
+  debugger_->publishDividedObjects(divided_objects);
 
   // merge under/over segmented objects to build output objects
   for (const auto & merged_object : merged_objects.feature_objects) {
@@ -387,8 +390,9 @@ float DetectionByTracker::optimizeUnderSegmentedObject(
 
   // build output
   highest_iou_object.object.classification = target_object.classification;
-  // TODO(yukkysaito): It is necessary to consider appropriate values in the future.
-  highest_iou_object.object.existence_probability = 0.1f;
+  highest_iou_object.object.existence_probability =
+    utils::get2dIoU(target_object, highest_iou_object.object);
+
   output = highest_iou_object;
   return highest_iou;
 }
@@ -437,7 +441,6 @@ void DetectionByTracker::mergeOverSegmentedObjects(
 
     // build output clusters
     tier4_perception_msgs::msg::DetectedObjectWithFeature feature_object;
-    feature_object.object.existence_probability = 0.1f;
     feature_object.object.classification = tracked_object.classification;
 
     bool is_shape_estimated = shape_estimator_->estimateShapeAndPose(
@@ -450,6 +453,8 @@ void DetectionByTracker::mergeOverSegmentedObjects(
       continue;
     }
 
+    feature_object.object.existence_probability =
+      utils::get2dIoU(tracked_object, feature_object.object);
     setClusterInObjectWithFeature(in_cluster_objects.header, pcl_merged_cluster, feature_object);
     out_objects.feature_objects.push_back(feature_object);
   }

@@ -15,6 +15,8 @@
 #ifndef DETECTION_BY_TRACKER__DETECTION_BY_TRACKER_CORE_HPP_
 #define DETECTION_BY_TRACKER__DETECTION_BY_TRACKER_CORE_HPP_
 
+#include "detection_by_tracker/debugger.hpp"
+
 #include <euclidean_cluster/euclidean_cluster.hpp>
 #include <euclidean_cluster/utils.hpp>
 #include <euclidean_cluster/voxel_grid_based_euclidean_cluster.hpp>
@@ -69,6 +71,7 @@ private:
   TrackerHandler tracker_handler_;
   std::shared_ptr<ShapeEstimator> shape_estimator_;
   std::shared_ptr<euclidean_cluster::EuclideanClusterInterface> cluster_;
+  std::shared_ptr<Debugger> debugger_;
 
   void onObjects(
     const tier4_perception_msgs::msg::DetectedObjectsWithFeature::ConstSharedPtr input_msg);
