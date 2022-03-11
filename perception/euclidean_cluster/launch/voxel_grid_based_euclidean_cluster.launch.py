@@ -32,7 +32,7 @@ def launch_setup(context, *args, **kwargs):
         with open(LaunchConfiguration(param_path).perform(context), "r") as f:
             return yaml.safe_load(f)["/**"]["ros__parameters"]
 
-    ns = "clustering"
+    ns = ""
     pkg = "euclidean_cluster"
 
     # set compare map filter as a component

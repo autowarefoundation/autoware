@@ -5,6 +5,7 @@
 
   <!-- Clustering -->
   <group>
+    <push-ros-namespace namespace="clustering"/>
     <include file="$(find-pkg-share euclidean_cluster)/launch/voxel_grid_based_euclidean_cluster.launch.xml">
       <arg name="output_clusters" value="clusters"/>
       <arg name="use_pointcloud_map" value="false"/>
