@@ -911,6 +911,73 @@ lanelet::Lanelets RouteHandler::getRightOppositeLanelets(
   return lanelet_map_ptr_->laneletLayer.findUsages(lanelet.rightBound().invert());
 }
 
+lanelet::ConstLanelets RouteHandler::getAllLeftSharedLinestringLanelets(
+  const lanelet::ConstLanelet & lane, const bool & include_opposite) const noexcept
+{
+  lanelet::ConstLanelets linestring_shared;
+  auto lanelet_at_left = getLeftLanelet(lane);
+  auto lanelet_at_left_opposite = getLeftOppositeLanelets(lane);
+  while (lanelet_at_left) {
+    linestring_shared.push_back(lanelet_at_left.get());
+    lanelet_at_left = getLeftLanelet(lanelet_at_left.get());
+    lanelet_at_left_opposite = getLeftOppositeLanelets(lanelet_at_left.get());
+  }
+
+  if (!lanelet_at_left_opposite.empty() && include_opposite) {
+    linestring_shared.push_back(lanelet_at_left_opposite.front());
+    auto lanelet_at_right = getRightLanelet(lanelet_at_left_opposite.front());
+    while (lanelet_at_right) {
+      linestring_shared.push_back(lanelet_at_right.get());
+      lanelet_at_right = getRightLanelet(lanelet_at_right.get());
+    }
+  }
+  return linestring_shared;
+}
+
+lanelet::ConstLanelets RouteHandler::getAllRightSharedLinestringLanelets(
+  const lanelet::ConstLanelet & lane, const bool & include_opposite) const noexcept
+{
+  lanelet::ConstLanelets linestring_shared;
+  auto lanelet_at_right = getRightLanelet(lane);
+  auto lanelet_at_right_opposite = getRightOppositeLanelets(lane);
+  while (lanelet_at_right) {
+    linestring_shared.push_back(lanelet_at_right.get());
+    lanelet_at_right = getRightLanelet(lanelet_at_right.get());
+    lanelet_at_right_opposite = getRightOppositeLanelets(lanelet_at_right.get());
+  }
+
+  if (!lanelet_at_right_opposite.empty() && include_opposite) {
+    linestring_shared.push_back(lanelet_at_right_opposite.front());
+    auto lanelet_at_left = getLeftLanelet(lanelet_at_right_opposite.front());
+    while (lanelet_at_left) {
+      linestring_shared.push_back(lanelet_at_left.get());
+      lanelet_at_left = getLeftLanelet(lanelet_at_left.get());
+    }
+  }
+  return linestring_shared;
+}
+
+lanelet::ConstLanelets RouteHandler::getAllSharedLineStringLanelets(
+  const lanelet::ConstLanelet & current_lane, bool is_right, bool is_left,
+  bool is_opposite) const noexcept
+{
+  lanelet::ConstLanelets shared{current_lane};
+
+  if (is_right) {
+    const lanelet::ConstLanelets all_right_lanelets =
+      getAllRightSharedLinestringLanelets(current_lane, is_opposite);
+    shared.insert(shared.end(), all_right_lanelets.begin(), all_right_lanelets.end());
+  }
+
+  if (is_left) {
+    const lanelet::ConstLanelets all_left_lanelets =
+      getAllLeftSharedLinestringLanelets(current_lane, is_opposite);
+    shared.insert(shared.end(), all_left_lanelets.begin(), all_left_lanelets.end());
+  }
+
+  return shared;
+}
+
 lanelet::Lanelets RouteHandler::getLeftOppositeLanelets(const lanelet::ConstLanelet & lanelet) const
 {
   return lanelet_map_ptr_->laneletLayer.findUsages(lanelet.leftBound().invert());
@@ -970,6 +1037,31 @@ lanelet::ConstLineString3d RouteHandler::getLeftMostLinestring(
     return getRightMostLinestring(lanelet::ConstLanelet(opposite.front()));
   }
   return {};
+}
+
+lanelet::ConstLineStrings3d RouteHandler::getFurthestLinestring(
+  const lanelet::ConstLanelet & lanelet, bool is_right, bool is_left,
+  bool is_opposite) const noexcept
+{
+  lanelet::ConstLineStrings3d linestrings;
+  linestrings.reserve(2);
+
+  if (is_right && is_opposite) {
+    linestrings.emplace_back(getRightMostLinestring(lanelet));
+  } else if (is_right && !is_opposite) {
+    linestrings.emplace_back(getRightMostSameDirectionLinestring(lanelet));
+  } else {
+    linestrings.emplace_back(lanelet.rightBound());
+  }
+
+  if (is_left && is_opposite) {
+    linestrings.emplace_back(getLeftMostLinestring(lanelet));
+  } else if (is_left && !is_opposite) {
+    linestrings.emplace_back(getLeftMostSameDirectionLinestring(lanelet));
+  } else {
+    linestrings.emplace_back(lanelet.leftBound());
+  }
+  return linestrings;
 }
 
 bool RouteHandler::getLaneChangeTarget(
