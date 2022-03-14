@@ -67,7 +67,7 @@ class TestFaultInjectionLink(unittest.TestCase):
         # Create a ROS node for tests
         self.test_node = rclpy.create_node("test_node")
         self.event_name = "cpu_temperature"
-        self.evaluation_time = 10.0
+        self.evaluation_time = 0.5  # 500ms
 
     def tearDown(self):
         self.test_node.destroy_node()
@@ -105,6 +105,18 @@ class TestFaultInjectionLink(unittest.TestCase):
             DiagnosticArray, "/diagnostics", lambda msg: msg_buffer.append(msg), 10
         )
 
+        # Test init state.
+        # Expect fault_injection_node does not publish /diagnostics.status
+        # while the talker does not to publish
+        # Wait until the talker transmits two messages over the ROS topic
+        end_time = time.time() + self.evaluation_time
+        while time.time() < end_time:
+            rclpy.spin_once(self.test_node, timeout_sec=0.1)
+
+        # Return False if no valid data is received
+        self.assertEqual(self.get_num_valid_data(msg_buffer, DiagnosticStatus.ERROR), 0)
+
+        # Test node linkage.
         # Wait until the talker transmits messages over the ROS topic
         item = FaultInjectionEvent(name=self.event_name, level=FaultInjectionEvent.ERROR)
         msg = SimulationEvents(fault_injection_events=[item])
@@ -114,27 +126,6 @@ class TestFaultInjectionLink(unittest.TestCase):
             rclpy.spin_once(self.test_node, timeout_sec=0.1)
 
         self.assertGreaterEqual(self.get_num_valid_data(msg_buffer, DiagnosticStatus.ERROR), 1)
-
-    def test_node_init_state(self):
-        """
-        Test init state.
-
-        Expect fault_injection_node does not publish /diagnostics.status
-        while the talker does not to publish
-        """
-        msg_buffer = []
-
-        self.test_node.create_subscription(
-            DiagnosticArray, "/diagnostics", lambda msg: msg_buffer.append(msg), 10
-        )
-
-        # Wait until the talker transmits two messages over the ROS topic
-        end_time = time.time() + self.evaluation_time
-        while time.time() < end_time:
-            rclpy.spin_once(self.test_node, timeout_sec=0.1)
-
-        # Return False if no valid data is received
-        self.assertEqual(self.get_num_valid_data(msg_buffer, DiagnosticStatus.ERROR), 0)
 
 
 @launch_testing.post_shutdown_test()

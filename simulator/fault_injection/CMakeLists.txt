@@ -42,16 +42,24 @@ if(BUILD_TESTING)
     fault_injection_node_component
   )
 
-  # TODO: Comment out until the error in CI is resolved.
   # launch_testing
-  # find_package(launch_testing_ament_cmake REQUIRED)
-  # add_launch_test(test/test_fault_injection_node.test.py)
+  find_package(launch_testing_ament_cmake REQUIRED)
+  add_launch_test(
+    test/test_fault_injection_node.test.py
+    TARGET test_fault_injection_launch_test
+  )
+  # TODO(KeisukeShima): Remove in Humble
+  set_tests_properties(
+    test_fault_injection_launch_test
+    PROPERTIES
+    LABELS "launch_test"
+  )
 
-  # install(DIRECTORY
-  #   test/config
-  #   test/launch
-  #   DESTINATION share/${PROJECT_NAME}/
-  # )
+  install(DIRECTORY
+    test/config
+    test/launch
+    DESTINATION share/${PROJECT_NAME}/
+  )
 endif()
 
 ## Package
