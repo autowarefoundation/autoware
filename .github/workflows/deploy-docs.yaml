@@ -38,4 +38,4 @@ jobs:
         uses: autowarefoundation/autoware-github-actions/deploy-docs@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          latest: ${{ github.ref_name == github.event.repository.default_branch }}
+          latest: ${{ github.event_name != 'pull_request_target' && github.ref_name == github.event.repository.default_branch }}
