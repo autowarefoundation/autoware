@@ -103,7 +103,8 @@ ExternalCmdSelector::ExternalCmdSelector(const rclcpp::NodeOptions & node_option
   // Timer
   const auto period_ns = rclcpp::Rate(update_rate).period();
   timer_ = rclcpp::create_timer(
-    this, get_clock(), period_ns, std::bind(&ExternalCmdSelector::onTimer, this));
+    this, get_clock(), period_ns, std::bind(&ExternalCmdSelector::onTimer, this),
+    callback_group_subscribers_);
 }
 
 void ExternalCmdSelector::onLocalControlCmd(const ExternalControlCommand::ConstSharedPtr msg)
