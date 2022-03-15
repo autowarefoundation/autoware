@@ -279,17 +279,11 @@ size_t insertStopVelocityAtCollision(
     return 0;
   }
 
-  const auto insert_index = offset_segment.index + 1;
+  auto insert_index = static_cast<size_t>(offset_segment.index + 1);
   auto insert_point = path->points.at(insert_index);
   insert_point.point.pose = interpolated_pose;
-
-  path->points.insert(path->points.begin() + insert_index, insert_point);
-
-  // Insert 0 velocity after stop point
-  for (size_t i = insert_index; i < path->points.size(); ++i) {
-    path->points.at(i).point.longitudinal_velocity_mps = 0.0;
-  }
-
+  // Insert 0 velocity after stop point or replace velocity with 0
+  behavior_velocity_planner::planning_utils::insertVelocity(*path, insert_point, 0.0, insert_index);
   return insert_index;
 }
 }  // namespace

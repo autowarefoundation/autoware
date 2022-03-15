@@ -242,11 +242,13 @@ bool BlindSpotModule::generateStopLine(
   }
 
   /* insert judge point */
-  const int pass_judge_idx_ip = std::min(
+  // need to remove const because pass judge idx will be changed by insert stop point
+  int pass_judge_idx_ip = std::min(
     static_cast<int>(path_ip.points.size()) - 1, std::max(stop_idx_ip - pass_judge_idx_dist, 0));
   if (has_prior_stopline || stop_idx_ip == pass_judge_idx_ip) {
     *pass_judge_line_idx = *stop_line_idx;
   } else {
+    //! insertPoint check if there is no duplicated point
     *pass_judge_line_idx = insertPoint(pass_judge_idx_ip, path_ip, path);
     ++(*stop_line_idx);  // stop index is incremented by judge line insertion
   }
@@ -309,6 +311,14 @@ int BlindSpotModule::insertPoint(
     // copy from previous point
     inserted_point = inout_path->points.at(std::max(insert_idx - 1, 0));
     inserted_point.point.pose = path_ip.points[insert_idx_ip].point.pose;
+    constexpr double min_dist = 0.001;
+    //! avoid to insert duplicated point
+    if (
+      planning_utils::calcDist2d(inserted_point, inout_path->points.at(insert_idx).point) <
+      min_dist) {
+      inout_path->points.at(insert_idx).point.longitudinal_velocity_mps = 0.0;
+      return insert_idx;
+    }
     inout_path->points.insert(it, inserted_point);
   }
   return insert_idx;

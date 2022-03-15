@@ -166,22 +166,17 @@ autoware_auto_planning_msgs::msg::PathWithLaneId StopLineModule::insertStopPose(
   auto modified_path = path;
 
   // Insert stop pose to between segment start and end
-  const int insert_index = stop_pose_with_index.index + 1;
+  size_t insert_index = static_cast<size_t>(stop_pose_with_index.index + 1);
   auto stop_point_with_lane_id = modified_path.points.at(insert_index);
   stop_point_with_lane_id.point.pose = stop_pose_with_index.pose;
   stop_point_with_lane_id.point.longitudinal_velocity_mps = 0.0;
 
   // Update first stop index
-  first_stop_path_point_index_ = insert_index;
+  first_stop_path_point_index_ = static_cast<int>(insert_index);
   debug_data_.stop_pose = stop_point_with_lane_id.point.pose;
 
-  // Insert stop point
-  modified_path.points.insert(modified_path.points.begin() + insert_index, stop_point_with_lane_id);
-
-  // Insert 0 velocity after stop point
-  for (size_t j = insert_index; j < modified_path.points.size(); ++j) {
-    modified_path.points.at(j).point.longitudinal_velocity_mps = 0.0;
-  }
+  // Insert stop point or replace with zero velocity
+  planning_utils::insertVelocity(modified_path, stop_point_with_lane_id, 0.0, insert_index);
 
   // Get stop point and stop factor
   {

@@ -59,6 +59,44 @@ SearchRangeIndex getPathIndexRangeIncludeLaneId(
   }
   return search_range;
 }
+
+void setVelocityFromIndex(const size_t begin_idx, const double vel, PathWithLaneId * input)
+{
+  for (size_t i = begin_idx; i < input->points.size(); ++i) {
+    input->points.at(i).point.longitudinal_velocity_mps =
+      std::min(static_cast<float>(vel), input->points.at(i).point.longitudinal_velocity_mps);
+  }
+  return;
+}
+
+void insertVelocity(
+  PathWithLaneId & path, const PathPointWithLaneId & path_point, const double v,
+  size_t & insert_index, const double min_distance)
+{
+  bool already_has_path_point = false;
+  // consider front/back point is near to insert point or not
+  int min_idx = std::max(0, static_cast<int>(insert_index - 1));
+  int max_idx =
+    std::min(static_cast<int>(insert_index + 1), static_cast<int>(path.points.size() - 1));
+  for (int i = min_idx; i <= max_idx; i++) {
+    if (
+      tier4_autoware_utils::calcDistance2d(path.points.at(static_cast<size_t>(i)), path_point) <
+      min_distance) {
+      path.points.at(i).point.longitudinal_velocity_mps = 0;
+      already_has_path_point = true;
+      insert_index = static_cast<size_t>(i);
+      // set velocity from is going to insert min velocity later
+      break;
+    }
+  }
+  //! insert velocity point only if there is no close point on path
+  if (!already_has_path_point) {
+    path.points.insert(path.points.begin() + insert_index, path_point);
+  }
+  // set zero velocity from insert index
+  setVelocityFromIndex(insert_index, v, &path);
+}
+
 Polygon2d toFootprintPolygon(const autoware_auto_perception_msgs::msg::PredictedObject & object)
 {
   Polygon2d obj_footprint;

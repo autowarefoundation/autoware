@@ -397,7 +397,7 @@ bool NoStoppingAreaModule::isStoppable(
 void NoStoppingAreaModule::insertStopPoint(
   autoware_auto_planning_msgs::msg::PathWithLaneId & path, const PathIndexWithPose & stop_point)
 {
-  const auto insert_idx = stop_point.first + 1;
+  size_t insert_idx = static_cast<size_t>(stop_point.first + 1);
   const auto stop_pose = stop_point.second;
 
   // To PathPointWithLaneId
@@ -406,13 +406,8 @@ void NoStoppingAreaModule::insertStopPoint(
   stop_point_with_lane_id.point.pose = stop_pose;
   stop_point_with_lane_id.point.longitudinal_velocity_mps = 0.0;
 
-  // Insert stop point
-  path.points.insert(path.points.begin() + insert_idx, stop_point_with_lane_id);
-
-  // Insert 0 velocity after stop point
-  for (size_t j = insert_idx; j < path.points.size(); ++j) {
-    path.points.at(j).point.longitudinal_velocity_mps = 0.0;
-  }
+  // Insert stop point or replace with zero velocity
+  planning_utils::insertVelocity(path, stop_point_with_lane_id, 0.0, insert_idx);
 }
 
 boost::optional<PathIndexWithPose> NoStoppingAreaModule::createTargetPoint(

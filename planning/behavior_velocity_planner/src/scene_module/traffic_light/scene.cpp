@@ -460,23 +460,17 @@ autoware_auto_planning_msgs::msg::PathWithLaneId TrafficLightModule::insertStopP
   modified_path = input;
 
   // Create stop pose
-  const int target_velocity_point_idx = std::max(static_cast<int>(insert_target_point_idx - 1), 0);
+  size_t target_velocity_point_idx = std::max(static_cast<int>(insert_target_point_idx - 1), 0);
   auto target_point_with_lane_id = modified_path.points.at(target_velocity_point_idx);
   target_point_with_lane_id.point.pose.position.x = target_point.x();
   target_point_with_lane_id.point.pose.position.y = target_point.y();
   target_point_with_lane_id.point.longitudinal_velocity_mps = 0.0;
 
-  // Insert stop pose into path
-  modified_path.points.insert(
-    modified_path.points.begin() + insert_target_point_idx, target_point_with_lane_id);
-  debug_data_.stop_poses.push_back(target_point_with_lane_id.point.pose);
-
-  // insert 0 velocity after target point
-  for (size_t j = insert_target_point_idx; j < modified_path.points.size(); ++j) {
-    modified_path.points.at(j).point.longitudinal_velocity_mps = 0.0;
-  }
-  if (target_velocity_point_idx < first_stop_path_point_index_) {
-    first_stop_path_point_index_ = target_velocity_point_idx;
+  // Insert stop pose into path or replace with zero velocity
+  planning_utils::insertVelocity(
+    modified_path, target_point_with_lane_id, 0.0, target_velocity_point_idx);
+  if (static_cast<int>(target_velocity_point_idx) < first_stop_path_point_index_) {
+    first_stop_path_point_index_ = static_cast<int>(target_velocity_point_idx);
     debug_data_.first_stop_pose = target_point_with_lane_id.point.pose;
   }
 
