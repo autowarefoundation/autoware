@@ -424,6 +424,7 @@ bool isPullOverPathSafe(
     const auto & obj = dynamic_objects->objects.at(i);
     std::vector<PredictedPath> predicted_paths;
     if (ros_parameters.use_all_predicted_path) {
+      predicted_paths.resize(obj.kinematics.predicted_paths.size());
       std::copy(
         obj.kinematics.predicted_paths.begin(), obj.kinematics.predicted_paths.end(),
         predicted_paths.begin());
@@ -459,6 +460,7 @@ bool isPullOverPathSafe(
     const auto & obj = dynamic_objects->objects.at(i);
     std::vector<PredictedPath> predicted_paths;
     if (ros_parameters.use_all_predicted_path) {
+      predicted_paths.resize(obj.kinematics.predicted_paths.size());
       std::copy(
         obj.kinematics.predicted_paths.begin(), obj.kinematics.predicted_paths.end(),
         predicted_paths.begin());
