@@ -76,6 +76,18 @@
                   contains: [": CPU Thermal Throttling"]
                   timeout: 3.0
 
+                frequency:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: frequency
+                  contains: [": CPU Frequency"]
+                  timeout: 3.0
+
+                load_average:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: load_average
+                  contains: [": CPU Load Average"]
+                  timeout: 3.0
+
             gpu:
               type: diagnostic_aggregator/AnalyzerGroup
               path: gpu
@@ -122,6 +134,12 @@
                   type: diagnostic_aggregator/GenericAnalyzer
                   path: network_usage
                   contains: [": Network Usage"]
+                  timeout: 3.0
+
+                network_traffic:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: network_traffic
+                  contains: [": Network Traffic"]
                   timeout: 3.0
 
             storage:
