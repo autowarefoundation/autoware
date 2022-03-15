@@ -190,6 +190,7 @@ SideShiftParameters BehaviorPathPlannerNode::getSideShiftParam()
   p.shifting_lateral_jerk = dp("shifting_lateral_jerk", 0.2);
   p.min_shifting_distance = dp("min_shifting_distance", 5.0);
   p.min_shifting_speed = dp("min_shifting_speed", 5.56);
+  p.shift_request_time_limit = dp("shift_request_time_limit", 1.0);
 
   return p;
 }

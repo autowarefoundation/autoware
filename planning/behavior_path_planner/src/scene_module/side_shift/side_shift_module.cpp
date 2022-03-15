@@ -115,11 +115,40 @@ bool SideShiftModule::isExecutionReady() const
   return true;  // TODO(Horibe) is it ok to say "always safe"?
 }
 
+bool SideShiftModule::isReadyForNextRequest(
+  const double & min_request_time_sec, bool override_requests) const noexcept
+{
+  rclcpp::Time current_time = clock_->now();
+  const auto interval_from_last_request_sec = current_time - last_requested_shift_change_time_;
+
+  if (interval_from_last_request_sec.seconds() >= min_request_time_sec && !override_requests) {
+    last_requested_shift_change_time_ = current_time;
+    return true;
+  }
+
+  return false;
+}
+
 BT::NodeStatus SideShiftModule::updateState()
 {
   // Never return the FAILURE. When the desired offset is zero and the vehicle is in the original
   // drivable area,this module can stop the computation and return SUCCESS.
 
+  const auto isOffsetDiffAlmostZero = [this]() noexcept {
+    const auto last_sp = path_shifter_.getLastShiftPoint();
+    if (last_sp) {
+      const auto length = std::fabs(last_sp.get().length);
+      const auto lateral_offset = std::fabs(lateral_offset_);
+      const auto offset_diff = lateral_offset - length;
+      if (!isAlmostZero(offset_diff)) {
+        lateral_offset_change_request_ = true;
+        return false;
+      }
+    }
+    return true;
+  }();
+
+  const bool no_offset_diff = isOffsetDiffAlmostZero;
   const bool no_request = isAlmostZero(lateral_offset_);
 
   const auto no_shifted_plan = [&]() {
@@ -137,7 +166,7 @@ BT::NodeStatus SideShiftModule::updateState()
     getLogger(), "ESS::updateState() : no_request = %d, no_shifted_plan = %d", no_request,
     no_shifted_plan);
 
-  if (no_request && no_shifted_plan) {
+  if (no_request && no_shifted_plan && no_offset_diff) {
     current_state_ = BT::NodeStatus::SUCCESS;
   } else {
     current_state_ = BT::NodeStatus::RUNNING;
@@ -182,14 +211,18 @@ bool SideShiftModule::addShiftPoint()
   };
 
   // remove shift points on a far position.
-  for (int i = static_cast<int>(shift_points.size()) - 1; i >= 0; --i) {
-    const auto dist_to_start = calcLongitudinal(shift_points.at(i));
-    const double remove_threshold =
-      std::max(planner_data_->self_odometry->twist.twist.linear.x * 1.0 /* sec */, 2.0 /* m */);
-    if (dist_to_start > remove_threshold) {  // TODO(Horibe)
-      shift_points.erase(shift_points.begin() + i);
-    }
-  }
+  const auto remove_iter = std::remove_if(
+    shift_points.begin(), shift_points.end(), [this, calcLongitudinal](const ShiftPoint & sp) {
+      const auto dist_to_start = calcLongitudinal(sp);
+      constexpr double max_remove_threshold_time = 1.0;  // [s]
+      constexpr double max_remove_threshold_dist = 2.0;  // [m]
+      const auto ego_current_speed = planner_data_->self_odometry->twist.twist.linear.x;
+      const auto remove_threshold =
+        std::max(ego_current_speed * max_remove_threshold_time, max_remove_threshold_dist);
+      return (dist_to_start > remove_threshold);
+    });
+
+  shift_points.erase(remove_iter, shift_points.end());
 
   // check if the new_shift_point has conflicts with existing shift points.
   const auto new_sp = calcShiftPoint();
@@ -289,10 +322,16 @@ void SideShiftModule::onLateralOffset(const LateralOffset::ConstSharedPtr latera
     return;
   }
 
+  if (parameters_.shift_request_time_limit < parameters_.time_to_start_shifting) {
+    RCLCPP_DEBUG(
+      getLogger(), "Shift request time might be too low. Generated trajectory might be wavy");
+  }
   // new offset is requested.
-  lateral_offset_change_request_ = true;
+  if (isReadyForNextRequest(parameters_.shift_request_time_limit)) {
+    lateral_offset_change_request_ = true;
 
-  lateral_offset_ = new_lateral_offset;
+    lateral_offset_ = new_lateral_offset;
+  }
 }
 
 ShiftPoint SideShiftModule::calcShiftPoint() const
@@ -307,7 +346,7 @@ ShiftPoint SideShiftModule::calcShiftPoint() const
   const double dist_to_end = [&]() {
     const double shift_length = lateral_offset_ - getClosestShiftLength();
     const double jerk_shifting_distance = path_shifter_.calcLongitudinalDistFromJerk(
-      shift_length, p.shifting_lateral_jerk, std::min(ego_speed, p.min_shifting_speed));
+      shift_length, p.shifting_lateral_jerk, std::max(ego_speed, p.min_shifting_speed));
     const double shifting_distance = std::max(jerk_shifting_distance, p.min_shifting_distance);
     const double dist_to_end = dist_to_start + shifting_distance;
     RCLCPP_DEBUG(
@@ -341,8 +380,8 @@ void SideShiftModule::adjustDrivableArea(ShiftedPath * path) const
 {
   const auto itr = std::minmax_element(path->shift_length.begin(), path->shift_length.end());
 
-  const double threshold = 0.1;
-  const double margin = 0.5;
+  constexpr double threshold = 0.1;
+  constexpr double margin = 0.5;
   const double right_offset = std::min(*itr.first - (*itr.first < -threshold ? margin : 0.0), 0.0);
   const double left_offset = std::max(*itr.second + (*itr.first > threshold ? margin : 0.0), 0.0);
 
@@ -360,16 +399,18 @@ void SideShiftModule::adjustDrivableArea(ShiftedPath * path) const
 PoseStamped SideShiftModule::getUnshiftedEgoPose(const ShiftedPath & prev_path) const
 {
   const auto ego_pose = getEgoPose();
+  if (prev_path.path.points.empty()) {
+    return ego_pose;
+  }
 
   // un-shifted fot current ideal pose
   const auto closest =
     tier4_autoware_utils::findNearestIndex(prev_path.path.points, ego_pose.pose.position);
 
-  PoseStamped unshifted_pose{};
-  unshifted_pose.header = ego_pose.header;
-  unshifted_pose.pose = prev_path.path.points.at(closest).point.pose;
+  PoseStamped unshifted_pose = ego_pose;
 
   util::shiftPose(&unshifted_pose.pose, -prev_path.shift_length.at(closest));
+  unshifted_pose.pose.orientation = ego_pose.pose.orientation;
 
   return unshifted_pose;
 }

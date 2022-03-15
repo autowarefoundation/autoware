@@ -24,6 +24,7 @@
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <tier4_planning_msgs/msg/lateral_offset.hpp>
 
+#include <chrono>
 #include <memory>
 #include <string>
 
@@ -32,6 +33,9 @@ namespace behavior_path_planner
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using geometry_msgs::msg::Pose;
 using nav_msgs::msg::OccupancyGrid;
+using std::chrono::duration;
+using std::chrono::high_resolution_clock;
+using std::chrono::time_point;
 using tier4_planning_msgs::msg::LateralOffset;
 
 struct SideShiftParameters
@@ -44,6 +48,7 @@ struct SideShiftParameters
   double drivable_area_resolution;
   double drivable_area_width;
   double drivable_area_height;
+  double shift_request_time_limit;
 };
 
 class SideShiftModule : public SceneModuleInterface
@@ -54,6 +59,8 @@ public:
 
   bool isExecutionRequested() const override;
   bool isExecutionReady() const override;
+  bool isReadyForNextRequest(
+    const double & min_request_time_sec, bool override_requests = false) const noexcept;
   BT::NodeStatus updateState() override;
   void updateData() override;
   BehaviorModuleOutput plan() override;
@@ -107,6 +114,8 @@ private:
   inline PoseStamped getEgoPose() const { return *(planner_data_->self_pose); }
   PathWithLaneId calcCenterLinePath(
     const std::shared_ptr<const PlannerData> & planner_data, const PoseStamped & pose) const;
+
+  mutable rclcpp::Time last_requested_shift_change_time_{clock_->now()};
 };
 
 }  // namespace behavior_path_planner
