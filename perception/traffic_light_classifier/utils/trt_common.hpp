@@ -18,8 +18,6 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-#include <boost/filesystem.hpp>
-
 #include <./cudnn.h>
 #include <NvInfer.h>
 #include <NvOnnxParser.h>
@@ -110,7 +108,7 @@ Tn::UniquePtr<T> make_unique()
 class TrtCommon
 {
 public:
-  TrtCommon(std::string model_path, std::string cache_dir, std::string precision);
+  TrtCommon(std::string model_path, std::string precision);
   ~TrtCommon() {}
 
   bool loadEngine(std::string engine_file_path);

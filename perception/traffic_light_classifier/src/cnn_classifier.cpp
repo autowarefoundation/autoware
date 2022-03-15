@@ -42,9 +42,7 @@ CNNClassifier::CNNClassifier(rclcpp::Node * node_ptr) : node_ptr_(node_ptr)
 
   readLabelfile(label_file_path, labels_);
 
-  std::string cache_dir =
-    ament_index_cpp::get_package_share_directory("traffic_light_classifier") + "/data";
-  trt_ = std::make_shared<Tn::TrtCommon>(model_file_path, cache_dir, precision);
+  trt_ = std::make_shared<Tn::TrtCommon>(model_file_path, precision);
   trt_->setup();
 }
 

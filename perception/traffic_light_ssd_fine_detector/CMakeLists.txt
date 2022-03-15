@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD 17)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
   set(CMAKE_CXX_EXTENSIONS OFF)
 endif()
@@ -123,8 +123,6 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
     ${CUDA_INCLUDE_DIRS}
   )
 
-  set(CMAKE_CXX_FLAGS "-O2 -Wall -Wunused-variable ${CMAKE_CXX_FLAGS} -fpic -std=c++11 -pthread")
-
   ### ssd ###
   ament_auto_add_library(ssd SHARED
     lib/src/trt_ssd.cpp
@@ -149,6 +147,7 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
 
   target_link_libraries(traffic_light_ssd_fine_detector_nodelet
     ${OpenCV_LIB}
+    stdc++fs
     ssd
   )
 

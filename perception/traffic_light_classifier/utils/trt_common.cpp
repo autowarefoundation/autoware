@@ -14,6 +14,14 @@
 
 #include <trt_common.hpp>
 
+#if (defined(_MSC_VER) or (defined(__GNUC__) and (7 <= __GNUC_MAJOR__)))
+#include <filesystem>
+namespace fs = ::std::filesystem;
+#else
+#include <experimental/filesystem>
+namespace fs = ::std::experimental::filesystem;
+#endif
+
 #include <functional>
 #include <string>
 
@@ -29,9 +37,8 @@ void check_error(const ::cudaError_t e, decltype(__FILE__) f, decltype(__LINE__)
   }
 }
 
-TrtCommon::TrtCommon(std::string model_path, std::string cache_dir, std::string precision)
+TrtCommon::TrtCommon(std::string model_path, std::string precision)
 : model_file_path_(model_path),
-  cache_dir_(cache_dir),
   precision_(precision),
   input_name_("input_0"),
   output_name_("output_0"),
@@ -42,20 +49,20 @@ TrtCommon::TrtCommon(std::string model_path, std::string cache_dir, std::string 
 
 void TrtCommon::setup()
 {
-  const boost::filesystem::path path(model_file_path_);
+  const fs::path path(model_file_path_);
   std::string extension = path.extension().string();
 
-  if (boost::filesystem::exists(path)) {
+  if (fs::exists(path)) {
     if (extension == ".engine") {
       loadEngine(model_file_path_);
     } else if (extension == ".onnx") {
-      std::string cache_engine_path = cache_dir_ + "/" + path.stem().string() + ".engine";
-      const boost::filesystem::path cache_path(cache_engine_path);
-      if (boost::filesystem::exists(cache_path)) {
-        loadEngine(cache_engine_path);
+      fs::path cache_engine_path{model_file_path_};
+      cache_engine_path.replace_extension("engine");
+      if (fs::exists(cache_engine_path)) {
+        loadEngine(cache_engine_path.string());
       } else {
         logger_.log(nvinfer1::ILogger::Severity::kINFO, "start build engine");
-        buildEngineFromOnnx(model_file_path_, cache_engine_path);
+        buildEngineFromOnnx(model_file_path_, cache_engine_path.string());
         logger_.log(nvinfer1::ILogger::Severity::kINFO, "end build engine");
       }
     } else {
