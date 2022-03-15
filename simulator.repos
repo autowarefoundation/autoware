@@ -3,7 +3,3 @@ repositories:
     type: git
     url: https://github.com/tier4/scenario_simulator_v2.git
     version: master
-  simulator/vendor/quaternion_operation:
-    type: git
-    url: https://github.com/OUXT-Polaris/quaternion_operation.git
-    version: ros2
