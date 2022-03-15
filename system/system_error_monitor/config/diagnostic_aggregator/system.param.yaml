@@ -157,3 +157,25 @@
                   path: usage
                   contains: [": HDD Usage"]
                   timeout: 3.0
+
+            process:
+              type: diagnostic_aggregator/AnalyzerGroup
+              path: process
+              analyzers:
+                high_load:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: high_load
+                  contains: [": High-load"]
+                  timeout: 3.0
+
+                high_mem:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: high_mem
+                  contains: [": High-mem"]
+                  timeout: 3.0
+
+                tasks_summary:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: tasks_summary
+                  contains: [": Tasks Summary"]
+                  timeout: 3.0
