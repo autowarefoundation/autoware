@@ -74,6 +74,7 @@ void PlanningErrorMonitorNode::onCurrentTrajectory(const Trajectory::ConstShared
 void PlanningErrorMonitorNode::onTrajectoryPointValueChecker(DiagnosticStatusWrapper & stat)
 {
   if (!current_trajectory_) {
+    stat.summary(DiagnosticStatus::OK, "No trajectory message was set.");
     return;
   }
 
@@ -87,6 +88,7 @@ void PlanningErrorMonitorNode::onTrajectoryPointValueChecker(DiagnosticStatusWra
 void PlanningErrorMonitorNode::onTrajectoryIntervalChecker(DiagnosticStatusWrapper & stat)
 {
   if (!current_trajectory_) {
+    stat.summary(DiagnosticStatus::OK, "No trajectory message was set.");
     return;
   }
 
@@ -101,6 +103,7 @@ void PlanningErrorMonitorNode::onTrajectoryIntervalChecker(DiagnosticStatusWrapp
 void PlanningErrorMonitorNode::onTrajectoryCurvatureChecker(DiagnosticStatusWrapper & stat)
 {
   if (!current_trajectory_) {
+    stat.summary(DiagnosticStatus::OK, "No trajectory message was set.");
     return;
   }
 
@@ -115,6 +118,7 @@ void PlanningErrorMonitorNode::onTrajectoryCurvatureChecker(DiagnosticStatusWrap
 void PlanningErrorMonitorNode::onTrajectoryRelativeAngleChecker(DiagnosticStatusWrapper & stat)
 {
   if (!current_trajectory_) {
+    stat.summary(DiagnosticStatus::OK, "No trajectory message was set.");
     return;
   }
 
