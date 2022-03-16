@@ -11,7 +11,7 @@
     # -- path smoothing --
     enable_path_smoothing: false   # flag for path smoothing
     path_filter_moving_ave_num: 25 # param of moving average filter for path smoothing
-    curvature_smoothing_num_traj: 1         # point-to-point index distance used in curvature calculation (for trajectory): curvature is calculated from three points p(i-num), p(i), p(i+num)
+    curvature_smoothing_num_traj: 15        # point-to-point index distance used in curvature calculation (for trajectory): curvature is calculated from three points p(i-num), p(i), p(i+num)
     curvature_smoothing_num_ref_steer: 15   # point-to-point index distance used in curvature calculation (for steer command reference): curvature is calculated from three points p(i-num), p(i), p(i+num)
 
     # -- mpc optimization --
