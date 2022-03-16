@@ -113,7 +113,7 @@ struct PlannerData
     }
 
     // Check all velocities
-    constexpr double stop_velocity = 0.1;
+    constexpr double stop_velocity = 1e-3;
     for (const auto & v : vs) {
       if (v >= stop_velocity) {
         return false;
