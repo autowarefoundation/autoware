@@ -36,7 +36,7 @@ public:
     probability_matrix_(Index::FREE, Index::FREE) = 0.8;
     probability_matrix_(Index::OCCUPIED, Index::FREE) = 1.0 - probability_matrix_(FREE, FREE);
   }
-  bool update(const Costmap2D & oneshot_occupancy_grid_map) override;
+  bool update(const Costmap2D & single_frame_occupancy_grid_map) override;
 
 private:
   inline unsigned char applyBBF(const unsigned char & z, const unsigned char & o);

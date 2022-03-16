@@ -45,13 +45,14 @@ inline unsigned char OccupancyGridMapBBFUpdater::applyBBF(
     static_cast<unsigned char>(254));
 }
 
-bool OccupancyGridMapBBFUpdater::update(const Costmap2D & oneshot_occupancy_grid_map)
+bool OccupancyGridMapBBFUpdater::update(const Costmap2D & single_frame_occupancy_grid_map)
 {
-  updateOrigin(oneshot_occupancy_grid_map.getOriginX(), oneshot_occupancy_grid_map.getOriginY());
+  updateOrigin(
+    single_frame_occupancy_grid_map.getOriginX(), single_frame_occupancy_grid_map.getOriginY());
   for (unsigned int x = 0; x < getSizeInCellsX(); x++) {
     for (unsigned int y = 0; y < getSizeInCellsY(); y++) {
       unsigned int index = getIndex(x, y);
-      costmap_[index] = applyBBF(oneshot_occupancy_grid_map.getCost(x, y), costmap_[index]);
+      costmap_[index] = applyBBF(single_frame_occupancy_grid_map.getCost(x, y), costmap_[index]);
     }
   }
   return true;

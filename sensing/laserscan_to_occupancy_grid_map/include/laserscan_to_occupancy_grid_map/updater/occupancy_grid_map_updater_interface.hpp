@@ -31,7 +31,7 @@ public:
   {
   }
   virtual ~OccupancyGridMapUpdaterInterface() = default;
-  virtual bool update(const Costmap2D & oneshot_occupancy_grid_map) = 0;
+  virtual bool update(const Costmap2D & single_frame_occupancy_grid_map) = 0;
 };
 
 }  // namespace costmap_2d

@@ -93,6 +93,7 @@ private:
   std::string map_frame_;
   std::string base_link_frame_;
   bool use_height_filter_;
+  bool enable_single_frame_mode_;
 };
 
 }  // namespace occupancy_grid_map
