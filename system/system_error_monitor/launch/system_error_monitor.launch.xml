@@ -17,6 +17,7 @@
   <arg name="agg_config_file_system" default="$(find-pkg-share system_error_monitor)/config/diagnostic_aggregator/system.param.yaml" />
   <arg name="agg_config_file_vehicle" default="$(find-pkg-share system_error_monitor)/config/diagnostic_aggregator/vehicle.param.yaml" />
   <arg name="extra_agg_config_file_sensing" default="$(find-pkg-share system_error_monitor)/config/diagnostic_aggregator/_empty.param.yaml" />
+  <arg name="extra_agg_config_file_system" default="$(find-pkg-share system_error_monitor)/config/diagnostic_aggregator/_empty.param.yaml" />
   <arg name="extra_agg_config_file_vehicle" default="$(find-pkg-share system_error_monitor)/config/diagnostic_aggregator/_empty.param.yaml" />
 
   <group>
@@ -34,6 +35,7 @@
       <param from="$(var agg_config_file_system)" />
       <param from="$(var agg_config_file_vehicle)" />
       <param from="$(var extra_agg_config_file_sensing)" />
+      <param from="$(var extra_agg_config_file_system)" />
       <param from="$(var extra_agg_config_file_vehicle)" />
     </node>
   </group>

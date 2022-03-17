@@ -20,26 +20,6 @@
           contains: [": emergency_stop_operation"]
           timeout: 1.0
 
-        driving_recorder:
-          type: diagnostic_aggregator/AnalyzerGroup
-          path: driving_recorder
-          analyzers:
-            storage_error:
-              type: diagnostic_aggregator/GenericAnalyzer
-              path: storage_error
-              contains: ["bagkeeper"]
-              timeout: 3.0
-
-        debug_data_logger:
-          type: diagnostic_aggregator/AnalyzerGroup
-          path: debug_data_logger
-          analyzers:
-            storage_error:
-              type: diagnostic_aggregator/GenericAnalyzer
-              path: storage_error
-              contains: ["bagpacker"]
-              timeout: 3.0
-
         resource_monitoring:
           type: diagnostic_aggregator/AnalyzerGroup
           path: resource_monitoring
