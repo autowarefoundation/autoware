@@ -11,10 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
-//
-// Author: v1.0 Yukihiro Saito
-//
 
 #include "multi_object_tracker/utils/utils.hpp"
 
@@ -29,7 +25,7 @@
 namespace utils
 {
 void toPolygon2d(
-  const autoware_auto_perception_msgs::msg::TrackedObject & object,
+  const geometry_msgs::msg::Pose & pose, const autoware_auto_perception_msgs::msg::Shape & shape,
   tier4_autoware_utils::Polygon2d & output);
 bool isClockWise(const tier4_autoware_utils::Polygon2d & polygon);
 tier4_autoware_utils::Polygon2d inverseClockWise(const tier4_autoware_utils::Polygon2d & polygon);
@@ -51,8 +47,8 @@ double getPolygonArea(const geometry_msgs::msg::Polygon & footprint)
 {
   double area = 0.0;
 
-  for (int i = 0; i < static_cast<int>(footprint.points.size()); ++i) {
-    int j = (i + 1) % static_cast<int>(footprint.points.size());
+  for (size_t i = 0; i < footprint.points.size(); ++i) {
+    size_t j = (i + 1) % footprint.points.size();
     area += 0.5 * (footprint.points.at(i).x * footprint.points.at(j).y -
                    footprint.points.at(j).x * footprint.points.at(i).y);
   }
@@ -71,12 +67,14 @@ double getCircleArea(const geometry_msgs::msg::Vector3 & dimensions)
 }
 
 double get2dIoU(
-  const autoware_auto_perception_msgs::msg::TrackedObject & object1,
-  const autoware_auto_perception_msgs::msg::TrackedObject & object2)
+  const std::tuple<
+    const geometry_msgs::msg::Pose &, const autoware_auto_perception_msgs::msg::Shape &> & object1,
+  const std::tuple<
+    const geometry_msgs::msg::Pose &, const autoware_auto_perception_msgs::msg::Shape &> & object2)
 {
   tier4_autoware_utils::Polygon2d polygon1, polygon2;
-  toPolygon2d(object1, polygon1);
-  toPolygon2d(object2, polygon2);
+  toPolygon2d(std::get<0>(object1), std::get<1>(object1), polygon1);
+  toPolygon2d(std::get<0>(object2), std::get<1>(object2), polygon2);
 
   std::vector<tier4_autoware_utils::Polygon2d> union_polygons;
   std::vector<tier4_autoware_utils::Polygon2d> intersection_polygons;
@@ -91,12 +89,17 @@ double get2dIoU(
   for (const auto & intersection_polygon : intersection_polygons) {
     intersection_area += boost::geometry::area(intersection_polygon);
   }
-  double iou;
-  if (union_area < 0.01) {
-    iou = 0.0f;
-  }
-  iou = std::min(1.0, intersection_area / union_area);
+  const double iou = union_area < 0.01 ? 0.0 : std::min(1.0, intersection_area / union_area);
   return iou;
+}
+
+double get2dIoU(
+  const autoware_auto_perception_msgs::msg::TrackedObject & object1,
+  const autoware_auto_perception_msgs::msg::TrackedObject & object2)
+{
+  return get2dIoU(
+    {object1.kinematics.pose_with_covariance.pose, object1.shape},
+    {object2.kinematics.pose_with_covariance.pose, object2.shape});
 }
 
 tier4_autoware_utils::Polygon2d inverseClockWise(const tier4_autoware_utils::Polygon2d & polygon)
@@ -124,23 +127,18 @@ bool isClockWise(const tier4_autoware_utils::Polygon2d & polygon)
 }
 
 void toPolygon2d(
-  const autoware_auto_perception_msgs::msg::TrackedObject & object,
+  const geometry_msgs::msg::Pose & pose, const autoware_auto_perception_msgs::msg::Shape & shape,
   tier4_autoware_utils::Polygon2d & output)
 {
-  if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {
-    const auto & pose = object.kinematics.pose_with_covariance.pose;
-    double yaw = tier4_autoware_utils::normalizeRadian(tf2::getYaw(pose.orientation));
+  if (shape.type == autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {
+    const double yaw = tier4_autoware_utils::normalizeRadian(tf2::getYaw(pose.orientation));
     Eigen::Matrix2d rotation;
     rotation << std::cos(yaw), -std::sin(yaw), std::sin(yaw), std::cos(yaw);
     Eigen::Vector2d offset0, offset1, offset2, offset3;
-    offset0 = rotation *
-              Eigen::Vector2d(object.shape.dimensions.x * 0.5f, object.shape.dimensions.y * 0.5f);
-    offset1 = rotation *
-              Eigen::Vector2d(object.shape.dimensions.x * 0.5f, -object.shape.dimensions.y * 0.5f);
-    offset2 = rotation *
-              Eigen::Vector2d(-object.shape.dimensions.x * 0.5f, -object.shape.dimensions.y * 0.5f);
-    offset3 = rotation *
-              Eigen::Vector2d(-object.shape.dimensions.x * 0.5f, object.shape.dimensions.y * 0.5f);
+    offset0 = rotation * Eigen::Vector2d(shape.dimensions.x * 0.5f, shape.dimensions.y * 0.5f);
+    offset1 = rotation * Eigen::Vector2d(shape.dimensions.x * 0.5f, -shape.dimensions.y * 0.5f);
+    offset2 = rotation * Eigen::Vector2d(-shape.dimensions.x * 0.5f, -shape.dimensions.y * 0.5f);
+    offset3 = rotation * Eigen::Vector2d(-shape.dimensions.x * 0.5f, shape.dimensions.y * 0.5f);
     output.outer().push_back(boost::geometry::make<tier4_autoware_utils::Point2d>(
       pose.position.x + offset0.x(), pose.position.y + offset0.y()));
     output.outer().push_back(boost::geometry::make<tier4_autoware_utils::Point2d>(
@@ -150,9 +148,9 @@ void toPolygon2d(
     output.outer().push_back(boost::geometry::make<tier4_autoware_utils::Point2d>(
       pose.position.x + offset3.x(), pose.position.y + offset3.y()));
     output.outer().push_back(output.outer().front());
-  } else if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::CYLINDER) {
-    const auto & center = object.kinematics.pose_with_covariance.pose.position;
-    const auto & radius = object.shape.dimensions.x * 0.5;
+  } else if (shape.type == autoware_auto_perception_msgs::msg::Shape::CYLINDER) {
+    const auto & center = pose.position;
+    const auto & radius = shape.dimensions.x * 0.5;
     constexpr int n = 6;
     for (int i = 0; i < n; ++i) {
       Eigen::Vector2d point;
@@ -170,13 +168,8 @@ void toPolygon2d(
         boost::geometry::make<tier4_autoware_utils::Point2d>(point.x(), point.y()));
     }
     output.outer().push_back(output.outer().front());
-  } else if (object.shape.type == autoware_auto_perception_msgs::msg::Shape::POLYGON) {
-    const auto & pose = object.kinematics.pose_with_covariance.pose;
-    // don't use yaw
-    // double yaw = tier4_autoware_utils::normalizeRadian(tf2::getYaw(pose.orientation));
-    // Eigen::Matrix2d rotation;
-    // rotation << std::cos(yaw), -std::sin(yaw), std::sin(yaw), std::cos(yaw);
-    for (const auto & point : object.shape.footprint.points) {
+  } else if (shape.type == autoware_auto_perception_msgs::msg::Shape::POLYGON) {
+    for (const auto & point : shape.footprint.points) {
       output.outer().push_back(boost::geometry::make<tier4_autoware_utils::Point2d>(
         pose.position.x + point.x, pose.position.y + point.y));
     }

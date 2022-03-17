@@ -79,7 +79,7 @@ double getFormedYawAngle(
 DataAssociation::DataAssociation(
   std::vector<int> can_assign_vector, std::vector<double> max_dist_vector,
   std::vector<double> max_area_vector, std::vector<double> min_area_vector,
-  std::vector<double> max_rad_vector)
+  std::vector<double> max_rad_vector, std::vector<double> min_iou_vector)
 : score_threshold_(0.01)
 {
   {
@@ -111,6 +111,12 @@ DataAssociation::DataAssociation(
     Eigen::Map<Eigen::MatrixXd> max_rad_matrix_tmp(
       max_rad_vector.data(), max_rad_label_num, max_rad_label_num);
     max_rad_matrix_ = max_rad_matrix_tmp.transpose();
+  }
+  {
+    const int min_iou_label_num = static_cast<int>(std::sqrt(min_iou_vector.size()));
+    Eigen::Map<Eigen::MatrixXd> min_iou_matrix_tmp(
+      min_iou_vector.data(), min_iou_label_num, min_iou_label_num);
+    min_iou_matrix_ = min_iou_matrix_tmp.transpose();
   }
 
   gnn_solver_ptr_ = std::make_unique<gnn_solver::MuSSP>();
@@ -167,42 +173,57 @@ Eigen::MatrixXd DataAssociation::calcScoreMatrix(
         utils::getHighestProbLabel(measurement_object.classification);
 
       double score = 0.0;
-      const geometry_msgs::msg::PoseWithCovariance tracker_pose_covariance =
-        (*tracker_itr)->getPoseWithCovariance(measurements.header.stamp);
       if (can_assign_matrix_(tracker_label, measurement_label)) {
+        autoware_auto_perception_msgs::msg::TrackedObject tracked_object;
+        (*tracker_itr)->getTrackedObject(measurements.header.stamp, tracked_object);
+
         const double max_dist = max_dist_matrix_(tracker_label, measurement_label);
-        const double max_area = max_area_matrix_(tracker_label, measurement_label);
-        const double min_area = min_area_matrix_(tracker_label, measurement_label);
-        const double max_rad = max_rad_matrix_(tracker_label, measurement_label);
         const double dist = getDistance(
           measurement_object.kinematics.pose_with_covariance.pose.position,
-          tracker_pose_covariance.pose.position);
-        const double area = utils::getArea(measurement_object.shape);
-        score = (max_dist - std::min(dist, max_dist)) / max_dist;
+          tracked_object.kinematics.pose_with_covariance.pose.position);
 
+        bool passed_gate = true;
         // dist gate
-        if (max_dist < dist) {
-          score = 0.0;
-          // area gate
-        } else if (area < min_area || max_area < area) {
-          score = 0.0;
-          // angle gate
-        } else if (std::fabs(max_rad) < M_PI) {
+        if (passed_gate) {
+          if (max_dist < dist) passed_gate = false;
+        }
+        // area gate
+        if (passed_gate) {
+          const double max_area = max_area_matrix_(tracker_label, measurement_label);
+          const double min_area = min_area_matrix_(tracker_label, measurement_label);
+          const double area = utils::getArea(measurement_object.shape);
+          if (area < min_area || max_area < area) passed_gate = false;
+        }
+        // angle gate
+        if (passed_gate) {
+          const double max_rad = max_rad_matrix_(tracker_label, measurement_label);
           const double angle = getFormedYawAngle(
             measurement_object.kinematics.pose_with_covariance.pose.orientation,
-            tracker_pose_covariance.pose.orientation, false);
-          if (std::fabs(max_rad) < std::fabs(angle)) {
-            score = 0.0;
-          }
-          // mahalanobis dist gate
-        } else if (score < score_threshold_) {
-          double mahalanobis_dist = getMahalanobisDistance(
-            measurements.objects.at(measurement_idx).kinematics.pose_with_covariance.pose.position,
-            tracker_pose_covariance.pose.position, getXYCovariance(tracker_pose_covariance));
+            tracked_object.kinematics.pose_with_covariance.pose.orientation, false);
+          if (std::fabs(max_rad) < M_PI && std::fabs(max_rad) < std::fabs(angle))
+            passed_gate = false;
+        }
+        // mahalanobis dist gate
+        if (passed_gate) {
+          const double mahalanobis_dist = getMahalanobisDistance(
+            measurement_object.kinematics.pose_with_covariance.pose.position,
+            tracked_object.kinematics.pose_with_covariance.pose.position,
+            getXYCovariance(tracked_object.kinematics.pose_with_covariance));
+          if (2.448 /*95%*/ <= mahalanobis_dist) passed_gate = false;
+        }
+        // 2d iou gate
+        if (passed_gate) {
+          const double min_iou = min_iou_matrix_(tracker_label, measurement_label);
+          const double iou = utils::get2dIoU(
+            {measurement_object.kinematics.pose_with_covariance.pose, measurement_object.shape},
+            {tracked_object.kinematics.pose_with_covariance.pose, tracked_object.shape});
+          if (iou < min_iou) passed_gate = false;
+        }
 
-          if (2.448 /*95%*/ <= mahalanobis_dist) {
-            score = 0.0;
-          }
+        // all gate is passed
+        if (passed_gate) {
+          score = (max_dist - std::min(dist, max_dist)) / max_dist;
+          if (score < score_threshold_) score = 0.0;
         }
       }
       score_matrix(tracker_idx, measurement_idx) = score;

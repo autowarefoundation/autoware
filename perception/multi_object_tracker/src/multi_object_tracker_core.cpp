@@ -194,9 +194,11 @@ MultiObjectTracker::MultiObjectTracker(const rclcpp::NodeOptions & node_options)
   const auto max_area_matrix = this->declare_parameter<std::vector<double>>("max_area_matrix");
   const auto min_area_matrix = this->declare_parameter<std::vector<double>>("min_area_matrix");
   const auto max_rad_matrix = this->declare_parameter<std::vector<double>>("max_rad_matrix");
+  const auto min_iou_matrix = this->declare_parameter<std::vector<double>>("min_iou_matrix");
 
   data_association_ = std::make_unique<DataAssociation>(
-    can_assign_matrix, max_dist_matrix, max_area_matrix, min_area_matrix, max_rad_matrix);
+    can_assign_matrix, max_dist_matrix, max_area_matrix, min_area_matrix, max_rad_matrix,
+    min_iou_matrix);
 }
 
 void MultiObjectTracker::onMeasurement(

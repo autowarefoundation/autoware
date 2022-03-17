@@ -28,6 +28,7 @@
 #include <geometry_msgs/msg/vector3.hpp>
 
 #include <cmath>
+#include <tuple>
 #include <vector>
 
 namespace utils
@@ -36,6 +37,11 @@ double getPolygonArea(const geometry_msgs::msg::Polygon & footprint);
 double getRectangleArea(const geometry_msgs::msg::Vector3 & dimensions);
 double getCircleArea(const geometry_msgs::msg::Vector3 & dimensions);
 double getArea(const autoware_auto_perception_msgs::msg::Shape & shape);
+double get2dIoU(
+  const std::tuple<
+    const geometry_msgs::msg::Pose &, const autoware_auto_perception_msgs::msg::Shape &> & object1,
+  const std::tuple<
+    const geometry_msgs::msg::Pose &, const autoware_auto_perception_msgs::msg::Shape &> & object2);
 double get2dIoU(
   const autoware_auto_perception_msgs::msg::TrackedObject & object1,
   const autoware_auto_perception_msgs::msg::TrackedObject & object2);
