@@ -4,6 +4,12 @@
     - source: CONTRIBUTING.md
     - source: DISCLAIMER.md
     - source: LICENSE
+    - source: .github/ISSUE_TEMPLATE/bug.yaml
+    - source: .github/ISSUE_TEMPLATE/config.yml
+    - source: .github/ISSUE_TEMPLATE/task.yaml
+    - source: .github/PULL_REQUEST_TEMPLATE.md
+    - source: .github/PULL_REQUEST_TEMPLATE/small-change.md
+    - source: .github/PULL_REQUEST_TEMPLATE/standard-change.md
     - source: .github/dependabot.yaml
     - source: .github/workflows/pre-commit.yaml
     - source: .github/workflows/pre-commit-optional.yaml
