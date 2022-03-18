@@ -301,7 +301,7 @@ double MapBasedPredictionNode::getObjectYaw(const TrackedObject & object)
   const auto & object_twist = object.kinematics.twist_with_covariance.twist;
   const auto future_object_pose = tier4_autoware_utils::calcOffsetPose(
     object_pose, object_twist.linear.x * 0.1, object_twist.linear.y * 0.1, 0.0);
-  return tier4_autoware_utils::calcAzimuthAngle(future_object_pose.position, object_pose.position);
+  return tier4_autoware_utils::calcAzimuthAngle(object_pose.position, future_object_pose.position);
 }
 
 void MapBasedPredictionNode::removeOldObjectsHistory(const double current_time)
@@ -412,11 +412,11 @@ bool MapBasedPredictionNode::checkCloseLaneletCondition(
   }
 
   // Step3. Calculate the angle difference between the lane angle and obstacle angle
-  double object_yaw = getObjectYaw(object);
+  const double object_yaw = getObjectYaw(object);
   const double lane_yaw = lanelet::utils::getLaneletAngle(
     lanelet.second, object.kinematics.pose_with_covariance.pose.position);
   const double delta_yaw = object_yaw - lane_yaw;
-  const double normalized_delta_yaw = std::atan2(std::sin(delta_yaw), std::cos(delta_yaw));
+  const double normalized_delta_yaw = tier4_autoware_utils::normalizeRadian(delta_yaw);
   const double abs_norm_delta = std::fabs(normalized_delta_yaw);
 
   // Step4. Check if the closest lanelet is valid, and add all
