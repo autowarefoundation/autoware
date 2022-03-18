@@ -207,6 +207,8 @@ ObstacleAvoidancePlanner::ObstacleAvoidancePlanner(const rclcpp::NodeOptions & n
     create_publisher<autoware_auto_planning_msgs::msg::Trajectory>("~/debug/mpt_traj", 1);
   debug_markers_pub_ =
     create_publisher<visualization_msgs::msg::MarkerArray>("~/debug/marker", durable_qos);
+  debug_wall_markers_pub_ =
+    create_publisher<visualization_msgs::msg::MarkerArray>("~/debug/wall_marker", durable_qos);
   debug_clearance_map_pub_ =
     create_publisher<nav_msgs::msg::OccupancyGrid>("~/debug/clearance_map", durable_qos);
   debug_object_clearance_map_pub_ =
@@ -1160,6 +1162,19 @@ void ObstacleAvoidancePlanner::publishDebugDataInOptimization(
       debug_markers_pub_->publish(debug_marker);
       debug_data_ptr_->msg_stream << "      publishDebugVisualizationMarker:= "
                                   << stop_watch_.toc("publishDebugVisualizationMarker")
+                                  << " [ms]\n";
+
+      stop_watch_.tic("getDebugVisualizationWallMarker");
+      const auto & debug_wall_marker =
+        debug_visualization::getDebugVisualizationWallMarker(debug_data_ptr_, vehicle_param_);
+      debug_data_ptr_->msg_stream << "      getDebugVisualizationWallMarker:= "
+                                  << stop_watch_.toc("getDebugVisualizationWallMarker")
+                                  << " [ms]\n";
+
+      stop_watch_.tic("publishDebugVisualizationWallMarker");
+      debug_wall_markers_pub_->publish(debug_wall_marker);
+      debug_data_ptr_->msg_stream << "      publishDebugVisualizationWallMarker:= "
+                                  << stop_watch_.toc("publishDebugVisualizationWallMarker")
                                   << " [ms]\n";
     }
   }

@@ -40,6 +40,9 @@ visualization_msgs::msg::MarkerArray getDebugVisualizationMarker(
   const std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> & optimized_points,
   const VehicleParam & vehicle_param, const bool is_showing_debug_detail);
 
+visualization_msgs::msg::MarkerArray getDebugVisualizationWallMarker(
+  const std::shared_ptr<DebugData> debug_data_ptr, const VehicleParam & vehicle_param);
+
 nav_msgs::msg::OccupancyGrid getDebugCostmap(
   const cv::Mat & clearance_map, const nav_msgs::msg::OccupancyGrid & occupancy_grid);
 }  // namespace debug_visualization

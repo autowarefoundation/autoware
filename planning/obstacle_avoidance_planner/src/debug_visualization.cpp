@@ -718,17 +718,7 @@ visualization_msgs::msg::MarkerArray getDebugVisualizationMarker(
   const std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> & optimized_points,
   const VehicleParam & vehicle_param, const bool is_showing_debug_detail)
 {
-  // virtual wall
   visualization_msgs::msg::MarkerArray vis_marker_array;
-  if (debug_data_ptr->stop_pose_by_drivable_area) {
-    const auto virtual_wall_pose =
-      getVirtualWallPose(debug_data_ptr->stop_pose_by_drivable_area.get(), vehicle_param);
-    appendMarkerArray(
-      getVirtualWallMarkerArray(virtual_wall_pose, "virtual_wall", 1.0, 0, 0), &vis_marker_array);
-    appendMarkerArray(
-      getVirtualWallTextMarkerArray(virtual_wall_pose, "virtual_wall_text", 1.0, 1.0, 1.0),
-      &vis_marker_array);
-  }
 
   if (is_showing_debug_detail) {
     const auto points_marker_array = getDebugPointsMarkers(
@@ -806,6 +796,22 @@ visualization_msgs::msg::MarkerArray getDebugVisualizationMarker(
       "vehicle_circles", 1.0, 0.3, 0.3),
     &vis_marker_array);
 
+  return vis_marker_array;
+}
+
+visualization_msgs::msg::MarkerArray getDebugVisualizationWallMarker(
+  const std::shared_ptr<DebugData> debug_data_ptr, const VehicleParam & vehicle_param)
+{
+  visualization_msgs::msg::MarkerArray vis_marker_array;
+  if (debug_data_ptr->stop_pose_by_drivable_area) {
+    const auto virtual_wall_pose =
+      getVirtualWallPose(debug_data_ptr->stop_pose_by_drivable_area.get(), vehicle_param);
+    appendMarkerArray(
+      getVirtualWallMarkerArray(virtual_wall_pose, "virtual_wall", 1.0, 0, 0), &vis_marker_array);
+    appendMarkerArray(
+      getVirtualWallTextMarkerArray(virtual_wall_pose, "virtual_wall_text", 1.0, 1.0, 1.0),
+      &vis_marker_array);
+  }
   return vis_marker_array;
 }
 
