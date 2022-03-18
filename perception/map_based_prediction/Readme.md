@@ -50,6 +50,7 @@
 
 | Parameter                                   | Type   | Description                                                                                                  |
 | ------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------ |
+| `enable_delay_compensation`                 | bool   | flag to enable the time delay compensation for the position of the object                                    |
 | `prediction_time_horizon`                   | double | predict time duration for predicted path [s]                                                                 |
 | `prediction_sampling_delta_time`            | double | sampling time for points in predicted path [s]                                                               |
 | `min_velocity_for_map_based_prediction`     | double | apply map-based prediction to the objects with higher velocity than this value                               |
@@ -57,6 +58,7 @@
 | `delta_yaw_threshold_for_searching_lanelet` | double | The threshold of the distance used when searching for the lane to which the object belongs [m]               |
 | `sigma_lateral_offset`                      | double | Standard deviation for lateral position of objects [m]                                                       |
 | `sigma_yaw_angle`                           | double | Standard deviation yaw angle of objects [rad]                                                                |
+| `object_buffer_time_length`                 | double | Time span of object history to store the information [s]                                                     |
 | `history_time_length`                       | double | Time span of object information used for prediction [s]                                                      |
 | `dist_ratio_threshold_to_left_bound`        | double | Conditions for using lane change detection of objects. Distance to the left bound of lanelet.                |
 | `dist_ratio_threshold_to_right_bound`       | double | Conditions for using lane change detection of objects. Distance to the right bound of lanelet.               |
