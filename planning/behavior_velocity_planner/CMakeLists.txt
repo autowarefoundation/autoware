@@ -220,10 +220,8 @@ target_link_libraries(scene_module_virtual_traffic_light scene_module_lib)
 # SceneModule OcclusionSpot
 ament_auto_add_library(scene_module_occlusion_spot SHARED
   src/scene_module/occlusion_spot/grid_utils.cpp
-  src/scene_module/occlusion_spot/geometry.cpp
   src/scene_module/occlusion_spot/manager.cpp
   src/scene_module/occlusion_spot/debug.cpp
-  src/scene_module/occlusion_spot/scene_occlusion_spot_in_public_road.cpp
   src/scene_module/occlusion_spot/scene_occlusion_spot.cpp
   src/scene_module/occlusion_spot/occlusion_spot_utils.cpp
   src/scene_module/occlusion_spot/risk_predictive_braking.cpp
@@ -313,7 +311,6 @@ if(BUILD_TESTING)
   ament_add_gtest(occlusion_spot-test
     test/src/test_occlusion_spot_utils.cpp
     test/src/test_risk_predictive_braking.cpp
-    test/src/test_geometry.cpp
     test/src/test_grid_utils.cpp
   )
   target_link_libraries(occlusion_spot-test

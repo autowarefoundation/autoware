@@ -18,7 +18,6 @@
 #include <rclcpp/rclcpp.hpp>
 #include <scene_module/occlusion_spot/occlusion_spot_utils.hpp>
 #include <scene_module/occlusion_spot/scene_occlusion_spot.hpp>
-#include <scene_module/occlusion_spot/scene_occlusion_spot_in_public_road.hpp>
 #include <scene_module/scene_module_interface.hpp>
 
 #include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
@@ -49,6 +48,7 @@ private:
   using PlannerParam = occlusion_spot_utils::PlannerParam;
 
   PlannerParam planner_param_;
+  int64_t module_id_;
 
   void launchNewModules(const autoware_auto_planning_msgs::msg::PathWithLaneId & path) override;
 

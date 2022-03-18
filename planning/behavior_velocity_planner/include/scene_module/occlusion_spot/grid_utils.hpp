@@ -19,6 +19,7 @@
 #include <grid_map_core/iterators/LineIterator.hpp>
 #include <grid_map_core/iterators/PolygonIterator.hpp>
 #include <opencv2/opencv.hpp>
+#include <utilization/boost_geometry_helper.hpp>
 
 #include <nav_msgs/msg/occupancy_grid.hpp>
 
@@ -67,7 +68,7 @@ bool isOcclusionSpotSquare(
 //!< @brief Find all occlusion spots inside the given lanelet
 void findOcclusionSpots(
   std::vector<grid_map::Position> & occlusion_spot_positions, const grid_map::GridMap & grid,
-  const lanelet::BasicPolygon2d & polygon, const double min_size);
+  const Polygon2d & polygon, const double min_size);
 //!< @brief Return true if the path between the two given points is free of occupied cells
 bool isCollisionFree(
   const grid_map::GridMap & grid, const grid_map::Position & p1, const grid_map::Position & p2);

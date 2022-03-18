@@ -65,49 +65,6 @@ TEST(safeMotion, delay_jerk_acceleration)
   }
 }
 
-TEST(detectionArea, calcLateralDistance)
-{
-  namespace utils = behavior_velocity_planner::occlusion_spot_utils;
-  using utils::calculateLateralDistanceFromTTC;
-  /**
-   * @brief check if calculation is correct in below parameter
-   * lateral distance is calculated from
-   * - ego velocity
-   * - min distance(safety margin)
-   * - max distance(ignore distance above this)
-   * - pedestrian velocity
-   * - min allowed velocity(not to stop)
-   */
-  utils::PlannerParam p;
-  p.half_vehicle_width = 2.0;
-  p.baselink_to_front = 3.0;
-  p.pedestrian_vel = 1.5;
-  p.detection_area.max_lateral_distance = 5.0;
-  p.v.min_allowed_velocity = 1.5;
-  p.v.v_ego = 5.0;
-  const double offset_from_ego_to_start = 0.0;
-  {
-    for (size_t i = 0; i <= 15; i += 5) {
-      // arc length in path point
-      const double l = i * 1.0;
-      const double s = l - offset_from_ego_to_start;
-      const double d = utils::calculateLateralDistanceFromTTC(s, p);
-      const double eps = 1e-3;
-      std::cout << "s: " << l << " v: " << p.v.v_ego << " d: " << d << std::endl;
-      if (i == 0)
-        EXPECT_NEAR(d, 2.5, eps);
-      else if (i == 5)
-        EXPECT_NEAR(d, 3.5, eps);
-      else if (i == 10)
-        EXPECT_NEAR(d, 5.0, eps);
-      else if (i == 15)
-        EXPECT_NEAR(d, 5.0, eps);
-      else
-        break;
-    }
-  }
-}
-
 TEST(calculateInsertVelocity, min_max)
 {
   using behavior_velocity_planner::occlusion_spot_utils::calculateInsertVelocity;

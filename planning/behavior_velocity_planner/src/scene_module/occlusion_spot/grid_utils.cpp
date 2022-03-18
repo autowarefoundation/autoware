@@ -80,12 +80,12 @@ bool isOcclusionSpotSquare(
 
 void findOcclusionSpots(
   std::vector<grid_map::Position> & occlusion_spot_positions, const grid_map::GridMap & grid,
-  const lanelet::BasicPolygon2d & polygon, double min_size)
+  const Polygon2d & polygon, double min_size)
 {
   const grid_map::Matrix & grid_data = grid["layer"];
   const int min_occlusion_spot_size = std::max(0.0, std::floor(min_size / grid.getResolution()));
   grid_map::Polygon grid_polygon;
-  for (const auto & point : polygon) {
+  for (const auto & point : polygon.outer()) {
     grid_polygon.addVertex({point.x(), point.y()});
   }
   for (grid_map::PolygonIterator iterator(grid, grid_polygon); !iterator.isPastEnd(); ++iterator) {

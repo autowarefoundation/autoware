@@ -35,15 +35,6 @@ int insertSafeVelocityToPath(
   PathWithLaneId * inout_path);
 
 /**
- *
- * @param: longitudinal_distance: longitudinal distance to collision
- * @param: param: planner param
- * @return lateral distance
- **/
-double calculateLateralDistanceFromTTC(
-  const double longitudinal_distance, const PlannerParam & param);
-
-/**
  * @param: v: ego velocity config
  * @param: ttc: time to collision
  * @return safe motion

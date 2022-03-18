@@ -14,7 +14,6 @@
 
 #include <scene_module/occlusion_spot/manager.hpp>
 #include <scene_module/occlusion_spot/scene_occlusion_spot.hpp>
-#include <scene_module/occlusion_spot/scene_occlusion_spot_in_public_road.hpp>
 #include <utilization/util.hpp>
 
 #include <lanelet2_core/primitives/BasicRegulatoryElements.h>
@@ -25,7 +24,8 @@
 
 namespace behavior_velocity_planner
 {
-using occlusion_spot_utils::METHOD;
+using occlusion_spot_utils::DETECTION_METHOD;
+using occlusion_spot_utils::PASS_JUDGE;
 
 OcclusionSpotModuleManager::OcclusionSpotModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterface(node, getModuleName())
@@ -36,14 +36,31 @@ OcclusionSpotModuleManager::OcclusionSpotModuleManager(rclcpp::Node & node)
 
   // for crosswalk parameters
   auto & pp = planner_param_;
-  // assume pedestrian coming out from occlusion spot with this velocity
-  const std::string method = node.declare_parameter(ns + ".method", "occupancy_grid");
-  if (method == "occupancy_grid") {
-    pp.method = METHOD::OCCUPANCY_GRID;
-  } else if (method == "predicted_object") {
-    pp.method = METHOD::PREDICTED_OBJECT;
-  } else {
-    throw std::invalid_argument{"[behavior_velocity]: occlusion spot detection method is invalid"};
+  // for detection type
+  {
+    const std::string method = node.declare_parameter(ns + ".detection_method", "occupancy_grid");
+    if (method == "occupancy_grid") {  // module id 0
+      pp.detection_method = DETECTION_METHOD::OCCUPANCY_GRID;
+      module_id_ = DETECTION_METHOD::OCCUPANCY_GRID;
+    } else if (method == "predicted_object") {  // module id 1
+      pp.detection_method = DETECTION_METHOD::PREDICTED_OBJECT;
+      module_id_ = DETECTION_METHOD::PREDICTED_OBJECT;
+    } else {
+      throw std::invalid_argument{
+        "[behavior_velocity]: occlusion spot detection method has invalid argument"};
+    }
+  }
+  // for passable judgement
+  {
+    const std::string pass_judge = node.declare_parameter(ns + ".pass_judge", "current_velocity");
+    if (pass_judge == "current_velocity") {
+      pp.pass_judge = PASS_JUDGE::CURRENT_VELOCITY;
+    } else if (pass_judge == "smooth_velocity") {
+      pp.pass_judge = PASS_JUDGE::SMOOTH_VELOCITY;
+    } else {
+      throw std::invalid_argument{
+        "[behavior_velocity]: occlusion spot pass judge method has invalid argument"};
+    }
   }
   pp.debug = node.declare_parameter(ns + ".debug", false);
   pp.use_partition_lanelet = node.declare_parameter(ns + ".use_partition_lanelet", false);
@@ -84,23 +101,11 @@ void OcclusionSpotModuleManager::launchNewModules(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
 {
   if (path.points.empty()) return;
-  const int64_t module_id = static_cast<int64_t>(ModuleID::OCCUPANCY);
-  const int64_t public_road_module_id = static_cast<int64_t>(ModuleID::OBJECT);
   // general
-  if (!isModuleRegistered(module_id)) {
-    if (planner_param_.method == METHOD::OCCUPANCY_GRID) {
-      registerModule(std::make_shared<OcclusionSpotModule>(
-        module_id, planner_data_, planner_param_, logger_.get_child("occlusion_spot_module"),
-        clock_, pub_debug_occupancy_grid_));
-    }
-  }
-  // public
-  if (!isModuleRegistered(public_road_module_id)) {
-    if (planner_param_.method == METHOD::PREDICTED_OBJECT) {
-      registerModule(std::make_shared<OcclusionSpotInPublicModule>(
-        public_road_module_id, planner_data_, planner_param_,
-        logger_.get_child("occlusion_spot_in_public_module"), clock_));
-    }
+  if (!isModuleRegistered(module_id_)) {
+    registerModule(std::make_shared<OcclusionSpotModule>(
+      module_id_, planner_data_, planner_param_, logger_.get_child("occlusion_spot_module"), clock_,
+      pub_debug_occupancy_grid_));
   }
 }
 
