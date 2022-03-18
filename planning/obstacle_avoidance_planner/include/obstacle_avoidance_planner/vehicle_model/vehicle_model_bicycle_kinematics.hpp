@@ -48,10 +48,11 @@
 #ifndef OBSTACLE_AVOIDANCE_PLANNER__VEHICLE_MODEL__VEHICLE_MODEL_BICYCLE_KINEMATICS_HPP_
 #define OBSTACLE_AVOIDANCE_PLANNER__VEHICLE_MODEL__VEHICLE_MODEL_BICYCLE_KINEMATICS_HPP_
 
+#include "eigen3/Eigen/Core"
+#include "eigen3/Eigen/LU"
 #include "obstacle_avoidance_planner/vehicle_model/vehicle_model_interface.hpp"
 
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/LU>
+#include <vector>
 
 /**
  * @class vehicle model class of bicycle kinematics
@@ -64,9 +65,8 @@ public:
    * @brief constructor with parameter initialization
    * @param [in] wheelbase wheelbase length [m]
    * @param [in] steer_lim steering angle limit [rad]
-   * @param [in] steer_tau steering time constant for 1d-model
    */
-  KinematicsBicycleModel(const double wheelbase, const double steer_lim, const double steer_tau);
+  KinematicsBicycleModel(const double wheel_base, const double steer_limit);
 
   /**
    * @brief destructor
@@ -74,26 +74,31 @@ public:
   virtual ~KinematicsBicycleModel() = default;
 
   /**
-   * @brief calculate discrete model matrix of x_k+1 = Ad * xk + Bd * uk + Wd, yk = Cd * xk
+   * @brief calculate discrete kinematics equation matrix of x_k+1 = Ad * x_k + Bd * uk + Wd
    * @param [out] Ad coefficient matrix
    * @param [out] Bd coefficient matrix
-   * @param [out] Cd coefficient matrix
    * @param [out] Wd coefficient matrix
-   * @param [in] dt Discretization arc length
+   * @param [in] ds discretization arc length
    */
-  void calculateDiscreteMatrix(
-    Eigen::MatrixXd * Ad, Eigen::MatrixXd * Bd, Eigen::MatrixXd * Cd, Eigen::MatrixXd * Wd,
-    const double ds) override;
+  void calculateStateEquationMatrix(
+    Eigen::MatrixXd & Ad, Eigen::MatrixXd & Bd, Eigen::MatrixXd & Wd, const double ds) override;
+
+  /**
+   * @brief calculate discrete observation matrix of y_k = Cd * x_k
+   * @param [out] Cd coefficient matrix
+   */
+  void calculateObservationMatrix(Eigen::MatrixXd & Cd) override;
+
+  /**
+   * @brief calculate discrete observation matrix of y_k = Cd * x_k
+   * @param [out] Cd_vec sparse matrix information of coefficient matrix
+   */
+  void calculateObservationSparseMatrix(std::vector<Eigen::Triplet<double>> & Cd_vec) override;
 
   /**
    * @brief calculate reference input
    * @param [out] reference input
    */
   void calculateReferenceInput(Eigen::MatrixXd * Uref) override;
-
-private:
-  double wheelbase_;  //!< @brief wheelbase length [m]
-  double steer_lim_;  //!< @brief steering angle limit [rad]
-  double steer_tau_;  //!< @brief steering time constant for 1d-model
 };
 #endif  // OBSTACLE_AVOIDANCE_PLANNER__VEHICLE_MODEL__VEHICLE_MODEL_BICYCLE_KINEMATICS_HPP_

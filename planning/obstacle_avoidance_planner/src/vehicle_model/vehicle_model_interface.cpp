@@ -14,11 +14,24 @@
 
 #include "obstacle_avoidance_planner/vehicle_model/vehicle_model_interface.hpp"
 
-VehicleModelInterface::VehicleModelInterface(int dim_x, int dim_u, int dim_y)
-: dim_x_(dim_x), dim_u_(dim_u), dim_y_(dim_y)
+VehicleModelInterface::VehicleModelInterface(
+  int dim_x, int dim_u, int dim_y, double wheel_base, double steer_limit)
+: dim_x_(dim_x),
+  dim_u_(dim_u),
+  dim_y_(dim_y),
+  wheel_base_(wheel_base),
+  steer_limit_(steer_limit),
+  center_offset_from_base_(0.0)
 {
 }
+
 int VehicleModelInterface::getDimX() { return dim_x_; }
 int VehicleModelInterface::getDimU() { return dim_u_; }
 int VehicleModelInterface::getDimY() { return dim_y_; }
+
+void VehicleModelInterface::updateCenterOffset(const double center_offset_from_base)
+{
+  center_offset_from_base_ = center_offset_from_base;
+}
+
 void VehicleModelInterface::setCurvature(const double curvature) { curvature_ = curvature; }

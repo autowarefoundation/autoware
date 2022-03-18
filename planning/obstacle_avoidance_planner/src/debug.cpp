@@ -18,7 +18,6 @@
 #include "obstacle_avoidance_planner/marker_helper.hpp"
 #include "obstacle_avoidance_planner/mpt_optimizer.hpp"
 #include "obstacle_avoidance_planner/process_cv.hpp"
-#include "obstacle_avoidance_planner/util.hpp"
 
 #include <opencv2/core.hpp>
 #include <rclcpp/clock.hpp>

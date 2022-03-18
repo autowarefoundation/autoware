@@ -15,48 +15,53 @@
 #include "obstacle_avoidance_planner/vehicle_model/vehicle_model_bicycle_kinematics.hpp"
 
 #include <iostream>
+#include <limits>
+#include <vector>
 
-KinematicsBicycleModel::KinematicsBicycleModel(
-  const double wheelbase, const double steer_lim, const double steer_tau)
-: VehicleModelInterface(/* dim_x */ 3, /* dim_u */ 1, /* dim_y */ 2)
+KinematicsBicycleModel::KinematicsBicycleModel(const double wheel_base, const double steer_limit)
+: VehicleModelInterface(/* dim_x */ 2, /* dim_u */ 1, /* dim_y */ 2, wheel_base, steer_limit)
 {
-  wheelbase_ = wheelbase;
-  steer_lim_ = steer_lim;
-  steer_tau_ = steer_tau;
 }
 
-void KinematicsBicycleModel::calculateDiscreteMatrix(
-  Eigen::MatrixXd * Ad, Eigen::MatrixXd * Bd, Eigen::MatrixXd * Cd, Eigen::MatrixXd * Wd,
-  const double ds)
+void KinematicsBicycleModel::calculateStateEquationMatrix(
+  Eigen::MatrixXd & Ad, Eigen::MatrixXd & Bd, Eigen::MatrixXd & Wd, const double ds)
 {
-  auto sign = [](double x) { return (x > 0.0) - (x < 0.0); };
+  // const double epsilon = std::numeric_limits<double>::epsilon();
+  // constexpr double dt = 0.03;  // assuming delta time for steer tau
 
-  /* Linearize delta around delta_r (reference delta) */
-  double delta_r = atan(wheelbase_ * curvature_);
-  if (abs(delta_r) >= steer_lim_) {
-    delta_r = steer_lim_ * static_cast<double>(sign(delta_r));
-  }
-  double cos_delta_r_squared_inv = 1 / (cos(delta_r) * cos(delta_r));
+  /*
+  const double lf = wheel_base_ - center_offset_from_base_;
+  const double lr = center_offset_from_base_;
+  */
 
-  // Ad << 0.0, velocity, 0.0, 0.0, 0.0, velocity / wheelbase_ * cos_delta_r_squared_inv, 0.0, 0.0,
-  //   -1.0 / steer_tau_;
-  // Eigen::MatrixXd I = Eigen::MatrixXd::Identity(dim_x_, dim_x_);
-  // Ad = (I - dt * 0.5 * Ad).inverse() * (I + dt * 0.5 * Ad);  // bilinear discretization
+  const double delta_r = std::atan(wheel_base_ * curvature_);
+  const double cropped_delta_r = std::clamp(delta_r, -steer_limit_, steer_limit_);
 
-  // assuming delta time for steer tau
-  constexpr double dt = 0.03;
-  *Ad << 1.0, ds, 0, 0.0, 1, ds / (wheelbase_ * cos_delta_r_squared_inv), 0.0, 0,
-    1 - dt / steer_tau_;
+  // NOTE: cos(delta_r) will not be zero since that happens only when curvature is infinity
+  Ad << 1.0, ds,  //
+    0.0, 1.0;
 
-  *Bd << 0.0, 0.0, dt / steer_tau_;
+  Bd << 0.0, ds / wheel_base_ / std::pow(std::cos(delta_r), 2.0);
 
-  *Cd << 1.0, 0.0, 0.0, 0.0, 1.0, 0.0;
+  Wd << 0.0, -ds * curvature_ + ds / wheel_base_ *
+                                  (std::tan(cropped_delta_r) -
+                                   cropped_delta_r / std::pow(std::cos(cropped_delta_r), 2.0));
+}
 
-  *Wd << 0.0,
-    -ds * curvature_ + ds / wheelbase_ * (tan(delta_r) - delta_r * cos_delta_r_squared_inv), 0.0;
+void KinematicsBicycleModel::calculateObservationMatrix(Eigen::MatrixXd & Cd)
+{
+  Cd << 1.0, 0.0, 0.0, 0.0, 1.0, 0.0;
+}
+
+void KinematicsBicycleModel::calculateObservationSparseMatrix(
+  std::vector<Eigen::Triplet<double>> & Cd_vec)
+{
+  Cd_vec.clear();
+  Cd_vec.push_back({0, 0, 1.0});
+  Cd_vec.push_back({1, 1, 1.0});
 }
 
 void KinematicsBicycleModel::calculateReferenceInput(Eigen::MatrixXd * Uref)
 {
-  (*Uref)(0, 0) = std::atan(wheelbase_ * curvature_);
+  (*Uref)(0, 0) = std::atan(wheel_base_ * curvature_);
 }

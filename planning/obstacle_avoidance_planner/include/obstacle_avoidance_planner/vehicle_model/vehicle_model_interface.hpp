@@ -22,7 +22,10 @@
 #ifndef OBSTACLE_AVOIDANCE_PLANNER__VEHICLE_MODEL__VEHICLE_MODEL_INTERFACE_HPP_
 #define OBSTACLE_AVOIDANCE_PLANNER__VEHICLE_MODEL__VEHICLE_MODEL_INTERFACE_HPP_
 
-#include <eigen3/Eigen/Core>
+#include "eigen3/Eigen/Core"
+#include "eigen3/Eigen/Sparse"
+
+#include <vector>
 
 /**
  * @class vehicle model class
@@ -31,20 +34,23 @@
 class VehicleModelInterface
 {
 protected:
-  const int dim_x_;   //!< @brief dimension of state x
-  const int dim_u_;   //!< @brief dimension of input u
-  const int dim_y_;   //!< @brief dimension of output y
-  double velocity_;   //!< @brief vehicle velocity
-  double curvature_;  //!< @brief curvature on the linearized point on path
+  const int dim_x_;                 // !< @brief dimension of kinematics x
+  const int dim_u_;                 // !< @brief dimension of input u
+  const int dim_y_;                 // !< @brief dimension of output y
+  double velocity_;                 // !< @brief vehicle velocity
+  double curvature_;                // !< @brief curvature on the linearized point on path
+  double wheel_base_;               // !< @brief wheel base of vehicle
+  double steer_limit_;              // !< @brief vehicle velocity
+  double center_offset_from_base_;  // !< @brief length from base lin to optimization center [m]
 
 public:
   /**
    * @brief constructor
-   * @param [in] dim_x dimension of state x
+   * @param [in] dim_x dimension of kinematics x
    * @param [in] dim_u dimension of input u
    * @param [in] dim_y dimension of output y
    */
-  VehicleModelInterface(int dim_x, int dim_u, int dim_y);
+  VehicleModelInterface(int dim_x, int dim_u, int dim_y, double wheel_base, double steer_limit);
 
   /**
    * @brief destructor
@@ -52,8 +58,8 @@ public:
   virtual ~VehicleModelInterface() = default;
 
   /**
-   * @brief get state x dimension
-   * @return state dimension
+   * @brief get kinematics x dimension
+   * @return kinematics dimension
    */
   int getDimX();
 
@@ -69,6 +75,8 @@ public:
    */
   int getDimY();
 
+  void updateCenterOffset(const double center_offset_from_base);
+
   /**
    * @brief set curvature
    * @param [in] curvature curvature on the linearized point on path
@@ -76,16 +84,26 @@ public:
   void setCurvature(const double curvature);
 
   /**
-   * @brief calculate discrete model matrix of x_k+1 = Ad * xk + Bd * uk + Wd, yk = Cd * xk
+   * @brief calculate discrete kinematics equation matrix of x_k+1 = Ad * x_k + Bd * uk + Wd
    * @param [out] Ad coefficient matrix
    * @param [out] Bd coefficient matrix
-   * @param [out] Cd coefficient matrix
    * @param [out] Wd coefficient matrix
-   * @param [in] ds Discretization arc length
+   * @param [in] ds discretization arc length
    */
-  virtual void calculateDiscreteMatrix(
-    Eigen::MatrixXd * Ad, Eigen::MatrixXd * Bd, Eigen::MatrixXd * Cd, Eigen::MatrixXd * Wd,
-    const double ds) = 0;
+  virtual void calculateStateEquationMatrix(
+    Eigen::MatrixXd & Ad, Eigen::MatrixXd & Bd, Eigen::MatrixXd & Wd, const double ds) = 0;
+
+  /**
+   * @brief calculate discrete observation matrix of y_k = Cd * x_k
+   * @param [out] Cd coefficient matrix
+   */
+  virtual void calculateObservationMatrix(Eigen::MatrixXd & Cd) = 0;
+
+  /**
+   * @brief calculate discrete observation matrix of y_k = Cd * x_k
+   * @param [out] Cd_vec sparse matrix information of coefficient matrix
+   */
+  virtual void calculateObservationSparseMatrix(std::vector<Eigen::Triplet<double>> & Cd_vec) = 0;
 
   /**
    * @brief calculate reference input

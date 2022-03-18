@@ -1,9 +1,15 @@
-# Obstacle Avoidance Planner
-
 ## Purpose
 
 This package generates a trajectory that is feasible to drive and collision free based on a reference path, drivable area, and static/dynamic obstacles.
-Only position and orientation of trajectory are calculated in this module, and velocity or acceleration will be updated in the latter modules.
+Only position and orientation of trajectory are calculated in this module (velocity is just aligned from the one in the path), and velocity or acceleration will be updated in the latter modules.
+
+## Feature
+
+This package is able to
+
+- follow the behavior path smoothly
+- make the trajectory inside the drivable area as much as possible
+- insert stop point if its trajectory point is outside the drivable area
 
 ## Inputs / Outputs
 
@@ -13,34 +19,84 @@ Only position and orientation of trajectory are calculated in this module, and v
 | ---------------------------------------------------------------------- | ---------------------------------------------- | -------------------------------------------------- |
 | `~/input/path`                                                         | autoware_auto_planning_msgs/Path               | Reference path and the corresponding drivable area |
 | `~/input/objects`                                                      | autoware_auto_perception_msgs/PredictedObjects | Recognized objects around the vehicle              |
-| `/localization/kinematic_state`                                        | nav_msgs/Odometry                              | Current Velocity of ego vehicle                    |
+| `/localization/kinematic_kinematics`                                   | nav_msgs/Odometry                              | Current Velocity of ego vehicle                    |
 | `/planning/scenario_planning/lane_driving/obstacle_avoidance_approval` | tier4_planning_msgs/EnableAvoidance            | Approval to execute obstacle avoidance             |
 
 ### output
 
-| Name            | Type                                   | Description                                                       |
-| --------------- | -------------------------------------- | ----------------------------------------------------------------- |
-| `~/output/path` | autoware_auto_planning_msgs/Trajectory | Optimized trajectory that is feasible to drive and collision-free |
+| Name                  | Type                                   | Description                                                       |
+| --------------------- | -------------------------------------- | ----------------------------------------------------------------- |
+| `~/output/trajectory` | autoware_auto_planning_msgs/Trajectory | Optimized trajectory that is feasible to drive and collision-free |
 
 ## Flowchart
 
-Each module is explained briefly here based on the flowchart.
+Flowchart of functions is explained here.
 
-![obstacle_avoidance_planner_flowchart](./media/obstacle_avoidance_planner_flowchart.drawio.svg)
+```plantuml
+@startuml
+title pathCallback
+start
 
-### Manage trajectory generation
+group generateOptimizedTrajectory
+  :checkReplan;
+  if (replanning required?) then (yes)
+    group getMaps
+      :getDrivableArea;
+      :getRoadClearanceMap;
+      :drawObstacleOnImage;
+      :getObstacleClearanceMap;
+    end group
 
-When one of the following conditions area realized, callback function to generate a trajectory is called and publish the trajectory.
-Otherwise, previously generated trajectory is published.
+    group optimizeTrajectory
+      :getEBTrajectory;
+      :getModelPredictiveTrajectory;
 
-- Ego moves a certain distance compared to the previous ego pose (default: 10.0 [m])
+      if (optimization failed?) then (no)
+      else (yes)
+        :send previous\n trajectory;
+      endif
+    end group
+
+    :insertZeroVelocityOutsideDrivableArea;
+
+    :publishDebugDataInOptimization;
+  else (no)
+    :send previous\n trajectory;
+  endif
+end group
+
+
+group generatePostProcessedTrajectory
+  :getExtendedOptimizedTrajectory;
+  :concatTrajectory;
+  :generateFineTrajectoryPoints;
+  :alignVelocity;
+end group
+
+:convertToTrajectory;
+
+:publishDebugDataInMain;
+
+stop
+@enduml
+```
+
+### checkReplan
+
+When one of the following conditions are realized, callback function to generate a trajectory is called and publish the trajectory.
+Otherwise, previously generated (optimized) trajectory is published just with aligning the velocity from the latest behavior path.
+
+- Ego moves a certain distance compared to the previous ego pose (default: 3.0 [m])
 - Time passes (default: 1.0 [s])
-- The path shape is changed (e.g. when starting planning lane change)
 - Ego is far from the previously generated trajectory
 
-The previously generated trajectory is memorized, but it is not when the path shape is changed and ego is far from the previously generated trajectory.
+### getRoadClearanceMap
 
-### Select objects to avoid
+Cost map is generated according to the distance to the road boundaries.
+
+These cost maps are used in the optimization to generate a collision-free trajectory.
+
+### drawObstacleOnImage
 
 Only obstacles that are static and locate in a shoulder lane is decided to avoid.
 In detail, this equals to the following three conditions at the same time, and the red obstacles in the figure (id: 3, 4, 5) is to be avoided.
@@ -52,39 +108,37 @@ In detail, this equals to the following three conditions at the same time, and t
 
 ![obstacle_to_avoid](./media/obstacle_to_avoid.drawio.svg)
 
-### Generate object costmap
+### getObstacleClearanceMap
 
 Cost map is generated according to the distance to the target obstacles to be avoided.
 
-### Generate road boundary costmap
+### getEBTrajectory
 
-Cost map is generated according to the distance to the road boundaries.
+The latter optimization (MPT) assumes that the reference path is smooth enough.
+Therefore the path from behavior is made smooth here, and send to the optimization as a format of trajectory.
+Obstacles are ignored in this function.
 
-These cost maps area used in the optimization to generate a collision-free trajectory.
+More details can be seen in the Elastic Band section.
 
-### Smooth path
-
-The latter optimization assumes that the reference path is smooth enough.
-Therefore the path from behavior is smoothed here, and send to the optimization as a format of trajectory.
-Obstacles are not considered.
-
-### Optimize trajectory
+### getModelPredictiveTrajectory
 
 This module makes the trajectory kinematically-feasible and collision-free.
 We define vehicle pose in the frenet coordinate, and minimize tracking errors by optimization.
-This optimization also considers vehicle kinematics and collision checking with road boundary and obstacles.
-To decrease the computation cost, the optimization is applied to the shorter trajectory than the whole trajectory, and concatenate the remained trajectory with the optimized one at last.
+This optimization considers vehicle kinematics and collision checking with road boundary and obstacles.
+To decrease the computation cost, the optimization is applied to the shorter trajectory (default: 50 [m]) than the whole trajectory, and concatenate the remained trajectory with the optimized one at last.
 
 The trajectory just in front of the ego must not be changed a lot so that the steering wheel will be stable.
 Therefore, we use the previously generated trajectory in front of the ego.
 
 Optimization center on the vehicle, that tries to locate just on the trajectory, can be tuned along side the vehicle vertical axis.
-This parameter `optimization center offset` is defined as the signed length from the back-wheel center to the optimization center.
+This parameter `mpt.kinematics.optimization center offset` is defined as the signed length from the back-wheel center to the optimization center.
 Some examples are shown in the following figure, and it is shown that the trajectory of vehicle shape differs according to the optimization center even if the reference trajectory (green one) is the same.
 
 ![mpt_optimization_offset](./media/mpt_optimization_offset.svg)
 
-### Check drivability, and extend trajectory
+More details can be seen in the Model Predictive Trajectory section.
+
+### insertZeroVelocityOutsideDrivableArea
 
 Optimized trajectory is too short for velocity planning, therefore extend the trajectory by concatenating the optimized trajectory and the behavior path considering drivability.
 Generated trajectory is checked if it is inside the drivable area or not, and if outside drivable area, output a trajectory inside drivable area with the behavior path or the previously generated trajectory.
@@ -96,9 +150,9 @@ As described above, the behavior path is separated into two paths: one is for op
   - In this case, we do not care if the remained trajectory is inside or outside the drivable area since generally it is outside the drivable area (especially in a narrow road), but we want to pass a trajectory as long as possible to the latter module.
 - If optimized trajectory is **outside the drivable area**, and the remained trajectory is inside/outside the drivable area,
   - and if the previously generated trajectory **is memorized**,
-    - the output trajectory will be a part of previously generated trajectory, whose end firstly goes outside the drivable area.
+    - the output trajectory will be the previously generated trajectory, where zero velocity is inserted to the point firstly going outside the drivable area.
   - and if the previously generated trajectory **is not memorized**,
-    - the output trajectory will be a part of trajectory just transformed from the behavior path, whose end firstly goes outside the drivable area.
+    - the output trajectory will be a part of trajectory just transformed from the behavior path, where zero velocity is inserted to the point firstly going outside the drivable area.
 
 Optimization failure is dealt with the same as if the optimized trajectory is outside the drivable area.
 The output trajectory is memorized as a previously generated trajectory for the next cycle.
@@ -107,14 +161,14 @@ _Rationale_
 In the current design, since there are some modelling errors, the constraints are considered to be soft constraints.
 Therefore, we have to make sure that the optimized trajectory is inside the drivable area or not after optimization.
 
-### Assign trajectory velocity
+### alignVelocity
 
-Velocity is assigned in the result trajectory by the behavior path.
+Velocity is assigned in the result trajectory from the velocity in the behavior path.
 The shapes of the trajectory and the path are different, therefore the each nearest trajectory point to the path is searched and interpolated linearly.
 
 ## Algorithms
 
-In this section, Elastic band (to smooth the path) and Model Predictive Trajectory (to optimize the trajectory) will be explained in detail.
+In this section, Elastic band (to make the path smooth) and Model Predictive Trajectory (to make the trajectory kinematically feasible and collision-free) will be explained in detail.
 
 ### Elastic band
 
@@ -131,11 +185,68 @@ Therefore the output path may have a collision with road boundaries or obstacles
 We formulate a QP problem minimizing the distance between the previous point and the next point for each point.
 Conditions that each point can move to a certain extent are used so that the path will not changed a lot but will be smoother.
 
-For $k$'th point ($\boldsymbol{p}_k$), the objective function is as follows.
+For $k$'th point ($\boldsymbol{p}_k = (x_k, y_k)$), the objective function is as follows.
 The beginning and end point are fixed during the optimization.
 
 $$
-\min \sum_{k=1}^{n-1} |\boldsymbol{p}_{k+1} - \boldsymbol{p}_{k}| - |\boldsymbol{p}_{k} - \boldsymbol{p}_{k-1}|
+\begin{align}
+\ J & = \min \sum_{k=1}^{n-1} ||(\boldsymbol{p}_{k+1} - \boldsymbol{p}_{k}) - (\boldsymbol{p}_{k} - \boldsymbol{p}_{k-1})||^2 \\
+\ & = \min \sum_{k=1}^{n-1} ||\boldsymbol{p}_{k+1} - 2 \boldsymbol{p}_{k} + \boldsymbol{p}_{k-1}||^2 \\
+\ & = \min \sum_{k=1}^{n-1} \{(x_{k+1} - x_k + x_{k-1})^2 + (y_{k+1} - y_k + y_{k-1})^2\} \\
+\ & = \min
+    \begin{pmatrix}
+        \ x_0 \\
+        \ x_1 \\
+        \ x_2 \\
+        \vdots \\
+        \ x_{n-2}\\
+        \ x_{n-1} \\
+        \ x_{n} \\
+        \ y_0 \\
+        \ y_1 \\
+        \ y_2 \\
+        \vdots \\
+        \ y_{n-2}\\
+        \ y_{n-1} \\
+        \ y_{n} \\
+    \end{pmatrix}^T
+    \begin{pmatrix}
+      1 & -2 & 1 & 0 & \dots& \\
+      -2 & 5 & -4 & 1 & 0 &\dots   \\
+      1 & -4 & 6 & -4 & 1 & \\
+      0 & 1 & -4 & 6 & -4 &   \\
+      \vdots & 0 & \ddots&\ddots& \ddots   \\
+      & \vdots & & & \\
+      & & & 1 & -4 & 6 & -4 & 1 \\
+      & & & & 1 & -4 & 5 & -2 \\
+      & & & & & 1 & -2 &  1& \\
+      & & & & & & & &1 & -2 & 1 & 0 & \dots& \\
+      & & & & & & & &-2 & 5 & -4 & 1 & 0 &\dots   \\
+      & & & & & & & &1 & -4 & 6 & -4 & 1 & \\
+      & & & & & & & &0 & 1 & -4 & 6 & -4 &   \\
+      & & & & & & & &\vdots & 0 & \ddots&\ddots& \ddots   \\
+      & & & & & & & & & \vdots & & & \\
+      & & & & & & & & & & & 1 & -4 & 6 & -4 & 1 \\
+      & & & & & & & & & & & & 1 & -4 & 5 & -2 \\
+      & & & & & & & & & & & & & 1 & -2 &  1& \\
+    \end{pmatrix}
+    \begin{pmatrix}
+        \ x_0 \\
+        \ x_1 \\
+        \ x_2 \\
+        \vdots \\
+        \ x_{n-2}\\
+        \ x_{n-1} \\
+        \ x_{n} \\
+        \ y_0 \\
+        \ y_1 \\
+        \ y_2 \\
+        \vdots \\
+        \ y_{n-2}\\
+        \ y_{n-1} \\
+        \ y_{n} \\
+    \end{pmatrix}
+\end{align}
 $$
 
 ### Model predictive trajectory
@@ -152,7 +263,7 @@ When the optimization failed or the optimized trajectory is not collision free, 
 
 Trajectory near the ego must be stable, therefore the condition where trajectory points near the ego are the same as previously generated trajectory is considered, and this is the only hard constraints in MPT.
 
-#### Formulation
+#### Vehicle kinematics
 
 As the following figure, we consider the bicycle kinematics model in the frenet frame to track the reference path.
 At time step $k$, we define lateral distance to the reference path, heading angle against the reference path, and steer angle as $y_k$, $\theta_k$, and $\delta_k$ respectively.
@@ -169,6 +280,8 @@ y_{k+1} & = y_{k} + v \sin \theta_k dt \\
 \delta_{k+1} & = \delta_k - \frac{\delta_k - \delta_{des,k}}{\tau}dt
 \end{align}
 $$
+
+##### Linearization
 
 Then we linearize these equations.
 $y_k$ and $\theta_k$ are tracking errors, so we assume that those are small enough.
@@ -200,47 +313,197 @@ $$
 \end{align}
 $$
 
-Based on the linearization, the error kinematics is formulated with the following linear equations.
+##### One-step state equation
+
+Based on the linearization, the error kinematics is formulated with the following linear equations,
 
 $$
 \begin{align}
     \begin{pmatrix}
         y_{k+1} \\
-        \theta_{k+1} \\
-        \delta_{k+1}
+        \theta_{k+1}
     \end{pmatrix}
     =
     \begin{pmatrix}
-        1 & v dt & 0 \\
-        0 & 1 & \frac{v dt}{L \cos^{2} \delta_{\mathrm{ref}, k}} \\
-        0 & 0 & 1 - \frac{dt}{\tau}
+        1 & v dt \\
+        0 & 1 \\
     \end{pmatrix}
     \begin{pmatrix}
         y_k \\
         \theta_k \\
-        \delta_k
     \end{pmatrix}
     +
     \begin{pmatrix}
         0 \\
-        0 \\
-        \frac{dt}{\tau}
+        \frac{v dt}{L \cos^{2} \delta_{\mathrm{ref}, k}} \\
     \end{pmatrix}
-    \delta_{des}
+    \delta_{k}
     +
     \begin{pmatrix}
         0 \\
         \frac{v \tan(\delta_{\mathrm{ref}, k}) dt}{L} - \frac{v \delta_{\mathrm{ref}, k} dt}{L \cos^{2} \delta_{\mathrm{ref}, k}} - \kappa_k v dt\\
-        0
     \end{pmatrix}
 \end{align}
 $$
 
-The objective function for smoothing and tracking is shown as follows.
+which can be formulated as follows with the state $\boldsymbol{x}$, control input $u$ and some matrices, where $\boldsymbol{x} = (y_k, \theta_k)$
 
 $$
 \begin{align}
-J_1 & (y_{0...N-1}, \theta_{0...N-1}, \delta_{0...N-1}) \\ & = w_y \sum_{k} y_k^2 + w_{\theta} \sum_{k} \theta_k^2 + w_{\delta} \sum_k \delta_k^2 + w_{\dot{\delta}} \sum_k \dot{\delta}_k^2 + w_{\ddot{\delta}} \sum_k \ddot{\delta}_k^2
+  \boldsymbol{x}_{k+1} = A_k \boldsymbol{x}_k + \boldsymbol{b}_k u_k + \boldsymbol{w}_k
+\end{align}
+$$
+
+##### Time-series state equation
+
+Then, we formulate time-series state equation by concatenating states, control inputs and matrices respectively as
+
+$$
+\begin{align}
+  \boldsymbol{x} = A \boldsymbol{x}_0 + B \boldsymbol{u} + \boldsymbol{w}
+\end{align}
+$$
+
+where
+
+$$
+\begin{align}
+\boldsymbol{x} = (\boldsymbol{x}^T_1, \boldsymbol{x}^T_2, \boldsymbol{x}^T_3, \dots, \boldsymbol{x}^T_{n-1})^T \\
+\boldsymbol{u} = (u_0, u_1, u_2, \dots, u_{n-2})^T \\
+\boldsymbol{w} = (\boldsymbol{w}^T_0, \boldsymbol{w}^T_1, \boldsymbol{w}^T_2, \dots, \boldsymbol{w}^T_{n-1})^T. \\
+\end{align}
+$$
+
+In detail, each matrices are constructed as follows.
+
+$$
+\begin{align}
+    \begin{pmatrix}
+        \boldsymbol{x}_1 \\
+        \boldsymbol{x}_2 \\
+        \boldsymbol{x}_3 \\
+        \vdots \\
+        \boldsymbol{x}_{n-1}
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+        A_0 \\
+        A_1 A_0 \\
+        A_2 A_1 A_0\\
+        \vdots \\
+        \prod\limits_{k=0}^{n-1} A_{k}
+    \end{pmatrix}
+    \boldsymbol{x}_0
+    +
+    \begin{pmatrix}
+      B_0 & 0 & & \dots & 0 \\
+      A_0 B_0 & B_1 & 0 & \dots & 0 \\
+      A_1 A_0 B_0 & A_0 B_1 & B_2 & \dots & 0 \\
+      \vdots & \vdots & & \ddots & 0 \\
+      \prod\limits_{k=0}^{n-3} A_k B_0 & \prod\limits_{k=0}^{n-4} A_k B_1 & \dots & A_0 B_{n-3} & B_{n-2}
+    \end{pmatrix}
+    \begin{pmatrix}
+        u_0 \\
+        u_1 \\
+        u_2 \\
+        \vdots \\
+        u_{n-2}
+    \end{pmatrix}
+    +
+    \begin{pmatrix}
+      I & 0 & & \dots & 0 \\
+      A_0 & I & 0 & \dots & 0 \\
+      A_1 A_0 & A_0 & I & \dots & 0 \\
+      \vdots & \vdots & & \ddots & 0 \\
+      \prod\limits_{k=0}^{n-3} A_k & \prod\limits_{k=0}^{n-4} A_k & \dots & A_0 & I
+    \end{pmatrix}
+    \begin{pmatrix}
+        \boldsymbol{w}_0 \\
+        \boldsymbol{w}_1 \\
+        \boldsymbol{w}_2 \\
+        \vdots \\
+        \boldsymbol{w}_{n-2}
+    \end{pmatrix}
+\end{align}
+$$
+
+##### Free-boundary-conditioned time-series state equation
+
+For path planning which does not start from the current ego pose, $\boldsymbol{x}_0$ should be the design variable of optimization.
+Therefore, we make $\boldsymbol{u}'$ by concatenating $\boldsymbol{x}_0$ and $\boldsymbol{u}$, and redefine $\boldsymbol{x}$ as follows.
+
+$$
+\begin{align}
+  \boldsymbol{u}' & = (\boldsymbol{x}^T_0, \boldsymbol{u}^T)^T \\
+  \boldsymbol{x} & = (\boldsymbol{x}^T_0, \boldsymbol{x}^T_1, \boldsymbol{x}^T_2, \dots, \boldsymbol{x}^T_{n-1})^T
+\end{align}
+$$
+
+Then we get the following state equation
+
+$$
+\begin{align}
+  \boldsymbol{x}' = B \boldsymbol{u}' + \boldsymbol{w},
+\end{align}
+$$
+
+which is in detail
+
+$$
+\begin{align}
+    \begin{pmatrix}
+        \boldsymbol{x}_0 \\
+        \boldsymbol{x}_1 \\
+        \boldsymbol{x}_2 \\
+        \boldsymbol{x}_3 \\
+        \vdots \\
+        \boldsymbol{x}_{n-1}
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+      I & 0 & \dots & & & 0 \\
+      A_0 & B_0 & 0 & & \dots & 0 \\
+      A_1 A_0 & A_0 B_0 & B_1 & 0 & \dots & 0 \\
+      A_2 A_1 A_0 & A_1 A_0 B_0 & A_0 B_1 & B_2 & \dots & 0 \\
+      \vdots & \vdots & \vdots & & \ddots & 0 \\
+      \prod\limits_{k=0}^{n-1} A_k & \prod\limits_{k=0}^{n-3} A_k B_0 & \prod\limits_{k=0}^{n-4} A_k B_1 & \dots & A_0 B_{n-3} & B_{n-2}
+    \end{pmatrix}
+    \begin{pmatrix}
+        \boldsymbol{x}_0 \\
+        u_0 \\
+        u_1 \\
+        u_2 \\
+        \vdots \\
+        u_{n-2}
+    \end{pmatrix}
+    +
+    \begin{pmatrix}
+      0 & \dots & & & 0 \\
+      I & 0 & & \dots & 0 \\
+      A_0 & I & 0 & \dots & 0 \\
+      A_1 A_0 & A_0 & I & \dots & 0 \\
+      \vdots & \vdots & & \ddots & 0 \\
+      \prod\limits_{k=0}^{n-3} A_k & \prod\limits_{k=0}^{n-4} A_k & \dots & A_0 & I
+    \end{pmatrix}
+    \begin{pmatrix}
+        \boldsymbol{w}_0 \\
+        \boldsymbol{w}_1 \\
+        \boldsymbol{w}_2 \\
+        \vdots \\
+        \boldsymbol{w}_{n-2}
+    \end{pmatrix}.
+\end{align}
+$$
+
+#### Objective function
+
+The objective function for smoothing and tracking is shown as follows, which can be formulated with value function matrices $Q, R$.
+
+$$
+\begin{align}
+J_1 (\boldsymbol{x}', \boldsymbol{u}') & = w_y \sum_{k} y_k^2 + w_{\theta} \sum_{k} \theta_k^2 + w_{\delta} \sum_k \delta_k^2 + w_{\dot{\delta}} \sum_k \dot{\delta}_k^2 + w_{\ddot{\delta}} \sum_k \ddot{\delta}_k^2 \\
+& = \boldsymbol{x}'^T Q \boldsymbol{x}' + \boldsymbol{u}'^T R \boldsymbol{u}' \\
+& = \boldsymbol{u}'^T H \boldsymbol{u}' + \boldsymbol{u}'^T \boldsymbol{f}
 \end{align}
 $$
 
@@ -250,25 +513,29 @@ Assuming that the lateral distance to the road boundaries or obstacles from the 
 $$
 y_{\mathrm{base}, k, \min} - \lambda_{\mathrm{base}, k} \leq y_{\mathrm{base}, k} (y_k)  \leq y_{\mathrm{base}, k, \max} + \lambda_{\mathrm{base}, k}\\
 y_{\mathrm{top}, k, \min} - \lambda_{\mathrm{top}, k} \leq y_{\mathrm{top}, k} (y_k) \leq y_{\mathrm{top}, k, \max} + \lambda_{\mathrm{top}, k}\\
-y_{\mathrm{mid}, k, \min} - \lambda_{\mathrm{mid}, k} \leq y_{\mathrm{mid}, k} (y_k) \leq y_{\mathrm{mid}, k, \max} + \lambda_{\mathrm{mid}, k}
+y_{\mathrm{mid}, k, \min} - \lambda_{\mathrm{mid}, k} \leq y_{\mathrm{mid}, k} (y_k) \leq y_{\mathrm{mid}, k, \max} + \lambda_{\mathrm{mid}, k} \\
+0 \leq \lambda_{\mathrm{base}, k} \\
+0 \leq \lambda_{\mathrm{top}, k} \\
+0 \leq \lambda_{\mathrm{mid}, k}
 $$
 
 Since $y_{\mathrm{base}, k}, y_{\mathrm{top}, k}, y_{\mathrm{mid}, k}$ is formulated as a linear function of $y_k$, the objective function for soft constraints is formulated as follows.
 
 $$
 \begin{align}
-J_2 & (\lambda_{\mathrm{base}, 0...N-1}, \lambda_{\mathrm{mid}, 0...N-1}, \lambda_{\mathrm{top}, 0...N-1}) \\ & = w_{\mathrm{base}} \sum_{k} \lambda_{\mathrm{base}, k}^2 + w_{\mathrm{mid}} \sum_k \lambda_{\mathrm{mid}, k}^2 + w_{\mathrm{top}} \sum_k \lambda_{\mathrm{top}, k}^2
+J_2 & (\boldsymbol{\lambda}_\mathrm{base}, \boldsymbol{\lambda}_\mathrm{top}, \boldsymbol {\lambda}_\mathrm{mid})\\
+& = w_{\mathrm{base}} \sum_{k} \lambda_{\mathrm{base}, k} + w_{\mathrm{mid}} \sum_k \lambda_{\mathrm{mid}, k} + w_{\mathrm{top}} \sum_k \lambda_{\mathrm{top}, k}
 \end{align}
 $$
 
 Slack variables are also design variables for optimization.
-We define a vector $\boldsymbol{x}$, that concatenates all the design variables.
+We define a vector $\boldsymbol{v}$, that concatenates all the design variables.
 
 $$
 \begin{align}
-\boldsymbol{x} =
+\boldsymbol{v} =
 \begin{pmatrix}
-... & y_k & \lambda_{\mathrm{base}, k} & \lambda_{\mathrm{top}, k} & \lambda_{\mathrm{mid}, k} &  ...
+  \boldsymbol{u}'^T & \boldsymbol{\lambda}_\mathrm{base}^T & \boldsymbol{\lambda}_\mathrm{top}^T & \boldsymbol{\lambda}_\mathrm{mid}^T
 \end{pmatrix}^T
 \end{align}
 $$
@@ -277,7 +544,7 @@ The summation of these two objective functions is the objective function for the
 
 $$
 \begin{align}
-\min_{\boldsymbol{x}} J (\boldsymbol{x}) = \min_{\boldsymbol{x}} J_1 & (y_{0...N-1}, \theta_{0...N-1}, \delta_{0...N-1}) + J_2 (\lambda_{\mathrm{base}, 0...N-1}, \lambda_{\mathrm{mid}, 0...N-1}, \lambda_{\mathrm{top}, 0...N-1})
+\min_{\boldsymbol{v}} J (\boldsymbol{v}) = \min_{\boldsymbol{v}} J_1 (\boldsymbol{u}') + J_2 (\boldsymbol{\lambda}_\mathrm{base}, \boldsymbol{\lambda}_\mathrm{top}, \boldsymbol{\lambda}_\mathrm{mid})
 \end{align}
 $$
 
@@ -294,10 +561,214 @@ Finally we transform those objective functions to the following QP problem, and 
 
 $$
 \begin{align}
-\min_{\boldsymbol{x}} \ & \frac{1}{2} \boldsymbol{x}^T \boldsymbol{P} \boldsymbol{x} + \boldsymbol{q} \boldsymbol{x} \\
-\mathrm{s.t.} \ & \boldsymbol{b}_l \leq \boldsymbol{A} \boldsymbol{x} \leq \boldsymbol{b}_u
+\min_{\boldsymbol{v}} \ & \frac{1}{2} \boldsymbol{v}^T \boldsymbol{H} \boldsymbol{v} + \boldsymbol{f} \boldsymbol{v} \\
+\mathrm{s.t.} \ & \boldsymbol{b}_{lower} \leq \boldsymbol{A} \boldsymbol{v} \leq \boldsymbol{b}_{upper}
 \end{align}
 $$
+
+#### Constraints
+
+##### Steer angle limitation
+
+Steer angle has a certain limitation ($\delta_{max}$, $\delta_{min}$).
+Therefore we add linear inequality equations.
+
+$$
+\begin{align}
+\delta_{min} \leq \delta_i \leq \delta_{max}
+\end{align}
+$$
+
+##### Collision free
+
+To realize collision-free path planning, we have to formulate constraints that the vehicle is inside the road (moreover, a certain meter far from the road boundary) and does not collide with obstacles in linear equations.
+For linearity, we chose a method to approximate the vehicle shape with a set of circles, that is reliable and easy to implement.
+
+Now we formulate the linear constraints where a set of circles on each trajectory point is collision-free.
+For collision checking, we have a drivable area in the format of an image where walls or obstacles are filled with a color.
+By using this drivable area, we calculate upper (left) and lower (right) boundaries along reference points so that we can interpolate boundaries on any position on the trajectory.
+
+Assuming that upper and lower boundaries are $b_l$, $b_u$ respectively, and $r$ is a radius of a circle, lateral deviation of the circle center $y'$ has to be
+
+$$
+b_l + r \leq y' \leq b_u - r.
+$$
+
+Based on the following figure, $y'$ can be formulated as follows.
+
+$$
+\begin{align}
+y' & = L \sin(\theta + \beta) + y \cos \beta - l \sin(\gamma - \phi_a) \\
+& = L \sin \theta \cos \beta + L \cos \theta \sin \beta + y \cos \beta - l \sin(\gamma - \phi_a) \\
+& \approx L \theta \cos \beta + L \sin \beta + y \cos \beta - l \sin(\gamma - \phi_a)
+\end{align}
+$$
+
+$$
+b_l + r - \lambda \leq y' \leq b_u - r + \lambda.
+$$
+
+$$
+\begin{align}
+y' & = C_1 \boldsymbol{x} + C_2 \\
+& = C_1 (B \boldsymbol{v} + \boldsymbol{w}) + C_2 \\
+& = C_1 B \boldsymbol{v} + \boldsymbol{w} + C_2
+\end{align}
+$$
+
+Note that longitudinal position of the circle center and the trajectory point to calculate boundaries are different.
+But each boundaries are vertical against the trajectory, resulting in less distortion by the longitudinal position difference since road boundaries does not change so much.
+For example, if the boundaries are not vertical against the trajectory and there is a certain difference of longitudinal position between the circe center and the trajectory point, we can easily guess that there is much more distortion when comparing lateral deviation and boundaries.
+
+$$
+\begin{align}
+    A_{blk} & =
+    \begin{pmatrix}
+        C_1 B & O & \dots & O & I_{N_{ref} \times N_{ref}} & O \dots & O\\
+        -C_1 B & O & \dots & O & I & O \dots & O\\
+        O & O & \dots & O & I & O \dots & O
+    \end{pmatrix}
+    \in \boldsymbol{R}^{3 N_{ref} \times D_v + N_{circle} N_{ref}} \\
+    \boldsymbol{b}_{lower, blk} & =
+    \begin{pmatrix}
+        \boldsymbol{b}_{lower} - C_1 \boldsymbol{w} - C_2 \\
+        -\boldsymbol{b}_{upper} + C_1 \boldsymbol{w} + C_2 \\
+        O
+    \end{pmatrix}
+    \in \boldsymbol{R}^{3 N_{ref}} \\
+    \boldsymbol{b}_{upper, blk} & = \boldsymbol{\infty}
+    \in \boldsymbol{R}^{3 N_{ref}}
+\end{align}
+$$
+
+We will explain options for optimization.
+
+###### L-infinity optimization
+
+The above formulation is called L2 norm for slack variables.
+Instead, if we use L-infinity norm where slack variables are shared by enabling `l_inf_norm`.
+
+$$
+\begin{align}
+    A_{blk} =
+    \begin{pmatrix}
+        C_1 B & I_{N_{ref} \times N_{ref}} \\
+        -C_1 B & I \\
+        O & I
+    \end{pmatrix}
+\in \boldsymbol{R}^{3N_{ref} \times D_v + N_{ref}}
+\end{align}
+$$
+
+###### Two-step soft constraints
+
+$$
+\begin{align}
+\boldsymbol{v}' =
+  \begin{pmatrix}
+    \boldsymbol{v} \\
+    \boldsymbol{\lambda}^{soft_1} \\
+    \boldsymbol{\lambda}^{soft_2} \\
+  \end{pmatrix}
+  \in \boldsymbol{R}^{D_v + 2N_{slack}}
+\end{align}
+$$
+
+$*$ depends on whether to use L2 norm or L-infinity optimization.
+
+$$
+\begin{align}
+    A_{blk} & =
+    \begin{pmatrix}
+        A^{soft_1}_{blk} \\
+        A^{soft_2}_{blk} \\
+    \end{pmatrix}\\
+    & =
+    \begin{pmatrix}
+        C_1^{soft_1} B & & \\
+        -C_1^{soft_1} B & \Huge{*} & \Huge{O} \\
+        O & & \\
+        C_1^{soft_2} B & & \\
+        -C_1^{soft_2} B & \Huge{O} & \Huge{*} \\
+        O & &
+    \end{pmatrix}
+    \in \boldsymbol{R}^{6 N_{ref} \times D_v + 2 N_{slack}}
+\end{align}
+$$
+
+$N_{slack}$ is $N_{circle}$ when L2 optimization, or $1$ when L-infinity optimization.
+$N_{circle}$ is the number of circles to check collision.
+
+## Tuning
+
+### Vehicle
+
+- max steering wheel degree
+  - `mpt.kinematics.max_steer_deg`
+
+### Assumptions
+
+- EB optimized trajectory length should be longer than MPT optimized trajectory length
+  - since MPT result may be jerky because of non-fixed reference path (= EB optimized trajectory)
+  - At least, EB fixed optimized trajectory length must be longer than MPT fixed optimization trajectory length
+    - This causes the case that there is a large difference between MPT fixed optimized point and MPT optimized point just after the point.
+
+### Drivability in narrow roads
+
+- set `option.drivability_check.use_vehicle_circles` true
+  - use a set of circles as a shape of the vehicle when checking if the generated trajectory will be outside the drivable area.
+- make `mpt.clearance.soft_clearance_from_road` smaller
+- make `mpt.kinematics.optimization_center_offset` different
+
+  - The point on the vehicle, offset forward from the base link` tries to follow the reference path.
+
+  - This may cause the a part of generated trajectory will be outside the drivable area.
+
+### Computation time
+
+- Loose EB optimization
+
+  - 1. make `eb.common.delta_arc_length_for_eb` large and `eb.common.num_sampling_points_for_eb` small
+    - This makes the number of design variables smaller
+    - Be careful about the trajectory length between MPT and EB as shown in Assumptions.
+    - However, empirically this causes large turn at the corner (e.g. The vehicle turns a steering wheel to the opposite side (=left) a bit just before the corner turning to right)
+  - 2. make `eb.qp.eps_abs` and `eb.qp.eps_rel` small
+    - This causes very unstable reference path generation for MPT, or turning a steering wheel a little bit larger
+
+- Enable computation reduction flag
+
+  - 1. set l_inf_norm true (by default)
+    - use L-inf norm optimization for MPT w.r.t. slack variables, resulting in lower number of design variables
+  - 2. set enable_warm_start true
+  - 3. set enable_manual_warm_start true (by default)
+  - 4. set steer_limit_constraint false
+    - This causes no assumption for trajectory generation where steering angle will not exceeds its hardware limitation
+  - 5. make the number of collision-free constraints small
+    - How to change parameters depend on the type of collision-free constraints
+      - If
+    - This may cause the trajectory generation where a part of ego vehicle is out of drivable area
+
+- Disable publishing debug visualization markers
+  - set `option.is_publishing_*` false
+
+### Robustness
+
+- Check if the trajectory before EB, after EB, or after MPT is not robust
+  - if the trajectory before EB is not robust
+  - if the trajectory after EB is not robust
+  - if the trajectory after MPT is not robust
+    - make `mpt.weight.steer_input_weight` or `mpt.weight.steer_rate_weight` larger, which are stability of steering wheel along the trajectory.
+
+### Other options
+
+- `option.skip_optimization` skips EB and MPT optimization.
+- `option.enable_pre_smoothing` enables EB which is smoothing the trajectory for MPT.
+  - EB is not required if the reference path for MPT is smooth enough and does not change its shape suddenly
+- `option.is_showing_calculation_time` enables showing each calculation time for functions and total calculation time on the terminal.
+- `option.is_stopping_if_outside_drivable_area` enables stopping just before the generated trajectory point will be outside the drivable area.
+- `mpt.option.plan_from_ego` enables planning from the ego pose when the ego's velocity is zero.
+- `mpt.option.two_step_soft_constraint` enables two step of soft constraints for collision free
+  - `mpt.option.soft_clearance_from_road` and `mpt.option.soft_second_clearance_from_road` are the weight.
 
 ## Limitation
 
@@ -331,54 +802,51 @@ Although it has a cons to converge to the local minima, it can get a good soluti
 
 Topics for debugging will be explained in this section.
 
-- **interpolated_points_marker**
-  - Trajectory points that is resampled from the input trajectory of obstacle avoidance planner. Whether this trajectory is inside the drivable area, smooth enough can be checked.
-
-![interpolated_points_marker](./media/interpolated_points_marker.png)
-
-- **smoothed_points_text**
-  - The output trajectory points from Elastic Band. Not points but small numbers are visualized. Whether these smoothed points are distorted or not can be checked.
-
-![smoothed_points_text](./media/smoothed_points_text.png)
-
-- **(base/top/mid)\_bounds_line**
-  - Lateral Distance to the road boundaries to check collision in MPT (More precisely, - vehicle_width / 2.0).
-  - This collision check is done with three points on the vehicle (base = back wheel center, top, mid), therefore three line markers are visualized for each trajectory point.
-  - If the distance between the edge of line markers and the road boundaries is not about the half width of the vehicle, collision check will fail.
-
-![bounds_line](./media/bounds_line.png)
-
-- **optimized_points_marker**
-  - The output trajectory points from MPT. Whether the trajectory is outside the drivable area can be checked.
-
-![optimized_points_marker](./media/optimized_points_marker.png)
-
-- **Trajectory with footprint**
-  - Trajectory footprints can be visualized by TrajectoryFootprint of rviz_plugin. Whether trajectory footprints of input/output of obstacle_avoidance_planner is inside the drivable area or not can be checked.
-
-![trajectory_with_footprint](./media/trajectory_with_footprint.png)
-
-- **Drivable Area**
-  - Drivable area. When drivable area generation failed, the drawn area may be distorted.
-  - `nav_msgs/msg/OccupancyGrid`
-  - topic name: `/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/debug/drivable_area`
+- **Drivable area**
+  - Drivable area to cover the road. Whether this area is continuous and covers the road can be checked.
+  - `/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/debug/drivable_area`, whose type is `nav_msgs/msg/OccupancyGrid`
 
 ![drivable_area](./media/drivable_area.png)
 
-- **area_with_objects**
-  - Area where obstacles are removed from the drivable area
-  - `nav_msgs/msg/OccupancyGrid`
+- **Path from behavior**
+  - The input path of obstacle_avoidance_planner. Whether this path is continuous and the curvature is not so high can be checked.
+  - `Path` or `PathFootprint` rviz plugin.
 
-![area_with_objects](./media/area_with_objects.png)
+![behavior_path](./media/behavior_path.png)
 
-- **object_clearance_map**
-  - Cost map for obstacles (distance to the target obstacles to be avoided)
-  - `nav_msgs/msg/OccupancyGrid`
+- **EB trajectory**
+  - The output trajectory of elastic band. Whether this trajectory is very smooth and a sampling width is constant can be checked.
+  - `Trajectory` or `TrajectoryFootprint` rviz plugin.
 
-![object_clearance_map](./media/object_clearance_map.png)
+![eb_traj](./media/eb_traj.png)
 
-- **clearance_map**
-  - Cost map for drivable area (distance to the road boundaries)
-  - `nav_msgs/msg/OccupancyGrid`
+- **MPT reference trajectory**
+  - The reference trajectory of model predictive trajectory. Whether this trajectory is very smooth and a sampling width is constant can be checked.
+  - `Trajectory` or `TrajectoryFootprint` rviz plugin.
 
-![clearance_map](./media/clearance_map.png)
+![mpt_ref_traj](./media/mpt_ref_traj.png)
+
+- **MPT fixed trajectory**
+  - The fixed trajectory around the ego of model predictive trajectory.
+  - `Trajectory` or `TrajectoryFootprint` rviz plugin.
+
+![mpt_fixed_traj](./media/mpt_fixed_traj.png)
+
+- **bounds**
+  - Lateral Distance to the road or object boundaries to check collision in model predictive trajectory.
+  - Whether these lines' ends align the road or obstacle boundaries can be checked.
+  - `bounds*` of `/planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner/debug/marker` whose type is `visualization_msgs/msg/MarkerArray`
+
+![bounds](./media/bounds.png)
+
+- **MPT trajectory**
+  - The output of model predictive trajectory. Whether this trajectory is smooth enough and inside the drivable area can be checked.
+  - `Trajectory` or `TrajectoryFootprint` rviz plugin.
+
+![mpt_traj](./media/mpt_traj.png)
+
+- **Output trajectory**
+  - The output of obstacle_avoidance_planner. Whether this trajectory is smooth enough can be checked.
+  - `Trajectory` or `TrajectoryFootprint` rviz plugin.
+
+![output_traj](./media/output_traj.png)
