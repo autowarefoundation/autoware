@@ -28,6 +28,35 @@
 
 namespace
 {
+enum class DebugLevel { DEBUG, INFO, WARN, ERROR, FATAL };
+
+template <DebugLevel debug_level>
+void logThrottledNamed(
+  const std::string & logger_name, const rclcpp::Clock::SharedPtr clock, const double duration_ms,
+  const std::string & message)
+{
+  static std::unordered_map<std::string, rclcpp::Time> last_output_time;
+  if (last_output_time.count(logger_name) != 0) {
+    const auto time_from_last_output = clock->now() - last_output_time.at(logger_name);
+    if (time_from_last_output.seconds() * 1000.0 < duration_ms) {
+      return;
+    }
+  }
+
+  last_output_time[logger_name] = clock->now();
+  if constexpr (debug_level == DebugLevel::DEBUG) {
+    RCLCPP_DEBUG(rclcpp::get_logger(logger_name), message.c_str());
+  } else if constexpr (debug_level == DebugLevel::INFO) {
+    RCLCPP_INFO(rclcpp::get_logger(logger_name), message.c_str());
+  } else if constexpr (debug_level == DebugLevel::WARN) {
+    RCLCPP_WARN(rclcpp::get_logger(logger_name), message.c_str());
+  } else if constexpr (debug_level == DebugLevel::ERROR) {
+    RCLCPP_ERROR(rclcpp::get_logger(logger_name), message.c_str());
+  } else if constexpr (debug_level == DebugLevel::FATAL) {
+    RCLCPP_FATAL(rclcpp::get_logger(logger_name), message.c_str());
+  }
+}
+
 std::vector<std::string> split(const std::string & str, const char delim)
 {
   std::vector<std::string> elems;
@@ -111,9 +140,17 @@ diagnostic_msgs::msg::DiagnosticArray convertHazardStatusToDiagnosticArray(
     diag_array.status.push_back(decorateDiag(hazard_diag, "[Safe Fault]"));
   }
   for (const auto & hazard_diag : hazard_status.diag_latent_fault) {
+    const std::string logger_name = "system_error_monitor " + hazard_diag.name;
+    logThrottledNamed<DebugLevel::WARN>(
+      logger_name, clock, 5000, "[Latent Fault]: " + hazard_diag.message);
+
     diag_array.status.push_back(decorateDiag(hazard_diag, "[Latent Fault]"));
   }
   for (const auto & hazard_diag : hazard_status.diag_single_point_fault) {
+    const std::string logger_name = "system_error_monitor " + hazard_diag.name;
+    logThrottledNamed<DebugLevel::ERROR>(
+      logger_name, clock, 5000, "[Single Point Fault]: " + hazard_diag.message);
+
     diag_array.status.push_back(decorateDiag(hazard_diag, "[Single Point Fault]"));
   }
 
