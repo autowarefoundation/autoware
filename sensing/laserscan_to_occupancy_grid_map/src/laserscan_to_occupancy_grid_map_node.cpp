@@ -121,6 +121,7 @@ OccupancyGridMapNode::OccupancyGridMapNode(const rclcpp::NodeOptions & node_opti
   use_height_filter_ = declare_parameter("use_height_filter", true);
   enable_single_frame_mode_ = declare_parameter("enable_single_frame_mode", false);
   const double map_length{declare_parameter("map_length", 100.0)};
+  const double map_width{declare_parameter("map_width", 100.0)};
   const double map_resolution{declare_parameter("map_resolution", 0.5)};
   const bool input_obstacle_pointcloud{declare_parameter("input_obstacle_pointcloud", true)};
   const bool input_obstacle_and_raw_pointcloud{
@@ -152,7 +153,7 @@ OccupancyGridMapNode::OccupancyGridMapNode(const rclcpp::NodeOptions & node_opti
 
   /* Occupancy grid */
   occupancy_grid_map_updater_ptr_ = std::make_shared<OccupancyGridMapBBFUpdater>(
-    map_length / map_resolution, map_length / map_resolution, map_resolution);
+    map_length / map_resolution, map_width / map_resolution, map_resolution);
 }
 
 PointCloud2::SharedPtr OccupancyGridMapNode::convertLaserscanToPointCLoud2(
