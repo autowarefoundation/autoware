@@ -45,7 +45,7 @@ The parameters and input topic names can be set in the `ekf_localizer.launch` fi
 
   Input pose source with measurement covariance matrix.
 
-- measured_twist_with_covariance (geometry_msgs/PoseWithCovarianceStamped)
+- measured_twist_with_covariance (geometry_msgs/TwistWithCovarianceStamped)
 
   Input twist source with measurement covariance matrix.
 
