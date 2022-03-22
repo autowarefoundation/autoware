@@ -71,31 +71,16 @@ Bounds findWidestBounds(const BoundsCandidates & front_bounds_candidates)
   return front_bounds_candidates.at(max_width_index);
 }
 
-double calcOverlappedBounds(
-  const geometry_msgs::msg::Pose & front_point, const Bounds & front_bounds_candidate,
-  const geometry_msgs::msg::Pose & prev_front_point, const Bounds & prev_front_continuous_bounds)
+double calcOverlappedBoundsSignedLength(
+  const Bounds & prev_front_continuous_bounds, const Bounds & front_bounds_candidate)
 {
-  const double avoiding_yaw =
-    tier4_autoware_utils::normalizeRadian(tf2::getYaw(front_point.orientation) + M_PI_2);
+  const double min_ub =
+    std::min(front_bounds_candidate.upper_bound, prev_front_continuous_bounds.upper_bound);
+  const double max_lb =
+    std::max(front_bounds_candidate.lower_bound, prev_front_continuous_bounds.lower_bound);
 
-  geometry_msgs::msg::Point ub_pos;
-  ub_pos.x = front_point.position.x + front_bounds_candidate.upper_bound * std::cos(avoiding_yaw);
-  ub_pos.y = front_point.position.y + front_bounds_candidate.upper_bound * std::sin(avoiding_yaw);
-
-  geometry_msgs::msg::Point lb_pos;
-  lb_pos.x = front_point.position.x + front_bounds_candidate.lower_bound * std::cos(avoiding_yaw);
-  lb_pos.y = front_point.position.y + front_bounds_candidate.lower_bound * std::sin(avoiding_yaw);
-
-  const double projected_ub_y =
-    geometry_utils::transformToRelativeCoordinate2D(ub_pos, prev_front_point).y;
-  const double projected_lb_y =
-    geometry_utils::transformToRelativeCoordinate2D(lb_pos, prev_front_point).y;
-
-  const double min_ub = std::min(projected_ub_y, prev_front_continuous_bounds.upper_bound);
-  const double max_lb = std::max(projected_lb_y, prev_front_continuous_bounds.lower_bound);
-
-  const double overlapped_length = min_ub - max_lb;
-  return overlapped_length;
+  const double overlapped_signed_length = min_ub - max_lb;
+  return overlapped_signed_length;
 }
 
 geometry_msgs::msg::Pose calcVehiclePose(
@@ -1340,7 +1325,6 @@ void MPTOptimizer::calcBounds(
   for (size_t i = 0; i < sequential_bounds_candidates.size(); ++i) {
     // NOTE: back() is the front avoiding circle
     const auto & bounds_candidates = sequential_bounds_candidates.at(i);
-    const auto & ref_point = ref_points.at(i);
 
     // extract only continuous bounds;
     if (i == 0) {  // TODO(murooka) use previous bounds, not widest bounds
@@ -1350,32 +1334,55 @@ void MPTOptimizer::calcBounds(
       const auto & prev_ref_point = ref_points.at(i - 1);
       const auto & prev_continuous_bounds = prev_ref_point.bounds;
 
-      // search continuous bounds
-      double max_length = std::numeric_limits<double>::min();
-      int max_idx = -1;
-      for (size_t c_idx = 0; c_idx < bounds_candidates.size(); ++c_idx) {
-        const auto & bounds_candidate = bounds_candidates.at(c_idx);
-        const double overlapped_length = calcOverlappedBounds(
-          convertRefPointsToPose(ref_point), bounds_candidate,
-          convertRefPointsToPose(prev_ref_point), prev_continuous_bounds);
-        if (overlapped_length > 0 && max_length < overlapped_length) {
-          max_length = overlapped_length;
-          max_idx = c_idx;
+      BoundsCandidates filtered_bounds_candidates;
+      for (const auto & bounds_candidate : bounds_candidates) {
+        // Step 1. Bounds is continuous to the previous one,
+        //         and the overlapped signed length is longer than vehice width
+        //         overlapped_signed_length already considers vehicle width.
+        const double overlapped_signed_length =
+          calcOverlappedBoundsSignedLength(prev_continuous_bounds, bounds_candidate);
+        if (overlapped_signed_length < 0) {
+          RCLCPP_INFO_EXPRESSION(
+            rclcpp::get_logger("mpt_optimizer"), is_showing_debug_info_,
+            "non-overlapped length bounds is ignored.");
+          continue;
+        }
+
+        // Step 2. Bounds is longer than vehicle width.
+        //         bounds_length already considers vehicle width.
+        const double bounds_length = bounds_candidate.upper_bound - bounds_candidate.lower_bound;
+        if (bounds_length < 0) {
+          RCLCPP_INFO_EXPRESSION(
+            rclcpp::get_logger("mpt_optimizer"), is_showing_debug_info_,
+            "negative length bounds is ignored.");
+          continue;
+        }
+
+        filtered_bounds_candidates.push_back(bounds_candidate);
+      }
+
+      // Step 3. Nearest bounds to trajectory
+      if (!filtered_bounds_candidates.empty()) {
+        const auto nearest_bounds = std::min_element(
+          filtered_bounds_candidates.begin(), filtered_bounds_candidates.end(),
+          [](const auto & a, const auto & b) {
+            return std::abs(a.lower_bound + a.upper_bound) <
+                   std::abs(b.lower_bound + b.upper_bound);
+          });
+        if (
+          filtered_bounds_candidates.begin() <= nearest_bounds &&
+          nearest_bounds < filtered_bounds_candidates.end()) {
+          ref_points.at(i).bounds = *nearest_bounds;
+          continue;
         }
       }
 
-      // find widest bounds
-      if (max_idx == -1) {
-        // NOTE: set invalid bounds so that MPT won't be solved
-        // TODO(murooka) this invalid bounds even makes optimization solved. consider if this is ok
-        RCLCPP_WARN_EXPRESSION(
-          rclcpp::get_logger("getBounds: front"), is_showing_debug_info_, "invalid bounds");
-        const auto invalid_bounds =
-          Bounds{-5.0, 5.0, CollisionType::OUT_OF_ROAD, CollisionType::OUT_OF_ROAD};
-        ref_points.at(i).bounds = invalid_bounds;
-      } else {
-        ref_points.at(i).bounds = bounds_candidates.at(max_idx);
-      }
+      // invalid bounds
+      RCLCPP_WARN_EXPRESSION(
+        rclcpp::get_logger("getBounds: front"), is_showing_debug_info_, "invalid bounds");
+      const auto invalid_bounds =
+        Bounds{-5.0, 5.0, CollisionType::OUT_OF_ROAD, CollisionType::OUT_OF_ROAD};
+      ref_points.at(i).bounds = invalid_bounds;
     }
   }
 
@@ -1484,14 +1491,14 @@ BoundsCandidates MPTOptimizer::getBoundsCandidates(
   double current_right_bound = -max_search_lane_width;
 
   // calculate the initial position is empty or not
-  // 0.drivable, 1.out of map 2.out of road or object
+  // 0.drivable, 1.out of map, 2.out of road, 3. object
   CollisionType previous_collision_type =
     getCollisionType(maps, enable_avoidance, avoiding_point, traversed_dist, bound_angle);
 
   const auto has_collision = [&](const CollisionType & collision_type) -> bool {
     return collision_type == CollisionType::OUT_OF_ROAD || collision_type == CollisionType::OBJECT;
   };
-  CollisionType latest_right_bound_collision_type = CollisionType::OUT_OF_ROAD;
+  CollisionType latest_right_bound_collision_type = previous_collision_type;
 
   while (traversed_dist < max_search_lane_width) {
     for (size_t ds_idx = 0; ds_idx < ds_vec.size(); ++ds_idx) {
@@ -1500,25 +1507,9 @@ BoundsCandidates MPTOptimizer::getBoundsCandidates(
         const CollisionType current_collision_type =
           getCollisionType(maps, enable_avoidance, avoiding_point, traversed_dist, bound_angle);
 
-        // return only full bounds whenever finding out of map
-        if (current_collision_type == CollisionType::OUT_OF_SIGHT) {
-          const auto full_bounds = Bounds{
-            -max_search_lane_width, max_search_lane_width, CollisionType::OUT_OF_SIGHT,
-            CollisionType::OUT_OF_SIGHT};
-          return BoundsCandidates({full_bounds});
-        }
-
-        if (has_collision(previous_collision_type)) {
-          if (!has_collision(current_collision_type)) {  // if target_position becomes no collision
-            if (ds_idx == ds_vec.size() - 1) {
-              current_right_bound = traversed_dist - ds / 2.0;
-              latest_right_bound_collision_type = previous_collision_type;
-              previous_collision_type = current_collision_type;
-            }
-            break;
-          }
-        } else {
-          if (has_collision(current_collision_type)) {
+        if (has_collision(current_collision_type)) {  // currently collision
+          if (!has_collision(previous_collision_type)) {
+            // if target_position becomes collision from no collision or out_of_sight
             if (ds_idx == ds_vec.size() - 1) {
               const double left_bound = traversed_dist - ds / 2.0;
               bounds_candidate.push_back(Bounds{
@@ -1528,15 +1519,40 @@ BoundsCandidates MPTOptimizer::getBoundsCandidates(
             }
             break;
           }
+        } else if (current_collision_type == CollisionType::OUT_OF_SIGHT) {  // currently
+                                                                             // out_of_sight
+          if (previous_collision_type == CollisionType::NO_COLLISION) {
+            // if target_position becomes out_of_sight from no collision
+            if (ds_idx == ds_vec.size() - 1) {
+              const double left_bound = max_search_lane_width;
+              bounds_candidate.push_back(Bounds{
+                current_right_bound, left_bound, latest_right_bound_collision_type,
+                current_collision_type});
+              previous_collision_type = current_collision_type;
+            }
+            break;
+          }
+        } else {  // currently no collision
+          if (has_collision(previous_collision_type)) {
+            // if target_position becomes no collision from collision
+            if (ds_idx == ds_vec.size() - 1) {
+              current_right_bound = traversed_dist - ds / 2.0;
+              latest_right_bound_collision_type = previous_collision_type;
+              previous_collision_type = current_collision_type;
+            }
+            break;
+          }
         }
 
-        // if target_position is out of lane
+        // if target_position is longer than max_search_lane_width
         if (traversed_dist >= max_search_lane_width) {
-          if (!has_collision(previous_collision_type) && ds_idx == ds_vec.size() - 1) {
-            const double left_bound = traversed_dist - ds / 2.0;
-            bounds_candidate.push_back(Bounds{
-              current_right_bound, left_bound, latest_right_bound_collision_type,
-              CollisionType::OUT_OF_ROAD});
+          if (!has_collision(previous_collision_type)) {
+            if (ds_idx == ds_vec.size() - 1) {
+              const double left_bound = traversed_dist - ds / 2.0;
+              bounds_candidate.push_back(Bounds{
+                current_right_bound, left_bound, latest_right_bound_collision_type,
+                CollisionType::OUT_OF_ROAD});
+            }
           }
           break;
         }
@@ -1568,7 +1584,6 @@ BoundsCandidates MPTOptimizer::getBoundsCandidates(
   return bounds_candidate;
 }
 
-// 0.drivable, 1.out of drivable area 2.out of road or object
 // 0.NO_COLLISION, 1.OUT_OF_SIGHT, 2.OUT_OF_ROAD, 3.OBJECT
 CollisionType MPTOptimizer::getCollisionType(
   const CVMaps & maps, const bool enable_avoidance, const geometry_msgs::msg::Pose & avoiding_point,
