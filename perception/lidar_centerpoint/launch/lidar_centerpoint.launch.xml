@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-    <arg name="input/pointcloud" default="/sensing/lidar/top/rectified/pointcloud"/>
+    <arg name="input/pointcloud" default="/sensing/lidar/pointcloud"/>
     <arg name="output/objects" default="objects"/>
     <arg name="model_name" default="default" description="options: `default` or `aip_x2`"/>
     <arg name="model_path" default="$(find-pkg-share lidar_centerpoint)/data"/>

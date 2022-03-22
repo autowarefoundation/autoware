@@ -1,4 +1,5 @@
 <launch>
+  <arg name="input/pointcloud" default="/sensing/lidar/pointcloud"/>
   <arg name="model" default="model_128" />
   <arg name="output/objects" default="labeled_clusters" />
 
@@ -15,7 +16,7 @@
   <arg name="z_offset" default="-2" />
 
   <node pkg="lidar_apollo_instance_segmentation" exec="lidar_apollo_instance_segmentation_node" name="lidar_apollo_instance_segmentation" output="screen">
-    <remap from="input/pointcloud" to="/sensing/lidar/top/rectified/pointcloud"/>
+    <remap from="input/pointcloud" to="$(var input/pointcloud)"/>
     <remap from="output/labeled_clusters" to="$(var output/objects)"/>
     <param name="engine_file" value="$(var trained_engine_file)"/>
     <param name="prototxt_file" value="$(var trained_prototxt_file)"/>
