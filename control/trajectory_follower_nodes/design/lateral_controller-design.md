@@ -17,7 +17,7 @@ when following a path.
     - How does it work? -->
 The node uses an implementation of linear model predictive control (MPC) for accurate path tracking.
 The MPC uses a model of the vehicle to simulate the trajectory resulting from the control command.
-The optimization of the control command is formulated as a Quadradic Program (QP).
+The optimization of the control command is formulated as a Quadratic Program (QP).
 
 These functionalities are implemented in the `trajectory_follower` package
 (see @subpage trajectory_follower-mpc-design)
@@ -42,19 +42,23 @@ Output
 The default parameters defined in `param/lateral_controller_defaults.yaml` are adjusted to the
 AutonomouStuff Lexus RX 450h for under 40 km/h driving.
 
-| Name                              | Type   | Description                                                                                                                                       | Default value |
-| :-------------------------------- | :----- | :------------------------------------------------------------------------------------------------------------------------------------------------ | :------------ |
-| show_debug_info                   | bool   | display debug info                                                                                                                                | false         |
-| ctrl_period                       | double | control period [s]                                                                                                                                | 0.03          |
-| traj_resample_dist                | double | distance of waypoints in resampling [m]                                                                                                           | 0.1           |
-| enable_path_smoothing             | bool   | path smoothing flag. This should be true when uses path resampling to reduce resampling noise.                                                    | true          |
-| path_filter_moving_ave_num        | int    | number of data points moving average filter for path smoothing                                                                                    | 35            |
-| path_smoothing_times              | int    | number of times of applying path smoothing filter                                                                                                 | 1             |
-| curvature_smoothing_num_ref_steer | double | index distance of points used in curvature calculation for reference steer command: p(i-num), p(i), p(i+num). larger num makes less noisy values. | 35            |
-| curvature_smoothing_num_traj      | double | index distance of points used in curvature calculation for trajectory: p(i-num), p(i), p(i+num). larger num makes less noisy values.              | 1             |
-| steering_lpf_cutoff_hz            | double | cutoff frequency of lowpass filter for steering output command [hz]                                                                               | 3.0           |
-| admissible_position_error         | double | stop vehicle when following position error is larger than this value [m].                                                                         | 5.0           |
-| admissible_yaw_error_rad          | double | stop vehicle when following yaw angle error is larger than this value [rad].                                                                      | 1.57          |
+| Name                                         | Type   | Description                                                                                                                                       | Default value |
+| :------------------------------------------- | :----- | :------------------------------------------------------------------------------------------------------------------------------------------------ | :------------ |
+| show_debug_info                              | bool   | display debug info                                                                                                                                | false         |
+| ctrl_period                                  | double | control period [s]                                                                                                                                | 0.03          |
+| traj_resample_dist                           | double | distance of waypoints in resampling [m]                                                                                                           | 0.1           |
+| enable_path_smoothing                        | bool   | path smoothing flag. This should be true when uses path resampling to reduce resampling noise.                                                    | true          |
+| path_filter_moving_ave_num                   | int    | number of data points moving average filter for path smoothing                                                                                    | 35            |
+| path_smoothing_times                         | int    | number of times of applying path smoothing filter                                                                                                 | 1             |
+| curvature_smoothing_num_ref_steer            | double | index distance of points used in curvature calculation for reference steer command: p(i-num), p(i), p(i+num). larger num makes less noisy values. | 35            |
+| curvature_smoothing_num_traj                 | double | index distance of points used in curvature calculation for trajectory: p(i-num), p(i), p(i+num). larger num makes less noisy values.              | 1             |
+| steering_lpf_cutoff_hz                       | double | cutoff frequency of lowpass filter for steering output command [hz]                                                                               | 3.0           |
+| admissible_position_error                    | double | stop vehicle when following position error is larger than this value [m].                                                                         | 5.0           |
+| admissible_yaw_error_rad                     | double | stop vehicle when following yaw angle error is larger than this value [rad].                                                                      | 1.57          |
+| stop_state_entry_ego_speed <sup>\*1</sup>    | double | threshold value of the ego vehicle speed used to the stop state entry condition                                                                   | 0.0           |
+| stop_state_entry_target_speed <sup>\*1</sup> | double | threshold value of the target speed used to the stop state entry condition                                                                        | 0.0           |
+
+(\*1) To prevent unnecessary steering movement, the steering command is fixed to the previous value in the stop state.
 
 ### MPC algorithm
 
