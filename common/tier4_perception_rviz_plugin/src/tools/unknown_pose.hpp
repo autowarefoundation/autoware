@@ -43,44 +43,21 @@
 #ifndef TOOLS__UNKNOWN_POSE_HPP_
 #define TOOLS__UNKNOWN_POSE_HPP_
 
-#ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
-#include <QObject>
-#include <rclcpp/node.hpp>
-#include <rviz_common/properties/float_property.hpp>
-#include <rviz_common/properties/string_property.hpp>
-#include <rviz_default_plugins/tools/pose/pose_tool.hpp>
-#endif
-
-#include <dummy_perception_publisher/msg/object.hpp>
+#include "interactive_object.hpp"
 
 namespace rviz_plugins
 {
-class UnknownInitialPoseTool : public rviz_default_plugins::tools::PoseTool
-{
-  Q_OBJECT
 
+using autoware_auto_perception_msgs::msg::ObjectClassification;
+using autoware_auto_perception_msgs::msg::Shape;
+using dummy_perception_publisher::msg::Object;
+
+class UnknownInitialPoseTool : public InteractiveObjectTool
+{
 public:
   UnknownInitialPoseTool();
-  virtual ~UnknownInitialPoseTool() {}
-  virtual void onInitialize();
-
-protected:
-  virtual void onPoseSet(double x, double y, double theta);
-
-private Q_SLOTS:
-  void updateTopic();
-
-private:
-  rclcpp::Clock::SharedPtr clock_;
-  rclcpp::Publisher<dummy_perception_publisher::msg::Object>::SharedPtr dummy_object_info_pub_;
-
-  rviz_common::properties::StringProperty * topic_property_;
-  rviz_common::properties::FloatProperty * std_dev_x_;
-  rviz_common::properties::FloatProperty * std_dev_y_;
-  rviz_common::properties::FloatProperty * std_dev_z_;
-  rviz_common::properties::FloatProperty * std_dev_theta_;
-  rviz_common::properties::FloatProperty * position_z_;
-  rviz_common::properties::FloatProperty * velocity_;
+  void onInitialize();
+  Object createObjectMsg() const override;
 };
 
 }  // namespace rviz_plugins

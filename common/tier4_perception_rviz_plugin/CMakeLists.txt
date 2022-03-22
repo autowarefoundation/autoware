@@ -22,6 +22,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 ## Declare a C++ library
 ament_auto_add_library(tier4_perception_rviz_plugin SHARED
   src/tools/util.cpp
+  src/tools/interactive_object.cpp
   src/tools/pedestrian_pose.cpp
   src/tools/car_pose.cpp
   src/tools/unknown_pose.cpp

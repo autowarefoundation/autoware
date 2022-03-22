@@ -47,10 +47,9 @@
 
 #include "car_pose.hpp"
 
-#include <unique_identifier_msgs/msg/uuid.hpp>
+#include "util.hpp"
 
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include <tf2_ros/transform_listener.h>
+#include <rviz_common/display_context.hpp>
 
 #include <algorithm>
 #include <random>
@@ -62,6 +61,12 @@ CarInitialPoseTool::CarInitialPoseTool()
 {
   shortcut_key_ = 'k';
 
+  enable_interactive_property_ = new rviz_common::properties::BoolProperty(
+    "Interactive", false, "Enable/Disable interactive action by manipulating mouse.",
+    getPropertyContainer());
+  property_frame_ = new rviz_common::properties::TfFrameProperty(
+    "Target Frame", rviz_common::properties::TfFrameProperty::FIXED_FRAME_STRING,
+    "The TF frame where the point cloud is output.", getPropertyContainer(), nullptr, true);
   topic_property_ = new rviz_common::properties::StringProperty(
     "Pose Topic", "/simulation/dummy_perception_publisher/object_info",
     "The topic on which to publish dummy object info.", getPropertyContainer(), SLOT(updateTopic()),
@@ -93,73 +98,44 @@ void CarInitialPoseTool::onInitialize()
   updateTopic();
 }
 
-void CarInitialPoseTool::updateTopic()
+Object CarInitialPoseTool::createObjectMsg() const
 {
-  rclcpp::Node::SharedPtr raw_node = context_->getRosNodeAbstraction().lock()->get_raw_node();
-  dummy_object_info_pub_ = raw_node->create_publisher<dummy_perception_publisher::msg::Object>(
-    topic_property_->getStdString(), 1);
-  clock_ = raw_node->get_clock();
-}
-
-void CarInitialPoseTool::onPoseSet(double x, double y, double theta)
-{
-  dummy_perception_publisher::msg::Object output_msg;
+  Object object{};
   std::string fixed_frame = context_->getFixedFrame().toStdString();
 
   // header
-  output_msg.header.frame_id = fixed_frame;
-  output_msg.header.stamp = clock_->now();
+  object.header.frame_id = fixed_frame;
+  object.header.stamp = clock_->now();
 
   // semantic
-  output_msg.classification.label = autoware_auto_perception_msgs::msg::ObjectClassification::CAR;
-  output_msg.classification.probability = 1.0;
+  object.classification.label = ObjectClassification::CAR;
+  object.classification.probability = 1.0;
 
   // shape
-  output_msg.shape.type = autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX;
+  object.shape.type = Shape::BOUNDING_BOX;
   const double width = 1.8;
   const double length = 4.0;
-  output_msg.shape.dimensions.x = length;
-  output_msg.shape.dimensions.y = width;
-  output_msg.shape.dimensions.z = 2.0;
+  object.shape.dimensions.x = length;
+  object.shape.dimensions.y = width;
+  object.shape.dimensions.z = 2.0;
 
   // initial state
-  // pose
-  output_msg.initial_state.pose_covariance.pose.position.x = x;
-  output_msg.initial_state.pose_covariance.pose.position.y = y;
-  output_msg.initial_state.pose_covariance.pose.position.z = position_z_->getFloat();
-  output_msg.initial_state.pose_covariance.covariance[0] =
+  object.initial_state.pose_covariance.pose.position.z = position_z_->getFloat();
+  object.initial_state.pose_covariance.covariance[0] =
     std_dev_x_->getFloat() * std_dev_x_->getFloat();
-  output_msg.initial_state.pose_covariance.covariance[7] =
+  object.initial_state.pose_covariance.covariance[7] =
     std_dev_y_->getFloat() * std_dev_y_->getFloat();
-  output_msg.initial_state.pose_covariance.covariance[14] =
+  object.initial_state.pose_covariance.covariance[14] =
     std_dev_z_->getFloat() * std_dev_z_->getFloat();
-  output_msg.initial_state.pose_covariance.covariance[35] =
+  object.initial_state.pose_covariance.covariance[35] =
     std_dev_theta_->getFloat() * std_dev_theta_->getFloat();
-  tf2::Quaternion quat;
-  quat.setRPY(0.0, 0.0, theta);
-  output_msg.initial_state.pose_covariance.pose.orientation = tf2::toMsg(quat);
-  RCLCPP_INFO(
-    rclcpp::get_logger("CarInitialPoseTool"), "Setting pose: %.3f %.3f %.3f %.3f [frame=%s]", x, y,
-    position_z_->getFloat(), theta, fixed_frame.c_str());
-  // twist
-  output_msg.initial_state.twist_covariance.twist.linear.x = velocity_->getFloat();
-  output_msg.initial_state.twist_covariance.twist.linear.y = 0.0;
-  output_msg.initial_state.twist_covariance.twist.linear.z = 0.0;
-  RCLCPP_INFO(
-    rclcpp::get_logger("CarInitialPoseTool"), "Setting twist: %.3f %.3f %.3f [frame=%s]",
-    velocity_->getFloat(), 0.0, 0.0, fixed_frame.c_str());
 
-  // action
-  output_msg.action = dummy_perception_publisher::msg::Object::ADD;
-
-  // id
   std::mt19937 gen(std::random_device{}());
   std::independent_bits_engine<std::mt19937, 8, uint8_t> bit_eng(gen);
-  std::generate(output_msg.id.uuid.begin(), output_msg.id.uuid.end(), bit_eng);
+  std::generate(object.id.uuid.begin(), object.id.uuid.end(), bit_eng);
 
-  dummy_object_info_pub_->publish(output_msg);
+  return object;
 }
-
 }  // end namespace rviz_plugins
 
 #include <pluginlib/class_list_macros.hpp>
