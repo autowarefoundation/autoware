@@ -54,9 +54,9 @@
     steering_lpf_cutoff_hz: 3.0 # cutoff frequency of lowpass filter for steering command [Hz]
     error_deriv_lpf_cutoff_hz: 5.0
 
-    # stop state
-    stop_state_entry_ego_speed: 0.2
-    stop_state_entry_target_speed: 0.5
+    # stop state: steering command is kept in the previous value in the stop state.
+    stop_state_entry_ego_speed: 0.001
+    stop_state_entry_target_speed: 0.001
 
     # vehicle parameters
     mass_kg: 2400.0
