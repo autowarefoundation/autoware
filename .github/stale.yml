@@ -1,0 +1,7 @@
+# Modified from https://github.com/probot/stale#usage
+
+# Number of days of inactivity before a stale issue is closed
+daysUntilClose: false
+
+# Label to use when marking an issue as stale
+staleLabel: stale
