@@ -18,6 +18,7 @@
 #include "behavior_path_planner/behavior_tree_manager.hpp"
 #include "behavior_path_planner/data_manager.hpp"
 #include "behavior_path_planner/scene_module/avoidance/avoidance_module.hpp"
+#include "behavior_path_planner/scene_module/avoidance/debug.hpp"
 #include "behavior_path_planner/scene_module/lane_change/lane_change_module.hpp"
 #include "behavior_path_planner/scene_module/lane_following/lane_following_module.hpp"
 #include "behavior_path_planner/scene_module/pull_out/pull_out_module.hpp"
@@ -156,6 +157,7 @@ private:
 
 private:
   rclcpp::Publisher<OccupancyGrid>::SharedPtr debug_drivable_area_publisher_;
+  rclcpp::Publisher<MarkerArray>::SharedPtr debug_drivable_area_lanelets_publisher_;
   rclcpp::Publisher<Path>::SharedPtr debug_path_publisher_;
   rclcpp::Publisher<MarkerArray>::SharedPtr debug_marker_publisher_;
   void publishDebugMarker(const std::vector<MarkerArray> & debug_markers);

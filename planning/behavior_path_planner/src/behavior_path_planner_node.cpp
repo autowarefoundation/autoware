@@ -82,6 +82,11 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
   // Debug
   debug_marker_publisher_ = create_publisher<MarkerArray>("~/debug/markers", 1);
 
+  if (planner_data_->parameters.visualize_drivable_area_for_shared_linestrings_lanelet) {
+    debug_drivable_area_lanelets_publisher_ =
+      create_publisher<MarkerArray>("~/drivable_area_boundary", 1);
+  }
+
   // behavior tree manager
   {
     bt_manager_ = std::make_shared<BehaviorTreeManager>(*this, getBehaviorTreeManagerParam());
@@ -160,6 +165,8 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
   p.turn_light_on_threshold_dis_lat = declare_parameter("turn_light_on_threshold_dis_lat", 0.3);
   p.turn_light_on_threshold_dis_long = declare_parameter("turn_light_on_threshold_dis_long", 10.0);
   p.turn_light_on_threshold_time = declare_parameter("turn_light_on_threshold_time", 3.0);
+  p.visualize_drivable_area_for_shared_linestrings_lanelet =
+    declare_parameter("visualize_drivable_area_for_shared_linestrings_lanelet", true);
 
   // vehicle info
   const auto vehicle_info = VehicleInfoUtil(*this).getVehicleInfo();
@@ -502,6 +509,11 @@ void BehaviorPathPlannerNode::run()
 
   publishDebugMarker(bt_manager_->getDebugMarkers());
 
+  if (planner_data_->parameters.visualize_drivable_area_for_shared_linestrings_lanelet) {
+    const auto drivable_area_lines = marker_utils::createFurthestLineStringMarkerArray(
+      util::getDrivableAreaForAllSharedLinestringLanelets(planner_data_));
+    debug_drivable_area_lanelets_publisher_->publish(drivable_area_lines);
+  }
   RCLCPP_DEBUG(get_logger(), "----- behavior path planner end -----\n\n");
 }
 
@@ -704,7 +716,6 @@ PathWithLaneId BehaviorPathPlannerNode::modifyPathForSmoothGoalConnection(
 
   return refined_path;
 }
-
 }  // namespace behavior_path_planner
 
 #include <rclcpp_components/register_node_macro.hpp>

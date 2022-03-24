@@ -48,6 +48,9 @@ struct BehaviorPathPlannerParameters
   double right_over_hang;
   double base_link2front;
   double base_link2rear;
+
+  // drivable area visualization
+  bool visualize_drivable_area_for_shared_linestrings_lanelet;
 };
 
 #endif  // BEHAVIOR_PATH_PLANNER__PARAMETERS_HPP_

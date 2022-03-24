@@ -96,6 +96,8 @@ MarkerArray makeOverhangToRoadShoulderMarkerArray(
 MarkerArray createOvehangFurthestLineStringMarkerArray(
   const lanelet::ConstLineStrings3d & linestrings, const std::string & ns, const double r,
   const double g, const double b);
+
+MarkerArray createFurthestLineStringMarkerArray(const lanelet::ConstLineStrings3d & linestrings);
 }  // namespace marker_utils
 
 std::string toStrInfo(const behavior_path_planner::ShiftPointArray & sp_arr);
