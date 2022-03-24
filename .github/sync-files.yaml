@@ -11,10 +11,12 @@
     - source: .github/PULL_REQUEST_TEMPLATE/small-change.md
     - source: .github/PULL_REQUEST_TEMPLATE/standard-change.md
     - source: .github/dependabot.yaml
+    - source: .github/stale.yml
     - source: .github/workflows/pre-commit.yaml
     - source: .github/workflows/pre-commit-optional.yaml
     - source: .github/workflows/semantic-pull-request.yaml
     - source: .github/workflows/spell-check-differential.yaml
+    - source: .github/workflows/sync-files.yaml
     - source: .clang-format
     - source: .markdown-link-check.json
     - source: .markdownlint.yaml
@@ -33,7 +35,6 @@
     - source: .github/workflows/build-and-test-self-hosted.yaml
     - source: .github/workflows/check-build-depends.yaml
     - source: .github/workflows/clang-tidy-pr-comments.yaml
-    - source: .github/workflows/sync-files.yaml
 
 - repository: autowarefoundation/autoware-documentation
   files:
