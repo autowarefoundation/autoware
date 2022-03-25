@@ -89,7 +89,7 @@ bool BlindSpotModule::modifyPathVelocity(
     return false;
   }
 
-  if (stop_line_idx <= 0 || pass_judge_line_idx <= 0) {
+  if (stop_line_idx <= 0 || (planner_param_.use_pass_judge_line && pass_judge_line_idx <= 0)) {
     RCLCPP_DEBUG(
       logger_, "[Blind Spot] stop line or pass judge line is at path[0], ignore planning.");
     *path = input_path;  // reset path
@@ -118,10 +118,12 @@ bool BlindSpotModule::modifyPathVelocity(
     geometry_msgs::msg::Pose pass_judge_line = path->points.at(pass_judge_line_idx).point.pose;
     is_over_pass_judge_line = util::isAheadOf(current_pose.pose, pass_judge_line);
   }
-  if (current_state == State::GO && is_over_pass_judge_line) {
-    RCLCPP_DEBUG(logger_, "over the pass judge line. no plan needed.");
-    *path = input_path;  // reset path
-    return true;         // no plan needed.
+  if (planner_param_.use_pass_judge_line) {
+    if (current_state == State::GO && is_over_pass_judge_line) {
+      RCLCPP_DEBUG(logger_, "over the pass judge line. no plan needed.");
+      *path = input_path;  // reset path
+      return true;         // no plan needed.
+    }
   }
 
   /* get dynamic object */
@@ -230,7 +232,8 @@ bool BlindSpotModule::generateStopLine(
   }
 
   /* insert stop_point */
-  *stop_line_idx = insertPoint(stop_idx_ip, path_ip, path);
+  [[maybe_unused]] bool is_stop_point_inserted = true;
+  *stop_line_idx = insertPoint(stop_idx_ip, path_ip, path, is_stop_point_inserted);
 
   /* if another stop point exist before intersection stop_line, disable judge_line. */
   bool has_prior_stopline = false;
@@ -248,9 +251,12 @@ bool BlindSpotModule::generateStopLine(
   if (has_prior_stopline || stop_idx_ip == pass_judge_idx_ip) {
     *pass_judge_line_idx = *stop_line_idx;
   } else {
+    bool is_pass_judge_point_inserted = true;
     //! insertPoint check if there is no duplicated point
-    *pass_judge_line_idx = insertPoint(pass_judge_idx_ip, path_ip, path);
-    ++(*stop_line_idx);  // stop index is incremented by judge line insertion
+    *pass_judge_line_idx =
+      insertPoint(pass_judge_idx_ip, path_ip, path, is_pass_judge_point_inserted);
+    if (is_pass_judge_point_inserted)
+      ++(*stop_line_idx);  // stop index is incremented by judge line insertion
   }
 
   RCLCPP_DEBUG(
@@ -287,7 +293,7 @@ void BlindSpotModule::cutPredictPathWithDuration(
 
 int BlindSpotModule::insertPoint(
   const int insert_idx_ip, const autoware_auto_planning_msgs::msg::PathWithLaneId path_ip,
-  autoware_auto_planning_msgs::msg::PathWithLaneId * inout_path) const
+  autoware_auto_planning_msgs::msg::PathWithLaneId * inout_path, bool & is_point_inserted) const
 {
   double insert_point_s = 0.0;
   for (int i = 1; i <= insert_idx_ip; i++) {
@@ -296,7 +302,8 @@ int BlindSpotModule::insertPoint(
   }
   int insert_idx = -1;
   // initialize with epsilon so that comparison with insert_point_s = 0.0 would work
-  double accum_s = 1e-6;
+  constexpr double eps = 1e-4;
+  double accum_s = eps * 2.0;
   for (size_t i = 1; i < inout_path->points.size(); i++) {
     accum_s += planning_utils::calcDist2d(
       inout_path->points[i].point.pose.position, inout_path->points[i - 1].point.pose.position);
@@ -311,15 +318,17 @@ int BlindSpotModule::insertPoint(
     // copy from previous point
     inserted_point = inout_path->points.at(std::max(insert_idx - 1, 0));
     inserted_point.point.pose = path_ip.points[insert_idx_ip].point.pose;
-    constexpr double min_dist = 0.001;
+    constexpr double min_dist = eps;  // to make sure path point is forward insert index
     //! avoid to insert duplicated point
     if (
       planning_utils::calcDist2d(inserted_point, inout_path->points.at(insert_idx).point) <
       min_dist) {
       inout_path->points.at(insert_idx).point.longitudinal_velocity_mps = 0.0;
+      is_point_inserted = false;
       return insert_idx;
     }
     inout_path->points.insert(it, inserted_point);
+    is_point_inserted = true;
   }
   return insert_idx;
 }
@@ -467,7 +476,7 @@ boost::optional<BlindSpotPolygons> BlindSpotModule::generateBlindSpotPolygons(
     const auto conflict_area = lanelet::utils::getPolygonFromArcLength(
       blind_spot_lanelets, current_arc.length, stop_line_arc.length);
     const auto detection_area = lanelet::utils::getPolygonFromArcLength(
-      blind_spot_lanelets, detection_area_start_length, current_arc.length);
+      blind_spot_lanelets, detection_area_start_length, stop_line_arc.length);
 
     BlindSpotPolygons blind_spot_polygons;
     blind_spot_polygons.conflict_area = conflict_area;

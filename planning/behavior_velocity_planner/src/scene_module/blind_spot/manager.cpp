@@ -59,6 +59,7 @@ BlindSpotModuleManager::BlindSpotModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterface(node, getModuleName())
 {
   const std::string ns(getModuleName());
+  planner_param_.use_pass_judge_line = node.declare_parameter(ns + ".use_pass_judge_line", false);
   planner_param_.stop_line_margin = node.declare_parameter(ns + ".stop_line_margin", 1.0);
   planner_param_.backward_length = node.declare_parameter(ns + ".backward_length", 15.0);
   planner_param_.ignore_width_from_center_line =

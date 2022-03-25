@@ -98,8 +98,9 @@ public:
 public:
   struct PlannerParam
   {
-    double stop_line_margin;  //! distance from auto-generated stopline to detection_area boundary
-    double backward_length;   //! distance[m] from closest path point to the edge of beginning point
+    bool use_pass_judge_line;  //! distance which ego can stop with max brake
+    double stop_line_margin;   //! distance from auto-generated stopline to detection_area boundary
+    double backward_length;  //! distance[m] from closest path point to the edge of beginning point
     double ignore_width_from_center_line;  //! ignore width from center line from detection_area
     double
       max_future_movement_time;  //! maximum time[second] for considering future movement of object
@@ -216,7 +217,7 @@ private:
    */
   int insertPoint(
     const int insert_idx_ip, const autoware_auto_planning_msgs::msg::PathWithLaneId path_ip,
-    autoware_auto_planning_msgs::msg::PathWithLaneId * path) const;
+    autoware_auto_planning_msgs::msg::PathWithLaneId * path, bool & is_point_inserted) const;
 
   /**
    * @brief Calculate first path index that is conflicting lanelets.
