@@ -251,6 +251,9 @@ bool PlanningErrorMonitorNode::checkTrajectoryCurvature(
   }
 
   constexpr double points_distance = 1.0;
+  const auto isValidDistance = [points_distance](const auto & p1, const auto & p2) {
+    return calcDistance2d(p1, p2) >= points_distance;
+  };
 
   for (size_t p1_id = 0; p1_id < traj.points.size() - 2; ++p1_id) {
     // Get Point1
@@ -266,6 +269,9 @@ bool PlanningErrorMonitorNode::checkTrajectoryCurvature(
 
     // no need to check for pi, since there is no point with "points_distance" from p1.
     if (p1_id == p2_id || p1_id == p3_id || p2_id == p3_id) {
+      break;
+    }
+    if (!isValidDistance(p1, p2) || !isValidDistance(p1, p3) || !isValidDistance(p2, p3)) {
       break;
     }
 
