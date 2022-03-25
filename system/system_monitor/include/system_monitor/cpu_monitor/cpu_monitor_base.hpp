@@ -135,17 +135,19 @@ protected:
 
   diagnostic_updater::Updater updater_;  //!< @brief Updater class which advertises to /diagnostics
 
-  char hostname_[HOST_NAME_MAX + 1];  //!< @brief host name
-  int num_cores_;                     //!< @brief number of cores
-  std::vector<cpu_temp_info> temps_;  //!< @brief CPU list for temperature
-  std::vector<cpu_freq_info> freqs_;  //!< @brief CPU list for frequency
-  std::vector<int> usage_check_cnt_;  //!< @brief CPU list for usage over check counter
-  bool mpstat_exists_;                //!< @brief flag if mpstat exists
+  char hostname_[HOST_NAME_MAX + 1];        //!< @brief host name
+  int num_cores_;                           //!< @brief number of cores
+  std::vector<cpu_temp_info> temps_;        //!< @brief CPU list for temperature
+  std::vector<cpu_freq_info> freqs_;        //!< @brief CPU list for frequency
+  std::vector<int> usage_warn_check_cnt_;   //!< @brief CPU list for usage over warn check counter
+  std::vector<int> usage_error_check_cnt_;  //!< @brief CPU list for usage over error check counter
+  bool mpstat_exists_;                      //!< @brief flag if mpstat exists
 
-  float usage_warn_;   //!< @brief CPU usage(%) to generate warning
-  float usage_error_;  //!< @brief CPU usage(%) to generate error
-  int usage_count_;    //!< @brief CPU usage(%) usage over continuous count
-  bool usage_avg_;     //!< @brief Check CPU usage calculated as averages among all processors
+  float usage_warn_;       //!< @brief CPU usage(%) to generate warning
+  float usage_error_;      //!< @brief CPU usage(%) to generate error
+  int usage_warn_count_;   //!< @brief continuous count over usage_warn_ to generate warning
+  int usage_error_count_;  //!< @brief continuous count over usage_error_ to generate error
+  bool usage_avg_;         //!< @brief Check CPU usage calculated as averages among all processors
 
   /**
    * @brief CPU temperature status messages

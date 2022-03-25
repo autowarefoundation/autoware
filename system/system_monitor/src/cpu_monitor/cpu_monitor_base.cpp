@@ -47,12 +47,14 @@ CPUMonitorBase::CPUMonitorBase(const std::string & node_name, const rclcpp::Node
   mpstat_exists_(false),
   usage_warn_(declare_parameter<float>("usage_warn", 0.96)),
   usage_error_(declare_parameter<float>("usage_error", 1.00)),
-  usage_count_(declare_parameter<int>("usage_count", 2)),
+  usage_warn_count_(declare_parameter<int>("usage_warn_count", 2)),
+  usage_error_count_(declare_parameter<int>("usage_error_count", 2)),
   usage_avg_(declare_parameter<bool>("usage_avg", true))
 {
   gethostname(hostname_, sizeof(hostname_));
   num_cores_ = boost::thread::hardware_concurrency();
-  usage_check_cnt_.resize(num_cores_ + 2);  // 2 = all + dummy
+  usage_warn_check_cnt_.resize(num_cores_ + 2);   // 2 = all + dummy
+  usage_error_check_cnt_.resize(num_cores_ + 2);  // 2 = all + dummy
 
   // Check if command exists
   fs::path p = bp::search_path("mpstat");
@@ -233,7 +235,8 @@ void CPUMonitorBase::checkUsage(diagnostic_updater::DiagnosticStatusWrapper & st
   } catch (const std::exception & e) {
     stat.summary(DiagStatus::ERROR, "mpstat exception");
     stat.add("mpstat", e.what());
-    std::fill(usage_check_cnt_.begin(), usage_check_cnt_.end(), 0);
+    std::fill(usage_warn_check_cnt_.begin(), usage_warn_check_cnt_.end(), 0);
+    std::fill(usage_error_check_cnt_.begin(), usage_error_check_cnt_.end(), 0);
     cpu_usage.all.status = CpuStatus::STALE;
     cpu_usage.cpus.clear();
     publishCpuUsage(cpu_usage);
@@ -268,22 +271,24 @@ int CPUMonitorBase::CpuUsageToLevel(const std::string & cpu_name, float usage)
   }
 
   // convert CPU usage to level
-  int level;
-  if (usage >= usage_error_) {
-    usage_check_cnt_[idx] = usage_count_;
-    level = DiagStatus::ERROR;
-  } else if (usage >= usage_warn_) {
-    if (usage_check_cnt_[idx] < usage_count_) {
-      usage_check_cnt_[idx]++;
-    }
-    if (usage_check_cnt_[idx] >= usage_count_) {
-      level = DiagStatus::ERROR;
+  int level = DiagStatus::OK;
+  if (usage >= usage_warn_) {
+    if (usage_warn_check_cnt_[idx] < usage_warn_count_) {
+      usage_warn_check_cnt_[idx]++;
     } else {
       level = DiagStatus::WARN;
     }
   } else {
-    usage_check_cnt_[idx] = 0;
-    level = DiagStatus::OK;
+    usage_warn_check_cnt_[idx] = 0;
+  }
+  if (usage >= usage_error_) {
+    if (usage_error_check_cnt_[idx] < usage_error_count_) {
+      usage_error_check_cnt_[idx]++;
+    } else {
+      level = DiagStatus::ERROR;
+    }
+  } else {
+    usage_error_check_cnt_[idx] = 0;
   }
 
   return level;
