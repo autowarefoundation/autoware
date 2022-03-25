@@ -1,7 +1,12 @@
 # Modified from https://github.com/probot/stale#usage
 
-# Number of days of inactivity before a stale issue is closed
+# Number of days of inactivity before an Issue or Pull Request with the stale label is closed
 daysUntilClose: false
 
-# Label to use when marking an issue as stale
+# Label to use when marking as stale
 staleLabel: stale
+
+# Comment to post when marking as stale
+markComment: >
+  This pull request has been automatically marked as stale because it has not had
+  recent activity.
