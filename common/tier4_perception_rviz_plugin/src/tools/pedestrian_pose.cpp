@@ -113,8 +113,8 @@ Object PedestrianInitialPoseTool::createObjectMsg() const
 
   // shape
   object.shape.type = Shape::CYLINDER;
-  const double width = 0.8;
-  const double length = 0.8;
+  const double width = 0.6;
+  const double length = 0.6;
   object.shape.dimensions.x = length;
   object.shape.dimensions.y = width;
   object.shape.dimensions.z = 2.0;
