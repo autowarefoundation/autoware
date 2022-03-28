@@ -27,6 +27,8 @@ ament_auto_add_library(tier4_planning_rviz_plugin SHARED
   src/path/display.cpp
   include/path_footprint/display.hpp
   src/path_footprint/display.cpp
+  include/path_with_lane_id/display.hpp
+  src/path_with_lane_id/display.cpp
   include/trajectory/display.hpp
   src/trajectory/display.cpp
   include/trajectory_footprint/display.hpp
