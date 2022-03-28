@@ -2,14 +2,14 @@
 
 <launch>
   <arg name="input/detected_objects" default="/perception/object_recognition/detection/objects" />
-  <arg name="output/objects" default="/perception/object_recognition/detection/validattion/occupancy_grid_based/objects" />
+  <arg name="output/objects" default="/perception/object_recognition/detection/validation/occupancy_grid_based/objects" />
 
-  <arg name="input/lasescan" default="/perception/occupancy_grid_map/virtual_scan/laserscan" />
+  <arg name="input/laserscan" default="/perception/occupancy_grid_map/virtual_scan/laserscan" />
   <arg name="input/occupancy_grid_map" default="/perception/object_recognition/detection/validation/occupancy_grid_based/single_frame_occupancy_grid_map" />
 
 
   <node pkg="laserscan_to_occupancy_grid_map" exec="laserscan_to_occupancy_grid_map_node" name="single_frame_laserscan_occupancy_grid_map" output="screen">
-    <remap from="~/input/laserscan" to="/perception/occupancy_grid_map/virtual_scan/laserscan" />
+    <remap from="~/input/laserscan" to="$(var input/laserscan)" />
     <remap from="~/output/occupancy_grid_map" to="$(var input/occupancy_grid_map)" />
     <param name="input_obstacle_pointcloud" value="false" />
     <param name="input_obstacle_and_raw_pointcloud" value="false" />

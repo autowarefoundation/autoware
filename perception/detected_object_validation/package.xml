@@ -12,6 +12,7 @@
   <depend>autoware_auto_perception_msgs</depend>
   <depend>message_filters</depend>
   <depend>nav_msgs</depend>
+  <depend>pcl_conversions</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>tf2</depend>
