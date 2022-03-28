@@ -57,6 +57,7 @@ ament_auto_add_library(pointcloud_preprocessor_filter SHARED
   src/pointcloud_accumulator/pointcloud_accumulator_nodelet.cpp
   src/vector_map_filter/lanelet2_map_filter_nodelet.cpp
   src/distortion_corrector/distortion_corrector.cpp
+  src/blockage_diag/blockage_diag_nodelet.cpp
 )
 
 target_link_libraries(pointcloud_preprocessor_filter
@@ -149,6 +150,10 @@ rclcpp_components_register_node(pointcloud_preprocessor_filter
   PLUGIN "pointcloud_preprocessor::DistortionCorrectorComponent"
   EXECUTABLE distortion_corrector_node)
 
+# ========== Blockage Diagnostics ===========
+rclcpp_components_register_node(pointcloud_preprocessor_filter
+  PLUGIN "pointcloud_preprocessor::BlockageDiagComponent"
+  EXECUTABLE blockage_diag_node)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

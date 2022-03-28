@@ -18,6 +18,7 @@
   <depend>ament_cmake_cppcheck</depend>
   <depend>ament_cmake_lint_cmake</depend>
   <depend>ament_cmake_xmllint</depend>
+  <depend>pcl_ros</depend>
   <depend>point_cloud_msg_wrapper</depend>
 
   <test_depend>ament_cmake_gtest</test_depend>

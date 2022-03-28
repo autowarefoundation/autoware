@@ -14,6 +14,8 @@
 
 #include "pointcloud_preprocessor/outlier_filter/dual_return_outlier_filter_nodelet.hpp"
 
+#include "autoware_point_types/types.hpp"
+
 #include <std_msgs/msg/header.hpp>
 
 #include <pcl/kdtree/kdtree_flann.h>
@@ -26,6 +28,8 @@
 
 namespace pointcloud_preprocessor
 {
+using autoware_point_types::PointXYZIRADRT;
+using autoware_point_types::ReturnType;
 using diagnostic_msgs::msg::DiagnosticStatus;
 
 DualReturnOutlierFilterComponent::DualReturnOutlierFilterComponent(
@@ -112,8 +116,7 @@ void DualReturnOutlierFilterComponent::filter(
   PointCloud2 & output)
 {
   boost::mutex::scoped_lock lock(mutex_);
-  pcl::PointCloud<return_type_cloud::PointXYZIRADT>::Ptr pcl_input(
-    new pcl::PointCloud<return_type_cloud::PointXYZIRADT>);
+  pcl::PointCloud<PointXYZIRADRT>::Ptr pcl_input(new pcl::PointCloud<PointXYZIRADRT>);
   pcl::fromROSMsg(*input, *pcl_input);
 
   uint32_t vertical_bins = vertical_bins_;
@@ -136,15 +139,13 @@ void DualReturnOutlierFilterComponent::filter(
 
   uint32_t horizontal_res = static_cast<uint32_t>((max_azimuth - min_azimuth) / horizontal_bins);
 
-  pcl::PointCloud<return_type_cloud::PointXYZIRADT>::Ptr pcl_output(
-    new pcl::PointCloud<return_type_cloud::PointXYZIRADT>);
+  pcl::PointCloud<PointXYZIRADRT>::Ptr pcl_output(new pcl::PointCloud<PointXYZIRADRT>);
   pcl_output->points.reserve(pcl_input->points.size());
 
-  std::vector<pcl::PointCloud<return_type_cloud::PointXYZIRADT>> pcl_input_ring_array;
-  std::vector<pcl::PointCloud<return_type_cloud::PointXYZIRADT>> weak_first_pcl_input_ring_array;
+  std::vector<pcl::PointCloud<PointXYZIRADRT>> pcl_input_ring_array;
+  std::vector<pcl::PointCloud<PointXYZIRADRT>> weak_first_pcl_input_ring_array;
 
-  pcl::PointCloud<return_type_cloud::PointXYZIRADT>::Ptr noise_output(
-    new pcl::PointCloud<return_type_cloud::PointXYZIRADT>);
+  pcl::PointCloud<PointXYZIRADRT>::Ptr noise_output(new pcl::PointCloud<PointXYZIRADRT>);
   noise_output->points.reserve(pcl_input->points.size());
   pcl_input_ring_array.resize(
     vertical_bins);  // TODO(davidw): this is for Pandar 40 only, make dynamic
@@ -168,7 +169,7 @@ void DualReturnOutlierFilterComponent::filter(
     }
     std::vector<float> deleted_azimuths;
     std::vector<float> deleted_distances;
-    pcl::PointCloud<return_type_cloud::PointXYZIRADT> temp_segment;
+    pcl::PointCloud<PointXYZIRADRT> temp_segment;
 
     bool keep_next = false;
     uint ring_id = weak_first_single_ring.points.front().ring;
@@ -285,7 +286,7 @@ void DualReturnOutlierFilterComponent::filter(
     if (input_ring.size() < 2) {
       continue;
     }
-    pcl::PointCloud<return_type_cloud::PointXYZIRADT> temp_segment;
+    pcl::PointCloud<PointXYZIRADRT> temp_segment;
     bool keep_next = false;
     // uint ring_id = input_ring.points.front().ring;
     for (auto iter = std::begin(input_ring) + 1; iter != std::end(input_ring) - 1; ++iter) {
