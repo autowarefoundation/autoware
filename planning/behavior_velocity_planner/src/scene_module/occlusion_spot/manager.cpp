@@ -31,10 +31,6 @@ OcclusionSpotModuleManager::OcclusionSpotModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterface(node, getModuleName())
 {
   const std::string ns(getModuleName());
-  pub_debug_occupancy_grid_ =
-    node.create_publisher<nav_msgs::msg::OccupancyGrid>("~/debug/" + ns + "/occupancy_grid", 1);
-
-  // for crosswalk parameters
   auto & pp = planner_param_;
   // for detection type
   {
@@ -62,19 +58,26 @@ OcclusionSpotModuleManager::OcclusionSpotModuleManager(rclcpp::Node & node)
         "[behavior_velocity]: occlusion spot pass judge method has invalid argument"};
     }
   }
-  pp.debug = node.declare_parameter(ns + ".debug", false);
+  pp.filter_occupancy_grid = node.declare_parameter(ns + ".filter_occupancy_grid", false);
+  pp.use_object_info = node.declare_parameter(ns + ".use_object_info", false);
   pp.use_partition_lanelet = node.declare_parameter(ns + ".use_partition_lanelet", false);
-  pp.pedestrian_vel = node.declare_parameter(ns + ".pedestrian_vel", 1.0);
+  pp.pedestrian_vel = node.declare_parameter(ns + ".pedestrian_vel", 1.5);
+  pp.pedestrian_radius = node.declare_parameter(ns + ".pedestrian_radius", 0.5);
+
+  // debug
+  pp.is_show_occlusion = node.declare_parameter(ns + ".debug.is_show_occlusion", false);
+  pp.is_show_cv_window = node.declare_parameter(ns + ".debug.is_show_cv_window", false);
+  pp.is_show_processing_time = node.declare_parameter(ns + ".debug.is_show_processing_time", false);
+
+  // threshold
   pp.detection_area_length = node.declare_parameter(ns + ".threshold.detection_area_length", 200.0);
   pp.stuck_vehicle_vel = node.declare_parameter(ns + ".threshold.stuck_vehicle_vel", 1.0);
   pp.lateral_distance_thr = node.declare_parameter(ns + ".threshold.lateral_distance", 10.0);
-
   pp.dist_thr = node.declare_parameter(ns + ".threshold.search_dist", 10.0);
   pp.angle_thr = node.declare_parameter(ns + ".threshold.search_angle", M_PI / 5.0);
 
   // ego additional velocity config
   pp.v.safety_ratio = node.declare_parameter(ns + ".motion.safety_ratio", 1.0);
-  pp.v.delay_time = node.declare_parameter(ns + ".motion.delay_time", 0.1);
   pp.v.safe_margin = node.declare_parameter(ns + ".motion.safe_margin", 1.0);
   pp.v.max_slow_down_jerk = node.declare_parameter(ns + ".motion.max_slow_down_jerk", -0.7);
   pp.v.max_slow_down_accel = node.declare_parameter(ns + ".motion.max_slow_down_accel", -2.5);
@@ -85,6 +88,8 @@ OcclusionSpotModuleManager::OcclusionSpotModuleManager(rclcpp::Node & node)
   // detection_area param
   pp.detection_area.min_occlusion_spot_size =
     node.declare_parameter(ns + ".detection_area.min_occlusion_spot_size", 2.0);
+  pp.detection_area.min_longitudinal_offset =
+    node.declare_parameter(ns + ".detection_area.min_longitudinal_offset", 1.0);
   pp.detection_area.max_lateral_distance =
     node.declare_parameter(ns + ".detection_area.max_lateral_distance", 4.0);
   pp.detection_area.slice_length = node.declare_parameter(ns + ".detection_area.slice_length", 1.5);
@@ -104,8 +109,8 @@ void OcclusionSpotModuleManager::launchNewModules(
   // general
   if (!isModuleRegistered(module_id_)) {
     registerModule(std::make_shared<OcclusionSpotModule>(
-      module_id_, planner_data_, planner_param_, logger_.get_child("occlusion_spot_module"), clock_,
-      pub_debug_occupancy_grid_));
+      module_id_, planner_data_, planner_param_, logger_.get_child("occlusion_spot_module"),
+      clock_));
   }
 }
 

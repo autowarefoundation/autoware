@@ -18,9 +18,14 @@
 #include <grid_map_core/GridMap.hpp>
 #include <grid_map_core/iterators/LineIterator.hpp>
 #include <grid_map_core/iterators/PolygonIterator.hpp>
+#include <grid_map_ros/GridMapRosConverter.hpp>
 #include <opencv2/opencv.hpp>
 #include <utilization/boost_geometry_helper.hpp>
+#include <utilization/util.hpp>
 
+#include <autoware_auto_perception_msgs/msg/object_classification.hpp>
+#include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
+#include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
 
 #include <boost/geometry.hpp>
@@ -34,12 +39,17 @@ namespace behavior_velocity_planner
 {
 namespace grid_utils
 {
+using autoware_auto_perception_msgs::msg::PredictedObject;
+using autoware_auto_perception_msgs::msg::PredictedObjects;
+using nav_msgs::msg::OccupancyGrid;
 namespace occlusion_cost_value
 {
-static constexpr int NO_INFORMATION = -1;
-static constexpr int FREE_SPACE = 0;
-static constexpr int UNKNOWN = 50;
-static constexpr int OCCUPIED = 100;
+static constexpr unsigned char FREE_SPACE = 0;
+static constexpr unsigned char UNKNOWN = 50;
+static constexpr unsigned char OCCUPIED = 100;
+static constexpr unsigned char FREE_SPACE_IMAGE = 0;
+static constexpr unsigned char UNKNOWN_IMAGE = 128;
+static constexpr unsigned char OCCUPIED_IMAGE = 255;
 }  // namespace occlusion_cost_value
 
 struct GridParam
@@ -71,7 +81,8 @@ void findOcclusionSpots(
   const Polygon2d & polygon, const double min_size);
 //!< @brief Return true if the path between the two given points is free of occupied cells
 bool isCollisionFree(
-  const grid_map::GridMap & grid, const grid_map::Position & p1, const grid_map::Position & p2);
+  const grid_map::GridMap & grid, const grid_map::Position & p1, const grid_map::Position & p2,
+  const double radius);
 //!< @brief get the corner positions of the square described by the given anchor
 void getCornerPositions(
   std::vector<grid_map::Position> & corner_positions, const grid_map::GridMap & grid,
@@ -80,8 +91,10 @@ void imageToOccupancyGrid(const cv::Mat & cv_image, nav_msgs::msg::OccupancyGrid
 void toQuantizedImage(
   const nav_msgs::msg::OccupancyGrid & occupancy_grid, cv::Mat * cv_image, const GridParam & param);
 void denoiseOccupancyGridCV(
-  nav_msgs::msg::OccupancyGrid & occupancy_grid, grid_map::GridMap & grid_map,
-  const GridParam & param);
+  const nav_msgs::msg::OccupancyGrid::ConstSharedPtr occupancy_grid_ptr,
+  grid_map::GridMap & grid_map, const GridParam & param, const bool is_show_debug_window,
+  const bool filter_occupancy_grid);
+void addObjectsToGridMap(const PredictedObjects & objs, grid_map::GridMap & grid);
 }  // namespace grid_utils
 }  // namespace behavior_velocity_planner
 

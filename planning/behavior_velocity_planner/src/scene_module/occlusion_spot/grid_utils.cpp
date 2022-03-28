@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <grid_map_ros/GridMapRosConverter.hpp>
 #include <scene_module/occlusion_spot/grid_utils.hpp>
 
 #include <algorithm>
@@ -23,6 +22,70 @@ namespace behavior_velocity_planner
 {
 namespace grid_utils
 {
+
+Polygon2d pointsToPoly(const Point2d p0, const Point2d p1, const double radius)
+{
+  LineString2d line = {p0, p1};
+  const double angle = atan2(p0.y() - p1.y(), p0.x() - p1.x());
+  const double r = radius;
+  Polygon2d line_poly;
+  // add polygon counter clockwise
+  line_poly.outer().emplace_back(p0.x() + r * sin(angle), p0.y() - r * cos(angle));
+  line_poly.outer().emplace_back(p1.x() + r * sin(angle), p1.y() - r * cos(angle));
+  line_poly.outer().emplace_back(p1.x() - r * sin(angle), p1.y() + r * cos(angle));
+  line_poly.outer().emplace_back(p0.x() - r * sin(angle), p0.y() + r * cos(angle));
+  // std::cout << boost::geometry::wkt(line_poly) << std::endl;
+  // std::cout << boost::geometry::wkt(line) << std::endl;
+  return line_poly;
+}
+
+std::vector<std::pair<grid_map::Position, grid_map::Position>> pointsToRays(
+  const grid_map::Position p0, const grid_map::Position p1, const double radius)
+{
+  using grid_map::Position;
+  std::vector<std::pair<Position, Position>> lines;
+  const double angle = atan2(p0.y() - p1.y(), p0.x() - p1.x());
+  const double r = radius;
+  lines.emplace_back(std::make_pair(p0, p1));
+  lines.emplace_back(std::make_pair(
+    Position(p0.x() + r * sin(angle), p0.y() - r * cos(angle)),
+    Position(p1.x() + r * sin(angle), p1.y() - r * cos(angle))));
+  lines.emplace_back(std::make_pair(
+    Position(p1.x() - r * sin(angle), p1.y() + r * cos(angle)),
+    Position(p0.x() - r * sin(angle), p0.y() + r * cos(angle))));
+  return lines;
+}
+
+void addObjectsToGridMap(const PredictedObjects & objs, grid_map::GridMap & grid)
+{
+  auto & grid_data = grid["layer"];
+  for (const auto & obj : objs.objects) {
+    Polygon2d foot_print_polygon = planning_utils::toFootprintPolygon(obj);
+    grid_map::Polygon grid_polygon;
+    const auto & pos = obj.kinematics.initial_pose_with_covariance.pose.position;
+    const auto & obj_label = obj.classification.at(0).label;
+    using autoware_auto_perception_msgs::msg::ObjectClassification;
+    if (
+      obj_label != ObjectClassification::CAR || obj_label != ObjectClassification::TRUCK ||
+      obj_label != ObjectClassification::BUS || obj_label != ObjectClassification::TRAILER)
+      continue;
+    if (grid.isInside(grid_map::Position(pos.x, pos.y))) continue;
+    try {
+      for (const auto & point : foot_print_polygon.outer()) {
+        grid_polygon.addVertex({point.x(), point.y()});
+      }
+      for (grid_map::PolygonIterator iterator(grid, grid_polygon); !iterator.isPastEnd();
+           ++iterator) {
+        const grid_map::Index & index = *iterator;
+        if (!grid.isValid(index)) continue;
+        grid_data(index.x(), index.y()) = grid_utils::occlusion_cost_value::OCCUPIED;
+      }
+    } catch (const std::invalid_argument & e) {
+      std::cerr << e.what() << std::endl;
+    }
+  }
+}
+
 bool isOcclusionSpotSquare(
   OcclusionSpotSquare & occlusion_spot, const grid_map::Matrix & grid_data,
   const grid_map::Index & cell, int min_occlusion_size, const grid_map::Size & grid_size)
@@ -105,18 +168,43 @@ void findOcclusionSpots(
 }
 
 bool isCollisionFree(
-  const grid_map::GridMap & grid, const grid_map::Position & p1, const grid_map::Position & p2)
+  const grid_map::GridMap & grid, const grid_map::Position & p1, const grid_map::Position & p2,
+  const double radius)
 {
   const grid_map::Matrix & grid_data = grid["layer"];
+  bool polys = true;
   try {
-    for (grid_map::LineIterator iterator(grid, p1, p2); !iterator.isPastEnd(); ++iterator) {
-      const grid_map::Index & index = *iterator;
-      if (grid_data(index.x(), index.y()) == grid_utils::occlusion_cost_value::OCCUPIED) {
-        return false;
+    if (polys) {
+      Point2d occlusion_p = {p1.x(), p1.y()};
+      Point2d collision_p = {p2.x(), p2.y()};
+      Polygon2d polygon = pointsToPoly(occlusion_p, collision_p, radius);
+      grid_map::Polygon grid_polygon;
+      for (const auto & point : polygon.outer()) {
+        grid_polygon.addVertex({point.x(), point.y()});
       }
-    }
+      for (grid_map::PolygonIterator iterator(grid, grid_polygon); !iterator.isPastEnd();
+           ++iterator) {
+        const grid_map::Index & index = *iterator;
+        if (grid_data(index.x(), index.y()) == grid_utils::occlusion_cost_value::OCCUPIED) {
+          return false;
+        }
+      }
+    } else {
+      std::vector<std::pair<grid_map::Position, grid_map::Position>> lines =
+        pointsToRays(p1, p2, radius);
+      for (const auto & p : lines) {
+        for (grid_map::LineIterator iterator(grid, p.first, p.second); !iterator.isPastEnd();
+             ++iterator) {
+          const grid_map::Index & index = *iterator;
+          if (grid_data(index.x(), index.y()) == grid_utils::occlusion_cost_value::OCCUPIED) {
+            return false;
+          }
+        }
+      }
+    }  // polys or not
   } catch (const std::invalid_argument & e) {
     std::cerr << e.what() << std::endl;
+    return false;
   }
   return true;
 }
@@ -168,7 +256,16 @@ void imageToOccupancyGrid(const cv::Mat & cv_image, nav_msgs::msg::OccupancyGrid
   for (int x = width - 1; x >= 0; x--) {
     for (int y = height - 1; y >= 0; y--) {
       const int idx = (height - 1 - y) + (width - 1 - x) * height;
-      const unsigned char intensity = cv_image.at<unsigned char>(y, x);
+      unsigned char intensity = cv_image.at<unsigned char>(y, x);
+      if (intensity == grid_utils::occlusion_cost_value::FREE_SPACE_IMAGE) {
+        intensity = grid_utils::occlusion_cost_value::FREE_SPACE;
+      } else if (intensity == grid_utils::occlusion_cost_value::UNKNOWN_IMAGE) {
+        intensity = grid_utils::occlusion_cost_value::UNKNOWN;
+      } else if (intensity == grid_utils::occlusion_cost_value::OCCUPIED_IMAGE) {
+        intensity = grid_utils::occlusion_cost_value::OCCUPIED;
+      } else {
+        throw std::logic_error("behavior_velocity[occlusion_spot_grid]: invalid if clause");
+      }
       occupancy_grid->data.at(idx) = intensity;
     }
   }
@@ -181,32 +278,41 @@ void toQuantizedImage(
   for (int x = width - 1; x >= 0; x--) {
     for (int y = height - 1; y >= 0; y--) {
       const int idx = (height - 1 - y) + (width - 1 - x) * height;
-      int8_t intensity = occupancy_grid.data.at(idx);
-      if (0 <= intensity && intensity <= param.free_space_max) {
-        intensity = grid_utils::occlusion_cost_value::FREE_SPACE;
+      unsigned char intensity = occupancy_grid.data.at(idx);
+      if (intensity <= param.free_space_max) {
+        intensity = grid_utils::occlusion_cost_value::FREE_SPACE_IMAGE;
       } else if (param.free_space_max < intensity && intensity < param.occupied_min) {
-        intensity = grid_utils::occlusion_cost_value::UNKNOWN;
+        intensity = grid_utils::occlusion_cost_value::UNKNOWN_IMAGE;
       } else if (param.occupied_min <= intensity) {
-        intensity = grid_utils::occlusion_cost_value::OCCUPIED;
+        intensity = grid_utils::occlusion_cost_value::OCCUPIED_IMAGE;
       } else {
-        std::logic_error("behavior_velocity[occlusion_spot_grid]: invalid if clause");
+        throw std::logic_error("behavior_velocity[occlusion_spot_grid]: invalid if clause");
       }
       cv_image->at<unsigned char>(y, x) = intensity;
     }
   }
 }
+
 void denoiseOccupancyGridCV(
-  nav_msgs::msg::OccupancyGrid & occupancy_grid, grid_map::GridMap & grid_map,
-  const GridParam & param)
+  const nav_msgs::msg::OccupancyGrid::ConstSharedPtr occupancy_grid_ptr,
+  grid_map::GridMap & grid_map, const GridParam & param, const bool is_show_debug_window,
+  const bool filter_occupancy_grid)
 {
+  OccupancyGrid occupancy_grid = *occupancy_grid_ptr;
   cv::Mat cv_image(
     occupancy_grid.info.width, occupancy_grid.info.height, CV_8UC1,
     cv::Scalar(grid_utils::occlusion_cost_value::OCCUPIED));
   toQuantizedImage(occupancy_grid, &cv_image, param);
   constexpr int num_iter = 2;
   //!< @brief opening & closing to remove noise in occupancy grid
-  cv::dilate(cv_image, cv_image, cv::Mat(), cv::Point(-1, -1), num_iter);
-  cv::erode(cv_image, cv_image, cv::Mat(), cv::Point(-1, -1), num_iter);
+  if (filter_occupancy_grid) {
+    cv::morphologyEx(cv_image, cv_image, cv::MORPH_CLOSE, cv::Mat(), cv::Point(-1, -1), num_iter);
+  }
+  if (is_show_debug_window) {
+    cv::namedWindow("morph", cv::WINDOW_NORMAL);
+    cv::imshow("morph", cv_image);
+    cv::waitKey(1);
+  }
   imageToOccupancyGrid(cv_image, &occupancy_grid);
   grid_map::GridMapRosConverter::fromOccupancyGrid(occupancy_grid, "layer", grid_map);
 }

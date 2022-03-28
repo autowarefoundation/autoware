@@ -90,11 +90,34 @@ The maximum length of detection area depends on ego current vehicle velocity and
 By using lanelet information of "guard_rail", "fence", "wall" tag, it's possible to remove unwanted occlusion spot.
 ![brief](./docs/occlusion_spot/occlusion_spot_partition.svg)
 
+##### Use Object Info
+
+use object info to make occupancy grid more accurate
+![brief](./docs/occlusion_spot/use_object_info.drawio.svg)
+
+##### Collision Free Judgement
+
+obstacle that can run out from occlusion should have free space until intersection from ego vehicle
+![brief](./docs/occlusion_spot/collision_free.drawio.svg)
+
 #### Module Parameters
 
-| Parameter        | Type   | Description                                                               |
-| ---------------- | ------ | ------------------------------------------------------------------------- |
-| `pedestrian_vel` | double | [m/s] maximum velocity assumed pedestrian coming out from occlusion point |
+| Parameter           | Type   | Description                                                                |
+| ------------------- | ------ | -------------------------------------------------------------------------- |
+| `pedestrian_vel`    | double | [m/s] maximum velocity assumed pedestrian coming out from occlusion point. |
+| `pedestrian_radius` | double | [m] assumed pedestrian radius which fits in occlusion spot.                |
+
+| Parameter               | Type | Description                                                      |
+| ----------------------- | ---- | ---------------------------------------------------------------- |
+| `filter_occupancy_grid` | bool | [-] whether to filter occupancy grid by morphologyEx or not.     |
+| `use_object_info`       | bool | [-] whether to reflect object info to occupancy grid map or not. |
+| `use_partition_lanelet` | bool | [-] whether to use partition lanelet map data.                   |
+
+| Parameter /debug          | Type | Description                                    |
+| ------------------------- | ---- | ---------------------------------------------- |
+| `is_show_occlusion`       | bool | [-] whether to show occlusion point markers.　 |
+| `is_show_cv_window`       | bool | [-] whether to show open_cv debug window.      |
+| `is_show_processing_time` | bool | [-] whether to show processing time.           |
 
 | Parameter /threshold    | Type   | Description                                               |
 | ----------------------- | ------ | --------------------------------------------------------- |
@@ -110,7 +133,6 @@ By using lanelet information of "guard_rail", "fence", "wall" tag, it's possible
 | `non_effective_jerk`         | double | [m/s^3] weak jerk for velocity planning.                 |
 | `non_effective_acceleration` | double | [m/s^2] weak deceleration for velocity planning.         |
 | `min_allowed_velocity`       | double | [m/s] minimum velocity allowed                           |
-| `delay_time`                 | double | [m/s] time buffer for the system delay                   |
 | `safe_margin`                | double | [m] maximum error to stop with emergency braking system. |
 
 | Parameter /detection_area | Type   | Description                                                           |
@@ -293,9 +315,12 @@ note right
   - filter occlusion spot by partition lanelets which prevent pedestrians come out.
 end note
 :calculate collision path point and intersection point;
+note right
+  - use pedestrian polygon to judge "collision_free" or not.
+end note
 :calculate safe velocity and safe margin for possible collision;
 note right
-  - safe velocity and safe margin is calculated from performance of ego emergency braking system.
+  - safe velocity and safe margin is calculated from the performance of ego emergency braking system.
 end note
 }
 partition handle_possible_collision {

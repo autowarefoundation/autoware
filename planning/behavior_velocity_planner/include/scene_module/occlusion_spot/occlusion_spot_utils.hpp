@@ -82,6 +82,7 @@ enum PASS_JUDGE { SMOOTH_VELOCITY, CURRENT_VELOCITY };
 
 struct DetectionArea
 {
+  double min_longitudinal_offset;  // [m] detection area safety buffer from front bumper
   double max_lateral_distance;     // [m] distance to care about occlusion spot
   double slice_length;             // [m] size of each slice
   double min_occlusion_spot_size;  // [m] minumum size to care about the occlusion spot
@@ -112,14 +113,19 @@ struct PlannerParam
 {
   DETECTION_METHOD detection_method;
   PASS_JUDGE pass_judge;
-  bool debug;                  // [-]
-  bool use_partition_lanelet;  // [-]
+  bool is_show_occlusion;        // [-]
+  bool is_show_cv_window;        // [-]
+  bool is_show_processing_time;  // [-]
+  bool filter_occupancy_grid;    // [-]
+  bool use_object_info;          // [-]
+  bool use_partition_lanelet;    // [-]
   // parameters in yaml
   double detection_area_length;      // [m]
   double detection_area_max_length;  // [m]
   double stuck_vehicle_vel;          // [m/s]
   double lateral_distance_thr;       // [m] lateral distance threshold to consider
   double pedestrian_vel;             // [m/s]
+  double pedestrian_radius;          // [m]
 
   double dist_thr;   // [m]
   double angle_thr;  // [rad]
@@ -182,6 +188,7 @@ struct DebugData
   std::string road_type = "";
   std::string detection_type = "";
   Polygons2d detection_area_polygons;
+  std::vector<lanelet::BasicPolygon2d> close_partition;
   std::vector<lanelet::BasicPolygon2d> partition_lanelets;
   std::vector<geometry_msgs::msg::Point> parked_vehicle_point;
   std::vector<PossibleCollisionInfo> possible_collisions;

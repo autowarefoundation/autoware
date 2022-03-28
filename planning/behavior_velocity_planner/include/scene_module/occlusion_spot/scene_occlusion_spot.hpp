@@ -18,6 +18,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <scene_module/occlusion_spot/occlusion_spot_utils.hpp>
 #include <scene_module/scene_module_interface.hpp>
+#include <tier4_autoware_utils/system/stop_watch.hpp>
 #include <utilization/boost_geometry_helper.hpp>
 
 #include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
@@ -44,10 +45,9 @@ class OcclusionSpotModule : public SceneModuleInterface
 
 public:
   OcclusionSpotModule(
-    const int64_t module_id, std::shared_ptr<const PlannerData> planner_data,
-    const PlannerParam & planner_param, const rclcpp::Logger logger,
-    const rclcpp::Clock::SharedPtr clock,
-    const rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr publisher);
+    const int64_t module_id, const std::shared_ptr<const PlannerData> & planner_data,
+    const PlannerParam & planner_param, const rclcpp::Logger & logger,
+    const rclcpp::Clock::SharedPtr clock);
 
   /**
    * @brief plan occlusion spot velocity at unknown area in occupancy grid
@@ -58,14 +58,12 @@ public:
   visualization_msgs::msg::MarkerArray createDebugMarkerArray() override;
 
 private:
-  autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr predicted_objects_array_;
-  rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr publisher_;
-
   // Parameter
   PlannerParam param_;
+  tier4_autoware_utils::StopWatch<std::chrono::milliseconds> stop_watch_;
 
 protected:
-  int64_t module_id_;
+  int64_t module_id_{};
 
   // Debug
   mutable DebugData debug_data_;

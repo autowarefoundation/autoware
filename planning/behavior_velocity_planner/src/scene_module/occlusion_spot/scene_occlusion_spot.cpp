@@ -28,16 +28,19 @@
 #include <memory>
 #include <vector>
 
+// turn on only when debugging.
+#define DEBUG_PRINT(enable, x) \
+  if (enable) RCLCPP_INFO_STREAM_THROTTLE(logger_, *clock_, 3000, x);
+
 namespace behavior_velocity_planner
 {
 namespace utils = occlusion_spot_utils;
 
 OcclusionSpotModule::OcclusionSpotModule(
-  const int64_t module_id, [[maybe_unused]] std::shared_ptr<const PlannerData> planner_data,
-  const PlannerParam & planner_param, const rclcpp::Logger logger,
-  const rclcpp::Clock::SharedPtr clock,
-  const rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr publisher)
-: SceneModuleInterface(module_id, logger, clock), publisher_(publisher), param_(planner_param)
+  const int64_t module_id, const std::shared_ptr<const PlannerData> & planner_data,
+  const PlannerParam & planner_param, const rclcpp::Logger & logger,
+  const rclcpp::Clock::SharedPtr clock)
+: SceneModuleInterface(module_id, logger, clock), param_(planner_param)
 {
   if (param_.detection_method == utils::DETECTION_METHOD::OCCUPANCY_GRID) {
     debug_data_.detection_type = "occupancy";
@@ -66,6 +69,7 @@ bool OcclusionSpotModule::modifyPathVelocity(
     param_.v.max_stop_accel = planner_data_->max_stop_acceleration_threshold;
     param_.v.v_ego = planner_data_->current_velocity->twist.linear.x;
     param_.v.a_ego = planner_data_->current_accel.get();
+    param_.v.delay_time = planner_data_->delay_response_time;
     const double detection_area_offset = 5.0;  // for visualization and stability
     param_.detection_area_max_length =
       planning_utils::calcJudgeLineDistWithJerkLimit(
@@ -79,8 +83,9 @@ bool OcclusionSpotModule::modifyPathVelocity(
   PathWithLaneId interp_path;
   //! never change this interpolation interval(will affect module accuracy)
   splineInterpolate(clipped_path, 1.0, &interp_path, logger_);
+  PathWithLaneId predicted_path;
   if (param_.pass_judge == utils::PASS_JUDGE::CURRENT_VELOCITY) {
-    interp_path = utils::applyVelocityToPath(interp_path, param_.v.v_ego);
+    predicted_path = utils::applyVelocityToPath(interp_path, param_.v.v_ego);
   } else if (param_.pass_judge == utils::PASS_JUDGE::SMOOTH_VELOCITY) {
   }
   debug_data_.interp_path = interp_path;
@@ -91,17 +96,27 @@ bool OcclusionSpotModule::modifyPathVelocity(
   const double offset_from_start_to_ego = -offset.get();
   auto & detection_area_polygons = debug_data_.detection_area_polygons;
   if (!utils::buildDetectionAreaPolygon(
-        detection_area_polygons, interp_path, offset_from_start_to_ego, param_)) {
+        detection_area_polygons, predicted_path, offset_from_start_to_ego, param_)) {
     return true;  // path point is not enough
   }
   std::vector<utils::PossibleCollisionInfo> possible_collisions;
+  // extract only close lanelet
+  if (param_.use_partition_lanelet) {
+    planning_utils::extractClosePartition(
+      ego_pose.position, debug_data_.partition_lanelets, debug_data_.close_partition);
+  }
+  if (param_.is_show_processing_time) stop_watch_.tic("processing_time");
   if (param_.detection_method == utils::DETECTION_METHOD::OCCUPANCY_GRID) {
     const auto & occ_grid_ptr = planner_data_->occupancy_grid;
     if (!occ_grid_ptr) return true;  // mo data
-    nav_msgs::msg::OccupancyGrid occ_grid = *occ_grid_ptr;
     grid_map::GridMap grid_map;
-    grid_utils::denoiseOccupancyGridCV(occ_grid, grid_map, param_.grid);
-    if (param_.debug) publisher_->publish(occ_grid);  //
+    grid_utils::denoiseOccupancyGridCV(
+      occ_grid_ptr, grid_map, param_.grid, param_.is_show_cv_window, param_.filter_occupancy_grid);
+    if (param_.use_object_info) {
+      grid_utils::addObjectsToGridMap(*planner_data_->predicted_objects, grid_map);
+    }
+    DEBUG_PRINT(
+      param_.is_show_processing_time, "grid [ms]: " << stop_watch_.toc("processing_time", true));
     // Note: Don't consider offset from path start to ego here
     if (!utils::createPossibleCollisionsInDetectionArea(
           possible_collisions, grid_map, interp_path, offset_from_start_to_ego, param_,
@@ -123,8 +138,9 @@ bool OcclusionSpotModule::modifyPathVelocity(
       return true;
     }
   }
-  RCLCPP_DEBUG_STREAM_THROTTLE(
-    logger_, *clock_, 3000, "num possible collision:" << possible_collisions.size());
+  DEBUG_PRINT(
+    param_.is_show_processing_time, "occlusion [ms]: " << stop_watch_.toc("processing_time", true));
+  DEBUG_PRINT(param_.is_show_occlusion, "num collision:" << possible_collisions.size());
   utils::calcSlowDownPointsForPossibleCollision(0, interp_path, 0.0, possible_collisions);
   // Note: Consider offset from path start to ego here
   utils::handleCollisionOffset(possible_collisions, offset_from_start_to_ego);
@@ -134,7 +150,7 @@ bool OcclusionSpotModule::modifyPathVelocity(
 
   debug_data_.z = path->points.front().point.pose.position.z;
   debug_data_.possible_collisions = possible_collisions;
-  debug_data_.path_raw = *path;
+  debug_data_.path_raw = clipped_path;
   return true;
 }
 

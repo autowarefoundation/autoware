@@ -142,6 +142,18 @@ bool createDetectionAreaPolygons(
   return true;
 }
 
+void extractClosePartition(
+  const geometry_msgs::msg::Point position, const BasicPolygons2d & all_partitions,
+  BasicPolygons2d & close_partition, const double distance_thresh)
+{
+  for (const auto & p : all_partitions) {
+    if (boost::geometry::distance(Point2d(position.x, position.y), p) < distance_thresh) {
+      close_partition.emplace_back(p);
+    }
+  }
+  return;
+}
+
 void getAllPartitionLanelets(const lanelet::LaneletMapConstPtr ll, BasicPolygons2d & polys)
 {
   const lanelet::ConstLineStrings3d partitions = lanelet::utils::query::getAllPartitions(ll);
@@ -150,6 +162,8 @@ void getAllPartitionLanelets(const lanelet::LaneletMapConstPtr ll, BasicPolygons
     for (const auto & p : partition) {
       line.emplace_back(lanelet::BasicPoint2d{p.x(), p.y()});
     }
+    // corect line to calculate distance accuratry
+    boost::geometry::correct(line);
     polys.emplace_back(lanelet::BasicPolygon2d(line));
   }
 }

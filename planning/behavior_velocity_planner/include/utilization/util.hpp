@@ -38,6 +38,8 @@
 #include <boost/geometry/geometries/point_xy.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
+#include <lanelet2_core/geometry/Lanelet.h>
+#include <lanelet2_core/geometry/Point.h>
 #include <lanelet2_routing/RoutingGraph.h>
 #include <pcl/point_types.h>
 #include <tf2/utils.h>
@@ -131,7 +133,9 @@ bool createDetectionAreaPolygons(
   const double obstacle_vel_mps);
 PathPoint getLerpPathPointWithLaneId(const PathPoint p0, const PathPoint p1, const double ratio);
 Point2d calculateLateralOffsetPoint2d(const Pose & p, const double offset);
-
+void extractClosePartition(
+  const geometry_msgs::msg::Point position, const BasicPolygons2d & all_partitions,
+  BasicPolygons2d & close_partition, const double distance_thresh = 30.0);
 void getAllPartitionLanelets(const lanelet::LaneletMapConstPtr ll, BasicPolygons2d & polys);
 void setVelocityFrom(const size_t idx, const double vel, PathWithLaneId * input);
 void insertVelocity(

@@ -151,16 +151,16 @@ visualization_msgs::msg::MarkerArray makePolygonMarker(
   debug_marker.id = planning_utils::bitShift(id);
   debug_marker.type = visualization_msgs::msg::Marker::LINE_STRIP;
   debug_marker.action = visualization_msgs::msg::Marker::ADD;
-  debug_marker.pose.position = tier4_autoware_utils::createMarkerPosition(0.0, 0.0, z);
+  debug_marker.pose.position = tier4_autoware_utils::createMarkerPosition(0.0, 0.0, 0);
   debug_marker.pose.orientation = tier4_autoware_utils::createMarkerOrientation(0, 0, 0, 1.0);
   debug_marker.scale = tier4_autoware_utils::createMarkerScale(0.1, 0.1, 0.1);
   debug_marker.color = tier4_autoware_utils::createMarkerColor(1.0, 1.0, 1.0, 0.5);
-  debug_marker.lifetime = rclcpp::Duration::from_seconds(0.1);
+  debug_marker.lifetime = rclcpp::Duration::from_seconds(0.5);
   debug_marker.ns = ns;
   for (const auto & poly : polygons) {
     for (const auto & p : poly) {
       geometry_msgs::msg::Point point =
-        tier4_autoware_utils::createMarkerPosition(p.x(), p.y(), 0.0);
+        tier4_autoware_utils::createMarkerPosition(p.x(), p.y(), z + 0.5);
       debug_marker.points.push_back(point);
     }
     debug_markers.markers.push_back(debug_marker);
@@ -180,7 +180,7 @@ visualization_msgs::msg::MarkerArray makeSlicePolygonMarker(
   debug_marker.id = planning_utils::bitShift(id);
   debug_marker.type = visualization_msgs::msg::Marker::LINE_STRIP;
   debug_marker.action = visualization_msgs::msg::Marker::ADD;
-  debug_marker.pose.position = tier4_autoware_utils::createMarkerPosition(0.0, 0.0, z);
+  debug_marker.pose.position = tier4_autoware_utils::createMarkerPosition(0.0, 0.0, 0);
   debug_marker.pose.orientation = tier4_autoware_utils::createMarkerOrientation(0, 0, 0, 1.0);
   debug_marker.scale = tier4_autoware_utils::createMarkerScale(0.1, 0.1, 0.1);
   debug_marker.color = tier4_autoware_utils::createMarkerColor(1.0, 0.0, 1.0, 0.3);
@@ -188,8 +188,7 @@ visualization_msgs::msg::MarkerArray makeSlicePolygonMarker(
   debug_marker.ns = ns;
   for (const auto & slice : slices) {
     for (const auto & p : slice.outer()) {
-      geometry_msgs::msg::Point point =
-        tier4_autoware_utils::createMarkerPosition(p.x(), p.y(), 0.0);
+      geometry_msgs::msg::Point point = tier4_autoware_utils::createMarkerPosition(p.x(), p.y(), z);
       debug_marker.points.push_back(point);
     }
     debug_markers.markers.push_back(debug_marker);
@@ -298,7 +297,7 @@ visualization_msgs::msg::MarkerArray OcclusionSpotModule::createDebugMarkerArray
   }
   if (!debug_data_.partition_lanelets.empty()) {
     appendMarkerArray(
-      makePolygonMarker(debug_data_.partition_lanelets, "partition", module_id_, debug_data_.z),
+      makePolygonMarker(debug_data_.close_partition, "partition", module_id_, debug_data_.z),
       current_time, &debug_marker_array);
   }
   if (!debug_data_.interp_path.points.empty()) {

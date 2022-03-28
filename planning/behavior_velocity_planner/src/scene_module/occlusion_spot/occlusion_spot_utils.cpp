@@ -66,7 +66,8 @@ bool buildDetectionAreaPolygon(
   const auto & p = param;
   DetectionRange da_range;
   da_range.interval = p.detection_area.slice_length;
-  da_range.min_longitudinal_distance = offset + p.baselink_to_front;
+  da_range.min_longitudinal_distance =
+    offset + std::max(0.0, p.baselink_to_front - p.detection_area.min_longitudinal_offset);
   da_range.max_longitudinal_distance =
     std::min(p.detection_area_max_length, p.detection_area_length) +
     da_range.min_longitudinal_distance;
@@ -381,7 +382,7 @@ bool createPossibleCollisionsInDetectionArea(
     grid_utils::findOcclusionSpots(
       occlusion_spot_positions, grid, detection_area_slice,
       param.detection_area.min_occlusion_spot_size);
-    if (param.debug) {
+    if (param.is_show_occlusion) {
       for (const auto & op : occlusion_spot_positions) {
         Point p =
           tier4_autoware_utils::createPoint(op[0], op[1], path.points.at(0).point.pose.position.z);
@@ -428,7 +429,7 @@ boost::optional<PossibleCollisionInfo> generateOneNotableCollisionFromOcclusionS
   double distance_lower_bound = std::numeric_limits<double>::max();
   PossibleCollisionInfo candidate;
   bool has_collision = false;
-  const auto & partition_lanelets = debug_data.partition_lanelets;
+  const auto & partition_lanelets = debug_data.close_partition;
   for (const grid_map::Position & occlusion_spot_position : occlusion_spot_positions) {
     // arc intersection
     const lanelet::BasicPoint2d obstacle_point = {
@@ -450,19 +451,19 @@ boost::optional<PossibleCollisionInfo> generateOneNotableCollisionFromOcclusionS
     PossibleCollisionInfo pc = calculateCollisionPathPointFromOcclusionSpot(
       arc_coord_occlusion_point, arc_coord_collision_point, path_lanelet, param);
     const auto & ip = pc.intersection_pose.position;
-    bool collision_free_at_intersection =
-      grid_utils::isCollisionFree(grid, occlusion_spot_position, grid_map::Position(ip.x, ip.y));
+    bool collision_free_at_intersection = grid_utils::isCollisionFree(
+      grid, occlusion_spot_position, grid_map::Position(ip.x, ip.y), param.pedestrian_radius);
     bool obstacle_not_blocked_by_partition = true;
+    if (!collision_free_at_intersection) continue;
     if (param.use_partition_lanelet) {
       const auto & op = obstacle_point;
       const LineString2d obstacle_vec = {{op[0], op[1]}, {ip.x, ip.y}};
       obstacle_not_blocked_by_partition = isNotBlockedByPartition(obstacle_vec, partition_lanelets);
     }
-    if (collision_free_at_intersection && obstacle_not_blocked_by_partition) {
-      distance_lower_bound = dist;
-      candidate = pc;
-      has_collision = true;
-    }
+    if (!obstacle_not_blocked_by_partition) continue;
+    distance_lower_bound = dist;
+    candidate = pc;
+    has_collision = true;
   }
   if (has_collision) {
     return candidate;

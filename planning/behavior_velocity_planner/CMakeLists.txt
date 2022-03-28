@@ -218,13 +218,31 @@ target_link_libraries(scene_module_virtual_traffic_light scene_module_lib)
 
 
 # SceneModule OcclusionSpot
-ament_auto_add_library(scene_module_occlusion_spot SHARED
+# Util
+ament_auto_add_library(occlusion_spot_lib SHARED
   src/scene_module/occlusion_spot/grid_utils.cpp
+  src/scene_module/occlusion_spot/occlusion_spot_utils.cpp
+  src/scene_module/occlusion_spot/risk_predictive_braking.cpp
+)
+
+target_include_directories(occlusion_spot_lib
+  SYSTEM PUBLIC
+    ${BOOST_INCLUDE_DIRS}
+    ${tf2_geometry_msgs_INCLUDE_DIRS}
+)
+
+target_include_directories(occlusion_spot_lib
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+
+ament_target_dependencies(occlusion_spot_lib ${BEHAVIOR_VELOCITY_PLANNER_DEPENDENCIES})
+
+ament_auto_add_library(scene_module_occlusion_spot SHARED
   src/scene_module/occlusion_spot/manager.cpp
   src/scene_module/occlusion_spot/debug.cpp
   src/scene_module/occlusion_spot/scene_occlusion_spot.cpp
-  src/scene_module/occlusion_spot/occlusion_spot_utils.cpp
-  src/scene_module/occlusion_spot/risk_predictive_braking.cpp
 )
 
 target_include_directories(scene_module_occlusion_spot
@@ -235,7 +253,7 @@ target_include_directories(scene_module_occlusion_spot
 
 ament_target_dependencies(scene_module_occlusion_spot ${BEHAVIOR_VELOCITY_PLANNER_DEPENDENCIES})
 
-target_link_libraries(scene_module_occlusion_spot scene_module_lib)
+target_link_libraries(scene_module_occlusion_spot scene_module_lib occlusion_spot_lib)
 
 # Scene Module Manager
 ament_auto_add_library(scene_module_manager SHARED

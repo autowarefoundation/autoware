@@ -54,8 +54,6 @@ private:
 
   std::function<bool(const std::shared_ptr<SceneModuleInterface> &)> getModuleExpiredFunction(
     const autoware_auto_planning_msgs::msg::PathWithLaneId & path) override;
-
-  rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr pub_debug_occupancy_grid_;
 };
 }  // namespace behavior_velocity_planner
 
