@@ -2528,8 +2528,14 @@ bool AvoidanceModule::isTargetObjectType(const PredictedObject & object) const
   using autoware_auto_perception_msgs::msg::ObjectClassification;
   const auto t = util::getHighestProbLabel(object.classification);
   const auto is_object_type =
-    (t == ObjectClassification::CAR || t == ObjectClassification::TRUCK ||
-     t == ObjectClassification::BUS);
+    ((t == ObjectClassification::CAR && parameters_.avoid_car) ||
+     (t == ObjectClassification::TRUCK && parameters_.avoid_truck) ||
+     (t == ObjectClassification::BUS && parameters_.avoid_bus) ||
+     (t == ObjectClassification::TRAILER && parameters_.avoid_trailer) ||
+     (t == ObjectClassification::UNKNOWN && parameters_.avoid_unknown) ||
+     (t == ObjectClassification::BICYCLE && parameters_.avoid_bicycle) ||
+     (t == ObjectClassification::MOTORCYCLE && parameters_.avoid_motorcycle) ||
+     (t == ObjectClassification::PEDESTRIAN && parameters_.avoid_pedestrian));
   return is_object_type;
 }
 

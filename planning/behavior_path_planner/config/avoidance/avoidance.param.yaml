@@ -46,5 +46,16 @@
       longitudinal_collision_margin_min_distance: 0.0          # [m]
       longitudinal_collision_margin_time: 0.0
 
+      # avoidance is performed for the object type with true
+      target_object:
+        car: true
+        truck: true
+        bus: true
+        trailer: true
+        unknown: false
+        bicycle: false
+        motorcycle: false
+        pedestrian: false
+
       # ---------- advanced parameters ----------
       avoidance_execution_lateral_threshold: 0.499
