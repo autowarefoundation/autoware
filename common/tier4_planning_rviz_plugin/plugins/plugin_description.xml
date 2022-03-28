@@ -19,6 +19,11 @@
     base_class_type="rviz_common::Display">
     <description>Display path_with_lane_id of autoware_auto_planning_msg::PathWithLaneId</description>
   </class>
+  <class name="rviz_plugins/PathWithLaneIdFootprint"
+    type="rviz_plugins::AutowarePathWithLaneIdFootprintDisplay"
+    base_class_type="rviz_common::Display">
+    <description>Display footprint of autoware_auto_planning_msg::PathWithLaneId</description>
+  </class>
   <class name="rviz_plugins/Trajectory"
     type="rviz_plugins::AutowareTrajectoryDisplay"
     base_class_type="rviz_common::Display">
