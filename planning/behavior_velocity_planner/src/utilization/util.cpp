@@ -146,6 +146,7 @@ void extractClosePartition(
   const geometry_msgs::msg::Point position, const BasicPolygons2d & all_partitions,
   BasicPolygons2d & close_partition, const double distance_thresh)
 {
+  close_partition.clear();
   for (const auto & p : all_partitions) {
     if (boost::geometry::distance(Point2d(position.x, position.y), p) < distance_thresh) {
       close_partition.emplace_back(p);
