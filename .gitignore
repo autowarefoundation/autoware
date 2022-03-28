@@ -10,8 +10,10 @@
 build/
 install/
 log/
+/src/
 
 # Python
 *.pyc
 
-# Don't ignore src/ because full-text search won't work correctly.
+# Jetbrains
+.idea/
