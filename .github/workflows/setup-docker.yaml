@@ -1,0 +1,16 @@
+name: setup-docker
+
+on:
+  pull_request:
+
+jobs:
+  setup-docker:
+    runs-on: ubuntu-latest
+    container: ubuntu:20.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Run setup script
+        run: |
+          ./setup-dev-env.sh -y docker
