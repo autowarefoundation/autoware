@@ -34,18 +34,18 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#include <cuda.h>
+#include <thrust/device_ptr.h>
+#include <thrust/execution_policy.h>
+#include <thrust/gather.h>
+#include <thrust/sequence.h>
+
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <iostream>
 #include <stdexcept>
 #include <vector>
-
-#include <cuda.h>
-#include <thrust/device_ptr.h>
-#include <thrust/execution_policy.h>
-#include <thrust/gather.h>
-#include <thrust/sequence.h>
 
 #if CUDART_VERSION >= 11000
 #include <cub/device/device_radix_sort.cuh>

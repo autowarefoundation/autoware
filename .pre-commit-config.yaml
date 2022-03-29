@@ -58,7 +58,7 @@ repos:
       - id: isort
 
   - repo: https://github.com/psf/black
-    rev: 22.1.0
+    rev: 22.3.0
     hooks:
       - id: black
         args: [--line-length=100]
@@ -80,9 +80,10 @@ repos:
           ]
 
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v13.0.0
+    rev: v13.0.1
     hooks:
       - id: clang-format
+        types_or: [c++, c, cuda]
 
   - repo: https://github.com/cpplint/cpplint
     rev: 1.5.5
