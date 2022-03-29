@@ -114,9 +114,23 @@
     force: true
     mode: 0775
 
+- name: Authorize OSRF GPG key
+  become: true
+  ansible.builtin.apt_key:
+    url: https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc
+
+# echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/ros-latest.list > /dev/null
+- name: Add OSRF apt repository to source list
+  become: true
+  ansible.builtin.apt_repository:
+    repo: deb http://packages.ros.org/ros/ubuntu {{ lsb_release_cs.stdout }} main
+    filename: ros-latest
+    state: present
+    update_cache: true
+
 - name: Install rocker
   become: true
-  ansible.builtin.pip:
-    name: rocker
-    state: latest
-    executable: pip3
+  ansible.builtin.apt:
+    name:
+      - python3-rocker
+    update_cache: true
