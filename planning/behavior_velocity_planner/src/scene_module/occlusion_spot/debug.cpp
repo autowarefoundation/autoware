@@ -295,9 +295,9 @@ visualization_msgs::msg::MarkerArray OcclusionSpotModule::createDebugMarkerArray
         debug_data_.detection_area_polygons, "detection_area", module_id_, debug_data_.z),
       current_time, &debug_marker_array);
   }
-  if (!debug_data_.partition_lanelets.empty()) {
+  if (!debug_data_.close_partition.empty()) {
     appendMarkerArray(
-      makePolygonMarker(debug_data_.close_partition, "partition", module_id_, debug_data_.z),
+      makePolygonMarker(debug_data_.close_partition, "close_partition", module_id_, debug_data_.z),
       current_time, &debug_marker_array);
   }
   if (!debug_data_.interp_path.points.empty()) {

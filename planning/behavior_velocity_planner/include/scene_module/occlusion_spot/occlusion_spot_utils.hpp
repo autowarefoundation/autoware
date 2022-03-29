@@ -189,7 +189,6 @@ struct DebugData
   std::string detection_type = "";
   Polygons2d detection_area_polygons;
   std::vector<lanelet::BasicPolygon2d> close_partition;
-  std::vector<lanelet::BasicPolygon2d> partition_lanelets;
   std::vector<geometry_msgs::msg::Point> parked_vehicle_point;
   std::vector<PossibleCollisionInfo> possible_collisions;
   std::vector<geometry_msgs::msg::Point> occlusion_points;
@@ -197,6 +196,7 @@ struct DebugData
   PathWithLaneId interp_path;
   void resetData()
   {
+    close_partition.clear();
     detection_area_polygons.clear();
     parked_vehicle_point.clear();
     possible_collisions.clear();
@@ -220,7 +220,7 @@ std::vector<PredictedObject> filterDynamicObjectByDetectionArea(
 std::vector<PredictedObject> getParkedVehicles(
   const PredictedObjects & dyn_objects, const PlannerParam & param,
   std::vector<Point> & debug_point);
-bool generatePossibleCollisionBehindParkedVehicle(
+bool generatePossibleCollisionsFromObjects(
   std::vector<PossibleCollisionInfo> & possible_collisions, const PathWithLaneId & path,
   const PlannerParam & param, const double offset_from_start_to_ego,
   const std::vector<PredictedObject> & dyn_objects);
@@ -246,7 +246,7 @@ boost::optional<PossibleCollisionInfo> generateOneNotableCollisionFromOcclusionS
   const double offset_from_start_to_ego, const Point2d base_point,
   const lanelet::ConstLanelet & path_lanelet, const PlannerParam & param, DebugData & debug_data);
 //!< @brief generate possible collisions coming from occlusion spots on the side of the path
-bool createPossibleCollisionsInDetectionArea(
+bool generatePossibleCollisionsFromGridMap(
   std::vector<PossibleCollisionInfo> & possible_collisions, const grid_map::GridMap & grid,
   const PathWithLaneId & path, const double offset_from_start_to_ego, const PlannerParam & param,
   DebugData & debug_data);

@@ -27,8 +27,6 @@ void applySafeVelocityConsideringPossibleCollision(
   PathWithLaneId * inout_path, std::vector<PossibleCollisionInfo> & possible_collisions,
   const PlannerParam & param)
 {
-  const auto logger{rclcpp::get_logger("behavior_velocity_planner").get_child("occlusion_spot")};
-  rclcpp::Clock clock{RCL_ROS_TIME};
   // return nullptr or too few points
   if (!inout_path || inout_path->points.size() < 2) {
     return;
