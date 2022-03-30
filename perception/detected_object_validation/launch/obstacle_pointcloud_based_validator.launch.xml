@@ -2,23 +2,13 @@
 
 <launch>
   <arg name="input/detected_objects" default="/perception/object_recognition/detection/objects" />
-
   <arg name="input/obstacle_pointcloud" default="/perception/obstacle_segmentation/pointcloud" />
-  <arg name="input/pointcloud_map" default="/map/pointcloud_map" />
   <arg name="output/objects" default="/perception/object_recognition/detection/validation/obstacle_pointcloud_based/objects" />
-
-  <include file="$(find-pkg-share compare_map_segmentation)/launch/voxel_based_compare_map_filter.launch.xml">
-    <arg name="input" value="$(var input/obstacle_pointcloud)" />
-    <arg name="input_map" value="$(var input/pointcloud_map)" />
-    <arg name="output" value="map_filtered/pointcloud" />
-    <arg name="distance_threshold" value="0.5" />
-  </include>
 
   <node pkg="detected_object_validation" exec="obstacle_pointcloud_based_validator_node" name="obstacle_pointcloud_based_validator_node" output="screen">
     <remap from="~/input/detected_objects" to="$(var input/detected_objects)" />
-    <remap from="~/input/obstacle_pointcloud" to="/perception/object_recognition/detection/map_filtered/pointcloud" />
+    <remap from="~/input/obstacle_pointcloud" to="$(var input/obstacle_pointcloud)" />
     <remap from="~/output/objects" to="$(var output/objects)" />
     <param name="enable_debugger" value="false" />
   </node>
-
 </launch>
