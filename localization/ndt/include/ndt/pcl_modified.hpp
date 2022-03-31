@@ -48,6 +48,7 @@ public:
   double getStepSize() const override;
   double getTransformationEpsilon() override;
   double getTransformationProbability() const override;
+  double getNearestVoxelTransformationLikelihood() const override;
   double getFitnessScore() override;
   boost::shared_ptr<const pcl::PointCloud<PointTarget>> getInputTarget() const override;
   boost::shared_ptr<const pcl::PointCloud<PointSource>> getInputSource() const override;
@@ -58,6 +59,11 @@ public:
   Eigen::Matrix<double, 6, 6> getHessian() const override;
 
   boost::shared_ptr<pcl::search::KdTree<PointTarget>> getSearchMethodTarget() const override;
+
+  double calculateTransformationProbability(
+    const pcl::PointCloud<PointSource> & trans_cloud) const override;
+  double calculateNearestVoxelTransformationLikelihood(
+    const pcl::PointCloud<PointSource> & trans_cloud) const override;
 
 private:
   boost::shared_ptr<pcl::NormalDistributionsTransformModified<PointSource, PointTarget>> ndt_ptr_;

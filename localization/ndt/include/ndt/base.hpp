@@ -44,6 +44,7 @@ public:
   virtual double getStepSize() const = 0;
   virtual double getTransformationEpsilon() = 0;
   virtual double getTransformationProbability() const = 0;
+  virtual double getNearestVoxelTransformationLikelihood() const = 0;
   virtual double getFitnessScore() = 0;
   virtual boost::shared_ptr<const pcl::PointCloud<PointTarget>> getInputTarget() const = 0;
   virtual boost::shared_ptr<const pcl::PointCloud<PointSource>> getInputSource() const = 0;
@@ -54,6 +55,11 @@ public:
   virtual Eigen::Matrix<double, 6, 6> getHessian() const = 0;
 
   virtual boost::shared_ptr<pcl::search::KdTree<PointTarget>> getSearchMethodTarget() const = 0;
+
+  virtual double calculateTransformationProbability(
+    const pcl::PointCloud<PointSource> & trans_cloud) const = 0;
+  virtual double calculateNearestVoxelTransformationLikelihood(
+    const pcl::PointCloud<PointSource> & trans_cloud) const = 0;
 };
 
 #include "ndt/impl/base.hpp"

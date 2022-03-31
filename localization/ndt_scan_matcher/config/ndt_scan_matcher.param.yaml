@@ -24,8 +24,18 @@
     # The number of iterations required to calculate alignment
     max_iterations: 30
 
+    # Converged param type
+    # 0=TRANSFORM_PROBABILITY, 1=NEAREST_VOXEL_TRANSFORMATION_LIKELIHOOD
+    # NEAREST_VOXEL_TRANSFORMATION_LIKELIHOOD is only available when NDTImplementType::OMP is selected
+    converged_param_type: 1
+
+    # If converged_param_type is 0
     # Threshold for deciding whether to trust the estimation result
     converged_param_transform_probability: 3.0
+
+    # If converged_param_type is 1
+    # Threshold for deciding whether to trust the estimation result
+    converged_param_nearest_voxel_transformation_likelihood: 2.3
 
     # The number of particles to estimate initial pose
     initial_estimate_particles_num: 100

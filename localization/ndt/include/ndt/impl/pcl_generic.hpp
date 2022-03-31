@@ -111,6 +111,14 @@ double NormalDistributionsTransformPCLGeneric<
 }
 
 template <class PointSource, class PointTarget>
+double NormalDistributionsTransformPCLGeneric<
+  PointSource, PointTarget>::getNearestVoxelTransformationLikelihood() const
+{
+  // return ndt_ptr_->getNearestVoxelTransformationLikelihood();
+  return 0.0;
+}
+
+template <class PointSource, class PointTarget>
 double NormalDistributionsTransformPCLGeneric<PointSource, PointTarget>::getFitnessScore()
 {
   return ndt_ptr_->getFitnessScore();
@@ -158,6 +166,25 @@ boost::shared_ptr<pcl::search::KdTree<PointTarget>>
 NormalDistributionsTransformPCLGeneric<PointSource, PointTarget>::getSearchMethodTarget() const
 {
   return ndt_ptr_->getSearchMethodTarget();
+}
+
+template <class PointSource, class PointTarget>
+double NormalDistributionsTransformPCLGeneric<PointSource, PointTarget>::
+  calculateTransformationProbability(const pcl::PointCloud<PointSource> & trans_cloud) const
+{
+  (void)trans_cloud;
+  // return ndt_ptr_->calculateTransformationProbability(trans_cloud);
+  return 0.0;
+}
+
+template <class PointSource, class PointTarget>
+double NormalDistributionsTransformPCLGeneric<PointSource, PointTarget>::
+  calculateNearestVoxelTransformationLikelihood(
+    const pcl::PointCloud<PointSource> & trans_cloud) const
+{
+  (void)trans_cloud;
+  // return ndt_ptr_->calculateNearestVoxelTransformationLikelihood(trans_cloud);
+  return 0.0;
 }
 
 #endif  // NDT__IMPL__PCL_GENERIC_HPP_

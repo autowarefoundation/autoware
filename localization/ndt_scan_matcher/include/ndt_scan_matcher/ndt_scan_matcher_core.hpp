@@ -52,6 +52,10 @@
 #include <vector>
 
 enum class NDTImplementType { PCL_GENERIC = 0, PCL_MODIFIED = 1, OMP = 2 };
+enum class ConvergedParamType {
+  TRANSFORM_PROBABILITY = 0,
+  NEAREST_VOXEL_TRANSFORMATION_LIKELIHOOD = 1
+};
 
 template <typename PointSource, typename PointTarget>
 std::shared_ptr<NormalDistributionsTransformBase<PointSource, PointTarget>> getNDT(
@@ -134,6 +138,8 @@ private:
     initial_pose_with_covariance_pub_;
   rclcpp::Publisher<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr exe_time_pub_;
   rclcpp::Publisher<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr transform_probability_pub_;
+  rclcpp::Publisher<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr
+    nearest_voxel_transformation_likelihood_pub_;
   rclcpp::Publisher<tier4_debug_msgs::msg::Int32Stamped>::SharedPtr iteration_num_pub_;
   rclcpp::Publisher<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr
     initial_to_result_distance_pub_;
@@ -159,7 +165,11 @@ private:
   std::string base_frame_;
   std::string ndt_base_frame_;
   std::string map_frame_;
+
+  ConvergedParamType converged_param_type_;
   double converged_param_transform_probability_;
+  double converged_param_nearest_voxel_transformation_likelihood_;
+
   int initial_estimate_particles_num_;
   double initial_pose_timeout_sec_;
   double initial_pose_distance_tolerance_m_;
