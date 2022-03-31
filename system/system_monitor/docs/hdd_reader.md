@@ -2,7 +2,7 @@
 
 ## Name
 
-hdd_reader - Read S.M.A.R.T. information for monitoring HDD temperature
+hdd_reader - Read S.M.A.R.T. information for monitoring HDD temperature and life of HDD
 
 ## Synopsis
 
@@ -10,7 +10,7 @@ hdd_reader [OPTION]
 
 ## Description
 
-Read S.M.A.R.T. information for monitoring HDD temperature.<br>
+Read S.M.A.R.T. information for monitoring HDD temperature and life of HDD.<br>
 This runs as a daemon process and listens to a TCP/IP port (7635 by default).
 
 **Options:**<br>
@@ -24,15 +24,15 @@ Returns 0 if OK; non-zero otherwise.
 
 ## Notes
 
-The 'hdd_reader' accesses minimal data enough to get Model number, Serial number, and HDD temperature.<br>
+The 'hdd_reader' accesses minimal data enough to get Model number, Serial number, HDD temperature, and life of HDD.<br>
 This is an approach to limit its functionality, however, the functionality can be expanded for further improvements and considerations in the future.<br><br>
 
 ### [ATA]
 
-| Purpose                     | Name                 | Length               |
-| --------------------------- | -------------------- | -------------------- |
-| Model number, Serial number | IDENTIFY DEVICE data | 256 words(512 bytes) |
-| HDD temperature             | SMART READ DATA      | 256 words(512 bytes) |
+| Purpose                      | Name                 | Length               |
+| ---------------------------- | -------------------- | -------------------- |
+| Model number, Serial number  | IDENTIFY DEVICE data | 256 words(512 bytes) |
+| HDD temperature, life of HDD | SMART READ DATA      | 256 words(512 bytes) |
 
 For details please see the documents below.<br>
 
@@ -43,10 +43,10 @@ For details please see the documents below.<br>
 
 ### [NVMe]
 
-| Purpose                     | Name                               | Length           |
-| --------------------------- | ---------------------------------- | ---------------- |
-| Model number, Serial number | Identify Controller data structure | 4096 bytes       |
-| HDD temperature             | SMART / Health Information         | 1 Dword(4 bytes) |
+| Purpose                      | Name                               | Length              |
+| ---------------------------- | ---------------------------------- | ------------------- |
+| Model number, Serial number  | Identify Controller data structure | 4096 bytes          |
+| HDD temperature, life of HDD | SMART / Health Information         | 36 Dword(144 bytes) |
 
 For details please see the documents below.<br>
 

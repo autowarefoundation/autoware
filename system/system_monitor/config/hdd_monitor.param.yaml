@@ -7,5 +7,8 @@
         name: /
         temp_warn: 55.0
         temp_error: 70.0
+        power_on_hours_warn: 3000000
+        total_data_written_warn: 4915200   # =150TB (1unit=32MB)
+        total_data_written_safety_factor: 0.05
         free_warn: 5120 # MB(8hour)
         free_error: 100 # MB(last 1 minute)

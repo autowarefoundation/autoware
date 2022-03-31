@@ -128,12 +128,12 @@ Thermal throttling event can be monitored by reading contents of MSR(Model Speci
 
 ## <u>HDD Monitor</u>
 
-Generally, S.M.A.R.T. information is used to monitor HDD temperature, and normally accessing disk device node is allowed for root user or disk group.<br>
+Generally, S.M.A.R.T. information is used to monitor HDD temperature and life of HDD, and normally accessing disk device node is allowed for root user or disk group.<br>
 As with the CPU monitor, this package provides an approach to minimize security risks as much as possible:<br>
 
-- Provide a small program named 'hdd_reader' which accesses S.M.A.R.T. information and sends HDD temperature to HDD monitor by using socket programming.
+- Provide a small program named 'hdd_reader' which accesses S.M.A.R.T. information and sends some items of it to HDD monitor by using socket programming.
 - Run 'hdd_reader' as a specific user.
-- HDD monitor is able to know HDD temperature as an unprivileged user since HDD temperature is sent by socket communication.
+- HDD monitor is able to know some items of S.M.A.R.T. information as an unprivileged user since those are sent by socket communication.
 
 ### Instructions before starting
 

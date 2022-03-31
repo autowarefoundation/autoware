@@ -24,8 +24,38 @@
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/string.hpp>
 
+#include <bitset>
 #include <map>
 #include <string>
+
+/**
+ * @brief ATA attribute IDs
+ */
+enum class ATAAttributeIDs : uint8_t { TEMPERATURE = 0, POWER_ON_HOURS = 1, SIZE };
+
+/**
+ * @brief HDD device
+ */
+struct HDDDevice
+{
+  std::string name_;  //!< @brief Device name
+  uint8_t
+    total_data_written_attribute_id_;  //!< @brief S.M.A.R.T attribute ID of total data written
+
+  /**
+   * @brief Load or save data members.
+   * @param [inout] ar archive reference to load or save the serialized data members
+   * @param [in] version version for the archive
+   * @note NOLINT syntax is needed since this is an interface to serialization and
+   * used inside boost serialization.
+   */
+  template <typename archive>
+  void serialize(archive & ar, const unsigned /*version*/)  // NOLINT(runtime/references)
+  {
+    ar & name_;
+    ar & total_data_written_attribute_id_;
+  }
+};
 
 /**
  * @brief HDD information
@@ -38,6 +68,9 @@ struct HDDInfo
   uint8_t temp_;        //!< @brief temperature(DegC)
   // Lowest byte of the raw value contains the exact temperature value (Celsius degrees)
   // in S.M.A.R.T. information.
+  uint64_t power_on_hours_;           //!< @brief power on hours count
+  uint64_t total_data_written_;       //!< @brief total data written
+  bool is_valid_total_data_written_;  //!< @brief whether total_data_written_ is valid value
 
   /**
    * @brief Load or save data members.
@@ -53,6 +86,9 @@ struct HDDInfo
     ar & model_;
     ar & serial_;
     ar & temp_;
+    ar & power_on_hours_;
+    ar & total_data_written_;
+    ar & is_valid_total_data_written_;
   }
 };
 

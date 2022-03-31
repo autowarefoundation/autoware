@@ -239,6 +239,7 @@ int get_ata_identify(int fd, HDDInfo * info)
  * @brief get SMART DATA for ATA drive
  * @param [in] fd file descriptor to device
  * @param [out] info a pointer to HDD information
+ * @param [in] device a reference to HDD device
  * @return 0 on success, otherwise error
  * @note For details please see the documents below.
  * - ATA Command Pass-Through
@@ -250,7 +251,7 @@ int get_ata_identify(int fd, HDDInfo * info)
  * - SMART Attribute Annex
  *   http://www.t13.org/documents/uploadeddocuments/docs2005/e05148r0-acs-smartattributesannex.pdf
  */
-int get_ata_SMARTData(int fd, HDDInfo * info)
+int get_ata_SMARTData(int fd, HDDInfo * info, const HDDDevice & device)
 {
   sg_io_hdr_t hdr{};
   ATAPassThrough12 ata{};
@@ -282,12 +283,28 @@ int get_ata_SMARTData(int fd, HDDInfo * info)
     return errno;
   }
 
-  // Retrieve C2h Enclosure Temperature
+  std::bitset<static_cast<uint8_t>(ATAAttributeIDs::SIZE)> found_flag;
+  info->is_valid_total_data_written_ = false;
+  // Retrieve S.M.A.R.T. Informations
   for (int i = 0; i < 30; ++i) {
-    if (data.attribute_entry_[i].attribute_id_ == 0xC2) {
+    if (data.attribute_entry_[i].attribute_id_ == 0xC2) {  // Temperature - Device Internal
       info->temp_ = static_cast<uint8_t>(data.attribute_entry_[i].data_);
-      return EXIT_SUCCESS;
+      found_flag.set(static_cast<uint8_t>(ATAAttributeIDs::TEMPERATURE));
+    } else if (data.attribute_entry_[i].attribute_id_ == 0x09) {  // Power-on Hours Count
+      info->power_on_hours_ = data.attribute_entry_[i].data_;
+      found_flag.set(static_cast<uint8_t>(ATAAttributeIDs::POWER_ON_HOURS));
+    } else if (
+      data.attribute_entry_[i].attribute_id_ ==
+      device.total_data_written_attribute_id_) {  // Total LBAs Written
+      info->total_data_written_ =
+        (data.attribute_entry_[i].data_ |
+         (static_cast<uint64_t>(data.attribute_entry_[i].attribute_specific_) << 32));
+      info->is_valid_total_data_written_ = true;
     }
+  }
+
+  if (found_flag.all()) {
+    return EXIT_SUCCESS;
   }
 
   return ENOENT;
@@ -347,15 +364,15 @@ int get_nvme_identify(int fd, HDDInfo * info)
 int get_nvme_SMARTData(int fd, HDDInfo * info)
 {
   nvme_admin_cmd cmd{};
-  char data[4]{};  // 1 Dword (get byte 0 to 3)
+  unsigned char data[144]{};  // 36 Dword (get byte 0 to 143)
 
   // The Get Log Page command returns a data buffer containing the log page requested
   cmd.opcode = 0x02;            // Get Log Page
   cmd.nsid = 0xFFFFFFFF;        // Global log page
   cmd.addr = (uint64_t)data;    // memory address of data
   cmd.data_len = sizeof(data);  // length of data
-  cmd.cdw10 = 0x00010002;       // Bit 27:16 Number of Dwords (NUMD) = 001h (1 Dword)
-                                // - Minimum necessary size to obtain a temperature
+  cmd.cdw10 = 0x00240002;       // Bit 27:16 Number of Dwords (NUMD) = 024h (36 Dword)
+                                // - Minimum necessary size to obtain S.M.A.R.T. informations
                                 // Bit 07:00 = 02h (SMART / Health Information)
 
   // send Admin Command to device
@@ -368,6 +385,19 @@ int get_nvme_SMARTData(int fd, HDDInfo * info)
   // Convert kelvin to celsius
   unsigned int temperature = ((data[2] << 8) | data[1]) - 273;
   info->temp_ = static_cast<uint8_t>(temperature);
+
+  // Bytes 63:48 Data Units Written
+  // This value is reported in thousands
+  // (i.e., a value of 1 corresponds to 1,000 units of 512 bytes written)
+  // and is rounded up
+  // (e.g., one indicates that the number of 512 byte data units written
+  // is from 1 to 1,000, three indicates that the number of 512 byte data
+  // units written is from 2,001 to 3,000)
+  info->is_valid_total_data_written_ = true;
+  info->total_data_written_ = *(reinterpret_cast<uint64_t *>(&data[48]));
+
+  // Bytes 143:128 Power On Hours
+  info->power_on_hours_ = *(reinterpret_cast<uint64_t *>(&data[128]));
 
   return EXIT_SUCCESS;
 }
@@ -447,7 +477,7 @@ void run(int port)
     }
 
     // Restore list of devices
-    std::vector<std::string> hdd_devices;
+    std::vector<HDDDevice> hdd_devices;
 
     try {
       buf[sizeof(buf) - 1] = '\0';
@@ -469,7 +499,7 @@ void run(int port)
       HDDInfo info{};
 
       // Open a file
-      int fd = open(hdd_device.c_str(), O_RDONLY);
+      int fd = open(hdd_device.name_.c_str(), O_RDONLY);
       if (fd < 0) {
         info.error_code_ = errno;
         syslog(LOG_ERR, "Failed to open a file. %s\n", strerror(info.error_code_));
@@ -477,7 +507,7 @@ void run(int port)
       }
 
       // AHCI device
-      if (boost::starts_with(hdd_device.c_str(), "/dev/sd")) {
+      if (boost::starts_with(hdd_device.name_.c_str(), "/dev/sd")) {
         // Get IDENTIFY DEVICE for ATA drive
         info.error_code_ = get_ata_identify(fd, &info);
         if (info.error_code_ != 0) {
@@ -488,14 +518,14 @@ void run(int port)
           continue;
         }
         // Get SMART DATA for ATA drive
-        info.error_code_ = get_ata_SMARTData(fd, &info);
+        info.error_code_ = get_ata_SMARTData(fd, &info, hdd_device);
         if (info.error_code_ != 0) {
           syslog(
             LOG_ERR, "Failed to get SMART LOG for ATA drive. %s\n", strerror(info.error_code_));
           close(fd);
           continue;
         }
-      } else if (boost::starts_with(hdd_device.c_str(), "/dev/nvme")) {  // NVMe device
+      } else if (boost::starts_with(hdd_device.name_.c_str(), "/dev/nvme")) {  // NVMe device
         // Get Identify for NVMe drive
         info.error_code_ = get_nvme_identify(fd, &info);
         if (info.error_code_ != 0) {
@@ -522,7 +552,7 @@ void run(int port)
         syslog(LOG_ERR, "Failed to close the file descriptor FD. %s\n", strerror(info.error_code_));
       }
 
-      list[hdd_device] = info;
+      list[hdd_device.name_] = info;
     }
 
     oa << list;
