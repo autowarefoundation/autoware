@@ -62,10 +62,30 @@ bool applyMaxVelocity(
 
 namespace motion_velocity_smoother
 {
-AnalyticalJerkConstrainedSmoother::AnalyticalJerkConstrainedSmoother(const Param & smoother_param)
-: smoother_param_(smoother_param)
+AnalyticalJerkConstrainedSmoother::AnalyticalJerkConstrainedSmoother(rclcpp::Node & node)
+: SmootherBase(node)
 {
+  auto & p = smoother_param_;
+  p.resample.ds_resample = node.declare_parameter("resample.ds_resample", 0.1);
+  p.resample.num_resample = node.declare_parameter("resample.num_resample", 1);
+  p.resample.delta_yaw_threshold = node.declare_parameter("resample.delta_yaw_threshold", 0.785);
+  p.latacc.enable_constant_velocity_while_turning =
+    node.declare_parameter("latacc.enable_constant_velocity_while_turning", false);
+  p.latacc.constant_velocity_dist_threshold =
+    node.declare_parameter("latacc.constant_velocity_dist_threshold", 2.0);
+  p.forward.max_acc = node.declare_parameter("forward.max_acc", 1.0);
+  p.forward.min_acc = node.declare_parameter("forward.min_acc", -1.0);
+  p.forward.max_jerk = node.declare_parameter("forward.max_jerk", 0.3);
+  p.forward.min_jerk = node.declare_parameter("forward.min_jerk", -0.3);
+  p.forward.kp = node.declare_parameter("forward.kp", 0.3);
+  p.backward.start_jerk = node.declare_parameter("backward.start_jerk", -0.1);
+  p.backward.min_jerk_mild_stop = node.declare_parameter("backward.min_jerk_mild_stop", -0.3);
+  p.backward.min_jerk = node.declare_parameter("backward.min_jerk", -1.5);
+  p.backward.min_acc_mild_stop = node.declare_parameter("backward.min_acc_mild_stop", -1.0);
+  p.backward.min_acc = node.declare_parameter("backward.min_acc", -2.5);
+  p.backward.span_jerk = node.declare_parameter("backward.span_jerk", -0.01);
 }
+
 void AnalyticalJerkConstrainedSmoother::setParam(const Param & smoother_param)
 {
   smoother_param_ = smoother_param;
@@ -227,7 +247,7 @@ boost::optional<TrajectoryPoints> AnalyticalJerkConstrainedSmoother::resampleTra
       continue;
     }
 
-    for (size_t j = 0; j < smoother_param_.resample.num_resample; ++j) {
+    for (size_t j = 0; j < static_cast<size_t>(smoother_param_.resample.num_resample); ++j) {
       auto tp = input.at(i);
 
       tp.pose = lerpByPose(tp0.pose, tp1.pose, s);

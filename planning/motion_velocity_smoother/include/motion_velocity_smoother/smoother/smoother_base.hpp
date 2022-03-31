@@ -50,6 +50,7 @@ public:
     resampling::ResampleParam resample_param;
   };
 
+  explicit SmootherBase(rclcpp::Node & node);
   virtual ~SmootherBase() = default;
   virtual bool apply(
     const double initial_vel, const double initial_acc, const TrajectoryPoints & input,

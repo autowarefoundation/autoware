@@ -194,16 +194,6 @@ private:
   // parameter handling
   void initCommonParam();
 
-  void initSmootherBaseParam();
-
-  void initJerkFilteredSmootherParam();
-
-  void initL2PseudoJerkSmootherParam();
-
-  void initLinfPseudoJerkSmootherParam();
-
-  void initAnalyticalJerkConstrainedSmootherParam();
-
   // debug
   tier4_autoware_utils::StopWatch<std::chrono::milliseconds> stop_watch_;
   std::shared_ptr<rclcpp::Time> prev_time_;

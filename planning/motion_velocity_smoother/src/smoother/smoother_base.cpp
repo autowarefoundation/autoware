@@ -23,6 +23,29 @@
 
 namespace motion_velocity_smoother
 {
+SmootherBase::SmootherBase(rclcpp::Node & node)
+{
+  auto & p = base_param_;
+  p.max_accel = node.declare_parameter("normal.max_acc", 2.0);
+  p.min_decel = node.declare_parameter("normal.min_acc", -3.0);
+  p.stop_decel = node.declare_parameter("stop_decel", 0.0);
+  p.max_jerk = node.declare_parameter("normal.max_jerk", 0.3);
+  p.min_jerk = node.declare_parameter("normal.min_jerk", -0.1);
+  p.max_lateral_accel = node.declare_parameter("max_lateral_accel", 0.2);
+  p.decel_distance_before_curve = node.declare_parameter("decel_distance_before_curve", 3.5);
+  p.decel_distance_after_curve = node.declare_parameter("decel_distance_after_curve", 0.0);
+  p.min_curve_velocity = node.declare_parameter("min_curve_velocity", 1.38);
+  p.resample_param.max_trajectory_length = node.declare_parameter("max_trajectory_length", 200.0);
+  p.resample_param.min_trajectory_length = node.declare_parameter("min_trajectory_length", 30.0);
+  p.resample_param.resample_time = node.declare_parameter("resample_time", 10.0);
+  p.resample_param.dense_resample_dt = node.declare_parameter("dense_resample_dt", 0.1);
+  p.resample_param.dense_min_interval_distance =
+    node.declare_parameter("dense_min_interval_distance", 0.1);
+  p.resample_param.sparse_resample_dt = node.declare_parameter("sparse_resample_dt", 0.5);
+  p.resample_param.sparse_min_interval_distance =
+    node.declare_parameter("sparse_min_interval_distance", 4.0);
+}
+
 void SmootherBase::setParam(const BaseParam & param) { base_param_ = param; }
 
 double SmootherBase::getMaxAccel() const { return base_param_.max_accel; }
