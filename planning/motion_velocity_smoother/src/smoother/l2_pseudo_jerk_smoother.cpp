@@ -43,6 +43,8 @@ void L2PseudoJerkSmoother::setParam(const Param & smoother_param)
   smoother_param_ = smoother_param;
 }
 
+L2PseudoJerkSmoother::Param L2PseudoJerkSmoother::getParam() const { return smoother_param_; }
+
 bool L2PseudoJerkSmoother::apply(
   const double initial_vel, const double initial_acc, const TrajectoryPoints & input,
   TrajectoryPoints & output, std::vector<TrajectoryPoints> & debug_trajectories)

@@ -124,12 +124,6 @@ private:
     AlgorithmType algorithm_type;  // Option : JerkFiltered, Linf, L2
   } node_param_{};
 
-  SmootherBase::BaseParam base_param_{};
-  JerkFilteredSmoother::Param jerk_filtered_smoother_param_{};
-  L2PseudoJerkSmoother::Param l2_pseudo_jerk_smoother_param_{};
-  LinfPseudoJerkSmoother::Param linf_pseudo_jerk_smoother_param_{};
-  AnalyticalJerkConstrainedSmoother::Param analytical_jerk_constrained_smoother_param_{};
-
   std::shared_ptr<SmootherBase> smoother_;
 
   bool publish_debug_trajs_;  // publish planned trajectories

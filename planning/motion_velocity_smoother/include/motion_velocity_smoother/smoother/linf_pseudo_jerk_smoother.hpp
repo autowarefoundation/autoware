@@ -48,6 +48,7 @@ public:
     const TrajectoryPoints & input, const double v_current, const int closest_id) const override;
 
   void setParam(const Param & smoother_param);
+  Param getParam() const;
 
 private:
   Param smoother_param_;

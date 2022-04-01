@@ -91,6 +91,11 @@ void AnalyticalJerkConstrainedSmoother::setParam(const Param & smoother_param)
   smoother_param_ = smoother_param;
 }
 
+AnalyticalJerkConstrainedSmoother::Param AnalyticalJerkConstrainedSmoother::getParam() const
+{
+  return smoother_param_;
+}
+
 bool AnalyticalJerkConstrainedSmoother::apply(
   const double initial_vel, const double initial_acc, const TrajectoryPoints & input,
   TrajectoryPoints & output, [[maybe_unused]] std::vector<TrajectoryPoints> & debug_trajectories)

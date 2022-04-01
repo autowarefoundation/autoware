@@ -68,6 +68,7 @@ public:
   double getMinJerk() const;
 
   void setParam(const BaseParam & param);
+  BaseParam getBaseParam() const;
 
 protected:
   BaseParam base_param_;

@@ -47,6 +47,8 @@ void JerkFilteredSmoother::setParam(const Param & smoother_param)
   smoother_param_ = smoother_param;
 }
 
+JerkFilteredSmoother::Param JerkFilteredSmoother::getParam() const { return smoother_param_; }
+
 bool JerkFilteredSmoother::apply(
   const double v0, const double a0, const TrajectoryPoints & input, TrajectoryPoints & output,
   std::vector<TrajectoryPoints> & debug_trajectories)

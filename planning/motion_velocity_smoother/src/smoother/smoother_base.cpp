@@ -48,6 +48,8 @@ SmootherBase::SmootherBase(rclcpp::Node & node)
 
 void SmootherBase::setParam(const BaseParam & param) { base_param_ = param; }
 
+SmootherBase::BaseParam SmootherBase::getBaseParam() const { return base_param_; }
+
 double SmootherBase::getMaxAccel() const { return base_param_.max_accel; }
 
 double SmootherBase::getMinDecel() const { return base_param_.min_decel; }

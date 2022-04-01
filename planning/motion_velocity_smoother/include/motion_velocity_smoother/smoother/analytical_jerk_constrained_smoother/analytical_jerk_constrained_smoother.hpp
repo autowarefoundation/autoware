@@ -78,6 +78,7 @@ public:
     const TrajectoryPoints & input) const override;
 
   void setParam(const Param & param);
+  Param getParam() const;
 
 private:
   Param smoother_param_;
