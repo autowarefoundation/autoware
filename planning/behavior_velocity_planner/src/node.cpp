@@ -199,6 +199,9 @@ bool BehaviorVelocityPlannerNode::isDataReady(const PlannerData planner_data) co
   if (!d.current_velocity) {
     return false;
   }
+  if (!d.current_accel) {
+    return false;
+  }
   if (!d.predicted_objects) {
     return false;
   }
