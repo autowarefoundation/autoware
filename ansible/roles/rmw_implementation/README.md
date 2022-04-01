@@ -8,3 +8,20 @@ This role sets up ROS 2 RMW implementation following [this page](https://docs.ro
 | ------------------ | -------- | ------------------- |
 | rosdistro          | true     | The ROS distro.     |
 | rmw_implementation | true     | RMW implementation. |
+
+## Manual Installation
+
+For Universe, the `rosdistro` and `rmw_implementation` variable can also be found in:
+[../../playbooks/universe.yaml](../../playbooks/universe.yaml)
+
+```bash
+# For details: https://docs.ros.org/en/galactic/How-To-Guides/Working-with-multiple-RMW-implementations.html
+sudo apt update
+rosdistro=galactic
+rmw_implementation=rmw_cyclonedds_cpp
+rmw_implementation_dashed=$(eval sed -e "s/_/-/g" <<< "${rmw_implementation}")
+sudo apt install ros-${rosdistro}-${rmw_implementation_dashed}
+
+# (Optional) You set the default RMW implementation in the ~/.bashrc file.
+echo '' >> ~/.bashrc && echo "export RMW_IMPLEMENTATION=${rmw_implementation}" >> ~/.bashrc
+```
