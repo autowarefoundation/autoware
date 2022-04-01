@@ -1,9 +1,13 @@
 repositories:
   # core
-  core/autoware_msgs:
+  core/tmp/autoware_auto_msgs:
     type: git
     url: https://github.com/tier4/autoware_auto_msgs.git # TODO(Tier IV): Move to autowarefoundation/autoware_msgs
     version: tier4/main
+  core/autoware_msgs:
+    type: git
+    url: https://github.com/autowarefoundation/autoware_msgs.git
+    version: main
   core/common:
     type: git
     url: https://github.com/autowarefoundation/autoware_common.git
@@ -17,7 +21,7 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/autoware.universe.git
     version: main
-  universe/tier4_autoware_msgs:
+  universe/extension_msgs/tier4_autoware_msgs:
     type: git
     url: https://github.com/tier4/tier4_autoware_msgs.git
     version: tier4/universe
