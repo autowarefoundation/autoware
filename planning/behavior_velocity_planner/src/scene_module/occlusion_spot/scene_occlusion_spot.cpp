@@ -109,7 +109,8 @@ bool OcclusionSpotModule::modifyPathVelocity(
   std::vector<utils::PossibleCollisionInfo> possible_collisions;
   // extract only close lanelet
   if (param_.use_partition_lanelet) {
-    planning_utils::extractClosePartition(ego_pose.position, partition_lanelets_, close_partition_);
+    planning_utils::extractClosePartition(
+      ego_pose.position, partition_lanelets_, debug_data_.close_partition);
   }
   DEBUG_PRINT(show_time, "extract[ms]: ", stop_watch_.toc("processing_time", true));
   std::vector<geometry_msgs::msg::Point> parked_vehicle_point;
@@ -153,7 +154,6 @@ bool OcclusionSpotModule::modifyPathVelocity(
   utils::applySafeVelocityConsideringPossibleCollision(path, possible_collisions, param_);
   // these debug topics needs computation resource
   debug_data_.parked_vehicle_point = parked_vehicle_point;
-  debug_data_.close_partition = close_partition_;
   debug_data_.z = path->points.front().point.pose.position.z;
   debug_data_.possible_collisions = possible_collisions;
   debug_data_.interp_path = interp_path;
