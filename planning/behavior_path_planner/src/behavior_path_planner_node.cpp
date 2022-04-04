@@ -686,11 +686,11 @@ void BehaviorPathPlannerNode::onRoute(const HADMapRoute::ConstSharedPtr msg)
 
 void BehaviorPathPlannerNode::clipPathLength(PathWithLaneId & path) const
 {
-  const auto ego_pos = planner_data_->self_pose->pose.position;
+  const auto ego_pose = planner_data_->self_pose->pose;
   const double forward = planner_data_->parameters.forward_path_length;
   const double backward = planner_data_->parameters.backward_path_length;
 
-  util::clipPathLength(path, ego_pos, forward, backward);
+  util::clipPathLength(path, ego_pose, forward, backward);
 }
 
 PathWithLaneId BehaviorPathPlannerNode::modifyPathForSmoothGoalConnection(

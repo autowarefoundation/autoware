@@ -2520,7 +2520,7 @@ void AvoidanceModule::clipPathLength(PathWithLaneId & path) const
   const double forward = planner_data_->parameters.forward_path_length;
   const double backward = planner_data_->parameters.backward_path_length;
 
-  util::clipPathLength(path, getEgoPosition(), forward, backward);
+  util::clipPathLength(path, getEgoPose().pose, forward, backward);
 }
 
 bool AvoidanceModule::isTargetObjectType(const PredictedObject & object) const

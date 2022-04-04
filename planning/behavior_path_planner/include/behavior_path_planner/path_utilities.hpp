@@ -59,11 +59,10 @@ PathWithLaneId resamplePathWithSpline(const PathWithLaneId & path, double interv
 
 Path toPath(const PathWithLaneId & input);
 
-size_t getIdxByArclength(
-  const PathWithLaneId & path, const Point & origin, const double signed_arc);
+size_t getIdxByArclength(const PathWithLaneId & path, const Pose & origin, const double signed_arc);
 
 void clipPathLength(
-  PathWithLaneId & path, const Point base_pos, const double forward, const double backward);
+  PathWithLaneId & path, const Pose base_pose, const double forward, const double backward);
 
 std::pair<TurnIndicatorsCommand, double> getPathTurnSignal(
   const lanelet::ConstLanelets & current_lanes, const ShiftedPath & path,

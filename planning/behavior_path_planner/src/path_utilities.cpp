@@ -177,13 +177,19 @@ Path toPath(const PathWithLaneId & input)
   return output;
 }
 
-size_t getIdxByArclength(const PathWithLaneId & path, const Point & origin, const double signed_arc)
+size_t getIdxByArclength(const PathWithLaneId & path, const Pose & origin, const double signed_arc)
 {
   if (path.points.empty()) {
     throw std::runtime_error("[getIdxByArclength] path points must be > 0");
   }
 
-  const auto closest_idx = tier4_autoware_utils::findNearestIndex(path.points, origin);
+  const auto boost_closest_idx = tier4_autoware_utils::findNearestIndex(
+    path.points, origin, std::numeric_limits<double>::max(), M_PI / 4.0);
+
+  // If the nearest index search with angle limit fails, search again without angle limit.
+  size_t closest_idx = boost_closest_idx
+                         ? *boost_closest_idx
+                         : tier4_autoware_utils::findNearestIndex(path.points, origin.position);
 
   using tier4_autoware_utils::calcDistance2d;
   double sum_length = 0.0;
@@ -209,14 +215,14 @@ size_t getIdxByArclength(const PathWithLaneId & path, const Point & origin, cons
 }
 
 void clipPathLength(
-  PathWithLaneId & path, const Point base_pos, const double forward, const double backward)
+  PathWithLaneId & path, const Pose base_pose, const double forward, const double backward)
 {
   if (path.points.size() < 3) {
     return;
   }
 
-  const auto start_idx = util::getIdxByArclength(path, base_pos, -backward);
-  const auto end_idx = util::getIdxByArclength(path, base_pos, forward);
+  const auto start_idx = util::getIdxByArclength(path, base_pose, -backward);
+  const auto end_idx = util::getIdxByArclength(path, base_pose, forward);
 
   const std::vector<PathPointWithLaneId> clipped_points{
     path.points.begin() + start_idx, path.points.begin() + end_idx + 1};
