@@ -46,16 +46,4 @@
     </include>
 
   </group>
-
-  <!-- perception module -->
-  <group>
-    <push-ros-namespace namespace="perception"/>
-    <!-- publish empty objects instead of object recognition module -->
-    <group unless="$(var use_object_recognition)">
-      <push-ros-namespace namespace="object_recognition"/>
-      <node pkg="dummy_perception_publisher" exec="empty_objects_publisher" name="empty_objects_publisher" output="screen">
-        <remap from="~/output/objects" to="/perception/object_recognition/objects" />
-      </node>
-    </group>
-  </group>
 </launch>

@@ -29,23 +29,31 @@
   <!-- perception module -->
   <group>
     <push-ros-namespace namespace="perception"/>
-    <!-- object recognition -->
-    <group if="$(var perception/enable_object_recognition)">
-      <push-ros-namespace namespace="object_recognition"/>
-      <!-- tracking module -->
-      <group>
-        <push-ros-namespace namespace="tracking"/>
-        <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/tracking/tracking.launch.xml">
-        </include>
+      <!-- object recognition -->
+      <group if="$(var perception/enable_object_recognition)">
+        <push-ros-namespace namespace="object_recognition"/>
+        <!-- tracking module -->
+        <group>
+          <push-ros-namespace namespace="tracking"/>
+          <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/tracking/tracking.launch.xml">
+          </include>
+        </group>
+        <!-- prediction module -->
+        <group>
+          <push-ros-namespace namespace="prediction"/>
+          <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/prediction/prediction.launch.xml">
+            <arg name="use_vector_map" value="true" />
+          </include>
+        </group>
       </group>
-      <!-- prediction module -->
-      <group>
-        <push-ros-namespace namespace="prediction"/>
-        <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/prediction/prediction.launch.xml">
-          <arg name="use_vector_map" value="true" />
-        </include>
+
+      <!-- publish empty objects instead of object recognition module -->
+      <group unless="$(var perception/enable_object_recognition)">
+        <push-ros-namespace namespace="object_recognition"/>
+        <node pkg="dummy_perception_publisher" exec="empty_objects_publisher" name="empty_objects_publisher" output="screen">
+          <remap from="~/output/objects" to="/perception/object_recognition/objects" />
+        </node>
       </group>
-    </group>
 
     <!-- object segmentation module -->
     <group>
@@ -64,6 +72,7 @@
       <push-ros-namespace namespace="traffic_light_recognition"/>
       <include file="$(find-pkg-share tier4_perception_launch)/launch/traffic_light_recognition/traffic_light.launch.xml"></include>
     </group>
+
   </group>
 
   <!-- Simulator model -->
