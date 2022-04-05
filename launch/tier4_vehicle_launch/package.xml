@@ -7,7 +7,6 @@
   <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>
   <license>Apache License 2.0</license>
 
-
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
   <exec_depend>robot_state_publisher</exec_depend>

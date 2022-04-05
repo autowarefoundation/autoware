@@ -2,7 +2,7 @@
 <package format="3">
   <name>planning_error_monitor</name>
   <version>0.1.0</version>
-  <description>ros node for monitoring planning error </description>
+  <description>ros node for monitoring planning error</description>
 
   <maintainer email="yutaka.shimizu@tier4.jp">Yutaka Shimizu</maintainer>
 

@@ -24,5 +24,4 @@
     <build_type>ament_cmake</build_type>
     <rviz plugin="${prefix}/plugins/plugin_description.xml"/>
   </export>
-
 </package>

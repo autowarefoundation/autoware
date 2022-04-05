@@ -3,7 +3,7 @@
 <package format="3">
   <name>goal_distance_calculator</name>
   <version>0.0.0</version>
-  <description>The goal_distance_calculator package </description>
+  <description>The goal_distance_calculator package</description>
   <maintainer email="ttatcoder@outlook.jp">Taiki Tanaka</maintainer>
   <license>Apache License 2.0</license>
 

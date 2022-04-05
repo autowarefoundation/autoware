@@ -1,3 +1,4 @@
+# See https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md for all rules.
 default: true
 MD013: false
 MD024:
@@ -5,3 +6,4 @@ MD024:
 MD033: false
 MD041: false
 MD046: false
+MD049: false
