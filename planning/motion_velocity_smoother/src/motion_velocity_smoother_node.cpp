@@ -286,7 +286,7 @@ void MotionVelocitySmootherNode::onExternalVelocityLimit(const VelocityLimit::Co
         const double a0 = prev_closest_point_->acceleration_mps2;
 
         if (isEngageStatus(v0)) {
-          max_velocity_with_deceleration_ = external_velocity_limit_;
+          max_velocity_with_deceleration_ = msg->max_velocity;
           external_velocity_limit_dist_ = 0.0;
         } else {
           const double a_min =
