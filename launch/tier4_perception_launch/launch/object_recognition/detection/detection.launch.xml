@@ -1,5 +1,4 @@
 <?xml version="1.0"?>
-
 <launch>
   <arg name="mode" description="options: `camera_lidar_fusion`, `lidar` or `camera`"/>
   <arg name="lidar_detection_model" default="centerpoint" description="options: `centerpoint`, `apollo`"/>
@@ -54,6 +53,5 @@
     </include>
   </group>
   <!-- camera based detection-->
-  <group if="$(eval '&quot;$(var mode)&quot;==&quot;camera&quot;')">
-  </group>
+  <group if="$(eval '&quot;$(var mode)&quot;==&quot;camera&quot;')"/>
 </launch>

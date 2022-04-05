@@ -1,17 +1,17 @@
 <launch>
-  <arg name="diag_name" />
-  <arg name="update_rate" default="10.0" />
-  <arg name="is_active" default="true" />
-  <arg name="status" default="0" />
+  <arg name="diag_name"/>
+  <arg name="update_rate" default="10.0"/>
+  <arg name="is_active" default="true"/>
+  <arg name="status" default="0"/>
 
   <group>
     <push-ros-namespace namespace="dummy_diag_publisher"/>
 
     <node pkg="dummy_diag_publisher" exec="dummy_diag_publisher" name="$(var diag_name)" output="screen">
-      <param name="diag_name" value="$(var diag_name)" />
-      <param name="update_rate" value="$(var update_rate)" />
-      <param name="is_active" value="$(var is_active)" />
-      <param name="status" value="$(var status)" />
+      <param name="diag_name" value="$(var diag_name)"/>
+      <param name="update_rate" value="$(var update_rate)"/>
+      <param name="is_active" value="$(var is_active)"/>
+      <param name="status" value="$(var status)"/>
     </node>
   </group>
 </launch>

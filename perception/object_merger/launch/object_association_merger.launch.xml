@@ -1,5 +1,4 @@
 <?xml version="1.0"?>
-
 <launch>
   <arg name="input/object0" default="object0"/>
   <arg name="input/object1" default="object1"/>
@@ -10,5 +9,4 @@
     <remap from="input/object1" to="$(var input/object1)"/>
     <remap from="output/object" to="$(var output/object)"/>
   </node>
-
 </launch>

@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <launch>
   <arg name="input/tracked_objects" default="/perception/object_recognition/tracking/objects"/>
   <arg name="input/clusters" default="/perception/object_recognition/detection/clustering/clusters"/>
@@ -8,7 +7,7 @@
   <group>
     <include file="$(find-pkg-share shape_estimation)/launch/shape_estimation.launch.xml">
       <arg name="input/objects" value="$(var input/clusters)"/>
-      <arg name="output/objects" value="initial_objects" />
+      <arg name="output/objects" value="initial_objects"/>
       <arg name="node_name" value="initial_cluster_shape_estimation"/>
     </include>
   </group>

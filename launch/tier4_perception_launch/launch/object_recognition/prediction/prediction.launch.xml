@@ -1,5 +1,4 @@
 <?xml version="1.0"?>
-
 <launch>
   <arg name="use_vector_map" default="false" description="use vector map in prediction"/>
 
@@ -10,7 +9,6 @@
     </include>
   </group>
   <group unless="$(var use_vector_map)">
-    <include file="$(find-pkg-share naive_path_prediction)/launch/naive_path_prediction.launch.xml">
-    </include>
+    <include file="$(find-pkg-share naive_path_prediction)/launch/naive_path_prediction.launch.xml"/>
   </group>
 </launch>

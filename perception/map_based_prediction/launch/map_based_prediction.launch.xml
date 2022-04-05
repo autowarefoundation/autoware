@@ -1,13 +1,12 @@
-<?xml version="1.0" ?>
-
+<?xml version="1.0"?>
 <launch>
-  <arg name="param_path" default="$(find-pkg-share map_based_prediction)/config/map_based_prediction.param.yaml" />
+  <arg name="param_path" default="$(find-pkg-share map_based_prediction)/config/map_based_prediction.param.yaml"/>
 
-  <arg name="vector_map_topic" default="/map/vector_map" />
+  <arg name="vector_map_topic" default="/map/vector_map"/>
   <arg name="output_topic" default="objects"/>
 
   <node pkg="map_based_prediction" exec="map_based_prediction" name="map_based_prediction" output="screen">
-    <param from="$(var param_path)" />
+    <param from="$(var param_path)"/>
     <remap from="/vector_map" to="$(var vector_map_topic)"/>
     <remap from="objects" to="$(var output_topic)"/>
   </node>

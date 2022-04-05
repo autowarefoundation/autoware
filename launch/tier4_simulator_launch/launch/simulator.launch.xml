@@ -1,7 +1,7 @@
 <launch>
-  <arg name="launch_dummy_perception" />
+  <arg name="launch_dummy_perception"/>
   <arg name="launch_dummy_vehicle"/>
-  <arg name="vehicle_info_param_file" />
+  <arg name="vehicle_info_param_file"/>
 
   <arg name="perception/enable_detection_failure" default="true" description="enable to simulate detection failure when using dummy perception"/>
   <arg name="perception/enable_object_recognition" default="false" description="enable object recognition"/>
@@ -29,60 +29,57 @@
   <!-- perception module -->
   <group>
     <push-ros-namespace namespace="perception"/>
-      <!-- object recognition -->
-      <group if="$(var perception/enable_object_recognition)">
-        <push-ros-namespace namespace="object_recognition"/>
-        <!-- tracking module -->
-        <group>
-          <push-ros-namespace namespace="tracking"/>
-          <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/tracking/tracking.launch.xml">
-          </include>
-        </group>
-        <!-- prediction module -->
-        <group>
-          <push-ros-namespace namespace="prediction"/>
-          <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/prediction/prediction.launch.xml">
-            <arg name="use_vector_map" value="true" />
-          </include>
-        </group>
+    <!-- object recognition -->
+    <group if="$(var perception/enable_object_recognition)">
+      <push-ros-namespace namespace="object_recognition"/>
+      <!-- tracking module -->
+      <group>
+        <push-ros-namespace namespace="tracking"/>
+        <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/tracking/tracking.launch.xml"/>
       </group>
+      <!-- prediction module -->
+      <group>
+        <push-ros-namespace namespace="prediction"/>
+        <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/prediction/prediction.launch.xml">
+          <arg name="use_vector_map" value="true"/>
+        </include>
+      </group>
+    </group>
 
-      <!-- publish empty objects instead of object recognition module -->
-      <group unless="$(var perception/enable_object_recognition)">
-        <push-ros-namespace namespace="object_recognition"/>
-        <node pkg="dummy_perception_publisher" exec="empty_objects_publisher" name="empty_objects_publisher" output="screen">
-          <remap from="~/output/objects" to="/perception/object_recognition/objects" />
-        </node>
-      </group>
+    <!-- publish empty objects instead of object recognition module -->
+    <group unless="$(var perception/enable_object_recognition)">
+      <push-ros-namespace namespace="object_recognition"/>
+      <node pkg="dummy_perception_publisher" exec="empty_objects_publisher" name="empty_objects_publisher" output="screen">
+        <remap from="~/output/objects" to="/perception/object_recognition/objects"/>
+      </node>
+    </group>
 
     <!-- object segmentation module -->
     <group>
       <push-ros-namespace namespace="occupancy_grid_map"/>
       <!-- Occupancy Grid -->
       <include file="$(find-pkg-share laserscan_to_occupancy_grid_map)/launch/laserscan_to_occupancy_grid_map.launch.py">
-        <arg name="input_obstacle_pointcloud" value="true" />
-        <arg name="input_obstacle_and_raw_pointcloud" value="false" />
-        <arg name="input/obstacle_pointcloud" value="/perception/obstacle_segmentation/pointcloud" />
-        <arg name="output" value="/perception/occupancy_grid_map/map" />
+        <arg name="input_obstacle_pointcloud" value="true"/>
+        <arg name="input_obstacle_and_raw_pointcloud" value="false"/>
+        <arg name="input/obstacle_pointcloud" value="/perception/obstacle_segmentation/pointcloud"/>
+        <arg name="output" value="/perception/occupancy_grid_map/map"/>
       </include>
     </group>
 
     <!-- traffic light module -->
     <group if="$(var perception/enable_traffic_light)">
       <push-ros-namespace namespace="traffic_light_recognition"/>
-      <include file="$(find-pkg-share tier4_perception_launch)/launch/traffic_light_recognition/traffic_light.launch.xml"></include>
+      <include file="$(find-pkg-share tier4_perception_launch)/launch/traffic_light_recognition/traffic_light.launch.xml"/>
     </group>
-
   </group>
 
   <!-- Simulator model -->
   <group if="$(var launch_dummy_vehicle)">
-      <arg name="simulator_model" default="$(var vehicle_model_pkg)/config/simulator_model.param.yaml" description="path to the file of simulator model"/>
-      <include file="$(find-pkg-share simple_planning_simulator)/launch/simple_planning_simulator.launch.py">
-        <arg name="vehicle_info_param_file" value="$(var vehicle_info_param_file)" />
-        <arg name="simulator_model_param_file" value="$(var simulator_model)"/>
-        <arg name="initial_engage_state" value="$(var initial_engage_state)"/>
-      </include>
+    <arg name="simulator_model" default="$(var vehicle_model_pkg)/config/simulator_model.param.yaml" description="path to the file of simulator model"/>
+    <include file="$(find-pkg-share simple_planning_simulator)/launch/simple_planning_simulator.launch.py">
+      <arg name="vehicle_info_param_file" value="$(var vehicle_info_param_file)"/>
+      <arg name="simulator_model_param_file" value="$(var simulator_model)"/>
+      <arg name="initial_engage_state" value="$(var initial_engage_state)"/>
+    </include>
   </group>
-
 </launch>

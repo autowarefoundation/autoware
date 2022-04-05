@@ -8,16 +8,15 @@
 
   <!-- autoware -->
   <include file="$(find-pkg-share autoware_launch)/launch/planning_simulator.launch.xml">
-    <arg name="vehicle_model" value="$(var vehicle_model)" />
-    <arg name="sensor_model" value="$(var sensor_model)" />
+    <arg name="vehicle_model" value="$(var vehicle_model)"/>
+    <arg name="sensor_model" value="$(var sensor_model)"/>
     <arg name="map_path" value="$(var map_path)"/>
-    <arg name="rviz" value="$(var rviz)" />
-    <arg name="initial_engage_state" value="false" />
-    <arg name="perception/enable_detection_failure" value="false" />
-    <arg name="sensing/visible_range" value="1000.0" />
+    <arg name="rviz" value="$(var rviz)"/>
+    <arg name="initial_engage_state" value="false"/>
+    <arg name="perception/enable_detection_failure" value="false"/>
+    <arg name="sensing/visible_range" value="1000.0"/>
   </include>
 
   <!-- ci  -->
   <!-- TODO  -->
-
 </launch>

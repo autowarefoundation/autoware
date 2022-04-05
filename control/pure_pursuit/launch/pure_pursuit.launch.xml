@@ -1,5 +1,4 @@
 <launch>
-
   <arg name="pure_pursuit_param_path" default="$(find-pkg-share pure_pursuit)/config/pure_pursuit.param.yaml"/>
 
   <arg name="input/reference_trajectory" default="/planning/scenario_planning/trajectory"/>

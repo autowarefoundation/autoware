@@ -1,7 +1,7 @@
 <launch>
   <arg name="input_vehicle_twist_with_covariance_topic" default="/vehicle/status/twist_with_covariance" description="input twist with covariance topic name from vehicle"/>
 
-  <arg name="input_imu_topic" default="/sensing/imu/imu_data" description="input imu topic name" />
+  <arg name="input_imu_topic" default="/sensing/imu/imu_data" description="input imu topic name"/>
 
   <arg name="output_twist_topic" default="gyro_twist" description="output twist topic name"/>
   <arg name="output_twist_with_covariance_topic" default="gyro_twist_with_covariance" description="output twist with covariance topic name"/>
@@ -10,15 +10,14 @@
   <arg name="message_timeout_sec" default="0.2" description="delay tolerance time for message"/>
 
   <node pkg="gyro_odometer" exec="gyro_odometer" name="gyro_odometer" output="screen">
+    <remap from="vehicle/twist_with_covariance" to="$(var input_vehicle_twist_with_covariance_topic)"/>
 
-    <remap from="vehicle/twist_with_covariance" to="$(var input_vehicle_twist_with_covariance_topic)" />
+    <remap from="imu" to="$(var input_imu_topic)"/>
 
-    <remap from="imu" to="$(var input_imu_topic)" />
+    <remap from="twist" to="$(var output_twist_topic)"/>
+    <remap from="twist_with_covariance" to="$(var output_twist_with_covariance_topic)"/>
 
-    <remap from="twist" to="$(var output_twist_topic)" />
-    <remap from="twist_with_covariance" to="$(var output_twist_with_covariance_topic)" />
-
-    <param name="output_frame" value="$(var output_frame)" />
-    <param name="message_timeout_sec" value="$(var message_timeout_sec)" />
+    <param name="output_frame" value="$(var output_frame)"/>
+    <param name="message_timeout_sec" value="$(var message_timeout_sec)"/>
   </node>
 </launch>

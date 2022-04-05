@@ -1,5 +1,4 @@
 <launch>
-
   <arg name="input/objects" default="labeled_clusters"/>
   <arg name="output/objects" default="shape_estimated_objects"/>
   <arg name="use_filter" default="true"/>
@@ -7,10 +6,10 @@
   <arg name="node_name" default="shape_estimation"/>
   <arg name="use_vehicle_reference_yaw" default="false"/>
   <node pkg="shape_estimation" exec="shape_estimation" name="$(var node_name)" output="screen">
-    <remap from="input" to="$(var input/objects)" />
-    <remap from="objects" to="$(var output/objects)" />
-    <param name="use_filter" value="$(var use_filter)" />
-    <param name="use_corrector" value="$(var use_corrector)" />
+    <remap from="input" to="$(var input/objects)"/>
+    <remap from="objects" to="$(var output/objects)"/>
+    <param name="use_filter" value="$(var use_filter)"/>
+    <param name="use_corrector" value="$(var use_corrector)"/>
     <param name="use_vehicle_reference_yaw" value="$(var use_vehicle_reference_yaw)"/>
   </node>
 </launch>

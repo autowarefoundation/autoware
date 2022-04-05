@@ -1,13 +1,13 @@
 <launch>
-  <arg name="input_lane_driving_trajectory" />
-  <arg name="input_parking_trajectory" />
-  <arg name="input_lanelet_map" />
-  <arg name="input_route" />
-  <arg name="input_odometry" />
-  <arg name="is_parking_completed" />
+  <arg name="input_lane_driving_trajectory"/>
+  <arg name="input_parking_trajectory"/>
+  <arg name="input_lanelet_map"/>
+  <arg name="input_route"/>
+  <arg name="input_odometry"/>
+  <arg name="is_parking_completed"/>
 
-  <arg name="output_scenario" />
-  <arg name="output_trajectory" />
+  <arg name="output_scenario"/>
+  <arg name="output_trajectory"/>
 
   <node pkg="scenario_selector" exec="scenario_selector" name="scenario_selector" output="screen">
     <remap from="input/lane_driving/trajectory" to="$(var input_lane_driving_trajectory)"/>
@@ -20,10 +20,10 @@
     <remap from="output/scenario" to="$(var output_scenario)"/>
     <remap from="output/trajectory" to="$(var output_trajectory)"/>
 
-    <param name="update_rate" value="10.0" />
-    <param name="th_max_message_delay_sec" value="1.0" />
-    <param name="th_arrived_distance_m" value="1.0" />
-    <param name="th_stopped_time_sec" value="1.0" />
-    <param name="th_stopped_velocity_mps" value="0.01" />
+    <param name="update_rate" value="10.0"/>
+    <param name="th_max_message_delay_sec" value="1.0"/>
+    <param name="th_arrived_distance_m" value="1.0"/>
+    <param name="th_stopped_time_sec" value="1.0"/>
+    <param name="th_stopped_velocity_mps" value="0.01"/>
   </node>
 </launch>

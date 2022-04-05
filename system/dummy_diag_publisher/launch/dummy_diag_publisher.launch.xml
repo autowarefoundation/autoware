@@ -18,7 +18,7 @@
 
   <group if="$(var launch_rqt_runtime_monitor_err)">
     <node pkg="rqt_runtime_monitor" exec="rqt_runtime_monitor" name="rqt_runtime_monitor_err">
-      <remap from="/diagnostics" to="/diagnostics_err" />
+      <remap from="/diagnostics" to="/diagnostics_err"/>
     </node>
   </group>
 

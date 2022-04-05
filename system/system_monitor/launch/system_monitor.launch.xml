@@ -9,25 +9,25 @@
 
   <group>
     <node pkg="system_monitor" exec="cpu_monitor" name="cpu_monitor" output="log" respawn="true">
-      <param from="$(var cpu_monitor_config_file)" />
+      <param from="$(var cpu_monitor_config_file)"/>
     </node>
     <node pkg="system_monitor" exec="hdd_monitor" name="hdd_monitor" output="log" respawn="true">
-      <param from="$(var hdd_monitor_config_file)" />
+      <param from="$(var hdd_monitor_config_file)"/>
     </node>
     <node pkg="system_monitor" exec="mem_monitor" name="mem_monitor" output="log" respawn="true">
-      <param from="$(var mem_monitor_config_file)" />
+      <param from="$(var mem_monitor_config_file)"/>
     </node>
     <node pkg="system_monitor" exec="net_monitor" name="net_monitor" output="log" respawn="true">
-      <param from="$(var net_monitor_config_file)" />
+      <param from="$(var net_monitor_config_file)"/>
     </node>
     <node pkg="system_monitor" exec="ntp_monitor" name="ntp_monitor" output="log" respawn="true">
-      <param from="$(var ntp_monitor_config_file)" />
+      <param from="$(var ntp_monitor_config_file)"/>
     </node>
     <node pkg="system_monitor" exec="process_monitor" name="process_monitor" output="log" respawn="true">
-      <param from="$(var process_monitor_config_file)" />
+      <param from="$(var process_monitor_config_file)"/>
     </node>
     <node pkg="system_monitor" exec="gpu_monitor" name="gpu_monitor" output="log" respawn="true">
-      <param from="$(var gpu_monitor_config_file)" />
+      <param from="$(var gpu_monitor_config_file)"/>
     </node>
   </group>
 </launch>

@@ -1,5 +1,4 @@
 <?xml version="1.0"?>
-
 <launch>
   <arg name="input/object" default="object"/>
   <arg name="output/long_range_object" default="long_range_object"/>
@@ -10,7 +9,6 @@
     <remap from="input/object" to="$(var input/object)"/>
     <remap from="output/long_range_object" to="$(var output/long_range_object)"/>
     <remap from="output/short_range_object" to="$(var output/short_range_object)"/>
-    <param name="split_range" value="$(var split_range)" />
+    <param name="split_range" value="$(var split_range)"/>
   </node>
-
 </launch>

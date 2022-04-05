@@ -1,6 +1,6 @@
 <launch>
-  <arg name="input" description="input topic name" />
-  <arg name="output" description="output topic name" />
+  <arg name="input" description="input topic name"/>
+  <arg name="output" description="output topic name"/>
 
   <!--
     bit 0~1: Point property based on spatial position
@@ -20,7 +20,7 @@
       11: return 3
     bit 6~7: Reserved
   -->
-  <arg name="ignore_tags" description="tags to be ignored(see comments in livox_tag_filter.launch.xml for more details)" />
+  <arg name="ignore_tags" description="tags to be ignored(see comments in livox_tag_filter.launch.xml for more details)"/>
 
   <node pkg="livox_tag_filter" exec="livox_tag_filter_node" name="livox_tag_filter_node" output="screen">
     <remap from="input" to="$(var input)"/>

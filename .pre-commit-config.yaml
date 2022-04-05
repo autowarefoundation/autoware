@@ -35,8 +35,10 @@ repos:
       - id: yamllint
 
   - repo: https://github.com/tier4/pre-commit-hooks-ros
-    rev: v0.5.1
+    rev: v0.6.0
     hooks:
+      - id: prettier-xacro
+      - id: prettier-launch-xml
       - id: prettier-package-xml
       - id: sort-package-xml
       - id: ros-include-guard

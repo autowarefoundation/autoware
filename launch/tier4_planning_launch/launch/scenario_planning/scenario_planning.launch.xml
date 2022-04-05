@@ -1,7 +1,7 @@
 <launch>
   <!-- common param -->
   <arg name="common_param_path" default="$(find-pkg-share tier4_planning_launch)/config/scenario_planning/common/common.param.yaml"/>
-  <arg name="vehicle_info_param_file" />
+  <arg name="vehicle_info_param_file"/>
 
   <!-- scenario selector -->
   <include file="$(find-pkg-share scenario_selector)/launch/scenario_selector.launch.xml">
@@ -25,10 +25,10 @@
     </include>
     <!-- motion velocity smoother -->
     <arg name="smoother_type" default="JerkFiltered" description="options: JerkFiltered, L2, Analytical, Linf(Unstable)"/>
-    <set_remap from="~/input/trajectory" to="/planning/scenario_planning/scenario_selector/trajectory" />
-    <set_remap from="~/output/trajectory" to="/planning/scenario_planning/trajectory" />
+    <set_remap from="~/input/trajectory" to="/planning/scenario_planning/scenario_selector/trajectory"/>
+    <set_remap from="~/output/trajectory" to="/planning/scenario_planning/trajectory"/>
     <include file="$(find-pkg-share motion_velocity_smoother)/launch/motion_velocity_smoother.launch.xml">
-      <arg name="smoother_type" value="$(var smoother_type)" />
+      <arg name="smoother_type" value="$(var smoother_type)"/>
       <arg name="common_param_path" value="$(var common_param_path)"/>
       <arg name="param_path" value="$(var param_path)"/>
       <arg name="smoother_param_path" value="$(find-pkg-share tier4_planning_launch)/config/scenario_planning/common/motion_velocity_smoother/$(var smoother_type).param.yaml"/>
@@ -40,11 +40,11 @@
     <!-- lane driving -->
     <include file="$(find-pkg-share tier4_planning_launch)/launch/scenario_planning/lane_driving.launch.xml">
       <arg name="common_param_path" value="$(var common_param_path)"/>
-      <arg name="vehicle_info_param_file" value="$(var vehicle_info_param_file)" />
+      <arg name="vehicle_info_param_file" value="$(var vehicle_info_param_file)"/>
     </include>
     <!-- parking -->
     <include file="$(find-pkg-share tier4_planning_launch)/launch/scenario_planning/parking.launch.py">
-      <arg name="vehicle_info_param_file" value="$(var vehicle_info_param_file)" />
+      <arg name="vehicle_info_param_file" value="$(var vehicle_info_param_file)"/>
     </include>
   </group>
 </launch>
