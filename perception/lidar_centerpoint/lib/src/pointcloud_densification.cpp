@@ -1,4 +1,4 @@
-// Copyright 2021 Tier IV, Inc.
+// Copyright 2021 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ PointCloudDensification::PointCloudDensification(const DensificationParam & para
 {
 }
 
-void PointCloudDensification::enqueuePointCloud(
+bool PointCloudDensification::enqueuePointCloud(
   const sensor_msgs::msg::PointCloud2 & pointcloud_msg, const tf2_ros::Buffer & tf_buffer)
 {
   const auto header = pointcloud_msg.header;
@@ -63,12 +63,14 @@ void PointCloudDensification::enqueuePointCloud(
   auto transform_world2current =
     getTransform(tf_buffer, header.frame_id, param_.world_frame_id(), header.stamp);
   if (!transform_world2current) {
-    return;
+    return false;
   }
   auto affine_world2current = transformToEigen(transform_world2current.get());
 
   enqueue(pointcloud_msg, affine_world2current);
   dequeue();
+
+  return true;
 }
 
 void PointCloudDensification::enqueue(

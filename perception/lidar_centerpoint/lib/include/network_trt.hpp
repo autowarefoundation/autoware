@@ -1,4 +1,4 @@
-// Copyright 2021 Tier IV, Inc.
+// Copyright 2021 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -35,14 +35,14 @@ class HeadTRT : public TensorRTWrapper
 public:
   using TensorRTWrapper::TensorRTWrapper;
 
-  HeadTRT(const int num_class, const bool verbose);
+  HeadTRT(const std::size_t num_class, const bool verbose);
 
 protected:
   bool setProfile(
     nvinfer1::IBuilder & builder, nvinfer1::INetworkDefinition & network,
     nvinfer1::IBuilderConfig & config) override;
 
-  int num_class_{0};
+  std::size_t num_class_{0};
 };
 
 }  // namespace centerpoint

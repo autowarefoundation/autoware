@@ -13,9 +13,9 @@
       <param name="score_threshold" value="0.45"/>
       <param name="densification_world_frame_id" value="map"/>
       <param name="densification_num_past_frames" value="1"/>
-      <param name="use_head_trt" value="true"/>
       <param name="trt_precision" value="fp16"/>
-      <param name="encoder_pt_path" value="$(var model_path)/pts_voxel_encoder_$(var model_name).pt"/>
+      <param name="encoder_onnx_path" value="$(var model_path)/pts_voxel_encoder_$(var model_name).onnx"/>
+      <param name="encoder_engine_path" value="$(var model_path)/pts_voxel_encoder_$(var model_name).engine"/>
       <param name="head_onnx_path" value="$(var model_path)/pts_backbone_neck_head_$(var model_name).onnx"/>
       <param name="head_engine_path" value="$(var model_path)/pts_backbone_neck_head_$(var model_name).engine"/>
       <param from="$(var model_param_path)"/>

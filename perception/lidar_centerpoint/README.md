@@ -20,10 +20,9 @@ We trained the models using <https://github.com/open-mmlab/mmdetection3d>.
 
 ### Output
 
-| Name                               | Type                                                  | Description              |
-| ---------------------------------- | ----------------------------------------------------- | ------------------------ |
-| `~/output/objects`                 | `autoware_auto_perception_msgs::msg::DetectedObjects` | detected objects         |
-| `~/debug/pointcloud_densification` | `sensor_msgs::msg::PointCloud2`                       | densification pointcloud |
+| Name               | Type                                                  | Description      |
+| ------------------ | ----------------------------------------------------- | ---------------- |
+| `~/output/objects` | `autoware_auto_perception_msgs::msg::DetectedObjects` | detected objects |
 
 ## Parameters
 
@@ -34,29 +33,15 @@ We trained the models using <https://github.com/open-mmlab/mmdetection3d>.
 | `score_threshold`               | float  | `0.4`         | detected objects with score less than threshold are ignored |
 | `densification_world_frame_id`  | string | `map`         | the world frame id to fuse multi-frame pointcloud           |
 | `densification_num_past_frames` | int    | `1`           | the number of past frames to fuse with the current frame    |
-| `use_encoder_trt`               | bool   | `false`       | use TensorRT VoxelFeatureEncoder                            |
-| `use_head_trt`                  | bool   | `true`        | use TensorRT DetectionHead                                  |
 | `trt_precision`                 | string | `fp16`        | TensorRT inference precision: `fp32` or `fp16`              |
 | `encoder_onnx_path`             | string | `""`          | path to VoxelFeatureEncoder ONNX file                       |
 | `encoder_engine_path`           | string | `""`          | path to VoxelFeatureEncoder TensorRT Engine file            |
-| `encoder_pt_path`               | string | `""`          | path to VoxelFeatureEncoder TorchScript file                |
 | `head_onnx_path`                | string | `""`          | path to DetectionHead ONNX file                             |
 | `head_engine_path`              | string | `""`          | path to DetectionHead TensorRT Engine file                  |
-| `head_pt_path`                  | string | `""`          | path to DetectionHead TorchScript file                      |
 
 ## Assumptions / Known limits
 
 - The `object.existence_probability` is stored the value of classification confidence of a DNN, not probability.
-
-- If you have an error like `'GOMP_4.5' not found`, replace the OpenMP library in libtorch.
-
-  ```bash
-  sudo apt install libgomp1 -y
-  sudo rm /usr/local/libtorch/lib/libgomp-75eea7e8.so.1
-  sudo ln -s /usr/lib/x86_64-linux-gnu/libgomp.so.1 /usr/local/libtorch/lib/libgomp-75eea7e8.so.1
-  ```
-
-- if `use_encoder_trt` is set `use_encoder_trt`, more GPU memory is allocated.
 
 ## (Optional) Error detection and handling
 
@@ -92,15 +77,9 @@ Example:
 
 [5] <https://github.com/open-mmlab/OpenPCDet>
 
-[6] <https://github.com/poodarchu/Det3D>
+[6] <https://github.com/yukkysaito/autoware_perception>
 
-[7] <https://github.com/xingyizhou/CenterNet>
-
-[8] <https://github.com/lzccccc/SMOKE>
-
-[9] <https://github.com/yukkysaito/autoware_perception>
-
-[10] <https://github.com/pytorch/pytorch>
+[7] <https://github.com/NVIDIA-AI-IOT/CUDA-PointPillars>
 
 ## (Optional) Future extensions / Unimplemented parts
 
