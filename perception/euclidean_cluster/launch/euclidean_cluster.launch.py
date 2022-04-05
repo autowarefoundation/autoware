@@ -49,8 +49,8 @@ def launch_setup(context, *args, **kwargs):
 
     # set compare map filter as a component
     compare_map_filter_component = ComposableNode(
-        package="pointcloud_preprocessor",
-        plugin="pointcloud_preprocessor::VoxelBasedCompareMapFilterComponent",
+        package="compare_map_segmentation",
+        plugin="compare_map_segmentation::VoxelBasedCompareMapFilterComponent",
         name=AnonName("compare_map_filter"),
         remappings=[
             ("input", "voxel_grid_filtered/pointcloud"),
