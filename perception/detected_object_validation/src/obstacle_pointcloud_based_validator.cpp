@@ -282,7 +282,7 @@ void ObstaclePointCloudBasedValidator::toPolygon2d(
     }
   } else if (object.shape.type == Shape::POLYGON) {
     RCLCPP_WARN_THROTTLE(
-      this->get_logger(), *this->get_clock(), 5, "POLYGON type is not supported");
+      this->get_logger(), *this->get_clock(), 5000, "POLYGON type is not supported");
   }
 }
 
@@ -301,7 +301,7 @@ std::optional<float> ObstaclePointCloudBasedValidator::getMaxRadius(
     }
     return max_dist;
   } else {
-    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5, "unknown shape type");
+    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000, "unknown shape type");
     return std::nullopt;
   }
 }
