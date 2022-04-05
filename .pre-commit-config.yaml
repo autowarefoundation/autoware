@@ -19,13 +19,13 @@ repos:
         args: [--markdown-linebreak-ext=md]
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.30.0
+    rev: v0.31.1
     hooks:
       - id: markdownlint
         args: [-c, .markdownlint.yaml, --fix]
 
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v2.5.1
+    rev: v2.6.2
     hooks:
       - id: prettier
 
@@ -44,12 +44,12 @@ repos:
       - id: ros-include-guard
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.8.0.3
+    rev: v0.8.0.4
     hooks:
       - id: shellcheck
 
   - repo: https://github.com/scop/pre-commit-shfmt
-    rev: v3.4.2-1
+    rev: v3.4.3-1
     hooks:
       - id: shfmt
         args: [-w, -s, -i=4]
@@ -88,7 +88,7 @@ repos:
         types_or: [c++, c, cuda]
 
   - repo: https://github.com/cpplint/cpplint
-    rev: 1.5.5
+    rev: 1.6.0
     hooks:
       - id: cpplint
         args: [--quiet]
