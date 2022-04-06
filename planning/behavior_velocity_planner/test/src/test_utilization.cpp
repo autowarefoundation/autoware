@@ -12,12 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "tier4_autoware_utils/trajectory/trajectory.hpp"
+#include "utilization/path_utilization.hpp"
 #include "utils.hpp"
 
 #include <utilization/boost_geometry_helper.hpp>
 #include <utilization/util.hpp>
 
 #include <gtest/gtest.h>
+
+#include <iostream>
+
+#define DEBUG_PRINT_PATH(path)                                                        \
+  {                                                                                   \
+    std::stringstream ss;                                                             \
+    ss << #path << "(px, vx): ";                                                      \
+    for (const auto p : path.points) {                                                \
+      ss << "(" << p.pose.position.x << ", " << p.longitudinal_velocity_mps << "), "; \
+    }                                                                                 \
+    std::cerr << ss.str() << std::endl;                                               \
+  }
 
 TEST(to_footprint_polygon, nominal)
 {
@@ -71,5 +85,100 @@ TEST(smoothDeceleration, calculateMaxSlowDownVelocity)
         continue;
       std::cout << "s: " << l << " v: " << v << std::endl;
     }
+  }
+}
+
+TEST(specialInterpolation, specialInterpolation)
+{
+  using autoware_auto_planning_msgs::msg::Path;
+  using autoware_auto_planning_msgs::msg::PathPoint;
+  using behavior_velocity_planner::interpolatePath;
+  using tier4_autoware_utils::calcSignedArcLength;
+  using tier4_autoware_utils::searchZeroVelocityIndex;
+
+  const auto genPath = [](const auto p, const auto v) {
+    if (p.size() != v.size()) throw std::invalid_argument("different size is not expected");
+    Path path;
+    for (size_t i = 0; i < p.size(); ++i) {
+      PathPoint pp;
+      pp.pose.position.x = p.at(i);
+      pp.longitudinal_velocity_mps = v.at(i);
+      path.points.push_back(pp);
+    }
+    return path;
+  };
+
+  constexpr auto length = 5.0;
+  constexpr auto interval = 1.0;
+
+  const auto calcInterpolatedStopDist = [&](const auto & px, const auto & vx) {
+    const auto path = genPath(px, vx);
+    const auto res = interpolatePath(path, length, interval);
+    // DEBUG_PRINT_PATH(path);
+    // DEBUG_PRINT_PATH(res);
+    return calcSignedArcLength(res.points, 0, *searchZeroVelocityIndex(res.points));
+  };
+
+  // expected stop position: s=2.0
+  {
+    const std::vector<double> px{0.0, 1.0, 2.0, 3.0};
+    const std::vector<double> vx{5.5, 5.5, 0.0, 0.0};
+    EXPECT_DOUBLE_EQ(calcInterpolatedStopDist(px, vx), 2.0);
+  }
+
+  // expected stop position: s=2.1
+  {
+    constexpr auto expected = 2.1;
+    const std::vector<double> px{0.0, 1.0, 2.1, 3.0};
+    const std::vector<double> vx{5.5, 5.5, 0.0, 0.0};
+    EXPECT_DOUBLE_EQ(calcInterpolatedStopDist(px, vx), expected);
+  }
+
+  // expected stop position: s=2.001
+  {
+    constexpr auto expected = 2.001;
+    const std::vector<double> px{0.0, 1.0, 2.001, 3.0};
+    const std::vector<double> vx{5.5, 5.5, 0.000, 0.0};
+    EXPECT_DOUBLE_EQ(calcInterpolatedStopDist(px, vx), expected);
+  }
+
+  // expected stop position: s=2.001
+  {
+    constexpr auto expected = 2.001;
+    const std::vector<double> px{0.0, 1.0, 1.999, 2.0, 2.001, 3.0};
+    const std::vector<double> vx{5.5, 5.5, 5.555, 5.5, 0.000, 0.0};
+    EXPECT_DOUBLE_EQ(calcInterpolatedStopDist(px, vx), expected);
+  }
+
+  // expected stop position: s=2.0
+  {
+    constexpr auto expected = 2.0;
+    const std::vector<double> px{0.0, 1.0, 1.999, 2.0, 2.001, 3.0};
+    const std::vector<double> vx{5.5, 5.5, 5.555, 0.0, 0.000, 0.0};
+    EXPECT_DOUBLE_EQ(calcInterpolatedStopDist(px, vx), expected);
+  }
+
+  // expected stop position: s=1.999
+  {
+    constexpr auto expected = 1.999;
+    const std::vector<double> px{0.0, 1.0, 1.999, 3.0};
+    const std::vector<double> vx{5.5, 5.5, 0.000, 0.0};
+    EXPECT_DOUBLE_EQ(calcInterpolatedStopDist(px, vx), expected);
+  }
+
+  // expected stop position: s=0.2
+  {
+    constexpr auto expected = 0.2;
+    const std::vector<double> px{0.0, 0.1, 0.2, 0.3, 0.4};
+    const std::vector<double> vx{5.5, 5.5, 0.0, 0.0, 0.0};
+    EXPECT_DOUBLE_EQ(calcInterpolatedStopDist(px, vx), expected);
+  }
+
+  // expected stop position: s=0.4
+  {
+    constexpr auto expected = 0.4;
+    const std::vector<double> px{0.0, 0.1, 0.2, 0.3, 0.4};
+    const std::vector<double> vx{5.5, 5.5, 5.5, 5.5, 0.0};
+    EXPECT_DOUBLE_EQ(calcInterpolatedStopDist(px, vx), expected);
   }
 }

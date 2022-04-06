@@ -116,6 +116,14 @@ bool splineInterpolate(
   return true;
 }
 
+/*
+ * Interpolate the path with a fixed interval by spline.
+ * In order to correctly inherit the position of the planned velocity points, the position of the
+ * existing points in the input path are kept in the interpolated path.
+ * The velocity is interpolated by zero-order hold, that is, the velocity of the interpolated point
+ * is the velocity of the closest point for the input "sub-path" which consists of the points before
+ * the interpolated point.
+ */
 autoware_auto_planning_msgs::msg::Path interpolatePath(
   const autoware_auto_planning_msgs::msg::Path & path, const double length, const double interval)
 {
@@ -127,7 +135,7 @@ autoware_auto_planning_msgs::msg::Path interpolatePath(
   std::vector<double> y;
   std::vector<double> z;
   std::vector<double> v;
-  std::vector<double> s_in, s_out;
+  std::vector<double> s_in;
   if (2000 < path.points.size()) {
     RCLCPP_WARN(
       logger, "because path size is too large, calculation cost is high. size is %d.",
@@ -169,19 +177,23 @@ autoware_auto_planning_msgs::msg::Path interpolatePath(
   }
 
   // Calculate query points
-  // Remove query point if query point is near input path point
-  std::vector<double> s_tmp = s_in;
-  for (double s = 0.0; s < path_len; s += interval) {
-    s_tmp.push_back(s);
-  }
-  std::sort(s_tmp.begin(), s_tmp.end());
+  // Use all values of s_in to inherit the velocity-planned point, and add some points for
+  // interpolation with a constant interval if the point is not closed to the original s_in points.
+  // (because if this interval is very short, the interpolation will be less accurate and may fail.)
+  std::vector<double> s_out = s_in;
 
-  for (const double s : s_tmp) {
-    if (!s_out.empty() && std::fabs(s_out.back() - s) < epsilon) {
-      continue;
+  const auto has_almost_same_value = [&](const auto & vec, const auto x) {
+    if (vec.empty()) return false;
+    const auto has_close = [&](const auto v) { return std::abs(v - x) < epsilon; };
+    return std::find_if(vec.begin(), vec.end(), has_close) != vec.end();
+  };
+  for (double s = 0.0; s < path_len; s += interval) {
+    if (!has_almost_same_value(s_out, s)) {
+      s_out.push_back(s);
     }
-    s_out.push_back(s);
   }
+
+  std::sort(s_out.begin(), s_out.end());
 
   if (s_out.empty()) {
     RCLCPP_WARN(logger, "Do not interpolate because s_out is empty.");
@@ -193,11 +205,14 @@ autoware_auto_planning_msgs::msg::Path interpolatePath(
   const auto y_interp = interpolation::slerp(s_in, y, s_out);
   const auto z_interp = interpolation::slerp(s_in, z, s_out);
 
+  // Find a nearest segment for each point in s_out and use the velocity of the segment's beginning
+  // point. Note that if s_out is almost the same value as s_in within DOUBLE_EPSILON range, the
+  // velocity of s_out should be same as the one of s_in.
   std::vector<double> v_interp;
   size_t closest_segment_idx = 0;
   for (size_t i = 0; i < s_out.size() - 1; ++i) {
     for (size_t j = closest_segment_idx; j < s_in.size() - 1; ++j) {
-      if (s_in.at(j) < s_out.at(i) + DOUBLE_EPSILON && s_out.at(i) < s_in.at(j + 1)) {
+      if (s_in.at(j) - DOUBLE_EPSILON < s_out.at(i) && s_out.at(i) < s_in.at(j + 1)) {
         // find closest segment in s_in
         closest_segment_idx = j;
       }
