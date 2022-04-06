@@ -41,7 +41,7 @@ jobs:
 
       - name: Upload coverage to CodeCov
         if: ${{ steps.test.outputs.coverage-report-files != '' }}
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           files: ${{ steps.test.outputs.coverage-report-files }}
           fail_ci_if_error: false
