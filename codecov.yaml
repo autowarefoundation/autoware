@@ -1,0 +1,22 @@
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+    patch:
+      default:
+        target: auto
+
+comment:
+  show_carryforward_flags: true
+
+flag_management:
+  default_rules:
+    carryforward: true
+    statuses:
+      - name_prefix: project-
+        type: project
+        target: auto
+      - name_prefix: patch-
+        type: patch
+        target: auto

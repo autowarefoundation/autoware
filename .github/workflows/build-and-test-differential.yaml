@@ -47,6 +47,7 @@ jobs:
           files: ${{ steps.test.outputs.coverage-report-files }}
           fail_ci_if_error: false
           verbose: true
+          flags: differential
 
   clang-tidy-differential:
     runs-on: ubuntu-latest
