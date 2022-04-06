@@ -5,9 +5,7 @@
   <arg name="status" default="0"/>
 
   <group>
-    <push-ros-namespace namespace="dummy_diag_publisher"/>
-
-    <node pkg="dummy_diag_publisher" exec="dummy_diag_publisher" name="$(var diag_name)" output="screen">
+    <node pkg="dummy_diag_publisher" exec="dummy_diag_publisher" name="$(anon dummy_diag_publisher)" output="screen">
       <param name="diag_name" value="$(var diag_name)"/>
       <param name="update_rate" value="$(var update_rate)"/>
       <param name="is_active" value="$(var is_active)"/>
