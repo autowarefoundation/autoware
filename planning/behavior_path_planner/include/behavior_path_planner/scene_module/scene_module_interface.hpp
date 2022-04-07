@@ -83,7 +83,8 @@ public:
   : name_{name},
     logger_{node.get_logger().get_child(name)},
     clock_{node.get_clock()},
-    approval_handler_(node)
+    approval_handler_(node),
+    current_state_{BT::NodeStatus::IDLE}
   {
   }
 
