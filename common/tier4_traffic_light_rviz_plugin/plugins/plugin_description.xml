@@ -1,0 +1,9 @@
+<library path="tier4_traffic_light_rviz_plugin">
+
+  <class
+    type="rviz_plugins::TrafficLightPublishPanel"
+    base_class_type="rviz_common::Panel">
+    <description>TrafficLightPublishPanel</description>
+  </class>
+
+</library>
