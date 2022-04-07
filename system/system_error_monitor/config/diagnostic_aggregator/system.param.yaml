@@ -138,6 +138,18 @@
                   contains: [": HDD Usage"]
                   timeout: 3.0
 
+                power_on_hours:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: usage
+                  contains: [": HDD PowerOnHours"]
+                  timeout: 3.0
+
+                total_data_written:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: usage
+                  contains: [": HDD TotalDataWritten"]
+                  timeout: 3.0
+
             process:
               type: diagnostic_aggregator/AnalyzerGroup
               path: process
