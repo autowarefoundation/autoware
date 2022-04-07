@@ -74,7 +74,8 @@ void DummyDiagPublisherNode::onTimer()
   }
 }
 
-DummyDiagPublisherNode::DummyDiagPublisherNode() : Node("dummy_diag_publisher")
+DummyDiagPublisherNode::DummyDiagPublisherNode(const rclcpp::NodeOptions & node_options)
+: Node("dummy_diag_publisher", node_options)
 {
   // Parameter
   update_rate_ = declare_parameter("update_rate", 10.0);
@@ -99,3 +100,6 @@ DummyDiagPublisherNode::DummyDiagPublisherNode() : Node("dummy_diag_publisher")
   timer_ = rclcpp::create_timer(
     this, get_clock(), period_ns, std::bind(&DummyDiagPublisherNode::onTimer, this));
 }
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(DummyDiagPublisherNode)

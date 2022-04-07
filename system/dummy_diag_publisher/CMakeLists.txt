@@ -15,13 +15,13 @@ endif()
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
-### Target executable
-set(DUMMY_DIAG_PUBLISHER_SRC
-  src/dummy_diag_publisher_node/dummy_diag_publisher_node.cpp)
+ament_auto_add_library(dummy_diag_publisher SHARED
+  src/dummy_diag_publisher_node/dummy_diag_publisher_node.cpp
+)
 
-ament_auto_add_executable(${PROJECT_NAME}
-  src/dummy_diag_publisher_node/main.cpp
-  ${DUMMY_DIAG_PUBLISHER_SRC}
+rclcpp_components_register_node(dummy_diag_publisher
+  PLUGIN "DummyDiagPublisherNode"
+  EXECUTABLE dummy_diag_publisher_node
 )
 
 if(BUILD_TESTING)

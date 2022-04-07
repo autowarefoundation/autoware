@@ -34,7 +34,7 @@ struct DiagConfig
 class DummyDiagPublisherNode : public rclcpp::Node
 {
 public:
-  DummyDiagPublisherNode();
+  explicit DummyDiagPublisherNode(const rclcpp::NodeOptions & node_options);
 
 private:
   enum Status {
