@@ -34,8 +34,8 @@ def launch_setup(context, *args, **kwargs):
         plugin="pointcloud_preprocessor::CropBoxFilterComponent",
         name="crop_box_filter_measurement_range",
         remappings=[
-            ("input", LaunchConfiguration("input_sensor_points_topic")),
-            ("output", LaunchConfiguration("output_measurement_range_sensor_points_topic")),
+            ("input", LaunchConfiguration("input/pointcloud")),
+            ("output", "measurement_range/pointcloud"),
         ],
         parameters=[
             load_composable_node_param("crop_box_filter_measurement_range_param_path"),
@@ -47,8 +47,8 @@ def launch_setup(context, *args, **kwargs):
         plugin="pointcloud_preprocessor::VoxelGridDownsampleFilterComponent",
         name="voxel_grid_downsample_filter",
         remappings=[
-            ("input", LaunchConfiguration("output_measurement_range_sensor_points_topic")),
-            ("output", LaunchConfiguration("output_voxel_grid_downsample_sensor_points_topic")),
+            ("input", "measurement_range/pointcloud"),
+            ("output", "voxel_grid_downsample/pointcloud"),
         ],
         parameters=[load_composable_node_param("voxel_grid_downsample_filter_param_path")],
         extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
@@ -58,8 +58,8 @@ def launch_setup(context, *args, **kwargs):
         plugin="pointcloud_preprocessor::RandomDownsampleFilterComponent",
         name="random_downsample_filter",
         remappings=[
-            ("input", LaunchConfiguration("output_voxel_grid_downsample_sensor_points_topic")),
-            ("output", LaunchConfiguration("output_downsample_sensor_points_topic")),
+            ("input", "voxel_grid_downsample/pointcloud"),
+            ("output", LaunchConfiguration("output/pointcloud")),
         ],
         parameters=[load_composable_node_param("random_downsample_filter_param_path")],
         extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
@@ -115,9 +115,14 @@ def generate_launch_description():
         "container name",
     )
     add_launch_arg(
-        "input_sensor_points_topic",
+        "input/pointcloud",
         "/sensing/lidar/top/rectified/pointcloud",
         "input topic name for raw pointcloud",
+    )
+    add_launch_arg(
+        "output/pointcloud",
+        "downsample/pointcloud",
+        "final output topic name",
     )
     add_launch_arg(
         "output_measurement_range_sensor_points_topic",

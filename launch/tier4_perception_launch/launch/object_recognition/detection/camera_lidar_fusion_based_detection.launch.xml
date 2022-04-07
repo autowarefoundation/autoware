@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <launch>
+  <arg name="input/pointcloud"/>
+  <arg name="input/obstacle_segmentation/pointcloud" default="/perception/obstacle_segmentation/pointcloud"/>
   <arg name="image_raw0" default="/image_raw" description="image raw topic name"/>
   <arg name="camera_info0" default="/camera_info" description="camera info topic name"/>
   <arg name="image_raw1" default="/image_raw1"/>
@@ -19,7 +21,6 @@
   <arg name="image_number" default="1" description="choose image raw number(0-7)"/>
   <arg name="lidar_detection_model" default="centerpoint" description="options: `centerpoint`, `apollo`"/>
   <arg name="use_pointcloud_map" default="true" description="use pointcloud map in detection"/>
-  <arg name="input_pointcloud" default="/perception/obstacle_segmentation/pointcloud"/>
 
   <!-- Jetson AGX -->
   <!-- <include file="$(find-pkg-share tensorrt_yolo)/launch/yolo.launch.xml">
@@ -37,7 +38,7 @@
   <!-- Pointcloud map filter -->
   <group>
     <include file="$(find-pkg-share compare_map_segmentation)/launch/voxel_based_compare_map_filter.launch.xml" if="$(var use_pointcloud_map)">
-      <arg name="input" value="$(var input_pointcloud)"/>
+      <arg name="input" value="$(var input/obstacle_segmentation/pointcloud)"/>
       <arg name="input_map" value="/map/pointcloud_map"/>
       <arg name="output" value="pointcloud_map_filtered/pointcloud"/>
       <arg name="distance_threshold" value="0.5"/>
@@ -47,7 +48,7 @@
   <group>
     <push-ros-namespace namespace="clustering"/>
     <let name="clustering/input/pointcloud" value="/perception/object_recognition/detection/pointcloud_map_filtered/pointcloud" if="$(var use_pointcloud_map)"/>
-    <let name="clustering/input/pointcloud" value="$(var input_pointcloud)" unless="$(var use_pointcloud_map)"/>
+    <let name="clustering/input/pointcloud" value="$(var input/obstacle_segmentation/pointcloud)" unless="$(var use_pointcloud_map)"/>
     <include file="$(find-pkg-share euclidean_cluster)/launch/voxel_grid_based_euclidean_cluster.launch.xml">
       <arg name="input_pointcloud" value="$(var clustering/input/pointcloud)"/>
       <arg name="output_clusters" value="clusters"/>
@@ -109,6 +110,7 @@
   <group if="$(eval &quot;'$(var lidar_detection_model)'=='centerpoint'&quot;)">
     <push-ros-namespace namespace="centerpoint"/>
     <include file="$(find-pkg-share lidar_centerpoint)/launch/lidar_centerpoint.launch.xml">
+      <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
       <arg name="output/objects" value="objects"/>
     </include>
   </group>
@@ -117,7 +119,9 @@
   <group if="$(eval &quot;'$(var lidar_detection_model)'=='apollo'&quot;)">
     <push-ros-namespace namespace="apollo"/>
     <group>
-      <include file="$(find-pkg-share lidar_apollo_instance_segmentation)/launch/lidar_apollo_instance_segmentation.launch.xml"/>
+      <include file="$(find-pkg-share lidar_apollo_instance_segmentation)/launch/lidar_apollo_instance_segmentation.launch.xml">
+        <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
+      </include>
       <include file="$(find-pkg-share shape_estimation)/launch/shape_estimation.launch.xml">
         <arg name="output/objects" value="objects_with_feature"/>
         <arg name="use_vehicle_reference_yaw" value="true"/>
@@ -133,7 +137,7 @@
   <!-- Validator -->
   <group>
     <let name="validator/input/obstacle_pointcloud" value="/perception/object_recognition/detection/pointcloud_map_filtered/pointcloud" if="$(var use_pointcloud_map)"/>
-    <let name="validator/input/obstacle_pointcloud" value="$(var input_pointcloud)" unless="$(var use_pointcloud_map)"/>
+    <let name="validator/input/obstacle_pointcloud" value="$(var input/obstacle_segmentation/pointcloud)" unless="$(var use_pointcloud_map)"/>
     <include file="$(find-pkg-share detected_object_validation)/launch/obstacle_pointcloud_based_validator.launch.xml">
       <arg name="input/detected_objects" value="$(var lidar_detection_model)/objects"/>
       <arg name="input/obstacle_pointcloud" value="$(var validator/input/obstacle_pointcloud)"/>

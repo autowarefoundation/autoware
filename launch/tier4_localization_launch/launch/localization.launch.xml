@@ -1,12 +1,16 @@
 <?xml version="1.0"?>
 <launch>
+  <arg name="input/pointcloud" default="/sensing/lidar/top/rectified/pointcloud" description="The topic will be used in the localization util module"/>
+
   <!-- localization module -->
   <group>
     <push-ros-namespace namespace="localization"/>
     <!-- util module -->
     <group>
       <push-ros-namespace namespace="util"/>
-      <include file="$(find-pkg-share tier4_localization_launch)/launch/util/util.launch.xml"/>
+      <include file="$(find-pkg-share tier4_localization_launch)/launch/util/util.launch.xml">
+        <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
+      </include>
     </group>
     <!-- pose_estimator module -->
     <group>
