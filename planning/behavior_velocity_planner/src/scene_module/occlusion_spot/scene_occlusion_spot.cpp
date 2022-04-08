@@ -19,6 +19,7 @@
 #include <scene_module/occlusion_spot/scene_occlusion_spot.hpp>
 #include <utilization/boost_geometry_helper.hpp>
 #include <utilization/path_utilization.hpp>
+#include <utilization/trajectory_utils.hpp>
 #include <utilization/util.hpp>
 
 #include <boost/optional.hpp>
@@ -99,6 +100,10 @@ bool OcclusionSpotModule::modifyPathVelocity(
   if (param_.pass_judge == utils::PASS_JUDGE::CURRENT_VELOCITY) {
     predicted_path = utils::applyVelocityToPath(interp_path, param_.v.v_ego);
   } else if (param_.pass_judge == utils::PASS_JUDGE::SMOOTH_VELOCITY) {
+    if (!smoothPath(interp_path, predicted_path, planner_data_)) {
+      predicted_path = utils::applyVelocityToPath(interp_path, param_.v.v_ego);
+      // use current ego velocity in path if optimization failure
+    }
   }
   DEBUG_PRINT(show_time, "apply velocity [ms]: ", stop_watch_.toc("processing_time", true));
   if (!utils::buildDetectionAreaPolygon(

@@ -29,6 +29,7 @@
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <tier4_api_msgs/msg/crosswalk_status.hpp>
 #include <tier4_api_msgs/msg/intersection_status.hpp>
+#include <tier4_planning_msgs/msg/velocity_limit.hpp>
 
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
@@ -39,6 +40,7 @@
 
 namespace behavior_velocity_planner
 {
+using tier4_planning_msgs::msg::VelocityLimit;
 class BehaviorVelocityPlannerNode : public rclcpp::Node
 {
 public:
@@ -68,6 +70,7 @@ private:
   rclcpp::Subscription<tier4_v2x_msgs::msg::VirtualTrafficLightStateArray>::SharedPtr
     sub_virtual_traffic_light_states_;
   rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::SharedPtr sub_occupancy_grid_;
+  rclcpp::Subscription<VelocityLimit>::SharedPtr sub_external_velocity_limit_;
 
   void onTrigger(
     const autoware_auto_planning_msgs::msg::PathWithLaneId::ConstSharedPtr input_path_msg);
@@ -86,6 +89,8 @@ private:
   void onVirtualTrafficLightStates(
     const tier4_v2x_msgs::msg::VirtualTrafficLightStateArray::ConstSharedPtr msg);
   void onOccupancyGrid(const nav_msgs::msg::OccupancyGrid::ConstSharedPtr msg);
+  void onExternalVelocityLimit(const VelocityLimit::ConstSharedPtr msg);
+  void onParam();
 
   // publisher
   rclcpp::Publisher<autoware_auto_planning_msgs::msg::Path>::SharedPtr path_pub_;

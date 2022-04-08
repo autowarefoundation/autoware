@@ -17,6 +17,8 @@
 
 #include "route_handler/route_handler.hpp"
 
+#include <motion_velocity_smoother/smoother/analytical_jerk_constrained_smoother/analytical_jerk_constrained_smoother.hpp>
+#include <motion_velocity_smoother/smoother/smoother_base.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
@@ -30,6 +32,7 @@
 #include <std_msgs/msg/header.hpp>
 #include <tier4_api_msgs/msg/crosswalk_status.hpp>
 #include <tier4_api_msgs/msg/intersection_status.hpp>
+#include <tier4_planning_msgs/msg/velocity_limit.hpp>
 #include <tier4_v2x_msgs/msg/virtual_traffic_light_state_array.hpp>
 
 #include <boost/optional.hpp>
@@ -81,8 +84,11 @@ struct PlannerData
     external_traffic_light_id_map;
   boost::optional<tier4_api_msgs::msg::CrosswalkStatus> external_crosswalk_status_input;
   boost::optional<tier4_api_msgs::msg::IntersectionStatus> external_intersection_status_input;
+  boost::optional<tier4_planning_msgs::msg::VelocityLimit> external_velocity_limit;
   tier4_v2x_msgs::msg::VirtualTrafficLightStateArray::ConstSharedPtr virtual_traffic_light_states;
 
+  // velocity smoother
+  std::shared_ptr<motion_velocity_smoother::SmootherBase> velocity_smoother_;
   // route handler
   std::shared_ptr<route_handler::RouteHandler> route_handler_;
   // parameters

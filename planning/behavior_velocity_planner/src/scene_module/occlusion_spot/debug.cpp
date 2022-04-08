@@ -295,7 +295,7 @@ visualization_msgs::msg::MarkerArray OcclusionSpotModule::createDebugMarkerArray
         debug_data_.detection_area_polygons, "detection_area", module_id_, debug_data_.z),
       current_time, &debug_marker_array);
   }
-  if (!debug_data_.close_partition.empty()) {
+  if (!debug_data_.close_partition.empty() && param_.is_show_occlusion) {
     appendMarkerArray(
       makePolygonMarker(debug_data_.close_partition, "close_partition", module_id_, debug_data_.z),
       current_time, &debug_marker_array);

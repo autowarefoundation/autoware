@@ -22,6 +22,7 @@
   <depend>lanelet2_extension</depend>
   <depend>libboost-dev</depend>
   <depend>libopencv-dev</depend>
+  <depend>motion_velocity_smoother</depend>
   <depend>nav_msgs</depend>
   <depend>nlohmann-json-dev</depend>
   <depend>pcl_conversions</depend>
