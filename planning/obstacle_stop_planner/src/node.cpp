@@ -445,6 +445,8 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & nod
     p.hunting_threshold = declare_parameter("hunting_threshold", 0.5);
     p.lowpass_gain = declare_parameter("lowpass_gain", 0.9);
     lpf_acc_ = std::make_shared<LowpassFilter1d>(0.0, p.lowpass_gain);
+    const double max_yaw_deviation_deg = declare_parameter("max_yaw_deviation_deg", 90.0);
+    p.max_yaw_deviation_rad = tier4_autoware_utils::deg2rad(max_yaw_deviation_deg);
   }
 
   {
@@ -1219,18 +1221,13 @@ TrajectoryPoints ObstacleStopPlannerNode::trimTrajectoryWithIndexFromSelfPose(
 {
   TrajectoryPoints output{};
 
-  double min_distance = 0.0;
   size_t min_distance_index = 0;
-  bool is_init = false;
-  for (size_t i = 0; i < input.size(); ++i) {
-    const double x = input.at(i).pose.position.x - self_pose.position.x;
-    const double y = input.at(i).pose.position.y - self_pose.position.y;
-    const double squared_distance = x * x + y * y;
-    if (!is_init || squared_distance < min_distance * min_distance) {
-      is_init = true;
-      min_distance = std::sqrt(squared_distance);
-      min_distance_index = i;
-    }
+  const auto nearest_index = tier4_autoware_utils::findNearestIndex(
+    input, self_pose, 10.0, node_param_.max_yaw_deviation_rad);
+  if (!nearest_index) {
+    min_distance_index = tier4_autoware_utils::findNearestIndex(input, self_pose.position);
+  } else {
+    min_distance_index = nearest_index.value();
   }
   for (size_t i = min_distance_index; i < input.size(); ++i) {
     output.push_back(input.at(i));

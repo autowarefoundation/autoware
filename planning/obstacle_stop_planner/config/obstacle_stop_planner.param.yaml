@@ -6,6 +6,7 @@
       step_length: 1.0 # step length for pointcloud search range [m]
       extend_distance: 0.0 # extend trajectory to consider after goal obstacle in the extend_distance
       expand_stop_range: 0.0 # margin of vehicle footprint [m]
+      max_yaw_deviation_deg: 90.0 # maximum ego yaw deviation from trajectory [deg] (measures against overlapping lanes)
 
     slow_down_planner:
       # slow down planner parameters
