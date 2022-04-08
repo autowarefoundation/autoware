@@ -16,6 +16,8 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.actions import SetLaunchConfiguration
 from launch.conditions import IfCondition
+from launch.conditions import LaunchConfigurationEquals
+from launch.conditions import LaunchConfigurationNotEquals
 from launch.conditions import UnlessCondition
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import ComposableNodeContainer
@@ -100,23 +102,24 @@ def generate_launch_description():
     ]
 
     occupancy_grid_map_container = ComposableNodeContainer(
-        name=LaunchConfiguration("container_name"),
+        condition=LaunchConfigurationEquals("container", ""),
+        name="occupancy_grid_map_container",
         namespace="",
         package="rclcpp_components",
         executable=LaunchConfiguration("container_executable"),
         composable_node_descriptions=composable_nodes,
-        condition=UnlessCondition(LaunchConfiguration("use_pointcloud_container")),
         output="screen",
     )
 
     load_composable_nodes = LoadComposableNodes(
+        condition=LaunchConfigurationNotEquals("container", ""),
         composable_node_descriptions=composable_nodes,
-        target_container=LaunchConfiguration("container_name"),
-        condition=IfCondition(LaunchConfiguration("use_pointcloud_container")),
+        target_container=LaunchConfiguration("container"),
     )
 
     return LaunchDescription(
         [
+            add_launch_arg("container", ""),
             add_launch_arg("use_multithread", "false"),
             add_launch_arg("use_intra_process", "false"),
             add_launch_arg("input/obstacle_pointcloud", "no_ground/oneshot/pointcloud"),
@@ -128,8 +131,6 @@ def generate_launch_description():
             add_launch_arg("output/stixel", "virtual_scan/stixel"),
             add_launch_arg("input_obstacle_pointcloud", "false"),
             add_launch_arg("input_obstacle_and_raw_pointcloud", "true"),
-            add_launch_arg("use_pointcloud_container", "False"),
-            add_launch_arg("container_name", "occupancy_grid_map_container"),
             set_container_executable,
             set_container_mt_executable,
             occupancy_grid_map_container,

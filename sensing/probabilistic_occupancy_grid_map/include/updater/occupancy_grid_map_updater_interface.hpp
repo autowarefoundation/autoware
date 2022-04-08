@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef LASERSCAN_TO_OCCUPANCY_GRID_MAP__UPDATER__OCCUPANCY_GRID_MAP_UPDATER_INTERFACE_HPP_
-#define LASERSCAN_TO_OCCUPANCY_GRID_MAP__UPDATER__OCCUPANCY_GRID_MAP_UPDATER_INTERFACE_HPP_
+#ifndef UPDATER__OCCUPANCY_GRID_MAP_UPDATER_INTERFACE_HPP_
+#define UPDATER__OCCUPANCY_GRID_MAP_UPDATER_INTERFACE_HPP_
 
-#include "laserscan_to_occupancy_grid_map/cost_value.hpp"
+#include "cost_value.hpp"
 
 #include <nav2_costmap_2d/costmap_2d.hpp>
 
@@ -36,4 +36,4 @@ public:
 
 }  // namespace costmap_2d
 
-#endif  // LASERSCAN_TO_OCCUPANCY_GRID_MAP__UPDATER__OCCUPANCY_GRID_MAP_UPDATER_INTERFACE_HPP_
+#endif  // UPDATER__OCCUPANCY_GRID_MAP_UPDATER_INTERFACE_HPP_

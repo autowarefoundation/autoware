@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>laserscan_to_occupancy_grid_map</name>
+  <name>probabilistic_occupancy_grid_map</name>
   <version>0.1.0</version>
-  <description>generate occupancy grid map from laser scan</description>
+  <description>generate probabilistic occupancy grid map</description>
 
   <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>
   <author email="yukihiro.saito@tier4.jp">Yukihiro Saito</author>

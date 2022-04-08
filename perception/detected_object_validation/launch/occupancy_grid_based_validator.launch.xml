@@ -6,7 +6,7 @@
   <arg name="input/laserscan" default="/perception/occupancy_grid_map/virtual_scan/laserscan"/>
   <arg name="input/occupancy_grid_map" default="/perception/object_recognition/detection/validation/occupancy_grid_based/single_frame_occupancy_grid_map"/>
 
-  <node pkg="laserscan_to_occupancy_grid_map" exec="laserscan_to_occupancy_grid_map_node" name="single_frame_laserscan_occupancy_grid_map" output="screen">
+  <node pkg="probabilistic_occupancy_grid_map" exec="laserscan_based_occupancy_grid_map_node" name="single_frame_laserscan_occupancy_grid_map" output="screen">
     <remap from="~/input/laserscan" to="$(var input/laserscan)"/>
     <remap from="~/output/occupancy_grid_map" to="$(var input/occupancy_grid_map)"/>
     <param name="input_obstacle_pointcloud" value="false"/>

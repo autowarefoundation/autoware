@@ -1,10 +1,6 @@
-# laserscan_to_occupancy_grid_map
+# laserscan based occupancy grid map
 
-## Purpose
-
-This package outputs the probability of having an obstacle as occupancy grid map.
-
-![occupancy_grid_map_sample_image](./image/occupancy_grid_map_sample_image.png)
+![laserscan_based_occupancy_grid_map_sample_image](./image/laserscan_based_occupancy_grid_map_sample_image.png)
 
 ## Inner-workings / Algorithms
 

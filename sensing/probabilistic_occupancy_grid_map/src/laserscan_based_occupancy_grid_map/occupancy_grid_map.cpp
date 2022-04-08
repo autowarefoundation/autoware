@@ -49,9 +49,9 @@
  *         David V. Lu!!
  *********************************************************************/
 
-#include "laserscan_to_occupancy_grid_map/occupancy_grid_map.hpp"
+#include "laserscan_based_occupancy_grid_map/occupancy_grid_map.hpp"
 
-#include "laserscan_to_occupancy_grid_map/cost_value.hpp"
+#include "cost_value.hpp"
 
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 

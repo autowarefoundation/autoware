@@ -46,32 +46,49 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *
  * Author: Eitan Marder-Eppstein
+ *         David V. Lu!!
  *********************************************************************/
 
-#ifndef LASERSCAN_TO_OCCUPANCY_GRID_MAP__COST_VALUE_HPP_
-#define LASERSCAN_TO_OCCUPANCY_GRID_MAP__COST_VALUE_HPP_
+#ifndef LASERSCAN_BASED_OCCUPANCY_GRID_MAP__OCCUPANCY_GRID_MAP_HPP_
+#define LASERSCAN_BASED_OCCUPANCY_GRID_MAP__OCCUPANCY_GRID_MAP_HPP_
 
-#include <algorithm>
+#include <nav2_costmap_2d/costmap_2d.hpp>
+#include <rclcpp/rclcpp.hpp>
 
-namespace occupancy_cost_value
+#include <nav_msgs/msg/occupancy_grid.hpp>
+#include <sensor_msgs/msg/laser_scan.hpp>
+#include <sensor_msgs/msg/point_cloud2.hpp>
+
+namespace costmap_2d
 {
-static const unsigned char NO_INFORMATION = 128;  // 0.5 * 255
-static const unsigned char LETHAL_OBSTACLE = 255;
-static const unsigned char FREE_SPACE = 0;
+using geometry_msgs::msg::Pose;
+using sensor_msgs::msg::PointCloud2;
 
-struct CostTranslationTable
+class OccupancyGridMap : public nav2_costmap_2d::Costmap2D
 {
-  CostTranslationTable()
-  {
-    for (int i = 0; i < 256; i++) {
-      const auto value = static_cast<char>(static_cast<float>(i) * 100.f / 255.f);
-      data[i] = std::max(std::min(value, static_cast<char>(99)), static_cast<char>(1));
-    }
-  }
-  char operator[](unsigned char n) const { return data[n]; }
-  char data[256];
+public:
+  OccupancyGridMap(
+    const unsigned int cells_size_x, const unsigned int cells_size_y, const float resolution);
+
+  void raytrace2D(const PointCloud2 & pointcloud, const Pose & robot_pose);
+
+  void updateFreespaceCells(const PointCloud2 & pointcloud);
+
+  void updateOccupiedCells(const PointCloud2 & pointcloud);
+
+  void updateOrigin(double new_origin_x, double new_origin_y) override;
+
+private:
+  void raytraceFreespace(const PointCloud2 & pointcloud, const Pose & robot_pose);
+
+  void updateCellsByPointCloud(const PointCloud2 & pointcloud, const unsigned char cost);
+
+  bool worldToMap(double wx, double wy, unsigned int & mx, unsigned int & my) const;
+
+  rclcpp::Logger logger_{rclcpp::get_logger("laserscan_based_occupancy_grid_map")};
+  rclcpp::Clock clock_{RCL_ROS_TIME};
 };
-static const CostTranslationTable cost_translation_table;
-}  // namespace occupancy_cost_value
 
-#endif  // LASERSCAN_TO_OCCUPANCY_GRID_MAP__COST_VALUE_HPP_
+}  // namespace costmap_2d
+
+#endif  // LASERSCAN_BASED_OCCUPANCY_GRID_MAP__OCCUPANCY_GRID_MAP_HPP_

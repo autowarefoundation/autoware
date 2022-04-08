@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef LASERSCAN_TO_OCCUPANCY_GRID_MAP__UPDATER__OCCUPANCY_GRID_MAP_BINARY_BAYES_FILTER_UPDATER_HPP_
-#define LASERSCAN_TO_OCCUPANCY_GRID_MAP__UPDATER__OCCUPANCY_GRID_MAP_BINARY_BAYES_FILTER_UPDATER_HPP_
+#ifndef UPDATER__OCCUPANCY_GRID_MAP_BINARY_BAYES_FILTER_UPDATER_HPP_
+#define UPDATER__OCCUPANCY_GRID_MAP_BINARY_BAYES_FILTER_UPDATER_HPP_
 
-#include "laserscan_to_occupancy_grid_map/updater/occupancy_grid_map_updater_interface.hpp"
+#include "updater/occupancy_grid_map_updater_interface.hpp"
 
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Geometry>
@@ -45,4 +45,4 @@ private:
 
 }  // namespace costmap_2d
 
-#endif  // LASERSCAN_TO_OCCUPANCY_GRID_MAP__UPDATER__OCCUPANCY_GRID_MAP_BINARY_BAYES_FILTER_UPDATER_HPP_
+#endif  // UPDATER__OCCUPANCY_GRID_MAP_BINARY_BAYES_FILTER_UPDATER_HPP_

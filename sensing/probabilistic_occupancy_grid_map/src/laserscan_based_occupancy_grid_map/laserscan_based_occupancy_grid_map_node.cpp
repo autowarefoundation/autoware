@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "laserscan_to_occupancy_grid_map/laserscan_to_occupancy_grid_map_node.hpp"
+#include "laserscan_based_occupancy_grid_map/laserscan_based_occupancy_grid_map_node.hpp"
 
-#include "laserscan_to_occupancy_grid_map/cost_value.hpp"
+#include "cost_value.hpp"
 
 #include <pcl_ros/transforms.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
@@ -56,20 +56,7 @@ bool cropPointcloudByHeight(
   sensor_msgs::msg::PointCloud2 trans_input_tmp;
   const bool is_target_frame = (input.header.frame_id == target_frame);
   if (!is_target_frame) {
-    try {
-      geometry_msgs::msg::TransformStamped tf_stamped;
-      tf_stamped = tf2.lookupTransform(
-        target_frame, input.header.frame_id, input.header.stamp,
-        rclcpp::Duration::from_seconds(0.5));
-      // transform pointcloud
-      Eigen::Matrix4f tf_matrix =
-        tf2::transformToEigen(tf_stamped.transform).matrix().cast<float>();
-      pcl_ros::transformPointCloud(tf_matrix, input, trans_input_tmp);
-    } catch (const tf2::TransformException & ex) {
-      RCLCPP_WARN_THROTTLE(
-        rclcpp::get_logger("laserscan_to_occupancy_grid_map"), clock, 5000, "%s", ex.what());
-      return false;
-    }
+    if (!transformPointcloud(input, tf2, target_frame, trans_input_tmp)) return false;
   }
   const sensor_msgs::msg::PointCloud2 & trans_input = is_target_frame ? input : trans_input_tmp;
 
@@ -85,7 +72,7 @@ bool cropPointcloudByHeight(
 
   // Convert to ros msg
   pcl::toROSMsg(*pcl_output, output);
-  output.header = input.header;
+  output.header = trans_input.header;
   return true;
 }
 
@@ -108,8 +95,9 @@ using costmap_2d::OccupancyGridMap;
 using costmap_2d::OccupancyGridMapBBFUpdater;
 using geometry_msgs::msg::Pose;
 
-OccupancyGridMapNode::OccupancyGridMapNode(const rclcpp::NodeOptions & node_options)
-: Node("occupancy_grid_map_node", node_options)
+LaserscanBasedOccupancyGridMapNode::LaserscanBasedOccupancyGridMapNode(
+  const rclcpp::NodeOptions & node_options)
+: Node("laserscan_based_occupancy_grid_map_node", node_options)
 {
   using std::placeholders::_1;
   using std::placeholders::_2;
@@ -136,7 +124,8 @@ OccupancyGridMapNode::OccupancyGridMapNode(const rclcpp::NodeOptions & node_opti
   raw_pointcloud_sub_.subscribe(
     this, "~/input/raw_pointcloud", rclcpp::SensorDataQoS{}.keep_last(1).get_rmw_qos_profile());
   // add dummy callback to enable passthrough filter
-  laserscan_sub_.registerCallback(std::bind(&OccupancyGridMapNode::onDummyPointCloud2, this, _1));
+  laserscan_sub_.registerCallback(
+    std::bind(&LaserscanBasedOccupancyGridMapNode::onDummyPointCloud2, this, _1));
   if (input_obstacle_and_raw_pointcloud) {
     sync_ptr_ = std::make_shared<Sync>(
       SyncPolicy(5), laserscan_sub_, obstacle_pointcloud_sub_, raw_pointcloud_sub_);
@@ -147,8 +136,9 @@ OccupancyGridMapNode::OccupancyGridMapNode(const rclcpp::NodeOptions & node_opti
     sync_ptr_ = std::make_shared<Sync>(SyncPolicy(3), laserscan_sub_, passthrough_, passthrough_);
   }
 
-  sync_ptr_->registerCallback(
-    std::bind(&OccupancyGridMapNode::onLaserscanPointCloud2WithObstacleAndRaw, this, _1, _2, _3));
+  sync_ptr_->registerCallback(std::bind(
+    &LaserscanBasedOccupancyGridMapNode::onLaserscanPointCloud2WithObstacleAndRaw, this, _1, _2,
+    _3));
   occupancy_grid_map_pub_ = create_publisher<OccupancyGrid>("~/output/occupancy_grid_map", 1);
 
   /* Occupancy grid */
@@ -156,7 +146,7 @@ OccupancyGridMapNode::OccupancyGridMapNode(const rclcpp::NodeOptions & node_opti
     map_length / map_resolution, map_width / map_resolution, map_resolution);
 }
 
-PointCloud2::SharedPtr OccupancyGridMapNode::convertLaserscanToPointCLoud2(
+PointCloud2::SharedPtr LaserscanBasedOccupancyGridMapNode::convertLaserscanToPointCLoud2(
   const LaserScan::ConstSharedPtr & input)
 {
   // check over max range point
@@ -181,7 +171,7 @@ PointCloud2::SharedPtr OccupancyGridMapNode::convertLaserscanToPointCLoud2(
   return pointcloud_ptr;
 }
 
-void OccupancyGridMapNode::onLaserscanPointCloud2WithObstacleAndRaw(
+void LaserscanBasedOccupancyGridMapNode::onLaserscanPointCloud2WithObstacleAndRaw(
   const LaserScan::ConstSharedPtr & input_laserscan_msg,
   const PointCloud2::ConstSharedPtr & input_obstacle_msg,
   const PointCloud2::ConstSharedPtr & input_raw_msg)
@@ -251,7 +241,7 @@ void OccupancyGridMapNode::onLaserscanPointCloud2WithObstacleAndRaw(
   }
 }
 
-OccupancyGrid::UniquePtr OccupancyGridMapNode::OccupancyGridMapToMsgPtr(
+OccupancyGrid::UniquePtr LaserscanBasedOccupancyGridMapNode::OccupancyGridMapToMsgPtr(
   const std::string & frame_id, const Time & stamp, const float & robot_pose_z,
   const Costmap2D & occupancy_grid_map)
 {
@@ -284,4 +274,4 @@ OccupancyGrid::UniquePtr OccupancyGridMapNode::OccupancyGridMapToMsgPtr(
 }  // namespace occupancy_grid_map
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(occupancy_grid_map::OccupancyGridMapNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(occupancy_grid_map::LaserscanBasedOccupancyGridMapNode)

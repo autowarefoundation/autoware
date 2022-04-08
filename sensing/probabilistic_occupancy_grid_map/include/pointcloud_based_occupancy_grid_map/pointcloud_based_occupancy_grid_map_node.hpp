@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef LASERSCAN_TO_OCCUPANCY_GRID_MAP__LASERSCAN_TO_OCCUPANCY_GRID_MAP_NODE_HPP_
-#define LASERSCAN_TO_OCCUPANCY_GRID_MAP__LASERSCAN_TO_OCCUPANCY_GRID_MAP_NODE_HPP_
+#ifndef POINTCLOUD_BASED_OCCUPANCY_GRID_MAP__POINTCLOUD_BASED_OCCUPANCY_GRID_MAP_NODE_HPP_
+#define POINTCLOUD_BASED_OCCUPANCY_GRID_MAP__POINTCLOUD_BASED_OCCUPANCY_GRID_MAP_NODE_HPP_
 
-#include "laserscan_to_occupancy_grid_map/occupancy_grid_map.hpp"
-#include "laserscan_to_occupancy_grid_map/updater/occupancy_grid_map_binary_bayes_filter_updater.hpp"
-#include "laserscan_to_occupancy_grid_map/updater/occupancy_grid_map_updater_interface.hpp"
+#include "pointcloud_based_occupancy_grid_map/occupancy_grid_map.hpp"
+#include "updater/occupancy_grid_map_binary_bayes_filter_updater.hpp"
+#include "updater/occupancy_grid_map_updater_interface.hpp"
 
 #include <builtin_interfaces/msg/time.hpp>
 #include <laser_geometry/laser_geometry.hpp>
@@ -48,44 +48,30 @@ using sensor_msgs::msg::PointCloud2;
 using tf2_ros::Buffer;
 using tf2_ros::TransformListener;
 
-class OccupancyGridMapNode : public rclcpp::Node
+class PointcloudBasedOccupancyGridMapNode : public rclcpp::Node
 {
 public:
-  explicit OccupancyGridMapNode(const rclcpp::NodeOptions & node_options);
+  explicit PointcloudBasedOccupancyGridMapNode(const rclcpp::NodeOptions & node_options);
 
 private:
-  PointCloud2::SharedPtr convertLaserscanToPointCLoud2(const LaserScan::ConstSharedPtr & input);
-  void onLaserscanPointCloud2WithObstacleAndRaw(
-    const LaserScan::ConstSharedPtr & input_laserscan_msg,
+  void onPointcloudWithObstacleAndRaw(
     const PointCloud2::ConstSharedPtr & input_obstacle_msg,
     const PointCloud2::ConstSharedPtr & input_raw_msg);
   OccupancyGrid::UniquePtr OccupancyGridMapToMsgPtr(
     const std::string & frame_id, const Time & stamp, const float & robot_pose_z,
     const Costmap2D & occupancy_grid_map);
-  inline void onDummyPointCloud2(const LaserScan::ConstSharedPtr & input)
-  {
-    PointCloud2 dummy;
-    sensor_msgs::PointCloud2Modifier modifier(dummy);
-    modifier.setPointCloud2FieldsByString(1, "xyz");
-    dummy.header = input->header;
-    passthrough_.add(std::make_shared<PointCloud2>(dummy));
-  }
 
 private:
   rclcpp::Publisher<OccupancyGrid>::SharedPtr occupancy_grid_map_pub_;
-  message_filters::Subscriber<LaserScan> laserscan_sub_;
   message_filters::Subscriber<PointCloud2> obstacle_pointcloud_sub_;
   message_filters::Subscriber<PointCloud2> raw_pointcloud_sub_;
-  message_filters::PassThrough<PointCloud2> passthrough_;
 
   std::shared_ptr<Buffer> tf2_{std::make_shared<Buffer>(get_clock())};
   std::shared_ptr<TransformListener> tf2_listener_{std::make_shared<TransformListener>(*tf2_)};
 
-  using SyncPolicy = message_filters::sync_policies::ExactTime<LaserScan, PointCloud2, PointCloud2>;
+  using SyncPolicy = message_filters::sync_policies::ExactTime<PointCloud2, PointCloud2>;
   using Sync = message_filters::Synchronizer<SyncPolicy>;
   std::shared_ptr<Sync> sync_ptr_;
-
-  LaserProjection laserscan2pointcloud_converter_;
 
   std::shared_ptr<OccupancyGridMapUpdaterInterface> occupancy_grid_map_updater_ptr_;
 
@@ -98,4 +84,4 @@ private:
 
 }  // namespace occupancy_grid_map
 
-#endif  // LASERSCAN_TO_OCCUPANCY_GRID_MAP__LASERSCAN_TO_OCCUPANCY_GRID_MAP_NODE_HPP_
+#endif  // POINTCLOUD_BASED_OCCUPANCY_GRID_MAP__POINTCLOUD_BASED_OCCUPANCY_GRID_MAP_NODE_HPP_

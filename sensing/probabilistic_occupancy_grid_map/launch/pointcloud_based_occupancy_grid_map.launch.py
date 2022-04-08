@@ -43,46 +43,10 @@ def generate_launch_description():
 
     composable_nodes = [
         ComposableNode(
-            package="pointcloud_to_laserscan",
-            plugin="pointcloud_to_laserscan::PointCloudToLaserScanNode",
-            name="pointcloud_to_laserscan_node",
-            remappings=[
-                ("~/input/pointcloud", LaunchConfiguration("input/obstacle_pointcloud")),
-                ("~/output/laserscan", LaunchConfiguration("output/laserscan")),
-                ("~/output/pointcloud", LaunchConfiguration("output/pointcloud")),
-                ("~/output/ray", LaunchConfiguration("output/ray")),
-                ("~/output/stixel", LaunchConfiguration("output/stixel")),
-            ],
-            parameters=[
-                {
-                    "target_frame": "base_link",  # Leave disabled to output scan in pointcloud frame
-                    "transform_tolerance": 0.01,
-                    "min_height": 0.0,
-                    "max_height": 2.0,
-                    "angle_min": -3.141592,  # -M_PI
-                    "angle_max": 3.141592,  # M_PI
-                    "angle_increment": 0.00349065850,  # 0.20*M_PI/180.0
-                    "scan_time": 0.0,
-                    "range_min": 1.0,
-                    "range_max": 200.0,
-                    "use_inf": True,
-                    "inf_epsilon": 1.0,
-                    # Concurrency level, affects number of pointclouds queued for processing
-                    # and number of threads used
-                    # 0 : Detect number of cores
-                    # 1 : Single threaded
-                    # 2->inf : Parallelism level
-                    "concurrency_level": 1,
-                }
-            ],
-            extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
-        ),
-        ComposableNode(
-            package="laserscan_to_occupancy_grid_map",
-            plugin="occupancy_grid_map::OccupancyGridMapNode",
+            package="probabilistic_occupancy_grid_map",
+            plugin="occupancy_grid_map::PointcloudBasedOccupancyGridMapNode",
             name="occupancy_grid_map_node",
             remappings=[
-                ("~/input/laserscan", LaunchConfiguration("output/laserscan")),
                 ("~/input/obstacle_pointcloud", LaunchConfiguration("input/obstacle_pointcloud")),
                 ("~/input/raw_pointcloud", LaunchConfiguration("input/raw_pointcloud")),
                 ("~/output/occupancy_grid_map", LaunchConfiguration("output")),
@@ -91,10 +55,6 @@ def generate_launch_description():
                 {
                     "map_resolution": 0.5,
                     "use_height_filter": True,
-                    "input_obstacle_pointcloud": LaunchConfiguration("input_obstacle_pointcloud"),
-                    "input_obstacle_and_raw_pointcloud": LaunchConfiguration(
-                        "input_obstacle_and_raw_pointcloud"
-                    ),
                 }
             ],
             extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
@@ -125,12 +85,6 @@ def generate_launch_description():
             add_launch_arg("input/obstacle_pointcloud", "no_ground/oneshot/pointcloud"),
             add_launch_arg("input/raw_pointcloud", "concatenated/pointcloud"),
             add_launch_arg("output", "occupancy_grid"),
-            add_launch_arg("output/laserscan", "virtual_scan/laserscan"),
-            add_launch_arg("output/pointcloud", "virtual_scan/pointcloud"),
-            add_launch_arg("output/ray", "virtual_scan/ray"),
-            add_launch_arg("output/stixel", "virtual_scan/stixel"),
-            add_launch_arg("input_obstacle_pointcloud", "false"),
-            add_launch_arg("input_obstacle_and_raw_pointcloud", "true"),
             set_container_executable,
             set_container_mt_executable,
             occupancy_grid_map_container,
