@@ -36,6 +36,7 @@
 #include <tf2_ros/transform_listener.h>
 
 #include <list>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -54,6 +55,8 @@ private:
 
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
+
+  std::map<std::uint8_t, std::string> tracker_map_;
 
   void onMeasurement(
     const autoware_auto_perception_msgs::msg::DetectedObjects::ConstSharedPtr input_objects_msg);
