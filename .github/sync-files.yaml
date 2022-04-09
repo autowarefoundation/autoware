@@ -35,6 +35,7 @@
     - source: .github/workflows/build-and-test-self-hosted.yaml
     - source: .github/workflows/check-build-depends.yaml
     - source: .github/workflows/clang-tidy-pr-comments.yaml
+    - source: codecov.yaml
 
 - repository: autowarefoundation/autoware-documentation
   files:
