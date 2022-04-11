@@ -383,7 +383,7 @@ void SimplePlanningSimulator::add_measurement_noise(
   odom.pose.pose.position.x += (*n.pos_dist_)(*n.rand_engine_);
   odom.pose.pose.position.y += (*n.pos_dist_)(*n.rand_engine_);
   const auto velocity_noise = (*n.vel_dist_)(*n.rand_engine_);
-  odom.twist.twist.linear.x = velocity_noise;
+  odom.twist.twist.linear.x += velocity_noise;
   float32_t yaw = motion::motion_common::to_angle(odom.pose.pose.orientation);
   yaw += static_cast<float>((*n.rpy_dist_)(*n.rand_engine_));
   odom.pose.pose.orientation = motion::motion_common::from_angle(yaw);
