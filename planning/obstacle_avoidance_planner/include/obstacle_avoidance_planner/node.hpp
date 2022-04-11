@@ -51,6 +51,10 @@ template <typename T>
 double lerpTwistX(
   const T & points, const geometry_msgs::msg::Point & target_pos, const size_t closest_seg_idx)
 {
+  if (points.size() == 1) {
+    return points.at(0).longitudinal_velocity_mps;
+  }
+
   constexpr double epsilon = 1e-6;
 
   const double closest_to_target_dist =
@@ -70,6 +74,10 @@ template <typename T>
 double lerpPoseZ(
   const T & points, const geometry_msgs::msg::Point & target_pos, const size_t closest_seg_idx)
 {
+  if (points.size() == 1) {
+    return points.at(0).pose.position.z;
+  }
+
   constexpr double epsilon = 1e-6;
 
   const double closest_to_target_dist =
