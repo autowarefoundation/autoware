@@ -109,7 +109,7 @@ void AutowareStatePanel::onInitialize()
   sub_gear_ = raw_node_->create_subscription<autoware_auto_vehicle_msgs::msg::GearReport>(
     "/vehicle/status/gear_status", 10, std::bind(&AutowareStatePanel::onShift, this, _1));
 
-  sub_engage_ = raw_node_->create_subscription<tier4_external_api_msgs::msg::EngageStatus>(
+  sub_engage_ = raw_node_->create_subscription<autoware_auto_vehicle_msgs::msg::Engage>(
     "/api/autoware/get/engage", 10, std::bind(&AutowareStatePanel::onEngageStatus, this, _1));
 
   client_engage_ = raw_node_->create_client<tier4_external_api_msgs::srv::Engage>(
@@ -209,7 +209,7 @@ void AutowareStatePanel::onShift(
 }
 
 void AutowareStatePanel::onEngageStatus(
-  const tier4_external_api_msgs::msg::EngageStatus::ConstSharedPtr msg)
+  const autoware_auto_vehicle_msgs::msg::Engage::ConstSharedPtr msg)
 {
   current_engage_ = msg->engage;
   engage_status_label_ptr_->setText(QString::fromStdString(Bool2String(current_engage_)));
