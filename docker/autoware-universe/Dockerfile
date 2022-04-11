@@ -30,8 +30,8 @@ RUN --mount=type=ssh \
   && rm -rf /var/lib/apt/lists/*
 
 ## Install cuDNN and TensorRT
-ARG CUDNN_VERSION=8.2.2.26-1+cuda11.4
-ARG TENSORRT_VERSION=8.2.2-1+cuda11.4
+ARG CUDNN_VERSION=8.2.4.15-1+cuda11.4
+ARG TENSORRT_VERSION=8.2.4-1+cuda11.4
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
   libcudnn8=$CUDNN_VERSION \
   libcudnn8-dev=$CUDNN_VERSION \
