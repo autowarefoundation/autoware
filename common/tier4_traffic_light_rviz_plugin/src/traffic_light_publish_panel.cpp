@@ -43,11 +43,25 @@ TrafficLightPublishPanel::TrafficLightPublishPanel(QWidget * parent) : rviz_comm
   traffic_light_id_input_->setRange(0, 999999);
   traffic_light_id_input_->setValue(0);
 
+  // Traffic Light Confidence
+  traffic_light_confidence_input_ = new QDoubleSpinBox();
+  traffic_light_confidence_input_->setRange(0.0, 1.0);
+  traffic_light_confidence_input_->setSingleStep(0.1);
+  traffic_light_confidence_input_->setValue(1.0);
+
   // Traffic Light Color
   light_color_combo_ = new QComboBox();
-  light_color_combo_->addItems(
-    {"RED", "AMBER", "GREEN", "WHITE", "LEFT_ARROW", "RIGHT_ARROW", "UP_ARROW", "DOWN_ARROW",
-     "DOWN_LEFT_ARROW", "DOWN_RIGHT_ARROW", "FLASHING", "UNKNOWN"});
+  light_color_combo_->addItems({"RED", "AMBER", "GREEN", "WHITE", "UNKNOWN"});
+
+  // Traffic Light Shape
+  light_shape_combo_ = new QComboBox();
+  light_shape_combo_->addItems(
+    {"CIRCLE", "LEFT_ARROW", "RIGHT_ARROW", "UP_ARROW", "DOWN_ARROW", "DOWN_LEFT_ARROW",
+     "DOWN_RIGHT_ARROW", "CROSS", "UNKNOWN"});
+
+  // Traffic Light Status
+  light_status_combo_ = new QComboBox();
+  light_status_combo_->addItems({"SOLID_ON", "SOLID_OFF", "FLASHING", "UNKNOWN"});
 
   // Set Traffic Signals Button
   set_button_ = new QPushButton("SET");
@@ -64,8 +78,8 @@ TrafficLightPublishPanel::TrafficLightPublishPanel(QWidget * parent) : rviz_comm
   horizontal_header->setSectionResizeMode(QHeaderView::Stretch);
 
   traffic_table_ = new QTableWidget();
-  traffic_table_->setColumnCount(2);
-  traffic_table_->setHorizontalHeaderLabels({"ID", "Status"});
+  traffic_table_->setColumnCount(5);
+  traffic_table_->setHorizontalHeaderLabels({"ID", "Color", "Shape", "Status", "Confidence"});
   traffic_table_->setVerticalHeader(vertical_header);
   traffic_table_->setHorizontalHeader(horizontal_header);
 
@@ -77,34 +91,48 @@ TrafficLightPublishPanel::TrafficLightPublishPanel(QWidget * parent) : rviz_comm
   auto * h_layout_1 = new QHBoxLayout;
   h_layout_1->addWidget(new QLabel("Rate: "));
   h_layout_1->addWidget(publishing_rate_input_);
-  h_layout_1->addWidget(new QLabel("Traffic Light ID: "));
+  h_layout_1->addWidget(new QLabel("ID: "));
   h_layout_1->addWidget(traffic_light_id_input_);
+  h_layout_1->addWidget(new QLabel("Confidence: "));
+  h_layout_1->addWidget(traffic_light_confidence_input_);
 
   auto * h_layout_2 = new QHBoxLayout;
-  h_layout_2->addWidget(new QLabel("Traffic Light Status: "));
-  h_layout_2->addWidget(light_color_combo_);
+  h_layout_2->addWidget(new QLabel("Traffic Light Color: "), 40);
+  h_layout_2->addWidget(light_color_combo_, 60);
+
+  auto * h_layout_3 = new QHBoxLayout;
+  h_layout_3->addWidget(new QLabel("Traffic Light Shape: "), 40);
+  h_layout_3->addWidget(light_shape_combo_, 60);
+
+  auto * h_layout_4 = new QHBoxLayout;
+  h_layout_4->addWidget(new QLabel("Traffic Light Status: "), 40);
+  h_layout_4->addWidget(light_status_combo_, 60);
 
   auto * v_layout = new QVBoxLayout;
   v_layout->addLayout(h_layout_1);
   v_layout->addLayout(h_layout_2);
+  v_layout->addLayout(h_layout_3);
+  v_layout->addLayout(h_layout_4);
   v_layout->addWidget(set_button_);
   v_layout->addWidget(reset_button_);
   v_layout->addWidget(publish_button_);
 
-  auto * h_layout_3 = new QHBoxLayout;
-  h_layout_3->addLayout(v_layout);
-  h_layout_3->addWidget(traffic_table_);
+  auto * h_layout_5 = new QHBoxLayout;
+  h_layout_5->addLayout(v_layout);
+  h_layout_5->addWidget(traffic_table_);
 
-  setLayout(h_layout_3);
+  setLayout(h_layout_5);
 }
 
 void TrafficLightPublishPanel::onSetTrafficLightState()
 {
   const auto traffic_light_id = traffic_light_id_input_->value();
   const auto color = light_color_combo_->currentText();
+  const auto shape = light_shape_combo_->currentText();
+  const auto status = light_status_combo_->currentText();
 
   TrafficLight traffic_light;
-  traffic_light.confidence = 1.0;
+  traffic_light.confidence = traffic_light_confidence_input_->value();
 
   if (color == "RED") {
     traffic_light.color = TrafficLight::RED;
@@ -114,22 +142,36 @@ void TrafficLightPublishPanel::onSetTrafficLightState()
     traffic_light.color = TrafficLight::GREEN;
   } else if (color == "WHITE") {
     traffic_light.color = TrafficLight::WHITE;
-  } else if (color == "LEFT_ARROW") {
-    traffic_light.color = TrafficLight::LEFT_ARROW;
-  } else if (color == "RIGHT_ARROW") {
-    traffic_light.color = TrafficLight::RIGHT_ARROW;
-  } else if (color == "UP_ARROW") {
-    traffic_light.color = TrafficLight::UP_ARROW;
-  } else if (color == "DOWN_ARROW") {
-    traffic_light.color = TrafficLight::DOWN_ARROW;
-  } else if (color == "DOWN_LEFT_ARROW") {
-    traffic_light.color = TrafficLight::DOWN_LEFT_ARROW;
-  } else if (color == "DOWN_RIGHT_ARROW") {
-    traffic_light.color = TrafficLight::DOWN_RIGHT_ARROW;
-  } else if (color == "FLASHING") {
-    traffic_light.color = TrafficLight::FLASHING;
   } else if (color == "UNKNOWN") {
     traffic_light.color = TrafficLight::UNKNOWN;
+  }
+
+  if (shape == "CIRCLE") {
+    traffic_light.shape = TrafficLight::CIRCLE;
+  } else if (shape == "LEFT_ARROW") {
+    traffic_light.shape = TrafficLight::LEFT_ARROW;
+  } else if (shape == "RIGHT_ARROW") {
+    traffic_light.shape = TrafficLight::RIGHT_ARROW;
+  } else if (shape == "UP_ARROW") {
+    traffic_light.shape = TrafficLight::UP_ARROW;
+  } else if (shape == "DOWN_ARROW") {
+    traffic_light.shape = TrafficLight::DOWN_ARROW;
+  } else if (shape == "DOWN_LEFT_ARROW") {
+    traffic_light.shape = TrafficLight::DOWN_LEFT_ARROW;
+  } else if (shape == "DOWN_RIGHT_ARROW") {
+    traffic_light.shape = TrafficLight::DOWN_RIGHT_ARROW;
+  } else if (shape == "UNKNOWN") {
+    traffic_light.shape = TrafficLight::UNKNOWN;
+  }
+
+  if (status == "SOLID_OFF") {
+    traffic_light.status = TrafficLight::SOLID_OFF;
+  } else if (status == "SOLID_ON") {
+    traffic_light.status = TrafficLight::SOLID_ON;
+  } else if (status == "FLASHING") {
+    traffic_light.status = TrafficLight::FLASHING;
+  } else if (status == "UNKNOWN") {
+    traffic_light.status = TrafficLight::UNKNOWN;
   }
 
   TrafficSignal traffic_signal;
@@ -234,34 +276,6 @@ void TrafficLightPublishPanel::onTimer()
         color_label->setText("WHITE");
         color_label->setStyleSheet("background-color: #FFFFFF;");
         break;
-      case TrafficLight::LEFT_ARROW:
-        color_label->setText("LEFT_ARROW");
-        color_label->setStyleSheet("background-color: #7CFC00;");
-        break;
-      case TrafficLight::RIGHT_ARROW:
-        color_label->setText("RIGHT_ARROW");
-        color_label->setStyleSheet("background-color: #7CFC00;");
-        break;
-      case TrafficLight::UP_ARROW:
-        color_label->setText("UP_ARROW");
-        color_label->setStyleSheet("background-color: #7CFC00;");
-        break;
-      case TrafficLight::DOWN_ARROW:
-        color_label->setText("DOWN_ARROW");
-        color_label->setStyleSheet("background-color: #7CFC00;");
-        break;
-      case TrafficLight::DOWN_LEFT_ARROW:
-        color_label->setText("DOWN_LEFT_ARROW");
-        color_label->setStyleSheet("background-color: #7CFC00;");
-        break;
-      case TrafficLight::DOWN_RIGHT_ARROW:
-        color_label->setText("DOWN_RIGHT_ARROW");
-        color_label->setStyleSheet("background-color: #7CFC00;");
-        break;
-      case TrafficLight::FLASHING:
-        color_label->setText("FLASHING");
-        color_label->setStyleSheet("background-color: #7CFC00;");
-        break;
       case TrafficLight::UNKNOWN:
         color_label->setText("UNKNOWN");
         color_label->setStyleSheet("background-color: #808080;");
@@ -270,8 +284,69 @@ void TrafficLightPublishPanel::onTimer()
         break;
     }
 
+    auto shape_label = new QLabel();
+    shape_label->setAlignment(Qt::AlignCenter);
+
+    switch (light.shape) {
+      case TrafficLight::CIRCLE:
+        shape_label->setText("CIRCLE");
+        break;
+      case TrafficLight::LEFT_ARROW:
+        shape_label->setText("LEFT_ARROW");
+        break;
+      case TrafficLight::RIGHT_ARROW:
+        shape_label->setText("RIGHT_ARROW");
+        break;
+      case TrafficLight::UP_ARROW:
+        shape_label->setText("UP_ARROW");
+        break;
+      case TrafficLight::DOWN_ARROW:
+        shape_label->setText("DOWN_ARROW");
+        break;
+      case TrafficLight::DOWN_LEFT_ARROW:
+        shape_label->setText("DOWN_LEFT_ARROW");
+        break;
+      case TrafficLight::DOWN_RIGHT_ARROW:
+        shape_label->setText("DOWN_RIGHT_ARROW");
+        break;
+      case TrafficLight::FLASHING:
+        shape_label->setText("FLASHING");
+        break;
+      case TrafficLight::UNKNOWN:
+        shape_label->setText("UNKNOWN");
+        break;
+      default:
+        break;
+    }
+
+    auto status_label = new QLabel();
+    status_label->setAlignment(Qt::AlignCenter);
+
+    switch (light.status) {
+      case TrafficLight::SOLID_OFF:
+        status_label->setText("SOLID_OFF");
+        break;
+      case TrafficLight::SOLID_ON:
+        status_label->setText("SOLID_ON");
+        break;
+      case TrafficLight::FLASHING:
+        status_label->setText("FLASHING");
+        break;
+      case TrafficLight::UNKNOWN:
+        status_label->setText("UNKNOWN");
+        break;
+      default:
+        break;
+    }
+
+    auto confidence_label = new QLabel(QString::number(light.confidence));
+    confidence_label->setAlignment(Qt::AlignCenter);
+
     traffic_table_->setCellWidget(i, 0, id_label);
     traffic_table_->setCellWidget(i, 1, color_label);
+    traffic_table_->setCellWidget(i, 2, shape_label);
+    traffic_table_->setCellWidget(i, 3, status_label);
+    traffic_table_->setCellWidget(i, 4, confidence_label);
   }
 }
 

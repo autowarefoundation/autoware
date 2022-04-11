@@ -60,7 +60,10 @@ protected:
 
   QSpinBox * publishing_rate_input_;
   QSpinBox * traffic_light_id_input_;
+  QDoubleSpinBox * traffic_light_confidence_input_;
   QComboBox * light_color_combo_;
+  QComboBox * light_shape_combo_;
+  QComboBox * light_status_combo_;
   QPushButton * set_button_;
   QPushButton * reset_button_;
   QPushButton * publish_button_;
