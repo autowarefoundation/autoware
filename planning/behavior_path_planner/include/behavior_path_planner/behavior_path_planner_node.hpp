@@ -42,6 +42,7 @@
 #include <tier4_planning_msgs/msg/path_change_module.hpp>
 #include <tier4_planning_msgs/msg/path_change_module_array.hpp>
 #include <tier4_planning_msgs/msg/path_change_module_id.hpp>
+#include <tier4_planning_msgs/msg/scenario.hpp>
 #include <tier4_planning_msgs/msg/stop_reason_array.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
@@ -68,6 +69,7 @@ using nav_msgs::msg::Odometry;
 using route_handler::RouteHandler;
 using tier4_planning_msgs::msg::PathChangeModule;
 using tier4_planning_msgs::msg::PathChangeModuleArray;
+using tier4_planning_msgs::msg::Scenario;
 using visualization_msgs::msg::MarkerArray;
 
 class BehaviorPathPlannerNode : public rclcpp::Node
@@ -79,6 +81,7 @@ private:
   rclcpp::Subscription<HADMapRoute>::SharedPtr route_subscriber_;
   rclcpp::Subscription<HADMapBin>::SharedPtr vector_map_subscriber_;
   rclcpp::Subscription<Odometry>::SharedPtr velocity_subscriber_;
+  rclcpp::Subscription<Scenario>::SharedPtr scenario_subscriber_;
   rclcpp::Subscription<PredictedObjects>::SharedPtr perception_subscriber_;
   rclcpp::Subscription<ApprovalMsg>::SharedPtr external_approval_subscriber_;
   rclcpp::Subscription<PathChangeModule>::SharedPtr force_approval_subscriber_;
@@ -94,6 +97,7 @@ private:
   std::shared_ptr<PlannerData> planner_data_;
   std::shared_ptr<BehaviorTreeManager> bt_manager_;
   tier4_autoware_utils::SelfPoseListener self_pose_listener_{this};
+  Scenario::SharedPtr current_scenario_{nullptr};
 
   std::string prev_ready_module_name_ = "NONE";
 

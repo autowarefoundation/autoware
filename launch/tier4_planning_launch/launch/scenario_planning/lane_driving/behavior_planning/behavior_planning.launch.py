@@ -138,6 +138,7 @@ def launch_setup(context, *args, **kwargs):
             ("~/input/vector_map", LaunchConfiguration("map_topic_name")),
             ("~/input/perception", "/perception/object_recognition/objects"),
             ("~/input/odometry", "/localization/kinematic_state"),
+            ("~/input/scenario", "/planning/scenario_planning/scenario"),
             (
                 "~/input/external_approval",
                 "/planning/scenario_planning/lane_driving/behavior_planning/"
