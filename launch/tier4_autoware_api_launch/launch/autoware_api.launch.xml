@@ -1,0 +1,14 @@
+<launch>
+  <!-- awapi (deprecated) -->
+  <group>
+    <include file="$(find-pkg-share awapi_awiv_adapter)/launch/awapi_awiv_adapter.launch.xml"/>
+  </group>
+
+  <!-- autoware api adaptor -->
+  <group>
+    <push-ros-namespace namespace="autoware_api"/>
+    <include file="$(find-pkg-share tier4_autoware_api_launch)/launch/include/external_api_adaptor.launch.py"/>
+    <include file="$(find-pkg-share tier4_autoware_api_launch)/launch/include/internal_api_adaptor.launch.py"/>
+    <include file="$(find-pkg-share tier4_autoware_api_launch)/launch/include/internal_api_relay.launch.xml"/>
+  </group>
+</launch>

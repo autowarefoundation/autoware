@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>tier4_autoware_api_launch</name>
+  <version>0.0.0</version>
+  <description>The tier4_autoware_api_launch package</description>
+  <maintainer email="isamu.takagi@tier4.jp">Takagi, Isamu</maintainer>
+  <maintainer email="ryohsuke.mitsudome@tier4.jp">Ryohsuke, Mitsudome</maintainer>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <exec_depend>autoware_iv_external_api_adaptor</exec_depend>
+  <exec_depend>autoware_iv_internal_api_adaptor</exec_depend>
+  <exec_depend>awapi_awiv_adapter</exec_depend>
+  <exec_depend>path_distance_calculator</exec_depend>
+  <exec_depend>topic_tools</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
