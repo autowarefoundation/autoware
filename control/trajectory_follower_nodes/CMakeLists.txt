@@ -68,7 +68,7 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
   # Unit tests
   set(TRAJECTORY_FOLLOWER_NODES_TEST test_trajectory_follower_nodes)
-  ament_add_gtest(${TRAJECTORY_FOLLOWER_NODES_TEST}
+  ament_add_ros_isolated_gtest(${TRAJECTORY_FOLLOWER_NODES_TEST}
     test/trajectory_follower_test_utils.hpp
     test/test_latlon_muxer_node.cpp
     test/test_lateral_controller_node.cpp
