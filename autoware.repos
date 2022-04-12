@@ -21,6 +21,10 @@ repositories:
     type: git
     url: https://github.com/autowarefoundation/autoware.universe.git
     version: main
+  universe/tmp/tier4_ad_api_adapter:
+    type: git
+    url: https://github.com/tier4/tier4_ad_api_adaptor.git
+    version: tier4/universe
   universe/extension_msgs/tier4_autoware_msgs:
     type: git
     url: https://github.com/tier4/tier4_autoware_msgs.git
