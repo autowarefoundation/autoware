@@ -1,5 +1,5 @@
 <launch>
-  <arg name="joy_type" default="DS4" description="options: DS4, G29"/>
+  <arg name="joy_type" default="DS4" description="options: DS4, G29, P65"/>
   <arg name="external_cmd_source" default="remote" description="options: local, remote"/>
 
   <arg name="input_joy" default="/joy"/>

@@ -15,6 +15,7 @@
 #include "joy_controller/joy_controller.hpp"
 #include "joy_controller/joy_converter/ds4_joy_converter.hpp"
 #include "joy_controller/joy_converter/g29_joy_converter.hpp"
+#include "joy_controller/joy_converter/p65_joy_converter.hpp"
 
 #include <tier4_api_utils/tier4_api_utils.hpp>
 
@@ -151,8 +152,10 @@ void AutowareJoyControllerNode::onJoy(const sensor_msgs::msg::Joy::ConstSharedPt
   last_joy_received_time_ = msg->header.stamp;
   if (joy_type_ == "G29") {
     joy_ = std::make_shared<const G29JoyConverter>(*msg);
-  } else {
+  } else if (joy_type_ == "DS4") {
     joy_ = std::make_shared<const DS4JoyConverter>(*msg);
+  } else {
+    joy_ = std::make_shared<const P65JoyConverter>(*msg);
   }
 
   if (joy_->shift_up() || joy_->shift_down() || joy_->shift_drive() || joy_->shift_reverse()) {
