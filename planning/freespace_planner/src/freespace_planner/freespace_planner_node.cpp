@@ -233,7 +233,8 @@ FreespacePlannerNode::FreespacePlannerNode(const rclcpp::NodeOptions & node_opti
   // Subscribers
   {
     route_sub_ = create_subscription<HADMapRoute>(
-      "~/input/route", 1, std::bind(&FreespacePlannerNode::onRoute, this, _1));
+      "~/input/route", rclcpp::QoS{1}.transient_local(),
+      std::bind(&FreespacePlannerNode::onRoute, this, _1));
     occupancy_grid_sub_ = create_subscription<OccupancyGrid>(
       "~/input/occupancy_grid", 1, std::bind(&FreespacePlannerNode::onOccupancyGrid, this, _1));
     scenario_sub_ = create_subscription<Scenario>(
