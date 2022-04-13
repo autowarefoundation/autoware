@@ -114,11 +114,11 @@ void InteractiveObject::update(const Ogre::Vector3 & point)
              : std::atan2(velocity_.y, velocity_.x);
 }
 
+void InteractiveObject::reset() { velocity_ = Ogre::Vector3::ZERO; }
+
 double InteractiveObject::distance(const Ogre::Vector3 & point) { return point_.distance(point); }
 
 InteractiveObjectCollection::InteractiveObjectCollection() { target_ = nullptr; }
-
-void InteractiveObjectCollection::reset() { target_ = nullptr; }
 
 void InteractiveObjectCollection::select(const Ogre::Vector3 & point)
 {
@@ -126,6 +126,19 @@ void InteractiveObjectCollection::select(const Ogre::Vector3 & point)
   if (index != objects_.size()) {
     target_ = objects_[index].get();
   }
+}
+
+boost::optional<std::array<uint8_t, 16>> InteractiveObjectCollection::reset()
+{
+  if (!target_) {
+    return {};
+  }
+
+  const auto uuid = target_->uuid();
+  target_->reset();
+  target_ = nullptr;
+
+  return uuid;
 }
 
 boost::optional<std::array<uint8_t, 16>> InteractiveObjectCollection::create(
@@ -304,7 +317,8 @@ int InteractiveObjectTool::processMouseEvent(rviz_common::ViewportMouseEvent & e
   }
 
   if (event.rightUp()) {
-    objects_.reset();
+    const auto uuid = objects_.reset();
+    publishObjectMsg(uuid.get(), Object::MODIFY);
     return 0;
   }
 

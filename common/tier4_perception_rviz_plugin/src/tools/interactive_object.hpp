@@ -90,6 +90,7 @@ public:
   void twist(geometry_msgs::msg::Twist & twist) const;
   void transform(tf2::Transform & tf_map2object) const;
   void update(const Ogre::Vector3 & point);
+  void reset();
   double distance(const Ogre::Vector3 & point);
 
 private:
@@ -105,8 +106,8 @@ public:
   InteractiveObjectCollection();
   ~InteractiveObjectCollection() {}
 
-  void reset();
   void select(const Ogre::Vector3 & point);
+  boost::optional<std::array<uint8_t, 16>> reset();
   boost::optional<std::array<uint8_t, 16>> create(const Ogre::Vector3 & point);
   boost::optional<std::array<uint8_t, 16>> remove(const Ogre::Vector3 & point);
   boost::optional<std::array<uint8_t, 16>> update(const Ogre::Vector3 & point);
