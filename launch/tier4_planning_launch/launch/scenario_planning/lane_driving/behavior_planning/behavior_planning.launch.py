@@ -190,72 +190,108 @@ def launch_setup(context, *args, **kwargs):
 
     # behavior velocity planner
     blind_spot_param_path = os.path.join(
-        get_package_share_directory("behavior_velocity_planner"),
+        get_package_share_directory("tier4_planning_launch"),
         "config",
+        "scenario_planning",
+        "lane_driving",
+        "behavior_planning",
+        "behavior_velocity_planner",
         "blind_spot.param.yaml",
     )
     with open(blind_spot_param_path, "r") as f:
         blind_spot_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
     crosswalk_param_path = os.path.join(
-        get_package_share_directory("behavior_velocity_planner"),
+        get_package_share_directory("tier4_planning_launch"),
         "config",
+        "scenario_planning",
+        "lane_driving",
+        "behavior_planning",
+        "behavior_velocity_planner",
         "crosswalk.param.yaml",
     )
     with open(crosswalk_param_path, "r") as f:
         crosswalk_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
     detection_area_param_path = os.path.join(
-        get_package_share_directory("behavior_velocity_planner"),
+        get_package_share_directory("tier4_planning_launch"),
         "config",
+        "scenario_planning",
+        "lane_driving",
+        "behavior_planning",
+        "behavior_velocity_planner",
         "detection_area.param.yaml",
     )
     with open(detection_area_param_path, "r") as f:
         detection_area_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
     intersection_param_path = os.path.join(
-        get_package_share_directory("behavior_velocity_planner"),
+        get_package_share_directory("tier4_planning_launch"),
         "config",
+        "scenario_planning",
+        "lane_driving",
+        "behavior_planning",
+        "behavior_velocity_planner",
         "intersection.param.yaml",
     )
     with open(intersection_param_path, "r") as f:
         intersection_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
     stop_line_param_path = os.path.join(
-        get_package_share_directory("behavior_velocity_planner"),
+        get_package_share_directory("tier4_planning_launch"),
         "config",
+        "scenario_planning",
+        "lane_driving",
+        "behavior_planning",
+        "behavior_velocity_planner",
         "stop_line.param.yaml",
     )
     with open(stop_line_param_path, "r") as f:
         stop_line_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
     traffic_light_param_path = os.path.join(
-        get_package_share_directory("behavior_velocity_planner"),
+        get_package_share_directory("tier4_planning_launch"),
         "config",
+        "scenario_planning",
+        "lane_driving",
+        "behavior_planning",
+        "behavior_velocity_planner",
         "traffic_light.param.yaml",
     )
     with open(traffic_light_param_path, "r") as f:
         traffic_light_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
     virtual_traffic_light_param_path = os.path.join(
-        get_package_share_directory("behavior_velocity_planner"),
+        get_package_share_directory("tier4_planning_launch"),
         "config",
+        "scenario_planning",
+        "lane_driving",
+        "behavior_planning",
+        "behavior_velocity_planner",
         "virtual_traffic_light.param.yaml",
     )
     with open(virtual_traffic_light_param_path, "r") as f:
         virtual_traffic_light_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
     occlusion_spot_param_path = os.path.join(
-        get_package_share_directory("behavior_velocity_planner"),
+        get_package_share_directory("tier4_planning_launch"),
         "config",
+        "scenario_planning",
+        "lane_driving",
+        "behavior_planning",
+        "behavior_velocity_planner",
         "occlusion_spot.param.yaml",
     )
     with open(occlusion_spot_param_path, "r") as f:
         occlusion_spot_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
     no_stopping_area_param_path = os.path.join(
-        get_package_share_directory("behavior_velocity_planner"),
+        get_package_share_directory("tier4_planning_launch"),
         "config",
+        "scenario_planning",
+        "lane_driving",
+        "behavior_planning",
+        "behavior_velocity_planner",
         "no_stopping_area.param.yaml",
     )
     with open(no_stopping_area_param_path, "r") as f:
