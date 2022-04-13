@@ -123,8 +123,8 @@ bool IntersectionModule::modifyPathVelocity(
     return false;
   }
 
-  if (stop_line_idx <= 0 || pass_judge_line_idx <= 0) {
-    RCLCPP_DEBUG(logger_, "stop line or pass judge line is at path[0], ignore planning.");
+  if (stop_line_idx <= 0) {
+    RCLCPP_DEBUG(logger_, "stop line line is at path[0], ignore planning.");
     RCLCPP_DEBUG(logger_, "===== plan end =====");
     return true;
   }
