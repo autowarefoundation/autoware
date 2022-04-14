@@ -20,3 +20,7 @@ jobs:
         uses: autowarefoundation/autoware-github-actions/sync-files@v1
         with:
           token: ${{ steps.generate-token.outputs.token }}
+          pr-labels: |
+            bot
+            sync-files
+          auto-merge-method: squash
