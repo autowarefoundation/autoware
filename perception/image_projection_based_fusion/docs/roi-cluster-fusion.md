@@ -2,7 +2,7 @@
 
 ## Purpose
 
-roi_cluster_fusion is a package for filtering clusters that are less likely to be objects and overwriting labels of clusters with that of Region Of Interests (ROIs) by a 2D object detector.
+The `roi_cluster_fusion` is a package for filtering clusters that are less likely to be objects and overwriting labels of clusters with that of Region Of Interests (ROIs) by a 2D object detector.
 
 ## Inner-workings / Algorithms
 
@@ -16,16 +16,17 @@ The clusters are projected onto image planes, and then if the ROIs of clusters a
 
 | Name                  | Type                                                     | Description                                                                        |
 | --------------------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `clusters`            | `tier4_perception_msgs::msg::DetectedObjectsWithFeature` | clustered pointcloud                                                               |
+| `input`               | `tier4_perception_msgs::msg::DetectedObjectsWithFeature` | clustered pointcloud                                                               |
 | `input/camera_infoID` | `sensor_msgs::msg::CameraInfo`                           | camera information to project 3d points onto image planes, `ID` is between 0 and 7 |
 | `input/roisID`        | `tier4_perception_msgs::msg::DetectedObjectsWithFeature` | ROIs from each image, `ID` is between 0 and 7                                      |
 | `input/image_rawID`   | `sensor_msgs::msg::Image`                                | images for visualization, `ID` is between 0 and 7                                  |
 
 ### Output
 
-| Name                 | Type                      | Description                                       |
-| -------------------- | ------------------------- | ------------------------------------------------- |
-| `output/image_rawID` | `sensor_msgs::msg::Image` | images for visualization, `ID` is between 0 and 7 |
+| Name                 | Type                                                     | Description                                       |
+| -------------------- | -------------------------------------------------------- | ------------------------------------------------- |
+| `output`             | `tier4_perception_msgs::msg::DetectedObjectsWithFeature` | labeled cluster pointcloud                        |
+| `output/image_rawID` | `sensor_msgs::msg::Image`                                | images for visualization, `ID` is between 0 and 7 |
 
 ## Parameters
 
@@ -39,6 +40,7 @@ The clusters are projected onto image planes, and then if the ROIs of clusters a
 | `use_cluster_semantic_type` | bool  | if `false`, the labels of clusters are overwritten by `UNKNOWN` before fusion |
 | `iou_threshold`             | float | the IoU threshold to overwrite a label of clusters with a label of roi        |
 | `rois_number`               | int   | the number of input rois                                                      |
+| `debug_mode`                | bool  | If `true`, subscribe and publish images for visualization.                    |
 
 ## Assumptions / Known limits
 
@@ -62,6 +64,7 @@ Example:
 <!-- Write performance information like complexity. If it wouldn't be the bottleneck, not necessary.
 
 Example:
+
   ### Complexity
 
   This algorithm is O(N).

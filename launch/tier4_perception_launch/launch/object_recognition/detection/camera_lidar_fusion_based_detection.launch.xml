@@ -54,7 +54,7 @@
       <arg name="output_clusters" value="clusters"/>
       <arg name="use_pointcloud_map" value="false"/>
     </include>
-    <include file="$(find-pkg-share roi_cluster_fusion)/launch/roi_cluster_fusion.launch.xml">
+    <include file="$(find-pkg-share image_projection_based_fusion)/launch/roi_cluster_fusion.launch.xml">
       <arg name="input/camera_info0" value="$(var camera_info0)"/>
       <arg name="input/rois0" value="/perception/object_recognition/detection/rois0"/>
       <arg name="input/camera_info1" value="$(var camera_info1)"/>
@@ -81,7 +81,7 @@
       <arg name="input/image5" value="$(var image_raw5)"/>
       <arg name="input/image6" value="$(var image_raw6)"/>
       <arg name="input/image7" value="$(var image_raw7)"/>
-      <arg name="output" value="camera_lidar_fusion/clusters"/>
+      <arg name="output/clusters" value="camera_lidar_fusion/clusters"/>
     </include>
     <include file="$(find-pkg-share shape_estimation)/launch/shape_estimation.launch.xml">
       <arg name="input/objects" value="camera_lidar_fusion/clusters"/>

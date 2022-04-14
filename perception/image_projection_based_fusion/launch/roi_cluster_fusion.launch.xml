@@ -17,7 +17,7 @@
   <arg name="input/rois7" default="rois7"/>
   <arg name="input/camera_info7" default="/camera_info7"/>
   <arg name="input/clusters" default="clusters"/>
-  <arg name="output" default="labeled_clusters"/>
+  <arg name="output/clusters" default="labeled_clusters"/>
 
   <!-- for eval variable-->
   <arg name="input_rois_number" default="$(var input/rois_number)"/>
@@ -59,14 +59,14 @@
     <set_remap if="$(eval &quot; '$(var input_rois_number)' >= '7' &quot;)" from="input/image_raw6" to="$(var input/image6)"/>
     <set_remap if="$(eval &quot; '$(var input_rois_number)' >= '8' &quot;)" from="input/image_raw7" to="$(var input/image7)"/>
 
-    <node pkg="roi_cluster_fusion" exec="roi_cluster_fusion_node" name="roi_cluster_fusion">
+    <node pkg="image_projection_based_fusion" exec="roi_cluster_fusion_node" name="roi_cluster_fusion" output="screen">
       <param name="use_iou" value="true"/>
       <param name="use_iou_x" value="false"/>
       <param name="use_iou_y" value="false"/>
       <param name="iou_threshold" value="0.35"/>
-      <remap from="clusters" to="$(var input/clusters)"/>
-      <remap from="output/labeled_clusters" to="$(var output)"/>
       <param name="rois_number" value="$(var input/rois_number)"/>
+      <remap from="input" to="$(var input/clusters)"/>
+      <remap from="output" to="$(var output/clusters)"/>
 
       <!-- debug -->
       <param name="debug_mode" value="$(var debug_mode)"/>
