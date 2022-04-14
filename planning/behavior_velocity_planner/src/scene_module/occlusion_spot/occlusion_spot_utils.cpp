@@ -192,39 +192,53 @@ void clipPathByLength(
   }
 }
 
-bool isStuckVehicle(PredictedObject obj, const double min_vel)
+bool isVehicle(const PredictedObject & obj)
 {
-  if (
-    obj.classification.at(0).label == ObjectClassification::CAR ||
-    obj.classification.at(0).label == ObjectClassification::TRUCK ||
-    obj.classification.at(0).label == ObjectClassification::BUS) {
-    if (std::abs(obj.kinematics.initial_twist_with_covariance.twist.linear.x) < min_vel) {
-      return true;
-    }
-  }
-  return false;
+  const auto & label = obj.classification.at(0).label;
+  return (
+    label == ObjectClassification::CAR || label == ObjectClassification::TRUCK ||
+    label == ObjectClassification::BUS || label == ObjectClassification::TRAILER);
 }
 
-std::vector<PredictedObject> getParkedVehicles(
-  const PredictedObjects & dyn_objects, const PlannerParam & param,
-  std::vector<Point> & debug_point)
+bool isStuckVehicle(const PredictedObject & obj, const double min_vel)
 {
-  std::vector<PredictedObject> parked_vehicles;
-  std::vector<Point> points;
-  for (const auto & obj : dyn_objects.objects) {
-    bool is_parked_vehicle = true;
-    if (!occlusion_spot_utils::isStuckVehicle(obj, param.stuck_vehicle_vel)) {
-      continue;
-    }
-    const geometry_msgs::msg::Point & p = obj.kinematics.initial_pose_with_covariance.pose.position;
-    BasicPoint2d obj_point(p.x, p.y);
-    if (is_parked_vehicle) {
-      parked_vehicles.emplace_back(obj);
-      points.emplace_back(p);
+  if (!isVehicle(obj)) return false;
+  const auto & obj_vel = obj.kinematics.initial_twist_with_covariance.twist.linear.x;
+  return std::abs(obj_vel) <= min_vel;
+}
+
+bool isMovingVehicle(const PredictedObject & obj, const double min_vel)
+{
+  if (!isVehicle(obj)) return false;
+  const auto & obj_vel = obj.kinematics.initial_twist_with_covariance.twist.linear.x;
+  return std::abs(obj_vel) > min_vel;
+}
+
+std::vector<PredictedObject> extractVehicles(const PredictedObjects::ConstSharedPtr objects_ptr)
+{
+  std::vector<PredictedObject> vehicles;
+  for (const auto & obj : objects_ptr->objects) {
+    if (occlusion_spot_utils::isVehicle(obj)) {
+      vehicles.emplace_back(obj);
     }
   }
-  debug_point = points;
-  return parked_vehicles;
+  return vehicles;
+}
+
+void categorizeVehicles(
+  const std::vector<PredictedObject> & vehicles, Polygons2d & stuck_vehicle_foot_prints,
+  Polygons2d & moving_vehicle_foot_prints, const double stuck_vehicle_vel)
+{
+  moving_vehicle_foot_prints.clear();
+  stuck_vehicle_foot_prints.clear();
+  for (const auto & vehicle : vehicles) {
+    if (isMovingVehicle(vehicle, stuck_vehicle_vel)) {
+      moving_vehicle_foot_prints.emplace_back(planning_utils::toFootprintPolygon(vehicle));
+    } else if (isStuckVehicle(vehicle, stuck_vehicle_vel)) {
+      stuck_vehicle_foot_prints.emplace_back(planning_utils::toFootprintPolygon(vehicle));
+    }
+  }
+  return;
 }
 
 ArcCoordinates getOcclusionPoint(const PredictedObject & obj, const ConstLineString2d & ll_string)
@@ -343,8 +357,8 @@ bool generatePossibleCollisionsFromObjects(
   return !possible_collisions.empty();
 }
 
-std::vector<PredictedObject> filterDynamicObjectByDetectionArea(
-  std::vector<PredictedObject> & objs, const Polygons2d & polys)
+std::vector<PredictedObject> filterVehiclesByDetectionArea(
+  const std::vector<PredictedObject> & objs, const Polygons2d & polys)
 {
   std::vector<PredictedObject> filtered_obj;
   // stuck points by predicted objects
@@ -438,16 +452,16 @@ boost::optional<PossibleCollisionInfo> generateOneNotableCollisionFromOcclusionS
     PossibleCollisionInfo pc = calculateCollisionPathPointFromOcclusionSpot(
       arc_coord_occlusion_point, arc_coord_collision_point, path_lanelet, param);
     const auto & ip = pc.intersection_pose.position;
-    bool collision_free_at_intersection = grid_utils::isCollisionFree(
-      grid, occlusion_spot_position, grid_map::Position(ip.x, ip.y), param.pedestrian_radius);
     bool is_obstacle_blocked_by_partition = false;
-    if (!collision_free_at_intersection) continue;
     if (param.use_partition_lanelet) {
       const auto & op = obstacle_point;
       const LineString2d obstacle_vec = {{op[0], op[1]}, {ip.x, ip.y}};
       is_obstacle_blocked_by_partition = isBlockedByPartition(obstacle_vec, partition_lanelets);
     }
     if (is_obstacle_blocked_by_partition) continue;
+    bool collision_free_at_intersection = grid_utils::isCollisionFree(
+      grid, occlusion_spot_position, grid_map::Position(ip.x, ip.y), param.pedestrian_radius);
+    if (!collision_free_at_intersection) continue;
     distance_lower_bound = dist;
     candidate = pc;
     has_collision = true;

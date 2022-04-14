@@ -60,6 +60,7 @@ OcclusionSpotModuleManager::OcclusionSpotModuleManager(rclcpp::Node & node)
   }
   pp.filter_occupancy_grid = node.declare_parameter(ns + ".filter_occupancy_grid", false);
   pp.use_object_info = node.declare_parameter(ns + ".use_object_info", false);
+  pp.use_moving_object_ray_cast = node.declare_parameter(ns + ".use_moving_object_ray_cast", false);
   pp.use_partition_lanelet = node.declare_parameter(ns + ".use_partition_lanelet", false);
   pp.pedestrian_vel = node.declare_parameter(ns + ".pedestrian_vel", 1.5);
   pp.pedestrian_radius = node.declare_parameter(ns + ".pedestrian_radius", 0.5);
