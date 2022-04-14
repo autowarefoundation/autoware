@@ -6,7 +6,7 @@ We have two types of Docker image: `development` and `prebuilt`.
 2. The `prebuilt` image contains executables and enables you to try out Autoware quickly.
    - Note that the prebuilt image is not designed for deployment on a real vehicle!
 
-**Note**: Before pulling these images, confirm and agree with the [NVIDIA Deep Learning Container license](https://developer.nvidia.com/ngc/nvidia-deep-learning-container-license).
+**Note**: Before proceeding, confirm and agree with the [NVIDIA Deep Learning Container license](https://developer.nvidia.com/ngc/nvidia-deep-learning-container-license). By pulling and using the Autoware Universe images, you accept the terms and conditions of the license.
 
 ## Prerequisites
 
