@@ -178,6 +178,10 @@ void ScanGroundFilterComponent::classifyPointCloud(
       } else {
         calculate_slope = true;
       }
+      if (is_point_close_to_prev) {
+        height_from_gnd = p->orig_point->z - ground_cluster.getAverageHeight();
+        radius_distance_from_gnd = p->radius - ground_cluster.getAverageRadius();
+      }
       if (calculate_slope) {
         // far from the previous point
 
