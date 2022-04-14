@@ -7,5 +7,6 @@
   <include file="$(find-pkg-share gyro_odometer)/launch/gyro_odometer.launch.xml">
     <arg name="input_vehicle_twist_with_covariance_topic" value="/localization/twist_estimator/vehicle_velocity_converter/twist_with_covariance"/>
     <arg name="output_twist_with_covariance_topic" value="/localization/twist_estimator/twist_with_covariance"/>
+    <arg name="output_twist_with_covariance_raw_topic" value="/localization/twist_estimator/twist_with_covariance_raw"/>
   </include>
 </launch>

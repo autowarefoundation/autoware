@@ -34,6 +34,10 @@ GyroOdometer::GyroOdometer()
   imu_sub_ = create_subscription<sensor_msgs::msg::Imu>(
     "imu", rclcpp::QoS{100}, std::bind(&GyroOdometer::callbackImu, this, std::placeholders::_1));
 
+  twist_raw_pub_ = create_publisher<geometry_msgs::msg::TwistStamped>("twist_raw", rclcpp::QoS{10});
+  twist_with_covariance_raw_pub_ = create_publisher<geometry_msgs::msg::TwistWithCovarianceStamped>(
+    "twist_with_covariance_raw", rclcpp::QoS{10});
+
   twist_pub_ = create_publisher<geometry_msgs::msg::TwistStamped>("twist", rclcpp::QoS{10});
   twist_with_covariance_pub_ = create_publisher<geometry_msgs::msg::TwistWithCovarianceStamped>(
     "twist_with_covariance", rclcpp::QoS{10});
@@ -93,15 +97,6 @@ void GyroOdometer::callbackImu(const sensor_msgs::msg::Imu::ConstSharedPtr imu_m
   transformed_angular_velocity.header = tf_base2imu_ptr->header;
   tf2::doTransform(angular_velocity, transformed_angular_velocity, *tf_base2imu_ptr);
 
-  // clear imu yaw bias if vehicle is stopped
-  if (
-    std::fabs(transformed_angular_velocity.vector.z) < 0.01 &&
-    std::fabs(twist_with_cov_msg_ptr_->twist.twist.linear.x) < 0.01) {
-    transformed_angular_velocity.vector.x = 0.0;
-    transformed_angular_velocity.vector.y = 0.0;
-    transformed_angular_velocity.vector.z = 0.0;
-  }
-
   // TODO(YamatoAndo) move code
   geometry_msgs::msg::TwistStamped twist;
   twist.header.stamp = imu_msg_ptr_->header.stamp;
@@ -110,7 +105,7 @@ void GyroOdometer::callbackImu(const sensor_msgs::msg::Imu::ConstSharedPtr imu_m
   twist.twist.angular.x = transformed_angular_velocity.vector.x;
   twist.twist.angular.y = transformed_angular_velocity.vector.y;
   twist.twist.angular.z = transformed_angular_velocity.vector.z;
-  twist_pub_->publish(twist);
+  twist_raw_pub_->publish(twist);
 
   geometry_msgs::msg::TwistWithCovarianceStamped twist_with_covariance;
   twist_with_covariance.header.stamp = imu_msg_ptr_->header.stamp;
@@ -130,6 +125,21 @@ void GyroOdometer::callbackImu(const sensor_msgs::msg::Imu::ConstSharedPtr imu_m
   twist_with_covariance.twist.covariance[28] = imu_msg_ptr_->angular_velocity_covariance[4];
   twist_with_covariance.twist.covariance[35] = imu_msg_ptr_->angular_velocity_covariance[8];
 
+  twist_with_covariance_raw_pub_->publish(twist_with_covariance);
+
+  // clear imu yaw bias if vehicle is stopped
+  if (
+    std::fabs(transformed_angular_velocity.vector.z) < 0.01 &&
+    std::fabs(twist_with_cov_msg_ptr_->twist.twist.linear.x) < 0.01) {
+    twist.twist.angular.x = 0.0;
+    twist.twist.angular.y = 0.0;
+    twist.twist.angular.z = 0.0;
+    twist_with_covariance.twist.twist.angular.x = 0.0;
+    twist_with_covariance.twist.twist.angular.y = 0.0;
+    twist_with_covariance.twist.twist.angular.z = 0.0;
+  }
+
+  twist_pub_->publish(twist);
   twist_with_covariance_pub_->publish(twist_with_covariance);
 }
 

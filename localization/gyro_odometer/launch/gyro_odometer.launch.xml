@@ -3,6 +3,9 @@
 
   <arg name="input_imu_topic" default="/sensing/imu/imu_data" description="input imu topic name"/>
 
+  <arg name="output_twist_raw_topic" default="gyro_twist_raw" description="output raw twist topic name"/>
+  <arg name="output_twist_with_covariance_raw_topic" default="gyro_twist_with_covariance_raw" description="output raw twist with covariance topic name"/>
+
   <arg name="output_twist_topic" default="gyro_twist" description="output twist topic name"/>
   <arg name="output_twist_with_covariance_topic" default="gyro_twist_with_covariance" description="output twist with covariance topic name"/>
 
@@ -13,6 +16,9 @@
     <remap from="vehicle/twist_with_covariance" to="$(var input_vehicle_twist_with_covariance_topic)"/>
 
     <remap from="imu" to="$(var input_imu_topic)"/>
+
+    <remap from="twist_raw" to="$(var output_twist_raw_topic)"/>
+    <remap from="twist_with_covariance_raw" to="$(var output_twist_with_covariance_raw_topic)"/>
 
     <remap from="twist" to="$(var output_twist_topic)"/>
     <remap from="twist_with_covariance" to="$(var output_twist_with_covariance_topic)"/>
