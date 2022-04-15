@@ -49,6 +49,7 @@ NormalVehicleTracker::NormalVehicleTracker(
   float r_stddev_x = 1.0;                                     // object coordinate [m]
   float r_stddev_y = 0.3;                                     // object coordinate [m]
   float r_stddev_yaw = tier4_autoware_utils::deg2rad(30);     // map coordinate [rad]
+  float r_stddev_vx = 1.0;                                    // object coordinate [m/s]
   float p0_stddev_x = 1.0;                                    // object coordinate [m/s]
   float p0_stddev_y = 0.3;                                    // object coordinate [m/s]
   float p0_stddev_yaw = tier4_autoware_utils::deg2rad(30);    // map coordinate [rad]
@@ -62,6 +63,7 @@ NormalVehicleTracker::NormalVehicleTracker(
   ekf_params_.r_cov_x = std::pow(r_stddev_x, 2.0);
   ekf_params_.r_cov_y = std::pow(r_stddev_y, 2.0);
   ekf_params_.r_cov_yaw = std::pow(r_stddev_yaw, 2.0);
+  ekf_params_.r_cov_vx = std::pow(r_stddev_vx, 2.0);
   ekf_params_.p0_cov_x = std::pow(p0_stddev_x, 2.0);
   ekf_params_.p0_cov_y = std::pow(p0_stddev_y, 2.0);
   ekf_params_.p0_cov_yaw = std::pow(p0_stddev_yaw, 2.0);
@@ -230,7 +232,8 @@ bool NormalVehicleTracker::measureWithPose(
     r_cov_y = ekf_params_.r_cov_y;
   }
 
-  constexpr int dim_y = 3;  // pos x, pos y, yaw, depending on Pose output
+  const int dim_y =
+    object.kinematics.has_twist ? 4 : 3;  // pos x, pos y, yaw, vx depending on Pose output
   double measurement_yaw = tier4_autoware_utils::normalizeRadian(
     tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation));
   {
@@ -245,19 +248,19 @@ bool NormalVehicleTracker::measureWithPose(
     }
   }
 
-  /* Set measurement matrix */
+  /* Set measurement matrix and noise covariance*/
   Eigen::MatrixXd Y(dim_y, 1);
-  Y << object.kinematics.pose_with_covariance.pose.position.x,
-    object.kinematics.pose_with_covariance.pose.position.y, measurement_yaw;
-
-  /* Set measurement matrix */
   Eigen::MatrixXd C = Eigen::MatrixXd::Zero(dim_y, ekf_params_.dim_x);
+  Eigen::MatrixXd R = Eigen::MatrixXd::Zero(dim_y, dim_y);
+
+  Y(IDX::X, 0) = object.kinematics.pose_with_covariance.pose.position.x;
+  Y(IDX::Y, 0) = object.kinematics.pose_with_covariance.pose.position.y;
+  Y(IDX::YAW, 0) = measurement_yaw;
   C(0, IDX::X) = 1.0;    // for pos x
   C(1, IDX::Y) = 1.0;    // for pos y
   C(2, IDX::YAW) = 1.0;  // for yaw
 
   /* Set measurement noise covariance */
-  Eigen::MatrixXd R = Eigen::MatrixXd::Zero(dim_y, dim_y);
   if (
     !ekf_params_.use_measurement_covariance ||
     object.kinematics.pose_with_covariance.covariance[utils::MSG_COV_IDX::X_X] == 0.0 ||
@@ -282,6 +285,21 @@ bool NormalVehicleTracker::measureWithPose(
     R(2, 1) = object.kinematics.pose_with_covariance.covariance[utils::MSG_COV_IDX::YAW_Y];
     R(2, 2) = object.kinematics.pose_with_covariance.covariance[utils::MSG_COV_IDX::YAW_YAW];
   }
+
+  if (object.kinematics.has_twist) {
+    Y(IDX::VX, 0) = object.kinematics.twist_with_covariance.twist.linear.x;
+    C(3, IDX::VX) = 1.0;  // for vx
+
+    if (
+      !ekf_params_.use_measurement_covariance ||
+      object.kinematics.twist_with_covariance.covariance[utils::MSG_COV_IDX::X_X] == 0.0) {
+      R(3, 3) = ekf_params_.r_cov_vx;  // vx -vx
+    } else {
+      R(3, 3) = object.kinematics.twist_with_covariance.covariance[utils::MSG_COV_IDX::X_X];
+    }
+  }
+
+  // update
   if (!ekf_.update(Y, C, R)) {
     RCLCPP_WARN(logger_, "Cannot update");
   }

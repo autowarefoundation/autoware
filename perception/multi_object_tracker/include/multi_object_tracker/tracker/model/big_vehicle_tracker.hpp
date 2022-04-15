@@ -54,6 +54,7 @@ private:
     float r_cov_x;
     float r_cov_y;
     float r_cov_yaw;
+    float r_cov_vx;
     float p0_cov_x;
     float p0_cov_y;
     float p0_cov_yaw;
