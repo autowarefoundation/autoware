@@ -21,6 +21,7 @@
 #include <grid_map_ros/GridMapRosConverter.hpp>
 #include <opencv2/opencv.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
+#include <tier4_autoware_utils/math/normalization.hpp>
 #include <utilization/boost_geometry_helper.hpp>
 #include <utilization/util.hpp>
 
