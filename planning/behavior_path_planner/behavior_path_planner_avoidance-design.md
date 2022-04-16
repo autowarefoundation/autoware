@@ -438,14 +438,6 @@ TODO
 
 ## Future extensions / Unimplemented parts
 
-- **Design of the limit distance of the avoidance width**
-
-  - Currently, the avoidance width limit is given as a fixed value as a parameter for both left and right. Therefore, even if there is a wall, this module generates an avoidance path towards the wall. It is needed to calculate the area that the vehicle can move and generate an avoidance path within the area.
-
-- **Dynamic calculation of avoidance width**
-
-  - The length of the avoidance shift needs to be adjusted according to the situation. For example, the length of the margin between the ego and the target object can be large if the another lane is clear and safe. In another case, it may be small if there are other vehicles in the oncoming lane. The ability to set such an appropriate avoidance margin has not yet been implemented, and currently the largest margin is always used for the avoidance.
-
 - **Planning on the intersection**
   - If it is known that the ego vehicle is going to stop in the middle of avoidance execution (for example, at a red traffic light), sometimes the avoidance should not be executed until the vehicle is ready to move. This is because it is impossible to predict how the environment will change during the stop.　 This is especially important at intersections.
 
