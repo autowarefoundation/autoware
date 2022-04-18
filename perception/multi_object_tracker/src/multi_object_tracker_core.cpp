@@ -279,25 +279,26 @@ std::shared_ptr<Tracker> MultiObjectTracker::createNewTracker(
   const rclcpp::Time & time) const
 {
   const std::uint8_t label = utils::getHighestProbLabel(object.classification);
-  const auto tracker = tracker_map_.at(label);
+  if (tracker_map_.count(label) != 0) {
+    const auto tracker = tracker_map_.at(label);
 
-  if (tracker == "bicycle_tracker") {
-    return std::make_shared<BicycleTracker>(time, object);
-  } else if (tracker == "big_vehicle_tracker") {
-    return std::make_shared<BigVehicleTracker>(time, object);
-  } else if (tracker == "multi_vehicle_tracker") {
-    return std::make_shared<MultipleVehicleTracker>(time, object);
-  } else if (tracker == "normal_vehicle_tracker") {
-    return std::make_shared<NormalVehicleTracker>(time, object);
-  } else if (tracker == "pass_through_tracker") {
-    return std::make_shared<PassThroughTracker>(time, object);
-  } else if (tracker == "pedestrian_and_bicycle_tracker") {
-    return std::make_shared<PedestrianAndBicycleTracker>(time, object);
-  } else if (tracker == "pedestrian_tracker") {
-    return std::make_shared<PedestrianTracker>(time, object);
-  } else {
-    return std::make_shared<UnknownTracker>(time, object);
+    if (tracker == "bicycle_tracker") {
+      return std::make_shared<BicycleTracker>(time, object);
+    } else if (tracker == "big_vehicle_tracker") {
+      return std::make_shared<BigVehicleTracker>(time, object);
+    } else if (tracker == "multi_vehicle_tracker") {
+      return std::make_shared<MultipleVehicleTracker>(time, object);
+    } else if (tracker == "normal_vehicle_tracker") {
+      return std::make_shared<NormalVehicleTracker>(time, object);
+    } else if (tracker == "pass_through_tracker") {
+      return std::make_shared<PassThroughTracker>(time, object);
+    } else if (tracker == "pedestrian_and_bicycle_tracker") {
+      return std::make_shared<PedestrianAndBicycleTracker>(time, object);
+    } else if (tracker == "pedestrian_tracker") {
+      return std::make_shared<PedestrianTracker>(time, object);
+    }
   }
+  return std::make_shared<UnknownTracker>(time, object);
 }
 
 void MultiObjectTracker::onTimer()
