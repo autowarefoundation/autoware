@@ -132,8 +132,8 @@ public:
     const Eigen::MatrixXd & P, const Eigen::MatrixXd & A, const std::vector<float64_t> & q,
     const std::vector<float64_t> & l, const std::vector<float64_t> & u);
   int64_t initializeProblem(
-    CSC_Matrix P, CSC_Matrix A, const std::vector<float64_t> & q,
-    const std::vector<float64_t> & l, const std::vector<float64_t> & u);
+    CSC_Matrix P, CSC_Matrix A, const std::vector<float64_t> & q, const std::vector<float64_t> & l,
+    const std::vector<float64_t> & u);
 
   // Updates problem parameters while keeping solution in memory.
   //

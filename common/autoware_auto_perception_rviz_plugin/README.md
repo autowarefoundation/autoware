@@ -25,7 +25,7 @@ Example:
 
 #### Visualization Result
 
-![](./images/detected-object-visualization-description.jpg)
+![detected-object-visualization-description](./images/detected-object-visualization-description.jpg)
 
 ### TrackedObjects
 
@@ -39,7 +39,7 @@ Example:
 
 Overwrite tracking results with detection results.
 
-![](./images/tracked-object-visualization-description.jpg)
+![tracked-object-visualization-description](./images/tracked-object-visualization-description.jpg)
 
 ### PredictedObjects
 
@@ -53,10 +53,10 @@ Overwrite tracking results with detection results.
 
 Overwrite prediction results with tracking results.
 
-![](./images/predicted-object-visualization-description.jpg)
+![predicted-object-visualization-description](./images/predicted-object-visualization-description.jpg)
 
 ## References/External links
 
-[1] https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/tree/master/src/tools/visualization/autoware_rviz_plugins
+[1] <https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/tree/master/src/tools/visualization/autoware_rviz_plugins>
 
 ## Future extensions / Unimplemented parts

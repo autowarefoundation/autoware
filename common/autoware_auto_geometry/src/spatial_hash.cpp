@@ -15,10 +15,11 @@
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include <geometry/spatial_hash.hpp>
+
 #include <geometry_msgs/msg/point32.hpp>
-//lint -e537 NOLINT repeated include file due to cpplint rule
+// lint -e537 NOLINT repeated include file due to cpplint rule
 #include <algorithm>
-//lint -e537 NOLINT repeated include file due to cpplint rule
+// lint -e537 NOLINT repeated include file due to cpplint rule
 #include <limits>
 
 namespace autoware
@@ -31,14 +32,9 @@ namespace spatial_hash
 {
 ////////////////////////////////////////////////////////////////////////////////
 Config2d::Config2d(
-  const float32_t min_x,
-  const float32_t max_x,
-  const float32_t min_y,
-  const float32_t max_y,
-  const float32_t radius,
-  const Index capacity)
-: Config(min_x, max_x, min_y, max_y, {}, std::numeric_limits<float32_t>::min(),
-    radius, capacity)
+  const float32_t min_x, const float32_t max_x, const float32_t min_y, const float32_t max_y,
+  const float32_t radius, const Index capacity)
+: Config(min_x, max_x, min_y, max_y, {}, std::numeric_limits<float32_t>::min(), radius, capacity)
 {
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -49,9 +45,7 @@ Index Config2d::bin_(const float32_t x, const float32_t y, const float32_t z) co
 }
 ////////////////////////////////////////////////////////////////////////////////
 bool Config2d::valid(
-  const details::Index3 & ref,
-  const details::Index3 & query,
-  const float ref_distance2) const
+  const details::Index3 & ref, const details::Index3 & query, const float ref_distance2) const
 {
   const float dx = idx_distance(ref.x, query.x);
   const float dy = idx_distance(ref.y, query.y);
@@ -65,20 +59,11 @@ details::Index3 Config2d::index3_(const float32_t x, const float32_t y, const fl
   return {x_index(x), y_index(y), Index{}};  // zero initialization
 }
 ////////////////////////////////////////////////////////////////////////////////
-Index Config2d::index_(const details::Index3 & idx) const
-{
-  return bin_impl(idx.x, idx.y);
-}
+Index Config2d::index_(const details::Index3 & idx) const { return bin_impl(idx.x, idx.y); }
 ////////////////////////////////////////////////////////////////////////////////
 Config3d::Config3d(
-  const float32_t min_x,
-  const float32_t max_x,
-  const float32_t min_y,
-  const float32_t max_y,
-  const float32_t min_z,
-  const float32_t max_z,
-  const float32_t radius,
-  const Index capacity)
+  const float32_t min_x, const float32_t max_x, const float32_t min_y, const float32_t max_y,
+  const float32_t min_z, const float32_t max_z, const float32_t radius, const Index capacity)
 : Config(min_x, max_x, min_y, max_y, min_z, max_z, radius, capacity)
 {
 }
@@ -89,9 +74,7 @@ Index Config3d::bin_(const float32_t x, const float32_t y, const float32_t z) co
 }
 ////////////////////////////////////////////////////////////////////////////////
 bool Config3d::valid(
-  const details::Index3 & ref,
-  const details::Index3 & query,
-  const float ref_distance2) const
+  const details::Index3 & ref, const details::Index3 & query, const float ref_distance2) const
 {
   const float dx = idx_distance(ref.x, query.x);
   const float dy = idx_distance(ref.y, query.y);
@@ -105,10 +88,7 @@ details::Index3 Config3d::index3_(const float32_t x, const float32_t y, const fl
   return {x_index(x), y_index(y), z_index(z)};  // zero initialization
 }
 ////////////////////////////////////////////////////////////////////////////////
-Index Config3d::index_(const details::Index3 & idx) const
-{
-  return bin_impl(idx.x, idx.y, idx.z);
-}
+Index Config3d::index_(const details::Index3 & idx) const { return bin_impl(idx.x, idx.y, idx.z); }
 ////////////////////////////////////////////////////////////////////////////////
 template class SpatialHash<geometry_msgs::msg::Point32, Config2d>;
 template class SpatialHash<geometry_msgs::msg::Point32, Config3d>;

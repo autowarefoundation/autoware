@@ -15,10 +15,10 @@
 #ifndef TRAJECTORY_FOLLOWER__DEBUG_VALUES_HPP_
 #define TRAJECTORY_FOLLOWER__DEBUG_VALUES_HPP_
 
-#include <array>
-
 #include "common/types.hpp"
 #include "trajectory_follower/visibility_control.hpp"
+
+#include <array>
 
 namespace autoware
 {
@@ -34,8 +34,7 @@ class TRAJECTORY_FOLLOWER_PUBLIC DebugValues
 {
 public:
   /// Types of debug values
-  enum class TYPE
-  {
+  enum class TYPE {
     DT = 0,
     CURRENT_VEL = 1,
     TARGET_VEL = 2,
@@ -73,12 +72,12 @@ public:
    * @param [in] type the TYPE enum for which to get the index
    * @return index of the type
    */
-  size_t getValuesIdx(const TYPE type) const {return static_cast<size_t>(type);}
+  size_t getValuesIdx(const TYPE type) const { return static_cast<size_t>(type); }
   /**
    * @brief get all the debug values as an std::array
    * @return array of all debug values
    */
-  std::array<float64_t, static_cast<size_t>(TYPE::SIZE)> getValues() const {return m_values;}
+  std::array<float64_t, static_cast<size_t>(TYPE::SIZE)> getValues() const { return m_values; }
   /**
    * @brief set the given type to the given value
    * @param [in] type TYPE of the value
@@ -93,7 +92,7 @@ public:
    * @param [in] type index of the type
    * @param [in] value value to set
    */
-  void setValues(const size_t type, const float64_t value) {m_values.at(type) = value;}
+  void setValues(const size_t type, const float64_t value) { m_values.at(type) = value; }
 
 private:
   std::array<float64_t, static_cast<size_t>(TYPE::SIZE)> m_values;

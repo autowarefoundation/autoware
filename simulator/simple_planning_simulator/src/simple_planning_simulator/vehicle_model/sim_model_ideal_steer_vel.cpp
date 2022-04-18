@@ -14,21 +14,22 @@
 
 #include "simple_planning_simulator/vehicle_model/sim_model_ideal_steer_vel.hpp"
 
-
 SimModelIdealSteerVel::SimModelIdealSteerVel(float64_t wheelbase)
-: SimModelInterface(3 /* dim x */, 2 /* dim u */), wheelbase_(wheelbase) {}
+: SimModelInterface(3 /* dim x */, 2 /* dim u */), wheelbase_(wheelbase)
+{
+}
 
-float64_t SimModelIdealSteerVel::getX() {return state_(IDX::X);}
-float64_t SimModelIdealSteerVel::getY() {return state_(IDX::Y);}
-float64_t SimModelIdealSteerVel::getYaw() {return state_(IDX::YAW);}
-float64_t SimModelIdealSteerVel::getVx() {return input_(IDX_U::VX_DES);}
-float64_t SimModelIdealSteerVel::getVy() {return 0.0;}
-float64_t SimModelIdealSteerVel::getAx() {return current_ax_;}
+float64_t SimModelIdealSteerVel::getX() { return state_(IDX::X); }
+float64_t SimModelIdealSteerVel::getY() { return state_(IDX::Y); }
+float64_t SimModelIdealSteerVel::getYaw() { return state_(IDX::YAW); }
+float64_t SimModelIdealSteerVel::getVx() { return input_(IDX_U::VX_DES); }
+float64_t SimModelIdealSteerVel::getVy() { return 0.0; }
+float64_t SimModelIdealSteerVel::getAx() { return current_ax_; }
 float64_t SimModelIdealSteerVel::getWz()
 {
   return input_(IDX_U::VX_DES) * std::tan(input_(IDX_U::STEER_DES)) / wheelbase_;
 }
-float64_t SimModelIdealSteerVel::getSteer() {return input_(IDX_U::STEER_DES);}
+float64_t SimModelIdealSteerVel::getSteer() { return input_(IDX_U::STEER_DES); }
 void SimModelIdealSteerVel::update(const float64_t & dt)
 {
   updateRungeKutta(dt, input_);

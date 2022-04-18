@@ -19,12 +19,12 @@
 #ifndef COMMON__TYPES_HPP_
 #define COMMON__TYPES_HPP_
 
-#include <cstdint>
-#include <vector>
-#include <limits>
-
-#include "helper_functions/float_comparisons.hpp"
 #include "common/visibility_control.hpp"
+#include "helper_functions/float_comparisons.hpp"
+
+#include <cstdint>
+#include <limits>
+#include <vector>
 
 namespace autoware
 {
@@ -61,16 +61,12 @@ struct COMMON_PUBLIC PointXYZIF
   float32_t intensity{0};
   uint16_t id{0};
   static constexpr uint16_t END_OF_SCAN_ID = 65535u;
-  friend bool operator==(
-    const PointXYZIF & p1,
-    const PointXYZIF & p2) noexcept
+  friend bool operator==(const PointXYZIF & p1, const PointXYZIF & p2) noexcept
   {
     using autoware::common::helper_functions::comparisons::rel_eq;
     const auto epsilon = std::numeric_limits<float32_t>::epsilon();
-    return rel_eq(p1.x, p2.x, epsilon) &&
-           rel_eq(p1.y, p2.y, epsilon) &&
-           rel_eq(p1.z, p2.z, epsilon) &&
-           rel_eq(p1.intensity, p2.intensity, epsilon) &&
+    return rel_eq(p1.x, p2.x, epsilon) && rel_eq(p1.y, p2.y, epsilon) &&
+           rel_eq(p1.z, p2.z, epsilon) && rel_eq(p1.intensity, p2.intensity, epsilon) &&
            (p1.id == p2.id);
   }
 };
@@ -82,16 +78,12 @@ struct COMMON_PUBLIC PointXYZF
   float32_t z{0};
   uint16_t id{0};
   static constexpr uint16_t END_OF_SCAN_ID = 65535u;
-  friend bool operator==(
-    const PointXYZF & p1,
-    const PointXYZF & p2) noexcept
+  friend bool operator==(const PointXYZF & p1, const PointXYZF & p2) noexcept
   {
     using autoware::common::helper_functions::comparisons::rel_eq;
     const auto epsilon = std::numeric_limits<float32_t>::epsilon();
-    return rel_eq(p1.x, p2.x, epsilon) &&
-           rel_eq(p1.y, p2.y, epsilon) &&
-           rel_eq(p1.z, p2.z, epsilon) &&
-           (p1.id == p2.id);
+    return rel_eq(p1.x, p2.x, epsilon) && rel_eq(p1.y, p2.y, epsilon) &&
+           rel_eq(p1.z, p2.z, epsilon) && (p1.id == p2.id);
   }
 };
 
@@ -101,22 +93,19 @@ struct COMMON_PUBLIC PointXYZI
   float32_t y{0.0F};
   float32_t z{0.0F};
   float32_t intensity{0.0F};
-  friend bool operator==(
-    const PointXYZI & p1,
-    const PointXYZI & p2) noexcept
+  friend bool operator==(const PointXYZI & p1, const PointXYZI & p2) noexcept
   {
-    return
-      helper_functions::comparisons::rel_eq(
-      p1.x, p2.x, std::numeric_limits<float32_t>::epsilon()) &&
+    return helper_functions::comparisons::rel_eq(
+             p1.x, p2.x, std::numeric_limits<float32_t>::epsilon()) &&
 
-      helper_functions::comparisons::rel_eq(
-      p1.y, p2.y, std::numeric_limits<float32_t>::epsilon()) &&
+           helper_functions::comparisons::rel_eq(
+             p1.y, p2.y, std::numeric_limits<float32_t>::epsilon()) &&
 
-      helper_functions::comparisons::rel_eq(
-      p1.z, p2.z, std::numeric_limits<float32_t>::epsilon()) &&
+           helper_functions::comparisons::rel_eq(
+             p1.z, p2.z, std::numeric_limits<float32_t>::epsilon()) &&
 
-      helper_functions::comparisons::rel_eq(
-      p1.intensity, p2.intensity, std::numeric_limits<float32_t>::epsilon());
+           helper_functions::comparisons::rel_eq(
+             p1.intensity, p2.intensity, std::numeric_limits<float32_t>::epsilon());
   }
 };
 
@@ -127,7 +116,7 @@ static constexpr uint16_t POINT_BLOCK_CAPACITY = 512U;
 
 // TODO(yunus.caliskan): switch to std::void_t when C++17 is available
 /// \brief `std::void_t<> implementation
-template<typename ... Ts>
+template <typename... Ts>
 using void_t = void;
 }  // namespace types
 }  // namespace common

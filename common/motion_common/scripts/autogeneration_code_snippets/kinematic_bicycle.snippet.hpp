@@ -27,7 +27,7 @@
 
 DifferentialState x, y, yaw;  // pose
 DifferentialState u;
-Control ax;  // acceleration
+Control ax;     // acceleration
 Control delta;  // wheel angle
 
 // Vehicle parameters
@@ -47,4 +47,7 @@ f << dot(x) == u * cos(yaw + beta);
 f << dot(y) == u * sin(yaw + beta);
 f << dot(yaw) == (u * sin(beta)) / L_r;
 f << dot(u) == ax;
+
+// clang-format off
 #endif  // COMMON__MOTION_COMMON__SCRIPTS__AUTOGENERATION_CODE_SNIPPETS__KINEMATIC_BICYCLE_SNIPPET_HPP_  // NOLINT
+// clang-format on

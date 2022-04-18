@@ -14,21 +14,24 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#include <gtest/gtest.h>
-#include <geometry_msgs/msg/point32.hpp>
-#include <list>
-#include <vector>
-#include <utility>
-#include <iterator>
 #include "geometry/convex_hull.hpp"
 #include "geometry/hull_pockets.hpp"
 
-using autoware::common::types::float32_t;
-using autoware::common::types::float64_t;
+#include <geometry_msgs/msg/point32.hpp>
+
+#include <gtest/gtest.h>
+
+#include <iterator>
+#include <list>
+#include <utility>
+#include <vector>
+
 using autoware::common::geometry::point_adapter::x_;
 using autoware::common::geometry::point_adapter::y_;
+using autoware::common::types::float32_t;
+using autoware::common::types::float64_t;
 
-template<typename PointT>
+template <typename PointT>
 class TypedHullPocketsTest : public ::testing::Test
 {
 protected:
@@ -48,38 +51,29 @@ TYPED_TEST_SUITE(TypedHullPocketsTest, PointTypes, );
 /// NOTE: This is the older version due to 1.8.0 of GTest. v1.8.1 uses TYPED_TEST_SUITE
 
 // Inner test function, shared among all the tests
-template<typename Iter>
+template <typename Iter>
 typename std::vector<std::vector<typename std::iterator_traits<Iter>::value_type>>
-compute_hull_and_pockets(
-  const Iter polygon_start,
-  const Iter polygon_end)
+compute_hull_and_pockets(const Iter polygon_start, const Iter polygon_end)
 {
-  auto convex_hull_list = std::list<typename std::iterator_traits<Iter>::value_type>{
-    polygon_start, polygon_end};
-  const auto cvx_hull_end =
-    autoware::common::geometry::convex_hull(convex_hull_list);
+  auto convex_hull_list =
+    std::list<typename std::iterator_traits<Iter>::value_type>{polygon_start, polygon_end};
+  const auto cvx_hull_end = autoware::common::geometry::convex_hull(convex_hull_list);
 
   const typename decltype(convex_hull_list)::const_iterator list_beginning =
     convex_hull_list.begin();
-  const auto pockets =
-    autoware::common::geometry::hull_pockets(
-    polygon_start, polygon_end,
-    list_beginning, cvx_hull_end);
+  const auto pockets = autoware::common::geometry::hull_pockets(
+    polygon_start, polygon_end, list_beginning, cvx_hull_end);
 
   return pockets;
 }
 
-
 // Test for a triangle - any triangle should really not result in any pockets.
 TYPED_TEST(TypedHullPocketsTest, Triangle)
 {
-  const auto polygon = std::vector<decltype(this->make(0, 0, 0))> {
-    this->make(0, 0, 0),
-    this->make(2, 0, 0),
-    this->make(1, 1, 0)
-  };
+  const auto polygon = std::vector<decltype(this->make(0, 0, 0))>{
+    this->make(0, 0, 0), this->make(2, 0, 0), this->make(1, 1, 0)};
 
-  const auto pockets = compute_hull_and_pockets(polygon.begin(), polygon.end() );
+  const auto pockets = compute_hull_and_pockets(polygon.begin(), polygon.end());
   ASSERT_EQ(pockets.size(), 0u);
 }
 
@@ -95,17 +89,12 @@ TYPED_TEST(TypedHullPocketsTest, Triangle)
 // This should not result in any pockets.
 TYPED_TEST(TypedHullPocketsTest, Box)
 {
-  const auto polygon = std::vector<decltype(this->make(0, 0, 0))> {
-    this->make(0, 0, 0),
-    this->make(2, 0, 0),
-    this->make(2, 1, 0),
-    this->make(0, 1, 0)
-  };
+  const auto polygon = std::vector<decltype(this->make(0, 0, 0))>{
+    this->make(0, 0, 0), this->make(2, 0, 0), this->make(2, 1, 0), this->make(0, 1, 0)};
 
-  const auto pockets = compute_hull_and_pockets(polygon.begin(), polygon.end() );
+  const auto pockets = compute_hull_and_pockets(polygon.begin(), polygon.end());
   ASSERT_EQ(pockets.size(), 0u);
 }
-
 
 // Test for the use case:
 //    +-----+            +-----+
@@ -123,18 +112,12 @@ TYPED_TEST(TypedHullPocketsTest, Box)
 // This should come up with a single box on the top left.
 TYPED_TEST(TypedHullPocketsTest, Ushape)
 {
-  const auto polygon = std::vector<decltype(this->make(0, 0, 0))> {
-    this->make(0, 0, 0),
-    this->make(5, 0, 0),
-    this->make(5, 4.5, 0),
-    this->make(4, 5, 0),
-    this->make(4, 2, 0),
-    this->make(2, 2, 0),
-    this->make(2, 5, 0),
-    this->make(0, 4.5, 0),
+  const auto polygon = std::vector<decltype(this->make(0, 0, 0))>{
+    this->make(0, 0, 0), this->make(5, 0, 0), this->make(5, 4.5, 0), this->make(4, 5, 0),
+    this->make(4, 2, 0), this->make(2, 2, 0), this->make(2, 5, 0),   this->make(0, 4.5, 0),
   };
 
-  const auto pockets = compute_hull_and_pockets(polygon.begin(), polygon.end() );
+  const auto pockets = compute_hull_and_pockets(polygon.begin(), polygon.end());
 
   ASSERT_EQ(pockets.size(), 1u);
   ASSERT_EQ(pockets[0].size(), 4u);
@@ -159,18 +142,12 @@ TYPED_TEST(TypedHullPocketsTest, Ushape)
 // top right.
 TYPED_TEST(TypedHullPocketsTest, TypicalGap)
 {
-  const auto polygon = std::vector<decltype(this->make(0, 0, 0))> {
-    this->make(0, 0, 0),
-    this->make(10, 0, 0),
-    this->make(10, 2, 0),
-    this->make(8, 2, 0),
-    this->make(8, 4, 0),
-    this->make(6, 4, 0),
-    this->make(6, 2, 0),
-    this->make(0, 2, 0),
+  const auto polygon = std::vector<decltype(this->make(0, 0, 0))>{
+    this->make(0, 0, 0), this->make(10, 0, 0), this->make(10, 2, 0), this->make(8, 2, 0),
+    this->make(8, 4, 0), this->make(6, 4, 0),  this->make(6, 2, 0),  this->make(0, 2, 0),
   };
 
-  const auto pockets = compute_hull_and_pockets(polygon.begin(), polygon.end() );
+  const auto pockets = compute_hull_and_pockets(polygon.begin(), polygon.end());
 
   ASSERT_EQ(pockets.size(), 2u);
   ASSERT_EQ(pockets[0].size(), 3u);
@@ -192,15 +169,12 @@ TYPED_TEST(TypedHullPocketsTest, TypicalGap)
 // the segment of the final to the first point.
 TYPED_TEST(TypedHullPocketsTest, EndsInPocket)
 {
-  const auto polygon = std::vector<decltype(this->make(0, 0, 0))> {
-    this->make(0, 0, 0),
-    this->make(2, 0, 0),
-    this->make(2, 2, 0),
-    this->make(0, 2, 0),
-    this->make(0.1, 1, 0),
+  const auto polygon = std::vector<decltype(this->make(0, 0, 0))>{
+    this->make(0, 0, 0), this->make(2, 0, 0),   this->make(2, 2, 0),
+    this->make(0, 2, 0), this->make(0.1, 1, 0),
   };
 
-  const auto pockets = compute_hull_and_pockets(polygon.begin(), polygon.end() );
+  const auto pockets = compute_hull_and_pockets(polygon.begin(), polygon.end());
 
   ASSERT_EQ(pockets.size(), 1u);
   ASSERT_EQ(pockets[0].size(), 3u);

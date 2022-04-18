@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
-#include <gtest/gtest.h>
-
 #include <common/types.hpp>
 #include <helper_functions/mahalanobis_distance.hpp>
+
+#include <gtest/gtest.h>
 
 TEST(MahalanobisDistanceTest, BasicTest)
 {
@@ -31,11 +31,10 @@ TEST(MahalanobisDistanceTest, BasicTest)
   // equidistant from mean but on two different axes will have vastly different
   // mahalanobis distance values
   EXPECT_FLOAT_EQ(
-    autoware::common::helper_functions::calculate_mahalanobis_distance(
-      sample, mean, cov), 1.666666666F);
+    autoware::common::helper_functions::calculate_mahalanobis_distance(sample, mean, cov),
+    1.666666666F);
 
   sample << 3.F, 2.F;
   EXPECT_FLOAT_EQ(
-    autoware::common::helper_functions::calculate_mahalanobis_distance(
-      sample, mean, cov), 10.0F);
+    autoware::common::helper_functions::calculate_mahalanobis_distance(sample, mean, cov), 10.0F);
 }

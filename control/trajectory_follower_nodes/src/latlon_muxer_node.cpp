@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "trajectory_follower_nodes/latlon_muxer_node.hpp"
+
 #include <functional>
 #include <memory>
-
-#include "trajectory_follower_nodes/latlon_muxer_node.hpp"
 
 namespace autoware
 {
@@ -29,16 +29,13 @@ namespace trajectory_follower_nodes
 LatLonMuxer::LatLonMuxer(const rclcpp::NodeOptions & node_options)
 : rclcpp::Node("latlon_muxer", node_options)
 {
-  m_control_cmd_pub =
-    create_publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>(
-    "~/output/control_cmd",
-    rclcpp::QoS{1}.transient_local());
+  m_control_cmd_pub = create_publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>(
+    "~/output/control_cmd", rclcpp::QoS{1}.transient_local());
   m_lat_control_cmd_sub =
     create_subscription<autoware_auto_control_msgs::msg::AckermannLateralCommand>(
-    "~/input/lateral/control_cmd", rclcpp::QoS{1},
-    std::bind(&LatLonMuxer::latCtrlCmdCallback, this, std::placeholders::_1));
-  m_lon_control_cmd_sub =
-    create_subscription<autoware_auto_control_msgs::msg::LongitudinalCommand>(
+      "~/input/lateral/control_cmd", rclcpp::QoS{1},
+      std::bind(&LatLonMuxer::latCtrlCmdCallback, this, std::placeholders::_1));
+  m_lon_control_cmd_sub = create_subscription<autoware_auto_control_msgs::msg::LongitudinalCommand>(
     "~/input/longitudinal/control_cmd", rclcpp::QoS{1},
     std::bind(&LatLonMuxer::lonCtrlCmdCallback, this, std::placeholders::_1));
   m_timeout_thr_sec = declare_parameter<double>("timeout_thr_sec");
@@ -49,15 +46,13 @@ bool LatLonMuxer::checkTimeout()
   const auto now = this->now();
   if ((now - m_lat_cmd->stamp).seconds() > m_timeout_thr_sec) {
     RCLCPP_ERROR_THROTTLE(
-      get_logger(),
-      *get_clock(), 1000 /*ms*/,
+      get_logger(), *get_clock(), 1000 /*ms*/,
       "Lateral control command too old, muxed command will not be published.");
     return false;
   }
   if ((now - m_lon_cmd->stamp).seconds() > m_timeout_thr_sec) {
     RCLCPP_ERROR_THROTTLE(
-      get_logger(),
-      *get_clock(), 1000 /*ms*/,
+      get_logger(), *get_clock(), 1000 /*ms*/,
       "Longitudinal control command too old, muxed command will not be published.");
     return false;
   }

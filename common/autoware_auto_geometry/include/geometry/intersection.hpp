@@ -17,20 +17,20 @@
 #ifndef GEOMETRY__INTERSECTION_HPP_
 #define GEOMETRY__INTERSECTION_HPP_
 
+#include <geometry/common_2d.hpp>
+#include <geometry/convex_hull.hpp>
 
-#include <autoware_auto_vehicle_msgs/msg/vehicle_kinematic_state.hpp>
 #include <autoware_auto_perception_msgs/msg/bounding_box.hpp>
 #include <autoware_auto_planning_msgs/msg/trajectory_point.hpp>
-#include <geometry/convex_hull.hpp>
-#include <geometry/common_2d.hpp>
+#include <autoware_auto_vehicle_msgs/msg/vehicle_kinematic_state.hpp>
 
-#include <limits>
-#include <vector>
-#include <iostream>
-#include <list>
-#include <utility>
-#include <type_traits>
 #include <algorithm>
+#include <iostream>
+#include <limits>
+#include <list>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 namespace autoware
 {
@@ -38,15 +38,15 @@ namespace common
 {
 namespace geometry
 {
-using autoware_auto_planning_msgs::msg::TrajectoryPoint;
-using autoware_auto_perception_msgs::msg::BoundingBox;
-using autoware::common::geometry::convex_hull;
-using autoware::common::geometry::get_normal;
-using autoware::common::geometry::dot_2d;
-using autoware::common::geometry::minus_2d;
-using autoware::common::geometry::times_2d;
-using autoware::common::geometry::norm_2d;
 using autoware::common::geometry::closest_line_point_2d;
+using autoware::common::geometry::convex_hull;
+using autoware::common::geometry::dot_2d;
+using autoware::common::geometry::get_normal;
+using autoware::common::geometry::minus_2d;
+using autoware::common::geometry::norm_2d;
+using autoware::common::geometry::times_2d;
+using autoware_auto_perception_msgs::msg::BoundingBox;
+using autoware_auto_planning_msgs::msg::TrajectoryPoint;
 
 using Point = geometry_msgs::msg::Point32;
 
@@ -62,7 +62,7 @@ using Line = std::pair<Point, Point>;
 /// \param[in] start Start iterator of the list of points
 /// \param[in] end End iterator of the list of points
 /// \return The list of faces
-template<typename Iter>
+template <typename Iter>
 std::vector<Line> get_sorted_face_list(const Iter start, const Iter end)
 {
   // First get a sorted list of points - convex_hull does that by modifying its argument
@@ -84,44 +84,41 @@ std::vector<Line> get_sorted_face_list(const Iter start, const Iter end)
 }
 
 /// \brief Append points of the polygon `internal` that are contained in the polygon `exernal`.
-template<template<typename ...> class Iterable1T, template<typename ...> class Iterable2T,
-  typename PointT>
+template <
+  template <typename...> class Iterable1T, template <typename...> class Iterable2T, typename PointT>
 void append_contained_points(
-  const Iterable1T<PointT> & external,
-  const Iterable2T<PointT> & internal,
+  const Iterable1T<PointT> & external, const Iterable2T<PointT> & internal,
   std::list<PointT> & result)
 {
   std::copy_if(
-    internal.begin(), internal.end(), std::back_inserter(result),
-    [&external](const auto & pt) {
+    internal.begin(), internal.end(), std::back_inserter(result), [&external](const auto & pt) {
       return common::geometry::is_point_inside_polygon_2d(external.begin(), external.end(), pt);
     });
 }
 
 /// \brief Append the intersecting points between two polygons into the output list.
-template<template<typename ...> class Iterable1T, template<typename ...> class Iterable2T,
-  typename PointT>
+template <
+  template <typename...> class Iterable1T, template <typename...> class Iterable2T, typename PointT>
 void append_intersection_points(
-  const Iterable1T<PointT> & polygon1,
-  const Iterable2T<PointT> & polygon2,
+  const Iterable1T<PointT> & polygon1, const Iterable2T<PointT> & polygon2,
   std::list<PointT> & result)
 {
   using FloatT = decltype(point_adapter::x_(std::declval<PointT>()));
   using Interval = common::geometry::Interval<float32_t>;
 
   auto get_edge = [](const auto & list, const auto & iterator) {
-      const auto next_it = std::next(iterator);
-      const auto & next_pt = (next_it != list.end()) ? *next_it : list.front();
-      return std::make_pair(*iterator, next_pt);
-    };
+    const auto next_it = std::next(iterator);
+    const auto & next_pt = (next_it != list.end()) ? *next_it : list.front();
+    return std::make_pair(*iterator, next_pt);
+  };
 
   // Get the max absolute value out of two intervals and a scalar.
   auto compute_eps_scale = [](const auto & i1, const auto & i2, const auto val) {
-      auto get_abs_max = [](const auto & interval) {
-          return std::max(std::fabs(Interval::min(interval)), std::fabs(Interval::max(interval)));
-        };
-      return std::max(std::fabs(val), std::max(get_abs_max(i1), get_abs_max(i2)));
+    auto get_abs_max = [](const auto & interval) {
+      return std::max(std::fabs(Interval::min(interval)), std::fabs(Interval::max(interval)));
     };
+    return std::max(std::fabs(val), std::max(get_abs_max(i1), get_abs_max(i2)));
+  };
 
   // Compare each edge from polygon1 to each edge from polygon2
   for (auto corner1_it = polygon1.begin(); corner1_it != polygon1.end(); ++corner1_it) {
@@ -138,10 +135,9 @@ void append_intersection_points(
     for (auto corner2_it = polygon2.begin(); corner2_it != polygon2.end(); ++corner2_it) {
       try {
         const auto & edge2 = get_edge(polygon2, corner2_it);
-        const auto & intersection =
-          common::geometry::intersection_2d(
-          edge1.first, minus_2d(edge1.second, edge1.first),
-          edge2.first, minus_2d(edge2.second, edge2.first));
+        const auto & intersection = common::geometry::intersection_2d(
+          edge1.first, minus_2d(edge1.second, edge1.first), edge2.first,
+          minus_2d(edge2.second, edge2.first));
 
         Interval edge2_x_interval{
           std::min(point_adapter::x_(edge2.first), point_adapter::x_(edge2.second)),
@@ -156,15 +152,14 @@ void append_intersection_points(
         // while computing the epsilon.
         const auto max_feps_scale = std::max(
           compute_eps_scale(edge1_x_interval, edge2_x_interval, point_adapter::x_(intersection)),
-          compute_eps_scale(edge1_y_interval, edge2_y_interval, point_adapter::y_(intersection))
-        );
+          compute_eps_scale(edge1_y_interval, edge2_y_interval, point_adapter::y_(intersection)));
         const auto feps = max_feps_scale * std::numeric_limits<FloatT>::epsilon();
         // Only accept intersections that lie on both of the line segments (edges)
-        if (Interval::contains(edge1_x_interval, point_adapter::x_(intersection), feps) &&
+        if (
+          Interval::contains(edge1_x_interval, point_adapter::x_(intersection), feps) &&
           Interval::contains(edge2_x_interval, point_adapter::x_(intersection), feps) &&
           Interval::contains(edge1_y_interval, point_adapter::y_(intersection), feps) &&
-          Interval::contains(edge2_y_interval, point_adapter::y_(intersection), feps))
-        {
+          Interval::contains(edge2_y_interval, point_adapter::y_(intersection), feps)) {
           result.push_back(intersection);
         }
       } catch (const std::runtime_error &) {
@@ -174,7 +169,6 @@ void append_intersection_points(
     }
   }
 }
-
 
 }  // namespace details
 
@@ -189,41 +183,38 @@ void append_intersection_points(
 /// \param[in] begin2 Start iterator to first list of point types
 /// \param[in] end2   End iterator to first list of point types
 /// \return true if the boxes collide, false otherwise.
-template<typename Iter>
+template <typename Iter>
 bool intersect(const Iter begin1, const Iter end1, const Iter begin2, const Iter end2)
 {
   // Obtain sorted lists of faces of both boxes, merge them into one big list of faces
   auto faces = details::get_sorted_face_list(begin1, end1);
   const auto faces_2 = details::get_sorted_face_list(begin2, end2);
   faces.reserve(faces.size() + faces_2.size());
-  faces.insert(faces.end(), faces_2.begin(), faces_2.end() );
+  faces.insert(faces.end(), faces_2.begin(), faces_2.end());
 
   // Also look at last line
   for (const auto & face : faces) {
     // Compute normal vector to the face and define a closure to get progress along it
     const auto normal = get_normal(minus_2d(face.second, face.first));
-    auto get_position_along_line = [&normal](auto point)
-      {
-        return dot_2d(normal, minus_2d(point, Point{}) );
-      };
+    auto get_position_along_line = [&normal](auto point) {
+      return dot_2d(normal, minus_2d(point, Point{}));
+    };
 
     // Define a function to get the minimum and maximum projected position of the corners
     // of a given bounding box along the normal line of the face
-    auto get_projected_min_max = [&get_position_along_line, &normal](Iter begin, Iter end)
-      {
-        const auto zero_point = Point{};
-        auto min_corners =
-          get_position_along_line(closest_line_point_2d(normal, zero_point, *begin));
-        auto max_corners = min_corners;
+    auto get_projected_min_max = [&get_position_along_line, &normal](Iter begin, Iter end) {
+      const auto zero_point = Point{};
+      auto min_corners = get_position_along_line(closest_line_point_2d(normal, zero_point, *begin));
+      auto max_corners = min_corners;
 
-        for (auto & point = begin; point != end; ++point) {
-          const auto point_projected = closest_line_point_2d(normal, zero_point, *point);
-          const auto position_along_line = get_position_along_line(point_projected);
-          min_corners = std::min(min_corners, position_along_line);
-          max_corners = std::max(max_corners, position_along_line);
-        }
-        return std::pair<float, float>{min_corners, max_corners};
-      };
+      for (auto & point = begin; point != end; ++point) {
+        const auto point_projected = closest_line_point_2d(normal, zero_point, *point);
+        const auto position_along_line = get_position_along_line(point_projected);
+        min_corners = std::min(min_corners, position_along_line);
+        max_corners = std::max(max_corners, position_along_line);
+      }
+      return std::pair<float, float>{min_corners, max_corners};
+    };
 
     // Perform the actual computations for the extent computation
     auto minmax_1 = get_projected_min_max(begin1, end1);
@@ -260,11 +251,10 @@ bool intersect(const Iter begin1, const Iter end1, const Iter begin2, const Iter
 /// \param polygon1 A convex polygon
 /// \param polygon2 A convex polygon
 /// \return The resulting conv
-template<template<typename ...> class Iterable1T, template<typename ...> class Iterable2T,
-  typename PointT>
+template <
+  template <typename...> class Iterable1T, template <typename...> class Iterable2T, typename PointT>
 std::list<PointT> convex_polygon_intersection2d(
-  const Iterable1T<PointT> & polygon1,
-  const Iterable2T<PointT> & polygon2)
+  const Iterable1T<PointT> & polygon1, const Iterable2T<PointT> & polygon2)
 {
   std::list<PointT> result;
   details::append_contained_points(polygon1, polygon2, result);
@@ -274,7 +264,6 @@ std::list<PointT> convex_polygon_intersection2d(
   result.resize(static_cast<uint32_t>(std::distance(result.cbegin(), end_it)));
   return result;
 }
-
 
 /// \brief Compute the intersection over union of two 2d convex polygons. If any of the polygons
 /// span a zero area, the result is 0.0.
@@ -287,12 +276,10 @@ std::list<PointT> convex_polygon_intersection2d(
 /// \return (Intersection / Union) between two given polygons.
 /// \throws std::domain_error If there is any inconsistency on the undderlying geometrical
 /// computation.
-template<template<typename ...> class Iterable1T, template<typename ...> class Iterable2T,
-  typename PointT>
+template <
+  template <typename...> class Iterable1T, template <typename...> class Iterable2T, typename PointT>
 common::types::float32_t convex_intersection_over_union_2d(
-  const Iterable1T<PointT> & polygon1,
-  const Iterable2T<PointT> & polygon2
-)
+  const Iterable1T<PointT> & polygon1, const Iterable2T<PointT> & polygon2)
 {
   constexpr auto eps = std::numeric_limits<float32_t>::epsilon();
   const auto intersection = convex_polygon_intersection2d(polygon1, polygon2);
@@ -304,10 +291,8 @@ common::types::float32_t convex_intersection_over_union_2d(
     return 0.0F;  // There's either no intersection or the points are collinear
   }
 
-  const auto polygon1_area =
-    common::geometry::area_2d(polygon1.begin(), polygon1.end());
-  const auto polygon2_area =
-    common::geometry::area_2d(polygon2.begin(), polygon2.end());
+  const auto polygon1_area = common::geometry::area_2d(polygon1.begin(), polygon1.end());
+  const auto polygon2_area = common::geometry::area_2d(polygon2.begin(), polygon2.end());
 
   const auto union_area = polygon1_area + polygon2_area - intersection_area;
   if (union_area < eps) {

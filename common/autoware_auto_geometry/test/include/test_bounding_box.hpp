@@ -17,22 +17,22 @@
 #ifndef TEST_BOUNDING_BOX_HPP_
 #define TEST_BOUNDING_BOX_HPP_
 
+#include "geometry/bounding_box/lfit.hpp"
+#include "geometry/bounding_box/rotating_calipers.hpp"
+
 #include <geometry_msgs/msg/point32.hpp>
 
 #include <limits>
 #include <list>
 #include <vector>
 
-#include "geometry/bounding_box/rotating_calipers.hpp"
-#include "geometry/bounding_box/lfit.hpp"
-
-using autoware_auto_perception_msgs::msg::BoundingBox;
 using autoware::common::geometry::point_adapter::x_;
-using autoware::common::geometry::point_adapter::y_;
 using autoware::common::geometry::point_adapter::xr_;
+using autoware::common::geometry::point_adapter::y_;
 using autoware::common::geometry::point_adapter::yr_;
+using autoware_auto_perception_msgs::msg::BoundingBox;
 
-template<typename PointT>
+template <typename PointT>
 class BoxTest : public ::testing::Test
 {
 protected:
@@ -52,14 +52,14 @@ protected:
     box = autoware::common::geometry::bounding_box::minimum_perimeter_bounding_box(points);
     // apex_test_tools::memory_test::stop();
   }
-  template<typename IT>
+  template <typename IT>
   void eigenbox(const IT begin, const IT end)
   {
     // apex_test_tools::memory_test::start();
     box = autoware::common::geometry::bounding_box::eigenbox_2d(begin, end);
     // apex_test_tools::memory_test::stop();
   }
-  template<typename IT>
+  template <typename IT>
   void lfit_bounding_box_2d(const IT begin, const IT end)
   {
     // apex_test_tools::memory_test::start();
@@ -86,9 +86,7 @@ protected:
     ASSERT_LT(fabsf(box.centroid.y - cy), TOL);
   }
 
-  void test_corners(
-    const std::vector<PointT> & expect,
-    const float TOL = 1.0E-6F) const
+  void test_corners(const std::vector<PointT> & expect, const float TOL = 1.0E-6F) const
   {
     for (uint32_t idx = 0U; idx < 4U; ++idx) {
       bool found = false;
@@ -109,14 +107,9 @@ protected:
   }
 
   /// \brief converts a radian value to a degree value
-  float32_t rad2deg(const float rad_val) const
-  {
-    return rad_val * 57.2958F;
-  }
+  float32_t rad2deg(const float rad_val) const { return rad_val * 57.2958F; }
 
-  void test_orientation(
-    const float ref_angle_deg,
-    const float TOL = 1.0E-4F) const
+  void test_orientation(const float ref_angle_deg, const float TOL = 1.0E-4F) const
   {
     bool found = false;
     const float angle_deg = rad2deg(2.0F * asinf(box.orientation.z));
@@ -193,7 +186,6 @@ TYPED_TEST(BoxTest, ClosestPointOnLine)
   EXPECT_THROW(t = closest_line_point_2d(p, q, r), std::runtime_error);
 }
 
-
 TYPED_TEST(BoxTest, Basic)
 {
   const std::vector<TypeParam> data{
@@ -216,9 +208,7 @@ TYPED_TEST(BoxTest, Basic)
 //
 TYPED_TEST(BoxTest, OrientedTriangle)
 {
-  this->points.insert(
-    this->points.begin(),
-    {this->make(5, 5), this->make(7, 7), this->make(5, 7)});
+  this->points.insert(this->points.begin(), {this->make(5, 5), this->make(7, 7), this->make(5, 7)});
 
   this->minimum_area_bounding_box();
 
@@ -258,10 +248,8 @@ TYPED_TEST(BoxTest, Hull)
   ASSERT_LT(fabsf(this->box.centroid.y - dy), TOL_M);
 
   this->test_corners(
-    {this->make(dx + rx, dy + ry),
-      this->make(dx - rx, dy + ry),
-      this->make(dx - rx, dy - ry),
-      this->make(dx + rx, dy - ry)},
+    {this->make(dx + rx, dy + ry), this->make(dx - rx, dy + ry), this->make(dx - rx, dy - ry),
+     this->make(dx + rx, dy - ry)},
     TOL_M);
 
   this->test_orientation(this->rad2deg(dth), 1.0F);
@@ -276,18 +264,9 @@ TYPED_TEST(BoxTest, Hull)
 TYPED_TEST(BoxTest, Collinear)
 {
   this->points.insert(
-    this->points.begin(),
-  {
-    this->make(-2, -2),
-    this->make(-3, -2),
-    this->make(-4, -2),
-    this->make(-2, -4),
-    this->make(-3, -4),
-    this->make(-4, -4),
-    this->make(-2, -3),
-    this->make(-2, -3),
-    this->make(-2, -4)
-  });
+    this->points.begin(), {this->make(-2, -2), this->make(-3, -2), this->make(-4, -2),
+                           this->make(-2, -4), this->make(-3, -4), this->make(-4, -4),
+                           this->make(-2, -3), this->make(-2, -3), this->make(-2, -4)});
 
   this->minimum_area_bounding_box();
 
@@ -297,57 +276,36 @@ TYPED_TEST(BoxTest, Collinear)
   this->test_orientation(0.0F);
 }
 
-
 //
 TYPED_TEST(BoxTest, Line1)
 {
   this->points.insert(
-    this->points.begin(), {
-    this->make(-4, 3),
-    this->make(-8, 6),
-    this->make(-12, 9),
-    this->make(-16, 12),
-    this->make(-20, 15),
-    this->make(-24, 18),
-    this->make(-28, 21),
-    this->make(-32, 24),
-    this->make(-36, 27)
-  });
+    this->points.begin(), {this->make(-4, 3), this->make(-8, 6), this->make(-12, 9),
+                           this->make(-16, 12), this->make(-20, 15), this->make(-24, 18),
+                           this->make(-28, 21), this->make(-32, 24), this->make(-36, 27)});
 
   this->minimum_area_bounding_box();
 
   this->check(-20.0F, 15.0F, 1.0E-6F, 40.0F, 4.0E-5F);
   this->test_orientation(this->rad2deg(atan2f(3, -4)));
   this->test_corners(
-    {this->make(-4, 3), this->make(-30, 27), this->make(-4, 3), this->make(
-        -36,
-        27)});
+    {this->make(-4, 3), this->make(-30, 27), this->make(-4, 3), this->make(-36, 27)});
 
   this->minimum_perimeter_bounding_box();
 
   this->check(-20.0F, 15.0F, 1.0E-6F, 40.0F, 40.00001F);
   this->test_orientation(this->rad2deg(atan2f(3, -4)));
   this->test_corners(
-    {this->make(-4, 3), this->make(-30, 27), this->make(-4, 3), this->make(
-        -36,
-        27)});
+    {this->make(-4, 3), this->make(-30, 27), this->make(-4, 3), this->make(-36, 27)});
 }
 
 //
 TYPED_TEST(BoxTest, Line2)
 {
   this->points.insert(
-    this->points.begin(), {
-    this->make(4, 0),
-    this->make(8, 0),
-    this->make(12, 0),
-    this->make(16, 0),
-    this->make(20, 0),
-    this->make(24, 0),
-    this->make(28, 0),
-    this->make(32, 0),
-    this->make(36, 0)
-  });
+    this->points.begin(),
+    {this->make(4, 0), this->make(8, 0), this->make(12, 0), this->make(16, 0), this->make(20, 0),
+     this->make(24, 0), this->make(28, 0), this->make(32, 0), this->make(36, 0)});
 
   this->minimum_area_bounding_box();
 
@@ -360,17 +318,9 @@ TYPED_TEST(BoxTest, Line2)
 TYPED_TEST(BoxTest, Line3)
 {
   this->points.insert(
-    this->points.begin(), {
-    this->make(4, 3),
-    this->make(8, 6),
-    this->make(12, 9),
-    this->make(16, 12),
-    this->make(20, 15),
-    this->make(24, 18),
-    this->make(28, 21),
-    this->make(32, 24),
-    this->make(36, 27)
-  });
+    this->points.begin(),
+    {this->make(4, 3), this->make(8, 6), this->make(12, 9), this->make(16, 12), this->make(20, 15),
+     this->make(24, 18), this->make(28, 21), this->make(32, 24), this->make(36, 27)});
 
   this->minimum_area_bounding_box();
 
@@ -386,12 +336,8 @@ TYPED_TEST(BoxTest, Line3)
 TYPED_TEST(BoxTest, SuboptInit)
 {
   this->points.insert(
-    this->points.begin(), {
-    this->make(8, 15),
-    this->make(17, 0),
-    this->make(0, 0),
-    this->make(25, 15)
-  });
+    this->points.begin(),
+    {this->make(8, 15), this->make(17, 0), this->make(0, 0), this->make(25, 15)});
 
   this->minimum_area_bounding_box();
 
@@ -399,8 +345,8 @@ TYPED_TEST(BoxTest, SuboptInit)
   this->test_orientation(this->rad2deg(atan2f(15, 8)));
   // these are approximate.
   this->test_corners(
-    {this->make(0, 0), this->make(25, 15),
-      this->make(11.7647F, 22.0588F), this->make(13.2353F, -7.05882F)},
+    {this->make(0, 0), this->make(25, 15), this->make(11.7647F, 22.0588F),
+     this->make(13.2353F, -7.05882F)},
     0.1F);
 }
 
@@ -408,12 +354,8 @@ TYPED_TEST(BoxTest, SuboptInit)
 TYPED_TEST(BoxTest, Centered)
 {
   this->points.insert(
-    this->points.begin(), {
-    this->make(-1, 0),
-    this->make(1, 0),
-    this->make(0, -1),
-    this->make(0, 1)
-  });
+    this->points.begin(),
+    {this->make(-1, 0), this->make(1, 0), this->make(0, -1), this->make(0, 1)});
 
   this->minimum_area_bounding_box();
 
@@ -426,16 +368,8 @@ TYPED_TEST(BoxTest, Centered)
 TYPED_TEST(BoxTest, OverlappingPoints)
 {
   this->points.insert(
-    this->points.begin(), {
-    this->make(0, 0),
-    this->make(1, 0),
-    this->make(1, 1),
-    this->make(0, 1),
-    this->make(0, 0),
-    this->make(1, 0),
-    this->make(1, 1),
-    this->make(0, 1)
-  });
+    this->points.begin(), {this->make(0, 0), this->make(1, 0), this->make(1, 1), this->make(0, 1),
+                           this->make(0, 0), this->make(1, 0), this->make(1, 1), this->make(0, 1)});
 
   this->minimum_area_bounding_box();
 
@@ -448,24 +382,16 @@ TYPED_TEST(BoxTest, OverlappingPoints)
 TYPED_TEST(BoxTest, Perimeter)
 {
   this->points.insert(
-    this->points.begin(), {
-    this->make(0, 0),
-    this->make(0, 1),
-    this->make(0, 2),
-    this->make(0, 3),
-    this->make(0, 4),
-    this->make(1, -0.1),    // small fudge to force diagonal
-    this->make(2, 0),
-    this->make(3, 0)
-  });
+    this->points.begin(), {this->make(0, 0), this->make(0, 1), this->make(0, 2), this->make(0, 3),
+                           this->make(0, 4), this->make(1, -0.1),  // small fudge to force diagonal
+                           this->make(2, 0), this->make(3, 0)});
 
   this->minimum_area_bounding_box();
 
   this->check(0.54F, 1.28F, 5.0F, 12.0F / 5.0F, 12.0F);
   this->test_orientation(-53.13F, 0.001F);
   this->test_corners(
-    {this->make(3, 0), this->make(0, 4), this->make(-1.92, 2.56),
-      this->make(1.08, -1.44)});
+    {this->make(3, 0), this->make(0, 4), this->make(-1.92, 2.56), this->make(1.08, -1.44)});
 
   // eigenbox should produce AABB TODO(c.ho)
   // compute minimum perimeter box
@@ -474,24 +400,17 @@ TYPED_TEST(BoxTest, Perimeter)
   // perimeter for first box would be 14.8
   this->test_orientation(0.0F, 0.001F);
   this->test_corners(
-    {this->make(3, -0.1), this->make(0, 4), this->make(3, 4),
-      this->make(0, -0.1)});
+    {this->make(3, -0.1), this->make(0, 4), this->make(3, 4), this->make(0, -0.1)});
 }
 
 // bounding box is diagonal on an L
 TYPED_TEST(BoxTest, Eigenbox1)
 {
-  std::vector<TypeParam> v{
-    this->make(0, 0),
-    this->make(0, 1),
-    this->make(-1, 2),    // small fudge to force diagonal
-    this->make(0, 3),
-    this->make(0, 4),
-    this->make(1, 0),
-    this->make(2, -1),    // small fudge to force diagonal
-    this->make(3, 0),
-    this->make(4, 0)
-  };
+  std::vector<TypeParam> v{this->make(0, 0),  this->make(0, 1),
+                           this->make(-1, 2),  // small fudge to force diagonal
+                           this->make(0, 3),  this->make(0, 4),
+                           this->make(1, 0),  this->make(2, -1),  // small fudge to force diagonal
+                           this->make(3, 0),  this->make(4, 0)};
   this->points.insert(this->points.begin(), v.begin(), v.end());
 
   // rotating calipers should produce a diagonal box
@@ -499,16 +418,15 @@ TYPED_TEST(BoxTest, Eigenbox1)
   const float r = 4.0F;
 
   this->check(1.0F, 1.0F, r / sqrtf(2.0F), sqrtf(2.0F) * r, r * r);
-  const std::vector<TypeParam>
-  diag_corners{this->make(4, 0), this->make(0, 4), this->make(-2, 2), this->make(2, -2)};
+  const std::vector<TypeParam> diag_corners{
+    this->make(4, 0), this->make(0, 4), this->make(-2, 2), this->make(2, -2)};
   this->test_corners(diag_corners);
   this->test_orientation(45.0F, 0.001F);
 
   //// perimeter should also produce diagonal ////
   this->minimum_perimeter_bounding_box();
   this->check(
-    1.0F, 1.0F, r / sqrtf(2.0F), sqrtf(2.0F) * r,
-    r * (sqrtf(2.0F) + (1.0F / sqrtf(2.0F))));
+    1.0F, 1.0F, r / sqrtf(2.0F), sqrtf(2.0F) * r, r * (sqrtf(2.0F) + (1.0F / sqrtf(2.0F))));
   this->test_corners(diag_corners);
   this->test_orientation(45.0F, 0.001F);
   //// eigenbox should also produce aabb ////
@@ -528,21 +446,15 @@ TYPED_TEST(BoxTest, Eigenbox1)
 // same as above test, just rotated
 TYPED_TEST(BoxTest, Eigenbox2)
 {
-  std::vector<TypeParam> v{
-    this->make(0, 0),
-    this->make(1, 1),
-    this->make(1, 2),  // small fudge to force diagonal
-    this->make(3, 3),
-    this->make(4, 4),
-    this->make(1, -1),
-    this->make(1, -2),  // small fudge to force diagonal
-    this->make(3, -3),
-    this->make(4, -4)
-  };
+  std::vector<TypeParam> v{this->make(0, 0),  this->make(1, 1),
+                           this->make(1, 2),  // small fudge to force diagonal
+                           this->make(3, 3),  this->make(4, 4),
+                           this->make(1, -1), this->make(1, -2),  // small fudge to force diagonal
+                           this->make(3, -3), this->make(4, -4)};
   this->points.insert(this->points.begin(), v.begin(), v.end());
 
-  const std::vector<TypeParam>
-  diag_corners{this->make(4, 4), this->make(0, 4), this->make(0, -4), this->make(4, -4)};
+  const std::vector<TypeParam> diag_corners{
+    this->make(4, 4), this->make(0, 4), this->make(0, -4), this->make(4, -4)};
   // rotating calipers should produce a aabb
   this->minimum_area_bounding_box();
   this->check(2.0F, 0.0F, 8, 4, 32);
@@ -568,17 +480,9 @@ TYPED_TEST(BoxTest, Eigenbox2)
 TYPED_TEST(BoxTest, Eigenbox3)
 {
   // horizontal line with some noise
-  std::vector<TypeParam> v{
-    this->make(0, 0.00),
-    this->make(1, -0.01),
-    this->make(3, 0.02),
-    this->make(3, 0.03),
-    this->make(4, -0.04),
-    this->make(-1, 0.01),
-    this->make(-2, -0.02),
-    this->make(-3, -0.03),
-    this->make(-4, 0.04)
-  };
+  std::vector<TypeParam> v{this->make(0, 0.00),   this->make(1, -0.01),  this->make(3, 0.02),
+                           this->make(3, 0.03),   this->make(4, -0.04),  this->make(-1, 0.01),
+                           this->make(-2, -0.02), this->make(-3, -0.03), this->make(-4, 0.04)};
   this->lfit_bounding_box_2d(v.begin(), v.end());
   this->test_corners(
     {this->make(-4, -0.04), this->make(-4, 0.04), this->make(4, -0.04), this->make(4, 0.04)}, 0.2F);
@@ -590,44 +494,19 @@ TYPED_TEST(BoxTest, Eigenbox3)
 TYPED_TEST(BoxTest, IntersectFail)
 {
   std::vector<TypeParam> vals{
-    this->make(-13.9, 0.100006),
-    this->make(-14.1, 0.100006),
-    this->make(-13.9, 0.300003),
-    this->make(-14.1, 0.300003),
-    this->make(-13.9, 0.5),
-    this->make(-14.1, 0.5),
-    this->make(-13.9, 0.699997),
-    this->make(-14.1, 0.699997),
-    this->make(-14.3, 0.699997)
-  };
+    this->make(-13.9, 0.100006), this->make(-14.1, 0.100006), this->make(-13.9, 0.300003),
+    this->make(-14.1, 0.300003), this->make(-13.9, 0.5),      this->make(-14.1, 0.5),
+    this->make(-13.9, 0.699997), this->make(-14.1, 0.699997), this->make(-14.3, 0.699997)};
   EXPECT_NO_THROW(this->lfit_bounding_box_2d(vals.begin(), vals.end()));
-  vals = {
-    this->make(-2.1, 10.1),
-    this->make(-1.89999, 10.1),
-    this->make(-1.89999, 10.3),
-    this->make(-1.7, 10.3),
-    this->make(-1.5, 10.3),
-    this->make(-1.3, 10.3),
-    this->make(-0.5, 10.3),
-    this->make(-0.300003, 10.3),
-    this->make(-0.0999908, 10.3),
-    this->make(0.699997, 10.3),
-    this->make(0.900009, 10.3),
-    this->make(1.3, 10.3),
-    this->make(1.7, 10.3)
-  };
+  vals = {this->make(-2.1, 10.1),     this->make(-1.89999, 10.1),  this->make(-1.89999, 10.3),
+          this->make(-1.7, 10.3),     this->make(-1.5, 10.3),      this->make(-1.3, 10.3),
+          this->make(-0.5, 10.3),     this->make(-0.300003, 10.3), this->make(-0.0999908, 10.3),
+          this->make(0.699997, 10.3), this->make(0.900009, 10.3),  this->make(1.3, 10.3),
+          this->make(1.7, 10.3)};
   EXPECT_NO_THROW(this->lfit_bounding_box_2d(vals.begin(), vals.end()));
-  vals = {
-    this->make(2.7, -5.5),
-    this->make(2.7, -5.3),
-    this->make(2.7, -5.1),
-    this->make(2.7, -4.9),
-    this->make(2.7, -4.7),
-    this->make(2.7, -4.5),
-    this->make(2.7, -4.3),
-    this->make(2.7, -4.1),
-    this->make(2.7, -3.9)
-  };
+  vals = {this->make(2.7, -5.5), this->make(2.7, -5.3), this->make(2.7, -5.1),
+          this->make(2.7, -4.9), this->make(2.7, -4.7), this->make(2.7, -4.5),
+          this->make(2.7, -4.3), this->make(2.7, -4.1), this->make(2.7, -3.9)};
   EXPECT_NO_THROW(this->lfit_bounding_box_2d(vals.begin(), vals.end()));
 }
 /// Handle slight floating point underflow case
@@ -662,7 +541,6 @@ TYPED_TEST(BoxTest, EigUnderflow)
   // EXPECT_LT(discriminant(c6), 0.0F);
   EXPECT_NO_THROW(autoware::common::geometry::bounding_box::details::eig_2d(c6, u, v));
 }
-
 
 ////////////////////////////////////////////////
 

@@ -15,29 +15,28 @@
 #ifndef TRAJECTORY_FOLLOWER__MPC_UTILS_HPP_
 #define TRAJECTORY_FOLLOWER__MPC_UTILS_HPP_
 
-#include <cmath>
-#include <string>
-#include <vector>
-
+#include "common/types.hpp"
+#include "eigen3/Eigen/Core"
+#include "geometry/common_2d.hpp"
+#include "helper_functions/angle_utils.hpp"
+#include "interpolation/linear_interpolation.hpp"
+#include "interpolation/spline_interpolation.hpp"
+#include "motion_common/motion_common.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "tf2/utils.h"
 #include "trajectory_follower/interpolate.hpp"
 #include "trajectory_follower/mpc_trajectory.hpp"
 #include "trajectory_follower/visibility_control.hpp"
 
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
-#include "common/types.hpp"
-#include "eigen3/Eigen/Core"
-#include "geometry/common_2d.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
-#include "helper_functions/angle_utils.hpp"
-#include "interpolation/spline_interpolation.hpp"
-#include "interpolation/linear_interpolation.hpp"
-#include "motion_common/motion_common.hpp"
-#include "rclcpp/rclcpp.hpp"
-#include "tf2/utils.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 
+#include <cmath>
+#include <string>
+#include <vector>
 
 namespace autoware
 {
@@ -49,8 +48,8 @@ namespace trajectory_follower
 {
 namespace MPCUtils
 {
-using autoware::common::types::float64_t;
 using autoware::common::types::bool8_t;
+using autoware::common::types::float64_t;
 /**
  * @brief convert from yaw to ros-Quaternion
  * @param [in] yaw input yaw angle
@@ -103,7 +102,8 @@ TRAJECTORY_FOLLOWER_PUBLIC void calcMPCTrajectoryArclength(
 TRAJECTORY_FOLLOWER_PUBLIC bool8_t resampleMPCTrajectoryByDistance(
   const MPCTrajectory & input, const float64_t resample_interval_dist, MPCTrajectory * output);
 /**
- * @brief linearly interpolate the given trajectory assuming a base indexing and a new desired indexing
+ * @brief linearly interpolate the given trajectory assuming a base indexing and a new desired
+ * indexing
  * @param [in] in_index indexes for each trajectory point
  * @param [in] in_traj MPCTrajectory to interpolate
  * @param [in] out_index desired interpolated indexes
@@ -138,17 +138,19 @@ TRAJECTORY_FOLLOWER_PUBLIC void dynamicSmoothingVelocity(
 TRAJECTORY_FOLLOWER_PUBLIC void calcTrajectoryYawFromXY(
   MPCTrajectory * traj, const int64_t nearest_idx, const float64_t ego_yaw);
 /**
- * @brief Calculate path curvature by 3-points circle fitting with smoothing num (use nearest 3 points when num = 1)
+ * @brief Calculate path curvature by 3-points circle fitting with smoothing num (use nearest 3
+ * points when num = 1)
  * @param [in] curvature_smoothing_num_traj index distance for 3 points for curvature calculation
- * @param [in] curvature_smoothing_num_ref_steer index distance for 3 points for smoothed curvature calculation
+ * @param [in] curvature_smoothing_num_ref_steer index distance for 3 points for smoothed curvature
+ * calculation
  * @param [inout] traj object trajectory
  */
 TRAJECTORY_FOLLOWER_PUBLIC bool8_t calcTrajectoryCurvature(
-  const size_t curvature_smoothing_num_traj,
-  const size_t curvature_smoothing_num_ref_steer,
+  const size_t curvature_smoothing_num_traj, const size_t curvature_smoothing_num_ref_steer,
   MPCTrajectory * traj);
 /**
- * @brief Calculate path curvature by 3-points circle fitting with smoothing num (use nearest 3 points when num = 1)
+ * @brief Calculate path curvature by 3-points circle fitting with smoothing num (use nearest 3
+ * points when num = 1)
  * @param [in] curvature_smoothing_num index distance for 3 points for curvature calculation
  * @param [in] traj input trajectory
  * @return vector of curvatures at each point of the given trajectory
@@ -176,9 +178,8 @@ TRAJECTORY_FOLLOWER_PUBLIC bool8_t calcNearestPoseInterp(
  * @param [in] self_pose pose for which to search the nearest trajectory point
  * @return index of the input trajectory nearest to the pose
  */
-TRAJECTORY_FOLLOWER_PUBLIC int64_t calcNearestIndex(
-  const MPCTrajectory & traj,
-  const geometry_msgs::msg::Pose & self_pose);
+TRAJECTORY_FOLLOWER_PUBLIC int64_t
+calcNearestIndex(const MPCTrajectory & traj, const geometry_msgs::msg::Pose & self_pose);
 /**
  * @brief calculate the index of the trajectory point nearest to the given pose
  * @param [in] traj trajectory to search for the point nearest to the pose
@@ -192,8 +193,7 @@ TRAJECTORY_FOLLOWER_PUBLIC int64_t calcNearestIndex(
  * @brief calculate distance to stopped point
  */
 TRAJECTORY_FOLLOWER_PUBLIC float64_t calcStopDistance(
-  const autoware_auto_planning_msgs::msg::Trajectory & current_trajectory,
-  const int64_t origin);
+  const autoware_auto_planning_msgs::msg::Trajectory & current_trajectory, const int64_t origin);
 }  // namespace MPCUtils
 }  // namespace trajectory_follower
 }  // namespace control

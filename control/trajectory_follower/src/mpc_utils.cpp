@@ -105,9 +105,8 @@ bool8_t resampleMPCTrajectoryByDistance(
   output->vx = interpolation::lerp(input_arclength, input.vx, output_arclength);
   output->k = interpolation::slerp(input_arclength, input.k, output_arclength);
   output->smooth_k = interpolation::slerp(input_arclength, input.smooth_k, output_arclength);
-  output->relative_time = interpolation::lerp(
-    input_arclength, input.relative_time,
-    output_arclength);
+  output->relative_time =
+    interpolation::lerp(input_arclength, input.relative_time, output_arclength);
 
   return true;
 }
@@ -136,9 +135,7 @@ bool8_t linearInterpMPCTrajectory(
     !linearInterpolate(in_index, in_traj.vx, out_index, out_traj->vx) ||
     !linearInterpolate(in_index, in_traj.k, out_index, out_traj->k) ||
     !linearInterpolate(in_index, in_traj.smooth_k, out_index, out_traj->smooth_k) ||
-    !linearInterpolate(
-      in_index, in_traj.relative_time, out_index, out_traj->relative_time))
-  {
+    !linearInterpolate(in_index, in_traj.relative_time, out_index, out_traj->relative_time)) {
     std::cerr << "linearInterpMPCTrajectory error!" << std::endl;
     return false;
   }
@@ -152,8 +149,7 @@ bool8_t linearInterpMPCTrajectory(
 }
 
 void calcTrajectoryYawFromXY(
-  MPCTrajectory * traj, const int64_t nearest_idx,
-  const float64_t ego_yaw)
+  MPCTrajectory * traj, const int64_t nearest_idx, const float64_t ego_yaw)
 {
   if (traj->yaw.size() < 3) {  // at least 3 points are required to calculate yaw
     return;
@@ -167,9 +163,9 @@ void calcTrajectoryYawFromXY(
   const int64_t upper_nearest_idx =
     (static_cast<int64_t>(traj->x.size()) - 1 == nearest_idx) ? nearest_idx : nearest_idx + 1;
   const float64_t dx = traj->x[static_cast<size_t>(upper_nearest_idx)] -
-    traj->x[static_cast<size_t>(upper_nearest_idx - 1)];
+                       traj->x[static_cast<size_t>(upper_nearest_idx - 1)];
   const float64_t dy = traj->y[static_cast<size_t>(upper_nearest_idx)] -
-    traj->y[static_cast<size_t>(upper_nearest_idx - 1)];
+                       traj->y[static_cast<size_t>(upper_nearest_idx - 1)];
   const bool forward_shift =
     std::abs(autoware::common::helper_functions::wrap_angle(std::atan2(dy, dx) - ego_yaw)) <
     M_PI / 2.0;
@@ -188,8 +184,7 @@ void calcTrajectoryYawFromXY(
 }
 
 bool8_t calcTrajectoryCurvature(
-  const size_t curvature_smoothing_num_traj,
-  const size_t curvature_smoothing_num_ref_steer,
+  const size_t curvature_smoothing_num_traj, const size_t curvature_smoothing_num_ref_steer,
   MPCTrajectory * traj)
 {
   if (!traj) {
@@ -208,8 +203,8 @@ std::vector<float64_t> calcTrajectoryCurvature(
 
   /* calculate curvature by circle fitting from three points */
   geometry_msgs::msg::Point p1, p2, p3;
-  const size_t max_smoothing_num = static_cast<size_t>(
-    std::floor(0.5 * (static_cast<float64_t>(traj.x.size() - 1))));
+  const size_t max_smoothing_num =
+    static_cast<size_t>(std::floor(0.5 * (static_cast<float64_t>(traj.x.size() - 1))));
   const size_t L = std::min(curvature_smoothing_num, max_smoothing_num);
   for (size_t i = L; i < traj.x.size() - L; ++i) {
     const size_t curr_idx = i;
@@ -222,9 +217,8 @@ std::vector<float64_t> calcTrajectoryCurvature(
     p2.y = traj.y[curr_idx];
     p3.y = traj.y[next_idx];
     const float64_t den = std::max(
-      distance_2d<float64_t>(
-        p1,
-        p2) * distance_2d<float64_t>(p2, p3) * distance_2d<float64_t>(p3, p1),
+      distance_2d<float64_t>(p1, p2) * distance_2d<float64_t>(p2, p3) *
+        distance_2d<float64_t>(p3, p1),
       std::numeric_limits<float64_t>::epsilon());
     const float64_t curvature =
       2.0 * ((p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x)) / den;
@@ -234,9 +228,8 @@ std::vector<float64_t> calcTrajectoryCurvature(
   /* first and last curvature is copied from next value */
   for (size_t i = 0; i < std::min(L, traj.x.size()); ++i) {
     curvature_vec.at(i) = curvature_vec.at(std::min(L, traj.x.size() - 1));
-    curvature_vec.at(
-      traj.x.size() - i -
-      1) = curvature_vec.at(std::max(traj.x.size() - L - 1, size_t(0)));
+    curvature_vec.at(traj.x.size() - i - 1) =
+      curvature_vec.at(std::max(traj.x.size() - L - 1, size_t(0)));
   }
   return curvature_vec;
 }
@@ -304,8 +297,8 @@ void dynamicSmoothingVelocity(
   for (size_t i = start_idx + 1; i < traj.size(); ++i) {
     const float64_t ds =
       std::hypot(traj.x.at(i) - traj.x.at(i - 1), traj.y.at(i) - traj.y.at(i - 1));
-    const float64_t dt = ds /
-      std::max(std::fabs(curr_v), std::numeric_limits<float64_t>::epsilon());
+    const float64_t dt =
+      ds / std::max(std::fabs(curr_v), std::numeric_limits<float64_t>::epsilon());
     const float64_t a = tau / std::max(tau + dt, std::numeric_limits<float64_t>::epsilon());
     const float64_t updated_v = a * curr_v + (1.0 - a) * traj.vx.at(i);
     const float64_t dv = std::max(-acc_lim * dt, std::min(acc_lim * dt, updated_v - curr_v));
@@ -315,8 +308,7 @@ void dynamicSmoothingVelocity(
   calcMPCTrajectoryTime(traj);
 }
 
-int64_t calcNearestIndex(
-  const MPCTrajectory & traj, const geometry_msgs::msg::Pose & self_pose)
+int64_t calcNearestIndex(const MPCTrajectory & traj, const geometry_msgs::msg::Pose & self_pose)
 {
   if (traj.empty()) {
     return -1;
@@ -437,22 +429,18 @@ bool8_t calcNearestPoseInterp(
     alpha * traj.x[*nearest_index] + (1 - alpha) * traj.x[second_nearest_index];
   nearest_pose->position.y =
     alpha * traj.y[*nearest_index] + (1 - alpha) * traj.y[second_nearest_index];
-  const float64_t tmp_yaw_err =
-    autoware::common::helper_functions::wrap_angle(
-    traj.yaw[*nearest_index] -
-    traj.yaw[second_nearest_index]);
-  const float64_t nearest_yaw =
-    autoware::common::helper_functions::wrap_angle(
+  const float64_t tmp_yaw_err = autoware::common::helper_functions::wrap_angle(
+    traj.yaw[*nearest_index] - traj.yaw[second_nearest_index]);
+  const float64_t nearest_yaw = autoware::common::helper_functions::wrap_angle(
     traj.yaw[second_nearest_index] + alpha * tmp_yaw_err);
   nearest_pose->orientation = getQuaternionFromYaw(nearest_yaw);
   *nearest_time = alpha * traj.relative_time[*nearest_index] +
-    (1 - alpha) * traj.relative_time[second_nearest_index];
+                  (1 - alpha) * traj.relative_time[second_nearest_index];
   return true;
 }
 
 float64_t calcStopDistance(
-  const autoware_auto_planning_msgs::msg::Trajectory & current_trajectory,
-  const int64_t origin)
+  const autoware_auto_planning_msgs::msg::Trajectory & current_trajectory, const int64_t origin)
 {
   constexpr float zero_velocity = std::numeric_limits<float>::epsilon();
   const float origin_velocity =
@@ -462,8 +450,7 @@ float64_t calcStopDistance(
   // search forward
   if (std::fabs(origin_velocity) > zero_velocity) {
     for (int64_t i = origin + 1; i < static_cast<int64_t>(current_trajectory.points.size()) - 1;
-      ++i)
-    {
+         ++i) {
       const auto & p0 = current_trajectory.points.at(static_cast<size_t>(i));
       const auto & p1 = current_trajectory.points.at(static_cast<size_t>(i - 1));
       stop_dist += distance_2d<float64_t>(p0, p1);

@@ -39,12 +39,11 @@ namespace comparisons
  * @pre eps >= 0
  * @return True iff 'a' and 'b' are within 'eps' of each other.
  */
-template<typename T>
+template <typename T>
 bool abs_eq(const T & a, const T & b, const T & eps)
 {
   static_assert(
-    std::is_floating_point<T>::value,
-    "Float comparisons only support floating point types.");
+    std::is_floating_point<T>::value, "Float comparisons only support floating point types.");
 
   return std::abs(a - b) <= eps;
 }
@@ -54,7 +53,7 @@ bool abs_eq(const T & a, const T & b, const T & eps)
  * @pre eps >= 0
  * @return True iff 'a' is less than 'b' minus 'eps'.
  */
-template<typename T>
+template <typename T>
 bool abs_lt(const T & a, const T & b, const T & eps)
 {
   return !abs_eq(a, b, eps) && (a < b);
@@ -65,7 +64,7 @@ bool abs_lt(const T & a, const T & b, const T & eps)
  * @pre eps >= 0
  * @return True iff 'a' is less than or equal to 'b' plus 'eps'.
  */
-template<typename T>
+template <typename T>
 bool abs_lte(const T & a, const T & b, const T & eps)
 {
   return abs_eq(a, b, eps) || (a < b);
@@ -76,7 +75,7 @@ bool abs_lte(const T & a, const T & b, const T & eps)
  * @pre eps >= 0
  * @return True iff 'a' is greater than or equal to 'b' minus 'eps'.
  */
-template<typename T>
+template <typename T>
 bool abs_gte(const T & a, const T & b, const T & eps)
 {
   return !abs_lt(a, b, eps);
@@ -87,7 +86,7 @@ bool abs_gte(const T & a, const T & b, const T & eps)
  * @pre eps >= 0
  * @return True iff 'a' is greater than 'b' minus 'eps'.
  */
-template<typename T>
+template <typename T>
 bool abs_gt(const T & a, const T & b, const T & eps)
 {
   return !abs_lte(a, b, eps);
@@ -98,7 +97,7 @@ bool abs_gt(const T & a, const T & b, const T & eps)
  * @pre eps >= 0
  * @return True iff 'a' is within 'eps' of zero.
  */
-template<typename T>
+template <typename T>
 bool abs_eq_zero(const T & a, const T & eps)
 {
   return abs_eq(a, static_cast<T>(0), eps);
@@ -110,12 +109,11 @@ bool abs_eq_zero(const T & a, const T & eps)
  * @pre rel_eps >= 0
  * @return True iff 'a' and 'b' are within relative 'rel_eps' of each other.
  */
-template<typename T>
+template <typename T>
 bool rel_eq(const T & a, const T & b, const T & rel_eps)
 {
   static_assert(
-    std::is_floating_point<T>::value,
-    "Float comparisons only support floating point types.");
+    std::is_floating_point<T>::value, "Float comparisons only support floating point types.");
 
   const auto delta = std::abs(a - b);
   const auto larger = std::max(std::abs(a), std::abs(b));
@@ -135,7 +133,7 @@ bool rel_eq(const T & a, const T & b, const T & rel_eps)
  * @pre rel_eps >= 0
  * @return True iff 'a' and 'b' are within 'eps' or 'rel_eps' of each other
  */
-template<typename T>
+template <typename T>
 bool approx_eq(const T & a, const T & b, const T & abs_eps, const T & rel_eps)
 {
   const auto are_absolute_eq = abs_eq(a, b, abs_eps);

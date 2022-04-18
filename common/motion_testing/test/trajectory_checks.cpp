@@ -11,23 +11,24 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#include <gtest/gtest.h>
 #include <motion_testing/motion_testing.hpp>
+
+#include <gtest/gtest.h>
 
 #include <chrono>
 
+using motion::motion_testing::constant_velocity_trajectory;
+using motion::motion_testing::make_state;
 using motion::motion_testing::State;
 using motion::motion_testing::Trajectory;
-using motion::motion_testing::make_state;
-using motion::motion_testing::constant_velocity_trajectory;
 
 TEST(TrajectoryChecks, Basic)
 {
   Trajectory traj{};
   const auto target =
     make_state(-100.0F, 100.0F, 2.0F, 1.0F, 0.0F, 0.0F, std::chrono::system_clock::now());
-  using motion::motion_testing::progresses_towards_target;
   using motion::motion_testing::dynamically_feasible;
+  using motion::motion_testing::progresses_towards_target;
   // Empty case
   ASSERT_TRUE(traj.points.empty());
   EXPECT_EQ(dynamically_feasible(traj), {});

@@ -17,23 +17,23 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 #if defined(__WIN32)
-  #if defined(VEHICLE_CONSTANTS_MANAGER_BUILDING_DLL) || defined(VEHICLE_CONSTANTS_MANAGER_EXPORTS)
-    #define VEHICLE_CONSTANTS_MANAGER_PUBLIC __declspec(dllexport)
-    #define VEHICLE_CONSTANTS_MANAGER_LOCAL
-  #else  // defined(VEHICLE_CONSTANTS_MANAGER_BUILDING_DLL)
+#if defined(VEHICLE_CONSTANTS_MANAGER_BUILDING_DLL) || defined(VEHICLE_CONSTANTS_MANAGER_EXPORTS)
+#define VEHICLE_CONSTANTS_MANAGER_PUBLIC __declspec(dllexport)
+#define VEHICLE_CONSTANTS_MANAGER_LOCAL
+#else  // defined(VEHICLE_CONSTANTS_MANAGER_BUILDING_DLL)
 // || defined(VEHICLE_CONSTANTS_MANAGER_EXPORTS)
-    #define VEHICLE_CONSTANTS_MANAGER_PUBLIC __declspec(dllimport)
-    #define VEHICLE_CONSTANTS_MANAGER_LOCAL
-  #endif  // defined(VEHICLE_CONSTANTS_MANAGER_BUILDING_DLL)
+#define VEHICLE_CONSTANTS_MANAGER_PUBLIC __declspec(dllimport)
+#define VEHICLE_CONSTANTS_MANAGER_LOCAL
+#endif  // defined(VEHICLE_CONSTANTS_MANAGER_BUILDING_DLL)
 // || defined(VEHICLE_CONSTANTS_MANAGER_EXPORTS)
 #elif defined(__linux__)
-  #define VEHICLE_CONSTANTS_MANAGER_PUBLIC __attribute__((visibility("default")))
-  #define VEHICLE_CONSTANTS_MANAGER_LOCAL __attribute__((visibility("hidden")))
+#define VEHICLE_CONSTANTS_MANAGER_PUBLIC __attribute__((visibility("default")))
+#define VEHICLE_CONSTANTS_MANAGER_LOCAL __attribute__((visibility("hidden")))
 #elif defined(__APPLE__)
-  #define VEHICLE_CONSTANTS_MANAGER_PUBLIC __attribute__((visibility("default")))
-  #define VEHICLE_CONSTANTS_MANAGER_LOCAL __attribute__((visibility("hidden")))
+#define VEHICLE_CONSTANTS_MANAGER_PUBLIC __attribute__((visibility("default")))
+#define VEHICLE_CONSTANTS_MANAGER_LOCAL __attribute__((visibility("hidden")))
 #else
-  #error "Unsupported Build Configuration"
+#error "Unsupported Build Configuration"
 #endif
 
 #endif  // VEHICLE_CONSTANTS_MANAGER__VISIBILITY_CONTROL_HPP_

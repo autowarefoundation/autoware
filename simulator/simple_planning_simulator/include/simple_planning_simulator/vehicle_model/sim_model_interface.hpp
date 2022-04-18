@@ -15,13 +15,14 @@
 #ifndef SIMPLE_PLANNING_SIMULATOR__VEHICLE_MODEL__SIM_MODEL_INTERFACE_HPP_
 #define SIMPLE_PLANNING_SIMULATOR__VEHICLE_MODEL__SIM_MODEL_INTERFACE_HPP_
 
-#include "eigen3/Eigen/Core"
-#include "autoware_auto_vehicle_msgs/msg/gear_command.hpp"
 #include "common/types.hpp"
+#include "eigen3/Eigen/Core"
 
+#include "autoware_auto_vehicle_msgs/msg/gear_command.hpp"
+
+using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
 using autoware::common::types::float64_t;
-using autoware::common::types::bool8_t;
 
 /**
  * @class SimModelInterface
@@ -144,12 +145,12 @@ public:
   /**
    * @brief get state vector dimension
    */
-  inline int getDimX() {return dim_x_;}
+  inline int getDimX() { return dim_x_; }
 
   /**
    * @brief get input vector demension
    */
-  inline int getDimU() {return dim_u_;}
+  inline int getDimU() { return dim_u_; }
 
   /**
    * @brief calculate derivative of states with vehicle model

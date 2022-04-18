@@ -14,21 +14,21 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#include <gtest/gtest.h>
-
-#include <geometry/lookup_table.hpp>
 #include <common/types.hpp>
+#include <geometry/lookup_table.hpp>
+
+#include <gtest/gtest.h>
 
 #include <memory>
 #include <vector>
 
-using autoware::common::helper_functions::lookup_1d;
 using autoware::common::helper_functions::interpolate;
+using autoware::common::helper_functions::lookup_1d;
 using autoware::common::helper_functions::LookupTable1D;
 using autoware::common::types::float32_t;
 using autoware::common::types::float64_t;
 
-template<typename T>
+template <typename T>
 class BadCase : public ::testing::Test
 {
 };
@@ -60,7 +60,7 @@ TYPED_TEST(BadCase, DomainNotSorted)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template<typename Type>
+template <typename Type>
 class SanityCheck : public ::testing::Test
 {
 public:
@@ -129,7 +129,8 @@ TYPED_TEST(SanityCheck, BelowRange)
   this->check(result, this->range_.front());
 }
 
-TEST(LookupTableHelpers, Interpolate) {
+TEST(LookupTableHelpers, Interpolate)
+{
   {
     const auto scaling = 0.0f;
     EXPECT_EQ(interpolate(0.0f, 1.0f, scaling), 0.0f);

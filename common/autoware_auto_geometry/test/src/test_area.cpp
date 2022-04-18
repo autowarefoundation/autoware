@@ -14,16 +14,17 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#include <gtest/gtest.h>
+#include <geometry/common_2d.hpp>
 
 #include <geometry_msgs/msg/point32.hpp>
-#include <geometry/common_2d.hpp>
+
+#include <gtest/gtest.h>
 
 #include <list>
 #include <utility>
 #include <vector>
 
-template<typename DataStructure>
+template <typename DataStructure>
 class AreaTest : public ::testing::Test
 {
 protected:
@@ -31,10 +32,7 @@ protected:
   using Point = typename DataStructure::value_type;
   using Real = decltype(autoware::common::geometry::point_adapter::x_(std::declval<Point>()));
 
-  auto area()
-  {
-    return autoware::common::geometry::area_checked_2d(data_.begin(), data_.end());
-  }
+  auto area() { return autoware::common::geometry::area_checked_2d(data_.begin(), data_.end()); }
 
   void add_point(Real x, Real y)
   {
@@ -47,21 +45,15 @@ protected:
 };
 
 // Data structures to test...
-template<typename ... Points>
-using TestTypes_ = ::testing::Types<
-  std::vector<Points>...,
-  std::list<Points>...
->;
+template <typename... Points>
+using TestTypes_ = ::testing::Types<std::vector<Points>..., std::list<Points>...>;
 // ... and point types to test
 using TestTypes = TestTypes_<geometry_msgs::msg::Point32>;
 // cppcheck-suppress syntaxError
 TYPED_TEST_SUITE(AreaTest, TestTypes, );
 
 // The empty set has zero area
-TYPED_TEST(AreaTest, DegenerateZero)
-{
-  EXPECT_FLOAT_EQ(0.0, this->area());
-}
+TYPED_TEST(AreaTest, DegenerateZero) { EXPECT_FLOAT_EQ(0.0, this->area()); }
 
 // An individual point has zero area
 TYPED_TEST(AreaTest, DegenerateOne)
@@ -82,8 +74,8 @@ TYPED_TEST(AreaTest, DegenerateTwo)
 TYPED_TEST(AreaTest, Triangle)
 {
   this->add_point(1.0, 0.0);
-  this->add_point(3.0, 0.0);  // 2.0 wide
-  this->add_point(2.0, 2.0);  // 2.0 tall
+  this->add_point(3.0, 0.0);           // 2.0 wide
+  this->add_point(2.0, 2.0);           // 2.0 tall
   EXPECT_FLOAT_EQ(2.0, this->area());  // A = (1/2) * b * h
 }
 

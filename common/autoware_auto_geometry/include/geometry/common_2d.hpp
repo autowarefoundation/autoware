@@ -19,16 +19,18 @@
 #ifndef GEOMETRY__COMMON_2D_HPP_
 #define GEOMETRY__COMMON_2D_HPP_
 
+#include "geometry/interval.hpp"
+
 #include <common/types.hpp>
+
+#include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
+
 #include <cmath>
 #include <limits>
 #include <stdexcept>
 
-#include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
-#include "geometry/interval.hpp"
-
-using autoware::common::types::float32_t;
 using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
 
 namespace comparison = autoware::common::helper_functions::comparisons;
 
@@ -46,7 +48,7 @@ namespace point_adapter
 /// \return The x value of the point
 /// \param[in] pt The point
 /// \tparam PointT The point type
-template<typename PointT>
+template <typename PointT>
 inline auto x_(const PointT & pt)
 {
   return pt.x;
@@ -62,7 +64,7 @@ inline auto x_(const autoware_auto_planning_msgs::msg::TrajectoryPoint & pt)
 /// \return The y value of the point
 /// \param[in] pt The point
 /// \tparam PointT The point type
-template<typename PointT>
+template <typename PointT>
 inline auto y_(const PointT & pt)
 {
   return pt.y;
@@ -78,7 +80,7 @@ inline auto y_(const autoware_auto_planning_msgs::msg::TrajectoryPoint & pt)
 /// \return The z value of the point
 /// \param[in] pt The point
 /// \tparam PointT The point type
-template<typename PointT>
+template <typename PointT>
 inline auto z_(const PointT & pt)
 {
   return pt.z;
@@ -94,7 +96,7 @@ inline auto z_(const autoware_auto_planning_msgs::msg::TrajectoryPoint & pt)
 /// \return A reference to the x value of the point
 /// \param[in] pt The point
 /// \tparam PointT The point type
-template<typename PointT>
+template <typename PointT>
 inline auto & xr_(PointT & pt)
 {
   return pt.x;
@@ -110,7 +112,7 @@ inline auto & xr_(autoware_auto_planning_msgs::msg::TrajectoryPoint & pt)
 /// \return A reference to The y value of the point
 /// \param[in] pt The point
 /// \tparam PointT The point type
-template<typename PointT>
+template <typename PointT>
 inline auto & yr_(PointT & pt)
 {
   return pt.y;
@@ -126,7 +128,7 @@ inline auto & yr_(autoware_auto_planning_msgs::msg::TrajectoryPoint & pt)
 /// \return A reference to the z value of the point
 /// \param[in] pt The point
 /// \tparam PointT The point type
-template<typename PointT>
+template <typename PointT>
 inline auto & zr_(PointT & pt)
 {
   return pt.z;
@@ -143,7 +145,7 @@ inline auto & zr_(autoware_auto_planning_msgs::msg::TrajectoryPoint & pt)
 namespace details
 {
 // Return the next iterator, cycling back to the beginning of the list if you hit the end
-template<typename IT>
+template <typename IT>
 IT circular_next(const IT begin, const IT end, const IT current) noexcept
 {
   auto next = std::next(current);
@@ -155,14 +157,13 @@ IT circular_next(const IT begin, const IT end, const IT current) noexcept
 
 }  // namespace details
 
-
 /// \tparam T1, T2, T3 point type. Must have point adapters defined or have float members x and y
 /// \brief compute whether line segment rp is counter clockwise relative to line segment qp
 /// \param[in] pt shared point for both line segments
 /// \param[in] r point to check if it forms a ccw angle
 /// \param[in] q reference point
 /// \return whether angle formed is ccw. Three collinear points is considered ccw
-template<typename T1, typename T2, typename T3>
+template <typename T1, typename T2, typename T3>
 inline auto ccw(const T1 & pt, const T2 & q, const T3 & r)
 {
   using point_adapter::x_;
@@ -175,7 +176,7 @@ inline auto ccw(const T1 & pt, const T2 & q, const T3 & r)
 /// \param[in] pt first point
 /// \param[in] q second point
 /// \return 2d cross product
-template<typename T1, typename T2>
+template <typename T1, typename T2>
 inline auto cross_2d(const T1 & pt, const T2 & q)
 {
   using point_adapter::x_;
@@ -188,7 +189,7 @@ inline auto cross_2d(const T1 & pt, const T2 & q)
 /// \param[in] pt first point
 /// \param[in] q second point
 /// \return 2d scalar dot product
-template<typename T1, typename T2>
+template <typename T1, typename T2>
 inline auto dot_2d(const T1 & pt, const T2 & q)
 {
   using point_adapter::x_;
@@ -202,7 +203,7 @@ inline auto dot_2d(const T1 & pt, const T2 & q)
 /// \param[in] q The right hand side
 /// \return A point with the difference in the x and y fields, all other fields are default
 ///         initialized
-template<typename T>
+template <typename T>
 T minus_2d(const T & p, const T & q)
 {
   T r;
@@ -218,7 +219,7 @@ T minus_2d(const T & p, const T & q)
 /// \param[in] p The left hand side
 /// \return A point with the negation in the x and y fields, all other fields are default
 ///         initialized
-template<typename T>
+template <typename T>
 T minus_2d(const T & p)
 {
   T r;
@@ -232,7 +233,7 @@ T minus_2d(const T & p)
 /// \param[in] q The right hand side
 /// \return A point with the sum in the x and y fields, all other fields are default
 ///         initialized
-template<typename T>
+template <typename T>
 T plus_2d(const T & p, const T & q)
 {
   T r;
@@ -249,7 +250,7 @@ T plus_2d(const T & p, const T & q)
 /// \param[in] a The scalar value
 /// \return A point with the scaled x and y fields, all other fields are default
 ///         initialized
-template<typename T>
+template <typename T>
 T times_2d(const T & p, const float32_t a)
 {
   T r;
@@ -268,7 +269,7 @@ T times_2d(const T & p, const float32_t a)
 /// \param[in] v direction of second line
 /// \return intersection point
 /// \throw std::runtime_error if lines are (nearly) collinear or parallel
-template<typename T>
+template <typename T>
 inline T intersection_2d(const T & pt, const T & u, const T & q, const T & v)
 {
   const float32_t num = cross_2d(minus_2d(pt, q), u);
@@ -281,19 +282,18 @@ inline T intersection_2d(const T & pt, const T & u, const T & q, const T & v)
     } else {
       // parallel case, no valid output
       throw std::runtime_error(
-              "intersection_2d: no unique solution (either collinear or parallel)");
+        "intersection_2d: no unique solution (either collinear or parallel)");
     }
   }
   return plus_2d(q, times_2d(v, num / den));
 }
-
 
 /// \tparam T point type. Must have point adapters defined or have float members x and y
 /// \brief rotate point given precomputed sin and cos
 /// \param[inout] pt point to rotate
 /// \param[in] cos_th precomputed cosine value
 /// \param[in] sin_th precompined sine value
-template<typename T>
+template <typename T>
 inline void rotate_2d(T & pt, const float32_t cos_th, const float32_t sin_th)
 {
   const float32_t x = point_adapter::x_(pt);
@@ -307,7 +307,7 @@ inline void rotate_2d(T & pt, const float32_t cos_th, const float32_t sin_th)
 /// \param[in] pt reference point to rotate
 /// \param[in] th_rad angle by which to rotate point
 /// \return rotated point
-template<typename T>
+template <typename T>
 inline T rotate_2d(const T & pt, const float32_t th_rad)
 {
   T q(pt);  // It's reasonable to expect a copy constructor
@@ -322,7 +322,7 @@ inline T rotate_2d(const T & pt, const float32_t th_rad)
 ///        This is the equivalent of a 90 degree ccw rotation
 /// \param[in] pt point to get normal point of
 /// \return point normal to p (unnormalized)
-template<typename T>
+template <typename T>
 inline T get_normal(const T & pt)
 {
   T q(pt);
@@ -335,7 +335,7 @@ inline T get_normal(const T & pt)
 /// \brief get magnitude of x and y components:
 /// \param[in] pt point to get magnitude of
 /// \return magitude of x and y components together
-template<typename T>
+template <typename T>
 inline auto norm_2d(const T & pt)
 {
   return sqrtf(static_cast<float32_t>(dot_2d(pt, pt)));
@@ -349,7 +349,7 @@ inline auto norm_2d(const T & pt)
 /// \param[in] q Second point defining the line segment
 /// \param[in] r Reference point to find the closest point to
 /// \return Closest point on line segment p-q to point r
-template<typename T>
+template <typename T>
 inline T closest_segment_point_2d(const T & p, const T & q, const T & r)
 {
   const T qp = minus_2d(q, p);
@@ -373,7 +373,7 @@ inline T closest_segment_point_2d(const T & p, const T & q, const T & r)
 /// \return Closest point on line p-q to point r
 /// \throw std::runtime_error if the two points coincide and hence don't uniquely
 //         define a line
-template<typename T>
+template <typename T>
 inline T closest_line_point_2d(const T & p, const T & q, const T & r)
 {
   const T qp = minus_2d(q, p);
@@ -384,7 +384,7 @@ inline T closest_line_point_2d(const T & p, const T & q, const T & r)
     ret = plus_2d(p, times_2d(qp, t));
   } else {
     throw std::runtime_error(
-            "closet_line_point_2d: line ill-defined because given points coincide");
+      "closet_line_point_2d: line ill-defined because given points coincide");
   }
   return ret;
 }
@@ -395,7 +395,7 @@ inline T closest_line_point_2d(const T & p, const T & q, const T & r)
 /// \param[in] q Second point defining the line segment
 /// \param[in] r Reference point to find the distance from the line segment to
 /// \return Distance from point r to line segment p-q
-template<typename T>
+template <typename T>
 inline auto point_line_segment_distance_2d(const T & p, const T & q, const T & r)
 {
   const T pq_r = minus_2d(closest_segment_point_2d(p, q, r), r);
@@ -406,7 +406,7 @@ inline auto point_line_segment_distance_2d(const T & p, const T & q, const T & r
 /// \tparam T Point type. Must have point adapters defined or have float members x and y
 /// \param th Angle in radians
 /// \return Unit vector in the direction of the given angle.
-template<typename T>
+template <typename T>
 inline T make_unit_vector2d(float th)
 {
   T r;
@@ -422,7 +422,7 @@ inline T make_unit_vector2d(float th)
 /// \param a point 1
 /// \param b point 2
 /// \return squared euclidean distance
-template<typename OUT = float32_t, typename T1, typename T2>
+template <typename OUT = float32_t, typename T1, typename T2>
 inline OUT squared_distance_2d(const T1 & a, const T2 & b)
 {
   const auto x = static_cast<OUT>(point_adapter::x_(a)) - static_cast<OUT>(point_adapter::x_(b));
@@ -437,7 +437,7 @@ inline OUT squared_distance_2d(const T1 & a, const T2 & b)
 /// \param a point 1
 /// \param b point 2
 /// \return euclidean distance
-template<typename OUT = float32_t, typename T1, typename T2>
+template <typename OUT = float32_t, typename T1, typename T2>
 inline OUT distance_2d(const T1 & a, const T2 & b)
 {
   return std::sqrt(squared_distance_2d<OUT>(a, b));
@@ -452,7 +452,7 @@ inline OUT distance_2d(const T1 & a, const T2 & b)
 /// \return > 0 for point q left of the line through p1 to p2
 ///         = 0 for point q on the line through p1 to p2
 ///         < 0 for point q right of the line through p1 to p2
-template<typename T>
+template <typename T>
 inline auto check_point_position_to_line_2d(const T & p1, const T & p2, const T & q)
 {
   return cross_2d(minus_2d(p2, p1), minus_2d(q, p1));
@@ -465,7 +465,7 @@ inline auto check_point_position_to_line_2d(const T & p1, const T & p2, const T 
 /// \param[in] end One past the last of the point sequence
 /// \return Whether or not all point triples p_i, p_{i+1}, p_{i+2} are in a particular order.
 ///         Returns true for collinear points as well
-template<typename IT>
+template <typename IT>
 bool all_ordered(const IT begin, const IT end) noexcept
 {
   // Short circuit: a line or point is always CCW or otherwise ill-defined
@@ -479,9 +479,7 @@ bool all_ordered(const IT begin, const IT end) noexcept
     const auto query_point = details::circular_next(begin, end, line_end);
     // Check if 3 points starting from current point are in clockwise direction
     const bool is_cw = comparison::abs_lte(
-      check_point_position_to_line_2d(*line_start, *line_end, *query_point),
-      0.0F, 1e-3F
-    );
+      check_point_position_to_line_2d(*line_start, *line_end, *query_point), 0.0F, 1e-3F);
     if (is_cw) {
       if (line_start == begin) {
         is_first_point_cw = true;
@@ -502,7 +500,7 @@ bool all_ordered(const IT begin, const IT end) noexcept
 /// \param[in] begin Iterator pointing to the beginning of the polygon points
 /// \param[in] end Iterator pointing to one past the last of the polygon points
 /// \return The area of the polygon, in squared of whatever units your points are in
-template<typename IT>
+template <typename IT>
 auto area_2d(const IT begin, const IT end) noexcept
 {
   using point_adapter::x_;
@@ -515,7 +513,7 @@ auto area_2d(const IT begin, const IT end) noexcept
     area += x_(*it) * y_(*next);
     area -= x_(*next) * y_(*it);
   }
-  return std::abs(T{0.5} *area);
+  return std::abs(T{0.5} * area);
 }
 
 /// Compute area of convex hull, throw if points are not ordered (convexity check is not
@@ -525,7 +523,7 @@ auto area_2d(const IT begin, const IT end) noexcept
 /// \param[in] begin Iterator pointing to the beginning of the polygon points
 /// \param[in] end Iterator pointing to one past the last of the polygon points
 /// \return The area of the polygon, in squared of whatever units your points are in
-template<typename IT>
+template <typename IT>
 auto area_checked_2d(const IT begin, const IT end)
 {
   if (!all_ordered(begin, end)) {
@@ -543,7 +541,7 @@ auto area_checked_2d(const IT begin, const IT end)
 ///               order.
 /// \param p point to be searched
 /// \return True if the point is inside or on the edge of the polygon. False otherwise
-template<typename IteratorType, typename PointType>
+template <typename IteratorType, typename PointType>
 bool is_point_inside_polygon_2d(
   const IteratorType & start_it, const IteratorType & end_it, const PointType & p)
 {
@@ -560,10 +558,7 @@ bool is_point_inside_polygon_2d(
         if (comparison::abs_gt(check_point_position_to_line_2d(*it, *next_it, p), 0.0F, 1e-3F)) {
           ++winding_num;
         } else {
-          if (comparison::abs_eq_zero(
-              check_point_position_to_line_2d(*it, *next_it, p),
-              1e-3F))
-          {
+          if (comparison::abs_eq_zero(check_point_position_to_line_2d(*it, *next_it, p), 1e-3F)) {
             return true;
           }
         }
@@ -574,10 +569,7 @@ bool is_point_inside_polygon_2d(
         if (comparison::abs_lt(check_point_position_to_line_2d(*it, *next_it, p), 0.0F, 1e-3F)) {
           --winding_num;
         } else {
-          if (comparison::abs_eq_zero(
-              check_point_position_to_line_2d(*it, *next_it, p),
-              1e-3F))
-          {
+          if (comparison::abs_eq_zero(check_point_position_to_line_2d(*it, *next_it, p), 1e-3F)) {
             return true;
           }
         }
@@ -586,7 +578,6 @@ bool is_point_inside_polygon_2d(
   }
   return winding_num != 0;
 }
-
 
 }  // namespace geometry
 }  // namespace common

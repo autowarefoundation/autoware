@@ -14,7 +14,5 @@
       tire_cornering_stiffness_front: 0.1 # Taken from AVP demo params, can't verify
       tire_cornering_stiffness_rear: 0.1 # Taken from AVP demo params, can't verify
       mass_vehicle: 2120.0 # Measured from SVL
-      inertia_yaw_kg_m2: 12.0  # Taken from AVP demo params, can't verify
+      inertia_yaw_kg_m2: 12.0 # Taken from AVP demo params, can't verify
       maximum_turning_angle_rad: 0.53
-
-

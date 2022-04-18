@@ -15,22 +15,22 @@
 #ifndef TRAJECTORY_FOLLOWER_TEST_UTILS_HPP_
 #define TRAJECTORY_FOLLOWER_TEST_UTILS_HPP_
 
-#include <memory>
-#include <string>
-
 #include "fake_test_node/fake_test_node.hpp"
-#include "geometry_msgs/msg/transform_stamped.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/time.hpp"
 #include "tf2_ros/static_transform_broadcaster.h"
+
+#include "geometry_msgs/msg/transform_stamped.hpp"
+
+#include <memory>
+#include <string>
 
 namespace test_utils
 {
 using FakeNodeFixture = autoware::tools::testing::FakeTestNode;
 
 inline void waitForMessage(
-  const std::shared_ptr<rclcpp::Node> & node, FakeNodeFixture * fixture,
-  const bool & received_flag,
+  const std::shared_ptr<rclcpp::Node> & node, FakeNodeFixture * fixture, const bool & received_flag,
   const std::chrono::duration<int64_t> max_wait_time = std::chrono::seconds{10LL},
   const bool fail_on_timeout = true)
 {
@@ -43,9 +43,7 @@ inline void waitForMessage(
     time_passed += dt;
     if (time_passed > max_wait_time) {
       if (fail_on_timeout) {
-        throw std::runtime_error(
-                std::string(
-                  "Did not receive a message soon enough"));
+        throw std::runtime_error(std::string("Did not receive a message soon enough"));
       } else {
         break;
       }
@@ -70,14 +68,15 @@ inline geometry_msgs::msg::TransformStamped getDummyTransform()
   return transform_stamped;
 }
 
-// TODO(Horibe): modify the controller nodes so that they does not publish topics when data is not ready.
-// then, remove this function.
+// TODO(Horibe): modify the controller nodes so that they does not publish topics when data is not
+// ready. then, remove this function.
 template <typename T>
-inline void spinWhile(T &node){
-    for (size_t i = 0; i < 10; i++) {
-      rclcpp::spin_some(node);
-      const auto dt{std::chrono::milliseconds{100LL}};
-      std::this_thread::sleep_for(dt);
+inline void spinWhile(T & node)
+{
+  for (size_t i = 0; i < 10; i++) {
+    rclcpp::spin_some(node);
+    const auto dt{std::chrono::milliseconds{100LL}};
+    std::this_thread::sleep_for(dt);
   }
 }
 }  // namespace test_utils

@@ -18,9 +18,9 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
-#include <gtest/gtest.h>
-
 #include "helper_functions/float_comparisons.hpp"
+
+#include <gtest/gtest.h>
 
 // cppcheck does not like gtest macros inside of namespaces:
 // https://sourceforge.net/p/cppcheck/discussion/general/thread/e68df47b/
@@ -40,7 +40,8 @@ const auto epsilon = 0.0001;
 
 //------------------------------------------------------------------------------
 
-TEST(HelperFunctionsComparisons, AbsEqZero) {
+TEST(HelperFunctionsComparisons, AbsEqZero)
+{
   EXPECT_TRUE(comp::abs_eq_zero(d, epsilon));
   EXPECT_TRUE(comp::abs_eq_zero(d + epsilon * epsilon, epsilon));
   EXPECT_FALSE(comp::abs_eq_zero(d + 2.0 * epsilon, epsilon));
@@ -50,7 +51,8 @@ TEST(HelperFunctionsComparisons, AbsEqZero) {
 
 //------------------------------------------------------------------------------
 
-TEST(HelperFunctionsComparisons, AbsEq) {
+TEST(HelperFunctionsComparisons, AbsEq)
+{
   EXPECT_TRUE(comp::abs_eq(c, e, epsilon));
   EXPECT_TRUE(comp::abs_eq(e, c, epsilon));
   EXPECT_FALSE(comp::abs_eq(c, e, 0.0));
@@ -63,7 +65,8 @@ TEST(HelperFunctionsComparisons, AbsEq) {
 
 //------------------------------------------------------------------------------
 
-TEST(HelperFunctionsComparisons, AbsLt) {
+TEST(HelperFunctionsComparisons, AbsLt)
+{
   EXPECT_TRUE(comp::abs_lt(f, c, 0.0));
   EXPECT_TRUE(comp::abs_lt(f, c, epsilon));
   EXPECT_FALSE(comp::abs_lt(c, f, epsilon));
@@ -73,7 +76,8 @@ TEST(HelperFunctionsComparisons, AbsLt) {
 
 //------------------------------------------------------------------------------
 
-TEST(HelperFunctionsComparisons, AbsLte) {
+TEST(HelperFunctionsComparisons, AbsLte)
+{
   EXPECT_TRUE(comp::abs_lte(c, e, epsilon));
   EXPECT_TRUE(comp::abs_lte(e, c, epsilon));
   EXPECT_FALSE(comp::abs_lte(c, e, 0.0));
@@ -88,7 +92,8 @@ TEST(HelperFunctionsComparisons, AbsLte) {
 
 //------------------------------------------------------------------------------
 
-TEST(HelperFunctionsComparisons, AbsGt) {
+TEST(HelperFunctionsComparisons, AbsGt)
+{
   EXPECT_TRUE(comp::abs_gt(c, e, 0.0));
   EXPECT_FALSE(comp::abs_gt(c, e, epsilon));
   EXPECT_FALSE(comp::abs_gt(f, c, epsilon));
@@ -99,7 +104,8 @@ TEST(HelperFunctionsComparisons, AbsGt) {
 
 //------------------------------------------------------------------------------
 
-TEST(HelperFunctionsComparisons, AbsGte) {
+TEST(HelperFunctionsComparisons, AbsGte)
+{
   EXPECT_TRUE(comp::abs_gte(c, e, 0.0));
   EXPECT_FALSE(comp::abs_gte(e, c, 0.0));
   EXPECT_TRUE(comp::abs_gte(c, e, epsilon));
@@ -112,7 +118,8 @@ TEST(HelperFunctionsComparisons, AbsGte) {
 
 //------------------------------------------------------------------------------
 
-TEST(HelperFunctionsComparisons, RelEq) {
+TEST(HelperFunctionsComparisons, RelEq)
+{
   EXPECT_FALSE(comp::rel_eq(c, e, 0.0));
   EXPECT_FALSE(comp::rel_eq(e, c, 0.0));
   EXPECT_TRUE(comp::rel_eq(a, a, 0.0));
@@ -128,7 +135,8 @@ TEST(HelperFunctionsComparisons, RelEq) {
 
 //------------------------------------------------------------------------------
 
-TEST(HelperFunctionsComparisons, ApproxEq) {
+TEST(HelperFunctionsComparisons, ApproxEq)
+{
   EXPECT_TRUE(comp::approx_eq(c, e, epsilon, 0.0));
   EXPECT_TRUE(comp::approx_eq(e, c, epsilon, 0.0));
   EXPECT_TRUE(comp::approx_eq(a, a, epsilon, 0.0));

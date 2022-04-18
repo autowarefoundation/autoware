@@ -17,27 +17,27 @@
 #ifndef TEST_SPATIAL_HASH_HPP_
 #define TEST_SPATIAL_HASH_HPP_
 
-#include <geometry_msgs/msg/point32.hpp>
-#include <vector>
-#include <limits>
 #include "geometry/spatial_hash.hpp"
 
-using autoware::common::types::float32_t;
-using autoware::common::types::float64_t;
-using autoware::common::types::bool8_t;
+#include <geometry_msgs/msg/point32.hpp>
+
+#include <limits>
+#include <vector>
+
 using autoware::common::geometry::spatial_hash::Config2d;
 using autoware::common::geometry::spatial_hash::Config3d;
 using autoware::common::geometry::spatial_hash::SpatialHash;
 using autoware::common::geometry::spatial_hash::SpatialHash2d;
 using autoware::common::geometry::spatial_hash::SpatialHash3d;
+using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
+using autoware::common::types::float64_t;
 
-template<typename PointT>
+template <typename PointT>
 class TypedSpatialHashTest : public ::testing::Test
 {
 public:
-  TypedSpatialHashTest()
-  : ref(),
-    EPS(0.001F)
+  TypedSpatialHashTest() : ref(), EPS(0.001F)
   {
     ref.x = 0.0F;
     ref.y = 0.0F;
@@ -45,14 +45,10 @@ public:
   }
 
 protected:
-  template<typename Cfg>
+  template <typename Cfg>
   void add_points(
-    SpatialHash<PointT, Cfg> & hash,
-    const uint32_t points_per_ring,
-    const uint32_t num_rings,
-    const float32_t dr,
-    const float32_t dx = 0.0F,
-    const float32_t dy = 0.0F)
+    SpatialHash<PointT, Cfg> & hash, const uint32_t points_per_ring, const uint32_t num_rings,
+    const float32_t dr, const float32_t dx = 0.0F, const float32_t dy = 0.0F)
   {
     const float32_t dth = 2.0F * 3.14159F / points_per_ring;
 
@@ -81,7 +77,6 @@ using PointTypesSpatialHash = ::testing::Types<geometry_msgs::msg::Point32>;
 // cppcheck-suppress syntaxError
 TYPED_TEST_SUITE(TypedSpatialHashTest, PointTypesSpatialHash, );
 /// NOTE: This is the older version due to 1.8.0 of GTest. v1.8.1 uses TYPED_TEST_SUITE
-
 
 ///////////////////////////////////////////////////////////////
 // TODO(christopher.ho) helper functions to simplify this stuff
@@ -130,7 +125,7 @@ TYPED_TEST(TypedSpatialHashTest, OneBin)
   count = 0U;
   for (auto it : hash) {
     // TODO(c.ho) check uniqueness of stuff
-    (void) it;
+    (void)it;
     ++count;
   }
   EXPECT_EQ(count, 0U);
@@ -224,7 +219,7 @@ TYPED_TEST(TypedSpatialHashTest, 3d)
   count = 0U;
   for (auto it : hash) {
     // TODO(c.ho) check uniqueness of stuff
-    (void) it;
+    (void)it;
     ++count;
   }
   EXPECT_EQ(count, 0U);
@@ -241,8 +236,7 @@ TEST(SpatialHashConfig, BadCases)
   EXPECT_THROW(Config2d({-30.0F, 30.0F, 30.1F, 30.0F, 1.0F, 1024U}), std::domain_error);
   // min_z >= max_z
   EXPECT_THROW(
-    Config3d({-30.0F, 30.0F, -30.0F, 30.0F, 31.0F, 30.0F, 1.0F, 1024U}),
-    std::domain_error);
+    Config3d({-30.0F, 30.0F, -30.0F, 30.0F, 31.0F, 30.0F, 1.0F, 1024U}), std::domain_error);
   // floating point limit
   constexpr float32_t max_float = std::numeric_limits<float32_t>::max();
   EXPECT_THROW(Config2d({-max_float, max_float, -30.0F, 30.0F, 1.0F, 1024U}), std::domain_error);

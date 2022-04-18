@@ -21,14 +21,15 @@
 
 namespace
 {
+using autoware::common::helper_functions::wrap_angle;
 using autoware::common::types::float32_t;
 using autoware::common::types::float64_t;
-using autoware::common::helper_functions::wrap_angle;
 
 }  // namespace
 
 /// @test       Wrap an angle.
-TEST(TestAngleUtils, WrapAngle) {
+TEST(TestAngleUtils, WrapAngle)
+{
   EXPECT_DOUBLE_EQ(wrap_angle(-5.0 * M_PI_2), -M_PI_2);
   EXPECT_DOUBLE_EQ(wrap_angle(5.0 * M_PI_2), M_PI_2);
   EXPECT_DOUBLE_EQ(wrap_angle(M_PI), -M_PI);

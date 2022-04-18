@@ -24,8 +24,7 @@ namespace trajectory_follower
 {
 void MPCTrajectory::push_back(
   const float64_t & xp, const float64_t & yp, const float64_t & zp, const float64_t & yawp,
-  const float64_t & vxp,
-  const float64_t & kp, const float64_t & smooth_kp, const float64_t & tp)
+  const float64_t & vxp, const float64_t & kp, const float64_t & smooth_kp, const float64_t & tp)
 {
   x.push_back(xp);
   y.push_back(yp);
@@ -54,8 +53,7 @@ size_t MPCTrajectory::size() const
   if (
     x.size() == y.size() && x.size() == z.size() && x.size() == yaw.size() &&
     x.size() == vx.size() && x.size() == k.size() && x.size() == smooth_k.size() &&
-    x.size() == relative_time.size())
-  {
+    x.size() == relative_time.size()) {
     return x.size();
   } else {
     std::cerr << "[MPC trajectory] trajectory size is inappropriate" << std::endl;

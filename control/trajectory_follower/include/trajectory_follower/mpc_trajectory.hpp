@@ -15,11 +15,11 @@
 #ifndef TRAJECTORY_FOLLOWER__MPC_TRAJECTORY_HPP_
 #define TRAJECTORY_FOLLOWER__MPC_TRAJECTORY_HPP_
 
-#include <iostream>
-#include <vector>
-
 #include "common/types.hpp"
 #include "trajectory_follower/visibility_control.hpp"
+
+#include <iostream>
+#include <vector>
 
 namespace autoware
 {
@@ -65,10 +65,7 @@ public:
   /**
    * @return true if the compensents sizes are all 0 or are inconsistent
    */
-  inline bool empty() const
-  {
-    return size() == 0;
-  }
+  inline bool empty() const { return size() == 0; }
 };
 }  // namespace trajectory_follower
 }  // namespace control

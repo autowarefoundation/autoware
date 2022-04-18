@@ -16,21 +16,21 @@
 #define TIME_UTILS__VISIBILITY_CONTROL_HPP_
 
 #if defined(__WIN32)
-  #if defined(TIME_UTILS_BUILDING_DLL) || defined(TIME_UTILS_EXPORTS)
-    #define TIME_UTILS_PUBLIC __declspec(dllexport)
-    #define TIME_UTILS_LOCAL
-  #else  // defined(TIME_UTILS_BUILDING_DLL) || defined(TIME_UTILS_EXPORTS)
-    #define TIME_UTILS_PUBLIC __declspec(dllimport)
-    #define TIME_UTILS_LOCAL
-  #endif  // defined(TIME_UTILS_BUILDING_DLL) || defined(TIME_UTILS_EXPORTS)
+#if defined(TIME_UTILS_BUILDING_DLL) || defined(TIME_UTILS_EXPORTS)
+#define TIME_UTILS_PUBLIC __declspec(dllexport)
+#define TIME_UTILS_LOCAL
+#else  // defined(TIME_UTILS_BUILDING_DLL) || defined(TIME_UTILS_EXPORTS)
+#define TIME_UTILS_PUBLIC __declspec(dllimport)
+#define TIME_UTILS_LOCAL
+#endif  // defined(TIME_UTILS_BUILDING_DLL) || defined(TIME_UTILS_EXPORTS)
 #elif defined(__linux__)
-  #define TIME_UTILS_PUBLIC __attribute__((visibility("default")))
-  #define TIME_UTILS_LOCAL __attribute__((visibility("hidden")))
+#define TIME_UTILS_PUBLIC __attribute__((visibility("default")))
+#define TIME_UTILS_LOCAL __attribute__((visibility("hidden")))
 #elif defined(__APPLE__)
-  #define TIME_UTILS_PUBLIC __attribute__((visibility("default")))
-  #define TIME_UTILS_LOCAL __attribute__((visibility("hidden")))
+#define TIME_UTILS_PUBLIC __attribute__((visibility("default")))
+#define TIME_UTILS_LOCAL __attribute__((visibility("hidden")))
 #else  // defined(_LINUX)
-  #error "Unsupported Build Configuration"
+#error "Unsupported Build Configuration"
 #endif  // defined(_WINDOWS)
 
 #endif  // TIME_UTILS__VISIBILITY_CONTROL_HPP_

@@ -17,7 +17,6 @@
 /// \copyright Copyright 2021 Apex.AI, Inc.
 /// All rights reserved.
 
-
 #include <fake_test_node/fake_test_node.hpp>
 
 #include <memory>
@@ -50,18 +49,17 @@ void detail::FakeNodeCore::set_up(const std::string & test_name)
   rclcpp::init(kArgc, nullptr);
   ASSERT_TRUE(rclcpp::ok());
   m_fake_node = std::make_shared<rclcpp::Node>("FakeNodeForTest_" + sanitize_test_name(test_name));
-  m_tf_listener = std::make_shared<tf2_ros::TransformListener>(
-    m_tf_buffer, m_fake_node, kSpinThread);
+  m_tf_listener =
+    std::make_shared<tf2_ros::TransformListener>(m_tf_buffer, m_fake_node, kSpinThread);
 }
 
-void detail::FakeNodeCore::tear_down()
-{
-  (void)rclcpp::shutdown();
-}
+void detail::FakeNodeCore::tear_down() { (void)rclcpp::shutdown(); }
 
 std::string detail::get_test_name(const ::testing::TestInfo * info)
 {
-  if (!info) {throw std::runtime_error("No test info available.");}
+  if (!info) {
+    throw std::runtime_error("No test info available.");
+  }
   return std::string{info->test_case_name()} + "_" + info->name();
 }
 
@@ -70,11 +68,7 @@ void FakeTestNode::SetUp()
   set_up(detail::get_test_name(::testing::UnitTest::GetInstance()->current_test_info()));
 }
 
-void FakeTestNode::TearDown()
-{
-  tear_down();
-}
-
+void FakeTestNode::TearDown() { tear_down(); }
 
 }  // namespace testing
 }  // namespace tools

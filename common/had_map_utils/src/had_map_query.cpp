@@ -14,15 +14,15 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-//lint -e537 pclint vs cpplint NOLINT
+// lint -e537 pclint vs cpplint NOLINT
+
+#include "had_map_utils/had_map_query.hpp"
 
 #include <algorithm>
 #include <limits>
 #include <memory>
 #include <string>
 #include <vector>
-
-#include "had_map_utils/had_map_query.hpp"
 
 namespace autoware
 {
@@ -79,21 +79,17 @@ lanelet::Polygons3d subtypePolygons(const lanelet::Polygons3d polygons, const ch
   return subtype_polygons;
 }
 
-
 lanelet::LineStrings3d getLineStringLayer(const lanelet::LaneletMapPtr ll_map)
 {
   lanelet::LineStrings3d linestrings;
-  for (auto lsi = ll_map->lineStringLayer.begin();
-    lsi != ll_map->lineStringLayer.end(); lsi++)
-  {
+  for (auto lsi = ll_map->lineStringLayer.begin(); lsi != ll_map->lineStringLayer.end(); lsi++) {
     linestrings.push_back(*lsi);
   }
   return linestrings;
 }
 
 lanelet::LineStrings3d subtypeLineStrings(
-  const lanelet::LineStrings3d linestrings,
-  const char subtype[])
+  const lanelet::LineStrings3d linestrings, const char subtype[])
 {
   lanelet::LineStrings3d subtype_linestrings;
   for (auto lsi = linestrings.begin(); lsi != linestrings.end(); lsi++) {

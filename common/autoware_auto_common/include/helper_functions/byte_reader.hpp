@@ -40,14 +40,13 @@ public:
   /// \brief Default constructor, byte reader class
   /// \param[in] byte_vector A vector to read bytes from
   explicit ByteReader(const std::vector<uint8_t> & byte_vector)
-  : byte_vector_(byte_vector),
-    index_(0U)
+  : byte_vector_(byte_vector), index_(0U)
   {
   }
 
   // brief Read bytes and store it in the argument passed in big-endian order
   /// \param[inout] value Read and store the bytes from the vector matching the size of the argument
-  template<typename T>
+  template <typename T>
   void read(T & value)
   {
     constexpr std::size_t kTypeSize = sizeof(T);
@@ -65,10 +64,7 @@ public:
     index_ += kTypeSize;
   }
 
-  void skip(std::size_t count)
-  {
-    index_ += count;
-  }
+  void skip(std::size_t count) { index_ += count; }
 };
 }  // namespace helper_functions
 }  // namespace common

@@ -35,7 +35,7 @@ void KinematicsBicycleModelNoDelay::calculateDiscreteMatrix(
   Eigen::MatrixXd & a_d, Eigen::MatrixXd & b_d, Eigen::MatrixXd & c_d, Eigen::MatrixXd & w_d,
   const float64_t dt)
 {
-  auto sign = [](float64_t x) {return (x > 0.0) - (x < 0.0);};
+  auto sign = [](float64_t x) { return (x > 0.0) - (x < 0.0); };
 
   /* Linearize delta around delta_r (reference delta) */
   float64_t delta_r = atan(m_wheelbase * m_curvature);

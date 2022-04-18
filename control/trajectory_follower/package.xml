@@ -11,11 +11,11 @@
   <buildtool_depend>autoware_auto_cmake</buildtool_depend>
 
   <depend>autoware_auto_common</depend>
-  <depend>autoware_auto_planning_msgs</depend>
   <depend>autoware_auto_control_msgs</depend>
-  <depend>autoware_auto_vehicle_msgs</depend>
-  <depend>autoware_auto_system_msgs</depend>
   <depend>autoware_auto_geometry</depend>
+  <depend>autoware_auto_planning_msgs</depend>
+  <depend>autoware_auto_system_msgs</depend>
+  <depend>autoware_auto_vehicle_msgs</depend>
   <depend>eigen</depend>
   <depend>geometry_msgs</depend>
   <depend>interpolation</depend>
@@ -28,9 +28,9 @@
   <depend>tf2_ros</depend>
 
   <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>eigen</test_depend>
   <!-- <test_depend>ament_lint_auto</test_depend> -->
   <!-- <test_depend>ament_lint_common</test_depend> -->
-  <test_depend>eigen</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

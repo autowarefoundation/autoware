@@ -15,24 +15,12 @@
 #ifndef TRAJECTORY_FOLLOWER_NODES__LONGITUDINAL_CONTROLLER_NODE_HPP_
 #define TRAJECTORY_FOLLOWER_NODES__LONGITUDINAL_CONTROLLER_NODE_HPP_
 
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
-
-#include "autoware_auto_control_msgs/msg/longitudinal_command.hpp"
-#include "autoware_auto_planning_msgs/msg/trajectory.hpp"
-#include "autoware_auto_vehicle_msgs/msg/vehicle_odometry.hpp"
-#include "autoware_auto_system_msgs/msg/float32_multi_array_diagnostic.hpp"
 #include "eigen3/Eigen/Core"
 #include "eigen3/Eigen/Geometry"
-#include "geometry_msgs/msg/pose_stamped.hpp"
 #include "motion_common/motion_common.hpp"
 #include "motion_common/trajectory_common.hpp"
-#include "nav_msgs/msg/odometry.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tf2/utils.h"
-#include "tf2_msgs/msg/tf_message.hpp"
 #include "tf2_ros/buffer.h"
 #include "tf2_ros/transform_listener.h"
 #include "trajectory_follower/debug_values.hpp"
@@ -42,6 +30,19 @@
 #include "trajectory_follower/smooth_stop.hpp"
 #include "vehicle_info_util/vehicle_info_util.hpp"
 
+#include "autoware_auto_control_msgs/msg/longitudinal_command.hpp"
+#include "autoware_auto_planning_msgs/msg/trajectory.hpp"
+#include "autoware_auto_system_msgs/msg/float32_multi_array_diagnostic.hpp"
+#include "autoware_auto_vehicle_msgs/msg/vehicle_odometry.hpp"
+#include "geometry_msgs/msg/pose_stamped.hpp"
+#include "nav_msgs/msg/odometry.hpp"
+#include "tf2_msgs/msg/tf_message.hpp"
+
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 namespace autoware
 {
 namespace motion
@@ -50,8 +51,8 @@ namespace control
 {
 namespace trajectory_follower_nodes
 {
-using autoware::common::types::float64_t;
 using autoware::common::types::bool8_t;
+using autoware::common::types::float64_t;
 namespace trajectory_follower = ::autoware::motion::control::trajectory_follower;
 namespace motion_common = ::autoware::motion::motion_common;
 
@@ -83,12 +84,14 @@ private:
   };
 
   // ros variables
-  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr
-    m_sub_current_velocity;
+  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr m_sub_current_velocity;
   rclcpp::Subscription<autoware_auto_planning_msgs::msg::Trajectory>::SharedPtr m_sub_trajectory;
-  rclcpp::Publisher<autoware_auto_control_msgs::msg::LongitudinalCommand>::SharedPtr m_pub_control_cmd;
-  rclcpp::Publisher<autoware_auto_system_msgs::msg::Float32MultiArrayDiagnostic>::SharedPtr m_pub_slope;
-  rclcpp::Publisher<autoware_auto_system_msgs::msg::Float32MultiArrayDiagnostic>::SharedPtr m_pub_debug;
+  rclcpp::Publisher<autoware_auto_control_msgs::msg::LongitudinalCommand>::SharedPtr
+    m_pub_control_cmd;
+  rclcpp::Publisher<autoware_auto_system_msgs::msg::Float32MultiArrayDiagnostic>::SharedPtr
+    m_pub_slope;
+  rclcpp::Publisher<autoware_auto_system_msgs::msg::Float32MultiArrayDiagnostic>::SharedPtr
+    m_pub_debug;
   rclcpp::TimerBase::SharedPtr m_timer_control;
 
   rclcpp::Subscription<tf2_msgs::msg::TFMessage>::SharedPtr m_tf_sub;
@@ -209,8 +212,7 @@ private:
    * @brief set current and previous velocity with received message
    * @param [in] msg current state message
    */
-  void callbackCurrentVelocity(
-    const nav_msgs::msg::Odometry::ConstSharedPtr msg);
+  void callbackCurrentVelocity(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
 
   /**
    * @brief set reference trajectory with received message
@@ -284,7 +286,8 @@ private:
   enum Shift getCurrentShift(const size_t nearest_idx) const;
 
   /**
-   * @brief filter acceleration command with limitation of acceleration and jerk, and slope compensation
+   * @brief filter acceleration command with limitation of acceleration and jerk, and slope
+   * compensation
    * @param [in] raw_acc acceleration before filtered
    * @param [in] control_data data for control calculation
    */
@@ -303,8 +306,7 @@ private:
    * @param [in] shift direction that vehicle move (forward or backward)
    */
   float64_t applySlopeCompensation(
-    const float64_t acc, const float64_t pitch,
-    const Shift shift) const;
+    const float64_t acc, const float64_t pitch, const Shift shift) const;
 
   /**
    * @brief keep target motion acceleration negative before stop
@@ -322,8 +324,8 @@ private:
    * @param [in] nearest_idx index of the trajectory point nearest to the vehicle position
    */
   autoware_auto_planning_msgs::msg::TrajectoryPoint calcInterpolatedTargetValue(
-    const autoware_auto_planning_msgs::msg::Trajectory & traj, const geometry_msgs::msg::Point & point,
-    const size_t nearest_idx) const;
+    const autoware_auto_planning_msgs::msg::Trajectory & traj,
+    const geometry_msgs::msg::Point & point, const size_t nearest_idx) const;
 
   /**
    * @brief calculate predicted velocity after time delay based on past control commands
@@ -335,7 +337,8 @@ private:
 
   /**
    * @brief calculate velocity feedback with feed forward and pid controller
-   * @param [in] target_motion reference velocity and acceleration. This acceleration will be used as feed forward.
+   * @param [in] target_motion reference velocity and acceleration. This acceleration will be used
+   * as feed forward.
    * @param [in] dt time step to use
    * @param [in] current_vel current velocity of the vehicle
    */
@@ -349,8 +352,7 @@ private:
    * @param [in] raw_pitch current raw pitch of the vehicle (unfiltered)
    */
   void updatePitchDebugValues(
-    const float64_t pitch, const float64_t traj_pitch,
-    const float64_t raw_pitch);
+    const float64_t pitch, const float64_t traj_pitch, const float64_t raw_pitch);
 
   /**
    * @brief update variables for velocity and acceleration

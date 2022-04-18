@@ -14,8 +14,9 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#include <memory>
 #include <object_detection/detected_objects_display.hpp>
+
+#include <memory>
 
 namespace autoware
 {
@@ -23,8 +24,7 @@ namespace rviz_plugins
 {
 namespace object_detection
 {
-DetectedObjectsDisplay::DetectedObjectsDisplay()
-: ObjectPolygonDisplayBase("detected_objects") {}
+DetectedObjectsDisplay::DetectedObjectsDisplay() : ObjectPolygonDisplayBase("detected_objects") {}
 
 void DetectedObjectsDisplay::processMessage(DetectedObjects::ConstSharedPtr msg)
 {

@@ -21,7 +21,7 @@ namespace time_utils
 {
 namespace details
 {
-template<typename TimeT>
+template <typename TimeT>
 TimeT duration_to_msg(std::chrono::nanoseconds dt)
 {
   // Round down seconds
@@ -94,9 +94,7 @@ std::chrono::nanoseconds from_message(builtin_interfaces::msg::Duration dt) noex
 
 ////////////////////////////////////////////////////////////////////////////////
 std::chrono::nanoseconds interpolate(
-  std::chrono::nanoseconds a,
-  std::chrono::nanoseconds b,
-  float t) noexcept
+  std::chrono::nanoseconds a, std::chrono::nanoseconds b, float t) noexcept
 {
   // TODO(c.ho) consider long double
   const auto t_ = static_cast<double>(std::min(std::max(t, 0.0F), 1.0F));

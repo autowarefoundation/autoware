@@ -11,9 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#include <gtest/gtest.h>
 #include <motion_testing/motion_testing.hpp>
 #include <time_utils/time_utils.hpp>
+
+#include <gtest/gtest.h>
 
 using motion::motion_testing::State;
 using motion::motion_testing::Trajectory;
@@ -59,8 +60,7 @@ TEST(ConstantTrajectory, ConstantVelocity)
   EXPECT_FLOAT_EQ(std::sin(heading), s);
   EXPECT_FLOAT_EQ(std::cos(heading), c);
   const auto dt = std::chrono::milliseconds(100LL);
-  const auto traj = motion::motion_testing::constant_velocity_trajectory(
-    x0, y0, heading, v0, dt);
+  const auto traj = motion::motion_testing::constant_velocity_trajectory(x0, y0, heading, v0, dt);
   const auto dt_s = std::chrono::duration_cast<std::chrono::duration<float_t>>(dt).count();
   for (auto i = 0U; i < traj.points.size(); ++i) {
     const auto & t = traj.points[i];
@@ -97,8 +97,8 @@ TEST(ConstantTrajectory, ConstantAcceleration)
   EXPECT_FLOAT_EQ(std::sin(heading), s);
   EXPECT_FLOAT_EQ(std::cos(heading), c);
   const auto dt = std::chrono::milliseconds(100LL);
-  const auto traj = motion::motion_testing::constant_acceleration_trajectory(
-    x0, y0, heading, v0, a0, dt);
+  const auto traj =
+    motion::motion_testing::constant_acceleration_trajectory(x0, y0, heading, v0, a0, dt);
   const auto dt_s = std::chrono::duration_cast<std::chrono::duration<float_t>>(dt).count();
   for (auto i = 0U; i < traj.points.size(); ++i) {
     const auto & t = traj.points[i];

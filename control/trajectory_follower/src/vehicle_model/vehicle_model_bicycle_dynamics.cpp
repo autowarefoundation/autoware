@@ -25,9 +25,8 @@ namespace control
 namespace trajectory_follower
 {
 DynamicsBicycleModel::DynamicsBicycleModel(
-  const float64_t wheelbase, const float64_t mass_fl,
-  const float64_t mass_fr, const float64_t mass_rl,
-  const float64_t mass_rr, const float64_t cf, const float64_t cr)
+  const float64_t wheelbase, const float64_t mass_fl, const float64_t mass_fr,
+  const float64_t mass_rl, const float64_t mass_rr, const float64_t cf, const float64_t cr)
 : VehicleModelInterface(/* dim_x */ 4, /* dim_u */ 1, /* dim_y */ 2, wheelbase)
 {
   const float64_t mass_front = mass_fl + mass_fr;
@@ -89,8 +88,8 @@ void DynamicsBicycleModel::calculateDiscreteMatrix(
 void DynamicsBicycleModel::calculateReferenceInput(Eigen::MatrixXd & u_ref)
 {
   const float64_t vel = std::max(m_velocity, 0.01);
-  const float64_t Kv = m_lr * m_mass / (2 * m_cf * m_wheelbase) - m_lf * m_mass /
-    (2 * m_cr * m_wheelbase);
+  const float64_t Kv =
+    m_lr * m_mass / (2 * m_cf * m_wheelbase) - m_lf * m_mass / (2 * m_cr * m_wheelbase);
   u_ref(0, 0) = m_wheelbase * m_curvature + Kv * vel * vel * m_curvature;
 }
 }  // namespace trajectory_follower

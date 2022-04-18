@@ -14,18 +14,19 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-//lint -e537 pclint vs cpplint NOLINT
-
+// lint -e537 pclint vs cpplint NOLINT
 
 #include "had_map_utils/had_map_utils.hpp"
 
-#include <lanelet2_core/geometry/Lanelet.h>
 #include <common/types.hpp>
-#include <utility>
+
+#include <lanelet2_core/geometry/Lanelet.h>
+
 #include <algorithm>
 #include <limits>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 using autoware::common::types::float64_t;
@@ -83,15 +84,13 @@ std::pair<size_t, size_t> findNearestIndexPair(
   for (size_t i = 1; i < N; ++i) {
     if (
       accumulated_lengths.at(i - 1) <= target_length &&
-      target_length <= accumulated_lengths.at(i))
-    {
+      target_length <= accumulated_lengths.at(i)) {
       return std::make_pair(i - 1, i);
     }
   }
 
   // Throw an exception because this never happens
-  throw std::runtime_error(
-          "findNearestIndexPair(): No nearest point found.");
+  throw std::runtime_error("findNearestIndexPair(): No nearest point found.");
 }
 
 std::vector<lanelet::BasicPoint3d> resamplePoints(
@@ -107,8 +106,8 @@ std::vector<lanelet::BasicPoint3d> resamplePoints(
   std::vector<lanelet::BasicPoint3d> resampled_points;
   for (auto i = 0; i <= num_segments; ++i) {
     // Find two nearest points
-    const float64_t target_length = (static_cast<float64_t>(i) / num_segments) *
-      static_cast<float64_t>(line_length);
+    const float64_t target_length =
+      (static_cast<float64_t>(i) / num_segments) * static_cast<float64_t>(line_length);
     const auto index_pair = findNearestIndexPair(accumulated_lengths, target_length);
 
     // Apply linear interpolation
@@ -159,8 +158,7 @@ lanelet::LineString3d generateFineCenterline(
 }
 
 void overwriteLaneletsCenterline(
-  lanelet::LaneletMapPtr lanelet_map,
-  const autoware::common::types::bool8_t force_overwrite)
+  lanelet::LaneletMapPtr lanelet_map, const autoware::common::types::bool8_t force_overwrite)
 {
   for (auto & lanelet_obj : lanelet_map->laneletLayer) {
     if (force_overwrite || !lanelet_obj.hasCustomCenterline()) {

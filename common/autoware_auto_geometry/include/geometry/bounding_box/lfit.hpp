@@ -22,6 +22,7 @@
 #define GEOMETRY__BOUNDING_BOX__LFIT_HPP_
 
 #include <geometry/bounding_box/eigenbox_2d.hpp>
+
 #include <limits>
 #include <utility>
 
@@ -67,7 +68,7 @@ struct LFitWs
 /// \param[in] size The number of points in the point list
 /// \param[out] ws A representation of the M matrix to get initialized
 /// \tparam IT The iterator type, should dereference to a point type with float members x and y
-template<typename IT>
+template <typename IT>
 void init_lfit_ws(const IT begin, const IT end, const std::size_t size, LFitWs & ws)
 {
   ws.p = 1UL;
@@ -106,17 +107,15 @@ void init_lfit_ws(const IT begin, const IT end, const std::size_t size, LFitWs &
 /// \param[in] ws A representation of the M Matrix
 /// \param[out] dir The best fit direction for this partition/M matrix
 /// \return The L2 residual for this fit (the score, lower is better)
-template<typename PointT>
+template <typename PointT>
 float32_t solve_lfit(const LFitWs & ws, PointT & dir)
 {
   const float32_t pi = 1.0F / static_cast<float32_t>(ws.p);
   const float32_t qi = 1.0F / static_cast<float32_t>(ws.q);
-  const Covariance2d M{  // matrix of form [x, z; z y]
-    ws.m22a - (((ws.m12a * ws.m12a) * pi) + ((ws.m12c * ws.m12c) * qi)),
-    ws.m22d - (((ws.m12b * ws.m12b) * pi) + ((ws.m12d * ws.m12d) * qi)),
-    ws.m22b - (((ws.m12a * ws.m12b) * pi) + ((ws.m12c * ws.m12d) * qi)),
-    0UL
-  };
+  const Covariance2d M{// matrix of form [x, z; z y]
+                       ws.m22a - (((ws.m12a * ws.m12a) * pi) + ((ws.m12c * ws.m12c) * qi)),
+                       ws.m22d - (((ws.m12b * ws.m12b) * pi) + ((ws.m12d * ws.m12d) * qi)),
+                       ws.m22b - (((ws.m12a * ws.m12b) * pi) + ((ws.m12c * ws.m12d) * qi)), 0UL};
   PointT eig1;
   const auto eigv = eig_2d(M, eig1, dir);
   return eigv.second;
@@ -126,7 +125,7 @@ float32_t solve_lfit(const LFitWs & ws, PointT & dir)
 /// \tparam PointT The point type
 /// \param[in] pt The point to increment the M matrix with
 /// \param[inout] ws A representation of the M matrix
-template<typename PointT>
+template <typename PointT>
 void increment_lfit_ws(const PointT & pt, LFitWs & ws)
 {
   const float32_t px = point_adapter::x_(pt);
@@ -142,7 +141,7 @@ void increment_lfit_ws(const PointT & pt, LFitWs & ws)
 }
 
 /// \tparam IT An iterator type that should dereference into a point type with float members x and y
-template<typename PointT>
+template <typename PointT>
 class LFitCompare
 {
 public:
@@ -150,8 +149,7 @@ public:
   /// \param[in] hint A 2d vector with the direction that will be used to order the
   ///                 point list
   explicit LFitCompare(const PointT & hint)
-  : m_nx(point_adapter::x_(hint)),
-    m_ny(point_adapter::y_(hint))
+  : m_nx(point_adapter::x_(hint)), m_ny(point_adapter::y_(hint))
   {
   }
 
@@ -179,7 +177,7 @@ private:
 /// \param[in] size The number of points in the point list
 /// \return A bounding box that minimizes the LFit residual
 /// \tparam IT An iterator type dereferencable into a point with float members x and y
-template<typename IT>
+template <typename IT>
 BoundingBox lfit_bounding_box_2d_impl(const IT begin, const IT end, const std::size_t size)
 {
   // initialize M
@@ -239,19 +237,16 @@ BoundingBox lfit_bounding_box_2d_impl(const IT begin, const IT end, const std::s
 ///         second element is the size of the list
 /// \tparam IT An iterator type dereferencable into a point with float members x and y
 /// \throw std::domain_error If the number of points is too few
-template<typename IT, typename PointT>
+template <typename IT, typename PointT>
 BoundingBox lfit_bounding_box_2d(
-  const IT begin,
-  const IT end,
-  const PointT hint,
-  const std::size_t size)
+  const IT begin, const IT end, const PointT hint, const std::size_t size)
 {
   if (size <= 1U) {
     throw std::domain_error("LFit requires >= 2 points!");
   }
   // NOTE: assumes points are in base_link/sensor frame!
   // sort along tangent wrt sensor origin
-  //lint -e522 NOLINT Not a pure function: data structure iterators are pointing to is modified
+  // lint -e522 NOLINT Not a pure function: data structure iterators are pointing to is modified
   std::partial_sort(begin, end, end, details::LFitCompare<PointT>{hint});
 
   return details::lfit_bounding_box_2d_impl(begin, end, size);
@@ -264,7 +259,7 @@ BoundingBox lfit_bounding_box_2d(
 /// \param[in] begin An iterator pointing to the first point in a point list
 /// \param[in] end An iterator pointing to one past the last point in the point list
 /// \tparam IT An iterator type dereferencable into a point with float members x and y
-template<typename IT>
+template <typename IT>
 BoundingBox lfit_bounding_box_2d(const IT begin, const IT end)
 {
   // use the principal component as the sorting direction

@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "trajectory_follower/pid.hpp"
+
 #include <algorithm>
 #include <memory>
 #include <utility>
 #include <vector>
-
-#include "trajectory_follower/pid.hpp"
 
 namespace autoware
 {
@@ -28,8 +28,13 @@ namespace control
 namespace trajectory_follower
 {
 PIDController::PIDController()
-: m_error_integral(0.0), m_prev_error(0.0), m_is_first_time(true), m_is_gains_set(false),
-  m_is_limits_set(false) {}
+: m_error_integral(0.0),
+  m_prev_error(0.0),
+  m_is_first_time(true),
+  m_is_gains_set(false),
+  m_is_limits_set(false)
+{
+}
 
 float64_t PIDController::calculate(
   const float64_t error, const float64_t dt, const bool8_t enable_integration,
@@ -83,9 +88,8 @@ void PIDController::setGains(const float64_t kp, const float64_t ki, const float
 
 void PIDController::setLimits(
   const float64_t max_ret, const float64_t min_ret, const float64_t max_ret_p,
-  const float64_t min_ret_p,
-  const float64_t max_ret_i, const float64_t min_ret_i, const float64_t max_ret_d,
-  const float64_t min_ret_d)
+  const float64_t min_ret_p, const float64_t max_ret_i, const float64_t min_ret_i,
+  const float64_t max_ret_d, const float64_t min_ret_d)
 {
   m_params.max_ret = max_ret;
   m_params.min_ret = min_ret;

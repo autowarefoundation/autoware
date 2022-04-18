@@ -12,17 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-#include <memory>
-#include <vector>
-
-#include "trajectory_follower/mpc_utils.hpp"
+#include "gtest/gtest.h"
 #include "trajectory_follower/mpc_trajectory.hpp"
+#include "trajectory_follower/mpc_utils.hpp"
 
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
 #include "geometry_msgs/msg/pose.hpp"
-#include "gtest/gtest.h"
+
+#include <memory>
+#include <vector>
 
 namespace
 {
@@ -31,7 +30,8 @@ typedef autoware_auto_planning_msgs::msg::Trajectory Trajectory;
 typedef autoware_auto_planning_msgs::msg::TrajectoryPoint TrajectoryPoint;
 typedef geometry_msgs::msg::Pose Pose;
 
-TEST(TestMPCUtils, CalcNearestIndex) {
+TEST(TestMPCUtils, CalcNearestIndex)
+{
   Pose pose;
   pose.position.x = 0.0;
   pose.position.y = 0.0;
@@ -53,7 +53,8 @@ TEST(TestMPCUtils, CalcNearestIndex) {
 }
 
 /* cppcheck-suppress syntaxError */
-TEST(TestMPC, CalcStopDistance) {
+TEST(TestMPC, CalcStopDistance)
+{
   using autoware_auto_planning_msgs::msg::Trajectory;
   using autoware_auto_planning_msgs::msg::TrajectoryPoint;
 

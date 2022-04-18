@@ -33,23 +33,24 @@
  * u = steer
  *
  *    Linearized model around reference point (v=vr)
- *          [0,                   1,                0,                        0]       [       0]       [ 0] dx/dt = [0,
- * -(cf+cr)/m/vr,        (cf+cr)/m,       (lr*cr-lf*cf)/m/vr] * x + [    cf/m] * u + [(lr*cr-lf*cf)/m/vr*k - vr*k] [0,
- * 0,                0,                        1]       [       0]       [                          0] [0,
- * (lr*cr-lf*cf)/Iz/vr, (lf*cf-lr*cr)/Iz, -(lf^2*cf+lr^2*cr)/Iz/vr]       [lf*cf/Iz]       [   -(lf^2*cf+lr^2*cr)/Iz/vr]
+ *          [0,                   1,                0,                        0]       [       0] [
+ * 0] dx/dt = [0,
+ * -(cf+cr)/m/vr,        (cf+cr)/m,       (lr*cr-lf*cf)/m/vr] * x + [    cf/m] * u +
+ * [(lr*cr-lf*cf)/m/vr*k - vr*k] [0, 0,                0,                        1]       [       0]
+ * [                          0] [0, (lr*cr-lf*cf)/Iz/vr, (lf*cf-lr*cr)/Iz,
+ * -(lf^2*cf+lr^2*cr)/Iz/vr]       [lf*cf/Iz]       [   -(lf^2*cf+lr^2*cr)/Iz/vr]
  *
- * Reference : Jarrod M. Snider, "Automatic Steering Methods for Autonomous Automobile Path Tracking", Robotics
- * Institute, Carnegie Mellon University, February 2009.
+ * Reference : Jarrod M. Snider, "Automatic Steering Methods for Autonomous Automobile Path
+ * Tracking", Robotics Institute, Carnegie Mellon University, February 2009.
  */
 
 #ifndef TRAJECTORY_FOLLOWER__VEHICLE_MODEL__VEHICLE_MODEL_BICYCLE_DYNAMICS_HPP_
 #define TRAJECTORY_FOLLOWER__VEHICLE_MODEL__VEHICLE_MODEL_BICYCLE_DYNAMICS_HPP_
 
-#include "trajectory_follower/vehicle_model/vehicle_model_interface.hpp"
-
 #include "common/types.hpp"
 #include "eigen3/Eigen/Core"
 #include "eigen3/Eigen/LU"
+#include "trajectory_follower/vehicle_model/vehicle_model_interface.hpp"
 #include "trajectory_follower/visibility_control.hpp"
 
 namespace autoware
@@ -80,8 +81,7 @@ public:
    */
   DynamicsBicycleModel(
     const float64_t wheelbase, const float64_t mass_fl, const float64_t mass_fr,
-    const float64_t mass_rl, const float64_t mass_rr,
-    const float64_t cf, const float64_t cr);
+    const float64_t mass_rl, const float64_t mass_rr, const float64_t cf, const float64_t cr);
 
   /**
    * @brief destructor
@@ -107,12 +107,12 @@ public:
   void calculateReferenceInput(Eigen::MatrixXd & u_ref) override;
 
 private:
-  float64_t m_lf;         //!< @brief length from center of mass to front wheel [m]
-  float64_t m_lr;         //!< @brief length from center of mass to rear wheel [m]
-  float64_t m_mass;       //!< @brief total mass of vehicle [kg]
-  float64_t m_iz;         //!< @brief moment of inertia [kg * m2]
-  float64_t m_cf;         //!< @brief front cornering power [N/rad]
-  float64_t m_cr;         //!< @brief rear cornering power [N/rad]
+  float64_t m_lf;    //!< @brief length from center of mass to front wheel [m]
+  float64_t m_lr;    //!< @brief length from center of mass to rear wheel [m]
+  float64_t m_mass;  //!< @brief total mass of vehicle [kg]
+  float64_t m_iz;    //!< @brief moment of inertia [kg * m2]
+  float64_t m_cf;    //!< @brief front cornering power [N/rad]
+  float64_t m_cr;    //!< @brief rear cornering power [N/rad]
 };
 }  // namespace trajectory_follower
 }  // namespace control

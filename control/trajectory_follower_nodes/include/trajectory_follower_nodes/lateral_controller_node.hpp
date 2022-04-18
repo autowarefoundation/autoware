@@ -15,12 +15,13 @@
 #ifndef TRAJECTORY_FOLLOWER_NODES__LATERAL_CONTROLLER_NODE_HPP_
 #define TRAJECTORY_FOLLOWER_NODES__LATERAL_CONTROLLER_NODE_HPP_
 
-#include <deque>
-#include <memory>
-#include <string>
-#include <vector>
-
-#include "trajectory_follower_nodes/visibility_control.hpp"
+#include "common/types.hpp"
+#include "osqp_interface/osqp_interface.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "rclcpp_components/register_node_macro.hpp"
+#include "tf2/utils.h"
+#include "tf2_ros/buffer.h"
+#include "tf2_ros/transform_listener.h"
 #include "trajectory_follower/interpolate.hpp"
 #include "trajectory_follower/lowpass_filter.hpp"
 #include "trajectory_follower/mpc.hpp"
@@ -31,25 +32,23 @@
 #include "trajectory_follower/vehicle_model/vehicle_model_bicycle_dynamics.hpp"
 #include "trajectory_follower/vehicle_model/vehicle_model_bicycle_kinematics.hpp"
 #include "trajectory_follower/vehicle_model/vehicle_model_bicycle_kinematics_no_delay.hpp"
+#include "trajectory_follower_nodes/visibility_control.hpp"
+#include "vehicle_info_util/vehicle_info_util.hpp"
 
 #include "autoware_auto_control_msgs/msg/ackermann_lateral_command.hpp"
-#include "autoware_auto_system_msgs/msg/float32_multi_array_diagnostic.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
+#include "autoware_auto_system_msgs/msg/float32_multi_array_diagnostic.hpp"
 #include "autoware_auto_vehicle_msgs/msg/steering_report.hpp"
 #include "autoware_auto_vehicle_msgs/msg/vehicle_odometry.hpp"
-#include "common/types.hpp"
 #include "geometry_msgs/msg/pose.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
-#include "osqp_interface/osqp_interface.hpp"
-#include "rclcpp/rclcpp.hpp"
-#include "rclcpp_components/register_node_macro.hpp"
-#include "tf2/utils.h"
 #include "tf2_msgs/msg/tf_message.hpp"
-#include "tf2_ros/buffer.h"
-#include "tf2_ros/transform_listener.h"
-#include "vehicle_info_util/vehicle_info_util.hpp"
 
+#include <deque>
+#include <memory>
+#include <string>
+#include <vector>
 
 namespace autoware
 {
@@ -59,8 +58,8 @@ namespace control
 {
 namespace trajectory_follower_nodes
 {
-using autoware::common::types::float64_t;
 using autoware::common::types::bool8_t;
+using autoware::common::types::float64_t;
 namespace trajectory_follower = ::autoware::motion::control::trajectory_follower;
 
 class TRAJECTORY_FOLLOWER_PUBLIC LateralController : public rclcpp::Node
@@ -104,7 +103,8 @@ private:
   int64_t m_path_filter_moving_ave_num;
   //!< @brief point-to-point index distance for curvature calculation for trajectory  //NOLINT
   int64_t m_curvature_smoothing_num_traj;
-  //!< @brief point-to-point index distance for curvature calculation for reference steer command  //NOLINT
+  //!< @brief point-to-point index distance for curvature calculation for reference steer command
+  //!< //NOLINT
   int64_t m_curvature_smoothing_num_ref_steer;
   //!< @brief path resampling interval [m]
   float64_t m_traj_resample_dist;
@@ -123,8 +123,7 @@ private:
   //!< @brief measured steering
   autoware_auto_vehicle_msgs::msg::SteeringReport::SharedPtr m_current_steering_ptr;
   //!< @brief reference trajectory
-  autoware_auto_planning_msgs::msg::Trajectory::SharedPtr
-    m_current_trajectory_ptr;
+  autoware_auto_planning_msgs::msg::Trajectory::SharedPtr m_current_trajectory_ptr;
 
   //!< @brief mpc filtered output in previous period
   float64_t m_steer_cmd_prev = 0.0;
@@ -187,8 +186,8 @@ private:
    * @brief publish diagnostic message
    * @param [in] diagnostic published diagnostic
    */
-  void publishDiagnostic(autoware_auto_system_msgs::msg::Float32MultiArrayDiagnostic & diagnostic)
-  const;
+  void publishDiagnostic(
+    autoware_auto_system_msgs::msg::Float32MultiArrayDiagnostic & diagnostic) const;
 
   /**
    * @brief get stop command

@@ -12,13 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 #ifndef SIMPLE_PLANNING_SIMULATOR__VISIBILITY_CONTROL_HPP_
 #define SIMPLE_PLANNING_SIMULATOR__VISIBILITY_CONTROL_HPP_
 
 #if defined(__WIN32)
-#if defined(PLANNING_SIMULATOR_BUILDING_DLL) || \
-  defined(PLANNING_SIMULATOR_EXPORTS)
+#if defined(PLANNING_SIMULATOR_BUILDING_DLL) || defined(PLANNING_SIMULATOR_EXPORTS)
 #define PLANNING_SIMULATOR_PUBLIC __declspec(dllexport)
 #define PLANNING_SIMULATOR_LOCAL
 #else  // defined(PLANNING_SIMULATOR_BUILDING_DLL) ||

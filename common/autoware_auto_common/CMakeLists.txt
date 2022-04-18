@@ -32,7 +32,6 @@ if(BUILD_TESTING)
   # Temporarily disable cpplint and uncrustify
   list(APPEND AMENT_LINT_AUTO_EXCLUDE
     ament_cmake_cpplint
-    ament_cmake_uncrustify
   )
 
   ament_lint_auto_find_test_dependencies()
@@ -45,10 +44,6 @@ if(BUILD_TESTING)
   # Re-enable cpplint
   find_package(ament_cmake_cpplint)
   ament_cpplint(${FILES_MINUS_SOME})
-
-  # Re-enable uncrustify
-  find_package(ament_cmake_uncrustify)
-  ament_uncrustify(${FILES_MINUS_SOME})
 
   # Unit tests
   set(TEST_COMMON test_common_gtest)

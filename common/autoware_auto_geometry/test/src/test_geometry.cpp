@@ -15,10 +15,8 @@
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
 #include "gtest/gtest.h"
-
-#include "test_spatial_hash.hpp"
 #include "test_bounding_box.hpp"
-
+#include "test_spatial_hash.hpp"
 
 int32_t main(int32_t argc, char ** argv)
 {

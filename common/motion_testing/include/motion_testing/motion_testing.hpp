@@ -15,6 +15,7 @@
 #define MOTION_TESTING__MOTION_TESTING_HPP_
 
 #include <motion_testing/visibility_control.hpp>
+
 #include <autoware_auto_planning_msgs/msg/trajectory.hpp>
 #include <autoware_auto_vehicle_msgs/msg/vehicle_control_command.hpp>
 #include <autoware_auto_vehicle_msgs/msg/vehicle_kinematic_state.hpp>
@@ -36,12 +37,7 @@ using Real = decltype(Point::longitudinal_velocity_mps);
 
 /// \brief Makes a state, intended to make message generation more terse
 MOTION_TESTING_PUBLIC State make_state(
-  Real x0,
-  Real y0,
-  Real heading,
-  Real v0,
-  Real a0,
-  Real turn_rate,
+  Real x0, Real y0, Real heading, Real v0, Real a0, Real turn_rate,
   std::chrono::system_clock::time_point t);
 
 /// \brief Generates a state from a normal distribution with the following bounds:
@@ -66,44 +62,23 @@ Trajectory bad_heading_trajectory(const State & start_state, std::chrono::nanose
 /// \brief Generates a constant velocity trajectory with invalid heading values
 
 MOTION_TESTING_PUBLIC Trajectory constant_velocity_trajectory(
-  float x0,
-  float y0,
-  float heading,
-  float v0,
-  std::chrono::nanoseconds dt);
+  float x0, float y0, float heading, float v0, std::chrono::nanoseconds dt);
 /// \brief Generates a constant acceleration trajectory
 MOTION_TESTING_PUBLIC Trajectory constant_acceleration_trajectory(
-  float x0,
-  float y0,
-  float heading,
-  float v0,
-  float a0,
-  std::chrono::nanoseconds dt);
+  float x0, float y0, float heading, float v0, float a0, std::chrono::nanoseconds dt);
 /// \brief Generates a constant velocity and constant turn rate trajectory
 MOTION_TESTING_PUBLIC Trajectory constant_velocity_turn_rate_trajectory(
-  float x0,
-  float y0,
-  float heading,
-  float v0,
-  float turn_rate,
-  std::chrono::nanoseconds dt);
+  float x0, float y0, float heading, float v0, float turn_rate, std::chrono::nanoseconds dt);
 /// \brief Generates a constant acceleration and constant turn rate trajectory
 MOTION_TESTING_PUBLIC Trajectory constant_acceleration_turn_rate_trajectory(
-  float x0,
-  float y0,
-  float heading,
-  float v0,
-  float a0,
-  float turn_rate,
+  float x0, float y0, float heading, float v0, float a0, float turn_rate,
   std::chrono::nanoseconds dt);
 
 /// Given a trajectory, advance state to next trajectory point, with normally distributed noise
 /// Note: This version takes "hint" as gospel, and doesn't try to do any time/space matching
 /// Note: not implemented
 MOTION_TESTING_PUBLIC void next_state(
-  const Trajectory & trajectory,
-  State & state,
-  uint32_t hint,
+  const Trajectory & trajectory, State & state, uint32_t hint,
   Generator * gen = nullptr);  // TODO(c.ho) std::optional NOLINT
 // TODO(c.ho) version that takes control commands
 
@@ -112,9 +87,7 @@ MOTION_TESTING_PUBLIC void next_state(
 /// heading tolerance is in dot product space of 2d quaternion
 MOTION_TESTING_PUBLIC
 Index progresses_towards_target(
-  const Trajectory & trajectory,
-  const Point & target,
-  Real heading_tolerance = Real{0.006F});
+  const Trajectory & trajectory, const Point & target, Real heading_tolerance = Real{0.006F});
 
 /// Checks that a trajectory is more or less dynamically feasible given the derivatives;
 /// tolerance is relative tolerance of trajectory, index is first point that is not dynamically

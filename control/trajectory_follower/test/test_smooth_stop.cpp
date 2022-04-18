@@ -12,17 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <utility>
-#include <vector>
-
 #include "gtest/gtest.h"
 #include "rclcpp/rclcpp.hpp"
 #include "trajectory_follower/smooth_stop.hpp"
 
-TEST(TestSmoothStop, calculate_stopping_acceleration) {
+#include <utility>
+#include <vector>
+
+TEST(TestSmoothStop, calculate_stopping_acceleration)
+{
   using ::autoware::motion::control::trajectory_follower::SmoothStop;
-  using rclcpp::Time;
   using rclcpp::Duration;
+  using rclcpp::Time;
 
   const double max_strong_acc = -0.5;
   const double min_strong_acc = -1.0;
@@ -97,16 +98,14 @@ TEST(TestSmoothStop, calculate_stopping_acceleration) {
   vel_in_target = 1.0;
   ss.init(vel_in_target, stop_dist);
   EXPECT_EQ(
-    ss.calculate(
-      stop_dist, current_vel, current_acc, velocity_history,
-      delay_time), max_strong_acc);
+    ss.calculate(stop_dist, current_vel, current_acc, velocity_history, delay_time),
+    max_strong_acc);
 
   vel_in_target = std::sqrt(2.0);
   ss.init(vel_in_target, stop_dist);
   EXPECT_EQ(
-    ss.calculate(
-      stop_dist, current_vel, current_acc, velocity_history,
-      delay_time), min_strong_acc);
+    ss.calculate(stop_dist, current_vel, current_acc, velocity_history, delay_time),
+    min_strong_acc);
 
   for (double vel_in_target = 1.1; vel_in_target < std::sqrt(2.0); vel_in_target += 0.1) {
     ss.init(vel_in_target, stop_dist);

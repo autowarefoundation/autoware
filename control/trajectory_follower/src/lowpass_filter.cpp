@@ -60,8 +60,7 @@ float64_t Butterworth2dFilter::filter(const float64_t & u0)
 }
 
 void Butterworth2dFilter::filt_vector(
-  const std::vector<float64_t> & t,
-  std::vector<float64_t> & u) const
+  const std::vector<float64_t> & t, std::vector<float64_t> & u) const
 {
   u.resize(t.size());
   float64_t y1 = t.at(0);
@@ -83,8 +82,7 @@ void Butterworth2dFilter::filt_vector(
 
 // filtering forward and backward direction
 void Butterworth2dFilter::filtfilt_vector(
-  const std::vector<float64_t> & t,
-  std::vector<float64_t> & u) const
+  const std::vector<float64_t> & t, std::vector<float64_t> & u) const
 {
   std::vector<float64_t> t_fwd(t);
   std::vector<float64_t> t_rev(t);

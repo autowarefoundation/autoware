@@ -12,14 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <vector>
-
 #include "common/types.hpp"
 #include "gtest/gtest.h"
 #include "trajectory_follower/interpolate.hpp"
 
+#include <vector>
+
 using autoware::common::types::float64_t;
-TEST(TestInterpolate, Nominal) {
+TEST(TestInterpolate, Nominal)
+{
   using autoware::motion::control::trajectory_follower::linearInterpolate;
 
   // Simple case
@@ -30,9 +31,7 @@ TEST(TestInterpolate, Nominal) {
     std::vector<float64_t> target_values;
 
     ASSERT_TRUE(
-      linearInterpolate(
-        original_indexes, original_values, target_indexes,
-        target_values));
+      linearInterpolate(original_indexes, original_values, target_indexes, target_values));
     ASSERT_EQ(target_values.size(), target_indexes.size());
     for (size_t i = 0; i < target_values.size(); ++i) {
       EXPECT_EQ(target_values[i], target_indexes[i]);
@@ -46,9 +45,7 @@ TEST(TestInterpolate, Nominal) {
     std::vector<float64_t> target_values;
 
     ASSERT_TRUE(
-      linearInterpolate(
-        original_indexes, original_values, target_indexes,
-        target_values));
+      linearInterpolate(original_indexes, original_values, target_indexes, target_values));
     ASSERT_EQ(target_values.size(), target_indexes.size());
     EXPECT_EQ(target_values[0], 1.5);
     EXPECT_EQ(target_values[1], 3.0);
@@ -61,47 +58,31 @@ TEST(TestInterpolate, Nominal) {
     float64_t target_index = 1.25;
     float64_t target_value;
 
-    ASSERT_TRUE(
-      linearInterpolate(
-        original_indexes, original_values, target_index,
-        target_value));
+    ASSERT_TRUE(linearInterpolate(original_indexes, original_values, target_index, target_value));
     EXPECT_EQ(target_value, 1.5);
   }
 }
-TEST(TestInterpolate, Failure) {
+TEST(TestInterpolate, Failure)
+{
   using autoware::motion::control::trajectory_follower::linearInterpolate;
 
   std::vector<float64_t> target_values;
 
   // Non increasing indexes
   ASSERT_FALSE(
-    linearInterpolate(
-      {1.0, 2.0, 1.5, 3.0}, {1.0, 2.0, 3.0, 4.0},
-      {1.0, 3.0}, target_values));
+    linearInterpolate({1.0, 2.0, 1.5, 3.0}, {1.0, 2.0, 3.0, 4.0}, {1.0, 3.0}, target_values));
   ASSERT_FALSE(
-    linearInterpolate(
-      {1.0, 2.0, 2.5, 3.0}, {1.0, 2.0, 3.0, 4.0},
-      {3.0, 1.0}, target_values));
+    linearInterpolate({1.0, 2.0, 2.5, 3.0}, {1.0, 2.0, 3.0, 4.0}, {3.0, 1.0}, target_values));
 
   // Target indexes out of range
   ASSERT_FALSE(
-    linearInterpolate(
-      {1.0, 2.0, 2.5, 3.0}, {1.0, 2.0, 3.0, 4.0},
-      {0.0, 3.0}, target_values));
+    linearInterpolate({1.0, 2.0, 2.5, 3.0}, {1.0, 2.0, 3.0, 4.0}, {0.0, 3.0}, target_values));
   ASSERT_FALSE(
-    linearInterpolate(
-      {1.0, 2.0, 2.5, 3.0}, {1.0, 2.0, 3.0, 4.0},
-      {1.0, 3.5}, target_values));
+    linearInterpolate({1.0, 2.0, 2.5, 3.0}, {1.0, 2.0, 3.0, 4.0}, {1.0, 3.5}, target_values));
 
   // Missmatched inputs
-  ASSERT_FALSE(
-    linearInterpolate(
-      {1.0, 2.0, 2.5, 3.0}, {1.0, 2.0, 3.0},
-      {1.0, 1.5}, target_values));
-  ASSERT_FALSE(
-    linearInterpolate(
-      {1.0, 2.0, 3.0}, {1.0, 2.0, 3.0, 4.0},
-      {1.0, 1.5}, target_values));
+  ASSERT_FALSE(linearInterpolate({1.0, 2.0, 2.5, 3.0}, {1.0, 2.0, 3.0}, {1.0, 1.5}, target_values));
+  ASSERT_FALSE(linearInterpolate({1.0, 2.0, 3.0}, {1.0, 2.0, 3.0, 4.0}, {1.0, 1.5}, target_values));
 
   // Input size 0
   ASSERT_FALSE(linearInterpolate({}, {}, {1.0, 3.5}, target_values));

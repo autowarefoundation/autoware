@@ -32,19 +32,19 @@ namespace helper_functions
 {
 
 /// @brief      Get a demangled name of a type.
-template<typename T>
+template <typename T>
 COMMON_PUBLIC std::string get_type_name()
 {
-  #if defined(__clang__) || defined(__GNUC__) || defined(__GNUG__)
+#if defined(__clang__) || defined(__GNUC__) || defined(__GNUG__)
   return abi::__cxa_demangle(typeid(T).name(), NULL, NULL, 0);
-  #else
+#else
   // For unsupported compilers return a mangled name.
   return typeid(T).name();
-  #endif
+#endif
 }
 
 /// @brief      Get a demangled name of a type given its instance.
-template<typename T>
+template <typename T>
 COMMON_PUBLIC std::string get_type_name(const T &)
 {
   return get_type_name<T>();

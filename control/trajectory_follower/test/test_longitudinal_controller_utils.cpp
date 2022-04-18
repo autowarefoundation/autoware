@@ -12,21 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <limits>
-
 #include "gtest/gtest.h"
+#include "tf2/LinearMath/Quaternion.h"
 #include "trajectory_follower/longitudinal_controller_utils.hpp"
+
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
 #include "geometry_msgs/msg/point.hpp"
 #include "geometry_msgs/msg/pose.hpp"
 #include "geometry_msgs/msg/quaternion.hpp"
-#include "tf2/LinearMath/Quaternion.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
+
+#include <limits>
 
 namespace longitudinal_utils = ::autoware::motion::control::trajectory_follower::longitudinal_utils;
 
-TEST(TestLongitudinalControllerUtils, isValidTrajectory) {
+TEST(TestLongitudinalControllerUtils, isValidTrajectory)
+{
   using autoware_auto_planning_msgs::msg::Trajectory;
   using autoware_auto_planning_msgs::msg::TrajectoryPoint;
   Trajectory traj;
@@ -39,7 +41,8 @@ TEST(TestLongitudinalControllerUtils, isValidTrajectory) {
   EXPECT_FALSE(longitudinal_utils::isValidTrajectory(traj));
 }
 
-TEST(TestLongitudinalControllerUtils, calcStopDistance) {
+TEST(TestLongitudinalControllerUtils, calcStopDistance)
+{
   using autoware_auto_planning_msgs::msg::Trajectory;
   using autoware_auto_planning_msgs::msg::TrajectoryPoint;
   using geometry_msgs::msg::Point;
@@ -87,7 +90,8 @@ TEST(TestLongitudinalControllerUtils, calcStopDistance) {
   EXPECT_EQ(longitudinal_utils::calcStopDistance(current_pos, traj), 3.0);
 }
 
-TEST(TestLongitudinalControllerUtils, getPitchByPose) {
+TEST(TestLongitudinalControllerUtils, getPitchByPose)
+{
   tf2::Quaternion quaternion_tf;
   quaternion_tf.setRPY(0.0, 0.0, 0.0);
   EXPECT_EQ(longitudinal_utils::getPitchByPose(tf2::toMsg(quaternion_tf)), 0.0);
@@ -95,7 +99,8 @@ TEST(TestLongitudinalControllerUtils, getPitchByPose) {
   EXPECT_EQ(longitudinal_utils::getPitchByPose(tf2::toMsg(quaternion_tf)), 1.0);
 }
 
-TEST(TestLongitudinalControllerUtils, getPitchByTraj) {
+TEST(TestLongitudinalControllerUtils, getPitchByTraj)
+{
   using autoware_auto_planning_msgs::msg::Trajectory;
   using autoware_auto_planning_msgs::msg::TrajectoryPoint;
   const double wheel_base = 0.9;
@@ -127,16 +132,10 @@ TEST(TestLongitudinalControllerUtils, getPitchByTraj) {
   traj.points.push_back(point);
   size_t closest_idx = 0;
   EXPECT_DOUBLE_EQ(
-    std::abs(
-      longitudinal_utils::getPitchByTraj(
-        traj, closest_idx,
-        wheel_base)), M_PI_4);
+    std::abs(longitudinal_utils::getPitchByTraj(traj, closest_idx, wheel_base)), M_PI_4);
   closest_idx = 1;
   EXPECT_DOUBLE_EQ(
-    std::abs(
-      longitudinal_utils::getPitchByTraj(
-        traj, closest_idx,
-        wheel_base)), M_PI_4);
+    std::abs(longitudinal_utils::getPitchByTraj(traj, closest_idx, wheel_base)), M_PI_4);
   closest_idx = 2;
   EXPECT_DOUBLE_EQ(
     std::abs(longitudinal_utils::getPitchByTraj(traj, closest_idx, wheel_base)),
@@ -147,7 +146,8 @@ TEST(TestLongitudinalControllerUtils, getPitchByTraj) {
     std::atan2(0.5, 1));
 }
 
-TEST(TestLongitudinalControllerUtils, calcElevationAngle) {
+TEST(TestLongitudinalControllerUtils, calcElevationAngle)
+{
   using autoware_auto_planning_msgs::msg::TrajectoryPoint;
   TrajectoryPoint p_from;
   p_from.pose.position.x = 0.0;
@@ -173,7 +173,8 @@ TEST(TestLongitudinalControllerUtils, calcElevationAngle) {
   EXPECT_DOUBLE_EQ(longitudinal_utils::calcElevationAngle(p_from, p_to), M_PI_4);
 }
 
-TEST(TestLongitudinalControllerUtils, calcPoseAfterTimeDelay) {
+TEST(TestLongitudinalControllerUtils, calcPoseAfterTimeDelay)
+{
   using geometry_msgs::msg::Pose;
   const double abs_err = 1e-7;
   Pose current_pose;
@@ -187,9 +188,8 @@ TEST(TestLongitudinalControllerUtils, calcPoseAfterTimeDelay) {
   // With a delay and/or a velocity of 0.0 there is no change of position
   double delay_time = 0.0;
   double current_vel = 0.0;
-  Pose delayed_pose = longitudinal_utils::calcPoseAfterTimeDelay(
-    current_pose, delay_time,
-    current_vel);
+  Pose delayed_pose =
+    longitudinal_utils::calcPoseAfterTimeDelay(current_pose, delay_time, current_vel);
   EXPECT_NEAR(delayed_pose.position.x, current_pose.position.x, abs_err);
   EXPECT_NEAR(delayed_pose.position.y, current_pose.position.y, abs_err);
   EXPECT_NEAR(delayed_pose.position.z, current_pose.position.z, abs_err);
@@ -255,7 +255,8 @@ TEST(TestLongitudinalControllerUtils, calcPoseAfterTimeDelay) {
   EXPECT_NEAR(delayed_pose.position.z, current_pose.position.z, abs_err);
 }
 
-TEST(TestLongitudinalControllerUtils, lerpOrientation) {
+TEST(TestLongitudinalControllerUtils, lerpOrientation)
+{
   geometry_msgs::msg::Quaternion result;
   tf2::Quaternion o_from;
   tf2::Quaternion o_to;
@@ -310,7 +311,8 @@ TEST(TestLongitudinalControllerUtils, lerpOrientation) {
   EXPECT_DOUBLE_EQ(yaw, M_PI_4 / 2);
 }
 
-TEST(TestLongitudinalControllerUtils, lerpTrajectoryPoint) {
+TEST(TestLongitudinalControllerUtils, lerpTrajectoryPoint)
+{
   using autoware_auto_planning_msgs::msg::TrajectoryPoint;
   using geometry_msgs::msg::Point;
   const double abs_err = 1e-15;
@@ -408,7 +410,8 @@ TEST(TestLongitudinalControllerUtils, lerpTrajectoryPoint) {
   EXPECT_NEAR(result.acceleration_mps2, 15.0, abs_err);
 }
 
-TEST(TestLongitudinalControllerUtils, applyDiffLimitFilter) {
+TEST(TestLongitudinalControllerUtils, applyDiffLimitFilter)
+{
   double dt = 1.0;
   double max_val = 0.0;  // cannot increase
   double min_val = 0.0;  // cannot decrease
@@ -416,46 +419,33 @@ TEST(TestLongitudinalControllerUtils, applyDiffLimitFilter) {
 
   double input_val = 10.0;
   EXPECT_DOUBLE_EQ(
-    longitudinal_utils::applyDiffLimitFilter(
-      input_val, prev_val, dt, max_val,
-      min_val), 0.0);
+    longitudinal_utils::applyDiffLimitFilter(input_val, prev_val, dt, max_val, min_val), 0.0);
 
   max_val = 1.0;  // can only increase by up to 1.0 at a time
   EXPECT_DOUBLE_EQ(
-    longitudinal_utils::applyDiffLimitFilter(
-      input_val, prev_val, dt, max_val,
-      min_val), 1.0);
+    longitudinal_utils::applyDiffLimitFilter(input_val, prev_val, dt, max_val, min_val), 1.0);
 
   input_val = -10.0;
   EXPECT_DOUBLE_EQ(
-    longitudinal_utils::applyDiffLimitFilter(
-      input_val, prev_val, dt, max_val,
-      min_val), 0.0);
+    longitudinal_utils::applyDiffLimitFilter(input_val, prev_val, dt, max_val, min_val), 0.0);
 
   min_val = -1.0;  // can decrease by up to -1.0 at a time
   EXPECT_DOUBLE_EQ(
-    longitudinal_utils::applyDiffLimitFilter(
-      input_val, prev_val, dt, max_val,
-      min_val), -1.0);
+    longitudinal_utils::applyDiffLimitFilter(input_val, prev_val, dt, max_val, min_val), -1.0);
 
   dt = 5.0;  // can now increase/decrease 5 times more
   input_val = 10.0;
   EXPECT_DOUBLE_EQ(
-    longitudinal_utils::applyDiffLimitFilter(
-      input_val, prev_val, dt, max_val,
-      min_val), 5.0);
+    longitudinal_utils::applyDiffLimitFilter(input_val, prev_val, dt, max_val, min_val), 5.0);
   input_val = -10.0;
   EXPECT_DOUBLE_EQ(
-    longitudinal_utils::applyDiffLimitFilter(
-      input_val, prev_val, dt, max_val,
-      min_val), -5.0);
+    longitudinal_utils::applyDiffLimitFilter(input_val, prev_val, dt, max_val, min_val), -5.0);
 
   dt = 1.0;
   input_val = 100.0;
   for (double prev = 0.0; prev < 100.0; ++prev) {
-    const double new_val = longitudinal_utils::applyDiffLimitFilter(
-      input_val, prev, dt, max_val,
-      min_val);
+    const double new_val =
+      longitudinal_utils::applyDiffLimitFilter(input_val, prev, dt, max_val, min_val);
     EXPECT_DOUBLE_EQ(new_val, prev + max_val);
     prev = new_val;
   }

@@ -17,19 +17,21 @@
 #ifndef AUTOWARE_AUTO_TF2__TF2_AUTOWARE_AUTO_MSGS_HPP_
 #define AUTOWARE_AUTO_TF2__TF2_AUTOWARE_AUTO_MSGS_HPP_
 
+#include <common/types.hpp>
+#include <kdl/frames.hpp>
+
+#include <autoware_auto_geometry_msgs/msg/quaternion32.hpp>
+#include <autoware_auto_perception_msgs/msg/bounding_box.hpp>
+#include <autoware_auto_perception_msgs/msg/bounding_box_array.hpp>
+#include <geometry_msgs/msg/point32.hpp>
+#include <geometry_msgs/msg/polygon.hpp>
+#include <geometry_msgs/msg/transform_stamped.hpp>
+
 #include <tf2/convert.h>
 #include <tf2/time.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include <autoware_auto_perception_msgs/msg/bounding_box_array.hpp>
-#include <autoware_auto_perception_msgs/msg/bounding_box.hpp>
-#include <geometry_msgs/msg/transform_stamped.hpp>
-#include <autoware_auto_geometry_msgs/msg/quaternion32.hpp>
-#include <geometry_msgs/msg/polygon.hpp>
-#include <geometry_msgs/msg/point32.hpp>
-#include <kdl/frames.hpp>
-#include <common/types.hpp>
-#include <string>
 
+#include <string>
 
 using autoware::common::types::float32_t;
 using autoware::common::types::float64_t;
@@ -38,7 +40,6 @@ using BoundingBox = autoware_auto_perception_msgs::msg::BoundingBox;
 
 namespace tf2
 {
-
 
 /*************/
 /** Point32 **/
@@ -50,9 +51,8 @@ namespace tf2
  * \param t_out The transformed point, as a Point32 message.
  * \param transform The timestamped transform to apply, as a TransformStamped message.
  */
-template<>
-inline
-void doTransform(
+template <>
+inline void doTransform(
   const geometry_msgs::msg::Point32 & t_in, geometry_msgs::msg::Point32 & t_out,
   const geometry_msgs::msg::TransformStamped & transform)
 {
@@ -61,7 +61,6 @@ void doTransform(
   t_out.y = static_cast<float>(v_out[1]);
   t_out.z = static_cast<float>(v_out[2]);
 }
-
 
 /*************/
 /** Polygon **/
@@ -73,9 +72,8 @@ void doTransform(
  * \param t_out The transformed polygon.
  * \param transform The timestamped transform to apply, as a TransformStamped message.
  */
-template<>
-inline
-void doTransform(
+template <>
+inline void doTransform(
   const geometry_msgs::msg::Polygon & t_in, geometry_msgs::msg::Polygon & t_out,
   const geometry_msgs::msg::TransformStamped & transform)
 {
@@ -84,8 +82,8 @@ void doTransform(
   // We don't use std::back_inserter to allow aliasing between t_in and t_out
   t_out.points.resize(t_in.points.size());
   for (size_t i = 0; i < t_in.points.size(); ++i) {
-    const KDL::Vector v_out = kdl_frame * KDL::Vector(
-      t_in.points[i].x, t_in.points[i].y, t_in.points[i].z);
+    const KDL::Vector v_out =
+      kdl_frame * KDL::Vector(t_in.points[i].x, t_in.points[i].y, t_in.points[i].z);
     t_out.points[i].x = static_cast<float>(v_out[0]);
     t_out.points[i].y = static_cast<float>(v_out[1]);
     t_out.points[i].z = static_cast<float>(v_out[2]);
@@ -102,9 +100,8 @@ void doTransform(
  * \param t_out The transformed Quaternion32 message.
  * \param transform The timestamped transform to apply, as a TransformStamped message.
  */
-template<>
-inline
-void doTransform(
+template <>
+inline void doTransform(
   const autoware_auto_geometry_msgs::msg::Quaternion32 & t_in,
   autoware_auto_geometry_msgs::msg::Quaternion32 & t_out,
   const geometry_msgs::msg::TransformStamped & transform)
@@ -120,7 +117,6 @@ void doTransform(
   t_out.w = static_cast<float32_t>(qw);
 }
 
-
 /******************/
 /** BoundingBox **/
 /******************/
@@ -131,9 +127,8 @@ void doTransform(
  * \param t_out The transformed BoundingBox message.
  * \param transform The timestamped transform to apply, as a TransformStamped message.
  */
-template<>
-inline
-void doTransform(
+template <>
+inline void doTransform(
   const BoundingBox & t_in, BoundingBox & t_out,
   const geometry_msgs::msg::TransformStamped & transform)
 {
@@ -147,7 +142,6 @@ void doTransform(
   // TODO(jitrc): add conversion for other fields of BoundingBox, such as heading, variance, size
 }
 
-
 /**********************/
 /** BoundingBoxArray **/
 /**********************/
@@ -157,9 +151,8 @@ void doTransform(
  * \param t A timestamped BoundingBoxArray message to extract the timestamp from.
  * \return The timestamp of the message.
  */
-template<>
-inline
-tf2::TimePoint getTimestamp(const BoundingBoxArray & t)
+template <>
+inline tf2::TimePoint getTimestamp(const BoundingBoxArray & t)
 {
   return tf2_ros::fromMsg(t.header.stamp);
 }
@@ -169,9 +162,11 @@ tf2::TimePoint getTimestamp(const BoundingBoxArray & t)
  * \param t A timestamped BoundingBoxArray message to extract the frame ID from.
  * \return A string containing the frame ID of the message.
  */
-template<>
-inline
-std::string getFrameId(const BoundingBoxArray & t) {return t.header.frame_id;}
+template <>
+inline std::string getFrameId(const BoundingBoxArray & t)
+{
+  return t.header.frame_id;
+}
 
 /** \brief Apply a geometry_msgs TransformStamped to an autoware_auto_msgs BoundingBoxArray type.
  * This function is a specialization of the doTransform template defined in tf2/convert.h.
@@ -179,11 +174,9 @@ std::string getFrameId(const BoundingBoxArray & t) {return t.header.frame_id;}
  * \param t_out The transformed BoundingBoxArray, as a timestamped BoundingBoxArray message.
  * \param transform The timestamped transform to apply, as a TransformStamped message.
  */
-template<>
-inline
-void doTransform(
-  const BoundingBoxArray & t_in,
-  BoundingBoxArray & t_out,
+template <>
+inline void doTransform(
+  const BoundingBoxArray & t_in, BoundingBoxArray & t_out,
   const geometry_msgs::msg::TransformStamped & transform)
 {
   t_out = t_in;

@@ -13,11 +13,12 @@
 // limitations under the License.
 #include "motion_testing/motion_testing.hpp"
 
-#include <tf2/convert.h>
+#include <time_utils/time_utils.hpp>
+
 #include <tf2/LinearMath/Quaternion.h>
+#include <tf2/convert.h>
 #include <tf2/utils.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include <time_utils/time_utils.hpp>
 
 #include <limits>
 
@@ -26,12 +27,7 @@ namespace motion
 namespace motion_testing
 {
 State make_state(
-  Real x0,
-  Real y0,
-  Real heading,
-  Real v0,
-  Real a0,
-  Real turn_rate,
+  Real x0, Real y0, Real heading, Real v0, Real a0, Real turn_rate,
   std::chrono::system_clock::time_point t)
 {
   State start_state{rosidl_runtime_cpp::MessageInitialization::ALL};
@@ -66,8 +62,7 @@ State generate_state(Generator & gen)
   quat.setRPY(0.0, 0.0, normal(gen));
   ret.state.pose.orientation = tf2::toMsg(quat);
   // Parameters with only positive supports
-  std::exponential_distribution<decltype(ret.state.longitudinal_velocity_mps)>
-  exponential{1.0F};
+  std::exponential_distribution<decltype(ret.state.longitudinal_velocity_mps)> exponential{1.0F};
   ret.state.longitudinal_velocity_mps = 5.0F * exponential(gen);
 
   return ret;
@@ -105,9 +100,8 @@ Trajectory constant_trajectory(const State & start_state, const std::chrono::nan
     tf2::fromMsg(last_state.pose.orientation, last_orientation);
     next_state.pose.orientation = tf2::toMsg(last_orientation * orientation_increment);
     // pose.position update: simplified heading effects
-    const auto ds =
-      static_cast<double>(dt_s *
-      (last_state.longitudinal_velocity_mps + (0.5F * dt_s * last_state.acceleration_mps2)));
+    const auto ds = static_cast<double>(
+      dt_s * (last_state.longitudinal_velocity_mps + (0.5F * dt_s * last_state.acceleration_mps2)));
     const auto yaw = tf2::getYaw(next_state.pose.orientation);
     next_state.pose.position.x += std::cos(yaw) * ds;
     next_state.pose.position.y += std::sin(yaw) * ds;
@@ -153,10 +147,7 @@ Trajectory bad_heading_trajectory(const State & start_state, const std::chrono::
 
 ////////////////////////////////////////////////////////////////////////////////
 Trajectory constant_velocity_trajectory(
-  const Real x0,
-  const Real y0,
-  const Real heading,
-  const Real v0,
+  const Real x0, const Real y0, const Real heading, const Real v0,
   const std::chrono::nanoseconds dt)
 {
   return constant_acceleration_turn_rate_trajectory(x0, y0, heading, v0, 0.0F, 0.0F, dt);
@@ -164,11 +155,7 @@ Trajectory constant_velocity_trajectory(
 
 ////////////////////////////////////////////////////////////////////////////////
 Trajectory constant_acceleration_trajectory(
-  const Real x0,
-  const Real y0,
-  const Real heading,
-  const Real v0,
-  const Real a0,
+  const Real x0, const Real y0, const Real heading, const Real v0, const Real a0,
   const std::chrono::nanoseconds dt)
 {
   return constant_acceleration_turn_rate_trajectory(x0, y0, heading, v0, a0, 0.0F, dt);
@@ -176,11 +163,7 @@ Trajectory constant_acceleration_trajectory(
 
 ////////////////////////////////////////////////////////////////////////////////
 Trajectory constant_velocity_turn_rate_trajectory(
-  const Real x0,
-  const Real y0,
-  const Real heading,
-  const Real v0,
-  const Real turn_rate,
+  const Real x0, const Real y0, const Real heading, const Real v0, const Real turn_rate,
   const std::chrono::nanoseconds dt)
 {
   return constant_acceleration_turn_rate_trajectory(x0, y0, heading, v0, 0.0F, turn_rate, dt);
@@ -188,13 +171,8 @@ Trajectory constant_velocity_turn_rate_trajectory(
 
 ////////////////////////////////////////////////////////////////////////////////
 Trajectory constant_acceleration_turn_rate_trajectory(
-  const Real x0,
-  const Real y0,
-  const Real heading,
-  const Real v0,
-  const Real a0,
-  const Real turn_rate,
-  const std::chrono::nanoseconds dt)
+  const Real x0, const Real y0, const Real heading, const Real v0, const Real a0,
+  const Real turn_rate, const std::chrono::nanoseconds dt)
 {
   State start_state =
     make_state(x0, y0, heading, v0, a0, turn_rate, std::chrono::system_clock::now());
@@ -204,10 +182,7 @@ Trajectory constant_acceleration_turn_rate_trajectory(
 
 ////////////////////////////////////////////////////////////////////////////////
 void next_state(
-  const Trajectory & trajectory,
-  State & state,
-  const uint32_t hint,
-  Generator * const gen)
+  const Trajectory & trajectory, State & state, const uint32_t hint, Generator * const gen)
 {
   (void)trajectory;
   (void)state;
@@ -217,9 +192,7 @@ void next_state(
 
 ////////////////////////////////////////////////////////////////////////////////
 Index progresses_towards_target(
-  const Trajectory & trajectory,
-  const Point & target,
-  const Real heading_tolerance)
+  const Trajectory & trajectory, const Point & target, const Real heading_tolerance)
 {
   auto last_err = std::numeric_limits<double>::max();
   auto last_heading_err = -std::numeric_limits<Real>::max();
@@ -257,23 +230,22 @@ Index dynamically_feasible(const Trajectory & trajectory, const Real tolerance)
   for (auto idx = Index{1}; idx < trajectory.points.size(); ++idx) {
     const auto & pt = trajectory.points[idx];
     const auto dt_ = time_utils::from_message(pt.time_from_start) -
-      time_utils::from_message(last_pt.time_from_start);
+                     time_utils::from_message(last_pt.time_from_start);
     const auto dt = std::chrono::duration_cast<std::chrono::duration<Real>>(dt_).count();
     const auto dv = last_pt.acceleration_mps2 * dt;
-    const auto ds =
-      (Real{0.5} *dv * dt) + (last_pt.longitudinal_velocity_mps * dt);
+    const auto ds = (Real{0.5} * dv * dt) + (last_pt.longitudinal_velocity_mps * dt);
     const auto dn = last_pt.lateral_velocity_mps * dt;
     const auto dth = last_pt.heading_rate_rps * dt;
     const auto check_fn = [tolerance](auto expect, auto val, auto str) -> bool {
-        bool success = true;
-        if (static_cast<Real>(std::fabs(expect)) < Real{1}) {
-          success = static_cast<Real>(std::fabs(expect - val)) < tolerance;
-        } else {
-          success = static_cast<Real>(std::fabs(expect - val) / expect) < tolerance;
-        }
-        (void)str;
-        return success;
-      };
+      bool success = true;
+      if (static_cast<Real>(std::fabs(expect)) < Real{1}) {
+        success = static_cast<Real>(std::fabs(expect - val)) < tolerance;
+      } else {
+        success = static_cast<Real>(std::fabs(expect - val) / expect) < tolerance;
+      }
+      (void)str;
+      return success;
+    };
     bool ok = true;
     {
       const auto v = last_pt.longitudinal_velocity_mps + dv;
@@ -302,11 +274,11 @@ Index dynamically_feasible(const Trajectory & trajectory, const Real tolerance)
       const tf2::Transform tf2(new_th);
       const tf2::Vector3 delta2 = tf2 * ds_dn;
       ok = (check_fn(last_pt.pose.position.x + delta.getX(), pt.pose.position.x, "x") ||
-        check_fn(last_pt.pose.position.x + delta2.getX(), pt.pose.position.x, "x2")) &&
-        ok;
+            check_fn(last_pt.pose.position.x + delta2.getX(), pt.pose.position.x, "x2")) &&
+           ok;
       ok = (check_fn(last_pt.pose.position.y + delta.getY(), pt.pose.position.y, "y") ||
-        check_fn(last_pt.pose.position.y + delta2.getY(), pt.pose.position.y, "y2")) &&
-        ok;
+            check_fn(last_pt.pose.position.y + delta2.getY(), pt.pose.position.y, "y2")) &&
+           ok;
     }
     if (!ok) {
       return idx;

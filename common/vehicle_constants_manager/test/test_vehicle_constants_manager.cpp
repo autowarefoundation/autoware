@@ -12,18 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "gtest/gtest.h"
+#include "vehicle_constants_manager/vehicle_constants_manager.hpp"
+
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
-#include "vehicle_constants_manager/vehicle_constants_manager.hpp"
-#include "gtest/gtest.h"
-
-TEST(TestVehicleConstantsManager, TestInitializationConstructor) {
+TEST(TestVehicleConstantsManager, TestInitializationConstructor)
+{
   using float64_t = autoware::common::types::float64_t;
-  using VehicleConstants =
-    autoware::common::vehicle_constants_manager::VehicleConstants;
+  using VehicleConstants = autoware::common::vehicle_constants_manager::VehicleConstants;
 
   const float64_t wheel_radius = 0.37;
   const float64_t wheel_width = 0.27;
@@ -42,54 +42,45 @@ TEST(TestVehicleConstantsManager, TestInitializationConstructor) {
   const float64_t maximum_turning_angle_rad = 0.53;
 
   // Well set parameters
-  EXPECT_NO_THROW(
-    VehicleConstants vc(
-      wheel_radius, wheel_width, wheel_base, wheel_tread, overhang_front,
-      overhang_rear, overhang_left, overhang_right, vehicle_height, cg_to_rear,
-      tire_cornering_stiffness_front_n_per_deg,
-      tire_cornering_stiffness_rear_n_per_deg, mass_vehicle,
-      inertia_yaw_kg_m_2, maximum_turning_angle_rad));
+  EXPECT_NO_THROW(VehicleConstants vc(
+    wheel_radius, wheel_width, wheel_base, wheel_tread, overhang_front, overhang_rear,
+    overhang_left, overhang_right, vehicle_height, cg_to_rear,
+    tire_cornering_stiffness_front_n_per_deg, tire_cornering_stiffness_rear_n_per_deg, mass_vehicle,
+    inertia_yaw_kg_m_2, maximum_turning_angle_rad));
 
   // Center of gravity is not within wheel_base
   const float64_t bad_cg_to_rear = wheel_base + 1.0;
   EXPECT_THROW(
     VehicleConstants vc(
-      wheel_radius, wheel_width, wheel_base,
-      wheel_tread, overhang_front, overhang_rear,
-      overhang_left, overhang_right,
-      vehicle_height, bad_cg_to_rear,
-      tire_cornering_stiffness_front_n_per_deg,
-      tire_cornering_stiffness_rear_n_per_deg,
-      mass_vehicle, inertia_yaw_kg_m_2,
-      maximum_turning_angle_rad),
+      wheel_radius, wheel_width, wheel_base, wheel_tread, overhang_front, overhang_rear,
+      overhang_left, overhang_right, vehicle_height, bad_cg_to_rear,
+      tire_cornering_stiffness_front_n_per_deg, tire_cornering_stiffness_rear_n_per_deg,
+      mass_vehicle, inertia_yaw_kg_m_2, maximum_turning_angle_rad),
     std::runtime_error);
 
   // Some supposedly absolute parameters are negative
   EXPECT_THROW(
     VehicleConstants vc(
-      wheel_radius, wheel_width, -wheel_base,
-      wheel_tread, -overhang_front, overhang_rear,
-      overhang_left, -overhang_right,
-      vehicle_height, cg_to_rear,
-      tire_cornering_stiffness_front_n_per_deg,
-      tire_cornering_stiffness_rear_n_per_deg,
-      mass_vehicle, inertia_yaw_kg_m_2,
-      maximum_turning_angle_rad),
+      wheel_radius, wheel_width, -wheel_base, wheel_tread, -overhang_front, overhang_rear,
+      overhang_left, -overhang_right, vehicle_height, cg_to_rear,
+      tire_cornering_stiffness_front_n_per_deg, tire_cornering_stiffness_rear_n_per_deg,
+      mass_vehicle, inertia_yaw_kg_m_2, maximum_turning_angle_rad),
     std::runtime_error);
 }
 
-TEST(TestVehicleConstantsManager, TestGetVehicleConstantsMissing) {
+TEST(TestVehicleConstantsManager, TestGetVehicleConstantsMissing)
+{
   rclcpp::init(0, nullptr);
   const std::string ns_node = "TestGetVehicleConstantsMissing";
   rclcpp::Node node("some_node", ns_node);
   EXPECT_THROW(
-    autoware::common::vehicle_constants_manager::
-    declare_and_get_vehicle_constants(node),
+    autoware::common::vehicle_constants_manager::declare_and_get_vehicle_constants(node),
     std::runtime_error);
   rclcpp::shutdown();
 }
 
-TEST(TestVehicleConstantsManager, TestGetVehicleConstants) {
+TEST(TestVehicleConstantsManager, TestGetVehicleConstants)
+{
   rclcpp::init(0, nullptr);
   const std::string ns_node = "TestGetVehicleConstants";
   std::vector<rclcpp::Parameter> params;
@@ -117,8 +108,7 @@ TEST(TestVehicleConstantsManager, TestGetVehicleConstants) {
     std::make_shared<rclcpp::Node>("some_node", ns_node, node_options);
 
   EXPECT_NO_THROW(
-    autoware::common::vehicle_constants_manager::
-    declare_and_get_vehicle_constants(*node));
+    autoware::common::vehicle_constants_manager::declare_and_get_vehicle_constants(*node));
 
   rclcpp::shutdown();
 }

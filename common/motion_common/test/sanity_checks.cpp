@@ -15,12 +15,13 @@
 /// \file
 /// \brief This file includes basic tests for utility functions in motion_common
 
-#include <gtest/gtest.h>
+#include <common/types.hpp>
+#include <motion_common/motion_common.hpp>
 
 #include <autoware_auto_geometry_msgs/msg/complex32.hpp>
-#include <common/types.hpp>
 #include <geometry_msgs/msg/quaternion.hpp>
-#include <motion_common/motion_common.hpp>
+
+#include <gtest/gtest.h>
 
 using autoware::common::types::float64_t;
 using autoware_auto_geometry_msgs::msg::Complex32;
@@ -35,7 +36,8 @@ struct MyQuaternion
   float64_t w{1.0};
 };
 
-TEST(HeadingFuncs, FromQuat) {
+TEST(HeadingFuncs, FromQuat)
+{
   Quaternion gm_quat{};
   gm_quat.z = 0.5f;
   gm_quat.w = 0.5f;

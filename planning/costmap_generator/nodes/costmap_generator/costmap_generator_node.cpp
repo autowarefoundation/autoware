@@ -163,8 +163,8 @@ CostmapGenerator::CostmapGenerator(const rclcpp::NodeOptions & node_options)
 
   // Timer
   const auto period_ns = rclcpp::Rate(update_rate_).period();
-  timer_ = rclcpp::create_timer(this, get_clock(), period_ns,
-    std::bind(&CostmapGenerator::onTimer, this));
+  timer_ =
+    rclcpp::create_timer(this, get_clock(), period_ns, std::bind(&CostmapGenerator::onTimer, this));
 
   // Initialize
   initGridmap();

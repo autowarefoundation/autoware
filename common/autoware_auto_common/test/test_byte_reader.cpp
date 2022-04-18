@@ -14,10 +14,11 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#include <vector>
+#include "common/types.hpp"
 #include "gtest/gtest.h"
 #include "helper_functions/byte_reader.hpp"
-#include "common/types.hpp"
+
+#include <vector>
 
 using autoware::common::types::float64_t;
 
@@ -28,13 +29,11 @@ class ByteReader : public ::testing::Test
 };
 }  // namespace
 
-
 // tests serial_driver_node's get_packet function which receives serial packages
 TEST_F(ByteReader, Basic)
 {
-  std::vector<uint8_t> data = {
-    0x00, 0x00, 0x00, 0x17, 0x40, 0x28, 0xAE, 0x14, 0x7A, 0xE1, 0x47, 0xAE, 0x00, 0x00, 0x08
-  };
+  std::vector<uint8_t> data = {0x00, 0x00, 0x00, 0x17, 0x40, 0x28, 0xAE, 0x14,
+                               0x7A, 0xE1, 0x47, 0xAE, 0x00, 0x00, 0x08};
 
   autoware::common::helper_functions::ByteReader byte_reader(data);
 

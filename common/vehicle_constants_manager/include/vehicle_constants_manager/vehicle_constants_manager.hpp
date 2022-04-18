@@ -63,13 +63,11 @@ struct VEHICLE_CONSTANTS_MANAGER_PUBLIC VehicleConstants
   /// @throws std::runtime_error if cg_to_rear is larger than wheel_base (center of gravity must be
   /// within front and rear axles.)
   explicit VehicleConstants(
-    float64_t wheel_radius, float64_t wheel_width, float64_t wheel_base,
-    float64_t wheel_tread, float64_t overhang_front,
-    float64_t overhang_rear, float64_t overhang_left,
-    float64_t overhang_right, float64_t vehicle_height,
-    float64_t cg_to_rear, float64_t tire_cornering_stiffness_front,
-    float64_t tire_cornering_stiffness_rear, float64_t mass_vehicle,
-    float64_t inertia_yaw_kg_m_2, float64_t maximum_turning_angle_rad);
+    float64_t wheel_radius, float64_t wheel_width, float64_t wheel_base, float64_t wheel_tread,
+    float64_t overhang_front, float64_t overhang_rear, float64_t overhang_left,
+    float64_t overhang_right, float64_t vehicle_height, float64_t cg_to_rear,
+    float64_t tire_cornering_stiffness_front, float64_t tire_cornering_stiffness_rear,
+    float64_t mass_vehicle, float64_t inertia_yaw_kg_m_2, float64_t maximum_turning_angle_rad);
 
   // Primary Constants
 
@@ -126,7 +124,6 @@ struct VEHICLE_CONSTANTS_MANAGER_PUBLIC VehicleConstants
 
   /// @brief [rad] Maximum turning angle for cars front axis
   const float64_t maximum_turning_angle_rad;
-
 
   // Derived Constants
 

@@ -15,18 +15,17 @@
 #ifndef TRAJECTORY_FOLLOWER_NODES__LATLON_MUXER_NODE_HPP_
 #define TRAJECTORY_FOLLOWER_NODES__LATLON_MUXER_NODE_HPP_
 
-#include <memory>
-#include <string>
-
+#include "rclcpp/rclcpp.hpp"
+#include "rclcpp/time.hpp"
+#include "rclcpp_components/register_node_macro.hpp"
 #include "trajectory_follower_nodes/visibility_control.hpp"
 
 #include "autoware_auto_control_msgs/msg/ackermann_control_command.hpp"
 #include "autoware_auto_control_msgs/msg/ackermann_lateral_command.hpp"
 #include "autoware_auto_control_msgs/msg/longitudinal_command.hpp"
 
-#include "rclcpp/rclcpp.hpp"
-#include "rclcpp/time.hpp"
-#include "rclcpp_components/register_node_macro.hpp"
+#include <memory>
+#include <string>
 
 namespace autoware
 {
@@ -46,16 +45,19 @@ public:
 
 private:
   // \brief Callback for the lateral control command
-  void latCtrlCmdCallback(const autoware_auto_control_msgs::msg::AckermannLateralCommand::SharedPtr msg);
+  void latCtrlCmdCallback(
+    const autoware_auto_control_msgs::msg::AckermannLateralCommand::SharedPtr msg);
   // \brief Callback for the longitudinal control command
-  void lonCtrlCmdCallback(const autoware_auto_control_msgs::msg::LongitudinalCommand::SharedPtr msg);
+  void lonCtrlCmdCallback(
+    const autoware_auto_control_msgs::msg::LongitudinalCommand::SharedPtr msg);
   // \brief Publish the combined control command message
   void publishCmd();
   // \brief Check that the received messages are not too old
   // \return bool True if the stored messages timed out
   bool checkTimeout();
 
-  rclcpp::Publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>::SharedPtr m_control_cmd_pub;
+  rclcpp::Publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>::SharedPtr
+    m_control_cmd_pub;
   rclcpp::Subscription<autoware_auto_control_msgs::msg::AckermannLateralCommand>::SharedPtr
     m_lat_control_cmd_sub;
   rclcpp::Subscription<autoware_auto_control_msgs::msg::LongitudinalCommand>::SharedPtr

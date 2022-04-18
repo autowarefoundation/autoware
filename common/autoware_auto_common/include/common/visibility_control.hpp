@@ -18,21 +18,21 @@
 #define COMMON__VISIBILITY_CONTROL_HPP_
 
 #if defined(_MSC_VER) && defined(_WIN64)
-  #if defined(COMMON_BUILDING_DLL) || defined(COMMON_EXPORTS)
-    #define COMMON_PUBLIC __declspec(dllexport)
-    #define COMMON_LOCAL
-  #else  // defined(COMMON_BUILDING_DLL) || defined(COMMON_EXPORTS)
-    #define COMMON_PUBLIC __declspec(dllimport)
-    #define COMMON_LOCAL
-  #endif  // defined(COMMON_BUILDING_DLL) || defined(COMMON_EXPORTS)
+#if defined(COMMON_BUILDING_DLL) || defined(COMMON_EXPORTS)
+#define COMMON_PUBLIC __declspec(dllexport)
+#define COMMON_LOCAL
+#else  // defined(COMMON_BUILDING_DLL) || defined(COMMON_EXPORTS)
+#define COMMON_PUBLIC __declspec(dllimport)
+#define COMMON_LOCAL
+#endif  // defined(COMMON_BUILDING_DLL) || defined(COMMON_EXPORTS)
 #elif defined(__GNUC__) && defined(__linux__)
-  #define COMMON_PUBLIC __attribute__((visibility("default")))
-  #define COMMON_LOCAL __attribute__((visibility("hidden")))
+#define COMMON_PUBLIC __attribute__((visibility("default")))
+#define COMMON_LOCAL __attribute__((visibility("hidden")))
 #elif defined(__GNUC__) && defined(__APPLE__)
-  #define COMMON_PUBLIC __attribute__((visibility("default")))
-  #define COMMON_LOCAL __attribute__((visibility("hidden")))
+#define COMMON_PUBLIC __attribute__((visibility("default")))
+#define COMMON_LOCAL __attribute__((visibility("hidden")))
 #else  // !(defined(__GNUC__) && defined(__APPLE__))
-  #error "Unsupported Build Configuration"
+#error "Unsupported Build Configuration"
 #endif  // _MSC_VER
 
 #endif  // COMMON__VISIBILITY_CONTROL_HPP_

@@ -22,6 +22,7 @@
 #define GEOMETRY__BOUNDING_BOX__EIGENBOX_2D_HPP_
 
 #include <geometry/bounding_box/bounding_box_common.hpp>
+
 #include <limits>
 #include <utility>
 
@@ -54,7 +55,7 @@ struct Covariance2d
 /// \param[in] end An iterator pointing to one past the last point in the point list
 /// \tparam IT An iterator type dereferencable into a point with float members x and y
 /// \return A 2d covariance matrix for all points inthe list
-template<typename IT>
+template <typename IT>
 Covariance2d covariance_2d(const IT begin, const IT end)
 {
   Covariance2d ret{0.0F, 0.0F, 0.0F, 0U};
@@ -97,9 +98,8 @@ Covariance2d covariance_2d(const IT begin, const IT end)
 /// \tparam PointT Point type that has at least float members x and y
 /// \return A pairt of eigenvalues: The first is the larger eigenvalue
 /// \throw std::runtime error if you would get degenerate covariance
-template<typename PointT>
-std::pair<float32_t, float32_t> eig_2d(
-  const Covariance2d & cov, PointT & eigvec1, PointT & eigvec2)
+template <typename PointT>
+std::pair<float32_t, float32_t> eig_2d(const Covariance2d & cov, PointT & eigvec1, PointT & eigvec2)
 {
   const float32_t tr_2 = (cov.xx + cov.yy) * 0.5F;
   const float32_t det = (cov.xx * cov.yy) - (cov.xy * cov.xy);
@@ -107,8 +107,8 @@ std::pair<float32_t, float32_t> eig_2d(
   float32_t disc = ((tr_2 * tr_2) - det) + std::numeric_limits<float32_t>::epsilon();
   if (disc < 0.0F) {
     throw std::runtime_error(
-            "pca_2d: negative discriminant! Should never happen for well formed "
-            "covariance matrix");
+      "pca_2d: negative discriminant! Should never happen for well formed "
+      "covariance matrix");
   }
   disc = sqrtf(disc);
   // compute eigenvalues
@@ -140,7 +140,6 @@ std::pair<float32_t, float32_t> eig_2d(
   return ret;
 }
 
-
 /// \brief Given eigenvectors, compute support (furthest) point in each direction
 /// \tparam IT An iterator type dereferencable into a point with float members x and y
 /// \tparam PointT type of a point with float members x and y
@@ -151,21 +150,14 @@ std::pair<float32_t, float32_t> eig_2d(
 /// \param[out] support Array to get filled with extreme points in each of the principal
 ///                     components
 /// \return whether or not eig2 is ccw wrt eig1
-template<typename IT, typename PointT>
+template <typename IT, typename PointT>
 bool8_t compute_supports(
-  const IT begin,
-  const IT end,
-  const PointT & eig1,
-  const PointT & eig2,
-  Point4<IT> & support)
+  const IT begin, const IT end, const PointT & eig1, const PointT & eig2, Point4<IT> & support)
 {
   const bool8_t ret = cross_2d(eig1, eig2) >= 0.0F;
-  std::array<float32_t, 4U> metrics{{
-    -std::numeric_limits<float32_t>::max(),
-    -std::numeric_limits<float32_t>::max(),
-    std::numeric_limits<float32_t>::max(),
-    std::numeric_limits<float32_t>::max()
-  }};
+  std::array<float32_t, 4U> metrics{
+    {-std::numeric_limits<float32_t>::max(), -std::numeric_limits<float32_t>::max(),
+     std::numeric_limits<float32_t>::max(), std::numeric_limits<float32_t>::max()}};
   for (auto it = begin; it != end; ++it) {
     const PointT & pt = *it;
     float32_t val = dot_2d(ret ? eig1 : eig2, pt);
@@ -198,11 +190,9 @@ bool8_t compute_supports(
 /// \param[in] supports Array of iterators referring to points that are most extreme in each basis
 ///                     direction. Should be result of compute_supports function
 /// \return A bounding box based on the basis axes and the support points
-template<typename IT, typename PointT>
+template <typename IT, typename PointT>
 BoundingBox compute_bounding_box(
-  const PointT & ax1,
-  const PointT & ax2,
-  const Point4<IT> & supports)
+  const PointT & ax1, const PointT & ax2, const Point4<IT> & supports)
 {
   decltype(BoundingBox::corners) corners;
   const Point4<PointT> directions{{ax1, ax2, minus_2d(ax1), minus_2d(ax2)}};
@@ -222,7 +212,7 @@ BoundingBox compute_bounding_box(
 /// \param[in] end An iterator pointing to one past the last point in the point list
 /// \tparam IT An iterator type dereferencable into a point with float members x and y
 /// \return An oriented bounding box in x-y. This bounding box has no height information
-template<typename IT>
+template <typename IT>
 BoundingBox eigenbox_2d(const IT begin, const IT end)
 {
   // compute covariance

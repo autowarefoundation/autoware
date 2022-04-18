@@ -16,9 +16,9 @@
 #ifndef TIME_UTILS__TIME_UTILS_HPP_
 #define TIME_UTILS__TIME_UTILS_HPP_
 
-#include <time_utils/visibility_control.hpp>
 #include <builtin_interfaces/msg/duration.hpp>
 #include <builtin_interfaces/msg/time.hpp>
+#include <time_utils/visibility_control.hpp>
 
 #include <chrono>
 
@@ -36,13 +36,11 @@ TIME_UTILS_PUBLIC
 std::chrono::nanoseconds from_message(builtin_interfaces::msg::Duration dt) noexcept;
 /// Standard interpolation
 TIME_UTILS_PUBLIC std::chrono::nanoseconds interpolate(
-  std::chrono::nanoseconds a,
-  std::chrono::nanoseconds b,
-  float t) noexcept;
+  std::chrono::nanoseconds a, std::chrono::nanoseconds b, float t) noexcept;
 
 namespace details
 {
-template<typename TimeT>
+template <typename TimeT>
 TimeT duration_to_msg(std::chrono::nanoseconds dt);
 }  // namespace details
 }  // namespace time_utils

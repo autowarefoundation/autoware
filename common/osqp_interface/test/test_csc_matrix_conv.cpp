@@ -12,17 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
-#include <tuple>
-#include <vector>
-
 #include "eigen3/Eigen/Core"
 #include "gtest/gtest.h"
 #include "osqp_interface/csc_matrix_conv.hpp"
 
-TEST(TestCscMatrixConv, Nominal) {
-  using autoware::common::osqp::CSC_Matrix;
+#include <string>
+#include <tuple>
+#include <vector>
+
+TEST(TestCscMatrixConv, Nominal)
+{
   using autoware::common::osqp::calCSCMatrix;
+  using autoware::common::osqp::CSC_Matrix;
 
   Eigen::MatrixXd rect1(1, 2);
   rect1 << 0.0, 1.0;
@@ -38,8 +39,7 @@ TEST(TestCscMatrixConv, Nominal) {
   EXPECT_EQ(rect_m1.m_col_idxs[2], c_int(1));
 
   Eigen::MatrixXd rect2(2, 4);
-  rect2 << 1.0, 0.0, 3.0, 0.0,
-    0.0, 6.0, 7.0, 0.0;
+  rect2 << 1.0, 0.0, 3.0, 0.0, 0.0, 6.0, 7.0, 0.0;
 
   const CSC_Matrix rect_m2 = calCSCMatrix(rect2);
   ASSERT_EQ(rect_m2.m_vals.size(), size_t(4));
@@ -61,12 +61,8 @@ TEST(TestCscMatrixConv, Nominal) {
 
   // Example from http://netlib.org/linalg/html_templates/node92.html
   Eigen::MatrixXd square2(6, 6);
-  square2 << 10.0, 0.0, 0.0, 0.0, -2.0, 0.0,
-    3.0, 9.0, 0.0, 0.0, 0.0, 3.0,
-    0.0, 7.0, 8.0, 7.0, 0.0, 0.0,
-    3.0, 0.0, 8.0, 7.0, 5.0, 0.0,
-    0.0, 8.0, 0.0, 9.0, 9.0, 13.0,
-    0.0, 4.0, 0.0, 0.0, 2.0, -1.0;
+  square2 << 10.0, 0.0, 0.0, 0.0, -2.0, 0.0, 3.0, 9.0, 0.0, 0.0, 0.0, 3.0, 0.0, 7.0, 8.0, 7.0, 0.0,
+    0.0, 3.0, 0.0, 8.0, 7.0, 5.0, 0.0, 0.0, 8.0, 0.0, 9.0, 9.0, 13.0, 0.0, 4.0, 0.0, 0.0, 2.0, -1.0;
 
   const CSC_Matrix square_m2 = calCSCMatrix(square2);
   ASSERT_EQ(square_m2.m_vals.size(), size_t(19));
@@ -118,18 +114,16 @@ TEST(TestCscMatrixConv, Nominal) {
   EXPECT_EQ(square_m2.m_col_idxs[5], c_int(16));
   EXPECT_EQ(square_m2.m_col_idxs[6], c_int(19));
 }
-TEST(TestCscMatrixConv, Trapezoidal) {
-  using autoware::common::osqp::CSC_Matrix;
+TEST(TestCscMatrixConv, Trapezoidal)
+{
   using autoware::common::osqp::calCSCMatrixTrapezoidal;
+  using autoware::common::osqp::CSC_Matrix;
 
   Eigen::MatrixXd square1(2, 2);
   Eigen::MatrixXd square2(3, 3);
   Eigen::MatrixXd rect1(1, 2);
-  square1 << 1.0, 2.0,
-    2.0, 4.0;
-  square2 << 0.0, 2.0, 0.0,
-    4.0, 5.0, 6.0,
-    0.0, 0.0, 0.0;
+  square1 << 1.0, 2.0, 2.0, 4.0;
+  square2 << 0.0, 2.0, 0.0, 4.0, 5.0, 6.0, 0.0, 0.0, 0.0;
   rect1 << 0.0, 1.0;
 
   const CSC_Matrix square_m1 = calCSCMatrixTrapezoidal(square1);
@@ -169,11 +163,12 @@ TEST(TestCscMatrixConv, Trapezoidal) {
     EXPECT_EQ(e.what(), std::string("Matrix must be square (n, n)"));
   }
 }
-TEST(TestCscMatrixConv, Print) {
-  using autoware::common::osqp::CSC_Matrix;
-  using autoware::common::osqp::printCSCMatrix;
+TEST(TestCscMatrixConv, Print)
+{
   using autoware::common::osqp::calCSCMatrix;
   using autoware::common::osqp::calCSCMatrixTrapezoidal;
+  using autoware::common::osqp::CSC_Matrix;
+  using autoware::common::osqp::printCSCMatrix;
   Eigen::MatrixXd square1(2, 2);
   Eigen::MatrixXd rect1(1, 2);
   square1 << 1.0, 2.0, 2.0, 4.0;

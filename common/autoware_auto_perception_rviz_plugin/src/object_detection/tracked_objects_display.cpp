@@ -14,8 +14,9 @@
 //
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#include <memory>
 #include <object_detection/tracked_objects_display.hpp>
+
+#include <memory>
 
 namespace autoware
 {
@@ -23,8 +24,7 @@ namespace rviz_plugins
 {
 namespace object_detection
 {
-TrackedObjectsDisplay::TrackedObjectsDisplay()
-: ObjectPolygonDisplayBase("tracks") {}
+TrackedObjectsDisplay::TrackedObjectsDisplay() : ObjectPolygonDisplayBase("tracks") {}
 
 void TrackedObjectsDisplay::processMessage(TrackedObjects::ConstSharedPtr msg)
 {

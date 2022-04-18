@@ -10,13 +10,11 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_auto_cmake</buildtool_depend>
 
+  <depend>autoware_auto_common</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
-  <depend>autoware_auto_common</depend>
 
   <test_depend>ament_cmake_gtest</test_depend>
-  <!-- <test_depend>ament_lint_auto</test_depend>
-  <test_depend>ament_lint_common</test_depend> -->
   <test_depend>autoware_auto_cmake</test_depend>
 
   <export>

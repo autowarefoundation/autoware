@@ -15,28 +15,29 @@
 #ifndef HAD_MAP_UTILS__HAD_MAP_VISUALIZATION_HPP_
 #define HAD_MAP_UTILS__HAD_MAP_VISUALIZATION_HPP_
 
-#include <visualization_msgs/msg/marker.hpp>
-#include <visualization_msgs/msg/marker_array.hpp>
+#include "had_map_utils/visibility_control.hpp"
+
+#include <common/types.hpp>
+#include <rclcpp/rclcpp.hpp>
+
 #include <geometry_msgs/msg/point.hpp>
 #include <geometry_msgs/msg/point32.hpp>
 #include <geometry_msgs/msg/polygon.hpp>
-#include <rclcpp/rclcpp.hpp>
-#include <common/types.hpp>
+#include <visualization_msgs/msg/marker.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
 
 #include <chrono>
-#include <unordered_set>
+#include <cmath>
 #include <memory>
 #include <string>
-#include <cmath>
+#include <unordered_set>
 #include <vector>
 
-#include "had_map_utils/visibility_control.hpp"
-
+using autoware::common::types::bool8_t;
 using autoware::common::types::float32_t;
 using autoware::common::types::float64_t;
-using autoware::common::types::bool8_t;
 
 namespace autoware
 {
@@ -53,8 +54,8 @@ namespace had_map_utils
  * \param a alpha value
  */
 void HAD_MAP_UTILS_PUBLIC setColor(
-  std_msgs::msg::ColorRGBA * cl,
-  const float32_t & r, const float32_t & g, const float32_t & b, const float32_t & a);
+  std_msgs::msg::ColorRGBA * cl, const float32_t & r, const float32_t & g, const float32_t & b,
+  const float32_t & a);
 
 /**
  * \brief Set the header information to a marker object
@@ -70,11 +71,9 @@ void HAD_MAP_UTILS_PUBLIC setColor(
  * \return visualization_msgs::msg::Marker
  */
 void HAD_MAP_UTILS_PUBLIC setMarkerHeader(
-  visualization_msgs::msg::Marker * m,
-  const int32_t & id, const rclcpp::Time & t,
-  const std::string & frame_id, const std::string & ns,
-  const std_msgs::msg::ColorRGBA & c, const int32_t & action, const int32_t & type,
-  const float32_t & scale);
+  visualization_msgs::msg::Marker * m, const int32_t & id, const rclcpp::Time & t,
+  const std::string & frame_id, const std::string & ns, const std_msgs::msg::ColorRGBA & c,
+  const int32_t & action, const int32_t & type, const float32_t & scale);
 
 /**
  * \brief creates marker with type LINE_STRIP from a lanelet::LineString3d object
@@ -87,10 +86,8 @@ void HAD_MAP_UTILS_PUBLIC setMarkerHeader(
  * \return created visualization_msgs::msg::Marker
  */
 visualization_msgs::msg::Marker HAD_MAP_UTILS_PUBLIC lineString2Marker(
-  const rclcpp::Time & t,
-  const lanelet::LineString3d & ls,
-  const std::string & frame_id, const std::string & ns, const std_msgs::msg::ColorRGBA & c,
-  const float32_t & lss);
+  const rclcpp::Time & t, const lanelet::LineString3d & ls, const std::string & frame_id,
+  const std::string & ns, const std_msgs::msg::ColorRGBA & c, const float32_t & lss);
 
 /**
  * \brief creates marker with type LINE_STRIP from a lanelet::ConstLineString3d object
@@ -103,10 +100,8 @@ visualization_msgs::msg::Marker HAD_MAP_UTILS_PUBLIC lineString2Marker(
  * \return created visualization_msgs::msg::Marker
  */
 visualization_msgs::msg::Marker HAD_MAP_UTILS_PUBLIC lineString2Marker(
-  const rclcpp::Time & t,
-  const lanelet::ConstLineString3d & ls,
-  const std::string & frame_id, const std::string & ns, const std_msgs::msg::ColorRGBA & c,
-  const float32_t & lss);
+  const rclcpp::Time & t, const lanelet::ConstLineString3d & ls, const std::string & frame_id,
+  const std::string & ns, const std_msgs::msg::ColorRGBA & c, const float32_t & lss);
 
 /**
  * \brief converts lanelet::LineString into markers with type LINE_STRIP
@@ -116,11 +111,8 @@ visualization_msgs::msg::Marker HAD_MAP_UTILS_PUBLIC lineString2Marker(
  * \param c color of the marker
  * \return created visualization_msgs::msg::MarkerArray
  */
-visualization_msgs::msg::MarkerArray HAD_MAP_UTILS_PUBLIC
-lineStringsAsMarkerArray(
-  const rclcpp::Time & t,
-  const std::string & ns,
-  const lanelet::LineStrings3d & linestrings,
+visualization_msgs::msg::MarkerArray HAD_MAP_UTILS_PUBLIC lineStringsAsMarkerArray(
+  const rclcpp::Time & t, const std::string & ns, const lanelet::LineStrings3d & linestrings,
   const std_msgs::msg::ColorRGBA & c);
 
 /**
@@ -132,10 +124,8 @@ lineStringsAsMarkerArray(
  * \return created visualization_msgs::msg::MarkerArray
  */
 visualization_msgs::msg::MarkerArray HAD_MAP_UTILS_PUBLIC laneletsBoundaryAsMarkerArray(
-  const rclcpp::Time & t,
-  const lanelet::ConstLanelets & lanelets,
-  const std_msgs::msg::ColorRGBA & c,
-  const bool8_t & viz_centerline);
+  const rclcpp::Time & t, const lanelet::ConstLanelets & lanelets,
+  const std_msgs::msg::ColorRGBA & c, const bool8_t & viz_centerline);
 
 /**
  * \brief creates marker with type LINE_STRIP from a lanelet::BasicPolygon object
@@ -149,10 +139,9 @@ visualization_msgs::msg::MarkerArray HAD_MAP_UTILS_PUBLIC laneletsBoundaryAsMark
  * \return created visualization_msgs::msg::Marker
  */
 visualization_msgs::msg::Marker HAD_MAP_UTILS_PUBLIC basicPolygon2Marker(
-  const rclcpp::Time & t,
-  const int32_t & line_id, const lanelet::BasicPolygon3d & pg,
-  const std::string & frame_id, const std::string & ns,
-  const std_msgs::msg::ColorRGBA & c, const float32_t & lss);
+  const rclcpp::Time & t, const int32_t & line_id, const lanelet::BasicPolygon3d & pg,
+  const std::string & frame_id, const std::string & ns, const std_msgs::msg::ColorRGBA & c,
+  const float32_t & lss);
 
 /**
  * \brief converts outer bound of lanelet::Area into markers with type LINE_STRIP
@@ -163,8 +152,7 @@ visualization_msgs::msg::Marker HAD_MAP_UTILS_PUBLIC basicPolygon2Marker(
  * \return created visualization_msgs::msg::MarkerArray
  */
 visualization_msgs::msg::MarkerArray HAD_MAP_UTILS_PUBLIC areasBoundaryAsMarkerArray(
-  const rclcpp::Time & t,
-  const std::string & ns, const lanelet::Areas & areas,
+  const rclcpp::Time & t, const std::string & ns, const lanelet::Areas & areas,
   const std_msgs::msg::ColorRGBA & c);
 
 /**
@@ -176,8 +164,7 @@ visualization_msgs::msg::MarkerArray HAD_MAP_UTILS_PUBLIC areasBoundaryAsMarkerA
  * \return created visualization_msgs::msg::MarkerArray
  */
 visualization_msgs::msg::MarkerArray HAD_MAP_UTILS_PUBLIC polygonsBoundaryAsMarkerArray(
-  const rclcpp::Time & t,
-  const std::string & ns, const lanelet::Polygons3d & polygons,
+  const rclcpp::Time & t, const std::string & ns, const lanelet::Polygons3d & polygons,
   const std_msgs::msg::ColorRGBA & c);
 
 /**
@@ -193,10 +180,9 @@ visualization_msgs::msg::MarkerArray HAD_MAP_UTILS_PUBLIC polygonsBoundaryAsMark
  * \return created visualization_msgs::msg::Marker
  */
 visualization_msgs::msg::Marker HAD_MAP_UTILS_PUBLIC bbox2Marker(
-  const rclcpp::Time & t, const int32_t & line_id,
-  const float64_t lower[], const float64_t upper[],
-  const std::string & frame_id, const std::string & ns,
-  const std_msgs::msg::ColorRGBA & c, const float32_t & lss);
+  const rclcpp::Time & t, const int32_t & line_id, const float64_t lower[], const float64_t upper[],
+  const std::string & frame_id, const std::string & ns, const std_msgs::msg::ColorRGBA & c,
+  const float32_t & lss);
 
 /**
  * \brief creates marker array from bounding box
@@ -208,8 +194,7 @@ visualization_msgs::msg::Marker HAD_MAP_UTILS_PUBLIC bbox2Marker(
  * \return created visualization_msgs::msg::MarkerArray
  */
 visualization_msgs::msg::MarkerArray HAD_MAP_UTILS_PUBLIC boundingBoxAsMarkerArray(
-  const rclcpp::Time & t,
-  const std::string & ns, const float64_t upper[], const float64_t lower[],
+  const rclcpp::Time & t, const std::string & ns, const float64_t upper[], const float64_t lower[],
   const std_msgs::msg::ColorRGBA & c);
 
 /**
@@ -217,32 +202,30 @@ visualization_msgs::msg::MarkerArray HAD_MAP_UTILS_PUBLIC boundingBoxAsMarkerArr
  * \param ll input lanelet
  * \return result of triangulation
  */
-std::vector<geometry_msgs::msg::Polygon> HAD_MAP_UTILS_PUBLIC lanelet2Triangle(
-  const lanelet::ConstLanelet & ll);
+std::vector<geometry_msgs::msg::Polygon> HAD_MAP_UTILS_PUBLIC
+lanelet2Triangle(const lanelet::ConstLanelet & ll);
 
 /**
  * \brief converts area enclosed by geometry_msg::msg::Polygon into list of triangles.
  * \param polygon input polygon
  * \return result of triangulation
  */
-std::vector<geometry_msgs::msg::Polygon> HAD_MAP_UTILS_PUBLIC polygon2Triangle(
-  const geometry_msgs::msg::Polygon & polygon);
+std::vector<geometry_msgs::msg::Polygon> HAD_MAP_UTILS_PUBLIC
+polygon2Triangle(const geometry_msgs::msg::Polygon & polygon);
 
 /**
  * \brief converts lanelet::Area into geometry_msgs::msg::Polygon type
  * \param area input area
  * \return converted geometry_msgs::msg::Polygon
  */
-geometry_msgs::msg::Polygon HAD_MAP_UTILS_PUBLIC area2Polygon(
-  const lanelet::ConstArea & area);
+geometry_msgs::msg::Polygon HAD_MAP_UTILS_PUBLIC area2Polygon(const lanelet::ConstArea & area);
 
 /**
  * \brief converts lanelet::Lanelet into geometry_msgs::msg::Polygon type
  * \param ll input lanelet
  * \return converted geometry_msgs::msg::Polygon
  */
-geometry_msgs::msg::Polygon HAD_MAP_UTILS_PUBLIC lanelet2Polygon(
-  const lanelet::ConstLanelet & ll);
+geometry_msgs::msg::Polygon HAD_MAP_UTILS_PUBLIC lanelet2Polygon(const lanelet::ConstLanelet & ll);
 
 /**
  * \brief converts bounded area by lanelet::Lanelet into triangle markers

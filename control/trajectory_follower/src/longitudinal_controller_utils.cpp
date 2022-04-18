@@ -14,15 +14,16 @@
 
 #include "trajectory_follower/longitudinal_controller_utils.hpp"
 
-#include <algorithm>
-#include <experimental/optional>  // NOLINT
-#include <limits>
-
 #include "motion_common/motion_common.hpp"
 #include "tf2/LinearMath/Matrix3x3.h"
 #include "tf2/LinearMath/Quaternion.h"
+
+#include <experimental/optional>  // NOLINT
+
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 
+#include <algorithm>
+#include <limits>
 
 namespace autoware
 {
@@ -44,8 +45,7 @@ bool isValidTrajectory(const Trajectory & traj)
       !isfinite(p.pose.orientation.x) || !isfinite(p.pose.orientation.y) ||
       !isfinite(p.pose.orientation.z) || !isfinite(p.longitudinal_velocity_mps) ||
       !isfinite(p.lateral_velocity_mps) || !isfinite(p.acceleration_mps2) ||
-      !isfinite(p.heading_rate_rps))
-    {
+      !isfinite(p.heading_rate_rps)) {
       return false;
     }
   }
@@ -58,8 +58,7 @@ bool isValidTrajectory(const Trajectory & traj)
   return true;
 }
 
-float64_t calcStopDistance(
-  const Point & current_pos, const Trajectory & traj)
+float64_t calcStopDistance(const Point & current_pos, const Trajectory & traj)
 {
   const std::experimental::optional<size_t> stop_idx_opt =
     trajectory_common::searchZeroVelocityIndex(traj.points);
@@ -96,8 +95,7 @@ float64_t getPitchByTraj(
       distance_2d<float64_t>(trajectory.points.at(nearest_idx), trajectory.points.at(i));
     if (dist > wheel_base) {
       // calculate pitch from trajectory between rear wheel (nearest) and front center (i)
-      return calcElevationAngle(
-        trajectory.points.at(nearest_idx), trajectory.points.at(i));
+      return calcElevationAngle(trajectory.points.at(nearest_idx), trajectory.points.at(i));
     }
   }
 
@@ -109,15 +107,12 @@ float64_t getPitchByTraj(
     if (dist > wheel_base) {
       // calculate pitch from trajectory
       // between wheelbase behind the end of trajectory (i) and the end of trajectory (back)
-      return calcElevationAngle(
-        trajectory.points.at(i), trajectory.points.back());
+      return calcElevationAngle(trajectory.points.at(i), trajectory.points.back());
     }
   }
 
   // calculate pitch from trajectory between the beginning and end of trajectory
-  return calcElevationAngle(
-    trajectory.points.at(0),
-    trajectory.points.back());
+  return calcElevationAngle(trajectory.points.at(0), trajectory.points.back());
 }
 
 float64_t calcElevationAngle(const TrajectoryPoint & p_from, const TrajectoryPoint & p_to)

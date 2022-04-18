@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "trajectory_follower/smooth_stop.hpp"
+
+#include <experimental/optional>  // NOLINT
+
 #include <algorithm>
 #include <cmath>
-#include <experimental/optional>  // NOLINT
 #include <limits>
 #include <utility>
 #include <vector>
-
-#include "trajectory_follower/smooth_stop.hpp"
-
 
 namespace autoware
 {
@@ -41,15 +41,14 @@ void SmoothStop::init(const float64_t pred_vel_in_target, const float64_t pred_s
   }
 
   m_strong_acc = -std::pow(pred_vel_in_target, 2) / (2 * pred_stop_dist);
-  m_strong_acc =
-    std::max(std::min(m_strong_acc, m_params.max_strong_acc), m_params.min_strong_acc);
+  m_strong_acc = std::max(std::min(m_strong_acc, m_params.max_strong_acc), m_params.min_strong_acc);
 }
 
 void SmoothStop::setParams(
   float64_t max_strong_acc, float64_t min_strong_acc, float64_t weak_acc, float64_t weak_stop_acc,
   float64_t strong_stop_acc, float64_t min_fast_vel, float64_t min_running_vel,
-  float64_t min_running_acc,
-  float64_t weak_stop_time, float64_t weak_stop_dist, float64_t strong_stop_dist)
+  float64_t min_running_acc, float64_t weak_stop_time, float64_t weak_stop_dist,
+  float64_t strong_stop_dist)
 {
   m_params.max_strong_acc = max_strong_acc;
   m_params.min_strong_acc = min_strong_acc;
@@ -99,9 +98,9 @@ std::experimental::optional<float64_t> SmoothStop::calcTimeToStop(
 
   // return when gradient a (of v = at + b) cannot be calculated.
   // See the following calculation of a
-  if (std::abs(vel_hist_size * mean_t * mean_t - sum_tt) <
-    std::numeric_limits<float64_t>::epsilon())
-  {
+  if (
+    std::abs(vel_hist_size * mean_t * mean_t - sum_tt) <
+    std::numeric_limits<float64_t>::epsilon()) {
     return {};
   }
 
@@ -138,12 +137,12 @@ float64_t SmoothStop::calculate(
   // calculate some flags
   const bool8_t is_fast_vel = std::abs(current_vel) > m_params.min_fast_vel;
   const bool8_t is_running = std::abs(current_vel) > m_params.min_running_vel ||
-    std::abs(current_acc) > m_params.min_running_acc;
+                             std::abs(current_acc) > m_params.min_running_acc;
 
   // when exceeding the stopline (stop_dist is negative in these cases.)
-  if (stop_dist < m_params.strong_stop_dist) {    // when exceeding the stopline much
+  if (stop_dist < m_params.strong_stop_dist) {  // when exceeding the stopline much
     return m_params.strong_stop_acc;
-  } else if (stop_dist < m_params.weak_stop_dist) {    // when exceeding the stopline a bit
+  } else if (stop_dist < m_params.weak_stop_dist) {  // when exceeding the stopline a bit
     return m_params.weak_stop_acc;
   }
 

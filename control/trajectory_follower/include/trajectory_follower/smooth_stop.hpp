@@ -15,17 +15,17 @@
 #ifndef TRAJECTORY_FOLLOWER__SMOOTH_STOP_HPP_
 #define TRAJECTORY_FOLLOWER__SMOOTH_STOP_HPP_
 
-#include <algorithm>
-#include <cmath>
-#include <experimental/optional>  // NOLINT
-#include <limits>
-#include <utility>
-#include <vector>
-
 #include "common/types.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "trajectory_follower/visibility_control.hpp"
 
+#include <experimental/optional>  // NOLINT
+
+#include <algorithm>
+#include <cmath>
+#include <limits>
+#include <utility>
+#include <vector>
 
 namespace autoware
 {
@@ -35,8 +35,8 @@ namespace control
 {
 namespace trajectory_follower
 {
-using autoware::common::types::float64_t;
 using autoware::common::types::bool8_t;
+using autoware::common::types::float64_t;
 /**
  * @brief Smooth stop class to implement vehicle specific deceleration profiles
  */
@@ -62,13 +62,14 @@ public:
    * @param [in] min_running_acc minimum acceleration to consider ego to be running [m/s]
    * @param [in] weak_stop_time time allowed for stopping with a weak acceleration [s]
    * @param [in] weak_stop_dist distance to the stop point bellow which a weak accel is applied [m]
-   * @param [in] strong_stop_dist distance to the stop point bellow which a strong accel is applied [m]
+   * @param [in] strong_stop_dist distance to the stop point bellow which a strong accel is applied
+   * [m]
    */
   void setParams(
     float64_t max_strong_acc, float64_t min_strong_acc, float64_t weak_acc, float64_t weak_stop_acc,
     float64_t strong_stop_acc, float64_t min_fast_vel, float64_t min_running_vel,
-    float64_t min_running_acc,
-    float64_t weak_stop_time, float64_t weak_stop_dist, float64_t strong_stop_dist);
+    float64_t min_running_acc, float64_t weak_stop_time, float64_t weak_stop_dist,
+    float64_t strong_stop_dist);
 
   /**
    * @brief predict time when car stops by fitting some latest observed velocity history

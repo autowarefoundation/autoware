@@ -18,21 +18,21 @@
 #define HAD_MAP_UTILS__VISIBILITY_CONTROL_HPP_
 
 #if defined(_MSC_VER) && defined(_WIN64)
-  #if defined(HAD_MAP_UTILS_BUILDING_DLL) || defined(HAD_MAP_UTILS_EXPORTS)
-    #define HAD_MAP_UTILS_PUBLIC __declspec(dllexport)
-    #define HAD_MAP_UTILS_LOCAL
-  #else  // defined(HAD_MAP_UTILS_BUILDING_DLL) || defined(HAD_MAP_UTILS_EXPORTS)
-    #define HAD_MAP_UTILS_PUBLIC __declspec(dllimport)
-    #define HAD_MAP_UTILS_LOCAL
-  #endif  // defined(HAD_MAP_UTILS_BUILDING_DLL) || defined(HAD_MAP_UTILS_EXPORTS)
+#if defined(HAD_MAP_UTILS_BUILDING_DLL) || defined(HAD_MAP_UTILS_EXPORTS)
+#define HAD_MAP_UTILS_PUBLIC __declspec(dllexport)
+#define HAD_MAP_UTILS_LOCAL
+#else  // defined(HAD_MAP_UTILS_BUILDING_DLL) || defined(HAD_MAP_UTILS_EXPORTS)
+#define HAD_MAP_UTILS_PUBLIC __declspec(dllimport)
+#define HAD_MAP_UTILS_LOCAL
+#endif  // defined(HAD_MAP_UTILS_BUILDING_DLL) || defined(HAD_MAP_UTILS_EXPORTS)
 #elif defined(__GNUC__) && defined(__linux__)
-  #define HAD_MAP_UTILS_PUBLIC __attribute__((visibility("default")))
-  #define HAD_MAP_UTILS_LOCAL __attribute__((visibility("hidden")))
+#define HAD_MAP_UTILS_PUBLIC __attribute__((visibility("default")))
+#define HAD_MAP_UTILS_LOCAL __attribute__((visibility("hidden")))
 #elif defined(__GNUC__) && defined(__APPLE__)
-  #define HAD_MAP_UTILS_PUBLIC __attribute__((visibility("default")))
-  #define HAD_MAP_UTILS_LOCAL __attribute__((visibility("hidden")))
+#define HAD_MAP_UTILS_PUBLIC __attribute__((visibility("default")))
+#define HAD_MAP_UTILS_LOCAL __attribute__((visibility("hidden")))
 #else  // !(defined(__GNUC__) && defined(__APPLE__))
-  #error "Unsupported Build Configuration"
+#error "Unsupported Build Configuration"
 #endif  // _MSC_VER
 
 #endif  // HAD_MAP_UTILS__VISIBILITY_CONTROL_HPP_

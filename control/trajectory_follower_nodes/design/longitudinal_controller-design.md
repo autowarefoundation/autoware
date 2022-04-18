@@ -1,6 +1,6 @@
 # Longitudinal Controller {#longitudinal-controller-design}
 
-# Purpose / Use cases
+## Purpose / Use cases
 
 The longitudinal_controller computes the target acceleration to achieve the target velocity set at each point of the target trajectory using a feed-forward/back control.
 
@@ -32,7 +32,7 @@ The lat-lon mixed control problem is very complex and uses nonlinear optimizatio
 
 Also, the benefits of simultaneous longitudinal and lateral control are small if the vehicle doesn't move at high speed.
 
-# Design
+## Design
 
 ## Assumptions / Known limits
 
@@ -58,9 +58,9 @@ Also, the benefits of simultaneous longitudinal and lateral control are small if
 - current_state [`autoware_auto_msgs/VehicleKinematicState`] : Current ego state including the current pose and velocity.
 - current_trajectory [`autoware_auto_msgs/Trajectory`] : Current target trajectory for the desired velocity on the each trajectory points.
 
-# Inner-workings / Algorithms
+## Inner-workings / Algorithms
 
-## States
+### States
 
 This module has four state transitions as shown below in order to handle special processing in a specific situation.
 
@@ -80,19 +80,19 @@ The state transition diagram is shown below.
 
 ![LongitudinalControllerStateTransition](./media/LongitudinalControllerStateTransition.drawio.svg)
 
-## Logics
+### Logics
 
-### Control Block Diagram
+#### Control Block Diagram
 
 ![LongitudinalControllerDiagram](./media/LongitudinalControllerDiagram.drawio.svg)
 
-### FeedForward (FF)
+#### FeedForward (FF)
 
 The reference acceleration set in the trajectory and slope compensation terms are output as a feedforward. Under ideal conditions with no modeling error, this FF term alone should be sufficient for velocity tracking.
 
 Tracking errors causing modeling or discretization errors are removed by the feedback control (now using PID).
 
-#### Brake keeping
+##### Brake keeping
 
 From the viewpoint of ride comfort, stopping with 0 acceleration is important because it reduces the impact of braking. However, if the target acceleration when stopping is 0, the vehicle may cross over the stop line or accelerate a little in front of the stop line due to vehicle model error or gradient estimation error.
 
@@ -100,7 +100,7 @@ For reliable stopping, the target acceleration calculated by the FeedForward sys
 
 ![BrakeKeepingDiagram](./media/BrakeKeeping.drawio.svg)
 
-### Slope compensation
+#### Slope compensation
 
 Based on the slope information, a compensation term is added to the target acceleration.
 
@@ -117,7 +117,7 @@ There are two sources of the slope information, which can be switched by a param
   - Cons: z-coordinates of high-precision map is needed.
   - Cons: Does not support free space planning (for now)
 
-### PID control
+#### PID control
 
 For deviations that cannot be handled by FeedForward control, such as model errors, PID control is used to construct a feedback system.
 
@@ -134,16 +134,16 @@ On the other hand, if the vehicle gets stuck in a depression in the road surface
 At present, PID control is implemented from the viewpoint of trade-off between development/maintenance cost and performance.
 This may be replaced by a higher performance controller (adaptive control or robust control) in future development.
 
-### Time delay compensation
+#### Time delay compensation
 
 At high speeds, the delay of actuator systems such as gas pedals and brakes has a significant impact on driving accuracy.
 Depending on the actuating principle of the vehicle, the mechanism that physically controls the gas pedal and brake typically has a delay of about a hundred millisecond.
 
 In this controller, the predicted ego-velocity and the target velocity after the delay time are calculated and used for the feedback to address the time delay problem.
 
-## Parameter description
+### Parameter description
 
-The default parameters defined in `param/lateral_controller_defaults.yaml` are adjusted to the
+The default parameters defined in `param/lateral_controller_defaults.param.yaml` are adjusted to the
 AutonomouStuff Lexus RX 450h for under 40 km/h driving.
 
 | Name                                 | Type   | Description                                                                                                                                                                             | Default value |
@@ -163,7 +163,7 @@ AutonomouStuff Lexus RX 450h for under 40 km/h driving.
 | max_pitch_rad                        | double | max value of estimated pitch [rad]                                                                                                                                                      | 0.1           |
 | min_pitch_rad                        | double | min value of estimated pitch [rad]                                                                                                                                                      | -0.1          |
 
-### State transition
+#### State transition
 
 | Name                                | Type   | Description                                                                                                                                                          | Default value |
 | :---------------------------------- | :----- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
@@ -176,7 +176,7 @@ AutonomouStuff Lexus RX 450h for under 40 km/h driving.
 | emergency_state_traj_trans_dev      | double | If the ego's position is `emergency_state_traj_tran_dev` meter away from the nearest trajectory point, the state will transit to EMERGENCY. [m]                      | 3.0           |
 | emergency_state_traj_rot_dev        | double | If the ego's orientation is `emergency_state_traj_rot_dev` rad away from the nearest trajectory point orientation, the state will transit to EMERGENCY. [rad]        | 0.784         |
 
-### DRIVE Parameter
+#### DRIVE Parameter
 
 | Name                                  | Type   | Description                                                                                                                                                        | Default value |
 | :------------------------------------ | :----- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
@@ -195,7 +195,7 @@ AutonomouStuff Lexus RX 450h for under 40 km/h driving.
 | current_vel_threshold_pid_integration | double | Velocity error is integrated for I-term only when the absolute value of current velocity is larger than this parameter. [m/s]                                      | 0.5           |
 | brake_keeping_acc                     | double | If `enable_brake_keeping_before_stop` is true, a certain acceleration is kept during DRIVE state before the ego stops [m/s^2] See [Brake keeping](#brake-keeping). | 0.2           |
 
-### STOPPING Parameter (smooth stop)
+#### STOPPING Parameter (smooth stop)
 
 Smooth stop is enabled if `enable_smooth_stop` is true.
 In smooth stop, strong acceleration (`strong_acc`) will be output first to decrease the ego velocity.
@@ -217,7 +217,7 @@ If the ego is still running, strong acceleration (`strong_stop_acc`) to stop rig
 | smooth_stop_weak_stop_dist   | double | Weak acceleration will be output when the ego is `smooth_stop_weak_stop_dist`-meter before the stop point. [m]       | -0.3          |
 | smooth_stop_strong_stop_dist | double | Strong acceleration will be output when the ego is `smooth_stop_strong_stop_dist`-meter over the stop point. [m]     | -0.5          |
 
-### STOPPED Parameter
+#### STOPPED Parameter
 
 | Name         | Type   | Description                                  | Default value |
 | :----------- | :----- | :------------------------------------------- | :------------ |
@@ -225,7 +225,7 @@ If the ego is still running, strong acceleration (`strong_stop_acc`) to stop rig
 | stopped_acc  | double | target acceleration in STOPPED state [m/s^2] | -3.4          |
 | stopped_jerk | double | target jerk in STOPPED state [m/s^3]         | -5.0          |
 
-### EMERGENCY Parameter
+#### EMERGENCY Parameter
 
 | Name           | Type   | Description                                       | Default value |
 | :------------- | :----- | :------------------------------------------------ | :------------ |
@@ -233,10 +233,10 @@ If the ego is still running, strong acceleration (`strong_stop_acc`) to stop rig
 | emergency_acc  | double | target acceleration in an EMERGENCY state [m/s^2] | -5.0          |
 | emergency_jerk | double | target jerk in an EMERGENCY state [m/s^3]         | -3.0          |
 
-# References / External links
+## References / External links
 
-# Future extensions / Unimplemented parts
+## Future extensions / Unimplemented parts
 
-# Related issues
+## Related issues
 
 - <https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/1058>

@@ -15,20 +15,22 @@
 #ifndef OBJECT_DETECTION__OBJECT_POLYGON_DETAIL_HPP_
 #define OBJECT_DETECTION__OBJECT_POLYGON_DETAIL_HPP_
 
+#include <rclcpp/logging.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <visibility_control.hpp>
+
 #include <autoware_auto_perception_msgs/msg/object_classification.hpp>
 #include <autoware_auto_perception_msgs/msg/predicted_path.hpp>
 #include <autoware_auto_perception_msgs/msg/shape.hpp>
-#include <algorithm>
 #include <geometry_msgs/msg/pose_with_covariance.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <geometry_msgs/msg/twist_with_covariance.hpp>
+#include <visualization_msgs/msg/marker.hpp>
+
+#include <algorithm>
 #include <map>
-#include <rclcpp/logging.hpp>
-#include <rclcpp/rclcpp.hpp>
 #include <string>
 #include <vector>
-#include <visibility_control.hpp>
-#include <visualization_msgs/msg/marker.hpp>
 
 namespace autoware
 {
@@ -53,20 +55,20 @@ struct ObjectPropertyValues
 // Map defining colors according to value of label field in ObjectClassification msg
 const std::map<
   autoware_auto_perception_msgs::msg::ObjectClassification::_label_type, ObjectPropertyValues>
-// Color map is based on cityscapes color
-kDefaultObjectPropertyValues = {
-  {autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN,
-    {"UNKNOWN", {255, 255, 255}}},
-  {autoware_auto_perception_msgs::msg::ObjectClassification::CAR, {"CAR", {30, 144, 255}}},
-  {autoware_auto_perception_msgs::msg::ObjectClassification::BUS, {"BUS", {30, 144, 255}}},
-  {autoware_auto_perception_msgs::msg::ObjectClassification::PEDESTRIAN,
-    {"PEDESTRIAN", {255, 192, 203}}},
-  {autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE, {"CYCLIST", {119, 11, 32}}},
-  {autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE,
-    {"MOTORCYCLE", {119, 11, 32}}},
-  {autoware_auto_perception_msgs::msg::ObjectClassification::TRAILER,
-    {"TRAILER", {30, 144, 255}}},
-  {autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK, {"TRUCK", {30, 144, 255}}}};
+  // Color map is based on cityscapes color
+  kDefaultObjectPropertyValues = {
+    {autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN,
+     {"UNKNOWN", {255, 255, 255}}},
+    {autoware_auto_perception_msgs::msg::ObjectClassification::CAR, {"CAR", {30, 144, 255}}},
+    {autoware_auto_perception_msgs::msg::ObjectClassification::BUS, {"BUS", {30, 144, 255}}},
+    {autoware_auto_perception_msgs::msg::ObjectClassification::PEDESTRIAN,
+     {"PEDESTRIAN", {255, 192, 203}}},
+    {autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE, {"CYCLIST", {119, 11, 32}}},
+    {autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE,
+     {"MOTORCYCLE", {119, 11, 32}}},
+    {autoware_auto_perception_msgs::msg::ObjectClassification::TRAILER,
+     {"TRAILER", {30, 144, 255}}},
+    {autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK, {"TRUCK", {30, 144, 255}}}};
 
 /// \brief Convert the given polygon into a marker representing the shape in 3d
 /// \param shape_msg Shape msg to be converted. Corners should be in object-local frame
@@ -182,14 +184,14 @@ inline AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN_PUBLIC geometry_msgs::msg::Pose init
 /// \param labels List of ObjectClassificationMsg objects
 /// \param logger_name Name to use for logger in case of a warning (if labels is empty)
 /// \return Id of the best classification, Unknown if there is no best label
-template<typename ClassificationContainerT>
+template <typename ClassificationContainerT>
 AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN_PUBLIC
-autoware_auto_perception_msgs::msg::ObjectClassification::_label_type
-get_best_label(ClassificationContainerT labels, const std::string & logger_name)
+  autoware_auto_perception_msgs::msg::ObjectClassification::_label_type
+  get_best_label(ClassificationContainerT labels, const std::string & logger_name)
 {
   const auto best_class_label = std::max_element(
     labels.begin(), labels.end(),
-    [](const auto & a, const auto & b) -> bool {return a.probability < b.probability;});
+    [](const auto & a, const auto & b) -> bool { return a.probability < b.probability; });
   if (best_class_label == labels.end()) {
     RCLCPP_WARN(
       rclcpp::get_logger(logger_name),

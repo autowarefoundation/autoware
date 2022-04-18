@@ -17,21 +17,21 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 #if defined(__WIN32)
-  #if defined(TRAJECTORY_FOLLOWER_BUILDING_DLL) || defined(TRAJECTORY_FOLLOWER_EXPORTS)
-    #define TRAJECTORY_FOLLOWER_PUBLIC __declspec(dllexport)
-    #define TRAJECTORY_FOLLOWER_LOCAL
-  #else  // defined(TRAJECTORY_FOLLOWER_BUILDING_DLL) || defined(TRAJECTORY_FOLLOWER_EXPORTS)
-    #define TRAJECTORY_FOLLOWER_PUBLIC __declspec(dllimport)
-    #define TRAJECTORY_FOLLOWER_LOCAL
-  #endif  // defined(TRAJECTORY_FOLLOWER_BUILDING_DLL) || defined(TRAJECTORY_FOLLOWER_EXPORTS)
+#if defined(TRAJECTORY_FOLLOWER_BUILDING_DLL) || defined(TRAJECTORY_FOLLOWER_EXPORTS)
+#define TRAJECTORY_FOLLOWER_PUBLIC __declspec(dllexport)
+#define TRAJECTORY_FOLLOWER_LOCAL
+#else  // defined(TRAJECTORY_FOLLOWER_BUILDING_DLL) || defined(TRAJECTORY_FOLLOWER_EXPORTS)
+#define TRAJECTORY_FOLLOWER_PUBLIC __declspec(dllimport)
+#define TRAJECTORY_FOLLOWER_LOCAL
+#endif  // defined(TRAJECTORY_FOLLOWER_BUILDING_DLL) || defined(TRAJECTORY_FOLLOWER_EXPORTS)
 #elif defined(__linux__)
-  #define TRAJECTORY_FOLLOWER_PUBLIC __attribute__((visibility("default")))
-  #define TRAJECTORY_FOLLOWER_LOCAL __attribute__((visibility("hidden")))
+#define TRAJECTORY_FOLLOWER_PUBLIC __attribute__((visibility("default")))
+#define TRAJECTORY_FOLLOWER_LOCAL __attribute__((visibility("hidden")))
 #elif defined(__APPLE__)
-  #define TRAJECTORY_FOLLOWER_PUBLIC __attribute__((visibility("default")))
-  #define TRAJECTORY_FOLLOWER_LOCAL __attribute__((visibility("hidden")))
+#define TRAJECTORY_FOLLOWER_PUBLIC __attribute__((visibility("default")))
+#define TRAJECTORY_FOLLOWER_LOCAL __attribute__((visibility("hidden")))
 #else
-  #error "Unsupported Build Configuration"
+#error "Unsupported Build Configuration"
 #endif
 
 #endif  // TRAJECTORY_FOLLOWER_NODES__VISIBILITY_CONTROL_HPP_

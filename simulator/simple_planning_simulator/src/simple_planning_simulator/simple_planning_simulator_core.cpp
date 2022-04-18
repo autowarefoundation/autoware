@@ -15,11 +15,11 @@
 #include "simple_planning_simulator/simple_planning_simulator_core.hpp"
 
 #include "autoware_auto_tf2/tf2_autoware_auto_msgs.hpp"
-#include "tier4_autoware_utils/ros/update_param.hpp"
 #include "common/types.hpp"
 #include "motion_common/motion_common.hpp"
 #include "rclcpp_components/register_node_macro.hpp"
 #include "simple_planning_simulator/vehicle_model/sim_model.hpp"
+#include "tier4_autoware_utils/ros/update_param.hpp"
 #include "vehicle_info_util/vehicle_info_util.hpp"
 
 #include <tf2/LinearMath/Quaternion.h>
@@ -31,7 +31,7 @@
 #include <string>
 #include <utility>
 
-using namespace std::chrono_literals;
+using namespace std::literals::chrono_literals;
 
 namespace
 {
@@ -314,30 +314,28 @@ void SimplePlanningSimulator::set_input(const float steer, const float vel, cons
   using autoware_auto_vehicle_msgs::msg::GearCommand;
   Eigen::VectorXd input(vehicle_model_ptr_->getDimU());
 
-  // TODO (Watanabe): The definition of the sign of acceleration in REVERSE mode is different
+  // TODO(Watanabe): The definition of the sign of acceleration in REVERSE mode is different
   // between .auto and proposal.iv, and will be discussed later.
   float acc = accel;
   if (!current_gear_cmd_ptr_) {
     acc = 0.0;
   } else if (
     current_gear_cmd_ptr_->command == GearCommand::REVERSE ||
-    current_gear_cmd_ptr_->command == GearCommand::REVERSE_2)
-  {
+    current_gear_cmd_ptr_->command == GearCommand::REVERSE_2) {
     acc = -accel;
   }
 
-  if (vehicle_model_type_ == VehicleModelType::IDEAL_STEER_VEL ||
-      vehicle_model_type_ == VehicleModelType::DELAY_STEER_VEL) {
+  if (
+    vehicle_model_type_ == VehicleModelType::IDEAL_STEER_VEL ||
+    vehicle_model_type_ == VehicleModelType::DELAY_STEER_VEL) {
     input << vel, steer;
   } else if (  // NOLINT
     vehicle_model_type_ == VehicleModelType::IDEAL_STEER_ACC ||
-    vehicle_model_type_ == VehicleModelType::DELAY_STEER_ACC)
-  {
+    vehicle_model_type_ == VehicleModelType::DELAY_STEER_ACC) {
     input << acc, steer;
   } else if (  // NOLINT
     vehicle_model_type_ == VehicleModelType::IDEAL_STEER_ACC_GEARED ||
-    vehicle_model_type_ == VehicleModelType::DELAY_STEER_ACC_GEARED)
-  {
+    vehicle_model_type_ == VehicleModelType::DELAY_STEER_ACC_GEARED) {
     input << acc, steer;
   }
   vehicle_model_ptr_->setInput(input);
@@ -349,8 +347,7 @@ void SimplePlanningSimulator::on_gear_cmd(const GearCommand::ConstSharedPtr msg)
 
   if (
     vehicle_model_type_ == VehicleModelType::IDEAL_STEER_ACC_GEARED ||
-    vehicle_model_type_ == VehicleModelType::DELAY_STEER_ACC_GEARED)
-  {
+    vehicle_model_type_ == VehicleModelType::DELAY_STEER_ACC_GEARED) {
     vehicle_model_ptr_->setGear(current_gear_cmd_ptr_->command);
   }
 }
@@ -420,17 +417,14 @@ void SimplePlanningSimulator::set_initial_state(const Pose & pose, const Twist &
     state << x, y, yaw;
   } else if (  // NOLINT
     vehicle_model_type_ == VehicleModelType::IDEAL_STEER_ACC ||
-    vehicle_model_type_ == VehicleModelType::IDEAL_STEER_ACC_GEARED)
-  {
+    vehicle_model_type_ == VehicleModelType::IDEAL_STEER_ACC_GEARED) {
     state << x, y, yaw, vx;
   } else if (  // NOLINT
-    vehicle_model_type_ == VehicleModelType::DELAY_STEER_VEL)
-  {
+    vehicle_model_type_ == VehicleModelType::DELAY_STEER_VEL) {
     state << x, y, yaw, vx, steer;
   } else if (  // NOLINT
     vehicle_model_type_ == VehicleModelType::DELAY_STEER_ACC ||
-    vehicle_model_type_ == VehicleModelType::DELAY_STEER_ACC_GEARED)
-  {
+    vehicle_model_type_ == VehicleModelType::DELAY_STEER_ACC_GEARED) {
     state << x, y, yaw, vx, steer, accx;
   }
   vehicle_model_ptr_->setState(state);

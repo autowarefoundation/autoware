@@ -12,13 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <tuple>
-#include <vector>
-
 #include "eigen3/Eigen/Core"
 #include "gtest/gtest.h"
 #include "osqp_interface/osqp_interface.hpp"
 
+#include <tuple>
+#include <vector>
 
 namespace
 {
@@ -39,10 +38,11 @@ using autoware::common::osqp::float64_t;
 // obj = 1.88
 
 // cppcheck-suppress syntaxError
-TEST(TestOsqpInterface, BasicQp) {
-  using autoware::common::osqp::CSC_Matrix;
+TEST(TestOsqpInterface, BasicQp)
+{
   using autoware::common::osqp::calCSCMatrix;
   using autoware::common::osqp::calCSCMatrixTrapezoidal;
+  using autoware::common::osqp::CSC_Matrix;
 
   auto check_result =
     [](const std::tuple<std::vector<float64_t>, std::vector<float64_t>, int, int, int> & result) {
@@ -73,15 +73,16 @@ TEST(TestOsqpInterface, BasicQp) {
   {
     // Define problem during optimization
     autoware::common::osqp::OSQPInterface osqp;
-    std::tuple<std::vector<float64_t>, std::vector<float64_t>, int, int, int> result = osqp.optimize(
-      P, A, q, l, u);
+    std::tuple<std::vector<float64_t>, std::vector<float64_t>, int, int, int> result =
+      osqp.optimize(P, A, q, l, u);
     check_result(result);
   }
 
   {
     // Define problem during initialization
     autoware::common::osqp::OSQPInterface osqp(P, A, q, l, u, 1e-6);
-    std::tuple<std::vector<float64_t>, std::vector<float64_t>, int, int, int> result = osqp.optimize();
+    std::tuple<std::vector<float64_t>, std::vector<float64_t>, int, int, int> result =
+      osqp.optimize();
     check_result(result);
   }
 
@@ -107,7 +108,8 @@ TEST(TestOsqpInterface, BasicQp) {
     CSC_Matrix P_csc = calCSCMatrixTrapezoidal(P);
     CSC_Matrix A_csc = calCSCMatrix(A);
     autoware::common::osqp::OSQPInterface osqp(P_csc, A_csc, q, l, u, 1e-6);
-    std::tuple<std::vector<float64_t>, std::vector<float64_t>, int, int, int> result = osqp.optimize();
+    std::tuple<std::vector<float64_t>, std::vector<float64_t>, int, int, int> result =
+      osqp.optimize();
     check_result(result);
   }
 

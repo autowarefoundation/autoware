@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <algorithm>
-
 #include "simple_planning_simulator/vehicle_model/sim_model_delay_steer_acc_geared.hpp"
+
 #include "autoware_auto_vehicle_msgs/msg/gear_command.hpp"
+
+#include <algorithm>
 
 SimModelDelaySteerAccGeared::SimModelDelaySteerAccGeared(
   float64_t vx_lim, float64_t steer_lim, float64_t vx_rate_lim, float64_t steer_rate_lim,
@@ -36,17 +37,17 @@ SimModelDelaySteerAccGeared::SimModelDelaySteerAccGeared(
   initializeInputQueue(dt);
 }
 
-float64_t SimModelDelaySteerAccGeared::getX() {return state_(IDX::X);}
-float64_t SimModelDelaySteerAccGeared::getY() {return state_(IDX::Y);}
-float64_t SimModelDelaySteerAccGeared::getYaw() {return state_(IDX::YAW);}
-float64_t SimModelDelaySteerAccGeared::getVx() {return state_(IDX::VX);}
-float64_t SimModelDelaySteerAccGeared::getVy() {return 0.0;}
-float64_t SimModelDelaySteerAccGeared::getAx() {return state_(IDX::ACCX);}
+float64_t SimModelDelaySteerAccGeared::getX() { return state_(IDX::X); }
+float64_t SimModelDelaySteerAccGeared::getY() { return state_(IDX::Y); }
+float64_t SimModelDelaySteerAccGeared::getYaw() { return state_(IDX::YAW); }
+float64_t SimModelDelaySteerAccGeared::getVx() { return state_(IDX::VX); }
+float64_t SimModelDelaySteerAccGeared::getVy() { return 0.0; }
+float64_t SimModelDelaySteerAccGeared::getAx() { return state_(IDX::ACCX); }
 float64_t SimModelDelaySteerAccGeared::getWz()
 {
   return state_(IDX::VX) * std::tan(state_(IDX::STEER)) / wheelbase_;
 }
-float64_t SimModelDelaySteerAccGeared::getSteer() {return state_(IDX::STEER);}
+float64_t SimModelDelaySteerAccGeared::getSteer() { return state_(IDX::STEER); }
 void SimModelDelaySteerAccGeared::update(const float64_t & dt)
 {
   Eigen::VectorXd delayed_input = Eigen::VectorXd::Zero(dim_u_);
@@ -83,7 +84,7 @@ void SimModelDelaySteerAccGeared::initializeInputQueue(const float64_t & dt)
 Eigen::VectorXd SimModelDelaySteerAccGeared::calcModel(
   const Eigen::VectorXd & state, const Eigen::VectorXd & input)
 {
-  auto sat = [](float64_t val, float64_t u, float64_t l) {return std::max(std::min(val, u), l);};
+  auto sat = [](float64_t val, float64_t u, float64_t l) { return std::max(std::min(val, u), l); };
 
   const float64_t vel = sat(state(IDX::VX), vx_lim_, -vx_lim_);
   const float64_t acc = sat(state(IDX::ACCX), vx_rate_lim_, -vx_rate_lim_);
@@ -117,8 +118,7 @@ void SimModelDelaySteerAccGeared::updateStateWithGear(
     gear == GearCommand::DRIVE_12 || gear == GearCommand::DRIVE_13 ||
     gear == GearCommand::DRIVE_14 || gear == GearCommand::DRIVE_15 ||
     gear == GearCommand::DRIVE_16 || gear == GearCommand::DRIVE_17 ||
-    gear == GearCommand::DRIVE_18 || gear == GearCommand::LOW || gear == GearCommand::LOW_2)
-  {
+    gear == GearCommand::DRIVE_18 || gear == GearCommand::LOW || gear == GearCommand::LOW_2) {
     if (state(IDX::VX) < 0.0) {
       state(IDX::VX) = 0.0;
       state(IDX::X) = prev_state(IDX::X);

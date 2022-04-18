@@ -20,13 +20,11 @@
 #ifndef FAKE_TEST_NODE__FAKE_TEST_NODE_HPP_
 #define FAKE_TEST_NODE__FAKE_TEST_NODE_HPP_
 
-
 #include <fake_test_node/visibility_control.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <tf2_ros/transform_listener.h>
-
 #include <gtest/gtest.h>
+#include <tf2_ros/transform_listener.h>
 
 #include <memory>
 #include <string>
@@ -44,7 +42,7 @@ namespace testing
 ///
 /// @tparam     T     Type of the parameter as forwarded to testing::TestWithParam<T>.
 ///
-template<typename T>
+template <typename T>
 class FAKE_TEST_NODE_PUBLIC FakeTestNodeParametrized;
 
 ///
@@ -98,7 +96,7 @@ public:
   ///
   /// @return     A publisher pointer;
   ///
-  template<typename MsgT>
+  template <typename MsgT>
   typename rclcpp::Publisher<MsgT>::SharedPtr create_publisher(
     const std::string & topic,
     const std::chrono::milliseconds & timeout = std::chrono::seconds{10LL},
@@ -114,8 +112,7 @@ public:
       spent_time += dt;
       if (spent_time > timeout) {
         throw std::runtime_error(
-                std::string(
-                  "No matching subscriber to the mock topic '") + topic + "' that we publish");
+          std::string("No matching subscriber to the mock topic '") + topic + "' that we publish");
       }
       std::this_thread::sleep_for(dt);
     }
@@ -140,10 +137,9 @@ public:
   ///
   /// @return     Returns a subscription pointer.
   ///
-  template<typename MsgT, typename NodeT>
+  template <typename MsgT, typename NodeT>
   typename rclcpp::Subscription<MsgT>::SharedPtr create_subscription(
-    const std::string & topic,
-    const NodeT & publishing_node,
+    const std::string & topic, const NodeT & publishing_node,
     std::function<void(const typename MsgT::SharedPtr msg)> callback,
     const std::chrono::milliseconds & timeout = std::chrono::seconds{10LL},
     const rclcpp::QoS & qos = rclcpp::QoS(rclcpp::KeepLast(10)))
@@ -155,10 +151,8 @@ public:
       spent_time += dt;
       if (spent_time > timeout) {
         throw std::runtime_error(
-                std::string(
-                  "The node under test '") + publishing_node.get_name() +
-                "' is not publishing the topic '" + topic +
-                "' that we listen to.");
+          std::string("The node under test '") + publishing_node.get_name() +
+          "' is not publishing the topic '" + topic + "' that we listen to.");
       }
       std::this_thread::sleep_for(dt);
     }
@@ -170,14 +164,14 @@ public:
   ///
   /// @return     The mock node.
   ///
-  inline rclcpp::Node::SharedPtr get_fake_node() {return m_fake_node;}
+  inline rclcpp::Node::SharedPtr get_fake_node() { return m_fake_node; }
 
   ///
   /// @brief      Gets the tf buffer.
   ///
   /// @return     The tf buffer.
   ///
-  inline tf2::BufferCore & get_tf_buffer() {return m_tf_buffer;}
+  inline tf2::BufferCore & get_tf_buffer() { return m_tf_buffer; }
 
 private:
   std::shared_ptr<rclcpp::Node> m_fake_node{nullptr};
@@ -196,16 +190,15 @@ FAKE_TEST_NODE_PUBLIC std::string get_test_name(const ::testing::TestInfo * info
 
 }  // namespace detail
 
-
 ///
 /// @brief      This class describes a fake test node that inherits from the parametrized GTest
 ///             fixture.
 ///
 /// @tparam     T     Type of parameter to be used in the fixture.
 ///
-template<typename T>
-class FAKE_TEST_NODE_PUBLIC FakeTestNodeParametrized
-  : public detail::FakeNodeCore, public ::testing::TestWithParam<T>
+template <typename T>
+class FAKE_TEST_NODE_PUBLIC FakeTestNodeParametrized : public detail::FakeNodeCore,
+                                                       public ::testing::TestWithParam<T>
 {
   using FakeNodeCore::FakeNodeCore;
 
@@ -221,15 +214,14 @@ public:
   ///
   /// @brief      Override the tear down function of the fixture.
   ///
-  void TearDown() override {tear_down();}
+  void TearDown() override { tear_down(); }
 };
 
 ///
 /// @brief      This class describes a fake test node that inherits from the parametrized GTest
 ///             fixture.
 ///
-class FAKE_TEST_NODE_PUBLIC FakeTestNode
-  : public detail::FakeNodeCore, public ::testing::Test
+class FAKE_TEST_NODE_PUBLIC FakeTestNode : public detail::FakeNodeCore, public ::testing::Test
 {
   using FakeNodeCore::FakeNodeCore;
 
@@ -244,7 +236,6 @@ public:
   ///
   void TearDown() override;
 };
-
 
 }  // namespace testing
 }  // namespace tools

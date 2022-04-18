@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <exception>
-#include <iostream>
-#include <vector>
+#include "osqp_interface/csc_matrix_conv.hpp"
 
 #include "eigen3/Eigen/Core"
 #include "eigen3/Eigen/SparseCore"
-#include "osqp_interface/csc_matrix_conv.hpp"
+
+#include <exception>
+#include <iostream>
+#include <vector>
 
 namespace autoware
 {
@@ -45,7 +46,7 @@ CSC_Matrix calCSCMatrix(const Eigen::MatrixXd & mat)
 
   col_idxs.push_back(0);
 
-  for (Eigen::Index j = 0; j < cols; j++) {  // col iteration
+  for (Eigen::Index j = 0; j < cols; j++) {    // col iteration
     for (Eigen::Index i = 0; i < rows; i++) {  // row iteration
       // Get values of nonzero elements
       val = mat(i, j);
@@ -91,7 +92,7 @@ CSC_Matrix calCSCMatrixTrapezoidal(const Eigen::MatrixXd & mat)
 
   col_idxs.push_back(0);
 
-  for (Eigen::Index j = 0; j < cols; j++) {  // col iteration
+  for (Eigen::Index j = 0; j < cols; j++) {              // col iteration
     for (Eigen::Index i = 0; i <= trap_last_idx; i++) {  // row iteration
       // Get values of nonzero elements
       val = mat(i, j);

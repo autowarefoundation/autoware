@@ -15,14 +15,13 @@
 #ifndef SIMPLE_PLANNING_SIMULATOR__VEHICLE_MODEL__SIM_MODEL_DELAY_STEER_VEL_HPP_
 #define SIMPLE_PLANNING_SIMULATOR__VEHICLE_MODEL__SIM_MODEL_DELAY_STEER_VEL_HPP_
 
+#include "eigen3/Eigen/Core"
+#include "eigen3/Eigen/LU"
+#include "simple_planning_simulator/vehicle_model/sim_model_interface.hpp"
+
 #include <deque>
 #include <iostream>
 #include <queue>
-
-#include "eigen3/Eigen/Core"
-#include "eigen3/Eigen/LU"
-
-#include "simple_planning_simulator/vehicle_model/sim_model_interface.hpp"
 /**
  * @class SimModelDelaySteerVel
  * @brief calculate delay steering dynamics
@@ -56,34 +55,32 @@ public:
 private:
   const float64_t MIN_TIME_CONSTANT;  //!< @brief minimum time constant
 
-  enum IDX
-  {
+  enum IDX {
     X = 0,
     Y,
     YAW,
     VX,
     STEER,
   };
-  enum IDX_U
-  {
+  enum IDX_U {
     VX_DES = 0,
     STEER_DES,
   };
 
-  const float64_t vx_lim_;       //!< @brief velocity limit
-  const float64_t vx_rate_lim_;  //!< @brief acceleration limit
+  const float64_t vx_lim_;          //!< @brief velocity limit
+  const float64_t vx_rate_lim_;     //!< @brief acceleration limit
   const float64_t steer_lim_;       //!< @brief steering limit [rad]
   const float64_t steer_rate_lim_;  //!< @brief steering angular velocity limit [rad/s]
   const float64_t wheelbase_;       //!< @brief vehicle wheelbase length [m]
   float64_t prev_vx_ = 0.0;
   float64_t current_ax_ = 0.0;
 
-  std::deque<float64_t> vx_input_queue_;  //!< @brief buffer for velocity command
+  std::deque<float64_t> vx_input_queue_;     //!< @brief buffer for velocity command
   std::deque<float64_t> steer_input_queue_;  //!< @brief buffer for angular velocity command
-  const float64_t vx_delay_;              //!< @brief time delay for velocity command [s]
+  const float64_t vx_delay_;                 //!< @brief time delay for velocity command [s]
   const float64_t vx_time_constant_;
-    //!< @brief time constant for 1D model of velocity dynamics
-  const float64_t steer_delay_;              //!< @brief time delay for angular-velocity command [s]
+  //!< @brief time constant for 1D model of velocity dynamics
+  const float64_t steer_delay_;  //!< @brief time delay for angular-velocity command [s]
   const float64_t
     steer_time_constant_;  //!< @brief time constant for 1D model of angular-velocity dynamics
 

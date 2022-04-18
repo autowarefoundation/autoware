@@ -15,12 +15,11 @@
 #ifndef SIMPLE_PLANNING_SIMULATOR__VEHICLE_MODEL__SIM_MODEL_IDEAL_STEER_ACC_GEARED_HPP_
 #define SIMPLE_PLANNING_SIMULATOR__VEHICLE_MODEL__SIM_MODEL_IDEAL_STEER_ACC_GEARED_HPP_
 
-#include <iostream>
-
 #include "eigen3/Eigen/Core"
 #include "eigen3/Eigen/LU"
-
 #include "simple_planning_simulator/vehicle_model/sim_model_interface.hpp"
+
+#include <iostream>
 
 /**
  * @class SimModelIdealSteerAccGeared
@@ -41,21 +40,14 @@ public:
   ~SimModelIdealSteerAccGeared() = default;
 
 private:
-  enum IDX
-  {
-    X = 0,
-    Y,
-    YAW,
-    VX
-  };
-  enum IDX_U
-  {
+  enum IDX { X = 0, Y, YAW, VX };
+  enum IDX_U {
     AX_DES = 0,
     STEER_DES,
   };
 
   const float64_t wheelbase_;  //!< @brief vehicle wheelbase length
-  float64_t current_acc_;  //!< @brief current_acc with gear consideration
+  float64_t current_acc_;      //!< @brief current_acc with gear consideration
 
   /**
    * @brief get vehicle position x
@@ -117,7 +109,9 @@ private:
    * @param [in] gear current gear (defined in autoware_auto_msgs/GearCommand)
    * @param [in] dt delta time to update state
    */
-  void updateStateWithGear(Eigen::VectorXd & state, const Eigen::VectorXd & prev_state, const uint8_t gear, const double dt);
+  void updateStateWithGear(
+    Eigen::VectorXd & state, const Eigen::VectorXd & prev_state, const uint8_t gear,
+    const double dt);
 };
 
 #endif  // SIMPLE_PLANNING_SIMULATOR__VEHICLE_MODEL__SIM_MODEL_IDEAL_STEER_ACC_GEARED_HPP_

@@ -1,19 +1,22 @@
-PID (Trajectory Follower) {#trajectory_follower-pid-design}
-===========
+# PID (Trajectory Follower) {#trajectory_follower-pid-design}
 
 This is the design document for the PID implemented in the `trajectory_follower` package.
 
-# Purpose / Use cases
+## Purpose / Use cases
+
 <!-- Required -->
 <!-- Things to consider:
     - Why did we implement this feature? -->
+
 PID control is used by the `trajectory_follower`
 to calculate longitudinal commands corresponding to a velocity and an acceleration.
 
-# Design
+## Design
+
 <!-- Required -->
 <!-- Things to consider:
     - How does it work? -->
+
 This PID control calculates the target acceleration from the deviation between the current ego-velocity and the target velocity.
 
 This PID logic has a maximum value for the output of each term. This is to prevent the following:
@@ -29,7 +32,7 @@ This may be replaced by a higher performance controller (adaptive control or rob
 
 @image html images/trajectory_follower-pid-diagram.svg "PID controller diagram"
 
-## States
+### States
 
 This module has four state transitions as shown below in order to handle special processing in a specific situation.
 
@@ -49,7 +52,7 @@ The state transition diagram is shown below.
 
 @image html images/trajectory_follower-pid-states-diagram.svg "State Transitions"
 
-## Time delay compensation
+### Time delay compensation
 
 At high speeds, the delay of actuator systems such as gas pedals and brakes has a significant impact on driving accuracy.
 Depending on the actuating principle of the vehicle,
@@ -58,7 +61,7 @@ the mechanism that physically controls the gas pedal and brake typically has a d
 In this controller,
 the predicted ego-velocity and the target velocity after the delay time are calculated and used for the feedback to address the time delay problem.
 
-## Slope compensation
+### Slope compensation
 
 Based on the slope information, a compensation term is added to the target acceleration.
 
@@ -75,14 +78,18 @@ There are two sources of the slope information, which can be switched by a param
   - Cons: z-coordinates of high-precision map is needed.
   - Cons: Does not support free space planning (for now)
 
-## Inputs / Outputs / API
+### Inputs / Outputs / API
+
 <!-- Required -->
 <!-- Things to consider:
     - How do you use the package / API? -->
+
 The `PIDController` class is straightforward to use.
 First, gains and limits must be set (using `setGains()` and `setLimits()`) for the proportional (P), integral (I), and derivative (D) components.
 Then, the velocity can be calculated by providing the current error and time step duration to the `calculate()` function.
 
-# Related issues
+## Related issues
+
 <!-- Required -->
-- https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/1058
+
+- <https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/1058>

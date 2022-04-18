@@ -25,7 +25,7 @@ namespace common
 {
 namespace helper_functions
 {
-template<typename Derived>
+template <typename Derived>
 class crtp
 {
 protected:
@@ -33,7 +33,7 @@ protected:
   {
     // This is the CRTP pattern for static polymorphism: this is related, static_cast is the only
     // way to do this
-    //lint -e{9005, 9176, 1939} NOLINT
+    // lint -e{9005, 9176, 1939} NOLINT
     return *static_cast<const Derived *>(this);
   }
 
@@ -41,7 +41,7 @@ protected:
   {
     // This is the CRTP pattern for static polymorphism: this is related, static_cast is the only
     // way to do this
-    //lint -e{9005, 9176, 1939} NOLINT
+    // lint -e{9005, 9176, 1939} NOLINT
     return *static_cast<Derived *>(this);
   }
 };

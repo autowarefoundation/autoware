@@ -18,17 +18,17 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
+#include "geometry/interval.hpp"
+
 #include <gtest/gtest.h>
 
 #include <algorithm>
 #include <cmath>
 #include <limits>
 
-#include "geometry/interval.hpp"
-
+using autoware::common::geometry::Interval;
 using autoware::common::geometry::Interval_d;
 using autoware::common::geometry::Interval_f;
-using autoware::common::geometry::Interval;
 
 namespace
 {
@@ -41,7 +41,8 @@ const auto epsilon = 1e-5;
 
 //------------------------------------------------------------------------------
 
-TEST(GeometryInterval, AbsEq) {
+TEST(GeometryInterval, AbsEq)
+{
   const auto i1 = Interval_d(-1.0, 1.0);
   const auto i2 = Interval_d(-1.0 + 0.5 * epsilon, 1.0 + 0.5 * epsilon);
   const auto shift = (2.0 * epsilon);
@@ -60,30 +61,19 @@ TEST(GeometryInterval, AbsEq) {
 
 //------------------------------------------------------------------------------
 
-TEST(GeometryInterval, IsSubsetEq) {
-  EXPECT_TRUE(
-    Interval_d::is_subset_eq(
-      Interval_d(-0.5, 0.5),
-      Interval_d(-1.0, 1.0)));
-  EXPECT_TRUE(
-    Interval_d::is_subset_eq(
-      Interval_d(3.2, 4.2),
-      Interval_d(3.2, 4.2)));
-  EXPECT_FALSE(
-    Interval_d::is_subset_eq(
-      Interval_d(-3.0, -1.0),
-      Interval_d(1.0, 3.0)));
-  EXPECT_FALSE(
-    Interval_d::is_subset_eq(
-      Interval_d(1.0, 3.0),
-      Interval_d(2.0, 4.0)));
-  EXPECT_FALSE(
-    Interval_d::is_subset_eq(Interval_d(), Interval_d()));
+TEST(GeometryInterval, IsSubsetEq)
+{
+  EXPECT_TRUE(Interval_d::is_subset_eq(Interval_d(-0.5, 0.5), Interval_d(-1.0, 1.0)));
+  EXPECT_TRUE(Interval_d::is_subset_eq(Interval_d(3.2, 4.2), Interval_d(3.2, 4.2)));
+  EXPECT_FALSE(Interval_d::is_subset_eq(Interval_d(-3.0, -1.0), Interval_d(1.0, 3.0)));
+  EXPECT_FALSE(Interval_d::is_subset_eq(Interval_d(1.0, 3.0), Interval_d(2.0, 4.0)));
+  EXPECT_FALSE(Interval_d::is_subset_eq(Interval_d(), Interval_d()));
 }
 
 //------------------------------------------------------------------------------
 
-TEST(GeometryInterval, ClampTo) {
+TEST(GeometryInterval, ClampTo)
+{
   const auto i = Interval_d(-1.0, 1.0);
   {
     const auto val = 0.0;
@@ -111,7 +101,8 @@ TEST(GeometryInterval, ClampTo) {
 
 //------------------------------------------------------------------------------
 
-TEST(GeometryInterval, Comparisons) {
+TEST(GeometryInterval, Comparisons)
+{
   {
     const auto i1 = Interval_d(0.25, 1);
     const auto i2 = Interval_d(0, 1);
@@ -157,7 +148,8 @@ TEST(GeometryInterval, Comparisons) {
 
 //------------------------------------------------------------------------------
 
-TEST(GeometryInterval, Contains) {
+TEST(GeometryInterval, Contains)
+{
   {
     const auto i = Interval_d();
     EXPECT_FALSE(Interval_d::contains(i, 0.0));
@@ -172,7 +164,8 @@ TEST(GeometryInterval, Contains) {
 
 //------------------------------------------------------------------------------
 
-TEST(GeometryInterval, Empty) {
+TEST(GeometryInterval, Empty)
+{
   {
     const auto i1 = Interval_d();
     const auto i2 = Interval_d();
@@ -190,7 +183,8 @@ TEST(GeometryInterval, Empty) {
 
 //------------------------------------------------------------------------------
 
-TEST(GeometryInterval, ZeroMeasure) {
+TEST(GeometryInterval, ZeroMeasure)
+{
   {
     const auto i = Interval_d(0, 1);
     EXPECT_FALSE(Interval_d::zero_measure(i));
@@ -209,7 +203,8 @@ TEST(GeometryInterval, ZeroMeasure) {
 
 //------------------------------------------------------------------------------
 
-TEST(GeometryInterval, IntersectionMeasure) {
+TEST(GeometryInterval, IntersectionMeasure)
+{
   {
     const auto i1 = Interval_d(-1.0, 1.0);
     const auto i2 = Interval_d(-0.5, 1.5);
@@ -232,7 +227,8 @@ TEST(GeometryInterval, IntersectionMeasure) {
 
 //------------------------------------------------------------------------------
 
-TEST(GeometryInterval, ConstructionMeasure) {
+TEST(GeometryInterval, ConstructionMeasure)
+{
   {
     const auto i = Interval_d();
     EXPECT_TRUE(std::isnan(Interval_d::min(i)));
@@ -256,7 +252,7 @@ TEST(GeometryInterval, ConstructionMeasure) {
   }
 
   {
-    EXPECT_THROW({Interval_d(1.0, -1.0);}, std::runtime_error);
+    EXPECT_THROW({ Interval_d(1.0, -1.0); }, std::runtime_error);
   }
 }
 

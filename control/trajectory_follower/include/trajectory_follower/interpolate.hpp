@@ -15,12 +15,12 @@
 #ifndef TRAJECTORY_FOLLOWER__INTERPOLATE_HPP_
 #define TRAJECTORY_FOLLOWER__INTERPOLATE_HPP_
 
+#include "common/types.hpp"
+#include "trajectory_follower/visibility_control.hpp"
+
 #include <cmath>
 #include <iostream>
 #include <vector>
-
-#include "common/types.hpp"
-#include "trajectory_follower/visibility_control.hpp"
 
 namespace autoware
 {
@@ -30,8 +30,8 @@ namespace control
 {
 namespace trajectory_follower
 {
-using autoware::common::types::float64_t;
 using autoware::common::types::bool8_t;
+using autoware::common::types::float64_t;
 /**
  * @brief linearly interpolate the given values assuming a base indexing and a new desired indexing
  * @param [in] base_index indexes for each base value

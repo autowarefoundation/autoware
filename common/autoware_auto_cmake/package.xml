@@ -12,11 +12,11 @@
 
   <build_depend>ros_environment</build_depend>
 
-  <buildtool_export_depend>ament_cmake_core</buildtool_export_depend>
-  <buildtool_export_depend>ament_cmake_lint_cmake</buildtool_export_depend>
   <buildtool_export_depend>ament_cmake_copyright</buildtool_export_depend>
+  <buildtool_export_depend>ament_cmake_core</buildtool_export_depend>
   <buildtool_export_depend>ament_cmake_cppcheck</buildtool_export_depend>
   <buildtool_export_depend>ament_cmake_cpplint</buildtool_export_depend>
+  <buildtool_export_depend>ament_cmake_lint_cmake</buildtool_export_depend>
   <buildtool_export_depend>ament_cmake_uncrustify</buildtool_export_depend>
 
   <test_depend>ament_cmake_lint_cmake</test_depend>

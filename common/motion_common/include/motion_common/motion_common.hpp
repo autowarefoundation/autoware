@@ -15,9 +15,11 @@
 #define MOTION_COMMON__MOTION_COMMON_HPP_
 
 #include <motion_common/visibility_control.hpp>
+#include <time_utils/time_utils.hpp>
+
 #include <autoware_auto_geometry_msgs/msg/complex32.hpp>
-#include <autoware_auto_system_msgs/msg/control_diagnostic.hpp>
 #include <autoware_auto_planning_msgs/msg/trajectory.hpp>
+#include <autoware_auto_system_msgs/msg/control_diagnostic.hpp>
 #include <autoware_auto_vehicle_msgs/msg/vehicle_control_command.hpp>
 #include <autoware_auto_vehicle_msgs/msg/vehicle_kinematic_state.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
@@ -25,7 +27,6 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/utils.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include <time_utils/time_utils.hpp>
 
 #include <algorithm>
 #include <cmath>
@@ -56,12 +57,9 @@ MOTION_COMMON_PUBLIC
 bool is_past_point(const Point & state, const Point & pt, double nx, double ny) noexcept;
 
 /// Advance to the first trajectory point past state according to criterion is_past_point
-template<typename IsPastPointF>
+template <typename IsPastPointF>
 Index update_reference_index(
-  const Trajectory & traj,
-  const State & state,
-  Index start_idx,
-  IsPastPointF is_past_point)
+  const Trajectory & traj, const State & state, Index start_idx, IsPastPointF is_past_point)
 {
   // Invariant: m_reference_trajectory.points.size > 0U
   if (traj.points.empty()) {
@@ -90,13 +88,11 @@ MOTION_COMMON_PUBLIC bool heading_ok(const Trajectory & traj);
 
 /// Apply transform to TrajectoryPoint
 MOTION_COMMON_PUBLIC void doTransform(
-  const Point & t_in,
-  Point & t_out,
+  const Point & t_in, Point & t_out,
   const geometry_msgs::msg::TransformStamped & transform) noexcept;
 /// Apply transform to VehicleKinematicState
 MOTION_COMMON_PUBLIC void doTransform(
-  const State & t_in,
-  State & t_out,
+  const State & t_in, State & t_out,
   const geometry_msgs::msg::TransformStamped & transform) noexcept;
 
 /// Converts 2D quaternion to simple heading representation
@@ -105,7 +101,7 @@ MOTION_COMMON_PUBLIC Real to_angle(Heading heading) noexcept;
 MOTION_COMMON_PUBLIC Real to_angle(Orientation orientation) noexcept;
 
 /// Basic conversion
-template<typename RealT>
+template <typename RealT>
 Heading heading_from_angle(RealT angle) noexcept
 {
   static_assert(std::is_floating_point<RealT>::value, "angle must be floating point");
@@ -115,7 +111,7 @@ Heading heading_from_angle(RealT angle) noexcept
   return ret;
 }
 
-template<typename RealT>
+template <typename RealT>
 Orientation from_angle(RealT angle) noexcept
 {
   static_assert(std::is_floating_point<RealT>::value, "angle must be floating point");
@@ -128,7 +124,7 @@ Orientation from_angle(RealT angle) noexcept
 /// \tparam QuatT A quaternion-like object with at least z and w members
 /// \param[in] quat A quaternion-like object to be converted to a heading object
 /// \returns A converted heading object
-template<typename QuatT>
+template <typename QuatT>
 Heading from_quat(QuatT quat) noexcept
 {
   Heading ret{};
@@ -138,7 +134,7 @@ Heading from_quat(QuatT quat) noexcept
 }
 
 /// Standard clamp implementation
-template<typename T>
+template <typename T>
 T clamp(T val, T min, T max)
 {
   if (max < min) {
@@ -148,7 +144,7 @@ T clamp(T val, T min, T max)
 }
 
 /// Standard linear interpolation
-template<typename T, typename RealT = double>
+template <typename T, typename RealT = double>
 T interpolate(T a, T b, RealT t)
 {
   static_assert(std::is_floating_point<RealT>::value, "t must be floating point");
@@ -161,7 +157,7 @@ T interpolate(T a, T b, RealT t)
 MOTION_COMMON_PUBLIC Orientation slerp(const Orientation & a, const Orientation & b, const Real t);
 
 /// Trajectory point interpolation
-template<typename SlerpF>
+template <typename SlerpF>
 Point interpolate(Point a, Point b, Real t, SlerpF slerp_fn)
 {
   Point ret{rosidl_runtime_cpp::MessageInitialization::ALL};
@@ -188,12 +184,9 @@ Point interpolate(Point a, Point b, Real t, SlerpF slerp_fn)
 MOTION_COMMON_PUBLIC Point interpolate(Point a, Point b, Real t);
 
 /// Sample a trajectory using interpolation; does not extrapolate
-template<typename SlerpF>
+template <typename SlerpF>
 void sample(
-  const Trajectory & in,
-  Trajectory & out,
-  std::chrono::nanoseconds period,
-  SlerpF slerp_fn)
+  const Trajectory & in, Trajectory & out, std::chrono::nanoseconds period, SlerpF slerp_fn)
 {
   out.points.clear();
   out.header = in.header;
@@ -240,9 +233,7 @@ void sample(
 
 /// Trajectory sampling with default interpolation
 MOTION_COMMON_PUBLIC void sample(
-  const Trajectory & in,
-  Trajectory & out,
-  std::chrono::nanoseconds period);
+  const Trajectory & in, Trajectory & out, std::chrono::nanoseconds period);
 
 /// Diagnostic header stuff
 MOTION_COMMON_PUBLIC
@@ -263,7 +254,7 @@ MOTION_COMMON_PUBLIC Complex32 operator-(Complex32 a) noexcept;
 /// Difference operator
 MOTION_COMMON_PUBLIC Complex32 operator-(Complex32 a, Complex32 b) noexcept;
 }  // namespace msg
-}  // namespace autoware_auto_msgs
+}  // namespace autoware_auto_geometry_msgs
 namespace geometry_msgs
 {
 namespace msg

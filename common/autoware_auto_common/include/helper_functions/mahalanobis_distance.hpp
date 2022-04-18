@@ -32,10 +32,9 @@ namespace helper_functions
 /// \param mean Single column matrix containing mean of samples received so far
 /// \param covariance_factor Covariance matrix
 /// \return Square of mahalanobis distance
-template<typename T, std::int32_t kNumOfStates>
+template <typename T, std::int32_t kNumOfStates>
 types::float32_t calculate_squared_mahalanobis_distance(
-  const Eigen::Matrix<T, kNumOfStates, 1> & sample,
-  const Eigen::Matrix<T, kNumOfStates, 1> & mean,
+  const Eigen::Matrix<T, kNumOfStates, 1> & sample, const Eigen::Matrix<T, kNumOfStates, 1> & mean,
   const Eigen::Matrix<T, kNumOfStates, kNumOfStates> & covariance_factor)
 {
   using Vector = Eigen::Matrix<T, kNumOfStates, 1>;
@@ -59,12 +58,10 @@ types::float32_t calculate_squared_mahalanobis_distance(
 /// \param mean Single column matrix containing mean of samples received so far
 /// \param covariance_factor Covariance matrix
 /// \return Mahalanobis distance
-template<typename T, std::int32_t kNumOfStates>
+template <typename T, std::int32_t kNumOfStates>
 types::float32_t calculate_mahalanobis_distance(
-  const Eigen::Matrix<T, kNumOfStates, 1> & sample,
-  const Eigen::Matrix<T, kNumOfStates, 1> & mean,
-  const Eigen::Matrix<T, kNumOfStates, kNumOfStates> & covariance_factor
-)
+  const Eigen::Matrix<T, kNumOfStates, 1> & sample, const Eigen::Matrix<T, kNumOfStates, 1> & mean,
+  const Eigen::Matrix<T, kNumOfStates, kNumOfStates> & covariance_factor)
 {
   return sqrtf(calculate_squared_mahalanobis_distance(sample, mean, covariance_factor));
 }

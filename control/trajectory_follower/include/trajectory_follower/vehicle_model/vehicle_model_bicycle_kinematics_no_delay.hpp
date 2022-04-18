@@ -38,11 +38,10 @@
 #ifndef TRAJECTORY_FOLLOWER__VEHICLE_MODEL__VEHICLE_MODEL_BICYCLE_KINEMATICS_NO_DELAY_HPP_
 #define TRAJECTORY_FOLLOWER__VEHICLE_MODEL__VEHICLE_MODEL_BICYCLE_KINEMATICS_NO_DELAY_HPP_
 
-#include "trajectory_follower/vehicle_model/vehicle_model_interface.hpp"
-
 #include "common/types.hpp"
 #include "eigen3/Eigen/Core"
 #include "eigen3/Eigen/LU"
+#include "trajectory_follower/vehicle_model/vehicle_model_interface.hpp"
 #include "trajectory_follower/visibility_control.hpp"
 
 namespace autoware

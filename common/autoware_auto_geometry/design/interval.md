@@ -1,43 +1,42 @@
-Interval {#geometry-interval}
-========
+# Interval {#geometry-interval}
 
 The interval is a standard 1D real-valued interval.
 The class implements a representation and operations on the interval type and guarantees interval validity on construction.
-Basic operations and  accessors are implemented, as well as other common operations.
+Basic operations and accessors are implemented, as well as other common operations.
 See 'Example Usage' below.
 
-# Target use cases
+## Target use cases
 
-* Range or containment checks.
-The interval class simplifies code that involves checking membership of a value to a range, or intersecting two ranges.
-It also provides consistent behavior and consistent handling of edge cases.
+- Range or containment checks.
+  The interval class simplifies code that involves checking membership of a value to a range, or intersecting two ranges.
+  It also provides consistent behavior and consistent handling of edge cases.
 
-# Properties
+## Properties
 
-* **empty**: An empty interval is equivalent to an empty set.
-It contains no elements.
-It is a valid interval, but because it is empty, the notion of measure (length) is undefined; the measure of an empty interval is *not* zero.
-The implementation represents the measure of an empty interval with `NaN`.
-* **zero measure**: An interval with zero measure is an interval whose bounds are exactly equal.
-The measure is zero because the interval contains only a single point, and points have zero measure.
-However, because it does contain a single element, the interval is *not* empty.
-* **valid**: A valid interval is either empty or has min/max bounds such that (min <= max). On construction, interval objects are guaranteed to be valid.
-An attempt to construct an invalid interval results in a runtime_error exception being thrown.
-* **pseudo-immutable**: Once constructed the only way to change the value of an interval is to overwrite it with a new one; an existing object cannot be modified.
+- **empty**: An empty interval is equivalent to an empty set.
+  It contains no elements.
+  It is a valid interval, but because it is empty, the notion of measure (length) is undefined; the measure of an empty interval is _not_ zero.
+  The implementation represents the measure of an empty interval with `NaN`.
+- **zero measure**: An interval with zero measure is an interval whose bounds are exactly equal.
+  The measure is zero because the interval contains only a single point, and points have zero measure.
+  However, because it does contain a single element, the interval is _not_ empty.
+- **valid**: A valid interval is either empty or has min/max bounds such that (min <= max). On construction, interval objects are guaranteed to be valid.
+  An attempt to construct an invalid interval results in a runtime_error exception being thrown.
+- **pseudo-immutable**: Once constructed the only way to change the value of an interval is to overwrite it with a new one; an existing object cannot be modified.
 
-# Conventions
+## Conventions
 
-* All operations on interval objects are defined as static class methods on the interval class.
-This is a functional-style of programming that basically turns the class into a namespace that grants functions access to private member variables of the object they operate on.
+- All operations on interval objects are defined as static class methods on the interval class.
+  This is a functional-style of programming that basically turns the class into a namespace that grants functions access to private member variables of the object they operate on.
 
-# Assumptions
+## Assumptions
 
-* The interval is only intended for floating point types.
-This is enforced via static assertion.
-* The constructor for non-empty intervals takes two arguments 'min' and 'max', and they must be ordered (i.e., min <= max).
-If this assumption is violated, an exception is emitted and construction fails.
+- The interval is only intended for floating point types.
+  This is enforced via static assertion.
+- The constructor for non-empty intervals takes two arguments 'min' and 'max', and they must be ordered (i.e., min <= max).
+  If this assumption is violated, an exception is emitted and construction fails.
 
-# Example Usage
+## Example Usage
 
 ```c++
 #include "geometry/interval.hpp"
@@ -72,7 +71,7 @@ const auto i = Interval_d(MIN, MAX);
 // Test accessors and properties
 //
 
-std::cout << Interval_d::min(i) << " " << Interval_d::max(i) << "\n";  
+std::cout << Interval_d::min(i) << " " << Interval_d::max(i) << "\n";
 // Prints: 0.0 1.0
 
 std::cout << Interval_d::empty(i) << " " << Interval_d::length(i) << "\n";

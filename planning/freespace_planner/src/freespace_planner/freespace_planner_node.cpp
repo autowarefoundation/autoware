@@ -44,7 +44,6 @@ namespace
 using autoware_auto_planning_msgs::msg::Trajectory;
 using autoware_auto_planning_msgs::msg::TrajectoryPoint;
 using TrajectoryPoints = std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint>;
-using tier4_planning_msgs::msg::Scenario;
 using freespace_planning_algorithms::AstarSearch;
 using freespace_planning_algorithms::PlannerWaypoint;
 using freespace_planning_algorithms::PlannerWaypoints;
@@ -54,6 +53,7 @@ using geometry_msgs::msg::PoseStamped;
 using geometry_msgs::msg::TransformStamped;
 using geometry_msgs::msg::Twist;
 using nav_msgs::msg::Odometry;
+using tier4_planning_msgs::msg::Scenario;
 
 bool isActive(const Scenario::ConstSharedPtr & scenario)
 {
@@ -261,8 +261,8 @@ FreespacePlannerNode::FreespacePlannerNode(const rclcpp::NodeOptions & node_opti
   // Timer
   {
     const auto period_ns = rclcpp::Rate(node_param_.update_rate).period();
-    timer_ = rclcpp::create_timer(this, get_clock(), period_ns,
-      std::bind(&FreespacePlannerNode::onTimer, this));
+    timer_ = rclcpp::create_timer(
+      this, get_clock(), period_ns, std::bind(&FreespacePlannerNode::onTimer, this));
   }
 }
 
@@ -350,8 +350,8 @@ bool FreespacePlannerNode::isPlanRequired()
   if (node_param_.replan_when_obstacle_found) {
     algo_->setMap(*occupancy_grid_);
 
-    const size_t nearest_index_partial =
-      tier4_autoware_utils::findNearestIndex(partial_trajectory_.points, current_pose_.pose.position);
+    const size_t nearest_index_partial = tier4_autoware_utils::findNearestIndex(
+      partial_trajectory_.points, current_pose_.pose.position);
     const size_t end_index_partial = partial_trajectory_.points.size() - 1;
 
     const auto forward_trajectory =
@@ -421,8 +421,8 @@ void FreespacePlannerNode::onTimer()
 
   // Get current pose
   constexpr const char * vehicle_frame = "base_link";
-  current_pose_ =
-    tier4_autoware_utils::transform2pose(getTransform(occupancy_grid_->header.frame_id, vehicle_frame));
+  current_pose_ = tier4_autoware_utils::transform2pose(
+    getTransform(occupancy_grid_->header.frame_id, vehicle_frame));
   if (current_pose_.header.frame_id == "") {
     return;
   }

@@ -35,9 +35,9 @@ using autoware::common::types::float64_t;
 class TRAJECTORY_FOLLOWER_PUBLIC VehicleModelInterface
 {
 protected:
-  const int64_t m_dim_x;   //!< @brief dimension of state x
-  const int64_t m_dim_u;   //!< @brief dimension of input u
-  const int64_t m_dim_y;   //!< @brief dimension of output y
+  const int64_t m_dim_x;  //!< @brief dimension of state x
+  const int64_t m_dim_u;  //!< @brief dimension of input u
+  const int64_t m_dim_y;  //!< @brief dimension of output y
   float64_t m_velocity;   //!< @brief vehicle velocity [m/s]
   float64_t m_curvature;  //!< @brief curvature on the linearized point on path
   float64_t m_wheelbase;  //!< @brief wheelbase of the vehicle [m]

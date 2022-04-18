@@ -23,11 +23,12 @@
 
 #include <common/types.hpp>
 #include <geometry/common_2d.hpp>
-#include <vector>
-#include <utility>
-#include <limits>
+
 #include <algorithm>
 #include <iterator>
+#include <limits>
+#include <utility>
+#include <vector>
 
 using autoware::common::types::float32_t;
 
@@ -37,7 +38,6 @@ namespace common
 {
 namespace geometry
 {
-
 
 /// \brief Compute a list of "pockets" of a simple polygon
 ///   (https://en.wikipedia.org/wiki/Simple_polygon), that is, the areas that make
@@ -59,13 +59,10 @@ namespace geometry
 ///
 /// \tparam Iter1 Iterator to a point type
 /// \tparam Iter2 Iterator to a point type (can be the same as Iter1, but does not need to be)
-template<typename Iter1, typename Iter2>
+template <typename Iter1, typename Iter2>
 typename std::vector<std::vector<typename std::iterator_traits<Iter1>::value_type>> hull_pockets(
-  const Iter1 polygon_start,
-  const Iter1 polygon_end,
-  const Iter2 convex_hull_start,
-  const Iter2 convex_hull_end
-)
+  const Iter1 polygon_start, const Iter1 polygon_end, const Iter2 convex_hull_start,
+  const Iter2 convex_hull_end)
 {
   auto pockets = std::vector<std::vector<typename std::iterator_traits<Iter1>::value_type>>{};
   if (std::distance(polygon_start, polygon_end) <= 3) {
@@ -74,15 +71,10 @@ typename std::vector<std::vector<typename std::iterator_traits<Iter1>::value_typ
 
   // Function to check whether a point is in the convex hull.
   const auto in_convex_hull = [convex_hull_start, convex_hull_end](Iter1 p) {
-      return std::any_of(
-        convex_hull_start, convex_hull_end, [p](auto hull_entry)
-        {
-          return norm_2d(
-            minus_2d(
-              hull_entry,
-              *p)) < std::numeric_limits<float32_t>::epsilon();
-        });
-    };
+    return std::any_of(convex_hull_start, convex_hull_end, [p](auto hull_entry) {
+      return norm_2d(minus_2d(hull_entry, *p)) < std::numeric_limits<float32_t>::epsilon();
+    });
+  };
 
   // We go through the points of the polygon only once, adding pockets to the list of pockets
   // as we detect them.

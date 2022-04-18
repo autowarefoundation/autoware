@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <vector>
-
 #include "common/types.hpp"
 #include "gtest/gtest.h"
 #include "trajectory_follower/lowpass_filter.hpp"
+
+#include <vector>
 
 using autoware::common::types::float64_t;
 
@@ -42,14 +42,15 @@ TEST(TestLowpassFilter, LowpassFilter1d)
   EXPECT_NEAR(lowpass_filter_1d.filter(0.0), -0.11, epsilon);
   EXPECT_NEAR(lowpass_filter_1d.getValue(), -0.11, epsilon);
 }
-TEST(TestLowpassFilter, MoveAverageFilter) {
+TEST(TestLowpassFilter, MoveAverageFilter)
+{
   namespace MoveAverageFilter = autoware::motion::control::trajectory_follower::MoveAverageFilter;
 
   {  // Fail case: window size higher than the vector size
     const int64_t window_size = 5;
     std::vector<float64_t> vec = {1.0, 2.0, 3.0, 4.0};
     EXPECT_FALSE(MoveAverageFilter::filt_vector(window_size, vec));
-  }
+  }  // namespace autoware::motion::control::trajectory_follower::MoveAverageFilter;
   {
     const int64_t window_size = 0;
     const std::vector<float64_t> original_vec = {1.0, 3.0, 4.0, 6.0};
@@ -85,7 +86,8 @@ TEST(TestLowpassFilter, MoveAverageFilter) {
     EXPECT_EQ(filtered_vec[5], original_vec[5]);
   }
 }
-TEST(TestLowpassFilter, Butterworth2dFilter) {
+TEST(TestLowpassFilter, Butterworth2dFilter)
+{
   using autoware::motion::control::trajectory_follower::Butterworth2dFilter;
   const float64_t dt = 1.0;
   const float64_t cutoff_hz = 1.0;

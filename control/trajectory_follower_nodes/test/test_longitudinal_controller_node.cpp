@@ -12,24 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-#include <trajectory_follower_nodes/longitudinal_controller_node.hpp>
-
-#include <memory>
-
 #include "ament_index_cpp/get_package_share_directory.hpp"
-#include "autoware_auto_planning_msgs/msg/trajectory.hpp"
-#include "autoware_auto_control_msgs/msg/longitudinal_command.hpp"
-#include "autoware_auto_vehicle_msgs/msg/vehicle_odometry.hpp"
-#include "geometry_msgs/msg/pose.hpp"
-#include "geometry_msgs/msg/pose_stamped.hpp"
-#include "geometry_msgs/msg/transform_stamped.hpp"
-#include "nav_msgs/msg/odometry.hpp"
 #include "fake_test_node/fake_test_node.hpp"
 #include "gtest/gtest.h"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/time.hpp"
 #include "trajectory_follower_test_utils.hpp"
+
+#include <trajectory_follower_nodes/longitudinal_controller_node.hpp>
+
+#include "autoware_auto_control_msgs/msg/longitudinal_command.hpp"
+#include "autoware_auto_planning_msgs/msg/trajectory.hpp"
+#include "autoware_auto_vehicle_msgs/msg/vehicle_odometry.hpp"
+#include "geometry_msgs/msg/pose.hpp"
+#include "geometry_msgs/msg/pose_stamped.hpp"
+#include "geometry_msgs/msg/transform_stamped.hpp"
+#include "nav_msgs/msg/odometry.hpp"
+
+#include <memory>
 
 using LongitudinalController =
   autoware::motion::control::trajectory_follower_nodes::LongitudinalController;
@@ -46,20 +46,23 @@ std::shared_ptr<LongitudinalController> makeLongitudinalNode()
   const auto share_dir = ament_index_cpp::get_package_share_directory("trajectory_follower_nodes");
   rclcpp::NodeOptions node_options;
   node_options.arguments(
-    {"--ros-args", "--params-file", share_dir + "/param/longitudinal_controller_defaults.yaml",
-      "--params-file", share_dir + "/param/test_vehicle_info.yaml"});
-  std::shared_ptr<LongitudinalController> node = std::make_shared<LongitudinalController>(
-    node_options);
+    {"--ros-args", "--params-file",
+     share_dir + "/param/longitudinal_controller_defaults.param.yaml", "--params-file",
+     share_dir + "/param/test_vehicle_info.param.yaml"});
+  std::shared_ptr<LongitudinalController> node =
+    std::make_shared<LongitudinalController>(node_options);
 
   // Enable all logging in the node
-  auto ret = rcutils_logging_set_logger_level(
-    node->get_logger().get_name(), RCUTILS_LOG_SEVERITY_DEBUG);
-  if (ret != RCUTILS_RET_OK) {std::cout << "Failed to set logging severerity to DEBUG\n";}
+  auto ret =
+    rcutils_logging_set_logger_level(node->get_logger().get_name(), RCUTILS_LOG_SEVERITY_DEBUG);
+  if (ret != RCUTILS_RET_OK) {
+    std::cout << "Failed to set logging severerity to DEBUG\n";
+  }
   return node;
 }
 
-
-TEST_F(FakeNodeFixture, longitudinal_keep_velocity) {
+TEST_F(FakeNodeFixture, longitudinal_keep_velocity)
+{
   // Data to test
   LongitudinalCommand::SharedPtr cmd_msg;
   bool received_longitudinal_command = false;
@@ -68,16 +71,17 @@ TEST_F(FakeNodeFixture, longitudinal_keep_velocity) {
   std::shared_ptr<LongitudinalController> node = makeLongitudinalNode();
 
   // Publisher/Subscribers
-  rclcpp::Publisher<VehicleOdometry>::SharedPtr odom_pub = this->create_publisher<VehicleOdometry>(
-    "longitudinal_controller/input/current_odometry");
-  rclcpp::Publisher<Trajectory>::SharedPtr traj_pub = this->create_publisher<Trajectory>(
-    "longitudinal_controller/input/current_trajectory");
+  rclcpp::Publisher<VehicleOdometry>::SharedPtr odom_pub =
+    this->create_publisher<VehicleOdometry>("longitudinal_controller/input/current_odometry");
+  rclcpp::Publisher<Trajectory>::SharedPtr traj_pub =
+    this->create_publisher<Trajectory>("longitudinal_controller/input/current_trajectory");
   rclcpp::Subscription<LongitudinalCommand>::SharedPtr cmd_sub =
     this->create_subscription<LongitudinalCommand>(
-    "longitudinal_controller/output/control_cmd", *this->get_fake_node(),
-    [&cmd_msg, &received_longitudinal_command](const LongitudinalCommand::SharedPtr msg) {
-      cmd_msg = msg;received_longitudinal_command = true;
-    });
+      "longitudinal_controller/output/control_cmd", *this->get_fake_node(),
+      [&cmd_msg, &received_longitudinal_command](const LongitudinalCommand::SharedPtr msg) {
+        cmd_msg = msg;
+        received_longitudinal_command = true;
+      });
   std::shared_ptr<tf2_ros::StaticTransformBroadcaster> br =
     std::make_shared<tf2_ros::StaticTransformBroadcaster>(this->get_fake_node());
 
@@ -129,7 +133,8 @@ TEST_F(FakeNodeFixture, longitudinal_keep_velocity) {
   EXPECT_DOUBLE_EQ(cmd_msg->acceleration, 0.0);
 }
 
-TEST_F(FakeNodeFixture, longitudinal_slow_down) {
+TEST_F(FakeNodeFixture, longitudinal_slow_down)
+{
   // Data to test
   LongitudinalCommand::SharedPtr cmd_msg;
   bool received_longitudinal_command = false;
@@ -138,16 +143,17 @@ TEST_F(FakeNodeFixture, longitudinal_slow_down) {
   std::shared_ptr<LongitudinalController> node = makeLongitudinalNode();
 
   // Publisher/Subscribers
-  rclcpp::Publisher<VehicleOdometry>::SharedPtr odom_pub = this->create_publisher<VehicleOdometry>(
-    "longitudinal_controller/input/current_odometry");
-  rclcpp::Publisher<Trajectory>::SharedPtr traj_pub = this->create_publisher<Trajectory>(
-    "longitudinal_controller/input/current_trajectory");
+  rclcpp::Publisher<VehicleOdometry>::SharedPtr odom_pub =
+    this->create_publisher<VehicleOdometry>("longitudinal_controller/input/current_odometry");
+  rclcpp::Publisher<Trajectory>::SharedPtr traj_pub =
+    this->create_publisher<Trajectory>("longitudinal_controller/input/current_trajectory");
   rclcpp::Subscription<LongitudinalCommand>::SharedPtr cmd_sub =
     this->create_subscription<LongitudinalCommand>(
-    "longitudinal_controller/output/control_cmd", *this->get_fake_node(),
-    [&cmd_msg, &received_longitudinal_command](const LongitudinalCommand::SharedPtr msg) {
-      cmd_msg = msg;received_longitudinal_command = true;
-    });
+      "longitudinal_controller/output/control_cmd", *this->get_fake_node(),
+      [&cmd_msg, &received_longitudinal_command](const LongitudinalCommand::SharedPtr msg) {
+        cmd_msg = msg;
+        received_longitudinal_command = true;
+      });
   std::shared_ptr<tf2_ros::StaticTransformBroadcaster> br =
     std::make_shared<tf2_ros::StaticTransformBroadcaster>(this->get_fake_node());
 
@@ -199,7 +205,8 @@ TEST_F(FakeNodeFixture, longitudinal_slow_down) {
   EXPECT_LT(cmd_msg->acceleration, 0.0f);
 }
 
-TEST_F(FakeNodeFixture, longitudinal_accelerate) {
+TEST_F(FakeNodeFixture, longitudinal_accelerate)
+{
   // Data to test
   LongitudinalCommand::SharedPtr cmd_msg;
   bool received_longitudinal_command = false;
@@ -208,16 +215,17 @@ TEST_F(FakeNodeFixture, longitudinal_accelerate) {
   std::shared_ptr<LongitudinalController> node = makeLongitudinalNode();
 
   // Publisher/Subscribers
-  rclcpp::Publisher<VehicleOdometry>::SharedPtr odom_pub = this->create_publisher<VehicleOdometry>(
-    "longitudinal_controller/input/current_odometry");
-  rclcpp::Publisher<Trajectory>::SharedPtr traj_pub = this->create_publisher<Trajectory>(
-    "longitudinal_controller/input/current_trajectory");
+  rclcpp::Publisher<VehicleOdometry>::SharedPtr odom_pub =
+    this->create_publisher<VehicleOdometry>("longitudinal_controller/input/current_odometry");
+  rclcpp::Publisher<Trajectory>::SharedPtr traj_pub =
+    this->create_publisher<Trajectory>("longitudinal_controller/input/current_trajectory");
   rclcpp::Subscription<LongitudinalCommand>::SharedPtr cmd_sub =
     this->create_subscription<LongitudinalCommand>(
-    "longitudinal_controller/output/control_cmd", *this->get_fake_node(),
-    [&cmd_msg, &received_longitudinal_command](const LongitudinalCommand::SharedPtr msg) {
-      cmd_msg = msg;received_longitudinal_command = true;
-    });
+      "longitudinal_controller/output/control_cmd", *this->get_fake_node(),
+      [&cmd_msg, &received_longitudinal_command](const LongitudinalCommand::SharedPtr msg) {
+        cmd_msg = msg;
+        received_longitudinal_command = true;
+      });
   std::shared_ptr<tf2_ros::StaticTransformBroadcaster> br =
     std::make_shared<tf2_ros::StaticTransformBroadcaster>(this->get_fake_node());
 
@@ -269,7 +277,8 @@ TEST_F(FakeNodeFixture, longitudinal_accelerate) {
   EXPECT_GT(cmd_msg->acceleration, 0.0f);
 }
 
-TEST_F(FakeNodeFixture, longitudinal_stopped) {
+TEST_F(FakeNodeFixture, longitudinal_stopped)
+{
   // Data to test
   LongitudinalCommand::SharedPtr cmd_msg;
   bool received_longitudinal_command = false;
@@ -278,16 +287,17 @@ TEST_F(FakeNodeFixture, longitudinal_stopped) {
   std::shared_ptr<LongitudinalController> node = makeLongitudinalNode();
 
   // Publisher/Subscribers
-  rclcpp::Publisher<VehicleOdometry>::SharedPtr odom_pub = this->create_publisher<VehicleOdometry>(
-    "longitudinal_controller/input/current_odometry");
-  rclcpp::Publisher<Trajectory>::SharedPtr traj_pub = this->create_publisher<Trajectory>(
-    "longitudinal_controller/input/current_trajectory");
+  rclcpp::Publisher<VehicleOdometry>::SharedPtr odom_pub =
+    this->create_publisher<VehicleOdometry>("longitudinal_controller/input/current_odometry");
+  rclcpp::Publisher<Trajectory>::SharedPtr traj_pub =
+    this->create_publisher<Trajectory>("longitudinal_controller/input/current_trajectory");
   rclcpp::Subscription<LongitudinalCommand>::SharedPtr cmd_sub =
     this->create_subscription<LongitudinalCommand>(
-    "longitudinal_controller/output/control_cmd", *this->get_fake_node(),
-    [&cmd_msg, &received_longitudinal_command](const LongitudinalCommand::SharedPtr msg) {
-      cmd_msg = msg;received_longitudinal_command = true;
-    });
+      "longitudinal_controller/output/control_cmd", *this->get_fake_node(),
+      [&cmd_msg, &received_longitudinal_command](const LongitudinalCommand::SharedPtr msg) {
+        cmd_msg = msg;
+        received_longitudinal_command = true;
+      });
   std::shared_ptr<tf2_ros::StaticTransformBroadcaster> br =
     std::make_shared<tf2_ros::StaticTransformBroadcaster>(this->get_fake_node());
 
@@ -331,7 +341,8 @@ TEST_F(FakeNodeFixture, longitudinal_stopped) {
   EXPECT_LT(cmd_msg->acceleration, 0.0f);  // when stopped negative acceleration to brake
 }
 
-TEST_F(FakeNodeFixture, longitudinal_reverse) {
+TEST_F(FakeNodeFixture, longitudinal_reverse)
+{
   // Data to test
   LongitudinalCommand::SharedPtr cmd_msg;
   bool received_longitudinal_command = false;
@@ -340,16 +351,17 @@ TEST_F(FakeNodeFixture, longitudinal_reverse) {
   std::shared_ptr<LongitudinalController> node = makeLongitudinalNode();
 
   // Publisher/Subscribers
-  rclcpp::Publisher<VehicleOdometry>::SharedPtr odom_pub = this->create_publisher<VehicleOdometry>(
-    "longitudinal_controller/input/current_odometry");
-  rclcpp::Publisher<Trajectory>::SharedPtr traj_pub = this->create_publisher<Trajectory>(
-    "longitudinal_controller/input/current_trajectory");
+  rclcpp::Publisher<VehicleOdometry>::SharedPtr odom_pub =
+    this->create_publisher<VehicleOdometry>("longitudinal_controller/input/current_odometry");
+  rclcpp::Publisher<Trajectory>::SharedPtr traj_pub =
+    this->create_publisher<Trajectory>("longitudinal_controller/input/current_trajectory");
   rclcpp::Subscription<LongitudinalCommand>::SharedPtr cmd_sub =
     this->create_subscription<LongitudinalCommand>(
-    "longitudinal_controller/output/control_cmd", *this->get_fake_node(),
-    [&cmd_msg, &received_longitudinal_command](const LongitudinalCommand::SharedPtr msg) {
-      cmd_msg = msg;received_longitudinal_command = true;
-    });
+      "longitudinal_controller/output/control_cmd", *this->get_fake_node(),
+      [&cmd_msg, &received_longitudinal_command](const LongitudinalCommand::SharedPtr msg) {
+        cmd_msg = msg;
+        received_longitudinal_command = true;
+      });
   std::shared_ptr<tf2_ros::StaticTransformBroadcaster> br =
     std::make_shared<tf2_ros::StaticTransformBroadcaster>(this->get_fake_node());
 
@@ -393,7 +405,8 @@ TEST_F(FakeNodeFixture, longitudinal_reverse) {
   EXPECT_GT(cmd_msg->acceleration, 0.0f);
 }
 
-TEST_F(FakeNodeFixture, longitudinal_emergency) {
+TEST_F(FakeNodeFixture, longitudinal_emergency)
+{
   // Data to test
   LongitudinalCommand::SharedPtr cmd_msg;
   bool received_longitudinal_command = false;
@@ -402,16 +415,17 @@ TEST_F(FakeNodeFixture, longitudinal_emergency) {
   std::shared_ptr<LongitudinalController> node = makeLongitudinalNode();
 
   // Publisher/Subscribers
-  rclcpp::Publisher<VehicleOdometry>::SharedPtr odom_pub = this->create_publisher<VehicleOdometry>(
-    "longitudinal_controller/input/current_odometry");
-  rclcpp::Publisher<Trajectory>::SharedPtr traj_pub = this->create_publisher<Trajectory>(
-    "longitudinal_controller/input/current_trajectory");
+  rclcpp::Publisher<VehicleOdometry>::SharedPtr odom_pub =
+    this->create_publisher<VehicleOdometry>("longitudinal_controller/input/current_odometry");
+  rclcpp::Publisher<Trajectory>::SharedPtr traj_pub =
+    this->create_publisher<Trajectory>("longitudinal_controller/input/current_trajectory");
   rclcpp::Subscription<LongitudinalCommand>::SharedPtr cmd_sub =
     this->create_subscription<LongitudinalCommand>(
-    "longitudinal_controller/output/control_cmd", *this->get_fake_node(),
-    [&cmd_msg, &received_longitudinal_command](const LongitudinalCommand::SharedPtr msg) {
-      cmd_msg = msg;received_longitudinal_command = true;
-    });
+      "longitudinal_controller/output/control_cmd", *this->get_fake_node(),
+      [&cmd_msg, &received_longitudinal_command](const LongitudinalCommand::SharedPtr msg) {
+        cmd_msg = msg;
+        received_longitudinal_command = true;
+      });
   std::shared_ptr<tf2_ros::StaticTransformBroadcaster> br =
     std::make_shared<tf2_ros::StaticTransformBroadcaster>(this->get_fake_node());
 

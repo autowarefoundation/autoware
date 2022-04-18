@@ -14,9 +14,11 @@
 
 // Co-developed by Tier IV, Inc. and Apex.AI, Inc.
 
-#include <gtest/gtest.h>
-#include <geometry/intersection.hpp>
 #include <geometry/convex_hull.hpp>
+#include <geometry/intersection.hpp>
+
+#include <gtest/gtest.h>
+
 #include <list>
 
 struct TestPoint
@@ -42,19 +44,18 @@ class IntersectionTest : public ::testing::TestWithParam<IntersectionTestParams>
 {
 };
 
-
-TEST_P(IntersectionTest, Basic) {
+TEST_P(IntersectionTest, Basic)
+{
   const auto get_ordered_polygon = [](auto polygon) {
-      order_ccw(polygon);
-      return polygon;
-    };
+    order_ccw(polygon);
+    return polygon;
+  };
 
   const auto polygon1 = get_ordered_polygon(GetParam().polygon1_pts);
   const auto polygon2 = get_ordered_polygon(GetParam().polygon2_pts);
   const auto expected_intersection = get_ordered_polygon(GetParam().expected_intersection_pts);
 
-  const auto result =
-    autoware::common::geometry::convex_polygon_intersection2d(polygon1, polygon2);
+  const auto result = autoware::common::geometry::convex_polygon_intersection2d(polygon1, polygon2);
 
   ASSERT_EQ(result.size(), expected_intersection.size());
   auto expected_shape_it = expected_intersection.begin();
@@ -68,71 +69,56 @@ TEST_P(IntersectionTest, Basic) {
 INSTANTIATE_TEST_SUITE_P(
   Basic, IntersectionTest,
   ::testing::Values(
-    IntersectionTestParams{
-  {},
-  {},
-  {}
-},
-    IntersectionTestParams{      // Partial intersection
-  {{0.0F, 0.0F}, {10.0F, 0.0F}, {0.0F, 10.0F}, {10.0F, 10.0F}},
-  {{5.0F, 5.0F}, {15.0F, 5.0F}, {5.0F, 15.0F}, {15.0F, 15.0F}},
-  {{5.0F, 5.0F}, {10.0F, 5.0F}, {5.0F, 10.0F}, {10.0F, 10.0F}}
-},
+    IntersectionTestParams{{}, {}, {}},
+    IntersectionTestParams{// Partial intersection
+                           {{0.0F, 0.0F}, {10.0F, 0.0F}, {0.0F, 10.0F}, {10.0F, 10.0F}},
+                           {{5.0F, 5.0F}, {15.0F, 5.0F}, {5.0F, 15.0F}, {15.0F, 15.0F}},
+                           {{5.0F, 5.0F}, {10.0F, 5.0F}, {5.0F, 10.0F}, {10.0F, 10.0F}}},
     // Full intersection with overlapping edges
     // TODO(yunus.caliskan): enable after #1231
-//        IntersectionTestParams{
-//            {{0.0F, 0.0F}, {10.0F, 0.0F}, {0.0F, 10.0F}, {10.0F, 10.0F}},
-//            {{5.0F, 5.0F}, {10.0F, 5.0F}, {5.0F, 10.0F}, {10.0F, 10.0F}},
-//            {{5.0F, 5.0F}, {10.0F, 5.0F}, {5.0F, 10.0F}, {10.0F, 10.0F}},
-//        },
-    IntersectionTestParams{      // Fully contained
-  {{0.0F, 0.0F}, {10.0F, 0.0F}, {0.0F, 10.0F}, {10.0F, 10.0F}},
-  {{5.0F, 5.0F}, {6.0F, 5.0F}, {5.0F, 7.0F}, {8.0F, 8.0F}},
-  {{5.0F, 5.0F}, {6.0F, 5.0F}, {5.0F, 7.0F}, {8.0F, 8.0F}},
-},
-    IntersectionTestParams{      // Fully contained triangle
-  {{0.0F, 0.0F}, {10.0F, 0.0F}, {0.0F, 10.0F}, {10.0F, 10.0F}},
-  {{5.0F, 5.0F}, {6.0F, 5.0F}, {5.0F, 7.0F}},
-  {{5.0F, 5.0F}, {6.0F, 5.0F}, {5.0F, 7.0F}},
-},
-    IntersectionTestParams{      // Triangle rectangle intersection.
-  {{0.0F, 0.0F}, {10.0F, 0.0F}, {0.0F, 10.0F}, {10.0F, 10.0F}},
-  {{5.0F, 1.0F}, {5.0F, 9.0F}, {15.0F, 5.0F}},
-  {{5.0F, 1.0F}, {5.0F, 9.0F}, {10.0F, 3.0F}, {10.0F, 7.0F}}
-},
-    IntersectionTestParams{      // No intersection
-  {{0.0F, 0.0F}, {10.0F, 0.0F}, {0.0F, 10.0F}, {10.0F, 10.0F}},
-  {{15.0F, 15.0F}, {20.0F, 15.0F}, {15.0F, 20.0F}, {20.0F, 20.0F}},
-  {}
-}
-    // cppcheck-suppress syntaxError
-));
+    //        IntersectionTestParams{
+    //            {{0.0F, 0.0F}, {10.0F, 0.0F}, {0.0F, 10.0F}, {10.0F, 10.0F}},
+    //            {{5.0F, 5.0F}, {10.0F, 5.0F}, {5.0F, 10.0F}, {10.0F, 10.0F}},
+    //            {{5.0F, 5.0F}, {10.0F, 5.0F}, {5.0F, 10.0F}, {10.0F, 10.0F}},
+    //        },
+    IntersectionTestParams{
+      // Fully contained
+      {{0.0F, 0.0F}, {10.0F, 0.0F}, {0.0F, 10.0F}, {10.0F, 10.0F}},
+      {{5.0F, 5.0F}, {6.0F, 5.0F}, {5.0F, 7.0F}, {8.0F, 8.0F}},
+      {{5.0F, 5.0F}, {6.0F, 5.0F}, {5.0F, 7.0F}, {8.0F, 8.0F}},
+    },
+    IntersectionTestParams{
+      // Fully contained triangle
+      {{0.0F, 0.0F}, {10.0F, 0.0F}, {0.0F, 10.0F}, {10.0F, 10.0F}},
+      {{5.0F, 5.0F}, {6.0F, 5.0F}, {5.0F, 7.0F}},
+      {{5.0F, 5.0F}, {6.0F, 5.0F}, {5.0F, 7.0F}},
+    },
+    IntersectionTestParams{// Triangle rectangle intersection.
+                           {{0.0F, 0.0F}, {10.0F, 0.0F}, {0.0F, 10.0F}, {10.0F, 10.0F}},
+                           {{5.0F, 1.0F}, {5.0F, 9.0F}, {15.0F, 5.0F}},
+                           {{5.0F, 1.0F}, {5.0F, 9.0F}, {10.0F, 3.0F}, {10.0F, 7.0F}}},
+    IntersectionTestParams{// No intersection
+                           {{0.0F, 0.0F}, {10.0F, 0.0F}, {0.0F, 10.0F}, {10.0F, 10.0F}},
+                           {{15.0F, 15.0F}, {20.0F, 15.0F}, {15.0F, 20.0F}, {20.0F, 20.0F}},
+                           {}}  // cppcheck-suppress syntaxError
+    ));
 
-TEST(PolygonPointTest, Basic) {
+TEST(PolygonPointTest, Basic)
+{
   GTEST_SKIP();  // TODO(yunus.caliskan): enable after #1231
   std::list<TestPoint> polygon{{5.0F, 5.0F}, {10.0F, 5.0F}, {5.0F, 10.0F}, {10.0F, 10.0F}};
   order_ccw(polygon);
-  EXPECT_FALSE(
-    autoware::common::geometry::is_point_inside_polygon_2d(
-      polygon.begin(), polygon.end(), TestPoint{0.0F, 10.0F}));
+  EXPECT_FALSE(autoware::common::geometry::is_point_inside_polygon_2d(
+    polygon.begin(), polygon.end(), TestPoint{0.0F, 10.0F}));
 }
 
 // IoU of two intersecting shapes: a pentagon and a square. The test includes pen and paper
 // computations for the intermediate steps as assertions.
-TEST(IoUTest, PentagonRectangleIntersection) {
+TEST(IoUTest, PentagonRectangleIntersection)
+{
   std::list<TestPoint> polygon1{
-    {0.0F, 3.0F},
-    {3.0F, 4.0F},
-    {6.0F, 3.0F},
-    {4.0F, 1.0F},
-    {2.0F, 1.0F}
-  };
-  std::list<TestPoint> polygon2{
-    {3.0F, 0.0F},
-    {3.0F, 2.0F},
-    {5.0F, 2.0F},
-    {5.0F, 0.0F}
-  };
+    {0.0F, 3.0F}, {3.0F, 4.0F}, {6.0F, 3.0F}, {4.0F, 1.0F}, {2.0F, 1.0F}};
+  std::list<TestPoint> polygon2{{3.0F, 0.0F}, {3.0F, 2.0F}, {5.0F, 2.0F}, {5.0F, 0.0F}};
 
   order_ccw(polygon1);
   order_ccw(polygon2);
@@ -156,19 +142,10 @@ TEST(IoUTest, PentagonRectangleIntersection) {
 }
 
 // IoU of two non-intersecting rectangles.
-TEST(IoUTest, NoIntersection) {
-  std::list<TestPoint> polygon1{
-    {0.0F, 0.0F},
-    {0.0F, 1.0F},
-    {1.0F, 1.0F},
-    {1.0F, 0.0F}
-  };
-  std::list<TestPoint> polygon2{
-    {3.0F, 0.0F},
-    {3.0F, 2.0F},
-    {5.0F, 2.0F},
-    {5.0F, 0.0F}
-  };
+TEST(IoUTest, NoIntersection)
+{
+  std::list<TestPoint> polygon1{{0.0F, 0.0F}, {0.0F, 1.0F}, {1.0F, 1.0F}, {1.0F, 0.0F}};
+  std::list<TestPoint> polygon2{{3.0F, 0.0F}, {3.0F, 2.0F}, {5.0F, 2.0F}, {5.0F, 0.0F}};
 
   order_ccw(polygon1);
   order_ccw(polygon2);

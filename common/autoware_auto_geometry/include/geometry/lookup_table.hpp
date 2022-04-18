@@ -20,12 +20,12 @@
 #ifndef GEOMETRY__LOOKUP_TABLE_HPP_
 #define GEOMETRY__LOOKUP_TABLE_HPP_
 
+#include "common/types.hpp"
+#include "geometry/interval.hpp"
+
 #include <cmath>
 #include <stdexcept>
 #include <vector>
-
-#include "common/types.hpp"
-#include "geometry/interval.hpp"
 
 namespace autoware
 {
@@ -41,7 +41,7 @@ namespace
  * @brief Compute a scaling between 'a' and 'b'
  * @note scaling is clamped to be in the interval [0, 1]
  */
-template<typename T, typename U>
+template <typename T, typename U>
 T interpolate(const T & a, const T & b, U scaling)
 {
   static const geometry::Interval<U> UNIT_INTERVAL(static_cast<U>(0), static_cast<U>(1));
@@ -55,7 +55,7 @@ T interpolate(const T & a, const T & b, U scaling)
 // TODO(c.ho) support more forms of interpolation as template functor
 // Actual lookup logic, assuming all invariants hold:
 // Throw if value is not finite
-template<typename T>
+template <typename T>
 T lookup_impl_1d(const std::vector<T> & domain, const std::vector<T> & range, const T value)
 {
   if (!std::isfinite(value)) {
@@ -85,7 +85,7 @@ T lookup_impl_1d(const std::vector<T> & domain, const std::vector<T> & range, co
 }
 
 // Check invariants for table lookup:
-template<typename T>
+template <typename T>
 void check_table_lookup_invariants(const std::vector<T> & domain, const std::vector<T> & range)
 {
   if (domain.size() != range.size()) {
@@ -115,7 +115,7 @@ void check_table_lookup_invariants(const std::vector<T> & domain, const std::vec
 /// \throw std::domain_error If domain is not sorted
 /// \throw std::domain_error If value is not finite (NAN or INF)
 /// \tparam T The type of the function, must be interpolatable
-template<typename T>
+template <typename T>
 T lookup_1d(const std::vector<T> & domain, const std::vector<T> & range, const T value)
 {
   check_table_lookup_invariants(domain, range);
@@ -126,7 +126,7 @@ T lookup_1d(const std::vector<T> & domain, const std::vector<T> & range, const T
 /// A class wrapping a 1D lookup table. Intended for more frequent lookups. Error checking is pushed
 /// into the constructor and not done in the lookup function call
 /// \tparam T The type of the function, must be interpolatable
-template<typename T>
+template <typename T>
 class LookupTable1D
 {
 public:
@@ -137,8 +137,7 @@ public:
   /// \throw std::domain_error If range is not the same size as domain
   /// \throw std::domain_error If domain is not sorted
   LookupTable1D(const std::vector<T> & domain, const std::vector<T> & range)
-  : m_domain{domain},
-    m_range{range}
+  : m_domain{domain}, m_range{range}
   {
     check_table_lookup_invariants(m_domain, m_range);
   }
@@ -150,8 +149,7 @@ public:
   /// \throw std::domain_error If range is not the same size as domain
   /// \throw std::domain_error If domain is not sorted
   LookupTable1D(std::vector<T> && domain, std::vector<T> && range)
-  : m_domain{domain},
-    m_range{range}
+  : m_domain{domain}, m_range{range}
   {
     check_table_lookup_invariants(m_domain, m_range);
   }
@@ -162,14 +160,11 @@ public:
   /// \param[in] value The point in the domain to query, x
   /// \return A linearly interpolated value y, corresponding to the query, x
   /// \throw std::domain_error If value is not finite
-  T lookup(const T value) const
-  {
-    return lookup_impl_1d(m_domain, m_range, value);
-  }
+  T lookup(const T value) const { return lookup_impl_1d(m_domain, m_range, value); }
   /// Get the domain table
-  const std::vector<T> & domain() const noexcept {return m_domain;}
+  const std::vector<T> & domain() const noexcept { return m_domain; }
   /// Get the range table
-  const std::vector<T> & range() const noexcept {return m_range;}
+  const std::vector<T> & range() const noexcept { return m_range; }
 
 private:
   std::vector<T> m_domain;
@@ -179,6 +174,5 @@ private:
 }  // namespace helper_functions
 }  // namespace common
 }  // namespace autoware
-
 
 #endif  // GEOMETRY__LOOKUP_TABLE_HPP_

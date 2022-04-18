@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <vector>
-
 #include "gtest/gtest.h"
 #include "trajectory_follower/pid.hpp"
 
-TEST(TestPID, calculate_pid_output) {
+#include <vector>
+
+TEST(TestPID, calculate_pid_output)
+{
   using ::autoware::motion::control::trajectory_follower::PIDController;
   std::vector<double> contributions;
   const double dt = 1.0;

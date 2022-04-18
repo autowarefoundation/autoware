@@ -19,9 +19,9 @@
 
 #ifndef GEOMETRY__BOUNDING_BOX__ROTATING_CALIPERS_HPP_
 #define GEOMETRY__BOUNDING_BOX__ROTATING_CALIPERS_HPP_
-#include <geometry/convex_hull.hpp>
-#include <geometry/common_2d.hpp>
 #include <geometry/bounding_box/bounding_box_common.hpp>
+#include <geometry/common_2d.hpp>
+#include <geometry/convex_hull.hpp>
 
 #include <algorithm>
 #include <cstring>
@@ -44,7 +44,7 @@ namespace details
 /// \param[inout] directions Array of directions of current bounding box (in ccw order)
 /// \tparam PointT Point type of the lists, must have float members x and y
 /// \return index of array to advance, e.g. the one with the smallest angle between edge and dir
-template<typename PointT>
+template <typename PointT>
 uint32_t update_angles(const Point4<PointT> & edges, Point4<PointT> & directions)
 {
   // find smallest angle to next
@@ -52,10 +52,8 @@ uint32_t update_angles(const Point4<PointT> & edges, Point4<PointT> & directions
   float32_t best_edge_dir_mag = 0.0F;
   uint32_t advance_idx = 0U;
   for (uint32_t idx = 0U; idx < edges.size(); ++idx) {
-    const float32_t edge_dir_mag =
-      std::max(
-      norm_2d(edges[idx]) * norm_2d(
-        directions[idx]), std::numeric_limits<float32_t>::epsilon());
+    const float32_t edge_dir_mag = std::max(
+      norm_2d(edges[idx]) * norm_2d(directions[idx]), std::numeric_limits<float32_t>::epsilon());
     const float32_t cos_th = dot_2d(edges[idx], directions[idx]) / edge_dir_mag;
     if (cos_th > best_cos_th) {
       best_cos_th = cos_th;
@@ -81,12 +79,8 @@ uint32_t update_angles(const Point4<PointT> & edges, Point4<PointT> & directions
 /// \param[in] end An iterator pointing to one past the last point in the point list
 /// \param[in] support Array of points that are most extreme in 4 directions for current OBB
 /// \param[out] edges An array to be filled with the polygon edges next from support points
-template<typename IT, typename PointT>
-void init_edges(
-  const IT begin,
-  const IT end,
-  const Point4<IT> & support,
-  Point4<PointT> & edges)
+template <typename IT, typename PointT>
+void init_edges(const IT begin, const IT end, const Point4<IT> & support, Point4<PointT> & edges)
 {
   for (uint32_t idx = 0U; idx < support.size(); ++idx) {
     auto tmp_it = support[idx];
@@ -104,7 +98,7 @@ void init_edges(
 /// \param[out] support Array that gets filled with pointers to points that are most extreme in
 ///                     each direction aligned with and orthogonal to the first polygon edge.
 ///                     Most extreme = max/min wrt u = P[1]-P[0] (in the dot/cross product sense)
-template<typename IT>
+template <typename IT>
 void init_bbox(const IT begin, const IT end, Point4<IT> & support)
 {
   // compute initial orientation using first two points
@@ -112,11 +106,9 @@ void init_bbox(const IT begin, const IT end, Point4<IT> & support)
   ++pt_it;
   const auto u = minus_2d(*pt_it, *begin);
   support[0U] = begin;
-  std::array<float32_t, 3U> metric{{
-    -std::numeric_limits<float32_t>::max(),
-    -std::numeric_limits<float32_t>::max(),
-    std::numeric_limits<float32_t>::max()
-  }};
+  std::array<float32_t, 3U> metric{
+    {-std::numeric_limits<float32_t>::max(), -std::numeric_limits<float32_t>::max(),
+     std::numeric_limits<float32_t>::max()}};
   // track u * p, fabsf(u x p), and -u * p
   for (pt_it = begin; pt_it != end; ++pt_it) {
     // check points against orientation for run_ptr
@@ -152,7 +144,7 @@ void init_bbox(const IT begin, const IT end, Point4<IT> & support)
 ///                 of a bounding box, assumed to be packed in a Point32 message.
 /// \throw std::domain_error if the list of points is too small to reasonable generate a bounding
 ///                          box
-template<typename IT, typename MetricF>
+template <typename IT, typename MetricF>
 BoundingBox rotating_calipers_impl(const IT begin, const IT end, const MetricF metric_fn)
 {
   using PointT = base_type<decltype(*begin)>;
@@ -232,13 +224,12 @@ BoundingBox rotating_calipers_impl(const IT begin, const IT end, const MetricF m
 /// \param[in] end An iterator to one past the last point on a convex hull
 /// \return A minimum area bounding box, value field is the area
 /// \tparam IT An iterator type dereferencable into a point type with float members x and y
-template<typename IT>
+template <typename IT>
 BoundingBox minimum_area_bounding_box(const IT begin, const IT end)
 {
-  const auto metric_fn = [](const decltype(BoundingBox::size) & pt) -> float32_t
-    {
-      return pt.x * pt.y;
-    };
+  const auto metric_fn = [](const decltype(BoundingBox::size) & pt) -> float32_t {
+    return pt.x * pt.y;
+  };
   return details::rotating_calipers_impl(begin, end, metric_fn);
 }
 
@@ -248,13 +239,12 @@ BoundingBox minimum_area_bounding_box(const IT begin, const IT end)
 /// \param[in] end An iterator to one past the last point on a convex hull
 /// \return A minimum perimeter bounding box, value field is half the perimeter
 /// \tparam IT An iterator type dereferencable into a point type with float members x and y
-template<typename IT>
+template <typename IT>
 BoundingBox minimum_perimeter_bounding_box(const IT begin, const IT end)
 {
-  const auto metric_fn = [](const decltype(BoundingBox::size) & pt) -> float32_t
-    {
-      return pt.x + pt.y;
-    };
+  const auto metric_fn = [](const decltype(BoundingBox::size) & pt) -> float32_t {
+    return pt.x + pt.y;
+  };
   return details::rotating_calipers_impl(begin, end, metric_fn);
 }
 
@@ -264,7 +254,7 @@ BoundingBox minimum_perimeter_bounding_box(const IT begin, const IT end)
 /// \param[inout] list A list of points to form a hull around, gets reordered
 /// \return A minimum area bounding box, value field is the area
 /// \tparam PointT Point type of the lists, must have float members x and y
-template<typename PointT>
+template <typename PointT>
 BoundingBox minimum_area_bounding_box(std::list<PointT> & list)
 {
   const auto last = convex_hull(list);
@@ -277,7 +267,7 @@ BoundingBox minimum_area_bounding_box(std::list<PointT> & list)
 /// \param[inout] list A list of points to form a hull around, gets reordered
 /// \return A minimum perimeter bounding box, value field is half the perimeter
 /// \tparam PointT Point type of the lists, must have float members x and y
-template<typename PointT>
+template <typename PointT>
 BoundingBox minimum_perimeter_bounding_box(std::list<PointT> & list)
 {
   const auto last = convex_hull(list);

@@ -35,7 +35,9 @@ namespace
 bool8_t isIncrease(const std::vector<float64_t> & x)
 {
   for (size_t i = 0; i < x.size() - 1; ++i) {
-    if (x.at(i) > x.at(i + 1)) {return false;}
+    if (x.at(i) > x.at(i + 1)) {
+      return false;
+    }
   }
   return true;
 }
@@ -45,19 +47,19 @@ bool8_t isValidInput(
   const std::vector<float64_t> & return_index)
 {
   if (base_index.empty() || base_value.empty() || return_index.empty()) {
-    std::cerr << "mpc bad index : some vector is empty. base_index: " << base_index.size() <<
-      ", base_value: " << base_value.size() << ", return_index: " << return_index.size() <<
-      std::endl;
+    std::cerr << "mpc bad index : some vector is empty. base_index: " << base_index.size()
+              << ", base_value: " << base_value.size() << ", return_index: " << return_index.size()
+              << std::endl;
     return false;
   }
   if (!isIncrease(base_index)) {
-    std::cerr << "mpc bad index : base_index is not monotonically increasing. base_index = [" <<
-      base_index.front() << ", " << base_index.back() << "]" << std::endl;
+    std::cerr << "mpc bad index : base_index is not monotonically increasing. base_index = ["
+              << base_index.front() << ", " << base_index.back() << "]" << std::endl;
     return false;
   }
   if (!isIncrease(return_index)) {
-    std::cerr << "mpc bad index : base_index is not monotonically increasing. return_index = [" <<
-      return_index.front() << ", " << return_index.back() << "]" << std::endl;
+    std::cerr << "mpc bad index : base_index is not monotonically increasing. return_index = ["
+              << return_index.front() << ", " << return_index.back() << "]" << std::endl;
     return false;
   }
   if (return_index.front() < base_index.front()) {
@@ -97,13 +99,15 @@ bool8_t linearInterpolate(
     }
     while (base_index.at(i) < idx) {
       ++i;
-      if (i <= 0 || base_size - 1 < i) {break;}
+      if (i <= 0 || base_size - 1 < i) {
+        break;
+      }
     }
 
     if (i <= 0 || base_size - 1 < i) {
-      std::cerr << "mpc LinearInterpolate : undesired condition. skip index. (i = " << i <<
-        ", base_size = " << base_size << "), idx = " << idx <<
-        ", base_index.at(i)  = " << base_index.at(i) << std::endl;
+      std::cerr << "mpc LinearInterpolate : undesired condition. skip index. (i = " << i
+                << ", base_size = " << base_size << "), idx = " << idx
+                << ", base_index.at(i)  = " << base_index.at(i) << std::endl;
       continue;
     }
 

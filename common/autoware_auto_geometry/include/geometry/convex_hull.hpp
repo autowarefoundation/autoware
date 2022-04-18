@@ -24,11 +24,11 @@
 #include <common/types.hpp>
 #include <geometry/common_2d.hpp>
 
-//lint -e537 NOLINT pclint vs cpplint
+// lint -e537 NOLINT pclint vs cpplint
 #include <algorithm>
-//lint -e537 NOLINT pclint vs cpplint
-#include <list>
+// lint -e537 NOLINT pclint vs cpplint
 #include <limits>
+#include <list>
 #include <utility>
 
 using autoware::common::types::float32_t;
@@ -49,14 +49,14 @@ namespace details
 ///                    (for splice)
 /// \tparam PointT The point type for the points list
 /// \tparam HullT the point type for the hull list
-template<typename PointT, typename HullT>
+template <typename PointT, typename HullT>
 void form_lower_hull(std::list<PointT> & points, std::list<HullT> & hull)
 {
   auto hull_it = hull.cbegin();
   auto point_it = points.cbegin();
   // This ensures that the points we splice to back to the end of list are not processed
   const auto iters = points.size();
-  for (auto idx = decltype(iters) {0}; idx < iters; ++idx) {
+  for (auto idx = decltype(iters){0}; idx < iters; ++idx) {
     // splice points from tail of hull to tail of list until point from head of list satisfies ccw
     bool8_t is_ccw = true;
     while ((hull.cbegin() != hull_it) && is_ccw) {
@@ -87,7 +87,7 @@ void form_lower_hull(std::list<PointT> & points, std::list<HullT> & hull)
 ///                    and to contain the lower hull (minus the left-most point)
 /// \tparam PointT The point type for the points list
 /// \tparam HullT the point type for the hull list
-template<typename PointT, typename HullT>
+template <typename PointT, typename HullT>
 void form_upper_hull(std::list<PointT> & points, std::list<HullT> & hull)
 {
   // TODO(c.ho) consider reverse iterators, not sure if they work with splice()
@@ -98,7 +98,7 @@ void form_upper_hull(std::list<PointT> & points, std::list<HullT> & hull)
   --point_it;
   // This ensures that the points we splice to back to the head of list are not processed
   const auto iters = points.size();
-  for (auto idx = decltype(iters) {0}; idx < iters; ++idx) {
+  for (auto idx = decltype(iters){0}; idx < iters; ++idx) {
     // splice points from tail of hull to head of list until ccw is satisfied with tail of list
     bool8_t is_ccw = true;
     while ((lower_hull_end != hull_it) && is_ccw) {
@@ -129,18 +129,16 @@ void form_upper_hull(std::list<PointT> & points, std::list<HullT> & hull)
 /// \param[inout] list A list of nodes that will be pruned down and reordered into a ccw convex hull
 /// \return An iterator pointing to one after the last point contained in the hull
 /// \tparam PointT Type of a point, must have x and y float members
-template<typename PointT>
+template <typename PointT>
 typename std::list<PointT>::const_iterator convex_hull_impl(std::list<PointT> & list)
 {
   // Functor that return whether a <= b in the lexical sense (a.x < b.x), sort by y if tied
-  const auto lexical_comparator = [](const PointT & a, const PointT & b) -> bool8_t
-    {
-      using point_adapter::x_;
-      using point_adapter::y_;
-      constexpr auto FEPS = std::numeric_limits<float32_t>::epsilon();
-      return (fabsf(x_(a) - x_(b)) > FEPS) ?
-             (x_(a) < x_(b)) : (y_(a) < y_(b));
-    };
+  const auto lexical_comparator = [](const PointT & a, const PointT & b) -> bool8_t {
+    using point_adapter::x_;
+    using point_adapter::y_;
+    constexpr auto FEPS = std::numeric_limits<float32_t>::epsilon();
+    return (fabsf(x_(a) - x_(b)) > FEPS) ? (x_(a) < x_(b)) : (y_(a) < y_(b));
+  };
   list.sort(lexical_comparator);
 
   // Temporary list to store points
@@ -181,7 +179,7 @@ typename std::list<PointT>::const_iterator convex_hull_impl(std::list<PointT> & 
 /// \param[inout] list A list of nodes that will be reordered into a ccw convex hull
 /// \return An iterator pointing to one after the last point contained in the hull
 /// \tparam PointT Type of a point, must have x and y float members
-template<typename PointT>
+template <typename PointT>
 typename std::list<PointT>::const_iterator convex_hull(std::list<PointT> & list)
 {
   return (list.size() <= 3U) ? list.end() : details::convex_hull_impl(list);

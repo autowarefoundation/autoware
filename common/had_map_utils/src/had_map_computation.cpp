@@ -12,14 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <CGAL/Boolean_set_operations_2.h>
+#include "had_map_utils/had_map_computation.hpp"
+
+#include "had_map_utils/had_map_visualization.hpp"
 
 #include <geometry_msgs/msg/polygon.hpp>
 
-#include <vector>
+#include <CGAL/Boolean_set_operations_2.h>
 
-#include "had_map_utils/had_map_computation.hpp"
-#include "had_map_utils/had_map_visualization.hpp"
+#include <vector>
 
 namespace autoware
 {
@@ -55,9 +56,8 @@ lanelet::Polygon3d coalesce_drivable_areas(
       } else {
         // This might happen if a primitive is on the route, but outside of the bounding box that we
         // query the map for. Not sure how to deal with this at this point though.
-        std::cerr << "Error: primitive ID " << map_segment.preferred_primitive_id <<
-          " not found, skipping" <<
-          std::endl;
+        std::cerr << "Error: primitive ID " << map_segment.preferred_primitive_id
+                  << " not found, skipping" << std::endl;
         continue;
       }
     }
@@ -67,18 +67,16 @@ lanelet::Polygon3d coalesce_drivable_areas(
       CGAL_Polygon to_join{};
       CGAL_Polygon_with_holes temporary_union;
       const auto first_point = current_area_polygon.points.begin();
-      for (auto area_point_it =
-        current_area_polygon.points.begin();
-        // Stop if we run out of points, or if we encounter the first point again
-        area_point_it < current_area_polygon.points.end() &&
-        !(first_point != area_point_it && first_point->x == area_point_it->x &&
-        first_point->y == area_point_it->y);
-        area_point_it++)
-      {
+      for (auto area_point_it = current_area_polygon.points.begin();
+           // Stop if we run out of points, or if we encounter the first point again
+           area_point_it < current_area_polygon.points.end() &&
+           !(first_point != area_point_it && first_point->x == area_point_it->x &&
+             first_point->y == area_point_it->y);
+           area_point_it++) {
         to_join.push_back(CGAL_Point(area_point_it->x, area_point_it->y));
       }
 
-      if (to_join.is_clockwise_oriented() ) {
+      if (to_join.is_clockwise_oriented()) {
         to_join.reverse_orientation();
       }
 
@@ -97,17 +95,15 @@ lanelet::Polygon3d coalesce_drivable_areas(
       // Otherwise, just set the current drivable area equal to the area to add to it, because
       // CGAL seems to do "union(empty, non-empty) = empty" for some reason.
       const auto first_point = current_area_polygon.points.begin();
-      for (auto area_point_it =
-        current_area_polygon.points.begin();
-        area_point_it < current_area_polygon.points.end() &&
-        // Stop if we run out of points, or if we encounter the first point again
-        !(first_point != area_point_it && first_point->x == area_point_it->x &&
-        first_point->y == area_point_it->y);
-        area_point_it++)
-      {
+      for (auto area_point_it = current_area_polygon.points.begin();
+           area_point_it < current_area_polygon.points.end() &&
+           // Stop if we run out of points, or if we encounter the first point again
+           !(first_point != area_point_it && first_point->x == area_point_it->x &&
+             first_point->y == area_point_it->y);
+           area_point_it++) {
         drivable_area.outer_boundary().push_back(CGAL_Point(area_point_it->x, area_point_it->y));
       }
-      if (drivable_area.outer_boundary().is_clockwise_oriented() ) {
+      if (drivable_area.outer_boundary().is_clockwise_oriented()) {
         drivable_area.outer_boundary().reverse_orientation();
       }
     }
@@ -118,17 +114,13 @@ lanelet::Polygon3d coalesce_drivable_areas(
   std::vector<lanelet::Point3d> lanelet_drivable_area_points{};
   lanelet_drivable_area_points.reserve(drivable_area.outer_boundary().size());
   for (auto p = drivable_area.outer_boundary().vertices_begin();
-    p != drivable_area.outer_boundary().vertices_end(); p++)
-  {
-    lanelet_drivable_area_points.emplace_back(
-      lanelet::Point3d(
-        lanelet::utils::getId(), CGAL::to_double(p->x()),
-        CGAL::to_double(p->y()), 0.0));
+       p != drivable_area.outer_boundary().vertices_end(); p++) {
+    lanelet_drivable_area_points.emplace_back(lanelet::Point3d(
+      lanelet::utils::getId(), CGAL::to_double(p->x()), CGAL::to_double(p->y()), 0.0));
   }
   lanelet::Polygon3d lanelet_drivable_area(lanelet::utils::getId(), lanelet_drivable_area_points);
   return lanelet_drivable_area;
 }
-
 
 }  // namespace had_map_utils
 }  // namespace common

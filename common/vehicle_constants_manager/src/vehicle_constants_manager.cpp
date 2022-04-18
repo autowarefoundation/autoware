@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "vehicle_constants_manager/vehicle_constants_manager.hpp"
+
 #include <rclcpp/rclcpp.hpp>
 
 #include <map>
@@ -29,23 +30,12 @@ namespace vehicle_constants_manager
 
 using float64_t = VehicleConstants::float64_t;
 
-
 VehicleConstants::VehicleConstants(
-  float64_t wheel_radius,
-  float64_t wheel_width,
-  float64_t wheel_base,
-  float64_t wheel_tread,
-  float64_t overhang_front,
-  float64_t overhang_rear,
-  float64_t overhang_left,
-  float64_t overhang_right,
-  float64_t vehicle_height,
-  float64_t cg_to_rear,
-  float64_t tire_cornering_stiffness_front,
-  float64_t tire_cornering_stiffness_rear,
-  float64_t mass_vehicle,
-  float64_t inertia_yaw_kg_m_2,
-  float64_t maximum_turning_angle_rad)
+  float64_t wheel_radius, float64_t wheel_width, float64_t wheel_base, float64_t wheel_tread,
+  float64_t overhang_front, float64_t overhang_rear, float64_t overhang_left,
+  float64_t overhang_right, float64_t vehicle_height, float64_t cg_to_rear,
+  float64_t tire_cornering_stiffness_front, float64_t tire_cornering_stiffness_rear,
+  float64_t mass_vehicle, float64_t inertia_yaw_kg_m_2, float64_t maximum_turning_angle_rad)
 : wheel_radius(wheel_radius),
   wheel_width(wheel_width),
   wheel_base(wheel_base),
@@ -79,12 +69,10 @@ VehicleConstants::VehicleConstants(
 
   // These values must be positive
   auto throw_if_negative = [](float64_t number, const std::string & name) {
-      if (number < 0.0) {
-        throw std::runtime_error(
-                name + " = " + std::to_string(number) +
-                " shouldn't be negative.");
-      }
-    };
+    if (number < 0.0) {
+      throw std::runtime_error(name + " = " + std::to_string(number) + " shouldn't be negative.");
+    }
+  };
   throw_if_negative(wheel_radius, "wheel_radius");
   throw_if_negative(wheel_width, "wheel_width");
   throw_if_negative(wheel_base, "wheel_base");
@@ -103,7 +91,7 @@ VehicleConstants::VehicleConstants(
 
   if (!(0.0 < maximum_turning_angle_rad && maximum_turning_angle_rad < (M_PI / 2.0))) {
     throw std::runtime_error(
-            "maximum_turning_angle_rad must be positive and cannot be greater than 0.5*PI.");
+      "maximum_turning_angle_rad must be positive and cannot be greater than 0.5*PI.");
   }
   minimum_turning_radius = wheel_base / tan(maximum_turning_angle_rad);
 }
@@ -111,32 +99,79 @@ VehicleConstants::VehicleConstants(
 std::string VehicleConstants::str_pretty() const
 {
   return std::string{
-    "wheel_radius: " + std::to_string(wheel_radius) + "\n"
-    "wheel_width: " + std::to_string(wheel_width) + "\n"
-    "wheel_base: " + std::to_string(wheel_base) + "\n"
-    "wheel_tread: " + std::to_string(wheel_tread) + "\n"
-    "overhang_front: " + std::to_string(overhang_front) + "\n"
-    "overhang_rear: " + std::to_string(overhang_rear) + "\n"
-    "overhang_left: " + std::to_string(overhang_left) + "\n"
-    "overhang_right: " + std::to_string(overhang_right) + "\n"
-    "vehicle_height: " + std::to_string(vehicle_height) + "\n"
-    "cg_to_rear: " + std::to_string(cg_to_rear) + "\n"
-    "tire_cornering_stiffness_front: " + std::to_string(tire_cornering_stiffness_front) + "\n"
-    "tire_cornering_stiffness_rear: " + std::to_string(tire_cornering_stiffness_rear) + "\n"
-    "mass_vehicle: " + std::to_string(mass_vehicle) + "\n"
-    "inertia_yaw_kg_m2: " + std::to_string(inertia_yaw_kg_m2) + "\n"
-    "maximum_turning_angle_rad: " + std::to_string(maximum_turning_angle_rad) + "\n"
-    "cg_to_front: " + std::to_string(cg_to_front) + "\n"
-    "vehicle_length: " + std::to_string(vehicle_length) + "\n"
-    "vehicle_width: " + std::to_string(vehicle_width) + "\n"
-    "offset_longitudinal_min: " + std::to_string(offset_longitudinal_min) + "\n"
-    "offset_longitudinal_max: " + std::to_string(offset_longitudinal_max) + "\n"
-    "offset_lateral_min: " + std::to_string(offset_lateral_min) + "\n"
-    "offset_lateral_max: " + std::to_string(offset_lateral_max) + "\n"
-    "offset_height_min: " + std::to_string(offset_height_min) + "\n"
-    "offset_height_max: " + std::to_string(offset_height_max) + "\n"
-    "minimum_turning_radius: " + std::to_string(minimum_turning_radius) + "\n"
-  };
+    "wheel_radius: " + std::to_string(wheel_radius) +
+    "\n"
+    "wheel_width: " +
+    std::to_string(wheel_width) +
+    "\n"
+    "wheel_base: " +
+    std::to_string(wheel_base) +
+    "\n"
+    "wheel_tread: " +
+    std::to_string(wheel_tread) +
+    "\n"
+    "overhang_front: " +
+    std::to_string(overhang_front) +
+    "\n"
+    "overhang_rear: " +
+    std::to_string(overhang_rear) +
+    "\n"
+    "overhang_left: " +
+    std::to_string(overhang_left) +
+    "\n"
+    "overhang_right: " +
+    std::to_string(overhang_right) +
+    "\n"
+    "vehicle_height: " +
+    std::to_string(vehicle_height) +
+    "\n"
+    "cg_to_rear: " +
+    std::to_string(cg_to_rear) +
+    "\n"
+    "tire_cornering_stiffness_front: " +
+    std::to_string(tire_cornering_stiffness_front) +
+    "\n"
+    "tire_cornering_stiffness_rear: " +
+    std::to_string(tire_cornering_stiffness_rear) +
+    "\n"
+    "mass_vehicle: " +
+    std::to_string(mass_vehicle) +
+    "\n"
+    "inertia_yaw_kg_m2: " +
+    std::to_string(inertia_yaw_kg_m2) +
+    "\n"
+    "maximum_turning_angle_rad: " +
+    std::to_string(maximum_turning_angle_rad) +
+    "\n"
+    "cg_to_front: " +
+    std::to_string(cg_to_front) +
+    "\n"
+    "vehicle_length: " +
+    std::to_string(vehicle_length) +
+    "\n"
+    "vehicle_width: " +
+    std::to_string(vehicle_width) +
+    "\n"
+    "offset_longitudinal_min: " +
+    std::to_string(offset_longitudinal_min) +
+    "\n"
+    "offset_longitudinal_max: " +
+    std::to_string(offset_longitudinal_max) +
+    "\n"
+    "offset_lateral_min: " +
+    std::to_string(offset_lateral_min) +
+    "\n"
+    "offset_lateral_max: " +
+    std::to_string(offset_lateral_max) +
+    "\n"
+    "offset_height_min: " +
+    std::to_string(offset_height_min) +
+    "\n"
+    "offset_height_max: " +
+    std::to_string(offset_height_max) +
+    "\n"
+    "minimum_turning_radius: " +
+    std::to_string(minimum_turning_radius) + "\n"};
 }
 
 VehicleConstants declare_and_get_vehicle_constants(rclcpp::Node & node)
@@ -158,8 +193,7 @@ VehicleConstants declare_and_get_vehicle_constants(rclcpp::Node & node)
     std::make_pair(ns + "tire_cornering_stiffness_rear", -1.0),
     std::make_pair(ns + "mass_vehicle", -1.0),
     std::make_pair(ns + "inertia_yaw_kg_m2", -1.0),
-    std::make_pair(ns + "maximum_turning_angle_rad", -1.0)
-  };
+    std::make_pair(ns + "maximum_turning_angle_rad", -1.0)};
 
   // Try to get parameter values from parameter_overrides set either from .yaml
   // or with args.
@@ -170,26 +204,18 @@ VehicleConstants declare_and_get_vehicle_constants(rclcpp::Node & node)
       continue;
     }
 
-    pair.second = node.declare_parameter(pair.first, rclcpp::ParameterType::PARAMETER_DOUBLE).get<float64_t>();
+    pair.second =
+      node.declare_parameter(pair.first, rclcpp::ParameterType::PARAMETER_DOUBLE).get<float64_t>();
   }
 
   return VehicleConstants(
-    params.at(ns + "wheel_radius"),
-    params.at(ns + "wheel_width"),
-    params.at(ns + "wheel_base"),
-    params.at(ns + "wheel_tread"),
-    params.at(ns + "overhang_front"),
-    params.at(ns + "overhang_rear"),
-    params.at(ns + "overhang_left"),
-    params.at(ns + "overhang_right"),
-    params.at(ns + "vehicle_height"),
-    params.at(ns + "cg_to_rear"),
-    params.at(ns + "tire_cornering_stiffness_front"),
-    params.at(ns + "tire_cornering_stiffness_rear"),
-    params.at(ns + "mass_vehicle"),
-    params.at(ns + "inertia_yaw_kg_m2"),
-    params.at(ns + "maximum_turning_angle_rad")
-  );
+    params.at(ns + "wheel_radius"), params.at(ns + "wheel_width"), params.at(ns + "wheel_base"),
+    params.at(ns + "wheel_tread"), params.at(ns + "overhang_front"),
+    params.at(ns + "overhang_rear"), params.at(ns + "overhang_left"),
+    params.at(ns + "overhang_right"), params.at(ns + "vehicle_height"),
+    params.at(ns + "cg_to_rear"), params.at(ns + "tire_cornering_stiffness_front"),
+    params.at(ns + "tire_cornering_stiffness_rear"), params.at(ns + "mass_vehicle"),
+    params.at(ns + "inertia_yaw_kg_m2"), params.at(ns + "maximum_turning_angle_rad"));
 }
 }  // namespace vehicle_constants_manager
 }  // namespace common

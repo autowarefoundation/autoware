@@ -23,12 +23,13 @@
 #include <common/types.hpp>
 #include <geometry/spatial_hash_config.hpp>
 #include <geometry/visibility_control.hpp>
-#include <vector>
+
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
-using autoware::common::types::float32_t;
 using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
 
 namespace autoware
 {
@@ -47,11 +48,11 @@ namespace spatial_hash
 /// This implementation can support both 2D and 3D queries
 /// (though only one type per data structure), and can support queries of varying radius. This data
 /// structure cannot do near neighbor lookups for euclidean distance in arbitrary dimensions.
-template<typename PointT, typename ConfigT>
+template <typename PointT, typename ConfigT>
 class GEOMETRY_PUBLIC SpatialHashBase
 {
   using Index3 = details::Index3;
-  //lint -e{9131} NOLINT There's no other way to make this work in a static assert
+  // lint -e{9131} NOLINT There's no other way to make this work in a static assert
   static_assert(
     std::is_same<ConfigT, Config2d>::value || std::is_same<ConfigT, Config3d>::value,
     "SpatialHash only works with Config2d or Config3d");
@@ -62,47 +63,30 @@ public:
   /// \brief Wrapper around an iterator and a distance (from some query point)
   class Output
   {
-public:
+  public:
     /// \brief Constructor
     /// \param[in] iterator An iterator pointing to some point
     /// \param[in] distance The euclidean distance (2d or 3d) to a reference point
-    Output(const IT iterator, const float32_t distance)
-    : m_iterator(iterator),
-      m_distance(distance)
+    Output(const IT iterator, const float32_t distance) : m_iterator(iterator), m_distance(distance)
     {
     }
     /// \brief Get stored point
     /// \return A const reference to the stored point
-    const PointT & get_point() const
-    {
-      return m_iterator->second;
-    }
+    const PointT & get_point() const { return m_iterator->second; }
     /// \brief Get underlying iterator
     /// \return A copy of the underlying iterator
-    IT get_iterator() const
-    {
-      return m_iterator;
-    }
+    IT get_iterator() const { return m_iterator; }
     /// \brief Convert to underlying point
     /// \return A reference to the underlying point
-    operator const PointT &() const
-    {
-      return get_point();
-    }
+    operator const PointT &() const { return get_point(); }
     /// \brief Convert to underlying iterator
     /// \return A copy of the iterator
-    operator IT() const
-    {
-      return get_iterator();
-    }
+    operator IT() const { return get_iterator(); }
     /// \brief Get distance to reference point
     /// \return The distance
-    float32_t get_distance() const
-    {
-      return m_distance;
-    }
+    float32_t get_distance() const { return m_distance; }
 
-private:
+  private:
     IT m_iterator;
     float32_t m_distance;
   };  // class Output
@@ -114,7 +98,7 @@ private:
   : m_config{cfg},
     m_hash(),
     m_neighbors{},  // TODO(c.ho) reserve, but there's no default constructor for output
-    m_bins_hit{},  // zero initialization (and below)
+    m_bins_hit{},   // zero initialization (and below)
     m_neighbors_found{}
   {
   }
@@ -137,7 +121,7 @@ private:
   /// \tparam IteratorT The iterator type
   /// \throw std::length_error If the range of points to insert exceeds the data structure's
   ///                          capacity
-  template<typename IteratorT>
+  template <typename IteratorT>
   void insert(IteratorT begin, IteratorT end)
   {
     // This check is here for strong exception safety
@@ -166,68 +150,38 @@ private:
   }
 
   /// \brief Reset the state of the data structure
-  void clear()
-  {
-    m_hash.clear();
-  }
+  void clear() { m_hash.clear(); }
   /// \brief Get current number of element stored in this data structure
   /// \return Number of stored elements
-  Index size() const
-  {
-    return m_hash.size();
-  }
+  Index size() const { return m_hash.size(); }
   /// \brief Get the maximum capacity of the data structure
   /// \return The capacity of the data structure
-  Index capacity() const
-  {
-    return m_config.get_capacity();
-  }
+  Index capacity() const { return m_config.get_capacity(); }
   /// \brief Whether the hash is empty
   /// \return True if data structure is empty
-  bool8_t empty() const
-  {
-    return m_hash.empty();
-  }
+  bool8_t empty() const { return m_hash.empty(); }
   /// \brief Get iterator to beginning of data structure
   /// \return Iterator
-  IT begin() const
-  {
-    return m_hash.begin();
-  }
+  IT begin() const { return m_hash.begin(); }
   /// \brief Get iterator to end of data structure
   /// \return Iterator
-  IT end() const
-  {
-    return m_hash.end();
-  }
+  IT end() const { return m_hash.end(); }
   /// \brief Get iterator to beginning of data structure
   /// \return Iterator
-  IT cbegin() const
-  {
-    return begin();
-  }
+  IT cbegin() const { return begin(); }
   /// \brief Get iterator to end of data structure
   /// \return Iterator
-  IT cend() const
-  {
-    return end();
-  }
+  IT cend() const { return end(); }
 
   /// \brief Get the number of bins touched during the lifetime of this object, for debugging and
   ///        size tuning
   /// \return The total number of bins touched during near() queries
-  Index bins_hit() const
-  {
-    return m_bins_hit;
-  }
+  Index bins_hit() const { return m_bins_hit; }
 
   /// \brief Get number of near neighbors found during the lifetime of this object, for debugging
   ///        and size tuning
   /// \return The total number of neighbors found during near() queries
-  Index neighbors_found() const
-  {
-    return m_neighbors_found;
-  }
+  Index neighbors_found() const { return m_neighbors_found; }
 
 protected:
   /// \brief Finds all points within a fixed radius of a reference point
@@ -239,10 +193,7 @@ protected:
   /// \return A const reference to a vector containing iterators pointing to
   ///         all points within the radius, and the actual distance to the reference point
   const OutputVector & near_impl(
-    const float32_t x,
-    const float32_t y,
-    const float32_t z,
-    const float32_t radius)
+    const float32_t x, const float32_t y, const float32_t z, const float32_t radius)
   {
     // reset output
     m_neighbors.clear();
@@ -298,19 +249,18 @@ private:
 /// apex_app::common::geometry::spatial_hash::SpatialHashBase to provide different function
 /// signatures on 2D and 3D configurations
 /// \tparam PointT The point type stored in this data structure. Must have float members x, y and z
-template<typename PointT, typename ConfigT>
+template <typename PointT, typename ConfigT>
 class GEOMETRY_PUBLIC SpatialHash;
 
 /// \brief Explicit specialization of SpatialHash for 2D configuration
 /// \tparam PointT The point type stored in this data structure.
-template<typename PointT>
-class GEOMETRY_PUBLIC SpatialHash<PointT, Config2d>: public SpatialHashBase<PointT, Config2d>
+template <typename PointT>
+class GEOMETRY_PUBLIC SpatialHash<PointT, Config2d> : public SpatialHashBase<PointT, Config2d>
 {
 public:
   using OutputVector = typename SpatialHashBase<PointT, Config2d>::OutputVector;
 
-  explicit SpatialHash(const Config2d & cfg)
-  : SpatialHashBase<PointT, Config2d>(cfg) {}
+  explicit SpatialHash(const Config2d & cfg) : SpatialHashBase<PointT, Config2d>(cfg) {}
 
   /// \brief Finds all points within a fixed radius of a reference point
   /// \param[in] x The x component of the reference point
@@ -318,10 +268,7 @@ public:
   /// \param[in] radius The radius within which to find all near points
   /// \return A const reference to a vector containing iterators pointing to
   ///         all points within the radius, and the actual distance to the reference point
-  const OutputVector & near(
-    const float32_t x,
-    const float32_t y,
-    const float32_t radius)
+  const OutputVector & near(const float32_t x, const float32_t y, const float32_t radius)
   {
     return this->near_impl(x, y, 0.0F, radius);
   }
@@ -339,14 +286,13 @@ public:
 
 /// \brief Explicit specialization of SpatialHash for 3D configuration
 /// \tparam PointT The point type stored in this data structure. Must have float members x, y and z
-template<typename PointT>
-class GEOMETRY_PUBLIC SpatialHash<PointT, Config3d>: public SpatialHashBase<PointT, Config3d>
+template <typename PointT>
+class GEOMETRY_PUBLIC SpatialHash<PointT, Config3d> : public SpatialHashBase<PointT, Config3d>
 {
 public:
   using OutputVector = typename SpatialHashBase<PointT, Config3d>::OutputVector;
 
-  explicit SpatialHash(const Config3d & cfg)
-  : SpatialHashBase<PointT, Config3d>(cfg) {}
+  explicit SpatialHash(const Config3d & cfg) : SpatialHashBase<PointT, Config3d>(cfg) {}
 
   /// \brief Finds all points within a fixed radius of a reference point
   /// \param[in] x The x component of the reference point
@@ -357,10 +303,7 @@ public:
   /// \return A const reference to a vector containing iterators pointing to
   ///         all points within the radius, and the actual distance to the reference point
   const OutputVector & near(
-    const float32_t x,
-    const float32_t y,
-    const float32_t z,
-    const float32_t radius)
+    const float32_t x, const float32_t y, const float32_t z, const float32_t radius)
   {
     return this->near_impl(x, y, z, radius);
   }
@@ -372,15 +315,13 @@ public:
   ///         all points within the radius, and the actual distance to the reference point
   const OutputVector & near(const PointT & pt, const float32_t radius)
   {
-    return near(
-      point_adapter::x_(pt), point_adapter::y_(pt), point_adapter::z_(pt),
-      radius);
+    return near(point_adapter::x_(pt), point_adapter::y_(pt), point_adapter::z_(pt), radius);
   }
 };
 
-template<typename T>
+template <typename T>
 using SpatialHash2d = SpatialHash<T, Config2d>;
-template<typename T>
+template <typename T>
 using SpatialHash3d = SpatialHash<T, Config3d>;
 }  // namespace spatial_hash
 }  // namespace geometry

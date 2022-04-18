@@ -14,12 +14,14 @@
 #ifndef COMMON__COLOR_ALPHA_PROPERTY_HPP_
 #define COMMON__COLOR_ALPHA_PROPERTY_HPP_
 
-#include <memory>
 #include <rviz_common/display.hpp>
 #include <rviz_common/properties/color_property.hpp>
 #include <rviz_common/properties/float_property.hpp>
-#include <std_msgs/msg/color_rgba.hpp>
 #include <visibility_control.hpp>
+
+#include <std_msgs/msg/color_rgba.hpp>
+
+#include <memory>
 
 namespace autoware
 {

@@ -18,9 +18,9 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
-#include <gtest/gtest.h>
-
 #include "helper_functions/bool_comparisons.hpp"
+
+#include <gtest/gtest.h>
 
 // cppcheck does not like gtest macros inside of namespaces:
 // https://sourceforge.net/p/cppcheck/discussion/general/thread/e68df47b/
@@ -29,7 +29,8 @@ namespace comp = autoware::common::helper_functions::comparisons;
 
 //------------------------------------------------------------------------------
 
-TEST(HelperFunctionsComparisons, ExclusiveOr) {
+TEST(HelperFunctionsComparisons, ExclusiveOr)
+{
   EXPECT_TRUE(comp::exclusive_or(0, 1));
   EXPECT_TRUE(comp::exclusive_or(1, 0));
   EXPECT_FALSE(comp::exclusive_or(0, 0));

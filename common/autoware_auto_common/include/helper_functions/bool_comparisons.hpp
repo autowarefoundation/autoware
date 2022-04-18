@@ -36,7 +36,7 @@ namespace comparisons
  * @brief Convenience method for performing logical exclusive or ops.
  * @return True iff exactly one of 'a' and 'b' is true.
  */
-template<typename T>
+template <typename T>
 types::bool8_t exclusive_or(const T & a, const T & b)
 {
   return static_cast<types::bool8_t>(a) != static_cast<types::bool8_t>(b);

@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 #include <apex_test_tools/apex_test_tools.hpp>
-
 #include <motion_common/motion_common.hpp>
 #include <motion_testing/motion_testing.hpp>
 #include <time_utils/time_utils.hpp>
@@ -21,13 +20,13 @@
 #include <limits>
 
 using motion::motion_common::Command;
+using motion::motion_common::from_angle;
 using motion::motion_common::Point;
 using motion::motion_common::State;
-using motion::motion_common::Trajectory;
-using motion::motion_common::from_angle;
 using motion::motion_common::to_angle;
-using motion::motion_testing::make_state;
+using motion::motion_common::Trajectory;
 using motion::motion_testing::constant_velocity_trajectory;
+using motion::motion_testing::make_state;
 
 using time_utils::from_message;
 
@@ -35,24 +34,22 @@ using std::chrono::milliseconds;
 
 TEST(Interpolation, Clamp)
 {
-  const auto fn_floating = [](auto val, auto min, auto max, auto res, auto tol)
-    {
-      EXPECT_LT(std::fabs(motion::motion_common::clamp(val, min, max) - res), tol) <<
-        val << ", " << min << ", " << max << ", " << res << ", " << tol;
-    };
-  const auto fn_suite = [ = ](auto min, auto max, auto tol)
-    {
-      const auto med = (min + max) / decltype(min) {2.0};
-      fn_floating(med, min, max, med, tol);
-      fn_floating(max, min, max, max, tol);
-      fn_floating(min, min, max, min, tol);
-      constexpr auto eps = std::numeric_limits<decltype(tol)>::epsilon();
-      fn_floating(min - eps, min, max, min, tol);
-      fn_floating(max + eps, min, max, max, tol);
-      constexpr auto lim = std::numeric_limits<decltype(tol)>::max();
-      fn_floating(min - lim, min, max, min, tol);
-      fn_floating(max + lim, min, max, max, tol);
-    };
+  const auto fn_floating = [](auto val, auto min, auto max, auto res, auto tol) {
+    EXPECT_LT(std::fabs(motion::motion_common::clamp(val, min, max) - res), tol)
+      << val << ", " << min << ", " << max << ", " << res << ", " << tol;
+  };
+  const auto fn_suite = [=](auto min, auto max, auto tol) {
+    const auto med = (min + max) / decltype(min){2.0};
+    fn_floating(med, min, max, med, tol);
+    fn_floating(max, min, max, max, tol);
+    fn_floating(min, min, max, min, tol);
+    constexpr auto eps = std::numeric_limits<decltype(tol)>::epsilon();
+    fn_floating(min - eps, min, max, min, tol);
+    fn_floating(max + eps, min, max, max, tol);
+    constexpr auto lim = std::numeric_limits<decltype(tol)>::max();
+    fn_floating(min - lim, min, max, min, tol);
+    fn_floating(max + lim, min, max, max, tol);
+  };
   apex_test_tools::memory_test::start_paused();
   // Just have one of these in a compilation unit to make sure everything is hunky-dory
 #ifndef __aarch64__
@@ -75,11 +72,10 @@ TEST(Interpolation, Clamp)
 
 TEST(Interpolation, Interpolation)
 {
-  const auto fn_floating = [](auto a, auto b, auto t, auto res, auto tol)
-    {
-      EXPECT_LT(std::fabs(motion::motion_common::interpolate(a, b, t) - res), tol) <<
-        a << ", " << b << ", " << t << ", " << res << ", " << tol;
-    };
+  const auto fn_floating = [](auto a, auto b, auto t, auto res, auto tol) {
+    EXPECT_LT(std::fabs(motion::motion_common::interpolate(a, b, t) - res), tol)
+      << a << ", " << b << ", " << t << ", " << res << ", " << tol;
+  };
   constexpr auto TOL = 1.0E-5F;
   constexpr auto lim = std::numeric_limits<decltype(TOL)>::max();
   // Base case
@@ -106,42 +102,37 @@ TEST(Interpolation, Slerp2d)
 {
   using motion::motion_common::Orientation;
   using motion::motion_common::Real;
-  const auto angle_distance = [](Real a, Real b) -> Real
-    {
-      // https://stackoverflow.com/questions/1878907/the-smallest-difference-between-2-angles?rq=1
-      const auto d = a - b;
-      return std::atan2(std::sin(d), std::cos(d));
-    };
+  const auto angle_distance = [](Real a, Real b) -> Real {
+    // https://stackoverflow.com/questions/1878907/the-smallest-difference-between-2-angles?rq=1
+    const auto d = a - b;
+    return std::atan2(std::sin(d), std::cos(d));
+  };
   // Plain check
-  const auto test_case = [ = ](Orientation a, Orientation b, Real t, Orientation res, Real tol)
-    {
-      using motion::motion_common::slerp;
-      const auto ret = slerp(a, b, t);
-      EXPECT_LT(
-        std::fabs(to_angle(ret) - to_angle(res)),
-        tol) << to_angle(ret) << ", " << to_angle(res);
-    };
+  const auto test_case = [=](Orientation a, Orientation b, Real t, Orientation res, Real tol) {
+    using motion::motion_common::slerp;
+    const auto ret = slerp(a, b, t);
+    EXPECT_LT(std::fabs(to_angle(ret) - to_angle(res)), tol)
+      << to_angle(ret) << ", " << to_angle(res);
+  };
   // Check using alternate computation path
-  const auto test_case_dual_path = [ = ](Orientation a, Orientation b, Real t, double tol)
-    {
-      // Compute result using angles
-      const auto th_a = to_angle(a);
-      const auto th_b = to_angle(b);
-      const auto ab = angle_distance(th_a, th_b);
-      const auto t_ = motion::motion_common::clamp(t, 0.0F, 1.0F);
-      const auto th_t = th_a + (t_ * ab);
-      const auto res_th = from_angle(th_t);
-      using motion::motion_common::slerp;
-      test_case(a, b, t, res_th, tol);
-      if (HasFailure()) {
-        const auto ret = slerp(a, b, t);
-        std::cout << "Angles: " << th_a << ", " << th_b << "; " << th_t << ", " << to_angle(ret) <<
-          "\n";
-      }
-    };
+  const auto test_case_dual_path = [=](Orientation a, Orientation b, Real t, double tol) {
+    // Compute result using angles
+    const auto th_a = to_angle(a);
+    const auto th_b = to_angle(b);
+    const auto ab = angle_distance(th_a, th_b);
+    const auto t_ = motion::motion_common::clamp(t, 0.0F, 1.0F);
+    const auto th_t = th_a + (t_ * ab);
+    const auto res_th = from_angle(th_t);
+    using motion::motion_common::slerp;
+    test_case(a, b, t, res_th, tol);
+    if (HasFailure()) {
+      const auto ret = slerp(a, b, t);
+      std::cout << "Angles: " << th_a << ", " << th_b << "; " << th_t << ", " << to_angle(ret)
+                << "\n";
+    }
+  };
   const auto test_suite =
-    [ = ](Orientation a, Orientation b, Real tol, Real tol2, bool b_snap = false)
-    {
+    [=](Orientation a, Orientation b, Real tol, Real tol2, bool b_snap = false) {
       constexpr auto lim = std::numeric_limits<Real>::max();
       // If you do something crazy, make b less crazy wrt a
       if (!b_snap) {
@@ -181,12 +172,12 @@ TEST(Interpolation, Slerp2d)
 TEST(Interpolation, AngleArithmetic)
 {
   const auto test_fn = [](auto a, auto b, auto res, auto tol) {
-      const auto qa = from_angle(a);
-      const auto qb = from_angle(b);
-      const auto dq = qa - qb;
-      const auto dth = to_angle(dq);
-      EXPECT_LT(std::fabs(dth - res), tol) << a << ", " << b << ", " << res << ", " << dth;
-    };
+    const auto qa = from_angle(a);
+    const auto qb = from_angle(b);
+    const auto dq = qa - qb;
+    const auto dth = to_angle(dq);
+    EXPECT_LT(std::fabs(dth - res), tol) << a << ", " << b << ", " << res << ", " << dth;
+  };
   const auto TOL = 1.0E-3F;
   apex_test_tools::memory_test::start();
   test_fn(0.0F, 1.0F, -1.0F, TOL);
@@ -206,8 +197,8 @@ void generic_checks(const Point & s, const Point & p, std::chrono::nanoseconds d
   EXPECT_LT(std::fabs(s.lateral_velocity_mps - p.lateral_velocity_mps), TOL);
   EXPECT_LT(std::fabs(s.front_wheel_angle_rad - p.front_wheel_angle_rad), TOL);
   EXPECT_LT(std::fabs(s.rear_wheel_angle_rad - p.rear_wheel_angle_rad), TOL);
-  EXPECT_TRUE((dt < milliseconds(1)) && (dt > milliseconds(-1))) <<
-    std::chrono::duration_cast<milliseconds>(dt).count();
+  EXPECT_TRUE((dt < milliseconds(1)) && (dt > milliseconds(-1)))
+    << std::chrono::duration_cast<milliseconds>(dt).count();
 }
 TEST(Interpolation, TrajectorySubsample)
 {

@@ -15,10 +15,10 @@
 #ifndef TRAJECTORY_FOLLOWER__PID_HPP_
 #define TRAJECTORY_FOLLOWER__PID_HPP_
 
-#include <vector>
-
 #include "common/types.hpp"
 #include "trajectory_follower/visibility_control.hpp"
+
+#include <vector>
 
 namespace autoware
 {
@@ -28,8 +28,8 @@ namespace control
 {
 namespace trajectory_follower
 {
-using autoware::common::types::float64_t;
 using autoware::common::types::bool8_t;
+using autoware::common::types::float64_t;
 /// @brief implementation of a PID controller
 class TRAJECTORY_FOLLOWER_PUBLIC PIDController
 {
@@ -68,9 +68,8 @@ public:
    */
   void setLimits(
     const float64_t max_ret, const float64_t min_ret, const float64_t max_ret_p,
-    const float64_t min_ret_p,
-    const float64_t max_ret_i, const float64_t min_ret_i, const float64_t max_ret_d,
-    const float64_t min_ret_d);
+    const float64_t min_ret_p, const float64_t max_ret_i, const float64_t min_ret_i,
+    const float64_t max_ret_d, const float64_t min_ret_d);
   /**
    * @brief reset this PID to its initial state
    */

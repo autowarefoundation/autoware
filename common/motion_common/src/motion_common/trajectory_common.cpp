@@ -14,9 +14,9 @@
 
 #include "motion_common/trajectory_common.hpp"
 
-#include <limits>
-
 #include "motion_common/motion_common.hpp"
+
+#include <limits>
 
 namespace autoware
 {
@@ -75,8 +75,7 @@ size_t findNearestIndex(const Points & points, const geometry_msgs::msg::Point &
 }
 
 std::experimental::optional<size_t> findNearestIndex(
-  const Points & points, const geometry_msgs::msg::Pose & pose,
-  const float64_t max_dist,
+  const Points & points, const geometry_msgs::msg::Pose & pose, const float64_t max_dist,
   const float64_t max_yaw)
 {
   validateNonEmpty(points);
@@ -107,8 +106,8 @@ std::experimental::optional<size_t> findNearestIndex(
     min_idx = i;
     is_nearest_found = true;
   }
-  return is_nearest_found ? std::experimental::optional<size_t>(min_idx) : std::experimental::
-         nullopt;
+  return is_nearest_found ? std::experimental::optional<size_t>(min_idx)
+                          : std::experimental::nullopt;
 }
 
 float64_t calcLongitudinalOffsetToSegment(
@@ -124,8 +123,9 @@ float64_t calcLongitudinalOffsetToSegment(
   const auto y_back = static_cast<float64_t>(p_back.pose.position.y);
 
   const Vector3f segment_vec{x_back - x_front, y_back - y_front, 0.0};
-  const Vector3f target_vec{static_cast<float64_t>(p_target.x) - x_front,
-    static_cast<float64_t>(p_target.y) - y_front, 0.0};
+  const Vector3f target_vec{
+    static_cast<float64_t>(p_target.x) - x_front, static_cast<float64_t>(p_target.y) - y_front,
+    0.0};
 
   if (segment_vec.norm() == 0.0) {
     throw std::runtime_error("Same points are given.");

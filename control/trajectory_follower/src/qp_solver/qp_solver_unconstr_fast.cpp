@@ -28,7 +28,9 @@ bool8_t QPSolverEigenLeastSquareLLT::solve(
   const Eigen::VectorXd & /*lb*/, const Eigen::VectorXd & /*ub*/, const Eigen::VectorXd & /*lb_a*/,
   const Eigen::VectorXd & /*ub_a*/, Eigen::VectorXd & u)
 {
-  if (std::fabs(h_mat.determinant()) < 1.0E-9) {return false;}
+  if (std::fabs(h_mat.determinant()) < 1.0E-9) {
+    return false;
+  }
 
   u = -h_mat.llt().solve(f_vec);
 

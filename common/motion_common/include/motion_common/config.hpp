@@ -14,27 +14,27 @@
 #ifndef MOTION_COMMON__CONFIG_HPP_
 #define MOTION_COMMON__CONFIG_HPP_
 
-#include <motion_common/visibility_control.hpp>
 #include <motion_common/motion_common.hpp>
+#include <motion_common/visibility_control.hpp>
 
 #define MOTION_COMMON_COPY_MOVE_ASSIGNABLE(Class) \
-  Class(const Class &) = default; \
-  Class(Class &&) = default; \
-  Class & operator=(const Class &) = default; \
-  Class & operator=(Class &&) = default; \
+  Class(const Class &) = default;                 \
+  Class(Class &&) = default;                      \
+  Class & operator=(const Class &) = default;     \
+  Class & operator=(Class &&) = default;          \
   ~Class() = default;
 
 namespace motion
 {
 namespace motion_common
 {
-using motion_common::Real;
 using motion_common::Command;
-using motion_common::State;
-using motion_common::Trajectory;
-using motion_common::Point;
 using motion_common::Heading;
 using motion_common::Index;
+using motion_common::Point;
+using motion_common::Real;
+using motion_common::State;
+using motion_common::Trajectory;
 
 /// Extreme values for state/control variables
 class MOTION_COMMON_PUBLIC LimitsConfig
@@ -43,25 +43,21 @@ public:
   /// \brief Class representing min and max values for a variable
   class Extremum
   {
-public:
+  public:
     Extremum(Real min, Real max);
     MOTION_COMMON_COPY_MOVE_ASSIGNABLE(Extremum)
 
     Real min() const noexcept;
     Real max() const noexcept;
 
-private:
+  private:
     Real m_min;
     Real m_max;
   };  // class Extremum
 
   LimitsConfig(
-    Extremum longitudinal_velocity_mps,
-    Extremum lateral_velocity_mps,
-    Extremum acceleration_mps2,
-    Extremum yaw_rate_rps,
-    Extremum jerk_mps3,
-    Extremum steer_angle_rad,
+    Extremum longitudinal_velocity_mps, Extremum lateral_velocity_mps, Extremum acceleration_mps2,
+    Extremum yaw_rate_rps, Extremum jerk_mps3, Extremum steer_angle_rad,
     Extremum steer_angle_rate_rps);
   MOTION_COMMON_COPY_MOVE_ASSIGNABLE(LimitsConfig)
 
@@ -88,15 +84,9 @@ class MOTION_COMMON_PUBLIC VehicleConfig
 {
 public:
   VehicleConfig(
-    Real length_cg_front_axel_m,
-    Real length_cg_rear_axel_m,
-    Real front_cornering_stiffness_N,
-    Real rear_cornering_stiffness_N,
-    Real mass_kg,
-    Real inertia_kgm2,
-    Real width_m,
-    Real front_overhang_m,
-    Real rear_overhang_m);
+    Real length_cg_front_axel_m, Real length_cg_rear_axel_m, Real front_cornering_stiffness_N,
+    Real rear_cornering_stiffness_N, Real mass_kg, Real inertia_kgm2, Real width_m,
+    Real front_overhang_m, Real rear_overhang_m);
   MOTION_COMMON_COPY_MOVE_ASSIGNABLE(VehicleConfig)
 
   Real length_cg_front_axel() const noexcept;
@@ -127,15 +117,8 @@ class MOTION_COMMON_PUBLIC StateWeight
 {
 public:
   StateWeight(
-    Real pose,
-    Real heading,
-    Real longitudinal_velocity,
-    Real lateral_velocity,
-    Real yaw_rate,
-    Real acceleration,
-    Real jerk,
-    Real steer_angle,
-    Real steer_angle_rate);
+    Real pose, Real heading, Real longitudinal_velocity, Real lateral_velocity, Real yaw_rate,
+    Real acceleration, Real jerk, Real steer_angle, Real steer_angle_rate);
   MOTION_COMMON_COPY_MOVE_ASSIGNABLE(StateWeight)
 
   Real pose() const noexcept;
@@ -165,9 +148,7 @@ private:
 class MOTION_COMMON_PUBLIC OptimizationConfig
 {
 public:
-  OptimizationConfig(
-    StateWeight nominal_weights,
-    StateWeight terminal_weights);
+  OptimizationConfig(StateWeight nominal_weights, StateWeight terminal_weights);
   MOTION_COMMON_COPY_MOVE_ASSIGNABLE(OptimizationConfig)
 
   StateWeight nominal() const noexcept;

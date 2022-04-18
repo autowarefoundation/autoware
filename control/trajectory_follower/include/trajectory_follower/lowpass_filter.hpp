@@ -15,13 +15,13 @@
 #ifndef TRAJECTORY_FOLLOWER__LOWPASS_FILTER_HPP_
 #define TRAJECTORY_FOLLOWER__LOWPASS_FILTER_HPP_
 
+#include "common/types.hpp"
+#include "trajectory_follower/visibility_control.hpp"
+
 #include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <vector>
-
-#include "common/types.hpp"
-#include "trajectory_follower/visibility_control.hpp"
 
 namespace autoware
 {
@@ -31,8 +31,8 @@ namespace control
 {
 namespace trajectory_follower
 {
-using autoware::common::types::float64_t;
 using autoware::common::types::bool8_t;
+using autoware::common::types::float64_t;
 
 /**
  * @brief Simple filter with gain on the first derivative of the value
@@ -49,19 +49,18 @@ public:
    * @param [in] x initial value
    * @param [in] gain first-order gain
    */
-  LowpassFilter1d(const float64_t x, const float64_t gain)
-  : m_x(x), m_gain(gain) {}
+  LowpassFilter1d(const float64_t x, const float64_t gain) : m_x(x), m_gain(gain) {}
 
   /**
    * @brief set the current value of the filter
    * @param [in] x new value
    */
-  void reset(const float64_t x) {m_x = x;}
+  void reset(const float64_t x) { m_x = x; }
 
   /**
    * @brief get the current value of the filter
    */
-  float64_t getValue() const {return m_x;}
+  float64_t getValue() const { return m_x; }
 
   /**
    * @brief filter a new value
@@ -74,7 +73,6 @@ public:
     return ret;
   }
 };
-
 
 /**
  * @brief 2nd-order Butterworth Filter

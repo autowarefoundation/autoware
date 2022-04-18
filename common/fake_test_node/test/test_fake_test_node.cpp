@@ -19,6 +19,7 @@
 
 #include <common/types.hpp>
 #include <fake_test_node/fake_test_node.hpp>
+
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/int32.hpp>
 
@@ -44,13 +45,11 @@ public:
   NodeUnderTest()
   : rclcpp::Node{"is_positive_node"},
     m_pub{this->create_publisher<Bool>("/output_topic", 10)},
-    m_sub{this->create_subscription<Int32>(
-        "/input_topic", 10,
-        [&](const Int32::SharedPtr msg) {
-          Bool output;
-          output.data = msg->data > 0;
-          m_pub->publish(output);
-        })}
+    m_sub{this->create_subscription<Int32>("/input_topic", 10, [&](const Int32::SharedPtr msg) {
+      Bool output;
+      output.data = msg->data > 0;
+      m_pub->publish(output);
+    })}
   {
   }
 
@@ -59,7 +58,7 @@ private:
   rclcpp::Subscription<Int32>::SharedPtr m_sub{};
 };
 
-template<typename FixtureT>
+template <typename FixtureT>
 void run_test(int32_t value_in_message, FixtureT * fixture)
 {
   Int32 msg{};
@@ -70,7 +69,7 @@ void run_test(int32_t value_in_message, FixtureT * fixture)
   auto fake_odom_publisher = fixture->template create_publisher<Int32>("/input_topic");
   auto result_odom_subscription = fixture->template create_subscription<Bool>(
     "/output_topic", *node,
-    [&last_received_msg](const Bool::SharedPtr msg) {last_received_msg = msg;});
+    [&last_received_msg](const Bool::SharedPtr msg) { last_received_msg = msg; });
 
   const auto dt{std::chrono::milliseconds{100LL}};
   const auto max_wait_time{std::chrono::seconds{10LL}};
@@ -89,21 +88,15 @@ void run_test(int32_t value_in_message, FixtureT * fixture)
   SUCCEED();
 }
 
-
 }  // namespace
 
 /// @test Test that we can use a non-parametrized test.
-TEST_F(FakeNodeFixture, Test) {
-  run_test(15, this);
-}
+TEST_F(FakeNodeFixture, Test) { run_test(15, this); }
 
 INSTANTIATE_TEST_SUITE_P(
-  FakeNodeFixtureTests,
-  FakeNodeFixtureParametrized,
+  FakeNodeFixtureTests, FakeNodeFixtureParametrized,
   // cppcheck-suppress syntaxError  // cppcheck doesn't like the trailing comma.
   ::testing::Values(-5, 0, 42));
 
 /// @test Test that we can use a parametrized test.
-TEST_P(FakeNodeFixtureParametrized, Test) {
-  run_test(GetParam(), this);
-}
+TEST_P(FakeNodeFixtureParametrized, Test) { run_test(GetParam(), this); }

@@ -32,11 +32,15 @@ namespace time_utils
 namespace detail
 {
 
-template<typename T>
-struct is_duration : public std::false_type {};
+template <typename T>
+struct is_duration : public std::false_type
+{
+};
 
-template<typename ScalarT, typename DurationT>
-struct is_duration<std::chrono::duration<ScalarT, DurationT>>: public std::true_type {};
+template <typename ScalarT, typename DurationT>
+struct is_duration<std::chrono::duration<ScalarT, DurationT>> : public std::true_type
+{
+};
 
 }  // namespace detail
 
@@ -53,7 +57,7 @@ public:
   Stopwatch() = default;
 
   /// Restart a running timer.
-  inline void restart() noexcept {m_start = Clock::now();}
+  inline void restart() noexcept { m_start = Clock::now(); }
 
   ///
   /// @brief      Get the elapsed time in the specified duration.
@@ -63,7 +67,7 @@ public:
   /// @return     Time elapsed since the start (or a restart) of the timer represented in the
   ///             provided duration format.
   ///
-  template<typename UnitsT>
+  template <typename UnitsT>
   inline UnitsT measure() const noexcept
   {
     static_assert(

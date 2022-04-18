@@ -25,8 +25,7 @@ namespace control
 {
 namespace trajectory_follower
 {
-QPSolverOSQP::QPSolverOSQP(const rclcpp::Logger & logger)
-: logger_{logger} {}
+QPSolverOSQP::QPSolverOSQP(const rclcpp::Logger & logger) : logger_{logger} {}
 bool8_t QPSolverOSQP::solve(
   const Eigen::MatrixXd & h_mat, const Eigen::MatrixXd & f_vec, const Eigen::MatrixXd & a,
   const Eigen::VectorXd & lb, const Eigen::VectorXd & ub, const Eigen::VectorXd & lb_a,
@@ -60,14 +59,12 @@ bool8_t QPSolverOSQP::solve(
   auto result = osqpsolver_.optimize(h_mat, osqpA, f, lower_bound, upper_bound);
 
   std::vector<float64_t> U_osqp = std::get<0>(result);
-  u =
-    Eigen::Map<Eigen::Matrix<float64_t, Eigen::Dynamic, 1>>(
-    &U_osqp[0],
-    static_cast<Eigen::Index>(U_osqp.size()), 1);
+  u = Eigen::Map<Eigen::Matrix<float64_t, Eigen::Dynamic, 1>>(
+    &U_osqp[0], static_cast<Eigen::Index>(U_osqp.size()), 1);
 
   const int64_t status_val = std::get<3>(result);
   if (status_val != 1) {
-  // TODO(Horibe): Should return false and the failure must be handled in an appropriate way.
+    // TODO(Horibe): Should return false and the failure must be handled in an appropriate way.
     RCLCPP_WARN(logger_, "optimization failed : %s", osqpsolver_.getStatusMessage().c_str());
   }
 

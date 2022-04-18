@@ -24,16 +24,16 @@
 // Variables
 //
 
-DifferentialState x, y, yaw;  // pose
+DifferentialState x, y, yaw;    // pose
 DifferentialState u, v, omega;  // velocities
-DifferentialState delta;  // wheel angle
-DifferentialState ax;  // acceleration
+DifferentialState delta;        // wheel angle
+DifferentialState ax;           // acceleration
 Control jx, delta_dot;
 
 // Vehicle parameters
 OnlineData L_f, L_r;  // front, rear wheelbase length
 OnlineData C_f, C_r;  // front, rear cornering stiffness
-OnlineData m, I;  // mass, moment of inertia
+OnlineData m, I;      // mass, moment of inertia
 
 //
 // Differential algebraic equation
@@ -56,4 +56,7 @@ f << dot(v) == ((-u * omega) + ((F_f + F_r) / m));
 f << dot(omega) == (((L_f * F_f) - (L_r * F_r)) / I);
 f << dot(delta) == delta_dot;
 f << dot(ax) == jx;
+
+// clang-format off
 #endif  // COMMON__MOTION_COMMON__SCRIPTS__AUTOGENERATION_CODE_SNIPPETS__LINEAR_TIRE_SNIPPET_HPP_  // NOLINT
+// clang-format on

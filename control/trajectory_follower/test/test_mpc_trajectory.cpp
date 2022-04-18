@@ -12,14 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <vector>
-
 #include "common/types.hpp"
 #include "gtest/gtest.h"
 #include "trajectory_follower/mpc_trajectory.hpp"
 
+#include <vector>
+
 using autoware::common::types::float64_t;
-TEST(TestMPCTrajectory, Nominal) {
+TEST(TestMPCTrajectory, Nominal)
+{
   typedef autoware::motion::control::trajectory_follower::MPCTrajectory MPCTrajectory;
 
   MPCTrajectory traj;

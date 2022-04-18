@@ -20,9 +20,11 @@
 #ifndef GEOMETRY__SPATIAL_HASH_CONFIG_HPP_
 #define GEOMETRY__SPATIAL_HASH_CONFIG_HPP_
 
+#include "helper_functions/crtp.hpp"
+
 #include <common/types.hpp>
-#include <geometry/visibility_control.hpp>
 #include <geometry/common_2d.hpp>
+#include <geometry/visibility_control.hpp>
 
 #include <algorithm>
 #include <cmath>
@@ -30,11 +32,9 @@
 #include <stdexcept>
 #include <utility>
 
-#include "helper_functions/crtp.hpp"
-
-using autoware::common::types::float64_t;
-using autoware::common::types::float32_t;
 using autoware::common::types::bool8_t;
+using autoware::common::types::float32_t;
+using autoware::common::types::float64_t;
 
 namespace autoware
 {
@@ -68,7 +68,7 @@ using BinRange = std::pair<Index3, Index3>;
 
 /// \brief The base class for the configuration object for the SpatialHash class
 /// \tparam Derived The type of the derived class to support static polymorphism/CRTP
-template<typename Derived>
+template <typename Derived>
 class GEOMETRY_PUBLIC Config : public autoware::common::helper_functions::crtp<Derived>
 {
 public:
@@ -82,14 +82,8 @@ public:
   /// \param[in] radius The look up radius
   /// \param[in] capacity The maximum number of points the spatial hash can store
   Config(
-    const float32_t min_x,
-    const float32_t max_x,
-    const float32_t min_y,
-    const float32_t max_y,
-    const float32_t min_z,
-    const float32_t max_z,
-    const float32_t radius,
-    const Index capacity)
+    const float32_t min_x, const float32_t max_x, const float32_t min_y, const float32_t max_y,
+    const float32_t min_z, const float32_t max_z, const float32_t radius, const Index capacity)
   : m_min_x{min_x},
     m_min_y{min_y},
     m_min_z{min_z},
@@ -117,7 +111,7 @@ public:
     // small fudging to prevent weird boundary effects
     // (e.g (x=xmax, y) rolls index over to (x=0, y+1)
     constexpr auto FEPS = std::numeric_limits<float32_t>::epsilon();
-    //lint -e{1938} read only access is fine NOLINT
+    // lint -e{1938} read only access is fine NOLINT
     m_max_x -= FEPS;
     m_max_y -= FEPS;
     m_max_z -= FEPS;
@@ -177,16 +171,10 @@ public:
   }
   /// \brief Get the maximum capacity of the spatial hash
   /// \return The capacity
-  Index get_capacity() const
-  {
-    return m_capacity;
-  }
+  Index get_capacity() const { return m_capacity; }
 
   /// \brief Getter for the side length, equivalently the lookup radius
-  float32_t radius2() const
-  {
-    return m_side_length2;
-  }
+  float32_t radius2() const { return m_side_length2; }
 
   ////////////////////////////////////////////////////////////////////////////////////////////
   // "Polymorphic" API
@@ -207,9 +195,7 @@ public:
   /// \return True if query and ref could possibly hold points within reference distance to one
   ///         another
   bool is_candidate_bin(
-    const details::Index3 & ref,
-    const details::Index3 & query,
-    const float ref_distance2) const
+    const details::Index3 & ref, const details::Index3 & query, const float ref_distance2) const
   {
     return this->impl().valid(ref, query, ref_distance2);
   }
@@ -225,10 +211,7 @@ public:
   /// \brief Compute the composed single index given a decomposed index
   /// \param[in] idx A decomposed index triple for a bin
   /// \return The composed bin index
-  Index index(const details::Index3 & idx) const
-  {
-    return this->impl().index_(idx);
-  }
+  Index index(const details::Index3 & idx) const { return this->impl().index_(idx); }
   /// \brief Compute the squared distance between the two points
   /// \tparam PointT A point type with float members x, y and z, or point adapters defined
   /// \param[in] x The x component of the first point
@@ -236,12 +219,9 @@ public:
   /// \param[in] z The z component of the first point
   /// \param[in] pt The other point being compared
   /// \return The squared distance between the points (2d or 3d)
-  template<typename PointT>
+  template <typename PointT>
   float32_t distance_squared(
-    const float32_t x,
-    const float32_t y,
-    const float32_t z,
-    const PointT & pt) const
+    const float32_t x, const float32_t y, const float32_t z, const PointT & pt) const
   {
     return this->impl().distance_squared_(x, y, z, pt);
   }
@@ -272,10 +252,7 @@ protected:
       std::floor((std::min(std::max(z, m_min_z), m_max_z) - m_min_z) * m_side_length_inv));
   }
   /// \brief Compose the provided index offsets
-  Index bin_impl(const Index xdx, const Index ydx) const
-  {
-    return xdx + (ydx * m_y_stride);
-  }
+  Index bin_impl(const Index xdx, const Index ydx) const { return xdx + (ydx * m_y_stride); }
   /// \brief Compose the provided index offsets
   Index bin_impl(const Index xdx, const Index ydx, const Index zdx) const
   {
@@ -310,10 +287,7 @@ protected:
   }
 
   /// \brief Get side length squared
-  float side_length2() const
-  {
-    return m_side_length2;
-  }
+  float side_length2() const { return m_side_length2; }
 
 private:
   /// \brief Sanity check a range in a basis direction
@@ -363,12 +337,8 @@ public:
   /// \param[in] radius The lookup distance
   /// \param[in] capacity The maximum number of points the spatial hash can store
   Config2d(
-    const float32_t min_x,
-    const float32_t max_x,
-    const float32_t min_y,
-    const float32_t max_y,
-    const float32_t radius,
-    const Index capacity);
+    const float32_t min_x, const float32_t max_x, const float32_t min_y, const float32_t max_y,
+    const float32_t radius, const Index capacity);
   /// \brief The index of a point given it's x, y and z values, 2d implementation
   /// \param[in] x The x value of a point
   /// \param[in] y the y value of a point
@@ -383,9 +353,7 @@ public:
   /// \return True if the reference bin and query bin could possibly hold a point within the
   ///         reference distance
   bool valid(
-    const details::Index3 & ref,
-    const details::Index3 & query,
-    const float ref_distance2) const;
+    const details::Index3 & ref, const details::Index3 & query, const float ref_distance2) const;
   /// \brief Compute the decomposed index given a point, 2d implementation
   /// \param[in] x The x component of the point
   /// \param[in] y The y component of the point
@@ -403,12 +371,9 @@ public:
   /// \param[in] z The z component of the first point
   /// \param[in] pt The other point being compared
   /// \return The squared distance between the points (2d)
-  template<typename PointT>
+  template <typename PointT>
   float32_t distance_squared_(
-    const float32_t x,
-    const float32_t y,
-    const float32_t z,
-    const PointT & pt) const
+    const float32_t x, const float32_t y, const float32_t z, const PointT & pt) const
   {
     (void)z;
     const float32_t dx = x - point_adapter::x_(pt);
@@ -431,14 +396,8 @@ public:
   /// \param[in] radius The lookup distance
   /// \param[in] capacity The maximum number of points the spatial hash can store
   Config3d(
-    const float32_t min_x,
-    const float32_t max_x,
-    const float32_t min_y,
-    const float32_t max_y,
-    const float32_t min_z,
-    const float32_t max_z,
-    const float32_t radius,
-    const Index capacity);
+    const float32_t min_x, const float32_t max_x, const float32_t min_y, const float32_t max_y,
+    const float32_t min_z, const float32_t max_z, const float32_t radius, const Index capacity);
   /// \brief The index of a point given it's x, y and z values, 3d implementation
   /// \param[in] x The x value of a point
   /// \param[in] y the y value of a point
@@ -453,9 +412,7 @@ public:
   /// \return True if the reference bin and query bin could possibly hold a point within the
   ///         reference distance
   bool valid(
-    const details::Index3 & ref,
-    const details::Index3 & query,
-    const float ref_distance2) const;
+    const details::Index3 & ref, const details::Index3 & query, const float ref_distance2) const;
   /// \brief Compute the decomposed index given a point, 3d implementation
   /// \param[in] x The x component of the point
   /// \param[in] y The y component of the point
@@ -473,12 +430,9 @@ public:
   /// \param[in] z The z component of the first point
   /// \param[in] pt The other point being compared
   /// \return The squared distance between the points (3d)
-  template<typename PointT>
+  template <typename PointT>
   float32_t distance_squared_(
-    const float32_t x,
-    const float32_t y,
-    const float32_t z,
-    const PointT & pt) const
+    const float32_t x, const float32_t y, const float32_t z, const PointT & pt) const
   {
     const float32_t dx = x - point_adapter::x_(pt);
     const float32_t dy = y - point_adapter::y_(pt);

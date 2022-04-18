@@ -12,24 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
-from ament_index_python.packages import get_package_share_directory
 import launch
 from launch.actions import DeclareLaunchArgument
 from launch.actions import GroupAction
-from launch.actions import IncludeLaunchDescription
 from launch.actions import OpaqueFunction
-from launch.actions import SetLaunchConfiguration
-from launch.conditions import IfCondition
-from launch.conditions import UnlessCondition
 from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import ComposableNodeContainer
-from launch_ros.actions import LoadComposableNodes
 from launch_ros.actions import Node
-from launch_ros.descriptions import ComposableNode
 from launch_ros.substitutions import FindPackageShare
 import yaml
+
 
 def launch_setup(context, *args, **kwargs):
     # vehicle information param path
@@ -37,7 +28,9 @@ def launch_setup(context, *args, **kwargs):
     with open(vehicle_info_param_path, "r") as f:
         vehicle_info_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
-    vehicle_characteristics_param_path = LaunchConfiguration("vehicle_characteristics_param_file").perform(context)
+    vehicle_characteristics_param_path = LaunchConfiguration(
+        "vehicle_characteristics_param_file"
+    ).perform(context)
     with open(vehicle_characteristics_param_path, "r") as f:
         vehicle_characteristics_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
@@ -46,11 +39,11 @@ def launch_setup(context, *args, **kwargs):
         simulator_model_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
     simple_planning_simulator_node = Node(
-        package='simple_planning_simulator',
-        executable='simple_planning_simulator_exe',
-        name='simple_planning_simulator',
-        namespace='simulation',
-        output='screen',
+        package="simple_planning_simulator",
+        executable="simple_planning_simulator_exe",
+        name="simple_planning_simulator",
+        namespace="simulation",
+        output="screen",
         parameters=[
             vehicle_info_param,
             vehicle_characteristics_param,
@@ -60,36 +53,32 @@ def launch_setup(context, *args, **kwargs):
             },
         ],
         remappings=[
-            ('input/ackermann_control_command', '/control/command/control_cmd'),
-            ('input/gear_command', '/control/command/gear_cmd'),
-            ('input/turn_indicators_command', '/control/command/turn_indicators_cmd'),
-            ('input/hazard_lights_command', '/control/command/hazard_lights_cmd'),
-            ('input/trajectory', '/planning/scenario_planning/trajectory'),
-            ('input/engage', '/vehicle/engage'),
-            ('output/twist', '/vehicle/status/velocity_status'),
-            ('output/odometry', '/localization/kinematic_state'),
-            ('output/steering', '/vehicle/status/steering_status'),
-            ('output/gear_report', '/vehicle/status/gear_status'),
-            ('output/turn_indicators_report', '/vehicle/status/turn_indicators_status'),
-            ('output/hazard_lights_report', '/vehicle/status/hazard_lights_status'),
-            ('output/control_mode_report', '/vehicle/status/control_mode'),
-            ('/initialpose', '/initialpose'),
-        ]
+            ("input/ackermann_control_command", "/control/command/control_cmd"),
+            ("input/gear_command", "/control/command/gear_cmd"),
+            ("input/turn_indicators_command", "/control/command/turn_indicators_cmd"),
+            ("input/hazard_lights_command", "/control/command/hazard_lights_cmd"),
+            ("input/trajectory", "/planning/scenario_planning/trajectory"),
+            ("input/engage", "/vehicle/engage"),
+            ("output/twist", "/vehicle/status/velocity_status"),
+            ("output/odometry", "/localization/kinematic_state"),
+            ("output/steering", "/vehicle/status/steering_status"),
+            ("output/gear_report", "/vehicle/status/gear_status"),
+            ("output/turn_indicators_report", "/vehicle/status/turn_indicators_status"),
+            ("output/hazard_lights_report", "/vehicle/status/hazard_lights_status"),
+            ("output/control_mode_report", "/vehicle/status/control_mode"),
+            ("/initialpose", "/initialpose"),
+        ],
     )
 
     map_to_odom_tf_publisher = Node(
-        package='tf2_ros',
-        executable='static_transform_publisher',
-        name='static_map_to_odom_tf_publisher',
-        output='screen',
-        arguments=['0.0', '0.0', '0.0', '0', '0', '0', 'map', 'odom'])
-
-    group = GroupAction(
-        [
-            simple_planning_simulator_node,
-            map_to_odom_tf_publisher
-        ]
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        name="static_map_to_odom_tf_publisher",
+        output="screen",
+        arguments=["0.0", "0.0", "0.0", "0", "0", "0", "map", "odom"],
     )
+
+    group = GroupAction([simple_planning_simulator_node, map_to_odom_tf_publisher])
 
     return [group]
 
@@ -129,9 +118,4 @@ def generate_launch_description():
         "path to config file for simulator_model",
     )
 
-
-
-    return launch.LaunchDescription(
-        launch_arguments
-        + [OpaqueFunction(function=launch_setup)]
-    )
+    return launch.LaunchDescription(launch_arguments + [OpaqueFunction(function=launch_setup)])

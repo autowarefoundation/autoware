@@ -15,10 +15,11 @@
 #ifndef HAD_MAP_UTILS__HAD_MAP_COMPUTATION_HPP_
 #define HAD_MAP_UTILS__HAD_MAP_COMPUTATION_HPP_
 
-#include <autoware_auto_planning_msgs/msg/had_map_route.hpp>
-#include <lanelet2_core/LaneletMap.h>
-
 #include "visibility_control.hpp"
+
+#include <autoware_auto_planning_msgs/msg/had_map_route.hpp>
+
+#include <lanelet2_core/LaneletMap.h>
 
 namespace autoware
 {

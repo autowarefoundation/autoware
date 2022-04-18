@@ -14,13 +14,14 @@
 /// \file
 /// \brief This file includes common transoform functionaly for autoware_auto_msgs
 
-
-#include <gtest/gtest.h>
-#include <tf2_ros/buffer.h>
-#include <tf2_ros/transform_listener.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <autoware_auto_tf2/tf2_autoware_auto_msgs.hpp>
 #include <rclcpp/clock.hpp>
+
+#include <gtest/gtest.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.h>
+
 #include <memory>
 
 std::unique_ptr<tf2_ros::Buffer> tf_buffer = nullptr;
@@ -43,7 +44,6 @@ geometry_msgs::msg::TransformStamped filled_transfom()
   return t;
 }
 
-
 TEST(Tf2AutowareAuto, DoTransformPoint32)
 {
   const auto trans = filled_transfom();
@@ -60,7 +60,6 @@ TEST(Tf2AutowareAuto, DoTransformPoint32)
   EXPECT_NEAR(p_out.y, 18, EPS);
   EXPECT_NEAR(p_out.z, 27, EPS);
 }
-
 
 TEST(Tf2AutowareAuto, DoTransformPolygon)
 {
@@ -80,7 +79,6 @@ TEST(Tf2AutowareAuto, DoTransformPolygon)
   EXPECT_NEAR(poly_out.points[0].z, 27, EPS);
 }
 
-
 TEST(Tf2AutowareAuto, DoTransformQuaternion32)
 {
   const auto trans = filled_transfom();
@@ -99,7 +97,6 @@ TEST(Tf2AutowareAuto, DoTransformQuaternion32)
   EXPECT_NEAR(q_out.z, 0.0, EPS);
   EXPECT_NEAR(q_out.w, 0.0, EPS);
 }
-
 
 TEST(Tf2AutowareAuto, DoTransformBoundingBox)
 {
@@ -212,7 +209,6 @@ TEST(Tf2AutowareAuto, TransformBoundingBoxArray)
   // simple api
   const auto bba_simple = tf_buffer->transform(bba1, "B", tf2::durationFromSec(2.0));
 
-
   EXPECT_EQ(bba_simple.header.frame_id, "B");
 
   // checking boxes[0]
@@ -257,11 +253,9 @@ TEST(Tf2AutowareAuto, TransformBoundingBoxArray)
   EXPECT_NEAR(bba_simple.boxes[1].corners[3].y, -33, EPS);
   EXPECT_NEAR(bba_simple.boxes[1].corners[3].z, -24, EPS);
 
-
   // advanced api
-  const auto bba_advanced = tf_buffer->transform(
-    bba1, "B",
-    tf2::timeFromSec(2.0), "A", tf2::durationFromSec(3.0));
+  const auto bba_advanced =
+    tf_buffer->transform(bba1, "B", tf2::timeFromSec(2.0), "A", tf2::durationFromSec(3.0));
 
   EXPECT_EQ(bba_advanced.header.frame_id, "B");
 

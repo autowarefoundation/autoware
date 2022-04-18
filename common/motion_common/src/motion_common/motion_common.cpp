@@ -14,13 +14,14 @@
 
 #include "motion_common/motion_common.hpp"
 
+#include "helper_functions/angle_utils.hpp"
+#include "tf2/utils.h"
+
+#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
+
 #include <algorithm>
 #include <cmath>
 #include <limits>
-
-#include "helper_functions/angle_utils.hpp"
-#include "tf2/utils.h"
-#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 
 namespace motion
 {
@@ -39,10 +40,7 @@ bool is_past_point(const Point & state, const Point & pt) noexcept
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-bool is_past_point(
-  const Point & state,
-  const Point & current_pt,
-  const Point & next_pt) noexcept
+bool is_past_point(const Point & state, const Point & current_pt, const Point & next_pt) noexcept
 {
   const auto nx = next_pt.pose.position.x - current_pt.pose.position.x;
   const auto ny = next_pt.pose.position.y - current_pt.pose.position.y;
@@ -51,11 +49,7 @@ bool is_past_point(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-bool is_past_point(
-  const Point & state,
-  const Point & pt,
-  const double nx,
-  const double ny) noexcept
+bool is_past_point(const Point & state, const Point & pt, const double nx, const double ny) noexcept
 {
   const auto dx = (state.pose.position.x - pt.pose.position.x);
   const auto dy = (state.pose.position.y - pt.pose.position.y);
@@ -81,11 +75,11 @@ bool is_aligned(const Heading a, const Heading b, const Real dot_threshold)
 bool heading_ok(const Trajectory & traj)
 {
   const auto bad_heading = [](const auto & pt) -> bool {
-      const auto real2 = static_cast<Real>(pt.pose.orientation.w * pt.pose.orientation.w);
-      const auto imag2 = static_cast<Real>(pt.pose.orientation.z * pt.pose.orientation.z);
-      constexpr auto TOL = 1.0E-3F;
-      return std::fabs(1.0F - (real2 + imag2)) > TOL;
-    };
+    const auto real2 = static_cast<Real>(pt.pose.orientation.w * pt.pose.orientation.w);
+    const auto imag2 = static_cast<Real>(pt.pose.orientation.z * pt.pose.orientation.z);
+    constexpr auto TOL = 1.0E-3F;
+    return std::fabs(1.0F - (real2 + imag2)) > TOL;
+  };
   const auto bad_it = std::find_if(traj.points.begin(), traj.points.end(), bad_heading);
   // True if there is no bad point
   return bad_it == traj.points.end();
@@ -93,8 +87,7 @@ bool heading_ok(const Trajectory & traj)
 
 ////////////////////////////////////////////////////////////////////////////////
 void doTransform(
-  const Point & t_in,
-  Point & t_out,
+  const Point & t_in, Point & t_out,
   const geometry_msgs::msg::TransformStamped & transform) noexcept
 {
   geometry_msgs::msg::PoseStamped p_in;
@@ -107,8 +100,7 @@ void doTransform(
 
 ////////////////////////////////////////////////////////////////////////////////
 void doTransform(
-  const State & t_in,
-  State & t_out,
+  const State & t_in, State & t_out,
   const geometry_msgs::msg::TransformStamped & transform) noexcept
 {
   doTransform(t_in.state, t_out.state, transform);
@@ -127,8 +119,8 @@ Real to_angle(Heading heading) noexcept
   }
   // See:
   // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-  const auto y = Real{2.0} *heading.real * heading.imag;
-  const auto x = Real{1} - (Real{2.0} *heading.imag * heading.imag);
+  const auto y = Real{2.0} * heading.real * heading.imag;
+  const auto x = Real{1} - (Real{2.0} * heading.imag * heading.imag);
   // TODO(c.ho) fast atan2
   return std::atan2(y, x);
 }
@@ -173,10 +165,7 @@ Orientation slerp(const Orientation & a, const Orientation & b, const Real t)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-Point interpolate(Point a, Point b, Real t)
-{
-  return interpolate(a, b, t, slerp);
-}
+Point interpolate(Point a, Point b, Real t) { return interpolate(a, b, t, slerp); }
 
 ////////////////////////////////////////////////////////////////////////////////
 void sample(const Trajectory & in, Trajectory & out, std::chrono::nanoseconds period)
@@ -191,7 +180,7 @@ void error(const Point & state, const Point & ref, Diagnostic & out) noexcept
     // compute heading normal of reference point
     const auto & q = ref.pose.orientation;
     const auto nx = (q.w * q.w) - (q.z * q.z);
-    const auto ny = decltype(nx) {2.0} *q.w * q.z;
+    const auto ny = decltype(nx){2.0} * q.w * q.z;
     // project state onto reference basis
     const auto dx = state.pose.position.x - ref.pose.position.x;
     const auto dy = state.pose.position.y - ref.pose.position.y;
@@ -219,7 +208,7 @@ Complex32 operator+(Complex32 a, Complex32 b) noexcept
   // check dot product: if negative, reflect one quaternion (360 deg rotation)
   {
     const auto dot = (a.real * b.real) + (a.imag * b.imag);
-    if (dot < decltype(b.real) {}) {  // zero initialization
+    if (dot < decltype(b.real){}) {  // zero initialization
       b.real = -b.real;
       b.imag = -b.imag;
     }
@@ -233,12 +222,9 @@ Complex32 operator-(Complex32 a) noexcept
   a.real = -a.real;
   return a;
 }
-Complex32 operator-(Complex32 a, Complex32 b) noexcept
-{
-  return a + (-b);
-}
+Complex32 operator-(Complex32 a, Complex32 b) noexcept { return a + (-b); }
 }  // namespace msg
-}  // namespace autoware_auto_msgs
+}  // namespace autoware_auto_geometry_msgs
 
 namespace geometry_msgs
 {

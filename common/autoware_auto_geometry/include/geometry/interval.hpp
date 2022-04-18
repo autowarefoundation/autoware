@@ -21,6 +21,9 @@
 #ifndef GEOMETRY__INTERVAL_HPP_
 #define GEOMETRY__INTERVAL_HPP_
 
+#include "common/types.hpp"
+#include "helper_functions/float_comparisons.hpp"
+
 #include <algorithm>
 #include <cmath>
 #include <iostream>
@@ -30,9 +33,6 @@
 #include <string>
 #include <type_traits>
 #include <utility>
-
-#include "common/types.hpp"
-#include "helper_functions/float_comparisons.hpp"
 
 namespace autoware
 {
@@ -48,12 +48,10 @@ namespace geometry
  * interval [min, max] is "valid" if it is empty (min/max = NaN) or its bounds
  * are ordered (min <= max).
  */
-template<typename T>
+template <typename T>
 class Interval
 {
-  static_assert(
-    std::is_floating_point<T>::value,
-    "Intervals only support floating point types.");
+  static_assert(std::is_floating_point<T>::value, "Intervals only support floating point types.");
 
 public:
   /**
@@ -79,10 +77,7 @@ public:
    * @brief Compute inequality and the logical negation of equality.
    * @note This is defined inline because the class is templated.
    */
-  friend bool operator!=(const Interval & i1, const Interval & i2)
-  {
-    return !(i1 == i2);
-  }
+  friend bool operator!=(const Interval & i1, const Interval & i2) { return !(i1 == i2); }
 
   /**
    * @brief Stream overload for Interval types.
@@ -99,26 +94,26 @@ public:
 
     // Internal helper to format the output.
     const auto readable_extremum = [](const T & val) {
-        if (val == std::numeric_limits<T>::lowest()) {
-          return std::string("REAL_MIN");
-        }
-        if (val == std::numeric_limits<T>::max()) {
-          return std::string("REAL_MAX");
-        }
+      if (val == std::numeric_limits<T>::lowest()) {
+        return std::string("REAL_MIN");
+      }
+      if (val == std::numeric_limits<T>::max()) {
+        return std::string("REAL_MAX");
+      }
 
-        std::stringstream ss;
-        ss.setf(std::ios::fixed, std::ios::floatfield);
-        ss.precision(PRECISION);
-        ss << val;
-        return ss.str();
-      };
+      std::stringstream ss;
+      ss.setf(std::ios::fixed, std::ios::floatfield);
+      ss.precision(PRECISION);
+      ss << val;
+      return ss.str();
+    };
 
     // Do stream output.
     if (Interval::empty(i)) {
       return os << "{}";
     }
-    return os << "{\"min\": " << readable_extremum(Interval::min(i)) <<
-           ", \"max\": " << readable_extremum(Interval::max(i)) << "}";
+    return os << "{\"min\": " << readable_extremum(Interval::min(i))
+              << ", \"max\": " << readable_extremum(Interval::max(i)) << "}";
   }
 
   /**
@@ -131,10 +126,10 @@ public:
   static bool abs_eq(const Interval & i1, const Interval & i2, const T & eps);
 
   /** @brief The minimum bound of the interval. */
-  static T min(const Interval & i) {return i.min_;}
+  static T min(const Interval & i) { return i.min_; }
 
   /** @brief The maximum bound of the interval. */
-  static T max(const Interval & i) {return i.max_;}
+  static T max(const Interval & i) { return i.max_; }
 
   /**
    * @brief Return the measure (length) of the interval.
@@ -171,8 +166,7 @@ public:
    * @return True iff 'interval' contains 'value'.
    */
   static bool contains(
-    const Interval & i, const T & value,
-    const T & eps = std::numeric_limits<T>::epsilon());
+    const Interval & i, const T & value, const T & eps = std::numeric_limits<T>::epsilon());
 
   /**
    * @brief Test for whether 'i1' subseteq 'i2'
@@ -229,20 +223,20 @@ typedef Interval<autoware::common::types::float32_t> Interval_f;
 
 //------------------------------------------------------------------------------
 
-template<typename T>
+template <typename T>
 constexpr T Interval<T>::NaN;
 
 //------------------------------------------------------------------------------
 
-template<typename T>
-Interval<T>::Interval()
-: min_(Interval::NaN), max_(Interval::NaN) {}
+template <typename T>
+Interval<T>::Interval() : min_(Interval::NaN), max_(Interval::NaN)
+{
+}
 
 //------------------------------------------------------------------------------
 
-template<typename T>
-Interval<T>::Interval(const T & min, const T & max)
-: min_(min), max_(max)
+template <typename T>
+Interval<T>::Interval(const T & min, const T & max) : min_(min), max_(max)
 {
   if (!Interval::bounds_valid(*this)) {
     std::stringstream ss;
@@ -253,9 +247,8 @@ Interval<T>::Interval(const T & min, const T & max)
 
 //------------------------------------------------------------------------------
 
-template<typename T>
-bool Interval<T>::abs_eq(
-  const Interval & i1, const Interval & i2, const T & eps)
+template <typename T>
+bool Interval<T>::abs_eq(const Interval & i1, const Interval & i2, const T & eps)
 {
   namespace comp = helper_functions::comparisons;
 
@@ -271,7 +264,7 @@ bool Interval<T>::abs_eq(
 
 //------------------------------------------------------------------------------
 
-template<typename T>
+template <typename T>
 bool Interval<T>::zero_measure(const Interval & i)
 {
   // An empty interval will return false because (NaN == NaN) is false.
@@ -280,7 +273,7 @@ bool Interval<T>::zero_measure(const Interval & i)
 
 //------------------------------------------------------------------------------
 
-template<typename T>
+template <typename T>
 bool Interval<T>::empty(const Interval & i)
 {
   return std::isnan(Interval::min(i)) && std::isnan(Interval::max(i));
@@ -288,7 +281,7 @@ bool Interval<T>::empty(const Interval & i)
 
 //------------------------------------------------------------------------------
 
-template<typename T>
+template <typename T>
 bool Interval<T>::bounds_valid(const Interval & i)
 {
   const auto is_ordered = (Interval::min(i) <= Interval::max(i));
@@ -299,7 +292,7 @@ bool Interval<T>::bounds_valid(const Interval & i)
 
 //------------------------------------------------------------------------------
 
-template<typename T>
+template <typename T>
 bool Interval<T>::is_subset_eq(const Interval & i1, const Interval & i2)
 {
   const auto lower_contained = (Interval::min(i1) >= Interval::min(i2));
@@ -309,7 +302,7 @@ bool Interval<T>::is_subset_eq(const Interval & i1, const Interval & i2)
 
 //------------------------------------------------------------------------------
 
-template<typename T>
+template <typename T>
 bool Interval<T>::contains(const Interval & i, const T & value, const T & eps)
 {
   return common::helper_functions::comparisons::abs_gte(value, Interval::min(i), eps) &&
@@ -318,7 +311,7 @@ bool Interval<T>::contains(const Interval & i, const T & value, const T & eps)
 
 //------------------------------------------------------------------------------
 
-template<typename T>
+template <typename T>
 T Interval<T>::measure(const Interval & i)
 {
   return Interval::max(i) - Interval::min(i);
@@ -326,7 +319,7 @@ T Interval<T>::measure(const Interval & i)
 
 //------------------------------------------------------------------------------
 
-template<typename T>
+template <typename T>
 Interval<T> Interval<T>::intersect(const Interval & i1, const Interval & i2)
 {
   // Construct intersection assuming an intersection exists.
@@ -344,7 +337,7 @@ Interval<T> Interval<T>::intersect(const Interval & i1, const Interval & i2)
 
 //------------------------------------------------------------------------------
 
-template<typename T>
+template <typename T>
 T Interval<T>::clamp_to(const Interval & i, T val)
 {
   // clamp val to min

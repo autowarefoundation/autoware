@@ -42,9 +42,8 @@ public:
   PubSubNode() : Node{"test_simple_planning_simulator_pubsub"}
   {
     current_odom_sub_ = create_subscription<Odometry>(
-      "output/odometry", rclcpp::QoS{1}, [this](const Odometry::SharedPtr msg) {
-        current_odom_ = msg;
-      });
+      "output/odometry", rclcpp::QoS{1},
+      [this](const Odometry::SharedPtr msg) { current_odom_ = msg; });
     pub_ackermann_command_ =
       create_publisher<AckermannControlCommand>("input/ackermann_control_command", rclcpp::QoS{1});
     pub_initialpose_ = create_publisher<PoseWithCovarianceStamped>("/initialpose", rclcpp::QoS{1});
@@ -187,8 +186,6 @@ void declareVehicleInfoParams(rclcpp::NodeOptions & node_options)
   node_options.append_parameter_override("vehicle_height", 1.5);
 }
 
-
-
 // Send a control command and run the simulation.
 // Then check if the vehicle is moving in the desired direction.
 class TestSimplePlanningSimulator : public ::testing::TestWithParam<std::string>
@@ -263,14 +260,12 @@ TEST_P(TestSimplePlanningSimulator, TestIdealSteerVel)
   rclcpp::shutdown();
 }
 
-const std::string VEHICLE_MODEL_LIST[] = {
-  "IDEAL_STEER_VEL",
-  "IDEAL_STEER_ACC",
-  "IDEAL_STEER_ACC_GEARED",
-  "DELAY_STEER_VEL",
-  "DELAY_STEER_ACC",
-  "DELAY_STEER_ACC_GEARED",
+// clang-format off
+const std::string VEHICLE_MODEL_LIST[] = {   // NOLINT
+  "IDEAL_STEER_VEL", "IDEAL_STEER_ACC", "IDEAL_STEER_ACC_GEARED",
+  "DELAY_STEER_VEL", "DELAY_STEER_ACC", "DELAY_STEER_ACC_GEARED",
 };
+// clang-format on
 
 INSTANTIATE_TEST_CASE_P(
   TestForEachVehicleModel, TestSimplePlanningSimulator, ::testing::ValuesIn(VEHICLE_MODEL_LIST));
