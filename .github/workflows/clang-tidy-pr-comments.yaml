@@ -45,7 +45,7 @@ jobs:
           cp /tmp/clang-tidy-result/fixes.yaml fixes.yaml
 
       - name: Run clang-tidy-pr-comments action
-        uses: platisd/clang-tidy-pr-comments@1.1.6
+        uses: platisd/clang-tidy-pr-comments@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           clang_tidy_fixes: fixes.yaml
