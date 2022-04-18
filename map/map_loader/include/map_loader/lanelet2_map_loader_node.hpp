@@ -19,6 +19,8 @@
 
 #include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
 
+#include <lanelet2_projection/UTM.h>
+
 #include <memory>
 
 class Lanelet2MapLoaderNode : public rclcpp::Node

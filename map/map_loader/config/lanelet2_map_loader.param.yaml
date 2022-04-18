@@ -1,0 +1,8 @@
+/**:
+  ros__parameters:
+
+    # Latitude of map_origin
+    latitude: 40.816617984672746
+
+    # Longitude of map_origin
+    longitude: 29.360491808334285
