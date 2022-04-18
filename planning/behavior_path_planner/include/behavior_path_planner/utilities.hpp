@@ -315,7 +315,7 @@ void shiftPose(Pose * pose, double shift_length);
 PathWithLaneId getCenterLinePath(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & lanelet_sequence,
   const Pose & pose, const double backward_path_length, const double forward_path_length,
-  const BehaviorPathPlannerParameters & parameter);
+  const BehaviorPathPlannerParameters & parameter, double optional_length = 0.0);
 
 PathWithLaneId setDecelerationVelocity(
   const RouteHandler & route_handler, const PathWithLaneId & input,
@@ -327,6 +327,10 @@ PathWithLaneId setDecelerationVelocity(
   const lanelet::ConstLanelets & lanelet_sequence, const double distance_after_pullover,
   const double pullover_distance_min, const double distance_before_pull_over,
   const double deceleration_interval, Pose goal_pose);
+
+bool checkLaneIsInIntersection(
+  const RouteHandler & route_handler, const PathWithLaneId & ref,
+  const lanelet::ConstLanelets & lanelet_sequence, double & additional_length_to_add);
 
 // object label
 std::uint8_t getHighestProbLabel(const std::vector<ObjectClassification> & classification);

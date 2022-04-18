@@ -1470,10 +1470,10 @@ double getDistanceToShoulderBoundary(
 }
 
 double getArcLengthToTargetLanelet(
-  const lanelet::ConstLanelets & current_lanes, const lanelet::ConstLanelet & target_lane,
+  const lanelet::ConstLanelets & lanelet_sequence, const lanelet::ConstLanelet & target_lane,
   const Pose & pose)
 {
-  const auto arc_pose = lanelet::utils::getArcCoordinates(current_lanes, pose);
+  const auto arc_pose = lanelet::utils::getArcCoordinates(lanelet_sequence, pose);
 
   const auto target_center_line = target_lane.centerline().basicLineString();
 
@@ -1497,8 +1497,8 @@ double getArcLengthToTargetLanelet(
     back_pose.orientation = tf2::toMsg(tf_quat);
   }
 
-  const auto arc_front = lanelet::utils::getArcCoordinates(current_lanes, front_pose);
-  const auto arc_back = lanelet::utils::getArcCoordinates(current_lanes, back_pose);
+  const auto arc_front = lanelet::utils::getArcCoordinates(lanelet_sequence, front_pose);
+  const auto arc_back = lanelet::utils::getArcCoordinates(lanelet_sequence, back_pose);
 
   return std::max(
     std::min(arc_front.length - arc_pose.length, arc_back.length - arc_pose.length), 0.0);
@@ -1601,17 +1601,17 @@ std::shared_ptr<PathWithLaneId> generateCenterLinePath(
     return {};  // TODO(Horibe) What should be returned?
   }
 
-  // For current_lanes with desired length
-  lanelet::ConstLanelets current_lanes = route_handler->getLaneletSequence(
+  // For lanelet_sequence with desired length
+  lanelet::ConstLanelets lanelet_sequence = route_handler->getLaneletSequence(
     current_lane, pose->pose, p.backward_path_length, p.forward_path_length);
 
   *centerline_path = getCenterLinePath(
-    *route_handler, current_lanes, pose->pose, p.backward_path_length, p.forward_path_length, p);
+    *route_handler, lanelet_sequence, pose->pose, p.backward_path_length, p.forward_path_length, p);
 
   centerline_path->header = route_handler->getRouteHeader();
 
   centerline_path->drivable_area = util::generateDrivableArea(
-    current_lanes, p.drivable_area_resolution, p.vehicle_length, planner_data);
+    lanelet_sequence, p.drivable_area_resolution, p.vehicle_length, planner_data);
 
   return centerline_path;
 }
@@ -1673,7 +1673,7 @@ void shiftPose(Pose * pose, double shift_length)
 PathWithLaneId getCenterLinePath(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & lanelet_sequence,
   const Pose & pose, const double backward_path_length, const double forward_path_length,
-  const BehaviorPathPlannerParameters & parameter)
+  const BehaviorPathPlannerParameters & parameter, double optional_length)
 {
   PathWithLaneId reference_path;
 
@@ -1686,8 +1686,8 @@ PathWithLaneId getCenterLinePath(
   const double s_backward = std::max(0., s - backward_path_length);
   double s_forward = s + forward_path_length;
 
-  const double buffer =
-    parameter.backward_length_buffer_for_end_of_lane;  // buffer for min_lane_change_length
+  const double buffer = parameter.backward_length_buffer_for_end_of_lane +
+                        optional_length;  // buffer for min_lane_change_length
   const int num_lane_change =
     std::abs(route_handler.getNumLaneToPreferredLane(lanelet_sequence.back()));
   const double lane_length = lanelet::utils::getLaneletLength2d(lanelet_sequence);
@@ -1705,6 +1705,80 @@ PathWithLaneId getCenterLinePath(
   }
 
   return route_handler.getCenterLinePath(lanelet_sequence, s_backward, s_forward, true);
+}
+
+bool checkLaneIsInIntersection(
+  const RouteHandler & route_handler, const PathWithLaneId & reference_path,
+  const lanelet::ConstLanelets & lanelet_sequence, double & additional_length_to_add)
+{
+  if (lanelet_sequence.empty()) {
+    return false;
+  }
+
+  const auto & path_points = reference_path.points;
+  auto end_of_route_pose = path_points.back().point.pose;
+
+  lanelet::ConstLanelet check_lane;
+  if (!lanelet::utils::query::getClosestLanelet(lanelet_sequence, end_of_route_pose, &check_lane)) {
+    return false;
+  }
+
+  lanelet::ConstLanelets lane_change_prohibited_lanes{check_lane};
+
+  const auto checking_rev_iter = std::find_if(
+    lanelet_sequence.crbegin(), lanelet_sequence.crend(),
+    [&check_lane](const lanelet::ConstLanelet & lanelet) noexcept {
+      return lanelet.id() == check_lane.id();
+    });
+  if (checking_rev_iter != lanelet_sequence.crend()) {
+    const auto prev_lane = std::next(checking_rev_iter);
+
+    if (prev_lane != lanelet_sequence.crend()) {
+      const auto lanes = route_handler.getNextLanelets(*prev_lane);
+      const auto isHaveNeighborWithTurnDirection =
+        [&](const lanelet::ConstLanelets & lanes) noexcept {
+          return std::any_of(lanes.cbegin(), lanes.cend(), [](const lanelet::ConstLanelet & lane) {
+            return lane.hasAttribute("turn_direction");
+          });
+        };
+
+      if (isHaveNeighborWithTurnDirection(lanes)) {
+        // lambdas
+        const auto checkAttribute = [](const lanelet::ConstLineString3d & linestring) noexcept {
+          const auto & attribute_name = lanelet::AttributeNamesString::LaneChange;
+          if (linestring.hasAttribute(attribute_name)) {
+            const auto attr = linestring.attribute(attribute_name);
+            if (attr.value() == std::string("yes")) {
+              return true;
+            }
+          }
+          return false;
+        };
+        const auto isLaneChangeAttributeYes =
+          [checkAttribute](const lanelet::ConstLanelet & lanelet) noexcept {
+            return (checkAttribute(lanelet.rightBound()) || checkAttribute(lanelet.leftBound()));
+          };
+
+        for (auto prev_ll_itr = prev_lane; prev_ll_itr != lanelet_sequence.crend(); ++prev_ll_itr) {
+          if (!isLaneChangeAttributeYes(*prev_ll_itr)) {
+            lane_change_prohibited_lanes.push_back(*prev_ll_itr);
+          } else {
+            break;
+          }
+        }
+      }
+    }
+  }
+  std::reverse(lane_change_prohibited_lanes.begin(), lane_change_prohibited_lanes.end());
+  const auto prohibited_arc_coordinate =
+    lanelet::utils::getArcCoordinates(lane_change_prohibited_lanes, end_of_route_pose);
+
+  constexpr double small_earlier_stopping_buffer = 0.2;
+  additional_length_to_add =
+    prohibited_arc_coordinate.length +
+    small_earlier_stopping_buffer;  // additional a slight "buffer so that vehicle stop earlier"
+
+  return true;
 }
 
 PathWithLaneId setDecelerationVelocity(
