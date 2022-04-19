@@ -272,3 +272,29 @@ TEST(spline_interpolation, SplineInterpolationPoints2d)
   single_points.push_back(createPoint(1.0, 0.0, 0.0));
   EXPECT_THROW(s.calcSplineCoefficients(single_points), std::logic_error);
 }
+
+TEST(spline_interpolation, SplineInterpolationPoints2dPolymorphism)
+{
+  using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+  using tier4_autoware_utils::createPoint;
+
+  std::vector<geometry_msgs::msg::Point> points;
+  points.push_back(createPoint(-2.0, -10.0, 0.0));
+  points.push_back(createPoint(2.0, 1.5, 0.0));
+  points.push_back(createPoint(3.0, 3.0, 0.0));
+
+  std::vector<TrajectoryPoint> trajectory_points;
+  for (const auto & p : points) {
+    TrajectoryPoint tp;
+    tp.pose.position = p;
+    trajectory_points.push_back(tp);
+  }
+
+  SplineInterpolationPoints2d s_point;
+  s_point.calcSplineCoefficients(points);
+  s_point.getSplineInterpolatedPoint(0, 0.);
+
+  SplineInterpolationPoints2d s_traj_point;
+  s_traj_point.calcSplineCoefficients(trajectory_points);
+  s_traj_point.getSplineInterpolatedPoint(0, 0.);
+}

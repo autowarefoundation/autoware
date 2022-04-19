@@ -35,16 +35,16 @@ std::vector<double> calcEuclidDist(const std::vector<double> & x, const std::vec
   return dist_v;
 }
 
-template <typename T>
-std::array<std::vector<double>, 3> getBaseValues(const std::vector<T> & points)
+std::array<std::vector<double>, 3> getBaseValues(
+  const std::vector<geometry_msgs::msg::Point> & points)
 {
   // calculate x, y
   std::vector<double> base_x;
   std::vector<double> base_y;
   for (size_t i = 0; i < points.size(); i++) {
-    const auto & current_pos = tier4_autoware_utils::getPoint(points.at(i));
+    const auto & current_pos = points.at(i);
     if (i > 0) {
-      const auto & prev_pos = tier4_autoware_utils::getPoint(points.at(i - 1));
+      const auto & prev_pos = points.at(i - 1);
       if (
         std::fabs(current_pos.x - prev_pos.x) < 1e-6 &&
         std::fabs(current_pos.y - prev_pos.y) < 1e-6) {
@@ -87,20 +87,6 @@ std::vector<double> slerpYawFromPoints(const std::vector<T> & points)
 template std::vector<double> slerpYawFromPoints(
   const std::vector<geometry_msgs::msg::Point> & points);
 }  // namespace interpolation
-
-template <typename T>
-void SplineInterpolationPoints2d::calcSplineCoefficients(const std::vector<T> & points)
-{
-  const auto base = getBaseValues(points);
-
-  base_s_vec_ = base.at(0);
-  const auto & base_x_vec = base.at(1);
-  const auto & base_y_vec = base.at(2);
-
-  // calculate spline coefficients
-  slerp_x_.calcSplineCoefficients(base_s_vec_, base_x_vec);
-  slerp_y_.calcSplineCoefficients(base_s_vec_, base_y_vec);
-}
 
 geometry_msgs::msg::Point SplineInterpolationPoints2d::getSplineInterpolatedPoint(
   const size_t idx, const double s) const
@@ -152,4 +138,18 @@ double SplineInterpolationPoints2d::getAccumulatedLength(const size_t idx) const
     throw std::out_of_range("idx is out of range.");
   }
   return base_s_vec_.at(idx);
+}
+
+void SplineInterpolationPoints2d::calcSplineCoefficientsInner(
+  const std::vector<geometry_msgs::msg::Point> & points)
+{
+  const auto base = getBaseValues(points);
+
+  base_s_vec_ = base.at(0);
+  const auto & base_x_vec = base.at(1);
+  const auto & base_y_vec = base.at(2);
+
+  // calculate spline coefficients
+  slerp_x_.calcSplineCoefficients(base_s_vec_, base_x_vec);
+  slerp_y_.calcSplineCoefficients(base_s_vec_, base_y_vec);
 }

@@ -46,7 +46,14 @@ public:
   SplineInterpolationPoints2d() = default;
 
   template <typename T>
-  void calcSplineCoefficients(const std::vector<T> & points);
+  void calcSplineCoefficients(const std::vector<T> & points)
+  {
+    std::vector<geometry_msgs::msg::Point> points_inner;
+    for (const auto & p : points) {
+      points_inner.push_back(tier4_autoware_utils::getPoint(p));
+    }
+    calcSplineCoefficientsInner(points_inner);
+  }
 
   // TODO(murooka) implement these functions
   // std::vector<geometry_msgs::msg::Point> getSplineInterpolatedPoints(const double width);
@@ -58,6 +65,7 @@ public:
   double getAccumulatedLength(const size_t idx) const;
 
 private:
+  void calcSplineCoefficientsInner(const std::vector<geometry_msgs::msg::Point> & points);
   SplineInterpolation slerp_x_;
   SplineInterpolation slerp_y_;
 
