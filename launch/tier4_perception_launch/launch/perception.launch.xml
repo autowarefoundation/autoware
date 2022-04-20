@@ -51,7 +51,7 @@
     <!-- occupancy grid map module -->
     <group>
       <push-ros-namespace namespace="occupancy_grid_map"/>
-      <include file="$(find-pkg-share tier4_perception_launch)/launch/occupancy_grid_map/occupancy_grid_map.launch.py">
+      <include file="$(find-pkg-share tier4_perception_launch)/launch/occupancy_grid_map/pointcloud_based_occupancy_grid_map.launch.py">
         <arg name="input/obstacle_pointcloud" value="/perception/obstacle_segmentation/single_frame/pointcloud_raw"/>
         <arg name="input/raw_pointcloud" value="/sensing/lidar/concatenated/pointcloud"/>
         <arg name="output" value="/perception/occupancy_grid_map/map"/>
