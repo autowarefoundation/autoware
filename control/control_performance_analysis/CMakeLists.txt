@@ -42,6 +42,13 @@ target_link_libraries(control_performance_analysis_node
   control_performance_analysis_core
 )
 
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(control_performance_analysis_node PUBLIC
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
+
 rclcpp_components_register_node(control_performance_analysis_node
   PLUGIN "control_performance_analysis::ControlPerformanceAnalysisNode"
   EXECUTABLE control_performance_analysis

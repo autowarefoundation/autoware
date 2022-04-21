@@ -40,6 +40,13 @@ target_link_libraries(behavior_path_planner_node
   ${OpenCV_LIBRARIES}
 )
 
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(behavior_path_planner_node PUBLIC
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
+
 rclcpp_components_register_node(behavior_path_planner_node
   PLUGIN "behavior_path_planner::BehaviorPathPlannerNode"
   EXECUTABLE behavior_path_planner

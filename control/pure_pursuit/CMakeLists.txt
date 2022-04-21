@@ -37,6 +37,13 @@ target_link_libraries(pure_pursuit_node
   pure_pursuit_core
 )
 
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(pure_pursuit_node PUBLIC
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
+
 rclcpp_components_register_node(pure_pursuit_node
   PLUGIN "pure_pursuit::PurePursuitNode"
   EXECUTABLE pure_pursuit_node_exe

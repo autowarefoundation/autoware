@@ -50,6 +50,13 @@ target_link_libraries(occupancy_grid_map_outlier_filter
   ${PCL_LIBRARIES}
 )
 
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(occupancy_grid_map_outlier_filter PUBLIC
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
+
 if(OPENMP_FOUND)
   set_target_properties(occupancy_grid_map_outlier_filter PROPERTIES
     COMPILE_FLAGS ${OpenMP_CXX_FLAGS}

@@ -17,6 +17,14 @@ ament_auto_add_library(planning_error_monitor_node SHARED
   src/planning_error_monitor_node.cpp
   src/debug_marker.cpp
 )
+
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(planning_error_monitor_node PUBLIC
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
+
 rclcpp_components_register_node(planning_error_monitor_node
   PLUGIN "planning_diagnostics::PlanningErrorMonitorNode"
   EXECUTABLE planning_error_monitor

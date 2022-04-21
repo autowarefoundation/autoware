@@ -37,6 +37,14 @@ target_link_libraries(obstacle_avoidance_planner
   ${OpenCV_LIBRARIES}
 )
 
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(obstacle_avoidance_planner PUBLIC
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
+
+
 rclcpp_components_register_node(obstacle_avoidance_planner
   PLUGIN "ObstacleAvoidancePlanner"
   EXECUTABLE obstacle_avoidance_planner_node

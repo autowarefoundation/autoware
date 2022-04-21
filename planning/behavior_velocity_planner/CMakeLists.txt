@@ -69,6 +69,12 @@ target_include_directories(scene_module_lib
 
 ament_target_dependencies(scene_module_lib ${BEHAVIOR_VELOCITY_PLANNER_DEPENDENCIES})
 
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(scene_module_lib PUBLIC
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
 
 # Scene Module: Stop Line
 ament_auto_add_library(scene_module_stop_line SHARED

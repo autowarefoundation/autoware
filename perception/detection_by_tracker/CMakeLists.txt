@@ -51,6 +51,13 @@ target_link_libraries(detection_by_tracker_node
   ${PCL_LIBRARIES}
 )
 
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(detection_by_tracker_node PUBLIC
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
+
 rclcpp_components_register_node(detection_by_tracker_node
   PLUGIN "DetectionByTracker"
   EXECUTABLE detection_by_tracker

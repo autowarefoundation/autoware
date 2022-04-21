@@ -54,6 +54,13 @@ target_link_libraries(occupancy_grid_based_validator
   Eigen3::Eigen
 )
 
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(occupancy_grid_based_validator PUBLIC
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
+
 
 # Generate obstacle pointcloud based validator exe file
 set(OBSTACLE_POINTCLOUD_BASED_VALIDATOR_SRC
@@ -68,7 +75,6 @@ target_link_libraries(obstacle_pointcloud_based_validator
   ${PCL_LIBRARIES}
   Eigen3::Eigen
 )
-
 
 rclcpp_components_register_node(obstacle_pointcloud_based_validator
   PLUGIN "obstacle_pointcloud_based_validator::ObstaclePointCloudBasedValidator"

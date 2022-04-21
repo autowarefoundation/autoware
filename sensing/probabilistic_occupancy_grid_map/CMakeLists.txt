@@ -27,6 +27,13 @@ target_link_libraries(pointcloud_based_occupancy_grid_map
   ${PCL_LIBRARIES}
 )
 
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(pointcloud_based_occupancy_grid_map PUBLIC
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
+
 rclcpp_components_register_node(pointcloud_based_occupancy_grid_map
   PLUGIN "occupancy_grid_map::PointcloudBasedOccupancyGridMapNode"
   EXECUTABLE pointcloud_based_occupancy_grid_map_node

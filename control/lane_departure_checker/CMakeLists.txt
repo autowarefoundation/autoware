@@ -28,6 +28,13 @@ ament_auto_add_library(lane_departure_checker SHARED
   src/lane_departure_checker_node/lane_departure_checker_node.cpp
 )
 
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(lane_departure_checker PUBLIC
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
+
 rclcpp_components_register_node(lane_departure_checker
   PLUGIN "lane_departure_checker::LaneDepartureCheckerNode"
   EXECUTABLE lane_departure_checker_node

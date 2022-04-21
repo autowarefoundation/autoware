@@ -63,6 +63,13 @@ ament_auto_add_library(${LATERAL_CONTROLLER_LIB} SHARED
 autoware_set_compile_options(${LATERAL_CONTROLLER_LIB})
 target_compile_options(${LATERAL_CONTROLLER_LIB} PRIVATE -Wno-error=old-style-cast)
 
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(${LATERAL_CONTROLLER_LIB} PUBLIC
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
+
 # longitudinal_controller
 set(LONGITUDINAL_CONTROLLER_LIB longitudinal_controller_lib)
 set(LONGITUDINAL_CONTROLLER_LIB_SRC
@@ -85,6 +92,13 @@ ament_auto_add_library(${LONGITUDINAL_CONTROLLER_LIB} SHARED
 )
 autoware_set_compile_options(${LONGITUDINAL_CONTROLLER_LIB})
 target_compile_options(${LONGITUDINAL_CONTROLLER_LIB} PRIVATE -Wno-error=old-style-cast)
+
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(${LONGITUDINAL_CONTROLLER_LIB} PUBLIC
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
 
 # Testing
 if(BUILD_TESTING)

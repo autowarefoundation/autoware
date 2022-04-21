@@ -57,6 +57,13 @@ target_link_libraries(lanelet2_extension_lib
   ${GeographicLib_LIBRARIES}
 )
 
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(lanelet2_extension_lib PUBLIC
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
+
 ament_auto_add_executable(lanelet2_extension_sample src/sample_code.cpp)
 add_dependencies(lanelet2_extension_sample lanelet2_extension_lib)
 target_link_libraries(lanelet2_extension_sample

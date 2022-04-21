@@ -55,6 +55,13 @@ target_link_libraries(multi_object_tracker_node
   Eigen3::Eigen
 )
 
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(multi_object_tracker_node PUBLIC
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
+
 rclcpp_components_register_node(multi_object_tracker_node
   PLUGIN "MultiObjectTracker"
   EXECUTABLE multi_object_tracker

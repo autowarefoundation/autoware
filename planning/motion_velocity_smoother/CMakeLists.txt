@@ -38,6 +38,13 @@ ament_auto_add_library(smoother SHARED
   ${SMOOTHER_SRC}
 )
 
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(smoother PUBLIC
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
+
 ament_auto_add_library(motion_velocity_smoother_node SHARED
   ${MOTION_VELOCITY_SMOOTHER_SRC}
 )
