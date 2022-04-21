@@ -1,16 +1,17 @@
-## Welcome to Autoware! 👋
+# Autoware - the world's leading open-source software project for autonomous driving
 
 ![Autoware_RViz](https://user-images.githubusercontent.com/63835446/158918717-58d6deaf-93fb-47f9-891d-e242b02cba7b.png)
+[![Discord](https://img.shields.io/discord/953808765935816715?label=Autoware%20Discord&style=for-the-badge)](https://discord.gg/Q94UsPvReQ)
 
-The [Autoware Foundation](https://www.autoware.org/) manages the development of Autoware, the world's leading open-source software project for autonomous driving, and sponsors Autoware-based projects all over the world. Autoware was started in 2015 and is being used by over 100 companies on more than 30 vehicles in over 20 different countries worldwide.
+Autoware is an open-source software stack for self-driving vehicles, built on the [Robot Operating System (ROS)](https://www.ros.org/). It includes all of the necessary functions to drive an autonomous vehicles from localization and object detection to route planning and control, and was created with the aim of enabling as many individuals and organizations as possible to contribute to open innovations in autonomous driving technology.
 
-[![Discord](https://img.shields.io/discord/953808765935816715?label=Join%20Autoware%20Discord&style=for-the-badge)](https://discord.gg/Q94UsPvReQ)
+![Autoware architecture](https://static.wixstatic.com/media/984e93_552e338be28543c7949717053cc3f11f~mv2.png/v1/crop/x_0,y_1,w_1500,h_879/fill/w_863,h_506,al_c,usm_0.66_1.00_0.01,enc_auto/Autoware-GFX_edited.png)
 
-### Documentation
+## Documentation
 
-See the [documentation site](https://autowarefoundation.github.io/autoware-documentation/main/) for details.
+To learn more about using or developing Autoware, refer to the [Autoware documentation site](https://autowarefoundation.github.io/autoware-documentation/main/). You can find the source for the documentation in [autowarefoundation/autoware-documentation](https://github.com/autowarefoundation/autoware-documentation).
 
-### Repository overview
+## Repository overview
 
 - [autowarefoundation/autoware](https://github.com/autowarefoundation/autoware)
   - Meta-repository containing `.repos` files to construct an Autoware workspace.
@@ -33,13 +34,14 @@ See the [documentation site](https://autowarefoundation.github.io/autoware-docum
   - Documentation repository for Autoware users and developers.
   - Since Autoware Core/Universe has multiple repositories, a central documentation repository is important to make information accessible from a single place.
 
-### Contribution guidelines
+## Contributing
 
 - [There is no formal process to become a contributor](https://github.com/autowarefoundation/autoware-projects/wiki#contributors) - you can comment on any [existing issues](https://github.com/autowarefoundation/autoware.universe/issues) or make a pull request on any Autoware repository!
   - Make sure to follow the [Contribution Guidelines](https://autowarefoundation.github.io/autoware-documentation/main/contributing/).
   - Take a look at Autoware's [various working groups](https://github.com/autowarefoundation/autoware-projects/wiki#working-group-list) to gain an understanding of any work in progress and to see how projects are managed.
-- If you have any questions or ideas, feel free to start a discussion on [GitHub Discussions in autowarefoundation/autoware](https://github.com/autowarefoundation/autoware/discussions).
+- If you have any technical questions, you can start a discussion in the [Q&A category](https://github.com/autowarefoundation/autoware/discussions/categories/q-a) to request help and confirm if a potential issue is a bug or not.
 
-### Useful resources
+## Useful resources
 
 - [Autoware Foundation homepage](https://www.autoware.org/)
+- [Support guidelines](https://autowarefoundation.github.io/autoware-documentation/main/help/support-guidelines/)
