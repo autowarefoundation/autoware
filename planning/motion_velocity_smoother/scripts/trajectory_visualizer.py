@@ -43,6 +43,8 @@ parser.add_argument(
 
 args = parser.parse_args()
 
+PLOT_MIN_ARCLENGTH = -5
+
 if args.length is None:
     PLOT_MAX_ARCLENGTH = 200
 else:
@@ -264,7 +266,7 @@ class TrajectoryVisualizer(Node):
 
         self.ax1.set_title("trajectory's velocity")
         self.ax1.legend()
-        self.ax1.set_xlim([0, PLOT_MAX_ARCLENGTH])
+        self.ax1.set_xlim([PLOT_MIN_ARCLENGTH, PLOT_MAX_ARCLENGTH])
         self.ax1.set_ylabel("vel [m/s]")
 
         return (
@@ -370,14 +372,11 @@ class TrajectoryVisualizer(Node):
             self.im9.set_data(x, y)
             self.update_traj_final = False
 
-            closest = self.calcClosestTrajectory(trajectory_final)
-            if closest >= 0:
-                x_closest = x[closest]
-                self.im10.set_data(x_closest, self.localization_vx)
-                self.im11.set_data(x_closest, self.vehicle_vx)
+            self.im10.set_data(0, self.localization_vx)
+            self.im11.set_data(0, self.vehicle_vx)
 
             if self.velocity_limit is not None:
-                x = [0, PLOT_MAX_ARCLENGTH]
+                x = [PLOT_MIN_ARCLENGTH, PLOT_MAX_ARCLENGTH]
                 y = [self.velocity_limit, self.velocity_limit]
                 self.im12.set_data(x, y)
 
@@ -400,13 +399,23 @@ class TrajectoryVisualizer(Node):
         )
 
     def CalcArcLength(self, traj):
+        if len(traj.points) == 0:
+            return
+
         s_arr = []
         ds = 0.0
         s_sum = 0.0
 
-        if len(traj.points) > 0:
-            s_arr.append(s_sum)
+        closest_id = self.calcClosestTrajectory(traj)
+        for i in range(1, closest_id):
+            p0 = traj.points[i - 1]
+            p1 = traj.points[i]
+            dx = p1.pose.position.x - p0.pose.position.x
+            dy = p1.pose.position.y - p0.pose.position.y
+            ds = np.sqrt(dx**2 + dy**2)
+            s_sum -= ds
 
+        s_arr.append(s_sum)
         for i in range(1, len(traj.points)):
             p0 = traj.points[i - 1]
             p1 = traj.points[i]
@@ -418,13 +427,23 @@ class TrajectoryVisualizer(Node):
         return s_arr
 
     def CalcArcLengthPathWLid(self, traj):
+        if len(traj.points) == 0:
+            return
+
         s_arr = []
         ds = 0.0
         s_sum = 0.0
 
-        if len(traj.points) > 0:
-            s_arr.append(s_sum)
+        closest_id = self.calcClosestPathWLid(traj)
+        for i in range(1, closest_id):
+            p0 = traj.points[i - 1].point
+            p1 = traj.points[i].point
+            dx = p1.pose.position.x - p0.pose.position.x
+            dy = p1.pose.position.y - p0.pose.position.y
+            ds = np.sqrt(dx**2 + dy**2)
+            s_sum -= ds
 
+        s_arr.append(s_sum)
         for i in range(1, len(traj.points)):
             p0 = traj.points[i - 1].point
             p1 = traj.points[i].point
@@ -436,13 +455,23 @@ class TrajectoryVisualizer(Node):
         return s_arr
 
     def CalcArcLengthPath(self, traj):
+        if len(traj.points) == 0:
+            return
+
         s_arr = []
         ds = 0.0
         s_sum = 0.0
 
-        if len(traj.points) > 0:
-            s_arr.append(s_sum)
+        closest_id = self.calcClosestPath(traj)
+        for i in range(1, closest_id):
+            p0 = traj.points[i - 1]
+            p1 = traj.points[i]
+            dx = p1.pose.position.x - p0.pose.position.x
+            dy = p1.pose.position.y - p0.pose.position.y
+            ds = np.sqrt(dx**2 + dy**2)
+            s_sum -= ds
 
+        s_arr.append(s_sum)
         for i in range(1, len(traj.points)):
             p0 = traj.points[i - 1]
             p1 = traj.points[i]
@@ -528,17 +557,17 @@ class TrajectoryVisualizer(Node):
         (self.im2,) = self.ax1.plot([], [], label="4: final velocity", marker="")
         self.ax1.set_title("trajectory's velocity")
         self.ax1.legend()
-        self.ax1.set_xlim([0, PLOT_MAX_ARCLENGTH])
+        self.ax1.set_xlim([PLOT_MIN_ARCLENGTH, PLOT_MAX_ARCLENGTH])
         self.ax1.set_ylabel("vel [m/s]")
 
         self.ax2 = plt.subplot(3, 1, 2)
-        self.ax2.set_xlim([0, PLOT_MAX_ARCLENGTH])
+        self.ax2.set_xlim([PLOT_MIN_ARCLENGTH, PLOT_MAX_ARCLENGTH])
         self.ax2.set_ylim([-1, 1])
         self.ax2.set_ylabel("acc [m/ss]")
         (self.im3,) = self.ax2.plot([], [], label="final accel")
 
         self.ax3 = plt.subplot(3, 1, 3)
-        self.ax3.set_xlim([0, PLOT_MAX_ARCLENGTH])
+        self.ax3.set_xlim([PLOT_MIN_ARCLENGTH, PLOT_MAX_ARCLENGTH])
         self.ax3.set_ylim([-2, 2])
         self.ax3.set_xlabel("arclength [m]")
         self.ax3.set_ylabel("jerk [m/sss]")
