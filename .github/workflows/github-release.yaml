@@ -34,9 +34,16 @@ jobs:
           fetch-depth: 0
           ref: ${{ steps.set-tag-name.outputs.ref-name }}
 
-      - name: Create a temporary local tag for beta branches
+      - name: Set target name for beta branches
+        id: set-target-name
         run: |
           if [[ "${{ steps.set-tag-name.outputs.ref-name }}" =~ "beta/" ]]; then
+            echo ::set-output name=target-name::"${{ steps.set-tag-name.outputs.ref-name }}"
+          fi
+
+      - name: Create a local tag for beta branches
+        run: |
+          if [ "${{ steps.set-target-name.outputs.target-name }}" != "" ]; then
             git tag "${{ steps.set-tag-name.outputs.tag-name }}"
           fi
 
@@ -44,16 +51,11 @@ jobs:
         id: generate-changelog
         uses: autowarefoundation/autoware-github-actions/generate-changelog@v1
 
-      - name: Remove the temporary local tag for beta branches
-        run: |
-          if [[ "${{ steps.set-tag-name.outputs.ref-name }}" =~ "beta/" ]]; then
-            git tag -d "${{ steps.set-tag-name.outputs.tag-name }}"
-          fi
-
       - name: Release to GitHub
         run: |
           gh release create "${{ steps.set-tag-name.outputs.tag-name }}" \
             --draft \
+            --target "${{ steps.set-target-name.outputs.target-name }}" \
             --title "Release ${{ steps.set-tag-name.outputs.tag-name }}" \
             --notes "$NOTES"
         env:
