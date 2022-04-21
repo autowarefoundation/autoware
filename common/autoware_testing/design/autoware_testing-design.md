@@ -38,7 +38,7 @@ Where
 
 `<executable_name>` - [required] tested node executable name.
 
-`<param_filename>` - [optional] param filename. Default value is `test.param.yaml`. Required mostly in situation where there are multiple smoke tests in a package and each requires different paramteres set
+`<param_filename>` - [optional] param filename. Default value is `test.param.yaml`. Required mostly in situation where there are multiple smoke tests in a package and each requires different parameters set
 
 `<arguments>` - [optional] arguments passed to executable. By default no arguments are passed.
 
@@ -52,7 +52,7 @@ build/<package_name>/test_results/<package_name>/<executable_name>_smoke_test.xu
 
 ## References / External links
 
-- <https://en.wikipedia.org/wiki/Smoke_testing_(software>)
+- <https://en.wikipedia.org/wiki/Smoke_testing_(software)>
 - <https://github.com/ros2/ros_testing>
 - <https://github.com/ros2/launch/blob/master/launch_testing>
 
