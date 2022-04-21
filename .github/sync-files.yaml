@@ -12,6 +12,7 @@
     - source: .github/PULL_REQUEST_TEMPLATE/standard-change.md
     - source: .github/dependabot.yaml
     - source: .github/stale.yml
+    - source: .github/workflows/github-release.yaml
     - source: .github/workflows/pre-commit.yaml
     - source: .github/workflows/pre-commit-optional.yaml
     - source: .github/workflows/semantic-pull-request.yaml
