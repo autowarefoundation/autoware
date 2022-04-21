@@ -186,7 +186,10 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
 
   // Start Request
   const auto use_start_request = declare_parameter("use_start_request", false);
-  start_request_ = std::make_unique<StartRequest>(this, use_start_request);
+  const auto stopped_state_entry_duration_time =
+    declare_parameter("stopped_state_entry_duration_time", 0.1);
+  start_request_ =
+    std::make_unique<StartRequest>(this, use_start_request, stopped_state_entry_duration_time);
 
   // Timer
   const auto period_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -676,7 +679,8 @@ void VehicleCmdGate::checkExternalEmergencyStop(diagnostic_updater::DiagnosticSt
   stat.summary(status.level, status.message);
 }
 
-VehicleCmdGate::StartRequest::StartRequest(rclcpp::Node * node, bool use_start_request)
+VehicleCmdGate::StartRequest::StartRequest(
+  rclcpp::Node * node, bool use_start_request, double stopped_state_entry_duration_time)
 {
   using std::placeholders::_1;
 
@@ -697,6 +701,9 @@ VehicleCmdGate::StartRequest::StartRequest(rclcpp::Node * node, bool use_start_r
   current_twist_sub_ = node_->create_subscription<nav_msgs::msg::Odometry>(
     "/localization/kinematic_state", rclcpp::QoS(1),
     std::bind(&VehicleCmdGate::StartRequest::onCurrentTwist, this, _1));
+
+  last_running_time_ = std::make_shared<rclcpp::Time>(node_->now());
+  stopped_state_entry_duration_time_ = stopped_state_entry_duration_time;
 }
 
 void VehicleCmdGate::StartRequest::onCurrentTwist(nav_msgs::msg::Odometry::ConstSharedPtr msg)
@@ -730,7 +737,15 @@ void VehicleCmdGate::StartRequest::checkStopped(const ControlCommandStamped & co
   if (is_start_accepted_) {
     const auto control_velocity = std::abs(control.longitudinal.speed);
     const auto current_velocity = std::abs(current_twist_.twist.twist.linear.x);
-    if (control_velocity < eps && current_velocity < eps) {
+
+    if (eps < current_velocity) {
+      last_running_time_ = std::make_shared<rclcpp::Time>(node_->now());
+    }
+
+    const auto is_stopped =
+      stopped_state_entry_duration_time_ < (node_->now() - *last_running_time_).seconds();
+
+    if (control_velocity < eps && is_stopped) {
       is_start_accepted_ = false;
       is_start_cancelled_ = true;
       RCLCPP_INFO(node_->get_logger(), "clear start request");

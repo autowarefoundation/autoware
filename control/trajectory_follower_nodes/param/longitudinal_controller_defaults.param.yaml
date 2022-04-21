@@ -11,6 +11,7 @@
     drive_state_stop_dist: 0.5
     drive_state_offset_stop_dist: 1.0
     stopping_state_stop_dist: 0.49
+    stopped_state_entry_duration_time: 0.1
     stopped_state_entry_vel: 0.1
     stopped_state_entry_acc: 0.1
     emergency_state_overshoot_stop_dist: 1.5

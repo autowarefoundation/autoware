@@ -5,6 +5,7 @@
     external_emergency_stop_heartbeat_timeout: 0.0
     stop_hold_acceleration: -1.5
     emergency_acceleration: -2.4
+    stopped_state_entry_duration_time: 0.1
     vel_lim: 25.0
     lon_acc_lim: 5.0
     lon_jerk_lim: 5.0

@@ -218,7 +218,8 @@ private:
     using ControlCommandStamped = autoware_auto_control_msgs::msg::AckermannControlCommand;
 
   public:
-    StartRequest(rclcpp::Node * node, bool use_start_request);
+    StartRequest(
+      rclcpp::Node * node, bool use_start_request, double stopped_state_entry_duration_time);
     bool isAccepted();
     void publishStartAccepted();
     void checkStopped(const ControlCommandStamped & control);
@@ -230,6 +231,9 @@ private:
     bool is_start_accepted_;
     bool is_start_cancelled_;
     nav_msgs::msg::Odometry current_twist_;
+
+    std::shared_ptr<rclcpp::Time> last_running_time_;
+    double stopped_state_entry_duration_time_;
 
     rclcpp::Node * node_;
     rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr request_start_cli_;
