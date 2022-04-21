@@ -129,10 +129,10 @@ inline geometry_msgs::msg::Pose getPose(
 
 // create detection area from given range return false if creation failure
 bool createDetectionAreaPolygons(
-  Polygons2d & slices, const PathWithLaneId & path, const DetectionRange da_range,
-  const double obstacle_vel_mps);
+  Polygons2d & slices, const PathWithLaneId & path, const geometry_msgs::msg::Pose & current_pose,
+  const DetectionRange & da_range, const double obstacle_vel_mps, const double min_velocity = 1.0);
 PathPoint getLerpPathPointWithLaneId(const PathPoint p0, const PathPoint p1, const double ratio);
-Point2d calculateLateralOffsetPoint2d(const Pose & p, const double offset);
+Point2d calculateOffsetPoint2d(const Pose & pose, const double offset_x, const double offset_y);
 void extractClosePartition(
   const geometry_msgs::msg::Point position, const BasicPolygons2d & all_partitions,
   BasicPolygons2d & close_partition, const double distance_thresh = 30.0);

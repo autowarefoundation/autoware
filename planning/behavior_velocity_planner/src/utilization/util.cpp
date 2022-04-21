@@ -23,10 +23,10 @@ namespace behavior_velocity_planner
 {
 namespace planning_utils
 {
-Point2d calculateLateralOffsetPoint2d(const Pose & pose, const double offset)
+Point2d calculateOffsetPoint2d(const Pose & pose, const double offset_x, const double offset_y)
 {
   using tier4_autoware_utils::calcOffsetPose;
-  return to_bg2d(calcOffsetPose(pose, 0.0, offset, 0.0));
+  return to_bg2d(calcOffsetPose(pose, offset_x, offset_y, 0.0));
 }
 
 PathPoint getLerpPathPointWithLaneId(const PathPoint p0, const PathPoint p1, const double ratio)
@@ -48,8 +48,8 @@ PathPoint getLerpPathPointWithLaneId(const PathPoint p0, const PathPoint p1, con
 }
 
 bool createDetectionAreaPolygons(
-  Polygons2d & da_polys, const PathWithLaneId & path, const DetectionRange da_range,
-  const double obstacle_vel_mps)
+  Polygons2d & da_polys, const PathWithLaneId & path, const geometry_msgs::msg::Pose & pose,
+  const DetectionRange & da_range, const double obstacle_vel_mps, const double min_velocity)
 {
   /**
    * @brief relationships for interpolated polygon
@@ -63,44 +63,45 @@ bool createDetectionAreaPolygons(
   const double min_dst = da_range.min_lateral_distance;
   const double max_dst = da_range.max_lateral_distance;
   const double interval = da_range.interval;
-  const double min_velocity = 0.5;  // min velocity that autoware can cruise stably
+
   //! max index is the last index of path point
   const size_t max_index = static_cast<size_t>(path.points.size() - 1);
-  double dist_sum = 0;
-  size_t first_idx = 0;  // first path point found in front of ego front bumper + offset
-  const auto & pp = path.points;
   //! avoid bug with same point polygon
   const double eps = 1e-3;
-  if (path.points.size() < 2) return false;  // case of path point is only one
-  auto p0 = path.points.front().point;
-  // handle the first point
-  {
-    double current_dist = 0.0;
-    for (size_t i = 1; i <= max_index - 1; i++) {
-      dist_sum += tier4_autoware_utils::calcDistance2d(pp.at(i - 1), pp.at(i));
-      if (dist_sum > min_len) {
-        first_idx = i;
-        break;
-      }
-      current_dist = dist_sum;
-    }
-    if (first_idx == 0) return false;  // case of all path point is behind ego front bumper + offset
-    const double ds = dist_sum - current_dist;
-    if (std::abs(ds) < eps) {
-      p0 = pp.at(first_idx - 1).point;
-    } else {
-      const double ratio = (min_len - current_dist) / ds;
-      p0 = getLerpPathPointWithLaneId(pp.at(first_idx - 1).point, pp.at(first_idx).point, ratio);
-    }
+  auto nearest_idx = tier4_autoware_utils::findNearestIndex(path.points, pose.position);
+  if (max_index == nearest_idx) return false;  // case of path point is not enough size
+  auto p0 = path.points.at(nearest_idx).point;
+  auto first_idx = nearest_idx + 1;
+
+  // use ego point as start point if same point as ego is not in the path
+  const auto dist_to_nearest =
+    std::fabs(tier4_autoware_utils::calcSignedArcLength(path.points, pose.position, nearest_idx));
+  if (dist_to_nearest > eps) {
+    const auto nearest_seg_idx =
+      tier4_autoware_utils::findNearestSegmentIndex(path.points, pose.position);
+
+    // interpolate ego point
+    const auto & pp = path.points;
+    const double ds =
+      tier4_autoware_utils::calcDistance2d(pp.at(nearest_seg_idx), pp.at(nearest_seg_idx + 1));
+    const double dist_to_nearest_seg =
+      tier4_autoware_utils::calcSignedArcLength(path.points, nearest_seg_idx, pose.position);
+    const double ratio = dist_to_nearest_seg / ds;
+    p0 = getLerpPathPointWithLaneId(
+      pp.at(nearest_seg_idx).point, pp.at(nearest_seg_idx + 1).point, ratio);
+
+    // new first index should be ahead of p0
+    first_idx = nearest_seg_idx + 1;
   }
+
   double ttc = 0.0;
-  dist_sum = min_len;
+  double dist_sum = 0.0;
   double length = 0;
   // initial point of detection area polygon
-  LineString2d left_inner_bound = {calculateLateralOffsetPoint2d(p0.pose, min_dst)};
-  LineString2d left_outer_bound = {calculateLateralOffsetPoint2d(p0.pose, min_dst + eps)};
-  LineString2d right_inner_bound = {calculateLateralOffsetPoint2d(p0.pose, -min_dst)};
-  LineString2d right_outer_bound = {calculateLateralOffsetPoint2d(p0.pose, -min_dst - eps)};
+  LineString2d left_inner_bound = {calculateOffsetPoint2d(p0.pose, min_len, min_dst)};
+  LineString2d left_outer_bound = {calculateOffsetPoint2d(p0.pose, min_len, min_dst + eps)};
+  LineString2d right_inner_bound = {calculateOffsetPoint2d(p0.pose, min_len, -min_dst)};
+  LineString2d right_outer_bound = {calculateOffsetPoint2d(p0.pose, min_len, -min_dst - eps)};
   for (size_t s = first_idx; s <= max_index; s++) {
     const auto p1 = path.points.at(s).point;
     const double ds = tier4_autoware_utils::calcDistance2d(p0, p1);
@@ -115,13 +116,14 @@ bool createDetectionAreaPolygons(
     const double max_lateral_distance = std::min(max_dst, min_dst + ttc * obstacle_vel_mps + eps);
     // left bound
     if (da_range.use_left) {
-      left_inner_bound.emplace_back(calculateLateralOffsetPoint2d(p1.pose, min_dst));
-      left_outer_bound.emplace_back(calculateLateralOffsetPoint2d(p1.pose, max_lateral_distance));
+      left_inner_bound.emplace_back(calculateOffsetPoint2d(p1.pose, min_len, min_dst));
+      left_outer_bound.emplace_back(calculateOffsetPoint2d(p1.pose, min_len, max_lateral_distance));
     }
     // right bound
     if (da_range.use_right) {
-      right_inner_bound.emplace_back(calculateLateralOffsetPoint2d(p1.pose, -min_dst));
-      right_outer_bound.emplace_back(calculateLateralOffsetPoint2d(p1.pose, -max_lateral_distance));
+      right_inner_bound.emplace_back(calculateOffsetPoint2d(p1.pose, min_len, -min_dst));
+      right_outer_bound.emplace_back(
+        calculateOffsetPoint2d(p1.pose, min_len, -max_lateral_distance));
     }
     // replace previous point with next point
     p0 = p1;

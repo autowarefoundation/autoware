@@ -208,7 +208,7 @@ struct DebugData
 PathWithLaneId applyVelocityToPath(const PathWithLaneId & path, const double v0);
 //!< @brief wrapper for detection area polygon generation
 bool buildDetectionAreaPolygon(
-  Polygons2d & slices, const PathWithLaneId & path, const double offset,
+  Polygons2d & slices, const PathWithLaneId & path, const geometry_msgs::msg::Pose & pose,
   const PlannerParam & param);
 lanelet::ConstLanelet toPathLanelet(const PathWithLaneId & path);
 // Note : consider offset_from_start_to_ego and safety margin for collision here
