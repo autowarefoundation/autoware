@@ -3,7 +3,7 @@
 <package format="3">
   <name>autoware_auto_tf2</name>
   <version>1.0.0</version>
-  <description>Transform related utilites for different msg types</description>
+  <description>Transform related utilities for different msg types</description>
   <maintainer email="jit.ray.c@gmail.com">Jit Ray Chowdhury</maintainer>
   <license>Apache 2</license>
 

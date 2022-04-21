@@ -3,7 +3,7 @@
 <package format="2">
   <name>autoware_auto_common</name>
   <version>1.0.0</version>
-  <description>Miscelaneous helper functions</description>
+  <description>Miscellaneous helper functions</description>
   <maintainer email="opensource@apex.ai">Apex.AI, Inc.</maintainer>
   <license>Apache 2</license>
 
