@@ -166,6 +166,9 @@ inline bool smoothPath(
   // Resample trajectory with ego-velocity based interval distances
   auto traj_resampled = smoother->resampleTrajectory(traj_with_ego_point_on_path, v0, nearest_idx);
   const auto traj_resampled_closest = findNearestIndex(*traj_resampled, current_pose, max, M_PI_4);
+  if (!traj_resampled_closest) {
+    return false;
+  }
   std::vector<TrajectoryPoints> debug_trajectories;
   // Clip trajectory from closest point
   TrajectoryPoints clipped;
