@@ -103,6 +103,7 @@ bool LidarApolloInstanceSegmentation::transformCloud(
         tf2::transformToEigen(transform_stamped.transform).matrix().cast<float>();
       pcl::transformPointCloud(pcl_input, pcl_transformed_cloud, affine_matrix);
       transformed_cloud.header.frame_id = target_frame_;
+      pcl_transformed_cloud.header.frame_id = target_frame_;
     } catch (tf2::TransformException & ex) {
       RCLCPP_WARN(node_->get_logger(), "%s", ex.what());
       return false;
