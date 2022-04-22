@@ -1,0 +1,63 @@
+name: github-release
+
+on:
+  push:
+    branches:
+      - beta/v*
+    tags:
+      - v*
+  workflow_dispatch:
+    inputs:
+      beta-branch-or-tag-name:
+        type: string
+        required: true
+
+jobs:
+  github-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set tag name
+        id: set-tag-name
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            REF_NAME="${{ github.event.inputs.beta-branch-or-tag-name }}"
+          else
+            REF_NAME="${{ github.ref_name }}"
+          fi
+
+          echo ::set-output name=ref-name::"$REF_NAME"
+          echo ::set-output name=tag-name::"${REF_NAME#beta/}"
+
+      - name: Check out repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ steps.set-tag-name.outputs.ref-name }}
+
+      - name: Set target name for beta branches
+        id: set-target-name
+        run: |
+          if [[ "${{ steps.set-tag-name.outputs.ref-name }}" =~ "beta/" ]]; then
+            echo ::set-output name=target-name::"${{ steps.set-tag-name.outputs.ref-name }}"
+          fi
+
+      - name: Create a local tag for beta branches
+        run: |
+          if [ "${{ steps.set-target-name.outputs.target-name }}" != "" ]; then
+            git tag "${{ steps.set-tag-name.outputs.tag-name }}"
+          fi
+
+      - name: Run generate-changelog
+        id: generate-changelog
+        uses: autowarefoundation/autoware-github-actions/generate-changelog@v1
+
+      - name: Release to GitHub
+        run: |
+          gh release create "${{ steps.set-tag-name.outputs.tag-name }}" \
+            --draft \
+            --target "${{ steps.set-target-name.outputs.target-name }}" \
+            --title "Release ${{ steps.set-tag-name.outputs.tag-name }}" \
+            --notes "$NOTES"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NOTES: ${{ steps.generate-changelog.outputs.changelog }}
