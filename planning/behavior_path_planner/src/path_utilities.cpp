@@ -313,10 +313,15 @@ std::pair<TurnIndicatorsCommand, double> getPathTurnSignal(
   }
 
   bool cross_line = false;
-  if (
-    left_start_point_is_in_lane != left_end_point_is_in_lane ||
-    right_start_point_is_in_lane != right_end_point_is_in_lane) {
+  bool TEMPORARY_SET_CROSSLINE_TRUE =
+    true;  // due to a bug. See link:
+           // https://github.com/autowarefoundation/autoware.universe/pull/748
+  if (TEMPORARY_SET_CROSSLINE_TRUE) {
     cross_line = true;
+  } else {
+    cross_line =
+      (left_start_point_is_in_lane != left_end_point_is_in_lane ||
+       right_start_point_is_in_lane != right_end_point_is_in_lane);
   }
 
   if (time_to_shift_start < prev_sec || distance_to_shift_start < tl_on_threshold_long) {
