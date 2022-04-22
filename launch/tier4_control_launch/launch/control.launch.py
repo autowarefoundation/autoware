@@ -31,6 +31,7 @@ import yaml
 
 
 def launch_setup(context, *args, **kwargs):
+    lateral_controller_mode = LaunchConfiguration("lateral_controller_mode").perform(context)
     vehicle_info_param_path = LaunchConfiguration("vehicle_info_param_file").perform(context)
     with open(vehicle_info_param_path, "r") as f:
         vehicle_info_param = yaml.safe_load(f)["/**"]["ros__parameters"]
@@ -43,7 +44,9 @@ def launch_setup(context, *args, **kwargs):
     latlon_muxer_param_path = LaunchConfiguration("latlon_muxer_param_path").perform(context)
     with open(latlon_muxer_param_path, "r") as f:
         latlon_muxer_param = yaml.safe_load(f)["/**"]["ros__parameters"]
-
+    pure_pursuit_param_path = LaunchConfiguration("pure_pursuit_param_path").perform(context)
+    with open(pure_pursuit_param_path, "r") as f:
+        pure_pursuit_param = yaml.safe_load(f)["/**"]["ros__parameters"]
     vehicle_cmd_gate_param_path = LaunchConfiguration("vehicle_cmd_gate_param_path").perform(
         context
     )
@@ -72,6 +75,22 @@ def launch_setup(context, *args, **kwargs):
         parameters=[
             lat_controller_param,
             vehicle_info_param,
+        ],
+        extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
+    )
+
+    pure_pursuit_component = ComposableNode(
+        package="pure_pursuit",
+        plugin="pure_pursuit::PurePursuitNode",
+        name="pure_pursuit_node_exe",
+        namespace="trajectory_follower",
+        remappings=[
+            ("input/reference_trajectory", "/planning/scenario_planning/trajectory"),
+            ("input/current_odometry", "/localization/kinematic_state"),
+            ("output/control_raw", "lateral/control_cmd"),
+        ],
+        parameters=[
+            pure_pursuit_param,
         ],
         extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
     )
@@ -238,11 +257,18 @@ def launch_setup(context, *args, **kwargs):
     )
 
     # lateral controller is separated since it may be another controller (e.g. pure pursuit)
-    lat_controller_loader = LoadComposableNodes(
-        composable_node_descriptions=[lat_controller_component],
-        target_container=container,
-        # condition=LaunchConfigurationEquals("lateral_controller_mode", "mpc"),
-    )
+    if lateral_controller_mode == "mpc_follower":
+        lat_controller_loader = LoadComposableNodes(
+            composable_node_descriptions=[lat_controller_component],
+            target_container=container,
+            # condition=LaunchConfigurationEquals("lateral_controller_mode", "mpc"),
+        )
+    elif lateral_controller_mode == "pure_pursuit":
+        lat_controller_loader = LoadComposableNodes(
+            composable_node_descriptions=[pure_pursuit_component],
+            target_container=container,
+            # condition=LaunchConfigurationEquals("lateral_controller_mode", "mpc"),
+        )
 
     group = GroupAction(
         [
@@ -265,11 +291,13 @@ def generate_launch_description():
             DeclareLaunchArgument(name, default_value=default_value, description=description)
         )
 
-    # add_launch_arg(
-    #     "lateral_controller_mode",
-    #     "mpc_follower",
-    #     "lateral controller mode: `mpc_follower` or `pure_pursuit`",
-    # )
+    # lateral controller
+
+    add_launch_arg(
+        "lateral_controller_mode",
+        "mpc_follower",
+        "lateral controller mode: `mpc_follower` or `pure_pursuit`",
+    )
 
     add_launch_arg(
         "vehicle_info_param_file",
@@ -285,6 +313,14 @@ def generate_launch_description():
         [
             FindPackageShare("tier4_control_launch"),
             "/config/trajectory_follower/lateral_controller.param.yaml",
+        ],
+        "path to the parameter file of lateral controller",
+    )
+    add_launch_arg(
+        "pure_pursuit_param_path",
+        [
+            FindPackageShare("pure_pursuit"),
+            "/config/pure_pursuit.param.yaml",
         ],
         "path to the parameter file of lateral controller",
     )
