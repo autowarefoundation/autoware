@@ -24,6 +24,7 @@
 #include <rviz_common/properties/float_property.hpp>
 #include <rviz_common/properties/parse_color.hpp>
 #include <rviz_common/validate_floats.hpp>
+#include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_auto_planning_msgs/msg/trajectory.hpp>
 
@@ -37,6 +38,9 @@
 
 namespace rviz_plugins
 {
+using vehicle_info_util::VehicleInfo;
+using vehicle_info_util::VehicleInfoUtil;
+
 class AutowareTrajectoryFootprintDisplay
 : public rviz_common::MessageFilterDisplay<autoware_auto_planning_msgs::msg::Trajectory>
 {
@@ -79,6 +83,7 @@ protected:
     }
     float length, width, rear_overhang;
   };
+  std::shared_ptr<VehicleInfo> vehicle_info_;
   std::shared_ptr<VehicleFootprintInfo> vehicle_footprint_info_;
 
 private:

@@ -88,6 +88,20 @@ void AutowarePathFootprintDisplay::processMessage(
     return;
   }
 
+  // This doesn't work in the constructor.
+  if (!vehicle_info_) {
+    try {
+      vehicle_info_ = std::make_shared<VehicleInfo>(
+        VehicleInfoUtil(*rviz_ros_node_.lock()->get_raw_node()).getVehicleInfo());
+      updateVehicleInfo();
+    } catch (const std::exception & e) {
+      RCLCPP_WARN_THROTTLE(
+        rviz_ros_node_.lock()->get_raw_node()->get_logger(),
+        *rviz_ros_node_.lock()->get_raw_node()->get_clock(), 5000, "Failed to get vehicle_info: %s",
+        e.what());
+    }
+  }
+
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
   if (!context_->getFrameManager()->getTransform(msg_ptr->header, position, orientation)) {
@@ -172,11 +186,17 @@ void AutowarePathFootprintDisplay::updateVisualization()
 
 void AutowarePathFootprintDisplay::updateVehicleInfo()
 {
-  float length{property_vehicle_length_->getFloat()};
-  float width{property_vehicle_width_->getFloat()};
-  float rear_overhang{property_rear_overhang_->getFloat()};
+  if (vehicle_info_) {
+    vehicle_footprint_info_ = std::make_shared<VehicleFootprintInfo>(
+      vehicle_info_->vehicle_length_m, vehicle_info_->vehicle_width_m,
+      vehicle_info_->rear_overhang_m);
+  } else {
+    const float length{property_vehicle_length_->getFloat()};
+    const float width{property_vehicle_width_->getFloat()};
+    const float rear_overhang{property_rear_overhang_->getFloat()};
 
-  vehicle_footprint_info_ = std::make_shared<VehicleFootprintInfo>(length, width, rear_overhang);
+    vehicle_footprint_info_ = std::make_shared<VehicleFootprintInfo>(length, width, rear_overhang);
+  }
 }
 
 }  // namespace rviz_plugins
