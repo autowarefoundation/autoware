@@ -132,6 +132,8 @@ void EmergencyHandler::publishControlCommands()
     autoware_auto_control_msgs::msg::AckermannControlCommand msg;
     msg = selectAlternativeControlCommand();
     msg.stamp = stamp;
+    msg.lateral.stamp = stamp;
+    msg.longitudinal.stamp = stamp;
     pub_control_command_->publish(msg);
   }
 
