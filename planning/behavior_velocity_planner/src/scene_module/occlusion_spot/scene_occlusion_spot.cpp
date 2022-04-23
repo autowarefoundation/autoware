@@ -104,22 +104,22 @@ bool OcclusionSpotModule::modifyPathVelocity(
   const geometry_msgs::msg::Pose ego_pose = planner_data_->current_pose.pose;
   PathWithLaneId clipped_path;
   utils::clipPathByLength(*path, clipped_path, param_.detection_area_length);
-  PathWithLaneId interp_path;
+  PathWithLaneId path_interpolated;
   //! never change this interpolation interval(will affect module accuracy)
-  splineInterpolate(clipped_path, 1.0, &interp_path, logger_);
-  const geometry_msgs::msg::Point start_point = interp_path.points.at(0).point.pose.position;
+  splineInterpolate(clipped_path, 1.0, &path_interpolated, logger_);
+  const geometry_msgs::msg::Point start_point = path_interpolated.points.at(0).point.pose.position;
   const auto offset = tier4_autoware_utils::calcSignedArcLength(
-    interp_path.points, ego_pose, start_point, param_.dist_thr, param_.angle_thr);
+    path_interpolated.points, ego_pose, start_point, param_.dist_thr, param_.angle_thr);
   if (offset == boost::none) return true;
   const double offset_from_start_to_ego = -offset.get();
   const bool show_time = param_.is_show_processing_time;
   if (show_time) stop_watch_.tic("processing_time");
   PathWithLaneId predicted_path;
   if (param_.pass_judge == utils::PASS_JUDGE::CURRENT_VELOCITY) {
-    predicted_path = utils::applyVelocityToPath(interp_path, param_.v.v_ego);
+    predicted_path = utils::applyVelocityToPath(path_interpolated, param_.v.v_ego);
   } else if (param_.pass_judge == utils::PASS_JUDGE::SMOOTH_VELOCITY) {
-    if (!smoothPath(interp_path, predicted_path, planner_data_)) {
-      predicted_path = utils::applyVelocityToPath(interp_path, param_.v.v_ego);
+    if (!smoothPath(path_interpolated, predicted_path, planner_data_)) {
+      predicted_path = utils::applyVelocityToPath(path_interpolated, param_.v.v_ego);
       // use current ego velocity in path if optimization failure
     }
   }
@@ -158,7 +158,7 @@ bool OcclusionSpotModule::modifyPathVelocity(
     DEBUG_PRINT(show_time, "grid [ms]: ", stop_watch_.toc("processing_time", true));
     // Note: Don't consider offset from path start to ego here
     if (!utils::generatePossibleCollisionsFromGridMap(
-          possible_collisions, grid_map, interp_path, offset_from_start_to_ego, param_,
+          possible_collisions, grid_map, path_interpolated, offset_from_start_to_ego, param_,
           debug_data_)) {
       // no occlusion spot
       return true;
@@ -167,14 +167,15 @@ bool OcclusionSpotModule::modifyPathVelocity(
     const auto stuck_vehicles = extractStuckVehicle(filtered_vehicles, param_.stuck_vehicle_vel);
     // Note: Don't consider offset from path start to ego here
     if (!utils::generatePossibleCollisionsFromObjects(
-          possible_collisions, interp_path, param_, offset_from_start_to_ego, stuck_vehicles)) {
+          possible_collisions, path_interpolated, param_, offset_from_start_to_ego,
+          stuck_vehicles)) {
       // no occlusion spot
       return true;
     }
   }
   DEBUG_PRINT(show_time, "occlusion [ms]: ", stop_watch_.toc("processing_time", true));
   DEBUG_PRINT(show_time, "num collision:", possible_collisions.size());
-  utils::calcSlowDownPointsForPossibleCollision(0, interp_path, 0.0, possible_collisions);
+  utils::calcSlowDownPointsForPossibleCollision(0, path_interpolated, 0.0, possible_collisions);
   // Note: Consider offset from path start to ego here
   utils::handleCollisionOffset(possible_collisions, offset_from_start_to_ego);
   // apply safe velocity using ebs and pbs deceleration
@@ -182,7 +183,7 @@ bool OcclusionSpotModule::modifyPathVelocity(
   // these debug topics needs computation resource
   debug_data_.z = path->points.front().point.pose.position.z;
   debug_data_.possible_collisions = possible_collisions;
-  debug_data_.interp_path = interp_path;
+  debug_data_.path_interpolated = path_interpolated;
   debug_data_.path_raw = clipped_path;
   DEBUG_PRINT(show_time, "total [ms]: ", stop_watch_.toc("total_processing_time", true));
   return true;

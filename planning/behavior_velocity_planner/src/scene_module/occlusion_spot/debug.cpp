@@ -300,13 +300,13 @@ visualization_msgs::msg::MarkerArray OcclusionSpotModule::createDebugMarkerArray
       makePolygonMarker(debug_data_.close_partition, "close_partition", module_id_, debug_data_.z),
       current_time, &debug_marker_array);
   }
-  if (!debug_data_.interp_path.points.empty()) {
+  if (!debug_data_.path_interpolated.points.empty()) {
     appendMarkerArray(
       createPathMarkerArray(debug_data_.path_raw, "path_raw", 0, 0.0, 1.0, 1.0), current_time,
       &debug_marker_array);
     appendMarkerArray(
-      createPathMarkerArray(debug_data_.interp_path, "path_interp", 0, 0.0, 1.0, 1.0), current_time,
-      &debug_marker_array);
+      createPathMarkerArray(debug_data_.path_interpolated, "path_interpolated", 0, 0.0, 1.0, 1.0),
+      current_time, &debug_marker_array);
   }
   if (!debug_data_.occlusion_points.empty()) {
     appendMarkerArray(
