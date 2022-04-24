@@ -21,6 +21,11 @@ ament_auto_add_library(pointcloud_map_loader_node SHARED
 )
 target_link_libraries(pointcloud_map_loader_node ${PCL_LIBRARIES})
 
+target_include_directories(pointcloud_map_loader_node
+  SYSTEM PUBLIC
+    ${PCL_INCLUDE_DIRS}
+)
+
 rclcpp_components_register_node(pointcloud_map_loader_node
   PLUGIN "PointCloudMapLoaderNode"
   EXECUTABLE pointcloud_map_loader
