@@ -35,8 +35,14 @@ ament_auto_add_library(control_performance_analysis_node SHARED
   src/control_performance_analysis_node.cpp
 )
 
-rosidl_target_interfaces(control_performance_analysis_node
-  control_performance_analysis_msgs "rosidl_typesupport_cpp")
+if(${rosidl_cmake_VERSION} VERSION_LESS 2.5.0)
+  rosidl_target_interfaces(control_performance_analysis_node
+    control_performance_analysis_msgs "rosidl_typesupport_cpp")
+else()
+  rosidl_get_typesupport_target(
+    cpp_typesupport_target control_performance_analysis_msgs "rosidl_typesupport_cpp")
+  target_link_libraries(control_performance_analysis_node "${cpp_typesupport_target}")
+endif()
 
 target_link_libraries(control_performance_analysis_node
   control_performance_analysis_core
