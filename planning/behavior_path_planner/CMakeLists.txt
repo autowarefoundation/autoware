@@ -36,6 +36,10 @@ ament_auto_add_library(behavior_path_planner_node SHARED
   src/scene_module/pull_out/util.cpp
 )
 
+target_include_directories(behavior_path_planner_node SYSTEM PUBLIC
+  ${EIGEN3_INCLUDE_DIR}
+)
+
 target_link_libraries(behavior_path_planner_node
   ${OpenCV_LIBRARIES}
 )

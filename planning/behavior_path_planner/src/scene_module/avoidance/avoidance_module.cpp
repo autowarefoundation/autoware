@@ -2449,7 +2449,7 @@ void AvoidanceModule::updateRegisteredObject(const ObjectDataArray & now_objects
   };
 
   // -- check now_objects, add it if it has new object id --
-  for (const auto now_obj : now_objects) {
+  for (const auto & now_obj : now_objects) {
     if (!isAlreadyRegistered(now_obj.object.object_id)) {
       registered_objects_.push_back(now_obj);
     }

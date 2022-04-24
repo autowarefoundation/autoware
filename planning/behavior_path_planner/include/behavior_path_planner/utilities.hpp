@@ -45,7 +45,12 @@
 #include <lanelet2_routing/RoutingGraph.h>
 #include <lanelet2_routing/RoutingGraphContainer.h>
 #include <tf2/utils.h>
+
+#ifdef USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#else
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#endif
 
 #include <limits>
 #include <memory>
@@ -69,6 +74,7 @@ inline geometry_msgs::msg::Pose getPose(
 }
 }  // namespace tier4_autoware_utils
 
+#ifdef USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
 namespace tf2
 {
 inline void fromMsg(const geometry_msgs::msg::PoseStamped & msg, tf2::Stamped<tf2::Transform> & out)
@@ -110,6 +116,7 @@ inline void doTransform(
   toMsg(v_out, t_out);
 }
 }  // namespace tf2
+#endif
 
 namespace behavior_path_planner
 {

@@ -52,7 +52,9 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
   perception_subscriber_ = create_subscription<PredictedObjects>(
     "~/input/perception", 1, std::bind(&BehaviorPathPlannerNode::onPerception, this, _1));
   scenario_subscriber_ = create_subscription<Scenario>(
-    "~/input/scenario", 1, [this](const Scenario::SharedPtr msg) { current_scenario_ = msg; });
+    "~/input/scenario", 1, [this](const Scenario::ConstSharedPtr msg) {
+      current_scenario_ = std::make_shared<Scenario>(*msg);
+    });
   external_approval_subscriber_ = create_subscription<ApprovalMsg>(
     "~/input/external_approval", 1,
     std::bind(&BehaviorPathPlannerNode::onExternalApproval, this, _1));
