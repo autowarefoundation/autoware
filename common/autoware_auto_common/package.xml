@@ -10,12 +10,13 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>autoware_auto_cmake</buildtool_depend>
 
-  <build_depend>builtin_interfaces</build_depend>
-  <build_depend>eigen</build_depend>
+  <depend>builtin_interfaces</depend>
+  <depend>eigen</depend>
 
   <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>
+  <test_depend>geometry_msgs</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

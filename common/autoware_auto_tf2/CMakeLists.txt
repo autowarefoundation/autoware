@@ -30,6 +30,12 @@ if(BUILD_TESTING)
   # Unit test
   ament_add_gtest(test_tf2_autoware_auto_msgs test/test_tf2_autoware_auto_msgs.cpp)
   autoware_set_compile_options(test_tf2_autoware_auto_msgs)
+  # workaround to allow deprecated header to build on both galactic and rolling
+  if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+    target_compile_definitions(test_tf2_autoware_auto_msgs PRIVATE
+      USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+    )
+  endif()
   target_include_directories(test_tf2_autoware_auto_msgs PRIVATE "include")
   ament_target_dependencies(test_tf2_autoware_auto_msgs
     "autoware_auto_common"
@@ -39,8 +45,9 @@ if(BUILD_TESTING)
     "geometry_msgs"
     "orocos_kdl"
     "tf2"
+    "tf2_geometry_msgs"
     "tf2_ros"
-)
+  )
 endif()
 
 ament_auto_package()
