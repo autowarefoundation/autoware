@@ -12,13 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "ad_service_state_monitor/state_machine.hpp"
+
 #include <deque>
 #include <vector>
 
-#define FMT_HEADER_ONLY
-#include "ad_service_state_monitor/state_machine.hpp"
-
+#define FMT_HEADER_ONLY  // NOLINT
 #include <fmt/format.h>
+#include <tf2/utils.h>
+
+#ifdef USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#else
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#endif
 
 namespace
 {
