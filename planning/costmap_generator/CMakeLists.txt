@@ -33,6 +33,13 @@ target_link_libraries(costmap_generator_lib
   FLANN::FLANN
 )
 
+if(${PCL_VERSION} GREATER_EQUAL 1.12.1)
+  find_package(Qhull REQUIRED)
+  target_link_libraries(costmap_generator_lib
+    QHULL::QHULL
+  )
+endif()
+
 ament_auto_add_library(costmap_generator_node SHARED
   nodes/costmap_generator/costmap_generator_node.cpp
 )
