@@ -984,7 +984,7 @@ T AccelBrakeMapCalibrator::getNearestTimeDataFromVec(
   double nearest_time = std::numeric_limits<double>::max();
   const double target_time = rclcpp::Time(base_data->header.stamp).seconds() - back_time;
   T nearest_time_data;
-  for (const auto data : vec) {
+  for (const auto & data : vec) {
     const double data_time = rclcpp::Time(data->header.stamp).seconds();
     const auto delta_time = std::abs(target_time - data_time);
     if (nearest_time > delta_time) {
@@ -1001,7 +1001,7 @@ DataStampedPtr AccelBrakeMapCalibrator::getNearestTimeDataFromVec(
   double nearest_time = std::numeric_limits<double>::max();
   const double target_time = base_data->data_time.seconds() - back_time;
   DataStampedPtr nearest_time_data;
-  for (const auto data : vec) {
+  for (const auto & data : vec) {
     const double data_time = data->data_time.seconds();
     const auto delta_time = std::abs(target_time - data_time);
     if (nearest_time > delta_time) {

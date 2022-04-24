@@ -22,6 +22,13 @@
 #include "raw_vehicle_cmd_converter/brake_map.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tf2/utils.h"
+
+#ifdef USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
+#else
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+#endif
+
 #include "tier4_autoware_utils/planning/planning_marker_helper.hpp"
 #include "tier4_autoware_utils/ros/transform_listener.hpp"
 
