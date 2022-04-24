@@ -11,6 +11,7 @@
 
   <depend>diagnostic_updater</depend>
   <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
   <depend>tier4_autoware_utils</depend>
 
   <exec_depend>rqt_reconfigure</exec_depend>
