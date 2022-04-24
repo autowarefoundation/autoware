@@ -20,6 +20,7 @@
   <depend>rclcpp_components</depend>
   <depend>sensor_msgs</depend>
   <depend>tf2</depend>
+  <depend>tf2_eigen</depend>
   <depend>tf2_ros</depend>
   <depend>tf2_sensor_msgs</depend>
   <depend>tier4_perception_msgs</depend>
