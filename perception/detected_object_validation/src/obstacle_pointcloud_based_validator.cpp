@@ -21,7 +21,12 @@
 #include <pcl/search/kdtree.h>
 #include <pcl/search/pcl_search.h>
 #include <pcl_conversions/pcl_conversions.h>
+
+#ifdef USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#else
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#endif
 
 #define EIGEN_MPL2_ONLY
 #include <Eigen/Core>
@@ -165,7 +170,7 @@ void ObstaclePointCloudBasedValidator::onObjectsAndObstaclePointCloud(
 
   // Create Kd-tree to search neighbor pointcloud to reduce cost.
   pcl::search::Search<pcl::PointXY>::Ptr kdtree =
-    boost::make_shared<pcl::search::KdTree<pcl::PointXY>>(false);
+    pcl::make_shared<pcl::search::KdTree<pcl::PointXY>>(false);
   kdtree->setInputCloud(obstacle_pointcloud);
 
   for (size_t i = 0; i < transformed_objects.objects.size(); ++i) {
