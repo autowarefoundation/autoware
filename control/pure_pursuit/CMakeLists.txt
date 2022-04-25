@@ -27,6 +27,13 @@ ament_auto_add_library(pure_pursuit_core SHARED
   src/pure_pursuit_core/interpolate.cpp
 )
 
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(pure_pursuit_core PRIVATE
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
+
 # pure_pursuit
 ament_auto_add_library(pure_pursuit_node SHARED
   src/pure_pursuit/pure_pursuit_node.cpp
@@ -39,7 +46,7 @@ target_link_libraries(pure_pursuit_node
 
 # workaround to allow deprecated header to build on both galactic and rolling
 if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
-  target_compile_definitions(pure_pursuit_node PUBLIC
+  target_compile_definitions(pure_pursuit_node PRIVATE
     USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
   )
 endif()

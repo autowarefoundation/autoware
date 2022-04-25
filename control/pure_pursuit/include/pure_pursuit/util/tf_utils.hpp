@@ -19,7 +19,12 @@
 
 #include <boost/optional.hpp>  // To be replaced by std::optional in C++17
 
+#ifdef USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#else
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#endif
+
 #include <tf2_ros/transform_listener.h>
 
 #include <string>
