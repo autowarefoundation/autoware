@@ -665,7 +665,7 @@ double AdaptiveCruiseController::getMedianVel(const std::vector<nav_msgs::msg::O
   }
 
   std::vector<double> raw_vel_que;
-  for (const auto vel : vel_que) {
+  for (const auto & vel : vel_que) {
     raw_vel_que.emplace_back(vel.twist.twist.linear.x);
   }
 

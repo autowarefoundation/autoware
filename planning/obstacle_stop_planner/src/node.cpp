@@ -30,7 +30,12 @@
 
 #include <pcl/filters/voxel_grid.h>
 #include <tf2/utils.h>
+
+#ifdef USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
 #include <tf2_eigen/tf2_eigen.h>
+#else
+#include <tf2_eigen/tf2_eigen.hpp>
+#endif
 
 namespace motion_planning
 {
