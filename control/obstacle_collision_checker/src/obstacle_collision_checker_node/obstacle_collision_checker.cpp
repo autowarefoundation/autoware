@@ -59,12 +59,13 @@ pcl::PointCloud<pcl::PointXYZ> filterPointCloudByTrajectory(
   const autoware_auto_planning_msgs::msg::Trajectory & trajectory, const double radius)
 {
   pcl::PointCloud<pcl::PointXYZ> filtered_pointcloud;
-  for (const auto & trajectory_point : trajectory.points) {
-    for (const auto & point : pointcloud.points) {
+  for (const auto & point : pointcloud.points) {
+    for (const auto & trajectory_point : trajectory.points) {
       const double dx = trajectory_point.pose.position.x - point.x;
       const double dy = trajectory_point.pose.position.y - point.y;
       if (std::hypot(dx, dy) < radius) {
         filtered_pointcloud.points.push_back(point);
+        break;
       }
     }
   }

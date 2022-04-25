@@ -44,6 +44,10 @@ rclcpp_components_register_node(obstacle_collision_checker
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
+  ament_add_ros_isolated_gtest(test_obstacle_collision_checker
+    test/test_obstacle_collision_checker.cpp
+  )
+  target_link_libraries(test_obstacle_collision_checker obstacle_collision_checker)
 endif()
 
 ament_auto_package(
