@@ -15,7 +15,7 @@
 #ifndef NDT__BASE_HPP_
 #define NDT__BASE_HPP_
 
-#include <pcl/io/io.h>
+#include <pcl/common/io.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 #include <pcl/search/kdtree.h>
@@ -30,8 +30,8 @@ public:
   virtual ~NormalDistributionsTransformBase() = default;
 
   virtual void align(pcl::PointCloud<PointSource> & output, const Eigen::Matrix4f & guess) = 0;
-  virtual void setInputTarget(const boost::shared_ptr<pcl::PointCloud<PointTarget>> & map_ptr) = 0;
-  virtual void setInputSource(const boost::shared_ptr<pcl::PointCloud<PointSource>> & scan_ptr) = 0;
+  virtual void setInputTarget(const pcl::shared_ptr<pcl::PointCloud<PointTarget>> & map_ptr) = 0;
+  virtual void setInputSource(const pcl::shared_ptr<pcl::PointCloud<PointSource>> & scan_ptr) = 0;
 
   virtual void setMaximumIterations(int max_iter) = 0;
   virtual void setResolution(float res) = 0;
@@ -46,15 +46,15 @@ public:
   virtual double getTransformationProbability() const = 0;
   virtual double getNearestVoxelTransformationLikelihood() const = 0;
   virtual double getFitnessScore() = 0;
-  virtual boost::shared_ptr<const pcl::PointCloud<PointTarget>> getInputTarget() const = 0;
-  virtual boost::shared_ptr<const pcl::PointCloud<PointSource>> getInputSource() const = 0;
+  virtual pcl::shared_ptr<const pcl::PointCloud<PointTarget>> getInputTarget() const = 0;
+  virtual pcl::shared_ptr<const pcl::PointCloud<PointSource>> getInputSource() const = 0;
   virtual Eigen::Matrix4f getFinalTransformation() const = 0;
   virtual std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>>
   getFinalTransformationArray() const = 0;
 
   virtual Eigen::Matrix<double, 6, 6> getHessian() const = 0;
 
-  virtual boost::shared_ptr<pcl::search::KdTree<PointTarget>> getSearchMethodTarget() const = 0;
+  virtual pcl::shared_ptr<pcl::search::KdTree<PointTarget>> getSearchMethodTarget() const = 0;
 
   virtual double calculateTransformationProbability(
     const pcl::PointCloud<PointSource> & trans_cloud) const = 0;

@@ -102,7 +102,11 @@ protected:
   using NormalDistributionsTransform<PointSource, PointTarget>::step_size_;
   using NormalDistributionsTransform<PointSource, PointTarget>::gauss_d1_;
   using NormalDistributionsTransform<PointSource, PointTarget>::gauss_d2_;
+#if PCL_VERSION >= PCL_VERSION_CALC(1, 12, 1)
+  using NormalDistributionsTransform<PointSource, PointTarget>::point_jacobian_;
+#else
   using NormalDistributionsTransform<PointSource, PointTarget>::point_gradient_;
+#endif
   using NormalDistributionsTransform<PointSource, PointTarget>::point_hessian_;
   using NormalDistributionsTransform<PointSource, PointTarget>::trans_probability_;
 

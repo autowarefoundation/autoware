@@ -17,7 +17,7 @@
 
 #include "ndt/base.hpp"
 
-#include <pcl/io/io.h>
+#include <pcl/common/io.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 #include <pcl/registration/ndt.h>
@@ -33,8 +33,8 @@ public:
   ~NormalDistributionsTransformPCLGeneric() = default;
 
   void align(pcl::PointCloud<PointSource> & output, const Eigen::Matrix4f & guess) override;
-  void setInputTarget(const boost::shared_ptr<pcl::PointCloud<PointTarget>> & map_ptr) override;
-  void setInputSource(const boost::shared_ptr<pcl::PointCloud<PointSource>> & scan_ptr) override;
+  void setInputTarget(const pcl::shared_ptr<pcl::PointCloud<PointTarget>> & map_ptr) override;
+  void setInputSource(const pcl::shared_ptr<pcl::PointCloud<PointSource>> & scan_ptr) override;
 
   void setMaximumIterations(int max_iter) override;
   void setResolution(float res) override;
@@ -49,15 +49,15 @@ public:
   double getTransformationProbability() const override;
   double getNearestVoxelTransformationLikelihood() const override;
   double getFitnessScore() override;
-  boost::shared_ptr<const pcl::PointCloud<PointTarget>> getInputTarget() const override;
-  boost::shared_ptr<const pcl::PointCloud<PointSource>> getInputSource() const override;
+  pcl::shared_ptr<const pcl::PointCloud<PointTarget>> getInputTarget() const override;
+  pcl::shared_ptr<const pcl::PointCloud<PointSource>> getInputSource() const override;
   Eigen::Matrix4f getFinalTransformation() const override;
   std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>>
   getFinalTransformationArray() const override;
 
   Eigen::Matrix<double, 6, 6> getHessian() const override;
 
-  boost::shared_ptr<pcl::search::KdTree<PointTarget>> getSearchMethodTarget() const override;
+  pcl::shared_ptr<pcl::search::KdTree<PointTarget>> getSearchMethodTarget() const override;
 
   double calculateTransformationProbability(
     const pcl::PointCloud<PointSource> & trans_cloud) const override;
@@ -65,7 +65,7 @@ public:
     const pcl::PointCloud<PointSource> & trans_cloud) const override;
 
 private:
-  boost::shared_ptr<pcl::NormalDistributionsTransform<PointSource, PointTarget>> ndt_ptr_;
+  pcl::shared_ptr<pcl::NormalDistributionsTransform<PointSource, PointTarget>> ndt_ptr_;
 };
 
 #include "ndt/impl/pcl_generic.hpp"

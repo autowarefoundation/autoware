@@ -81,8 +81,13 @@ void pcl::NormalDistributionsTransformModified<PointSource, PointTarget>::comput
   }
 
   // Initialize Point Gradient and Hessian
+#if PCL_VERSION >= PCL_VERSION_CALC(1, 12, 1)
+  point_jacobian_.setZero();
+  point_jacobian_.block(0, 0, 3, 3).setIdentity();
+#else
   point_gradient_.setZero();
   point_gradient_.block(0, 0, 3, 3).setIdentity();
+#endif
   point_hessian_.setZero();
 
   Eigen::Transform<float, 3, Eigen::Affine, Eigen::ColMajor> eig_transformation;
@@ -366,8 +371,13 @@ double pcl::NormalDistributionsTransformModified<PointSource, PointTarget>::comp
   // Hessian is unnecessary for step length determination but gradients are required
   // so derivative and transform data is stored for the next iteration.
   if (step_iterations) {
+#if PCL_VERSION >= PCL_VERSION_CALC(1, 12, 1)
+    NormalDistributionsTransformModified<PointSource, PointTarget>::computeHessian(
+      hessian, trans_cloud);
+#else
     NormalDistributionsTransformModified<PointSource, PointTarget>::computeHessian(
       hessian, trans_cloud, x_t);
+#endif
   }
 
   return a_t;

@@ -41,6 +41,11 @@ target_include_directories(ndt_pcl_modified
     $<INSTALL_INTERFACE:include>
 )
 
+target_include_directories(ndt_pcl_modified
+  SYSTEM PUBLIC
+    ${PCL_INCLUDE_DIRS}
+)
+
 ament_target_dependencies(ndt_pcl_modified PCL)
 ament_export_targets(export_ndt_pcl_modified HAS_LIBRARY_TARGET)
 ament_export_dependencies(PCL)

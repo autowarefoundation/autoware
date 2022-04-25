@@ -35,14 +35,14 @@ void NormalDistributionsTransformPCLModified<PointSource, PointTarget>::align(
 
 template <class PointSource, class PointTarget>
 void NormalDistributionsTransformPCLModified<PointSource, PointTarget>::setInputTarget(
-  const boost::shared_ptr<pcl::PointCloud<PointTarget>> & map_ptr)
+  const pcl::shared_ptr<pcl::PointCloud<PointTarget>> & map_ptr)
 {
   ndt_ptr_->setInputTarget(map_ptr);
 }
 
 template <class PointSource, class PointTarget>
 void NormalDistributionsTransformPCLModified<PointSource, PointTarget>::setInputSource(
-  const boost::shared_ptr<pcl::PointCloud<PointSource>> & scan_ptr)
+  const pcl::shared_ptr<pcl::PointCloud<PointSource>> & scan_ptr)
 {
   ndt_ptr_->setInputSource(scan_ptr);
 }
@@ -126,14 +126,14 @@ double NormalDistributionsTransformPCLModified<PointSource, PointTarget>::getFit
 }
 
 template <class PointSource, class PointTarget>
-boost::shared_ptr<const pcl::PointCloud<PointTarget>>
+pcl::shared_ptr<const pcl::PointCloud<PointTarget>>
 NormalDistributionsTransformPCLModified<PointSource, PointTarget>::getInputTarget() const
 {
   return ndt_ptr_->getInputTarget();
 }
 
 template <class PointSource, class PointTarget>
-boost::shared_ptr<const pcl::PointCloud<PointSource>>
+pcl::shared_ptr<const pcl::PointCloud<PointSource>>
 NormalDistributionsTransformPCLModified<PointSource, PointTarget>::getInputSource() const
 {
   return ndt_ptr_->getInputSource();
@@ -162,7 +162,7 @@ NormalDistributionsTransformPCLModified<PointSource, PointTarget>::getHessian() 
 }
 
 template <class PointSource, class PointTarget>
-boost::shared_ptr<pcl::search::KdTree<PointTarget>>
+pcl::shared_ptr<pcl::search::KdTree<PointTarget>>
 NormalDistributionsTransformPCLModified<PointSource, PointTarget>::getSearchMethodTarget() const
 {
   return ndt_ptr_->getSearchMethodTarget();
