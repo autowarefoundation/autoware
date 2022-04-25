@@ -45,6 +45,11 @@ ament_auto_add_library(shape_estimation_lib SHARED
 
 ament_target_dependencies(shape_estimation_lib ${SHAPE_ESTIMATION_DEPENDENCIES})
 
+target_include_directories(shape_estimation_lib
+  SYSTEM PUBLIC
+    "${PCL_INCLUDE_DIRS}"
+)
+
 # workaround to allow deprecated header to build on both galactic and rolling
 if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
   target_compile_definitions(shape_estimation_lib PUBLIC
