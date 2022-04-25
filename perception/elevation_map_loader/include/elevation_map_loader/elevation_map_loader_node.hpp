@@ -67,7 +67,7 @@ private:
   rclcpp::Publisher<grid_map_msgs::msg::GridMap>::SharedPtr pub_elevation_map_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pub_elevation_map_cloud_;
   void onPointcloudMap(const sensor_msgs::msg::PointCloud2::ConstSharedPtr pointcloud_map);
-  void onMapHash(const tier4_external_api_msgs::msg::MapHash::SharedPtr map_hash);
+  void onMapHash(const tier4_external_api_msgs::msg::MapHash::ConstSharedPtr map_hash);
   void onVectorMap(const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr vector_map);
 
   void publish();

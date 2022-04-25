@@ -120,7 +120,7 @@ void ElevationMapLoaderNode::publish()
 }
 
 void ElevationMapLoaderNode::onMapHash(
-  const tier4_external_api_msgs::msg::MapHash::SharedPtr map_hash)
+  const tier4_external_api_msgs::msg::MapHash::ConstSharedPtr map_hash)
 {
   RCLCPP_INFO(this->get_logger(), "subscribe map_hash");
   const auto elevation_map_hash = map_hash->pcd;
