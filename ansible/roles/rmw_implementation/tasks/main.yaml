@@ -1,12 +1,12 @@
-- name: Get kebab-case name
+- name: Get dash-case name of rmw_implementation
   ansible.builtin.shell: bash -c 'sed -e "s/_/-/g" <<< $(echo {{ rmw_implementation }})'
-  register: kebab_case_name
+  register: dash_case_rmw_implementation
   changed_when: false
 
-- name: Install ros-{{ rosdistro }}-{{ kebab_case_name.stdout }}
+- name: Install ros-{{ rosdistro }}-{{ dash_case_rmw_implementation.stdout }}
   become: true
   ansible.builtin.apt:
-    name: ros-{{ rosdistro }}-{{ kebab_case_name.stdout }}
+    name: ros-{{ rosdistro }}-{{ dash_case_rmw_implementation.stdout }}
     state: latest
     update_cache: true
 

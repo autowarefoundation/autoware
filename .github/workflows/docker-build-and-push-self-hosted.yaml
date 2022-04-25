@@ -23,11 +23,23 @@ jobs:
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
 
+      - name: Load env
+        run: |
+          cat amd64.env | sed "/^#/d" >> $GITHUB_ENV
+          if [ "$(uname -m)" = "aarch64" ]; then
+            cat arm64.env | sed "/^#/d" >> $GITHUB_ENV
+          fi
+
       - name: Build 'autoware-universe'
         uses: ./.github/actions/docker-build-and-push
         with:
           bake-target: autoware-universe
-          platforms: linux/arm64
+          build-args: |
+            *.platform=linux/arm64
+            *.args.ROS_DISTRO=${{ env.rosdistro }}
+            *.args.CUDA_IMAGE_TAG=${{ env.cuda_image_tag }}
+            *.args.CUDNN_VERSION=${{ env.cudnn_version }}
+            *.args.TENSORRT_VERSION=${{ env.tensorrt_version }}
           tag-suffix: -arm64
 
       - name: Show disk space

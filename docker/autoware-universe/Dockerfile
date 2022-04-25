@@ -1,5 +1,10 @@
-FROM nvidia/cuda:11.4.1-devel-ubuntu20.04 as devel
+ARG CUDA_IMAGE_TAG
+FROM nvidia/cuda:$CUDA_IMAGE_TAG as devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+ARG ROS_DISTRO
+ARG CUDNN_VERSION
+ARG TENSORRT_VERSION
 
 ## Install apt packages
 # hadolint ignore=DL3008
@@ -10,7 +15,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-ins
   && rm -rf /var/lib/apt/lists/*
 
 ## Copy files
-COPY autoware.repos setup-dev-env.sh ansible-galaxy-requirements.yaml /autoware/
+COPY autoware.repos setup-dev-env.sh ansible-galaxy-requirements.yaml amd64.env arm64.env /autoware/
 COPY ansible/ /autoware/ansible/
 WORKDIR /autoware
 RUN ls /autoware
@@ -25,30 +30,28 @@ RUN --mount=type=ssh \
   && mkdir src \
   && vcs import src < autoware.repos \
   && rosdep update \
-  && DEBIAN_FRONTEND=noninteractive rosdep install -y --ignore-src --from-paths src --rosdistro galactic \
+  && DEBIAN_FRONTEND=noninteractive rosdep install -y --ignore-src --from-paths src --rosdistro "$ROS_DISTRO" \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
 ## Install cuDNN and TensorRT
-ARG CUDNN_VERSION=8.2.4.15-1+cuda11.4
-ARG TENSORRT_VERSION=8.2.4-1+cuda11.4
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
-  libcudnn8=$CUDNN_VERSION \
-  libcudnn8-dev=$CUDNN_VERSION \
-  libnvinfer8=$TENSORRT_VERSION \
-  libnvinfer-dev=$TENSORRT_VERSION \
-  libnvinfer-plugin8=$TENSORRT_VERSION \
-  libnvinfer-plugin-dev=$TENSORRT_VERSION \
-  libnvonnxparsers8=$TENSORRT_VERSION \
-  libnvonnxparsers-dev=$TENSORRT_VERSION \
-  libnvparsers8=$TENSORRT_VERSION \
-  libnvparsers-dev=$TENSORRT_VERSION \
+  libcudnn8="$CUDNN_VERSION" \
+  libcudnn8-dev="$CUDNN_VERSION" \
+  libnvinfer8="$TENSORRT_VERSION" \
+  libnvinfer-dev="$TENSORRT_VERSION" \
+  libnvinfer-plugin8="$TENSORRT_VERSION" \
+  libnvinfer-plugin-dev="$TENSORRT_VERSION" \
+  libnvonnxparsers8="$TENSORRT_VERSION" \
+  libnvonnxparsers-dev="$TENSORRT_VERSION" \
+  libnvparsers8="$TENSORRT_VERSION" \
+  libnvparsers-dev="$TENSORRT_VERSION" \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
 ## Create entrypoint
 # hadolint ignore=SC1091
-RUN echo "source /opt/ros/galactic/setup.bash" > /etc/bash.bashrc
+RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" > /etc/bash.bashrc
 CMD ["/bin/bash"]
 
 FROM devel as prebuilt
@@ -56,7 +59,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ## Build and change permission for runtime data conversion
 # hadolint ignore=SC1091
-RUN source /opt/ros/galactic/setup.bash \
+RUN source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release \
   && find /autoware/install -type d -exec chmod 777 {} \;
 

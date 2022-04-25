@@ -25,10 +25,15 @@
     repo: deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/{{ cuda_architecture.stdout }}/ /
     state: present
 
-- name: Install cuda-{{ cuda_version }}
+- name: Get dash-case name of cuda_version
+  ansible.builtin.shell: bash -c 'sed -e "s/\./-/g" <<< $(echo {{ cuda_version }})'
+  register: dash_case_cuda_version
+  changed_when: false
+
+- name: Install cuda-{{ dash_case_cuda_version.stdout }}
   become: true
   ansible.builtin.apt:
-    name: cuda-{{ cuda_version }}
+    name: cuda-{{ dash_case_cuda_version.stdout }}
     update_cache: true
 
 - name: Add PATH to .bashrc

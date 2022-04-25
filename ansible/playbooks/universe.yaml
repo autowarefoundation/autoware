@@ -1,11 +1,5 @@
 - hosts: localhost
   connection: local
-  vars:
-    - rosdistro: galactic
-    - rmw_implementation: rmw_cyclonedds_cpp
-    - cuda_version: 11-4
-    - cudnn_version: 8.2.4.15-1+cuda11.4
-    - tensorrt_version: 8.2.4-1+cuda11.4
   vars_prompt:
     - name: install_nvidia
       prompt: |-
@@ -13,6 +7,15 @@
         Did you confirm the licenses and are you sure to to install them? [y/N]
       private: false
   pre_tasks:
+    - name: Print args
+      ansible.builtin.debug:
+        msg:
+          - rosdistro: "{{ rosdistro }}"
+          - rmw_implementation: "{{ rmw_implementation }}"
+          - cuda_version: "{{ cuda_version }}"
+          - cudnn_version: "{{ cudnn_version }}"
+          - tensorrt_version: "{{ tensorrt_version }}"
+
     - name: Show warnings that NVIDIA libraries will not be installed
       ansible.builtin.pause:
         seconds: 10
