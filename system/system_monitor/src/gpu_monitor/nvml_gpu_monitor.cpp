@@ -183,10 +183,10 @@ void GPUMonitor::addProcessUsage(
   uint32_t info_count = MAX_ARRAY_SIZE;
   std::unique_ptr<nvmlProcessInfo_t[]> infos;
   infos = std::make_unique<nvmlProcessInfo_t[]>(MAX_ARRAY_SIZE);
-  ret = nvmlDeviceGetComputeRunningProcesses_v2(device, &info_count, infos.get());
+  ret = nvmlDeviceGetComputeRunningProcesses(device, &info_count, infos.get());
   if (ret != NVML_SUCCESS) {
     RCLCPP_WARN(
-      this->get_logger(), "Failed to nvmlDeviceGetComputeRunningProcesses_v2 NVML: %s",
+      this->get_logger(), "Failed to nvmlDeviceGetComputeRunningProcesses NVML: %s",
       nvmlErrorString(ret));
     return;
   }
@@ -197,10 +197,10 @@ void GPUMonitor::addProcessUsage(
   // Get Graphics Process ID
   info_count = MAX_ARRAY_SIZE;
   infos = std::make_unique<nvmlProcessInfo_t[]>(MAX_ARRAY_SIZE);
-  ret = nvmlDeviceGetGraphicsRunningProcesses_v2(device, &info_count, infos.get());
+  ret = nvmlDeviceGetGraphicsRunningProcesses(device, &info_count, infos.get());
   if (ret != NVML_SUCCESS) {
     RCLCPP_WARN(
-      this->get_logger(), "Failed to nvmlDeviceGetGraphicsRunningProcesses_v2 NVML: %s",
+      this->get_logger(), "Failed to nvmlDeviceGetGraphicsRunningProcesses NVML: %s",
       nvmlErrorString(ret));
     return;
   }
