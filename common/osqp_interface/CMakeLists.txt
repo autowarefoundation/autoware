@@ -19,13 +19,16 @@ project(osqp_interface)
 # require that dependencies from package.xml be available
 find_package(ament_cmake_auto REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(osqp REQUIRED)
-get_target_property(OSQP_INCLUDE_DIR osqp::osqp INTERFACE_INCLUDE_DIRECTORIES)
 
 ament_auto_find_build_dependencies(REQUIRED
   ${${PROJECT_NAME}_BUILD_DEPENDS}
   ${${PROJECT_NAME}_BUILDTOOL_DEPENDS}
 )
+
+# after find_package(osqp_vendor) in ament_auto_find_build_dependencies
+find_package(osqp REQUIRED)
+get_target_property(OSQP_INCLUDE_SUB_DIR osqp::osqp INTERFACE_INCLUDE_DIRECTORIES)
+get_filename_component(OSQP_INCLUDE_DIR ${OSQP_INCLUDE_SUB_DIR} PATH)
 
 set(OSQP_INTERFACE_LIB_SRC
   src/csc_matrix_conv.cpp
@@ -46,7 +49,11 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
 autoware_set_compile_options(${PROJECT_NAME})
 target_compile_options(${PROJECT_NAME} PRIVATE -Wno-error=old-style-cast -Wno-error=useless-cast)
 
-target_include_directories(osqp_interface PUBLIC "${OSQP_INCLUDE_DIR}")
+target_include_directories(osqp_interface
+  SYSTEM PUBLIC
+    "${OSQP_INCLUDE_DIR}"
+)
+
 ament_target_dependencies(osqp_interface
   Eigen3
   osqp_vendor
