@@ -51,7 +51,12 @@
 #ifndef TIER4_PCL_EXTENSIONS__VOXEL_GRID_NEAREST_CENTROID_HPP_
 #define TIER4_PCL_EXTENSIONS__VOXEL_GRID_NEAREST_CENTROID_HPP_
 
+#include <pcl/pcl_config.h>
+
+#if PCL_VERSION < PCL_VERSION_CALC(1, 12, 0)
 #include <pcl/filters/boost.h>
+#endif
+
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/point_types.h>
@@ -97,8 +102,8 @@ protected:
   typedef typename PointCloud::ConstPtr PointCloudConstPtr;
 
 public:
-  typedef boost::shared_ptr<VoxelGrid<PointT>> Ptr;
-  typedef boost::shared_ptr<const VoxelGrid<PointT>> ConstPtr;
+  typedef pcl::shared_ptr<VoxelGrid<PointT>> Ptr;
+  typedef pcl::shared_ptr<const VoxelGrid<PointT>> ConstPtr;
 
   /** \brief Simple structure to hold a centroid, covariance and the number of points in a leaf.
    * Inverse covariance, eigen vectors and eigen values are precomputed. */
