@@ -24,6 +24,13 @@
 #include "motion_common/motion_common.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tf2/utils.h"
+
+#ifdef USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
+#else
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+#endif
+
 #include "trajectory_follower/interpolate.hpp"
 #include "trajectory_follower/mpc_trajectory.hpp"
 #include "trajectory_follower/visibility_control.hpp"
@@ -32,7 +39,6 @@
 #include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
-#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 
 #include <cmath>
 #include <string>
