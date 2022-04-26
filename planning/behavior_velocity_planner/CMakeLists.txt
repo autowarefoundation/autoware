@@ -67,11 +67,16 @@ target_include_directories(scene_module_lib
     $<INSTALL_INTERFACE:include>
 )
 
+target_include_directories(scene_module_lib
+  SYSTEM PUBLIC
+    ${PCL_INCLUDE_DIRS}
+)
+
 ament_target_dependencies(scene_module_lib ${BEHAVIOR_VELOCITY_PLANNER_DEPENDENCIES})
 
 # workaround to allow deprecated header to build on both galactic and rolling
 if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
-  target_compile_definitions(scene_module_lib PUBLIC
+  target_compile_definitions(scene_module_lib PRIVATE
     USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
   )
 endif()
@@ -93,6 +98,13 @@ ament_target_dependencies(scene_module_stop_line ${BEHAVIOR_VELOCITY_PLANNER_DEP
 
 target_link_libraries(scene_module_stop_line scene_module_lib)
 
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(scene_module_stop_line PRIVATE
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
+
 
 # Scene Module: Crosswalk
 ament_auto_add_library(scene_module_crosswalk SHARED
@@ -113,6 +125,12 @@ ament_target_dependencies(scene_module_crosswalk ${BEHAVIOR_VELOCITY_PLANNER_DEP
 
 target_link_libraries(scene_module_crosswalk scene_module_lib)
 
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(scene_module_crosswalk PRIVATE
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
 
 # Scene Module: Intersection
 ament_auto_add_library(scene_module_intersection SHARED
@@ -133,6 +151,13 @@ ament_target_dependencies(scene_module_intersection ${BEHAVIOR_VELOCITY_PLANNER_
 
 target_link_libraries(scene_module_intersection scene_module_lib)
 
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(scene_module_intersection PRIVATE
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
+
 
 # Scene Module: Traffic Light
 ament_auto_add_library(scene_module_traffic_light SHARED
@@ -150,6 +175,13 @@ target_include_directories(scene_module_traffic_light
 ament_target_dependencies(scene_module_traffic_light ${BEHAVIOR_VELOCITY_PLANNER_DEPENDENCIES})
 
 target_link_libraries(scene_module_traffic_light scene_module_lib)
+
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(scene_module_traffic_light PRIVATE
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
 
 
 # Scene Module: Blind Spot
@@ -169,6 +201,13 @@ ament_target_dependencies(scene_module_blind_spot ${BEHAVIOR_VELOCITY_PLANNER_DE
 
 target_link_libraries(scene_module_blind_spot scene_module_lib)
 
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(scene_module_blind_spot PRIVATE
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
+
 
 # Scene Module: Detection Area
 ament_auto_add_library(scene_module_detection_area SHARED
@@ -187,6 +226,13 @@ ament_target_dependencies(scene_module_detection_area ${BEHAVIOR_VELOCITY_PLANNE
 
 target_link_libraries(scene_module_detection_area scene_module_lib)
 
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(scene_module_detection_area PRIVATE
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
+
 # Scene Module: No Stopping Area
 ament_auto_add_library(scene_module_no_stopping_area SHARED
   src/scene_module/no_stopping_area/manager.cpp
@@ -203,6 +249,13 @@ target_include_directories(scene_module_no_stopping_area
 ament_target_dependencies(scene_module_no_stopping_area ${BEHAVIOR_VELOCITY_PLANNER_DEPENDENCIES})
 
 target_link_libraries(scene_module_no_stopping_area scene_module_lib)
+
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(scene_module_no_stopping_area PRIVATE
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
 
 
 # Scene Module: Virtual Traffic Light
@@ -221,6 +274,13 @@ target_include_directories(scene_module_virtual_traffic_light
 ament_target_dependencies(scene_module_virtual_traffic_light ${BEHAVIOR_VELOCITY_PLANNER_DEPENDENCIES})
 
 target_link_libraries(scene_module_virtual_traffic_light scene_module_lib)
+
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(scene_module_virtual_traffic_light PRIVATE
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
 
 
 # SceneModule OcclusionSpot
@@ -245,6 +305,13 @@ target_include_directories(occlusion_spot_lib
 
 ament_target_dependencies(occlusion_spot_lib ${BEHAVIOR_VELOCITY_PLANNER_DEPENDENCIES})
 
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(occlusion_spot_lib PRIVATE
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
+
 ament_auto_add_library(scene_module_occlusion_spot SHARED
   src/scene_module/occlusion_spot/manager.cpp
   src/scene_module/occlusion_spot/debug.cpp
@@ -261,6 +328,13 @@ ament_target_dependencies(scene_module_occlusion_spot ${BEHAVIOR_VELOCITY_PLANNE
 
 target_link_libraries(scene_module_occlusion_spot scene_module_lib occlusion_spot_lib)
 
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(scene_module_occlusion_spot PRIVATE
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
+
 # Scene Module Manager
 ament_auto_add_library(scene_module_manager SHARED
   src/planner_manager.cpp
@@ -276,6 +350,12 @@ ament_target_dependencies(scene_module_manager ${BEHAVIOR_VELOCITY_PLANNER_DEPEN
 
 target_link_libraries(scene_module_manager scene_module_lib)
 
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(scene_module_manager PRIVATE
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
 
 # Node
 ament_auto_add_library(behavior_velocity_planner SHARED
@@ -306,6 +386,13 @@ target_link_libraries(behavior_velocity_planner
 
 ament_export_dependencies(${BEHAVIOR_VELOCITY_PLANNER_DEPENDENCIES})
 
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(behavior_velocity_planner PRIVATE
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
+
 rclcpp_components_register_node(behavior_velocity_planner
   PLUGIN "behavior_velocity_planner::BehaviorVelocityPlannerNode"
   EXECUTABLE behavior_velocity_planner_node
@@ -320,6 +407,13 @@ if(BUILD_TESTING)
   ament_auto_add_library(utilization SHARED
     src/utilization/util.cpp
   )
+  # workaround to allow deprecated header to build on both galactic and rolling
+  if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+    target_compile_definitions(utilization PRIVATE
+      USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+    )
+  endif()
+
   # Gtest for utilization
   ament_add_gtest(utilization-test
     test/src/test_state_machine.cpp
@@ -330,6 +424,12 @@ if(BUILD_TESTING)
     gtest_main
     utilization
   )
+  # workaround to allow deprecated header to build on both galactic and rolling
+  if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+    target_compile_definitions(utilization-test PRIVATE
+      USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+    )
+  endif()
 
   # Gtest for occlusion spot
   ament_add_gtest(occlusion_spot-test
@@ -341,6 +441,12 @@ if(BUILD_TESTING)
     gtest_main
     scene_module_occlusion_spot
   )
+  # workaround to allow deprecated header to build on both galactic and rolling
+  if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+    target_compile_definitions(occlusion_spot-test PRIVATE
+      USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+    )
+  endif()
 
 endif()
 

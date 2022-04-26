@@ -23,7 +23,12 @@
 
 #include <lanelet2_routing/Route.h>
 #include <pcl/common/transforms.h>
+
+#ifdef USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
 #include <tf2_eigen/tf2_eigen.h>
+#else
+#include <tf2_eigen/tf2_eigen.hpp>
+#endif
 
 #include <functional>
 #include <memory>

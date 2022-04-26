@@ -98,7 +98,7 @@ TEST(calcSlowDownPointsForPossibleCollision, ConsiderSignedOffset)
         std::cout << "v : " << path.points[i].point.longitudinal_velocity_mps << "\t";
       }
       std::cout << std::endl;
-      for (const auto pc : pcs) {
+      for (const auto & pc : pcs) {
         std::cout << "len : " << pc.arc_lane_dist_at_collision.length << "\t";
       }
       std::cout << std::endl;
