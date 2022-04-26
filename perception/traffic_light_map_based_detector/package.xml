@@ -16,6 +16,7 @@
   <depend>image_geometry</depend>
   <depend>lanelet2_extension</depend>
   <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
   <depend>sensor_msgs</depend>
   <depend>tf2</depend>
   <depend>tf2_ros</depend>
