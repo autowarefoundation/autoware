@@ -112,9 +112,7 @@ def launch_setup(context, *args, **kwargs):
             lon_controller_param,
             vehicle_info_param,
             {
-                "control_rate": LaunchConfiguration("control_rate"),
                 "show_debug_info": LaunchConfiguration("show_debug_info"),
-                "enable_smooth_stop": LaunchConfiguration("enable_smooth_stop"),
                 "enable_pub_debug": LaunchConfiguration("enable_pub_debug"),
             },
         ],
@@ -354,11 +352,7 @@ def generate_launch_description():
     )
 
     # velocity controller
-    add_launch_arg("control_rate", "30.0", "control rate")
     add_launch_arg("show_debug_info", "false", "show debug information")
-    add_launch_arg(
-        "enable_smooth_stop", "true", "enable smooth stop (in velocity controller state)"
-    )
     add_launch_arg("enable_pub_debug", "true", "enable to publish debug information")
 
     # vehicle cmd gate

@@ -115,8 +115,8 @@ private:
   enum class ControlState { DRIVE = 0, STOPPING, STOPPED, EMERGENCY };
   ControlState m_control_state{ControlState::STOPPED};
 
-  // timer callback
-  float64_t m_control_rate;
+  // control period
+  float64_t m_longitudinal_ctrl_period;
 
   // delay compensation
   float64_t m_delay_compensation_time;

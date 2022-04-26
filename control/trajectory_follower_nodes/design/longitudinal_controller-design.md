@@ -148,7 +148,7 @@ AutonomouStuff Lexus RX 450h for under 40 km/h driving.
 
 | Name                                 | Type   | Description                                                                                                                                                                             | Default value |
 | :----------------------------------- | :----- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
-| control_rate                         | double | control rate [Hz]                                                                                                                                                                       | 30            |
+| longitudinal_ctrl_period             | double | longitudinal control period [s]                                                                                                                                                         | 0.03          |
 | delay_compensation_time              | double | delay for longitudinal control [s]                                                                                                                                                      | 0.17          |
 | enable_smooth_stop                   | bool   | flag to enable transition to STOPPING                                                                                                                                                   | true          |
 | enable_overshoot_emergency           | bool   | flag to enable transition to EMERGENCY when the ego is over the stop line with a certain distance. See `emergency_state_overshoot_stop_dist`.                                           | true          |
@@ -240,3 +240,4 @@ If the ego is still running, strong acceleration (`strong_stop_acc`) to stop rig
 ## Related issues
 
 - <https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/1058>
+- <https://github.com/autowarefoundation/autoware.universe/issues/701>

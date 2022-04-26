@@ -39,7 +39,7 @@ LongitudinalController::LongitudinalController(const rclcpp::NodeOptions & node_
   using std::placeholders::_1;
 
   // parameters timer
-  m_control_rate = declare_parameter<float64_t>("control_rate");
+  m_longitudinal_ctrl_period = declare_parameter<float64_t>("longitudinal_ctrl_period");
 
   m_wheel_base = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo().wheel_base_m;
 
@@ -184,7 +184,8 @@ LongitudinalController::LongitudinalController(const rclcpp::NodeOptions & node_
 
   // Timer
   {
-    const auto period_ns = rclcpp::Rate(m_control_rate).period();
+    const auto period_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
+      std::chrono::duration<float64_t>(m_longitudinal_ctrl_period));
     m_timer_control = rclcpp::create_timer(
       this, get_clock(), period_ns, std::bind(&LongitudinalController::callbackTimerControl, this));
   }
@@ -618,7 +619,7 @@ void LongitudinalController::publishCtrlCmd(const Motion & ctrl_cmd, float64_t c
 
   // store current velocity history
   m_vel_hist.push_back({this->now(), current_vel});
-  while (m_vel_hist.size() > static_cast<size_t>(m_control_rate * 0.5)) {
+  while (m_vel_hist.size() > static_cast<size_t>(0.5 / m_longitudinal_ctrl_period)) {
     m_vel_hist.erase(m_vel_hist.begin());
   }
 
@@ -659,14 +660,14 @@ float64_t LongitudinalController::getDt()
 {
   float64_t dt;
   if (!m_prev_control_time) {
-    dt = 1.0 / m_control_rate;
+    dt = m_longitudinal_ctrl_period;
     m_prev_control_time = std::make_shared<rclcpp::Time>(this->now());
   } else {
     dt = (this->now() - *m_prev_control_time).seconds();
     *m_prev_control_time = this->now();
   }
-  const float64_t max_dt = 1.0 / m_control_rate * 2.0;
-  const float64_t min_dt = 1.0 / m_control_rate * 0.5;
+  const float64_t max_dt = m_longitudinal_ctrl_period * 2.0;
+  const float64_t min_dt = m_longitudinal_ctrl_period * 0.5;
   return std::max(std::min(dt, max_dt), min_dt);
 }
 
