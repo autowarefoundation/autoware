@@ -39,7 +39,7 @@ public:
   {
     DiagnosticStatus status;
     status.name = diag_config.diag_name;
-    status.hardware_id = "";
+    status.hardware_id = "fault_injection";
     status.level = DiagnosticStatus::OK;
     status.message = "OK";
     event_diag_map_[diag_config.sim_name] = status;
