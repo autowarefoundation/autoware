@@ -6,7 +6,14 @@ on:
   workflow_dispatch:
 
 jobs:
+  check-secret:
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/check-secret.yaml@v1
+    secrets:
+      secret: ${{ secrets.APP_ID }}
+
   sync-files:
+    needs: check-secret
+    if: ${{ needs.check-secret.outputs.set == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Generate token
