@@ -353,22 +353,40 @@ lanelet::ConstPolygon3d RouteHandler::getIntersectionAreaById(const lanelet::Id 
 
 Header RouteHandler::getRouteHeader() const { return route_msg_.header; }
 
+std::vector<lanelet::ConstLanelet> RouteHandler::getLanesBeforePose(
+  const geometry_msgs::msg::Pose & pose, const double vehicle_length) const
+{
+  lanelet::ConstLanelet pose_lanelet;
+  if (!getClosestLaneletWithinRoute(pose, &pose_lanelet)) {
+    return std::vector<lanelet::ConstLanelet>{};
+  }
+
+  const double min_preceding_length = vehicle_length * 2;
+  const auto preceding_lanes_vec = lanelet::utils::query::getPrecedingLaneletSequences(
+    routing_graph_ptr_, pose_lanelet, min_preceding_length);
+  if (preceding_lanes_vec.empty()) {
+    return std::vector<lanelet::ConstLanelet>{};
+  }
+
+  return preceding_lanes_vec.front();
+}
+
 std::vector<lanelet::ConstLanelet> RouteHandler::getLanesAfterGoal(
   const double vehicle_length) const
 {
   lanelet::ConstLanelet goal_lanelet;
-  if (getGoalLanelet(&goal_lanelet)) {
-    const double min_succeeding_length = vehicle_length * 2;
-    const auto succeeding_lanes_vec = lanelet::utils::query::getSucceedingLaneletSequences(
-      routing_graph_ptr_, goal_lanelet, min_succeeding_length);
-    if (succeeding_lanes_vec.empty()) {
-      return std::vector<lanelet::ConstLanelet>{};
-    } else {
-      return succeeding_lanes_vec.front();
-    }
-  } else {
+  if (!getGoalLanelet(&goal_lanelet)) {
     return std::vector<lanelet::ConstLanelet>{};
   }
+
+  const double min_succeeding_length = vehicle_length * 2;
+  const auto succeeding_lanes_vec = lanelet::utils::query::getSucceedingLaneletSequences(
+    routing_graph_ptr_, goal_lanelet, min_succeeding_length);
+  if (succeeding_lanes_vec.empty()) {
+    return std::vector<lanelet::ConstLanelet>{};
+  }
+
+  return succeeding_lanes_vec.front();
 }
 
 lanelet::ConstLanelets RouteHandler::getRouteLanelets() const { return route_lanelets_; }

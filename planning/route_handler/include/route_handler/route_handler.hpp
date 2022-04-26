@@ -93,6 +93,8 @@ public:
   Pose getPullOverGoalPose() const;
   lanelet::Id getGoalLaneId() const;
   bool getGoalLanelet(lanelet::ConstLanelet * goal_lanelet) const;
+  std::vector<lanelet::ConstLanelet> getLanesBeforePose(
+    const geometry_msgs::msg::Pose & pose, const double vehicle_length) const;
   std::vector<lanelet::ConstLanelet> getLanesAfterGoal(const double vehicle_length) const;
 
   // for lanelet

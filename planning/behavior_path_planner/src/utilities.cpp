@@ -1136,10 +1136,22 @@ OccupancyGrid generateDrivableArea(
   const double width = max_x - min_x;
   const double height = max_y - min_y;
 
-  lanelet::ConstLanelets drivable_lanes = lanes;
-  if (containsGoal(lanes, route_handler->getGoalLaneId())) {
-    const auto lanes_after_goal = route_handler->getLanesAfterGoal(vehicle_length);
-    drivable_lanes.insert(drivable_lanes.end(), lanes_after_goal.begin(), lanes_after_goal.end());
+  lanelet::ConstLanelets drivable_lanes;
+  {  // add lanes which covers initial and final footprints
+    // 1. add preceding lanes before current pose
+    const auto lanes_before_current_pose =
+      route_handler->getLanesBeforePose(current_pose->pose, vehicle_length);
+    drivable_lanes.insert(
+      drivable_lanes.end(), lanes_before_current_pose.begin(), lanes_before_current_pose.end());
+
+    // 2. add lanes
+    drivable_lanes.insert(drivable_lanes.end(), lanes.begin(), lanes.end());
+
+    // 3. add succeeding lanes after goal
+    if (containsGoal(lanes, route_handler->getGoalLaneId())) {
+      const auto lanes_after_goal = route_handler->getLanesAfterGoal(vehicle_length);
+      drivable_lanes.insert(drivable_lanes.end(), lanes_after_goal.begin(), lanes_after_goal.end());
+    }
   }
 
   OccupancyGrid occupancy_grid;
