@@ -60,7 +60,9 @@
 #endif
 
 #include <QColor>
+#include <QCursor>
 #include <QImage>
+#include <QVariant>
 #include <rclcpp/rclcpp.hpp>
 #include <rviz_rendering/render_system.hpp>
 
