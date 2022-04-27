@@ -1481,7 +1481,7 @@ BoundsCandidates MPTOptimizer::getBoundsCandidates(
   BoundsCandidates bounds_candidate;
 
   constexpr double max_search_lane_width = 5.0;
-  const std::vector<double> ds_vec{0.45, 0.15, 0.05, 0.01};
+  const auto search_widths = mpt_param_.bounds_search_widths;
 
   // search right to left
   const double bound_angle =
@@ -1501,8 +1501,8 @@ BoundsCandidates MPTOptimizer::getBoundsCandidates(
   CollisionType latest_right_bound_collision_type = previous_collision_type;
 
   while (traversed_dist < max_search_lane_width) {
-    for (size_t ds_idx = 0; ds_idx < ds_vec.size(); ++ds_idx) {
-      const double ds = ds_vec.at(ds_idx);
+    for (size_t search_idx = 0; search_idx < search_widths.size(); ++search_idx) {
+      const double ds = search_widths.at(search_idx);
       while (true) {
         const CollisionType current_collision_type =
           getCollisionType(maps, enable_avoidance, avoiding_point, traversed_dist, bound_angle);
@@ -1510,7 +1510,7 @@ BoundsCandidates MPTOptimizer::getBoundsCandidates(
         if (has_collision(current_collision_type)) {  // currently collision
           if (!has_collision(previous_collision_type)) {
             // if target_position becomes collision from no collision or out_of_sight
-            if (ds_idx == ds_vec.size() - 1) {
+            if (search_idx == search_widths.size() - 1) {
               const double left_bound = traversed_dist - ds / 2.0;
               bounds_candidate.push_back(Bounds{
                 current_right_bound, left_bound, latest_right_bound_collision_type,
@@ -1523,7 +1523,7 @@ BoundsCandidates MPTOptimizer::getBoundsCandidates(
                                                                              // out_of_sight
           if (previous_collision_type == CollisionType::NO_COLLISION) {
             // if target_position becomes out_of_sight from no collision
-            if (ds_idx == ds_vec.size() - 1) {
+            if (search_idx == search_widths.size() - 1) {
               const double left_bound = max_search_lane_width;
               bounds_candidate.push_back(Bounds{
                 current_right_bound, left_bound, latest_right_bound_collision_type,
@@ -1535,7 +1535,7 @@ BoundsCandidates MPTOptimizer::getBoundsCandidates(
         } else {  // currently no collision
           if (has_collision(previous_collision_type)) {
             // if target_position becomes no collision from collision
-            if (ds_idx == ds_vec.size() - 1) {
+            if (search_idx == search_widths.size() - 1) {
               current_right_bound = traversed_dist - ds / 2.0;
               latest_right_bound_collision_type = previous_collision_type;
               previous_collision_type = current_collision_type;
@@ -1547,7 +1547,7 @@ BoundsCandidates MPTOptimizer::getBoundsCandidates(
         // if target_position is longer than max_search_lane_width
         if (traversed_dist >= max_search_lane_width) {
           if (!has_collision(previous_collision_type)) {
-            if (ds_idx == ds_vec.size() - 1) {
+            if (search_idx == search_widths.size() - 1) {
               const double left_bound = traversed_dist - ds / 2.0;
               bounds_candidate.push_back(Bounds{
                 current_right_bound, left_bound, latest_right_bound_collision_type,
@@ -1562,9 +1562,9 @@ BoundsCandidates MPTOptimizer::getBoundsCandidates(
         previous_collision_type = current_collision_type;
       }
 
-      if (ds_idx != ds_vec.size() - 1) {
+      if (search_idx != search_widths.size() - 1) {
         // go back with ds since target_position became empty or road/object
-        // NOTE: if ds is the last of ds_vec, don't have to go back
+        // NOTE: if ds is the last of search_widths, don't have to go back
         traversed_dist -= ds;
       }
     }

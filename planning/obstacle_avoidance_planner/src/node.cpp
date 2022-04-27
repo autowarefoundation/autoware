@@ -408,6 +408,10 @@ ObstacleAvoidancePlanner::ObstacleAvoidancePlanner(const rclcpp::NodeOptions & n
       "mpt.kinematics.optimization_center_offset",
       vehicle_param_.wheelbase * default_wheelbase_ratio);
 
+    // bounds search
+    mpt_param_.bounds_search_widths =
+      declare_parameter<std::vector<double>>("advanced.mpt.bounds_search_widths");
+
     // collision free constraints
     mpt_param_.l_inf_norm =
       declare_parameter<bool>("advanced.mpt.collision_free_constraints.option.l_inf_norm");

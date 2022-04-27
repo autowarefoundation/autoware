@@ -706,6 +706,15 @@ $N_{circle}$ is the number of circles to check collision.
 - max steering wheel degree
   - `mpt.kinematics.max_steer_deg`
 
+### Boundary search
+
+- `advanced.mpt.bounds_search_widths`
+  - In order to efficiently search precise lateral boundaries on each trajectory point, different resolutions of search widths are defined.
+  - By default, [0.45, 0.15, 0.05, 0.01] is used. In this case, the goal is to get the boundaries' length on each trajectory point with 0.01 [m] resolution.
+  - Firstly, lateral boundaries are searhed with a rough resolution (= 0.45 [m]).
+  - Then, within its 0.45 [m] resolution which boundaries are inside, they are searched again with a bit precise resolution (= 0.15 [m]).
+  - Following this rule, finally boundaries with 0.01 [m] will be found.
+
 ### Assumptions
 
 - EB optimized trajectory length should be longer than MPT optimized trajectory length

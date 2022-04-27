@@ -123,6 +123,8 @@
           eps_rel: 1.0e-10 # eps rel when solving OSQP
 
       mpt:
+        bounds_search_widths: [0.45, 0.15, 0.05, 0.01]
+
         clearance:  # clearance(distance) between vehicle and roads/objects when generating trajectory
           hard_clearance_from_road: 0.0 # clearance from road boundary[m]
           soft_clearance_from_road: 0.1 # clearance from road boundary[m]

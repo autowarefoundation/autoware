@@ -245,6 +245,8 @@ struct MPTParam
   double optimization_center_offset;
   double max_steer_rad;
 
+  std::vector<double> bounds_search_widths;
+
   bool soft_constraint;
   bool hard_constraint;
   bool l_inf_norm;
