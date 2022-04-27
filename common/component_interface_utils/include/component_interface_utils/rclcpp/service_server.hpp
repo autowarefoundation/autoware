@@ -44,7 +44,9 @@ public:
     auto wrapped = [logger, callback](
                      typename SpecT::Service::Request::SharedPtr request,
                      typename SpecT::Service::Response::SharedPtr response) {
+#ifdef USE_DEPRECATED_TO_YAML
       using rosidl_generator_traits::to_yaml;
+#endif
       RCLCPP_INFO_STREAM(logger, "service call: " << SpecT::name << "\n" << to_yaml(*request));
       callback(request, response);
       RCLCPP_INFO_STREAM(logger, "service exit: " << SpecT::name << "\n" << to_yaml(*response));

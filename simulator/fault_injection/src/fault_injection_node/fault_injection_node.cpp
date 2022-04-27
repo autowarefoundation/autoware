@@ -39,8 +39,6 @@ namespace fault_injection
 {
 #ifdef USE_DEPRECATED_TO_YAML
 using rosidl_generator_traits::to_yaml;
-#else
-using tier4_simulation_msgs::msg::to_yaml;
 #endif
 
 FaultInjectionNode::FaultInjectionNode(rclcpp::NodeOptions node_options)
