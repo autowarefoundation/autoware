@@ -77,7 +77,7 @@ private:
   double voxel_size_z_;
 
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  PCL_MAKE_ALIGNED_OPERATOR_NEW
   explicit ApproximateDownsampleFilterComponent(const rclcpp::NodeOptions & options);
 };
 }  // namespace pointcloud_preprocessor

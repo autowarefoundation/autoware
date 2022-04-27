@@ -32,7 +32,7 @@ RadiusSearch2DOutlierFilterComponent::RadiusSearch2DOutlierFilterComponent(
     search_radius_ = static_cast<double>(declare_parameter("search_radius", 0.2));
   }
 
-  kd_tree_ = boost::make_shared<pcl::search::KdTree<pcl::PointXY>>(false);
+  kd_tree_ = pcl::make_shared<pcl::search::KdTree<pcl::PointXY>>(false);
 
   using std::placeholders::_1;
   set_param_res_ = this->add_on_set_parameters_callback(

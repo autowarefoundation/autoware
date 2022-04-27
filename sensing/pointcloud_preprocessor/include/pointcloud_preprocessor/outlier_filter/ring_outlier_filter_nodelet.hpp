@@ -61,6 +61,7 @@ private:
   }
 
 public:
+  PCL_MAKE_ALIGNED_OPERATOR_NEW
   explicit RingOutlierFilterComponent(const rclcpp::NodeOptions & options);
 };
 

@@ -32,11 +32,12 @@ ament_auto_find_build_dependencies()
 
 include_directories(
   include
-  ${Boost_INCLUDE_DIRS}
-  ${PCL_INCLUDE_DIRS}
-  ${EIGEN3_INCLUDE_DIRS}
-  ${OpenCV_INCLUDE_DIRS}
-  ${GRID_MAP_INCLUDE_DIR}
+  SYSTEM
+    ${Boost_INCLUDE_DIRS}
+    ${PCL_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIRS}
+    ${OpenCV_INCLUDE_DIRS}
+    ${GRID_MAP_INCLUDE_DIR}
 )
 
 ament_auto_add_library(ground_segmentation SHARED

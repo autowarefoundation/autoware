@@ -40,7 +40,7 @@ private:
   boost::circular_buffer<PointCloud2ConstPtr> pointcloud_buffer_;
 
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  PCL_MAKE_ALIGNED_OPERATOR_NEW
   explicit PointcloudAccumulatorComponent(const rclcpp::NodeOptions & options);
 };
 }  // namespace pointcloud_preprocessor

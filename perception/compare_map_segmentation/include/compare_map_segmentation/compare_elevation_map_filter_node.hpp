@@ -53,7 +53,7 @@ private:
   void elevationMapCallback(const grid_map_msgs::msg::GridMap::ConstSharedPtr elevation_map);
 
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  PCL_MAKE_ALIGNED_OPERATOR_NEW
   explicit CompareElevationMapFilterComponent(const rclcpp::NodeOptions & options);
 };
 }  // namespace compare_map_segmentation

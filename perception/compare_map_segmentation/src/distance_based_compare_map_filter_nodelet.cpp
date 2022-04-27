@@ -63,7 +63,7 @@ void DistanceBasedCompareMapFilterComponent::input_target_callback(const PointCl
 {
   pcl::PointCloud<pcl::PointXYZ> map_pcl;
   pcl::fromROSMsg<pcl::PointXYZ>(*map, map_pcl);
-  const auto map_pcl_ptr = boost::make_shared<const pcl::PointCloud<pcl::PointXYZ>>(map_pcl);
+  const auto map_pcl_ptr = pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>(map_pcl);
 
   boost::mutex::scoped_lock lock(mutex_);
   map_ptr_ = map_pcl_ptr;

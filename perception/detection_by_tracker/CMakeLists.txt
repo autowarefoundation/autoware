@@ -20,7 +20,7 @@ endif()
 find_package(ament_cmake_auto REQUIRED)
 
 ### Find PCL Dependencies
-find_package(PCL REQUIRED QUIET COMPONENTS common search filters segmentation)
+find_package(PCL REQUIRED)
 
 ### Find Eigen Dependencies
 find_package(eigen3_cmake_module REQUIRED)

@@ -297,7 +297,7 @@ void RayGroundFilterComponent::ExtractPointsIndices(
 {
   pcl::ExtractIndices<PointType_> extract_ground;
   extract_ground.setInputCloud(in_cloud_ptr);
-  extract_ground.setIndices(boost::make_shared<pcl::PointIndices>(in_indices));
+  extract_ground.setIndices(pcl::make_shared<pcl::PointIndices>(in_indices));
 
   extract_ground.setNegative(false);  // true removes the indices, false leaves only the indices
   extract_ground.filter(*out_only_indices_cloud_ptr);

@@ -159,7 +159,8 @@ private:
     sensor_msgs::msg::PointCloud2::SharedPtr & output_ptr);
   void setPeriod(const int64_t new_period);
   void cloud_callback(
-    const sensor_msgs::msg::PointCloud2::SharedPtr & input_ptr, const std::string & topic_name);
+    const sensor_msgs::msg::PointCloud2::ConstSharedPtr & input_ptr,
+    const std::string & topic_name);
   void twist_callback(const autoware_auto_vehicle_msgs::msg::VelocityReport::ConstSharedPtr input);
   void timer_callback();
 

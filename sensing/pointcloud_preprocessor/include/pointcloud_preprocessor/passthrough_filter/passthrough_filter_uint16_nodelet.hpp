@@ -40,7 +40,7 @@ private:
   pcl::PassThroughUInt16<pcl::PCLPointCloud2> impl_;
 
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  PCL_MAKE_ALIGNED_OPERATOR_NEW
   explicit PassThroughFilterUInt16Component(const rclcpp::NodeOptions & options);
 };
 }  // namespace pointcloud_preprocessor

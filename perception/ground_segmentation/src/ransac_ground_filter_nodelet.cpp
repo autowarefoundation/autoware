@@ -17,7 +17,6 @@
 #include <pcl_ros/transforms.hpp>
 
 #include <pcl/common/centroid.h>
-#include <tf2_eigen/tf2_eigen.h>
 
 #include <limits>
 #include <random>
@@ -187,7 +186,7 @@ void RANSACGroundFilterComponent::extractPointsIndices(
 {
   pcl::ExtractIndices<PointType> extract_ground;
   extract_ground.setInputCloud(in_cloud_ptr);
-  extract_ground.setIndices(boost::make_shared<pcl::PointIndices>(in_indices));
+  extract_ground.setIndices(pcl::make_shared<pcl::PointIndices>(in_indices));
 
   extract_ground.setNegative(false);  // true removes the indices, false leaves only the indices
   extract_ground.filter(*out_only_indices_cloud_ptr);

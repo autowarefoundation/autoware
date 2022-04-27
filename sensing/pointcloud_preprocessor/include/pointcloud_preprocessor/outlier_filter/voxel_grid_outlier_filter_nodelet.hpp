@@ -45,7 +45,7 @@ private:
   pcl::VoxelGrid<pcl::PointXYZ> voxel_filter;
 
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  PCL_MAKE_ALIGNED_OPERATOR_NEW
   explicit VoxelGridOutlierFilterComponent(const rclcpp::NodeOptions & option);
 };
 }  // namespace pointcloud_preprocessor

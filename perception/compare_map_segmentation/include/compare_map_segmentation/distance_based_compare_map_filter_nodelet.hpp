@@ -45,7 +45,7 @@ private:
   rcl_interfaces::msg::SetParametersResult paramCallback(const std::vector<rclcpp::Parameter> & p);
 
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  PCL_MAKE_ALIGNED_OPERATOR_NEW
   explicit DistanceBasedCompareMapFilterComponent(const rclcpp::NodeOptions & options);
 };
 }  // namespace compare_map_segmentation

@@ -239,7 +239,7 @@ void VoxelBasedCompareMapFilterComponent::input_target_callback(const PointCloud
 {
   pcl::PointCloud<pcl::PointXYZ> map_pcl;
   pcl::fromROSMsg<pcl::PointXYZ>(*map, map_pcl);
-  const auto map_pcl_ptr = boost::make_shared<const pcl::PointCloud<pcl::PointXYZ>>(map_pcl);
+  const auto map_pcl_ptr = pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>(map_pcl);
 
   boost::mutex::scoped_lock lock(mutex_);
   set_map_in_voxel_grid_ = true;
