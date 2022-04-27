@@ -428,7 +428,8 @@ bool MapBasedPredictionNode::checkCloseLaneletCondition(
   // of the lanelets that are below max_dist and max_delta_yaw
   if (
     lanelet.first < dist_threshold_for_searching_lanelet_ &&
-    abs_norm_delta < delta_yaw_threshold_for_searching_lanelet_) {
+    (M_PI - delta_yaw_threshold_for_searching_lanelet_ < abs_norm_delta ||
+     abs_norm_delta < delta_yaw_threshold_for_searching_lanelet_)) {
     return true;
   }
 
