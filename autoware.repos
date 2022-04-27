@@ -59,10 +59,6 @@ repositories:
     type: git
     url: https://github.com/tier4/sensor_component_description.git
     version: main
-  sensor_component/livox_ros2_driver:
-    type: git
-    url: https://github.com/tier4/livox_ros2_driver.git
-    version: tier4/master
   sensor_component/tamagawa_imu_driver:
     type: git
     url: https://github.com/tier4/tamagawa_imu_driver.git
