@@ -8,6 +8,7 @@
           - rmw_implementation: "{{ rmw_implementation }}"
   roles:
     - role: autoware.dev_env.autoware_core
+    - role: autoware.dev_env.plotjuggler
     - role: autoware.dev_env.pre_commit
     - role: autoware.dev_env.ros2
     - role: autoware.dev_env.ros2_dev_tools
