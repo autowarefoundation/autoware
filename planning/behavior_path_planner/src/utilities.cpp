@@ -1742,45 +1742,49 @@ bool checkLaneIsInIntersection(
     [&check_lane](const lanelet::ConstLanelet & lanelet) noexcept {
       return lanelet.id() == check_lane.id();
     });
-  if (checking_rev_iter != lanelet_sequence.crend()) {
-    const auto prev_lane = std::next(checking_rev_iter);
+  if (checking_rev_iter == lanelet_sequence.crend()) {
+    return false;
+  }
 
-    if (prev_lane != lanelet_sequence.crend()) {
-      const auto lanes = route_handler.getNextLanelets(*prev_lane);
-      const auto isHaveNeighborWithTurnDirection =
-        [&](const lanelet::ConstLanelets & lanes) noexcept {
-          return std::any_of(lanes.cbegin(), lanes.cend(), [](const lanelet::ConstLanelet & lane) {
-            return lane.hasAttribute("turn_direction");
-          });
-        };
+  const auto prev_lane = std::next(checking_rev_iter);
+  if (prev_lane == lanelet_sequence.crend()) {
+    return false;
+  }
 
-      if (isHaveNeighborWithTurnDirection(lanes)) {
-        // lambdas
-        const auto checkAttribute = [](const lanelet::ConstLineString3d & linestring) noexcept {
-          const auto & attribute_name = lanelet::AttributeNamesString::LaneChange;
-          if (linestring.hasAttribute(attribute_name)) {
-            const auto attr = linestring.attribute(attribute_name);
-            if (attr.value() == std::string("yes")) {
-              return true;
-            }
-          }
-          return false;
-        };
-        const auto isLaneChangeAttributeYes =
-          [checkAttribute](const lanelet::ConstLanelet & lanelet) noexcept {
-            return (checkAttribute(lanelet.rightBound()) || checkAttribute(lanelet.leftBound()));
-          };
+  const auto lanes = route_handler.getNextLanelets(*prev_lane);
+  const auto isHaveNeighborWithTurnDirection = [&](const lanelet::ConstLanelets & lanes) noexcept {
+    return std::any_of(lanes.cbegin(), lanes.cend(), [](const lanelet::ConstLanelet & lane) {
+      return lane.hasAttribute("turn_direction");
+    });
+  };
+  if (!isHaveNeighborWithTurnDirection(lanes)) {
+    return false;
+  }
 
-        for (auto prev_ll_itr = prev_lane; prev_ll_itr != lanelet_sequence.crend(); ++prev_ll_itr) {
-          if (!isLaneChangeAttributeYes(*prev_ll_itr)) {
-            lane_change_prohibited_lanes.push_back(*prev_ll_itr);
-          } else {
-            break;
-          }
-        }
+  const auto checkAttribute = [](const lanelet::ConstLineString3d & linestring) noexcept {
+    const auto & attribute_name = lanelet::AttributeNamesString::LaneChange;
+    if (linestring.hasAttribute(attribute_name)) {
+      const auto attr = linestring.attribute(attribute_name);
+      if (attr.value() == std::string("yes")) {
+        return true;
       }
     }
+    return false;
+  };
+
+  const auto isLaneChangeAttributeYes =
+    [checkAttribute](const lanelet::ConstLanelet & lanelet) noexcept {
+      return (checkAttribute(lanelet.rightBound()) || checkAttribute(lanelet.leftBound()));
+    };
+
+  for (auto prev_ll_itr = prev_lane; prev_ll_itr != lanelet_sequence.crend(); ++prev_ll_itr) {
+    if (!isLaneChangeAttributeYes(*prev_ll_itr)) {
+      lane_change_prohibited_lanes.push_back(*prev_ll_itr);
+    } else {
+      break;
+    }
   }
+
   std::reverse(lane_change_prohibited_lanes.begin(), lane_change_prohibited_lanes.end());
   const auto prohibited_arc_coordinate =
     lanelet::utils::getArcCoordinates(lane_change_prohibited_lanes, end_of_route_pose);
