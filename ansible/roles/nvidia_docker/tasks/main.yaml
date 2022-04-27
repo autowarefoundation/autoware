@@ -1,0 +1,30 @@
+- name: Authorize NVIDIA Docker GPG key
+  become: true
+  ansible.builtin.apt_key:
+    url: https://nvidia.github.io/nvidia-docker/gpgkey
+
+- name: Save result of '. /etc/os-release;echo $ID$VERSION_ID'
+  ansible.builtin.shell: . /etc/os-release;echo $ID$VERSION_ID
+  register: distribution
+  changed_when: false
+
+- name: Save result of 'curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list'
+  ansible.builtin.uri:
+    url: https://nvidia.github.io/nvidia-docker/{{ distribution.stdout }}/nvidia-docker.list
+    return_content: true
+  register: nvidia_docker_list
+
+# curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+- name: Add NVIDIA Docker apt repository to source list
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/nvidia-docker.list
+    content: "{{ nvidia_docker_list.content }}"
+    mode: 0644
+
+- name: Install NVIDIA Container Toolkit
+  become: true
+  ansible.builtin.apt:
+    name:
+      - nvidia-docker2
+    update_cache: true

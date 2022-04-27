@@ -15,7 +15,10 @@ We have two types of Docker image: `development` and `prebuilt`.
   - We use `rocker` to enable GUI applications such as `rviz` and `rqt` on Docker Containers.
   - Refer to [here](http://wiki.ros.org/docker/Tutorials/GUI) for more details.
 
-The [setup script](../setup-dev-env.sh) will install these dependencies through the [docker role](../ansible/roles/docker/README.md).
+The [setup script](../setup-dev-env.sh) will install these dependencies through the following roles.
+
+- [Docker](../ansible/roles/docker_engine/README.md)
+- [rocker](../ansible/roles/rocker/README.md)
 
 ## Usage
 

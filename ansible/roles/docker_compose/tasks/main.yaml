@@ -1,0 +1,7 @@
+- name: Install Docker Compose
+  become: true
+  ansible.builtin.get_url:
+    url: https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-{{ ansible_system }}-{{ ansible_architecture }}
+    dest: /usr/local/bin/docker-compose
+    force: true
+    mode: 0775
