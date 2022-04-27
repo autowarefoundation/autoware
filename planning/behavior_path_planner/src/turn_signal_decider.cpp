@@ -67,41 +67,45 @@ std::pair<TurnIndicatorsCommand, double> TurnSignalDecider::getIntersectionTurnS
   double accumulated_distance = 0;
 
   auto prev_point = path.points.front();
-  auto prev_lane_id = lanelet::InvalId;
+  auto lane_attribute = std::string("none");
   for (const auto & path_point : path.points) {
-    accumulated_distance +=
+    const double path_point_distance =
       tier4_autoware_utils::calcDistance3d(prev_point.point, path_point.point);
+    accumulated_distance += path_point_distance;
     prev_point = path_point;
     const double distance_from_vehicle_front =
       accumulated_distance - vehicle_pose_frenet.length - base_link2front_;
-    if (distance_from_vehicle_front < 0.0) {
-      continue;
+    if (distance_from_vehicle_front > intersection_search_distance_) {
+      return std::make_pair(turn_signal, distance);
     }
     // TODO(Horibe): Route Handler should be a library.
     for (const auto & lane : route_handler.getLaneletsFromIds(path_point.lane_ids)) {
-      if (lane.id() == prev_lane_id) {
-        continue;
+      // judgement of lighting of turn_signal
+      bool lighting_turn_signal = false;
+      if (lane.attributeOr("turn_direction", std::string("none")) != lane_attribute) {
+        if (
+          distance_from_vehicle_front <
+            lane.attributeOr("turn_signal_distance", intersection_search_distance_) &&
+          path_point_distance > 0.0) {
+          lighting_turn_signal = true;
+        }
+      } else {
+        if (
+          lane.hasAttribute("turn_direction") &&
+          distance_from_vehicle_front < path_point_distance && distance_from_vehicle_front > 0) {
+          lighting_turn_signal = true;
+        }
       }
-      prev_lane_id = lane.id();
+      lane_attribute = lane.attributeOr("turn_direction", std::string("none"));
 
-      if (
-        lane.attributeOr("turn_signal_distance", std::numeric_limits<double>::max()) <
-        distance_from_vehicle_front) {
-        continue;
-      }
-      if (lane.attributeOr("turn_direction", std::string("none")) == "left") {
-        turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
+      if (lighting_turn_signal) {
+        if (lane_attribute == std::string("left")) {
+          turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
+        } else if (lane_attribute == std::string("right")) {
+          turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
+        }
         distance = distance_from_vehicle_front;
-        return std::make_pair(turn_signal, distance);
       }
-      if (lane.attributeOr("turn_direction", std::string("none")) == "right") {
-        turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
-        distance = distance_from_vehicle_front;
-        return std::make_pair(turn_signal, distance);
-      }
-    }
-    if (distance_from_vehicle_front > intersection_search_distance_) {
-      return std::make_pair(turn_signal, distance);
     }
   }
   return std::make_pair(turn_signal, distance);
