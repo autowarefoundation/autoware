@@ -8,6 +8,22 @@
   register: cuda_architecture
   changed_when: false
 
+- name: (tmp for Ubuntu 22.04) Add liburcu6 repository into sources.list for amd64
+  become: true
+  ansible.builtin.apt_repository:
+    repo: deb http://archive.ubuntu.com/ubuntu focal main restricted
+    filename: focal
+    state: present
+  when: cuda_architecture.stdout == "x86_64"
+
+- name: (tmp for Ubuntu 22.04) Add liburcu6 repository into sources.list for arm64
+  become: true
+  ansible.builtin.apt_repository:
+    repo: deb http://ports.ubuntu.com/ubuntu-ports focal main restricted
+    filename: focal
+    state: present
+  when: cuda_architecture.stdout == "aarch64"
+
 - name: Remove old /etc/apt/sources.list.d/cuda.list
   become: true
   ansible.builtin.file:
