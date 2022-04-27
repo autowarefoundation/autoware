@@ -223,7 +223,9 @@ void clipPathByLength(
 //!< @brief extract target vehicles
 bool isStuckVehicle(const PredictedObject & obj, const double min_vel);
 bool isMovingVehicle(const PredictedObject & obj, const double min_vel);
-std::vector<PredictedObject> extractVehicles(const PredictedObjects::ConstSharedPtr objects_ptr);
+std::vector<PredictedObject> extractVehicles(
+  const PredictedObjects::ConstSharedPtr objects_ptr, const Point ego_position,
+  const double distance);
 std::vector<PredictedObject> filterVehiclesByDetectionArea(
   const std::vector<PredictedObject> & objs, const Polygons2d & polys);
 bool isVehicle(const ObjectClassification & obj_class);

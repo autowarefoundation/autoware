@@ -31,5 +31,5 @@
         min_longitudinal_offset: 1.0     # [m] detection area safety buffer from front bumper.
         max_lateral_distance: 6.0        # [m] buffer around the ego path used to build the detection area.
       grid:
-        free_space_max: 40  # [-] maximum value of a free space cell in the occupancy grid
-        occupied_min: 60    # [-] minimum value of an occupied cell in the occupancy grid
+        free_space_max: 43  # [-] maximum value of a free space cell in the occupancy grid
+        occupied_min: 58    # [-] minimum value of an occupied cell in the occupancy grid

@@ -5,6 +5,7 @@
       pass_judge: "smooth_velocity"         # [-] candidate is "smooth_velocity" or "current_velocity"
       filter_occupancy_grid: true           # [-] whether to filter occupancy grid by morphologyEx or not
       use_object_info: true                 # [-] whether to reflect object info to occupancy grid map or not
+      use_moving_object_ray_cast: true      # [-] whether to reflect moving object ray_cast to occupancy grid map or not
       use_partition_lanelet: true           # [-] whether to use partition lanelet map data
       pedestrian_vel: 1.5                   # [m/s] assume pedestrian is dashing from occlusion at this velocity
       pedestrian_radius: 0.3                # [m] assume pedestrian width(0.2m) + margin(0.1m)
@@ -30,5 +31,5 @@
         min_longitudinal_offset: 1.0     # [m] detection area safety buffer from front bumper.
         max_lateral_distance: 6.0        # [m] buffer around the ego path used to build the detection area.
       grid:
-        free_space_max: 40  # [-] maximum value of a free space cell in the occupancy grid
-        occupied_min: 60    # [-] minimum value of an occupied cell in the occupancy grid
+        free_space_max: 43  # [-] maximum value of a free space cell in the occupancy grid
+        occupied_min: 58    # [-] minimum value of an occupied cell in the occupancy grid

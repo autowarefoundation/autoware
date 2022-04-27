@@ -62,6 +62,7 @@ struct PlannerData
     max_stop_acceleration_threshold = node.declare_parameter(
       "max_accel", -5.0);  // TODO(someone): read min_acc in velocity_controller.param.yaml?
     max_stop_jerk_threshold = node.declare_parameter("max_jerk", -5.0);
+    system_delay = node.declare_parameter("system_delay", 0.50);
     delay_response_time = node.declare_parameter("delay_response_time", 0.50);
   }
   // tf
@@ -97,6 +98,7 @@ struct PlannerData
   // additional parameters
   double max_stop_acceleration_threshold;
   double max_stop_jerk_threshold;
+  double system_delay;
   double delay_response_time;
   double stop_line_extend_length;
 

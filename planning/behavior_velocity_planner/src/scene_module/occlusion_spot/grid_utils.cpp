@@ -488,11 +488,10 @@ void denoiseOccupancyGridCV(
     cv::Scalar(grid_utils::occlusion_cost_value::OCCUPIED));
   toQuantizedImage(occupancy_grid, &cv_image, param);
 
-  //! show orignal occupancy grid to compare difference
+  //! show original occupancy grid to compare difference
   if (is_show_debug_window) {
     cv::namedWindow("original", cv::WINDOW_NORMAL);
     cv::imshow("original", cv_image);
-    cv::waitKey(1);
   }
 
   //! raycast object shadow using vehicle
@@ -503,7 +502,6 @@ void denoiseOccupancyGridCV(
     if (is_show_debug_window) {
       cv::namedWindow("object ray shadow", cv::WINDOW_NORMAL);
       cv::imshow("object ray shadow", cv_image);
-      cv::waitKey(1);
     }
   }
 

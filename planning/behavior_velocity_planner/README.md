@@ -52,4 +52,5 @@ So for example, in order to stop at a stop line with the vehicles' front on the 
 | `forward_path_length`   | double | forward path length                                                                 |
 | `backward_path_length`  | double | backward path length                                                                |
 | `max_accel`             | double | (to be a global parameter) max acceleration of the vehicle                          |
+| `system_delay`          | double | (to be a global parameter) delay time until output control command                  |
 | `delay_response_time`   | double | (to be a global parameter) delay time of the vehicle's response to control commands |

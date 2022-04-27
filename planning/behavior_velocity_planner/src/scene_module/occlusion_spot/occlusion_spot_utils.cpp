@@ -216,11 +216,17 @@ bool isMovingVehicle(const PredictedObject & obj, const double min_vel)
   return std::abs(obj_vel) > min_vel;
 }
 
-std::vector<PredictedObject> extractVehicles(const PredictedObjects::ConstSharedPtr objects_ptr)
+std::vector<PredictedObject> extractVehicles(
+  const PredictedObjects::ConstSharedPtr objects_ptr, const Point ego_position,
+  const double distance)
 {
   std::vector<PredictedObject> vehicles;
   for (const auto & obj : objects_ptr->objects) {
     if (occlusion_spot_utils::isVehicle(obj)) {
+      const auto & o = obj.kinematics.initial_pose_with_covariance.pose.position;
+      const auto & p = ego_position;
+      // Don't consider far vehicle
+      if (std::hypot(p.x - o.x, p.y - o.y) > distance) continue;
       vehicles.emplace_back(obj);
     }
   }
