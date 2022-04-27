@@ -10,5 +10,5 @@ None.
 
 ```bash
 sudo apt update && sudo apt install -y \
-  ros-galactic-plotjuggler-ros
+  ros-humble-plotjuggler-ros
 ```

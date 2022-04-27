@@ -1,6 +1,6 @@
 # ros2_dev_tools
 
-This role installs ROS 2 development tools following [this page](https://docs.ros.org/en/galactic/Installation/Ubuntu-Development-Setup.html).
+This role installs ROS 2 development tools following [this page](https://docs.ros.org/en/humble/Installation/Ubuntu-Development-Setup.html).
 
 ## Inputs
 
@@ -9,7 +9,7 @@ None.
 ## Manual Installation
 
 ```bash
-# Taken from https://docs.ros.org/en/galactic/Installation/Ubuntu-Development-Setup.html
+# Taken from https://docs.ros.org/en/humble/Installation/Ubuntu-Development-Setup.html
 sudo apt update && sudo apt install -y \
   build-essential \
   cmake \

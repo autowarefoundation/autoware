@@ -18,6 +18,6 @@ For Universe, the `rosdistro` variable can also be found in:
 sudo apt install apt-transport-https
 sudo sh -c 'echo "deb [trusted=yes] https://s3.amazonaws.com/autonomoustuff-repo/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/autonomoustuff-public.list'
 sudo apt update
-rosdistro=galactic
+rosdistro=humble
 sudo apt install ros-${rosdistro}-pacmod3
 ```
