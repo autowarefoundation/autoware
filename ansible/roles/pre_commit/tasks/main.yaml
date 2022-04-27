@@ -10,12 +10,6 @@
     version: "{{ clang_format_version }}"
     executable: pip3
 
-# TODO: Remove after we move to Ubuntu 22.04
-- name: Add Go PPA for shfmt
-  become: true
-  ansible.builtin.apt_repository:
-    repo: ppa:longsleep/golang-backports # cspell:disable-line
-
 - name: Install Go
   become: true
   ansible.builtin.apt:
