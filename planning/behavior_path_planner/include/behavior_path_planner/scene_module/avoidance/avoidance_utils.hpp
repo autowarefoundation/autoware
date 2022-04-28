@@ -57,6 +57,9 @@ void setStartData(
   AvoidPoint & ap, const double start_length, const geometry_msgs::msg::Pose & start,
   const size_t start_idx, const double start_dist);
 
+std::string getUuidStr(const ObjectData & obj);
+
+std::vector<std::string> getUuidStr(const ObjectDataArray & objs);
 }  // namespace behavior_path_planner
 
 #endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__AVOIDANCE__AVOIDANCE_UTILS_HPP_

@@ -77,6 +77,8 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
   hazard_signal_publisher_ = create_publisher<HazardLightsCommand>("~/output/hazard_lights_cmd", 1);
   debug_drivable_area_publisher_ = create_publisher<OccupancyGrid>("~/debug/drivable_area", 1);
   debug_path_publisher_ = create_publisher<Path>("~/debug/path_for_visualize", 1);
+  debug_avoidance_msg_array_publisher_ =
+    create_publisher<AvoidanceDebugMsgArray>("~/debug/avoidance_debug_message_array", 1);
 
   // For remote operation
   plan_ready_publisher_ = create_publisher<PathChangeModule>("~/output/ready", 1);
@@ -532,6 +534,7 @@ void BehaviorPathPlannerNode::run()
 
   // for remote operation
   publishModuleStatus(bt_manager_->getModulesStatus());
+  debug_avoidance_msg_array_publisher_->publish(bt_manager_->getAvoidanceDebugMsgArray());
 
   publishDebugMarker(bt_manager_->getDebugMarkers());
 
