@@ -87,6 +87,7 @@ private:
   std::string map_frame_;
 
   double update_rate_;
+  bool activate_by_scenario_;
 
   double grid_min_value_;
   double grid_max_value_;
@@ -152,6 +153,8 @@ private:
   void onScenario(const tier4_planning_msgs::msg::Scenario::ConstSharedPtr msg);
 
   void onTimer();
+
+  bool isActive();
 
   /// \brief initialize gridmap parameters based on rosparam
   void initGridmap();

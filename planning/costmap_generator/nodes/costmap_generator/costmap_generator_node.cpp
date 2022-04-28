@@ -51,6 +51,7 @@
 #include <lanelet2_extension/visualization/visualization.hpp>
 #include <pcl_ros/transforms.hpp>
 
+#include <lanelet2_core/geometry/Polygon.h>
 #include <tf2/utils.h>
 #include <tf2_eigen/tf2_eigen.h>
 
@@ -61,20 +62,72 @@
 
 namespace
 {
-bool isActive(const tier4_planning_msgs::msg::Scenario::ConstSharedPtr scenario)
+
+// Copied from scenario selector
+geometry_msgs::msg::PoseStamped::ConstSharedPtr getCurrentPose(
+  const tf2_ros::Buffer & tf_buffer, const rclcpp::Logger & logger)
 {
-  if (!scenario) {
+  geometry_msgs::msg::TransformStamped tf_current_pose;
+
+  try {
+    tf_current_pose = tf_buffer.lookupTransform("map", "base_link", tf2::TimePointZero);
+  } catch (tf2::TransformException & ex) {
+    RCLCPP_ERROR(logger, "%s", ex.what());
+    return nullptr;
+  }
+
+  geometry_msgs::msg::PoseStamped::SharedPtr p(new geometry_msgs::msg::PoseStamped());
+  p->header = tf_current_pose.header;
+  p->pose.orientation = tf_current_pose.transform.rotation;
+  p->pose.position.x = tf_current_pose.transform.translation.x;
+  p->pose.position.y = tf_current_pose.transform.translation.y;
+  p->pose.position.z = tf_current_pose.transform.translation.z;
+
+  return geometry_msgs::msg::PoseStamped::ConstSharedPtr(p);
+}
+
+// copied from scenario selector
+std::shared_ptr<lanelet::ConstPolygon3d> findNearestParkinglot(
+  const std::shared_ptr<lanelet::LaneletMap> & lanelet_map_ptr,
+  const lanelet::BasicPoint2d & search_point)
+{
+  std::vector<std::pair<double, lanelet::Lanelet>> nearest_lanelets =
+    lanelet::geometry::findNearest(lanelet_map_ptr->laneletLayer, search_point, 1);
+
+  if (nearest_lanelets.empty()) {
+    return {};
+  }
+
+  const auto nearest_lanelet = nearest_lanelets.front().second;
+  const auto all_parking_lots = lanelet::utils::query::getAllParkingLots(lanelet_map_ptr);
+
+  const auto linked_parking_lot = std::make_shared<lanelet::ConstPolygon3d>();
+  const auto result = lanelet::utils::query::getLinkedParkingLot(
+    nearest_lanelet, all_parking_lots, linked_parking_lot.get());
+
+  if (result) {
+    return linked_parking_lot;
+  } else {
+    return {};
+  }
+}
+
+// copied from scenario selector
+bool isInParkingLot(
+  const std::shared_ptr<lanelet::LaneletMap> & lanelet_map_ptr,
+  const geometry_msgs::msg::Pose & current_pose)
+{
+  const auto & p = current_pose.position;
+  const lanelet::Point3d search_point(lanelet::InvalId, p.x, p.y, p.z);
+
+  const auto nearest_parking_lot =
+    findNearestParkinglot(lanelet_map_ptr, search_point.basicPoint2d());
+
+  if (!nearest_parking_lot) {
     return false;
   }
 
-  const auto & s = scenario->activating_scenarios;
-  if (
-    std::find(std::begin(s), std::end(s), tier4_planning_msgs::msg::Scenario::PARKING) !=
-    std::end(s)) {
-    return true;
-  }
-
-  return false;
+  return lanelet::geometry::within(search_point, nearest_parking_lot->basicPolygon());
 }
 
 // Convert from Point32 to Point
@@ -116,6 +169,7 @@ CostmapGenerator::CostmapGenerator(const rclcpp::NodeOptions & node_options)
   vehicle_frame_ = this->declare_parameter<std::string>("vehicle_frame", "base_link");
   map_frame_ = this->declare_parameter<std::string>("map_frame", "map");
   update_rate_ = this->declare_parameter<double>("update_rate", 10.0);
+  activate_by_scenario_ = this->declare_parameter<bool>("activate_by_scenario", true);
   grid_min_value_ = this->declare_parameter<double>("grid_min_value", 0.0);
   grid_max_value_ = this->declare_parameter<double>("grid_max_value", 1.0);
   grid_resolution_ = this->declare_parameter<double>("grid_resolution", 0.2);
@@ -241,7 +295,7 @@ void CostmapGenerator::onScenario(const tier4_planning_msgs::msg::Scenario::Cons
 
 void CostmapGenerator::onTimer()
 {
-  if (!isActive(scenario_)) {
+  if (!isActive()) {
     return;
   }
 
@@ -276,6 +330,24 @@ void CostmapGenerator::onTimer()
   costmap_[LayerName::combined] = generateCombinedCostmap();
 
   publishCostmap(costmap_);
+}
+
+bool CostmapGenerator::isActive()
+{
+  if (activate_by_scenario_) {
+    if (scenario_) {
+      const auto & s = scenario_->activating_scenarios;
+      if (
+        std::find(std::begin(s), std::end(s), tier4_planning_msgs::msg::Scenario::PARKING) !=
+        std::end(s)) {
+        return true;
+      }
+    }
+    return false;
+  } else {
+    const auto & current_pose_wrt_map = getCurrentPose(tf_buffer_, this->get_logger());
+    return isInParkingLot(lanelet_map_, current_pose_wrt_map->pose);
+  }
 }
 
 void CostmapGenerator::initGridmap()
