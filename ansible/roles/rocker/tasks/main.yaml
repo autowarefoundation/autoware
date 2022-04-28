@@ -1,14 +1,26 @@
-- name: Authorize OSRF GPG key
+# sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
+- name: Authorize ROS GPG key
   become: true
-  ansible.builtin.apt_key:
-    url: https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/ros/rosdistro/master/ros.key
+    dest: /usr/share/keyrings/ros-archive-keyring.gpg
 
-# echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/ros-latest.list > /dev/null
-- name: Add OSRF apt repository to source list
+- name: Save result of 'dpkg --print-architecture'
+  ansible.builtin.command: dpkg --print-architecture
+  register: deb_architecture
+  changed_when: false
+
+- name: Save result of 'lsb_release -cs'
+  ansible.builtin.command: lsb_release -cs
+  register: lsb_release_cs
+  changed_when: false
+
+# echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+- name: Add ROS 2 apt repository to source list
   become: true
   ansible.builtin.apt_repository:
-    repo: deb http://packages.ros.org/ros/ubuntu {{ lsb_release_cs.stdout }} main
-    filename: ros-latest
+    repo: deb [arch={{ deb_architecture.stdout }} signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu {{ lsb_release_cs.stdout }} main
+    filename: ros2
     state: present
     update_cache: true
 
