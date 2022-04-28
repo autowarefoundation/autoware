@@ -53,6 +53,7 @@
 #include <lanelet2_traffic_rules/TrafficRulesFactory.h>
 
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -109,6 +110,9 @@ private:
 
   TurnSignalDecider turn_signal_decider_;
 
+  std::mutex mutex_pd_;  // mutex for planner_data_
+  std::mutex mutex_bt_;  // mutex for bt_manager_
+
   // setup
   void waitForData();
 
@@ -146,22 +150,21 @@ private:
   /**
    * @brief extract path from behavior tree output
    */
-  PathWithLaneId::SharedPtr getPath(const BehaviorModuleOutput & bt_out);
+  PathWithLaneId::SharedPtr getPath(
+    const BehaviorModuleOutput & bt_out, const std::shared_ptr<PlannerData> planner_data);
 
   /**
    * @brief extract path candidate from behavior tree output
    */
-  PathWithLaneId::SharedPtr getPathCandidate(const BehaviorModuleOutput & bt_out);
+  PathWithLaneId::SharedPtr getPathCandidate(
+    const BehaviorModuleOutput & bt_out, const std::shared_ptr<PlannerData> planner_data);
 
   /**
    * @brief publish behavior module status mainly for the user interface
    */
-  void publishModuleStatus(const std::vector<std::shared_ptr<SceneModuleStatus>> & statuses);
-
-  /**
-   * @brief update current pose on the planner_data_
-   */
-  void updateCurrentPose();
+  void publishModuleStatus(
+    const std::vector<std::shared_ptr<SceneModuleStatus>> & statuses,
+    const std::shared_ptr<PlannerData> planner_data);
 
   // debug
 
