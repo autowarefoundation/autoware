@@ -74,7 +74,6 @@ inline geometry_msgs::msg::Pose getPose(
 }
 }  // namespace tier4_autoware_utils
 
-#ifdef USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
 namespace tf2
 {
 inline void fromMsg(const geometry_msgs::msg::PoseStamped & msg, tf2::Stamped<tf2::Transform> & out)
@@ -85,7 +84,7 @@ inline void fromMsg(const geometry_msgs::msg::PoseStamped & msg, tf2::Stamped<tf
   fromMsg(msg.pose, tmp);
   out.setData(tmp);
 }
-
+#ifdef USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
 // Remove after this commit is released
 // https://github.com/ros2/geometry2/commit/e9da371d81e388a589540357c050e262442f1b4a
 inline geometry_msgs::msg::Point & toMsg(const tf2::Vector3 & in, geometry_msgs::msg::Point & out)
@@ -115,8 +114,8 @@ inline void doTransform(
   tf2::Vector3 v_out = t * v_in;
   toMsg(v_out, t_out);
 }
-}  // namespace tf2
 #endif
+}  // namespace tf2
 
 namespace behavior_path_planner
 {
