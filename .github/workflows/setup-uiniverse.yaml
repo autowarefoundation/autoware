@@ -1,10 +1,10 @@
-name: setup-docker
+name: setup-universe
 
 on:
   pull_request:
 
 jobs:
-  setup-docker:
+  setup-universe:
     runs-on: ubuntu-latest
     container: ubuntu:20.04
     steps:
@@ -13,4 +13,4 @@ jobs:
 
       - name: Run setup script
         run: |
-          ./setup-dev-env.sh -y -v docker
+          ./setup-dev-env.sh -y -v --no-nvidia universe

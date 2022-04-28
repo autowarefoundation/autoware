@@ -1,7 +1,15 @@
-- name: Install apt packages
+# Workaround for https://serverfault.com/questions/1099606/ansible-openssl-error-with-apt-module
+- name: Upgrade pyOpenSSL
+  become: true
+  ansible.builtin.pip:
+    name: pyOpenSSL
+    state: latest
+    executable: pip3
+
+- name: Install plotjuggler
   become: true
   ansible.builtin.apt:
     name:
-      - ros-galactic-plotjuggler-ros
+      - ros-{{ rosdistro }}-plotjuggler-ros
     state: latest
     update_cache: true

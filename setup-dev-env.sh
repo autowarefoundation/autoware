@@ -60,7 +60,7 @@ fi
 
 # Check verbose option
 if [ "$option_verbose" = "true" ]; then
-    ansible_args+=("-v")
+    ansible_args+=("-vvv")
 fi
 
 # Check NVIDIA Installation
