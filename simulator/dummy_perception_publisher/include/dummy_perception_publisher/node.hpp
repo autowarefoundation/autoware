@@ -33,8 +33,63 @@
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 
+#include <memory>
 #include <random>
 #include <vector>
+
+struct ObjectInfo
+{
+  ObjectInfo(
+    const dummy_perception_publisher::msg::Object & object, const rclcpp::Time & current_time);
+  double length;
+  double width;
+  double height;
+  double std_dev_x;
+  double std_dev_y;
+  double std_dev_z;
+  double std_dev_yaw;
+  tf2::Transform tf_map2moved_object;
+};
+
+class PointCloudCreator
+{
+public:
+  virtual ~PointCloudCreator() {}
+
+  virtual std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> create_pointclouds(
+    const std::vector<ObjectInfo> & obj_infos, const tf2::Transform & tf_base_link2map,
+    std::mt19937 & random_generator,
+    pcl::PointCloud<pcl::PointXYZ>::Ptr & merged_pointcloud) const = 0;
+};
+
+class ObjectCentricPointCloudCreator : public PointCloudCreator
+{
+public:
+  explicit ObjectCentricPointCloudCreator(bool enable_ray_tracing)
+  : enable_ray_tracing_(enable_ray_tracing)
+  {
+  }
+
+  std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> create_pointclouds(
+    const std::vector<ObjectInfo> & obj_infos, const tf2::Transform & tf_base_link2map,
+    std::mt19937 & random_generator,
+    pcl::PointCloud<pcl::PointXYZ>::Ptr & merged_pointcloud) const override;
+
+private:
+  void create_object_pointcloud(
+    const ObjectInfo & obj_info, const tf2::Transform & tf_base_link2map,
+    std::mt19937 & random_generator, pcl::PointCloud<pcl::PointXYZ>::Ptr pointcloud) const;
+
+  bool enable_ray_tracing_;
+};
+
+class EgoCentricPointCloudCreator : public PointCloudCreator
+{
+  std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> create_pointclouds(
+    const std::vector<ObjectInfo> & obj_infos, const tf2::Transform & tf_base_link2map,
+    std::mt19937 & random_generator,
+    pcl::PointCloud<pcl::PointXYZ>::Ptr & merged_pointcloud) const override;
+};
 
 class DummyPerceptionPublisherNode : public rclcpp::Node
 {
@@ -52,13 +107,12 @@ private:
   bool enable_ray_tracing_;
   bool use_object_recognition_;
   bool use_real_param_;
+  std::unique_ptr<PointCloudCreator> pointcloud_creator_;
+
+  double angle_increment_;
+
   std::mt19937 random_generator_;
   void timerCallback();
-  void createObjectPointcloud(
-    const double length, const double width, const double height, const double std_dev_x,
-    const double std_dev_y, const double std_dev_z,
-    const tf2::Transform & tf_base_link2moved_object,
-    pcl::PointCloud<pcl::PointXYZ>::Ptr & pointcloud_ptr);
   void objectCallback(const dummy_perception_publisher::msg::Object::ConstSharedPtr msg);
 
 public:

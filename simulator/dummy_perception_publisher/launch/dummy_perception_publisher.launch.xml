@@ -18,6 +18,7 @@
         <param name="detection_successful_rate" value="0.999"/>
         <param name="enable_ray_tracing" value="false"/>
         <param name="use_object_recognition" value="$(var use_object_recognition)"/>
+        <param name="object_centric_pointcloud" value="false"/>
       </node>
       <include file="$(find-pkg-share shape_estimation)/launch/shape_estimation.launch.xml">
         <arg name="input/objects" value="/perception/object_recognition/detection/labeled_clusters"/>

@@ -12,7 +12,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 # Dependencies for messages
-find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_auto REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(autoware_auto_perception_msgs REQUIRED)
 find_package(tier4_perception_msgs REQUIRED)
@@ -43,9 +43,18 @@ set(${PROJECT_NAME}_DEPENDENCIES
   tf2_ros
 )
 
+ament_auto_add_library(signed_distance_function SHARED
+  src/signed_distance_function.cpp
+)
+
 ament_auto_add_executable(dummy_perception_publisher_node
   src/main.cpp
   src/node.cpp
+  src/pointcloud_creator.cpp
+)
+
+target_link_libraries(dummy_perception_publisher_node
+  signed_distance_function
 )
 
 ament_target_dependencies(dummy_perception_publisher_node ${${PROJECT_NAME}_DEPENDENCIES})
@@ -85,6 +94,15 @@ ament_auto_add_executable(empty_objects_publisher
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
+
+  find_package(ament_cmake_gtest REQUIRED)
+
+  ament_add_gtest(signed_distance_function-test
+    test/src/test_signed_distance_function.cpp
+  )
+  target_link_libraries(signed_distance_function-test
+    signed_distance_function
+  )
 endif()
 
 ament_auto_package(
