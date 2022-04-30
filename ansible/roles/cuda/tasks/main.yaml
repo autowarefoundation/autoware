@@ -17,7 +17,7 @@
 - name: Add NVIDIA apt key
   become: true
   ansible.builtin.apt_key:
-    url: https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/{{ cuda_architecture.stdout }}/7fa2af80.pub
+    url: https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/{{ cuda_architecture.stdout }}/3bf863cc.pub
 
 - name: Add CUDA repository into sources.list
   become: true
