@@ -263,7 +263,9 @@ void BehaviorVelocityPlannerNode::onNoGroundPointCloud(
 
   Eigen::Affine3f affine = tf2::transformToEigen(transform.transform).cast<float>();
   pcl::PointCloud<pcl::PointXYZ>::Ptr pc_transformed(new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::transformPointCloud(pc, *pc_transformed, affine);
+  if (!pc.empty()) {
+    pcl::transformPointCloud(pc, *pc_transformed, affine);
+  }
 
   {
     std::lock_guard<std::mutex> lock(mutex_);
