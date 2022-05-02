@@ -23,6 +23,7 @@
   become: true
   ansible.builtin.apt_repository:
     repo: deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/{{ cuda_architecture.stdout }}/ /
+    filename: cuda
     state: present
 
 - name: Get dash-case name of cuda_version

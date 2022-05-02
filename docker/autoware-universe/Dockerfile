@@ -27,6 +27,7 @@ RUN mkdir -p ~/.ssh \
 ## Set up development environment
 RUN --mount=type=ssh \
   ./setup-dev-env.sh -y --no-nvidia universe \
+  && pip uninstall -y ansible ansible-core \
   && mkdir src \
   && vcs import src < autoware.repos \
   && rosdep update \
@@ -49,8 +50,15 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-ins
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
+## Clean up unnecessary files
+RUN rm -rf \
+  "$HOME"/.cache \
+  /etc/apt/sources.list.d/cuda.list \
+  /etc/apt/sources.list.d/docker.list \
+  /etc/apt/sources.list.d/nvidia-docker.list
+
 ## Create entrypoint
-# hadolint ignore=SC1091
+# hadolint ignore=DL3059
 RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" > /etc/bash.bashrc
 CMD ["/bin/bash"]
 
@@ -58,12 +66,10 @@ FROM devel as prebuilt
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ## Build and change permission for runtime data conversion
-# hadolint ignore=SC1091
 RUN source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release \
   && find /autoware/install -type d -exec chmod 777 {} \;
 
 ## Create entrypoint
-# hadolint ignore=SC1091
 RUN echo "source /autoware/install/setup.bash" > /etc/bash.bashrc
 CMD ["/bin/bash"]
