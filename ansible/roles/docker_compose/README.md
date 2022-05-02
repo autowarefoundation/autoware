@@ -23,7 +23,7 @@ The `docker_compose_version` can also be found in:
 # Modified from: https://docs.docker.com/compose/cli-command/#install-on-linux
 
 # Run this command to download the Docker Compose:
-docker_compose_version=v2.2.2
+docker_compose_version=v2.5.0
 sudo curl -SL https://github.com/docker/compose/releases/download/${docker_compose_version}/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
 
 # Apply executable permissions to the binary:
