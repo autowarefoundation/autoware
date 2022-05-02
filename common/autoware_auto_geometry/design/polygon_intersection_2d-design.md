@@ -12,7 +12,7 @@ association and in any application that deals with the objects around the percei
 
 ## Design
 
-[\(Livermore, Calif, 1977\)](https://www.osti.gov/servlets/purl/7309916/) mention the following
+[\(Livermore, Calif, 1977\)](https://www.osti.gov/biblio/7309916/) mention the following
 observations about convex polygon intersection:
 
 - Intersection of two convex polygons is a convex polygon
@@ -29,7 +29,7 @@ With the observation mentioned above, the current algorithm operates in the foll
 
 - Compute and find the vertices from each polygon that is contained in the other polygon
   (Vertices A, C, D)
-- Compute and find the intersection points between each polygon (Verties B, E)
+- Compute and find the intersection points between each polygon (Vertices B, E)
 - Compute the convex hull shaped by these vertices by ordering them CCW.
 
 ### Inputs / Outputs / API
