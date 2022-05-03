@@ -9,8 +9,10 @@
   changed_when: false
 
 - name: Install CUDA keyring
+  become: true
   ansible.builtin.apt:
     deb: https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/{{ cuda_architecture.stdout }}/cuda-keyring_1.0-1_all.deb
+    update_cache: true
 
 - name: Get dash-case name of cuda_version
   ansible.builtin.shell: bash -c 'sed -e "s/\./-/g" <<< $(echo {{ cuda_version }})'
