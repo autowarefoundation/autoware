@@ -43,7 +43,6 @@ if(BUILD_TESTING)
     "autoware_auto_system_msgs"
     "autoware_auto_geometry_msgs"
     "geometry_msgs"
-    "orocos_kdl"
     "tf2"
     "tf2_geometry_msgs"
     "tf2_ros"
