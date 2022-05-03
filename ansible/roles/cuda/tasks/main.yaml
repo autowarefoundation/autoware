@@ -8,23 +8,9 @@
   register: cuda_architecture
   changed_when: false
 
-- name: Download pin file
-  become: true
-  ansible.builtin.get_url:
-    url: https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/{{ cuda_architecture.stdout }}/cuda-ubuntu2004.pin
-    dest: /etc/apt/preferences.d/cuda-repository-pin-600
-
-- name: Add NVIDIA apt key
-  become: true
-  ansible.builtin.apt_key:
-    url: https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/{{ cuda_architecture.stdout }}/3bf863cc.pub
-
-- name: Add CUDA repository into sources.list
-  become: true
-  ansible.builtin.apt_repository:
-    repo: deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/{{ cuda_architecture.stdout }}/ /
-    filename: cuda
-    state: present
+- name: Install CUDA keyring
+  ansible.builtin.apt:
+    deb: https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/{{ cuda_architecture.stdout }}/cuda-keyring_1.0-1_all.deb
 
 - name: Get dash-case name of cuda_version
   ansible.builtin.shell: bash -c 'sed -e "s/\./-/g" <<< $(echo {{ cuda_version }})'
