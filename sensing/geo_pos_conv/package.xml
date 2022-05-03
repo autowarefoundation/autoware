@@ -5,8 +5,6 @@
   <version>2.0.0</version>
   <description>The ROS2 geo_pos_conv package</description>
   <maintainer email="ryo.watanabe@tier4.jp">Ryo Watanabe</maintainer>
-  <maintainer email="tomo@axe.bz">Tomomi HORII</maintainer>
-  <!-- ROS2 -->
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>

@@ -1,19 +1,17 @@
 <?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>pointcloud_preprocessor</name>
   <version>0.1.0</version>
   <description>The ROS2 pointcloud_preprocessor package</description>
-
   <maintainer email="abrahammonrroy@yahoo.com">amc-nu</maintainer>
   <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>
   <license>Apache License 2.0</license>
 
+  <!-- Original authors -->
   <author>Open Perception</author>
   <author email="julius@kammerl.de">Julius Kammerl</author>
   <author email="william@osrfoundation.org">William Woodall</author>
-  <maintainer email="paul@bovbel.com">Paul Bovbel</maintainer>
-  <maintainer email="www.kentaro.wada@gmail.com">Kentaro Wada</maintainer>
-  <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 

@@ -1,11 +1,10 @@
 <?xml version="1.0"?>
-<package format="2">
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>map_based_prediction</name>
   <version>0.1.0</version>
   <description>This package implements a map_based_prediction</description>
-
-  <maintainer email="kosuke.murakami@tier4.jp">Kosuke Murakami</maintainer>
-
+  <maintainer email="yutaka.shimizu@tier4.jp">Yutaka Shimizu</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>

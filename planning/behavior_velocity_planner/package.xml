@@ -4,7 +4,6 @@
   <name>behavior_velocity_planner</name>
   <version>0.1.0</version>
   <description>The behavior_velocity_planner package</description>
-
   <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>
   <license>Apache License 2.0</license>
 

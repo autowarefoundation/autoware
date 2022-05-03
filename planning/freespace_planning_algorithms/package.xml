@@ -6,6 +6,7 @@
   <description>The freespace_planning_algorithms package</description>
   <maintainer email="aohsato@gmail.com">Akihito Ohsato</maintainer>
   <license>Apache License 2.0</license>
+
   <author email="aohsato@gmail.com">Akihito Ohsato</author>
   <author email="h-ishida@jsk.imi.i.u-tokyo.ac.jp">Hirokazu Ishida</author>
 

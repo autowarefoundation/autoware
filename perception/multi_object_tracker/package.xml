@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
-<package format="2">
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>multi_object_tracker</name>
   <version>1.0.0</version>
   <description>The ROS2 multi_object_tracker package</description>
   <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>
-  <!-- ROS2 -->
   <maintainer email="jilada.eccleston@tier4.jp">Jilada Eccleston</maintainer>
   <license>Apache License 2.0</license>
 

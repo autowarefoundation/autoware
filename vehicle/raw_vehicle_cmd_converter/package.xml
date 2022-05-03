@@ -1,12 +1,14 @@
 <?xml version="1.0"?>
-<package format="2">
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>raw_vehicle_cmd_converter</name>
   <version>0.1.0</version>
   <description>The raw_vehicle_cmd_converter package</description>
   <maintainer email="horibe.takamasa@gmail.com">Horibe Takamasa</maintainer>
+  <license>Apache License 2.0</license>
+
   <author email="mkuri8m@gmail.com">Makoto Kurihara</author>
   <author email="horibe.takamasa@gmail.com">Horibe Takamasa</author>
-  <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 

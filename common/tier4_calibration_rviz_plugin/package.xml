@@ -1,15 +1,16 @@
 <?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>tier4_calibration_rviz_plugin</name>
   <version>0.1.0</version>
   <description>The accel_brake_map_calibrator_button_panel package</description>
-
   <maintainer email="tomoya.kimura@tier4.jp">Tomoya Kimura</maintainer>
-  <author>Tomoya Kimura</author>
+  <license>Apache License 2.0</license>
 
-  <license>Apache 2</license>
+  <author email="tomoya.kimura@tier4.jp">Tomoya Kimura</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
   <depend>libqt5-core</depend>
   <depend>libqt5-widgets</depend>
   <depend>qtbase5-dev</depend>

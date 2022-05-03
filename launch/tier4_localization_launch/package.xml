@@ -4,9 +4,7 @@
   <name>tier4_localization_launch</name>
   <version>0.1.0</version>
   <description>The tier4_localization_launch package</description>
-
   <maintainer email="yamato.ando@gmail.com">Yamato Ando</maintainer>
-
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>

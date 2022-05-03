@@ -4,7 +4,6 @@
   <name>tier4_system_launch</name>
   <version>0.1.0</version>
   <description>The tier4_system_launch package</description>
-
   <maintainer email="kenji.miyake@tier4.jp">Kenji Miyake</maintainer>
   <license>Apache License 2.0</license>
 

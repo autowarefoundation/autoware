@@ -4,7 +4,6 @@
   <name>tier4_simulator_launch</name>
   <version>0.1.0</version>
   <description>The tier4_simulator_launch package</description>
-
   <maintainer email="keisuke.shima@tier4.jp">Keisuke Shima</maintainer>
   <license>Apache License 2.0</license>
 

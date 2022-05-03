@@ -1,11 +1,10 @@
 <?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>obstacle_avoidance_planner</name>
   <version>0.1.0</version>
   <description>The path_planner package</description>
-
-  <maintainer email="kosuke.murakami@gmail.com">KosukeMurakami</maintainer>
-
+  <maintainer email="takayuki.murooka@tier4.jp">Takayuki Murooka</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>

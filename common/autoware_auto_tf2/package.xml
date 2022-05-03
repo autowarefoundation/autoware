@@ -5,7 +5,7 @@
   <version>1.0.0</version>
   <description>Transform related utilities for different msg types</description>
   <maintainer email="jit.ray.c@gmail.com">Jit Ray Chowdhury</maintainer>
-  <license>Apache 2</license>
+  <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>autoware_auto_cmake</buildtool_depend>
@@ -21,8 +21,8 @@
   <depend>tf2_ros</depend>
 
   <test_depend>ament_cmake_gtest</test_depend>
-  <!-- <test_depend>ament_lint_auto</test_depend> -->
-  <!-- <test_depend>ament_lint_common</test_depend> -->
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

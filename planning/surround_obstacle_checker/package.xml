@@ -4,13 +4,12 @@
   <name>surround_obstacle_checker</name>
   <version>0.1.0</version>
   <description>The surround_obstacle_checker package</description>
-
-  <maintainer email="tier4@todo.todo">tier4</maintainer>
-
+  <maintainer email="satoshi.ota@tier4.jp">Satoshi Ota</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>eigen3_cmake_module</buildtool_depend>
+
   <depend>autoware_auto_perception_msgs</depend>
   <depend>autoware_auto_planning_msgs</depend>
   <depend>diagnostic_msgs</depend>

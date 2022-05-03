@@ -4,7 +4,6 @@
   <name>dummy_perception_publisher</name>
   <version>0.1.0</version>
   <description>The dummy_perception_publisher package</description>
-
   <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>
   <license>Apache License 2.0</license>
 

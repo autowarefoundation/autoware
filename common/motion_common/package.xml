@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
-<package format="2">
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>motion_common</name>
   <version>1.0.0</version>
   <description>Helper functions and base classes to aid the development of motion controllers and planners</description>
@@ -23,9 +23,9 @@
 
   <build_depend>motion_testing</build_depend>
 
+  <test_depend>ament_lint_auto</test_depend>
   <test_depend>apex_test_tools</test_depend>
-  <!-- <test_depend>ament_lint_auto</test_depend> -->
-  <!-- <test_depend>ament_lint_common</test_depend> -->
+  <test_depend>autoware_lint_common</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

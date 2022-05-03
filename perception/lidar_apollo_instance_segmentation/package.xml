@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>lidar_apollo_instance_segmentation</name>
   <version>0.1.0</version>
   <description>lidar_apollo_instance_segmentation</description>
-
   <maintainer email="yukky.saito@gmail.com">Yukihiro Saito</maintainer>
+  <license>Apache License 2.0</license>
+
   <author email="kosuke.tnp@gmail.com">Kosuke Takeuchi</author>
   <author email="yukky.saito@gmail.com">Yukihiro Saito</author>
-
-  <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 

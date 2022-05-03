@@ -4,9 +4,7 @@
   <name>tier4_control_launch</name>
   <version>0.1.0</version>
   <description>The tier4_control_launch package</description>
-
   <maintainer email="horibe.takamasa@gmail.com">Takamasa Horibe</maintainer>
-
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>

@@ -5,7 +5,7 @@
   <version>0.1.0</version>
   <description>The accel_brake_map_calibrator</description>
   <maintainer email="tomoya.kimura@tier4.jp">Tomoya Kimura</maintainer>
-  <license>Apache 2</license>
+  <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 

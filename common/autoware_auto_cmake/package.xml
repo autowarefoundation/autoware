@@ -20,8 +20,8 @@
   <buildtool_export_depend>ament_cmake_uncrustify</buildtool_export_depend>
 
   <test_depend>ament_cmake_lint_cmake</test_depend>
-  <!-- <test_depend>ament_lint_auto</test_depend> -->
-  <!-- <test_depend>ament_lint_common</test_depend> -->
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
