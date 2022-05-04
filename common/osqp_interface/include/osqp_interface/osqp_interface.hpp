@@ -33,7 +33,7 @@ namespace common
 {
 namespace osqp
 {
-constexpr c_float INF = OSQP_INFTY;
+constexpr c_float INF = 1e30;
 using autoware::common::types::bool8_t;
 using autoware::common::types::float64_t;
 
