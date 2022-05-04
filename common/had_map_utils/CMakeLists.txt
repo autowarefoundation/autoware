@@ -1,8 +1,4 @@
-# Copyright 2020 TierIV, Inc.
-# All rights reserved.
 cmake_minimum_required(VERSION 3.5)
-
-### Export headers
 project(had_map_utils)
 
 if(NOT CMAKE_CXX_STANDARD)
