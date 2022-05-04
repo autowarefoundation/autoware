@@ -19,7 +19,11 @@
 #include <lanelet2_extension/visualization/visualization.hpp>
 
 #include <lanelet2_routing/Route.h>
+#ifdef USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#else
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#endif
 #include <visualization_msgs/msg/marker_array.h>
 
 #include <string>

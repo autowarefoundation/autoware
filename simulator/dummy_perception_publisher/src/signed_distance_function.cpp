@@ -70,7 +70,7 @@ double CompisiteSDF::operator()(double x, double y) const
 size_t CompisiteSDF::nearest_sdf_index(double x, double y) const
 {
   double min_value = std::numeric_limits<double>::infinity();
-  size_t idx_min;
+  size_t idx_min{};
   for (size_t i = 0; i < sdf_ptrs_.size(); ++i) {
     const auto value = sdf_ptrs_.at(i)->operator()(x, y);
     if (value < min_value) {

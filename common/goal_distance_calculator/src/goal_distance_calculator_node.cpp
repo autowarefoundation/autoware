@@ -29,7 +29,7 @@
 namespace goal_distance_calculator
 {
 GoalDistanceCalculatorNode::GoalDistanceCalculatorNode(const rclcpp::NodeOptions & options)
-: Node("goal_distance_calculator"),
+: Node("goal_distance_calculator", options),
   self_pose_listener_(this),
   debug_publisher_(this, "goal_distance_calculator")
 {

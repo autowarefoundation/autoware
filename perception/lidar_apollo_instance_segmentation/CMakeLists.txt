@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
 project(lidar_apollo_instance_segmentation)
 
+# TODO: remove (https://github.com/autowarefoundation/autoware.universe/issues/850)
+add_compile_options(-Wno-deprecated-declarations)
+
 option(CUDA_VERBOSE "Verbose output of CUDA modules" OFF)
 
 # set flags for CUDA availability

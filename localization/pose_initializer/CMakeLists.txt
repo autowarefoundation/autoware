@@ -22,6 +22,13 @@ ament_auto_add_executable(pose_initializer
 )
 target_link_libraries(pose_initializer ${PCL_LIBRARIES})
 
+# workaround to allow deprecated header to build on both galactic and rolling
+if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
+  target_compile_definitions(pose_initializer PRIVATE
+    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+  )
+endif()
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()

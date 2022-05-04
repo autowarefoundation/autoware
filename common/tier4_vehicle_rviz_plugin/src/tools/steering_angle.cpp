@@ -130,7 +130,7 @@ void SteeringAngleDisplay::update(float wall_dt, float ros_dt)
   // ((property_handle_angle_scale_->getFloat() * (msg_ptr->data / M_PI) * -180.0));
   int handle_image_width = handle_image_.width(), handle_image_height = handle_image_.height();
   QPixmap rotate_handle_image;
-  rotate_handle_image = handle_image_.transformed(rotation_matrix);
+  rotate_handle_image = handle_image_.transformed(QTransform(rotation_matrix));
   rotate_handle_image = rotate_handle_image.copy(
     (rotate_handle_image.width() - handle_image_width) / 2,
     (rotate_handle_image.height() - handle_image_height) / 2, handle_image_width,

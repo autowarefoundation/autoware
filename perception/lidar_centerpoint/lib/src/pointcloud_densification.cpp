@@ -18,7 +18,11 @@
 #include <boost/optional.hpp>
 
 #include <pcl_conversions/pcl_conversions.h>
+#ifdef USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
 #include <tf2_eigen/tf2_eigen.h>
+#else
+#include <tf2_eigen/tf2_eigen.hpp>
+#endif
 
 #include <string>
 #include <utility>

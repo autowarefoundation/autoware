@@ -273,5 +273,5 @@ const std::string VEHICLE_MODEL_LIST[] = {   // NOLINT
 };
 // clang-format on
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
   TestForEachVehicleModel, TestSimplePlanningSimulator, ::testing::ValuesIn(VEHICLE_MODEL_LIST));

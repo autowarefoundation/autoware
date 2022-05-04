@@ -186,7 +186,7 @@ std::string ScenarioSelectorNode::selectScenarioByPosition()
   }
 
   if (current_scenario_ == tier4_planning_msgs::msg::Scenario::PARKING) {
-    bool is_parking_completed;
+    bool is_parking_completed{};
     this->get_parameter<bool>("is_parking_completed", is_parking_completed);
     if (is_parking_completed && is_in_lane) {
       this->set_parameter(rclcpp::Parameter("is_parking_completed", false));

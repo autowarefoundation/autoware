@@ -61,7 +61,7 @@ Stat<double> calcLateralDistance(const Trajectory & traj1, const Trajectory & tr
   if (traj1.points.empty()) {
     return stat;
   }
-  for (const auto point : traj2.points) {
+  for (const auto & point : traj2.points) {
     const auto p0 = tier4_autoware_utils::getPoint(point);
     // find nearest segment
     const size_t nearest_segment_idx =

@@ -14,6 +14,9 @@ endif()
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
+# TODO: remove (https://github.com/autowarefoundation/autoware.universe/issues/851)
+add_compile_options(-Wno-stringop-truncation)
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 find_package(NVML)
 find_package(fmt REQUIRED)
