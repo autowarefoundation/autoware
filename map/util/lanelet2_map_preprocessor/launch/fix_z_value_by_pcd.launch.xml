@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="llt_map_path" default=""/>
+  <arg name="pcd_map_path" default=""/>
+  <arg name="llt_output_path" default=""/>
+
+  <node pkg="lanelet2_map_preprocessor" exec="fix_z_value_by_pcd" name="fix_z_value_by_pcd" output="screen">
+    <param name="llt_map_path" value="$(var llt_map_path)"/>
+    <param name="pcd_map_path" value="$(var pcd_map_path)"/>
+    <param name="llt_output_path" value="$(var llt_output_path)"/>
+  </node>
+</launch>

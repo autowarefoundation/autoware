@@ -13,6 +13,9 @@
   <depend>pcl_ros</depend>
   <depend>rclcpp</depend>
 
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
   <export>
     <build_type>ament_cmake</build_type>
   </export>

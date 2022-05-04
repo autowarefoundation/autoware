@@ -26,4 +26,11 @@ ament_auto_add_executable(merge_close_points src/merge_close_points.cpp)
 ament_auto_add_executable(remove_unreferenced_geometry src/remove_unreferenced_geometry.cpp)
 ament_auto_add_executable(fix_lane_change_tags src/fix_lane_change_tags.cpp)
 
-ament_auto_package()
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
+endif()
+
+ament_auto_package(INSTALL_TO_SHARE
+  launch
+)

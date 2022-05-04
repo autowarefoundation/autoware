@@ -27,14 +27,6 @@
 #include <unordered_set>
 #include <vector>
 
-void printUsage()
-{
-  std::cerr << "Please set following private parameters:" << std::endl
-            << "llt_map_path" << std::endl
-            << "pcd_map_path" << std::endl
-            << "output_path" << std::endl;
-}
-
 bool loadLaneletMap(
   const std::string & llt_map_path, lanelet::LaneletMapPtr & lanelet_map_ptr,
   lanelet::Projector & projector)
@@ -44,7 +36,7 @@ bool loadLaneletMap(
   lanelet_map_ptr = lanelet::load(llt_map_path, "autoware_osm_handler", projector, &errors);
 
   for (const auto & error : errors) {
-    RCLCPP_ERROR_STREAM(rclcpp::get_logger("fix_z_value_by_pcd"), error);
+    RCLCPP_ERROR_STREAM(rclcpp::get_logger("loadLaneletMap"), error);
   }
   if (!errors.empty()) {
     return false;
@@ -56,7 +48,7 @@ bool loadLaneletMap(
 bool loadPCDMap(const std::string & pcd_map_path, pcl::PointCloud<pcl::PointXYZ>::Ptr & pcd_map_ptr)
 {
   if (pcl::io::loadPCDFile<pcl::PointXYZ>(pcd_map_path, *pcd_map_ptr) == -1) {  //* load the file
-    PCL_ERROR("Couldn't read file test_pcd.pcd \n");
+    RCLCPP_ERROR_STREAM(rclcpp::get_logger("loadPCDMap"), "Couldn't read file: " << pcd_map_path);
     return false;
   }
   std::cout << "Loaded " << pcd_map_ptr->width * pcd_map_ptr->height << " data points."
@@ -149,25 +141,12 @@ void adjustHeight(
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
-  rclcpp::Node node("fix_z_value_by_pcd");
 
-  if (!node.has_parameter("llt_map_path")) {
-    printUsage();
-    return EXIT_FAILURE;
-  }
-  if (!node.has_parameter("pcd_map_path")) {
-    printUsage();
-    return EXIT_FAILURE;
-  }
-  if (!node.has_parameter("output_path")) {
-    printUsage();
-    return EXIT_FAILURE;
-  }
+  auto node = rclcpp::Node::make_shared("lanelet_map_height_adjuster");
 
-  std::string llt_map_path, pcd_map_path, output_path;
-  node.get_parameter("llt_map_path", llt_map_path);
-  node.get_parameter("pcd_map_path", pcd_map_path);
-  node.get_parameter("output_path", output_path);
+  const auto llt_map_path = node->declare_parameter<std::string>("llt_map_path");
+  const auto pcd_map_path = node->declare_parameter<std::string>("pcd_map_path");
+  const auto llt_output_path = node->declare_parameter<std::string>("llt_output_path");
 
   lanelet::LaneletMapPtr llt_map_ptr(new lanelet::LaneletMap);
   lanelet::projection::MGRSProjector projector;
@@ -182,7 +161,7 @@ int main(int argc, char * argv[])
   }
 
   adjustHeight(pcd_map_ptr, llt_map_ptr);
-  lanelet::write(output_path, *llt_map_ptr, projector);
+  lanelet::write(llt_output_path, *llt_map_ptr, projector);
 
   rclcpp::shutdown();
 

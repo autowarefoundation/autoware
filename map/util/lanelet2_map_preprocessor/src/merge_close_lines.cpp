@@ -26,13 +26,6 @@
 #include <unordered_set>
 #include <vector>
 
-void printUsage()
-{
-  std::cerr << "Please set following private parameters:" << std::endl
-            << "llt_map_path" << std::endl
-            << "output_path" << std::endl;
-}
-
 using lanelet::utils::getId;
 using lanelet::utils::to2D;
 
@@ -45,7 +38,7 @@ bool loadLaneletMap(
   lanelet_map_ptr = lanelet::load(llt_map_path, "autoware_osm_handler", projector, &errors);
 
   for (const auto & error : errors) {
-    RCLCPP_ERROR_STREAM(rclcpp::get_logger("merge_close_lines"), error);
+    RCLCPP_ERROR_STREAM(rclcpp::get_logger("loadLaneletMap"), error);
   }
   if (!errors.empty()) {
     return false;
@@ -187,20 +180,11 @@ void mergeLines(lanelet::LaneletMapPtr & lanelet_map_ptr)
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
-  rclcpp::Node node("merge_close_lines");
 
-  if (!node.has_parameter("llt_map_path")) {
-    printUsage();
-    return EXIT_FAILURE;
-  }
-  if (!node.has_parameter("output_path")) {
-    printUsage();
-    return EXIT_FAILURE;
-  }
+  auto node = rclcpp::Node::make_shared("merge_close_lines");
 
-  std::string llt_map_path, output_path;
-  node.get_parameter("llt_map_path", llt_map_path);
-  node.get_parameter("output_path", output_path);
+  const auto llt_map_path = node->declare_parameter<std::string>("llt_map_path");
+  const auto output_path = node->declare_parameter<std::string>("output_path");
 
   lanelet::LaneletMapPtr llt_map_ptr(new lanelet::LaneletMap);
   lanelet::projection::MGRSProjector projector;

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="llt_map_path" default=""/>
+  <arg name="pcd_map_path" default=""/>
+  <arg name="llt_output_path" default=""/>
+  <arg name="pcd_output_path" default=""/>
+  <arg name="x" default="0.0"/>
+  <arg name="y" default="0.0"/>
+  <arg name="z" default="0.0"/>
+  <arg name="roll" default="0.0"/>
+  <arg name="pitch" default="0.0"/>
+  <arg name="yaw" default="0.0"/>
+
+  <node pkg="lanelet2_map_preprocessor" exec="transform_maps" name="transform_maps" output="screen">
+    <param name="llt_map_path" value="$(var llt_map_path)"/>
+    <param name="pcd_map_path" value="$(var pcd_map_path)"/>
+    <param name="llt_output_path" value="$(var llt_output_path)"/>
+    <param name="pcd_output_path" value="$(var pcd_output_path)"/>
+    <param name="x" value="$(var x)"/>
+    <param name="y" value="$(var y)"/>
+    <param name="z" value="$(var z)"/>
+    <param name="roll" value="$(var roll)"/>
+    <param name="pitch" value="$(var pitch)"/>
+    <param name="yaw" value="$(var yaw)"/>
+  </node>
+</launch>
