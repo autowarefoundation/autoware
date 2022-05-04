@@ -15,13 +15,13 @@
 #include <lanelet2_extension/io/autoware_osm_parser.hpp>
 #include <lanelet2_extension/projection/mgrs_projector.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
+#include <rclcpp/rclcpp.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_io/Io.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/point_types.h>
-#include <ros/ros.h>
 
 #include <iostream>
 #include <unordered_set>
@@ -44,7 +44,7 @@ bool loadLaneletMap(
   lanelet_map_ptr = lanelet::load(llt_map_path, "autoware_osm_handler", projector, &errors);
 
   for (const auto & error : errors) {
-    ROS_ERROR_STREAM(error);
+    RCLCPP_ERROR_STREAM(rclcpp::get_logger("fix_z_value_by_pcd"), error);
   }
   if (!errors.empty()) {
     return false;
@@ -148,26 +148,26 @@ void adjustHeight(
 
 int main(int argc, char * argv[])
 {
-  ros::init(argc, argv, "lanelet_map_height_adjuster");
-  ros::NodeHandle pnh("~");
+  rclcpp::init(argc, argv);
+  rclcpp::Node node("fix_z_value_by_pcd");
 
-  if (!pnh.hasParam("llt_map_path")) {
+  if (!node.has_parameter("llt_map_path")) {
     printUsage();
     return EXIT_FAILURE;
   }
-  if (!pnh.hasParam("pcd_map_path")) {
+  if (!node.has_parameter("pcd_map_path")) {
     printUsage();
     return EXIT_FAILURE;
   }
-  if (!pnh.hasParam("output_path")) {
+  if (!node.has_parameter("output_path")) {
     printUsage();
     return EXIT_FAILURE;
   }
 
   std::string llt_map_path, pcd_map_path, output_path;
-  pnh.getParam("llt_map_path", llt_map_path);
-  pnh.getParam("pcd_map_path", pcd_map_path);
-  pnh.getParam("output_path", output_path);
+  node.get_parameter("llt_map_path", llt_map_path);
+  node.get_parameter("pcd_map_path", pcd_map_path);
+  node.get_parameter("output_path", output_path);
 
   lanelet::LaneletMapPtr llt_map_ptr(new lanelet::LaneletMap);
   lanelet::projection::MGRSProjector projector;
@@ -183,6 +183,8 @@ int main(int argc, char * argv[])
 
   adjustHeight(pcd_map_ptr, llt_map_ptr);
   lanelet::write(output_path, *llt_map_ptr, projector);
+
+  rclcpp::shutdown();
 
   return 0;
 }

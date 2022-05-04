@@ -15,12 +15,12 @@
 #include <lanelet2_extension/io/autoware_osm_parser.hpp>
 #include <lanelet2_extension/projection/mgrs_projector.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
+#include <rclcpp/rclcpp.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_core/geometry/Lanelet.h>
 #include <lanelet2_core/primitives/LaneletSequence.h>
 #include <lanelet2_io/Io.h>
-#include <ros/ros.h>
 
 #include <iostream>
 #include <unordered_set>
@@ -45,7 +45,7 @@ bool loadLaneletMap(
   lanelet_map_ptr = lanelet::load(llt_map_path, "autoware_osm_handler", projector, &errors);
 
   for (const auto & error : errors) {
-    ROS_ERROR_STREAM(error);
+    RCLCPP_ERROR_STREAM(rclcpp::get_logger("merge_close_lines"), error);
   }
   if (!errors.empty()) {
     return false;
@@ -62,7 +62,7 @@ bool exists(std::unordered_set<lanelet::Id> & set, lanelet::Id element)
 lanelet::LineStrings3d convertLineLayerToLineStrings(lanelet::LaneletMapPtr & lanelet_map_ptr)
 {
   lanelet::LineStrings3d lines;
-  for (const lanelet::LineString3d line : lanelet_map_ptr->lineStringLayer) {
+  for (const lanelet::LineString3d & line : lanelet_map_ptr->lineStringLayer) {
     lines.push_back(line);
   }
   return lines;
@@ -76,7 +76,7 @@ lanelet::ConstPoint3d get3DPointFrom2DArcLength(
     return lanelet::Point3d();
   }
   auto prev_pt = line.front();
-  for (int i = 1; i < line.size(); i++) {
+  for (size_t i = 1; i < line.size(); i++) {
     const auto & pt = line[i];
     double distance2d = lanelet::geometry::distance2d(to2D(prev_pt), to2D(pt));
     if (accumulated_distance2d + distance2d >= s) {
@@ -89,7 +89,7 @@ lanelet::ConstPoint3d get3DPointFrom2DArcLength(
     accumulated_distance2d += distance2d;
     prev_pt = pt;
   }
-  ROS_ERROR("interpolation failed");
+  RCLCPP_ERROR(rclcpp::get_logger("merge_close_lines"), "interpolation failed");
   return lanelet::ConstPoint3d();
 }
 
@@ -155,7 +155,7 @@ void copyData(lanelet::LineString3d & dst, lanelet::LineString3d & src)
 {
   lanelet::Points3d points;
   dst.clear();
-  for (lanelet::Point3d pt : src) {
+  for (lanelet::Point3d & pt : src) {
     dst.push_back(pt);
   }
 }
@@ -175,7 +175,7 @@ void mergeLines(lanelet::LaneletMapPtr & lanelet_map_ptr)
         line_i.setId(line_j.id());
         std::cout << line_j << " " << line_i << std::endl;
         // lanelet_map_ptr->add(merged_line);
-        for (lanelet::Point3d pt : merged_line) {
+        for (lanelet::Point3d & pt : merged_line) {
           lanelet_map_ptr->add(pt);
         }
         break;
@@ -186,21 +186,21 @@ void mergeLines(lanelet::LaneletMapPtr & lanelet_map_ptr)
 
 int main(int argc, char * argv[])
 {
-  ros::init(argc, argv, "merge_lines");
-  ros::NodeHandle pnh("~");
+  rclcpp::init(argc, argv);
+  rclcpp::Node node("merge_close_lines");
 
-  if (!pnh.hasParam("llt_map_path")) {
+  if (!node.has_parameter("llt_map_path")) {
     printUsage();
     return EXIT_FAILURE;
   }
-  if (!pnh.hasParam("output_path")) {
+  if (!node.has_parameter("output_path")) {
     printUsage();
     return EXIT_FAILURE;
   }
 
   std::string llt_map_path, output_path;
-  pnh.getParam("llt_map_path", llt_map_path);
-  pnh.getParam("output_path", output_path);
+  node.get_parameter("llt_map_path", llt_map_path);
+  node.get_parameter("output_path", output_path);
 
   lanelet::LaneletMapPtr llt_map_ptr(new lanelet::LaneletMap);
   lanelet::projection::MGRSProjector projector;
@@ -211,6 +211,8 @@ int main(int argc, char * argv[])
 
   mergeLines(llt_map_ptr);
   lanelet::write(output_path, *llt_map_ptr, projector);
+
+  rclcpp::shutdown();
 
   return 0;
 }

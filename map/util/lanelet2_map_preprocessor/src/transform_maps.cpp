@@ -15,13 +15,13 @@
 #include <lanelet2_extension/io/autoware_osm_parser.hpp>
 #include <lanelet2_extension/projection/mgrs_projector.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
+#include <rclcpp/rclcpp.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_io/Io.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/point_types.h>
-#include <ros/ros.h>
 
 #include <iostream>
 #include <unordered_set>
@@ -45,7 +45,7 @@ bool loadLaneletMap(
   lanelet_map_ptr = lanelet::load(llt_map_path, "autoware_osm_handler", projector, &errors);
 
   for (const auto & error : errors) {
-    ROS_ERROR_STREAM(error);
+    RCLCPP_ERROR_STREAM(rclcpp::get_logger("transform_maps"), error);
   }
   if (!errors.empty()) {
     return false;
@@ -70,7 +70,7 @@ void transformMaps(
   const Eigen::Affine3d affine)
 {
   {
-    for (lanelet::Point3d pt : lanelet_map_ptr->pointLayer) {
+    for (lanelet::Point3d & pt : lanelet_map_ptr->pointLayer) {
       Eigen::Vector3d eigen_pt(pt.x(), pt.y(), pt.z());
       auto transformed_pt = affine * eigen_pt;
       pt.x() = transformed_pt.x();
@@ -108,37 +108,36 @@ Eigen::Affine3d createAffineMatrixFromXYZRPY(
 
 int main(int argc, char * argv[])
 {
-  ros::init(argc, argv, "lanelet_map_height_adjuster");
-  ros::NodeHandle pnh("~");
+  rclcpp::init(argc, argv);
+  rclcpp::Node node("transform_maps");
 
-  if (!pnh.hasParam("llt_map_path")) {
+  if (!node.has_parameter("llt_map_path")) {
     printUsage();
     return EXIT_FAILURE;
   }
-  if (!pnh.hasParam("pcd_map_path")) {
+  if (!node.has_parameter("pcd_map_path")) {
     printUsage();
     return EXIT_FAILURE;
   }
-  if (!pnh.hasParam("llt_output_path")) {
+  if (!node.has_parameter("llt_output_path")) {
     printUsage();
     return EXIT_FAILURE;
   }
-  if (!pnh.hasParam("pcd_output_path")) {
+  if (!node.has_parameter("pcd_output_path")) {
     printUsage();
     return EXIT_FAILURE;
   }
   std::string llt_map_path, pcd_map_path, llt_output_path, pcd_output_path;
-  double x, y, z, roll, pitch, yaw;
-  pnh.getParam("llt_map_path", llt_map_path);
-  pnh.getParam("pcd_map_path", pcd_map_path);
-  pnh.getParam("llt_output_path", llt_output_path);
-  pnh.getParam("pcd_output_path", pcd_output_path);
-  pnh.param("x", x, 0.0);
-  pnh.param("y", y, 0.0);
-  pnh.param("z", z, 0.0);
-  pnh.param("roll", roll, 0.0);
-  pnh.param("pitch", pitch, 0.0);
-  pnh.param("yaw", yaw, 0.0);
+  node.get_parameter("llt_map_path", llt_map_path);
+  node.get_parameter("pcd_map_path", pcd_map_path);
+  node.get_parameter("llt_output_path", llt_output_path);
+  node.get_parameter("pcd_output_path", pcd_output_path);
+  const double x = node.declare_parameter("x", 0.0);
+  const double y = node.declare_parameter("y", 0.0);
+  const double z = node.declare_parameter("z", 0.0);
+  const double roll = node.declare_parameter("roll", 0.0);
+  const double pitch = node.declare_parameter("pitch", 0.0);
+  const double yaw = node.declare_parameter("yaw", 0.0);
 
   std::cout << "transforming maps with following parameters" << std::endl
             << "x " << x << std::endl
@@ -162,8 +161,8 @@ int main(int argc, char * argv[])
   Eigen::Affine3d affine = createAffineMatrixFromXYZRPY(x, y, z, roll, pitch, yaw);
 
   std::string mgrs_grid;
-  if (pnh.hasParam("mgrs_grid")) {
-    pnh.param("mgrs_grid", mgrs_grid, mgrs_grid);
+  if (node.has_parameter("mgrs_grid")) {
+    node.get_parameter("mgrs_grid", mgrs_grid);
     projector.setMGRSCode(mgrs_grid);
   } else {
     std::cout << "no mgrs code set. using last projected grid instead" << std::endl;
@@ -175,5 +174,8 @@ int main(int argc, char * argv[])
   transformMaps(pcd_map_ptr, llt_map_ptr, affine);
   lanelet::write(llt_output_path, *llt_map_ptr, projector);
   pcl::io::savePCDFileBinary(pcd_output_path, *pcd_map_ptr);
+
+  rclcpp::shutdown();
+
   return 0;
 }

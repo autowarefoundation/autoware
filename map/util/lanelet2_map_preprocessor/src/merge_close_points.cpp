@@ -15,11 +15,11 @@
 #include <lanelet2_extension/io/autoware_osm_parser.hpp>
 #include <lanelet2_extension/projection/mgrs_projector.hpp>
 #include <lanelet2_extension/utility/message_conversion.hpp>
+#include <rclcpp/rclcpp.hpp>
 
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_core/geometry/Lanelet.h>
 #include <lanelet2_io/Io.h>
-#include <ros/ros.h>
 
 #include <iostream>
 #include <unordered_set>
@@ -41,7 +41,7 @@ bool loadLaneletMap(
   lanelet_map_ptr = lanelet::load(llt_map_path, "autoware_osm_handler", projector, &errors);
 
   for (const auto & error : errors) {
-    ROS_ERROR_STREAM(error);
+    RCLCPP_ERROR_STREAM(rclcpp::get_logger("merge_close_points"), error);
   }
   if (!errors.empty()) {
     return false;
@@ -58,7 +58,7 @@ bool exists(std::unordered_set<lanelet::Id> & set, lanelet::Id element)
 lanelet::Points3d convertPointsLayerToPoints(lanelet::LaneletMapPtr & lanelet_map_ptr)
 {
   lanelet::Points3d points;
-  for (const lanelet::Point3d pt : lanelet_map_ptr->pointLayer) {
+  for (const lanelet::Point3d & pt : lanelet_map_ptr->pointLayer) {
     points.push_back(pt);
   }
   return points;
@@ -106,21 +106,21 @@ void mergePoints(lanelet::LaneletMapPtr & lanelet_map_ptr)
 
 int main(int argc, char * argv[])
 {
-  ros::init(argc, argv, "merge_lines");
-  ros::NodeHandle pnh("~");
+  rclcpp::init(argc, argv);
+  rclcpp::Node node("merge_close_points");
 
-  if (!pnh.hasParam("llt_map_path")) {
+  if (!node.has_parameter("llt_map_path")) {
     printUsage();
     return EXIT_FAILURE;
   }
-  if (!pnh.hasParam("output_path")) {
+  if (!node.has_parameter("output_path")) {
     printUsage();
     return EXIT_FAILURE;
   }
 
   std::string llt_map_path, pcd_map_path, output_path;
-  pnh.getParam("llt_map_path", llt_map_path);
-  pnh.getParam("output_path", output_path);
+  node.get_parameter("llt_map_path", llt_map_path);
+  node.get_parameter("output_path", output_path);
 
   lanelet::LaneletMapPtr llt_map_ptr(new lanelet::LaneletMap);
   lanelet::projection::MGRSProjector projector;
@@ -131,6 +131,8 @@ int main(int argc, char * argv[])
 
   mergePoints(llt_map_ptr);
   lanelet::write(output_path, *llt_map_ptr, projector);
+
+  rclcpp::shutdown();
 
   return 0;
 }
