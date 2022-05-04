@@ -98,13 +98,13 @@ struct AttributeEntry
 {
   uint8_t attribute_id_;  //!< @brief Attribute ID
   //  Flags
-  uint16_t warranty_ : 1;           //!< @brief Bit 0 – Warranty
-  uint16_t offline_ : 1;            //!< @brief Bit 1 – Offline
-  uint16_t performance_ : 1;        //!< @brief Bit 2 – Performance
-  uint16_t error_rate_ : 1;         //!< @brief Bit 3 – Error rate
-  uint16_t event_count_ : 1;        //!< @brief Bit 4 – Event count
-  uint16_t self_preservation_ : 1;  //!< @brief Bit 5 – Self-preservation
-  uint16_t reserved_ : 10;          //!< @brief Bits 6–15 – Reserved
+  uint16_t warranty_ : 1;           //!< @brief Bit 0 - Warranty
+  uint16_t offline_ : 1;            //!< @brief Bit 1 - Offline
+  uint16_t performance_ : 1;        //!< @brief Bit 2 - Performance
+  uint16_t error_rate_ : 1;         //!< @brief Bit 3 - Error rate
+  uint16_t event_count_ : 1;        //!< @brief Bit 4 - Event count
+  uint16_t self_preservation_ : 1;  //!< @brief Bit 5 - Self-preservation
+  uint16_t reserved_ : 10;          //!< @brief Bits 6-15 - Reserved
 
   uint8_t current_value_;        //!< @brief Current value
   uint8_t worst_value_;          //!< @brief Worst value

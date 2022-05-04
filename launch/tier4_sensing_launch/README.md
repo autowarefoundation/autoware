@@ -28,11 +28,11 @@ This package finds sensor settings of specified sensor model in `launch`.
 ```bash
 launch/
 ├── aip_x1 # Sensor model name
-│   ├── camera.launch.xml # Camera
-│   ├── gnss.launch.xml # GNSS
-│   ├── imu.launch.xml # IMU
-│   ├── lidar.launch.xml # LiDAR
-│   └── pointcloud_preprocessor.launch.py # for preprocessing pointcloud
+│   ├── camera.launch.xml # Camera
+│   ├── gnss.launch.xml # GNSS
+│   ├── imu.launch.xml # IMU
+│   ├── lidar.launch.xml # LiDAR
+│   └── pointcloud_preprocessor.launch.py # for preprocessing pointcloud
 ...
 ```
 

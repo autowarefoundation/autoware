@@ -81,7 +81,7 @@ else()
   target_link_libraries(dummy_perception_publisher_node "${cpp_typesupport_target}")
 endif()
 
-# PCL dependencies – `ament_target_dependencies` doesn't respect the
+# PCL dependencies - `ament_target_dependencies` doesn't respect the
 # components/modules selected above and only links in `common` ,so we need
 # to do this manually.
 target_compile_definitions(dummy_perception_publisher_node PRIVATE ${PCL_DEFINITIONS})

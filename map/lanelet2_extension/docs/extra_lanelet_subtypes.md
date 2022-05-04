@@ -6,7 +6,7 @@ The subtypes for this lanelet classify the outer lanes adjacent to the driving l
 
 ### Road shoulder subtype
 
-- refers: lanelet with subtype attribute. Subtype explains what the type of roadside it represents. If there is an area outside of this roadside lane that is open to traffic, such as a sidewalk or bike lane, select the road_shoulder subtype.
+- refers: lanelet with subtype attribute. Subtype explains what the type of roadside it represents. If there is an area outside of this roadside lane that is open to traffic, such as a sidewalk or bike lane, select the road_shoulder subtype.
 
 ![Road shoulder](road_shoulder.svg)
 
@@ -26,7 +26,7 @@ Sample road shoulder in .osm format is shown below:
 
 ### Pedestrian lane subtype
 
-- refers: lanelet with subtype attribute. Subtype explains what the type of roadside it represents. If there are no passable areas outside of this roadside lane, select the pedestrian_lane subtype.
+- refers: lanelet with subtype attribute. Subtype explains what the type of roadside it represents. If there are no passable areas outside of this roadside lane, select the pedestrian_lane subtype.
 
 ![Pedestrian lane](pedestrian_lane.svg)
 
