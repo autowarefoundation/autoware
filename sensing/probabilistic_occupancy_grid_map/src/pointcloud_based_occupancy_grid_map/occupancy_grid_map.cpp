@@ -58,7 +58,7 @@
 
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 
-#ifdef USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+#ifdef ROS_DISTRO_GALACTIC
 #include <tf2_eigen/tf2_eigen.h>
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
 #else

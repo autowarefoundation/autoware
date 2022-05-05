@@ -30,13 +30,6 @@ target_link_libraries(gnss_poser_node
   Geographic
 )
 
-# workaround to allow deprecated header to build on both galactic and rolling
-if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
-  target_compile_definitions(gnss_poser_node PRIVATE
-    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
-  )
-endif()
-
 rclcpp_components_register_node(gnss_poser_node
   PLUGIN "gnss_poser::GNSSPoser"
   EXECUTABLE gnss_poser

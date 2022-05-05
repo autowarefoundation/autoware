@@ -21,13 +21,6 @@ target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${tf2_INCLUDE_DIRS})
 
 target_compile_options(${PROJECT_NAME} PRIVATE -Wno-old-style-cast) # RCLCPP_ERROR_THROTTLE() has built-in old-style casts.
 
-# workaround to allow deprecated header to build on both galactic and rolling
-if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
-  target_compile_definitions(${PROJECT_NAME} PRIVATE
-    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
-  )
-endif()
-
 # Node executable
 rclcpp_components_register_node(${PROJECT_NAME}
   PLUGIN "simulation::simple_planning_simulator::SimplePlanningSimulator"
@@ -43,13 +36,6 @@ if(BUILD_TESTING)
   target_link_libraries(test_simple_planning_simulator
     ${PROJECT_NAME}
   )
-
-  # workaround to allow deprecated header to build on both galactic and rolling
-  if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
-    target_compile_definitions(test_simple_planning_simulator PRIVATE
-      USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
-    )
-  endif()
 endif()
 
 ament_auto_package(INSTALL_TO_SHARE param launch)

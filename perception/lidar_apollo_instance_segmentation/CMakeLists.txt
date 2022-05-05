@@ -133,13 +133,6 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
     src/debugger.cpp
   )
 
-  # workaround to allow deprecated header to build on both galactic and rolling
-  if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
-    target_compile_definitions(lidar_apollo_instance_segmentation PRIVATE
-      USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
-    )
-  endif()
-
   target_link_libraries(lidar_apollo_instance_segmentation
     tensorrt_apollo_cnn_lib
   )

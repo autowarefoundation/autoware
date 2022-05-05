@@ -8,13 +8,6 @@ ament_auto_add_library(fault_injection_node_component SHARED
   src/fault_injection_node/fault_injection_node.cpp
 )
 
-# workaround to allow deprecated function to build on both galactic and rolling
-if(${rosidl_generator_cpp_VERSION} VERSION_LESS 2.5.0)
-  target_compile_definitions(fault_injection_node_component PRIVATE
-    USE_DEPRECATED_TO_YAML
-  )
-endif()
-
 rclcpp_components_register_node(fault_injection_node_component
   PLUGIN "fault_injection::FaultInjectionNode"
   EXECUTABLE fault_injection_node

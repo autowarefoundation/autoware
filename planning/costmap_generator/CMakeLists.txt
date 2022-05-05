@@ -32,13 +32,6 @@ if(${PCL_VERSION} GREATER_EQUAL 1.12.1)
   )
 endif()
 
-# workaround to allow deprecated header to build on both galactic and rolling
-if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
-  target_compile_definitions(costmap_generator_lib PRIVATE
-    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
-  )
-endif()
-
 ament_auto_add_library(costmap_generator_node SHARED
   nodes/costmap_generator/costmap_generator_node.cpp
 )
@@ -46,13 +39,6 @@ target_link_libraries(costmap_generator_node
   ${PCL_LIBRARIES}
   costmap_generator_lib
 )
-
-# workaround to allow deprecated header to build on both galactic and rolling
-if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
-  target_compile_definitions(costmap_generator_node PRIVATE
-    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
-  )
-endif()
 
 rclcpp_components_register_node(costmap_generator_node
   PLUGIN "CostmapGenerator"

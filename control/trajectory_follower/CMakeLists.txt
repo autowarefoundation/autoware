@@ -42,13 +42,6 @@ ament_auto_add_library(${LATERAL_CONTROLLER_LIB} SHARED
 )
 target_compile_options(${LATERAL_CONTROLLER_LIB} PRIVATE -Wno-error=old-style-cast)
 
-# workaround to allow deprecated header to build on both galactic and rolling
-if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
-  target_compile_definitions(${LATERAL_CONTROLLER_LIB} PRIVATE
-    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
-  )
-endif()
-
 # longitudinal_controller
 set(LONGITUDINAL_CONTROLLER_LIB longitudinal_controller_lib)
 set(LONGITUDINAL_CONTROLLER_LIB_SRC
@@ -70,13 +63,6 @@ ament_auto_add_library(${LONGITUDINAL_CONTROLLER_LIB} SHARED
 )
 target_compile_options(${LONGITUDINAL_CONTROLLER_LIB} PRIVATE -Wno-error=old-style-cast)
 
-# workaround to allow deprecated header to build on both galactic and rolling
-if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
-  target_compile_definitions(${LONGITUDINAL_CONTROLLER_LIB} PRIVATE
-    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
-  )
-endif()
-
 if(BUILD_TESTING)
   set(TEST_LAT_SOURCES
     test/test_mpc.cpp
@@ -89,13 +75,6 @@ if(BUILD_TESTING)
   ament_add_gtest(${TEST_LATERAL_CONTROLLER_EXE} ${TEST_LAT_SOURCES})
   target_link_libraries(${TEST_LATERAL_CONTROLLER_EXE} ${LATERAL_CONTROLLER_LIB})
 
-  # workaround to allow deprecated header to build on both galactic and rolling
-  if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
-    target_compile_definitions(${TEST_LATERAL_CONTROLLER_EXE} PRIVATE
-      USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
-    )
-  endif()
-
   set(TEST_LON_SOURCES
     test/test_debug_values.cpp
     test/test_pid.cpp
@@ -105,13 +84,6 @@ if(BUILD_TESTING)
   set(TEST_LONGITUDINAL_CONTROLLER_EXE test_longitudinal_controller)
   ament_add_gtest(${TEST_LONGITUDINAL_CONTROLLER_EXE} ${TEST_LON_SOURCES})
   target_link_libraries(${TEST_LONGITUDINAL_CONTROLLER_EXE} ${LONGITUDINAL_CONTROLLER_LIB})
-
-  # workaround to allow deprecated header to build on both galactic and rolling
-  if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
-    target_compile_definitions(${TEST_LONGITUDINAL_CONTROLLER_EXE} PRIVATE
-      USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
-    )
-  endif()
 endif()
 
 ament_auto_package(INSTALL_TO_SHARE

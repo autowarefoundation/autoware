@@ -41,7 +41,7 @@
 #include <lanelet2_core/primitives/Lanelet.h>
 #include <tf2/utils.h>
 
-#ifdef USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+#ifdef ROS_DISTRO_GALACTIC
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #else
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
@@ -59,7 +59,7 @@ inline void fromMsg(const geometry_msgs::msg::PoseStamped & msg, tf2::Stamped<tf
   fromMsg(msg.pose, tmp);
   out.setData(tmp);
 }
-#ifdef USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
+#ifdef ROS_DISTRO_GALACTIC
 // Remove after this commit is released
 // https://github.com/ros2/geometry2/commit/e9da371d81e388a589540357c050e262442f1b4a
 inline geometry_msgs::msg::Point & toMsg(const tf2::Vector3 & in, geometry_msgs::msg::Point & out)

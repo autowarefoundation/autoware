@@ -23,13 +23,6 @@ ament_auto_add_library(tier4_perception_rviz_plugin SHARED
 target_link_libraries(tier4_perception_rviz_plugin
   ${QT_LIBRARIES})
 
-# workaround to allow deprecated header to build on both galactic and rolling
-if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
-  target_compile_definitions(tier4_perception_rviz_plugin PRIVATE
-    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
-  )
-endif()
-
 # Export the plugin to be imported by rviz2
 pluginlib_export_plugin_description_file(rviz_common plugins/plugin_description.xml)
 

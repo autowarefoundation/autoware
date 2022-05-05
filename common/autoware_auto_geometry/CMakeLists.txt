@@ -9,14 +9,8 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
   include/geometry/intersection.hpp
   include/geometry/spatial_hash_config.hpp
   src/spatial_hash.cpp
-  src/bounding_box.cpp)
-
-# workaround to allow deprecated header to build on both galactic and rolling
-if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
-  target_compile_definitions(${PROJECT_NAME} PRIVATE
-    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
-  )
-endif()
+  src/bounding_box.cpp
+)
 
 if(BUILD_TESTING)
   set(GEOMETRY_GTEST geometry_gtest)

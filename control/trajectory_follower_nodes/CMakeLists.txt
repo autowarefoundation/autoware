@@ -10,13 +10,6 @@ ament_auto_add_library(${LATERAL_CONTROLLER_NODE} SHARED
   src/lateral_controller_node.cpp
 )
 
-# workaround to allow deprecated header to build on both galactic and rolling
-if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
-  target_compile_definitions(${LATERAL_CONTROLLER_NODE} PUBLIC
-    USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
-  )
-endif()
-
 # TODO(lateral_controller) : RCLCPP_ERROR_THROTTLE() has built-in old-style casts.
 # TODO(lateral_controller) : Temporary workaround until this is fixed.
 target_compile_options(${LATERAL_CONTROLLER_NODE} PRIVATE -Wno-error=old-style-cast)

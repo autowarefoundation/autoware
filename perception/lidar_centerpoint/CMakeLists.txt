@@ -144,13 +144,6 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
     centerpoint_cuda_libraries
   )
 
-  # workaround to allow deprecated header to build on both galactic and rolling
-  if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
-    target_compile_definitions(centerpoint PRIVATE
-      USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
-    )
-  endif()
-
   ## node ##
   ament_auto_add_library(lidar_centerpoint_component SHARED
     src/node.cpp
@@ -159,13 +152,6 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
   target_link_libraries(lidar_centerpoint_component
     centerpoint
   )
-
-  # workaround to allow deprecated header to build on both galactic and rolling
-  if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
-    target_compile_definitions(lidar_centerpoint_component PUBLIC
-      USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
-    )
-  endif()
 
   rclcpp_components_register_node(lidar_centerpoint_component
     PLUGIN "centerpoint::LidarCenterPointNode"
