@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.14)
 project(compare_map_segmentation)
 
 find_package(autoware_cmake REQUIRED)
