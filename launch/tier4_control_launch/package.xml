@@ -9,6 +9,8 @@
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
+  <build_depend>autoware_cmake</build_depend>
+
   <exec_depend>external_cmd_converter</exec_depend>
   <exec_depend>lane_departure_checker</exec_depend>
   <exec_depend>shift_decider</exec_depend>

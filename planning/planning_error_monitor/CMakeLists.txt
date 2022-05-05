@@ -1,17 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(planning_error_monitor)
 
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
-  set(CMAKE_CXX_EXTENSIONS OFF)
-endif()
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
-find_package(ament_cmake_auto REQUIRED)
-ament_auto_find_build_dependencies()
+find_package(autoware_cmake REQUIRED)
+autoware_package()
 
 ament_auto_add_library(planning_error_monitor_node SHARED
   src/planning_error_monitor_node.cpp
@@ -39,8 +30,6 @@ rclcpp_components_register_node(invalid_trajectory_publisher_node
 )
 
 if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  ament_lint_auto_find_test_dependencies()
   ament_add_gtest(test_planning_error_monitor
     test/src/test_main.cpp
     test/src/test_planning_error_monitor_functions.cpp

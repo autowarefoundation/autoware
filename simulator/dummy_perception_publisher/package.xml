@@ -9,6 +9,7 @@
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
+  <build_depend>autoware_cmake</build_depend>
   <build_depend>rosidl_default_generators</build_depend>
 
   <exec_depend>rosidl_default_runtime</exec_depend>

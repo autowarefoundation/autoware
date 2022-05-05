@@ -10,6 +10,7 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <build_depend>autoware_cmake</build_depend>
   <build_depend>qtbase5-dev</build_depend>
 
   <depend>autoware_auto_perception_msgs</depend>

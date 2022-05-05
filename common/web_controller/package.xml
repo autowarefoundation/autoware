@@ -9,6 +9,8 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <build_depend>autoware_cmake</build_depend>
+
   <exec_depend>autoware_auto_system_msgs</exec_depend>
   <exec_depend>rosbridge_server</exec_depend>
   <exec_depend>std_msgs</exec_depend>

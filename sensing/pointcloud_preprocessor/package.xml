@@ -15,6 +15,8 @@
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
+  <build_depend>autoware_cmake</build_depend>
+
   <depend>autoware_auto_vehicle_msgs</depend>
   <depend>autoware_point_types</depend>
   <depend>cv_bridge</depend>

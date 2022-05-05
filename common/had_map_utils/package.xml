@@ -8,8 +8,8 @@
   <license>Apache 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
-  <buildtool_depend>autoware_auto_cmake</buildtool_depend>
 
+  <build_depend>autoware_cmake</build_depend>
   <build_depend>rclcpp</build_depend>
   <build_depend>sensor_msgs</build_depend>
 

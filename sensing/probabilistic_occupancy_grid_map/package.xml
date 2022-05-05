@@ -11,6 +11,8 @@
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
+  <build_depend>autoware_cmake</build_depend>
+
   <depend>eigen3_cmake_module</depend>
   <depend>laser_geometry</depend>
   <depend>message_filters</depend>

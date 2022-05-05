@@ -9,6 +9,9 @@
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <build_depend>autoware_cmake</build_depend>
+
   <depend>autoware_auto_perception_msgs</depend>
   <depend>cv_bridge</depend>
   <depend>image_transport</depend>

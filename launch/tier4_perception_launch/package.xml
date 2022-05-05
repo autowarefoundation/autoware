@@ -9,6 +9,8 @@
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
+  <build_depend>autoware_cmake</build_depend>
+
   <exec_depend>compare_map_segmentation</exec_depend>
   <exec_depend>euclidean_cluster</exec_depend>
   <exec_depend>ground_segmentation</exec_depend>

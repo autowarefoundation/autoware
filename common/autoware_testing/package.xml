@@ -10,6 +10,8 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>ament_cmake_lint_cmake</buildtool_depend>
 
+  <build_depend>autoware_cmake</build_depend>
+
   <test_depend>ament_cmake_core</test_depend>
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

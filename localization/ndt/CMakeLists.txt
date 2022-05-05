@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
 project(ndt)
 
+find_package(autoware_cmake REQUIRED)
+autoware_package()
+
 # Compile flags for SIMD instructions
 # Be careful to change these options, especially when `ndt_omp` implementation is used.
 # All packages linked to `ndt_omp` should use the same SIMD instruction set.
@@ -19,19 +22,7 @@ else()
   endif()
 endif()
 
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
-  set(CMAKE_CXX_EXTENSIONS OFF)
-endif()
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
-find_package(ament_cmake REQUIRED)
 find_package(PCL REQUIRED COMPONENTS common io registration)
-find_package(ndt_omp REQUIRED)
-find_package(ndt_pcl_modified REQUIRED)
 
 add_library(ndt
   src/base.cpp
@@ -74,10 +65,5 @@ install(
   ARCHIVE DESTINATION lib
   RUNTIME DESTINATION bin
 )
-
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  ament_lint_auto_find_test_dependencies()
-endif()
 
 ament_package()

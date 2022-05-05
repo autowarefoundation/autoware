@@ -15,6 +15,8 @@
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
+  <build_depend>autoware_cmake</build_depend>
+
   <depend>grid_map_pcl</depend>
   <depend>grid_map_ros</depend>
   <depend>pcl_conversions</depend>

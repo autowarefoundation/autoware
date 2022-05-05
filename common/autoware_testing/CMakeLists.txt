@@ -1,18 +1,12 @@
 cmake_minimum_required(VERSION 3.5)
-
 project(autoware_testing)
 
-find_package(ament_cmake_auto REQUIRED)
-ament_auto_find_build_dependencies()
-
+find_package(autoware_cmake REQUIRED)
+autoware_package()
 
 list(APPEND ${PROJECT_NAME}_CONFIG_EXTRAS
   "autoware_testing-extras.cmake"
 )
-
-if(BUILD_TESTING)
-    ament_lint_cmake(${CMAKE_CURRENT_SOURCE_DIR})
-endif()
 
 ament_auto_package(
   INSTALL_TO_SHARE cmake autoware_testing

@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.5)
 project(autoware_auto_perception_rviz_plugin)
 
-#dependencies
-find_package(ament_cmake_auto REQUIRED)
+find_package(autoware_cmake REQUIRED)
+autoware_package()
+
 find_package(Qt5 REQUIRED COMPONENTS Widgets)
-ament_auto_find_build_dependencies()
 
 set(OD_PLUGIN_LIB_SRC
   src/object_detection/detected_objects_display.cpp
@@ -55,12 +55,6 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE "OBJECT_DETECTION_PLUGINS_BUI
 
 # Export the plugin to be imported by rviz2
 pluginlib_export_plugin_description_file(rviz_common plugins_description.xml)
-
-if(BUILD_TESTING)
-  # run linters
-  find_package(ament_lint_auto REQUIRED)
-  ament_lint_auto_find_test_dependencies()
-endif()
 
 ament_auto_package(
   INSTALL_TO_SHARE

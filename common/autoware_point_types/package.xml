@@ -14,6 +14,8 @@
   <buildtool_export_depend>ament_cmake_core</buildtool_export_depend>
   <buildtool_export_depend>ament_cmake_test</buildtool_export_depend>
 
+  <build_depend>autoware_cmake</build_depend>
+
   <depend>ament_cmake_copyright</depend>
   <depend>ament_cmake_cppcheck</depend>
   <depend>ament_cmake_lint_cmake</depend>

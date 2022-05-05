@@ -7,8 +7,9 @@
   <maintainer email="ryohsuke.mitsudome@tier4.jp">mitsudome-r</maintainer>
   <license>Apache License 2.0</license>
 
-  <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <build_depend>autoware_cmake</build_depend>
 
   <depend>autoware_auto_mapping_msgs</depend>
   <depend>geographiclib</depend>

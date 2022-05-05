@@ -1,26 +1,15 @@
 cmake_minimum_required(VERSION 3.5)
 project(behavior_velocity_planner)
 
-### Compile options
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
-  set(CMAKE_CXX_EXTENSIONS OFF)
-endif()
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic -Werror)
-endif()
+find_package(autoware_cmake REQUIRED)
+autoware_package()
 
 # Find the non-obvious packages manually
-find_package(ament_cmake REQUIRED)
 find_package(Boost REQUIRED)
 find_package(eigen3_cmake_module REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(PCL REQUIRED COMPONENTS common)
 find_package(OpenCV REQUIRED)
-
-find_package(ament_cmake_auto REQUIRED)
-ament_auto_find_build_dependencies()
 
 set(BEHAVIOR_VELOCITY_PLANNER_DEPENDENCIES
   tier4_api_msgs
@@ -400,9 +389,6 @@ rclcpp_components_register_node(behavior_velocity_planner
 
 
 if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  ament_lint_auto_find_test_dependencies()
-
   # utils for test
   ament_auto_add_library(utilization SHARED
     src/utilization/util.cpp
@@ -447,7 +433,6 @@ if(BUILD_TESTING)
       USE_TF2_GEOMETRY_MSGS_DEPRECATED_HEADER
     )
   endif()
-
 endif()
 
 ament_auto_package(INSTALL_TO_SHARE

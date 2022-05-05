@@ -9,6 +9,8 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <build_depend>autoware_cmake</build_depend>
+
   <depend>autoware_auto_perception_msgs</depend>
   <depend>builtin_interfaces</depend>
   <depend>eigen</depend>

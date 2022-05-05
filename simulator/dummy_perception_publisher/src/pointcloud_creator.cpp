@@ -30,7 +30,7 @@ pcl::PointXYZ getPointWrtBaseLink(
 {
   const auto p_wrt_base = tf_base_link2moved_object(tf2::Vector3(x, y, z));
   return pcl::PointXYZ(p_wrt_base.x(), p_wrt_base.y(), p_wrt_base.z());
-};
+}
 
 void ObjectCentricPointCloudCreator::create_object_pointcloud(
   const ObjectInfo & obj_info, const tf2::Transform & tf_base_link2map,

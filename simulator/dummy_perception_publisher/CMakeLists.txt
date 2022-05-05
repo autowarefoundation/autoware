@@ -1,24 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(dummy_perception_publisher)
 
-### Compile options
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
-  set(CMAKE_CXX_EXTENSIONS OFF)
-endif()
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
-# Dependencies for messages
-find_package(ament_cmake_auto REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
-find_package(autoware_auto_perception_msgs REQUIRED)
-find_package(tier4_perception_msgs REQUIRED)
-find_package(geometry_msgs REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(unique_identifier_msgs REQUIRED)
+find_package(autoware_cmake REQUIRED)
+autoware_package()
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/InitialState.msg"
@@ -28,8 +12,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 
 # See ndt_omp package for documentation on why PCL is special
 find_package(PCL REQUIRED COMPONENTS common filters)
-find_package(ament_cmake_auto REQUIRED)
-ament_auto_find_build_dependencies()
 
 set(${PROJECT_NAME}_DEPENDENCIES
   autoware_auto_perception_msgs
@@ -99,11 +81,6 @@ ament_auto_add_executable(empty_objects_publisher
 )
 
 if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  ament_lint_auto_find_test_dependencies()
-
-  find_package(ament_cmake_gtest REQUIRED)
-
   ament_add_gtest(signed_distance_function-test
     test/src/test_signed_distance_function.cpp
   )

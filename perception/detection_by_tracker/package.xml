@@ -10,6 +10,8 @@
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>eigen3_cmake_module</buildtool_depend>
 
+  <build_depend>autoware_cmake</build_depend>
+
   <depend>eigen</depend>
   <depend>euclidean_cluster</depend>
   <depend>libpcl-all-dev</depend>

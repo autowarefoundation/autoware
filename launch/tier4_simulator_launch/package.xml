@@ -9,6 +9,8 @@
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
+  <build_depend>autoware_cmake</build_depend>
+
   <exec_depend>dummy_perception_publisher</exec_depend>
   <exec_depend>fault_injection</exec_depend>
   <exec_depend>simple_planning_simulator</exec_depend>

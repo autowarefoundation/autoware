@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(trajectory_follower_nodes)
 
-find_package(ament_cmake_auto REQUIRED)
-ament_auto_find_build_dependencies()
+find_package(autoware_cmake REQUIRED)
+autoware_package()
 
 set(LATERAL_CONTROLLER_NODE lateral_controller_node)
 ament_auto_add_library(${LATERAL_CONTROLLER_NODE} SHARED
@@ -17,7 +17,6 @@ if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
   )
 endif()
 
-autoware_set_compile_options(${LATERAL_CONTROLLER_NODE})
 # TODO(lateral_controller) : RCLCPP_ERROR_THROTTLE() has built-in old-style casts.
 # TODO(lateral_controller) : Temporary workaround until this is fixed.
 target_compile_options(${LATERAL_CONTROLLER_NODE} PRIVATE -Wno-error=old-style-cast)
@@ -32,7 +31,6 @@ ament_auto_add_library(${LONGITUDINAL_CONTROLLER_NODE} SHARED
   src/longitudinal_controller_node.cpp
 )
 
-autoware_set_compile_options(${LONGITUDINAL_CONTROLLER_NODE})
 # TODO(longitudinal_controller) : RCLCPP_ERROR_THROTTLE() has built-in old-style casts.
 # TODO(longitudinal_controller) : Temporary workaround until this is fixed.
 target_compile_options(${LONGITUDINAL_CONTROLLER_NODE} PRIVATE -Wno-error=old-style-cast)
@@ -47,7 +45,6 @@ ament_auto_add_library(${LATLON_MUXER_NODE} SHARED
   src/latlon_muxer_node.cpp
 )
 
-autoware_set_compile_options(${LATLON_MUXER_NODE})
 # TODO(latlon_muxer) : RCLCPP_ERROR_THROTTLE() has built-in old-style casts.
 # TODO(latlon_muxer) : Temporary workaround until this is fixed.
 target_compile_options(${LATLON_MUXER_NODE} PRIVATE -Wno-error=old-style-cast)
@@ -57,9 +54,6 @@ rclcpp_components_register_node(${LATLON_MUXER_NODE}
 )
 
 if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  ament_lint_auto_find_test_dependencies()
-  # Unit tests
   set(TRAJECTORY_FOLLOWER_NODES_TEST test_trajectory_follower_nodes)
   ament_add_ros_isolated_gtest(${TRAJECTORY_FOLLOWER_NODES_TEST}
     test/trajectory_follower_test_utils.hpp
@@ -68,7 +62,6 @@ if(BUILD_TESTING)
     test/test_longitudinal_controller_node.cpp
   )
   ament_target_dependencies(${TRAJECTORY_FOLLOWER_NODES_TEST} fake_test_node)
-  autoware_set_compile_options(${TRAJECTORY_FOLLOWER_NODES_TEST})
   target_link_libraries(${TRAJECTORY_FOLLOWER_NODES_TEST} ${LATLON_MUXER_NODE} ${LATERAL_CONTROLLER_NODE} ${LONGITUDINAL_CONTROLLER_NODE})
 
   #find_package(autoware_testing REQUIRED)

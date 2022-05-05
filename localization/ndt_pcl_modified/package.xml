@@ -9,6 +9,8 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <build_depend>autoware_cmake</build_depend>
+
   <depend>libpcl-all-dev</depend>
 
   <test_depend>ament_cmake_cppcheck</test_depend>

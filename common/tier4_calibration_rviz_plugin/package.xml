@@ -11,6 +11,8 @@
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
+  <build_depend>autoware_cmake</build_depend>
+
   <depend>libqt5-core</depend>
   <depend>libqt5-widgets</depend>
   <depend>qtbase5-dev</depend>

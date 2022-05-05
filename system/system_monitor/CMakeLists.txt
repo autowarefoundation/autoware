@@ -1,18 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(system_monitor)
 
-## Compile as C++14, supported in ROS Melodic and newer
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
-  set(CMAKE_CXX_EXTENSIONS OFF)
-endif()
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic -Werror -Wno-stringop-truncation)
-endif()
-
-find_package(ament_cmake_auto REQUIRED)
-ament_auto_find_build_dependencies()
+find_package(autoware_cmake REQUIRED)
+autoware_package()
 
 # TODO: remove (https://github.com/autowarefoundation/autoware.universe/issues/851)
 add_compile_options(-Wno-stringop-truncation)
@@ -21,10 +11,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 find_package(NVML)
 find_package(fmt REQUIRED)
 set(LIBRARIES fmt)
-
-###########
-## Build ##
-###########
 
 ## Specify additional locations of header files
 
@@ -194,9 +180,6 @@ rclcpp_components_register_node(gpu_monitor_lib
 
 # TODO(yunus.caliskan): Port the tests to ROS2, robustify the tests.
 if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  ament_lint_auto_find_test_dependencies()
-
   # ament_add_gtest(test_cpu_monitor
   #   test/src/cpu_monitor/test_${CMAKE_CPU_PLATFORM}_cpu_monitor.cpp
   #   ${CPU_MONITOR_SOURCE}
@@ -312,10 +295,6 @@ if(BUILD_TESTING)
   # target_link_libraries(test_gpu_monitor ${GPU_LIBRARY} ${LIBRARIES})
 
 endif()
-
-#############
-## Install ##
-#############
 
 ament_auto_package(INSTALL_TO_SHARE
   launch

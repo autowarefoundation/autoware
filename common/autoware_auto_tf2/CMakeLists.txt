@@ -1,20 +1,11 @@
 cmake_minimum_required(VERSION 3.5)
 project(autoware_auto_tf2)
 
-## dependencies
-find_package(ament_cmake REQUIRED)
-find_package(ament_cmake_auto REQUIRED)
-ament_auto_find_build_dependencies()
+find_package(autoware_cmake REQUIRED)
+autoware_package()
 
-
-### Test
 if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  # Linters
-  ament_lint_auto_find_test_dependencies()
-  # Unit test
   ament_add_gtest(test_tf2_autoware_auto_msgs test/test_tf2_autoware_auto_msgs.cpp)
-  autoware_set_compile_options(test_tf2_autoware_auto_msgs)
   # workaround to allow deprecated header to build on both galactic and rolling
   if(${tf2_geometry_msgs_VERSION} VERSION_LESS 0.18.0)
     target_compile_definitions(test_tf2_autoware_auto_msgs PRIVATE
