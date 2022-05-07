@@ -3,6 +3,9 @@
   "ignorePatterns": [
     {
       "pattern": "^http://localhost"
+    },
+    {
+      "pattern": "^https://github.com/.*/discussions/new"
     }
   ],
   "retryOn429": true,
