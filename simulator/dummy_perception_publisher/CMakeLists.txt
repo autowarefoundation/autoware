@@ -74,7 +74,7 @@ ament_auto_add_executable(empty_objects_publisher
 )
 
 if(BUILD_TESTING)
-  ament_add_gtest(signed_distance_function-test
+  ament_add_ros_isolated_gtest(signed_distance_function-test
     test/src/test_signed_distance_function.cpp
   )
   target_link_libraries(signed_distance_function-test

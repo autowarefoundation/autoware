@@ -12,11 +12,11 @@ ament_auto_add_library(tier4_autoware_utils SHARED
 )
 
 if(BUILD_TESTING)
-  find_package(ament_cmake_gtest REQUIRED)
+  find_package(ament_cmake_ros REQUIRED)
 
   file(GLOB_RECURSE test_files test/**/*.cpp)
 
-  ament_add_gtest(test_tier4_autoware_utils ${test_files})
+  ament_add_ros_isolated_gtest(test_tier4_autoware_utils ${test_files})
 
   target_link_libraries(test_tier4_autoware_utils
     tier4_autoware_utils

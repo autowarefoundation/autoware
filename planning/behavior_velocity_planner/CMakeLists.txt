@@ -56,7 +56,7 @@ rclcpp_components_register_node(behavior_velocity_planner
 
 if(BUILD_TESTING)
   # Gtest for utilization
-  ament_add_gtest(utilization-test
+  ament_add_ros_isolated_gtest(utilization-test
     test/src/test_state_machine.cpp
     test/src/test_arc_lane_util.cpp
     test/src/test_utilization.cpp
@@ -67,7 +67,7 @@ if(BUILD_TESTING)
   )
 
   # Gtest for occlusion spot
-  ament_add_gtest(occlusion_spot-test
+  ament_add_ros_isolated_gtest(occlusion_spot-test
     test/src/test_occlusion_spot_utils.cpp
     test/src/test_risk_predictive_braking.cpp
     test/src/test_grid_utils.cpp

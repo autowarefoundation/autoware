@@ -23,7 +23,7 @@ rclcpp_components_register_node(invalid_trajectory_publisher_node
 )
 
 if(BUILD_TESTING)
-  ament_add_gtest(test_planning_error_monitor
+  ament_add_ros_isolated_gtest(test_planning_error_monitor
     test/src/test_main.cpp
     test/src/test_planning_error_monitor_functions.cpp
     test/src/test_planning_error_monitor_helper.hpp

@@ -11,7 +11,7 @@ include_directories(
 )
 
 if(BUILD_TESTING)
-  ament_add_gtest(test_autoware_point_types
+  ament_add_ros_isolated_gtest(test_autoware_point_types
     test/test_point_types.cpp
   )
   target_include_directories(test_autoware_point_types

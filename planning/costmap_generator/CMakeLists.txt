@@ -46,7 +46,7 @@ rclcpp_components_register_node(costmap_generator_node
 )
 
 if(BUILD_TESTING)
-  find_package(ament_cmake_gtest REQUIRED)
+  find_package(ament_cmake_ros REQUIRED)
 endif()
 
 ament_auto_package(INSTALL_TO_SHARE launch)

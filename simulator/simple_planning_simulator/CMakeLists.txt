@@ -28,7 +28,7 @@ rclcpp_components_register_node(${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)
-  ament_add_gtest(test_simple_planning_simulator
+  ament_add_ros_isolated_gtest(test_simple_planning_simulator
     test/test_simple_planning_simulator.cpp
     TIMEOUT 120
   )

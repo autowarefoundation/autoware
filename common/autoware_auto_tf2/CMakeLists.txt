@@ -5,7 +5,7 @@ find_package(autoware_cmake REQUIRED)
 autoware_package()
 
 if(BUILD_TESTING)
-  ament_add_gtest(test_tf2_autoware_auto_msgs test/test_tf2_autoware_auto_msgs.cpp)
+  ament_add_ros_isolated_gtest(test_tf2_autoware_auto_msgs test/test_tf2_autoware_auto_msgs.cpp)
   target_include_directories(test_tf2_autoware_auto_msgs PRIVATE "include")
   ament_target_dependencies(test_tf2_autoware_auto_msgs
     "autoware_auto_common"

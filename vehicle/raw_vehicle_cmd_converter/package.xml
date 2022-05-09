@@ -26,7 +26,7 @@
 
   <exec_depend>rclpy</exec_depend>
 
-  <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>ament_cmake_ros</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>
 

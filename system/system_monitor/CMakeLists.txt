@@ -180,7 +180,7 @@ rclcpp_components_register_node(gpu_monitor_lib
 
 # TODO(yunus.caliskan): Port the tests to ROS2, robustify the tests.
 if(BUILD_TESTING)
-  # ament_add_gtest(test_cpu_monitor
+  # ament_add_ros_isolated_gtest(test_cpu_monitor
   #   test/src/cpu_monitor/test_${CMAKE_CPU_PLATFORM}_cpu_monitor.cpp
   #   ${CPU_MONITOR_SOURCE}
   # )
@@ -196,7 +196,7 @@ if(BUILD_TESTING)
 
   # target_link_libraries(test_cpu_monitor ${Boost_LIBRARIES} ${LIBRARIES})
 
-  # ament_add_gtest(test_hdd_monitor
+  # ament_add_ros_isolated_gtest(test_hdd_monitor
   #   test/src/hdd_monitor/test_hdd_monitor.cpp
   #   src/hdd_monitor/hdd_monitor.cpp
   # )
@@ -213,7 +213,7 @@ if(BUILD_TESTING)
   # target_link_libraries(test_hdd_monitor ${Boost_LIBRARIES} ${LIBRARIES}
   # )
 
-  # ament_add_gtest(test_mem_monitor
+  # ament_add_ros_isolated_gtest(test_mem_monitor
   #   test/src/mem_monitor/test_mem_monitor.cpp
   #   src/mem_monitor/mem_monitor.cpp
   # )
@@ -229,7 +229,7 @@ if(BUILD_TESTING)
 
   # target_link_libraries(test_mem_monitor ${Boost_LIBRARIES} ${LIBRARIES})
 
-  # ament_add_gtest(test_net_monitor
+  # ament_add_ros_isolated_gtest(test_net_monitor
   #   test/src/net_monitor/test_net_monitor.cpp
   #   src/net_monitor/net_monitor.cpp
   #   src/net_monitor/nl80211.cpp
@@ -246,7 +246,7 @@ if(BUILD_TESTING)
 
   # target_link_libraries(test_net_monitor ${Boost_LIBRARIES} ${NL_LIBS} ${LIBRARIES})
 
-  # ament_add_gtest(test_ntp_monitor
+  # ament_add_ros_isolated_gtest(test_ntp_monitor
   #   test/src/ntp_monitor/test_ntp_monitor.cpp
   #   src/ntp_monitor/ntp_monitor.cpp
   # )
@@ -262,7 +262,7 @@ if(BUILD_TESTING)
 
   # target_link_libraries(test_ntp_monitor ${Boost_LIBRARIES} ${LIBRARIES})
 
-  # ament_add_gtest(test_process_monitor
+  # ament_add_ros_isolated_gtest(test_process_monitor
   #   test/src/process_monitor/test_process_monitor.cpp
   #   src/process_monitor/process_monitor.cpp
   # )
@@ -278,7 +278,7 @@ if(BUILD_TESTING)
 
   # target_link_libraries(test_process_monitor ${Boost_LIBRARIES} ${LIBRARIES})
 
-  # ament_add_gtest(test_gpu_monitor
+  # ament_add_ros_isolated_gtest(test_gpu_monitor
   #   test/src/gpu_monitor/test_${CMAKE_GPU_PLATFORM}_gpu_monitor.cpp
   #   ${GPU_MONITOR_SOURCE}
   # )

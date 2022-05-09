@@ -15,7 +15,7 @@ rclcpp_components_register_node(fault_injection_node_component
 
 if(BUILD_TESTING)
   # gtest
-  ament_add_gtest(test_fault_injection_node_component
+  ament_add_ros_isolated_gtest(test_fault_injection_node_component
     test/src/main.cpp
     test/src/test_diagnostic_storage.cpp
   )

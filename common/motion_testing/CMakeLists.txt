@@ -7,7 +7,7 @@ autoware_package()
 ament_auto_add_library(${PROJECT_NAME} SHARED src/motion_testing/motion_testing.cpp)
 
 if(BUILD_TESTING)
-  ament_add_gtest(motion_testing_unit_tests
+  ament_add_ros_isolated_gtest(motion_testing_unit_tests
     test/gtest_main.cpp
     test/constant_trajectory.cpp
     test/trajectory_checks.cpp)

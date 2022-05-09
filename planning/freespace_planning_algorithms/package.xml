@@ -21,7 +21,7 @@
   <depend>tf2_geometry_msgs</depend>
   <depend>tier4_autoware_utils</depend>
 
-  <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>ament_cmake_ros</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>
 

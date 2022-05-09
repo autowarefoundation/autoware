@@ -72,7 +72,7 @@ if(BUILD_TESTING)
     test/test_lowpass_filter.cpp
   )
   set(TEST_LATERAL_CONTROLLER_EXE test_lateral_controller)
-  ament_add_gtest(${TEST_LATERAL_CONTROLLER_EXE} ${TEST_LAT_SOURCES})
+  ament_add_ros_isolated_gtest(${TEST_LATERAL_CONTROLLER_EXE} ${TEST_LAT_SOURCES})
   target_link_libraries(${TEST_LATERAL_CONTROLLER_EXE} ${LATERAL_CONTROLLER_LIB})
 
   set(TEST_LON_SOURCES
@@ -82,7 +82,7 @@ if(BUILD_TESTING)
     test/test_longitudinal_controller_utils.cpp
   )
   set(TEST_LONGITUDINAL_CONTROLLER_EXE test_longitudinal_controller)
-  ament_add_gtest(${TEST_LONGITUDINAL_CONTROLLER_EXE} ${TEST_LON_SOURCES})
+  ament_add_ros_isolated_gtest(${TEST_LONGITUDINAL_CONTROLLER_EXE} ${TEST_LON_SOURCES})
   target_link_libraries(${TEST_LONGITUDINAL_CONTROLLER_EXE} ${LONGITUDINAL_CONTROLLER_LIB})
 endif()
 

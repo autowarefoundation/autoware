@@ -9,7 +9,7 @@ include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
 
 if(BUILD_TESTING)
   set(TEST_COMMON test_common_gtest)
-  ament_add_gtest(${TEST_COMMON}
+  ament_add_ros_isolated_gtest(${TEST_COMMON}
     test/gtest_main.cpp
     test/test_bool_comparisons.cpp
     test/test_byte_reader.cpp

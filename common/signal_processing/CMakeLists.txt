@@ -9,7 +9,7 @@ ament_auto_add_library(lowpass_filter_1d SHARED
 )
 
 if(BUILD_TESTING)
-  ament_add_gtest(test_signal_processing
+  ament_add_ros_isolated_gtest(test_signal_processing
     test/src/lowpass_filter_1d_test.cpp
   )
   target_link_libraries(test_signal_processing

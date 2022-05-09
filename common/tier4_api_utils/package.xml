@@ -14,7 +14,7 @@
   <depend>rclcpp</depend>
   <depend>tier4_external_api_msgs</depend>
 
-  <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>ament_cmake_ros</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>
   <test_depend>rclcpp</test_depend>

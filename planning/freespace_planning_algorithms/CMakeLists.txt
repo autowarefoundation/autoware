@@ -18,8 +18,8 @@ target_link_libraries(freespace_planning_algorithms
 )
 
 if(BUILD_TESTING)
-  find_package(ament_cmake_gtest REQUIRED)
-  ament_add_gtest(freespace_planning_algorithms-test
+  find_package(ament_cmake_ros REQUIRED)
+  ament_add_ros_isolated_gtest(freespace_planning_algorithms-test
     test/src/test_freespace_planning_algorithms.cpp
   )
   target_link_libraries(freespace_planning_algorithms-test

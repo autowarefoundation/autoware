@@ -28,7 +28,7 @@ if(BUILD_TESTING)
     test/test_raw_vehicle_cmd_converter.cpp
   )
   set(TEST_RAW_VEHICLE_CMD_CONVERTER_EXE test_raw_vehicle_cmd_converter)
-  ament_add_gtest(${TEST_RAW_VEHICLE_CMD_CONVERTER_EXE} ${TEST_SOURCES})
+  ament_add_ros_isolated_gtest(${TEST_RAW_VEHICLE_CMD_CONVERTER_EXE} ${TEST_SOURCES})
   target_link_libraries(${TEST_RAW_VEHICLE_CMD_CONVERTER_EXE} actuation_map_converter raw_vehicle_cmd_converter_node_component)
 endif()
 

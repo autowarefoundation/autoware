@@ -6,7 +6,7 @@ autoware_package()
 
 if(BUILD_TESTING)
   include_directories(include)
-  ament_add_gtest(${PROJECT_NAME}_test test/test.cpp)
+  ament_add_ros_isolated_gtest(${PROJECT_NAME}_test test/test.cpp)
   ament_target_dependencies(${PROJECT_NAME}_test rclcpp tier4_external_api_msgs)
 endif()
 
