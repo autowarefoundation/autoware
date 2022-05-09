@@ -129,7 +129,7 @@ AvoidanceDebugMsgArray BehaviorTreeManager::getAvoidanceDebugMsgArray()
   const auto avoidance_module = std::find_if(
     scene_modules_.begin(), scene_modules_.end(),
     [](const std::shared_ptr<SceneModuleInterface> & module_ptr) {
-      return module_ptr->current_state_ == BT::NodeStatus::SUCCESS;
+      return module_ptr->name() == "Avoidance";
     });
   if (avoidance_module != scene_modules_.end()) {
     const auto & ptr = avoidance_module->get()->getAvoidanceDebugMsgArray();

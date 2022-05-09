@@ -157,8 +157,7 @@ private:
   // debug
   mutable DebugData debug_data_;
   void setDebugData(const PathShifter & shifter, const DebugData & debug);
-  mutable std::vector<AvoidanceDebugMsg> debug_avoidance_initializer_for_object;
-  mutable std::vector<AvoidanceDebugMsg> debug_avoidance_initializer_for_shift_point;
+  mutable std::vector<AvoidanceDebugMsg> debug_avoidance_initializer_for_shift_point_;
   // =====================================
   // ========= helper functions ==========
   // =====================================
