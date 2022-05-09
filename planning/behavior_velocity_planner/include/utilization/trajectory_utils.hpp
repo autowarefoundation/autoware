@@ -91,7 +91,7 @@ inline Quaternion lerpOrientation(
  * @param [in] point Interpolated point is nearest to this point.
  */
 template <class T>
-TrajectoryPointWithIdx getLerpTrajectoryPointWithIdx(
+boost::optional<TrajectoryPointWithIdx> getLerpTrajectoryPointWithIdx(
   const T & points, const geometry_msgs::msg::Point & point)
 {
   TrajectoryPoint interpolated_point;
@@ -100,7 +100,9 @@ TrajectoryPointWithIdx getLerpTrajectoryPointWithIdx(
     tier4_autoware_utils::calcLongitudinalOffsetToSegment(points, nearest_seg_idx, point);
   const double len_segment =
     tier4_autoware_utils::calcSignedArcLength(points, nearest_seg_idx, nearest_seg_idx + 1);
-  const double interpolate_ratio = std::clamp(len_to_interpolated / len_segment, 0.0, 1.0);
+  const double ratio = len_to_interpolated / len_segment;
+  if (ratio <= 0.0 || 1.0 <= ratio) return boost::none;
+  const double interpolate_ratio = std::clamp(ratio, 0.0, 1.0);
   {
     const size_t i = nearest_seg_idx;
     const auto & pos0 = points.at(i).pose.position;
@@ -154,14 +156,15 @@ inline bool smoothPath(
     // calc ego internal division point on path
     const auto traj_with_ego_point_with_idx =
       getLerpTrajectoryPointWithIdx(*traj_lateral_acc_filtered, current_pose.position);
-    TrajectoryPoint ego_point_on_path = traj_with_ego_point_with_idx.first;
-    const size_t nearest_seg_idx = traj_with_ego_point_with_idx.second;
+    if (traj_with_ego_point_with_idx == boost::none) return false;
+    TrajectoryPoint ego_point_on_path = traj_with_ego_point_with_idx->first;
+    const size_t nearest_seg_idx = traj_with_ego_point_with_idx->second;
     //! insert ego projected pose on path so new nearest segment will be nearest_seg_idx + 1
     traj_with_ego_point_on_path.insert(
       traj_with_ego_point_on_path.begin() + nearest_seg_idx, ego_point_on_path);
 
     // ego point inserted is new nearest point
-    nearest_idx = traj_with_ego_point_with_idx.second + 1;
+    nearest_idx = nearest_seg_idx + 1;
   }
   // Resample trajectory with ego-velocity based interval distances
   auto traj_resampled = smoother->resampleTrajectory(traj_with_ego_point_on_path, v0, nearest_idx);
@@ -182,6 +185,7 @@ inline bool smoothPath(
   traj_smoothed.insert(
     traj_smoothed.begin(), traj_resampled->begin(),
     traj_resampled->begin() + *traj_resampled_closest);
+
   out_path = convertTrajectoryPointsToPath(traj_smoothed);
   return true;
 }
