@@ -93,7 +93,7 @@ MarkerArray createPoseMarkerArray(
 MarkerArray makeOverhangToRoadShoulderMarkerArray(
   const behavior_path_planner::ObjectDataArray & objects);
 
-MarkerArray createOvehangFurthestLineStringMarkerArray(
+MarkerArray createOverhangFurthestLineStringMarkerArray(
   const lanelet::ConstLineStrings3d & linestrings, const std::string & ns, const double r,
   const double g, const double b);
 

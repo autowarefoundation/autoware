@@ -1939,8 +1939,8 @@ void AvoidanceModule::modifyPathVelocityToPreventAccelerationOnAvoidance(Shifted
     std::sqrt(v0 * v0 + 2.0 * s * parameters_.max_avoidance_acceleration));
 
   // apply velocity limit
-  constexpr size_t VLIM_APPLY_IDX_MARGIN = 0;
-  for (size_t i = ego_idx + VLIM_APPLY_IDX_MARGIN; i < N; ++i) {
+  constexpr size_t V_LIM_APPLY_IDX_MARGIN = 0;
+  for (size_t i = ego_idx + V_LIM_APPLY_IDX_MARGIN; i < N; ++i) {
     path.path.points.at(i).point.longitudinal_velocity_mps =
       std::min(path.path.points.at(i).point.longitudinal_velocity_mps, static_cast<float>(vmax));
   }
@@ -2619,7 +2619,7 @@ void AvoidanceModule::setDebugData(const PathShifter & shifter, const DebugData 
   using marker_utils::createAvoidPointMarkerArray;
   using marker_utils::createLaneletsAreaMarkerArray;
   using marker_utils::createObjectsMarkerArray;
-  using marker_utils::createOvehangFurthestLineStringMarkerArray;
+  using marker_utils::createOverhangFurthestLineStringMarkerArray;
   using marker_utils::createPathMarkerArray;
   using marker_utils::createPoseMarkerArray;
   using marker_utils::createShiftLengthMarkerArray;
@@ -2652,7 +2652,7 @@ void AvoidanceModule::setDebugData(const PathShifter & shifter, const DebugData 
   add(createLaneletsAreaMarkerArray(*debug.expanded_lanelets, "expanded_lanelet", 0.8, 0.8, 0.0));
   add(createAvoidanceObjectsMarkerArray(avoidance_data_.objects, "avoidance_object"));
   add(makeOverhangToRoadShoulderMarkerArray(avoidance_data_.objects));
-  add(createOvehangFurthestLineStringMarkerArray(
+  add(createOverhangFurthestLineStringMarkerArray(
     *debug.farthest_linestring_from_overhang, "farthest_linestring_from_overhang", 1.0, 0.0, 1.0));
 
   // parent object info
