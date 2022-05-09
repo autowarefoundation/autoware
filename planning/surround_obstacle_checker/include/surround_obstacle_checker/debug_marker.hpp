@@ -25,8 +25,18 @@
 #include <memory>
 #include <string>
 
+namespace surround_obstacle_checker
+{
+
+using tier4_planning_msgs::msg::StopFactor;
+using tier4_planning_msgs::msg::StopReason;
+using tier4_planning_msgs::msg::StopReasonArray;
+using visualization_msgs::msg::Marker;
+using visualization_msgs::msg::MarkerArray;
+
 enum class PoseType : int8_t { NoStart = 0 };
 enum class PointType : int8_t { NoStart = 0 };
+
 class SurroundObstacleCheckerDebugNode
 {
 public:
@@ -38,16 +48,16 @@ public:
   void publish();
 
 private:
-  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr debug_viz_pub_;
-  rclcpp::Publisher<tier4_planning_msgs::msg::StopReasonArray>::SharedPtr stop_reason_pub_;
+  rclcpp::Publisher<MarkerArray>::SharedPtr debug_viz_pub_;
+  rclcpp::Publisher<StopReasonArray>::SharedPtr stop_reason_pub_;
   double base_link2front_;
 
-  visualization_msgs::msg::MarkerArray makeVisualizationMarker();
-  tier4_planning_msgs::msg::StopReasonArray makeStopReasonArray();
+  MarkerArray makeVisualizationMarker();
+  StopReasonArray makeStopReasonArray();
 
   std::shared_ptr<geometry_msgs::msg::Point> stop_obstacle_point_ptr_;
   std::shared_ptr<geometry_msgs::msg::Pose> stop_pose_ptr_;
   rclcpp::Clock::SharedPtr clock_;
 };
-
+}  // namespace surround_obstacle_checker
 #endif  // SURROUND_OBSTACLE_CHECKER__DEBUG_MARKER_HPP_

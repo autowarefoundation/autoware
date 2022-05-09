@@ -18,7 +18,7 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "SurroundObstacleCheckerNode"
+  PLUGIN "surround_obstacle_checker::SurroundObstacleCheckerNode"
   EXECUTABLE ${PROJECT_NAME}_node
 )
 

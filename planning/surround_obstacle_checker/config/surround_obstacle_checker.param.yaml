@@ -9,3 +9,4 @@
 
     # ego stop state
     stop_state_ego_speed: 0.1 #[m/s]
+    stop_state_entry_duration_time: 0.1 #[s]
