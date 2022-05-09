@@ -34,9 +34,12 @@ void drawRoiOnImage(
 
 namespace image_projection_based_fusion
 {
-Debugger::Debugger(rclcpp::Node * node_ptr, const std::size_t image_num) : node_ptr_(node_ptr)
+Debugger::Debugger(
+  rclcpp::Node * node_ptr, const std::size_t image_num, const std::size_t image_buffer_size)
+: node_ptr_(node_ptr)
 {
   image_buffers_.resize(image_num);
+  image_buffer_size_ = image_buffer_size;
   for (std::size_t img_i = 0; img_i < image_num; ++img_i) {
     auto sub = image_transport::create_subscription(
       node_ptr, "input/image_raw" + std::to_string(img_i),
@@ -54,7 +57,7 @@ Debugger::Debugger(rclcpp::Node * node_ptr, const std::size_t image_num) : node_
     auto pub =
       image_transport::create_publisher(node_ptr, "output/image_raw" + std::to_string(img_i));
     image_pubs_.push_back(pub);
-    image_buffers_.at(img_i).set_capacity(image_buffer_size);
+    image_buffers_.at(img_i).set_capacity(image_buffer_size_);
   }
 }
 
