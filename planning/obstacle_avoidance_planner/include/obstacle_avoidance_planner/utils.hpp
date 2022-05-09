@@ -27,6 +27,7 @@
 #include "boost/optional/optional_fwd.hpp"
 
 #include <algorithm>
+#include <limits>
 #include <memory>
 #include <vector>
 
@@ -188,14 +189,19 @@ T clipBackwardPoints(
 
 template <typename T>
 T clipBackwardPoints(
-  const T & points, const geometry_msgs::msg::Point pos, const double backward_length,
-  const double delta_length)
+  const T & points, const geometry_msgs::msg::Pose pose, const double backward_length,
+  const double delta_length, const double delta_yaw)
 {
   if (points.empty()) {
     return T{};
   }
 
-  const size_t target_idx = tier4_autoware_utils::findNearestIndex(points, pos);
+  const auto target_idx_optional = tier4_autoware_utils::findNearestIndex(
+    points, pose, std::numeric_limits<double>::max(), delta_yaw);
+
+  const size_t target_idx = target_idx_optional
+                              ? *target_idx_optional
+                              : tier4_autoware_utils::findNearestIndex(points, pose.position);
 
   const int begin_idx =
     std::max(0, static_cast<int>(target_idx) - static_cast<int>(backward_length / delta_length));
