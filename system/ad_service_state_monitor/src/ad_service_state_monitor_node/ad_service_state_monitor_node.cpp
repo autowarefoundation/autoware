@@ -120,6 +120,11 @@ void AutowareStateMonitorNode::onOdometry(const nav_msgs::msg::Odometry::ConstSh
 
     state_input_.odometry_buffer.pop_front();
   }
+
+  constexpr size_t odometry_buffer_size = 200;  // 40Hz * 5sec
+  if (state_input_.odometry_buffer.size() > odometry_buffer_size) {
+    state_input_.odometry_buffer.pop_front();
+  }
 }
 
 bool AutowareStateMonitorNode::onShutdownService(
