@@ -131,8 +131,8 @@ Polygon2d createSelfPolygon(const VehicleInfo & vehicle_info)
 
   ego_polygon.outer().push_back(Point2d(front_m, -width_m));
   ego_polygon.outer().push_back(Point2d(front_m, width_m));
-  ego_polygon.outer().push_back(Point2d(-rear_m, width_m));
-  ego_polygon.outer().push_back(Point2d(-rear_m, -width_m));
+  ego_polygon.outer().push_back(Point2d(rear_m, width_m));
+  ego_polygon.outer().push_back(Point2d(rear_m, -width_m));
 
   bg::correct(ego_polygon);
 
