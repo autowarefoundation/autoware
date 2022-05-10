@@ -4,9 +4,6 @@ project(tensorrt_yolo)
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
-# TODO: remove (https://github.com/autowarefoundation/autoware.universe/issues/850)
-add_compile_options(-Wno-deprecated-declarations)
-
 option(CUDA_VERBOSE "Verbose output of CUDA modules" OFF)
 
 find_package(OpenCV REQUIRED)

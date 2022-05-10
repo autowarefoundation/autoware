@@ -4,9 +4,6 @@ project(traffic_light_classifier)
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
-# TODO: remove (https://github.com/autowarefoundation/autoware.universe/issues/850)
-add_compile_options(-Wno-deprecated-declarations)
-
 option(CUDA_VERBOSE "Verbose output of CUDA modules" OFF)
 # set flags for CUDA availability
 option(CUDA_AVAIL "CUDA available" OFF)

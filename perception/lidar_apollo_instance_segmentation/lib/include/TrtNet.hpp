@@ -56,13 +56,13 @@ public:
     }
 
     if (!mTrtRunTime) {
-      mTrtRunTime->destroy();
+      delete mTrtRunTime;
     }
     if (!mTrtContext) {
-      mTrtContext->destroy();
+      delete mTrtContext;
     }
     if (!mTrtEngine) {
-      mTrtEngine->destroy();
+      delete mTrtEngine;
     }
   }
 

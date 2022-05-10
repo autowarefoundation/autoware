@@ -4,9 +4,6 @@ project(lidar_centerpoint)
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
-# TODO: remove (https://github.com/autowarefoundation/autoware.universe/issues/850)
-add_compile_options(-Wno-deprecated-declarations -Wno-unknown-pragmas)
-
 option(CUDA_VERBOSE "Verbose output of CUDA modules" OFF)
 
 # set flags for CUDA availability
@@ -142,6 +139,13 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
     ${CUDA_curand_LIBRARY}
     ${CUDNN_LIBRARY}
     centerpoint_cuda_libraries
+  )
+
+  # To suppress unknown-pragmas error. The root-cause is CUB library in CUDA 11.6.
+  # This issue was fixed by https://github.com/NVIDIA/cub/commit/7d608bf1dc14553e2fb219eabeed80b76621b6fe
+  target_include_directories(centerpoint
+    SYSTEM PUBLIC
+      ${CUDA_INCLUDE_DIRS}
   )
 
   ## node ##

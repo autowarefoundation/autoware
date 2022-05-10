@@ -104,7 +104,13 @@ bool TensorRTWrapper::parseONNX(
 
   std::cout << "Applying optimizations and building TRT CUDA engine (" << onnx_path << ") ..."
             << std::endl;
-  engine_ = unique_ptr<nvinfer1::ICudaEngine>(builder->buildEngineWithConfig(*network, *config));
+  plan_ = unique_ptr<nvinfer1::IHostMemory>(builder->buildSerializedNetwork(*network, *config));
+  if (!plan_) {
+    std::cout << "Fail to create serialized network" << std::endl;
+    return false;
+  }
+  engine_ = unique_ptr<nvinfer1::ICudaEngine>(
+    runtime_->deserializeCudaEngine(plan_->data(), plan_->size()));
   if (!engine_) {
     std::cout << "Fail to create engine" << std::endl;
     return false;
@@ -116,9 +122,8 @@ bool TensorRTWrapper::parseONNX(
 bool TensorRTWrapper::saveEngine(const std::string & engine_path)
 {
   std::cout << "Writing to " << engine_path << std::endl;
-  auto serialized = unique_ptr<nvinfer1::IHostMemory>(engine_->serialize());
   std::ofstream file(engine_path, std::ios::out | std::ios::binary);
-  file.write(reinterpret_cast<const char *>(serialized->data()), serialized->size());
+  file.write(reinterpret_cast<const char *>(plan_->data()), plan_->size());
   return true;
 }
 
@@ -139,8 +144,7 @@ bool TensorRTWrapper::loadEngine(const std::string & engine_path)
   }
 
   std::cout << "Loading from " << engine_path << std::endl;
-  engine_ =
-    unique_ptr<nvinfer1::ICudaEngine>(runtime_->deserializeCudaEngine(buffer.get(), size, nullptr));
+  engine_ = unique_ptr<nvinfer1::ICudaEngine>(runtime_->deserializeCudaEngine(buffer.get(), size));
   return true;
 }
 
