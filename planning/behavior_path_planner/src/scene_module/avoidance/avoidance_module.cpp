@@ -490,24 +490,19 @@ AvoidPointArray AvoidanceModule::calcRawShiftPointsFromObjects(
     avoidance_debug_msg.max_shift_length = max_allowable_lateral_distance;
 
     if (!(o.to_road_shoulder_distance > max_allowable_lateral_distance)) {
-      avoidance_debug_msg.allow_avoidance = false;
-      avoidance_debug_msg.failed_reason = AvoidanceDebugFactor::INSUFFICIENT_LATERAL_MARGIN;
+      avoidance_debug_array_false_and_push_back(AvoidanceDebugFactor::INSUFFICIENT_LATERAL_MARGIN);
+      continue;
     }
 
     const auto max_shift_length =
       o.to_road_shoulder_distance - road_shoulder_safety_margin - 0.5 * vehicle_width;
-    const auto max_left_shift_limit = [&o, &max_allowable_lateral_distance, &max_shift_length,
-                                       this]() noexcept {
-      const auto left_shift_constraint = std::min(getLeftShiftBound(), max_shift_length);
-      return (o.to_road_shoulder_distance > max_allowable_lateral_distance) ? left_shift_constraint
-                                                                            : 0.0;
+
+    const auto max_left_shift_limit = [&max_shift_length, this]() noexcept {
+      return std::min(getLeftShiftBound(), max_shift_length);
     };
 
-    const auto max_right_shift_limit = [&o, &max_allowable_lateral_distance, &max_shift_length,
-                                        this]() noexcept {
-      const auto right_shift_constraint = std::max(getRightShiftBound(), -max_shift_length);
-      return (o.to_road_shoulder_distance > max_allowable_lateral_distance) ? right_shift_constraint
-                                                                            : 0.0;
+    const auto max_right_shift_limit = [&max_shift_length, this]() noexcept {
+      return std::max(getRightShiftBound(), -max_shift_length);
     };
 
     const auto shift_length = isOnRight(o)
