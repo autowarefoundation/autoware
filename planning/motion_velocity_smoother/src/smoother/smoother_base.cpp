@@ -105,7 +105,7 @@ boost::optional<TrajectoryPoints> SmootherBase::applyLateralAccelerationFilter(
   for (size_t i = 0; i < output->size(); ++i) {
     double curvature = 0.0;
     const size_t start = i > after_decel_index ? i - after_decel_index : 0;
-    const size_t end = std::min(output->size(), i + before_decel_index);
+    const size_t end = std::min(output->size(), i + before_decel_index + 1);
     for (size_t j = start; j < end; ++j) {
       curvature = std::max(curvature, std::fabs(curvature_v->at(j)));
     }
