@@ -9,6 +9,6 @@
     </include>
   </group>
   <group unless="$(var use_vector_map)">
-    <include file="$(find-pkg-share naive_path_prediction)/launch/naive_path_prediction.launch.xml"/>
+    <!-- Not support without vector map -->
   </group>
 </launch>
