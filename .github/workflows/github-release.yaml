@@ -54,7 +54,7 @@ jobs:
       - name: Select verb
         id: select-verb
         run: |
-          has_previous_draft=$(gh release view --json isDraft -q ".isDraft" "${{ steps.set-tag-name.outputs.tag-name }}")
+          has_previous_draft=$(gh release view --json isDraft -q ".isDraft" "${{ steps.set-tag-name.outputs.tag-name }}") || true
 
           verb=create
           if [ "$has_previous_draft" = "true" ]; then
