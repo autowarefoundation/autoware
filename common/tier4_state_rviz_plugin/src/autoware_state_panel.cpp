@@ -80,13 +80,26 @@ AutowareStatePanel::AutowareStatePanel(QWidget * parent) : rviz_common::Panel(pa
   engage_button_ptr_ = new QPushButton("Engage");
   connect(engage_button_ptr_, SIGNAL(clicked()), SLOT(onClickAutowareEngage()));
 
+  velocity_limit_button_ptr_ = new QPushButton("Send Velocity Limit");
+  pub_velocity_limit_input_ = new QSpinBox();
+  pub_velocity_limit_input_->setRange(-100.0, 100.0);
+  pub_velocity_limit_input_->setValue(0.0);
+  pub_velocity_limit_input_->setSingleStep(5.0);
+  connect(velocity_limit_button_ptr_, SIGNAL(clicked()), this, SLOT(onClickVelocityLimit()));
+
   auto * v_layout = new QVBoxLayout;
+  auto * velocity_limit_layout = new QHBoxLayout();
   v_layout->addLayout(gate_layout);
   v_layout->addLayout(selector_layout);
   v_layout->addLayout(state_layout);
   v_layout->addLayout(gear_layout);
   v_layout->addLayout(engage_status_layout);
   v_layout->addWidget(engage_button_ptr_);
+  v_layout->addLayout(engage_status_layout);
+  velocity_limit_layout->addWidget(velocity_limit_button_ptr_);
+  velocity_limit_layout->addWidget(pub_velocity_limit_input_);
+  velocity_limit_layout->addWidget(new QLabel("  [km/h]"));
+  v_layout->addLayout(velocity_limit_layout);
   setLayout(v_layout);
 }
 
@@ -114,6 +127,9 @@ void AutowareStatePanel::onInitialize()
 
   client_engage_ = raw_node_->create_client<tier4_external_api_msgs::srv::Engage>(
     "/api/autoware/set/engage", rmw_qos_profile_services_default);
+
+  pub_velocity_limit_ = raw_node_->create_publisher<tier4_planning_msgs::msg::VelocityLimit>(
+    "/planning/scenario_planning/max_velocity_default", rclcpp::QoS(1));
 }
 
 void AutowareStatePanel::onGateMode(const tier4_control_msgs::msg::GateMode::ConstSharedPtr msg)
@@ -213,6 +229,13 @@ void AutowareStatePanel::onEngageStatus(
 {
   current_engage_ = msg->engage;
   engage_status_label_ptr_->setText(QString::fromStdString(Bool2String(current_engage_)));
+}
+
+void AutowareStatePanel::onClickVelocityLimit()
+{
+  auto velocity_limit = std::make_shared<tier4_planning_msgs::msg::VelocityLimit>();
+  velocity_limit->max_velocity = pub_velocity_limit_input_->value() / 3.6;
+  pub_velocity_limit_->publish(*velocity_limit);
 }
 
 void AutowareStatePanel::onClickAutowareEngage()

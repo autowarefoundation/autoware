@@ -19,6 +19,7 @@
 
 #include <QLabel>
 #include <QPushButton>
+#include <QSpinBox>
 #include <rclcpp/rclcpp.hpp>
 #include <rviz_common/panel.hpp>
 
@@ -28,6 +29,7 @@
 #include <tier4_control_msgs/msg/external_command_selector_mode.hpp>
 #include <tier4_control_msgs/msg/gate_mode.hpp>
 #include <tier4_external_api_msgs/srv/engage.hpp>
+#include <tier4_planning_msgs/msg/velocity_limit.hpp>
 
 namespace rviz_plugins
 {
@@ -41,6 +43,7 @@ public:
 
 public Q_SLOTS:
   void onClickAutowareEngage();
+  void onClickVelocityLimit();
 
 protected:
   void onGateMode(const tier4_control_msgs::msg::GateMode::ConstSharedPtr msg);
@@ -61,12 +64,16 @@ protected:
 
   rclcpp::Client<tier4_external_api_msgs::srv::Engage>::SharedPtr client_engage_;
 
+  rclcpp::Publisher<tier4_planning_msgs::msg::VelocityLimit>::SharedPtr pub_velocity_limit_;
+
   QLabel * gate_mode_label_ptr_;
   QLabel * selector_mode_label_ptr_;
   QLabel * autoware_state_label_ptr_;
   QLabel * gear_label_ptr_;
   QLabel * engage_status_label_ptr_;
   QPushButton * engage_button_ptr_;
+  QPushButton * velocity_limit_button_ptr_;
+  QSpinBox * pub_velocity_limit_input_;
 
   bool current_engage_;
 };
