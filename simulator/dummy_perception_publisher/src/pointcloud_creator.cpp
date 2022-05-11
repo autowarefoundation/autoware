@@ -25,12 +25,26 @@
 #include <limits>
 #include <memory>
 
+namespace
+{
+
+static constexpr double epsilon = 0.001;
+static constexpr double step = 0.05;
+static constexpr double vertical_theta_step = (1.0 / 180.0) * M_PI;
+static constexpr double vertical_min_theta = (-15.0 / 180.0) * M_PI;
+static constexpr double vertical_max_theta = (15.0 / 180.0) * M_PI;
+static constexpr double horizontal_theta_step = (0.1 / 180.0) * M_PI;
+static constexpr double horizontal_min_theta = (-180.0 / 180.0) * M_PI;
+static constexpr double horizontal_max_theta = (180.0 / 180.0) * M_PI;
+
 pcl::PointXYZ getPointWrtBaseLink(
   const tf2::Transform & tf_base_link2moved_object, double x, double y, double z)
 {
   const auto p_wrt_base = tf_base_link2moved_object(tf2::Vector3(x, y, z));
   return pcl::PointXYZ(p_wrt_base.x(), p_wrt_base.y(), p_wrt_base.z());
 }
+
+}  // namespace
 
 void ObjectCentricPointCloudCreator::create_object_pointcloud(
   const ObjectInfo & obj_info, const tf2::Transform & tf_base_link2map,
@@ -39,14 +53,6 @@ void ObjectCentricPointCloudCreator::create_object_pointcloud(
   std::normal_distribution<> x_random(0.0, obj_info.std_dev_x);
   std::normal_distribution<> y_random(0.0, obj_info.std_dev_y);
   std::normal_distribution<> z_random(0.0, obj_info.std_dev_z);
-  const double epsilon = 0.001;
-  const double step = 0.05;
-  const double vertical_theta_step = (1.0 / 180.0) * M_PI;
-  const double vertical_min_theta = (-15.0 / 180.0) * M_PI;
-  const double vertical_max_theta = (15.0 / 180.0) * M_PI;
-  const double horizontal_theta_step = (0.1 / 180.0) * M_PI;
-  const double horizontal_min_theta = (-180.0 / 180.0) * M_PI;
-  const double horizontal_max_theta = (180.0 / 180.0) * M_PI;
 
   const auto tf_base_link2moved_object = tf_base_link2map * obj_info.tf_map2moved_object;
 
@@ -206,7 +212,18 @@ std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> EgoCentricPointCloudCreator::cr
     pointclouds.at(i) = (pcl::PointCloud<pcl::PointXYZ>::Ptr(new pcl::PointCloud<pcl::PointXYZ>));
   }
 
-  const double horizontal_theta_step = 0.25 * M_PI / 180.0;
+  std::vector<double> min_zs(obj_infos.size());
+  std::vector<double> max_zs(obj_infos.size());
+
+  for (size_t idx = 0; idx < obj_infos.size(); ++idx) {
+    const auto & obj_info = obj_infos.at(idx);
+    const auto tf_base_link2moved_object = tf_base_link2map * obj_info.tf_map2moved_object;
+    const double min_z = -1.0 * (obj_info.height / 2.0) + tf_base_link2moved_object.getOrigin().z();
+    const double max_z = 1.0 * (obj_info.height / 2.0) + tf_base_link2moved_object.getOrigin().z();
+    min_zs.at(idx) = min_z;
+    max_zs.at(idx) = max_z;
+  }
+
   double angle = 0.0;
   const auto n_scan = static_cast<size_t>(std::floor(2 * M_PI / horizontal_theta_step));
   for (size_t i = 0; i < n_scan; ++i) {
@@ -217,13 +234,22 @@ std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> EgoCentricPointCloudCreator::cr
       const auto x_hit = dist * cos(angle);
       const auto y_hit = dist * sin(angle);
       const auto idx_hit = composite_sdf.nearest_sdf_index(x_hit, y_hit);
+      const auto obj_info_here = obj_infos.at(idx_hit);
+      const auto min_z_here = min_zs.at(idx_hit);
+      const auto max_z_here = max_zs.at(idx_hit);
+      std::normal_distribution<> x_random(0.0, obj_info_here.std_dev_x);
+      std::normal_distribution<> y_random(0.0, obj_info_here.std_dev_y);
+      std::normal_distribution<> z_random(0.0, obj_info_here.std_dev_z);
 
-      std::normal_distribution<> x_random(0.0, obj_infos.at(idx_hit).std_dev_x);
-      std::normal_distribution<> y_random(0.0, obj_infos.at(idx_hit).std_dev_y);
-      std::normal_distribution<> z_random(0.0, obj_infos.at(idx_hit).std_dev_z);
-      pointclouds.at(idx_hit)->push_back(pcl::PointXYZ(
-        x_hit + x_random(random_generator), y_hit + y_random(random_generator),
-        z_random(random_generator)));
+      for (double vertical_theta = vertical_min_theta;
+           vertical_theta <= vertical_max_theta + epsilon; vertical_theta += vertical_theta_step) {
+        const double z = dist * std::tan(vertical_theta);
+        if (min_z_here <= z && z <= max_z_here + epsilon) {
+          pointclouds.at(idx_hit)->push_back(pcl::PointXYZ(
+            x_hit + x_random(random_generator), y_hit + y_random(random_generator),
+            z + z_random(random_generator)));
+        }
+      }
     }
   }
 
