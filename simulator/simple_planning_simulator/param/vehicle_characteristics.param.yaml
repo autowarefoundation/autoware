@@ -10,3 +10,4 @@
       width_m: 2.0
       front_overhang_m: 0.5
       rear_overhang_m: 0.5
+      max_steer_angle: 0.70 # [rad]

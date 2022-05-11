@@ -190,6 +190,7 @@ void declareVehicleInfoParams(rclcpp::NodeOptions & node_options)
   node_options.append_parameter_override("left_overhang", 0.5);
   node_options.append_parameter_override("right_overhang", 0.5);
   node_options.append_parameter_override("vehicle_height", 1.5);
+  node_options.append_parameter_override("max_steer_angle", 0.7);
 }
 
 // Send a control command and run the simulation.

@@ -31,6 +31,7 @@ struct VehicleInfo
   double left_overhang_m;
   double right_overhang_m;
   double vehicle_height_m;
+  double max_steer_angle_m;
 
   // Derived parameters, i.e. calculated from base parameters
   // The offset values are relative to the base frame origin, which is located
@@ -49,7 +50,8 @@ struct VehicleInfo
 inline VehicleInfo createVehicleInfo(
   const double wheel_radius_m, const double wheel_width_m, const double wheel_base_m,
   const double wheel_tread_m, const double front_overhang_m, const double rear_overhang_m,
-  const double left_overhang_m, const double right_overhang_m, const double vehicle_height_m)
+  const double left_overhang_m, const double right_overhang_m, const double vehicle_height_m,
+  const double max_steer_angle_m)
 {
   // Calculate derived parameters
   const double vehicle_length_m_ = front_overhang_m + wheel_base_m + rear_overhang_m;
@@ -72,6 +74,7 @@ inline VehicleInfo createVehicleInfo(
     left_overhang_m,
     right_overhang_m,
     vehicle_height_m,
+    max_steer_angle_m,
     // Derived parameters
     vehicle_length_m_,
     vehicle_width_m_,
