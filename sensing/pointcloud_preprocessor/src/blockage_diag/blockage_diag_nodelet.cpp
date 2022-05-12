@@ -42,7 +42,7 @@ BlockageDiagComponent::BlockageDiagComponent(const rclcpp::NodeOptions & options
 
   updater_.setHardwareID("blockage_diag");
   updater_.add(
-    std::string(this->get_namespace()) + ": ground_blockage_validation", this,
+    std::string(this->get_namespace()) + ": blockage_validation", this,
     &BlockageDiagComponent::onBlockageChecker);
   updater_.setPeriod(0.1);
 
@@ -93,9 +93,9 @@ void BlockageDiagComponent::onBlockageChecker(DiagnosticStatusWrapper & stat)
   if (level == DiagnosticStatus::OK) {
     msg = "OK";
   } else if (level == DiagnosticStatus::WARN) {
-    msg = "WARNING: LiDAR ground blockage";
+    msg = "WARNING: LiDAR blockage";
   } else if (level == DiagnosticStatus::ERROR) {
-    msg = "ERROR: LiDAR ground blockage";
+    msg = "ERROR: LiDAR blockage";
   } else if (level == DiagnosticStatus::STALE) {
     msg = "STALE";
   }
