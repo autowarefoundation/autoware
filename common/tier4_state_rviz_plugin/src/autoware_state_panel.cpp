@@ -16,6 +16,7 @@
 
 #include "autoware_state_panel.hpp"
 
+#include <QHBoxLayout>
 #include <QString>
 #include <QVBoxLayout>
 #include <rviz_common/display_context.hpp>
@@ -80,6 +81,15 @@ AutowareStatePanel::AutowareStatePanel(QWidget * parent) : rviz_common::Panel(pa
   engage_button_ptr_ = new QPushButton("Engage");
   connect(engage_button_ptr_, SIGNAL(clicked()), SLOT(onClickAutowareEngage()));
 
+  // Gate Mode Button
+  gate_mode_button_ptr_ = new QPushButton("Gate Mode");
+  connect(gate_mode_button_ptr_, SIGNAL(clicked()), SLOT(onClickGateMode()));
+
+  // Path Change Approval Button
+  path_change_approval_button_ptr_ = new QPushButton("Path Change Approval");
+  connect(path_change_approval_button_ptr_, SIGNAL(clicked()), SLOT(onClickPathChangeApproval()));
+
+  // Velocity Limit
   velocity_limit_button_ptr_ = new QPushButton("Send Velocity Limit");
   pub_velocity_limit_input_ = new QSpinBox();
   pub_velocity_limit_input_->setRange(-100.0, 100.0);
@@ -87,7 +97,9 @@ AutowareStatePanel::AutowareStatePanel(QWidget * parent) : rviz_common::Panel(pa
   pub_velocity_limit_input_->setSingleStep(5.0);
   connect(velocity_limit_button_ptr_, SIGNAL(clicked()), this, SLOT(onClickVelocityLimit()));
 
+  // Layout
   auto * v_layout = new QVBoxLayout;
+  auto * gate_mode_path_change_approval_layout = new QHBoxLayout;
   auto * velocity_limit_layout = new QHBoxLayout();
   v_layout->addLayout(gate_layout);
   v_layout->addLayout(selector_layout);
@@ -96,6 +108,9 @@ AutowareStatePanel::AutowareStatePanel(QWidget * parent) : rviz_common::Panel(pa
   v_layout->addLayout(engage_status_layout);
   v_layout->addWidget(engage_button_ptr_);
   v_layout->addLayout(engage_status_layout);
+  gate_mode_path_change_approval_layout->addWidget(gate_mode_button_ptr_);
+  gate_mode_path_change_approval_layout->addWidget(path_change_approval_button_ptr_);
+  v_layout->addLayout(gate_mode_path_change_approval_layout);
   velocity_limit_layout->addWidget(velocity_limit_button_ptr_);
   velocity_limit_layout->addWidget(pub_velocity_limit_input_);
   velocity_limit_layout->addWidget(new QLabel("  [km/h]"));
@@ -130,6 +145,14 @@ void AutowareStatePanel::onInitialize()
 
   pub_velocity_limit_ = raw_node_->create_publisher<tier4_planning_msgs::msg::VelocityLimit>(
     "/planning/scenario_planning/max_velocity_default", rclcpp::QoS(1));
+
+  pub_gate_mode_ = raw_node_->create_publisher<tier4_control_msgs::msg::GateMode>(
+    "/control/gate_mode_cmd", rclcpp::QoS(1));
+
+  pub_path_change_approval_ = raw_node_->create_publisher<tier4_planning_msgs::msg::Approval>(
+    "/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/"
+    "path_change_approval",
+    rclcpp::QoS(1));
 }
 
 void AutowareStatePanel::onGateMode(const tier4_control_msgs::msg::GateMode::ConstSharedPtr msg)
@@ -258,6 +281,23 @@ void AutowareStatePanel::onClickAutowareEngage()
     });
 }
 
+void AutowareStatePanel::onClickGateMode()
+{
+  const auto data = gate_mode_label_ptr_->text().toStdString() == "AUTO"
+                      ? tier4_control_msgs::msg::GateMode::EXTERNAL
+                      : tier4_control_msgs::msg::GateMode::AUTO;
+  RCLCPP_INFO(raw_node_->get_logger(), "data : %d", data);
+  pub_gate_mode_->publish(
+    tier4_control_msgs::build<tier4_control_msgs::msg::GateMode>().data(data));
+}
+
+void AutowareStatePanel::onClickPathChangeApproval()
+{
+  pub_path_change_approval_->publish(
+    tier4_planning_msgs::build<tier4_planning_msgs::msg::Approval>()
+      .stamp(raw_node_->now())
+      .approval(true));
+}
 }  // namespace rviz_plugins
 
 #include <pluginlib/class_list_macros.hpp>
