@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "map_tf_generator/uniform_random.hpp"
+
 #include <rclcpp/rclcpp.hpp>
 
 #include <sensor_msgs/msg/point_cloud2.hpp>
@@ -24,6 +26,8 @@
 
 #include <memory>
 #include <string>
+
+constexpr size_t N_SAMPLES = 20;
 
 class MapTFGeneratorNode : public rclcpp::Node
 {
@@ -51,19 +55,23 @@ private:
 
   void onPointCloud(const sensor_msgs::msg::PointCloud2::ConstSharedPtr clouds_ros)
   {
+    // fix random seed to produce the same viewer position every time
+    // 3939 is just the author's favorite number
+    srand(3939);
+
     PointCloud clouds;
     pcl::fromROSMsg<pcl::PointXYZ>(*clouds_ros, clouds);
 
-    const unsigned int sum = clouds.points.size();
+    const std::vector<size_t> indices = UniformRandom(clouds.size(), N_SAMPLES);
     double coordinate[3] = {0, 0, 0};
-    for (unsigned int i = 0; i < sum; i++) {
+    for (const auto i : indices) {
       coordinate[0] += clouds.points[i].x;
       coordinate[1] += clouds.points[i].y;
       coordinate[2] += clouds.points[i].z;
     }
-    coordinate[0] = coordinate[0] / sum;
-    coordinate[1] = coordinate[1] / sum;
-    coordinate[2] = coordinate[2] / sum;
+    coordinate[0] = coordinate[0] / indices.size();
+    coordinate[1] = coordinate[1] / indices.size();
+    coordinate[2] = coordinate[2] / indices.size();
 
     geometry_msgs::msg::TransformStamped static_transformStamped;
     static_transformStamped.header.stamp = this->now();
