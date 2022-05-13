@@ -35,7 +35,7 @@ if [ ${#args[@]} -ge 1 ]; then
 fi
 
 if [ "$installation_type" != "core" ] && [ "$installation_type" != "universe" ] && [ "$installation_type" != "docker" ]; then
-    echo -e "\e[31mPlease input a valid installation type 'core', 'universe' or 'docker' as the 1st argument, or keep it empty to use the default.\e[m"
+    echo -e "\e[31mPlease input a valid installation type argument. Either input 'core', 'universe' or 'docker' as the first argument, or leave the argument blank to use the default type.\e[m"
     exit 1
 fi
 
@@ -46,8 +46,8 @@ ansible_args=()
 if [ "$option_yes" = "true" ]; then
     echo -e "\e[36mRun the setup in non-interactive mode.\e[m"
 else
-    echo -e "\e[33mSetting up the build environment take up to 1 hour.\e[m"
-    read -rp ">  Are you sure to run the setup? [y/N] " answer
+    echo -e "\e[33mSetting up the build environment can take up to 1 hour.\e[m"
+    read -rp ">  Are you sure you want to run setup? [y/N] " answer
 
     # Check whether to cancel
     if ! [[ ${answer:0:1} =~ y|Y ]]; then
