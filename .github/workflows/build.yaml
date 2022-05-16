@@ -15,7 +15,12 @@ jobs:
 
       - name: Run setup script
         run: |
-          ./setup-dev-env.sh -y universe
+          ./setup-dev-env.sh -y
+
+      - name: Set git config
+        uses: autowarefoundation/autoware-github-actions/set-git-config@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run vcs import
         run: |

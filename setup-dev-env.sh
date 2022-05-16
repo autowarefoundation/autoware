@@ -83,6 +83,12 @@ if ! (command -v sudo >/dev/null 2>&1); then
     apt-get -y install sudo
 fi
 
+# Install git
+if ! (command -v git >/dev/null 2>&1); then
+    sudo apt-get -y update
+    sudo apt-get -y install git
+fi
+
 # Install pip for ansible
 if ! (command -v pip3 >/dev/null 2>&1); then
     sudo apt-get -y update
