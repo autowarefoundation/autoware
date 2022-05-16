@@ -75,7 +75,7 @@ void AccelBrakeMapCalibratorButtonPanel::onInitialize()
       &AccelBrakeMapCalibratorButtonPanel::callbackUpdateSuggest, this, std::placeholders::_1));
 
   client_ = raw_node->create_client<tier4_vehicle_msgs::srv::UpdateAccelBrakeMap>(
-    "/vehicle/calibration/accel_brake_map_calibrator/update_map_dir");
+    "/accel_brake_map_calibrator/update_map_dir");
 }
 
 void AccelBrakeMapCalibratorButtonPanel::callbackUpdateSuggest(

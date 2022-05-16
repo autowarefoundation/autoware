@@ -17,9 +17,9 @@ Panels:
       - /Current View1
     Name: Views
     Splitter Ratio: 0.5
-  - Class: autoware_localization_rviz_plugin/InitialPoseButtonPanel
+  - Class: tier4_localization_rviz_plugin/InitialPoseButtonPanel
     Name: InitialPoseButtonPanel
-  - Class: autoware_localization_rviz_plugin/InitialPoseButtonPanel
+  - Class: tier4_localization_rviz_plugin/InitialPoseButtonPanel
     Name: InitialPoseButtonPanel
 Preferences:
   PromptSaveOnExit: true
