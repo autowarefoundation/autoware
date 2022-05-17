@@ -315,8 +315,38 @@ lanelet::ConstLanelet getExpandedLanelet(
   // Note: The lanelet::geometry::offset throws exception when the undesired inversion is found.
   // Use offsetNoThrow until the logic is updated to handle the inversion.
   // TODO(Horibe) update
-  const auto & expanded_left_bound_2d = offsetNoThrow(orig_left_bound_2d, left_offset);
-  const auto & expanded_right_bound_2d = offsetNoThrow(orig_right_bound_2d, right_offset);
+  auto expanded_left_bound_2d = offsetNoThrow(orig_left_bound_2d, left_offset);
+  auto expanded_right_bound_2d = offsetNoThrow(orig_right_bound_2d, right_offset);
+
+  // Note: modify front and back points so that the successive lanelets will not have any
+  // longitudinal space between them.
+  {  // front
+    const double diff_x = orig_right_bound_2d.front().x() - orig_left_bound_2d.front().x();
+    const double diff_y = orig_right_bound_2d.front().y() - orig_left_bound_2d.front().y();
+    const double theta = std::atan2(diff_y, diff_x);
+    expanded_right_bound_2d.front().x() =
+      orig_right_bound_2d.front().x() - right_offset * std::cos(theta);
+    expanded_right_bound_2d.front().y() =
+      orig_right_bound_2d.front().y() - right_offset * std::sin(theta);
+    expanded_left_bound_2d.front().x() =
+      orig_left_bound_2d.front().x() - left_offset * std::cos(theta);
+    expanded_left_bound_2d.front().y() =
+      orig_left_bound_2d.front().y() - left_offset * std::sin(theta);
+  }
+  {  // back
+    const double diff_x = orig_right_bound_2d.back().x() - orig_left_bound_2d.back().x();
+    const double diff_y = orig_right_bound_2d.back().y() - orig_left_bound_2d.back().y();
+    const double theta = std::atan2(diff_y, diff_x);
+    expanded_right_bound_2d.back().x() =
+      orig_right_bound_2d.back().x() - right_offset * std::cos(theta);
+    expanded_right_bound_2d.back().y() =
+      orig_right_bound_2d.back().y() - right_offset * std::sin(theta);
+    expanded_left_bound_2d.back().x() =
+      orig_left_bound_2d.back().x() - left_offset * std::cos(theta);
+    expanded_left_bound_2d.back().y() =
+      orig_left_bound_2d.back().y() - left_offset * std::sin(theta);
+  }
+
   rclcpp::Clock clock{RCL_ROS_TIME};
   try {
     checkForInversion(orig_left_bound_2d, expanded_left_bound_2d, left_offset);
