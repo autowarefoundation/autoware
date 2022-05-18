@@ -10,7 +10,7 @@ ament_auto_add_library(vehicle_cmd_gate_node SHARED
 )
 
 rclcpp_components_register_node(vehicle_cmd_gate_node
-  PLUGIN "VehicleCmdGate"
+  PLUGIN "vehicle_cmd_gate::VehicleCmdGate"
   EXECUTABLE vehicle_cmd_gate
 )
 

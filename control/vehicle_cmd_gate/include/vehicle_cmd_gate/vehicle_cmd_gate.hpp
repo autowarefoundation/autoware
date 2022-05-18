@@ -40,14 +40,34 @@
 
 #include <memory>
 
+namespace vehicle_cmd_gate
+{
+
+using autoware_auto_control_msgs::msg::AckermannControlCommand;
+using autoware_auto_system_msgs::msg::EmergencyState;
+using autoware_auto_vehicle_msgs::msg::GearCommand;
+using autoware_auto_vehicle_msgs::msg::HazardLightsCommand;
+using autoware_auto_vehicle_msgs::msg::SteeringReport;
+using autoware_auto_vehicle_msgs::msg::TurnIndicatorsCommand;
+using tier4_control_msgs::msg::GateMode;
+using tier4_external_api_msgs::msg::Emergency;
+using tier4_external_api_msgs::msg::Heartbeat;
+using tier4_external_api_msgs::srv::SetEmergency;
+using tier4_vehicle_msgs::msg::VehicleEmergencyStamped;
+
+using diagnostic_msgs::msg::DiagnosticStatus;
+using nav_msgs::msg::Odometry;
+
+using EngageMsg = autoware_auto_vehicle_msgs::msg::Engage;
+using EngageSrv = tier4_external_api_msgs::srv::Engage;
+
 struct Commands
 {
-  autoware_auto_control_msgs::msg::AckermannControlCommand control;
-  autoware_auto_vehicle_msgs::msg::TurnIndicatorsCommand turn_indicator;
-  autoware_auto_vehicle_msgs::msg::HazardLightsCommand hazard_light;
-  autoware_auto_vehicle_msgs::msg::GearCommand gear;
-  explicit Commands(
-    const uint8_t & default_gear = autoware_auto_vehicle_msgs::msg::GearCommand::PARK)
+  AckermannControlCommand control;
+  TurnIndicatorsCommand turn_indicator;
+  HazardLightsCommand hazard_light;
+  GearCommand gear;
+  explicit Commands(const uint8_t & default_gear = GearCommand::PARK)
   {
     gear.command = default_gear;
   }
@@ -55,43 +75,35 @@ struct Commands
 
 class VehicleCmdGate : public rclcpp::Node
 {
-  using VehicleEmergencyStamped = tier4_vehicle_msgs::msg::VehicleEmergencyStamped;
-
 public:
   explicit VehicleCmdGate(const rclcpp::NodeOptions & node_options);
 
 private:
   // Publisher
   rclcpp::Publisher<VehicleEmergencyStamped>::SharedPtr vehicle_cmd_emergency_pub_;
-  rclcpp::Publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>::SharedPtr
-    control_cmd_pub_;
-  rclcpp::Publisher<autoware_auto_vehicle_msgs::msg::GearCommand>::SharedPtr gear_cmd_pub_;
-  rclcpp::Publisher<autoware_auto_vehicle_msgs::msg::TurnIndicatorsCommand>::SharedPtr
-    turn_indicator_cmd_pub_;
-  rclcpp::Publisher<autoware_auto_vehicle_msgs::msg::HazardLightsCommand>::SharedPtr
-    hazard_light_cmd_pub_;
-  rclcpp::Publisher<tier4_control_msgs::msg::GateMode>::SharedPtr gate_mode_pub_;
-  rclcpp::Publisher<autoware_auto_vehicle_msgs::msg::Engage>::SharedPtr engage_pub_;
+  rclcpp::Publisher<AckermannControlCommand>::SharedPtr control_cmd_pub_;
+  rclcpp::Publisher<GearCommand>::SharedPtr gear_cmd_pub_;
+  rclcpp::Publisher<TurnIndicatorsCommand>::SharedPtr turn_indicator_cmd_pub_;
+  rclcpp::Publisher<HazardLightsCommand>::SharedPtr hazard_light_cmd_pub_;
+  rclcpp::Publisher<GateMode>::SharedPtr gate_mode_pub_;
+  rclcpp::Publisher<EngageMsg>::SharedPtr engage_pub_;
 
   // Subscription
-  rclcpp::Subscription<autoware_auto_system_msgs::msg::EmergencyState>::SharedPtr
-    emergency_state_sub_;
-  rclcpp::Subscription<tier4_external_api_msgs::msg::Heartbeat>::SharedPtr
-    external_emergency_stop_heartbeat_sub_;
-  rclcpp::Subscription<tier4_control_msgs::msg::GateMode>::SharedPtr gate_mode_sub_;
-  rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::SteeringReport>::SharedPtr steer_sub_;
+  rclcpp::Subscription<EmergencyState>::SharedPtr emergency_state_sub_;
+  rclcpp::Subscription<Heartbeat>::SharedPtr external_emergency_stop_heartbeat_sub_;
+  rclcpp::Subscription<GateMode>::SharedPtr gate_mode_sub_;
+  rclcpp::Subscription<SteeringReport>::SharedPtr steer_sub_;
 
-  void onGateMode(tier4_control_msgs::msg::GateMode::ConstSharedPtr msg);
-  void onEmergencyState(autoware_auto_system_msgs::msg::EmergencyState::ConstSharedPtr msg);
-  void onExternalEmergencyStopHeartbeat(
-    tier4_external_api_msgs::msg::Heartbeat::ConstSharedPtr msg);
-  void onSteering(autoware_auto_vehicle_msgs::msg::SteeringReport::ConstSharedPtr msg);
+  void onGateMode(GateMode::ConstSharedPtr msg);
+  void onEmergencyState(EmergencyState::ConstSharedPtr msg);
+  void onExternalEmergencyStopHeartbeat(Heartbeat::ConstSharedPtr msg);
+  void onSteering(SteeringReport::ConstSharedPtr msg);
 
   bool is_engaged_;
   bool is_system_emergency_ = false;
   bool is_external_emergency_stop_ = false;
   double current_steer_ = 0;
-  tier4_control_msgs::msg::GateMode current_gate_mode_;
+  GateMode current_gate_mode_;
 
   // Heartbeat
   std::shared_ptr<rclcpp::Time> emergency_state_heartbeat_received_time_;
@@ -103,53 +115,35 @@ private:
 
   // Subscriber for auto
   Commands auto_commands_;
-  rclcpp::Subscription<autoware_auto_control_msgs::msg::AckermannControlCommand>::SharedPtr
-    auto_control_cmd_sub_;
-  rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::TurnIndicatorsCommand>::SharedPtr
-    auto_turn_indicator_cmd_sub_;
-  rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::HazardLightsCommand>::SharedPtr
-    auto_hazard_light_cmd_sub_;
-  rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::GearCommand>::SharedPtr auto_gear_cmd_sub_;
-  void onAutoCtrlCmd(autoware_auto_control_msgs::msg::AckermannControlCommand::ConstSharedPtr msg);
-  void onAutoTurnIndicatorsCmd(
-    autoware_auto_vehicle_msgs::msg::TurnIndicatorsCommand::ConstSharedPtr msg);
-  void onAutoHazardLightsCmd(
-    autoware_auto_vehicle_msgs::msg::HazardLightsCommand::ConstSharedPtr msg);
-  void onAutoShiftCmd(autoware_auto_vehicle_msgs::msg::GearCommand::ConstSharedPtr msg);
+  rclcpp::Subscription<AckermannControlCommand>::SharedPtr auto_control_cmd_sub_;
+  rclcpp::Subscription<TurnIndicatorsCommand>::SharedPtr auto_turn_indicator_cmd_sub_;
+  rclcpp::Subscription<HazardLightsCommand>::SharedPtr auto_hazard_light_cmd_sub_;
+  rclcpp::Subscription<GearCommand>::SharedPtr auto_gear_cmd_sub_;
+  void onAutoCtrlCmd(AckermannControlCommand::ConstSharedPtr msg);
+  void onAutoTurnIndicatorsCmd(TurnIndicatorsCommand::ConstSharedPtr msg);
+  void onAutoHazardLightsCmd(HazardLightsCommand::ConstSharedPtr msg);
+  void onAutoShiftCmd(GearCommand::ConstSharedPtr msg);
 
   // Subscription for external
   Commands remote_commands_;
-  rclcpp::Subscription<autoware_auto_control_msgs::msg::AckermannControlCommand>::SharedPtr
-    remote_control_cmd_sub_;
-  rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::TurnIndicatorsCommand>::SharedPtr
-    remote_turn_indicator_cmd_sub_;
-  rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::HazardLightsCommand>::SharedPtr
-    remote_hazard_light_cmd_sub_;
-  rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::GearCommand>::SharedPtr
-    remote_gear_cmd_sub_;
-  void onRemoteCtrlCmd(
-    autoware_auto_control_msgs::msg::AckermannControlCommand::ConstSharedPtr msg);
-  void onRemoteTurnIndicatorsCmd(
-    autoware_auto_vehicle_msgs::msg::TurnIndicatorsCommand::ConstSharedPtr msg);
-  void onRemoteHazardLightsCmd(
-    autoware_auto_vehicle_msgs::msg::HazardLightsCommand::ConstSharedPtr msg);
-  void onRemoteShiftCmd(autoware_auto_vehicle_msgs::msg::GearCommand::ConstSharedPtr msg);
+  rclcpp::Subscription<AckermannControlCommand>::SharedPtr remote_control_cmd_sub_;
+  rclcpp::Subscription<TurnIndicatorsCommand>::SharedPtr remote_turn_indicator_cmd_sub_;
+  rclcpp::Subscription<HazardLightsCommand>::SharedPtr remote_hazard_light_cmd_sub_;
+  rclcpp::Subscription<GearCommand>::SharedPtr remote_gear_cmd_sub_;
+  void onRemoteCtrlCmd(AckermannControlCommand::ConstSharedPtr msg);
+  void onRemoteTurnIndicatorsCmd(TurnIndicatorsCommand::ConstSharedPtr msg);
+  void onRemoteHazardLightsCmd(HazardLightsCommand::ConstSharedPtr msg);
+  void onRemoteShiftCmd(GearCommand::ConstSharedPtr msg);
 
   // Subscription for emergency
   Commands emergency_commands_;
-  rclcpp::Subscription<autoware_auto_control_msgs::msg::AckermannControlCommand>::SharedPtr
-    emergency_control_cmd_sub_;
-  rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::HazardLightsCommand>::SharedPtr
-    emergency_hazard_light_cmd_sub_;
-  rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::GearCommand>::SharedPtr
-    emergency_gear_cmd_sub_;
-  void onEmergencyCtrlCmd(
-    autoware_auto_control_msgs::msg::AckermannControlCommand::ConstSharedPtr msg);
-  void onEmergencyTurnIndicatorsCmd(
-    autoware_auto_vehicle_msgs::msg::TurnIndicatorsCommand::ConstSharedPtr msg);
-  void onEmergencyHazardLightsCmd(
-    autoware_auto_vehicle_msgs::msg::HazardLightsCommand::ConstSharedPtr msg);
-  void onEmergencyShiftCmd(autoware_auto_vehicle_msgs::msg::GearCommand::ConstSharedPtr msg);
+  rclcpp::Subscription<AckermannControlCommand>::SharedPtr emergency_control_cmd_sub_;
+  rclcpp::Subscription<HazardLightsCommand>::SharedPtr emergency_hazard_light_cmd_sub_;
+  rclcpp::Subscription<GearCommand>::SharedPtr emergency_gear_cmd_sub_;
+  void onEmergencyCtrlCmd(AckermannControlCommand::ConstSharedPtr msg);
+  void onEmergencyTurnIndicatorsCmd(TurnIndicatorsCommand::ConstSharedPtr msg);
+  void onEmergencyHazardLightsCmd(HazardLightsCommand::ConstSharedPtr msg);
+  void onEmergencyShiftCmd(GearCommand::ConstSharedPtr msg);
 
   // Parameter
   double update_period_;
@@ -163,7 +157,7 @@ private:
   // Service
   rclcpp::Service<tier4_external_api_msgs::srv::Engage>::SharedPtr srv_engage_;
   rclcpp::Service<tier4_external_api_msgs::srv::SetEmergency>::SharedPtr srv_external_emergency_;
-  rclcpp::Publisher<tier4_external_api_msgs::msg::Emergency>::SharedPtr pub_external_emergency_;
+  rclcpp::Publisher<Emergency>::SharedPtr pub_external_emergency_;
   void onEngageService(
     const tier4_external_api_msgs::srv::Engage::Request::SharedPtr request,
     const tier4_external_api_msgs::srv::Engage::Response::SharedPtr response);
@@ -173,10 +167,10 @@ private:
     const std::shared_ptr<tier4_external_api_msgs::srv::SetEmergency::Response> response);
 
   // TODO(Takagi, Isamu): deprecated
-  rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::Engage>::SharedPtr engage_sub_;
+  rclcpp::Subscription<EngageMsg>::SharedPtr engage_sub_;
   rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr srv_external_emergency_stop_;
   rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr srv_clear_external_emergency_stop_;
-  void onEngage(autoware_auto_vehicle_msgs::msg::Engage::ConstSharedPtr msg);
+  void onEngage(EngageMsg::ConstSharedPtr msg);
   bool onSetExternalEmergencyStopService(
     const std::shared_ptr<rmw_request_id_t> req_header,
     const std::shared_ptr<std_srvs::srv::Trigger::Request> req,
@@ -199,23 +193,22 @@ private:
   void checkExternalEmergencyStop(diagnostic_updater::DiagnosticStatusWrapper & stat);
 
   // Algorithm
-  autoware_auto_control_msgs::msg::AckermannControlCommand prev_control_cmd_;
-  autoware_auto_control_msgs::msg::AckermannControlCommand createStopControlCmd() const;
-  autoware_auto_control_msgs::msg::AckermannControlCommand createEmergencyStopControlCmd() const;
+  AckermannControlCommand prev_control_cmd_;
+  AckermannControlCommand createStopControlCmd() const;
+  AckermannControlCommand createEmergencyStopControlCmd() const;
 
   std::shared_ptr<rclcpp::Time> prev_time_;
   double getDt();
 
   VehicleCmdFilter filter_;
-  autoware_auto_control_msgs::msg::AckermannControlCommand filterControlCommand(
-    const autoware_auto_control_msgs::msg::AckermannControlCommand & msg);
+  AckermannControlCommand filterControlCommand(const AckermannControlCommand & msg);
 
   // Start request service
   struct StartRequest
   {
   private:
     static constexpr double eps = 1e-3;
-    using ControlCommandStamped = autoware_auto_control_msgs::msg::AckermannControlCommand;
+    using ControlCommandStamped = AckermannControlCommand;
 
   public:
     StartRequest(
@@ -230,7 +223,7 @@ private:
     bool is_start_requesting_;
     bool is_start_accepted_;
     bool is_start_cancelled_;
-    nav_msgs::msg::Odometry current_twist_;
+    Odometry current_twist_;
 
     std::shared_ptr<rclcpp::Time> last_running_time_;
     double stopped_state_entry_duration_time_;
@@ -238,11 +231,12 @@ private:
     rclcpp::Node * node_;
     rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr request_start_cli_;
     rclcpp::Publisher<tier4_debug_msgs::msg::BoolStamped>::SharedPtr request_start_pub_;
-    rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr current_twist_sub_;
-    void onCurrentTwist(nav_msgs::msg::Odometry::ConstSharedPtr msg);
+    rclcpp::Subscription<Odometry>::SharedPtr current_twist_sub_;
+    void onCurrentTwist(Odometry::ConstSharedPtr msg);
   };
 
   std::unique_ptr<StartRequest> start_request_;
 };
 
+}  // namespace vehicle_cmd_gate
 #endif  // VEHICLE_CMD_GATE__VEHICLE_CMD_GATE_HPP_
