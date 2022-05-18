@@ -21,7 +21,7 @@ namespace image_projection_based_fusion
 {
 
 RoiDetectedObjectFusionNode::RoiDetectedObjectFusionNode(const rclcpp::NodeOptions & options)
-: FusionNode<DetectedObjects>("roi_detected_object_fusion", options)
+: FusionNode<DetectedObjects, DetectedObject>("roi_detected_object_fusion", options)
 {
   use_iou_x_ = declare_parameter("use_iou_x", false);
   use_iou_y_ = declare_parameter("use_iou_y", false);
@@ -78,6 +78,12 @@ void RoiDetectedObjectFusionNode::generateDetectedObjectRois(
     std::vector<Eigen::Vector3d> vertices_camera_coord;
     {
       const auto & object = input_objects.at(obj_i);
+
+      // filter point out of scope
+      if (debugger_ && out_of_scope(object)) {
+        continue;
+      }
+
       std::vector<Eigen::Vector3d> vertices;
       objectToVertices(object.kinematics.pose_with_covariance.pose, object.shape, vertices);
       transformPoints(vertices, object2camera_affine, vertices_camera_coord);
@@ -169,6 +175,29 @@ void RoiDetectedObjectFusionNode::updateDetectedObjectClassification(
       output_objects.at(object_i).classification = image_roi.object.classification;
     }
   }
+}
+
+bool RoiDetectedObjectFusionNode::out_of_scope(const DetectedObject & obj)
+{
+  bool is_out = true;
+  auto pose = obj.kinematics.pose_with_covariance.pose;
+
+  auto valid_point = [](float p, float min_num, float max_num) -> bool {
+    return (p > min_num) && (p < max_num);
+  };
+
+  if (!valid_point(pose.position.x, filter_scope_minx_, filter_scope_maxx_)) {
+    return is_out;
+  }
+  if (!valid_point(pose.position.y, filter_scope_miny_, filter_scope_maxy_)) {
+    return is_out;
+  }
+  if (!valid_point(pose.position.z, filter_scope_minz_, filter_scope_maxz_)) {
+    return is_out;
+  }
+
+  is_out = false;
+  return is_out;
 }
 
 }  // namespace image_projection_based_fusion

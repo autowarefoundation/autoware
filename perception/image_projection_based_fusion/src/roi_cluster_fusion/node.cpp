@@ -32,7 +32,7 @@ namespace image_projection_based_fusion
 {
 
 RoiClusterFusionNode::RoiClusterFusionNode(const rclcpp::NodeOptions & options)
-: FusionNode<DetectedObjectsWithFeature>("roi_cluster_fusion", options)
+: FusionNode<DetectedObjectsWithFeature, DetectedObjectWithFeature>("roi_cluster_fusion", options)
 {
   use_iou_x_ = declare_parameter("use_iou_x", true);
   use_iou_y_ = declare_parameter("use_iou_y", false);
@@ -82,6 +82,11 @@ void RoiClusterFusionNode::fuseOnSingleImage(
   std::map<std::size_t, RegionOfInterest> m_cluster_roi;
   for (std::size_t i = 0; i < input_cluster_msg.feature_objects.size(); ++i) {
     if (input_cluster_msg.feature_objects.at(i).feature.cluster.data.empty()) {
+      continue;
+    }
+
+    // filter point out of scope
+    if (debugger_ && out_of_scope(input_cluster_msg.feature_objects.at(i))) {
       continue;
     }
 
@@ -170,6 +175,36 @@ void RoiClusterFusionNode::fuseOnSingleImage(
     debugger_->obstacle_points_ = debug_image_points;
     debugger_->publishImage(image_id, input_roi_msg.header.stamp);
   }
+}
+
+bool RoiClusterFusionNode::out_of_scope(const DetectedObjectWithFeature & obj)
+{
+  auto cluster = obj.feature.cluster;
+  bool is_out = false;
+  auto valid_point = [](float p, float min_num, float max_num) -> bool {
+    return (p > min_num) && (p < max_num);
+  };
+
+  for (sensor_msgs::PointCloud2ConstIterator<float> iter_x(cluster, "x"), iter_y(cluster, "y"),
+       iter_z(cluster, "z");
+       iter_x != iter_x.end(); ++iter_x, ++iter_y, ++iter_z) {
+    if (!valid_point(*iter_x, filter_scope_minx_, filter_scope_maxx_)) {
+      is_out = true;
+      break;
+    }
+
+    if (!valid_point(*iter_y, filter_scope_miny_, filter_scope_maxy_)) {
+      is_out = true;
+      break;
+    }
+
+    if (!valid_point(*iter_z, filter_scope_minz_, filter_scope_maxz_)) {
+      is_out = true;
+      break;
+    }
+  }
+
+  return is_out;
 }
 
 }  // namespace image_projection_based_fusion

@@ -22,7 +22,8 @@
 namespace image_projection_based_fusion
 {
 
-class RoiClusterFusionNode : public FusionNode<DetectedObjectsWithFeature>
+class RoiClusterFusionNode
+: public FusionNode<DetectedObjectsWithFeature, DetectedObjectWithFeature>
 {
 public:
   explicit RoiClusterFusionNode(const rclcpp::NodeOptions & options);
@@ -41,6 +42,8 @@ protected:
   bool use_iou_{false};
   bool use_cluster_semantic_type_{false};
   float iou_threshold_{0.0f};
+
+  bool out_of_scope(const DetectedObjectWithFeature & obj);
 };
 
 }  // namespace image_projection_based_fusion
