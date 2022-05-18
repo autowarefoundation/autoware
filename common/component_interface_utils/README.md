@@ -24,3 +24,9 @@ This is a utility package that provides the following features:
    component_interface_utils::Service<SampleService>::SharedPtr srv_;
    srv_ = component_interface_utils::create_service<SampleService>(node, ...);
    ```
+
+## Design
+
+This package provides the wrappers for the interface classes of rclcpp.
+The wrappers limit the usage of the original class to enforce the processing recommended by the component interface.
+Do not inherit the class of rclcpp, and forward or wrap the member function that is allowed to be used.

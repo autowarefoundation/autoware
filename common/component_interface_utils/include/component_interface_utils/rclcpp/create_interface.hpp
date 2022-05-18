@@ -15,7 +15,11 @@
 #ifndef COMPONENT_INTERFACE_UTILS__RCLCPP__CREATE_INTERFACE_HPP_
 #define COMPONENT_INTERFACE_UTILS__RCLCPP__CREATE_INTERFACE_HPP_
 
+#include <component_interface_utils/rclcpp/service_client.hpp>
 #include <component_interface_utils/rclcpp/service_server.hpp>
+#include <component_interface_utils/rclcpp/topic_publisher.hpp>
+#include <component_interface_utils/rclcpp/topic_subscription.hpp>
+#include <component_interface_utils/specs.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <utility>
@@ -23,12 +27,23 @@
 namespace component_interface_utils
 {
 
+/// Create a client wrapper for logging. This is a private implementation.
+template <class SpecT, class NodeT>
+typename Client<SpecT>::SharedPtr create_client_impl(
+  NodeT * node, rclcpp::CallbackGroup::SharedPtr group = nullptr)
+{
+  // This function is a wrapper for the following.
+  // https://github.com/ros2/rclcpp/blob/48068130edbb43cdd61076dc1851672ff1a80408/rclcpp/include/rclcpp/node.hpp#L253-L265
+  auto client = node->template create_client<typename SpecT::Service>(
+    SpecT::name, rmw_qos_profile_services_default, group);
+  return Client<SpecT>::make_shared(client, node->get_logger());
+}
+
 /// Create a service wrapper for logging. This is a private implementation.
 template <class SpecT, class NodeT, class CallbackT>
 typename Service<SpecT>::SharedPtr create_service_impl(
   NodeT * node, CallbackT && callback, rclcpp::CallbackGroup::SharedPtr group = nullptr)
 {
-  // Use a node pointer because shared_from_this cannot be used in constructor.
   // This function is a wrapper for the following.
   // https://github.com/ros2/rclcpp/blob/48068130edbb43cdd61076dc1851672ff1a80408/rclcpp/include/rclcpp/node.hpp#L267-L281
   auto wrapped = Service<SpecT>::wrap(callback, node->get_logger());
@@ -37,23 +52,27 @@ typename Service<SpecT>::SharedPtr create_service_impl(
   return Service<SpecT>::make_shared(service);
 }
 
-/// Create a service wrapper for logging. This is for lambda or bound function.
-template <class SpecT, class NodeT, class CallbackT>
-typename Service<SpecT>::SharedPtr create_service(
-  NodeT * node, CallbackT && callback, rclcpp::CallbackGroup::SharedPtr group = nullptr)
+/// Create a publisher using traits like services. This is a private implementation.
+template <class SpecT, class NodeT>
+typename Publisher<SpecT>::SharedPtr create_publisher_impl(NodeT * node)
 {
-  return create_service_impl<SpecT>(node, std::forward<CallbackT>(callback), group);
+  // This function is a wrapper for the following.
+  // https://github.com/ros2/rclcpp/blob/48068130edbb43cdd61076dc1851672ff1a80408/rclcpp/include/rclcpp/node.hpp#L167-L205
+  auto publisher =
+    node->template create_publisher<typename SpecT::Message>(SpecT::name, get_qos<SpecT>());
+  return Publisher<SpecT>::make_shared(publisher);
 }
 
-/// Create a service wrapper for logging. This is for member function of node.
-template <class SpecT, class NodeT>
-typename Service<SpecT>::SharedPtr create_service(
-  NodeT * node, typename Service<SpecT>::template CallbackType<NodeT> callback,
-  rclcpp::CallbackGroup::SharedPtr group = nullptr)
+/// Create a subscription using traits like services. This is a private implementation.
+template <class SpecT, class NodeT, class CallbackT>
+typename Subscription<SpecT>::SharedPtr create_subscription_impl(
+  NodeT * node, CallbackT && callback)
 {
-  using std::placeholders::_1;
-  using std::placeholders::_2;
-  return create_service_impl<SpecT>(node, std::bind(callback, node, _1, _2), group);
+  // This function is a wrapper for the following.
+  // https://github.com/ros2/rclcpp/blob/48068130edbb43cdd61076dc1851672ff1a80408/rclcpp/include/rclcpp/node.hpp#L207-L238
+  auto subscription = node->template create_subscription<typename SpecT::Message>(
+    SpecT::name, get_qos<SpecT>(), std::forward<CallbackT>(callback));
+  return Subscription<SpecT>::make_shared(subscription);
 }
 
 }  // namespace component_interface_utils

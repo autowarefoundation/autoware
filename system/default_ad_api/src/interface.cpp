@@ -12,31 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DEFAULT_AD_API__NODES__INTERFACE_VERSION_HPP_
-#define DEFAULT_AD_API__NODES__INTERFACE_VERSION_HPP_
-
-#include "default_ad_api/specs/interface/version.hpp"
-
-#include <component_interface_utils/rclcpp.hpp>
-#include <rclcpp/rclcpp.hpp>
+#include "interface.hpp"
 
 namespace default_ad_api
 {
 
-class InterfaceVersionNode : public rclcpp::Node
+InterfaceNode::InterfaceNode(const rclcpp::NodeOptions & options) : Node("interface", options)
 {
-public:
-  explicit InterfaceVersionNode(const rclcpp::NodeOptions & options);
-
-private:
   using InterfaceVersion = autoware_ad_api_msgs::srv::InterfaceVersion;
 
-  component_interface_utils::Service<ad_api::interface::version::T>::SharedPtr srv_;
-  void onInterfaceVersion(
-    const InterfaceVersion::Request::SharedPtr request,
-    const InterfaceVersion::Response::SharedPtr response);
-};
+  const auto on_interface_version = [](SERVICE_ARG_NO_REQ(InterfaceVersion)) {
+    response->major = 0;
+    response->minor = 1;
+    response->patch = 0;
+  };
+
+  const auto node = component_interface_utils::NodeAdaptor(this);
+  node.init_srv(srv_, on_interface_version);
+}
 
 }  // namespace default_ad_api
 
-#endif  // DEFAULT_AD_API__NODES__INTERFACE_VERSION_HPP_
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(default_ad_api::InterfaceNode)

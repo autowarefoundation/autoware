@@ -5,10 +5,10 @@ find_package(autoware_cmake REQUIRED)
 autoware_package()
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
-  src/interface_version.cpp
+  src/interface.cpp
 )
 
-rclcpp_components_register_nodes(${PROJECT_NAME} "default_ad_api::InterfaceVersionNode")
+rclcpp_components_register_nodes(${PROJECT_NAME} "default_ad_api::InterfaceNode")
 
 if(BUILD_TESTING)
   add_launch_test(test/main.test.py)

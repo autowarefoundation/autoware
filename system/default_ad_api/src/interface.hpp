@@ -12,27 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "default_ad_api/nodes/interface_version.hpp"
+#ifndef INTERFACE_HPP_
+#define INTERFACE_HPP_
+
+#include "default_ad_api/specs/interface/version.hpp"
+#include "utils/types.hpp"
+
+#include <component_interface_utils/rclcpp.hpp>
+#include <rclcpp/rclcpp.hpp>
 
 namespace default_ad_api
 {
 
-InterfaceVersionNode::InterfaceVersionNode(const rclcpp::NodeOptions & options)
-: Node("interface_version", options)
+class InterfaceNode : public rclcpp::Node
 {
-  srv_ = component_interface_utils::create_service<ad_api::interface::version::T>(
-    this, &InterfaceVersionNode::onInterfaceVersion);
-}
+public:
+  explicit InterfaceNode(const rclcpp::NodeOptions & options);
 
-void InterfaceVersionNode::onInterfaceVersion(
-  const InterfaceVersion::Request::SharedPtr, const InterfaceVersion::Response::SharedPtr response)
-{
-  response->major = 0;
-  response->minor = 1;
-  response->patch = 0;
-}
+private:
+  Service<ad_api::interface::version::T>::SharedPtr srv_;
+};
 
 }  // namespace default_ad_api
 
-#include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(default_ad_api::InterfaceVersionNode)
+#endif  // INTERFACE_HPP_
