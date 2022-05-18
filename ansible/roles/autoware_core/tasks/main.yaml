@@ -1,5 +1,4 @@
 - name: Install gdown to download files from CMakeLists.txt
-  become: true
   ansible.builtin.pip:
     name:
       - gdown

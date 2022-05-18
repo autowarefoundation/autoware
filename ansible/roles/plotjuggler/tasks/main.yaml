@@ -1,6 +1,5 @@
 # Workaround for https://serverfault.com/questions/1099606/ansible-openssl-error-with-apt-module
 - name: Upgrade pyOpenSSL
-  become: true
   ansible.builtin.pip:
     name: pyOpenSSL
     state: latest

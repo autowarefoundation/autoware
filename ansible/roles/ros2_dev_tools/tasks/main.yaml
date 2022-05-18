@@ -18,7 +18,6 @@
     update_cache: true
 
 - name: Install pip packages
-  become: true
   ansible.builtin.pip:
     name:
       - flake8-blind-except
