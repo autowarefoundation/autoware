@@ -171,7 +171,7 @@ def launch_setup(context, *args, **kwargs):
     # vehicle cmd gate
     vehicle_cmd_gate_component = ComposableNode(
         package="vehicle_cmd_gate",
-        plugin="VehicleCmdGate",
+        plugin="vehicle_cmd_gate::VehicleCmdGate",
         name="vehicle_cmd_gate",
         remappings=[
             ("input/emergency_state", "/system/emergency/emergency_state"),
