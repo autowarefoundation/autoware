@@ -159,7 +159,7 @@ void usage()
 
 /**
  * @brief exchanges the values of 2 bytes
- * @param [inout] ptr a pointer to ATA string
+ * @param [inout] str a string reference to ATA string
  * @param [in] size size of ATA string
  * @note Each pair of bytes in an ATA string is swapped.
  * FIRMWARE REVISION field example
@@ -170,10 +170,10 @@ void usage()
  * 26   6720h (" g")
  * -> "abcdefg "
  */
-void swap_char(char * ptr, size_t size)
+void swap_char(std::string & str, size_t size)
 {
   for (auto i = 0U; i < size; i += 2U) {
-    std::swap(ptr[i], ptr[i + 1]);
+    std::swap(str[i], str[i + 1]);
   }
 }
 
@@ -219,17 +219,13 @@ int get_ata_identify(int fd, HDDInfo * info)
 
   // IDENTIFY DEVICE
   // Word 10..19 Serial number
-  char serial_number[20 + 1]{};
-  strncpy(serial_number, reinterpret_cast<char *>(data) + 20, 20);
-  swap_char(serial_number, 20);
-  info->serial_ = serial_number;
+  info->serial_ = std::string(reinterpret_cast<char *>(data) + 20, 20);
+  swap_char(info->serial_, 20);
   boost::trim(info->serial_);
 
   // Word 27..46 Model number
-  char model_number[40 + 1]{};
-  strncpy(model_number, reinterpret_cast<char *>(data) + 54, 40);
-  swap_char(model_number, 40);
-  info->model_ = model_number;
+  info->model_ = std::string(reinterpret_cast<char *>(data) + 54, 40);
+  swap_char(info->model_, 40);
   boost::trim(info->model_);
 
   return EXIT_SUCCESS;
@@ -338,15 +334,11 @@ int get_nvme_identify(int fd, HDDInfo * info)
 
   // Identify Controller Data Structure
   // Bytes 23:04 Serial Number (SN)
-  char serial_number[20 + 1]{};
-  strncpy(serial_number, data + 4, 20);
-  info->serial_ = serial_number;
+  info->serial_ = std::string(data + 4, 20);
   boost::trim(info->serial_);
 
   // Bytes 63:24 Model Number (MN)
-  char model_number[40 + 1]{};
-  strncpy(model_number, data + 24, 40);
-  info->model_ = model_number;
+  info->model_ = std::string(data + 24, 40);
   boost::trim(info->model_);
 
   return EXIT_SUCCESS;

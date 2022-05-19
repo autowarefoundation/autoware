@@ -4,9 +4,6 @@ project(system_monitor)
 find_package(autoware_cmake REQUIRED)
 autoware_package()
 
-# TODO: remove (https://github.com/autowarefoundation/autoware.universe/issues/851)
-add_compile_options(-Wno-stringop-truncation)
-
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 find_package(NVML)
 find_package(fmt REQUIRED)
