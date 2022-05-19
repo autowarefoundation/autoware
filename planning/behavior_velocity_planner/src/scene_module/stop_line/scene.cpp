@@ -207,14 +207,19 @@ bool StopLineModule::modifyPathVelocity(
   const auto & current_position = planner_data_->current_pose.pose.position;
   const PointWithSearchRangeIndex src_point_with_search_range_index =
     planning_utils::findFirstNearSearchRangeIndex(path->points, current_position);
-  const SearchRangeIndex dst_search_range =
+  SearchRangeIndex dst_search_range =
     planning_utils::getPathIndexRangeIncludeLaneId(*path, lane_id_);
+
+  // extend following and previous search range to avoid no collision
+  if (dst_search_range.max_idx < path->points.size() - 1) dst_search_range.max_idx++;
+  if (dst_search_range.min_idx > 0) dst_search_range.min_idx--;
 
   // Find collision
   const auto collision = findCollision(*path, stop_line, dst_search_range);
 
   // If no collision found, do nothing
   if (!collision) {
+    RCLCPP_WARN(logger_, "is no collision");
     return true;
   }
 
