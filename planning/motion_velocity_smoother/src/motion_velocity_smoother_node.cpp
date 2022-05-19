@@ -545,12 +545,12 @@ bool MotionVelocitySmootherNode::smoothVelocity(
     RCLCPP_WARN(get_logger(), "Fail to solve optimization.");
   }
 
+  // Set 0 velocity after input-stop-point
+  overwriteStopPoint(clipped, traj_smoothed);
+
   traj_smoothed.insert(
     traj_smoothed.begin(), traj_resampled->begin(),
     traj_resampled->begin() + *traj_resampled_closest);
-
-  // Set 0 velocity after input-stop-point
-  overwriteStopPoint(*traj_resampled, traj_smoothed);
 
   // For the endpoint of the trajectory
   if (!traj_smoothed.empty()) {
