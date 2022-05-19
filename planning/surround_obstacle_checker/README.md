@@ -2,16 +2,47 @@
 
 ## Purpose
 
-`surround_obstacle_checker` is a module to prevent moving if any obstacles is near stopping ego vehicle.
-This module runs only when ego vehicle is stopping.
+This module subscribes required data (ego-pose, obstacles, etc), and publishes zero velocity limit to keep stopping if any of stop conditions are satisfied.
 
 ## Inner-workings / Algorithms
 
 ### Flow chart
 
-![surround_obstacle_checker_flow](./media/surround_obstacle_checker_flow.svg)
+```plantuml
+@startuml
 
-![check_distance](./media/check_distance.drawio.svg)
+title surround obstacle checker
+start
+
+if (Check state) then
+  :State::STOP;
+
+  if (Is stop required?) then (yes)
+  else (no)
+    :Clear velocity limit;
+    :Set state to State::PASS;
+  endif
+
+else
+  :State::PASS;
+
+  if (Is stop required?) then (yes)
+    :Set velocity limit;
+    :Set state to State::STOP;
+  else (no)
+  endif
+
+endif
+
+:Publish stop reason;
+
+stop
+@enduml
+```
+
+<div align="center">
+  <img src="./media/check_distance.drawio.svg" width=80%>
+</div>
 
 ### Algorithms
 
@@ -49,7 +80,6 @@ As mentioned in stop condition section, it prevents chattering by changing thres
 
 | Name                                           | Type                                                   | Description                                                        |
 | ---------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------ |
-| `~/input/trajectory`                           | `autoware_auto_planning_msgs::msg::Trajectory`         | Reference trajectory                                               |
 | `/perception/obstacle_segmentation/pointcloud` | `sensor_msgs::msg::PointCloud2`                        | Pointcloud of obstacles which the ego-vehicle should stop or avoid |
 | `/perception/object_recognition/objects`       | `autoware_auto_perception_msgs::msg::PredictedObjects` | Dynamic objects                                                    |
 | `/localization/kinematic_state`                | `nav_msgs::msg::Odometry`                              | Current twist                                                      |
@@ -58,12 +88,13 @@ As mentioned in stop condition section, it prevents chattering by changing thres
 
 ### Output
 
-| Name                       | Type                                        | Description              |
-| -------------------------- | ------------------------------------------- | ------------------------ |
-| `~/output/trajectory`      | `autoware_auto_planning_msgs/Trajectory`    | Modified trajectory      |
-| `~/output/no_start_reason` | `diagnostic_msgs::msg::DiagnosticStatus`    | No start reason          |
-| `~/output/stop_reasons`    | `tier4_planning_msgs::msg::StopReasonArray` | Stop reasons             |
-| `~/debug/marker`           | `visualization_msgs::msg::MarkerArray`      | Marker for visualization |
+| Name                                    | Type                                                  | Description                  |
+| --------------------------------------- | ----------------------------------------------------- | ---------------------------- |
+| `~/output/velocity_limit_clear_command` | `tier4_planning_msgs::msg::VelocityLimitClearCommand` | Velocity limit clear command |
+| `~/output/max_velocity`                 | `tier4_planning_msgs::msg::VelocityLimit`             | Velocity limit command       |
+| `~/output/no_start_reason`              | `diagnostic_msgs::msg::DiagnosticStatus`              | No start reason              |
+| `~/output/stop_reasons`                 | `tier4_planning_msgs::msg::StopReasonArray`           | Stop reasons                 |
+| `~/debug/marker`                        | `visualization_msgs::msg::MarkerArray`                | Marker for visualization     |
 
 ## Parameters
 
@@ -75,6 +106,7 @@ As mentioned in stop condition section, it prevents chattering by changing thres
 | `surround_check_recover_distance` | `double` | If no object exists in this distance, transit to "non-surrounding-obstacle" status [m] | 0.8           |
 | `state_clear_time`                | `double` | Threshold to clear stop state [s]                                                      | 2.0           |
 | `stop_state_ego_speed`            | `double` | Threshold to check ego vehicle stopped [m/s]                                           | 0.1           |
+| `stop_state_entry_duration_time`  | `double` | Threshold to check ego vehicle stopped [s]                                             | 0.1           |
 
 ## Assumptions / Known limits
 
