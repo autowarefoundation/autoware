@@ -46,7 +46,6 @@ private:
   struct Anchor
   {
     geometry_msgs::msg::Pose pose;
-    double velocity;
   };
 
   struct ConstrainRectangles

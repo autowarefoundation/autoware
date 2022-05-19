@@ -42,11 +42,53 @@
 
 #include "boost/optional.hpp"
 
+#include <algorithm>
 #include <memory>
 #include <vector>
 
 namespace
 {
+template <typename T>
+boost::optional<geometry_msgs::msg::Pose> lerpPose(
+  const T & points, const geometry_msgs::msg::Point & target_pos, const size_t closest_seg_idx)
+{
+  constexpr double epsilon = 1e-6;
+
+  const double closest_to_target_dist =
+    tier4_autoware_utils::calcSignedArcLength(points, closest_seg_idx, target_pos);
+  const double seg_dist =
+    tier4_autoware_utils::calcSignedArcLength(points, closest_seg_idx, closest_seg_idx + 1);
+
+  const auto & closest_pose = points[closest_seg_idx].pose;
+  const auto & next_pose = points[closest_seg_idx + 1].pose;
+
+  geometry_msgs::msg::Pose interpolated_pose;
+  if (std::abs(seg_dist) < epsilon) {
+    interpolated_pose.position.x = next_pose.position.x;
+    interpolated_pose.position.y = next_pose.position.y;
+    interpolated_pose.position.z = next_pose.position.z;
+    interpolated_pose.orientation = next_pose.orientation;
+  } else {
+    const double ratio = closest_to_target_dist / seg_dist;
+    if (ratio < 0 || 1 < ratio) {
+      return {};
+    }
+
+    interpolated_pose.position.x =
+      interpolation::lerp(closest_pose.position.x, next_pose.position.x, ratio);
+    interpolated_pose.position.y =
+      interpolation::lerp(closest_pose.position.y, next_pose.position.y, ratio);
+    interpolated_pose.position.z =
+      interpolation::lerp(closest_pose.position.z, next_pose.position.z, ratio);
+
+    const double closest_yaw = tf2::getYaw(closest_pose.orientation);
+    const double next_yaw = tf2::getYaw(next_pose.orientation);
+    const double interpolated_yaw = interpolation::lerp(closest_yaw, next_yaw, ratio);
+    interpolated_pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(interpolated_yaw);
+  }
+  return interpolated_pose;
+}
+
 template <typename T>
 double lerpTwistX(
   const T & points, const geometry_msgs::msg::Point & target_pos, const size_t closest_seg_idx)
@@ -65,9 +107,12 @@ double lerpTwistX(
   const double closest_vel = points[closest_seg_idx].longitudinal_velocity_mps;
   const double next_vel = points[closest_seg_idx + 1].longitudinal_velocity_mps;
 
-  return std::abs(seg_dist) < epsilon
-           ? next_vel
-           : interpolation::lerp(closest_vel, next_vel, closest_to_target_dist / seg_dist);
+  if (std::abs(seg_dist) < epsilon) {
+    return next_vel;
+  }
+
+  const double ratio = std::min(1.0, std::max(0.0, closest_to_target_dist / seg_dist));
+  return interpolation::lerp(closest_vel, next_vel, ratio);
 }
 
 template <typename T>
@@ -211,6 +256,10 @@ private:
 
   Trajectories getPrevTrajs(
     const std::vector<autoware_auto_planning_msgs::msg::PathPoint> & path_points) const;
+
+  void calcVelocity(
+    const std::vector<autoware_auto_planning_msgs::msg::PathPoint> & path_points,
+    std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> & traj_points) const;
 
   void insertZeroVelocityOutsideDrivableArea(
     std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> & traj_points,

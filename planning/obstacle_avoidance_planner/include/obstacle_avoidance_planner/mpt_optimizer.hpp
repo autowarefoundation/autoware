@@ -231,13 +231,6 @@ private:
 
   void calcOrientation(std::vector<ReferencePoint> & ref_points) const;
 
-  void calcVelocity(std::vector<ReferencePoint> & ref_points) const;
-
-  void calcVelocity(
-    std::vector<ReferencePoint> & ref_points,
-    const std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> & points,
-    const double yaw_thresh) const;
-
   void calcCurvature(std::vector<ReferencePoint> & ref_points) const;
 
   void calcArcLength(std::vector<ReferencePoint> & ref_points) const;

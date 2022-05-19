@@ -354,15 +354,14 @@ int EBPathOptimizer::getNumFixedPoints(
 
 std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint>
 EBPathOptimizer::convertOptimizedPointsToTrajectory(
-  const std::vector<double> optimized_points, const std::vector<ConstrainRectangle> & constraints,
-  const int farthest_idx)
+  const std::vector<double> optimized_points,
+  [[maybe_unused]] const std::vector<ConstrainRectangle> & constraints, const int farthest_idx)
 {
   std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> traj_points;
   for (int i = 0; i <= farthest_idx; i++) {
     autoware_auto_planning_msgs::msg::TrajectoryPoint tmp_point;
     tmp_point.pose.position.x = optimized_points[i];
     tmp_point.pose.position.y = optimized_points[i + eb_param_.num_sampling_points_for_eb];
-    tmp_point.longitudinal_velocity_mps = constraints[i].velocity;
     traj_points.push_back(tmp_point);
   }
   for (size_t i = 0; i < traj_points.size(); i++) {
@@ -462,7 +461,6 @@ EBPathOptimizer::Anchor EBPathOptimizer::getAnchor(
   Anchor anchor;
   anchor.pose.position = interpolated_points[interpolated_idx];
   anchor.pose.orientation = nearest_q;
-  anchor.velocity = path_points[nearest_idx].longitudinal_velocity_mps;
   return anchor;
 }
 
@@ -595,7 +593,6 @@ ConstrainRectangle EBPathOptimizer::getConstrainRectangle(
   bottom_right.y = -1 * clearance;
   constrain_range.bottom_right =
     geometry_utils::transformToAbsoluteCoordinate2D(bottom_right, anchor.pose);
-  constrain_range.velocity = anchor.velocity;
   return constrain_range;
 }
 
@@ -608,6 +605,5 @@ ConstrainRectangle EBPathOptimizer::getConstrainRectangle(
   rect.top_right = tier4_autoware_utils::calcOffsetPose(anchor.pose, max_x, min_y, 0.0).position;
   rect.bottom_left = tier4_autoware_utils::calcOffsetPose(anchor.pose, min_x, max_y, 0.0).position;
   rect.bottom_right = tier4_autoware_utils::calcOffsetPose(anchor.pose, min_x, min_y, 0.0).position;
-  rect.velocity = anchor.velocity;
   return rect;
 }

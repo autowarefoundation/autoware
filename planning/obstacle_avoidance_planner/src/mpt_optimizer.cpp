@@ -338,7 +338,6 @@ std::vector<ReferencePoint> MPTOptimizer::getReferencePoints(
     // set some information to reference points considering fix kinematics
     trimPoints(ref_points);
     calcOrientation(ref_points);
-    calcVelocity(ref_points, smoothed_points, traj_param_.delta_yaw_threshold_for_closest_point);
     calcCurvature(ref_points);
     calcArcLength(ref_points);
     calcPlanningFromEgo(
@@ -1146,7 +1145,6 @@ std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> MPTOptimizer::get
     autoware_auto_planning_msgs::msg::TrajectoryPoint traj_point;
     traj_point.pose = calcVehiclePose(ref_point, lat_error, yaw_error, 0.0);
 
-    traj_point.longitudinal_velocity_mps = ref_point.v;
     traj_points.push_back(traj_point);
 
     {  // for debug visualization
@@ -1214,21 +1212,6 @@ void MPTOptimizer::calcOrientation(std::vector<ReferencePoint> & ref_points) con
     }
 
     ref_points.at(i).yaw = yaw_angles.at(i);
-  }
-}
-
-void MPTOptimizer::calcVelocity(
-  std::vector<ReferencePoint> & ref_points,
-  const std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> & points,
-  const double yaw_thresh) const
-{
-  const auto ref_points_with_yaw =
-    points_utils::convertToPosesWithYawEstimation(points_utils::convertToPoints(ref_points));
-  for (size_t i = 0; i < ref_points.size(); i++) {
-    ref_points.at(i).v =
-      points[findNearestIndexWithSoftYawConstraints(
-               points_utils::convertToPoints(points), ref_points_with_yaw.at(i), yaw_thresh)]
-        .longitudinal_velocity_mps;
   }
 }
 
