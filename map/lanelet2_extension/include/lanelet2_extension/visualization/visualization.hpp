@@ -84,6 +84,16 @@ void pushLineStringMarker(
   const std_msgs::msg::ColorRGBA c, const float lss = 0.1);
 
 /**
+ * [pushArrowMarkerArray pushes marker to visualize arrows]
+ * @param marker_array     [output marker array message]
+ * @param ls         [input linestring]
+ * @param c          [color of the marker]
+ */
+void pushArrowMarkerArray(
+  visualization_msgs::msg::MarkerArray * marker_array, const lanelet::ConstLineString3d & ls,
+  const std::string frame_id, const std::string ns, const std_msgs::msg::ColorRGBA c);
+
+/**
  * [initTrafficLightTriangleMarker initializes marker to visualize shape of traffic
  * lights]
  * @param marker   [created marker]
