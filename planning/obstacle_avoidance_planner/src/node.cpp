@@ -82,7 +82,7 @@ bool isPathShapeChanged(
   // calculate lateral deviations between truncated path_points and prev_path_points
   for (const auto & prev_point : truncated_prev_points) {
     const double dist =
-      tier4_autoware_utils::calcLateralOffset(truncated_points, prev_point.pose.position);
+      std::abs(tier4_autoware_utils::calcLateralOffset(truncated_points, prev_point.pose.position));
     if (dist > max_path_shape_change_dist) {
       return true;
     }
@@ -976,7 +976,8 @@ bool ObstacleAvoidancePlanner::checkReplan(
         current_ego_pose_, path_points, prev_path_points_ptr_, max_mpt_length,
         max_path_shape_change_dist_for_replan_,
         traj_param_.delta_yaw_threshold_for_closest_point)) {
-    RCLCPP_INFO(get_logger(), "Replan since path shape was changed.");
+    RCLCPP_INFO(get_logger(), "Replan with resetting optimization since path shape was changed.");
+    resetPrevOptimization();
     return true;
   }
 
