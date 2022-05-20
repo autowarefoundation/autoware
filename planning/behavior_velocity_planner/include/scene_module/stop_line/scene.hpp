@@ -63,6 +63,8 @@ public:
   {
     double base_link2front;
     boost::optional<geometry_msgs::msg::Pose> stop_pose;
+    std::vector<LineString2d> search_segments;
+    LineString2d search_stopline;
   };
 
   struct PlannerParam
@@ -70,6 +72,7 @@ public:
     double stop_margin;
     double stop_check_dist;
     double stop_duration_sec;
+    bool show_stopline_collision_check;
   };
 
 public:

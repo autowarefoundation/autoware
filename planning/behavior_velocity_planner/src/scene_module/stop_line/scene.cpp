@@ -109,6 +109,18 @@ boost::optional<StopLineModule::SegmentIndexWithPoint2d> StopLineModule::findCol
 {
   const size_t min_search_index = std::max(static_cast<size_t>(0), search_index.min_idx);
   const size_t max_search_index = std::min(search_index.max_idx, path.points.size() - 1);
+
+  // for creating debug marker
+  if (planner_param_.show_stopline_collision_check) {
+    debug_data_.search_stopline = stop_line;
+    for (size_t i = min_search_index; i < max_search_index; ++i) {
+      const auto & p_front = path.points.at(i).point.pose.position;
+      const auto & p_back = path.points.at(i + 1).point.pose.position;
+      const LineString2d path_segment = {{p_front.x, p_front.y}, {p_back.x, p_back.y}};
+      debug_data_.search_segments.push_back(path_segment);
+    }
+  }
+
   for (size_t i = min_search_index; i < max_search_index; ++i) {
     const auto & p_front = path.points.at(i).point.pose.position;
     const auto & p_back = path.points.at(i + 1).point.pose.position;

@@ -93,6 +93,9 @@ StopLineModuleManager::StopLineModuleManager(rclcpp::Node & node)
   p.stop_margin = node.declare_parameter(ns + ".stop_margin", 0.0);
   p.stop_check_dist = node.declare_parameter(ns + ".stop_check_dist", 2.0);
   p.stop_duration_sec = node.declare_parameter(ns + ".stop_duration_sec", 1.0);
+  // debug
+  p.show_stopline_collision_check =
+    node.declare_parameter(ns + ".debug.show_stopline_collision_check", false);
 }
 
 void StopLineModuleManager::launchNewModules(

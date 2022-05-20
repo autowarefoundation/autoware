@@ -4,3 +4,5 @@
       stop_margin: 0.0
       stop_check_dist: 2.0
       stop_duration_sec: 1.0
+      debug:
+        show_stopline_collision_check: false            # [-] whether to show stopline collision
