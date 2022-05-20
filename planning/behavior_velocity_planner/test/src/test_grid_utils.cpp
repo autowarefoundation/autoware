@@ -38,73 +38,6 @@ struct indexEq
   }
 };
 
-using test::grid_param;
-
-TEST(isOcclusionSpotSquare, occlusion_spot_cell)
-{
-  using behavior_velocity_planner::grid_utils::isOcclusionSpotSquare;
-  using behavior_velocity_planner::grid_utils::OcclusionSpotSquare;
-  using behavior_velocity_planner::grid_utils::occlusion_cost_value::UNKNOWN;
-  // Prepare an occupancy grid with a single occlusion_spot
-  const int min_occlusion_spot_size = 2;
-
-  // case simple
-  {
-    /*
-        0 1 2 3 4
-      0
-      1   ?   ?
-      2   ? x ?
-      3   ? ?
-      4
-      */
-    grid_map::GridMap grid = test::generateGrid(5, 5, 1.0);
-    std::vector<grid_map::Index> unknown_cells = {{1, 1}, {1, 2}, {1, 3}, {2, 2},
-                                                  {2, 3}, {3, 1}, {3, 2}};
-    for (grid_map::Index index : unknown_cells) {
-      grid.at("layer", index) = UNKNOWN;
-    }
-
-    // occlusion spot (2,2)
-    for (int i = 0; i < grid.getLength().x(); ++i) {
-      for (int j = 0; j < grid.getLength().y(); ++j) {
-        OcclusionSpotSquare occlusion_spot;
-        bool found = isOcclusionSpotSquare(
-          occlusion_spot, grid["layer"], {i, j}, min_occlusion_spot_size, grid.getSize());
-        if (i == 2 && j == 2) {
-          EXPECT_TRUE(found);
-        } else {
-          EXPECT_FALSE(found);
-        }
-      }
-    }
-  }
-  // case noisy
-  {
-    std::cout << "TooNoisyCase->No OcclusionSpot 2by2" << std::endl
-              << "    0|1|2|3|4|                      " << std::endl
-              << "  0  |?| | | |                      " << std::endl
-              << "  1  |?| | | |                      " << std::endl
-              << "  2  |?|?|?| |                      " << std::endl;
-    grid_map::GridMap grid = test::generateGrid(5, 3, 1.0);
-    std::vector<grid_map::Index> unknown_cells = {{1, 0}, {1, 1}, {1, 2}, {2, 2}, {3, 2}};
-    for (grid_map::Index index : unknown_cells) {
-      grid.at("layer", index) = UNKNOWN;
-    }
-    for (int i = 0; i < grid.getLength().x(); ++i) {
-      for (int j = 0; j < grid.getLength().y(); ++j) {
-        OcclusionSpotSquare occlusion_spot;
-        bool found = isOcclusionSpotSquare(
-          occlusion_spot, grid["layer"], {i, j}, min_occlusion_spot_size, grid.getSize());
-        if (found) {
-          std::cout << "i: " << i << " j: " << j << " change algorithm or update test" << std::endl;
-        }
-        ASSERT_FALSE(found);
-      }
-    }
-  }
-}
-
 using behavior_velocity_planner::LineString2d;
 using behavior_velocity_planner::Point2d;
 using behavior_velocity_planner::Polygon2d;
@@ -214,4 +147,31 @@ TEST(compareTime, polygon_vs_line_iterator)
     // if (i < 4) std::cout << "line iterator [ms]: " << time << " :num: " << count << std::endl;
     count = 0;
   }
+}
+
+TEST(test, erode_with_custom_kernel)
+{
+  cv::Mat image;
+  cv::Mat cv_image(100, 100, CV_8UC1, cv::Scalar(0));
+  {
+    // line 1
+    cv::rectangle(cv_image, cv::Point(25, 5), cv::Point(75, 5), cv::Scalar(200), -1);
+
+    // line 2
+    cv::rectangle(cv_image, cv::Point(25, 15), cv::Point(75, 16), cv::Scalar(200), -1);
+    // line 3
+    cv::rectangle(cv_image, cv::Point(25, 25), cv::Point(75, 27), cv::Scalar(200), -1);
+    // line 4
+    cv::rectangle(cv_image, cv::Point(25, 35), cv::Point(75, 38), cv::Scalar(200), -1);
+    // line 5
+    cv::rectangle(cv_image, cv::Point(25, 45), cv::Point(75, 49), cv::Scalar(200), -1);
+  }
+  // cv::namedWindow("original", cv::WINDOW_NORMAL);
+  // cv::imshow("original", cv_image);
+  // cv::waitKey(100);
+  cv::Mat kernel(2, 2, CV_8UC1, cv::Scalar(1));
+  cv::erode(cv_image, cv_image, kernel, cv::Point(-1, -1), 4);
+  // cv::namedWindow("erode", cv::WINDOW_NORMAL);
+  // cv::imshow("erode", cv_image);
+  // cv::waitKey(5000);
 }

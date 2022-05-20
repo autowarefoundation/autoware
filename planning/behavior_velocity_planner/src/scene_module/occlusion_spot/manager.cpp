@@ -58,7 +58,6 @@ OcclusionSpotModuleManager::OcclusionSpotModuleManager(rclcpp::Node & node)
         "[behavior_velocity]: occlusion spot pass judge method has invalid argument"};
     }
   }
-  pp.filter_occupancy_grid = node.declare_parameter(ns + ".filter_occupancy_grid", false);
   pp.use_object_info = node.declare_parameter(ns + ".use_object_info", true);
   pp.use_moving_object_ray_cast = node.declare_parameter(ns + ".use_moving_object_ray_cast", true);
   pp.use_partition_lanelet = node.declare_parameter(ns + ".use_partition_lanelet", false);

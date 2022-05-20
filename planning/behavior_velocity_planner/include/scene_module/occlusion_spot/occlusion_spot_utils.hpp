@@ -121,7 +121,6 @@ struct PlannerParam
   bool is_show_occlusion;           // [-]
   bool is_show_cv_window;           // [-]
   bool is_show_processing_time;     // [-]
-  bool filter_occupancy_grid;       // [-]
   bool use_object_info;             // [-]
   bool use_moving_object_ray_cast;  // [-]
   bool use_partition_lanelet;       // [-]

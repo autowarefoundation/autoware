@@ -80,77 +80,21 @@ void addObjectsToGridMap(const std::vector<PredictedObject> & objs, grid_map::Gr
   }
 }
 
-bool isOcclusionSpotSquare(
-  OcclusionSpotSquare & occlusion_spot, const grid_map::Matrix & grid_data,
-  const grid_map::Index & cell, int min_occlusion_size, const grid_map::Size & grid_size)
-{
-  const int offset = (min_occlusion_size != 1) ? (min_occlusion_size - 1) : min_occlusion_size;
-  const int cell_max_x = grid_size.x() - 1;
-  const int cell_max_y = grid_size.y() - 1;
-  // Calculate ranges to check
-  int min_x = cell.x() - offset;
-  int max_x = cell.x() + offset;
-  int min_y = cell.y() - offset;
-  int max_y = cell.y() + offset;
-  if (min_x < 0) max_x += std::abs(min_x);
-  if (max_x > cell_max_x) min_x -= std::abs(max_x - cell_max_x);
-  if (min_y < 0) max_y += std::abs(min_y);
-  if (max_y > cell_max_y) min_y -= std::abs(max_y - cell_max_y);
-  // No occlusion_spot with size 0
-  if (min_occlusion_size == 0) {
-    return false;
-  }
-  /**
-   * @brief
-   *   (min_x,min_y)...(max_x,min_y)
-   *        .               .
-   *   (min_x,max_y)...(max_x,max_y)
-   */
-  // Ensure we stay inside the grid
-  min_x = std::max(0, min_x);
-  max_x = std::min(cell_max_x, max_x);
-  min_y = std::max(0, min_y);
-  max_y = std::min(cell_max_y, max_y);
-  int not_unknown_count = 0;
-  if (grid_data(cell.x(), cell.y()) != grid_utils::occlusion_cost_value::UNKNOWN) {
-    return false;
-  }
-  for (int x = min_x; x <= max_x; ++x) {
-    for (int y = min_y; y <= max_y; ++y) {
-      // if the value is not unknown value return false
-      if (grid_data(x, y) != grid_utils::occlusion_cost_value::UNKNOWN) {
-        not_unknown_count++;
-      }
-      /**
-       * @brief case pass o: unknown x: freespace or occupied
-       *   oxx oxo oox xxx oxo oxo
-       *   oox oxx oox ooo oox oxo ... etc
-       *   ooo ooo oox ooo xoo oxo
-       */
-      if (not_unknown_count > min_occlusion_size + 1) return false;
-    }
-  }
-  occlusion_spot.min_occlusion_size = min_occlusion_size;
-  occlusion_spot.index = cell;
-  return true;
-}
-
 void findOcclusionSpots(
   std::vector<grid_map::Position> & occlusion_spot_positions, const grid_map::GridMap & grid,
-  const Polygon2d & polygon, double min_size)
+  const Polygon2d & polygon, [[maybe_unused]] double min_size)
 {
   const grid_map::Matrix & grid_data = grid["layer"];
-  const int min_occlusion_spot_size = std::max(0.0, std::floor(min_size / grid.getResolution()));
   grid_map::Polygon grid_polygon;
   for (const auto & point : polygon.outer()) {
     grid_polygon.addVertex({point.x(), point.y()});
   }
   for (grid_map::PolygonIterator iterator(grid, grid_polygon); !iterator.isPastEnd(); ++iterator) {
-    OcclusionSpotSquare occlusion_spot_square;
-    if (isOcclusionSpotSquare(
-          occlusion_spot_square, grid_data, *iterator, min_occlusion_spot_size, grid.getSize())) {
-      if (grid.getPosition(occlusion_spot_square.index, occlusion_spot_square.position)) {
-        occlusion_spot_positions.emplace_back(occlusion_spot_square.position);
+    const grid_map::Index & index = *iterator;
+    if (grid_data(index.x(), index.y()) == grid_utils::occlusion_cost_value::UNKNOWN) {
+      grid_map::Position occlusion_spot_position;
+      if (grid.getPosition(index, occlusion_spot_position)) {
+        occlusion_spot_positions.emplace_back(occlusion_spot_position);
       }
     }
   }
@@ -196,45 +140,6 @@ bool isCollisionFree(
     return false;
   }
   return true;
-}
-
-void getCornerPositions(
-  std::vector<grid_map::Position> & corner_positions, const grid_map::GridMap & grid,
-  const OcclusionSpotSquare & occlusion_spot_square)
-{
-  // Special case with size = 1: only one cell
-  if (occlusion_spot_square.min_occlusion_size == 1) {
-    corner_positions.emplace_back(occlusion_spot_square.position);
-    return;
-  }
-  std::vector<grid_map::Index> corner_indexes;
-  const int offset = (occlusion_spot_square.min_occlusion_size - 1) / 2;
-  /**
-   * @brief relation of each grid position
-   *    bl br
-   *    tl tr
-   */
-  corner_indexes = {// bl
-                    grid_map::Index(
-                      std::max(0, occlusion_spot_square.index.x() - offset),
-                      std::max(0, occlusion_spot_square.index.y() - offset)),
-                    // br
-                    grid_map::Index(
-                      std::min(grid.getSize().x() - 1, occlusion_spot_square.index.x() + offset),
-                      std::max(0, occlusion_spot_square.index.y() - offset)),
-                    // tl
-                    grid_map::Index(
-                      std::max(0, occlusion_spot_square.index.x() - offset),
-                      std::min(grid.getSize().y() - 1, occlusion_spot_square.index.y() + offset)),
-                    // tr
-                    grid_map::Index(
-                      std::min(grid.getSize().x() - 1, occlusion_spot_square.index.x() + offset),
-                      std::min(grid.getSize().y() - 1, occlusion_spot_square.index.y() + offset))};
-  for (const grid_map::Index & corner_index : corner_indexes) {
-    grid_map::Position corner_position;
-    grid.getPosition(corner_index, corner_position);
-    corner_positions.emplace_back(corner_position);
-  }
 }
 
 boost::optional<Polygon2d> generateOcclusionPolygon(
@@ -453,24 +358,26 @@ void imageToOccupancyGrid(const cv::Mat & cv_image, nav_msgs::msg::OccupancyGrid
   }
 }
 void toQuantizedImage(
-  const nav_msgs::msg::OccupancyGrid & occupancy_grid, cv::Mat * cv_image, const GridParam & param)
+  const nav_msgs::msg::OccupancyGrid & occupancy_grid, cv::Mat * border_image,
+  cv::Mat * occlusion_image, const GridParam & param)
 {
-  const int width = cv_image->cols;
-  const int height = cv_image->rows;
+  const int width = border_image->cols;
+  const int height = border_image->rows;
   for (int x = width - 1; x >= 0; x--) {
     for (int y = height - 1; y >= 0; y--) {
       const int idx = (height - 1 - y) + (width - 1 - x) * height;
       unsigned char intensity = occupancy_grid.data.at(idx);
       if (intensity <= param.free_space_max) {
-        intensity = grid_utils::occlusion_cost_value::FREE_SPACE;
+        continue;
       } else if (param.free_space_max < intensity && intensity < param.occupied_min) {
         intensity = grid_utils::occlusion_cost_value::UNKNOWN_IMAGE;
+        occlusion_image->at<unsigned char>(y, x) = intensity;
       } else if (param.occupied_min <= intensity) {
         intensity = grid_utils::occlusion_cost_value::OCCUPIED_IMAGE;
+        border_image->at<unsigned char>(y, x) = intensity;
       } else {
         throw std::logic_error("behavior_velocity[occlusion_spot_grid]: invalid if clause");
       }
-      cv_image->at<unsigned char>(y, x) = intensity;
     }
   }
 }
@@ -479,43 +386,53 @@ void denoiseOccupancyGridCV(
   const OccupancyGrid::ConstSharedPtr occupancy_grid_ptr,
   const Polygons2d & stuck_vehicle_foot_prints, const Polygons2d & moving_vehicle_foot_prints,
   grid_map::GridMap & grid_map, const GridParam & param, const bool is_show_debug_window,
-  const bool filter_occupancy_grid, const bool use_object_footprints,
-  const bool use_object_ray_casts)
+  const int num_iter, const bool use_object_footprints, const bool use_object_ray_casts)
 {
   OccupancyGrid occupancy_grid = *occupancy_grid_ptr;
-  cv::Mat cv_image(
+  cv::Mat border_image(
     occupancy_grid.info.width, occupancy_grid.info.height, CV_8UC1,
-    cv::Scalar(grid_utils::occlusion_cost_value::OCCUPIED));
-  toQuantizedImage(occupancy_grid, &cv_image, param);
+    cv::Scalar(grid_utils::occlusion_cost_value::FREE_SPACE));
+  cv::Mat occlusion_image(
+    occupancy_grid.info.width, occupancy_grid.info.height, CV_8UC1,
+    cv::Scalar(grid_utils::occlusion_cost_value::FREE_SPACE));
+  toQuantizedImage(occupancy_grid, &border_image, &occlusion_image, param);
 
   //! show original occupancy grid to compare difference
   if (is_show_debug_window) {
-    cv::namedWindow("original", cv::WINDOW_NORMAL);
-    cv::imshow("original", cv_image);
+    cv::namedWindow("occlusion_image", cv::WINDOW_NORMAL);
+    cv::imshow("occlusion_image", occlusion_image);
+    cv::moveWindow("occlusion_image", 0, 0);
   }
 
   //! raycast object shadow using vehicle
   if (use_object_footprints || use_object_ray_casts) {
     generateOccupiedImage(
-      occupancy_grid, cv_image, stuck_vehicle_foot_prints, moving_vehicle_foot_prints,
+      occupancy_grid, border_image, stuck_vehicle_foot_prints, moving_vehicle_foot_prints,
       use_object_footprints, use_object_ray_casts);
     if (is_show_debug_window) {
       cv::namedWindow("object ray shadow", cv::WINDOW_NORMAL);
-      cv::imshow("object ray shadow", cv_image);
+      cv::imshow("object ray shadow", border_image);
+      cv::moveWindow("object ray shadow", 300, 0);
     }
   }
 
-  //!< @brief opening & closing to remove noise in occupancy grid
-  if (filter_occupancy_grid) {
-    constexpr int num_iter = 2;
-    cv::morphologyEx(cv_image, cv_image, cv::MORPH_CLOSE, cv::Mat(), cv::Point(-1, -1), num_iter);
-    if (is_show_debug_window) {
-      cv::namedWindow("morph", cv::WINDOW_NORMAL);
-      cv::imshow("morph", cv_image);
-      cv::waitKey(1);
-    }
+  //!< @brief erode occlusion to make sure occlusion candidates are big enough
+  cv::Mat kernel(2, 2, CV_8UC1, cv::Scalar(1));
+  cv::erode(occlusion_image, occlusion_image, kernel, cv::Point(-1, -1), num_iter);
+  if (is_show_debug_window) {
+    cv::namedWindow("morph", cv::WINDOW_NORMAL);
+    cv::imshow("morph", occlusion_image);
+    cv::moveWindow("morph", 0, 300);
   }
-  imageToOccupancyGrid(cv_image, &occupancy_grid);
+
+  border_image += occlusion_image;
+  if (is_show_debug_window) {
+    cv::namedWindow("merge", cv::WINDOW_NORMAL);
+    cv::imshow("merge", border_image);
+    cv::moveWindow("merge", 300, 300);
+    cv::waitKey(1);
+  }
+  imageToOccupancyGrid(border_image, &occupancy_grid);
   grid_map::GridMapRosConverter::fromOccupancyGrid(occupancy_grid, "layer", grid_map);
 }
 }  // namespace grid_utils
