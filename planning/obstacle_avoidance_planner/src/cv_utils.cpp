@@ -441,7 +441,7 @@ bool isOutsideDrivableAreaFromRectangleFootprint(
   return false;
 }
 
-bool isOutsideDrivableAreaFromCirclesFootprint(
+[[maybe_unused]] bool isOutsideDrivableAreaFromCirclesFootprint(
   const autoware_auto_planning_msgs::msg::TrajectoryPoint & traj_point,
   const cv::Mat & road_clearance_map, const nav_msgs::msg::MapMetaData & map_info,
   const std::vector<double> vehicle_circle_longitudinal_offsets, const double vehicle_circle_radius)

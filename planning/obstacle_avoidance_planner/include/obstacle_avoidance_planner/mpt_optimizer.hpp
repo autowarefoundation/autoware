@@ -219,6 +219,7 @@ private:
 
   void calcBounds(
     std::vector<ReferencePoint> & ref_points, const bool enable_avoidance, const CVMaps & maps,
+    const std::unique_ptr<Trajectories> & prev_trajs,
     std::shared_ptr<DebugData> debug_data_ptr) const;
 
   void calcVehicleBounds(

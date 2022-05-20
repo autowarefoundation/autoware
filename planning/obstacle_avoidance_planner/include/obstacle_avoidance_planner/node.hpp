@@ -44,6 +44,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace
@@ -158,20 +159,10 @@ private:
   bool skip_optimization_;
   bool reset_prev_optimization_;
 
-  // vehicle circles info for drivability check
-  bool use_vehicle_circles_for_drivability_;
-  bool use_manual_vehicle_circles_for_drivability_;
-  int vehicle_circle_constraints_num_for_drivability_;
-  int vehicle_circle_radius_num_for_drivability_;
-  double vehicle_circle_radius_ratio_for_drivability_;
-  double vehicle_circle_radius_for_drivability_;
-  std::vector<double> vehicle_circle_longitudinal_offsets_for_drivability_;
-
   // vehicle circles info for for mpt constraints
-  bool use_manual_vehicle_circles_for_mpt_;
-  int vehicle_circle_constraints_num_for_mpt_;
-  int vehicle_circle_radius_num_for_mpt_;
-  double vehicle_circle_radius_ratio_for_mpt_;
+  std::string vehicle_circle_method_;
+  int vehicle_circle_num_for_calculation_;
+  std::vector<double> vehicle_circle_radius_ratios_;
 
   // params for replan
   double max_path_shape_change_dist_for_replan_;

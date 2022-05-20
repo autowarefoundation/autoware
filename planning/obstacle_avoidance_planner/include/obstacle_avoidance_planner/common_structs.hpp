@@ -126,20 +126,20 @@ struct DebugData
   void init(
     const bool local_is_showing_calculation_time, const int local_mpt_visualize_sampling_num,
     const geometry_msgs::msg::Pose & local_current_ego_pose,
-    const double local_vehicle_circle_radius,
+    const std::vector<double> & local_vehicle_circle_radiuses,
     const std::vector<double> & local_vehicle_circle_longitudinal_offsets)
   {
     msg_stream.is_showing_calculation_time = local_is_showing_calculation_time;
     mpt_visualize_sampling_num = local_mpt_visualize_sampling_num;
     current_ego_pose = local_current_ego_pose;
-    vehicle_circle_radius = local_vehicle_circle_radius;
+    vehicle_circle_radiuses = local_vehicle_circle_radiuses;
     vehicle_circle_longitudinal_offsets = local_vehicle_circle_longitudinal_offsets;
   }
 
   StreamWithPrint msg_stream;
   size_t mpt_visualize_sampling_num;
   geometry_msgs::msg::Pose current_ego_pose;
-  double vehicle_circle_radius;
+  std::vector<double> vehicle_circle_radiuses;
   std::vector<double> vehicle_circle_longitudinal_offsets;
 
   boost::optional<geometry_msgs::msg::Pose> stop_pose_by_drivable_area = boost::none;
@@ -212,7 +212,7 @@ struct MPTParam
   int num_curvature_sampling_points;
 
   std::vector<double> vehicle_circle_longitudinal_offsets;  // from base_link
-  double vehicle_circle_radius;
+  std::vector<double> vehicle_circle_radiuses;
 
   double delta_arc_length_for_mpt_points;
 

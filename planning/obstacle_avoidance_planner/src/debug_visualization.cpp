@@ -484,7 +484,7 @@ visualization_msgs::msg::MarkerArray getBoundsCandidatesLineMarkerArray(
 
 visualization_msgs::msg::MarkerArray getBoundsLineMarkerArray(
   const std::vector<ReferencePoint> & ref_points, const double r, const double g, const double b,
-  const double vehicle_circle_radius, const size_t sampling_num)
+  const double vehicle_width, const size_t sampling_num)
 {
   const auto current_time = rclcpp::Clock().now();
   visualization_msgs::msg::MarkerArray msg;
@@ -507,7 +507,7 @@ visualization_msgs::msg::MarkerArray getBoundsLineMarkerArray(
 
         const geometry_msgs::msg::Pose & pose = ref_points.at(i).vehicle_bounds_poses.at(bound_idx);
         const double lb_y =
-          ref_points.at(i).vehicle_bounds[bound_idx].lower_bound - vehicle_circle_radius;
+          ref_points.at(i).vehicle_bounds[bound_idx].lower_bound - vehicle_width / 2.0;
         const auto lb = tier4_autoware_utils::calcOffsetPose(pose, 0.0, lb_y, 0.0).position;
 
         marker.points.push_back(pose.position);
@@ -529,7 +529,7 @@ visualization_msgs::msg::MarkerArray getBoundsLineMarkerArray(
 
         const geometry_msgs::msg::Pose & pose = ref_points.at(i).vehicle_bounds_poses.at(bound_idx);
         const double ub_y =
-          ref_points.at(i).vehicle_bounds[bound_idx].upper_bound + vehicle_circle_radius;
+          ref_points.at(i).vehicle_bounds[bound_idx].upper_bound + vehicle_width / 2.0;
         const auto ub = tier4_autoware_utils::calcOffsetPose(pose, 0.0, ub_y, 0.0).position;
 
         marker.points.push_back(pose.position);
@@ -544,8 +544,8 @@ visualization_msgs::msg::MarkerArray getBoundsLineMarkerArray(
 
 visualization_msgs::msg::MarkerArray getVehicleCircleLineMarkerArray(
   const std::vector<std::vector<geometry_msgs::msg::Pose>> & vehicle_circles_pose,
-  const double vehicle_circle_radius, const size_t sampling_num, const std::string & ns,
-  const double r, const double g, const double b)
+  const double vehicle_width, const size_t sampling_num, const std::string & ns, const double r,
+  const double g, const double b)
 {
   const auto current_time = rclcpp::Clock().now();
   visualization_msgs::msg::MarkerArray msg;
@@ -563,9 +563,9 @@ visualization_msgs::msg::MarkerArray getVehicleCircleLineMarkerArray(
     for (size_t j = 0; j < vehicle_circles_pose.at(i).size(); ++j) {
       const geometry_msgs::msg::Pose & pose = vehicle_circles_pose.at(i).at(j);
       const auto ub =
-        tier4_autoware_utils::calcOffsetPose(pose, 0.0, vehicle_circle_radius, 0.0).position;
+        tier4_autoware_utils::calcOffsetPose(pose, 0.0, vehicle_width / 2.0, 0.0).position;
       const auto lb =
-        tier4_autoware_utils::calcOffsetPose(pose, 0.0, -vehicle_circle_radius, 0.0).position;
+        tier4_autoware_utils::calcOffsetPose(pose, 0.0, -vehicle_width / 2.0, 0.0).position;
 
       marker.points.push_back(ub);
       marker.points.push_back(lb);
@@ -605,13 +605,15 @@ visualization_msgs::msg::MarkerArray getLateralErrorsLineMarkerArray(
 visualization_msgs::msg::MarkerArray getCurrentVehicleCirclesMarkerArray(
   const geometry_msgs::msg::Pose & current_ego_pose,
   const std::vector<double> & vehicle_circle_longitudinal_offsets,
-  const double vehicle_circle_radius, const std::string & ns, const double r, const double g,
-  const double b)
+  const std::vector<double> & vehicle_circle_radiuses, const std::string & ns, const double r,
+  const double g, const double b)
 {
   visualization_msgs::msg::MarkerArray msg;
 
   size_t id = 0;
-  for (const double offset : vehicle_circle_longitudinal_offsets) {
+  for (size_t v_idx = 0; v_idx < vehicle_circle_longitudinal_offsets.size(); ++v_idx) {
+    const double offset = vehicle_circle_longitudinal_offsets.at(v_idx);
+
     auto marker = createDefaultMarker(
       "map", rclcpp::Clock().now(), ns, id, visualization_msgs::msg::Marker::LINE_STRIP,
       createMarkerScale(0.05, 0.0, 0.0), createMarkerColor(r, g, b, 0.8));
@@ -624,8 +626,8 @@ visualization_msgs::msg::MarkerArray getCurrentVehicleCirclesMarkerArray(
 
       const double edge_angle =
         static_cast<double>(e_idx) / static_cast<double>(circle_dividing_num) * 2.0 * M_PI;
-      edge_pos.x = vehicle_circle_radius * std::cos(edge_angle);
-      edge_pos.y = vehicle_circle_radius * std::sin(edge_angle);
+      edge_pos.x = vehicle_circle_radiuses.at(v_idx) * std::cos(edge_angle);
+      edge_pos.y = vehicle_circle_radiuses.at(v_idx) * std::sin(edge_angle);
 
       marker.points.push_back(edge_pos);
     }
@@ -639,8 +641,8 @@ visualization_msgs::msg::MarkerArray getCurrentVehicleCirclesMarkerArray(
 visualization_msgs::msg::MarkerArray getVehicleCirclesMarkerArray(
   const std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> & mpt_traj_points,
   const std::vector<double> & vehicle_circle_longitudinal_offsets,
-  const double vehicle_circle_radius, const size_t sampling_num, const std::string & ns,
-  const double r, const double g, const double b)
+  const std::vector<double> & vehicle_circle_radiuses, const size_t sampling_num,
+  const std::string & ns, const double r, const double g, const double b)
 {
   visualization_msgs::msg::MarkerArray msg;
 
@@ -651,7 +653,9 @@ visualization_msgs::msg::MarkerArray getVehicleCirclesMarkerArray(
     }
     const auto & mpt_traj_point = mpt_traj_points.at(i);
 
-    for (const double offset : vehicle_circle_longitudinal_offsets) {
+    for (size_t v_idx = 0; v_idx < vehicle_circle_longitudinal_offsets.size(); ++v_idx) {
+      const double offset = vehicle_circle_longitudinal_offsets.at(v_idx);
+
       auto marker = createDefaultMarker(
         "map", rclcpp::Clock().now(), ns, id, visualization_msgs::msg::Marker::LINE_STRIP,
         createMarkerScale(0.05, 0.0, 0.0), createMarkerColor(r, g, b, 0.8));
@@ -664,8 +668,8 @@ visualization_msgs::msg::MarkerArray getVehicleCirclesMarkerArray(
 
         const double edge_angle =
           static_cast<double>(e_idx) / static_cast<double>(circle_dividing_num) * 2.0 * M_PI;
-        edge_pos.x = vehicle_circle_radius * std::cos(edge_angle);
-        edge_pos.y = vehicle_circle_radius * std::sin(edge_angle);
+        edge_pos.x = vehicle_circle_radiuses.at(v_idx) * std::cos(edge_angle);
+        edge_pos.y = vehicle_circle_radiuses.at(v_idx) * std::sin(edge_angle);
 
         marker.points.push_back(edge_pos);
       }
@@ -754,7 +758,7 @@ visualization_msgs::msg::MarkerArray getDebugVisualizationMarker(
   // bounds
   appendMarkerArray(
     getBoundsLineMarkerArray(
-      debug_data_ptr->ref_points, 0.99, 0.99, 0.2, debug_data_ptr->vehicle_circle_radius,
+      debug_data_ptr->ref_points, 0.99, 0.99, 0.2, vehicle_param.width,
       debug_data_ptr->mpt_visualize_sampling_num),
     &vis_marker_array);
 
@@ -770,7 +774,7 @@ visualization_msgs::msg::MarkerArray getDebugVisualizationMarker(
   // vehicle circle line
   appendMarkerArray(
     getVehicleCircleLineMarkerArray(
-      debug_data_ptr->vehicle_circles_pose, debug_data_ptr->vehicle_circle_radius,
+      debug_data_ptr->vehicle_circles_pose, vehicle_param.width,
       debug_data_ptr->mpt_visualize_sampling_num, "vehicle_circle_lines", 0.99, 0.99, 0.2),
     &vis_marker_array);
 
@@ -785,14 +789,14 @@ visualization_msgs::msg::MarkerArray getDebugVisualizationMarker(
   appendMarkerArray(
     getCurrentVehicleCirclesMarkerArray(
       debug_data_ptr->current_ego_pose, debug_data_ptr->vehicle_circle_longitudinal_offsets,
-      debug_data_ptr->vehicle_circle_radius, "current_vehicle_circles", 1.0, 0.3, 0.3),
+      debug_data_ptr->vehicle_circle_radiuses, "current_vehicle_circles", 1.0, 0.3, 0.3),
     &vis_marker_array);
 
   // vehicle circles
   appendMarkerArray(
     getVehicleCirclesMarkerArray(
       debug_data_ptr->mpt_traj, debug_data_ptr->vehicle_circle_longitudinal_offsets,
-      debug_data_ptr->vehicle_circle_radius, debug_data_ptr->mpt_visualize_sampling_num,
+      debug_data_ptr->vehicle_circle_radiuses, debug_data_ptr->mpt_visualize_sampling_num,
       "vehicle_circles", 1.0, 0.3, 0.3),
     &vis_marker_array);
 

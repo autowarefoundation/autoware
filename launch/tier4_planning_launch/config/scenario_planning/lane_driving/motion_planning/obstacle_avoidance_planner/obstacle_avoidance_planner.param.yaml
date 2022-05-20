@@ -83,28 +83,6 @@
 
     # advanced parameters to improve performance as much as possible
     advanced:
-      option:
-        # check if planned trajectory is outside drivable area
-        drivability_check:
-          # true: vehicle shape is considered as a set of circles
-          # false: vehicle shape is considered as footprint (= rectangle)
-          use_vehicle_circles: false
-
-          # parameters only when use_vehicle_circles is true
-          vehicle_circles:
-            use_manual_vehicle_circles: false
-            num_for_constraints: 4
-
-            # parameters only when use_manual_vehicle_circles is true
-            longitudinal_offsets: [-0.15, 0.88, 1.9, 2.95]
-            radius: 0.95
-
-            # parameters only when use_manual_vehicle_circles is false
-            radius_ratio: 0.9
-            # If this parameter is commented out, the parameter is calculated automatically
-            # based on the vehicle length and width
-            # num_for_radius: 4
-
       eb:
         common:
           num_joint_buffer_points: 3 # number of joint buffer points
@@ -161,15 +139,13 @@
             # two_step_soft_constraint: false
 
           vehicle_circles:
-            use_manual_vehicle_circles: false
-            num_for_constraints: 3
+            method: "rear_drive"
 
-            # parameters only when use_manual_vehicle_circles is true
-            longitudinal_offsets: [-0.15, 0.88, 1.9, 2.95]
-            radius: 0.95
+            uniform_circle:
+              num: 3
+              radius_ratio: 0.8
 
-            # parameters only when use_manual_vehicle_circles is false
-            radius_ratio: 0.8
-            # If this parameter is commented out, the parameter is calculated automatically
-            # based on the vehicle length and width
-            # num_for_radius: 4
+            rear_drive:
+              num_for_calculation: 3
+              front_radius_ratio: 1.0
+              rear_radius_ratio: 1.0
