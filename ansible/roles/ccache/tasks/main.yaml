@@ -1,0 +1,7 @@
+- name: Install ccache
+  become: true
+  ansible.builtin.apt:
+    name:
+      - ccache
+    state: latest
+    update_cache: true

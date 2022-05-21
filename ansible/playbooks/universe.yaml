@@ -24,6 +24,7 @@
   roles:
     # Core
     - role: autoware.dev_env.autoware_core
+    - role: autoware.dev_env.ccache
     - role: autoware.dev_env.plotjuggler
     - role: autoware.dev_env.pre_commit
     - role: autoware.dev_env.ros2
