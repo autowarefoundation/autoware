@@ -36,5 +36,6 @@
     - role: autoware.dev_env.cuda
       when: install_nvidia == 'y'
     - role: autoware.dev_env.pacmod
+      when: rosdistro == 'galactic'
     - role: autoware.dev_env.tensorrt
       when: install_nvidia == 'y'
