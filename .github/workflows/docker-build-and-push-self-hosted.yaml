@@ -25,9 +25,9 @@ jobs:
 
       - name: Load env
         run: |
-          cat amd64.env | sed "/^#/d" >> $GITHUB_ENV
+          cat amd64.env | sed -e "s/^\s*//" -e "/^#/d" >> $GITHUB_ENV
           if [ "$(uname -m)" = "aarch64" ]; then
-            cat arm64.env | sed "/^#/d" >> $GITHUB_ENV
+            cat arm64.env | sed -e "s/^\s*//" -e "/^#/d" >> $GITHUB_ENV
           fi
 
       - name: Build 'autoware-universe'

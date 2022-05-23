@@ -73,7 +73,7 @@ fi
 
 # Add env args
 # shellcheck disable=SC2013
-for env_name in $(sed "s/=.*//" <amd64.env); do
+for env_name in $(sed -e "s/^\s*//" -e "/^#/d" -e "s/=.*//" <amd64.env); do
     ansible_args+=("--extra-vars" "${env_name}=${!env_name}")
 done
 
