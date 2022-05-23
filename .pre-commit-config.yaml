@@ -39,7 +39,7 @@ repos:
       - id: shellcheck
 
   - repo: https://github.com/scop/pre-commit-shfmt
-    rev: v3.4.3-1
+    rev: v3.5.0-1
     hooks:
       - id: shfmt
         args: [-w, -s, -i=4]
