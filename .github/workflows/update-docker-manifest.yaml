@@ -12,7 +12,13 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
 
-      - name: Update Docker manifest for 'autoware-universe'
-        uses: ./.github/actions/update-docker-manifest
+      - name: Combine multi arch images for 'autoware-universe'
+        uses: ./.github/actions/combine-multi-arch-images
         with:
           package-name: autoware-universe
+
+      - name: Create main distro alias for 'autoware-universe'
+        uses: ./.github/actions/create-main-distro-alias
+        with:
+          package-name: autoware-universe
+          rosdistro: galactic

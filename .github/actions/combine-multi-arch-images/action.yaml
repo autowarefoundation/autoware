@@ -1,4 +1,4 @@
-name: update-docker-manifest
+name: combine-multi-arch-images
 description: ""
 
 inputs:
@@ -72,8 +72,8 @@ runs:
         for base_tag in $BASE_TAGS; do
           echo -e "\nbase_tag: $base_tag"
 
-          amd64_tag=$(printf "%s\n" $ALL_TAGS | grep "$base_tag\-amd64" || true)
-          arm64_tag=$(printf "%s\n" $ALL_TAGS | grep "$base_tag\-arm64" || true)
+          amd64_tag=$(printf "%s\n" $ALL_TAGS | grep "^$base_tag\-amd64" || true)
+          arm64_tag=$(printf "%s\n" $ALL_TAGS | grep "^$base_tag\-arm64" || true)
 
           echo "amd64_tag: $amd64_tag"
           echo "arm64_tag: $arm64_tag"
