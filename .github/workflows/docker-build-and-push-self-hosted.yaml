@@ -11,6 +11,15 @@ on:
 jobs:
   docker-build-and-push-self-hosted:
     runs-on: [self-hosted, linux, ARM64]
+    strategy:
+      fail-fast: false
+      matrix:
+        rosdistro:
+          - galactic
+          - humble
+        include:
+          - { rosdistro: galactic, branch: main }
+          - { rosdistro: humble, branch: humble }
     steps:
       # https://github.com/actions/checkout/issues/211
       - name: Change permission of workspace
@@ -19,6 +28,8 @@ jobs:
 
       - name: Check out repository
         uses: actions/checkout@v3
+        with:
+          ref: ${{ matrix.branch }}
 
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
