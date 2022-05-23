@@ -51,6 +51,7 @@ TensorrtYoloNodelet::TensorrtYoloNodelet(const rclcpp::NodeOptions & options)
   std::string calib_image_directory = declare_parameter("calib_image_directory", "");
   std::string calib_cache_file = declare_parameter("calib_cache_file", "");
   std::string mode = declare_parameter("mode", "FP32");
+  int gpu_device_id = declare_parameter("gpu_id", 0);
   yolo_config_.num_anchors = declare_parameter("num_anchors", 3);
   auto anchors = declare_parameter(
     "anchors", std::vector<double>{
@@ -65,6 +66,10 @@ TensorrtYoloNodelet::TensorrtYoloNodelet(const rclcpp::NodeOptions & options)
   yolo_config_.detections_per_im = declare_parameter("detections_per_im", 100);
   yolo_config_.use_darknet_layer = declare_parameter("use_darknet_layer", true);
   yolo_config_.ignore_thresh = declare_parameter("ignore_thresh", 0.5);
+
+  if (!yolo::set_cuda_device(gpu_device_id)) {
+    RCLCPP_ERROR(this->get_logger(), "Given GPU not exist or suitable");
+  }
 
   if (!readLabelFile(label_file, &labels_)) {
     RCLCPP_ERROR(this->get_logger(), "Could not find label file");
@@ -90,6 +95,8 @@ TensorrtYoloNodelet::TensorrtYoloNodelet(const rclcpp::NodeOptions & options)
       new yolo::Net(onnx_file, mode, 1, yolo_config_, calibration_images, calib_cache_file));
     net_ptr_->save(engine_file);
   }
+  RCLCPP_INFO(this->get_logger(), "Inference engine prepared.");
+
   using std::chrono_literals::operator""ms;
   timer_ = rclcpp::create_timer(
     this, get_clock(), 100ms, std::bind(&TensorrtYoloNodelet::connectCb, this));

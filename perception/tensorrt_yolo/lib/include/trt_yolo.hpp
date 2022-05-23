@@ -147,6 +147,16 @@ private:
   void infer(std::vector<void *> & buffers, const int batch_size);
 };
 
+bool set_cuda_device(int gpu_id)
+{
+  cudaError_t status = cudaSetDevice(gpu_id);
+  if (status != cudaSuccess) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
 }  // namespace yolo
 
 #endif  // TRT_YOLO_HPP_

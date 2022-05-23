@@ -86,6 +86,10 @@ Refer to [this guide](https://github.com/ultralytics/yolov5/issues/251 "guide")
 
 - [YOLOv5x](https://drive.google.com/uc?id=1kAHuNJUCxpD-yWrS6t95H3zbAPfClLxI "YOLOv5x")
 
+## Limitations
+
+- If you want to run multiple instances of this node for multiple cameras using "yolo.launch.xml", first of all, create a TensorRT engine by running the "tensorrt_yolo.launch.xml" launch file separately for each GPU. Otherwise, multiple instances of the node trying to create the same TensorRT engine can cause potential problems.
+
 ## Reference repositories
 
 - <https://github.com/pjreddie/darknet>
