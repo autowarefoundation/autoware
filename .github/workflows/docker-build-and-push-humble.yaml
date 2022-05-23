@@ -1,4 +1,4 @@
-name: docker-build-and-push-self-hosted
+name: docker-build-and-push-humble
 
 on:
   push:
@@ -9,18 +9,13 @@ on:
   workflow_dispatch:
 
 jobs:
-  docker-build-and-push-self-hosted:
-    runs-on: [self-hosted, linux, ARM64]
+  docker-build-and-push-humble:
+    runs-on: ubuntu-latest
     steps:
-      # https://github.com/actions/checkout/issues/211
-      - name: Change permission of workspace
-        run: |
-          sudo chown -R $USER:$USER ${{ github.workspace }}
-
       - name: Check out repository
         uses: actions/checkout@v3
         with:
-          ref: main
+          ref: humble
 
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
@@ -37,11 +32,11 @@ jobs:
         with:
           bake-target: autoware-universe
           build-args: |
-            *.platform=linux/arm64
+            *.platform=linux/amd64
             *.args.ROS_DISTRO=${{ env.rosdistro }}
             *.args.BASE_IMAGE=${{ env.base_image }}
           tag-prefix: ${{ env.rosdistro }}-
-          tag-suffix: -arm64
+          tag-suffix: -amd64
 
       - name: Show disk space
         run: |

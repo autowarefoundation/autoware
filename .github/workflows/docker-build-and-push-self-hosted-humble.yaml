@@ -1,4 +1,4 @@
-name: docker-build-and-push-self-hosted
+name: docker-build-and-push-self-hosted-humble
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  docker-build-and-push-self-hosted:
+  docker-build-and-push-self-hosted-humble:
     runs-on: [self-hosted, linux, ARM64]
     steps:
       # https://github.com/actions/checkout/issues/211
@@ -20,7 +20,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
         with:
-          ref: main
+          ref: humble
 
       - name: Free disk space
         uses: ./.github/actions/free-disk-space

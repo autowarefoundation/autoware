@@ -8,21 +8,12 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: ubuntu:${{ matrix.ubuntu-version }}
-    strategy:
-      fail-fast: false
-      matrix:
-        rosdistro:
-          - galactic
-          - humble
-        include:
-          - { rosdistro: galactic, branch: main, ubuntu-version: "20.04" }
-          - { rosdistro: humble, branch: humble, ubuntu-version: "22.04" }
+    container: ubuntu:20.04
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
         with:
-          ref: ${{ matrix.branch }}
+          ref: main
 
       - name: Run setup script
         run: |
@@ -42,9 +33,9 @@ jobs:
         run: |
           sudo apt-get -y update
           rosdep update
-          DEBIAN_FRONTEND=noninteractive rosdep install -y --from-paths src --ignore-src --rosdistro ${{ matrix.rosdistro }}
+          DEBIAN_FRONTEND=noninteractive rosdep install -y --from-paths src --ignore-src --rosdistro galactic
 
       - name: Build
         run: |
-          . /opt/ros/${{ matrix.rosdistro }}/setup.sh
+          . /opt/ros/galactic/setup.sh
           colcon build --event-handlers console_cohesion+ --cmake-args -DCMAKE_BUILD_TYPE=Release

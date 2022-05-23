@@ -11,20 +11,11 @@ on:
 jobs:
   docker-build-and-push:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        rosdistro:
-          - galactic
-          - humble
-        include:
-          - { rosdistro: galactic, branch: main }
-          - { rosdistro: humble, branch: humble }
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
         with:
-          ref: ${{ matrix.branch }}
+          ref: main
 
       - name: Free disk space
         uses: ./.github/actions/free-disk-space
