@@ -33,22 +33,24 @@
 #include <glob.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl_conversions/pcl_conversions.h>
-#include <rcutils/filesystem.h>  // To be replaced by std::filesystem in C++17
 
+#include <filesystem>
 #include <string>
 #include <vector>
+
+namespace fs = std::filesystem;
 
 namespace
 {
 bool isPcdFile(const std::string & p)
 {
-  if (!rcutils_is_file(p.c_str())) {
+  if (fs::is_directory(p)) {
     return false;
   }
 
-  const auto ext = p.substr(p.find_last_of(".") + 1);
+  const std::string ext = fs::path(p).extension();
 
-  if (ext != "pcd" && ext != "PCD") {
+  if (ext != ".pcd" && ext != ".PCD") {
     return false;
   }
 
@@ -70,7 +72,7 @@ PointCloudMapLoaderNode::PointCloudMapLoaderNode(const rclcpp::NodeOptions & opt
   std::vector<std::string> pcd_paths{};
 
   for (const auto & p : pcd_paths_or_directory) {
-    if (!rcutils_exists(p.c_str())) {
+    if (!fs::exists(p)) {
       RCLCPP_ERROR_STREAM(get_logger(), "invalid path: " << p);
     }
 
@@ -78,13 +80,13 @@ PointCloudMapLoaderNode::PointCloudMapLoaderNode(const rclcpp::NodeOptions & opt
       pcd_paths.push_back(p);
     }
 
-    if (rcutils_is_directory(p.c_str())) {
-      glob_t glob_buf;
-      glob((p + "/*.pcd").c_str(), 0, NULL, &glob_buf);
-      for (size_t i = 0; i < glob_buf.gl_pathc; ++i) {
-        pcd_paths.push_back(glob_buf.gl_pathv[i]);
+    if (fs::is_directory(p)) {
+      for (const auto & file : fs::directory_iterator(p)) {
+        const auto filename = file.path().string();
+        if (isPcdFile(filename)) {
+          pcd_paths.push_back(filename);
+        }
       }
-      globfree(&glob_buf);
     }
   }
 
