@@ -1,10 +1,9 @@
-ARG CUDA_IMAGE_TAG
-FROM nvidia/cuda:$CUDA_IMAGE_TAG as devel
+ARG BASE_IMAGE
+# hadolint ignore=DL3006
+FROM $BASE_IMAGE as devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ARG ROS_DISTRO
-ARG CUDNN_VERSION
-ARG TENSORRT_VERSION
 
 ## Install apt packages
 # hadolint ignore=DL3008
@@ -26,27 +25,12 @@ RUN mkdir -p ~/.ssh \
 
 ## Set up development environment
 RUN --mount=type=ssh \
-  ./setup-dev-env.sh -y --no-nvidia universe \
+  ./setup-dev-env.sh -y --no-cuda-drivers universe \
   && pip uninstall -y ansible ansible-core \
   && mkdir src \
   && vcs import src < autoware.repos \
   && rosdep update \
   && DEBIAN_FRONTEND=noninteractive rosdep install -y --ignore-src --from-paths src --rosdistro "$ROS_DISTRO" \
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
-
-## Install cuDNN and TensorRT
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
-  libcudnn8="$CUDNN_VERSION" \
-  libcudnn8-dev="$CUDNN_VERSION" \
-  libnvinfer8="$TENSORRT_VERSION" \
-  libnvinfer-dev="$TENSORRT_VERSION" \
-  libnvinfer-plugin8="$TENSORRT_VERSION" \
-  libnvinfer-plugin-dev="$TENSORRT_VERSION" \
-  libnvonnxparsers8="$TENSORRT_VERSION" \
-  libnvonnxparsers-dev="$TENSORRT_VERSION" \
-  libnvparsers8="$TENSORRT_VERSION" \
-  libnvparsers-dev="$TENSORRT_VERSION" \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 

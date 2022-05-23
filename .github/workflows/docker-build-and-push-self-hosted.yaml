@@ -37,9 +37,7 @@ jobs:
           build-args: |
             *.platform=linux/arm64
             *.args.ROS_DISTRO=${{ env.rosdistro }}
-            *.args.CUDA_IMAGE_TAG=${{ env.cuda_image_tag }}
-            *.args.CUDNN_VERSION=${{ env.cudnn_version }}
-            *.args.TENSORRT_VERSION=${{ env.tensorrt_version }}
+            *.args.BASE_IMAGE=${{ env.base_image }}
           tag-prefix: ${{ env.rosdistro }}-
           tag-suffix: -arm64
 
