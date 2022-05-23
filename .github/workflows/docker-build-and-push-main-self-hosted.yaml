@@ -1,4 +1,4 @@
-name: docker-build-and-push
+name: docker-build-and-push-main-self-hosted
 
 on:
   push:
@@ -9,9 +9,14 @@ on:
   workflow_dispatch:
 
 jobs:
-  docker-build-and-push:
-    runs-on: ubuntu-latest
+  docker-build-and-push-main-self-hosted:
+    runs-on: [self-hosted, linux, ARM64]
     steps:
+      # https://github.com/actions/checkout/issues/211
+      - name: Change permission of workspace
+        run: |
+          sudo chown -R $USER:$USER ${{ github.workspace }}
+
       - name: Check out repository
         uses: actions/checkout@v3
         with:
@@ -32,11 +37,11 @@ jobs:
         with:
           bake-target: autoware-universe
           build-args: |
-            *.platform=linux/amd64
+            *.platform=linux/arm64
             *.args.ROS_DISTRO=${{ env.rosdistro }}
             *.args.BASE_IMAGE=${{ env.base_image }}
           tag-prefix: ${{ env.rosdistro }}-
-          tag-suffix: -amd64
+          tag-suffix: -arm64
 
       - name: Show disk space
         run: |

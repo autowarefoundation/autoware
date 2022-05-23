@@ -1,4 +1,4 @@
-name: build
+name: build-main
 
 on:
   schedule:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-main:
     runs-on: ubuntu-latest
     container: ubuntu:20.04
     steps:

@@ -1,4 +1,4 @@
-name: build-self-hosted-humble
+name: build-main-self-hosted
 
 on:
   schedule:
@@ -6,14 +6,14 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-self-hosted-humble:
+  build-main-self-hosted:
     runs-on: [self-hosted, linux, ARM64]
-    container: ubuntu:22.04
+    container: ubuntu:20.04
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
         with:
-          ref: humble
+          ref: main
 
       - name: Run setup script
         run: |
@@ -28,9 +28,9 @@ jobs:
         run: |
           sudo apt-get -y update
           rosdep update
-          DEBIAN_FRONTEND=noninteractive rosdep install -y --from-paths src --ignore-src --rosdistro humble
+          DEBIAN_FRONTEND=noninteractive rosdep install -y --from-paths src --ignore-src --rosdistro galactic
 
       - name: Build
         run: |
-          . /opt/ros/humble/setup.sh
+          . /opt/ros/galactic/setup.sh
           colcon build --event-handlers console_cohesion+ --cmake-args -DCMAKE_BUILD_TYPE=Release
