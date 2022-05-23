@@ -37,7 +37,7 @@ void PointcloudAccumulatorComponent::filter(
   const PointCloud2ConstPtr & input, [[maybe_unused]] const IndicesPtr & indices,
   PointCloud2 & output)
 {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::scoped_lock lock(mutex_);
   pointcloud_buffer_.push_front(input);
   rclcpp::Time last_time = input->header.stamp;
   pcl::PointCloud<pcl::PointXYZ> pcl_input;
@@ -56,7 +56,7 @@ void PointcloudAccumulatorComponent::filter(
 rcl_interfaces::msg::SetParametersResult PointcloudAccumulatorComponent::paramCallback(
   const std::vector<rclcpp::Parameter> & p)
 {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::scoped_lock lock(mutex_);
 
   if (get_param(p, "accumulation_time_sec", accumulation_time_sec_)) {
     RCLCPP_DEBUG(get_logger(), "Setting new accumulation time to: %f.", accumulation_time_sec_);

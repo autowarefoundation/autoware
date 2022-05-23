@@ -167,7 +167,7 @@ protected:
   std::string tf_output_frame_;
 
   /** \brief Internal mutex. */
-  boost::mutex mutex_;
+  std::mutex mutex_;
 
   /** \brief Virtual abstract filter method. To be implemented by every child.
    * \param input the input point cloud dataset.

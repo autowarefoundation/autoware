@@ -70,14 +70,14 @@ void PassThroughFilterComponent::filter(
   const PointCloud2ConstPtr & input, [[maybe_unused]] const IndicesPtr & indices,
   PointCloud2 & output)
 {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::scoped_lock lock(mutex_);
   output = *input;
 }
 
 rcl_interfaces::msg::SetParametersResult PassThroughFilterComponent::paramCallback(
   [[maybe_unused]] const std::vector<rclcpp::Parameter> & p)
 {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::scoped_lock lock(mutex_);
 
   // write me
 

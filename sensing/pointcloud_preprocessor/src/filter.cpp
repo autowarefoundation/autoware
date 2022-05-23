@@ -210,7 +210,7 @@ void pointcloud_preprocessor::Filter::computePublish(
 rcl_interfaces::msg::SetParametersResult pointcloud_preprocessor::Filter::filterParamCallback(
   const std::vector<rclcpp::Parameter> & p)
 {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::scoped_lock lock(mutex_);
 
   if (get_param(p, "input_frame", tf_input_frame_)) {
     RCLCPP_DEBUG(get_logger(), "Setting the input TF frame to: %s.", tf_input_frame_.c_str());

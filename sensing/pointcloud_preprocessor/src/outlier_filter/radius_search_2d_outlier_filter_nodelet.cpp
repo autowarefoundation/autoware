@@ -43,7 +43,7 @@ void RadiusSearch2DOutlierFilterComponent::filter(
   const PointCloud2ConstPtr & input, [[maybe_unused]] const IndicesPtr & indices,
   PointCloud2 & output)
 {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::scoped_lock lock(mutex_);
   pcl::PointCloud<pcl::PointXYZ>::Ptr xyz_cloud(new pcl::PointCloud<pcl::PointXYZ>);
   pcl::fromROSMsg(*input, *xyz_cloud);
 
@@ -71,7 +71,7 @@ void RadiusSearch2DOutlierFilterComponent::filter(
 rcl_interfaces::msg::SetParametersResult RadiusSearch2DOutlierFilterComponent::paramCallback(
   const std::vector<rclcpp::Parameter> & p)
 {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::scoped_lock lock(mutex_);
 
   if (get_param(p, "min_neighbors", min_neighbors_)) {
     RCLCPP_DEBUG(get_logger(), "Setting new min neighbors to: %zu.", min_neighbors_);

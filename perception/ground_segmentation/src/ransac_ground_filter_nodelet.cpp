@@ -231,7 +231,7 @@ void RANSACGroundFilterComponent::filter(
   const PointCloud2::ConstSharedPtr & input, [[maybe_unused]] const IndicesPtr & indices,
   PointCloud2 & output)
 {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::scoped_lock lock(mutex_);
   sensor_msgs::msg::PointCloud2::SharedPtr input_transformed_ptr(new sensor_msgs::msg::PointCloud2);
   if (!transformPointCloud(base_frame_, input, input_transformed_ptr)) {
     RCLCPP_ERROR_STREAM_THROTTLE(
@@ -322,7 +322,7 @@ void RANSACGroundFilterComponent::filter(
 rcl_interfaces::msg::SetParametersResult RANSACGroundFilterComponent::paramCallback(
   const std::vector<rclcpp::Parameter> & p)
 {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::scoped_lock lock(mutex_);
 
   if (get_param(p, "base_frame", base_frame_)) {
     RCLCPP_DEBUG(get_logger(), "Setting base_frame to: %s.", base_frame_.c_str());

@@ -43,7 +43,7 @@ void DistanceBasedCompareMapFilterComponent::filter(
   const PointCloud2ConstPtr & input, [[maybe_unused]] const IndicesPtr & indices,
   PointCloud2 & output)
 {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::scoped_lock lock(mutex_);
   if (map_ptr_ == NULL || tree_ == NULL) {
     output = *input;
     return;
@@ -65,7 +65,7 @@ void DistanceBasedCompareMapFilterComponent::input_target_callback(const PointCl
   pcl::fromROSMsg<pcl::PointXYZ>(*map, map_pcl);
   const auto map_pcl_ptr = pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>(map_pcl);
 
-  boost::mutex::scoped_lock lock(mutex_);
+  std::scoped_lock lock(mutex_);
   map_ptr_ = map_pcl_ptr;
   tf_input_frame_ = map_ptr_->header.frame_id;
   if (!tree_) {
@@ -81,7 +81,7 @@ void DistanceBasedCompareMapFilterComponent::input_target_callback(const PointCl
 rcl_interfaces::msg::SetParametersResult DistanceBasedCompareMapFilterComponent::paramCallback(
   const std::vector<rclcpp::Parameter> & p)
 {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::scoped_lock lock(mutex_);
 
   if (get_param(p, "distance_threshold", distance_threshold_)) {
     RCLCPP_DEBUG(get_logger(), "Setting new distance threshold to: %f.", distance_threshold_);

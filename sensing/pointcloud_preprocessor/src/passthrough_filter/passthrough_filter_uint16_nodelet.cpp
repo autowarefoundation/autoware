@@ -48,7 +48,7 @@ PassThroughFilterUInt16Component::PassThroughFilterUInt16Component(
 void PassThroughFilterUInt16Component::filter(
   const PointCloud2ConstPtr & input, const IndicesPtr & indices, PointCloud2 & output)
 {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::scoped_lock lock(mutex_);
 
   pcl::PCLPointCloud2::Ptr pcl_input(new pcl::PCLPointCloud2);
   pcl_conversions::toPCL(*(input), *(pcl_input));
@@ -62,7 +62,7 @@ void PassThroughFilterUInt16Component::filter(
 rcl_interfaces::msg::SetParametersResult PassThroughFilterUInt16Component::paramCallback(
   const std::vector<rclcpp::Parameter> & p)
 {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::scoped_lock lock(mutex_);
 
   std::uint16_t filter_min, filter_max;
   impl_.getFilterLimits(filter_min, filter_max);

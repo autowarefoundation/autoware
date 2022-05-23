@@ -310,7 +310,7 @@ void RayGroundFilterComponent::filter(
   const PointCloud2::ConstSharedPtr & input, [[maybe_unused]] const IndicesPtr & indices,
   PointCloud2 & output)
 {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::scoped_lock lock(mutex_);
 
   sensor_msgs::msg::PointCloud2::SharedPtr input_transformed_ptr(new sensor_msgs::msg::PointCloud2);
   bool succeeded = TransformPointCloud(base_frame_, input, input_transformed_ptr);
@@ -366,7 +366,7 @@ void RayGroundFilterComponent::filter(
 rcl_interfaces::msg::SetParametersResult RayGroundFilterComponent::paramCallback(
   const std::vector<rclcpp::Parameter> & p)
 {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::scoped_lock lock(mutex_);
 
   if (get_param(p, "min_x", min_x_)) {
     RCLCPP_DEBUG(get_logger(), "Setting min_x to: %f.", min_x_);

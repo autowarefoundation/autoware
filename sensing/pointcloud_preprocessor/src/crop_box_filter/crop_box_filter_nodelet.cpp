@@ -90,7 +90,7 @@ void CropBoxFilterComponent::filter(
   const PointCloud2ConstPtr & input, [[maybe_unused]] const IndicesPtr & indices,
   PointCloud2 & output)
 {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::scoped_lock lock(mutex_);
 
   output.data.resize(input->data.size());
   Eigen::Vector3f pt(Eigen::Vector3f::Zero());
@@ -188,7 +188,7 @@ void CropBoxFilterComponent::publishCropBoxPolygon()
 rcl_interfaces::msg::SetParametersResult CropBoxFilterComponent::paramCallback(
   const std::vector<rclcpp::Parameter> & p)
 {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::scoped_lock lock(mutex_);
 
   CropBoxParam new_param{};
 

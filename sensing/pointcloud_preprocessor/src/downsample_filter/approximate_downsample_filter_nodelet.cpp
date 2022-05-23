@@ -77,7 +77,7 @@ ApproximateDownsampleFilterComponent::ApproximateDownsampleFilterComponent(
 void ApproximateDownsampleFilterComponent::filter(
   const PointCloud2ConstPtr & input, const IndicesPtr & /*indices*/, PointCloud2 & output)
 {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::scoped_lock lock(mutex_);
   pcl::PointCloud<pcl::PointXYZ>::Ptr pcl_input(new pcl::PointCloud<pcl::PointXYZ>);
   pcl::PointCloud<pcl::PointXYZ>::Ptr pcl_output(new pcl::PointCloud<pcl::PointXYZ>);
   pcl::fromROSMsg(*input, *pcl_input);
@@ -94,7 +94,7 @@ void ApproximateDownsampleFilterComponent::filter(
 rcl_interfaces::msg::SetParametersResult ApproximateDownsampleFilterComponent::paramCallback(
   const std::vector<rclcpp::Parameter> & p)
 {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::scoped_lock lock(mutex_);
 
   if (get_param(p, "voxel_size_x", voxel_size_x_)) {
     RCLCPP_DEBUG(get_logger(), "Setting new distance threshold to: %f.", voxel_size_x_);

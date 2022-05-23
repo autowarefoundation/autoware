@@ -115,7 +115,7 @@ void DualReturnOutlierFilterComponent::filter(
   const PointCloud2ConstPtr & input, [[maybe_unused]] const IndicesPtr & indices,
   PointCloud2 & output)
 {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::scoped_lock lock(mutex_);
   pcl::PointCloud<PointXYZIRADRT>::Ptr pcl_input(new pcl::PointCloud<PointXYZIRADRT>);
   pcl::fromROSMsg(*input, *pcl_input);
 
@@ -349,7 +349,7 @@ void DualReturnOutlierFilterComponent::filter(
 rcl_interfaces::msg::SetParametersResult DualReturnOutlierFilterComponent::paramCallback(
   const std::vector<rclcpp::Parameter> & p)
 {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::scoped_lock lock(mutex_);
 
   if (get_param(p, "weak_first_distance_ratio", weak_first_distance_ratio_)) {
     RCLCPP_DEBUG(

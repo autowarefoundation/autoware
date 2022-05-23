@@ -38,7 +38,7 @@ void RingOutlierFilterComponent::filter(
   const PointCloud2ConstPtr & input, [[maybe_unused]] const IndicesPtr & indices,
   PointCloud2 & output)
 {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::scoped_lock lock(mutex_);
   std::unordered_map<uint16_t, std::vector<std::size_t>> input_ring_map;
   input_ring_map.reserve(128);
   sensor_msgs::msg::PointCloud2::SharedPtr input_ptr =
@@ -114,7 +114,7 @@ void RingOutlierFilterComponent::filter(
 rcl_interfaces::msg::SetParametersResult RingOutlierFilterComponent::paramCallback(
   const std::vector<rclcpp::Parameter> & p)
 {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::scoped_lock lock(mutex_);
 
   if (get_param(p, "distance_ratio", distance_ratio_)) {
     RCLCPP_DEBUG(get_logger(), "Setting new distance ratio to: %f.", distance_ratio_);

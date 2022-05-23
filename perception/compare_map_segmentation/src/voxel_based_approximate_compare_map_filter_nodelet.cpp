@@ -45,7 +45,7 @@ void VoxelBasedApproximateCompareMapFilterComponent::filter(
   const PointCloud2ConstPtr & input, [[maybe_unused]] const IndicesPtr & indices,
   PointCloud2 & output)
 {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::scoped_lock lock(mutex_);
   if (voxel_map_ptr_ == NULL) {
     output = *input;
     return;
@@ -74,7 +74,7 @@ void VoxelBasedApproximateCompareMapFilterComponent::input_target_callback(
   pcl::fromROSMsg<pcl::PointXYZ>(*map, map_pcl);
   const auto map_pcl_ptr = pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>(map_pcl);
 
-  boost::mutex::scoped_lock lock(mutex_);
+  std::scoped_lock lock(mutex_);
   set_map_in_voxel_grid_ = true;
   tf_input_frame_ = map_pcl_ptr->header.frame_id;
   voxel_map_ptr_.reset(new pcl::PointCloud<pcl::PointXYZ>);
@@ -88,7 +88,7 @@ rcl_interfaces::msg::SetParametersResult
 VoxelBasedApproximateCompareMapFilterComponent::paramCallback(
   const std::vector<rclcpp::Parameter> & p)
 {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::scoped_lock lock(mutex_);
 
   if (get_param(p, "distance_threshold", distance_threshold_)) {
     voxel_grid_.setLeafSize(distance_threshold_, distance_threshold_, distance_threshold_);
