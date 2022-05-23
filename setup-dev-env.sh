@@ -20,6 +20,9 @@ while [ "$1" != "" ]; do
     --no-nvidia)
         option_no_nvidia=true
         ;;
+    --no-cuda-drivers)
+        option_no_cuda_drivers=true
+        ;;
     *)
         args+=("$1")
         ;;
@@ -58,11 +61,16 @@ if [ "$option_verbose" = "true" ]; then
     ansible_args+=("-vvv")
 fi
 
-# Check NVIDIA Installation
+# Check installation of NVIDIA libraries
 if [ "$option_no_nvidia" = "true" ]; then
     ansible_args+=("--extra-vars" "install_nvidia=n")
 elif [ "$option_yes" = "true" ]; then
     ansible_args+=("--extra-vars" "install_nvidia=y")
+fi
+
+# Check installation of CUDA Drivers
+if [ "$option_no_cuda_drivers" = "true" ]; then
+    ansible_args+=("--extra-vars" "install_cuda_drivers=false")
 fi
 
 # Load env

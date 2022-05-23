@@ -4,9 +4,10 @@ This role installs [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit) fol
 
 ## Inputs
 
-| Name         | Required | Description                  |
-| ------------ | -------- | ---------------------------- |
-| cuda_version | true     | The version of CUDA Toolkit. |
+| Name                 | Required | Description                      |
+| -------------------- | -------- | -------------------------------- |
+| cuda_version         | true     | The version of CUDA Toolkit.     |
+| install_cuda_drivers | false    | Whether to install cuda-drivers. |
 
 ## Manual Installation
 

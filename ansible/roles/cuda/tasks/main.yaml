@@ -19,11 +19,20 @@
   register: dash_case_cuda_version
   changed_when: false
 
-- name: Install cuda-{{ dash_case_cuda_version.stdout }}
+- name: Install cuda-toolkit-{{ dash_case_cuda_version.stdout }}
   become: true
   ansible.builtin.apt:
-    name: cuda-{{ dash_case_cuda_version.stdout }}
+    name:
+      - cuda-toolkit-{{ dash_case_cuda_version.stdout }}
     update_cache: true
+
+- name: Install cuda-drivers
+  become: true
+  ansible.builtin.apt:
+    name:
+      - cuda-drivers
+    update_cache: true
+  when: install_cuda_drivers|bool
 
 - name: Add PATH to .bashrc
   ansible.builtin.lineinfile:
