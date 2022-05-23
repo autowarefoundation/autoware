@@ -35,6 +35,7 @@ jobs:
             *.args.CUDA_IMAGE_TAG=${{ env.cuda_image_tag }}
             *.args.CUDNN_VERSION=${{ env.cudnn_version }}
             *.args.TENSORRT_VERSION=${{ env.tensorrt_version }}
+          tag-prefix: ${{ env.rosdistro }}-
           tag-suffix: -amd64
 
       - name: Show disk space

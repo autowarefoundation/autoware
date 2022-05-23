@@ -21,5 +21,5 @@ docker buildx bake --load --progress=plain -f "$SCRIPT_DIR/autoware-universe/doc
     --set "*.args.CUDA_IMAGE_TAG=$cuda_image_tag" \
     --set "*.args.CUDNN_VERSION=$cudnn_version" \
     --set "*.args.TENSORRT_VERSION=$tensorrt_version" \
-    --set "devel.tags=ghcr.io/autowarefoundation/autoware-universe:latest" \
-    --set "prebuilt.tags=ghcr.io/autowarefoundation/autoware-universe:latest-prebuilt"
+    --set "devel.tags=ghcr.io/autowarefoundation/autoware-universe:$rosdistro-latest" \
+    --set "prebuilt.tags=ghcr.io/autowarefoundation/autoware-universe:$rosdistro-latest-prebuilt"
