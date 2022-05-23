@@ -297,6 +297,18 @@ def launch_setup(context, *args, **kwargs):
     with open(no_stopping_area_param_path, "r") as f:
         no_stopping_area_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
+    behavior_velocity_planner_param_path = os.path.join(
+        get_package_share_directory("tier4_planning_launch"),
+        "config",
+        "scenario_planning",
+        "lane_driving",
+        "behavior_planning",
+        "behavior_velocity_planner",
+        "behavior_velocity_planner.param.yaml",
+    )
+    with open(behavior_velocity_planner_param_path, "r") as f:
+        behavior_velocity_planner_param = yaml.safe_load(f)["/**"]["ros__parameters"]
+
     behavior_velocity_planner_component = ComposableNode(
         package="behavior_velocity_planner",
         plugin="behavior_velocity_planner::BehaviorVelocityPlannerNode",
@@ -333,21 +345,7 @@ def launch_setup(context, *args, **kwargs):
             ("~/output/traffic_signal", "debug/traffic_signal"),
         ],
         parameters=[
-            {
-                "launch_stop_line": True,
-                "launch_crosswalk": True,
-                "launch_traffic_light": True,
-                "launch_intersection": True,
-                "launch_blind_spot": True,
-                "launch_detection_area": True,
-                "launch_virtual_traffic_light": True,
-                "launch_occlusion_spot": True,
-                "launch_no_stopping_area": True,
-                "forward_path_length": 1000.0,
-                "backward_path_length": 5.0,
-                "max_accel": -2.8,
-                "delay_response_time": 1.3,
-            },
+            behavior_velocity_planner_param,
             blind_spot_param,
             crosswalk_param,
             detection_area_param,
