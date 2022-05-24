@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
 
-from ament_index_python.packages import get_package_share_directory
 import launch
 from launch.actions import DeclareLaunchArgument
 from launch.actions import GroupAction
@@ -26,16 +24,17 @@ from launch_ros.actions import ComposableNodeContainer
 from launch_ros.actions import Node
 from launch_ros.actions import PushRosNamespace
 from launch_ros.descriptions import ComposableNode
+from launch_ros.substitutions import FindPackageShare
 import yaml
 
 
 def launch_setup(context, *args, **kwargs):
-    lanelet2_map_origin_path = os.path.join(
-        get_package_share_directory("map_loader"), "config/lanelet2_map_loader.param.yaml"
+    lanelet2_map_loader_param_path = LaunchConfiguration("lanelet2_map_loader_param_path").perform(
+        context
     )
 
-    with open(lanelet2_map_origin_path, "r") as f:
-        lanelet2_map_origin_param = yaml.safe_load(f)["/**"]["ros__parameters"]
+    with open(lanelet2_map_loader_param_path, "r") as f:
+        lanelet2_map_loader_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
     map_hash_generator = Node(
         package="map_loader",
@@ -56,11 +55,9 @@ def launch_setup(context, *args, **kwargs):
         remappings=[("output/lanelet2_map", "vector_map")],
         parameters=[
             {
-                "center_line_resolution": 5.0,
                 "lanelet2_map_path": LaunchConfiguration("lanelet2_map_path"),
-                "lanelet2_map_projector_type": "MGRS",  # Options: MGRS, UTM
             },
-            lanelet2_map_origin_param,
+            lanelet2_map_loader_param,
         ],
         extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
     )
@@ -143,6 +140,14 @@ def generate_launch_description():
         "pointcloud_map_path",
         [LaunchConfiguration("map_path"), "/pointcloud_map.pcd"],
         "path to pointcloud map file",
+    ),
+    add_launch_arg(
+        "lanelet2_map_loader_param_path",
+        [
+            FindPackageShare("map_loader"),
+            "/config/lanelet2_map_loader.param.yaml",
+        ],
+        "path to lanelet2_map_loader param file",
     ),
     add_launch_arg("use_intra_process", "false", "use ROS2 component container communication"),
     add_launch_arg("use_multithread", "false", "use multithread"),
