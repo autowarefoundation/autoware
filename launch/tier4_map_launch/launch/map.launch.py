@@ -17,6 +17,7 @@ from ament_index_python.packages import get_package_share_directory
 import launch
 from launch.actions import DeclareLaunchArgument
 from launch.actions import GroupAction
+from launch.actions import OpaqueFunction
 from launch.actions import SetLaunchConfiguration
 from launch.conditions import IfCondition
 from launch.conditions import UnlessCondition
@@ -28,8 +29,7 @@ from launch_ros.descriptions import ComposableNode
 import yaml
 
 
-def generate_launch_description():
-
+def launch_setup(context, *args, **kwargs):
     lanelet2_map_origin_path = os.path.join(
         get_package_share_directory("map_loader"), "config/lanelet2_map_loader.param.yaml"
     )
@@ -114,42 +114,56 @@ def generate_launch_description():
         output="screen",
     )
 
+    group = GroupAction(
+        [
+            PushRosNamespace("map"),
+            container,
+            map_hash_generator,
+        ]
+    )
+
+    return [group]
+
+
+def generate_launch_description():
+    launch_arguments = []
+
     def add_launch_arg(name: str, default_value=None, description=None):
-        return DeclareLaunchArgument(name, default_value=default_value, description=description)
+        launch_arguments.append(
+            DeclareLaunchArgument(name, default_value=default_value, description=description)
+        )
+
+    add_launch_arg("map_path", "", "path to map directory"),
+    add_launch_arg(
+        "lanelet2_map_path",
+        [LaunchConfiguration("map_path"), "/lanelet2_map.osm"],
+        "path to lanelet2 map file",
+    ),
+    add_launch_arg(
+        "pointcloud_map_path",
+        [LaunchConfiguration("map_path"), "/pointcloud_map.pcd"],
+        "path to pointcloud map file",
+    ),
+    add_launch_arg("use_intra_process", "false", "use ROS2 component container communication"),
+    add_launch_arg("use_multithread", "false", "use multithread"),
+
+    set_container_executable = SetLaunchConfiguration(
+        "container_executable",
+        "component_container",
+        condition=UnlessCondition(LaunchConfiguration("use_multithread")),
+    )
+
+    set_container_mt_executable = SetLaunchConfiguration(
+        "container_executable",
+        "component_container_mt",
+        condition=IfCondition(LaunchConfiguration("use_multithread")),
+    )
 
     return launch.LaunchDescription(
-        [
-            add_launch_arg("map_path", "", "path to map directory"),
-            add_launch_arg(
-                "lanelet2_map_path",
-                [LaunchConfiguration("map_path"), "/lanelet2_map.osm"],
-                "path to lanelet2 map file",
-            ),
-            add_launch_arg(
-                "pointcloud_map_path",
-                [LaunchConfiguration("map_path"), "/pointcloud_map.pcd"],
-                "path to pointcloud map file",
-            ),
-            add_launch_arg(
-                "use_intra_process", "false", "use ROS2 component container communication"
-            ),
-            add_launch_arg("use_multithread", "false", "use multithread"),
-            SetLaunchConfiguration(
-                "container_executable",
-                "component_container",
-                condition=UnlessCondition(LaunchConfiguration("use_multithread")),
-            ),
-            SetLaunchConfiguration(
-                "container_executable",
-                "component_container_mt",
-                condition=IfCondition(LaunchConfiguration("use_multithread")),
-            ),
-            GroupAction(
-                [
-                    PushRosNamespace("map"),
-                    container,
-                    map_hash_generator,
-                ]
-            ),
+        launch_arguments
+        + [
+            set_container_executable,
+            set_container_mt_executable,
         ]
+        + [OpaqueFunction(function=launch_setup)]
     )
