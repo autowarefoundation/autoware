@@ -13,7 +13,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
         with:
-          ref: main
+          ref: ""
 
       - name: Run setup script
         run: |

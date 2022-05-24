@@ -4,6 +4,7 @@ FROM $BASE_IMAGE as devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ARG ROS_DISTRO
+ARG SETUP_ARGS
 
 ## Install apt packages
 # hadolint ignore=DL3008
@@ -25,7 +26,7 @@ RUN mkdir -p ~/.ssh \
 
 ## Set up development environment
 RUN --mount=type=ssh \
-  ./setup-dev-env.sh -y --no-cuda-drivers universe \
+  ./setup-dev-env.sh -y $SETUP_ARGS universe \
   && pip uninstall -y ansible ansible-core \
   && mkdir src \
   && vcs import src < autoware.repos \

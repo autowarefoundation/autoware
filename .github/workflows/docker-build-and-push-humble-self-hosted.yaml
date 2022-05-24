@@ -32,7 +32,7 @@ jobs:
             cat arm64.env | sed -e "s/^\s*//" -e "/^#/d" >> $GITHUB_ENV
           fi
 
-      - name: Build 'autoware-universe'
+      - name: Build 'autoware-universe' without CUDA
         uses: ./.github/actions/docker-build-and-push
         with:
           bake-target: autoware-universe
@@ -40,7 +40,20 @@ jobs:
             *.platform=linux/arm64
             *.args.ROS_DISTRO=${{ env.rosdistro }}
             *.args.BASE_IMAGE=${{ env.base_image }}
+            *.args.SETUP_ARGS=--no-nvidia
           tag-prefix: ${{ env.rosdistro }}-
+          tag-suffix: -arm64
+
+      - name: Build 'autoware-universe' with CUDA
+        uses: ./.github/actions/docker-build-and-push
+        with:
+          bake-target: autoware-universe
+          build-args: |
+            *.platform=linux/amd64
+            *.args.ROS_DISTRO=${{ env.rosdistro }}
+            *.args.BASE_IMAGE=${{ env.base_image }}
+            *.args.SETUP_ARGS=--no-cuda-drivers
+          tag-prefix: ${{ env.rosdistro }}-cuda-
           tag-suffix: -arm64
 
       - name: Show disk space
