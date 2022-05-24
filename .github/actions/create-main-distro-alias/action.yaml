@@ -32,7 +32,7 @@ runs:
           amd64_image="$distro_image-amd64"
         fi
         if docker manifest inspect "$distro_image-arm64" >/dev/null 2>&1; then
-          amd64_image="$distro_image-arm64"
+          arm64_image="$distro_image-arm64"
         fi
 
         echo "amd64_image: $amd64_image"
@@ -53,7 +53,7 @@ runs:
           amd64_image="$distro_image-amd64"
         fi
         if docker manifest inspect "$distro_image-arm64" >/dev/null 2>&1; then
-          amd64_image="$distro_image-arm64"
+          arm64_image="$distro_image-arm64"
         fi
 
         echo "amd64_image: $amd64_image"
