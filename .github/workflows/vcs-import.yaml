@@ -22,6 +22,7 @@ jobs:
           sudo apt-get -y install python3-pip
 
       - name: Register AutonomouStuff repository
+        if: ${{ env.rosdistro != 'rolling' }}
         uses: autowarefoundation/autoware-github-actions/register-autonomoustuff-repository@v1
         with:
           rosdistro: ${{ needs.load-env.outputs.rosdistro }}
