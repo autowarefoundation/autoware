@@ -8,6 +8,8 @@ This package detects 2D bounding boxes for target objects e.g., cars, trucks, bi
 
 ### Cite
 
+<!-- cspell:ignore Redmon, Farhadi, Bochkovskiy, Jocher, ultralytics, Roboflow, Zenodo -->
+
 yolov3
 
 Redmon, J., & Farhadi, A. (2018). Yolov3: An incremental improvement. arXiv preprint arXiv:1804.02767.

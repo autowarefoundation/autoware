@@ -1,4 +1,4 @@
-# Fake Test Node {#fake-test-node-design}
+# Fake Test Node
 
 ## What this package provides
 

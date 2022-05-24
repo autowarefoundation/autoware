@@ -1,4 +1,4 @@
-# Longitudinal Controller {#longitudinal-controller-design}
+# Longitudinal Controller
 
 ## Purpose / Use cases
 

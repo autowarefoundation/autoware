@@ -1,4 +1,4 @@
-# Spatial Hash {#geometry-spatial-hash}
+# Spatial Hash
 
 The spatial hash is a data structure designed for efficient fixed-radius near-neighbor queries in
 low dimensions.
@@ -35,9 +35,11 @@ The spatial hash works as follows:
 Under the hood, an `std::unordered_multimap` is used, where the key is a bin/voxel index.
 The bin size was computed to be the same as the lookup distance.
 
+<!-- cspell:ignore CRTP -->
+
 In addition, this data structure can support 2D or 3D queries. This is determined during
 configuration, and baked into the data structure via the configuration class. The purpose of
-this was to avoid if statements in tight loops. The configuration class specializations themself
+this was to avoid if statements in tight loops. The configuration class specializations themselves
 use CRTP (Curiously Recurring Template Patterns) to do "static polymorphism", and avoid
 a dispatching call.
 

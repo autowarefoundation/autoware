@@ -1,4 +1,4 @@
-# Trajectory Follower {#trajectory_follower-package-design}
+# Trajectory Follower
 
 This is the design document for the `trajectory_follower` package.
 
@@ -12,9 +12,9 @@ This package provides the library code used by the nodes of the `trajectory_foll
 Mainly, it implements two algorithms:
 
 - Model-Predictive Control (MPC) for the computation of lateral steering commands.
-  - @subpage trajectory_follower-mpc-design
+  - [trajectory_follower-mpc-design](trajectory_follower-mpc-design.md)
 - PID control for the computation of velocity and acceleration commands.
-  - @subpage trajectory_follower-pid-design
+  - [trajectory_follower-pid-design](trajectory_follower-pid-design.md)
 
 ## Related issues
 

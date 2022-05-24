@@ -1,4 +1,4 @@
-# MPC (Trajectory Follower) {#trajectory_follower-mpc-design}
+# MPC (Trajectory Follower)
 
 This is the design document for the MPC implemented in the `trajectory_follower` package.
 
@@ -34,7 +34,7 @@ Different vehicle models are implemented:
 
 The `kinematics` model is being used by default. Please see the reference [1] for more details.
 
-For the optimization, a Quadratric Programming (QP) solver is used
+For the optimization, a Quadratic Programming (QP) solver is used
 with two options are currently implemented:
 
 - `unconstraint` : use least square method to solve unconstraint QP with eigen.

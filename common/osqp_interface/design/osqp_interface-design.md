@@ -1,4 +1,4 @@
-# Interface for the OSQP library {#osqp_interface-package-design}
+# Interface for the OSQP library
 
 This is the design document for the `osqp_interface` package.
 

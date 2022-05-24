@@ -1,4 +1,4 @@
-# vehicle_constants_manager {#vehicle-constants-manager-package-design}
+# vehicle_constants_manager
 
 This is the design document for the `vehicle_constants_manager` package.
 
@@ -83,7 +83,7 @@ vehicle:
   inertia_yaw_kg_m_2:
 ```
 
-## Inputs / Outputs / API {#vehicle-constants-manager-package-design-inputs}
+## Inputs / Outputs / API
 
 <!-- Required -->
 <!-- Things to consider:

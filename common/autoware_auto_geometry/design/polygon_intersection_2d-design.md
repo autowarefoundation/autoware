@@ -1,4 +1,4 @@
-# 2D Convex Polygon Intersection {#convex-polygon-intersection-2d}
+# 2D Convex Polygon Intersection
 
 Two convex polygon's intersection can be visualized on the image below as the blue area:
 

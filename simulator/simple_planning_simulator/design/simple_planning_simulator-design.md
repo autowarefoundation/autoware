@@ -1,4 +1,4 @@
-# simple_planning_simulator {#simple_planning_simulator-package-design}
+# simple_planning_simulator
 
 ## Purpose / Use cases
 

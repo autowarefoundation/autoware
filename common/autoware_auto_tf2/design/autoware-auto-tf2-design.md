@@ -1,4 +1,4 @@
-# autoware_auto_tf2 {#autoware-auto-tf2-design}
+# autoware_auto_tf2
 
 This is the design document for the `autoware_auto_tf2` package.
 
@@ -110,7 +110,7 @@ inline void doTransform(
   const geometry_msgs::msg::TransformStamped & transform)
 ```
 
-- `Quarternion32` (`autoware_auto_msgs`)
+- `Quaternion32` (`autoware_auto_msgs`)
 
 ```cpp
 inline void doTransform(
@@ -169,7 +169,7 @@ inline std::string getFrameId(const BoundingBoxArray & t)
 
 ## Challenges
 
-- `tf2_geometry_msgs` does not implement `doTransform` for any non-stamped datatypes, but it is
+- `tf2_geometry_msgs` does not implement `doTransform` for any non-stamped data types, but it is
   possible with the same function template. It is needed when transforming sub-data, with main data
   that does have a stamp and can call doTransform on the sub-data with the same transform. Is this a useful upstream contribution?
 - `tf2_geometry_msgs` does not have `Point`, `Point32`, does not seem it needs one, also the
@@ -177,7 +177,7 @@ inline std::string getFrameId(const BoundingBoxArray & t)
 - `BoundingBox` uses 32-bit float like `Quaternion32` and `Point32` to save space, as they are used
   repeatedly in `BoundingBoxArray`. While transforming is it better to convert to 64-bit `Quaternion`,
   `Point`, or `PoseStamped`, to re-use existing implementation of `doTransform`, or does it need to be
-  implemented? Templatization may not be simple.
+  implemented? It may not be simple to template.
 
 <!-- # Related issues -->
 <!-- Required -->

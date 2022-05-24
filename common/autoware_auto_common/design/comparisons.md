@@ -1,4 +1,4 @@
-# Comparisons {#helper-comparisons}
+# Comparisons
 
 The `float_comparisons.hpp` library is a simple set of functions for performing approximate numerical comparisons.
 There are separate functions for performing comparisons using absolute bounds and relative bounds. Absolute comparison checks are prefixed with `abs_` and relative checks are prefixed with `rel_`.

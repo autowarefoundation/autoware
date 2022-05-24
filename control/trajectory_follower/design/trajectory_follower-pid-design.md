@@ -1,4 +1,4 @@
-# PID (Trajectory Follower) {#trajectory_follower-pid-design}
+# PID (Trajectory Follower)
 
 This is the design document for the PID implemented in the `trajectory_follower` package.
 

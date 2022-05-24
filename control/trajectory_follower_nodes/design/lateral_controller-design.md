@@ -1,4 +1,4 @@
-# Lateral Controller {#lateral-controller-design}
+# Lateral Controller
 
 This is the design document for the lateral controller node
 in the `trajectory_follower_nodes` package.
@@ -23,7 +23,7 @@ The MPC uses a model of the vehicle to simulate the trajectory resulting from th
 The optimization of the control command is formulated as a Quadratic Program (QP).
 
 These functionalities are implemented in the `trajectory_follower` package
-(see @subpage trajectory_follower-mpc-design)
+(see [trajectory_follower-mpc-design](../../trajectory_follower/design/trajectory_follower-mpc-design.md#mpc-trajectory-follower))
 
 ### Assumptions / Known limits
 

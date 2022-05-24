@@ -1,4 +1,4 @@
-# autoware_testing {#autoware_testing-package-design}
+# autoware_testing
 
 This is the design document for the `autoware_testing` package.
 
