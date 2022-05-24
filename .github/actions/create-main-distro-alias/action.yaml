@@ -8,6 +8,9 @@ inputs:
   rosdistro:
     description: ""
     required: true
+  tag-name:
+    description: ""
+    required: true
 
 runs:
   using: composite
@@ -27,7 +30,7 @@ runs:
     - name: Create Docker manifest for latest
       run: |
         # Check image existence
-        distro_image="${{ steps.set-image-name.outputs.image-name }}:${{ inputs.rosdistro }}-latest"
+        distro_image="${{ steps.set-image-name.outputs.image-name }}:${{ inputs.rosdistro }}-${{ inputs.tag-name }}"
         if docker manifest inspect "$distro_image-amd64" >/dev/null 2>&1; then
           amd64_image="$distro_image-amd64"
         fi
@@ -38,30 +41,9 @@ runs:
         echo "amd64_image: $amd64_image"
         echo "arm64_image: $arm64_image"
 
-        docker manifest create --amend ${{ steps.set-image-name.outputs.image-name }}:latest \
+        docker manifest create --amend ${{ steps.set-image-name.outputs.image-name }}:${{ inputs.tag-name }} \
           $amd64_image \
           $arm64_image
 
-        docker manifest push ${{ steps.set-image-name.outputs.image-name }}:latest
-      shell: bash
-
-    - name: Create Docker manifest for latest-prebuilt
-      run: |
-        # Check image existence
-        distro_image="${{ steps.set-image-name.outputs.image-name }}:${{ inputs.rosdistro }}-latest-prebuilt"
-        if docker manifest inspect "$distro_image-amd64" >/dev/null 2>&1; then
-          amd64_image="$distro_image-amd64"
-        fi
-        if docker manifest inspect "$distro_image-arm64" >/dev/null 2>&1; then
-          arm64_image="$distro_image-arm64"
-        fi
-
-        echo "amd64_image: $amd64_image"
-        echo "arm64_image: $arm64_image"
-
-        docker manifest create --amend ${{ steps.set-image-name.outputs.image-name }}:latest-prebuilt \
-          $amd64_image \
-          $arm64_image
-
-        docker manifest push ${{ steps.set-image-name.outputs.image-name }}:latest-prebuilt
+        docker manifest push ${{ steps.set-image-name.outputs.image-name }}:${{ inputs.tag-name }}
       shell: bash
