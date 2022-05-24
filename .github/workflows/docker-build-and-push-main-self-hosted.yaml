@@ -11,6 +11,15 @@ on:
 jobs:
   docker-build-and-push-main-self-hosted:
     runs-on: [self-hosted, linux, ARM64]
+    strategy:
+      fail-fast: false
+      matrix:
+        name:
+          - no-cuda
+          - cuda
+        include:
+          - { name: no-cuda, setup-args: --no-nvidia, additional-tag-suffix: "" }
+          - { name: cuda, setup-args: --no-cuda-drivers, additional-tag-suffix: -cuda }
     steps:
       # https://github.com/actions/checkout/issues/211
       - name: Change permission of workspace
@@ -32,7 +41,7 @@ jobs:
             cat arm64.env | sed -e "s/^\s*//" -e "/^#/d" >> $GITHUB_ENV
           fi
 
-      - name: Build 'autoware-universe' without CUDA
+      - name: Build 'autoware-universe'
         uses: ./.github/actions/docker-build-and-push
         with:
           bake-target: autoware-universe
@@ -40,21 +49,9 @@ jobs:
             *.platform=linux/arm64
             *.args.ROS_DISTRO=${{ env.rosdistro }}
             *.args.BASE_IMAGE=${{ env.base_image }}
-            *.args.SETUP_ARGS=--no-nvidia
+            *.args.SETUP_ARGS=${{ matrix.setup-args }}
           tag-prefix: ${{ env.rosdistro }}-
-          tag-suffix: -arm64
-
-      - name: Build 'autoware-universe' with CUDA
-        uses: ./.github/actions/docker-build-and-push
-        with:
-          bake-target: autoware-universe
-          build-args: |
-            *.platform=linux/amd64
-            *.args.ROS_DISTRO=${{ env.rosdistro }}
-            *.args.BASE_IMAGE=${{ env.base_image }}
-            *.args.SETUP_ARGS=--no-cuda-drivers
-          tag-prefix: ${{ env.rosdistro }}-cuda-
-          tag-suffix: -arm64
+          tag-suffix: ${{ matrix.additional-tag-suffix }}-arm64
 
       - name: Show disk space
         run: |
