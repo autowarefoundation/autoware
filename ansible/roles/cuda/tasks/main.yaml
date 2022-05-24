@@ -19,11 +19,20 @@
   register: dash_case_cuda_version
   changed_when: false
 
-- name: Install cuda-toolkit-{{ dash_case_cuda_version.stdout }}
+- name: Install CUDA libraries except for cuda-drivers
   become: true
   ansible.builtin.apt:
     name:
-      - cuda-toolkit-{{ dash_case_cuda_version.stdout }}
+      - cuda-cudart-dev-{{ dash_case_cuda_version.stdout }}
+      - cuda-command-line-tools-{{ dash_case_cuda_version.stdout }}
+      - cuda-minimal-build-{{ dash_case_cuda_version.stdout }}
+      - cuda-libraries-dev-{{ dash_case_cuda_version.stdout }}
+      - cuda-nvml-dev-{{ dash_case_cuda_version.stdout }}
+      - cuda-nvprof-{{ dash_case_cuda_version.stdout }}
+      - libnpp-dev-{{ dash_case_cuda_version.stdout }}
+      - libcusparse-dev-{{ dash_case_cuda_version.stdout }}
+      - libcublas-dev-{{ dash_case_cuda_version.stdout }}
+      - libnccl-dev
     update_cache: true
 
 - name: Install cuda-drivers
