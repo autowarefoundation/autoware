@@ -51,7 +51,7 @@ jobs:
 
   clang-tidy-differential:
     runs-on: ubuntu-latest
-    container: ros:galactic
+    container: ghcr.io/autowarefoundation/autoware-universe:latest
     needs: build-and-test-differential
     steps:
       - name: Check out repository
