@@ -12,15 +12,19 @@ args=()
 while [ "$1" != "" ]; do
     case "$1" in
     -y)
+        # Skip prompt inputs without confirmation.
         option_yes=true
         ;;
     -v)
+        # Enable debug outputs.
         option_verbose=true
         ;;
     --no-nvidia)
+        # Disable installation of 'cuda' and 'tensorrt'.
         option_no_nvidia=true
         ;;
     --no-cuda-drivers)
+        # Disable installation of 'cuda-drivers' in 'cuda'.
         option_no_cuda_drivers=true
         ;;
     *)
@@ -63,9 +67,9 @@ fi
 
 # Check installation of NVIDIA libraries
 if [ "$option_no_nvidia" = "true" ]; then
-    ansible_args+=("--extra-vars" "install_nvidia=n")
+    ansible_args+=("--extra-vars" "prompt_install_nvidia=n")
 elif [ "$option_yes" = "true" ]; then
-    ansible_args+=("--extra-vars" "install_nvidia=y")
+    ansible_args+=("--extra-vars" "prompt_install_nvidia=y")
 fi
 
 # Check installation of CUDA Drivers

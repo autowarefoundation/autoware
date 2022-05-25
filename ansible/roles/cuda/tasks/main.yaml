@@ -41,7 +41,7 @@
     name:
       - cuda-drivers
     update_cache: true
-  when: install_cuda_drivers|bool
+  when: install_cuda_drivers | bool
 
 - name: Add PATH to .bashrc
   ansible.builtin.lineinfile:
