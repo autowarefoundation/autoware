@@ -123,7 +123,7 @@ void CropBoxFilterComponent::filter(
 
   output.data.resize(j);
   output.header.frame_id = input->header.frame_id;
-  output.height = input->height;
+  output.height = 1;
   output.fields = input->fields;
   output.is_bigendian = input->is_bigendian;
   output.point_step = input->point_step;
