@@ -18,6 +18,8 @@
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <rviz_common/uniform_string_stream.hpp>
 
+#include <X11/Xlib.h>
+
 #include <algorithm>
 #include <iomanip>
 #include <memory>
@@ -31,17 +33,25 @@ SteeringAngleDisplay::SteeringAngleDisplay()
                   "/images/handle.png")
                   .c_str())
 {
+  const Screen * screen_info = DefaultScreenOfDisplay(XOpenDisplay(NULL));
+
+  constexpr float hight_4k = 2160.0;
+  const float scale = static_cast<float>(screen_info->height) / hight_4k;
+  const auto left = static_cast<int>(std::round(128 * scale));
+  const auto top = static_cast<int>(std::round(128 * scale));
+  const auto length = static_cast<int>(std::round(256 * scale));
+
   property_text_color_ = new rviz_common::properties::ColorProperty(
     "Text Color", QColor(25, 255, 240), "text color", this, SLOT(updateVisualization()), this);
   property_left_ = new rviz_common::properties::IntProperty(
-    "Left", 128, "Left of the plotter window", this, SLOT(updateVisualization()), this);
+    "Left", left, "Left of the plotter window", this, SLOT(updateVisualization()), this);
   property_left_->setMin(0);
   property_top_ = new rviz_common::properties::IntProperty(
-    "Top", 128, "Top of the plotter window", this, SLOT(updateVisualization()));
+    "Top", top, "Top of the plotter window", this, SLOT(updateVisualization()));
   property_top_->setMin(0);
 
   property_length_ = new rviz_common::properties::IntProperty(
-    "Length", 256, "Length of the plotter window", this, SLOT(updateVisualization()), this);
+    "Length", length, "Length of the plotter window", this, SLOT(updateVisualization()), this);
   property_length_->setMin(10);
   property_value_height_offset_ = new rviz_common::properties::IntProperty(
     "Value height offset", 0, "Height offset of the plotter window", this,
