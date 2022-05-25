@@ -62,7 +62,7 @@ FaultInjectionNode::FaultInjectionNode(rclcpp::NodeOptions node_options)
   for (const auto & diag : readEventDiagList()) {
     diagnostic_storage_.registerEvent(diag);
     updater_.add(
-      diag.sim_name, std::bind(&FaultInjectionNode::updateEventDiag, this, _1, diag.sim_name));
+      diag.diag_name, std::bind(&FaultInjectionNode::updateEventDiag, this, _1, diag.sim_name));
   }
 }
 
