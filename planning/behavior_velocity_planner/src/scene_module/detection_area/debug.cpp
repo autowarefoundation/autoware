@@ -48,88 +48,6 @@ geometry_msgs::msg::Point toMsg(const lanelet::BasicPoint3d & point)
   return msg;
 }
 
-visualization_msgs::msg::MarkerArray createMarkerArray(
-  const DebugData & debug_data, const int64_t module_id)
-{
-  visualization_msgs::msg::MarkerArray msg;
-  const tf2::Transform tf_base_link2front(
-    tf2::Quaternion(0.0, 0.0, 0.0, 1.0), tf2::Vector3(debug_data.base_link2front, 0.0, 0.0));
-
-  // Stop VirtualWall
-  const int32_t uid = planning_utils::bitShift(module_id);
-  for (size_t j = 0; j < debug_data.stop_poses.size(); ++j) {
-    visualization_msgs::msg::Marker marker;
-    marker.header.frame_id = "map";
-    marker.ns = "stop_virtual_wall";
-    marker.id = uid + j;
-    marker.lifetime = rclcpp::Duration::from_seconds(0.5);
-    marker.type = visualization_msgs::msg::Marker::CUBE;
-    marker.action = visualization_msgs::msg::Marker::ADD;
-    tf2::Transform tf_map2base_link;
-    tf2::fromMsg(debug_data.stop_poses.at(j), tf_map2base_link);
-    tf2::Transform tf_map2front = tf_map2base_link * tf_base_link2front;
-    tf2::toMsg(tf_map2front, marker.pose);
-    marker.pose.position.z += 1.0;
-    marker.scale.x = 0.1;
-    marker.scale.y = 5.0;
-    marker.scale.z = 2.0;
-    marker.color.a = 0.5;  // Don't forget to set the alpha!
-    marker.color.r = 1.0;
-    marker.color.g = 0.0;
-    marker.color.b = 0.0;
-    msg.markers.push_back(marker);
-  }
-  // DeadLine VirtualWall
-  for (size_t j = 0; j < debug_data.dead_line_poses.size(); ++j) {
-    visualization_msgs::msg::Marker marker;
-    marker.header.frame_id = "map";
-    marker.ns = "dead_line_virtual_wall";
-    marker.id = uid + j;
-    marker.lifetime = rclcpp::Duration::from_seconds(0.5);
-    marker.type = visualization_msgs::msg::Marker::CUBE;
-    marker.action = visualization_msgs::msg::Marker::ADD;
-    tf2::Transform tf_map2base_link;
-    tf2::fromMsg(debug_data.dead_line_poses.at(j), tf_map2base_link);
-    tf2::Transform tf_map2front = tf_map2base_link * tf_base_link2front;
-    tf2::toMsg(tf_map2front, marker.pose);
-    marker.pose.position.z += 1.0;
-    marker.scale.x = 0.1;
-    marker.scale.y = 5.0;
-    marker.scale.z = 2.0;
-    marker.color.a = 0.5;  // Don't forget to set the alpha!
-    marker.color.r = 0.0;
-    marker.color.g = 1.0;
-    marker.color.b = 0.0;
-    msg.markers.push_back(marker);
-  }
-  // Facto Text
-  for (size_t j = 0; j < debug_data.stop_poses.size(); ++j) {
-    visualization_msgs::msg::Marker marker;
-    marker.header.frame_id = "map";
-    marker.ns = "factor_text";
-    marker.id = uid + j;
-    marker.lifetime = rclcpp::Duration::from_seconds(0.5);
-    marker.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
-    marker.action = visualization_msgs::msg::Marker::ADD;
-    tf2::Transform tf_map2base_link;
-    tf2::fromMsg(debug_data.stop_poses.at(j), tf_map2base_link);
-    tf2::Transform tf_map2front = tf_map2base_link * tf_base_link2front;
-    tf2::toMsg(tf_map2front, marker.pose);
-    marker.pose.position.z += 2.0;
-    marker.scale.x = 0.0;
-    marker.scale.y = 0.0;
-    marker.scale.z = 1.0;
-    marker.color.a = 0.999;  // Don't forget to set the alpha!
-    marker.color.r = 1.0;
-    marker.color.g = 1.0;
-    marker.color.b = 1.0;
-    marker.text = "detection area";
-    msg.markers.push_back(marker);
-  }
-
-  return msg;
-}
-
 visualization_msgs::msg::MarkerArray createCorrespondenceMarkerArray(
   const lanelet::autoware::DetectionArea & detection_area_reg_elem, const rclcpp::Time & now)
 {
@@ -234,21 +152,46 @@ visualization_msgs::msg::MarkerArray createObstacleMarkerArray(
 
 visualization_msgs::msg::MarkerArray DetectionAreaModule::createDebugMarkerArray()
 {
-  visualization_msgs::msg::MarkerArray debug_marker_array;
+  visualization_msgs::msg::MarkerArray wall_marker;
   const rclcpp::Time current_time = clock_->now();
-  appendMarkerArray(
-    createMarkerArray(debug_data_, getModuleId()), current_time, &debug_marker_array);
 
   if (!debug_data_.stop_poses.empty()) {
     appendMarkerArray(
       createCorrespondenceMarkerArray(detection_area_reg_elem_, current_time), current_time,
-      &debug_marker_array);
+      &wall_marker);
 
     appendMarkerArray(
       createObstacleMarkerArray(debug_data_.obstacle_points, current_time), current_time,
-      &debug_marker_array);
+      &wall_marker);
   }
 
-  return debug_marker_array;
+  return wall_marker;
 }
+
+visualization_msgs::msg::MarkerArray DetectionAreaModule::createVirtualWallMarkerArray()
+{
+  visualization_msgs::msg::MarkerArray wall_marker;
+
+  const rclcpp::Time now = clock_->now();
+
+  auto id = getModuleId();
+  for (const auto & p : debug_data_.stop_poses) {
+    const auto p_front =
+      tier4_autoware_utils::calcOffsetPose(p, debug_data_.base_link2front, 0.0, 0.0);
+    appendMarkerArray(
+      tier4_autoware_utils::createStopVirtualWallMarker(p_front, "detection_area", now, id++), now,
+      &wall_marker);
+  }
+
+  for (const auto & p : debug_data_.dead_line_poses) {
+    const auto p_front =
+      tier4_autoware_utils::calcOffsetPose(p, debug_data_.base_link2front, 0.0, 0.0);
+    appendMarkerArray(
+      tier4_autoware_utils::createDeadLineVirtualWallMarker(p_front, "detection_area", now, id++),
+      now, &wall_marker);
+  }
+
+  return wall_marker;
+}
+
 }  // namespace behavior_velocity_planner

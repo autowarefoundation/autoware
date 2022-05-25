@@ -48,10 +48,12 @@ public:
   void publish();
 
 private:
+  rclcpp::Publisher<MarkerArray>::SharedPtr debug_virtual_wall_pub_;
   rclcpp::Publisher<MarkerArray>::SharedPtr debug_viz_pub_;
   rclcpp::Publisher<StopReasonArray>::SharedPtr stop_reason_pub_;
   double base_link2front_;
 
+  MarkerArray makeVirtualWallMarker();
   MarkerArray makeVisualizationMarker();
   StopReasonArray makeStopReasonArray();
 

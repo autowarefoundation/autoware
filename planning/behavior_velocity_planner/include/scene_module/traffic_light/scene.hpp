@@ -75,6 +75,7 @@ public:
     tier4_planning_msgs::msg::StopReason * stop_reason) override;
 
   visualization_msgs::msg::MarkerArray createDebugMarkerArray() override;
+  visualization_msgs::msg::MarkerArray createVirtualWallMarkerArray() override;
 
   inline autoware_auto_perception_msgs::msg::LookingTrafficSignal getTrafficSignal() const
   {

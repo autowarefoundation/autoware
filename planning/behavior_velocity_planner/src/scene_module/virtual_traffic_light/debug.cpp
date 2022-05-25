@@ -48,13 +48,38 @@ namespace
 }
 }  // namespace
 
+visualization_msgs::msg::MarkerArray VirtualTrafficLightModule::createVirtualWallMarkerArray()
+{
+  visualization_msgs::msg::MarkerArray wall_marker;
+
+  const auto & d = module_data_;
+  const auto now = clock_->now();
+
+  // virtual_wall_stop_line
+  if (d.stop_head_pose_at_stop_line) {
+    const auto markers = createStopVirtualWallMarker(
+      *d.stop_head_pose_at_stop_line, "virtual_traffic_light", now, module_id_);
+
+    appendMarkerArray(markers, &wall_marker);
+  }
+
+  // virtual_wall_end_line
+  if (d.stop_head_pose_at_end_line) {
+    const auto markers = createStopVirtualWallMarker(
+      *d.stop_head_pose_at_end_line, "virtual_traffic_light", now, module_id_);
+
+    appendMarkerArray(markers, &wall_marker);
+  }
+
+  return wall_marker;
+}
+
 visualization_msgs::msg::MarkerArray VirtualTrafficLightModule::createDebugMarkerArray()
 {
   visualization_msgs::msg::MarkerArray debug_marker_array;
 
   // Common
   const auto & m = map_data_;
-  const auto & d = module_data_;
   const auto now = clock_->now();
 
   // instrument_id
@@ -120,22 +145,6 @@ visualization_msgs::msg::MarkerArray VirtualTrafficLightModule::createDebugMarke
     }
 
     debug_marker_array.markers.push_back(marker);
-  }
-
-  // virtual_wall_stop_line
-  if (d.stop_head_pose_at_stop_line) {
-    const auto markers = createStopVirtualWallMarker(
-      *d.stop_head_pose_at_stop_line, "virtual_traffic_light", now, module_id_);
-
-    appendMarkerArray(markers, &debug_marker_array);
-  }
-
-  // virtual_wall_end_line
-  if (d.stop_head_pose_at_end_line) {
-    const auto markers = createStopVirtualWallMarker(
-      *d.stop_head_pose_at_end_line, "virtual_traffic_light", now, module_id_);
-
-    appendMarkerArray(markers, &debug_marker_array);
   }
 
   return debug_marker_array;

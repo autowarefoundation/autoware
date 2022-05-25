@@ -79,9 +79,6 @@ MarkerArray createPathMarkerArray(
   const PathWithLaneId & path, const std::string & ns, const int64_t lane_id, const double r,
   const double g, const double b);
 
-MarkerArray createVirtualWallMarkerArray(
-  const Pose & pose, const int64_t lane_id, const std::string & stop_factor);
-
 MarkerArray createPoseLineMarkerArray(
   const Pose & pose, const std::string & ns, const int64_t id, const double r, const double g,
   const double b);

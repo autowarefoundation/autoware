@@ -383,43 +383,6 @@ MarkerArray createPathMarkerArray(
   return msg;
 }
 
-MarkerArray createVirtualWallMarkerArray(
-  const Pose & pose, const int64_t lane_id, const std::string & stop_factor)
-{
-  MarkerArray msg;
-
-  Marker marker_virtual_wall{};
-  marker_virtual_wall.header.frame_id = "map";
-  marker_virtual_wall.header.stamp = rclcpp::Clock{RCL_ROS_TIME}.now();
-  marker_virtual_wall.ns = "stop_virtual_wall";
-  marker_virtual_wall.id = lane_id;
-  marker_virtual_wall.lifetime = rclcpp::Duration::from_seconds(0.2);
-  marker_virtual_wall.type = Marker::CUBE;
-  marker_virtual_wall.action = Marker::ADD;
-  marker_virtual_wall.pose = pose;
-  marker_virtual_wall.pose.position.z += 1.0;
-  marker_virtual_wall.scale = tier4_autoware_utils::createMarkerScale(0.1, 5.0, 2.0);
-  marker_virtual_wall.color = tier4_autoware_utils::createMarkerColor(1.0, 0.0, 0.0, 0.5);
-  msg.markers.push_back(marker_virtual_wall);
-
-  Marker marker_factor_text{};
-  marker_factor_text.header.frame_id = "map";
-  marker_factor_text.header.stamp = rclcpp::Clock{RCL_ROS_TIME}.now();
-  marker_factor_text.ns = "factor_text";
-  marker_factor_text.id = lane_id;
-  marker_factor_text.lifetime = rclcpp::Duration::from_seconds(0.2);
-  marker_factor_text.type = Marker::TEXT_VIEW_FACING;
-  marker_factor_text.action = Marker::ADD;
-  marker_factor_text.pose = pose;
-  marker_factor_text.pose.position.z += 2.0;
-  marker_factor_text.scale = tier4_autoware_utils::createMarkerScale(0.0, 0.0, 1.0);
-  marker_factor_text.color = tier4_autoware_utils::createMarkerColor(1.0, 1.0, 1.0, 0.999);
-  marker_factor_text.text = stop_factor;
-  msg.markers.push_back(marker_factor_text);
-
-  return msg;
-}
-
 MarkerArray createPoseLineMarkerArray(
   const Pose & pose, const std::string & ns, const int64_t id, const double r, const double g,
   const double b)

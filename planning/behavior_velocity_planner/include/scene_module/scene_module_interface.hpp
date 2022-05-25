@@ -48,6 +48,7 @@ public:
     autoware_auto_planning_msgs::msg::PathWithLaneId * path,
     tier4_planning_msgs::msg::StopReason * stop_reason) = 0;
   virtual visualization_msgs::msg::MarkerArray createDebugMarkerArray() = 0;
+  virtual visualization_msgs::msg::MarkerArray createVirtualWallMarkerArray() = 0;
 
   int64_t getModuleId() const { return module_id_; }
   void setPlannerData(const std::shared_ptr<const PlannerData> & planner_data)
@@ -85,6 +86,8 @@ public:
   {
     const auto ns = std::string("~/debug/") + module_name;
     pub_debug_ = node.create_publisher<visualization_msgs::msg::MarkerArray>(ns, 20);
+    pub_virtual_wall_ = node.create_publisher<visualization_msgs::msg::MarkerArray>(
+      std::string("~/virtual_wall/") + module_name, 20);
     pub_stop_reason_ =
       node.create_publisher<tier4_planning_msgs::msg::StopReasonArray>("~/output/stop_reasons", 20);
     pub_infrastructure_commands_ =
@@ -111,6 +114,7 @@ public:
   virtual void modifyPathVelocity(autoware_auto_planning_msgs::msg::PathWithLaneId * path)
   {
     visualization_msgs::msg::MarkerArray debug_marker_array;
+    visualization_msgs::msg::MarkerArray virtual_wall_marker_array;
     tier4_planning_msgs::msg::StopReasonArray stop_reason_array;
     stop_reason_array.header.frame_id = "map";
     stop_reason_array.header.stamp = clock_->now();
@@ -139,6 +143,10 @@ public:
       for (const auto & marker : scene_module->createDebugMarkerArray().markers) {
         debug_marker_array.markers.push_back(marker);
       }
+
+      for (const auto & marker : scene_module->createVirtualWallMarkerArray().markers) {
+        virtual_wall_marker_array.markers.push_back(marker);
+      }
     }
 
     if (!stop_reason_array.stop_reasons.empty()) {
@@ -146,6 +154,7 @@ public:
     }
     pub_infrastructure_commands_->publish(infrastructure_command_array);
     pub_debug_->publish(debug_marker_array);
+    pub_virtual_wall_->publish(virtual_wall_marker_array);
   }
 
 protected:
@@ -201,6 +210,7 @@ protected:
   rclcpp::Clock::SharedPtr clock_;
   // Debug
   rclcpp::Logger logger_;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pub_virtual_wall_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pub_debug_;
   rclcpp::Publisher<tier4_planning_msgs::msg::StopReasonArray>::SharedPtr pub_stop_reason_;
   rclcpp::Publisher<tier4_v2x_msgs::msg::InfrastructureCommandArray>::SharedPtr

@@ -285,10 +285,7 @@ visualization_msgs::msg::MarkerArray OcclusionSpotModule::createDebugMarkerArray
   const auto current_time = this->clock_->now();
 
   visualization_msgs::msg::MarkerArray debug_marker_array;
-  if (!debug_data_.possible_collisions.empty()) {
-    appendMarkerArray(
-      createPossibleCollisionMarkers(debug_data_, module_id_), current_time, &debug_marker_array);
-  }
+
   if (!debug_data_.detection_area_polygons.empty()) {
     appendMarkerArray(
       makeSlicePolygonMarker(
@@ -314,5 +311,17 @@ visualization_msgs::msg::MarkerArray OcclusionSpotModule::createDebugMarkerArray
       &debug_marker_array);
   }
   return debug_marker_array;
+}
+
+visualization_msgs::msg::MarkerArray OcclusionSpotModule::createVirtualWallMarkerArray()
+{
+  const auto current_time = this->clock_->now();
+
+  visualization_msgs::msg::MarkerArray wall_marker;
+  if (!debug_data_.possible_collisions.empty()) {
+    appendMarkerArray(
+      createPossibleCollisionMarkers(debug_data_, module_id_), current_time, &wall_marker);
+  }
+  return wall_marker;
 }
 }  // namespace behavior_velocity_planner

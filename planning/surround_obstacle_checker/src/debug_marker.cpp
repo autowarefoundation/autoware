@@ -38,6 +38,8 @@ SurroundObstacleCheckerDebugNode::SurroundObstacleCheckerDebugNode(
   const double base_link2front, const rclcpp::Clock::SharedPtr clock, rclcpp::Node & node)
 : base_link2front_(base_link2front), clock_(clock)
 {
+  debug_virtual_wall_pub_ =
+    node.create_publisher<visualization_msgs::msg::MarkerArray>("~/virtual_wall", 1);
   debug_viz_pub_ = node.create_publisher<visualization_msgs::msg::MarkerArray>("~/debug/marker", 1);
   stop_reason_pub_ = node.create_publisher<StopReasonArray>("~/output/stop_reasons", 1);
 }
@@ -68,6 +70,10 @@ bool SurroundObstacleCheckerDebugNode::pushObstaclePoint(
 
 void SurroundObstacleCheckerDebugNode::publish()
 {
+  /* publish virtual_wall marker for rviz */
+  const auto virtual_wall_msg = makeVirtualWallMarker();
+  debug_virtual_wall_pub_->publish(virtual_wall_msg);
+
   /* publish debug marker for rviz */
   const auto visualization_msg = makeVisualizationMarker();
   debug_viz_pub_->publish(visualization_msg);
@@ -81,7 +87,7 @@ void SurroundObstacleCheckerDebugNode::publish()
   stop_obstacle_point_ptr_ = nullptr;
 }
 
-MarkerArray SurroundObstacleCheckerDebugNode::makeVisualizationMarker()
+MarkerArray SurroundObstacleCheckerDebugNode::makeVirtualWallMarker()
 {
   MarkerArray msg;
   rclcpp::Time current_time = this->clock_->now();
@@ -92,6 +98,14 @@ MarkerArray SurroundObstacleCheckerDebugNode::makeVisualizationMarker()
     const auto markers = createStopVirtualWallMarker(p, "surround obstacle", current_time, 0);
     appendMarkerArray(markers, &msg);
   }
+
+  return msg;
+}
+
+MarkerArray SurroundObstacleCheckerDebugNode::makeVisualizationMarker()
+{
+  MarkerArray msg;
+  rclcpp::Time current_time = this->clock_->now();
 
   // visualize surround object
   if (stop_obstacle_point_ptr_ != nullptr) {

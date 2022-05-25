@@ -77,6 +77,7 @@ void TrafficLightModuleManager::modifyPathVelocity(
   autoware_auto_planning_msgs::msg::PathWithLaneId * path)
 {
   visualization_msgs::msg::MarkerArray debug_marker_array;
+  visualization_msgs::msg::MarkerArray virtual_wall_marker_array;
   tier4_planning_msgs::msg::StopReasonArray stop_reason_array;
   autoware_auto_perception_msgs::msg::LookingTrafficSignal tl_state;
 
@@ -111,11 +112,15 @@ void TrafficLightModuleManager::modifyPathVelocity(
     for (const auto & marker : traffic_light_scene_module->createDebugMarkerArray().markers) {
       debug_marker_array.markers.push_back(marker);
     }
+    for (const auto & marker : traffic_light_scene_module->createVirtualWallMarkerArray().markers) {
+      virtual_wall_marker_array.markers.push_back(marker);
+    }
   }
   if (!stop_reason_array.stop_reasons.empty()) {
     pub_stop_reason_->publish(stop_reason_array);
   }
   pub_debug_->publish(debug_marker_array);
+  pub_virtual_wall_->publish(virtual_wall_marker_array);
   pub_tl_state_->publish(tl_state);
 }
 

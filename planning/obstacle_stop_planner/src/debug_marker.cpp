@@ -41,6 +41,8 @@ ObstacleStopPlannerDebugNode::ObstacleStopPlannerDebugNode(
   rclcpp::Node * node, const double base_link2front)
 : node_(node), base_link2front_(base_link2front)
 {
+  virtual_wall_pub_ =
+    node_->create_publisher<visualization_msgs::msg::MarkerArray>("~/virtual_wall", 1);
   debug_viz_pub_ =
     node_->create_publisher<visualization_msgs::msg::MarkerArray>("~/debug/marker", 1);
   stop_reason_pub_ =
@@ -136,6 +138,10 @@ bool ObstacleStopPlannerDebugNode::pushObstaclePoint(
 void ObstacleStopPlannerDebugNode::publish()
 {
   /* publish debug marker for rviz */
+  const auto virtual_wall_msg = makeVirtualWallMarker();
+  virtual_wall_pub_->publish(virtual_wall_msg);
+
+  /* publish debug marker for rviz */
   const auto visualization_msg = makeVisualizationMarker();
   debug_viz_pub_->publish(visualization_msg);
 
@@ -161,6 +167,45 @@ void ObstacleStopPlannerDebugNode::publish()
   slow_down_end_pose_ptr_ = nullptr;
   stop_obstacle_point_ptr_ = nullptr;
   slow_down_obstacle_point_ptr_ = nullptr;
+}
+
+visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVirtualWallMarker()
+{
+  visualization_msgs::msg::MarkerArray msg;
+  rclcpp::Time current_time = node_->now();
+
+  if (stop_pose_ptr_ != nullptr) {
+    const auto p = calcOffsetPose(*stop_pose_ptr_, base_link2front_, 0.0, 0.0);
+    const auto markers = createStopVirtualWallMarker(p, "obstacle on the path", current_time, 0);
+    appendMarkerArray(markers, &msg);
+  }
+
+  if (slow_down_start_pose_ptr_ != nullptr && stop_pose_ptr_ == nullptr) {
+    const auto p = calcOffsetPose(*slow_down_start_pose_ptr_, base_link2front_, 0.0, 0.0);
+
+    {
+      const auto markers =
+        createSlowDownVirtualWallMarker(p, "obstacle beside the path", current_time, 0);
+      appendMarkerArray(markers, &msg);
+    }
+
+    {
+      auto markers = createSlowDownVirtualWallMarker(p, "slow down\nstart", current_time, 1);
+      markers.markers.front().ns = "slow_down_start_virtual_wall";
+      markers.markers.back().ns = "slow_down_start_factor_text";
+      appendMarkerArray(markers, &msg);
+    }
+  }
+
+  if (slow_down_end_pose_ptr_ != nullptr && stop_pose_ptr_ == nullptr) {
+    const auto p = calcOffsetPose(*slow_down_end_pose_ptr_, base_link2front_, 0.0, 0.0);
+    auto markers = createSlowDownVirtualWallMarker(p, "slow down\nend", current_time, 2);
+    markers.markers.front().ns = "slow_down_end_virtual_wall";
+    markers.markers.back().ns = "slow_down_end_factor_text";
+    appendMarkerArray(markers, &msg);
+  }
+
+  return msg;
 }
 
 visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualizationMarker()
@@ -260,37 +305,6 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
       }
     }
     msg.markers.push_back(marker);
-  }
-
-  if (stop_pose_ptr_ != nullptr) {
-    const auto p = calcOffsetPose(*stop_pose_ptr_, base_link2front_, 0.0, 0.0);
-    const auto markers = createStopVirtualWallMarker(p, "obstacle on the path", current_time, 0);
-    appendMarkerArray(markers, &msg);
-  }
-
-  if (slow_down_start_pose_ptr_ != nullptr && stop_pose_ptr_ == nullptr) {
-    const auto p = calcOffsetPose(*slow_down_start_pose_ptr_, base_link2front_, 0.0, 0.0);
-
-    {
-      const auto markers =
-        createSlowDownVirtualWallMarker(p, "obstacle beside the path", current_time, 0);
-      appendMarkerArray(markers, &msg);
-    }
-
-    {
-      auto markers = createSlowDownVirtualWallMarker(p, "slow down\nstart", current_time, 1);
-      markers.markers.front().ns = "slow_down_start_virtual_wall";
-      markers.markers.back().ns = "slow_down_start_factor_text";
-      appendMarkerArray(markers, &msg);
-    }
-  }
-
-  if (slow_down_end_pose_ptr_ != nullptr && stop_pose_ptr_ == nullptr) {
-    const auto p = calcOffsetPose(*slow_down_end_pose_ptr_, base_link2front_, 0.0, 0.0);
-    auto markers = createSlowDownVirtualWallMarker(p, "slow down\nend", current_time, 2);
-    markers.markers.front().ns = "slow_down_end_virtual_wall";
-    markers.markers.back().ns = "slow_down_end_factor_text";
-    appendMarkerArray(markers, &msg);
   }
 
   if (stop_obstacle_point_ptr_ != nullptr) {

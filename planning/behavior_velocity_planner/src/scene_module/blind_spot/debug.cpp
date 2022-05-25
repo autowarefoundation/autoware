@@ -109,41 +109,6 @@ visualization_msgs::msg::MarkerArray createPathMarkerArray(
   return msg;
 }
 
-visualization_msgs::msg::MarkerArray createVirtualWallMarkerArray(
-  const geometry_msgs::msg::Pose & pose, const int64_t lane_id)
-{
-  visualization_msgs::msg::MarkerArray msg;
-
-  visualization_msgs::msg::Marker marker_virtual_wall{};
-  marker_virtual_wall.header.frame_id = "map";
-  marker_virtual_wall.ns = "stop_virtual_wall";
-  marker_virtual_wall.id = lane_id;
-  marker_virtual_wall.lifetime = rclcpp::Duration::from_seconds(0.5);
-  marker_virtual_wall.type = visualization_msgs::msg::Marker::CUBE;
-  marker_virtual_wall.action = visualization_msgs::msg::Marker::ADD;
-  marker_virtual_wall.pose = pose;
-  marker_virtual_wall.pose.position.z += 1.0;
-  marker_virtual_wall.scale = createMarkerScale(0.1, 5.0, 2.0);
-  marker_virtual_wall.color = createMarkerColor(1.0, 0.0, 0.0, 0.5);
-  msg.markers.push_back(marker_virtual_wall);
-
-  visualization_msgs::msg::Marker marker_factor_text{};
-  marker_factor_text.header.frame_id = "map";
-  marker_factor_text.ns = "factor_text";
-  marker_factor_text.id = lane_id;
-  marker_factor_text.lifetime = rclcpp::Duration::from_seconds(0.5);
-  marker_factor_text.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
-  marker_factor_text.action = visualization_msgs::msg::Marker::ADD;
-  marker_factor_text.pose = pose;
-  marker_factor_text.pose.position.z += 2.0;
-  marker_factor_text.scale = createMarkerScale(0.0, 0.0, 1.0);
-  marker_factor_text.color = createMarkerColor(1.0, 1.0, 1.0, 0.999);
-  marker_factor_text.text = "blind spot";
-  msg.markers.push_back(marker_factor_text);
-
-  return msg;
-}
-
 visualization_msgs::msg::MarkerArray createPoseMarkerArray(
   const geometry_msgs::msg::Pose & pose, const State & state, const std::string & ns,
   const int64_t id, const double r, const double g, const double b)
@@ -184,6 +149,22 @@ visualization_msgs::msg::MarkerArray createPoseMarkerArray(
 }
 
 }  // namespace
+
+visualization_msgs::msg::MarkerArray BlindSpotModule::createVirtualWallMarkerArray()
+{
+  visualization_msgs::msg::MarkerArray wall_marker;
+
+  const auto state = state_machine_.getState();
+  const auto now = this->clock_->now();
+
+  if (state == BlindSpotModule::State::STOP) {
+    appendMarkerArray(
+      tier4_autoware_utils::createStopVirtualWallMarker(
+        debug_data_.virtual_wall_pose, "blind_spot", now, lane_id_),
+      now, &wall_marker);
+  }
+  return wall_marker;
+}
 
 visualization_msgs::msg::MarkerArray BlindSpotModule::createDebugMarkerArray()
 {
@@ -226,12 +207,6 @@ visualization_msgs::msg::MarkerArray BlindSpotModule::createDebugMarkerArray()
   appendMarkerArray(
     createPathMarkerArray(debug_data_.spline_path, "spline", lane_id_, 0.5, 0.5, 0.5), current_time,
     &debug_marker_array);
-
-  if (state == BlindSpotModule::State::STOP) {
-    appendMarkerArray(
-      createVirtualWallMarkerArray(debug_data_.virtual_wall_pose, lane_id_), current_time,
-      &debug_marker_array);
-  }
 
   return debug_marker_array;
 }

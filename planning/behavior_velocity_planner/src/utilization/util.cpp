@@ -592,5 +592,6 @@ LineString2d extendLine(
   return {
     {(p1 - length * t).x(), (p1 - length * t).y()}, {(p2 + length * t).x(), (p2 + length * t).y()}};
 }
+
 }  // namespace planning_utils
 }  // namespace behavior_velocity_planner

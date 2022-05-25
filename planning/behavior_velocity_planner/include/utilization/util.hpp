@@ -298,6 +298,7 @@ std::vector<T> concatVector(const std::vector<T> & vec1, const std::vector<T> & 
   concat_vec.insert(std::end(concat_vec), std::begin(vec2), std::end(vec2));
   return concat_vec;
 }
+
 }  // namespace planning_utils
 }  // namespace behavior_velocity_planner
 
