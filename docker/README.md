@@ -87,6 +87,19 @@ cd autoware/
 ./docker/build.sh
 ```
 
+To build without CUDA, use the `--no-cuda` option:
+
+```bash
+./docker/build.sh --no-cuda
+```
+
+To specify the platform, use the `--platform` option:
+
+```bash
+./docker/build.sh --platform linux/amd64
+./docker/build.sh --platform linux/arm64
+```
+
 ## Tips
 
 ### Precautions for not using `rocker`
