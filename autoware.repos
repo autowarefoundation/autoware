@@ -16,6 +16,10 @@ repositories:
     type: git
     url: https://github.com/tier4/autoware_auto_msgs.git
     version: tier4/main
+  core/external/ament_cmake:
+    type: git
+    url: https://github.com/autowarefoundation/ament_cmake.git
+    version: autoware-humble
   # universe
   universe/autoware.universe:
     type: git
