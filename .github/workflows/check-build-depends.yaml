@@ -8,7 +8,7 @@ on:
 jobs:
   check-build-depends:
     runs-on: ubuntu-latest
-    container: ghcr.io/autowarefoundation/autoware-universe:latest
+    container: ghcr.io/autowarefoundation/autoware-universe:galactic-latest-cuda
     steps:
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.9.1

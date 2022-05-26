@@ -8,7 +8,7 @@ on:
 jobs:
   build-and-test-self-hosted:
     runs-on: [self-hosted, linux, ARM64]
-    container: ghcr.io/autowarefoundation/autoware-universe:latest
+    container: ghcr.io/autowarefoundation/autoware-universe:galactic-latest-cuda
     steps:
       - name: Check out repository
         uses: actions/checkout@v3

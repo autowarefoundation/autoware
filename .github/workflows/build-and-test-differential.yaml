@@ -6,7 +6,7 @@ on:
 jobs:
   build-and-test-differential:
     runs-on: ubuntu-latest
-    container: ghcr.io/autowarefoundation/autoware-universe:latest
+    container: ghcr.io/autowarefoundation/autoware-universe:galactic-latest-cuda
     steps:
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.9.1
@@ -51,7 +51,7 @@ jobs:
 
   clang-tidy-differential:
     runs-on: ubuntu-latest
-    container: ghcr.io/autowarefoundation/autoware-universe:latest
+    container: ghcr.io/autowarefoundation/autoware-universe:galactic-latest-cuda
     needs: build-and-test-differential
     steps:
       - name: Check out repository

@@ -10,7 +10,7 @@ jobs:
   build-and-test:
     if: ${{ github.event_name != 'push' || github.ref_name == github.event.repository.default_branch }}
     runs-on: ubuntu-latest
-    container: ghcr.io/autowarefoundation/autoware-universe:latest
+    container: ghcr.io/autowarefoundation/autoware-universe:galactic-latest-cuda
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
