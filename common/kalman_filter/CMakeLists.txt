@@ -7,6 +7,11 @@ autoware_package()
 find_package(eigen3_cmake_module REQUIRED)
 find_package(Eigen3 REQUIRED)
 
+include_directories(
+  SYSTEM
+    ${EIGEN3_INCLUDE_DIR}
+)
+
 ament_auto_add_library(kalman_filter SHARED
   src/kalman_filter.cpp
   src/time_delay_kalman_filter.cpp

@@ -8,6 +8,11 @@ find_package(eigen3_cmake_module REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(PCL REQUIRED COMPONENTS common)
 
+include_directories(
+  SYSTEM
+    ${EIGEN3_INCLUDE_DIR}
+)
+
 ament_auto_add_library(${PROJECT_NAME} SHARED
   src/debug_marker.cpp
   src/node.cpp

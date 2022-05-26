@@ -9,8 +9,9 @@ find_package(Eigen3 REQUIRED)
 
 include_directories(
   include
-  ${OpenCV_INCLUDE_DIRS}
-  ${EIGEN3_INCLUDE_DIRS}
+  SYSTEM
+    ${OpenCV_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIRS}
 )
 
 ament_auto_add_library(${PROJECT_NAME} SHARED

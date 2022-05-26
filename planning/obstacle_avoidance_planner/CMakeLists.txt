@@ -20,8 +20,9 @@ ament_auto_add_library(obstacle_avoidance_planner SHARED
 )
 
 target_include_directories(obstacle_avoidance_planner
-  PUBLIC
+  SYSTEM PUBLIC
     ${OpenCV_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIR}
 )
 
 target_link_libraries(obstacle_avoidance_planner

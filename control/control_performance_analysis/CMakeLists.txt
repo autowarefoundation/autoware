@@ -9,6 +9,11 @@ find_package(Boost REQUIRED)
 find_package(eigen3_cmake_module REQUIRED)
 find_package(Eigen3 REQUIRED)
 
+include_directories(
+  SYSTEM
+    ${EIGEN3_INCLUDE_DIR}
+)
+
 rosidl_generate_interfaces(control_performance_analysis_msgs
   msg/Error.msg
   msg/ErrorStamped.msg

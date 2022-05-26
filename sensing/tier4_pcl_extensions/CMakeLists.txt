@@ -8,7 +8,11 @@ find_package(PCL REQUIRED COMPONENTS common)
 find_package(eigen3_cmake_module REQUIRED)
 find_package(Eigen3 REQUIRED)
 
-include_directories(${PCL_INCLUDE_DIRS})
+include_directories(
+  SYSTEM
+    ${EIGEN3_INCLUDE_DIR}
+    ${PCL_INCLUDE_DIRS}
+)
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 

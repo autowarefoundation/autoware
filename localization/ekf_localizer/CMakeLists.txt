@@ -6,6 +6,11 @@ autoware_package()
 
 find_package(Eigen3 REQUIRED)
 
+include_directories(
+  SYSTEM
+    ${EIGEN3_INCLUDE_DIR}
+)
+
 ament_auto_add_executable(ekf_localizer
   src/ekf_localizer_node.cpp
   src/ekf_localizer.cpp

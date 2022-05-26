@@ -7,7 +7,8 @@ autoware_package()
 find_package(Eigen3 REQUIRED)
 
 include_directories(
-  ${EIGEN3_INCLUDE_DIR}
+  SYSTEM
+    ${EIGEN3_INCLUDE_DIR}
 )
 
 ament_auto_add_library(traffic_light_map_based_detector SHARED

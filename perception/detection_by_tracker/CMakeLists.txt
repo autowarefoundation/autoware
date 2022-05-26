@@ -19,8 +19,9 @@ find_package(Eigen3 REQUIRED)
 include_directories(
   include
   SYSTEM
-  ${PCL_COMMON_INCLUDE_DIRS}
-  ${PCL_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIRS}
+    ${PCL_COMMON_INCLUDE_DIRS}
+    ${PCL_INCLUDE_DIRS}
 )
 
 # Generate exe file

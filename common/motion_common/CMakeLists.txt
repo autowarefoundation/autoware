@@ -6,6 +6,11 @@ autoware_package()
 
 find_package(Eigen3 REQUIRED)
 
+include_directories(
+  SYSTEM
+    ${EIGEN3_INCLUDE_DIR}
+)
+
 ament_auto_add_library(${PROJECT_NAME} SHARED
   src/motion_common/config.cpp
   src/motion_common/motion_common.cpp

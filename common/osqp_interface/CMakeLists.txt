@@ -31,6 +31,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE -Wno-error=old-style-cast -Wno-er
 target_include_directories(osqp_interface
   SYSTEM PUBLIC
     "${OSQP_INCLUDE_DIR}"
+    "${EIGEN3_INCLUDE_DIR}"
 )
 
 ament_target_dependencies(osqp_interface

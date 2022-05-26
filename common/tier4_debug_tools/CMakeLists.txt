@@ -6,6 +6,11 @@ autoware_package()
 
 find_package(Eigen3 REQUIRED)
 
+include_directories(
+  SYSTEM
+    ${EIGEN3_INCLUDE_DIR}
+)
+
 ament_auto_add_library(lateral_error_publisher SHARED
   src/lateral_error_publisher.cpp
 )

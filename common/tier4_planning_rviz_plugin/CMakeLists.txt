@@ -11,6 +11,11 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 add_definitions(-DQT_NO_KEYWORDS)
 find_package(Eigen3 REQUIRED)
 
+include_directories(
+  SYSTEM
+    ${EIGEN3_INCLUDE_DIR}
+)
+
 ament_auto_add_library(tier4_planning_rviz_plugin SHARED
   include/drivable_area/display.hpp
   src/drivable_area/display.cpp

@@ -41,6 +41,7 @@ target_include_directories(behavior_velocity_planner
     ${BOOST_INCLUDE_DIRS}
     ${PCL_INCLUDE_DIRS}
     ${tf2_geometry_msgs_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIR}
 )
 
 ament_target_dependencies(behavior_velocity_planner

@@ -8,6 +8,11 @@ find_package(Boost REQUIRED)
 find_package(eigen3_cmake_module REQUIRED)
 find_package(Eigen3 REQUIRED)
 
+include_directories(
+  SYSTEM
+    ${EIGEN3_INCLUDE_DIR}
+)
+
 set(MOTION_VELOCITY_SMOOTHER_SRC
   src/motion_velocity_smoother_node.cpp
   src/trajectory_utils.cpp

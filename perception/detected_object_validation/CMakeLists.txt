@@ -20,6 +20,7 @@ include_directories(
   ${OpenCV_INCLUDE_DIRS}
   ${PCL_COMMON_INCLUDE_DIRS}
   ${PCL_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIR}
 )
 
 # Generate occupancy grid based validator exe file
