@@ -831,12 +831,14 @@ void ObstacleStopPlannerNode::insertVelocity(
     }
   }
 
-  for (size_t i = 0; i < output.size() - 2; ++i) {
-    const auto & p_base = output.at(i).pose;
-    const auto & p_target = output.at(i + 1).pose;
-    const auto & p_next = output.at(i + 2).pose;
-    if (!checkValidIndex(p_base, p_next, p_target)) {
-      RCLCPP_ERROR(get_logger(), "detect bad index");
+  if (output.size() >= 2) {
+    for (size_t i = 0; i < output.size() - 2; ++i) {
+      const auto & p_base = output.at(i).pose;
+      const auto & p_target = output.at(i + 1).pose;
+      const auto & p_next = output.at(i + 2).pose;
+      if (!checkValidIndex(p_base, p_next, p_target)) {
+        RCLCPP_ERROR(get_logger(), "detect bad index");
+      }
     }
   }
 
