@@ -12,18 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PREPROCESS_KERNEL_HPP_
-#define PREPROCESS_KERNEL_HPP_
+#ifndef LIDAR_CENTERPOINT__UTILS_HPP_
+#define LIDAR_CENTERPOINT__UTILS_HPP_
 
-#include <cuda.h>
-#include <cuda_runtime_api.h>
+#include <cstddef>
 
 namespace centerpoint
 {
-cudaError_t generateFeatures_launch(
-  const float * voxel_features, const float * voxel_num_points, const int * coords,
-  const std::size_t num_voxels, float * features, cudaStream_t stream);
+struct Box3D
+{
+  // initializer not allowed for __shared__ variable
+  int label;
+  float score;
+  float x;
+  float y;
+  float z;
+  float length;
+  float width;
+  float height;
+  float yaw;
+  float vel_x;
+  float vel_y;
+};
+
+std::size_t divup(const std::size_t a, const std::size_t b);
 
 }  // namespace centerpoint
 
-#endif  // PREPROCESS_KERNEL_HPP_
+#endif  // LIDAR_CENTERPOINT__UTILS_HPP_

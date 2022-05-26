@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef POSTPROCESS_KERNEL_HPP_
-#define POSTPROCESS_KERNEL_HPP_
+#ifndef LIDAR_CENTERPOINT__POSTPROCESS__POSTPROCESS_KERNEL_HPP_
+#define LIDAR_CENTERPOINT__POSTPROCESS__POSTPROCESS_KERNEL_HPP_
 
-#include <config.hpp>
-#include <utils.hpp>
+#include <lidar_centerpoint/centerpoint_config.hpp>
+#include <lidar_centerpoint/utils.hpp>
 
 #include <cuda.h>
 #include <cuda_runtime_api.h>
@@ -29,7 +29,7 @@ namespace centerpoint
 class PostProcessCUDA
 {
 public:
-  explicit PostProcessCUDA(const std::size_t num_class, const float score_threshold);
+  explicit PostProcessCUDA(const CenterPointConfig & config);
 
   cudaError_t generateDetectedBoxes3D_launch(
     const float * out_heatmap, const float * out_offset, const float * out_z, const float * out_dim,
@@ -37,16 +37,10 @@ public:
     cudaStream_t stream);
 
 private:
-  cudaError_t generateBoxes3D_launch(
-    const float * out_heatmap, const float * out_offset, const float * out_z, const float * out_dim,
-    const float * out_rot, const float * out_vel, Box3D * det_boxes3d, cudaStream_t stream);
-
-  std::size_t num_class_{0};
-  float score_threshold_{0.0f};
-  float dist_threshold_{1.5f};  // TODO(yukke42): temporary value
+  CenterPointConfig config_;
   thrust::device_vector<Box3D> boxes3d_d_;
 };
 
 }  // namespace centerpoint
 
-#endif  // POSTPROCESS_KERNEL_HPP_
+#endif  // LIDAR_CENTERPOINT__POSTPROCESS__POSTPROCESS_KERNEL_HPP_

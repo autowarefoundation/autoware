@@ -12,10 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef NETWORK_TRT_HPP_
-#define NETWORK_TRT_HPP_
+#ifndef LIDAR_CENTERPOINT__NETWORK__NETWORK_TRT_HPP_
+#define LIDAR_CENTERPOINT__NETWORK__NETWORK_TRT_HPP_
 
-#include <tensorrt_wrapper.hpp>
+#include <lidar_centerpoint/centerpoint_config.hpp>
+#include <lidar_centerpoint/network/tensorrt_wrapper.hpp>
+
+#include <vector>
 
 namespace centerpoint
 {
@@ -35,16 +38,18 @@ class HeadTRT : public TensorRTWrapper
 public:
   using TensorRTWrapper::TensorRTWrapper;
 
-  HeadTRT(const std::size_t num_class, const bool verbose);
+  HeadTRT(
+    const std::vector<std::size_t> & out_channel_sizes, const CenterPointConfig & config,
+    const bool verbose);
 
 protected:
   bool setProfile(
     nvinfer1::IBuilder & builder, nvinfer1::INetworkDefinition & network,
     nvinfer1::IBuilderConfig & config) override;
 
-  std::size_t num_class_{0};
+  std::vector<std::size_t> out_channel_sizes_;
 };
 
 }  // namespace centerpoint
 
-#endif  // NETWORK_TRT_HPP_
+#endif  // LIDAR_CENTERPOINT__NETWORK__NETWORK_TRT_HPP_

@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef VOXEL_GENERATOR_HPP_
-#define VOXEL_GENERATOR_HPP_
+#ifndef LIDAR_CENTERPOINT__PREPROCESS__VOXEL_GENERATOR_HPP_
+#define LIDAR_CENTERPOINT__PREPROCESS__VOXEL_GENERATOR_HPP_
 
-#include <config.hpp>
-#include <pointcloud_densification.hpp>
+#include <lidar_centerpoint/centerpoint_config.hpp>
+#include <lidar_centerpoint/preprocess/pointcloud_densification.hpp>
 
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
@@ -28,7 +28,8 @@ namespace centerpoint
 class VoxelGeneratorTemplate
 {
 public:
-  explicit VoxelGeneratorTemplate(const DensificationParam & param);
+  explicit VoxelGeneratorTemplate(
+    const DensificationParam & param, const CenterPointConfig & config);
 
   virtual std::size_t pointsToVoxels(
     std::vector<float> & voxels, std::vector<int> & coordinates,
@@ -40,11 +41,10 @@ public:
 protected:
   std::unique_ptr<PointCloudDensification> pd_ptr_{nullptr};
 
-  std::array<float, 6> range_{Config::range_min_x, Config::range_min_y, Config::range_min_z,
-                              Config::range_max_x, Config::range_max_y, Config::range_max_z};
-  std::array<float, 3> recip_voxel_size_{
-    1 / Config::voxel_size_x, 1 / Config::voxel_size_y, 1 / Config::voxel_size_z};
-  std::array<int, 3> grid_size_{Config::grid_size_x, Config::grid_size_y, Config::grid_size_z};
+  CenterPointConfig config_;
+  std::array<float, 6> range_;
+  std::array<int, 3> grid_size_;
+  std::array<float, 3> recip_voxel_size_;
 };
 
 class VoxelGenerator : public VoxelGeneratorTemplate
@@ -59,4 +59,4 @@ public:
 
 }  // namespace centerpoint
 
-#endif  // VOXEL_GENERATOR_HPP_
+#endif  // LIDAR_CENTERPOINT__PREPROCESS__VOXEL_GENERATOR_HPP_

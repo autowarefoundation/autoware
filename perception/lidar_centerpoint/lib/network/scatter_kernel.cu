@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <config.hpp>
-#include <scatter_kernel.hpp>
-#include <utils.hpp>
+#include "lidar_centerpoint/network/scatter_kernel.hpp"
+
+#include <lidar_centerpoint/utils.hpp>
 
 namespace
 {
@@ -50,15 +50,16 @@ __global__ void scatterFeatures_kernel(
 
 cudaError_t scatterFeatures_launch(
   const float * pillar_features, const int * coords, const std::size_t num_pillars,
-  float * scattered_features, cudaStream_t stream)
+  const std::size_t max_voxel_size, const std::size_t encoder_out_feature_size,
+  const std::size_t grid_size_x, const std::size_t grid_size_y, float * scattered_features,
+  cudaStream_t stream)
 {
   dim3 blocks(
-    divup(Config::max_num_voxels, THREADS_PER_BLOCK),
-    divup(Config::encoder_out_feature_size, THREADS_PER_BLOCK));
+    divup(max_voxel_size, THREADS_PER_BLOCK), divup(encoder_out_feature_size, THREADS_PER_BLOCK));
   dim3 threads(THREADS_PER_BLOCK, THREADS_PER_BLOCK);
   scatterFeatures_kernel<<<blocks, threads, 0, stream>>>(
-    pillar_features, coords, num_pillars, Config::encoder_out_feature_size, Config::grid_size_x,
-    Config::grid_size_y, scattered_features);
+    pillar_features, coords, num_pillars, encoder_out_feature_size, grid_size_x, grid_size_y,
+    scattered_features);
 
   return cudaGetLastError();
 }

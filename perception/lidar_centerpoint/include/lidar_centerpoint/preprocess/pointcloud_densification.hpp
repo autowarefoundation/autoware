@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef POINTCLOUD_DENSIFICATION_HPP_
-#define POINTCLOUD_DENSIFICATION_HPP_
+#ifndef LIDAR_CENTERPOINT__PREPROCESS__POINTCLOUD_DENSIFICATION_HPP_
+#define LIDAR_CENTERPOINT__PREPROCESS__POINTCLOUD_DENSIFICATION_HPP_
 
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
@@ -83,4 +83,4 @@ private:
 
 }  // namespace centerpoint
 
-#endif  // POINTCLOUD_DENSIFICATION_HPP_
+#endif  // LIDAR_CENTERPOINT__PREPROCESS__POINTCLOUD_DENSIFICATION_HPP_

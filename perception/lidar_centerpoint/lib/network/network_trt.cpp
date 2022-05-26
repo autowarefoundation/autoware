@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <config.hpp>
-#include <network_trt.hpp>
+#include "lidar_centerpoint/network/network_trt.hpp"
 
 namespace centerpoint
 {
@@ -24,13 +23,13 @@ bool VoxelEncoderTRT::setProfile(
   auto profile = builder.createOptimizationProfile();
   auto in_name = network.getInput(0)->getName();
   auto in_dims = nvinfer1::Dims3(
-    Config::max_num_voxels, Config::max_num_points_per_voxel, Config::encoder_in_feature_size);
+    config_.max_voxel_size_, config_.max_point_in_voxel_size_, config_.encoder_in_feature_size_);
   profile->setDimensions(in_name, nvinfer1::OptProfileSelector::kMIN, in_dims);
   profile->setDimensions(in_name, nvinfer1::OptProfileSelector::kOPT, in_dims);
   profile->setDimensions(in_name, nvinfer1::OptProfileSelector::kMAX, in_dims);
 
   auto out_name = network.getOutput(0)->getName();
-  auto out_dims = nvinfer1::Dims2(Config::max_num_voxels, Config::encoder_out_feature_size);
+  auto out_dims = nvinfer1::Dims2(config_.max_voxel_size_, config_.encoder_out_feature_size_);
   profile->setDimensions(out_name, nvinfer1::OptProfileSelector::kMIN, out_dims);
   profile->setDimensions(out_name, nvinfer1::OptProfileSelector::kOPT, out_dims);
   profile->setDimensions(out_name, nvinfer1::OptProfileSelector::kMAX, out_dims);
@@ -39,8 +38,10 @@ bool VoxelEncoderTRT::setProfile(
   return true;
 }
 
-HeadTRT::HeadTRT(const std::size_t num_class, const bool verbose)
-: TensorRTWrapper(verbose), num_class_(num_class)
+HeadTRT::HeadTRT(
+  const std::vector<std::size_t> & out_channel_sizes, const CenterPointConfig & config,
+  const bool verbose)
+: TensorRTWrapper(config, verbose), out_channel_sizes_(out_channel_sizes)
 {
 }
 
@@ -51,22 +52,17 @@ bool HeadTRT::setProfile(
   auto profile = builder.createOptimizationProfile();
   auto in_name = network.getInput(0)->getName();
   auto in_dims = nvinfer1::Dims4(
-    Config::batch_size, Config::encoder_out_feature_size, Config::grid_size_y, Config::grid_size_x);
+    config_.batch_size_, config_.encoder_out_feature_size_, config_.grid_size_y_,
+    config_.grid_size_x_);
   profile->setDimensions(in_name, nvinfer1::OptProfileSelector::kMIN, in_dims);
   profile->setDimensions(in_name, nvinfer1::OptProfileSelector::kOPT, in_dims);
   profile->setDimensions(in_name, nvinfer1::OptProfileSelector::kMAX, in_dims);
 
-  std::array<std::size_t, Config::head_out_size> output_channels = {
-    num_class_,
-    Config::head_out_offset_size,
-    Config::head_out_z_size,
-    Config::head_out_dim_size,
-    Config::head_out_rot_size,
-    Config::head_out_vel_size};
-  for (std::size_t ci = 0; ci < Config::head_out_size; ci++) {
+  for (std::size_t ci = 0; ci < out_channel_sizes_.size(); ci++) {
     auto out_name = network.getOutput(ci)->getName();
     auto out_dims = nvinfer1::Dims4(
-      Config::batch_size, output_channels[ci], Config::down_grid_size_x, Config::down_grid_size_y);
+      config_.batch_size_, out_channel_sizes_[ci], config_.down_grid_size_y_,
+      config_.down_grid_size_x_);
     profile->setDimensions(out_name, nvinfer1::OptProfileSelector::kMIN, out_dims);
     profile->setDimensions(out_name, nvinfer1::OptProfileSelector::kOPT, out_dims);
     profile->setDimensions(out_name, nvinfer1::OptProfileSelector::kMAX, out_dims);

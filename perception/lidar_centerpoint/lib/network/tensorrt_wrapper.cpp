@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <tensorrt_wrapper.hpp>
+#include "lidar_centerpoint/network/tensorrt_wrapper.hpp"
 
 #include <NvOnnxParser.h>
 
@@ -22,7 +22,10 @@
 
 namespace centerpoint
 {
-TensorRTWrapper::TensorRTWrapper(bool verbose) : logger_(Logger(verbose)) {}
+TensorRTWrapper::TensorRTWrapper(const CenterPointConfig & config, const bool verbose)
+: config_(config), logger_(Logger(verbose))
+{
+}
 
 bool TensorRTWrapper::init(
   const std::string & onnx_path, const std::string & engine_path, const std::string & precision)

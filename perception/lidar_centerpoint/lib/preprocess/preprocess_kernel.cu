@@ -28,16 +28,15 @@
  * limitations under the License.
  */
 
-#include <config.hpp>
-#include <preprocess_kernel.hpp>
-#include <utils.hpp>
+#include "lidar_centerpoint/preprocess/preprocess_kernel.hpp"
+
+#include <lidar_centerpoint/utils.hpp>
 
 namespace
 {
-const std::size_t WARP_SIZE = 32;
+const std::size_t MAX_POINT_IN_VOXEL_SIZE = 32;  // the same as max_point_in_voxel_size_ in config
 const std::size_t WARPS_PER_BLOCK = 4;
-const std::size_t FEATURE_SIZE = 9;  // same as `box_feature_size` in config.hpp
-
+const std::size_t ENCODER_IN_FEATURE_SIZE = 9;  // the same as encoder_in_feature_size_ in config
 }  // namespace
 
 namespace centerpoint
@@ -47,21 +46,21 @@ __global__ void generateFeatures_kernel(
   const std::size_t num_voxels, const float voxel_x, const float voxel_y, const float voxel_z,
   const float range_min_x, const float range_min_y, const float range_min_z, float * features)
 {
-  // voxel_features (float): (max_num_voxels, max_num_points_per_voxel, point_feature_size)
-  // voxel_num_points (int): (max_num_voxels)
-  // coords (int): (max_num_voxels, point_dim_size)
-  int pillar_idx = blockIdx.x * WARPS_PER_BLOCK + threadIdx.x / WARP_SIZE;
-  int point_idx = threadIdx.x % WARP_SIZE;
-  int pillar_idx_inBlock = threadIdx.x / WARP_SIZE;
+  // voxel_features (float): (max_voxel_size, max_point_in_voxel_size, point_feature_size)
+  // voxel_num_points (int): (max_voxel_size)
+  // coords (int): (max_voxel_size, point_dim_size)
+  int pillar_idx = blockIdx.x * WARPS_PER_BLOCK + threadIdx.x / MAX_POINT_IN_VOXEL_SIZE;
+  int point_idx = threadIdx.x % MAX_POINT_IN_VOXEL_SIZE;
+  int pillar_idx_inBlock = threadIdx.x / MAX_POINT_IN_VOXEL_SIZE;  // max_point_in_voxel_size
 
   if (pillar_idx >= num_voxels) return;
 
   // load src
-  __shared__ float4 pillarSM[WARPS_PER_BLOCK][WARP_SIZE];
+  __shared__ float4 pillarSM[WARPS_PER_BLOCK][MAX_POINT_IN_VOXEL_SIZE];
   __shared__ float3 pillarSumSM[WARPS_PER_BLOCK];
   __shared__ int3 cordsSM[WARPS_PER_BLOCK];
   __shared__ int pointsNumSM[WARPS_PER_BLOCK];
-  __shared__ float pillarOutSM[WARPS_PER_BLOCK][WARP_SIZE][FEATURE_SIZE];
+  __shared__ float pillarOutSM[WARPS_PER_BLOCK][MAX_POINT_IN_VOXEL_SIZE][ENCODER_IN_FEATURE_SIZE];
 
   if (threadIdx.x < WARPS_PER_BLOCK) {
     pointsNumSM[threadIdx.x] = voxel_num_points[blockIdx.x * WARPS_PER_BLOCK + threadIdx.x];
@@ -70,7 +69,7 @@ __global__ void generateFeatures_kernel(
   }
 
   pillarSM[pillar_idx_inBlock][point_idx] =
-    ((float4 *)voxel_features)[pillar_idx * WARP_SIZE + point_idx];
+    ((float4 *)voxel_features)[pillar_idx * MAX_POINT_IN_VOXEL_SIZE + point_idx];
   __syncthreads();
 
   // calculate sm in a pillar
@@ -133,23 +132,26 @@ __global__ void generateFeatures_kernel(
 
   __syncthreads();
 
-  for (int i = 0; i < FEATURE_SIZE; i++) {
-    int outputSMId = pillar_idx_inBlock * WARP_SIZE * FEATURE_SIZE + i * WARP_SIZE + point_idx;
-    int outputId = pillar_idx * WARP_SIZE * FEATURE_SIZE + i * WARP_SIZE + point_idx;
+  for (int i = 0; i < ENCODER_IN_FEATURE_SIZE; i++) {
+    int outputSMId = pillar_idx_inBlock * MAX_POINT_IN_VOXEL_SIZE * ENCODER_IN_FEATURE_SIZE +
+                     i * MAX_POINT_IN_VOXEL_SIZE + point_idx;
+    int outputId = pillar_idx * MAX_POINT_IN_VOXEL_SIZE * ENCODER_IN_FEATURE_SIZE +
+                   i * MAX_POINT_IN_VOXEL_SIZE + point_idx;
     features[outputId] = ((float *)pillarOutSM)[outputSMId];
   }
 }
 
 cudaError_t generateFeatures_launch(
   const float * voxel_features, const float * voxel_num_points, const int * coords,
-  const std::size_t num_voxels, float * features, cudaStream_t stream)
+  const std::size_t num_voxels, const std::size_t max_voxel_size, const float voxel_size_x,
+  const float voxel_size_y, const float voxel_size_z, const float range_min_x,
+  const float range_min_y, const float range_min_z, float * features, cudaStream_t stream)
 {
-  dim3 blocks(divup(Config::max_num_voxels, WARPS_PER_BLOCK));
-  dim3 threads(WARPS_PER_BLOCK * WARP_SIZE);
+  dim3 blocks(divup(max_voxel_size, WARPS_PER_BLOCK));
+  dim3 threads(WARPS_PER_BLOCK * MAX_POINT_IN_VOXEL_SIZE);
   generateFeatures_kernel<<<blocks, threads, 0, stream>>>(
-    voxel_features, voxel_num_points, coords, num_voxels, Config::voxel_size_x,
-    Config::voxel_size_y, Config::voxel_size_z, Config::range_min_x, Config::range_min_y,
-    Config::range_min_z, features);
+    voxel_features, voxel_num_points, coords, num_voxels, voxel_size_x, voxel_size_y, voxel_size_z,
+    range_min_x, range_min_y, range_min_z, features);
 
   return cudaGetLastError();
 }

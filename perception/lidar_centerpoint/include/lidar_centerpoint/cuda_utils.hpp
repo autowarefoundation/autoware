@@ -39,8 +39,8 @@
  * https://creativecommons.org/publicdomain/zero/1.0/deed.en
  */
 
-#ifndef CUDA_UTILS_HPP_
-#define CUDA_UTILS_HPP_
+#ifndef LIDAR_CENTERPOINT__CUDA_UTILS_HPP_
+#define LIDAR_CENTERPOINT__CUDA_UTILS_HPP_
 
 #include <cuda_runtime_api.h>
 
@@ -117,4 +117,4 @@ inline T * get_next_ptr(size_t num_elem, void *& workspace, size_t & workspace_s
 
 }  // namespace cuda
 
-#endif  // CUDA_UTILS_HPP_
+#endif  // LIDAR_CENTERPOINT__CUDA_UTILS_HPP_

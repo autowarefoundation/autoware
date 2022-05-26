@@ -12,30 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef UTILS_HPP_
-#define UTILS_HPP_
+#ifndef LIDAR_CENTERPOINT__POSTPROCESS__CIRCLE_NMS_KERNEL_HPP_
+#define LIDAR_CENTERPOINT__POSTPROCESS__CIRCLE_NMS_KERNEL_HPP_
 
-#include <cstddef>
+#include <lidar_centerpoint/utils.hpp>
+
+#include <thrust/device_vector.h>
 
 namespace centerpoint
 {
-struct Box3D
-{
-  // initializer not allowed for __shared__ variable
-  int label;
-  float score;
-  float x;
-  float y;
-  float z;
-  float length;
-  float width;
-  float height;
-  float yaw;
-  float vel_x;
-  float vel_y;
-};
+// Non-maximum suppression (NMS) uses the distance on the xy plane instead of
+// intersection over union (IoU) to suppress overlapped objects.
+std::size_t circleNMS(
+  thrust::device_vector<Box3D> & boxes3d, const float distance_threshold,
+  thrust::device_vector<bool> & keep_mask, cudaStream_t stream);
 
-std::size_t divup(const std::size_t a, const std::size_t b);
 }  // namespace centerpoint
 
-#endif  // UTILS_HPP_
+#endif  // LIDAR_CENTERPOINT__POSTPROCESS__CIRCLE_NMS_KERNEL_HPP_

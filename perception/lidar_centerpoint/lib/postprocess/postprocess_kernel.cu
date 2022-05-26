@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <circle_nms_kernel.hpp>
-#include <postprocess_kernel.hpp>
+#include "lidar_centerpoint/postprocess/circle_nms_kernel.hpp"
+
+#include <lidar_centerpoint/postprocess/postprocess_kernel.hpp>
 
 #include <thrust/count.h>
 #include <thrust/sort.h>
@@ -52,12 +53,12 @@ __global__ void generateBoxes3D_kernel(
   const float * out_heatmap, const float * out_offset, const float * out_z, const float * out_dim,
   const float * out_rot, const float * out_vel, const float voxel_size_x, const float voxel_size_y,
   const float range_min_x, const float range_min_y, const std::size_t down_grid_size_x,
-  const std::size_t down_grid_size_y, const std::size_t downsample_factor, const int num_class,
+  const std::size_t down_grid_size_y, const std::size_t downsample_factor, const int class_size,
   Box3D * det_boxes3d)
 {
   // generate boxes3d from the outputs of the network.
   // shape of out_*: (N, DOWN_GRID_SIZE_Y, DOWN_GRID_SIZE_X)
-  // heatmap: N = num_class, offset: N = 2, z: N = 1, dim: N = 3, rot: N = 2, vel: N = 2
+  // heatmap: N = class_size, offset: N = 2, z: N = 1, dim: N = 3, rot: N = 2, vel: N = 2
   const auto yi = blockIdx.x * THREADS_PER_BLOCK + threadIdx.x;
   const auto xi = blockIdx.y * THREADS_PER_BLOCK + threadIdx.y;
   const auto idx = down_grid_size_x * yi + xi;
@@ -69,7 +70,7 @@ __global__ void generateBoxes3D_kernel(
 
   int label = -1;
   float max_score = -1;
-  for (int ci = 0; ci < num_class; ci++) {
+  for (int ci = 0; ci < class_size; ci++) {
     float score = sigmoid(out_heatmap[down_grid_size * ci + idx]);
     if (score > max_score) {
       label = ci;
@@ -103,10 +104,9 @@ __global__ void generateBoxes3D_kernel(
   det_boxes3d[idx].vel_y = vel_y;
 }
 
-PostProcessCUDA::PostProcessCUDA(const std::size_t num_class, const float score_threshold)
-: num_class_(num_class), score_threshold_(score_threshold)
+PostProcessCUDA::PostProcessCUDA(const CenterPointConfig & config) : config_(config)
 {
-  const auto num_raw_boxes3d = Config::down_grid_size_y * Config::down_grid_size_x;
+  const auto num_raw_boxes3d = config.down_grid_size_y_ * config.down_grid_size_x_;
   boxes3d_d_ = thrust::device_vector<Box3D>(num_raw_boxes3d);
 }
 
@@ -116,25 +116,26 @@ cudaError_t PostProcessCUDA::generateDetectedBoxes3D_launch(
   cudaStream_t stream)
 {
   dim3 blocks(
-    divup(Config::down_grid_size_y, THREADS_PER_BLOCK),
-    divup(Config::down_grid_size_x, THREADS_PER_BLOCK));
+    divup(config_.down_grid_size_y_, THREADS_PER_BLOCK),
+    divup(config_.down_grid_size_x_, THREADS_PER_BLOCK));
   dim3 threads(THREADS_PER_BLOCK, THREADS_PER_BLOCK);
   generateBoxes3D_kernel<<<blocks, threads, 0, stream>>>(
-    out_heatmap, out_offset, out_z, out_dim, out_rot, out_vel, Config::voxel_size_x,
-    Config::voxel_size_y, Config::range_min_x, Config::range_min_y, Config::down_grid_size_x,
-    Config::down_grid_size_y, Config::downsample_factor, num_class_,
+    out_heatmap, out_offset, out_z, out_dim, out_rot, out_vel, config_.voxel_size_x_,
+    config_.voxel_size_y_, config_.range_min_x_, config_.range_min_y_, config_.down_grid_size_x_,
+    config_.down_grid_size_y_, config_.downsample_factor_, config_.class_size_,
     thrust::raw_pointer_cast(boxes3d_d_.data()));
 
   // suppress by socre
   const auto num_det_boxes3d = thrust::count_if(
-    thrust::device, boxes3d_d_.begin(), boxes3d_d_.end(), is_score_greater(score_threshold_));
+    thrust::device, boxes3d_d_.begin(), boxes3d_d_.end(),
+    is_score_greater(config_.score_threshold_));
   if (num_det_boxes3d == 0) {
     return cudaGetLastError();
   }
   thrust::device_vector<Box3D> det_boxes3d_d(num_det_boxes3d);
   thrust::copy_if(
     thrust::device, boxes3d_d_.begin(), boxes3d_d_.end(), det_boxes3d_d.begin(),
-    is_score_greater(score_threshold_));
+    is_score_greater(config_.score_threshold_));
 
   // sort by score
   thrust::sort(det_boxes3d_d.begin(), det_boxes3d_d.end(), score_greater());
@@ -142,7 +143,7 @@ cudaError_t PostProcessCUDA::generateDetectedBoxes3D_launch(
   // supress by NMS
   thrust::device_vector<bool> final_keep_mask_d(num_det_boxes3d);
   const auto num_final_det_boxes3d =
-    circleNMS(det_boxes3d_d, dist_threshold_, final_keep_mask_d, stream);
+    circleNMS(det_boxes3d_d, config_.circle_nms_dist_threshold_, final_keep_mask_d, stream);
 
   thrust::device_vector<Box3D> final_det_boxes3d_d(num_final_det_boxes3d);
   thrust::copy_if(

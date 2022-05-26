@@ -12,14 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef CENTERPOINT_TRT_HPP_
-#define CENTERPOINT_TRT_HPP_
+#ifndef LIDAR_CENTERPOINT__CENTERPOINT_TRT_HPP_
+#define LIDAR_CENTERPOINT__CENTERPOINT_TRT_HPP_
 
-#include <config.hpp>
-#include <cuda_utils.hpp>
-#include <network_trt.hpp>
-#include <postprocess_kernel.hpp>
-#include <voxel_generator.hpp>
+#include <lidar_centerpoint/cuda_utils.hpp>
+#include <lidar_centerpoint/network/network_trt.hpp>
+#include <lidar_centerpoint/postprocess/postprocess_kernel.hpp>
+#include <lidar_centerpoint/preprocess/voxel_generator.hpp>
 
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
@@ -57,8 +56,8 @@ class CenterPointTRT
 {
 public:
   explicit CenterPointTRT(
-    const std::size_t num_class, const float score_threshold, const NetworkParam & encoder_param,
-    const NetworkParam & head_param, const DensificationParam & densification_param);
+    const NetworkParam & encoder_param, const NetworkParam & head_param,
+    const DensificationParam & densification_param, const CenterPointConfig & config);
 
   ~CenterPointTRT();
 
@@ -83,7 +82,8 @@ private:
   cudaStream_t stream_{nullptr};
 
   bool verbose_{false};
-  std::size_t num_class_{0};
+  std::size_t class_size_{0};
+  CenterPointConfig config_;
   std::size_t num_voxels_{0};
   std::size_t encoder_in_feature_size_{0};
   std::size_t spatial_features_size_{0};
@@ -106,4 +106,4 @@ private:
 
 }  // namespace centerpoint
 
-#endif  // CENTERPOINT_TRT_HPP_
+#endif  // LIDAR_CENTERPOINT__CENTERPOINT_TRT_HPP_

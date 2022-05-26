@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "lidar_centerpoint/preprocess/pointcloud_densification.hpp"
+
 #include <pcl_ros/transforms.hpp>
-#include <pointcloud_densification.hpp>
 
 #include <boost/optional.hpp>
 

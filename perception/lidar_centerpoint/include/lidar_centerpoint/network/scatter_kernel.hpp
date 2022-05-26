@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SCATTER_KERNEL_HPP_
-#define SCATTER_KERNEL_HPP_
+#ifndef LIDAR_CENTERPOINT__NETWORK__SCATTER_KERNEL_HPP_
+#define LIDAR_CENTERPOINT__NETWORK__SCATTER_KERNEL_HPP_
 
 #include <cuda.h>
 #include <cuda_runtime_api.h>
@@ -22,8 +22,10 @@ namespace centerpoint
 {
 cudaError_t scatterFeatures_launch(
   const float * pillar_features, const int * coords, const std::size_t num_pillars,
-  float * scattered_features, cudaStream_t stream);
+  const std::size_t max_voxel_size, const std::size_t encoder_out_feature_size,
+  const std::size_t grid_size_x, const std::size_t grid_size_y, float * scattered_features,
+  cudaStream_t stream);
 
 }  // namespace centerpoint
 
-#endif  // SCATTER_KERNEL_HPP_
+#endif  // LIDAR_CENTERPOINT__NETWORK__SCATTER_KERNEL_HPP_

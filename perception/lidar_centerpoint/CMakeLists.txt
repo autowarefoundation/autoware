@@ -110,40 +110,47 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
   ament_auto_find_build_dependencies()
 
   include_directories(
-    lib/include
+    include
     ${CUDA_INCLUDE_DIRS}
   )
 
   ### centerpoint ###
-  ament_auto_add_library(centerpoint SHARED
-    lib/src/centerpoint_trt.cpp
-    lib/src/pointcloud_densification.cpp
-    lib/src/voxel_generator.cpp
-    lib/src/tensorrt_wrapper.cpp
-    lib/src/network_trt.cpp
-    lib/src/utils.cpp
+  ament_auto_add_library(centerpoint_lib SHARED
+    lib/centerpoint_trt.cpp
+    lib/utils.cpp
+    lib/ros_utils.cpp
+    lib/network/network_trt.cpp
+    lib/network/tensorrt_wrapper.cpp
+    lib/preprocess/pointcloud_densification.cpp
+    lib/preprocess/voxel_generator.cpp
   )
 
-  cuda_add_library(centerpoint_cuda_libraries SHARED
-    lib/src/circle_nms_kernel.cu
-    lib/src/postprocess_kernel.cu
-    lib/src/preprocess_kernel.cu
-    lib/src/scatter_kernel.cu
+  cuda_add_library(centerpoint_cuda_lib SHARED
+    lib/postprocess/circle_nms_kernel.cu
+    lib/postprocess/postprocess_kernel.cu
+    lib/network/scatter_kernel.cu
+    lib/preprocess/preprocess_kernel.cu
   )
 
-  target_link_libraries(centerpoint
+  target_link_libraries(centerpoint_lib
     ${NVINFER}
     ${NVONNXPARSER}
     ${CUDA_LIBRARIES}
     ${CUBLAS_LIBRARIES}
     ${CUDA_curand_LIBRARY}
     ${CUDNN_LIBRARY}
-    centerpoint_cuda_libraries
+    centerpoint_cuda_lib
+  )
+
+  target_include_directories(centerpoint_lib
+    PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<INSTALL_INTERFACE:include>
   )
 
   # To suppress unknown-pragmas error. The root-cause is CUB library in CUDA 11.6.
   # This issue was fixed by https://github.com/NVIDIA/cub/commit/7d608bf1dc14553e2fb219eabeed80b76621b6fe
-  target_include_directories(centerpoint
+  target_include_directories(centerpoint_lib
     SYSTEM PUBLIC
       ${CUDA_INCLUDE_DIRS}
   )
@@ -154,7 +161,7 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
   )
 
   target_link_libraries(lidar_centerpoint_component
-    centerpoint
+    centerpoint_lib
   )
 
   rclcpp_components_register_node(lidar_centerpoint_component
