@@ -115,6 +115,8 @@ private:
 
   // Debugger
   std::shared_ptr<Debugger> debugger_ptr_;
+  std::unique_ptr<tier4_autoware_utils::StopWatch<std::chrono::milliseconds>> stop_watch_ptr_;
+  std::unique_ptr<tier4_autoware_utils::DebugPublisher> debug_publisher_;
 
   // ROS Parameters
   std::string map_frame_;
