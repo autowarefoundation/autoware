@@ -47,6 +47,10 @@ PathDistanceCalculator::PathDistanceCalculator(const rclcpp::NodeOptions & optio
       RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 5000, "path empty");
     }
 
+    if (path->points.size() == 1) {
+      RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 5000, "too short path");
+    }
+
     const double distance = tier4_autoware_utils::calcSignedArcLength(
       path->points, pose->pose.position, path->points.size() - 1);
 
