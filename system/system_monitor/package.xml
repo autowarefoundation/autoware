@@ -18,6 +18,7 @@
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>std_msgs</depend>
+  <depend>tier4_autoware_utils</depend>
   <depend>tier4_external_api_msgs</depend>
 
   <exec_depend>chrony</exec_depend>

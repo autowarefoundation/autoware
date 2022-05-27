@@ -21,6 +21,8 @@
 
 #include "system_monitor/system_monitor_utility.hpp"
 
+#include <tier4_autoware_utils/system/stop_watch.hpp>
+
 #include <fmt/format.h>
 
 #include <memory>
@@ -31,8 +33,11 @@
 ProcessMonitor::ProcessMonitor(const rclcpp::NodeOptions & options)
 : Node("process_monitor", options),
   updater_(this),
-  num_of_procs_(declare_parameter<int>("num_of_procs", 5))
+  num_of_procs_(declare_parameter<int>("num_of_procs", 5)),
+  is_top_error_(false)
 {
+  using namespace std::literals::chrono_literals;
+
   int index;
 
   gethostname(hostname_, sizeof(hostname_));
@@ -50,33 +55,40 @@ ProcessMonitor::ProcessMonitor(const rclcpp::NodeOptions & options)
     memory_tasks_.push_back(task);
     updater_.add(*task);
   }
-}
 
-void ProcessMonitor::update() { updater_.force_update(); }
+  // Start timer to execute top command
+  timer_callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+  timer_ = rclcpp::create_timer(
+    this, get_clock(), 1s, std::bind(&ProcessMonitor::onTimer, this), timer_callback_group_);
+}
 
 void ProcessMonitor::monitorProcesses(diagnostic_updater::DiagnosticStatusWrapper & stat)
 {
-  // Remember start time to measure elapsed time
-  const auto t_start = SystemMonitorUtility::startMeasurement();
+  // thread-safe read
+  std::string str;
+  bool is_top_error;
+  double elapsed_ms;
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    str = top_output_;
+    is_top_error = is_top_error_;
+    elapsed_ms = elapsed_ms_;
+  }
 
-  bp::ipstream is_err;
-  bp::ipstream is_out;
-  std::ostringstream os;
-
-  // Get processes
-  bp::child c("top -bn1 -o %CPU -w 128", bp::std_out > is_out, bp::std_err > is_err);
-  c.wait();
-  if (c.exit_code() != 0) {
-    is_err >> os.rdbuf();
+  if (is_top_error) {
     stat.summary(DiagStatus::ERROR, "top error");
-    stat.add("top", os.str().c_str());
-    setErrorContent(&load_tasks_, "top error", "top", os.str().c_str());
-    setErrorContent(&memory_tasks_, "top error", "top", os.str().c_str());
+    stat.add("top", str);
+    setErrorContent(&load_tasks_, "top error", "top", str);
+    setErrorContent(&memory_tasks_, "top error", "top", str);
     return;
   }
 
-  is_out >> os.rdbuf();
-  std::string str = os.str();
+  // If top still not running
+  if (str.empty()) {
+    // Send OK tentatively
+    stat.summary(DiagStatus::OK, "starting up");
+    return;
+  }
 
   // Get task summary
   getTasksSummary(stat, str);
@@ -89,8 +101,7 @@ void ProcessMonitor::monitorProcesses(diagnostic_updater::DiagnosticStatusWrappe
   // Get high memory processes
   getHighMemoryProcesses(str);
 
-  // Measure elapsed time since start time and report
-  SystemMonitorUtility::stopMeasurement(t_start, stat);
+  stat.addf("execution time", "%f ms", elapsed_ms);
 }
 
 void ProcessMonitor::getTasksSummary(
@@ -307,6 +318,40 @@ void ProcessMonitor::setErrorContent(
   for (auto itr = tasks->begin(); itr != tasks->end(); ++itr) {
     (*itr)->setDiagnosticsStatus(DiagStatus::ERROR, message);
     (*itr)->setErrorContent(error_command, content);
+  }
+}
+
+void ProcessMonitor::onTimer()
+{
+  bool is_top_error = false;
+
+  // Start to measure elapsed time
+  tier4_autoware_utils::StopWatch<std::chrono::milliseconds> stop_watch;
+  stop_watch.tic("execution_time");
+
+  bp::ipstream is_err;
+  bp::ipstream is_out;
+  std::ostringstream os;
+
+  // Get processes
+  bp::child c("top -bn1 -o %CPU -w 128", bp::std_out > is_out, bp::std_err > is_err);
+  c.wait();
+
+  if (c.exit_code() != 0) {
+    is_top_error = true;
+    is_err >> os.rdbuf();
+  } else {
+    is_out >> os.rdbuf();
+  }
+
+  const double elapsed_ms = stop_watch.toc("execution_time");
+
+  // thread-safe copy
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    top_output_ = os.str();
+    is_top_error_ = is_top_error;
+    elapsed_ms_ = elapsed_ms;
   }
 }
 

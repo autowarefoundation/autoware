@@ -27,6 +27,7 @@
 #include <boost/process.hpp>
 
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -40,11 +41,6 @@ public:
    * @param [in] options Options associated with this node.
    */
   explicit ProcessMonitor(const rclcpp::NodeOptions & options);
-
-  /**
-   * @brief Update the diagnostic state
-   */
-  void update();
 
 protected:
   using DiagStatus = diagnostic_msgs::msg::DiagnosticStatus;
@@ -110,6 +106,11 @@ protected:
     std::vector<std::shared_ptr<DiagTask>> * tasks, const std::string & message,
     const std::string & error_command, const std::string & content);
 
+  /**
+   * @brief timer callback to execute top command
+   */
+  void onTimer();
+
   diagnostic_updater::Updater updater_;  //!< @brief Updater class which advertises to /diagnostics
 
   char hostname_[HOST_NAME_MAX + 1];  //!< @brief host name
@@ -118,7 +119,13 @@ protected:
   std::vector<std::shared_ptr<DiagTask>>
     load_tasks_;  //!< @brief list of diagnostics tasks for high load procs
   std::vector<std::shared_ptr<DiagTask>>
-    memory_tasks_;  //!< @brief list of diagnostics tasks for high memory procs
+    memory_tasks_;                      //!< @brief list of diagnostics tasks for high memory procs
+  rclcpp::TimerBase::SharedPtr timer_;  //!< @brief timer to execute top command
+  std::string top_output_;              //!< @brief output from top command
+  bool is_top_error_;                   //!< @brief flag if an error occurs
+  double elapsed_ms_;                   //!< @brief Execution time of top command
+  std::mutex mutex_;                    //!< @brief mutex for output from top command
+  rclcpp::CallbackGroup::SharedPtr timer_callback_group_;  //!< @brief Callback Group
 };
 
 #endif  // SYSTEM_MONITOR__PROCESS_MONITOR__PROCESS_MONITOR_HPP_
