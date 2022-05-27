@@ -9,7 +9,7 @@
 
   <!-- Pointcloud map filter -->
   <group>
-    <include file="$(find-pkg-share perception_launch)/launch/object_recognition/detection/detection_preprocess.launch.py" if="$(var use_pointcloud_map)">
+    <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/detection_preprocess.launch.py" if="$(var use_pointcloud_map)">
       <arg name="input_topic" value="$(var input/obstacle_segmentation/pointcloud)"/>
       <arg name="output_topic" value="pointcloud_map_filtered/pointcloud"/>
       <arg name="use_intra_process" value="true"/>
