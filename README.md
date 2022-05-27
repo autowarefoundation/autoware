@@ -1,7 +1,5 @@
 [![Autoware.AI](docs/images/Autoware.AI-Logo-Typo-right.png)](https://github.com/Autoware-AI/autoware.ai)
 
-![Native CI workflow](https://github.com/Autoware-AI/autoware.ai/workflows/Native%20CI%20workflow/badge.svg) ![CUDA CI workflow](https://github.com/Autoware-AI/autoware.ai/workflows/CUDA%20CI%20workflow/badge.svg) ![Cross CI workflow](https://github.com/Autoware-AI/autoware.ai/workflows/Cross%20CI%20workflow/badge.svg)
-
 ## Announcement on End-of-Life on Autoware.AI and Transition to ROS2
 As some of the users may know, the Autoware Foundation is currently developing [Autoware Core/Universe](https://github.com/autowarefoundation/autoware), which is ROS2 version of Autoware. In order to focus our resources, the Technical Steering Committee has decided on the end-of-life date for Autoware.AI by the end of 2022 as [announced in 2020](https://discourse.ros.org/t/end-of-life-dates-for-autoware-ai/13750).
 
@@ -10,6 +8,7 @@ After the end-of-life, no releases will be made and no merge requests accepted. 
 **Please be aware that we do NOT stop development of Autoware**, and we are just transitioning to ROS2 based Autoware for future development. We encourage any current and future contributors to consider using/contributing to Autoware Core/Universe rather than Autoware.AI.
 
 ---
+![Native CI workflow](https://github.com/Autoware-AI/autoware.ai/workflows/Native%20CI%20workflow/badge.svg) ![CUDA CI workflow](https://github.com/Autoware-AI/autoware.ai/workflows/CUDA%20CI%20workflow/badge.svg) ![Cross CI workflow](https://github.com/Autoware-AI/autoware.ai/workflows/Cross%20CI%20workflow/badge.svg)
 
 ## What Is Autoware
 
@@ -84,7 +83,7 @@ Autoware is provided under the [Apache 2 License](https://github.com/Autoware-AI
 
 [Autoware Discourse](https://discourse.ros.org/c/autoware)
 
-[Autoware Developers Slack Team](https://autoware.herokuapp.com/)
+[Autoware Developers Discord Team](https://autoware.herokuapp.com/)
 
 Please see the [Support Guidelines](https://github.com/Autoware-AI/autoware.ai/wiki/Support-guidelines) for more details about getting help.
 
