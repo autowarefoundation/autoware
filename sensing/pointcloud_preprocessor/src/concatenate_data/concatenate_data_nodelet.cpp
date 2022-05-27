@@ -122,6 +122,12 @@ PointCloudConcatenateDataSynchronizerComponent::PointCloudConcatenateDataSynchro
     }
   }
 
+  // tf2 listener
+  {
+    tf2_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
+    tf2_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf2_buffer_);
+  }
+
   // Publishers
   {
     pub_output_ = this->create_publisher<PointCloud2>(
