@@ -8,7 +8,20 @@ on:
 jobs:
   build-and-test-self-hosted:
     runs-on: [self-hosted, linux, ARM64]
-    container: ghcr.io/autowarefoundation/autoware-universe:galactic-latest-cuda
+    container: ${{ matrix.container }}
+    strategy:
+      fail-fast: false
+      matrix:
+        rosdistro:
+          - galactic
+          - humble
+        include:
+          - rosdistro: galactic
+            container: ghcr.io/autowarefoundation/autoware-universe:galactic-latest-cuda
+            build-depends-repos: build_depends.repos
+          - rosdistro: humble
+            container: ghcr.io/autowarefoundation/autoware-universe:humble-latest-cuda
+            build-depends-repos: build_depends.humble.repos
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
@@ -24,14 +37,14 @@ jobs:
         if: ${{ steps.get-self-packages.outputs.self-packages != '' }}
         uses: autowarefoundation/autoware-github-actions/colcon-build@v1
         with:
-          rosdistro: galactic
+          rosdistro: ${{ matrix.rosdistro }}
           target-packages: ${{ steps.get-self-packages.outputs.self-packages }}
-          build-depends-repos: build_depends.repos
+          build-depends-repos: ${{ matrix.build-depends-repos }}
 
       - name: Test
         if: ${{ steps.get-self-packages.outputs.self-packages != '' }}
         uses: autowarefoundation/autoware-github-actions/colcon-test@v1
         with:
-          rosdistro: galactic
+          rosdistro: ${{ matrix.rosdistro }}
           target-packages: ${{ steps.get-self-packages.outputs.self-packages }}
-          build-depends-repos: build_depends.repos
+          build-depends-repos: ${{ matrix.build-depends-repos }}
