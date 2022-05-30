@@ -231,7 +231,7 @@ bool StopLineModule::modifyPathVelocity(
 
   // If no collision found, do nothing
   if (!collision) {
-    RCLCPP_WARN(logger_, "is no collision");
+    RCLCPP_WARN_THROTTLE(logger_, *clock_, 5000 /* ms */, "is no collision");
     return true;
   }
 
