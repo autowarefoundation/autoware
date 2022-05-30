@@ -9,11 +9,7 @@
   <arg name="input_odometry" default=""/>
   <arg name="is_parking_completed" default=""/>
 
-  <node pkg="topic_tools" exec="relay" name="scenario_trajectory_relay" output="log">
-    <param name="input_topic" value="$(var input_parking_trajectory)"/>
-    <param name="output_topic" value="$(var output_trajectory)"/>
-    <param name="type" value="tier4_planning_msgs/msg/Trajectory"/>
-  </node>
+  <node pkg="topic_tools" exec="relay" name="scenario_trajectory_relay" output="log" args="$(var input_parking_trajectory) $(var output_trajectory)"/>
 
   <arg name="cmd" default="ros2 topic pub $(var output_scenario) tier4_planning_msgs/msg/Scenario '{current_scenario: Parking, activating_scenarios: [Parking]}'"/>
   <executable cmd="$(var cmd)" name="scenario_pub" output="screen" shell="true"/>
