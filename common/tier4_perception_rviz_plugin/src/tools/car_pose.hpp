@@ -65,6 +65,14 @@ public:
   Object createObjectMsg() const override;
 };
 
+class BusInitialPoseTool : public InteractiveObjectTool
+{
+public:
+  BusInitialPoseTool();
+  void onInitialize();
+  Object createObjectMsg() const override;
+};
+
 }  // namespace rviz_plugins
 
 #endif  // TOOLS__CAR_POSE_HPP_
