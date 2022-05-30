@@ -131,7 +131,8 @@ void RadiusSearch2dfilter::filter(
     const int min_points_threshold = std::min(
       std::max(static_cast<int>(min_points_and_distance_ratio_ / distance + 0.5f), min_points_),
       max_points_);
-    const int points_num = kd_tree_->radiusSearch(i, search_radius_, k_indices, k_dists);
+    const int points_num =
+      kd_tree_->radiusSearch(i, search_radius_, k_indices, k_dists, min_points_threshold);
 
     if (min_points_threshold <= points_num) {
       output.points.push_back(xyz_cloud.points.at(i));
@@ -167,7 +168,8 @@ void RadiusSearch2dfilter::filter(
     const int min_points_threshold = std::min(
       std::max(static_cast<int>(min_points_and_distance_ratio_ / distance + 0.5f), min_points_),
       max_points_);
-    const int points_num = kd_tree_->radiusSearch(i, search_radius_, k_indices, k_dists);
+    const int points_num =
+      kd_tree_->radiusSearch(i, search_radius_, k_indices, k_dists, min_points_threshold);
 
     if (min_points_threshold <= points_num) {
       output.points.push_back(low_conf_xyz_cloud.points.at(i));
