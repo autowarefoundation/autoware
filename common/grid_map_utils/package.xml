@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>grid_map_utils</name>
+  <version>0.0.0</version>
+  <description>Utilities for the grid_map library</description>
+  <maintainer email="maxime.clement@tier4.jp">mclement</maintainer>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>autoware_cmake</buildtool_depend>
+  <buildtool_depend>eigen3_cmake_module</buildtool_depend>
+
+  <depend>grid_map_core</depend>
+  <depend>grid_map_cv</depend>
+  <depend>libopencv-dev</depend>
+  <depend>tier4_autoware_utils</depend>
+
+  <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
