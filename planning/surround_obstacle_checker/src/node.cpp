@@ -162,9 +162,10 @@ SurroundObstacleCheckerNode::SurroundObstacleCheckerNode(const rclcpp::NodeOptio
   // Publishers
   pub_stop_reason_ =
     this->create_publisher<diagnostic_msgs::msg::DiagnosticStatus>("~/output/no_start_reason", 1);
-  pub_clear_velocity_limit_ =
-    this->create_publisher<VelocityLimitClearCommand>("~/output/velocity_limit_clear_command", 1);
-  pub_velocity_limit_ = this->create_publisher<VelocityLimit>("~/output/max_velocity", 1);
+  pub_clear_velocity_limit_ = this->create_publisher<VelocityLimitClearCommand>(
+    "~/output/velocity_limit_clear_command", rclcpp::QoS{1}.transient_local());
+  pub_velocity_limit_ = this->create_publisher<VelocityLimit>(
+    "~/output/max_velocity", rclcpp::QoS{1}.transient_local());
 
   // Subscribers
   sub_pointcloud_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
