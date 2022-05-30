@@ -23,7 +23,7 @@
     <arg name="input/image" value="$(var input/image)"/>
     <arg name="enable_fine_detection" value="$(var enable_fine_detection)"/>
     <arg name="use_intra_process" value="true"/>
-    <arg name="use_multithread" value="false"/>
+    <arg name="use_multithread" value="true"/>
   </include>
 
   <!-- visualizer -->
