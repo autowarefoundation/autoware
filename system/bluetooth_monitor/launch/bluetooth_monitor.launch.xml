@@ -1,0 +1,6 @@
+<launch>
+  <arg name="bluetooth_monitor_param_file" default="$(find-pkg-share bluetooth_monitor)/config/bluetooth_monitor.param.yaml"/>
+  <node pkg="bluetooth_monitor" exec="bluetooth_monitor" name="bluetooth_monitor" output="log" respawn="true">
+    <param from="$(var bluetooth_monitor_param_file)"/>
+  </node>
+</launch>

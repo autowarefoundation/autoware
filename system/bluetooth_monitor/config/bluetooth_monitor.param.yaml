@@ -1,0 +1,7 @@
+---
+/**:
+  ros__parameters:
+    port: 7640
+    timeout: 5
+    rtt_warn: 0.00
+    addresses: ["4C:B9:9B:6E:7F:9A"]
