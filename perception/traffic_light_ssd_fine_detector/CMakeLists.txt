@@ -155,4 +155,8 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
 
 else()
   message(STATUS "TrafficLightSSDFineDetector won't be built, CUDA and/or TensorRT were not found.")
+  # to avoid launch file missing without a gpu
+  ament_auto_package(INSTALL_TO_SHARE
+    launch
+  )
 endif()
