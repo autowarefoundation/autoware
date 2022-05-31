@@ -222,6 +222,7 @@ PointWithSearchRangeIndex findFirstNearSearchRangeIndex(
   tier4_autoware_utils::validateNonEmpty(points);
 
   bool min_idx_found = false;
+  bool max_idx_found = false;
   PointWithSearchRangeIndex point_with_range = {point, {static_cast<size_t>(0), points.size() - 1}};
   for (size_t i = 0; i < points.size(); i++) {
     const auto & p = points.at(i).point.pose.position;
@@ -231,7 +232,10 @@ PointWithSearchRangeIndex findFirstNearSearchRangeIndex(
         point_with_range.index.min_idx = i;
         min_idx_found = true;
       }
-      point_with_range.index.max_idx = i;
+      if (!max_idx_found) point_with_range.index.max_idx = i;
+    } else if (min_idx_found) {
+      // found close index and farther than distance_thresh, stop update max index
+      max_idx_found = true;
     }
   }
   return point_with_range;
