@@ -17,8 +17,8 @@
 
 #include <grid_map_core/GridMap.hpp>
 #include <grid_map_core/iterators/LineIterator.hpp>
-#include <grid_map_core/iterators/PolygonIterator.hpp>
 #include <grid_map_ros/GridMapRosConverter.hpp>
+#include <grid_map_utils/polygon_iterator.hpp>
 #include <opencv2/opencv.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/math/normalization.hpp>

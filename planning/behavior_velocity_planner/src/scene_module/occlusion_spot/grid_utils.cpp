@@ -68,7 +68,7 @@ void addObjectsToGridMap(const std::vector<PredictedObject> & objs, grid_map::Gr
       for (const auto & point : foot_print_polygon.outer()) {
         grid_polygon.addVertex({point.x(), point.y()});
       }
-      for (grid_map::PolygonIterator iterator(grid, grid_polygon); !iterator.isPastEnd();
+      for (grid_map_utils::PolygonIterator iterator(grid, grid_polygon); !iterator.isPastEnd();
            ++iterator) {
         const grid_map::Index & index = *iterator;
         if (!grid.isValid(index)) continue;
@@ -89,7 +89,8 @@ void findOcclusionSpots(
   for (const auto & point : polygon.outer()) {
     grid_polygon.addVertex({point.x(), point.y()});
   }
-  for (grid_map::PolygonIterator iterator(grid, grid_polygon); !iterator.isPastEnd(); ++iterator) {
+  for (grid_map_utils::PolygonIterator iterator(grid, grid_polygon); !iterator.isPastEnd();
+       ++iterator) {
     const grid_map::Index & index = *iterator;
     if (grid_data(index.x(), index.y()) == grid_utils::occlusion_cost_value::UNKNOWN) {
       grid_map::Position occlusion_spot_position;
@@ -115,7 +116,7 @@ bool isCollisionFree(
       for (const auto & point : polygon.outer()) {
         grid_polygon.addVertex({point.x(), point.y()});
       }
-      for (grid_map::PolygonIterator iterator(grid, grid_polygon); !iterator.isPastEnd();
+      for (grid_map_utils::PolygonIterator iterator(grid, grid_polygon); !iterator.isPastEnd();
            ++iterator) {
         const grid_map::Index & index = *iterator;
         if (grid_data(index.x(), index.y()) == grid_utils::occlusion_cost_value::OCCUPIED) {
