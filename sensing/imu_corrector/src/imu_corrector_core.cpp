@@ -38,9 +38,9 @@ void ImuCorrector::callbackImu(const sensor_msgs::msg::Imu::ConstSharedPtr imu_m
   sensor_msgs::msg::Imu imu_msg;
   imu_msg = *imu_msg_ptr;
 
-  imu_msg.angular_velocity.x += angular_velocity_offset_x_;
-  imu_msg.angular_velocity.y += angular_velocity_offset_y_;
-  imu_msg.angular_velocity.z += angular_velocity_offset_z_;
+  imu_msg.angular_velocity.x -= angular_velocity_offset_x_;
+  imu_msg.angular_velocity.y -= angular_velocity_offset_y_;
+  imu_msg.angular_velocity.z -= angular_velocity_offset_z_;
 
   imu_msg.angular_velocity_covariance[0 * 3 + 0] =
     angular_velocity_stddev_xx_ * angular_velocity_stddev_xx_;
