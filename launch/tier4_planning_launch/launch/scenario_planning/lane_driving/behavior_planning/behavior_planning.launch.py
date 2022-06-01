@@ -19,11 +19,14 @@ import launch
 from launch.actions import DeclareLaunchArgument
 from launch.actions import ExecuteProcess
 from launch.actions import GroupAction
+from launch.actions import IncludeLaunchDescription
 from launch.actions import OpaqueFunction
 from launch.actions import SetLaunchConfiguration
 from launch.conditions import IfCondition
 from launch.conditions import UnlessCondition
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
+from launch.substitutions import PythonExpression
 from launch_ros.actions import ComposableNodeContainer
 from launch_ros.descriptions import ComposableNode
 from launch_ros.substitutions import FindPackageShare
@@ -188,6 +191,39 @@ def launch_setup(context, *args, **kwargs):
         extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
     )
 
+    # smoother param
+    common_param_path = os.path.join(
+        get_package_share_directory("tier4_planning_launch"),
+        "config",
+        "scenario_planning",
+        "common",
+        "common.param.yaml",
+    )
+    with open(common_param_path, "r") as f:
+        common_param = yaml.safe_load(f)["/**"]["ros__parameters"]
+
+    motion_velocity_smoother_param_path = os.path.join(
+        get_package_share_directory("tier4_planning_launch"),
+        "config",
+        "scenario_planning",
+        "common",
+        "motion_velocity_smoother",
+        "motion_velocity_smoother.param.yaml",
+    )
+    with open(motion_velocity_smoother_param_path, "r") as f:
+        motion_velocity_smoother_param = yaml.safe_load(f)["/**"]["ros__parameters"]
+
+    smoother_type_param_path = os.path.join(
+        get_package_share_directory("tier4_planning_launch"),
+        "config",
+        "scenario_planning",
+        "common",
+        "motion_velocity_smoother",
+        "Analytical.param.yaml",
+    )
+    with open(smoother_type_param_path, "r") as f:
+        smoother_type_param = yaml.safe_load(f)["/**"]["ros__parameters"]
+
     # behavior velocity planner
     blind_spot_param_path = os.path.join(
         get_package_share_directory("tier4_planning_launch"),
@@ -297,6 +333,18 @@ def launch_setup(context, *args, **kwargs):
     with open(no_stopping_area_param_path, "r") as f:
         no_stopping_area_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
+    run_out_param_path = os.path.join(
+        get_package_share_directory("tier4_planning_launch"),
+        "config",
+        "scenario_planning",
+        "lane_driving",
+        "behavior_planning",
+        "behavior_velocity_planner",
+        "run_out.param.yaml",
+    )
+    with open(run_out_param_path, "r") as f:
+        run_out_param = yaml.safe_load(f)["/**"]["ros__parameters"]
+
     behavior_velocity_planner_param_path = os.path.join(
         get_package_share_directory("tier4_planning_launch"),
         "config",
@@ -324,12 +372,20 @@ def launch_setup(context, *args, **kwargs):
                 "/perception/obstacle_segmentation/pointcloud",
             ),
             (
+                "~/input/compare_map_filtered_pointcloud",
+                "compare_map_filtered/pointcloud",
+            ),
+            (
                 "~/input/traffic_signals",
                 "/perception/traffic_light_recognition/traffic_signals",
             ),
             (
                 "~/input/external_traffic_signals",
                 "/external/traffic_light_recognition/traffic_signals",
+            ),
+            (
+                "~/input/external_velocity_limit_mps",
+                "/planning/scenario_planning/max_velocity_default",
             ),
             ("~/input/virtual_traffic_light_states", "/awapi/tmp/virtual_traffic_light_states"),
             (
@@ -356,6 +412,10 @@ def launch_setup(context, *args, **kwargs):
             occlusion_spot_param,
             no_stopping_area_param,
             vehicle_info_param,
+            run_out_param,
+            common_param,
+            motion_velocity_smoother_param,
+            smoother_type_param,
         ],
         extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
     )
@@ -372,9 +432,39 @@ def launch_setup(context, *args, **kwargs):
         output="screen",
     )
 
+    # load compare map for dynamic obstacle stop module
+    load_compare_map = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            [
+                FindPackageShare("tier4_planning_launch"),
+                "/launch/scenario_planning/lane_driving/behavior_planning/compare_map.launch.py",
+            ]
+        ),
+        launch_arguments={
+            "use_pointcloud_container": LaunchConfiguration("use_pointcloud_container"),
+            "container_name": LaunchConfiguration("container_name"),
+            "use_multithread": "true",
+        }.items(),
+        # launch compare map only when run_out module is enabled and detection method is Points
+        condition=IfCondition(
+            PythonExpression(
+                [
+                    LaunchConfiguration(
+                        "launch_run_out", default=behavior_velocity_planner_param["launch_run_out"]
+                    ),
+                    " and ",
+                    "'",
+                    run_out_param["run_out"]["detection_method"],
+                    "' == 'Points'",
+                ]
+            )
+        ),
+    )
+
     group = GroupAction(
         [
             container,
+            load_compare_map,
             ExecuteProcess(
                 cmd=[
                     "ros2",
@@ -419,6 +509,10 @@ def generate_launch_description():
     # component
     add_launch_arg("use_intra_process", "false", "use ROS2 component container communication")
     add_launch_arg("use_multithread", "false", "use multithread")
+
+    # for compare map
+    add_launch_arg("use_pointcloud_container", "true")
+    add_launch_arg("container_name", "pointcloud_container")
 
     set_container_executable = SetLaunchConfiguration(
         "container_executable",

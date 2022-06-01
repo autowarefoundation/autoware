@@ -3,6 +3,10 @@
   <arg name="common_param_path" default="$(find-pkg-share tier4_planning_launch)/config/scenario_planning/common/common.param.yaml"/>
   <arg name="vehicle_info_param_file"/>
 
+  <!-- pointcloud container -->
+  <arg name="use_pointcloud_container"/>
+  <arg name="pointcloud_container_name"/>
+
   <!-- scenario selector -->
   <include file="$(find-pkg-share scenario_selector)/launch/scenario_selector.launch.xml">
     <arg name="input_lane_driving_trajectory" value="/planning/scenario_planning/lane_driving/trajectory"/>
@@ -41,6 +45,8 @@
     <include file="$(find-pkg-share tier4_planning_launch)/launch/scenario_planning/lane_driving.launch.xml">
       <arg name="common_param_path" value="$(var common_param_path)"/>
       <arg name="vehicle_info_param_file" value="$(var vehicle_info_param_file)"/>
+      <arg name="use_pointcloud_container" value="$(var use_pointcloud_container)"/>
+      <arg name="pointcloud_container_name" value="$(var pointcloud_container_name)"/>
     </include>
     <!-- parking -->
     <include file="$(find-pkg-share tier4_planning_launch)/launch/scenario_planning/parking.launch.py">

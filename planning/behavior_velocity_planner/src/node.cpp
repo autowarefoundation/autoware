@@ -40,6 +40,7 @@
 #include <scene_module/intersection/manager.hpp>
 #include <scene_module/no_stopping_area/manager.hpp>
 #include <scene_module/occlusion_spot/manager.hpp>
+#include <scene_module/run_out/manager.hpp>
 #include <scene_module/stop_line/manager.hpp>
 #include <scene_module/traffic_light/manager.hpp>
 #include <scene_module/virtual_traffic_light/manager.hpp>
@@ -194,6 +195,9 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode(const rclcpp::NodeOptio
   // to calculate ttc it's better to be after stop line
   if (this->declare_parameter("launch_occlusion_spot", true)) {
     planner_manager_.launchSceneModule(std::make_shared<OcclusionSpotModuleManager>(*this));
+  }
+  if (this->declare_parameter("launch_run_out", false)) {
+    planner_manager_.launchSceneModule(std::make_shared<RunOutModuleManager>(*this));
   }
 }
 

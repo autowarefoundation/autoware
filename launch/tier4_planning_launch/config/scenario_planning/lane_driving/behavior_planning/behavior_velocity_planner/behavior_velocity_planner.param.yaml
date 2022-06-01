@@ -9,6 +9,7 @@
     launch_virtual_traffic_light: true
     launch_occlusion_spot: true
     launch_no_stopping_area: true
+    launch_run_out: false
     forward_path_length: 1000.0
     backward_path_length: 5.0
     max_accel: -2.8
