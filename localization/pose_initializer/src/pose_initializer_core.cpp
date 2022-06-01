@@ -86,8 +86,10 @@ PoseInitializer::PoseInitializer()
   initial_pose_pub_ =
     this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>("initialpose3d", 10);
 
-  ndt_client_ =
-    this->create_client<tier4_localization_msgs::srv::PoseWithCovarianceStamped>("ndt_align_srv");
+  initialize_pose_service_group_ =
+    create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+  ndt_client_ = this->create_client<tier4_localization_msgs::srv::PoseWithCovarianceStamped>(
+    "ndt_align_srv", rmw_qos_profile_services_default, initialize_pose_service_group_);
   while (!ndt_client_->wait_for_service(std::chrono::seconds(1)) && rclcpp::ok()) {
     RCLCPP_INFO(get_logger(), "Waiting for service...");
   }
@@ -219,24 +221,26 @@ bool PoseInitializer::callAlignServiceAndPublishResult(
   req->seq = ++request_id_;
 
   RCLCPP_INFO(get_logger(), "call NDT Align Server");
+  auto result = ndt_client_->async_send_request(req).get();
 
-  ndt_client_->async_send_request(
-    req,
-    [this](rclcpp::Client<tier4_localization_msgs::srv::PoseWithCovarianceStamped>::SharedFuture
-             result) {
-      if (result.get()->success) {
-        RCLCPP_INFO(get_logger(), "called NDT Align Server");
-        response_id_ = result.get()->seq;
-        // NOTE temporary cov
-        geometry_msgs::msg::PoseWithCovarianceStamped & pose_with_covariance =
-          result.get()->pose_with_covariance;
-        pose_with_covariance.pose.covariance = output_pose_covariance_;
-        initial_pose_pub_->publish(pose_with_covariance);
-        enable_gnss_callback_ = false;
-      } else {
-        RCLCPP_INFO(get_logger(), "failed NDT Align Server");
-        response_id_ = result.get()->seq;
-      }
-    });
+  if (!result->success) {
+    RCLCPP_INFO(get_logger(), "failed NDT Align Server");
+    response_id_ = result->seq;
+    return false;
+  }
+
+  RCLCPP_INFO(get_logger(), "called NDT Align Server");
+  response_id_ = result->seq;
+  // NOTE temporary cov
+  geometry_msgs::msg::PoseWithCovarianceStamped & pose_with_cov = result->pose_with_covariance;
+  pose_with_cov.pose.covariance[0] = 1.0;
+  pose_with_cov.pose.covariance[1 * 6 + 1] = 1.0;
+  pose_with_cov.pose.covariance[2 * 6 + 2] = 0.01;
+  pose_with_cov.pose.covariance[3 * 6 + 3] = 0.01;
+  pose_with_cov.pose.covariance[4 * 6 + 4] = 0.01;
+  pose_with_cov.pose.covariance[5 * 6 + 5] = 0.2;
+  initial_pose_pub_->publish(pose_with_cov);
+  enable_gnss_callback_ = false;
+
   return true;
 }

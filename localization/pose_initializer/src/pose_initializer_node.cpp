@@ -21,7 +21,11 @@
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<PoseInitializer>());
+  rclcpp::executors::MultiThreadedExecutor executor;
+  auto node = std::make_shared<PoseInitializer>();
+  executor.add_node(node);
+  executor.spin();
+  executor.remove_node(node);
   rclcpp::shutdown();
   return 0;
 }
