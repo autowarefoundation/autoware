@@ -1,9 +1,15 @@
 float64 lateral_error
+float64 lateral_error_velocity
+float64 lateral_error_acceleration
+float64 longitudinal_error
+float64 longitudinal_error_velocity
+float64 longitudinal_error_acceleration
 float64 heading_error
+float64 heading_error_velocity
 float64 control_effort_energy
 float64 error_energy
 float64 value_approximation
 float64 curvature_estimate
 float64 curvature_estimate_pp
-float64 lateral_error_velocity
-float64 lateral_error_acceleration
+float64 vehicle_velocity_error
+float64 tracking_curvature_discontinuity_ability

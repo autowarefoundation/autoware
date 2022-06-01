@@ -1,4 +1,4 @@
-// Copyright 2021 Tier IV, Inc.
+// Copyright 2021 - 2022 Tier IV, Inc., Leo Drive Teknoloji A.Ş.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,12 +16,14 @@
 #define CONTROL_PERFORMANCE_ANALYSIS__CONTROL_PERFORMANCE_ANALYSIS_NODE_HPP_
 
 #include "control_performance_analysis/control_performance_analysis_core.hpp"
+#include "control_performance_analysis/msg/driving_monitor_stamped.hpp"
 #include "control_performance_analysis/msg/error_stamped.hpp"
 
 #include <rclcpp/rclcpp.hpp>
+#include <signal_processing/lowpass_filter_1d.hpp>
 #include <tier4_autoware_utils/ros/self_pose_listener.hpp>
 
-#include <autoware_auto_control_msgs/msg/ackermann_lateral_command.hpp>
+#include <autoware_auto_control_msgs/msg/ackermann_control_command.hpp>
 #include <autoware_auto_planning_msgs/msg/trajectory.hpp>
 #include <autoware_auto_vehicle_msgs/msg/steering_report.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
@@ -30,12 +32,14 @@
 #include <boost/optional.hpp>
 
 #include <memory>
+#include <utility>
 
 namespace control_performance_analysis
 {
-using autoware_auto_control_msgs::msg::AckermannLateralCommand;
+using autoware_auto_control_msgs::msg::AckermannControlCommand;
 using autoware_auto_planning_msgs::msg::Trajectory;
 using autoware_auto_vehicle_msgs::msg::SteeringReport;
+using control_performance_analysis::msg::DrivingMonitorStamped;
 using control_performance_analysis::msg::ErrorStamped;
 using geometry_msgs::msg::PoseStamped;
 using nav_msgs::msg::Odometry;
@@ -46,9 +50,12 @@ struct Param
   // Global parameters
   double wheel_base;
   double curvature_interval_length;
+  double prevent_zero_division_value;
+  uint odom_interval;  // Increase it for smoother curve
 
-  // Control Method Parameters
-  double control_period;
+  // How far the next waypoint can be ahead of the vehicle direction.
+
+  double acceptable_min_waypoint_distance;
 };
 
 class ControlPerformanceAnalysisNode : public rclcpp::Node
@@ -59,8 +66,8 @@ public:
 private:
   // Subscribers and Local Variable Assignment
   rclcpp::Subscription<Trajectory>::SharedPtr sub_trajectory_;  // subscribe to trajectory
-  rclcpp::Subscription<AckermannLateralCommand>::SharedPtr
-    sub_control_steering_;                                  // subscribe to steering control value
+  rclcpp::Subscription<AckermannControlCommand>::SharedPtr
+    sub_control_cmd_;                                       // subscribe to steering control value
   rclcpp::Subscription<Odometry>::SharedPtr sub_velocity_;  // subscribe to velocity
   rclcpp::Subscription<SteeringReport>::SharedPtr sub_vehicle_steering_;
 
@@ -69,32 +76,38 @@ private:
 
   // Publishers
   rclcpp::Publisher<ErrorStamped>::SharedPtr pub_error_msg_;  // publish error message
+  rclcpp::Publisher<DrivingMonitorStamped>::SharedPtr
+    pub_driving_msg_;  // publish driving status message
 
   // Node Methods
   bool isDataReady() const;  // check if data arrive
   static bool isValidTrajectory(const Trajectory & traj);
-  boost::optional<TargetPerformanceMsgVars> computeTargetPerformanceMsgVars() const;
 
   // Callback Methods
   void onTrajectory(const Trajectory::ConstSharedPtr msg);
-  void publishErrorMsg(const TargetPerformanceMsgVars & control_performance_vars);
-  void onControlRaw(const AckermannLateralCommand::ConstSharedPtr control_msg);
+  void onControlRaw(const AckermannControlCommand::ConstSharedPtr control_msg);
   void onVecSteeringMeasured(const SteeringReport::ConstSharedPtr meas_steer_msg);
   void onVelocity(const Odometry::ConstSharedPtr msg);
 
-  // Timer - To Publish In Control Period
-  rclcpp::TimerBase::SharedPtr timer_publish_;
-  void onTimer();
-
   // Parameters
   Param param_{};  // wheelbase, control period and feedback coefficients.
+  // State holder
+  std_msgs::msg::Header last_control_cmd_;
+  double d_control_cmd_{0};
 
   // Subscriber Parameters
   Trajectory::ConstSharedPtr current_trajectory_ptr_;  // ConstPtr to local traj.
-  AckermannLateralCommand::ConstSharedPtr current_control_msg_ptr_;
+  AckermannControlCommand::ConstSharedPtr current_control_msg_ptr_;
   SteeringReport::ConstSharedPtr current_vec_steering_msg_ptr_;
   Odometry::ConstSharedPtr current_odom_ptr_;
   PoseStamped::ConstSharedPtr current_pose_;  // pose of the vehicle, x, y, heading
+
+  // prev states
+  Trajectory prev_traj;
+  AckermannControlCommand prev_cmd;
+  SteeringReport prev_steering;
+
+  std_msgs::msg::Header odom_state_;
 
   // Algorithm
   std::unique_ptr<ControlPerformanceAnalysisCore> control_performance_core_ptr_;

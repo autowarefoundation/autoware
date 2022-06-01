@@ -1,4 +1,4 @@
-// Copyright 2021 Tier IV, Inc.
+// Copyright 2021 - 2022 Tier IV, Inc., Leo Drive Teknoloji A.Ş.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,6 +39,23 @@ inline std::vector<double> getTangentVector(double yaw_angle)
 inline std::vector<double> getNormalVector(double yaw_angle)
 {
   return std::vector<double>{-sin(yaw_angle), cos(yaw_angle)};
+}
+
+inline std::vector<double> computeLateralLongitudinalError(
+  std::vector<double> & closest_point_position, std::vector<double> & vehicle_position,
+  double & desired_yaw_angle)
+{
+  // Vector to path point originating from the vehicle r - rd
+  std::vector<double> vector_to_path_point{
+    vehicle_position[0] - closest_point_position[0],
+    vehicle_position[1] - closest_point_position[1]};
+
+  double lateral_error = -sin(desired_yaw_angle) * vector_to_path_point[0] +
+                         cos(desired_yaw_angle) * vector_to_path_point[1];
+  double longitudinal_error = cos(desired_yaw_angle) * vector_to_path_point[0] +
+                              sin(desired_yaw_angle) * vector_to_path_point[1];
+
+  return std::vector<double>{lateral_error, longitudinal_error};
 }
 
 inline double computeLateralError(

@@ -1,4 +1,4 @@
-// Copyright 2021 Tier IV, Inc.
+// Copyright 2021 - 2022 Tier IV, Inc., Leo Drive Teknoloji A.Ş.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,14 +16,20 @@
 #define CONTROL_PERFORMANCE_ANALYSIS__CONTROL_PERFORMANCE_ANALYSIS_CORE_HPP_
 
 #include "control_performance_analysis/control_performance_analysis_utils.hpp"
+#include "control_performance_analysis/msg/driving_monitor_stamped.hpp"
+#include "control_performance_analysis/msg/error_stamped.hpp"
+#include "control_performance_analysis/msg/float_stamped.hpp"
 
 #include <eigen3/Eigen/Core>
+#include <rclcpp/time.hpp>
 
-#include <autoware_auto_control_msgs/msg/ackermann_lateral_command.hpp>
+#include <autoware_auto_control_msgs/msg/ackermann_control_command.hpp>
 #include <autoware_auto_planning_msgs/msg/trajectory.hpp>
+#include <autoware_auto_vehicle_msgs/msg/steering_report.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/pose_array.hpp>
 #include <geometry_msgs/msg/twist.hpp>
+#include <nav_msgs/msg/odometry.hpp>
 
 #include <memory>
 #include <utility>
@@ -31,24 +37,16 @@
 
 namespace control_performance_analysis
 {
-using autoware_auto_control_msgs::msg::AckermannLateralCommand;
+using autoware_auto_control_msgs::msg::AckermannControlCommand;
 using autoware_auto_planning_msgs::msg::Trajectory;
+using autoware_auto_vehicle_msgs::msg::SteeringReport;
+using control_performance_analysis::msg::DrivingMonitorStamped;
+using control_performance_analysis::msg::ErrorStamped;
+using control_performance_analysis::msg::FloatStamped;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::PoseArray;
 using geometry_msgs::msg::Twist;
-
-struct TargetPerformanceMsgVars
-{
-  double lateral_error;
-  double heading_error;
-  double control_effort_energy;
-  double error_energy;
-  double value_approximation;
-  double curvature_estimate;
-  double curvature_estimate_pp;
-  double lateral_error_velocity;
-  double lateral_error_acceleration;
-};
+using nav_msgs::msg::Odometry;
 
 class ControlPerformanceAnalysisCore
 {
@@ -56,14 +54,18 @@ public:
   // See https://eigen.tuxfamily.org/dox/group__TopicStructHavingEigenMembers.html
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   ControlPerformanceAnalysisCore();
-  ControlPerformanceAnalysisCore(double wheelbase, double curvature_interval_length);
+  ControlPerformanceAnalysisCore(
+    double wheelbase, double curvature_interval_length, uint odom_interval,
+    double acceptable_min_waypoint_distance, double prevent_zero_division_value);
 
   // Setters
   void setCurrentPose(const Pose & msg);
   void setCurrentWaypoints(const Trajectory & trajectory);
-  void setCurrentVelocities(const Twist & twist_msg);
-  void setCurrentControlValue(const AckermannLateralCommand & msg);
-  void setInterpolatedPose(Pose & interpolated_pose);
+  void setCurrentControlValue(const AckermannControlCommand & msg);
+  void setInterpolatedVars(
+    Pose & interpolated_pose, double & interpolated_velocity, double & interpolated_acceleration);
+  void setOdomHistory(const Odometry & odom);
+  void setSteeringStatus(const SteeringReport & steering);
 
   void findCurveRefIdx();
   std::pair<bool, int32_t> findClosestPrevWayPointIdx_path_direction();
@@ -72,26 +74,46 @@ public:
 
   // Getters
   bool isDataReady() const;
-  std::pair<bool, TargetPerformanceMsgVars> getPerformanceVars();
-  Pose getPrevWPPose() const;
+  bool calculateErrorVars();
+  bool calculateDrivingVars();
+  Pose getPrevWPPose() const;  // It is not used!
   std::pair<bool, Pose> calculateClosestPose();
+
+  // Output variables
+  ErrorStamped error_vars;
+  DrivingMonitorStamped driving_status_vars;
 
 private:
   double wheelbase_;
   double curvature_interval_length_;
+  uint odom_interval_;
+  double acceptable_min_waypoint_distance_;
+  double prevent_zero_division_value_;
 
   // Variables Received Outside
   std::shared_ptr<PoseArray> current_waypoints_ptr_;
+  std::shared_ptr<std::vector<double>> current_waypoints_vel_ptr_;
   std::shared_ptr<Pose> current_vec_pose_ptr_;
-  std::shared_ptr<std::vector<double>> current_velocities_ptr_;  // [Vx, Heading rate]
-  std::shared_ptr<AckermannLateralCommand> current_control_ptr_;
+  std::shared_ptr<std::vector<Odometry>> odom_history_ptr_;  // velocities at k-2, k-1, k, k+1
+  std::shared_ptr<AckermannControlCommand> current_control_ptr_;
+  std::shared_ptr<SteeringReport> current_vec_steering_msg_ptr_;
+
+  // State holder
+
+  std_msgs::msg::Header last_odom_header;
+  std_msgs::msg::Header last_steering_report;
 
   // Variables computed
+
   std::unique_ptr<int32_t> idx_prev_wp_;       // the waypoint index, vehicle
   std::unique_ptr<int32_t> idx_curve_ref_wp_;  // index of waypoint corresponds to front axle center
   std::unique_ptr<int32_t> idx_next_wp_;       //  the next waypoint index, vehicle heading to
-  std::unique_ptr<TargetPerformanceMsgVars> prev_target_vars_{};
+  std::unique_ptr<ErrorStamped> prev_target_vars_{};
+  std::unique_ptr<DrivingMonitorStamped> prev_driving_vars_{};
   std::shared_ptr<Pose> interpolated_pose_ptr_;
+  std::shared_ptr<double> interpolated_velocity_ptr_;
+  std::shared_ptr<double> interpolated_acceleration_ptr_;
+
   // V = xPx' ; Value function from DARE Lyap matrix P
   Eigen::Matrix2d const lyap_P_ = (Eigen::MatrixXd(2, 2) << 2.342, 8.60, 8.60, 64.29).finished();
   double const contR{10.0};  // Control weight in LQR

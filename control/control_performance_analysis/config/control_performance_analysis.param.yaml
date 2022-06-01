@@ -1,5 +1,7 @@
 /**:
   ros__parameters:
     # -- publishing period --
-    control_period: 0.033
-    double curvature_interval_length_: 5.0
+    curvature_interval_length_: 5.0
+    prevent_zero_division_value: 0.001
+    odom_interval_: 3
+    acceptable_min_waypoint_distance: 2.0
