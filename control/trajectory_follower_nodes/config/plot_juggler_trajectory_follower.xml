@@ -126,7 +126,7 @@
        <plot mode="TimeSeries" style="Lines">
         <range bottom="0.900000" top="1.100000" right="118.791728" left="76.166273"/>
         <limitY/>
-        <curve name="/vehicle/state_report/mode" color="#1f77b4"/>
+        <curve name="/vehicle/status/control_mode/mode" color="#1f77b4"/>
        </plot>
       </DockArea>
      </DockSplitter>
@@ -256,7 +256,7 @@
    <selected_topics>
     <topic name="/control/trajectory_follower/longitudinal/diagnostic"/>
     <topic name="/control/trajectory_follower/lateral/diagnostic"/>
-    <topic name="/vehicle/state_report"/>
+    <topic name="/vehicle/status/control_mode"/>
    </selected_topics>
   </plugin>
   <plugin ID="UDP Server"/>
