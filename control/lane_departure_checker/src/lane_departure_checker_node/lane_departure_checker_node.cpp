@@ -134,6 +134,8 @@ LaneDepartureCheckerNode::LaneDepartureCheckerNode(const rclcpp::NodeOptions & o
   param_.max_lateral_deviation = declare_parameter("max_lateral_deviation", 1.0);
   param_.max_longitudinal_deviation = declare_parameter("max_longitudinal_deviation", 1.0);
   param_.max_yaw_deviation_deg = declare_parameter("max_yaw_deviation_deg", 30.0);
+  param_.delta_yaw_threshold_for_closest_point =
+    declare_parameter("delta_yaw_threshold_for_closest_point", 90.0);
 
   // Parameter Callback
   set_param_res_ =

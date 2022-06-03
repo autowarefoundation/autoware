@@ -18,6 +18,7 @@
 #include <rosidl_runtime_cpp/message_initialization.hpp>
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
 #include <tier4_autoware_utils/geometry/pose_deviation.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_auto_planning_msgs/msg/had_map_route.hpp>
@@ -55,6 +56,7 @@ struct Param
   double max_lateral_deviation;
   double max_longitudinal_deviation;
   double max_yaw_deviation_deg;
+  double delta_yaw_threshold_for_closest_point;
 };
 
 struct Input
@@ -98,7 +100,8 @@ private:
   std::shared_ptr<vehicle_info_util::VehicleInfo> vehicle_info_ptr_;
 
   static PoseDeviation calcTrajectoryDeviation(
-    const Trajectory & trajectory, const geometry_msgs::msg::Pose & pose);
+    const Trajectory & trajectory, const geometry_msgs::msg::Pose & pose,
+    const double yaw_threshold);
 
   //! This function assumes the input trajectory is sampled dense enough
   static TrajectoryPoints resampleTrajectory(const Trajectory & trajectory, const double interval);

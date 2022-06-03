@@ -12,3 +12,4 @@
     max_lateral_deviation: 2.0
     max_longitudinal_deviation: 2.0
     max_yaw_deviation_deg: 60.0
+    delta_yaw_threshold_for_closest_point: 1.570 #M_PI/2.0, delta yaw thres for closest point

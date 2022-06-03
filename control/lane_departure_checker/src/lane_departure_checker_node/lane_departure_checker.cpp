@@ -56,22 +56,14 @@ bool isInAnyLane(const lanelet::ConstLanelets & candidate_lanelets, const Point2
   return false;
 }
 
-size_t findNearestIndex(const Trajectory & trajectory, const geometry_msgs::msg::Pose & pose)
+size_t findNearestIndexWithSoftYawConstraints(
+  const Trajectory & trajectory, const geometry_msgs::msg::Pose & pose, const double yaw_threshold)
 {
-  std::vector<double> distances;
-  distances.reserve(trajectory.points.size());
-  std::transform(
-    trajectory.points.cbegin(), trajectory.points.cend(), std::back_inserter(distances),
-    [&](const TrajectoryPoint & p) {
-      const auto p1 = tier4_autoware_utils::fromMsg(p.pose.position).to_2d();
-      const auto p2 = tier4_autoware_utils::fromMsg(pose.position).to_2d();
-      return boost::geometry::distance(p1, p2);
-    });
-
-  const auto min_itr = std::min_element(distances.cbegin(), distances.cend());
-  const auto min_idx = static_cast<size_t>(std::distance(distances.cbegin(), min_itr));
-
-  return min_idx;
+  const auto nearest_idx_optional = tier4_autoware_utils::findNearestIndex(
+    trajectory.points, pose, std::numeric_limits<double>::max(), yaw_threshold);
+  return nearest_idx_optional
+           ? *nearest_idx_optional
+           : tier4_autoware_utils::findNearestIndex(trajectory.points, pose.position);
 }
 
 LinearRing2d createHullFromFootprints(const std::vector<LinearRing2d> & footprints)
@@ -116,8 +108,9 @@ Output LaneDepartureChecker::update(const Input & input)
 
   tier4_autoware_utils::StopWatch<std::chrono::milliseconds> stop_watch;
 
-  output.trajectory_deviation =
-    calcTrajectoryDeviation(*input.reference_trajectory, input.current_pose->pose);
+  output.trajectory_deviation = calcTrajectoryDeviation(
+    *input.reference_trajectory, input.current_pose->pose,
+    param_.delta_yaw_threshold_for_closest_point);
   output.processing_time_map["calcTrajectoryDeviation"] = stop_watch.toc(true);
 
   {
@@ -152,9 +145,9 @@ Output LaneDepartureChecker::update(const Input & input)
 }
 
 PoseDeviation LaneDepartureChecker::calcTrajectoryDeviation(
-  const Trajectory & trajectory, const geometry_msgs::msg::Pose & pose)
+  const Trajectory & trajectory, const geometry_msgs::msg::Pose & pose, const double yaw_threshold)
 {
-  const auto nearest_idx = findNearestIndex(trajectory, pose);
+  const auto nearest_idx = findNearestIndexWithSoftYawConstraints(trajectory, pose, yaw_threshold);
   return tier4_autoware_utils::calcPoseDeviation(trajectory.points.at(nearest_idx).pose, pose);
 }
 
