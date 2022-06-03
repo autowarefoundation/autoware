@@ -96,9 +96,11 @@ visualization_msgs::msg::MarkerArray StopLineModule::createVirtualWallMarkerArra
   visualization_msgs::msg::MarkerArray wall_marker;
   const auto p_front = tier4_autoware_utils::calcOffsetPose(
     *debug_data_.stop_pose, debug_data_.base_link2front, 0.0, 0.0);
-  appendMarkerArray(
-    tier4_autoware_utils::createStopVirtualWallMarker(p_front, "stopline", now, module_id_), now,
-    &wall_marker);
+  if (state_ == State::APPROACH) {
+    appendMarkerArray(
+      tier4_autoware_utils::createStopVirtualWallMarker(p_front, "stopline", now, module_id_), now,
+      &wall_marker);
+  }
   return wall_marker;
 }
 }  // namespace behavior_velocity_planner
