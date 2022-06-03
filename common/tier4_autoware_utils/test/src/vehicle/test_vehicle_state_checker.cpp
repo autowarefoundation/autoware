@@ -142,7 +142,7 @@ TEST(vehicle_stop_checker, isVehicleStopped)
     auto manager = std::make_shared<PubManager>();
     EXPECT_GE(manager->pub_odom_->get_subscription_count(), 1U) << "topic is not connected.";
 
-    EXPECT_FALSE(checker->vehicle_stop_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_0_MS));
+    EXPECT_FALSE(checker->vehicle_stop_checker_->isVehicleStopped());
 
     rclcpp::executors::SingleThreadedExecutor executor;
     executor.add_node(checker);
@@ -153,6 +153,7 @@ TEST(vehicle_stop_checker, isVehicleStopped)
 
     manager->publishStoppedOdometry(ODOMETRY_HISTORY_500_MS);
 
+    EXPECT_TRUE(checker->vehicle_stop_checker_->isVehicleStopped());
     EXPECT_TRUE(checker->vehicle_stop_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_0_MS));
     EXPECT_TRUE(checker->vehicle_stop_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_200_MS));
     EXPECT_TRUE(checker->vehicle_stop_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_400_MS));
@@ -171,7 +172,7 @@ TEST(vehicle_stop_checker, isVehicleStopped)
     auto manager = std::make_shared<PubManager>();
     EXPECT_GE(manager->pub_odom_->get_subscription_count(), 1U) << "topic is not connected.";
 
-    EXPECT_FALSE(checker->vehicle_stop_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_0_MS));
+    EXPECT_FALSE(checker->vehicle_stop_checker_->isVehicleStopped());
 
     rclcpp::executors::SingleThreadedExecutor executor;
     executor.add_node(checker);
@@ -182,6 +183,7 @@ TEST(vehicle_stop_checker, isVehicleStopped)
 
     manager->publishStoppedOdometry(ODOMETRY_HISTORY_1000_MS);
 
+    EXPECT_TRUE(checker->vehicle_stop_checker_->isVehicleStopped());
     EXPECT_TRUE(checker->vehicle_stop_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_0_MS));
     EXPECT_TRUE(checker->vehicle_stop_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_200_MS));
     EXPECT_TRUE(checker->vehicle_stop_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_400_MS));
@@ -200,7 +202,7 @@ TEST(vehicle_stop_checker, isVehicleStopped)
     auto manager = std::make_shared<PubManager>();
     EXPECT_GE(manager->pub_odom_->get_subscription_count(), 1U) << "topic is not connected.";
 
-    EXPECT_FALSE(checker->vehicle_stop_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_0_MS));
+    EXPECT_FALSE(checker->vehicle_stop_checker_->isVehicleStopped());
 
     rclcpp::executors::SingleThreadedExecutor executor;
     executor.add_node(checker);
@@ -211,6 +213,7 @@ TEST(vehicle_stop_checker, isVehicleStopped)
 
     manager->publishStoppingOdometry(ODOMETRY_HISTORY_1000_MS);
 
+    EXPECT_TRUE(checker->vehicle_stop_checker_->isVehicleStopped());
     EXPECT_TRUE(checker->vehicle_stop_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_0_MS));
     EXPECT_TRUE(checker->vehicle_stop_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_200_MS));
     EXPECT_TRUE(checker->vehicle_stop_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_400_MS));
@@ -232,7 +235,7 @@ TEST(vehicle_arrival_checker, isVehicleStopped)
     auto manager = std::make_shared<PubManager>();
     EXPECT_GE(manager->pub_odom_->get_subscription_count(), 1U) << "topic is not connected.";
 
-    EXPECT_FALSE(checker->vehicle_arrival_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_0_MS));
+    EXPECT_FALSE(checker->vehicle_arrival_checker_->isVehicleStopped());
 
     rclcpp::executors::SingleThreadedExecutor executor;
     executor.add_node(checker);
@@ -243,6 +246,7 @@ TEST(vehicle_arrival_checker, isVehicleStopped)
 
     manager->publishStoppedOdometry(ODOMETRY_HISTORY_500_MS);
 
+    EXPECT_TRUE(checker->vehicle_arrival_checker_->isVehicleStopped());
     EXPECT_TRUE(checker->vehicle_arrival_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_0_MS));
     EXPECT_TRUE(
       checker->vehicle_arrival_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_200_MS));
@@ -266,7 +270,7 @@ TEST(vehicle_arrival_checker, isVehicleStopped)
     auto manager = std::make_shared<PubManager>();
     EXPECT_GE(manager->pub_odom_->get_subscription_count(), 1U) << "topic is not connected.";
 
-    EXPECT_FALSE(checker->vehicle_arrival_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_0_MS));
+    EXPECT_FALSE(checker->vehicle_arrival_checker_->isVehicleStopped());
 
     rclcpp::executors::SingleThreadedExecutor executor;
     executor.add_node(checker);
@@ -277,6 +281,7 @@ TEST(vehicle_arrival_checker, isVehicleStopped)
 
     manager->publishStoppedOdometry(ODOMETRY_HISTORY_1000_MS);
 
+    EXPECT_TRUE(checker->vehicle_arrival_checker_->isVehicleStopped());
     EXPECT_TRUE(checker->vehicle_arrival_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_0_MS));
     EXPECT_TRUE(
       checker->vehicle_arrival_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_200_MS));
@@ -300,7 +305,7 @@ TEST(vehicle_arrival_checker, isVehicleStopped)
     auto manager = std::make_shared<PubManager>();
     EXPECT_GE(manager->pub_odom_->get_subscription_count(), 1U) << "topic is not connected.";
 
-    EXPECT_FALSE(checker->vehicle_arrival_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_0_MS));
+    EXPECT_FALSE(checker->vehicle_arrival_checker_->isVehicleStopped());
 
     rclcpp::executors::SingleThreadedExecutor executor;
     executor.add_node(checker);
@@ -311,6 +316,7 @@ TEST(vehicle_arrival_checker, isVehicleStopped)
 
     manager->publishStoppingOdometry(ODOMETRY_HISTORY_1000_MS);
 
+    EXPECT_TRUE(checker->vehicle_arrival_checker_->isVehicleStopped());
     EXPECT_TRUE(checker->vehicle_arrival_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_0_MS));
     EXPECT_TRUE(
       checker->vehicle_arrival_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_200_MS));
@@ -337,7 +343,7 @@ TEST(vehicle_arrival_checker, isVehicleStoppedAtStopPoint)
     auto manager = std::make_shared<PubManager>();
     EXPECT_GE(manager->pub_odom_->get_subscription_count(), 1U) << "topic is not connected.";
 
-    EXPECT_FALSE(checker->vehicle_arrival_checker_->isVehicleStopped(STOP_DURATION_THRESHOLD_0_MS));
+    EXPECT_FALSE(checker->vehicle_arrival_checker_->isVehicleStopped());
 
     rclcpp::executors::SingleThreadedExecutor executor;
     executor.add_node(checker);
@@ -357,6 +363,7 @@ TEST(vehicle_arrival_checker, isVehicleStoppedAtStopPoint)
     manager->pub_traj_->publish(generateTrajectoryWithStopPoint(goal_pose));
     manager->publishStoppedOdometry(odom_pose, ODOMETRY_HISTORY_500_MS);
 
+    EXPECT_TRUE(checker->vehicle_arrival_checker_->isVehicleStoppedAtStopPoint());
     EXPECT_TRUE(
       checker->vehicle_arrival_checker_->isVehicleStoppedAtStopPoint(STOP_DURATION_THRESHOLD_0_MS));
     EXPECT_TRUE(checker->vehicle_arrival_checker_->isVehicleStoppedAtStopPoint(
@@ -381,8 +388,7 @@ TEST(vehicle_arrival_checker, isVehicleStoppedAtStopPoint)
     auto manager = std::make_shared<PubManager>();
     EXPECT_GE(manager->pub_odom_->get_subscription_count(), 1U) << "topic is not connected.";
 
-    EXPECT_FALSE(
-      checker->vehicle_arrival_checker_->isVehicleStoppedAtStopPoint(STOP_DURATION_THRESHOLD_0_MS));
+    EXPECT_FALSE(checker->vehicle_arrival_checker_->isVehicleStoppedAtStopPoint());
 
     rclcpp::executors::SingleThreadedExecutor executor;
     executor.add_node(checker);
@@ -402,6 +408,7 @@ TEST(vehicle_arrival_checker, isVehicleStoppedAtStopPoint)
     manager->pub_traj_->publish(generateTrajectoryWithStopPoint(goal_pose));
     manager->publishStoppedOdometry(odom_pose, ODOMETRY_HISTORY_500_MS);
 
+    EXPECT_FALSE(checker->vehicle_arrival_checker_->isVehicleStoppedAtStopPoint());
     EXPECT_FALSE(
       checker->vehicle_arrival_checker_->isVehicleStoppedAtStopPoint(STOP_DURATION_THRESHOLD_0_MS));
     EXPECT_FALSE(checker->vehicle_arrival_checker_->isVehicleStoppedAtStopPoint(
@@ -426,8 +433,7 @@ TEST(vehicle_arrival_checker, isVehicleStoppedAtStopPoint)
     auto manager = std::make_shared<PubManager>();
     EXPECT_GE(manager->pub_odom_->get_subscription_count(), 1U) << "topic is not connected.";
 
-    EXPECT_FALSE(
-      checker->vehicle_arrival_checker_->isVehicleStoppedAtStopPoint(STOP_DURATION_THRESHOLD_0_MS));
+    EXPECT_FALSE(checker->vehicle_arrival_checker_->isVehicleStoppedAtStopPoint());
 
     rclcpp::executors::SingleThreadedExecutor executor;
     executor.add_node(checker);
@@ -447,6 +453,7 @@ TEST(vehicle_arrival_checker, isVehicleStoppedAtStopPoint)
     manager->pub_traj_->publish(generateTrajectoryWithoutStopPoint(goal_pose));
     manager->publishStoppedOdometry(odom_pose, ODOMETRY_HISTORY_500_MS);
 
+    EXPECT_FALSE(checker->vehicle_arrival_checker_->isVehicleStoppedAtStopPoint());
     EXPECT_FALSE(
       checker->vehicle_arrival_checker_->isVehicleStoppedAtStopPoint(STOP_DURATION_THRESHOLD_0_MS));
     EXPECT_FALSE(checker->vehicle_arrival_checker_->isVehicleStoppedAtStopPoint(

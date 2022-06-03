@@ -30,7 +30,7 @@ VehicleStopChecker::VehicleStopChecker(rclcpp::Node * node)
     std::bind(&VehicleStopChecker::onOdom, this, _1));
 }
 
-bool VehicleStopChecker::isVehicleStopped(const double stop_duration = 0.0) const
+bool VehicleStopChecker::isVehicleStopped(const double stop_duration) const
 {
   if (twist_buffer_.empty()) {
     return false;
@@ -93,7 +93,7 @@ VehicleArrivalChecker::VehicleArrivalChecker(rclcpp::Node * node) : VehicleStopC
     std::bind(&VehicleArrivalChecker::onTrajectory, this, _1));
 }
 
-bool VehicleArrivalChecker::isVehicleStoppedAtStopPoint(const double stop_duration = 0.0) const
+bool VehicleArrivalChecker::isVehicleStoppedAtStopPoint(const double stop_duration) const
 {
   if (!odometry_ptr_ || !trajectory_ptr_) {
     return false;

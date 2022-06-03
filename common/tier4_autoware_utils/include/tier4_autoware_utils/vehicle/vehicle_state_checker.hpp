@@ -36,7 +36,7 @@ class VehicleStopChecker
 public:
   explicit VehicleStopChecker(rclcpp::Node * node);
 
-  bool isVehicleStopped(const double stop_duration) const;
+  bool isVehicleStopped(const double stop_duration = 0.0) const;
 
   rclcpp::Logger getLogger() { return logger_; }
 
@@ -60,7 +60,7 @@ class VehicleArrivalChecker : public VehicleStopChecker
 public:
   explicit VehicleArrivalChecker(rclcpp::Node * node);
 
-  bool isVehicleStoppedAtStopPoint(const double stop_duration) const;
+  bool isVehicleStoppedAtStopPoint(const double stop_duration = 0.0) const;
 
 private:
   static constexpr double th_arrived_distance_m = 1.0;
