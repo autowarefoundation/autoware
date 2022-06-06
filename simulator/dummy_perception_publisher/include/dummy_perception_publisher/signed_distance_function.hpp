@@ -17,6 +17,7 @@
 
 #include <tf2/LinearMath/Transform.h>
 
+#include <limits>
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -30,7 +31,8 @@ class AbstractSignedDistanceFunction
 public:
   virtual double operator()(double x, double y) const = 0;
   double getSphereTracingDist(
-    double x_start, double y_start, double angle, double eps = 1e-2) const;
+    double x_start, double y_start, double angle,
+    double max_dist = std::numeric_limits<double>::infinity(), double eps = 1e-2) const;
   virtual ~AbstractSignedDistanceFunction() {}
 };
 
@@ -38,7 +40,7 @@ class BoxSDF : public AbstractSignedDistanceFunction
 {
 public:
   BoxSDF(double length, double width, tf2::Transform tf_global_to_local)
-  : length_(length), width_(width), tf_global_to_local_(tf_global_to_local)
+  : length_(length), width_(width), tf_local_to_global_(tf_global_to_local.inverse())
   {
   }
   double operator()(double x, double y) const override;
@@ -46,15 +48,13 @@ public:
 private:
   double length_;
   double width_;
-  // tf_global_to_local_ is NOT a transfrom of basis, rather just a coordinate of local w.r.t.
-  // global
-  tf2::Transform tf_global_to_local_;
+  tf2::Transform tf_local_to_global_;
 };
 
-class CompisiteSDF : public AbstractSignedDistanceFunction
+class CompositeSDF : public AbstractSignedDistanceFunction
 {
 public:
-  explicit CompisiteSDF(std::vector<std::shared_ptr<AbstractSignedDistanceFunction>> sdf_ptrs)
+  explicit CompositeSDF(std::vector<std::shared_ptr<AbstractSignedDistanceFunction>> sdf_ptrs)
   : sdf_ptrs_(std::move(sdf_ptrs))
   {
     if (sdf_ptrs_.empty()) {

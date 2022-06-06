@@ -23,7 +23,7 @@ namespace signed_distance_function
 {
 
 double AbstractSignedDistanceFunction::getSphereTracingDist(
-  double x_start, double y_start, double angle, double eps) const
+  double x_start, double y_start, double angle, double max_dist, double eps) const
 {
   // https://computergraphics.stackexchange.com/questions/161/what-is-ray-marching-is-sphere-tracing-the-same-thing/163
   tf2::Vector3 direction(cos(angle), sin(angle), 0.0);
@@ -35,6 +35,9 @@ double AbstractSignedDistanceFunction::getSphereTracingDist(
   auto ray_tip = pos_start;
   for (size_t itr = 0; itr < max_iter; ++itr) {
     const auto dist = this->operator()(ray_tip.getX(), ray_tip.getY());
+    if (dist > max_dist) {
+      return std::numeric_limits<double>::infinity();
+    }
     ray_tip = ray_tip + dist * direction;
     bool almost_on_surface = std::abs(dist) < eps;
     if (almost_on_surface) {
@@ -47,8 +50,8 @@ double AbstractSignedDistanceFunction::getSphereTracingDist(
 
 double BoxSDF::operator()(double x, double y) const
 {
-  const auto vec_global = tf2::Vector3(x, y, 0.0);
-  const auto vec_local = tf_global_to_local_.inverse()(vec_global);
+  const auto && vec_global = tf2::Vector3(x, y, 0.0);
+  const auto vec_local = tf_local_to_global_(vec_global);
 
   // As for signed distance field for a box, please refere:
   // https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm
@@ -56,18 +59,22 @@ double BoxSDF::operator()(double x, double y) const
   const auto sd_val_y = std::abs(vec_local.getY()) - 0.5 * width_;
   const auto positive_dist_x = std::max(sd_val_x, 0.0);
   const auto positive_dist_y = std::max(sd_val_y, 0.0);
+
   const auto positive_dist = std::hypot(positive_dist_x, positive_dist_y);
+  if (positive_dist > 0.0) {
+    return positive_dist;
+  }
   const auto negative_dist = std::min(std::max(sd_val_x, sd_val_y), 0.0);
-  return positive_dist + negative_dist;
+  return negative_dist;
 }
 
-double CompisiteSDF::operator()(double x, double y) const
+double CompositeSDF::operator()(double x, double y) const
 {
   const size_t nearest_idx = nearest_sdf_index(x, y);
   return sdf_ptrs_.at(nearest_idx)->operator()(x, y);
 }
 
-size_t CompisiteSDF::nearest_sdf_index(double x, double y) const
+size_t CompositeSDF::nearest_sdf_index(double x, double y) const
 {
   double min_value = std::numeric_limits<double>::infinity();
   size_t idx_min{};

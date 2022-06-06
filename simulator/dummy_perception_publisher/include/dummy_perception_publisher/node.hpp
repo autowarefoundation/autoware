@@ -89,10 +89,15 @@ private:
 
 class EgoCentricPointCloudCreator : public PointCloudCreator
 {
+public:
+  explicit EgoCentricPointCloudCreator(double visible_range) : visible_range_(visible_range) {}
   std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> create_pointclouds(
     const std::vector<ObjectInfo> & obj_infos, const tf2::Transform & tf_base_link2map,
     std::mt19937 & random_generator,
     pcl::PointCloud<pcl::PointXYZ>::Ptr & merged_pointcloud) const override;
+
+private:
+  double visible_range_;
 };
 
 class DummyPerceptionPublisherNode : public rclcpp::Node

@@ -205,7 +205,7 @@ std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> EgoCentricPointCloudCreator::cr
       obj_info.length, obj_info.width, tf_base_link2map * obj_info.tf_map2moved_object);
     sdf_ptrs.push_back(sdf_ptr);
   }
-  const auto composite_sdf = signed_distance_function::CompisiteSDF(sdf_ptrs);
+  const auto composite_sdf = signed_distance_function::CompositeSDF(sdf_ptrs);
 
   std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> pointclouds(obj_infos.size());
   for (size_t i = 0; i < obj_infos.size(); ++i) {
@@ -228,7 +228,7 @@ std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> EgoCentricPointCloudCreator::cr
   const auto n_scan = static_cast<size_t>(std::floor(2 * M_PI / horizontal_theta_step));
   for (size_t i = 0; i < n_scan; ++i) {
     angle += horizontal_theta_step;
-    const auto dist = composite_sdf.getSphereTracingDist(0.0, 0.0, angle);
+    const auto dist = composite_sdf.getSphereTracingDist(0.0, 0.0, angle, visible_range_);
 
     if (std::isfinite(dist)) {
       const auto x_hit = dist * cos(angle);
