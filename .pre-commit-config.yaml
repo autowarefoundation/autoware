@@ -35,7 +35,7 @@ repos:
       - id: yamllint
 
   - repo: https://github.com/tier4/pre-commit-hooks-ros
-    rev: v0.7.0
+    rev: v0.7.1
     hooks:
       - id: flake8-ros
       - id: prettier-xacro
@@ -50,7 +50,7 @@ repos:
       - id: shellcheck
 
   - repo: https://github.com/scop/pre-commit-shfmt
-    rev: v3.4.3-1
+    rev: v3.5.1-1
     hooks:
       - id: shfmt
         args: [-w, -s, -i=4]
