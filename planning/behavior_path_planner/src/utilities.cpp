@@ -100,17 +100,16 @@ std::array<double, 4> getLaneletScope(
       p.y = point.y();
       points.push_back(p);
     }
-    const size_t nearest_point_idx =
-      tier4_autoware_utils::findNearestIndex(points, current_pose.position);
-
-    drivable_area_utils::updateMinMaxPosition(
-      nearest_bound[nearest_point_idx].basicPoint(), min_x, min_y, max_x, max_y);
+    const size_t nearest_segment_idx =
+      tier4_autoware_utils::findNearestSegmentIndex(points, current_pose.position);
 
     // forward lanelet
-    double sum_length = 0.0;
+    const auto forward_offset_length =
+      tier4_autoware_utils::calcSignedArcLength(points, current_pose.position, nearest_segment_idx);
+    double sum_length = std::min(forward_offset_length, 0.0);
     size_t current_lane_idx = nearest_lane_idx;
     auto current_lane = lanes.at(current_lane_idx);
-    size_t current_point_idx = nearest_point_idx;
+    size_t current_point_idx = nearest_segment_idx;
     while (true) {
       const auto & bound = get_bound_func(current_lane);
       if (current_point_idx != bound.size() - 1) {
@@ -140,10 +139,8 @@ std::array<double, 4> getLaneletScope(
         current_point_idx = 0;
         const auto & current_bound = get_bound_func(current_lane);
 
-        const Eigen::Vector2d & prev_point =
-          get_bound_func(previous_lane)[previous_point_idx].basicPoint();
-        const Eigen::Vector2d & current_point =
-          get_bound_func(current_lane)[current_point_idx].basicPoint();
+        const Eigen::Vector2d & prev_point = previous_bound[previous_point_idx].basicPoint();
+        const Eigen::Vector2d & current_point = current_bound[current_point_idx].basicPoint();
         const bool is_end_lane = drivable_area_utils::sumLengthFromTwoPoints(
           prev_point, current_point, forward_lane_length + lane_margin, sum_length, min_x, min_y,
           max_x, max_y);
@@ -154,8 +151,10 @@ std::array<double, 4> getLaneletScope(
     }
 
     // backward lanelet
-    current_point_idx = nearest_point_idx;
-    sum_length = 0.0;
+    current_point_idx = nearest_segment_idx + 1;
+    const auto backward_offset_length = tier4_autoware_utils::calcSignedArcLength(
+      points, nearest_segment_idx + 1, current_pose.position);
+    sum_length = std::min(backward_offset_length, 0.0);
     current_lane_idx = nearest_lane_idx;
     current_lane = lanes.at(current_lane_idx);
     while (true) {
@@ -187,9 +186,8 @@ std::array<double, 4> getLaneletScope(
         const auto & current_bound = get_bound_func(current_lane);
         current_point_idx = current_bound.size() - 1;
 
-        const Eigen::Vector2d & next_point = get_bound_func(next_lane)[next_point_idx].basicPoint();
-        const Eigen::Vector2d & current_point =
-          get_bound_func(current_lane)[current_point_idx].basicPoint();
+        const Eigen::Vector2d & next_point = next_bound[next_point_idx].basicPoint();
+        const Eigen::Vector2d & current_point = current_bound[current_point_idx].basicPoint();
         const bool is_end_lane = drivable_area_utils::sumLengthFromTwoPoints(
           next_point, current_point, backward_lane_length + lane_margin, sum_length, min_x, min_y,
           max_x, max_y);
