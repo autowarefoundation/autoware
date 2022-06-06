@@ -1,4 +1,6 @@
 <launch>
+  <arg name="respawn_rosbridge" default="true"/>
+
   <!-- awapi (deprecated) -->
   <group>
     <include file="$(find-pkg-share awapi_awiv_adapter)/launch/awapi_awiv_adapter.launch.xml"/>
@@ -11,4 +13,10 @@
     <include file="$(find-pkg-share tier4_autoware_api_launch)/launch/include/internal_api_adaptor.launch.py"/>
     <include file="$(find-pkg-share tier4_autoware_api_launch)/launch/include/internal_api_relay.launch.xml"/>
   </group>
+
+  <!-- rosbridge -->
+  <!-- TODO: respawn will work once https://github.com/ros2/launch/pull/569 is released. I'll delete this comment when it's done. -->
+  <include file="$(find-pkg-share rosbridge_server)/launch/rosbridge_websocket_launch.xml">
+    <arg name="respawn" value="$(var respawn)"/>
+  </include>
 </launch>
