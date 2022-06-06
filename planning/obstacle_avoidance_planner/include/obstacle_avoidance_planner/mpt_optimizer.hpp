@@ -296,7 +296,7 @@ private:
 
   size_t findNearestIndexWithSoftYawConstraints(
     const std::vector<geometry_msgs::msg::Point> & points, const geometry_msgs::msg::Pose & pose,
-    const double yaw_threshold) const;
+    const double dist_threshold, const double yaw_threshold) const;
 
 public:
   MPTOptimizer(
