@@ -1137,8 +1137,8 @@ OccupancyGrid generateDrivableArea(
   lanelet::ConstLanelets drivable_lanes;
   {  // add lanes which covers initial and final footprints
     // 1. add preceding lanes before current pose
-    const auto lanes_before_current_pose =
-      route_handler->getLanesBeforePose(current_pose->pose, vehicle_length);
+    const auto lanes_before_current_pose = route_handler->getLanesBeforePose(
+      current_pose->pose, params.drivable_lane_backward_length + params.drivable_lane_margin);
     drivable_lanes.insert(
       drivable_lanes.end(), lanes_before_current_pose.begin(), lanes_before_current_pose.end());
 

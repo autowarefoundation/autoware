@@ -354,14 +354,14 @@ lanelet::ConstPolygon3d RouteHandler::getIntersectionAreaById(const lanelet::Id 
 Header RouteHandler::getRouteHeader() const { return route_msg_.header; }
 
 std::vector<lanelet::ConstLanelet> RouteHandler::getLanesBeforePose(
-  const geometry_msgs::msg::Pose & pose, const double vehicle_length) const
+  const geometry_msgs::msg::Pose & pose, const double length) const
 {
   lanelet::ConstLanelet pose_lanelet;
   if (!getClosestLaneletWithinRoute(pose, &pose_lanelet)) {
     return std::vector<lanelet::ConstLanelet>{};
   }
 
-  const double min_preceding_length = vehicle_length * 2;
+  const double min_preceding_length = length;
   const auto preceding_lanes_vec = lanelet::utils::query::getPrecedingLaneletSequences(
     routing_graph_ptr_, pose_lanelet, min_preceding_length);
   if (preceding_lanes_vec.empty()) {
