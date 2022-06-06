@@ -1,0 +1,7 @@
+<launch>
+  <arg name="param_path" default="$(find-pkg-share rtc_auto_approver)/config/rtc_auto_approver.param.yaml"/>
+
+  <node pkg="rtc_auto_approver" exec="rtc_auto_approver_node" name="rtc_auto_approver" output="screen">
+    <param from="$(var param_path)"/>
+  </node>
+</launch>
