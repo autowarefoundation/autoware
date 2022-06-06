@@ -21,6 +21,7 @@ from launch.actions import GroupAction
 from launch.actions import OpaqueFunction
 from launch.actions import SetLaunchConfiguration
 from launch.conditions import IfCondition
+from launch.conditions import LaunchConfigurationEquals
 from launch.conditions import UnlessCondition
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import ComposableNodeContainer
@@ -172,6 +173,52 @@ def launch_setup(context, *args, **kwargs):
         extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
     )
 
+    # obstacle cruise planner
+    obstacle_cruise_planner_param_path = os.path.join(
+        get_package_share_directory("tier4_planning_launch"),
+        "config",
+        "scenario_planning",
+        "lane_driving",
+        "motion_planning",
+        "obstacle_cruise_planner",
+        "obstacle_cruise_planner.param.yaml",
+    )
+    with open(obstacle_cruise_planner_param_path, "r") as f:
+        obstacle_cruise_planner_param = yaml.safe_load(f)["/**"]["ros__parameters"]
+    obstacle_cruise_planner_component = ComposableNode(
+        package="obstacle_cruise_planner",
+        plugin="motion_planning::ObstacleCruisePlannerNode",
+        name="obstacle_cruise_planner",
+        namespace="",
+        remappings=[
+            ("~/input/trajectory", "obstacle_avoidance_planner/trajectory"),
+            ("~/input/odometry", "/localization/kinematic_state"),
+            ("~/input/objects", "/perception/object_recognition/objects"),
+            ("~/output/trajectory", "/planning/scenario_planning/lane_driving/trajectory"),
+            ("~/output/velocity_limit", "/planning/scenario_planning/max_velocity_candidates"),
+            ("~/output/clear_velocity_limit", "/planning/scenario_planning/clear_velocity_limit"),
+            ("~/output/stop_reasons", "/planning/scenario_planning/status/stop_reasons"),
+        ],
+        parameters=[
+            common_param,
+            obstacle_cruise_planner_param,
+        ],
+        extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
+    )
+
+    obstacle_cruise_planner_relay_component = ComposableNode(
+        package="topic_tools",
+        plugin="topic_tools::RelayNode",
+        name="obstacle_cruise_planner_relay",
+        namespace="",
+        parameters=[
+            {"input_topic": "obstacle_avoidance_planner/trajectory"},
+            {"output_topic": "/planning/scenario_planning/lane_driving/trajectory"},
+            {"type": "autoware_auto_planning_msgs/msg/Trajectory"},
+        ],
+        extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
+    )
+
     container = ComposableNodeContainer(
         name="motion_planning_container",
         namespace="",
@@ -179,8 +226,25 @@ def launch_setup(context, *args, **kwargs):
         executable=LaunchConfiguration("container_executable"),
         composable_node_descriptions=[
             obstacle_avoidance_planner_component,
-            obstacle_stop_planner_component,
         ],
+    )
+
+    obstacle_stop_planner_loader = LoadComposableNodes(
+        composable_node_descriptions=[obstacle_stop_planner_component],
+        target_container=container,
+        condition=LaunchConfigurationEquals("cruise_planner", "obstacle_stop_planner"),
+    )
+
+    obstacle_cruise_planner_loader = LoadComposableNodes(
+        composable_node_descriptions=[obstacle_cruise_planner_component],
+        target_container=container,
+        condition=LaunchConfigurationEquals("cruise_planner", "obstacle_cruise_planner"),
+    )
+
+    obstacle_cruise_planner_relay_loader = LoadComposableNodes(
+        composable_node_descriptions=[obstacle_cruise_planner_relay_component],
+        target_container=container,
+        condition=LaunchConfigurationEquals("cruise_planner", "none"),
     )
 
     surround_obstacle_checker_loader = LoadComposableNodes(
@@ -189,8 +253,15 @@ def launch_setup(context, *args, **kwargs):
         condition=IfCondition(LaunchConfiguration("use_surround_obstacle_check")),
     )
 
-    group = GroupAction([container, surround_obstacle_checker_loader])
-
+    group = GroupAction(
+        [
+            container,
+            obstacle_stop_planner_loader,
+            obstacle_cruise_planner_loader,
+            obstacle_cruise_planner_relay_loader,
+            surround_obstacle_checker_loader,
+        ]
+    )
     return [group]
 
 
@@ -221,6 +292,9 @@ def generate_launch_description():
 
     # surround obstacle checker
     add_launch_arg("use_surround_obstacle_check", "true", "launch surround_obstacle_checker or not")
+    add_launch_arg(
+        "cruise_planner", "obstacle_stop_planner", "cruise planner type"
+    )  # select from "obstacle_stop_planner", "obstacle_cruise_planner", "none"
 
     add_launch_arg("use_intra_process", "false", "use ROS2 component container communication")
     add_launch_arg("use_multithread", "false", "use multithread")
