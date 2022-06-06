@@ -33,10 +33,10 @@ The purpose of this simulator is for the integration test of planning and contro
 ### Common Parameters
 
 | Name                  | Type   | Description                                                                                                                           | Default value        |
-| :-------------------- | :----- | :------------------------------------------------------------------------------------------------------------------------------------ | :------------------- | -------------------- |
+| :-------------------- | :----- | :------------------------------------------------------------------------------------------------------------------------------------ | :------------------- |
 | simulated_frame_id    | string | set to the child_frame_id in output tf                                                                                                | "base_link"          |
 | origin_frame_id       | string | set to the frame_id in output tf                                                                                                      | "odom"               |
-| initialize_source     | string | If "ORIGIN", the initial pose is set at (0,0,0). If "INITIAL_POSE_TOPIC", node will wait until the `/initialpose` topic is published. | "INITIAL_POSE_TOPIC" | "INITIAL_POSE_TOPIC" |
+| initialize_source     | string | If "ORIGIN", the initial pose is set at (0,0,0). If "INITIAL_POSE_TOPIC", node will wait until the `/initialpose` topic is published. | "INITIAL_POSE_TOPIC" |
 | add_measurement_noise | bool   | If true, the Gaussian noise is added to the simulated results.                                                                        | true                 |
 | pos_noise_stddev      | double | Standard deviation for position noise                                                                                                 | 0.01                 |
 | rpy_noise_stddev      | double | Standard deviation for Euler angle noise                                                                                              | 0.0001               |
@@ -59,19 +59,20 @@ The `IDEAL` model moves ideally as commanded, while the `DELAY` model moves base
 
 The table below shows which models correspond to what parameters. The model names are written in abbreviated form (e.g. IDEAL_STEER_VEL = I_ST_V).
 
-| Name                | Type                 | Description                                          | I_ST_V                              | I_ST_A | I_ST_A_G | D_ST_V | D_ST_A | D_ST_A_G | Default value | unit    |
-| :------------------ | :------------------- | :--------------------------------------------------- | :---------------------------------- | :----- | :------- | :----- | :----- | :------- | :------------ | :------ | --- |
-| acc_time_delay      | double               | dead time for the acceleration input                 | x                                   | x      | x        | x      | o      | o        | 0.1           | [s]     |
-| steer_time_delay    | double               | dead time for the steering input                     | x                                   | x      | x        | o      | o      | o        | 0.24          | [s]     |
-| vel_time_delay      | double               | dead time for the velocity input                     | x                                   | x      | x        | o      | x      | x        | 0.25          | [s]     |
-| acc_time_constant   | double               | time constant of the 1st-order acceleration dynamics | x                                   | x      | x        | x      | o      | o        | 0.1           | [s]     |
-| steer_time_constant | double               | time constant of the 1st-order steering dynamics     | x                                   | x      | x        | o      | o      | o        | 0.27          | [s]     |
-| vel_time_constant   | double               | time constant of the 1st-order velocity dynamics     | x                                   | x      | x        | o      | x      | x        | 0.5           | [s]     |
-| vel_lim             | double               | limit of velocity                                    | x                                   | x      | x        | o      | o      | o        | 50.0          | [m/s]   |
-| vel_rate_lim        | double               | limit of acceleration                                | x                                   | x      | x        | o      | o      | o        | 7.0           | [m/ss]  |
-| steer_lim           | double               | limit of steering angle                              | x                                   | x      | x        | o      | o      | o        | 1.0           | [rad]   |
-| steer_rate_lim      | double               | limit of steering angle change rate                  | x                                   | x      | x        | o      | o      | o        | 5.0           | [rad/s] |
-| <!--                | deadzone_delta_steer | double                                               | dead zone for the steering dynamics | x      | x        | x      | o      | o        | 0.0           | [rad]   | --> |
+| Name                | Type   | Description                                          | I_ST_V | I_ST_A | I_ST_A_G | D_ST_V | D_ST_A | D_ST_A_G | Default value | unit    |
+| :------------------ | :----- | :--------------------------------------------------- | :----- | :----- | :------- | :----- | :----- | :------- | :------------ | :------ |
+| acc_time_delay      | double | dead time for the acceleration input                 | x      | x      | x        | x      | o      | o        | 0.1           | [s]     |
+| steer_time_delay    | double | dead time for the steering input                     | x      | x      | x        | o      | o      | o        | 0.24          | [s]     |
+| vel_time_delay      | double | dead time for the velocity input                     | x      | x      | x        | o      | x      | x        | 0.25          | [s]     |
+| acc_time_constant   | double | time constant of the 1st-order acceleration dynamics | x      | x      | x        | x      | o      | o        | 0.1           | [s]     |
+| steer_time_constant | double | time constant of the 1st-order steering dynamics     | x      | x      | x        | o      | o      | o        | 0.27          | [s]     |
+| vel_time_constant   | double | time constant of the 1st-order velocity dynamics     | x      | x      | x        | o      | x      | x        | 0.5           | [s]     |
+| vel_lim             | double | limit of velocity                                    | x      | x      | x        | o      | o      | o        | 50.0          | [m/s]   |
+| vel_rate_lim        | double | limit of acceleration                                | x      | x      | x        | o      | o      | o        | 7.0           | [m/ss]  |
+| steer_lim           | double | limit of steering angle                              | x      | x      | x        | o      | o      | o        | 1.0           | [rad]   |
+| steer_rate_lim      | double | limit of steering angle change rate                  | x      | x      | x        | o      | o      | o        | 5.0           | [rad/s] |
+
+<!-- deadzone_delta_steer | double | dead zone for the steering dynamics                  | x      | x      | x        | o      | o      | 0.0      | [rad]         |         | -->
 
 _Note_: The steering/velocity/acceleration dynamics is modeled by a first order system with a deadtime in a _delay_ model. The definition of the _time constant_ is the time it takes for the step response to rise up to 63% of its final value. The _deadtime_ is a delay in the response to a control input.
 
@@ -105,7 +106,3 @@ This is originally developed in the Autoware.AI. See the link below.
 
 - Improving the accuracy of vehicle models (e.g., adding steering dead zones and slip behavior)
 - Cooperation with modules that output pseudo pointcloud or pseudo perception results
-
-## Related issues
-
-- #1142: Follow-up to #570 - Integrate simple_planning_simulator Into CI
