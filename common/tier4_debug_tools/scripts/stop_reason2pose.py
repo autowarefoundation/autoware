@@ -93,7 +93,7 @@ class StopReason2PoseNode(Node):
         if not poses:
             return None
 
-        distances = map(lambda p: StopReason2PoseNode.calc_distance2d(p, self_pose), poses)
+        distances = [StopReason2PoseNode.calc_distance2d(p, self_pose.pose) for p in poses]
         nearest_idx = np.argmin(distances)
 
         return poses[nearest_idx]
