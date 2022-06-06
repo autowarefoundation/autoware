@@ -1,0 +1,29 @@
+/**:
+  ros__parameters:
+    module_list:
+      - "behavior_velocity_planner/blind_spot"
+      - "behavior_velocity_planner/crosswalk"
+      - "behavior_velocity_planner/detection_area"
+      - "behavior_velocity_planner/intersection"
+      - "behavior_velocity_planner/no_stopping_area"
+      - "behavior_velocity_planner/traffic_light"
+      - "behavior_path_planner/lane_change_left"
+      - "behavior_path_planner/lane_change_right"
+      - "behavior_path_planner/avoidance_left"
+      - "behavior_path_planner/avoidance_right"
+      - "behavior_path_planner/pull_over"
+      - "behavior_path_planner/pull_out"
+
+    default_enable_list:
+      - "behavior_velocity_planner/blind_spot"
+      - "behavior_velocity_planner/crosswalk"
+      - "behavior_velocity_planner/detection_area"
+      - "behavior_velocity_planner/intersection"
+      - "behavior_velocity_planner/no_stopping_area"
+      - "behavior_velocity_planner/traffic_light"
+      - "behavior_path_planner/lane_change_left"
+      - "behavior_path_planner/lane_change_right"
+      - "behavior_path_planner/avoidance_left"
+      - "behavior_path_planner/avoidance_right"
+      - "behavior_path_planner/pull_over"
+      - "behavior_path_planner/pull_out"
