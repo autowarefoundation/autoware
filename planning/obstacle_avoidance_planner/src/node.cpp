@@ -201,7 +201,7 @@ std::tuple<std::vector<double>, std::vector<double>> calcVehicleCirclesInfo(
   }
 }
 
-size_t findNearestIndexWithSoftYawConstraints(
+[[maybe_unused]] size_t findNearestIndexWithSoftYawConstraints(
   const std::vector<geometry_msgs::msg::Point> & points, const geometry_msgs::msg::Pose & pose,
   const double dist_threshold, const double yaw_threshold)
 {
@@ -1081,33 +1081,23 @@ void ObstacleAvoidancePlanner::calcVelocity(
   std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> & traj_points) const
 {
   for (size_t i = 0; i < traj_points.size(); i++) {
-    const size_t nearest_path_idx = findNearestIndexWithSoftYawConstraints(
-      points_utils::convertToPoints(path_points), traj_points.at(i).pose,
-      traj_param_.delta_dist_threshold_for_closest_point,
-      traj_param_.delta_yaw_threshold_for_closest_point);
-    const size_t second_nearest_path_idx = [&]() -> size_t {
-      if (nearest_path_idx == 0) {
-        return 1;
-      } else if (nearest_path_idx == path_points.size() - 1) {
-        return path_points.size() - 2;
+    const size_t nearest_seg_idx = [&]() {
+      const auto opt_seg_idx = tier4_autoware_utils::findNearestSegmentIndex(
+        path_points, traj_points.at(i).pose, traj_param_.delta_dist_threshold_for_closest_point,
+        traj_param_.delta_yaw_threshold_for_closest_point);
+      if (opt_seg_idx) {
+        return opt_seg_idx.get();
       }
-
-      const double prev_dist = tier4_autoware_utils::calcDistance2d(
-        traj_points.at(i), path_points.at(nearest_path_idx - 1));
-      const double next_dist = tier4_autoware_utils::calcDistance2d(
-        traj_points.at(i), path_points.at(nearest_path_idx + 1));
-      if (prev_dist < next_dist) {
-        return nearest_path_idx - 1;
-      }
-      return nearest_path_idx + 1;
+      return tier4_autoware_utils::findNearestSegmentIndex(
+        path_points, traj_points.at(i).pose.position);
     }();
 
     // NOTE: std::max, not std::min, is used here since traj_points' sampling width may be longer
     // than path_points' sampling width. A zero velocity point is guaranteed to be inserted in an
     // output trajectory in the alignVelocity function
     traj_points.at(i).longitudinal_velocity_mps = std::max(
-      path_points.at(nearest_path_idx).longitudinal_velocity_mps,
-      path_points.at(second_nearest_path_idx).longitudinal_velocity_mps);
+      path_points.at(nearest_seg_idx).longitudinal_velocity_mps,
+      path_points.at(nearest_seg_idx + 1).longitudinal_velocity_mps);
   }
 }
 
