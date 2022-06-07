@@ -318,6 +318,17 @@ lanelet::ConstLanelet getExpandedLanelet(
   auto expanded_left_bound_2d = offsetNoThrow(orig_left_bound_2d, left_offset);
   auto expanded_right_bound_2d = offsetNoThrow(orig_right_bound_2d, right_offset);
 
+  rclcpp::Clock clock{RCL_ROS_TIME};
+  try {
+    checkForInversion(orig_left_bound_2d, expanded_left_bound_2d, left_offset);
+    checkForInversion(orig_right_bound_2d, expanded_right_bound_2d, right_offset);
+  } catch (const lanelet::GeometryError & e) {
+    RCLCPP_ERROR_THROTTLE(
+      rclcpp::get_logger("lanelet2_extension"), clock, 1000,
+      "Fail to expand lanelet. output may be undesired. Lanelet points interval in map data could "
+      "be too narrow.");
+  }
+
   // Note: modify front and back points so that the successive lanelets will not have any
   // longitudinal space between them.
   {  // front
@@ -345,17 +356,6 @@ lanelet::ConstLanelet getExpandedLanelet(
       orig_left_bound_2d.back().x() - left_offset * std::cos(theta);
     expanded_left_bound_2d.back().y() =
       orig_left_bound_2d.back().y() - left_offset * std::sin(theta);
-  }
-
-  rclcpp::Clock clock{RCL_ROS_TIME};
-  try {
-    checkForInversion(orig_left_bound_2d, expanded_left_bound_2d, left_offset);
-    checkForInversion(orig_right_bound_2d, expanded_right_bound_2d, right_offset);
-  } catch (const lanelet::GeometryError & e) {
-    RCLCPP_ERROR_THROTTLE(
-      rclcpp::get_logger("lanelet2_extension"), clock, 1000,
-      "Fail to expand lanelet. output may be undesired. Lanelet points interval in map data could "
-      "be too narrow.");
   }
 
   const auto toPoints3d = [](const lanelet::BasicLineString2d & ls2d, const double z) {
