@@ -22,10 +22,17 @@
 #include <QString>
 #include <QStringList>
 #include <QVBoxLayout>
+#include <lanelet2_extension/regulatory_elements/autoware_traffic_light.hpp>
+#include <lanelet2_extension/utility/message_conversion.hpp>
+#include <lanelet2_extension/utility/query.hpp>
 #include <rviz_common/display_context.hpp>
+
+#include <lanelet2_core/primitives/RegulatoryElement.h>
 
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 namespace rviz_plugins
 {
@@ -39,9 +46,8 @@ TrafficLightPublishPanel::TrafficLightPublishPanel(QWidget * parent) : rviz_comm
   publishing_rate_input_->setSuffix("Hz");
 
   // Traffic Light ID
-  traffic_light_id_input_ = new QSpinBox();
-  traffic_light_id_input_->setRange(0, 999999);
-  traffic_light_id_input_->setValue(0);
+  traffic_light_id_input_ = new QComboBox();  // init items in first onVectorMap
+  traffic_light_id_input_->view()->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
   // Traffic Light Confidence
   traffic_light_confidence_input_ = new QDoubleSpinBox();
@@ -122,11 +128,13 @@ TrafficLightPublishPanel::TrafficLightPublishPanel(QWidget * parent) : rviz_comm
   h_layout_5->addWidget(traffic_table_);
 
   setLayout(h_layout_5);
+  received_vector_map_ = false;
 }
 
 void TrafficLightPublishPanel::onSetTrafficLightState()
 {
-  const auto traffic_light_id = traffic_light_id_input_->value();
+  const auto traffic_light_id_str = traffic_light_id_input_->currentText();
+  const auto traffic_light_id = std::stoi(traffic_light_id_str.toStdString());
   const auto color = light_color_combo_->currentText();
   const auto shape = light_shape_combo_->currentText();
   const auto status = light_status_combo_->currentText();
@@ -207,14 +215,19 @@ void TrafficLightPublishPanel::onPublishTrafficLightState()
 
 void TrafficLightPublishPanel::onInitialize()
 {
+  using std::placeholders::_1;
   raw_node_ = this->getDisplayContext()->getRosNodeAbstraction().lock()->get_raw_node();
 
   pub_traffic_signals_ = raw_node_->create_publisher<TrafficSignalArray>(
     "/perception/traffic_light_recognition/traffic_signals", rclcpp::QoS(1));
 
+  sub_vector_map_ = raw_node_->create_subscription<HADMapBin>(
+    "/map/vector_map", rclcpp::QoS{1}.transient_local(),
+    std::bind(&TrafficLightPublishPanel::onVectorMap, this, _1));
   createWallTimer();
 
   enable_publish_ = false;
+  received_vector_map_ = false;
 }
 
 void TrafficLightPublishPanel::onRateChanged(int new_rate)
@@ -350,6 +363,31 @@ void TrafficLightPublishPanel::onTimer()
   }
 }
 
+void TrafficLightPublishPanel::onVectorMap(const HADMapBin::ConstSharedPtr msg)
+{
+  if (received_vector_map_) return;
+  // NOTE: examples from map_loader/lanelet2_map_visualization_node.cpp
+  lanelet::LaneletMapPtr lanelet_map(new lanelet::LaneletMap);
+  lanelet::utils::conversion::fromBinMsg(*msg, lanelet_map);
+  lanelet::ConstLanelets all_lanelets = lanelet::utils::query::laneletLayer(lanelet_map);
+  std::vector<lanelet::TrafficLightConstPtr> tl_reg_elems =
+    lanelet::utils::query::trafficLights(all_lanelets);
+  std::string info = "Fetching traffic lights :";
+  std::string delim = " ";
+  for (auto && tl_reg_elem_ptr : tl_reg_elems) {
+    for (auto && traffic_light : tl_reg_elem_ptr->trafficLights()) {
+      auto id = static_cast<int>(traffic_light.id());
+      info += (std::exchange(delim, ", ") + std::to_string(id));
+      traffic_light_ids_.insert(id);
+    }
+  }
+  RCLCPP_INFO_STREAM(raw_node_->get_logger(), info);
+  received_vector_map_ = true;
+
+  for (auto && traffic_light_id : traffic_light_ids_) {
+    traffic_light_id_input_->addItem(QString::fromStdString(std::to_string(traffic_light_id)));
+  }
+}
 }  // namespace rviz_plugins
 
 #include <pluginlib/class_list_macros.hpp>

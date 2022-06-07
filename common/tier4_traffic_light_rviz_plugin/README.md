@@ -20,6 +20,9 @@ This plugin panel publishes dummy traffic light signals.
 <div align="center">
   <img src="images/select_traffic_light_publish_panel.png" width=50%>
 </div>
+<div align="center">
+  <img src="images/select_traffic_light_id.png" width=50%>
+</div>
 
 1. Start rviz and select panels/Add new panel.
 2. Select TrafficLightPublishPanel and press OK.
