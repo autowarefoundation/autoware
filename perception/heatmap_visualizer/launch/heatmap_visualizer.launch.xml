@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <!-- heatmap visualizer-->
+  <arg name="input/objects" default="objects"/>
+  <arg name="frame_count" default="50"/>
+  <arg name="map_frame" default="base_link"/>
+  <arg name="map_length" default="200.0"/>
+  <arg name="map_resolution" default="0.5"/>
+  <arg name="use_confidence" default="false"/>
+  <arg name="rename_car_to_truck_and_bus" default="true"/>
+
+  <node pkg="heatmap_visualizer" exec="heatmap_visualizer" output="screen">
+    <remap from="~/input/objects" to="$(var input/objects)"/>
+    <param name="frame_count" value="$(var frame_count)"/>
+    <param name="map_frame" value="$(var map_frame)"/>
+    <param name="map_length" value="$(var map_length)"/>
+    <param name="map_resolution" value="$(var map_resolution)"/>
+    <param name="use_confidence" value="$(var use_confidence)"/>
+    <param name="rename_car_to_truck_and_bus" value="$(var rename_car_to_truck_and_bus)"/>
+  </node>
+</launch>
