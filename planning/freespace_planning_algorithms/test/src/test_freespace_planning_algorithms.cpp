@@ -53,21 +53,21 @@ nav_msgs::msg::OccupancyGrid construct_cost_map(
 
   for (int i = 0; i < n_padding; i++) {
     // fill left
-    for (int j = width * i; j <= width * (i + 1); j++) {
+    for (int j = width * i; j < width * (i + 1); j++) {
       costmap_msg.data[j] = 100.0;
     }
     // fill right
-    for (int j = width * (height - n_padding + i); j <= width * (height - n_padding + i + 1); j++) {
+    for (int j = width * (height - n_padding + i); j < width * (height - n_padding + i + 1); j++) {
       costmap_msg.data[j] = 100.0;
     }
   }
 
   for (int i = 0; i < height; i++) {
     // fill bottom
-    for (int j = i * width; j <= i * width + n_padding; j++) {
+    for (int j = i * width; j < i * width + n_padding; j++) {
       costmap_msg.data[j] = 100.0;
     }
-    for (int j = (i + 1) * width - n_padding; j <= (i + 1) * width; j++) {
+    for (int j = (i + 1) * width - n_padding; j < (i + 1) * width; j++) {
       costmap_msg.data[j] = 100.0;
     }
   }

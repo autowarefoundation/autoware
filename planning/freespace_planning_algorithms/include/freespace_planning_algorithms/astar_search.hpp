@@ -117,6 +117,7 @@ public:
 
 private:
   bool search();
+  void clearNodes();
   void setPath(const AstarNode & goal);
   bool setStartNode();
   bool setGoalNode();
