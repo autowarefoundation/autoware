@@ -125,20 +125,27 @@ void clipByMinStartIdx(const AvoidPointArray & shift_points, PathWithLaneId & pa
     std::vector<PathPointWithLaneId>{path.points.begin() + min_start_idx, path.points.end()};
 }
 
-double calcDistanceToClosestFootprintPoint(
-  const PathWithLaneId & path, const PredictedObject & object, const Point & ego_pos)
+void fillLongitudinalAndLengthByClosestFootprint(
+  const PathWithLaneId & path, const PredictedObject & object, const Point & ego_pos,
+  ObjectData & obj)
 {
   tier4_autoware_utils::Polygon2d object_poly{};
   util::calcObjectPolygon(object, &object_poly);
 
-  double distance = tier4_autoware_utils::calcSignedArcLength(
+  const double distance = tier4_autoware_utils::calcSignedArcLength(
     path.points, ego_pos, object.kinematics.initial_pose_with_covariance.pose.position);
+  double min_distance = distance;
+  double max_distance = distance;
   for (const auto & p : object_poly.outer()) {
     const auto point = tier4_autoware_utils::createPoint(p.x(), p.y(), 0.0);
-    distance =
-      std::min(distance, tier4_autoware_utils::calcSignedArcLength(path.points, ego_pos, point));
+    const double arc_length =
+      tier4_autoware_utils::calcSignedArcLength(path.points, ego_pos, point);
+    min_distance = std::min(min_distance, arc_length);
+    max_distance = std::max(max_distance, arc_length);
   }
-  return distance;
+  obj.longitudinal = min_distance;
+  obj.length = max_distance - min_distance;
+  return;
 }
 
 double calcOverhangDistance(

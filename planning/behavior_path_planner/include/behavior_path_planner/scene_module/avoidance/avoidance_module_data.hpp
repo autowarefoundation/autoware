@@ -174,8 +174,8 @@ struct AvoidanceParameters
 struct ObjectData  // avoidance target
 {
   ObjectData() = default;
-  ObjectData(const PredictedObject & obj, double lat, double lon, double overhang)
-  : object(obj), lateral(lat), longitudinal(lon), overhang_dist(overhang)
+  ObjectData(const PredictedObject & obj, double lat, double lon, double len, double overhang)
+  : object(obj), lateral(lat), longitudinal(lon), length(len), overhang_dist(overhang)
   {
   }
 
@@ -186,6 +186,9 @@ struct ObjectData  // avoidance target
 
   // longitudinal position of the CoM, in Frenet coordinate from ego-pose
   double longitudinal;
+
+  // longitudinal length of vehicle, in Frenet coordinate
+  double length;
 
   // lateral distance to the closest footprint, in Frenet coordinate
   double overhang_dist;
