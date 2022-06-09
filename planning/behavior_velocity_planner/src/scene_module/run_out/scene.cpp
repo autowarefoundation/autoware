@@ -55,7 +55,7 @@ bool RunOutModule::modifyPathVelocity(
   const auto current_acc = planner_data_->current_accel.get();
   const auto & current_pose = planner_data_->current_pose.pose;
 
-  // smooth velocity of the path to calcute time to collision accurately
+  // smooth velocity of the path to calculate time to collision accurately
   PathWithLaneId smoothed_path;
   if (!smoothPath(*path, smoothed_path, planner_data_)) {
     return true;
@@ -505,10 +505,15 @@ std::vector<geometry_msgs::msg::Point> RunOutModule::createBoundingBoxForRangedP
     tier4_autoware_utils::calcDistance2d(pose_with_range.pose_min, pose_with_range.pose_max);
 
   geometry_msgs::msg::Pose p_min_to_p_max;
-  const auto azimuth_angle = tier4_autoware_utils::calcAzimuthAngle(
-    pose_with_range.pose_min.position, pose_with_range.pose_max.position);
-  p_min_to_p_max.position = pose_with_range.pose_min.position;
-  p_min_to_p_max.orientation = tier4_autoware_utils::createQuaternionFromYaw(azimuth_angle);
+  if (dist_p1_p2 < std::numeric_limits<double>::epsilon()) {
+    // can't calculate the angle if two points are the same
+    p_min_to_p_max = pose_with_range.pose_min;
+  } else {
+    const auto azimuth_angle = tier4_autoware_utils::calcAzimuthAngle(
+      pose_with_range.pose_min.position, pose_with_range.pose_max.position);
+    p_min_to_p_max.position = pose_with_range.pose_min.position;
+    p_min_to_p_max.orientation = tier4_autoware_utils::createQuaternionFromYaw(azimuth_angle);
+  }
 
   std::vector<geometry_msgs::msg::Point> poly;
   poly.emplace_back(
