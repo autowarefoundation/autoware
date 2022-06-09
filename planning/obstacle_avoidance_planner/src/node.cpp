@@ -1105,6 +1105,10 @@ void ObstacleAvoidancePlanner::insertZeroVelocityOutsideDrivableArea(
   std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> & traj_points,
   const CVMaps & cv_maps)
 {
+  if (traj_points.empty()) {
+    return;
+  }
+
   stop_watch_.tic(__func__);
 
   const auto & map_info = cv_maps.map_info;
