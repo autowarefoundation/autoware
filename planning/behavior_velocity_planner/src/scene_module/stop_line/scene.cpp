@@ -278,8 +278,7 @@ bool StopLineModule::modifyPathVelocity(
     }
   } else if (state_ == State::START) {
     // Initialize if vehicle is far from stop_line
-    constexpr bool use_initialization_after_start = false;
-    if (use_initialization_after_start) {
+    if (planner_param_.use_initialization_stop_line_state) {
       if (signed_arc_dist_to_stop_point > planner_param_.stop_check_dist) {
         RCLCPP_INFO(logger_, "START -> APPROACH");
         state_ = State::APPROACH;

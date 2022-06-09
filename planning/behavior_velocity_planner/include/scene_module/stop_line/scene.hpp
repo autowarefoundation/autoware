@@ -72,6 +72,7 @@ public:
     double stop_margin;
     double stop_check_dist;
     double stop_duration_sec;
+    bool use_initialization_stop_line_state;
     bool show_stopline_collision_check;
   };
 
