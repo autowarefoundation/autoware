@@ -39,6 +39,17 @@ rclcpp_components_register_node(lanelet2_map_visualization_node
   EXECUTABLE lanelet2_map_visualization
 )
 
+if(BUILD_TESTING)
+  add_ros_test(
+    test/lanelet2_map_loader_launch.test.py
+    TIMEOUT "30"
+  )
+  install(DIRECTORY
+    test/data/
+    DESTINATION share/${PROJECT_NAME}/test/data/
+  )
+endif()
+
 install(PROGRAMS
   script/map_hash_generator
   DESTINATION lib/${PROJECT_NAME}
