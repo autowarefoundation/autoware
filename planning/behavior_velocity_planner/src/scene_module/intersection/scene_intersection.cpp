@@ -92,14 +92,20 @@ bool IntersectionModule::modifyPathVelocity(
   /* get detection area and conflicting area */
   std::vector<lanelet::ConstLanelets> detection_area_lanelets;
   std::vector<lanelet::ConstLanelets> conflicting_area_lanelets;
+  std::vector<lanelet::ConstLanelets> detection_area_lanelets_with_margin;
 
   util::getObjectiveLanelets(
     lanelet_map_ptr, routing_graph_ptr, lane_id_, planner_param_.detection_area_length,
-    &conflicting_area_lanelets, &detection_area_lanelets, logger_);
+    planner_param_.detection_area_right_margin, planner_param_.detection_area_left_margin,
+    &conflicting_area_lanelets, &detection_area_lanelets, &detection_area_lanelets_with_margin,
+    logger_);
   std::vector<lanelet::CompoundPolygon3d> conflicting_areas = util::getPolygon3dFromLaneletsVec(
     conflicting_area_lanelets, planner_param_.detection_area_length);
   std::vector<lanelet::CompoundPolygon3d> detection_areas = util::getPolygon3dFromLaneletsVec(
     detection_area_lanelets, planner_param_.detection_area_length);
+  std::vector<lanelet::CompoundPolygon3d> detection_areas_with_margin =
+    util::getPolygon3dFromLaneletsVec(
+      detection_area_lanelets_with_margin, planner_param_.detection_area_length);
   std::vector<int> conflicting_area_lanelet_ids =
     util::getLaneletIdsFromLaneletsVec(conflicting_area_lanelets);
   std::vector<int> detection_area_lanelet_ids =
@@ -110,6 +116,7 @@ bool IntersectionModule::modifyPathVelocity(
     return true;
   }
   debug_data_.detection_area = detection_areas;
+  debug_data_.detection_area_with_margin = detection_areas_with_margin;
 
   /* set stop-line and stop-judgement-line for base_link */
   int stop_line_idx = -1;
@@ -153,8 +160,8 @@ bool IntersectionModule::modifyPathVelocity(
   const auto objects_ptr = planner_data_->predicted_objects;
 
   /* calculate dynamic collision around detection area */
-  bool has_collision = checkCollision(
-    lanelet_map_ptr, *path, detection_areas, detection_area_lanelet_ids, objects_ptr, closest_idx);
+  bool has_collision =
+    checkCollision(lanelet_map_ptr, *path, detection_area_lanelet_ids, objects_ptr, closest_idx);
   bool is_stuck = checkStuckVehicleInIntersection(
     lanelet_map_ptr, *path, closest_idx, stop_line_idx, objects_ptr);
   bool is_entry_prohibited = (has_collision || is_stuck);
@@ -226,7 +233,6 @@ void IntersectionModule::cutPredictPathWithDuration(
 bool IntersectionModule::checkCollision(
   lanelet::LaneletMapConstPtr lanelet_map_ptr,
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-  const std::vector<lanelet::CompoundPolygon3d> & detection_areas,
   const std::vector<int> & detection_area_lanelet_ids,
   const autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr objects_ptr,
   const int closest_idx)
@@ -256,24 +262,11 @@ bool IntersectionModule::checkCollision(
       continue;  // TODO(Kenji Miyake): check direction?
     }
 
-    // keep vehicle in detection_area
-    const Point2d obj_point(
-      object.kinematics.initial_pose_with_covariance.pose.position.x,
-      object.kinematics.initial_pose_with_covariance.pose.position.y);
-    for (const auto & detection_area : detection_areas) {
-      const auto detection_poly = lanelet::utils::to2D(detection_area).basicPolygon();
-      const double dist_to_detection_area =
-        boost::geometry::distance(obj_point, toBoostPoly(detection_poly));
-      if (dist_to_detection_area > planner_param_.detection_area_margin) {
-        // ignore the object far from detection area
-        continue;
-      }
-      // check direction of objects
-      const auto object_direction = getObjectPoseWithVelocityDirection(object.kinematics);
-      if (checkAngleForTargetLanelets(object_direction, detection_area_lanelet_ids)) {
-        target_objects.objects.push_back(object);
-        break;
-      }
+    // check direction of objects
+    const auto object_direction = getObjectPoseWithVelocityDirection(object.kinematics);
+    if (checkAngleForTargetLanelets(object_direction, detection_area_lanelet_ids)) {
+      target_objects.objects.push_back(object);
+      break;
     }
   }
 

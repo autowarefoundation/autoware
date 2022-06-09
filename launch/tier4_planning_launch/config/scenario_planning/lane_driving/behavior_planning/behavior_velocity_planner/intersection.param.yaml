@@ -10,6 +10,8 @@
       intersection_velocity: 2.778 # 2.778m/s = 10.0km/h
       intersection_max_accel: 0.5 # m/ss
       detection_area_margin: 0.5 # [m]
+      detection_area_right_margin: 0.5 # [m]
+      detection_area_left_margin: 0.5 # [m]
       detection_area_length: 200.0 # [m]
       min_predicted_path_confidence: 0.05
       collision_start_margin_time: 5.0 # [s]

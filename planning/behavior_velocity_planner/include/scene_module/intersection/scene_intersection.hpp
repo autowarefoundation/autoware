@@ -89,6 +89,7 @@ public:
     geometry_msgs::msg::Pose stop_point_pose;
     geometry_msgs::msg::Pose judge_point_pose;
     geometry_msgs::msg::Polygon ego_lane_polygon;
+    std::vector<lanelet::CompoundPolygon3d> detection_area_with_margin;
     geometry_msgs::msg::Polygon stuck_vehicle_detect_area;
     geometry_msgs::msg::Polygon candidate_collision_ego_lane_polygon;
     std::vector<geometry_msgs::msg::Polygon> candidate_collision_object_polygons;
@@ -111,8 +112,12 @@ public:
     double intersection_velocity;  //! used for intersection passing time
     double intersection_max_acc;   //! used for calculating intersection velocity
     double detection_area_margin;  //! used for detecting objects in detection area
-    double detection_area_length;  //! used to create detection area polygon
-    double detection_area_angle_thr;  //! threshold in checking the angle of detecting objects
+    double detection_area_right_margin;  //! used for detecting objects in detection area only right
+                                         //! direction
+    double detection_area_left_margin;   //! used for detecting objects in detection area only left
+                                         //! direction
+    double detection_area_length;        //! used to create detection area polygon
+    double detection_area_angle_thr;     //! threshold in checking the angle of detecting objects
     double min_predicted_path_confidence;
     //! minimum confidence value of predicted path to use for collision detection
     double external_input_timeout;       //! used to disable external input
@@ -149,7 +154,6 @@ private:
    * actual collision check algorithm inside this function)
    * @param lanelet_map_ptr  lanelet map
    * @param path             ego-car lane
-   * @param detection_areas  collision check is performed for vehicles that exist in this area
    * @param detection_area_lanelet_ids  angle check is performed for obstacles using this lanelet
    * ids
    * @param objects_ptr      target objects
@@ -159,7 +163,6 @@ private:
   bool checkCollision(
     lanelet::LaneletMapConstPtr lanelet_map_ptr,
     const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-    const std::vector<lanelet::CompoundPolygon3d> & detection_areas,
     const std::vector<int> & detection_area_lanelet_ids,
     const autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr objects_ptr,
     const int closest_idx);
