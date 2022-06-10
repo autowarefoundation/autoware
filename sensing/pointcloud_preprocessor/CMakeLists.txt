@@ -9,6 +9,7 @@ find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED)
 find_package(PCL REQUIRED)
 find_package(OpenMP)
+find_package(CGAL REQUIRED COMPONENTS Core)
 
 include_directories(
   include
@@ -38,6 +39,7 @@ ament_auto_add_library(pointcloud_preprocessor_filter SHARED
   src/vector_map_filter/lanelet2_map_filter_nodelet.cpp
   src/distortion_corrector/distortion_corrector.cpp
   src/blockage_diag/blockage_diag_nodelet.cpp
+  src/polygon_remover/polygon_remover.cpp
 )
 
 target_link_libraries(pointcloud_preprocessor_filter
@@ -134,6 +136,14 @@ rclcpp_components_register_node(pointcloud_preprocessor_filter
 rclcpp_components_register_node(pointcloud_preprocessor_filter
   PLUGIN "pointcloud_preprocessor::BlockageDiagComponent"
   EXECUTABLE blockage_diag_node)
+
+# ========== PolygonRemover ==========
+rclcpp_components_register_node(pointcloud_preprocessor_filter
+  PLUGIN "pointcloud_preprocessor::PolygonRemoverComponent"
+  EXECUTABLE polygon_remover_node)
+
+set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
+target_link_libraries(polygon_remover_node gmp CGAL CGAL::CGAL CGAL::CGAL_Core)
 
 ament_auto_package(INSTALL_TO_SHARE
   launch

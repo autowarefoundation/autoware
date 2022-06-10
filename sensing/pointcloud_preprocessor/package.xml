@@ -19,6 +19,7 @@
 
   <depend>autoware_auto_vehicle_msgs</depend>
   <depend>autoware_point_types</depend>
+  <depend>cgal</depend>
   <depend>cv_bridge</depend>
   <depend>diagnostic_updater</depend>
   <depend>image_transport</depend>

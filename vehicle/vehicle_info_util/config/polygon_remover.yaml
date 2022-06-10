@@ -1,0 +1,41 @@
+/**:
+  ros__parameters:
+    polygon_vertices:
+      # This is the coordinates of polygon vertices
+      # The first two numbers are the horizontal and vertical coordinates of the first point respectively
+      # Axis directions are as same as base_link
+      [
+        -1.03,
+        0.815,
+        2.0,
+        0.815,
+        1.9,
+        1.115,
+        2.1,
+        1.115,
+        2.2,
+        1.015,
+        3.0,
+        1.015,
+        3.2,
+        0.815,
+        3.74,
+        0.815,
+        3.74,
+        -0.815,
+        3.2,
+        -0.815,
+        3.0,
+        -1.015,
+        2.2,
+        -1.015,
+        2.1,
+        -1.115,
+        1.9,
+        -1.115,
+        2.0,
+        -0.815,
+        -1.03,
+        -0.815,
+      ] # car
+    will_visualize: true
