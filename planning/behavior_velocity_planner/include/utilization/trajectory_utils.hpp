@@ -146,28 +146,9 @@ inline bool smoothPath(
   const auto traj_lateral_acc_filtered = smoother->applyLateralAccelerationFilter(trajectory);
   auto nearest_idx =
     tier4_autoware_utils::findNearestIndex(*traj_lateral_acc_filtered, current_pose.position);
-  const auto dist_to_nearest = tier4_autoware_utils::calcSignedArcLength(
-    *traj_lateral_acc_filtered, current_pose.position, nearest_idx);
 
-  // if trajectory has the almost same point as ego, don't insert the ego point
-  constexpr double epsilon = 1e-2;
-  TrajectoryPoints traj_with_ego_point_on_path = *traj_lateral_acc_filtered;
-  if (std::fabs(dist_to_nearest) > epsilon) {
-    // calc ego internal division point on path
-    const auto traj_with_ego_point_with_idx =
-      getLerpTrajectoryPointWithIdx(*traj_lateral_acc_filtered, current_pose.position);
-    if (traj_with_ego_point_with_idx == boost::none) return false;
-    TrajectoryPoint ego_point_on_path = traj_with_ego_point_with_idx->first;
-    const size_t nearest_seg_idx = traj_with_ego_point_with_idx->second;
-    //! insert ego projected pose on path so new nearest segment will be nearest_seg_idx + 1
-    traj_with_ego_point_on_path.insert(
-      traj_with_ego_point_on_path.begin() + nearest_seg_idx, ego_point_on_path);
-
-    // ego point inserted is new nearest point
-    nearest_idx = nearest_seg_idx + 1;
-  }
   // Resample trajectory with ego-velocity based interval distances
-  auto traj_resampled = smoother->resampleTrajectory(traj_with_ego_point_on_path, v0, nearest_idx);
+  auto traj_resampled = smoother->resampleTrajectory(*traj_lateral_acc_filtered, v0, nearest_idx);
   const auto traj_resampled_closest = findNearestIndex(*traj_resampled, current_pose, max, M_PI_4);
   if (!traj_resampled_closest) {
     return false;
