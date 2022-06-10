@@ -25,6 +25,16 @@
       <arg name="visible_range" value="$(var sensing/visible_range)"/>
     </include>
   </group>
+  <group unless="$(var scenario_simulation)">
+    <!-- Occupancy Grid -->
+    <push-ros-namespace namespace="occupancy_grid_map"/>
+    <include file="$(find-pkg-share tier4_perception_launch)/launch/occupancy_grid_map/laserscan_based_occupancy_grid_map.launch.py">
+      <arg name="input_obstacle_pointcloud" value="true"/>
+      <arg name="input_obstacle_and_raw_pointcloud" value="false"/>
+      <arg name="input/obstacle_pointcloud" value="/perception/obstacle_segmentation/pointcloud"/>
+      <arg name="output" value="/perception/occupancy_grid_map/map"/>
+    </include>
+  </group>
 
   <!-- perception module -->
   <group>
@@ -52,18 +62,6 @@
       <node pkg="dummy_perception_publisher" exec="empty_objects_publisher" name="empty_objects_publisher" output="screen">
         <remap from="~/output/objects" to="/perception/object_recognition/objects"/>
       </node>
-    </group>
-
-    <!-- object segmentation module -->
-    <group>
-      <push-ros-namespace namespace="occupancy_grid_map"/>
-      <!-- Occupancy Grid -->
-      <include file="$(find-pkg-share probabilistic_occupancy_grid_map)/launch/laserscan_based_occupancy_grid_map.launch.py">
-        <arg name="input_obstacle_pointcloud" value="true"/>
-        <arg name="input_obstacle_and_raw_pointcloud" value="false"/>
-        <arg name="input/obstacle_pointcloud" value="/perception/obstacle_segmentation/pointcloud"/>
-        <arg name="output" value="/perception/occupancy_grid_map/map"/>
-      </include>
     </group>
 
     <!-- traffic light module -->
