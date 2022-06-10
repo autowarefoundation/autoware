@@ -377,6 +377,9 @@ std::vector<ReferencePoint> MPTOptimizer::getReferencePoints(
       traj_param_.num_sampling_points * mpt_param_.delta_arc_length_for_mpt_points +
       tmp_ref_points_margin;
     ref_points = points_utils::clipForwardPoints(ref_points, 0, ref_length_with_margin);
+    if (ref_points.empty()) {
+      return std::vector<ReferencePoint>{};
+    }
 
     // set bounds information
     calcBounds(ref_points, enable_avoidance, maps, prev_trajs, debug_data_ptr);
