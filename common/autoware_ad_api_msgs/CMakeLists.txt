@@ -5,7 +5,8 @@ find_package(autoware_cmake REQUIRED)
 autoware_package()
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-  srv/InterfaceVersion.srv
+  common/msg/ResponseStatus.msg
+  interface/srv/InterfaceVersion.srv
   DEPENDENCIES
     builtin_interfaces
     std_msgs
