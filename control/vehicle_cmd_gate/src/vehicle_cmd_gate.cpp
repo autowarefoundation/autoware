@@ -181,6 +181,8 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
     std::chrono::duration<double>(update_period_));
   timer_ =
     rclcpp::create_timer(this, get_clock(), period_ns, std::bind(&VehicleCmdGate::onTimer, this));
+  timer_pub_status_ = rclcpp::create_timer(
+    this, get_clock(), period_ns, std::bind(&VehicleCmdGate::publishStatus, this));
 }
 
 bool VehicleCmdGate::isHeartbeatTimeout(
@@ -197,6 +199,19 @@ bool VehicleCmdGate::isHeartbeatTimeout(
   const auto time_from_heartbeat = this->now() - *heartbeat_received_time;
 
   return time_from_heartbeat.seconds() > timeout;
+}
+
+bool VehicleCmdGate::isDataReady()
+{
+  // emergency state must be received before running
+  if (use_emergency_handling_) {
+    if (!emergency_state_heartbeat_received_time_) {
+      RCLCPP_WARN(get_logger(), "emergency_state_heartbeat_received_time_ is false");
+      return false;
+    }
+  }
+
+  return true;
 }
 
 // for auto
@@ -268,6 +283,11 @@ void VehicleCmdGate::onTimer()
 {
   updater_.force_update();
 
+  if (!isDataReady()) {
+    RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 5000, "waiting topics...");
+    return;
+  }
+
   // Check system emergency heartbeat
   if (use_emergency_handling_) {
     is_emergency_state_heartbeat_timeout_ = isHeartbeatTimeout(
@@ -333,23 +353,11 @@ void VehicleCmdGate::onTimer()
     }
   }
 
-  // Engage
-  EngageMsg autoware_engage;
-  autoware_engage.stamp = this->now();
-  autoware_engage.engage = is_engaged_;
-
-  // External emergency
-  Emergency external_emergency;
-  external_emergency.stamp = this->now();
-  external_emergency.emergency = is_external_emergency_stop_;
-
   // Publish topics
   gate_mode_pub_->publish(current_gate_mode_);
   turn_indicator_cmd_pub_->publish(turn_indicator);
   hazard_light_cmd_pub_->publish(hazard_light);
   gear_cmd_pub_->publish(gear);
-  engage_pub_->publish(autoware_engage);
-  pub_external_emergency_->publish(external_emergency);
 
   // Publish start request
   start_request_->publishStartAccepted();
@@ -364,6 +372,11 @@ void VehicleCmdGate::publishControlCommands(const Commands & commands)
 
   // Check external emergency stop
   if (is_external_emergency_stop_) {
+    return;
+  }
+
+  // Check initialization is done
+  if (!isDataReady()) {
     return;
   }
 
@@ -444,6 +457,21 @@ void VehicleCmdGate::publishEmergencyStopControlCommands()
   vehicle_cmd_emergency.stamp = stamp;
   vehicle_cmd_emergency.emergency = true;
 
+  // Publish topics
+  vehicle_cmd_emergency_pub_->publish(vehicle_cmd_emergency);
+  control_cmd_pub_->publish(control_cmd);
+  turn_indicator_cmd_pub_->publish(turn_indicator);
+  hazard_light_cmd_pub_->publish(hazard_light);
+  gear_cmd_pub_->publish(gear);
+
+  // Publish start request
+  start_request_->publishStartAccepted();
+}
+
+void VehicleCmdGate::publishStatus()
+{
+  const auto stamp = this->now();
+
   // Engage
   EngageMsg autoware_engage;
   autoware_engage.stamp = stamp;
@@ -454,18 +482,9 @@ void VehicleCmdGate::publishEmergencyStopControlCommands()
   external_emergency.stamp = stamp;
   external_emergency.emergency = is_external_emergency_stop_;
 
-  // Publish topics
-  vehicle_cmd_emergency_pub_->publish(vehicle_cmd_emergency);
-  control_cmd_pub_->publish(control_cmd);
   gate_mode_pub_->publish(current_gate_mode_);
-  turn_indicator_cmd_pub_->publish(turn_indicator);
-  hazard_light_cmd_pub_->publish(hazard_light);
-  gear_cmd_pub_->publish(gear);
   engage_pub_->publish(autoware_engage);
   pub_external_emergency_->publish(external_emergency);
-
-  // Publish start request
-  start_request_->publishStartAccepted();
 }
 
 AckermannControlCommand VehicleCmdGate::filterControlCommand(const AckermannControlCommand & in)
