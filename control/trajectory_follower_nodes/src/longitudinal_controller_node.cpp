@@ -425,7 +425,7 @@ LongitudinalController::ControlData LongitudinalController::getControlData(
 
   // distance to stopline
   control_data.stop_dist = trajectory_follower::longitudinal_utils::calcStopDistance(
-    current_pose.position, *m_trajectory_ptr);
+    current_pose, *m_trajectory_ptr, max_dist, max_yaw);
 
   // pitch
   const float64_t raw_pitch =
@@ -553,7 +553,7 @@ LongitudinalController::Motion LongitudinalController::calcCtrlCmd(
     const auto target_pose = trajectory_follower::longitudinal_utils::calcPoseAfterTimeDelay(
       current_pose, m_delay_compensation_time, current_vel);
     const auto target_interpolated_point =
-      calcInterpolatedTargetValue(*m_trajectory_ptr, target_pose.position, nearest_idx);
+      calcInterpolatedTargetValue(*m_trajectory_ptr, target_pose, nearest_idx);
     target_motion = Motion{
       target_interpolated_point.longitudinal_velocity_mps,
       target_interpolated_point.acceleration_mps2};
@@ -800,8 +800,8 @@ LongitudinalController::Motion LongitudinalController::keepBrakeBeforeStop(
 
 autoware_auto_planning_msgs::msg::TrajectoryPoint
 LongitudinalController::calcInterpolatedTargetValue(
-  const autoware_auto_planning_msgs::msg::Trajectory & traj,
-  const geometry_msgs::msg::Point & point, const size_t nearest_idx) const
+  const autoware_auto_planning_msgs::msg::Trajectory & traj, const geometry_msgs::msg::Pose & pose,
+  const size_t nearest_idx) const
 {
   if (traj.points.size() == 1) {
     return traj.points.at(0);
@@ -810,18 +810,21 @@ LongitudinalController::calcInterpolatedTargetValue(
   // If the current position is not within the reference trajectory, enable the edge value.
   // Else, apply linear interpolation
   if (nearest_idx == 0) {
-    if (motion_common::calcSignedArcLength(traj.points, point, 0) > 0) {
+    if (motion_common::calcSignedArcLength(traj.points, pose.position, 0) > 0) {
       return traj.points.at(0);
     }
   }
   if (nearest_idx == traj.points.size() - 1) {
-    if (motion_common::calcSignedArcLength(traj.points, point, traj.points.size() - 1) < 0) {
+    if (
+      motion_common::calcSignedArcLength(traj.points, pose.position, traj.points.size() - 1) < 0) {
       return traj.points.at(traj.points.size() - 1);
     }
   }
 
   // apply linear interpolation
-  return trajectory_follower::longitudinal_utils::lerpTrajectoryPoint(traj.points, point);
+  return trajectory_follower::longitudinal_utils::lerpTrajectoryPoint(
+    traj.points, pose, m_state_transition_params.emergency_state_traj_trans_dev,
+    m_state_transition_params.emergency_state_traj_rot_dev);
 }
 
 float64_t LongitudinalController::predictedVelocityInTargetPoint(
@@ -920,7 +923,7 @@ void LongitudinalController::updateDebugVelAcc(
   const size_t nearest_idx = control_data.nearest_idx;
 
   const auto interpolated_point =
-    calcInterpolatedTargetValue(*m_trajectory_ptr, current_pose.position, nearest_idx);
+    calcInterpolatedTargetValue(*m_trajectory_ptr, current_pose, nearest_idx);
 
   m_debug_values.setValues(DebugValues::TYPE::CURRENT_VEL, current_vel);
   m_debug_values.setValues(DebugValues::TYPE::TARGET_VEL, target_motion.vel);

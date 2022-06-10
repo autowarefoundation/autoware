@@ -50,20 +50,26 @@ TEST(TestLongitudinalControllerUtils, calcStopDistance)
 {
   using autoware_auto_planning_msgs::msg::Trajectory;
   using autoware_auto_planning_msgs::msg::TrajectoryPoint;
-  using geometry_msgs::msg::Point;
-  Point current_pos;
-  current_pos.x = 0.0;
-  current_pos.y = 0.0;
+  using geometry_msgs::msg::Pose;
+  Pose current_pose;
+  current_pose.position.x = 0.0;
+  current_pose.position.y = 0.0;
+  current_pose.position.z = 0.0;
   Trajectory traj;
+  double max_dist = 3.0;
+  double max_yaw = 0.7;
   // empty trajectory : exception
-  EXPECT_THROW(longitudinal_utils::calcStopDistance(current_pos, traj), std::invalid_argument);
+  EXPECT_THROW(
+    longitudinal_utils::calcStopDistance(current_pose, traj, max_dist, max_yaw),
+    std::invalid_argument);
   // one point trajectory : exception
   TrajectoryPoint point;
   point.pose.position.x = 0.0;
   point.pose.position.y = 0.0;
   point.longitudinal_velocity_mps = 0.0;
   traj.points.push_back(point);
-  EXPECT_THROW(longitudinal_utils::calcStopDistance(current_pos, traj), std::out_of_range);
+  EXPECT_THROW(
+    longitudinal_utils::calcStopDistance(current_pose, traj, max_dist, max_yaw), std::out_of_range);
   traj.points.clear();
   // non stopping trajectory: stop distance = trajectory length
   point.pose.position.x = 0.0;
@@ -78,7 +84,7 @@ TEST(TestLongitudinalControllerUtils, calcStopDistance)
   point.pose.position.y = 0.0;
   point.longitudinal_velocity_mps = 1.0;
   traj.points.push_back(point);
-  EXPECT_EQ(longitudinal_utils::calcStopDistance(current_pos, traj), 2.0);
+  EXPECT_EQ(longitudinal_utils::calcStopDistance(current_pose, traj, max_dist, max_yaw), 2.0);
   // stopping trajectory: stop distance = length until stopping point
   point.pose.position.x = 3.0;
   point.pose.position.y = 0.0;
@@ -92,7 +98,7 @@ TEST(TestLongitudinalControllerUtils, calcStopDistance)
   point.pose.position.y = 0.0;
   point.longitudinal_velocity_mps = 0.0;
   traj.points.push_back(point);
-  EXPECT_EQ(longitudinal_utils::calcStopDistance(current_pos, traj), 3.0);
+  EXPECT_EQ(longitudinal_utils::calcStopDistance(current_pose, traj, max_dist, max_yaw), 3.0);
 }
 
 TEST(TestLongitudinalControllerUtils, getPitchByPose)
@@ -319,7 +325,7 @@ TEST(TestLongitudinalControllerUtils, lerpOrientation)
 TEST(TestLongitudinalControllerUtils, lerpTrajectoryPoint)
 {
   using autoware_auto_planning_msgs::msg::TrajectoryPoint;
-  using geometry_msgs::msg::Point;
+  using geometry_msgs::msg::Pose;
   const double abs_err = 1e-15;
   decltype(autoware_auto_planning_msgs::msg::Trajectory::points) points;
   TrajectoryPoint p;
@@ -344,72 +350,73 @@ TEST(TestLongitudinalControllerUtils, lerpTrajectoryPoint)
   p.acceleration_mps2 = 40.0;
   points.push_back(p);
   TrajectoryPoint result;
-  Point point;
-
+  Pose pose;
+  double max_dist = 3.0;
+  double max_yaw = 0.7;
   // Points on the trajectory gives back the original trajectory points values
-  point.x = 0.0;
-  point.y = 0.0;
-  result = longitudinal_utils::lerpTrajectoryPoint(points, point);
-  EXPECT_NEAR(result.pose.position.x, point.x, abs_err);
-  EXPECT_NEAR(result.pose.position.y, point.y, abs_err);
+  pose.position.x = 0.0;
+  pose.position.y = 0.0;
+  result = longitudinal_utils::lerpTrajectoryPoint(points, pose, max_dist, max_yaw);
+  EXPECT_NEAR(result.pose.position.x, pose.position.x, abs_err);
+  EXPECT_NEAR(result.pose.position.y, pose.position.y, abs_err);
   EXPECT_NEAR(result.longitudinal_velocity_mps, 10.0, abs_err);
   EXPECT_NEAR(result.acceleration_mps2, 10.0, abs_err);
 
-  point.x = 1.0;
-  point.y = 0.0;
-  result = longitudinal_utils::lerpTrajectoryPoint(points, point);
-  EXPECT_NEAR(result.pose.position.x, point.x, abs_err);
-  EXPECT_NEAR(result.pose.position.y, point.y, abs_err);
+  pose.position.x = 1.0;
+  pose.position.y = 0.0;
+  result = longitudinal_utils::lerpTrajectoryPoint(points, pose, max_dist, max_yaw);
+  EXPECT_NEAR(result.pose.position.x, pose.position.x, abs_err);
+  EXPECT_NEAR(result.pose.position.y, pose.position.y, abs_err);
   EXPECT_NEAR(result.longitudinal_velocity_mps, 20.0, abs_err);
   EXPECT_NEAR(result.acceleration_mps2, 20.0, abs_err);
 
-  point.x = 1.0;
-  point.y = 1.0;
-  result = longitudinal_utils::lerpTrajectoryPoint(points, point);
-  EXPECT_NEAR(result.pose.position.x, point.x, abs_err);
-  EXPECT_NEAR(result.pose.position.y, point.y, abs_err);
+  pose.position.x = 1.0;
+  pose.position.y = 1.0;
+  result = longitudinal_utils::lerpTrajectoryPoint(points, pose, max_dist, max_yaw);
+  EXPECT_NEAR(result.pose.position.x, pose.position.x, abs_err);
+  EXPECT_NEAR(result.pose.position.y, pose.position.y, abs_err);
   EXPECT_NEAR(result.longitudinal_velocity_mps, 30.0, abs_err);
   EXPECT_NEAR(result.acceleration_mps2, 30.0, abs_err);
 
-  point.x = 2.0;
-  point.y = 1.0;
-  result = longitudinal_utils::lerpTrajectoryPoint(points, point);
-  EXPECT_NEAR(result.pose.position.x, point.x, abs_err);
-  EXPECT_NEAR(result.pose.position.y, point.y, abs_err);
+  pose.position.x = 2.0;
+  pose.position.y = 1.0;
+  result = longitudinal_utils::lerpTrajectoryPoint(points, pose, max_dist, max_yaw);
+  EXPECT_NEAR(result.pose.position.x, pose.position.x, abs_err);
+  EXPECT_NEAR(result.pose.position.y, pose.position.y, abs_err);
   EXPECT_NEAR(result.longitudinal_velocity_mps, 40.0, abs_err);
   EXPECT_NEAR(result.acceleration_mps2, 40.0, abs_err);
 
   // Interpolate between trajectory points
-  point.x = 0.5;
-  point.y = 0.0;
-  result = longitudinal_utils::lerpTrajectoryPoint(points, point);
-  EXPECT_NEAR(result.pose.position.x, point.x, abs_err);
-  EXPECT_NEAR(result.pose.position.y, point.y, abs_err);
+  pose.position.x = 0.5;
+  pose.position.y = 0.0;
+  result = longitudinal_utils::lerpTrajectoryPoint(points, pose, max_dist, max_yaw);
+  EXPECT_NEAR(result.pose.position.x, pose.position.x, abs_err);
+  EXPECT_NEAR(result.pose.position.y, pose.position.y, abs_err);
   EXPECT_NEAR(result.longitudinal_velocity_mps, 15.0, abs_err);
   EXPECT_NEAR(result.acceleration_mps2, 15.0, abs_err);
-  point.x = 0.75;
-  point.y = 0.0;
-  result = longitudinal_utils::lerpTrajectoryPoint(points, point);
+  pose.position.x = 0.75;
+  pose.position.y = 0.0;
+  result = longitudinal_utils::lerpTrajectoryPoint(points, pose, max_dist, max_yaw);
 
-  EXPECT_NEAR(result.pose.position.x, point.x, abs_err);
-  EXPECT_NEAR(result.pose.position.y, point.y, abs_err);
+  EXPECT_NEAR(result.pose.position.x, pose.position.x, abs_err);
+  EXPECT_NEAR(result.pose.position.y, pose.position.y, abs_err);
   EXPECT_NEAR(result.longitudinal_velocity_mps, 17.5, abs_err);
   EXPECT_NEAR(result.acceleration_mps2, 17.5, abs_err);
 
   // Interpolate away from the trajectory (interpolated point is projected)
-  point.x = 0.5;
-  point.y = -1.0;
-  result = longitudinal_utils::lerpTrajectoryPoint(points, point);
-  EXPECT_NEAR(result.pose.position.x, point.x, abs_err);
+  pose.position.x = 0.5;
+  pose.position.y = -1.0;
+  result = longitudinal_utils::lerpTrajectoryPoint(points, pose, max_dist, max_yaw);
+  EXPECT_NEAR(result.pose.position.x, pose.position.x, abs_err);
   EXPECT_NEAR(result.pose.position.y, 0.0, abs_err);
   EXPECT_NEAR(result.longitudinal_velocity_mps, 15.0, abs_err);
   EXPECT_NEAR(result.acceleration_mps2, 15.0, abs_err);
 
   // Ambiguous projections: possibility with the lowest index is used
-  point.x = 0.5;
-  point.y = 0.5;
-  result = longitudinal_utils::lerpTrajectoryPoint(points, point);
-  EXPECT_NEAR(result.pose.position.x, point.x, abs_err);
+  pose.position.x = 0.5;
+  pose.position.y = 0.5;
+  result = longitudinal_utils::lerpTrajectoryPoint(points, pose, max_dist, max_yaw);
+  EXPECT_NEAR(result.pose.position.x, pose.position.x, abs_err);
   EXPECT_NEAR(result.pose.position.y, 0.0, abs_err);
   EXPECT_NEAR(result.longitudinal_velocity_mps, 15.0, abs_err);
   EXPECT_NEAR(result.acceleration_mps2, 15.0, abs_err);

@@ -22,6 +22,7 @@
 #include "motion_common/motion_common.hpp"
 #include "motion_common/trajectory_common.hpp"
 #include "tf2/utils.h"
+#include "tier4_autoware_utils/trajectory/trajectory.hpp"
 #include "trajectory_follower/visibility_control.hpp"
 
 #include <experimental/optional>  // NOLINT
@@ -60,8 +61,9 @@ TRAJECTORY_FOLLOWER_PUBLIC bool8_t isValidTrajectory(const Trajectory & traj);
 /**
  * @brief calculate distance to stopline from current vehicle position where velocity is 0
  */
-TRAJECTORY_FOLLOWER_PUBLIC float64_t
-calcStopDistance(const Point & current_pos, const Trajectory & traj);
+TRAJECTORY_FOLLOWER_PUBLIC float64_t calcStopDistance(
+  const Pose & current_pose, const Trajectory & traj, const float64_t max_dist,
+  const float64_t max_yaw);
 
 /**
  * @brief calculate pitch angle from estimated current pose
@@ -106,21 +108,23 @@ lerpOrientation(const Quaternion & o_from, const Quaternion & o_to, const float6
  * @param [in] point Interpolated point is nearest to this point.
  */
 template <class T>
-TRAJECTORY_FOLLOWER_PUBLIC TrajectoryPoint
-lerpTrajectoryPoint(const T & points, const Point & point)
+TRAJECTORY_FOLLOWER_PUBLIC TrajectoryPoint lerpTrajectoryPoint(
+  const T & points, const Pose & pose, const float64_t max_dist, const float64_t max_yaw)
 {
   TrajectoryPoint interpolated_point;
-
-  const size_t nearest_seg_idx = trajectory_common::findNearestSegmentIndex(points, point);
+  auto seg_idx = tier4_autoware_utils::findNearestSegmentIndex(points, pose, max_dist, max_yaw);
+  if (!seg_idx) {  // if not fund idx
+    seg_idx = tier4_autoware_utils::findNearestSegmentIndex(points, pose);
+  }
 
   const float64_t len_to_interpolated =
-    trajectory_common::calcLongitudinalOffsetToSegment(points, nearest_seg_idx, point);
+    tier4_autoware_utils::calcLongitudinalOffsetToSegment(points, *seg_idx, pose.position);
   const float64_t len_segment =
-    trajectory_common::calcSignedArcLength(points, nearest_seg_idx, nearest_seg_idx + 1);
+    trajectory_common::calcSignedArcLength(points, *seg_idx, *seg_idx + 1);
   const float64_t interpolate_ratio = std::clamp(len_to_interpolated / len_segment, 0.0, 1.0);
 
   {
-    const size_t i = nearest_seg_idx;
+    const size_t i = *seg_idx;
 
     interpolated_point.pose.position.x = motion_common::interpolate(
       points.at(i).pose.position.x, points.at(i + 1).pose.position.x, interpolate_ratio);
