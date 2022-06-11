@@ -97,6 +97,7 @@ private:
   double min_behavior_stop_margin_;
   double nearest_dist_deviation_threshold_;
   double nearest_yaw_deviation_threshold_;
+  double obstacle_velocity_threshold_from_cruise_to_stop_;
 
   // parameter callback result
   OnSetParametersCallbackHandle::SharedPtr set_param_res_;

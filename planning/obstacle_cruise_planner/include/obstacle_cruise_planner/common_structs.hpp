@@ -79,27 +79,14 @@ struct ObstacleCruisePlannerData
 
 struct LongitudinalInfo
 {
-  LongitudinalInfo(
-    const double arg_max_accel, const double arg_min_accel, const double arg_max_jerk,
-    const double arg_min_jerk, const double arg_min_strong_accel, const double arg_idling_time,
-    const double arg_min_ego_accel_for_rss, const double arg_min_object_accel_for_rss,
-    const double arg_safe_distance_margin)
-  : max_accel(arg_max_accel),
-    min_accel(arg_min_accel),
-    max_jerk(arg_max_jerk),
-    min_jerk(arg_min_jerk),
-    min_strong_accel(arg_min_strong_accel),
-    idling_time(arg_idling_time),
-    min_ego_accel_for_rss(arg_min_ego_accel_for_rss),
-    min_object_accel_for_rss(arg_min_object_accel_for_rss),
-    safe_distance_margin(arg_safe_distance_margin)
-  {
-  }
   double max_accel;
   double min_accel;
   double max_jerk;
   double min_jerk;
-  double min_strong_accel;
+  double limit_max_accel;
+  double limit_min_accel;
+  double limit_max_jerk;
+  double limit_min_jerk;
   double idling_time;
   double min_ego_accel_for_rss;
   double min_object_accel_for_rss;

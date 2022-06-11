@@ -10,13 +10,13 @@
       min_ego_accel_for_rss: -1.0 # ego's acceleration to calculate RSS distance [m/ss]
       min_object_accel_for_rss: -1.0 # front obstacle's acceleration to calculate RSS distance [m/ss]
       safe_distance_margin : 6.0 # This is also used as a stop margin [m]
-      min_strong_accel: -3.0 # obstacle stop requiring deceleration less than this value will be ignored [m/ss]
 
       lpf_gain_for_accel: 0.2 # gain of low pass filter for ego acceleration [-]
 
       nearest_dist_deviation_threshold: 3.0 # [m] for finding nearest index
       nearest_yaw_deviation_threshold: 1.57 # [rad] for finding nearest index
       min_behavior_stop_margin: 3.0 # [m]
+      obstacle_velocity_threshold_from_cruise_to_stop : 3.0 # stop planning is executed to the obstacle whose velocity is less than this value [m/s]
 
       cruise_obstacle_type:
         unknown: true
@@ -76,10 +76,7 @@
 
       min_cruise_target_vel: 0.0 # minimum target velocity during slow down [m/s]
 
-      obstacle_velocity_threshold_from_cruise_to_stop : 3.0 # stop planning is executed to the obstacle whose velocity is less than this value [m/s]
-
     optimization_based_planner:
-      limit_min_accel: -3.0
       resampling_s_interval: 2.0
       dense_resampling_time_interval: 0.1
       sparse_resampling_time_interval: 1.0
@@ -89,22 +86,7 @@
       velocity_margin: 0.1 #[m/s]
 
       # Parameters for safe distance
-      safe_distance_margin: 5.0
       t_dangerous: 0.5
-
-      # Parameters for collision detection
-      collision_time_threshold: 10.0
-      object_zero_velocity_threshold: 3.0 #[m/s]
-      object_low_velocity_threshold: 3.0 #[m/s]
-      external_velocity_limit: 20.0 #[m/s]
-      delta_yaw_threshold_of_object_and_ego: 90.0 # [deg]
-      delta_yaw_threshold_of_nearest_index: 60.0 # [deg]
-      collision_duration_threshold_of_object_and_ego: 1.0 # [s]
-
-      # Switch for each functions
-      enable_adaptive_cruise: true
-      use_object_acceleration: false
-      use_hd_map: true
 
       # For initial Motion
       replan_vel_deviation: 5.0         # velocity deviation to replan initial velocity [m/s]

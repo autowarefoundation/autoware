@@ -209,17 +209,30 @@ ObstacleCruisePlannerNode::ObstacleCruisePlannerNode(const rclcpp::NodeOptions &
     const double min_accel = declare_parameter<double>("normal.min_acc");
     const double max_jerk = declare_parameter<double>("normal.max_jerk");
     const double min_jerk = declare_parameter<double>("normal.min_jerk");
+    const double limit_max_accel = declare_parameter<double>("limit.max_acc");
+    const double limit_min_accel = declare_parameter<double>("limit.min_acc");
+    const double limit_max_jerk = declare_parameter<double>("limit.max_jerk");
+    const double limit_min_jerk = declare_parameter<double>("limit.min_jerk");
 
-    const double min_strong_accel = declare_parameter<double>("common.min_strong_accel");
     const double min_ego_accel_for_rss = declare_parameter<double>("common.min_ego_accel_for_rss");
     const double min_object_accel_for_rss =
       declare_parameter<double>("common.min_object_accel_for_rss");
     const double idling_time = declare_parameter<double>("common.idling_time");
     const double safe_distance_margin = declare_parameter<double>("common.safe_distance_margin");
 
-    return LongitudinalInfo(
-      max_accel, min_accel, max_jerk, min_jerk, min_strong_accel, idling_time,
-      min_ego_accel_for_rss, min_object_accel_for_rss, safe_distance_margin);
+    return LongitudinalInfo{
+      max_accel,
+      min_accel,
+      max_jerk,
+      min_jerk,
+      limit_max_accel,
+      limit_min_accel,
+      limit_max_jerk,
+      limit_min_jerk,
+      idling_time,
+      min_ego_accel_for_rss,
+      min_object_accel_for_rss,
+      safe_distance_margin};
   }();
 
   const bool is_showing_debug_info_ = declare_parameter<bool>("common.is_showing_debug_info");
@@ -301,9 +314,11 @@ ObstacleCruisePlannerNode::ObstacleCruisePlannerNode(const rclcpp::NodeOptions &
       declare_parameter<double>("common.nearest_dist_deviation_threshold");
     nearest_yaw_deviation_threshold_ =
       declare_parameter<double>("common.nearest_yaw_deviation_threshold");
+    obstacle_velocity_threshold_from_cruise_to_stop_ =
+      declare_parameter<double>("common.obstacle_velocity_threshold_from_cruise_to_stop");
     planner_ptr_->setParams(
       is_showing_debug_info_, min_behavior_stop_margin_, nearest_dist_deviation_threshold_,
-      nearest_yaw_deviation_threshold_);
+      nearest_yaw_deviation_threshold_, obstacle_velocity_threshold_from_cruise_to_stop_);
   }
 
   // wait for first self pose
@@ -335,7 +350,7 @@ rcl_interfaces::msg::SetParametersResult ObstacleCruisePlannerNode::onParam(
     parameters, "common.is_showing_debug_info", is_showing_debug_info_);
   planner_ptr_->setParams(
     is_showing_debug_info_, min_behavior_stop_margin_, nearest_dist_deviation_threshold_,
-    nearest_yaw_deviation_threshold_);
+    nearest_yaw_deviation_threshold_, obstacle_velocity_threshold_from_cruise_to_stop_);
 
   // obstacle_filtering
   tier4_autoware_utils::updateParam<double>(

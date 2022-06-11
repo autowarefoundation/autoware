@@ -113,7 +113,6 @@ private:
   double min_accel_during_cruise_;
   double vel_to_acc_weight_;
   double min_cruise_target_vel_;
-  double obstacle_velocity_threshold_from_cruise_to_stop_;
   // bool use_predicted_obstacle_pose_;
 
   // pid controller

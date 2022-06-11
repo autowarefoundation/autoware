@@ -31,7 +31,10 @@ public:
     double v_max;
     double a_max;
     double a_min;
+    double limit_a_max;
     double limit_a_min;
+    double limit_j_max;
+    double limit_j_min;
     double j_max;
     double j_min;
     double t_dangerous;

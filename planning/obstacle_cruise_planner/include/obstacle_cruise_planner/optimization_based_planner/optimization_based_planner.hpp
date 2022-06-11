@@ -116,16 +116,13 @@ private:
     const TargetObstacle & object, const rclcpp::Time & obj_base_time,
     const PredictedPath & predicted_path);
 
-  bool checkIsFrontObject(const TargetObstacle & object, const Trajectory & traj);
-
   boost::optional<PredictedPath> resampledPredictedPath(
     const TargetObstacle & object, const rclcpp::Time & obj_base_time,
     const rclcpp::Time & current_time, const std::vector<double> & resolutions,
     const double horizon);
 
   boost::optional<double> getDistanceToCollisionPoint(
-    const TrajectoryData & ego_traj_data, const ObjectData & obj_data,
-    const double delta_yaw_threshold);
+    const TrajectoryData & ego_traj_data, const ObjectData & obj_data);
 
   boost::optional<size_t> getCollisionIdx(
     const TrajectoryData & ego_traj, const Box2d & obj_box, const size_t start_idx,
@@ -165,19 +162,9 @@ private:
   double sparse_resampling_time_interval_;
   double dense_time_horizon_;
   double max_time_horizon_;
-  double limit_min_accel_;
 
-  double delta_yaw_threshold_of_nearest_index_;
-  double delta_yaw_threshold_of_object_and_ego_;
-  double object_zero_velocity_threshold_;
-  double object_low_velocity_threshold_;
-  double external_velocity_limit_;
-  double collision_time_threshold_;
-  double safe_distance_margin_;
   double t_dangerous_;
   double velocity_margin_;
-  bool enable_adaptive_cruise_;
-  bool use_object_acceleration_;
 
   double replan_vel_deviation_;
   double engage_velocity_;
