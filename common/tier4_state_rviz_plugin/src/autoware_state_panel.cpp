@@ -155,15 +155,15 @@ void AutowareStatePanel::onInitialize()
     "/api/autoware/set/emergency", rmw_qos_profile_services_default);
 
   pub_velocity_limit_ = raw_node_->create_publisher<tier4_planning_msgs::msg::VelocityLimit>(
-    "/planning/scenario_planning/max_velocity_default", rclcpp::QoS(1));
+    "/planning/scenario_planning/max_velocity_default", rclcpp::QoS{1}.transient_local());
 
   pub_gate_mode_ = raw_node_->create_publisher<tier4_control_msgs::msg::GateMode>(
-    "/control/gate_mode_cmd", rclcpp::QoS(1));
+    "/control/gate_mode_cmd", rclcpp::QoS{1}.transient_local());
 
   pub_path_change_approval_ = raw_node_->create_publisher<tier4_planning_msgs::msg::Approval>(
     "/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/"
     "path_change_approval",
-    rclcpp::QoS(1));
+    rclcpp::QoS{1}.transient_local());
 }
 
 void AutowareStatePanel::onGateMode(const tier4_control_msgs::msg::GateMode::ConstSharedPtr msg)
