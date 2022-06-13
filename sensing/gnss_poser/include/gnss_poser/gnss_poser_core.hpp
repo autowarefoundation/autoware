@@ -90,6 +90,7 @@ private:
   std::string gnss_base_frame_;
   std::string map_frame_;
 
+  sensor_msgs::msg::NavSatFix nav_sat_fix_origin_;
   bool use_ublox_receiver_;
 
   int plane_zone_;

@@ -36,6 +36,10 @@ GNSSPoser::GNSSPoser(const rclcpp::NodeOptions & node_options)
     declare_parameter("coordinate_system", static_cast<int>(CoordinateSystem::MGRS));
   coordinate_system_ = static_cast<CoordinateSystem>(coordinate_system);
 
+  nav_sat_fix_origin_.latitude = declare_parameter("latitude", 0.0);
+  nav_sat_fix_origin_.longitude = declare_parameter("longitude", 0.0);
+  nav_sat_fix_origin_.altitude = declare_parameter("altitude", 0.0);
+
   int buff_epoch = declare_parameter("buff_epoch", 1);
   position_buffer_.set_capacity(buff_epoch);
 
@@ -166,6 +170,8 @@ GNSSStat GNSSPoser::convert(
     gnss_stat = NavSatFix2MGRS(nav_sat_fix_msg, MGRSPrecision::_100MICRO_METER, this->get_logger());
   } else if (coordinate_system == CoordinateSystem::PLANE) {
     gnss_stat = NavSatFix2PLANE(nav_sat_fix_msg, plane_zone_, this->get_logger());
+  } else if (coordinate_system == CoordinateSystem::LOCAL_CARTESIAN) {
+    gnss_stat = NavSatFix2LocalCartesian(nav_sat_fix_msg, nav_sat_fix_origin_, this->get_logger());
   } else {
     RCLCPP_ERROR_STREAM_THROTTLE(
       this->get_logger(), *this->get_clock(), std::chrono::milliseconds(1000).count(),

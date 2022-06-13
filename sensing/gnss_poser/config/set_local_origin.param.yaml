@@ -1,0 +1,11 @@
+/**:
+  ros__parameters:
+
+    # Latitude of local origin
+    latitude: 40.816617984672746
+
+    # Longitude of local origin
+    longitude: 29.360491808334285
+
+    # Altitude of local origin
+    altitude: 52.251157145314075

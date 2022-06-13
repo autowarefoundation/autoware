@@ -2,6 +2,7 @@
 <launch>
   <arg name="input_topic_fix" default="/fix"/>
   <arg name="input_topic_navpvt" default="/navpvt"/>
+  <arg name="param_file" default="$(find-pkg-share gnss_poser)/config/set_local_origin.param.yaml"/>
 
   <arg name="output_topic_gnss_pose" default="gnss_pose"/>
   <arg name="output_topic_gnss_pose_cov" default="gnss_pose_cov"/>
@@ -12,7 +13,7 @@
   <arg name="gnss_frame" default="gnss"/>
   <arg name="map_frame" default="map"/>
 
-  <arg name="coordinate_system" default="1" description="0:UTM, 1:MGRS, 2:PLANE"/>
+  <arg name="coordinate_system" default="1" description="0:UTM, 1:MGRS, 2:PLANE, 3:LocalCartesian"/>
   <arg name="buff_epoch" default="1"/>
   <arg name="use_ublox_receiver" default="false"/>
   <arg name="plane_zone" default="9"/>
@@ -34,5 +35,6 @@
     <param name="buff_epoch" value="$(var buff_epoch)"/>
     <param name="use_ublox_receiver" value="$(var use_ublox_receiver)"/>
     <param name="plane_zone" value="$(var plane_zone)"/>
+    <param from="$(var param_file)"/>
   </node>
 </launch>
