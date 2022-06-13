@@ -97,6 +97,10 @@ AutowareStatePanel::AutowareStatePanel(QWidget * parent) : rviz_common::Panel(pa
   pub_velocity_limit_input_->setSingleStep(5.0);
   connect(velocity_limit_button_ptr_, SIGNAL(clicked()), this, SLOT(onClickVelocityLimit()));
 
+  // Emergency Button
+  emergency_button_ptr_ = new QPushButton("Set Emergency");
+  connect(emergency_button_ptr_, SIGNAL(clicked()), this, SLOT(onClickEmergencyButton()));
+
   // Layout
   auto * v_layout = new QVBoxLayout;
   auto * gate_mode_path_change_approval_layout = new QHBoxLayout;
@@ -114,6 +118,7 @@ AutowareStatePanel::AutowareStatePanel(QWidget * parent) : rviz_common::Panel(pa
   velocity_limit_layout->addWidget(velocity_limit_button_ptr_);
   velocity_limit_layout->addWidget(pub_velocity_limit_input_);
   velocity_limit_layout->addWidget(new QLabel("  [km/h]"));
+  velocity_limit_layout->addWidget(emergency_button_ptr_);
   v_layout->addLayout(velocity_limit_layout);
   setLayout(v_layout);
 }
@@ -140,8 +145,14 @@ void AutowareStatePanel::onInitialize()
   sub_engage_ = raw_node_->create_subscription<tier4_external_api_msgs::msg::EngageStatus>(
     "/api/external/get/engage", 10, std::bind(&AutowareStatePanel::onEngageStatus, this, _1));
 
+  sub_emergency_ = raw_node_->create_subscription<tier4_external_api_msgs::msg::Emergency>(
+    "/api/autoware/get/emergency", 10, std::bind(&AutowareStatePanel::onEmergencyStatus, this, _1));
+
   client_engage_ = raw_node_->create_client<tier4_external_api_msgs::srv::Engage>(
     "/api/external/set/engage", rmw_qos_profile_services_default);
+
+  client_emergency_stop_ = raw_node_->create_client<tier4_external_api_msgs::srv::SetEmergency>(
+    "/api/autoware/set/emergency", rmw_qos_profile_services_default);
 
   pub_velocity_limit_ = raw_node_->create_publisher<tier4_planning_msgs::msg::VelocityLimit>(
     "/planning/scenario_planning/max_velocity_default", rclcpp::QoS(1));
@@ -254,6 +265,19 @@ void AutowareStatePanel::onEngageStatus(
   engage_status_label_ptr_->setText(QString::fromStdString(Bool2String(current_engage_)));
 }
 
+void AutowareStatePanel::onEmergencyStatus(
+  const tier4_external_api_msgs::msg::Emergency::ConstSharedPtr msg)
+{
+  current_emergency_ = msg->emergency;
+  if (msg->emergency) {
+    emergency_button_ptr_->setText(QString::fromStdString("Clear Emergency"));
+    emergency_button_ptr_->setStyleSheet("background-color: #FF0000;");
+  } else {
+    emergency_button_ptr_->setText(QString::fromStdString("Set Emergency"));
+    emergency_button_ptr_->setStyleSheet("background-color: #00FF00;");
+  }
+}
+
 void AutowareStatePanel::onClickVelocityLimit()
 {
   auto velocity_limit = std::make_shared<tier4_planning_msgs::msg::VelocityLimit>();
@@ -281,6 +305,29 @@ void AutowareStatePanel::onClickAutowareEngage()
     });
 }
 
+void AutowareStatePanel::onClickEmergencyButton()
+{
+  auto request = std::make_shared<tier4_external_api_msgs::srv::SetEmergency::Request>();
+  if (current_emergency_) {
+    request->emergency = false;
+  } else {
+    request->emergency = true;
+  }
+  RCLCPP_INFO(raw_node_->get_logger(), request->emergency ? "Set Emergency" : "Clear Emergency");
+
+  client_emergency_stop_->async_send_request(
+    request,
+    [this]([[maybe_unused]] rclcpp::Client<tier4_external_api_msgs::srv::SetEmergency>::SharedFuture
+             result) {
+      auto response = result.get();
+      if (response->status.code == tier4_external_api_msgs::msg::ResponseStatus::SUCCESS) {
+        RCLCPP_INFO(raw_node_->get_logger(), "service succeeded");
+      } else {
+        RCLCPP_WARN(
+          raw_node_->get_logger(), "service failed: %s", response->status.message.c_str());
+      }
+    });
+}
 void AutowareStatePanel::onClickGateMode()
 {
   const auto data = gate_mode_label_ptr_->text().toStdString() == "AUTO"
