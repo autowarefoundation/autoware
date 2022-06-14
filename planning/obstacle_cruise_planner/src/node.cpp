@@ -533,7 +533,9 @@ std::vector<TargetObstacle> ObstacleCruisePlannerNode::filterObstacles(
     const double dist_from_obstacle_to_traj = [&]() {
       return tier4_autoware_utils::calcLateralOffset(decimated_traj.points, object_pose.position);
     }();
-    if (dist_from_obstacle_to_traj > obstacle_filtering_param_.rough_detection_area_expand_width) {
+    if (
+      std::fabs(dist_from_obstacle_to_traj) >
+      obstacle_filtering_param_.rough_detection_area_expand_width) {
       RCLCPP_INFO_EXPRESSION(
         get_logger(), is_showing_debug_info_,
         "Ignore obstacles since it is far from the trajectory.");
