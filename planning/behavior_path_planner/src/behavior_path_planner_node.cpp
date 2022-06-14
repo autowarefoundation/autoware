@@ -521,6 +521,8 @@ void BehaviorPathPlannerNode::run()
 
   // behavior_path_planner runs only in LANE DRIVING scenario.
   if (current_scenario_->current_scenario != Scenario::LANEDRIVING) {
+    mutex_bt_.unlock();  // for bt_manager_
+    mutex_pd_.unlock();  // for planner_data_
     return;
   }
 
