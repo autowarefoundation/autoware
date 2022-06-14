@@ -93,21 +93,13 @@ geometry_msgs::msg::PoseStamped::ConstSharedPtr getCurrentPose(
 // copied from scenario selector
 std::shared_ptr<lanelet::ConstPolygon3d> findNearestParkinglot(
   const std::shared_ptr<lanelet::LaneletMap> & lanelet_map_ptr,
-  const lanelet::BasicPoint2d & search_point)
+  const lanelet::BasicPoint2d & current_position)
 {
-  std::vector<std::pair<double, lanelet::Lanelet>> nearest_lanelets =
-    lanelet::geometry::findNearest(lanelet_map_ptr->laneletLayer, search_point, 1);
-
-  if (nearest_lanelets.empty()) {
-    return {};
-  }
-
-  const auto nearest_lanelet = nearest_lanelets.front().second;
   const auto all_parking_lots = lanelet::utils::query::getAllParkingLots(lanelet_map_ptr);
 
   const auto linked_parking_lot = std::make_shared<lanelet::ConstPolygon3d>();
   const auto result = lanelet::utils::query::getLinkedParkingLot(
-    nearest_lanelet, all_parking_lots, linked_parking_lot.get());
+    current_position, all_parking_lots, linked_parking_lot.get());
 
   if (result) {
     return linked_parking_lot;

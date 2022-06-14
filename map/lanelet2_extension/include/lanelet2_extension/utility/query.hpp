@@ -160,6 +160,11 @@ lanelet::ConstLanelets getLinkedLanelets(
 bool getLinkedParkingLot(
   const lanelet::ConstLanelet & lanelet, const lanelet::ConstPolygons3d & all_parking_lots,
   lanelet::ConstPolygon3d * linked_parking_lot);
+// get linked parking lot from current pose of ego car
+bool getLinkedParkingLot(
+  const lanelet::BasicPoint2d & current_position, const lanelet::ConstPolygons3d & all_parking_lots,
+  lanelet::ConstPolygon3d * linked_parking_lot);
+// get linked parking lot from parking space
 bool getLinkedParkingLot(
   const lanelet::ConstLineString3d & parking_space,
   const lanelet::ConstPolygons3d & all_parking_lots, lanelet::ConstPolygon3d * linked_parking_lot);
