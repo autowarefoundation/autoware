@@ -271,7 +271,7 @@ std::vector<LaneChangePath> selectValidPaths(
 bool selectSafePath(
   const std::vector<LaneChangePath> & paths, const lanelet::ConstLanelets & current_lanes,
   const lanelet::ConstLanelets & target_lanes,
-  const PredictedObjects::ConstSharedPtr & dynamic_objects, const Pose & current_pose,
+  const PredictedObjects::ConstSharedPtr dynamic_objects, const Pose & current_pose,
   const Twist & current_twist, const double vehicle_width,
   const LaneChangeParameters & ros_parameters, LaneChangePath * selected_path)
 {
@@ -329,7 +329,7 @@ bool hasEnoughDistance(
 bool isLaneChangePathSafe(
   const PathWithLaneId & path, const lanelet::ConstLanelets & current_lanes,
   const lanelet::ConstLanelets & target_lanes,
-  const PredictedObjects::ConstSharedPtr & dynamic_objects, const Pose & current_pose,
+  const PredictedObjects::ConstSharedPtr dynamic_objects, const Pose & current_pose,
   const Twist & current_twist, const double vehicle_width,
   const LaneChangeParameters & ros_parameters, const bool use_buffer, const double acceleration)
 {

@@ -653,7 +653,7 @@ std::vector<size_t> filterObjectsByLanelets(
   }
 
   for (size_t i = 0; i < objects.objects.size(); i++) {
-    const auto obj = objects.objects.at(i);
+    const auto & obj = objects.objects.at(i);
     // create object polygon
     Polygon2d obj_polygon;
     if (!calcObjectPolygon(obj, &obj_polygon)) {
@@ -687,7 +687,7 @@ std::vector<size_t> filterObjectsByLanelets(
 
   for (size_t i = 0; i < objects.objects.size(); i++) {
     // create object polygon
-    const auto obj = objects.objects.at(i);
+    const auto & obj = objects.objects.at(i);
     // create object polygon
     Polygon2d obj_polygon;
     if (!calcObjectPolygon(obj, &obj_polygon)) {

@@ -337,7 +337,7 @@ std::vector<PullOutPath> selectValidPaths(
 bool selectSafePath(
   const std::vector<PullOutPath> & paths, const lanelet::ConstLanelets & road_lanes,
   const lanelet::ConstLanelets & shoulder_lanes,
-  const PredictedObjects::ConstSharedPtr & dynamic_objects,
+  const PredictedObjects::ConstSharedPtr dynamic_objects,
   [[maybe_unused]] const Pose & current_pose, [[maybe_unused]] const Twist & current_twist,
   [[maybe_unused]] const double vehicle_width, const PullOutParameters & ros_parameters,
   const tier4_autoware_utils::LinearRing2d & local_vehicle_footprint, PullOutPath * selected_path)
@@ -397,8 +397,7 @@ bool hasEnoughDistance(
 bool isPullOutPathSafe(
   const behavior_path_planner::PullOutPath & path, const lanelet::ConstLanelets & road_lanes,
   const lanelet::ConstLanelets & shoulder_lanes,
-  const PredictedObjects::ConstSharedPtr & dynamic_objects,
-  const PullOutParameters & ros_parameters,
+  const PredictedObjects::ConstSharedPtr dynamic_objects, const PullOutParameters & ros_parameters,
   const tier4_autoware_utils::LinearRing2d & local_vehicle_footprint, const bool use_buffer,
   const bool use_dynamic_object)
 {
