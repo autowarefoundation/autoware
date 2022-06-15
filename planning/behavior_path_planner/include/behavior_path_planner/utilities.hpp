@@ -160,6 +160,10 @@ PredictedPath convertToPredictedPath(
   const PathWithLaneId & path, const Twist & vehicle_twist, const Pose & vehicle_pose,
   const double duration, const double resolution, const double acceleration);
 
+bool checkIfPositionIsOnTheLine(const double & linestring_length, const FrenetCoordinate3d & pose);
+FrenetCoordinate3d convertToFrenetCoordinate3d(
+  const std::vector<Point> & linestring, const Point & search_point_geom);
+
 bool convertToFrenetCoordinate3d(
   const PathWithLaneId & path, const Point & search_point_geom,
   FrenetCoordinate3d * frenet_coordinate);
@@ -262,7 +266,8 @@ lanelet::ConstLineStrings3d getDrivableAreaForAllSharedLinestringLanelets(
 // goal management
 
 /**
- * @brief Modify the path points near the goal to smoothly connect the input path and the goal point
+ * @brief Modify the path points near the goal to smoothly connect the input path and the goal
+ * point
  * @details Remove the path points that are forward from the goal by the distance of
  * search_radius_range. Then insert the goal into the path. The previous goal point generated
  * from the goal posture information is also inserted for the smooth connection of the goal pose.
