@@ -24,6 +24,8 @@
     <param name="use_sim_time" value="$(var use_sim_time)"/>
   </node>
 
+  <!-- calibration plot and map server node -->
+  <node pkg="accel_brake_map_calibrator" exec="new_accel_brake_map_server.py" name="new_accel_brake_map_server" output="screen"/>
   <!-- Rviz -->
   <node pkg="rviz2" exec="rviz2" name="rviz2" output="screen" args="-d $(find-pkg-share accel_brake_map_calibrator)/rviz/occupancy.rviz" if="$(var rviz)"/>
 </launch>

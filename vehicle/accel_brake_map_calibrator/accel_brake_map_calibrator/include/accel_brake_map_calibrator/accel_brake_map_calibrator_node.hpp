@@ -42,6 +42,9 @@
 #include "std_msgs/msg/string.hpp"
 #include "tier4_debug_msgs/msg/float32_multi_array_stamped.hpp"
 #include "tier4_debug_msgs/msg/float32_stamped.hpp"
+#include "tier4_external_api_msgs/msg/calibration_status.hpp"
+#include "tier4_external_api_msgs/msg/calibration_status_array.hpp"
+#include "tier4_external_api_msgs/srv/get_accel_brake_map_calibration_data.hpp"
 #include "tier4_vehicle_msgs/msg/actuation_status_stamped.hpp"
 #include "tier4_vehicle_msgs/srv/update_accel_brake_map.hpp"
 
@@ -84,6 +87,8 @@ private:
   rclcpp::Publisher<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr current_map_error_pub_;
   rclcpp::Publisher<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr updated_map_error_pub_;
   rclcpp::Publisher<tier4_debug_msgs::msg::Float32Stamped>::SharedPtr map_error_ratio_pub_;
+  rclcpp::Publisher<tier4_external_api_msgs::msg::CalibrationStatus>::SharedPtr
+    calibration_status_pub_;
 
   rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::VelocityReport>::SharedPtr velocity_sub_;
   rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::SteeringReport>::SharedPtr steer_sub_;
@@ -110,6 +115,7 @@ private:
 
   // Diagnostic Updater
   std::shared_ptr<diagnostic_updater::Updater> updater_ptr_;
+  bool is_default_map_ = true;
 
   int get_pitch_method_;
   int update_method_;
