@@ -806,6 +806,41 @@ TEST(geometry, calcOffsetPose)
   }
 }
 
+TEST(geometry, calcInterpolatedPoint)
+{
+  using tier4_autoware_utils::calcInterpolatedPoint;
+  using tier4_autoware_utils::createPoint;
+
+  {
+    const auto src_point = createPoint(0.0, 0.0, 0.0);
+    const auto dst_point = createPoint(3.0, 0.0, 0.0);
+
+    const double epsilon = 1e-3;
+    for (double ratio = 0.0; ratio < 1.0 + epsilon; ratio += 0.1) {
+      const auto p_out = calcInterpolatedPoint(src_point, dst_point, ratio);
+
+      EXPECT_DOUBLE_EQ(p_out.x, 3.0 * ratio);
+      EXPECT_DOUBLE_EQ(p_out.y, 0.0);
+      EXPECT_DOUBLE_EQ(p_out.z, 0.0);
+    }
+  }
+
+  // Same points are given
+  {
+    const auto src_point = createPoint(0.0, 0.0, 0.0);
+    const auto dst_point = createPoint(0.0, 0.0, 0.0);
+
+    const double epsilon = 1e-3;
+    for (double ratio = 0.0; ratio < 1.0 + epsilon; ratio += 0.1) {
+      const auto p_out = calcInterpolatedPoint(src_point, dst_point, ratio);
+
+      EXPECT_DOUBLE_EQ(p_out.x, 0.0);
+      EXPECT_DOUBLE_EQ(p_out.y, 0.0);
+      EXPECT_DOUBLE_EQ(p_out.z, 0.0);
+    }
+  }
+}
+
 TEST(geometry, calcInterpolatedPose)
 {
   using tier4_autoware_utils::calcInterpolatedPose;
