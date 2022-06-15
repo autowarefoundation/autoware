@@ -497,6 +497,48 @@ TEST(trajectory, calcSignedArcLengthFromPointToIndex)
   EXPECT_NEAR(calcSignedArcLength(traj.points, createPoint(4.3, 7.0, 0.0), 2), -2.3, epsilon);
 }
 
+TEST(trajectory, calcSignedArcLengthFromPoseToIndex_DistThreshold)
+{
+  using tier4_autoware_utils::calcSignedArcLength;
+
+  const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
+
+  // Out of threshold
+  EXPECT_FALSE(calcSignedArcLength(traj.points, createPose(0.0, 0.6, 0.0, 0.0, 0.0, 0.0), 3, 0.5));
+
+  // On threshold
+  EXPECT_NEAR(
+    *calcSignedArcLength(traj.points, createPose(0.0, 0.5, 0.0, 0.0, 0.0, 0.0), 3, 0.5), 3.0,
+    epsilon);
+
+  // Within threshold
+  EXPECT_NEAR(
+    *calcSignedArcLength(traj.points, createPose(0.0, 0.4, 0.0, 0.0, 0.0, 0.0), 3, 0.5), 3.0,
+    epsilon);
+}
+
+TEST(trajectory, calcSignedArcLengthFromPoseToIndex_YawThreshold)
+{
+  using tier4_autoware_utils::calcSignedArcLength;
+
+  const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
+  const auto max_d = std::numeric_limits<double>::max();
+
+  // Out of threshold
+  EXPECT_FALSE(
+    calcSignedArcLength(traj.points, createPose(0.0, 0.5, 0.0, 0.0, 0.0, 1.1), 3, max_d, 1.0));
+
+  // On threshold
+  EXPECT_NEAR(
+    *calcSignedArcLength(traj.points, createPose(0.0, 0.5, 0.0, 0.0, 0.0, 1.0), 3, max_d, 1.0), 3.0,
+    epsilon);
+
+  // Within threshold
+  EXPECT_NEAR(
+    *calcSignedArcLength(traj.points, createPose(0.0, 0.5, 0.0, 0.0, 0.0, 0.9), 3, max_d, 1.0), 3.0,
+    epsilon);
+}
+
 TEST(trajectory, calcSignedArcLengthFromIndexToPoint)
 {
   using tier4_autoware_utils::calcSignedArcLength;

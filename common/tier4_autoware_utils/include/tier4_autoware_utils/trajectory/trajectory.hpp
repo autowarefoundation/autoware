@@ -256,7 +256,7 @@ double calcSignedArcLength(const T & points, const size_t src_idx, const size_t 
  */
 template <class T>
 double calcSignedArcLength(
-  const T & points, const geometry_msgs::msg::Point & src_point, const size_t & dst_idx)
+  const T & points, const geometry_msgs::msg::Point & src_point, const size_t dst_idx)
 {
   validateNonEmpty(points);
 
@@ -265,6 +265,29 @@ double calcSignedArcLength(
   const double signed_length_on_traj = calcSignedArcLength(points, src_seg_idx, dst_idx);
   const double signed_length_src_offset =
     calcLongitudinalOffsetToSegment(points, src_seg_idx, src_point);
+
+  return signed_length_on_traj - signed_length_src_offset;
+}
+
+/**
+ * @brief calcSignedArcLength from point to index with maximum distance and yaw threshold
+ */
+template <class T>
+boost::optional<double> calcSignedArcLength(
+  const T & points, const geometry_msgs::msg::Pose & src_pose, const size_t dst_idx,
+  const double max_dist = std::numeric_limits<double>::max(),
+  const double max_yaw = std::numeric_limits<double>::max())
+{
+  validateNonEmpty(points);
+
+  const auto src_seg_idx = findNearestSegmentIndex(points, src_pose, max_dist, max_yaw);
+  if (!src_seg_idx) {
+    return boost::none;
+  }
+
+  const double signed_length_on_traj = calcSignedArcLength(points, *src_seg_idx, dst_idx);
+  const double signed_length_src_offset =
+    calcLongitudinalOffsetToSegment(points, *src_seg_idx, src_pose.position);
 
   return signed_length_on_traj - signed_length_src_offset;
 }
