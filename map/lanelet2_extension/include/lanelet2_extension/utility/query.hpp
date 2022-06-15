@@ -227,6 +227,10 @@ bool getClosestLanelet(
   const ConstLanelets & lanelets, const geometry_msgs::msg::Pose & search_pose,
   ConstLanelet * closest_lanelet_ptr);
 
+bool getCurrentLanelets(
+  const ConstLanelets & lanelets, const geometry_msgs::msg::Pose & search_pose,
+  ConstLanelets * current_lanelets_ptr);
+
 /**
  * [getSucceedingLaneletSequences retrieves a sequence of lanelets after the given lanelet.
  * The total length of retrieved lanelet sequence at least given length. Returned lanelet sequence

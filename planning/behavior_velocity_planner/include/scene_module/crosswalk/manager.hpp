@@ -25,6 +25,8 @@
 
 #include <functional>
 #include <memory>
+#include <set>
+#include <vector>
 
 namespace behavior_velocity_planner
 {
@@ -38,6 +40,17 @@ public:
 private:
   CrosswalkModule::PlannerParam crosswalk_planner_param_;
   WalkwayModule::PlannerParam walkway_planner_param_;
+
+  std::vector<lanelet::ConstLanelet> getCrosswalksOnPath(
+    const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
+    const lanelet::LaneletMapPtr lanelet_map,
+    const std::shared_ptr<const lanelet::routing::RoutingGraphContainer> & overall_graphs);
+
+  std::set<int64_t> getCrosswalkIdSetOnPath(
+    const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
+    const lanelet::LaneletMapPtr lanelet_map,
+    const std::shared_ptr<const lanelet::routing::RoutingGraphContainer> & overall_graphs);
+
   void launchNewModules(const autoware_auto_planning_msgs::msg::PathWithLaneId & path) override;
 
   std::function<bool(const std::shared_ptr<SceneModuleInterface> &)> getModuleExpiredFunction(

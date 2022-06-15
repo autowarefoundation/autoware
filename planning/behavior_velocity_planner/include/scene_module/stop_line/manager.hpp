@@ -23,9 +23,14 @@
 
 #include <functional>
 #include <memory>
+#include <set>
+#include <utility>
+#include <vector>
 
 namespace behavior_velocity_planner
 {
+using StopLineWithLaneId = std::pair<lanelet::ConstLineString3d, int64_t>;
+
 class StopLineModuleManager : public SceneModuleManagerInterface
 {
 public:
@@ -35,6 +40,15 @@ public:
 
 private:
   StopLineModule::PlannerParam planner_param_;
+
+  std::vector<StopLineWithLaneId> getStopLinesWithLaneIdOnPath(
+    const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
+    const lanelet::LaneletMapPtr lanelet_map);
+
+  std::set<int64_t> getStopLineIdSetOnPath(
+    const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
+    const lanelet::LaneletMapPtr lanelet_map);
+
   void launchNewModules(const autoware_auto_planning_msgs::msg::PathWithLaneId & path) override;
 
   std::function<bool(const std::shared_ptr<SceneModuleInterface> &)> getModuleExpiredFunction(

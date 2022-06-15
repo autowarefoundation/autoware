@@ -27,38 +27,7 @@
 
 namespace behavior_velocity_planner
 {
-namespace
-{
-std::vector<lanelet::NoStoppingAreaConstPtr> getNoStoppingAreaRegElemsOnPath(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-  const lanelet::LaneletMapPtr lanelet_map)
-{
-  std::vector<lanelet::NoStoppingAreaConstPtr> no_stopping_area_reg_elems;
-
-  for (const auto & p : path.points) {
-    const auto lane_id = p.lane_ids.at(0);
-    const auto ll = lanelet_map->laneletLayer.get(lane_id);
-    const auto no_stopping_areas =
-      ll.regulatoryElementsAs<const lanelet::autoware::NoStoppingArea>();
-    for (const auto & no_stopping_area : no_stopping_areas) {
-      no_stopping_area_reg_elems.push_back(no_stopping_area);
-    }
-  }
-
-  return no_stopping_area_reg_elems;
-}
-
-std::set<int64_t> getNoStoppingAreaIdSetOnPath(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-  const lanelet::LaneletMapPtr lanelet_map)
-{
-  std::set<int64_t> no_stopping_area_id_set;
-  for (const auto & no_stopping_area : getNoStoppingAreaRegElemsOnPath(path, lanelet_map)) {
-    no_stopping_area_id_set.insert(no_stopping_area->id());
-  }
-  return no_stopping_area_id_set;
-}
-}  // namespace
+using lanelet::autoware::NoStoppingArea;
 
 NoStoppingAreaModuleManager::NoStoppingAreaModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterface(node, getModuleName())
@@ -79,15 +48,15 @@ NoStoppingAreaModuleManager::NoStoppingAreaModuleManager(rclcpp::Node & node)
 void NoStoppingAreaModuleManager::launchNewModules(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
 {
-  for (const auto & no_stopping_area :
-       getNoStoppingAreaRegElemsOnPath(path, planner_data_->route_handler_->getLaneletMapPtr())) {
+  for (const auto & m : planning_utils::getRegElemMapOnPath<NoStoppingArea>(
+         path, planner_data_->route_handler_->getLaneletMapPtr(),
+         planner_data_->current_pose.pose)) {
     // Use lanelet_id to unregister module when the route is changed
-    const auto module_id = no_stopping_area->id();
+    const auto module_id = m.first->id();
     if (!isModuleRegistered(module_id)) {
       // assign 1 no stopping area for each module
       registerModule(std::make_shared<NoStoppingAreaModule>(
-        module_id, *no_stopping_area, planner_param_, logger_.get_child("no_stopping_area_module"),
-        clock_));
+        module_id, *m.first, planner_param_, logger_.get_child("no_stopping_area_module"), clock_));
     }
   }
 }
@@ -96,8 +65,8 @@ std::function<bool(const std::shared_ptr<SceneModuleInterface> &)>
 NoStoppingAreaModuleManager::getModuleExpiredFunction(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
 {
-  const auto no_stopping_area_id_set =
-    getNoStoppingAreaIdSetOnPath(path, planner_data_->route_handler_->getLaneletMapPtr());
+  const auto no_stopping_area_id_set = planning_utils::getRegElemIdSetOnPath<NoStoppingArea>(
+    path, planner_data_->route_handler_->getLaneletMapPtr(), planner_data_->current_pose.pose);
 
   return [no_stopping_area_id_set](const std::shared_ptr<SceneModuleInterface> & scene_module) {
     return no_stopping_area_id_set.count(scene_module->getModuleId()) == 0;

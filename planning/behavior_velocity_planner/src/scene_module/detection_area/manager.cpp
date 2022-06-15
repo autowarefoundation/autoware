@@ -26,37 +26,7 @@
 
 namespace behavior_velocity_planner
 {
-namespace
-{
-std::vector<lanelet::DetectionAreaConstPtr> getDetectionAreaRegElemsOnPath(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-  const lanelet::LaneletMapPtr lanelet_map)
-{
-  std::vector<lanelet::DetectionAreaConstPtr> detection_area_reg_elems;
-
-  for (const auto & p : path.points) {
-    const auto lane_id = p.lane_ids.at(0);
-    const auto ll = lanelet_map->laneletLayer.get(lane_id);
-    const auto detection_areas = ll.regulatoryElementsAs<const lanelet::autoware::DetectionArea>();
-    for (const auto & detection_area : detection_areas) {
-      detection_area_reg_elems.push_back(detection_area);
-    }
-  }
-
-  return detection_area_reg_elems;
-}
-
-std::set<int64_t> getDetectionAreaIdSetOnPath(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-  const lanelet::LaneletMapPtr lanelet_map)
-{
-  std::set<int64_t> detection_area_id_set;
-  for (const auto & detection_area : getDetectionAreaRegElemsOnPath(path, lanelet_map)) {
-    detection_area_id_set.insert(detection_area->id());
-  }
-  return detection_area_id_set;
-}
-}  // namespace
+using lanelet::autoware::DetectionArea;
 
 DetectionAreaModuleManager::DetectionAreaModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterface(node, getModuleName())
@@ -72,14 +42,16 @@ DetectionAreaModuleManager::DetectionAreaModuleManager(rclcpp::Node & node)
 void DetectionAreaModuleManager::launchNewModules(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
 {
-  for (const auto & detection_area :
-       getDetectionAreaRegElemsOnPath(path, planner_data_->route_handler_->getLaneletMapPtr())) {
+  for (const auto & detection_area_with_lane_id :
+       planning_utils::getRegElemMapOnPath<DetectionArea>(
+         path, planner_data_->route_handler_->getLaneletMapPtr(),
+         planner_data_->current_pose.pose)) {
     // Use lanelet_id to unregister module when the route is changed
-    const auto module_id = detection_area->id();
+    const auto module_id = detection_area_with_lane_id.first->id();
     if (!isModuleRegistered(module_id)) {
       registerModule(std::make_shared<DetectionAreaModule>(
-        module_id, *detection_area, planner_param_, logger_.get_child("detection_area_module"),
-        clock_));
+        module_id, *detection_area_with_lane_id.first, planner_param_,
+        logger_.get_child("detection_area_module"), clock_));
     }
   }
 }
@@ -88,8 +60,8 @@ std::function<bool(const std::shared_ptr<SceneModuleInterface> &)>
 DetectionAreaModuleManager::getModuleExpiredFunction(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
 {
-  const auto detection_area_id_set =
-    getDetectionAreaIdSetOnPath(path, planner_data_->route_handler_->getLaneletMapPtr());
+  const auto detection_area_id_set = planning_utils::getRegElemIdSetOnPath<DetectionArea>(
+    path, planner_data_->route_handler_->getLaneletMapPtr(), planner_data_->current_pose.pose);
 
   return [detection_area_id_set](const std::shared_ptr<SceneModuleInterface> & scene_module) {
     return detection_area_id_set.count(scene_module->getModuleId()) == 0;

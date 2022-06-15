@@ -21,49 +21,6 @@
 
 namespace behavior_velocity_planner
 {
-namespace
-{
-std::vector<lanelet::ConstLanelet> getCrosswalksOnPath(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-  const lanelet::LaneletMapPtr lanelet_map,
-  const std::shared_ptr<const lanelet::routing::RoutingGraphContainer> & overall_graphs)
-{
-  std::vector<lanelet::ConstLanelet> crosswalks;
-
-  std::set<int64_t> unique_lane_ids;
-  for (const auto & p : path.points) {
-    unique_lane_ids.insert(p.lane_ids.at(0));  // should we iterate ids? keep as it was.
-  }
-
-  for (const auto & lane_id : unique_lane_ids) {
-    const auto ll = lanelet_map->laneletLayer.get(lane_id);
-
-    constexpr int PEDESTRIAN_GRAPH_ID = 1;
-    const auto conflicting_crosswalks = overall_graphs->conflictingInGraph(ll, PEDESTRIAN_GRAPH_ID);
-    for (const auto & crosswalk : conflicting_crosswalks) {
-      crosswalks.push_back(crosswalk);
-    }
-  }
-
-  return crosswalks;
-}
-
-std::set<int64_t> getCrosswalkIdSetOnPath(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-  const lanelet::LaneletMapPtr lanelet_map,
-  const std::shared_ptr<const lanelet::routing::RoutingGraphContainer> & overall_graphs)
-{
-  std::set<int64_t> crosswalk_id_set;
-
-  for (const auto & crosswalk : getCrosswalksOnPath(path, lanelet_map, overall_graphs)) {
-    crosswalk_id_set.insert(crosswalk.id());
-  }
-
-  return crosswalk_id_set;
-}
-
-}  // namespace
-
 CrosswalkModuleManager::CrosswalkModuleManager(rclcpp::Node & node)
 : SceneModuleManagerInterface(node, getModuleName())
 {
@@ -85,6 +42,67 @@ CrosswalkModuleManager::CrosswalkModuleManager(rclcpp::Node & node)
   wp.stop_line_distance = node.declare_parameter(ns + ".walkway.stop_line_distance", 1.0);
   wp.stop_duration_sec = node.declare_parameter(ns + ".walkway.stop_duration_sec", 1.0);
   wp.external_input_timeout = node.declare_parameter(ns + ".walkway.external_input_timeout", 1.0);
+}
+
+std::vector<lanelet::ConstLanelet> CrosswalkModuleManager::getCrosswalksOnPath(
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
+  const lanelet::LaneletMapPtr lanelet_map,
+  const std::shared_ptr<const lanelet::routing::RoutingGraphContainer> & overall_graphs)
+{
+  std::vector<lanelet::ConstLanelet> crosswalks;
+  std::set<int64_t> unique_lane_ids;
+
+  auto nearest_segment_idx = tier4_autoware_utils::findNearestSegmentIndex(
+    path.points, planner_data_->current_pose.pose, std::numeric_limits<double>::max(), M_PI_2);
+
+  // Add current lane id
+  lanelet::ConstLanelets current_lanes;
+  if (
+    lanelet::utils::query::getCurrentLanelets(
+      lanelet::utils::query::laneletLayer(lanelet_map), planner_data_->current_pose.pose,
+      &current_lanes) &&
+    nearest_segment_idx) {
+    for (const auto & ll : current_lanes) {
+      if (
+        ll.id() == path.points.at(*nearest_segment_idx).lane_ids.at(0) ||
+        ll.id() == path.points.at(*nearest_segment_idx + 1).lane_ids.at(0)) {
+        unique_lane_ids.insert(ll.id());
+      }
+    }
+  }
+
+  // Add forward path lane_id
+  const size_t start_idx = *nearest_segment_idx ? *nearest_segment_idx + 1 : 0;
+  for (size_t i = start_idx; i < path.points.size(); i++) {
+    unique_lane_ids.insert(
+      path.points.at(i).lane_ids.at(0));  // should we iterate ids? keep as it was.
+  }
+
+  for (const auto lane_id : unique_lane_ids) {
+    const auto ll = lanelet_map->laneletLayer.get(lane_id);
+
+    constexpr int PEDESTRIAN_GRAPH_ID = 1;
+    const auto conflicting_crosswalks = overall_graphs->conflictingInGraph(ll, PEDESTRIAN_GRAPH_ID);
+    for (const auto & crosswalk : conflicting_crosswalks) {
+      crosswalks.push_back(crosswalk);
+    }
+  }
+
+  return crosswalks;
+}
+
+std::set<int64_t> CrosswalkModuleManager::getCrosswalkIdSetOnPath(
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
+  const lanelet::LaneletMapPtr lanelet_map,
+  const std::shared_ptr<const lanelet::routing::RoutingGraphContainer> & overall_graphs)
+{
+  std::set<int64_t> crosswalk_id_set;
+
+  for (const auto & crosswalk : getCrosswalksOnPath(path, lanelet_map, overall_graphs)) {
+    crosswalk_id_set.insert(crosswalk.id());
+  }
+
+  return crosswalk_id_set;
 }
 
 void CrosswalkModuleManager::launchNewModules(
