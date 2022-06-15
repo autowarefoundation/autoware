@@ -18,6 +18,7 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include "autoware_auto_perception_msgs/msg/object_classification.hpp"
+#include "autoware_auto_perception_msgs/msg/predicted_object.hpp"
 #include "autoware_auto_perception_msgs/msg/predicted_path.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
 #include "geometry_msgs/msg/pose.hpp"
@@ -26,6 +27,7 @@
 #include <boost/optional.hpp>
 
 #include <string>
+#include <vector>
 
 namespace obstacle_cruise_utils
 {
@@ -41,8 +43,23 @@ boost::optional<geometry_msgs::msg::Pose> calcForwardPose(
   const autoware_auto_planning_msgs::msg::Trajectory & traj, const size_t nearest_idx,
   const double target_length);
 
+geometry_msgs::msg::Pose lerpByPose(
+  const geometry_msgs::msg::Pose & p1, const geometry_msgs::msg::Pose & p2, const double t);
+
+boost::optional<geometry_msgs::msg::Pose> lerpByTimeStamp(
+  const autoware_auto_perception_msgs::msg::PredictedPath & path,
+  const rclcpp::Duration & rel_time);
+
 boost::optional<geometry_msgs::msg::Pose> getCurrentObjectPoseFromPredictedPath(
   const autoware_auto_perception_msgs::msg::PredictedPath & predicted_path,
+  const rclcpp::Time & obj_base_time, const rclcpp::Time & current_time);
+
+boost::optional<geometry_msgs::msg::Pose> getCurrentObjectPoseFromPredictedPath(
+  const std::vector<autoware_auto_perception_msgs::msg::PredictedPath> & predicted_paths,
+  const rclcpp::Time & obj_base_time, const rclcpp::Time & current_time);
+
+geometry_msgs::msg::Pose getCurrentObjectPoseFromPredictedPath(
+  const autoware_auto_perception_msgs::msg::PredictedObject & predicted_object,
   const rclcpp::Time & obj_base_time, const rclcpp::Time & current_time);
 }  // namespace obstacle_cruise_utils
 

@@ -73,8 +73,7 @@ private:
   std::vector<double> createTimeVector();
 
   double getClosestStopDistance(
-    const ObstacleCruisePlannerData & planner_data, const TrajectoryData & ego_traj_data,
-    const std::vector<double> & resolutions);
+    const ObstacleCruisePlannerData & planner_data, const TrajectoryData & ego_traj_data);
 
   std::tuple<double, double> calcInitialMotion(
     const double current_vel, const Trajectory & input_traj, const size_t input_closest,
@@ -116,7 +115,7 @@ private:
     const TargetObstacle & object, const rclcpp::Time & obj_base_time,
     const PredictedPath & predicted_path);
 
-  boost::optional<PredictedPath> resampledPredictedPath(
+  boost::optional<PredictedPath> resamplePredictedPath(
     const TargetObstacle & object, const rclcpp::Time & obj_base_time,
     const rclcpp::Time & current_time, const std::vector<double> & resolutions,
     const double horizon);

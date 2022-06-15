@@ -488,6 +488,7 @@ std::vector<TargetObstacle> ObstacleCruisePlannerNode::filterObstacles(
   const PredictedObjects & predicted_objects, const Trajectory & traj,
   const geometry_msgs::msg::Pose & current_pose, const double current_vel, DebugData & debug_data)
 {
+  const auto current_time = now();
   const auto time_stamp = rclcpp::Time(predicted_objects.header.stamp);
 
   const size_t ego_idx = findExtendedNearestIndex(
@@ -518,7 +519,8 @@ std::vector<TargetObstacle> ObstacleCruisePlannerNode::filterObstacles(
       continue;
     }
 
-    const auto & object_pose = predicted_object.kinematics.initial_pose_with_covariance.pose;
+    const auto object_pose = obstacle_cruise_utils::getCurrentObjectPoseFromPredictedPath(
+      predicted_object, time_stamp, current_time);
     const auto & object_velocity =
       predicted_object.kinematics.initial_twist_with_covariance.twist.linear.x;
 

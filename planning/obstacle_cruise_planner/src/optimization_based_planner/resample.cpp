@@ -16,36 +16,9 @@
 
 #include "interpolation/linear_interpolation.hpp"
 #include "interpolation/spline_interpolation.hpp"
+#include "obstacle_cruise_planner/utils.hpp"
 
 #include <vector>
-
-namespace
-{
-[[maybe_unused]] rclcpp::Duration safeSubtraction(const rclcpp::Time & t1, const rclcpp::Time & t2)
-{
-  rclcpp::Duration duration = rclcpp::Duration::from_seconds(0.0);
-  try {
-    duration = t1 - t2;
-  } catch (std::runtime_error & err) {
-    if (t1 > t2) {
-      duration = rclcpp::Duration::max() * -1.0;
-    } else {
-      duration = rclcpp::Duration::max();
-    }
-  }
-  return duration;
-}
-
-// tf2::toMsg does not have this type of function
-geometry_msgs::msg::Point toMsg(tf2::Vector3 vec)
-{
-  geometry_msgs::msg::Point point;
-  point.x = vec.x();
-  point.y = vec.y();
-  point.z = vec.z();
-  return point;
-}
-}  // namespace
 
 namespace resampling
 {
@@ -86,7 +59,7 @@ autoware_auto_perception_msgs::msg::PredictedPath resamplePredictedPath(
   resampled_path.time_step = input_path.time_step;
 
   for (const auto & rel_time : rel_time_vec) {
-    const auto opt_pose = lerpByTimeStamp(input_path, rel_time);
+    const auto opt_pose = obstacle_cruise_utils::lerpByTimeStamp(input_path, rel_time);
     if (!opt_pose) {
       continue;
     }
@@ -95,68 +68,6 @@ autoware_auto_perception_msgs::msg::PredictedPath resamplePredictedPath(
   }
 
   return resampled_path;
-}
-
-geometry_msgs::msg::Pose lerpByPose(
-  const geometry_msgs::msg::Pose & p1, const geometry_msgs::msg::Pose & p2, const double t)
-{
-  tf2::Transform tf_transform1, tf_transform2;
-  tf2::fromMsg(p1, tf_transform1);
-  tf2::fromMsg(p2, tf_transform2);
-  const auto & tf_point = tf2::lerp(tf_transform1.getOrigin(), tf_transform2.getOrigin(), t);
-  const auto & tf_quaternion =
-    tf2::slerp(tf_transform1.getRotation(), tf_transform2.getRotation(), t);
-
-  geometry_msgs::msg::Pose pose;
-  pose.position = ::toMsg(tf_point);
-  pose.orientation = tf2::toMsg(tf_quaternion);
-  return pose;
-}
-
-boost::optional<geometry_msgs::msg::Pose> lerpByTimeStamp(
-  const autoware_auto_perception_msgs::msg::PredictedPath & path, const rclcpp::Duration & rel_time)
-{
-  auto clock{rclcpp::Clock{RCL_ROS_TIME}};
-  if (path.path.empty()) {
-    RCLCPP_WARN_STREAM_THROTTLE(
-      rclcpp::get_logger("DynamicAvoidance.resample"), clock, 1000,
-      "Empty path. Failed to interpolate path by time!");
-    return {};
-  }
-  if (rel_time < rclcpp::Duration::from_seconds(0.0)) {
-    RCLCPP_DEBUG_STREAM(
-      rclcpp::get_logger("DynamicAvoidance.resample"), "failed to interpolate path by time!"
-                                                         << std::endl
-                                                         << "query time: " << rel_time.seconds());
-
-    return {};
-  }
-
-  if (rel_time > rclcpp::Duration(path.time_step) * (static_cast<double>(path.path.size()) - 1)) {
-    RCLCPP_DEBUG_STREAM(
-      rclcpp::get_logger("DynamicAvoidance.resample"),
-      "failed to interpolate path by time!"
-        << std::endl
-        << "path max duration: " << path.path.size() * rclcpp::Duration(path.time_step).seconds()
-        << std::endl
-        << "query time       : " << rel_time.seconds());
-
-    return {};
-  }
-
-  for (size_t i = 1; i < path.path.size(); ++i) {
-    const auto & pt = path.path.at(i);
-    const auto & prev_pt = path.path.at(i - 1);
-    if (rel_time <= rclcpp::Duration(path.time_step) * static_cast<double>(i)) {
-      const auto offset = rel_time - rclcpp::Duration(path.time_step) * static_cast<double>(i - 1);
-      const auto ratio = offset.seconds() / rclcpp::Duration(path.time_step).seconds();
-      return lerpByPose(prev_pt, pt, ratio);
-    }
-  }
-
-  RCLCPP_ERROR_STREAM(
-    rclcpp::get_logger("DynamicAvoidance.resample"), "Something failed in function: " << __func__);
-  return {};
 }
 
 inline void convertEulerAngleToMonotonic(std::vector<double> & a)

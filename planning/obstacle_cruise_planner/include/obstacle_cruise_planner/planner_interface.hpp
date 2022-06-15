@@ -167,6 +167,21 @@ public:
     return std::find(types.begin(), types.end(), label) != types.end();
   }
 
+  // Note: If stop planning is not required, cruise planning will be done instead.
+  bool isStopRequired(const TargetObstacle & obstacle)
+  {
+    const bool is_cruise_obstacle = isCruiseObstacle(obstacle.classification.label);
+    const bool is_stop_obstacle = isStopObstacle(obstacle.classification.label);
+
+    if (is_cruise_obstacle) {
+      return std::abs(obstacle.velocity) < obstacle_velocity_threshold_from_cruise_to_stop_;
+    } else if (is_stop_obstacle && !is_cruise_obstacle) {
+      return true;
+    }
+
+    return false;
+  }
+
 protected:
   // Parameters
   bool is_showing_debug_info_{false};

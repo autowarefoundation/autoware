@@ -90,22 +90,97 @@ boost::optional<geometry_msgs::msg::Pose> calcForwardPose(
   return target_pose;
 }
 
-boost::optional<geometry_msgs::msg::Pose> getCurrentObjectPoseFromPredictedPath(
-  const autoware_auto_perception_msgs::msg::PredictedPath & predicted_path,
-  const rclcpp::Time & obj_base_time, const rclcpp::Time & current_time)
+geometry_msgs::msg::Pose lerpByPose(
+  const geometry_msgs::msg::Pose & p1, const geometry_msgs::msg::Pose & p2, const double t)
 {
-  for (size_t i = 0; i < predicted_path.path.size(); ++i) {
-    const auto & obj_p = predicted_path.path.at(i);
+  tf2::Transform tf_transform1, tf_transform2;
+  tf2::fromMsg(p1, tf_transform1);
+  tf2::fromMsg(p2, tf_transform2);
+  const auto & tf_point = tf2::lerp(tf_transform1.getOrigin(), tf_transform2.getOrigin(), t);
+  const auto & tf_quaternion =
+    tf2::slerp(tf_transform1.getRotation(), tf_transform2.getRotation(), t);
 
-    const double object_time =
-      (obj_base_time + rclcpp::Duration(predicted_path.time_step) * static_cast<double>(i) -
-       current_time)
-        .seconds();
-    if (object_time >= 0) {
-      return obj_p;
+  geometry_msgs::msg::Pose pose;
+  {
+    pose.position.x = tf_point.x();
+    pose.position.y = tf_point.y();
+    pose.position.z = tf_point.z();
+  }
+  pose.orientation = tf2::toMsg(tf_quaternion);
+  return pose;
+}
+
+boost::optional<geometry_msgs::msg::Pose> lerpByTimeStamp(
+  const autoware_auto_perception_msgs::msg::PredictedPath & path, const rclcpp::Duration & rel_time)
+{
+  auto clock{rclcpp::Clock{RCL_ROS_TIME}};
+  if (
+    path.path.empty() || rel_time < rclcpp::Duration::from_seconds(0.0) ||
+    rel_time > rclcpp::Duration(path.time_step) * (static_cast<double>(path.path.size()) - 1)) {
+    return boost::none;
+  }
+
+  for (size_t i = 1; i < path.path.size(); ++i) {
+    const auto & pt = path.path.at(i);
+    const auto & prev_pt = path.path.at(i - 1);
+    if (rel_time <= rclcpp::Duration(path.time_step) * static_cast<double>(i)) {
+      const auto offset = rel_time - rclcpp::Duration(path.time_step) * static_cast<double>(i - 1);
+      const auto ratio = offset.seconds() / rclcpp::Duration(path.time_step).seconds();
+      return lerpByPose(prev_pt, pt, ratio);
     }
   }
 
   return boost::none;
+}
+
+boost::optional<geometry_msgs::msg::Pose> getCurrentObjectPoseFromPredictedPath(
+  const autoware_auto_perception_msgs::msg::PredictedPath & predicted_path,
+  const rclcpp::Time & obj_base_time, const rclcpp::Time & current_time)
+{
+  const auto rel_time = current_time - obj_base_time;
+  if (rel_time.seconds() < 0.0) {
+    return boost::none;
+  }
+
+  return lerpByTimeStamp(predicted_path, rel_time);
+}
+
+boost::optional<geometry_msgs::msg::Pose> getCurrentObjectPoseFromPredictedPath(
+  const std::vector<autoware_auto_perception_msgs::msg::PredictedPath> & predicted_paths,
+  const rclcpp::Time & obj_base_time, const rclcpp::Time & current_time)
+{
+  if (predicted_paths.empty()) {
+    return boost::none;
+  }
+  // Get the most reliable path
+  const auto predicted_path = std::max_element(
+    predicted_paths.begin(), predicted_paths.end(),
+    [](
+      const autoware_auto_perception_msgs::msg::PredictedPath & a,
+      const autoware_auto_perception_msgs::msg::PredictedPath & b) {
+      return a.confidence < b.confidence;
+    });
+
+  return getCurrentObjectPoseFromPredictedPath(*predicted_path, obj_base_time, current_time);
+}
+
+geometry_msgs::msg::Pose getCurrentObjectPoseFromPredictedPath(
+  const autoware_auto_perception_msgs::msg::PredictedObject & predicted_object,
+  const rclcpp::Time & obj_base_time, const rclcpp::Time & current_time)
+{
+  std::vector<autoware_auto_perception_msgs::msg::PredictedPath> predicted_paths;
+  for (const auto & path : predicted_object.kinematics.predicted_paths) {
+    predicted_paths.push_back(path);
+  }
+  const auto interpolated_pose =
+    getCurrentObjectPoseFromPredictedPath(predicted_paths, obj_base_time, current_time);
+
+  if (!interpolated_pose) {
+    RCLCPP_WARN(
+      rclcpp::get_logger("ObstacleCruisePlanner"), "Failed to find the interpolated obstacle pose");
+    return predicted_object.kinematics.initial_pose_with_covariance.pose;
+  }
+
+  return interpolated_pose.get();
 }
 }  // namespace obstacle_cruise_utils

@@ -34,13 +34,6 @@ autoware_auto_perception_msgs::msg::PredictedPath resamplePredictedPath(
   const autoware_auto_perception_msgs::msg::PredictedPath & input_path,
   const std::vector<rclcpp::Duration> & rel_time_vec);
 
-geometry_msgs::msg::Pose lerpByPose(
-  const geometry_msgs::msg::Pose & p1, const geometry_msgs::msg::Pose & p2, const double t);
-
-boost::optional<geometry_msgs::msg::Pose> lerpByTimeStamp(
-  const autoware_auto_perception_msgs::msg::PredictedPath & path,
-  const rclcpp::Duration & rel_time);
-
 autoware_auto_planning_msgs::msg::Trajectory applyLinearInterpolation(
   const std::vector<double> & base_index,
   const autoware_auto_planning_msgs::msg::Trajectory & base_trajectory,

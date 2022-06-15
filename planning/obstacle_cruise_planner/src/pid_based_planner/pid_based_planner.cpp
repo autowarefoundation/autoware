@@ -301,21 +301,6 @@ double PIDBasedPlanner::calcDistanceToObstacle(
          offset;
 }
 
-// Note: If stop planning is not required, cruise planning will be done instead.
-bool PIDBasedPlanner::isStopRequired(const TargetObstacle & obstacle)
-{
-  const bool is_cruise_obstacle = isCruiseObstacle(obstacle.classification.label);
-  const bool is_stop_obstacle = isStopObstacle(obstacle.classification.label);
-
-  if (is_cruise_obstacle) {
-    return std::abs(obstacle.velocity) < obstacle_velocity_threshold_from_cruise_to_stop_;
-  } else if (is_stop_obstacle && !is_cruise_obstacle) {
-    return true;
-  }
-
-  return false;
-}
-
 Trajectory PIDBasedPlanner::planStop(
   const ObstacleCruisePlannerData & planner_data,
   const boost::optional<StopObstacleInfo> & stop_obstacle_info, DebugData & debug_data)
