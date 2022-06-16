@@ -362,7 +362,7 @@ bool VirtualTrafficLightModule::modifyPathVelocity(
   }
 
   // Do nothing if vehicle is after any end line
-  if (isAfterAnyEndLine()) {
+  if (isAfterAnyEndLine() || state_ == State::FINALIZED) {
     RCLCPP_DEBUG(logger_, "after end_line");
     state_ = State::FINALIZED;
     updateInfrastructureCommand();
