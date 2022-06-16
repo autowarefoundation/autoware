@@ -159,13 +159,6 @@ private:
   PathWithLaneId::SharedPtr getPathCandidate(
     const BehaviorModuleOutput & bt_out, const std::shared_ptr<PlannerData> planner_data);
 
-  /**
-   * @brief publish behavior module status mainly for the user interface
-   */
-  void publishModuleStatus(
-    const std::vector<std::shared_ptr<SceneModuleStatus>> & statuses,
-    const std::shared_ptr<PlannerData> planner_data);
-
   // debug
 
 private:

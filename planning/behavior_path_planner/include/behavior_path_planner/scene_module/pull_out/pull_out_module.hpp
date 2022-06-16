@@ -35,6 +35,7 @@
 
 namespace behavior_path_planner
 {
+
 struct PullOutParameters
 {
   double min_stop_distance;
@@ -92,7 +93,7 @@ public:
   BT::NodeStatus updateState() override;
   BehaviorModuleOutput plan() override;
   BehaviorModuleOutput planWaitingApproval() override;
-  PathWithLaneId planCandidate() const override;
+  CandidateOutput planCandidate() const override;
   void onEntry() override;
   void onExit() override;
 

@@ -28,7 +28,6 @@ struct SceneModuleStatus
 {
   explicit SceneModuleStatus(const std::string & n) : module_name(n) {}
   std::string module_name;  // TODO(Horibe) should be const
-  bool is_ready{false};
   bool is_requested{false};
   bool is_waiting_approval{true};
   BT::NodeStatus status{BT::NodeStatus::IDLE};
@@ -55,10 +54,6 @@ public:
 };
 
 BT::NodeStatus isExecutionRequested(
-  const std::shared_ptr<const SceneModuleInterface> p,
-  const std::shared_ptr<SceneModuleStatus> & status);
-
-BT::NodeStatus isExecutionReady(
   const std::shared_ptr<const SceneModuleInterface> p,
   const std::shared_ptr<SceneModuleStatus> & status);
 

@@ -37,6 +37,7 @@
 namespace behavior_path_planner
 {
 using autoware_auto_vehicle_msgs::msg::HazardLightsCommand;
+
 struct PullOverParameters
 {
   double min_stop_distance;
@@ -91,7 +92,7 @@ public:
   BT::NodeStatus updateState() override;
   BehaviorModuleOutput plan() override;
   BehaviorModuleOutput planWaitingApproval() override;
-  PathWithLaneId planCandidate() const override;
+  CandidateOutput planCandidate() const override;
   void onEntry() override;
   void onExit() override;
 

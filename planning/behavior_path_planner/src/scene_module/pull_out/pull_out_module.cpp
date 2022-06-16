@@ -40,12 +40,12 @@ PullOutModule::PullOutModule(
   const std::string & name, rclcpp::Node & node, const PullOutParameters & parameters)
 : SceneModuleInterface{name, node}, parameters_{parameters}
 {
-  approval_handler_.waitApproval();
+  rtc_interface_ptr_ = std::make_shared<RTCInterface>(node, "pull_out");
 }
 
 BehaviorModuleOutput PullOutModule::run()
 {
-  approval_handler_.clearWaitApproval();
+  clearWaitingApproval();
   current_state_ = BT::NodeStatus::RUNNING;
   return plan();
 }
@@ -62,12 +62,12 @@ void PullOutModule::onEntry()
     lanelet::utils::getArcCoordinates(status_.pull_out_lanes, current_pose);
   status_.back_finished = false;
   status_.start_distance = arclength_start.length;
-  approval_handler_.waitApproval();
 }
 
 void PullOutModule::onExit()
 {
-  approval_handler_.clearWaitApproval();
+  clearWaitingApproval();
+  removeRTCStatus();
   current_state_ = BT::NodeStatus::IDLE;
   RCLCPP_DEBUG(getLogger(), "PULL_OUT onExit");
 }
@@ -173,11 +173,13 @@ BehaviorModuleOutput PullOutModule::plan()
   return output;
 }
 
-PathWithLaneId PullOutModule::planCandidate() const
+CandidateOutput PullOutModule::planCandidate() const
 {
   // Get lane change lanes
   const auto current_lanes = getCurrentLanes();
   const auto shoulder_lanes = getPullOutLanes(current_lanes);
+
+  const auto current_pose = planner_data_->self_pose->pose;
 
   // Find pull out path
   bool found_valid_path, found_safe_path;
@@ -196,14 +198,21 @@ PathWithLaneId PullOutModule::planCandidate() const
       if (found_safe_retreat_path == true) {
         selected_retreat_path.pull_out_path.path.header =
           planner_data_->route_handler->getRouteHeader();
-        return selected_retreat_path.pull_out_path.path;
+        CandidateOutput output_retreat(selected_retreat_path.pull_out_path.path);
+        output_retreat.distance_to_path_change = tier4_autoware_utils::calcSignedArcLength(
+          selected_retreat_path.pull_out_path.path.points, current_pose.position,
+          selected_retreat_path.backed_pose.position);
+        return output_retreat;
       }
     }
   }
   // ROS_ERROR("found safe path in plan candidate :%d", found_safe_path);
 
   selected_path.path.header = planner_data_->route_handler->getRouteHeader();
-  return selected_path.path;
+  CandidateOutput output(selected_path.path);
+  output.distance_to_path_change = tier4_autoware_utils::calcSignedArcLength(
+    selected_path.path.points, current_pose.position, selected_path.shift_point.start.position);
+  return output;
 }
 
 BehaviorModuleOutput PullOutModule::planWaitingApproval()
@@ -213,23 +222,26 @@ BehaviorModuleOutput PullOutModule::planWaitingApproval()
   const auto current_lanes = getCurrentLanes();
   const auto shoulder_lanes = getPullOutLanes(current_lanes);
 
-  PathWithLaneId candidatePath;
+  PathWithLaneId candidate_path;
   // Generate drivable area
   {
-    candidatePath = planCandidate();
+    const auto candidate = planCandidate();
+    candidate_path = candidate.path_candidate;
     lanelet::ConstLanelets lanes;
     lanes.insert(lanes.end(), current_lanes.begin(), current_lanes.end());
     lanes.insert(lanes.end(), shoulder_lanes.begin(), shoulder_lanes.end());
     const double resolution = common_parameters.drivable_area_resolution;
-    candidatePath.drivable_area = util::generateDrivableArea(
+    candidate_path.drivable_area = util::generateDrivableArea(
       lanes, resolution, common_parameters.vehicle_length, planner_data_);
-  }
-  for (size_t i = 1; i < candidatePath.points.size(); i++) {
-    candidatePath.points.at(i).point.longitudinal_velocity_mps = 0.0;
-  }
-  out.path = std::make_shared<PathWithLaneId>(candidatePath);
 
-  out.path_candidate = std::make_shared<PathWithLaneId>(planCandidate());
+    updateRTCStatus(candidate.distance_to_path_change);
+  }
+  for (size_t i = 1; i < candidate_path.points.size(); i++) {
+    candidate_path.points.at(i).point.longitudinal_velocity_mps = 0.0;
+  }
+  out.path = std::make_shared<PathWithLaneId>(candidate_path);
+
+  out.path_candidate = std::make_shared<PathWithLaneId>(candidate_path);
 
   return out;
 }

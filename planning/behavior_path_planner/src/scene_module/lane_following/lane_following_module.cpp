@@ -30,7 +30,7 @@ LaneFollowingModule::LaneFollowingModule(
 
 void LaneFollowingModule::initParam()
 {
-  approval_handler_.clearWaitApproval();  // no need approval
+  clearWaitingApproval();  // no need approval
 }
 
 bool LaneFollowingModule::isExecutionRequested() const { return true; }
@@ -49,7 +49,10 @@ BehaviorModuleOutput LaneFollowingModule::plan()
   output.path = std::make_shared<PathWithLaneId>(getReferencePath());
   return output;
 }
-PathWithLaneId LaneFollowingModule::planCandidate() const { return getReferencePath(); }
+CandidateOutput LaneFollowingModule::planCandidate() const
+{
+  return CandidateOutput(getReferencePath());
+}
 void LaneFollowingModule::onEntry()
 {
   initParam();

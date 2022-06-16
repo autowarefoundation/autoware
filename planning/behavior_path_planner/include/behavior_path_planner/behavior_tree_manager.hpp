@@ -48,7 +48,6 @@ public:
   BehaviorTreeManager(rclcpp::Node & node, const BehaviorTreeManagerParam & param);
   void createBehaviorTree();
   void registerSceneModule(const std::shared_ptr<SceneModuleInterface> & p);
-  void registerForceApproval(const std::string & name);
 
   void resetBehaviorTree();
 

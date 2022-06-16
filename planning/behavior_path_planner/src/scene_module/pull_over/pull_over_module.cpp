@@ -39,12 +39,12 @@ PullOverModule::PullOverModule(
   const std::string & name, rclcpp::Node & node, const PullOverParameters & parameters)
 : SceneModuleInterface{name, node}, parameters_{parameters}
 {
-  approval_handler_.waitApproval();
+  rtc_interface_ptr_ = std::make_shared<RTCInterface>(node, "pull_over");
 }
 
 BehaviorModuleOutput PullOverModule::run()
 {
-  approval_handler_.clearWaitApproval();
+  clearWaitingApproval();
   current_state_ = BT::NodeStatus::RUNNING;
   return plan();
 }
@@ -59,12 +59,12 @@ void PullOverModule::onEntry()
   const auto arclength_start =
     lanelet::utils::getArcCoordinates(status_.pull_over_lanes, current_pose);
   status_.start_distance = arclength_start.length;
-  approval_handler_.waitApproval();
 }
 
 void PullOverModule::onExit()
 {
-  approval_handler_.clearWaitApproval();
+  clearWaitingApproval();
+  removeRTCStatus();
   current_state_ = BT::NodeStatus::IDLE;
   RCLCPP_DEBUG(getLogger(), "PULL_OVER onExit");
 }
@@ -157,7 +157,7 @@ BehaviorModuleOutput PullOverModule::plan()
   return output;
 }
 
-PathWithLaneId PullOverModule::planCandidate() const
+CandidateOutput PullOverModule::planCandidate() const
 {
   // Get lane change lanes
   const auto current_lanes = getCurrentLanes();
@@ -170,14 +170,41 @@ PathWithLaneId PullOverModule::planCandidate() const
     getSafePath(pull_over_lanes, check_distance_, selected_path);
   selected_path.path.header = planner_data_->route_handler->getRouteHeader();
 
-  return selected_path.path;
+  CandidateOutput output(selected_path.path);
+  output.distance_to_path_change = tier4_autoware_utils::calcSignedArcLength(
+    selected_path.path.points, planner_data_->self_pose->pose.position,
+    selected_path.shift_point.start.position);
+
+  const auto hazard_info = getHazard(
+    status_.pull_over_lanes, planner_data_->self_pose->pose,
+    planner_data_->route_handler->getGoalPose(), planner_data_->self_odometry->twist.twist.linear.x,
+    parameters_.hazard_on_threshold_dis, parameters_.hazard_on_threshold_vel,
+    planner_data_->parameters.base_link2front);
+
+  const auto turn_info = util::getPathTurnSignal(
+    status_.current_lanes, status_.pull_over_path.shifted_path, status_.pull_over_path.shift_point,
+    planner_data_->self_pose->pose, planner_data_->self_odometry->twist.twist.linear.x,
+    planner_data_->parameters, parameters_.pull_over_search_distance);
+
+  TurnSignalInfo turn_signal_info;
+  if (hazard_info.first.command == HazardLightsCommand::ENABLE) {
+    turn_signal_info.hazard_signal.command = hazard_info.first.command;
+    turn_signal_info.signal_distance = hazard_info.second;
+  } else {
+    turn_signal_info.turn_signal.command = turn_info.first.command;
+    turn_signal_info.signal_distance = turn_info.second;
+  }
+
+  return output;
 }
 
 BehaviorModuleOutput PullOverModule::planWaitingApproval()
 {
   BehaviorModuleOutput out;
   out.path = std::make_shared<PathWithLaneId>(getReferencePath());
-  out.path_candidate = std::make_shared<PathWithLaneId>(planCandidate());
+  const auto candidate = planCandidate();
+  out.path_candidate = std::make_shared<PathWithLaneId>(candidate.path_candidate);
+  updateRTCStatus(candidate.distance_to_path_change);
   return out;
 }
 

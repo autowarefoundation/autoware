@@ -48,11 +48,14 @@ using tier4_autoware_utils::findNearestIndex;
 
 AvoidanceModule::AvoidanceModule(
   const std::string & name, rclcpp::Node & node, const AvoidanceParameters & parameters)
-: SceneModuleInterface{name, node}, parameters_{parameters}
+: SceneModuleInterface{name, node},
+  parameters_{parameters},
+  rtc_interface_left_(node, "avoidance_left"),
+  rtc_interface_right_(node, "avoidance_right"),
+  uuid_left_{generateUUID()},
+  uuid_right_{generateUUID()}
 {
   using std::placeholders::_1;
-
-  approval_handler_.waitApproval();
 }
 
 bool AvoidanceModule::isExecutionRequested() const
@@ -2080,8 +2083,8 @@ BehaviorModuleOutput AvoidanceModule::plan()
     DEBUG_PRINT("new_shift_points size = %lu", new_shift_points->size());
     printShiftPoints(*new_shift_points, "new_shift_points");
     addShiftPointIfApproved(*new_shift_points);
-  } else if (approval_handler_.isWaitingApproval()) {
-    approval_handler_.clearWaitApproval();
+  } else if (isWaitingApproval()) {
+    clearWaitingApproval();
   }
 
   // generate path with shift points that have been inserted.
@@ -2122,9 +2125,10 @@ BehaviorModuleOutput AvoidanceModule::plan()
   return output;
 }
 
-PathWithLaneId AvoidanceModule::planCandidate() const
+CandidateOutput AvoidanceModule::planCandidate() const
 {
   DEBUG_PRINT("AVOIDANCE planCandidate start");
+  CandidateOutput output;
 
   auto path_shifter = path_shifter_;
   auto debug_data = debug_data_;
@@ -2140,24 +2144,30 @@ PathWithLaneId AvoidanceModule::planCandidate() const
 
   if (new_shift_points) {  // clip from shift start index for visualize
     clipByMinStartIdx(*new_shift_points, shifted_path.path);
+    output.lateral_shift = new_shift_points->back().getRelativeLength();
+    output.distance_to_path_change = new_shift_points->front().start_longitudinal;
   }
 
   clipPathLength(shifted_path.path);
 
-  return shifted_path.path;
+  output.path_candidate = shifted_path.path;
+
+  return output;
 }
 
 BehaviorModuleOutput AvoidanceModule::planWaitingApproval()
 {
   // we can execute the plan() since it handles the approval appropriately.
   BehaviorModuleOutput out = plan();
-  out.path_candidate = std::make_shared<PathWithLaneId>(planCandidate());
+  const auto candidate = planCandidate();
+  out.path_candidate = std::make_shared<PathWithLaneId>(candidate.path_candidate);
+  updateRTCStatus(candidate);
   return out;
 }
 
 void AvoidanceModule::addShiftPointIfApproved(const AvoidPointArray & shift_points)
 {
-  if (approval_handler_.isApproved()) {
+  if (isActivated()) {
     DEBUG_PRINT("We want to add this shift point, and approved. ADD SHIFT POINT!");
     const size_t prev_size = path_shifter_.getShiftPointsSize();
     addNewShiftPoints(path_shifter_, shift_points);
@@ -2165,13 +2175,21 @@ void AvoidanceModule::addShiftPointIfApproved(const AvoidPointArray & shift_poin
     // register original points for consistency
     registerRawShiftPoints(shift_points);
 
-    DEBUG_PRINT("shift_point size: %lu -> %lu", prev_size, path_shifter_.getShiftPointsSize());
+    TurnSignalInfo turn_signal_info;
+    turn_signal_info.signal_distance = std::numeric_limits<double>::lowest();
+    if (shift_points.back().getRelativeLength() > 0.0) {
+      turn_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
+    } else if (shift_points.back().getRelativeLength() < 0.0) {
+      turn_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
+    }
 
-    // use this approval.
-    approval_handler_.clearApproval();  // TODO(Horibe) will be fixed with service-call?
+    uuid_left_ = generateUUID();
+    uuid_right_ = generateUUID();
+
+    DEBUG_PRINT("shift_point size: %lu -> %lu", prev_size, path_shifter_.getShiftPointsSize());
   } else {
     DEBUG_PRINT("We want to add this shift point, but NOT approved. waiting...");
-    approval_handler_.waitApproval();
+    waitApproval();
   }
 }
 
@@ -2497,7 +2515,6 @@ void AvoidanceModule::onEntry()
   DEBUG_PRINT("AVOIDANCE onEntry. wait approval!");
   initVariables();
   current_state_ = BT::NodeStatus::SUCCESS;
-  approval_handler_.waitApproval();
 }
 
 void AvoidanceModule::onExit()
@@ -2505,7 +2522,8 @@ void AvoidanceModule::onExit()
   DEBUG_PRINT("AVOIDANCE onExit");
   initVariables();
   current_state_ = BT::NodeStatus::IDLE;
-  approval_handler_.clearWaitApproval();
+  clearWaitingApproval();
+  removeRTCStatus();
 }
 
 void AvoidanceModule::setParameters(const AvoidanceParameters & parameters)

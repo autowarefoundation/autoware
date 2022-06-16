@@ -27,6 +27,7 @@
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>route_handler</depend>
+  <depend>rtc_interface</depend>
   <depend>sensor_msgs</depend>
   <depend>tf2</depend>
   <depend>tf2_geometry_msgs</depend>

@@ -24,6 +24,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 namespace behavior_path_planner
 {
@@ -47,7 +48,7 @@ public:
   bool isExecutionReady() const override;
   BT::NodeStatus updateState() override;
   BehaviorModuleOutput plan() override;
-  PathWithLaneId planCandidate() const override;
+  CandidateOutput planCandidate() const override;
   void onEntry() override;
   void onExit() override;
 

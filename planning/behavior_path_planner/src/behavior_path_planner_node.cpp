@@ -140,12 +140,6 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
       std::make_shared<LaneChangeModule>("LaneChange", *this, lane_change_param);
     bt_manager_->registerSceneModule(lane_change_module);
 
-    auto force_lane_change_module =
-      std::make_shared<LaneChangeModule>("ForceLaneChange", *this, lane_change_param);
-    bt_manager_->registerSceneModule(force_lane_change_module);
-
-    bt_manager_->registerForceApproval("ForceLaneChange");
-
     auto pull_over_module = std::make_shared<PullOverModule>("PullOver", *this, getPullOverParam());
     bt_manager_->registerSceneModule(pull_over_module);
 
@@ -573,10 +567,8 @@ void BehaviorPathPlannerNode::run()
     hazard_signal_publisher_->publish(hazard_signal);
   }
 
-  // for remote operation
-  publishModuleStatus(bt_manager_->getModulesStatus(), planner_data);
+  // for debug
   debug_avoidance_msg_array_publisher_->publish(bt_manager_->getAvoidanceDebugMsgArray());
-
   publishDebugMarker(bt_manager_->getDebugMarkers());
 
   if (planner_data->parameters.visualize_drivable_area_for_shared_linestrings_lanelet) {
@@ -613,81 +605,6 @@ PathWithLaneId::SharedPtr BehaviorPathPlannerNode::getPathCandidate(
     get_logger(), "BehaviorTreeManager: path candidate is %s.",
     bt_output.path_candidate ? "FOUND" : "NOT FOUND");
   return path_candidate;
-}
-
-void BehaviorPathPlannerNode::publishModuleStatus(
-  const std::vector<std::shared_ptr<SceneModuleStatus>> & statuses,
-  const std::shared_ptr<PlannerData> planner_data)
-{
-  auto getModuleType = [](std::string name) {
-    if (name == "LaneChange") {
-      return PathChangeModuleId::LANE_CHANGE;
-    } else if (name == "Avoidance") {
-      return PathChangeModuleId::AVOIDANCE;
-    } else if (name == "ForceLaneChange") {
-      return PathChangeModuleId::FORCE_LANE_CHANGE;
-    } else if (name == "PullOver") {
-      return PathChangeModuleId::PULL_OVER;
-    } else if (name == "PullOut") {
-      return PathChangeModuleId::PULL_OUT;
-    } else {
-      return PathChangeModuleId::NONE;
-    }
-  };
-
-  const auto now = this->now();
-
-  PathChangeModule ready_module{};
-  PathChangeModuleArray running_modules{};
-  PathChangeModuleArray force_available{};
-
-  bool is_ready{false};
-  for (auto & status : statuses) {
-    if (status->status == BT::NodeStatus::RUNNING) {
-      PathChangeModuleId module{};
-      module.type = getModuleType(status->module_name);
-      running_modules.modules.push_back(module);
-    }
-    if (status->module_name == "LaneChange") {
-      const auto force_approval = planner_data->approval.is_force_approved;
-      if (
-        force_approval.module_name == "ForceLaneChange" &&
-        (now - force_approval.stamp).seconds() < 0.5) {
-        is_ready = true;
-        ready_module.module.type = getModuleType("ForceLaneChange");
-      }
-      if (status->is_requested && !status->is_ready) {
-        PathChangeModuleId module;
-        module.type = getModuleType("ForceLaneChange");
-        force_available.modules.push_back(module);
-        break;
-      }
-    }
-    if (status->is_ready && status->is_waiting_approval) {
-      if (status->module_name == "LaneFollowing" || status->module_name == "SideShift") {
-        continue;
-      }
-      is_ready = true;
-      RCLCPP_DEBUG(
-        get_logger(), "%s is Ready : ready = %s, is_approved = %s", status->module_name.c_str(),
-        status->is_ready ? "true" : "false", status->is_waiting_approval ? "true" : "false");
-      ready_module.module.type = getModuleType(status->module_name);
-    }
-  }
-
-  if (!is_ready) {
-    prev_ready_module_name_ = "NONE";
-    ready_module.module.type = PathChangeModuleId::NONE;
-  }
-
-  ready_module.header.stamp = now;
-  plan_ready_publisher_->publish(ready_module);
-
-  running_modules.header.stamp = now;
-  plan_running_publisher_->publish(running_modules);
-
-  force_available.header.stamp = now;
-  force_available_publisher_->publish(force_available);
 }
 
 void BehaviorPathPlannerNode::publishDebugMarker(const std::vector<MarkerArray> & debug_markers)
