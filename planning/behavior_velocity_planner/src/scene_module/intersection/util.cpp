@@ -169,10 +169,12 @@ bool generateStopLine(
 {
   /* set judge line dist */
   const double current_vel = planner_data->current_velocity->twist.linear.x;
+  const double current_acc = planner_data->current_accel.get();
   const double max_acc = planner_data->max_stop_acceleration_threshold;
+  const double max_jerk = planner_data->max_stop_jerk_threshold;
   const double delay_response_time = planner_data->delay_response_time;
-  const double pass_judge_line_dist =
-    planning_utils::calcJudgeLineDistWithAccLimit(current_vel, max_acc, delay_response_time);
+  const double pass_judge_line_dist = planning_utils::calcJudgeLineDistWithJerkLimit(
+    current_vel, current_acc, max_acc, max_jerk, delay_response_time);
 
   /* set parameters */
   constexpr double interval = 0.2;
