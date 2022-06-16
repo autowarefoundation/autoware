@@ -30,7 +30,7 @@ namespace behavior_velocity_planner
 using lanelet::autoware::NoStoppingArea;
 
 NoStoppingAreaModuleManager::NoStoppingAreaModuleManager(rclcpp::Node & node)
-: SceneModuleManagerInterface(node, getModuleName())
+: SceneModuleManagerInterfaceWithRTC(node, getModuleName())
 {
   const std::string ns(getModuleName());
   auto & pp = planner_param_;
@@ -57,6 +57,7 @@ void NoStoppingAreaModuleManager::launchNewModules(
       // assign 1 no stopping area for each module
       registerModule(std::make_shared<NoStoppingAreaModule>(
         module_id, *m.first, planner_param_, logger_.get_child("no_stopping_area_module"), clock_));
+      generateUUID(module_id);
     }
   }
 }
@@ -72,4 +73,5 @@ NoStoppingAreaModuleManager::getModuleExpiredFunction(
     return no_stopping_area_id_set.count(scene_module->getModuleId()) == 0;
   };
 }
+
 }  // namespace behavior_velocity_planner

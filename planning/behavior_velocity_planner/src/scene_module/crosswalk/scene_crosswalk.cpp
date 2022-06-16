@@ -198,25 +198,43 @@ bool CrosswalkModule::checkStopArea(
   }
 
   // insert stop point
-  if (stop) {
+  autoware_auto_planning_msgs::msg::PathWithLaneId path_tmp;
+  auto tmp_debug_data = debug_data_;
+  {
     lanelet::Optional<lanelet::ConstLineString3d> stop_line_opt =
       getStopLineFromMap(module_id_, planner_data_, "crosswalk_id");
     if (!!stop_line_opt) {
       if (!insertTargetVelocityPoint(
-            input, stop_line_opt.get(), planner_param_.stop_margin, 0.0, *planner_data_, output,
-            debug_data_, first_stop_path_point_index_)) {
+            input, stop_line_opt.get(), planner_param_.stop_margin, 0.0, *planner_data_, path_tmp,
+            tmp_debug_data, first_stop_path_point_index_)) {
         return false;
       }
     } else {
       if (!insertTargetVelocityPoint(
             input, crosswalk_polygon,
             planner_param_.stop_line_distance + planner_param_.stop_margin, 0.0, *planner_data_,
-            output, debug_data_, first_stop_path_point_index_)) {
+            path_tmp, tmp_debug_data, first_stop_path_point_index_)) {
         return false;
       }
-      *insert_stop = stop;
     }
   }
+
+  // set status
+  setSafe(!stop);
+  if (first_stop_path_point_index_) {
+    setDistance(tier4_autoware_utils::calcSignedArcLength(
+      path_tmp.points, planner_data_->current_pose.pose.position,
+      tmp_debug_data.first_stop_pose.position));
+  } else {
+    setDistance(std::numeric_limits<double>::max());
+  }
+
+  if (!isActivated()) {
+    output = path_tmp;
+    debug_data_ = tmp_debug_data;
+    *insert_stop = true;
+  }
+
   return true;
 }
 

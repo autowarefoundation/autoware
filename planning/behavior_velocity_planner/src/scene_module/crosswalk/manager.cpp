@@ -22,7 +22,7 @@
 namespace behavior_velocity_planner
 {
 CrosswalkModuleManager::CrosswalkModuleManager(rclcpp::Node & node)
-: SceneModuleManagerInterface(node, getModuleName())
+: SceneModuleManagerInterfaceWithRTC(node, getModuleName())
 {
   const std::string ns(getModuleName());
 
@@ -123,6 +123,7 @@ void CrosswalkModuleManager::launchNewModules(
           module_id, crosswalk, walkway_planner_param_, logger_.get_child("walkway_module"),
           clock_));
       }
+      generateUUID(module_id);
     }
   }
 }
@@ -139,4 +140,5 @@ CrosswalkModuleManager::getModuleExpiredFunction(
     return crosswalk_id_set.count(scene_module->getModuleId()) == 0;
   };
 }
+
 }  // namespace behavior_velocity_planner

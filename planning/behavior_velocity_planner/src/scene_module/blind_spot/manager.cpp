@@ -26,7 +26,7 @@
 namespace behavior_velocity_planner
 {
 BlindSpotModuleManager::BlindSpotModuleManager(rclcpp::Node & node)
-: SceneModuleManagerInterface(node, getModuleName())
+: SceneModuleManagerInterfaceWithRTC(node, getModuleName())
 {
   const std::string ns(getModuleName());
   planner_param_.use_pass_judge_line = node.declare_parameter(ns + ".use_pass_judge_line", false);
@@ -60,6 +60,7 @@ void BlindSpotModuleManager::launchNewModules(
     registerModule(std::make_shared<BlindSpotModule>(
       module_id, lane_id, planner_data_, planner_param_, logger_.get_child("blind_spot_module"),
       clock_));
+    generateUUID(module_id);
   }
 }
 
@@ -74,4 +75,5 @@ BlindSpotModuleManager::getModuleExpiredFunction(
     return lane_id_set.count(scene_module->getModuleId()) == 0;
   };
 }
+
 }  // namespace behavior_velocity_planner

@@ -93,6 +93,8 @@ bool BlindSpotModule::modifyPathVelocity(
     RCLCPP_DEBUG(
       logger_, "[Blind Spot] stop line or pass judge line is at path[0], ignore planning.");
     *path = input_path;  // reset path
+    setSafe(true);
+    setDistance(std::numeric_limits<double>::lowest());
     return true;
   }
 
@@ -122,7 +124,9 @@ bool BlindSpotModule::modifyPathVelocity(
     if (current_state == State::GO && is_over_pass_judge_line) {
       RCLCPP_DEBUG(logger_, "over the pass judge line. no plan needed.");
       *path = input_path;  // reset path
-      return true;         // no plan needed.
+      setSafe(true);
+      setDistance(std::numeric_limits<double>::lowest());
+      return true;  // no plan needed.
     }
   }
 
@@ -136,7 +140,10 @@ bool BlindSpotModule::modifyPathVelocity(
     has_obstacle ? State::STOP : State::GO, logger_.get_child("state_machine"), *clock_);
 
   /* set stop speed */
-  if (state_machine_.getState() == State::STOP) {
+  setSafe(state_machine_.getState() != State::STOP);
+  setDistance(tier4_autoware_utils::calcSignedArcLength(
+    path->points, current_pose.pose.position, path->points.at(stop_line_idx).point.pose.position));
+  if (!isActivated()) {
     constexpr double stop_vel = 0.0;
     util::setVelocityFrom(stop_line_idx, stop_vel, path);
 
@@ -148,7 +155,6 @@ bool BlindSpotModule::modifyPathVelocity(
   } else {
     *path = input_path;  // reset path
   }
-
   return true;
 }
 

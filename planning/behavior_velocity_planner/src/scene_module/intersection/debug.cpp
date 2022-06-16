@@ -262,18 +262,16 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createVirtualWallMarker
   const auto now = this->clock_->now();
   const auto state = state_machine_.getState();
 
-  if (state == IntersectionModule::State::STOP) {
-    if (debug_data_.stop_required) {
-      appendMarkerArray(
-        tier4_autoware_utils::createStopVirtualWallMarker(
-          debug_data_.stop_wall_pose, "intersection", now, lane_id_),
-        now, &wall_marker);
-    } else {
-      appendMarkerArray(
-        tier4_autoware_utils::createStopVirtualWallMarker(
-          debug_data_.slow_wall_pose, "intersection", now, lane_id_),
-        now, &wall_marker);
-    }
+  if (debug_data_.stop_required) {
+    appendMarkerArray(
+      tier4_autoware_utils::createStopVirtualWallMarker(
+        debug_data_.stop_wall_pose, "intersection", now, lane_id_),
+      now, &wall_marker);
+  } else if (state == IntersectionModule::State::STOP) {
+    appendMarkerArray(
+      tier4_autoware_utils::createStopVirtualWallMarker(
+        debug_data_.slow_wall_pose, "intersection", now, lane_id_),
+      now, &wall_marker);
   }
   return wall_marker;
 }

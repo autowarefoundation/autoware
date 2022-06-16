@@ -27,7 +27,7 @@ namespace behavior_velocity_planner
 using lanelet::TrafficLight;
 
 TrafficLightModuleManager::TrafficLightModuleManager(rclcpp::Node & node)
-: SceneModuleManagerInterface(node, getModuleName())
+: SceneModuleManagerInterfaceWithRTC(node, getModuleName())
 {
   const std::string ns(getModuleName());
   planner_param_.stop_margin = node.declare_parameter(ns + ".stop_margin", 0.0);
@@ -62,6 +62,7 @@ void TrafficLightModuleManager::modifyPathVelocity(
     traffic_light_scene_module->setPlannerData(planner_data_);
     traffic_light_scene_module->modifyPathVelocity(path, &stop_reason);
     stop_reason_array.stop_reasons.emplace_back(stop_reason);
+
     if (traffic_light_scene_module->getFirstStopPathPointIndex() < first_stop_path_point_index_) {
       first_stop_path_point_index_ = traffic_light_scene_module->getFirstStopPathPointIndex();
     }
@@ -112,6 +113,7 @@ void TrafficLightModuleManager::launchNewModules(
       registerModule(std::make_shared<TrafficLightModule>(
         module_id, *(traffic_light_reg_elem.first), traffic_light_reg_elem.second, planner_param_,
         logger_.get_child("traffic_light_module"), clock_));
+      generateUUID(module_id);
     }
   }
 }
@@ -127,4 +129,5 @@ TrafficLightModuleManager::getModuleExpiredFunction(
     return lanelet_id_set.count(scene_module->getModuleId()) == 0;
   };
 }
+
 }  // namespace behavior_velocity_planner

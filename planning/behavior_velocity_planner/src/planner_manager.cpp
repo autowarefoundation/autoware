@@ -66,7 +66,7 @@ autoware_auto_planning_msgs::msg::PathWithLaneId BehaviorVelocityPlannerManager:
 
   for (const auto & scene_manager_ptr : scene_manager_ptrs_) {
     scene_manager_ptr->updateSceneModuleInstances(planner_data, input_path_msg);
-    scene_manager_ptr->modifyPathVelocity(&output_path_msg);
+    scene_manager_ptr->plan(&output_path_msg);
     boost::optional<int> firstStopPathPointIndex = scene_manager_ptr->getFirstStopPathPointIndex();
 
     if (firstStopPathPointIndex) {

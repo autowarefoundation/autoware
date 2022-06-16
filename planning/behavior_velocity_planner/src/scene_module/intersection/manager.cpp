@@ -26,7 +26,7 @@
 namespace behavior_velocity_planner
 {
 IntersectionModuleManager::IntersectionModuleManager(rclcpp::Node & node)
-: SceneModuleManagerInterface(node, getModuleName())
+: SceneModuleManagerInterfaceWithRTC(node, getModuleName())
 {
   const std::string ns(getModuleName());
   auto & ip = intersection_param_;
@@ -89,6 +89,7 @@ void IntersectionModuleManager::launchNewModules(
     registerModule(std::make_shared<IntersectionModule>(
       module_id, lane_id, planner_data_, intersection_param_,
       logger_.get_child("intersection_module"), clock_));
+    generateUUID(module_id);
   }
 }
 
@@ -150,4 +151,5 @@ MergeFromPrivateModuleManager::getModuleExpiredFunction(
     return lane_id_set.count(scene_module->getModuleId()) == 0;
   };
 }
+
 }  // namespace behavior_velocity_planner

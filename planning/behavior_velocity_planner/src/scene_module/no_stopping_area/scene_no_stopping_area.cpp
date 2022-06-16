@@ -124,17 +124,22 @@ bool NoStoppingAreaModule::modifyPathVelocity(
   // Get stop line geometry
   const auto stop_line = getStopLineGeometry2d(original_path, planner_param_.stop_line_margin);
   if (!stop_line) {
+    setSafe(true);
     return true;
   }
   const auto stop_point =
     createTargetPoint(original_path, stop_line.value(), planner_param_.stop_margin);
   if (!stop_point) {
+    setSafe(true);
     return true;
   }
   const auto & stop_pose = stop_point->second;
+  setDistance(tier4_autoware_utils::calcSignedArcLength(
+    original_path.points, current_pose.pose.position, stop_pose.position));
   if (isOverDeadLine(original_path, current_pose.pose, stop_pose)) {
     // ego can't stop in front of no stopping area -> GO or OR
     state_machine_.setState(StateMachine::State::GO);
+    setSafe(true);
     return true;
   }
   const auto & vi = planner_data_->vehicle_info_;
@@ -150,6 +155,7 @@ bool NoStoppingAreaModule::modifyPathVelocity(
     *path, current_pose.pose, ego_space_in_front_of_stop_line,
     planner_param_.detection_area_length);
   if (stuck_vehicle_detect_area.outer().empty() && stop_line_detect_area.outer().empty()) {
+    setSafe(true);
     return true;
   }
   debug_data_.stuck_vehicle_detect_area = toGeomMsg(stuck_vehicle_detect_area);
@@ -164,6 +170,7 @@ bool NoStoppingAreaModule::modifyPathVelocity(
     is_entry_prohibited_by_stuck_vehicle || is_entry_prohibited_by_stop_line;
   if (!isStoppable(current_pose.pose, stop_point->second)) {
     state_machine_.setState(StateMachine::State::GO);
+    setSafe(true);
     return false;
   } else {
     state_machine_.setStateWithMarginTime(
@@ -171,7 +178,8 @@ bool NoStoppingAreaModule::modifyPathVelocity(
       logger_.get_child("state_machine"), *clock_);
   }
 
-  if (state_machine_.getState() == StateMachine::State::STOP) {
+  setSafe(state_machine_.getState() != StateMachine::State::STOP);
+  if (!isActivated()) {
     // ----------------stop reason and stop point--------------------------
     insertStopPoint(*path, *stop_point);
     // For virtual wall

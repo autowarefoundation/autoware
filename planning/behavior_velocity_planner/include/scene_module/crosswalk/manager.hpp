@@ -30,7 +30,7 @@
 
 namespace behavior_velocity_planner
 {
-class CrosswalkModuleManager : public SceneModuleManagerInterface
+class CrosswalkModuleManager : public SceneModuleManagerInterfaceWithRTC
 {
 public:
   explicit CrosswalkModuleManager(rclcpp::Node & node);

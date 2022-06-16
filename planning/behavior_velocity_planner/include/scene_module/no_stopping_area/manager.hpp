@@ -26,7 +26,7 @@
 
 namespace behavior_velocity_planner
 {
-class NoStoppingAreaModuleManager : public SceneModuleManagerInterface
+class NoStoppingAreaModuleManager : public SceneModuleManagerInterfaceWithRTC
 {
 public:
   explicit NoStoppingAreaModuleManager(rclcpp::Node & node);
@@ -35,6 +35,7 @@ public:
 
 private:
   NoStoppingAreaModule::PlannerParam planner_param_;
+
   void launchNewModules(const autoware_auto_planning_msgs::msg::PathWithLaneId & path) override;
 
   std::function<bool(const std::shared_ptr<SceneModuleInterface> &)> getModuleExpiredFunction(

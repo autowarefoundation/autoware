@@ -29,7 +29,7 @@ namespace behavior_velocity_planner
 using lanelet::autoware::DetectionArea;
 
 DetectionAreaModuleManager::DetectionAreaModuleManager(rclcpp::Node & node)
-: SceneModuleManagerInterface(node, getModuleName())
+: SceneModuleManagerInterfaceWithRTC(node, getModuleName())
 {
   const std::string ns(getModuleName());
   planner_param_.stop_margin = node.declare_parameter(ns + ".stop_margin", 0.0);
@@ -52,6 +52,7 @@ void DetectionAreaModuleManager::launchNewModules(
       registerModule(std::make_shared<DetectionAreaModule>(
         module_id, *detection_area_with_lane_id.first, planner_param_,
         logger_.get_child("detection_area_module"), clock_));
+      generateUUID(module_id);
     }
   }
 }
@@ -67,4 +68,5 @@ DetectionAreaModuleManager::getModuleExpiredFunction(
     return detection_area_id_set.count(scene_module->getModuleId()) == 0;
   };
 }
+
 }  // namespace behavior_velocity_planner

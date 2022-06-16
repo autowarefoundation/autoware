@@ -26,7 +26,7 @@
 
 namespace behavior_velocity_planner
 {
-class BlindSpotModuleManager : public SceneModuleManagerInterface
+class BlindSpotModuleManager : public SceneModuleManagerInterfaceWithRTC
 {
 public:
   explicit BlindSpotModuleManager(rclcpp::Node & node);

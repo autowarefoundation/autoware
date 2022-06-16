@@ -26,21 +26,22 @@
 
 namespace behavior_velocity_planner
 {
-class TrafficLightModuleManager : public SceneModuleManagerInterface
+class TrafficLightModuleManager : public SceneModuleManagerInterfaceWithRTC
 {
 public:
   explicit TrafficLightModuleManager(rclcpp::Node & node);
 
   const char * getModuleName() override { return "traffic_light"; }
 
-  void modifyPathVelocity(autoware_auto_planning_msgs::msg::PathWithLaneId * path) override;
-
 private:
   TrafficLightModule::PlannerParam planner_param_;
+
   void launchNewModules(const autoware_auto_planning_msgs::msg::PathWithLaneId & path) override;
 
   std::function<bool(const std::shared_ptr<SceneModuleInterface> &)> getModuleExpiredFunction(
     const autoware_auto_planning_msgs::msg::PathWithLaneId & path) override;
+
+  void modifyPathVelocity(autoware_auto_planning_msgs::msg::PathWithLaneId * path) override;
 
   // Debug
   rclcpp::Publisher<autoware_auto_perception_msgs::msg::LookingTrafficSignal>::SharedPtr

@@ -28,7 +28,7 @@
 
 namespace behavior_velocity_planner
 {
-class IntersectionModuleManager : public SceneModuleManagerInterface
+class IntersectionModuleManager : public SceneModuleManagerInterfaceWithRTC
 {
 public:
   explicit IntersectionModuleManager(rclcpp::Node & node);

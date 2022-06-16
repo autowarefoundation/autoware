@@ -26,7 +26,7 @@
 
 namespace behavior_velocity_planner
 {
-class DetectionAreaModuleManager : public SceneModuleManagerInterface
+class DetectionAreaModuleManager : public SceneModuleManagerInterfaceWithRTC
 {
 public:
   explicit DetectionAreaModuleManager(rclcpp::Node & node);
@@ -35,6 +35,7 @@ public:
 
 private:
   DetectionAreaModule::PlannerParam planner_param_;
+
   void launchNewModules(const autoware_auto_planning_msgs::msg::PathWithLaneId & path) override;
 
   std::function<bool(const std::shared_ptr<SceneModuleInterface> &)> getModuleExpiredFunction(
