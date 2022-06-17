@@ -1,0 +1,7 @@
+<launch>
+  <arg name="input_topic_name" default="/sensing/camera/camera0/image_raw"/>
+
+  <node pkg="image_diagnostics" exec="image_diagnostics_node" name="image_diagnostics_node">
+    <remap from="input/raw_image" to="$(var input_topic_name)"/>
+  </node>
+</launch>
