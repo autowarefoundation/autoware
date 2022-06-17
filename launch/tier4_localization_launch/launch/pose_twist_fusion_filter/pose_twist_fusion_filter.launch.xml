@@ -27,4 +27,10 @@
     <arg name="input_twist_with_covariance_name" value="/localization/pose_twist_fusion_filter/twist_with_covariance"/>
     <arg name="output_odom_name" value="/localization/kinematic_state"/>
   </include>
+  <include file="$(find-pkg-share twist2accel)/launch/twist2accel.launch.xml">
+    <arg name="use_odom" value="true"/>
+    <arg name="in_odom" value="/localization/kinematic_state"/>
+    <arg name="in_twist" value="/localization/twist_estimator/twist_with_covariance"/>
+    <arg name="out_accel" value="/localization/acceleration"/>
+  </include>
 </launch>
