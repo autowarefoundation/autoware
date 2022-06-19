@@ -1,6 +1,6 @@
 # tier4_control_rviz_plugin
 
-This package is to add manual controller from rviz plugin.
+This package is to mimic external control for simulation.
 
 ## Inputs / Outputs
 

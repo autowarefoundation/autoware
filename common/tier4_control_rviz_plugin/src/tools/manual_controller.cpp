@@ -133,8 +133,9 @@ void ManualController::update()
     const double eps = 0.001;
     if (ackermann.longitudinal.speed > eps) {
       gear_cmd.command = GearCommand::DRIVE;
-    } else if (ackermann.longitudinal.speed < -eps) {
+    } else if (ackermann.longitudinal.speed < -eps && current_velocity_ < eps) {
       gear_cmd.command = GearCommand::REVERSE;
+      ackermann.longitudinal.acceleration *= -1.0;
     } else {
       gear_cmd.command = GearCommand::PARK;
     }
