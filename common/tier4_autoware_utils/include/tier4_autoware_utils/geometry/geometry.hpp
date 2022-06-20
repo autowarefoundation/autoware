@@ -385,25 +385,27 @@ geometry_msgs::msg::Point calcInterpolatedPoint(
  */
 template <class Pose1, class Pose2>
 geometry_msgs::msg::Pose calcInterpolatedPose(
-  const Pose1 & src_pose, const Pose2 & dst_pose, const double ratio)
+  const Pose1 & src_pose, const Pose2 & dst_pose, const double ratio,
+  const bool set_orientation_from_position_direction = true)
 {
-  tf2::Transform src_tf, dst_tf;
-  tf2::fromMsg(getPose(src_pose), src_tf);
-  tf2::fromMsg(getPose(dst_pose), dst_tf);
+  geometry_msgs::msg::Pose output_pose;
+  output_pose.position = calcInterpolatedPoint(getPoint(src_pose), getPoint(dst_pose), ratio);
 
-  // Get pose by linear interpolation
-  const auto & point = tf2::lerp(src_tf.getOrigin(), dst_tf.getOrigin(), ratio);
+  if (set_orientation_from_position_direction) {
+    // Get orientation from interpolated point and src_pose
+    const double pitch = calcElevationAngle(getPoint(output_pose), getPoint(dst_pose));
+    const double yaw = calcAzimuthAngle(output_pose.position, getPoint(dst_pose));
+    output_pose.orientation = createQuaternionFromRPY(0.0, pitch, yaw);
+  } else {
+    // Get orientation by spherical linear interpolation
+    tf2::Transform src_tf, dst_tf;
+    tf2::fromMsg(getPose(src_pose), src_tf);
+    tf2::fromMsg(getPose(dst_pose), dst_tf);
+    const auto & quaternion = tf2::slerp(src_tf.getRotation(), dst_tf.getRotation(), ratio);
+    output_pose.orientation = tf2::toMsg(quaternion);
+  }
 
-  // Get quaternion by spherical linear interpolation
-  const auto & quaternion = tf2::slerp(src_tf.getRotation(), dst_tf.getRotation(), ratio);
-
-  geometry_msgs::msg::Pose pose;
-  pose.position.x = point.x();
-  pose.position.y = point.y();
-  pose.position.z = point.z();
-  pose.orientation = tf2::toMsg(quaternion);
-
-  return pose;
+  return output_pose;
 }
 }  // namespace tier4_autoware_utils
 
