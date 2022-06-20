@@ -78,7 +78,7 @@ DynamicObstacleCreatorForObject::DynamicObstacleCreatorForObject(rclcpp::Node & 
 {
 }
 
-std::vector<DynamicObstacle> DynamicObstacleCreatorForObject::createDynamicObstacles() const
+std::vector<DynamicObstacle> DynamicObstacleCreatorForObject::createDynamicObstacles()
 {
   // create dynamic obstacles from predicted objects
   std::vector<DynamicObstacle> dynamic_obstacles;
@@ -115,7 +115,6 @@ DynamicObstacleCreatorForObjectWithoutPath::DynamicObstacleCreatorForObjectWitho
 }
 
 std::vector<DynamicObstacle> DynamicObstacleCreatorForObjectWithoutPath::createDynamicObstacles()
-  const
 {
   std::vector<DynamicObstacle> dynamic_obstacles;
 
@@ -154,8 +153,9 @@ DynamicObstacleCreatorForPoints::DynamicObstacleCreatorForPoints(rclcpp::Node & 
     std::bind(&DynamicObstacleCreatorForPoints::onCompareMapFilteredPointCloud, this, _1));
 }
 
-std::vector<DynamicObstacle> DynamicObstacleCreatorForPoints::createDynamicObstacles() const
+std::vector<DynamicObstacle> DynamicObstacleCreatorForPoints::createDynamicObstacles()
 {
+  std::lock_guard<std::mutex> lock(mutex_);
   std::vector<DynamicObstacle> dynamic_obstacles;
   for (const auto & point : dynamic_obstacle_data_.compare_map_filtered_pointcloud) {
     DynamicObstacle dynamic_obstacle;
@@ -213,6 +213,7 @@ void DynamicObstacleCreatorForPoints::onCompareMapFilteredPointCloud(
   pcl::PointCloud<pcl::PointXYZ>::Ptr pc_transformed(new pcl::PointCloud<pcl::PointXYZ>);
   pcl::transformPointCloud(pc, *pc_transformed, affine);
 
+  std::lock_guard<std::mutex> lock(mutex_);
   dynamic_obstacle_data_.compare_map_filtered_pointcloud = applyVoxelGridFilter(pc_transformed);
 }
 }  // namespace behavior_velocity_planner
