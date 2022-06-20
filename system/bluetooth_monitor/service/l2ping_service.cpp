@@ -106,14 +106,22 @@ void L2pingService::run()
     }
 
     // Restore configuration of L2ping
+    L2pingServiceConfig config;
     try {
       std::istringstream iss(buf);
       boost::archive::text_iarchive oa(iss);
-      oa & config_;
+      oa & config;
     } catch (const std::exception & e) {
       syslog(LOG_ERR, "Exception occurred. ! %s\n", e.what());
       close(new_sock);
       continue;
+    }
+
+    // If configuration is changed
+    if (config_ != config) {
+      // Stop all ping threads
+      stop();
+      config_ = config;
     }
 
     // Now communication with ros2 node successful
@@ -155,6 +163,15 @@ void L2pingService::setFunctionError(
   status.error_message = error_message;
 
   status_list_.emplace_back(status);
+}
+
+void L2pingService::stop()
+{
+  for (auto & object : objects_) {
+    object->stop();
+    object.reset();
+  }
+  objects_.clear();
 }
 
 bool L2pingService::buildDeviceList()

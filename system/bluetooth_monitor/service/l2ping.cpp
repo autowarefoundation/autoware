@@ -66,12 +66,32 @@ bool L2ping::getDeviceInformation()
 void L2ping::run()
 {
   // Start thread loop
+  stop_ = false;
   thread_ = std::thread(&L2ping::thread, this);
+}
+
+void L2ping::stop()
+{
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    stop_ = true;
+  }
+
+  thread_.join();
 }
 
 void L2ping::thread()
 {
   while (true) {
+    bool stop = false;
+    {
+      std::lock_guard<std::mutex> lock(mutex_);
+      stop = stop_;
+    }
+    if (stop) {
+      break;
+    }
+
     // Get device information if not provided
     if (status_.name.empty() || status_.manufacturer.empty()) {
       getDeviceInformation();

@@ -17,6 +17,7 @@
 
 #include "bluetooth_monitor/service/l2ping_interface.hpp"
 
+#include <mutex>
 #include <string>
 #include <thread>
 #include <vector>
@@ -35,6 +36,11 @@ public:
    * @brief Start ping thread
    */
   void run();
+
+  /**
+   * @brief Stop ping thread
+   */
+  void stop();
 
   /**
    * @brief Get status
@@ -82,6 +88,8 @@ protected:
   L2pingConfig config_;  //!< @brief Configuration of L2ping
   std::thread thread_;   //!< @brief Thread to L2ping
   L2pingStatus status_;  //!< @brief L2ping status
+  std::mutex mutex_;     //!< @brief mutex for stop flag
+  bool stop_;            //!< @brief Flag to stop thread
 };
 
 #endif  // BLUETOOTH_MONITOR__SERVICE__L2PING_HPP_

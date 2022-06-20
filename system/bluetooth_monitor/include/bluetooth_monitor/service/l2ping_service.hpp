@@ -58,6 +58,11 @@ protected:
   void setFunctionError(const std::string & function_name, const std::string & error_message);
 
   /**
+   * @brief Stop all ping threads
+   */
+  void stop();
+
+  /**
    * @brief Build device list to ping
    * @param [in] addresses List of bluetooth address
    * @return true on success, false on error

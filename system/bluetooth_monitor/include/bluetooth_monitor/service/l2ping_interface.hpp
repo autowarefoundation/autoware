@@ -20,6 +20,7 @@
 #include <boost/serialization/vector.hpp>
 
 #include <string>
+#include <tuple>
 #include <vector>
 
 // 7634-7647 Unassigned
@@ -50,6 +51,26 @@ struct L2pingConfig
     ar & timeout;
     ar & rtt_warn;
   }
+
+  /**
+   * @brief Get struct reference without copying values of the members.
+   * @return Struct reference
+   */
+  inline auto tied() const { return std::tie(timeout, rtt_warn); }
+
+  /**
+   * @brief The equal comparison operator for struct.
+   * @param [in] right right hand side
+   * @return true on equal, false on not equal
+   */
+  inline bool operator==(const L2pingConfig & right) const { return (tied() == right.tied()); }
+
+  /**
+   * @brief The not equal comparison operator for struct.
+   * @param [in] right right hand side
+   * @return true on not equal, false on equal
+   */
+  inline bool operator!=(const L2pingConfig & right) const { return (tied() != right.tied()); }
 };
 
 /**
@@ -72,6 +93,32 @@ struct L2pingServiceConfig
   {
     ar & l2ping;
     ar & addresses;
+  }
+
+  /**
+   * @brief Get struct reference without copying values of the members.
+   * @return Struct reference
+   */
+  inline auto tied() const { return std::tie(l2ping, addresses); }
+
+  /**
+   * @brief The equal comparison operator for struct.
+   * @param [in] right right hand side
+   * @return true on equal, false on not equal
+   */
+  inline bool operator==(const L2pingServiceConfig & right) const
+  {
+    return (tied() == right.tied());
+  }
+
+  /**
+   * @brief The not equal comparison operator for struct.
+   * @param [in] right right hand side
+   * @return true on not equal, false on equal
+   */
+  inline bool operator!=(const L2pingServiceConfig & right) const
+  {
+    return (tied() != right.tied());
   }
 };
 
