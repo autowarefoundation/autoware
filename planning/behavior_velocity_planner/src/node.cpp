@@ -166,6 +166,7 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode(const rclcpp::NodeOptio
   // Initialize PlannerManager
   if (this->declare_parameter("launch_crosswalk", true)) {
     planner_manager_.launchSceneModule(std::make_shared<CrosswalkModuleManager>(*this));
+    planner_manager_.launchSceneModule(std::make_shared<WalkwayModuleManager>(*this));
   }
   if (this->declare_parameter("launch_traffic_light", true)) {
     planner_manager_.launchSceneModule(std::make_shared<TrafficLightModuleManager>(*this));
