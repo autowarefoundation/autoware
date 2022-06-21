@@ -62,6 +62,7 @@ private:
   double max_vx_;
   double max_wz_;
   float z_;
+  double velocity_deviation_threshold_;
 
 private:
   struct BoundingBox
