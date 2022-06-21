@@ -56,7 +56,8 @@ public:
   ControlPerformanceAnalysisCore();
   ControlPerformanceAnalysisCore(
     double wheelbase, double curvature_interval_length, uint odom_interval,
-    double acceptable_min_waypoint_distance, double prevent_zero_division_value);
+    double acceptable_min_waypoint_distance, double prevent_zero_division_value,
+    double lpf_gain_val);
 
   // Setters
   void setCurrentPose(const Pose & msg);
@@ -89,6 +90,7 @@ private:
   uint odom_interval_;
   double acceptable_min_waypoint_distance_;
   double prevent_zero_division_value_;
+  double lpf_gain_;
 
   // Variables Received Outside
   std::shared_ptr<PoseArray> current_waypoints_ptr_;

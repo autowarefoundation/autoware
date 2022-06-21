@@ -50,11 +50,12 @@ ControlPerformanceAnalysisNode::ControlPerformanceAnalysisNode(
   param_.odom_interval = declare_parameter("odom_interval", 2);
   param_.acceptable_min_waypoint_distance =
     declare_parameter("acceptable_min_waypoint_distance", 2.0);
+  param_.lpf_gain = declare_parameter("low_pass_filter_gain", 0.8);
 
   // Prepare error computation class with the wheelbase parameter.
   control_performance_core_ptr_ = std::make_unique<ControlPerformanceAnalysisCore>(
     param_.wheel_base, param_.curvature_interval_length, param_.odom_interval,
-    param_.acceptable_min_waypoint_distance, param_.prevent_zero_division_value);
+    param_.acceptable_min_waypoint_distance, param_.prevent_zero_division_value, param_.lpf_gain);
 
   // Subscribers.
   sub_trajectory_ = create_subscription<Trajectory>(

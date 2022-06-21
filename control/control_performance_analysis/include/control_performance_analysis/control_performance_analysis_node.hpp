@@ -52,6 +52,7 @@ struct Param
   double curvature_interval_length;
   double prevent_zero_division_value;
   uint odom_interval;  // Increase it for smoother curve
+  double lpf_gain;
 
   // How far the next waypoint can be ahead of the vehicle direction.
 
