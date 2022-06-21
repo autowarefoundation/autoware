@@ -202,10 +202,10 @@ bool ControlPerformanceAnalysisCore::calculateErrorVars()
 
   if (
     !pair_pose_interp_wp_.first || !interpolated_pose_ptr_ || !interpolated_velocity_ptr_ ||
-    !interpolated_acceleration_ptr_) {
+    !interpolated_acceleration_ptr_ || !interpolated_steering_angle_ptr_) {
     RCLCPP_WARN_THROTTLE(
       logger_, clock_, 1000,
-      "Cannot get interpolated pose, velocity, and acceleration into control_performance "
+      "Cannot get interpolated pose, velocity, acceleration, and steering into control_performance "
       "algorithm");
     return false;
   }
@@ -372,6 +372,14 @@ bool ControlPerformanceAnalysisCore::calculateDrivingVars()
     const uint odom_size = odom_history_ptr_->size();
 
     if (odom_history_ptr_->at(odom_size - 1).header.stamp != last_odom_header.stamp) {
+      //  Add desired steering angle
+
+      if (interpolated_steering_angle_ptr_) {
+        driving_status_vars.desired_steering_angle.header =
+          odom_history_ptr_->at(odom_size - 1).header;
+        driving_status_vars.desired_steering_angle.data = *interpolated_steering_angle_ptr_;
+      }
+
       //  Calculate lateral acceleration
 
       driving_status_vars.lateral_acceleration.header.set__stamp(
@@ -444,6 +452,10 @@ bool ControlPerformanceAnalysisCore::calculateDrivingVars()
         driving_status_vars.controller_processing_time.data =
           lpf_gain_ * prev_driving_vars_->controller_processing_time.data +
           (1 - lpf_gain_) * driving_status_vars.controller_processing_time.data;
+
+        driving_status_vars.desired_steering_angle.data =
+          lpf_gain_ * prev_driving_vars_->desired_steering_angle.data +
+          (1 - lpf_gain_) * driving_status_vars.desired_steering_angle.data;
       }
 
       prev_driving_vars_ =
@@ -588,6 +600,7 @@ std::pair<bool, Pose> ControlPerformanceAnalysisCore::calculateClosestPose()
   double && distance_p02p_interp =
     (dx_prev2next * dx_prev2vehicle + dy_prev2next * dy_prev2vehicle) / distance_p02p1;
 
+  double && distance_p_interp2p1 = distance_p02p1 - distance_p02p_interp;
   /*
    * We use the following linear interpolation
    *  pi = p0 + ratio_t * (p1 - p0)
@@ -610,6 +623,28 @@ std::pair<bool, Pose> ControlPerformanceAnalysisCore::calculateClosestPose()
 
   Quaternion && orient_msg = utils::createOrientationMsgFromYaw(interp_yaw_angle);
   interpolated_pose.orientation = orient_msg;
+
+  /* interpolated steering calculation */
+
+  double interp_steering_angle = 0.0;
+
+  if (static_cast<size_t>(*idx_next_wp_ + 1) < current_waypoints_ptr_->poses.size()) {
+    double && dx_p1_p2 = current_waypoints_ptr_->poses.at(*idx_next_wp_ + 1).position.x -
+                         current_waypoints_ptr_->poses.at(*idx_next_wp_).position.x;
+    double && dy_p1_p2 = current_waypoints_ptr_->poses.at(*idx_next_wp_ + 1).position.y -
+                         current_waypoints_ptr_->poses.at(*idx_next_wp_).position.y;
+    double && distance_p1_p2 = std::hypot(dx_p1_p2, dy_p1_p2);
+    double && prev_steering =
+      static_cast<float>(std::atan((next_yaw - prev_yaw) * wheelbase_ / (distance_p02p1)));
+    double && next_steering = static_cast<float>(std::atan(
+      (tf2::getYaw(current_waypoints_ptr_->poses.at(*idx_next_wp_ + 1).orientation) - next_yaw) *
+      wheelbase_ / (distance_p1_p2)));
+    interp_steering_angle = prev_steering + ratio_t * (next_steering - prev_steering);
+  } else {
+    interp_steering_angle = static_cast<float>(std::atan(
+      (next_yaw - tf2::getYaw(interpolated_pose.orientation)) * wheelbase_ /
+      (distance_p_interp2p1)));
+  }
 
   /* interpolated acceleration calculation */
 
@@ -649,18 +684,21 @@ std::pair<bool, Pose> ControlPerformanceAnalysisCore::calculateClosestPose()
   double && d_acc_prev2next = next_wp_acc - prev_wp_acc;
   double && interp_acceleration = prev_wp_acc + ratio_t * d_acc_prev2next;
 
-  setInterpolatedVars(interpolated_pose, interp_velocity, interp_acceleration);
+  setInterpolatedVars(
+    interpolated_pose, interp_velocity, interp_acceleration, interp_steering_angle);
 
   return std::make_pair(true, interpolated_pose);
 }
 
 // Sets interpolated waypoint_ptr_.
 void ControlPerformanceAnalysisCore::setInterpolatedVars(
-  Pose & interpolated_pose, double & interpolated_velocity, double & interpolated_acceleration)
+  Pose & interpolated_pose, double & interpolated_velocity, double & interpolated_acceleration,
+  double & interpolated_steering_angle)
 {
   interpolated_pose_ptr_ = std::make_shared<Pose>(interpolated_pose);
   interpolated_velocity_ptr_ = std::make_shared<double>(interpolated_velocity);
   interpolated_acceleration_ptr_ = std::make_shared<double>(interpolated_acceleration);
+  interpolated_steering_angle_ptr_ = std::make_shared<double>(interpolated_steering_angle);
 }
 
 double ControlPerformanceAnalysisCore::estimateCurvature()

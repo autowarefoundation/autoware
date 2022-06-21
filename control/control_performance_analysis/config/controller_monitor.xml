@@ -1,98 +1,108 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <root>
- <tabbed_widget name="Main Window" parent="main_window">
-  <Tab containers="1" tab_name="Driving Status">
+ <tabbed_widget parent="main_window" name="Main Window">
+  <Tab tab_name="Driving Status" containers="1">
    <Container>
-    <DockSplitter sizes="0.333333;0.333333;0.333333" orientation="-" count="3">
-     <DockSplitter sizes="0.500674;0.499326" orientation="|" count="2">
+    <DockSplitter count="3" orientation="-" sizes="0.333705;0.332589;0.333705">
+     <DockSplitter count="2" orientation="|" sizes="0.500613;0.499387">
       <DockArea name="longitudinal_acceleration">
-       <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-        <range bottom="-0.100000" top="0.100000" left="371.237399" right="436.831237"/>
+       <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+        <range top="1.052621" left="104.174901" bottom="-1.534699" right="204.150033"/>
         <limitY/>
         <curve color="#d62728" name="/control_performance/driving_status/longitudinal_acceleration/data"/>
        </plot>
       </DockArea>
       <DockArea name="lateral_acceleration">
-       <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-        <range bottom="-0.100000" top="0.100000" left="371.237399" right="436.831237"/>
+       <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+        <range top="0.630960" left="104.174901" bottom="-0.436186" right="204.150033"/>
         <limitY/>
         <curve color="#ff7f0e" name="/control_performance/driving_status/lateral_acceleration/data"/>
        </plot>
       </DockArea>
      </DockSplitter>
-     <DockSplitter sizes="0.502695;0.497305" orientation="|" count="2">
+     <DockSplitter count="2" orientation="|" sizes="0.502451;0.497549">
       <DockArea name="longitudinal_jerk">
-       <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-        <range bottom="-0.100000" top="0.100000" left="371.237399" right="436.831237"/>
+       <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+        <range top="9.847205" left="104.174901" bottom="-2.347630" right="204.150033"/>
         <limitY/>
         <curve color="#1ac938" name="/control_performance/driving_status/longitudinal_jerk/data"/>
        </plot>
       </DockArea>
       <DockArea name="lateral_jerk">
-       <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-        <range bottom="-0.100000" top="0.100000" left="371.237399" right="436.831237"/>
+       <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+        <range top="0.320097" left="104.174901" bottom="-0.158578" right="204.150033"/>
         <limitY/>
         <curve color="#f14cc1" name="/control_performance/driving_status/lateral_jerk/data"/>
        </plot>
       </DockArea>
      </DockSplitter>
-     <DockArea name="controller_processing_time">
-      <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-       <range bottom="6.186600" top="23.769053" left="371.237399" right="436.831237"/>
-       <limitY/>
-       <curve color="#1f77b4" name="/control_performance/driving_status/controller_processing_time/data"/>
-      </plot>
-     </DockArea>
+     <DockSplitter count="2" orientation="|" sizes="0.231005;0.768995">
+      <DockArea name="controller_processing_time">
+       <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+        <range top="47.087141" left="104.174901" bottom="-0.835979" right="204.150033"/>
+        <limitY/>
+        <curve color="#1f77b4" name="/control_performance/driving_status/controller_processing_time/data"/>
+       </plot>
+      </DockArea>
+      <DockArea name="current - desired steering tire angle">
+       <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+        <range top="0.637976" left="104.174901" bottom="-0.568595" right="204.150410"/>
+        <limitY/>
+        <curve color="#d62728" name="/vehicle/status/steering_status/steering_tire_angle"/>
+        <curve color="#1ac938" name="/control_performance/driving_status/desired_steering_angle/data"/>
+       </plot>
+      </DockArea>
+     </DockSplitter>
     </DockSplitter>
    </Container>
   </Tab>
-  <Tab containers="1" tab_name="Performance Monitor - 1">
+  <Tab tab_name="Performance Monitor - 1" containers="1">
    <Container>
-    <DockSplitter sizes="1" orientation="-" count="1">
-     <DockSplitter sizes="0.333783;0.332434;0.333783" orientation="|" count="3">
-      <DockSplitter sizes="0.500548;0.499452" orientation="-" count="2">
+    <DockSplitter count="1" orientation="-" sizes="1">
+     <DockSplitter count="3" orientation="|" sizes="0.333538;0.332925;0.333538">
+      <DockSplitter count="2" orientation="-" sizes="0.500557;0.499443">
        <DockArea name="curvature_estimate">
-        <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-         <range bottom="-0.025441" top="-0.025423" left="371.237399" right="436.831237"/>
+        <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+         <range top="0.006648" left="0.000000" bottom="0.006648" right="59.925017"/>
          <limitY/>
          <curve color="#9467bd" name="/control_performance/performance_vars/error/curvature_estimate"/>
         </plot>
        </DockArea>
        <DockArea name="curvature_estimate_pp">
-        <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-         <range bottom="-0.005099" top="-0.004956" left="371.237399" right="436.831237"/>
+        <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+         <range top="0.071879" left="0.000000" bottom="0.071879" right="59.925017"/>
          <limitY/>
          <curve color="#17becf" name="/control_performance/performance_vars/error/curvature_estimate_pp"/>
         </plot>
        </DockArea>
       </DockSplitter>
-      <DockSplitter sizes="0.500548;0.499452" orientation="-" count="2">
+      <DockSplitter count="2" orientation="-" sizes="0.500557;0.499443">
        <DockArea name="control_effort_energy">
-        <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-         <range bottom="0.086950" top="0.286950" left="371.237399" right="436.831237"/>
+        <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+         <range top="0.100000" left="0.000000" bottom="-0.100000" right="59.925017"/>
          <limitY/>
          <curve color="#1ac938" name="/control_performance/performance_vars/error/control_effort_energy"/>
         </plot>
        </DockArea>
        <DockArea name="error_energy">
-        <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-         <range bottom="0.003755" top="0.003756" left="371.237399" right="436.831237"/>
+        <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+         <range top="0.194223" left="0.000000" bottom="0.194223" right="59.925017"/>
          <limitY/>
          <curve color="#ff7f0e" name="/control_performance/performance_vars/error/error_energy"/>
         </plot>
        </DockArea>
       </DockSplitter>
-      <DockSplitter sizes="0.500548;0.499452" orientation="-" count="2">
+      <DockSplitter count="2" orientation="-" sizes="0.500557;0.499443">
        <DockArea name="value_approximation">
-        <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-         <range bottom="0.091053" top="0.091067" left="371.237399" right="436.831237"/>
+        <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+         <range top="1.118628" left="0.000000" bottom="1.118628" right="59.925017"/>
          <limitY/>
          <curve color="#f14cc1" name="/control_performance/performance_vars/error/value_approximation"/>
         </plot>
        </DockArea>
        <DockArea name="tracking_curvature_discontinuity_ability">
-        <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-         <range bottom="-0.000000" top="0.000017" left="371.237399" right="436.831237"/>
+        <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+         <range top="0.000000" left="0.000000" bottom="-0.000000" right="59.925017"/>
          <limitY/>
          <curve color="#bcbd22" name="/control_performance/performance_vars/error/tracking_curvature_discontinuity_ability"/>
         </plot>
@@ -102,53 +112,53 @@
     </DockSplitter>
    </Container>
   </Tab>
-  <Tab containers="1" tab_name="Performance Monitor - 2">
+  <Tab tab_name="Performance Monitor - 2" containers="1">
    <Container>
-    <DockSplitter sizes="1" orientation="-" count="1">
-     <DockSplitter sizes="0.333783;0.332434;0.333783" orientation="|" count="3">
-      <DockSplitter sizes="0.500548;0.499452" orientation="-" count="2">
+    <DockSplitter count="1" orientation="-" sizes="1">
+     <DockSplitter count="3" orientation="|" sizes="0.333538;0.332925;0.333538">
+      <DockSplitter count="2" orientation="-" sizes="0.500557;0.499443">
        <DockArea name="lateral_error">
-        <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-         <range bottom="-0.043659" top="-0.043659" left="371.237399" right="436.831237"/>
+        <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+         <range top="-0.436695" left="0.000000" bottom="-0.436695" right="59.925017"/>
          <limitY/>
          <curve color="#9467bd" name="/control_performance/performance_vars/error/lateral_error"/>
         </plot>
        </DockArea>
        <DockArea name="longitudinal_error">
-        <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-         <range bottom="0.000471" top="0.000471" left="371.237399" right="436.831237"/>
+        <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+         <range top="0.000002" left="0.000000" bottom="0.000002" right="59.925017"/>
          <limitY/>
          <curve color="#1ac938" name="/control_performance/performance_vars/error/longitudinal_error"/>
         </plot>
        </DockArea>
       </DockSplitter>
-      <DockSplitter sizes="0.500548;0.499452" orientation="-" count="2">
+      <DockSplitter count="2" orientation="-" sizes="0.500557;0.499443">
        <DockArea name="lateral_error_velocity">
-        <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-         <range bottom="0.000001" top="0.000001" left="371.237399" right="436.831237"/>
+        <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+         <range top="-0.000000" left="0.000000" bottom="-0.000000" right="59.925017"/>
          <limitY/>
          <curve color="#bcbd22" name="/control_performance/performance_vars/error/lateral_error_velocity"/>
         </plot>
        </DockArea>
        <DockArea name="longitudinal_error_velocity">
-        <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-         <range bottom="-0.069622" top="-0.069622" left="371.237399" right="436.831237"/>
+        <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+         <range top="-0.250726" left="0.000000" bottom="-0.250726" right="59.925017"/>
          <limitY/>
          <curve color="#f14cc1" name="/control_performance/performance_vars/error/longitudinal_error_velocity"/>
         </plot>
        </DockArea>
       </DockSplitter>
-      <DockSplitter sizes="0.500548;0.499452" orientation="-" count="2">
+      <DockSplitter count="2" orientation="-" sizes="0.500557;0.499443">
        <DockArea name="lateral_error_acceleration">
-        <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-         <range bottom="-0.000125" top="-0.000125" left="371.237399" right="436.831237"/>
+        <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+         <range top="0.000417" left="0.000000" bottom="0.000417" right="59.925017"/>
          <limitY/>
          <curve color="#17becf" name="/control_performance/performance_vars/error/lateral_error_acceleration"/>
         </plot>
        </DockArea>
        <DockArea name="longitudinal_error_acceleration">
-        <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-         <range bottom="0.134490" top="0.134490" left="371.237399" right="436.831237"/>
+        <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+         <range top="-0.050140" left="0.000000" bottom="-0.050140" right="59.925017"/>
          <limitY/>
          <curve color="#f14cc1" name="/control_performance/performance_vars/error/longitudinal_error_acceleration"/>
         </plot>
@@ -158,27 +168,27 @@
     </DockSplitter>
    </Container>
   </Tab>
-  <Tab containers="1" tab_name="Performance Monitor - 3">
+  <Tab tab_name="Performance Monitor - 3" containers="1">
    <Container>
-    <DockSplitter sizes="0.500548;0.499452" orientation="-" count="2">
+    <DockSplitter count="2" orientation="-" sizes="0.500557;0.499443">
      <DockArea name="vehicle_velocity_error">
-      <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-       <range bottom="-0.069700" top="-0.069699" left="371.237399" right="436.831237"/>
+      <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+       <range top="-0.150000" left="0.000000" bottom="-0.350000" right="59.925017"/>
        <limitY/>
        <curve color="#9467bd" name="/control_performance/performance_vars/error/vehicle_velocity_error"/>
       </plot>
      </DockArea>
-     <DockSplitter sizes="0.502695;0.497305" orientation="|" count="2">
+     <DockSplitter count="2" orientation="|" sizes="0.502451;0.497549">
       <DockArea name="heading_error">
-       <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-        <range bottom="0.043001" top="0.043004" left="371.237399" right="436.831237"/>
+       <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+        <range top="0.040666" left="0.000000" bottom="-0.159334" right="59.925017"/>
         <limitY/>
         <curve color="#17becf" name="/control_performance/performance_vars/error/heading_error"/>
        </plot>
       </DockArea>
       <DockArea name="heading_velocity_error">
-       <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-        <range bottom="0.001772" top="0.001773" left="371.237399" right="436.831237"/>
+       <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+        <range top="-0.001662" left="0.000000" bottom="-0.001662" right="59.925017"/>
         <limitY/>
         <curve color="#bcbd22" name="/control_performance/performance_vars/error/heading_error_velocity"/>
        </plot>
@@ -187,50 +197,50 @@
     </DockSplitter>
    </Container>
   </Tab>
-  <Tab containers="1" tab_name="Lateral - Longitudinal RMS">
+  <Tab tab_name="Lateral - Longitudinal RMS" containers="1">
    <Container>
-    <DockSplitter sizes="0.500548;0.499452" orientation="-" count="2">
-     <DockSplitter sizes="0.333109;0.333783;0.333109" orientation="|" count="3">
+    <DockSplitter count="2" orientation="-" sizes="0.500557;0.499443">
+     <DockSplitter count="3" orientation="|" sizes="0.332925;0.334151;0.332925">
       <DockArea name="rms_lateral_error">
-       <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-        <range bottom="2444.796571" top="2565.040254" left="371.237399" right="436.831237"/>
+       <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+        <range top="19258.828562" left="0.000000" bottom="-469.280180" right="59.925017"/>
         <limitY/>
         <curve color="#1ac938" name="rms_lateral_error"/>
        </plot>
       </DockArea>
       <DockArea name="rms_lateral_velocity_error">
-       <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-        <range bottom="0.045853" top="0.048152" left="371.237399" right="436.831237"/>
+       <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+        <range top="243.005795" left="0.000000" bottom="-5.926971" right="59.925017"/>
         <limitY/>
         <curve color="#ff7f0e" name="rms_lateral_velocity_error"/>
        </plot>
       </DockArea>
       <DockArea name="rms_lateral_acceleration_error">
-       <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-        <range bottom="6.752911" top="7.097240" left="371.237399" right="436.831237"/>
+       <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+        <range top="629.990648" left="0.000000" bottom="-15.365199" right="59.925017"/>
         <limitY/>
         <curve color="#f14cc1" name="rms_lateral_acceleration_error"/>
        </plot>
       </DockArea>
      </DockSplitter>
-     <DockSplitter sizes="0.333109;0.333783;0.333109" orientation="|" count="3">
+     <DockSplitter count="3" orientation="|" sizes="0.332311;0.335377;0.332311">
       <DockArea name="rms_longitudinal_error">
-       <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-        <range bottom="24.683633" top="25.980207" left="371.237399" right="436.831237"/>
+       <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+        <range top="1110.220992" left="0.000000" bottom="-27.078558" right="59.925017"/>
         <limitY/>
         <curve color="#9467bd" name="rms_longitudinal_error"/>
        </plot>
       </DockArea>
       <DockArea name="rms_longitudinal_velocity_error">
-       <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-        <range bottom="2048.310593" top="2240.060202" left="371.237399" right="436.831237"/>
+       <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+        <range top="1278.960225" left="0.000000" bottom="-30.937311" right="59.925017"/>
         <limitY/>
         <curve color="#bcbd22" name="rms_longitudinal_velocity_error"/>
        </plot>
       </DockArea>
       <DockArea name="rms_longitudinal_acceleration_error">
-       <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-        <range bottom="6903.688580" top="7274.093730" left="371.237399" right="436.831237"/>
+       <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+        <range top="376.069650" left="0.000000" bottom="-9.121068" right="59.925017"/>
         <limitY/>
         <curve color="#17becf" name="rms_longitudinal_acceleration_error"/>
        </plot>
@@ -239,50 +249,50 @@
     </DockSplitter>
    </Container>
   </Tab>
-  <Tab containers="1" tab_name="Lateral - Longitudinal IAE">
+  <Tab tab_name="Lateral - Longitudinal IAE" containers="1">
    <Container>
-    <DockSplitter sizes="0.500548;0.499452" orientation="-" count="2">
-     <DockSplitter sizes="0.333109;0.333783;0.333109" orientation="|" count="3">
+    <DockSplitter count="2" orientation="-" sizes="0.500557;0.499443">
+     <DockSplitter count="3" orientation="|" sizes="0.332925;0.334151;0.332925">
       <DockArea name="iae_lateral_error">
-       <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-        <range bottom="1830.687801" top="1950.931483" left="371.237399" right="436.831237"/>
+       <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+        <range top="19258.828562" left="0.000000" bottom="-469.280180" right="59.925017"/>
         <limitY/>
         <curve color="#1f77b4" name="iae_lateral_error"/>
        </plot>
       </DockArea>
       <DockArea name="iae_lateral_velocity_error">
-       <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-        <range bottom="0.033764" top="0.036062" left="371.237399" right="436.831237"/>
+       <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+        <range top="243.005795" left="0.000000" bottom="-5.926971" right="59.925017"/>
         <limitY/>
         <curve color="#d62728" name="iae_lateral_velocity_error"/>
        </plot>
       </DockArea>
       <DockArea name="iae_lateral_acceleration_error">
-       <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-        <range bottom="4.772672" top="5.117000" left="371.237399" right="436.831237"/>
+       <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+        <range top="629.990648" left="0.000000" bottom="-15.365199" right="59.925017"/>
         <limitY/>
         <curve color="#1ac938" name="iae_lateral_acceleration_error"/>
        </plot>
       </DockArea>
      </DockSplitter>
-     <DockSplitter sizes="0.333109;0.333783;0.333109" orientation="|" count="3">
+     <DockSplitter count="3" orientation="|" sizes="0.332311;0.335377;0.332311">
       <DockArea name="iae_longitudinal_error">
-       <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-        <range bottom="16.418313" top="17.714888" left="371.237399" right="436.831237"/>
+       <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+        <range top="1110.220992" left="0.000000" bottom="-27.078558" right="59.925017"/>
         <limitY/>
         <curve color="#ff7f0e" name="iae_longitudinal_error"/>
        </plot>
       </DockArea>
       <DockArea name="iae_longitudinal_velocity_error">
-       <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-        <range bottom="2027.354355" top="2219.103964" left="371.237399" right="436.831237"/>
+       <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+        <range top="1278.960225" left="0.000000" bottom="-30.937311" right="59.925017"/>
         <limitY/>
         <curve color="#9467bd" name="iae_longitudina_velocity_error"/>
        </plot>
       </DockArea>
       <DockArea name="iae_longitudinal_acceleration_error">
-       <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-        <range bottom="3810.019259" top="4180.424409" left="371.237399" right="436.831237"/>
+       <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+        <range top="376.069650" left="0.000000" bottom="-9.121068" right="59.925017"/>
         <limitY/>
         <curve color="#f14cc1" name="iae_longitudinal_acceleration_error"/>
        </plot>
@@ -291,28 +301,28 @@
     </DockSplitter>
    </Container>
   </Tab>
-  <Tab containers="1" tab_name="Other RMS">
+  <Tab tab_name="Other RMS" containers="1">
    <Container>
-    <DockSplitter sizes="0.500548;0.499452" orientation="-" count="2">
-     <DockSplitter sizes="0.5;0.5" orientation="|" count="2">
+    <DockSplitter count="2" orientation="-" sizes="0.500557;0.499443">
+     <DockSplitter count="2" orientation="|" sizes="0.5;0.5">
       <DockArea name="rms_heading_error">
-       <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-        <range bottom="2480.642479" top="2599.079085" left="371.237399" right="436.831237"/>
+       <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+        <range top="12297.474187" left="0.000000" bottom="-299.877614" right="59.925017"/>
         <limitY/>
         <curve color="#bcbd22" name="rms_heading_error"/>
        </plot>
       </DockArea>
       <DockArea name="rms_heading_velocity_error">
-       <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-        <range bottom="100.566442" top="105.448357" left="371.237399" right="436.831237"/>
+       <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+        <range top="257.496735" left="0.000000" bottom="-6.278706" right="59.925017"/>
         <limitY/>
         <curve color="#1f77b4" name="rms_heading_velocity_error"/>
        </plot>
       </DockArea>
      </DockSplitter>
      <DockArea name="rms_tracking_curvature_discontinuity_ability">
-      <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-       <range bottom="0.015477" top="0.016387" left="371.237399" right="436.831237"/>
+      <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+       <range top="2.831900" left="0.000000" bottom="-0.069071" right="59.925017"/>
        <limitY/>
        <curve color="#17becf" name="rms_tracking_curvature_discontinuity_ability"/>
       </plot>
@@ -320,28 +330,28 @@
     </DockSplitter>
    </Container>
   </Tab>
-  <Tab containers="1" tab_name="Other IAE">
+  <Tab tab_name="Other IAE" containers="1">
    <Container>
-    <DockSplitter sizes="0.500548;0.499452" orientation="-" count="2">
-     <DockSplitter sizes="0.5;0.5" orientation="|" count="2">
+    <DockSplitter count="2" orientation="-" sizes="0.500557;0.499443">
+     <DockSplitter count="2" orientation="|" sizes="0.5;0.5">
       <DockArea name="iae_heading_error">
-       <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-        <range bottom="1887.829739" top="2068.396849" left="369.050456" right="469.025611"/>
+       <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+        <range top="12297.474187" left="0.000000" bottom="-299.877614" right="59.925017"/>
         <limitY/>
         <curve color="#1ac938" name="iae_heading_error"/>
        </plot>
       </DockArea>
       <DockArea name="iae_heading_velocity_error">
-       <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-        <range bottom="76.449736" top="83.892737" left="369.050456" right="469.025611"/>
+       <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+        <range top="257.496735" left="0.000000" bottom="-6.278706" right="59.925017"/>
         <limitY/>
         <curve color="#ff7f0e" name="iae_heading_velocity_error"/>
        </plot>
       </DockArea>
      </DockSplitter>
      <DockArea name="iae_tracking_curvature_discontinuity_ability">
-      <plot style="Lines" mode="TimeSeries" flip_x="false" flip_y="false">
-       <range bottom="0.008741" top="0.010123" left="369.050456" right="469.025611"/>
+      <plot flip_x="false" style="Lines" flip_y="false" mode="TimeSeries">
+       <range top="2.831900" left="0.000000" bottom="-0.069071" right="59.925017"/>
        <limitY/>
        <curve color="#d62728" name="iae_tracking_curvature_discontinuity_ability"/>
       </plot>
@@ -349,27 +359,27 @@
     </DockSplitter>
    </Container>
   </Tab>
-  <Tab containers="1" tab_name="XY Position">
+  <Tab tab_name="XY Position" containers="1">
    <Container>
-    <DockSplitter sizes="1" orientation="-" count="1">
+    <DockSplitter count="1" orientation="-" sizes="1">
      <DockArea name="...">
-      <plot style="Lines" mode="XYPlot" flip_x="false" flip_y="false">
-       <range bottom="73773.298693" top="73773.498693" left="0.000000" right="0.000000"/>
+      <plot flip_x="false" style="Lines" flip_y="false" mode="XYPlot">
+       <range top="73782.248438" left="0.000000" bottom="73782.048437" right="0.000000"/>
        <limitY/>
-       <curve color="#f14cc1" curve_x="/localization/kinematic_state/pose/pose/position/x" name="/localization/kinematic_state/pose/pose/position/[x;y]" curve_y="/localization/kinematic_state/pose/pose/position/y"/>
+       <curve curve_y="/localization/kinematic_state/pose/pose/position/y" curve_x="/localization/kinematic_state/pose/pose/position/x" color="#f14cc1" name="/localization/kinematic_state/pose/pose/position/[x;y]"/>
       </plot>
      </DockArea>
     </DockSplitter>
    </Container>
   </Tab>
-  <currentTabIndex index="7"/>
+  <currentTabIndex index="0"/>
  </tabbed_widget>
  <use_relative_time_offset enabled="1"/>
  <!-- - - - - - - - - - - - - - - -->
  <!-- - - - - - - - - - - - - - - -->
  <Plugins>
   <plugin ID="DataLoad CSV">
-   <default delimiter="0" time_axis=""/>
+   <default time_axis="" delimiter="0"/>
   </plugin>
   <plugin ID="DataLoad ROS2 bags">
    <use_header_stamp value="false"/>
@@ -402,13 +412,6 @@
  <previouslyLoaded_Streamer name="ROS2 Topic Subscriber"/>
  <!-- - - - - - - - - - - - - - - -->
  <customMathEquations>
-  <snippet name="iae_longitudinal_acceleration_error">
-   <global>sum = 0</global>
-   <function>sum = sum + math.abs(value)
-
-return sum</function>
-   <linked_source>/control_performance/performance_vars/error/longitudinal_error_acceleration</linked_source>
-  </snippet>
   <snippet name="iae_longitudina_velocity_error">
    <global>sum = 0</global>
    <function>sum = sum + math.abs(value)
@@ -444,27 +447,6 @@ return sum</function>
 return sum</function>
    <linked_source>/control_performance/performance_vars/error/heading_error_velocity</linked_source>
   </snippet>
-  <snippet name="rms_lateral_error">
-   <global>sum = 0</global>
-   <function>sum = sum + math.sqrt(value*value)
-
-return sum</function>
-   <linked_source>/control_performance/performance_vars/error/lateral_error</linked_source>
-  </snippet>
-  <snippet name="rms_longitudinal_velocity_error">
-   <global>sum = 0</global>
-   <function>sum = sum + math.abs(value)
-
-return sum</function>
-   <linked_source>/control_performance/performance_vars/error/longitudinal_error_velocity</linked_source>
-  </snippet>
-  <snippet name="rms_lateral_velocity_error">
-   <global>sum = 0</global>
-   <function>sum = sum + math.sqrt(value*value)
-
-return sum</function>
-   <linked_source>/control_performance/performance_vars/error/lateral_error_velocity</linked_source>
-  </snippet>
   <snippet name="rms_lateral_acceleration_error">
    <global>sum = 0</global>
    <function>sum = sum + math.sqrt(value*value)
@@ -472,33 +454,26 @@ return sum</function>
 return sum</function>
    <linked_source>/control_performance/performance_vars/error/lateral_error_acceleration</linked_source>
   </snippet>
-  <snippet name="rms_longitudinal_error">
-   <global>sum = 0</global>
-   <function>sum = sum + math.sqrt(value*value)
-
-return sum</function>
-   <linked_source>/control_performance/performance_vars/error/longitudinal_error</linked_source>
-  </snippet>
-  <snippet name="rms_longitudinal_acceleration_error">
-   <global>sum = 0</global>
-   <function>sum = sum + math.sqrt(value*value)
-
-return sum</function>
-   <linked_source>/control_performance/performance_vars/error/longitudinal_error_acceleration</linked_source>
-  </snippet>
-  <snippet name="iae_heading_error">
+  <snippet name="iae_lateral_velocity_error">
    <global>sum = 0</global>
    <function>sum = sum + math.abs(value)
 
 return sum</function>
-   <linked_source>/control_performance/performance_vars/error/heading_error</linked_source>
+   <linked_source>/control_performance/performance_vars/error/lateral_error_velocity</linked_source>
   </snippet>
-  <snippet name="rms_tracking_curvature_discontinuity_ability">
+  <snippet name="iae_heading_velocity_error">
    <global>sum = 0</global>
-   <function>sum = sum + math.sqrt(value*value)
+   <function>sum = sum + math.abs(value)
 
 return sum</function>
-   <linked_source>/control_performance/performance_vars/error/tracking_curvature_discontinuity_ability</linked_source>
+   <linked_source>/control_performance/performance_vars/error/heading_error_velocity</linked_source>
+  </snippet>
+  <snippet name="iae_longitudinal_acceleration_error">
+   <global>sum = 0</global>
+   <function>sum = sum + math.abs(value)
+
+return sum</function>
+   <linked_source>/control_performance/performance_vars/error/longitudinal_error_acceleration</linked_source>
   </snippet>
   <snippet name="iae_tracking_curvature_discontinuity_ability">
    <global>sum = 0</global>
@@ -514,19 +489,54 @@ return sum</function>
 return sum</function>
    <linked_source>/control_performance/performance_vars/error/lateral_error</linked_source>
   </snippet>
-  <snippet name="iae_heading_velocity_error">
+  <snippet name="rms_tracking_curvature_discontinuity_ability">
+   <global>sum = 0</global>
+   <function>sum = sum + math.sqrt(value*value)
+
+return sum</function>
+   <linked_source>/control_performance/performance_vars/error/tracking_curvature_discontinuity_ability</linked_source>
+  </snippet>
+  <snippet name="iae_heading_error">
    <global>sum = 0</global>
    <function>sum = sum + math.abs(value)
 
 return sum</function>
-   <linked_source>/control_performance/performance_vars/error/heading_error_velocity</linked_source>
+   <linked_source>/control_performance/performance_vars/error/heading_error</linked_source>
   </snippet>
-  <snippet name="iae_lateral_velocity_error">
+  <snippet name="rms_longitudinal_acceleration_error">
    <global>sum = 0</global>
-   <function>sum = sum + math.abs(value)
+   <function>sum = sum + math.sqrt(value*value)
+
+return sum</function>
+   <linked_source>/control_performance/performance_vars/error/longitudinal_error_acceleration</linked_source>
+  </snippet>
+  <snippet name="rms_longitudinal_error">
+   <global>sum = 0</global>
+   <function>sum = sum + math.sqrt(value*value)
+
+return sum</function>
+   <linked_source>/control_performance/performance_vars/error/longitudinal_error</linked_source>
+  </snippet>
+  <snippet name="rms_lateral_velocity_error">
+   <global>sum = 0</global>
+   <function>sum = sum + math.sqrt(value*value)
 
 return sum</function>
    <linked_source>/control_performance/performance_vars/error/lateral_error_velocity</linked_source>
+  </snippet>
+  <snippet name="rms_longitudinal_velocity_error">
+   <global>sum = 0</global>
+   <function>sum = sum + math.abs(value)
+
+return sum</function>
+   <linked_source>/control_performance/performance_vars/error/longitudinal_error_velocity</linked_source>
+  </snippet>
+  <snippet name="rms_lateral_error">
+   <global>sum = 0</global>
+   <function>sum = sum + math.sqrt(value*value)
+
+return sum</function>
+   <linked_source>/control_performance/performance_vars/error/lateral_error</linked_source>
   </snippet>
  </customMathEquations>
  <snippets/>

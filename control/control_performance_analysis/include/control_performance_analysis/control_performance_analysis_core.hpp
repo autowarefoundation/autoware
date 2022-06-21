@@ -64,7 +64,8 @@ public:
   void setCurrentWaypoints(const Trajectory & trajectory);
   void setCurrentControlValue(const AckermannControlCommand & msg);
   void setInterpolatedVars(
-    Pose & interpolated_pose, double & interpolated_velocity, double & interpolated_acceleration);
+    Pose & interpolated_pose, double & interpolated_velocity, double & interpolated_acceleration,
+    double & interpolated_steering_angle);
   void setOdomHistory(const Odometry & odom);
   void setSteeringStatus(const SteeringReport & steering);
 
@@ -115,6 +116,7 @@ private:
   std::shared_ptr<Pose> interpolated_pose_ptr_;
   std::shared_ptr<double> interpolated_velocity_ptr_;
   std::shared_ptr<double> interpolated_acceleration_ptr_;
+  std::shared_ptr<double> interpolated_steering_angle_ptr_;
 
   // V = xPx' ; Value function from DARE Lyap matrix P
   Eigen::Matrix2d const lyap_P_ = (Eigen::MatrixXd(2, 2) << 2.342, 8.60, 8.60, 64.29).finished();
