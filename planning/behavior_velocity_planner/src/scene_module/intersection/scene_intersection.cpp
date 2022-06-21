@@ -540,6 +540,8 @@ bool IntersectionModule::isTargetCollisionVehicleType(
     object.classification.at(0).label ==
       autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK ||
     object.classification.at(0).label ==
+      autoware_auto_perception_msgs::msg::ObjectClassification::TRAILER ||
+    object.classification.at(0).label ==
       autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE ||
     object.classification.at(0).label ==
       autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE) {
@@ -558,6 +560,8 @@ bool IntersectionModule::isTargetStuckVehicleType(
       autoware_auto_perception_msgs::msg::ObjectClassification::BUS ||
     object.classification.at(0).label ==
       autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK ||
+    object.classification.at(0).label ==
+      autoware_auto_perception_msgs::msg::ObjectClassification::TRAILER ||
     object.classification.at(0).label ==
       autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE) {
     return true;
