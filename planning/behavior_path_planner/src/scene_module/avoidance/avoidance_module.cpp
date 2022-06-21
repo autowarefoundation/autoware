@@ -707,7 +707,7 @@ void AvoidanceModule::generateTotalShiftLine(
   const AvoidPointArray & avoid_points, ShiftLineData & shift_line_data) const
 {
   const auto & path = avoidance_data_.reference_path;
-  const auto & arclengths = avoidance_data_.arclength_from_ego;
+  const auto & arcs = avoidance_data_.arclength_from_ego;
   const auto N = path.points.size();
 
   auto & sl = shift_line_data;
@@ -729,7 +729,7 @@ void AvoidanceModule::generateTotalShiftLine(
     const auto & ap = avoid_points.at(j);
     for (size_t i = 0; i < N; ++i) {
       // calc current interpolated shift
-      const auto i_shift = lerpShiftLengthOnArc(arclengths.at(i), ap);
+      const auto i_shift = lerpShiftLengthOnArc(arcs.at(i), ap);
 
       // update maximum shift for positive direction
       if (i_shift > sl.pos_shift_line.at(i)) {
@@ -781,7 +781,7 @@ void AvoidanceModule::generateTotalShiftLine(
 AvoidPointArray AvoidanceModule::extractShiftPointsFromLine(ShiftLineData & shift_line_data) const
 {
   const auto & path = avoidance_data_.reference_path;
-  const auto & arclengths = avoidance_data_.arclength_from_ego;
+  const auto & arcs = avoidance_data_.arclength_from_ego;
   const auto N = path.points.size();
 
   auto & sl = shift_line_data;
@@ -790,7 +790,7 @@ AvoidPointArray AvoidanceModule::extractShiftPointsFromLine(ShiftLineData & shif
     if (i == 0) {
       return sl.shift_line_grad.at(i);
     }
-    const double ds = arclengths.at(i) - arclengths.at(i - 1);
+    const double ds = arcs.at(i) - arcs.at(i - 1);
     if (ds < 1.0e-5) {
       return sl.shift_line_grad.at(i);
     }  // use theoretical value when ds is too small.
@@ -798,10 +798,10 @@ AvoidPointArray AvoidanceModule::extractShiftPointsFromLine(ShiftLineData & shif
   };
 
   const auto getFwdGrad = [&](const size_t i) {
-    if (i == arclengths.size() - 1) {
+    if (i == arcs.size() - 1) {
       return sl.shift_line_grad.at(i);
     }
-    const double ds = arclengths.at(i + 1) - arclengths.at(i);
+    const double ds = arcs.at(i + 1) - arcs.at(i);
     if (ds < 1.0e-5) {
       return sl.shift_line_grad.at(i);
     }  // use theoretical value when ds is too small.
@@ -829,7 +829,7 @@ AvoidPointArray AvoidanceModule::extractShiftPointsFromLine(ShiftLineData & shif
     // If the vehicle is already on the avoidance (checked by the first point has shift),
     // set a start point at the first path point.
     if (!found_first_start && std::abs(shift) > IS_ALREADY_SHIFTING_THR) {
-      setStartData(ap, 0.0, p, i, arclengths.at(i));  // start length is overwritten later.
+      setStartData(ap, 0.0, p, i, arcs.at(i));  // start length is overwritten later.
       found_first_start = true;
       DEBUG_PRINT("shift (= %f) is not zero at i = %lu. set start shift here.", shift, i);
     }
@@ -843,14 +843,14 @@ AvoidPointArray AvoidanceModule::extractShiftPointsFromLine(ShiftLineData & shif
     }
 
     if (!found_first_start) {
-      setStartData(ap, 0.0, p, i, arclengths.at(i));  // start length is overwritten later.
+      setStartData(ap, 0.0, p, i, arcs.at(i));  // start length is overwritten later.
       found_first_start = true;
       DEBUG_PRINT("grad change detected. start at i = %lu", i);
     } else {
-      setEndData(ap, shift, p, i, arclengths.at(i));
+      setEndData(ap, shift, p, i, arcs.at(i));
       ap.id = getOriginalShiftPointUniqueId();
       merged_avoid_points.push_back(ap);
-      setStartData(ap, 0.0, p, i, arclengths.at(i));  // start length is overwritten later.
+      setStartData(ap, 0.0, p, i, arcs.at(i));  // start length is overwritten later.
       DEBUG_PRINT("end and start point found at i = %lu", i);
     }
   }
@@ -1011,7 +1011,7 @@ AvoidPointArray AvoidanceModule::trimShiftPoint(
 }
 
 void AvoidanceModule::alignShiftPointsOrder(
-  AvoidPointArray & shift_points, const bool recalc_start_length) const
+  AvoidPointArray & shift_points, const bool recalculate_start_length) const
 {
   if (shift_points.empty()) {
     return;
@@ -1025,7 +1025,7 @@ void AvoidanceModule::alignShiftPointsOrder(
   // calc relative length
   // NOTE: the input shift point must not have conflict range. Otherwise relative
   // length value will be broken.
-  if (recalc_start_length) {
+  if (recalculate_start_length) {
     shift_points.front().start_length = getCurrentLinearShift();
     for (size_t i = 1; i < shift_points.size(); ++i) {
       shift_points.at(i).start_length = shift_points.at(i - 1).length;
