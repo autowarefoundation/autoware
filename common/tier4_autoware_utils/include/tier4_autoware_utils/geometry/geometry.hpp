@@ -382,6 +382,9 @@ geometry_msgs::msg::Point calcInterpolatedPoint(
 
 /**
  * @brief Calculate a pose by linear interpolation.
+ * Note that if ratio>=1.0 or dist(src_pose, dst_pose)<=0.01
+ * the orientation of the output pose is same as the orientation
+ * of the dst_pose
  */
 template <class Pose1, class Pose2>
 geometry_msgs::msg::Pose calcInterpolatedPose(
@@ -392,10 +395,16 @@ geometry_msgs::msg::Pose calcInterpolatedPose(
   output_pose.position = calcInterpolatedPoint(getPoint(src_pose), getPoint(dst_pose), ratio);
 
   if (set_orientation_from_position_direction) {
+    const double input_poses_dist = calcDistance2d(getPoint(src_pose), getPoint(dst_pose));
+
     // Get orientation from interpolated point and src_pose
-    const double pitch = calcElevationAngle(getPoint(output_pose), getPoint(dst_pose));
-    const double yaw = calcAzimuthAngle(output_pose.position, getPoint(dst_pose));
-    output_pose.orientation = createQuaternionFromRPY(0.0, pitch, yaw);
+    if (ratio < 1.0 && input_poses_dist > 1e-3) {
+      const double pitch = calcElevationAngle(getPoint(output_pose), getPoint(dst_pose));
+      const double yaw = calcAzimuthAngle(output_pose.position, getPoint(dst_pose));
+      output_pose.orientation = createQuaternionFromRPY(0.0, pitch, yaw);
+    } else {
+      output_pose.orientation = getPose(dst_pose).orientation;
+    }
   } else {
     // Get orientation by spherical linear interpolation
     tf2::Transform src_tf, dst_tf;

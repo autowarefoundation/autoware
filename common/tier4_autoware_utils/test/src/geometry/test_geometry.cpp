@@ -873,31 +873,7 @@ TEST(geometry, calcInterpolatedPose)
     }
   }
 
-  // Quaternion Interpolation1
-  {
-    geometry_msgs::msg::Pose src_pose;
-    src_pose.position = createPoint(0.0, 0.0, 0.0);
-    src_pose.orientation = createQuaternionFromRPY(deg2rad(0), deg2rad(0), deg2rad(0));
-
-    geometry_msgs::msg::Pose dst_pose;
-    dst_pose.position = createPoint(0.0, 0.0, 0.0);
-    dst_pose.orientation = createQuaternionFromRPY(deg2rad(0), deg2rad(0), deg2rad(90));
-
-    for (double ratio = 0.0; ratio < 1.0 + epsilon; ratio += 0.1) {
-      const auto p_out = calcInterpolatedPose(src_pose, dst_pose, ratio);
-
-      const auto ans_quat = createQuaternionFromRPY(deg2rad(0), deg2rad(0), deg2rad(0));
-      EXPECT_DOUBLE_EQ(p_out.position.x, 0.0);
-      EXPECT_DOUBLE_EQ(p_out.position.y, 0.0);
-      EXPECT_DOUBLE_EQ(p_out.position.z, 0.0);
-      EXPECT_DOUBLE_EQ(p_out.orientation.x, ans_quat.x);
-      EXPECT_DOUBLE_EQ(p_out.orientation.y, ans_quat.y);
-      EXPECT_DOUBLE_EQ(p_out.orientation.z, ans_quat.z);
-      EXPECT_DOUBLE_EQ(p_out.orientation.w, ans_quat.w);
-    }
-  }
-
-  // Quaternion Interpolation2
+  // Quaternion Interpolation
   {
     geometry_msgs::msg::Pose src_pose;
     src_pose.position = createPoint(0.0, 0.0, 0.0);
@@ -907,7 +883,7 @@ TEST(geometry, calcInterpolatedPose)
     dst_pose.position = createPoint(1.0, 1.0, 0.0);
     dst_pose.orientation = createQuaternionFromRPY(deg2rad(0), deg2rad(0), deg2rad(60));
 
-    for (double ratio = 0.0; ratio < 1.0 + epsilon; ratio += 0.1) {
+    for (double ratio = 0.0; ratio < 1.0; ratio += 0.1) {
       const auto p_out = calcInterpolatedPose(src_pose, dst_pose, ratio);
 
       const auto ans_quat = createQuaternionFromRPY(deg2rad(0), deg2rad(0), deg2rad(45));
@@ -919,9 +895,21 @@ TEST(geometry, calcInterpolatedPose)
       EXPECT_DOUBLE_EQ(p_out.orientation.z, ans_quat.z);
       EXPECT_DOUBLE_EQ(p_out.orientation.w, ans_quat.w);
     }
+
+    // Boundary Condition (ratio = 1.0)
+    const auto p_out = calcInterpolatedPose(src_pose, dst_pose, 1.0);
+
+    const auto ans_quat = createQuaternionFromRPY(deg2rad(0), deg2rad(0), deg2rad(60));
+    EXPECT_DOUBLE_EQ(p_out.position.x, 1.0);
+    EXPECT_DOUBLE_EQ(p_out.position.y, 1.0);
+    EXPECT_DOUBLE_EQ(p_out.position.z, 0.0);
+    EXPECT_DOUBLE_EQ(p_out.orientation.x, ans_quat.x);
+    EXPECT_DOUBLE_EQ(p_out.orientation.y, ans_quat.y);
+    EXPECT_DOUBLE_EQ(p_out.orientation.z, ans_quat.z);
+    EXPECT_DOUBLE_EQ(p_out.orientation.w, ans_quat.w);
   }
 
-  // Same points are given
+  // Same poses are given
   {
     geometry_msgs::msg::Pose src_pose;
     src_pose.position = createPoint(0.0, 0.0, 0.0);
@@ -941,6 +929,30 @@ TEST(geometry, calcInterpolatedPose)
       EXPECT_DOUBLE_EQ(p_out.orientation.y, 0.0);
       EXPECT_DOUBLE_EQ(p_out.orientation.z, 0.0);
       EXPECT_DOUBLE_EQ(p_out.orientation.w, 1.0);
+    }
+  }
+
+  // Same points are given (different orientation)
+  {
+    geometry_msgs::msg::Pose src_pose;
+    src_pose.position = createPoint(0.0, 0.0, 0.0);
+    src_pose.orientation = createQuaternionFromRPY(deg2rad(0), deg2rad(0), deg2rad(0));
+
+    geometry_msgs::msg::Pose dst_pose;
+    dst_pose.position = createPoint(0.0, 0.0, 0.0);
+    dst_pose.orientation = createQuaternionFromRPY(deg2rad(0), deg2rad(0), deg2rad(45));
+
+    for (double ratio = 0.0; ratio < 1.0 + epsilon; ratio += 0.1) {
+      const auto p_out = calcInterpolatedPose(src_pose, dst_pose, ratio);
+
+      const auto ans_quat = createQuaternionFromRPY(deg2rad(0), deg2rad(0), deg2rad(45));
+      EXPECT_DOUBLE_EQ(p_out.position.x, 0.0);
+      EXPECT_DOUBLE_EQ(p_out.position.y, 0.0);
+      EXPECT_DOUBLE_EQ(p_out.position.z, 0.0);
+      EXPECT_DOUBLE_EQ(p_out.orientation.x, ans_quat.x);
+      EXPECT_DOUBLE_EQ(p_out.orientation.y, ans_quat.y);
+      EXPECT_DOUBLE_EQ(p_out.orientation.z, ans_quat.z);
+      EXPECT_DOUBLE_EQ(p_out.orientation.w, ans_quat.w);
     }
   }
 }
