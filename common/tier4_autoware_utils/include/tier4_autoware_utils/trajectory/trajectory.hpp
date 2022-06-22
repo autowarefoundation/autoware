@@ -364,6 +364,59 @@ double calcArcLength(const T & points)
 
   return calcSignedArcLength(points, 0, points.size() - 1);
 }
+
+/**
+ * @brief Calculate distance to the forward stop point from the given src index
+ */
+template <class T>
+boost::optional<double> calcDistanceToForwardStopPoint(
+  const T & points_with_twist, const size_t src_idx = 0)
+{
+  validateNonEmpty(points_with_twist);
+
+  const auto closest_stop_idx =
+    searchZeroVelocityIndex(points_with_twist, src_idx, points_with_twist.size());
+  if (!closest_stop_idx) {
+    return boost::none;
+  }
+
+  return std::max(0.0, calcSignedArcLength(points_with_twist, src_idx, *closest_stop_idx));
+}
+
+/**
+ * @brief Calculate distance to the forward stop point from the given pose
+ */
+template <class T>
+boost::optional<double> calcDistanceToForwardStopPoint(
+  const T & points_with_twist, const geometry_msgs::msg::Pose & pose,
+  const double max_dist = std::numeric_limits<double>::max(),
+  const double max_yaw = std::numeric_limits<double>::max())
+{
+  validateNonEmpty(points_with_twist);
+
+  const auto nearest_segment_idx =
+    tier4_autoware_utils::findNearestSegmentIndex(points_with_twist, pose, max_dist, max_yaw);
+
+  if (!nearest_segment_idx) {
+    return boost::none;
+  }
+
+  const auto stop_idx = tier4_autoware_utils::searchZeroVelocityIndex(
+    points_with_twist, *nearest_segment_idx + 1, points_with_twist.size());
+
+  if (!stop_idx) {
+    return boost::none;
+  }
+
+  const auto closest_stop_dist = tier4_autoware_utils::calcSignedArcLength(
+    points_with_twist, pose, *stop_idx, max_dist, max_yaw);
+
+  if (!closest_stop_dist) {
+    return boost::none;
+  }
+
+  return std::max(0.0, *closest_stop_dist);
+}
 }  // namespace tier4_autoware_utils
 
 #endif  // TIER4_AUTOWARE_UTILS__TRAJECTORY__TRAJECTORY_HPP_
