@@ -351,6 +351,10 @@ inline geometry_msgs::msg::Pose calcOffsetPose(
 
 /**
  * @brief Calculate a point by linear interpolation.
+ * @param src source point
+ * @param dst destination point
+ * @param ratio interpolation ratio, which should be [0.0, 1.0]
+ * @return interpolated point
  */
 template <class Point1, class Point2>
 geometry_msgs::msg::Point calcInterpolatedPoint(
@@ -370,7 +374,8 @@ geometry_msgs::msg::Point calcInterpolatedPoint(
   dst_vec.setZ(dst_point.z);
 
   // Get pose by linear interpolation
-  const auto & vec = tf2::lerp(src_vec, dst_vec, ratio);
+  const double clamped_ratio = std::clamp(ratio, 0.0, 1.0);
+  const auto & vec = tf2::lerp(src_vec, dst_vec, clamped_ratio);
 
   geometry_msgs::msg::Point point;
   point.x = vec.x();
@@ -385,20 +390,27 @@ geometry_msgs::msg::Point calcInterpolatedPoint(
  * Note that if ratio>=1.0 or dist(src_pose, dst_pose)<=0.01
  * the orientation of the output pose is same as the orientation
  * of the dst_pose
+ * @param src source point
+ * @param dst destination point
+ * @param ratio interpolation ratio, which should be [0.0, 1.0]
+ * @param set_orientation_from_position_direction set position by spherical interpolation if false
+ * @return interpolated point
  */
 template <class Pose1, class Pose2>
 geometry_msgs::msg::Pose calcInterpolatedPose(
   const Pose1 & src_pose, const Pose2 & dst_pose, const double ratio,
   const bool set_orientation_from_position_direction = true)
 {
+  const double clamped_ratio = std::clamp(ratio, 0.0, 1.0);
   geometry_msgs::msg::Pose output_pose;
-  output_pose.position = calcInterpolatedPoint(getPoint(src_pose), getPoint(dst_pose), ratio);
+  output_pose.position =
+    calcInterpolatedPoint(getPoint(src_pose), getPoint(dst_pose), clamped_ratio);
 
   if (set_orientation_from_position_direction) {
     const double input_poses_dist = calcDistance2d(getPoint(src_pose), getPoint(dst_pose));
 
     // Get orientation from interpolated point and src_pose
-    if (ratio < 1.0 && input_poses_dist > 1e-3) {
+    if (clamped_ratio < 1.0 && input_poses_dist > 1e-3) {
       const double pitch = calcElevationAngle(getPoint(output_pose), getPoint(dst_pose));
       const double yaw = calcAzimuthAngle(output_pose.position, getPoint(dst_pose));
       output_pose.orientation = createQuaternionFromRPY(0.0, pitch, yaw);
@@ -410,7 +422,7 @@ geometry_msgs::msg::Pose calcInterpolatedPose(
     tf2::Transform src_tf, dst_tf;
     tf2::fromMsg(getPose(src_pose), src_tf);
     tf2::fromMsg(getPose(dst_pose), dst_tf);
-    const auto & quaternion = tf2::slerp(src_tf.getRotation(), dst_tf.getRotation(), ratio);
+    const auto & quaternion = tf2::slerp(src_tf.getRotation(), dst_tf.getRotation(), clamped_ratio);
     output_pose.orientation = tf2::toMsg(quaternion);
   }
 
