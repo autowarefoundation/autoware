@@ -42,6 +42,7 @@ ament_auto_add_library(lanelet2_extension_lib SHARED
   lib/utilities.cpp
   lib/virtual_traffic_light.cpp
   lib/visualization.cpp
+  lib/route_checker.cpp
 )
 target_link_libraries(lanelet2_extension_lib
   ${GeographicLib_LIBRARIES}
@@ -72,6 +73,8 @@ if(BUILD_TESTING)
   target_link_libraries(regulatory_elements-test lanelet2_extension_lib)
   ament_add_ros_isolated_gtest(utilities-test test/src/test_utilities.cpp)
   target_link_libraries(utilities-test lanelet2_extension_lib)
+  ament_add_ros_isolated_gtest(route-test test/src/test_route_checker.cpp)
+  target_link_libraries(route-test lanelet2_extension_lib)
 endif()
 
 ament_auto_package()
