@@ -102,6 +102,74 @@ double get2dIoU(
     {object2.kinematics.pose_with_covariance.pose, object2.shape});
 }
 
+double get2dPrecision(
+  const std::tuple<
+    const geometry_msgs::msg::Pose &, const autoware_auto_perception_msgs::msg::Shape &> &
+    source_object,
+  const std::tuple<
+    const geometry_msgs::msg::Pose &, const autoware_auto_perception_msgs::msg::Shape &> &
+    target_object)
+{
+  tier4_autoware_utils::Polygon2d source_polygon, target_polygon;
+  toPolygon2d(std::get<0>(source_object), std::get<1>(source_object), source_polygon);
+  toPolygon2d(std::get<0>(target_object), std::get<1>(target_object), target_polygon);
+
+  std::vector<tier4_autoware_utils::Polygon2d> intersection_polygons;
+  boost::geometry::intersection(source_polygon, target_polygon, intersection_polygons);
+
+  double intersection_area = 0.0;
+  double source_area = 0.0;
+  for (const auto & intersection_polygon : intersection_polygons) {
+    intersection_area += boost::geometry::area(intersection_polygon);
+  }
+  source_area = boost::geometry::area(source_polygon);
+  const double precision = std::min(1.0, intersection_area / source_area);
+  return precision;
+}
+
+double get2dPrecision(
+  const autoware_auto_perception_msgs::msg::TrackedObject & source_object,
+  const autoware_auto_perception_msgs::msg::TrackedObject & target_object)
+{
+  return get2dPrecision(
+    {source_object.kinematics.pose_with_covariance.pose, source_object.shape},
+    {target_object.kinematics.pose_with_covariance.pose, target_object.shape});
+}
+
+double get2dRecall(
+  const std::tuple<
+    const geometry_msgs::msg::Pose &, const autoware_auto_perception_msgs::msg::Shape &> &
+    source_object,
+  const std::tuple<
+    const geometry_msgs::msg::Pose &, const autoware_auto_perception_msgs::msg::Shape &> &
+    target_object)
+{
+  tier4_autoware_utils::Polygon2d source_polygon, target_polygon;
+  toPolygon2d(std::get<0>(source_object), std::get<1>(source_object), source_polygon);
+  toPolygon2d(std::get<0>(target_object), std::get<1>(target_object), target_polygon);
+
+  std::vector<tier4_autoware_utils::Polygon2d> intersection_polygons;
+  boost::geometry::union_(source_polygon, target_polygon, intersection_polygons);
+
+  double intersection_area = 0.0;
+  double target_area = 0.0;
+  for (const auto & intersection_polygon : intersection_polygons) {
+    intersection_area += boost::geometry::area(intersection_polygon);
+  }
+  target_area += boost::geometry::area(target_polygon);
+  const double recall = std::min(1.0, intersection_area / target_area);
+  return recall;
+}
+
+double get2dRecall(
+  const autoware_auto_perception_msgs::msg::TrackedObject & source_object,
+  const autoware_auto_perception_msgs::msg::TrackedObject & target_object)
+{
+  return get2dRecall(
+    {source_object.kinematics.pose_with_covariance.pose, source_object.shape},
+    {target_object.kinematics.pose_with_covariance.pose, target_object.shape});
+}
+
 tier4_autoware_utils::Polygon2d inverseClockWise(const tier4_autoware_utils::Polygon2d & polygon)
 {
   tier4_autoware_utils::Polygon2d inverted_polygon;
@@ -169,7 +237,9 @@ void toPolygon2d(
     }
     output.outer().push_back(output.outer().front());
   } else if (shape.type == autoware_auto_perception_msgs::msg::Shape::POLYGON) {
-    for (const auto & point : shape.footprint.points) {
+    const double yaw = tf2::getYaw(pose.orientation);
+    const auto rotated_footprint = rotatePolygon(shape.footprint, yaw);
+    for (const auto & point : rotated_footprint.points) {
       output.outer().push_back(boost::geometry::make<tier4_autoware_utils::Point2d>(
         pose.position.x + point.x, pose.position.y + point.y));
     }
@@ -206,6 +276,21 @@ autoware_auto_perception_msgs::msg::TrackedObject toTrackedObject(
 
   tracked_object.shape = detected_object.shape;
   return tracked_object;
+}
+
+geometry_msgs::msg::Polygon rotatePolygon(
+  const geometry_msgs::msg::Polygon & polygon, const double angle)
+{
+  const double cos = std::cos(angle);
+  const double sin = std::sin(angle);
+  geometry_msgs::msg::Polygon rotated_polygon;
+  for (const auto & point : polygon.points) {
+    auto rotated_point = point;
+    rotated_point.x = cos * point.x - sin * point.y;
+    rotated_point.y = sin * point.x + cos * point.y;
+    rotated_polygon.points.push_back(rotated_point);
+  }
+  return rotated_polygon;
 }
 
 }  // namespace utils

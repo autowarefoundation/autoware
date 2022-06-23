@@ -29,6 +29,15 @@
       <arg name="output_clusters" value="clusters"/>
       <arg name="use_pointcloud_map" value="false"/>
     </include>
+    <include file="$(find-pkg-share shape_estimation)/launch/shape_estimation.launch.xml">
+      <arg name="input/objects" value="clusters"/>
+      <arg name="output/objects" value="objects_with_feature"/>
+    </include>
+    <!-- convert DynamicObjectsWithFeatureArray to DynamicObjects -->
+    <include file="$(find-pkg-share detected_object_feature_remover)/launch/detected_object_feature_remover.launch.xml">
+      <arg name="input" value="objects_with_feature"/>
+      <arg name="output" value="objects"/>
+    </include>
   </group>
 
   <!-- DetectionByTracker -->
@@ -81,6 +90,11 @@
   <group>
     <include file="$(find-pkg-share object_merger)/launch/object_association_merger.launch.xml">
       <arg name="input/object0" value="$(var lidar_detection_model)/validation/objects"/>
+      <arg name="input/object1" value="clustering/objects"/>
+      <arg name="output/object" value="temporary_merged_objects"/>
+    </include>
+    <include file="$(find-pkg-share object_merger)/launch/object_association_merger.launch.xml">
+      <arg name="input/object0" value="temporary_merged_objects"/>
       <arg name="input/object1" value="detection_by_tracker/objects"/>
       <arg name="output/object" value="objects"/>
     </include>

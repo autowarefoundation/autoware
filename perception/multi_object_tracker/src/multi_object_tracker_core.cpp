@@ -76,11 +76,10 @@ bool transformDetectedObjects(
       }
       tf2::fromMsg(*ros_target2objects_world, tf_target2objects_world);
     }
-    for (size_t i = 0; i < output_msg.objects.size(); ++i) {
-      tf2::fromMsg(
-        output_msg.objects.at(i).kinematics.pose_with_covariance.pose, tf_objects_world2objects);
+    for (auto & object : output_msg.objects) {
+      tf2::fromMsg(object.kinematics.pose_with_covariance.pose, tf_objects_world2objects);
       tf_target2objects = tf_target2objects_world * tf_objects_world2objects;
-      tf2::toMsg(tf_target2objects, output_msg.objects.at(i).kinematics.pose_with_covariance.pose);
+      tf2::toMsg(tf_target2objects, object.kinematics.pose_with_covariance.pose);
       // TODO(yukkysaito) transform covariance
     }
   }
@@ -266,7 +265,9 @@ void MultiObjectTracker::onMeasurement(
     if (reverse_assignment.find(i) != reverse_assignment.end()) {  // found
       continue;
     }
-    list_tracker_.push_back(createNewTracker(transformed_objects.objects.at(i), measurement_time));
+    std::shared_ptr<Tracker> tracker =
+      createNewTracker(transformed_objects.objects.at(i), measurement_time);
+    if (tracker) list_tracker_.push_back(tracker);
   }
 
   if (publish_timer_ == nullptr) {
@@ -341,6 +342,7 @@ void MultiObjectTracker::sanitizeTracker(
   std::list<std::shared_ptr<Tracker>> & list_tracker, const rclcpp::Time & time)
 {
   constexpr float min_iou = 0.1;
+  constexpr float min_iou_for_unknown_object = 0.001;
   constexpr double distance_threshold = 5.0;
   /* delete collision tracker */
   for (auto itr1 = list_tracker.begin(); itr1 != list_tracker.end(); ++itr1) {
@@ -357,15 +359,46 @@ void MultiObjectTracker::sanitizeTracker(
       if (distance_threshold < distance) {
         continue;
       }
-      if (min_iou < utils::get2dIoU(object1, object2)) {
-        if ((*itr1)->getTotalMeasurementCount() < (*itr2)->getTotalMeasurementCount()) {
-          itr1 = list_tracker.erase(itr1);
-          --itr1;
-          break;
-        } else {
-          itr2 = list_tracker.erase(itr2);
-          --itr2;
+
+      const auto iou = utils::get2dIoU(object1, object2);
+      const auto & label1 = (*itr1)->getHighestProbLabel();
+      const auto & label2 = (*itr2)->getHighestProbLabel();
+      bool should_delete_tracker1 = false;
+      bool should_delete_tracker2 = false;
+
+      // If at least one of them is UNKNOWN, delete the one with lower IOU. Because the UNKNOWN
+      // objects are not reliable.
+      if (label1 == Label::UNKNOWN || label2 == Label::UNKNOWN) {
+        if (min_iou_for_unknown_object < iou) {
+          if (label1 == Label::UNKNOWN && label2 == Label::UNKNOWN) {
+            if ((*itr1)->getTotalMeasurementCount() < (*itr2)->getTotalMeasurementCount()) {
+              should_delete_tracker1 = true;
+            } else {
+              should_delete_tracker2 = true;
+            }
+          } else if (label1 == Label::UNKNOWN) {
+            should_delete_tracker1 = true;
+          } else if (label2 == Label::UNKNOWN) {
+            should_delete_tracker2 = true;
+          }
         }
+      } else {  // If neither is UNKNOWN, delete the one with lower IOU.
+        if (min_iou < iou) {
+          if ((*itr1)->getTotalMeasurementCount() < (*itr2)->getTotalMeasurementCount()) {
+            should_delete_tracker1 = true;
+          } else {
+            should_delete_tracker2 = true;
+          }
+        }
+      }
+
+      if (should_delete_tracker1) {
+        itr1 = list_tracker.erase(itr1);
+        --itr1;
+        break;
+      } else if (should_delete_tracker2) {
+        itr2 = list_tracker.erase(itr2);
+        --itr2;
       }
     }
   }

@@ -39,6 +39,8 @@ double get2dPrecision(
 double get2dRecall(
   const autoware_auto_perception_msgs::msg::DetectedObject & source_object,
   const autoware_auto_perception_msgs::msg::DetectedObject & target_object);
+geometry_msgs::msg::Polygon rotatePolygon(
+  const geometry_msgs::msg::Polygon & polygon, const double angle);
 }  // namespace utils
 
 #endif  // DETECTION_BY_TRACKER__UTILS_HPP_

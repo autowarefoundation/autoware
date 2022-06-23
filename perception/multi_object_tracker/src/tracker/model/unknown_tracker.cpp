@@ -42,16 +42,16 @@ UnknownTracker::UnknownTracker(
 
   // initialize params
   ekf_params_.use_measurement_covariance = false;
-  float q_stddev_x = 0.0;                                    // [m/s]
-  float q_stddev_y = 0.0;                                    // [m/s]
-  float q_stddev_vx = tier4_autoware_utils::kmph2mps(0.1);   // [m/(s*s)]
-  float q_stddev_vy = tier4_autoware_utils::kmph2mps(0.1);   // [m/(s*s)]
-  float r_stddev_x = 0.4;                                    // [m]
-  float r_stddev_y = 0.4;                                    // [m]
-  float p0_stddev_x = 1.0;                                   // [m/s]
-  float p0_stddev_y = 1.0;                                   // [m/s]
-  float p0_stddev_vx = tier4_autoware_utils::kmph2mps(0.1);  // [m/(s*s)]
-  float p0_stddev_vy = tier4_autoware_utils::kmph2mps(0.1);  // [m/(s*s)]
+  float q_stddev_x = 0.0;                                   // [m/s]
+  float q_stddev_y = 0.0;                                   // [m/s]
+  float q_stddev_vx = tier4_autoware_utils::kmph2mps(20);   // [m/(s*s)]
+  float q_stddev_vy = tier4_autoware_utils::kmph2mps(20);   // [m/(s*s)]
+  float r_stddev_x = 1.0;                                   // [m]
+  float r_stddev_y = 1.0;                                   // [m]
+  float p0_stddev_x = 1.0;                                  // [m/s]
+  float p0_stddev_y = 1.0;                                  // [m/s]
+  float p0_stddev_vx = tier4_autoware_utils::kmph2mps(10);  // [m/(s*s)]
+  float p0_stddev_vy = tier4_autoware_utils::kmph2mps(10);  // [m/(s*s)]
   ekf_params_.q_cov_x = std::pow(q_stddev_x, 2.0);
   ekf_params_.q_cov_y = std::pow(q_stddev_y, 2.0);
   ekf_params_.q_cov_vx = std::pow(q_stddev_vx, 2.0);
@@ -62,8 +62,8 @@ UnknownTracker::UnknownTracker(
   ekf_params_.p0_cov_y = std::pow(p0_stddev_y, 2.0);
   ekf_params_.p0_cov_vx = std::pow(p0_stddev_vx, 2.0);
   ekf_params_.p0_cov_vy = std::pow(p0_stddev_vy, 2.0);
-  max_vx_ = tier4_autoware_utils::kmph2mps(5);  // [m/s]
-  max_vy_ = tier4_autoware_utils::kmph2mps(5);  // [m/s]
+  max_vx_ = tier4_autoware_utils::kmph2mps(60);  // [m/s]
+  max_vy_ = tier4_autoware_utils::kmph2mps(60);  // [m/s]
 
   // initialize X matrix
   Eigen::MatrixXd X(ekf_params_.dim_x, 1);
@@ -267,38 +267,43 @@ bool UnknownTracker::getTrackedObject(
   tmp_ekf_for_no_update.getX(X_t);
   tmp_ekf_for_no_update.getP(P);
 
+  auto & pose_with_cov = object.kinematics.pose_with_covariance;
+  auto & twist_with_cov = object.kinematics.twist_with_covariance;
   // position
-  object.kinematics.pose_with_covariance.pose.position.x = X_t(IDX::X);
-  object.kinematics.pose_with_covariance.pose.position.y = X_t(IDX::Y);
-  object.kinematics.pose_with_covariance.pose.position.z = z_;
-  // position covariance
+  pose_with_cov.pose.position.x = X_t(IDX::X);
+  pose_with_cov.pose.position.y = X_t(IDX::Y);
+  pose_with_cov.pose.position.z = z_;
   constexpr double z_cov = 0.1 * 0.1;    // TODO(yukkysaito) Currently tentative
   constexpr double r_cov = 0.1 * 0.1;    // TODO(yukkysaito) Currently tentative
   constexpr double p_cov = 0.1 * 0.1;    // TODO(yukkysaito) Currently tentative
   constexpr double yaw_cov = 0.1 * 0.1;  // TODO(yukkysaito) Currently tentative
-  object.kinematics.pose_with_covariance.covariance[utils::MSG_COV_IDX::X_X] = P(IDX::X, IDX::X);
-  object.kinematics.pose_with_covariance.covariance[utils::MSG_COV_IDX::X_Y] = P(IDX::X, IDX::Y);
-  object.kinematics.pose_with_covariance.covariance[utils::MSG_COV_IDX::Y_X] = P(IDX::Y, IDX::X);
-  object.kinematics.pose_with_covariance.covariance[utils::MSG_COV_IDX::Y_Y] = P(IDX::Y, IDX::Y);
-  object.kinematics.pose_with_covariance.covariance[utils::MSG_COV_IDX::Z_Z] = z_cov;
-  object.kinematics.pose_with_covariance.covariance[utils::MSG_COV_IDX::ROLL_ROLL] = r_cov;
-  object.kinematics.pose_with_covariance.covariance[utils::MSG_COV_IDX::PITCH_PITCH] = p_cov;
-  object.kinematics.pose_with_covariance.covariance[utils::MSG_COV_IDX::YAW_YAW] = yaw_cov;
+  pose_with_cov.covariance[utils::MSG_COV_IDX::X_X] = P(IDX::X, IDX::X);
+  pose_with_cov.covariance[utils::MSG_COV_IDX::X_Y] = P(IDX::X, IDX::Y);
+  pose_with_cov.covariance[utils::MSG_COV_IDX::Y_X] = P(IDX::Y, IDX::X);
+  pose_with_cov.covariance[utils::MSG_COV_IDX::Y_Y] = P(IDX::Y, IDX::Y);
+  pose_with_cov.covariance[utils::MSG_COV_IDX::Z_Z] = z_cov;
+  pose_with_cov.covariance[utils::MSG_COV_IDX::ROLL_ROLL] = r_cov;
+  pose_with_cov.covariance[utils::MSG_COV_IDX::PITCH_PITCH] = p_cov;
+  pose_with_cov.covariance[utils::MSG_COV_IDX::YAW_YAW] = yaw_cov;
 
   // twist
-  object.kinematics.twist_with_covariance.twist.linear.x = X_t(IDX::VX);
-  object.kinematics.twist_with_covariance.twist.linear.y = X_t(IDX::VY);
+  const auto pose_yaw = tf2::getYaw(pose_with_cov.pose.orientation);
+  const double cos = std::cos(-pose_yaw);
+  const double sin = std::sin(-pose_yaw);
+  twist_with_cov.twist.linear.x = cos * X_t(IDX::VX) - sin * X_t(IDX::VY);
+  twist_with_cov.twist.linear.y = sin * X_t(IDX::VX) + cos * X_t(IDX::VY);
+
   // twist covariance
   constexpr double vz_cov = 0.1 * 0.1;  // TODO(yukkysaito) Currently tentative
   constexpr double wx_cov = 0.1 * 0.1;  // TODO(yukkysaito) Currently tentative
   constexpr double wy_cov = 0.1 * 0.1;  // TODO(yukkysaito) Currently tentative
   constexpr double wz_cov = 0.1 * 0.1;  // TODO(yukkysaito) Currently tentative
-  object.kinematics.twist_with_covariance.covariance[utils::MSG_COV_IDX::X_X] = P(IDX::VX, IDX::VX);
-  object.kinematics.twist_with_covariance.covariance[utils::MSG_COV_IDX::Y_Y] = P(IDX::VY, IDX::VY);
-  object.kinematics.twist_with_covariance.covariance[utils::MSG_COV_IDX::Z_Z] = vz_cov;
-  object.kinematics.twist_with_covariance.covariance[utils::MSG_COV_IDX::ROLL_ROLL] = wx_cov;
-  object.kinematics.twist_with_covariance.covariance[utils::MSG_COV_IDX::PITCH_PITCH] = wy_cov;
-  object.kinematics.twist_with_covariance.covariance[utils::MSG_COV_IDX::YAW_YAW] = wz_cov;
+  twist_with_cov.covariance[utils::MSG_COV_IDX::X_X] = P(IDX::VX, IDX::VX);
+  twist_with_cov.covariance[utils::MSG_COV_IDX::Y_Y] = P(IDX::VY, IDX::VY);
+  twist_with_cov.covariance[utils::MSG_COV_IDX::Z_Z] = vz_cov;
+  twist_with_cov.covariance[utils::MSG_COV_IDX::ROLL_ROLL] = wx_cov;
+  twist_with_cov.covariance[utils::MSG_COV_IDX::PITCH_PITCH] = wy_cov;
+  twist_with_cov.covariance[utils::MSG_COV_IDX::YAW_YAW] = wz_cov;
 
   return true;
 }

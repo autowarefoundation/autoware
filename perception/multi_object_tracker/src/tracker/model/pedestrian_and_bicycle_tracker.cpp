@@ -20,6 +20,8 @@
 
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
+using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
+
 PedestrianAndBicycleTracker::PedestrianAndBicycleTracker(
   const rclcpp::Time & time, const autoware_auto_perception_msgs::msg::DetectedObject & object)
 : Tracker(time, object.classification),
@@ -40,7 +42,8 @@ bool PedestrianAndBicycleTracker::measure(
 {
   pedestrian_tracker_.measure(object, time);
   bicycle_tracker_.measure(object, time);
-  setClassification(object.classification);
+  if (utils::getHighestProbLabel(object.classification) != Label::UNKNOWN)
+    setClassification(object.classification);
   return true;
 }
 
