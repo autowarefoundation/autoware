@@ -239,7 +239,7 @@ ObstacleCruisePlannerNode::ObstacleCruisePlannerNode(const rclcpp::NodeOptions &
 
   // low pass filter for ego acceleration
   const double lpf_gain_for_accel = declare_parameter<double>("common.lpf_gain_for_accel");
-  lpf_acc_ptr_ = std::make_shared<LowpassFilter1d>(0.0, lpf_gain_for_accel);
+  lpf_acc_ptr_ = std::make_shared<LowpassFilter1d>(lpf_gain_for_accel);
 
   {  // Obstacle filtering parameters
     obstacle_filtering_param_.rough_detection_area_expand_width =

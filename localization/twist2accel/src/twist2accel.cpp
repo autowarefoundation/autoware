@@ -44,12 +44,12 @@ Twist2Accel::Twist2Accel(const std::string & node_name, const rclcpp::NodeOption
   accel_lowpass_gain_ = declare_parameter("accel_lowpass_gain", 0.5);
   use_odom_ = declare_parameter("use_odom", true);
 
-  lpf_alx_ptr_ = std::make_shared<LowpassFilter1d>(0.0, accel_lowpass_gain_);
-  lpf_aly_ptr_ = std::make_shared<LowpassFilter1d>(0.0, accel_lowpass_gain_);
-  lpf_alz_ptr_ = std::make_shared<LowpassFilter1d>(0.0, accel_lowpass_gain_);
-  lpf_aax_ptr_ = std::make_shared<LowpassFilter1d>(0.0, accel_lowpass_gain_);
-  lpf_aay_ptr_ = std::make_shared<LowpassFilter1d>(0.0, accel_lowpass_gain_);
-  lpf_aaz_ptr_ = std::make_shared<LowpassFilter1d>(0.0, accel_lowpass_gain_);
+  lpf_alx_ptr_ = std::make_shared<LowpassFilter1d>(accel_lowpass_gain_);
+  lpf_aly_ptr_ = std::make_shared<LowpassFilter1d>(accel_lowpass_gain_);
+  lpf_alz_ptr_ = std::make_shared<LowpassFilter1d>(accel_lowpass_gain_);
+  lpf_aax_ptr_ = std::make_shared<LowpassFilter1d>(accel_lowpass_gain_);
+  lpf_aay_ptr_ = std::make_shared<LowpassFilter1d>(accel_lowpass_gain_);
+  lpf_aaz_ptr_ = std::make_shared<LowpassFilter1d>(accel_lowpass_gain_);
 }
 
 void Twist2Accel::callbackOdometry(const nav_msgs::msg::Odometry::SharedPtr msg)

@@ -15,6 +15,8 @@
 #ifndef SIGNAL_PROCESSING__LOWPASS_FILTER_1D_HPP_
 #define SIGNAL_PROCESSING__LOWPASS_FILTER_1D_HPP_
 
+#include <boost/optional.hpp>
+
 /**
  * @class First-order low-pass filter
  * @brief filtering values
@@ -22,15 +24,16 @@
 class LowpassFilter1d
 {
 private:
-  double x_;     //!< @brief current filtered value
-  double gain_;  //!< @brief gain value of first-order low-pass filter
+  boost::optional<double> x_;  //!< @brief current filtered value
+  double gain_;                //!< @brief gain value of first-order low-pass filter
 
 public:
-  LowpassFilter1d(const double x, const double gain);
+  explicit LowpassFilter1d(const double gain);
 
+  void reset();
   void reset(const double x);
 
-  double getValue() const;
+  boost::optional<double> getValue() const;
   double filter(const double u);
 };
 
