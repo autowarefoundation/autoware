@@ -243,16 +243,16 @@ bool NormalVehicleTracker::measureWithPose(
   if (object.kinematics.has_twist) {
     Eigen::MatrixXd X_t(ekf_params_.dim_x, 1);  // predicted state
     ekf_.getX(X_t);
-    const double current_vx = X_t(IDX::VX);
+    const double predicted_vx = X_t(IDX::VX);
     const double observed_vx = object.kinematics.twist_with_covariance.twist.linear.x;
 
-    if (std::fabs(current_vx - observed_vx) > velocity_deviation_threshold_) {
-      // Velocity deviation is large
+    if (std::fabs(predicted_vx - observed_vx) < velocity_deviation_threshold_) {
+      // Velocity deviation is small
       enable_velocity_measurement = true;
     }
   }
   // pos x, pos y, yaw, vx depending on pose output
-  const int dim_y = enable_velocity_measurement ? 3 : 4;
+  const int dim_y = enable_velocity_measurement ? 4 : 3;
   double measurement_yaw = tier4_autoware_utils::normalizeRadian(
     tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation));
   {
