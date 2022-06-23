@@ -46,8 +46,8 @@ NormalVehicleTracker::NormalVehicleTracker(
 
   // initialize params
   ekf_params_.use_measurement_covariance = false;
-  float q_stddev_x = 0.0;                                     // object coordinate [m/s]
-  float q_stddev_y = 0.0;                                     // object coordinate [m/s]
+  float q_stddev_x = 1.0;                                     // object coordinate [m/s]
+  float q_stddev_y = 1.0;                                     // object coordinate [m/s]
   float q_stddev_yaw = tier4_autoware_utils::deg2rad(20);     // map coordinate[rad/s]
   float q_stddev_vx = tier4_autoware_utils::kmph2mps(10);     // object coordinate [m/(s*s)]
   float q_stddev_wz = tier4_autoware_utils::deg2rad(20);      // object coordinate [rad/(s*s)]

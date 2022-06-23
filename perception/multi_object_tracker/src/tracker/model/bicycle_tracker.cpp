@@ -48,8 +48,8 @@ BicycleTracker::BicycleTracker(
 
   // initialize params
   ekf_params_.use_measurement_covariance = false;
-  float q_stddev_x = 0.0;                                     // [m/s]
-  float q_stddev_y = 0.0;                                     // [m/s]
+  float q_stddev_x = 0.6;                                     // [m/s]
+  float q_stddev_y = 0.6;                                     // [m/s]
   float q_stddev_yaw = tier4_autoware_utils::deg2rad(10);     // [rad/s]
   float q_stddev_vx = tier4_autoware_utils::kmph2mps(10);     // [m/(s*s)]
   float q_stddev_wz = tier4_autoware_utils::deg2rad(25);      // [rad/(s*s)]
