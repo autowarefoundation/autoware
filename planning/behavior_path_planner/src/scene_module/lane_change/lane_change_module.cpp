@@ -301,7 +301,8 @@ lanelet::ConstLanelets LaneChangeModule::getCurrentLanes() const
 
   lanelet::ConstLanelet current_lane;
   if (!route_handler->getClosestLaneletWithinRoute(current_pose, &current_lane)) {
-    RCLCPP_ERROR(getLogger(), "failed to find closest lanelet within route!!!");
+    RCLCPP_ERROR_THROTTLE(
+      getLogger(), *clock_, 5000, "failed to find closest lanelet within route!!!");
     return {};  // TODO(Horibe) what should be returned?
   }
 

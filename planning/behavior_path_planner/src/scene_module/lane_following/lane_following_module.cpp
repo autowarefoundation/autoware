@@ -84,7 +84,8 @@ PathWithLaneId LaneFollowingModule::getReferencePath() const
 
   lanelet::ConstLanelet current_lane;
   if (!planner_data_->route_handler->getClosestLaneletWithinRoute(current_pose, &current_lane)) {
-    RCLCPP_ERROR(getLogger(), "failed to find closest lanelet within route!!!");
+    RCLCPP_ERROR_THROTTLE(
+      getLogger(), *clock_, 5000, "failed to find closest lanelet within route!!!");
     return reference_path;  // TODO(Horibe)
   }
 

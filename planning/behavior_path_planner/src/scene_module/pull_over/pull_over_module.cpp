@@ -228,7 +228,7 @@ void PullOverModule::updatePullOverStatus()
     route_handler->setPullOverGoalPose(
       target_shoulder_lane, common_parameters.vehicle_width, parameters_.margin_from_boundary);
   } else {
-    RCLCPP_ERROR(getLogger(), "failed to get shoulder lane!!!");
+    RCLCPP_ERROR_THROTTLE(getLogger(), *clock_, 5000, "failed to get shoulder lane!!!");
   }
 
   // Get pull_over lanes
@@ -309,7 +309,8 @@ lanelet::ConstLanelets PullOverModule::getCurrentLanes() const
 
   lanelet::ConstLanelet current_lane;
   if (!route_handler->getClosestLaneletWithinRoute(current_pose, &current_lane)) {
-    RCLCPP_ERROR(getLogger(), "failed to find closest lanelet within route!!!");
+    RCLCPP_ERROR_THROTTLE(
+      getLogger(), *clock_, 5000, "failed to find closest lanelet within route!!!");
     return {};  // TODO(Horibe) what should be returned?
   }
 
