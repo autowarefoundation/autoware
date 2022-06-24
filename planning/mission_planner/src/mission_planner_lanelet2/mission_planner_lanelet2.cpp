@@ -153,6 +153,7 @@ bool MissionPlannerLanelet2::isRoutingGraphReady() const { return is_graph_ready
 void MissionPlannerLanelet2::visualizeRoute(
   const autoware_auto_planning_msgs::msg::HADMapRoute & route) const
 {
+  if (!route_handler_.isHandlerReady()) return;
   lanelet::ConstLanelets route_lanelets;
   lanelet::ConstLanelets end_lanelets;
   lanelet::ConstLanelets normal_lanelets;

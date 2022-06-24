@@ -307,6 +307,8 @@ void FreespacePlannerNode::getAstarParam()
 
 void FreespacePlannerNode::onRoute(const HADMapRoute::ConstSharedPtr msg)
 {
+  if (scenario_ = nullptr) return;
+
   route_ = msg;
 
   goal_pose_.header = msg->header;

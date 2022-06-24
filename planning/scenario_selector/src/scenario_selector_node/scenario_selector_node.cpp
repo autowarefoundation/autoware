@@ -215,11 +215,14 @@ void ScenarioSelectorNode::onMap(
   lanelet_map_ptr_ = std::make_shared<lanelet::LaneletMap>();
   lanelet::utils::conversion::fromBinMsg(
     *msg, lanelet_map_ptr_, &traffic_rules_ptr_, &routing_graph_ptr_);
+  route_handler_ = std::make_shared<route_handler::RouteHandler>(*msg);
 }
 
 void ScenarioSelectorNode::onRoute(
   const autoware_auto_planning_msgs::msg::HADMapRoute::ConstSharedPtr msg)
 {
+  route_handler_->setRoute(*msg);
+  if (!route_handler_->isHandlerReady()) return;
   route_ = msg;
   current_scenario_ = tier4_planning_msgs::msg::Scenario::EMPTY;
 }
