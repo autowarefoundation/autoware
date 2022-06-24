@@ -25,12 +25,25 @@
 
 #include <boost/optional.hpp>
 
+#include <string>
 #include <vector>
 
 using autoware_auto_perception_msgs::msg::ObjectClassification;
 using autoware_auto_perception_msgs::msg::PredictedObject;
 using autoware_auto_perception_msgs::msg::PredictedPath;
 using autoware_auto_perception_msgs::msg::Shape;
+
+namespace
+{
+std::string toHexString(const unique_identifier_msgs::msg::UUID & id)
+{
+  std::stringstream ss;
+  for (auto i = 0; i < 16; ++i) {
+    ss << std::hex << std::setfill('0') << std::setw(2) << +id.uuid[i];
+  }
+  return ss.str();
+}
+}  // namespace
 
 struct TargetObstacle
 {
@@ -46,6 +59,7 @@ struct TargetObstacle
     is_classified = true;
     classification = object.classification.at(0);
     shape = object.shape;
+    uuid = toHexString(object.object_id);
 
     predicted_paths.clear();
     for (const auto & path : object.kinematics.predicted_paths) {
@@ -53,6 +67,7 @@ struct TargetObstacle
     }
 
     collision_point = arg_collision_point;
+    has_stopped = false;
   }
 
   rclcpp::Time time_stamp;
@@ -63,8 +78,10 @@ struct TargetObstacle
   bool is_classified;
   ObjectClassification classification;
   Shape shape;
+  std::string uuid;
   std::vector<PredictedPath> predicted_paths;
   geometry_msgs::msg::Point collision_point;
+  bool has_stopped;
 };
 
 struct ObstacleCruisePlannerData

@@ -76,6 +76,8 @@
 
       min_cruise_target_vel: 0.0 # minimum target velocity during slow down [m/s]
 
+      lpf_cruise_gain: 0.2
+
     optimization_based_planner:
       resampling_s_interval: 2.0
       dense_resampling_time_interval: 0.1

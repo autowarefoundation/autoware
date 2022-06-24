@@ -35,7 +35,6 @@ visualization_msgs::msg::Marker getObjectMarker(
     tier4_autoware_utils::createMarkerScale(2.0, 2.0, 2.0),
     tier4_autoware_utils::createMarkerColor(r, g, b, 0.8));
 
-  marker.lifetime = rclcpp::Duration::from_seconds(0.8);
   marker.pose = obstacle_pose;
 
   return marker;
@@ -145,7 +144,7 @@ boost::optional<geometry_msgs::msg::Pose> getCurrentObjectPoseFromPredictedPath(
   return lerpByTimeStamp(predicted_path, rel_time);
 }
 
-boost::optional<geometry_msgs::msg::Pose> getCurrentObjectPoseFromPredictedPath(
+boost::optional<geometry_msgs::msg::Pose> getCurrentObjectPoseFromPredictedPaths(
   const std::vector<autoware_auto_perception_msgs::msg::PredictedPath> & predicted_paths,
   const rclcpp::Time & obj_base_time, const rclcpp::Time & current_time)
 {
@@ -164,16 +163,20 @@ boost::optional<geometry_msgs::msg::Pose> getCurrentObjectPoseFromPredictedPath(
   return getCurrentObjectPoseFromPredictedPath(*predicted_path, obj_base_time, current_time);
 }
 
-geometry_msgs::msg::Pose getCurrentObjectPoseFromPredictedPath(
+geometry_msgs::msg::Pose getCurrentObjectPose(
   const autoware_auto_perception_msgs::msg::PredictedObject & predicted_object,
-  const rclcpp::Time & obj_base_time, const rclcpp::Time & current_time)
+  const rclcpp::Time & obj_base_time, const rclcpp::Time & current_time, const bool use_prediction)
 {
+  if (!use_prediction) {
+    return predicted_object.kinematics.initial_pose_with_covariance.pose;
+  }
+
   std::vector<autoware_auto_perception_msgs::msg::PredictedPath> predicted_paths;
   for (const auto & path : predicted_object.kinematics.predicted_paths) {
     predicted_paths.push_back(path);
   }
   const auto interpolated_pose =
-    getCurrentObjectPoseFromPredictedPath(predicted_paths, obj_base_time, current_time);
+    getCurrentObjectPoseFromPredictedPaths(predicted_paths, obj_base_time, current_time);
 
   if (!interpolated_pose) {
     RCLCPP_WARN(

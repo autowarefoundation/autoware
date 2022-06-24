@@ -235,13 +235,14 @@ boost::optional<size_t> getFirstNonCollisionIndex(
   return {};
 }
 
-bool willCollideWithSurroundObstacle(
+boost::optional<size_t> willCollideWithSurroundObstacle(
   const autoware_auto_planning_msgs::msg::Trajectory & traj,
   const std::vector<Polygon2d> & traj_polygons,
   const autoware_auto_perception_msgs::msg::PredictedPath & predicted_path,
   const autoware_auto_perception_msgs::msg::Shape & shape, const double max_dist,
   const double ego_obstacle_overlap_time_threshold,
-  const double max_prediction_time_for_collision_check)
+  const double max_prediction_time_for_collision_check,
+  std::vector<geometry_msgs::msg::Point> & collision_geom_points)
 {
   constexpr double epsilon = 1e-3;
 
@@ -252,7 +253,7 @@ bool willCollideWithSurroundObstacle(
     if (
       max_prediction_time_for_collision_check <
       rclcpp::Duration(predicted_path.time_step).seconds() * static_cast<double>(i)) {
-      return false;
+      return {};
     }
 
     for (size_t j = 0; j < traj.points.size(); ++j) {
@@ -269,13 +270,33 @@ bool willCollideWithSurroundObstacle(
 
       if (dist < epsilon) {
         if (!is_found) {
-          start_predicted_path_idx = i;
-          is_found = true;
+          // calculate collision point by polygon collision
+          std::deque<Polygon2d> collision_polygons;
+          boost::geometry::intersection(traj_polygon, obj_polygon, collision_polygons);
+
+          bool has_collision = false;
+          for (const auto & collision_polygon : collision_polygons) {
+            if (boost::geometry::area(collision_polygon) > 0.0) {
+              has_collision = true;
+
+              for (const auto & collision_point : collision_polygon.outer()) {
+                geometry_msgs::msg::Point collision_geom_point;
+                collision_geom_point.x = collision_point.x();
+                collision_geom_point.y = collision_point.y();
+                collision_geom_points.push_back(collision_geom_point);
+              }
+            }
+          }
+
+          if (has_collision) {
+            start_predicted_path_idx = i;
+            is_found = true;
+          }
         } else {
           const double overlap_time = (static_cast<double>(i) - start_predicted_path_idx) *
                                       rclcpp::Duration(predicted_path.time_step).seconds();
           if (ego_obstacle_overlap_time_threshold < overlap_time) {
-            return true;
+            return j;
           }
         }
       } else {
@@ -284,8 +305,10 @@ bool willCollideWithSurroundObstacle(
     }
   }
 
-  return false;
+  collision_geom_points.clear();
+  return {};
 }
+
 std::vector<Polygon2d> createOneStepPolygons(
   const autoware_auto_planning_msgs::msg::Trajectory & traj,
   const vehicle_info_util::VehicleInfo & vehicle_info, const double expand_width)

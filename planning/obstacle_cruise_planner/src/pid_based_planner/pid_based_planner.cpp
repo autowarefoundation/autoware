@@ -175,6 +175,11 @@ PIDBasedPlanner::PIDBasedPlanner(
   min_cruise_target_vel_ =
     node.declare_parameter<double>("pid_based_planner.min_cruise_target_vel");
 
+  // low pass filter
+  const double lpf_cruise_gain =
+    node.declare_parameter<double>("pid_based_planner.lpf_cruise_gain");
+  lpf_cruise_ptr_ = std::make_shared<LowpassFilter1d>(lpf_cruise_gain);
+
   // publisher
   stop_reasons_pub_ =
     node.create_publisher<tier4_planning_msgs::msg::StopReasonArray>("~/output/stop_reasons", 1);
@@ -220,18 +225,22 @@ void PIDBasedPlanner::calcObstaclesToCruiseAndStop(
   debug_values_.setValues(DebugValues::TYPE::CURRENT_VELOCITY, planner_data.current_vel);
   debug_values_.setValues(DebugValues::TYPE::CURRENT_ACCELERATION, planner_data.current_acc);
 
+  auto modified_target_obstacles = planner_data.target_obstacles;
+
   // search highest probability obstacle for stop and cruise
-  for (const auto & obstacle : planner_data.target_obstacles) {
+  for (size_t o_idx = 0; o_idx < planner_data.target_obstacles.size(); ++o_idx) {
+    const auto & obstacle = planner_data.target_obstacles.at(o_idx);
+
     // NOTE: from ego's front to obstacle's back
     const double dist_to_obstacle = calcDistanceToObstacle(planner_data, obstacle);
 
-    const bool is_stop_required = isStopRequired(obstacle);
+    const bool is_stop_required = isStopRequired(obstacle, modified_target_obstacles.at(o_idx));
     if (is_stop_required) {  // stop
       // calculate error distance (= distance to stop)
       const double error_dist = dist_to_obstacle - longitudinal_info_.safe_distance_margin;
       if (stop_obstacle_info) {
         if (error_dist > stop_obstacle_info->dist_to_stop) {
-          return;
+          continue;
         }
       }
       stop_obstacle_info = StopObstacleInfo(obstacle, error_dist);
@@ -253,11 +262,12 @@ void PIDBasedPlanner::calcObstaclesToCruiseAndStop(
       const double error_dist = dist_to_obstacle - rss_dist;
       if (cruise_obstacle_info) {
         if (error_dist > cruise_obstacle_info->dist_to_cruise) {
-          return;
+          continue;
         }
       }
       const double normalized_dist_to_cruise = error_dist / dist_to_obstacle;
-      cruise_obstacle_info = CruiseObstacleInfo(obstacle, error_dist, normalized_dist_to_cruise);
+      cruise_obstacle_info =
+        CruiseObstacleInfo(obstacle, error_dist, normalized_dist_to_cruise, dist_to_obstacle);
 
       // update debug values
       debug_values_.setValues(DebugValues::TYPE::CRUISE_CURRENT_OBJECT_VELOCITY, obstacle.velocity);
@@ -266,29 +276,14 @@ void PIDBasedPlanner::calcObstaclesToCruiseAndStop(
       debug_values_.setValues(DebugValues::TYPE::CRUISE_ERROR_OBJECT_DISTANCE, error_dist);
     }
   }
+
+  // TODO(shimizu) refactor obstacle stop;
+  prev_target_obstacles_ = modified_target_obstacles;
 }
 
 double PIDBasedPlanner::calcDistanceToObstacle(
   const ObstacleCruisePlannerData & planner_data, const TargetObstacle & obstacle)
 {
-  // TODO(murooka) enable this option considering collision_point (precise obstacle point to measure
-  // distance) if (use_predicted_obstacle_pose_) {
-  //   // interpolate current obstacle pose from predicted path
-  //   const auto current_interpolated_obstacle_pose =
-  //     obstacle_cruise_utils::getCurrentObjectPoseFromPredictedPath(
-  //       obstacle.predicted_paths.at(0), obstacle.time_stamp, planner_data.current_time);
-  //   if (current_interpolated_obstacle_pose) {
-  //     return tier4_autoware_utils::calcSignedArcLength(
-  //       planner_data.traj.points, planner_data.current_pose.position,
-  //       current_interpolated_obstacle_pose->position) - offset;
-  //   }
-  //
-  //   RCLCPP_INFO_EXPRESSION(
-  //     rclcpp::get_logger("ObstacleCruisePlanner::PIDBasedPlanner"), true,
-  //     "Failed to interpolated obstacle pose from predicted path. Use non-interpolated obstacle
-  //     pose.");
-  // }
-
   const size_t ego_segment_idx =
     findExtendedNearestSegmentIndex(planner_data.traj, planner_data.current_pose);
   const double segment_offset = std::max(
@@ -362,14 +357,18 @@ boost::optional<size_t> PIDBasedPlanner::doStop(
   std::vector<TargetObstacle> & debug_obstacles_to_stop,
   visualization_msgs::msg::MarkerArray & debug_wall_marker) const
 {
-  const size_t ego_idx = findExtendedNearestIndex(planner_data.traj, planner_data.current_pose);
+  // const size_t ego_idx = findExtendedNearestIndex(planner_data.traj, planner_data.current_pose);
 
-  // TODO(murooka) Should I use interpolation?
-  const auto modified_stop_info = [&]() -> boost::optional<std::pair<size_t, double>> {
-    const double dist_to_stop = stop_obstacle_info.dist_to_stop;
+  // TODO(murooka) use interpolation to calculate stop point and marker pose
+  const auto modified_stop_info = [&]() -> boost::optional<std::pair<size_t, size_t>> {
+    // const double dist_to_stop = stop_obstacle_info.dist_to_stop;
 
-    const size_t obstacle_zero_vel_idx =
-      getIndexWithLongitudinalOffset(planner_data.traj.points, dist_to_stop, ego_idx);
+    const size_t collision_idx = tier4_autoware_utils::findNearestIndex(
+      planner_data.traj.points, stop_obstacle_info.obstacle.collision_point);
+    const size_t obstacle_zero_vel_idx = getIndexWithLongitudinalOffset(
+      planner_data.traj.points,
+      -longitudinal_info_.safe_distance_margin - vehicle_info_.max_longitudinal_offset_m,
+      collision_idx);
 
     // check if there is already stop line between obstacle and zero_vel_idx
     const auto behavior_zero_vel_idx =
@@ -377,34 +376,34 @@ boost::optional<size_t> PIDBasedPlanner::doStop(
     if (behavior_zero_vel_idx) {
       const double zero_vel_diff_length = tier4_autoware_utils::calcSignedArcLength(
         planner_data.traj.points, obstacle_zero_vel_idx, behavior_zero_vel_idx.get());
+      std::cerr << zero_vel_diff_length << std::endl;
       if (
         0 < zero_vel_diff_length &&
         zero_vel_diff_length < longitudinal_info_.safe_distance_margin) {
-        const double modified_dist_to_stop =
-          dist_to_stop + longitudinal_info_.safe_distance_margin - min_behavior_stop_margin_;
-        const size_t modified_obstacle_zero_vel_idx =
-          getIndexWithLongitudinalOffset(planner_data.traj.points, modified_dist_to_stop, ego_idx);
-        return std::make_pair(modified_obstacle_zero_vel_idx, modified_dist_to_stop);
+        const size_t modified_obstacle_zero_vel_idx = getIndexWithLongitudinalOffset(
+          planner_data.traj.points,
+          -min_behavior_stop_margin_ - vehicle_info_.max_longitudinal_offset_m, collision_idx);
+        const size_t modified_wall_idx = getIndexWithLongitudinalOffset(
+          planner_data.traj.points, -min_behavior_stop_margin_, collision_idx);
+        return std::make_pair(modified_obstacle_zero_vel_idx, modified_wall_idx);
       }
     }
 
-    return std::make_pair(obstacle_zero_vel_idx, dist_to_stop);
+    const size_t wall_idx = getIndexWithLongitudinalOffset(
+      planner_data.traj.points, -longitudinal_info_.safe_distance_margin, collision_idx);
+    return std::make_pair(obstacle_zero_vel_idx, wall_idx);
   }();
   if (!modified_stop_info) {
     return {};
   }
   const size_t modified_zero_vel_idx = modified_stop_info->first;
-  const double modified_dist_to_stop = modified_stop_info->second;
+  const size_t modified_wall_idx = modified_stop_info->second;
 
   // virtual wall marker for stop
-  const auto marker_pose = obstacle_cruise_utils::calcForwardPose(
-    planner_data.traj, ego_idx, modified_dist_to_stop + vehicle_info_.max_longitudinal_offset_m);
-  if (marker_pose) {
-    visualization_msgs::msg::MarkerArray wall_msg;
-    const auto markers = tier4_autoware_utils::createStopVirtualWallMarker(
-      marker_pose.get(), "obstacle stop", planner_data.current_time, 0);
-    tier4_autoware_utils::appendMarkerArray(markers, &debug_wall_marker);
-  }
+  const auto marker_pose = planner_data.traj.points.at(modified_wall_idx).pose;
+  const auto markers = tier4_autoware_utils::createStopVirtualWallMarker(
+    marker_pose, "obstacle stop", planner_data.current_time, 0);
+  tier4_autoware_utils::appendMarkerArray(markers, &debug_wall_marker);
 
   debug_obstacles_to_stop.push_back(stop_obstacle_info.obstacle);
   return modified_zero_vel_idx;
@@ -431,6 +430,7 @@ void PIDBasedPlanner::planCruise(
   } else {
     // reset previous target velocity if adaptive cruise is not enabled
     prev_target_vel_ = {};
+    lpf_cruise_ptr_->reset();
   }
 }
 
@@ -440,17 +440,21 @@ VelocityLimit PIDBasedPlanner::doCruise(
   visualization_msgs::msg::MarkerArray & debug_wall_marker)
 {
   const double dist_to_cruise = cruise_obstacle_info.dist_to_cruise;
-  const double normalized_dist_to_cruise = cruise_obstacle_info.normalized_dist_to_cruise;
+  const double filtered_normalized_dist_to_cruise = [&]() {
+    const double normalized_dist_to_cruise = cruise_obstacle_info.normalized_dist_to_cruise;
+    return lpf_cruise_ptr_->filter(normalized_dist_to_cruise);
+  }();
+  const double dist_to_obstacle = cruise_obstacle_info.dist_to_obstacle;
 
   const size_t ego_idx = findExtendedNearestIndex(planner_data.traj, planner_data.current_pose);
 
   // calculate target velocity with acceleration limit by PID controller
-  const double pid_output_vel = pid_controller_->calc(normalized_dist_to_cruise);
+  const double pid_output_vel = pid_controller_->calc(filtered_normalized_dist_to_cruise);
   [[maybe_unused]] const double prev_vel =
     prev_target_vel_ ? prev_target_vel_.get() : planner_data.current_vel;
 
   const double additional_vel = [&]() {
-    if (normalized_dist_to_cruise > 0) {
+    if (filtered_normalized_dist_to_cruise > 0) {
       return pid_output_vel * output_ratio_during_accel_;
     }
     return pid_output_vel;
@@ -476,7 +480,9 @@ VelocityLimit PIDBasedPlanner::doCruise(
     longitudinal_info_.max_jerk, longitudinal_info_.min_jerk);
 
   // virtual wall marker for cruise
-  const double dist_to_rss_wall = dist_to_cruise + vehicle_info_.max_longitudinal_offset_m;
+  const double dist_to_rss_wall = std::min(
+    dist_to_cruise + vehicle_info_.max_longitudinal_offset_m,
+    dist_to_obstacle + vehicle_info_.max_longitudinal_offset_m);
   const size_t wall_idx =
     getIndexWithLongitudinalOffset(planner_data.traj.points, dist_to_rss_wall, ego_idx);
 

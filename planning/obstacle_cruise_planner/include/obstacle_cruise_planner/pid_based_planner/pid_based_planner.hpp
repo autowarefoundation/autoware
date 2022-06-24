@@ -18,6 +18,7 @@
 #include "obstacle_cruise_planner/pid_based_planner/debug_values.hpp"
 #include "obstacle_cruise_planner/pid_based_planner/pid_controller.hpp"
 #include "obstacle_cruise_planner/planner_interface.hpp"
+#include "signal_processing/lowpass_filter_1d.hpp"
 #include "tier4_autoware_utils/system/stop_watch.hpp"
 
 #include "tier4_debug_msgs/msg/float32_multi_array_stamped.hpp"
@@ -40,15 +41,17 @@ public:
   {
     CruiseObstacleInfo(
       const TargetObstacle & obstacle_arg, const double dist_to_cruise_arg,
-      const double normalized_dist_to_cruise_arg)
+      const double normalized_dist_to_cruise_arg, double dist_to_obstacle_arg)
     : obstacle(obstacle_arg),
       dist_to_cruise(dist_to_cruise_arg),
-      normalized_dist_to_cruise(normalized_dist_to_cruise_arg)
+      normalized_dist_to_cruise(normalized_dist_to_cruise_arg),
+      dist_to_obstacle(dist_to_obstacle_arg)
     {
     }
     TargetObstacle obstacle;
     double dist_to_cruise;
     double normalized_dist_to_cruise;
+    double dist_to_obstacle;
   };
 
   struct StopObstacleInfo
@@ -142,6 +145,8 @@ private:
   boost::optional<double> prev_target_vel_;
 
   DebugValues debug_values_;
+
+  std::shared_ptr<LowpassFilter1d> lpf_cruise_ptr_;
 };
 
 #endif  // OBSTACLE_CRUISE_PLANNER__PID_BASED_PLANNER__PID_BASED_PLANNER_HPP_
