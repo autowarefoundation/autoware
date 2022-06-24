@@ -72,7 +72,7 @@ inline std::vector<double> solveTridiagonalMatrixAlgorithm(const TDMACoef & tdma
       x[j] = p[j] * x[j + 1] + q[j];
     }
   } else {
-    x.push_back(d[0] / b[0]);
+    x[0] = (d[0] / b[0]);
   }
 
   return x;
