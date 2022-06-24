@@ -158,6 +158,26 @@ Eigen::Matrix<double, 6, 6> NormalDistributionsTransformOMP<PointSource, PointTa
 }
 
 template <class PointSource, class PointTarget>
+void NormalDistributionsTransformOMP<PointSource, PointTarget>::setRegularizationScaleFactor(
+  const float regularization_scale_factor)
+{
+  ndt_ptr_->setRegularizationScaleFactor(regularization_scale_factor);
+}
+
+template <class PointSource, class PointTarget>
+void NormalDistributionsTransformOMP<PointSource, PointTarget>::setRegularizationPose(
+  const Eigen::Matrix4f & regularization_pose)
+{
+  ndt_ptr_->setRegularizationPose(regularization_pose);
+}
+
+template <class PointSource, class PointTarget>
+void NormalDistributionsTransformOMP<PointSource, PointTarget>::unsetRegularizationPose()
+{
+  ndt_ptr_->unsetRegularizationPose();
+}
+
+template <class PointSource, class PointTarget>
 pcl::shared_ptr<pcl::search::KdTree<PointTarget>>
 NormalDistributionsTransformOMP<PointSource, PointTarget>::getSearchMethodTarget() const
 {

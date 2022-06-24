@@ -5,6 +5,7 @@
   <arg name="input/pointcloud" default="/points_raw" description="Sensor points topic"/>
   <arg name="input_initial_pose_topic" default="/ekf_pose_with_covariance" description="Initial position topic to align"/>
   <arg name="input_map_points_topic" default="/pointcloud_map" description="Map points topic"/>
+  <arg name="input_regularization_pose_topic" default="/sensing/gnss/pose_with_covariance" description="Regularization pose topic"/>
 
   <arg name="output_pose_topic" default="ndt_pose" description="Estimated self position"/>
   <arg name="output_pose_with_covariance_topic" default="ndt_pose_with_covariance" description="Estimated self position with covariance"/>
@@ -19,6 +20,7 @@
 
     <remap from="ndt_pose" to="$(var output_pose_topic)"/>
     <remap from="ndt_pose_with_covariance" to="$(var output_pose_with_covariance_topic)"/>
+    <remap from="regularization_pose_with_covariance" to="$(var input_regularization_pose_topic)"/>
 
     <param from="$(var param_file)"/>
   </node>

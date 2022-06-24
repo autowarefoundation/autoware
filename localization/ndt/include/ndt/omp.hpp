@@ -56,6 +56,9 @@ public:
   getFinalTransformationArray() const override;
 
   Eigen::Matrix<double, 6, 6> getHessian() const override;
+  void setRegularizationScaleFactor(const float regularization_scale_factor) override;
+  void setRegularizationPose(const Eigen::Matrix4f & regularization_pose) override;
+  void unsetRegularizationPose() override;
 
   pcl::shared_ptr<pcl::search::KdTree<PointTarget>> getSearchMethodTarget() const override;
 

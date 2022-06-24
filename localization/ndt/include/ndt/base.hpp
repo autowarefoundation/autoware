@@ -52,6 +52,10 @@ public:
   virtual std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>>
   getFinalTransformationArray() const = 0;
 
+  virtual void setRegularizationPose(const Eigen::Matrix4f &) = 0;
+  virtual void unsetRegularizationPose() = 0;
+  virtual void setRegularizationScaleFactor(const float) = 0;
+
   virtual Eigen::Matrix<double, 6, 6> getHessian() const = 0;
 
   virtual pcl::shared_ptr<pcl::search::KdTree<PointTarget>> getSearchMethodTarget() const = 0;

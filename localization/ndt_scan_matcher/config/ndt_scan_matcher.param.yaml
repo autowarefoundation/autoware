@@ -63,3 +63,9 @@
         0.0,   0.0,   0.0,   0.0,      0.000625, 0.0,
         0.0,   0.0,   0.0,   0.0,      0.0,      0.000625,
       ]
+
+    # Regularization switch
+    regularization_enabled: false
+
+    # Regularization scale factor
+    regularization_scale_factor: 0.01

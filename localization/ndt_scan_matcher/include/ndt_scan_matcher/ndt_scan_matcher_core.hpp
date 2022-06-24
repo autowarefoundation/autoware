@@ -115,6 +115,8 @@ private:
   void callbackSensorPoints(sensor_msgs::msg::PointCloud2::ConstSharedPtr pointcloud2_msg_ptr);
   void callbackInitialPose(
     geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr pose_conv_msg_ptr);
+  void callbackRegularizationPose(
+    geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr pose_conv_msg_ptr);
 
   geometry_msgs::msg::PoseWithCovarianceStamped alignUsingMonteCarlo(
     const std::shared_ptr<NormalDistributionsTransformBase<PointSource, PointTarget>> & ndt_ptr,
@@ -135,11 +137,16 @@ private:
     const geometry_msgs::msg::Point & target_point,
     const geometry_msgs::msg::Point & reference_point, const double distance_tolerance_m_);
 
+  std::optional<Eigen::Matrix4f> interpolateRegularizationPose(
+    const rclcpp::Time & sensor_ros_time);
+
   void timerDiagnostic();
 
   rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr initial_pose_sub_;
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr map_points_sub_;
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr sensor_points_sub_;
+  rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr
+    regularization_pose_sub_;
 
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr sensor_aligned_pose_pub_;
   rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr ndt_pose_pub_;
@@ -197,6 +204,12 @@ private:
 
   std::thread diagnostic_thread_;
   std::map<std::string, std::string> key_value_stdmap_;
+
+  // variables for regularization
+  const bool regularization_enabled_;
+  const float regularization_scale_factor_;
+  std::deque<geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr>
+    regularization_pose_msg_ptr_array_;
 };
 
 #endif  // NDT_SCAN_MATCHER__NDT_SCAN_MATCHER_CORE_HPP_
