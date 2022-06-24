@@ -18,6 +18,7 @@
   <depend>diagnostic_updater</depend>
   <depend>fmt</depend>
   <depend>geometry_msgs</depend>
+  <depend>lanelet2_extension</depend>
   <depend>nav_msgs</depend>
   <depend>rclcpp</depend>
   <depend>std_msgs</depend>

@@ -15,6 +15,7 @@
 #include "lane_departure_checker/lane_departure_checker_node.hpp"
 
 #include <lanelet2_extension/utility/query.hpp>
+#include <lanelet2_extension/utility/route_checker.hpp>
 #include <lanelet2_extension/visualization/visualization.hpp>
 #include <tier4_autoware_utils/math/unit_conversion.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
@@ -51,19 +52,26 @@ std::array<geometry_msgs::msg::Point, 3> triangle2points(
 }
 
 lanelet::ConstLanelets getRouteLanelets(
-  const lanelet::LaneletMap & lanelet_map, const lanelet::routing::RoutingGraphPtr & routing_graph,
-  const std::vector<HADMapSegment> & route_sections, const double vehicle_length)
+  const lanelet::LaneletMapPtr & lanelet_map,
+  const lanelet::routing::RoutingGraphPtr & routing_graph,
+  const autoware_auto_planning_msgs::msg::HADMapRoute::ConstSharedPtr & route_ptr,
+  const double vehicle_length)
 {
   lanelet::ConstLanelets route_lanelets;
+
+  bool is_route_valid = lanelet::utils::route::isRouteValid(*route_ptr, lanelet_map);
+  if (!is_route_valid) {
+    return route_lanelets;
+  }
 
   // Add preceding lanes of front route_section to prevent detection errors
   {
     const auto extension_length = 2 * vehicle_length;
 
-    for (const auto & primitive : route_sections.front().primitives) {
+    for (const auto & primitive : route_ptr->segments.front().primitives) {
       const auto lane_id = primitive.id;
       for (const auto & lanelet_sequence : lanelet::utils::query::getPrecedingLaneletSequences(
-             routing_graph, lanelet_map.laneletLayer.get(lane_id), extension_length)) {
+             routing_graph, lanelet_map->laneletLayer.get(lane_id), extension_length)) {
         for (const auto & preceding_lanelet : lanelet_sequence) {
           route_lanelets.push_back(preceding_lanelet);
         }
@@ -71,10 +79,10 @@ lanelet::ConstLanelets getRouteLanelets(
     }
   }
 
-  for (const auto & route_section : route_sections) {
+  for (const auto & route_section : route_ptr->segments) {
     for (const auto & primitive : route_section.primitives) {
       const auto lane_id = primitive.id;
-      route_lanelets.push_back(lanelet_map.laneletLayer.get(lane_id));
+      route_lanelets.push_back(lanelet_map->laneletLayer.get(lane_id));
     }
   }
 
@@ -82,10 +90,10 @@ lanelet::ConstLanelets getRouteLanelets(
   {
     const auto extension_length = 2 * vehicle_length;
 
-    for (const auto & primitive : route_sections.back().primitives) {
+    for (const auto & primitive : route_ptr->segments.back().primitives) {
       const auto lane_id = primitive.id;
       for (const auto & lanelet_sequence : lanelet::utils::query::getSucceedingLaneletSequences(
-             routing_graph, lanelet_map.laneletLayer.get(lane_id), extension_length)) {
+             routing_graph, lanelet_map->laneletLayer.get(lane_id), extension_length)) {
         for (const auto & succeeding_lanelet : lanelet_sequence) {
           route_lanelets.push_back(succeeding_lanelet);
         }
@@ -294,9 +302,8 @@ void LaneDepartureCheckerNode::onTimer()
   processing_time_map["Node: checkData"] = stop_watch.toc(true);
 
   // In order to wait for both of map and route will be ready, write this not in callback but here
-  if (last_route_ != route_) {
-    route_lanelets_ =
-      getRouteLanelets(*lanelet_map_, routing_graph_, route_->segments, vehicle_length_m_);
+  if (last_route_ != route_ && !route_->segments.empty()) {
+    route_lanelets_ = getRouteLanelets(lanelet_map_, routing_graph_, route_, vehicle_length_m_);
     last_route_ = route_;
   }
   processing_time_map["Node: getRouteLanelets"] = stop_watch.toc(true);
