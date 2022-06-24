@@ -35,6 +35,7 @@ To learn more about using or developing Autoware, refer to the [Autoware documen
   - Since Autoware Core/Universe has multiple repositories, a central documentation repository is important to make information accessible from a single place.
 
 ## Using Autoware-AI
+
 If you wish to use Autoware-AI, the previous version of Autoware based on ROS 1, please switch to [autoware-ai](https://github.com/autowarefoundation/autoware.ai/tree/autoware-ai) branch. However, please be aware that Autoware-AI will reach the end-of-life by the end of 2022, and we strongly recommend transitioning to Autoware Core/Universe for future use.
 
 ## Contributing
