@@ -133,28 +133,37 @@ void DummyPerceptionPublisherNode::timerCallback()
   }
 
   std::vector<size_t> selected_indices{};
+  std::vector<ObjectInfo> obj_infos;
   static std::uniform_real_distribution<> detection_successful_random(0.0, 1.0);
   for (size_t i = 0; i < objects_.size(); ++i) {
     if (detection_successful_rate_ >= detection_successful_random(random_generator_)) {
       selected_indices.push_back(i);
     }
+    const auto obj_info = ObjectInfo(objects_.at(i), current_time);
+    obj_infos.push_back(obj_info);
   }
 
-  if (selected_indices.empty()) {
-    pcl::PointCloud<pcl::PointXYZ>::Ptr merged_pointcloud_ptr(new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr merged_pointcloud_ptr(new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr detected_merged_pointcloud_ptr(
+    new pcl::PointCloud<pcl::PointXYZ>);
+
+  if (objects_.empty()) {
     pcl::toROSMsg(*merged_pointcloud_ptr, output_pointcloud_msg);
   } else {
-    std::vector<ObjectInfo> obj_infos;
-    for (const auto selected_idx : selected_indices) {
-      const auto obj_info = ObjectInfo(objects_.at(selected_idx), current_time);
-      tf2::toMsg(obj_info.tf_map2moved_object, output_moved_object_pose.pose);
-      obj_infos.push_back(obj_info);
-    }
-
-    pcl::PointCloud<pcl::PointXYZ>::Ptr merged_pointcloud_ptr(new pcl::PointCloud<pcl::PointXYZ>);
-    const auto pointclouds = pointcloud_creator_->create_pointclouds(
+    pointcloud_creator_->create_pointclouds(
       obj_infos, tf_base_link2map, random_generator_, merged_pointcloud_ptr);
     pcl::toROSMsg(*merged_pointcloud_ptr, output_pointcloud_msg);
+  }
+  if (!selected_indices.empty()) {
+    std::vector<ObjectInfo> detected_obj_infos;
+    for (const auto selected_idx : selected_indices) {
+      const auto detected_obj_info = ObjectInfo(objects_.at(selected_idx), current_time);
+      tf2::toMsg(detected_obj_info.tf_map2moved_object, output_moved_object_pose.pose);
+      detected_obj_infos.push_back(detected_obj_info);
+    }
+
+    const auto pointclouds = pointcloud_creator_->create_pointclouds(
+      detected_obj_infos, tf_base_link2map, random_generator_, detected_merged_pointcloud_ptr);
 
     std::vector<size_t> delete_idxs;
     for (size_t i = 0; i < selected_indices.size(); ++i) {
