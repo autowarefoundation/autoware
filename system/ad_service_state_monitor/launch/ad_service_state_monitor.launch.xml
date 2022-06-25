@@ -2,6 +2,7 @@
   <!-- Input -->
   <arg name="input_autoware_engage" default="/api/autoware/get/engage"/>
   <arg name="input_control_mode" default="/vehicle/status/control_mode"/>
+  <arg name="input_vector_map" default="/map/vector_map"/>
   <arg name="input_route" default="/planning/mission_planning/route"/>
   <arg name="input_odometry" default="/localization/kinematic_state"/>
 
@@ -28,6 +29,7 @@
   <node pkg="ad_service_state_monitor" exec="ad_service_state_monitor" name="ad_service_state_monitor" output="screen">
     <remap from="input/autoware_engage" to="$(var input_autoware_engage)"/>
     <remap from="input/control_mode" to="$(var input_control_mode)"/>
+    <remap from="input/vector_map" to="$(var input_vector_map)"/>
     <remap from="input/route" to="$(var input_route)"/>
     <remap from="input/odometry" to="$(var input_odometry)"/>
 
