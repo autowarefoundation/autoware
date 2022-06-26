@@ -14,6 +14,7 @@
 
 #include "behavior_path_planner/path_utilities.hpp"
 #include "behavior_path_planner/scene_module/avoidance/avoidance_module.hpp"
+#include "behavior_path_planner/scene_module/avoidance/avoidance_module_data.hpp"
 #include "behavior_path_planner/utilities.hpp"
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
@@ -31,6 +32,19 @@
 namespace behavior_path_planner
 {
 bool isOnRight(const ObjectData & obj) { return obj.lateral < 0.0; }
+
+double calcShiftLength(
+  const bool & is_object_on_right, const double & overhang_dist, const double & avoid_margin)
+{
+  const auto shift_length =
+    is_object_on_right ? (overhang_dist + avoid_margin) : (overhang_dist - avoid_margin);
+  return std::fabs(shift_length) > 1e-3 ? shift_length : 0.0;
+}
+
+bool isSameDirectionShift(const bool & is_object_on_right, const double & shift_length)
+{
+  return (is_object_on_right == std::signbit(shift_length));
+}
 
 lanelet::ConstLanelets calcLaneAroundPose(
   const std::shared_ptr<const PlannerData> & planner_data, const geometry_msgs::msg::Pose & pose,

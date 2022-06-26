@@ -15,6 +15,7 @@
 #ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__AVOIDANCE__AVOIDANCE_UTILS_HPP_
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__AVOIDANCE__AVOIDANCE_UTILS_HPP_
 
+#include "behavior_path_planner/data_manager.hpp"
 #include "behavior_path_planner/scene_module/avoidance/avoidance_module_data.hpp"
 
 #include <memory>
@@ -24,7 +25,13 @@
 
 namespace behavior_path_planner
 {
+using behavior_path_planner::PlannerData;
 bool isOnRight(const ObjectData & obj);
+
+double calcShiftLength(
+  const bool & is_object_on_right, const double & overhang_dist, const double & avoid_margin);
+
+bool isSameDirectionShift(const bool & is_object_on_right, const double & shift_length);
 
 lanelet::ConstLanelets calcLaneAroundPose(
   const std::shared_ptr<const PlannerData> & planner_data, const Pose & pose,

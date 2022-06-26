@@ -446,6 +446,14 @@ void AvoidanceModule::registerRawShiftPoints(const AvoidPointArray & future)
   DEBUG_PRINT("registered object size: %lu -> %lu", old_size, registered_raw_shift_points_.size());
 }
 
+double AvoidanceModule::getShiftLength(
+  const ObjectData & object, const bool & is_object_on_right, const double & avoid_margin) const
+{
+  const auto shift_length =
+    behavior_path_planner::calcShiftLength(is_object_on_right, object.overhang_dist, avoid_margin);
+  return is_object_on_right ? std::min(shift_length, getLeftShiftBound())
+                            : std::max(shift_length, getRightShiftBound());
+}
 /**
  * calcRawShiftPointsFromObjects
  *
@@ -494,9 +502,13 @@ AvoidPointArray AvoidanceModule::calcRawShiftPointsFromObjects(
       continue;
     }
 
-    const auto shift_length = isOnRight(o)
-                                ? std::min(o.overhang_dist + avoid_margin, getLeftShiftBound())
-                                : std::max(o.overhang_dist - avoid_margin, getRightShiftBound());
+    const auto is_object_on_right = isOnRight(o);
+    const auto shift_length = getShiftLength(o, is_object_on_right, avoid_margin);
+    if (isSameDirectionShift(is_object_on_right, shift_length)) {
+      avoidance_debug_array_false_and_push_back("IgnoreSameDirectionShift");
+      continue;
+    }
+
     const auto avoiding_shift = shift_length - current_ego_shift;
     const auto return_shift = shift_length;
 

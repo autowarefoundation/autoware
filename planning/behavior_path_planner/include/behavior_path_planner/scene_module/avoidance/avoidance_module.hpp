@@ -137,6 +137,8 @@ private:
     AvoidPointArray & current_raw_shift_points, DebugData & debug) const;
 
   // shift point generation: generator
+  double getShiftLength(
+    const ObjectData & object, const bool & is_object_on_right, const double & avoid_margin) const;
   AvoidPointArray calcRawShiftPointsFromObjects(const ObjectDataArray & objects) const;
   double getRightShiftBound() const;
   double getLeftShiftBound() const;

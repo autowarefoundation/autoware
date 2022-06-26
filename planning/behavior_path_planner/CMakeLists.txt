@@ -42,13 +42,22 @@ rclcpp_components_register_node(behavior_path_planner_node
 )
 
 if(BUILD_TESTING)
-  ament_add_ros_isolated_gmock(test_${PROJECT_NAME}_utilities
+  ament_add_ros_isolated_gmock(test_${CMAKE_PROJECT_NAME}_utilities
     test/input.cpp
     test/test_utilities.cpp
   )
-  target_link_libraries(test_${PROJECT_NAME}_utilities
+  target_link_libraries(test_${CMAKE_PROJECT_NAME}_utilities
     behavior_path_planner_node
   )
+
+  ament_add_ros_isolated_gmock(test_${CMAKE_PROJECT_NAME}_avoidance_module
+    test/test_avoidance_utils.cpp
+  )
+
+  target_link_libraries(test_${CMAKE_PROJECT_NAME}_avoidance_module
+    behavior_path_planner_node
+  )
+
 endif()
 
 ament_auto_package(
