@@ -50,35 +50,3 @@ TEST(BehaviorPathPlanningUtilitiesBehaviorTest, vehiclePoseToFrenetOnDiagonalLin
   EXPECT_NEAR(vehicle_pose_frenet.distance, 0, 1e-2);
   EXPECT_NEAR(vehicle_pose_frenet.length, 0.1414f, 1e-2);
 }
-
-TEST(BehaviorPathPlanningUtilitiesBehaviorTest, vehiclePoseToFrenetWhenEgoIsOnPath)
-{
-  PathWithLaneId path =
-    behavior_path_planner::generateDiagonalSamplePathWithLaneId(0.0f, 1.0f, 10u);
-  std::vector<Point> geometry_points =
-    behavior_path_planner::util::convertToGeometryPointArray(path);
-  Pose vehicle_pose = behavior_path_planner::generateEgoSamplePose(0.1f, 0.1f, 0.0);
-
-  FrenetCoordinate3d vehicle_pose_frenet;
-
-  const bool is_on_path = behavior_path_planner::util::convertToFrenetCoordinate3d(
-    geometry_points, vehicle_pose.position, &vehicle_pose_frenet);
-
-  EXPECT_TRUE(is_on_path);
-}
-
-TEST(BehaviorPathPlanningUtilitiesBehaviorTest, vehiclePoseToFrenetWhenEgoIsNotOnPath)
-{
-  PathWithLaneId path =
-    behavior_path_planner::generateDiagonalSamplePathWithLaneId(0.0f, 1.0f, 10u);
-  std::vector<Point> geometry_points =
-    behavior_path_planner::util::convertToGeometryPointArray(path);
-  Pose vehicle_pose = behavior_path_planner::generateEgoSamplePose(-0.01f, -0.01f, 0.0);
-
-  FrenetCoordinate3d vehicle_pose_frenet;
-
-  const bool is_on_path = behavior_path_planner::util::convertToFrenetCoordinate3d(
-    geometry_points, vehicle_pose.position, &vehicle_pose_frenet);
-
-  EXPECT_FALSE(is_on_path);
-}

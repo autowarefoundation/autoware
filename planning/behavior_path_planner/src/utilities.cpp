@@ -230,18 +230,6 @@ double l2Norm(const Vector3 vector)
   return std::sqrt(std::pow(vector.x, 2) + std::pow(vector.y, 2) + std::pow(vector.z, 2));
 }
 
-bool checkIfPositionIsOnTheLine(
-  const double & linestring_length, const FrenetCoordinate3d & frenet_pose)
-{
-  const auto length_ratio =
-    frenet_pose.length / ((std::fabs(linestring_length) > 0) ? linestring_length : 1e-5);
-  const auto length_ratio_positive = !std::signbit(length_ratio);
-
-  bool found_on_line = (std::fabs(frenet_pose.distance) < 1e-3) && length_ratio_positive &&
-                       (std::fabs(length_ratio) < 1.0);
-  return found_on_line;
-}
-
 FrenetCoordinate3d convertToFrenetCoordinate3d(
   const std::vector<Point> & linestring, const Point & search_point_geom)
 {
@@ -260,30 +248,11 @@ FrenetCoordinate3d convertToFrenetCoordinate3d(
   return frenet_coordinate;
 }
 
-bool convertToFrenetCoordinate3d(
-  const PathWithLaneId & path, const Point & search_point_geom,
-  FrenetCoordinate3d * frenet_coordinate)
+FrenetCoordinate3d convertToFrenetCoordinate3d(
+  const PathWithLaneId & path, const Point & search_point_geom)
 {
   const auto linestring = convertToPointArray(path);
-  return convertToFrenetCoordinate3d(linestring, search_point_geom, frenet_coordinate);
-}
-
-// returns false when search point is off the linestring
-bool convertToFrenetCoordinate3d(
-  const std::vector<Point> & linestring, const Point search_point_geom,
-  FrenetCoordinate3d * frenet_coordinate)
-{
-  if (linestring.empty()) {
-    return false;
-  }
-
-  // get frenet coordinate based on points
-  // this is done because linestring is not differentiable at vertices
-  const auto linestring_length =
-    tier4_autoware_utils::calcSignedArcLength(linestring, 0, linestring.size() - 1);
-  *frenet_coordinate = convertToFrenetCoordinate3d(linestring, search_point_geom);
-
-  return checkIfPositionIsOnTheLine(linestring_length, *frenet_coordinate);
+  return convertToFrenetCoordinate3d(linestring, search_point_geom);
 }
 
 std::vector<Point> convertToGeometryPointArray(const PathWithLaneId & path)

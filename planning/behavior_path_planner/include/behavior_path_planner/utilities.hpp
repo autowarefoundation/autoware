@@ -160,17 +160,11 @@ PredictedPath convertToPredictedPath(
   const PathWithLaneId & path, const Twist & vehicle_twist, const Pose & vehicle_pose,
   const double duration, const double resolution, const double acceleration);
 
-bool checkIfPositionIsOnTheLine(const double & linestring_length, const FrenetCoordinate3d & pose);
 FrenetCoordinate3d convertToFrenetCoordinate3d(
   const std::vector<Point> & linestring, const Point & search_point_geom);
 
-bool convertToFrenetCoordinate3d(
-  const PathWithLaneId & path, const Point & search_point_geom,
-  FrenetCoordinate3d * frenet_coordinate);
-
-bool convertToFrenetCoordinate3d(
-  const std::vector<Point> & linestring, const Point search_point_geom,
-  FrenetCoordinate3d * frenet_coordinate);
+FrenetCoordinate3d convertToFrenetCoordinate3d(
+  const PathWithLaneId & path, const Point & search_point_geom);
 
 std::vector<uint64_t> getIds(const lanelet::ConstLanelets & lanelets);
 
