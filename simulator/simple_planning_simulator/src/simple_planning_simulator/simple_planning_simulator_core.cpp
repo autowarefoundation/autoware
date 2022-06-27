@@ -74,9 +74,7 @@ namespace simple_planning_simulator
 {
 
 SimplePlanningSimulator::SimplePlanningSimulator(const rclcpp::NodeOptions & options)
-: Node("simple_planning_simulator", options),
-  tf_buffer_(get_clock()),
-  tf_listener_(tf_buffer_, std::shared_ptr<rclcpp::Node>(this, [](auto) {}), false)
+: Node("simple_planning_simulator", options), tf_buffer_(get_clock()), tf_listener_(tf_buffer_)
 {
   simulated_frame_id_ = declare_parameter("simulated_frame_id", "base_link");
   origin_frame_id_ = declare_parameter("origin_frame_id", "odom");
