@@ -405,6 +405,9 @@ bool getObjectiveLanelets(
   *objective_lanelets_result = objective_lanelets_sequences;
   *objective_lanelets_with_margin_result = objective_lanelets_with_margin;
 
+  // set this flag true when debugging
+  const bool is_debug = false;
+  if (!is_debug) return true;
   std::stringstream ss_c, ss_y, ss_e, ss_o, ss_os;
   for (const auto & l : conflicting_lanelets) {
     ss_c << l.id() << ", ";
@@ -423,10 +426,10 @@ bool getObjectiveLanelets(
       ss_os << ll.id() << ", ";
     }
   }
-  RCLCPP_DEBUG(
+  RCLCPP_INFO(
     logger, "getObjectiveLanelets() conflict = %s yield = %s ego = %s", ss_c.str().c_str(),
     ss_y.str().c_str(), ss_e.str().c_str());
-  RCLCPP_DEBUG(
+  RCLCPP_INFO(
     logger, "getObjectiveLanelets() object = %s object_sequences = %s", ss_o.str().c_str(),
     ss_os.str().c_str());
   return true;
