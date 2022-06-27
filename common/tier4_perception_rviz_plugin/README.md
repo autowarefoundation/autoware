@@ -95,3 +95,20 @@ Using a planning simulator
    ![select_plugin](./images/select_plugin.png)
 3. Select the new item in the tool tab (2D Dummy Car in the example) and click on it in rviz.
    ![select_dummy_car](./images/select_dummy_car.png)
+
+### Interactive manipulation
+
+You can interactively manipulate the object.
+
+1. Select "Tool Properties" in rviz.
+2. Select the corresponding object tab in the Tool Properties.
+3. Turn the "Interactive" checkbox on.
+   ![tool_properties](./images/tool_properties.png)
+4. Select the item in the tool tab in you haven't chosen yet.
+5. Key commands are as follows.
+
+| action | key command                            |
+| ------ | -------------------------------------- |
+| ADD    | Shift + Click Right Button             |
+| MOVE   | Hold down Right Button + Drug and Drop |
+| DELETE | Alt + Click Right Button               |
