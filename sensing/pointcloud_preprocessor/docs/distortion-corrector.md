@@ -23,10 +23,11 @@ $ ExactPointTime = TimeStamp + TimeOffset $
 
 ### Input
 
-| Name                      | Type                                              | Description      |
-| ------------------------- | ------------------------------------------------- | ---------------- |
-| `~/input/points`          | `sensor_msgs::msg::PointCloud2`                   | reference points |
-| `~/input/velocity_report` | `autoware_auto_vehicle_msgs::msg::VelocityReport` | vehicle velocity |
+| Name             | Type                                             | Description      |
+| ---------------- | ------------------------------------------------ | ---------------- |
+| `~/input/points` | `sensor_msgs::msg::PointCloud2`                  | reference points |
+| `~/input/twist`  | `geometry_msgs::msg::TwistWithCovarianceStamped` | twist            |
+| `~/input/imu`    | `sensor_msgs::msg::Imu`                          | imu data         |
 
 ### Output
 
@@ -38,8 +39,9 @@ $ ExactPointTime = TimeStamp + TimeOffset $
 
 ### Core Parameters
 
-| Name                   | Type   | Default Value | Description           |
-| ---------------------- | ------ | ------------- | --------------------- |
-| `timestamp_field_name` | string | "time_stamp"  | time stamp field name |
+| Name                   | Type   | Default Value | Description                                                 |
+| ---------------------- | ------ | ------------- | ----------------------------------------------------------- |
+| `timestamp_field_name` | string | "time_stamp"  | time stamp field name                                       |
+| `use_imu`              | bool   | true          | use gyroscope for yaw rate if true, else use vehicle status |
 
 ## Assumptions / Known limits
