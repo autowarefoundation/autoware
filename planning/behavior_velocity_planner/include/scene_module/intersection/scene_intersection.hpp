@@ -103,7 +103,6 @@ public:
   struct PlannerParam
   {
     double state_transit_margin_time;
-    double decel_velocity;    //! used when in straight and traffic_light lane
     double stop_line_margin;  //! distance from auto-generated stopline to detection_area boundary
     double stuck_vehicle_detect_dist;  //! distance from end point to finish stuck vehicle check
     double

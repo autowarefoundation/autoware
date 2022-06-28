@@ -32,7 +32,6 @@ IntersectionModuleManager::IntersectionModuleManager(rclcpp::Node & node)
   auto & ip = intersection_param_;
   const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo();
   ip.state_transit_margin_time = node.declare_parameter(ns + ".state_transit_margin_time", 2.0);
-  ip.decel_velocity = node.declare_parameter(ns + ".decel_velocity", 30.0 / 3.6);
   ip.stop_line_margin = node.declare_parameter(ns + ".stop_line_margin", 1.0);
   ip.stuck_vehicle_detect_dist = node.declare_parameter(ns + ".stuck_vehicle_detect_dist", 3.0);
   ip.stuck_vehicle_ignore_dist = node.declare_parameter(ns + ".stuck_vehicle_ignore_dist", 5.0) +
@@ -60,7 +59,6 @@ MergeFromPrivateModuleManager::MergeFromPrivateModuleManager(rclcpp::Node & node
   auto & mp = merge_from_private_area_param_;
   mp.stop_duration_sec =
     node.declare_parameter(ns + ".merge_from_private_area.stop_duration_sec", 1.0);
-  mp.decel_velocity = node.get_parameter("intersection.decel_velocity").as_double();
   mp.detection_area_length = node.get_parameter("intersection.detection_area_length").as_double();
   mp.stop_line_margin = node.get_parameter("intersection.stop_line_margin").as_double();
 }

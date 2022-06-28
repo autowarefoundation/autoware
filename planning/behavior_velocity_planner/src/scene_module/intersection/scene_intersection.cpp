@@ -181,11 +181,9 @@ bool IntersectionModule::modifyPathVelocity(
   state_machine_.setStateWithMarginTime(
     isActivated() ? State::GO : State::STOP, logger_.get_child("state_machine"), *clock_);
 
-  /* set stop speed : TODO behavior on straight lane should be improved*/
-  const bool is_stop_required = is_stuck || !has_traffic_light_ || turn_direction_ != "straight";
   const double base_link2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
 
-  setSafe(!(is_stop_required && is_entry_prohibited));
+  setSafe(!is_entry_prohibited);
   setDistance(tier4_autoware_utils::calcSignedArcLength(
     input_path.points, planner_data_->current_pose.pose.position,
     input_path.points.at(stop_line_idx).point.pose.position));
@@ -211,15 +209,6 @@ bool IntersectionModule::modifyPathVelocity(
     RCLCPP_DEBUG(logger_, "not activated. stop at the line.");
     RCLCPP_DEBUG(logger_, "===== plan end =====");
     return true;
-  }
-
-  if (state_machine_.getState() == State::STOP && is_entry_prohibited) {
-    const double v = planner_param_.decel_velocity;
-    util::setVelocityFrom(stop_line_idx, v, path);
-    setSafe(true);
-
-    debug_data_.stop_required = false;
-    debug_data_.slow_wall_pose = util::getAheadPose(stop_line_idx, base_link2front, *path);
   }
 
   RCLCPP_DEBUG(logger_, "===== plan end =====");
