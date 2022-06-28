@@ -31,29 +31,29 @@
 - repository: autowarefoundation/autoware_common
   files:
     - source: .github/workflows/build-and-test.yaml
-      post-commands: |
-        sd "container: ros:(\w+)" "container: ghcr.io/autowarefoundation/autoware-universe:\$1-latest-cuda" {dest}
-        sd -f ms '(rosdistro: humble.*?build-depends-repos): build_depends.repos' '$1: build_depends.humble.repos' {dest}
+      pre-commands: |
+        sd "container: ros:(\w+)" "container: ghcr.io/autowarefoundation/autoware-universe:\$1-latest-cuda" {source}
+        sd -f ms '(rosdistro: humble.*?build-depends-repos): build_depends.repos' '$1: build_depends.humble.repos' {source}
     - source: .github/workflows/build-and-test-differential.yaml
-      post-commands: |
-        sd "container: ros:(\w+)" "container: ghcr.io/autowarefoundation/autoware-universe:\$1-latest-cuda" {dest}
-        sd -f ms '(rosdistro: humble.*?build-depends-repos): build_depends.repos' '$1: build_depends.humble.repos' {dest}
+      pre-commands: |
+        sd "container: ros:(\w+)" "container: ghcr.io/autowarefoundation/autoware-universe:\$1-latest-cuda" {source}
+        sd -f ms '(rosdistro: humble.*?build-depends-repos): build_depends.repos' '$1: build_depends.humble.repos' {source}
     - source: .github/workflows/build-and-test-differential-self-hosted.yaml
-      post-commands: |
-        sd "container: ros:(\w+)" "container: ghcr.io/autowarefoundation/autoware-universe:\$1-latest-cuda" {dest}
-        sd -f ms '(rosdistro: humble.*?build-depends-repos): build_depends.repos' '$1: build_depends.humble.repos' {dest}
+      pre-commands: |
+        sd "container: ros:(\w+)" "container: ghcr.io/autowarefoundation/autoware-universe:\$1-latest-cuda" {source}
+        sd -f ms '(rosdistro: humble.*?build-depends-repos): build_depends.repos' '$1: build_depends.humble.repos' {source}
     - source: .github/workflows/build-and-test-self-hosted.yaml
-      post-commands: |
-        sd "container: ros:(\w+)" "container: ghcr.io/autowarefoundation/autoware-universe:\$1-latest-cuda" {dest}
-        sd -f ms '(rosdistro: humble.*?build-depends-repos): build_depends.repos' '$1: build_depends.humble.repos' {dest}
+      pre-commands: |
+        sd "container: ros:(\w+)" "container: ghcr.io/autowarefoundation/autoware-universe:\$1-latest-cuda" {source}
+        sd -f ms '(rosdistro: humble.*?build-depends-repos): build_depends.repos' '$1: build_depends.humble.repos' {source}
     - source: .github/workflows/check-build-depends.yaml
-      post-commands: |
-        sd "container: ros:(\w+)" "container: ghcr.io/autowarefoundation/autoware-universe:\$1-latest-cuda" {dest}
-        sd -f ms '(rosdistro: humble.*?build-depends-repos): build_depends.repos' '$1: build_depends.humble.repos' {dest}
+      pre-commands: |
+        sd "container: ros:(\w+)" "container: ghcr.io/autowarefoundation/autoware-universe:\$1-latest-cuda" {source}
+        sd -f ms '(rosdistro: humble.*?build-depends-repos): build_depends.repos' '$1: build_depends.humble.repos' {source}
     - source: .github/workflows/clang-tidy-pr-comments.yaml
-      post-commands: |
-        sd "container: ros:(\w+)" "container: ghcr.io/autowarefoundation/autoware-universe:\$1-latest-cuda" {dest}
-        sd -f ms '(rosdistro: humble.*?build-depends-repos): build_depends.repos' '$1: build_depends.humble.repos' {dest}
+      pre-commands: |
+        sd "container: ros:(\w+)" "container: ghcr.io/autowarefoundation/autoware-universe:\$1-latest-cuda" {source}
+        sd -f ms '(rosdistro: humble.*?build-depends-repos): build_depends.repos' '$1: build_depends.humble.repos' {source}
     - source: codecov.yaml
 
 - repository: autowarefoundation/autoware-documentation
