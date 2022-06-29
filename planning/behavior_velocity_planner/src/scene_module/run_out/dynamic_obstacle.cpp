@@ -61,7 +61,6 @@ pcl::PointCloud<pcl::PointXYZ> applyVoxelGridFilter(
     p.z = 0.0;
   }
 
-  // use boost::makeshared instead of std beacause filter.setInputCloud requires boost shared ptr
   pcl::VoxelGrid<pcl::PointXYZ> filter;
   filter.setInputCloud(pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>(no_height_points));
   filter.setLeafSize(0.05f, 0.05f, 100000.0f);
@@ -197,6 +196,12 @@ std::vector<DynamicObstacle> DynamicObstacleCreatorForPoints::createDynamicObsta
 void DynamicObstacleCreatorForPoints::onCompareMapFilteredPointCloud(
   const sensor_msgs::msg::PointCloud2::ConstSharedPtr msg)
 {
+  if (msg->data.empty()) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    dynamic_obstacle_data_.compare_map_filtered_pointcloud.clear();
+    return;
+  }
+
   geometry_msgs::msg::TransformStamped transform;
   try {
     transform = tf_buffer_.lookupTransform(
