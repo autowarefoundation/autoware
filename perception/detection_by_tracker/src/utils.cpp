@@ -81,13 +81,15 @@ double get2dIoU(
   boost::geometry::union_(polygon1, polygon2, union_polygons);
   boost::geometry::intersection(polygon1, polygon2, intersection_polygons);
 
-  double union_area = 0.0;
   double intersection_area = 0.0;
-  for (const auto & union_polygon : union_polygons) {
-    union_area += boost::geometry::area(union_polygon);
-  }
+  double union_area = 0.0;
   for (const auto & intersection_polygon : intersection_polygons) {
     intersection_area += boost::geometry::area(intersection_polygon);
+  }
+  if (intersection_area == 0.0) return 0.0;
+
+  for (const auto & union_polygon : union_polygons) {
+    union_area += boost::geometry::area(union_polygon);
   }
   const double iou = union_area < 0.01 ? 0.0 : std::min(1.0, intersection_area / union_area);
   return iou;
@@ -122,6 +124,8 @@ double get2dPrecision(
   for (const auto & intersection_polygon : intersection_polygons) {
     intersection_area += boost::geometry::area(intersection_polygon);
   }
+  if (intersection_area == 0.0) return 0.0;
+
   source_area = boost::geometry::area(source_polygon);
   const double precision = std::min(1.0, intersection_area / source_area);
   return precision;
@@ -149,13 +153,15 @@ double get2dRecall(
   toPolygon2d(std::get<0>(target_object), std::get<1>(target_object), target_polygon);
 
   std::vector<tier4_autoware_utils::Polygon2d> intersection_polygons;
-  boost::geometry::union_(source_polygon, target_polygon, intersection_polygons);
+  boost::geometry::intersection(source_polygon, target_polygon, intersection_polygons);
 
   double intersection_area = 0.0;
   double target_area = 0.0;
   for (const auto & intersection_polygon : intersection_polygons) {
     intersection_area += boost::geometry::area(intersection_polygon);
   }
+  if (intersection_area == 0.0) return 0.0;
+
   target_area += boost::geometry::area(target_polygon);
   const double recall = std::min(1.0, intersection_area / target_area);
   return recall;

@@ -25,7 +25,14 @@ The successive shortest path algorithm is used to solve the data association pro
 
 ## Parameters
 
-No Parameters.
+| Name                 | Type   | Description                                 |
+| -------------------- | ------ | ------------------------------------------- |
+| `can_assign_matrix`  | double | Assignment table for data association       |
+| `max_dist_matrix`    | double | Maximum distance table for data association |
+| `max_area_matrix`    | double | Maximum area table for data association     |
+| `min_area_matrix`    | double | Minimum area table for data association     |
+| `max_rad_matrix`     | double | Maximum angle table for data association    |
+| `base_link_frame_id` | double | association frame                           |
 
 ## Assumptions / Known limits
 

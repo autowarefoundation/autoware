@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <object_association_merger/successive_shortest_path.hpp>
+#include "object_association_merger/data_association/solver/successive_shortest_path.hpp"
 
 #include <algorithm>
 #include <cassert>
@@ -22,13 +22,7 @@
 #include <utility>
 #include <vector>
 
-// #include <cstdio>
-// #include <chrono>
-// #include <iostream>
-// #include <limits>
-// #include <unordered_set>
-
-namespace assignment_problem
+namespace gnn_solver
 {
 struct ResidualEdge
 {
@@ -49,7 +43,7 @@ struct ResidualEdge
   }
 };
 
-void MaximizeLinearAssignment(
+void SSP::maximizeLinearAssignment(
   const std::vector<std::vector<double>> & cost, std::unordered_map<int, int> * direct_assignment,
   std::unordered_map<int, int> * reverse_assignment)
 {
@@ -102,8 +96,8 @@ void MaximizeLinearAssignment(
   //     - {1, ...,  n_agents}: agent nodes
   //     - {n_agents+1, ...,  n_agents+n_tasks}: task nodes
   //     - n_agents+n_tasks+1: sink node
-  //     - {n_agents+n_tasks+2, ...,
-  //        n_agents+n_tasks+1+n_agents}: dummy node (when sparse_cost is true)
+  //     - {n_agents+n_tasks+2, ..., n_agents+n_tasks+1+n_agents}:
+  //       dummy node (when sparse_cost is true)
   std::vector<std::vector<ResidualEdge>> adjacency_list(n_nodes);
 
   // Reserve memory
@@ -187,27 +181,6 @@ void MaximizeLinearAssignment(
     }
   }
 
-  // // Print adjacency list
-  // std::cout << std::endl;
-  // for (int v = 0; v < n_nodes; v++)
-  // {
-  //   std::cout << v << ": ";
-  //   for (auto it_incident_edge = adjacency_list.at(v).cbegin();
-  //        it_incident_edge != adjacency_list.at(v).cend();
-  //        it_incident_edge++)
-  //   {
-  //     std::cout << "(" << it_incident_edge->first << ", " <<
-  //       it_incident_edge->second.cost << ")";
-  //   }
-  //   std::cout << std::endl;
-  // }
-
-  // end_time = std::chrono::system_clock::now();
-  // double time = static_cast<double>(
-  //  std::chrono::duration_cast<std::chrono::microseconds>(
-  //    end_time - start_time).count() / 1000.0);
-  // std::cout << " " << time << " ";
-
   // Maximum flow value
   const int max_flow = std::min(n_agents, n_tasks);
 
@@ -215,36 +188,36 @@ void MaximizeLinearAssignment(
   std::vector<double> potentials(n_nodes, 0);
 
   // Shortest path lengths
-  std::vector<double> dists(n_nodes, INF_DIST);
+  std::vector<double> distances(n_nodes, INF_DIST);
 
   // Whether previously visited the node or not
   std::vector<bool> is_visited(n_nodes, false);
 
   // Parent node (<prev_node, edge_index>)
-  std::vector<std::pair<int, int>> prevs(n_nodes);
+  std::vector<std::pair<int, int>> prev_values(n_nodes);
 
   for (int i = 0; i < max_flow; ++i) {
     // Initialize priority queue (<distance, node>)
     std::priority_queue<
       std::pair<double, int>, std::vector<std::pair<double, int>>,
       std::greater<std::pair<double, int>>>
-      pqueue;
+      p_queue;
 
     // Reset all trajectory states
     if (i > 0) {
-      std::fill(dists.begin(), dists.end(), INF_DIST);
+      std::fill(distances.begin(), distances.end(), INF_DIST);
       std::fill(is_visited.begin(), is_visited.end(), false);
     }
 
     // Start trajectory from the source node
-    pqueue.push(std::make_pair(0, source));
-    dists.at(source) = 0;
+    p_queue.push(std::make_pair(0, source));
+    distances.at(source) = 0;
 
-    while (!pqueue.empty()) {
+    while (!p_queue.empty()) {
       // Get the next element
-      std::pair<double, int> cur_elem = pqueue.top();
+      std::pair<double, int> cur_elem = p_queue.top();
       // std::cout << "[pop]: (" << cur_elem.first << ", " << cur_elem.second << ")" << std::endl;
-      pqueue.pop();
+      p_queue.pop();
 
       double cur_node_dist = cur_elem.first;
       int cur_node = cur_elem.second;
@@ -253,7 +226,7 @@ void MaximizeLinearAssignment(
       if (is_visited.at(cur_node)) {
         continue;
       }
-      assert(cur_node_dist == dists.at(cur_node));
+      assert(cur_node_dist == distances.at(cur_node));
 
       // Mark as visited
       is_visited.at(cur_node) = true;
@@ -274,19 +247,19 @@ void MaximizeLinearAssignment(
           double reduced_cost =
             it_incident_edge->cost + potentials.at(cur_node) - potentials.at(it_incident_edge->dst);
           assert(reduced_cost >= 0);
-          if (dists.at(it_incident_edge->dst) > reduced_cost) {
-            dists.at(it_incident_edge->dst) = reduced_cost;
-            prevs.at(it_incident_edge->dst) =
+          if (distances.at(it_incident_edge->dst) > reduced_cost) {
+            distances.at(it_incident_edge->dst) = reduced_cost;
+            prev_values.at(it_incident_edge->dst) =
               std::make_pair(cur_node, it_incident_edge - adjacency_list.at(cur_node).cbegin());
             // std::cout << "[push]: (" << reduced_cost << ", " << next_v << ")" << std::endl;
-            pqueue.push(std::make_pair(reduced_cost, it_incident_edge->dst));
+            p_queue.push(std::make_pair(reduced_cost, it_incident_edge->dst));
           }
         }
       }
     }
 
     // Shortest path length to sink is greater than MAX_COST,
-    // which means no non-dummy routes left ,terminate
+    // which means no non-dummy routes left, terminate
     if (potentials.at(sink) >= MAX_COST) {
       break;
     }
@@ -294,7 +267,7 @@ void MaximizeLinearAssignment(
     // Update potentials of unvisited nodes
     for (int v = 0; v < n_nodes; ++v) {
       if (!is_visited.at(v)) {
-        potentials.at(v) += dists.at(sink);
+        potentials.at(v) += distances.at(sink);
       }
     }
     // //Print potentials
@@ -308,7 +281,8 @@ void MaximizeLinearAssignment(
     int v = sink;
     int prev_v;
     while (v != source) {
-      ResidualEdge & e_forward = adjacency_list.at(prevs.at(v).first).at(prevs.at(v).second);
+      ResidualEdge & e_forward =
+        adjacency_list.at(prev_values.at(v).first).at(prev_values.at(v).second);
       assert(e_forward.dst == v);
       ResidualEdge & e_backward = adjacency_list.at(v).at(e_forward.reverse);
       prev_v = e_backward.dst;
@@ -393,4 +367,4 @@ void MaximizeLinearAssignment(
   }
 #endif
 }
-}  // namespace assignment_problem
+}  // namespace gnn_solver

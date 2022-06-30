@@ -12,253 +12,82 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <object_association_merger/data_association.hpp>
-#include <object_association_merger/successive_shortest_path.hpp>
-#include <object_association_merger/utils/utils.hpp>
+#include "object_association_merger/data_association/data_association.hpp"
 
-#include <sensor_msgs/point_cloud2_iterator.hpp>
+#include "object_association_merger/data_association/solver/gnn_solver.hpp"
+#include "object_association_merger/utils/utils.hpp"
 
 #include <algorithm>
+#include <list>
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
-DataAssociation::DataAssociation() : score_threshold_(0.1)
+namespace
 {
-  can_assign_matrix_ = Eigen::MatrixXi::Identity(20, 20);
-  can_assign_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN,
-    autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN) = 1;
-  can_assign_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::CAR,
-    autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN) = 0;
-  can_assign_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::CAR,
-    autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK) = 1;
-  can_assign_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::CAR,
-    autoware_auto_perception_msgs::msg::ObjectClassification::BUS) = 1;
-  can_assign_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK,
-    autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN) = 0;
-  can_assign_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK,
-    autoware_auto_perception_msgs::msg::ObjectClassification::CAR) = 1;
-  can_assign_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK,
-    autoware_auto_perception_msgs::msg::ObjectClassification::BUS) = 1;
-  can_assign_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::BUS,
-    autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN) = 0;
-  can_assign_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::BUS,
-    autoware_auto_perception_msgs::msg::ObjectClassification::CAR) = 1;
-  can_assign_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::BUS,
-    autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK) = 1;
-  can_assign_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE,
-    autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN) = 0;
-  can_assign_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE,
-    autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE) = 1;
-  can_assign_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE,
-    autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN) = 0;
-  can_assign_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE,
-    autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE) = 1;
-  can_assign_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::PEDESTRIAN,
-    autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN) = 0;
-  max_dist_matrix_ = Eigen::MatrixXd::Constant(20, 20, 1.0);
-  max_dist_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::CAR,
-    autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN) = 4.0;
-  max_dist_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::CAR,
-    autoware_auto_perception_msgs::msg::ObjectClassification::CAR) = 3.0;
-  max_dist_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::CAR,
-    autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK) = 3.0;
-  max_dist_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::CAR,
-    autoware_auto_perception_msgs::msg::ObjectClassification::BUS) = 3.0;
-  max_dist_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK,
-    autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN) = 3.0;
-  max_dist_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK,
-    autoware_auto_perception_msgs::msg::ObjectClassification::CAR) = 3.0;
-  max_dist_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK,
-    autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK) = 3.0;
-  max_dist_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK,
-    autoware_auto_perception_msgs::msg::ObjectClassification::BUS) = 3.0;
-  max_dist_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::BUS,
-    autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN) = 3.0;
-  max_dist_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::BUS,
-    autoware_auto_perception_msgs::msg::ObjectClassification::CAR) = 3.0;
-  max_dist_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::BUS,
-    autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK) = 3.0;
-  max_dist_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::BUS,
-    autoware_auto_perception_msgs::msg::ObjectClassification::BUS) = 3.0;
-  max_dist_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE,
-    autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN) = 2.0;
-  max_dist_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE,
-    autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE) = 2.0;
-  max_dist_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE,
-    autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE) = 2.0;
-  max_dist_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE,
-    autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN) = 2.0;
-  max_dist_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE,
-    autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE) = 2.0;
-  max_dist_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE,
-    autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE) = 2.0;
-  max_dist_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::PEDESTRIAN,
-    autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN) = 2.0;
-  max_dist_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::PEDESTRIAN,
-    autoware_auto_perception_msgs::msg::ObjectClassification::PEDESTRIAN) = 2.0;
-  max_area_matrix_ = Eigen::MatrixXd::Constant(20, 20, /* large number */ 10000.0);
-  max_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN,
-    autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN) = 5.0 * 5.0;
-  max_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::CAR,
-    autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN) = 2.2 * 5.5;
-  max_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::CAR,
-    autoware_auto_perception_msgs::msg::ObjectClassification::CAR) = 2.2 * 5.5;
-  max_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::CAR,
-    autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK) = 2.5 * 7.9;
-  max_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::CAR,
-    autoware_auto_perception_msgs::msg::ObjectClassification::BUS) = 2.7 * 12.0;
-  max_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK,
-    autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN) = 2.5 * 7.9;
-  max_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK,
-    autoware_auto_perception_msgs::msg::ObjectClassification::CAR) = 2.2 * 5.5;
-  max_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK,
-    autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK) = 2.5 * 7.9;
-  max_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK,
-    autoware_auto_perception_msgs::msg::ObjectClassification::BUS) = 2.7 * 12.0;
-  max_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::BUS,
-    autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN) = 2.7 * 12.0;
-  max_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::BUS,
-    autoware_auto_perception_msgs::msg::ObjectClassification::CAR) = 2.2 * 5.5;
-  max_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::BUS,
-    autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK) = 2.5 * 7.9;
-  max_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::BUS,
-    autoware_auto_perception_msgs::msg::ObjectClassification::BUS) = 2.7 * 12.0;
-  max_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE,
-    autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN) = 2.5;
-  max_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE,
-    autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE) = 2.5;
-  max_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE,
-    autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE) = 3.0;
-  max_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE,
-    autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN) = 3.0;
-  max_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE,
-    autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE) = 2.5;
-  max_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE,
-    autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE) = 3.0;
-  max_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::PEDESTRIAN,
-    autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN) = 2.0;
-  max_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::PEDESTRIAN,
-    autoware_auto_perception_msgs::msg::ObjectClassification::PEDESTRIAN) = 2.0;
-  min_area_matrix_ = Eigen::MatrixXd::Constant(20, 20, /* small number */ 0.0);
-  min_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::CAR,
-    autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN) = 1.2 * 3.0;
-  min_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::CAR,
-    autoware_auto_perception_msgs::msg::ObjectClassification::CAR) = 1.2 * 3.0;
-  min_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::CAR,
-    autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK) = 1.5 * 4.0;
-  min_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::CAR,
-    autoware_auto_perception_msgs::msg::ObjectClassification::BUS) = 2.0 * 5.0;
-  min_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK,
-    autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN) = 1.5 * 4.0;
-  min_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK,
-    autoware_auto_perception_msgs::msg::ObjectClassification::CAR) = 1.2 * 3.0;
-  min_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK,
-    autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK) = 1.5 * 4.0;
-  min_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK,
-    autoware_auto_perception_msgs::msg::ObjectClassification::BUS) = 2.0 * 5.0;
-  min_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::BUS,
-    autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN) = 2.0 * 5.0;
-  min_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::BUS,
-    autoware_auto_perception_msgs::msg::ObjectClassification::CAR) = 1.2 * 3.0;
-  min_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::BUS,
-    autoware_auto_perception_msgs::msg::ObjectClassification::TRUCK) = 1.5 * 4.0;
-  min_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::BUS,
-    autoware_auto_perception_msgs::msg::ObjectClassification::BUS) = 2.0 * 5.0;
-  min_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE,
-    autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN) = 0.001;
-  min_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE,
-    autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE) = 0.001;
-  min_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE,
-    autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE) = 0.001;
-  min_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE,
-    autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN) = 0.001;
-  min_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE,
-    autoware_auto_perception_msgs::msg::ObjectClassification::BICYCLE) = 0.001;
-  min_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE,
-    autoware_auto_perception_msgs::msg::ObjectClassification::MOTORCYCLE) = 0.001;
-  min_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::PEDESTRIAN,
-    autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN) = 0.001;
-  min_area_matrix_(
-    autoware_auto_perception_msgs::msg::ObjectClassification::PEDESTRIAN,
-    autoware_auto_perception_msgs::msg::ObjectClassification::PEDESTRIAN) = 0.001;
+double getDistance(
+  const geometry_msgs::msg::Point & point0, const geometry_msgs::msg::Point & point1)
+{
+  const double diff_x = point1.x - point0.x;
+  const double diff_y = point1.y - point0.y;
+  // const double diff_z = point1.z - point0.z;
+  return std::sqrt(diff_x * diff_x + diff_y * diff_y);
 }
 
-bool DataAssociation::assign(
+double getFormedYawAngle(
+  const geometry_msgs::msg::Quaternion & quat0, const geometry_msgs::msg::Quaternion & quat1,
+  const bool distinguish_front_or_back = true)
+{
+  const double yaw0 = tier4_autoware_utils::normalizeRadian(tf2::getYaw(quat0));
+  const double yaw1 = tier4_autoware_utils::normalizeRadian(tf2::getYaw(quat1));
+  const double angle_range = distinguish_front_or_back ? M_PI : M_PI_2;
+  const double angle_step = distinguish_front_or_back ? 2.0 * M_PI : M_PI;
+  // Fixed yaw0 to be in the range of +-90 or 180 degrees of yaw1
+  double fixed_yaw0 = yaw0;
+  while (angle_range <= yaw1 - fixed_yaw0) {
+    fixed_yaw0 = fixed_yaw0 + angle_step;
+  }
+  while (angle_range <= fixed_yaw0 - yaw1) {
+    fixed_yaw0 = fixed_yaw0 - angle_step;
+  }
+  return std::fabs(fixed_yaw0 - yaw1);
+}
+}  // namespace
+
+DataAssociation::DataAssociation(
+  std::vector<int> can_assign_vector, std::vector<double> max_dist_vector,
+  std::vector<double> max_rad_vector, std::vector<double> min_iou_vector)
+: score_threshold_(0.01)
+{
+  {
+    const int assign_label_num = static_cast<int>(std::sqrt(can_assign_vector.size()));
+    Eigen::Map<Eigen::MatrixXi> can_assign_matrix_tmp(
+      can_assign_vector.data(), assign_label_num, assign_label_num);
+    can_assign_matrix_ = can_assign_matrix_tmp.transpose();
+  }
+  {
+    const int max_dist_label_num = static_cast<int>(std::sqrt(max_dist_vector.size()));
+    Eigen::Map<Eigen::MatrixXd> max_dist_matrix_tmp(
+      max_dist_vector.data(), max_dist_label_num, max_dist_label_num);
+    max_dist_matrix_ = max_dist_matrix_tmp.transpose();
+  }
+  {
+    const int max_rad_label_num = static_cast<int>(std::sqrt(max_rad_vector.size()));
+    Eigen::Map<Eigen::MatrixXd> max_rad_matrix_tmp(
+      max_rad_vector.data(), max_rad_label_num, max_rad_label_num);
+    max_rad_matrix_ = max_rad_matrix_tmp.transpose();
+  }
+  {
+    const int min_iou_label_num = static_cast<int>(std::sqrt(min_iou_vector.size()));
+    Eigen::Map<Eigen::MatrixXd> min_iou_matrix_tmp(
+      min_iou_vector.data(), min_iou_label_num, min_iou_label_num);
+    min_iou_matrix_ = min_iou_matrix_tmp.transpose();
+  }
+
+  gnn_solver_ptr_ = std::make_unique<gnn_solver::MuSSP>();
+}
+
+void DataAssociation::assign(
   const Eigen::MatrixXd & src, std::unordered_map<int, int> & direct_assignment,
   std::unordered_map<int, int> & reverse_assignment)
 {
@@ -270,7 +99,7 @@ bool DataAssociation::assign(
     }
   }
   // Solve
-  assignment_problem::MaximizeLinearAssignment(score, &direct_assignment, &reverse_assignment);
+  gnn_solver_ptr_->maximizeLinearAssignment(score, &direct_assignment, &reverse_assignment);
 
   for (auto itr = direct_assignment.begin(); itr != direct_assignment.end();) {
     if (src(itr->first, itr->second) < score_threshold_) {
@@ -288,81 +117,63 @@ bool DataAssociation::assign(
       ++itr;
     }
   }
-  return true;
 }
 
 Eigen::MatrixXd DataAssociation::calcScoreMatrix(
-  const autoware_auto_perception_msgs::msg::DetectedObjects & object0,
-  const autoware_auto_perception_msgs::msg::DetectedObjects & object1)
+  const autoware_auto_perception_msgs::msg::DetectedObjects & objects0,
+  const autoware_auto_perception_msgs::msg::DetectedObjects & objects1)
 {
   Eigen::MatrixXd score_matrix =
-    Eigen::MatrixXd::Zero(object1.objects.size(), object0.objects.size());
-  for (size_t object1_idx = 0; object1_idx < object1.objects.size(); ++object1_idx) {
-    for (size_t object0_idx = 0; object0_idx < object0.objects.size(); ++object0_idx) {
+    Eigen::MatrixXd::Zero(objects1.objects.size(), objects0.objects.size());
+  for (size_t objects1_idx = 0; objects1_idx < objects1.objects.size(); ++objects1_idx) {
+    const autoware_auto_perception_msgs::msg::DetectedObject & object1 =
+      objects1.objects.at(objects1_idx);
+    const std::uint8_t object1_label = utils::getHighestProbLabel(object1.classification);
+
+    for (size_t objects0_idx = 0; objects0_idx < objects0.objects.size(); ++objects0_idx) {
+      const autoware_auto_perception_msgs::msg::DetectedObject & object0 =
+        objects0.objects.at(objects0_idx);
+      const std::uint8_t object0_label = utils::getHighestProbLabel(object0.classification);
+
       double score = 0.0;
-      if (can_assign_matrix_(
-            object1.objects.at(object1_idx).classification.front().label,
-            object0.objects.at(object0_idx).classification.front().label)) {
-        const double max_dist = max_dist_matrix_(
-          object1.objects.at(object1_idx).classification.front().label,
-          object0.objects.at(object0_idx).classification.front().label);
-        const double max_area = max_area_matrix_(
-          object1.objects.at(object1_idx).classification.front().label,
-          object0.objects.at(object0_idx).classification.front().label);
-        const double min_area = min_area_matrix_(
-          object1.objects.at(object1_idx).classification.front().label,
-          object0.objects.at(object0_idx).classification.front().label);
+      if (can_assign_matrix_(object1_label, object0_label)) {
+        const double max_dist = max_dist_matrix_(object1_label, object0_label);
         const double dist = getDistance(
-          object0.objects.at(object0_idx).kinematics.pose_with_covariance.pose.position,
-          object1.objects.at(object1_idx).kinematics.pose_with_covariance.pose.position);
-        const double area0 = utils::getArea(object0.objects.at(object0_idx).shape);
-        const double area1 = utils::getArea(object1.objects.at(object1_idx).shape);
-        // the score (=cost) is reversed in ssp solver
-        score = (max_dist - std::min(dist, max_dist)) / max_dist;
-        if (max_dist < dist) {
-          score = 0.0;
+          object0.kinematics.pose_with_covariance.pose.position,
+          object1.kinematics.pose_with_covariance.pose.position);
+
+        bool passed_gate = true;
+        // dist gate
+        if (passed_gate) {
+          if (max_dist < dist) passed_gate = false;
         }
-        if (area0 < min_area || max_area < area0) {
-          score = 0.0;
+        // angle gate
+        if (passed_gate) {
+          const double max_rad = max_rad_matrix_(object1_label, object0_label);
+          const double angle = getFormedYawAngle(
+            object0.kinematics.pose_with_covariance.pose.orientation,
+            object1.kinematics.pose_with_covariance.pose.orientation, false);
+          if (std::fabs(max_rad) < M_PI && std::fabs(max_rad) < std::fabs(angle))
+            passed_gate = false;
         }
-        if (area1 < min_area || max_area < area1) {
-          score = 0.0;
+        // 2d iou gate
+        if (passed_gate) {
+          const double min_iou = min_iou_matrix_(object1_label, object0_label);
+          const double iou = utils::get2dIoU(
+            {object0.kinematics.pose_with_covariance.pose, object0.shape},
+            {object1.kinematics.pose_with_covariance.pose, object1.shape});
+          if (iou < min_iou) passed_gate = false;
+        }
+
+        // all gate is passed
+        if (passed_gate) {
+          score = (max_dist - std::min(dist, max_dist)) / max_dist;
+          if (score < score_threshold_) score = 0.0;
         }
       }
-      score_matrix(object1_idx, object0_idx) = score;
+      score_matrix(objects1_idx, objects0_idx) = score;
     }
   }
+
   return score_matrix;
-}
-
-double DataAssociation::getDistance(
-  const geometry_msgs::msg::Point & point0, const geometry_msgs::msg::Point & point1)
-{
-  const double diff_x = point1.x - point0.x;
-  const double diff_y = point1.y - point0.y;
-  // const double diff_z = point1.z - point0.z;
-  return std::sqrt(diff_x * diff_x + diff_y * diff_y);
-}
-
-geometry_msgs::msg::Point DataAssociation::getCentroid(
-  const sensor_msgs::msg::PointCloud2 & pointcloud)
-{
-  geometry_msgs::msg::Point centroid;
-  centroid.x = 0;
-  centroid.y = 0;
-  centroid.z = 0;
-  for (sensor_msgs::PointCloud2ConstIterator<float> iter_x(pointcloud, "x"),
-       iter_y(pointcloud, "y"), iter_z(pointcloud, "z");
-       iter_x != iter_x.end(); ++iter_x, ++iter_y, ++iter_z) {
-    centroid.x += *iter_x;
-    centroid.y += *iter_y;
-    centroid.z += *iter_z;
-  }
-  centroid.x =
-    centroid.x / (static_cast<double>(pointcloud.height) * static_cast<double>(pointcloud.width));
-  centroid.y =
-    centroid.y / (static_cast<double>(pointcloud.height) * static_cast<double>(pointcloud.width));
-  centroid.z =
-    centroid.z / (static_cast<double>(pointcloud.height) * static_cast<double>(pointcloud.width));
-  return centroid;
 }
