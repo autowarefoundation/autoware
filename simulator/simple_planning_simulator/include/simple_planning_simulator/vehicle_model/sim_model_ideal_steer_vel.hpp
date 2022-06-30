@@ -75,7 +75,7 @@ private:
   float64_t getVy() override;
 
   /**
-   * @brief get vehicle longiudinal acceleration
+   * @brief get vehicle longitudinal acceleration
    */
   float64_t getAx() override;
 

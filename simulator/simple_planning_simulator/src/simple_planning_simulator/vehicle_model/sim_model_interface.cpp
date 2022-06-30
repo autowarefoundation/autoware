@@ -38,3 +38,4 @@ void SimModelInterface::getInput(Eigen::VectorXd & input) { input = input_; }
 void SimModelInterface::setState(const Eigen::VectorXd & state) { state_ = state; }
 void SimModelInterface::setInput(const Eigen::VectorXd & input) { input_ = input; }
 void SimModelInterface::setGear(const uint8_t gear) { gear_ = gear; }
+uint8_t SimModelInterface::getGear() const { return gear_; }
