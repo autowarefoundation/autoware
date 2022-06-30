@@ -8,6 +8,7 @@
     th_stopped_time_sec: 1.0
     th_stopped_velocity_mps: 0.01
     th_course_out_distance_m: 1.0
+    vehicle_shape_margin_m: 1.0
     replan_when_obstacle_found: true
     replan_when_course_out: true
 
