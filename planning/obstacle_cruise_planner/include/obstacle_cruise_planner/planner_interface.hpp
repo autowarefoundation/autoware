@@ -21,7 +21,10 @@
 #include "vehicle_info_util/vehicle_info_util.hpp"
 
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
+#include "tier4_planning_msgs/msg/stop_reason_array.hpp"
+#include "tier4_planning_msgs/msg/stop_speed_exceeded.hpp"
 #include "tier4_planning_msgs/msg/velocity_limit.hpp"
+#include "visualization_msgs/msg/marker_array.hpp"
 
 #include <boost/optional.hpp>
 
@@ -30,6 +33,7 @@
 
 using autoware_auto_perception_msgs::msg::ObjectClassification;
 using autoware_auto_planning_msgs::msg::Trajectory;
+using tier4_planning_msgs::msg::StopSpeedExceeded;
 using tier4_planning_msgs::msg::VelocityLimit;
 
 class PlannerInterface
@@ -40,96 +44,30 @@ public:
     const vehicle_info_util::VehicleInfo & vehicle_info)
   : longitudinal_info_(longitudinal_info), vehicle_info_(vehicle_info)
   {
-    {  // cruise obstacle type
-      if (node.declare_parameter<bool>("common.cruise_obstacle_type.unknown")) {
-        cruise_obstacle_types_.push_back(ObjectClassification::UNKNOWN);
-      }
-      if (node.declare_parameter<bool>("common.cruise_obstacle_type.car")) {
-        cruise_obstacle_types_.push_back(ObjectClassification::CAR);
-      }
-      if (node.declare_parameter<bool>("common.cruise_obstacle_type.truck")) {
-        cruise_obstacle_types_.push_back(ObjectClassification::TRUCK);
-      }
-      if (node.declare_parameter<bool>("common.cruise_obstacle_type.bus")) {
-        cruise_obstacle_types_.push_back(ObjectClassification::BUS);
-      }
-      if (node.declare_parameter<bool>("common.cruise_obstacle_type.trailer")) {
-        cruise_obstacle_types_.push_back(ObjectClassification::TRAILER);
-      }
-      if (node.declare_parameter<bool>("common.cruise_obstacle_type.motorcycle")) {
-        cruise_obstacle_types_.push_back(ObjectClassification::MOTORCYCLE);
-      }
-      if (node.declare_parameter<bool>("common.cruise_obstacle_type.bicycle")) {
-        cruise_obstacle_types_.push_back(ObjectClassification::BICYCLE);
-      }
-      if (node.declare_parameter<bool>("common.cruise_obstacle_type.pedestrian")) {
-        cruise_obstacle_types_.push_back(ObjectClassification::PEDESTRIAN);
-      }
-    }
-
-    {  // stop obstacle type
-      if (node.declare_parameter<bool>("common.stop_obstacle_type.unknown")) {
-        stop_obstacle_types_.push_back(ObjectClassification::UNKNOWN);
-      }
-      if (node.declare_parameter<bool>("common.stop_obstacle_type.car")) {
-        stop_obstacle_types_.push_back(ObjectClassification::CAR);
-      }
-      if (node.declare_parameter<bool>("common.stop_obstacle_type.truck")) {
-        stop_obstacle_types_.push_back(ObjectClassification::TRUCK);
-      }
-      if (node.declare_parameter<bool>("common.stop_obstacle_type.bus")) {
-        stop_obstacle_types_.push_back(ObjectClassification::BUS);
-      }
-      if (node.declare_parameter<bool>("common.stop_obstacle_type.trailer")) {
-        stop_obstacle_types_.push_back(ObjectClassification::TRAILER);
-      }
-      if (node.declare_parameter<bool>("common.stop_obstacle_type.motorcycle")) {
-        stop_obstacle_types_.push_back(ObjectClassification::MOTORCYCLE);
-      }
-      if (node.declare_parameter<bool>("common.stop_obstacle_type.bicycle")) {
-        stop_obstacle_types_.push_back(ObjectClassification::BICYCLE);
-      }
-      if (node.declare_parameter<bool>("common.stop_obstacle_type.pedestrian")) {
-        stop_obstacle_types_.push_back(ObjectClassification::PEDESTRIAN);
-      }
-    }
+    stop_reasons_pub_ =
+      node.create_publisher<tier4_planning_msgs::msg::StopReasonArray>("~/output/stop_reasons", 1);
+    stop_speed_exceeded_pub_ =
+      node.create_publisher<StopSpeedExceeded>("~/output/stop_speed_exceeded", 1);
   }
 
   PlannerInterface() = default;
 
   void setParams(
     const bool is_showing_debug_info, const double min_behavior_stop_margin,
-    const double nearest_dist_deviation_threshold, const double nearest_yaw_deviation_threshold,
-    const double obstacle_velocity_threshold_from_cruise_to_stop,
-    const double obstacle_velocity_threshold_from_stop_to_cruise)
+    const double nearest_dist_deviation_threshold, const double nearest_yaw_deviation_threshold)
   {
     is_showing_debug_info_ = is_showing_debug_info;
     min_behavior_stop_margin_ = min_behavior_stop_margin;
     nearest_dist_deviation_threshold_ = nearest_dist_deviation_threshold;
     nearest_yaw_deviation_threshold_ = nearest_yaw_deviation_threshold;
-    obstacle_velocity_threshold_from_cruise_to_stop_ =
-      obstacle_velocity_threshold_from_cruise_to_stop;
-    obstacle_velocity_threshold_from_stop_to_cruise_ =
-      obstacle_velocity_threshold_from_stop_to_cruise;
   }
 
-  /*
-  // two kinds of velocity planning is supported.
-  // 1. getZeroVelocityIndexWithVelocityLimit
-  //   returns zero velocity index and velocity limit
-  // 2. generateTrajectory
-  //   returns trajectory with planned velocity
-  virtual boost::optional<size_t> getZeroVelocityIndexWithVelocityLimit(
-    [[maybe_unused]] const ObstacleCruisePlannerData & planner_data,
-    [[maybe_unused]] boost::optional<VelocityLimit> & vel_limit)
-  {
-    return {};
-  };
-  */
+  Trajectory generateStopTrajectory(
+    const ObstacleCruisePlannerData & planner_data, DebugData & debug_data);
 
-  virtual Trajectory generateTrajectory(
-    const ObstacleCruisePlannerData & planner_data, boost::optional<VelocityLimit> & vel_limit,
-    DebugData & debug_data) = 0;
+  virtual Trajectory generateCruiseTrajectory(
+    const ObstacleCruisePlannerData & planner_data, const Trajectory & stop_traj,
+    boost::optional<VelocityLimit> & vel_limit, DebugData & debug_data) = 0;
 
   void updateCommonParam(const std::vector<rclcpp::Parameter> & parameters)
   {
@@ -158,52 +96,6 @@ public:
     smoothed_trajectory_ptr_ = traj;
   }
 
-  bool isCruiseObstacle(const uint8_t label)
-  {
-    const auto & types = cruise_obstacle_types_;
-    return std::find(types.begin(), types.end(), label) != types.end();
-  }
-
-  bool isStopObstacle(const uint8_t label)
-  {
-    const auto & types = stop_obstacle_types_;
-    return std::find(types.begin(), types.end(), label) != types.end();
-  }
-
-  bool isStopRequired(const TargetObstacle & obstacle, TargetObstacle & modified_obstacle)
-  {
-    const bool is_cruise_obstacle = isCruiseObstacle(obstacle.classification.label);
-    const bool is_stop_obstacle = isStopObstacle(obstacle.classification.label);
-
-    if (is_stop_obstacle && !is_cruise_obstacle) {
-      modified_obstacle.has_stopped = true;
-      return true;
-    }
-
-    if (is_cruise_obstacle) {
-      const auto itr = std::find_if(
-        prev_target_obstacles_.begin(), prev_target_obstacles_.end(),
-        [&](const auto & prev_target_obstacle) {
-          return obstacle.uuid == prev_target_obstacle.uuid;
-        });
-      const bool has_already_stopped = (itr != prev_target_obstacles_.end()) && itr->has_stopped;
-      if (has_already_stopped) {
-        if (std::abs(obstacle.velocity) < obstacle_velocity_threshold_from_stop_to_cruise_) {
-          modified_obstacle.has_stopped = true;
-          return true;
-        }
-      } else {
-        if (std::abs(obstacle.velocity) < obstacle_velocity_threshold_from_cruise_to_stop_) {
-          modified_obstacle.has_stopped = true;
-          return true;
-        }
-      }
-    }
-
-    modified_obstacle.has_stopped = false;
-    return false;
-  }
-
 protected:
   // Parameters
   bool is_showing_debug_info_{false};
@@ -211,8 +103,10 @@ protected:
   double min_behavior_stop_margin_;
   double nearest_dist_deviation_threshold_;
   double nearest_yaw_deviation_threshold_;
-  double obstacle_velocity_threshold_from_cruise_to_stop_;
-  double obstacle_velocity_threshold_from_stop_to_cruise_;
+
+  // Publishers
+  rclcpp::Publisher<tier4_planning_msgs::msg::StopReasonArray>::SharedPtr stop_reasons_pub_;
+  rclcpp::Publisher<StopSpeedExceeded>::SharedPtr stop_speed_exceeded_pub_;
 
   // Vehicle Parameters
   vehicle_info_util::VehicleInfo vehicle_info_;
@@ -220,21 +114,15 @@ protected:
   // TODO(shimizu) remove these parameters
   Trajectory::ConstSharedPtr smoothed_trajectory_ptr_;
 
-  std::vector<TargetObstacle> prev_target_obstacles_;
-
   double calcRSSDistance(
     const double ego_vel, const double obj_vel, const double margin = 0.0) const
   {
     const auto & i = longitudinal_info_;
     const double rss_dist_with_margin =
-      ego_vel * i.idling_time + std::pow(ego_vel, 2) * 0.5 / std::abs(i.min_accel) -
+      ego_vel * i.idling_time + std::pow(ego_vel, 2) * 0.5 / std::abs(i.min_ego_accel_for_rss) -
       std::pow(obj_vel, 2) * 0.5 / std::abs(i.min_object_accel_for_rss) + margin;
     return rss_dist_with_margin;
   }
-
-private:
-  std::vector<int> cruise_obstacle_types_;
-  std::vector<int> stop_obstacle_types_;
 };
 
 #endif  // OBSTACLE_CRUISE_PLANNER__PLANNER_INTERFACE_HPP_

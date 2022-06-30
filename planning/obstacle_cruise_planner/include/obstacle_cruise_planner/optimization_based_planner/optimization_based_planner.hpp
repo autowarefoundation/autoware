@@ -48,9 +48,9 @@ public:
     rclcpp::Node & node, const LongitudinalInfo & longitudinal_info,
     const vehicle_info_util::VehicleInfo & vehicle_info);
 
-  Trajectory generateTrajectory(
-    const ObstacleCruisePlannerData & planner_data, boost::optional<VelocityLimit> & vel_limit,
-    DebugData & debug_data) override;
+  Trajectory generateCruiseTrajectory(
+    const ObstacleCruisePlannerData & planner_data, const Trajectory & stop_traj,
+    boost::optional<VelocityLimit> & vel_limit, DebugData & debug_data) override;
 
 private:
   struct TrajectoryData
@@ -71,26 +71,20 @@ private:
 
   // Member Functions
   std::vector<double> createTimeVector();
-
-  double getClosestStopDistance(
-    const ObstacleCruisePlannerData & planner_data, const TrajectoryData & ego_traj_data);
-
   std::tuple<double, double> calcInitialMotion(
-    const double current_vel, const Trajectory & input_traj, const size_t input_closest,
-    const Trajectory & prev_traj, const double closest_stop_dist);
+    const ObstacleCruisePlannerData & planner_data, const Trajectory & stop_traj,
+    const size_t input_closest, const Trajectory & prev_traj);
 
   TrajectoryPoint calcInterpolatedTrajectoryPoint(
     const Trajectory & trajectory, const geometry_msgs::msg::Pose & target_pose);
-
-  bool checkHasReachedGoal(const Trajectory & traj, const size_t closest_idx, const double v0);
-
+  bool checkHasReachedGoal(
+    const ObstacleCruisePlannerData & planner_data, const Trajectory & stop_traj);
   TrajectoryData getTrajectoryData(
     const Trajectory & traj, const geometry_msgs::msg::Pose & current_pose);
 
   TrajectoryData resampleTrajectoryData(
     const TrajectoryData & base_traj_data, const double resampling_s_interval,
-    const double max_traj_length, const double stop_dist);
-
+    const double max_traj_length);
   Trajectory resampleTrajectory(
     const std::vector<double> & base_index, const Trajectory & base_trajectory,
     const std::vector<double> & query_index, const bool use_spline_for_pose = false);
@@ -137,7 +131,6 @@ private:
     const rclcpp::Time & current_time, const Trajectory & traj, const size_t closest_idx,
     const std::vector<double> & time_vec, const SBoundaries & s_boundaries,
     const VelocityOptimizer::OptimizationResult & opt_result);
-
   // Calculation time watcher
   tier4_autoware_utils::StopWatch<std::chrono::milliseconds> stop_watch_;
 
@@ -150,7 +143,6 @@ private:
   rclcpp::Publisher<Trajectory>::SharedPtr boundary_pub_;
   rclcpp::Publisher<Trajectory>::SharedPtr optimized_sv_pub_;
   rclcpp::Publisher<Trajectory>::SharedPtr optimized_st_graph_pub_;
-  rclcpp::Publisher<Float32Stamped>::SharedPtr distance_to_closest_obj_pub_;
   rclcpp::Publisher<Float32Stamped>::SharedPtr debug_calculation_time_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr debug_wall_marker_pub_;
 

@@ -6,7 +6,7 @@
       is_showing_debug_info: true
 
       # longitudinal info
-      idling_time: 4.0 # idling time to detect front vehicle starting deceleration [s]
+      idling_time: 1.5 # idling time to detect front vehicle starting deceleration [s]
       min_ego_accel_for_rss: -1.0 # ego's acceleration to calculate RSS distance [m/ss]
       min_object_accel_for_rss: -1.0 # front obstacle's acceleration to calculate RSS distance [m/ss]
       safe_distance_margin : 6.0 # This is also used as a stop margin [m]
@@ -17,6 +17,7 @@
       nearest_yaw_deviation_threshold: 1.57 # [rad] for finding nearest index
       min_behavior_stop_margin: 3.0 # [m]
       obstacle_velocity_threshold_from_cruise_to_stop : 3.0 # stop planning is executed to the obstacle whose velocity is less than this value [m/s]
+      obstacle_velocity_threshold_from_stop_to_cruise : 3.5 # stop planning is executed to the obstacle whose velocity is less than this value [m/s]
 
       cruise_obstacle_type:
         unknown: true
@@ -39,7 +40,7 @@
         pedestrian: true
 
     obstacle_filtering:
-      rough_detection_area_expand_width : 5.0 # rough lateral margin for rough detection area expansion [m]
+      rough_detection_area_expand_width : 3.0 # rough lateral margin for rough detection area expansion [m]
       detection_area_expand_width : 0.0 # lateral margin for precise detection area expansion
       decimate_trajectory_step_length : 2.0 # longitudinal step length to calculate trajectory polygon for collision checking
 
@@ -48,6 +49,7 @@
       crossing_obstacle_traj_angle_threshold : 1.22 # [rad] = 70 [deg], yaw threshold of crossing obstacle against the nearest trajectory point for cruise or stop
       collision_time_margin : 8.0 # time threshold of collision between obstacle adn ego for cruise or stop [s]
 
+      outside_rough_detection_area_expand_width : 0.5 # rough lateral margin for rough detection area expansion for obstacles outside the trajectory [m]
       ego_obstacle_overlap_time_threshold : 1.0 #  time threshold to decide cut-in obstacle for cruise or stop [s]
       max_prediction_time_for_collision_check : 20.0 # prediction time to check collision between obstacle and ego
 
@@ -65,14 +67,14 @@
       # use_predicted_obstacle_pose: false
 
       # PID gains to keep safe distance with the front vehicle
-      kp: 0.6
+      kp: 2.5
       ki: 0.0
-      kd: 0.5
+      kd: 2.3
 
       min_accel_during_cruise: -2.0 # minimum acceleration during cruise to slow down [m/ss]
 
-      output_ratio_during_accel: 2.5 # target acceleration is multiplied with this value while ego accelerates to catch up the front vehicle [-]
-      vel_to_acc_weight: 8.0 # target acceleration is calculated by (target_velocity - current_velocity) * vel_to_acc_weight [-]
+      output_ratio_during_accel: 0.6 # target acceleration is multiplied with this value while ego accelerates to catch up the front vehicle [-]
+      vel_to_acc_weight: 3.0 # target acceleration is calculated by (target_velocity - current_velocity) * vel_to_acc_weight [-]
 
       min_cruise_target_vel: 0.0 # minimum target velocity during slow down [m/s]
 
@@ -87,11 +89,11 @@
       max_trajectory_length: 200.0
       velocity_margin: 0.1 #[m/s]
 
-      # Parameters for safety distance limit time
+      # Parameters for safe distance
       t_dangerous: 0.5
 
       # For initial Motion
-      replan_vel_deviation: 5.0          # velocity deviation to replan initial velocity [m/s]
+      replan_vel_deviation: 5.0         # velocity deviation to replan initial velocity [m/s]
       engage_velocity: 0.25              # engage velocity threshold [m/s] (if the trajectory velocity is higher than this value, use this velocity for engage vehicle speed)
       engage_acceleration: 0.1           # engage acceleration [m/ss] (use this acceleration when engagement)
       engage_exit_ratio: 0.5             # exit engage sequence to normal velocity planning when the velocity exceeds engage_exit_ratio x engage_velocity.

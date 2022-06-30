@@ -22,8 +22,6 @@
 #include "tier4_autoware_utils/system/stop_watch.hpp"
 
 #include "tier4_debug_msgs/msg/float32_multi_array_stamped.hpp"
-#include "tier4_planning_msgs/msg/stop_reason_array.hpp"
-#include "tier4_planning_msgs/msg/stop_speed_exceeded.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
 
 #include <boost/optional.hpp>
@@ -32,7 +30,6 @@
 #include <vector>
 
 using tier4_debug_msgs::msg::Float32MultiArrayStamped;
-using tier4_planning_msgs::msg::StopSpeedExceeded;
 
 class PIDBasedPlanner : public PlannerInterface
 {
@@ -54,30 +51,19 @@ public:
     double dist_to_obstacle;
   };
 
-  struct StopObstacleInfo
-  {
-    StopObstacleInfo(const TargetObstacle & obstacle_arg, const double dist_to_stop_arg)
-    : obstacle(obstacle_arg), dist_to_stop(dist_to_stop_arg)
-    {
-    }
-    TargetObstacle obstacle;
-    double dist_to_stop;
-  };
-
   PIDBasedPlanner(
     rclcpp::Node & node, const LongitudinalInfo & longitudinal_info,
     const vehicle_info_util::VehicleInfo & vehicle_info);
 
-  Trajectory generateTrajectory(
-    const ObstacleCruisePlannerData & planner_data, boost::optional<VelocityLimit> & vel_limit,
-    DebugData & debug_data) override;
+  Trajectory generateCruiseTrajectory(
+    const ObstacleCruisePlannerData & planner_data, const Trajectory & stop_traj,
+    boost::optional<VelocityLimit> & vel_limit, DebugData & debug_data) override;
 
   void updateParam(const std::vector<rclcpp::Parameter> & parameters) override;
 
 private:
-  void calcObstaclesToCruiseAndStop(
+  void calcObstaclesToCruise(
     const ObstacleCruisePlannerData & planner_data,
-    boost::optional<StopObstacleInfo> & stop_obstacle_info,
     boost::optional<CruiseObstacleInfo> & cruise_obstacle_info);
   double calcDistanceToObstacle(
     const ObstacleCruisePlannerData & planner_data, const TargetObstacle & obstacle);
@@ -89,14 +75,6 @@ private:
     const ObstacleCruisePlannerData & planner_data, const CruiseObstacleInfo & cruise_obstacle_info,
     std::vector<TargetObstacle> & debug_obstacles_to_cruise,
     visualization_msgs::msg::MarkerArray & debug_walls_marker);
-
-  Trajectory planStop(
-    const ObstacleCruisePlannerData & planner_data,
-    const boost::optional<StopObstacleInfo> & stop_obstacle_info, DebugData & debug_data);
-  boost::optional<size_t> doStop(
-    const ObstacleCruisePlannerData & planner_data, const StopObstacleInfo & stop_obstacle_info,
-    std::vector<TargetObstacle> & debug_obstacles_to_stop,
-    visualization_msgs::msg::MarkerArray & debug_walls_marker) const;
 
   void publishDebugValues(const ObstacleCruisePlannerData & planner_data) const;
 
@@ -138,8 +116,6 @@ private:
     stop_watch_;
 
   // publisher
-  rclcpp::Publisher<tier4_planning_msgs::msg::StopReasonArray>::SharedPtr stop_reasons_pub_;
-  rclcpp::Publisher<StopSpeedExceeded>::SharedPtr stop_speed_exceeded_pub_;
   rclcpp::Publisher<Float32MultiArrayStamped>::SharedPtr debug_values_pub_;
 
   boost::optional<double> prev_target_vel_;
