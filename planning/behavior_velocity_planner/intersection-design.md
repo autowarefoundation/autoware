@@ -86,7 +86,6 @@ If there is any object in a certain distance (default : 5[m]) from the end point
 | Parameter                                     | Type   | Description                                                                   |
 | --------------------------------------------- | ------ | ----------------------------------------------------------------------------- |
 | `intersection/state_transit_margin_time`      | double | [m] time margin to change state                                               |
-| `intersection/decel_velocity`                 | double | [m] deceleration velocity in intersection                                     |
 | `intersection/path_expand_width`              | bool   | [m] path area to see with expansion                                           |
 | `intersection/stop_line_margin`               | double | [m] margin before stop line                                                   |
 | `intersection/stuck_vehicle_detect_dist`      | double | [m] this should be the length between cars when they are stopped.             |
