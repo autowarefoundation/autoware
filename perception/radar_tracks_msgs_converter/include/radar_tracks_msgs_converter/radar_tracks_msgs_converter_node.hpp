@@ -38,7 +38,7 @@ using autoware_auto_perception_msgs::msg::Shape;
 using autoware_auto_perception_msgs::msg::TrackedObject;
 using autoware_auto_perception_msgs::msg::TrackedObjectKinematics;
 using autoware_auto_perception_msgs::msg::TrackedObjects;
-using geometry_msgs::msg::TwistStamped;
+using nav_msgs::msg::Odometry;
 using radar_msgs::msg::RadarTracks;
 
 class RadarTracksMsgsConverterNode : public rclcpp::Node
@@ -56,16 +56,16 @@ public:
 private:
   // Subscriber
   rclcpp::Subscription<RadarTracks>::SharedPtr sub_radar_{};
-  rclcpp::Subscription<TwistStamped>::SharedPtr sub_twist_{};
+  rclcpp::Subscription<Odometry>::SharedPtr sub_odometry_{};
   std::shared_ptr<tier4_autoware_utils::TransformListener> transform_listener_;
 
   // Callback
   void onRadarTracks(const RadarTracks::ConstSharedPtr msg);
-  void onTwist(const TwistStamped::ConstSharedPtr msg);
+  void onTwist(const Odometry::ConstSharedPtr msg);
 
   // Data Buffer
   RadarTracks::ConstSharedPtr radar_data_{};
-  TwistStamped::ConstSharedPtr twist_data_{};
+  Odometry::ConstSharedPtr odometry_data_{};
   geometry_msgs::msg::TransformStamped::ConstSharedPtr transform_;
 
   // Publisher

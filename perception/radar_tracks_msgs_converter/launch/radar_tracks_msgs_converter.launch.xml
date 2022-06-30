@@ -1,13 +1,13 @@
 <launch>
   <arg name="input/radar_objects" default="input/radar_objects"/>
-  <arg name="input/twist" default="input/twist"/>
+  <arg name="input/odometry" default="/localization/kinematic_state"/>
   <arg name="output/radar_objects" default="output/radar_objects"/>
   <arg name="update_rate_hz" default="20.0"/>
   <arg name="use_twist_compensation" default="false"/>
 
   <node pkg="radar_tracks_msgs_converter" exec="radar_tracks_msgs_converter_node" name="radar_tracks_msgs_converter" output="screen">
     <remap from="~/input/radar_objects" to="$(var input/radar_objects)"/>
-    <remap from="~/input/twist" to="$(var input/twist)"/>
+    <remap from="~/input/odometry" to="$(var input/odometry)"/>
     <remap from="~/output/radar_objects" to="$(var output/radar_objects)"/>
     <param name="update_rate_hz" value="$(var update_rate_hz)"/>
     <param name="use_twist_compensation" value="$(var use_twist_compensation)"/>
