@@ -125,6 +125,7 @@ private:
   bool8_t m_enable_smooth_stop;
   bool8_t m_enable_overshoot_emergency;
   bool8_t m_enable_slope_compensation;
+  bool8_t m_enable_large_tracking_error_emergency;
 
   // smooth stop transition
   struct StateTransitionParams

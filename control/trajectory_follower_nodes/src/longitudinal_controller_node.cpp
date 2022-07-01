@@ -49,6 +49,8 @@ LongitudinalController::LongitudinalController(const rclcpp::NodeOptions & node_
   // parameters to enable functions
   m_enable_smooth_stop = declare_parameter<bool8_t>("enable_smooth_stop");
   m_enable_overshoot_emergency = declare_parameter<bool8_t>("enable_overshoot_emergency");
+  m_enable_large_tracking_error_emergency =
+    declare_parameter<bool8_t>("enable_large_tracking_error_emergency");
   m_enable_slope_compensation = declare_parameter<bool8_t>("enable_slope_compensation");
 
   // parameters for state transition
@@ -371,7 +373,9 @@ void LongitudinalController::callbackTimerControl()
 
   // self pose is far from trajectory
   if (control_data.is_far_from_trajectory) {
-    m_control_state = ControlState::EMERGENCY;                          // update control state
+    if (m_enable_large_tracking_error_emergency) {
+      m_control_state = ControlState::EMERGENCY;  // update control state
+    }
     const Motion raw_ctrl_cmd = calcEmergencyCtrlCmd(control_data.dt);  // calculate control command
     m_prev_raw_ctrl_cmd = raw_ctrl_cmd;
     publishCtrlCmd(raw_ctrl_cmd, control_data.current_motion.vel);  // publish control command
