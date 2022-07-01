@@ -63,6 +63,9 @@
 #include <pcl/filters/boost.h>
 #endif
 
+#include <range/v3/all.hpp>
+
+#include <algorithm>
 #include <limits>
 #include <map>
 #include <vector>
@@ -320,19 +323,16 @@ void pcl::VoxelGridNearestCentroid<PointT>::applyFilter(PointCloud & output)
 
       output.push_back(PointT());
 
-      // TODO(kenji.miyake) refactor
-      double dis_min = 1000000.0;
-      size_t i_min = 0;
-      for (size_t i = 0; i < leaf.points.size(); ++i) {
-        double dis = std::pow(leaf.points.at(i).x - leaf.centroid[0], 2.0) +
-                     std::pow(leaf.points.at(i).y - leaf.centroid[1], 2.0) +
-                     std::pow(leaf.points.at(i).z - leaf.centroid[2], 2.0);
-        if (dis < dis_min) {
-          dis_min = dis;
-          i_min = i;
-        }
-      }
-      output.points.back() = leaf.points.at(i_min);
+      const auto & centroid = leaf.centroid;
+      const auto squared_distances =
+        leaf.points | ranges::views::transform([&centroid](const auto & p) {
+          return (p.x - centroid[0]) * (p.x - centroid[0]) +
+                 (p.y - centroid[1]) * (p.y - centroid[1]) +
+                 (p.z - centroid[2]) * (p.z - centroid[2]);
+        });
+      const auto min_itr = ranges::min_element(squared_distances);
+      const auto min_idx = ranges::distance(squared_distances.begin(), min_itr);
+      output.points.back() = leaf.points.at(min_idx);
 
       // Stores the voxel indices for fast access searching
       if (searchable_) {
