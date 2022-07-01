@@ -61,6 +61,12 @@ e.g. crosswalks, trafficlights, stoplines
 This module contains other useful functions related to Lanelet.
 e.g. matching waypoint with lanelets
 
+#### Route Checker
+
+This module contains a function to check the loading route is valid or not.
+If it is invalid, puts warning without dying.
+The case valid is when the route is created on the same map as the current one.
+
 ### Visualization
 
 Visualization contains functions to convert lanelet objects into visualization marker messages.
@@ -83,5 +89,5 @@ This node checks if an .osm file follows the Autoware version of Lanelet2 format
 You can check by running:
 
 ```sh
-ros2 run lanelet2_extension autoware_lanelet2_validation _map_file:=<path/to/map.osm>
+ros2 run lanelet2_extension autoware_lanelet2_validation --ros-args -p map_file:=<path/to/map.osm>
 ```
