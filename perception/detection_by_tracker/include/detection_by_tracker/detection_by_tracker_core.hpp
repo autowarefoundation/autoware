@@ -79,6 +79,8 @@ private:
   std::shared_ptr<euclidean_cluster::EuclideanClusterInterface> cluster_;
   std::shared_ptr<Debugger> debugger_;
 
+  bool ignore_unknown_tracker_;
+
   void onObjects(
     const tier4_perception_msgs::msg::DetectedObjectsWithFeature::ConstSharedPtr input_msg);
 

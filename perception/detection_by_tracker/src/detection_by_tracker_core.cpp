@@ -212,6 +212,8 @@ DetectionByTracker::DetectionByTracker(const rclcpp::NodeOptions & node_options)
   objects_pub_ = create_publisher<autoware_auto_perception_msgs::msg::DetectedObjects>(
     "~/output", rclcpp::QoS{1});
 
+  ignore_unknown_tracker_ = declare_parameter<bool>("ignore_unknown_tracker", true);
+
   shape_estimator_ = std::make_shared<ShapeEstimator>(true, true);
   cluster_ = std::make_shared<euclidean_cluster::VoxelGridBasedEuclideanCluster>(
     false, 10, 10000, 0.7, 0.3, 0);
@@ -282,6 +284,9 @@ void DetectionByTracker::divideUnderSegmentedObjects(
   out_no_found_tracked_objects.header = tracked_objects.header;
 
   for (const auto & tracked_object : tracked_objects.objects) {
+    const auto & label = tracked_object.classification.front().label;
+    if (ignore_unknown_tracker_ && (label == Label::UNKNOWN)) continue;
+
     std::optional<tier4_perception_msgs::msg::DetectedObjectWithFeature>
       highest_score_divided_object = std::nullopt;
     float highest_score = 0.0;
@@ -410,6 +415,8 @@ void DetectionByTracker::mergeOverSegmentedObjects(
 
   for (const auto & tracked_object : tracked_objects.objects) {
     const auto & label = tracked_object.classification.front().label;
+    if (ignore_unknown_tracker_ && (label == Label::UNKNOWN)) continue;
+
     // extend shape
     autoware_auto_perception_msgs::msg::DetectedObject extended_tracked_object = tracked_object;
     extended_tracked_object.shape = extendShape(tracked_object.shape, /*scale*/ 1.1);
