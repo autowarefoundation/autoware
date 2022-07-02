@@ -19,7 +19,7 @@ bool BusFilter::filter(
   [[maybe_unused]] const geometry_msgs::msg::Pose & pose)
 {
   constexpr float min_width = 2.0;
-  constexpr float max_width = 2.9;
+  constexpr float max_width = 3.2;
   constexpr float max_length = 17.0;
   return utils::filterVehicleBoundingBox(shape, min_width, max_width, max_length);
 }

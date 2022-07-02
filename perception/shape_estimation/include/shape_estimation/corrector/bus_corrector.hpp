@@ -28,7 +28,7 @@ public:
   explicit BusCorrector(bool use_reference_yaw = false) : use_reference_yaw_(use_reference_yaw)
   {
     params_.min_width = 2.0;
-    params_.max_width = 2.9;
+    params_.max_width = 3.2;
     params_.avg_width = (params_.min_width + params_.max_width) * 0.5;
     params_.min_length = 5.0;
     params_.max_length = 17.0;
