@@ -1493,7 +1493,8 @@ TEST(trajectory, insertTargetPoint)
     const size_t base_idx = findNearestSegmentIndex(traj.points, p_target);
     const auto insert_idx = insertTargetPoint(base_idx, p_target, traj_out.points);
 
-    EXPECT_EQ(insert_idx, base_idx + 1);
+    EXPECT_NE(insert_idx, boost::none);
+    EXPECT_EQ(insert_idx.get(), base_idx + 1);
     EXPECT_EQ(traj_out.points.size(), traj.points.size() + 1);
 
     for (size_t i = 0; i < traj_out.points.size() - 1; ++i) {
@@ -1501,7 +1502,7 @@ TEST(trajectory, insertTargetPoint)
     }
 
     {
-      const auto p_insert = getPose(traj_out.points.at(insert_idx));
+      const auto p_insert = getPose(traj_out.points.at(insert_idx.get()));
       const auto ans_quat = createQuaternionFromRPY(deg2rad(0.0), deg2rad(0.0), deg2rad(0.0));
       EXPECT_EQ(p_insert.position.x, p_target.x);
       EXPECT_EQ(p_insert.position.y, p_target.y);
@@ -1530,7 +1531,8 @@ TEST(trajectory, insertTargetPoint)
     const size_t base_idx = findNearestSegmentIndex(traj.points, p_target);
     const auto insert_idx = insertTargetPoint(base_idx, p_target, traj_out.points);
 
-    EXPECT_EQ(insert_idx, base_idx + 1);
+    EXPECT_NE(insert_idx, boost::none);
+    EXPECT_EQ(insert_idx.get(), base_idx + 1);
     EXPECT_EQ(traj_out.points.size(), traj.points.size() + 1);
 
     for (size_t i = 0; i < traj_out.points.size() - 1; ++i) {
@@ -1538,7 +1540,7 @@ TEST(trajectory, insertTargetPoint)
     }
 
     {
-      const auto p_insert = getPose(traj_out.points.at(insert_idx));
+      const auto p_insert = getPose(traj_out.points.at(insert_idx.get()));
       const auto ans_quat = createQuaternionFromRPY(deg2rad(0.0), deg2rad(0.0), deg2rad(0.0));
       EXPECT_EQ(p_insert.position.x, p_target.x);
       EXPECT_EQ(p_insert.position.y, p_target.y);
@@ -1567,7 +1569,8 @@ TEST(trajectory, insertTargetPoint)
     const size_t base_idx = findNearestSegmentIndex(traj.points, p_target);
     const auto insert_idx = insertTargetPoint(base_idx, p_target, traj_out.points);
 
-    EXPECT_EQ(insert_idx, base_idx + 1);
+    EXPECT_NE(insert_idx, boost::none);
+    EXPECT_EQ(insert_idx.get(), base_idx + 1);
     EXPECT_EQ(traj_out.points.size(), traj.points.size() + 1);
 
     for (size_t i = 0; i < traj_out.points.size() - 1; ++i) {
@@ -1575,7 +1578,7 @@ TEST(trajectory, insertTargetPoint)
     }
 
     {
-      const auto p_insert = getPose(traj_out.points.at(insert_idx));
+      const auto p_insert = getPose(traj_out.points.at(insert_idx.get()));
       const auto ans_quat = createQuaternionFromRPY(deg2rad(0.0), deg2rad(0.0), deg2rad(-30.0));
       EXPECT_EQ(p_insert.position.x, p_target.x);
       EXPECT_EQ(p_insert.position.y, p_target.y);
@@ -1604,7 +1607,8 @@ TEST(trajectory, insertTargetPoint)
     const size_t base_idx = findNearestSegmentIndex(traj.points, p_target);
     const auto insert_idx = insertTargetPoint(base_idx, p_target, traj_out.points);
 
-    EXPECT_EQ(insert_idx, base_idx);
+    EXPECT_NE(insert_idx, boost::none);
+    EXPECT_EQ(insert_idx.get(), base_idx);
     EXPECT_EQ(traj_out.points.size(), traj.points.size());
 
     for (size_t i = 0; i < traj_out.points.size() - 1; ++i) {
@@ -1620,7 +1624,8 @@ TEST(trajectory, insertTargetPoint)
     const size_t base_idx = findNearestSegmentIndex(traj.points, p_target);
     const auto insert_idx = insertTargetPoint(base_idx, p_target, traj_out.points);
 
-    EXPECT_EQ(insert_idx, base_idx + 1);
+    EXPECT_NE(insert_idx, boost::none);
+    EXPECT_EQ(insert_idx.get(), base_idx + 1);
     EXPECT_EQ(traj_out.points.size(), traj.points.size());
 
     for (size_t i = 0; i < traj_out.points.size() - 1; ++i) {
@@ -1638,12 +1643,7 @@ TEST(trajectory, insertTargetPoint)
     const auto insert_idx = insertTargetPoint(base_idx, p_target, traj_out.points);
 
     EXPECT_STREQ(testing::internal::GetCapturedStderr().c_str(), "Sharp angle.\n");
-    EXPECT_EQ(insert_idx, base_idx + 1);
-    EXPECT_EQ(traj_out.points.size(), traj.points.size() + 1);
-
-    for (size_t i = 0; i < traj_out.points.size() - 1; ++i) {
-      EXPECT_TRUE(calcDistance2d(traj_out.points.at(i), traj_out.points.at(i + 1)) > 1e-3);
-    }
+    EXPECT_EQ(insert_idx, boost::none);
   }
 
   // Invalid target point(Behind of end point)
@@ -1656,12 +1656,7 @@ TEST(trajectory, insertTargetPoint)
     const auto insert_idx = insertTargetPoint(base_idx, p_target, traj_out.points);
 
     EXPECT_STREQ(testing::internal::GetCapturedStderr().c_str(), "Sharp angle.\n");
-    EXPECT_EQ(insert_idx, base_idx + 1);
-    EXPECT_EQ(traj_out.points.size(), traj.points.size() + 1);
-
-    for (size_t i = 0; i < traj_out.points.size() - 1; ++i) {
-      EXPECT_TRUE(calcDistance2d(traj_out.points.at(i), traj_out.points.at(i + 1)) > 1e-3);
-    }
+    EXPECT_EQ(insert_idx, boost::none);
   }
 
   // Invalid target point(Huge lateral offset)
@@ -1674,12 +1669,17 @@ TEST(trajectory, insertTargetPoint)
     const auto insert_idx = insertTargetPoint(base_idx, p_target, traj_out.points);
 
     EXPECT_STREQ(testing::internal::GetCapturedStderr().c_str(), "Sharp angle.\n");
-    EXPECT_EQ(insert_idx, base_idx + 1);
-    EXPECT_EQ(traj_out.points.size(), traj.points.size() + 1);
+    EXPECT_EQ(insert_idx, boost::none);
+  }
 
-    for (size_t i = 0; i < traj_out.points.size() - 1; ++i) {
-      EXPECT_TRUE(calcDistance2d(traj_out.points.at(i), traj_out.points.at(i + 1)) > 1e-3);
-    }
+  // Invalid base index
+  {
+    auto traj_out = traj;
+
+    const auto p_target = createPoint(10.0, 0.0, 0.0);
+    const auto insert_idx = insertTargetPoint(9U, p_target, traj_out.points);
+
+    EXPECT_EQ(insert_idx, boost::none);
   }
 
   // Empty
@@ -1713,7 +1713,8 @@ TEST(trajectory, insertTargetPoint_OverlapThreshold)
     const auto insert_idx =
       insertTargetPoint(base_idx, p_target, traj_out.points, overlap_threshold);
 
-    EXPECT_EQ(insert_idx, base_idx + 1);
+    EXPECT_NE(insert_idx, boost::none);
+    EXPECT_EQ(insert_idx.get(), base_idx + 1);
     EXPECT_EQ(traj_out.points.size(), traj.points.size() + 1);
 
     for (size_t i = 0; i < traj_out.points.size() - 1; ++i) {
@@ -1722,7 +1723,7 @@ TEST(trajectory, insertTargetPoint_OverlapThreshold)
     }
 
     {
-      const auto p_insert = getPose(traj_out.points.at(insert_idx));
+      const auto p_insert = getPose(traj_out.points.at(insert_idx.get()));
       const auto ans_quat = createQuaternionFromRPY(deg2rad(0.0), deg2rad(0.0), deg2rad(0.0));
       EXPECT_EQ(p_insert.position.x, p_target.x);
       EXPECT_EQ(p_insert.position.y, p_target.y);
@@ -1752,7 +1753,8 @@ TEST(trajectory, insertTargetPoint_OverlapThreshold)
     const auto insert_idx =
       insertTargetPoint(base_idx, p_target, traj_out.points, overlap_threshold);
 
-    EXPECT_EQ(insert_idx, base_idx);
+    EXPECT_NE(insert_idx, boost::none);
+    EXPECT_EQ(insert_idx.get(), base_idx);
     EXPECT_EQ(traj_out.points.size(), traj.points.size());
 
     for (size_t i = 0; i < traj_out.points.size() - 1; ++i) {
@@ -1770,7 +1772,8 @@ TEST(trajectory, insertTargetPoint_OverlapThreshold)
     const auto insert_idx =
       insertTargetPoint(base_idx, p_target, traj_out.points, overlap_threshold);
 
-    EXPECT_EQ(insert_idx, base_idx + 1);
+    EXPECT_NE(insert_idx, boost::none);
+    EXPECT_EQ(insert_idx.get(), base_idx + 1);
     EXPECT_EQ(traj_out.points.size(), traj.points.size());
 
     for (size_t i = 0; i < traj_out.points.size() - 1; ++i) {

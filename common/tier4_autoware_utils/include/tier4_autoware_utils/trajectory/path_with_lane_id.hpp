@@ -201,12 +201,17 @@ inline boost::optional<geometry_msgs::msg::Pose> calcLongitudinalOffsetPose(
  * @return index of insert point
  */
 template <>
-inline size_t insertTargetPoint(
+inline boost::optional<size_t> insertTargetPoint(
   const size_t seg_idx, const geometry_msgs::msg::Point & p_target,
   std::vector<autoware_auto_planning_msgs::msg::PathPointWithLaneId> & points,
   const double overlap_threshold)
 {
   validateNonEmpty(points);
+
+  // invalid segment index
+  if (seg_idx + 1 >= points.size()) {
+    return {};
+  }
 
   const auto p_front = getPoint(points.at(seg_idx));
   const auto p_back = getPoint(points.at(seg_idx + 1));
@@ -215,6 +220,7 @@ inline size_t insertTargetPoint(
     validateNonSharpAngle(p_front, p_target, p_back);
   } catch (const std::exception & e) {
     std::cerr << e.what() << std::endl;
+    return {};
   }
 
   const auto overlap_with_front = calcDistance2d(p_target, p_front) < overlap_threshold;
