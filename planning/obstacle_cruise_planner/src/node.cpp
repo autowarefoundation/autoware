@@ -482,17 +482,24 @@ void ObstacleCruisePlannerNode::onTrajectory(const Trajectory::ConstSharedPtr ms
 
   stop_watch_.tic(__func__);
 
-  // create algorithmic data
+  // Get Target Obstacles
   DebugData debug_data;
-  const auto planner_data = createPlannerData(*msg, current_pose_ptr->pose, debug_data);
+  const auto target_obstacles = getTargetObstacles(
+    *msg, current_pose_ptr->pose, current_twist_ptr_->twist.linear.x, debug_data);
+
+  // create data for stop
+  const auto stop_data = createStopData(*msg, current_pose_ptr->pose, target_obstacles);
 
   // stop planning
-  const auto stop_traj = planner_ptr_->generateStopTrajectory(planner_data, debug_data);
+  const auto stop_traj = planner_ptr_->generateStopTrajectory(stop_data, debug_data);
+
+  // create data for cruise
+  const auto cruise_data = createCruiseData(stop_traj, current_pose_ptr->pose, target_obstacles);
 
   // cruise planning
   boost::optional<VelocityLimit> vel_limit;
   const auto output_traj =
-    planner_ptr_->generateCruiseTrajectory(planner_data, stop_traj, vel_limit, debug_data);
+    planner_ptr_->generateCruiseTrajectory(cruise_data, vel_limit, debug_data);
 
   // publisher external velocity limit if required
   publishVelocityLimit(vel_limit);
@@ -523,33 +530,50 @@ bool ObstacleCruisePlannerNode::isStopObstacle(const uint8_t label)
   return std::find(types.begin(), types.end(), label) != types.end();
 }
 
-ObstacleCruisePlannerData ObstacleCruisePlannerNode::createPlannerData(
+ObstacleCruisePlannerData ObstacleCruisePlannerNode::createStopData(
   const Trajectory & trajectory, const geometry_msgs::msg::Pose & current_pose,
-  DebugData & debug_data)
+  const std::vector<TargetObstacle> & obstacles)
 {
-  stop_watch_.tic(__func__);
-
   const auto current_time = now();
   const double current_vel = current_twist_ptr_->twist.linear.x;
   const double current_accel = calcCurrentAccel();
-  auto target_obstacles =
-    filterObstacles(*in_objects_ptr_, trajectory, current_pose, current_vel, debug_data);
-  updateHasStopped(target_obstacles);
 
-  // create planner_data
+  // create planner_stop data
   ObstacleCruisePlannerData planner_data;
   planner_data.current_time = current_time;
   planner_data.traj = trajectory;
   planner_data.current_pose = current_pose;
   planner_data.current_vel = current_vel;
   planner_data.current_acc = current_accel;
-  planner_data.target_obstacles = target_obstacles;
+  for (const auto & obstacle : obstacles) {
+    if (obstacle.has_stopped) {
+      planner_data.target_obstacles.push_back(obstacle);
+    }
+  }
 
-  // print calculation time
-  const double calculation_time = stop_watch_.toc(__func__);
-  RCLCPP_INFO_EXPRESSION(
-    rclcpp::get_logger("ObstacleCruisePlanner"), is_showing_debug_info_, "  %s := %f [ms]",
-    __func__, calculation_time);
+  return planner_data;
+}
+
+ObstacleCruisePlannerData ObstacleCruisePlannerNode::createCruiseData(
+  const Trajectory & trajectory, const geometry_msgs::msg::Pose & current_pose,
+  const std::vector<TargetObstacle> & obstacles)
+{
+  const auto current_time = now();
+  const double current_vel = current_twist_ptr_->twist.linear.x;
+  const double current_accel = calcCurrentAccel();
+
+  // create planner_stop data
+  ObstacleCruisePlannerData planner_data;
+  planner_data.current_time = current_time;
+  planner_data.traj = trajectory;
+  planner_data.current_pose = current_pose;
+  planner_data.current_vel = current_vel;
+  planner_data.current_acc = current_accel;
+  for (const auto & obstacle : obstacles) {
+    if (!obstacle.has_stopped) {
+      planner_data.target_obstacles.push_back(obstacle);
+    }
+  }
 
   return planner_data;
 }
@@ -565,6 +589,25 @@ double ObstacleCruisePlannerNode::calcCurrentAccel() const
   const double accel = diff_vel / diff_time;
 
   return lpf_acc_ptr_->filter(accel);
+}
+
+std::vector<TargetObstacle> ObstacleCruisePlannerNode::getTargetObstacles(
+  const Trajectory & trajectory, const geometry_msgs::msg::Pose & current_pose,
+  const double current_vel, DebugData & debug_data)
+{
+  stop_watch_.tic(__func__);
+
+  auto target_obstacles =
+    filterObstacles(*in_objects_ptr_, trajectory, current_pose, current_vel, debug_data);
+  updateHasStopped(target_obstacles);
+
+  // print calculation time
+  const double calculation_time = stop_watch_.toc(__func__);
+  RCLCPP_INFO_EXPRESSION(
+    rclcpp::get_logger("ObstacleCruisePlanner"), is_showing_debug_info_, "  %s := %f [ms]",
+    __func__, calculation_time);
+
+  return target_obstacles;
 }
 
 std::vector<TargetObstacle> ObstacleCruisePlannerNode::filterObstacles(

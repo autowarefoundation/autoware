@@ -56,8 +56,8 @@ public:
     const vehicle_info_util::VehicleInfo & vehicle_info);
 
   Trajectory generateCruiseTrajectory(
-    const ObstacleCruisePlannerData & planner_data, const Trajectory & stop_traj,
-    boost::optional<VelocityLimit> & vel_limit, DebugData & debug_data) override;
+    const ObstacleCruisePlannerData & planner_data, boost::optional<VelocityLimit> & vel_limit,
+    DebugData & debug_data) override;
 
   void updateParam(const std::vector<rclcpp::Parameter> & parameters) override;
 

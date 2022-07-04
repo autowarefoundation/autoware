@@ -71,10 +71,16 @@ private:
   void onSmoothedTrajectory(const Trajectory::ConstSharedPtr msg);
 
   // member Functions
-  ObstacleCruisePlannerData createPlannerData(
+  ObstacleCruisePlannerData createCruiseData(
     const Trajectory & trajectory, const geometry_msgs::msg::Pose & current_pose,
-    DebugData & debug_data);
+    const std::vector<TargetObstacle> & obstacles);
+  ObstacleCruisePlannerData createStopData(
+    const Trajectory & trajectory, const geometry_msgs::msg::Pose & current_pose,
+    const std::vector<TargetObstacle> & obstacles);
   double calcCurrentAccel() const;
+  std::vector<TargetObstacle> getTargetObstacles(
+    const Trajectory & trajectory, const geometry_msgs::msg::Pose & current_pose,
+    const double current_vel, DebugData & debug_data);
   std::vector<TargetObstacle> filterObstacles(
     const PredictedObjects & predicted_objects, const Trajectory & traj,
     const geometry_msgs::msg::Pose & current_pose, const double current_vel,

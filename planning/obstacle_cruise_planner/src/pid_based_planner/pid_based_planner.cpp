@@ -87,8 +87,8 @@ PIDBasedPlanner::PIDBasedPlanner(
 }
 
 Trajectory PIDBasedPlanner::generateCruiseTrajectory(
-  const ObstacleCruisePlannerData & planner_data, const Trajectory & stop_traj,
-  boost::optional<VelocityLimit> & vel_limit, DebugData & debug_data)
+  const ObstacleCruisePlannerData & planner_data, boost::optional<VelocityLimit> & vel_limit,
+  DebugData & debug_data)
 {
   stop_watch_.tic(__func__);
   debug_values_.resetValues();
@@ -108,7 +108,7 @@ Trajectory PIDBasedPlanner::generateCruiseTrajectory(
     rclcpp::get_logger("ObstacleCruisePlanner::PIDBasedPlanner"), is_showing_debug_info_,
     "  %s := %f [ms]", __func__, calculation_time);
 
-  return stop_traj;
+  return planner_data.traj;
 }
 
 void PIDBasedPlanner::calcObstaclesToCruise(

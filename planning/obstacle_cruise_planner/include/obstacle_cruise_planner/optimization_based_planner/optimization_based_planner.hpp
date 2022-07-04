@@ -49,8 +49,8 @@ public:
     const vehicle_info_util::VehicleInfo & vehicle_info);
 
   Trajectory generateCruiseTrajectory(
-    const ObstacleCruisePlannerData & planner_data, const Trajectory & stop_traj,
-    boost::optional<VelocityLimit> & vel_limit, DebugData & debug_data) override;
+    const ObstacleCruisePlannerData & planner_data, boost::optional<VelocityLimit> & vel_limit,
+    DebugData & debug_data) override;
 
 private:
   struct TrajectoryData
@@ -72,13 +72,12 @@ private:
   // Member Functions
   std::vector<double> createTimeVector();
   std::tuple<double, double> calcInitialMotion(
-    const ObstacleCruisePlannerData & planner_data, const Trajectory & stop_traj,
-    const size_t input_closest, const Trajectory & prev_traj);
+    const ObstacleCruisePlannerData & planner_data, const size_t input_closest,
+    const Trajectory & prev_traj);
 
   TrajectoryPoint calcInterpolatedTrajectoryPoint(
     const Trajectory & trajectory, const geometry_msgs::msg::Pose & target_pose);
-  bool checkHasReachedGoal(
-    const ObstacleCruisePlannerData & planner_data, const Trajectory & stop_traj);
+  bool checkHasReachedGoal(const ObstacleCruisePlannerData & planner_data);
   TrajectoryData getTrajectoryData(
     const Trajectory & traj, const geometry_msgs::msg::Pose & current_pose);
 

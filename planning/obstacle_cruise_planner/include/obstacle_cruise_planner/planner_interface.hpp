@@ -66,8 +66,8 @@ public:
     const ObstacleCruisePlannerData & planner_data, DebugData & debug_data);
 
   virtual Trajectory generateCruiseTrajectory(
-    const ObstacleCruisePlannerData & planner_data, const Trajectory & stop_traj,
-    boost::optional<VelocityLimit> & vel_limit, DebugData & debug_data) = 0;
+    const ObstacleCruisePlannerData & planner_data, boost::optional<VelocityLimit> & vel_limit,
+    DebugData & debug_data) = 0;
 
   void updateCommonParam(const std::vector<rclcpp::Parameter> & parameters)
   {
