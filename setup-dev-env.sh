@@ -12,15 +12,19 @@ args=()
 while [ "$1" != "" ]; do
     case "$1" in
     -y)
+        # Use non-interactive mode.
         option_yes=true
         ;;
     -v)
+        # Enable debug outputs.
         option_verbose=true
         ;;
     --no-nvidia)
+        # Disable installation of the NVIDIA-related roles ('cuda' and 'tensorrt').
         option_no_nvidia=true
         ;;
     --no-cuda-drivers)
+        # Disable installation of 'cuda-drivers' in the role 'cuda'.
         option_no_cuda_drivers=true
         ;;
     *)
@@ -63,9 +67,9 @@ fi
 
 # Check installation of NVIDIA libraries
 if [ "$option_no_nvidia" = "true" ]; then
-    ansible_args+=("--extra-vars" "install_nvidia=n")
+    ansible_args+=("--extra-vars" "prompt_install_nvidia=n")
 elif [ "$option_yes" = "true" ]; then
-    ansible_args+=("--extra-vars" "install_nvidia=y")
+    ansible_args+=("--extra-vars" "prompt_install_nvidia=y")
 fi
 
 # Check installation of CUDA Drivers
@@ -114,10 +118,11 @@ fi
 export PATH="$HOME/.local/bin:$PATH"
 
 # Install ansible collections
+echo -e "\e[36m"ansible-galaxy collection install -f -r "$SCRIPT_DIR/ansible-galaxy-requirements.yaml" "\e[m"
 ansible-galaxy collection install -f -r "$SCRIPT_DIR/ansible-galaxy-requirements.yaml"
 
 # Run ansible
-echo -e "\e[36m Run ansible-playbook" "$target_playbook" "${ansible_args[@]}" "\e[m"
+echo -e "\e[36m"ansible-playbook "$target_playbook" "${ansible_args[@]}" "\e[m"
 if ansible-playbook "$target_playbook" "${ansible_args[@]}"; then
     echo -e "\e[32mCompleted.\e[0m"
     exit 0

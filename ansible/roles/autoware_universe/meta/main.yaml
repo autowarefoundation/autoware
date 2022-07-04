@@ -1,2 +1,2 @@
 dependencies:
-  - autoware_core
+  - role: autoware.dev_env.autoware_core

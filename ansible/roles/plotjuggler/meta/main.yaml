@@ -1,2 +1,2 @@
 dependencies:
-  - ros2
+  - role: autoware.dev_env.ros2
