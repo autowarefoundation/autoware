@@ -1,2 +1,2 @@
 dependencies:
-  - role: cuda
+  - role: autoware.dev_env.cuda
