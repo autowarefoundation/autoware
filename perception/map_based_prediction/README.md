@@ -6,6 +6,8 @@
 
 ## Inner-workings / Algorithms
 
+### Path prediction for road users
+
 1. Get lanelet path
    The first step is to get the lanelet of the current position of the car. After that, we obtain several trajectories based on the map.
 
@@ -29,6 +31,29 @@
 
 4. Drawing predicted trajectories
    From the current position and reference trajectories that we get in the step1, we create predicted trajectories by using Quintic polynomial. Note that, since this algorithm consider lateral and longitudinal motions separately, it sometimes generates dynamically-infeasible trajectories when the vehicle travels at a low speed. To deal with this problem, we only make straight line predictions when the vehicle speed is lower than a certain value (which is given as a parameter).
+
+### Path prediction for crosswalk users
+
+This module treats **Pedestrians** and **Bicycles** as objects using the crosswalk, and outputs prediction path based on map and estimated object's velocity, assuming the object has intention to cross the crosswalk, if the objects satisfies at least one of the following conditions:
+
+- move toward the crosswalk
+- stop near the crosswalk
+
+<div align="center">
+  <img src="images/target_objects.svg" width=90%>
+</div>
+
+If there are a reachable crosswalk entry points within the `prediction_time_horizon` and the objects satisfies above condition, this module outputs additional predicted path to cross the opposite side via the crosswalk entry point.
+
+<div align="center">
+  <img src="images/outside_road.svg" width=90%>
+</div>
+
+If the target object is inside the road or crosswalk, this module outputs one or two additional prediction path(s) to reach exit point of the crosswalk. The number of prediction paths are depend on whether object is moving or not. If the object is moving, this module outputs one prediction path toward an exit point that existed in the direction of object's movement. One the other hand, if the object has stopped, it is impossible to infer which exit points the object want to go, so this module outputs two prediction paths toward both side exit point.
+
+<div align="center">
+  <img src="images/inside_road.svg" width=90%>
+</div>
 
 ## Inputs / Outputs
 

@@ -24,6 +24,8 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 
+#include <memory>
+#include <utility>
 #include <vector>
 
 namespace map_based_prediction
@@ -47,13 +49,16 @@ struct FrenetPoint
   float d_acc;
 };
 
+using EntryPoint = std::pair<Eigen::Vector2d /*in*/, Eigen::Vector2d /*out*/>;
 using FrenetPath = std::vector<FrenetPoint>;
 using PosePath = std::vector<geometry_msgs::msg::Pose>;
 
 class PathGenerator
 {
 public:
-  PathGenerator(const double time_horizon, const double sampling_time_interval);
+  PathGenerator(
+    const double time_horizon, const double sampling_time_interval,
+    const double min_velocity_for_map_based_prediction);
 
   PredictedPath generatePathForNonVehicleObject(const TrackedObject & object);
 
@@ -64,10 +69,17 @@ public:
   PredictedPath generatePathForOnLaneVehicle(
     const TrackedObject & object, const PosePath & ref_paths);
 
+  PredictedPath generatePathForCrosswalkUser(
+    const TrackedObject & object, const EntryPoint & reachable_crosswalk) const;
+
+  PredictedPath generatePathToTargetPoint(
+    const TrackedObject & object, const Eigen::Vector2d & point) const;
+
 private:
   // Parameters
   double time_horizon_;
   double sampling_time_interval_;
+  double min_velocity_for_map_based_prediction_;
 
   // Member functions
   PredictedPath generateStraightPath(const TrackedObject & object) const;

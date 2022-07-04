@@ -18,9 +18,11 @@
 #include "map_based_prediction/path_generator.hpp"
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
+#include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/ros/transform_listener.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <autoware_auto_mapping_msgs/msg/had_map_bin.hpp>
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
@@ -86,6 +88,7 @@ using autoware_auto_perception_msgs::msg::PredictedPath;
 using autoware_auto_perception_msgs::msg::TrackedObject;
 using autoware_auto_perception_msgs::msg::TrackedObjectKinematics;
 using autoware_auto_perception_msgs::msg::TrackedObjects;
+using tier4_autoware_utils::StopWatch;
 
 class MapBasedPredictionNode : public rclcpp::Node
 {
@@ -113,6 +116,9 @@ private:
   // Path Generator
   std::shared_ptr<PathGenerator> path_generator_;
 
+  // Crosswalk Entry Points
+  lanelet::ConstLanelets crosswalks_;
+
   // Parameters
   bool enable_delay_compensation_;
   double prediction_time_horizon_;
@@ -131,6 +137,9 @@ private:
   double diff_dist_threshold_to_right_bound_;
   double reference_path_resolution_;
 
+  // Stop watch
+  StopWatch<std::chrono::milliseconds> stop_watch_;
+
   // Member Functions
   void mapCallback(const HADMapBin::ConstSharedPtr msg);
   void objectsCallback(const TrackedObjects::ConstSharedPtr in_objects);
@@ -139,6 +148,8 @@ private:
     const TrackedObjectKinematics & tracked_object);
 
   PredictedObject convertToPredictedObject(const TrackedObject & tracked_object);
+
+  PredictedObject getPredictedObjectAsCrosswalkUser(const TrackedObject & object);
 
   void removeOldObjectsHistory(const double current_time);
 

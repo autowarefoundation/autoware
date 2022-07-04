@@ -21,14 +21,102 @@
 
 namespace map_based_prediction
 {
-PathGenerator::PathGenerator(const double time_horizon, const double sampling_time_interval)
-: time_horizon_(time_horizon), sampling_time_interval_(sampling_time_interval)
+PathGenerator::PathGenerator(
+  const double time_horizon, const double sampling_time_interval,
+  const double min_velocity_for_map_based_prediction)
+: time_horizon_(time_horizon),
+  sampling_time_interval_(sampling_time_interval),
+  min_velocity_for_map_based_prediction_(min_velocity_for_map_based_prediction)
 {
 }
 
 PredictedPath PathGenerator::generatePathForNonVehicleObject(const TrackedObject & object)
 {
   return generateStraightPath(object);
+}
+
+PredictedPath PathGenerator::generatePathToTargetPoint(
+  const TrackedObject & object, const Eigen::Vector2d & point) const
+{
+  PredictedPath predicted_path{};
+  const double ep = 0.001;
+
+  const auto & obj_pos = object.kinematics.pose_with_covariance.pose.position;
+  const auto & obj_vel = object.kinematics.twist_with_covariance.twist.linear;
+
+  const Eigen::Vector2d pedestrian_to_entry_point(point.x() - obj_pos.x, point.y() - obj_pos.y);
+  const auto velocity =
+    std::max(std::hypot(obj_vel.x, obj_vel.y), min_velocity_for_map_based_prediction_);
+  const auto arrival_time = pedestrian_to_entry_point.norm() / velocity;
+
+  for (double dt = 0.0; dt < arrival_time + ep; dt += sampling_time_interval_) {
+    geometry_msgs::msg::Pose world_frame_pose;
+    world_frame_pose.position.x =
+      obj_pos.x + velocity * pedestrian_to_entry_point.normalized().x() * dt;
+    world_frame_pose.position.y =
+      obj_pos.y + velocity * pedestrian_to_entry_point.normalized().y() * dt;
+    world_frame_pose.position.z = obj_pos.z;
+    world_frame_pose.orientation = object.kinematics.pose_with_covariance.pose.orientation;
+    predicted_path.path.push_back(world_frame_pose);
+    if (predicted_path.path.size() >= predicted_path.path.max_size()) {
+      break;
+    }
+  }
+
+  predicted_path.confidence = 1.0;
+  predicted_path.time_step = rclcpp::Duration::from_seconds(sampling_time_interval_);
+
+  return predicted_path;
+}
+
+PredictedPath PathGenerator::generatePathForCrosswalkUser(
+  const TrackedObject & object, const EntryPoint & reachable_crosswalk) const
+{
+  PredictedPath predicted_path{};
+  const double ep = 0.001;
+
+  const auto & obj_pos = object.kinematics.pose_with_covariance.pose.position;
+  const auto & obj_vel = object.kinematics.twist_with_covariance.twist.linear;
+
+  const Eigen::Vector2d pedestrian_to_entry_point(
+    reachable_crosswalk.first.x() - obj_pos.x, reachable_crosswalk.first.y() - obj_pos.y);
+  const Eigen::Vector2d entry_to_exit_point(
+    reachable_crosswalk.second.x() - reachable_crosswalk.first.x(),
+    reachable_crosswalk.second.y() - reachable_crosswalk.first.y());
+  const auto velocity =
+    std::max(std::hypot(obj_vel.x, obj_vel.y), min_velocity_for_map_based_prediction_);
+  const auto arrival_time = pedestrian_to_entry_point.norm() / velocity;
+
+  for (double dt = 0.0; dt < time_horizon_ + ep; dt += sampling_time_interval_) {
+    geometry_msgs::msg::Pose world_frame_pose;
+    if (dt < arrival_time) {
+      world_frame_pose.position.x =
+        obj_pos.x + velocity * pedestrian_to_entry_point.normalized().x() * dt;
+      world_frame_pose.position.y =
+        obj_pos.y + velocity * pedestrian_to_entry_point.normalized().y() * dt;
+      world_frame_pose.position.z = obj_pos.z;
+      world_frame_pose.orientation = object.kinematics.pose_with_covariance.pose.orientation;
+      predicted_path.path.push_back(world_frame_pose);
+    } else {
+      world_frame_pose.position.x =
+        reachable_crosswalk.first.x() +
+        velocity * entry_to_exit_point.normalized().x() * (dt - arrival_time);
+      world_frame_pose.position.y =
+        reachable_crosswalk.first.y() +
+        velocity * entry_to_exit_point.normalized().y() * (dt - arrival_time);
+      world_frame_pose.position.z = obj_pos.z;
+      world_frame_pose.orientation = object.kinematics.pose_with_covariance.pose.orientation;
+      predicted_path.path.push_back(world_frame_pose);
+    }
+    if (predicted_path.path.size() >= predicted_path.path.max_size()) {
+      break;
+    }
+  }
+
+  predicted_path.confidence = 1.0;
+  predicted_path.time_step = rclcpp::Duration::from_seconds(sampling_time_interval_);
+
+  return predicted_path;
 }
 
 PredictedPath PathGenerator::generatePathForLowSpeedVehicle(const TrackedObject & object) const
