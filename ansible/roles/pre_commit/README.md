@@ -14,7 +14,7 @@ The `clang_format_version` variable can also be found in:
 [./defaults/main.yaml](./defaults/main.yaml)
 
 ```bash
-clang_format_version=14.0.5
+clang_format_version=14.0.6
 pip3 install pre-commit clang-format==${clang_format_version}
 
 # Install Golang (Add Go PPA for shfmt)
