@@ -58,6 +58,7 @@ private:
 
   void mapCallback(const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr msg);
   bool isGoalValid() const;
+  void refineGoalHeight(const RouteSections & route_sections);
 
   // virtual functions
   bool isRoutingGraphReady() const;
