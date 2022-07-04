@@ -3,7 +3,7 @@
   <include file="$(find-pkg-share ekf_localizer)/launch/ekf_localizer.launch.xml">
     <arg name="enable_yaw_bias_estimation" value="False"/>
     <arg name="tf_rate" value="50.0"/>
-    <arg name="twist_rate" value="25.0"/>
+    <arg name="twist_smoothing_steps" value="2"/>
     <arg name="input_initial_pose_name" value="/initialpose3d"/>
 
     <arg name="input_pose_with_cov_name" value="/localization/pose_estimator/pose_with_covariance"/>

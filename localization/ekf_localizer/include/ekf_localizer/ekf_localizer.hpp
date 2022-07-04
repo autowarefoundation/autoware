@@ -39,8 +39,73 @@
 #include <chrono>
 #include <iostream>
 #include <memory>
+#include <queue>
 #include <string>
 #include <vector>
+
+struct PoseInfo
+{
+  geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr pose;
+  int counter;
+  int smoothing_steps;
+};
+
+struct TwistInfo
+{
+  geometry_msgs::msg::TwistWithCovarianceStamped::SharedPtr twist;
+  int counter;
+  int smoothing_steps;
+};
+
+class Simple1DFilter
+{
+public:
+  Simple1DFilter()
+  {
+    initialized_ = false;
+    x_ = 0;
+    stddev_ = 1e9;
+    proc_stddev_x_c_ = 0.0;
+    return;
+  };
+  void init(const double init_obs, const double obs_stddev, const rclcpp::Time time)
+  {
+    x_ = init_obs;
+    stddev_ = obs_stddev;
+    latest_time_ = time;
+    initialized_ = true;
+    return;
+  };
+  void update(const double obs, const double obs_stddev, const rclcpp::Time time)
+  {
+    if (!initialized_) {
+      init(obs, obs_stddev, time);
+      return;
+    }
+
+    // Prediction step (current stddev_)
+    double dt = (time - latest_time_).seconds();
+    double proc_stddev_x_d = proc_stddev_x_c_ * dt;
+    stddev_ = std::sqrt(stddev_ * stddev_ + proc_stddev_x_d * proc_stddev_x_d);
+
+    // Update step
+    double kalman_gain = stddev_ * stddev_ / (stddev_ * stddev_ + obs_stddev * obs_stddev);
+    x_ = x_ + kalman_gain * (obs - x_);
+    stddev_ = std::sqrt(1 - kalman_gain) * stddev_;
+
+    latest_time_ = time;
+    return;
+  };
+  void set_proc_stddev(const double proc_stddev) { proc_stddev_x_c_ = proc_stddev; }
+  double get_x() { return x_; }
+
+private:
+  bool initialized_;
+  double x_;
+  double stddev_;
+  double proc_stddev_x_c_;
+  rclcpp::Time latest_time_;
+};
 
 class EKFLocalizer : public rclcpp::Node
 {
@@ -87,6 +152,9 @@ private:
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_br_;
   //!< @brief  extended kalman filter instance.
   TimeDelayKalmanFilter ekf_;
+  Simple1DFilter z_filter_;
+  Simple1DFilter roll_filter_;
+  Simple1DFilter pitch_filter_;
 
   /* parameters */
   bool show_debug_info_;
@@ -138,15 +206,17 @@ private:
   };
 
   /* for model prediction */
-  geometry_msgs::msg::TwistStamped::SharedPtr
-    current_twist_ptr_;                                          //!< @brief current measured twist
-  geometry_msgs::msg::PoseStamped::SharedPtr current_pose_ptr_;  //!< @brief current measured pose
-  geometry_msgs::msg::PoseStamped current_ekf_pose_;             //!< @brief current estimated pose
+  std::queue<TwistInfo> current_twist_info_queue_;    //!< @brief current measured pose
+  std::queue<PoseInfo> current_pose_info_queue_;      //!< @brief current measured pose
+  geometry_msgs::msg::PoseStamped current_ekf_pose_;  //!< @brief current estimated pose
   geometry_msgs::msg::PoseStamped
     current_ekf_pose_no_yawbias_;  //!< @brief current estimated pose w/o yaw bias
   geometry_msgs::msg::TwistStamped current_ekf_twist_;  //!< @brief current estimated twist
   std::array<double, 36ul> current_pose_covariance_;
   std::array<double, 36ul> current_twist_covariance_;
+
+  int pose_smoothing_steps_;
+  int twist_smoothing_steps_;
 
   /**
    * @brief computes update & prediction of EKF for each ekf_dt_[s] time
@@ -192,13 +262,13 @@ private:
    * @brief compute EKF update with pose measurement
    * @param pose measurement value
    */
-  void measurementUpdatePose(const geometry_msgs::msg::PoseStamped & pose);
+  void measurementUpdatePose(const geometry_msgs::msg::PoseWithCovarianceStamped & pose);
 
   /**
    * @brief compute EKF update with pose measurement
    * @param twist measurement value
    */
-  void measurementUpdateTwist(const geometry_msgs::msg::TwistStamped & twist);
+  void measurementUpdateTwist(const geometry_msgs::msg::TwistWithCovarianceStamped & twist);
 
   /**
    * @brief check whether a measurement value falls within the mahalanobis distance threshold
@@ -240,6 +310,8 @@ private:
    * @brief for debug
    */
   void showCurrentX();
+
+  void updateSimple1DFilters(const geometry_msgs::msg::PoseWithCovarianceStamped & pose);
 
   tier4_autoware_utils::StopWatch<std::chrono::milliseconds> stop_watch_;
 

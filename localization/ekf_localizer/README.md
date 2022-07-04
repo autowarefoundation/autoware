@@ -1,6 +1,6 @@
 # Overview
 
-The **Extend Kalman Filter Localizer** estimates robust and less noisy robot pose and twist by integrating the 2D vehicle dynamics model with input ego-pose and ego-twist messages. The algorithm is designed especially for fast moving robot such as autonomous driving system.
+The **Extend Kalman Filter Localizer** estimates robust and less noisy robot pose and twist by integrating the 2D vehicle dynamics model with input ego-pose and ego-twist messages. The algorithm is designed especially for fast-moving robots such as autonomous driving systems.
 
 ## Flowchart
 
@@ -14,10 +14,10 @@ The overall flowchart of the ekf_localizer is described below.
 
 This package includes the following features:
 
-- **Time delay compensation** for input messages, which enables proper integration of input information with varying time delay. This is important especially for high speed moving robot, such as autonomous driving vehicle. (see following figure).
+- **Time delay compensation** for input messages, which enables proper integration of input information with varying time delays. This is important especially for high-speed moving robots, such as autonomous driving vehicles. (see the following figure).
 - **Automatic estimation of yaw bias** prevents modeling errors caused by sensor mounting angle errors, which can improve estimation accuracy.
 - **Mahalanobis distance gate** enables probabilistic outlier detection to determine which inputs should be used or ignored.
-- **Smooth update**, the Kalman Filter measurement update is typically performed when a measurement is obtained, but it can cause large changes in the estimated value especially for low frequency measurements. Since the algorithm can consider the measurement time, the measurement data can be divided into multiple pieces and integrated smoothly while maintaining consistency (see following figure).
+- **Smooth update**, the Kalman Filter measurement update is typically performed when a measurement is obtained, but it can cause large changes in the estimated value, especially for low-frequency measurements. Since the algorithm can consider the measurement time, the measurement data can be divided into multiple pieces and integrated smoothly while maintaining consistency (see the following figure).
 
 <p align="center">
 <img src="./media/ekf_delay_comp.png" width="800">
@@ -43,15 +43,15 @@ The parameters and input topic names can be set in the `ekf_localizer.launch` fi
 
 - measured_pose_with_covariance (geometry_msgs/PoseWithCovarianceStamped)
 
-  Input pose source with measurement covariance matrix.
+  Input pose source with the measurement covariance matrix.
 
 - measured_twist_with_covariance (geometry_msgs/TwistWithCovarianceStamped)
 
-  Input twist source with measurement covariance matrix.
+  Input twist source with the measurement covariance matrix.
 
 - initialpose (geometry_msgs/PoseWithCovarianceStamped)
 
-  Initial pose for EKF. The estimated pose is initialized with zeros at start. It is initialized with this message whenever published.
+  Initial pose for EKF. The estimated pose is initialized with zeros at the start. It is initialized with this message whenever published.
 
 ### Published Topics
 
@@ -81,7 +81,7 @@ The parameters and input topic names can be set in the `ekf_localizer.launch` fi
 
 - ekf_twist_with_covariance (geometry_msgs/TwistWithCovarianceStamped)
 
-  Estimated twist with covariance.
+  The estimated twist with covariance.
 
 ### Published TF
 
@@ -93,13 +93,13 @@ The parameters and input topic names can be set in the `ekf_localizer.launch` fi
 
 ### Predict
 
-The current robot state is predicted from previously estimated data using a given prediction model. This calculation is called at constant interval (`predict_frequency [Hz]`). The prediction equation is described at the end of this page.
+The current robot state is predicted from previously estimated data using a given prediction model. This calculation is called at a constant interval (`predict_frequency [Hz]`). The prediction equation is described at the end of this page.
 
 ### Measurement Update
 
-Before update, the Mahalanobis distance is calculated between the measured input and the predicted state, the measurement update is not performed for inputs where the Mahalanobis distance exceeds the given threshold.
+Before the update, the Mahalanobis distance is calculated between the measured input and the predicted state, the measurement update is not performed for inputs where the Mahalanobis distance exceeds the given threshold.
 
-The predicted state is updated with the latest measured inputs, measured_pose and measured_twist. The updates are performed with the same frequency as prediction, usually at a high frequency, in order to enable smooth state estimation.
+The predicted state is updated with the latest measured inputs, measured_pose, and measured_twist. The updates are performed with the same frequency as prediction, usually at a high frequency, in order to enable smooth state estimation.
 
 ## Parameter description
 
@@ -117,20 +117,20 @@ The parameters are set in `launch/ekf_localizer.launch` .
 
 ### For pose measurement
 
-| Name                          | Type   | Description                                                       | Default value |
-| :---------------------------- | :----- | :---------------------------------------------------------------- | :------------ |
-| pose_additional_delay         | double | Additional delay time for pose measurement [s]                    | 0.0           |
-| pose_measure_uncertainty_time | double | Measured time uncertainty used for covariance calculation [s]     | 0.01          |
-| pose_rate                     | double | Approximated input pose rate used for covariance calculation [Hz] | 10.0          |
-| pose_gate_dist                | double | Limit of Mahalanobis distance used for outliers detection         | 10000.0       |
+| Name                          | Type   | Description                                                   | Default value |
+| :---------------------------- | :----- | :------------------------------------------------------------ | :------------ |
+| pose_additional_delay         | double | Additional delay time for pose measurement [s]                | 0.0           |
+| pose_measure_uncertainty_time | double | Measured time uncertainty used for covariance calculation [s] | 0.01          |
+| pose_smoothing_steps          | int    | A value for smoothing steps                                   | 5             |
+| pose_gate_dist                | double | Limit of Mahalanobis distance used for outliers detection     | 10000.0       |
 
 ### For twist measurement
 
-| Name                   | Type   | Description                                                        | Default value |
-| :--------------------- | :----- | :----------------------------------------------------------------- | :------------ |
-| twist_additional_delay | double | Additional delay time for twist [s]                                | 0.0           |
-| twist_rate             | double | Approximated input twist rate used for covariance calculation [Hz] | 10.0          |
-| twist_gate_dist        | double | Limit of Mahalanobis distance used for outliers detection          | 10000.0       |
+| Name                   | Type   | Description                                               | Default value |
+| :--------------------- | :----- | :-------------------------------------------------------- | :------------ |
+| twist_additional_delay | double | Additional delay time for twist [s]                       | 0.0           |
+| twist_smoothing_steps  | int    | A value for smoothing steps                               | 2             |
+| twist_gate_dist        | double | Limit of Mahalanobis distance used for outliers detection | 10000.0       |
 
 ### For process noise
 
@@ -141,28 +141,30 @@ The parameters are set in `launch/ekf_localizer.launch` .
 | proc_stddev_yaw_c      | double | Standard deviation of process noise in time differentiation expression of yaw, noise for d_yaw = omega           | 0.005         |
 | proc_stddev_yaw_bias_c | double | Standard deviation of process noise in time differentiation expression of yaw_bias, noise for d_yaw_bias = 0     | 0.001         |
 
-note: process noise for position x & y are calculated automatically from nonlinear dynamics.
+note: process noise for positions x & y are calculated automatically from nonlinear dynamics.
 
-## How to turn EKF parameters
+## How to tune EKF parameters
 
 ### 0. Preliminaries
 
-- Check header time in pose and twist message is set to sensor time appropriately, because time delay is calculated from this value. If it is difficult to set appropriate time due to timer synchronization problem, use `twist_additional_delay` and `pose_additional_delay` to correct the time.
-- Check the relation between measurement pose and twist is appropriate (whether the derivative of pose has similar value to twist). This discrepancy is caused mainly by unit error (such as confusing radian/degree) or bias noise, and it causes large estimation errors.
+- Check header time in pose and twist message is set to sensor time appropriately, because time delay is calculated from this value. If it is difficult to set an appropriate time due to the timer synchronization problem, use `twist_additional_delay` and `pose_additional_delay` to correct the time.
+- Check if the relation between measurement pose and twist is appropriate (whether the derivative of the pose has a similar value to twist). This discrepancy is caused mainly by unit error (such as confusing radian/degree) or bias noise, and it causes large estimation errors.
 
-### 1. Set sensor parameters
+### 1. Tune sensor parameters
 
-Set sensor-rate and standard-deviation from the basic information of the sensor. The `pose_measure_uncertainty_time` is for uncertainty of the header timestamp data.
+Set standard deviation for each sensor. The `pose_measure_uncertainty_time` is for the uncertainty of the header timestamp data.
+You can also tune a number of steps for smoothing for each observed sensor data by tuning `*_smoothing_steps`.
+Increasing the number will improve the smoothness of the estimation, but may have an adverse effect on the estimation performance.
 
 - `pose_measure_uncertainty_time`
-- `pose_rate`
-- `twist_rate`
+- `pose_smoothing_steps`
+- `twist_smoothing_steps`
 
-### 2. Set process model parameters
+### 2. Tune process model parameters
 
 - `proc_stddev_vx_c` : set to maximum linear acceleration
 - `proc_stddev_wz_c` : set to maximum angular acceleration
-- `proc_stddev_yaw_c` : This parameter describes the correlation between the yaw and yaw-rate. Large value means the change in yaw does not correlate to the estimated yaw-rate. If this is set to 0, it means the change in estimate yaw is equal to yaw-rate. Usually this should be set to 0.
+- `proc_stddev_yaw_c` : This parameter describes the correlation between the yaw and yawrate. A large value means the change in yaw does not correlate to the estimated yawrate. If this is set to 0, it means the change in estimated yaw is equal to yawrate. Usually, this should be set to 0.
 - `proc_stddev_yaw_bias_c` : This parameter is the standard deviation for the rate of change in yaw bias. In most cases, yaw bias is constant, so it can be very small, but must be non-zero.
 
 ## Kalman Filter Model
@@ -171,21 +173,25 @@ Set sensor-rate and standard-deviation from the basic information of the sensor.
 
 <img src="./media/ekf_dynamics.png" width="320">
 
-where `b_k` is the yaw-bias.
+where `b_k` is the yawbias.
 
 ### time delay model
 
-The measurement time delay is handled by an augmented states [1] (See, Section 7.3 FIXED-LAG SMOOTHING).
+The measurement time delay is handled by an augmented state [1] (See, Section 7.3 FIXED-LAG SMOOTHING).
 
 <img src="./media/delay_model_eq.png" width="320">
 
-Note that, although the dimension gets larger, since the analytical expansion can be applied based on the specific structures of the augmented states, the computational complexity does not significantly change.
+Note that, although the dimension gets larger since the analytical expansion can be applied based on the specific structures of the augmented states, the computational complexity does not significantly change.
 
 ## Test Result with Autoware NDT
 
 <p align="center">
 <img src="./media/ekf_autoware_res.png" width="600">
 </p>
+
+## Known issues
+
+- In the presence of multiple inputs with yaw estimation, yaw bias `b_k` in the current EKF state would not make any sense, since it is intended to capture the extrinsic parameter's calibration error of a sensor. Thus, future work includes introducing yaw bias for each sensor with yaw estimation.
 
 ## reference
 

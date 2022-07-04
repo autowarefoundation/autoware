@@ -11,13 +11,13 @@
   <arg name="input_pose_with_cov_name" default="in_pose_with_covariance"/>
   <arg name="pose_additional_delay" default="0.0"/>
   <arg name="pose_measure_uncertainty_time" default="0.01"/>
-  <arg name="pose_rate" default="10.0"/>
+  <arg name="pose_smoothing_steps" default="5"/>
   <arg name="pose_gate_dist" default="10000.0"/>
 
   <!-- for twist measurement -->
   <arg name="input_twist_with_cov_name" default="in_twist_with_covariance"/>
   <arg name="twist_additional_delay" default="0.0"/>
-  <arg name="twist_rate" default="10.0"/>
+  <arg name="twist_smoothing_steps" default="2"/>
   <arg name="twist_gate_dist" default="10000.0"/>
 
   <!-- for process model -->
@@ -53,11 +53,11 @@
 
     <param name="pose_additional_delay" value="$(var pose_additional_delay)"/>
     <param name="pose_measure_uncertainty_time" value="$(var pose_measure_uncertainty_time)"/>
-    <param name="pose_rate" value="$(var pose_rate)"/>
+    <param name="pose_smoothing_steps" value="$(var pose_smoothing_steps)"/>
     <param name="pose_gate_dist" value="$(var pose_gate_dist)"/>
 
     <param name="twist_additional_delay" value="$(var twist_additional_delay)"/>
-    <param name="twist_rate" value="$(var twist_rate)"/>
+    <param name="twist_smoothing_steps" value="$(var twist_smoothing_steps)"/>
     <param name="twist_gate_dist" value="$(var twist_gate_dist)"/>
 
     <param name="proc_stddev_yaw_c" value="$(var proc_stddev_yaw_c)"/>
