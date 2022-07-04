@@ -58,7 +58,8 @@
       option:
         steer_limit_constraint: true
         fix_points_around_ego: true
-        # plan_from_ego: false
+        plan_from_ego: false
+        max_plan_from_ego_length: 10.0
         visualize_sampling_num: 1
         enable_manual_warm_start: true
         enable_warm_start: true # false

@@ -411,8 +411,11 @@ void MPTOptimizer::calcPlanningFromEgo(std::vector<ReferencePoint> & ref_points)
 {
   // if plan from ego
   constexpr double epsilon = 1e-04;
-  const bool plan_from_ego =
-    mpt_param_.plan_from_ego && std::abs(current_ego_vel_) < epsilon && ref_points.size() > 1;
+  const double trajectory_length = tier4_autoware_utils::calcArcLength(ref_points);
+
+  const bool plan_from_ego = mpt_param_.plan_from_ego && std::abs(current_ego_vel_) < epsilon &&
+                             ref_points.size() > 1 &&
+                             trajectory_length < mpt_param_.max_plan_from_ego_length;
   if (plan_from_ego) {
     for (auto & ref_point : ref_points) {
       ref_point.fix_kinematic_state = boost::none;
@@ -634,24 +637,19 @@ MPTOptimizer::ValueMatrix MPTOptimizer::generateValueMatrix(
   std::vector<Eigen::Triplet<double>> Qex_triplet_vec;
   for (size_t i = 0; i < N_ref; ++i) {
     // this is for plan_from_ego
-    const bool near_kinematic_state_while_planning_from_ego = [&]() {
-      const size_t min_idx = static_cast<size_t>(std::max(0, static_cast<int>(i) - 20));
-      const size_t max_idx = std::min(ref_points.size() - 1, i + 20);
-      for (size_t j = min_idx; j <= max_idx; ++j) {
-        if (ref_points.at(j).plan_from_ego && ref_points.at(j).fix_kinematic_state) {
-          return true;
-        }
-      }
-      return false;
-    }();
+    // const bool near_kinematic_state_while_planning_from_ego = [&]() {
+    //   const size_t min_idx = static_cast<size_t>(std::max(0, static_cast<int>(i) - 20));
+    //   const size_t max_idx = std::min(ref_points.size() - 1, i + 20);
+    //   for (size_t j = min_idx; j <= max_idx; ++j) {
+    //     if (ref_points.at(j).plan_from_ego && ref_points.at(j).fix_kinematic_state) {
+    //       return true;
+    //     }
+    //   }
+    //   return false;
+    // }();
 
     const auto adaptive_error_weight = [&]() -> std::array<double, 2> {
-      if (near_kinematic_state_while_planning_from_ego) {
-        constexpr double obstacle_avoid_error_weight_ratio = 1 / 100.0;
-        return {
-          mpt_param_.obstacle_avoid_lat_error_weight * obstacle_avoid_error_weight_ratio,
-          mpt_param_.obstacle_avoid_yaw_error_weight * obstacle_avoid_error_weight_ratio};
-      } else if (ref_points.at(i).near_objects) {
+      if (ref_points.at(i).near_objects) {
         return {
           mpt_param_.obstacle_avoid_lat_error_weight, mpt_param_.obstacle_avoid_yaw_error_weight};
       } else if (i == N_ref - 1 && is_containing_path_terminal_point) {

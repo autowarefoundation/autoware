@@ -254,6 +254,7 @@ struct MPTParam
   bool l_inf_norm;
   bool two_step_soft_constraint;
   bool plan_from_ego;
+  double max_plan_from_ego_length;
 };
 
 #endif  // OBSTACLE_AVOIDANCE_PLANNER__COMMON_STRUCTS_HPP_
