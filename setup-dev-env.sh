@@ -118,10 +118,11 @@ fi
 export PATH="$HOME/.local/bin:$PATH"
 
 # Install ansible collections
+echo -e "\e[36m"ansible-galaxy collection install -f -r "$SCRIPT_DIR/ansible-galaxy-requirements.yaml" "\e[m"
 ansible-galaxy collection install -f -r "$SCRIPT_DIR/ansible-galaxy-requirements.yaml"
 
 # Run ansible
-echo -e "\e[36m Run ansible-playbook" "$target_playbook" "${ansible_args[@]}" "\e[m"
+echo -e "\e[36m"ansible-playbook "$target_playbook" "${ansible_args[@]}" "\e[m"
 if ansible-playbook "$target_playbook" "${ansible_args[@]}"; then
     echo -e "\e[32mCompleted.\e[0m"
     exit 0
