@@ -16,8 +16,6 @@
     <arg name="output_twist_name" value="twist"/>
     <arg name="output_twist_with_covariance_name" value="twist_with_covariance"/>
 
-    <arg name="twist_stddev_wz" value="0.003 "/>
-
     <arg name="proc_stddev_vx_c" value="10.0"/>
     <arg name="proc_stddev_wz_c" value="5.0"/>
   </include>
