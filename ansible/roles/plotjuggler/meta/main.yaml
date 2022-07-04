@@ -1,2 +1,2 @@
 dependencies:
-  - ros2
+  - role: ros2
