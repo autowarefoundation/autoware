@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>crosswalk_traffic_light_estimator</name>
+  <version>0.1.0</version>
+  <description>The crosswalk_traffic_light_estimator package</description>
+
+  <maintainer email="satoshi.ota@tier4.jp">Satoshi Ota</maintainer>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <build_depend>autoware_cmake</build_depend>
+
+  <depend>autoware_auto_mapping_msgs</depend>
+  <depend>autoware_auto_perception_msgs</depend>
+  <depend>autoware_auto_planning_msgs</depend>
+  <depend>lanelet2_extension</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>tier4_autoware_utils</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

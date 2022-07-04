@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+  <node pkg="crosswalk_traffic_light_estimator" exec="crosswalk_traffic_light_estimator_node" name="crosswalk_traffic_light_estimator" output="screen">
+    <remap from="~/input/vector_map" to="/map/vector_map"/>
+    <remap from="~/input/route" to="/planning/mission_planning/route"/>
+    <remap from="~/input/classified/traffic_signals" to="classified/traffic_signals"/>
+    <remap from="~/output/traffic_signals" to="traffic_signals"/>
+  </node>
+</launch>
