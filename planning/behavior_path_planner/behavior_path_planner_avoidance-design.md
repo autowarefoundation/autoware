@@ -238,11 +238,9 @@ The shift points are modified by a filtering process in order to get the expecte
 - Similar gradient removal: Connect two shift points with a straight line, and remove the shift points in between if their shift amount is in the vicinity of the straight line.
 - Remove momentary returns: For shift points that reduce the avoidance width (for going back to the center line), if there is enough long distance in the longitudinal direction, remove them.
 
-#### Computing shift length (available as of develop/v0.25.0)
+#### Computing shift length
 
-**Note**: This feature is available as of develop/`v0.25.0`.
-
-The shift length is set as a constant value before the feature is implemented (develop/`v0.24.0` and below). Setting the shift length like this will cause the module to generate an avoidance path regardless of actual environmental properties. For example, the path might exceed the actual road boundary or go towards a wall. Therefore, to address this limitation, in addition to [how to decide the target obstacle](#how-to-decide-the-target-obstacles), the upgraded module also takes into account the following additional element
+The shift length is set as a constant value before the feature is implemented. Setting the shift length like this will cause the module to generate an avoidance path regardless of actual environmental properties. For example, the path might exceed the actual road boundary or go towards a wall. Therefore, to address this limitation, in addition to [how to decide the target obstacle](#how-to-decide-the-target-obstacles), the upgraded module also takes into account the following additional element
 
 - The obstacles' current lane and position.
 - The road shoulder with reference to the direction to avoid.
@@ -250,7 +248,7 @@ The shift length is set as a constant value before the feature is implemented (d
 
 These elements are used to compute the distance from the object to the road's shoulder (`(class ObjectData.to_road_shoulder_distance)`).
 
-![fig1](./image/obstacle_to_road_shoulder_distance.png)
+![obstacle_to_road_shoulder_distance](./image/obstacle_to_road_shoulder_distance.drawio.svg)
 
 ##### Computing shift length
 
@@ -261,23 +259,9 @@ To compute the shift length, in addition to the vehicle's width and the paramete
   - It is recommended to set the value to more than half of the ego vehicle's width.
 - The `road_shoulder_safety_margin` will prevent the module from generating a path that might cause the vehicle to go too near the road shoulder.
 
-![fig1](./image/shift_length_parameters.png)
-
-The shift length is subjected to the following constraints.
+![shift_length_parameters](./image/shift_length_parameters.drawio.svg)
 
 <!-- spell-checker:disable -->
-
-$$
-\text{shift_length}=\begin{cases}d_{lcsb}+d_{lcm}+\frac{1}{2}(W_{ego})&\text{if}&(d_{lcsb}+d_{lcm}+W_{ego}+d_{rssm})\lt d_{trsd}\\0 &\textrm{if}&\left(d_{lcsb}+d_{lcm}+W_{ego}+d_{rssm}\right)\geq d_{trsd}\end{cases}
-$$
-
-where
-
-- <img src="https://latex.codecogs.com/svg.latex?\inline&space;\large&space;d_{lcsb}" title="\large d_{lcsb}" /> = `lateral_collision_safety_buffer`
-- <img src="https://latex.codecogs.com/svg.latex?\inline&space;\large&space;d_{lcm}" title="\large d_{lcm}" /> = `lateral_collision_margin`
-- <img src="https://latex.codecogs.com/svg.latex?\inline&space;\large&space;W_{ego}" title="\large d_{W_{ego}}" /> = ego vehicle's width
-- <img src="https://latex.codecogs.com/svg.latex?\inline&space;\large&space;d_{rssm}" title="\large d_{rssm}" /> = `road_shoulder_safety_margin`
-- <img src="https://latex.codecogs.com/svg.latex?\inline&space;\large&space;d_{trsd}" title="\large d_{trsm}" /> = `(class ObjectData).to_road_shoulder_distance`
 
 ```plantuml
 @startuml
@@ -302,7 +286,7 @@ if(Is overhang_lanelet.id() exist?) then (no)
 stop
 else (\n yes)
 
-if(isOnRight(obstacle)?) then (yes)
+if(isOnRight(object)?) then (yes)
 partition getLeftMostLineString() {
 repeat
 repeat
@@ -316,7 +300,7 @@ repeat while (Same direction Lanelet exist?) is (yes) not (no)
 :getLeftOppositeLanelet;
 repeat while (Opposite direction Lanelet exist?) is (yes) not (no)
 }
-:compute\n(class ObjectData).to_road_shoulder_distance;
+:compute\nobject.to_road_shoulder_distance;
 note left
 distance from overhang_pose
 to left most linestring
@@ -335,7 +319,7 @@ repeat while (Same direction Lanelet exist?) is (yes) not (no)
 :getRightOppositeLanelet;
 repeat while (Opposite direction Lanelet exist?) is (yes) not (no)
 }
-:compute\n(class ObjectData).to_road_shoulder_distance;
+:compute\nobject.to_road_shoulder_distance;
 note right
 distance from overhang_pose
 to right most linestring
@@ -351,28 +335,25 @@ The sum of
 - lat_collision_safety_buffer
 - lat_collision_margin
 - vehicle_width
-end note
-:compute max_shift_length;
-note right
-subtract
+Minus
 - road_shoulder_safety_margin
-- 0.5 x vehicle_width
-from (class ObjectData).to_road_shoulder_margin
 end note
+:compute avoid_margin;
+note right
+The sum of
+- lat_collision_safety_buffer
+- lat_collision_margin
+- 0.5 * vehicle_width
+end note
+if(object.to_road_shoulder_distance > max_allowable_lateral_distance ?) then (no)
+stop
+else (\n yes)
 if(isOnRight(object)?) then (yes)
-if((class ObjectData).to_road_shoulder_distance \n\l>\l\n max_allowable_lateral_distance ?) then (yes)
-:max_left_shift_limit = max_shift_length;
+:shift_length = std::min(object.overhang_dist + avoid_margin);
 else (\n No)
-:max_left_shift_limit = 0.0;
-endif
-else (\n No)
-if((class ObjectData).to_road_shoulder_distance \n\l>\l\n max_allowable_lateral_distance ?) then (yes)
-:max_right_shift_limit = -max_shift_length;
-else (\n No)
-:max_right_shift_limit = 0.0;
+:shift_length = std::max(object.overhang_dist - avoid_margin);
 endif
 endif
-:compute shift length;
 }
 stop
 @enduml
@@ -465,6 +446,36 @@ TODO
 
 ## How to debug
 
-The behavior_path_planner will publish debug marker when `publish_debug_marker` parameter is `true`. It will visualize all outputs of the each avoidance planning process such as target vehicles, shift points for each object, shift points after each filtering process, etc., so that developer can see what is going on in the each process one by one.
+### Publishing Visualization Marker
+
+Developers can see what is going on in each process by visualizing all the avoidance planning process outputs. The example includes target vehicles, shift points for each object, shift points after each filtering process, etc.
 
 ![fig1](./image/avoidance_design/avoidance-debug-marker.png)
+
+The debug marker can be enable via `avoidance.param.yaml`. Simply set the `publish_debug_marker` to `true`, restart `rviz2` and add the marker `planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/debug/markers/MarkerArray`.
+
+### Echoing debug message to find out why the objects were ignored
+
+If for some reason, no shift point is generated for your object, you can check for the failure reason via `ros2 topic echo`.
+
+![avoidance_debug_message_array](./image/avoidance_design/avoidance_debug_message_array.png)
+
+To print the debug message, just run the following
+
+```bash
+ros2 topic echo /planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/debug/avoidance_debug_message_array
+```
+
+### Showing drivable area boundary
+
+Sometimes, the developers might get a different result between two maps that may look identical during visual inspection.
+
+For example, in the same area, one can perform avoidance and another cannot. This might be related to the drivable area issues due to the non-compliance vector map design from the user.
+
+To debug the issue, the drivable area boundary can be visualized.
+
+![drivable_area_boundary_marker1](./image/avoidance_design/drivable_area_boundary_marker_example1.png)
+
+![drivable_area_boundary_marker2](./image/avoidance_design/drivable_area_boundary_marker_example2.png)
+
+The boundary can be visualize by adding the marker from `/planning/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/drivable_area_boundary`

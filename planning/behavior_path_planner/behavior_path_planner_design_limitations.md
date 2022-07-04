@@ -50,3 +50,9 @@ Currently, the implementation doesn't cover avoidance at corners and intersectio
 ![limitation-at-the-intersections](./image/limitations/limitation-intersection.png)
 
 ![limitation-at-the-corner](./image/limitations/limitation-corner.png)
+
+## Limitation: Chattering shifts
+
+There are possibilities that the shifted path chatters as a result of various factors. For example, bounded box shape or position from the perception input. Sometimes, it is difficult for the perception to get complete information about the object's size. As the object size is updated, the object length will also be updated. This might cause shifts point to be re-calculated, therefore resulting in chattering shift points.
+
+![limitation-chattering-shift](./image/limitations/limitation-chattering_shifts.png)
