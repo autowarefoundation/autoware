@@ -1368,6 +1368,9 @@ lanelet::Polygon3d getVehiclePolygon(
 PathPointWithLaneId insertStopPoint(double length, PathWithLaneId * path)
 {
   if (path->points.empty()) {
+    RCLCPP_ERROR_STREAM(
+      rclcpp::get_logger("behavior_path_planner").get_child("utilities"),
+      "failed to insert stop point. path points is empty.");
     return PathPointWithLaneId();
   }
 
@@ -1386,14 +1389,20 @@ PathPointWithLaneId insertStopPoint(double length, PathWithLaneId * path)
       break;
     }
   }
+  if (accumulated_length <= length) {
+    RCLCPP_ERROR_STREAM(
+      rclcpp::get_logger("behavior_path_planner").get_child("utilities"),
+      "failed to insert stop point. length is longer than path length");
+    return PathPointWithLaneId();
+  }
 
   PathPointWithLaneId stop_point;
   stop_point.lane_ids = path->points.at(insert_idx).lane_ids;
   stop_point.point.pose = stop_pose;
   path->points.insert(path->points.begin() + insert_idx, stop_point);
   for (size_t i = insert_idx; i < path->points.size(); i++) {
-    path->points.at(insert_idx).point.longitudinal_velocity_mps = 0.0;
-    path->points.at(insert_idx).point.lateral_velocity_mps = 0.0;
+    path->points.at(i).point.longitudinal_velocity_mps = 0.0;
+    path->points.at(i).point.lateral_velocity_mps = 0.0;
   }
   return stop_point;
 }
