@@ -23,7 +23,6 @@ from launch.conditions import UnlessCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import ComposableNodeContainer
-from launch_ros.actions import LoadComposableNodes
 from launch_ros.actions import PushRosNamespace
 from launch_ros.descriptions import ComposableNode
 from launch_ros.substitutions import FindPackageShare
@@ -31,7 +30,6 @@ import yaml
 
 
 def launch_setup(context, *args, **kwargs):
-    lateral_controller_mode = LaunchConfiguration("lateral_controller_mode").perform(context)
     vehicle_info_param_path = LaunchConfiguration("vehicle_info_param_file").perform(context)
     with open(vehicle_info_param_path, "r") as f:
         vehicle_info_param = yaml.safe_load(f)["/**"]["ros__parameters"]
@@ -41,12 +39,6 @@ def launch_setup(context, *args, **kwargs):
     lon_controller_param_path = LaunchConfiguration("lon_controller_param_path").perform(context)
     with open(lon_controller_param_path, "r") as f:
         lon_controller_param = yaml.safe_load(f)["/**"]["ros__parameters"]
-    latlon_muxer_param_path = LaunchConfiguration("latlon_muxer_param_path").perform(context)
-    with open(latlon_muxer_param_path, "r") as f:
-        latlon_muxer_param = yaml.safe_load(f)["/**"]["ros__parameters"]
-    pure_pursuit_param_path = LaunchConfiguration("pure_pursuit_param_path").perform(context)
-    with open(pure_pursuit_param_path, "r") as f:
-        pure_pursuit_param = yaml.safe_load(f)["/**"]["ros__parameters"]
     vehicle_cmd_gate_param_path = LaunchConfiguration("vehicle_cmd_gate_param_path").perform(
         context
     )
@@ -58,80 +50,28 @@ def launch_setup(context, *args, **kwargs):
     with open(lane_departure_checker_param_path, "r") as f:
         lane_departure_checker_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
-    # lateral controller
-    lat_controller_component = ComposableNode(
+    controller_component = ComposableNode(
         package="trajectory_follower_nodes",
-        plugin="autoware::motion::control::trajectory_follower_nodes::LateralController",
-        name="lateral_controller_node_exe",
+        plugin="autoware::motion::control::trajectory_follower_nodes::Controller",
+        name="controller_node_exe",
         namespace="trajectory_follower",
         remappings=[
             ("~/input/reference_trajectory", "/planning/scenario_planning/trajectory"),
             ("~/input/current_odometry", "/localization/kinematic_state"),
             ("~/input/current_steering", "/vehicle/status/steering_status"),
-            ("~/output/control_cmd", "lateral/control_cmd"),
             ("~/output/predicted_trajectory", "lateral/predicted_trajectory"),
-            ("~/output/diagnostic", "lateral/diagnostic"),
-        ],
-        parameters=[
-            lat_controller_param,
-            vehicle_info_param,
-        ],
-        extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
-    )
-
-    pure_pursuit_component = ComposableNode(
-        package="pure_pursuit",
-        plugin="pure_pursuit::PurePursuitNode",
-        name="pure_pursuit_node_exe",
-        namespace="trajectory_follower",
-        remappings=[
-            ("input/reference_trajectory", "/planning/scenario_planning/trajectory"),
-            ("input/current_odometry", "/localization/kinematic_state"),
-            ("output/control_raw", "lateral/control_cmd"),
-        ],
-        parameters=[
-            pure_pursuit_param,
-        ],
-        extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
-    )
-
-    # longitudinal controller
-    lon_controller_component = ComposableNode(
-        package="trajectory_follower_nodes",
-        plugin="autoware::motion::control::trajectory_follower_nodes::LongitudinalController",
-        name="longitudinal_controller_node_exe",
-        namespace="trajectory_follower",
-        remappings=[
-            ("~/input/current_trajectory", "/planning/scenario_planning/trajectory"),
-            ("~/input/current_odometry", "/localization/kinematic_state"),
-            ("~/output/control_cmd", "longitudinal/control_cmd"),
+            ("~/output/lateral_diagnostic", "lateral/diagnostic"),
             ("~/output/slope_angle", "longitudinal/slope_angle"),
-            ("~/output/diagnostic", "longitudinal/diagnostic"),
-        ],
-        parameters=[
-            lon_controller_param,
-            vehicle_info_param,
-            {
-                "show_debug_info": LaunchConfiguration("show_debug_info"),
-                "enable_pub_debug": LaunchConfiguration("enable_pub_debug"),
-            },
-        ],
-        extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
-    )
-
-    # latlon muxer
-    latlon_muxer_component = ComposableNode(
-        package="trajectory_follower_nodes",
-        plugin="autoware::motion::control::trajectory_follower_nodes::LatLonMuxer",
-        name="latlon_muxer_node_exe",
-        namespace="trajectory_follower",
-        remappings=[
-            ("~/input/lateral/control_cmd", "lateral/control_cmd"),
-            ("~/input/longitudinal/control_cmd", "longitudinal/control_cmd"),
+            ("~/output/longitudinal_diagnostic", "longitudinal/diagnostic"),
             ("~/output/control_cmd", "control_cmd"),
         ],
         parameters=[
-            latlon_muxer_param,
+            {
+                "ctrl_period": 0.03,
+                "lateral_controller_mode": LaunchConfiguration("lateral_controller_mode"),
+            },
+            lon_controller_param,
+            lat_controller_param,
         ],
         extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
     )
@@ -246,27 +186,12 @@ def launch_setup(context, *args, **kwargs):
         package="rclcpp_components",
         executable=LaunchConfiguration("container_executable"),
         composable_node_descriptions=[
-            lon_controller_component,
-            latlon_muxer_component,
+            controller_component,
             lane_departure_component,
             shift_decider_component,
             vehicle_cmd_gate_component,
         ],
     )
-
-    # lateral controller is separated since it may be another controller (e.g. pure pursuit)
-    if lateral_controller_mode == "mpc_follower":
-        lat_controller_loader = LoadComposableNodes(
-            composable_node_descriptions=[lat_controller_component],
-            target_container=container,
-            # condition=LaunchConfigurationEquals("lateral_controller_mode", "mpc"),
-        )
-    elif lateral_controller_mode == "pure_pursuit":
-        lat_controller_loader = LoadComposableNodes(
-            composable_node_descriptions=[pure_pursuit_component],
-            target_container=container,
-            # condition=LaunchConfigurationEquals("lateral_controller_mode", "mpc"),
-        )
 
     group = GroupAction(
         [
@@ -274,7 +199,6 @@ def launch_setup(context, *args, **kwargs):
             container,
             external_cmd_selector_loader,
             external_cmd_converter_loader,
-            lat_controller_loader,
         ]
     )
 
@@ -315,28 +239,12 @@ def generate_launch_description():
         "path to the parameter file of lateral controller",
     )
     add_launch_arg(
-        "pure_pursuit_param_path",
-        [
-            FindPackageShare("pure_pursuit"),
-            "/config/pure_pursuit.param.yaml",
-        ],
-        "path to the parameter file of lateral controller",
-    )
-    add_launch_arg(
         "lon_controller_param_path",
         [
             FindPackageShare("tier4_control_launch"),
             "/config/trajectory_follower/longitudinal_controller.param.yaml",
         ],
         "path to the parameter file of longitudinal controller",
-    )
-    add_launch_arg(
-        "latlon_muxer_param_path",
-        [
-            FindPackageShare("tier4_control_launch"),
-            "/config/trajectory_follower/latlon_muxer.param.yaml",
-        ],
-        "path to the parameter file of latlon muxer",
     )
     add_launch_arg(
         "vehicle_cmd_gate_param_path",

@@ -15,6 +15,7 @@
   <depend>autoware_auto_planning_msgs</depend>
   <depend>autoware_auto_system_msgs</depend>
   <depend>autoware_auto_vehicle_msgs</depend>
+  <depend>pure_pursuit</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>trajectory_follower</depend>

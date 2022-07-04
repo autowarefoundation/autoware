@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TRAJECTORY_FOLLOWER_NODES__LONGITUDINAL_CONTROLLER_NODE_HPP_
-#define TRAJECTORY_FOLLOWER_NODES__LONGITUDINAL_CONTROLLER_NODE_HPP_
+#ifndef TRAJECTORY_FOLLOWER__PID_LONGITUDINAL_CONTROLLER_HPP_
+#define TRAJECTORY_FOLLOWER__PID_LONGITUDINAL_CONTROLLER_HPP_
 
 #include "eigen3/Eigen/Core"
 #include "eigen3/Eigen/Geometry"
@@ -24,6 +24,7 @@
 #include "tf2_ros/buffer.h"
 #include "tf2_ros/transform_listener.h"
 #include "trajectory_follower/debug_values.hpp"
+#include "trajectory_follower/longitudinal_controller_base.hpp"
 #include "trajectory_follower/longitudinal_controller_utils.hpp"
 #include "trajectory_follower/lowpass_filter.hpp"
 #include "trajectory_follower/pid.hpp"
@@ -38,6 +39,7 @@
 #include "nav_msgs/msg/odometry.hpp"
 #include "tf2_msgs/msg/tf_message.hpp"
 
+#include <deque>
 #include <memory>
 #include <string>
 #include <utility>
@@ -49,19 +51,19 @@ namespace motion
 {
 namespace control
 {
-namespace trajectory_follower_nodes
+namespace trajectory_follower
 {
 using autoware::common::types::bool8_t;
 using autoware::common::types::float64_t;
 namespace trajectory_follower = ::autoware::motion::control::trajectory_follower;
 namespace motion_common = ::autoware::motion::motion_common;
 
-/// \class LongitudinalController
+/// \class PidLongitudinalController
 /// \brief The node class used for generating longitudinal control commands (velocity/acceleration)
-class TRAJECTORY_FOLLOWER_PUBLIC LongitudinalController : public rclcpp::Node
+class TRAJECTORY_FOLLOWER_PUBLIC PidLongitudinalController : public LongitudinalControllerBase
 {
 public:
-  explicit LongitudinalController(const rclcpp::NodeOptions & node_options);
+  explicit PidLongitudinalController(rclcpp::Node & node);
 
 private:
   struct Motion
@@ -82,24 +84,19 @@ private:
     float64_t slope_angle{0.0};
     float64_t dt{0.0};
   };
-
+  rclcpp::Node * node_;
   // ros variables
-  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr m_sub_current_velocity;
-  rclcpp::Subscription<autoware_auto_planning_msgs::msg::Trajectory>::SharedPtr m_sub_trajectory;
-  rclcpp::Publisher<autoware_auto_control_msgs::msg::LongitudinalCommand>::SharedPtr
-    m_pub_control_cmd;
   rclcpp::Publisher<autoware_auto_system_msgs::msg::Float32MultiArrayDiagnostic>::SharedPtr
     m_pub_slope;
   rclcpp::Publisher<autoware_auto_system_msgs::msg::Float32MultiArrayDiagnostic>::SharedPtr
     m_pub_debug;
-  rclcpp::TimerBase::SharedPtr m_timer_control;
 
   rclcpp::Subscription<tf2_msgs::msg::TFMessage>::SharedPtr m_tf_sub;
   rclcpp::Subscription<tf2_msgs::msg::TFMessage>::SharedPtr m_tf_static_sub;
   tf2::BufferCore m_tf_buffer{tf2::BUFFER_CORE_DEFAULT_CACHE_TIME};
   tf2_ros::TransformListener m_tf_listener{m_tf_buffer};
 
-  OnSetParametersCallbackHandle::SharedPtr m_set_param_res;
+  rclcpp::Node::OnSetParametersCallbackHandle::SharedPtr m_set_param_res;
   rcl_interfaces::msg::SetParametersResult paramCallback(
     const std::vector<rclcpp::Parameter> & parameters);
 
@@ -126,6 +123,7 @@ private:
   bool8_t m_enable_overshoot_emergency;
   bool8_t m_enable_slope_compensation;
   bool8_t m_enable_large_tracking_error_emergency;
+  bool8_t m_enable_keep_stopped_until_steer_convergence;
 
   // smooth stop transition
   struct StateTransitionParams
@@ -208,24 +206,29 @@ private:
   // debug values
   trajectory_follower::DebugValues m_debug_values;
 
-  std::shared_ptr<rclcpp::Time> m_last_running_time{std::make_shared<rclcpp::Time>(this->now())};
+  std::shared_ptr<rclcpp::Time> m_last_running_time{std::make_shared<rclcpp::Time>(node_->now())};
 
   /**
    * @brief set current and previous velocity with received message
    * @param [in] msg current state message
    */
-  void callbackCurrentVelocity(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
+  void setCurrentVelocity(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
 
   /**
    * @brief set reference trajectory with received message
    * @param [in] msg trajectory message
    */
-  void callbackTrajectory(const autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr msg);
+  void setTrajectory(const autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr msg);
 
   /**
    * @brief compute control command, and publish periodically
    */
-  void callbackTimerControl();
+  boost::optional<LongitudinalOutput> run() override;
+
+  /**
+   * @brief set input data like current odometry and trajectory.
+   */
+  void setInputData(InputData const & input_data) override;
 
   /**
    * @brief calculate data for controllers whose type is ControlData
@@ -262,7 +265,8 @@ private:
    * @param [in] ctrl_cmd calculated control command to control velocity
    * @param [in] current_vel current velocity of the vehicle
    */
-  void publishCtrlCmd(const Motion & ctrl_cmd, const float64_t current_vel);
+  autoware_auto_control_msgs::msg::LongitudinalCommand createCtrlCmdMsg(
+    const Motion & ctrl_cmd, const float64_t & current_vel);
 
   /**
    * @brief publish debug data
@@ -366,9 +370,9 @@ private:
     const Motion & ctrl_cmd, const geometry_msgs::msg::Pose & current_pose,
     const ControlData & control_data);
 };
-}  // namespace trajectory_follower_nodes
+}  // namespace trajectory_follower
 }  // namespace control
 }  // namespace motion
 }  // namespace autoware
 
-#endif  // TRAJECTORY_FOLLOWER_NODES__LONGITUDINAL_CONTROLLER_NODE_HPP_
+#endif  // TRAJECTORY_FOLLOWER__PID_LONGITUDINAL_CONTROLLER_HPP_

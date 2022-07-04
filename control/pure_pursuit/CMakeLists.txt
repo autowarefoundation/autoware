@@ -19,18 +19,18 @@ ament_auto_add_library(pure_pursuit_core SHARED
 )
 
 # pure_pursuit
-ament_auto_add_library(pure_pursuit_node SHARED
-  src/pure_pursuit/pure_pursuit_node.cpp
+ament_auto_add_library(pure_pursuit_lateral_controller SHARED
+  src/pure_pursuit/pure_pursuit_lateral_controller.cpp
   src/pure_pursuit/pure_pursuit_viz.cpp
 )
 
-target_link_libraries(pure_pursuit_node
+target_link_libraries(pure_pursuit_lateral_controller
   pure_pursuit_core
 )
 
-rclcpp_components_register_node(pure_pursuit_node
-  PLUGIN "pure_pursuit::PurePursuitNode"
-  EXECUTABLE pure_pursuit_node_exe
+rclcpp_components_register_node(pure_pursuit_lateral_controller
+  PLUGIN "pure_pursuit::PurePursuitLateralController"
+  EXECUTABLE pure_pursuit_lateral_controller_exe
 )
 
 ament_auto_package(INSTALL_TO_SHARE

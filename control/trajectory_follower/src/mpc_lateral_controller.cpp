@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "trajectory_follower_nodes/lateral_controller_node.hpp"
+#include "trajectory_follower/mpc_lateral_controller.hpp"
 
 #include "tf2_ros/create_timer_ros.h"
 
@@ -30,7 +30,7 @@ namespace motion
 {
 namespace control
 {
-namespace trajectory_follower_nodes
+namespace trajectory_follower
 {
 namespace
 {
@@ -49,38 +49,47 @@ void update_param(
 }
 }  // namespace
 
-LateralController::LateralController(const rclcpp::NodeOptions & node_options)
-: Node("lateral_controller", node_options)
+MpcLateralController::MpcLateralController(rclcpp::Node & node) : node_{&node}
 {
   using std::placeholders::_1;
 
-  m_mpc.m_ctrl_period = declare_parameter<float64_t>("ctrl_period");
-  m_enable_path_smoothing = declare_parameter<bool8_t>("enable_path_smoothing");
-  m_path_filter_moving_ave_num = declare_parameter<int64_t>("path_filter_moving_ave_num");
-  m_curvature_smoothing_num_traj = declare_parameter<int64_t>("curvature_smoothing_num_traj");
+  m_mpc.m_ctrl_period = node_->get_parameter("ctrl_period").as_double();
+  m_enable_path_smoothing = node_->declare_parameter<bool8_t>("enable_path_smoothing");
+  m_path_filter_moving_ave_num = node_->declare_parameter<int64_t>("path_filter_moving_ave_num");
+  m_curvature_smoothing_num_traj =
+    node_->declare_parameter<int64_t>("curvature_smoothing_num_traj");
   m_curvature_smoothing_num_ref_steer =
-    declare_parameter<int64_t>("curvature_smoothing_num_ref_steer");
-  m_traj_resample_dist = declare_parameter<float64_t>("traj_resample_dist");
-  m_mpc.m_admissible_position_error = declare_parameter<float64_t>("admissible_position_error");
-  m_mpc.m_admissible_yaw_error_rad = declare_parameter<float64_t>("admissible_yaw_error_rad");
-  m_mpc.m_use_steer_prediction = declare_parameter<bool8_t>("use_steer_prediction");
-  m_mpc.m_param.steer_tau = declare_parameter<float64_t>("vehicle_model_steer_tau");
+    node_->declare_parameter<int64_t>("curvature_smoothing_num_ref_steer");
+  m_traj_resample_dist = node_->declare_parameter<float64_t>("traj_resample_dist");
+  m_mpc.m_admissible_position_error =
+    node_->declare_parameter<float64_t>("admissible_position_error");
+  m_mpc.m_admissible_yaw_error_rad =
+    node_->declare_parameter<float64_t>("admissible_yaw_error_rad");
+  m_mpc.m_use_steer_prediction = node_->declare_parameter<bool8_t>("use_steer_prediction");
+  m_mpc.m_param.steer_tau = node_->declare_parameter<float64_t>("vehicle_model_steer_tau");
 
   /* stop state parameters */
-  m_stop_state_entry_ego_speed = declare_parameter<float64_t>("stop_state_entry_ego_speed");
-  m_stop_state_entry_target_speed = declare_parameter<float64_t>("stop_state_entry_target_speed");
+  m_stop_state_entry_ego_speed = node_->declare_parameter<float64_t>("stop_state_entry_ego_speed");
+  m_stop_state_entry_target_speed =
+    node_->declare_parameter<float64_t>("stop_state_entry_target_speed");
+  m_converged_steer_rad = node_->declare_parameter<float64_t>("converged_steer_rad");
+  m_keep_steer_control_until_converged =
+    node_->declare_parameter<bool8_t>("keep_steer_control_until_converged");
+  m_new_traj_duration_time = node_->declare_parameter<float64_t>("new_traj_duration_time");  // [s]
+  m_new_traj_end_dist = node_->declare_parameter<float64_t>("new_traj_end_dist");            // [m]
 
   /* mpc parameters */
-  const float64_t steer_lim_deg = declare_parameter<float64_t>("steer_lim_deg");
-  const float64_t steer_rate_lim_dps = declare_parameter<float64_t>("steer_rate_lim_dps");
+  const float64_t steer_lim_deg = node_->declare_parameter<float64_t>("steer_lim_deg");
+  const float64_t steer_rate_lim_dps = node_->declare_parameter<float64_t>("steer_rate_lim_dps");
   constexpr float64_t deg2rad = static_cast<float64_t>(autoware::common::types::PI) / 180.0;
   m_mpc.m_steer_lim = steer_lim_deg * deg2rad;
   m_mpc.m_steer_rate_lim = steer_rate_lim_dps * deg2rad;
   const float64_t wheelbase =
-    vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo().wheel_base_m;
+    vehicle_info_util::VehicleInfoUtil(*node_).getVehicleInfo().wheel_base_m;
 
   /* vehicle model setup */
-  const std::string vehicle_model_type = declare_parameter<std::string>("vehicle_model_type");
+  const std::string vehicle_model_type =
+    node_->declare_parameter<std::string>("vehicle_model_type");
   std::shared_ptr<trajectory_follower::VehicleModelInterface> vehicle_model_ptr;
   if (vehicle_model_type == "kinematics") {
     vehicle_model_ptr = std::make_shared<trajectory_follower::KinematicsBicycleModel>(
@@ -89,35 +98,35 @@ LateralController::LateralController(const rclcpp::NodeOptions & node_options)
     vehicle_model_ptr = std::make_shared<trajectory_follower::KinematicsBicycleModelNoDelay>(
       wheelbase, m_mpc.m_steer_lim);
   } else if (vehicle_model_type == "dynamics") {
-    const float64_t mass_fl = declare_parameter<float64_t>("vehicle.mass_fl");
-    const float64_t mass_fr = declare_parameter<float64_t>("vehicle.mass_fr");
-    const float64_t mass_rl = declare_parameter<float64_t>("vehicle.mass_rl");
-    const float64_t mass_rr = declare_parameter<float64_t>("vehicle.mass_rr");
-    const float64_t cf = declare_parameter<float64_t>("vehicle.cf");
-    const float64_t cr = declare_parameter<float64_t>("vehicle.cr");
+    const float64_t mass_fl = node_->declare_parameter<float64_t>("vehicle.mass_fl");
+    const float64_t mass_fr = node_->declare_parameter<float64_t>("vehicle.mass_fr");
+    const float64_t mass_rl = node_->declare_parameter<float64_t>("vehicle.mass_rl");
+    const float64_t mass_rr = node_->declare_parameter<float64_t>("vehicle.mass_rr");
+    const float64_t cf = node_->declare_parameter<float64_t>("vehicle.cf");
+    const float64_t cr = node_->declare_parameter<float64_t>("vehicle.cr");
 
     // vehicle_model_ptr is only assigned in ctor, so parameter value have to be passed at init time
     // // NOLINT
     vehicle_model_ptr = std::make_shared<trajectory_follower::DynamicsBicycleModel>(
       wheelbase, mass_fl, mass_fr, mass_rl, mass_rr, cf, cr);
   } else {
-    RCLCPP_ERROR(get_logger(), "vehicle_model_type is undefined");
+    RCLCPP_ERROR(node_->get_logger(), "vehicle_model_type is undefined");
   }
 
   /* QP solver setup */
-  const std::string qp_solver_type = declare_parameter<std::string>("qp_solver_type");
+  const std::string qp_solver_type = node_->declare_parameter<std::string>("qp_solver_type");
   std::shared_ptr<trajectory_follower::QPSolverInterface> qpsolver_ptr;
   if (qp_solver_type == "unconstraint_fast") {
     qpsolver_ptr = std::make_shared<trajectory_follower::QPSolverEigenLeastSquareLLT>();
   } else if (qp_solver_type == "osqp") {
-    qpsolver_ptr = std::make_shared<trajectory_follower::QPSolverOSQP>(get_logger());
+    qpsolver_ptr = std::make_shared<trajectory_follower::QPSolverOSQP>(node_->get_logger());
   } else {
-    RCLCPP_ERROR(get_logger(), "qp_solver_type is undefined");
+    RCLCPP_ERROR(node_->get_logger(), "qp_solver_type is undefined");
   }
 
   /* delay compensation */
   {
-    const float64_t delay_tmp = declare_parameter<float64_t>("input_delay");
+    const float64_t delay_tmp = node_->declare_parameter<float64_t>("input_delay");
     const float64_t delay_step = std::round(delay_tmp / m_mpc.m_ctrl_period);
     m_mpc.m_param.input_delay = delay_step * m_mpc.m_ctrl_period;
     m_mpc.m_input_buffer = std::deque<float64_t>(static_cast<size_t>(delay_step), 0.0);
@@ -125,55 +134,39 @@ LateralController::LateralController(const rclcpp::NodeOptions & node_options)
 
   /* initialize lowpass filter */
   {
-    const float64_t steering_lpf_cutoff_hz = declare_parameter<float64_t>("steering_lpf_cutoff_hz");
+    const float64_t steering_lpf_cutoff_hz =
+      node_->declare_parameter<float64_t>("steering_lpf_cutoff_hz");
     const float64_t error_deriv_lpf_cutoff_hz =
-      declare_parameter<float64_t>("error_deriv_lpf_cutoff_hz");
+      node_->declare_parameter<float64_t>("error_deriv_lpf_cutoff_hz");
     m_mpc.initializeLowPassFilters(steering_lpf_cutoff_hz, error_deriv_lpf_cutoff_hz);
   }
 
-  /* set up ros system */
-  initTimer(m_mpc.m_ctrl_period);
-
-  m_pub_ctrl_cmd = create_publisher<autoware_auto_control_msgs::msg::AckermannLateralCommand>(
-    "~/output/control_cmd", 1);
-  m_pub_predicted_traj = create_publisher<autoware_auto_planning_msgs::msg::Trajectory>(
+  m_pub_predicted_traj = node_->create_publisher<autoware_auto_planning_msgs::msg::Trajectory>(
     "~/output/predicted_trajectory", 1);
-  m_pub_diagnostic = create_publisher<autoware_auto_system_msgs::msg::Float32MultiArrayDiagnostic>(
-    "~/output/diagnostic", 1);
-  m_sub_ref_path = create_subscription<autoware_auto_planning_msgs::msg::Trajectory>(
-    "~/input/reference_trajectory", rclcpp::QoS{1},
-    std::bind(&LateralController::onTrajectory, this, _1));
-  m_sub_steering = create_subscription<autoware_auto_vehicle_msgs::msg::SteeringReport>(
-    "~/input/current_steering", rclcpp::QoS{1},
-    std::bind(&LateralController::onSteering, this, _1));
-  m_sub_odometry = create_subscription<nav_msgs::msg::Odometry>(
-    "~/input/current_odometry", rclcpp::QoS{1},
-    std::bind(&LateralController::onOdometry, this, _1));
+  m_pub_diagnostic =
+    node_->create_publisher<autoware_auto_system_msgs::msg::Float32MultiArrayDiagnostic>(
+      "~/output/lateral_diagnostic", 1);
 
   // TODO(Frederik.Beaujean) ctor is too long, should factor out parameter declarations
   declareMPCparameters();
 
   /* get parameter updates */
-  m_set_param_res =
-    this->add_on_set_parameters_callback(std::bind(&LateralController::paramCallback, this, _1));
+  m_set_param_res = node_->add_on_set_parameters_callback(
+    std::bind(&MpcLateralController::paramCallback, this, _1));
 
   m_mpc.setQPSolver(qpsolver_ptr);
   m_mpc.setVehicleModel(vehicle_model_ptr, vehicle_model_type);
 
-  m_mpc.setLogger(get_logger());
-  m_mpc.setClock(get_clock());
+  m_mpc.setLogger(node_->get_logger());
+  m_mpc.setClock(node_->get_clock());
 }
 
-LateralController::~LateralController()
-{
-  autoware_auto_control_msgs::msg::AckermannLateralCommand stop_cmd = getStopControlCommand();
-  publishCtrlCmd(stop_cmd);
-}
+MpcLateralController::~MpcLateralController() {}
 
-void LateralController::onTimer()
+boost::optional<LateralOutput> MpcLateralController::run()
 {
   if (!checkData() || !updateCurrentPose()) {
-    return;
+    return boost::none;
   }
 
   autoware_auto_control_msgs::msg::AckermannLateralCommand ctrl_cmd;
@@ -189,6 +182,16 @@ void LateralController::onTimer()
     *m_current_steering_ptr, m_current_odometry_ptr->twist.twist.linear.x, m_current_pose_ptr->pose,
     ctrl_cmd, predicted_traj, diagnostic);
 
+  publishPredictedTraj(predicted_traj);
+  publishDiagnostic(diagnostic);
+
+  const auto createLateralOutput = [this](const auto & cmd) {
+    LateralOutput output;
+    output.control_cmd = createCtrlCmdMsg(cmd);
+    output.sync_data.is_steer_converged = isSteerConverged(cmd);
+    return boost::optional<LateralOutput>(output);
+  };
+
   if (isStoppedState()) {
     // Reset input buffer
     for (auto & value : m_mpc.m_input_buffer) {
@@ -196,91 +199,126 @@ void LateralController::onTimer()
     }
     // Use previous command value as previous raw steer command
     m_mpc.m_raw_steer_cmd_prev = m_ctrl_cmd_prev.steering_tire_angle;
-
-    publishCtrlCmd(m_ctrl_cmd_prev);
-    publishPredictedTraj(predicted_traj);
-    publishDiagnostic(diagnostic);
-    return;
+    return createLateralOutput(m_ctrl_cmd_prev);
   }
 
   if (!is_mpc_solved) {
     RCLCPP_WARN_SKIPFIRST_THROTTLE(
-      get_logger(), *get_clock(), 5000 /*ms*/, "MPC is not solved. publish 0 velocity.");
+      node_->get_logger(), *node_->get_clock(), 5000 /*ms*/,
+      "MPC is not solved. publish 0 velocity.");
     ctrl_cmd = getStopControlCommand();
   }
 
   m_ctrl_cmd_prev = ctrl_cmd;
-  publishCtrlCmd(ctrl_cmd);
-  publishPredictedTraj(predicted_traj);
-  publishDiagnostic(diagnostic);
+  return createLateralOutput(ctrl_cmd);
 }
 
-bool8_t LateralController::checkData() const
+void MpcLateralController::setInputData(InputData const & input_data)
+{
+  setTrajectory(input_data.current_trajectory_ptr);
+  m_current_odometry_ptr = input_data.current_odometry_ptr;
+  m_current_steering_ptr = input_data.current_steering_ptr;
+}
+
+bool MpcLateralController::isSteerConverged(
+  const autoware_auto_control_msgs::msg::AckermannLateralCommand & cmd) const
+{
+  // wait for a while to propagate the trajectory shape to the output command when the trajectory
+  // shape is changed.
+  if (isTrajectoryShapeChanged()) {
+    return false;
+  }
+
+  const bool is_converged =
+    std::abs(cmd.steering_tire_angle - m_current_steering_ptr->steering_tire_angle) <
+    static_cast<float>(m_converged_steer_rad);
+
+  return is_converged;
+}
+
+bool8_t MpcLateralController::checkData() const
 {
   if (!m_mpc.hasVehicleModel()) {
-    RCLCPP_DEBUG(get_logger(), "MPC does not have a vehicle model");
+    RCLCPP_DEBUG(node_->get_logger(), "MPC does not have a vehicle model");
     return false;
   }
   if (!m_mpc.hasQPSolver()) {
-    RCLCPP_DEBUG(get_logger(), "MPC does not have a QP solver");
+    RCLCPP_DEBUG(node_->get_logger(), "MPC does not have a QP solver");
     return false;
   }
 
   if (!m_current_odometry_ptr) {
     RCLCPP_DEBUG(
-      get_logger(), "waiting data. current_velocity = %d", m_current_odometry_ptr != nullptr);
+      node_->get_logger(), "waiting data. current_velocity = %d",
+      m_current_odometry_ptr != nullptr);
     return false;
   }
 
   if (!m_current_steering_ptr) {
     RCLCPP_DEBUG(
-      get_logger(), "waiting data. current_steering = %d", m_current_steering_ptr != nullptr);
+      node_->get_logger(), "waiting data. current_steering = %d",
+      m_current_steering_ptr != nullptr);
     return false;
   }
 
   if (m_mpc.m_ref_traj.size() == 0) {
-    RCLCPP_DEBUG(get_logger(), "trajectory size is zero.");
+    RCLCPP_DEBUG(node_->get_logger(), "trajectory size is zero.");
     return false;
   }
 
   return true;
 }
 
-void LateralController::onTrajectory(
+void MpcLateralController::setTrajectory(
   const autoware_auto_planning_msgs::msg::Trajectory::SharedPtr msg)
 {
+  if (!msg) return;
+
   m_current_trajectory_ptr = msg;
 
   if (!m_current_pose_ptr && !updateCurrentPose()) {
-    RCLCPP_DEBUG(get_logger(), "Current pose is not received yet.");
+    RCLCPP_DEBUG(node_->get_logger(), "Current pose is not received yet.");
     return;
   }
 
   if (msg->points.size() < 3) {
-    RCLCPP_DEBUG(get_logger(), "received path size is < 3, not enough.");
+    RCLCPP_DEBUG(node_->get_logger(), "received path size is < 3, not enough.");
     return;
   }
 
   if (!isValidTrajectory(*msg)) {
-    RCLCPP_ERROR(get_logger(), "Trajectory is invalid!! stop computing.");
+    RCLCPP_ERROR(node_->get_logger(), "Trajectory is invalid!! stop computing.");
     return;
   }
 
   m_mpc.setReferenceTrajectory(
     *msg, m_traj_resample_dist, m_enable_path_smoothing, m_path_filter_moving_ave_num,
     m_curvature_smoothing_num_traj, m_curvature_smoothing_num_ref_steer, m_current_pose_ptr);
+
+  // update trajectory buffer to check the trajectory shape change.
+  m_trajectory_buffer.push_back(*m_current_trajectory_ptr);
+  while (rclcpp::ok()) {
+    const auto time_diff = rclcpp::Time(m_trajectory_buffer.back().header.stamp) -
+                           rclcpp::Time(m_trajectory_buffer.front().header.stamp);
+    if (time_diff.seconds() < m_new_traj_duration_time) {
+      break;
+    }
+    m_trajectory_buffer.pop_front();
+  }
 }
 
-bool8_t LateralController::updateCurrentPose()
+bool8_t MpcLateralController::updateCurrentPose()
 {
   geometry_msgs::msg::TransformStamped transform;
   try {
     transform = m_tf_buffer.lookupTransform(
       m_current_trajectory_ptr->header.frame_id, "base_link", tf2::TimePointZero);
   } catch (tf2::TransformException & ex) {
-    RCLCPP_WARN_SKIPFIRST_THROTTLE(get_logger(), *get_clock(), 5000 /*ms*/, ex.what());
     RCLCPP_WARN_SKIPFIRST_THROTTLE(
-      get_logger(), *get_clock(), 5000 /*ms*/, m_tf_buffer.allFramesAsString().c_str());
+      node_->get_logger(), *node_->get_clock(), 5000 /*ms*/, ex.what());
+    RCLCPP_WARN_SKIPFIRST_THROTTLE(
+      node_->get_logger(), *node_->get_clock(), 5000 /*ms*/,
+      m_tf_buffer.allFramesAsString().c_str());
     return false;
   }
 
@@ -294,19 +332,8 @@ bool8_t LateralController::updateCurrentPose()
   return true;
 }
 
-void LateralController::onOdometry(const nav_msgs::msg::Odometry::SharedPtr msg)
-{
-  m_current_odometry_ptr = msg;
-}
-
-void LateralController::onSteering(
-  const autoware_auto_vehicle_msgs::msg::SteeringReport::SharedPtr msg)
-{
-  m_current_steering_ptr = msg;
-}
-
-autoware_auto_control_msgs::msg::AckermannLateralCommand LateralController::getStopControlCommand()
-  const
+autoware_auto_control_msgs::msg::AckermannLateralCommand
+MpcLateralController::getStopControlCommand() const
 {
   autoware_auto_control_msgs::msg::AckermannLateralCommand cmd;
   cmd.steering_tire_angle = static_cast<decltype(cmd.steering_tire_angle)>(m_steer_cmd_prev);
@@ -315,7 +342,7 @@ autoware_auto_control_msgs::msg::AckermannLateralCommand LateralController::getS
 }
 
 autoware_auto_control_msgs::msg::AckermannLateralCommand
-LateralController::getInitialControlCommand() const
+MpcLateralController::getInitialControlCommand() const
 {
   autoware_auto_control_msgs::msg::AckermannLateralCommand cmd;
   cmd.steering_tire_angle = m_current_steering_ptr->steering_tire_angle;
@@ -323,7 +350,7 @@ LateralController::getInitialControlCommand() const
   return cmd;
 }
 
-bool8_t LateralController::isStoppedState() const
+bool8_t MpcLateralController::isStoppedState() const
 {
   // Note: This function used to take into account the distance to the stop line
   // for the stop state judgement. However, it has been removed since the steering
@@ -340,6 +367,12 @@ bool8_t LateralController::isStoppedState() const
   const float64_t current_vel = m_current_odometry_ptr->twist.twist.linear.x;
   const float64_t target_vel =
     m_current_trajectory_ptr->points.at(static_cast<size_t>(nearest)).longitudinal_velocity_mps;
+
+  const auto latest_published_cmd = m_ctrl_cmd_prev;  // use prev_cmd as a latest published command
+  if (m_keep_steer_control_until_converged && !isSteerConverged(latest_published_cmd)) {
+    return false;  // not stopState: keep control
+  }
+
   if (
     std::fabs(current_vel) < m_stop_state_entry_ego_speed &&
     std::fabs(target_vel) < m_stop_state_entry_target_speed) {
@@ -349,80 +382,75 @@ bool8_t LateralController::isStoppedState() const
   }
 }
 
-void LateralController::publishCtrlCmd(
+autoware_auto_control_msgs::msg::AckermannLateralCommand MpcLateralController::createCtrlCmdMsg(
   autoware_auto_control_msgs::msg::AckermannLateralCommand ctrl_cmd)
 {
-  ctrl_cmd.stamp = this->now();
-  m_pub_ctrl_cmd->publish(ctrl_cmd);
+  ctrl_cmd.stamp = node_->now();
   m_steer_cmd_prev = ctrl_cmd.steering_tire_angle;
+  return ctrl_cmd;
 }
 
-void LateralController::publishPredictedTraj(
+void MpcLateralController::publishPredictedTraj(
   autoware_auto_planning_msgs::msg::Trajectory & predicted_traj) const
 {
-  predicted_traj.header.stamp = this->now();
+  predicted_traj.header.stamp = node_->now();
   predicted_traj.header.frame_id = m_current_trajectory_ptr->header.frame_id;
   m_pub_predicted_traj->publish(predicted_traj);
 }
 
-void LateralController::publishDiagnostic(
+void MpcLateralController::publishDiagnostic(
   autoware_auto_system_msgs::msg::Float32MultiArrayDiagnostic & diagnostic) const
 {
-  diagnostic.diag_header.data_stamp = this->now();
+  diagnostic.diag_header.data_stamp = node_->now();
   diagnostic.diag_header.name = std::string("linear-MPC lateral controller");
   m_pub_diagnostic->publish(diagnostic);
 }
 
-void LateralController::initTimer(float64_t period_s)
+void MpcLateralController::declareMPCparameters()
 {
-  const auto period_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
-    std::chrono::duration<float64_t>(period_s));
-  m_timer = rclcpp::create_timer(
-    this, get_clock(), period_ns, std::bind(&LateralController::onTimer, this));
-}
-
-void LateralController::declareMPCparameters()
-{
-  m_mpc.m_param.prediction_horizon = declare_parameter<int64_t>("mpc_prediction_horizon");
-  m_mpc.m_param.prediction_dt = declare_parameter<float64_t>("mpc_prediction_dt");
-  m_mpc.m_param.weight_lat_error = declare_parameter<float64_t>("mpc_weight_lat_error");
-  m_mpc.m_param.weight_heading_error = declare_parameter<float64_t>("mpc_weight_heading_error");
+  m_mpc.m_param.prediction_horizon = node_->declare_parameter<int64_t>("mpc_prediction_horizon");
+  m_mpc.m_param.prediction_dt = node_->declare_parameter<float64_t>("mpc_prediction_dt");
+  m_mpc.m_param.weight_lat_error = node_->declare_parameter<float64_t>("mpc_weight_lat_error");
+  m_mpc.m_param.weight_heading_error =
+    node_->declare_parameter<float64_t>("mpc_weight_heading_error");
   m_mpc.m_param.weight_heading_error_squared_vel =
-    declare_parameter<float64_t>("mpc_weight_heading_error_squared_vel");
-  m_mpc.m_param.weight_steering_input = declare_parameter<float64_t>("mpc_weight_steering_input");
+    node_->declare_parameter<float64_t>("mpc_weight_heading_error_squared_vel");
+  m_mpc.m_param.weight_steering_input =
+    node_->declare_parameter<float64_t>("mpc_weight_steering_input");
   m_mpc.m_param.weight_steering_input_squared_vel =
-    declare_parameter<float64_t>("mpc_weight_steering_input_squared_vel");
-  m_mpc.m_param.weight_lat_jerk = declare_parameter<float64_t>("mpc_weight_lat_jerk");
-  m_mpc.m_param.weight_steer_rate = declare_parameter<float64_t>("mpc_weight_steer_rate");
-  m_mpc.m_param.weight_steer_acc = declare_parameter<float64_t>("mpc_weight_steer_acc");
+    node_->declare_parameter<float64_t>("mpc_weight_steering_input_squared_vel");
+  m_mpc.m_param.weight_lat_jerk = node_->declare_parameter<float64_t>("mpc_weight_lat_jerk");
+  m_mpc.m_param.weight_steer_rate = node_->declare_parameter<float64_t>("mpc_weight_steer_rate");
+  m_mpc.m_param.weight_steer_acc = node_->declare_parameter<float64_t>("mpc_weight_steer_acc");
   m_mpc.m_param.low_curvature_weight_lat_error =
-    declare_parameter<float64_t>("mpc_low_curvature_weight_lat_error");
+    node_->declare_parameter<float64_t>("mpc_low_curvature_weight_lat_error");
   m_mpc.m_param.low_curvature_weight_heading_error =
-    declare_parameter<float64_t>("mpc_low_curvature_weight_heading_error");
+    node_->declare_parameter<float64_t>("mpc_low_curvature_weight_heading_error");
   m_mpc.m_param.low_curvature_weight_heading_error_squared_vel =
-    declare_parameter<float64_t>("mpc_low_curvature_weight_heading_error_squared_vel");
+    node_->declare_parameter<float64_t>("mpc_low_curvature_weight_heading_error_squared_vel");
   m_mpc.m_param.low_curvature_weight_steering_input =
-    declare_parameter<float64_t>("mpc_low_curvature_weight_steering_input");
+    node_->declare_parameter<float64_t>("mpc_low_curvature_weight_steering_input");
   m_mpc.m_param.low_curvature_weight_steering_input_squared_vel =
-    declare_parameter<float64_t>("mpc_low_curvature_weight_steering_input_squared_vel");
+    node_->declare_parameter<float64_t>("mpc_low_curvature_weight_steering_input_squared_vel");
   m_mpc.m_param.low_curvature_weight_lat_jerk =
-    declare_parameter<float64_t>("mpc_low_curvature_weight_lat_jerk");
+    node_->declare_parameter<float64_t>("mpc_low_curvature_weight_lat_jerk");
   m_mpc.m_param.low_curvature_weight_steer_rate =
-    declare_parameter<float64_t>("mpc_low_curvature_weight_steer_rate");
+    node_->declare_parameter<float64_t>("mpc_low_curvature_weight_steer_rate");
   m_mpc.m_param.low_curvature_weight_steer_acc =
-    declare_parameter<float64_t>("mpc_low_curvature_weight_steer_acc");
+    node_->declare_parameter<float64_t>("mpc_low_curvature_weight_steer_acc");
   m_mpc.m_param.low_curvature_thresh_curvature =
-    declare_parameter<float64_t>("mpc_low_curvature_thresh_curvature");
+    node_->declare_parameter<float64_t>("mpc_low_curvature_thresh_curvature");
   m_mpc.m_param.weight_terminal_lat_error =
-    declare_parameter<float64_t>("mpc_weight_terminal_lat_error");
+    node_->declare_parameter<float64_t>("mpc_weight_terminal_lat_error");
   m_mpc.m_param.weight_terminal_heading_error =
-    declare_parameter<float64_t>("mpc_weight_terminal_heading_error");
-  m_mpc.m_param.zero_ff_steer_deg = declare_parameter<float64_t>("mpc_zero_ff_steer_deg");
-  m_mpc.m_param.acceleration_limit = declare_parameter<float64_t>("mpc_acceleration_limit");
-  m_mpc.m_param.velocity_time_constant = declare_parameter<float64_t>("mpc_velocity_time_constant");
+    node_->declare_parameter<float64_t>("mpc_weight_terminal_heading_error");
+  m_mpc.m_param.zero_ff_steer_deg = node_->declare_parameter<float64_t>("mpc_zero_ff_steer_deg");
+  m_mpc.m_param.acceleration_limit = node_->declare_parameter<float64_t>("mpc_acceleration_limit");
+  m_mpc.m_param.velocity_time_constant =
+    node_->declare_parameter<float64_t>("mpc_velocity_time_constant");
 }
 
-rcl_interfaces::msg::SetParametersResult LateralController::paramCallback(
+rcl_interfaces::msg::SetParametersResult MpcLateralController::paramCallback(
   const std::vector<rclcpp::Parameter> & parameters)
 {
   rcl_interfaces::msg::SetParametersResult result;
@@ -492,7 +520,22 @@ rcl_interfaces::msg::SetParametersResult LateralController::paramCallback(
   return result;
 }
 
-bool8_t LateralController::isValidTrajectory(
+bool MpcLateralController::isTrajectoryShapeChanged() const
+{
+  // TODO(Horibe): update implementation to check trajectory shape around ego vehicle.
+  // Now temporally check the goal position.
+  for (const auto & trajectory : m_trajectory_buffer) {
+    if (
+      tier4_autoware_utils::calcDistance2d(
+        trajectory.points.back().pose, m_current_trajectory_ptr->points.back().pose) >
+      m_new_traj_end_dist) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool8_t MpcLateralController::isValidTrajectory(
   const autoware_auto_planning_msgs::msg::Trajectory & traj) const
 {
   for (const auto & p : traj.points) {
@@ -509,10 +552,7 @@ bool8_t LateralController::isValidTrajectory(
   return true;
 }
 
-}  // namespace trajectory_follower_nodes
+}  // namespace trajectory_follower
 }  // namespace control
 }  // namespace motion
 }  // namespace autoware
-
-RCLCPP_COMPONENTS_REGISTER_NODE(
-  autoware::motion::control::trajectory_follower_nodes::LateralController)

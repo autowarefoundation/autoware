@@ -12,17 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TRAJECTORY_FOLLOWER_NODES__LATERAL_CONTROLLER_NODE_HPP_
-#define TRAJECTORY_FOLLOWER_NODES__LATERAL_CONTROLLER_NODE_HPP_
+#ifndef TRAJECTORY_FOLLOWER__MPC_LATERAL_CONTROLLER_HPP_
+#define TRAJECTORY_FOLLOWER__MPC_LATERAL_CONTROLLER_HPP_
 
 #include "common/types.hpp"
 #include "osqp_interface/osqp_interface.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "rclcpp_components/register_node_macro.hpp"
 #include "tf2/utils.h"
 #include "tf2_ros/buffer.h"
 #include "tf2_ros/transform_listener.h"
 #include "trajectory_follower/interpolate.hpp"
+#include "trajectory_follower/lateral_controller_base.hpp"
 #include "trajectory_follower/lowpass_filter.hpp"
 #include "trajectory_follower/mpc.hpp"
 #include "trajectory_follower/mpc_trajectory.hpp"
@@ -32,7 +32,7 @@
 #include "trajectory_follower/vehicle_model/vehicle_model_bicycle_dynamics.hpp"
 #include "trajectory_follower/vehicle_model/vehicle_model_bicycle_kinematics.hpp"
 #include "trajectory_follower/vehicle_model/vehicle_model_bicycle_kinematics_no_delay.hpp"
-#include "trajectory_follower_nodes/visibility_control.hpp"
+#include "trajectory_follower/visibility_control.hpp"
 #include "vehicle_info_util/vehicle_info_util.hpp"
 
 #include "autoware_auto_control_msgs/msg/ackermann_lateral_command.hpp"
@@ -56,42 +56,33 @@ namespace motion
 {
 namespace control
 {
-namespace trajectory_follower_nodes
+namespace trajectory_follower
 {
 using autoware::common::types::bool8_t;
 using autoware::common::types::float64_t;
 namespace trajectory_follower = ::autoware::motion::control::trajectory_follower;
 
-class TRAJECTORY_FOLLOWER_PUBLIC LateralController : public rclcpp::Node
+class TRAJECTORY_FOLLOWER_PUBLIC MpcLateralController : public LateralControllerBase
 {
 public:
   /**
    * @brief constructor
    */
-  explicit LateralController(const rclcpp::NodeOptions & node_options);
+  explicit MpcLateralController(rclcpp::Node & node);
 
   /**
    * @brief destructor
    */
-  virtual ~LateralController();
+  virtual ~MpcLateralController();
 
 private:
-  //!< @brief topic publisher for control command
-  rclcpp::Publisher<autoware_auto_control_msgs::msg::AckermannLateralCommand>::SharedPtr
-    m_pub_ctrl_cmd;
+  rclcpp::Node * node_;
+
   //!< @brief topic publisher for predicted trajectory
   rclcpp::Publisher<autoware_auto_planning_msgs::msg::Trajectory>::SharedPtr m_pub_predicted_traj;
   //!< @brief topic publisher for control diagnostic
   rclcpp::Publisher<autoware_auto_system_msgs::msg::Float32MultiArrayDiagnostic>::SharedPtr
     m_pub_diagnostic;
-  //!< @brief topic subscription for reference waypoints
-  rclcpp::Subscription<autoware_auto_planning_msgs::msg::Trajectory>::SharedPtr m_sub_ref_path;
-  //!< @brief subscription for current velocity
-  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr m_sub_odometry;
-  //!< @brief subscription for current steering
-  rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::SteeringReport>::SharedPtr m_sub_steering;
-  //!< @brief timer to update after a given interval
-  rclcpp::TimerBase::SharedPtr m_timer;
   //!< @brief subscription for transform messages
   rclcpp::Subscription<tf2_msgs::msg::TFMessage>::SharedPtr m_tf_sub;
   rclcpp::Subscription<tf2_msgs::msg::TFMessage>::SharedPtr m_tf_static_sub;
@@ -112,6 +103,13 @@ private:
   /* parameters for stop state */
   float64_t m_stop_state_entry_ego_speed;
   float64_t m_stop_state_entry_target_speed;
+  float64_t m_converged_steer_rad;
+  float64_t m_new_traj_duration_time;  // check trajectory shape change
+  float64_t m_new_traj_end_dist;       // check trajectory shape change
+  bool m_keep_steer_control_until_converged;
+
+  // trajectory buffer for detecting new trajectory
+  std::deque<autoware_auto_planning_msgs::msg::Trajectory> m_trajectory_buffer;
 
   // MPC object
   trajectory_follower::MPC m_mpc;
@@ -140,14 +138,19 @@ private:
   //!< initialize timer to work in real, simulation, and replay
   void initTimer(float64_t period_s);
   /**
-   * @brief compute and publish control command for path follow with a constant control period
+   * @brief compute control command for path follow with a constant control period
    */
-  void onTimer();
+  boost::optional<LateralOutput> run() override;
+
+  /**
+   * @brief set input data like current odometry, trajectory and steering.
+   */
+  void setInputData(InputData const & input_data) override;
 
   /**
    * @brief set m_current_trajectory with received message
    */
-  void onTrajectory(const autoware_auto_planning_msgs::msg::Trajectory::SharedPtr);
+  void setTrajectory(const autoware_auto_planning_msgs::msg::Trajectory::SharedPtr);
 
   /**
    * @brief update current_pose from tf
@@ -161,20 +164,11 @@ private:
   bool8_t checkData() const;
 
   /**
-   * @brief set current_velocity with received message
+   * @brief create control command
+   * @param [in] ctrl_cmd published control command
    */
-  void onOdometry(const nav_msgs::msg::Odometry::SharedPtr msg);
-
-  /**
-   * @brief set current_steering with received message
-   */
-  void onSteering(const autoware_auto_vehicle_msgs::msg::SteeringReport::SharedPtr msg);
-
-  /**
-   * @brief publish control command
-   * @param [in] cmd published control command
-   */
-  void publishCtrlCmd(autoware_auto_control_msgs::msg::AckermannLateralCommand cmd);
+  autoware_auto_control_msgs::msg::AckermannLateralCommand createCtrlCmdMsg(
+    autoware_auto_control_msgs::msg::AckermannLateralCommand ctrl_cmd);
 
   /**
    * @brief publish predicted future trajectory
@@ -209,7 +203,11 @@ private:
    */
   bool8_t isValidTrajectory(const autoware_auto_planning_msgs::msg::Trajectory & traj) const;
 
-  OnSetParametersCallbackHandle::SharedPtr m_set_param_res;
+  bool8_t isTrajectoryShapeChanged() const;
+
+  bool isSteerConverged(const autoware_auto_control_msgs::msg::AckermannLateralCommand & cmd) const;
+
+  rclcpp::Node::OnSetParametersCallbackHandle::SharedPtr m_set_param_res;
 
   /**
    * @brief Declare MPC parameters as ROS parameters to allow tuning on the fly
@@ -222,9 +220,9 @@ private:
   rcl_interfaces::msg::SetParametersResult paramCallback(
     const std::vector<rclcpp::Parameter> & parameters);
 };
-}  // namespace trajectory_follower_nodes
+}  // namespace trajectory_follower
 }  // namespace control
 }  // namespace motion
 }  // namespace autoware
 
-#endif  // TRAJECTORY_FOLLOWER_NODES__LATERAL_CONTROLLER_NODE_HPP_
+#endif  // TRAJECTORY_FOLLOWER__MPC_LATERAL_CONTROLLER_HPP_

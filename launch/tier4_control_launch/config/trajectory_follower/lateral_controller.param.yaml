@@ -2,7 +2,6 @@
   ros__parameters:
 
     # -- system --
-    ctrl_period: 0.03               # control period [s]
     traj_resample_dist: 0.1         # path resampling interval [m]
     use_steer_prediction: false     # flag for using steer prediction (do not use steer measurement)
     admissible_position_error: 5.0  # stop mpc calculation when error is larger than the following value
@@ -57,6 +56,10 @@
     # stop state: steering command is kept in the previous value in the stop state.
     stop_state_entry_ego_speed: 0.001
     stop_state_entry_target_speed: 0.001
+    converged_steer_rad: 0.1
+    keep_steer_control_until_converged: false
+    new_traj_duration_time: 1.0
+    new_traj_end_dist: 0.3
 
     # vehicle parameters
     vehicle:
