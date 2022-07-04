@@ -672,6 +672,13 @@ void RunOutModule::insertStopPoint(
     tier4_autoware_utils::findNearestSegmentIndex(path.points, stop_point->position);
   auto insert_idx = nearest_seg_idx + 1;
 
+  // if stop point is ahead of the end of the path, don't insert
+  if (
+    insert_idx == path.points.size() - 1 &&
+    planning_utils::isAheadOf(*stop_point, path.points.at(insert_idx).point.pose)) {
+    return;
+  }
+
   // to PathPointWithLaneId
   autoware_auto_planning_msgs::msg::PathPointWithLaneId stop_point_with_lane_id;
   stop_point_with_lane_id = path.points.at(nearest_seg_idx);
