@@ -349,8 +349,8 @@ void OccupancyGridMap::raytrace(
   const double ox{source_x};
   const double oy{source_y};
   if (!worldToMap(ox, oy, x0, y0)) {
-    RCLCPP_WARN_THROTTLE(
-      logger_, clock_, 1000,
+    RCLCPP_DEBUG(
+      logger_,
       "The origin for the sensor at (%.2f, %.2f) is out of map bounds. So, the costmap cannot "
       "raytrace for it.",
       ox, oy);
