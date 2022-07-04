@@ -12,7 +12,7 @@ args=()
 while [ "$1" != "" ]; do
     case "$1" in
     -y)
-        # Skip prompt inputs without confirmation.
+        # Use non-interactive mode.
         option_yes=true
         ;;
     -v)
@@ -20,11 +20,11 @@ while [ "$1" != "" ]; do
         option_verbose=true
         ;;
     --no-nvidia)
-        # Disable installation of 'cuda' and 'tensorrt'.
+        # Disable installation of the NVIDIA-related roles ('cuda' and 'tensorrt').
         option_no_nvidia=true
         ;;
     --no-cuda-drivers)
-        # Disable installation of 'cuda-drivers' in 'cuda'.
+        # Disable installation of 'cuda-drivers' in the role 'cuda'.
         option_no_cuda_drivers=true
         ;;
     *)
