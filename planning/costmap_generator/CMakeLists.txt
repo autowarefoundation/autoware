@@ -47,6 +47,15 @@ rclcpp_components_register_node(costmap_generator_node
 
 if(BUILD_TESTING)
   find_package(ament_cmake_ros REQUIRED)
+
+  ament_add_ros_isolated_gtest(test_points_to_costmap
+    test/test_points_to_costmap.cpp
+  )
+
+  target_link_libraries(test_points_to_costmap
+    costmap_generator_lib
+  )
+
   ament_add_ros_isolated_gtest(test_objects_to_costmap
     test/test_objects_to_costmap.cpp
   )

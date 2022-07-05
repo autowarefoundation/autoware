@@ -46,6 +46,7 @@
 #define COSTMAP_GENERATOR__OBJECTS_TO_COSTMAP_HPP_
 
 #include <grid_map_ros/grid_map_ros.hpp>
+
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #else
