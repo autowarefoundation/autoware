@@ -10,10 +10,10 @@ This package convert from [radar_msgs/msg/RadarTracks](https://github.com/ros-pe
 ### Input / Output
 
 - Input
-  - `~/input/radar_objects` (radar_msgs/msg/RadarTracks.msg): Converted topic
-  - `~/input/twist` (geometry_msgs/msg/TwistStamped.msg): Ego vehicle twist
+  - `~/input/radar_objects` (radar_msgs/msg/RadarTracks.msg): Input radar topic
+  - `~/input/odometry` (nav_msgs/msg/Odometry.msg): Ego vehicle odometry topic
 - Output
-  - `~/output/radar_objects` (autoware_auto_perception_msgs/msg/TrackedObject.msg): Converted topic
+  - `~/output/radar_objects` (autoware_auto_perception_msgs/msg/TrackedObject.msg): The topic converted to Autoware's message
 
 ### Parameters
 
