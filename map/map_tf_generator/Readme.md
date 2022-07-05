@@ -2,10 +2,14 @@
 
 ## Purpose
 
-This node broadcasts `viewer` frames for visualization of pointcloud map in Rviz.
-The position of `viewer` frames is the geometric center of input pointclouds.
+The nodes in this package broadcast the `viewer` frame for visualization of the map in RViz.
 
-Note that there is no module to need `viewer` frames and this is used only for visualization.
+Note that there is no module to need the `viewer` frame and this is used only for visualization.
+
+The following are the supported methods to calculate the position of the `viewer` frame:
+
+- `pcd_map_tf_generator_node` outputs the geometric center of all points in the PCD.
+- `vector_map_tf_generator_node` outputs the geometric center of all points in the point layer.
 
 ## Inner-workings / Algorithms
 
@@ -13,9 +17,17 @@ Note that there is no module to need `viewer` frames and this is used only for v
 
 ### Input
 
+#### pcd_map_tf_generator
+
 | Name                  | Type                            | Description                                                       |
 | --------------------- | ------------------------------- | ----------------------------------------------------------------- |
 | `/map/pointcloud_map` | `sensor_msgs::msg::PointCloud2` | Subscribe pointcloud map to calculate position of `viewer` frames |
+
+#### vector_map_tf_generator
+
+| Name              | Type                                         | Description                                                   |
+| ----------------- | -------------------------------------------- | ------------------------------------------------------------- |
+| `/map/vector_map` | `autoware_auto_mapping_msgs::msg::HADMapBin` | Subscribe vector map to calculate position of `viewer` frames |
 
 ### Output
 

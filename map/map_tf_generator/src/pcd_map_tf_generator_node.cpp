@@ -29,19 +29,19 @@
 
 constexpr size_t N_SAMPLES = 20;
 
-class MapTFGeneratorNode : public rclcpp::Node
+class PcdMapTFGeneratorNode : public rclcpp::Node
 {
 public:
   using PointCloud = pcl::PointCloud<pcl::PointXYZ>;
-  explicit MapTFGeneratorNode(const rclcpp::NodeOptions & options)
-  : Node("map_tf_generator", options)
+  explicit PcdMapTFGeneratorNode(const rclcpp::NodeOptions & options)
+  : Node("pcd_map_tf_generator", options)
   {
     map_frame_ = declare_parameter("map_frame", "map");
     viewer_frame_ = declare_parameter("viewer_frame", "viewer");
 
     sub_ = create_subscription<sensor_msgs::msg::PointCloud2>(
       "pointcloud_map", rclcpp::QoS{1}.transient_local(),
-      std::bind(&MapTFGeneratorNode::onPointCloud, this, std::placeholders::_1));
+      std::bind(&PcdMapTFGeneratorNode::onPointCloud, this, std::placeholders::_1));
 
     static_broadcaster_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(this);
   }
@@ -97,4 +97,4 @@ private:
 };
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(MapTFGeneratorNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(PcdMapTFGeneratorNode)

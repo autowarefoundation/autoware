@@ -86,8 +86,8 @@ def launch_setup(context, *args, **kwargs):
 
     map_tf_generator = ComposableNode(
         package="map_tf_generator",
-        plugin="MapTFGeneratorNode",
-        name="map_tf_generator",
+        plugin="VectorMapTFGeneratorNode",
+        name="vector_map_tf_generator",
         parameters=[
             {
                 "map_frame": "map",

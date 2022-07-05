@@ -23,7 +23,6 @@
     topic_configs:
       names: [
         "/map/vector_map",
-        "/map/pointcloud_map",
         "/perception/object_recognition/objects",
         "/initialpose2d",
         "/planning/mission_planning/route",
@@ -41,13 +40,6 @@
           timeout: 0.0
           warn_rate: 0.0
           type: "autoware_auto_mapping_msgs/msg/HADMapBin"
-          transient_local: True
-
-        /map/pointcloud_map:
-          module: "map"
-          timeout: 0.0
-          warn_rate: 0.0
-          type: "sensor_msgs/msg/PointCloud2"
           transient_local: True
 
         /perception/object_recognition/objects:
