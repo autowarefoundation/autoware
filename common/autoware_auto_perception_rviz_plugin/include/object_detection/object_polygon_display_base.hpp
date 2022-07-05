@@ -74,6 +74,7 @@ public:
     m_display_path_confidence_property{
       "Display Predicted Path Confidence", true, "Enable/disable predicted paths visualization",
       this},
+    m_line_width_property{"Line Width", 0.03, "Line width of object-shape", this},
     m_default_topic{default_topic}
   {
     // iterate over default values to create and initialize the properties.
@@ -133,17 +134,18 @@ protected:
   /// \param centroid Centroid position of the shape in Object.header.frame_id frame
   /// \param orientation Orientation of the shape in Object.header.frame_id frame
   /// \param labels List of ObjectClassificationMsg objects
+  /// \param line_width Line thickness around the object
   /// \return Marker ptr. Id and header will have to be set by the caller
   template <typename ClassificationContainerT>
   std::optional<Marker::SharedPtr> get_shape_marker_ptr(
     const autoware_auto_perception_msgs::msg::Shape & shape_msg,
     const geometry_msgs::msg::Point & centroid, const geometry_msgs::msg::Quaternion & orientation,
-    const ClassificationContainerT & labels) const
+    const ClassificationContainerT & labels, const double & line_width) const
   {
     const std_msgs::msg::ColorRGBA color_rgba = get_color_rgba(labels);
 
     if (m_display_3d_property.getBool()) {
-      return detail::get_shape_marker_ptr(shape_msg, centroid, orientation, color_rgba);
+      return detail::get_shape_marker_ptr(shape_msg, centroid, orientation, color_rgba, line_width);
     } else {
       return std::nullopt;
     }
@@ -335,6 +337,8 @@ protected:
     colors.push_back(sample_color);  // spring green
   }
 
+  double get_line_width() { return m_line_width_property.getFloat(); }
+
 private:
   // All rviz plugins should have this. Should be initialized with pointer to this class
   MarkerCommon m_marker_common;
@@ -358,6 +362,8 @@ private:
   rviz_common::properties::BoolProperty m_display_predicted_paths_property;
   // Property to enable/disable predicted path confidence visualization
   rviz_common::properties::BoolProperty m_display_path_confidence_property;
+  // Property to decide line width of object shape
+  rviz_common::properties::FloatProperty m_line_width_property;
   // Default topic name to be visualized
   std::string m_default_topic;
 

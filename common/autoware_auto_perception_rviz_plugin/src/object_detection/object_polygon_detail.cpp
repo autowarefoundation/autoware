@@ -212,7 +212,7 @@ visualization_msgs::msg::Marker::SharedPtr get_label_marker_ptr(
 visualization_msgs::msg::Marker::SharedPtr get_shape_marker_ptr(
   const autoware_auto_perception_msgs::msg::Shape & shape_msg,
   const geometry_msgs::msg::Point & centroid, const geometry_msgs::msg::Quaternion & orientation,
-  const std_msgs::msg::ColorRGBA & color_rgba)
+  const std_msgs::msg::ColorRGBA & color_rgba, const double & line_width)
 {
   auto marker_ptr = std::make_shared<Marker>();
   marker_ptr->ns = std::string("shape");
@@ -235,7 +235,7 @@ visualization_msgs::msg::Marker::SharedPtr get_shape_marker_ptr(
   marker_ptr->action = visualization_msgs::msg::Marker::MODIFY;
   marker_ptr->pose = to_pose(centroid, orientation);
   marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.2);
-  marker_ptr->scale.x = 0.03;
+  marker_ptr->scale.x = line_width;
   marker_ptr->color = color_rgba;
 
   return marker_ptr;
