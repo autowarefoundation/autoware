@@ -35,6 +35,7 @@
 #include "autoware_auto_vehicle_msgs/msg/turn_indicators_report.hpp"
 #include "autoware_auto_vehicle_msgs/msg/vehicle_control_command.hpp"
 #include "autoware_auto_vehicle_msgs/msg/velocity_report.hpp"
+#include "geometry_msgs/msg/accel_with_covariance_stamped.hpp"
 #include "geometry_msgs/msg/pose.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
@@ -75,6 +76,7 @@ using autoware_auto_vehicle_msgs::msg::TurnIndicatorsCommand;
 using autoware_auto_vehicle_msgs::msg::TurnIndicatorsReport;
 using autoware_auto_vehicle_msgs::msg::VehicleControlCommand;
 using autoware_auto_vehicle_msgs::msg::VelocityReport;
+using geometry_msgs::msg::AccelWithCovarianceStamped;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::PoseStamped;
 using geometry_msgs::msg::PoseWithCovarianceStamped;
@@ -126,6 +128,7 @@ private:
   rclcpp::Publisher<VelocityReport>::SharedPtr pub_velocity_;
   rclcpp::Publisher<Odometry>::SharedPtr pub_odom_;
   rclcpp::Publisher<SteeringReport>::SharedPtr pub_steer_;
+  rclcpp::Publisher<AccelWithCovarianceStamped>::SharedPtr pub_acc_;
   rclcpp::Publisher<ControlModeReport>::SharedPtr pub_control_mode_report_;
   rclcpp::Publisher<GearReport>::SharedPtr pub_gear_report_;
   rclcpp::Publisher<TurnIndicatorsReport>::SharedPtr pub_turn_indicators_report_;
@@ -314,6 +317,11 @@ private:
    * @param [in] steer The steering to publish
    */
   void publish_steering(const SteeringReport & steer);
+
+  /**
+   * @brief publish acceleration
+   */
+  void publish_acceleration();
 
   /**
    * @brief publish control_mode report

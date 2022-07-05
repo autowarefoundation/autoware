@@ -127,6 +127,7 @@ SimplePlanningSimulator::SimplePlanningSimulator(const rclcpp::NodeOptions & opt
   pub_velocity_ = create_publisher<VelocityReport>("output/twist", QoS{1});
   pub_odom_ = create_publisher<Odometry>("output/odometry", QoS{1});
   pub_steer_ = create_publisher<SteeringReport>("output/steering", QoS{1});
+  pub_acc_ = create_publisher<AccelWithCovarianceStamped>("output/acceleration", QoS{1});
   pub_tf_ = create_publisher<tf2_msgs::msg::TFMessage>("/tf", QoS{1});
 
   /* set param callback */
@@ -293,6 +294,7 @@ void SimplePlanningSimulator::on_timer()
   publish_odometry(current_odometry_);
   publish_velocity(current_velocity_);
   publish_steering(current_steer_);
+  publish_acceleration();
 
   publish_control_mode_report();
   publish_gear_report();
@@ -516,6 +518,23 @@ void SimplePlanningSimulator::publish_steering(const SteeringReport & steer)
   SteeringReport msg = steer;
   msg.stamp = get_clock()->now();
   pub_steer_->publish(msg);
+}
+
+void SimplePlanningSimulator::publish_acceleration()
+{
+  AccelWithCovarianceStamped msg;
+  msg.header.frame_id = "/base_link";
+  msg.header.stamp = get_clock()->now();
+  msg.accel.accel.linear.x = vehicle_model_ptr_->getAx();
+
+  constexpr auto COV = 0.001;
+  msg.accel.covariance.at(6 * 0 + 0) = COV;  // linear x
+  msg.accel.covariance.at(6 * 1 + 1) = COV;  // linear y
+  msg.accel.covariance.at(6 * 2 + 2) = COV;  // linear z
+  msg.accel.covariance.at(6 * 3 + 3) = COV;  // angular x
+  msg.accel.covariance.at(6 * 4 + 4) = COV;  // angular y
+  msg.accel.covariance.at(6 * 5 + 5) = COV;  // angular z
+  pub_acc_->publish(msg);
 }
 
 void SimplePlanningSimulator::publish_control_mode_report()
