@@ -1,0 +1,31 @@
+<launch>
+  <arg name="steer_update_hz" default="10.0"/>
+  <arg name="initial_covariance" default="1000.0"/>
+  <arg name="forgetting_factor" default="0.999"/>
+  <arg name="valid_min_velocity" default="5.0"/>
+  <arg name="valid_max_steer" default="0.05"/>
+  <arg name="warn_steer_offset_deg" default="2.5" description="if absolute estimated offset is larger than 2.5[deg] => warning"/>
+
+  <!-- get wheel base from vehicle info -->
+  <include file="$(find-pkg-share global_parameter_loader)/launch/global_params.launch.py"/>
+
+  <!-- ndt twist publisher -->
+  <include file="$(find-pkg-share pose2twist)/launch/pose2twist.launch.xml">
+    <arg name="input_pose_topic" value="/localization/pose_estimator/pose"/>
+    <arg name="output_twist_topic" value="/estimate_twist"/>
+  </include>
+
+  <!-- steer offset estimator -->
+  <node pkg="steer_offset_estimator" exec="steer_offset_estimator" name="steer_offset_estimator" output="screen">
+    <param name="steer_update_hz" value="$(var steer_update_hz)"/>
+    <param name="initial_covariance" value="$(var initial_covariance)"/>
+    <param name="forgetting_factor" value="$(var forgetting_factor)"/>
+    <param name="valid_min_velocity" value="$(var valid_min_velocity)"/>
+    <param name="valid_max_steer" value="$(var valid_max_steer)"/>
+    <param name="warn_steer_offset_deg" value="$(var warn_steer_offset_deg)"/>
+    <remap from="~/input/twist" to="$(var output_twist_topic)"/>
+    <remap from="~/input/steer" to="/vehicle/status/steering_status"/>
+    <remap from="~/output/steering_offset" to="/vehicle/status/steering_offset"/>
+    <remap from="~/output/steering_offset_covariance" to="/vehicle/status/steering_offset_covariance"/>
+  </node>
+</launch>
