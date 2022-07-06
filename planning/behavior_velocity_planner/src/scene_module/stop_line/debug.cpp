@@ -94,6 +94,9 @@ visualization_msgs::msg::MarkerArray StopLineModule::createVirtualWallMarkerArra
 {
   const auto now = this->clock_->now();
   visualization_msgs::msg::MarkerArray wall_marker;
+  if (!debug_data_.stop_pose) {
+    return wall_marker;
+  }
   const auto p_front = tier4_autoware_utils::calcOffsetPose(
     *debug_data_.stop_pose, debug_data_.base_link2front, 0.0, 0.0);
   if (state_ == State::APPROACH) {
