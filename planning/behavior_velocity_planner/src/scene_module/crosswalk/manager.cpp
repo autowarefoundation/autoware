@@ -94,17 +94,47 @@ CrosswalkModuleManager::CrosswalkModuleManager(rclcpp::Node & node)
 
   // for crosswalk parameters
   auto & cp = crosswalk_planner_param_;
-  cp.stop_line_distance = node.declare_parameter(ns + ".crosswalk.stop_line_distance", 1.5);
-  cp.stop_margin = node.declare_parameter(ns + ".crosswalk.stop_margin", 1.0);
-  cp.slow_margin = node.declare_parameter(ns + ".crosswalk.slow_margin", 2.0);
-  cp.slow_velocity = node.declare_parameter(ns + ".crosswalk.slow_velocity", 5.0 / 3.6);
-  cp.stop_predicted_object_prediction_time_margin =
-    node.declare_parameter(ns + ".crosswalk.stop_predicted_object_prediction_time_margin", 3.0);
-  cp.external_input_timeout = node.declare_parameter(ns + ".crosswalk.external_input_timeout", 1.0);
+  cp.show_processing_time = node.declare_parameter(ns + ".show_processing_time", true);
+
+  // param for stop position
+  cp.stop_line_distance = node.declare_parameter(ns + ".stop_line_distance", 1.5);
+  cp.stop_margin = node.declare_parameter(ns + ".stop_margin", 1.0);
+  cp.stop_line_margin = node.declare_parameter(ns + ".stop_line_margin", 5.0);
+  cp.stop_position_threshold = node.declare_parameter(ns + ".stop_position_threshold", 1.0);
+
+  // param for ego velocity
+  cp.slow_velocity = node.declare_parameter(ns + ".slow_velocity", 5.0 / 3.6);
+  cp.max_slow_down_jerk = node.declare_parameter(ns + ".max_slow_down_jerk", -0.7);
+  cp.max_slow_down_accel = node.declare_parameter(ns + ".max_slow_down_accel", -2.5);
+  cp.no_relax_velocity = node.declare_parameter(ns + ".no_relax_velocity", 2.78);
+
+  // param for stuck vehicle
+  cp.stuck_vehicle_velocity = node.declare_parameter(ns + ".stuck_vehicle_velocity", 1.0);
+  cp.max_lateral_offset = node.declare_parameter(ns + ".max_lateral_offset", 2.0);
+  cp.stuck_vehicle_attention_range =
+    node.declare_parameter(ns + ".stuck_vehicle_attention_range", 10.0);
+
+  // param for pass judge logic
+  cp.ego_pass_first_margin = node.declare_parameter(ns + ".ego_pass_first_margin", 6.0);
+  cp.ego_pass_later_margin = node.declare_parameter(ns + ".ego_pass_later_margin", 10.0);
+  cp.stop_object_velocity =
+    node.declare_parameter(ns + ".stop_object_velocity_threshold", 0.5 / 3.6);
+  cp.min_object_velocity = node.declare_parameter(ns + ".min_object_velocity", 5.0 / 3.6);
+  cp.max_yield_timeout = node.declare_parameter(ns + ".max_yield_timeout", 3.0);
+
+  // param for input data
+  cp.external_input_timeout = node.declare_parameter(ns + ".external_input_timeout", 1.0);
+  cp.tl_state_timeout = node.declare_parameter(ns + ".tl_state_timeout", 1.0);
+
+  // param for target area & object
+  cp.crosswalk_attention_range = node.declare_parameter(ns + ".crosswalk_attention_range", 10.0);
+  cp.look_unknown = node.declare_parameter(ns + ".target_object.unknown", true);
+  cp.look_bicycle = node.declare_parameter(ns + ".target_object.bicycle", true);
+  cp.look_motorcycle = node.declare_parameter(ns + ".target_object.motorcycle", true);
+  cp.look_pedestrian = node.declare_parameter(ns + ".target_object.pedestrian", true);
 }
 
-void CrosswalkModuleManager::launchNewModules(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
+void CrosswalkModuleManager::launchNewModules(const PathWithLaneId & path)
 {
   const auto rh = planner_data_->route_handler_;
   for (const auto & crosswalk : getCrosswalksOnPath(
@@ -121,8 +151,7 @@ void CrosswalkModuleManager::launchNewModules(
 }
 
 std::function<bool(const std::shared_ptr<SceneModuleInterface> &)>
-CrosswalkModuleManager::getModuleExpiredFunction(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
+CrosswalkModuleManager::getModuleExpiredFunction(const PathWithLaneId & path)
 {
   const auto rh = planner_data_->route_handler_;
   const auto crosswalk_id_set = getCrosswalkIdSetOnPath(
@@ -140,10 +169,9 @@ WalkwayModuleManager::WalkwayModuleManager(rclcpp::Node & node)
 
   // for walkway parameters
   auto & wp = walkway_planner_param_;
-  wp.stop_margin = node.declare_parameter(ns + ".walkway.stop_margin", 1.0);
-  wp.stop_line_distance = node.declare_parameter(ns + ".walkway.stop_line_distance", 1.0);
-  wp.stop_duration_sec = node.declare_parameter(ns + ".walkway.stop_duration_sec", 1.0);
-  wp.external_input_timeout = node.declare_parameter(ns + ".walkway.external_input_timeout", 1.0);
+  wp.stop_line_distance = node.declare_parameter(ns + ".stop_line_distance", 1.0);
+  wp.stop_duration_sec = node.declare_parameter(ns + ".stop_duration_sec", 1.0);
+  wp.external_input_timeout = node.declare_parameter(ns + ".external_input_timeout", 1.0);
 }
 
 void WalkwayModuleManager::launchNewModules(

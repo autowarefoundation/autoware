@@ -19,10 +19,12 @@
 
 #include <builtin_interfaces/msg/time.hpp>
 #include <rtc_interface/rtc_interface.hpp>
+#include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 #include <utilization/util.hpp>
 
 #include <autoware_auto_planning_msgs/msg/path.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
+#include <tier4_debug_msgs/msg/float64_stamped.hpp>
 #include <tier4_planning_msgs/msg/stop_reason.hpp>
 #include <tier4_planning_msgs/msg/stop_reason_array.hpp>
 #include <tier4_v2x_msgs/msg/infrastructure_command_array.hpp>
@@ -43,9 +45,14 @@
 
 namespace behavior_velocity_planner
 {
+
 using builtin_interfaces::msg::Time;
 using rtc_interface::RTCInterface;
+using tier4_autoware_utils::DebugPublisher;
+using tier4_autoware_utils::StopWatch;
+using tier4_debug_msgs::msg::Float64Stamped;
 using unique_identifier_msgs::msg::UUID;
+
 class SceneModuleInterface
 {
 public:
@@ -108,7 +115,7 @@ protected:
 class SceneModuleManagerInterface
 {
 public:
-  SceneModuleManagerInterface(rclcpp::Node & node, const char * module_name)
+  SceneModuleManagerInterface(rclcpp::Node & node, [[maybe_unused]] const char * module_name)
   : clock_(node.get_clock()), logger_(node.get_logger())
   {
     const auto ns = std::string("~/debug/") + module_name;
@@ -120,6 +127,8 @@ public:
     pub_infrastructure_commands_ =
       node.create_publisher<tier4_v2x_msgs::msg::InfrastructureCommandArray>(
         "~/output/infrastructure_commands", 20);
+
+    processing_time_publisher_ = std::make_shared<DebugPublisher>(&node, "~/debug");
   }
 
   virtual ~SceneModuleManagerInterface() = default;
@@ -146,6 +155,9 @@ public:
 protected:
   virtual void modifyPathVelocity(autoware_auto_planning_msgs::msg::PathWithLaneId * path)
   {
+    StopWatch<std::chrono::milliseconds> stop_watch;
+    stop_watch.tic("Total");
+
     visualization_msgs::msg::MarkerArray debug_marker_array;
     visualization_msgs::msg::MarkerArray virtual_wall_marker_array;
     tier4_planning_msgs::msg::StopReasonArray stop_reason_array;
@@ -188,6 +200,8 @@ protected:
     pub_infrastructure_commands_->publish(infrastructure_command_array);
     pub_debug_->publish(debug_marker_array);
     pub_virtual_wall_->publish(virtual_wall_marker_array);
+    processing_time_publisher_->publish<Float64Stamped>(
+      std::string(getModuleName()) + "/processing_time_ms", stop_watch.toc("Total"));
   }
 
   virtual void launchNewModules(const autoware_auto_planning_msgs::msg::PathWithLaneId & path) = 0;
@@ -247,6 +261,8 @@ protected:
   rclcpp::Publisher<tier4_planning_msgs::msg::StopReasonArray>::SharedPtr pub_stop_reason_;
   rclcpp::Publisher<tier4_v2x_msgs::msg::InfrastructureCommandArray>::SharedPtr
     pub_infrastructure_commands_;
+
+  std::shared_ptr<DebugPublisher> processing_time_publisher_;
 };
 
 class SceneModuleManagerInterfaceWithRTC : public SceneModuleManagerInterface

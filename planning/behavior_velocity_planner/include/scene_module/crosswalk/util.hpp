@@ -35,27 +35,47 @@
 
 namespace behavior_velocity_planner
 {
+
+using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
+using autoware_auto_planning_msgs::msg::PathWithLaneId;
+
+enum class CollisionPointState { YIELD, EGO_PASS_FIRST, EGO_PASS_LATER, IGNORE };
+
+struct CollisionPoint
+{
+  geometry_msgs::msg::Point collision_point{};
+  double time_to_collision;
+  double time_to_vehicle;
+  CollisionPointState state{CollisionPointState::EGO_PASS_FIRST};
+};
+
 struct DebugData
 {
+  bool ignore_crosswalk{false};
   double base_link2front;
-  std::vector<Eigen::Vector3d> collision_points;
+  double stop_judge_range;
+
   geometry_msgs::msg::Pose first_stop_pose;
+  geometry_msgs::msg::Point nearest_collision_point;
+
+  boost::optional<geometry_msgs::msg::Point> range_near_point{boost::none};
+  boost::optional<geometry_msgs::msg::Point> range_far_point{boost::none};
+
+  std::vector<CollisionPoint> collision_points;
+
   std::vector<geometry_msgs::msg::Pose> stop_poses;
   std::vector<geometry_msgs::msg::Pose> slow_poses;
-  std::vector<std::vector<Eigen::Vector3d>> collision_lines;
-  std::vector<std::vector<Eigen::Vector3d>> crosswalk_polygons;
-  std::vector<std::vector<Eigen::Vector3d>> stop_polygons;
   std::vector<geometry_msgs::msg::Point> stop_factor_points;
-  std::vector<std::vector<Eigen::Vector3d>> slow_polygons;
-  geometry_msgs::msg::Point nearest_collision_point;
-  double stop_judge_range;
+  std::vector<geometry_msgs::msg::Point> crosswalk_polygon;
+  std::vector<geometry_msgs::msg::Polygon> ego_polygons;
+  std::vector<geometry_msgs::msg::Polygon> obj_polygons;
 };
 
 bool insertTargetVelocityPoint(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & input,
+  const PathWithLaneId & input,
   const boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<double>> & polygon,
   const double & margin, const double & velocity, const PlannerData & planner_data,
-  autoware_auto_planning_msgs::msg::PathWithLaneId & output, DebugData & debug_data,
+  PathWithLaneId & output, DebugData & debug_data,
   boost::optional<int> & first_stop_path_point_index);
 
 lanelet::Optional<lanelet::ConstLineString3d> getStopLineFromMap(
@@ -63,9 +83,21 @@ lanelet::Optional<lanelet::ConstLineString3d> getStopLineFromMap(
   const std::string & attribute_name);
 
 bool insertTargetVelocityPoint(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & input,
-  const lanelet::ConstLineString3d & stop_line, const double & margin, const double & velocity,
-  const PlannerData & planner_data, autoware_auto_planning_msgs::msg::PathWithLaneId & output,
+  const PathWithLaneId & input, const lanelet::ConstLineString3d & stop_line, const double & margin,
+  const double & velocity, const PlannerData & planner_data, PathWithLaneId & output,
+  DebugData & debug_data, boost::optional<int> & first_stop_path_point_index);
+
+bool insertTargetVelocityPoint(
+  const PathWithLaneId & input,
+  const boost::geometry::model::linestring<boost::geometry::model::d2::point_xy<double>> &
+    stop_line,
+  const double & margin, const double & velocity, const PlannerData & planner_data,
+  PathWithLaneId & output, DebugData & debug_data,
+  boost::optional<int> & first_stop_path_point_index);
+
+bool insertTargetVelocityPoint(
+  const PathWithLaneId & input, const geometry_msgs::msg::Point & stop_point, const double & margin,
+  const double & velocity, const PlannerData & planner_data, PathWithLaneId & output,
   DebugData & debug_data, boost::optional<int> & first_stop_path_point_index);
 
 bool isClockWise(
