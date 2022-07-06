@@ -15,6 +15,7 @@
   <depend>autoware_auto_perception_msgs</depend>
   <depend>cv_bridge</depend>
   <depend>image_transport</depend>
+  <depend>lidar_centerpoint</depend>
   <depend>message_filters</depend>
   <depend>pcl_conversions</depend>
   <depend>pcl_ros</depend>
@@ -25,6 +26,7 @@
   <depend>tf2_eigen</depend>
   <depend>tf2_ros</depend>
   <depend>tf2_sensor_msgs</depend>
+  <depend>tier4_autoware_utils</depend>
   <depend>tier4_perception_msgs</depend>
 
   <test_depend>ament_lint_auto</test_depend>

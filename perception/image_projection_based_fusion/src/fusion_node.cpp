@@ -32,6 +32,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
 
+#include <typeinfo>
 namespace image_projection_based_fusion
 {
 
@@ -166,10 +167,6 @@ void FusionNode<Msg, Obj>::fusionCallback(
   DetectedObjectsWithFeature::ConstSharedPtr input_roi6_msg,
   DetectedObjectsWithFeature::ConstSharedPtr input_roi7_msg)
 {
-  if (pub_ptr_->get_subscription_count() < 1) {
-    return;
-  }
-
   Msg output_msg = *input_msg;
 
   preprocess(output_msg);
@@ -218,13 +215,13 @@ void FusionNode<Msg, Obj>::fusionCallback(
       *input_msg, image_id, *input_roi_msg, camera_info_map_.at(image_id), output_msg);
   }
 
-  postprocess();
+  postprocess(output_msg);
 
   publish(output_msg);
 }
 
 template <class Msg, class Obj>
-void FusionNode<Msg, Obj>::postprocess()
+void FusionNode<Msg, Obj>::postprocess(Msg & output_msg __attribute__((unused)))
 {
   // do nothing by default
 }
@@ -232,10 +229,13 @@ void FusionNode<Msg, Obj>::postprocess()
 template <class Msg, class Obj>
 void FusionNode<Msg, Obj>::publish(const Msg & output_msg)
 {
+  if (pub_ptr_->get_subscription_count() < 1) {
+    return;
+  }
   pub_ptr_->publish(output_msg);
 }
 
 template class FusionNode<DetectedObjects, DetectedObject>;
 template class FusionNode<DetectedObjectsWithFeature, DetectedObjectWithFeature>;
-
+template class FusionNode<sensor_msgs::msg::PointCloud2, DetectedObjects>;
 }  // namespace image_projection_based_fusion

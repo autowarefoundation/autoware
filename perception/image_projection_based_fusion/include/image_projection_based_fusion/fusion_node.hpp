@@ -1,4 +1,4 @@
-// Copyright 2021 TIER IV, Inc.
+// Copyright 2022 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@ protected:
     const sensor_msgs::msg::CameraInfo & camera_info, Msg & output_msg) = 0;
 
   // set args if you need
-  virtual void postprocess();
+  virtual void postprocess(Msg & output_msg);
 
   void publish(const Msg & output_msg);
 
