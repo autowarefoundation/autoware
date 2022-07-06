@@ -110,7 +110,7 @@ void AutowareScreenCapturePanel::convertPNGImagesToMP4()
   if (!capture.isOpened()) {
     return;
   }
-  int fourcc = cv::VideoWriter::fourcc('m', 'p', '4', 'v');  // mp4
+  int fourcc = cv::VideoWriter::fourcc('h', '2', '6', '4');  // mp4
   cv::VideoWriter writer;
   cv::Size size = cv::Size(width_, height_);
   writer.open("capture/" + root_folder_ + ".mp4", fourcc, capture_hz_->value(), size);
