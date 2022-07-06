@@ -29,15 +29,6 @@ void appendPointToPolygon(Polygon2d & polygon, const geometry_msgs::msg::Point &
   bg::append(polygon.outer(), point);
 }
 
-void appendPointToPolygon(Polygon2d & polygon, const geometry_msgs::msg::Point32 & geom_point)
-{
-  Point2d point;
-  point.x() = geom_point.x;
-  point.y() = geom_point.y;
-
-  bg::append(polygon.outer(), point);
-}
-
 void appendPointToPolygon(Polygon2d & polygon, const Point2d point)
 {
   bg::append(polygon.outer(), point);
@@ -116,6 +107,21 @@ Polygon2d createOneStepPolygon(
 
   return hull_polygon;
 }
+
+geometry_msgs::msg::Polygon rotatePolygon(
+  const geometry_msgs::msg::Polygon & polygon, const double & angle)
+{
+  const double cos = std::cos(angle);
+  const double sin = std::sin(angle);
+  geometry_msgs::msg::Polygon rotated_polygon;
+  for (const auto & point : polygon.points) {
+    auto rotated_point = point;
+    rotated_point.x = cos * point.x - sin * point.y;
+    rotated_point.y = sin * point.x + cos * point.y;
+    rotated_polygon.points.push_back(rotated_point);
+  }
+  return rotated_polygon;
+}
 }  // namespace
 
 namespace polygon_utils
@@ -167,8 +173,14 @@ Polygon2d convertObstacleToPolygon(
     // NOTE: push back the first point in order to close polygon
     appendPointToPolygon(polygon, polygon.outer().front());
   } else if (shape.type == autoware_auto_perception_msgs::msg::Shape::POLYGON) {
-    for (const auto point : shape.footprint.points) {
-      appendPointToPolygon(polygon, point);
+    const double poly_yaw = tf2::getYaw(pose.orientation);
+    const auto rotated_footprint = rotatePolygon(shape.footprint, poly_yaw);
+    for (const auto rel_point : rotated_footprint.points) {
+      geometry_msgs::msg::Point abs_point;
+      abs_point.x = pose.position.x + rel_point.x;
+      abs_point.y = pose.position.y + rel_point.y;
+
+      appendPointToPolygon(polygon, abs_point);
     }
     if (polygon.outer().size() > 0) {
       // NOTE: push back the first point in order to close polygon
