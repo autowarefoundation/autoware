@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="input/object" default="in_objects"/>
+  <arg name="output/object" default="out_objects"/>
+  <arg name="filtering_range_param" default="$(find-pkg-share detected_object_validation)/config/object_position_filter.param.yaml"/>
+
+  <node pkg="detected_object_validation" exec="object_position_filter_node" name="object_position_filter" output="screen">
+    <remap from="input/object" to="$(var input/object)"/>
+    <remap from="output/object" to="$(var output/object)"/>
+    <param from="$(var filtering_range_param)"/>
+  </node>
+</launch>

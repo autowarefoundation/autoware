@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="vector_map_topic" default="/map/vector_map"/>
+  <arg name="input/object" default="in_objects"/>
+  <arg name="output/object" default="out_objects"/>
+  <arg name="filtering_range_param" default="$(find-pkg-share detected_object_validation)/config/object_lanelet_filter.param.yaml"/>
+
+  <node pkg="detected_object_validation" exec="object_lanelet_filter_node" name="object_lanelet_filter" output="screen">
+    <remap from="input/vector_map" to="$(var vector_map_topic)"/>
+    <remap from="input/object" to="$(var input/object)"/>
+    <remap from="output/object" to="$(var output/object)"/>
+    <param from="$(var filtering_range_param)"/>
+  </node>
+</launch>

@@ -99,6 +99,14 @@
     <include file="$(find-pkg-share object_merger)/launch/object_association_merger.launch.xml">
       <arg name="input/object0" value="temporary_merged_objects"/>
       <arg name="input/object1" value="detection_by_tracker/objects"/>
+      <arg name="output/object" value="objects_before_filter"/>
+    </include>
+  </group>
+
+  <!-- Filter -->
+  <group>
+    <include file="$(find-pkg-share detected_object_validation)/launch/object_lanelet_filter.launch.xml">
+      <arg name="input/object" value="objects_before_filter"/>
       <arg name="output/object" value="objects"/>
     </include>
   </group>

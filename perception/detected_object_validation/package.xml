@@ -12,7 +12,10 @@
 
   <build_depend>autoware_cmake</build_depend>
 
+  <depend>autoware_auto_mapping_msgs</depend>
   <depend>autoware_auto_perception_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>lanelet2_extension</depend>
   <depend>message_filters</depend>
   <depend>nav_msgs</depend>
   <depend>pcl_conversions</depend>
