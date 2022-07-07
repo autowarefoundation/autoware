@@ -26,6 +26,7 @@
 #include "tier4_rtc_msgs/srv/cooperate_commands.hpp"
 #include <unique_identifier_msgs/msg/uuid.hpp>
 
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -43,14 +44,14 @@ using unique_identifier_msgs::msg::UUID;
 class RTCInterface
 {
 public:
-  RTCInterface(rclcpp::Node & node, const std::string & name);
+  RTCInterface(rclcpp::Node * node, const std::string & name);
   void publishCooperateStatus(const rclcpp::Time & stamp);
   void updateCooperateStatus(
     const UUID & uuid, const bool safe, const double distance, const rclcpp::Time & stamp);
   void removeCooperateStatus(const UUID & uuid);
   void clearCooperateStatus();
-  bool isActivated(const UUID & uuid) const;
-  bool isRegistered(const UUID & uuid) const;
+  bool isActivated(const UUID & uuid);
+  bool isRegistered(const UUID & uuid);
 
 private:
   void onCooperateCommandService(
@@ -61,6 +62,8 @@ private:
   rclcpp::Publisher<CooperateStatusArray>::SharedPtr pub_statuses_;
   rclcpp::Service<CooperateCommands>::SharedPtr srv_commands_;
 
+  std::mutex mutex_;
+  rclcpp::CallbackGroup::SharedPtr callback_group_;
   rclcpp::Logger logger_;
   Module module_;
   CooperateStatusArray registered_status_;

@@ -98,7 +98,7 @@ public:
     rtc_interface_right_.publishCooperateStatus(clock_->now());
   }
 
-  bool isActivated() const override
+  bool isActivated() override
   {
     if (rtc_interface_left_.isRegistered(uuid_left_)) {
       return rtc_interface_left_.isActivated(uuid_left_);
@@ -123,6 +123,8 @@ private:
   RTCInterface rtc_interface_right_;
   UUID uuid_left_;
   UUID uuid_right_;
+
+  bool is_activated_ = false;
 
   void waitApprovalLeft(const double distance)
   {

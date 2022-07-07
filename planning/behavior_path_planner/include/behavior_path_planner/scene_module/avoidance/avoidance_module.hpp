@@ -59,7 +59,7 @@ public:
     rtc_interface_right_.publishCooperateStatus(clock_->now());
   }
 
-  bool isActivated() const override
+  bool isActivated() override
   {
     if (rtc_interface_left_.isRegistered(uuid_left_)) {
       return rtc_interface_left_.isActivated(uuid_left_);

@@ -39,8 +39,8 @@ LaneChangeModule::LaneChangeModule(
   const std::string & name, rclcpp::Node & node, const LaneChangeParameters & parameters)
 : SceneModuleInterface{name, node},
   parameters_{parameters},
-  rtc_interface_left_(node, "lane_change_left"),
-  rtc_interface_right_(node, "lane_change_right"),
+  rtc_interface_left_(&node, "lane_change_left"),
+  rtc_interface_right_(&node, "lane_change_right"),
   uuid_left_{generateUUID()},
   uuid_right_{generateUUID()}
 {
@@ -50,6 +50,7 @@ BehaviorModuleOutput LaneChangeModule::run()
 {
   RCLCPP_DEBUG(getLogger(), "Was waiting approval, and now approved. Do plan().");
   current_state_ = BT::NodeStatus::RUNNING;
+  is_activated_ = isActivated();
   const auto output = plan();
   const auto turn_signal_info = output.turn_signal_info;
   if (turn_signal_info.turn_signal.command == TurnIndicatorsCommand::ENABLE_LEFT) {
@@ -475,7 +476,7 @@ bool LaneChangeModule::isAbortConditionSatisfied() const
     return false;
   }
 
-  if (!isActivated()) {
+  if (!is_activated_) {
     return false;
   }
 

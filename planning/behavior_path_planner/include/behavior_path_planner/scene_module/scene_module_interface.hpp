@@ -203,7 +203,7 @@ public:
   /**
    * @brief Return true if the activation command is received
    */
-  virtual bool isActivated() const
+  virtual bool isActivated()
   {
     if (!rtc_interface_ptr_) {
       return true;
@@ -270,7 +270,7 @@ protected:
 
   void clearWaitingApproval() { is_waiting_approval_ = false; }
 
-  UUID generateUUID()
+  static UUID generateUUID()
   {
     // Generate random number
     UUID uuid;

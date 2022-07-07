@@ -39,7 +39,7 @@ PullOverModule::PullOverModule(
   const std::string & name, rclcpp::Node & node, const PullOverParameters & parameters)
 : SceneModuleInterface{name, node}, parameters_{parameters}
 {
-  rtc_interface_ptr_ = std::make_shared<RTCInterface>(node, "pull_over");
+  rtc_interface_ptr_ = std::make_shared<RTCInterface>(&node, "pull_over");
 }
 
 BehaviorModuleOutput PullOverModule::run()

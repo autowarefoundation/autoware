@@ -68,19 +68,22 @@ Module getModuleType(const std::string & module_name)
 
 namespace rtc_interface
 {
-RTCInterface::RTCInterface(rclcpp::Node & node, const std::string & name)
-: logger_{node.get_logger().get_child("RTCInterface[" + name + "]")}
+RTCInterface::RTCInterface(rclcpp::Node * node, const std::string & name)
+: logger_{node->get_logger().get_child("RTCInterface[" + name + "]")}
 {
   using std::placeholders::_1;
   using std::placeholders::_2;
 
   // Publisher
-  pub_statuses_ = node.create_publisher<CooperateStatusArray>("~/" + name + "/cooperate_status", 1);
+  pub_statuses_ =
+    node->create_publisher<CooperateStatusArray>("~/" + name + "/cooperate_status", 1);
 
   // Service
-  srv_commands_ = node.create_service<CooperateCommands>(
+  callback_group_ = node->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+  srv_commands_ = node->create_service<CooperateCommands>(
     "~/" + name + "/cooperate_commands",
-    std::bind(&RTCInterface::onCooperateCommandService, this, _1, _2));
+    std::bind(&RTCInterface::onCooperateCommandService, this, _1, _2),
+    rmw_qos_profile_services_default, callback_group_);
 
   // Module
   module_ = getModuleType(name);
@@ -88,6 +91,7 @@ RTCInterface::RTCInterface(rclcpp::Node & node, const std::string & name)
 
 void RTCInterface::publishCooperateStatus(const rclcpp::Time & stamp)
 {
+  std::lock_guard<std::mutex> lock(mutex_);
   registered_status_.stamp = stamp;
   pub_statuses_->publish(registered_status_);
 }
@@ -96,6 +100,7 @@ void RTCInterface::onCooperateCommandService(
   const CooperateCommands::Request::SharedPtr request,
   const CooperateCommands::Response::SharedPtr responses)
 {
+  std::lock_guard<std::mutex> lock(mutex_);
   for (const auto & command : request->commands) {
     CooperateResponse response;
     response.uuid = command.uuid;
@@ -122,6 +127,7 @@ void RTCInterface::onCooperateCommandService(
 void RTCInterface::updateCooperateStatus(
   const UUID & uuid, const bool safe, const double distance, const rclcpp::Time & stamp)
 {
+  std::lock_guard<std::mutex> lock(mutex_);
   // Find registered status which has same uuid
   auto itr = std::find_if(
     registered_status_.statuses.begin(), registered_status_.statuses.end(),
@@ -148,6 +154,7 @@ void RTCInterface::updateCooperateStatus(
 
 void RTCInterface::removeCooperateStatus(const UUID & uuid)
 {
+  std::lock_guard<std::mutex> lock(mutex_);
   // Find registered status which has same uuid and erase it
   const auto itr = std::find_if(
     registered_status_.statuses.begin(), registered_status_.statuses.end(),
@@ -163,10 +170,15 @@ void RTCInterface::removeCooperateStatus(const UUID & uuid)
     "[removeCooperateStatus] uuid : " << to_string(uuid) << " is not found." << std::endl);
 }
 
-void RTCInterface::clearCooperateStatus() { registered_status_.statuses.clear(); }
-
-bool RTCInterface::isActivated(const UUID & uuid) const
+void RTCInterface::clearCooperateStatus()
 {
+  std::lock_guard<std::mutex> lock(mutex_);
+  registered_status_.statuses.clear();
+}
+
+bool RTCInterface::isActivated(const UUID & uuid)
+{
+  std::lock_guard<std::mutex> lock(mutex_);
   const auto itr = std::find_if(
     registered_status_.statuses.begin(), registered_status_.statuses.end(),
     [uuid](auto & s) { return s.uuid == uuid; });
@@ -180,8 +192,9 @@ bool RTCInterface::isActivated(const UUID & uuid) const
   return false;
 }
 
-bool RTCInterface::isRegistered(const UUID & uuid) const
+bool RTCInterface::isRegistered(const UUID & uuid)
 {
+  std::lock_guard<std::mutex> lock(mutex_);
   const auto itr = std::find_if(
     registered_status_.statuses.begin(), registered_status_.statuses.end(),
     [uuid](auto & s) { return s.uuid == uuid; });

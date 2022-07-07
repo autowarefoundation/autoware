@@ -269,7 +269,7 @@ class SceneModuleManagerInterfaceWithRTC : public SceneModuleManagerInterface
 {
 public:
   SceneModuleManagerInterfaceWithRTC(rclcpp::Node & node, const char * module_name)
-  : SceneModuleManagerInterface(node, module_name), rtc_interface_(node, module_name)
+  : SceneModuleManagerInterface(node, module_name), rtc_interface_(&node, module_name)
   {
   }
 

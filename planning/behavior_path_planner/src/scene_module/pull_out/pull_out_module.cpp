@@ -40,7 +40,7 @@ PullOutModule::PullOutModule(
   const std::string & name, rclcpp::Node & node, const PullOutParameters & parameters)
 : SceneModuleInterface{name, node}, parameters_{parameters}
 {
-  rtc_interface_ptr_ = std::make_shared<RTCInterface>(node, "pull_out");
+  rtc_interface_ptr_ = std::make_shared<RTCInterface>(&node, "pull_out");
 }
 
 BehaviorModuleOutput PullOutModule::run()

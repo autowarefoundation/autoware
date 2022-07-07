@@ -50,8 +50,8 @@ AvoidanceModule::AvoidanceModule(
   const std::string & name, rclcpp::Node & node, const AvoidanceParameters & parameters)
 : SceneModuleInterface{name, node},
   parameters_{parameters},
-  rtc_interface_left_(node, "avoidance_left"),
-  rtc_interface_right_(node, "avoidance_right"),
+  rtc_interface_left_(&node, "avoidance_left"),
+  rtc_interface_right_(&node, "avoidance_right"),
   uuid_left_{generateUUID()},
   uuid_right_{generateUUID()}
 {
