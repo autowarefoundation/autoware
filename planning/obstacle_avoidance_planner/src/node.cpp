@@ -956,6 +956,14 @@ bool ObstacleAvoidancePlanner::checkReplan(
     return true;
   }
 
+  if (prev_optimal_trajs_ptr_->model_predictive_trajectory.empty()) {
+    RCLCPP_INFO(
+      get_logger(),
+      "Replan with resetting optimization since previous optimized trajectory is empty.");
+    resetPrevOptimization();
+    return true;
+  }
+
   const double max_mpt_length =
     traj_param_.num_sampling_points * mpt_param_.delta_arc_length_for_mpt_points;
   if (isPathShapeChanged(
