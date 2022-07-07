@@ -158,12 +158,10 @@ You can choose whether to use this feature by parameter of `slow_down_limit.enab
 | `detection_span`        | double | [m] calculate collision with this span to reduce calculation time                                                        |
 | `min_vel_ego_kmph`      | double | [km/h] min velocity to calculate time to collision                                                                       |
 
-| Parameter /detection_area_size | Type   | Description                           |
-| ------------------------------ | ------ | ------------------------------------- |
-| `dist_ahead`                   | double | [m] ahead distance from ego position  |
-| `dist_behind`                  | double | [m] behind distance from ego position |
-| `dist_right`                   | double | [m] right distance from ego position  |
-| `dist_left`                    | double | [m] left distance from ego position   |
+| Parameter /detection_area | Type   | Description                                  |
+| ------------------------- | ------ | -------------------------------------------- |
+| `margin_ahead`            | double | [m] ahead margin for detection area polygon  |
+| `margin_behind`           | double | [m] behind margin for detection area polygon |
 
 | Parameter /dynamic_obstacle | Type   | Description                                                                                                 |
 | --------------------------- | ------ | ----------------------------------------------------------------------------------------------------------- |

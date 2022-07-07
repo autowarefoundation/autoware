@@ -86,6 +86,7 @@ struct DynamicObstacleData
   PredictedObjects predicted_objects;
   pcl::PointCloud<pcl::PointXYZ> compare_map_filtered_pointcloud;
   PathWithLaneId path;
+  Polygons2d detection_area_polygon;
 };
 
 /**
@@ -98,11 +99,13 @@ public:
   virtual ~DynamicObstacleCreator() = default;
   virtual std::vector<DynamicObstacle> createDynamicObstacles() = 0;
   void setParam(const DynamicObstacleParam & param) { param_ = param; }
-  void setData(const PlannerData & planner_data, const PathWithLaneId & path)
+  void setData(
+    const PlannerData & planner_data, const PathWithLaneId & path, const Polygons2d & poly)
   {
     // compare map filtered points are subscribed in derived class that needs points
     dynamic_obstacle_data_.predicted_objects = *planner_data.predicted_objects;
     dynamic_obstacle_data_.path = path;
+    dynamic_obstacle_data_.detection_area_polygon = poly;
   }
 
 protected:

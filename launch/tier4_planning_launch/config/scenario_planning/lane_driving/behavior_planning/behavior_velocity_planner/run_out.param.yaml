@@ -12,13 +12,9 @@
       detection_span: 1.0         # [m] calculate collision with this span to reduce calculation time
       min_vel_ego_kmph: 3.6       # [km/h] min velocity to calculate time to collision
 
-      # rectangle detection area for Points method
-      # this will be replaced with more appropriate detection area
-      detection_area_size:
-        dist_ahead: 50.0 # [m] ahead distance from ego position
-        dist_behind: 5.0 # [m] behind distance from ego position
-        dist_right: 7.0  # [m] right distance from ego position
-        dist_left: 7.0   # [m] left distance from ego position
+      detection_area:
+        margin_behind: 0.5 # [m] ahead margin for detection area length
+        margin_ahead: 1.0  # [m] behind margin for detection area length
 
       # parameter to create abstracted dynamic obstacles
       dynamic_obstacle:

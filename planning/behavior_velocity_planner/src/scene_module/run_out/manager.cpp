@@ -35,6 +35,12 @@ RunOutModuleManager::RunOutModuleManager(rclcpp::Node & node)
   const std::string ns(getModuleName());
 
   {
+    auto & p = planner_param_.smoother;
+    // smoother parameters are already declared in behavior velocity node, so use get parameter
+    p.start_jerk = node.get_parameter("backward.start_jerk").get_value<double>();
+  }
+
+  {
     auto & p = planner_param_.common;
     p.normal_min_jerk = node.declare_parameter(".normal.min_jerk", -0.3);
     p.normal_min_acc = node.declare_parameter(".normal.min_acc", -1.0);
@@ -58,11 +64,9 @@ RunOutModuleManager::RunOutModuleManager(rclcpp::Node & node)
 
   {
     auto & p = planner_param_.detection_area;
-    const std::string ns_da = ns + ".detection_area_size";
-    p.dist_ahead = node.declare_parameter(ns_da + ".dist_ahead", 50.0);
-    p.dist_behind = node.declare_parameter(ns_da + ".dist_behind", 5.0);
-    p.dist_right = node.declare_parameter(ns_da + ".dist_right", 10.0);
-    p.dist_left = node.declare_parameter(ns_da + ".dist_left", 10.0);
+    const std::string ns_da = ns + ".detection_area";
+    p.margin_ahead = node.declare_parameter(ns_da + ".margin_ahead", 1.0);
+    p.margin_behind = node.declare_parameter(ns_da + ".margin_behind", 0.5);
   }
 
   {

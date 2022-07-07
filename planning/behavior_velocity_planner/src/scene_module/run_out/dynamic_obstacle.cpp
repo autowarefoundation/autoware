@@ -70,6 +70,41 @@ pcl::PointCloud<pcl::PointXYZ> applyVoxelGridFilter(
 
   return output_points;
 }
+
+pcl::PointCloud<pcl::PointXYZ> extractObstaclePointsWithinPolygon(
+  const pcl::PointCloud<pcl::PointXYZ> & input_points, const Polygons2d & polys)
+{
+  namespace bg = boost::geometry;
+
+  if (polys.empty()) {
+    RCLCPP_WARN_STREAM(
+      rclcpp::get_logger("run_out"), "detection area polygon is empty. return empty points.");
+
+    const pcl::PointCloud<pcl::PointXYZ> empty_points;
+    return empty_points;
+  }
+
+  pcl::PointCloud<pcl::PointXYZ> output_points;
+  for (const auto & poly : polys) {
+    const auto bounding_box = bg::return_envelope<tier4_autoware_utils::Box2d>(poly);
+    for (const auto & p : input_points) {
+      Point2d point(p.x, p.y);
+
+      // filter with bounding box to reduce calculation time
+      if (!bg::covered_by(point, bounding_box)) {
+        continue;
+      }
+
+      if (!bg::covered_by(point, poly)) {
+        continue;
+      }
+
+      output_points.push_back(p);
+    }
+  }
+
+  return output_points;
+}
 }  // namespace
 
 DynamicObstacleCreatorForObject::DynamicObstacleCreatorForObject(rclcpp::Node & node)
@@ -218,7 +253,9 @@ void DynamicObstacleCreatorForPoints::onCompareMapFilteredPointCloud(
   pcl::PointCloud<pcl::PointXYZ>::Ptr pc_transformed(new pcl::PointCloud<pcl::PointXYZ>);
   pcl::transformPointCloud(pc, *pc_transformed, affine);
 
+  const auto voxel_grid_filtered_points = applyVoxelGridFilter(pc_transformed);
   std::lock_guard<std::mutex> lock(mutex_);
-  dynamic_obstacle_data_.compare_map_filtered_pointcloud = applyVoxelGridFilter(pc_transformed);
+  dynamic_obstacle_data_.compare_map_filtered_pointcloud = extractObstaclePointsWithinPolygon(
+    voxel_grid_filtered_points, dynamic_obstacle_data_.detection_area_polygon);
 }
 }  // namespace behavior_velocity_planner

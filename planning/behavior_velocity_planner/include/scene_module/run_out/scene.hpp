@@ -30,7 +30,6 @@ namespace bg = boost::geometry;
 using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
-using run_out_utils::DetectionAreaSize;
 using run_out_utils::PlannerParam;
 using run_out_utils::State;
 using tier4_debug_msgs::msg::Float32Stamped;
@@ -66,15 +65,7 @@ private:
   std::shared_ptr<RunOutDebug> debug_ptr_;
 
   // Function
-  pcl::PointCloud<pcl::PointXYZ> extractObstaclePointsWithRectangle(
-    const pcl::PointCloud<pcl::PointXYZ> & input_points,
-    const geometry_msgs::msg::Pose & current_pose) const;
-
-  void visualizeDetectionArea(const PathWithLaneId & smoothed_path) const;
-
-  pcl::PointCloud<pcl::PointXYZ> pointsWithinPolygon(
-    const std::vector<geometry_msgs::msg::Point> & polygon,
-    const pcl::PointCloud<pcl::PointXYZ> & candidate_points) const;
+  Polygons2d createDetectionAreaPolygon(const PathWithLaneId & smoothed_path) const;
 
   boost::optional<DynamicObstacle> detectCollision(
     const std::vector<DynamicObstacle> & dynamic_obstacles,
