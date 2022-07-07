@@ -2552,7 +2552,7 @@ void AvoidanceModule::initVariables()
 
   debug_avoidance_msg_array_ptr_.reset();
   debug_data_ = DebugData();
-
+  debug_marker_.markers.clear();
   registered_raw_shift_points_ = {};
   current_raw_shift_points_ = {};
   original_unique_id = 0;
@@ -2625,16 +2625,16 @@ double AvoidanceModule::getCurrentLinearShift() const
 
 void AvoidanceModule::setDebugData(const PathShifter & shifter, const DebugData & debug)
 {
-  using marker_utils::createAvoidanceObjectsMarkerArray;
-  using marker_utils::createAvoidPointMarkerArray;
   using marker_utils::createLaneletsAreaMarkerArray;
   using marker_utils::createObjectsMarkerArray;
-  using marker_utils::createOverhangFurthestLineStringMarkerArray;
   using marker_utils::createPathMarkerArray;
   using marker_utils::createPoseMarkerArray;
   using marker_utils::createShiftLengthMarkerArray;
   using marker_utils::createShiftPointMarkerArray;
-  using marker_utils::makeOverhangToRoadShoulderMarkerArray;
+  using marker_utils::avoidance_marker::createAvoidanceObjectsMarkerArray;
+  using marker_utils::avoidance_marker::createAvoidPointMarkerArray;
+  using marker_utils::avoidance_marker::createOverhangFurthestLineStringMarkerArray;
+  using marker_utils::avoidance_marker::makeOverhangToRoadShoulderMarkerArray;
 
   debug_marker_.markers.clear();
 
@@ -2661,7 +2661,7 @@ void AvoidanceModule::setDebugData(const PathShifter & shifter, const DebugData 
   add(createLaneletsAreaMarkerArray(*debug.current_lanelets, "current_lanelet", 0.0, 1.0, 0.0));
   add(createLaneletsAreaMarkerArray(*debug.expanded_lanelets, "expanded_lanelet", 0.8, 0.8, 0.0));
   add(createAvoidanceObjectsMarkerArray(avoidance_data_.objects, "avoidance_object"));
-  add(makeOverhangToRoadShoulderMarkerArray(avoidance_data_.objects));
+  add(makeOverhangToRoadShoulderMarkerArray(avoidance_data_.objects, "overhang"));
   add(createOverhangFurthestLineStringMarkerArray(
     *debug.farthest_linestring_from_overhang, "farthest_linestring_from_overhang", 1.0, 0.0, 1.0));
 

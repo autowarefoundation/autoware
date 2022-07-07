@@ -15,6 +15,7 @@
 #ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__AVOIDANCE__DEBUG_HPP_
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__AVOIDANCE__DEBUG_HPP_
 
+#include "behavior_path_planner/debug_utilities.hpp"
 #include "behavior_path_planner/path_shifter/path_shifter.hpp"
 #include "behavior_path_planner/scene_module/avoidance/avoidance_module_data.hpp"
 
@@ -31,71 +32,32 @@
 #include <string>
 #include <vector>
 
-namespace marker_utils
+namespace marker_utils::avoidance_marker
 {
 using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
-using behavior_path_planner::AvoidPoint;
 using behavior_path_planner::AvoidPointArray;
-using behavior_path_planner::ShiftPoint;
 using behavior_path_planner::ShiftPointArray;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Polygon;
 using geometry_msgs::msg::Pose;
 using visualization_msgs::msg::MarkerArray;
 
-MarkerArray createShiftLengthMarkerArray(
-  const std::vector<double> shift_distance, const PathWithLaneId & reference,
-  const std::string & ns, const double r, const double g, const double b);
-
 MarkerArray createAvoidPointMarkerArray(
-  const AvoidPointArray & shift_points, const std::string & ns, const double r, const double g,
-  const double b, const double w);
-
-MarkerArray createShiftPointMarkerArray(
-  const ShiftPointArray & shift_points, const double base_shift, const std::string & ns,
-  const double r, const double g, const double b, const double w);
-
-MarkerArray createLaneletsAreaMarkerArray(
-  const std::vector<lanelet::ConstLanelet> & lanelets, const std::string & ns, const double r,
-  const double g, const double b);
-
-MarkerArray createLaneletPolygonsMarkerArray(
-  const std::vector<lanelet::CompoundPolygon3d> & polygons, const std::string & ns,
-  const int64_t lane_id);
-
-MarkerArray createPolygonMarkerArray(
-  const Polygon & polygon, const std::string & ns, const int64_t lane_id, const double r,
-  const double g, const double b);
-
-MarkerArray createObjectsMarkerArray(
-  const PredictedObjects & objects, const std::string & ns, const int64_t lane_id, const double r,
-  const double g, const double b);
+  const AvoidPointArray & shift_points, std::string && ns, const float & r, const float & g,
+  const float & b, const double & w);
 
 MarkerArray createAvoidanceObjectsMarkerArray(
-  const behavior_path_planner::ObjectDataArray & objects, const std::string & ns);
-
-MarkerArray createPathMarkerArray(
-  const PathWithLaneId & path, const std::string & ns, const int64_t lane_id, const double r,
-  const double g, const double b);
-
-MarkerArray createPoseLineMarkerArray(
-  const Pose & pose, const std::string & ns, const int64_t id, const double r, const double g,
-  const double b);
-
-MarkerArray createPoseMarkerArray(
-  const Pose & pose, const std::string & ns, const int64_t id, const double r, const double g,
-  const double b);
+  const behavior_path_planner::ObjectDataArray & objects, std::string && ns);
 
 MarkerArray makeOverhangToRoadShoulderMarkerArray(
-  const behavior_path_planner::ObjectDataArray & objects);
+  const behavior_path_planner::ObjectDataArray & objects, std::string && ns);
 
 MarkerArray createOverhangFurthestLineStringMarkerArray(
-  const lanelet::ConstLineStrings3d & linestrings, const std::string & ns, const double r,
-  const double g, const double b);
+  const lanelet::ConstLineStrings3d & linestrings, std::string && ns, const float & r,
+  const float & g, const float & b);
 
-MarkerArray createFurthestLineStringMarkerArray(const lanelet::ConstLineStrings3d & linestrings);
-}  // namespace marker_utils
+}  // namespace marker_utils::avoidance_marker
 
 std::string toStrInfo(const behavior_path_planner::ShiftPointArray & sp_arr);
 

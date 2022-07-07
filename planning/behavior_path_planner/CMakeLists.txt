@@ -11,6 +11,7 @@ ament_auto_add_library(behavior_path_planner_node SHARED
   src/behavior_tree_manager.cpp
   src/utilities.cpp
   src/path_utilities.cpp
+  src/debug_utilities.cpp
   src/path_shifter/path_shifter.cpp
   src/turn_signal_decider.cpp
   src/scene_module/scene_module_bt_node_interface.cpp
