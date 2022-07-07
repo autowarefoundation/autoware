@@ -15,20 +15,34 @@
 #ifndef VEHICLE_CMD_GATE__VEHICLE_CMD_FILTER_HPP_
 #define VEHICLE_CMD_GATE__VEHICLE_CMD_FILTER_HPP_
 
+#include <rclcpp/rclcpp.hpp>
+
 #include <autoware_auto_control_msgs/msg/ackermann_control_command.hpp>
 
+struct VehicleCmdFilterParam
+{
+  double wheel_base;
+  double vel_lim;
+  double lon_acc_lim;
+  double lon_jerk_lim;
+  double lat_acc_lim;
+  double lat_jerk_lim;
+  double actual_steer_diff_lim;
+};
 class VehicleCmdFilter
 {
 public:
   VehicleCmdFilter();
   ~VehicleCmdFilter() = default;
 
-  void setWheelBase(double v) { wheel_base_ = v; }
-  void setVelLim(double v) { vel_lim_ = v; }
-  void setLonAccLim(double v) { lon_acc_lim_ = v; }
-  void setLonJerkLim(double v) { lon_jerk_lim_ = v; }
-  void setLatAccLim(double v) { lat_acc_lim_ = v; }
-  void setLatJerkLim(double v) { lat_jerk_lim_ = v; }
+  void setWheelBase(double v) { param_.wheel_base = v; }
+  void setVelLim(double v) { param_.vel_lim = v; }
+  void setLonAccLim(double v) { param_.lon_acc_lim = v; }
+  void setLonJerkLim(double v) { param_.lon_jerk_lim = v; }
+  void setLatAccLim(double v) { param_.lat_acc_lim = v; }
+  void setLatJerkLim(double v) { param_.lat_jerk_lim = v; }
+  void setActualSteerDiffLim(double v) { param_.actual_steer_diff_lim = v; }
+  void setParam(const VehicleCmdFilterParam & p) { param_ = p; }
   void setPrevCmd(const autoware_auto_control_msgs::msg::AckermannControlCommand & v)
   {
     prev_cmd_ = v;
@@ -44,14 +58,15 @@ public:
     const double dt, autoware_auto_control_msgs::msg::AckermannControlCommand & input) const;
   void limitLateralWithLatJerk(
     const double dt, autoware_auto_control_msgs::msg::AckermannControlCommand & input) const;
+  void limitActualSteerDiff(
+    const double current_steer_angle,
+    autoware_auto_control_msgs::msg::AckermannControlCommand & input) const;
+  void filterAll(
+    const double dt, const double current_steer_angle,
+    autoware_auto_control_msgs::msg::AckermannControlCommand & input) const;
 
 private:
-  double wheel_base_;
-  double vel_lim_;
-  double lon_acc_lim_;
-  double lon_jerk_lim_;
-  double lat_acc_lim_;
-  double lat_jerk_lim_;
+  VehicleCmdFilterParam param_;
   autoware_auto_control_msgs::msg::AckermannControlCommand prev_cmd_;
 
   double calcLatAcc(const autoware_auto_control_msgs::msg::AckermannControlCommand & cmd) const;

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.5)
 project(vehicle_cmd_gate)
 
 find_package(autoware_cmake REQUIRED)

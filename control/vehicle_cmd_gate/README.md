@@ -26,6 +26,7 @@
 | `~/input/emergency/hazard_lights_cmd`       | `autoware_auto_vehicle_msgs::msg::HazardLightsCommand`     | hazard lights command from emergency handler                         |
 | `~/input/emergency/gear_cmd`                | `autoware_auto_vehicle_msgs::msg::GearCommand`             | gear command from emergency handler                                  |
 | `~/input/engage`                            | `autoware_auto_vehicle_msgs::msg::Engage`                  | engage signal                                                        |
+| `~/input/operation_mode`                    | `tier4_system_msgs::msg::OperationMode`                    | operation mode of Autoware                                           |
 
 ### Output
 
@@ -39,23 +40,29 @@
 | `~/output/gate_mode`                   | `tier4_control_msgs::msg::GateMode`                        | gate mode (AUTO or EXTERNAL)                             |
 | `~/output/engage`                      | `autoware_auto_vehicle_msgs::msg::Engage`                  | engage signal                                            |
 | `~/output/external_emergency`          | `tier4_external_api_msgs::msg::Emergency`                  | external emergency signal                                |
+| `~/output/operation_mode`              | `tier4_system_msgs::msg::OperationMode`                    | current operation mode of the vehicle_cmd_gate           |
 
 ## Parameters
 
-| Parameter                                   | Type   | Description                                                    |
-| ------------------------------------------- | ------ | -------------------------------------------------------------- |
-| `update_period`                             | double | update period                                                  |
-| `use_emergency_handling`                    | bool   | true when emergency handler is used                            |
-| `use_external_emergency_stop`               | bool   | true when external emergency stop information is used          |
-| `system_emergency_heartbeat_timeout`        | double | timeout for system emergency                                   |
-| `external_emergency_stop_heartbeat_timeout` | double | timeout for external emergency                                 |
-| `stop_hold_acceleration`                    | double | longitudinal acceleration cmd when vehicle should stop         |
-| `emergency_acceleration`                    | double | longitudinal acceleration cmd when vehicle stop with emergency |
-| `vel_lim`                                   | double | limit of longitudinal velocity                                 |
-| `lon_acc_lim`                               | double | limit of longitudinal acceleration                             |
-| `lon_jerk_lim`                              | double | limit of longitudinal jerk                                     |
-| `lat_acc_lim`                               | double | limit of lateral acceleration                                  |
-| `lat_jerk_lim`                              | double | limit of lateral jerk                                          |
+| Parameter                                   | Type   | Description                                                                 |
+| ------------------------------------------- | ------ | --------------------------------------------------------------------------- |
+| `update_period`                             | double | update period                                                               |
+| `use_emergency_handling`                    | bool   | true when emergency handler is used                                         |
+| `use_external_emergency_stop`               | bool   | true when external emergency stop information is used                       |
+| `system_emergency_heartbeat_timeout`        | double | timeout for system emergency                                                |
+| `external_emergency_stop_heartbeat_timeout` | double | timeout for external emergency                                              |
+| `stop_hold_acceleration`                    | double | longitudinal acceleration cmd when vehicle should stop                      |
+| `emergency_acceleration`                    | double | longitudinal acceleration cmd when vehicle stop with emergency              |
+| `nominal.vel_lim`                           | double | limit of longitudinal velocity (activated in AUTONOMOUS operation mode)     |
+| `nominal.lon_acc_lim`                       | double | limit of longitudinal acceleration (activated in AUTONOMOUS operation mode) |
+| `nominal.lon_jerk_lim`                      | double | limit of longitudinal jerk (activated in AUTONOMOUS operation mode)         |
+| `nominal.lat_acc_lim`                       | double | limit of lateral acceleration (activated in AUTONOMOUS operation mode)      |
+| `nominal.lat_jerk_lim`                      | double | limit of lateral jerk (activated in AUTONOMOUS operation mode)              |
+| `on_transition.vel_lim`                     | double | limit of longitudinal velocity (activated in TRANSITION operation mode)     |
+| `on_transition.lon_acc_lim`                 | double | limit of longitudinal acceleration (activated in TRANSITION operation mode) |
+| `on_transition.lon_jerk_lim`                | double | limit of longitudinal jerk (activated in TRANSITION operation mode)         |
+| `on_transition.lat_acc_lim`                 | double | limit of lateral acceleration (activated in TRANSITION operation mode)      |
+| `on_transition.lat_jerk_lim`                | double | limit of lateral jerk (activated in TRANSITION operation mode)              |
 
 ## Assumptions / Known limits
 

@@ -36,6 +36,7 @@
 #include <tier4_external_api_msgs/msg/heartbeat.hpp>
 #include <tier4_external_api_msgs/srv/engage.hpp>
 #include <tier4_external_api_msgs/srv/set_emergency.hpp>
+#include <tier4_system_msgs/msg/operation_mode.hpp>
 #include <tier4_vehicle_msgs/msg/vehicle_emergency_stamped.hpp>
 
 #include <memory>
@@ -53,6 +54,7 @@ using tier4_control_msgs::msg::GateMode;
 using tier4_external_api_msgs::msg::Emergency;
 using tier4_external_api_msgs::msg::Heartbeat;
 using tier4_external_api_msgs::srv::SetEmergency;
+using tier4_system_msgs::msg::OperationMode;
 using tier4_vehicle_msgs::msg::VehicleEmergencyStamped;
 
 using diagnostic_msgs::msg::DiagnosticStatus;
@@ -87,12 +89,14 @@ private:
   rclcpp::Publisher<HazardLightsCommand>::SharedPtr hazard_light_cmd_pub_;
   rclcpp::Publisher<GateMode>::SharedPtr gate_mode_pub_;
   rclcpp::Publisher<EngageMsg>::SharedPtr engage_pub_;
+  rclcpp::Publisher<OperationMode>::SharedPtr operation_mode_pub_;
 
   // Subscription
   rclcpp::Subscription<EmergencyState>::SharedPtr emergency_state_sub_;
   rclcpp::Subscription<Heartbeat>::SharedPtr external_emergency_stop_heartbeat_sub_;
   rclcpp::Subscription<GateMode>::SharedPtr gate_mode_sub_;
   rclcpp::Subscription<SteeringReport>::SharedPtr steer_sub_;
+  rclcpp::Subscription<OperationMode>::SharedPtr operation_mode_sub_;
 
   void onGateMode(GateMode::ConstSharedPtr msg);
   void onEmergencyState(EmergencyState::ConstSharedPtr msg);
@@ -207,6 +211,10 @@ private:
 
   VehicleCmdFilter filter_;
   AckermannControlCommand filterControlCommand(const AckermannControlCommand & msg);
+
+  // filtering on transition
+  OperationMode current_operation_mode_;
+  VehicleCmdFilter filter_on_transition_;
 
   // Start request service
   struct StartRequest
