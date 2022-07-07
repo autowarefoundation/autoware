@@ -245,6 +245,7 @@ PathPointWithLaneId insertStopPoint(double length, PathWithLaneId * path);
 
 double getDistanceToShoulderBoundary(
   const lanelet::ConstLanelets & shoulder_lanelets, const Pose & pose);
+double getDistanceToRightBoundary(const lanelet::ConstLanelets & lanelets, const Pose & pose);
 
 // misc
 
@@ -280,6 +281,9 @@ bool checkLaneIsInIntersection(
 
 // object label
 std::uint8_t getHighestProbLabel(const std::vector<ObjectClassification> & classification);
+
+lanelet::ConstLanelets getExtendedCurrentLanes(
+  const std::shared_ptr<const PlannerData> & planner_data);
 
 }  // namespace util
 }  // namespace behavior_path_planner
