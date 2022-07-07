@@ -96,7 +96,8 @@ MarkerArray createAvoidanceObjectsMarkerArray(
   for (const auto & object : objects) {
     marker.id = ++i;
     marker.pose = object.object.kinematics.initial_pose_with_covariance.pose;
-    marker.color = object.lost_count == 0 ? normal_color : disappearing_color;
+    marker.scale = tier4_autoware_utils::createMarkerScale(3.0, 1.5, 1.5);
+    marker.color = std::fabs(object.lost_time) < 1e-2 ? normal_color : disappearing_color;
     msg.markers.push_back(marker);
   }
 

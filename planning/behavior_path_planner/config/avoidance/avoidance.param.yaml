@@ -32,7 +32,7 @@
       nominal_lateral_jerk: 0.2   # [m/s3]
       max_lateral_jerk: 1.0       # [m/s3]
 
-      object_hold_max_count: 20
+      object_last_seen_threshold: 2.0
 
       # For prevention of large acceleration while avoidance
       min_avoidance_speed_for_acc_prevention: 3.0  # [m/s]

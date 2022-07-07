@@ -271,7 +271,7 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
     dp("longitudinal_collision_margin_min_distance", 0.0);
   p.longitudinal_collision_margin_time = dp("longitudinal_collision_margin_time", 0.0);
 
-  p.object_hold_max_count = dp("object_hold_max_count", 0);
+  p.object_last_seen_threshold = dp("object_last_seen_threshold", 2.0);
 
   p.min_avoidance_speed_for_acc_prevention = dp("min_avoidance_speed_for_acc_prevention", 3.0);
   p.max_avoidance_acceleration = dp("max_avoidance_acceleration", 0.5);

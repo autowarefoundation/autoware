@@ -291,6 +291,8 @@ ObjectDataArray AvoidanceModule::calcAvoidanceTargetObjects(
       continue;
     }
 
+    object_data.last_seen = clock_->now();
+
     // set data
     target_objects.push_back(object_data);
   }
@@ -2475,12 +2477,15 @@ void AvoidanceModule::updateRegisteredObject(const ObjectDataArray & now_objects
 
     // registered object is not detected this time. lost count up.
     if (!updateIfDetectedNow(r)) {
-      ++r.lost_count;
+      r.lost_time = (clock_->now() - r.last_seen).seconds();
+    } else {
+      r.last_seen = clock_->now();
+      r.lost_time = 0.0;
+    }
 
-      // lost count exceeds threshold. remove object from register.
-      if (r.lost_count > parameters_.object_hold_max_count) {
-        registered_objects_.erase(registered_objects_.begin() + i);
-      }
+    // lost count exceeds threshold. remove object from register.
+    if (r.lost_time > parameters_.object_last_seen_threshold) {
+      registered_objects_.erase(registered_objects_.begin() + i);
     }
   }
 

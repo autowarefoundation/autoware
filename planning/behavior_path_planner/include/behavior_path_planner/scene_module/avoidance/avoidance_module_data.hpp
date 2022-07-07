@@ -134,7 +134,7 @@ struct AvoidanceParameters
   // For the compensation of the detection lost. Once an object is observed, it is registered and
   // will be used for planning from the next time. If the object is not observed, it counts up the
   // lost_count and the registered object will be removed when the count exceeds this max count.
-  int object_hold_max_count;
+  double object_last_seen_threshold;
 
   // For velocity planning to avoid acceleration during avoidance.
   // Speeds smaller than this are not inserted.
@@ -194,7 +194,8 @@ struct ObjectData  // avoidance target
   double overhang_dist;
 
   // count up when object disappeared. Removed when it exceeds threshold.
-  int lost_count = 0;
+  rclcpp::Time last_seen;
+  double lost_time{0.0};
 
   // store the information of the lanelet which the object's overhang is currently occupying
   lanelet::ConstLanelet overhang_lanelet;
