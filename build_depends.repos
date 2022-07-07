@@ -1,31 +1,31 @@
 repositories:
   # core
-  core/autoware_msgs:
-    type: git
-    url: https://github.com/tier4/autoware_auto_msgs.git # TODO(Tier IV): Move to autowarefoundation/autoware_msgs
-    version: tier4/main
-  core/common:
+  core/autoware_common:
     type: git
     url: https://github.com/autowarefoundation/autoware_common.git
     version: main
-  core/autoware:
+  core/autoware.core:
     type: git
     url: https://github.com/autowarefoundation/autoware.core.git
     version: main
-  # universe
-  universe/tier4_autoware_msgs:
+  core/external/autoware_auto_msgs:
     type: git
-    url: https://github.com/tier4/AutowareArchitectureProposal_msgs.git # TODO(Tier IV): Rename to tier4/tier4_autoware_msgs
+    url: https://github.com/tier4/autoware_auto_msgs.git
+    version: tier4/main
+  # universe
+  universe/external/tier4_autoware_msgs:
+    type: git
+    url: https://github.com/tier4/tier4_autoware_msgs.git
     version: tier4/universe
-  universe/vendor/grid_map:
+  universe/external/grid_map:
     type: git
     url: https://github.com/ANYbotics/grid_map.git
     version: ba2f9cb6e62f7ee9c5bac7401391a211e442e459
-  universe/vendor/mussp:
+  universe/external/mussp:
     type: git
     url: https://github.com/tier4/muSSP.git
     version: tier4/main
-  universe/vendor/ndt_omp:
+  universe/external/ndt_omp:
     type: git
     url: https://github.com/tier4/ndt_omp.git
     version: tier4/main
