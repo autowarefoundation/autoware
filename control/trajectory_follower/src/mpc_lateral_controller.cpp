@@ -453,6 +453,8 @@ void MpcLateralController::declareMPCparameters()
   m_mpc.m_param.acceleration_limit = node_->declare_parameter<float64_t>("mpc_acceleration_limit");
   m_mpc.m_param.velocity_time_constant =
     node_->declare_parameter<float64_t>("mpc_velocity_time_constant");
+  m_mpc.m_param.min_prediction_length =
+    node_->declare_parameter<float64_t>("mpc_min_prediction_length");
 }
 
 rcl_interfaces::msg::SetParametersResult MpcLateralController::paramCallback(
@@ -505,6 +507,7 @@ rcl_interfaces::msg::SetParametersResult MpcLateralController::paramCallback(
     update_param(parameters, "mpc_zero_ff_steer_deg", param.zero_ff_steer_deg);
     update_param(parameters, "mpc_acceleration_limit", param.acceleration_limit);
     update_param(parameters, "mpc_velocity_time_constant", param.velocity_time_constant);
+    update_param(parameters, "mpc_min_prediction_length", param.min_prediction_length);
 
     // initialize input buffer
     update_param(parameters, "input_delay", param.input_delay);

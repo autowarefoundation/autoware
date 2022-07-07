@@ -95,6 +95,7 @@ protected:
     param.input_delay = 0.0;
     param.acceleration_limit = 2.0;
     param.velocity_time_constant = 0.3;
+    param.min_prediction_length = 5.0;
     param.steer_tau = 0.1;
     param.weight_lat_error = 1.0;
     param.weight_heading_error = 1.0;

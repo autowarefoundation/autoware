@@ -39,6 +39,7 @@
     mpc_zero_ff_steer_deg: 0.5                   # threshold that feed-forward angle becomes zero
     mpc_acceleration_limit: 2.0                  # limit on the vehicle's acceleration
     mpc_velocity_time_constant: 0.3              # time constant used for velocity smoothing
+    mpc_min_prediction_length: 5.0               # minimum prediction length
 
     # -- vehicle model --
     vehicle_model_type: "kinematics" # vehicle model type for mpc prediction. option is kinematics, kinematics_no_delay, and dynamics
