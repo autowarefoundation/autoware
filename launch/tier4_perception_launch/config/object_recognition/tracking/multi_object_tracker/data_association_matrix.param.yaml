@@ -55,7 +55,7 @@
     min_iou_matrix: # If value is negative, it will be ignored.
       #UNKNOWN, CAR,   TRUCK, BUS,    TRAILER,  MOTORBIKE, BICYCLE, PEDESTRIAN
       [0.0001,  0.1,   0.1,   0.1,    0.1,      0.1,       0.1,     0.1,       #UNKNOWN
-          0.1,  0.3,   0.2,   0.2,    0.2,      0.1,       0.1,     0.1,       #CAR
+          0.1,  0.1,   0.2,   0.2,    0.2,      0.1,       0.1,     0.1,       #CAR
           0.1,  0.2,   0.3,   0.3,    0.3,      0.1,       0.1,     0.1,       #TRUCK
           0.1,  0.2,   0.3,   0.3,    0.3,      0.1,       0.1,     0.1,       #BUS
           0.1,  0.2,   0.3,   0.3,    0.3,      0.1,       0.1,     0.1,       #TRAILER
