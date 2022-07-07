@@ -29,6 +29,7 @@
 #include <algorithm>
 #include <limits>
 #include <memory>
+#include <string>
 #include <vector>
 
 struct ReferencePoint;
@@ -336,7 +337,7 @@ bool isNearLastPathPoint(
 
 namespace utils
 {
-void logOSQPSolutionStatus(const int solution_status);
+void logOSQPSolutionStatus(const int solution_status, const std::string & msg);
 }  // namespace utils
 
 #endif  // OBSTACLE_AVOIDANCE_PLANNER__UTILS_HPP_
