@@ -14,8 +14,8 @@
 #ifndef BEHAVIOR_PATH_PLANNER__DEBUG_UTILITIES_HPP_
 #define BEHAVIOR_PATH_PLANNER__DEBUG_UTILITIES_HPP_
 
-#include "behavior_path_planner/path_shifter/path_shifter.hpp"
 #include "behavior_path_planner/path_utilities.hpp"
+#include "behavior_path_planner/scene_module/utils/path_shifter.hpp"
 #include "behavior_path_planner/utilities.hpp"
 
 #include <tier4_autoware_utils/ros/marker_helper.hpp>

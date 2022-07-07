@@ -14,8 +14,8 @@
 
 #include "behavior_path_planner/scene_module/pull_out/util.hpp"
 
-#include "behavior_path_planner/path_shifter/path_shifter.hpp"
 #include "behavior_path_planner/path_utilities.hpp"
+#include "behavior_path_planner/scene_module/utils/path_shifter.hpp"
 #include "behavior_path_planner/util/create_vehicle_footprint.hpp"
 
 #include <lanelet2_extension/utility/query.hpp>

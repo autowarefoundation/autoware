@@ -16,7 +16,7 @@
 #define BEHAVIOR_PATH_PLANNER__PATH_UTILITIES_HPP_
 
 #include <behavior_path_planner/parameters.hpp>
-#include <behavior_path_planner/path_shifter/path_shifter.hpp>
+#include <behavior_path_planner/scene_module/utils/path_shifter.hpp>
 #include <opencv2/opencv.hpp>
 
 #include <autoware_auto_planning_msgs/msg/path.hpp>
