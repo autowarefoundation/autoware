@@ -215,4 +215,39 @@ autoware_auto_planning_msgs::msg::Trajectory insertStopPoint(
 
   return output;
 }
+
+boost::optional<TargetObstacle> getClosestStopObstacle(
+  const autoware_auto_planning_msgs::msg::Trajectory & traj,
+  const std::vector<TargetObstacle> & target_obstacles)
+{
+  if (target_obstacles.empty()) {
+    return boost::none;
+  }
+
+  boost::optional<TargetObstacle> closest_stop_obstacle = boost::none;
+  double dist_to_closest_stop_obstacle = std::numeric_limits<double>::max();
+  for (const auto & obstacle : target_obstacles) {
+    // Ignore obstacle that has not stopped
+    if (!obstacle.has_stopped) {
+      continue;
+    }
+
+    const double dist_to_stop_obstacle =
+      tier4_autoware_utils::calcSignedArcLength(traj.points, 0, obstacle.collision_point);
+    if (dist_to_stop_obstacle < dist_to_closest_stop_obstacle) {
+      dist_to_closest_stop_obstacle = dist_to_stop_obstacle;
+      closest_stop_obstacle = obstacle;
+    }
+  }
+  return closest_stop_obstacle;
+}
+
+std::string toHexString(const unique_identifier_msgs::msg::UUID & id)
+{
+  std::stringstream ss;
+  for (auto i = 0; i < 16; ++i) {
+    ss << std::hex << std::setfill('0') << std::setw(2) << +id.uuid[i];
+  }
+  return ss.str();
+}
 }  // namespace obstacle_cruise_utils

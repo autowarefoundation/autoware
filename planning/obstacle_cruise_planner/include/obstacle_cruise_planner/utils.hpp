@@ -15,6 +15,7 @@
 #ifndef OBSTACLE_CRUISE_PLANNER__UTILS_HPP_
 #define OBSTACLE_CRUISE_PLANNER__UTILS_HPP_
 
+#include "common_structs.hpp"
 #include "tier4_autoware_utils/tier4_autoware_utils.hpp"
 
 #include <rclcpp/rclcpp.hpp>
@@ -61,6 +62,12 @@ boost::optional<geometry_msgs::msg::Pose> getCurrentObjectPoseFromPredictedPaths
 geometry_msgs::msg::Pose getCurrentObjectPose(
   const autoware_auto_perception_msgs::msg::PredictedObject & predicted_object,
   const rclcpp::Time & obj_base_time, const rclcpp::Time & current_time, const bool use_prediction);
+
+boost::optional<TargetObstacle> getClosestStopObstacle(
+  const autoware_auto_planning_msgs::msg::Trajectory & traj,
+  const std::vector<TargetObstacle> & target_obstacles);
+
+std::string toHexString(const unique_identifier_msgs::msg::UUID & id);
 
 template <class T>
 size_t getIndexWithLongitudinalOffset(

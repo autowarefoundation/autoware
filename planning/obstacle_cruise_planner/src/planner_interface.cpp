@@ -55,31 +55,6 @@ double calcMinimumDistanceToStop(const double initial_vel, const double min_acc)
 {
   return -std::pow(initial_vel, 2) / 2.0 / min_acc;
 }
-
-boost::optional<TargetObstacle> getClosestStopObstacle(
-  const Trajectory & traj, const std::vector<TargetObstacle> & target_obstacles)
-{
-  if (target_obstacles.empty()) {
-    return boost::none;
-  }
-
-  boost::optional<TargetObstacle> closest_stop_obstacle = boost::none;
-  double dist_to_closest_stop_obstacle = std::numeric_limits<double>::max();
-  for (const auto & obstacle : target_obstacles) {
-    // Ignore obstacle that has not stopped
-    if (!obstacle.has_stopped) {
-      continue;
-    }
-
-    const double dist_to_stop_obstacle =
-      tier4_autoware_utils::calcSignedArcLength(traj.points, 0, obstacle.collision_point);
-    if (dist_to_stop_obstacle < dist_to_closest_stop_obstacle) {
-      dist_to_closest_stop_obstacle = dist_to_stop_obstacle;
-      closest_stop_obstacle = obstacle;
-    }
-  }
-  return closest_stop_obstacle;
-}
 }  // namespace
 
 Trajectory PlannerInterface::generateStopTrajectory(
@@ -91,7 +66,7 @@ Trajectory PlannerInterface::generateStopTrajectory(
 
   // Get Closest Stop Obstacle
   const auto closest_stop_obstacle =
-    getClosestStopObstacle(planner_data.traj, planner_data.target_obstacles);
+    obstacle_cruise_utils::getClosestStopObstacle(planner_data.traj, planner_data.target_obstacles);
   if (!closest_stop_obstacle) {
     return planner_data.traj;
   }

@@ -86,6 +86,9 @@ private:
     const geometry_msgs::msg::Pose & current_pose, const double current_vel,
     DebugData & debug_data);
   void updateHasStopped(std::vector<TargetObstacle> & target_obstacles);
+  void checkConsistency(
+    const rclcpp::Time & current_time, const PredictedObjects & predicted_objects,
+    const Trajectory & traj, std::vector<TargetObstacle> & target_obstacles);
   geometry_msgs::msg::Point calcNearestCollisionPoint(
     const size_t & first_within_idx,
     const std::vector<geometry_msgs::msg::Point> & collision_points,
@@ -158,6 +161,9 @@ private:
   // planner
   std::unique_ptr<PlannerInterface> planner_ptr_;
 
+  // previous closest obstacle
+  std::shared_ptr<TargetObstacle> prev_closest_obstacle_ptr_{nullptr};
+
   // obstacle filtering parameter
   struct ObstacleFilteringParam
   {
@@ -173,6 +179,8 @@ private:
     double max_prediction_time_for_collision_check;
     double crossing_obstacle_traj_angle_threshold;
     std::vector<int> ignored_outside_obstacle_types;
+    // obstacle hold
+    double stop_obstacle_hold_time_threshold;
   };
   ObstacleFilteringParam obstacle_filtering_param_;
 

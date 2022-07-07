@@ -53,6 +53,8 @@
       ego_obstacle_overlap_time_threshold : 1.0 #  time threshold to decide cut-in obstacle for cruise or stop [s]
       max_prediction_time_for_collision_check : 20.0 # prediction time to check collision between obstacle and ego
 
+      stop_obstacle_hold_time_threshold : 1.0 # maximum time for holding closest stop obstacle
+
       ignored_outside_obstacle_type:
         unknown: false
         car: false
