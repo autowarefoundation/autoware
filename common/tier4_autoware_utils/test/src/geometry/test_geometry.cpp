@@ -735,6 +735,175 @@ TEST(geometry, transformPoint)
     EXPECT_DOUBLE_EQ(p_transformed.y(), 3.5334936490538906);
     EXPECT_DOUBLE_EQ(p_transformed.z(), 5.6160254037844393);
   }
+
+  {
+    const Eigen::Vector3d p(1.0, 2.0, 3.0);
+
+    geometry_msgs::msg::Pose pose_transform;
+    pose_transform.position.x = 1.0;
+    pose_transform.position.y = 2.0;
+    pose_transform.position.z = 3.0;
+    pose_transform.orientation = createQuaternionFromRPY(deg2rad(30), deg2rad(30), deg2rad(30));
+
+    const Eigen::Vector3d p_transformed = transformPoint(p, pose_transform);
+
+    EXPECT_DOUBLE_EQ(p_transformed.x(), 3.1919872981077804);
+    EXPECT_DOUBLE_EQ(p_transformed.y(), 3.5334936490538906);
+    EXPECT_DOUBLE_EQ(p_transformed.z(), 5.6160254037844393);
+  }
+
+  {
+    geometry_msgs::msg::Point p;
+    p.x = 1.0;
+    p.y = 2.0;
+    p.z = 3.0;
+
+    geometry_msgs::msg::Pose pose_transform;
+    pose_transform.position.x = 1.0;
+    pose_transform.position.y = 2.0;
+    pose_transform.position.z = 3.0;
+    pose_transform.orientation = createQuaternionFromRPY(deg2rad(30), deg2rad(30), deg2rad(30));
+
+    const geometry_msgs::msg::Point p_transformed = transformPoint(p, pose_transform);
+
+    EXPECT_DOUBLE_EQ(p_transformed.x, 3.1919872981077804);
+    EXPECT_DOUBLE_EQ(p_transformed.y, 3.5334936490538906);
+    EXPECT_DOUBLE_EQ(p_transformed.z, 5.6160254037844393);
+  }
+}
+
+TEST(geometry, transformPose)
+{
+  using tier4_autoware_utils::createQuaternionFromRPY;
+  using tier4_autoware_utils::deg2rad;
+  using tier4_autoware_utils::transformPose;
+
+  geometry_msgs::msg::Pose pose;
+  pose.position.x = 2.0;
+  pose.position.y = 4.0;
+  pose.position.z = 6.0;
+  pose.orientation = createQuaternionFromRPY(deg2rad(10), deg2rad(20), deg2rad(30));
+
+  // with transform
+  {
+    geometry_msgs::msg::Transform transform;
+    transform.translation.x = 1.0;
+    transform.translation.y = 2.0;
+    transform.translation.z = 3.0;
+    transform.rotation = createQuaternionFromRPY(deg2rad(30), deg2rad(30), deg2rad(30));
+
+    const geometry_msgs::msg::Pose pose_transformed = transformPose(pose, transform);
+
+    EXPECT_NEAR(pose_transformed.position.x, 5.3839745962155598, epsilon);
+    EXPECT_NEAR(pose_transformed.position.y, 5.0669872981077804, epsilon);
+    EXPECT_NEAR(pose_transformed.position.z, 8.2320508075688785, epsilon);
+    EXPECT_NEAR(pose_transformed.orientation.x, 0.24304508436548405, epsilon);
+    EXPECT_NEAR(pose_transformed.orientation.y, 0.4296803495383052, epsilon);
+    EXPECT_NEAR(pose_transformed.orientation.z, 0.40981009820187703, epsilon);
+    EXPECT_NEAR(pose_transformed.orientation.w, 0.76704600096616271, epsilon);
+  }
+
+  // with pose_transform
+  {
+    geometry_msgs::msg::Pose pose_transform;
+    pose_transform.position.x = 1.0;
+    pose_transform.position.y = 2.0;
+    pose_transform.position.z = 3.0;
+    pose_transform.orientation = createQuaternionFromRPY(deg2rad(30), deg2rad(30), deg2rad(30));
+
+    const geometry_msgs::msg::Pose pose_transformed = transformPose(pose, pose_transform);
+
+    EXPECT_NEAR(pose_transformed.position.x, 5.3839745962155598, epsilon);
+    EXPECT_NEAR(pose_transformed.position.y, 5.0669872981077804, epsilon);
+    EXPECT_NEAR(pose_transformed.position.z, 8.2320508075688785, epsilon);
+    EXPECT_NEAR(pose_transformed.orientation.x, 0.24304508436548405, epsilon);
+    EXPECT_NEAR(pose_transformed.orientation.y, 0.4296803495383052, epsilon);
+    EXPECT_NEAR(pose_transformed.orientation.z, 0.40981009820187703, epsilon);
+    EXPECT_NEAR(pose_transformed.orientation.w, 0.76704600096616271, epsilon);
+  }
+}
+
+TEST(geometry, inverseTransformPose)
+{
+  using tier4_autoware_utils::createQuaternionFromRPY;
+  using tier4_autoware_utils::deg2rad;
+  using tier4_autoware_utils::inverseTransformPose;
+
+  geometry_msgs::msg::Pose pose;
+  pose.position.x = 2.0;
+  pose.position.y = 4.0;
+  pose.position.z = 6.0;
+  pose.orientation = createQuaternionFromRPY(deg2rad(10), deg2rad(20), deg2rad(30));
+
+  // with transform
+  {
+    geometry_msgs::msg::Transform transform;
+    transform.translation.x = 1.0;
+    transform.translation.y = 2.0;
+    transform.translation.z = 3.0;
+    transform.rotation = createQuaternionFromRPY(deg2rad(30), deg2rad(30), deg2rad(30));
+
+    const geometry_msgs::msg::Pose pose_transformed = inverseTransformPose(pose, transform);
+
+    EXPECT_NEAR(pose_transformed.position.x, 0.11602540378443926, epsilon);
+    EXPECT_NEAR(pose_transformed.position.y, 2.8325317547305482, epsilon);
+    EXPECT_NEAR(pose_transformed.position.z, 2.4419872981077804, epsilon);
+    EXPECT_NEAR(pose_transformed.orientation.x, -0.17298739392508941, epsilon);
+    EXPECT_NEAR(pose_transformed.orientation.y, -0.08189960831908924, epsilon);
+    EXPECT_NEAR(pose_transformed.orientation.z, 0.029809019626209146, epsilon);
+    EXPECT_NEAR(pose_transformed.orientation.w, 0.98106026219040698, epsilon);
+  }
+
+  // with pose_transform
+  {
+    geometry_msgs::msg::Pose pose_transform;
+    pose_transform.position.x = 1.0;
+    pose_transform.position.y = 2.0;
+    pose_transform.position.z = 3.0;
+    pose_transform.orientation = createQuaternionFromRPY(deg2rad(30), deg2rad(30), deg2rad(30));
+
+    const geometry_msgs::msg::Pose pose_transformed = inverseTransformPose(pose, pose_transform);
+
+    EXPECT_NEAR(pose_transformed.position.x, 0.11602540378443926, epsilon);
+    EXPECT_NEAR(pose_transformed.position.y, 2.8325317547305482, epsilon);
+    EXPECT_NEAR(pose_transformed.position.z, 2.4419872981077804, epsilon);
+    EXPECT_NEAR(pose_transformed.orientation.x, -0.17298739392508941, epsilon);
+    EXPECT_NEAR(pose_transformed.orientation.y, -0.08189960831908924, epsilon);
+    EXPECT_NEAR(pose_transformed.orientation.z, 0.029809019626209146, epsilon);
+    EXPECT_NEAR(pose_transformed.orientation.w, 0.98106026219040698, epsilon);
+  }
+}
+
+TEST(geometry, inverseTransformPoint)
+{
+  using tier4_autoware_utils::createQuaternionFromRPY;
+  using tier4_autoware_utils::deg2rad;
+  using tier4_autoware_utils::inverseTransformPoint;
+  using tier4_autoware_utils::inverseTransformPose;
+
+  geometry_msgs::msg::Pose pose_transform;
+  pose_transform.position.x = 1.0;
+  pose_transform.position.y = 2.0;
+  pose_transform.position.z = 3.0;
+  pose_transform.orientation = createQuaternionFromRPY(deg2rad(30), deg2rad(30), deg2rad(30));
+
+  // calc expected values
+  geometry_msgs::msg::Pose pose;
+  pose.position.x = 2.0;
+  pose.position.y = 4.0;
+  pose.position.z = 6.0;
+  pose.orientation = createQuaternionFromRPY(deg2rad(0), deg2rad(0), deg2rad(0));
+  const geometry_msgs::msg::Pose pose_transformed = inverseTransformPose(pose, pose_transform);
+  const geometry_msgs::msg::Point expected_p = pose_transformed.position;
+
+  geometry_msgs::msg::Point p;
+  p.x = 2.0;
+  p.y = 4.0;
+  p.z = 6.0;
+  const geometry_msgs::msg::Point p_transformed = inverseTransformPoint(p, pose_transform);
+  EXPECT_NEAR(p_transformed.x, expected_p.x, epsilon);
+  EXPECT_NEAR(p_transformed.y, expected_p.y, epsilon);
+  EXPECT_NEAR(p_transformed.z, expected_p.z, epsilon);
 }
 
 TEST(geometry, transformVector)

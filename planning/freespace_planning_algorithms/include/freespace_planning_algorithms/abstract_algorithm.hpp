@@ -15,44 +15,14 @@
 #ifndef FREESPACE_PLANNING_ALGORITHMS__ABSTRACT_ALGORITHM_HPP_
 #define FREESPACE_PLANNING_ALGORITHMS__ABSTRACT_ALGORITHM_HPP_
 
+#include <tier4_autoware_utils/geometry/geometry.hpp>
+
 #include <geometry_msgs/msg/pose_array.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
 
 #include <tf2/utils.h>
 
-#ifdef ROS_DISTRO_GALACTIC
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#else
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
-#endif
-
 #include <vector>
-
-#ifdef ROS_DISTRO_GALACTIC
-namespace tf2
-{
-inline void fromMsg(const geometry_msgs::msg::Point & in, tf2::Vector3 & out)
-{
-  out = tf2::Vector3(in.x, in.y, in.z);
-}
-
-template <>
-inline void doTransform(
-  const geometry_msgs::msg::Pose & t_in, geometry_msgs::msg::Pose & t_out,
-  const geometry_msgs::msg::TransformStamped & transform)
-{
-  tf2::Vector3 v;
-  fromMsg(t_in.position, v);
-  tf2::Quaternion r;
-  fromMsg(t_in.orientation, r);
-
-  tf2::Transform t;
-  fromMsg(transform.transform, t);
-  tf2::Transform v_out = t * tf2::Transform(r, v);
-  toMsg(v_out, t_out);
-}
-}  // namespace tf2
-#endif
 
 namespace freespace_planning_algorithms
 {

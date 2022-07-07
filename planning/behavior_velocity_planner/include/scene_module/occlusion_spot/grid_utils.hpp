@@ -49,49 +49,6 @@
 
 #include <vector>
 
-namespace tf2
-{
-inline void fromMsg(const geometry_msgs::msg::PoseStamped & msg, tf2::Stamped<tf2::Transform> & out)
-{
-  out.stamp_ = tf2_ros::fromMsg(msg.header.stamp);
-  out.frame_id_ = msg.header.frame_id;
-  tf2::Transform tmp;
-  fromMsg(msg.pose, tmp);
-  out.setData(tmp);
-}
-#ifdef ROS_DISTRO_GALACTIC
-// Remove after this commit is released
-// https://github.com/ros2/geometry2/commit/e9da371d81e388a589540357c050e262442f1b4a
-inline geometry_msgs::msg::Point & toMsg(const tf2::Vector3 & in, geometry_msgs::msg::Point & out)
-{
-  out.x = in.getX();
-  out.y = in.getY();
-  out.z = in.getZ();
-  return out;
-}
-
-// Remove after this commit is released
-// https://github.com/ros2/geometry2/commit/e9da371d81e388a589540357c050e262442f1b4a
-inline void fromMsg(const geometry_msgs::msg::Point & in, tf2::Vector3 & out)
-{
-  out = tf2::Vector3(in.x, in.y, in.z);
-}
-
-template <>
-inline void doTransform(
-  const geometry_msgs::msg::Point & t_in, geometry_msgs::msg::Point & t_out,
-  const geometry_msgs::msg::TransformStamped & transform)
-{
-  tf2::Transform t;
-  fromMsg(transform.transform, t);
-  tf2::Vector3 v_in;
-  fromMsg(t_in, v_in);
-  tf2::Vector3 v_out = t * v_in;
-  toMsg(v_out, t_out);
-}
-#endif
-}  // namespace tf2
-
 namespace behavior_velocity_planner
 {
 using geometry_msgs::msg::Pose;
