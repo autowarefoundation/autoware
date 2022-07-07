@@ -75,7 +75,10 @@ class GroundSegmentationPipeline:
                 plugin="pointcloud_preprocessor::CropBoxFilterComponent",
                 name=f"{lidar_name}_crop_box_filter",
                 remappings=[
-                    ("input", f"/sensing/lidar/{lidar_name}/outlier_filtered/pointcloud"),
+                    (
+                        "input",
+                        f"/sensing/lidar/{lidar_name}/outlier_filtered/pointcloud",
+                    ),
                     ("output", f"{lidar_name}/range_cropped/pointcloud"),
                 ],
                 parameters=[
@@ -296,7 +299,10 @@ class GroundSegmentationPipeline:
                 plugin="occupancy_grid_map_outlier_filter::OccupancyGridMapOutlierFilterComponent",
                 name="occupancy_grid_map_outlier_filter",
                 remappings=[
-                    ("~/input/occupancy_grid_map", "/perception/occupancy_grid_map/map"),
+                    (
+                        "~/input/occupancy_grid_map",
+                        "/perception/occupancy_grid_map/map",
+                    ),
                     ("~/input/pointcloud", input_topic),
                     ("~/output/pointcloud", output_topic),
                 ],
@@ -337,7 +343,11 @@ class GroundSegmentationPipeline:
                             ]
                         ),
                         "elevation_map_directory": PathJoinSubstitution(
-                            [FindPackageShare("elevation_map_loader"), "data", "elevation_maps"]
+                            [
+                                FindPackageShare("elevation_map_loader"),
+                                "data",
+                                "elevation_maps",
+                            ]
                         ),
                         "use_elevation_map_cloud_publisher": False,
                     }
