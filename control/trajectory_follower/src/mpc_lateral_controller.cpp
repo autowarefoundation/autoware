@@ -225,7 +225,7 @@ bool MpcLateralController::isSteerConverged(
 {
   // wait for a while to propagate the trajectory shape to the output command when the trajectory
   // shape is changed.
-  if (isTrajectoryShapeChanged()) {
+  if (!m_has_received_first_trajectory || isTrajectoryShapeChanged()) {
     return false;
   }
 
@@ -300,7 +300,12 @@ void MpcLateralController::setTrajectory(
   while (rclcpp::ok()) {
     const auto time_diff = rclcpp::Time(m_trajectory_buffer.back().header.stamp) -
                            rclcpp::Time(m_trajectory_buffer.front().header.stamp);
-    if (time_diff.seconds() < m_new_traj_duration_time) {
+
+    const float64_t first_trajectory_duration_time = 5.0;
+    const float64_t duration_time =
+      m_has_received_first_trajectory ? m_new_traj_duration_time : first_trajectory_duration_time;
+    if (time_diff.seconds() < duration_time) {
+      m_has_received_first_trajectory = true;
       break;
     }
     m_trajectory_buffer.pop_front();

@@ -140,17 +140,20 @@ bool Controller::isTimeOut()
 
 void Controller::callbackTimerControl()
 {
-  longitudinal_controller_->setInputData(input_data_);  // trajectory, odometry
-  lateral_controller_->setInputData(input_data_);       // trajectory, odometry, steering
-
-  const auto lon_out = longitudinal_controller_->run();
-  longitudinal_output_ = lon_out ? lon_out : longitudinal_output_;  // use previous value if none.
+  // Since the longitudinal uses the convergence information of the steer
+  // with the current trajectory, it is necessary to run the lateral first.
+  // TODO(kosuke55): Do not depend on the order of execution.
+  lateral_controller_->setInputData(input_data_);  // trajectory, odometry, steering
   const auto lat_out = lateral_controller_->run();
   lateral_output_ = lat_out ? lat_out : lateral_output_;  // use previous value if none.
-
-  if (!longitudinal_output_ || !lateral_output_) return;
+  if (!lateral_output_) return;
 
   longitudinal_controller_->sync(lateral_output_->sync_data);
+  longitudinal_controller_->setInputData(input_data_);  // trajectory, odometry
+  const auto lon_out = longitudinal_controller_->run();
+  longitudinal_output_ = lon_out ? lon_out : longitudinal_output_;  // use previous value if none.
+  if (!longitudinal_output_) return;
+
   lateral_controller_->sync(longitudinal_output_->sync_data);
 
   // TODO(Horibe): Think specification. This comes from the old implementation.

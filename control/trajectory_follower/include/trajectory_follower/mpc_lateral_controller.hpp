@@ -131,6 +131,9 @@ private:
   //!< @brief previous control command
   autoware_auto_control_msgs::msg::AckermannLateralCommand m_ctrl_cmd_prev;
 
+  //!< @brief flag whether the first trajectory has been received
+  bool m_has_received_first_trajectory = false;
+
   //!< @brief buffer for transforms
   tf2::BufferCore m_tf_buffer{tf2::BUFFER_CORE_DEFAULT_CACHE_TIME};
   tf2_ros::TransformListener m_tf_listener{m_tf_buffer};
