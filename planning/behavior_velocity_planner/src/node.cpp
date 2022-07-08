@@ -397,6 +397,10 @@ void BehaviorVelocityPlannerNode::onTrigger(
   const auto planner_data = planner_data_;
   mutex_.unlock();
 
+  if (input_path_msg->points.empty()) {
+    return;
+  }
+
   // Plan path velocity
   const auto velocity_planned_path = planner_manager_.planPathVelocity(
     std::make_shared<const PlannerData>(planner_data), *input_path_msg);
