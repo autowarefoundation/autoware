@@ -13,8 +13,10 @@
 
   <depend>autoware_ad_api_msgs</depend>
   <depend>component_interface_utils</depend>
+  <depend>geometry_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
+  <depend>tier4_debug_msgs</depend>
 
   <exec_depend>python3-flask</exec_depend>
 
