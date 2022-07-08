@@ -24,7 +24,7 @@
       min_nominal_avoidance_speed: 7.0  # [m/s]
       min_sharp_avoidance_speed: 1.0    # [m/s]
 
-      road_shoulder_safety_margin: 0.5 # [m]
+      road_shoulder_safety_margin: 0.0 # [m]
 
       max_right_shift_length: 5.0
       max_left_shift_length: 5.0

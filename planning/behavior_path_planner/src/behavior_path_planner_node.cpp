@@ -259,7 +259,7 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
   p.min_nominal_avoidance_speed = dp("min_nominal_avoidance_speed", 5.0);
   p.min_sharp_avoidance_speed = dp("min_sharp_avoidance_speed", 1.0);
 
-  p.road_shoulder_safety_margin = dp("road_shoulder_safety_margin", 0.5);
+  p.road_shoulder_safety_margin = dp("road_shoulder_safety_margin", 0.0);
 
   p.max_right_shift_length = dp("max_right_shift_length", 1.5);
   p.max_left_shift_length = dp("max_left_shift_length", 1.5);
