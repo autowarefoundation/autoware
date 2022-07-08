@@ -401,6 +401,45 @@ void BehaviorVelocityPlannerNode::onTrigger(
     return;
   }
 
+  const autoware_auto_planning_msgs::msg::Path output_path_msg =
+    generatePath(input_path_msg, planner_data);
+
+  path_pub_->publish(output_path_msg);
+  stop_reason_diag_pub_->publish(planner_manager_.getStopReasonDiag());
+
+  if (debug_viz_pub_->get_subscription_count() > 0) {
+    publishDebugMarker(output_path_msg);
+  }
+}
+
+bool BehaviorVelocityPlannerNode::isBackwardPath(
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & path) const
+{
+  const bool has_negative_velocity = std::any_of(
+    path.points.begin(), path.points.end(),
+    [&](const auto & p) { return p.point.longitudinal_velocity_mps < 0; });
+
+  return has_negative_velocity;
+}
+
+autoware_auto_planning_msgs::msg::Path BehaviorVelocityPlannerNode::generatePath(
+  const autoware_auto_planning_msgs::msg::PathWithLaneId::ConstSharedPtr input_path_msg,
+  const PlannerData & planner_data)
+{
+  autoware_auto_planning_msgs::msg::Path output_path_msg;
+
+  // TODO(someone): support negative velocity
+  if (isBackwardPath(*input_path_msg)) {
+    RCLCPP_WARN_THROTTLE(
+      get_logger(), *get_clock(), 3000,
+      "Negative velocity is NOT supported. just converting path_with_lane_id to path");
+    output_path_msg = to_path(*input_path_msg);
+    output_path_msg.header.frame_id = "map";
+    output_path_msg.header.stamp = this->now();
+    output_path_msg.drivable_area = input_path_msg->drivable_area;
+    return output_path_msg;
+  }
+
   // Plan path velocity
   const auto velocity_planned_path = planner_manager_.planPathVelocity(
     std::make_shared<const PlannerData>(planner_data), *input_path_msg);
@@ -412,19 +451,15 @@ void BehaviorVelocityPlannerNode::onTrigger(
   const auto interpolated_path_msg = interpolatePath(filtered_path, forward_path_length_);
 
   // check stop point
-  auto output_path_msg = filterStopPathPoint(interpolated_path_msg);
+  output_path_msg = filterStopPathPoint(interpolated_path_msg);
+
   output_path_msg.header.frame_id = "map";
   output_path_msg.header.stamp = this->now();
 
   // TODO(someone): This must be updated in each scene module, but copy from input message for now.
   output_path_msg.drivable_area = input_path_msg->drivable_area;
 
-  path_pub_->publish(output_path_msg);
-  stop_reason_diag_pub_->publish(planner_manager_.getStopReasonDiag());
-
-  if (debug_viz_pub_->get_subscription_count() > 0) {
-    publishDebugMarker(output_path_msg);
-  }
+  return output_path_msg;
 }
 
 void BehaviorVelocityPlannerNode::publishDebugMarker(

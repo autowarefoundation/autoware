@@ -113,6 +113,10 @@ private:
   // function
   geometry_msgs::msg::PoseStamped getCurrentPose();
   bool isDataReady(const PlannerData planner_data) const;
+  bool isBackwardPath(const autoware_auto_planning_msgs::msg::PathWithLaneId & planner_data) const;
+  autoware_auto_planning_msgs::msg::Path generatePath(
+    const autoware_auto_planning_msgs::msg::PathWithLaneId::ConstSharedPtr input_path_msg,
+    const PlannerData & planner_data);
 };
 }  // namespace behavior_velocity_planner
 
