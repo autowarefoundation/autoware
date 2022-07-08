@@ -101,10 +101,10 @@ Trajectory decimateTrajectory(const Trajectory & input, const double step_length
   double trajectory_length_sum = 0.0;
   double next_length = 0.0;
 
+  constexpr double epsilon = 1e-3;
   for (int i = 0; i < static_cast<int>(input.points.size()) - 1; ++i) {
     const auto & p_front = input.points.at(i);
     const auto & p_back = input.points.at(i + 1);
-    constexpr double epsilon = 1e-3;
 
     if (next_length <= trajectory_length_sum + epsilon) {
       const auto p_interpolate =
@@ -117,7 +117,12 @@ Trajectory decimateTrajectory(const Trajectory & input, const double step_length
     trajectory_length_sum += tier4_autoware_utils::calcDistance2d(p_front, p_back);
   }
 
-  output.points.push_back(input.points.back());
+  // avoid "Same points are given"
+  if (
+    !input.points.empty() && !output.points.empty() &&
+    epsilon < tier4_autoware_utils::calcDistance2d(input.points.back(), output.points.back())) {
+    output.points.push_back(input.points.back());
+  }
 
   return output;
 }
