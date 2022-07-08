@@ -311,6 +311,7 @@ void RouteHandler::setRouteLanelets(const lanelet::ConstLanelets & path_lanelets
   for (const auto & id : route_lanelets_id) {
     route_lanelets_.push_back(lanelet_map_ptr_->laneletLayer.get(id));
   }
+  is_handler_ready_ = true;
 }
 
 void RouteHandler::setLaneletsFromRouteMsg()
