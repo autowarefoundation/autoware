@@ -81,7 +81,8 @@ double getLaneletAngle(
 bool isInLanelet(
   const geometry_msgs::msg::Pose & current_pose, const lanelet::ConstLanelet & lanelet,
   const double radius = 0.0);
-
+geometry_msgs::msg::Pose getClosestCenterPose(
+  const lanelet::ConstLanelet & lanelet, const geometry_msgs::msg::Point & search_point);
 }  // namespace utils
 }  // namespace lanelet
 

@@ -25,6 +25,12 @@
 #include <lanelet2_traffic_rules/TrafficRules.h>
 #include <lanelet2_traffic_rules/TrafficRulesFactory.h>
 
+#ifdef ROS_DISTRO_GALACTIC
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#else
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#endif
+
 #include <algorithm>
 #include <limits>
 #include <map>
@@ -685,5 +691,29 @@ bool isInLanelet(
   return false;
 }
 
+geometry_msgs::msg::Pose getClosestCenterPose(
+  const lanelet::ConstLanelet & lanelet, const geometry_msgs::msg::Point & search_point)
+{
+  lanelet::BasicPoint2d llt_search_point(search_point.x, search_point.y);
+  lanelet::ConstLineString3d segment = getClosestSegment(llt_search_point, lanelet.centerline());
+
+  const Eigen::Vector2d direction(
+    (segment.back().basicPoint2d() - segment.front().basicPoint2d()).normalized());
+  const Eigen::Vector2d xf(segment.front().basicPoint2d());
+  const Eigen::Vector2d x(search_point.x, search_point.y);
+  const Eigen::Vector2d p = xf + (x - xf).dot(direction) * direction;
+
+  geometry_msgs::msg::Pose closest_pose;
+  closest_pose.position.x = p.x();
+  closest_pose.position.y = p.y();
+  closest_pose.position.z = search_point.z;
+
+  const float lane_yaw = getLaneletAngle(lanelet, search_point);
+  tf2::Quaternion q;
+  q.setRPY(0, 0, lane_yaw);
+  closest_pose.orientation = tf2::toMsg(q);
+
+  return closest_pose;
+}
 }  // namespace utils
 }  // namespace lanelet

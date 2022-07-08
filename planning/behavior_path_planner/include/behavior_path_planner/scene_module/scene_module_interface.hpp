@@ -255,7 +255,6 @@ protected:
       return;
     }
     rtc_interface_ptr_->updateCooperateStatus(uuid_, isExecutionReady(), distance, clock_->now());
-    waitApproval();
   }
 
   virtual void removeRTCStatus()

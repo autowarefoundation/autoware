@@ -44,23 +44,20 @@ PathWithLaneId combineReferencePath(const PathWithLaneId path1, const PathWithLa
 bool isPathInLanelets(
   const PathWithLaneId & path, const lanelet::ConstLanelets & original_lanelets,
   const lanelet::ConstLanelets & target_lanelets);
-std::vector<PullOverPath> getPullOverPaths(
+std::vector<ShiftParkingPath> getShiftParkingPaths(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & original_lanelets,
-  const lanelet::ConstLanelets & target_lanelets, const Pose & pose, const Twist & twist,
-  const BehaviorPathPlannerParameters & common_parameter,
+  const lanelet::ConstLanelets & target_lanelets, const Pose & pose, const Pose & goal_pose,
+  const Twist & twist, const BehaviorPathPlannerParameters & common_parameter,
   const behavior_path_planner::PullOverParameters & parameter);
 
-std::vector<PullOverPath> selectValidPaths(
-  const std::vector<PullOverPath> & paths, const lanelet::ConstLanelets & current_lanes,
+std::vector<ShiftParkingPath> selectValidPaths(
+  const std::vector<ShiftParkingPath> & paths, const lanelet::ConstLanelets & current_lanes,
   const lanelet::ConstLanelets & target_lanes,
   const lanelet::routing::RoutingGraphContainer & overall_graphs, const Pose & current_pose,
   const bool isInGoalRouteSection, const Pose & goal_pose);
 bool selectSafePath(
-  const std::vector<PullOverPath> & paths, const lanelet::ConstLanelets & current_lanes,
-  const lanelet::ConstLanelets & target_lanes,
-  const PredictedObjects::ConstSharedPtr dynamic_objects, const Pose & current_pose,
-  const Twist & current_twist, const double vehicle_width,
-  const behavior_path_planner::PullOverParameters & ros_parameters, PullOverPath * selected_path);
+  const std::vector<ShiftParkingPath> & paths,
+  const OccupancyGridBasedCollisionDetector & occupancy_grid_map, ShiftParkingPath & selected_path);
 bool isPullOverPathSafe(
   const PathWithLaneId & path, const lanelet::ConstLanelets & current_lanes,
   const lanelet::ConstLanelets & target_lanes,
@@ -69,7 +66,7 @@ bool isPullOverPathSafe(
   const behavior_path_planner::PullOverParameters & ros_parameters, const bool use_buffer = true,
   const double acceleration = 0.0);
 bool hasEnoughDistance(
-  const PullOverPath & path, const lanelet::ConstLanelets & current_lanes,
+  const ShiftParkingPath & path, const lanelet::ConstLanelets & current_lanes,
   const lanelet::ConstLanelets & target_lanes, const Pose & current_pose,
   const bool isInGoalRouteSection, const Pose & goal_pose,
   const lanelet::routing::RoutingGraphContainer & overall_graphs);

@@ -39,6 +39,7 @@ using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using geometry_msgs::msg::PoseStamped;
 using geometry_msgs::msg::TwistStamped;
+using nav_msgs::msg::OccupancyGrid;
 using nav_msgs::msg::Odometry;
 using route_handler::RouteHandler;
 struct BoolStamped
@@ -65,6 +66,7 @@ struct PlannerData
   PoseStamped::ConstSharedPtr self_pose{};
   Odometry::ConstSharedPtr self_odometry{};
   PredictedObjects::ConstSharedPtr dynamic_object{};
+  OccupancyGrid::ConstSharedPtr occupancy_grid{};
   PathWithLaneId::SharedPtr reference_path{std::make_shared<PathWithLaneId>()};
   PathWithLaneId::SharedPtr prev_output_path{std::make_shared<PathWithLaneId>()};
   BehaviorPathPlannerParameters parameters{};
