@@ -355,6 +355,7 @@ bool CrosswalkModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
     stop_watch_.toc("total_processing_time", false));
 
   const auto nearest_stop_point = findNearestStopPoint(ego_path, *stop_reason);
+  const auto rtc_stop_point = findRTCStopPoint(ego_path);
 
   RCLCPP_INFO_EXPRESSION(
     logger_, planner_param_.show_processing_time, "- step3: %f ms",
@@ -362,12 +363,20 @@ bool CrosswalkModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
 
   setSafe(!nearest_stop_point);
 
-  if (!nearest_stop_point) {
+  const auto target_velocity =
+    nearest_stop_point ? calcTargetVelocity(nearest_stop_point.get().second, ego_path) : 0.0;
+
+  if (isActivated()) {
+    if (1e-3 < target_velocity) {
+      insertDecelPoint(nearest_stop_point.get(), target_velocity, *path);
+    }
     return true;
   }
 
-  if (!isActivated()) {
-    insertDecelPoint(nearest_stop_point.get(), *path);
+  if (nearest_stop_point) {
+    insertDecelPoint(nearest_stop_point.get(), target_velocity, *path);
+  } else if (rtc_stop_point) {
+    insertDecelPoint(rtc_stop_point.get(), target_velocity, *path);
   }
 
   RCLCPP_INFO_EXPRESSION(
@@ -404,6 +413,26 @@ boost::optional<std::pair<double, geometry_msgs::msg::Point>> CrosswalkModule::g
   }
 
   return {};
+}
+
+boost::optional<std::pair<size_t, PathPointWithLaneId>> CrosswalkModule::findRTCStopPoint(
+  const PathWithLaneId & ego_path)
+{
+  const auto & base_link2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
+
+  const auto p_stop_line = getStopLine(ego_path);
+  if (!p_stop_line) {
+    return {};
+  }
+
+  const auto & p_stop = p_stop_line.get().second;
+  const auto & margin = planner_param_.stop_line_distance;
+
+  const size_t base_idx = findNearestSegmentIndex(ego_path.points, p_stop);
+  const auto residual_length = calcLongitudinalOffsetToSegment(ego_path.points, base_idx, p_stop);
+  const auto update_margin = margin - residual_length + base_link2front;
+
+  return getBackwardInsertPointFromBasePoint(base_idx, ego_path, update_margin);
 }
 
 boost::optional<std::pair<size_t, PathPointWithLaneId>> CrosswalkModule::findNearestStopPoint(
@@ -514,8 +543,6 @@ boost::optional<std::pair<size_t, PathPointWithLaneId>> CrosswalkModule::findNea
   const auto need_to_stop =
     found_pedestrians || found_stuck_vehicle || external_stop || external_slowdown;
   if (!need_to_stop) {
-    setDistance(
-      std::abs(p_stop_line.get().first - planner_param_.stop_line_distance - base_link2front));
     return {};
   }
 
@@ -541,9 +568,6 @@ boost::optional<std::pair<size_t, PathPointWithLaneId>> CrosswalkModule::findNea
   const auto stop_point = getBackwardInsertPointFromBasePoint(base_idx, ego_path, update_margin);
   stop_factor.stop_pose = stop_point.get().second.point.pose;
   planning_utils::appendStopReason(stop_factor, &stop_reason);
-
-  setDistance(
-    std::abs(calcSignedArcLength(ego_path.points, ego_pos, p_stop) - margin - base_link2front));
 
   return stop_point;
 }
@@ -576,7 +600,8 @@ std::pair<double, double> CrosswalkModule::getAttentionRange(const PathWithLaneI
 }
 
 void CrosswalkModule::insertDecelPoint(
-  const std::pair<size_t, PathPointWithLaneId> & stop_point, PathWithLaneId & output)
+  const std::pair<size_t, PathPointWithLaneId> & stop_point, const float target_velocity,
+  PathWithLaneId & output)
 {
   const auto traj_end_idx = output.points.size() - 1;
   const auto & stop_idx = stop_point.first;
@@ -603,12 +628,16 @@ void CrosswalkModule::insertDecelPoint(
     update_stop_idx = std::min(update_stop_idx + 1, traj_end_idx);
   }
 
-  const auto target_velocity = calcTargetVelocity(p_insert, output);
   for (size_t i = update_stop_idx; i < output.points.size(); ++i) {
     const auto & original_velocity = output.points.at(i).point.longitudinal_velocity_mps;
     output.points.at(i).point.longitudinal_velocity_mps =
       std::min(original_velocity, target_velocity);
   }
+
+  const auto & ego_pos = planner_data_->current_pose.pose.position;
+  const auto & stop_point_distance =
+    calcSignedArcLength(output.points, ego_pos, getPoint(stop_point.second));
+  setDistance(std::abs(stop_point_distance));
 
   debug_data_.first_stop_pose = stop_point.second.point.pose;
   debug_data_.stop_poses.push_back(stop_point.second.point.pose);
@@ -617,6 +646,10 @@ void CrosswalkModule::insertDecelPoint(
 float CrosswalkModule::calcTargetVelocity(
   const PathPointWithLaneId & stop_point, const PathWithLaneId & ego_path) const
 {
+  if (!isActivated()) {
+    return 0.0;
+  }
+
   if (isTargetExternalInputStatus(CrosswalkStatus::SLOWDOWN)) {
     return planner_param_.slow_velocity;
   }
