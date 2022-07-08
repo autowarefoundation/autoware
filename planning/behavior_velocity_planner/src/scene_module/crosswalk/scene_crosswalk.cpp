@@ -637,7 +637,7 @@ void CrosswalkModule::insertDecelPoint(
   const auto & ego_pos = planner_data_->current_pose.pose.position;
   const auto & stop_point_distance =
     calcSignedArcLength(output.points, ego_pos, getPoint(stop_point.second));
-  setDistance(std::abs(stop_point_distance));
+  setDistance(stop_point_distance);
 
   debug_data_.first_stop_pose = stop_point.second.point.pose;
   debug_data_.stop_poses.push_back(stop_point.second.point.pose);
