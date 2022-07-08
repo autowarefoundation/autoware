@@ -731,16 +731,18 @@ void CrosswalkModule::clampAttentionRangeByNeighborCrosswalks(
   boost::optional<lanelet::ConstLanelet> prev_crosswalk{boost::none};
   boost::optional<lanelet::ConstLanelet> next_crosswalk{boost::none};
 
-  for (size_t i = 0; i < crosswalks.size() - 1; ++i) {
-    const auto ll_front = crosswalks.at(i);
-    const auto ll_back = crosswalks.at(i + 1);
+  if (!crosswalks.empty()) {
+    for (size_t i = 0; i < crosswalks.size() - 1; ++i) {
+      const auto ll_front = crosswalks.at(i);
+      const auto ll_back = crosswalks.at(i + 1);
 
-    if (ll_front.id() == module_id_ && ll_back.id() != module_id_) {
-      next_crosswalk = ll_back;
-    }
+      if (ll_front.id() == module_id_ && ll_back.id() != module_id_) {
+        next_crosswalk = ll_back;
+      }
 
-    if (ll_front.id() != module_id_ && ll_back.id() == module_id_) {
-      prev_crosswalk = ll_front;
+      if (ll_front.id() != module_id_ && ll_back.id() == module_id_) {
+        prev_crosswalk = ll_front;
+      }
     }
   }
 
