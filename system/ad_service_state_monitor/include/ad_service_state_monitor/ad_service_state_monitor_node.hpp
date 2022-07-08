@@ -75,6 +75,7 @@ private:
   rclcpp::Subscription<autoware_auto_vehicle_msgs::msg::ControlModeReport>::SharedPtr
     sub_control_mode_;
   rclcpp::Subscription<autoware_auto_planning_msgs::msg::HADMapRoute>::SharedPtr sub_route_;
+  rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr sub_modified_goal_;
   rclcpp::Subscription<autoware_auto_mapping_msgs::msg::HADMapBin>::SharedPtr sub_map_;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr sub_odom_;
 
@@ -83,6 +84,7 @@ private:
     const autoware_auto_vehicle_msgs::msg::ControlModeReport::ConstSharedPtr msg);
   void onMap(const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr msg);
   void onRoute(const autoware_auto_planning_msgs::msg::HADMapRoute::ConstSharedPtr msg);
+  void onModifiedGoal(const geometry_msgs::msg::PoseStamped::ConstSharedPtr msg);
   void onOdometry(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
 
   // Topic Buffer

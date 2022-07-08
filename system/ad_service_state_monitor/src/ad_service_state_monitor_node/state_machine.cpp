@@ -192,10 +192,18 @@ bool StateMachine::isOverridden() const { return !isEngaged(); }
 
 bool StateMachine::hasArrivedGoal() const
 {
-  const auto is_valid_goal_angle = isValidAngle(
-    state_input_.current_pose->pose, *state_input_.goal_pose, state_param_.th_arrived_angle);
-  const auto is_near_goal = isNearGoal(
-    state_input_.current_pose->pose, *state_input_.goal_pose, state_param_.th_arrived_distance_m);
+  geometry_msgs::msg::Pose goal_pose = *state_input_.goal_pose;
+  if (
+    state_input_.modified_goal_pose != nullptr &&
+    rclcpp::Time(state_input_.route->header.stamp).seconds() ==
+      rclcpp::Time(state_input_.modified_goal_pose->header.stamp).seconds()) {
+    goal_pose = state_input_.modified_goal_pose->pose;
+  }
+
+  const auto is_valid_goal_angle =
+    isValidAngle(state_input_.current_pose->pose, goal_pose, state_param_.th_arrived_angle);
+  const auto is_near_goal =
+    isNearGoal(state_input_.current_pose->pose, goal_pose, state_param_.th_arrived_distance_m);
   const auto is_stopped =
     isStopped(state_input_.odometry_buffer, state_param_.th_stopped_velocity_mps);
 
