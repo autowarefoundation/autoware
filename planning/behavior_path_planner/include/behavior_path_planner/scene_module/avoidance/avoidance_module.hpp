@@ -107,6 +107,20 @@ private:
     rtc_interface_right_.clearCooperateStatus();
   }
 
+  void removePreviousRTCStatusLeft()
+  {
+    if (rtc_interface_left_.isRegistered(uuid_left_)) {
+      rtc_interface_left_.removeCooperateStatus(uuid_left_);
+    }
+  }
+
+  void removePreviousRTCStatusRight()
+  {
+    if (rtc_interface_right_.isRegistered(uuid_right_)) {
+      rtc_interface_right_.removeCooperateStatus(uuid_right_);
+    }
+  }
+
   // data used in previous planning
   ShiftedPath prev_output_;
   ShiftedPath prev_linear_shift_path_;  // used for shift point check

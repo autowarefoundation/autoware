@@ -2096,6 +2096,13 @@ BehaviorModuleOutput AvoidanceModule::plan()
     debug_data_.new_shift_points = *new_shift_points;
     DEBUG_PRINT("new_shift_points size = %lu", new_shift_points->size());
     printShiftPoints(*new_shift_points, "new_shift_points");
+    if (new_shift_points->back().getRelativeLength() > 0.0) {
+      removePreviousRTCStatusRight();
+    } else if (new_shift_points->back().getRelativeLength() < 0.0) {
+      removePreviousRTCStatusLeft();
+    } else {
+      RCLCPP_WARN_STREAM(getLogger(), "Direction is UNKNOWN");
+    }
     addShiftPointIfApproved(*new_shift_points);
   } else if (isWaitingApproval()) {
     clearWaitingApproval();
@@ -2188,14 +2195,6 @@ void AvoidanceModule::addShiftPointIfApproved(const AvoidPointArray & shift_poin
 
     // register original points for consistency
     registerRawShiftPoints(shift_points);
-
-    TurnSignalInfo turn_signal_info;
-    turn_signal_info.signal_distance = std::numeric_limits<double>::lowest();
-    if (shift_points.back().getRelativeLength() > 0.0) {
-      turn_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
-    } else if (shift_points.back().getRelativeLength() < 0.0) {
-      turn_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
-    }
 
     uuid_left_ = generateUUID();
     uuid_right_ = generateUUID();
