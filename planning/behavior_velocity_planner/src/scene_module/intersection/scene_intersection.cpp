@@ -76,8 +76,7 @@ bool IntersectionModule::modifyPathVelocity(
   *stop_reason =
     planning_utils::initializeStopReason(tier4_planning_msgs::msg::StopReason::INTERSECTION);
 
-  const auto input_path = *path;
-  debug_data_.path_raw = input_path;
+  debug_data_.path_raw = *path;
 
   State current_state = state_machine_.getState();
   RCLCPP_DEBUG(logger_, "lane_id = %ld, state = %s", lane_id_, toString(current_state).c_str());
@@ -142,7 +141,7 @@ bool IntersectionModule::modifyPathVelocity(
 
   /* calc closest index */
   int closest_idx = -1;
-  if (!planning_utils::calcClosestIndex(input_path, current_pose.pose, closest_idx)) {
+  if (!planning_utils::calcClosestIndex(*path, current_pose.pose, closest_idx)) {
     RCLCPP_WARN_SKIPFIRST_THROTTLE(logger_, *clock_, 1000 /* ms */, "calcClosestIndex fail");
     RCLCPP_DEBUG(logger_, "===== plan end =====");
     return false;
@@ -159,8 +158,8 @@ bool IntersectionModule::modifyPathVelocity(
     RCLCPP_DEBUG(logger_, "===== plan end =====");
     setSafe(true);
     setDistance(tier4_autoware_utils::calcSignedArcLength(
-      input_path.points, planner_data_->current_pose.pose.position,
-      input_path.points.at(stop_line_idx).point.pose.position));
+      path->points, planner_data_->current_pose.pose.position,
+      path->points.at(stop_line_idx).point.pose.position));
     return true;  // no plan needed.
   }
 
@@ -185,8 +184,8 @@ bool IntersectionModule::modifyPathVelocity(
 
   setSafe(!is_entry_prohibited);
   setDistance(tier4_autoware_utils::calcSignedArcLength(
-    input_path.points, planner_data_->current_pose.pose.position,
-    input_path.points.at(stop_line_idx).point.pose.position));
+    path->points, planner_data_->current_pose.pose.position,
+    path->points.at(stop_line_idx).point.pose.position));
 
   if (!isActivated()) {
     const double v = 0.0;
