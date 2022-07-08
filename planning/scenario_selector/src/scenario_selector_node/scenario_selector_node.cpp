@@ -178,10 +178,8 @@ std::string ScenarioSelectorNode::selectScenarioByPosition()
   }
 
   if (current_scenario_ == tier4_planning_msgs::msg::Scenario::PARKING) {
-    bool is_parking_completed{};
-    this->get_parameter<bool>("is_parking_completed", is_parking_completed);
-    if (is_parking_completed && is_in_lane) {
-      this->set_parameter(rclcpp::Parameter("is_parking_completed", false));
+    if (is_parking_completed_ && is_in_lane) {
+      is_parking_completed_ = false;
       return tier4_planning_msgs::msg::Scenario::LANEDRIVING;
     }
   }
@@ -247,6 +245,11 @@ void ScenarioSelectorNode::onOdom(const nav_msgs::msg::Odometry::ConstSharedPtr 
 
     twist_buffer_.pop_front();
   }
+}
+
+void ScenarioSelectorNode::onParkingState(const std_msgs::msg::Bool::ConstSharedPtr msg)
+{
+  is_parking_completed_ = msg->data;
 }
 
 void ScenarioSelectorNode::onTimer()
@@ -322,11 +325,9 @@ ScenarioSelectorNode::ScenarioSelectorNode(const rclcpp::NodeOptions & node_opti
   th_max_message_delay_sec_(this->declare_parameter<double>("th_max_message_delay_sec", 1.0)),
   th_arrived_distance_m_(this->declare_parameter<double>("th_arrived_distance_m", 1.0)),
   th_stopped_time_sec_(this->declare_parameter<double>("th_stopped_time_sec", 1.0)),
-  th_stopped_velocity_mps_(this->declare_parameter<double>("th_stopped_velocity_mps", 0.01))
+  th_stopped_velocity_mps_(this->declare_parameter<double>("th_stopped_velocity_mps", 0.01)),
+  is_parking_completed_(false)
 {
-  // Parameters
-  this->declare_parameter<bool>("is_parking_completed", false);
-
   // Input
   sub_lane_driving_trajectory_ =
     this->create_subscription<autoware_auto_planning_msgs::msg::Trajectory>(
@@ -346,6 +347,9 @@ ScenarioSelectorNode::ScenarioSelectorNode(const rclcpp::NodeOptions & node_opti
   sub_odom_ = this->create_subscription<nav_msgs::msg::Odometry>(
     "input/odometry", rclcpp::QoS{100},
     std::bind(&ScenarioSelectorNode::onOdom, this, std::placeholders::_1));
+  sub_parking_state_ = this->create_subscription<std_msgs::msg::Bool>(
+    "is_parking_completed", rclcpp::QoS{100},
+    std::bind(&ScenarioSelectorNode::onParkingState, this, std::placeholders::_1));
 
   // Output
   pub_scenario_ =

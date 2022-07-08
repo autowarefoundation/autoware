@@ -224,7 +224,6 @@ FreespacePlannerNode::FreespacePlannerNode(const rclcpp::NodeOptions & node_opti
     p.vehicle_shape_margin_m = declare_parameter("vehicle_shape_margin_m", 1.0);
     p.replan_when_obstacle_found = declare_parameter("replan_when_obstacle_found", true);
     p.replan_when_course_out = declare_parameter("replan_when_course_out", true);
-    declare_parameter<bool>("is_completed", false);
   }
 
   // Planning
@@ -251,6 +250,7 @@ FreespacePlannerNode::FreespacePlannerNode(const rclcpp::NodeOptions & node_opti
     trajectory_pub_ = create_publisher<Trajectory>("~/output/trajectory", qos);
     debug_pose_array_pub_ = create_publisher<PoseArray>("~/debug/pose_array", qos);
     debug_partial_pose_array_pub_ = create_publisher<PoseArray>("~/debug/partial_pose_array", qos);
+    parking_state_pub_ = create_publisher<std_msgs::msg::Bool>("is_completed", qos);
   }
 
   // TF
@@ -393,8 +393,10 @@ void FreespacePlannerNode::updateTargetIndex()
     if (new_target_index == target_index_) {
       // Finished publishing all partial trajectories
       is_completed_ = true;
-      this->set_parameter(rclcpp::Parameter("is_completed", true));
       RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, "Freespace planning completed");
+      std_msgs::msg::Bool is_completed_msg;
+      is_completed_msg.data = is_completed_;
+      parking_state_pub_->publish(is_completed_msg);
     } else {
       // Switch to next partial trajectory
       prev_target_index_ = target_index_;
@@ -506,7 +508,9 @@ void FreespacePlannerNode::reset()
   trajectory_ = Trajectory();
   partial_trajectory_ = Trajectory();
   is_completed_ = false;
-  this->set_parameter(rclcpp::Parameter("is_completed", false));
+  std_msgs::msg::Bool is_completed_msg;
+  is_completed_msg.data = is_completed_;
+  parking_state_pub_->publish(is_completed_msg);
 }
 
 TransformStamped FreespacePlannerNode::getTransform(
