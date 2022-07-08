@@ -22,6 +22,7 @@
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_auto_planning_msgs/msg/had_map_route.hpp>
+#include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <autoware_auto_planning_msgs/msg/trajectory.hpp>
 #include <autoware_auto_planning_msgs/msg/trajectory_point.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
@@ -41,6 +42,7 @@
 namespace lane_departure_checker
 {
 using autoware_auto_planning_msgs::msg::HADMapRoute;
+using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using autoware_auto_planning_msgs::msg::Trajectory;
 using autoware_auto_planning_msgs::msg::TrajectoryPoint;
 using tier4_autoware_utils::LinearRing2d;
@@ -95,6 +97,15 @@ public:
 
   void setParam(const Param & param) { param_ = param; }
 
+  void setVehicleInfo(const vehicle_info_util::VehicleInfo vehicle_info)
+  {
+    vehicle_info_ptr_ = std::make_shared<vehicle_info_util::VehicleInfo>(vehicle_info);
+  }
+
+  bool checkPathWillLeaveLane(const lanelet::ConstLanelets & lanelets, const PathWithLaneId & path);
+
+  vehicle_info_util::VehicleInfo vehicle_info_public_;
+
 private:
   Param param_;
   std::shared_ptr<vehicle_info_util::VehicleInfo> vehicle_info_ptr_;
@@ -111,6 +122,7 @@ private:
   std::vector<LinearRing2d> createVehicleFootprints(
     const geometry_msgs::msg::PoseWithCovariance & covariance, const TrajectoryPoints & trajectory,
     const Param & param);
+  std::vector<LinearRing2d> createVehicleFootprints(const PathWithLaneId & path);
 
   static std::vector<LinearRing2d> createVehiclePassingAreas(
     const std::vector<LinearRing2d> & vehicle_footprints);

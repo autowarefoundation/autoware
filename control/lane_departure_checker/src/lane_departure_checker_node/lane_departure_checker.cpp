@@ -144,6 +144,14 @@ Output LaneDepartureChecker::update(const Input & input)
   return output;
 }
 
+bool LaneDepartureChecker::checkPathWillLeaveLane(
+  const lanelet::ConstLanelets & lanelets, const PathWithLaneId & path)
+{
+  std::vector<LinearRing2d> vehicle_footprints = createVehicleFootprints(path);
+  lanelet::ConstLanelets candidate_lanelets = getCandidateLanelets(lanelets, vehicle_footprints);
+  return willLeaveLane(candidate_lanelets, vehicle_footprints);
+}
+
 PoseDeviation LaneDepartureChecker::calcTrajectoryDeviation(
   const Trajectory & trajectory, const geometry_msgs::msg::Pose & pose, const double yaw_threshold)
 {
@@ -229,6 +237,21 @@ std::vector<LinearRing2d> LaneDepartureChecker::createVehicleFootprints(
   for (const auto & p : trajectory) {
     vehicle_footprints.push_back(
       transformVector(local_vehicle_footprint, tier4_autoware_utils::pose2transform(p.pose)));
+  }
+
+  return vehicle_footprints;
+}
+
+std::vector<LinearRing2d> LaneDepartureChecker::createVehicleFootprints(const PathWithLaneId & path)
+{
+  // Create vehicle footprint in base_link coordinate
+  const auto local_vehicle_footprint = createVehicleFootprint(*vehicle_info_ptr_);
+
+  // Create vehicle footprint on each Path point
+  std::vector<LinearRing2d> vehicle_footprints;
+  for (const auto & p : path.points) {
+    vehicle_footprints.push_back(
+      transformVector(local_vehicle_footprint, tier4_autoware_utils::pose2transform(p.point.pose)));
   }
 
   return vehicle_footprints;
