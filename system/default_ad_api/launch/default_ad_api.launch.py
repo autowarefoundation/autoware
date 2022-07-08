@@ -31,7 +31,6 @@ def _create_api_node(node_name, class_name, **kwargs):
 def generate_launch_description():
     components = [
         _create_api_node("interface", "InterfaceNode"),
-        _create_api_node("localization_score", "LocalizationScoreNode"),
     ]
     container = ComposableNodeContainer(
         namespace="default_ad_api",

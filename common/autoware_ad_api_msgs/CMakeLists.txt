@@ -5,8 +5,6 @@ find_package(autoware_cmake REQUIRED)
 autoware_package()
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-  localization/msg/LocalizationScoreArray.msg
-  localization/msg/LocalizationScore.msg
   common/msg/ResponseStatus.msg
   interface/srv/InterfaceVersion.srv
   DEPENDENCIES
