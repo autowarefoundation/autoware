@@ -50,6 +50,12 @@ def launch_setup(context, *args, **kwargs):
     with open(lane_departure_checker_param_path, "r") as f:
         lane_departure_checker_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
+    operation_mode_transition_manager_param_path = LaunchConfiguration(
+        "operation_mode_transition_manager_param_path"
+    ).perform(context)
+    with open(operation_mode_transition_manager_param_path, "r") as f:
+        operation_mode_transition_manager_param = yaml.safe_load(f)["/**"]["ros__parameters"]
+
     controller_component = ComposableNode(
         package="trajectory_follower_nodes",
         plugin="autoware::motion::control::trajectory_follower_nodes::Controller",
@@ -116,6 +122,7 @@ def launch_setup(context, *args, **kwargs):
         remappings=[
             ("input/emergency_state", "/system/emergency/emergency_state"),
             ("input/steering", "/vehicle/status/steering_status"),
+            ("input/operation_mode", "/control/operation_mode"),
             ("input/auto/control_cmd", "/control/trajectory_follower/control_cmd"),
             ("input/auto/turn_indicators_cmd", "/planning/turn_indicators_cmd"),
             ("input/auto/hazard_lights_cmd", "/planning/hazard_lights_cmd"),
@@ -137,6 +144,7 @@ def launch_setup(context, *args, **kwargs):
             ("output/gate_mode", "/control/current_gate_mode"),
             ("output/engage", "/api/autoware/get/engage"),
             ("output/external_emergency", "/api/autoware/get/emergency"),
+            ("output/operation_mode", "/control/vehicle_cmd_gate/operation_mode"),
             ("~/service/engage", "/api/autoware/set/engage"),
             ("~/service/external_emergency", "/api/autoware/set/emergency"),
             # TODO(Takagi, Isamu): deprecated
@@ -154,6 +162,31 @@ def launch_setup(context, *args, **kwargs):
             },
         ],
         extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
+    )
+
+    # operation mode transition manager
+    operation_mode_transition_manager_component = ComposableNode(
+        package="operation_mode_transition_manager",
+        plugin="operation_mode_transition_manager::OperationModeTransitionManager",
+        name="operation_mode_transition_manager",
+        remappings=[
+            # input
+            ("kinematics", "/localization/kinematic_state"),
+            ("steering", "/vehicle/status/steering_status"),
+            ("trajectory", "/planning/scenario_planning/trajectory"),
+            ("control_cmd", "/control/command/control_cmd"),
+            ("control_mode_report", "/vehicle/status/control_mode"),
+            ("gate_operation_mode", "/control/vehicle_cmd_gate/operation_mode"),
+            ("operation_mode_request", "/system/operation_mode_request"),
+            # output
+            ("is_autonomous_available", "/control/is_autonomous_available"),
+            ("operation_mode", "/control/operation_mode"),
+            ("control_mode_request", "/control/control_mode_request"),
+        ],
+        parameters=[
+            operation_mode_transition_manager_param,
+            vehicle_info_param,
+        ],
     )
 
     # external cmd selector
@@ -190,6 +223,7 @@ def launch_setup(context, *args, **kwargs):
             lane_departure_component,
             shift_decider_component,
             vehicle_cmd_gate_component,
+            operation_mode_transition_manager_component,
         ],
     )
 
@@ -257,6 +291,14 @@ def generate_launch_description():
     add_launch_arg(
         "lane_departure_checker_param_path",
         [FindPackageShare("lane_departure_checker"), "/config/lane_departure_checker.param.yaml"],
+    )
+    add_launch_arg(
+        "operation_mode_transition_manager_param_path",
+        [
+            FindPackageShare("tier4_control_launch"),
+            "/config/operation_mode_transition_manager/operation_mode_transition_manager.param.yaml",
+        ],
+        "path to the parameter file of vehicle_cmd_gate",
     )
 
     # velocity controller

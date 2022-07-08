@@ -1,0 +1,34 @@
+<package format="3">
+  <name>operation_mode_transition_manager</name>
+  <version>0.1.0</version>
+  <description>The vehicle_cmd_gate package</description>
+  <maintainer email="horibe.takamasa@gmail.com">Takamasa Horibe</maintainer>
+  <license>Apache License 2.0</license>
+
+  <build_depend>autoware_cmake</build_depend>
+  <build_depend>rosidl_default_generators</build_depend>
+
+  <depend>autoware_auto_control_msgs</depend>
+  <depend>autoware_auto_system_msgs</depend>
+  <depend>autoware_auto_vehicle_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>std_srvs</depend>
+  <depend>tier4_autoware_utils</depend>
+  <depend>tier4_control_msgs</depend>
+  <depend>tier4_system_msgs</depend>
+  <depend>tier4_vehicle_msgs</depend>
+  <depend>vehicle_info_util</depend>
+
+  <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>autoware_lint_common</test_depend>
+
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
