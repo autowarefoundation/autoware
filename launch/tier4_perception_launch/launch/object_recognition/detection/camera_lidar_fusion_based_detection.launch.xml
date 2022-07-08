@@ -2,7 +2,6 @@
 <launch>
   <arg name="input/pointcloud"/>
   <arg name="input/obstacle_segmentation/pointcloud" default="/perception/obstacle_segmentation/pointcloud"/>
-  <arg name="output/objects" default="objects"/>
   <arg name="image_raw0" default="/image_raw" description="image raw topic name"/>
   <arg name="camera_info0" default="/camera_info" description="camera info topic name"/>
   <arg name="image_raw1" default="/image_raw1"/>
@@ -185,7 +184,7 @@
   <group>
     <include file="$(find-pkg-share detected_object_validation)/launch/object_lanelet_filter.launch.xml">
       <arg name="input/object" value="objects_before_filter"/>
-      <arg name="output/object" value="$(var output/objects)"/>
+      <arg name="output/object" value="objects"/>
     </include>
   </group>
 </launch>
