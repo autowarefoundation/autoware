@@ -38,12 +38,22 @@ namespace tier4_autoware_utils
 template <>
 inline boost::optional<geometry_msgs::msg::Point> calcLongitudinalOffsetPoint(
   const std::vector<autoware_auto_planning_msgs::msg::PathPointWithLaneId> & points,
-  const size_t src_idx, const double offset)
+  const size_t src_idx, const double offset, const bool throw_exception)
 {
-  validateNonEmpty(points);
+  try {
+    validateNonEmpty(points);
+  } catch (const std::exception & e) {
+    std::cerr << e.what() << std::endl;
+    return {};
+  }
 
   if (points.size() - 1 < src_idx) {
-    throw std::out_of_range("Invalid source index");
+    const auto e = std::out_of_range("Invalid source index");
+    if (throw_exception) {
+      throw e;
+    }
+    std::cerr << e.what() << std::endl;
+    return {};
   }
 
   if (points.size() == 1) {
@@ -92,7 +102,12 @@ inline boost::optional<geometry_msgs::msg::Point> calcLongitudinalOffsetPoint(
   const std::vector<autoware_auto_planning_msgs::msg::PathPointWithLaneId> & points,
   const geometry_msgs::msg::Point & src_point, const double offset)
 {
-  validateNonEmpty(points);
+  try {
+    validateNonEmpty(points);
+  } catch (const std::exception & e) {
+    std::cerr << e.what() << std::endl;
+    return {};
+  }
 
   if (offset < 0.0) {
     auto reverse_points = points;
@@ -117,12 +132,22 @@ inline boost::optional<geometry_msgs::msg::Point> calcLongitudinalOffsetPoint(
 template <>
 inline boost::optional<geometry_msgs::msg::Pose> calcLongitudinalOffsetPose(
   const std::vector<autoware_auto_planning_msgs::msg::PathPointWithLaneId> & points,
-  const size_t src_idx, const double offset)
+  const size_t src_idx, const double offset, const bool throw_exception)
 {
-  validateNonEmpty(points);
+  try {
+    validateNonEmpty(points);
+  } catch (const std::exception & e) {
+    std::cerr << e.what() << std::endl;
+    return {};
+  }
 
   if (points.size() - 1 < src_idx) {
-    throw std::out_of_range("Invalid source index");
+    const auto e = std::out_of_range("Invalid source index");
+    if (throw_exception) {
+      throw e;
+    }
+    std::cerr << e.what() << std::endl;
+    return {};
   }
 
   if (points.size() == 1) {
@@ -184,7 +209,12 @@ inline boost::optional<geometry_msgs::msg::Pose> calcLongitudinalOffsetPose(
   const std::vector<autoware_auto_planning_msgs::msg::PathPointWithLaneId> & points,
   const geometry_msgs::msg::Point & src_point, const double offset)
 {
-  validateNonEmpty(points);
+  try {
+    validateNonEmpty(points);
+  } catch (const std::exception & e) {
+    std::cerr << e.what() << std::endl;
+    return {};
+  }
 
   const size_t src_seg_idx = findNearestSegmentIndex(points, src_point);
   const double signed_length_src_offset =
@@ -206,7 +236,12 @@ inline boost::optional<size_t> insertTargetPoint(
   std::vector<autoware_auto_planning_msgs::msg::PathPointWithLaneId> & points,
   const double overlap_threshold)
 {
-  validateNonEmpty(points);
+  try {
+    validateNonEmpty(points);
+  } catch (const std::exception & e) {
+    std::cerr << e.what() << std::endl;
+    return {};
+  }
 
   // invalid segment index
   if (seg_idx + 1 >= points.size()) {
