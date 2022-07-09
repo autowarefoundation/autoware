@@ -2,6 +2,7 @@
 <launch>
   <arg name="input/pointcloud"/>
   <arg name="input/obstacle_segmentation/pointcloud" default="/perception/obstacle_segmentation/pointcloud"/>
+  <arg name="output/objects" default="objects"/>
   <arg name="lidar_detection_model" default="centerpoint" description="options: `centerpoint`, `apollo`"/>
   <arg name="use_pointcloud_map" default="true" description="use pointcloud map in detection"/>
   <arg name="use_pointcloud_container" default="false" description="use pointcloud container for detection preprocessor"/>
@@ -107,7 +108,7 @@
   <group>
     <include file="$(find-pkg-share detected_object_validation)/launch/object_lanelet_filter.launch.xml">
       <arg name="input/object" value="objects_before_filter"/>
-      <arg name="output/object" value="objects"/>
+      <arg name="output/object" value="$(var output/objects)"/>
     </include>
   </group>
 </launch>
