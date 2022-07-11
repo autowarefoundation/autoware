@@ -126,6 +126,7 @@ private:
   int64_t lane_id_;
   TurnDirection turn_direction_;
   bool has_traffic_light_;
+  bool is_over_pass_judge_line_;
 
   // Parameter
   PlannerParam planner_param_;

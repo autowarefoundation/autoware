@@ -156,7 +156,7 @@ visualization_msgs::msg::MarkerArray BlindSpotModule::createVirtualWallMarkerArr
 
   const auto now = this->clock_->now();
 
-  if (!isActivated()) {
+  if (!isActivated() && !is_over_pass_judge_line_) {
     appendMarkerArray(
       tier4_autoware_utils::createStopVirtualWallMarker(
         debug_data_.virtual_wall_pose, "blind_spot", now, lane_id_),
