@@ -141,7 +141,7 @@ Polygons2d RunOutModule::createDetectionAreaPolygon(const PathWithLaneId & smoot
     initial_vel, target_vel, initial_acc, planning_dec, jerk_acc, jerk_dec);
 
   if (!stop_dist) {
-    *stop_dist = 0;
+    stop_dist = boost::make_optional<double>(0.0);
   }
 
   // create detection area polygon
