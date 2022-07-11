@@ -69,6 +69,8 @@ RadarObjectFusionToDetectedObjectNode::RadarObjectFusionToDetectedObjectNode(
     declare_parameter<double>("core_params.bounding_box_margin", 0.5);
   core_param_.split_threshold_velocity =
     declare_parameter<double>("core_params.split_threshold_velocity", 0.0);
+  core_param_.threshold_yaw_diff =
+    declare_parameter<double>("core_params.threshold_yaw_diff", 0.35);
   core_param_.velocity_weight_average =
     declare_parameter<double>("core_params.velocity_weight_average", 0.0);
   core_param_.velocity_weight_median =
@@ -136,6 +138,7 @@ rcl_interfaces::msg::SetParametersResult RadarObjectFusionToDetectedObjectNode::
       // Update params
       update_param(params, "core_params.bounding_box_margin", p.bounding_box_margin);
       update_param(params, "core_params.split_threshold_velocity", p.split_threshold_velocity);
+      update_param(params, "core_params.threshold_yaw_diff", p.threshold_yaw_diff);
       update_param(params, "core_params.velocity_weight_average", p.velocity_weight_average);
       update_param(params, "core_params.velocity_weight_median", p.velocity_weight_median);
       update_param(

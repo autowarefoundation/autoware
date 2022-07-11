@@ -40,6 +40,7 @@ void RadarFusionToDetectedObject::setParam(const Param & param)
   // Radar fusion param
   param_.bounding_box_margin = param.bounding_box_margin;
   param_.split_threshold_velocity = param.split_threshold_velocity;
+  param_.threshold_yaw_diff = param.split_threshold_velocity;
 
   // normalize weight param
   double sum_weight = param.velocity_weight_median + param.velocity_weight_min_distance +
@@ -97,12 +98,19 @@ RadarFusionToDetectedObject::Output RadarFusionToDetectedObject::update(
         // If object is split, then filter radar again
         radars_within_split_object = filterRadarWithinObject(object, radars_within_object);
       }
-
       // Estimate twist of object
       if (!radars_within_split_object || !(*radars_within_split_object).empty()) {
-        split_object.kinematics.has_twist = true;
-        split_object.kinematics.twist_with_covariance =
+        TwistWithCovariance twist_with_covariance =
           estimateTwist(split_object, radars_within_split_object);
+        const double twist_yaw = tier4_autoware_utils::normalizeRadian(
+          std::atan2(twist_with_covariance.twist.linear.y, twist_with_covariance.twist.linear.x));
+        const double object_yaw = tier4_autoware_utils::normalizeRadian(
+          tf2::getYaw(split_object.kinematics.pose_with_covariance.pose.orientation));
+        const double diff_yaw = tier4_autoware_utils::normalizeRadian(twist_yaw - object_yaw);
+        if (isYawCorrect(diff_yaw, param_.threshold_yaw_diff)) {
+          split_object.kinematics.twist_with_covariance = twist_with_covariance;
+          split_object.kinematics.has_twist = true;
+        }
       }
 
       // Delete objects with low probability
@@ -114,6 +122,20 @@ RadarFusionToDetectedObject::Output RadarFusionToDetectedObject::update(
     }
   }
   return output;
+}
+
+// Judge whether object's yaw is same direction with twist's yaw.
+// This function improve multi object tracking with observed speed.
+bool RadarFusionToDetectedObject::isYawCorrect(const double & yaw, const double & yaw_threshold)
+{
+  double normalized_yaw = tier4_autoware_utils::normalizeRadian(yaw);
+  if (std::abs(normalized_yaw) < yaw_threshold) {
+    return true;
+  } else if (M_PI - yaw_threshold < std::abs(normalized_yaw)) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 // Choose radar pointcloud/objects within 3D bounding box from lidar-base detection with margin
@@ -249,7 +271,7 @@ TwistWithCovariance RadarFusionToDetectedObject::estimateTwist(
   return twist_with_covariance;
 }
 
-// Jugde wether low confidence objects that do not have some radar points/objects or not.
+// Judge whether low confidence objects that do not have some radar points/objects or not.
 bool RadarFusionToDetectedObject::isQualified(
   const DetectedObject & object, std::shared_ptr<std::vector<RadarInput>> & radars)
 {

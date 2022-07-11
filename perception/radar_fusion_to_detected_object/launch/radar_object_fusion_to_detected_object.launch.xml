@@ -12,6 +12,6 @@
     <remap from="~/input/objects" to="$(var input/objects)"/>
     <remap from="~/input/radars" to="$(var input/radars)"/>
     <remap from="~/output/objects" to="$(var output/objects)"/>
-    <!--<param from="$(var config_file)" /> -->
+    <param from="$(var config_file)"/>
   </node>
 </launch>
