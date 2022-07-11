@@ -68,7 +68,7 @@ public:
     double stop_line_margin;
     double stop_position_threshold;
     // param for ego velocity
-    double slow_velocity;
+    float min_slow_down_velocity;
     double max_slow_down_jerk;
     double max_slow_down_accel;
     double no_relax_velocity;

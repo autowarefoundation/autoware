@@ -10,7 +10,7 @@
       stop_position_threshold: 1.0 # [m] threshold for check whether the vehicle stop in front of crosswalk
 
       # param for ego velocity
-      slow_velocity: 2.78 # [m/s] target vehicle velocity when module receive slow down command from FOA (2.78 m/s = 10.0 kmph)
+      min_slow_down_velocity: 2.78 # [m/s] target vehicle velocity when module receive slow down command from FOA (2.78 m/s = 10.0 kmph)
       max_slow_down_jerk: -1.5 # [m/sss] minimum jerk deceleration for safe brake
       max_slow_down_accel: -2.5 # [m/ss] minimum accel deceleration for safe brake
       no_relax_velocity: 2.78 # [m/s] if the current velocity is less than X m/s, ego always stops at the stop position(not relax deceleration constraints 2.78 m/s = 10 kmph)

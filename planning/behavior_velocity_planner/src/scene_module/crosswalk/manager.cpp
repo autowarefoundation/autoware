@@ -103,7 +103,7 @@ CrosswalkModuleManager::CrosswalkModuleManager(rclcpp::Node & node)
   cp.stop_position_threshold = node.declare_parameter(ns + ".stop_position_threshold", 1.0);
 
   // param for ego velocity
-  cp.slow_velocity = node.declare_parameter(ns + ".slow_velocity", 5.0 / 3.6);
+  cp.min_slow_down_velocity = node.declare_parameter(ns + ".min_slow_down_velocity", 5.0 / 3.6);
   cp.max_slow_down_jerk = node.declare_parameter(ns + ".max_slow_down_jerk", -0.7);
   cp.max_slow_down_accel = node.declare_parameter(ns + ".max_slow_down_accel", -2.5);
   cp.no_relax_velocity = node.declare_parameter(ns + ".no_relax_velocity", 2.78);

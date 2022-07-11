@@ -363,20 +363,23 @@ bool CrosswalkModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
 
   setSafe(!nearest_stop_point);
 
-  const auto target_velocity =
-    nearest_stop_point ? calcTargetVelocity(nearest_stop_point.get().second, ego_path) : 0.0;
-
   if (isActivated()) {
-    if (1e-3 < target_velocity) {
-      insertDecelPoint(nearest_stop_point.get(), target_velocity, *path);
+    if (!nearest_stop_point) {
+      return true;
     }
+
+    const auto target_velocity = calcTargetVelocity(nearest_stop_point.get().second, ego_path);
+    insertDecelPoint(
+      nearest_stop_point.get(), std::max(planner_param_.min_slow_down_velocity, target_velocity),
+      *path);
+
     return true;
   }
 
   if (nearest_stop_point) {
-    insertDecelPoint(nearest_stop_point.get(), target_velocity, *path);
+    insertDecelPoint(nearest_stop_point.get(), 0.0, *path);
   } else if (rtc_stop_point) {
-    insertDecelPoint(rtc_stop_point.get(), target_velocity, *path);
+    insertDecelPoint(rtc_stop_point.get(), 0.0, *path);
   }
 
   RCLCPP_INFO_EXPRESSION(
@@ -442,13 +445,6 @@ boost::optional<std::pair<size_t, PathPointWithLaneId>> CrosswalkModule::findNea
 
   bool found_pedestrians = false;
   bool found_stuck_vehicle = false;
-  const bool external_slowdown = isTargetExternalInputStatus(CrosswalkStatus::SLOWDOWN);
-  const bool external_stop = isTargetExternalInputStatus(CrosswalkStatus::STOP);
-  const bool external_go = isTargetExternalInputStatus(CrosswalkStatus::GO);
-
-  if (external_go) {
-    return {};
-  }
 
   const auto crosswalk_attention_range = getAttentionRange(ego_path);
   const auto & ego_pos = planner_data_->current_pose.pose.position;
@@ -540,8 +536,7 @@ boost::optional<std::pair<size_t, PathPointWithLaneId>> CrosswalkModule::findNea
     }
   }
 
-  const auto need_to_stop =
-    found_pedestrians || found_stuck_vehicle || external_stop || external_slowdown;
+  const auto need_to_stop = found_pedestrians || found_stuck_vehicle;
   if (!need_to_stop) {
     return {};
   }
@@ -646,18 +641,6 @@ void CrosswalkModule::insertDecelPoint(
 float CrosswalkModule::calcTargetVelocity(
   const PathPointWithLaneId & stop_point, const PathWithLaneId & ego_path) const
 {
-  if (!isActivated()) {
-    return 0.0;
-  }
-
-  if (isTargetExternalInputStatus(CrosswalkStatus::SLOWDOWN)) {
-    return planner_param_.slow_velocity;
-  }
-
-  if (isTargetExternalInputStatus(CrosswalkStatus::STOP)) {
-    return 0.0;
-  }
-
   const auto & max_jerk = planner_param_.max_slow_down_jerk;
   const auto & max_accel = planner_param_.max_slow_down_accel;
   const auto & ego_pos = planner_data_->current_pose.pose.position;
