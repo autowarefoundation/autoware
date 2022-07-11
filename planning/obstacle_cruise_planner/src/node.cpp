@@ -803,12 +803,12 @@ void ObstacleCruisePlannerNode::updateHasStopped(std::vector<TargetObstacle> & t
         });
       const bool has_already_stopped = (itr != prev_target_obstacles_.end()) && itr->has_stopped;
       if (has_already_stopped) {
-        if (std::abs(obstacle.velocity) < obstacle_velocity_threshold_from_stop_to_cruise_) {
+        if (obstacle.velocity < obstacle_velocity_threshold_from_stop_to_cruise_) {
           obstacle.has_stopped = true;
           continue;
         }
       } else {
-        if (std::abs(obstacle.velocity) < obstacle_velocity_threshold_from_cruise_to_stop_) {
+        if (obstacle.velocity < obstacle_velocity_threshold_from_cruise_to_stop_) {
           obstacle.has_stopped = true;
           continue;
         }
