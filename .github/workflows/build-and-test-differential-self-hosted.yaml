@@ -18,19 +18,22 @@ jobs:
     needs: prevent-no-label-execution
     if: ${{ needs.prevent-no-label-execution.outputs.run == 'true' }}
     runs-on: [self-hosted, linux, ARM64]
-    container: ${{ matrix.container }}
+    container: ${{ matrix.container }}${{ matrix.container-suffix }}
     strategy:
       fail-fast: false
       matrix:
         rosdistro:
           - galactic
           - humble
+        container-suffix:
+          - ""
+          - -cuda
         include:
           - rosdistro: galactic
-            container: ghcr.io/autowarefoundation/autoware-universe:galactic-latest-cuda
+            container: ghcr.io/autowarefoundation/autoware-universe:galactic-latest
             build-depends-repos: build_depends.repos
           - rosdistro: humble
-            container: ghcr.io/autowarefoundation/autoware-universe:humble-latest-cuda
+            container: ghcr.io/autowarefoundation/autoware-universe:humble-latest
             build-depends-repos: build_depends.humble.repos
     steps:
       - name: Check out repository
