@@ -773,7 +773,7 @@ bool query::getCurrentLanelets(
 
   lanelet::BasicPoint2d search_point(search_pose.position.x, search_pose.position.y);
   for (const auto & llt : lanelets) {
-    if (!lanelet::geometry::inside(llt, search_point)) {
+    if (lanelet::geometry::inside(llt, search_point)) {
       current_lanelets_ptr->push_back(llt);
     }
   }
