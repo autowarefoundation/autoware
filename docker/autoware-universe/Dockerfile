@@ -38,7 +38,7 @@ RUN --mount=type=ssh \
 ## Clean up unnecessary files
 RUN rm -rf \
   "$HOME"/.cache \
-  /etc/apt/sources.list.d/cuda.list \
+  /etc/apt/sources.list.d/cuda*.list \
   /etc/apt/sources.list.d/docker.list \
   /etc/apt/sources.list.d/nvidia-docker.list
 
