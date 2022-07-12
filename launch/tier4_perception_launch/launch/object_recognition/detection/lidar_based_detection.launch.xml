@@ -111,6 +111,7 @@
     <include file="$(find-pkg-share detected_object_validation)/launch/object_lanelet_filter.launch.xml">
       <arg name="input/object" value="objects_before_filter"/>
       <arg name="output/object" value="$(var output/objects)"/>
+      <arg name="filtering_range_param" value="$(find-pkg-share tier4_perception_launch)/config/object_recognition/detection/object_lanelet_filter.param.yaml"/>
     </include>
   </group>
 </launch>
