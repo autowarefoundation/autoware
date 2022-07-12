@@ -14,6 +14,7 @@
 
 #include "obstacle_stop_planner/debug_marker.hpp"
 
+#include <motion_utils/motion_utils.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #ifdef ROS_DISTRO_GALACTIC
@@ -25,6 +26,8 @@
 #include <memory>
 #include <vector>
 
+using motion_utils::createSlowDownVirtualWallMarker;
+using motion_utils::createStopVirtualWallMarker;
 using tier4_autoware_utils::appendMarkerArray;
 using tier4_autoware_utils::calcOffsetPose;
 using tier4_autoware_utils::createDefaultMarker;
@@ -32,8 +35,6 @@ using tier4_autoware_utils::createMarkerColor;
 using tier4_autoware_utils::createMarkerOrientation;
 using tier4_autoware_utils::createMarkerScale;
 using tier4_autoware_utils::createPoint;
-using tier4_autoware_utils::createSlowDownVirtualWallMarker;
-using tier4_autoware_utils::createStopVirtualWallMarker;
 
 namespace motion_planning
 {

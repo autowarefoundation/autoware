@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tier4_autoware_utils/planning/planning_marker_helper.hpp"
+#include "motion_utils/marker/marker_helper.hpp"
 
 #include <string>
 
@@ -59,7 +59,7 @@ inline visualization_msgs::msg::MarkerArray createVirtualWallMarkerArray(
 
 }  // namespace
 
-namespace tier4_autoware_utils
+namespace motion_utils
 {
 visualization_msgs::msg::MarkerArray createStopVirtualWallMarker(
   const geometry_msgs::msg::Pose & pose, const std::string & module_name, const rclcpp::Time & now,
@@ -84,4 +84,4 @@ visualization_msgs::msg::MarkerArray createDeadLineVirtualWallMarker(
   return createVirtualWallMarkerArray(
     pose, module_name, "dead_line_", now, id, createMarkerColor(0.0, 1.0, 0.0, 0.5));
 }
-}  // namespace tier4_autoware_utils
+}  // namespace motion_utils

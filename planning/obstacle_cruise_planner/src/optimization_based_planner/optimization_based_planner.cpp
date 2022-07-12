@@ -719,11 +719,11 @@ boost::optional<SBoundaries> OptimizationBasedPlanner::getSBoundaries(
       visualization_msgs::msg::MarkerArray wall_msg;
 
       if (obj.has_stopped) {
-        const auto markers = tier4_autoware_utils::createStopVirtualWallMarker(
+        const auto markers = motion_utils::createStopVirtualWallMarker(
           marker_pose.get(), "obstacle to follow", current_time, 0);
         tier4_autoware_utils::appendMarkerArray(markers, &wall_msg);
       } else {
-        const auto markers = tier4_autoware_utils::createSlowDownVirtualWallMarker(
+        const auto markers = motion_utils::createSlowDownVirtualWallMarker(
           marker_pose.get(), "obstacle to follow", current_time, 0);
         tier4_autoware_utils::appendMarkerArray(markers, &wall_msg);
       }

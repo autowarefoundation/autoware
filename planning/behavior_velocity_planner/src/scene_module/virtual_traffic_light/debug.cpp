@@ -12,16 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <motion_utils/motion_utils.hpp>
 #include <scene_module/virtual_traffic_light/scene.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
+using motion_utils::createStopVirtualWallMarker;
 using tier4_autoware_utils::appendMarkerArray;
 using tier4_autoware_utils::createDefaultMarker;
 using tier4_autoware_utils::createMarkerColor;
 using tier4_autoware_utils::createMarkerOrientation;
 using tier4_autoware_utils::createMarkerPosition;
 using tier4_autoware_utils::createMarkerScale;
-using tier4_autoware_utils::createStopVirtualWallMarker;
 using tier4_autoware_utils::toMsg;
 using namespace std::literals::string_literals;
 

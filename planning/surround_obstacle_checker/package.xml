@@ -18,6 +18,7 @@
   <depend>diagnostic_msgs</depend>
   <depend>eigen</depend>
   <depend>libpcl-all-dev</depend>
+  <depend>motion_utils</depend>
   <depend>pcl_conversions</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>

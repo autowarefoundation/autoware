@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TIER4_AUTOWARE_UTILS__PLANNING__PLANNING_MARKER_HELPER_HPP_
-#define TIER4_AUTOWARE_UTILS__PLANNING__PLANNING_MARKER_HELPER_HPP_
+#ifndef MOTION_UTILS__MARKER__MARKER_HELPER_HPP_
+#define MOTION_UTILS__MARKER__MARKER_HELPER_HPP_
 
 #include "tier4_autoware_utils/ros/marker_helper.hpp"
 
 #include <string>
 
-namespace tier4_autoware_utils
+namespace motion_utils
 {
 visualization_msgs::msg::MarkerArray createStopVirtualWallMarker(
   const geometry_msgs::msg::Pose & pose, const std::string & module_name, const rclcpp::Time & now,
@@ -32,6 +32,6 @@ visualization_msgs::msg::MarkerArray createSlowDownVirtualWallMarker(
 visualization_msgs::msg::MarkerArray createDeadLineVirtualWallMarker(
   const geometry_msgs::msg::Pose & pose, const std::string & module_name, const rclcpp::Time & now,
   const int32_t id);
-}  // namespace tier4_autoware_utils
+}  // namespace motion_utils
 
-#endif  // TIER4_AUTOWARE_UTILS__PLANNING__PLANNING_MARKER_HELPER_HPP_
+#endif  // MOTION_UTILS__MARKER__MARKER_HELPER_HPP_

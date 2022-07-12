@@ -244,7 +244,7 @@ VelocityLimit PIDBasedPlanner::doCruise(
   const size_t wall_idx = obstacle_cruise_utils::getIndexWithLongitudinalOffset(
     planner_data.traj.points, dist_to_rss_wall, ego_idx);
 
-  const auto markers = tier4_autoware_utils::createSlowDownVirtualWallMarker(
+  const auto markers = motion_utils::createSlowDownVirtualWallMarker(
     planner_data.traj.points.at(wall_idx).pose, "obstacle cruise", planner_data.current_time, 0);
   tier4_autoware_utils::appendMarkerArray(markers, &debug_wall_marker);
 

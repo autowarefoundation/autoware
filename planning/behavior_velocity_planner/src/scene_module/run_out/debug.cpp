@@ -16,6 +16,8 @@
 
 #include "scene_module/run_out/scene.hpp"
 
+#include <motion_utils/motion_utils.hpp>
+
 using tier4_autoware_utils::appendMarkerArray;
 using tier4_autoware_utils::calcOffsetPose;
 using tier4_autoware_utils::createDefaultMarker;
@@ -176,7 +178,7 @@ visualization_msgs::msg::MarkerArray RunOutDebug::createVirtualWallMarkerArray()
 
   for (const auto & p : stop_pose_) {
     appendMarkerArray(
-      tier4_autoware_utils::createStopVirtualWallMarker(p, "run_out", now, id++), &wall_marker);
+      motion_utils::createStopVirtualWallMarker(p, "run_out", now, id++), &wall_marker);
   }
 
   stop_pose_.clear();

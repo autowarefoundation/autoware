@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <motion_utils/motion_utils.hpp>
 #include <scene_module/crosswalk/scene_crosswalk.hpp>
 #include <scene_module/crosswalk/scene_walkway.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
@@ -22,14 +23,14 @@
 namespace behavior_velocity_planner
 {
 
+using motion_utils::createSlowDownVirtualWallMarker;
+using motion_utils::createStopVirtualWallMarker;
 using tier4_autoware_utils::appendMarkerArray;
 using tier4_autoware_utils::calcOffsetPose;
 using tier4_autoware_utils::createDefaultMarker;
 using tier4_autoware_utils::createMarkerColor;
 using tier4_autoware_utils::createMarkerScale;
 using tier4_autoware_utils::createPoint;
-using tier4_autoware_utils::createSlowDownVirtualWallMarker;
-using tier4_autoware_utils::createStopVirtualWallMarker;
 using visualization_msgs::msg::Marker;
 
 namespace

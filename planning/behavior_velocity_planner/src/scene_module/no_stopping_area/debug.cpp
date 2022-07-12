@@ -16,7 +16,7 @@
 #include "utilization/marker_helper.hpp"
 #include "utilization/util.hpp"
 
-#include <tier4_autoware_utils/planning/planning_marker_helper.hpp>
+#include <motion_utils/motion_utils.hpp>
 
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -216,8 +216,8 @@ visualization_msgs::msg::MarkerArray NoStoppingAreaModule::createVirtualWallMark
     const auto p_front =
       tier4_autoware_utils::calcOffsetPose(p, debug_data_.base_link2front, 0.0, 0.0);
     appendMarkerArray(
-      tier4_autoware_utils::createStopVirtualWallMarker(p_front, "no_stopping_area", now, id++),
-      now, &wall_marker);
+      motion_utils::createStopVirtualWallMarker(p_front, "no_stopping_area", now, id++), now,
+      &wall_marker);
   }
   return wall_marker;
 }

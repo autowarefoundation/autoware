@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <motion_utils/motion_utils.hpp>
 #include <scene_module/stop_line/scene.hpp>
 #include <utilization/marker_helper.hpp>
 #include <utilization/util.hpp>
@@ -101,7 +102,7 @@ visualization_msgs::msg::MarkerArray StopLineModule::createVirtualWallMarkerArra
     *debug_data_.stop_pose, debug_data_.base_link2front, 0.0, 0.0);
   if (state_ == State::APPROACH) {
     appendMarkerArray(
-      tier4_autoware_utils::createStopVirtualWallMarker(p_front, "stopline", now, module_id_), now,
+      motion_utils::createStopVirtualWallMarker(p_front, "stopline", now, module_id_), now,
       &wall_marker);
   }
   return wall_marker;

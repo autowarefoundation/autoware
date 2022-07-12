@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <motion_utils/motion_utils.hpp>
 #include <scene_module/blind_spot/scene.hpp>
 #include <utilization/marker_helper.hpp>
 #include <utilization/util.hpp>
@@ -158,7 +159,7 @@ visualization_msgs::msg::MarkerArray BlindSpotModule::createVirtualWallMarkerArr
 
   if (!isActivated() && !is_over_pass_judge_line_) {
     appendMarkerArray(
-      tier4_autoware_utils::createStopVirtualWallMarker(
+      motion_utils::createStopVirtualWallMarker(
         debug_data_.virtual_wall_pose, "blind_spot", now, lane_id_),
       now, &wall_marker);
   }

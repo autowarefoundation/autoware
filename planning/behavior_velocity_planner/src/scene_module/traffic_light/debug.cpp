@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <motion_utils/motion_utils.hpp>
 #include <scene_module/traffic_light/scene.hpp>
 #include <utilization/marker_helper.hpp>
 #include <utilization/util.hpp>
@@ -41,15 +42,15 @@ visualization_msgs::msg::MarkerArray TrafficLightModule::createVirtualWallMarker
     const auto p_front =
       tier4_autoware_utils::calcOffsetPose(p, debug_data_.base_link2front, 0.0, 0.0);
     appendMarkerArray(
-      tier4_autoware_utils::createDeadLineVirtualWallMarker(p_front, "traffic_light", now, id++),
-      now, &wall_marker);
+      motion_utils::createDeadLineVirtualWallMarker(p_front, "traffic_light", now, id++), now,
+      &wall_marker);
   }
 
   for (const auto & p : debug_data_.stop_poses) {
     const auto p_front =
       tier4_autoware_utils::calcOffsetPose(p, debug_data_.base_link2front, 0.0, 0.0);
     appendMarkerArray(
-      tier4_autoware_utils::createStopVirtualWallMarker(p_front, "traffic_light", now, id++), now,
+      motion_utils::createStopVirtualWallMarker(p_front, "traffic_light", now, id++), now,
       &wall_marker);
   }
 

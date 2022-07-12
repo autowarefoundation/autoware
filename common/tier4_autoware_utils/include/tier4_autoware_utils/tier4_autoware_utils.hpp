@@ -23,7 +23,6 @@
 #include "tier4_autoware_utils/math/normalization.hpp"
 #include "tier4_autoware_utils/math/range.hpp"
 #include "tier4_autoware_utils/math/unit_conversion.hpp"
-#include "tier4_autoware_utils/planning/planning_marker_helper.hpp"
 #include "tier4_autoware_utils/ros/debug_publisher.hpp"
 #include "tier4_autoware_utils/ros/debug_traits.hpp"
 #include "tier4_autoware_utils/ros/marker_helper.hpp"

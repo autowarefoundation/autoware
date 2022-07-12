@@ -138,7 +138,7 @@ Trajectory PlannerInterface::generateStopTrajectory(
 
   // virtual wall marker for stop obstacle
   const auto marker_pose = planner_data.traj.points.at(wall_idx).pose;
-  const auto markers = tier4_autoware_utils::createStopVirtualWallMarker(
+  const auto markers = motion_utils::createStopVirtualWallMarker(
     marker_pose, "obstacle stop", planner_data.current_time, 0);
   tier4_autoware_utils::appendMarkerArray(markers, &debug_data.stop_wall_marker);
   debug_data.obstacles_to_stop.push_back(*closest_stop_obstacle);
