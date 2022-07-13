@@ -30,7 +30,9 @@
     <param name="bt_tree_config_path" value="$(find-pkg-share behavior_path_planner)/config/behavior_path_planner_tree.xml"/>
   </node>
 
-  <include file="$(find-pkg-share behavior_velocity_planner)/launch/behavior_velocity_planner.launch.xml">
-    <arg name="vehicle_info_param_file" value="$(var vehicle_info_param_file)"/>
-  </include>
+  <group>
+    <include file="$(find-pkg-share behavior_velocity_planner)/launch/behavior_velocity_planner.launch.xml">
+      <arg name="vehicle_info_param_file" value="$(var vehicle_info_param_file)"/>
+    </include>
+  </group>
 </launch>
