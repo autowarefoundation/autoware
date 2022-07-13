@@ -4,9 +4,8 @@
   <arg name="input/object1" default="object1"/>
   <arg name="output/object" default="merged_object"/>
   <arg name="data_association_matrix_path" default="$(find-pkg-share object_merger)/config/data_association_matrix.param.yaml"/>
-  <arg name="node_name" default="object_association_merger"/>
 
-  <node pkg="object_merger" exec="object_association_merger_node" name="$(var node_name)" output="screen">
+  <node pkg="object_merger" exec="object_association_merger_node" name="$(anon object_association_merger)" output="screen">
     <remap from="input/object0" to="$(var input/object0)"/>
     <remap from="input/object1" to="$(var input/object1)"/>
     <remap from="output/object" to="$(var output/object)"/>

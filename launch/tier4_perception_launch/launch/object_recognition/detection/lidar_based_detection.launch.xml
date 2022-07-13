@@ -72,11 +72,13 @@
     <group>
       <include file="$(find-pkg-share lidar_apollo_instance_segmentation)/launch/lidar_apollo_instance_segmentation.launch.xml">
         <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
+        <arg name="output/objects" value="labeled_clusters"/>
       </include>
     </group>
 
     <group>
       <include file="$(find-pkg-share shape_estimation)/launch/shape_estimation.launch.xml">
+        <arg name="input/objects" value="labeled_clusters"/>
         <arg name="output/objects" value="objects_with_feature"/>
         <arg name="use_vehicle_reference_yaw" value="true"/>
       </include>
@@ -110,7 +112,6 @@
       <arg name="input/object0" value="$(var merger/input/objects)"/>
       <arg name="input/object1" value="clustering/objects"/>
       <arg name="output/object" value="temporary_merged_objects"/>
-      <arg name="node_name" value="object_association_merger_unknown_clustering"/>
     </include>
   </group>
 
@@ -119,7 +120,6 @@
       <arg name="input/object0" value="temporary_merged_objects"/>
       <arg name="input/object1" value="detection_by_tracker/objects"/>
       <arg name="output/object" value="objects_before_filter"/>
-      <arg name="node_name" value="object_association_merger_detection_by_tracker"/>
     </include>
   </group>
 
