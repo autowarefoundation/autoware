@@ -32,6 +32,8 @@ docker run --rm -it \
 
 To run with `rocker`:
 
+If you use `rocker<=0.2.9`, add an option of `--env NVIDIA_DRIVER_CAPABILITIES=""` or `--env NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics` to avoid the CUDA environment error. See [this issue](https://github.com/autowarefoundation/autoware/issues/2452) in more details.
+
 ```bash
 rocker --nvidia --x11 --user \
  --volume {path_to_your_workspace} \
