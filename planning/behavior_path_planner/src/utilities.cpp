@@ -1688,7 +1688,7 @@ bool checkLaneIsInIntersection(
   const RouteHandler & route_handler, const PathWithLaneId & reference_path,
   const lanelet::ConstLanelets & lanelet_sequence, double & additional_length_to_add)
 {
-  if (lanelet_sequence.size() < 2) {
+  if (lanelet_sequence.size() < 2 || reference_path.points.empty()) {
     return false;
   }
 
