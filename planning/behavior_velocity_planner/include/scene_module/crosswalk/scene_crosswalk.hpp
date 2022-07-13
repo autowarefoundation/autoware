@@ -142,6 +142,8 @@ private:
 
   bool isRedSignalForPedestrians() const;
 
+  bool isVehicle(const PredictedObject & object) const;
+
   bool isTargetType(const PredictedObject & object) const;
 
   bool isTargetExternalInputStatus(const int target_status) const;

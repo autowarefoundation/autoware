@@ -468,8 +468,11 @@ boost::optional<std::pair<size_t, PathPointWithLaneId>> CrosswalkModule::findNea
     const auto & obj_vel = object.kinematics.initial_twist_with_covariance.twist.linear;
     const auto obj_uuid = toHexString(object.object_id);
 
-    if (!isTargetType(object)) {
+    if (isVehicle(object)) {
       found_stuck_vehicle = found_stuck_vehicle || isStuckVehicle(ego_path, object);
+    }
+
+    if (!isTargetType(object)) {
       continue;
     }
 
@@ -922,15 +925,6 @@ CollisionPointState CrosswalkModule::getCollisionPointState(
 bool CrosswalkModule::isStuckVehicle(
   const PathWithLaneId & ego_path, const PredictedObject & object) const
 {
-  const auto & label = object.classification.at(0).label;
-  const auto is_target =
-    label == ObjectClassification::CAR || label == ObjectClassification::TRUCK ||
-    label == ObjectClassification::BUS || label == ObjectClassification::TRAILER ||
-    label == ObjectClassification::MOTORCYCLE;
-  if (!is_target) {
-    return false;
-  }
-
   const auto & obj_vel = object.kinematics.initial_twist_with_covariance.twist.linear;
   if (planner_param_.stuck_vehicle_velocity < std::hypot(obj_vel.x, obj_vel.y)) {
     return false;
@@ -989,6 +983,37 @@ bool CrosswalkModule::isRedSignalForPedestrians() const
         return true;
       }
     }
+  }
+
+  return false;
+}
+
+bool CrosswalkModule::isVehicle(const PredictedObject & object) const
+{
+  if (object.classification.empty()) {
+    return false;
+  }
+
+  const auto & label = object.classification.front().label;
+
+  if (label == ObjectClassification::CAR) {
+    return true;
+  }
+
+  if (label == ObjectClassification::TRUCK) {
+    return true;
+  }
+
+  if (label == ObjectClassification::BUS) {
+    return true;
+  }
+
+  if (label == ObjectClassification::TRAILER) {
+    return true;
+  }
+
+  if (label == ObjectClassification::MOTORCYCLE) {
+    return true;
   }
 
   return false;
