@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <motion_utils/trajectory/trajectory.hpp>
 #include <scene_module/stop_line/scene.hpp>
-#include <tier4_autoware_utils/trajectory/trajectory.hpp>
 #include <utilization/util.hpp>
 
 #include <algorithm>

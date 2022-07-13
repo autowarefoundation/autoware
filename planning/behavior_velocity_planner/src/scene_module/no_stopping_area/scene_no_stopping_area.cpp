@@ -134,7 +134,7 @@ bool NoStoppingAreaModule::modifyPathVelocity(
     return true;
   }
   const auto & stop_pose = stop_point->second;
-  setDistance(tier4_autoware_utils::calcSignedArcLength(
+  setDistance(motion_utils::calcSignedArcLength(
     original_path.points, current_pose.pose.position, stop_pose.position));
   if (isOverDeadLine(original_path, current_pose.pose, stop_pose)) {
     // ego can't stop in front of no stopping area -> GO or OR
@@ -360,8 +360,7 @@ bool NoStoppingAreaModule::isOverDeadLine(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
   const geometry_msgs::msg::Pose & self_pose, const geometry_msgs::msg::Pose & line_pose) const
 {
-  return tier4_autoware_utils::calcSignedArcLength(
-           path.points, self_pose.position, line_pose.position) +
+  return motion_utils::calcSignedArcLength(path.points, self_pose.position, line_pose.position) +
            planner_param_.dead_line_margin <
          0.0;
 }

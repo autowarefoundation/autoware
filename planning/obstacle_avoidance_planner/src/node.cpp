@@ -15,13 +15,13 @@
 #include "obstacle_avoidance_planner/node.hpp"
 
 #include "interpolation/spline_interpolation_points_2d.hpp"
+#include "motion_utils/trajectory/tmp_conversion.hpp"
 #include "obstacle_avoidance_planner/cv_utils.hpp"
 #include "obstacle_avoidance_planner/debug_visualization.hpp"
 #include "obstacle_avoidance_planner/utils.hpp"
 #include "rclcpp/time.hpp"
 #include "tf2/utils.h"
 #include "tier4_autoware_utils/ros/update_param.hpp"
-#include "tier4_autoware_utils/trajectory/tmp_conversion.hpp"
 #include "vehicle_info_util/vehicle_info_util.hpp"
 
 #include "geometry_msgs/msg/transform_stamped.hpp"
@@ -42,10 +42,9 @@ template <typename T1, typename T2>
 size_t searchExtendedZeroVelocityIndex(
   const std::vector<T1> & fine_points, const std::vector<T2> & vel_points)
 {
-  const auto opt_zero_vel_idx = tier4_autoware_utils::searchZeroVelocityIndex(vel_points);
+  const auto opt_zero_vel_idx = motion_utils::searchZeroVelocityIndex(vel_points);
   const size_t zero_vel_idx = opt_zero_vel_idx ? opt_zero_vel_idx.get() : vel_points.size() - 1;
-  return tier4_autoware_utils::findNearestIndex(
-    fine_points, vel_points.at(zero_vel_idx).pose.position);
+  return motion_utils::findNearestIndex(fine_points, vel_points.at(zero_vel_idx).pose.position);
 }
 
 bool isPathShapeChanged(
@@ -61,14 +60,14 @@ bool isPathShapeChanged(
   }
 
   // truncate prev points from ego pose to fixed end points
-  const auto opt_prev_begin_idx = tier4_autoware_utils::findNearestIndex(
+  const auto opt_prev_begin_idx = motion_utils::findNearestIndex(
     *prev_path_points, ego_pose, std::numeric_limits<double>::max(), delta_yaw_threshold);
   const size_t prev_begin_idx = opt_prev_begin_idx ? *opt_prev_begin_idx : 0;
   const auto truncated_prev_points =
     points_utils::clipForwardPoints(*prev_path_points, prev_begin_idx, max_mpt_length);
 
   // truncate points from ego pose to fixed end points
-  const auto opt_begin_idx = tier4_autoware_utils::findNearestIndex(
+  const auto opt_begin_idx = motion_utils::findNearestIndex(
     path_points, ego_pose, std::numeric_limits<double>::max(), delta_yaw_threshold);
   const size_t begin_idx = opt_begin_idx ? *opt_begin_idx : 0;
   const auto truncated_points =
@@ -82,7 +81,7 @@ bool isPathShapeChanged(
   // calculate lateral deviations between truncated path_points and prev_path_points
   for (const auto & prev_point : truncated_prev_points) {
     const double dist =
-      std::abs(tier4_autoware_utils::calcLateralOffset(truncated_points, prev_point.pose.position));
+      std::abs(motion_utils::calcLateralOffset(truncated_points, prev_point.pose.position));
     if (dist > max_path_shape_change_dist) {
       return true;
     }
@@ -128,7 +127,7 @@ bool hasValidNearestPointFromEgo(
 
   const auto interpolated_poses_with_yaw =
     points_utils::convertToPosesWithYawEstimation(interpolated_points);
-  const auto opt_nearest_idx = tier4_autoware_utils::findNearestIndex(
+  const auto opt_nearest_idx = motion_utils::findNearestIndex(
     interpolated_poses_with_yaw, ego_pose, traj_param.delta_dist_threshold_for_closest_point,
     traj_param.delta_yaw_threshold_for_closest_point);
 
@@ -208,10 +207,9 @@ std::tuple<std::vector<double>, std::vector<double>> calcVehicleCirclesInfo(
   const auto points_with_yaw = points_utils::convertToPosesWithYawEstimation(points);
 
   const auto nearest_idx_optional =
-    tier4_autoware_utils::findNearestIndex(points_with_yaw, pose, dist_threshold, yaw_threshold);
-  return nearest_idx_optional
-           ? *nearest_idx_optional
-           : tier4_autoware_utils::findNearestIndex(points_with_yaw, pose.position);
+    motion_utils::findNearestIndex(points_with_yaw, pose, dist_threshold, yaw_threshold);
+  return nearest_idx_optional ? *nearest_idx_optional
+                              : motion_utils::findNearestIndex(points_with_yaw, pose.position);
 }
 }  // namespace
 
@@ -901,7 +899,7 @@ autoware_auto_planning_msgs::msg::Trajectory ObstacleAvoidancePlanner::generateT
       "[ObstacleAvoidancePlanner] Negative velocity is NOT supported. Just converting path to "
       "trajectory");
     const auto traj_points = points_utils::convertToTrajectoryPoints(path.points);
-    output_traj_msg = tier4_autoware_utils::convertToTrajectory(traj_points);
+    output_traj_msg = motion_utils::convertToTrajectory(traj_points);
     output_traj_msg.header = path.header;
 
     return output_traj_msg;
@@ -914,7 +912,7 @@ autoware_auto_planning_msgs::msg::Trajectory ObstacleAvoidancePlanner::generateT
     generatePostProcessedTrajectory(path.points, optimized_traj_points);
 
   // convert to output msg type
-  output_traj_msg = tier4_autoware_utils::convertToTrajectory(post_processed_traj_points);
+  output_traj_msg = motion_utils::convertToTrajectory(post_processed_traj_points);
 
   output_traj_msg.header = path.header;
   return output_traj_msg;
@@ -1125,14 +1123,13 @@ void ObstacleAvoidancePlanner::calcVelocity(
 {
   for (size_t i = 0; i < traj_points.size(); i++) {
     const size_t nearest_seg_idx = [&]() {
-      const auto opt_seg_idx = tier4_autoware_utils::findNearestSegmentIndex(
+      const auto opt_seg_idx = motion_utils::findNearestSegmentIndex(
         path_points, traj_points.at(i).pose, traj_param_.delta_dist_threshold_for_closest_point,
         traj_param_.delta_yaw_threshold_for_closest_point);
       if (opt_seg_idx) {
         return opt_seg_idx.get();
       }
-      return tier4_autoware_utils::findNearestSegmentIndex(
-        path_points, traj_points.at(i).pose.position);
+      return motion_utils::findNearestSegmentIndex(path_points, traj_points.at(i).pose.position);
     }();
 
     // add this line not to exceed max index size
@@ -1160,7 +1157,7 @@ void ObstacleAvoidancePlanner::insertZeroVelocityOutsideDrivableArea(
   const auto & road_clearance_map = cv_maps.clearance_map;
 
   const size_t nearest_idx =
-    tier4_autoware_utils::findNearestIndex(traj_points, current_ego_pose_.position);
+    motion_utils::findNearestIndex(traj_points, current_ego_pose_.position);
 
   // NOTE: Some end trajectory points will be ignored to check if outside the drivable area
   //       since these points might be outside drivable area if only end reference points have high
@@ -1201,21 +1198,19 @@ void ObstacleAvoidancePlanner::publishDebugDataInOptimization(
   stop_watch_.tic(__func__);
 
   {  // publish trajectories
-    auto debug_eb_traj = tier4_autoware_utils::convertToTrajectory(debug_data_ptr_->eb_traj);
+    auto debug_eb_traj = motion_utils::convertToTrajectory(debug_data_ptr_->eb_traj);
     debug_eb_traj.header = path.header;
     debug_eb_traj_pub_->publish(debug_eb_traj);
 
-    auto debug_mpt_fixed_traj =
-      tier4_autoware_utils::convertToTrajectory(debug_data_ptr_->mpt_fixed_traj);
+    auto debug_mpt_fixed_traj = motion_utils::convertToTrajectory(debug_data_ptr_->mpt_fixed_traj);
     debug_mpt_fixed_traj.header = path.header;
     debug_mpt_fixed_traj_pub_->publish(debug_mpt_fixed_traj);
 
-    auto debug_mpt_ref_traj =
-      tier4_autoware_utils::convertToTrajectory(debug_data_ptr_->mpt_ref_traj);
+    auto debug_mpt_ref_traj = motion_utils::convertToTrajectory(debug_data_ptr_->mpt_ref_traj);
     debug_mpt_ref_traj.header = path.header;
     debug_mpt_ref_traj_pub_->publish(debug_mpt_ref_traj);
 
-    auto debug_mpt_traj = tier4_autoware_utils::convertToTrajectory(debug_data_ptr_->mpt_traj);
+    auto debug_mpt_traj = motion_utils::convertToTrajectory(debug_data_ptr_->mpt_traj);
     debug_mpt_traj.header = path.header;
     debug_mpt_traj_pub_->publish(debug_mpt_traj);
   }
@@ -1321,7 +1316,7 @@ ObstacleAvoidancePlanner::getExtendedTrajectory(
 
   assert(!path_points.empty());
 
-  const double accum_arc_length = tier4_autoware_utils::calcArcLength(optimized_points);
+  const double accum_arc_length = motion_utils::calcArcLength(optimized_points);
   if (accum_arc_length > traj_param_.trajectory_length) {
     RCLCPP_INFO_THROTTLE(
       this->get_logger(), *this->get_clock(), std::chrono::milliseconds(10000).count(),
@@ -1330,7 +1325,7 @@ ObstacleAvoidancePlanner::getExtendedTrajectory(
   }
 
   // calculate end idx of optimized points on path points
-  const auto opt_end_path_idx = tier4_autoware_utils::findNearestIndex(
+  const auto opt_end_path_idx = motion_utils::findNearestIndex(
     path_points, optimized_points.back().pose, std::numeric_limits<double>::max(),
     traj_param_.delta_yaw_threshold_for_closest_point);
   if (!opt_end_path_idx) {
@@ -1443,10 +1438,10 @@ ObstacleAvoidancePlanner::alignVelocity(
   const auto path_zero_vel_info = [&]()
     -> std::pair<
       std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint>, boost::optional<size_t>> {
-    const auto opt_path_zero_vel_idx = tier4_autoware_utils::searchZeroVelocityIndex(path_points);
+    const auto opt_path_zero_vel_idx = motion_utils::searchZeroVelocityIndex(path_points);
     if (opt_path_zero_vel_idx) {
       const auto & zero_vel_path_point = path_points.at(opt_path_zero_vel_idx.get());
-      const auto opt_traj_seg_idx = tier4_autoware_utils::findNearestSegmentIndex(
+      const auto opt_traj_seg_idx = motion_utils::findNearestSegmentIndex(
         fine_traj_points, zero_vel_path_point.pose, std::numeric_limits<double>::max(),
         traj_param_.delta_yaw_threshold_for_closest_point);
       if (opt_traj_seg_idx) {
@@ -1503,14 +1498,14 @@ ObstacleAvoidancePlanner::alignVelocity(
     const auto truncated_points = points_utils::clipForwardPoints(path_points, prev_begin_idx, 5.0);
 
     const auto & target_pose = fine_traj_points_with_vel[i].pose;
-    const auto closest_seg_idx_optional = tier4_autoware_utils::findNearestSegmentIndex(
+    const auto closest_seg_idx_optional = motion_utils::findNearestSegmentIndex(
       truncated_points, target_pose, traj_param_.delta_dist_threshold_for_closest_point,
       traj_param_.delta_yaw_threshold_for_closest_point);
 
     const auto closest_seg_idx =
       closest_seg_idx_optional
         ? *closest_seg_idx_optional
-        : tier4_autoware_utils::findNearestSegmentIndex(truncated_points, target_pose.position);
+        : motion_utils::findNearestSegmentIndex(truncated_points, target_pose.position);
 
     // lerp z
     fine_traj_points_with_vel[i].pose.position.z =
@@ -1541,12 +1536,12 @@ void ObstacleAvoidancePlanner::publishDebugDataInMain(
 
   {  // publish trajectories
     auto debug_extended_fixed_traj =
-      tier4_autoware_utils::convertToTrajectory(debug_data_ptr_->extended_fixed_traj);
+      motion_utils::convertToTrajectory(debug_data_ptr_->extended_fixed_traj);
     debug_extended_fixed_traj.header = path.header;
     debug_extended_fixed_traj_pub_->publish(debug_extended_fixed_traj);
 
     auto debug_extended_non_fixed_traj =
-      tier4_autoware_utils::convertToTrajectory(debug_data_ptr_->extended_non_fixed_traj);
+      motion_utils::convertToTrajectory(debug_data_ptr_->extended_non_fixed_traj);
     debug_extended_non_fixed_traj.header = path.header;
     debug_extended_non_fixed_traj_pub_->publish(debug_extended_non_fixed_traj);
   }

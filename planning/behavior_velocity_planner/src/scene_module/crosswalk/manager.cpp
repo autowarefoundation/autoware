@@ -30,7 +30,7 @@ std::vector<lanelet::ConstLanelet> getCrosswalksOnPath(
 {
   std::vector<lanelet::ConstLanelet> crosswalks;
 
-  auto nearest_segment_idx = tier4_autoware_utils::findNearestSegmentIndex(
+  auto nearest_segment_idx = motion_utils::findNearestSegmentIndex(
     path.points, current_pose, std::numeric_limits<double>::max(), M_PI_2);
 
   // Add current lane id

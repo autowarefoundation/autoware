@@ -24,7 +24,7 @@ namespace
 geometry_msgs::msg::Quaternion createQuaternionFacingToTrajectory(
   const PathPointsWithLaneId & path_points, const geometry_msgs::msg::Point & point)
 {
-  const auto nearest_idx = tier4_autoware_utils::findNearestIndex(path_points, point);
+  const auto nearest_idx = motion_utils::findNearestIndex(path_points, point);
   const auto & nearest_pose = path_points.at(nearest_idx).point.pose;
 
   const auto longitudinal_offset =

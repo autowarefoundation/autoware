@@ -72,10 +72,10 @@ Trajectory PlannerInterface::generateStopTrajectory(
   }
 
   // Get Closest Obstacle Stop Distance
-  const double closest_obstacle_dist = tier4_autoware_utils::calcSignedArcLength(
+  const double closest_obstacle_dist = motion_utils::calcSignedArcLength(
     planner_data.traj.points, 0, closest_stop_obstacle->collision_point);
 
-  const auto negative_dist_to_ego = tier4_autoware_utils::calcSignedArcLength(
+  const auto negative_dist_to_ego = motion_utils::calcSignedArcLength(
     planner_data.traj.points, planner_data.current_pose, 0, nearest_dist_deviation_threshold_,
     nearest_yaw_deviation_threshold_);
   if (!negative_dist_to_ego) {
@@ -86,10 +86,9 @@ Trajectory PlannerInterface::generateStopTrajectory(
   // If behavior stop point is ahead of the closest_obstacle_stop point within a certain margin
   // we set closest_obstacle_stop_distance to closest_behavior_stop_distance
   const double margin_from_obstacle = [&]() {
-    const auto closest_behavior_stop_dist_from_ego =
-      tier4_autoware_utils::calcDistanceToForwardStopPoint(
-        planner_data.traj.points, planner_data.current_pose, nearest_dist_deviation_threshold_,
-        nearest_yaw_deviation_threshold_);
+    const auto closest_behavior_stop_dist_from_ego = motion_utils::calcDistanceToForwardStopPoint(
+      planner_data.traj.points, planner_data.current_pose, nearest_dist_deviation_threshold_,
+      nearest_yaw_deviation_threshold_);
 
     if (closest_behavior_stop_dist_from_ego) {
       const double closest_obstacle_stop_dist_from_ego = closest_obstacle_dist - dist_to_ego -
@@ -121,7 +120,7 @@ Trajectory PlannerInterface::generateStopTrajectory(
     will_collide_with_obstacle = true;
   }
 
-  const size_t collision_idx = tier4_autoware_utils::findNearestIndex(
+  const size_t collision_idx = motion_utils::findNearestIndex(
     planner_data.traj.points, closest_stop_obstacle->collision_point);
   const size_t zero_vel_idx = obstacle_cruise_utils::getIndexWithLongitudinalOffset(
     planner_data.traj.points,

@@ -49,8 +49,7 @@ boost::optional<geometry_msgs::msg::Pose> calcForwardPose(
   size_t search_idx = start_idx;
   double length_to_search_idx = 0.0;
   for (; search_idx < traj.points.size(); ++search_idx) {
-    length_to_search_idx =
-      tier4_autoware_utils::calcSignedArcLength(traj.points, start_idx, search_idx);
+    length_to_search_idx = motion_utils::calcSignedArcLength(traj.points, start_idx, search_idx);
     if (length_to_search_idx > target_length) {
       break;
     } else if (search_idx == traj.points.size() - 1) {
@@ -161,7 +160,7 @@ autoware_auto_planning_msgs::msg::Trajectory insertStopPoint(
     return trajectory;
   }
 
-  const double traj_length = tier4_autoware_utils::calcArcLength(trajectory.points);
+  const double traj_length = motion_utils::calcArcLength(trajectory.points);
   if (traj_length < distance_to_stop_point) {
     return trajectory;
   }
@@ -233,7 +232,7 @@ boost::optional<TargetObstacle> getClosestStopObstacle(
     }
 
     const double dist_to_stop_obstacle =
-      tier4_autoware_utils::calcSignedArcLength(traj.points, 0, obstacle.collision_point);
+      motion_utils::calcSignedArcLength(traj.points, 0, obstacle.collision_point);
     if (dist_to_stop_obstacle < dist_to_closest_stop_obstacle) {
       dist_to_closest_stop_obstacle = dist_to_stop_obstacle;
       closest_stop_obstacle = obstacle;

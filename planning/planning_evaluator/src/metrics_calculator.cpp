@@ -14,6 +14,7 @@
 
 #include "planning_evaluator/metrics_calculator.hpp"
 
+#include "motion_utils/motion_utils.hpp"
 #include "planning_evaluator/metrics/deviation_metrics.hpp"
 #include "planning_evaluator/metrics/obstacle_metrics.hpp"
 #include "planning_evaluator/metrics/stability_metrics.hpp"
@@ -99,8 +100,7 @@ Trajectory MetricsCalculator::getLookaheadTrajectory(
     return traj;
   }
 
-  const auto ego_index =
-    tier4_autoware_utils::findNearestSegmentIndex(traj.points, ego_pose_.position);
+  const auto ego_index = motion_utils::findNearestSegmentIndex(traj.points, ego_pose_.position);
   Trajectory lookahead_traj;
   lookahead_traj.header = traj.header;
   double dist = 0.0;

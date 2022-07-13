@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "motion_utils/trajectory/path_with_lane_id.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 #include "tier4_autoware_utils/math/unit_conversion.hpp"
-#include "tier4_autoware_utils/trajectory/path_with_lane_id.hpp"
 
 #include <gtest/gtest.h>
 #include <tf2/LinearMath/Quaternion.h>
@@ -63,9 +63,9 @@ PathWithLaneId generateTestTrajectory(
 
 TEST(trajectory, calcLongitudinalOffsetPointFromIndex_PathWithLaneId)
 {
-  using tier4_autoware_utils::calcArcLength;
-  using tier4_autoware_utils::calcLongitudinalOffsetPoint;
-  using tier4_autoware_utils::calcSignedArcLength;
+  using motion_utils::calcArcLength;
+  using motion_utils::calcLongitudinalOffsetPoint;
+  using motion_utils::calcSignedArcLength;
   using tier4_autoware_utils::getPoint;
 
   const auto traj = generateTestTrajectory(10, 1.0);
@@ -139,9 +139,9 @@ TEST(trajectory, calcLongitudinalOffsetPointFromIndex_PathWithLaneId)
 
 TEST(trajectory, calcLongitudinalOffsetPointFromPoint_PathWithLaneId)
 {
-  using tier4_autoware_utils::calcArcLength;
-  using tier4_autoware_utils::calcLongitudinalOffsetPoint;
-  using tier4_autoware_utils::calcSignedArcLength;
+  using motion_utils::calcArcLength;
+  using motion_utils::calcLongitudinalOffsetPoint;
+  using motion_utils::calcSignedArcLength;
   using tier4_autoware_utils::createPoint;
   using tier4_autoware_utils::getPoint;
 
@@ -217,9 +217,9 @@ TEST(trajectory, calcLongitudinalOffsetPointFromPoint_PathWithLaneId)
 
 TEST(trajectory, calcLongitudinalOffsetPoseFromIndex_PathWithLaneId)
 {
-  using tier4_autoware_utils::calcArcLength;
-  using tier4_autoware_utils::calcLongitudinalOffsetPose;
-  using tier4_autoware_utils::calcSignedArcLength;
+  using motion_utils::calcArcLength;
+  using motion_utils::calcLongitudinalOffsetPose;
+  using motion_utils::calcSignedArcLength;
   using tier4_autoware_utils::getPoint;
 
   const auto traj = generateTestTrajectory(10, 1.0);
@@ -301,9 +301,9 @@ TEST(trajectory, calcLongitudinalOffsetPoseFromIndex_PathWithLaneId)
 
 TEST(trajectory, calcLongitudinalOffsetPoseFromPoint_PathWithLaneId)
 {
-  using tier4_autoware_utils::calcArcLength;
-  using tier4_autoware_utils::calcLongitudinalOffsetPose;
-  using tier4_autoware_utils::calcSignedArcLength;
+  using motion_utils::calcArcLength;
+  using motion_utils::calcLongitudinalOffsetPose;
+  using motion_utils::calcSignedArcLength;
   using tier4_autoware_utils::createPoint;
   using tier4_autoware_utils::getPoint;
 
@@ -387,13 +387,13 @@ TEST(trajectory, calcLongitudinalOffsetPoseFromPoint_PathWithLaneId)
 
 TEST(trajectory, insertTargetPoint_PathWithLaneId)
 {
-  using tier4_autoware_utils::calcArcLength;
+  using motion_utils::calcArcLength;
+  using motion_utils::findNearestSegmentIndex;
+  using motion_utils::insertTargetPoint;
   using tier4_autoware_utils::calcDistance2d;
   using tier4_autoware_utils::createPoint;
   using tier4_autoware_utils::deg2rad;
-  using tier4_autoware_utils::findNearestSegmentIndex;
   using tier4_autoware_utils::getPose;
-  using tier4_autoware_utils::insertTargetPoint;
 
   const auto traj = generateTestTrajectory(10, 1.0);
   const auto total_length = calcArcLength(traj.points);
@@ -606,13 +606,13 @@ TEST(trajectory, insertTargetPoint_PathWithLaneId)
 
 TEST(trajectory, insertTargetPoint_OverlapThreshold_PathWithLaneId)
 {
-  using tier4_autoware_utils::calcArcLength;
+  using motion_utils::calcArcLength;
+  using motion_utils::findNearestSegmentIndex;
+  using motion_utils::insertTargetPoint;
   using tier4_autoware_utils::calcDistance2d;
   using tier4_autoware_utils::createPoint;
   using tier4_autoware_utils::deg2rad;
-  using tier4_autoware_utils::findNearestSegmentIndex;
   using tier4_autoware_utils::getPose;
-  using tier4_autoware_utils::insertTargetPoint;
 
   constexpr double overlap_threshold = 1e-4;
   const auto traj = generateTestTrajectory(10, 1.0);
@@ -699,13 +699,13 @@ TEST(trajectory, insertTargetPoint_OverlapThreshold_PathWithLaneId)
 
 TEST(trajectory, insertTargetPoint_PathWithLaneId_Length)
 {
-  using tier4_autoware_utils::calcArcLength;
+  using motion_utils::calcArcLength;
+  using motion_utils::findNearestSegmentIndex;
+  using motion_utils::insertTargetPoint;
   using tier4_autoware_utils::calcDistance2d;
   using tier4_autoware_utils::createPoint;
   using tier4_autoware_utils::deg2rad;
-  using tier4_autoware_utils::findNearestSegmentIndex;
   using tier4_autoware_utils::getPose;
-  using tier4_autoware_utils::insertTargetPoint;
 
   const auto traj = generateTestTrajectory(10, 1.0);
   const auto total_length = calcArcLength(traj.points);

@@ -32,8 +32,5 @@
 #include "tier4_autoware_utils/ros/update_param.hpp"
 #include "tier4_autoware_utils/ros/wait_for_param.hpp"
 #include "tier4_autoware_utils/system/stop_watch.hpp"
-#include "tier4_autoware_utils/trajectory/path_with_lane_id.hpp"
-#include "tier4_autoware_utils/trajectory/trajectory.hpp"
-#include "tier4_autoware_utils/vehicle/vehicle_state_checker.hpp"
 
 #endif  // TIER4_AUTOWARE_UTILS__TIER4_AUTOWARE_UTILS_HPP_

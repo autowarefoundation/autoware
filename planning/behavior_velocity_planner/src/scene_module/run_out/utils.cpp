@@ -340,7 +340,7 @@ std::vector<DynamicObstacle> excludeObstaclesOutSideOfLine(
   std::vector<DynamicObstacle> extracted_dynamic_obstacle;
   for (const auto & obstacle : dynamic_obstacles) {
     const auto obstacle_nearest_idx =
-      tier4_autoware_utils::findNearestIndex(path_points, obstacle.pose.position);
+      motion_utils::findNearestIndex(path_points, obstacle.pose.position);
     const auto & obstacle_nearest_path_point =
       path_points.at(obstacle_nearest_idx).point.pose.position;
 
@@ -394,8 +394,7 @@ PathWithLaneId trimPathFromSelfPose(
   const PathWithLaneId & input, const geometry_msgs::msg::Pose & self_pose,
   const double trim_distance)
 {
-  const size_t nearest_idx =
-    tier4_autoware_utils::findNearestIndex(input.points, self_pose.position);
+  const size_t nearest_idx = motion_utils::findNearestIndex(input.points, self_pose.position);
 
   PathWithLaneId output{};
   output.header = input.header;

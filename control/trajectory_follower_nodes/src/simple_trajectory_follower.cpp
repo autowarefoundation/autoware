@@ -14,6 +14,7 @@
 
 #include "trajectory_follower_nodes/simple_trajectory_follower.hpp"
 
+#include <motion_utils/motion_utils.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <algorithm>
@@ -21,9 +22,9 @@
 namespace simple_trajectory_follower
 {
 
+using motion_utils::findNearestIndex;
 using tier4_autoware_utils::calcLateralDeviation;
 using tier4_autoware_utils::calcYawDeviation;
-using tier4_autoware_utils::findNearestIndex;
 
 SimpleTrajectoryFollower::SimpleTrajectoryFollower(const rclcpp::NodeOptions & options)
 : Node("simple_trajectory_follower", options)

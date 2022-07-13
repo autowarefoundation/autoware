@@ -183,13 +183,13 @@ size_t getIdxByArclength(const PathWithLaneId & path, const Pose & origin, const
     throw std::runtime_error("[getIdxByArclength] path points must be > 0");
   }
 
-  const auto boost_closest_idx = tier4_autoware_utils::findNearestIndex(
+  const auto boost_closest_idx = motion_utils::findNearestIndex(
     path.points, origin, std::numeric_limits<double>::max(), M_PI / 4.0);
 
   // If the nearest index search with angle limit fails, search again without angle limit.
   size_t closest_idx = boost_closest_idx
                          ? *boost_closest_idx
-                         : tier4_autoware_utils::findNearestIndex(path.points, origin.position);
+                         : motion_utils::findNearestIndex(path.points, origin.position);
 
   using tier4_autoware_utils::calcDistance2d;
   double sum_length = 0.0;

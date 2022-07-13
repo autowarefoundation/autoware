@@ -16,6 +16,7 @@
 #define ROUTE_HANDLER__ROUTE_HANDLER_HPP_
 
 #include <lanelet2_extension/utility/query.hpp>
+#include <motion_utils/motion_utils.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 

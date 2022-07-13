@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TIER4_AUTOWARE_UTILS__VEHICLE__VEHICLE_STATE_CHECKER_HPP_
-#define TIER4_AUTOWARE_UTILS__VEHICLE__VEHICLE_STATE_CHECKER_HPP_
+#ifndef MOTION_UTILS__VEHICLE__VEHICLE_STATE_CHECKER_HPP_
+#define MOTION_UTILS__VEHICLE__VEHICLE_STATE_CHECKER_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -24,7 +24,7 @@
 #include <deque>
 #include <memory>
 
-namespace tier4_autoware_utils
+namespace motion_utils
 {
 
 using autoware_auto_planning_msgs::msg::Trajectory;
@@ -71,6 +71,6 @@ private:
 
   void onTrajectory(const Trajectory::SharedPtr msg);
 };
-}  // namespace tier4_autoware_utils
+}  // namespace motion_utils
 
-#endif  // TIER4_AUTOWARE_UTILS__VEHICLE__VEHICLE_STATE_CHECKER_HPP_
+#endif  // MOTION_UTILS__VEHICLE__VEHICLE_STATE_CHECKER_HPP_

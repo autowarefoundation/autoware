@@ -45,7 +45,7 @@ namespace bg = boost::geometry;
 using Point = bg::model::d2::point_xy<double>;
 using Polygon = bg::model::polygon<Point>;
 using Line = bg::model::linestring<Point>;
-using tier4_autoware_utils::findNearestSegmentIndex;
+using motion_utils::findNearestSegmentIndex;
 
 bool getBackwardPointFromBasePoint(
   const Eigen::Vector2d & line_point1, const Eigen::Vector2d & line_point2,

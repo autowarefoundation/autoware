@@ -85,7 +85,7 @@ bool isAvoidingObject(
     return false;
   }
 
-  const int nearest_idx = tier4_autoware_utils::findNearestIndex(
+  const int nearest_idx = motion_utils::findNearestIndex(
     path_points, object.kinematics.initial_pose_with_covariance.pose.position);
   const auto nearest_path_point = path_points[nearest_idx];
   const auto rel_p = geometry_utils::transformToRelativeCoordinate2D(
@@ -115,7 +115,7 @@ bool isAvoidingObject(
       nearest_path_point_image.get().y))[static_cast<int>(nearest_path_point_image.get().x)] *
     map_info.resolution;
   */
-  const double lateral_offset_to_path = tier4_autoware_utils::calcLateralOffset(
+  const double lateral_offset_to_path = motion_utils::calcLateralOffset(
     path_points, object.kinematics.initial_pose_with_covariance.pose.position);
   if (
     // nearest_path_point_clearance - traj_param.center_line_width * 0.5 <
@@ -254,9 +254,9 @@ cv::Mat CostmapGenerator::drawObstaclesOnImage(
     const PolygonPoints polygon_points = cv_polygon_utils::getPolygonPoints(object, map_info);
     if (isAvoidingObject(
           polygon_points, object, clearance_map, map_info, path_points_inside_area, traj_param)) {
-      const double lon_dist_to_path = tier4_autoware_utils::calcSignedArcLength(
+      const double lon_dist_to_path = motion_utils::calcSignedArcLength(
         path_points, 0, object.kinematics.initial_pose_with_covariance.pose.position);
-      const double lat_dist_to_path = tier4_autoware_utils::calcLateralOffset(
+      const double lat_dist_to_path = motion_utils::calcLateralOffset(
         path_points, object.kinematics.initial_pose_with_covariance.pose.position);
       obj_cog_info.push_back({lon_dist_to_path, lat_dist_to_path});
       obj_positions.push_back(object.kinematics.initial_pose_with_covariance.pose.position);
@@ -273,7 +273,7 @@ cv::Mat CostmapGenerator::drawObstaclesOnImage(
   // fill between objects in the same side
   const auto get_closest_obj_point = [&](size_t idx) {
     const auto & path_point =
-      path_points.at(tier4_autoware_utils::findNearestIndex(path_points, obj_positions.at(idx)));
+      path_points.at(motion_utils::findNearestIndex(path_points, obj_positions.at(idx)));
     double min_dist = std::numeric_limits<double>::min();
     size_t min_idx = 0;
     for (size_t p_idx = 0; p_idx < cv_polygons.at(idx).size(); ++p_idx) {

@@ -794,7 +794,7 @@ PidLongitudinalController::Motion PidLongitudinalController::keepBrakeBeforeStop
   if (m_enable_brake_keeping_before_stop == false) {
     return output_motion;
   }
-  // const auto stop_idx = tier4_autoware_utils::searchZeroVelocityIndex(traj.points);
+  // const auto stop_idx = motion_utils::searchZeroVelocityIndex(traj.points);
   const auto stop_idx = motion_common::searchZeroVelocityIndex(traj.points);
   if (!stop_idx) {
     return output_motion;

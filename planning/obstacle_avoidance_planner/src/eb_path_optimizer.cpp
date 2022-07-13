@@ -236,7 +236,7 @@ std::vector<geometry_msgs::msg::Pose> EBPathOptimizer::getFixedPoints(
       std::vector<geometry_msgs::msg::Pose> empty_points;
       return empty_points;
     }
-    const auto opt_begin_idx = tier4_autoware_utils::findNearestIndex(
+    const auto opt_begin_idx = motion_utils::findNearestIndex(
       prev_trajs->smoothed_trajectory, ego_pose, std::numeric_limits<double>::max(),
       traj_param_.delta_yaw_threshold_for_closest_point);
     const int begin_idx = opt_begin_idx ? *opt_begin_idx : 0;
@@ -280,7 +280,7 @@ EBPathOptimizer::CandidatePoints EBPathOptimizer::getCandidatePoints(
   }
 
   // try to find non-fix points
-  const auto opt_begin_idx = tier4_autoware_utils::findNearestIndex(
+  const auto opt_begin_idx = motion_utils::findNearestIndex(
     path_points, fixed_points.back(), std::numeric_limits<double>::max(),
     traj_param_.delta_yaw_threshold_for_closest_point);
   if (!opt_begin_idx) {
@@ -463,7 +463,7 @@ EBPathOptimizer::Anchor EBPathOptimizer::getAnchor(
     pose.orientation = geometry_utils::getQuaternionFromPoints(
       interpolated_points[interpolated_idx + 1], interpolated_points[interpolated_idx]);
   }
-  const auto opt_nearest_idx = tier4_autoware_utils::findNearestIndex(
+  const auto opt_nearest_idx = motion_utils::findNearestIndex(
     path_points, pose, std::numeric_limits<double>::max(),
     traj_param_.delta_yaw_threshold_for_closest_point);
   const int nearest_idx = opt_nearest_idx ? *opt_nearest_idx : 0;

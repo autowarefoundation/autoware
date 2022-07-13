@@ -260,7 +260,7 @@ bool PathShifter::calcShiftPointFromArcLength(
     return false;
   }
 
-  const auto origin_idx = tier4_autoware_utils::findNearestIndex(path.points, origin);
+  const auto origin_idx = motion_utils::findNearestIndex(path.points, origin);
   const auto arclength_from_origin = util::calcPathArcLengthArray(path, origin_idx);
 
   if (dist_to_end > arclength_from_origin.back()) {
@@ -311,8 +311,8 @@ bool PathShifter::calcShiftPointFromArcLength(
 void PathShifter::updateShiftPointIndices()
 {
   for (auto & p : shift_points_) {
-    p.start_idx = tier4_autoware_utils::findNearestIndex(reference_path_.points, p.start.position);
-    p.end_idx = tier4_autoware_utils::findNearestIndex(reference_path_.points, p.end.position);
+    p.start_idx = motion_utils::findNearestIndex(reference_path_.points, p.start.position);
+    p.end_idx = motion_utils::findNearestIndex(reference_path_.points, p.end.position);
   }
   is_index_aligned_ = true;
 }
@@ -381,7 +381,7 @@ bool PathShifter::sortShiftPointsAlongPath([[maybe_unused]] const PathWithLaneId
 
 void PathShifter::removeBehindShiftPointAndSetBaseOffset(const Point & base_point)
 {
-  const auto base_idx = tier4_autoware_utils::findNearestIndex(reference_path_.points, base_point);
+  const auto base_idx = motion_utils::findNearestIndex(reference_path_.points, base_point);
 
   // If shift_point.end is behind the base_point, remove the shift_point and
   // set its shift_length to the base_offset.

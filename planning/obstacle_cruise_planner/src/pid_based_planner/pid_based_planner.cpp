@@ -158,11 +158,11 @@ double PIDBasedPlanner::calcDistanceToObstacle(
   const size_t ego_segment_idx =
     findExtendedNearestSegmentIndex(planner_data.traj, planner_data.current_pose);
   const double segment_offset = std::max(
-    0.0, tier4_autoware_utils::calcLongitudinalOffsetToSegment(
+    0.0, motion_utils::calcLongitudinalOffsetToSegment(
            planner_data.traj.points, ego_segment_idx, planner_data.current_pose.position));
   const double offset = vehicle_info_.max_longitudinal_offset_m + segment_offset;
 
-  return tier4_autoware_utils::calcSignedArcLength(
+  return motion_utils::calcSignedArcLength(
            planner_data.traj.points, ego_segment_idx, obstacle.collision_point) -
          offset;
 }

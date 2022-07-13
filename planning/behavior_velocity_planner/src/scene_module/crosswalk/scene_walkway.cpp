@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <motion_utils/trajectory/trajectory.hpp>
 #include <scene_module/crosswalk/scene_walkway.hpp>
-#include <tier4_autoware_utils/trajectory/trajectory.hpp>
 #include <utilization/util.hpp>
 
 #include <cmath>
@@ -81,7 +81,7 @@ bool WalkwayModule::modifyPathVelocity(
     planning_utils::appendStopReason(stop_factor, stop_reason);
 
     // use arc length to identify if ego vehicle is in front of walkway stop or not.
-    const double signed_arc_dist_to_stop_point = tier4_autoware_utils::calcSignedArcLength(
+    const double signed_arc_dist_to_stop_point = motion_utils::calcSignedArcLength(
       path->points, planner_data_->current_pose.pose.position,
       debug_data_.first_stop_pose.position);
     const double distance_threshold = 1.0;

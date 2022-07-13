@@ -207,11 +207,11 @@ bool SideShiftModule::addShiftPoint()
   auto shift_points = path_shifter_.getShiftPoints();
 
   const auto calcLongitudinal_to_shift_start = [this](const auto & sp) {
-    return tier4_autoware_utils::calcSignedArcLength(
+    return motion_utils::calcSignedArcLength(
       reference_path_->points, getEgoPose().pose.position, sp.start.position);
   };
   const auto calcLongitudinal_to_shift_end = [this](const auto & sp) {
-    return tier4_autoware_utils::calcSignedArcLength(
+    return motion_utils::calcSignedArcLength(
       reference_path_->points, getEgoPose().pose.position, sp.end.position);
   };
 
@@ -406,7 +406,7 @@ double SideShiftModule::getClosestShiftLength() const
   }
 
   const auto ego_point = planner_data_->self_pose->pose.position;
-  const auto closest = tier4_autoware_utils::findNearestIndex(prev_output_.path.points, ego_point);
+  const auto closest = motion_utils::findNearestIndex(prev_output_.path.points, ego_point);
   return prev_output_.shift_length.at(closest);
 }
 
@@ -439,7 +439,7 @@ PoseStamped SideShiftModule::getUnshiftedEgoPose(const ShiftedPath & prev_path) 
 
   // un-shifted fot current ideal pose
   const auto closest =
-    tier4_autoware_utils::findNearestIndex(prev_path.path.points, ego_pose.pose.position);
+    motion_utils::findNearestIndex(prev_path.path.points, ego_pose.pose.position);
 
   PoseStamped unshifted_pose = ego_pose;
 

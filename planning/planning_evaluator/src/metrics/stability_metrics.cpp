@@ -15,6 +15,7 @@
 #include "planning_evaluator/metrics/stability_metrics.hpp"
 
 #include "eigen3/Eigen/Core"
+#include "motion_utils/trajectory/trajectory.hpp"
 #include "tier4_autoware_utils/tier4_autoware_utils.hpp"
 
 #include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
@@ -64,20 +65,19 @@ Stat<double> calcLateralDistance(const Trajectory & traj1, const Trajectory & tr
   for (const auto & point : traj2.points) {
     const auto p0 = tier4_autoware_utils::getPoint(point);
     // find nearest segment
-    const size_t nearest_segment_idx =
-      tier4_autoware_utils::findNearestSegmentIndex(traj1.points, p0);
+    const size_t nearest_segment_idx = motion_utils::findNearestSegmentIndex(traj1.points, p0);
     double dist;
     // distance to segment
     if (
       nearest_segment_idx == traj1.points.size() - 2 &&
-      tier4_autoware_utils::calcLongitudinalOffsetToSegment(traj1.points, nearest_segment_idx, p0) >
+      motion_utils::calcLongitudinalOffsetToSegment(traj1.points, nearest_segment_idx, p0) >
         tier4_autoware_utils::calcDistance2d(
           traj1.points[nearest_segment_idx], traj1.points[nearest_segment_idx + 1])) {
       // distance to last point
       dist = tier4_autoware_utils::calcDistance2d(traj1.points.back(), p0);
     } else if (  // NOLINT
-      nearest_segment_idx == 0 && tier4_autoware_utils::calcLongitudinalOffsetToSegment(
-                                    traj1.points, nearest_segment_idx, p0) <= 0) {
+      nearest_segment_idx == 0 &&
+      motion_utils::calcLongitudinalOffsetToSegment(traj1.points, nearest_segment_idx, p0) <= 0) {
       // distance to first point
       dist = tier4_autoware_utils::calcDistance2d(traj1.points.front(), p0);
     } else {

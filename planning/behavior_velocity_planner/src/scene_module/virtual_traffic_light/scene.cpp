@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <motion_utils/trajectory/trajectory.hpp>
 #include <scene_module/virtual_traffic_light/scene.hpp>
-#include <tier4_autoware_utils/trajectory/trajectory.hpp>
 #include <utilization/util.hpp>
 
 #include <tier4_v2x_msgs/msg/key_value.hpp>
@@ -257,8 +257,8 @@ size_t insertStopVelocityAtCollision(
   const SegmentIndexWithPoint & collision, const double offset,
   autoware_auto_planning_msgs::msg::PathWithLaneId * path)
 {
-  const auto collision_offset = tier4_autoware_utils::calcLongitudinalOffsetToSegment(
-    path->points, collision.index, collision.point);
+  const auto collision_offset =
+    motion_utils::calcLongitudinalOffsetToSegment(path->points, collision.index, collision.point);
 
   const auto offset_segment = findOffsetSegment(*path, collision.index, offset + collision_offset);
   const auto interpolated_pose =
@@ -461,7 +461,7 @@ bool VirtualTrafficLightModule::isBeforeStartLine()
   }
 
   const double max_dist = std::numeric_limits<double>::max();
-  const auto signed_arc_length = tier4_autoware_utils::calcSignedArcLength(
+  const auto signed_arc_length = motion_utils::calcSignedArcLength(
     module_data_.path.points, module_data_.head_pose, collision->point, max_dist,
     planner_param_.max_yaw_deviation_rad);
 
@@ -479,7 +479,7 @@ bool VirtualTrafficLightModule::isBeforeStopLine()
   }
 
   const double max_dist = std::numeric_limits<double>::max();
-  const auto signed_arc_length = tier4_autoware_utils::calcSignedArcLength(
+  const auto signed_arc_length = motion_utils::calcSignedArcLength(
     module_data_.path.points, module_data_.head_pose, collision->point, max_dist,
     planner_param_.max_yaw_deviation_rad);
 
@@ -502,7 +502,7 @@ bool VirtualTrafficLightModule::isAfterAnyEndLine()
   }
 
   const double max_dist = std::numeric_limits<double>::max();
-  const auto signed_arc_length = tier4_autoware_utils::calcSignedArcLength(
+  const auto signed_arc_length = motion_utils::calcSignedArcLength(
     module_data_.path.points, module_data_.head_pose, collision->point, max_dist,
     planner_param_.max_yaw_deviation_rad);
 
@@ -518,7 +518,7 @@ bool VirtualTrafficLightModule::isNearAnyEndLine()
   }
 
   const double max_dist = std::numeric_limits<double>::max();
-  const auto signed_arc_length = tier4_autoware_utils::calcSignedArcLength(
+  const auto signed_arc_length = motion_utils::calcSignedArcLength(
     module_data_.path.points, module_data_.head_pose, collision->point, max_dist,
     planner_param_.max_yaw_deviation_rad);
 

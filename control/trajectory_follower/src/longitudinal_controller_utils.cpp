@@ -70,12 +70,12 @@ float64_t calcStopDistance(
     trajectory_common::searchZeroVelocityIndex(traj.points);
 
   auto seg_idx =
-    tier4_autoware_utils::findNearestSegmentIndex(traj.points, current_pose, max_dist, max_yaw);
+    motion_utils::findNearestSegmentIndex(traj.points, current_pose, max_dist, max_yaw);
   if (!seg_idx) {  // if not fund idx
-    seg_idx = tier4_autoware_utils::findNearestSegmentIndex(traj.points, current_pose);
+    seg_idx = motion_utils::findNearestSegmentIndex(traj.points, current_pose);
   }
-  const float64_t signed_length_src_offset = tier4_autoware_utils::calcLongitudinalOffsetToSegment(
-    traj.points, *seg_idx, current_pose.position);
+  const float64_t signed_length_src_offset =
+    motion_utils::calcLongitudinalOffsetToSegment(traj.points, *seg_idx, current_pose.position);
 
   if (std::isnan(signed_length_src_offset)) {
     return 0.0;
@@ -84,12 +84,12 @@ float64_t calcStopDistance(
   // If no zero velocity point, return the length between current_pose to the end of trajectory.
   if (!stop_idx_opt) {
     float64_t signed_length_on_traj =
-      tier4_autoware_utils::calcSignedArcLength(traj.points, *seg_idx, traj.points.size() - 1);
+      motion_utils::calcSignedArcLength(traj.points, *seg_idx, traj.points.size() - 1);
     return signed_length_on_traj - signed_length_src_offset;
   }
 
   float64_t signed_length_on_traj =
-    tier4_autoware_utils::calcSignedArcLength(traj.points, *seg_idx, *stop_idx_opt);
+    motion_utils::calcSignedArcLength(traj.points, *seg_idx, *stop_idx_opt);
   return signed_length_on_traj - signed_length_src_offset;
 }
 

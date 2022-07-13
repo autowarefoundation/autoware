@@ -40,11 +40,11 @@
 
 namespace behavior_path_planner
 {
+using motion_utils::calcSignedArcLength;
+using motion_utils::findNearestIndex;
 using tier4_autoware_utils::calcDistance2d;
 using tier4_autoware_utils::calcLateralDeviation;
-using tier4_autoware_utils::calcSignedArcLength;
 using tier4_autoware_utils::createPoint;
-using tier4_autoware_utils::findNearestIndex;
 
 AvoidanceModule::AvoidanceModule(
   const std::string & name, rclcpp::Node & node, const AvoidanceParameters & parameters)
@@ -1987,7 +1987,7 @@ PathWithLaneId AvoidanceModule::calcCenterLinePath(
 
   // for debug: check if the path backward distance is same as the desired length.
   // {
-  //   const auto back_to_ego = tier4_autoware_utils::calcSignedArcLength(
+  //   const auto back_to_ego = motion_utils::calcSignedArcLength(
   //     centerline_path.points, centerline_path.points.front().point.pose.position,
   //     getEgoPosition());
   //   RCLCPP_INFO(getLogger(), "actual back_to_ego distance = %f", back_to_ego);

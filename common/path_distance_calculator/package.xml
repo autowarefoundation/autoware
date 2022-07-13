@@ -12,6 +12,7 @@
   <build_depend>autoware_cmake</build_depend>
 
   <depend>autoware_auto_planning_msgs</depend>
+  <depend>motion_utils</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>tier4_autoware_utils</depend>

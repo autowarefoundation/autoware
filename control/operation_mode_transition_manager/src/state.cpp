@@ -14,6 +14,7 @@
 
 #include "operation_mode_transition_manager/state.hpp"
 
+#include "motion_utils/motion_utils.hpp"
 #include "tier4_autoware_utils/tier4_autoware_utils.hpp"
 
 #include <algorithm>
@@ -22,9 +23,9 @@
 namespace operation_mode_transition_manager
 {
 
+using motion_utils::findNearestIndex;
 using tier4_autoware_utils::calcDistance2d;
 using tier4_autoware_utils::calcYawDeviation;
-using tier4_autoware_utils::findNearestIndex;
 
 EngageStateBase::EngageStateBase(const State state, rclcpp::Node * node)
 : logger_(node->get_logger()), clock_(node->get_clock()), state_(state)

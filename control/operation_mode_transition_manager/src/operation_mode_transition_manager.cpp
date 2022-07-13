@@ -14,6 +14,7 @@
 
 #include "operation_mode_transition_manager/operation_mode_transition_manager.hpp"
 
+#include "motion_utils/motion_utils.hpp"
 #include "tier4_autoware_utils/tier4_autoware_utils.hpp"
 
 #include <algorithm>
@@ -22,9 +23,9 @@
 namespace operation_mode_transition_manager
 {
 
+using motion_utils::findNearestIndex;
 using tier4_autoware_utils::calcDistance2d;
 using tier4_autoware_utils::calcYawDeviation;
-using tier4_autoware_utils::findNearestIndex;
 
 OperationModeTransitionManager::OperationModeTransitionManager(const rclcpp::NodeOptions & options)
 : Node("operation_mode_transition_manager", options)

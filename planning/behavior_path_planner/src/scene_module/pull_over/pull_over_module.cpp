@@ -23,6 +23,7 @@
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
+#include <motion_utils/motion_utils.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
@@ -33,17 +34,17 @@
 #include <utility>
 #include <vector>
 
+using motion_utils::calcLongitudinalOffsetPose;
+using motion_utils::calcSignedArcLength;
+using motion_utils::findNearestIndex;
 using nav_msgs::msg::OccupancyGrid;
 using tier4_autoware_utils::calcDistance2d;
-using tier4_autoware_utils::calcLongitudinalOffsetPose;
 using tier4_autoware_utils::calcOffsetPose;
-using tier4_autoware_utils::calcSignedArcLength;
 using tier4_autoware_utils::createDefaultMarker;
 using tier4_autoware_utils::createMarkerColor;
 using tier4_autoware_utils::createMarkerScale;
 using tier4_autoware_utils::createPoint;
 using tier4_autoware_utils::createQuaternionFromYaw;
-using tier4_autoware_utils::findNearestIndex;
 using tier4_autoware_utils::inverseTransformPose;
 using tier4_autoware_utils::transformPose;
 

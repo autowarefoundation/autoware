@@ -142,7 +142,7 @@ bool BlindSpotModule::modifyPathVelocity(
 
   /* set stop speed */
   setSafe(state_machine_.getState() != State::STOP);
-  setDistance(tier4_autoware_utils::calcSignedArcLength(
+  setDistance(motion_utils::calcSignedArcLength(
     path->points, current_pose.pose.position, path->points.at(stop_line_idx).point.pose.position));
   if (!isActivated()) {
     constexpr double stop_vel = 0.0;

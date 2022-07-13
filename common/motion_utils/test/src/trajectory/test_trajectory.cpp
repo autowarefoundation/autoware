@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "motion_utils/trajectory/tmp_conversion.hpp"
+#include "motion_utils/trajectory/trajectory.hpp"
 #include "tier4_autoware_utils/geometry/boost_geometry.hpp"
 #include "tier4_autoware_utils/math/unit_conversion.hpp"
-#include "tier4_autoware_utils/trajectory/tmp_conversion.hpp"
-#include "tier4_autoware_utils/trajectory/trajectory.hpp"
 
 #include <gtest/gtest.h>
 #include <gtest/internal/gtest-port.h>
@@ -94,7 +94,7 @@ void updateTrajectoryVelocityAt(T & points, const size_t idx, const double vel)
 
 TEST(trajectory, validateNonEmpty)
 {
-  using tier4_autoware_utils::validateNonEmpty;
+  using motion_utils::validateNonEmpty;
 
   // Empty
   EXPECT_THROW(validateNonEmpty(Trajectory{}.points), std::invalid_argument);
@@ -107,7 +107,7 @@ TEST(trajectory, validateNonEmpty)
 TEST(trajectory, validateNonSharpAngle_DefaultThreshold)
 {
   using autoware_auto_planning_msgs::msg::TrajectoryPoint;
-  using tier4_autoware_utils::validateNonSharpAngle;
+  using motion_utils::validateNonSharpAngle;
 
   TrajectoryPoint p1;
   p1.pose = createPose(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
@@ -136,8 +136,8 @@ TEST(trajectory, validateNonSharpAngle_DefaultThreshold)
 TEST(trajectory, validateNonSharpAngle_SetThreshold)
 {
   using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+  using motion_utils::validateNonSharpAngle;
   using tier4_autoware_utils::pi;
-  using tier4_autoware_utils::validateNonSharpAngle;
 
   TrajectoryPoint p1;
   p1.pose = createPose(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
@@ -165,7 +165,7 @@ TEST(trajectory, validateNonSharpAngle_SetThreshold)
 
 TEST(trajectory, searchZeroVelocityIndex)
 {
-  using tier4_autoware_utils::searchZeroVelocityIndex;
+  using motion_utils::searchZeroVelocityIndex;
 
   // Empty
   EXPECT_FALSE(searchZeroVelocityIndex(Trajectory{}.points));
@@ -244,7 +244,7 @@ TEST(trajectory, searchZeroVelocityIndex)
 
 TEST(trajectory, findNearestIndex_Pos_StraightTrajectory)
 {
-  using tier4_autoware_utils::findNearestIndex;
+  using motion_utils::findNearestIndex;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
 
@@ -275,7 +275,7 @@ TEST(trajectory, findNearestIndex_Pos_StraightTrajectory)
 
 TEST(trajectory, findNearestIndex_Pos_CurvedTrajectory)
 {
-  using tier4_autoware_utils::findNearestIndex;
+  using motion_utils::findNearestIndex;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0, 0.0, 0.0, 0.1);
 
@@ -285,7 +285,7 @@ TEST(trajectory, findNearestIndex_Pos_CurvedTrajectory)
 
 TEST(trajectory, findNearestIndex_Pose_NoThreshold)
 {
-  using tier4_autoware_utils::findNearestIndex;
+  using motion_utils::findNearestIndex;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
 
@@ -311,7 +311,7 @@ TEST(trajectory, findNearestIndex_Pose_NoThreshold)
 
 TEST(trajectory, findNearestIndex_Pose_DistThreshold)
 {
-  using tier4_autoware_utils::findNearestIndex;
+  using motion_utils::findNearestIndex;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
 
@@ -327,7 +327,7 @@ TEST(trajectory, findNearestIndex_Pose_DistThreshold)
 
 TEST(trajectory, findNearestIndex_Pose_YawThreshold)
 {
-  using tier4_autoware_utils::findNearestIndex;
+  using motion_utils::findNearestIndex;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
   const auto max_d = std::numeric_limits<double>::max();
@@ -346,7 +346,7 @@ TEST(trajectory, findNearestIndex_Pose_YawThreshold)
 
 TEST(trajectory, findNearestIndex_Pose_DistAndYawThreshold)
 {
-  using tier4_autoware_utils::findNearestIndex;
+  using motion_utils::findNearestIndex;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
 
@@ -360,7 +360,7 @@ TEST(trajectory, findNearestIndex_Pose_DistAndYawThreshold)
 
 TEST(trajectory, findNearestSegmentIndex)
 {
-  using tier4_autoware_utils::findNearestSegmentIndex;
+  using motion_utils::findNearestSegmentIndex;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
 
@@ -400,7 +400,7 @@ TEST(trajectory, findNearestSegmentIndex)
 
 TEST(trajectory, calcLongitudinalOffsetToSegment_StraightTrajectory)
 {
-  using tier4_autoware_utils::calcLongitudinalOffsetToSegment;
+  using motion_utils::calcLongitudinalOffsetToSegment;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
   const bool throw_exception = true;
@@ -450,7 +450,7 @@ TEST(trajectory, calcLongitudinalOffsetToSegment_StraightTrajectory)
 
 TEST(trajectory, calcLongitudinalOffsetToSegment_CurveTrajectory)
 {
-  using tier4_autoware_utils::calcLongitudinalOffsetToSegment;
+  using motion_utils::calcLongitudinalOffsetToSegment;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0, 0.0, 0.0, 0.1);
 
@@ -462,7 +462,7 @@ TEST(trajectory, calcLongitudinalOffsetToSegment_CurveTrajectory)
 
 TEST(trajectory, calcLateralOffset)
 {
-  using tier4_autoware_utils::calcLateralOffset;
+  using motion_utils::calcLateralOffset;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
   const bool throw_exception = true;
@@ -503,7 +503,7 @@ TEST(trajectory, calcLateralOffset)
 
 TEST(trajectory, calcLateralOffset_CurveTrajectory)
 {
-  using tier4_autoware_utils::calcLateralOffset;
+  using motion_utils::calcLateralOffset;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0, 0.0, 0.0, 0.1);
 
@@ -514,7 +514,7 @@ TEST(trajectory, calcLateralOffset_CurveTrajectory)
 
 TEST(trajectory, calcSignedArcLengthFromIndexToIndex)
 {
-  using tier4_autoware_utils::calcSignedArcLength;
+  using motion_utils::calcSignedArcLength;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
 
@@ -537,7 +537,7 @@ TEST(trajectory, calcSignedArcLengthFromIndexToIndex)
 
 TEST(trajectory, calcSignedArcLengthFromPointToIndex)
 {
-  using tier4_autoware_utils::calcSignedArcLength;
+  using motion_utils::calcSignedArcLength;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
 
@@ -566,7 +566,7 @@ TEST(trajectory, calcSignedArcLengthFromPointToIndex)
 
 TEST(trajectory, calcSignedArcLengthFromPoseToIndex_DistThreshold)
 {
-  using tier4_autoware_utils::calcSignedArcLength;
+  using motion_utils::calcSignedArcLength;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
 
@@ -586,7 +586,7 @@ TEST(trajectory, calcSignedArcLengthFromPoseToIndex_DistThreshold)
 
 TEST(trajectory, calcSignedArcLengthFromPoseToIndex_YawThreshold)
 {
-  using tier4_autoware_utils::calcSignedArcLength;
+  using motion_utils::calcSignedArcLength;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
   const auto max_d = std::numeric_limits<double>::max();
@@ -608,7 +608,7 @@ TEST(trajectory, calcSignedArcLengthFromPoseToIndex_YawThreshold)
 
 TEST(trajectory, calcSignedArcLengthFromIndexToPoint)
 {
-  using tier4_autoware_utils::calcSignedArcLength;
+  using motion_utils::calcSignedArcLength;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
 
@@ -637,7 +637,7 @@ TEST(trajectory, calcSignedArcLengthFromIndexToPoint)
 
 TEST(trajectory, calcSignedArcLengthFromPointToPoint)
 {
-  using tier4_autoware_utils::calcSignedArcLength;
+  using motion_utils::calcSignedArcLength;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
 
@@ -700,7 +700,7 @@ TEST(trajectory, calcSignedArcLengthFromPointToPoint)
 
 TEST(trajectory, calcArcLength)
 {
-  using tier4_autoware_utils::calcArcLength;
+  using motion_utils::calcArcLength;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
 
@@ -713,7 +713,7 @@ TEST(trajectory, calcArcLength)
 
 TEST(trajectory, convertToTrajectory)
 {
-  using tier4_autoware_utils::convertToTrajectory;
+  using motion_utils::convertToTrajectory;
 
   // Size check
   {
@@ -736,7 +736,7 @@ TEST(trajectory, convertToTrajectory)
 
 TEST(trajectory, convertToTrajectoryPointArray)
 {
-  using tier4_autoware_utils::convertToTrajectoryPointArray;
+  using motion_utils::convertToTrajectoryPointArray;
 
   const auto traj_input = generateTestTrajectory<Trajectory>(100, 1.0);
   const auto traj = convertToTrajectoryPointArray(traj_input);
@@ -752,7 +752,7 @@ TEST(trajectory, convertToTrajectoryPointArray)
 
 TEST(trajectory, calcDistanceToForwardStopPointFromIndex)
 {
-  using tier4_autoware_utils::calcDistanceToForwardStopPoint;
+  using motion_utils::calcDistanceToForwardStopPoint;
 
   auto traj_input = generateTestTrajectory<Trajectory>(100, 1.0, 3.0);
   traj_input.points.at(50).longitudinal_velocity_mps = 0.0;
@@ -810,7 +810,7 @@ TEST(trajectory, calcDistanceToForwardStopPointFromIndex)
 
 TEST(trajectory, calcDistanceToForwardStopPointFromPose)
 {
-  using tier4_autoware_utils::calcDistanceToForwardStopPoint;
+  using motion_utils::calcDistanceToForwardStopPoint;
 
   auto traj_input = generateTestTrajectory<Trajectory>(100, 1.0, 3.0);
   traj_input.points.at(50).longitudinal_velocity_mps = 0.0;
@@ -894,7 +894,7 @@ TEST(trajectory, calcDistanceToForwardStopPointFromPose)
 
 TEST(trajectory, calcDistanceToForwardStopPoint_DistThreshold)
 {
-  using tier4_autoware_utils::calcDistanceToForwardStopPoint;
+  using motion_utils::calcDistanceToForwardStopPoint;
 
   auto traj_input = generateTestTrajectory<Trajectory>(100, 1.0, 3.0);
   traj_input.points.at(50).longitudinal_velocity_mps = 0.0;
@@ -938,7 +938,7 @@ TEST(trajectory, calcDistanceToForwardStopPoint_DistThreshold)
 
 TEST(trajectory, calcDistanceToForwardStopPoint_YawThreshold)
 {
-  using tier4_autoware_utils::calcDistanceToForwardStopPoint;
+  using motion_utils::calcDistanceToForwardStopPoint;
   using tier4_autoware_utils::deg2rad;
 
   const auto max_d = std::numeric_limits<double>::max();
@@ -990,9 +990,9 @@ TEST(trajectory, calcDistanceToForwardStopPoint_YawThreshold)
 
 TEST(trajectory, calcLongitudinalOffsetPointFromIndex)
 {
-  using tier4_autoware_utils::calcArcLength;
-  using tier4_autoware_utils::calcLongitudinalOffsetPoint;
-  using tier4_autoware_utils::calcSignedArcLength;
+  using motion_utils::calcArcLength;
+  using motion_utils::calcLongitudinalOffsetPoint;
+  using motion_utils::calcSignedArcLength;
   using tier4_autoware_utils::getPoint;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
@@ -1066,9 +1066,9 @@ TEST(trajectory, calcLongitudinalOffsetPointFromIndex)
 
 TEST(trajectory, calcLongitudinalOffsetPointFromPoint)
 {
-  using tier4_autoware_utils::calcArcLength;
-  using tier4_autoware_utils::calcLongitudinalOffsetPoint;
-  using tier4_autoware_utils::calcSignedArcLength;
+  using motion_utils::calcArcLength;
+  using motion_utils::calcLongitudinalOffsetPoint;
+  using motion_utils::calcSignedArcLength;
   using tier4_autoware_utils::createPoint;
   using tier4_autoware_utils::getPoint;
 
@@ -1144,9 +1144,9 @@ TEST(trajectory, calcLongitudinalOffsetPointFromPoint)
 
 TEST(trajectory, calcLongitudinalOffsetPoseFromIndex)
 {
-  using tier4_autoware_utils::calcArcLength;
-  using tier4_autoware_utils::calcLongitudinalOffsetPose;
-  using tier4_autoware_utils::calcSignedArcLength;
+  using motion_utils::calcArcLength;
+  using motion_utils::calcLongitudinalOffsetPose;
+  using motion_utils::calcSignedArcLength;
   using tier4_autoware_utils::getPoint;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
@@ -1229,8 +1229,8 @@ TEST(trajectory, calcLongitudinalOffsetPoseFromIndex)
 TEST(trajectory, calcLongitudinalOffsetPoseFromIndex_quatInterpolation)
 {
   using autoware_auto_planning_msgs::msg::TrajectoryPoint;
-  using tier4_autoware_utils::calcArcLength;
-  using tier4_autoware_utils::calcLongitudinalOffsetPose;
+  using motion_utils::calcArcLength;
+  using motion_utils::calcLongitudinalOffsetPose;
   using tier4_autoware_utils::deg2rad;
 
   Trajectory traj{};
@@ -1314,9 +1314,9 @@ TEST(trajectory, calcLongitudinalOffsetPoseFromIndex_quatInterpolation)
 
 TEST(trajectory, calcLongitudinalOffsetPoseFromPoint)
 {
-  using tier4_autoware_utils::calcArcLength;
-  using tier4_autoware_utils::calcLongitudinalOffsetPose;
-  using tier4_autoware_utils::calcSignedArcLength;
+  using motion_utils::calcArcLength;
+  using motion_utils::calcLongitudinalOffsetPose;
+  using motion_utils::calcSignedArcLength;
   using tier4_autoware_utils::createPoint;
   using tier4_autoware_utils::getPoint;
 
@@ -1401,9 +1401,9 @@ TEST(trajectory, calcLongitudinalOffsetPoseFromPoint)
 TEST(trajectory, calcLongitudinalOffsetPoseFromPoint_quatInterpolation)
 {
   using autoware_auto_planning_msgs::msg::TrajectoryPoint;
-  using tier4_autoware_utils::calcArcLength;
-  using tier4_autoware_utils::calcLongitudinalOffsetPose;
-  using tier4_autoware_utils::calcLongitudinalOffsetToSegment;
+  using motion_utils::calcArcLength;
+  using motion_utils::calcLongitudinalOffsetPose;
+  using motion_utils::calcLongitudinalOffsetToSegment;
   using tier4_autoware_utils::createPoint;
   using tier4_autoware_utils::deg2rad;
 
@@ -1474,13 +1474,13 @@ TEST(trajectory, calcLongitudinalOffsetPoseFromPoint_quatInterpolation)
 
 TEST(trajectory, insertTargetPoint)
 {
-  using tier4_autoware_utils::calcArcLength;
+  using motion_utils::calcArcLength;
+  using motion_utils::findNearestSegmentIndex;
+  using motion_utils::insertTargetPoint;
   using tier4_autoware_utils::calcDistance2d;
   using tier4_autoware_utils::createPoint;
   using tier4_autoware_utils::deg2rad;
-  using tier4_autoware_utils::findNearestSegmentIndex;
   using tier4_autoware_utils::getPose;
-  using tier4_autoware_utils::insertTargetPoint;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
   const auto total_length = calcArcLength(traj.points);
@@ -1693,13 +1693,13 @@ TEST(trajectory, insertTargetPoint)
 
 TEST(trajectory, insertTargetPoint_OverlapThreshold)
 {
-  using tier4_autoware_utils::calcArcLength;
+  using motion_utils::calcArcLength;
+  using motion_utils::findNearestSegmentIndex;
+  using motion_utils::insertTargetPoint;
   using tier4_autoware_utils::calcDistance2d;
   using tier4_autoware_utils::createPoint;
   using tier4_autoware_utils::deg2rad;
-  using tier4_autoware_utils::findNearestSegmentIndex;
   using tier4_autoware_utils::getPose;
-  using tier4_autoware_utils::insertTargetPoint;
 
   constexpr double overlap_threshold = 1e-4;
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
@@ -1786,13 +1786,13 @@ TEST(trajectory, insertTargetPoint_OverlapThreshold)
 
 TEST(trajectory, insertTargetPoint_Length)
 {
-  using tier4_autoware_utils::calcArcLength;
+  using motion_utils::calcArcLength;
+  using motion_utils::findNearestSegmentIndex;
+  using motion_utils::insertTargetPoint;
   using tier4_autoware_utils::calcDistance2d;
   using tier4_autoware_utils::createPoint;
   using tier4_autoware_utils::deg2rad;
-  using tier4_autoware_utils::findNearestSegmentIndex;
   using tier4_autoware_utils::getPose;
-  using tier4_autoware_utils::insertTargetPoint;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
   const auto total_length = calcArcLength(traj.points);
@@ -2026,13 +2026,13 @@ TEST(trajectory, insertTargetPoint_Length)
 
 TEST(trajectory, insertTargetPoint_Length_Without_Target_Point)
 {
-  using tier4_autoware_utils::calcArcLength;
+  using motion_utils::calcArcLength;
+  using motion_utils::findNearestSegmentIndex;
+  using motion_utils::insertTargetPoint;
   using tier4_autoware_utils::calcDistance2d;
   using tier4_autoware_utils::createPoint;
   using tier4_autoware_utils::deg2rad;
-  using tier4_autoware_utils::findNearestSegmentIndex;
   using tier4_autoware_utils::getPose;
-  using tier4_autoware_utils::insertTargetPoint;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
   const auto total_length = calcArcLength(traj.points);
@@ -2212,13 +2212,13 @@ TEST(trajectory, insertTargetPoint_Length_Without_Target_Point)
 
 TEST(trajectory, insertTargetPoint_Length_Without_Target_Point_Non_Zero_Start_Idx)
 {
-  using tier4_autoware_utils::calcArcLength;
+  using motion_utils::calcArcLength;
+  using motion_utils::findNearestSegmentIndex;
+  using motion_utils::insertTargetPoint;
   using tier4_autoware_utils::calcDistance2d;
   using tier4_autoware_utils::createPoint;
   using tier4_autoware_utils::deg2rad;
-  using tier4_autoware_utils::findNearestSegmentIndex;
   using tier4_autoware_utils::getPose;
-  using tier4_autoware_utils::insertTargetPoint;
 
   const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
 

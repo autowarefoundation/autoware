@@ -16,6 +16,7 @@
 
 #include "lane_departure_checker/util/create_vehicle_footprint.hpp"
 
+#include <motion_utils/trajectory/trajectory.hpp>
 #include <tier4_autoware_utils/geometry/geometry.hpp>
 #include <tier4_autoware_utils/math/normalization.hpp>
 #include <tier4_autoware_utils/math/unit_conversion.hpp>
@@ -59,11 +60,10 @@ bool isInAnyLane(const lanelet::ConstLanelets & candidate_lanelets, const Point2
 size_t findNearestIndexWithSoftYawConstraints(
   const Trajectory & trajectory, const geometry_msgs::msg::Pose & pose, const double yaw_threshold)
 {
-  const auto nearest_idx_optional = tier4_autoware_utils::findNearestIndex(
+  const auto nearest_idx_optional = motion_utils::findNearestIndex(
     trajectory.points, pose, std::numeric_limits<double>::max(), yaw_threshold);
-  return nearest_idx_optional
-           ? *nearest_idx_optional
-           : tier4_autoware_utils::findNearestIndex(trajectory.points, pose.position);
+  return nearest_idx_optional ? *nearest_idx_optional
+                              : motion_utils::findNearestIndex(trajectory.points, pose.position);
 }
 
 LinearRing2d createHullFromFootprints(const std::vector<LinearRing2d> & footprints)

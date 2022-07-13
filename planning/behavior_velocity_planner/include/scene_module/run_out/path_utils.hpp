@@ -38,7 +38,7 @@ geometry_msgs::msg::Point findLongitudinalNearestPoint(
   geometry_msgs::msg::Point min_dist_point{};
 
   for (const auto & p : target_points) {
-    const float dist = tier4_autoware_utils::calcSignedArcLength(points, src_point, p);
+    const float dist = motion_utils::calcSignedArcLength(points, src_point, p);
     if (dist < min_dist) {
       min_dist = dist;
       min_dist_point = p;
@@ -52,14 +52,13 @@ template <class T>
 size_t calcIndexByLength(
   const T & points, const geometry_msgs::msg::Pose & current_pose, const double target_length)
 {
-  const size_t nearest_index =
-    tier4_autoware_utils::findNearestIndex(points, current_pose.position);
+  const size_t nearest_index = motion_utils::findNearestIndex(points, current_pose.position);
   if (target_length < 0) {
     return nearest_index;
   }
 
   for (size_t i = nearest_index; i < points.size(); i++) {
-    double length_sum = tier4_autoware_utils::calcSignedArcLength(points, current_pose.position, i);
+    double length_sum = motion_utils::calcSignedArcLength(points, current_pose.position, i);
     if (length_sum > target_length) {
       return i;
     }
@@ -73,14 +72,13 @@ template <class T>
 size_t calcIndexByLengthReverse(
   const T & points, const geometry_msgs::msg::Point & src_point, const float target_length)
 {
-  const auto nearest_seg_idx = tier4_autoware_utils::findNearestSegmentIndex(points, src_point);
+  const auto nearest_seg_idx = motion_utils::findNearestSegmentIndex(points, src_point);
   if (nearest_seg_idx == 0) {
     return 0;
   }
 
   for (size_t i = nearest_seg_idx; i > 0; i--) {
-    const auto length_sum =
-      std::abs(tier4_autoware_utils::calcSignedArcLength(points, src_point, i));
+    const auto length_sum = std::abs(motion_utils::calcSignedArcLength(points, src_point, i));
     if (length_sum > target_length) {
       return i + 1;
     }

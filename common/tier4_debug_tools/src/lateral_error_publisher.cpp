@@ -74,7 +74,7 @@ void LateralErrorPublisher::onGroundTruthPose(
   }
 
   // Search closest trajectory point with vehicle pose
-  const auto closest_index = tier4_autoware_utils::findNearestIndex(
+  const auto closest_index = motion_utils::findNearestIndex(
     current_trajectory_ptr_->points, current_vehicle_pose_ptr_->pose.pose,
     std::numeric_limits<double>::max(), yaw_threshold_to_search_closest_);
   if (!closest_index) {

@@ -119,7 +119,7 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(
     stop_factor.stop_factor_points.emplace_back(debug_data_.first_collision_point);
     planning_utils::appendStopReason(stop_factor, stop_reason);
 
-    const double signed_arc_dist_to_stop_point = tier4_autoware_utils::calcSignedArcLength(
+    const double signed_arc_dist_to_stop_point = motion_utils::calcSignedArcLength(
       path->points, current_pose.pose.position, path->points.at(stop_line_idx).point.pose.position);
 
     constexpr double distance_threshold = 2.0;

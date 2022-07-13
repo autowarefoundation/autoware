@@ -16,6 +16,7 @@
 #define UTILIZATION__UTIL_HPP_
 
 #include <lanelet2_extension/utility/query.hpp>
+#include <motion_utils/motion_utils.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 #include <utilization/boost_geometry_helper.hpp>
 
@@ -176,7 +177,7 @@ size_t findNearestSegmentIndex(const T & points, const PointWithSearchRangeIndex
   const auto & index = point_with_index.index;
   const auto point = point_with_index.point;
 
-  tier4_autoware_utils::validateNonEmpty(points);
+  motion_utils::validateNonEmpty(points);
 
   double min_dist = std::numeric_limits<double>::max();
   size_t nearest_idx = 0;
@@ -197,7 +198,7 @@ size_t findNearestSegmentIndex(const T & points, const PointWithSearchRangeIndex
   }
 
   const double signed_length =
-    tier4_autoware_utils::calcLongitudinalOffsetToSegment(points, nearest_idx, point);
+    motion_utils::calcLongitudinalOffsetToSegment(points, nearest_idx, point);
 
   if (signed_length <= 0) {
     return nearest_idx - 1;
@@ -212,7 +213,7 @@ template <class T>
 PointWithSearchRangeIndex findFirstNearSearchRangeIndex(
   const T & points, const geometry_msgs::msg::Point & point, const double distance_thresh = 9.0)
 {
-  tier4_autoware_utils::validateNonEmpty(points);
+  motion_utils::validateNonEmpty(points);
 
   bool min_idx_found = false;
   bool max_idx_found = false;
@@ -241,14 +242,14 @@ double calcSignedArcLengthWithSearchIndex(
   const T & points, const PointWithSearchRangeIndex & src_point_with_range,
   const PointWithSearchRangeIndex & dst_point_with_range)
 {
-  tier4_autoware_utils::validateNonEmpty(points);
+  motion_utils::validateNonEmpty(points);
   const size_t src_idx = planning_utils::findNearestSegmentIndex(points, src_point_with_range);
   const size_t dst_idx = planning_utils::findNearestSegmentIndex(points, dst_point_with_range);
-  const double signed_length = tier4_autoware_utils::calcSignedArcLength(points, src_idx, dst_idx);
-  const double signed_length_src_offset = tier4_autoware_utils::calcLongitudinalOffsetToSegment(
-    points, src_idx, src_point_with_range.point);
-  const double signed_length_dst_offset = tier4_autoware_utils::calcLongitudinalOffsetToSegment(
-    points, dst_idx, dst_point_with_range.point);
+  const double signed_length = motion_utils::calcSignedArcLength(points, src_idx, dst_idx);
+  const double signed_length_src_offset =
+    motion_utils::calcLongitudinalOffsetToSegment(points, src_idx, src_point_with_range.point);
+  const double signed_length_dst_offset =
+    motion_utils::calcLongitudinalOffsetToSegment(points, dst_idx, dst_point_with_range.point);
   return signed_length - signed_length_src_offset + signed_length_dst_offset;
 }
 Polygon2d toFootprintPolygon(const autoware_auto_perception_msgs::msg::PredictedObject & object);

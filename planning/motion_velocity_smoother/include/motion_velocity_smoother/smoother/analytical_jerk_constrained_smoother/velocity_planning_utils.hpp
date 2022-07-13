@@ -15,9 +15,9 @@
 #ifndef MOTION_VELOCITY_SMOOTHER__SMOOTHER__ANALYTICAL_JERK_CONSTRAINED_SMOOTHER__VELOCITY_PLANNING_UTILS_HPP_  // NOLINT
 #define MOTION_VELOCITY_SMOOTHER__SMOOTHER__ANALYTICAL_JERK_CONSTRAINED_SMOOTHER__VELOCITY_PLANNING_UTILS_HPP_  // NOLINT
 
+#include "motion_utils/trajectory/trajectory.hpp"
 #include "motion_velocity_smoother/linear_interpolation.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "tier4_autoware_utils/trajectory/trajectory.hpp"
 
 #include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
 

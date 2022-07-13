@@ -194,7 +194,7 @@ CandidateOutput LaneChangeModule::planCandidate() const
   output.path_candidate = selected_path.path;
   output.lateral_shift = selected_path.shifted_path.shift_length.at(end_idx) -
                          selected_path.shifted_path.shift_length.at(start_idx);
-  output.distance_to_path_change = tier4_autoware_utils::calcSignedArcLength(
+  output.distance_to_path_change = motion_utils::calcSignedArcLength(
     selected_path.path.points, planner_data_->self_pose->pose.position,
     selected_path.shift_point.start.position);
 

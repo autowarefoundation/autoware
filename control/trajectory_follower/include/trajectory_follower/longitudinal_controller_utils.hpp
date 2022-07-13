@@ -21,8 +21,8 @@
 #include "geometry/common_2d.hpp"
 #include "motion_common/motion_common.hpp"
 #include "motion_common/trajectory_common.hpp"
+#include "motion_utils/trajectory/trajectory.hpp"
 #include "tf2/utils.h"
-#include "tier4_autoware_utils/trajectory/trajectory.hpp"
 #include "trajectory_follower/visibility_control.hpp"
 
 #include <experimental/optional>  // NOLINT
@@ -112,13 +112,13 @@ TRAJECTORY_FOLLOWER_PUBLIC TrajectoryPoint lerpTrajectoryPoint(
   const T & points, const Pose & pose, const float64_t max_dist, const float64_t max_yaw)
 {
   TrajectoryPoint interpolated_point;
-  auto seg_idx = tier4_autoware_utils::findNearestSegmentIndex(points, pose, max_dist, max_yaw);
+  auto seg_idx = motion_utils::findNearestSegmentIndex(points, pose, max_dist, max_yaw);
   if (!seg_idx) {  // if not fund idx
-    seg_idx = tier4_autoware_utils::findNearestSegmentIndex(points, pose);
+    seg_idx = motion_utils::findNearestSegmentIndex(points, pose);
   }
 
   const float64_t len_to_interpolated =
-    tier4_autoware_utils::calcLongitudinalOffsetToSegment(points, *seg_idx, pose.position);
+    motion_utils::calcLongitudinalOffsetToSegment(points, *seg_idx, pose.position);
   const float64_t len_segment =
     trajectory_common::calcSignedArcLength(points, *seg_idx, *seg_idx + 1);
   const float64_t interpolate_ratio = std::clamp(len_to_interpolated / len_segment, 0.0, 1.0);

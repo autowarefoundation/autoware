@@ -194,11 +194,11 @@ std::vector<PullOutPath> getPullOutPaths(
       continue;
     }
 
-    const auto pull_out_end_idx = tier4_autoware_utils::findNearestIndex(
+    const auto pull_out_end_idx = motion_utils::findNearestIndex(
       shifted_path.path.points, reference_path2.points.front().point.pose);
 
     const auto goal_idx =
-      tier4_autoware_utils::findNearestIndex(shifted_path.path.points, route_handler.getGoalPose());
+      motion_utils::findNearestIndex(shifted_path.path.points, route_handler.getGoalPose());
 
     if (pull_out_end_idx && goal_idx) {
       const auto distance_pull_out_end_to_goal = tier4_autoware_utils::calcDistance2d(

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TIER4_AUTOWARE_UTILS__TRAJECTORY__TMP_CONVERSION_HPP_
-#define TIER4_AUTOWARE_UTILS__TRAJECTORY__TMP_CONVERSION_HPP_
+#ifndef MOTION_UTILS__TRAJECTORY__TMP_CONVERSION_HPP_
+#define MOTION_UTILS__TRAJECTORY__TMP_CONVERSION_HPP_
 
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 #include "tier4_autoware_utils/geometry/pose_deviation.hpp"
@@ -26,7 +26,7 @@
 #include <algorithm>
 #include <vector>
 
-namespace tier4_autoware_utils
+namespace motion_utils
 {
 /**
  * @brief Convert std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> to
@@ -39,7 +39,7 @@ namespace tier4_autoware_utils
  * @todo Decide how to handle the situation that we need to use the trajectory with the size of
  * points larger than the capacity. (Tier IV)
  */
-autoware_auto_planning_msgs::msg::Trajectory convertToTrajectory(
+inline autoware_auto_planning_msgs::msg::Trajectory convertToTrajectory(
   const std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> & trajectory)
 {
   autoware_auto_planning_msgs::msg::Trajectory output{};
@@ -56,7 +56,7 @@ autoware_auto_planning_msgs::msg::Trajectory convertToTrajectory(
  * @brief Convert autoware_auto_planning_msgs::msg::Trajectory to
  * std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint>.
  */
-std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> convertToTrajectoryPointArray(
+inline std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> convertToTrajectoryPointArray(
   const autoware_auto_planning_msgs::msg::Trajectory & trajectory)
 {
   std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> output(trajectory.points.size());
@@ -64,6 +64,6 @@ std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> convertToTrajecto
   return output;
 }
 
-}  // namespace tier4_autoware_utils
+}  // namespace motion_utils
 
-#endif  // TIER4_AUTOWARE_UTILS__TRAJECTORY__TMP_CONVERSION_HPP_
+#endif  // MOTION_UTILS__TRAJECTORY__TMP_CONVERSION_HPP_

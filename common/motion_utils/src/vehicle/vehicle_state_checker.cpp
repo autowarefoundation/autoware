@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "tier4_autoware_utils/vehicle/vehicle_state_checker.hpp"
+#include "motion_utils/vehicle/vehicle_state_checker.hpp"
 
-#include "tier4_autoware_utils/trajectory/trajectory.hpp"
+#include "motion_utils/trajectory/trajectory.hpp"
 
 #include <string>
 
-namespace tier4_autoware_utils
+namespace motion_utils
 {
 VehicleStopChecker::VehicleStopChecker(rclcpp::Node * node)
 : clock_(node->get_clock()), logger_(node->get_logger())
@@ -104,15 +104,15 @@ bool VehicleArrivalChecker::isVehicleStoppedAtStopPoint(const double stop_durati
   }
 
   const auto & p = odometry_ptr_->pose.pose.position;
-  const auto idx = searchZeroVelocityIndex(trajectory_ptr_->points);
+  const auto idx = motion_utils::searchZeroVelocityIndex(trajectory_ptr_->points);
 
   if (!idx) {
     return false;
   }
 
-  return std::abs(calcSignedArcLength(trajectory_ptr_->points, p, idx.get())) <
+  return std::abs(motion_utils::calcSignedArcLength(trajectory_ptr_->points, p, idx.get())) <
          th_arrived_distance_m;
 }
 
 void VehicleArrivalChecker::onTrajectory(const Trajectory::SharedPtr msg) { trajectory_ptr_ = msg; }
-}  // namespace tier4_autoware_utils
+}  // namespace motion_utils

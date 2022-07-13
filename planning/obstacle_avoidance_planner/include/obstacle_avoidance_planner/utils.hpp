@@ -18,8 +18,8 @@
 #include "eigen3/Eigen/Core"
 #include "interpolation/linear_interpolation.hpp"
 #include "interpolation/spline_interpolation.hpp"
+#include "motion_utils/trajectory/trajectory.hpp"
 #include "obstacle_avoidance_planner/common_structs.hpp"
-#include "tier4_autoware_utils/trajectory/trajectory.hpp"
 
 #include "autoware_auto_planning_msgs/msg/path_point.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
@@ -197,12 +197,12 @@ T clipBackwardPoints(
     return T{};
   }
 
-  const auto target_idx_optional = tier4_autoware_utils::findNearestIndex(
-    points, pose, std::numeric_limits<double>::max(), delta_yaw);
+  const auto target_idx_optional =
+    motion_utils::findNearestIndex(points, pose, std::numeric_limits<double>::max(), delta_yaw);
 
   const size_t target_idx = target_idx_optional
                               ? *target_idx_optional
-                              : tier4_autoware_utils::findNearestIndex(points, pose.position);
+                              : motion_utils::findNearestIndex(points, pose.position);
 
   const int begin_idx =
     std::max(0, static_cast<int>(target_idx) - static_cast<int>(backward_length / delta_length));

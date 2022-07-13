@@ -241,10 +241,10 @@ boost::optional<DynamicObstacle> RunOutModule::findNearestCollisionObstacle(
   std::sort(
     dynamic_obstacles.begin(), dynamic_obstacles.end(),
     [&path, &base_pose](const auto & lhs, const auto & rhs) -> bool {
-      const auto dist_lhs = tier4_autoware_utils::calcSignedArcLength(
-        path.points, base_pose.position, lhs.pose.position);
-      const auto dist_rhs = tier4_autoware_utils::calcSignedArcLength(
-        path.points, base_pose.position, rhs.pose.position);
+      const auto dist_lhs =
+        motion_utils::calcSignedArcLength(path.points, base_pose.position, lhs.pose.position);
+      const auto dist_rhs =
+        motion_utils::calcSignedArcLength(path.points, base_pose.position, rhs.pose.position);
 
       return dist_lhs < dist_rhs;
     });
@@ -551,7 +551,7 @@ boost::optional<geometry_msgs::msg::Pose> RunOutModule::calcStopPoint(
   }
 
   // calculate distance to collision with the obstacle
-  const float dist_to_collision_point = tier4_autoware_utils::calcSignedArcLength(
+  const float dist_to_collision_point = motion_utils::calcSignedArcLength(
     path.points, current_pose.position, dynamic_obstacle->nearest_collision_point);
   const float dist_to_collision =
     dist_to_collision_point - planner_param_.vehicle_param.base_to_front;
@@ -641,7 +641,7 @@ void RunOutModule::insertStopPoint(
 
   // find nearest point index behind the stop point
   const auto nearest_seg_idx =
-    tier4_autoware_utils::findNearestSegmentIndex(path.points, stop_point->position);
+    motion_utils::findNearestSegmentIndex(path.points, stop_point->position);
   auto insert_idx = nearest_seg_idx + 1;
 
   // if stop point is ahead of the end of the path, don't insert
@@ -671,7 +671,7 @@ void RunOutModule::insertVelocity(
   }
 
   const auto longitudinal_offset_to_collision_point =
-    tier4_autoware_utils::calcSignedArcLength(
+    motion_utils::calcSignedArcLength(
       smoothed_path.points, current_pose.position, dynamic_obstacle->nearest_collision_point) -
     planner_param_.vehicle_param.base_to_front;
   // enough distance to the obstacle
@@ -740,7 +740,7 @@ void RunOutModule::insertApproachingVelocity(
 {
   // insert slow down velocity from nearest segment point
   const auto nearest_seg_idx =
-    tier4_autoware_utils::findNearestSegmentIndex(output_path.points, current_pose.position);
+    motion_utils::findNearestSegmentIndex(output_path.points, current_pose.position);
   run_out_utils::insertPathVelocityFromIndexLimited(
     nearest_seg_idx, approaching_vel, output_path.points);
 
@@ -760,7 +760,7 @@ void RunOutModule::insertApproachingVelocity(
     stop_point, planner_param_.vehicle_param.base_to_front, 0, 0));
 
   const auto nearest_seg_idx_stop =
-    tier4_autoware_utils::findNearestSegmentIndex(output_path.points, stop_point.position);
+    motion_utils::findNearestSegmentIndex(output_path.points, stop_point.position);
   auto insert_idx_stop = nearest_seg_idx_stop + 1;
 
   // to PathPointWithLaneId
@@ -783,7 +783,7 @@ void RunOutModule::applyMaxJerkLimit(
 
   const auto stop_point = path.points.at(stop_point_idx.get()).point.pose.position;
   const auto dist_to_stop_point =
-    tier4_autoware_utils::calcSignedArcLength(path.points, current_pose.position, stop_point);
+    motion_utils::calcSignedArcLength(path.points, current_pose.position, stop_point);
 
   // calculate desired velocity with limited jerk
   const auto jerk_limited_vel = planning_utils::calcDecelerationVelocityFromDistanceToTarget(
@@ -828,15 +828,15 @@ void RunOutModule::publishDebugValue(
   const geometry_msgs::msg::Pose & current_pose) const
 {
   if (dynamic_obstacle) {
-    const auto lateral_dist = std::abs(tier4_autoware_utils::calcLateralOffset(
-                                path.points, dynamic_obstacle->pose.position)) -
-                              planner_param_.vehicle_param.width / 2.0;
+    const auto lateral_dist =
+      std::abs(motion_utils::calcLateralOffset(path.points, dynamic_obstacle->pose.position)) -
+      planner_param_.vehicle_param.width / 2.0;
     const auto longitudinal_dist_to_obstacle =
-      tier4_autoware_utils::calcSignedArcLength(
+      motion_utils::calcSignedArcLength(
         path.points, current_pose.position, dynamic_obstacle->pose.position) -
       planner_param_.vehicle_param.base_to_front;
 
-    const float dist_to_collision_point = tier4_autoware_utils::calcSignedArcLength(
+    const float dist_to_collision_point = motion_utils::calcSignedArcLength(
       path.points, current_pose.position, dynamic_obstacle->nearest_collision_point);
     const auto dist_to_collision =
       dist_to_collision_point - planner_param_.vehicle_param.base_to_front;

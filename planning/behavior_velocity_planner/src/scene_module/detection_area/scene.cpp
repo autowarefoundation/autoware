@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <motion_utils/trajectory/trajectory.hpp>
 #include <scene_module/detection_area/scene.hpp>
-#include <tier4_autoware_utils/trajectory/trajectory.hpp>
 #include <utilization/util.hpp>
 
 #ifdef ROS_DISTRO_GALACTIC
@@ -242,8 +242,8 @@ bool DetectionAreaModule::modifyPathVelocity(
 
   const auto & stop_pose = stop_point->second;
 
-  setDistance(tier4_autoware_utils::calcSignedArcLength(
-    path->points, self_pose.position, stop_pose.position));
+  setDistance(
+    motion_utils::calcSignedArcLength(path->points, self_pose.position, stop_pose.position));
 
   // Check state
   setSafe(canClearStopState());
@@ -363,8 +363,7 @@ bool DetectionAreaModule::isOverLine(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
   const geometry_msgs::msg::Pose & self_pose, const geometry_msgs::msg::Pose & line_pose) const
 {
-  return tier4_autoware_utils::calcSignedArcLength(
-           path.points, self_pose.position, line_pose.position) < 0;
+  return motion_utils::calcSignedArcLength(path.points, self_pose.position, line_pose.position) < 0;
 }
 
 bool DetectionAreaModule::hasEnoughBrakingDistance(

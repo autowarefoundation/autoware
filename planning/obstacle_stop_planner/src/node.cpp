@@ -42,11 +42,11 @@
 
 namespace motion_planning
 {
+using motion_utils::calcSignedArcLength;
+using motion_utils::findNearestIndex;
 using tier4_autoware_utils::calcAzimuthAngle;
 using tier4_autoware_utils::calcDistance2d;
-using tier4_autoware_utils::calcSignedArcLength;
 using tier4_autoware_utils::createPoint;
-using tier4_autoware_utils::findNearestIndex;
 using tier4_autoware_utils::getRPY;
 
 namespace
@@ -617,11 +617,11 @@ void ObstacleStopPlannerNode::pathCallback(const Trajectory::ConstSharedPtr inpu
 
   Trajectory output_trajectory = *input_msg;
   TrajectoryPoints output_trajectory_points =
-    tier4_autoware_utils::convertToTrajectoryPointArray(*input_msg);
+    motion_utils::convertToTrajectoryPointArray(*input_msg);
 
   // trim trajectory from self pose
   const auto base_trajectory = trimTrajectoryWithIndexFromSelfPose(
-    tier4_autoware_utils::convertToTrajectoryPointArray(*input_msg), planner_data.current_pose,
+    motion_utils::convertToTrajectoryPointArray(*input_msg), planner_data.current_pose,
     planner_data.trajectory_trim_index);
   // extend trajectory to consider obstacles after the goal
   const auto extend_trajectory = extendTrajectory(base_trajectory, stop_param.extend_distance);
@@ -645,7 +645,7 @@ void ObstacleStopPlannerNode::pathCallback(const Trajectory::ConstSharedPtr inpu
     resetExternalVelocityLimit(current_acc);
   }
 
-  auto trajectory = tier4_autoware_utils::convertToTrajectory(output_trajectory_points);
+  auto trajectory = motion_utils::convertToTrajectory(output_trajectory_points);
   publishDebugData(planner_data, current_acc);
 
   trajectory.header = input_msg->header;
@@ -1252,10 +1252,10 @@ TrajectoryPoints ObstacleStopPlannerNode::trimTrajectoryWithIndexFromSelfPose(
   TrajectoryPoints output{};
 
   size_t min_distance_index = 0;
-  const auto nearest_index = tier4_autoware_utils::findNearestIndex(
-    input, self_pose, 10.0, node_param_.max_yaw_deviation_rad);
+  const auto nearest_index =
+    motion_utils::findNearestIndex(input, self_pose, 10.0, node_param_.max_yaw_deviation_rad);
   if (!nearest_index) {
-    min_distance_index = tier4_autoware_utils::findNearestIndex(input, self_pose.position);
+    min_distance_index = motion_utils::findNearestIndex(input, self_pose.position);
   } else {
     min_distance_index = nearest_index.value();
   }

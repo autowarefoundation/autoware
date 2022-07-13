@@ -76,7 +76,7 @@ TrajectoryPoint calcInterpolatedTrajectoryPoint(
   }
 
   const size_t segment_idx =
-    tier4_autoware_utils::findNearestSegmentIndex(trajectory, target_pose.position);
+    motion_utils::findNearestSegmentIndex(trajectory, target_pose.position);
 
   auto v1 = getTransVector3(trajectory.at(segment_idx).pose, trajectory.at(segment_idx + 1).pose);
   auto v2 = getTransVector3(trajectory.at(segment_idx).pose, target_pose);

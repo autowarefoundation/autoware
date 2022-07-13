@@ -101,11 +101,11 @@ std::array<double, 4> getLaneletScope(
       points.push_back(p);
     }
     const size_t nearest_segment_idx =
-      tier4_autoware_utils::findNearestSegmentIndex(points, current_pose.position);
+      motion_utils::findNearestSegmentIndex(points, current_pose.position);
 
     // forward lanelet
     const auto forward_offset_length =
-      tier4_autoware_utils::calcSignedArcLength(points, current_pose.position, nearest_segment_idx);
+      motion_utils::calcSignedArcLength(points, current_pose.position, nearest_segment_idx);
     double sum_length = std::min(forward_offset_length, 0.0);
     size_t current_lane_idx = nearest_lane_idx;
     auto current_lane = lanes.at(current_lane_idx);
@@ -152,8 +152,8 @@ std::array<double, 4> getLaneletScope(
 
     // backward lanelet
     current_point_idx = nearest_segment_idx + 1;
-    const auto backward_offset_length = tier4_autoware_utils::calcSignedArcLength(
-      points, nearest_segment_idx + 1, current_pose.position);
+    const auto backward_offset_length =
+      motion_utils::calcSignedArcLength(points, nearest_segment_idx + 1, current_pose.position);
     sum_length = std::min(backward_offset_length, 0.0);
     current_lane_idx = nearest_lane_idx;
     current_lane = lanes.at(current_lane_idx);
@@ -236,14 +236,12 @@ FrenetCoordinate3d convertToFrenetCoordinate3d(
   FrenetCoordinate3d frenet_coordinate;
 
   const size_t nearest_segment_idx =
-    tier4_autoware_utils::findNearestSegmentIndex(linestring, search_point_geom);
-  const double longitudinal_length = tier4_autoware_utils::calcLongitudinalOffsetToSegment(
+    motion_utils::findNearestSegmentIndex(linestring, search_point_geom);
+  const double longitudinal_length = motion_utils::calcLongitudinalOffsetToSegment(
     linestring, nearest_segment_idx, search_point_geom);
   frenet_coordinate.length =
-    tier4_autoware_utils::calcSignedArcLength(linestring, 0, nearest_segment_idx) +
-    longitudinal_length;
-  frenet_coordinate.distance =
-    tier4_autoware_utils::calcLateralOffset(linestring, search_point_geom);
+    motion_utils::calcSignedArcLength(linestring, 0, nearest_segment_idx) + longitudinal_length;
+  frenet_coordinate.distance = motion_utils::calcLateralOffset(linestring, search_point_geom);
 
   return frenet_coordinate;
 }
@@ -864,12 +862,12 @@ bool setGoal(
     PathPointWithLaneId refined_goal{};
     {  // NOTE: goal does not have valid z, that will be calculated by interpolation here
       const size_t closest_seg_idx =
-        tier4_autoware_utils::findNearestSegmentIndex(input.points, goal.position);
-      const double closest_to_goal_dist = tier4_autoware_utils::calcSignedArcLength(
+        motion_utils::findNearestSegmentIndex(input.points, goal.position);
+      const double closest_to_goal_dist = motion_utils::calcSignedArcLength(
         input.points, input.points.at(closest_seg_idx).point.pose.position,
         goal.position);  // TODO(murooka) implement calcSignedArcLength(points, idx, point)
-      const double seg_dist = tier4_autoware_utils::calcSignedArcLength(
-        input.points, closest_seg_idx, closest_seg_idx + 1);
+      const double seg_dist =
+        motion_utils::calcSignedArcLength(input.points, closest_seg_idx, closest_seg_idx + 1);
       const double closest_z = input.points.at(closest_seg_idx).point.pose.position.z;
       const double next_z = input.points.at(closest_seg_idx + 1).point.pose.position.z;
       const double goal_z = std::abs(seg_dist) < 1e-6
@@ -898,12 +896,12 @@ bool setGoal(
     pre_refined_goal.point.pose.orientation = goal.orientation;
 
     {  // NOTE: interpolate z and velocity of pre_refined_goal
-      const size_t closest_seg_idx = tier4_autoware_utils::findNearestSegmentIndex(
-        input.points, pre_refined_goal.point.pose.position);
-      const double closest_to_pre_goal_dist = tier4_autoware_utils::calcSignedArcLength(
+      const size_t closest_seg_idx =
+        motion_utils::findNearestSegmentIndex(input.points, pre_refined_goal.point.pose.position);
+      const double closest_to_pre_goal_dist = motion_utils::calcSignedArcLength(
         input.points, input.points.at(closest_seg_idx).point.pose.position,
         pre_refined_goal.point.pose.position);
-      const double seg_dist = tier4_autoware_utils::calcSignedArcLength(
+      const double seg_dist = motion_utils::calcSignedArcLength(
         input.points, closest_seg_idx,
         closest_seg_idx + 1);  // TODO(murooka) implement calcSignedArcLength(points, idx, point)
 
@@ -1830,7 +1828,7 @@ PathWithLaneId setDecelerationVelocity(
 
   for (auto & point : reference_path.points) {
     const auto arclength_to_target = std::max(
-      0.0, tier4_autoware_utils::calcSignedArcLength(
+      0.0, motion_utils::calcSignedArcLength(
              reference_path.points, point.point.pose.position, target_pose.position) +
              buffer);
     if (arclength_to_target > deceleration_interval) continue;
@@ -1843,8 +1841,7 @@ PathWithLaneId setDecelerationVelocity(
   }
 
   const auto stop_point_length =
-    tier4_autoware_utils::calcSignedArcLength(reference_path.points, 0, target_pose.position) +
-    buffer;
+    motion_utils::calcSignedArcLength(reference_path.points, 0, target_pose.position) + buffer;
   if (target_velocity == 0.0 && stop_point_length > 0) {
     const auto stop_point = util::insertStopPoint(stop_point_length, &reference_path);
   }
@@ -1859,7 +1856,7 @@ PathWithLaneId setDecelerationVelocityForTurnSignal(
 
   for (auto & point : reference_path.points) {
     const auto arclength_to_target = std::max(
-      0.0, tier4_autoware_utils::calcSignedArcLength(
+      0.0, motion_utils::calcSignedArcLength(
              reference_path.points, point.point.pose.position, target_pose.position));
     point.point.longitudinal_velocity_mps = std::min(
       point.point.longitudinal_velocity_mps,
@@ -1867,7 +1864,7 @@ PathWithLaneId setDecelerationVelocityForTurnSignal(
   }
 
   const auto stop_point_length =
-    tier4_autoware_utils::calcSignedArcLength(reference_path.points, 0, target_pose.position);
+    motion_utils::calcSignedArcLength(reference_path.points, 0, target_pose.position);
   if (stop_point_length > 0) {
     const auto stop_point = util::insertStopPoint(stop_point_length, &reference_path);
   }

@@ -15,6 +15,8 @@
 #ifndef MOTION_VELOCITY_SMOOTHER__MOTION_VELOCITY_SMOOTHER_NODE_HPP_
 #define MOTION_VELOCITY_SMOOTHER__MOTION_VELOCITY_SMOOTHER_NODE_HPP_
 
+#include "motion_utils/trajectory/tmp_conversion.hpp"
+#include "motion_utils/trajectory/trajectory.hpp"
 #include "motion_velocity_smoother/resample.hpp"
 #include "motion_velocity_smoother/smoother/analytical_jerk_constrained_smoother/analytical_jerk_constrained_smoother.hpp"
 #include "motion_velocity_smoother/smoother/jerk_filtered_smoother.hpp"
@@ -30,8 +32,6 @@
 #include "tier4_autoware_utils/math/unit_conversion.hpp"
 #include "tier4_autoware_utils/ros/self_pose_listener.hpp"
 #include "tier4_autoware_utils/system/stop_watch.hpp"
-#include "tier4_autoware_utils/trajectory/tmp_conversion.hpp"
-#include "tier4_autoware_utils/trajectory/trajectory.hpp"
 
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"

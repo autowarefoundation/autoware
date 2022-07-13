@@ -14,6 +14,7 @@
 #ifndef OBSTACLE_AVOIDANCE_PLANNER__NODE_HPP_
 #define OBSTACLE_AVOIDANCE_PLANNER__NODE_HPP_
 
+#include "motion_utils/trajectory/trajectory.hpp"
 #include "obstacle_avoidance_planner/common_structs.hpp"
 #include "obstacle_avoidance_planner/costmap_generator.hpp"
 #include "obstacle_avoidance_planner/eb_path_optimizer.hpp"
@@ -56,9 +57,9 @@ boost::optional<geometry_msgs::msg::Pose> lerpPose(
   constexpr double epsilon = 1e-6;
 
   const double closest_to_target_dist =
-    tier4_autoware_utils::calcSignedArcLength(points, closest_seg_idx, target_pos);
+    motion_utils::calcSignedArcLength(points, closest_seg_idx, target_pos);
   const double seg_dist =
-    tier4_autoware_utils::calcSignedArcLength(points, closest_seg_idx, closest_seg_idx + 1);
+    motion_utils::calcSignedArcLength(points, closest_seg_idx, closest_seg_idx + 1);
 
   const auto & closest_pose = points[closest_seg_idx].pose;
   const auto & next_pose = points[closest_seg_idx + 1].pose;
@@ -101,9 +102,9 @@ double lerpTwistX(
   constexpr double epsilon = 1e-6;
 
   const double closest_to_target_dist =
-    tier4_autoware_utils::calcSignedArcLength(points, closest_seg_idx, target_pos);
+    motion_utils::calcSignedArcLength(points, closest_seg_idx, target_pos);
   const double seg_dist =
-    tier4_autoware_utils::calcSignedArcLength(points, closest_seg_idx, closest_seg_idx + 1);
+    motion_utils::calcSignedArcLength(points, closest_seg_idx, closest_seg_idx + 1);
 
   const double closest_vel = points[closest_seg_idx].longitudinal_velocity_mps;
   const double next_vel = points[closest_seg_idx + 1].longitudinal_velocity_mps;
@@ -127,9 +128,9 @@ double lerpPoseZ(
   constexpr double epsilon = 1e-6;
 
   const double closest_to_target_dist =
-    tier4_autoware_utils::calcSignedArcLength(points, closest_seg_idx, target_pos);
+    motion_utils::calcSignedArcLength(points, closest_seg_idx, target_pos);
   const double seg_dist =
-    tier4_autoware_utils::calcSignedArcLength(points, closest_seg_idx, closest_seg_idx + 1);
+    motion_utils::calcSignedArcLength(points, closest_seg_idx, closest_seg_idx + 1);
 
   const double closest_z = points[closest_seg_idx].pose.position.z;
   const double next_z = points[closest_seg_idx + 1].pose.position.z;

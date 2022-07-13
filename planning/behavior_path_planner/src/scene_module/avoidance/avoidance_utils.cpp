@@ -146,14 +146,13 @@ void fillLongitudinalAndLengthByClosestFootprint(
   tier4_autoware_utils::Polygon2d object_poly{};
   util::calcObjectPolygon(object, &object_poly);
 
-  const double distance = tier4_autoware_utils::calcSignedArcLength(
+  const double distance = motion_utils::calcSignedArcLength(
     path.points, ego_pos, object.kinematics.initial_pose_with_covariance.pose.position);
   double min_distance = distance;
   double max_distance = distance;
   for (const auto & p : object_poly.outer()) {
     const auto point = tier4_autoware_utils::createPoint(p.x(), p.y(), 0.0);
-    const double arc_length =
-      tier4_autoware_utils::calcSignedArcLength(path.points, ego_pos, point);
+    const double arc_length = motion_utils::calcSignedArcLength(path.points, ego_pos, point);
     min_distance = std::min(min_distance, arc_length);
     max_distance = std::max(max_distance, arc_length);
   }

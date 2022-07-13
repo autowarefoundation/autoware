@@ -221,10 +221,9 @@ std::vector<ShiftParkingPath> getShiftParkingPaths(
     }
 
     const auto shift_end_idx =
-      tier4_autoware_utils::findNearestIndex(shifted_path.path.points, shift_end_point.point.pose);
+      motion_utils::findNearestIndex(shifted_path.path.points, shift_end_point.point.pose);
 
-    const auto goal_idx =
-      tier4_autoware_utils::findNearestIndex(shifted_path.path.points, goal_pose);
+    const auto goal_idx = motion_utils::findNearestIndex(shifted_path.path.points, goal_pose);
 
     if (shift_end_idx && goal_idx) {
       for (size_t i = 0; i < shifted_path.path.points.size(); ++i) {
@@ -266,15 +265,15 @@ std::vector<ShiftParkingPath> getShiftParkingPaths(
       goal_path_point.lane_ids = shifted_path.path.points.back().lane_ids;
       candidate_path.path.points.push_back(goal_path_point);
 
-      const auto shift_start_idx = tier4_autoware_utils::findNearestIndex(
-        candidate_path.path.points, shift_point.start.position);
+      const auto shift_start_idx =
+        motion_utils::findNearestIndex(candidate_path.path.points, shift_point.start.position);
       for (size_t i = shift_start_idx; i < candidate_path.path.points.size(); i++) {
         candidate_path.shifted_path.path.points.push_back(candidate_path.path.points.at(i));
       }
 
-      shift_point.start_idx = tier4_autoware_utils::findNearestIndex(
+      shift_point.start_idx = motion_utils::findNearestIndex(
         candidate_path.shifted_path.path.points, shift_point.start.position);
-      shift_point.end_idx = tier4_autoware_utils::findNearestIndex(
+      shift_point.end_idx = motion_utils::findNearestIndex(
         candidate_path.shifted_path.path.points, shift_point.end.position);
       // todo: shift_length size dose not match path size due to resample,
       // so sume fuctions (like getTurnInfo()) can not be used with this shifted_point.

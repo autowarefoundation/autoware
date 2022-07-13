@@ -25,6 +25,7 @@
   <depend>lanelet2_extension</depend>
   <depend>libboost-dev</depend>
   <depend>libopencv-dev</depend>
+  <depend>motion_utils</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>route_handler</depend>

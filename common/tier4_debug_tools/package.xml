@@ -13,6 +13,7 @@
 
   <depend>autoware_auto_planning_msgs</depend>
   <depend>geometry_msgs</depend>
+  <depend>motion_utils</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>tf2_ros</depend>

@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TIER4_AUTOWARE_UTILS__TRAJECTORY__PATH_WITH_LANE_ID_HPP_
-#define TIER4_AUTOWARE_UTILS__TRAJECTORY__PATH_WITH_LANE_ID_HPP_
+#ifndef MOTION_UTILS__TRAJECTORY__PATH_WITH_LANE_ID_HPP_
+#define MOTION_UTILS__TRAJECTORY__PATH_WITH_LANE_ID_HPP_
 
+#include "motion_utils/trajectory/trajectory.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 #include "tier4_autoware_utils/geometry/path_with_lane_id_geometry.hpp"
-#include "tier4_autoware_utils/trajectory/trajectory.hpp"
 
 #include <boost/optional.hpp>
 
@@ -26,7 +26,7 @@
 #include <stdexcept>
 #include <vector>
 
-namespace tier4_autoware_utils
+namespace motion_utils
 {
 /**
  * @brief calculate the point offset from source point along the trajectory (or path)
@@ -61,7 +61,7 @@ inline boost::optional<geometry_msgs::msg::Point> calcLongitudinalOffsetPoint(
   }
 
   if (src_idx + 1 == points.size() && offset == 0.0) {
-    return getPoint(points.at(src_idx));
+    return tier4_autoware_utils::getPoint(points.at(src_idx));
   }
 
   if (offset < 0.0) {
@@ -77,12 +77,13 @@ inline boost::optional<geometry_msgs::msg::Point> calcLongitudinalOffsetPoint(
     const auto & p_front = points.at(i);
     const auto & p_back = points.at(i + 1);
 
-    const auto dist_segment = calcDistance2d(p_front, p_back);
+    const auto dist_segment = tier4_autoware_utils::calcDistance2d(p_front, p_back);
     dist_sum += dist_segment;
 
     const auto dist_res = offset - dist_sum;
     if (dist_res <= 0.0) {
-      return calcInterpolatedPoint(p_back, p_front, std::abs(dist_res / dist_segment));
+      return tier4_autoware_utils::calcInterpolatedPoint(
+        p_back, p_front, std::abs(dist_res / dist_segment));
     }
   }
 
@@ -155,7 +156,7 @@ inline boost::optional<geometry_msgs::msg::Pose> calcLongitudinalOffsetPose(
   }
 
   if (src_idx + 1 == points.size() && offset == 0.0) {
-    return getPose(points.at(src_idx));
+    return tier4_autoware_utils::getPose(points.at(src_idx));
   }
 
   if (offset < 0.0) {
@@ -168,12 +169,13 @@ inline boost::optional<geometry_msgs::msg::Pose> calcLongitudinalOffsetPose(
       const auto & p_front = reverse_points.at(i);
       const auto & p_back = reverse_points.at(i + 1);
 
-      const auto dist_segment = calcDistance2d(p_front, p_back);
+      const auto dist_segment = tier4_autoware_utils::calcDistance2d(p_front, p_back);
       dist_sum += dist_segment;
 
       const auto dist_res = -offset - dist_sum;
       if (dist_res <= 0.0) {
-        return calcInterpolatedPose(p_back, p_front, std::abs(dist_res / dist_segment));
+        return tier4_autoware_utils::calcInterpolatedPose(
+          p_back, p_front, std::abs(dist_res / dist_segment));
       }
     }
   } else {
@@ -183,12 +185,13 @@ inline boost::optional<geometry_msgs::msg::Pose> calcLongitudinalOffsetPose(
       const auto & p_front = points.at(i);
       const auto & p_back = points.at(i + 1);
 
-      const auto dist_segment = calcDistance2d(p_front, p_back);
+      const auto dist_segment = tier4_autoware_utils::calcDistance2d(p_front, p_back);
       dist_sum += dist_segment;
 
       const auto dist_res = offset - dist_sum;
       if (dist_res <= 0.0) {
-        return calcInterpolatedPose(p_front, p_back, 1.0 - std::abs(dist_res / dist_segment));
+        return tier4_autoware_utils::calcInterpolatedPose(
+          p_front, p_back, 1.0 - std::abs(dist_res / dist_segment));
       }
     }
   }
@@ -248,8 +251,8 @@ inline boost::optional<size_t> insertTargetPoint(
     return {};
   }
 
-  const auto p_front = getPoint(points.at(seg_idx));
-  const auto p_back = getPoint(points.at(seg_idx + 1));
+  const auto p_front = tier4_autoware_utils::getPoint(points.at(seg_idx));
+  const auto p_back = tier4_autoware_utils::getPoint(points.at(seg_idx + 1));
 
   try {
     validateNonSharpAngle(p_front, p_target, p_back);
@@ -258,32 +261,34 @@ inline boost::optional<size_t> insertTargetPoint(
     return {};
   }
 
-  const auto overlap_with_front = calcDistance2d(p_target, p_front) < overlap_threshold;
-  const auto overlap_with_back = calcDistance2d(p_target, p_back) < overlap_threshold;
+  const auto overlap_with_front =
+    tier4_autoware_utils::calcDistance2d(p_target, p_front) < overlap_threshold;
+  const auto overlap_with_back =
+    tier4_autoware_utils::calcDistance2d(p_target, p_back) < overlap_threshold;
 
   geometry_msgs::msg::Pose target_pose;
   {
-    const auto pitch = calcElevationAngle(p_target, p_back);
-    const auto yaw = calcAzimuthAngle(p_target, p_back);
+    const auto pitch = tier4_autoware_utils::calcElevationAngle(p_target, p_back);
+    const auto yaw = tier4_autoware_utils::calcAzimuthAngle(p_target, p_back);
 
     target_pose.position = p_target;
-    target_pose.orientation = createQuaternionFromRPY(0.0, pitch, yaw);
+    target_pose.orientation = tier4_autoware_utils::createQuaternionFromRPY(0.0, pitch, yaw);
   }
 
   auto p_insert = points.at(seg_idx);
-  setPose(target_pose, p_insert);
+  tier4_autoware_utils::setPose(target_pose, p_insert);
 
   geometry_msgs::msg::Pose front_pose;
   {
-    const auto pitch = calcElevationAngle(p_front, p_target);
-    const auto yaw = calcAzimuthAngle(p_front, p_target);
+    const auto pitch = tier4_autoware_utils::calcElevationAngle(p_front, p_target);
+    const auto yaw = tier4_autoware_utils::calcAzimuthAngle(p_front, p_target);
 
-    front_pose.position = getPoint(points.at(seg_idx));
-    front_pose.orientation = createQuaternionFromRPY(0.0, pitch, yaw);
+    front_pose.position = tier4_autoware_utils::getPoint(points.at(seg_idx));
+    front_pose.orientation = tier4_autoware_utils::createQuaternionFromRPY(0.0, pitch, yaw);
   }
 
   if (!overlap_with_front && !overlap_with_back) {
-    setPose(front_pose, points.at(seg_idx));
+    tier4_autoware_utils::setPose(front_pose, points.at(seg_idx));
     points.insert(points.begin() + seg_idx + 1, p_insert);
     return seg_idx + 1;
   }
@@ -330,6 +335,6 @@ inline boost::optional<size_t> insertTargetPoint(
 
   return insertTargetPoint(*segment_idx, p_target, points, overlap_threshold);
 }
-}  // namespace tier4_autoware_utils
+}  // namespace motion_utils
 
-#endif  // TIER4_AUTOWARE_UTILS__TRAJECTORY__PATH_WITH_LANE_ID_HPP_
+#endif  // MOTION_UTILS__TRAJECTORY__PATH_WITH_LANE_ID_HPP_
