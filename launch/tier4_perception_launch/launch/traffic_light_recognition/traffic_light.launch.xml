@@ -19,13 +19,16 @@
   </group>
 
   <!-- classification -->
-  <include file="$(find-pkg-share tier4_perception_launch)/launch/traffic_light_recognition/traffic_light_node_container.launch.py">
-    <arg name="input/image" value="$(var input/image)"/>
-    <arg name="enable_fine_detection" value="$(var enable_fine_detection)"/>
-    <arg name="use_intra_process" value="true"/>
-    <arg name="use_multithread" value="true"/>
-  </include>
-
+  <group>
+    <include file="$(find-pkg-share tier4_perception_launch)/launch/traffic_light_recognition/traffic_light_node_container.launch.py">
+      <arg name="input/image" value="$(var input/image)"/>
+      <arg name="enable_fine_detection" value="$(var enable_fine_detection)"/>
+      <arg name="use_intra_process" value="true"/>
+      <arg name="use_multithread" value="true"/>
+    </include>
+  </group>
   <!-- visualizer -->
-  <include file="$(find-pkg-share traffic_light_visualization)/launch/traffic_light_map_visualizer.launch.xml"/>
+  <group>
+    <include file="$(find-pkg-share traffic_light_visualization)/launch/traffic_light_map_visualizer.launch.xml"/>
+  </group>
 </launch>
