@@ -44,6 +44,7 @@ BT::NodeStatus SceneModuleBTNodeInterface::tick()
   auto current_status = BT::NodeStatus::RUNNING;
 
   scene_module_->onEntry();
+  module_status_->is_waiting_approval = scene_module_->isWaitingApproval();
 
   const bool is_lane_following = scene_module_->name() == "LaneFollowing";
 

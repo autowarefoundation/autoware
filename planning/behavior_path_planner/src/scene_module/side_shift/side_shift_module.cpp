@@ -338,6 +338,8 @@ BehaviorModuleOutput SideShiftModule::planWaitingApproval()
 
   prev_output_ = shifted_path;
 
+  waitApproval();
+
   return output;
 }
 

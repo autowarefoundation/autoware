@@ -109,13 +109,13 @@ void PullOverModule::onEntry()
   occupancy_grid_map_param.obstacle_threshold = parameters_.obstacle_threshold;
   occupancy_grid_map_.setParam(occupancy_grid_map_param);
 
-  // inititialize when receiving new route
+  // initialize when receiving new route
   if (
     last_received_time_.get() == nullptr ||
     *last_received_time_ != planner_data_->route_handler->getRouteHeader().stamp) {
-    // Initialize parallel parking planner sratus
+    // Initialize parallel parking planner status
     parallel_parking_planner_.clear();
-    parallel_parking_prameters_ = ParallelParkingParameters{
+    parallel_parking_parameters_ = ParallelParkingParameters{
       parameters_.th_arrived_distance_m,
       parameters_.th_stopped_velocity_mps,
       parameters_.after_forward_parking_straight_distance,
@@ -138,8 +138,6 @@ void PullOverModule::onEntry()
     goal_candidate.distance_from_original_goal = 0.0;
     goal_candidates_.push_back(goal_candidate);
   }
-
-  waitApproval();
 }
 
 void PullOverModule::onExit()
@@ -240,13 +238,13 @@ void PullOverModule::researchGoal()
   pull_over_areas_.clear();
   const Pose goal_pose_map_coords = global2local(occupancy_grid_map_.getMap(), goal_pose);
   Pose start_pose = calcOffsetPose(goal_pose, dx, 0, 0);
-  // Serch non collision areas around the goal
+  // Search non collision areas around the goal
   while (true) {
     bool is_last_search = (dx >= parameters_.forward_goal_search_length);
-    Pose serach_pose = calcOffsetPose(goal_pose_map_coords, dx, 0, 0);
+    Pose search_pose = calcOffsetPose(goal_pose_map_coords, dx, 0, 0);
     bool is_collided = occupancy_grid_map_.detectCollision(
-      pose2index(occupancy_grid_map_.getMap(), serach_pose, common_param.theta_size), false);
-    // Add area when (1) chnage non-collision -> collison or (2) last serach without collision
+      pose2index(occupancy_grid_map_.getMap(), search_pose, common_param.theta_size), false);
+    // Add area when (1) change non-collision -> collision or (2) last search without collision
     if ((!prev_is_collided && is_collided) || (!is_collided && is_last_search)) {
       Pose end_pose = calcOffsetPose(goal_pose, dx, 0, 0);
       if (!pull_over_areas_.empty()) {
@@ -295,7 +293,7 @@ void PullOverModule::researchGoal()
 
 BT::NodeStatus PullOverModule::updateState()
 {
-  // pull_out moudule will be run when setting new goal, so not need finishing pull_over module.
+  // pull_out module will be run when setting new goal, so not need finishing pull_over module.
   // Finishing it causes wrong lane_following path generation.
   // if (hasFinishedPullOver()) {
   //   current_state_ = BT::NodeStatus::SUCCESS;
@@ -355,7 +353,7 @@ bool PullOverModule::planWithEfficientPath()
   if (parameters_.enable_arc_forward_parking) {
     for (const auto goal_candidate : goal_candidates_) {
       modified_goal_pose_ = goal_candidate.goal_pose;
-      parallel_parking_planner_.setParams(planner_data_, parallel_parking_prameters_);
+      parallel_parking_planner_.setParams(planner_data_, parallel_parking_parameters_);
       if (
         parallel_parking_planner_.plan(modified_goal_pose_, status_.lanes, true) &&
         isLongEnoughToParkingStart(
@@ -376,7 +374,7 @@ bool PullOverModule::planWithEfficientPath()
   if (parameters_.enable_arc_backward_parking) {
     for (const auto goal_candidate : goal_candidates_) {
       modified_goal_pose_ = goal_candidate.goal_pose;
-      parallel_parking_planner_.setParams(planner_data_, parallel_parking_prameters_);
+      parallel_parking_planner_.setParams(planner_data_, parallel_parking_parameters_);
       if (
         parallel_parking_planner_.plan(modified_goal_pose_, status_.lanes, false) &&
         isLongEnoughToParkingStart(
@@ -415,7 +413,7 @@ bool PullOverModule::planWithCloseGoal()
       return true;
     }
 
-    parallel_parking_planner_.setParams(planner_data_, parallel_parking_prameters_);
+    parallel_parking_planner_.setParams(planner_data_, parallel_parking_parameters_);
     // Generate arc forward path.
     if (
       parameters_.enable_arc_forward_parking &&
@@ -479,7 +477,7 @@ BehaviorModuleOutput PullOverModule::plan()
   status_.lanes.insert(
     status_.lanes.end(), status_.pull_over_lanes.begin(), status_.pull_over_lanes.end());
 
-  // Check if it needs to deciede path
+  // Check if it needs to decide path
   if (status_.is_safe) {
     const Pose parking_start_pose = getParkingStartPose();
     const auto dist_to_parking_start_pose = calcSignedArcLength(
@@ -494,7 +492,7 @@ BehaviorModuleOutput PullOverModule::plan()
   // Use decided path
   if (status_.has_decided_path) {
     if (!status_.has_requested_approval_) {
-      // request approval again one the final parth is decided
+      // request approval again one the final path is decided
       waitApproval();
       removeRTCStatus();
       uuid_ = generateUUID();
@@ -504,7 +502,7 @@ BehaviorModuleOutput PullOverModule::plan()
       clearWaitingApproval();
       last_approved_time_ = std::make_unique<rclcpp::Time>(clock_->now());
 
-      // decide velocity to guarantee turn singnal lighting time
+      // decide velocity to guarantee turn signal lighting time
       if (!status_.has_decided_velocity) {
         const float vel = static_cast<float>(std::max(
           planner_data_->self_odometry->twist.twist.linear.x,
@@ -518,7 +516,7 @@ BehaviorModuleOutput PullOverModule::plan()
 
     if (isActivated() && isArcPath() && last_approved_time_ != nullptr) {
       // if using arc_path and finishing current_path, get next path
-      // enough time for turn singal
+      // enough time for turn signal
       const bool has_passed_enough_time = (clock_->now() - *last_approved_time_).seconds() >
                                           planner_data_->parameters.turn_light_on_threshold_time;
 
@@ -529,7 +527,7 @@ BehaviorModuleOutput PullOverModule::plan()
     }
 
   } else {  // Replan shift -> arc forward -> arc backward path with each goal candidate.
-    // Research goal when enabling research and final path has not been decieded
+    // Research goal when enabling research and final path has not been decided
     if (parameters_.enable_goal_research) researchGoal();
 
     status_.path_type = PathType::NONE;
@@ -542,7 +540,7 @@ BehaviorModuleOutput PullOverModule::plan()
       has_found_safe_path = planWithCloseGoal();
     } else {
       RCLCPP_ERROR(
-        getLogger(), "search_priority shoudbe efficient_path or close_goal, but %s is given.",
+        getLogger(), "search_priority should be efficient_path or close_goal, but %s is given.",
         parameters_.search_priority.c_str());
     }
 
@@ -563,7 +561,7 @@ BehaviorModuleOutput PullOverModule::plan()
   output.path = status_.is_safe ? std::make_shared<PathWithLaneId>(status_.path)
                                 : std::make_shared<PathWithLaneId>(getStopPath());
 
-  // set hazard and turn singnal
+  // set hazard and turn signal
   if (status_.has_decided_path) {
     const auto hazard_info = getHazardInfo();
     const auto turn_info = getTurnInfo();
@@ -591,8 +589,8 @@ BehaviorModuleOutput PullOverModule::plan()
 }
 
 // This const function can not change the menber variables like the goal.
-// so implement generating candidate path in planWaitingApprval().
-// No specific path for the cadidte. It's same to the one generated by plan().
+// so implement generating candidate path in planWaitingApproval().
+// No specific path for the candidate. It's same to the one generated by plan().
 CandidateOutput PullOverModule::planCandidate() const { return CandidateOutput{}; }
 
 BehaviorModuleOutput PullOverModule::planWaitingApproval()
@@ -608,6 +606,7 @@ BehaviorModuleOutput PullOverModule::planWaitingApproval()
 
   const double distance_to_path_change = calcDistanceToPathChange();
   updateRTCStatus(distance_to_path_change);
+  waitApproval();
 
   return out;
 }
@@ -682,7 +681,7 @@ PathWithLaneId PullOverModule::getReferencePath() const
     status_.current_lanes, s_backward, arc_position_stop_pose.length, true);
   reference_path.header = route_handler->getRouteHeader();
 
-  // slow donw for turn singnal, insert stop point to stop_pose
+  // slow down for turn signal, insert stop point to stop_pose
   reference_path = util::setDecelerationVelocityForTurnSignal(
     reference_path, stop_pose, planner_data_->parameters.turn_light_on_threshold_time);
 
