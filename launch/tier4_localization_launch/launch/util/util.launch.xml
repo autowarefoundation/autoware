@@ -11,11 +11,16 @@
   <arg name="use_intra_process" default="true" description="use ROS2 component container communication"/>
 
   <!-- pose_initializer -->
-  <include file="$(find-pkg-share pose_initializer)/launch/pose_initializer.launch.xml"/>
-
+  <group>
+    <include file="$(find-pkg-share pose_initializer)/launch/pose_initializer.launch.xml"/>
+  </group>
   <!-- util -->
-  <include file="$(find-pkg-share tier4_localization_launch)/launch/util/util.launch.py">
-    <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
-    <arg name="output/pointcloud" value="$(var output/pointcloud)"/>
-  </include>
+  <group>
+    <include file="$(find-pkg-share tier4_localization_launch)/launch/util/util.launch.py">
+      <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
+      <arg name="output/pointcloud" value="$(var output/pointcloud)"/>
+      <arg name="container" value="$(var container)"/>
+      <arg name="use_intra_process" value="$(var use_intra_process)"/>
+    </include>
+  </group>
 </launch>

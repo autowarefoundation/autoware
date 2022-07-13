@@ -28,6 +28,8 @@
       <include file="$(find-pkg-share tier4_localization_launch)/launch/pose_twist_fusion_filter/pose_twist_fusion_filter.launch.xml"/>
     </group>
     <!-- localization_error_monitor_module -->
-    <include file="$(find-pkg-share tier4_localization_launch)/launch/localization_error_monitor/localization_error_monitor.launch.xml"/>
+    <group>
+      <include file="$(find-pkg-share tier4_localization_launch)/launch/localization_error_monitor/localization_error_monitor.launch.xml"/>
+    </group>
   </group>
 </launch>

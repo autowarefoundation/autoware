@@ -1,34 +1,40 @@
 <?xml version="1.0"?>
 <launch>
-  <include file="$(find-pkg-share ekf_localizer)/launch/ekf_localizer.launch.xml">
-    <arg name="enable_yaw_bias_estimation" value="False"/>
-    <arg name="tf_rate" value="50.0"/>
-    <arg name="twist_smoothing_steps" value="2"/>
-    <arg name="input_initial_pose_name" value="/initialpose3d"/>
+  <group>
+    <include file="$(find-pkg-share ekf_localizer)/launch/ekf_localizer.launch.xml">
+      <arg name="enable_yaw_bias_estimation" value="False"/>
+      <arg name="tf_rate" value="50.0"/>
+      <arg name="twist_smoothing_steps" value="2"/>
+      <arg name="input_initial_pose_name" value="/initialpose3d"/>
+      <arg name="input_pose_with_cov_name" value="/localization/pose_estimator/pose_with_covariance"/>
+      <arg name="input_twist_with_cov_name" value="/localization/twist_estimator/twist_with_covariance"/>
+      <arg name="output_odom_name" value="kinematic_state"/>
+      <arg name="output_pose_name" value="pose"/>
+      <arg name="output_pose_with_covariance_name" value="/localization/pose_with_covariance"/>
+      <arg name="output_pose_without_yawbias_name" value="pose_without_yawbias"/>
+      <arg name="output_pose_with_covariance_without_yawbias_name" value="pose_with_covariance_without_yawbias"/>
+      <arg name="output_twist_name" value="twist"/>
+      <arg name="output_twist_with_covariance_name" value="twist_with_covariance"/>
+      <arg name="proc_stddev_vx_c" value="10.0"/>
+      <arg name="proc_stddev_wz_c" value="5.0"/>
+    </include>
+  </group>
 
-    <arg name="input_pose_with_cov_name" value="/localization/pose_estimator/pose_with_covariance"/>
-    <arg name="input_twist_with_cov_name" value="/localization/twist_estimator/twist_with_covariance"/>
-    <arg name="output_odom_name" value="kinematic_state"/>
-    <arg name="output_pose_name" value="pose"/>
-    <arg name="output_pose_with_covariance_name" value="/localization/pose_with_covariance"/>
-    <arg name="output_pose_without_yawbias_name" value="pose_without_yawbias"/>
-    <arg name="output_pose_with_covariance_without_yawbias_name" value="pose_with_covariance_without_yawbias"/>
-    <arg name="output_twist_name" value="twist"/>
-    <arg name="output_twist_with_covariance_name" value="twist_with_covariance"/>
+  <group>
+    <include file="$(find-pkg-share stop_filter)/launch/stop_filter.launch.xml">
+      <arg name="use_twist_with_covariance" value="True"/>
+      <arg name="input_odom_name" value="/localization/pose_twist_fusion_filter/kinematic_state"/>
+      <arg name="input_twist_with_covariance_name" value="/localization/pose_twist_fusion_filter/twist_with_covariance"/>
+      <arg name="output_odom_name" value="/localization/kinematic_state"/>
+    </include>
+  </group>
 
-    <arg name="proc_stddev_vx_c" value="10.0"/>
-    <arg name="proc_stddev_wz_c" value="5.0"/>
-  </include>
-  <include file="$(find-pkg-share stop_filter)/launch/stop_filter.launch.xml">
-    <arg name="use_twist_with_covariance" value="True"/>
-    <arg name="input_odom_name" value="/localization/pose_twist_fusion_filter/kinematic_state"/>
-    <arg name="input_twist_with_covariance_name" value="/localization/pose_twist_fusion_filter/twist_with_covariance"/>
-    <arg name="output_odom_name" value="/localization/kinematic_state"/>
-  </include>
-  <include file="$(find-pkg-share twist2accel)/launch/twist2accel.launch.xml">
-    <arg name="use_odom" value="true"/>
-    <arg name="in_odom" value="/localization/kinematic_state"/>
-    <arg name="in_twist" value="/localization/twist_estimator/twist_with_covariance"/>
-    <arg name="out_accel" value="/localization/acceleration"/>
-  </include>
+  <group>
+    <include file="$(find-pkg-share twist2accel)/launch/twist2accel.launch.xml">
+      <arg name="use_odom" value="true"/>
+      <arg name="in_odom" value="/localization/kinematic_state"/>
+      <arg name="in_twist" value="/localization/twist_estimator/twist_with_covariance"/>
+      <arg name="out_accel" value="/localization/acceleration"/>
+    </include>
+  </group>
 </launch>

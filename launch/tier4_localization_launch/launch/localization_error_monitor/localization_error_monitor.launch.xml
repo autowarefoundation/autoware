@@ -1,7 +1,9 @@
 <?xml version="1.0"?>
 <launch>
-  <include file="$(find-pkg-share localization_error_monitor)/launch/localization_error_monitor.launch.xml">
-    <arg name="input/pose_with_cov" value="/localization/pose_with_covariance"/>
-    <arg name="param_file" value="$(find-pkg-share tier4_localization_launch)/config/localization_error_monitor.param.yaml"/>
-  </include>
+  <group>
+    <include file="$(find-pkg-share localization_error_monitor)/launch/localization_error_monitor.launch.xml">
+      <arg name="input/pose_with_cov" value="/localization/pose_with_covariance"/>
+      <arg name="param_file" value="$(find-pkg-share tier4_localization_launch)/config/localization_error_monitor.param.yaml"/>
+    </include>
+  </group>
 </launch>
