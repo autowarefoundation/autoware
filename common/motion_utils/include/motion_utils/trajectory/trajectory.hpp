@@ -948,6 +948,70 @@ inline boost::optional<size_t> insertTargetPoint(
   return insertTargetPoint(
     *nearest_segment_idx, insert_point_length + offset_length, points, overlap_threshold);
 }
+
+/**
+ * @brief Insert stop point from the source segment index
+ * @param src_segment_idx start segment index on the trajectory
+ * @param distance_to_stop_point distance to stop point from the source index
+ * @param points output points of trajectory, path, ...
+ * @return index of stop point
+ */
+template <class T>
+inline boost::optional<size_t> insertStopPoint(
+  const size_t src_segment_idx, const double distance_to_stop_point, T & points_with_twist,
+  const double overlap_threshold = 1e-3)
+{
+  validateNonEmpty(points_with_twist);
+
+  if (distance_to_stop_point < 0.0 || src_segment_idx >= points_with_twist.size() - 1) {
+    return boost::none;
+  }
+
+  const auto stop_idx = insertTargetPoint(
+    src_segment_idx, distance_to_stop_point, points_with_twist, overlap_threshold);
+  if (!stop_idx) {
+    return boost::none;
+  }
+
+  for (size_t i = *stop_idx; i < points_with_twist.size(); ++i) {
+    points_with_twist.at(i).longitudinal_velocity_mps = 0.0;
+  }
+
+  return stop_idx;
+}
+
+/**
+ * @brief Insert Stop point from the source pose
+ * @param src_pose source pose
+ * @param distance_to_stop_point  distance to stop point from the src point
+ * @param points output points of trajectory, path, ...
+ * @return index of stop point
+ */
+template <class T>
+inline boost::optional<size_t> insertStopPoint(
+  const geometry_msgs::msg::Pose & src_pose, const double distance_to_stop_point,
+  T & points_with_twist, const double max_dist = std::numeric_limits<double>::max(),
+  const double max_yaw = std::numeric_limits<double>::max(), const double overlap_threshold = 1e-3)
+{
+  validateNonEmpty(points_with_twist);
+
+  if (distance_to_stop_point < 0.0) {
+    return boost::none;
+  }
+
+  const auto stop_idx = insertTargetPoint(
+    src_pose, distance_to_stop_point, points_with_twist, max_dist, max_yaw, overlap_threshold);
+
+  if (!stop_idx) {
+    return boost::none;
+  }
+
+  for (size_t i = *stop_idx; i < points_with_twist.size(); ++i) {
+    points_with_twist.at(i).longitudinal_velocity_mps = 0.0;
+  }
+
+  return stop_idx;
+}
 }  // namespace motion_utils
 
 #endif  // MOTION_UTILS__TRAJECTORY__TRAJECTORY_HPP_
