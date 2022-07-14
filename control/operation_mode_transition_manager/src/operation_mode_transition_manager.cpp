@@ -211,7 +211,8 @@ bool OperationModeTransitionManager::checkEngageAvailable()
   const auto & param = engage_acceptable_param_;
 
   if (data_->trajectory.points.size() < 2) {
-    RCLCPP_WARN(get_logger(), "Engage unavailable: trajectory size must be > 2");
+    RCLCPP_WARN_SKIPFIRST_THROTTLE(
+      get_logger(), *get_clock(), 5000, "Engage unavailable: trajectory size must be > 2");
     debug_info_ = OperationModeTransitionManagerDebug{};  // all false
     return false;
   }

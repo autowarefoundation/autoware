@@ -2,6 +2,7 @@
   ros__parameters:
     frequency_hz: 10.0
     engage_acceptable_limits:
+      allow_autonomous_in_stopped: true  # no check if the velocity is zero, always allowed.
       dist_threshold: 1.5
       yaw_threshold: 0.524
       speed_upper_threshold: 10.0
