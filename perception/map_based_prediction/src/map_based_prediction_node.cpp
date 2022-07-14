@@ -814,7 +814,7 @@ std::vector<PredictedRefPath> MapBasedPredictionNode::getPredictedReferencePath(
   const double object_detected_time)
 {
   const double delta_horizon = 1.0;
-  const double obj_vel = object.kinematics.twist_with_covariance.twist.linear.x;
+  const double obj_vel = std::fabs(object.kinematics.twist_with_covariance.twist.linear.x);
 
   std::vector<PredictedRefPath> all_ref_paths;
   for (const auto & current_lanelet_data : current_lanelets_data) {
