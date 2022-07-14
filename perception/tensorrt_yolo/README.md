@@ -68,25 +68,33 @@ This package includes multiple licenses.
 
 ## Onnx model
 
+All YOLO ONNX models are converted from the officially trained model. If you need information about training datasets and conditions, please refer to the official repositories .
+
 ### YOLOv3
 
-[YOLOv3](https://drive.google.com/uc?id=1ZYoBqVynmO5kKntyN56GEbELRpuXG8Ym "YOLOv3"): Converted from darknet [weight file](https://pjreddie.com/media/files/yolov3.weights "weight file") and [conf file](https://github.com/pjreddie/darknet/blob/master/cfg/yolov3.cfg "conf file").
+[YOLOv3](https://awf.ml.dev.web.auto/perception/models/yolov3.onnx "YOLOv3"): Converted from darknet [weight file](https://pjreddie.com/media/files/yolov3.weights "weight file") and [conf file](https://github.com/pjreddie/darknet/blob/master/cfg/yolov3.cfg "conf file").
+
+- [This code](https://github.com/wep21/yolo_onnx_converter) is used for converting darknet weight file and conf file to onnx.
 
 ### YOLOv4
 
-[YOLOv4](https://drive.google.com/uc?id=1vkNmSwcIpTkJ_-BrKhxtit0PBJeJYTVX "YOLOv4"): Converted from darknet [weight file](https://github.com/AlexeyAB/darknet/releases/download/darknet_yolo_v3_optimal/yolov4.weights "weight file") and [conf file](https://github.com/AlexeyAB/darknet/blob/master/cfg/yolov4.cfg "conf file").
+[YOLOv4](https://awf.ml.dev.web.auto/perception/models/yolov4.onnx "YOLOv4"): Converted from darknet [weight file](https://github.com/AlexeyAB/darknet/releases/download/darknet_yolo_v3_optimal/yolov4.weights "weight file") and [conf file](https://github.com/AlexeyAB/darknet/blob/master/cfg/yolov4.cfg "conf file").
+
+[YOLOv4-tiny](https://awf.ml.dev.web.auto/perception/models/yolov4-tiny.onnx "YOLOv4-tiny"): Converted from darknet [weight file](https://github.com/AlexeyAB/darknet/releases/download/darknet_yolo_v4_pre/yolov4-tiny.weights "weight file") and [conf file](https://github.com/AlexeyAB/darknet/blob/master/cfg/yolov4-tiny.cfg "conf file").
+
+- [This code](https://github.com/wep21/yolo_onnx_converter) is used for converting darknet weight file and conf file to onnx.
 
 ### YOLOv5
 
 Refer to [this guide](https://github.com/ultralytics/yolov5/issues/251 "guide")
 
-- [YOLOv5s](https://drive.google.com/uc?id=1CF21nQWigwCPTr5psQZXg6cBQIOYKbad "YOLOv5s")
+- [YOLOv5s](https://awf.ml.dev.web.auto/perception/models/yolov5s.onnx "YOLOv5s")
 
-- [YOLOv5m](https://drive.google.com/uc?id=1a1h50KJH6slwmjKZpPlS-errukF-BrgG "YOLOv5m")
+- [YOLOv5m](https://awf.ml.dev.web.auto/perception/models/yolov5m.onnx "YOLOv5m")
 
-- [YOLOv5l](https://drive.google.com/uc?id=1xO8S92Cq7qrmx93UHHyA7Cd7-dJsBDP8 "YOLOv5l")
+- [YOLOv5l](https://awf.ml.dev.web.auto/perception/models/yolov5l.onnx "YOLOv5l")
 
-- [YOLOv5x](https://drive.google.com/uc?id=1kAHuNJUCxpD-yWrS6t95H3zbAPfClLxI "YOLOv5x")
+- [YOLOv5x](https://awf.ml.dev.web.auto/perception/models/yolov5x.onnx "YOLOv5x")
 
 ## Limitations
 
