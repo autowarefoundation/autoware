@@ -875,26 +875,27 @@ inline boost::optional<size_t> insertTargetPoint(
 }
 
 /**
- * @brief calculate the point offset from source point along the trajectory (or path)
+ * @brief Insert a target point from the source index
+ * @param src_segment_idx source segment index on the trajectory
  * @param insert_point_length length to insert point from the beginning of the points
  * @param points output points of trajectory, path, ...
  * @return index of insert point
  */
 template <class T>
 inline boost::optional<size_t> insertTargetPoint(
-  const size_t start_segment_idx, const double insert_point_length, T & points,
+  const size_t src_segment_idx, const double insert_point_length, T & points,
   const double overlap_threshold = 1e-3)
 {
   validateNonEmpty(points);
 
-  if (insert_point_length < 0.0 || start_segment_idx >= points.size() - 1) {
+  if (insert_point_length < 0.0 || src_segment_idx >= points.size() - 1) {
     return boost::none;
   }
 
   // Get Nearest segment index
   boost::optional<size_t> segment_idx = boost::none;
-  for (size_t i = start_segment_idx + 1; i < points.size(); ++i) {
-    const double length = calcSignedArcLength(points, start_segment_idx, i);
+  for (size_t i = src_segment_idx + 1; i < points.size(); ++i) {
+    const double length = calcSignedArcLength(points, src_segment_idx, i);
     if (insert_point_length <= length) {
       segment_idx = i - 1;
       break;
@@ -907,14 +908,45 @@ inline boost::optional<size_t> insertTargetPoint(
 
   // Get Target Point
   const double segment_length = calcSignedArcLength(points, *segment_idx, *segment_idx + 1);
-  const double target_length = std::max(
-    0.0, insert_point_length - calcSignedArcLength(points, start_segment_idx, *segment_idx));
+  const double target_length =
+    std::max(0.0, insert_point_length - calcSignedArcLength(points, src_segment_idx, *segment_idx));
   const double ratio = std::clamp(target_length / segment_length, 0.0, 1.0);
   const auto p_target = tier4_autoware_utils::calcInterpolatedPoint(
     tier4_autoware_utils::getPoint(points.at(*segment_idx)),
     tier4_autoware_utils::getPoint(points.at(*segment_idx + 1)), ratio);
 
   return insertTargetPoint(*segment_idx, p_target, points, overlap_threshold);
+}
+
+/**
+ * @brief Insert a target point from a source pose on the trajectory
+ * @param src_pose source pose on the trajectory
+ * @param insert_point_length length to insert point from the beginning of the points
+ * @param points output points of trajectory, path, ...
+ * @return index of insert point
+ */
+template <class T>
+inline boost::optional<size_t> insertTargetPoint(
+  const geometry_msgs::msg::Pose & src_pose, const double insert_point_length, T & points,
+  const double max_dist = std::numeric_limits<double>::max(),
+  const double max_yaw = std::numeric_limits<double>::max(), const double overlap_threshold = 1e-3)
+{
+  validateNonEmpty(points);
+
+  if (insert_point_length < 0.0) {
+    return boost::none;
+  }
+
+  const auto nearest_segment_idx = findNearestSegmentIndex(points, src_pose, max_dist, max_yaw);
+  if (!nearest_segment_idx) {
+    return boost::none;
+  }
+
+  const double offset_length =
+    calcLongitudinalOffsetToSegment(points, *nearest_segment_idx, src_pose.position);
+
+  return insertTargetPoint(
+    *nearest_segment_idx, insert_point_length + offset_length, points, overlap_threshold);
 }
 }  // namespace motion_utils
 
