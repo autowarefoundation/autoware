@@ -59,7 +59,8 @@ double SmootherBase::getMaxJerk() const { return base_param_.max_jerk; }
 double SmootherBase::getMinJerk() const { return base_param_.min_jerk; }
 
 boost::optional<TrajectoryPoints> SmootherBase::applyLateralAccelerationFilter(
-  const TrajectoryPoints & input) const
+  const TrajectoryPoints & input, [[maybe_unused]] const double v0,
+  [[maybe_unused]] const double a0, [[maybe_unused]] const bool enable_smooth_limit) const
 {
   if (input.empty()) {
     return boost::none;
@@ -102,6 +103,12 @@ boost::optional<TrajectoryPoints> SmootherBase::applyLateralAccelerationFilter(
     static_cast<size_t>(std::round(base_param_.decel_distance_after_curve / points_interval));
   const double max_lateral_accel_abs = std::fabs(base_param_.max_lateral_accel);
 
+  const auto latacc_min_vel_arr =
+    enable_smooth_limit
+      ? trajectory_utils::calcVelocityProfileWithConstantJerkAndAccelerationLimit(
+          *output, v0, a0, base_param_.min_jerk, base_param_.max_accel, base_param_.min_decel)
+      : std::vector<double>{};
+
   for (size_t i = 0; i < output->size(); ++i) {
     double curvature = 0.0;
     const size_t start = i > after_decel_index ? i - after_decel_index : 0;
@@ -111,6 +118,9 @@ boost::optional<TrajectoryPoints> SmootherBase::applyLateralAccelerationFilter(
     }
     double v_curvature_max = std::sqrt(max_lateral_accel_abs / std::max(curvature, 1.0E-5));
     v_curvature_max = std::max(v_curvature_max, base_param_.min_curve_velocity);
+    if (enable_smooth_limit) {
+      v_curvature_max = std::max(v_curvature_max, latacc_min_vel_arr.at(i));
+    }
     if (output->at(i).longitudinal_velocity_mps > v_curvature_max) {
       output->at(i).longitudinal_velocity_mps = v_curvature_max;
     }

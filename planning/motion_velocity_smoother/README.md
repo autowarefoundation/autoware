@@ -30,8 +30,10 @@ This function is used to approach near the obstacle or improve the accuracy of s
 #### Apply lateral acceleration limit
 
 It applies the velocity limit to decelerate at the curve.
-It calculate the velocity limit from the curvature of the reference trajectory and the maximum lateral acceleration `max_lateral_accel`.
+It calculates the velocity limit from the curvature of the reference trajectory and the maximum lateral acceleration `max_lateral_accel`.
 The velocity limit is set as not to fall under `min_curve_velocity`.
+
+Note: velocity limit that requests larger than `nominal.jerk` is not applied. In other words, even if a sharp curve is planned just in front of the ego, no deceleration is performed.
 
 #### Resample trajectory
 

@@ -75,7 +75,9 @@ public:
     const TrajectoryPoints & input, const double v_current, const int closest_id) const override;
 
   boost::optional<TrajectoryPoints> applyLateralAccelerationFilter(
-    const TrajectoryPoints & input) const override;
+    const TrajectoryPoints & input, [[maybe_unused]] const double v0,
+    [[maybe_unused]] const double a0,
+    [[maybe_unused]] const bool enable_smooth_limit) const override;
 
   void setParam(const Param & param);
   Param getParam() const;

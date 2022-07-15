@@ -639,5 +639,32 @@ boost::optional<std::tuple<double, double, double, double>> updateStateWithJerkC
   return {};
 }
 
+std::vector<double> calcVelocityProfileWithConstantJerkAndAccelerationLimit(
+  const TrajectoryPoints & trajectory, const double v0, const double a0, const double jerk,
+  const double acc_max, const double acc_min)
+{
+  if (trajectory.empty()) return {};
+
+  std::vector<double> velocities(trajectory.size());
+  velocities.at(0) = v0;
+  auto curr_v = v0;
+  auto curr_a = a0;
+
+  const auto intervals = calcTrajectoryIntervalDistance(trajectory);
+
+  if (intervals.size() + 1 != trajectory.size()) {
+    throw std::logic_error("interval calculation result has unexpected array size.");
+  }
+
+  for (size_t i = 0; i < intervals.size(); ++i) {
+    const auto t = intervals.at(i) / std::max(velocities.at(i), 1.0e-5);
+    curr_v = integ_v(curr_v, curr_a, jerk, t);
+    velocities.at(i + 1) = curr_v;
+    curr_a = std::clamp(integ_a(curr_a, jerk, t), acc_min, acc_max);
+  }
+
+  return velocities;
+}
+
 }  // namespace trajectory_utils
 }  // namespace motion_velocity_smoother

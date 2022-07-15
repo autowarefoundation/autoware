@@ -85,6 +85,10 @@ boost::optional<TrajectoryPoints> applyDecelFilterWithJerkConstraint(
 boost::optional<std::tuple<double, double, double, double>> updateStateWithJerkConstraint(
   const double v0, const double a0, const std::map<double, double> & jerk_profile, const double t);
 
+std::vector<double> calcVelocityProfileWithConstantJerkAndAccelerationLimit(
+  const TrajectoryPoints & trajectory, const double v0, const double a0, const double jerk,
+  const double acc_max, const double acc_min);
+
 }  // namespace trajectory_utils
 }  // namespace motion_velocity_smoother
 

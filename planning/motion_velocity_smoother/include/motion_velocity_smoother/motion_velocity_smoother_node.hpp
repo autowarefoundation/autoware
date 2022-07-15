@@ -157,7 +157,9 @@ private:
 
   TrajectoryPoints calcTrajectoryVelocity(const TrajectoryPoints & input) const;
 
-  bool smoothVelocity(const TrajectoryPoints & input, TrajectoryPoints & traj_smoothed) const;
+  bool smoothVelocity(
+    const TrajectoryPoints & input, const size_t input_closest,
+    TrajectoryPoints & traj_smoothed) const;
 
   std::tuple<double, double, InitializeType> calcInitialMotion(
     const TrajectoryPoints & input_traj, const size_t input_closest,
