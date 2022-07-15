@@ -160,7 +160,7 @@ private:
     const lanelet::BasicPoint2d & search_point);
   float calculateLocalLikelihood(
     const lanelet::Lanelet & current_lanelet, const TrackedObject & object) const;
-  static double getObjectYaw(const TrackedObject & object);
+  void updateObjectData(TrackedObject & object);
 
   void updateObjectsHistory(
     const std_msgs::msg::Header & header, const TrackedObject & object,

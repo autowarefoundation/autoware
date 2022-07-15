@@ -17,6 +17,8 @@
 #include <interpolation/linear_interpolation.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
+#include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
+
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/polygon.hpp>
 
@@ -385,6 +387,9 @@ void MapBasedPredictionNode::objectsCallback(const TrackedObjects::ConstSharedPt
       label == ObjectClassification::CAR || label == ObjectClassification::BUS ||
       label == ObjectClassification::TRAILER || label == ObjectClassification::MOTORCYCLE ||
       label == ObjectClassification::TRUCK) {
+      // Update object yaw and velocity
+      updateObjectData(transformed_object);
+
       // Get Closest Lanelet
       const auto current_lanelets = getCurrentLanelets(transformed_object);
 
@@ -610,17 +615,41 @@ PredictedObject MapBasedPredictionNode::getPredictedObjectAsCrosswalkUser(
   return predicted_object;
 }
 
-double MapBasedPredictionNode::getObjectYaw(const TrackedObject & object)
+void MapBasedPredictionNode::updateObjectData(TrackedObject & object)
 {
-  if (object.kinematics.orientation_availability) {
-    return tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation);
+  if (
+    object.kinematics.orientation_availability ==
+    autoware_auto_perception_msgs::msg::DetectedObjectKinematics::AVAILABLE) {
+    return;
   }
 
+  // Compute yaw angle from the velocity and position of the object
   const auto & object_pose = object.kinematics.pose_with_covariance.pose;
   const auto & object_twist = object.kinematics.twist_with_covariance.twist;
   const auto future_object_pose = tier4_autoware_utils::calcOffsetPose(
     object_pose, object_twist.linear.x * 0.1, object_twist.linear.y * 0.1, 0.0);
-  return tier4_autoware_utils::calcAzimuthAngle(object_pose.position, future_object_pose.position);
+
+  if (object.kinematics.twist_with_covariance.twist.linear.x < 0.0) {
+    if (
+      object.kinematics.orientation_availability ==
+      autoware_auto_perception_msgs::msg::DetectedObjectKinematics::SIGN_UNKNOWN) {
+      const auto original_yaw =
+        tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation);
+      // flip the angle
+      object.kinematics.pose_with_covariance.pose.orientation =
+        tier4_autoware_utils::createQuaternionFromYaw(tier4_autoware_utils::pi + original_yaw);
+    } else {
+      const auto updated_object_yaw =
+        tier4_autoware_utils::calcAzimuthAngle(object_pose.position, future_object_pose.position);
+
+      object.kinematics.pose_with_covariance.pose.orientation =
+        tier4_autoware_utils::createQuaternionFromYaw(updated_object_yaw);
+    }
+
+    object.kinematics.twist_with_covariance.twist.linear.x *= -1.0;
+  }
+
+  return;
 }
 
 void MapBasedPredictionNode::removeOldObjectsHistory(const double current_time)
@@ -731,7 +760,7 @@ bool MapBasedPredictionNode::checkCloseLaneletCondition(
   }
 
   // Step3. Calculate the angle difference between the lane angle and obstacle angle
-  const double object_yaw = getObjectYaw(object);
+  const double object_yaw = tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation);
   const double lane_yaw = lanelet::utils::getLaneletAngle(
     lanelet.second, object.kinematics.pose_with_covariance.pose.position);
   const double delta_yaw = object_yaw - lane_yaw;
@@ -758,7 +787,7 @@ float MapBasedPredictionNode::calculateLocalLikelihood(
   const auto & obj_point = object.kinematics.pose_with_covariance.pose.position;
 
   // compute yaw difference between the object and lane
-  const double obj_yaw = getObjectYaw(object);
+  const double obj_yaw = tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation);
   const double lane_yaw = lanelet::utils::getLaneletAngle(current_lanelet, obj_point);
   const double delta_yaw = obj_yaw - lane_yaw;
   const double abs_norm_delta_yaw = std::fabs(tier4_autoware_utils::normalizeRadian(delta_yaw));
@@ -798,7 +827,7 @@ void MapBasedPredictionNode::updateObjectsHistory(
   single_object_data.current_lanelets = current_lanelets;
   single_object_data.future_possible_lanelets = current_lanelets;
   single_object_data.pose = object.kinematics.pose_with_covariance.pose;
-  const double object_yaw = getObjectYaw(object);
+  const double object_yaw = tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation);
   single_object_data.pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(object_yaw);
   single_object_data.time_delay = std::fabs((this->get_clock()->now() - header.stamp).seconds());
   single_object_data.twist = object.kinematics.twist_with_covariance.twist;
