@@ -522,7 +522,7 @@ PredictedObject MapBasedPredictionNode::getPredictedObjectAsCrosswalkUser(
     const auto entry_point = getCrosswalkEntryPoint(crossing_crosswalk.get());
 
     if (hasPotentialToReach(
-          object, entry_point.first, prediction_time_horizon_,
+          object, entry_point.first, std::numeric_limits<double>::max(),
           min_velocity_for_map_based_prediction_)) {
       PredictedPath predicted_path =
         path_generator_->generatePathToTargetPoint(object, entry_point.first);
@@ -531,7 +531,7 @@ PredictedObject MapBasedPredictionNode::getPredictedObjectAsCrosswalkUser(
     }
 
     if (hasPotentialToReach(
-          object, entry_point.second, prediction_time_horizon_,
+          object, entry_point.second, std::numeric_limits<double>::max(),
           min_velocity_for_map_based_prediction_)) {
       PredictedPath predicted_path =
         path_generator_->generatePathToTargetPoint(object, entry_point.second);
@@ -540,11 +540,16 @@ PredictedObject MapBasedPredictionNode::getPredictedObjectAsCrosswalkUser(
     }
 
   } else if (withinRoadLanelet(object, lanelet_map_ptr_)) {
-    for (const auto & crosswalk : crosswalks_) {
-      const auto entry_point = getCrosswalkEntryPoint(crosswalk);
+    lanelet::ConstLanelet closest_crosswalk{};
+    const auto & obj_pose = object.kinematics.pose_with_covariance.pose;
+    const auto found_closest_crosswalk =
+      lanelet::utils::query::getClosestLanelet(crosswalks_, obj_pose, &closest_crosswalk);
+
+    if (found_closest_crosswalk) {
+      const auto entry_point = getCrosswalkEntryPoint(closest_crosswalk);
 
       if (hasPotentialToReach(
-            object, entry_point.first, prediction_time_horizon_,
+            object, entry_point.first, prediction_time_horizon_ * 2.0,
             min_velocity_for_map_based_prediction_)) {
         PredictedPath predicted_path =
           path_generator_->generatePathToTargetPoint(object, entry_point.first);
@@ -553,7 +558,7 @@ PredictedObject MapBasedPredictionNode::getPredictedObjectAsCrosswalkUser(
       }
 
       if (hasPotentialToReach(
-            object, entry_point.second, prediction_time_horizon_,
+            object, entry_point.second, prediction_time_horizon_ * 2.0,
             min_velocity_for_map_based_prediction_)) {
         PredictedPath predicted_path =
           path_generator_->generatePathToTargetPoint(object, entry_point.second);
