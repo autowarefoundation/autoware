@@ -638,7 +638,12 @@ void CrosswalkModule::insertDecelPoint(
   setDistance(stop_point_distance);
 
   debug_data_.first_stop_pose = stop_point.second.point.pose;
-  debug_data_.stop_poses.push_back(stop_point.second.point.pose);
+
+  if (std::abs(target_velocity) < 1e-3) {
+    debug_data_.stop_poses.push_back(stop_point.second.point.pose);
+  } else {
+    debug_data_.slow_poses.push_back(stop_point.second.point.pose);
+  }
 }
 
 float CrosswalkModule::calcTargetVelocity(
