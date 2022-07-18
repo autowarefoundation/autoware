@@ -38,7 +38,7 @@ LidarApolloInstanceSegmentation::LidarApolloInstanceSegmentation(rclcpp::Node * 
   use_intensity_feature = node_->declare_parameter("use_intensity_feature", true);
   use_constant_feature = node_->declare_parameter("use_constant_feature", true);
   target_frame_ = node_->declare_parameter("target_frame", "base_link");
-  z_offset_ = node_->declare_parameter("z_offset", 2);
+  z_offset_ = node_->declare_parameter<float>("z_offset", -2.0);
 
   // load weight file
   std::ifstream fs(engine_file);
