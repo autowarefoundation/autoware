@@ -892,11 +892,11 @@ autoware_auto_planning_msgs::msg::Trajectory ObstacleAvoidancePlanner::generateT
 {
   autoware_auto_planning_msgs::msg::Trajectory output_traj_msg;
 
-  // TODO(someone): support backward velocity
-  if (isBackwardPath(path)) {
+  // TODO(someone): support backward path
+  if (!motion_utils::isDrivingForward(path.points)) {
     RCLCPP_WARN_THROTTLE(
       get_logger(), *get_clock(), 3000,
-      "[ObstacleAvoidancePlanner] Negative velocity is NOT supported. Just converting path to "
+      "[ObstacleAvoidancePlanner] Backward path is NOT supported. Just converting path to "
       "trajectory");
     const auto traj_points = points_utils::convertToTrajectoryPoints(path.points);
     output_traj_msg = motion_utils::convertToTrajectory(traj_points);
@@ -916,16 +916,6 @@ autoware_auto_planning_msgs::msg::Trajectory ObstacleAvoidancePlanner::generateT
 
   output_traj_msg.header = path.header;
   return output_traj_msg;
-}
-
-bool ObstacleAvoidancePlanner::isBackwardPath(
-  const autoware_auto_planning_msgs::msg::Path & path) const
-{
-  const bool has_negative_velocity = std::any_of(
-    path.points.begin(), path.points.end(),
-    [&](const auto & p) { return p.longitudinal_velocity_mps < 0; });
-
-  return has_negative_velocity;
 }
 
 std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint>

@@ -36,10 +36,24 @@ inline geometry_msgs::msg::Pose getPose(
 }
 
 template <>
+inline double getLongitudinalVelocity(
+  const autoware_auto_planning_msgs::msg::PathPointWithLaneId & p)
+{
+  return p.point.longitudinal_velocity_mps;
+}
+
+template <>
 inline void setPose(
   const geometry_msgs::msg::Pose & pose, autoware_auto_planning_msgs::msg::PathPointWithLaneId & p)
 {
   p.point.pose = pose;
+}
+
+template <>
+inline void setLongitudinalVelocity(
+  const double velocity, autoware_auto_planning_msgs::msg::PathPointWithLaneId & p)
+{
+  p.point.longitudinal_velocity_mps = velocity;
 }
 }  // namespace tier4_autoware_utils
 

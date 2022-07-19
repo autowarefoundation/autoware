@@ -199,6 +199,25 @@ TEST(geometry, getPose)
   }
 }
 
+TEST(geometry, getLongitudinalVelocity)
+{
+  using tier4_autoware_utils::getLongitudinalVelocity;
+
+  const double velocity = 1.0;
+
+  {
+    autoware_auto_planning_msgs::msg::PathPoint p;
+    p.longitudinal_velocity_mps = velocity;
+    EXPECT_DOUBLE_EQ(getLongitudinalVelocity(p), velocity);
+  }
+
+  {
+    autoware_auto_planning_msgs::msg::TrajectoryPoint p;
+    p.longitudinal_velocity_mps = velocity;
+    EXPECT_DOUBLE_EQ(getLongitudinalVelocity(p), velocity);
+  }
+}
+
 TEST(geometry, setPose)
 {
   using tier4_autoware_utils::setPose;
@@ -266,6 +285,25 @@ TEST(geometry, setPose)
     EXPECT_DOUBLE_EQ(p_out.pose.orientation.y, q_y_ans);
     EXPECT_DOUBLE_EQ(p_out.pose.orientation.z, q_z_ans);
     EXPECT_DOUBLE_EQ(p_out.pose.orientation.w, q_w_ans);
+  }
+}
+
+TEST(geometry, setLongitudinalVelocity)
+{
+  using tier4_autoware_utils::setLongitudinalVelocity;
+
+  const double velocity = 1.0;
+
+  {
+    autoware_auto_planning_msgs::msg::PathPoint p{};
+    setLongitudinalVelocity(velocity, p);
+    EXPECT_DOUBLE_EQ(p.longitudinal_velocity_mps, velocity);
+  }
+
+  {
+    autoware_auto_planning_msgs::msg::TrajectoryPoint p{};
+    setLongitudinalVelocity(velocity, p);
+    EXPECT_DOUBLE_EQ(p.longitudinal_velocity_mps, velocity);
   }
 }
 

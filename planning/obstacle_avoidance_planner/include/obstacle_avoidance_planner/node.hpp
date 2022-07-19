@@ -238,8 +238,6 @@ private:
   void resetPlanning();
   void resetPrevOptimization();
 
-  bool isBackwardPath(const autoware_auto_planning_msgs::msg::Path & path) const;
-
   std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> generateOptimizedTrajectory(
     const autoware_auto_planning_msgs::msg::Path & input_path);
 

@@ -611,10 +611,10 @@ void ObstacleStopPlannerNode::pathCallback(const Trajectory::ConstSharedPtr inpu
     }
   }
 
-  // TODO(someone): support negative velocity
-  if (isBackwardPath(*input_msg)) {
+  // TODO(someone): support backward path
+  if (!motion_utils::isDrivingForward(input_msg->points)) {
     RCLCPP_WARN_THROTTLE(
-      get_logger(), *get_clock(), 3000, "Negative velocity NOT supported. publish input as it is.");
+      get_logger(), *get_clock(), 3000, "Backward path is NOT supported. publish input as it is.");
     path_pub_->publish(*input_msg);
     return;
   }
@@ -658,16 +658,6 @@ void ObstacleStopPlannerNode::pathCallback(const Trajectory::ConstSharedPtr inpu
 
   trajectory.header = input_msg->header;
   path_pub_->publish(trajectory);
-}
-
-bool ObstacleStopPlannerNode::isBackwardPath(
-  const autoware_auto_planning_msgs::msg::Trajectory & trajectory) const
-{
-  const bool has_negative_velocity = std::any_of(
-    trajectory.points.begin(), trajectory.points.end(),
-    [&](const auto & p) { return p.longitudinal_velocity_mps < 0; });
-
-  return has_negative_velocity;
 }
 
 void ObstacleStopPlannerNode::searchObstacle(

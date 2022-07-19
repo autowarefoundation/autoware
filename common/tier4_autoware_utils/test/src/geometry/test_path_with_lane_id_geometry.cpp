@@ -64,6 +64,17 @@ TEST(geometry, getPose_PathWithLaneId)
   EXPECT_DOUBLE_EQ(p_out.orientation.w, q_w_ans);
 }
 
+TEST(geometry, getLongitudinalVelocity_PathWithLaneId)
+{
+  using tier4_autoware_utils::getLongitudinalVelocity;
+
+  const double velocity = 1.0;
+
+  autoware_auto_planning_msgs::msg::PathPointWithLaneId p;
+  p.point.longitudinal_velocity_mps = velocity;
+  EXPECT_DOUBLE_EQ(getLongitudinalVelocity(p), velocity);
+}
+
 TEST(geometry, setPose_PathWithLaneId)
 {
   using tier4_autoware_utils::setPose;
@@ -94,4 +105,15 @@ TEST(geometry, setPose_PathWithLaneId)
   EXPECT_DOUBLE_EQ(p_out.point.pose.orientation.y, q_y_ans);
   EXPECT_DOUBLE_EQ(p_out.point.pose.orientation.z, q_z_ans);
   EXPECT_DOUBLE_EQ(p_out.point.pose.orientation.w, q_w_ans);
+}
+
+TEST(geometry, setLongitudinalVelocity_PathWithLaneId)
+{
+  using tier4_autoware_utils::setLongitudinalVelocity;
+
+  const double velocity = 1.0;
+
+  autoware_auto_planning_msgs::msg::PathPointWithLaneId p{};
+  setLongitudinalVelocity(velocity, p);
+  EXPECT_DOUBLE_EQ(p.point.longitudinal_velocity_mps, velocity);
 }

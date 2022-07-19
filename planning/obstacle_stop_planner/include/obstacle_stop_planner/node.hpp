@@ -217,8 +217,6 @@ private:
   void externalExpandStopRangeCallback(const ExpandStopRange::ConstSharedPtr input_msg);
 
 private:
-  bool isBackwardPath(const autoware_auto_planning_msgs::msg::Trajectory & trajectory) const;
-
   bool withinPolygon(
     const std::vector<cv::Point2d> & cv_polygon, const double radius, const Point2d & prev_point,
     const Point2d & next_point, pcl::PointCloud<pcl::PointXYZ>::Ptr candidate_points_ptr,
