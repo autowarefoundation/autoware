@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <trajectory/display.hpp>
+#include <utils.hpp>
 
 #include <memory>
 #define EIGEN_MPL2_ONLY
@@ -229,7 +230,7 @@ void AutowareTrajectoryDisplay::processMessage(
           Eigen::Quaternionf quat(
             path_point.pose.orientation.w, path_point.pose.orientation.x,
             path_point.pose.orientation.y, path_point.pose.orientation.z);
-          if (path_point.longitudinal_velocity_mps < 0) {
+          if (!isDrivingForward(msg_ptr->points, point_idx)) {
             quat *= quat_yaw_reverse;
           }
           vec_out = quat * vec_in;
@@ -243,7 +244,7 @@ void AutowareTrajectoryDisplay::processMessage(
           Eigen::Quaternionf quat(
             path_point.pose.orientation.w, path_point.pose.orientation.x,
             path_point.pose.orientation.y, path_point.pose.orientation.z);
-          if (path_point.longitudinal_velocity_mps < 0) {
+          if (!isDrivingForward(msg_ptr->points, point_idx)) {
             quat *= quat_yaw_reverse;
           }
           vec_out = quat * vec_in;

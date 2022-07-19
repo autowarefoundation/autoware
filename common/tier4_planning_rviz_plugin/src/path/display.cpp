@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <path/display.hpp>
+#include <utils.hpp>
 
 #include <memory>
 #define EIGEN_MPL2_ONLY
@@ -166,7 +167,8 @@ void AutowarePathDisplay::processMessage(
     // path_manual_object_->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_TRIANGLE_STRIP);
     velocity_manual_object_->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP);
 
-    for (auto && path_point : msg_ptr->points) {
+    for (size_t point_idx = 0; point_idx < msg_ptr->points.size(); point_idx++) {
+      const auto & path_point = msg_ptr->points.at(point_idx);
       /*
        * Path
        */
@@ -188,7 +190,7 @@ void AutowarePathDisplay::processMessage(
           Eigen::Quaternionf quat(
             path_point.pose.orientation.w, path_point.pose.orientation.x,
             path_point.pose.orientation.y, path_point.pose.orientation.z);
-          if (path_point.longitudinal_velocity_mps < 0) {
+          if (!isDrivingForward(msg_ptr->points, point_idx)) {
             quat *= quat_yaw_reverse;
           }
           vec_out = quat * vec_in;
@@ -202,7 +204,7 @@ void AutowarePathDisplay::processMessage(
           Eigen::Quaternionf quat(
             path_point.pose.orientation.w, path_point.pose.orientation.x,
             path_point.pose.orientation.y, path_point.pose.orientation.z);
-          if (path_point.longitudinal_velocity_mps < 0) {
+          if (!isDrivingForward(msg_ptr->points, point_idx)) {
             quat *= quat_yaw_reverse;
           }
           vec_out = quat * vec_in;
