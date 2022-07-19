@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="input/pointcloud" default="/sensing/lidar/top/rectified/pointcloud" description="The topic will be used in the localization util module"/>
+  <arg name="input/pointcloud" default="/sensing/lidar/top/outlier_filtered/pointcloud" description="The topic will be used in the localization util module"/>
 
   <!-- localization module -->
   <group>
