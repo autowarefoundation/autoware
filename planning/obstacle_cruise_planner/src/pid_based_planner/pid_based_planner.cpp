@@ -160,7 +160,11 @@ double PIDBasedPlanner::calcDistanceToObstacle(
   const double segment_offset = std::max(
     0.0, motion_utils::calcLongitudinalOffsetToSegment(
            planner_data.traj.points, ego_segment_idx, planner_data.current_pose.position));
-  const double offset = vehicle_info_.max_longitudinal_offset_m + segment_offset;
+  const double abs_ego_offset = planner_data.is_driving_forward
+                                  ? std::abs(vehicle_info_.max_longitudinal_offset_m)
+                                  : std::abs(vehicle_info_.min_longitudinal_offset_m);
+
+  const double offset = abs_ego_offset + segment_offset;
 
   return motion_utils::calcSignedArcLength(
            planner_data.traj.points, ego_segment_idx, obstacle.collision_point) -
@@ -238,9 +242,11 @@ VelocityLimit PIDBasedPlanner::doCruise(
     longitudinal_info_.max_jerk, longitudinal_info_.min_jerk);
 
   // virtual wall marker for cruise
-  const double dist_to_rss_wall = std::min(
-    dist_to_cruise + vehicle_info_.max_longitudinal_offset_m,
-    dist_to_obstacle + vehicle_info_.max_longitudinal_offset_m);
+  const double abs_ego_offset = planner_data.is_driving_forward
+                                  ? std::abs(vehicle_info_.max_longitudinal_offset_m)
+                                  : std::abs(vehicle_info_.min_longitudinal_offset_m);
+  const double dist_to_rss_wall =
+    std::min(dist_to_cruise + abs_ego_offset, dist_to_obstacle + abs_ego_offset);
   const size_t wall_idx = obstacle_cruise_utils::getIndexWithLongitudinalOffset(
     planner_data.traj.points, dist_to_rss_wall, ego_idx);
 
