@@ -81,6 +81,21 @@ bool generateStopLine(
   int * pass_judge_line_idx, int * first_idx_inside_lane, const rclcpp::Logger logger);
 
 /**
+ * @brief If use_stuck_stopline is true, a stop line is generated before the intersection.
+ * @param input_path      input path
+ * @param output_path     output path
+ * @param stuck_stop_line_idx   generated stuck stop line index
+ * @param pass_judge_line_idx  generated pass judge line index
+ * @return false when generation failed
+ */
+bool generateStopLineBeforeIntersection(
+  const int lane_id, lanelet::LaneletMapConstPtr lanelet_map_ptr,
+  const std::shared_ptr<const PlannerData> & planner_data,
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & input_path,
+  autoware_auto_planning_msgs::msg::PathWithLaneId * output_path, int * stuck_stop_line_idx,
+  int * pass_judge_line_idx, const rclcpp::Logger logger);
+
+/**
  * @brief Calculate first path index that is in the polygon.
  * @param path     target path
  * @param polygons target polygon

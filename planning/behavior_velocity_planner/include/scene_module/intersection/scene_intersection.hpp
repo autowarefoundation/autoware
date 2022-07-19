@@ -122,6 +122,7 @@ public:
     double external_input_timeout;       //! used to disable external input
     double collision_start_margin_time;  //! start margin time to check collision
     double collision_end_margin_time;    //! end margin time to check collision
+    bool use_stuck_stopline;  //! stopline generate before the intersection lanelet when is_stuck.
   };
 
   IntersectionModule(

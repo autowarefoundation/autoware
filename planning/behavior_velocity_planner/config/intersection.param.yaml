@@ -15,6 +15,7 @@
       min_predicted_path_confidence: 0.05
       collision_start_margin_time: 5.0 # [s]
       collision_end_margin_time: 2.0 # [s]
+      use_stuck_stopline: false # stopline generate before the intersection lanelet when is_stuck
 
     merge_from_private_road:
       stop_duration_sec: 1.0
