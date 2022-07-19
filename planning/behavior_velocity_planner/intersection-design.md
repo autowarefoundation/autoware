@@ -7,7 +7,7 @@ This module is designed for rule-based intersection velocity decision that is ea
 
 In addition, the external users / modules (e.g. remote operation) to can intervene the STOP/GO decision for the vehicle behavior. The override interface is expected to be used, for example, for remote intervention in emergency situations or gathering information on operator decisions during development.
 
-![brief](./docs/intersection/intersection.svg)
+![brief](./docs/intersection/intersection.drawio.svg)
 
 ### Activation Timing
 
