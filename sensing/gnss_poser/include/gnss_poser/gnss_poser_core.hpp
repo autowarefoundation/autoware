@@ -19,11 +19,11 @@
 
 #include <rclcpp/rclcpp.hpp>
 
+#include <autoware_sensing_msgs/msg/gnss_ins_orientation_stamped.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
 #include <tier4_debug_msgs/msg/bool_stamped.hpp>
-#include <ublox_msgs/msg/nav_pvt.hpp>
 
 #include <boost/circular_buffer.hpp>
 
@@ -49,7 +49,8 @@ public:
 
 private:
   void callbackNavSatFix(const sensor_msgs::msg::NavSatFix::ConstSharedPtr nav_sat_fix_msg_ptr);
-  void callbackNavPVT(const ublox_msgs::msg::NavPVT::ConstSharedPtr msg);
+  void callbackGnssInsOrientationStamped(
+    const autoware_sensing_msgs::msg::GnssInsOrientationStamped::ConstSharedPtr msg);
 
   bool isFixed(const sensor_msgs::msg::NavSatStatus & nav_sat_status_msg);
   bool canGetCovariance(const sensor_msgs::msg::NavSatFix & nav_sat_fix_msg);
@@ -78,7 +79,8 @@ private:
   tf2_ros::TransformBroadcaster tf2_broadcaster_;
 
   rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr nav_sat_fix_sub_;
-  rclcpp::Subscription<ublox_msgs::msg::NavPVT>::SharedPtr nav_pvt_sub_;
+  rclcpp::Subscription<autoware_sensing_msgs::msg::GnssInsOrientationStamped>::SharedPtr
+    autoware_orientation_sub_;
 
   rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pose_pub_;
   rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pose_cov_pub_;
@@ -91,12 +93,14 @@ private:
   std::string map_frame_;
 
   sensor_msgs::msg::NavSatFix nav_sat_fix_origin_;
-  bool use_ublox_receiver_;
+  bool use_gnss_ins_orientation_;
+
+  boost::circular_buffer<geometry_msgs::msg::Point> position_buffer_;
 
   int plane_zone_;
 
-  boost::circular_buffer<geometry_msgs::msg::Point> position_buffer_;
-  ublox_msgs::msg::NavPVT::ConstSharedPtr nav_pvt_msg_ptr_;
+  autoware_sensing_msgs::msg::GnssInsOrientationStamped::SharedPtr
+    msg_gnss_ins_orientation_stamped_;
 };
 }  // namespace gnss_poser
 

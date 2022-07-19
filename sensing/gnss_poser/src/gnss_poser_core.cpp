@@ -14,6 +14,8 @@
 
 #include "gnss_poser/gnss_poser_core.hpp"
 
+#include <autoware_sensing_msgs/msg/gnss_ins_orientation_stamped.hpp>
+
 #include <algorithm>
 #include <memory>
 #include <string>
@@ -29,8 +31,10 @@ GNSSPoser::GNSSPoser(const rclcpp::NodeOptions & node_options)
   gnss_frame_(declare_parameter("gnss_frame", "gnss")),
   gnss_base_frame_(declare_parameter("gnss_base_frame", "gnss_base_link")),
   map_frame_(declare_parameter("map_frame", "map")),
-  use_ublox_receiver_(declare_parameter("use_ublox_receiver", false)),
-  plane_zone_(declare_parameter("plane_zone", 9))
+  use_gnss_ins_orientation_(declare_parameter("use_gnss_heading", true)),
+  plane_zone_(declare_parameter<int>("plane_zone", 9)),
+  msg_gnss_ins_orientation_stamped_(
+    std::make_shared<autoware_sensing_msgs::msg::GnssInsOrientationStamped>())
 {
   int coordinate_system =
     declare_parameter("coordinate_system", static_cast<int>(CoordinateSystem::MGRS));
@@ -45,8 +49,10 @@ GNSSPoser::GNSSPoser(const rclcpp::NodeOptions & node_options)
 
   nav_sat_fix_sub_ = create_subscription<sensor_msgs::msg::NavSatFix>(
     "fix", rclcpp::QoS{1}, std::bind(&GNSSPoser::callbackNavSatFix, this, std::placeholders::_1));
-  nav_pvt_sub_ = create_subscription<ublox_msgs::msg::NavPVT>(
-    "navpvt", rclcpp::QoS{1}, std::bind(&GNSSPoser::callbackNavPVT, this, std::placeholders::_1));
+  autoware_orientation_sub_ =
+    create_subscription<autoware_sensing_msgs::msg::GnssInsOrientationStamped>(
+      "autoware_orientation", rclcpp::QoS{1},
+      std::bind(&GNSSPoser::callbackGnssInsOrientationStamped, this, std::placeholders::_1));
 
   pose_pub_ = create_publisher<geometry_msgs::msg::PoseStamped>("gnss_pose", rclcpp::QoS{1});
   pose_cov_pub_ = create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
@@ -89,8 +95,8 @@ void GNSSPoser::callbackNavSatFix(
 
   // calc gnss antenna orientation
   geometry_msgs::msg::Quaternion orientation;
-  if (use_ublox_receiver_ && nav_pvt_msg_ptr_ != nullptr) {
-    orientation = getQuaternionByHeading(nav_pvt_msg_ptr_->heading);
+  if (use_gnss_ins_orientation_) {
+    orientation = msg_gnss_ins_orientation_stamped_->orientation.orientation;
   } else {
     static auto prev_position = median_position;
     orientation = getQuaternionByPositionDifference(median_position, prev_position);
@@ -129,24 +135,36 @@ void GNSSPoser::callbackNavSatFix(
   geometry_msgs::msg::PoseWithCovarianceStamped gnss_base_pose_cov_msg;
   gnss_base_pose_cov_msg.header = gnss_base_pose_msg.header;
   gnss_base_pose_cov_msg.pose.pose = gnss_base_pose_msg.pose;
-  gnss_base_pose_cov_msg.pose.covariance[6 * 0 + 0] =
+  gnss_base_pose_cov_msg.pose.covariance[7 * 0] =
     canGetCovariance(*nav_sat_fix_msg_ptr) ? nav_sat_fix_msg_ptr->position_covariance[0] : 10.0;
-  gnss_base_pose_cov_msg.pose.covariance[6 * 1 + 1] =
+  gnss_base_pose_cov_msg.pose.covariance[7 * 1] =
     canGetCovariance(*nav_sat_fix_msg_ptr) ? nav_sat_fix_msg_ptr->position_covariance[4] : 10.0;
-  gnss_base_pose_cov_msg.pose.covariance[6 * 2 + 2] =
+  gnss_base_pose_cov_msg.pose.covariance[7 * 2] =
     canGetCovariance(*nav_sat_fix_msg_ptr) ? nav_sat_fix_msg_ptr->position_covariance[8] : 10.0;
-  gnss_base_pose_cov_msg.pose.covariance[6 * 3 + 3] = 0.1;
-  gnss_base_pose_cov_msg.pose.covariance[6 * 4 + 4] = 0.1;
-  gnss_base_pose_cov_msg.pose.covariance[6 * 5 + 5] = 1.0;
+
+  if (use_gnss_ins_orientation_) {
+    gnss_base_pose_cov_msg.pose.covariance[7 * 3] =
+      std::pow(msg_gnss_ins_orientation_stamped_->orientation.rmse_rotation_x, 2);
+    gnss_base_pose_cov_msg.pose.covariance[7 * 4] =
+      std::pow(msg_gnss_ins_orientation_stamped_->orientation.rmse_rotation_y, 2);
+    gnss_base_pose_cov_msg.pose.covariance[7 * 5] =
+      std::pow(msg_gnss_ins_orientation_stamped_->orientation.rmse_rotation_z, 2);
+  } else {
+    gnss_base_pose_cov_msg.pose.covariance[7 * 3] = 0.1;
+    gnss_base_pose_cov_msg.pose.covariance[7 * 4] = 0.1;
+    gnss_base_pose_cov_msg.pose.covariance[7 * 5] = 1.0;
+  }
+
   pose_cov_pub_->publish(gnss_base_pose_cov_msg);
 
   // broadcast map to gnss_base_link
   publishTF(map_frame_, gnss_base_frame_, gnss_base_pose_msg);
 }
 
-void GNSSPoser::callbackNavPVT(const ublox_msgs::msg::NavPVT::ConstSharedPtr nav_pvt_msg_ptr)
+void GNSSPoser::callbackGnssInsOrientationStamped(
+  const autoware_sensing_msgs::msg::GnssInsOrientationStamped::ConstSharedPtr msg)
 {
-  nav_pvt_msg_ptr_ = nav_pvt_msg_ptr;
+  *msg_gnss_ins_orientation_stamped_ = *msg;
 }
 
 bool GNSSPoser::isFixed(const sensor_msgs::msg::NavSatStatus & nav_sat_status_msg)

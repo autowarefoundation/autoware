@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
   <arg name="input_topic_fix" default="/fix"/>
-  <arg name="input_topic_navpvt" default="/navpvt"/>
+  <arg name="input_topic_orientation" default="/autoware_orientation"/>
   <arg name="param_file" default="$(find-pkg-share gnss_poser)/config/set_local_origin.param.yaml"/>
 
   <arg name="output_topic_gnss_pose" default="gnss_pose"/>
@@ -15,13 +15,12 @@
 
   <arg name="coordinate_system" default="1" description="0:UTM, 1:MGRS, 2:PLANE, 3:LocalCartesian"/>
   <arg name="buff_epoch" default="1"/>
-  <arg name="use_ublox_receiver" default="false"/>
+  <arg name="use_gnss_ins_orientation" default="true"/>
   <arg name="plane_zone" default="9"/>
 
   <node pkg="gnss_poser" exec="gnss_poser" name="gnss_poser" output="screen">
     <remap from="fix" to="$(var input_topic_fix)"/>
-    <remap from="navpvt" to="$(var input_topic_navpvt)"/>
-
+    <remap from="autoware_orientation" to="$(var input_topic_orientation)"/>
     <remap from="gnss_pose" to="$(var output_topic_gnss_pose)"/>
     <remap from="gnss_pose_cov" to="$(var output_topic_gnss_pose_cov)"/>
     <remap from="gnss_fixed" to="$(var output_topic_gnss_fixed)"/>
@@ -33,7 +32,6 @@
 
     <param name="coordinate_system" value="$(var coordinate_system)"/>
     <param name="buff_epoch" value="$(var buff_epoch)"/>
-    <param name="use_ublox_receiver" value="$(var use_ublox_receiver)"/>
     <param name="plane_zone" value="$(var plane_zone)"/>
     <param from="$(var param_file)"/>
   </node>
