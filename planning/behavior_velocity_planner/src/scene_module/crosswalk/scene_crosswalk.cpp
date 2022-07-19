@@ -229,11 +229,13 @@ PathPointWithLaneId getBackwardPointFromBasePoint(
   PathPointWithLaneId output;
   const double dx = p_to.point.pose.position.x - p_from.point.pose.position.x;
   const double dy = p_to.point.pose.position.y - p_from.point.pose.position.y;
-  const double norm = std::hypot(dx, dy);
+  const double dz = p_to.point.pose.position.z - p_from.point.pose.position.z;
+  const double norm = std::hypot(dx, dy, dz);
 
   output = p_base;
   output.point.pose.position.x += backward_length * dx / norm;
   output.point.pose.position.y += backward_length * dy / norm;
+  output.point.pose.position.z += backward_length * dz / norm;
 
   return output;
 }
