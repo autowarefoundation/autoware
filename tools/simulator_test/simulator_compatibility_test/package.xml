@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>simulator_compatibility_test</name>
+  <version>0.0.0</version>
+  <description>TODO: Package description</description>
+  <maintainer email="shpark@morai.ai">shpark</maintainer>
+  <license>TODO: License declaration</license>
+
+  <depend>autoware_auto_control_msgs</depend>
+  <depend>autoware_auto_geometry_msgs</depend>
+  <depend>autoware_auto_mapping_msgs</depend>
+  <depend>autoware_auto_msgs</depend>
+  <depend>autoware_auto_perception_msgs</depend>
+  <depend>autoware_auto_planning_msgs</depend>
+  <depend>autoware_auto_system_msgs</depend>
+  <depend>autoware_auto_vehicle_msgs</depend>
+  <depend>rclpy</depend>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>morai_msgs</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
