@@ -164,9 +164,9 @@
 | `max_trajectory_length`        | `double` | Max trajectory length for resampling [m]               | 200.0         |
 | `min_trajectory_length`        | `double` | Min trajectory length for resampling [m]               | 30.0          |
 | `resample_time`                | `double` | Resample total time [s]                                | 10.0          |
-| `dense_dt`                     | `double` | resample time interval for dense sampling [s]          | 0.1           |
+| `dense_resample_dt`            | `double` | resample time interval for dense sampling [s]          | 0.1           |
 | `dense_min_interval_distance`  | `double` | minimum points-interval length for dense sampling [m]  | 0.1           |
-| `sparse_dt`                    | `double` | resample time interval for sparse sampling [s]         | 0.5           |
+| `sparse_resample_dt`           | `double` | resample time interval for sparse sampling [s]         | 0.5           |
 | `sparse_min_interval_distance` | `double` | minimum points-interval length for sparse sampling [m] | 4.0           |
 
 ### Resampling parameters for post process
@@ -176,9 +176,9 @@
 | `post_max_trajectory_length`        | `double` | max trajectory length for resampling [m]               | 300.0         |
 | `post_min_trajectory_length`        | `double` | min trajectory length for resampling [m]               | 30.0          |
 | `post_resample_time`                | `double` | resample total time for dense sampling [s]             | 10.0          |
-| `post_dense_dt`                     | `double` | resample time interval for dense sampling [s]          | 0.1           |
+| `post_dense_resample_dt`            | `double` | resample time interval for dense sampling [s]          | 0.1           |
 | `post_dense_min_interval_distance`  | `double` | minimum points-interval length for dense sampling [m]  | 0.1           |
-| `post_sparse_dt`                    | `double` | resample time interval for sparse sampling [s]         | 0.1           |
+| `post_sparse_resample_dt`           | `double` | resample time interval for sparse sampling [s]         | 0.1           |
 | `post_sparse_min_interval_distance` | `double` | minimum points-interval length for sparse sampling [m] | 1.0           |
 
 ### Weights for optimization

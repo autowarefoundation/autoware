@@ -32,19 +32,19 @@
     # resampling parameters for optimization
     max_trajectory_length: 200.0        # max trajectory length for resampling [m]
     min_trajectory_length: 150.0        # min trajectory length for resampling [m]
-    resample_time: 5.0                 # resample total time for dense sampling [s]
-    dense_dt: 0.1                       # resample time interval for dense sampling [s]
+    resample_time: 5.0                  # resample total time for dense sampling [s]
+    dense_resample_dt: 0.1              # resample time interval for dense sampling [s]
     dense_min_interval_distance: 0.1    # minimum points-interval length for dense sampling [m]
-    sparse_dt: 0.5                      # resample time interval for sparse sampling [s]
+    sparse_resample_dt: 0.5             # resample time interval for sparse sampling [s]
     sparse_min_interval_distance: 4.0   # minimum points-interval length for sparse sampling [m]
 
     # resampling parameters for post process
     post_max_trajectory_length: 300.0        # max trajectory length for resampling [m]
     post_min_trajectory_length: 30.0         # min trajectory length for resampling [m]
-    post_resample_time: 10.0                  # resample total time for dense sampling [s]
-    post_dense_dt: 0.1                       # resample time interval for dense sampling [s]
+    post_resample_time: 10.0                 # resample total time for dense sampling [s]
+    post_dense_resample_dt: 0.1              # resample time interval for dense sampling [s]
     post_dense_min_interval_distance: 0.1    # minimum points-interval length for dense sampling [m]
-    post_sparse_dt: 0.1                      # resample time interval for sparse sampling [s]
+    post_sparse_resample_dt: 0.1             # resample time interval for sparse sampling [s]
     post_sparse_min_interval_distance: 1.0   # minimum points-interval length for sparse sampling [m]
 
     # system
