@@ -1,0 +1,7 @@
+/**:
+  ros__parameters:
+    output_file: loc_metrics.results # if empty, metrics are not written to file
+
+    selected_metrics:
+      - lateral_error
+      - absolute_error

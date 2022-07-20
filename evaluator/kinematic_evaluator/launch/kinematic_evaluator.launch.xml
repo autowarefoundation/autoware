@@ -1,0 +1,8 @@
+<launch>
+  <arg name="input/twist" default="/localization/kinematic_state"/>
+
+  <node name="kinematic_evaluator" exec="kinematic_evaluator" pkg="kinematic_evaluator" output="screen">
+    <param from="$(find-pkg-share kinematic_evaluator)/param/kinematic_evaluator.defaults.yaml"/>
+    <remap from="~/input/twist" to="$(var input/twist)"/>
+  </node>
+</launch>
