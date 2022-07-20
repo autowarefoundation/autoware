@@ -13,7 +13,7 @@
   <arg name="gnss_frame" default="gnss"/>
   <arg name="map_frame" default="map"/>
 
-  <arg name="coordinate_system" default="1" description="0:UTM, 1:MGRS, 2:PLANE, 3:LocalCartesian"/>
+  <arg name="coordinate_system" default="4" description="0:UTM, 1:MGRS, 2:PLANE, 3:LocalCartesianWGS84, 4:LocalCartesianUTM"/>
   <arg name="buff_epoch" default="1"/>
   <arg name="use_gnss_ins_orientation" default="true"/>
   <arg name="plane_zone" default="9"/>
