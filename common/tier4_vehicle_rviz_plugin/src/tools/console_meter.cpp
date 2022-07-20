@@ -95,10 +95,9 @@ void ConsoleMeterDisplay::update(float wall_dt, float ros_dt)
   double linear_x = 0;
   {
     std::lock_guard<std::mutex> message_lock(mutex_);
-    if (!last_msg_ptr_) {
-      return;
+    if (last_msg_ptr_) {
+      linear_x = last_msg_ptr_->longitudinal_velocity;
     }
-    linear_x = last_msg_ptr_->longitudinal_velocity;
   }
 
   QColor background_color;

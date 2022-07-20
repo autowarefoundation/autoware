@@ -106,10 +106,9 @@ void SteeringAngleDisplay::update(float wall_dt, float ros_dt)
   double steering = 0;
   {
     std::lock_guard<std::mutex> message_lock(mutex_);
-    if (!last_msg_ptr_) {
-      return;
+    if (last_msg_ptr_) {
+      steering = last_msg_ptr_->steering_tire_angle;
     }
-    steering = last_msg_ptr_->steering_tire_angle;
   }
 
   QColor background_color;
