@@ -142,7 +142,7 @@ public:
 
 ```c++
 
-bool SampleNode::sampleFunc1()
+bool SampleNode::sampleFunc()
 {
   ...
 
