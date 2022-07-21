@@ -77,6 +77,7 @@ void MaxVelocityDisplay::onInitialize()
   overlay_->updateTextureSize(property_length_->getInt(), property_length_->getInt());
   overlay_->setPosition(property_left_->getInt(), property_top_->getInt());
   overlay_->setDimensions(overlay_->getTextureWidth(), overlay_->getTextureHeight());
+  processMessage(last_msg_ptr_);
 
   // QColor background_color;
   // background_color.setAlpha(0);
@@ -126,9 +127,6 @@ void MaxVelocityDisplay::unsubscribe() { max_vel_sub_.reset(); }
 void MaxVelocityDisplay::processMessage(
   const tier4_planning_msgs::msg::VelocityLimit::ConstSharedPtr msg_ptr)
 {
-  if (!isEnabled()) {
-    return;
-  }
   if (!overlay_->isVisible()) {
     return;
   }
@@ -172,8 +170,12 @@ void MaxVelocityDisplay::processMessage(
   font.setBold(true);
   painter.setFont(font);
   std::ostringstream velocity_ss;
+  float velocity = 0.0;
+  if (msg_ptr != nullptr) {
+    velocity = msg_ptr->max_velocity;
+  }
   velocity_ss << std::fixed << std::setprecision(0) << "limited" << std::endl
-              << msg_ptr->max_velocity * 3.6 << "km/h";
+              << velocity * 3.6 << "km/h";
   painter.drawText(
     static_cast<int>(line_width * 0.5), std::min(static_cast<int>(line_width * 0.5), h - 1), w,
     std::max(h, 1), Qt::AlignCenter | Qt::AlignVCenter, velocity_ss.str().c_str());
