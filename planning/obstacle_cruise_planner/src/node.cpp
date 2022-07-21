@@ -493,7 +493,7 @@ void ObstacleCruisePlannerNode::onTrajectory(const Trajectory::ConstSharedPtr ms
 
   // Get Target Obstacles
   DebugData debug_data;
-  const bool is_driving_forward = motion_utils::isDrivingForward(msg->points);
+  const bool is_driving_forward = motion_utils::isDrivingForwardWithTwist(msg->points);
   const auto target_obstacles = getTargetObstacles(
     *msg, current_pose_ptr->pose, current_twist_ptr_->twist.linear.x, is_driving_forward,
     debug_data);
