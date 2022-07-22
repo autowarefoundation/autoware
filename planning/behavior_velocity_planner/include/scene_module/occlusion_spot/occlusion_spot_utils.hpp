@@ -115,6 +115,7 @@ struct PlannerParam
   bool use_moving_object_ray_cast;  // [-]
   bool use_partition_lanelet;       // [-]
   // parameters in yaml
+  double detection_area_offset;      // [m]
   double detection_area_length;      // [m]
   double detection_area_max_length;  // [m]
   double stuck_vehicle_vel;          // [m/s]
