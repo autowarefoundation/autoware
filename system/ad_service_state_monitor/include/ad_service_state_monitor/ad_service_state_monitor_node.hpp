@@ -131,6 +131,10 @@ private:
   StateInput state_input_;
   StateParam state_param_;
 
+  // Lock Variables
+  std::mutex lock_state_machine_;
+  std::mutex lock_state_input_;
+
   // Diagnostic Updater
   diagnostic_updater::Updater updater_;
 
