@@ -370,6 +370,14 @@ bool CrosswalkModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
 
   if (isActivated()) {
     if (!nearest_stop_point) {
+      if (!rtc_stop_point) {
+        setDistance(std::numeric_limits<double>::lowest());
+        return true;
+      }
+
+      const auto crosswalk_distance =
+        calcSignedArcLength(ego_path.points, ego_pos, getPoint(rtc_stop_point.get().second));
+      setDistance(crosswalk_distance);
       return true;
     }
 
