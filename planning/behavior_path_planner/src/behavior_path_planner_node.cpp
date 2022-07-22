@@ -73,12 +73,6 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
   debug_avoidance_msg_array_publisher_ =
     create_publisher<AvoidanceDebugMsgArray>("~/debug/avoidance_debug_message_array", 1);
 
-  // For remote operation
-  plan_ready_publisher_ = create_publisher<PathChangeModule>("~/output/ready", 1);
-  plan_running_publisher_ = create_publisher<PathChangeModuleArray>("~/output/running", 1);
-  force_available_publisher_ =
-    create_publisher<PathChangeModuleArray>("~/output/force_available", 1);
-
   // Debug
   debug_marker_publisher_ = create_publisher<MarkerArray>("~/debug/markers", 1);
 
@@ -104,13 +98,6 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     [this](const Scenario::ConstSharedPtr msg) {
       current_scenario_ = std::make_shared<Scenario>(*msg);
     },
-    createSubscriptionOptions(this));
-  external_approval_subscriber_ = create_subscription<ApprovalMsg>(
-    "~/input/external_approval", 1,
-    std::bind(&BehaviorPathPlannerNode::onExternalApproval, this, _1),
-    createSubscriptionOptions(this));
-  force_approval_subscriber_ = create_subscription<PathChangeModule>(
-    "~/input/force_approval", 1, std::bind(&BehaviorPathPlannerNode::onForceApproval, this, _1),
     createSubscriptionOptions(this));
 
   // route_handler
