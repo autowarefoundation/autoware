@@ -51,6 +51,25 @@ tier4_planning_msgs::msg::StopReasonArray makeStopReasonArray(
   return stop_reason_array;
 }
 
+tier4_planning_msgs::msg::StopReasonArray makeEmptyStopReasonArray(
+  const rclcpp::Time & current_time)
+{
+  // create header
+  std_msgs::msg::Header header;
+  header.frame_id = "map";
+  header.stamp = current_time;
+
+  // create stop reason stamped
+  tier4_planning_msgs::msg::StopReason stop_reason_msg;
+  stop_reason_msg.reason = tier4_planning_msgs::msg::StopReason::OBSTACLE_STOP;
+
+  // create stop reason array
+  tier4_planning_msgs::msg::StopReasonArray stop_reason_array;
+  stop_reason_array.header = header;
+  stop_reason_array.stop_reasons.emplace_back(stop_reason_msg);
+  return stop_reason_array;
+}
+
 double calcMinimumDistanceToStop(
   const double initial_vel, const double max_acc, const double min_acc)
 {
@@ -70,6 +89,7 @@ Trajectory PlannerInterface::generateStopTrajectory(
                                   : std::abs(vehicle_info_.min_longitudinal_offset_m);
 
   if (planner_data.target_obstacles.empty()) {
+    stop_reasons_pub_->publish(makeEmptyStopReasonArray(planner_data.current_time));
     return planner_data.traj;
   }
 
