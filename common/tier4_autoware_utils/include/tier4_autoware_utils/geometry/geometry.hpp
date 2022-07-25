@@ -21,6 +21,8 @@
 
 #define EIGEN_MPL2_ONLY
 #include "tier4_autoware_utils/geometry/boost_geometry.hpp"
+#include "tier4_autoware_utils/math/constants.hpp"
+#include "tier4_autoware_utils/math/normalization.hpp"
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -31,6 +33,8 @@
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/quaternion.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
+
+#include <tf2/utils.h>
 
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -581,6 +585,19 @@ inline double calcCurvature(
   return 2.0 * ((p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x)) / denominator;
 }
 
+template <class Pose1, class Pose2>
+bool isDrivingForward(const Pose1 & src_pose, const Pose2 & dst_pose)
+{
+  // check the first point direction
+  const double src_yaw = tf2::getYaw(getPose(src_pose).orientation);
+  const double pose_direction_yaw = calcAzimuthAngle(getPoint(src_pose), getPoint(dst_pose));
+  if (std::fabs(normalizeRadian(src_yaw - pose_direction_yaw)) < pi / 2.0) {
+    return true;
+  }
+
+  return false;
+}
+
 /**
  * @brief Calculate offset pose. The offset values are defined in the local coordinate of the input
  * pose.
@@ -638,7 +655,7 @@ geometry_msgs::msg::Point calcInterpolatedPoint(
 
 /**
  * @brief Calculate a pose by linear interpolation.
- * Note that if ratio>=1.0 or dist(src_pose, dst_pose)<=0.01
+ * Note that if dist(src_pose, dst_pose)<=0.01
  * the orientation of the output pose is same as the orientation
  * of the dst_pose
  * @param src source point
@@ -653,20 +670,25 @@ geometry_msgs::msg::Pose calcInterpolatedPose(
   const bool set_orientation_from_position_direction = true)
 {
   const double clamped_ratio = std::clamp(ratio, 0.0, 1.0);
+
   geometry_msgs::msg::Pose output_pose;
   output_pose.position =
     calcInterpolatedPoint(getPoint(src_pose), getPoint(dst_pose), clamped_ratio);
 
   if (set_orientation_from_position_direction) {
     const double input_poses_dist = calcDistance2d(getPoint(src_pose), getPoint(dst_pose));
+    const bool is_driving_forward = isDrivingForward(src_pose, dst_pose);
 
     // Get orientation from interpolated point and src_pose
-    if (clamped_ratio < 1.0 && input_poses_dist > 1e-3) {
-      const double pitch = calcElevationAngle(getPoint(output_pose), getPoint(dst_pose));
-      const double yaw = calcAzimuthAngle(output_pose.position, getPoint(dst_pose));
-      output_pose.orientation = createQuaternionFromRPY(0.0, pitch, yaw);
-    } else {
+    if ((is_driving_forward && clamped_ratio > 1.0 - (1e-6)) || input_poses_dist < 1e-3) {
       output_pose.orientation = getPose(dst_pose).orientation;
+    } else if (!is_driving_forward && clamped_ratio < 1e-6) {
+      output_pose.orientation = getPose(src_pose).orientation;
+    } else {
+      const auto & base_pose = is_driving_forward ? dst_pose : src_pose;
+      const double pitch = calcElevationAngle(getPoint(output_pose), getPoint(base_pose));
+      const double yaw = calcAzimuthAngle(getPoint(output_pose), getPoint(base_pose));
+      output_pose.orientation = createQuaternionFromRPY(0.0, pitch, yaw);
     }
   } else {
     // Get orientation by spherical linear interpolation

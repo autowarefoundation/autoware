@@ -1083,6 +1083,68 @@ TEST(geometry, calcOffsetPose)
   }
 }
 
+TEST(geometry, isDrivingForward)
+{
+  using tier4_autoware_utils::calcInterpolatedPoint;
+  using tier4_autoware_utils::createPoint;
+  using tier4_autoware_utils::createQuaternion;
+  using tier4_autoware_utils::createQuaternionFromRPY;
+  using tier4_autoware_utils::deg2rad;
+  using tier4_autoware_utils::isDrivingForward;
+
+  const double epsilon = 1e-3;
+
+  {
+    geometry_msgs::msg::Pose src_pose;
+    src_pose.position = createPoint(0.0, 0.0, 0.0);
+    src_pose.orientation = createQuaternion(0.0, 0.0, 0.0, 1.0);
+
+    geometry_msgs::msg::Pose dst_pose;
+    dst_pose.position = createPoint(3.0, 0.0, 0.0);
+    dst_pose.orientation = createQuaternion(0.0, 0.0, 0.0, 1.0);
+
+    EXPECT_TRUE(isDrivingForward(src_pose, dst_pose));
+  }
+
+  {
+    geometry_msgs::msg::Pose src_pose;
+    src_pose.position = createPoint(0.0, 0.0, 0.0);
+    src_pose.orientation = createQuaternionFromRPY(0.0, 0.0, deg2rad(180));
+
+    geometry_msgs::msg::Pose dst_pose;
+    dst_pose.position = createPoint(3.0, 0.0, 0.0);
+    dst_pose.orientation = createQuaternionFromRPY(0.0, 0.0, deg2rad(180));
+
+    EXPECT_FALSE(isDrivingForward(src_pose, dst_pose));
+  }
+
+  // Boundary Condition
+  {
+    geometry_msgs::msg::Pose src_pose;
+    src_pose.position = createPoint(0.0, 0.0, 0.0);
+    src_pose.orientation = createQuaternionFromRPY(0.0, 0.0, deg2rad(90));
+
+    geometry_msgs::msg::Pose dst_pose;
+    dst_pose.position = createPoint(3.0, 0.0, 0.0);
+    dst_pose.orientation = createQuaternionFromRPY(0.0, 0.0, deg2rad(90));
+
+    EXPECT_TRUE(isDrivingForward(src_pose, dst_pose));
+  }
+
+  // Boundary Condition
+  {
+    geometry_msgs::msg::Pose src_pose;
+    src_pose.position = createPoint(0.0, 0.0, 0.0);
+    src_pose.orientation = createQuaternionFromRPY(0.0, 0.0, deg2rad(90 + epsilon));
+
+    geometry_msgs::msg::Pose dst_pose;
+    dst_pose.position = createPoint(3.0, 0.0, 0.0);
+    dst_pose.orientation = createQuaternionFromRPY(0.0, 0.0, deg2rad(90 + epsilon));
+
+    EXPECT_FALSE(isDrivingForward(src_pose, dst_pose));
+  }
+}
+
 TEST(geometry, calcInterpolatedPoint)
 {
   using tier4_autoware_utils::calcInterpolatedPoint;
@@ -1226,7 +1288,7 @@ TEST(geometry, calcInterpolatedPose)
     dst_pose.position = createPoint(1.0, 1.0, 0.0);
     dst_pose.orientation = createQuaternionFromRPY(deg2rad(0), deg2rad(0), deg2rad(60));
 
-    for (double ratio = 0.0; ratio < 1.0; ratio += 0.1) {
+    for (double ratio = 0.0; ratio < 1.0 - epsilon; ratio += 0.1) {
       const auto p_out = calcInterpolatedPose(src_pose, dst_pose, ratio);
 
       const auto ans_quat = createQuaternionFromRPY(deg2rad(0), deg2rad(0), deg2rad(45));
@@ -1290,6 +1352,30 @@ TEST(geometry, calcInterpolatedPose)
 
       const auto ans_quat = createQuaternionFromRPY(deg2rad(0), deg2rad(0), deg2rad(45));
       EXPECT_DOUBLE_EQ(p_out.position.x, 0.0);
+      EXPECT_DOUBLE_EQ(p_out.position.y, 0.0);
+      EXPECT_DOUBLE_EQ(p_out.position.z, 0.0);
+      EXPECT_DOUBLE_EQ(p_out.orientation.x, ans_quat.x);
+      EXPECT_DOUBLE_EQ(p_out.orientation.y, ans_quat.y);
+      EXPECT_DOUBLE_EQ(p_out.orientation.z, ans_quat.z);
+      EXPECT_DOUBLE_EQ(p_out.orientation.w, ans_quat.w);
+    }
+  }
+
+  // Driving Backward
+  {
+    geometry_msgs::msg::Pose src_pose;
+    src_pose.position = createPoint(0.0, 0.0, 0.0);
+    src_pose.orientation = createQuaternionFromRPY(deg2rad(0), deg2rad(0), deg2rad(180));
+
+    geometry_msgs::msg::Pose dst_pose;
+    dst_pose.position = createPoint(5.0, 0.0, 0.0);
+    dst_pose.orientation = createQuaternionFromRPY(deg2rad(0), deg2rad(0), deg2rad(180));
+
+    for (double ratio = 0.0; ratio < 1.0 + epsilon; ratio += 0.1) {
+      const auto p_out = calcInterpolatedPose(src_pose, dst_pose, ratio);
+
+      const auto ans_quat = createQuaternionFromRPY(deg2rad(0), deg2rad(0), deg2rad(180));
+      EXPECT_DOUBLE_EQ(p_out.position.x, 5.0 * ratio);
       EXPECT_DOUBLE_EQ(p_out.position.y, 0.0);
       EXPECT_DOUBLE_EQ(p_out.position.z, 0.0);
       EXPECT_DOUBLE_EQ(p_out.orientation.x, ans_quat.x);

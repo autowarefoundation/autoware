@@ -97,19 +97,10 @@ bool isDrivingForward(const T points)
   }
 
   // check the first point direction
-  const auto & first_point_pose = tier4_autoware_utils::getPose(points.at(0));
-  const auto & second_point_pose = tier4_autoware_utils::getPose(points.at(1));
+  const auto & first_pose = tier4_autoware_utils::getPose(points.at(0));
+  const auto & second_pose = tier4_autoware_utils::getPose(points.at(1));
 
-  const double first_point_yaw = tf2::getYaw(first_point_pose.orientation);
-  const double driving_direction_yaw =
-    tier4_autoware_utils::calcAzimuthAngle(first_point_pose.position, second_point_pose.position);
-  if (
-    std::abs(tier4_autoware_utils::normalizeRadian(first_point_yaw - driving_direction_yaw)) <
-    tier4_autoware_utils::pi / 2.0) {
-    return true;
-  }
-
-  return false;
+  return tier4_autoware_utils::isDrivingForward(first_pose, second_pose);
 }
 
 template <class T>
