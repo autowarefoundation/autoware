@@ -49,6 +49,7 @@ using autoware_auto_planning_msgs::msg::HADMapRoute;
 using tier4_autoware_utils::DebugPublisher;
 using tier4_autoware_utils::StopWatch;
 using tier4_debug_msgs::msg::Float64Stamped;
+using TrafficLightIdMap = std::unordered_map<lanelet::Id, TrafficSignal>;
 
 class CrosswalkTrafficLightEstimatorNode : public rclcpp::Node
 {
@@ -72,28 +73,25 @@ private:
   void onRoute(const HADMapRoute::ConstSharedPtr msg);
   void onTrafficLightArray(const TrafficSignalArray::ConstSharedPtr msg);
 
-  void updateLastDetectedSignal(const lanelet::Id & id, const uint8_t color);
+  void updateLastDetectedSignal(const TrafficLightIdMap & traffic_signals);
   void setCrosswalkTrafficSignal(
     const lanelet::ConstLanelet & crosswalk, const uint8_t color, TrafficSignalArray & msg) const;
 
   lanelet::ConstLanelets getGreenLanelets(
-    const lanelet::ConstLanelets & lanelets,
-    const std::unordered_map<lanelet::Id, TrafficSignal> & traffic_light_id_map);
+    const lanelet::ConstLanelets & lanelets, const TrafficLightIdMap & traffic_light_id_map) const;
 
   uint8_t estimateCrosswalkTrafficSignal(
     const lanelet::ConstLanelet & crosswalk, const lanelet::ConstLanelets & green_lanelets) const;
 
-  uint8_t getHighestConfidenceTrafficSignal(
+  boost::optional<uint8_t> getHighestConfidenceTrafficSignal(
     const lanelet::ConstLineStringsOrPolygons3d & traffic_lights,
-    const std::unordered_map<lanelet::Id, TrafficSignal> & traffic_light_id_map) const;
-
-  uint8_t getLastDetectedTrafficSignal(const lanelet::Id & id) const;
+    const TrafficLightIdMap & traffic_light_id_map) const;
 
   // Node param
   bool use_last_detect_color_;
 
   // Signal history
-  std::unordered_map<uint32_t, uint8_t> last_detect_color_;
+  TrafficLightIdMap last_detect_color_;
 
   // Stop watch
   StopWatch<std::chrono::milliseconds> stop_watch_;
