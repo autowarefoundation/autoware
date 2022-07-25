@@ -3,6 +3,9 @@
 
   <arg name="vehicle_info_param_file"/>
 
+  <!-- parameter path -->
+  <arg name="tier4_planning_launch_param_path" default="$(find-pkg-share tier4_planning_launch)/config" description="tier4_planning_launch parameter path"/>
+
   <!-- pointcloud container -->
   <arg name="use_pointcloud_container" default="false"/>
   <arg name="pointcloud_container_name" default="pointcloud_container"/>
@@ -22,6 +25,7 @@
         <arg name="vehicle_info_param_file" value="$(var vehicle_info_param_file)"/>
         <arg name="use_pointcloud_container" value="$(var use_pointcloud_container)"/>
         <arg name="pointcloud_container_name" value="$(var pointcloud_container_name)"/>
+        <arg name="tier4_planning_launch_param_path" value="$(var tier4_planning_launch_param_path)"/>
       </include>
     </group>
 
