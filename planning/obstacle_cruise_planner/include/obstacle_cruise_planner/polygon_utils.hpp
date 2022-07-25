@@ -34,9 +34,6 @@ namespace bg = boost::geometry;
 using tier4_autoware_utils::Point2d;
 using tier4_autoware_utils::Polygon2d;
 
-Polygon2d convertObstacleToPolygon(
-  const geometry_msgs::msg::Pose & pose, const autoware_auto_perception_msgs::msg::Shape & shape);
-
 boost::optional<size_t> getFirstCollisionIndex(
   const std::vector<Polygon2d> & traj_polygons, const Polygon2d & obj_polygon,
   std::vector<geometry_msgs::msg::Point> & collision_points);

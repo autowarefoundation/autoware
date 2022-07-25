@@ -17,6 +17,7 @@
 #include "motion_utils/trajectory/tmp_conversion.hpp"
 #include "obstacle_cruise_planner/polygon_utils.hpp"
 #include "obstacle_cruise_planner/utils.hpp"
+#include "tier4_autoware_utils/geometry/boost_polygon_utils.hpp"
 #include "tier4_autoware_utils/ros/update_param.hpp"
 
 #include <boost/format.hpp>
@@ -691,7 +692,7 @@ std::vector<TargetObstacle> ObstacleCruisePlannerNode::filterObstacles(
 
     // calculate collision points
     const auto obstacle_polygon =
-      polygon_utils::convertObstacleToPolygon(object_pose, predicted_object.shape);
+      tier4_autoware_utils::toPolygon2d(object_pose, predicted_object.shape);
     std::vector<geometry_msgs::msg::Point> collision_points;
     const auto first_within_idx = polygon_utils::getFirstCollisionIndex(
       decimated_traj_polygons, obstacle_polygon, collision_points);
