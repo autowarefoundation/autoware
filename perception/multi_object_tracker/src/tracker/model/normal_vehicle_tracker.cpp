@@ -30,6 +30,7 @@
 #define EIGEN_MPL2_ONLY
 #include "multi_object_tracker/tracker/model/normal_vehicle_tracker.hpp"
 #include "multi_object_tracker/utils/utils.hpp"
+#include "perception_utils/perception_utils.hpp"
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -225,7 +226,7 @@ bool NormalVehicleTracker::measureWithPose(
 
   float r_cov_x;
   float r_cov_y;
-  const uint8_t label = utils::getHighestProbLabel(object.classification);
+  const uint8_t label = perception_utils::getHighestProbLabel(object.classification);
 
   if (label == Label::CAR) {
     r_cov_x = ekf_params_.r_cov_x;
@@ -369,7 +370,7 @@ bool NormalVehicleTracker::measure(
 {
   const auto & current_classification = getClassification();
   object_ = object;
-  if (utils::getHighestProbLabel(object.classification) == Label::UNKNOWN) {
+  if (perception_utils::getHighestProbLabel(object.classification) == Label::UNKNOWN) {
     setClassification(current_classification);
   }
 
@@ -388,7 +389,7 @@ bool NormalVehicleTracker::measure(
 bool NormalVehicleTracker::getTrackedObject(
   const rclcpp::Time & time, autoware_auto_perception_msgs::msg::TrackedObject & object) const
 {
-  object = utils::toTrackedObject(object_);
+  object = perception_utils::toTrackedObject(object_);
   object.object_id = getUUID();
   object.classification = getClassification();
 
@@ -461,6 +462,7 @@ bool NormalVehicleTracker::getTrackedObject(
   object.shape.dimensions.z = bounding_box_.height;
   const auto origin_yaw = tf2::getYaw(object_.kinematics.pose_with_covariance.pose.orientation);
   const auto ekf_pose_yaw = tf2::getYaw(pose_with_cov.pose.orientation);
-  object.shape.footprint = utils::rotatePolygon(object.shape.footprint, origin_yaw - ekf_pose_yaw);
+  object.shape.footprint =
+    tier4_autoware_utils::rotatePolygon(object.shape.footprint, origin_yaw - ekf_pose_yaw);
   return true;
 }

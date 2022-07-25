@@ -16,6 +16,7 @@
 
 #include "multi_object_tracker/data_association/solver/gnn_solver.hpp"
 #include "multi_object_tracker/utils/utils.hpp"
+#include "perception_utils/perception_utils.hpp"
 
 #include <algorithm>
 #include <list>
@@ -25,15 +26,6 @@
 
 namespace
 {
-double getDistance(
-  const geometry_msgs::msg::Point & measurement, const geometry_msgs::msg::Point & tracker)
-{
-  const double diff_x = tracker.x - measurement.x;
-  const double diff_y = tracker.y - measurement.y;
-  // const double diff_z = tracker.z - measurement.z;
-  return std::sqrt(diff_x * diff_x + diff_y * diff_y);
-}
-
 double getMahalanobisDistance(
   const geometry_msgs::msg::Point & measurement, const geometry_msgs::msg::Point & tracker,
   const Eigen::Matrix2d & covariance)
@@ -170,7 +162,7 @@ Eigen::MatrixXd DataAssociation::calcScoreMatrix(
       const autoware_auto_perception_msgs::msg::DetectedObject & measurement_object =
         measurements.objects.at(measurement_idx);
       const std::uint8_t measurement_label =
-        utils::getHighestProbLabel(measurement_object.classification);
+        perception_utils::getHighestProbLabel(measurement_object.classification);
 
       double score = 0.0;
       if (can_assign_matrix_(tracker_label, measurement_label)) {
@@ -178,7 +170,7 @@ Eigen::MatrixXd DataAssociation::calcScoreMatrix(
         (*tracker_itr)->getTrackedObject(measurements.header.stamp, tracked_object);
 
         const double max_dist = max_dist_matrix_(tracker_label, measurement_label);
-        const double dist = getDistance(
+        const double dist = tier4_autoware_utils::calcDistance2d(
           measurement_object.kinematics.pose_with_covariance.pose.position,
           tracked_object.kinematics.pose_with_covariance.pose.position);
 
@@ -191,7 +183,7 @@ Eigen::MatrixXd DataAssociation::calcScoreMatrix(
         if (passed_gate) {
           const double max_area = max_area_matrix_(tracker_label, measurement_label);
           const double min_area = min_area_matrix_(tracker_label, measurement_label);
-          const double area = utils::getArea(measurement_object.shape);
+          const double area = tier4_autoware_utils::getArea(measurement_object.shape);
           if (area < min_area || max_area < area) passed_gate = false;
         }
         // angle gate
@@ -214,9 +206,7 @@ Eigen::MatrixXd DataAssociation::calcScoreMatrix(
         // 2d iou gate
         if (passed_gate) {
           const double min_iou = min_iou_matrix_(tracker_label, measurement_label);
-          const double iou = utils::get2dIoU(
-            {measurement_object.kinematics.pose_with_covariance.pose, measurement_object.shape},
-            {tracked_object.kinematics.pose_with_covariance.pose, tracked_object.shape});
+          const double iou = perception_utils::get2dIoU(measurement_object, tracked_object);
           if (iou < min_iou) passed_gate = false;
         }
 

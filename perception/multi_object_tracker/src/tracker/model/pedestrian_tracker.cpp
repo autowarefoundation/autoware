@@ -19,6 +19,7 @@
 #include "multi_object_tracker/tracker/model/pedestrian_tracker.hpp"
 
 #include "multi_object_tracker/utils/utils.hpp"
+#include "perception_utils/perception_utils.hpp"
 
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
@@ -324,7 +325,7 @@ bool PedestrianTracker::measure(
 {
   const auto & current_classification = getClassification();
   object_ = object;
-  if (utils::getHighestProbLabel(object.classification) == Label::UNKNOWN) {
+  if (perception_utils::getHighestProbLabel(object.classification) == Label::UNKNOWN) {
     setClassification(current_classification);
   }
 
@@ -343,7 +344,7 @@ bool PedestrianTracker::measure(
 bool PedestrianTracker::getTrackedObject(
   const rclcpp::Time & time, autoware_auto_perception_msgs::msg::TrackedObject & object) const
 {
-  object = utils::toTrackedObject(object_);
+  object = perception_utils::toTrackedObject(object_);
   object.object_id = getUUID();
   object.classification = getClassification();
 
@@ -423,7 +424,7 @@ bool PedestrianTracker::getTrackedObject(
     const auto origin_yaw = tf2::getYaw(object_.kinematics.pose_with_covariance.pose.orientation);
     const auto ekf_pose_yaw = tf2::getYaw(pose_with_cov.pose.orientation);
     object.shape.footprint =
-      utils::rotatePolygon(object.shape.footprint, origin_yaw - ekf_pose_yaw);
+      tier4_autoware_utils::rotatePolygon(object.shape.footprint, origin_yaw - ekf_pose_yaw);
   }
 
   return true;

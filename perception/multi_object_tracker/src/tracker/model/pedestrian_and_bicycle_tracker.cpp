@@ -42,7 +42,7 @@ bool PedestrianAndBicycleTracker::measure(
 {
   pedestrian_tracker_.measure(object, time);
   bicycle_tracker_.measure(object, time);
-  if (utils::getHighestProbLabel(object.classification) != Label::UNKNOWN)
+  if (perception_utils::getHighestProbLabel(object.classification) != Label::UNKNOWN)
     setClassification(object.classification);
   return true;
 }

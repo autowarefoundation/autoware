@@ -21,7 +21,6 @@ include_directories(
 # Generate exe file
 set(MULTI_OBJECT_TRACKER_SRC
   src/multi_object_tracker_core.cpp
-  src/utils/utils.cpp
   src/tracker/model/tracker_base.cpp
   src/tracker/model/big_vehicle_tracker.cpp
   src/tracker/model/normal_vehicle_tracker.cpp

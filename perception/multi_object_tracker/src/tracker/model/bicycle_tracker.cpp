@@ -32,6 +32,7 @@
 #else
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
+#include "perception_utils/perception_utils.hpp"
 
 #define EIGEN_MPL2_ONLY
 #include <Eigen/Core>
@@ -318,7 +319,7 @@ bool BicycleTracker::measure(
 {
   const auto & current_classification = getClassification();
   object_ = object;
-  if (utils::getHighestProbLabel(object.classification) == Label::UNKNOWN) {
+  if (perception_utils::getHighestProbLabel(object.classification) == Label::UNKNOWN) {
     setClassification(current_classification);
   }
 
@@ -337,7 +338,7 @@ bool BicycleTracker::measure(
 bool BicycleTracker::getTrackedObject(
   const rclcpp::Time & time, autoware_auto_perception_msgs::msg::TrackedObject & object) const
 {
-  object = utils::toTrackedObject(object_);
+  object = perception_utils::toTrackedObject(object_);
   object.object_id = getUUID();
   object.classification = getClassification();
 
@@ -410,7 +411,8 @@ bool BicycleTracker::getTrackedObject(
   object.shape.dimensions.z = bounding_box_.height;
   const auto origin_yaw = tf2::getYaw(object_.kinematics.pose_with_covariance.pose.orientation);
   const auto ekf_pose_yaw = tf2::getYaw(pose_with_cov.pose.orientation);
-  object.shape.footprint = utils::rotatePolygon(object.shape.footprint, origin_yaw - ekf_pose_yaw);
+  object.shape.footprint =
+    tier4_autoware_utils::rotatePolygon(object.shape.footprint, origin_yaw - ekf_pose_yaw);
 
   return true;
 }
