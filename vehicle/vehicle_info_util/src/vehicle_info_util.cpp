@@ -49,7 +49,7 @@ VehicleInfoUtil::VehicleInfoUtil(rclcpp::Node & node)
   vehicle_info_.left_overhang_m = getParameter<double>(node, "left_overhang");
   vehicle_info_.right_overhang_m = getParameter<double>(node, "right_overhang");
   vehicle_info_.vehicle_height_m = getParameter<double>(node, "vehicle_height");
-  vehicle_info_.max_steer_angle_m = getParameter<double>(node, "max_steer_angle");
+  vehicle_info_.max_steer_angle_rad = getParameter<double>(node, "max_steer_angle");
 }
 
 VehicleInfo VehicleInfoUtil::getVehicleInfo()
@@ -58,7 +58,7 @@ VehicleInfo VehicleInfoUtil::getVehicleInfo()
     vehicle_info_.wheel_radius_m, vehicle_info_.wheel_width_m, vehicle_info_.wheel_base_m,
     vehicle_info_.wheel_tread_m, vehicle_info_.front_overhang_m, vehicle_info_.rear_overhang_m,
     vehicle_info_.left_overhang_m, vehicle_info_.right_overhang_m, vehicle_info_.vehicle_height_m,
-    vehicle_info_.max_steer_angle_m);
+    vehicle_info_.max_steer_angle_rad);
 }
 
 }  // namespace vehicle_info_util
