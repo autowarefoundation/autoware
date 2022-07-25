@@ -68,9 +68,6 @@ private:
 
   Filter_target_label filter_target_;
 
-  bool transformDetectedObjects(
-    const autoware_auto_perception_msgs::msg::DetectedObjects &, const std::string &,
-    const tf2_ros::Buffer &, autoware_auto_perception_msgs::msg::DetectedObjects &);
   LinearRing2d getConvexHull(const autoware_auto_perception_msgs::msg::DetectedObjects &);
   lanelet::ConstLanelets getIntersectedLanelets(
     const LinearRing2d &, const lanelet::ConstLanelets &);

@@ -14,6 +14,7 @@
 
 #include "detected_object_filter/object_lanelet_filter.hpp"
 
+#include <perception_utils/perception_utils.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <boost/geometry/algorithms/convex_hull.hpp>
@@ -22,21 +23,6 @@
 
 #include <lanelet2_core/geometry/Polygon.h>
 
-boost::optional<geometry_msgs::msg::Transform> getTransform(
-  const tf2_ros::Buffer & tf_buffer, const std::string & source_frame_id,
-  const std::string & target_frame_id, const rclcpp::Time & time)
-{
-  try {
-    geometry_msgs::msg::TransformStamped self_transform_stamped;
-    self_transform_stamped = tf_buffer.lookupTransform(
-      /*target*/ target_frame_id, /*src*/ source_frame_id, time,
-      rclcpp::Duration::from_seconds(0.5));
-    return self_transform_stamped.transform;
-  } catch (tf2::TransformException & ex) {
-    RCLCPP_WARN_STREAM(rclcpp::get_logger("object_lanelet_filter"), ex.what());
-    return boost::none;
-  }
-}
 namespace object_lanelet_filter
 {
 ObjectLaneletFilterNode::ObjectLaneletFilterNode(const rclcpp::NodeOptions & node_options)
@@ -91,7 +77,7 @@ void ObjectLaneletFilterNode::objectCallback(
     return;
   }
   autoware_auto_perception_msgs::msg::DetectedObjects transformed_objects;
-  if (!transformDetectedObjects(*input_msg, "map", tf_buffer_, transformed_objects)) {
+  if (!perception_utils::transformObjects(*input_msg, "map", tf_buffer_, transformed_objects)) {
     RCLCPP_ERROR(get_logger(), "Failed transform to map.");
     return;
   }
@@ -129,36 +115,6 @@ void ObjectLaneletFilterNode::objectCallback(
     ++index;
   }
   object_pub_->publish(output_object_msg);
-}
-
-bool ObjectLaneletFilterNode::transformDetectedObjects(
-  const autoware_auto_perception_msgs::msg::DetectedObjects & input_msg,
-  const std::string & target_frame_id, const tf2_ros::Buffer & tf_buffer,
-  autoware_auto_perception_msgs::msg::DetectedObjects & output_msg)
-{
-  output_msg = input_msg;
-
-  /* transform to world coordinate */
-  if (input_msg.header.frame_id != target_frame_id) {
-    output_msg.header.frame_id = target_frame_id;
-    tf2::Transform tf_target2objects_world;
-    tf2::Transform tf_target2objects;
-    tf2::Transform tf_objects_world2objects;
-    {
-      const auto ros_target2objects_world =
-        getTransform(tf_buffer, input_msg.header.frame_id, target_frame_id, input_msg.header.stamp);
-      if (!ros_target2objects_world) {
-        return false;
-      }
-      tf2::fromMsg(*ros_target2objects_world, tf_target2objects_world);
-    }
-    for (auto & object : output_msg.objects) {
-      tf2::fromMsg(object.kinematics.pose_with_covariance.pose, tf_objects_world2objects);
-      tf_target2objects = tf_target2objects_world * tf_objects_world2objects;
-      tf2::toMsg(tf_target2objects, object.kinematics.pose_with_covariance.pose);
-    }
-  }
-  return true;
 }
 
 LinearRing2d ObjectLaneletFilterNode::getConvexHull(
