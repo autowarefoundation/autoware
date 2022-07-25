@@ -76,6 +76,7 @@ struct PointWithSearchRangeIndex
   SearchRangeIndex index;
 };
 
+using geometry_msgs::msg::Pose;
 using BasicPolygons2d = std::vector<lanelet::BasicPolygon2d>;
 using Polygons2d = std::vector<Polygon2d>;
 using Point2d = boost::geometry::model::d2::point_xy<double>;
@@ -103,20 +104,6 @@ using tier4_planning_msgs::msg::StopReason;
 
 namespace planning_utils
 {
-using geometry_msgs::msg::Pose;
-inline geometry_msgs::msg::Pose getPose(const Path & path, int idx)
-{
-  return path.points.at(idx).pose;
-}
-inline geometry_msgs::msg::Pose getPose(const PathWithLaneId & path, int idx)
-{
-  return path.points.at(idx).point.pose;
-}
-inline geometry_msgs::msg::Pose getPose(const Trajectory & traj, int idx)
-{
-  return traj.points.at(idx).pose;
-}
-
 // create detection area from given range return false if creation failure
 bool createDetectionAreaPolygons(
   Polygons2d & slices, const PathWithLaneId & path, const geometry_msgs::msg::Pose & current_pose,
@@ -132,31 +119,6 @@ void insertVelocity(
   PathWithLaneId & path, const PathPointWithLaneId & path_point, const double v,
   size_t & insert_index, const double min_distance = 0.001);
 inline int64_t bitShift(int64_t original_id) { return original_id << (sizeof(int32_t) * 8 / 2); }
-
-inline double square(const double & a) { return a * a; }
-double normalizeEulerAngle(double euler);
-geometry_msgs::msg::Quaternion getQuaternionFromYaw(double yaw);
-
-template <class T1, class T2>
-double calcSquaredDist2d(const T1 & a, const T2 & b)
-{
-  return square(getPoint(a).x - getPoint(b).x) + square(getPoint(a).y - getPoint(b).y);
-}
-
-template <class T1, class T2>
-double calcDist2d(const T1 & a, const T2 & b)
-{
-  return std::sqrt(calcSquaredDist2d<T1, T2>(a, b));
-}
-
-template <class T>
-bool calcClosestIndex(
-  const T & path, const geometry_msgs::msg::Pose & pose, int & closest, double dist_thr = 3.0,
-  double angle_thr = M_PI_4);
-
-template <class T>
-bool calcClosestIndex(
-  const T & path, const geometry_msgs::msg::Point & point, int & closest, double dist_thr = 3.0);
 
 geometry_msgs::msg::Pose transformRelCoordinate2D(
   const geometry_msgs::msg::Pose & target, const geometry_msgs::msg::Pose & origin);

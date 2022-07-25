@@ -131,7 +131,8 @@ bool insertTargetVelocityPoint(
 
     if ((point1 - point2).norm() > 1.0E-3) {
       const double yaw = std::atan2(point1.y() - point2.y(), point1.x() - point2.x());
-      target_point_with_lane_id.point.pose.orientation = planning_utils::getQuaternionFromYaw(yaw);
+      target_point_with_lane_id.point.pose.orientation =
+        tier4_autoware_utils::createQuaternionFromYaw(yaw);
     }
     target_point_with_lane_id.point.longitudinal_velocity_mps = velocity;
     if (velocity == 0.0 && target_velocity_point_idx < first_stop_path_point_index) {
@@ -257,7 +258,8 @@ bool insertTargetVelocityPoint(
 
     if ((point1 - point2).norm() > 1.0E-3) {
       const double yaw = std::atan2(point1.y() - point2.y(), point1.x() - point2.x());
-      target_point_with_lane_id.point.pose.orientation = planning_utils::getQuaternionFromYaw(yaw);
+      target_point_with_lane_id.point.pose.orientation =
+        tier4_autoware_utils::createQuaternionFromYaw(yaw);
     }
     target_point_with_lane_id.point.longitudinal_velocity_mps = velocity;
     if (velocity == 0.0 && target_velocity_point_idx < first_stop_path_point_index) {
@@ -364,7 +366,8 @@ bool insertTargetVelocityPoint(
 
     if ((point1 - point2).norm() > 1.0E-3) {
       const double yaw = std::atan2(point1.y() - point2.y(), point1.x() - point2.x());
-      target_point_with_lane_id.point.pose.orientation = planning_utils::getQuaternionFromYaw(yaw);
+      target_point_with_lane_id.point.pose.orientation =
+        tier4_autoware_utils::createQuaternionFromYaw(yaw);
     }
     target_point_with_lane_id.point.longitudinal_velocity_mps = velocity;
     if (velocity == 0.0 && target_velocity_point_idx < first_stop_path_point_index) {

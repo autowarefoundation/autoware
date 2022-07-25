@@ -62,11 +62,13 @@ int insertSafeVelocityToPath(
   const geometry_msgs::msg::Pose & in_pose, const double safe_vel, const PlannerParam & param,
   PathWithLaneId * inout_path)
 {
-  int closest_idx = -1;
-  if (!planning_utils::calcClosestIndex(
-        *inout_path, in_pose, closest_idx, param.dist_thr, param.angle_thr)) {
+  const auto closest_idx_opt =
+    motion_utils::findNearestIndex(inout_path->points, in_pose, param.dist_thr, param.angle_thr);
+  if (!closest_idx_opt) {
     return -1;
   }
+  const size_t closest_idx = closest_idx_opt.get();
+
   PathPointWithLaneId inserted_point;
   inserted_point = inout_path->points.at(closest_idx);
   size_t insert_idx = closest_idx;

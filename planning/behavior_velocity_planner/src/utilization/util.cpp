@@ -19,6 +19,25 @@
 #include <string>
 #include <vector>
 
+namespace
+{
+inline geometry_msgs::msg::Pose getPose(
+  const autoware_auto_planning_msgs::msg::Path & path, int idx)
+{
+  return path.points.at(idx).pose;
+}
+inline geometry_msgs::msg::Pose getPose(
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, int idx)
+{
+  return path.points.at(idx).point.pose;
+}
+inline geometry_msgs::msg::Pose getPose(
+  const autoware_auto_planning_msgs::msg::Trajectory & traj, int idx)
+{
+  return traj.points.at(idx).pose;
+}
+}  // namespace
+
 namespace behavior_velocity_planner
 {
 namespace planning_utils
@@ -266,101 +285,6 @@ Polygon2d generatePathPolygon(
   return ego_area;
 }
 
-double normalizeEulerAngle(double euler)
-{
-  double res = euler;
-  while (res > M_PI) {
-    res -= (2.0 * M_PI);
-  }
-  while (res < -M_PI) {
-    res += 2.0 * M_PI;
-  }
-
-  return res;
-}
-
-geometry_msgs::msg::Quaternion getQuaternionFromYaw(double yaw)
-{
-  tf2::Quaternion q;
-  q.setRPY(0, 0, yaw);
-  return tf2::toMsg(q);
-}
-
-template <class T>
-bool calcClosestIndex(
-  const T & path, const geometry_msgs::msg::Pose & pose, int & closest, double dist_thr,
-  double angle_thr)
-{
-  double dist_squared_min = std::numeric_limits<double>::max();
-  double yaw_pose = tf2::getYaw(pose.orientation);
-  closest = -1;
-
-  for (int i = 0; i < static_cast<int>(path.points.size()); ++i) {
-    const double dist_squared = calcSquaredDist2d(getPose(path, i), pose);
-
-    /* check distance threshold */
-    if (dist_squared > dist_thr * dist_thr) {
-      continue;
-    }
-
-    /* check angle threshold */
-    double yaw_i = tf2::getYaw(getPose(path, i).orientation);
-    double yaw_diff = normalizeEulerAngle(yaw_pose - yaw_i);
-
-    if (std::fabs(yaw_diff) > angle_thr) {
-      continue;
-    }
-
-    if (dist_squared < dist_squared_min) {
-      dist_squared_min = dist_squared;
-      closest = i;
-    }
-  }
-
-  return closest == -1 ? false : true;
-}
-
-template bool calcClosestIndex<Trajectory>(
-  const Trajectory & path, const geometry_msgs::msg::Pose & pose, int & closest, double dist_thr,
-  double angle_thr);
-template bool calcClosestIndex<PathWithLaneId>(
-  const PathWithLaneId & path, const geometry_msgs::msg::Pose & pose, int & closest,
-  double dist_thr, double angle_thr);
-template bool calcClosestIndex<Path>(
-  const Path & path, const geometry_msgs::msg::Pose & pose, int & closest, double dist_thr,
-  double angle_thr);
-
-template <class T>
-bool calcClosestIndex(
-  const T & path, const geometry_msgs::msg::Point & point, int & closest, double dist_thr)
-{
-  double dist_squared_min = std::numeric_limits<double>::max();
-  closest = -1;
-
-  for (int i = 0; i < static_cast<int>(path.points.size()); ++i) {
-    const double dist_squared = calcSquaredDist2d(getPose(path, i), point);
-
-    /* check distance threshold */
-    if (dist_squared > dist_thr * dist_thr) {
-      continue;
-    }
-
-    if (dist_squared < dist_squared_min) {
-      dist_squared_min = dist_squared;
-      closest = i;
-    }
-  }
-
-  return closest == -1 ? false : true;
-}
-template bool calcClosestIndex<Trajectory>(
-  const Trajectory & path, const geometry_msgs::msg::Point & point, int & closest, double dist_thr);
-template bool calcClosestIndex<PathWithLaneId>(
-  const PathWithLaneId & path, const geometry_msgs::msg::Point & point, int & closest,
-  double dist_thr);
-template bool calcClosestIndex<Path>(
-  const Path & path, const geometry_msgs::msg::Point & point, int & closest, double dist_thr);
-
 geometry_msgs::msg::Pose transformRelCoordinate2D(
   const geometry_msgs::msg::Pose & target, const geometry_msgs::msg::Pose & origin)
 {
@@ -376,7 +300,8 @@ geometry_msgs::msg::Pose transformRelCoordinate2D(
   res.position.x = (std::cos(yaw) * trans_p.x) + (std::sin(yaw) * trans_p.y);
   res.position.y = ((-1.0) * std::sin(yaw) * trans_p.x) + (std::cos(yaw) * trans_p.y);
   res.position.z = target.position.z - origin.position.z;
-  res.orientation = getQuaternionFromYaw(tf2::getYaw(target.orientation) - yaw);
+  res.orientation =
+    tier4_autoware_utils::createQuaternionFromYaw(tf2::getYaw(target.orientation) - yaw);
 
   return res;
 }
@@ -395,7 +320,8 @@ geometry_msgs::msg::Pose transformAbsCoordinate2D(
   absolute.position.x = rot_p.x + origin.position.x;
   absolute.position.y = rot_p.y + origin.position.y;
   absolute.position.z = relative.position.z + origin.position.z;
-  absolute.orientation = getQuaternionFromYaw(tf2::getYaw(relative.orientation) + yaw);
+  absolute.orientation =
+    tier4_autoware_utils::createQuaternionFromYaw(tf2::getYaw(relative.orientation) + yaw);
 
   return absolute;
 }

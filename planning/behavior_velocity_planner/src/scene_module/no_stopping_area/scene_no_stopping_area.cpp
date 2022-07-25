@@ -284,12 +284,15 @@ Polygon2d NoStoppingAreaModule::generateEgoNoStoppingAreaLanePolygon(
   }
   auto & pp = interpolated_path.points;
   /* calc closest index */
-  int closest_idx = -1;
-  if (!planning_utils::calcClosestIndex<autoware_auto_planning_msgs::msg::PathWithLaneId>(
-        interpolated_path, ego_pose, closest_idx)) {
-    RCLCPP_WARN_SKIPFIRST_THROTTLE(logger_, *clock_, 1000 /* ms */, "calcClosestIndex fail");
+  const auto closest_idx_opt =
+    motion_utils::findNearestIndex(interpolated_path.points, ego_pose, 3.0, M_PI_4);
+  if (!closest_idx_opt) {
+    RCLCPP_WARN_SKIPFIRST_THROTTLE(
+      logger_, *clock_, 1000 /* ms */, "motion_utils::findNearestIndex fail");
     return ego_area;
   }
+  const size_t closest_idx = closest_idx_opt.get();
+
   const int num_ignore_nearest = 1;  // Do not consider nearest lane polygon
   size_t ego_area_start_idx = closest_idx + num_ignore_nearest;
   size_t ego_area_end_idx = ego_area_start_idx;
@@ -299,7 +302,7 @@ Polygon2d NoStoppingAreaModule::generateEgoNoStoppingAreaLanePolygon(
   }
   const auto no_stopping_area = no_stopping_area_reg_elem_.noStoppingAreas().front();
   for (size_t i = closest_idx + num_ignore_nearest; i < pp.size() - 1; ++i) {
-    dist_from_start_sum += planning_utils::calcDist2d(pp.at(i), pp.at(i - 1));
+    dist_from_start_sum += tier4_autoware_utils::calcDistance2d(pp.at(i), pp.at(i - 1));
     const auto & p = pp.at(i).point.pose.position;
     if (bg::within(Point2d{p.x, p.y}, lanelet::utils::to2D(no_stopping_area).basicPolygon())) {
       is_in_area = true;
@@ -320,10 +323,10 @@ Polygon2d NoStoppingAreaModule::generateEgoNoStoppingAreaLanePolygon(
   // decide end idx with extract distance
   ego_area_end_idx = ego_area_start_idx;
   for (size_t i = ego_area_start_idx; i < pp.size() - 1; ++i) {
-    dist_from_start_sum += planning_utils::calcDist2d(pp.at(i), pp.at(i - 1));
+    dist_from_start_sum += tier4_autoware_utils::calcDistance2d(pp.at(i), pp.at(i - 1));
     const auto & p = pp.at(i).point.pose.position;
     if (!bg::within(Point2d{p.x, p.y}, lanelet::utils::to2D(no_stopping_area).basicPolygon())) {
-      dist_from_area_sum += planning_utils::calcDist2d(pp.at(i), pp.at(i - 1));
+      dist_from_area_sum += tier4_autoware_utils::calcDistance2d(pp.at(i), pp.at(i - 1));
     }
     if (dist_from_start_sum > extra_dist || dist_from_area_sum > margin) {
       break;
