@@ -32,29 +32,6 @@
 
 namespace utils
 {
-double getPolygonArea(const geometry_msgs::msg::Polygon & footprint);
-double getRectangleArea(const geometry_msgs::msg::Vector3 & dimensions);
-double getCircleArea(const geometry_msgs::msg::Vector3 & dimensions);
-double getArea(const autoware_auto_perception_msgs::msg::Shape & shape);
-double get2dIoU(
-  const std::tuple<
-    const geometry_msgs::msg::Pose &, const autoware_auto_perception_msgs::msg::Shape &> & object1,
-  const std::tuple<
-    const geometry_msgs::msg::Pose &, const autoware_auto_perception_msgs::msg::Shape &> & object2);
-double get2dIoU(
-  const autoware_auto_perception_msgs::msg::DetectedObject & object1,
-  const autoware_auto_perception_msgs::msg::DetectedObject & object2);
-double get2dPrecision(
-  const autoware_auto_perception_msgs::msg::DetectedObject & source_object,
-  const autoware_auto_perception_msgs::msg::DetectedObject & target_object);
-double get2dRecall(
-  const autoware_auto_perception_msgs::msg::DetectedObject & source_object,
-  const autoware_auto_perception_msgs::msg::DetectedObject & target_object);
-std::uint8_t getHighestProbLabel(
-  const std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> & classification);
-geometry_msgs::msg::Polygon rotatePolygon(
-  const geometry_msgs::msg::Polygon & polygon, const double & angle);
-
 enum MSG_COV_IDX {
   X_X = 0,
   X_Y = 1,

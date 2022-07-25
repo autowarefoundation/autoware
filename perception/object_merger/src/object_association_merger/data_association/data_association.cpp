@@ -16,6 +16,8 @@
 
 #include "object_association_merger/data_association/solver/gnn_solver.hpp"
 #include "object_association_merger/utils/utils.hpp"
+#include "perception_utils/perception_utils.hpp"
+#include "tier4_autoware_utils/geometry/geometry.hpp"
 
 #include <algorithm>
 #include <list>
@@ -25,15 +27,6 @@
 
 namespace
 {
-double getDistance(
-  const geometry_msgs::msg::Point & point0, const geometry_msgs::msg::Point & point1)
-{
-  const double diff_x = point1.x - point0.x;
-  const double diff_y = point1.y - point0.y;
-  // const double diff_z = point1.z - point0.z;
-  return std::sqrt(diff_x * diff_x + diff_y * diff_y);
-}
-
 double getFormedYawAngle(
   const geometry_msgs::msg::Quaternion & quat0, const geometry_msgs::msg::Quaternion & quat1,
   const bool distinguish_front_or_back = true)
@@ -128,17 +121,19 @@ Eigen::MatrixXd DataAssociation::calcScoreMatrix(
   for (size_t objects1_idx = 0; objects1_idx < objects1.objects.size(); ++objects1_idx) {
     const autoware_auto_perception_msgs::msg::DetectedObject & object1 =
       objects1.objects.at(objects1_idx);
-    const std::uint8_t object1_label = utils::getHighestProbLabel(object1.classification);
+    const std::uint8_t object1_label =
+      perception_utils::getHighestProbLabel(object1.classification);
 
     for (size_t objects0_idx = 0; objects0_idx < objects0.objects.size(); ++objects0_idx) {
       const autoware_auto_perception_msgs::msg::DetectedObject & object0 =
         objects0.objects.at(objects0_idx);
-      const std::uint8_t object0_label = utils::getHighestProbLabel(object0.classification);
+      const std::uint8_t object0_label =
+        perception_utils::getHighestProbLabel(object0.classification);
 
       double score = 0.0;
       if (can_assign_matrix_(object1_label, object0_label)) {
         const double max_dist = max_dist_matrix_(object1_label, object0_label);
-        const double dist = getDistance(
+        const double dist = tier4_autoware_utils::calcDistance2d(
           object0.kinematics.pose_with_covariance.pose.position,
           object1.kinematics.pose_with_covariance.pose.position);
 
@@ -159,9 +154,7 @@ Eigen::MatrixXd DataAssociation::calcScoreMatrix(
         // 2d iou gate
         if (passed_gate) {
           const double min_iou = min_iou_matrix_(object1_label, object0_label);
-          const double iou = utils::get2dIoU(
-            {object0.kinematics.pose_with_covariance.pose, object0.shape},
-            {object1.kinematics.pose_with_covariance.pose, object1.shape});
+          const double iou = perception_utils::get2dIoU(object0, object1);
           if (iou < min_iou) passed_gate = false;
         }
 

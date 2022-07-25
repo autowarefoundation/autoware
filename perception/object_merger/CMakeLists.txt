@@ -23,7 +23,6 @@ ament_auto_add_library(mu_successive_shortest_path SHARED
 )
 
 ament_auto_add_library(object_association_merger SHARED
-  src/object_association_merger/utils/utils.cpp
   src/object_association_merger/data_association/data_association.cpp
   src/object_association_merger/node.cpp
 )
