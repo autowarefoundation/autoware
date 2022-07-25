@@ -14,7 +14,7 @@
 
 #include "detection_by_tracker/detection_by_tracker_core.hpp"
 
-#include "detection_by_tracker/utils.hpp"
+#include "perception_utils/perception_utils.hpp"
 
 #include <chrono>
 #include <memory>
@@ -29,52 +29,6 @@
 using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
 namespace
 {
-std::optional<geometry_msgs::msg::Transform> getTransform(
-  const tf2_ros::Buffer & tf_buffer, const std::string & source_frame_id,
-  const std::string & target_frame_id, const rclcpp::Time & time)
-{
-  try {
-    geometry_msgs::msg::TransformStamped transform_stamped;
-    transform_stamped = tf_buffer.lookupTransform(
-      /*target*/ target_frame_id, /*src*/ source_frame_id, time,
-      rclcpp::Duration::from_seconds(0.5));
-    return transform_stamped.transform;
-  } catch (tf2::TransformException & ex) {
-    RCLCPP_WARN_STREAM(rclcpp::get_logger("detection_by_tracker"), ex.what());
-    return std::nullopt;
-  }
-}
-
-bool transformTrackedObjects(
-  const autoware_auto_perception_msgs::msg::TrackedObjects & input_msg,
-  const std::string & target_frame_id, const tf2_ros::Buffer & tf_buffer,
-  autoware_auto_perception_msgs::msg::TrackedObjects & output_msg)
-{
-  output_msg = input_msg;
-
-  // Transform to world coordinate
-  if (output_msg.header.frame_id != target_frame_id) {
-    output_msg.header.frame_id = target_frame_id;
-    tf2::Transform tf_target2objects_world;
-    tf2::Transform tf_target2objects;
-    tf2::Transform tf_objects_world2objects;
-    {
-      const auto ros_target2objects_world =
-        getTransform(tf_buffer, input_msg.header.frame_id, target_frame_id, input_msg.header.stamp);
-      if (!ros_target2objects_world) {
-        return false;
-      }
-      tf2::fromMsg(*ros_target2objects_world, tf_target2objects_world);
-    }
-    for (auto & object : output_msg.objects) {
-      tf2::fromMsg(object.kinematics.pose_with_covariance.pose, tf_objects_world2objects);
-      tf_target2objects = tf_target2objects_world * tf_objects_world2objects;
-      tf2::toMsg(tf_target2objects, object.kinematics.pose_with_covariance.pose);
-    }
-  }
-  return true;
-}
-
 void setClusterInObjectWithFeature(
   const std_msgs::msg::Header & header, const pcl::PointCloud<pcl::PointXYZ> & cluster,
   tier4_perception_msgs::msg::DetectedObjectWithFeature & feature_object)
@@ -97,27 +51,6 @@ autoware_auto_perception_msgs::msg::Shape extendShape(
     point.z *= scale;
   }
   return output;
-}
-
-autoware_auto_perception_msgs::msg::DetectedObjects toDetectedObjects(
-  const autoware_auto_perception_msgs::msg::TrackedObjects & tracked_objects)
-{
-  autoware_auto_perception_msgs::msg::DetectedObjects out_objects;
-  out_objects.header = tracked_objects.header;
-  for (auto & tracked_object : tracked_objects.objects) {
-    autoware_auto_perception_msgs::msg::DetectedObject object;
-    object.existence_probability = tracked_object.existence_probability;
-    object.classification = tracked_object.classification;
-    object.kinematics.pose_with_covariance = tracked_object.kinematics.pose_with_covariance;
-    object.kinematics.has_position_covariance = true;
-    object.kinematics.orientation_availability = tracked_object.kinematics.orientation_availability;
-    object.kinematics.twist_with_covariance = tracked_object.kinematics.twist_with_covariance;
-    object.kinematics.has_twist = true;
-    object.kinematics.has_twist_covariance = true;
-    object.shape = tracked_object.shape;
-    out_objects.objects.push_back(object);
-  }
-  return out_objects;
 }
 
 boost::optional<ReferenceYawInfo> getReferenceYawInfo(const uint8_t label, const float yaw)
@@ -234,13 +167,13 @@ void DetectionByTracker::onObjects(
       tracker_handler_.estimateTrackedObjects(input_msg->header.stamp, objects);
     if (
       !available_trackers ||
-      !transformTrackedObjects(
+      !perception_utils::transformObjects(
         objects, input_msg->header.frame_id, tf_buffer_, transformed_objects)) {
       objects_pub_->publish(detected_objects);
       return;
     }
     // to simplify post processes, convert tracked_objects to DetectedObjects message.
-    tracked_objects = toDetectedObjects(transformed_objects);
+    tracked_objects = perception_utils::toDetectedObjects(transformed_objects);
   }
   debugger_->publishInitialObjects(*input_msg);
   debugger_->publishTrackedObjects(tracked_objects);
@@ -300,8 +233,9 @@ void DetectionByTracker::divideUnderSegmentedObjects(
         continue;
       }
       // detect under segmented cluster
-      const float recall = utils::get2dRecall(initial_object.object, tracked_object);
-      const float precision = utils::get2dPrecision(initial_object.object, tracked_object);
+      const float recall = perception_utils::get2dRecall(initial_object.object, tracked_object);
+      const float precision =
+        perception_utils::get2dPrecision(initial_object.object, tracked_object);
       const bool is_under_segmented =
         (recall_min_threshold < recall && precision < precision_max_threshold);
       if (!is_under_segmented) {
@@ -375,7 +309,8 @@ float DetectionByTracker::optimizeUnderSegmentedObject(
       if (!is_shape_estimated) {
         continue;
       }
-      const float iou = utils::get2dIoU(highest_iou_object_in_current_iter.object, target_object);
+      const float iou =
+        perception_utils::get2dIoU(highest_iou_object_in_current_iter.object, target_object);
       if (highest_iou_in_current_iter < iou) {
         highest_iou_in_current_iter = iou;
         setClusterInObjectWithFeature(
@@ -396,7 +331,7 @@ float DetectionByTracker::optimizeUnderSegmentedObject(
   // build output
   highest_iou_object.object.classification = target_object.classification;
   highest_iou_object.object.existence_probability =
-    utils::get2dIoU(target_object, highest_iou_object.object);
+    perception_utils::get2dIoU(target_object, highest_iou_object.object);
 
   output = highest_iou_object;
   return highest_iou;
@@ -432,7 +367,8 @@ void DetectionByTracker::mergeOverSegmentedObjects(
       }
 
       // If there is an initial object in the tracker, it will be merged.
-      const float precision = utils::get2dPrecision(initial_object.object, extended_tracked_object);
+      const float precision =
+        perception_utils::get2dPrecision(initial_object.object, extended_tracked_object);
       if (precision < precision_threshold) {
         continue;
       }
@@ -461,7 +397,7 @@ void DetectionByTracker::mergeOverSegmentedObjects(
     }
 
     feature_object.object.existence_probability =
-      utils::get2dIoU(tracked_object, feature_object.object);
+      perception_utils::get2dIoU(tracked_object, feature_object.object);
     setClusterInObjectWithFeature(in_cluster_objects.header, pcl_merged_cluster, feature_object);
     out_objects.feature_objects.push_back(feature_object);
   }

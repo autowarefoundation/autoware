@@ -16,6 +16,7 @@
   <depend>euclidean_cluster</depend>
   <depend>libpcl-all-dev</depend>
   <depend>pcl_conversions</depend>
+  <depend>perception_utils</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>shape_estimation</depend>
