@@ -145,6 +145,7 @@ private:
   int64_t lane_id_;
   std::string turn_direction_;
   bool has_traffic_light_;
+  bool is_go_out_;
 
   // Parameter
   PlannerParam planner_param_;

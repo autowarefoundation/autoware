@@ -53,7 +53,7 @@ IntersectionModule::IntersectionModule(
   const int64_t module_id, const int64_t lane_id, std::shared_ptr<const PlannerData> planner_data,
   const PlannerParam & planner_param, const rclcpp::Logger logger,
   const rclcpp::Clock::SharedPtr clock)
-: SceneModuleInterface(module_id, logger, clock), lane_id_(lane_id)
+: SceneModuleInterface(module_id, logger, clock), lane_id_(lane_id), is_go_out_(false)
 {
   planner_param_ = planner_param;
   const auto & assigned_lanelet =
@@ -153,7 +153,7 @@ bool IntersectionModule::modifyPathVelocity(
     geometry_msgs::msg::Pose pass_judge_line = path->points.at(pass_judge_line_idx).point.pose;
     is_over_pass_judge_line = util::isAheadOf(current_pose.pose, pass_judge_line);
   }
-  if (current_state == State::GO && is_over_pass_judge_line && !external_stop) {
+  if (is_go_out_ && is_over_pass_judge_line && !external_stop) {
     RCLCPP_DEBUG(logger_, "over the pass judge line. no plan needed.");
     RCLCPP_DEBUG(logger_, "===== plan end =====");
     setSafe(true);
@@ -178,17 +178,18 @@ bool IntersectionModule::modifyPathVelocity(
     is_entry_prohibited = true;
   }
   state_machine_.setStateWithMarginTime(
-    isActivated() ? State::GO : State::STOP, logger_.get_child("state_machine"), *clock_);
+    is_entry_prohibited ? State::STOP : State::GO, logger_.get_child("state_machine"), *clock_);
 
   const double base_link2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
 
-  setSafe(!is_entry_prohibited);
+  setSafe(state_machine_.getState() == State::GO);
   setDistance(motion_utils::calcSignedArcLength(
     path->points, planner_data_->current_pose.pose.position,
     path->points.at(stop_line_idx).point.pose.position));
 
   if (!isActivated()) {
     constexpr double v = 0.0;
+    is_go_out_ = false;
     if (planner_param_.use_stuck_stopline && is_stuck) {
       int stuck_stop_line_idx = -1;
       int stuck_pass_judge_line_idx = -1;
@@ -219,6 +220,7 @@ bool IntersectionModule::modifyPathVelocity(
     return true;
   }
 
+  is_go_out_ = true;
   RCLCPP_DEBUG(logger_, "===== plan end =====");
   return true;
 }
