@@ -97,6 +97,7 @@ public:
     std::vector<lanelet::CompoundPolygon3d> detection_area;
     autoware_auto_perception_msgs::msg::PredictedObjects conflicting_targets;
     autoware_auto_perception_msgs::msg::PredictedObjects stuck_targets;
+    geometry_msgs::msg::Pose predicted_obj_pose;
   };
 
 public:
@@ -123,6 +124,9 @@ public:
     double collision_start_margin_time;  //! start margin time to check collision
     double collision_end_margin_time;    //! end margin time to check collision
     bool use_stuck_stopline;  //! stopline generate before the intersection lanelet when is_stuck.
+    double
+      assumed_front_car_decel;  //! the expected deceleration of front car when front car as well
+    bool enable_front_car_decel_prediction;  //! flag for using above feature
   };
 
   IntersectionModule(
@@ -166,7 +170,7 @@ private:
     const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
     const std::vector<int> & detection_area_lanelet_ids,
     const autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr objects_ptr,
-    const int closest_idx);
+    const int closest_idx, const Polygon2d & stuck_vehicle_detect_area);
 
   /**
    * @brief Check if there is a stopped vehicle on the ego-lane.
@@ -177,10 +181,8 @@ private:
    * @return true if exists
    */
   bool checkStuckVehicleInIntersection(
-    lanelet::LaneletMapConstPtr lanelet_map_ptr,
-    const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const int closest_idx,
-    const int stop_idx,
-    const autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr objects_ptr) const;
+    const autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr objects_ptr,
+    const Polygon2d & stuck_vehicle_detect_area) const;
 
   /**
    * @brief Calculate the polygon of the path from the ego-car position to the end of the
@@ -289,6 +291,19 @@ private:
     lanelet::LaneletMapConstPtr lanelet_map_ptr,
     const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const size_t closest_idx) const;
 
+  /**
+   * @brief Check if the ego is expected to stop in the opposite lane if the front vehicle starts
+   * deceleration from current velocity and stop befor the crosswalk. If the stop position of front
+   * vehicle is in stuck area, and the position `ego_length` meter behind is in detection area,
+   * return true
+   * @param ego_poly Polygon of ego_with_next_lane
+   * @param closest_lanelet
+   * @return true if the ego is expected to stop in the opposite lane
+   */
+  bool checkFrontVehicleDeceleration(
+    lanelet::ConstLanelets & ego_lane_with_next_lane, lanelet::ConstLanelet & closest_lanelet,
+    const Polygon2d & stuck_vehicle_detect_area,
+    const autoware_auto_perception_msgs::msg::PredictedObject & object) const;
   StateMachine state_machine_;  //! for state
 
   // Debug

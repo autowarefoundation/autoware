@@ -81,23 +81,26 @@ To prevent going over the pass judge line before the traffic light stop line, th
 
 If there is any object in a certain distance (default : 5[m]) from the end point of the intersection lane on the driving lane and the object velocity is less than a threshold (default 3.0[km/h]), the object is regarded as a stuck vehicle. If the stuck vehicle exists, the ego vehicle cannot enter the intersection.
 
+As a related case, if the object in front of the ego vehicle is turning the same direction, this module predicts the stopping point that the object will reach at a certain deceleration (default: -1.0[m/s^2]). If the predicted position is in stuck vehicle detection area AND the position which `vehicle length` [m] behind the predicted position is in detection area, the ego vehicle will also stop.
+
 ### Module Parameters
 
-| Parameter                                     | Type   | Description                                                                   |
-| --------------------------------------------- | ------ | ----------------------------------------------------------------------------- |
-| `intersection/state_transit_margin_time`      | double | [m] time margin to change state                                               |
-| `intersection/path_expand_width`              | bool   | [m] path area to see with expansion                                           |
-| `intersection/stop_line_margin`               | double | [m] margin before stop line                                                   |
-| `intersection/stuck_vehicle_detect_dist`      | double | [m] this should be the length between cars when they are stopped.             |
-| `intersection/stuck_vehicle_ignore_dist`      | double | [m] obstacle stop max distance(5.0[m]) + stuck vehicle size / 2.0[m])         |
-| `intersection/stuck_vehicle_vel_thr`          | double | [m/s] velocity below 3[km/h] is ignored by default                            |
-| `intersection/intersection_velocity`          | double | [m/s] velocity to pass intersection. 10[km/h] is by default                   |
-| `intersection/intersection_max_accel`         | double | [m/s^2] acceleration in intersection                                          |
-| `intersection/detection_area_margin`          | double | [m] range for expanding detection area                                        |
-| `intersection/detection_area_length`          | double | [m] range for lidar detection 200[m] is by default                            |
-| `intersection/detection_area_angle_threshold` | double | [rad] threshold of angle difference between the detection object and lane     |
-| `intersection/min_predicted_path_confidence`  | double | [-] minimum confidence value of predicted path to use for collision detection |
-| `merge_from_private_road/stop_duration_sec`   | double | [s] duration to stop                                                          |
+| Parameter                                     | Type   | Description                                                                                    |
+| --------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------- |
+| `intersection/state_transit_margin_time`      | double | [m] time margin to change state                                                                |
+| `intersection/path_expand_width`              | bool   | [m] path area to see with expansion                                                            |
+| `intersection/stop_line_margin`               | double | [m] margin before stop line                                                                    |
+| `intersection/stuck_vehicle_detect_dist`      | double | [m] this should be the length between cars when they are stopped.                              |
+| `intersection/stuck_vehicle_ignore_dist`      | double | [m] obstacle stop max distance(5.0[m]) + stuck vehicle size / 2.0[m])                          |
+| `intersection/stuck_vehicle_vel_thr`          | double | [m/s] velocity below 3[km/h] is ignored by default                                             |
+| `intersection/intersection_velocity`          | double | [m/s] velocity to pass intersection. 10[km/h] is by default                                    |
+| `intersection/intersection_max_accel`         | double | [m/s^2] acceleration in intersection                                                           |
+| `intersection/detection_area_margin`          | double | [m] range for expanding detection area                                                         |
+| `intersection/detection_area_length`          | double | [m] range for lidar detection 200[m] is by default                                             |
+| `intersection/detection_area_angle_threshold` | double | [rad] threshold of angle difference between the detection object and lane                      |
+| `intersection/min_predicted_path_confidence`  | double | [-] minimum confidence value of predicted path to use for collision detection                  |
+| `merge_from_private_road/stop_duration_sec`   | double | [s] duration to stop                                                                           |
+| `assumed_front_car_decel: 1.0`                | double | [m/s^2] deceleration of front car used to check if it could stop in the stuck area at the exit |
 
 ### How To Tune Parameters
 

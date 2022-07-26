@@ -512,6 +512,13 @@ lanelet::ConstLanelet generateOffsetLanelet(
   return std::move(lanelet_with_margin);
 }
 
+geometry_msgs::msg::Pose toPose(const geometry_msgs::msg::Point & p)
+{
+  geometry_msgs::msg::Pose pose;
+  pose.position = p;
+  return pose;
+}
+
 bool generateStopLineBeforeIntersection(
   const int lane_id, lanelet::LaneletMapConstPtr lanelet_map_ptr,
   const std::shared_ptr<const PlannerData> & planner_data,

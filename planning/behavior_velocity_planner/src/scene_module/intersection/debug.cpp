@@ -244,6 +244,11 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray(
     createObjectsMarkerArray(debug_data_.stuck_targets, "stuck_targets", lane_id_, 0.99, 0.99, 0.2),
     &debug_marker_array, current_time);
 
+  appendMarkerArray(
+    createPoseMarkerArray(
+      debug_data_.predicted_obj_pose, "predicted_obj_pose", lane_id_, 0.7, 0.85, 0.9),
+    &debug_marker_array, current_time);
+
   if (state == IntersectionModule::State::STOP) {
     appendMarkerArray(
       createPoseMarkerArray(

@@ -16,6 +16,8 @@
       collision_start_margin_time: 5.0 # [s]
       collision_end_margin_time: 2.0 # [s]
       use_stuck_stopline: false # stopline generate before the intersection lanelet when is_stuck
+      assumed_front_car_decel: 1.0 # [m/ss] the expected deceleration of front car when front car as well as ego are turning
+      enable_front_car_decel_prediction: false # By default this feature is disabled
 
     merge_from_private_road:
       stop_duration_sec: 1.0

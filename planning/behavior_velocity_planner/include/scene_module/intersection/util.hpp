@@ -126,6 +126,9 @@ double calcArcLengthFromPath(
 
 lanelet::ConstLanelet generateOffsetLanelet(
   const lanelet::ConstLanelet lanelet, double right_margin, double left_margin);
+
+geometry_msgs::msg::Pose toPose(const geometry_msgs::msg::Point & p);
+
 }  // namespace util
 }  // namespace behavior_velocity_planner
 
