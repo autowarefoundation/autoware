@@ -13,7 +13,11 @@
 # limitations under the License.
 
 import launch
+from launch.actions import DeclareLaunchArgument
+from launch.conditions import IfCondition
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import ComposableNodeContainer
+from launch_ros.actions import LoadComposableNodes
 from launch_ros.descriptions import ComposableNode
 
 
@@ -28,7 +32,17 @@ def _create_api_node(node_name, class_name, **kwargs):
 
 
 def generate_launch_description():
-    components = [
+    launch_arguments = []
+
+    def add_launch_arg(name: str, default_value=None, description=None):
+        launch_arguments.append(
+            DeclareLaunchArgument(name, default_value=default_value, description=description)
+        )
+
+    add_launch_arg("launch_calibration_status_api", None, "launch calibration status api")
+    add_launch_arg("launch_start_api", None, "launch start api")
+
+    default_components = [
         _create_api_node("cpu_usage", "CpuUsage"),
         _create_api_node("diagnostics", "Diagnostics"),
         _create_api_node("door", "Door"),
@@ -41,7 +55,6 @@ def generate_launch_description():
         _create_api_node("metadata_packages", "MetadataPackages"),
         _create_api_node("route", "Route"),
         _create_api_node("service", "Service"),
-        _create_api_node("start", "Start"),
         _create_api_node("vehicle_status", "VehicleStatus"),
         _create_api_node("velocity", "Velocity"),
         _create_api_node("version", "Version"),
@@ -51,7 +64,22 @@ def generate_launch_description():
         name="autoware_iv_adaptor",
         package="rclcpp_components",
         executable="component_container_mt",
-        composable_node_descriptions=components,
+        composable_node_descriptions=default_components,
         output="screen",
     )
-    return launch.LaunchDescription([container])
+
+    calibration_status_loader = LoadComposableNodes(
+        composable_node_descriptions=[_create_api_node("calibration_status", "CalibrationStatus")],
+        target_container=container,
+        condition=IfCondition(LaunchConfiguration("launch_calibration_status_api")),
+    )
+
+    start_loader = LoadComposableNodes(
+        composable_node_descriptions=[_create_api_node("start", "Start")],
+        target_container=container,
+        condition=IfCondition(LaunchConfiguration("launch_start_api")),
+    )
+
+    return launch.LaunchDescription(
+        launch_arguments + [container, calibration_status_loader, start_loader]
+    )
