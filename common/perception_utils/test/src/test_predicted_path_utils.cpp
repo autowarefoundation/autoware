@@ -174,6 +174,29 @@ TEST(predicted_path_utils, resamplePredictedPath_by_vector)
     }
   }
 
+  // Resample which exceeds the maximum size
+  {
+    std::vector<double> resampling_vec(101);
+    for (size_t i = 0; i < 101; ++i) {
+      resampling_vec.at(i) = i * 0.05;
+    }
+
+    const auto resampled_path = resamplePredictedPath(path, resampling_vec);
+
+    EXPECT_EQ(resampled_path.path.size(), resampled_path.path.max_size());
+    EXPECT_NEAR(path.confidence, resampled_path.confidence, epsilon);
+
+    for (size_t i = 0; i < resampled_path.path.max_size(); ++i) {
+      EXPECT_NEAR(resampled_path.path.at(i).position.x, resampling_vec.at(i), epsilon);
+      EXPECT_NEAR(resampled_path.path.at(i).position.y, 0.0, epsilon);
+      EXPECT_NEAR(resampled_path.path.at(i).position.z, 0.0, epsilon);
+      EXPECT_NEAR(resampled_path.path.at(i).orientation.x, 0.0, epsilon);
+      EXPECT_NEAR(resampled_path.path.at(i).orientation.y, 0.0, epsilon);
+      EXPECT_NEAR(resampled_path.path.at(i).orientation.z, 0.0, epsilon);
+      EXPECT_NEAR(resampled_path.path.at(i).orientation.w, 1.0, epsilon);
+    }
+  }
+
   // Some points are out of range
   {
     const std::vector<double> resampling_vec = {-1.0, 0.0, 5.0, 9.0, 9.1};
