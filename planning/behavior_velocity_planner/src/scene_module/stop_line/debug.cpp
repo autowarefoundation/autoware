@@ -14,7 +14,6 @@
 
 #include <motion_utils/motion_utils.hpp>
 #include <scene_module/stop_line/scene.hpp>
-#include <utilization/marker_helper.hpp>
 #include <utilization/util.hpp>
 
 #ifdef ROS_DISTRO_GALACTIC
@@ -25,6 +24,10 @@
 
 namespace behavior_velocity_planner
 {
+using tier4_autoware_utils::appendMarkerArray;
+using tier4_autoware_utils::createMarkerColor;
+using tier4_autoware_utils::createMarkerScale;
+
 namespace
 {
 using DebugData = StopLineModule::DebugData;
@@ -85,8 +88,8 @@ visualization_msgs::msg::MarkerArray StopLineModule::createDebugMarkerArray()
   visualization_msgs::msg::MarkerArray debug_marker_array;
   if (planner_param_.show_stopline_collision_check) {
     appendMarkerArray(
-      createStopLineCollisionCheck(debug_data_, module_id_), this->clock_->now(),
-      &debug_marker_array);
+      createStopLineCollisionCheck(debug_data_, module_id_), &debug_marker_array,
+      this->clock_->now());
   }
   return debug_marker_array;
 }
@@ -102,8 +105,8 @@ visualization_msgs::msg::MarkerArray StopLineModule::createVirtualWallMarkerArra
     *debug_data_.stop_pose, debug_data_.base_link2front, 0.0, 0.0);
   if (state_ == State::APPROACH) {
     appendMarkerArray(
-      motion_utils::createStopVirtualWallMarker(p_front, "stopline", now, module_id_), now,
-      &wall_marker);
+      motion_utils::createStopVirtualWallMarker(p_front, "stopline", now, module_id_), &wall_marker,
+      now);
   }
   return wall_marker;
 }

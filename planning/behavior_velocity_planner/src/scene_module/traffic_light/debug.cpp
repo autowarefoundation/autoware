@@ -14,7 +14,6 @@
 
 #include <motion_utils/motion_utils.hpp>
 #include <scene_module/traffic_light/scene.hpp>
-#include <utilization/marker_helper.hpp>
 #include <utilization/util.hpp>
 
 #ifdef ROS_DISTRO_GALACTIC
@@ -25,6 +24,8 @@
 
 namespace behavior_velocity_planner
 {
+using tier4_autoware_utils::appendMarkerArray;
+
 visualization_msgs::msg::MarkerArray TrafficLightModule::createDebugMarkerArray()
 {
   visualization_msgs::msg::MarkerArray debug_marker_array;
@@ -42,16 +43,16 @@ visualization_msgs::msg::MarkerArray TrafficLightModule::createVirtualWallMarker
     const auto p_front =
       tier4_autoware_utils::calcOffsetPose(p, debug_data_.base_link2front, 0.0, 0.0);
     appendMarkerArray(
-      motion_utils::createDeadLineVirtualWallMarker(p_front, "traffic_light", now, id++), now,
-      &wall_marker);
+      motion_utils::createDeadLineVirtualWallMarker(p_front, "traffic_light", now, id++),
+      &wall_marker, now);
   }
 
   for (const auto & p : debug_data_.stop_poses) {
     const auto p_front =
       tier4_autoware_utils::calcOffsetPose(p, debug_data_.base_link2front, 0.0, 0.0);
     appendMarkerArray(
-      motion_utils::createStopVirtualWallMarker(p_front, "traffic_light", now, id++), now,
-      &wall_marker);
+      motion_utils::createStopVirtualWallMarker(p_front, "traffic_light", now, id++), &wall_marker,
+      now);
   }
 
   return wall_marker;

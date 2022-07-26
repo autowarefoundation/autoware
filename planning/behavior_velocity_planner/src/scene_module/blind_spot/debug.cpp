@@ -14,13 +14,17 @@
 
 #include <motion_utils/motion_utils.hpp>
 #include <scene_module/blind_spot/scene.hpp>
-#include <utilization/marker_helper.hpp>
 #include <utilization/util.hpp>
 
 #include <string>
 
 namespace behavior_velocity_planner
 {
+using tier4_autoware_utils::appendMarkerArray;
+using tier4_autoware_utils::createMarkerColor;
+using tier4_autoware_utils::createMarkerOrientation;
+using tier4_autoware_utils::createMarkerScale;
+
 namespace
 {
 using State = BlindSpotModule::State;
@@ -161,7 +165,7 @@ visualization_msgs::msg::MarkerArray BlindSpotModule::createVirtualWallMarkerArr
     appendMarkerArray(
       motion_utils::createStopVirtualWallMarker(
         debug_data_.virtual_wall_pose, "blind_spot", now, lane_id_),
-      now, &wall_marker);
+      &wall_marker, now);
   }
   return wall_marker;
 }
@@ -174,39 +178,39 @@ visualization_msgs::msg::MarkerArray BlindSpotModule::createDebugMarkerArray()
   const auto current_time = this->clock_->now();
 
   appendMarkerArray(
-    createPathMarkerArray(debug_data_.path_raw, "path_raw", lane_id_, 0.0, 1.0, 1.0), current_time,
-    &debug_marker_array);
+    createPathMarkerArray(debug_data_.path_raw, "path_raw", lane_id_, 0.0, 1.0, 1.0),
+    &debug_marker_array, current_time);
 
   appendMarkerArray(
     createPoseMarkerArray(
       debug_data_.stop_point_pose, state, "stop_point_pose", lane_id_, 1.0, 0.0, 0.0),
-    current_time, &debug_marker_array);
+    &debug_marker_array, current_time);
 
   appendMarkerArray(
     createPoseMarkerArray(
       debug_data_.judge_point_pose, state, "judge_point_pose", lane_id_, 1.0, 1.0, 0.5),
-    current_time, &debug_marker_array);
+    &debug_marker_array, current_time);
 
   appendMarkerArray(
     createPolygonMarkerArray(
       debug_data_.conflict_area_for_blind_spot, "conflict_area_for_blind_spot", lane_id_, 0.0, 0.5,
       0.5),
-    current_time, &debug_marker_array);
+    &debug_marker_array, current_time);
 
   appendMarkerArray(
     createPolygonMarkerArray(
       debug_data_.detection_area_for_blind_spot, "detection_area_for_blind_spot", lane_id_, 0.0,
       0.5, 0.5),
-    current_time, &debug_marker_array);
+    &debug_marker_array, current_time);
 
   appendMarkerArray(
     createObjectsMarkerArray(
       debug_data_.conflicting_targets, "conflicting_targets", lane_id_, 0.99, 0.4, 0.0),
-    current_time, &debug_marker_array);
+    &debug_marker_array, current_time);
 
   appendMarkerArray(
-    createPathMarkerArray(debug_data_.spline_path, "spline", lane_id_, 0.5, 0.5, 0.5), current_time,
-    &debug_marker_array);
+    createPathMarkerArray(debug_data_.spline_path, "spline", lane_id_, 0.5, 0.5, 0.5),
+    &debug_marker_array, current_time);
 
   return debug_marker_array;
 }
