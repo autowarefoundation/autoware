@@ -2,6 +2,8 @@
 <launch>
   <arg name="input/pointcloud" default="/sensing/lidar/top/outlier_filtered/pointcloud" description="The topic will be used in the localization util module"/>
 
+  <arg name="tier4_localization_launch_param_path" default="$(find-pkg-share tier4_localization_launch)/config" description="tier4_localization_launch parameter path"/>
+
   <!-- localization module -->
   <group>
     <push-ros-namespace namespace="localization"/>
@@ -10,12 +12,15 @@
       <push-ros-namespace namespace="util"/>
       <include file="$(find-pkg-share tier4_localization_launch)/launch/util/util.launch.xml">
         <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
+        <arg name="tier4_localization_launch_param_path" value="$(var tier4_localization_launch_param_path)"/>
       </include>
     </group>
     <!-- pose_estimator module -->
     <group>
       <push-ros-namespace namespace="pose_estimator"/>
-      <include file="$(find-pkg-share tier4_localization_launch)/launch/pose_estimator/pose_estimator.launch.xml"/>
+      <include file="$(find-pkg-share tier4_localization_launch)/launch/pose_estimator/pose_estimator.launch.xml">
+        <arg name="tier4_localization_launch_param_path" value="$(var tier4_localization_launch_param_path)"/>
+      </include>
     </group>
     <!-- twist_estimator module -->
     <group>
@@ -29,7 +34,9 @@
     </group>
     <!-- localization_error_monitor_module -->
     <group>
-      <include file="$(find-pkg-share tier4_localization_launch)/launch/localization_error_monitor/localization_error_monitor.launch.xml"/>
+      <include file="$(find-pkg-share tier4_localization_launch)/launch/localization_error_monitor/localization_error_monitor.launch.xml">
+        <arg name="param_file" value="$(var tier4_localization_launch_param_path)/localization_error_monitor.param.yaml"/>
+      </include>
     </group>
   </group>
 </launch>
