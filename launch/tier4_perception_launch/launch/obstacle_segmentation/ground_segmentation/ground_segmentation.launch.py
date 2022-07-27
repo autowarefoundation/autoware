@@ -518,9 +518,7 @@ def generate_launch_description():
     add_launch_arg("use_intra_process", "True")
     add_launch_arg("use_pointcloud_container", "False")
     add_launch_arg("container_name", "perception_pipeline_container")
-    add_launch_arg(
-        "tier4_perception_launch_param_path", None, "tier4_perception_launch parameter path"
-    )
+    add_launch_arg("tier4_perception_launch_param_path", "tier4_perception_launch parameter path")
 
     set_container_executable = SetLaunchConfiguration(
         "container_executable",
