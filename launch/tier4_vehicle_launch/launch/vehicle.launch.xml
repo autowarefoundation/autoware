@@ -5,6 +5,7 @@
   <arg name="sensor_model" description="sensor model name"/>
   <arg name="vehicle_id" default="$(env VEHICLE_ID default)" description="vehicle specific ID"/>
   <arg name="initial_engage_state" default="false" description="/vehicle/engage state after starting Autoware"/>
+  <arg name="config_dir" default="$(find-pkg-share $(var sensor_model)_description)/config" description="path to dir where sensors_calibration.yaml, etc. are located"/>
 
   <let name="vehicle_launch_pkg" value="$(find-pkg-share $(var vehicle_model)_launch)"/>
 
@@ -12,7 +13,7 @@
   <group>
     <arg name="model_file" default="$(find-pkg-share tier4_vehicle_launch)/urdf/vehicle.xacro" description="path to the file of model settings (*.xacro)"/>
     <node name="robot_state_publisher" pkg="robot_state_publisher" exec="robot_state_publisher">
-      <param name="robot_description" value="$(command 'xacro $(var model_file) vehicle_model:=$(var vehicle_model) sensor_model:=$(var sensor_model)')"/>
+      <param name="robot_description" value="$(command 'xacro $(var model_file) vehicle_model:=$(var vehicle_model) sensor_model:=$(var sensor_model) config_dir:=$(var config_dir)')"/>
     </node>
   </group>
 
