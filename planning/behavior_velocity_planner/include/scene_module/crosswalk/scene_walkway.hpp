@@ -28,6 +28,9 @@
 #include <lanelet2_routing/RoutingGraph.h>
 #include <lanelet2_routing/RoutingGraphContainer.h>
 
+#include <utility>
+#include <vector>
+
 namespace behavior_velocity_planner
 {
 
@@ -57,9 +60,18 @@ public:
 private:
   int64_t module_id_;
 
+  boost::optional<std::pair<double, geometry_msgs::msg::Point>> getStopLine(
+    const PathWithLaneId & ego_path) const;
+
+  void insertStopPoint(const geometry_msgs::msg::Point & stop_point, PathWithLaneId & output);
+
   enum class State { APPROACH, STOP, SURPASSED };
 
   lanelet::ConstLanelet walkway_;
+
+  std::vector<geometry_msgs::msg::Point> path_intersects_;
+
+  // State machine
   State state_;
 
   // Parameter

@@ -24,6 +24,12 @@ namespace bg = boost::geometry;
 using Point = bg::model::d2::point_xy<double>;
 using Polygon = bg::model::polygon<Point>;
 using Line = bg::model::linestring<Point>;
+using motion_utils::calcLongitudinalOffsetPose;
+using motion_utils::calcSignedArcLength;
+using motion_utils::findNearestSegmentIndex;
+using motion_utils::insertTargetPoint;
+using tier4_autoware_utils::createPoint;
+using tier4_autoware_utils::getPose;
 
 WalkwayModule::WalkwayModule(
   const int64_t module_id, const lanelet::ConstLanelet & walkway,
@@ -37,58 +43,93 @@ WalkwayModule::WalkwayModule(
   planner_param_ = planner_param;
 }
 
-bool WalkwayModule::modifyPathVelocity(
-  PathWithLaneId * path, tier4_planning_msgs::msg::StopReason * stop_reason)
+boost::optional<std::pair<double, geometry_msgs::msg::Point>> WalkwayModule::getStopLine(
+  const PathWithLaneId & ego_path) const
 {
+  const auto & ego_pos = planner_data_->current_pose.pose.position;
+
+  const auto stop_line = getStopLineFromMap(module_id_, planner_data_, "crosswalk_id");
+  if (stop_line) {
+    const auto intersects = getLinestringIntersects(
+      ego_path, lanelet::utils::to2D(stop_line.get()).basicLineString(), ego_pos, 2);
+    if (!intersects.empty()) {
+      const auto p_stop_line =
+        createPoint(intersects.front().x(), intersects.front().y(), ego_pos.z);
+      const auto dist_ego_to_stop = calcSignedArcLength(ego_path.points, ego_pos, p_stop_line);
+      return std::make_pair(dist_ego_to_stop, p_stop_line);
+    }
+  }
+
+  {
+    if (!path_intersects_.empty()) {
+      const auto p_stop_line = path_intersects_.front();
+      const auto dist_ego_to_stop = calcSignedArcLength(ego_path.points, ego_pos, p_stop_line) -
+                                    planner_param_.stop_line_distance;
+      return std::make_pair(dist_ego_to_stop, p_stop_line);
+    }
+  }
+
+  return {};
+}
+
+bool WalkwayModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason)
+{
+  const auto & base_link2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
+
   debug_data_ = DebugData();
-  debug_data_.base_link2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
-  first_stop_path_point_index_ = static_cast<int>(path->points.size()) - 1;
-  *stop_reason =
-    planning_utils::initializeStopReason(tier4_planning_msgs::msg::StopReason::WALKWAY);
+  debug_data_.base_link2front = base_link2front;
+  *stop_reason = planning_utils::initializeStopReason(StopReason::WALKWAY);
 
   const auto input = *path;
 
-  if (state_ == State::APPROACH) {
-    // create polygon
-    lanelet::CompoundPolygon3d lanelet_polygon = walkway_.polygon3d();
-    Polygon polygon;
-    for (const auto & lanelet_point : lanelet_polygon) {
-      polygon.outer().push_back(bg::make<Point>(lanelet_point.x(), lanelet_point.y()));
-    }
-    polygon.outer().push_back(polygon.outer().front());
-    polygon = isClockWise(polygon) ? polygon : inverseClockWise(polygon);
+  path_intersects_.clear();
 
-    lanelet::Optional<lanelet::ConstLineString3d> stop_line_opt =
-      getStopLineFromMap(module_id_, planner_data_, "crosswalk_id");
-    if (!!stop_line_opt) {
-      if (!insertTargetVelocityPoint(
-            input, stop_line_opt.get(), 0.0, 0.0, *planner_data_, *path, debug_data_,
-            first_stop_path_point_index_)) {
-        return false;
-      }
-    } else {
-      if (!insertTargetVelocityPoint(
-            input, polygon, planner_param_.stop_line_distance, 0.0, *planner_data_, *path,
-            debug_data_, first_stop_path_point_index_)) {
-        return false;
-      }
+  const auto & ego_pos = planner_data_->current_pose.pose.position;
+  const auto intersects =
+    getPolygonIntersects(input, walkway_.polygon2d().basicPolygon(), ego_pos, 2);
+
+  for (const auto & p : intersects) {
+    path_intersects_.push_back(createPoint(p.x(), p.y(), ego_pos.z));
+  }
+
+  if (path_intersects_.empty()) {
+    return false;
+  }
+
+  if (state_ == State::APPROACH) {
+    const auto p_stop_line = getStopLine(input);
+    if (!p_stop_line) {
+      return false;
     }
+
+    const auto & p_stop = p_stop_line.get().second;
+    const auto margin = planner_param_.stop_line_distance + base_link2front;
+    const auto stop_pose = calcLongitudinalOffsetPose(input.points, p_stop, -margin);
+
+    if (!stop_pose) {
+      return false;
+    }
+
+    insertStopPoint(stop_pose.get().position, *path);
 
     /* get stop point and stop factor */
-    tier4_planning_msgs::msg::StopFactor stop_factor;
-    stop_factor.stop_pose = debug_data_.first_stop_pose;
-    stop_factor.stop_factor_points.emplace_back(debug_data_.nearest_collision_point);
+    StopFactor stop_factor;
+    stop_factor.stop_pose = stop_pose.get();
+    stop_factor.stop_factor_points.push_back(path_intersects_.front());
     planning_utils::appendStopReason(stop_factor, stop_reason);
 
     // use arc length to identify if ego vehicle is in front of walkway stop or not.
-    const double signed_arc_dist_to_stop_point = motion_utils::calcSignedArcLength(
-      path->points, planner_data_->current_pose.pose.position,
-      debug_data_.first_stop_pose.position);
+    const double signed_arc_dist_to_stop_point =
+      calcSignedArcLength(input.points, ego_pos, stop_pose.get().position);
+
     const double distance_threshold = 1.0;
     debug_data_.stop_judge_range = distance_threshold;
-    if (
+
+    const auto stop_at_stop_point =
       signed_arc_dist_to_stop_point < distance_threshold &&
-      planner_data_->isVehicleStopped(planner_param_.stop_duration_sec)) {
+      planner_data_->isVehicleStopped(planner_param_.stop_duration_sec);
+
+    if (stop_at_stop_point) {
       // If ego vehicle is after walkway stop and stopped then move to stop state
       state_ = State::STOP;
       if (signed_arc_dist_to_stop_point < -distance_threshold) {
@@ -96,13 +137,33 @@ bool WalkwayModule::modifyPathVelocity(
           logger_, "Failed to stop near walkway but ego stopped. Change state to STOPPED");
       }
     }
+
     return true;
+
   } else if (state_ == State::STOP) {
     if (planner_data_->isVehicleStopped()) {
       state_ = State::SURPASSED;
     }
   } else if (state_ == State::SURPASSED) {
   }
+
   return true;
+}
+
+void WalkwayModule::insertStopPoint(
+  const geometry_msgs::msg::Point & stop_point, PathWithLaneId & output)
+{
+  const size_t base_idx = findNearestSegmentIndex(output.points, stop_point);
+  const auto insert_idx = insertTargetPoint(base_idx, stop_point, output.points);
+
+  if (!insert_idx) {
+    return;
+  }
+
+  for (size_t i = insert_idx.get(); i < output.points.size(); ++i) {
+    output.points.at(i).point.longitudinal_velocity_mps = 0.0;
+  }
+
+  debug_data_.stop_poses.push_back(getPose(output.points.at(insert_idx.get())));
 }
 }  // namespace behavior_velocity_planner
