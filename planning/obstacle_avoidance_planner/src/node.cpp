@@ -268,9 +268,9 @@ ObstacleAvoidancePlanner::ObstacleAvoidancePlanner(const rclcpp::NodeOptions & n
     "/planning/scenario_planning/lane_driving/obstacle_avoidance_approval", rclcpp::QoS{10},
     std::bind(&ObstacleAvoidancePlanner::enableAvoidanceCallback, this, std::placeholders::_1));
 
+  const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
   {  // vehicle param
     vehicle_param_ = VehicleParam{};
-    const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
     vehicle_param_.width = vehicle_info.vehicle_width_m;
     vehicle_param_.length = vehicle_info.vehicle_length_m;
     vehicle_param_.wheelbase = vehicle_info.wheel_base_m;
@@ -400,8 +400,7 @@ ObstacleAvoidancePlanner::ObstacleAvoidancePlanner(const rclcpp::NodeOptions & n
       declare_parameter<double>("mpt.common.delta_arc_length_for_mpt_points");
 
     // kinematics
-    mpt_param_.max_steer_rad =
-      declare_parameter<double>("mpt.kinematics.max_steer_deg") * M_PI / 180.0;
+    mpt_param_.max_steer_rad = vehicle_info.max_steer_angle_rad;
 
     // By default, optimization_center_offset will be vehicle_info.wheel_base * 0.8
     // The 0.8 scale is adopted as it performed the best.
@@ -662,9 +661,6 @@ rcl_interfaces::msg::SetParametersResult ObstacleAvoidancePlanner::paramCallback
       mpt_param_.delta_arc_length_for_mpt_points);
 
     // kinematics
-    double max_steer_deg = mpt_param_.max_steer_rad * 180.0 / M_PI;
-    updateParam<double>(parameters, "mpt.kinematics.max_steer_deg", max_steer_deg);
-    mpt_param_.max_steer_rad = max_steer_deg * M_PI / 180.0;
     updateParam<double>(
       parameters, "mpt.kinematics.optimization_center_offset",
       mpt_param_.optimization_center_offset);

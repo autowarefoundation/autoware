@@ -68,9 +68,7 @@
         num_curvature_sampling_points: 5 # number of sampling points when calculating curvature
         delta_arc_length_for_mpt_points: 0.5 # delta arc length when generating mpt [m]
 
-      kinematics:
-        max_steer_deg: 40.0 # max steering angle [deg]
-
+      # kinematics:
         # If this parameter is commented out, the parameter is set as below by default.
         # The logic could be `optimization_center_offset = vehicle_info.wheel_base * 0.8`
         # The 0.8 scale is adopted as it performed the best.
