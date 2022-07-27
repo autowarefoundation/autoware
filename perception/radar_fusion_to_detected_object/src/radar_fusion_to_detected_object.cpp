@@ -42,7 +42,7 @@ void RadarFusionToDetectedObject::setParam(const Param & param)
   param_.split_threshold_velocity = param.split_threshold_velocity;
   param_.threshold_yaw_diff = param.split_threshold_velocity;
 
-  // normalize weight param
+  // Normalize weight param
   double sum_weight = param.velocity_weight_median + param.velocity_weight_min_distance +
                       param.velocity_weight_average + param.velocity_weight_target_value_average +
                       param.velocity_weight_target_value_top;
@@ -71,7 +71,6 @@ RadarFusionToDetectedObject::Output RadarFusionToDetectedObject::update(
   const RadarFusionToDetectedObject::Input & input)
 {
   RadarFusionToDetectedObject::Output output{};
-
   output.objects.header = input.objects->header;
 
   if (!input.objects || input.objects->objects.empty()) {
@@ -90,24 +89,22 @@ RadarFusionToDetectedObject::Output RadarFusionToDetectedObject::update(
     split_objects.emplace_back(object);
 
     for (auto & split_object : split_objects) {
+      // set radars within objects
       std::shared_ptr<std::vector<RadarInput>> radars_within_split_object;
       if (split_objects.size() == 1) {
         // If object is not split, radar data within object is same
         radars_within_split_object = radars_within_object;
       } else {
         // If object is split, then filter radar again
-        radars_within_split_object = filterRadarWithinObject(object, radars_within_object);
+        radars_within_split_object = filterRadarWithinObject(split_object, radars_within_object);
       }
+
       // Estimate twist of object
       if (!radars_within_split_object || !(*radars_within_split_object).empty()) {
         TwistWithCovariance twist_with_covariance =
           estimateTwist(split_object, radars_within_split_object);
-        const double twist_yaw = tier4_autoware_utils::normalizeRadian(
-          std::atan2(twist_with_covariance.twist.linear.y, twist_with_covariance.twist.linear.x));
-        const double object_yaw = tier4_autoware_utils::normalizeRadian(
-          tf2::getYaw(split_object.kinematics.pose_with_covariance.pose.orientation));
-        const double diff_yaw = tier4_autoware_utils::normalizeRadian(twist_yaw - object_yaw);
-        if (isYawCorrect(diff_yaw, param_.threshold_yaw_diff)) {
+
+        if (isYawCorrect(split_object, twist_with_covariance, param_.threshold_yaw_diff)) {
           split_object.kinematics.twist_with_covariance = twist_with_covariance;
           split_object.kinematics.has_twist = true;
         }
@@ -126,12 +123,18 @@ RadarFusionToDetectedObject::Output RadarFusionToDetectedObject::update(
 
 // Judge whether object's yaw is same direction with twist's yaw.
 // This function improve multi object tracking with observed speed.
-bool RadarFusionToDetectedObject::isYawCorrect(const double & yaw, const double & yaw_threshold)
+bool RadarFusionToDetectedObject::isYawCorrect(
+  const DetectedObject & object, const TwistWithCovariance & twist_with_covariance,
+  const double & yaw_threshold)
 {
-  double normalized_yaw = tier4_autoware_utils::normalizeRadian(yaw);
-  if (std::abs(normalized_yaw) < yaw_threshold) {
+  const double twist_yaw = tier4_autoware_utils::normalizeRadian(
+    std::atan2(twist_with_covariance.twist.linear.y, twist_with_covariance.twist.linear.x));
+  const double object_yaw = tier4_autoware_utils::normalizeRadian(
+    tf2::getYaw(object.kinematics.pose_with_covariance.pose.orientation));
+  const double diff_yaw = tier4_autoware_utils::normalizeRadian(twist_yaw - object_yaw);
+  if (std::abs(diff_yaw) < yaw_threshold) {
     return true;
-  } else if (M_PI - yaw_threshold < std::abs(normalized_yaw)) {
+  } else if (M_PI - yaw_threshold < std::abs(diff_yaw)) {
     return true;
   } else {
     return false;
@@ -176,13 +179,13 @@ RadarFusionToDetectedObject::filterRadarWithinObject(
 TwistWithCovariance RadarFusionToDetectedObject::estimateTwist(
   const DetectedObject & object, std::shared_ptr<std::vector<RadarInput>> & radars)
 {
-  TwistWithCovariance twist_with_covariance{};
   if (!radars || (*radars).empty()) {
-    return twist_with_covariance;
+    TwistWithCovariance output{};
+    return output;
   }
 
   // calculate twist for radar data with min distance
-  Twist twist_min_distance{};
+  Eigen::Vector2d vec_min_distance(0.0, 0.0);
   if (param_.velocity_weight_min_distance > 0.0) {
     auto comp_func = [&](const RadarInput & a, const RadarInput & b) {
       return tier4_autoware_utils::calcSquaredDistance2d(
@@ -193,11 +196,12 @@ TwistWithCovariance RadarFusionToDetectedObject::estimateTwist(
                object.kinematics.pose_with_covariance.pose.position);
     };
     auto iter = std::min_element(std::begin(*radars), std::end(*radars), comp_func);
-    twist_min_distance = iter->twist_with_covariance.twist;
+    TwistWithCovariance twist_min_distance = iter->twist_with_covariance;
+    vec_min_distance = toVector2d(twist_min_distance);
   }
 
   // calculate twist for radar data with median twist
-  Twist twist_median{};
+  Eigen::Vector2d vec_median(0.0, 0.0);
   if (param_.velocity_weight_median > 0.0) {
     auto ascending_func = [&](const RadarInput & a, const RadarInput & b) {
       return getTwistNorm(a.twist_with_covariance.twist) <
@@ -207,68 +211,58 @@ TwistWithCovariance RadarFusionToDetectedObject::estimateTwist(
 
     if ((*radars).size() % 2 == 1) {
       int median_index = ((*radars).size() - 1) / 2;
-      twist_median = (*radars).at(median_index).twist_with_covariance.twist;
+      vec_median = toVector2d((*radars).at(median_index).twist_with_covariance);
     } else {
       int median_index = (*radars).size() / 2;
-
-      twist_median = scaleTwist(
-        addTwist(
-          (*radars).at(median_index - 1).twist_with_covariance.twist,
-          (*radars).at(median_index).twist_with_covariance.twist),
-        0.5);
+      Eigen::Vector2d v1 = toVector2d((*radars).at(median_index - 1).twist_with_covariance);
+      Eigen::Vector2d v2 = toVector2d((*radars).at(median_index).twist_with_covariance);
+      vec_median = (v1 + v2) / 2.0;
     }
   }
 
   // calculate twist for radar data with average twist
-  Twist twist_average{};
+  Eigen::Vector2d vec_average(0.0, 0.0);
   if (param_.velocity_weight_average > 0.0) {
     for (const auto & radar : (*radars)) {
-      twist_average = addTwist(twist_average, radar.twist_with_covariance.twist);
+      vec_average += toVector2d(radar.twist_with_covariance);
     }
-    twist_average = scaleTwist(twist_average, (1.0 / (*radars).size()));
+    vec_average /= (*radars).size();
   }
 
   // calculate twist for radar data with top target value
-  Twist twist_top_target_value{};
+  Eigen::Vector2d vec_top_target_value(0.0, 0.0);
   if (param_.velocity_weight_target_value_top > 0.0) {
     auto comp_func = [](const RadarInput & a, const RadarInput & b) {
       return a.target_value < b.target_value;
     };
     auto iter = std::max_element(std::begin((*radars)), std::end((*radars)), comp_func);
-    twist_top_target_value = iter->twist_with_covariance.twist;
+    vec_top_target_value = toVector2d(iter->twist_with_covariance);
   }
 
   // calculate twist for radar data with target_value * average
-  Twist twist_target_value_average{};
+  Eigen::Vector2d vec_target_value_average(0.0, 0.0);
   double sum_target_value = 0.0;
   if (param_.velocity_weight_target_value_average > 0.0) {
     for (const auto & radar : (*radars)) {
-      twist_target_value_average = scaleTwist(
-        addTwist(twist_target_value_average, radar.twist_with_covariance.twist),
-        radar.target_value);
+      vec_target_value_average += (toVector2d(radar.twist_with_covariance) * radar.target_value);
       sum_target_value += radar.target_value;
     }
-    twist_target_value_average = scaleTwist(twist_target_value_average, 1.0 / sum_target_value);
+    vec_target_value_average /= sum_target_value;
   }
 
-  // estimate doppler velocity with cost weight
-  std::vector<Twist> weight_twists{};
-  weight_twists.emplace_back(scaleTwist(twist_min_distance, param_.velocity_weight_min_distance));
-  weight_twists.emplace_back(scaleTwist(twist_median, param_.velocity_weight_median));
-  weight_twists.emplace_back(scaleTwist(twist_average, param_.velocity_weight_average));
-  weight_twists.emplace_back(
-    scaleTwist(twist_top_target_value, param_.velocity_weight_target_value_top));
-  weight_twists.emplace_back(
-    scaleTwist(twist_target_value_average, param_.velocity_weight_target_value_average));
-
-  twist_with_covariance.twist = sumTwist(weight_twists);
+  Eigen::Vector2d sum_vec = vec_min_distance * param_.velocity_weight_min_distance +
+                            vec_median * param_.velocity_weight_median +
+                            vec_average * param_.velocity_weight_average +
+                            vec_top_target_value * param_.velocity_weight_target_value_top +
+                            vec_target_value_average * param_.velocity_weight_target_value_average;
+  TwistWithCovariance estimated_twist_with_covariance = toTwistWithCovariance(sum_vec);
 
   // [TODO] (Satoshi Tanaka) Implement
   // Convert doppler velocity to twist
   // if (param_.convert_doppler_to_twist) {
   //   twist_with_covariance = convertDopplerToTwist(object, twist_with_covariance);
   // }
-  return twist_with_covariance;
+  return estimated_twist_with_covariance;
 }
 
 // Judge whether low confidence objects that do not have some radar points/objects or not.
@@ -293,27 +287,20 @@ bool RadarFusionToDetectedObject::isQualified(
 //   return twist_with_covariance;
 // }
 
-Twist RadarFusionToDetectedObject::addTwist(const Twist & twist_1, const Twist & twist_2)
+Eigen::Vector2d RadarFusionToDetectedObject::toVector2d(
+  const TwistWithCovariance & twist_with_covariance)
 {
-  Twist output{};
-  output.linear.x = twist_1.linear.x + twist_2.linear.x;
-  output.linear.y = twist_1.linear.y + twist_2.linear.y;
-  output.linear.z = twist_1.linear.z + twist_2.linear.z;
-  output.angular.x = twist_1.angular.x + twist_2.angular.x;
-  output.angular.y = twist_1.angular.y + twist_2.angular.y;
-  output.angular.z = twist_1.angular.z + twist_2.angular.z;
+  auto vec = twist_with_covariance.twist.linear;
+  Eigen::Vector2d output(vec.x, vec.y);
   return output;
 }
 
-Twist RadarFusionToDetectedObject::scaleTwist(const Twist & twist, const double scale)
+TwistWithCovariance RadarFusionToDetectedObject::toTwistWithCovariance(
+  const Eigen::Vector2d & vector2d)
 {
-  Twist output{};
-  output.linear.x = twist.linear.x * scale;
-  output.linear.y = twist.linear.y * scale;
-  output.linear.z = twist.linear.z * scale;
-  output.angular.x = twist.angular.x * scale;
-  output.angular.y = twist.angular.y * scale;
-  output.angular.z = twist.angular.z * scale;
+  TwistWithCovariance output{};
+  output.twist.linear.x = vector2d(0);
+  output.twist.linear.y = vector2d(1);
   return output;
 }
 
@@ -322,15 +309,6 @@ double RadarFusionToDetectedObject::getTwistNorm(const Twist & twist)
   double output = std::sqrt(
     twist.linear.x * twist.linear.x + twist.linear.y * twist.linear.y +
     twist.linear.z * twist.linear.z);
-  return output;
-}
-
-Twist RadarFusionToDetectedObject::sumTwist(const std::vector<Twist> & twists)
-{
-  Twist output{};
-  for (const auto & twist : twists) {
-    output = addTwist(output, twist);
-  }
   return output;
 }
 

@@ -71,6 +71,8 @@ RadarObjectFusionToDetectedObjectNode::RadarObjectFusionToDetectedObjectNode(
     declare_parameter<double>("core_params.split_threshold_velocity", 0.0);
   core_param_.threshold_yaw_diff =
     declare_parameter<double>("core_params.threshold_yaw_diff", 0.35);
+  core_param_.velocity_weight_min_distance =
+    declare_parameter<double>("core_params.velocity_weight_min_distance", 1.0);
   core_param_.velocity_weight_average =
     declare_parameter<double>("core_params.velocity_weight_average", 0.0);
   core_param_.velocity_weight_median =

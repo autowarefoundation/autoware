@@ -18,6 +18,10 @@
 #include "rclcpp/logger.hpp"
 #include "tier4_autoware_utils/tier4_autoware_utils.hpp"
 
+#define EIGEN_MPL2_ONLY
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+
 #include "autoware_auto_perception_msgs/msg/detected_objects.hpp"
 #include "geometry_msgs/msg/pose_with_covariance.hpp"
 #include "geometry_msgs/msg/twist_with_covariance.hpp"
@@ -98,11 +102,13 @@ private:
     const DetectedObject & object, std::shared_ptr<std::vector<RadarInput>> & radars);
   TwistWithCovariance convertDopplerToTwist(
     const DetectedObject & object, const TwistWithCovariance & twist_with_covariance);
-  bool isYawCorrect(const double & yaw, const double & yaw_threshold);
-  Twist addTwist(const Twist & twist_1, const Twist & twist_2);
-  Twist scaleTwist(const Twist & twist, const double scale);
+  bool isYawCorrect(
+    const DetectedObject & object, const TwistWithCovariance & twist_with_covariance,
+    const double & yaw_threshold);
+  Eigen::Vector2d toVector2d(const TwistWithCovariance & twist_with_covariance);
+  TwistWithCovariance toTwistWithCovariance(const Eigen::Vector2d & vector2d);
+
   double getTwistNorm(const Twist & twist);
-  Twist sumTwist(const std::vector<Twist> & twists);
   LinearRing2d createObject2dWithMargin(const Point2d object_size, const double margin);
 };
 }  // namespace radar_fusion_to_detected_object
