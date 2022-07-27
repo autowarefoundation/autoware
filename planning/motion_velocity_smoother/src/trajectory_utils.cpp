@@ -99,7 +99,7 @@ TrajectoryPoint calcInterpolatedTrajectoryPoint(
   return traj_p;
 }
 
-boost::optional<TrajectoryPoints> extractPathAroundIndex(
+TrajectoryPoints extractPathAroundIndex(
   const TrajectoryPoints & trajectory, const size_t index, const double & ahead_length,
   const double & behind_length)
 {
@@ -139,7 +139,7 @@ boost::optional<TrajectoryPoints> extractPathAroundIndex(
     extracted_traj.push_back(trajectory.at(i));
   }
 
-  return boost::optional<TrajectoryPoints>(extracted_traj);
+  return extracted_traj;
 }
 
 double calcArcLength(const TrajectoryPoints & path, const int idx1, const int idx2)
@@ -193,34 +193,28 @@ std::vector<double> calcTrajectoryIntervalDistance(const TrajectoryPoints & traj
   return intervals;
 }
 
-boost::optional<std::vector<double>> calcTrajectoryCurvatureFrom3Points(
-  const TrajectoryPoints & trajectory, const size_t & idx_dist)
+std::vector<double> calcTrajectoryCurvatureFrom3Points(
+  const TrajectoryPoints & trajectory, size_t idx_dist)
 {
-  std::vector<double> k_arr;
+  using tier4_autoware_utils::calcCurvature;
+  using tier4_autoware_utils::getPoint;
+
+  // if the idx size is not enough, change the idx_dist
   if (trajectory.size() < 2 * idx_dist + 1) {
-    RCLCPP_DEBUG(
-      rclcpp::get_logger("motion_velocity_smoother").get_child("trajectory_utils"),
-      "cannot calc curvature idx_dist = %lu, trajectory.size() = %lu", idx_dist, trajectory.size());
-    return {};
+    idx_dist = std::ceil((trajectory.size() - 1) / 2.0);
   }
 
   // calculate curvature by circle fitting from three points
-  Point p1{};
-  Point p2{};
-  Point p3{};
+  std::vector<double> k_arr;
   for (size_t i = idx_dist; i < trajectory.size() - idx_dist; ++i) {
-    p1.x = trajectory.at(i - idx_dist).pose.position.x;
-    p2.x = trajectory.at(i).pose.position.x;
-    p3.x = trajectory.at(i + idx_dist).pose.position.x;
-    p1.y = trajectory.at(i - idx_dist).pose.position.y;
-    p2.y = trajectory.at(i).pose.position.y;
-    p3.y = trajectory.at(i + idx_dist).pose.position.y;
-    double den = std::max(
-      tier4_autoware_utils::calcDistance2d(p1, p2) * tier4_autoware_utils::calcDistance2d(p2, p3) *
-        tier4_autoware_utils::calcDistance2d(p3, p1),
-      0.0001);
-    double curvature = 2.0 * ((p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x)) / den;
-    k_arr.push_back(curvature);
+    try {
+      const auto p0 = getPoint(trajectory.at(i - idx_dist));
+      const auto p1 = getPoint(trajectory.at(i));
+      const auto p2 = getPoint(trajectory.at(i + idx_dist));
+      k_arr.push_back(calcCurvature(p0, p1, p2));
+    } catch (...) {
+      k_arr.push_back(0.0);  // points are too close. No curvature.
+    }
   }
 
   // for debug
@@ -236,7 +230,7 @@ boost::optional<std::vector<double>> calcTrajectoryCurvatureFrom3Points(
     k_arr.insert(k_arr.begin(), k_arr.front());
     k_arr.push_back(k_arr.back());
   }
-  return boost::optional<std::vector<double>>(k_arr);
+  return k_arr;
 }
 
 void setZeroVelocity(TrajectoryPoints & trajectory)

@@ -272,50 +272,51 @@ void MotionVelocitySmootherNode::onCurrentOdometry(const Odometry::ConstSharedPt
 
 void MotionVelocitySmootherNode::onExternalVelocityLimit(const VelocityLimit::ConstSharedPtr msg)
 {
+  // on the first time, apply directly
+  if (prev_output_.empty() || !prev_closest_point_) {
+    external_velocity_limit_ = msg->max_velocity;
+    pub_velocity_limit_->publish(*msg);
+    return;
+  }
+
   constexpr double eps = 1.0E-04;
   const double margin = node_param_.margin_to_insert_external_velocity_limit;
 
   // calculate distance and maximum velocity
   // to decelerate to external velocity limit with jerk and acceleration
-  // constraints
-  if (!prev_output_.empty()) {
-    // if external velocity limit decreases
-    if (std::fabs((external_velocity_limit_ - msg->max_velocity)) > eps) {
-      if (prev_closest_point_) {
-        const double v0 = prev_closest_point_->longitudinal_velocity_mps;
-        const double a0 = prev_closest_point_->acceleration_mps2;
+  // constraints.
+  // if external velocity limit decreases
+  if (std::fabs((external_velocity_limit_ - msg->max_velocity)) > eps) {
+    const double v0 = prev_closest_point_->longitudinal_velocity_mps;
+    const double a0 = prev_closest_point_->acceleration_mps2;
 
-        if (isEngageStatus(v0)) {
-          max_velocity_with_deceleration_ = msg->max_velocity;
-          external_velocity_limit_dist_ = 0.0;
-        } else {
-          const double a_min =
-            msg->use_constraints ? msg->constraints.min_acceleration : smoother_->getMinDecel();
-          const double j_max =
-            msg->use_constraints ? msg->constraints.max_jerk : smoother_->getMaxJerk();
-          const double j_min =
-            msg->use_constraints ? msg->constraints.min_jerk : smoother_->getMinJerk();
-          double stop_dist;
-          std::map<double, double> jerk_profile;
-          if (!trajectory_utils::calcStopDistWithJerkConstraints(
-                v0, a0, j_max, j_min, a_min, msg->max_velocity, jerk_profile, stop_dist)) {
-            RCLCPP_WARN(get_logger(), "Stop distance calculation is failed!");
-          }
-          external_velocity_limit_dist_ = stop_dist + margin;
-          // If the closest acceleration is positive, velocity will increase
-          // until the acceleration becomes zero
-          // So we set the maximum increased velocity as the velocity limit
-          if (a0 > 0) {
-            max_velocity_with_deceleration_ = v0 - 0.5 * a0 * a0 / j_min;
-          } else {
-            max_velocity_with_deceleration_ = v0;
-          }
+    if (isEngageStatus(v0)) {
+      max_velocity_with_deceleration_ = msg->max_velocity;
+      external_velocity_limit_dist_ = 0.0;
+    } else {
+      const auto & cstr = msg->constraints;
+      const auto a_min = msg->use_constraints ? cstr.min_acceleration : smoother_->getMinDecel();
+      const auto j_max = msg->use_constraints ? cstr.max_jerk : smoother_->getMaxJerk();
+      const auto j_min = msg->use_constraints ? cstr.min_jerk : smoother_->getMinJerk();
+      double stop_dist = 0.0;
+      std::map<double, double> jerk_profile;
+      if (!trajectory_utils::calcStopDistWithJerkConstraints(
+            v0, a0, j_max, j_min, a_min, msg->max_velocity, jerk_profile, stop_dist)) {
+        RCLCPP_WARN(get_logger(), "Stop distance calculation is failed!");
+      }
+      external_velocity_limit_dist_ = stop_dist + margin;
+      // If the closest acceleration is positive, velocity will increase
+      // until the acceleration becomes zero
+      // So we set the maximum increased velocity as the velocity limit
+      if (a0 > 0) {
+        max_velocity_with_deceleration_ = v0 - 0.5 * a0 * a0 / j_min;
+      } else {
+        max_velocity_with_deceleration_ = v0;
+      }
 
-          if (max_velocity_with_deceleration_ < msg->max_velocity) {
-            max_velocity_with_deceleration_ = msg->max_velocity;
-            external_velocity_limit_dist_ = 0.0;
-          }
-        }
+      if (max_velocity_with_deceleration_ < msg->max_velocity) {
+        max_velocity_with_deceleration_ = msg->max_velocity;
+        external_velocity_limit_dist_ = 0.0;
       }
     }
   }
@@ -355,14 +356,7 @@ void MotionVelocitySmootherNode::onCurrentTrajectory(const Trajectory::ConstShar
   }
 
   // calculate distance to insert external velocity limit
-  if (!prev_output_.empty()) {
-    const double travel_dist = calcTravelDistance();
-    external_velocity_limit_dist_ -= travel_dist;
-    external_velocity_limit_dist_ = std::max(external_velocity_limit_dist_, 0.0);
-    RCLCPP_DEBUG(
-      get_logger(), "run: travel_dist = %f, external_velocity_limit_dist_ = %f", travel_dist,
-      external_velocity_limit_dist_);
-  }
+  updateDataForExternalVelocityLimit();
 
   // calculate trajectory velocity
   TrajectoryPoints output =
@@ -373,9 +367,8 @@ void MotionVelocitySmootherNode::onCurrentTrajectory(const Trajectory::ConstShar
   }
 
   // Get the nearest point
-  const auto output_closest_idx = motion_utils::findNearestIndex(
-    output, current_pose_ptr_->pose, std::numeric_limits<double>::max(),
-    node_param_.delta_yaw_threshold);
+  const auto output_closest_idx = findNearestIndexFromEgo(output);
+
   const auto output_closest_point =
     trajectory_utils::calcInterpolatedTrajectoryPoint(output, current_pose_ptr_->pose);
   if (!output_closest_idx) {
@@ -417,76 +410,81 @@ void MotionVelocitySmootherNode::onCurrentTrajectory(const Trajectory::ConstShar
   RCLCPP_DEBUG(get_logger(), "========================== run() end ==========================\n\n");
 }
 
+void MotionVelocitySmootherNode::updateDataForExternalVelocityLimit()
+{
+  if (prev_output_.empty()) {
+    return;
+  }
+
+  // calculate distance to insert external velocity limit
+  const double travel_dist = calcTravelDistance();
+  external_velocity_limit_dist_ -= travel_dist;
+  external_velocity_limit_dist_ = std::max(external_velocity_limit_dist_, 0.0);
+  RCLCPP_DEBUG(
+    get_logger(), "run: travel_dist = %f, external_velocity_limit_dist_ = %f", travel_dist,
+    external_velocity_limit_dist_);
+}
+
 TrajectoryPoints MotionVelocitySmootherNode::calcTrajectoryVelocity(
   const TrajectoryPoints & traj_input) const
 {
   TrajectoryPoints output{};  // velocity is optimized by qp solver
 
   // Extract trajectory around self-position with desired forward-backward length
-  const auto input_closest = motion_utils::findNearestIndex(
-    traj_input, current_pose_ptr_->pose, std::numeric_limits<double>::max(),
-    node_param_.delta_yaw_threshold);
+  const auto input_closest = findNearestIndexFromEgo(traj_input);
+
   if (!input_closest) {
-    auto clock{rclcpp::Clock{RCL_ROS_TIME}};
     RCLCPP_WARN_THROTTLE(
-      get_logger(), clock, 5000, "Cannot find the closest point from input trajectory");
+      get_logger(), *clock_, 5000, "Cannot find the closest point from input trajectory");
     return prev_output_;
   }
 
   auto traj_extracted = trajectory_utils::extractPathAroundIndex(
     traj_input, *input_closest, node_param_.extract_ahead_dist, node_param_.extract_behind_dist);
-  if (!traj_extracted) {
+  if (traj_extracted.empty()) {
     RCLCPP_WARN(get_logger(), "Fail to extract the path from the input trajectory");
     return prev_output_;
   }
 
-  // Smoother can not handle negative velocity,
-  // so multiple -1 to velocity if any trajectory points have reverse
-  // velocity
-  const bool is_reverse = std::any_of(
-    traj_extracted->begin(), traj_extracted->end(),
-    [](auto & pt) { return pt.longitudinal_velocity_mps < 0; });
+  // Smoother can not handle negative velocity, so multiple -1 to velocity if any trajectory points
+  // have reverse velocity
+  const bool is_reverse = isReverse(traj_extracted);
   if (is_reverse) {
-    for (auto & pt : *traj_extracted) {
-      pt.longitudinal_velocity_mps *= -1.0;
-    }
+    flipVelocity(traj_extracted);
   }
 
   // Debug
   if (publish_debug_trajs_) {
-    pub_trajectory_raw_->publish(toTrajectoryMsg(*traj_extracted, base_traj_raw_ptr_->header));
+    pub_trajectory_raw_->publish(toTrajectoryMsg(traj_extracted));
   }
 
   // Apply external velocity limit
-  applyExternalVelocityLimit(*traj_extracted);
+  applyExternalVelocityLimit(traj_extracted);
 
   // Change trajectory velocity to zero when current_velocity == 0 & stop_dist is close
-  const auto traj_extracted_closest = motion_utils::findNearestIndex(
-    *traj_extracted, current_pose_ptr_->pose, std::numeric_limits<double>::max(),
-    node_param_.delta_yaw_threshold);
+  const auto traj_extracted_closest = findNearestIndexFromEgo(traj_extracted);
+
   if (!traj_extracted_closest) {
     RCLCPP_WARN(get_logger(), "Cannot find the closest point from extracted trajectory");
     return prev_output_;
   }
 
   // Apply velocity to approach stop point
-  applyStopApproachingVelocity(*traj_extracted);
+  applyStopApproachingVelocity(traj_extracted);
 
   // Debug
   if (publish_debug_trajs_) {
-    pub_trajectory_vel_lim_->publish(toTrajectoryMsg(*traj_extracted, base_traj_raw_ptr_->header));
+    pub_trajectory_vel_lim_->publish(toTrajectoryMsg(traj_extracted));
   }
 
   // Smoothing velocity
-  if (!smoothVelocity(*traj_extracted, *traj_extracted_closest, output)) {
+  if (!smoothVelocity(traj_extracted, *traj_extracted_closest, output)) {
     return prev_output_;
   }
 
   // for reverse velocity
   if (is_reverse) {
-    for (auto & pt : output) {
-      pt.longitudinal_velocity_mps *= -1.0;
-    }
+    flipVelocity(output);
   }
 
   return output;
@@ -497,22 +495,17 @@ bool MotionVelocitySmootherNode::smoothVelocity(
   TrajectoryPoints & traj_smoothed) const
 {
   // Calculate initial motion for smoothing
-  double initial_vel{};
-  double initial_acc{};
-  InitializeType type{};
-  std::tie(initial_vel, initial_acc, type) = calcInitialMotion(input, input_closest, prev_output_);
+  const auto [initial_motion, type] = calcInitialMotion(input, input_closest, prev_output_);
 
   // Lateral acceleration limit
   const auto traj_lateral_acc_filtered =
-    smoother_->applyLateralAccelerationFilter(input, initial_vel, initial_acc, true);
+    smoother_->applyLateralAccelerationFilter(input, initial_motion.vel, initial_motion.acc, true);
   if (!traj_lateral_acc_filtered) {
     return false;
   }
 
   // Resample trajectory with ego-velocity based interval distance
-  const auto traj_pre_resampled_closest = motion_utils::findNearestIndex(
-    *traj_lateral_acc_filtered, current_pose_ptr_->pose, std::numeric_limits<double>::max(),
-    node_param_.delta_yaw_threshold);
+  const auto traj_pre_resampled_closest = findNearestIndexFromEgo(*traj_lateral_acc_filtered);
   if (!traj_pre_resampled_closest) {
     RCLCPP_WARN(
       get_logger(), "Cannot find closest waypoint for traj_lateral_acc_filtered trajectory");
@@ -525,9 +518,8 @@ bool MotionVelocitySmootherNode::smoothVelocity(
     RCLCPP_WARN(get_logger(), "Fail to do resampling before the optimization");
     return false;
   }
-  const auto traj_resampled_closest = motion_utils::findNearestIndex(
-    *traj_resampled, current_pose_ptr_->pose, std::numeric_limits<double>::max(),
-    node_param_.delta_yaw_threshold);
+  const auto traj_resampled_closest = findNearestIndexFromEgo(*traj_resampled);
+
   if (!traj_resampled_closest) {
     RCLCPP_WARN(get_logger(), "Cannot find closest waypoint for resampled trajectory");
     return false;
@@ -547,7 +539,8 @@ bool MotionVelocitySmootherNode::smoothVelocity(
     clipped.end(), traj_resampled->begin() + *traj_resampled_closest, traj_resampled->end());
 
   std::vector<TrajectoryPoints> debug_trajectories;
-  if (!smoother_->apply(initial_vel, initial_acc, clipped, traj_smoothed, debug_trajectories)) {
+  if (!smoother_->apply(
+        initial_motion.vel, initial_motion.acc, clipped, traj_smoothed, debug_trajectories)) {
     RCLCPP_WARN(get_logger(), "Fail to solve optimization.");
   }
 
@@ -572,10 +565,8 @@ bool MotionVelocitySmootherNode::smoothVelocity(
 
   RCLCPP_DEBUG(get_logger(), "smoothVelocity : traj_smoothed.size() = %lu", traj_smoothed.size());
   if (publish_debug_trajs_) {
-    pub_trajectory_latacc_filtered_->publish(
-      toTrajectoryMsg(*traj_lateral_acc_filtered, base_traj_raw_ptr_->header));
-    pub_trajectory_resampled_->publish(
-      toTrajectoryMsg(*traj_resampled, base_traj_raw_ptr_->header));
+    pub_trajectory_latacc_filtered_->publish(toTrajectoryMsg(*traj_lateral_acc_filtered));
+    pub_trajectory_resampled_->publish(toTrajectoryMsg(*traj_resampled));
 
     if (!debug_trajectories.empty()) {
       for (auto & debug_trajectory : debug_trajectories) {
@@ -636,7 +627,7 @@ void MotionVelocitySmootherNode::publishStopDistance(
   pub_dist_to_stopline_->publish(dist_to_stopline);
 }
 
-std::tuple<double, double, MotionVelocitySmootherNode::InitializeType>
+std::pair<Motion, MotionVelocitySmootherNode::InitializeType>
 MotionVelocitySmootherNode::calcInitialMotion(
   const TrajectoryPoints & input_traj, const size_t input_closest,
   const TrajectoryPoints & prev_traj) const
@@ -644,16 +635,15 @@ MotionVelocitySmootherNode::calcInitialMotion(
   const double vehicle_speed{std::fabs(current_odometry_ptr_->twist.twist.linear.x)};
   const double target_vel{std::fabs(input_traj.at(input_closest).longitudinal_velocity_mps)};
 
-  double initial_vel{};
-  double initial_acc{};
+  Motion initial_motion;
   InitializeType type{};
 
   // first time
   if (prev_traj.empty()) {
-    initial_vel = vehicle_speed;
-    initial_acc = 0.0;
+    initial_motion.vel = vehicle_speed;
+    initial_motion.acc = 0.0;
     type = InitializeType::INIT;
-    return std::make_tuple(initial_vel, initial_acc, type);
+    return std::make_pair(initial_motion, type);
   }
 
   const auto prev_output_closest_point =
@@ -664,14 +654,14 @@ MotionVelocitySmootherNode::calcInitialMotion(
   const double vel_error{vehicle_speed - std::fabs(desired_vel)};
   if (std::fabs(vel_error) > node_param_.replan_vel_deviation) {
     type = InitializeType::LARGE_DEVIATION_REPLAN;
-    initial_vel = vehicle_speed;  // use current vehicle speed
-    initial_acc = prev_output_closest_point.acceleration_mps2;
+    initial_motion.vel = vehicle_speed;  // use current vehicle speed
+    initial_motion.acc = prev_output_closest_point.acceleration_mps2;
     RCLCPP_DEBUG(
       get_logger(),
       "calcInitialMotion : Large deviation error for speed control. Use current speed for "
       "initial value, desired_vel = %f, vehicle_speed = %f, vel_error = %f, error_thr = %f",
       desired_vel, vehicle_speed, vel_error, node_param_.replan_vel_deviation);
-    return std::make_tuple(initial_vel, initial_acc, type);
+    return std::make_pair(initial_motion, type);
   }
 
   // if current vehicle velocity is low && base_desired speed is high,
@@ -685,14 +675,14 @@ MotionVelocitySmootherNode::calcInitialMotion(
                                    : 0.0;
       if (!idx || stop_dist > node_param_.stop_dist_to_prohibit_engage) {
         type = InitializeType::ENGAGING;
-        initial_vel = node_param_.engage_velocity;
-        initial_acc = node_param_.engage_acceleration;
+        initial_motion.vel = node_param_.engage_velocity;
+        initial_motion.acc = node_param_.engage_acceleration;
         RCLCPP_DEBUG(
           get_logger(),
           "calcInitialMotion : vehicle speed is low (%.3f), and desired speed is high (%.3f). Use "
           "engage speed (%.3f) until vehicle speed reaches engage_vel_thr (%.3f). stop_dist = %.3f",
           vehicle_speed, target_vel, node_param_.engage_velocity, engage_vel_thr, stop_dist);
-        return std::make_tuple(initial_vel, initial_acc, type);
+        return std::make_pair(initial_motion, type);
       } else {
         RCLCPP_DEBUG(
           get_logger(), "calcInitialMotion : stop point is close (%.3f[m]). no engage.", stop_dist);
@@ -708,13 +698,13 @@ MotionVelocitySmootherNode::calcInitialMotion(
 
   // normal update: use closest in prev_output
   type = InitializeType::NORMAL;
-  initial_vel = prev_output_closest_point.longitudinal_velocity_mps;
-  initial_acc = prev_output_closest_point.acceleration_mps2;
+  initial_motion.vel = prev_output_closest_point.longitudinal_velocity_mps;
+  initial_motion.acc = prev_output_closest_point.acceleration_mps2;
   RCLCPP_DEBUG(
     get_logger(),
     "calcInitialMotion : normal update. v0 = %f, a0 = %f, vehicle_speed = %f, target_vel = %f",
-    initial_vel, initial_acc, vehicle_speed, target_vel);
-  return std::make_tuple(initial_vel, initial_acc, type);
+    initial_motion.vel, initial_motion.acc, vehicle_speed, target_vel);
+  return std::make_pair(initial_motion, type);
 }
 
 void MotionVelocitySmootherNode::overwriteStopPoint(
@@ -726,9 +716,7 @@ void MotionVelocitySmootherNode::overwriteStopPoint(
   }
 
   // Get Closest Point from Output
-  const auto nearest_output_point_idx = motion_utils::findNearestIndex(
-    output, input.at(*stop_idx).pose, std::numeric_limits<double>::max(),
-    node_param_.delta_yaw_threshold);
+  const auto nearest_output_point_idx = findNearestIndex(output, input.at(*stop_idx).pose);
 
   // check over velocity
   bool is_stop_velocity_exceeded{false};
@@ -772,9 +760,7 @@ void MotionVelocitySmootherNode::applyExternalVelocityLimit(TrajectoryPoints & t
   trajectory_utils::applyMaximumVelocityLimit(
     0, traj.size(), max_velocity_with_deceleration_, traj);
 
-  const auto closest_idx = motion_utils::findNearestIndex(
-    traj, current_pose_ptr_->pose, std::numeric_limits<double>::max(),
-    node_param_.delta_yaw_threshold);
+  const auto closest_idx = findNearestIndexFromEgo(traj);
   if (!closest_idx) {
     return;
   }
@@ -819,10 +805,9 @@ void MotionVelocitySmootherNode::publishDebugTrajectories(
       RCLCPP_DEBUG(get_logger(), "Size of the debug trajectories is incorrect");
       return;
     }
-    const auto & h = base_traj_raw_ptr_->header;
-    pub_forward_filtered_trajectory_->publish(toTrajectoryMsg(debug_trajectories.at(0), h));
-    pub_backward_filtered_trajectory_->publish(toTrajectoryMsg(debug_trajectories.at(1), h));
-    pub_merged_filtered_trajectory_->publish(toTrajectoryMsg(debug_trajectories.at(2), h));
+    pub_forward_filtered_trajectory_->publish(toTrajectoryMsg(debug_trajectories.at(0)));
+    pub_backward_filtered_trajectory_->publish(toTrajectoryMsg(debug_trajectories.at(1)));
+    pub_merged_filtered_trajectory_->publish(toTrajectoryMsg(debug_trajectories.at(2)));
     publishClosestVelocity(
       debug_trajectories.at(2), current_pose_ptr_->pose, pub_closest_merged_velocity_);
   }
@@ -917,11 +902,38 @@ bool MotionVelocitySmootherNode::isEngageStatus(const double target_vel) const
 }
 
 Trajectory MotionVelocitySmootherNode::toTrajectoryMsg(
-  const TrajectoryPoints & points, const std_msgs::msg::Header & header) const
+  const TrajectoryPoints & points, const std_msgs::msg::Header * header) const
 {
   auto trajectory = motion_utils::convertToTrajectory(points);
-  trajectory.header = header;
+  trajectory.header = header ? *header : base_traj_raw_ptr_->header;
   return trajectory;
+}
+
+boost::optional<size_t> MotionVelocitySmootherNode::findNearestIndexFromEgo(
+  const TrajectoryPoints & points) const
+{
+  return findNearestIndex(points, current_pose_ptr_->pose);
+}
+
+boost::optional<size_t> MotionVelocitySmootherNode::findNearestIndex(
+  const TrajectoryPoints & points, const geometry_msgs::msg::Pose & p) const
+{
+  return motion_utils::findNearestIndex(
+    points, p, std::numeric_limits<double>::max(), node_param_.delta_yaw_threshold);
+}
+
+bool MotionVelocitySmootherNode::isReverse(const TrajectoryPoints & points) const
+{
+  if (points.empty()) return true;
+
+  return std::any_of(
+    points.begin(), points.end(), [](auto & pt) { return pt.longitudinal_velocity_mps < 0; });
+}
+void MotionVelocitySmootherNode::flipVelocity(TrajectoryPoints & points) const
+{
+  for (auto & pt : points) {
+    pt.longitudinal_velocity_mps *= -1.0;
+  }
 }
 
 }  // namespace motion_velocity_smoother

@@ -304,9 +304,6 @@ boost::optional<TrajectoryPoints> AnalyticalJerkConstrainedSmoother::applyLatera
 
   // Calculate curvature assuming the trajectory points interval is constant
   const auto curvature_v = trajectory_utils::calcTrajectoryCurvatureFrom3Points(*output, idx_dist);
-  if (!curvature_v) {
-    return boost::optional<TrajectoryPoints>(input);
-  }
 
   // Decrease speed according to lateral G
   const size_t before_decel_index =
@@ -321,7 +318,7 @@ boost::optional<TrajectoryPoints> AnalyticalJerkConstrainedSmoother::applyLatera
     const size_t start = i > before_decel_index ? i - before_decel_index : 0;
     const size_t end = std::min(output->size(), i + after_decel_index);
     for (size_t j = start; j < end; ++j) {
-      curvature = std::max(curvature, std::fabs(curvature_v->at(j)));
+      curvature = std::max(curvature, std::fabs(curvature_v.at(j)));
     }
     double v_curvature_max = std::sqrt(max_lateral_accel_abs / std::max(curvature, 1.0E-5));
     v_curvature_max = std::max(v_curvature_max, base_param_.min_curve_velocity);
