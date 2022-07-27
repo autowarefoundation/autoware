@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <launch>
+  <arg name="tier4_perception_launch_param_path"/>
   <arg name="input/pointcloud"/>
   <arg name="input/obstacle_segmentation/pointcloud" default="/perception/obstacle_segmentation/pointcloud"/>
   <arg name="output/objects" default="objects"/>
@@ -12,6 +13,7 @@
   <!-- Pointcloud map filter -->
   <group>
     <include file="$(find-pkg-share tier4_perception_launch)/launch/object_recognition/detection/pointcloud_map_filter.launch.py" if="$(var use_pointcloud_map)">
+      <arg name="tier4_perception_launch_param_path" value="$(var tier4_perception_launch_param_path)"/>
       <arg name="input_topic" value="$(var input/obstacle_segmentation/pointcloud)"/>
       <arg name="output_topic" value="pointcloud_map_filtered/pointcloud"/>
       <arg name="use_intra_process" value="true"/>
@@ -128,7 +130,7 @@
     <include file="$(find-pkg-share detected_object_validation)/launch/object_lanelet_filter.launch.xml">
       <arg name="input/object" value="objects_before_filter"/>
       <arg name="output/object" value="$(var output/objects)"/>
-      <arg name="filtering_range_param" value="$(find-pkg-share tier4_perception_launch)/config/object_recognition/detection/object_lanelet_filter.param.yaml"/>
+      <arg name="filtering_range_param" value="$(var tier4_perception_launch_param_path)/object_recognition/detection/object_lanelet_filter.param.yaml"/>
     </include>
   </group>
 </launch>
