@@ -2,35 +2,87 @@
 
 ## Role
 
-`map_based_prediction` is a module to predict the future paths of other vehicles and pedestrians according to the shape of the map and the surrounding environment.
+`map_based_prediction` is a module to predict the future paths (and their probabilities) of other vehicles and pedestrians according to the shape of the map and the surrounding environment.
+
+## Assumptions
+
+- The following information about the target obstacle is needed
+  - Label (type of person, car, etc.)
+  - The object position in the current time and predicted position in the future time.
+- The following information about the surrounding environment is needed
+  - Road network information with Lanelet2 format
 
 ## Inner-workings / Algorithms
 
+### Flow chart
+
+<div align="center">
+  <img src="media/map_based_prediction_flow.drawio.svg" width=20%>
+</div>
+
 ### Path prediction for road users
 
-1. Get lanelet path
-   The first step is to get the lanelet of the current position of the car. After that, we obtain several trajectories based on the map.
+#### Remove old object history
 
-2. Lane Change Detection
-   After finding the current lanelet from the current position of the obstacle, our algorithm try to detect the lane change maneuver from the past positions of the obstacle. Our method uses the deviation between the obstacle's current position and its position one second ago and current position to determine if it is about to change lanes. The parameters used for the lane change decision are obtained by analyzing the data obtained from the experiment. We already confirmed that these parameters give the least number of false positives.
+Store time-series data of objects to determine the vehicle's route and to detect lane change for several duration. Object Data contains the object's position, speed, and time information.
 
-3. Confidence calculation
-   We use the following metric to compute the distance to a certain lane.
+#### Get current lanelet and update Object history
 
-   ```txt
-   d = x^T P x
-   ```
+Search one or more lanelets satisfying the following conditions for each target object and store them in the ObjectData.
 
-   where `x=[lateral_dist, yaw_diff]` and `P` are covariance matrices. Therefore confidence values can be computed as
+- The CoG of the object must be inside the lanelet.
+- The centerline of the lanelet must have two or more points.
+- The angle difference between the lanelet and the direction of the object must be within the threshold given by the parameters.
+  - The angle flip is allowed, the condition is `diff_yaw < threshold or diff_yaw > pi - threshold`.
+- The lanelet must be reachable from the lanelet recorded in the past history.
 
-   ```txt
-   confidence = 1/d
-   ```
+#### Get predicted reference path
 
-   Finally, we normalize the confidence value to make it as probability value. Note that the standard deviation of the lateral distance and yaw difference is given by the user.
+- Get reference path
+  - Create a reference path for the object from the associated lanelet.
+- Predict Object Maneuver
+  - Generate predicted paths for the object.
+  - The probability is assigned to each maneuver of `Lane Follow`, `Left Lane Change`, and `Right Lane Chagne` based on the object history and the reference path obtained in the first step.
+  - The following information is used to determine the maneuver.
+    - The distance between the current center of gravity of the object and the left and right boundaries of the lane
+    - The lateral velocity (distance moved to the lateral direction in `t` seconds)
 
-4. Drawing predicted trajectories
-   From the current position and reference trajectories that we get in the step1, we create predicted trajectories by using Quintic polynomial. Note that, since this algorithm consider lateral and longitudinal motions separately, it sometimes generates dynamically-infeasible trajectories when the vehicle travels at a low speed. To deal with this problem, we only make straight line predictions when the vehicle speed is lower than a certain value (which is given as a parameter).
+The conditions for the lane change detection then becomes
+
+```cpp
+//  Left Lane Change Detection
+(d_current_left / d_lane) > dl_ratio_threshold &&
+(d_current_left - d_previous_left) > ddl_threshold
+
+// Right Lane Change Detection
+(d_current_right / d_lane) < dr_ratio_threshold &&
+(d_current_right - d_previous_right) < ddr_threshold
+```
+
+where the parameter is explained in the picture below. An example of how to tune the parameters is described later.
+
+![lane change detection](./media/lane_change_detection.drawio.svg)
+
+- Calculate Object Probability
+  - The path probability obtained above is calculated based on the current position and angle of the object.
+- Refine predicted paths for smooth movement
+  - The generated predicted paths are recomputed to take the vehicle dynamics into account.
+  - The path is calculated with minimum jerk trajectory implemented by 4th/5th order spline for lateral/longitudinal motion.引く。
+
+### Lane change detection logic
+
+This is an example to tune the parameters for lane change detection.
+The default parameters are set so that the lane change can be detected 1 second before the vehicle crosses the lane boundary. Here, 15 data in the lane change / non lane change cases are plotted.
+
+![right change data](./media/lanechange_detection_right_to_left.png)
+
+On the top plot, blue dots are the distance from the lane boundary one second before the lane change, and red dots are the average distance from the lane boundary when driving straight. From this plot, the most conservative value where lane change can be detected for all of these data can be seen as `-1.1`. Note that the larger number makes the decision conservative (lane change may not be detected) and the lower number makes the decision aggressive (many false positive occurs).
+
+On the bottom plot, blue dots are the lateral velocity one second before the lane change, and red dots are the average of the (absolute) lateral velocity when driving straight. In the same policy above, the parameter can be set as `0.5`.
+
+#### Limitations
+
+- This plot shows only for one environment data. The parameter/algorithm must consider lane width. (The default parameters are set roughly considering the generalization of the lane width for other environments.)
 
 ### Path prediction for crosswalk users
 
@@ -92,7 +144,15 @@ If the target object is inside the road or crosswalk, this module outputs one or
 
 ## Assumptions / Known limits
 
-`map_based_prediction` can only predict future trajectories for cars, tracks and buses.
+- For object types of passenger car, bus, and truck
+  - The predicted path of the object follows the road structure.
+  - For the object not being on any roads, the predicted path is generated by just a straight line prediction.
+  - For the object on a lanelet but moving in a different direction of the road, the predicted path is just straight.
+  - Vehicle dynamics may not be properly considered in the predicted path.
+- For object types of person and motorcycle
+  - The predicted path is generated by just a straight line in all situations except for "around crosswalk".
+- For all obstacles
+  - In the prediction, the vehicle motion is assumed to be a constant velocity due to a lack of acceleration information.
 
 ## Reference
 
