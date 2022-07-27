@@ -15,6 +15,7 @@
   <depend>autoware_auto_vehicle_msgs</depend>
   <depend>builtin_interfaces</depend>
   <depend>geometry_msgs</depend>
+  <depend>interpolation</depend>
   <depend>libboost-dev</depend>
   <depend>rclcpp</depend>
   <depend>tf2</depend>
