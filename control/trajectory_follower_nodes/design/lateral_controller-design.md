@@ -92,22 +92,21 @@ AutonomouStuff Lexus RX 450h for under 40 km/h driving.
 
 #### Vehicle
 
-| Name          | Type   | Description                                                                        | Default value |
-| :------------ | :----- | :--------------------------------------------------------------------------------- | :------------ |
-| cg_to_front_m | double | distance from baselink to the front axle[m]                                        | 1.228         |
-| cg_to_rear_m  | double | distance from baselink to the rear axle [m]                                        | 1.5618        |
-| mass_fl       | double | mass applied to front left tire [kg]                                               | 600           |
-| mass_fr       | double | mass applied to front right tire [kg]                                              | 600           |
-| mass_rl       | double | mass applied to rear left tire [kg]                                                | 600           |
-| mass_rr       | double | mass applied to rear right tire [kg]                                               | 600           |
-| cf            | double | front cornering power [N/rad]                                                      | 155494.663    |
-| cr            | double | rear cornering power [N/rad]                                                       | 155494.663    |
-| steering_tau  | double | steering dynamics time constant (1d approximation) for vehicle model [s]           | 0.3           |
-| steer_lim_deg | double | steering angle limit for vehicle model [deg]. This is also used for QP constraint. | 35.0          |
+| Name          | Type   | Description                                                              | Default value |
+| :------------ | :----- | :----------------------------------------------------------------------- | :------------ |
+| cg_to_front_m | double | distance from baselink to the front axle[m]                              | 1.228         |
+| cg_to_rear_m  | double | distance from baselink to the rear axle [m]                              | 1.5618        |
+| mass_fl       | double | mass applied to front left tire [kg]                                     | 600           |
+| mass_fr       | double | mass applied to front right tire [kg]                                    | 600           |
+| mass_rl       | double | mass applied to rear left tire [kg]                                      | 600           |
+| mass_rr       | double | mass applied to rear right tire [kg]                                     | 600           |
+| cf            | double | front cornering power [N/rad]                                            | 155494.663    |
+| cr            | double | rear cornering power [N/rad]                                             | 155494.663    |
+| steering_tau  | double | steering dynamics time constant (1d approximation) for vehicle model [s] | 0.3           |
 
 ### How to tune MPC parameters
 
-1. Set appropriate vehicle kinematics parameters for distance to front and rear axle, and `steer_lim_deg`.
+1. Set appropriate vehicle kinematics parameters for distance to front and rear axle and max steer angle.
    Also check that the input `VehicleKinematicState` has appropriate values (speed: vehicle rear-wheels-center velocity [km/h], angle: steering (tire) angle [rad]).
    These values give a vehicle information to the controller for path following.
    Errors in these values cause fundamental tracking error.

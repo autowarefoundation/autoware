@@ -79,13 +79,12 @@ MpcLateralController::MpcLateralController(rclcpp::Node & node) : node_{&node}
   m_new_traj_end_dist = node_->declare_parameter<float64_t>("new_traj_end_dist");            // [m]
 
   /* mpc parameters */
-  const float64_t steer_lim_deg = node_->declare_parameter<float64_t>("steer_lim_deg");
+  const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(*node_).getVehicleInfo();
+  const float64_t wheelbase = vehicle_info.wheel_base_m;
   const float64_t steer_rate_lim_dps = node_->declare_parameter<float64_t>("steer_rate_lim_dps");
   constexpr float64_t deg2rad = static_cast<float64_t>(autoware::common::types::PI) / 180.0;
-  m_mpc.m_steer_lim = steer_lim_deg * deg2rad;
+  m_mpc.m_steer_lim = vehicle_info.max_steer_angle_rad;
   m_mpc.m_steer_rate_lim = steer_rate_lim_dps * deg2rad;
-  const float64_t wheelbase =
-    vehicle_info_util::VehicleInfoUtil(*node_).getVehicleInfo().wheel_base_m;
 
   /* vehicle model setup */
   const std::string vehicle_model_type =
