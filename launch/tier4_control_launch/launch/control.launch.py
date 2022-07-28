@@ -96,6 +96,7 @@ def launch_setup(context, *args, **kwargs):
             },
             lon_controller_param,
             lat_controller_param,
+            vehicle_info_param,
         ],
         extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
     )
