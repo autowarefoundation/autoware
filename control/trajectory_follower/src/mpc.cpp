@@ -92,7 +92,8 @@ bool8_t MPC::calculateMPC(
   /* set control command */
   {
     ctrl_cmd.steering_tire_angle = static_cast<float>(u_filtered);
-    ctrl_cmd.steering_tire_rotation_rate = static_cast<float>((Uex(1) - Uex(0)) / prediction_dt);
+    ctrl_cmd.steering_tire_rotation_rate =
+      static_cast<float>((u_filtered - current_steer.steering_tire_angle) / prediction_dt);
   }
 
   storeSteerCmd(u_filtered);
