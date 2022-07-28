@@ -31,27 +31,34 @@ using autoware_auto_planning_msgs::msg::Trajectory;
 using geometry_msgs::msg::TwistStamped;
 using nav_msgs::msg::Odometry;
 
-class VehicleStopChecker
+class VehicleStopCheckerBase
+{
+public:
+  VehicleStopCheckerBase(rclcpp::Node * node, double buffer_duration);
+  rclcpp::Logger getLogger() { return logger_; }
+  void addTwist(const TwistStamped & twist);
+  bool isVehicleStopped(const double stop_duration = 0.0) const;
+
+protected:
+  rclcpp::Clock::SharedPtr clock_;
+  rclcpp::Logger logger_;
+
+private:
+  double buffer_duration_;
+  std::deque<TwistStamped> twist_buffer_;
+};
+
+class VehicleStopChecker : public VehicleStopCheckerBase
 {
 public:
   explicit VehicleStopChecker(rclcpp::Node * node);
 
-  bool isVehicleStopped(const double stop_duration = 0.0) const;
-
-  rclcpp::Logger getLogger() { return logger_; }
-
 protected:
   rclcpp::Subscription<Odometry>::SharedPtr sub_odom_;
-  rclcpp::Clock::SharedPtr clock_;
-  rclcpp::Logger logger_;
-
   Odometry::SharedPtr odometry_ptr_;
-
-  std::deque<TwistStamped> twist_buffer_;
 
 private:
   static constexpr double velocity_buffer_time_sec = 10.0;
-
   void onOdom(const Odometry::SharedPtr msg);
 };
 
