@@ -228,6 +228,8 @@ bool TrafficLightModule::modifyPathVelocity(
         planner_param_.stop_margin + planner_data_->vehicle_info_.max_longitudinal_offset_m,
         planner_data_->stop_line_extend_length, stop_line_point, stop_line_point_idx)) {
     RCLCPP_WARN_THROTTLE(logger_, *clock_, 5000, "Failed to calculate stop point and insert index");
+    setSafe(true);
+    setDistance(std::numeric_limits<double>::lowest());
     return false;
   }
 
