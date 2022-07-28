@@ -70,7 +70,7 @@ inline boost::optional<geometry_msgs::msg::Pose> calcInterpolatedPose(
  * time_step*(num_of_path_points)]
  * @return resampled path
  */
-autoware_auto_perception_msgs::msg::PredictedPath resamplePredictedPath(
+inline autoware_auto_perception_msgs::msg::PredictedPath resamplePredictedPath(
   const autoware_auto_perception_msgs::msg::PredictedPath & path,
   const std::vector<double> & resampled_time, const bool use_spline_for_xy = true,
   const bool use_spline_for_z = false)
@@ -136,7 +136,7 @@ autoware_auto_perception_msgs::msg::PredictedPath resamplePredictedPath(
  * @param sampling_horizon sampling time horizon
  * @return resampled path
  */
-autoware_auto_perception_msgs::msg::PredictedPath resamplePredictedPath(
+inline autoware_auto_perception_msgs::msg::PredictedPath resamplePredictedPath(
   const autoware_auto_perception_msgs::msg::PredictedPath & path,
   const double sampling_time_interval, const double sampling_horizon,
   const bool use_spline_for_xy = true, const bool use_spline_for_z = false)
