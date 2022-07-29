@@ -199,9 +199,17 @@ std::vector<double> calcTrajectoryCurvatureFrom3Points(
   using tier4_autoware_utils::calcCurvature;
   using tier4_autoware_utils::getPoint;
 
+  if (trajectory.size() < 3) {
+    const std::vector<double> k_arr(trajectory.size(), 0.0);
+    return k_arr;
+  }
+
   // if the idx size is not enough, change the idx_dist
-  if (trajectory.size() < 2 * idx_dist + 1) {
-    idx_dist = std::ceil((trajectory.size() - 1) / 2.0);
+  const auto max_idx_dist = static_cast<size_t>(std::floor((trajectory.size() - 1) / 2.0));
+  idx_dist = std::max(1ul, std::min(idx_dist, max_idx_dist));
+
+  if (idx_dist < 1) {
+    throw std::logic_error("idx_dist less than 1 is not expected");
   }
 
   // calculate curvature by circle fitting from three points
@@ -215,14 +223,6 @@ std::vector<double> calcTrajectoryCurvatureFrom3Points(
     } catch (...) {
       k_arr.push_back(0.0);  // points are too close. No curvature.
     }
-  }
-
-  // for debug
-  if (k_arr.empty()) {
-    RCLCPP_ERROR(
-      rclcpp::get_logger("motion_velocity_smoother").get_child("trajectory_utils"),
-      "k_arr.size() = 0, something wrong. pls check.");
-    return {};
   }
 
   // first and last curvature is copied from next value

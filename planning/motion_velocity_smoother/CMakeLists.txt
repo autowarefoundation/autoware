@@ -46,6 +46,16 @@ rclcpp_components_register_node(motion_velocity_smoother_node
   EXECUTABLE motion_velocity_smoother
 )
 
+if(BUILD_TESTING)
+  ament_add_ros_isolated_gmock(test_smoother_functions
+    test/test_smoother_functions.cpp
+  )
+  target_link_libraries(test_smoother_functions
+    smoother
+  )
+endif()
+
+
 ament_auto_package(
   INSTALL_TO_SHARE
     launch
