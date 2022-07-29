@@ -50,9 +50,10 @@ private:
 
   bool use_corrector_;
   bool use_filter_;
+  bool use_boost_bbox_optimizer_;
 
 public:
-  ShapeEstimator(bool use_corrector, bool use_filter);
+  ShapeEstimator(bool use_corrector, bool use_filter, bool use_boost_bbox_optimizer = false);
 
   virtual ~ShapeEstimator() = default;
 

@@ -20,6 +20,8 @@
 
 #include <autoware_auto_perception_msgs/msg/shape.hpp>
 
+#include <boost/math/tools/minima.hpp>
+
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
@@ -42,10 +44,14 @@
 
 constexpr float epsilon = 0.001;
 
-BoundingBoxShapeModel::BoundingBoxShapeModel() : ref_yaw_info_(boost::none) {}
+BoundingBoxShapeModel::BoundingBoxShapeModel()
+: ref_yaw_info_(boost::none), use_boost_bbox_optimizer_(false)
+{
+}
 
-BoundingBoxShapeModel::BoundingBoxShapeModel(const boost::optional<ReferenceYawInfo> & ref_yaw_info)
-: ref_yaw_info_(ref_yaw_info)
+BoundingBoxShapeModel::BoundingBoxShapeModel(
+  const boost::optional<ReferenceYawInfo> & ref_yaw_info, bool use_boost_bbox_optimizer)
+: ref_yaw_info_(ref_yaw_info), use_boost_bbox_optimizer_(use_boost_bbox_optimizer)
 {
 }
 
@@ -82,31 +88,13 @@ bool BoundingBoxShapeModel::fitLShape(
    */
 
   // Paper : Algo.2 Search-Based Rectangle Fitting
-  std::vector<std::pair<float /*theta*/, float /*q*/>> Q;
-  constexpr float angle_resolution = M_PI / 180.0;
-  for (float theta = min_angle; theta <= max_angle + epsilon; theta += angle_resolution) {
-    Eigen::Vector2f e_1;
-    e_1 << std::cos(theta), std::sin(theta);  // col.3, Algo.2
-    Eigen::Vector2f e_2;
-    e_2 << -std::sin(theta), std::cos(theta);  // col.4, Algo.2
-    std::vector<float> C_1;                    // col.5, Algo.2
-    std::vector<float> C_2;                    // col.6, Algo.2
-    for (const auto & point : cluster) {
-      C_1.push_back(point.x * e_1.x() + point.y * e_1.y());
-      C_2.push_back(point.x * e_2.x() + point.y * e_2.y());
-    }
-    float q = calcClosenessCriterion(C_1, C_2);  // col.7, Algo.2
-    Q.push_back(std::make_pair(theta, q));       // col.8, Algo.2
+  double theta_star;
+  if (use_boost_bbox_optimizer_) {
+    theta_star = boostOptimize(cluster, min_angle, max_angle);
+  } else {
+    theta_star = optimize(cluster, min_angle, max_angle);
   }
 
-  float theta_star{0.0};  // col.10, Algo.2
-  float max_q = 0.0;
-  for (size_t i = 0; i < Q.size(); ++i) {
-    if (max_q < Q.at(i).second || i == 0) {
-      max_q = Q.at(i).second;
-      theta_star = Q.at(i).first;
-    }
-  }
   const float sin_theta_star = std::sin(theta_star);
   const float cos_theta_star = std::cos(theta_star);
 
@@ -205,4 +193,62 @@ float BoundingBoxShapeModel::calcClosenessCriterion(
     beta += 1.0 / d;
   }
   return beta;
+}
+
+float BoundingBoxShapeModel::optimize(
+  const pcl::PointCloud<pcl::PointXYZ> & cluster, const float min_angle, const float max_angle)
+{
+  std::vector<std::pair<float /*theta*/, float /*q*/>> Q;
+  constexpr float angle_resolution = M_PI / 180.0;
+  for (float theta = min_angle; theta <= max_angle + epsilon; theta += angle_resolution) {
+    Eigen::Vector2f e_1;
+    e_1 << std::cos(theta), std::sin(theta);  // col.3, Algo.2
+    Eigen::Vector2f e_2;
+    e_2 << -std::sin(theta), std::cos(theta);  // col.4, Algo.2
+    std::vector<float> C_1;                    // col.5, Algo.2
+    std::vector<float> C_2;                    // col.6, Algo.2
+    for (const auto & point : cluster) {
+      C_1.push_back(point.x * e_1.x() + point.y * e_1.y());
+      C_2.push_back(point.x * e_2.x() + point.y * e_2.y());
+    }
+    float q = calcClosenessCriterion(C_1, C_2);  // col.7, Algo.2
+    Q.push_back(std::make_pair(theta, q));       // col.8, Algo.2
+  }
+
+  float theta_star{0.0};  // col.10, Algo.2
+  float max_q = 0.0;
+  for (size_t i = 0; i < Q.size(); ++i) {
+    if (max_q < Q.at(i).second || i == 0) {
+      max_q = Q.at(i).second;
+      theta_star = Q.at(i).first;
+    }
+  }
+
+  return theta_star;
+}
+
+float BoundingBoxShapeModel::boostOptimize(
+  const pcl::PointCloud<pcl::PointXYZ> & cluster, const float min_angle, const float max_angle)
+{
+  auto closeness_func = [&](float theta) {
+    Eigen::Vector2f e_1;
+    e_1 << std::cos(theta), std::sin(theta);  // col.3, Algo.2
+    Eigen::Vector2f e_2;
+    e_2 << -std::sin(theta), std::cos(theta);  // col.4, Algo.2
+    std::vector<float> C_1;                    // col.5, Algo.2
+    std::vector<float> C_2;                    // col.6, Algo.2
+    for (const auto & point : cluster) {
+      C_1.push_back(point.x * e_1.x() + point.y * e_1.y());
+      C_2.push_back(point.x * e_2.x() + point.y * e_2.y());
+    }
+    float q = calcClosenessCriterion(C_1, C_2);
+    return -q;
+  };
+
+  int bits = 6;
+  boost::uintmax_t max_iter = 20;
+  std::pair<float, float> min = boost::math::tools::brent_find_minima(
+    closeness_func, min_angle, max_angle + epsilon, bits, max_iter);
+  float theta_star = min.first;
+  return theta_star;
 }

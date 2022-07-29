@@ -28,11 +28,17 @@ private:
     autoware_auto_perception_msgs::msg::Shape & shape_output,
     geometry_msgs::msg::Pose & pose_output);
   float calcClosenessCriterion(const std::vector<float> & C_1, const std::vector<float> & C_2);
+  float optimize(
+    const pcl::PointCloud<pcl::PointXYZ> & cluster, const float min_angle, const float max_angle);
+  float boostOptimize(
+    const pcl::PointCloud<pcl::PointXYZ> & cluster, const float min_angle, const float max_angle);
 
 public:
   BoundingBoxShapeModel();
-  explicit BoundingBoxShapeModel(const boost::optional<ReferenceYawInfo> & ref_yaw_info);
+  explicit BoundingBoxShapeModel(
+    const boost::optional<ReferenceYawInfo> & ref_yaw_info, bool use_boost_bbox_optimizer = false);
   boost::optional<ReferenceYawInfo> ref_yaw_info_;
+  bool use_boost_bbox_optimizer_;
 
   ~BoundingBoxShapeModel() {}
 

@@ -30,6 +30,7 @@
 #endif
 
 #include <memory>
+#include <string>
 
 using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
 
@@ -44,7 +45,10 @@ ShapeEstimationNode::ShapeEstimationNode(const rclcpp::NodeOptions & node_option
   bool use_corrector = declare_parameter("use_corrector", true);
   bool use_filter = declare_parameter("use_filter", true);
   use_vehicle_reference_yaw_ = declare_parameter("use_vehicle_reference_yaw", true);
-  estimator_ = std::make_unique<ShapeEstimator>(use_corrector, use_filter);
+  bool use_boost_bbox_optimizer = declare_parameter("use_boost_bbox_optimizer", false);
+  RCLCPP_INFO(this->get_logger(), "using boost shape estimation : %d", use_boost_bbox_optimizer);
+  estimator_ =
+    std::make_unique<ShapeEstimator>(use_corrector, use_filter, use_boost_bbox_optimizer);
 }
 
 void ShapeEstimationNode::callback(const DetectedObjectsWithFeature::ConstSharedPtr input_msg)
