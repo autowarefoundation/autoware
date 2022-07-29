@@ -20,6 +20,7 @@
 #include <scene_module/intersection/util.hpp>
 #include <utilization/boost_geometry_helper.hpp>
 #include <utilization/path_utilization.hpp>
+#include <utilization/trajectory_utils.hpp>
 #include <utilization/util.hpp>
 
 #include <lanelet2_core/geometry/Polygon.h>
@@ -455,14 +456,14 @@ TimeDistanceArray IntersectionModule::calcIntersectionPassingTime(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const int closest_idx,
   const int objective_lane_id) const
 {
-  TimeDistanceArray time_distance_array{};
   double closest_vel =
     (std::max(1e-01, std::fabs(planner_data_->current_velocity->twist.linear.x)));
   double dist_sum = 0.0;
-  double passing_time = 0.0;
-  time_distance_array.emplace_back(passing_time, dist_sum);
   int assigned_lane_found = false;
 
+  PathWithLaneId reference_path;
+  reference_path.points.push_back(path.points.at(closest_idx));
+  reference_path.points.at(0).point.longitudinal_velocity_mps = closest_vel;
   for (size_t i = closest_idx + 1; i < path.points.size(); ++i) {
     const double dist =
       tier4_autoware_utils::calcDistance2d(path.points.at(i - 1), path.points.at(i));
@@ -474,8 +475,12 @@ TimeDistanceArray IntersectionModule::calcIntersectionPassingTime(
     // calc average vel in idx i~i+1
     const double average_vel =
       std::min((closest_vel + next_vel) / 2.0, planner_param_.intersection_velocity);
-    passing_time += dist / average_vel;
-    time_distance_array.emplace_back(passing_time, dist_sum);
+    // passing_time += dist / average_vel;
+    // time_distance_array.emplace_back(passing_time, dist_sum);
+    auto reference_point = path.points[i];
+    reference_point.point.longitudinal_velocity_mps = average_vel;
+    reference_path.points.push_back(reference_point);
+
     closest_vel = next_vel;
 
     bool has_objective_lane_id = util::hasLaneId(path.points.at(i), objective_lane_id);
@@ -489,6 +494,25 @@ TimeDistanceArray IntersectionModule::calcIntersectionPassingTime(
     return {{0.0, 0.0}};  // has already passed the intersection.
   }
 
+  PathWithLaneId smoothed_reference_path = reference_path;
+  if (!smoothPath(reference_path, smoothed_reference_path, planner_data_)) {
+    RCLCPP_WARN(logger_, "smoothPath failed");
+  }
+
+  TimeDistanceArray time_distance_array{};
+  dist_sum = 0.0;
+  double passing_time = 0.0;
+  time_distance_array.emplace_back(passing_time, dist_sum);
+  for (size_t i = 1; i < smoothed_reference_path.points.size(); ++i) {
+    const double dist = planning_utils::calcDist2d(
+      smoothed_reference_path.points.at(i - 1), smoothed_reference_path.points.at(i));
+    dist_sum += dist;
+    // to avoid zero division
+    passing_time +=
+      (dist / std::max<double>(
+                0.01, smoothed_reference_path.points.at(i - 1).point.longitudinal_velocity_mps));
+    time_distance_array.emplace_back(passing_time, dist_sum);
+  }
   RCLCPP_DEBUG(logger_, "intersection dist = %f, passing_time = %f", dist_sum, passing_time);
 
   return time_distance_array;
