@@ -117,6 +117,8 @@ MotionVelocitySmootherNode::MotionVelocitySmootherNode(const rclcpp::NodeOptions
   max_vel_msg.stamp = this->now();
   max_vel_msg.max_velocity = node_param_.max_velocity;
   pub_velocity_limit_->publish(max_vel_msg);
+
+  clock_ = get_clock();
 }
 
 rcl_interfaces::msg::SetParametersResult MotionVelocitySmootherNode::onParameter(

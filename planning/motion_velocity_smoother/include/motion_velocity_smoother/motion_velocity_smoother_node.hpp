@@ -134,7 +134,7 @@ private:
 
   double over_stop_velocity_warn_thr_;  // threshold to publish over velocity warn
 
-  mutable rclcpp::Clock::SharedPtr clock_;
+  rclcpp::Clock::SharedPtr clock_;
 
   // parameter update
   OnSetParametersCallbackHandle::SharedPtr set_param_res_;
