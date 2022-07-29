@@ -90,10 +90,10 @@ void validateNonSharpAngle(
 }
 
 template <class T>
-bool isDrivingForward(const T points)
+boost::optional<bool> isDrivingForward(const T points)
 {
   if (points.size() < 2) {
-    return true;
+    return boost::none;
   }
 
   // check the first point direction
@@ -104,16 +104,19 @@ bool isDrivingForward(const T points)
 }
 
 template <class T>
-bool isDrivingForwardWithTwist(const T points_with_twist)
+boost::optional<bool> isDrivingForwardWithTwist(const T points_with_twist)
 {
   if (points_with_twist.empty()) {
-    return true;
+    return boost::none;
   }
   if (points_with_twist.size() == 1) {
-    if (0.0 <= tier4_autoware_utils::getLongitudinalVelocity(points_with_twist.front())) {
+    if (0.0 < tier4_autoware_utils::getLongitudinalVelocity(points_with_twist.front())) {
       return true;
+    } else if (0.0 > tier4_autoware_utils::getLongitudinalVelocity(points_with_twist.front())) {
+      return false;
+    } else {
+      return boost::none;
     }
-    return false;
   }
 
   return isDrivingForward(points_with_twist);
@@ -835,11 +838,14 @@ inline boost::optional<size_t> insertTargetPoint(
   const auto overlap_with_back =
     tier4_autoware_utils::calcDistance2d(p_target, p_back) < overlap_threshold;
 
-  const bool is_driving_forward = isDrivingForward(points);
+  const auto is_driving_forward = isDrivingForward(points);
+  if (!is_driving_forward) {
+    return {};
+  }
 
   geometry_msgs::msg::Pose target_pose;
   {
-    const auto p_base = is_driving_forward ? p_back : p_front;
+    const auto p_base = is_driving_forward.get() ? p_back : p_front;
     const auto pitch = tier4_autoware_utils::calcElevationAngle(p_target, p_base);
     const auto yaw = tier4_autoware_utils::calcAzimuthAngle(p_target, p_base);
 
@@ -852,7 +858,7 @@ inline boost::optional<size_t> insertTargetPoint(
 
   geometry_msgs::msg::Pose base_pose;
   {
-    const auto p_base = is_driving_forward ? p_front : p_back;
+    const auto p_base = is_driving_forward.get() ? p_front : p_back;
     const auto pitch = tier4_autoware_utils::calcElevationAngle(p_base, p_target);
     const auto yaw = tier4_autoware_utils::calcAzimuthAngle(p_base, p_target);
 
@@ -861,7 +867,7 @@ inline boost::optional<size_t> insertTargetPoint(
   }
 
   if (!overlap_with_front && !overlap_with_back) {
-    if (is_driving_forward) {
+    if (is_driving_forward.get()) {
       tier4_autoware_utils::setPose(base_pose, points.at(seg_idx));
     } else {
       tier4_autoware_utils::setPose(base_pose, points.at(seg_idx + 1));

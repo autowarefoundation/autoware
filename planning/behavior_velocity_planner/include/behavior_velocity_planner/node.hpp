@@ -106,6 +106,7 @@ private:
   // member
   PlannerData planner_data_;
   BehaviorVelocityPlannerManager planner_manager_;
+  bool is_driving_forward_{true};
 
   // mutex for planner_data_
   std::mutex mutex_;

@@ -194,6 +194,7 @@ private:
   nav_msgs::msg::Odometry::ConstSharedPtr current_velocity_ptr_{nullptr};
   nav_msgs::msg::Odometry::ConstSharedPtr prev_velocity_ptr_{nullptr};
   double current_acc_{0.0};
+  bool is_driving_forward_{true};
 
   bool set_velocity_limit_{false};
 

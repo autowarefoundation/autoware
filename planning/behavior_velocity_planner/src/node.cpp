@@ -422,7 +422,9 @@ autoware_auto_planning_msgs::msg::Path BehaviorVelocityPlannerNode::generatePath
   autoware_auto_planning_msgs::msg::Path output_path_msg;
 
   // TODO(someone): support backward path
-  if (!motion_utils::isDrivingForward(input_path_msg->points)) {
+  const auto is_driving_forward = motion_utils::isDrivingForward(input_path_msg->points);
+  is_driving_forward_ = is_driving_forward ? is_driving_forward.get() : is_driving_forward_;
+  if (!is_driving_forward_) {
     RCLCPP_WARN_THROTTLE(
       get_logger(), *get_clock(), 3000,
       "Backward path is NOT supported. just converting path_with_lane_id to path");

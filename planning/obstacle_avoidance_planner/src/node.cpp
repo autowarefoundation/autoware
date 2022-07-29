@@ -889,7 +889,9 @@ autoware_auto_planning_msgs::msg::Trajectory ObstacleAvoidancePlanner::generateT
   autoware_auto_planning_msgs::msg::Trajectory output_traj_msg;
 
   // TODO(someone): support backward path
-  if (!motion_utils::isDrivingForward(path.points)) {
+  const auto is_driving_forward = motion_utils::isDrivingForward(path.points);
+  is_driving_forward_ = is_driving_forward ? is_driving_forward.get() : is_driving_forward_;
+  if (!is_driving_forward_) {
     RCLCPP_WARN_THROTTLE(
       get_logger(), *get_clock(), 3000,
       "[ObstacleAvoidancePlanner] Backward path is NOT supported. Just converting path to "

@@ -187,6 +187,8 @@ private:
 
   bool need_to_clear_vel_limit_{false};
 
+  bool is_driving_forward_{true};
+
   std::vector<TargetObstacle> prev_target_obstacles_;
 };
 }  // namespace motion_planning

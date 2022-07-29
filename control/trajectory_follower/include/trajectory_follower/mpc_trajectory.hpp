@@ -16,6 +16,7 @@
 #define TRAJECTORY_FOLLOWER__MPC_TRAJECTORY_HPP_
 
 #include "common/types.hpp"
+#include "tier4_autoware_utils/tier4_autoware_utils.hpp"
 #include "trajectory_follower/visibility_control.hpp"
 
 #include "geometry_msgs/msg/point.hpp"
@@ -77,6 +78,21 @@ public:
       point.x = x.at(i);
       point.y = y.at(i);
       point.z = z.at(i);
+      points.push_back(point);
+    }
+    return points;
+  }
+
+  std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> toTrajectoryPoints() const
+  {
+    std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> points;
+    for (size_t i = 0; i < x.size(); ++i) {
+      autoware_auto_planning_msgs::msg::TrajectoryPoint point;
+      point.pose.position.x = x.at(i);
+      point.pose.position.y = y.at(i);
+      point.pose.position.z = z.at(i);
+      point.pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(yaw.at(i));
+      point.longitudinal_velocity_mps = vx.at(i);
       points.push_back(point);
     }
     return points;

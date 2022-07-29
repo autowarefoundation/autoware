@@ -494,21 +494,22 @@ void ObstacleCruisePlannerNode::onTrajectory(const Trajectory::ConstSharedPtr ms
 
   // Get Target Obstacles
   DebugData debug_data;
-  const bool is_driving_forward = motion_utils::isDrivingForwardWithTwist(msg->points);
+  const auto is_driving_forward = motion_utils::isDrivingForwardWithTwist(msg->points);
+  is_driving_forward_ = is_driving_forward ? is_driving_forward.get() : is_driving_forward_;
   const auto target_obstacles = getTargetObstacles(
-    *msg, current_pose_ptr->pose, current_twist_ptr_->twist.linear.x, is_driving_forward,
+    *msg, current_pose_ptr->pose, current_twist_ptr_->twist.linear.x, is_driving_forward_,
     debug_data);
 
   // create data for stop
   const auto stop_data =
-    createStopData(*msg, current_pose_ptr->pose, target_obstacles, is_driving_forward);
+    createStopData(*msg, current_pose_ptr->pose, target_obstacles, is_driving_forward_);
 
   // stop planning
   const auto stop_traj = planner_ptr_->generateStopTrajectory(stop_data, debug_data);
 
   // create data for cruise
   const auto cruise_data =
-    createCruiseData(stop_traj, current_pose_ptr->pose, target_obstacles, is_driving_forward);
+    createCruiseData(stop_traj, current_pose_ptr->pose, target_obstacles, is_driving_forward_);
 
   // cruise planning
   boost::optional<VelocityLimit> vel_limit;

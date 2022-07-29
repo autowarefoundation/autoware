@@ -147,6 +147,7 @@ private:
   OnSetParametersCallbackHandle::SharedPtr set_param_res_;
   rclcpp::Clock logger_ros_clock_;
   int eb_solved_count_;
+  bool is_driving_forward_{true};
 
   bool is_publishing_debug_visualization_marker_;
   bool is_publishing_area_with_objects_;

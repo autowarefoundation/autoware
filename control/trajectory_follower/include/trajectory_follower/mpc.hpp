@@ -177,8 +177,8 @@ private:
   std::shared_ptr<float64_t> m_steer_prediction_prev;
   //!< @brief previous computation time
   rclcpp::Time m_time_prev = rclcpp::Time(0, 0, RCL_ROS_TIME);
-  //!< @brief sign of previous target speed to calculate curvature when the target speed is 0.
-  float64_t m_sign_vx = 0.0;
+  //!< @brief shift is forward or not.
+  bool8_t m_is_forward_shift = true;
   //!< @brief buffer of sent command
   std::vector<autoware_auto_control_msgs::msg::AckermannLateralCommand> m_ctrl_cmd_vec;
   //!< @brief minimum prediction distance

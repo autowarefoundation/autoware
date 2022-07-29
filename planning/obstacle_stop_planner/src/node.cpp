@@ -612,7 +612,9 @@ void ObstacleStopPlannerNode::pathCallback(const Trajectory::ConstSharedPtr inpu
   }
 
   // TODO(someone): support backward path
-  if (!motion_utils::isDrivingForward(input_msg->points)) {
+  const auto is_driving_forward = motion_utils::isDrivingForwardWithTwist(input_msg->points);
+  is_driving_forward_ = is_driving_forward ? is_driving_forward.get() : is_driving_forward_;
+  if (!is_driving_forward_) {
     RCLCPP_WARN_THROTTLE(
       get_logger(), *get_clock(), 3000, "Backward path is NOT supported. publish input as it is.");
     path_pub_->publish(*input_msg);
