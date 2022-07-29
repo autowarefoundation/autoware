@@ -43,6 +43,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 class QLineEdit;
 
@@ -82,8 +83,9 @@ private:
   std::string root_folder_;
   size_t counter_;
   bool is_capture_;
-  float width_ = {1280};
-  float height_ = {720};
+  cv::VideoWriter writer;
+  cv::Size current_movie_size;
+  std::vector<cv::Mat> image_vec_;
 
   std::string stateToString(const State & state)
   {
