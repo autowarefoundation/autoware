@@ -1175,12 +1175,12 @@ void visualization::pushLineStringMarker(
     p.z = (*(i + 1)).z();
     marker->points.push_back(p);
     marker->colors.push_back(c);
-    p.x = (*(i + 1)).x() + x_offset;
-    p.y = (*(i + 1)).y() - y_offset;
-    p.z = (*(i + 1)).z();
-    marker->points.push_back(p);
     p.x = (*(i + 1)).x() - x_offset;
     p.y = (*(i + 1)).y() + y_offset;
+    p.z = (*(i + 1)).z();
+    marker->points.push_back(p);
+    p.x = (*(i + 1)).x() + x_offset;
+    p.y = (*(i + 1)).y() - y_offset;
     p.z = (*(i + 1)).z();
     marker->points.push_back(p);
     p.x = (*i).x() - x_offset;
