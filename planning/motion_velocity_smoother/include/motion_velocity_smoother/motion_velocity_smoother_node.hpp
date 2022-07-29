@@ -93,6 +93,8 @@ private:
 
   tier4_autoware_utils::SelfPoseListener self_pose_listener_{this};
 
+  bool is_reverse_;
+
   enum class AlgorithmType {
     INVALID = 0,
     JERK_FILTERED = 1,

@@ -361,7 +361,15 @@ void MotionVelocitySmootherNode::onCurrentTrajectory(const Trajectory::ConstShar
   updateDataForExternalVelocityLimit();
 
   // calculate trajectory velocity
-  const auto input_points = motion_utils::convertToTrajectoryPointArray(*base_traj_raw_ptr_);
+  auto input_points = motion_utils::convertToTrajectoryPointArray(*base_traj_raw_ptr_);
+
+  // For negative velocity handling, multiple -1 to velocity if it is for reverse.
+  // NOTE: this process must be in the beginning of the process
+  is_reverse_ = isReverse(input_points);
+  if (is_reverse_) {
+    flipVelocity(input_points);
+  }
+
   const auto output = calcTrajectoryVelocity(input_points);
   if (output.empty()) {
     RCLCPP_WARN(get_logger(), "Output Point is empty");
@@ -381,6 +389,12 @@ void MotionVelocitySmootherNode::onCurrentTrajectory(const Trajectory::ConstShar
 
   // update previous step infomation
   updatePrevValues(output);
+
+  // for reverse velocity
+  // NOTE: this process must be in the end of the process
+  if (is_reverse_) {
+    flipVelocity(*output_resampled);
+  }
 
   // publish message
   publishTrajectory(*output_resampled);
@@ -430,16 +444,11 @@ TrajectoryPoints MotionVelocitySmootherNode::calcTrajectoryVelocity(
     return prev_output_;
   }
 
-  // Smoother can not handle negative velocity, so multiple -1 to velocity if any trajectory points
-  // have reverse velocity
-  const bool is_reverse = isReverse(traj_extracted);
-  if (is_reverse) {
-    flipVelocity(traj_extracted);
-  }
-
   // Debug
   if (publish_debug_trajs_) {
-    pub_trajectory_raw_->publish(toTrajectoryMsg(traj_extracted));
+    auto tmp = traj_extracted;
+    if (is_reverse_) flipVelocity(tmp);
+    pub_trajectory_raw_->publish(toTrajectoryMsg(tmp));
   }
 
   // Apply external velocity limit
@@ -458,17 +467,14 @@ TrajectoryPoints MotionVelocitySmootherNode::calcTrajectoryVelocity(
 
   // Debug
   if (publish_debug_trajs_) {
+    auto tmp = traj_extracted;
+    if (is_reverse_) flipVelocity(tmp);
     pub_trajectory_vel_lim_->publish(toTrajectoryMsg(traj_extracted));
   }
 
   // Smoothing velocity
   if (!smoothVelocity(traj_extracted, *traj_extracted_closest, output)) {
     return prev_output_;
-  }
-
-  // for reverse velocity
-  if (is_reverse) {
-    flipVelocity(output);
   }
 
   return output;
@@ -549,8 +555,16 @@ bool MotionVelocitySmootherNode::smoothVelocity(
 
   RCLCPP_DEBUG(get_logger(), "smoothVelocity : traj_smoothed.size() = %lu", traj_smoothed.size());
   if (publish_debug_trajs_) {
-    pub_trajectory_latacc_filtered_->publish(toTrajectoryMsg(*traj_lateral_acc_filtered));
-    pub_trajectory_resampled_->publish(toTrajectoryMsg(*traj_resampled));
+    {
+      auto tmp = *traj_lateral_acc_filtered;
+      if (is_reverse_) flipVelocity(tmp);
+      pub_trajectory_latacc_filtered_->publish(toTrajectoryMsg(tmp));
+    }
+    {
+      auto tmp = *traj_resampled;
+      if (is_reverse_) flipVelocity(tmp);
+      pub_trajectory_resampled_->publish(toTrajectoryMsg(tmp));
+    }
 
     if (!debug_trajectories.empty()) {
       for (auto & debug_trajectory : debug_trajectories) {
@@ -652,7 +666,7 @@ MotionVelocitySmootherNode::calcInitialMotion(
   }
 
   const auto prev_output_closest_point =
-    trajectory_utils::calcInterpolatedTrajectoryPoint(prev_traj, input_traj.at(input_closest).pose);
+    trajectory_utils::calcInterpolatedTrajectoryPoint(prev_traj, current_pose_ptr_->pose);
 
   // when velocity tracking deviation is large
   const double desired_vel{prev_output_closest_point.longitudinal_velocity_mps};
@@ -805,16 +819,22 @@ void MotionVelocitySmootherNode::applyStopApproachingVelocity(TrajectoryPoints &
 void MotionVelocitySmootherNode::publishDebugTrajectories(
   const std::vector<TrajectoryPoints> & debug_trajectories) const
 {
+  auto debug_trajectories_tmp = debug_trajectories;
   if (node_param_.algorithm_type == AlgorithmType::JERK_FILTERED) {
-    if (debug_trajectories.size() != 3) {
+    if (debug_trajectories_tmp.size() != 3) {
       RCLCPP_DEBUG(get_logger(), "Size of the debug trajectories is incorrect");
       return;
     }
-    pub_forward_filtered_trajectory_->publish(toTrajectoryMsg(debug_trajectories.at(0)));
-    pub_backward_filtered_trajectory_->publish(toTrajectoryMsg(debug_trajectories.at(1)));
-    pub_merged_filtered_trajectory_->publish(toTrajectoryMsg(debug_trajectories.at(2)));
+    if (is_reverse_) {
+      flipVelocity(debug_trajectories_tmp.at(0));
+      flipVelocity(debug_trajectories_tmp.at(1));
+      flipVelocity(debug_trajectories_tmp.at(2));
+    }
+    pub_forward_filtered_trajectory_->publish(toTrajectoryMsg(debug_trajectories_tmp.at(0)));
+    pub_backward_filtered_trajectory_->publish(toTrajectoryMsg(debug_trajectories_tmp.at(1)));
+    pub_merged_filtered_trajectory_->publish(toTrajectoryMsg(debug_trajectories_tmp.at(2)));
     publishClosestVelocity(
-      debug_trajectories.at(2), current_pose_ptr_->pose, pub_closest_merged_velocity_);
+      debug_trajectories_tmp.at(2), current_pose_ptr_->pose, pub_closest_merged_velocity_);
   }
 }
 
