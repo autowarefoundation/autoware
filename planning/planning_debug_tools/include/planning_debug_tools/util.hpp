@@ -1,0 +1,87 @@
+// Copyright 2022 Tier IV, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#ifndef PLANNING_DEBUG_TOOLS__UTIL_HPP_
+#define PLANNING_DEBUG_TOOLS__UTIL_HPP_
+
+#include "motion_utils/trajectory/trajectory.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "tier4_autoware_utils/geometry/geometry.hpp"
+#include "tier4_autoware_utils/geometry/path_with_lane_id_geometry.hpp"
+
+#include "autoware_auto_planning_msgs/msg/path.hpp"
+#include "autoware_auto_planning_msgs/msg/path_with_lane_id.hpp"
+#include "autoware_auto_planning_msgs/msg/trajectory.hpp"
+
+#include <vector>
+
+namespace planning_debug_tools
+{
+
+using tier4_autoware_utils::calcDistance2d;
+using tier4_autoware_utils::getPoint;
+
+double getVelocity(const autoware_auto_planning_msgs::msg::PathPoint & p)
+{
+  return p.longitudinal_velocity_mps;
+}
+double getVelocity(const autoware_auto_planning_msgs::msg::PathPointWithLaneId & p)
+{
+  return p.point.longitudinal_velocity_mps;
+}
+double getVelocity(const autoware_auto_planning_msgs::msg::TrajectoryPoint & p)
+{
+  return p.longitudinal_velocity_mps;
+}
+template <class T>
+inline std::vector<double> getVelocityArray(const T & points)
+{
+  std::vector<double> v_arr;
+  for (const auto & p : points) {
+    v_arr.push_back(getVelocity(p));
+  }
+  return v_arr;
+}
+
+template <typename T>
+std::vector<double> calcPathArcLengthArray(const T & points, const double offset)
+{
+  std::vector<double> out;
+  out.push_back(offset);
+  double sum = offset;
+  for (size_t i = 1; i < points.size(); ++i) {
+    sum += calcDistance2d(getPoint(points.at(i)), getPoint(points.at(i - 1)));
+    out.push_back(sum);
+  }
+  return out;
+}
+
+template <class T>
+inline std::vector<double> calcCurvature(const T & points)
+{
+  std::vector<double> curvature_arr;
+  curvature_arr.push_back(0.0);
+  for (size_t i = 1; i < points.size() - 1; ++i) {
+    const auto p1 = getPoint(points.at(i - 1));
+    const auto p2 = getPoint(points.at(i));
+    const auto p3 = getPoint(points.at(i + 1));
+    curvature_arr.push_back(tier4_autoware_utils::calcCurvature(p1, p2, p3));
+  }
+  curvature_arr.push_back(0.0);
+  return curvature_arr;
+}
+
+}  // namespace planning_debug_tools
+
+#endif  // PLANNING_DEBUG_TOOLS__UTIL_HPP_

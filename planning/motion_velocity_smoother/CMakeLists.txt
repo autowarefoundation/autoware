@@ -61,9 +61,3 @@ ament_auto_package(
     launch
     config
 )
-
-install(PROGRAMS
-  scripts/trajectory_visualizer.py
-  scripts/closest_velocity_checker.py
-  DESTINATION lib/${PROJECT_NAME}
-)
