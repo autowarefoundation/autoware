@@ -330,8 +330,9 @@ lanelet::ConstLanelets LaneChangeModule::getLaneChangeLanes(
   lanelet::ConstLanelet current_lane;
   lanelet::utils::query::getClosestLanelet(
     current_lanes, planner_data_->self_pose->pose, &current_lane);
-  const double lane_change_prepare_length =
-    current_twist.linear.x * parameters_.lane_change_prepare_duration;
+  const double lane_change_prepare_length = std::max(
+    current_twist.linear.x * parameters_.lane_change_prepare_duration,
+    planner_data_->parameters.minimum_lane_change_length);
   lanelet::ConstLanelets current_check_lanes =
     route_handler->getLaneletSequence(current_lane, current_pose, 0.0, lane_change_prepare_length);
   lanelet::ConstLanelet lane_change_lane;
