@@ -14,6 +14,8 @@
 
 #include "obstacle_cruise_planner/utils.hpp"
 
+#include "perception_utils/predicted_path_utils.hpp"
+
 namespace obstacle_cruise_utils
 {
 bool isVehicle(const uint8_t label)
@@ -74,39 +76,16 @@ boost::optional<geometry_msgs::msg::Pose> calcForwardPose(
   return tier4_autoware_utils::calcInterpolatedPose(pre_pose, next_pose, lerp_ratio);
 }
 
-boost::optional<geometry_msgs::msg::Pose> lerpByTimeStamp(
-  const autoware_auto_perception_msgs::msg::PredictedPath & path, const rclcpp::Duration & rel_time)
-{
-  auto clock{rclcpp::Clock{RCL_ROS_TIME}};
-  if (
-    path.path.empty() || rel_time < rclcpp::Duration::from_seconds(0.0) ||
-    rel_time > rclcpp::Duration(path.time_step) * (static_cast<double>(path.path.size()) - 1)) {
-    return boost::none;
-  }
-
-  for (size_t i = 1; i < path.path.size(); ++i) {
-    const auto & pt = path.path.at(i);
-    const auto & prev_pt = path.path.at(i - 1);
-    if (rel_time <= rclcpp::Duration(path.time_step) * static_cast<double>(i)) {
-      const auto offset = rel_time - rclcpp::Duration(path.time_step) * static_cast<double>(i - 1);
-      const auto ratio = offset.seconds() / rclcpp::Duration(path.time_step).seconds();
-      return tier4_autoware_utils::calcInterpolatedPose(prev_pt, pt, ratio);
-    }
-  }
-
-  return boost::none;
-}
-
 boost::optional<geometry_msgs::msg::Pose> getCurrentObjectPoseFromPredictedPath(
   const autoware_auto_perception_msgs::msg::PredictedPath & predicted_path,
   const rclcpp::Time & obj_base_time, const rclcpp::Time & current_time)
 {
-  const auto rel_time = current_time - obj_base_time;
-  if (rel_time.seconds() < 0.0) {
+  const double rel_time = (current_time - obj_base_time).seconds();
+  if (rel_time < 0.0) {
     return boost::none;
   }
 
-  return lerpByTimeStamp(predicted_path, rel_time);
+  return perception_utils::calcInterpolatedPose(predicted_path, rel_time);
 }
 
 boost::optional<geometry_msgs::msg::Pose> getCurrentObjectPoseFromPredictedPaths(
@@ -128,12 +107,16 @@ boost::optional<geometry_msgs::msg::Pose> getCurrentObjectPoseFromPredictedPaths
   return getCurrentObjectPoseFromPredictedPath(*predicted_path, obj_base_time, current_time);
 }
 
-geometry_msgs::msg::Pose getCurrentObjectPose(
+geometry_msgs::msg::PoseStamped getCurrentObjectPose(
   const autoware_auto_perception_msgs::msg::PredictedObject & predicted_object,
-  const rclcpp::Time & obj_base_time, const rclcpp::Time & current_time, const bool use_prediction)
+  const std_msgs::msg::Header & obj_header, const rclcpp::Time & current_time,
+  const bool use_prediction)
 {
   if (!use_prediction) {
-    return predicted_object.kinematics.initial_pose_with_covariance.pose;
+    geometry_msgs::msg::PoseStamped current_pose;
+    current_pose.pose = predicted_object.kinematics.initial_pose_with_covariance.pose;
+    current_pose.header = obj_header;
+    return current_pose;
   }
 
   std::vector<autoware_auto_perception_msgs::msg::PredictedPath> predicted_paths;
@@ -141,15 +124,22 @@ geometry_msgs::msg::Pose getCurrentObjectPose(
     predicted_paths.push_back(path);
   }
   const auto interpolated_pose =
-    getCurrentObjectPoseFromPredictedPaths(predicted_paths, obj_base_time, current_time);
+    getCurrentObjectPoseFromPredictedPaths(predicted_paths, obj_header.stamp, current_time);
 
   if (!interpolated_pose) {
     RCLCPP_WARN(
       rclcpp::get_logger("ObstacleCruisePlanner"), "Failed to find the interpolated obstacle pose");
-    return predicted_object.kinematics.initial_pose_with_covariance.pose;
+    geometry_msgs::msg::PoseStamped current_pose;
+    current_pose.pose = predicted_object.kinematics.initial_pose_with_covariance.pose;
+    current_pose.header = obj_header;
+    return current_pose;
   }
 
-  return interpolated_pose.get();
+  geometry_msgs::msg::PoseStamped current_pose;
+  current_pose.pose = interpolated_pose.get();
+  current_pose.header.frame_id = obj_header.frame_id;
+  current_pose.header.stamp = current_time;
+  return current_pose;
 }
 
 boost::optional<TargetObstacle> getClosestStopObstacle(
@@ -169,7 +159,7 @@ boost::optional<TargetObstacle> getClosestStopObstacle(
     }
 
     const double dist_to_stop_obstacle =
-      motion_utils::calcSignedArcLength(traj.points, 0, obstacle.collision_point);
+      motion_utils::calcSignedArcLength(traj.points, 0, obstacle.collision_point.point);
     if (dist_to_stop_obstacle < dist_to_closest_stop_obstacle) {
       dist_to_closest_stop_obstacle = dist_to_stop_obstacle;
       closest_stop_obstacle = obstacle;

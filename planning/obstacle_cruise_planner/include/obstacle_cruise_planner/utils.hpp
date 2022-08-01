@@ -26,6 +26,7 @@
 #include "autoware_auto_perception_msgs/msg/predicted_path.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
 #include "geometry_msgs/msg/pose.hpp"
+#include "geometry_msgs/msg/pose_stamped.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
 
 #include <boost/optional.hpp>
@@ -48,10 +49,6 @@ boost::optional<geometry_msgs::msg::Pose> calcForwardPose(
   const autoware_auto_planning_msgs::msg::Trajectory & traj, const size_t start_idx,
   const double target_length);
 
-boost::optional<geometry_msgs::msg::Pose> lerpByTimeStamp(
-  const autoware_auto_perception_msgs::msg::PredictedPath & path,
-  const rclcpp::Duration & rel_time);
-
 boost::optional<geometry_msgs::msg::Pose> getCurrentObjectPoseFromPredictedPath(
   const autoware_auto_perception_msgs::msg::PredictedPath & predicted_path,
   const rclcpp::Time & obj_base_time, const rclcpp::Time & current_time);
@@ -60,9 +57,10 @@ boost::optional<geometry_msgs::msg::Pose> getCurrentObjectPoseFromPredictedPaths
   const std::vector<autoware_auto_perception_msgs::msg::PredictedPath> & predicted_paths,
   const rclcpp::Time & obj_base_time, const rclcpp::Time & current_time);
 
-geometry_msgs::msg::Pose getCurrentObjectPose(
+geometry_msgs::msg::PoseStamped getCurrentObjectPose(
   const autoware_auto_perception_msgs::msg::PredictedObject & predicted_object,
-  const rclcpp::Time & obj_base_time, const rclcpp::Time & current_time, const bool use_prediction);
+  const std_msgs::msg::Header & obj_header, const rclcpp::Time & current_time,
+  const bool use_prediction);
 
 boost::optional<TargetObstacle> getClosestStopObstacle(
   const autoware_auto_planning_msgs::msg::Trajectory & traj,

@@ -17,6 +17,7 @@
 #include "interpolation/linear_interpolation.hpp"
 #include "interpolation/spline_interpolation.hpp"
 #include "obstacle_cruise_planner/utils.hpp"
+#include "perception_utils/predicted_path_utils.hpp"
 
 #include <vector>
 
@@ -59,7 +60,7 @@ autoware_auto_perception_msgs::msg::PredictedPath resamplePredictedPath(
   resampled_path.time_step = input_path.time_step;
 
   for (const auto & rel_time : rel_time_vec) {
-    const auto opt_pose = obstacle_cruise_utils::lerpByTimeStamp(input_path, rel_time);
+    const auto opt_pose = perception_utils::calcInterpolatedPose(input_path, rel_time.seconds());
     if (!opt_pose) {
       continue;
     }

@@ -26,6 +26,7 @@
 #include "autoware_auto_perception_msgs/msg/predicted_object.hpp"
 #include "autoware_auto_perception_msgs/msg/predicted_objects.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
+#include "geometry_msgs/msg/point_stamped.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
@@ -89,9 +90,9 @@ private:
   void checkConsistency(
     const rclcpp::Time & current_time, const PredictedObjects & predicted_objects,
     const Trajectory & traj, std::vector<TargetObstacle> & target_obstacles);
-  geometry_msgs::msg::Point calcNearestCollisionPoint(
+  geometry_msgs::msg::PointStamped calcNearestCollisionPoint(
     const size_t & first_within_idx,
-    const std::vector<geometry_msgs::msg::Point> & collision_points,
+    const std::vector<geometry_msgs::msg::PointStamped> & collision_points,
     const Trajectory & decimated_traj, const bool is_driving_forward);
   double calcCollisionTimeMargin(
     const geometry_msgs::msg::Pose & current_pose, const double current_vel,
@@ -182,6 +183,9 @@ private:
     std::vector<int> ignored_outside_obstacle_types;
     // obstacle hold
     double stop_obstacle_hold_time_threshold;
+    // prediction resampling
+    double prediction_resampling_time_interval;
+    double prediction_resampling_time_horizon;
   };
   ObstacleFilteringParam obstacle_filtering_param_;
 

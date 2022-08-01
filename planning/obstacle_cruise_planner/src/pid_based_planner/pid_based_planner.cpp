@@ -167,7 +167,7 @@ double PIDBasedPlanner::calcDistanceToObstacle(
   const double offset = abs_ego_offset + segment_offset;
 
   return motion_utils::calcSignedArcLength(
-           planner_data.traj.points, ego_segment_idx, obstacle.collision_point) -
+           planner_data.traj.points, ego_segment_idx, obstacle.collision_point.point) -
          offset;
 }
 

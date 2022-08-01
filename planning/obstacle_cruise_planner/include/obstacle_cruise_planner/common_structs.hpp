@@ -21,6 +21,7 @@
 
 #include "autoware_auto_perception_msgs/msg/predicted_objects.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
+#include "geometry_msgs/msg/point_stamped.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
 
 #include <boost/optional.hpp>
@@ -49,7 +50,8 @@ struct TargetObstacle
 {
   TargetObstacle(
     const rclcpp::Time & arg_time_stamp, const PredictedObject & object,
-    const double aligned_velocity, const geometry_msgs::msg::Point & arg_collision_point)
+    const double aligned_velocity, const geometry_msgs::msg::PointStamped & arg_collision_point,
+    const bool arg_is_on_ego_trajectory)
   {
     time_stamp = arg_time_stamp;
     orientation_reliable = true;
@@ -68,6 +70,7 @@ struct TargetObstacle
 
     collision_point = arg_collision_point;
     has_stopped = false;
+    is_on_ego_trajectory = arg_is_on_ego_trajectory;
   }
 
   rclcpp::Time time_stamp;
@@ -80,8 +83,9 @@ struct TargetObstacle
   Shape shape;
   std::string uuid;
   std::vector<PredictedPath> predicted_paths;
-  geometry_msgs::msg::Point collision_point;
+  geometry_msgs::msg::PointStamped collision_point;
   bool has_stopped;
+  bool is_on_ego_trajectory;
 };
 
 struct ObstacleCruisePlannerData

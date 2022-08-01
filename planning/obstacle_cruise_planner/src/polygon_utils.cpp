@@ -88,7 +88,8 @@ namespace polygon_utils
 {
 boost::optional<size_t> getFirstCollisionIndex(
   const std::vector<Polygon2d> & traj_polygons, const Polygon2d & obj_polygon,
-  std::vector<geometry_msgs::msg::Point> & collision_geom_points)
+  const std_msgs::msg::Header & obj_header,
+  std::vector<geometry_msgs::msg::PointStamped> & collision_geom_points)
 {
   for (size_t i = 0; i < traj_polygons.size(); ++i) {
     std::deque<Polygon2d> collision_polygons;
@@ -100,9 +101,10 @@ boost::optional<size_t> getFirstCollisionIndex(
         has_collision = true;
 
         for (const auto & collision_point : collision_polygon.outer()) {
-          geometry_msgs::msg::Point collision_geom_point;
-          collision_geom_point.x = collision_point.x();
-          collision_geom_point.y = collision_point.y();
+          geometry_msgs::msg::PointStamped collision_geom_point;
+          collision_geom_point.header = obj_header;
+          collision_geom_point.point.x = collision_point.x();
+          collision_geom_point.point.y = collision_point.y();
           collision_geom_points.push_back(collision_geom_point);
         }
       }
@@ -142,12 +144,12 @@ boost::optional<size_t> getFirstNonCollisionIndex(
 
 boost::optional<size_t> willCollideWithSurroundObstacle(
   const autoware_auto_planning_msgs::msg::Trajectory & traj,
-  const std::vector<Polygon2d> & traj_polygons,
+  const std::vector<Polygon2d> & traj_polygons, const std_msgs::msg::Header & obj_header,
   const autoware_auto_perception_msgs::msg::PredictedPath & predicted_path,
   const autoware_auto_perception_msgs::msg::Shape & shape, const double max_dist,
   const double ego_obstacle_overlap_time_threshold,
   const double max_prediction_time_for_collision_check,
-  std::vector<geometry_msgs::msg::Point> & collision_geom_points)
+  std::vector<geometry_msgs::msg::PointStamped> & collision_geom_points)
 {
   constexpr double epsilon = 1e-3;
 
@@ -185,9 +187,13 @@ boost::optional<size_t> willCollideWithSurroundObstacle(
               has_collision = true;
 
               for (const auto & collision_point : collision_polygon.outer()) {
-                geometry_msgs::msg::Point collision_geom_point;
-                collision_geom_point.x = collision_point.x();
-                collision_geom_point.y = collision_point.y();
+                geometry_msgs::msg::PointStamped collision_geom_point;
+                const auto collision_time =
+                  rclcpp::Time(obj_header.stamp) + rclcpp::Duration(predicted_path.time_step) * i;
+                collision_geom_point.header.frame_id = obj_header.frame_id;
+                collision_geom_point.header.stamp = collision_time;
+                collision_geom_point.point.x = collision_point.x();
+                collision_geom_point.point.y = collision_point.y();
                 collision_geom_points.push_back(collision_geom_point);
               }
             }
