@@ -93,7 +93,7 @@ private:
   Param param_{};
   std::shared_ptr<std::vector<RadarInput>> filterRadarWithinObject(
     const DetectedObject & object, const std::shared_ptr<std::vector<RadarInput>> & radars);
-  // [TODO] (Satoshi Tanaka) Implement
+  // TODO(Satoshi Tanaka): Implement
   // std::vector<DetectedObject> splitObject(
   //   const DetectedObject & object, const std::shared_ptr<std::vector<RadarInput>> & radars);
   TwistWithCovariance estimateTwist(

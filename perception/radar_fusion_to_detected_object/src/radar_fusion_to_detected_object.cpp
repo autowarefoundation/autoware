@@ -82,7 +82,7 @@ RadarFusionToDetectedObject::Output RadarFusionToDetectedObject::update(
     std::shared_ptr<std::vector<RadarInput>> radars_within_object =
       filterRadarWithinObject(object, input.radars);
 
-    // [TODO] (Satoshi Tanaka) Implement
+    // TODO(Satoshi Tanaka): Implement
     // Split the object going in a different direction
     // std::vector<DetectedObject> split_objects = splitObject(object, radars_within_object);
     std::vector<DetectedObject> split_objects;
@@ -165,7 +165,7 @@ RadarFusionToDetectedObject::filterRadarWithinObject(
   return std::make_shared<std::vector<RadarFusionToDetectedObject::RadarInput>>(outputs);
 }
 
-// [TODO] (Satoshi Tanaka) Implementation
+// TODO(Satoshi Tanaka): Implementation
 // std::vector<DetectedObject> RadarFusionToDetectedObject::splitObject(
 //   const DetectedObject & object, const std::vector<RadarInput> & radars)
 // {
@@ -257,7 +257,7 @@ TwistWithCovariance RadarFusionToDetectedObject::estimateTwist(
                             vec_target_value_average * param_.velocity_weight_target_value_average;
   TwistWithCovariance estimated_twist_with_covariance = toTwistWithCovariance(sum_vec);
 
-  // [TODO] (Satoshi Tanaka) Implement
+  // TODO(Satoshi Tanaka): Implement
   // Convert doppler velocity to twist
   // if (param_.convert_doppler_to_twist) {
   //   twist_with_covariance = convertDopplerToTwist(object, twist_with_covariance);
@@ -280,7 +280,7 @@ bool RadarFusionToDetectedObject::isQualified(
   }
 }
 
-// [TODO] (Satoshi Tanaka) Implement for radar pointcloud fusion
+// TODO(Satoshi Tanaka): Implement for radar pointcloud fusion
 // TwistWithCovariance RadarFusionToDetectedObject::convertDopplerToTwist(
 //   const DetectedObject & object, const TwistWithCovariance & twist_with_covariance)
 // {
