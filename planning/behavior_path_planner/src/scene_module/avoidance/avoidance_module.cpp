@@ -2097,9 +2097,17 @@ BehaviorModuleOutput AvoidanceModule::plan()
     debug_data_.new_shift_points = *new_shift_points;
     DEBUG_PRINT("new_shift_points size = %lu", new_shift_points->size());
     printShiftPoints(*new_shift_points, "new_shift_points");
-    if (new_shift_points->back().getRelativeLength() > 0.0) {
+    int i = new_shift_points->size() - 1;
+    for (; i > 0; i--) {
+      if (fabs(new_shift_points->at(i).getRelativeLength()) < 0.01) {
+        continue;
+      } else {
+        break;
+      }
+    }
+    if (new_shift_points->at(i).getRelativeLength() > 0.0) {
       removePreviousRTCStatusRight();
-    } else if (new_shift_points->back().getRelativeLength() < 0.0) {
+    } else if (new_shift_points->at(i).getRelativeLength() < 0.0) {
       removePreviousRTCStatusLeft();
     } else {
       RCLCPP_WARN_STREAM(getLogger(), "Direction is UNKNOWN");
@@ -2166,7 +2174,16 @@ CandidateOutput AvoidanceModule::planCandidate() const
 
   if (new_shift_points) {  // clip from shift start index for visualize
     clipByMinStartIdx(*new_shift_points, shifted_path.path);
-    output.lateral_shift = new_shift_points->back().getRelativeLength();
+
+    int i = new_shift_points->size() - 1;
+    for (; i > 0; i--) {
+      if (fabs(new_shift_points->at(i).getRelativeLength()) < 0.01) {
+        continue;
+      } else {
+        break;
+      }
+    }
+    output.lateral_shift = new_shift_points->at(i).getRelativeLength();
     output.distance_to_path_change = new_shift_points->front().start_longitudinal;
   }
 
