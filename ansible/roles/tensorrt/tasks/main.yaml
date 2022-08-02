@@ -17,14 +17,4 @@
   with_items:
     - libcudnn8
     - libcudnn8-dev
-    - libnvinfer8
-    - libnvinfer-dev
-    - libnvinfer-plugin8
-    - libnvinfer-plugin-dev
-    - libnvonnxparsers8
-    - libnvonnxparsers-dev
-    - libnvparsers8
-    - libnvparsers-dev
-    - libnvinfer-bin
-    - libnvinfer-samples
     - tensorrt
