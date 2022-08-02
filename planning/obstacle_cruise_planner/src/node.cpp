@@ -173,6 +173,26 @@ double calcAlignedAdaptiveCruise(
 
   return object_vel * std::cos(object_yaw - traj_yaw);
 }
+
+double calcObjectMaxLength(const autoware_auto_perception_msgs::msg::Shape & shape)
+{
+  if (shape.type == autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {
+    return std::hypot(shape.dimensions.x / 2.0, shape.dimensions.y / 2.0);
+  } else if (shape.type == autoware_auto_perception_msgs::msg::Shape::CYLINDER) {
+    return shape.dimensions.x / 2.0;
+  } else if (shape.type == autoware_auto_perception_msgs::msg::Shape::POLYGON) {
+    double max_length_to_point = 0.0;
+    for (const auto rel_point : shape.footprint.points) {
+      const double length_to_point = std::hypot(rel_point.x, rel_point.y);
+      if (max_length_to_point < length_to_point) {
+        max_length_to_point = length_to_point;
+      }
+    }
+    return max_length_to_point;
+  }
+
+  throw std::logic_error("The shape type is not supported in obstacle_cruise_planner.");
+}
 }  // namespace
 
 namespace motion_planning
@@ -693,9 +713,11 @@ std::vector<TargetObstacle> ObstacleCruisePlannerNode::filterObstacles(
     const double dist_from_obstacle_to_traj = [&]() {
       return motion_utils::calcLateralOffset(decimated_traj.points, object_pose.pose.position);
     }();
+    const double obstacle_max_length = calcObjectMaxLength(predicted_object.shape);
     if (
       std::fabs(dist_from_obstacle_to_traj) >
-      vehicle_info_.vehicle_width_m + obstacle_filtering_param_.rough_detection_area_expand_width) {
+      vehicle_info_.vehicle_width_m + obstacle_max_length +
+        obstacle_filtering_param_.rough_detection_area_expand_width) {
       RCLCPP_INFO_EXPRESSION(
         get_logger(), is_showing_debug_info_,
         "Ignore obstacle (%s) since it is far from the trajectory.", object_id.c_str());
@@ -752,7 +774,7 @@ std::vector<TargetObstacle> ObstacleCruisePlannerNode::filterObstacles(
 
       if (
         std::fabs(dist_from_obstacle_to_traj) >
-        vehicle_info_.vehicle_width_m +
+        vehicle_info_.vehicle_width_m + obstacle_max_length +
           obstacle_filtering_param_.outside_rough_detection_area_expand_width) {
         RCLCPP_INFO_EXPRESSION(
           get_logger(), is_showing_debug_info_,
