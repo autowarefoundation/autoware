@@ -425,6 +425,8 @@ CheckOptions:
     value: ""
   - key: portability-simd-intrinsics.Suggest
     value: "0"
+  - key: readability-function-cognitive-complexity.IgnoreMacros
+    value: "1"
   - key: readability-else-after-return.WarnOnUnfixable
     value: "1"
   - key: readability-identifier-naming.NamespaceCase
