@@ -138,6 +138,7 @@ Checks: "
   readability-delete-null-pointer,
   readability-else-after-return,
   readability-function-cognitive-complexity,
+  readability-identifier-naming,
   readability-inconsistent-declaration-parameter-name,
   readability-isolate-declaration,
   readability-make-member-function-const,
@@ -426,6 +427,20 @@ CheckOptions:
     value: "0"
   - key: readability-else-after-return.WarnOnUnfixable
     value: "1"
+  - key: readability-identifier-naming.NamespaceCase
+    value: lower_case
+  - key: readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key: readability-identifier-naming.PrivateMemberPrefix
+    value: ""
+  - key: readability-identifier-naming.StructCase
+    value: CamelCase
+  - key: readability-identifier-naming.FunctionCase
+    value: lower_case
+  - key: readability-identifier-naming.VariableCase
+    value: lower_case
+  - key: readability-identifier-naming.GlobalConstantCase
+    value: UPPER_CASE
   - key: readability-inconsistent-declaration-parameter-name.IgnoreMacros
     value: "1"
   - key: readability-inconsistent-declaration-parameter-name.Strict
