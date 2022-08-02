@@ -14,6 +14,8 @@
 
 #include "motion_utils/resample/resample.hpp"
 
+#include "tier4_autoware_utils/geometry/geometry.hpp"
+
 namespace motion_utils
 {
 std::vector<geometry_msgs::msg::Pose> resamplePath(
@@ -76,17 +78,37 @@ std::vector<geometry_msgs::msg::Pose> resamplePath(
     resampled_points.at(i) = pose;
   }
 
+  const bool is_driving_forward =
+    tier4_autoware_utils::isDrivingForward(points.at(0), points.at(1));
   // Insert Orientation
-  for (size_t i = 0; i < resampled_points.size() - 1; ++i) {
-    const auto & src_point = resampled_points.at(i).position;
-    const auto & dst_point = resampled_points.at(i + 1).position;
-    const double pitch = tier4_autoware_utils::calcElevationAngle(src_point, dst_point);
-    const double yaw = tier4_autoware_utils::calcAzimuthAngle(src_point, dst_point);
-    resampled_points.at(i).orientation =
-      tier4_autoware_utils::createQuaternionFromRPY(0.0, pitch, yaw);
-    if (i == resampled_points.size() - 2) {
-      // Terminal Orientation is same as the point before it
-      resampled_points.at(i + 1).orientation = resampled_points.at(i).orientation;
+  if (is_driving_forward) {
+    for (size_t i = 0; i < resampled_points.size() - 1; ++i) {
+      const auto & src_point = resampled_points.at(i).position;
+      const auto & dst_point = resampled_points.at(i + 1).position;
+      const double pitch = tier4_autoware_utils::calcElevationAngle(src_point, dst_point);
+      const double yaw = tier4_autoware_utils::calcAzimuthAngle(src_point, dst_point);
+      resampled_points.at(i).orientation =
+        tier4_autoware_utils::createQuaternionFromRPY(0.0, pitch, yaw);
+      if (i == resampled_points.size() - 2) {
+        // Terminal Orientation is same as the point before it
+        resampled_points.at(i + 1).orientation = resampled_points.at(i).orientation;
+      }
+    }
+  } else {
+    for (size_t i = resampled_points.size() - 1; i >= 1; --i) {
+      const auto & src_point = resampled_points.at(i).position;
+      const auto & dst_point = resampled_points.at(i - 1).position;
+      const double pitch = tier4_autoware_utils::calcElevationAngle(src_point, dst_point);
+      const double yaw = tier4_autoware_utils::calcAzimuthAngle(src_point, dst_point);
+      resampled_points.at(i).orientation =
+        tier4_autoware_utils::createQuaternionFromRPY(0.0, pitch, yaw);
+    }
+
+    // Initial Orientation is depend on the initial value of the resampled_arclength
+    if (resampled_arclength.front() < 1e-3) {
+      resampled_points.at(0).orientation = points.at(0).orientation;
+    } else {
+      resampled_points.at(0).orientation = resampled_points.at(1).orientation;
     }
   }
 
