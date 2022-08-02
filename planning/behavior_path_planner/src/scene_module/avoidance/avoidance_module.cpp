@@ -1895,10 +1895,14 @@ void AvoidanceModule::generateExtendedDrivableArea(ShiftedPath * shifted_path) c
   }
 }
 
-void AvoidanceModule::modifyPathVelocityToPreventAccelerationOnAvoidance(ShiftedPath & path) const
+void AvoidanceModule::modifyPathVelocityToPreventAccelerationOnAvoidance(ShiftedPath & path)
 {
   const auto ego_idx = avoidance_data_.ego_closest_path_index;
   const auto N = path.shift_length.size();
+
+  if (!ego_velocity_starting_avoidance_ptr_) {
+    ego_velocity_starting_avoidance_ptr_ = std::make_shared<double>(getEgoSpeed());
+  }
 
   // find first shift-change point from ego
   constexpr auto SHIFT_DIFF_THR = 0.1;
@@ -1919,33 +1923,42 @@ void AvoidanceModule::modifyPathVelocityToPreventAccelerationOnAvoidance(Shifted
     return;
   }
 
-  // calc time to the shift-change point
   constexpr auto NO_ACCEL_TIME_THR = 3.0;
-  const auto s = avoidance_data_.arclength_from_ego.at(target_idx) -
-                 avoidance_data_.arclength_from_ego.at(ego_idx);
-  const auto t = s / std::max(getEgoSpeed(), 1.0);
-  if (t > NO_ACCEL_TIME_THR) {
-    DEBUG_PRINT(
-      "shift point is far (s: %f, t: %f, ego_i: %lu, target_i: %lu). No velocity limit is applied.",
-      s, t, ego_idx, target_idx);
-    return;
+
+  // update ego velocity if the shift point is far
+  const auto s_from_ego = avoidance_data_.arclength_from_ego.at(target_idx) -
+                          avoidance_data_.arclength_from_ego.at(ego_idx);
+  const auto t_from_ego = s_from_ego / std::max(getEgoSpeed(), 1.0);
+  if (t_from_ego > NO_ACCEL_TIME_THR) {
+    *ego_velocity_starting_avoidance_ptr_ = getEgoSpeed();
   }
 
-  // calc max velocity with given acceleration
-  const auto v0 = getEgoSpeed();
-  const auto vmax = std::max(
-    parameters_.min_avoidance_speed_for_acc_prevention,
-    std::sqrt(v0 * v0 + 2.0 * s * parameters_.max_avoidance_acceleration));
+  // calc index and velocity to NO_ACCEL_TIME_THR
+  const auto v0 = *ego_velocity_starting_avoidance_ptr_;
+  auto vmax = 0.0;
+  size_t insert_idx = ego_idx;
+  for (size_t i = ego_idx; i <= target_idx; ++i) {
+    const auto s =
+      avoidance_data_.arclength_from_ego.at(target_idx) - avoidance_data_.arclength_from_ego.at(i);
+    const auto t = s / std::max(v0, 1.0);
+    if (t < NO_ACCEL_TIME_THR) {
+      insert_idx = i;
+      vmax = std::max(
+        parameters_.min_avoidance_speed_for_acc_prevention,
+        std::sqrt(v0 * v0 + 2.0 * s * parameters_.max_avoidance_acceleration));
+      break;
+    }
+  }
 
   // apply velocity limit
   constexpr size_t V_LIM_APPLY_IDX_MARGIN = 0;
-  for (size_t i = ego_idx + V_LIM_APPLY_IDX_MARGIN; i < N; ++i) {
+  for (size_t i = insert_idx + V_LIM_APPLY_IDX_MARGIN; i < N; ++i) {
     path.path.points.at(i).point.longitudinal_velocity_mps =
       std::min(path.path.points.at(i).point.longitudinal_velocity_mps, static_cast<float>(vmax));
   }
 
   DEBUG_PRINT(
-    "s: %f, t: %f, v0: %f, a: %f, vmax: %f, ego_i: %lu, target_i: %lu", s, t, v0,
+    "s: %f, t: %f, v0: %f, a: %f, vmax: %f, ego_i: %lu, target_i: %lu", s_from_ego, t_from_ego, v0,
     parameters_.max_avoidance_acceleration, vmax, ego_idx, target_idx);
 }
 

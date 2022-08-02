@@ -202,7 +202,8 @@ private:
   void generateExtendedDrivableArea(ShiftedPath * shifted_path) const;
 
   // -- velocity planning --
-  void modifyPathVelocityToPreventAccelerationOnAvoidance(ShiftedPath & shifted_path) const;
+  std::shared_ptr<double> ego_velocity_starting_avoidance_ptr_;
+  void modifyPathVelocityToPreventAccelerationOnAvoidance(ShiftedPath & shifted_path);
 
   // clean up shifter
   void postProcess(PathShifter & shifter) const;
