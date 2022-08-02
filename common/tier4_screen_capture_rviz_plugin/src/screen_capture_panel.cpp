@@ -44,6 +44,8 @@ AutowareScreenCapturePanel::AutowareScreenCapturePanel(QWidget * parent)
     connect(screen_capture_button_ptr_, SIGNAL(clicked()), this, SLOT(onClickScreenCapture()));
     cap_layout->addWidget(screen_capture_button_ptr_);
     cap_layout->addWidget(ros_time_label_);
+    // initialize file name system clock is better for identification.
+    setFormatDate(ros_time_label_, rclcpp::Clock().now().seconds());
     cap_layout->addWidget(new QLabel(" [.mp4] "));
   }
 
@@ -104,13 +106,6 @@ void AutowareScreenCapturePanel::onClickScreenCapture()
   return;
 }
 
-void AutowareScreenCapturePanel::convertPNGImagesToMP4()
-{
-  writer.release();
-  // remove temporary created folder
-  std::filesystem::remove_all(root_folder_);
-}
-
 void AutowareScreenCapturePanel::onClickVideoCapture()
 {
   const int clock = static_cast<int>(1e3 / capture_hz_->value());
@@ -130,9 +125,7 @@ void AutowareScreenCapturePanel::onClickVideoCapture()
     case State::WAITING_FOR_CAPTURE:
       // initialize setting
       {
-        counter_ = 0;
-        root_folder_ = ros_time_label_->text().toStdString();
-        std::filesystem::create_directory(root_folder_);
+        capture_file_name_ = ros_time_label_->text().toStdString();
       }
       capture_to_mp4_button_ptr_->setText("capturing rviz screen");
       capture_to_mp4_button_ptr_->setStyleSheet("background-color: #FF0000;");
@@ -146,17 +139,14 @@ void AutowareScreenCapturePanel::onClickVideoCapture()
                              .size();
         current_movie_size = cv::Size(qsize.width(), qsize.height());
         writer.open(
-          "capture/" + root_folder_ + ".mp4", fourcc, capture_hz_->value(), current_movie_size);
+          "capture/" + capture_file_name_ + ".mp4", fourcc, capture_hz_->value(),
+          current_movie_size);
       }
       capture_timer_->start(clock);
       state_ = State::CAPTURING;
       break;
-    case State::CAPTURING: {
+    case State::CAPTURING:
       capture_timer_->stop();
-    }
-      capture_to_mp4_button_ptr_->setText("writing to video");
-      capture_to_mp4_button_ptr_->setStyleSheet("background-color: #FFFF00;");
-      convertPNGImagesToMP4();
       capture_to_mp4_button_ptr_->setText("waiting for capture");
       capture_to_mp4_button_ptr_->setStyleSheet("background-color: #00FF00;");
       state_ = State::WAITING_FOR_CAPTURE;
@@ -181,7 +171,6 @@ void AutowareScreenCapturePanel::onTimer()
     cv::Mat new_image;
     cv::resize(image, new_image, current_movie_size);
     writer.write(new_image);
-
   } else {
     writer.write(image);
   }
@@ -190,17 +179,14 @@ void AutowareScreenCapturePanel::onTimer()
 
 void AutowareScreenCapturePanel::update()
 {
-  setFormatDate(ros_time_label_, raw_node_->get_clock()->now().seconds());
+  setFormatDate(ros_time_label_, rclcpp::Clock().now().seconds());
 }
 
 void AutowareScreenCapturePanel::save(rviz_common::Config config) const { Panel::save(config); }
 
 void AutowareScreenCapturePanel::load(const rviz_common::Config & config) { Panel::load(config); }
 
-AutowareScreenCapturePanel::~AutowareScreenCapturePanel()
-{
-  std::filesystem::remove_all(root_folder_);
-}
+AutowareScreenCapturePanel::~AutowareScreenCapturePanel() = default;
 
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(AutowareScreenCapturePanel, rviz_common::Panel)

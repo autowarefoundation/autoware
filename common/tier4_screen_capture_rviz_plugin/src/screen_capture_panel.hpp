@@ -58,7 +58,6 @@ public:
   void onInitialize() override;
   void createWallTimer();
   void onTimer();
-  void convertPNGImagesToMP4();
   void save(rviz_common::Config config) const override;
   void load(const rviz_common::Config & config) override;
   void onCaptureTrigger(
@@ -67,7 +66,6 @@ public:
 
 public Q_SLOTS:
   void onClickScreenCapture();
-  void onClickCaptureToVideo();
   void onClickVideoCapture();
   void onRateChanged();
 
@@ -80,8 +78,7 @@ private:
   QMainWindow * main_window_;
   enum class State { WAITING_FOR_CAPTURE, CAPTURING };
   State state_;
-  std::string root_folder_;
-  size_t counter_;
+  std::string capture_file_name_;
   bool is_capture_;
   cv::VideoWriter writer;
   cv::Size current_movie_size;
