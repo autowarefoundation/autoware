@@ -203,35 +203,46 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode(const rclcpp::NodeOptio
 }
 
 // NOTE: argument planner_data must not be referenced for multithreading
-bool BehaviorVelocityPlannerNode::isDataReady(const PlannerData planner_data) const
+bool BehaviorVelocityPlannerNode::isDataReady(
+  const PlannerData planner_data, rclcpp::Clock clock) const
 {
   const auto & d = planner_data;
 
   // from tf
   if (d.current_pose.header.frame_id == "") {
+    RCLCPP_INFO_THROTTLE(get_logger(), clock, 3000, "Frame id of current pose is missing");
     return false;
   }
 
   // from callbacks
   if (!d.current_velocity) {
+    RCLCPP_INFO_THROTTLE(get_logger(), clock, 3000, "Waiting for current velocity");
     return false;
   }
   if (!d.current_accel) {
+    RCLCPP_INFO_THROTTLE(get_logger(), clock, 3000, "Waiting for current acceleration");
     return false;
   }
   if (!d.predicted_objects) {
+    RCLCPP_INFO_THROTTLE(get_logger(), clock, 3000, "Waiting for predicted_objects");
     return false;
   }
   if (!d.no_ground_pointcloud) {
+    RCLCPP_INFO_THROTTLE(get_logger(), clock, 3000, "Waiting for pointcloud");
     return false;
   }
   if (!d.route_handler_) {
+    RCLCPP_INFO_THROTTLE(
+      get_logger(), clock, 3000, "Waiting for the initialization of route_handler");
     return false;
   }
   if (!d.route_handler_->isMapMsgReady()) {
+    RCLCPP_INFO_THROTTLE(get_logger(), clock, 3000, "Waiting for the initialization of map");
     return false;
   }
   if (!d.velocity_smoother_) {
+    RCLCPP_INFO_THROTTLE(
+      get_logger(), clock, 3000, "Waiting for the initialization of velocity smoother");
     return false;
   }
   return true;
@@ -381,6 +392,7 @@ void BehaviorVelocityPlannerNode::onTrigger(
   const autoware_auto_planning_msgs::msg::PathWithLaneId::ConstSharedPtr input_path_msg)
 {
   mutex_.lock();  // for planner_data_
+
   // Check ready
   try {
     planner_data_.current_pose =
@@ -391,7 +403,7 @@ void BehaviorVelocityPlannerNode::onTrigger(
     return;
   }
 
-  if (!isDataReady(planner_data_)) {
+  if (!isDataReady(planner_data_, *get_clock())) {
     mutex_.unlock();
     return;
   }
