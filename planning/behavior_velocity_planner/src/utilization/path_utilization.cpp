@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <interpolation/linear_interpolation.hpp>
 #include <interpolation/spline_interpolation.hpp>
+#include <interpolation/zero_order_hold.hpp>
+#include <motion_utils/resample/resample.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <utilization/path_utilization.hpp>
 
@@ -84,8 +87,9 @@ bool splineInterpolate(
   // do spline for xy
   const std::vector<double> resampled_x = ::interpolation::slerp(base_s, base_x, resampled_s);
   const std::vector<double> resampled_y = ::interpolation::slerp(base_s, base_y, resampled_s);
-  const std::vector<double> resampled_z = ::interpolation::slerp(base_s, base_z, resampled_s);
-  const std::vector<double> resampled_v = ::interpolation::slerp(base_s, base_v, resampled_s);
+  const std::vector<double> resampled_z = ::interpolation::lerp(base_s, base_z, resampled_s);
+  const std::vector<double> resampled_v =
+    ::interpolation::zero_order_hold(base_s, base_v, resampled_s);
 
   // set xy
   output->points.clear();
@@ -133,7 +137,6 @@ autoware_auto_planning_msgs::msg::Path interpolatePath(
   const autoware_auto_planning_msgs::msg::Path & path, const double length, const double interval)
 {
   const auto logger{rclcpp::get_logger("behavior_velocity_planner").get_child("path_utilization")};
-  autoware_auto_planning_msgs::msg::Path interpolated_path;
 
   const double epsilon = 0.01;
   std::vector<double> x;
@@ -151,7 +154,7 @@ autoware_auto_planning_msgs::msg::Path interpolatePath(
     return path;
   }
 
-  double path_len = length;
+  double path_len = std::min(length, motion_utils::calcArcLength(path.points));
   {
     double s = 0.0;
     for (size_t idx = 0; idx < path.points.size(); ++idx) {
@@ -162,7 +165,7 @@ autoware_auto_planning_msgs::msg::Path interpolatePath(
       v.push_back(path_point.longitudinal_velocity_mps);
       if (idx != 0) {
         const auto path_point_prev = path.points.at(idx - 1);
-        s += tier4_autoware_utils::calcDistance3d(path_point_prev.pose, path_point.pose);
+        s += tier4_autoware_utils::calcDistance2d(path_point_prev.pose, path_point.pose);
       }
       if (s > path_len) {
         break;
@@ -205,44 +208,7 @@ autoware_auto_planning_msgs::msg::Path interpolatePath(
     return path;
   }
 
-  // Interpolate
-  const auto x_interp = interpolation::slerp(s_in, x, s_out);
-  const auto y_interp = interpolation::slerp(s_in, y, s_out);
-  const auto z_interp = interpolation::slerp(s_in, z, s_out);
-
-  // Find a nearest segment for each point in s_out and use the velocity of the segment's beginning
-  // point. Note that if s_out is almost the same value as s_in within DOUBLE_EPSILON range, the
-  // velocity of s_out should be same as the one of s_in.
-  std::vector<double> v_interp;
-  size_t closest_segment_idx = 0;
-  for (size_t i = 0; i < s_out.size() - 1; ++i) {
-    for (size_t j = closest_segment_idx; j < s_in.size() - 1; ++j) {
-      if (s_in.at(j) - DOUBLE_EPSILON < s_out.at(i) && s_out.at(i) < s_in.at(j + 1)) {
-        // find closest segment in s_in
-        closest_segment_idx = j;
-      }
-    }
-    v_interp.push_back(v.at(closest_segment_idx));
-  }
-  v_interp.push_back(v.back());
-
-  // Insert path point to interpolated_path
-  for (size_t idx = 0; idx < v_interp.size() - 1; ++idx) {
-    autoware_auto_planning_msgs::msg::PathPoint path_point;
-    path_point.pose.position.x = x_interp.at(idx);
-    path_point.pose.position.y = y_interp.at(idx);
-    path_point.pose.position.z = z_interp.at(idx);
-    path_point.longitudinal_velocity_mps = v_interp.at(idx);
-    const double yaw =
-      std::atan2(y_interp.at(idx + 1) - y_interp.at(idx), x_interp.at(idx + 1) - x_interp.at(idx));
-    tf2::Quaternion quat;
-    quat.setRPY(0, 0, yaw);
-    path_point.pose.orientation = tf2::toMsg(quat);
-    interpolated_path.points.push_back(path_point);
-  }
-  interpolated_path.points.push_back(path.points.back());
-
-  return interpolated_path;
+  return motion_utils::resamplePath(path, s_out);
 }
 
 autoware_auto_planning_msgs::msg::Path filterLitterPathPoint(
