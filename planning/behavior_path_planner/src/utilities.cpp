@@ -1684,7 +1684,8 @@ PathWithLaneId getCenterLinePath(
 
 bool checkLaneIsInIntersection(
   const RouteHandler & route_handler, const PathWithLaneId & reference_path,
-  const lanelet::ConstLanelets & lanelet_sequence, double & additional_length_to_add)
+  const lanelet::ConstLanelets & lanelet_sequence, const BehaviorPathPlannerParameters & parameter,
+  double & additional_length_to_add)
 {
   if (lanelet_sequence.size() < 2 || reference_path.points.empty()) {
     return false;
@@ -1752,10 +1753,9 @@ bool checkLaneIsInIntersection(
   const auto prohibited_arc_coordinate =
     lanelet::utils::getArcCoordinates(lane_change_prohibited_lanes, end_of_route_pose);
 
-  constexpr double small_earlier_stopping_buffer = 0.2;
-  additional_length_to_add =
-    prohibited_arc_coordinate.length +
-    small_earlier_stopping_buffer;  // additional a slight "buffer so that vehicle stop earlier"
+  additional_length_to_add = prohibited_arc_coordinate.length +
+                             parameter.minimum_lane_change_length +
+                             parameter.backward_length_buffer_for_end_of_lane;
 
   return true;
 }

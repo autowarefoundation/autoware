@@ -103,7 +103,7 @@ PathWithLaneId LaneFollowingModule::getReferencePath() const
   {
     double optional_lengths{0.0};
     const auto isInIntersection = util::checkLaneIsInIntersection(
-      *route_handler, reference_path, current_lanes, optional_lengths);
+      *route_handler, reference_path, current_lanes, p, optional_lengths);
 
     if (isInIntersection) {
       reference_path = util::getCenterLinePath(
