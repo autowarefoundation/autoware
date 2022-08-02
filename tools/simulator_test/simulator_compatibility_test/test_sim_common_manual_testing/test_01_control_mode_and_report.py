@@ -1,3 +1,4 @@
+import pytest
 from simulator_compatibility_test.publishers.control_mode_command import (
     ControlModeCommand_Constants,
 )
@@ -6,6 +7,7 @@ from test_base.test_01_control_mode_and_report import Test01ControlModeAndReport
 
 
 class Test01ControlModeAndReportSim(Test01ControlModeAndReportBase):
+    @pytest.mark.skip(reason="manual mode is not required for now")
     def test_1_manual_mode(self, setup_method):
         self.set_control_mode(ControlModeCommand_Constants.MANUAL)
         result = self.get_control_mode_report()
