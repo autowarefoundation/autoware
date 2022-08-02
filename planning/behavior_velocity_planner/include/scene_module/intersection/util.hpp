@@ -58,7 +58,7 @@ bool getObjectiveLanelets(
   lanelet::LaneletMapConstPtr lanelet_map_ptr, lanelet::routing::RoutingGraphPtr routing_graph_ptr,
   const int lane_id, const double detection_area_length, const double right_margin,
   const double left_margin, std::vector<lanelet::ConstLanelets> * conflicting_lanelets_result,
-  std::vector<lanelet::ConstLanelets> * objective_lanelets_result,
+  lanelet::ConstLanelets * objective_lanelets_result,
   std::vector<lanelet::ConstLanelets> * objective_lanelets_with_margin_result,
   const rclcpp::Logger logger);
 
@@ -117,6 +117,9 @@ bool getStopPoseIndexFromMap(
 
 std::vector<lanelet::CompoundPolygon3d> getPolygon3dFromLaneletsVec(
   const std::vector<lanelet::ConstLanelets> & ll_vec, double clip_length);
+
+std::vector<lanelet::CompoundPolygon3d> getPolygon3dFromLanelets(
+  const lanelet::ConstLanelets & ll_vec, double clip_length);
 
 std::vector<int> getLaneletIdsFromLaneletsVec(const std::vector<lanelet::ConstLanelets> & ll_vec);
 

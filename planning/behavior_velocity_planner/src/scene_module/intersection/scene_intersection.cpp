@@ -91,7 +91,7 @@ bool IntersectionModule::modifyPathVelocity(
   const auto routing_graph_ptr = planner_data_->route_handler_->getRoutingGraphPtr();
 
   /* get detection area and conflicting area */
-  std::vector<lanelet::ConstLanelets> detection_area_lanelets;
+  lanelet::ConstLanelets detection_area_lanelets;
   std::vector<lanelet::ConstLanelets> conflicting_area_lanelets;
   std::vector<lanelet::ConstLanelets> detection_area_lanelets_with_margin;
 
@@ -102,15 +102,15 @@ bool IntersectionModule::modifyPathVelocity(
     logger_);
   std::vector<lanelet::CompoundPolygon3d> conflicting_areas = util::getPolygon3dFromLaneletsVec(
     conflicting_area_lanelets, planner_param_.detection_area_length);
-  std::vector<lanelet::CompoundPolygon3d> detection_areas = util::getPolygon3dFromLaneletsVec(
-    detection_area_lanelets, planner_param_.detection_area_length);
+  std::vector<lanelet::CompoundPolygon3d> detection_areas =
+    util::getPolygon3dFromLanelets(detection_area_lanelets, planner_param_.detection_area_length);
   std::vector<lanelet::CompoundPolygon3d> detection_areas_with_margin =
     util::getPolygon3dFromLaneletsVec(
       detection_area_lanelets_with_margin, planner_param_.detection_area_length);
   std::vector<int> conflicting_area_lanelet_ids =
     util::getLaneletIdsFromLaneletsVec(conflicting_area_lanelets);
   std::vector<int> detection_area_lanelet_ids =
-    util::getLaneletIdsFromLaneletsVec(detection_area_lanelets);
+    util::getLaneletIdsFromLaneletsVec({detection_area_lanelets});
 
   if (detection_areas.empty()) {
     RCLCPP_DEBUG(logger_, "no detection area. skip computation.");

@@ -337,7 +337,7 @@ bool getObjectiveLanelets(
   lanelet::LaneletMapConstPtr lanelet_map_ptr, lanelet::routing::RoutingGraphPtr routing_graph_ptr,
   const int lane_id, const double detection_area_length, double right_margin, double left_margin,
   std::vector<lanelet::ConstLanelets> * conflicting_lanelets_result,
-  std::vector<lanelet::ConstLanelets> * objective_lanelets_result,
+  lanelet::ConstLanelets * objective_lanelets_result,
   std::vector<lanelet::ConstLanelets> * objective_lanelets_with_margin_result,
   const rclcpp::Logger logger)
 {
@@ -399,21 +399,28 @@ bool getObjectiveLanelets(
 
   // get possible lanelet path that reaches conflicting_lane longer than given length
   const double length = detection_area_length;
-  std::vector<lanelet::ConstLanelets> objective_lanelets_sequences;
+  lanelet::ConstLanelets objective_and_preceding_lanelets;
+  std::set<lanelet::Id> objective_ids;
   for (const auto & ll : objective_lanelets) {
     // Preceding lanes does not include objective_lane so add them at the end
-    objective_lanelets_sequences.push_back(ll);
+    for (const auto & l : ll) {
+      const auto & inserted = objective_ids.insert(l.id());
+      if (inserted.second) objective_and_preceding_lanelets.push_back(l);
+    }
     // get preceding lanelets without ego_lanelets
     // to prevent the detection area from including the ego lanes and its' preceding lanes.
     const auto lanelet_sequences = lanelet::utils::query::getPrecedingLaneletSequences(
       routing_graph_ptr, ll.front(), length, ego_lanelets);
-    for (auto & l : lanelet_sequences) {
-      objective_lanelets_sequences.push_back(l);
+    for (const auto & ls : lanelet_sequences) {
+      for (const auto & l : ls) {
+        const auto & inserted = objective_ids.insert(l.id());
+        if (inserted.second) objective_and_preceding_lanelets.push_back(l);
+      }
     }
   }
 
   *conflicting_lanelets_result = conflicting_lanelets_ex_yield_ego;
-  *objective_lanelets_result = objective_lanelets_sequences;
+  *objective_lanelets_result = objective_and_preceding_lanelets;
   *objective_lanelets_with_margin_result = objective_lanelets_with_margin;
 
   // set this flag true when debugging
@@ -432,10 +439,8 @@ bool getObjectiveLanelets(
   for (const auto & l : objective_lanelets) {
     ss_o << l.front().id() << ", ";
   }
-  for (const auto & l : objective_lanelets_sequences) {
-    for (const auto & ll : l) {
-      ss_os << ll.id() << ", ";
-    }
+  for (const auto & l : objective_and_preceding_lanelets) {
+    ss_os << l.id() << ", ";
   }
   RCLCPP_INFO(
     logger, "getObjectiveLanelets() conflict = %s yield = %s ego = %s", ss_c.str().c_str(),
@@ -454,6 +459,19 @@ std::vector<lanelet::CompoundPolygon3d> getPolygon3dFromLaneletsVec(
     const double path_length = lanelet::utils::getLaneletLength3d(ll);
     const auto polygon3d =
       lanelet::utils::getPolygonFromArcLength(ll, path_length - clip_length, path_length);
+    p_vec.push_back(polygon3d);
+  }
+  return p_vec;
+}
+
+std::vector<lanelet::CompoundPolygon3d> getPolygon3dFromLanelets(
+  const lanelet::ConstLanelets & ll_vec, double clip_length)
+{
+  std::vector<lanelet::CompoundPolygon3d> p_vec;
+  for (const auto & ll : ll_vec) {
+    const double path_length = lanelet::utils::getLaneletLength3d({ll});
+    const auto polygon3d =
+      lanelet::utils::getPolygonFromArcLength({ll}, path_length - clip_length, path_length);
     p_vec.push_back(polygon3d);
   }
   return p_vec;

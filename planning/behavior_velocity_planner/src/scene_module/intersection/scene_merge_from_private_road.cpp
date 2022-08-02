@@ -65,7 +65,7 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(
   const auto routing_graph_ptr = planner_data_->route_handler_->getRoutingGraphPtr();
 
   /* get detection area */
-  std::vector<lanelet::ConstLanelets> detection_area_lanelets;
+  lanelet::ConstLanelets detection_area_lanelets;
   std::vector<lanelet::ConstLanelets> conflicting_area_lanelets;
   std::vector<lanelet::ConstLanelets> detection_area_lanelets_with_margin;
 
