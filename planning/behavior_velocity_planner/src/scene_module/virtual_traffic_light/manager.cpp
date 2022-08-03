@@ -35,6 +35,7 @@ VirtualTrafficLightModuleManager::VirtualTrafficLightModuleManager(rclcpp::Node 
     p.max_delay_sec = node.declare_parameter(ns + ".max_delay_sec", 3.0);
     p.near_line_distance = node.declare_parameter(ns + ".near_line_distance", 1.0);
     p.dead_line_margin = node.declare_parameter(ns + ".dead_line_margin", 1.0);
+    p.hold_stop_margin_distance = node.declare_parameter(ns + ".hold_stop_margin_distance", 0.0);
     p.max_yaw_deviation_rad =
       tier4_autoware_utils::deg2rad(node.declare_parameter(ns + ".max_yaw_deviation_deg", 90.0));
     p.check_timeout_after_stop_line =

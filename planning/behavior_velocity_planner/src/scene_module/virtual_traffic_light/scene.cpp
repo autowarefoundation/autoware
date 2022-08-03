@@ -565,15 +565,40 @@ void VirtualTrafficLightModule::insertStopVelocityAtStopLine(
   tier4_planning_msgs::msg::StopReason * stop_reason)
 {
   const auto collision = findCollision(path->points, *map_data_.stop_line);
+  const auto offset = -planner_data_->vehicle_info_.max_longitudinal_offset_m;
 
   geometry_msgs::msg::Pose stop_pose{};
   if (!collision) {
     insertStopVelocityFromStart(path);
     stop_pose = planner_data_->current_pose.pose;
   } else {
-    const auto offset = -planner_data_->vehicle_info_.max_longitudinal_offset_m;
-    const auto insert_index = insertStopVelocityAtCollision(*collision, offset, path);
-    stop_pose = path->points.at(insert_index).point.pose;
+    const auto & ego_pos = planner_data_->current_pose.pose.position;
+    const auto stop_distance =
+      motion_utils::calcSignedArcLength(path->points, ego_pos, collision.get().point) + offset;
+    const auto is_stopped = planner_data_->isVehicleStopped();
+
+    if (stop_distance < planner_param_.hold_stop_margin_distance && is_stopped) {
+      SegmentIndexWithPoint new_collision;
+      const auto ego_pos_on_path =
+        motion_utils::calcLongitudinalOffsetPoint(path->points, ego_pos, 0.0);
+
+      if (ego_pos_on_path) {
+        new_collision.point = ego_pos_on_path.get();
+        new_collision.index = motion_utils::findNearestSegmentIndex(path->points, ego_pos);
+        insertStopVelocityAtCollision(new_collision, 0.0, path);
+      }
+
+      // for virtual wall
+      {
+        auto path_tmp = path;
+        const auto insert_index = insertStopVelocityAtCollision(*collision, offset, path_tmp);
+        stop_pose = path_tmp->points.at(insert_index).point.pose;
+      }
+
+    } else {
+      const auto insert_index = insertStopVelocityAtCollision(*collision, offset, path);
+      stop_pose = path->points.at(insert_index).point.pose;
+    }
   }
 
   // Set StopReason
