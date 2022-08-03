@@ -29,18 +29,14 @@ StopLineModuleManager::StopLineModuleManager(rclcpp::Node & node)
   const std::string ns(getModuleName());
   auto & p = planner_param_;
   p.stop_margin = node.declare_parameter(ns + ".stop_margin", 0.0);
-  p.stop_check_dist = node.declare_parameter(ns + ".stop_check_dist", 2.0);
   p.stop_duration_sec = node.declare_parameter(ns + ".stop_duration_sec", 1.0);
+  p.hold_stop_margin_distance = node.declare_parameter(ns + ".hold_stop_margin_distance", 2.0);
   p.use_initialization_stop_line_state =
     node.declare_parameter(ns + ".use_initialization_stop_line_state", false);
-  // debug
-  p.show_stopline_collision_check =
-    node.declare_parameter(ns + ".debug.show_stopline_collision_check", false);
 }
 
 std::vector<StopLineWithLaneId> StopLineModuleManager::getStopLinesWithLaneIdOnPath(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-  const lanelet::LaneletMapPtr lanelet_map)
+  const PathWithLaneId & path, const lanelet::LaneletMapPtr lanelet_map)
 {
   std::vector<StopLineWithLaneId> stop_lines_with_lane_id;
 
@@ -62,8 +58,7 @@ std::vector<StopLineWithLaneId> StopLineModuleManager::getStopLinesWithLaneIdOnP
 }
 
 std::set<int64_t> StopLineModuleManager::getStopLineIdSetOnPath(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-  const lanelet::LaneletMapPtr lanelet_map)
+  const PathWithLaneId & path, const lanelet::LaneletMapPtr lanelet_map)
 {
   std::set<int64_t> stop_line_id_set;
 
@@ -74,8 +69,7 @@ std::set<int64_t> StopLineModuleManager::getStopLineIdSetOnPath(
   return stop_line_id_set;
 }
 
-void StopLineModuleManager::launchNewModules(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
+void StopLineModuleManager::launchNewModules(const PathWithLaneId & path)
 {
   for (const auto & stop_line_with_lane_id :
        getStopLinesWithLaneIdOnPath(path, planner_data_->route_handler_->getLaneletMapPtr())) {
@@ -90,8 +84,7 @@ void StopLineModuleManager::launchNewModules(
 }
 
 std::function<bool(const std::shared_ptr<SceneModuleInterface> &)>
-StopLineModuleManager::getModuleExpiredFunction(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
+StopLineModuleManager::getModuleExpiredFunction(const PathWithLaneId & path)
 {
   const auto stop_line_id_set =
     getStopLineIdSetOnPath(path, planner_data_->route_handler_->getLaneletMapPtr());

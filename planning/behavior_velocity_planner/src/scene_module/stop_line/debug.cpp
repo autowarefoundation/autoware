@@ -24,90 +24,53 @@
 
 namespace behavior_velocity_planner
 {
+
+using motion_utils::createStopVirtualWallMarker;
 using tier4_autoware_utils::appendMarkerArray;
+using tier4_autoware_utils::createDefaultMarker;
 using tier4_autoware_utils::createMarkerColor;
 using tier4_autoware_utils::createMarkerScale;
+using tier4_autoware_utils::createPoint;
+using visualization_msgs::msg::Marker;
+using visualization_msgs::msg::MarkerArray;
 
-namespace
+MarkerArray StopLineModule::createDebugMarkerArray()
 {
-using DebugData = StopLineModule::DebugData;
+  MarkerArray msg;
 
-visualization_msgs::msg::MarkerArray createStopLineCollisionCheck(
-  const DebugData & debug_data, const int64_t module_id)
-{
-  visualization_msgs::msg::MarkerArray msg;
-
-  // Search Segments
-  {
-    visualization_msgs::msg::Marker marker;
-    marker.header.frame_id = "map";
-    marker.ns = "search_segments";
-    marker.id = module_id;
-    marker.lifetime = rclcpp::Duration::from_seconds(0.5);
-    marker.type = visualization_msgs::msg::Marker::SPHERE_LIST;
-    marker.action = visualization_msgs::msg::Marker::ADD;
-    for (const auto & e : debug_data.search_segments) {
-      marker.points.push_back(
-        geometry_msgs::build<geometry_msgs::msg::Point>().x(e.at(0).x()).y(e.at(0).y()).z(0.0));
-      marker.points.push_back(
-        geometry_msgs::build<geometry_msgs::msg::Point>().x(e.at(1).x()).y(e.at(1).y()).z(0.0));
-    }
-    marker.scale = createMarkerScale(0.1, 0.1, 0.1);
-    marker.color = createMarkerColor(0.0, 0.0, 1.0, 0.999);
-    msg.markers.push_back(marker);
-  }
+  const auto now = this->clock_->now();
 
   // Search stopline
   {
-    visualization_msgs::msg::Marker marker;
-    marker.header.frame_id = "map";
-    marker.ns = "search_stopline";
-    marker.id = module_id;
-    marker.lifetime = rclcpp::Duration::from_seconds(0.5);
-    marker.type = visualization_msgs::msg::Marker::LINE_STRIP;
-    marker.action = visualization_msgs::msg::Marker::ADD;
-    const auto p0 = debug_data.search_stopline.at(0);
-    marker.points.push_back(
-      geometry_msgs::build<geometry_msgs::msg::Point>().x(p0.x()).y(p0.y()).z(0.0));
-    const auto p1 = debug_data.search_stopline.at(1);
-    marker.points.push_back(
-      geometry_msgs::build<geometry_msgs::msg::Point>().x(p1.x()).y(p1.y()).z(0.0));
+    auto marker = createDefaultMarker(
+      "map", now, "search_stopline", module_id_, Marker::LINE_STRIP,
+      createMarkerScale(0.1, 0.1, 0.1), createMarkerColor(0.0, 0.0, 1.0, 0.999));
 
-    marker.scale = createMarkerScale(0.1, 0.1, 0.1);
-    marker.color = createMarkerColor(1.0, 0.0, 0.0, 0.999);
+    const auto line = debug_data_.search_stopline;
+    if (!line.empty()) {
+      marker.points.push_back(createPoint(line.front().x(), line.front().y(), 0.0));
+      marker.points.push_back(createPoint(line.back().x(), line.back().y(), 0.0));
+    }
+
     msg.markers.push_back(marker);
   }
 
   return msg;
 }
 
-}  // namespace
-
-visualization_msgs::msg::MarkerArray StopLineModule::createDebugMarkerArray()
+MarkerArray StopLineModule::createVirtualWallMarkerArray()
 {
-  visualization_msgs::msg::MarkerArray debug_marker_array;
-  if (planner_param_.show_stopline_collision_check) {
-    appendMarkerArray(
-      createStopLineCollisionCheck(debug_data_, module_id_), &debug_marker_array,
-      this->clock_->now());
-  }
-  return debug_marker_array;
-}
+  MarkerArray wall_marker;
 
-visualization_msgs::msg::MarkerArray StopLineModule::createVirtualWallMarkerArray()
-{
-  const auto now = this->clock_->now();
-  visualization_msgs::msg::MarkerArray wall_marker;
   if (!debug_data_.stop_pose) {
     return wall_marker;
   }
-  const auto p_front = tier4_autoware_utils::calcOffsetPose(
-    *debug_data_.stop_pose, debug_data_.base_link2front, 0.0, 0.0);
-  if (state_ == State::APPROACH) {
-    appendMarkerArray(
-      motion_utils::createStopVirtualWallMarker(p_front, "stopline", now, module_id_), &wall_marker,
-      now);
-  }
+
+  const auto now = this->clock_->now();
+
+  const auto p = calcOffsetPose(*debug_data_.stop_pose, debug_data_.base_link2front, 0.0, 0.0);
+  appendMarkerArray(createStopVirtualWallMarker(p, "stopline", now, module_id_), &wall_marker);
+
   return wall_marker;
 }
 }  // namespace behavior_velocity_planner
