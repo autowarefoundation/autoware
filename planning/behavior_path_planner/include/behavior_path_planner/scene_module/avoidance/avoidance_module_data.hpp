@@ -144,10 +144,6 @@ struct AvoidanceParameters
   // acceleration.
   double max_avoidance_acceleration;
 
-  // if distance between vehicle front and shift end point is larger than this length,
-  // turn signal is not turned on.
-  double avoidance_search_distance;
-
   // The avoidance path generation is performed when the shift distance of the
   // avoidance points is greater than this threshold.
   // In multiple targets case: if there are multiple vehicles in a row to be avoided, no new

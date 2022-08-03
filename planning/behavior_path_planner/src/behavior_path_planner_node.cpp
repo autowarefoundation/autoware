@@ -279,7 +279,6 @@ AvoidanceParameters BehaviorPathPlannerNode::getAvoidanceParam()
 
   p.min_avoidance_speed_for_acc_prevention = dp("min_avoidance_speed_for_acc_prevention", 3.0);
   p.max_avoidance_acceleration = dp("max_avoidance_acceleration", 0.5);
-  p.avoidance_search_distance = dp("avoidance_search_distance", 30.0);
 
   p.publish_debug_marker = dp("publish_debug_marker", false);
   p.print_debug_info = dp("print_debug_info", false);
@@ -338,7 +337,6 @@ LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
     dp("abort_lane_change_angle_thresh", tier4_autoware_utils::deg2rad(10.0));
   p.abort_lane_change_distance_thresh = dp("abort_lane_change_distance_thresh", 0.3);
   p.enable_blocked_by_obstacle = dp("enable_blocked_by_obstacle", false);
-  p.lane_change_search_distance = dp("lane_change_search_distance", 30.0);
 
   // validation of parameters
   if (p.lane_change_sampling_num < 1) {

@@ -60,7 +60,6 @@ struct LaneChangeParameters
   bool use_predicted_path_outside_lanelet;
   bool use_all_predicted_path;
   bool enable_blocked_by_obstacle;
-  double lane_change_search_distance;
 };
 
 struct LaneChangeStatus

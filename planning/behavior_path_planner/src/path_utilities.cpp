@@ -233,7 +233,7 @@ void clipPathLength(
 std::pair<TurnIndicatorsCommand, double> getPathTurnSignal(
   const lanelet::ConstLanelets & current_lanes, const ShiftedPath & path,
   const ShiftPoint & shift_point, const Pose & pose, const double & velocity,
-  const BehaviorPathPlannerParameters & common_parameter, const double & search_distance)
+  const BehaviorPathPlannerParameters & common_parameter)
 {
   TurnIndicatorsCommand turn_signal;
   turn_signal.command = TurnIndicatorsCommand::NO_COMMAND;
@@ -341,8 +341,7 @@ std::pair<TurnIndicatorsCommand, double> getPathTurnSignal(
       arc_position_shift_end.length - arc_position_current_pose.length - base_link2front;
   }
 
-  // Output distance when the distance is positive and smaller than search distance
-  if (distance_from_vehicle_front >= 0.0 && distance_from_vehicle_front <= search_distance) {
+  if (distance_from_vehicle_front >= 0.0) {
     return std::make_pair(turn_signal, distance_from_vehicle_front);
   }
 

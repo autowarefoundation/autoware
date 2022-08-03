@@ -2653,8 +2653,7 @@ TurnSignalInfo AvoidanceModule::calcTurnSignalInfo(const ShiftedPath & path) con
 
   const auto turn_info = util::getPathTurnSignal(
     avoidance_data_.current_lanelets, path, latest_shift_point, planner_data_->self_pose->pose,
-    planner_data_->self_odometry->twist.twist.linear.x, planner_data_->parameters,
-    parameters_.avoidance_search_distance);
+    planner_data_->self_odometry->twist.twist.linear.x, planner_data_->parameters);
 
   // Set turn signal if the vehicle across the lane.
   if (!path.shift_length.empty()) {

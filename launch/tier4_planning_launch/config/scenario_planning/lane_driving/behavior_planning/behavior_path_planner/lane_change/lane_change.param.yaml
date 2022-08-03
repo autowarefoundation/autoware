@@ -17,4 +17,3 @@
       use_predicted_path_outside_lanelet: false
       use_all_predicted_path: false
       enable_blocked_by_obstacle: false
-      lane_change_search_distance: 30.0

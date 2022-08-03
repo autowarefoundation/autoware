@@ -166,8 +166,7 @@ BehaviorModuleOutput LaneChangeModule::plan()
   const auto turn_signal_info = util::getPathTurnSignal(
     status_.current_lanes, status_.lane_change_path.shifted_path,
     status_.lane_change_path.shift_point, planner_data_->self_pose->pose,
-    planner_data_->self_odometry->twist.twist.linear.x, planner_data_->parameters,
-    parameters_.lane_change_search_distance);
+    planner_data_->self_odometry->twist.twist.linear.x, planner_data_->parameters);
   output.turn_signal_info.turn_signal.command = turn_signal_info.first.command;
   output.turn_signal_info.signal_distance = turn_signal_info.second;
   return output;

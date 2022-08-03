@@ -98,6 +98,9 @@ std::pair<TurnIndicatorsCommand, double> TurnSignalDecider::getIntersectionTurnS
           turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
         } else if (lane_attribute == std::string("right")) {
           turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
+        } else {
+          // when lane_attribute is straight, return the turn signal with max distance
+          return std::make_pair(turn_signal, std::numeric_limits<double>::max());
         }
         distance = distance_from_vehicle_front;
       }
