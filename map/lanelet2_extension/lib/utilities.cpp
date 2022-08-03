@@ -148,6 +148,7 @@ std::vector<lanelet::BasicPoint3d> resamplePoints(
 
   // Calculate accumulated lengths
   const auto accumulated_lengths = calculateAccumulatedLengths(line_string);
+  if (accumulated_lengths.size() < 2) return {};
 
   // Create each segment
   std::vector<lanelet::BasicPoint3d> resampled_points;
