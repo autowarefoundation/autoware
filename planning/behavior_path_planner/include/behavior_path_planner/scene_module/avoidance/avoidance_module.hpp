@@ -39,6 +39,8 @@ namespace behavior_path_planner
 {
 class AvoidanceModule : public SceneModuleInterface
 {
+  using RegisteredShiftPointArray = std::vector<std::pair<UUID, Pose>>;
+
 public:
   AvoidanceModule(
     const std::string & name, rclcpp::Node & node, const AvoidanceParameters & parameters);
@@ -81,10 +83,13 @@ private:
 
   RTCInterface rtc_interface_left_;
   RTCInterface rtc_interface_right_;
+
+  RegisteredShiftPointArray left_shift_array_;
+  RegisteredShiftPointArray right_shift_array_;
   UUID uuid_left_;
   UUID uuid_right_;
 
-  void updateRTCStatus(const CandidateOutput & candidate)
+  void updateCandidateRTCStatus(const CandidateOutput & candidate)
   {
     if (candidate.lateral_shift > 0.0) {
       rtc_interface_left_.updateCooperateStatus(
@@ -99,6 +104,23 @@ private:
 
     RCLCPP_WARN_STREAM(
       getLogger(), "Direction is UNKNOWN, distance = " << candidate.distance_to_path_change);
+  }
+
+  void updateRegisteredRTCStatus(const PathWithLaneId & path)
+  {
+    const Point ego_position = planner_data_->self_pose->pose.position;
+
+    for (const auto & left_shift : left_shift_array_) {
+      const double distance =
+        motion_utils::calcSignedArcLength(path.points, ego_position, left_shift.second.position);
+      rtc_interface_left_.updateCooperateStatus(left_shift.first, true, distance, clock_->now());
+    }
+
+    for (const auto & right_shift : right_shift_array_) {
+      const double distance =
+        motion_utils::calcSignedArcLength(path.points, ego_position, right_shift.second.position);
+      rtc_interface_right_.updateCooperateStatus(right_shift.first, true, distance, clock_->now());
+    }
   }
 
   void removeRTCStatus() override

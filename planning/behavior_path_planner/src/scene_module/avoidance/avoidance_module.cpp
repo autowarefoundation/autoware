@@ -2165,6 +2165,8 @@ BehaviorModuleOutput AvoidanceModule::plan()
 
   DEBUG_PRINT("exit plan(): set prev output (back().lat = %f)", prev_output_.shift_length.back());
 
+  updateRegisteredRTCStatus(avoidance_path.path);
+
   return output;
 }
 
@@ -2212,9 +2214,12 @@ BehaviorModuleOutput AvoidanceModule::planWaitingApproval()
   // we can execute the plan() since it handles the approval appropriately.
   BehaviorModuleOutput out = plan();
   const auto candidate = planCandidate();
+  constexpr double threshold_to_update_status = -1.0e-03;
+  if (candidate.distance_to_path_change > threshold_to_update_status) {
+    updateCandidateRTCStatus(candidate);
+    waitApproval();
+  }
   out.path_candidate = std::make_shared<PathWithLaneId>(candidate.path_candidate);
-  updateRTCStatus(candidate);
-  waitApproval();
   return out;
 }
 
@@ -2227,6 +2232,21 @@ void AvoidanceModule::addShiftPointIfApproved(const AvoidPointArray & shift_poin
 
     // register original points for consistency
     registerRawShiftPoints(shift_points);
+
+    int i = shift_points.size() - 1;
+    for (; i > 0; i--) {
+      if (fabs(shift_points.at(i).getRelativeLength()) < 0.01) {
+        continue;
+      } else {
+        break;
+      }
+    }
+
+    if (shift_points.at(i).getRelativeLength() > 0.0) {
+      left_shift_array_.push_back({uuid_left_, shift_points.front().start});
+    } else if (shift_points.at(i).getRelativeLength() < 0.0) {
+      right_shift_array_.push_back({uuid_right_, shift_points.front().start});
+    }
 
     uuid_left_ = generateUUID();
     uuid_right_ = generateUUID();
@@ -2585,6 +2605,8 @@ void AvoidanceModule::initVariables()
   prev_linear_shift_path_ = ShiftedPath();
   prev_reference_ = PathWithLaneId();
   path_shifter_ = PathShifter{};
+  left_shift_array_.clear();
+  right_shift_array_.clear();
 
   debug_avoidance_msg_array_ptr_.reset();
   debug_data_ = DebugData();
