@@ -14,6 +14,8 @@
 
 #include "motion_velocity_smoother/smoother/smoother_base.hpp"
 
+#include "motion_utils/resample/resample.hpp"
+#include "motion_utils/trajectory/tmp_conversion.hpp"
 #include "motion_velocity_smoother/resample.hpp"
 #include "motion_velocity_smoother/trajectory_utils.hpp"
 
@@ -73,25 +75,21 @@ boost::optional<TrajectoryPoints> SmootherBase::applyLateralAccelerationFilter(
   // Interpolate with constant interval distance for lateral acceleration calculation.
   constexpr double points_interval = 0.1;  // [m]
   std::vector<double> out_arclength;
-  const std::vector<double> in_arclength = trajectory_utils::calcArclengthArray(input);
-  for (double s = 0; s < in_arclength.back(); s += points_interval) {
+  const auto traj_length = motion_utils::calcArcLength(input);
+  for (double s = 0; s < traj_length; s += points_interval) {
     out_arclength.push_back(s);
   }
-  auto output = trajectory_utils::applyLinearInterpolation(in_arclength, input, out_arclength);
-  if (!output) {
-    RCLCPP_WARN(
-      rclcpp::get_logger("smoother").get_child("smoother_base"),
-      "interpolation failed at lateral acceleration filter.");
-    return boost::none;
-  }
-  output->back() = input.back();  // keep the final speed.
+  const auto output_traj =
+    motion_utils::resampleTrajectory(motion_utils::convertToTrajectory(input), out_arclength);
+  auto output = motion_utils::convertToTrajectoryPointArray(output_traj);
+  output.back() = input.back();  // keep the final speed.
 
   constexpr double curvature_calc_dist = 5.0;  // [m] calc curvature with 5m away points
   const size_t idx_dist =
     static_cast<size_t>(std::max(static_cast<int>((curvature_calc_dist) / points_interval), 1));
 
   // Calculate curvature assuming the trajectory points interval is constant
-  const auto curvature_v = trajectory_utils::calcTrajectoryCurvatureFrom3Points(*output, idx_dist);
+  const auto curvature_v = trajectory_utils::calcTrajectoryCurvatureFrom3Points(output, idx_dist);
 
   //  Decrease speed according to lateral G
   const size_t before_decel_index =
@@ -103,13 +101,13 @@ boost::optional<TrajectoryPoints> SmootherBase::applyLateralAccelerationFilter(
   const auto latacc_min_vel_arr =
     enable_smooth_limit
       ? trajectory_utils::calcVelocityProfileWithConstantJerkAndAccelerationLimit(
-          *output, v0, a0, base_param_.min_jerk, base_param_.max_accel, base_param_.min_decel)
+          output, v0, a0, base_param_.min_jerk, base_param_.max_accel, base_param_.min_decel)
       : std::vector<double>{};
 
-  for (size_t i = 0; i < output->size(); ++i) {
+  for (size_t i = 0; i < output.size(); ++i) {
     double curvature = 0.0;
     const size_t start = i > after_decel_index ? i - after_decel_index : 0;
-    const size_t end = std::min(output->size(), i + before_decel_index + 1);
+    const size_t end = std::min(output.size(), i + before_decel_index + 1);
     for (size_t j = start; j < end; ++j) {
       if (j >= curvature_v.size()) return output;
       curvature = std::max(curvature, std::fabs(curvature_v.at(j)));
@@ -120,8 +118,8 @@ boost::optional<TrajectoryPoints> SmootherBase::applyLateralAccelerationFilter(
       if (i >= latacc_min_vel_arr.size()) return output;
       v_curvature_max = std::max(v_curvature_max, latacc_min_vel_arr.at(i));
     }
-    if (output->at(i).longitudinal_velocity_mps > v_curvature_max) {
-      output->at(i).longitudinal_velocity_mps = v_curvature_max;
+    if (output.at(i).longitudinal_velocity_mps > v_curvature_max) {
+      output.at(i).longitudinal_velocity_mps = v_curvature_max;
     }
   }
   return output;

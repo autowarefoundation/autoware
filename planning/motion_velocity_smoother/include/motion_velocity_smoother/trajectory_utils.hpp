@@ -64,10 +64,6 @@ void applyMaximumVelocityLimit(
 
 boost::optional<size_t> searchZeroVelocityIdx(const TrajectoryPoints & trajectory);
 
-boost::optional<TrajectoryPoints> applyLinearInterpolation(
-  const std::vector<double> & base_index, const TrajectoryPoints & base_trajectory,
-  const std::vector<double> & out_index, const bool use_spline_for_pose = false);
-
 bool calcStopDistWithJerkConstraints(
   const double v0, const double a0, const double jerk_acc, const double jerk_dec,
   const double min_acc, const double target_vel, std::map<double, double> & jerk_profile,

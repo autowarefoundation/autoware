@@ -376,7 +376,10 @@ void MotionVelocitySmootherNode::onCurrentTrajectory(const Trajectory::ConstShar
     return;
   }
 
-  auto output_resampled = poseResampleTrajectory(output);
+  // Note that output velocity is resampled by linear interpolation
+  auto output_resampled = resampling::resampleTrajectory(
+    output, current_odometry_ptr_->twist.twist.linear.x, current_pose_ptr_->pose,
+    node_param_.delta_yaw_threshold, node_param_.post_resample_param, false);
   if (!output_resampled) {
     RCLCPP_WARN(get_logger(), "Failed to get the resampled output trajectory");
     return;
@@ -495,15 +498,9 @@ bool MotionVelocitySmootherNode::smoothVelocity(
   }
 
   // Resample trajectory with ego-velocity based interval distance
-  const auto traj_pre_resampled_closest = findNearestIndexFromEgo(*traj_lateral_acc_filtered);
-  if (!traj_pre_resampled_closest) {
-    RCLCPP_WARN(
-      get_logger(), "Cannot find closest waypoint for traj_lateral_acc_filtered trajectory");
-    return false;
-  }
   auto traj_resampled = smoother_->resampleTrajectory(
     *traj_lateral_acc_filtered, current_odometry_ptr_->twist.twist.linear.x,
-    *traj_pre_resampled_closest);
+    current_pose_ptr_->pose, node_param_.delta_yaw_threshold);
   if (!traj_resampled) {
     RCLCPP_WARN(get_logger(), "Fail to do resampling before the optimization");
     return false;
@@ -604,22 +601,6 @@ void MotionVelocitySmootherNode::insertBehindVelocity(
       output.at(i).acceleration_mps2 = prev_output_point.acceleration_mps2;
     }
   }
-}
-
-boost::optional<TrajectoryPoints> MotionVelocitySmootherNode::poseResampleTrajectory(
-  const TrajectoryPoints trajectory) const
-{
-  // Get the nearest point
-  const auto closest_idx = findNearestIndexFromEgo(trajectory);
-  if (!closest_idx) {
-    return {};
-  }
-
-  auto trajectory_resampled = resampling::resampleTrajectory(
-    trajectory, current_odometry_ptr_->twist.twist.linear.x, *closest_idx,
-    node_param_.post_resample_param);
-
-  return trajectory_resampled;
 }
 
 void MotionVelocitySmootherNode::publishStopDistance(const TrajectoryPoints & trajectory) const

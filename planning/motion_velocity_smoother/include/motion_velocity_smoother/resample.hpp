@@ -19,6 +19,7 @@
 #include "motion_velocity_smoother/trajectory_utils.hpp"
 
 #include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
+#include <geometry_msgs/msg/pose.hpp>
 
 #include "boost/optional.hpp"
 
@@ -43,12 +44,14 @@ struct ResampleParam
 };
 
 boost::optional<TrajectoryPoints> resampleTrajectory(
-  const TrajectoryPoints & input, const double v_current, const size_t closest_id,
-  const ResampleParam & param);
+  const TrajectoryPoints & input, const double v_current,
+  const geometry_msgs::msg::Pose & current_pose, const double delta_yaw_threshold,
+  const ResampleParam & param, const bool use_zoh_for_v = true);
 
 boost::optional<TrajectoryPoints> resampleTrajectory(
-  const TrajectoryPoints & input, const size_t closest_id, const ResampleParam & param,
-  const double nominal_ds);
+  const TrajectoryPoints & input, const geometry_msgs::msg::Pose & current_pose,
+  const double delta_yaw_threshold, const ResampleParam & param, const double nominal_ds,
+  const bool use_zoh_for_v = true);
 }  // namespace resampling
 }  // namespace motion_velocity_smoother
 

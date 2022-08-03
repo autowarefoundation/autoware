@@ -57,7 +57,8 @@ public:
     TrajectoryPoints & output, std::vector<TrajectoryPoints> & debug_trajectories) = 0;
 
   virtual boost::optional<TrajectoryPoints> resampleTrajectory(
-    const TrajectoryPoints & input, const double v_current, const int closest_id) const = 0;
+    const TrajectoryPoints & input, const double v0, const geometry_msgs::msg::Pose & current_pose,
+    const double delta_yaw_threshold) const = 0;
 
   virtual boost::optional<TrajectoryPoints> applyLateralAccelerationFilter(
     const TrajectoryPoints & input, [[maybe_unused]] const double v0 = 0.0,

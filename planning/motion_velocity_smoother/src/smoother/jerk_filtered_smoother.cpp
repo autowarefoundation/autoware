@@ -100,8 +100,10 @@ bool JerkFilteredSmoother::apply(
   debug_trajectories[2] = filtered;
 
   // Resample TrajectoryPoints for Optimization
-  auto opt_resampled_trajectory =
-    resampling::resampleTrajectory(filtered, v0, 0, base_param_.resample_param);
+  const auto initial_traj_pose = filtered.front().pose;
+  auto opt_resampled_trajectory = resampling::resampleTrajectory(
+    filtered, v0, initial_traj_pose, std::numeric_limits<double>::max(),
+    base_param_.resample_param);
 
   if (!opt_resampled_trajectory) {
     RCLCPP_WARN(logger_, "Resample failed!");
@@ -468,10 +470,12 @@ TrajectoryPoints JerkFilteredSmoother::mergeFilteredTrajectory(
 }
 
 boost::optional<TrajectoryPoints> JerkFilteredSmoother::resampleTrajectory(
-  const TrajectoryPoints & input, const double /*v_current*/, const int closest_id) const
+  const TrajectoryPoints & input, [[maybe_unused]] const double v0,
+  const geometry_msgs::msg::Pose & current_pose, const double delta_yaw_threshold) const
 {
   return resampling::resampleTrajectory(
-    input, closest_id, base_param_.resample_param, smoother_param_.jerk_filter_ds);
+    input, current_pose, delta_yaw_threshold, base_param_.resample_param,
+    smoother_param_.jerk_filter_ds);
 }
 
 }  // namespace motion_velocity_smoother

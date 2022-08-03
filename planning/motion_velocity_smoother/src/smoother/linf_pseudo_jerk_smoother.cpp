@@ -234,9 +234,11 @@ bool LinfPseudoJerkSmoother::apply(
 }
 
 boost::optional<TrajectoryPoints> LinfPseudoJerkSmoother::resampleTrajectory(
-  const TrajectoryPoints & input, const double v_current, const int closest_id) const
+  const TrajectoryPoints & input, const double v0, const geometry_msgs::msg::Pose & current_pose,
+  const double delta_yaw_threshold) const
 {
-  return resampling::resampleTrajectory(input, v_current, closest_id, base_param_.resample_param);
+  return resampling::resampleTrajectory(
+    input, v0, current_pose, delta_yaw_threshold, base_param_.resample_param);
 }
 
 }  // namespace motion_velocity_smoother

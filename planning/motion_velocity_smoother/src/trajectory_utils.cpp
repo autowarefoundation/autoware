@@ -14,6 +14,7 @@
 
 #include "motion_velocity_smoother/trajectory_utils.hpp"
 
+#include "interpolation/linear_interpolation.hpp"
 #include "interpolation/spline_interpolation.hpp"
 #include "motion_velocity_smoother/linear_interpolation.hpp"
 
@@ -83,17 +84,14 @@ TrajectoryPoint calcInterpolatedTrajectoryPoint(
   // calc internal proportion
   const double prop{std::max(0.0, std::min(1.0, v1.dot(v2) / v1.length2()))};
 
-  auto interpolate = [&prop](double x1, double x2) { return prop * x1 + (1.0 - prop) * x2; };
-
   {
     const auto & seg_pt = trajectory.at(segment_idx);
     const auto & next_pt = trajectory.at(segment_idx + 1);
-    traj_p.longitudinal_velocity_mps =
-      interpolate(next_pt.longitudinal_velocity_mps, seg_pt.longitudinal_velocity_mps);
-    traj_p.acceleration_mps2 = interpolate(next_pt.acceleration_mps2, seg_pt.acceleration_mps2);
-    traj_p.pose.position.x = interpolate(next_pt.pose.position.x, seg_pt.pose.position.x);
-    traj_p.pose.position.y = interpolate(next_pt.pose.position.y, seg_pt.pose.position.y);
-    traj_p.pose.position.z = interpolate(next_pt.pose.position.z, seg_pt.pose.position.z);
+    traj_p.pose = tier4_autoware_utils::calcInterpolatedPose(seg_pt.pose, next_pt.pose, prop);
+    traj_p.longitudinal_velocity_mps = interpolation::lerp(
+      seg_pt.longitudinal_velocity_mps, next_pt.longitudinal_velocity_mps, prop);
+    traj_p.acceleration_mps2 =
+      interpolation::lerp(seg_pt.acceleration_mps2, next_pt.acceleration_mps2, prop);
   }
 
   return traj_p;
@@ -271,62 +269,6 @@ void applyMaximumVelocityLimit(
       trajectory.at(idx).longitudinal_velocity_mps = max_vel;
     }
   }
-}
-
-boost::optional<TrajectoryPoints> applyLinearInterpolation(
-  const std::vector<double> & base_index, const TrajectoryPoints & base_trajectory,
-  const std::vector<double> & out_index, const bool use_spline_for_pose)
-{
-  std::vector<double> px, py, pz, pyaw, tlx, taz, alx;
-  for (const auto & p : base_trajectory) {
-    px.push_back(p.pose.position.x);
-    py.push_back(p.pose.position.y);
-    pz.push_back(p.pose.position.z);
-    pyaw.push_back(tf2::getYaw(p.pose.orientation));
-    tlx.push_back(p.longitudinal_velocity_mps);
-    taz.push_back(p.heading_rate_rps);
-    alx.push_back(p.acceleration_mps2);
-  }
-
-  convertEulerAngleToMonotonic(pyaw);
-
-  boost::optional<std::vector<double>> px_p, py_p, pz_p, pyaw_p;
-  if (use_spline_for_pose) {
-    px_p = interpolation::slerp(base_index, px, out_index);
-    py_p = interpolation::slerp(base_index, py, out_index);
-    pz_p = interpolation::slerp(base_index, pz, out_index);
-    pyaw_p = interpolation::slerp(base_index, pyaw, out_index);
-  } else {
-    px_p = linear_interpolation::interpolate(base_index, px, out_index);
-    py_p = linear_interpolation::interpolate(base_index, py, out_index);
-    pz_p = linear_interpolation::interpolate(base_index, pz, out_index);
-    pyaw_p = linear_interpolation::interpolate(base_index, pyaw, out_index);
-  }
-  const auto tlx_p = linear_interpolation::interpolate(base_index, tlx, out_index);
-  const auto taz_p = linear_interpolation::interpolate(base_index, taz, out_index);
-  const auto alx_p = linear_interpolation::interpolate(base_index, alx, out_index);
-
-  if (!px_p || !py_p || !pz_p || !pyaw_p || !tlx_p || !taz_p || !alx_p) {
-    RCLCPP_WARN(
-      rclcpp::get_logger("motion_velocity_smoother").get_child("trajectory_utils"),
-      "interpolation error!!");
-    return {};
-  }
-
-  TrajectoryPoints out_trajectory;
-  TrajectoryPoint point;
-  for (unsigned int i = 0; i < out_index.size(); ++i) {
-    point.pose.position.x = px_p->at(i);
-    point.pose.position.y = py_p->at(i);
-    point.pose.position.z = pz_p->at(i);
-    point.pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(pyaw_p->at(i));
-
-    point.longitudinal_velocity_mps = tlx_p->at(i);
-    point.heading_rate_rps = taz_p->at(i);
-    point.acceleration_mps2 = alx_p->at(i);
-    out_trajectory.push_back(point);
-  }
-  return boost::optional<TrajectoryPoints>(out_trajectory);
 }
 
 bool calcStopDistWithJerkConstraints(

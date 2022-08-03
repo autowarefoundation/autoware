@@ -14,6 +14,7 @@
 
 #include "obstacle_cruise_planner/node.hpp"
 
+#include "motion_utils/resample/resample.hpp"
 #include "motion_utils/trajectory/tmp_conversion.hpp"
 #include "obstacle_cruise_planner/polygon_utils.hpp"
 #include "obstacle_cruise_planner/utils.hpp"
@@ -75,57 +76,15 @@ bool isFrontObstacle(
   return true;
 }
 
-TrajectoryPoint calcLinearPoint(
-  const TrajectoryPoint & p_from, const TrajectoryPoint & p_to, const double length)
-{
-  TrajectoryPoint output;
-  const double dx = p_to.pose.position.x - p_from.pose.position.x;
-  const double dy = p_to.pose.position.y - p_from.pose.position.y;
-  const double norm = std::hypot(dx, dy);
-
-  output = p_to;
-  output.pose.position.x += length * dx / norm;
-  output.pose.position.y += length * dy / norm;
-
-  return output;
-}
-
-// TODO(murooka) replace with spline interpolation
 Trajectory decimateTrajectory(const Trajectory & input, const double step_length)
 {
   Trajectory output{};
 
-  if (input.points.empty()) {
+  if (input.points.size() < 2) {
     return output;
   }
 
-  double trajectory_length_sum = 0.0;
-  double next_length = 0.0;
-
-  constexpr double epsilon = 1e-3;
-  for (int i = 0; i < static_cast<int>(input.points.size()) - 1; ++i) {
-    const auto & p_front = input.points.at(i);
-    const auto & p_back = input.points.at(i + 1);
-
-    if (next_length <= trajectory_length_sum + epsilon) {
-      const auto p_interpolate =
-        calcLinearPoint(p_front, p_back, next_length - trajectory_length_sum);
-      output.points.push_back(p_interpolate);
-      next_length += step_length;
-      continue;
-    }
-
-    trajectory_length_sum += tier4_autoware_utils::calcDistance2d(p_front, p_back);
-  }
-
-  // avoid "Same points are given"
-  if (
-    !input.points.empty() && !output.points.empty() &&
-    epsilon < tier4_autoware_utils::calcDistance2d(input.points.back(), output.points.back())) {
-    output.points.push_back(input.points.back());
-  }
-
-  return output;
+  return motion_utils::resampleTrajectory(input, step_length);
 }
 
 PredictedPath getHighestConfidencePredictedPath(const PredictedObject & predicted_object)

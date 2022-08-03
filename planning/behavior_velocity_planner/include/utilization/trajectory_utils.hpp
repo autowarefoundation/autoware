@@ -144,11 +144,10 @@ inline bool smoothPath(
       0, trajectory.size(), external_v_limit->max_velocity, trajectory);
   }
   const auto traj_lateral_acc_filtered = smoother->applyLateralAccelerationFilter(trajectory);
-  auto nearest_idx =
-    motion_utils::findNearestIndex(*traj_lateral_acc_filtered, current_pose.position);
 
   // Resample trajectory with ego-velocity based interval distances
-  auto traj_resampled = smoother->resampleTrajectory(*traj_lateral_acc_filtered, v0, nearest_idx);
+  auto traj_resampled = smoother->resampleTrajectory(
+    *traj_lateral_acc_filtered, v0, current_pose, std::numeric_limits<double>::max());
   const auto traj_resampled_closest = findNearestIndex(*traj_resampled, current_pose, max, M_PI_4);
   if (!traj_resampled_closest) {
     return false;

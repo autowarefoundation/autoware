@@ -72,7 +72,9 @@ public:
     TrajectoryPoints & output, std::vector<TrajectoryPoints> & debug_trajectories) override;
 
   boost::optional<TrajectoryPoints> resampleTrajectory(
-    const TrajectoryPoints & input, const double v_current, const int closest_id) const override;
+    const TrajectoryPoints & input, [[maybe_unused]] const double v0,
+    [[maybe_unused]] const geometry_msgs::msg::Pose & current_pose,
+    [[maybe_unused]] const double delta_yaw_threshold) const override;
 
   boost::optional<TrajectoryPoints> applyLateralAccelerationFilter(
     const TrajectoryPoints & input, [[maybe_unused]] const double v0,
