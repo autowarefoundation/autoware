@@ -108,12 +108,13 @@ public:
 
   struct StopParam
   {
-    double stop_margin;               // stop margin distance from obstacle on the path [m]
-    double min_behavior_stop_margin;  // margin distance, any other stop point is inserted [m]
-    double expand_stop_range;         // margin of vehicle footprint [m]
-    double extend_distance;           // trajectory extend_distance [m]
-    double step_length;               // step length for pointcloud search range [m]
-    double stop_search_radius;        // search radius for obstacle point cloud [m]
+    double stop_margin;                // stop margin distance from obstacle on the path [m]
+    double min_behavior_stop_margin;   // margin distance, any other stop point is inserted [m]
+    double expand_stop_range;          // margin of vehicle footprint [m]
+    double extend_distance;            // trajectory extend_distance [m]
+    double step_length;                // step length for pointcloud search range [m]
+    double stop_search_radius;         // search radius for obstacle point cloud [m]
+    double hold_stop_margin_distance;  // keep stopping if the ego is in this margin [m]
   };
 
   struct SlowDownParam
