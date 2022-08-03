@@ -46,6 +46,16 @@ When the deceleration section is inserted, the start point of the section is ins
 
 ## Modules
 
+### Common Parameter
+
+| Parameter               | Type   | Description                                                                              |
+| ----------------------- | ------ | ---------------------------------------------------------------------------------------- |
+| `enable_slow_down`      | bool   | enable slow down planner [-]                                                             |
+| `max_velocity`          | double | max velocity [m/s]                                                                       |
+| `hunting_threshold`     | double | # even if the obstacle disappears, the stop judgment continues for hunting_threshold [s] |
+| `lowpass_gain`          | double | low pass gain for calculating acceleration [-]                                           |
+| `max_yaw_deviation_deg` | double | # maximum ego yaw deviation from trajectory [deg] (measures against overlapping lanes)   |
+
 ### Obstacle Stop Planner
 
 #### Role
