@@ -93,6 +93,79 @@ std::vector<double> slerp(
   // interpolate base_keys at query_keys
   return interpolator.getSplineInterpolatedValues(query_keys);
 }
+
+std::vector<double> slerpByAkima(
+  const std::vector<double> & base_keys, const std::vector<double> & base_values,
+  const std::vector<double> & query_keys)
+{
+  constexpr double epsilon = 1e-5;
+
+  // calculate m
+  std::vector<double> m_values;
+  for (size_t i = 0; i < base_keys.size() - 1; ++i) {
+    const double m_val =
+      (base_values.at(i + 1) - base_values.at(i)) / (base_keys.at(i + 1) - base_keys.at(i));
+    m_values.push_back(m_val);
+  }
+
+  // calculate s
+  std::vector<double> s_values;
+  for (size_t i = 0; i < base_keys.size(); ++i) {
+    if (i == 0) {
+      s_values.push_back(m_values.front());
+      continue;
+    } else if (i == base_keys.size() - 1) {
+      s_values.push_back(m_values.back());
+      continue;
+    } else if (i == 1 || i == base_keys.size() - 2) {
+      const double s_val = (m_values.at(i - 1) + m_values.at(i)) / 2.0;
+      s_values.push_back(s_val);
+      continue;
+    }
+
+    const double denom = std::abs(m_values.at(i + 1) - m_values.at(i)) +
+                         std::abs(m_values.at(i - 1) - m_values.at(i - 2));
+    if (std::abs(denom) < epsilon) {
+      const double s_val = (m_values.at(i - 1) + m_values.at(i)) / 2.0;
+      s_values.push_back(s_val);
+      continue;
+    }
+
+    const double s_val = (std::abs(m_values.at(i + 1) - m_values.at(i)) * m_values.at(i - 1) +
+                          std::abs(m_values.at(i - 1) - m_values.at(i - 2)) * m_values.at(i)) /
+                         denom;
+    s_values.push_back(s_val);
+  }
+
+  // calculate cubic coefficients
+  std::vector<double> a;
+  std::vector<double> b;
+  std::vector<double> c;
+  std::vector<double> d;
+  for (size_t i = 0; i < base_keys.size() - 1; ++i) {
+    a.push_back(
+      (s_values.at(i) + s_values.at(i + 1) - 2.0 * m_values.at(i)) /
+      std::pow(base_keys.at(i + 1) - base_keys.at(i), 2));
+    b.push_back(
+      (3.0 * m_values.at(i) - 2.0 * s_values.at(i) - s_values.at(i + 1)) /
+      (base_keys.at(i + 1) - base_keys.at(i)));
+    c.push_back(s_values.at(i));
+    d.push_back(base_values.at(i));
+  }
+
+  // interpolate
+  std::vector<double> res;
+  size_t j = 0;
+  for (const auto & query_key : query_keys) {
+    while (base_keys.at(j + 1) < query_key) {
+      ++j;
+    }
+
+    const double ds = query_key - base_keys.at(j);
+    res.push_back(d.at(j) + (c.at(j) + (b.at(j) + a.at(j) * ds) * ds) * ds);
+  }
+  return res;
+}
 }  // namespace interpolation
 
 void SplineInterpolation::calcSplineCoefficients(

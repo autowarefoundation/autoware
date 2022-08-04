@@ -108,6 +108,117 @@ TEST(spline_interpolation, slerp)
       EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
     }
   }
+
+  {  // When the query keys changes suddenly (edge case of spline interpolation).
+    const std::vector<double> base_keys = {0.0, 1.0, 1.0001, 2.0, 3.0, 4.0};
+    const std::vector<double> base_values = {0.0, 0.0, 0.1, 0.1, 0.1, 0.1};
+    const std::vector<double> query_keys = {0.0, 1.0, 1.5, 2.0, 3.0, 4.0};
+    const std::vector<double> ans = {0.0, 0.0, 137.591789, 0.1, 0.1, 0.1};
+
+    const auto query_values = interpolation::slerp(base_keys, base_values, query_keys);
+    for (size_t i = 0; i < query_values.size(); ++i) {
+      EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
+    }
+  }
+}
+
+TEST(spline_interpolation, slerpByAkima)
+{
+  {  // straight: query_keys is same as base_keys
+    const std::vector<double> base_keys{0.0, 1.0, 2.0, 3.0, 4.0};
+    const std::vector<double> base_values{0.0, 1.5, 3.0, 4.5, 6.0};
+    const std::vector<double> query_keys = base_keys;
+    const std::vector<double> ans = base_values;
+
+    const auto query_values = interpolation::slerpByAkima(base_keys, base_values, query_keys);
+    for (size_t i = 0; i < query_values.size(); ++i) {
+      EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
+    }
+  }
+
+  {  // straight: query_keys is random
+    const std::vector<double> base_keys{0.0, 1.0, 2.0, 3.0, 4.0};
+    const std::vector<double> base_values{0.0, 1.5, 3.0, 4.5, 6.0};
+    const std::vector<double> query_keys{0.0, 0.7, 1.9, 4.0};
+    const std::vector<double> ans{0.0, 1.05, 2.85, 6.0};
+
+    const auto query_values = interpolation::slerpByAkima(base_keys, base_values, query_keys);
+    for (size_t i = 0; i < query_values.size(); ++i) {
+      EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
+    }
+  }
+
+  {  // curve: query_keys is same as base_keys
+    const std::vector<double> base_keys{-1.5, 1.0, 5.0, 10.0, 15.0, 20.0};
+    const std::vector<double> base_values{-1.2, 0.5, 1.0, 1.2, 2.0, 1.0};
+    const std::vector<double> query_keys = base_keys;
+    const std::vector<double> ans = base_values;
+
+    const auto query_values = interpolation::slerpByAkima(base_keys, base_values, query_keys);
+    for (size_t i = 0; i < query_values.size(); ++i) {
+      EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
+    }
+  }
+
+  {  // curve: query_keys is random
+    const std::vector<double> base_keys{-1.5, 1.0, 5.0, 10.0, 15.0, 20.0};
+    const std::vector<double> base_values{-1.2, 0.5, 1.0, 1.2, 2.0, 1.0};
+    const std::vector<double> query_keys{0.0, 8.0, 18.0};
+    const std::vector<double> ans{-0.0801, 1.110749, 1.4864};
+
+    const auto query_values = interpolation::slerpByAkima(base_keys, base_values, query_keys);
+    for (size_t i = 0; i < query_values.size(); ++i) {
+      EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
+    }
+  }
+
+  {  // straight: size of base_keys is 2 (edge case in the implementation)
+    const std::vector<double> base_keys{0.0, 1.0};
+    const std::vector<double> base_values{0.0, 1.5};
+    const std::vector<double> query_keys = base_keys;
+    const std::vector<double> ans = base_values;
+
+    const auto query_values = interpolation::slerpByAkima(base_keys, base_values, query_keys);
+    for (size_t i = 0; i < query_values.size(); ++i) {
+      EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
+    }
+  }
+
+  {  // straight: size of base_keys is 3 (edge case in the implementation)
+    const std::vector<double> base_keys{0.0, 1.0, 2.0};
+    const std::vector<double> base_values{0.0, 1.5, 3.0};
+    const std::vector<double> query_keys = base_keys;
+    const std::vector<double> ans = base_values;
+
+    const auto query_values = interpolation::slerpByAkima(base_keys, base_values, query_keys);
+    for (size_t i = 0; i < query_values.size(); ++i) {
+      EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
+    }
+  }
+
+  {  // curve: query_keys is random. size of base_keys is 3 (edge case in the implementation)
+    const std::vector<double> base_keys{-1.5, 1.0, 5.0};
+    const std::vector<double> base_values{-1.2, 0.5, 1.0};
+    const std::vector<double> query_keys{-1.0, 0.0, 4.0};
+    const std::vector<double> ans{-0.8378, -0.0801, 0.927031};
+
+    const auto query_values = interpolation::slerpByAkima(base_keys, base_values, query_keys);
+    for (size_t i = 0; i < query_values.size(); ++i) {
+      EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
+    }
+  }
+
+  {  // When the query keys changes suddenly (edge case of spline interpolation).
+    const std::vector<double> base_keys = {0.0, 1.0, 1.0001, 2.0, 3.0, 4.0};
+    const std::vector<double> base_values = {0.0, 0.0, 0.1, 0.1, 0.1, 0.1};
+    const std::vector<double> query_keys = {0.0, 1.0, 1.5, 2.0, 3.0, 4.0};
+    const std::vector<double> ans = {0.0, 0.0, 0.1, 0.1, 0.1, 0.1};
+
+    const auto query_values = interpolation::slerpByAkima(base_keys, base_values, query_keys);
+    for (size_t i = 0; i < query_values.size(); ++i) {
+      EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
+    }
+  }
 }
 
 TEST(spline_interpolation, slerpYawFromPoints)
