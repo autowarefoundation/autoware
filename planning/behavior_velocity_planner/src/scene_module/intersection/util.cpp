@@ -189,7 +189,7 @@ bool generateStopLine(
 
   /* spline interpolation */
   autoware_auto_planning_msgs::msg::PathWithLaneId path_ip;
-  if (!splineInterpolate(target_path, interval, &path_ip, logger)) {
+  if (!splineInterpolate(target_path, interval, path_ip, logger)) {
     return false;
   }
 
@@ -561,7 +561,7 @@ bool generateStopLineBeforeIntersection(
 
   /* spline interpolation */
   autoware_auto_planning_msgs::msg::PathWithLaneId path_ip;
-  if (!splineInterpolate(input_path, interval, &path_ip, logger)) {
+  if (!splineInterpolate(input_path, interval, path_ip, logger)) {
     return false;
   }
   const auto & assigned_lanelet = lanelet_map_ptr->laneletLayer.get(lane_id);
