@@ -20,6 +20,7 @@
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
+#include <motion_utils/resample/resample.hpp>
 #include <opencv2/opencv.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
@@ -89,80 +90,40 @@ double calcPathArcLength(const PathWithLaneId & path, size_t start, size_t end)
  */
 PathWithLaneId resamplePathWithSpline(const PathWithLaneId & path, double interval)
 {
-  const auto base_points = calcPathArcLengthArray(path);
-  const auto sampling_points = tier4_autoware_utils::arange(0.0, base_points.back(), interval);
-
-  if (base_points.empty() || sampling_points.empty()) {
+  if (path.points.size() < 2) {
     return path;
   }
 
-  std::vector<double> base_x, base_y, base_z;
-  for (const auto & p : path.points) {
-    const auto & pos = p.point.pose.position;
-    base_x.push_back(pos.x);
-    base_y.push_back(pos.y);
-    base_z.push_back(pos.z);
+  double s = 0.0;
+  std::vector<double> s_in{0.0};
+  for (size_t i = 0; i < path.points.size() - 1; ++i) {
+    s += tier4_autoware_utils::calcDistance2d(
+      path.points.at(i).point.pose, path.points.at(i + 1).point.pose);
+    s_in.push_back(s);
   }
 
-  const auto resampled_x = interpolation::slerp(base_points, base_x, sampling_points);
-  const auto resampled_y = interpolation::slerp(base_points, base_y, sampling_points);
-  const auto resampled_z = interpolation::slerp(base_points, base_z, sampling_points);
+  std::vector<double> s_out = s_in;
 
-  PathWithLaneId resampled_path{};
-  resampled_path.header = path.header;
-  resampled_path.drivable_area = path.drivable_area;
+  constexpr double epsilon = 0.01;
+  const auto has_almost_same_value = [&](const auto & vec, const auto x) {
+    if (vec.empty()) return false;
+    const auto has_close = [&](const auto v) { return std::abs(v - x) < epsilon; };
+    return std::find_if(vec.begin(), vec.end(), has_close) != vec.end();
+  };
 
-  // For Point X, Y, Z
-  for (size_t i = 0; i < sampling_points.size(); ++i) {
-    PathPointWithLaneId p{};
-    p.point.pose.position =
-      tier4_autoware_utils::createPoint(resampled_x.at(i), resampled_y.at(i), resampled_z.at(i));
-    resampled_path.points.push_back(p);
-  }
-
-  // For LaneIds, Type, Twist
-  //
-  // ------|----|----|----|----|----|----|-------> resampled
-  //      [0]  [1]  [2]  [3]  [4]  [5]  [6]
-  //
-  // --------|---------------|----------|---------> base
-  //        [0]             [1]        [2]
-  //
-  // resampled[0~3] = base[0]
-  // resampled[4~5] = base[1]
-  // resampled[6] = base[2]
-  //
-  size_t base_idx{0};
-  for (size_t i = 0; i < resampled_path.points.size(); ++i) {
-    while (base_idx < base_points.size() - 1 && sampling_points.at(i) > base_points.at(base_idx)) {
-      ++base_idx;
+  for (double s = 0.0; s < s_in.back(); s += interval) {
+    if (!has_almost_same_value(s_out, s)) {
+      s_out.push_back(s);
     }
-    size_t ref_idx = std::max(static_cast<int>(base_idx) - 1, 0);
-    if (i == resampled_path.points.size() - 1) {
-      ref_idx = base_points.size() - 1;  // for last point
-    }
-    auto & p = resampled_path.points.at(i);
-    p.lane_ids = path.points.at(ref_idx).lane_ids;
-    p.point.longitudinal_velocity_mps = path.points.at(ref_idx).point.longitudinal_velocity_mps;
-    p.point.lateral_velocity_mps = path.points.at(ref_idx).point.lateral_velocity_mps;
-    p.point.heading_rate_rps = path.points.at(ref_idx).point.heading_rate_rps;
-    p.point.is_final = path.points.at(ref_idx).point.is_final;
   }
 
-  // For Yaw
-  for (size_t i = 0; i < resampled_path.points.size() - 1; ++i) {
-    const auto & p0 = resampled_path.points.at(i).point.pose.position;
-    const auto & p1 = resampled_path.points.at(i + 1).point.pose.position;
-    const double yaw = std::atan2(p1.y - p0.y, p1.x - p0.x);
-    resampled_path.points.at(i).point.pose.orientation =
-      tier4_autoware_utils::createQuaternionFromYaw(yaw);
-  }
-  if (resampled_path.points.size() > 2) {
-    resampled_path.points.back().point.pose.orientation =
-      resampled_path.points.at(resampled_path.points.size() - 2).point.pose.orientation;
+  std::sort(s_out.begin(), s_out.end());
+
+  if (s_out.empty()) {
+    return path;
   }
 
-  return resampled_path;
+  return motion_utils::resamplePath(path, s_out);
 }
 
 Path toPath(const PathWithLaneId & input)
