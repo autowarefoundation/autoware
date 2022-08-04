@@ -1,4 +1,4 @@
-# Obstacle Velocity Planner
+# Obstacle Cruise Planner
 
 ## Overview
 
