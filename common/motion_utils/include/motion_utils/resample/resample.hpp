@@ -27,6 +27,7 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include "autoware_auto_planning_msgs/msg/path.hpp"
+#include "autoware_auto_planning_msgs/msg/path_with_lane_id.hpp"
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
 
 #include <algorithm>
@@ -54,6 +55,54 @@ std::vector<geometry_msgs::msg::Pose> resamplePath(
   const std::vector<geometry_msgs::msg::Pose> & points,
   const std::vector<double> & resampled_arclength, const bool use_lerp_for_xy = false,
   const bool use_lerp_for_z = true);
+
+/**
+ * @brief A resampling function for a path with lane id. Note that in a default setting, position xy
+ * are resampled by spline interpolation, position z are resampled by linear interpolation,
+ * longitudinal and lateral velocity are resampled by zero_order_hold, and heading rate is resampled
+ * by linear interpolation. Orientation of the resampled path are calculated by a forward difference
+ * method based on the interpolated position x and y. Moreover, lane_ids and is_final are also
+ * interpolated by zero order hold
+ * @param input_path input path to resample
+ * @param resampled_arclength arclength that contains length of each resampling points from initial
+ * point
+ * @param use_lerp_for_xy If true, it uses linear interpolation to resample position x and
+ * y. Otherwise, it uses spline interpolation
+ * @param use_lerp_for_z If true, it uses linear interpolation to resample position z.
+ * Otherwise, it uses spline interpolation
+ * @param use_zero_order_hold_for_v If true, it uses zero_order_hold to resample
+ * longitudinal and lateral velocity. Otherwise, it uses linear interpolation
+ * @return resampled path
+ */
+autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & input_path,
+  const std::vector<double> & resampled_arclength, const bool use_lerp_for_xy = false,
+  const bool use_lerp_for_z = true, const bool use_zero_order_hold_for_v = true);
+
+/**
+ * @brief A resampling function for a path with lane id. Note that in a default setting, position xy
+ * are resampled by spline interpolation, position z are resampled by linear interpolation,
+ * longitudinal and lateral velocity are resampled by zero_order_hold, and heading rate is resampled
+ * by linear interpolation. Orientation of the resampled path are calculated by a forward difference
+ * method based on the interpolated position x and y. Moreover, lane_ids and is_final are also
+ * interpolated by zero order hold
+ * @param input_path input path to resample
+ * @param resampled_interval resampling interval
+ * point
+ * @param use_lerp_for_xy If true, it uses linear interpolation to resample position x and
+ * y. Otherwise, it uses spline interpolation
+ * @param use_lerp_for_z If true, it uses linear interpolation to resample position z.
+ * Otherwise, it uses spline interpolation
+ * @param use_zero_order_hold_for_v If true, it uses zero_order_hold to resample
+ * longitudinal and lateral velocity. Otherwise, it uses linear interpolation
+ * @param resample_input_path_stop_point If true, resample closest stop point in input path
+ * @return resampled path
+ */
+autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & input_path,
+  const double resample_interval, const bool use_lerp_for_xy = false,
+  const bool use_lerp_for_z = true, const bool use_zero_order_hold_for_v = true,
+  const bool resample_input_path_stop_point = true);
 
 /**
  * @brief A resampling function for a path. Note that in a default setting, position xy are
@@ -116,12 +165,15 @@ autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
  * Otherwise, it uses spline interpolation
  * @param use_zero_order_hold_for_twist If true, it uses zero_order_hold to resample
  * longitudinal, lateral velocity and acceleration. Otherwise, it uses linear interpolation
+ * @param resample_input_trajectory_stop_point If true, resample closest stop point in input
+ * trajectory
  * @return resampled trajectory
  */
 autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
   const autoware_auto_planning_msgs::msg::Trajectory & input_trajectory,
   const double resample_interval, const bool use_lerp_for_xy = false,
-  const bool use_lerp_for_z = true, const bool use_zero_order_hold_for_twist = true);
+  const bool use_lerp_for_z = true, const bool use_zero_order_hold_for_twist = true,
+  const bool resample_input_trajectory_stop_point = true);
 }  // namespace motion_utils
 
 #endif  // MOTION_UTILS__RESAMPLE__RESAMPLE_HPP_

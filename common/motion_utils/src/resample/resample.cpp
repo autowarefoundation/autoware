@@ -115,6 +115,171 @@ std::vector<geometry_msgs::msg::Pose> resamplePath(
   return resampled_points;
 }
 
+autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & input_path,
+  const std::vector<double> & resampled_arclength, const bool use_lerp_for_xy,
+  const bool use_lerp_for_z, const bool use_zero_order_hold_for_v)
+{
+  // Check vector size and if out_arclength have the end point of the path
+  if (input_path.points.size() < 2 || resampled_arclength.size() < 2) {
+    std::cerr << "[motion_utils]: input path size or input path length is wrong" << std::endl;
+    return input_path;
+  }
+
+  // For LaneIds, is_final
+  //
+  // ------|----|----|----|----|----|----|-------> resampled
+  //      [0]  [1]  [2]  [3]  [4]  [5]  [6]
+  //
+  // ------|----------------|----------|---------> base
+  //      [0]             [1]        [2]
+  //
+  // resampled[0~3] = base[0]
+  // resampled[4~5] = base[1]
+  // resampled[6] = base[2]
+
+  // Input Path Information
+  std::vector<double> input_arclength(input_path.points.size());
+  std::vector<geometry_msgs::msg::Pose> input_pose(input_path.points.size());
+  std::vector<double> v_lon(input_path.points.size());
+  std::vector<double> v_lat(input_path.points.size());
+  std::vector<double> heading_rate(input_path.points.size());
+  std::vector<bool> is_final(input_path.points.size());
+  std::vector<std::vector<int64_t>> lane_ids(input_path.points.size());
+
+  input_arclength.front() = 0.0;
+  input_pose.front() = input_path.points.front().point.pose;
+  v_lon.front() = input_path.points.front().point.longitudinal_velocity_mps;
+  v_lat.front() = input_path.points.front().point.lateral_velocity_mps;
+  heading_rate.front() = input_path.points.front().point.heading_rate_rps;
+  for (size_t i = 1; i < input_path.points.size(); ++i) {
+    const auto & prev_pt = input_path.points.at(i - 1).point;
+    const auto & curr_pt = input_path.points.at(i).point;
+    const double ds =
+      tier4_autoware_utils::calcDistance2d(prev_pt.pose.position, curr_pt.pose.position);
+    input_arclength.at(i) = ds + input_arclength.at(i - 1);
+    input_pose.at(i) = curr_pt.pose;
+    v_lon.at(i) = curr_pt.longitudinal_velocity_mps;
+    v_lat.at(i) = curr_pt.lateral_velocity_mps;
+    heading_rate.at(i) = curr_pt.heading_rate_rps;
+    is_final.at(i) = curr_pt.is_final;
+    lane_ids.at(i) = input_path.points.at(i).lane_ids;
+  }
+
+  if (input_arclength.back() < resampled_arclength.back()) {
+    std::cerr << "[motion_utils]: resampled path length is longer than input path length"
+              << std::endl;
+    return input_path;
+  }
+
+  // Interpolate
+  const auto lerp = [&](const auto & input) {
+    return interpolation::lerp(input_arclength, input, resampled_arclength);
+  };
+  const auto zoh = [&](const auto & input) {
+    return interpolation::zero_order_hold(input_arclength, input, resampled_arclength);
+  };
+
+  const auto interpolated_pose =
+    resamplePath(input_pose, resampled_arclength, use_lerp_for_xy, use_lerp_for_z);
+  const auto interpolated_v_lon = use_zero_order_hold_for_v ? zoh(v_lon) : lerp(v_lon);
+  const auto interpolated_v_lat = use_zero_order_hold_for_v ? zoh(v_lat) : lerp(v_lat);
+  const auto interpolated_heading_rate = lerp(heading_rate);
+  const auto interpolated_is_final = zoh(is_final);
+  const auto interpolated_lane_ids = zoh(lane_ids);
+
+  if (interpolated_pose.size() != resampled_arclength.size()) {
+    std::cerr << "[motion_utils]: Resampled pose size is different from resampled arclength"
+              << std::endl;
+    return input_path;
+  }
+
+  autoware_auto_planning_msgs::msg::PathWithLaneId resampled_path;
+  resampled_path.header = input_path.header;
+  resampled_path.drivable_area = input_path.drivable_area;
+  resampled_path.points.resize(interpolated_pose.size());
+  for (size_t i = 0; i < resampled_path.points.size(); ++i) {
+    autoware_auto_planning_msgs::msg::PathPoint path_point;
+    path_point.pose = interpolated_pose.at(i);
+    path_point.longitudinal_velocity_mps = interpolated_v_lon.at(i);
+    path_point.lateral_velocity_mps = interpolated_v_lat.at(i);
+    path_point.heading_rate_rps = interpolated_heading_rate.at(i);
+    path_point.is_final = interpolated_is_final.at(i);
+    resampled_path.points.at(i).point = path_point;
+    resampled_path.points.at(i).lane_ids = interpolated_lane_ids.at(i);
+  }
+
+  return resampled_path;
+}
+
+autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & input_path,
+  const double resample_interval, const bool use_lerp_for_xy, const bool use_lerp_for_z,
+  const bool use_zero_order_hold_for_v, const bool resample_input_path_stop_point)
+{
+  // Check vector size and if out_arclength have the end point of the trajectory
+  if (input_path.points.size() < 2 || resample_interval < 1e-3) {
+    std::cerr << "[motion_utils]: input trajectory size or resample "
+                 "interval is invalid"
+              << std::endl;
+    return input_path;
+  }
+
+  // transform input_path
+  std::vector<autoware_auto_planning_msgs::msg::PathPoint> transformed_input_path(
+    input_path.points.size());
+  for (size_t i = 0; i < input_path.points.size(); ++i) {
+    transformed_input_path.at(i) = input_path.points.at(i).point;
+  }
+  // compute path length
+  const double input_path_len = motion_utils::calcArcLength(transformed_input_path);
+
+  std::vector<double> resampling_arclength;
+  for (double s = 0.0; s < input_path_len; s += resample_interval) {
+    resampling_arclength.push_back(s);
+  }
+  if (resampling_arclength.empty()) {
+    std::cerr << "[motion_utils]: resampling arclength is empty" << std::endl;
+    return input_path;
+  }
+
+  // Insert terminal point
+  if (input_path_len - resampling_arclength.back() < 1e-3) {
+    resampling_arclength.back() = input_path_len;
+  } else {
+    resampling_arclength.push_back(input_path_len);
+  }
+
+  // Insert stop point
+  if (resample_input_path_stop_point) {
+    const auto distance_to_stop_point =
+      motion_utils::calcDistanceToForwardStopPoint(transformed_input_path, 0);
+    if (distance_to_stop_point && !resampling_arclength.empty()) {
+      for (size_t i = 1; i < resampling_arclength.size(); ++i) {
+        if (
+          resampling_arclength.at(i - 1) <= *distance_to_stop_point &&
+          *distance_to_stop_point < resampling_arclength.at(i)) {
+          const double dist_to_prev_point =
+            std::fabs(*distance_to_stop_point - resampling_arclength.at(i - 1));
+          const double dist_to_following_point =
+            std::fabs(resampling_arclength.at(i) - *distance_to_stop_point);
+          if (dist_to_prev_point < 1e-3) {
+            resampling_arclength.at(i - 1) = *distance_to_stop_point;
+          } else if (dist_to_following_point < 1e-3) {
+            resampling_arclength.at(i) = *distance_to_stop_point;
+          } else {
+            resampling_arclength.insert(resampling_arclength.begin() + i, *distance_to_stop_point);
+          }
+          break;
+        }
+      }
+    }
+  }
+
+  return resamplePath(
+    input_path, resampling_arclength, use_lerp_for_xy, use_lerp_for_z, use_zero_order_hold_for_v);
+}
+
 autoware_auto_planning_msgs::msg::Path resamplePath(
   const autoware_auto_planning_msgs::msg::Path & input_path,
   const std::vector<double> & resampled_arclength, const bool use_lerp_for_xy,
@@ -291,7 +456,7 @@ autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
 autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
   const autoware_auto_planning_msgs::msg::Trajectory & input_trajectory,
   const double resample_interval, const bool use_lerp_for_xy, const bool use_lerp_for_z,
-  const bool use_zero_order_hold_for_twist)
+  const bool use_zero_order_hold_for_twist, const bool resample_input_trajectory_stop_point)
 {
   const double input_trajectory_len = motion_utils::calcArcLength(input_trajectory.points);
   // Check vector size and if out_arclength have the end point of the trajectory
@@ -320,25 +485,27 @@ autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
   }
 
   // Insert stop point
-  const auto distance_to_stop_point =
-    motion_utils::calcDistanceToForwardStopPoint(input_trajectory.points, 0);
-  if (distance_to_stop_point && !resampling_arclength.empty()) {
-    for (size_t i = 1; i < resampling_arclength.size(); ++i) {
-      if (
-        resampling_arclength.at(i - 1) <= *distance_to_stop_point &&
-        *distance_to_stop_point < resampling_arclength.at(i)) {
-        const double dist_to_prev_point =
-          std::fabs(*distance_to_stop_point - resampling_arclength.at(i - 1));
-        const double dist_to_following_point =
-          std::fabs(resampling_arclength.at(i) - *distance_to_stop_point);
-        if (dist_to_prev_point < 1e-3) {
-          resampling_arclength.at(i - 1) = *distance_to_stop_point;
-        } else if (dist_to_following_point < 1e-3) {
-          resampling_arclength.at(i) = *distance_to_stop_point;
-        } else {
-          resampling_arclength.insert(resampling_arclength.begin() + i, *distance_to_stop_point);
+  if (resample_input_trajectory_stop_point) {
+    const auto distance_to_stop_point =
+      motion_utils::calcDistanceToForwardStopPoint(input_trajectory.points, 0);
+    if (distance_to_stop_point && !resampling_arclength.empty()) {
+      for (size_t i = 1; i < resampling_arclength.size(); ++i) {
+        if (
+          resampling_arclength.at(i - 1) <= *distance_to_stop_point &&
+          *distance_to_stop_point < resampling_arclength.at(i)) {
+          const double dist_to_prev_point =
+            std::fabs(*distance_to_stop_point - resampling_arclength.at(i - 1));
+          const double dist_to_following_point =
+            std::fabs(resampling_arclength.at(i) - *distance_to_stop_point);
+          if (dist_to_prev_point < 1e-3) {
+            resampling_arclength.at(i - 1) = *distance_to_stop_point;
+          } else if (dist_to_following_point < 1e-3) {
+            resampling_arclength.at(i) = *distance_to_stop_point;
+          } else {
+            resampling_arclength.insert(resampling_arclength.begin() + i, *distance_to_stop_point);
+          }
+          break;
         }
-        break;
       }
     }
   }
