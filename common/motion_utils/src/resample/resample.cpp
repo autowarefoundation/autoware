@@ -152,6 +152,8 @@ autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
   v_lon.front() = input_path.points.front().point.longitudinal_velocity_mps;
   v_lat.front() = input_path.points.front().point.lateral_velocity_mps;
   heading_rate.front() = input_path.points.front().point.heading_rate_rps;
+  is_final.front() = input_path.points.front().point.is_final;
+  lane_ids.front() = input_path.points.front().lane_ids;
   for (size_t i = 1; i < input_path.points.size(); ++i) {
     const auto & prev_pt = input_path.points.at(i - 1).point;
     const auto & curr_pt = input_path.points.at(i).point;
