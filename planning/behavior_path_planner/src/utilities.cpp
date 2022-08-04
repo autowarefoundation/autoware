@@ -65,11 +65,47 @@ bool sumLengthFromTwoPoints(
   return is_end;
 }
 
-std::array<double, 4> getLaneletScope(
-  const lanelet::ConstLanelets & lanes, const size_t nearest_lane_idx,
+std::array<double, 4> getPathScope(
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
+  const std::shared_ptr<route_handler::RouteHandler> route_handler,
   const geometry_msgs::msg::Pose & current_pose, const double forward_lane_length,
   const double backward_lane_length, const double lane_margin)
 {
+  // extract lanes from path_with_lane_id
+  lanelet::ConstLanelets path_lanes = [&]() {
+    // extract "unique" lane ids from path_with_lane_id
+    std::vector<size_t> path_lane_ids;
+    for (const auto & path_point : path.points) {
+      for (const size_t lane_id : path_point.lane_ids) {
+        if (std::find(path_lane_ids.begin(), path_lane_ids.end(), lane_id) == path_lane_ids.end()) {
+          path_lane_ids.push_back(lane_id);
+        }
+      }
+    }
+
+    // get lanes according to lane ids
+    lanelet::ConstLanelets path_lanes;
+    for (const auto path_lane_id : path_lane_ids) {
+      const auto & lane = route_handler->getLaneletsFromId(path_lane_id);
+      path_lanes.push_back(lane);
+    }
+
+    return path_lanes;
+  }();
+
+  // claculate nearest lane idx
+  const int nearest_lane_idx = [&]() -> int {
+    lanelet::ConstLanelet closest_lanelet;
+    if (lanelet::utils::query::getClosestLanelet(path_lanes, current_pose, &closest_lanelet)) {
+      for (size_t i = 0; i < path_lanes.size(); ++i) {
+        if (path_lanes.at(i).id() == closest_lanelet.id()) {
+          return i;
+        }
+      }
+    }
+    return 0;
+  }();
+
   // define functions to get right/left bounds as a vector
   const auto get_bound_funcs =
     std::vector<std::function<lanelet::ConstLineString2d(const lanelet::ConstLanelet & lane)>>{
@@ -88,7 +124,7 @@ std::array<double, 4> getLaneletScope(
 
   for (const auto & get_bound_func : get_bound_funcs) {
     // search nearest point index to current pose
-    const auto & nearest_bound = get_bound_func(lanes.at(nearest_lane_idx));
+    const auto & nearest_bound = get_bound_func(path_lanes.at(nearest_lane_idx));
     if (nearest_bound.empty()) {
       continue;
     }
@@ -108,7 +144,7 @@ std::array<double, 4> getLaneletScope(
       motion_utils::calcSignedArcLength(points, current_pose.position, nearest_segment_idx);
     double sum_length = std::min(forward_offset_length, 0.0);
     size_t current_lane_idx = nearest_lane_idx;
-    auto current_lane = lanes.at(current_lane_idx);
+    auto current_lane = path_lanes.at(current_lane_idx);
     size_t current_point_idx = nearest_segment_idx;
     while (true) {
       const auto & bound = get_bound_func(current_lane);
@@ -130,12 +166,12 @@ std::array<double, 4> getLaneletScope(
         drivable_area_utils::updateMinMaxPosition(
           previous_bound[previous_point_idx].basicPoint(), min_x, min_y, max_x, max_y);
 
-        if (current_lane_idx == lanes.size() - 1) {
+        if (current_lane_idx == path_lanes.size() - 1) {
           break;
         }
 
         current_lane_idx += 1;
-        current_lane = lanes.at(current_lane_idx);
+        current_lane = path_lanes.at(current_lane_idx);
         current_point_idx = 0;
         const auto & current_bound = get_bound_func(current_lane);
 
@@ -156,7 +192,7 @@ std::array<double, 4> getLaneletScope(
       motion_utils::calcSignedArcLength(points, nearest_segment_idx + 1, current_pose.position);
     sum_length = std::min(backward_offset_length, 0.0);
     current_lane_idx = nearest_lane_idx;
-    current_lane = lanes.at(current_lane_idx);
+    current_lane = path_lanes.at(current_lane_idx);
     while (true) {
       const auto & bound = get_bound_func(current_lane);
       if (current_point_idx != 0) {
@@ -182,7 +218,7 @@ std::array<double, 4> getLaneletScope(
         }
 
         current_lane_idx -= 1;
-        current_lane = lanes.at(current_lane_idx);
+        current_lane = path_lanes.at(current_lane_idx);
         const auto & current_bound = get_bound_func(current_lane);
         current_point_idx = current_bound.size() - 1;
 
@@ -1029,40 +1065,32 @@ bool containsGoal(const lanelet::ConstLanelets & lanes, const lanelet::Id & goal
 }
 
 // input lanes must be in sequence
+// NOTE: lanes in the path argument is used to calculate the size of the drivable area to cover
+// designated forward and backward length by getPathScope function.
+//       lanes argument is used to determinte (= draw) the drivable area.
+//       This is because lanes argument has multiple parallel lanes which makes hard to calculate
+//       the size of the drivable area
 OccupancyGrid generateDrivableArea(
-  const lanelet::ConstLanelets & lanes, const double resolution, const double vehicle_length,
-  const std::shared_ptr<const PlannerData> planner_data)
+  const PathWithLaneId & path, const lanelet::ConstLanelets & lanes, const double resolution,
+  const double vehicle_length, const std::shared_ptr<const PlannerData> planner_data)
 {
   const auto & params = planner_data->parameters;
   const auto route_handler = planner_data->route_handler;
   const auto current_pose = planner_data->self_pose;
 
-  // search closest lanelet to current pose from given lanelets
-  const int nearest_lane_idx = [&]() -> int {
-    lanelet::ConstLanelet closest_lanelet;
-    if (lanelet::utils::query::getClosestLanelet(lanes, current_pose->pose, &closest_lanelet)) {
-      for (size_t i = 0; i < lanes.size(); ++i) {
-        if (lanes.at(i).id() == closest_lanelet.id()) {
-          return i;
-        }
-      }
-    }
-    return 0;
-  }();
-
-  // calculate min/max x and y
-  const auto lanelet_scope = drivable_area_utils::getLaneletScope(
-    lanes, nearest_lane_idx, current_pose->pose, params.drivable_lane_forward_length,
+  // calculate min/max x and y from lanes in path argument (not from lanes argument)
+  const auto path_scope = drivable_area_utils::getPathScope(
+    path, route_handler, current_pose->pose, params.drivable_lane_forward_length,
     params.drivable_lane_backward_length, params.drivable_lane_margin);
 
   const double min_x =
-    drivable_area_utils::quantize(lanelet_scope.at(0) - params.drivable_area_margin, resolution);
+    drivable_area_utils::quantize(path_scope.at(0) - params.drivable_area_margin, resolution);
   const double min_y =
-    drivable_area_utils::quantize(lanelet_scope.at(1) - params.drivable_area_margin, resolution);
+    drivable_area_utils::quantize(path_scope.at(1) - params.drivable_area_margin, resolution);
   const double max_x =
-    drivable_area_utils::quantize(lanelet_scope.at(2) + params.drivable_area_margin, resolution);
+    drivable_area_utils::quantize(path_scope.at(2) + params.drivable_area_margin, resolution);
   const double max_y =
-    drivable_area_utils::quantize(lanelet_scope.at(3) + params.drivable_area_margin, resolution);
+    drivable_area_utils::quantize(path_scope.at(3) + params.drivable_area_margin, resolution);
 
   const double width = max_x - min_x;
   const double height = max_y - min_y;
@@ -1584,7 +1612,7 @@ std::shared_ptr<PathWithLaneId> generateCenterLinePath(
   centerline_path->header = route_handler->getRouteHeader();
 
   centerline_path->drivable_area = util::generateDrivableArea(
-    lanelet_sequence, p.drivable_area_resolution, p.vehicle_length, planner_data);
+    *centerline_path, lanelet_sequence, p.drivable_area_resolution, p.vehicle_length, planner_data);
 
   return centerline_path;
 }

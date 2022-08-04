@@ -149,7 +149,7 @@ void GeometricParallelParking::generateStraightPath(const Pose start_pose)
 
   const auto common_params = planner_data_->parameters;
   path.drivable_area = util::generateDrivableArea(
-    current_lanes, common_params.drivable_area_resolution, common_params.vehicle_length,
+    path, current_lanes, common_params.drivable_area_resolution, common_params.vehicle_length,
     planner_data_);
 
   path.points.back().point.longitudinal_velocity_mps = 0;
@@ -255,12 +255,14 @@ bool GeometricParallelParking::planOneTraial(
 
   path_turn_left.header = planner_data_->route_handler->getRouteHeader();
   path_turn_left.drivable_area = util::generateDrivableArea(
-    lanes, common_params.drivable_area_resolution, common_params.vehicle_length, planner_data_);
+    path_turn_left, lanes, common_params.drivable_area_resolution, common_params.vehicle_length,
+    planner_data_);
   paths_.push_back(path_turn_left);
 
   path_turn_right.header = planner_data_->route_handler->getRouteHeader();
   path_turn_right.drivable_area = util::generateDrivableArea(
-    lanes, common_params.drivable_area_resolution, common_params.vehicle_length, planner_data_);
+    path_turn_right, lanes, common_params.drivable_area_resolution, common_params.vehicle_length,
+    planner_data_);
   paths_.push_back(path_turn_right);
 
   Cr_.pose = Cr;

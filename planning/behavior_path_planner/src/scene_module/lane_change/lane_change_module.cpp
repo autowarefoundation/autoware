@@ -152,7 +152,7 @@ BehaviorModuleOutput LaneChangeModule::plan()
 
     const double resolution = common_parameters.drivable_area_resolution;
     path.drivable_area = util::generateDrivableArea(
-      lanes, resolution, common_parameters.vehicle_length, planner_data_);
+      path, lanes, resolution, common_parameters.vehicle_length, planner_data_);
   }
 
   if (isAbortConditionSatisfied()) {
@@ -288,8 +288,8 @@ PathWithLaneId LaneChangeModule::getReferencePath() const
     lane_change_buffer);
 
   reference_path.drivable_area = util::generateDrivableArea(
-    current_lanes, common_parameters.drivable_area_resolution, common_parameters.vehicle_length,
-    planner_data_);
+    reference_path, current_lanes, common_parameters.drivable_area_resolution,
+    common_parameters.vehicle_length, planner_data_);
 
   return reference_path;
 }

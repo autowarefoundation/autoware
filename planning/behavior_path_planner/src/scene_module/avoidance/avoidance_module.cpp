@@ -1891,7 +1891,8 @@ void AvoidanceModule::generateExtendedDrivableArea(ShiftedPath * shifted_path) c
   {
     const auto & p = planner_data_->parameters;
     shifted_path->path.drivable_area = util::generateDrivableArea(
-      extended_lanelets, p.drivable_area_resolution, p.vehicle_length, planner_data_);
+      shifted_path->path, extended_lanelets, p.drivable_area_resolution, p.vehicle_length,
+      planner_data_);
   }
 }
 

@@ -232,7 +232,7 @@ BehaviorModuleOutput PullOutModule::planWaitingApproval()
     lanes.insert(lanes.end(), shoulder_lanes.begin(), shoulder_lanes.end());
     const double resolution = common_parameters.drivable_area_resolution;
     candidate_path.drivable_area = util::generateDrivableArea(
-      lanes, resolution, common_parameters.vehicle_length, planner_data_);
+      candidate_path, lanes, resolution, common_parameters.vehicle_length, planner_data_);
 
     updateRTCStatus(candidate.distance_to_path_change);
   }
@@ -309,7 +309,8 @@ void PullOutModule::updatePullOutStatus()
 
     const double resolution = common_parameters.drivable_area_resolution;
     status_.pull_out_path.path.drivable_area = util::generateDrivableArea(
-      lanes, resolution, common_parameters.vehicle_length, planner_data_);
+      status_.pull_out_path.path, lanes, resolution, common_parameters.vehicle_length,
+      planner_data_);
   }
 
   const auto arclength_start =
@@ -348,8 +349,8 @@ PathWithLaneId PullOutModule::getReferencePath() const
     parameters_.deceleration_interval, goal_pose);
 
   reference_path.drivable_area = util::generateDrivableArea(
-    pull_out_lanes, common_parameters.drivable_area_resolution, common_parameters.vehicle_length,
-    planner_data_);
+    reference_path, pull_out_lanes, common_parameters.drivable_area_resolution,
+    common_parameters.vehicle_length, planner_data_);
   return reference_path;
 }
 

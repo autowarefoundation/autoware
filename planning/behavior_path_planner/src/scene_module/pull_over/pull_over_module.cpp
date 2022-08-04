@@ -648,8 +648,8 @@ bool PullOverModule::planShiftPath()
   std::tie(found_valid_path, found_safe_path) = getSafePath(shift_parking_path_);
 
   shift_parking_path_.path.drivable_area = util::generateDrivableArea(
-    status_.lanes, common_parameters.drivable_area_resolution, common_parameters.vehicle_length,
-    planner_data_);
+    shift_parking_path_.path, status_.lanes, common_parameters.drivable_area_resolution,
+    common_parameters.vehicle_length, planner_data_);
 
   shift_parking_path_.path.header = planner_data_->route_handler->getRouteHeader();
   return found_safe_path;
@@ -694,7 +694,7 @@ PathWithLaneId PullOverModule::getReferencePath() const
   }
 
   reference_path.drivable_area = util::generateDrivableArea(
-    status_.current_lanes, common_parameters.drivable_area_resolution,
+    reference_path, status_.current_lanes, common_parameters.drivable_area_resolution,
     common_parameters.vehicle_length, planner_data_);
 
   return reference_path;
@@ -735,7 +735,7 @@ PathWithLaneId PullOverModule::getStopPath()
   }
 
   reference_path.drivable_area = util::generateDrivableArea(
-    status_.current_lanes, common_parameters.drivable_area_resolution,
+    reference_path, status_.current_lanes, common_parameters.drivable_area_resolution,
     common_parameters.vehicle_length, planner_data_);
 
   return reference_path;
