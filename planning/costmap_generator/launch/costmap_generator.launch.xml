@@ -21,6 +21,7 @@
     <param name="update_rate" value="10.0"/>
 
     <param name="use_wayarea" value="true"/>
+    <param name="use_parkinglot" value="true"/>
     <param name="use_objects" value="true"/>
     <param name="use_points" value="true"/>
 

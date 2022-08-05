@@ -59,7 +59,7 @@ void PublishOccupancyGrid(
 
 void FillPolygonAreas(
   grid_map::GridMap & out_grid_map,
-  const std::vector<std::vector<geometry_msgs::msg::Point>> & in_area_points,
+  const std::vector<std::vector<geometry_msgs::msg::Point>> & in_points,
   const std::string & in_grid_layer_name, const int in_layer_background_value,
   const int in_layer_min_value, const int in_fill_color, const int in_layer_max_value,
   const std::string & in_tf_target_frame, const std::string & in_tf_source_frame,
@@ -86,7 +86,7 @@ void FillPolygonAreas(
   const double origin_x_offset = out_grid_map.getLength().x() / 2.0 - map_pos.x();
   const double origin_y_offset = out_grid_map.getLength().y() / 2.0 - map_pos.y();
 
-  for (const auto & points : in_area_points) {
+  for (const auto & points : in_points) {
     std::vector<cv::Point> cv_polygon;
 
     for (const auto & p : points) {

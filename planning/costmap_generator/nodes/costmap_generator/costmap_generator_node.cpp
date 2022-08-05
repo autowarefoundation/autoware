@@ -178,6 +178,7 @@ CostmapGenerator::CostmapGenerator(const rclcpp::NodeOptions & node_options)
   use_objects_ = this->declare_parameter<bool>("use_objects", true);
   use_points_ = this->declare_parameter<bool>("use_points", true);
   use_wayarea_ = this->declare_parameter<bool>("use_wayarea", true);
+  use_parkinglot_ = this->declare_parameter<bool>("use_parkinglot", true);
   expand_polygon_size_ = this->declare_parameter<double>("expand_polygon_size", 1.0);
   size_of_expansion_kernel_ = this->declare_parameter<int>("size_of_expansion_kernel", 9);
 
@@ -268,8 +269,11 @@ void CostmapGenerator::onLaneletMapBin(
   lanelet::utils::conversion::fromBinMsg(*msg, lanelet_map_);
 
   if (use_wayarea_) {
-    loadRoadAreasFromLaneletMap(lanelet_map_, &area_points_);
-    loadParkingAreasFromLaneletMap(lanelet_map_, &area_points_);
+    loadRoadAreasFromLaneletMap(lanelet_map_, &primitives_points_);
+  }
+
+  if (use_parkinglot_) {
+    loadParkingAreasFromLaneletMap(lanelet_map_, &primitives_points_);
   }
 }
 
@@ -311,8 +315,8 @@ void CostmapGenerator::onTimer()
   p.y() = tf.transform.translation.y;
   costmap_.setPosition(p);
 
-  if (use_wayarea_ && lanelet_map_) {
-    costmap_[LayerName::wayarea] = generateWayAreaCostmap();
+  if ((use_wayarea_ || use_parkinglot_) && lanelet_map_) {
+    costmap_[LayerName::primitives] = generatePrimitivesCostmap();
   }
 
   if (use_objects_ && objects_) {
@@ -355,7 +359,7 @@ void CostmapGenerator::initGridmap()
 
   costmap_.add(LayerName::points, grid_min_value_);
   costmap_.add(LayerName::objects, grid_min_value_);
-  costmap_.add(LayerName::wayarea, grid_min_value_);
+  costmap_.add(LayerName::primitives, grid_min_value_);
   costmap_.add(LayerName::combined, grid_min_value_);
 }
 
@@ -418,15 +422,15 @@ grid_map::Matrix CostmapGenerator::generateObjectsCostmap(
   return objects_costmap;
 }
 
-grid_map::Matrix CostmapGenerator::generateWayAreaCostmap()
+grid_map::Matrix CostmapGenerator::generatePrimitivesCostmap()
 {
   grid_map::GridMap lanelet2_costmap = costmap_;
-  if (!area_points_.empty()) {
+  if (!primitives_points_.empty()) {
     object_map::FillPolygonAreas(
-      lanelet2_costmap, area_points_, LayerName::wayarea, grid_max_value_, grid_min_value_,
+      lanelet2_costmap, primitives_points_, LayerName::primitives, grid_max_value_, grid_min_value_,
       grid_min_value_, grid_max_value_, costmap_frame_, map_frame_, tf_buffer_);
   }
-  return lanelet2_costmap[LayerName::wayarea];
+  return lanelet2_costmap[LayerName::primitives];
 }
 
 grid_map::Matrix CostmapGenerator::generateCombinedCostmap()
@@ -440,7 +444,7 @@ grid_map::Matrix CostmapGenerator::generateCombinedCostmap()
     combined_costmap[LayerName::combined].cwiseMax(combined_costmap[LayerName::points]);
 
   combined_costmap[LayerName::combined] =
-    combined_costmap[LayerName::combined].cwiseMax(combined_costmap[LayerName::wayarea]);
+    combined_costmap[LayerName::combined].cwiseMax(combined_costmap[LayerName::primitives]);
 
   combined_costmap[LayerName::combined] =
     combined_costmap[LayerName::combined].cwiseMax(combined_costmap[LayerName::objects]);

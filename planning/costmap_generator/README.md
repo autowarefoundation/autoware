@@ -38,6 +38,7 @@ None
 | `use_objects`                | bool   | whether using `~input/objects` or not                                                          |
 | `use_points`                 | bool   | whether using `~input/points_no_ground` or not                                                 |
 | `use_wayarea`                | bool   | whether using `wayarea` from `~input/vector_map` or not                                        |
+| `use_parkinglot`             | bool   | whether using `parkinglot` from `~input/vector_map` or not                                     |
 | `costmap_frame`              | string | created costmap's coordinate                                                                   |
 | `vehicle_frame`              | string | vehicle's coordinate                                                                           |
 | `map_frame`                  | string | map's coordinate                                                                               |
@@ -69,8 +70,8 @@ endif
 
 :set the center of costmap to current pose;
 
-if (use wayarea?) then (yes)
- :generate wayarea costmap;
+if (use wayarea or use parkinglot?) then (yes)
+ :generate map primitives costmap;
 endif
 
 if (use objects?) then (yes)

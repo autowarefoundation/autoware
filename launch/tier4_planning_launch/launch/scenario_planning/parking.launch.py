@@ -73,6 +73,7 @@ def launch_setup(context, *args, **kwargs):
                         "map_frame": "map",
                         "update_rate": 10.0,
                         "use_wayarea": True,
+                        "use_parkinglot": True,
                         "use_objects": True,
                         "use_points": True,
                         "grid_min_value": 0.0,

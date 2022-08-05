@@ -81,6 +81,7 @@ private:
   bool use_objects_;
   bool use_points_;
   bool use_wayarea_;
+  bool use_parkinglot_;
 
   lanelet::LaneletMapPtr lanelet_map_;
   autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr objects_;
@@ -123,7 +124,7 @@ private:
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
 
-  std::vector<std::vector<geometry_msgs::msg::Point>> area_points_;
+  std::vector<std::vector<geometry_msgs::msg::Point>> primitives_points_;
 
   PointsToCostmap points2costmap_;
   ObjectsToCostmap objects2costmap_;
@@ -134,7 +135,7 @@ private:
   {
     static constexpr const char * objects = "objects";
     static constexpr const char * points = "points";
-    static constexpr const char * wayarea = "wayarea";
+    static constexpr const char * primitives = "primitives";
     static constexpr const char * combined = "combined";
   };
 
@@ -192,7 +193,7 @@ private:
     const autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr in_objects);
 
   /// \brief calculate cost from lanelet2 map
-  grid_map::Matrix generateWayAreaCostmap();
+  grid_map::Matrix generatePrimitivesCostmap();
 
   /// \brief calculate cost for final output
   grid_map::Matrix generateCombinedCostmap();
