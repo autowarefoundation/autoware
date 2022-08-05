@@ -262,6 +262,16 @@ stop
 @enduml
 ```
 
-##### Known Limits
+#### Map Format
+
+- To avoid sudden braking, the length between the start line and stop line of a virtual traffic light must be longer than $l_{\mathrm{min}}$ calculated as follows, assuming that $v_0$ is the velocity when passing the start line and $a_{\mathrm{min}}$ is minimum acceleration defined in Autoware.
+
+$$
+\begin{align}
+l_{\mathrm{min}} = -\frac{v_0^2}{2 a_{\mathrm{min}}}
+\end{align}
+$$
+
+#### Known Limits
 
 - tbd.
