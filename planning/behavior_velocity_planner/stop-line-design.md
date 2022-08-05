@@ -10,6 +10,14 @@ This module plans velocity so that the vehicle can stop right before stop lines 
 
 This module is activated when there is a stop line in a target lane.
 
+### Module Parameters
+
+| Parameter                   | Type   | Description                                                                                    |
+| --------------------------- | ------ | ---------------------------------------------------------------------------------------------- |
+| `stop_margin`               | double | a margin that the vehicle tries to stop before stop_line                                       |
+| `stop_check_dist`           | double | when the vehicle is within `stop_check_dist` from stop_line and stopped, move to STOPPED state |
+| `hold_stop_margin_distance` | double | [m] parameter for restart prevention (See Algorithm section)                                   |
+
 ### Inner-workings / Algorithms
 
 - Gets a stop line from map information.
@@ -17,14 +25,7 @@ This module is activated when there is a stop line in a target lane.
 - Sets velocities of the path after the stop point to 0[m/s].
 - Release the inserted stop velocity when the vehicle stops within a radius of 2[m] from the stop point.
 
-### Module Parameters
-
-| Parameter         | Type   | Description                                                                                    |
-| ----------------- | ------ | ---------------------------------------------------------------------------------------------- |
-| `stop_margin`     | double | a margin that the vehicle tries to stop before stop_line                                       |
-| `stop_check_dist` | double | when the vehicle is within `stop_check_dist` from stop_line and stopped, move to STOPPED state |
-
-### Flowchart
+#### Flowchart
 
 ```plantuml
 @startuml
@@ -85,3 +86,24 @@ Then, we can get `offset segment` and `offset from segment start`.
 After that, we can calculate a offset point from `offset segment` and `offset`. This will be `stop_pose`.
 
 ![calculate_stop_pose](./docs/stop_line/calculate_stop_pose.drawio.svg)
+
+#### Restart prevention
+
+If it needs X meters (e.g. 0.5 meters) to stop once the vehicle starts moving due to the poor vehicle control performance, the vehicle goes over the stopping position that should be strictly observed when the vehicle starts to moving in order to approach the near stop point (e.g. 0.3 meters away).
+
+This module has parameter `hold_stop_margin_distance` in order to prevent from these redundant restart. If the vehicle is stopped within `hold_stop_margin_distance` meters from stop point of the module (\_front_to_stop_line < hold_stop_margin_distance), the module judges that the vehicle has already stopped for the module's stop point and plans to keep stopping current position even if the vehicle is stopped due to other factors.
+
+<figure markdown>
+  ![example](docs/stop_line/restart_prevention.svg){width=1000}
+  <figcaption>parameters</figcaption>
+</figure>
+
+<figure markdown>
+  ![example](docs/stop_line/restart.svg){width=1000}
+  <figcaption>outside the hold_stop_margin_distance</figcaption>
+</figure>
+
+<figure markdown>
+  ![example](docs/stop_line/keep_stopping.svg){width=1000}
+  <figcaption>inside the hold_stop_margin_distance</figcaption>
+</figure>

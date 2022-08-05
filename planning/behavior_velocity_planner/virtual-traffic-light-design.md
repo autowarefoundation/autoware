@@ -211,7 +211,29 @@ remote_controllable_traffic_light -[hidden]down-> warning_light
 | `max_delay_sec`                 | double | [s] maximum allowed delay for command                                 |
 | `near_line_distance`            | double | [m] threshold distance to stop line to check ego stop.                |
 | `dead_line_margin`              | double | [m] threshold distance that this module continue to insert stop line. |
+| `hold_stop_margin_distance`     | double | [m] parameter for restart prevention (See following section)          |
 | `check_timeout_after_stop_line` | bool   | [-] check timeout to stop when linkage is disconnected                |
+
+#### Restart prevention
+
+If it needs X meters (e.g. 0.5 meters) to stop once the vehicle starts moving due to the poor vehicle control performance, the vehicle goes over the stopping position that should be strictly observed when the vehicle starts to moving in order to approach the near stop point (e.g. 0.3 meters away).
+
+This module has parameter `hold_stop_margin_distance` in order to prevent from these redundant restart. If the vehicle is stopped within `hold_stop_margin_distance` meters from stop point of the module (\_front_to_stop_line < hold_stop_margin_distance), the module judges that the vehicle has already stopped for the module's stop point and plans to keep stopping current position even if the vehicle is stopped due to other factors.
+
+<figure markdown>
+  ![example](docs/virtual_traffic_light/restart_prevention.svg){width=1000}
+  <figcaption>parameters</figcaption>
+</figure>
+
+<figure markdown>
+  ![example](docs/virtual_traffic_light/restart.svg){width=1000}
+  <figcaption>outside the hold_stop_margin_distance</figcaption>
+</figure>
+
+<figure markdown>
+  ![example](docs/virtual_traffic_light/keep_stopping.svg){width=1000}
+  <figcaption>inside the hold_stop_margin_distance</figcaption>
+</figure>
 
 #### Flowchart
 
