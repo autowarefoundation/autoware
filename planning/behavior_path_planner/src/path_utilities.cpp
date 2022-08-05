@@ -94,15 +94,10 @@ PathWithLaneId resamplePathWithSpline(const PathWithLaneId & path, double interv
     return path;
   }
 
-  double s = 0.0;
-  std::vector<double> s_in{0.0};
-  for (size_t i = 0; i < path.points.size() - 1; ++i) {
-    s += tier4_autoware_utils::calcDistance2d(
-      path.points.at(i).point.pose, path.points.at(i + 1).point.pose);
-    s_in.push_back(s);
+  std::vector<geometry_msgs::msg::Pose> transformed_path(path.points.size());
+  for (size_t i = 0; i < path.points.size(); ++i) {
+    transformed_path.at(i) = path.points.at(i).point.pose;
   }
-
-  std::vector<double> s_out = s_in;
 
   constexpr double epsilon = 0.01;
   const auto has_almost_same_value = [&](const auto & vec, const auto x) {
@@ -111,10 +106,33 @@ PathWithLaneId resamplePathWithSpline(const PathWithLaneId & path, double interv
     return std::find_if(vec.begin(), vec.end(), has_close) != vec.end();
   };
 
-  for (double s = 0.0; s < s_in.back(); s += interval) {
+  // Get lane ids that are not duplicated
+  std::vector<double> s_in;
+  std::vector<int64_t> unique_lane_ids;
+  for (size_t i = 0; i < path.points.size(); ++i) {
+    const double s = motion_utils::calcSignedArcLength(transformed_path, 0, i);
+    for (const auto & lane_id : path.points.at(i).lane_ids) {
+      if (
+        std::find(unique_lane_ids.begin(), unique_lane_ids.end(), lane_id) !=
+        unique_lane_ids.end()) {
+        unique_lane_ids.push_back(lane_id);
+        if (!has_almost_same_value(s_in, s)) {
+          s_in.push_back(s);
+        }
+      }
+    }
+  }
+
+  std::vector<double> s_out = s_in;
+
+  const double path_len = motion_utils::calcArcLength(transformed_path);
+  for (double s = 0.0; s < path_len; s += interval) {
     if (!has_almost_same_value(s_out, s)) {
       s_out.push_back(s);
     }
+  }
+  if (!has_almost_same_value(s_out, path_len)) {
+    s_out.push_back(path_len);
   }
 
   std::sort(s_out.begin(), s_out.end());
