@@ -90,6 +90,12 @@ Trajectory PlannerInterface::generateStopTrajectory(
 
   if (planner_data.target_obstacles.empty()) {
     stop_reasons_pub_->publish(makeEmptyStopReasonArray(planner_data.current_time));
+
+    // delete marker
+    const auto markers =
+      motion_utils::createDeletedStopVirtualWallMarker(planner_data.current_time, 0);
+    tier4_autoware_utils::appendMarkerArray(markers, &debug_data.stop_wall_marker);
+
     return planner_data.traj;
   }
 
@@ -97,6 +103,11 @@ Trajectory PlannerInterface::generateStopTrajectory(
   const auto closest_stop_obstacle =
     obstacle_cruise_utils::getClosestStopObstacle(planner_data.traj, planner_data.target_obstacles);
   if (!closest_stop_obstacle) {
+    // delete marker
+    const auto markers =
+      motion_utils::createDeletedStopVirtualWallMarker(planner_data.current_time, 0);
+    tier4_autoware_utils::appendMarkerArray(markers, &debug_data.stop_wall_marker);
+
     return planner_data.traj;
   }
 
@@ -108,6 +119,11 @@ Trajectory PlannerInterface::generateStopTrajectory(
     planner_data.traj.points, planner_data.current_pose, 0, nearest_dist_deviation_threshold_,
     nearest_yaw_deviation_threshold_);
   if (!negative_dist_to_ego) {
+    // delete marker
+    const auto markers =
+      motion_utils::createDeletedStopVirtualWallMarker(planner_data.current_time, 0);
+    tier4_autoware_utils::appendMarkerArray(markers, &debug_data.stop_wall_marker);
+
     return planner_data.traj;
   }
   const double dist_to_ego = -negative_dist_to_ego.get();

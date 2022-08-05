@@ -32,6 +32,15 @@ visualization_msgs::msg::MarkerArray createSlowDownVirtualWallMarker(
 visualization_msgs::msg::MarkerArray createDeadLineVirtualWallMarker(
   const geometry_msgs::msg::Pose & pose, const std::string & module_name, const rclcpp::Time & now,
   const int32_t id);
+
+visualization_msgs::msg::MarkerArray createDeletedStopVirtualWallMarker(
+  const rclcpp::Time & now, const int32_t id);
+
+visualization_msgs::msg::MarkerArray createDeletedSlowDownVirtualWallMarker(
+  const rclcpp::Time & now, const int32_t id);
+
+visualization_msgs::msg::MarkerArray createDeletedDeadLineVirtualWallMarker(
+  const rclcpp::Time & now, const int32_t id);
 }  // namespace motion_utils
 
 #endif  // MOTION_UTILS__MARKER__MARKER_HELPER_HPP_

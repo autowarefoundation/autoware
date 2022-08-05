@@ -193,6 +193,11 @@ void PIDBasedPlanner::planCruise(
     // reset previous target velocity if adaptive cruise is not enabled
     prev_target_vel_ = {};
     lpf_cruise_ptr_->reset();
+
+    // delete marker
+    const auto markers =
+      motion_utils::createDeletedSlowDownVirtualWallMarker(planner_data.current_time, 0);
+    tier4_autoware_utils::appendMarkerArray(markers, &debug_data.cruise_wall_marker);
   }
 }
 

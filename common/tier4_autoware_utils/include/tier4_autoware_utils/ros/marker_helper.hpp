@@ -88,6 +88,19 @@ inline visualization_msgs::msg::Marker createDefaultMarker(
   return marker;
 }
 
+inline visualization_msgs::msg::Marker createDeletedDefaultMarker(
+  const rclcpp::Time & now, const std::string & ns, const int32_t id)
+{
+  visualization_msgs::msg::Marker marker;
+
+  marker.header.stamp = now;
+  marker.ns = ns;
+  marker.id = id;
+  marker.action = visualization_msgs::msg::Marker::DELETE;
+
+  return marker;
+}
+
 inline void appendMarkerArray(
   const visualization_msgs::msg::MarkerArray & additional_marker_array,
   visualization_msgs::msg::MarkerArray * marker_array,
