@@ -154,12 +154,12 @@ boost::optional<TargetObstacle> getClosestStopObstacle(
   double dist_to_closest_stop_obstacle = std::numeric_limits<double>::max();
   for (const auto & obstacle : target_obstacles) {
     // Ignore obstacle that has not stopped
-    if (!obstacle.has_stopped) {
+    if (!obstacle.has_stopped || obstacle.collision_points.empty()) {
       continue;
     }
 
     const double dist_to_stop_obstacle =
-      motion_utils::calcSignedArcLength(traj.points, 0, obstacle.collision_point.point);
+      motion_utils::calcSignedArcLength(traj.points, 0, obstacle.collision_points.front().point);
     if (dist_to_stop_obstacle < dist_to_closest_stop_obstacle) {
       dist_to_closest_stop_obstacle = dist_to_stop_obstacle;
       closest_stop_obstacle = obstacle;

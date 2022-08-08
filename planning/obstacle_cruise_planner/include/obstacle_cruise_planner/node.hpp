@@ -90,7 +90,7 @@ private:
   void checkConsistency(
     const rclcpp::Time & current_time, const PredictedObjects & predicted_objects,
     const Trajectory & traj, std::vector<TargetObstacle> & target_obstacles);
-  geometry_msgs::msg::PointStamped calcNearestCollisionPoint(
+  std::vector<geometry_msgs::msg::PointStamped> calcNearestCollisionPoint(
     const size_t & first_within_idx,
     const std::vector<geometry_msgs::msg::PointStamped> & collision_points,
     const Trajectory & decimated_traj, const bool is_driving_forward);

@@ -124,6 +124,10 @@ void PIDBasedPlanner::calcObstaclesToCruise(
   for (size_t o_idx = 0; o_idx < planner_data.target_obstacles.size(); ++o_idx) {
     const auto & obstacle = planner_data.target_obstacles.at(o_idx);
 
+    if (obstacle.collision_points.empty()) {
+      continue;
+    }
+
     // NOTE: from ego's front to obstacle's back
     const double dist_to_obstacle = calcDistanceToObstacle(planner_data, obstacle);
 
@@ -167,7 +171,7 @@ double PIDBasedPlanner::calcDistanceToObstacle(
   const double offset = abs_ego_offset + segment_offset;
 
   return motion_utils::calcSignedArcLength(
-           planner_data.traj.points, ego_segment_idx, obstacle.collision_point.point) -
+           planner_data.traj.points, ego_segment_idx, obstacle.collision_points.front().point) -
          offset;
 }
 

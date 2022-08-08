@@ -37,7 +37,7 @@ tier4_planning_msgs::msg::StopReasonArray makeStopReasonArray(
   // create stop factor
   tier4_planning_msgs::msg::StopFactor stop_factor;
   stop_factor.stop_pose = stop_pose;
-  stop_factor.stop_factor_points.emplace_back(stop_obstacle.collision_point.point);
+  stop_factor.stop_factor_points.emplace_back(stop_obstacle.collision_points.front().point);
 
   // create stop reason stamped
   tier4_planning_msgs::msg::StopReason stop_reason_msg;
@@ -102,7 +102,7 @@ Trajectory PlannerInterface::generateStopTrajectory(
   // Get Closest Stop Obstacle
   const auto closest_stop_obstacle =
     obstacle_cruise_utils::getClosestStopObstacle(planner_data.traj, planner_data.target_obstacles);
-  if (!closest_stop_obstacle) {
+  if (!closest_stop_obstacle && closest_stop_obstacle->collision_points.empty()) {
     // delete marker
     const auto markers =
       motion_utils::createDeletedStopVirtualWallMarker(planner_data.current_time, 0);
@@ -113,7 +113,7 @@ Trajectory PlannerInterface::generateStopTrajectory(
 
   // Get Closest Obstacle Stop Distance
   const double closest_obstacle_dist = motion_utils::calcSignedArcLength(
-    planner_data.traj.points, 0, closest_stop_obstacle->collision_point.point);
+    planner_data.traj.points, 0, closest_stop_obstacle->collision_points.front().point);
 
   const auto negative_dist_to_ego = motion_utils::calcSignedArcLength(
     planner_data.traj.points, planner_data.current_pose, 0, nearest_dist_deviation_threshold_,
