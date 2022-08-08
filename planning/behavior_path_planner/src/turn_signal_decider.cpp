@@ -71,6 +71,9 @@ std::pair<TurnIndicatorsCommand, double> TurnSignalDecider::getIntersectionTurnS
     const double distance_from_vehicle_front =
       accumulated_distance - vehicle_pose_frenet.length - base_link2front_;
     if (distance_from_vehicle_front > intersection_search_distance_) {
+      if (turn_signal.command == TurnIndicatorsCommand::DISABLE) {
+        distance = std::numeric_limits<double>::max();
+      }
       return std::make_pair(turn_signal, distance);
     }
     // TODO(Horibe): Route Handler should be a library.
@@ -103,7 +106,7 @@ std::pair<TurnIndicatorsCommand, double> TurnSignalDecider::getIntersectionTurnS
       }
     }
   }
-  if (turn_signal.command == TurnIndicatorsCommand::NO_COMMAND) {
+  if (turn_signal.command == TurnIndicatorsCommand::DISABLE) {
     distance = std::numeric_limits<double>::max();
   }
   return std::make_pair(turn_signal, distance);
