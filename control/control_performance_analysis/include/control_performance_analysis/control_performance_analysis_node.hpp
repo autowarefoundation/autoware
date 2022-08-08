@@ -44,21 +44,6 @@ using control_performance_analysis::msg::ErrorStamped;
 using geometry_msgs::msg::PoseStamped;
 using nav_msgs::msg::Odometry;
 
-// Parameters Struct
-struct Param
-{
-  // Global parameters
-  double wheel_base;
-  double curvature_interval_length;
-  double prevent_zero_division_value;
-  uint odom_interval;  // Increase it for smoother curve
-  double lpf_gain;
-
-  // How far the next waypoint can be ahead of the vehicle direction.
-
-  double acceptable_min_waypoint_distance;
-};
-
 class ControlPerformanceAnalysisNode : public rclcpp::Node
 {
 public:
@@ -91,7 +76,7 @@ private:
   void onVelocity(const Odometry::ConstSharedPtr msg);
 
   // Parameters
-  Param param_{};  // wheelbase, control period and feedback coefficients.
+  Params param_{};  // wheelbase, control period and feedback coefficients.
   // State holder
   std_msgs::msg::Header last_control_cmd_;
   double d_control_cmd_{0};
@@ -107,8 +92,6 @@ private:
   Trajectory prev_traj;
   AckermannControlCommand prev_cmd;
   SteeringReport prev_steering;
-
-  std_msgs::msg::Header odom_state_;
 
   // Algorithm
   std::unique_ptr<ControlPerformanceAnalysisCore> control_performance_core_ptr_;

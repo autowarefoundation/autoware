@@ -41,21 +41,21 @@ ControlPerformanceAnalysisNode::ControlPerformanceAnalysisNode(
   using std::placeholders::_1;
 
   // Implement Reading Global and Local Variables.
-  const auto vehicle_info = VehicleInfoUtil(*this).getVehicleInfo();
-  param_.wheel_base = vehicle_info.wheel_base_m;
+  const auto & vehicle_info = VehicleInfoUtil(*this).getVehicleInfo();
+  param_.wheelbase_ = vehicle_info.wheel_base_m;
 
   // Node Parameters.
-  param_.curvature_interval_length = declare_parameter("curvature_interval_length", 10.0);
-  param_.prevent_zero_division_value = declare_parameter("prevent_zero_division_value", 0.001);
-  param_.odom_interval = declare_parameter("odom_interval", 2);
-  param_.acceptable_min_waypoint_distance =
-    declare_parameter("acceptable_min_waypoint_distance", 2.0);
-  param_.lpf_gain = declare_parameter("low_pass_filter_gain", 0.8);
+  param_.curvature_interval_length_ = declare_parameter("curvature_interval_length", 10.0);
+  param_.prevent_zero_division_value_ = declare_parameter("prevent_zero_division_value", 0.001);
+  param_.odom_interval_ = declare_parameter("odom_interval", 2);
+  param_.acceptable_max_distance_to_waypoint_ =
+    declare_parameter("acceptable_max_distance_to_waypoint", 1.5);
+  param_.acceptable_max_yaw_difference_rad_ =
+    declare_parameter("acceptable_max_yaw_difference_rad", 1.0472);
+  param_.lpf_gain_ = declare_parameter("low_pass_filter_gain", 0.8);
 
   // Prepare error computation class with the wheelbase parameter.
-  control_performance_core_ptr_ = std::make_unique<ControlPerformanceAnalysisCore>(
-    param_.wheel_base, param_.curvature_interval_length, param_.odom_interval,
-    param_.acceptable_min_waypoint_distance, param_.prevent_zero_division_value, param_.lpf_gain);
+  control_performance_core_ptr_ = std::make_unique<ControlPerformanceAnalysisCore>(param_);
 
   // Subscribers.
   sub_trajectory_ = create_subscription<Trajectory>(
@@ -111,7 +111,7 @@ void ControlPerformanceAnalysisNode::onControlRaw(
 
   } else {
     current_control_msg_ptr_ = control_msg;
-    rclcpp::Duration duration =
+    const rclcpp::Duration & duration =
       (rclcpp::Time(current_control_msg_ptr_->stamp) - rclcpp::Time(last_control_cmd_.stamp));
     d_control_cmd_ = duration.seconds() * 1000;  // ms
     last_control_cmd_.stamp = current_control_msg_ptr_->stamp;
@@ -155,7 +155,7 @@ void ControlPerformanceAnalysisNode::onVelocity(const Odometry::ConstSharedPtr m
     return;
   }
   // Find the index of the next waypoint.
-  std::pair<bool, int32_t> prev_closest_wp_pose_idx =
+  const std::pair<bool, int32_t> & prev_closest_wp_pose_idx =
     control_performance_core_ptr_->findClosestPrevWayPointIdx_path_direction();
 
   if (!prev_closest_wp_pose_idx.first) {
@@ -188,20 +188,11 @@ void ControlPerformanceAnalysisNode::onVelocity(const Odometry::ConstSharedPtr m
 bool ControlPerformanceAnalysisNode::isDataReady() const
 {
   rclcpp::Clock clock{RCL_ROS_TIME};
-  //  if (!current_pose_) {
-  //    RCLCPP_WARN_THROTTLE(get_logger(), clock, 1000, "waiting for current_pose ...");
-  //    return false;
-  //  }
 
   if (!current_trajectory_ptr_) {
     RCLCPP_WARN_THROTTLE(get_logger(), clock, 1000, "waiting for trajectory ... ");
     return false;
   }
-
-  //  if (!current_odom_ptr_) {
-  //    RCLCPP_WARN_THROTTLE(get_logger(), clock, 1000, "waiting for current_odom ...");
-  //    return false;
-  //  }
 
   if (!current_control_msg_ptr_) {
     RCLCPP_WARN_THROTTLE(get_logger(), clock, 1000, "waiting for current_control_cmd ...");

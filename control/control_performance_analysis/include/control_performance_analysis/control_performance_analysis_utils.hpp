@@ -42,8 +42,8 @@ inline std::vector<double> getNormalVector(double yaw_angle)
 }
 
 inline std::vector<double> computeLateralLongitudinalError(
-  std::vector<double> & closest_point_position, std::vector<double> & vehicle_position,
-  double & desired_yaw_angle)
+  const std::vector<double> & closest_point_position, const std::vector<double> & vehicle_position,
+  const double & desired_yaw_angle)
 {
   // Vector to path point originating from the vehicle r - rd
   std::vector<double> vector_to_path_point{
@@ -81,7 +81,7 @@ inline double computeLateralError(
  *  angles must be  carried out using the distance value instead of using the end values of
  *  two points.
  * */
-inline double angleDistance(double & target_angle, double const & reference_angle)
+inline double angleDistance(const double & target_angle, const double & reference_angle)
 {
   double diff = std::fmod(target_angle - reference_angle + M_PI_2, 2 * M_PI) - M_PI_2;
   double diff_signed_correction = diff < -M_PI_2 ? diff + 2 * M_PI : diff;  // Fix sign

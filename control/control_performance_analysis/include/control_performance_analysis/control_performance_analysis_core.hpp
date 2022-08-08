@@ -19,6 +19,8 @@
 #include "control_performance_analysis/msg/driving_monitor_stamped.hpp"
 #include "control_performance_analysis/msg/error_stamped.hpp"
 #include "control_performance_analysis/msg/float_stamped.hpp"
+#include "motion_common/motion_common.hpp"
+#include "motion_utils/trajectory/trajectory.hpp"
 
 #include <eigen3/Eigen/Core>
 #include <rclcpp/time.hpp>
@@ -48,24 +50,32 @@ using geometry_msgs::msg::PoseArray;
 using geometry_msgs::msg::Twist;
 using nav_msgs::msg::Odometry;
 
+struct Params
+{
+  double wheelbase_;
+  double curvature_interval_length_;
+  uint odom_interval_;
+  double acceptable_max_distance_to_waypoint_;
+  double acceptable_max_yaw_difference_rad_;
+  double prevent_zero_division_value_;
+  double lpf_gain_;
+};
+
 class ControlPerformanceAnalysisCore
 {
 public:
   // See https://eigen.tuxfamily.org/dox/group__TopicStructHavingEigenMembers.html
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   ControlPerformanceAnalysisCore();
-  ControlPerformanceAnalysisCore(
-    double wheelbase, double curvature_interval_length, uint odom_interval,
-    double acceptable_min_waypoint_distance, double prevent_zero_division_value,
-    double lpf_gain_val);
+  explicit ControlPerformanceAnalysisCore(Params & p);
 
   // Setters
   void setCurrentPose(const Pose & msg);
   void setCurrentWaypoints(const Trajectory & trajectory);
   void setCurrentControlValue(const AckermannControlCommand & msg);
   void setInterpolatedVars(
-    Pose & interpolated_pose, double & interpolated_velocity, double & interpolated_acceleration,
-    double & interpolated_steering_angle);
+    const Pose & interpolated_pose, const double & interpolated_velocity,
+    const double & interpolated_acceleration, const double & interpolated_steering_angle);
   void setOdomHistory(const Odometry & odom);
   void setSteeringStatus(const SteeringReport & steering);
 
@@ -86,12 +96,7 @@ public:
   DrivingMonitorStamped driving_status_vars;
 
 private:
-  double wheelbase_;
-  double curvature_interval_length_;
-  uint odom_interval_;
-  double acceptable_min_waypoint_distance_;
-  double prevent_zero_division_value_;
-  double lpf_gain_;
+  Params p_;
 
   // Variables Received Outside
   std::shared_ptr<PoseArray> current_waypoints_ptr_;
