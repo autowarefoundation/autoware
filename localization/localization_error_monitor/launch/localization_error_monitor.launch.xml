@@ -1,9 +1,9 @@
 <launch>
-  <arg name="input/pose_with_cov" default="/localization/pose_with_covariance"/>
+  <arg name="input/odom" default="/localization/kinematic_state"/>
   <arg name="param_file" default="$(find-pkg-share localization_error_monitor)/config/localization_error_monitor.param.yaml"/>
 
   <node name="localization_error_monitor" exec="localization_error_monitor" pkg="localization_error_monitor" output="screen">
-    <remap from="input/pose_with_cov" to="$(var input/pose_with_cov)"/>
+    <remap from="input/odom" to="$(var input/odom)"/>
     <param from="$(var param_file)"/>
   </node>
 </launch>

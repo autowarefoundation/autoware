@@ -42,9 +42,8 @@ LocalizationErrorMonitor::LocalizationErrorMonitor()
   warn_ellipse_size_lateral_direction_ =
     this->declare_parameter("warn_ellipse_size_lateral_direction", 0.2);
 
-  pose_with_cov_sub_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
-    "input/pose_with_cov", 1,
-    std::bind(&LocalizationErrorMonitor::onPoseWithCovariance, this, std::placeholders::_1));
+  odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
+    "input/odom", 1, std::bind(&LocalizationErrorMonitor::onOdom, this, std::placeholders::_1));
 
   // QoS setup
   rclcpp::QoS durable_qos(1);
@@ -101,8 +100,7 @@ void LocalizationErrorMonitor::checkLocalizationAccuracyLateralDirection(
 }
 
 visualization_msgs::msg::Marker LocalizationErrorMonitor::createEllipseMarker(
-  const Ellipse & ellipse,
-  geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr pose_with_cov)
+  const Ellipse & ellipse, nav_msgs::msg::Odometry::ConstSharedPtr odom)
 {
   tf2::Quaternion quat;
   quat.setEuler(0, 0, ellipse.yaw);
@@ -110,13 +108,13 @@ visualization_msgs::msg::Marker LocalizationErrorMonitor::createEllipseMarker(
   const double ellipse_long_radius = std::min(ellipse.long_radius, 30.0);
   const double ellipse_short_radius = std::min(ellipse.short_radius, 30.0);
   visualization_msgs::msg::Marker marker;
-  marker.header = pose_with_cov->header;
+  marker.header = odom->header;
   marker.header.stamp = this->now();
   marker.ns = "error_ellipse";
   marker.id = 0;
   marker.type = visualization_msgs::msg::Marker::SPHERE;
   marker.action = visualization_msgs::msg::Marker::ADD;
-  marker.pose = pose_with_cov->pose.pose;
+  marker.pose = odom->pose.pose;
   marker.pose.orientation = tf2::toMsg(quat);
   marker.scale.x = ellipse_long_radius * 2;
   marker.scale.y = ellipse_short_radius * 2;
@@ -128,8 +126,7 @@ visualization_msgs::msg::Marker LocalizationErrorMonitor::createEllipseMarker(
   return marker;
 }
 
-void LocalizationErrorMonitor::onPoseWithCovariance(
-  geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr input_msg)
+void LocalizationErrorMonitor::onOdom(nav_msgs::msg::Odometry::ConstSharedPtr input_msg)
 {
   // create xy covariance (2x2 matrix)
   // input geometry_msgs::PoseWithCovariance contain 6x6 matrix
