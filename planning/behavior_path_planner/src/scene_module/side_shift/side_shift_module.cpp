@@ -73,6 +73,7 @@ void SideShiftModule::initVariables()
   start_pose_reset_request_ = false;
   lateral_offset_ = 0.0;
   prev_output_ = ShiftedPath{};
+  prev_shiftpoint_ = ShiftPoint{};
   path_shifter_ = PathShifter{};
 }
 
@@ -232,6 +233,11 @@ bool SideShiftModule::addShiftPoint()
 
   // check if the new_shift_points overlap with existing shift points.
   const auto new_sp = calcShiftPoint();
+  // check if the new_shift_points is same with lately inserted shift_points.
+  if (new_sp.length == prev_shiftpoint_.length) {
+    return false;
+  }
+
   const auto new_sp_longitudinal_to_shift_start = calcLongitudinal_to_shift_start(new_sp);
   const auto new_sp_longitudinal_to_shift_end = calcLongitudinal_to_shift_end(new_sp);
 
@@ -239,6 +245,7 @@ bool SideShiftModule::addShiftPoint()
     shift_points.begin(), shift_points.end(),
     [this, calcLongitudinal_to_shift_start, calcLongitudinal_to_shift_end,
      new_sp_longitudinal_to_shift_start, new_sp_longitudinal_to_shift_end](const ShiftPoint & sp) {
+      const bool check_with_prev_sp = (sp.length == prev_shiftpoint_.length);
       const auto old_sp_longitudinal_to_shift_start = calcLongitudinal_to_shift_start(sp);
       const auto old_sp_longitudinal_to_shift_end = calcLongitudinal_to_shift_end(sp);
       const bool sp_overlap_front =
@@ -253,7 +260,10 @@ bool SideShiftModule::addShiftPoint()
       const bool sp_old_contain_new =
         ((old_sp_longitudinal_to_shift_start <= new_sp_longitudinal_to_shift_start) &&
          (new_sp_longitudinal_to_shift_end <= old_sp_longitudinal_to_shift_end));
-      return (sp_overlap_front || sp_overlap_back || sp_new_contain_old || sp_old_contain_new);
+      const bool overlap_with_new_sp =
+        (sp_overlap_front || sp_overlap_back || sp_new_contain_old || sp_old_contain_new);
+
+      return (overlap_with_new_sp && !check_with_prev_sp);
     });
 
   shift_points.erase(remove_overlap_iter, shift_points.end());
@@ -271,6 +281,11 @@ bool SideShiftModule::addShiftPoint()
 
   // if no conflict, then add the new point.
   shift_points.push_back(new_sp);
+  const bool new_sp_is_same_with_previous = new_sp.length == prev_shiftpoint_.length;
+
+  if (!new_sp_is_same_with_previous) {
+    prev_shiftpoint_ = new_sp;
+  }
 
   // set to path_shifter
   path_shifter_.setShiftPoints(shift_points);
