@@ -55,8 +55,8 @@
                   - -cuda
                 include:" {source}
 
-        sd "^    container: ghcr.io/autowarefoundation/autoware-universe:galactic-latest" \
-            "    container: ghcr.io/autowarefoundation/autoware-universe:galactic-latest-cuda" {source}
+        sd "^    container: ghcr.io/autowarefoundation/autoware-universe:(\w+)-latest\$" \
+            "    container: ghcr.io/autowarefoundation/autoware-universe:\$1-latest-cuda" {source}
     - source: .github/workflows/build-and-test-differential-self-hosted.yaml
       pre-commands: |
         sd "container: ros:(\w+)" "container: ghcr.io/autowarefoundation/autoware-universe:\$1-latest" {source}
