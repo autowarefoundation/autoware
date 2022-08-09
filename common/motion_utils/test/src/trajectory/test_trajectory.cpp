@@ -3489,3 +3489,529 @@ TEST(trajectory, insertStopPoint_from_a_pose)
     EXPECT_EQ(insertStopPoint(src_pose, 10.0, traj_out.points, max_dist, deg2rad(45)), boost::none);
   }
 }
+
+TEST(trajectory, findFirstNearestIndexWithSoftConstraints)
+{
+  using motion_utils::findFirstNearestIndexWithSoftConstraints;
+  using motion_utils::findFirstNearestSegmentIndexWithSoftConstraints;
+  using tier4_autoware_utils::pi;
+
+  const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
+
+  // Non overlapped points
+  {
+    // 1. Dist and yaw thresholds are given
+    // Normal cases
+    EXPECT_EQ(
+      findFirstNearestIndexWithSoftConstraints(
+        traj.points, createPose(2.4, 1.3, 0.0, 0.0, 0.0, 0.3), 2.0, 0.4),
+      2U);
+    EXPECT_EQ(
+      findFirstNearestSegmentIndexWithSoftConstraints(
+        traj.points, createPose(2.4, 1.3, 0.0, 0.0, 0.0, 0.3), 2.0, 0.4),
+      2U);
+
+    EXPECT_EQ(
+      findFirstNearestIndexWithSoftConstraints(
+        traj.points, createPose(4.1, 0.3, 0.0, 0.0, 0.0, -0.8), 0.5, 1.0),
+      4U);
+    EXPECT_EQ(
+      findFirstNearestSegmentIndexWithSoftConstraints(
+        traj.points, createPose(4.1, 0.3, 0.0, 0.0, 0.0, -0.8), 0.5, 1.0),
+      4U);
+
+    EXPECT_EQ(
+      findFirstNearestIndexWithSoftConstraints(
+        traj.points, createPose(8.5, -0.5, 0.0, 0.0, 0.0, 0.0), 1.0, 0.1),
+      8U);
+    EXPECT_EQ(
+      findFirstNearestSegmentIndexWithSoftConstraints(
+        traj.points, createPose(8.5, -0.5, 0.0, 0.0, 0.0, 0.0), 1.0, 0.1),
+      8U);
+
+    // Dist is out of range
+    EXPECT_EQ(
+      findFirstNearestIndexWithSoftConstraints(
+        traj.points, createPose(2.4, 1.3, 0.0, 0.0, 0.0, 0.3), 1.0, 0.4),
+      2U);
+    EXPECT_EQ(
+      findFirstNearestSegmentIndexWithSoftConstraints(
+        traj.points, createPose(2.4, 1.3, 0.0, 0.0, 0.0, 0.3), 1.0, 0.4),
+      2U);
+
+    // Yaw is out of range
+    EXPECT_EQ(
+      findFirstNearestIndexWithSoftConstraints(
+        traj.points, createPose(2.4, 1.3, 0.0, 0.0, 0.0, 0.3), 2.0, 0.2),
+      2U);
+    EXPECT_EQ(
+      findFirstNearestSegmentIndexWithSoftConstraints(
+        traj.points, createPose(2.4, 1.3, 0.0, 0.0, 0.0, 0.3), 2.0, 0.2),
+      2U);
+
+    // Dist and yaw is out of range
+    EXPECT_EQ(
+      findFirstNearestIndexWithSoftConstraints(
+        traj.points, createPose(2.4, 1.3, 0.0, 0.0, 0.0, 0.3), 1.0, 0.2),
+      2U);
+    EXPECT_EQ(
+      findFirstNearestSegmentIndexWithSoftConstraints(
+        traj.points, createPose(2.4, 1.3, 0.0, 0.0, 0.0, 0.3), 1.0, 0.2),
+      2U);
+
+    // Empty points
+    EXPECT_THROW(
+      findFirstNearestIndexWithSoftConstraints(
+        Trajectory{}.points, createPose(2.4, 1.3, 0.0, 0.0, 0.0, 0.3), 1.0, 0.2),
+      std::invalid_argument);
+    EXPECT_THROW(
+      findFirstNearestSegmentIndexWithSoftConstraints(
+        Trajectory{}.points, createPose(2.4, 1.3, 0.0, 0.0, 0.0, 0.3), 1.0, 0.2),
+      std::invalid_argument);
+
+    // 2. Dist threshold is given
+    // Normal cases
+    EXPECT_EQ(
+      findFirstNearestIndexWithSoftConstraints(
+        traj.points, createPose(2.4, 1.3, 0.0, 0.0, 0.0, 0.3), 2.0),
+      2U);
+    EXPECT_EQ(
+      findFirstNearestSegmentIndexWithSoftConstraints(
+        traj.points, createPose(2.4, 1.3, 0.0, 0.0, 0.0, 0.3), 2.0),
+      2U);
+
+    EXPECT_EQ(
+      findFirstNearestIndexWithSoftConstraints(
+        traj.points, createPose(4.1, 0.3, 0.0, 0.0, 0.0, -0.8), 0.5),
+      4U);
+    EXPECT_EQ(
+      findFirstNearestSegmentIndexWithSoftConstraints(
+        traj.points, createPose(4.1, 0.3, 0.0, 0.0, 0.0, -0.8), 0.5),
+      4U);
+
+    EXPECT_EQ(
+      findFirstNearestIndexWithSoftConstraints(
+        traj.points, createPose(8.5, -0.5, 0.0, 0.0, 0.0, 0.0), 1.0),
+      8U);
+    EXPECT_EQ(
+      findFirstNearestSegmentIndexWithSoftConstraints(
+        traj.points, createPose(8.5, -0.5, 0.0, 0.0, 0.0, 0.0), 1.0),
+      8U);
+
+    // Dist is out of range
+    EXPECT_EQ(
+      findFirstNearestIndexWithSoftConstraints(
+        traj.points, createPose(2.4, 1.3, 0.0, 0.0, 0.0, 0.3), 1.0),
+      2U);
+    EXPECT_EQ(
+      findFirstNearestSegmentIndexWithSoftConstraints(
+        traj.points, createPose(2.4, 1.3, 0.0, 0.0, 0.0, 0.3), 1.0),
+      2U);
+
+    // 3. No threshold is given
+    // Normal cases
+    EXPECT_EQ(
+      findFirstNearestIndexWithSoftConstraints(
+        traj.points, createPose(2.4, 1.3, 0.0, 0.0, 0.0, 0.3)),
+      2U);
+    EXPECT_EQ(
+      findFirstNearestSegmentIndexWithSoftConstraints(
+        traj.points, createPose(2.4, 1.3, 0.0, 0.0, 0.0, 0.3)),
+      2U);
+
+    EXPECT_EQ(
+      findFirstNearestIndexWithSoftConstraints(
+        traj.points, createPose(4.1, 0.3, 0.0, 0.0, 0.0, -0.8)),
+      4U);
+    EXPECT_EQ(
+      findFirstNearestSegmentIndexWithSoftConstraints(
+        traj.points, createPose(4.1, 0.3, 0.0, 0.0, 0.0, -0.8)),
+      4U);
+
+    EXPECT_EQ(
+      findFirstNearestIndexWithSoftConstraints(
+        traj.points, createPose(8.5, -0.5, 0.0, 0.0, 0.0, 0.0)),
+      8U);
+    EXPECT_EQ(
+      findFirstNearestSegmentIndexWithSoftConstraints(
+        traj.points, createPose(8.5, -0.5, 0.0, 0.0, 0.0, 0.0)),
+      8U);
+  }
+
+  // Vertically crossing points
+  {
+    //       ___
+    //      |  |
+    //   S__|__|
+    //      |
+    //      |
+    //      G
+    std::vector<geometry_msgs::msg::Pose> poses;
+    poses.push_back(createPose(-2.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+    poses.push_back(createPose(-1.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+    poses.push_back(createPose(0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+    poses.push_back(createPose(1.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+    poses.push_back(createPose(2.0, 0.0, 0.0, 0.0, 0.0, pi / 2.0));
+    poses.push_back(createPose(2.0, 1.0, 0.0, 0.0, 0.0, pi / 2.0));
+    poses.push_back(createPose(2.0, 2.0, 0.0, 0.0, 0.0, pi));
+    poses.push_back(createPose(1.0, 2.0, 0.0, 0.0, 0.0, pi));
+    poses.push_back(createPose(0.0, 2.0, 0.0, 0.0, 0.0, -pi / 2.0));
+    poses.push_back(createPose(0.0, 1.0, 0.0, 0.0, 0.0, -pi / 2.0));
+    poses.push_back(createPose(0.0, 0.0, 0.0, 0.0, 0.0, -pi / 2.0));
+    poses.push_back(createPose(0.0, -1.0, 0.0, 0.0, 0.0, -pi / 2.0));
+    poses.push_back(createPose(0.0, -2.0, 0.0, 0.0, 0.0, -pi / 2.0));
+
+    // 1. Dist and yaw thresholds are given
+    {
+      // Normal cases
+      EXPECT_EQ(
+        findFirstNearestIndexWithSoftConstraints(
+          poses, createPose(0.3, 0.3, 0.0, 0.0, 0.0, 0.0), 1.0, 0.4),
+        2U);
+      EXPECT_EQ(
+        findFirstNearestSegmentIndexWithSoftConstraints(
+          poses, createPose(0.3, 0.3, 0.0, 0.0, 0.0, 0.0), 1.0, 0.4),
+        2U);
+
+      EXPECT_EQ(
+        findFirstNearestIndexWithSoftConstraints(
+          poses, createPose(0.3, 0.3, 0.0, 0.0, 0.0, -pi / 2.0), 1.0, 0.4),
+        10U);
+      EXPECT_EQ(
+        findFirstNearestSegmentIndexWithSoftConstraints(
+          poses, createPose(0.3, 0.3, 0.0, 0.0, 0.0, -pi / 2.0), 1.0, 0.4),
+        9U);
+
+      // Several nearest index within threshold
+      EXPECT_EQ(
+        findFirstNearestIndexWithSoftConstraints(
+          poses, createPose(0.3, 0.3, 0.0, 0.0, 0.0, 0.0), 10.0, pi * 2.0),
+        2U);
+      EXPECT_EQ(
+        findFirstNearestSegmentIndexWithSoftConstraints(
+          poses, createPose(0.3, 0.3, 0.0, 0.0, 0.0, 0.0), 10.0, pi * 2.0),
+        2U);
+
+      // Dist is out of range
+      EXPECT_EQ(
+        findFirstNearestIndexWithSoftConstraints(
+          poses, createPose(0.3, 0.3, 0.0, 0.0, 0.0, 0.0), 0.0, 0.4),
+        2U);
+      EXPECT_EQ(
+        findFirstNearestSegmentIndexWithSoftConstraints(
+          poses, createPose(0.3, 0.3, 0.0, 0.0, 0.0, 0.0), 0.0, 0.4),
+        2U);
+
+      // Yaw is out of range
+      EXPECT_EQ(
+        findFirstNearestIndexWithSoftConstraints(
+          poses, createPose(0.3, 0.3, 0.0, 0.0, 0.0, 0.3), 1.0, 0.0),
+        2U);
+      EXPECT_EQ(
+        findFirstNearestSegmentIndexWithSoftConstraints(
+          poses, createPose(0.3, 0.3, 0.0, 0.0, 0.0, 0.3), 1.0, 0.0),
+        2U);
+
+      // Dist and yaw is out of range
+      EXPECT_EQ(
+        findFirstNearestIndexWithSoftConstraints(
+          poses, createPose(0.3, 0.3, 0.0, 0.0, 0.0, 0.3), 0.0, 0.0),
+        2U);
+      EXPECT_EQ(
+        findFirstNearestSegmentIndexWithSoftConstraints(
+          poses, createPose(0.3, 0.3, 0.0, 0.0, 0.0, 0.3), 0.0, 0.0),
+        2U);
+    }
+
+    // 2. Dist threshold is given
+    {
+      // Normal cases
+      EXPECT_EQ(
+        findFirstNearestIndexWithSoftConstraints(
+          poses, createPose(0.3, 0.3, 0.0, 0.0, 0.0, 0.0), 1.0),
+        2U);
+      EXPECT_EQ(
+        findFirstNearestSegmentIndexWithSoftConstraints(
+          poses, createPose(0.3, 0.3, 0.0, 0.0, 0.0, 0.0), 1.0),
+        2U);
+
+      // Several nearest index within threshold
+      EXPECT_EQ(
+        findFirstNearestIndexWithSoftConstraints(
+          poses, createPose(0.3, 0.3, 0.0, 0.0, 0.0, 0.0), 10.0),
+        2U);
+      EXPECT_EQ(
+        findFirstNearestSegmentIndexWithSoftConstraints(
+          poses, createPose(0.3, 0.3, 0.0, 0.0, 0.0, 0.0), 10.0),
+        2U);
+
+      // Dist is out of range
+      EXPECT_EQ(
+        findFirstNearestIndexWithSoftConstraints(
+          poses, createPose(0.3, 0.3, 0.0, 0.0, 0.0, 0.0), 0.0),
+        2U);
+      EXPECT_EQ(
+        findFirstNearestSegmentIndexWithSoftConstraints(
+          poses, createPose(0.3, 0.3, 0.0, 0.0, 0.0, 0.0), 0.0),
+        2U);
+    }
+
+    // 3. No threshold is given
+    {
+      // Normal cases
+      EXPECT_EQ(
+        findFirstNearestIndexWithSoftConstraints(poses, createPose(0.3, 0.3, 0.0, 0.0, 0.0, 0.0)),
+        2U);
+      EXPECT_EQ(
+        findFirstNearestSegmentIndexWithSoftConstraints(
+          poses, createPose(0.3, 0.3, 0.0, 0.0, 0.0, 0.0)),
+        2U);
+    }
+  }
+
+  {
+    // Points has a loop structure with the opposite direction (= u-turn)
+    //         __
+    // S/G ___|_|
+
+    std::vector<geometry_msgs::msg::Pose> poses;
+    poses.push_back(createPose(-3.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+    poses.push_back(createPose(-2.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+    poses.push_back(createPose(-1.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+    poses.push_back(createPose(0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+    poses.push_back(createPose(1.0, 0.0, 0.0, 0.0, 0.0, pi / 2.0));
+    poses.push_back(createPose(1.0, 1.0, 0.0, 0.0, 0.0, pi));
+    poses.push_back(createPose(0.0, 1.0, 0.0, 0.0, 0.0, -pi / 2.0));
+    poses.push_back(createPose(0.0, 0.0, 0.0, 0.0, 0.0, pi));
+    poses.push_back(createPose(-1.0, 0.0, 0.0, 0.0, 0.0, pi));
+    poses.push_back(createPose(-2.0, 0.0, 0.0, 0.0, 0.0, pi));
+    poses.push_back(createPose(-3.0, 0.0, 0.0, 0.0, 0.0, pi));
+
+    // 1. Dist and yaw thresholds are given
+    {
+      // Normal cases
+      EXPECT_EQ(
+        findFirstNearestIndexWithSoftConstraints(
+          poses, createPose(-2.1, 0.1, 0.0, 0.0, 0.0, 0.0), 1.0, 0.4),
+        1U);
+      EXPECT_EQ(
+        findFirstNearestSegmentIndexWithSoftConstraints(
+          poses, createPose(-2.1, 0.1, 0.0, 0.0, 0.0, 0.0), 1.0, 0.4),
+        0U);
+
+      EXPECT_EQ(
+        findFirstNearestIndexWithSoftConstraints(
+          poses, createPose(-2.1, 0.1, 0.0, 0.0, 0.0, pi), 1.0, 0.4),
+        9U);
+      EXPECT_EQ(
+        findFirstNearestSegmentIndexWithSoftConstraints(
+          poses, createPose(-2.1, 0.1, 0.0, 0.0, 0.0, pi), 1.0, 0.4),
+        9U);
+
+      // Several nearest index within threshold
+      EXPECT_EQ(
+        findFirstNearestIndexWithSoftConstraints(
+          poses, createPose(-2.1, 0.1, 0.0, 0.0, 0.0, pi), 10.0, pi * 2.0),
+        1U);
+      EXPECT_EQ(
+        findFirstNearestSegmentIndexWithSoftConstraints(
+          poses, createPose(-2.1, 0.1, 0.0, 0.0, 0.0, pi), 10.0, pi * 2.0),
+        0U);
+
+      // Dist is out of range
+      EXPECT_EQ(
+        findFirstNearestIndexWithSoftConstraints(
+          poses, createPose(-2.1, 0.1, 0.0, 0.0, 0.0, pi), 0.0, 0.4),
+        1U);
+      EXPECT_EQ(
+        findFirstNearestSegmentIndexWithSoftConstraints(
+          poses, createPose(-2.1, 0.1, 0.0, 0.0, 0.0, pi), 0.0, 0.4),
+        0U);
+
+      // Yaw is out of range
+      EXPECT_EQ(
+        findFirstNearestIndexWithSoftConstraints(
+          poses, createPose(-2.1, 0.1, 0.0, 0.0, 0.0, pi * 0.9), 1.0, 0.0),
+        1U);
+      EXPECT_EQ(
+        findFirstNearestSegmentIndexWithSoftConstraints(
+          poses, createPose(-2.1, 0.1, 0.0, 0.0, 0.0, pi * 0.9), 1.0, 0.0),
+        0U);
+
+      // Dist and yaw is out of range
+      EXPECT_EQ(
+        findFirstNearestIndexWithSoftConstraints(
+          poses, createPose(-2.1, 0.1, 0.0, 0.0, 0.0, pi * 0.9), 0.0, 0.0),
+        1U);
+      EXPECT_EQ(
+        findFirstNearestSegmentIndexWithSoftConstraints(
+          poses, createPose(-2.1, 0.1, 0.0, 0.0, 0.0, pi * 0.9), 0.0, 0.0),
+        0U);
+    }
+
+    // 2. Dist threshold is given
+    {
+      // Normal cases
+      EXPECT_EQ(
+        findFirstNearestIndexWithSoftConstraints(
+          poses, createPose(-2.1, 0.1, 0.0, 0.0, 0.0, 0.0), 1.0),
+        1U);
+      EXPECT_EQ(
+        findFirstNearestSegmentIndexWithSoftConstraints(
+          poses, createPose(-2.1, 0.1, 0.0, 0.0, 0.0, 0.0), 1.0),
+        0U);
+
+      // Several nearest index within threshold
+      EXPECT_EQ(
+        findFirstNearestIndexWithSoftConstraints(
+          poses, createPose(-2.1, 0.1, 0.0, 0.0, 0.0, 0.0), 10.0),
+        1U);
+      EXPECT_EQ(
+        findFirstNearestSegmentIndexWithSoftConstraints(
+          poses, createPose(-2.1, 0.1, 0.0, 0.0, 0.0, 0.0), 10.0),
+        0U);
+
+      // Dist is out of range
+      EXPECT_EQ(
+        findFirstNearestIndexWithSoftConstraints(
+          poses, createPose(-2.1, 0.1, 0.0, 0.0, 0.0, 0.0), 0.0),
+        1U);
+      EXPECT_EQ(
+        findFirstNearestSegmentIndexWithSoftConstraints(
+          poses, createPose(-2.1, 0.1, 0.0, 0.0, 0.0, 0.0), 0.0),
+        0U);
+    }
+
+    // 3. No threshold is given
+    {
+      // Normal cases
+      EXPECT_EQ(
+        findFirstNearestIndexWithSoftConstraints(poses, createPose(-2.1, 0.1, 0.0, 0.0, 0.0, 0.0)),
+        1U);
+      EXPECT_EQ(
+        findFirstNearestSegmentIndexWithSoftConstraints(
+          poses, createPose(-2.1, 0.1, 0.0, 0.0, 0.0, 0.0)),
+        0U);
+    }
+  }
+
+  {  // Points has a loop structure with the same direction
+     //      ___
+     //     |  |
+     //  S__|__|__G
+    std::vector<geometry_msgs::msg::Pose> poses;
+    poses.push_back(createPose(0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+    poses.push_back(createPose(1.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+    poses.push_back(createPose(2.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+    poses.push_back(createPose(3.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+    poses.push_back(createPose(4.0, 0.0, 0.0, 0.0, 0.0, pi / 2.0));
+    poses.push_back(createPose(4.0, 1.0, 0.0, 0.0, 0.0, pi / 2.0));
+    poses.push_back(createPose(4.0, 2.0, 0.0, 0.0, 0.0, pi));
+    poses.push_back(createPose(3.0, 2.0, 0.0, 0.0, 0.0, pi));
+    poses.push_back(createPose(2.0, 2.0, 0.0, 0.0, 0.0, -pi / 2.0));
+    poses.push_back(createPose(2.0, 1.0, 0.0, 0.0, 0.0, -pi / 2.0));
+    poses.push_back(createPose(2.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+    poses.push_back(createPose(3.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+    poses.push_back(createPose(4.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+    poses.push_back(createPose(5.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+    poses.push_back(createPose(6.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+
+    // 1. Dist and yaw thresholds are given
+    {
+      // Normal cases
+      EXPECT_EQ(
+        findFirstNearestIndexWithSoftConstraints(
+          poses, createPose(3.1, 0.1, 0.0, 0.0, 0.0, 0.0), 1.0, 0.4),
+        3U);
+      EXPECT_EQ(
+        findFirstNearestSegmentIndexWithSoftConstraints(
+          poses, createPose(3.1, 0.1, 0.0, 0.0, 0.0, 0.0), 1.0, 0.4),
+        3U);
+
+      // Several nearest index within threshold
+      EXPECT_EQ(
+        findFirstNearestIndexWithSoftConstraints(
+          poses, createPose(3.1, 0.1, 0.0, 0.0, 0.0, 0.0), 10.0, pi * 2.0),
+        3U);
+      EXPECT_EQ(
+        findFirstNearestSegmentIndexWithSoftConstraints(
+          poses, createPose(3.1, 0.1, 0.0, 0.0, 0.0, 0.0), 10.0, pi * 2.0),
+        3U);
+
+      // Dist is out of range
+      EXPECT_EQ(
+        findFirstNearestIndexWithSoftConstraints(
+          poses, createPose(3.1, 0.1, 0.0, 0.0, 0.0, 0.0), 0.0, 0.4),
+        3U);
+      EXPECT_EQ(
+        findFirstNearestSegmentIndexWithSoftConstraints(
+          poses, createPose(3.1, 0.1, 0.0, 0.0, 0.0, 0.0), 0.0, 0.4),
+        3U);
+
+      // Yaw is out of range
+      EXPECT_EQ(
+        findFirstNearestIndexWithSoftConstraints(
+          poses, createPose(3.1, 0.1, 0.0, 0.0, 0.0, 0.0), 1.0, 0.0),
+        3U);
+      EXPECT_EQ(
+        findFirstNearestSegmentIndexWithSoftConstraints(
+          poses, createPose(3.1, 0.1, 0.0, 0.0, 0.0, 0.0), 1.0, 0.0),
+        3U);
+
+      // Dist and yaw is out of range
+      EXPECT_EQ(
+        findFirstNearestIndexWithSoftConstraints(
+          poses, createPose(3.1, 0.1, 0.0, 0.0, 0.0, 0.0), 0.0, 0.0),
+        3U);
+      EXPECT_EQ(
+        findFirstNearestSegmentIndexWithSoftConstraints(
+          poses, createPose(3.1, 0.1, 0.0, 0.0, 0.0, 0.0), 0.0, 0.0),
+        3U);
+    }
+
+    // 2. Dist threshold is given
+    {
+      // Normal cases
+      EXPECT_EQ(
+        findFirstNearestIndexWithSoftConstraints(
+          poses, createPose(3.1, 0.1, 0.0, 0.0, 0.0, 0.0), 1.0),
+        3U);
+      EXPECT_EQ(
+        findFirstNearestSegmentIndexWithSoftConstraints(
+          poses, createPose(3.1, 0.1, 0.0, 0.0, 0.0, 0.0), 1.0),
+        3U);
+
+      // Several nearest index within threshold
+      EXPECT_EQ(
+        findFirstNearestIndexWithSoftConstraints(
+          poses, createPose(3.1, 0.1, 0.0, 0.0, 0.0, 0.0), 10.0),
+        3U);
+      EXPECT_EQ(
+        findFirstNearestSegmentIndexWithSoftConstraints(
+          poses, createPose(3.1, 0.1, 0.0, 0.0, 0.0, 0.0), 10.0),
+        3U);
+
+      // Dist is out of range
+      EXPECT_EQ(
+        findFirstNearestIndexWithSoftConstraints(
+          poses, createPose(3.1, 0.1, 0.0, 0.0, 0.0, 0.0), 0.0),
+        3U);
+      EXPECT_EQ(
+        findFirstNearestSegmentIndexWithSoftConstraints(
+          poses, createPose(3.1, 0.1, 0.0, 0.0, 0.0, 0.0), 0.0),
+        3U);
+    }
+
+    // 3. No threshold is given
+    {
+      // Normal cases
+      EXPECT_EQ(
+        findFirstNearestIndexWithSoftConstraints(poses, createPose(3.1, 0.1, 0.0, 0.0, 0.0, 0.0)),
+        3U);
+      EXPECT_EQ(
+        findFirstNearestSegmentIndexWithSoftConstraints(
+          poses, createPose(3.1, 0.1, 0.0, 0.0, 0.0, 0.0)),
+        3U);
+    }
+  }
+}

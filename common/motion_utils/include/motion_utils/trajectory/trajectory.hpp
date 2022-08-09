@@ -1056,6 +1056,127 @@ inline boost::optional<size_t> insertStopPoint(
 
   return stop_idx;
 }
+
+template <class T>
+double calcSignedArcLength(
+  const T & points, const geometry_msgs::msg::Point & src_point, const size_t src_seg_idx,
+  const geometry_msgs::msg::Point & dst_point, const size_t dst_seg_idx)
+{
+  validateNonEmpty(points);
+
+  const double signed_length_on_traj = calcSignedArcLength(points, src_seg_idx, dst_seg_idx);
+  const double signed_length_src_offset =
+    calcLongitudinalOffsetToSegment(points, src_seg_idx, src_point);
+  const double signed_length_dst_offset =
+    calcLongitudinalOffsetToSegment(points, dst_seg_idx, dst_point);
+
+  return signed_length_on_traj - signed_length_src_offset + signed_length_dst_offset;
+}
+
+template <class T>
+size_t findFirstNearestIndexWithSoftConstraints(
+  const T & points, const geometry_msgs::msg::Pose & pose,
+  const double dist_threshold = std::numeric_limits<double>::max(),
+  const double yaw_threshold = std::numeric_limits<double>::max())
+{
+  validateNonEmpty(points);
+
+  {  // with dist and yaw thresholds
+    const double squared_dist_threshold = dist_threshold * dist_threshold;
+    double min_squared_dist = std::numeric_limits<double>::max();
+    size_t min_idx = 0;
+    bool is_within_constraints = false;
+    for (size_t i = 0; i < points.size(); ++i) {
+      const auto squared_dist =
+        tier4_autoware_utils::calcSquaredDistance2d(points.at(i), pose.position);
+      const auto yaw =
+        tier4_autoware_utils::calcYawDeviation(tier4_autoware_utils::getPose(points.at(i)), pose);
+
+      if (squared_dist_threshold < squared_dist || yaw_threshold < std::abs(yaw)) {
+        if (is_within_constraints) {
+          break;
+        } else {
+          continue;
+        }
+      }
+
+      if (min_squared_dist <= squared_dist) {
+        continue;
+      }
+
+      min_squared_dist = squared_dist;
+      min_idx = i;
+      is_within_constraints = true;
+    }
+
+    // nearest index is found
+    if (is_within_constraints) {
+      return min_idx;
+    }
+  }
+
+  {  // with dist threshold
+    const double squared_dist_threshold = dist_threshold * dist_threshold;
+    double min_squared_dist = std::numeric_limits<double>::max();
+    size_t min_idx = 0;
+    bool is_within_constraints = false;
+    for (size_t i = 0; i < points.size(); ++i) {
+      const auto squared_dist =
+        tier4_autoware_utils::calcSquaredDistance2d(points.at(i), pose.position);
+
+      if (squared_dist_threshold < squared_dist) {
+        if (is_within_constraints) {
+          break;
+        } else {
+          continue;
+        }
+      }
+
+      if (min_squared_dist <= squared_dist) {
+        continue;
+      }
+
+      min_squared_dist = squared_dist;
+      min_idx = i;
+      is_within_constraints = true;
+    }
+
+    // nearest index is found
+    if (is_within_constraints) {
+      return min_idx;
+    }
+  }
+
+  // without any threshold
+  return findNearestIndex(points, pose.position);
+}
+
+template <class T>
+size_t findFirstNearestSegmentIndexWithSoftConstraints(
+  const T & points, const geometry_msgs::msg::Pose & pose,
+  const double dist_threshold = std::numeric_limits<double>::max(),
+  const double yaw_threshold = std::numeric_limits<double>::max())
+{
+  // find first nearest index with soft constraints (not segment index)
+  const size_t nearest_idx =
+    findFirstNearestIndexWithSoftConstraints(points, pose, dist_threshold, yaw_threshold);
+
+  // calculate segment index
+  if (nearest_idx == 0) {
+    return 0;
+  }
+  if (nearest_idx == points.size() - 1) {
+    return points.size() - 2;
+  }
+
+  const double signed_length = calcLongitudinalOffsetToSegment(points, nearest_idx, pose.position);
+
+  if (signed_length <= 0) {
+    return nearest_idx - 1;
+  }
+
+  return nearest_idx;
+}
 }  // namespace motion_utils
 
 #endif  // MOTION_UTILS__TRAJECTORY__TRAJECTORY_HPP_
