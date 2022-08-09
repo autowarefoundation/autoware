@@ -2347,11 +2347,6 @@ boost::optional<AvoidPointArray> AvoidanceModule::findNewShiftPoint(
     //   continue;
     // }
 
-    if (calcJerk(candidate) > parameters_.max_lateral_jerk) {
-      DEBUG_PRINT("%s, this shift exceeds jerk limit (%f). skip.", pfx, calcJerk(candidate));
-      continue;
-    }
-
     const auto current_shift = prev_linear_shift_path_.shift_length.at(
       findNearestIndex(prev_reference_.points, candidate.end.position));
 
@@ -2360,6 +2355,12 @@ boost::optional<AvoidPointArray> AvoidanceModule::findNewShiftPoint(
 
     const auto new_point_threshold = parameters_.avoidance_execution_lateral_threshold;
     if (std::abs(candidate.length - current_shift) > new_point_threshold) {
+      if (calcJerk(candidate) > parameters_.max_lateral_jerk) {
+        DEBUG_PRINT(
+          "%s, Failed to find new shift: jerk limit over (%f).", pfx, calcJerk(candidate));
+        break;
+      }
+
       DEBUG_PRINT(
         "%s, New shift point is found!!! shift change: %f -> %f", pfx, current_shift,
         candidate.length);
