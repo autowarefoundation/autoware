@@ -92,7 +92,11 @@ Net::Net(
   if (fp16 || int8) {
     config->setFlag(nvinfer1::BuilderFlag::kFP16);
   }
+#if (NV_TENSORRT_MAJOR * 1000) + (NV_TENSORRT_MINOR * 100) + NV_TENSOR_PATCH >= 8400
+  config->setMemoryPoolLimit(nvinfer1::MemoryPoolType::kWORKSPACE, workspace_size);
+#else
   config->setMaxWorkspaceSize(workspace_size);
+#endif
 
   // Parse ONNX FCN
   std::cout << "Building " << precision << " core model..." << std::endl;

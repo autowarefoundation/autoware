@@ -60,9 +60,11 @@ LidarApolloInstanceSegmentation::LidarApolloInstanceSegmentation(rclcpp::Node * 
       RCLCPP_ERROR(node_->get_logger(), "can not find output named %s", output_node.c_str());
     }
     network->markOutput(*output);
-    const int batch_size = 1;
-    builder->setMaxBatchSize(batch_size);
+#if (NV_TENSORRT_MAJOR * 1000) + (NV_TENSORRT_MINOR * 100) + NV_TENSOR_PATCH >= 8400
+    config->setMemoryPoolLimit(nvinfer1::MemoryPoolType::kWORKSPACE, 1 << 30);
+#else
     config->setMaxWorkspaceSize(1 << 30);
+#endif
     nvinfer1::IHostMemory * plan = builder->buildSerializedNetwork(*network, *config);
     assert(plan != nullptr);
     std::ofstream outfile(engine_file, std::ofstream::binary);

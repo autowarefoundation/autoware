@@ -42,8 +42,7 @@ TrtCommon::TrtCommon(std::string model_path, std::string precision)
   precision_(precision),
   input_name_("input_0"),
   output_name_("output_0"),
-  is_initialized_(false),
-  max_batch_size_(1)
+  is_initialized_(false)
 {
   runtime_ = UniquePtr<nvinfer1::IRuntime>(nvinfer1::createInferRuntime(logger_));
 }
@@ -106,8 +105,11 @@ bool TrtCommon::buildEngineFromOnnx(std::string onnx_file_path, std::string outp
     return false;
   }
 
-  builder->setMaxBatchSize(max_batch_size_);
+#if (NV_TENSORRT_MAJOR * 1000) + (NV_TENSORRT_MINOR * 100) + NV_TENSOR_PATCH >= 8400
+  config->setMemoryPoolLimit(nvinfer1::MemoryPoolType::kWORKSPACE, 16 << 20);
+#else
   config->setMaxWorkspaceSize(16 << 20);
+#endif
 
   if (precision_ == "fp16") {
     config->setFlag(nvinfer1::BuilderFlag::kFP16);

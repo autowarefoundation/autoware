@@ -136,7 +136,6 @@ private:
   std::string input_name_;
   std::string output_name_;
   bool is_initialized_;
-  size_t max_batch_size_;
 };
 
 }  // namespace Tn

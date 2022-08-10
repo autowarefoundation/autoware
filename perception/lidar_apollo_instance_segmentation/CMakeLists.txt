@@ -134,6 +134,11 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
     ${PCL_LIBRARIES}
   )
 
+  target_compile_options(tensorrt_apollo_cnn_lib
+    PUBLIC
+      -Wno-deprecated-declarations
+  )
+
   ament_auto_add_library(lidar_apollo_instance_segmentation SHARED
     src/node.cpp
     src/detector.cpp
