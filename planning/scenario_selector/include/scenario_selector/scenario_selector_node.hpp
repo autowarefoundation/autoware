@@ -52,6 +52,7 @@ public:
   void onOdom(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
   void onParkingState(const std_msgs::msg::Bool::ConstSharedPtr msg);
 
+  bool isDataReady();
   void onTimer();
   void onLaneDrivingTrajectory(
     const autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr msg);
