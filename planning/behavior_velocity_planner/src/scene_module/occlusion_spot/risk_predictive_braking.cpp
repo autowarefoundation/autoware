@@ -72,15 +72,17 @@ int insertSafeVelocityToPath(
   PathPointWithLaneId inserted_point;
   inserted_point = inout_path->points.at(closest_idx);
   size_t insert_idx = closest_idx;
-  // insert velocity to path if distance is not too close else insert new collision point
-  // if original path has narrow points it's better to set higher distance threshold
   if (planning_utils::isAheadOf(in_pose, inout_path->points.at(closest_idx).point.pose)) {
     ++insert_idx;
     if (insert_idx == static_cast<size_t>(inout_path->points.size())) return -1;
   }
   // return if index is after the last path point
   inserted_point.point.pose = in_pose;
-  planning_utils::insertVelocity(*inout_path, inserted_point, safe_vel, insert_idx);
+  // insert velocity to path if distance is not too close else insert new collision point
+  // if original path has narrow points it's better to set higher distance threshold
+  // TODO(tanaka): use Spherical Linear Interpolation for inserting point
+  const double eps = 0.05;
+  planning_utils::insertVelocity(*inout_path, inserted_point, safe_vel, insert_idx, eps);
   return 0;
 }
 
