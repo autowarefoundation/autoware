@@ -6,7 +6,7 @@ This package is to get vehicle info parameters.
 
 ### Description
 
-![description](./media/vehicle_info.drawio.svg)
+In [here](https://autowarefoundation.github.io/autoware-documentation/main/design/autoware-interfaces/components/vehicle-dimensions/), you can check the vehicle dimensions with more detail.
 
 ## Assumptions / Known limits
 
