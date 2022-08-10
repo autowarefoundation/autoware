@@ -47,7 +47,7 @@ struct score_greater
   __device__ bool operator()(const Box3D & lb, const Box3D & rb) { return lb.score > rb.score; }
 };
 
-__device__ inline float sigmoid(float x) { return 1.0f / expf(-x); }
+__device__ inline float sigmoid(float x) { return 1.0f / (1.0f + expf(-x)); }
 
 __global__ void generateBoxes3D_kernel(
   const float * out_heatmap, const float * out_offset, const float * out_z, const float * out_dim,
