@@ -157,16 +157,23 @@ bool PullOverModule::isExecutionRequested() const
   if (current_state_ == BT::NodeStatus::RUNNING) {
     return true;
   }
-
-  const auto current_lanes = util::getCurrentLanes(planner_data_);
-  const auto goal_pose = planner_data_->route_handler->getGoalPose();
+  const auto & current_lanes = util::getCurrentLanes(planner_data_);
+  const auto & current_pose = planner_data_->self_pose->pose;
+  const auto & goal_pose = planner_data_->route_handler->getGoalPose();
 
   // check if goal_pose is far
-  const double goal_arc_length = lanelet::utils::getArcCoordinates(current_lanes, goal_pose).length;
-  const double self_arc_length =
-    lanelet::utils::getArcCoordinates(current_lanes, planner_data_->self_pose->pose).length;
-  const double self_to_goal_arc_length = goal_arc_length - self_arc_length;
-  if (self_to_goal_arc_length > parameters_.request_length) return false;
+  const bool is_in_goal_route_section =
+    planner_data_->route_handler->isInGoalRouteSection(current_lanes.back());
+  // current_lanes does not have the goal
+  if (!is_in_goal_route_section) {
+    return false;
+  }
+  const double self_to_goal_arc_length =
+    util::getSignedDistance(current_pose, goal_pose, current_lanes);
+  // goal is away behind
+  if (self_to_goal_arc_length > parameters_.request_length || self_to_goal_arc_length < 0.0) {
+    return false;
+  }
 
   // check if goal_pose is in shoulder lane
   bool goal_is_in_shoulder_lane = false;
