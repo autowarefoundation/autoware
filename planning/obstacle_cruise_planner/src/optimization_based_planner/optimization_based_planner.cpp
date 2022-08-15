@@ -16,7 +16,9 @@
 
 #include "interpolation/linear_interpolation.hpp"
 #include "interpolation/spline_interpolation.hpp"
-#include "obstacle_cruise_planner/optimization_based_planner/resample.hpp"
+#include "interpolation/zero_order_hold.hpp"
+#include "motion_utils/resample/resample.hpp"
+#include "motion_utils/trajectory/trajectory.hpp"
 #include "obstacle_cruise_planner/utils.hpp"
 #include "tier4_autoware_utils/tier4_autoware_utils.hpp"
 
@@ -58,10 +60,6 @@ OptimizationBasedPlanner::OptimizationBasedPlanner(
 : PlannerInterface(node, longitudinal_info, vehicle_info)
 {
   // parameter
-  resampling_s_interval_ =
-    node.declare_parameter<double>("optimization_based_planner.resampling_s_interval");
-  max_trajectory_length_ =
-    node.declare_parameter<double>("optimization_based_planner.max_trajectory_length");
   dense_resampling_time_interval_ =
     node.declare_parameter<double>("optimization_based_planner.dense_resampling_time_interval");
   sparse_resampling_time_interval_ =
@@ -107,7 +105,6 @@ OptimizationBasedPlanner::OptimizationBasedPlanner(
   optimized_sv_pub_ = node.create_publisher<Trajectory>("~/optimized_sv_trajectory", 1);
   optimized_st_graph_pub_ = node.create_publisher<Trajectory>("~/optimized_st_graph", 1);
   boundary_pub_ = node.create_publisher<Trajectory>("~/boundary", 1);
-  debug_calculation_time_ = node.create_publisher<Float32Stamped>("~/calculation_time", 1);
   debug_wall_marker_pub_ =
     node.create_publisher<visualization_msgs::msg::MarkerArray>("~/debug/wall_marker", 1);
 }
@@ -128,23 +125,13 @@ Trajectory OptimizationBasedPlanner::generateCruiseTrajectory(
   }
 
   // Get the nearest point on the trajectory
-  const auto closest_idx = motion_utils::findNearestIndex(
+  const auto closest_idx = motion_utils::findNearestSegmentIndex(
     planner_data.traj.points, planner_data.current_pose, nearest_dist_deviation_threshold_,
     nearest_yaw_deviation_threshold_);
   if (!closest_idx) {  // Check validity of the closest index
     RCLCPP_ERROR(
       rclcpp::get_logger("ObstacleCruisePlanner::OptimizationBasedPlanner"),
       "Closest Index is Invalid");
-    prev_output_ = planner_data.traj;
-    return planner_data.traj;
-  }
-
-  // Transform original trajectory to TrajectoryData
-  const auto base_traj_data = getTrajectoryData(planner_data.traj, planner_data.current_pose);
-  if (base_traj_data.traj.points.size() < 2) {
-    RCLCPP_DEBUG(
-      rclcpp::get_logger("ObstacleCruisePlanner::OptimizationBasedPlanner"),
-      "The number of points on the trajectory data is too small");
     prev_output_ = planner_data.traj;
     return planner_data.traj;
   }
@@ -158,14 +145,14 @@ Trajectory OptimizationBasedPlanner::generateCruiseTrajectory(
   // Get Current Velocity
   double v0;
   double a0;
-  std::tie(v0, a0) = calcInitialMotion(planner_data, *closest_idx, prev_output_);
+  std::tie(v0, a0) = calcInitialMotion(planner_data, prev_output_);
   a0 = std::min(longitudinal_info_.max_accel, std::max(a0, longitudinal_info_.min_accel));
 
   // Check trajectory size
   if (planner_data.traj.points.size() - *closest_idx <= 2) {
     RCLCPP_DEBUG(
       rclcpp::get_logger("ObstacleCruisePlanner::OptimizationBasedPlanner"),
-      "The number of points on the trajectory is too small");
+      "The number of points on the trajectory is too small or failed to calculate front offset");
     prev_output_ = planner_data.traj;
     return planner_data.traj;
   }
@@ -176,23 +163,9 @@ Trajectory OptimizationBasedPlanner::generateCruiseTrajectory(
     return planner_data.traj;
   }
 
-  // Resample base trajectory data by time
-  const auto resampled_traj_data =
-    resampleTrajectoryData(base_traj_data, resampling_s_interval_, max_trajectory_length_);
-  if (resampled_traj_data.traj.points.size() < 2) {
-    RCLCPP_DEBUG(
-      rclcpp::get_logger("ObstacleCruisePlanner::OptimizationBasedPlanner"),
-      "The number of points on the resampled trajectory data is too small");
-    prev_output_ = planner_data.traj;
-    return planner_data.traj;
-  }
-
   // Get S Boundaries from the obstacle
-  const auto s_boundaries = getSBoundaries(planner_data, resampled_traj_data, time_vec);
+  const auto s_boundaries = getSBoundaries(planner_data, time_vec);
   if (!s_boundaries) {
-    RCLCPP_DEBUG(
-      rclcpp::get_logger("ObstacleCruisePlanner::OptimizationBasedPlanner"),
-      "No Dangerous Objects around the ego vehicle");
     prev_output_ = planner_data.traj;
     return planner_data.traj;
   }
@@ -200,7 +173,7 @@ Trajectory OptimizationBasedPlanner::generateCruiseTrajectory(
   // Optimization
   VelocityOptimizer::OptimizationData data;
   data.time_vec = time_vec;
-  data.s0 = resampled_traj_data.s.front();
+  data.s0 = 0.0;
   data.a0 = a0;
   data.v_max = v_max;
   data.a_max = longitudinal_info_.max_accel;
@@ -213,30 +186,21 @@ Trajectory OptimizationBasedPlanner::generateCruiseTrajectory(
   data.limit_j_min = longitudinal_info_.limit_min_jerk;
   data.t_dangerous = t_dangerous_;
   data.idling_time = longitudinal_info_.idling_time;
-  data.v_margin = velocity_margin_;
   data.s_boundary = *s_boundaries;
   data.v0 = v0;
   RCLCPP_DEBUG(rclcpp::get_logger("ObstacleCruisePlanner::OptimizationBasedPlanner"), "v0 %f", v0);
 
-  stop_watch_.tic();
-
   const auto optimized_result = velocity_optimizer_ptr_->optimize(data);
 
-  Float32Stamped calculation_time_data{};
-  calculation_time_data.stamp = planner_data.current_time;
-  calculation_time_data.data = stop_watch_.toc();
-  debug_calculation_time_->publish(calculation_time_data);
-  RCLCPP_DEBUG(
-    rclcpp::get_logger("ObstacleCruisePlanner::OptimizationBasedPlanner"),
-    "Optimization Time; %f[ms]", calculation_time_data.data);
-
   // Publish Debug trajectories
+  const double traj_front_to_vehicle_offset =
+    motion_utils::calcSignedArcLength(planner_data.traj.points, 0, *closest_idx);
   publishDebugTrajectory(
-    planner_data.current_time, planner_data.traj, *closest_idx, time_vec, *s_boundaries,
-    optimized_result);
+    planner_data, traj_front_to_vehicle_offset, time_vec, *s_boundaries, optimized_result);
 
   // Transformation from t to s
-  const auto processed_result = processOptimizedResult(data.v0, optimized_result);
+  const auto processed_result =
+    processOptimizedResult(data.v0, optimized_result, traj_front_to_vehicle_offset);
   if (!processed_result) {
     RCLCPP_DEBUG(
       rclcpp::get_logger("ObstacleCruisePlanner::OptimizationBasedPlanner"),
@@ -268,92 +232,48 @@ Trajectory OptimizationBasedPlanner::generateCruiseTrajectory(
   double closest_stop_dist = std::numeric_limits<double>::max();
   for (size_t i = 0; i < opt_velocity.size(); ++i) {
     if (opt_velocity.at(i) < ZERO_VEL_THRESHOLD) {
-      const double zero_vel_s = opt_position.at(i);
-      closest_stop_dist = std::min(closest_stop_dist, zero_vel_s);
+      closest_stop_dist = std::min(closest_stop_dist, opt_position.at(i));
       break;
     }
   }
-  const auto traj_stop_dist = motion_utils::calcDistanceToForwardStopPoint(
-    planner_data.traj.points, planner_data.current_pose, nearest_dist_deviation_threshold_,
-    nearest_yaw_deviation_threshold_);
+  const auto traj_stop_dist =
+    motion_utils::calcDistanceToForwardStopPoint(planner_data.traj.points, *closest_idx);
   if (traj_stop_dist) {
-    closest_stop_dist = std::min(*traj_stop_dist, closest_stop_dist);
+    closest_stop_dist = std::min(*traj_stop_dist + traj_front_to_vehicle_offset, closest_stop_dist);
   }
 
-  size_t break_id = base_traj_data.s.size();
-  bool has_insert_stop_point = false;
-  std::vector<double> resampled_opt_position = {base_traj_data.s.front()};
-  for (size_t i = 1; i < base_traj_data.s.size(); ++i) {
-    const double query_s = base_traj_data.s.at(i);
-    if (
-      !has_insert_stop_point && query_s > closest_stop_dist &&
-      closest_stop_dist < opt_position.back()) {
-      const double prev_query_s = resampled_opt_position.back();
-      if (closest_stop_dist - prev_query_s > CLOSE_S_DIST_THRESHOLD) {
-        resampled_opt_position.push_back(closest_stop_dist);
-      } else {
-        resampled_opt_position.back() = closest_stop_dist;
-      }
-      has_insert_stop_point = true;
-    }
-
+  // Resample Optimum Velocity
+  size_t break_id = planner_data.traj.points.size();
+  std::vector<double> resampled_opt_position;
+  for (size_t i = *closest_idx; i < planner_data.traj.points.size(); ++i) {
+    const double query_s = std::max(
+      motion_utils::calcSignedArcLength(planner_data.traj.points, 0, i), opt_position.front());
     if (query_s > opt_position.back()) {
       break_id = i;
       break;
     }
-
-    const double prev_query_s = resampled_opt_position.back();
-    if (query_s - prev_query_s > 1e-3) {
-      resampled_opt_position.push_back(query_s);
-    }
+    resampled_opt_position.push_back(query_s);
   }
-  const auto resampled_opt_velocity =
+  // resample optimum velocity for original each position
+  auto resampled_opt_velocity =
     interpolation::lerp(opt_position, opt_velocity, resampled_opt_position);
-
-  // Push positions after the last position of the opt position
-  for (size_t i = break_id; i < base_traj_data.s.size(); ++i) {
-    const double query_s = base_traj_data.s.at(i);
-    const double prev_query_s = resampled_opt_position.back();
-    if (query_s - prev_query_s > CLOSE_S_DIST_THRESHOLD) {
-      resampled_opt_position.push_back(query_s);
-    }
+  for (size_t i = break_id; i < planner_data.traj.points.size(); ++i) {
+    resampled_opt_velocity.push_back(planner_data.traj.points.at(i).longitudinal_velocity_mps);
   }
 
-  auto resampled_traj = resampling::applyLinearInterpolation(
-    base_traj_data.s, base_traj_data.traj, resampled_opt_position);
-  for (size_t i = 0; i < resampled_opt_velocity.size(); ++i) {
-    resampled_traj.points.at(i).longitudinal_velocity_mps = std::min(
-      resampled_opt_velocity.at(i),
-      static_cast<double>(resampled_traj.points.at(i).longitudinal_velocity_mps));
-  }
-  for (size_t i = 0; i < resampled_opt_position.size(); ++i) {
-    if (resampled_opt_position.at(i) >= closest_stop_dist) {
-      resampled_traj.points.at(i).longitudinal_velocity_mps = 0.0;
-    }
-  }
-
-  Trajectory output;
-  output.header = planner_data.traj.header;
+  // Create Output Data
+  Trajectory output = planner_data.traj;
   for (size_t i = 0; i < *closest_idx; ++i) {
-    auto point = planner_data.traj.points.at(i);
-    point.longitudinal_velocity_mps = data.v0;
-    output.points.push_back(point);
+    output.points.at(i).longitudinal_velocity_mps = data.v0;
   }
-  for (const auto & resampled_point : resampled_traj.points) {
-    if (output.points.empty()) {
-      output.points.push_back(resampled_point);
-    } else {
-      const auto prev_point = output.points.back();
-      const double dist = tier4_autoware_utils::calcDistance2d(
-        prev_point.pose.position, resampled_point.pose.position);
-      if (dist > 1e-3) {
-        output.points.push_back(resampled_point);
-      } else {
-        output.points.back() = resampled_point;
-      }
-    }
+  for (size_t i = *closest_idx; i < output.points.size(); ++i) {
+    output.points.at(i).longitudinal_velocity_mps =
+      resampled_opt_velocity.at(i - *closest_idx) + velocity_margin_;
   }
   output.points.back().longitudinal_velocity_mps = 0.0;  // terminal velocity is zero
+
+  // Insert Closest Stop Point
+  motion_utils::insertStopPoint(0, closest_stop_dist, output.points);
 
   prev_output_ = output;
   return output;
@@ -386,13 +306,15 @@ std::vector<double> OptimizationBasedPlanner::createTimeVector()
 
 // v0, a0
 std::tuple<double, double> OptimizationBasedPlanner::calcInitialMotion(
-  const ObstacleCruisePlannerData & planner_data, const size_t input_closest,
-  const Trajectory & prev_traj)
+  const ObstacleCruisePlannerData & planner_data, const Trajectory & prev_traj)
 {
   const auto & current_vel = planner_data.current_vel;
+  const auto & current_pose = planner_data.current_pose;
   const auto & input_traj = planner_data.traj;
   const double vehicle_speed{std::abs(current_vel)};
-  const double target_vel{std::abs(input_traj.points.at(input_closest).longitudinal_velocity_mps)};
+  const auto current_closest_point =
+    calcInterpolatedTrajectoryPoint(input_traj, planner_data.current_pose);
+  const double target_vel{std::abs(current_closest_point.longitudinal_velocity_mps)};
 
   double initial_vel{};
   double initial_acc{};
@@ -407,10 +329,9 @@ std::tuple<double, double> OptimizationBasedPlanner::calcInitialMotion(
   TrajectoryPoint prev_output_closest_point;
   if (smoothed_trajectory_ptr_) {
     prev_output_closest_point =
-      calcInterpolatedTrajectoryPoint(*smoothed_trajectory_ptr_, planner_data.current_pose);
+      calcInterpolatedTrajectoryPoint(*smoothed_trajectory_ptr_, current_pose);
   } else {
-    prev_output_closest_point =
-      calcInterpolatedTrajectoryPoint(prev_traj, planner_data.current_pose);
+    prev_output_closest_point = calcInterpolatedTrajectoryPoint(prev_traj, current_pose);
   }
 
   // when velocity tracking deviation is large
@@ -433,7 +354,7 @@ std::tuple<double, double> OptimizationBasedPlanner::calcInitialMotion(
   if (vehicle_speed < engage_vel_thr) {
     if (target_vel >= engage_velocity_) {
       const auto stop_dist = motion_utils::calcDistanceToForwardStopPoint(
-        input_traj.points, planner_data.current_pose, nearest_dist_deviation_threshold_,
+        input_traj.points, current_pose, nearest_dist_deviation_threshold_,
         nearest_yaw_deviation_threshold_);
       if ((stop_dist && *stop_dist > stop_dist_to_prohibit_engage_) || !stop_dist) {
         initial_vel = engage_velocity_;
@@ -518,159 +439,35 @@ bool OptimizationBasedPlanner::checkHasReachedGoal(const ObstacleCruisePlannerDa
   return false;
 }
 
-OptimizationBasedPlanner::TrajectoryData OptimizationBasedPlanner::getTrajectoryData(
-  const Trajectory & traj, const geometry_msgs::msg::Pose & current_pose)
-{
-  TrajectoryData base_traj;
-  const auto nearest_segment_idx =
-    motion_utils::findNearestSegmentIndex(traj.points, current_pose.position);
-  const auto interpolated_point = calcInterpolatedTrajectoryPoint(traj, current_pose);
-  const auto dist = tier4_autoware_utils::calcDistance2d(
-    interpolated_point.pose.position, traj.points.at(nearest_segment_idx).pose.position);
-  const auto current_point =
-    dist > CLOSE_S_DIST_THRESHOLD ? interpolated_point : traj.points.at(nearest_segment_idx);
-  base_traj.traj.points.push_back(current_point);
-  base_traj.s.push_back(0.0);
-
-  for (size_t id = nearest_segment_idx + 1; id < traj.points.size(); ++id) {
-    const auto prev_point = base_traj.traj.points.back();
-    const double ds = tier4_autoware_utils::calcDistance2d(
-      prev_point.pose.position, traj.points.at(id).pose.position);
-    if (ds < CLOSE_S_DIST_THRESHOLD) {
-      continue;
-    }
-    const double current_s = base_traj.s.back() + ds;
-
-    base_traj.traj.points.push_back(traj.points.at(id));
-    base_traj.s.push_back(current_s);
-  }
-
-  return base_traj;
-}
-
-OptimizationBasedPlanner::TrajectoryData OptimizationBasedPlanner::resampleTrajectoryData(
-  const TrajectoryData & base_traj_data, const double resampling_s_interval,
-  const double max_traj_length)
-{
-  // Create Base Keys
-  std::vector<double> base_s(base_traj_data.s.size());
-  for (size_t i = 0; i < base_s.size(); ++i) {
-    base_s.at(i) = base_traj_data.s.at(i);
-  }
-
-  // Obtain trajectory length until the velocity is zero or stop dist
-  const auto closest_stop_id = motion_utils::searchZeroVelocityIndex(base_traj_data.traj.points);
-  const double closest_stop_dist = closest_stop_id ? base_s.at(*closest_stop_id) : base_s.back();
-  const double traj_length = std::min(closest_stop_dist, std::min(base_s.back(), max_traj_length));
-
-  // Create Query Keys
-  std::vector<double> resampled_s;
-  for (double s = 0.0; s < traj_length; s += resampling_s_interval) {
-    resampled_s.push_back(s);
-  }
-
-  if (!resampled_s.empty() && traj_length - resampled_s.back() < CLOSE_S_DIST_THRESHOLD) {
-    resampled_s.back() = traj_length;
-  } else {
-    resampled_s.push_back(traj_length);
-  }
-
-  if (resampled_s.empty()) {
-    return TrajectoryData{};
-  }
-
-  // Resample trajectory
-  const auto resampled_traj = resampleTrajectory(base_s, base_traj_data.traj, resampled_s);
-
-  // Store Data
-  TrajectoryData resampled_traj_data;
-  resampled_traj_data.traj = resampled_traj;
-  resampled_traj_data.s = resampled_s;
-
-  return resampled_traj_data;
-}
-
-// TODO(shimizu) what is the difference with apply linear interpolation
-Trajectory OptimizationBasedPlanner::resampleTrajectory(
-  const std::vector<double> & base_index, const Trajectory & base_trajectory,
-  const std::vector<double> & query_index, const bool use_spline_for_pose)
-{
-  std::vector<double> px, py, pz, pyaw, tlx, taz, alx;
-  for (const auto & p : base_trajectory.points) {
-    px.push_back(p.pose.position.x);
-    py.push_back(p.pose.position.y);
-    pz.push_back(p.pose.position.z);
-    pyaw.push_back(tf2::getYaw(p.pose.orientation));
-    tlx.push_back(p.longitudinal_velocity_mps);
-    taz.push_back(p.heading_rate_rps);
-    alx.push_back(p.acceleration_mps2);
-  }
-
-  convertEulerAngleToMonotonic(pyaw);
-
-  std::vector<double> px_p, py_p, pz_p, pyaw_p;
-  if (use_spline_for_pose) {
-    px_p = interpolation::slerp(base_index, px, query_index);
-    py_p = interpolation::slerp(base_index, py, query_index);
-    pz_p = interpolation::slerp(base_index, pz, query_index);
-    pyaw_p = interpolation::slerp(base_index, pyaw, query_index);
-  } else {
-    px_p = interpolation::lerp(base_index, px, query_index);
-    py_p = interpolation::lerp(base_index, py, query_index);
-    pz_p = interpolation::lerp(base_index, pz, query_index);
-    pyaw_p = interpolation::lerp(base_index, pyaw, query_index);
-  }
-  const auto tlx_p = interpolation::lerp(base_index, tlx, query_index);
-  const auto taz_p = interpolation::lerp(base_index, taz, query_index);
-  const auto alx_p = interpolation::lerp(base_index, alx, query_index);
-
-  Trajectory resampled_trajectory;
-  resampled_trajectory.header = base_trajectory.header;
-  resampled_trajectory.points.resize(query_index.size());
-
-  for (size_t i = 0; i < query_index.size(); ++i) {
-    TrajectoryPoint point;
-    point.pose.position.x = px_p.at(i);
-    point.pose.position.y = py_p.at(i);
-    point.pose.position.z = pz_p.at(i);
-    point.pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(pyaw_p.at(i));
-
-    point.longitudinal_velocity_mps = tlx_p.at(i);
-    point.heading_rate_rps = taz_p.at(i);
-    point.acceleration_mps2 = alx_p.at(i);
-    resampled_trajectory.points.at(i) = point;
-  }
-  return resampled_trajectory;
-}
-
 boost::optional<SBoundaries> OptimizationBasedPlanner::getSBoundaries(
-  const ObstacleCruisePlannerData & planner_data, const TrajectoryData & ego_traj_data,
-  const std::vector<double> & time_vec)
+  const ObstacleCruisePlannerData & planner_data, const std::vector<double> & time_vec)
 {
-  if (ego_traj_data.traj.points.empty()) {
+  if (planner_data.traj.points.empty()) {
     return boost::none;
   }
 
-  const auto & current_time = planner_data.current_time;
+  const auto traj_length =
+    calcTrajectoryLengthFromCurrentPose(planner_data.traj, planner_data.current_pose);
+  if (!traj_length) {
+    return {};
+  }
 
   SBoundaries s_boundaries(time_vec.size());
   for (size_t i = 0; i < s_boundaries.size(); ++i) {
-    s_boundaries.at(i).max_s = ego_traj_data.s.back();
+    s_boundaries.at(i).max_s = *traj_length;
   }
 
   double min_slow_down_point_length = std::numeric_limits<double>::max();
   boost::optional<size_t> min_slow_down_idx = {};
   for (size_t o_idx = 0; o_idx < planner_data.target_obstacles.size(); ++o_idx) {
     const auto & obj = planner_data.target_obstacles.at(o_idx);
-    const auto obj_base_time = planner_data.target_obstacles.at(o_idx).time_stamp;
     // Only see cruise obstacles
-    if (obj.has_stopped) {
+    if (obj.has_stopped || obj.collision_points.empty()) {
       continue;
     }
 
     // Step1 Get S boundary from the obstacle
-    const auto obj_s_boundaries =
-      getSBoundaries(planner_data.current_time, ego_traj_data, obj, obj_base_time, time_vec);
+    const auto obj_s_boundaries = getSBoundaries(planner_data, obj, time_vec, *traj_length);
     if (!obj_s_boundaries) {
       continue;
     }
@@ -683,20 +480,14 @@ boost::optional<SBoundaries> OptimizationBasedPlanner::getSBoundaries(
     }
 
     // Step3 search nearest obstacle to follow for rviz marker
-    const double object_offset = obj.shape.dimensions.x / 2.0;
-
-    const auto current_object_pose = obstacle_cruise_utils::getCurrentObjectPoseFromPredictedPaths(
-      obj.predicted_paths, obj_base_time, current_time);
-
     const double obj_vel = std::abs(obj.velocity);
     const double rss_dist = calcRSSDistance(planner_data.current_vel, obj_vel);
 
     const auto & safe_distance_margin = longitudinal_info_.safe_distance_margin;
     const double ego_obj_length = motion_utils::calcSignedArcLength(
-      ego_traj_data.traj.points, planner_data.current_pose.position,
-      current_object_pose.get().position);
-    const double slow_down_point_length =
-      ego_obj_length - (rss_dist + object_offset + safe_distance_margin);
+      planner_data.traj.points, planner_data.current_pose.position,
+      obj.collision_points.front().point);
+    const double slow_down_point_length = ego_obj_length - (rss_dist + safe_distance_margin);
 
     if (slow_down_point_length < min_slow_down_point_length) {
       min_slow_down_point_length = slow_down_point_length;
@@ -707,12 +498,10 @@ boost::optional<SBoundaries> OptimizationBasedPlanner::getSBoundaries(
   // Publish wall marker for slowing down or stopping
   if (min_slow_down_idx) {
     const auto & obj = planner_data.target_obstacles.at(min_slow_down_idx.get());
+    const auto & current_time = planner_data.current_time;
 
-    const auto current_object_pose = obstacle_cruise_utils::getCurrentObjectPoseFromPredictedPaths(
-      obj.predicted_paths, obj.time_stamp, current_time);
-
-    const auto marker_pose =
-      obstacle_cruise_utils::calcForwardPose(ego_traj_data.traj, 0, min_slow_down_point_length);
+    const auto marker_pose = motion_utils::calcLongitudinalOffsetPose(
+      planner_data.traj.points, planner_data.current_pose.position, min_slow_down_point_length);
 
     if (marker_pose) {
       visualization_msgs::msg::MarkerArray wall_msg;
@@ -736,73 +525,47 @@ boost::optional<SBoundaries> OptimizationBasedPlanner::getSBoundaries(
 }
 
 boost::optional<SBoundaries> OptimizationBasedPlanner::getSBoundaries(
-  const rclcpp::Time & current_time, const TrajectoryData & ego_traj_data,
-  const TargetObstacle & object, const rclcpp::Time & obj_base_time,
-  const std::vector<double> & time_vec)
+  const ObstacleCruisePlannerData & planner_data, const TargetObstacle & object,
+  const std::vector<double> & time_vec, const double traj_length)
 {
-  // Get the predicted path, which has the most high confidence
-  const double max_horizon = time_vec.back();
-  const auto predicted_path =
-    resamplePredictedPath(object, obj_base_time, current_time, time_vec, max_horizon);
-  if (!predicted_path) {
-    RCLCPP_DEBUG(
-      rclcpp::get_logger("ObstacleCruisePlanner::OptimizationBasedPlanner"),
-      "Closest Obstacle does not have a predicted path");
-    return boost::none;
+  if (object.collision_points.empty()) {
+    return {};
   }
 
-  // Get current pose from object's predicted path
-  const auto current_object_pose = obstacle_cruise_utils::getCurrentObjectPoseFromPredictedPath(
-    *predicted_path, obj_base_time, current_time);
-  if (!current_object_pose) {
-    RCLCPP_DEBUG(
-      rclcpp::get_logger("ObstacleCruisePlanner::OptimizationBasedPlanner"),
-      "Failed to get current pose from the predicted path");
-    return boost::none;
-  }
-
-  // Check current object.kinematics
-  ObjectData obj_data;
-  obj_data.pose = current_object_pose.get();
-  obj_data.length = object.shape.dimensions.x;
-  obj_data.width = object.shape.dimensions.y;
-  obj_data.time = std::max((obj_base_time - current_time).seconds(), 0.0);
-  const auto current_collision_dist = getDistanceToCollisionPoint(ego_traj_data, obj_data);
-
-  // Calculate Safety Distance
+  const bool onEgoTrajectory = checkOnTrajectory(planner_data, object.collision_points.front());
   const auto & safe_distance_margin = longitudinal_info_.safe_distance_margin;
-  const double ego_vehicle_offset = vehicle_info_.wheel_base_m + vehicle_info_.front_overhang_m;
-  const double object_offset = obj_data.length / 2.0;
-  const double safety_distance = ego_vehicle_offset + object_offset + safe_distance_margin;
 
   // If the object is on the current ego trajectory,
   // we assume the object travels along ego trajectory
-  if (current_collision_dist) {
+  if (onEgoTrajectory) {
     RCLCPP_DEBUG(
       rclcpp::get_logger("ObstacleCruisePlanner::OptimizationBasedPlanner"),
       "On Trajectory Object");
 
-    return getSBoundaries(
-      ego_traj_data, time_vec, safety_distance, object, *current_collision_dist);
+    return getSBoundariesForOnTrajectoryObject(
+      planner_data, time_vec, safe_distance_margin, object, traj_length);
   }
 
   // Ignore low velocity objects that are not on the trajectory
-  return getSBoundaries(
-    current_time, ego_traj_data, time_vec, safety_distance, object, obj_base_time, *predicted_path);
+  return getSBoundariesForOffTrajectoryObject(
+    planner_data, time_vec, safe_distance_margin, object, traj_length);
 }
 
-boost::optional<SBoundaries> OptimizationBasedPlanner::getSBoundaries(
-  const TrajectoryData & ego_traj_data, const std::vector<double> & time_vec,
-  const double safety_distance, const TargetObstacle & object, const double dist_to_collision_point)
+boost::optional<SBoundaries> OptimizationBasedPlanner::getSBoundariesForOnTrajectoryObject(
+  const ObstacleCruisePlannerData & planner_data, const std::vector<double> & time_vec,
+  const double safety_distance, const TargetObstacle & object, const double traj_length)
 {
   const double & min_object_accel_for_rss = longitudinal_info_.min_object_accel_for_rss;
 
   SBoundaries s_boundaries(time_vec.size());
   for (size_t i = 0; i < s_boundaries.size(); ++i) {
-    s_boundaries.at(i).max_s = ego_traj_data.s.back();
+    s_boundaries.at(i).max_s = traj_length;
   }
 
   const double v_obj = std::abs(object.velocity);
+
+  const double dist_to_collision_point =
+    calcDistanceToCollisionPoint(planner_data, object.collision_points.front().point);
 
   double current_s_obj = std::max(dist_to_collision_point - safety_distance, 0.0);
   const double current_v_obj = object.has_stopped ? 0.0 : v_obj;
@@ -823,11 +586,11 @@ boost::optional<SBoundaries> OptimizationBasedPlanner::getSBoundaries(
   return s_boundaries;
 }
 
-boost::optional<SBoundaries> OptimizationBasedPlanner::getSBoundaries(
-  const rclcpp::Time & current_time, const TrajectoryData & ego_traj_data,
-  const std::vector<double> & time_vec, const double safety_distance, const TargetObstacle & object,
-  const rclcpp::Time & obj_base_time, const PredictedPath & predicted_path)
+boost::optional<SBoundaries> OptimizationBasedPlanner::getSBoundariesForOffTrajectoryObject(
+  const ObstacleCruisePlannerData & planner_data, const std::vector<double> & time_vec,
+  const double safety_distance, const TargetObstacle & object, const double traj_length)
 {
+  const auto & current_time = planner_data.current_time;
   const double & min_object_accel_for_rss = longitudinal_info_.min_object_accel_for_rss;
 
   const double abs_obj_vel = std::abs(object.velocity);
@@ -835,34 +598,37 @@ boost::optional<SBoundaries> OptimizationBasedPlanner::getSBoundaries(
 
   SBoundaries s_boundaries(time_vec.size());
   for (size_t i = 0; i < s_boundaries.size(); ++i) {
-    s_boundaries.at(i).max_s = ego_traj_data.s.back();
+    s_boundaries.at(i).max_s = traj_length;
   }
 
-  for (size_t predicted_path_id = 0; predicted_path_id < predicted_path.path.size();
-       ++predicted_path_id) {
-    const auto predicted_pose = predicted_path.path.at(predicted_path_id);
-    const double object_time = (obj_base_time - current_time).seconds();
+  for (const auto & collision_point : object.collision_points) {
+    const double object_time =
+      (rclcpp::Time(collision_point.header.stamp) - current_time).seconds();
     if (object_time < 0) {
       // Ignore Past Positions
       continue;
     }
 
-    ObjectData obj_data;
-    obj_data.pose = predicted_pose;
-    obj_data.length = object.shape.dimensions.x;
-    obj_data.width = object.shape.dimensions.y;
-    obj_data.time = object_time;
-
-    const auto dist_to_collision_point = getDistanceToCollisionPoint(ego_traj_data, obj_data);
+    const double dist_to_collision_point =
+      calcDistanceToCollisionPoint(planner_data, collision_point.point);
     if (!dist_to_collision_point) {
       continue;
     }
 
-    const double current_s_obj = std::max(*dist_to_collision_point - safety_distance, 0.0);
+    const double current_s_obj = std::max(dist_to_collision_point - safety_distance, 0.0);
     const double s_upper_bound =
       current_s_obj + (v_obj * v_obj) / (2 * std::fabs(min_object_accel_for_rss));
-    for (size_t i = 0; i < predicted_path_id; ++i) {
-      if (s_upper_bound < s_boundaries.at(i).max_s) {
+
+    size_t object_time_segment_idx = 0;
+    for (size_t i = 0; i < time_vec.size() - 1; ++i) {
+      if (time_vec.at(i) < object_time && object_time < time_vec.at(i + 1)) {
+        object_time_segment_idx = i;
+        break;
+      }
+    }
+
+    for (size_t i = 0; i <= object_time_segment_idx + 1; ++i) {
+      if (time_vec.at(i) < object_time && s_upper_bound < s_boundaries.at(i).max_s) {
         s_boundaries.at(i).max_s = std::max(0.0, s_upper_bound);
         s_boundaries.at(i).is_object = true;
       }
@@ -872,103 +638,43 @@ boost::optional<SBoundaries> OptimizationBasedPlanner::getSBoundaries(
   return s_boundaries;
 }
 
-boost::optional<double> OptimizationBasedPlanner::getDistanceToCollisionPoint(
-  const TrajectoryData & ego_traj_data, const ObjectData & obj_data)
+bool OptimizationBasedPlanner::checkOnTrajectory(
+  const ObstacleCruisePlannerData & planner_data, const geometry_msgs::msg::PointStamped & point)
 {
-  const auto obj_pose = obj_data.pose;
-  const auto obj_length = obj_data.length;
-  const auto obj_width = obj_data.width;
-  const auto object_box = Box2d(obj_pose, obj_length, obj_width);
-  const auto object_points = object_box.getAllCorners();
-
-  // Get nearest segment index for each point
-  size_t min_nearest_idx = ego_traj_data.s.size();
-  size_t max_nearest_idx = 0;
-  for (const auto & obj_p : object_points) {
-    size_t nearest_idx = motion_utils::findNearestSegmentIndex(ego_traj_data.traj.points, obj_p);
-    min_nearest_idx = std::min(nearest_idx, min_nearest_idx);
-    max_nearest_idx = std::max(nearest_idx, max_nearest_idx);
+  // If the collision point is in the future, we return false
+  if ((rclcpp::Time(point.header.stamp) - planner_data.current_time).seconds() > 0.1) {
+    return false;
   }
 
-  double min_len = 0.0;
-  size_t start_idx = 0;
-  for (size_t i = min_nearest_idx; i > 0; --i) {
-    min_len += (ego_traj_data.s.at(i) - ego_traj_data.s.at(i - 1));
-    if (min_len > 5.0) {
-      start_idx = i - 1;
-      break;
-    }
+  const double lateral_offset =
+    std::fabs(motion_utils::calcLateralOffset(planner_data.traj.points, point.point));
+
+  if (lateral_offset < vehicle_info_.max_lateral_offset_m + 0.1) {
+    return true;
   }
 
-  double max_len = 0.0;
-  size_t end_idx = ego_traj_data.s.size() - 1;
-  for (size_t i = max_nearest_idx; i < ego_traj_data.s.size() - 1; ++i) {
-    max_len += (ego_traj_data.s.at(i + 1) - ego_traj_data.s.at(i));
-    if (max_len > 5.0) {
-      end_idx = i + 1;
-      break;
-    }
-  }
-
-  // Check collision
-  const auto collision_idx = getCollisionIdx(ego_traj_data, object_box, start_idx, end_idx);
-
-  if (collision_idx) {
-    // TODO(shimizu) Consider the time difference between ego vehicle and objects
-    return motion_utils::calcSignedArcLength(
-      ego_traj_data.traj.points, ego_traj_data.traj.points.front().pose.position,
-      obj_pose.position);
-  }
-
-  return boost::none;
+  return false;
 }
 
-boost::optional<size_t> OptimizationBasedPlanner::getCollisionIdx(
-  const TrajectoryData & ego_traj, const Box2d & obj_box, const size_t start_idx,
-  const size_t end_idx)
+boost::optional<double> OptimizationBasedPlanner::calcTrajectoryLengthFromCurrentPose(
+  const autoware_auto_planning_msgs::msg::Trajectory & traj,
+  const geometry_msgs::msg::Pose & current_pose)
 {
-  for (size_t ego_idx = start_idx; ego_idx <= end_idx; ++ego_idx) {
-    const auto ego_center_pose = transformBaseLink2Center(ego_traj.traj.points.at(ego_idx).pose);
-    const auto ego_box =
-      Box2d(ego_center_pose, vehicle_info_.vehicle_length_m, vehicle_info_.vehicle_width_m);
-    if (ego_box.hasOverlap(obj_box)) {
-      return ego_idx;
-    }
+  const auto traj_length = motion_utils::calcSignedArcLength(
+    traj.points, current_pose, traj.points.size() - 1, nearest_dist_deviation_threshold_,
+    nearest_yaw_deviation_threshold_);
+
+  if (!traj_length) {
+    return {};
   }
 
-  return boost::none;
-}
-
-boost::optional<PredictedPath> OptimizationBasedPlanner::resamplePredictedPath(
-  const TargetObstacle & object, const rclcpp::Time & obj_base_time,
-  const rclcpp::Time & current_time, const std::vector<double> & resolutions, const double horizon)
-{
-  if (object.predicted_paths.empty()) {
-    return boost::none;
+  const auto dist_to_closest_stop_point = motion_utils::calcDistanceToForwardStopPoint(
+    traj.points, current_pose, nearest_dist_deviation_threshold_, nearest_yaw_deviation_threshold_);
+  if (dist_to_closest_stop_point) {
+    return std::min(traj_length.get(), dist_to_closest_stop_point.get());
   }
 
-  // Get the most reliable path
-  const auto reliable_path = std::max_element(
-    object.predicted_paths.begin(), object.predicted_paths.end(),
-    [](const PredictedPath & a, const PredictedPath & b) { return a.confidence < b.confidence; });
-
-  // Resample Predicted Path
-  const double duration = std::min(
-    std::max(
-      (obj_base_time +
-       rclcpp::Duration(reliable_path->time_step) *
-         (static_cast<double>(reliable_path->path.size()) - 1) -
-       current_time)
-        .seconds(),
-      0.0),
-    horizon);
-
-  // Calculate relative valid time vector
-  // rel_valid_time_vec is relative to obj_base_time.
-  const auto rel_valid_time_vec = resampling::resampledValidRelativeTimeVector(
-    current_time, obj_base_time, resolutions, duration);
-
-  return resampling::resamplePredictedPath(*reliable_path, rel_valid_time_vec);
+  return traj_length;
 }
 
 geometry_msgs::msg::Pose OptimizationBasedPlanner::transformBaseLink2Center(
@@ -997,7 +703,7 @@ geometry_msgs::msg::Pose OptimizationBasedPlanner::transformBaseLink2Center(
 
 boost::optional<VelocityOptimizer::OptimizationResult>
 OptimizationBasedPlanner::processOptimizedResult(
-  const double v0, const VelocityOptimizer::OptimizationResult & opt_result)
+  const double v0, const VelocityOptimizer::OptimizationResult & opt_result, const double offset)
 {
   if (
     opt_result.t.empty() || opt_result.s.empty() || opt_result.v.empty() || opt_result.a.empty() ||
@@ -1008,14 +714,14 @@ OptimizationBasedPlanner::processOptimizedResult(
   size_t break_id = opt_result.s.size();
   VelocityOptimizer::OptimizationResult processed_result;
   processed_result.t.push_back(0.0);
-  processed_result.s.push_back(0.0);
+  processed_result.s.push_back(offset);
   processed_result.v.push_back(v0);
   processed_result.a.push_back(opt_result.a.front());
   processed_result.j.push_back(opt_result.j.front());
 
   for (size_t i = 1; i < opt_result.s.size(); ++i) {
     const double prev_s = processed_result.s.back();
-    const double current_s = std::max(opt_result.s.at(i), 0.0);
+    const double current_s = std::max(opt_result.s.at(i), 0.0) + offset;
     const double current_v = opt_result.v.at(i);
     if (prev_s >= current_s) {
       processed_result.v.back() = 0.0;
@@ -1026,7 +732,7 @@ OptimizationBasedPlanner::processOptimizedResult(
       break;
     } else if (std::fabs(current_s - prev_s) < CLOSE_S_DIST_THRESHOLD) {
       processed_result.v.back() = current_v;
-      processed_result.s.back() = prev_s > 0.0 ? current_s : prev_s;
+      processed_result.s.back() = current_s;
       continue;
     }
 
@@ -1040,13 +746,13 @@ OptimizationBasedPlanner::processOptimizedResult(
   // Padding Zero Velocity after break id
   for (size_t i = break_id; i < opt_result.s.size(); ++i) {
     const double prev_s = processed_result.s.back();
-    const double current_s = std::max(opt_result.s.at(i), 0.0);
+    const double current_s = std::max(opt_result.s.at(i), 0.0) + offset;
     if (prev_s >= current_s) {
       processed_result.v.back() = 0.0;
       continue;
     } else if (std::fabs(current_s - prev_s) < CLOSE_S_DIST_THRESHOLD) {
       processed_result.v.back() = 0.0;
-      processed_result.s.back() = prev_s > 0.0 ? current_s : prev_s;
+      processed_result.s.back() = current_s;
       continue;
     }
     processed_result.t.push_back(opt_result.t.at(i));
@@ -1060,10 +766,11 @@ OptimizationBasedPlanner::processOptimizedResult(
 }
 
 void OptimizationBasedPlanner::publishDebugTrajectory(
-  const rclcpp::Time & current_time, const Trajectory & traj, const size_t closest_idx,
+  const ObstacleCruisePlannerData & planner_data, const double offset,
   const std::vector<double> & time_vec, const SBoundaries & s_boundaries,
   const VelocityOptimizer::OptimizationResult & opt_result)
 {
+  const auto & current_time = planner_data.current_time;
   const std::vector<double> time = opt_result.t;
   // Publish optimized result and boundary
   Trajectory boundary_traj;
@@ -1079,14 +786,13 @@ void OptimizationBasedPlanner::publishDebugTrajectory(
   }
   boundary_pub_->publish(boundary_traj);
 
-  const double s_before = motion_utils::calcSignedArcLength(traj.points, 0, closest_idx);
   Trajectory optimized_sv_traj;
   optimized_sv_traj.header.stamp = current_time;
   optimized_sv_traj.points.resize(opt_result.s.size());
   for (size_t i = 0; i < opt_result.s.size(); ++i) {
     const double s = opt_result.s.at(i);
     const double v = opt_result.v.at(i);
-    optimized_sv_traj.points.at(i).pose.position.x = s + s_before;
+    optimized_sv_traj.points.at(i).pose.position.x = s + offset;
     optimized_sv_traj.points.at(i).pose.position.y = v;
   }
   optimized_sv_pub_->publish(optimized_sv_traj);

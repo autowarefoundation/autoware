@@ -86,13 +86,11 @@
       lpf_cruise_gain: 0.2
 
     optimization_based_planner:
-      resampling_s_interval: 2.0
-      dense_resampling_time_interval: 0.1
-      sparse_resampling_time_interval: 1.0
+      dense_resampling_time_interval: 0.2
+      sparse_resampling_time_interval: 2.0
       dense_time_horizon: 5.0
       max_time_horizon: 25.0
-      max_trajectory_length: 200.0
-      velocity_margin: 0.1 #[m/s]
+      velocity_margin: 0.2 #[m/s]
 
       # Parameters for safe distance
       t_dangerous: 0.5

@@ -196,3 +196,23 @@ Trajectory PlannerInterface::generateStopTrajectory(
 
   return output_traj;
 }
+
+double PlannerInterface::calcDistanceToCollisionPoint(
+  const ObstacleCruisePlannerData & planner_data, const geometry_msgs::msg::Point & collision_point)
+{
+  const double offset = planner_data.is_driving_forward
+                          ? std::abs(vehicle_info_.max_longitudinal_offset_m)
+                          : std::abs(vehicle_info_.min_longitudinal_offset_m);
+
+  const auto dist_to_collision_point = motion_utils::calcSignedArcLength(
+    planner_data.traj.points, planner_data.current_pose, collision_point,
+    nearest_dist_deviation_threshold_, nearest_yaw_deviation_threshold_);
+
+  if (dist_to_collision_point) {
+    return dist_to_collision_point.get() - offset;
+  }
+
+  return motion_utils::calcSignedArcLength(
+           planner_data.traj.points, planner_data.current_pose.position, collision_point) -
+         offset;
+}

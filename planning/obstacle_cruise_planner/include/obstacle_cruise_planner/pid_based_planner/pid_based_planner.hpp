@@ -65,8 +65,6 @@ private:
   void calcObstaclesToCruise(
     const ObstacleCruisePlannerData & planner_data,
     boost::optional<CruiseObstacleInfo> & cruise_obstacle_info);
-  double calcDistanceToObstacle(
-    const ObstacleCruisePlannerData & planner_data, const TargetObstacle & obstacle);
 
   void planCruise(
     const ObstacleCruisePlannerData & planner_data, boost::optional<VelocityLimit> & vel_limit,

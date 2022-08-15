@@ -129,7 +129,8 @@ void PIDBasedPlanner::calcObstaclesToCruise(
     }
 
     // NOTE: from ego's front to obstacle's back
-    const double dist_to_obstacle = calcDistanceToObstacle(planner_data, obstacle);
+    const double dist_to_obstacle =
+      calcDistanceToCollisionPoint(planner_data, obstacle.collision_points.front().point);
 
     if (!obstacle.has_stopped) {  // cruise
       // calculate distance between ego and obstacle based on RSS
@@ -154,25 +155,6 @@ void PIDBasedPlanner::calcObstaclesToCruise(
       debug_values_.setValues(DebugValues::TYPE::CRUISE_ERROR_OBJECT_DISTANCE, error_dist);
     }
   }
-}
-
-double PIDBasedPlanner::calcDistanceToObstacle(
-  const ObstacleCruisePlannerData & planner_data, const TargetObstacle & obstacle)
-{
-  const size_t ego_segment_idx =
-    findExtendedNearestSegmentIndex(planner_data.traj, planner_data.current_pose);
-  const double segment_offset = std::max(
-    0.0, motion_utils::calcLongitudinalOffsetToSegment(
-           planner_data.traj.points, ego_segment_idx, planner_data.current_pose.position));
-  const double abs_ego_offset = planner_data.is_driving_forward
-                                  ? std::abs(vehicle_info_.max_longitudinal_offset_m)
-                                  : std::abs(vehicle_info_.min_longitudinal_offset_m);
-
-  const double offset = abs_ego_offset + segment_offset;
-
-  return motion_utils::calcSignedArcLength(
-           planner_data.traj.points, ego_segment_idx, obstacle.collision_points.front().point) -
-         offset;
 }
 
 void PIDBasedPlanner::planCruise(

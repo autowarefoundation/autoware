@@ -57,7 +57,6 @@ VelocityOptimizer::OptimizationResult VelocityOptimizer::optimize(const Optimiza
   const double j_range = std::max(j_max - j_min, 0.1);
   const double t_dangerous = data.t_dangerous;
   const double t_idling = data.idling_time;
-  const double v_margin = data.v_margin;
   const auto s_boundary = data.s_boundary;
 
   // Variables: s_i, v_i, a_i, j_i, over_s_safety_i, over_s_ideal_i, over_v_i, over_a_i, over_j_i
@@ -261,8 +260,6 @@ VelocityOptimizer::OptimizationResult VelocityOptimizer::optimize(const Optimiza
   for (size_t i = 0; i < N; ++i) {
     opt_pos.at(i) = optval.at(IDX_S0 + i);
     opt_vel.at(i) = std::max(optval.at(IDX_V0 + i), 0.0);
-    opt_vel.at(i) =
-      opt_vel.at(i) > 0.01 ? std::min(opt_vel.at(i) + v_margin, v_max) : opt_vel.at(i);
     opt_acc.at(i) = optval.at(IDX_A0 + i);
     opt_jerk.at(i) = optval.at(IDX_J0 + i);
   }

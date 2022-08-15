@@ -60,7 +60,6 @@ struct TargetObstacle
     velocity = aligned_velocity;
     is_classified = true;
     classification = object.classification.at(0);
-    shape = object.shape;
     uuid = toHexString(object.object_id);
 
     predicted_paths.clear();
@@ -79,7 +78,6 @@ struct TargetObstacle
   float velocity;
   bool is_classified;
   ObjectClassification classification;
-  Shape shape;
   std::string uuid;
   std::vector<PredictedPath> predicted_paths;
   std::vector<geometry_msgs::msg::PointStamped> collision_points;
