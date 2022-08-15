@@ -64,46 +64,46 @@ public:
   {
     initialized_ = false;
     x_ = 0;
-    stddev_ = 1e9;
-    proc_stddev_x_c_ = 0.0;
+    dev_ = 1e9;
+    proc_dev_x_c_ = 0.0;
     return;
   };
-  void init(const double init_obs, const double obs_stddev, const rclcpp::Time time)
+  void init(const double init_obs, const double obs_dev, const rclcpp::Time time)
   {
     x_ = init_obs;
-    stddev_ = obs_stddev;
+    dev_ = obs_dev;
     latest_time_ = time;
     initialized_ = true;
     return;
   };
-  void update(const double obs, const double obs_stddev, const rclcpp::Time time)
+  void update(const double obs, const double obs_dev, const rclcpp::Time time)
   {
     if (!initialized_) {
-      init(obs, obs_stddev, time);
+      init(obs, obs_dev, time);
       return;
     }
 
     // Prediction step (current stddev_)
     double dt = (time - latest_time_).seconds();
-    double proc_stddev_x_d = proc_stddev_x_c_ * dt;
-    stddev_ = std::sqrt(stddev_ * stddev_ + proc_stddev_x_d * proc_stddev_x_d);
+    double proc_dev_x_d = proc_dev_x_c_ * dt * dt;
+    dev_ = dev_ + proc_dev_x_d;
 
     // Update step
-    double kalman_gain = stddev_ * stddev_ / (stddev_ * stddev_ + obs_stddev * obs_stddev);
+    double kalman_gain = dev_ / (dev_ + obs_dev);
     x_ = x_ + kalman_gain * (obs - x_);
-    stddev_ = std::sqrt(1 - kalman_gain) * stddev_;
+    dev_ = (1 - kalman_gain) * dev_;
 
     latest_time_ = time;
     return;
   };
-  void set_proc_stddev(const double proc_stddev) { proc_stddev_x_c_ = proc_stddev; }
+  void set_proc_dev(const double proc_dev) { proc_dev_x_c_ = proc_dev; }
   double get_x() { return x_; }
 
 private:
   bool initialized_;
   double x_;
-  double stddev_;
-  double proc_stddev_x_c_;
+  double dev_;
+  double proc_dev_x_c_;
   rclcpp::Time latest_time_;
 };
 

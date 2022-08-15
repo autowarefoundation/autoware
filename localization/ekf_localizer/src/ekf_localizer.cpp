@@ -106,9 +106,9 @@ EKFLocalizer::EKFLocalizer(const std::string & node_name, const rclcpp::NodeOpti
 
   initEKF();
 
-  z_filter_.set_proc_stddev(1.0);
-  roll_filter_.set_proc_stddev(0.1);
-  pitch_filter_.set_proc_stddev(0.1);
+  z_filter_.set_proc_dev(1.0);
+  roll_filter_.set_proc_dev(0.01);
+  pitch_filter_.set_proc_dev(0.01);
 
   /* debug */
   pub_debug_ = create_publisher<tier4_debug_msgs::msg::Float64MultiArrayStamped>("debug", 1);
@@ -764,11 +764,11 @@ void EKFLocalizer::updateSimple1DFilters(const geometry_msgs::msg::PoseWithCovar
   tf2::fromMsg(pose.pose.pose.orientation, q_tf);
   tf2::Matrix3x3(q_tf).getRPY(roll, pitch, yaw_tmp);
 
-  double z_stddev = std::sqrt(pose.pose.covariance[2 * 6 + 2]);
-  double roll_stddev = std::sqrt(pose.pose.covariance[3 * 6 + 3]);
-  double pitch_stddev = std::sqrt(pose.pose.covariance[4 * 6 + 4]);
+  double z_dev = pose.pose.covariance[2 * 6 + 2];
+  double roll_dev = pose.pose.covariance[3 * 6 + 3];
+  double pitch_dev = pose.pose.covariance[4 * 6 + 4];
 
-  z_filter_.update(z, z_stddev, pose.header.stamp);
-  roll_filter_.update(roll, roll_stddev, pose.header.stamp);
-  pitch_filter_.update(pitch, pitch_stddev, pose.header.stamp);
+  z_filter_.update(z, z_dev, pose.header.stamp);
+  roll_filter_.update(roll, roll_dev, pose.header.stamp);
+  pitch_filter_.update(pitch, pitch_dev, pose.header.stamp);
 }
