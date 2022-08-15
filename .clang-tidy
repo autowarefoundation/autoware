@@ -418,7 +418,7 @@ CheckOptions:
   - key: performance-unnecessary-copy-initialization.AllowedTypes
     value: ""
   - key: performance-unnecessary-value-param.AllowedTypes
-    value: ".*Ptr"
+    value: ".*Ptr;.*SharedFuture"
   - key: performance-unnecessary-value-param.IncludeStyle
     value: google
   - key: portability-simd-intrinsics.Std
