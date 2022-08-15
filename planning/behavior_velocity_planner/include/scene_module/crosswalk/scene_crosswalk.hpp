@@ -94,9 +94,8 @@ public:
   };
 
   CrosswalkModule(
-    const int64_t module_id, const lanelet::ConstLanelet & crosswalk,
-    const PlannerParam & planner_param, const rclcpp::Logger logger,
-    const rclcpp::Clock::SharedPtr clock);
+    const int64_t module_id, lanelet::ConstLanelet crosswalk, const PlannerParam & planner_param,
+    const rclcpp::Logger & logger, const rclcpp::Clock::SharedPtr clock);
 
   bool modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason) override;
 
@@ -142,17 +141,17 @@ private:
 
   bool isRedSignalForPedestrians() const;
 
-  bool isVehicle(const PredictedObject & object) const;
+  static bool isVehicle(const PredictedObject & object);
 
   bool isTargetType(const PredictedObject & object) const;
 
   bool isTargetExternalInputStatus(const int target_status) const;
 
-  geometry_msgs::msg::Polygon createObjectPolygon(
-    const double width_m, const double length_m) const;
+  static geometry_msgs::msg::Polygon createObjectPolygon(
+    const double width_m, const double length_m);
 
-  geometry_msgs::msg::Polygon createVehiclePolygon(
-    const vehicle_info_util::VehicleInfo & vehicle_info) const;
+  static geometry_msgs::msg::Polygon createVehiclePolygon(
+    const vehicle_info_util::VehicleInfo & vehicle_info);
 
   lanelet::ConstLanelet crosswalk_;
 

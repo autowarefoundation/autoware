@@ -32,15 +32,14 @@ using tier4_autoware_utils::createPoint;
 using tier4_autoware_utils::getPose;
 
 WalkwayModule::WalkwayModule(
-  const int64_t module_id, const lanelet::ConstLanelet & walkway,
-  const PlannerParam & planner_param, const rclcpp::Logger logger,
-  const rclcpp::Clock::SharedPtr clock)
+  const int64_t module_id, lanelet::ConstLanelet walkway, const PlannerParam & planner_param,
+  const rclcpp::Logger & logger, const rclcpp::Clock::SharedPtr clock)
 : SceneModuleInterface(module_id, logger, clock),
   module_id_(module_id),
-  walkway_(walkway),
-  state_(State::APPROACH)
+  walkway_(std::move(walkway)),
+  state_(State::APPROACH),
+  planner_param_(planner_param)
 {
-  planner_param_ = planner_param;
 }
 
 boost::optional<std::pair<double, geometry_msgs::msg::Point>> WalkwayModule::getStopLine(
@@ -139,8 +138,9 @@ bool WalkwayModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_
     }
 
     return true;
+  }
 
-  } else if (state_ == State::STOP) {
+  if (state_ == State::STOP) {
     if (planner_data_->isVehicleStopped()) {
       state_ = State::SURPASSED;
     }

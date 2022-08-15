@@ -47,7 +47,6 @@ using Point = bg::model::d2::point_xy<double>;
 using Polygon = bg::model::polygon<Point>;
 using Line = bg::model::linestring<Point>;
 using motion_utils::calcSignedArcLength;
-using motion_utils::findNearestSegmentIndex;
 using tier4_autoware_utils::createPoint;
 
 std::vector<Point> getPolygonIntersects(

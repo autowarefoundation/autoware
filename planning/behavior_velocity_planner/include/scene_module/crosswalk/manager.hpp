@@ -38,7 +38,7 @@ public:
   const char * getModuleName() override { return "crosswalk"; }
 
 private:
-  CrosswalkModule::PlannerParam crosswalk_planner_param_;
+  CrosswalkModule::PlannerParam crosswalk_planner_param_{};
 
   void launchNewModules(const autoware_auto_planning_msgs::msg::PathWithLaneId & path) override;
 
@@ -54,7 +54,7 @@ public:
   const char * getModuleName() override { return "walkway"; }
 
 private:
-  WalkwayModule::PlannerParam walkway_planner_param_;
+  WalkwayModule::PlannerParam walkway_planner_param_{};
 
   void launchNewModules(const autoware_auto_planning_msgs::msg::PathWithLaneId & path) override;
 

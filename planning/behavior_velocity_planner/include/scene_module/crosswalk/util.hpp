@@ -46,8 +46,8 @@ enum class CollisionPointState { YIELD, EGO_PASS_FIRST, EGO_PASS_LATER, IGNORE }
 struct CollisionPoint
 {
   geometry_msgs::msg::Point collision_point{};
-  double time_to_collision;
-  double time_to_vehicle;
+  double time_to_collision{};
+  double time_to_vehicle{};
   CollisionPointState state{CollisionPointState::EGO_PASS_FIRST};
 };
 

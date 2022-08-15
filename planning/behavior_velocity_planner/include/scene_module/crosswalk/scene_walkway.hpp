@@ -40,7 +40,6 @@ using tier4_planning_msgs::msg::StopReason;
 class WalkwayModule : public SceneModuleInterface
 {
 public:
-public:
   struct PlannerParam
   {
     double stop_line_distance;
@@ -48,9 +47,8 @@ public:
     double external_input_timeout;
   };
   WalkwayModule(
-    const int64_t module_id, const lanelet::ConstLanelet & walkway,
-    const PlannerParam & planner_param, const rclcpp::Logger logger,
-    const rclcpp::Clock::SharedPtr clock);
+    const int64_t module_id, lanelet::ConstLanelet walkway, const PlannerParam & planner_param,
+    const rclcpp::Logger & logger, const rclcpp::Clock::SharedPtr clock);
 
   bool modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason) override;
 
@@ -60,7 +58,7 @@ public:
 private:
   int64_t module_id_;
 
-  boost::optional<std::pair<double, geometry_msgs::msg::Point>> getStopLine(
+  [[nodiscard]] boost::optional<std::pair<double, geometry_msgs::msg::Point>> getStopLine(
     const PathWithLaneId & ego_path) const;
 
   void insertStopPoint(const geometry_msgs::msg::Point & stop_point, PathWithLaneId & output);
