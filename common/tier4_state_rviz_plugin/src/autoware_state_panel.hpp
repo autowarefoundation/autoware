@@ -44,7 +44,7 @@ public:
   explicit AutowareStatePanel(QWidget * parent = nullptr);
   void onInitialize() override;
 
-public Q_SLOTS:
+public Q_SLOTS:  // NOLINT for Qt
   void onClickAutowareEngage();
   void onClickVelocityLimit();
   void onClickGateMode();
@@ -89,8 +89,8 @@ protected:
   QSpinBox * pub_velocity_limit_input_;
   QPushButton * emergency_button_ptr_;
 
-  bool current_engage_;
-  bool current_emergency_;
+  bool current_engage_{false};
+  bool current_emergency_{false};
 };
 
 }  // namespace rviz_plugins
