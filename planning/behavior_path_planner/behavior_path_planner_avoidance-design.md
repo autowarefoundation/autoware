@@ -186,80 +186,49 @@ The avoidance target should be limited to stationary objects (you should not avo
 
 ##### Compensation for detection lost
 
-In order to prevent chattering of recognition results, once an obstacle is targeted, it is hold for a while even if it disappears. This is effective when recognition is unstable. However, since it will result in over-detection (increase a number of false-positive), it is necessary to adjust parameters according to the recognition accuracy (if `object_hold_max_count = 0`, the recognition result is 100% trusted).
+In order to prevent chattering of recognition results, once an obstacle is targeted, it is hold for a while even if it disappears. This is effective when recognition is unstable. However, since it will result in over-detection (increase a number of false-positive), it is necessary to adjust parameters according to the recognition accuracy (if `object_last_seen_threshold = 0.0`, the recognition result is 100% trusted).
 
-#### How to decide the path shape
+#### Computing Shift Length and Shift Points
 
-Generate shift points for obstacles with given lateral jerk. These points are integrated to generate an avoidance path. The detailed process flow for each case corresponding to the obstacle placement are described below. The actual implementation is not separated for each case, but the function corresponding to `multiple obstacle case (both directions)` is always running.
+The lateral shift length is affected by 4 variables, namely `lateral_collision_safety_buffer`, `lateral_collision_margin`, `vehicle_width` and `overhang_distance`. The equation is as follows
 
-##### One obstacle case
+```C++
+max_allowable_lateral_distance = lateral_collision_margin + lateral_collision_safety_buffer + 0.5 * vehicle_width
+shift_length = max_allowable_lateral_distance - overhang_distance
+```
 
-The lateral shift distance to the obstacle is calculated, and then the shift point is generated from the ego vehicle speed and the given lateral jerk as shown in the figure below. A smooth avoidance path is then calculated based on the shift point.
+The following figure illustrates these variables.
+![shift_point_and_its_constraints](./image/avoidance_design/avoidance_module-shift_point_and_its_constraints.drawio.png)
 
-Additionally, the following processes are executed in special cases.
+##### Rationale of having safety buffer and safety margin
 
-###### Lateral jerk relaxation conditions
+To compute the shift length, additional parameters that can be tune are `lateral_collision_safety_buffer` and `road_shoulder_safety_margin`.
 
-- If the ego vehicle is close to the avoidance target, the lateral jerk will be relaxed up to the maximum jerk
-- When returning to the center line after avoidance, if there is not enough distance left to the goal (end of path), the jerk condition will be relaxed as above.
+- The `lateral_collision_safety_buffer` parameter is used to set a safety gap that will act as the final line of defense when computing avoidance path.
+  - The rationale behind having this parameter is that the parameter `lateral_collision_margin` might be changing according to the situation for various reasons. Therefore, `lateral_collision_safety_buffer` will act as the final line of defense in case of the usage of `lateral_collision_margin` fails.
+  - It is recommended to set the value to more than half of the ego vehicle's width.
+- The `road_shoulder_safety_margin` will prevent the module from generating a path that might cause the vehicle to go too near the road shoulder or adjacent lane dividing line.
 
-###### Minimum velocity relaxation conditions
+![shift_length_parameters](./image/shift_length_parameters.drawio.svg)
 
-There is a problem that we can not know the actual speed during avoidance in advance. This is especially critical when the ego vehicle speed is 0.
-To solve that, this module provides a parameter for the minimum avoidance speed, which is used for the lateral jerk calculation when the vehicle speed is low.
+##### Generating path only within lanelet boundaries
 
-- If the ego vehicle speed is lower than "nominal" minimum speed, use the minimum speed in the calculation of the jerk.
-- If the ego vehicle speed is lower than "sharp" minimum speed and a nominal lateral jerk is not enough for avoidance (the case where the ego vehicle is stopped close to the obstacle), use the "sharp" minimum speed in the calculation of the jerk (it should be lower than "nominal" speed).
-
-![fig1](./image/avoidance_design/how_to_decide_path_shape_one_object.drawio.svg)
-
-##### Multiple obstacle case (one direction)
-
-Generate shift points for multiple obstacles. All of them are merged to generate new shift points along the reference path. The new points are filtered (e.g. remove small-impact shift points), and the avoidance path is computed for the filtered shift points.
-
-**Merge process of raw shift points**: check the shift length on each path points. If the shift points are overlapped, the maximum shift value is selected for the same direction.
-
-For the details of the shift point filtering, see [filtering for shift points](#filtering-for-shift-points).
-
-![fig1](./image/avoidance_design/how_to_decide_path_shape_multi_object_one_direction.drawio.svg)
-
-##### Multiple obstacle case (both direction)
-
-Generate shift points for multiple obstacles. All of them are merged to generate new shift points. If there are areas where the desired shifts conflict in different directions, the sum of the maximum shift amounts of these areas is used as the final shift amount. The rest of the process is the same as in the case of one direction.
-
-![fig1](./image/avoidance_design/how_to_decide_path_shape_multi_object_both_direction.drawio.svg)
-
-##### Filtering for shift points
-
-The shift points are modified by a filtering process in order to get the expected shape of the avoidance path. It contains the following filters.
-
-- Quantization: Quantize the avoidance width in order to ignore small shifts.
-- Small shifts removal: Shifts with small changes with respect to the previous shift point are unified in the previous shift width.
-- Similar gradient removal: Connect two shift points with a straight line, and remove the shift points in between if their shift amount is in the vicinity of the straight line.
-- Remove momentary returns: For shift points that reduce the avoidance width (for going back to the center line), if there is enough long distance in the longitudinal direction, remove them.
-
-#### Computing shift length
-
-The shift length is set as a constant value before the feature is implemented. Setting the shift length like this will cause the module to generate an avoidance path regardless of actual environmental properties. For example, the path might exceed the actual road boundary or go towards a wall. Therefore, to address this limitation, in addition to [how to decide the target obstacle](#how-to-decide-the-target-obstacles), the upgraded module also takes into account the following additional element
+The shift length is set as a constant value before the feature is implemented. Setting the shift length like this will cause the module to generate an avoidance path regardless of actual environmental properties. For example, the path might exceed the actual road boundary or go towards a wall. Therefore, to address this limitation, in addition to [how to decide the target obstacle](#how-to-decide-the-target-obstacles), the module also takes into account the following additional element
 
 - The obstacles' current lane and position.
 - The road shoulder with reference to the direction to avoid.
-  - Note: Lane direction is disregarded.
 
-These elements are used to compute the distance from the object to the road's shoulder (`(class ObjectData.to_road_shoulder_distance)`).
+These elements are used to compute the distance from the object to the road's shoulder (`to_road_shoulder_distance`). The parameters `enable_avoidance_over_same_direction` and `enable_avoidance_over_opposite_direction` allows further configuration of the to `to_road_shoulder_distance`. The following image illustrates the configuration.
 
-![obstacle_to_road_shoulder_distance](./image/obstacle_to_road_shoulder_distance.drawio.svg)
+![obstacle_to_road_shoulder_distance](./image/avoidance_design/obstacle_to_road_shoulder_distance.drawio.svg)
 
-##### Computing shift length
+If the following condition is `false`, then the shift point will not be generated.
 
-To compute the shift length, in addition to the vehicle's width and the parameterized `lateral_collision_margin`, the upgraded feature also adds two new parameters; `lateral_collision_safety_buffer` and `road_shoulder_safety_margin`.
+```C++
+max_allowable_lateral_distance <= (to_road_shoulder_distance - 0.5 * vehicle_width - road_shoulder_safety_margin)
+```
 
-- The `lateral_collision_safety_buffer` parameter is used to set a safety gap that will act as the final line of defense when computing avoidance path.
-  - The rationale behind having this parameter is that the parameter `lateral_collision_margin` might be changed according to the situation for various reasons. Therefore, `lateral_collision_safety_buffer` will act as the final line of defense in case of the usage of `lateral_collision_margin` fails.
-  - It is recommended to set the value to more than half of the ego vehicle's width.
-- The `road_shoulder_safety_margin` will prevent the module from generating a path that might cause the vehicle to go too near the road shoulder.
-
-![shift_length_parameters](./image/shift_length_parameters.drawio.svg)
+##### Flow-chart of the process
 
 <!-- spell-checker:disable -->
 
@@ -361,33 +330,87 @@ stop
 
 <!-- spell-checker:enable -->
 
+#### How to decide the path shape
+
+Generate shift points for obstacles with given lateral jerk. These points are integrated to generate an avoidance path. The detailed process flow for each case corresponding to the obstacle placement are described below. The actual implementation is not separated for each case, but the function corresponding to `multiple obstacle case (both directions)` is always running.
+
+##### One obstacle case
+
+The lateral shift distance to the obstacle is calculated, and then the shift point is generated from the ego vehicle speed and the given lateral jerk as shown in the figure below. A smooth avoidance path is then calculated based on the shift point.
+
+Additionally, the following processes are executed in special cases.
+
+###### Lateral jerk relaxation conditions
+
+- If the ego vehicle is close to the avoidance target, the lateral jerk will be relaxed up to the maximum jerk
+- When returning to the center line after avoidance, if there is not enough distance left to the goal (end of path), the jerk condition will be relaxed as above.
+
+###### Minimum velocity relaxation conditions
+
+There is a problem that we can not know the actual speed during avoidance in advance. This is especially critical when the ego vehicle speed is 0.
+To solve that, this module provides a parameter for the minimum avoidance speed, which is used for the lateral jerk calculation when the vehicle speed is low.
+
+- If the ego vehicle speed is lower than "nominal" minimum speed, use the minimum speed in the calculation of the jerk.
+- If the ego vehicle speed is lower than "sharp" minimum speed and a nominal lateral jerk is not enough for avoidance (the case where the ego vehicle is stopped close to the obstacle), use the "sharp" minimum speed in the calculation of the jerk (it should be lower than "nominal" speed).
+
+![fig1](./image/avoidance_design/how_to_decide_path_shape_one_object.drawio.svg)
+
+##### Multiple obstacle case (one direction)
+
+Generate shift points for multiple obstacles. All of them are merged to generate new shift points along the reference path. The new points are filtered (e.g. remove small-impact shift points), and the avoidance path is computed for the filtered shift points.
+
+**Merge process of raw shift points**: check the shift length on each path points. If the shift points are overlapped, the maximum shift value is selected for the same direction.
+
+For the details of the shift point filtering, see [filtering for shift points](#filtering-for-shift-points).
+
+![fig1](./image/avoidance_design/how_to_decide_path_shape_multi_object_one_direction.drawio.svg)
+
+##### Multiple obstacle case (both direction)
+
+Generate shift points for multiple obstacles. All of them are merged to generate new shift points. If there are areas where the desired shifts conflict in different directions, the sum of the maximum shift amounts of these areas is used as the final shift amount. The rest of the process is the same as in the case of one direction.
+
+![fig1](./image/avoidance_design/how_to_decide_path_shape_multi_object_both_direction.drawio.svg)
+
+##### Filtering for shift points
+
+The shift points are modified by a filtering process in order to get the expected shape of the avoidance path. It contains the following filters.
+
+- Quantization: Quantize the avoidance width in order to ignore small shifts.
+- Small shifts removal: Shifts with small changes with respect to the previous shift point are unified in the previous shift width.
+- Similar gradient removal: Connect two shift points with a straight line, and remove the shift points in between if their shift amount is in the vicinity of the straight line.
+- Remove momentary returns: For shift points that reduce the avoidance width (for going back to the center line), if there is enough long distance in the longitudinal direction, remove them.
+
 #### How to keep the consistency of the planning
 
 TODO
 
 ## Parameters
 
+The avoidance specific parameter configuration file can be located at `src/autoware/launcher/planning_launch/config/scenario_planning/lane_driving/behavior_planning/behavior_path_planner/avoidance/avoidance.param.yaml`.
+
 ### Avoidance path generation
 
-| Name                                       | Unit   | Type   | Description                                                                                                                 | Default value |
-| :----------------------------------------- | :----- | :----- | :-------------------------------------------------------------------------------------------------------------------------- | :------------ |
-| resample_interval_for_planning             | [m]    | double | Path resample interval for avoidance planning path.                                                                         | 0.3           |
-| resample_interval_for_output               | [m]    | double | Path resample interval for output path. Too short interval increases computational cost for latter modules.                 | 3.0           |
-| lateral_collision_margin                   | [m]    | double | The lateral distance between ego and avoidance targets.                                                                     | 1.5           |
-| lateral_collision_safety_buffer            | [m]    | double | Creates an additional gap that will prevent the vehicle from getting to near to the obstacle                                | 0.5           |
-| longitudinal_collision_margin_min_distance | [m]    | double | when complete avoidance motion, there is a distance margin with the object for longitudinal direction.                      | 0.0           |
-| longitudinal_collision_margin_time         | [s]    | double | when complete avoidance motion, there is a time margin with the object for longitudinal direction.                          | 0.0           |
-| prepare_time                               | [s]    | double | Avoidance shift starts from point ahead of this time x ego_speed to avoid sudden path change.                               | 1.0           |
-| min_prepare_distance                       | [m]    | double | Minimum distance for "prepare_time" x "ego_speed".                                                                          | 1.0           |
-| nominal_lateral_jerk                       | [m/s3] | double | Avoidance path is generated with this jerk when there is enough distance from ego.                                          | 0.3           |
-| max_lateral_jerk                           | [m/s3] | double | Avoidance path gets sharp up to this jerk limit when there is not enough distance from ego.                                 | 2.0           |
-| min_avoidance_distance                     | [m]    | double | Minimum distance of avoidance path (i.e. this distance is needed even if its lateral jerk is very low)                      | 10.0          |
-| min_nominal_avoidance_speed                | [m/s]  | double | Minimum speed for jerk calculation in a nominal situation (\*1).                                                            | 5.0           |
-| min_sharp_avoidance_speed                  | [m/s]  | double | Minimum speed for jerk calculation in a sharp situation (\*1).                                                              | 1.0           |
-| max_right_shift_length                     | [m]    | double | Maximum shift length for right direction                                                                                    | 5.0           |
-| max_left_shift_length                      | [m]    | double | Maximum shift length for left direction                                                                                     | 5.0           |
-| road_shoulder_safety_margin                | [m]    | double | Prevents the generated path to come too close to the road shoulders.                                                        | 0.5           |
-| avoidance_execution_lateral_threshold      | [m]    | double | The lateral distance deviation threshold between the current path and suggested avoidance point to execute avoidance. (\*2) | 0.5           |
+| Name                                       | Unit   | Type   | Description                                                                                                                                      | Default value |
+| :----------------------------------------- | :----- | :----- | :----------------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
+| resample_interval_for_planning             | [m]    | double | Path resample interval for avoidance planning path.                                                                                              | 0.3           |
+| resample_interval_for_output               | [m]    | double | Path resample interval for output path. Too short interval increases computational cost for latter modules.                                      | 4.0           |
+| lateral_collision_margin                   | [m]    | double | The lateral distance between ego and avoidance targets.                                                                                          | 1.0           |
+| lateral_collision_safety_buffer            | [m]    | double | Creates an additional gap that will prevent the vehicle from getting to near to the obstacle                                                     | 0.7           |
+| longitudinal_collision_margin_min_distance | [m]    | double | when complete avoidance motion, there is a distance margin with the object for longitudinal direction.                                           | 0.0           |
+| longitudinal_collision_margin_time         | [s]    | double | when complete avoidance motion, there is a time margin with the object for longitudinal direction.                                               | 0.0           |
+| prepare_time                               | [s]    | double | Avoidance shift starts from point ahead of this time x ego_speed to avoid sudden path change.                                                    | 2.0           |
+| min_prepare_distance                       | [m]    | double | Minimum distance for "prepare_time" x "ego_speed".                                                                                               | 1.0           |
+| nominal_lateral_jerk                       | [m/s3] | double | Avoidance path is generated with this jerk when there is enough distance from ego.                                                               | 0.2           |
+| max_lateral_jerk                           | [m/s3] | double | Avoidance path gets sharp up to this jerk limit when there is not enough distance from ego.                                                      | 1.0           |
+| min_avoidance_distance                     | [m]    | double | Minimum distance of avoidance path (i.e. this distance is needed even if its lateral jerk is very low)                                           | 10.0          |
+| min_nominal_avoidance_speed                | [m/s]  | double | Minimum speed for jerk calculation in a nominal situation (\*1).                                                                                 | 7.0           |
+| min_sharp_avoidance_speed                  | [m/s]  | double | Minimum speed for jerk calculation in a sharp situation (\*1).                                                                                   | 1.0           |
+| max_right_shift_length                     | [m]    | double | Maximum shift length for right direction                                                                                                         | 5.0           |
+| max_left_shift_length                      | [m]    | double | Maximum shift length for left direction                                                                                                          | 5.0           |
+| road_shoulder_safety_margin                | [m]    | double | Prevents the generated path to come too close to the road shoulders.                                                                             | 0.0           |
+| avoidance_execution_lateral_threshold      | [m]    | double | The lateral distance deviation threshold between the current path and suggested avoidance point to execute avoidance. (\*2)                      | 0.499         |
+| enable_avoidance_over_same_direction       | [-]    | bool   | Extend avoidance trajectory to adjacent lanes that has same direction. If false, avoidance only happen in current lane.                          | true          |
+| enable_avoidance_over_opposite_direction   | [-]    | bool   | Extend avoidance trajectory to adjacent lanes that has opposite direction. `enable_avoidance_over_same_direction` must be `true` to take effects | true          |
 
 (\*2) If there are multiple vehicles in a row to be avoided, no new avoidance path will be generated unless their lateral margin difference exceeds this value.
 
@@ -400,22 +423,35 @@ TODO
 
 ### Object selection
 
-| Name                                   | Unit  | Type   | Description                                                                                                                                                                                                                                    | Default value |
-| :------------------------------------- | :---- | :----- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
-| object_check_forward_distance          | [m]   | double | Forward distance to search the avoidance target.                                                                                                                                                                                               | 150.0         |
-| object_check_backward_distance         | [m]   | double | Backward distance to search the avoidance target.                                                                                                                                                                                              | 2.0           |
-| threshold_distance_object_is_on_center | [m]   | double | Vehicles around the center line within this distance will be excluded from avoidance target.                                                                                                                                                   | 1.0           |
-| threshold_speed_object_is_stopped      | [m/s] | double | Vehicles with speed greater than this will be excluded from avoidance target.                                                                                                                                                                  | 1.0           |
-| detection_area_right_expand_dist       | [m]   | double | Lanelet expand length for right side to find avoidance target vehicles.                                                                                                                                                                        | 0.0           |
-| detection_area_left_expand_dist        | [m]   | double | Lanelet expand length for left side to find avoidance target vehicles.                                                                                                                                                                         | 1.0           |
-| object_hold_max_count                  | [-]   | int    | For the compensation of the detection lost. The object is registered once it is observed as an avoidance target. When the detection loses, it counts up the lost_count and the object will be un-registered when the count exceeds this limit. | 20            |
+| Name                                   | Unit  | Type   | Description                                                                                                                                                                                                                            | Default value |
+| :------------------------------------- | :---- | :----- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
+| object_check_forward_distance          | [m]   | double | Forward distance to search the avoidance target.                                                                                                                                                                                       | 150.0         |
+| object_check_backward_distance         | [m]   | double | Backward distance to search the avoidance target.                                                                                                                                                                                      | 2.0           |
+| threshold_distance_object_is_on_center | [m]   | double | Vehicles around the center line within this distance will be excluded from avoidance target.                                                                                                                                           | 1.0           |
+| threshold_speed_object_is_stopped      | [m/s] | double | Vehicles with speed greater than this will be excluded from avoidance target.                                                                                                                                                          | 1.0           |
+| detection_area_right_expand_dist       | [m]   | double | Lanelet expand length for right side to find avoidance target vehicles.                                                                                                                                                                | 0.0           |
+| detection_area_left_expand_dist        | [m]   | double | Lanelet expand length for left side to find avoidance target vehicles.                                                                                                                                                                 | 1.0           |
+| object_last_seen_threshold             | [s]   | double | For the compensation of the detection lost. The object is registered once it is observed as an avoidance target. When the detection loses, the timer will start and the object will be un-registered when the time exceeds this limit. | 2.0           |
+
+### Allow avoidance on specific object type
+
+| Name       | Unit | Type | Description                                | Default value |
+| :--------- | ---- | ---- | ------------------------------------------ | ------------- |
+| car        | [-]  | bool | Allow avoidance for object type CAR        | true          |
+| truck      | [-]  | bool | Allow avoidance for object type TRUCK      | true          |
+| bus        | [-]  | bool | Allow avoidance for object type BUS        | true          |
+| trailer    | [-]  | bool | Allow avoidance for object type TRAILER    | true          |
+| unknown    | [-]  | bool | Allow avoidance for object type UNKNOWN    | false         |
+| bicycle    | [-]  | bool | Allow avoidance for object type BICYCLE    | false         |
+| motorcycle | [-]  | bool | Allow avoidance for object type MOTORCYCLE | false         |
+| pedestrian | [-]  | bool | Allow avoidance for object type PEDESTRIAN | false         |
 
 ### System
 
-| Name                 | Unit | Type   | Description                                                                           | Default value |
-| :------------------- | :--- | :----- | :------------------------------------------------------------------------------------ | :------------ |
-| publish_debug_marker | [-]  | double | Flag to publish debug marker (set false as default since it takes considerable cost). | false         |
-| print_debug_info     | [-]  | double | Flag to print debug info (set false as default since it takes considerable cost).     | false         |
+| Name                 | Unit | Type   | Description                                                                             | Default value |
+| :------------------- | :--- | :----- | :-------------------------------------------------------------------------------------- | :------------ |
+| publish_debug_marker | [-]  | double | Flag to publish debug marker (set `false` as default since it takes considerable cost). | false         |
+| print_debug_info     | [-]  | double | Flag to print debug info (set `false` as default since it takes considerable cost).     | false         |
 
 ## Future extensions / Unimplemented parts
 
