@@ -284,6 +284,12 @@ boost::optional<int64_t> getNearestLaneId(
   const PathWithLaneId & path, const lanelet::LaneletMapPtr lanelet_map,
   const geometry_msgs::msg::Pose & current_pose, boost::optional<size_t> & nearest_segment_idx);
 
+std::vector<int64_t> getSortedLaneIdsFromPath(const PathWithLaneId & path);
+
+// return the set of lane_ids in the path after base_lane_id
+std::vector<int64_t> getSubsequentLaneIdsSetOnPath(
+  const PathWithLaneId & path, int64_t base_lane_id);
+
 template <class T>
 std::unordered_map<typename std::shared_ptr<const T>, lanelet::ConstLanelet> getRegElemMapOnPath(
   const PathWithLaneId & path, const lanelet::LaneletMapPtr lanelet_map,
@@ -298,17 +304,12 @@ std::unordered_map<typename std::shared_ptr<const T>, lanelet::ConstLanelet> get
 
   std::vector<int64_t> unique_lane_ids;
   if (nearest_lane_id) {
-    unique_lane_ids.emplace_back(*nearest_lane_id);
-  }
-
-  // Add forward path lane_id
-  const size_t start_idx = nearest_segment_idx ? *nearest_segment_idx + 1 : 0;
-  for (size_t i = start_idx; i < path.points.size(); i++) {
-    const int64_t lane_id = path.points.at(i).lane_ids.at(0);
-    if (
-      std::find(unique_lane_ids.begin(), unique_lane_ids.end(), lane_id) == unique_lane_ids.end()) {
-      unique_lane_ids.emplace_back(lane_id);
-    }
+    // Add subsequent lane_ids from nearest lane_id
+    unique_lane_ids = behavior_velocity_planner::planning_utils::getSubsequentLaneIdsSetOnPath(
+      path, *nearest_lane_id);
+  } else {
+    // Add all lane_ids in path
+    unique_lane_ids = behavior_velocity_planner::planning_utils::getSortedLaneIdsFromPath(path);
   }
 
   for (const auto lane_id : unique_lane_ids) {

@@ -181,7 +181,7 @@ void getAllPartitionLanelets(const lanelet::LaneletMapConstPtr ll, BasicPolygons
     for (const auto & p : partition) {
       line.emplace_back(lanelet::BasicPoint2d{p.x(), p.y()});
     }
-    // corect line to calculate distance accuratry
+    // correct line to calculate distance in accurate
     boost::geometry::correct(line);
     polys.emplace_back(lanelet::BasicPolygon2d(line));
   }
@@ -511,8 +511,6 @@ boost::optional<int64_t> getNearestLaneId(
   const PathWithLaneId & path, const lanelet::LaneletMapPtr lanelet_map,
   const geometry_msgs::msg::Pose & current_pose, boost::optional<size_t> & nearest_segment_idx)
 {
-  boost::optional<int64_t> nearest_lane_id;
-
   nearest_segment_idx = motion_utils::findNearestSegmentIndex(
     path.points, current_pose, std::numeric_limits<double>::max(), M_PI_2);
 
@@ -520,27 +518,15 @@ boost::optional<int64_t> getNearestLaneId(
     return boost::none;
   }
 
-  lanelet::ConstLanelets current_lanes;
-  if (
-    lanelet::utils::query::getCurrentLanelets(
-      lanelet::utils::query::laneletLayer(lanelet_map), current_pose, &current_lanes) &&
-    nearest_segment_idx) {
-    for (const auto & ll : current_lanes) {
-      if (ll.id() == path.points.at(*nearest_segment_idx).lane_ids.at(0)) {
-        nearest_lane_id = ll.id();
-        return nearest_lane_id;
-      }
-    }
+  lanelet::ConstLanelets lanes;
+  const auto lane_ids = getSortedLaneIdsFromPath(path);
+  for (const auto & lane_id : lane_ids) {
+    lanes.push_back(lanelet_map->laneletLayer.get(lane_id));
+  }
 
-    // if the lane_id of nearest_segment_idx does not involved in current_lanes,
-    // search the lane_id of nearest_segment_idx + 1
-    *nearest_segment_idx += 1;
-    for (const auto & ll : current_lanes) {
-      if (ll.id() == path.points.at(*nearest_segment_idx).lane_ids.at(0)) {
-        nearest_lane_id = ll.id();
-        return nearest_lane_id;
-      }
-    }
+  lanelet::Lanelet closest_lane;
+  if (lanelet::utils::query::getClosestLanelet(lanes, current_pose, &closest_lane)) {
+    return closest_lane.id();
   }
   return boost::none;
 }
@@ -555,19 +541,12 @@ std::vector<lanelet::ConstLanelet> getLaneletsOnPath(
 
   std::vector<int64_t> unique_lane_ids;
   if (nearest_lane_id) {
-    unique_lane_ids.emplace_back(*nearest_lane_id);
-  }
-
-  // Add forward path lane_id
-  const size_t start_idx = nearest_segment_idx ? *nearest_segment_idx : 0;
-  for (size_t i = start_idx; i < path.points.size(); i++) {
-    for (const int64_t lane_id : path.points.at(i).lane_ids) {
-      if (
-        std::find(unique_lane_ids.begin(), unique_lane_ids.end(), lane_id) ==
-        unique_lane_ids.end()) {
-        unique_lane_ids.emplace_back(lane_id);
-      }
-    }
+    // Add subsequent lane_ids from nearest lane_id
+    unique_lane_ids = behavior_velocity_planner::planning_utils::getSubsequentLaneIdsSetOnPath(
+      path, *nearest_lane_id);
+  } else {
+    // Add all lane_ids in path
+    unique_lane_ids = behavior_velocity_planner::planning_utils::getSortedLaneIdsFromPath(path);
   }
 
   std::vector<lanelet::ConstLanelet> lanelets;
@@ -589,5 +568,37 @@ std::set<int64_t> getLaneIdSetOnPath(
 
   return lane_id_set;
 }
+
+std::vector<int64_t> getSortedLaneIdsFromPath(const PathWithLaneId & path)
+{
+  std::vector<int64_t> sorted_lane_ids;
+  for (const auto & path_points : path.points) {
+    for (const auto lane_id : path_points.lane_ids)
+      if (
+        std::find(sorted_lane_ids.begin(), sorted_lane_ids.end(), lane_id) ==
+        sorted_lane_ids.end()) {
+        sorted_lane_ids.emplace_back(lane_id);
+      }
+  }
+  return sorted_lane_ids;
+}
+
+std::vector<int64_t> getSubsequentLaneIdsSetOnPath(
+  const PathWithLaneId & path, int64_t base_lane_id)
+{
+  const auto all_lane_ids = getSortedLaneIdsFromPath(path);
+  const auto base_index = std::find(all_lane_ids.begin(), all_lane_ids.end(), base_lane_id);
+
+  // cannot find base_index in all_lane_ids
+  if (base_index == all_lane_ids.end()) {
+    return std::vector<int64_t>();
+  }
+
+  std::vector<int64_t> subsequent_lane_ids;
+
+  std::copy(base_index, all_lane_ids.end(), std::back_inserter(subsequent_lane_ids));
+  return subsequent_lane_ids;
+}
+
 }  // namespace planning_utils
 }  // namespace behavior_velocity_planner
