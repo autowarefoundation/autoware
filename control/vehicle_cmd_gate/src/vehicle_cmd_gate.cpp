@@ -370,7 +370,6 @@ void VehicleCmdGate::onTimer()
   }
 
   // Publish topics
-  gate_mode_pub_->publish(current_gate_mode_);
   turn_indicator_cmd_pub_->publish(turn_indicator);
   hazard_light_cmd_pub_->publish(hazard_light);
   gear_cmd_pub_->publish(gear);
