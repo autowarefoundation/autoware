@@ -98,12 +98,12 @@ public:
 
   struct NodeParam
   {
-    bool enable_slow_down;         // set True, slow down for obstacle beside the path
-    double max_velocity;           // max velocity [m/s]
-    double lowpass_gain;           // smoothing calculated current acceleration [-]
-    double hunting_threshold;      // keep slow down or stop state if obstacle vanished [s]
-    double max_yaw_deviation_rad;  // maximum ego yaw deviation from trajectory [rad] (measures
-                                   // against overlapping lanes)
+    bool enable_slow_down;              // set True, slow down for obstacle beside the path
+    double max_velocity;                // max velocity [m/s]
+    double lowpass_gain;                // smoothing calculated current acceleration [-]
+    double hunting_threshold;           // keep slow down or stop state if obstacle vanished [s]
+    double ego_nearest_dist_threshold;  // dist threshold for ego's nearest index
+    double ego_nearest_yaw_threshold;   // yaw threshold for ego's nearest index
   };
 
   struct StopParam
