@@ -42,11 +42,11 @@ class AccelBrakeMapCalibratorButtonPanel : public rviz_common::Panel
 public:
   explicit AccelBrakeMapCalibratorButtonPanel(QWidget * parent = nullptr);
   void onInitialize() override;
-  void callbackUpdateSuggest(const std_msgs::msg::Bool::ConstSharedPtr msg);
+  void callback_update_suggest(const std_msgs::msg::Bool::ConstSharedPtr msg);
 
-public Q_SLOTS:
-  void editTopic();
-  void pushCalibrationButton();
+public Q_SLOTS:  // NOLINT for Qt
+  void edit_topic();
+  void push_calibration_button();
 
 protected:
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr update_suggest_sub_;
@@ -56,8 +56,6 @@ protected:
 
   QLabel * topic_label_;
   QLineEdit * topic_edit_;
-  QLabel * dir_label_;
-  QLineEdit * dir_edit_;
   QPushButton * calibration_button_;
   QLabel * status_label_;
 };
