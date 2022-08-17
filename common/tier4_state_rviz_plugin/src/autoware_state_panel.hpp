@@ -45,20 +45,20 @@ public:
   void onInitialize() override;
 
 public Q_SLOTS:  // NOLINT for Qt
-  void onClickAutowareEngage();
-  void onClickVelocityLimit();
-  void onClickGateMode();
-  void onClickPathChangeApproval();
-  void onClickEmergencyButton();
+  void on_click_autoware_engage();
+  void on_click_velocity_limit();
+  void on_click_gate_mode();
+  void on_click_path_change_approval();
+  void on_click_emergency_button();
 
 protected:
-  void onGateMode(const tier4_control_msgs::msg::GateMode::ConstSharedPtr msg);
-  void onSelectorMode(
+  void on_gate_mode(const tier4_control_msgs::msg::GateMode::ConstSharedPtr msg);
+  void on_selector_mode(
     const tier4_control_msgs::msg::ExternalCommandSelectorMode::ConstSharedPtr msg);
-  void onAutowareState(const autoware_auto_system_msgs::msg::AutowareState::ConstSharedPtr msg);
-  void onShift(const autoware_auto_vehicle_msgs::msg::GearReport::ConstSharedPtr msg);
-  void onEmergencyStatus(const tier4_external_api_msgs::msg::Emergency::ConstSharedPtr msg);
-  void onEngageStatus(const tier4_external_api_msgs::msg::EngageStatus::ConstSharedPtr msg);
+  void on_autoware_state(const autoware_auto_system_msgs::msg::AutowareState::ConstSharedPtr msg);
+  void on_shift(const autoware_auto_vehicle_msgs::msg::GearReport::ConstSharedPtr msg);
+  void on_emergency_status(const tier4_external_api_msgs::msg::Emergency::ConstSharedPtr msg);
+  void on_engage_status(const tier4_external_api_msgs::msg::EngageStatus::ConstSharedPtr msg);
 
   rclcpp::Node::SharedPtr raw_node_;
   rclcpp::Subscription<tier4_control_msgs::msg::GateMode>::SharedPtr sub_gate_mode_;
