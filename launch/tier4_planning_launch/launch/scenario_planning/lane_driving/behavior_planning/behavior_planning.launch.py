@@ -38,6 +38,16 @@ def launch_setup(context, *args, **kwargs):
     with open(vehicle_info_param_path, "r") as f:
         vehicle_info_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
+    # nearest search parameter
+    nearest_search_param_path = os.path.join(
+        LaunchConfiguration("tier4_planning_launch_param_path").perform(context),
+        "scenario_planning",
+        "common",
+        "nearest_search.param.yaml",
+    )
+    with open(nearest_search_param_path, "r") as f:
+        nearest_search_param = yaml.safe_load(f)["/**"]["ros__parameters"]
+
     # behavior path planner
     side_shift_param_path = os.path.join(
         LaunchConfiguration("tier4_planning_launch_param_path").perform(context),
@@ -138,6 +148,7 @@ def launch_setup(context, *args, **kwargs):
             ("~/output/hazard_lights_cmd", "/planning/hazard_lights_cmd"),
         ],
         parameters=[
+            nearest_search_param,
             side_shift_param,
             avoidance_param,
             lane_change_param,
@@ -353,6 +364,7 @@ def launch_setup(context, *args, **kwargs):
             ("~/output/traffic_signal", "debug/traffic_signal"),
         ],
         parameters=[
+            nearest_search_param,
             behavior_velocity_planner_param,
             blind_spot_param,
             crosswalk_param,

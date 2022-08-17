@@ -2,6 +2,7 @@
   <!-- common param -->
   <arg name="tier4_planning_launch_param_path"/>
   <arg name="common_param_path" default="$(var tier4_planning_launch_param_path)/scenario_planning/common/common.param.yaml"/>
+  <arg name="nearest_search_param_path" default="$(var tier4_planning_launch_param_path)/scenario_planning/common/nearest_search.param.yaml"/>
   <arg name="vehicle_info_param_file"/>
 
   <!-- pointcloud container -->
@@ -40,6 +41,7 @@
       <include file="$(find-pkg-share motion_velocity_smoother)/launch/motion_velocity_smoother.launch.xml">
         <arg name="smoother_type" value="$(var smoother_type)"/>
         <arg name="common_param_path" value="$(var common_param_path)"/>
+        <arg name="nearest_search_param_path" value="$(var nearest_search_param_path)"/>
         <arg name="param_path" value="$(var param_path)"/>
         <arg name="smoother_param_path" value="$(var tier4_planning_launch_param_path)/scenario_planning/common/motion_velocity_smoother/$(var smoother_type).param.yaml"/>
       </include>
