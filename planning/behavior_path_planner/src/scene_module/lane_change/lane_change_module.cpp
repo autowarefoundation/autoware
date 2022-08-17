@@ -23,6 +23,7 @@
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
 #include <autoware_auto_perception_msgs/msg/object_classification.hpp>
+#include <autoware_auto_vehicle_msgs/msg/turn_indicators_command.hpp>
 
 #include <algorithm>
 #include <limits>
@@ -34,6 +35,7 @@
 namespace behavior_path_planner
 {
 using autoware_auto_perception_msgs::msg::ObjectClassification;
+using route_handler::LaneChangeDirection;
 
 LaneChangeModule::LaneChangeModule(
   const std::string & name, rclcpp::Node & node, const LaneChangeParameters & parameters)

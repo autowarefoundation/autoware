@@ -19,18 +19,11 @@
 #include "behavior_path_planner/scene_module/scene_module_interface.hpp"
 #include "behavior_path_planner/scene_module/utils/geometric_parallel_parking.hpp"
 #include "behavior_path_planner/scene_module/utils/occupancy_grid_based_collision_detector.hpp"
-#include "behavior_path_planner/scene_module/utils/path_shifter.hpp"
-#include "behavior_path_planner/utilities.hpp"
 
 #include <lane_departure_checker/lane_departure_checker.hpp>
-#include <lanelet2_extension/utility/message_conversion.hpp>
-#include <lanelet2_extension/utility/utilities.hpp>
-#include <vehicle_info_util/vehicle_info_util.hpp>
 
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <autoware_auto_vehicle_msgs/msg/hazard_lights_command.hpp>
-
-#include <tf2/utils.h>
 
 #include <deque>
 #include <memory>
@@ -38,13 +31,12 @@
 #include <utility>
 #include <vector>
 
-using nav_msgs::msg::OccupancyGrid;
-
 namespace behavior_path_planner
 {
 using autoware_auto_vehicle_msgs::msg::HazardLightsCommand;
 using geometry_msgs::msg::PoseArray;
 using lane_departure_checker::LaneDepartureChecker;
+using nav_msgs::msg::OccupancyGrid;
 using visualization_msgs::msg::Marker;
 using visualization_msgs::msg::MarkerArray;
 

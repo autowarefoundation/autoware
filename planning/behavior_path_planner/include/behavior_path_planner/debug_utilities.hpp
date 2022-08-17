@@ -14,9 +14,7 @@
 #ifndef BEHAVIOR_PATH_PLANNER__DEBUG_UTILITIES_HPP_
 #define BEHAVIOR_PATH_PLANNER__DEBUG_UTILITIES_HPP_
 
-#include "behavior_path_planner/path_utilities.hpp"
 #include "behavior_path_planner/scene_module/utils/path_shifter.hpp"
-#include "behavior_path_planner/utilities.hpp"
 
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
 
@@ -25,9 +23,7 @@
 #include <geometry_msgs/msg/polygon.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
-#include <lanelet2_core/LaneletMap.h>
-#include <lanelet2_routing/RoutingGraph.h>
-#include <tf2/utils.h>
+#include <lanelet2_core/geometry/Lanelet.h>
 
 #include <string>
 #include <vector>

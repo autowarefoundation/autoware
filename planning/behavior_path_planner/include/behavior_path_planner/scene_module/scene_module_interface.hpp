@@ -25,12 +25,8 @@
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <autoware_auto_vehicle_msgs/msg/hazard_lights_command.hpp>
 #include <autoware_auto_vehicle_msgs/msg/turn_indicators_command.hpp>
-#include <tier4_planning_msgs/msg/avoidance_debug_factor.hpp>
-#include <tier4_planning_msgs/msg/avoidance_debug_msg.hpp>
 #include <tier4_planning_msgs/msg/avoidance_debug_msg_array.hpp>
 #include <unique_identifier_msgs/msg/uuid.hpp>
-
-#include <boost/optional.hpp>
 
 #include <behaviortree_cpp_v3/basic_types.h>
 
@@ -45,9 +41,6 @@ namespace behavior_path_planner
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using autoware_auto_vehicle_msgs::msg::HazardLightsCommand;
 using autoware_auto_vehicle_msgs::msg::TurnIndicatorsCommand;
-using route_handler::LaneChangeDirection;
-using route_handler::PullOutDirection;
-using route_handler::PullOverDirection;
 using rtc_interface::RTCInterface;
 using tier4_planning_msgs::msg::AvoidanceDebugMsgArray;
 using unique_identifier_msgs::msg::UUID;
@@ -73,7 +66,7 @@ struct TurnSignalInfo
 
 struct BehaviorModuleOutput
 {
-  BehaviorModuleOutput() {}
+  BehaviorModuleOutput() = default;
 
   // path planed by module
   PlanResult path{};
@@ -86,7 +79,7 @@ struct BehaviorModuleOutput
 
 struct CandidateOutput
 {
-  CandidateOutput() {}
+  CandidateOutput() = default;
   explicit CandidateOutput(const PathWithLaneId & path) : path_candidate{path} {}
   PathWithLaneId path_candidate{};
   double lateral_shift{0.0};

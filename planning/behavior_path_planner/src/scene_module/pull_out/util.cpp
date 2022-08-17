@@ -18,7 +18,6 @@
 #include "behavior_path_planner/scene_module/utils/path_shifter.hpp"
 #include "behavior_path_planner/util/create_vehicle_footprint.hpp"
 
-#include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/geometry/boost_geometry.hpp>
@@ -35,9 +34,7 @@
 #include <string>
 #include <vector>
 
-namespace behavior_path_planner
-{
-namespace pull_out_utils
+namespace behavior_path_planner::pull_out_utils
 {
 PathWithLaneId combineReferencePath(const PathWithLaneId path1, const PathWithLaneId path2)
 {
@@ -483,5 +480,4 @@ bool isObjectFront(const Pose & ego_pose, const Pose & obj_pose)
   return obj_from_ego.position.x > 0;
 }
 
-}  // namespace pull_out_utils
-}  // namespace behavior_path_planner
+}  // namespace behavior_path_planner::pull_out_utils

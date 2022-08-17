@@ -16,22 +16,19 @@
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OUT__UTIL_HPP_
 
 #include "behavior_path_planner/scene_module/pull_out/pull_out_module.hpp"
-#include "behavior_path_planner/utilities.hpp"
 
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_auto_perception_msgs/msg/predicted_path.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
-#include <geometry_msgs/msg/pose_stamped.hpp>
-#include <geometry_msgs/msg/twist_stamped.hpp>
+#include <geometry_msgs/msg/pose.hpp>
+#include <geometry_msgs/msg/twist.hpp>
 
 #include <lanelet2_core/primitives/Primitive.h>
 
 #include <memory>
 #include <vector>
 
-namespace behavior_path_planner
-{
-namespace pull_out_utils
+namespace behavior_path_planner::pull_out_utils
 {
 using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_perception_msgs::msg::PredictedPath;
@@ -83,7 +80,6 @@ bool hasEnoughDistance(
   const bool isInGoalRouteSection, const Pose & goal_pose,
   const lanelet::routing::RoutingGraphContainer & overall_graphs);
 bool isObjectFront(const Pose & ego_pose, const Pose & obj_pose);
-}  // namespace pull_out_utils
-}  // namespace behavior_path_planner
+}  // namespace behavior_path_planner::pull_out_utils
 
 #endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OUT__UTIL_HPP_

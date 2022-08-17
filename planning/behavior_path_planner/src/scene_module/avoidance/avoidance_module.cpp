@@ -21,11 +21,11 @@
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
-#include <opencv2/opencv.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 
+#include <tier4_planning_msgs/msg/avoidance_debug_factor.hpp>
+
 #include <algorithm>
-#include <iomanip>
 #include <limits>
 #include <memory>
 #include <set>
@@ -44,7 +44,7 @@ using motion_utils::calcSignedArcLength;
 using motion_utils::findNearestIndex;
 using tier4_autoware_utils::calcDistance2d;
 using tier4_autoware_utils::calcLateralDeviation;
-using tier4_autoware_utils::createPoint;
+using tier4_planning_msgs::msg::AvoidanceDebugFactor;
 
 AvoidanceModule::AvoidanceModule(
   const std::string & name, rclcpp::Node & node, const AvoidanceParameters & parameters)

@@ -16,6 +16,8 @@
 
 #include "behavior_path_planner/utilities.hpp"
 
+#include <lanelet2_extension/utility/utilities.hpp>
+
 #include <memory>
 #include <string>
 

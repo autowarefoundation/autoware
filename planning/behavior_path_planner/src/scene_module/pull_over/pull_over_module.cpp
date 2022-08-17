@@ -14,14 +14,10 @@
 
 #include "behavior_path_planner/scene_module/pull_over/pull_over_module.hpp"
 
-#include "behavior_path_planner/behavior_path_planner_node.hpp"
 #include "behavior_path_planner/path_utilities.hpp"
-#include "behavior_path_planner/scene_module/avoidance/debug.hpp"
 #include "behavior_path_planner/scene_module/pull_over/util.hpp"
 #include "behavior_path_planner/scene_module/utils/path_shifter.hpp"
-#include "behavior_path_planner/utilities.hpp"
 
-#include <lanelet2_extension/utility/message_conversion.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <motion_utils/motion_utils.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -36,7 +32,6 @@
 
 using motion_utils::calcLongitudinalOffsetPose;
 using motion_utils::calcSignedArcLength;
-using motion_utils::findNearestIndex;
 using nav_msgs::msg::OccupancyGrid;
 using tier4_autoware_utils::calcDistance2d;
 using tier4_autoware_utils::calcOffsetPose;
@@ -44,9 +39,7 @@ using tier4_autoware_utils::createDefaultMarker;
 using tier4_autoware_utils::createMarkerColor;
 using tier4_autoware_utils::createMarkerScale;
 using tier4_autoware_utils::createPoint;
-using tier4_autoware_utils::createQuaternionFromYaw;
 using tier4_autoware_utils::inverseTransformPose;
-using tier4_autoware_utils::transformPose;
 
 namespace behavior_path_planner
 {

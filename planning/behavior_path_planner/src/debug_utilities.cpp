@@ -14,6 +14,11 @@
 
 #include "behavior_path_planner/debug_utilities.hpp"
 
+#include "behavior_path_planner/path_utilities.hpp"
+#include "behavior_path_planner/utilities.hpp"
+
+#include <tier4_autoware_utils/ros/marker_helper.hpp>
+
 namespace marker_utils
 {
 using behavior_path_planner::ShiftPoint;

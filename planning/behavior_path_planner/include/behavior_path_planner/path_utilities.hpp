@@ -17,30 +17,19 @@
 
 #include <behavior_path_planner/parameters.hpp>
 #include <behavior_path_planner/scene_module/utils/path_shifter.hpp>
-#include <opencv2/opencv.hpp>
 
 #include <autoware_auto_planning_msgs/msg/path.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <autoware_auto_vehicle_msgs/msg/turn_indicators_command.hpp>
 #include <geometry_msgs/msg/point.hpp>
 
-#include <boost/geometry/geometries/box.hpp>
-#include <boost/geometry/geometries/point_xy.hpp>
-#include <boost/geometry/geometries/polygon.hpp>
-#include <boost/geometry/geometry.hpp>
-
 #include <lanelet2_core/geometry/Lanelet.h>
-#include <lanelet2_routing/Route.h>
-#include <lanelet2_routing/RoutingGraph.h>
-#include <lanelet2_routing/RoutingGraphContainer.h>
 
 #include <limits>
 #include <utility>
 #include <vector>
 
-namespace behavior_path_planner
-{
-namespace util
+namespace behavior_path_planner::util
 {
 using autoware_auto_planning_msgs::msg::Path;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
@@ -69,7 +58,6 @@ std::pair<TurnIndicatorsCommand, double> getPathTurnSignal(
   const ShiftPoint & shift_point, const Pose & pose, const double & velocity,
   const BehaviorPathPlannerParameters & common_parameter);
 
-}  // namespace util
-}  // namespace behavior_path_planner
+}  // namespace behavior_path_planner::util
 
 #endif  // BEHAVIOR_PATH_PLANNER__PATH_UTILITIES_HPP_
