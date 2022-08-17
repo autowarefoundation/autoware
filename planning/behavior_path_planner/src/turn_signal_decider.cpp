@@ -36,7 +36,10 @@ TurnIndicatorsCommand TurnSignalDecider::getTurnSignal(
   const auto intersection_turn_signal = intersection_result.first;
   const auto intersection_distance = intersection_result.second;
 
-  if (intersection_distance < plan_distance) {
+  if (
+    intersection_distance < plan_distance ||
+    turn_signal_plan.command == TurnIndicatorsCommand::NO_COMMAND ||
+    turn_signal_plan.command == TurnIndicatorsCommand::DISABLE) {
     turn_signal.command = intersection_turn_signal.command;
   }
 
@@ -82,6 +85,7 @@ std::pair<TurnIndicatorsCommand, double> TurnSignalDecider::getIntersectionTurnS
       bool lighting_turn_signal = false;
       if (lane.attributeOr("turn_direction", std::string("none")) != lane_attribute) {
         if (
+          distance_from_vehicle_front >= 0.0 &&
           distance_from_vehicle_front <
             lane.attributeOr("turn_signal_distance", intersection_search_distance_) &&
           path_point_distance > 0.0) {
@@ -99,10 +103,11 @@ std::pair<TurnIndicatorsCommand, double> TurnSignalDecider::getIntersectionTurnS
       if (lighting_turn_signal) {
         if (lane_attribute == std::string("left")) {
           turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
+          distance = distance_from_vehicle_front;
         } else if (lane_attribute == std::string("right")) {
           turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
+          distance = distance_from_vehicle_front;
         }
-        distance = distance_from_vehicle_front;
       }
     }
   }
