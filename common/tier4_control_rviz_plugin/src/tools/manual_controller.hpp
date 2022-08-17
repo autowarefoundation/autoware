@@ -54,7 +54,7 @@ public:
   explicit ManualController(QWidget * parent = nullptr);
   void onInitialize() override;
 
-public Q_SLOTS:
+public Q_SLOTS:  // NOLINT for Qt
   void onClickCruiseVelocity();
   void onClickEnableButton();
   void onManualSteering();
@@ -95,7 +95,7 @@ protected:
   QDial * steering_slider_ptr_;
   QLabel * steering_angle_ptr_;
 
-  bool current_engage_;
+  bool current_engage_{false};
 };
 
 }  // namespace rviz_plugins
