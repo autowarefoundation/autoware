@@ -72,13 +72,13 @@ void AccelBrakeMapCalibratorButtonPanel::onInitialize()
   update_suggest_sub_ = raw_node->create_subscription<std_msgs::msg::Bool>(
     topic_edit_->text().toStdString(), 10,
     std::bind(
-      &AccelBrakeMapCalibratorButtonPanel::callback_update_suggest, this, std::placeholders::_1));
+      &AccelBrakeMapCalibratorButtonPanel::callbackUpdateSuggest, this, std::placeholders::_1));
 
   client_ = raw_node->create_client<tier4_vehicle_msgs::srv::UpdateAccelBrakeMap>(
     "/accel_brake_map_calibrator/update_map_dir");
 }
 
-void AccelBrakeMapCalibratorButtonPanel::callback_update_suggest(
+void AccelBrakeMapCalibratorButtonPanel::callbackUpdateSuggest(
   const std_msgs::msg::Bool::ConstSharedPtr msg)
 {
   if (after_calib_) {
@@ -96,7 +96,7 @@ void AccelBrakeMapCalibratorButtonPanel::callback_update_suggest(
   calibration_button_->setEnabled(true);
 }
 
-void AccelBrakeMapCalibratorButtonPanel::edit_topic()
+void AccelBrakeMapCalibratorButtonPanel::editTopic()
 {
   update_suggest_sub_.reset();
   rclcpp::Node::SharedPtr raw_node =
@@ -104,12 +104,12 @@ void AccelBrakeMapCalibratorButtonPanel::edit_topic()
   update_suggest_sub_ = raw_node->create_subscription<std_msgs::msg::Bool>(
     topic_edit_->text().toStdString(), 10,
     std::bind(
-      &AccelBrakeMapCalibratorButtonPanel::callback_update_suggest, this, std::placeholders::_1));
+      &AccelBrakeMapCalibratorButtonPanel::callbackUpdateSuggest, this, std::placeholders::_1));
   calibration_button_->setText("Wait for subscribe topic");
   calibration_button_->setEnabled(false);
 }
 
-void AccelBrakeMapCalibratorButtonPanel::push_calibration_button()
+void AccelBrakeMapCalibratorButtonPanel::pushCalibrationButton()
 {
   // lock button
   calibration_button_->setEnabled(false);
