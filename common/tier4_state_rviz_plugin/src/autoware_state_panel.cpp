@@ -24,7 +24,7 @@
 #include <memory>
 #include <string>
 
-inline std::string bool_to_string(const bool var) { return var ? "True" : "False"; }
+inline std::string Bool2String(const bool var) { return var ? "True" : "False"; }
 
 using std::placeholders::_1;
 
@@ -128,26 +128,25 @@ void AutowareStatePanel::onInitialize()
   raw_node_ = this->getDisplayContext()->getRosNodeAbstraction().lock()->get_raw_node();
 
   sub_gate_mode_ = raw_node_->create_subscription<tier4_control_msgs::msg::GateMode>(
-    "/control/current_gate_mode", 10, std::bind(&AutowareStatePanel::on_gate_mode, this, _1));
+    "/control/current_gate_mode", 10, std::bind(&AutowareStatePanel::onGateMode, this, _1));
 
   sub_selector_mode_ =
     raw_node_->create_subscription<tier4_control_msgs::msg::ExternalCommandSelectorMode>(
       "/control/external_cmd_selector/current_selector_mode", 10,
-      std::bind(&AutowareStatePanel::on_selector_mode, this, _1));
+      std::bind(&AutowareStatePanel::onSelectorMode, this, _1));
 
   sub_autoware_state_ =
     raw_node_->create_subscription<autoware_auto_system_msgs::msg::AutowareState>(
-      "/autoware/state", 10, std::bind(&AutowareStatePanel::on_autoware_state, this, _1));
+      "/autoware/state", 10, std::bind(&AutowareStatePanel::onAutowareState, this, _1));
 
   sub_gear_ = raw_node_->create_subscription<autoware_auto_vehicle_msgs::msg::GearReport>(
-    "/vehicle/status/gear_status", 10, std::bind(&AutowareStatePanel::on_shift, this, _1));
+    "/vehicle/status/gear_status", 10, std::bind(&AutowareStatePanel::onShift, this, _1));
 
   sub_engage_ = raw_node_->create_subscription<tier4_external_api_msgs::msg::EngageStatus>(
-    "/api/external/get/engage", 10, std::bind(&AutowareStatePanel::on_engage_status, this, _1));
+    "/api/external/get/engage", 10, std::bind(&AutowareStatePanel::onEngageStatus, this, _1));
 
   sub_emergency_ = raw_node_->create_subscription<tier4_external_api_msgs::msg::Emergency>(
-    "/api/autoware/get/emergency", 10,
-    std::bind(&AutowareStatePanel::on_emergency_status, this, _1));
+    "/api/autoware/get/emergency", 10, std::bind(&AutowareStatePanel::onEmergencyStatus, this, _1));
 
   client_engage_ = raw_node_->create_client<tier4_external_api_msgs::srv::Engage>(
     "/api/external/set/engage", rmw_qos_profile_services_default);
@@ -167,7 +166,7 @@ void AutowareStatePanel::onInitialize()
     rclcpp::QoS{1}.transient_local());
 }
 
-void AutowareStatePanel::on_gate_mode(const tier4_control_msgs::msg::GateMode::ConstSharedPtr msg)
+void AutowareStatePanel::onGateMode(const tier4_control_msgs::msg::GateMode::ConstSharedPtr msg)
 {
   switch (msg->data) {
     case tier4_control_msgs::msg::GateMode::AUTO:
@@ -187,7 +186,7 @@ void AutowareStatePanel::on_gate_mode(const tier4_control_msgs::msg::GateMode::C
   }
 }
 
-void AutowareStatePanel::on_selector_mode(
+void AutowareStatePanel::onSelectorMode(
   const tier4_control_msgs::msg::ExternalCommandSelectorMode::ConstSharedPtr msg)
 {
   switch (msg->data) {
@@ -213,7 +212,7 @@ void AutowareStatePanel::on_selector_mode(
   }
 }
 
-void AutowareStatePanel::on_autoware_state(
+void AutowareStatePanel::onAutowareState(
   const autoware_auto_system_msgs::msg::AutowareState::ConstSharedPtr msg)
 {
   if (msg->state == autoware_auto_system_msgs::msg::AutowareState::INITIALIZING) {
@@ -240,7 +239,7 @@ void AutowareStatePanel::on_autoware_state(
   }
 }
 
-void AutowareStatePanel::on_shift(
+void AutowareStatePanel::onShift(
   const autoware_auto_vehicle_msgs::msg::GearReport::ConstSharedPtr msg)
 {
   switch (msg->report) {
@@ -259,14 +258,14 @@ void AutowareStatePanel::on_shift(
   }
 }
 
-void AutowareStatePanel::on_engage_status(
+void AutowareStatePanel::onEngageStatus(
   const tier4_external_api_msgs::msg::EngageStatus::ConstSharedPtr msg)
 {
   current_engage_ = msg->engage;
-  engage_status_label_ptr_->setText(QString::fromStdString(bool_to_string(current_engage_)));
+  engage_status_label_ptr_->setText(QString::fromStdString(Bool2String(current_engage_)));
 }
 
-void AutowareStatePanel::on_emergency_status(
+void AutowareStatePanel::onEmergencyStatus(
   const tier4_external_api_msgs::msg::Emergency::ConstSharedPtr msg)
 {
   current_emergency_ = msg->emergency;
@@ -279,14 +278,14 @@ void AutowareStatePanel::on_emergency_status(
   }
 }
 
-void AutowareStatePanel::on_click_velocity_limit()
+void AutowareStatePanel::onClickVelocityLimit()
 {
   auto velocity_limit = std::make_shared<tier4_planning_msgs::msg::VelocityLimit>();
   velocity_limit->max_velocity = pub_velocity_limit_input_->value() / 3.6;
   pub_velocity_limit_->publish(*velocity_limit);
 }
 
-void AutowareStatePanel::on_click_autoware_engage()
+void AutowareStatePanel::onClickAutowareEngage()
 {
   using tier4_external_api_msgs::srv::Engage;
 
@@ -307,7 +306,7 @@ void AutowareStatePanel::on_click_autoware_engage()
   });
 }
 
-void AutowareStatePanel::on_click_emergency_button()
+void AutowareStatePanel::onClickEmergencyButton()
 {
   using tier4_external_api_msgs::msg::ResponseStatus;
   using tier4_external_api_msgs::srv::SetEmergency;
@@ -328,7 +327,7 @@ void AutowareStatePanel::on_click_emergency_button()
       }
     });
 }
-void AutowareStatePanel::on_click_gate_mode()
+void AutowareStatePanel::onClickGateMode()
 {
   const auto data = gate_mode_label_ptr_->text().toStdString() == "AUTO"
                       ? tier4_control_msgs::msg::GateMode::EXTERNAL
@@ -338,7 +337,7 @@ void AutowareStatePanel::on_click_gate_mode()
     tier4_control_msgs::build<tier4_control_msgs::msg::GateMode>().data(data));
 }
 
-void AutowareStatePanel::on_click_path_change_approval()
+void AutowareStatePanel::onClickPathChangeApproval()
 {
   pub_path_change_approval_->publish(
     tier4_planning_msgs::build<tier4_planning_msgs::msg::Approval>()
