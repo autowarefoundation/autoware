@@ -163,8 +163,7 @@ bool PullOverModule::isExecutionRequested() const
   }
   const double self_to_goal_arc_length =
     util::getSignedDistance(current_pose, goal_pose, current_lanes);
-  // goal is away behind
-  if (self_to_goal_arc_length > parameters_.request_length || self_to_goal_arc_length < 0.0) {
+  if (self_to_goal_arc_length > parameters_.request_length) {
     return false;
   }
 
@@ -674,12 +673,19 @@ PathWithLaneId PullOverModule::getReferencePath() const
   // generate center line path to stop_pose
   const auto arc_position_stop_pose =
     lanelet::utils::getArcCoordinates(status_.current_lanes, stop_pose);
+  const double s_forward = arc_position_stop_pose.length;
   const auto arc_position_current_pose =
     lanelet::utils::getArcCoordinates(status_.current_lanes, current_pose);
-  const auto s_backward =
+  const double s_backward =
     std::max(0.0, arc_position_current_pose.length - common_parameters.backward_path_length);
-  PathWithLaneId reference_path = route_handler->getCenterLinePath(
-    status_.current_lanes, s_backward, arc_position_stop_pose.length, true);
+
+  // stop pose is behind current pose
+  if (s_forward < s_backward) {
+    return getStopPath();
+  }
+
+  PathWithLaneId reference_path =
+    route_handler->getCenterLinePath(status_.current_lanes, s_backward, s_forward, true);
   reference_path.header = route_handler->getRouteHeader();
 
   // slow down for turn signal, insert stop point to stop_pose
@@ -700,7 +706,7 @@ PathWithLaneId PullOverModule::getReferencePath() const
   return reference_path;
 }
 
-PathWithLaneId PullOverModule::getStopPath()
+PathWithLaneId PullOverModule::getStopPath() const
 {
   PathWithLaneId reference_path;
 

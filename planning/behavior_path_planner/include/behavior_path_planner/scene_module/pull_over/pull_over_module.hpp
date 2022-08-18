@@ -185,7 +185,7 @@ private:
   std::unique_ptr<rclcpp::Time> last_approved_time_;
 
   PathWithLaneId getReferencePath() const;
-  PathWithLaneId getStopPath();
+  PathWithLaneId getStopPath() const;
   lanelet::ConstLanelets getPullOverLanes() const;
   std::pair<bool, bool> getSafePath(ShiftParkingPath & safe_path) const;
   Pose getRefinedGoal() const;
