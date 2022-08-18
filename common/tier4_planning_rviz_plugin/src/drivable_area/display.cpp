@@ -257,8 +257,8 @@ void AutowareDrivableAreaDisplay::unsubscribeToUpdateTopic() { update_subscripti
 void AutowareDrivableAreaDisplay::updateAlpha()
 {
   float alpha = alpha_property_->getFloat();
-  Ogre::SceneBlendType scene_blending;
-  bool depth_write;
+  Ogre::SceneBlendType scene_blending = Ogre::SceneBlendType::SBT_TRANSPARENT_ALPHA;
+  bool depth_write = false;
 
   rviz_rendering::MaterialManager::enableAlphaBlending(scene_blending, depth_write, alpha);
 
@@ -398,7 +398,7 @@ void AutowareDrivableAreaDisplay::createSwatches()
 }
 
 void AutowareDrivableAreaDisplay::doubleSwatchNumber(
-  size_t & swatch_width, size_t & swatch_height, int & number_swatches) const
+  size_t & swatch_width, size_t & swatch_height, int & number_swatches)
 {
   RVIZ_COMMON_LOG_ERROR_STREAM(
     "Failed to create map using " << number_swatches

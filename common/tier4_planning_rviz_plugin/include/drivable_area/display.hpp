@@ -71,11 +71,9 @@
 namespace Ogre
 {
 class ManualObject;
-}
+}  // namespace Ogre
 
-namespace rviz_common
-{
-namespace properties
+namespace rviz_common::properties
 {
 class EnumProperty;
 class FloatProperty;
@@ -84,8 +82,7 @@ class Property;
 class QuaternionProperty;
 class VectorProperty;
 
-}  // namespace properties
-}  // namespace rviz_common
+}  // namespace rviz_common::properties
 
 namespace rviz_plugins
 {
@@ -112,14 +109,14 @@ public:
   void fixedFrameChanged() override;
   void reset() override;
 
-  float getResolution() { return resolution_; }
-  size_t getWidth() { return width_; }
-  size_t getHeight() { return height_; }
+  [[nodiscard]] float getResolution() const { return resolution_; }
+  [[nodiscard]] size_t getWidth() const { return width_; }
+  [[nodiscard]] size_t getHeight() const { return height_; }
 
   /** @brief Copy msg into current_map_ and call showMap(). */
   void processMessage(autoware_auto_planning_msgs::msg::Path::ConstSharedPtr msg) override;
 
-public Q_SLOTS:
+public Q_SLOTS:  // NOLINT
   void showMap();
 
 Q_SIGNALS:
@@ -134,7 +131,7 @@ protected Q_SLOTS:
   void transformMap();
   void updateMapUpdateTopic();
 
-protected:
+protected:  // NOLINT for Qt
   void updateTopic() override;
   void update(float wall_dt, float ros_dt) override;
 
@@ -146,7 +143,8 @@ protected:
   /** @brief Copy update's data into current_map_ and call showMap(). */
   void incomingUpdate(map_msgs::msg::OccupancyGridUpdate::ConstSharedPtr update);
 
-  bool updateDataOutOfBounds(map_msgs::msg::OccupancyGridUpdate::ConstSharedPtr update) const;
+  [[nodiscard]] bool updateDataOutOfBounds(
+    map_msgs::msg::OccupancyGridUpdate::ConstSharedPtr update) const;
   void updateMapDataInMemory(map_msgs::msg::OccupancyGridUpdate::ConstSharedPtr update);
 
   void clear();
@@ -157,12 +155,13 @@ protected:
   void showValidMap();
   void resetSwatchesIfNecessary(size_t width, size_t height, float resolution);
   void createSwatches();
-  void doubleSwatchNumber(
-    size_t & swatch_width, size_t & swatch_height, int & number_swatches) const;
+  static void doubleSwatchNumber(
+    size_t & swatch_width, size_t & swatch_height, int & number_swatches);
   void tryCreateSwatches(
     size_t width, size_t height, float resolution, size_t swatch_width, size_t swatch_height,
     int number_swatches);
-  size_t getEffectiveDimension(size_t map_dimension, size_t swatch_dimension, size_t position);
+  static size_t getEffectiveDimension(
+    size_t map_dimension, size_t swatch_dimension, size_t position);
   void updateSwatches() const;
 
   std::vector<std::shared_ptr<Swatch>> swatches_;
