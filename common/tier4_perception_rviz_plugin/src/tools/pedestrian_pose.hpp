@@ -61,8 +61,8 @@ class PedestrianInitialPoseTool : public InteractiveObjectTool
 {
 public:
   PedestrianInitialPoseTool();
-  void onInitialize();
-  Object createObjectMsg() const override;
+  void onInitialize() override;
+  [[nodiscard]] Object createObjectMsg() const override;
 };
 
 }  // namespace rviz_plugins

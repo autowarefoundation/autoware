@@ -89,9 +89,8 @@ class InteractiveObject
 {
 public:
   explicit InteractiveObject(const Ogre::Vector3 & point);
-  ~InteractiveObject() {}
 
-  std::array<uint8_t, 16> uuid() const;
+  [[nodiscard]] std::array<uint8_t, 16> uuid() const;
   void twist(geometry_msgs::msg::Twist & twist) const;
   void transform(tf2::Transform & tf_map2object) const;
   void update(const Ogre::Vector3 & point);
@@ -99,25 +98,26 @@ public:
   double distance(const Ogre::Vector3 & point);
 
 private:
-  std::array<uint8_t, 16> uuid_;
+  std::array<uint8_t, 16> uuid_{};
   Ogre::Vector3 point_;
   Ogre::Vector3 velocity_;
-  double theta_;
+  double theta_{0.0};
 };
 
 class InteractiveObjectCollection
 {
 public:
   InteractiveObjectCollection();
-  ~InteractiveObjectCollection() {}
 
   void select(const Ogre::Vector3 & point);
   boost::optional<std::array<uint8_t, 16>> reset();
   boost::optional<std::array<uint8_t, 16>> create(const Ogre::Vector3 & point);
   boost::optional<std::array<uint8_t, 16>> remove(const Ogre::Vector3 & point);
   boost::optional<std::array<uint8_t, 16>> update(const Ogre::Vector3 & point);
-  boost::optional<geometry_msgs::msg::Twist> twist(const std::array<uint8_t, 16> & uuid) const;
-  boost::optional<tf2::Transform> transform(const std::array<uint8_t, 16> & uuid) const;
+  [[nodiscard]] boost::optional<geometry_msgs::msg::Twist> twist(
+    const std::array<uint8_t, 16> & uuid) const;
+  [[nodiscard]] boost::optional<tf2::Transform> transform(
+    const std::array<uint8_t, 16> & uuid) const;
 
 private:
   size_t nearest(const Ogre::Vector3 & point);
@@ -130,17 +130,16 @@ class InteractiveObjectTool : public rviz_default_plugins::tools::PoseTool
   Q_OBJECT
 
 public:
-  virtual ~InteractiveObjectTool() = default;
-  virtual void onInitialize();
+  void onInitialize() override;
   int processMouseEvent(rviz_common::ViewportMouseEvent & event) override;
   int processKeyEvent(QKeyEvent * event, rviz_common::RenderPanel * panel) override;
 
-  virtual Object createObjectMsg() const = 0;
+  [[nodiscard]] virtual Object createObjectMsg() const = 0;
 
 protected Q_SLOTS:
   virtual void updateTopic();
 
-protected:
+protected:  // NOLINT for Qt
   rclcpp::Clock::SharedPtr clock_;
   rclcpp::Publisher<Object>::SharedPtr dummy_object_info_pub_;
 
@@ -161,7 +160,7 @@ protected:
 
 private:
   void publishObjectMsg(const std::array<uint8_t, 16> & uuid, const uint32_t action);
-  void onPoseSet(double x, double y, double theta);
+  void onPoseSet(double x, double y, double theta) override;
 
   InteractiveObjectCollection objects_;
 };

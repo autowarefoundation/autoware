@@ -99,7 +99,7 @@ CarInitialPoseTool::CarInitialPoseTool()
 
 void CarInitialPoseTool::onInitialize()
 {
-  PoseTool::onInitialize();
+  rviz_plugins::InteractiveObjectTool::onInitialize();
   setName("2D Dummy Car");
   updateTopic();
 }
@@ -184,7 +184,7 @@ BusInitialPoseTool::BusInitialPoseTool()
 
 void BusInitialPoseTool::onInitialize()
 {
-  PoseTool::onInitialize();
+  rviz_plugins::InteractiveObjectTool::onInitialize();
   setName("2D Dummy Bus");
   updateTopic();
 }

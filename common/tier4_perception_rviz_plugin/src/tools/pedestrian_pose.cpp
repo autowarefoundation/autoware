@@ -93,7 +93,7 @@ PedestrianInitialPoseTool::PedestrianInitialPoseTool()
 
 void PedestrianInitialPoseTool::onInitialize()
 {
-  PoseTool::onInitialize();
+  rviz_plugins::InteractiveObjectTool::onInitialize();
   setName("2D Dummy Pedestrian");
   updateTopic();
 }

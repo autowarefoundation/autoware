@@ -67,16 +67,15 @@ class DeleteAllObjectsTool : public rviz_default_plugins::tools::PoseTool
 
 public:
   DeleteAllObjectsTool();
-  virtual ~DeleteAllObjectsTool() {}
-  virtual void onInitialize();
+  void onInitialize() override;
 
 protected:
-  virtual void onPoseSet(double x, double y, double theta);
+  void onPoseSet(double x, double y, double theta) override;
 
 private Q_SLOTS:
   void updateTopic();
 
-private:
+private:  // NOLINT for Qt
   rclcpp::Clock::SharedPtr clock_;
   rclcpp::Publisher<dummy_perception_publisher::msg::Object>::SharedPtr dummy_object_info_pub_;
 

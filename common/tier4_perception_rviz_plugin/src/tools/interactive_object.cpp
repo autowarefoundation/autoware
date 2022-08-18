@@ -62,7 +62,6 @@ InteractiveObject::InteractiveObject(const Ogre::Vector3 & point)
 {
   velocity_ = Ogre::Vector3::ZERO;
   point_ = point;
-  theta_ = 0.0;
 
   std::mt19937 gen(std::random_device{}());
   std::independent_bits_engine<std::mt19937, 8, uint8_t> bit_eng(gen);

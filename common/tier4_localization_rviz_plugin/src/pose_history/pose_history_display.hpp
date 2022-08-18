@@ -59,7 +59,7 @@ private Q_SLOTS:
   void unsubscribe();
   void processMessage(const geometry_msgs::msg::PoseStamped::ConstSharedPtr message);
 
-private:
+private:  // NOLINT for Qt
   void updateHistory();
   void updateLines();
 
