@@ -42,7 +42,7 @@ enum class PolygonType : int8_t { Vehicle = 0, Collision, SlowDownRange, SlowDow
 
 enum class PointType : int8_t { Stop = 0, SlowDown };
 
-enum class PoseType : int8_t { Stop = 0, SlowDownStart, SlowDownEnd };
+enum class PoseType : int8_t { Stop = 0, TargetStop, SlowDownStart, SlowDownEnd };
 
 class DebugValues
 {
@@ -119,6 +119,7 @@ private:
   double base_link2front_;
 
   std::shared_ptr<geometry_msgs::msg::Pose> stop_pose_ptr_;
+  std::shared_ptr<geometry_msgs::msg::Pose> target_stop_pose_ptr_;
   std::shared_ptr<geometry_msgs::msg::Pose> slow_down_start_pose_ptr_;
   std::shared_ptr<geometry_msgs::msg::Pose> slow_down_end_pose_ptr_;
   std::shared_ptr<geometry_msgs::msg::Point> stop_obstacle_point_ptr_;

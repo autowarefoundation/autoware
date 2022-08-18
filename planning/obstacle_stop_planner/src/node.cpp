@@ -856,19 +856,22 @@ void ObstacleStopPlannerNode::insertVelocity(
           insertStopPoint(current_stop_pos, output, planner_data.stop_reason_diag);
           latest_stop_point_ = current_stop_pos;
 
-          debug_ptr_->pushPose(getPose(stop_point.point), PoseType::Stop);
+          debug_ptr_->pushPose(getPose(stop_point.point), PoseType::TargetStop);
+          debug_ptr_->pushPose(getPose(current_stop_pos.point), PoseType::Stop);
         }
 
       } else {
         insertStopPoint(stop_point, output, planner_data.stop_reason_diag);
         latest_stop_point_ = stop_point;
 
+        debug_ptr_->pushPose(getPose(stop_point.point), PoseType::TargetStop);
         debug_ptr_->pushPose(getPose(stop_point.point), PoseType::Stop);
       }
     }
   } else if (!no_hunting_collision_point) {
     if (latest_stop_point_) {
       insertStopPoint(latest_stop_point_.get(), output, planner_data.stop_reason_diag);
+      debug_ptr_->pushPose(getPose(latest_stop_point_.get().point), PoseType::TargetStop);
       debug_ptr_->pushPose(getPose(latest_stop_point_.get().point), PoseType::Stop);
     }
   }
