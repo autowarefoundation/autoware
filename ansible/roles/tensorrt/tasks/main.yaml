@@ -4,7 +4,16 @@
     name:
       - libcudnn8={{ cudnn_version }}
       - libcudnn8-dev={{ cudnn_version }}
-      - tensorrt={{ tensorrt_version }}
+      - libnvinfer8={{ tensorrt_version }}
+      - libnvinfer-plugin8={{ tensorrt_version }}
+      - libnvparsers8={{ tensorrt_version }}
+      - libnvonnxparsers8={{ tensorrt_version }}
+      - libnvinfer-bin={{ tensorrt_version }}
+      - libnvinfer-dev={{ tensorrt_version }}
+      - libnvinfer-plugin-dev={{ tensorrt_version }}
+      - libnvparsers-dev={{ tensorrt_version }}
+      - libnvonnxparsers-dev={{ tensorrt_version }}
+      - libnvinfer-samples={{ tensorrt_version }}
     allow_downgrade: true
     update_cache: true
 
@@ -17,4 +26,13 @@
   with_items:
     - libcudnn8
     - libcudnn8-dev
-    - tensorrt
+    - libnvinfer8
+    - libnvinfer-plugin8
+    - libnvparsers8
+    - libnvonnxparsers8
+    - libnvinfer-bin
+    - libnvinfer-dev
+    - libnvinfer-plugin-dev
+    - libnvparsers-dev
+    - libnvonnxparsers-dev
+    - libnvinfer-samples
