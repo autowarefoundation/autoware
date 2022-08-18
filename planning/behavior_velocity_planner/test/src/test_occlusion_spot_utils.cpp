@@ -93,7 +93,7 @@ TEST(calcSlowDownPointsForPossibleCollision, ConsiderSignedOffset)
      *    c : collision
      */
     calcSlowDownPointsForPossibleCollision(0, path, -offset_from_start_to_ego, pcs);
-    if (pcs[0].collision_with_margin.longitudinal_velocity_mps - 3.0 > 1e-3) {
+    if (pcs[0].collision_with_margin.longitudinal_velocity_mps != 3.0) {
       for (size_t i = 0; i < path.points.size(); i++) {
         std::cout << "v : " << path.points[i].point.longitudinal_velocity_mps << "\t";
       }
@@ -104,7 +104,7 @@ TEST(calcSlowDownPointsForPossibleCollision, ConsiderSignedOffset)
       std::cout << std::endl;
     }
     EXPECT_DOUBLE_EQ(pcs[0].collision_with_margin.longitudinal_velocity_mps, 3);
-    EXPECT_DOUBLE_EQ(pcs[1].collision_with_margin.longitudinal_velocity_mps, 4.5);
+    EXPECT_DOUBLE_EQ(pcs[1].collision_with_margin.longitudinal_velocity_mps, 4);
     EXPECT_DOUBLE_EQ(pcs[2].collision_with_margin.longitudinal_velocity_mps, 6);
   }
 

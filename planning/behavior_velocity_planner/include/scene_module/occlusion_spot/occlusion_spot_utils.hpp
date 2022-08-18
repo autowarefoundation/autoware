@@ -146,7 +146,7 @@ struct ObstacleInfo
   SafeMotion safe_motion;  // safe motion of velocity and stop point
   geometry_msgs::msg::Point position;
   double max_velocity;  // [m/s] Maximum velocity of the possible obstacle
-  double ttc;           // [s] time to collision with ego
+  double ttv;           // [s] time to vehicle for pedestrian
 };
 
 /**

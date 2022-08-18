@@ -65,18 +65,6 @@ TEST(safeMotion, delay_jerk_acceleration)
   }
 }
 
-TEST(calculateInsertVelocity, min_max)
-{
-  using behavior_velocity_planner::occlusion_spot_utils::calculateInsertVelocity;
-  const double inf = std::numeric_limits<double>::max();
-  // upper bound rpb_vel
-  ASSERT_EQ(calculateInsertVelocity(inf, inf, inf, inf), inf);
-  // lower bound org_vel = 0
-  ASSERT_EQ(calculateInsertVelocity(inf, inf, inf, 0), 0.0);
-  // lower bound min = 0
-  ASSERT_EQ(calculateInsertVelocity(inf, inf, 0, inf), inf);
-}
-
 TEST(insertSafeVelocityToPath, replace_original_at_too_close_case)
 {
   /* straight path

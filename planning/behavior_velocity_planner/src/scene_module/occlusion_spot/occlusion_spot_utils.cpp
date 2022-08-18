@@ -150,9 +150,10 @@ void calcSlowDownPointsForPossibleCollision(
         const double d1 = dist_along_next_path_point;
         const auto p0 = p_prev.pose.position;
         const auto p1 = p_next.pose.position;
+        const double dist_to_next = std::abs(d1 - dist_to_col);
         const double v0 = p_prev.longitudinal_velocity_mps;
         const double v1 = p_next.longitudinal_velocity_mps;
-        const double v = getInterpolatedValue(d0, v0, dist_to_col, d1, v1);
+        const double v = (dist_to_next < 1e-6) ? v1 : v0;
         const double z = getInterpolatedValue(d0, p0.z, dist_to_col, d1, p1.z);
         // height is used to visualize marker correctly
         auto & col = possible_collisions.at(collision_index);
@@ -320,15 +321,17 @@ PossibleCollisionInfo calculateCollisionPathPointFromOcclusionSpot(
    *             ------------------
    */
   PossibleCollisionInfo pc;
-  const double ttc = std::abs(arc_coord_occlusion_with_offset.distance / param.pedestrian_vel);
-  SafeMotion sm = calculateSafeMotion(param.v, ttc);
+  // ttv: time to vehicle for pedestrian
+  // ttc: time to collision for ego vehicle
+  const double ttv = std::abs(arc_coord_occlusion_with_offset.distance / param.pedestrian_vel);
+  SafeMotion sm = calculateSafeMotion(param.v, ttv);
   double distance_to_stop = arc_coord_occlusion_with_offset.length - sm.stop_dist;
   const double eps = 0.1;
   // avoid inserting path point behind original path
   if (distance_to_stop < eps) distance_to_stop = eps;
   pc.arc_lane_dist_at_collision = {distance_to_stop, arc_coord_occlusion_with_offset.distance};
   pc.obstacle_info.safe_motion = sm;
-  pc.obstacle_info.ttc = ttc;
+  pc.obstacle_info.ttv = ttv;
   pc.obstacle_info.position = calcPose(path_lanelet, arc_coord_occlusion).position;
   pc.obstacle_info.max_velocity = param.pedestrian_vel;
   pc.collision_pose = calcPose(path_lanelet, {arc_coord_occlusion_with_offset.length, 0.0});
