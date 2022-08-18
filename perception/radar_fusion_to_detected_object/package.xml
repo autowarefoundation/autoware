@@ -4,8 +4,9 @@
   <name>radar_fusion_to_detected_object</name>
   <version>0.0.0</version>
   <description>radar_fusion_to_detected_object</description>
-  <maintainer email="scepter914@gmail.com">scepter914</maintainer>
+  <maintainer email="satoshi.tanaka@tier4.jp">Satoshi Tanaka</maintainer>
   <license>Apache License 2.0</license>
+  <author email="satoshi.tanaka@tier4.jp">Satoshi Tanaka</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <build_depend>autoware_cmake</build_depend>
