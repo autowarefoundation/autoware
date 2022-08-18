@@ -101,7 +101,7 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(
     return true;
   }
 
-  debug_data_.virtual_wall_pose = util::getAheadPose(
+  debug_data_.virtual_wall_pose = planning_utils::getAheadPose(
     stop_line_idx, planner_data_->vehicle_info_.max_longitudinal_offset_m, *path);
   debug_data_.stop_point_pose = path->points.at(stop_line_idx).point.pose;
   if (first_idx_inside_lane != -1) {
@@ -111,7 +111,7 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(
   /* set stop speed */
   if (state_machine_.getState() == State::STOP) {
     constexpr double v = 0.0;
-    util::setVelocityFrom(stop_line_idx, v, path);
+    planning_utils::setVelocityFromIndex(stop_line_idx, v, path);
 
     /* get stop point and stop factor */
     tier4_planning_msgs::msg::StopFactor stop_factor;

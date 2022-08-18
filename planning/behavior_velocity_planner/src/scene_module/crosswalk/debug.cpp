@@ -218,6 +218,8 @@ visualization_msgs::msg::MarkerArray createWalkwayMarkers(
 }  // namespace
 
 visualization_msgs::msg::MarkerArray CrosswalkModule::createVirtualWallMarkerArray()
+//  const std::string & ns, const size_t id, const std::vector<geometry_msgs::msg::Pose> &
+//  stop_poses, const std::vector<geometry_msgs::msg::Pose> & slow_poses)
 {
   const auto now = this->clock_->now();
   auto id = module_id_;

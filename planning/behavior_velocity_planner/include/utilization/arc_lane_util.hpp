@@ -159,6 +159,17 @@ boost::optional<PathIndexWithOffset> findOffsetSegment(
   }
 }
 
+inline boost::optional<PathIndexWithOffset> findOffsetSegment(
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const size_t index,
+  const double offset)
+{
+  if (offset >= 0) {
+    return findForwardOffsetSegment(path, index, offset);
+  }
+
+  return findBackwardOffsetSegment(path, index, -offset);
+}
+
 template <class T>
 geometry_msgs::msg::Pose calcTargetPose(const T & path, const PathIndexWithOffset & offset_segment)
 {
@@ -188,6 +199,33 @@ geometry_msgs::msg::Pose calcTargetPose(const T & path, const PathIndexWithOffse
   return target_pose;
 }
 
+inline boost::optional<PathIndexWithPose> createTargetPoint(
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const LineString2d & stop_line,
+  const double margin, const double vehicle_offset)
+{
+  // Find collision segment
+  const auto collision_segment = findCollisionSegment(path, stop_line);
+  if (!collision_segment) {
+    // No collision
+    return {};
+  }
+
+  // Calculate offset length from stop line
+  // Use '-' to make the positive direction is forward
+  const double offset_length = -(margin + vehicle_offset);
+
+  // Find offset segment
+  const auto offset_segment = findOffsetSegment(path, *collision_segment, offset_length);
+  if (!offset_segment) {
+    // No enough path length
+    return {};
+  }
+
+  const auto target_pose = calcTargetPose(path, *offset_segment);
+
+  const auto front_idx = offset_segment->first;
+  return std::make_pair(front_idx, target_pose);
+}
 }  // namespace arc_lane_utils
 }  // namespace behavior_velocity_planner
 

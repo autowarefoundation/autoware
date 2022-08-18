@@ -49,7 +49,7 @@ int insertPoint(
   const size_t closest_idx = closest_idx_opt.get();
 
   int insert_idx = closest_idx;
-  if (isAheadOf(in_pose, inout_path->points.at(closest_idx).point.pose)) {
+  if (planning_utils::isAheadOf(in_pose, inout_path->points.at(closest_idx).point.pose)) {
     ++insert_idx;
   }
 
@@ -61,56 +61,6 @@ int insertPoint(
   inout_path->points.insert(it, inserted_point);
 
   return insert_idx;
-}
-
-geometry_msgs::msg::Pose getAheadPose(
-  const size_t start_idx, const double ahead_dist,
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
-{
-  if (path.points.size() == 0) {
-    return geometry_msgs::msg::Pose{};
-  }
-
-  double curr_dist = 0.0;
-  double prev_dist = 0.0;
-  for (size_t i = start_idx; i < path.points.size() - 1; ++i) {
-    const geometry_msgs::msg::Pose p0 = path.points.at(i).point.pose;
-    const geometry_msgs::msg::Pose p1 = path.points.at(i + 1).point.pose;
-    curr_dist += tier4_autoware_utils::calcDistance2d(p0, p1);
-    if (curr_dist > ahead_dist) {
-      const double dl = std::max(curr_dist - prev_dist, 0.0001 /* avoid 0 divide */);
-      const double w_p0 = (curr_dist - ahead_dist) / dl;
-      const double w_p1 = (ahead_dist - prev_dist) / dl;
-      geometry_msgs::msg::Pose p;
-      p.position.x = w_p0 * p0.position.x + w_p1 * p1.position.x;
-      p.position.y = w_p0 * p0.position.y + w_p1 * p1.position.y;
-      p.position.z = w_p0 * p0.position.z + w_p1 * p1.position.z;
-      tf2::Quaternion q0_tf, q1_tf;
-      tf2::fromMsg(p0.orientation, q0_tf);
-      tf2::fromMsg(p1.orientation, q1_tf);
-      p.orientation = tf2::toMsg(q0_tf.slerp(q1_tf, w_p1));
-      return p;
-    }
-    prev_dist = curr_dist;
-  }
-  return path.points.back().point.pose;
-}
-
-bool setVelocityFrom(
-  const size_t idx, const double vel, autoware_auto_planning_msgs::msg::PathWithLaneId * input)
-{
-  for (size_t i = idx; i < input->points.size(); ++i) {
-    input->points.at(i).point.longitudinal_velocity_mps =
-      std::min(static_cast<float>(vel), input->points.at(i).point.longitudinal_velocity_mps);
-  }
-  return true;
-}
-
-bool isAheadOf(const geometry_msgs::msg::Pose & target, const geometry_msgs::msg::Pose & origin)
-{
-  geometry_msgs::msg::Pose p = planning_utils::transformRelCoordinate2D(target, origin);
-  bool is_target_ahead = (p.position.x > 0.0);
-  return is_target_ahead;
 }
 
 bool hasLaneId(const autoware_auto_planning_msgs::msg::PathPointWithLaneId & p, const int id)
@@ -488,21 +438,6 @@ std::vector<int> getLaneletIdsFromLaneletsVec(const std::vector<lanelet::ConstLa
   return id_list;
 }
 
-double calcArcLengthFromPath(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & input_path, const size_t src_idx,
-  const size_t dst_idx)
-{
-  double length{0.0};
-  for (size_t i = src_idx; i < dst_idx; ++i) {
-    const double dx_wp = input_path.points.at(i + 1).point.pose.position.x -
-                         input_path.points.at(i).point.pose.position.x;
-    const double dy_wp = input_path.points.at(i + 1).point.pose.position.y -
-                         input_path.points.at(i).point.pose.position.y;
-    length += std::hypot(dx_wp, dy_wp);
-  }
-  return length;
-}
-
 lanelet::ConstLanelet generateOffsetLanelet(
   const lanelet::ConstLanelet lanelet, double right_margin, double left_margin)
 {
@@ -528,13 +463,6 @@ lanelet::ConstLanelet generateOffsetLanelet(
   const auto centerline = lanelet::utils::generateFineCenterline(lanelet_with_margin, 5.0);
   lanelet_with_margin.setCenterline(centerline);
   return std::move(lanelet_with_margin);
-}
-
-geometry_msgs::msg::Pose toPose(const geometry_msgs::msg::Point & p)
-{
-  geometry_msgs::msg::Pose pose;
-  pose.position = p;
-  return pose;
 }
 
 bool generateStopLineBeforeIntersection(
@@ -622,5 +550,11 @@ bool generateStopLineBeforeIntersection(
   return false;
 }
 
+geometry_msgs::msg::Pose toPose(const geometry_msgs::msg::Point & p)
+{
+  geometry_msgs::msg::Pose pose;
+  pose.position = p;
+  return pose;
+}
 }  // namespace util
 }  // namespace behavior_velocity_planner

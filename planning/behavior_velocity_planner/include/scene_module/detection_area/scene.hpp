@@ -82,17 +82,8 @@ private:
 
   bool canClearStopState() const;
 
-  bool isOverLine(
-    const PathWithLaneId & path, const geometry_msgs::msg::Pose & self_pose,
-    const geometry_msgs::msg::Pose & line_pose) const;
-
   bool hasEnoughBrakingDistance(
     const geometry_msgs::msg::Pose & self_pose, const geometry_msgs::msg::Pose & line_pose) const;
-
-  void insertStopPoint(const geometry_msgs::msg::Pose & stop_pose, PathWithLaneId & path) const;
-
-  boost::optional<PathIndexWithPose> createTargetPoint(
-    const PathWithLaneId & path, const LineString2d & stop_line, const double margin) const;
 
   // Key Feature
   const lanelet::autoware::DetectionArea & detection_area_reg_elem_;

@@ -114,42 +114,11 @@ void extractClosePartition(
   const geometry_msgs::msg::Point position, const BasicPolygons2d & all_partitions,
   BasicPolygons2d & close_partition, const double distance_thresh = 30.0);
 void getAllPartitionLanelets(const lanelet::LaneletMapConstPtr ll, BasicPolygons2d & polys);
-void setVelocityFrom(const size_t idx, const double vel, PathWithLaneId * input);
+void setVelocityFromIndex(const size_t begin_idx, const double vel, PathWithLaneId * input);
 void insertVelocity(
   PathWithLaneId & path, const PathPointWithLaneId & path_point, const double v,
   size_t & insert_index, const double min_distance = 0.001);
 inline int64_t bitShift(int64_t original_id) { return original_id << (sizeof(int32_t) * 8 / 2); }
-
-inline double square(const double & a) { return a * a; }
-double normalizeEulerAngle(double euler);
-geometry_msgs::msg::Quaternion getQuaternionFromYaw(double yaw);
-
-template <class T1, class T2>
-double calcSquaredDist2d(const T1 & a, const T2 & b)
-{
-  return square(getPoint(a).x - getPoint(b).x) + square(getPoint(a).y - getPoint(b).y);
-}
-
-template <class T1, class T2>
-double calcDist2d(const T1 & a, const T2 & b)
-{
-  return std::sqrt(calcSquaredDist2d<T1, T2>(a, b));
-}
-
-template <class T>
-double calcDist2d(const T & a, const T & b)
-{
-  return std::sqrt(calcSquaredDist2d<T, T>(a, b));
-}
-
-template <class T>
-bool calcClosestIndex(
-  const T & path, const geometry_msgs::msg::Pose & pose, int & closest, double dist_thr = 3.0,
-  double angle_thr = M_PI_4);
-
-template <class T>
-bool calcClosestIndex(
-  const T & path, const geometry_msgs::msg::Point & point, int & closest, double dist_thr = 3.0);
 
 geometry_msgs::msg::Pose transformRelCoordinate2D(
   const geometry_msgs::msg::Pose & target, const geometry_msgs::msg::Pose & origin);
@@ -241,6 +210,9 @@ double calcSignedArcLengthWithSearchIndex(
 }
 Polygon2d toFootprintPolygon(const PredictedObject & object);
 bool isAheadOf(const geometry_msgs::msg::Pose & target, const geometry_msgs::msg::Pose & origin);
+geometry_msgs::msg::Pose getAheadPose(
+  const size_t start_idx, const double ahead_dist,
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & path);
 Polygon2d generatePathPolygon(
   const PathWithLaneId & path, const size_t start_idx, const size_t end_idx, const double width);
 
@@ -358,6 +330,14 @@ std::vector<lanelet::ConstLanelet> getLaneletsOnPath(
 std::set<int64_t> getLaneIdSetOnPath(
   const PathWithLaneId & path, const lanelet::LaneletMapPtr lanelet_map,
   const geometry_msgs::msg::Pose & current_pose);
+
+bool isOverLine(
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
+  const geometry_msgs::msg::Pose & self_pose, const geometry_msgs::msg::Pose & line_pose,
+  const double offset = 0.0);
+
+boost::optional<geometry_msgs::msg::Pose> insertStopPoint(
+  const geometry_msgs::msg::Point & stop_point, PathWithLaneId & output);
 }  // namespace planning_utils
 }  // namespace behavior_velocity_planner
 

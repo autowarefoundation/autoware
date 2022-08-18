@@ -127,8 +127,9 @@ bool NoStoppingAreaModule::modifyPathVelocity(
     setSafe(true);
     return true;
   }
-  const auto stop_point =
-    createTargetPoint(original_path, stop_line.value(), planner_param_.stop_margin);
+  const auto stop_point = arc_lane_utils::createTargetPoint(
+    original_path, stop_line.value(), planner_param_.stop_margin,
+    planner_data_->vehicle_info_.max_longitudinal_offset_m);
   if (!stop_point) {
     setSafe(true);
     return true;
@@ -136,7 +137,8 @@ bool NoStoppingAreaModule::modifyPathVelocity(
   const auto & stop_pose = stop_point->second;
   setDistance(motion_utils::calcSignedArcLength(
     original_path.points, current_pose.pose.position, stop_pose.position));
-  if (isOverDeadLine(original_path, current_pose.pose, stop_pose)) {
+  if (planning_utils::isOverLine(
+        original_path, current_pose.pose, stop_pose, planner_param_.dead_line_margin)) {
     // ego can't stop in front of no stopping area -> GO or OR
     state_machine_.setState(StateMachine::State::GO);
     setSafe(true);
@@ -359,15 +361,6 @@ bool NoStoppingAreaModule::isTargetStuckVehicleType(
   return false;
 }
 
-bool NoStoppingAreaModule::isOverDeadLine(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-  const geometry_msgs::msg::Pose & self_pose, const geometry_msgs::msg::Pose & line_pose) const
-{
-  return motion_utils::calcSignedArcLength(path.points, self_pose.position, line_pose.position) +
-           planner_param_.dead_line_margin <
-         0.0;
-}
-
 bool NoStoppingAreaModule::isStoppable(
   const geometry_msgs::msg::Pose & self_pose, const geometry_msgs::msg::Pose & line_pose) const
 {
@@ -424,34 +417,4 @@ void NoStoppingAreaModule::insertStopPoint(
   // Insert stop point or replace with zero velocity
   planning_utils::insertVelocity(path, stop_point_with_lane_id, 0.0, insert_idx);
 }
-
-boost::optional<PathIndexWithPose> NoStoppingAreaModule::createTargetPoint(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const LineString2d & stop_line,
-  const double margin) const
-{
-  // Find collision segment
-  const auto collision_segment = arc_lane_utils::findCollisionSegment(path, stop_line);
-  if (!collision_segment) {
-    // No collision
-    return {};
-  }
-
-  // Calculate offset length from stop line
-  // Use '-' to make the positive direction is forward
-  const double offset_length = -(margin + planner_data_->vehicle_info_.max_longitudinal_offset_m);
-
-  // Find offset segment
-  const auto offset_segment =
-    arc_lane_utils::findOffsetSegment(path, *collision_segment, offset_length);
-  if (!offset_segment) {
-    // No enough path length
-    return {};
-  }
-
-  const auto front_idx = offset_segment->first;
-  const auto target_pose = arc_lane_utils::calcTargetPose(path, *offset_segment);
-
-  return std::make_pair(front_idx, target_pose);
-}
-
 }  // namespace behavior_velocity_planner

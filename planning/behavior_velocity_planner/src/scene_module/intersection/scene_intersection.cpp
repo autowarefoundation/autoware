@@ -157,7 +157,7 @@ bool IntersectionModule::modifyPathVelocity(
     static_cast<bool>(static_cast<int>(closest_idx) > pass_judge_line_idx);
   if (static_cast<int>(closest_idx) == pass_judge_line_idx) {
     geometry_msgs::msg::Pose pass_judge_line = path->points.at(pass_judge_line_idx).point.pose;
-    is_over_pass_judge_line = util::isAheadOf(current_pose.pose, pass_judge_line);
+    is_over_pass_judge_line = planning_utils::isAheadOf(current_pose.pose, pass_judge_line);
   }
   if (is_go_out_ && is_over_pass_judge_line && !external_stop) {
     RCLCPP_DEBUG(logger_, "over the pass judge line. no plan needed.");
@@ -211,9 +211,10 @@ bool IntersectionModule::modifyPathVelocity(
         pass_judge_line_idx = stuck_pass_judge_line_idx;
       }
     }
-    util::setVelocityFrom(stop_line_idx, v, path);
+    planning_utils::setVelocityFromIndex(stop_line_idx, v, path);
     debug_data_.stop_required = true;
-    debug_data_.stop_wall_pose = util::getAheadPose(stop_line_idx, base_link2front, *path);
+    debug_data_.stop_wall_pose =
+      planning_utils::getAheadPose(stop_line_idx, base_link2front, *path);
     debug_data_.stop_point_pose = path->points.at(stop_line_idx).point.pose;
     debug_data_.judge_point_pose = path->points.at(pass_judge_line_idx).point.pose;
 
@@ -504,7 +505,7 @@ TimeDistanceArray IntersectionModule::calcIntersectionPassingTime(
   double passing_time = 0.0;
   time_distance_array.emplace_back(passing_time, dist_sum);
   for (size_t i = 1; i < smoothed_reference_path.points.size(); ++i) {
-    const double dist = planning_utils::calcDist2d(
+    const double dist = tier4_autoware_utils::calcDistance2d(
       smoothed_reference_path.points.at(i - 1), smoothed_reference_path.points.at(i));
     dist_sum += dist;
     // to avoid zero division
@@ -707,7 +708,7 @@ double IntersectionModule::calcDistanceUntilIntersectionLanelet(
     return 0.0;
   }
 
-  double distance = util::calcArcLengthFromPath(path, closest_idx, dst_idx);
+  double distance = std::abs(motion_utils::calcSignedArcLength(path.points, closest_idx, dst_idx));
   const auto & lane_first_point = assigned_lanelet.centerline2d().front();
   distance += std::hypot(
     path.points.at(dst_idx).point.pose.position.x - lane_first_point.x(),

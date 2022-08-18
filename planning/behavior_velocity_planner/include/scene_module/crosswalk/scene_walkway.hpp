@@ -61,8 +61,6 @@ private:
   [[nodiscard]] boost::optional<std::pair<double, geometry_msgs::msg::Point>> getStopLine(
     const PathWithLaneId & ego_path) const;
 
-  void insertStopPoint(const geometry_msgs::msg::Point & stop_point, PathWithLaneId & output);
-
   enum class State { APPROACH, STOP, SURPASSED };
 
   lanelet::ConstLanelet walkway_;

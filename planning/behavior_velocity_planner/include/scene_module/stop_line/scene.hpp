@@ -73,8 +73,6 @@ public:
 private:
   int64_t module_id_;
 
-  void insertStopPoint(const geometry_msgs::msg::Point & stop_point, PathWithLaneId & path) const;
-
   std::shared_ptr<const rclcpp::Time> stopped_time_;
 
   lanelet::ConstLineString3d stop_line_;

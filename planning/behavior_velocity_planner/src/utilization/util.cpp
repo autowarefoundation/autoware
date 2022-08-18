@@ -19,25 +19,6 @@
 #include <string>
 #include <vector>
 
-namespace
-{
-inline geometry_msgs::msg::Pose getPose(
-  const autoware_auto_planning_msgs::msg::Path & path, int idx)
-{
-  return path.points.at(idx).pose;
-}
-inline geometry_msgs::msg::Pose getPose(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, int idx)
-{
-  return path.points.at(idx).point.pose;
-}
-inline geometry_msgs::msg::Pose getPose(
-  const autoware_auto_planning_msgs::msg::Trajectory & traj, int idx)
-{
-  return traj.points.at(idx).pose;
-}
-}  // namespace
-
 namespace behavior_velocity_planner
 {
 namespace planning_utils
@@ -286,6 +267,39 @@ bool isAheadOf(const geometry_msgs::msg::Pose & target, const geometry_msgs::msg
   geometry_msgs::msg::Pose p = planning_utils::transformRelCoordinate2D(target, origin);
   const bool is_target_ahead = (p.position.x > 0.0);
   return is_target_ahead;
+}
+
+geometry_msgs::msg::Pose getAheadPose(
+  const size_t start_idx, const double ahead_dist,
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & path)
+{
+  if (path.points.size() == 0) {
+    return geometry_msgs::msg::Pose{};
+  }
+
+  double curr_dist = 0.0;
+  double prev_dist = 0.0;
+  for (size_t i = start_idx; i < path.points.size() - 1; ++i) {
+    const geometry_msgs::msg::Pose p0 = path.points.at(i).point.pose;
+    const geometry_msgs::msg::Pose p1 = path.points.at(i + 1).point.pose;
+    curr_dist += tier4_autoware_utils::calcDistance2d(p0, p1);
+    if (curr_dist > ahead_dist) {
+      const double dl = std::max(curr_dist - prev_dist, 0.0001 /* avoid 0 divide */);
+      const double w_p0 = (curr_dist - ahead_dist) / dl;
+      const double w_p1 = (ahead_dist - prev_dist) / dl;
+      geometry_msgs::msg::Pose p;
+      p.position.x = w_p0 * p0.position.x + w_p1 * p1.position.x;
+      p.position.y = w_p0 * p0.position.y + w_p1 * p1.position.y;
+      p.position.z = w_p0 * p0.position.z + w_p1 * p1.position.z;
+      tf2::Quaternion q0_tf, q1_tf;
+      tf2::fromMsg(p0.orientation, q0_tf);
+      tf2::fromMsg(p1.orientation, q1_tf);
+      p.orientation = tf2::toMsg(q0_tf.slerp(q1_tf, w_p1));
+      return p;
+    }
+    prev_dist = curr_dist;
+  }
+  return path.points.back().point.pose;
 }
 
 Polygon2d generatePathPolygon(
@@ -622,5 +636,31 @@ std::vector<int64_t> getSubsequentLaneIdsSetOnPath(
   return subsequent_lane_ids;
 }
 
+bool isOverLine(
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
+  const geometry_msgs::msg::Pose & self_pose, const geometry_msgs::msg::Pose & line_pose,
+  const double offset)
+{
+  return motion_utils::calcSignedArcLength(path.points, self_pose.position, line_pose.position) +
+           offset <
+         0.0;
+}
+
+boost::optional<geometry_msgs::msg::Pose> insertStopPoint(
+  const geometry_msgs::msg::Point & stop_point, PathWithLaneId & output)
+{
+  const size_t base_idx = motion_utils::findNearestSegmentIndex(output.points, stop_point);
+  const auto insert_idx = motion_utils::insertTargetPoint(base_idx, stop_point, output.points);
+
+  if (!insert_idx) {
+    return {};
+  }
+
+  for (size_t i = insert_idx.get(); i < output.points.size(); ++i) {
+    output.points.at(i).point.longitudinal_velocity_mps = 0.0;
+  }
+
+  return tier4_autoware_utils::getPose(output.points.at(insert_idx.get()));
+}
 }  // namespace planning_utils
 }  // namespace behavior_velocity_planner

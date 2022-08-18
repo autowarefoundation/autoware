@@ -16,7 +16,6 @@
 #include <lanelet2_extension/utility/query.hpp>
 #include <lanelet2_extension/utility/utilities.hpp>
 #include <scene_module/blind_spot/scene.hpp>
-#include <scene_module/intersection/util.hpp>
 #include <tier4_autoware_utils/geometry/path_with_lane_id_geometry.hpp>
 #include <utilization/boost_geometry_helper.hpp>
 #include <utilization/path_utilization.hpp>
@@ -112,7 +111,7 @@ bool BlindSpotModule::modifyPathVelocity(
   const size_t closest_idx = closest_idx_opt.get();
 
   /* get debug info */
-  const auto stop_line_pose = util::getAheadPose(
+  const auto stop_line_pose = planning_utils::getAheadPose(
     stop_line_idx, planner_data_->vehicle_info_.max_longitudinal_offset_m, *path);
   debug_data_.virtual_wall_pose = stop_line_pose;
   debug_data_.stop_point_pose = path->points.at(stop_line_idx).point.pose;
@@ -122,7 +121,7 @@ bool BlindSpotModule::modifyPathVelocity(
   is_over_pass_judge_line_ = static_cast<bool>(static_cast<int>(closest_idx) > pass_judge_line_idx);
   if (static_cast<int>(closest_idx) == pass_judge_line_idx) {
     geometry_msgs::msg::Pose pass_judge_line = path->points.at(pass_judge_line_idx).point.pose;
-    is_over_pass_judge_line_ = util::isAheadOf(current_pose.pose, pass_judge_line);
+    is_over_pass_judge_line_ = planning_utils::isAheadOf(current_pose.pose, pass_judge_line);
   }
   if (planner_param_.use_pass_judge_line) {
     if (current_state == State::GO && is_over_pass_judge_line_) {
@@ -149,7 +148,7 @@ bool BlindSpotModule::modifyPathVelocity(
     path->points, current_pose.pose.position, path->points.at(stop_line_idx).point.pose.position));
   if (!isActivated()) {
     constexpr double stop_vel = 0.0;
-    util::setVelocityFrom(stop_line_idx, stop_vel, path);
+    planning_utils::setVelocityFromIndex(stop_line_idx, stop_vel, path);
 
     /* get stop point and stop factor */
     tier4_planning_msgs::msg::StopFactor stop_factor;

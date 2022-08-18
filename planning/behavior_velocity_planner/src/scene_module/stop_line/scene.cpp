@@ -137,7 +137,7 @@ bool StopLineModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop
 
   switch (state_) {
     case State::APPROACH: {
-      insertStopPoint(stop_pose.get().position, *path);
+      planning_utils::insertStopPoint(stop_pose.get().position, *path);
       planning_utils::appendStopReason(stop_factor, stop_reason);
 
       debug_data_.stop_pose = stop_pose.get();
@@ -166,7 +166,7 @@ bool StopLineModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop
         break;
       }
 
-      insertStopPoint(ego_pos_on_path.get(), *path);
+      planning_utils::insertStopPoint(ego_pos_on_path.get(), *path);
       planning_utils::appendStopReason(stop_factor, stop_reason);
 
       debug_data_.stop_pose = stop_pose.get();
@@ -198,20 +198,5 @@ bool StopLineModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop
   }
 
   return true;
-}
-
-void StopLineModule::insertStopPoint(
-  const geometry_msgs::msg::Point & stop_point, PathWithLaneId & path) const
-{
-  const size_t base_idx = findNearestSegmentIndex(path.points, stop_point);
-  const auto insert_idx = insertTargetPoint(base_idx, stop_point, path.points);
-
-  if (!insert_idx) {
-    return;
-  }
-
-  for (size_t i = insert_idx.get(); i < path.points.size(); ++i) {
-    path.points.at(i).point.longitudinal_velocity_mps = 0.0;
-  }
 }
 }  // namespace behavior_velocity_planner

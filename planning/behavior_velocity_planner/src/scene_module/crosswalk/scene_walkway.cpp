@@ -27,7 +27,6 @@ using Line = bg::model::linestring<Point>;
 using motion_utils::calcLongitudinalOffsetPose;
 using motion_utils::calcSignedArcLength;
 using motion_utils::findNearestSegmentIndex;
-using motion_utils::insertTargetPoint;
 using tier4_autoware_utils::createPoint;
 using tier4_autoware_utils::getPose;
 
@@ -109,7 +108,10 @@ bool WalkwayModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_
       return false;
     }
 
-    insertStopPoint(stop_pose.get().position, *path);
+    const auto inserted_pose = planning_utils::insertStopPoint(stop_pose.get().position, *path);
+    if (inserted_pose) {
+      debug_data_.stop_poses.push_back(inserted_pose.get());
+    }
 
     /* get stop point and stop factor */
     StopFactor stop_factor;
@@ -148,22 +150,5 @@ bool WalkwayModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_
   }
 
   return true;
-}
-
-void WalkwayModule::insertStopPoint(
-  const geometry_msgs::msg::Point & stop_point, PathWithLaneId & output)
-{
-  const size_t base_idx = findNearestSegmentIndex(output.points, stop_point);
-  const auto insert_idx = insertTargetPoint(base_idx, stop_point, output.points);
-
-  if (!insert_idx) {
-    return;
-  }
-
-  for (size_t i = insert_idx.get(); i < output.points.size(); ++i) {
-    output.points.at(i).point.longitudinal_velocity_mps = 0.0;
-  }
-
-  debug_data_.stop_poses.push_back(getPose(output.points.at(insert_idx.get())));
 }
 }  // namespace behavior_velocity_planner

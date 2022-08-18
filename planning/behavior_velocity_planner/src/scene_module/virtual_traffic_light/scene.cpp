@@ -14,6 +14,7 @@
 
 #include <motion_utils/trajectory/trajectory.hpp>
 #include <scene_module/virtual_traffic_light/scene.hpp>
+#include <utilization/arc_lane_util.hpp>
 #include <utilization/util.hpp>
 
 #include <tier4_v2x_msgs/msg/key_value.hpp>
@@ -152,100 +153,6 @@ boost::optional<SegmentIndexWithPoint> findCollision(
   return {};
 }
 
-SegmentIndexWithOffset findForwardOffsetSegment(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const size_t base_idx,
-  const double offset_length)
-{
-  double sum_length = 0.0;
-  for (size_t i = base_idx; i < path.points.size() - 1; ++i) {
-    const auto p_front = path.points.at(i);
-    const auto p_back = path.points.at(i + 1);
-
-    const auto segment_length = calcDistance2d(p_front, p_back);
-    sum_length += segment_length;
-
-    // If it's over offset length, return front index and offset from front point
-    if (sum_length >= offset_length) {
-      const auto remain_length = sum_length - offset_length;
-      return SegmentIndexWithOffset{i, segment_length - remain_length};
-    }
-  }
-
-  // No enough length
-  const auto last_segment_length =
-    calcDistance2d(path.points.at(path.points.size() - 2), path.points.at(path.points.size() - 1));
-
-  return {path.points.size() - 2, offset_length - sum_length + last_segment_length};
-}
-
-SegmentIndexWithOffset findBackwardOffsetSegment(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const size_t base_idx,
-  const double offset_length)
-{
-  double sum_length = 0.0;
-  for (size_t i = base_idx; i > 0; --i) {
-    const auto p_front = path.points.at(i - 1);
-    const auto p_back = path.points.at(i);
-
-    const auto segment_length = calcDistance2d(p_front, p_back);
-    sum_length += segment_length;
-
-    // If it's over offset length, return front index and offset from front point
-    if (sum_length >= offset_length) {
-      const auto remain_length = sum_length - offset_length;
-      return SegmentIndexWithOffset{i - 1, remain_length};
-    }
-  }
-
-  // No enough length
-  return {0, sum_length - offset_length};
-}
-
-SegmentIndexWithOffset findOffsetSegment(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const size_t index,
-  const double offset)
-{
-  if (offset >= 0) {
-    return findForwardOffsetSegment(path, index, offset);
-  }
-
-  return findBackwardOffsetSegment(path, index, -offset);
-}
-
-geometry_msgs::msg::Pose calcInterpolatedPose(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const size_t index,
-  const double offset)
-{
-  // Get segment points
-  const auto & p_front = path.points.at(index).point.pose.position;
-  const auto & p_back = path.points.at(index + 1).point.pose.position;
-
-  // To Eigen point
-  const auto p_eigen_front = Eigen::Vector2d(p_front.x, p_front.y);
-  const auto p_eigen_back = Eigen::Vector2d(p_back.x, p_back.y);
-
-  // Calculate interpolation ratio
-  const auto interpolate_ratio = offset / (p_eigen_back - p_eigen_front).norm();
-
-  // Add offset to front point
-  const auto interpolated_point_2d =
-    p_eigen_front + interpolate_ratio * (p_eigen_back - p_eigen_front);
-  const double interpolated_z = p_front.z + interpolate_ratio * (p_back.z - p_front.z);
-
-  // Calculate orientation so that X-axis would be along the trajectory
-  tf2::Quaternion quat;
-  quat.setRPY(0, 0, tier4_autoware_utils::calcAzimuthAngle(p_front, p_back));
-
-  // To Pose
-  geometry_msgs::msg::Pose interpolated_pose;
-  interpolated_pose.position.x = interpolated_point_2d.x();
-  interpolated_pose.position.y = interpolated_point_2d.y();
-  interpolated_pose.position.z = interpolated_z;
-  interpolated_pose.orientation = tf2::toMsg(quat);
-
-  return interpolated_pose;
-}
-
 void insertStopVelocityFromStart(autoware_auto_planning_msgs::msg::PathWithLaneId * path)
 {
   for (auto & p : path->points) {
@@ -253,23 +160,27 @@ void insertStopVelocityFromStart(autoware_auto_planning_msgs::msg::PathWithLaneI
   }
 }
 
-size_t insertStopVelocityAtCollision(
+boost::optional<size_t> insertStopVelocityAtCollision(
   const SegmentIndexWithPoint & collision, const double offset,
   autoware_auto_planning_msgs::msg::PathWithLaneId * path)
 {
   const auto collision_offset =
     motion_utils::calcLongitudinalOffsetToSegment(path->points, collision.index, collision.point);
 
-  const auto offset_segment = findOffsetSegment(*path, collision.index, offset + collision_offset);
-  const auto interpolated_pose =
-    calcInterpolatedPose(*path, offset_segment.index, offset_segment.offset);
+  const auto offset_segment =
+    arc_lane_utils::findOffsetSegment(*path, collision.index, offset + collision_offset);
+  if (!offset_segment) {
+    return {};
+  }
 
-  if (offset_segment.offset < 0) {
+  const auto interpolated_pose = arc_lane_utils::calcTargetPose(*path, *offset_segment);
+
+  if (offset_segment->second < 0) {
     insertStopVelocityFromStart(path);
     return 0;
   }
 
-  auto insert_index = static_cast<size_t>(offset_segment.index + 1);
+  auto insert_index = static_cast<size_t>(offset_segment->first + 1);
   auto insert_point = path->points.at(insert_index);
   insert_point.point.pose = interpolated_pose;
   // Insert 0 velocity after stop point or replace velocity with 0
@@ -592,12 +503,16 @@ void VirtualTrafficLightModule::insertStopVelocityAtStopLine(
       {
         auto path_tmp = path;
         const auto insert_index = insertStopVelocityAtCollision(*collision, offset, path_tmp);
-        stop_pose = path_tmp->points.at(insert_index).point.pose;
+        if (insert_index) {
+          stop_pose = path_tmp->points.at(insert_index.get()).point.pose;
+        }
       }
 
     } else {
       const auto insert_index = insertStopVelocityAtCollision(*collision, offset, path);
-      stop_pose = path->points.at(insert_index).point.pose;
+      if (insert_index) {
+        stop_pose = path->points.at(insert_index.get()).point.pose;
+      }
     }
   }
 
@@ -627,7 +542,9 @@ void VirtualTrafficLightModule::insertStopVelocityAtEndLine(
   } else {
     const auto offset = -planner_data_->vehicle_info_.max_longitudinal_offset_m;
     const auto insert_index = insertStopVelocityAtCollision(*collision, offset, path);
-    stop_pose = path->points.at(insert_index).point.pose;
+    if (insert_index) {
+      stop_pose = path->points.at(insert_index.get()).point.pose;
+    }
   }
 
   // Set StopReason

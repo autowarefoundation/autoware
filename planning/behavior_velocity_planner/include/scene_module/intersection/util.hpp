@@ -34,18 +34,10 @@ namespace behavior_velocity_planner
 {
 namespace util
 {
-bool setVelocityFrom(
-  const size_t idx, const double vel, autoware_auto_planning_msgs::msg::PathWithLaneId * input);
-
 int insertPoint(
   const geometry_msgs::msg::Pose & in_pose,
   autoware_auto_planning_msgs::msg::PathWithLaneId * inout_path);
 
-geometry_msgs::msg::Pose getAheadPose(
-  const size_t start_idx, const double ahead_dist,
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path);
-
-bool isAheadOf(const geometry_msgs::msg::Pose & target, const geometry_msgs::msg::Pose & origin);
 bool hasLaneId(const autoware_auto_planning_msgs::msg::PathPointWithLaneId & p, const int id);
 bool hasDuplicatedPoint(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
@@ -123,15 +115,9 @@ std::vector<lanelet::CompoundPolygon3d> getPolygon3dFromLanelets(
 
 std::vector<int> getLaneletIdsFromLaneletsVec(const std::vector<lanelet::ConstLanelets> & ll_vec);
 
-double calcArcLengthFromPath(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & input_path, const size_t src_idx,
-  const size_t dst_idx);
-
 lanelet::ConstLanelet generateOffsetLanelet(
   const lanelet::ConstLanelet lanelet, double right_margin, double left_margin);
-
 geometry_msgs::msg::Pose toPose(const geometry_msgs::msg::Point & p);
-
 }  // namespace util
 }  // namespace behavior_velocity_planner
 
