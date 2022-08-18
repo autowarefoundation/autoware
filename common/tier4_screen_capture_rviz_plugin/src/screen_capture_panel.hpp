@@ -80,8 +80,8 @@ private:
   State state_;
   std::string capture_file_name_;
   bool is_capture_;
-  cv::VideoWriter writer;
-  cv::Size current_movie_size;
+  cv::VideoWriter writer_;
+  cv::Size current_movie_size_;
   std::vector<cv::Mat> image_vec_;
 
   std::string stateToString(const State & state)

@@ -137,15 +137,16 @@ void AutowareScreenCapturePanel::onClickVideoCapture()
                              .convertToFormat(QImage::Format_RGB888)
                              .rgbSwapped()
                              .size();
-        current_movie_size = cv::Size(qsize.width(), qsize.height());
-        writer.open(
+        current_movie_size_ = cv::Size(qsize.width(), qsize.height());
+        writer_.open(
           "capture/" + capture_file_name_ + ".mp4", fourcc, capture_hz_->value(),
-          current_movie_size);
+          current_movie_size_);
       }
       capture_timer_->start(clock);
       state_ = State::CAPTURING;
       break;
     case State::CAPTURING:
+      writer_.release();
       capture_timer_->stop();
       capture_to_mp4_button_ptr_->setText("waiting for capture");
       capture_to_mp4_button_ptr_->setStyleSheet("background-color: #00FF00;");
@@ -167,12 +168,12 @@ void AutowareScreenCapturePanel::onTimer()
   cv::Size size = cv::Size(w, h);
   cv::Mat image(
     size, CV_8UC3, const_cast<uchar *>(qimage.bits()), static_cast<size_t>(qimage.bytesPerLine()));
-  if (size != current_movie_size) {
+  if (size != current_movie_size_) {
     cv::Mat new_image;
-    cv::resize(image, new_image, current_movie_size);
-    writer.write(new_image);
+    cv::resize(image, new_image, current_movie_size_);
+    writer_.write(new_image);
   } else {
-    writer.write(image);
+    writer_.write(image);
   }
   cv::waitKey(0);
 }
