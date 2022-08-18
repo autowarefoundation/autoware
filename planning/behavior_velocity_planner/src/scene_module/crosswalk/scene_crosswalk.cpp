@@ -200,7 +200,7 @@ bool CrosswalkModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
     }
 
     const auto target_velocity = calcTargetVelocity(nearest_stop_point.get(), ego_path);
-    insertDecelPoint(
+    insertDecelPointWithDebugInfo(
       nearest_stop_point.get(), std::max(planner_param_.min_slow_down_velocity, target_velocity),
       *path);
 
@@ -208,10 +208,10 @@ bool CrosswalkModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
   }
 
   if (nearest_stop_point) {
-    insertDecelPoint(nearest_stop_point.get(), 0.0, *path);
+    insertDecelPointWithDebugInfo(nearest_stop_point.get(), 0.0, *path);
     planning_utils::appendStopReason(stop_factor, stop_reason);
   } else if (rtc_stop_point) {
-    insertDecelPoint(rtc_stop_point.get(), 0.0, *path);
+    insertDecelPointWithDebugInfo(rtc_stop_point.get(), 0.0, *path);
     planning_utils::appendStopReason(stop_factor_rtc, stop_reason);
   }
 
@@ -430,32 +430,24 @@ std::pair<double, double> CrosswalkModule::getAttentionRange(const PathWithLaneI
   return std::make_pair(std::max(0.0, near_attention_range), std::max(0.0, far_attention_range));
 }
 
-void CrosswalkModule::insertDecelPoint(
+void CrosswalkModule::insertDecelPointWithDebugInfo(
   const geometry_msgs::msg::Point & stop_point, const float target_velocity,
   PathWithLaneId & output)
 {
-  const auto & ego_pos = planner_data_->current_pose.pose.position;
-  const size_t base_idx = findNearestSegmentIndex(output.points, stop_point);
-  const auto insert_idx = insertTargetPoint(base_idx, stop_point, output.points);
-
-  if (!insert_idx) {
+  const auto stop_pose = planning_utils::insertDecelPoint(stop_point, output, target_velocity);
+  if (!stop_pose) {
     return;
   }
+  const auto & ego_pos = planner_data_->current_pose.pose.position;
 
-  for (size_t i = insert_idx.get(); i < output.points.size(); ++i) {
-    const auto & original_velocity = output.points.at(i).point.longitudinal_velocity_mps;
-    output.points.at(i).point.longitudinal_velocity_mps =
-      std::min(original_velocity, target_velocity);
-  }
+  setDistance(calcSignedArcLength(output.points, ego_pos, stop_pose->position));
 
-  setDistance(calcSignedArcLength(output.points, ego_pos, stop_point));
-
-  debug_data_.first_stop_pose = getPose(output.points.at(insert_idx.get()));
+  debug_data_.first_stop_pose = getPose(*stop_pose);
 
   if (std::abs(target_velocity) < 1e-3) {
-    debug_data_.stop_poses.push_back(getPose(output.points.at(insert_idx.get())));
+    debug_data_.stop_poses.push_back(*stop_pose);
   } else {
-    debug_data_.slow_poses.push_back(getPose(output.points.at(insert_idx.get())));
+    debug_data_.slow_poses.push_back(*stop_pose);
   }
 }
 

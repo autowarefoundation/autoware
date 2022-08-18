@@ -347,6 +347,10 @@ std::set<int64_t> getLaneletIdSetOnPath(
   return id_set;
 }
 
+boost::optional<geometry_msgs::msg::Pose> insertDecelPoint(
+  const geometry_msgs::msg::Point & stop_point, PathWithLaneId & output,
+  const float target_velocity);
+
 std::vector<lanelet::ConstLanelet> getLaneletsOnPath(
   const PathWithLaneId & path, const lanelet::LaneletMapPtr lanelet_map,
   const geometry_msgs::msg::Pose & current_pose);

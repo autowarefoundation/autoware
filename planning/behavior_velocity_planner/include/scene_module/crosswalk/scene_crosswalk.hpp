@@ -120,7 +120,7 @@ private:
 
   std::pair<double, double> getAttentionRange(const PathWithLaneId & ego_path);
 
-  void insertDecelPoint(
+  void insertDecelPointWithDebugInfo(
     const geometry_msgs::msg::Point & stop_point, const float target_velocity,
     PathWithLaneId & output);
 

@@ -60,7 +60,7 @@ void applySafeVelocityConsideringPossibleCollision(
     safe_velocity = std::max(safe_velocity, v_min);
     possible_collision.obstacle_info.safe_motion.safe_velocity = safe_velocity;
     const auto & pose = possible_collision.collision_with_margin.pose;
-    insertSafeVelocityToPath(pose, safe_velocity, param, inout_path);
+    planning_utils::insertDecelPoint(pose.position, *inout_path, safe_velocity);
   }
 }
 
