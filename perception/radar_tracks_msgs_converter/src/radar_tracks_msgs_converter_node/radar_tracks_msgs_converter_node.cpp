@@ -118,6 +118,7 @@ rcl_interfaces::msg::SetParametersResult RadarTracksMsgsConverterNode::onSetPara
 
       // Update params
       update_param(params, "update_rate_hz", p.update_rate_hz);
+      update_param(params, "new_frame_id", p.new_frame_id);
       update_param(params, "use_twist_compensation", p.use_twist_compensation);
     }
   } catch (const rclcpp::exceptions::InvalidParameterTypeException & e) {
