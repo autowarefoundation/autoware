@@ -14,6 +14,8 @@
 
 #include "trajectory_follower/mpc_utils.hpp"
 
+#include "motion_utils/motion_utils.hpp"
+
 #include <algorithm>
 #include <limits>
 #include <string>
@@ -296,83 +298,26 @@ void dynamicSmoothingVelocity(
   calcMPCTrajectoryTime(traj);
 }
 
-int64_t calcNearestIndex(const MPCTrajectory & traj, const geometry_msgs::msg::Pose & self_pose)
-{
-  if (traj.empty()) {
-    return -1;
-  }
-  const float64_t my_yaw = ::motion::motion_common::to_angle(self_pose.orientation);
-  int64_t nearest_idx = -1;
-  float64_t min_dist_squared = std::numeric_limits<float64_t>::max();
-  for (size_t i = 0; i < traj.size(); ++i) {
-    const float64_t dx = self_pose.position.x - traj.x[i];
-    const float64_t dy = self_pose.position.y - traj.y[i];
-    const float64_t dist_squared = dx * dx + dy * dy;
-
-    /* ignore when yaw error is large, for crossing path */
-    const float64_t err_yaw = autoware::common::helper_functions::wrap_angle(my_yaw - traj.yaw[i]);
-    if (std::fabs(err_yaw) > (M_PI / 3.0)) {
-      continue;
-    }
-    if (dist_squared < min_dist_squared) {
-      min_dist_squared = dist_squared;
-      nearest_idx = static_cast<int64_t>(i);
-    }
-  }
-  return nearest_idx;
-}
-
-int64_t calcNearestIndex(
-  const autoware_auto_planning_msgs::msg::Trajectory & traj,
-  const geometry_msgs::msg::Pose & self_pose)
-{
-  if (traj.points.empty()) {
-    return -1;
-  }
-  const float64_t my_yaw = ::motion::motion_common::to_angle(self_pose.orientation);
-  int64_t nearest_idx = -1;
-  float64_t min_dist_squared = std::numeric_limits<float64_t>::max();
-  for (size_t i = 0; i < traj.points.size(); ++i) {
-    const float64_t dx =
-      self_pose.position.x - static_cast<float64_t>(traj.points.at(i).pose.position.x);
-    const float64_t dy =
-      self_pose.position.y - static_cast<float64_t>(traj.points.at(i).pose.position.y);
-    const float64_t dist_squared = dx * dx + dy * dy;
-
-    /* ignore when yaw error is large, for crossing path */
-    const float64_t traj_yaw =
-      ::motion::motion_common::to_angle(traj.points.at(i).pose.orientation);
-    const float64_t err_yaw = autoware::common::helper_functions::wrap_angle(my_yaw - traj_yaw);
-    if (std::fabs(err_yaw) > (M_PI / 3.0)) {
-      continue;
-    }
-    if (dist_squared < min_dist_squared) {
-      min_dist_squared = dist_squared;
-      nearest_idx = static_cast<int64_t>(i);
-    }
-  }
-  return nearest_idx;
-}
-
 bool8_t calcNearestPoseInterp(
   const MPCTrajectory & traj, const geometry_msgs::msg::Pose & self_pose,
   geometry_msgs::msg::Pose * nearest_pose, size_t * nearest_index, float64_t * nearest_time,
-  const rclcpp::Logger & logger, rclcpp::Clock & clock)
+  const double max_dist, const double max_yaw, const rclcpp::Logger & logger, rclcpp::Clock & clock)
 {
   if (traj.empty() || !nearest_pose || !nearest_index || !nearest_time) {
     return false;
   }
-  const int64_t nearest_idx = calcNearestIndex(traj, self_pose);
-  if (nearest_idx == -1) {
+
+  autoware_auto_planning_msgs::msg::Trajectory autoware_traj;
+  convertToAutowareTrajectory(traj, autoware_traj);
+  if (autoware_traj.points.empty()) {
     RCLCPP_WARN_SKIPFIRST_THROTTLE(
-      logger, clock, 5000, "[calcNearestPoseInterp] fail to get nearest. traj.size = %zu",
-      traj.size());
+      logger, clock, 5000, "[calcNearestPoseInterp] input trajectory is empty");
     return false;
   }
 
-  const int64_t traj_size = static_cast<int64_t>(traj.size());
-
-  *nearest_index = static_cast<size_t>(nearest_idx);
+  *nearest_index = motion_utils::findFirstNearestIndexWithSoftConstraints(
+    autoware_traj.points, self_pose, max_dist, max_yaw);
+  const size_t traj_size = traj.size();
 
   if (traj.size() == 1) {
     nearest_pose->position.x = traj.x[*nearest_index];
@@ -390,8 +335,10 @@ bool8_t calcNearestPoseInterp(
     };
 
   /* get second nearest index = next to nearest_index */
-  const size_t next = static_cast<size_t>(std::min(nearest_idx + 1, traj_size - 1));
-  const size_t prev = static_cast<size_t>(std::max(nearest_idx - 1, int64_t(0)));
+  const size_t next = static_cast<size_t>(
+    std::min(static_cast<int64_t>(*nearest_index) + 1, static_cast<int64_t>(traj_size) - 1));
+  const size_t prev =
+    static_cast<size_t>(std::max(static_cast<int64_t>(*nearest_index) - 1, int64_t(0)));
   const float64_t dist_to_next = calcSquaredDist(self_pose, traj, next);
   const float64_t dist_to_prev = calcSquaredDist(self_pose, traj, prev);
   const size_t second_nearest_index = (dist_to_next < dist_to_prev) ? next : prev;

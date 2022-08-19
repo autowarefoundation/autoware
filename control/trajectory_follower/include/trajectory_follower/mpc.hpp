@@ -365,6 +365,9 @@ public:
   /* parameters for path smoothing */
   //!< @brief flag to use predicted steer, not measured steer.
   bool8_t m_use_steer_prediction;
+  //!< @brief parameters for nearest index search
+  double ego_nearest_dist_threshold;
+  double ego_nearest_yaw_threshold;
 
   /**
    * @brief constructor

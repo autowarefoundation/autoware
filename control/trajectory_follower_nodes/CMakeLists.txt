@@ -43,7 +43,8 @@ if(BUILD_TESTING)
 
   find_package(autoware_testing REQUIRED)
   add_smoke_test(${PROJECT_NAME} ${CONTROLLER_NODE}_exe
-    PARAM_FILENAMES "lateral_controller_defaults.param.yaml longitudinal_controller_defaults.param.yaml test_vehicle_info.param.yaml"
+    PARAM_FILENAMES "lateral_controller_defaults.param.yaml longitudinal_controller_defaults.param.yaml
+test_vehicle_info.param.yaml test_nearest_search.param.yaml"
   )
 endif()
 

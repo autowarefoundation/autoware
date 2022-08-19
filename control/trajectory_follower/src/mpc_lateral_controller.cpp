@@ -14,6 +14,7 @@
 
 #include "trajectory_follower/mpc_lateral_controller.hpp"
 
+#include "motion_utils/motion_utils.hpp"
 #include "tf2_ros/create_timer_ros.h"
 
 #include <algorithm>
@@ -139,6 +140,18 @@ MpcLateralController::MpcLateralController(rclcpp::Node & node) : node_{&node}
       node_->declare_parameter<float64_t>("error_deriv_lpf_cutoff_hz");
     m_mpc.initializeLowPassFilters(steering_lpf_cutoff_hz, error_deriv_lpf_cutoff_hz);
   }
+
+  // ego nearest index search
+  m_ego_nearest_dist_threshold =
+    node_->has_parameter("ego_nearest_dist_threshold")
+      ? node_->get_parameter("ego_nearest_dist_threshold").as_double()
+      : node_->declare_parameter<double>("ego_nearest_dist_threshold");  // [m]
+  m_ego_nearest_yaw_threshold =
+    node_->has_parameter("ego_nearest_yaw_threshold")
+      ? node_->get_parameter("ego_nearest_yaw_threshold").as_double()
+      : node_->declare_parameter<double>("ego_nearest_yaw_threshold");  // [rad]
+  m_mpc.ego_nearest_dist_threshold = m_ego_nearest_dist_threshold;
+  m_mpc.ego_nearest_yaw_threshold = m_ego_nearest_yaw_threshold;
 
   m_pub_predicted_traj = node_->create_publisher<autoware_auto_planning_msgs::msg::Trajectory>(
     "~/output/predicted_trajectory", 1);
@@ -356,17 +369,18 @@ MpcLateralController::getInitialControlCommand() const
 
 bool8_t MpcLateralController::isStoppedState() const
 {
+  // If the nearest index is not found, return false
+  if (m_current_trajectory_ptr->points.empty()) {
+    return false;
+  }
+
   // Note: This function used to take into account the distance to the stop line
   // for the stop state judgement. However, it has been removed since the steering
   // control was turned off when approaching/exceeding the stop line on a curve or
   // emergency stop situation and it caused large tracking error.
-  const int64_t nearest = trajectory_follower::MPCUtils::calcNearestIndex(
-    *m_current_trajectory_ptr, m_current_pose_ptr->pose);
-
-  // If the nearest index is not found, return false
-  if (nearest < 0) {
-    return false;
-  }
+  const size_t nearest = motion_utils::findFirstNearestIndexWithSoftConstraints(
+    m_current_trajectory_ptr->points, m_current_pose_ptr->pose, m_ego_nearest_dist_threshold,
+    m_ego_nearest_yaw_threshold);
 
   const float64_t current_vel = m_current_odometry_ptr->twist.twist.linear.x;
   const float64_t target_vel =

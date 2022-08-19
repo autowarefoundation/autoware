@@ -186,6 +186,10 @@ private:
   float64_t m_max_pitch_rad;
   float64_t m_min_pitch_rad;
 
+  // ego nearest index search
+  double m_ego_nearest_dist_threshold;
+  double m_ego_nearest_yaw_threshold;
+
   // 1st order lowpass filter for acceleration
   std::shared_ptr<trajectory_follower::LowpassFilter1d> m_lpf_acc{nullptr};
 
@@ -331,7 +335,7 @@ private:
    */
   autoware_auto_planning_msgs::msg::TrajectoryPoint calcInterpolatedTargetValue(
     const autoware_auto_planning_msgs::msg::Trajectory & traj,
-    const geometry_msgs::msg::Pose & pose, const size_t nearest_idx) const;
+    const geometry_msgs::msg::Pose & pose) const;
 
   /**
    * @brief calculate predicted velocity after time delay based on past control commands

@@ -69,28 +69,17 @@ float64_t calcStopDistance(
   const std::experimental::optional<size_t> stop_idx_opt =
     trajectory_common::searchZeroVelocityIndex(traj.points);
 
-  auto seg_idx =
-    motion_utils::findNearestSegmentIndex(traj.points, current_pose, max_dist, max_yaw);
-  if (!seg_idx) {  // if not fund idx
-    seg_idx = motion_utils::findNearestSegmentIndex(traj.points, current_pose);
-  }
-  const float64_t signed_length_src_offset =
-    motion_utils::calcLongitudinalOffsetToSegment(traj.points, *seg_idx, current_pose.position);
+  const size_t end_idx = stop_idx_opt ? *stop_idx_opt : traj.points.size() - 1;
+  const size_t seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    traj.points, current_pose, max_dist, max_yaw);
+  const float64_t signed_length_on_traj = motion_utils::calcSignedArcLength(
+    traj.points, current_pose.position, seg_idx, traj.points.at(end_idx).pose.position,
+    std::min(end_idx, traj.points.size() - 2));
 
-  if (std::isnan(signed_length_src_offset)) {
+  if (std::isnan(signed_length_on_traj)) {
     return 0.0;
   }
-
-  // If no zero velocity point, return the length between current_pose to the end of trajectory.
-  if (!stop_idx_opt) {
-    float64_t signed_length_on_traj =
-      motion_utils::calcSignedArcLength(traj.points, *seg_idx, traj.points.size() - 1);
-    return signed_length_on_traj - signed_length_src_offset;
-  }
-
-  float64_t signed_length_on_traj =
-    motion_utils::calcSignedArcLength(traj.points, *seg_idx, *stop_idx_opt);
-  return signed_length_on_traj - signed_length_src_offset;
+  return signed_length_on_traj;
 }
 
 float64_t getPitchByPose(const Quaternion & quaternion_msg)

@@ -264,8 +264,8 @@ bool8_t MPC::getData(
   static constexpr auto duration = 5000 /*ms*/;
   size_t nearest_idx;
   if (!trajectory_follower::MPCUtils::calcNearestPoseInterp(
-        traj, current_pose, &(data->nearest_pose), &(nearest_idx), &(data->nearest_time), m_logger,
-        *m_clock)) {
+        traj, current_pose, &(data->nearest_pose), &(nearest_idx), &(data->nearest_time),
+        ego_nearest_dist_threshold, ego_nearest_yaw_threshold, m_logger, *m_clock)) {
     // reset previous MPC result
     // Note: When a large deviation from the trajectory occurs, the optimization stops and
     // the vehicle will return to the path by re-planning the trajectory or external operation.
@@ -490,10 +490,15 @@ trajectory_follower::MPCTrajectory MPC::applyVelocityDynamicsFilter(
   const trajectory_follower::MPCTrajectory & input, const geometry_msgs::msg::Pose & current_pose,
   const float64_t v0) const
 {
-  int64_t nearest_idx = trajectory_follower::MPCUtils::calcNearestIndex(input, current_pose);
-  if (nearest_idx < 0) {
+  autoware_auto_planning_msgs::msg::Trajectory autoware_traj;
+  autoware::motion::control::trajectory_follower::MPCUtils::convertToAutowareTrajectory(
+    input, autoware_traj);
+  if (autoware_traj.points.empty()) {
     return input;
   }
+
+  const size_t nearest_idx = motion_utils::findFirstNearestIndexWithSoftConstraints(
+    autoware_traj.points, current_pose, ego_nearest_dist_threshold, ego_nearest_yaw_threshold);
 
   const float64_t acc_lim = m_param.acceleration_limit;
   const float64_t tau = m_param.velocity_time_constant;
@@ -783,8 +788,11 @@ float64_t MPC::getPredictionDeletaTime(
   const geometry_msgs::msg::Pose & current_pose) const
 {
   // Calculate the time min_prediction_length ahead from current_pose
-  const size_t nearest_idx =
-    static_cast<size_t>(trajectory_follower::MPCUtils::calcNearestIndex(input, current_pose));
+  autoware_auto_planning_msgs::msg::Trajectory autoware_traj;
+  autoware::motion::control::trajectory_follower::MPCUtils::convertToAutowareTrajectory(
+    input, autoware_traj);
+  const size_t nearest_idx = motion_utils::findFirstNearestIndexWithSoftConstraints(
+    autoware_traj.points, current_pose, ego_nearest_dist_threshold, ego_nearest_yaw_threshold);
   float64_t sum_dist = 0;
   const float64_t target_time = [&]() {
     const float64_t t_ext =

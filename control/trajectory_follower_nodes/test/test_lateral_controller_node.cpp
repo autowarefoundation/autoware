@@ -51,7 +51,8 @@ std::shared_ptr<LateralController> makeLateralNode()
   rclcpp::NodeOptions node_options;
   node_options.arguments(
     {"--ros-args", "--params-file", share_dir + "/param/lateral_controller_defaults.param.yaml",
-     "--params-file", share_dir + "/param/test_vehicle_info.param.yaml"});
+     "--params-file", share_dir + "/param/test_vehicle_info.param.yaml", "--params-file",
+     share_dir + "/param/test_nearest_search.param.yaml"});
   std::shared_ptr<LateralController> node = std::make_shared<LateralController>(node_options);
 
   // Enable all logging in the node

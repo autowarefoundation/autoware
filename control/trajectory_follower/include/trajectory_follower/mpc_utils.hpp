@@ -176,27 +176,11 @@ TRAJECTORY_FOLLOWER_PUBLIC std::vector<float64_t> calcTrajectoryCurvature(
 TRAJECTORY_FOLLOWER_PUBLIC bool8_t calcNearestPoseInterp(
   const MPCTrajectory & traj, const geometry_msgs::msg::Pose & self_pose,
   geometry_msgs::msg::Pose * nearest_pose, size_t * nearest_index, float64_t * nearest_time,
-  const rclcpp::Logger & logger, rclcpp::Clock & clock);
-/**
- * @brief calculate the index of the trajectory point nearest to the given pose
- * @param [in] traj trajectory to search for the point nearest to the pose
- * @param [in] self_pose pose for which to search the nearest trajectory point
- * @return index of the input trajectory nearest to the pose
- */
-TRAJECTORY_FOLLOWER_PUBLIC int64_t
-calcNearestIndex(const MPCTrajectory & traj, const geometry_msgs::msg::Pose & self_pose);
-/**
- * @brief calculate the index of the trajectory point nearest to the given pose
- * @param [in] traj trajectory to search for the point nearest to the pose
- * @param [in] self_pose pose for which to search the nearest trajectory point
- * @return index of the input trajectory nearest to the pose
- */
-TRAJECTORY_FOLLOWER_PUBLIC int64_t calcNearestIndex(
-  const autoware_auto_planning_msgs::msg::Trajectory & traj,
-  const geometry_msgs::msg::Pose & self_pose);
-/**
- * @brief calculate distance to stopped point
- */
+  const double max_dist, const double max_yaw, const rclcpp::Logger & logger,
+  rclcpp::Clock & clock);
+// /**
+//  * @brief calculate distance to stopped point
+//  */
 TRAJECTORY_FOLLOWER_PUBLIC float64_t calcStopDistance(
   const autoware_auto_planning_msgs::msg::Trajectory & current_trajectory, const int64_t origin);
 }  // namespace MPCUtils

@@ -30,28 +30,6 @@ typedef autoware_auto_planning_msgs::msg::Trajectory Trajectory;
 typedef autoware_auto_planning_msgs::msg::TrajectoryPoint TrajectoryPoint;
 typedef geometry_msgs::msg::Pose Pose;
 
-TEST(TestMPCUtils, CalcNearestIndex)
-{
-  Pose pose;
-  pose.position.x = 0.0;
-  pose.position.y = 0.0;
-  Trajectory trajectory;
-  TrajectoryPoint p;
-  p.pose.position.x = -2.0;
-  p.pose.position.y = 1.0;
-  trajectory.points.push_back(p);
-  p.pose.position.x = -1.0;
-  p.pose.position.y = 1.0;
-  trajectory.points.push_back(p);
-  p.pose.position.x = 0.0;
-  p.pose.position.y = 1.0;
-  trajectory.points.push_back(p);
-  p.pose.position.x = 1.0;
-  p.pose.position.y = 1.0;
-  trajectory.points.push_back(p);
-  EXPECT_EQ(MPCUtils::calcNearestIndex(trajectory, pose), 2);
-}
-
 /* cppcheck-suppress syntaxError */
 TEST(TestMPC, CalcStopDistance)
 {

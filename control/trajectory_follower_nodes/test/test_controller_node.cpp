@@ -55,7 +55,8 @@ std::shared_ptr<Controller> makeNode()
   node_options.arguments(
     {"--ros-args", "--params-file", share_dir + "/param/lateral_controller_defaults.param.yaml",
      "--params-file", share_dir + "/param/longitudinal_controller_defaults.param.yaml",
-     "--params-file", share_dir + "/param/test_vehicle_info.param.yaml"});
+     "--params-file", share_dir + "/param/test_vehicle_info.param.yaml", "--params-file",
+     share_dir + "/param/test_nearest_search.param.yaml"});
   std::shared_ptr<Controller> node = std::make_shared<Controller>(node_options);
 
   // Enable all logging in the node
