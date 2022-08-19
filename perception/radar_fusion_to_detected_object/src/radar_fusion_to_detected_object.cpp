@@ -231,13 +231,15 @@ TwistWithCovariance RadarFusionToDetectedObject::estimateTwist(
 
   // calculate twist for radar data with top target value
   Eigen::Vector2d vec_top_target_value(0.0, 0.0);
+  auto comp_func = [](const RadarInput & a, const RadarInput & b) {
+    return a.target_value < b.target_value;
+  };
+  auto iter = std::max_element(std::begin((*radars)), std::end((*radars)), comp_func);
   if (param_.velocity_weight_target_value_top > 0.0) {
-    auto comp_func = [](const RadarInput & a, const RadarInput & b) {
-      return a.target_value < b.target_value;
-    };
-    auto iter = std::max_element(std::begin((*radars)), std::end((*radars)), comp_func);
     vec_top_target_value = toVector2d(iter->twist_with_covariance);
   }
+  // Get covariance values
+  auto twist_covariance = iter->twist_with_covariance.covariance;
 
   // calculate twist for radar data with target_value * average
   Eigen::Vector2d vec_target_value_average(0.0, 0.0);
@@ -256,6 +258,7 @@ TwistWithCovariance RadarFusionToDetectedObject::estimateTwist(
                             vec_top_target_value * param_.velocity_weight_target_value_top +
                             vec_target_value_average * param_.velocity_weight_target_value_average;
   TwistWithCovariance estimated_twist_with_covariance = toTwistWithCovariance(sum_vec);
+  estimated_twist_with_covariance.covariance = twist_covariance;
 
   // TODO(Satoshi Tanaka): Implement
   // Convert doppler velocity to twist
