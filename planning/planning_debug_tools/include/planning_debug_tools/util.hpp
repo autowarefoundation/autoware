@@ -29,20 +29,29 @@
 namespace planning_debug_tools
 {
 
+using autoware_auto_planning_msgs::msg::PathPoint;
+using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
+using autoware_auto_planning_msgs::msg::TrajectoryPoint;
 using tier4_autoware_utils::calcDistance2d;
 using tier4_autoware_utils::getPoint;
+using tier4_autoware_utils::getRPY;
 
-double getVelocity(const autoware_auto_planning_msgs::msg::PathPoint & p)
+double getVelocity(const PathPoint & p) { return p.longitudinal_velocity_mps; }
+double getVelocity(const PathPointWithLaneId & p) { return p.point.longitudinal_velocity_mps; }
+double getVelocity(const TrajectoryPoint & p) { return p.longitudinal_velocity_mps; }
+
+double getYaw(const PathPoint & p) { return getRPY(p.pose.orientation).z; }
+double getYaw(const PathPointWithLaneId & p) { return getRPY(p.point.pose.orientation).z; }
+double getYaw(const TrajectoryPoint & p) { return getRPY(p.pose.orientation).z; }
+
+template <class T>
+inline std::vector<double> getYawArray(const T & points)
 {
-  return p.longitudinal_velocity_mps;
-}
-double getVelocity(const autoware_auto_planning_msgs::msg::PathPointWithLaneId & p)
-{
-  return p.point.longitudinal_velocity_mps;
-}
-double getVelocity(const autoware_auto_planning_msgs::msg::TrajectoryPoint & p)
-{
-  return p.longitudinal_velocity_mps;
+  std::vector<double> yaw_arr;
+  for (const auto & p : points) {
+    yaw_arr.push_back(getYaw(p));
+  }
+  return yaw_arr;
 }
 template <class T>
 inline std::vector<double> getVelocityArray(const T & points)
