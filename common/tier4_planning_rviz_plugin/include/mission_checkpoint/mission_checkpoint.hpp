@@ -67,21 +67,19 @@ class MissionCheckpointTool : public rviz_default_plugins::tools::PoseTool
 
 public:
   MissionCheckpointTool();
-  virtual ~MissionCheckpointTool() {}
-  virtual void onInitialize();
+  void onInitialize() override;
 
 protected:
-  virtual void onPoseSet(double x, double y, double theta);
+  void onPoseSet(double x, double y, double theta) override;
 
 private Q_SLOTS:
   void updateTopic();
 
-private:
+private:  // NOLINT for Qt
   rclcpp::Clock::SharedPtr clock_;
   rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pose_pub_;
 
   rviz_common::properties::StringProperty * pose_topic_property_;
-  rviz_common::properties::StringProperty * twist_topic_property_;
   rviz_common::properties::FloatProperty * std_dev_x_;
   rviz_common::properties::FloatProperty * std_dev_y_;
   rviz_common::properties::FloatProperty * std_dev_theta_;
