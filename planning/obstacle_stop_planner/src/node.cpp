@@ -870,6 +870,10 @@ void ObstacleStopPlannerNode::insertVelocity(
     }
   } else if (!no_hunting_collision_point) {
     if (latest_stop_point_) {
+      // update stop point index with the current trajectory
+      latest_stop_point_.get().index = findFirstNearestSegmentIndexWithSoftConstraints(
+        output, getPose(latest_stop_point_.get().point), node_param_.ego_nearest_dist_threshold,
+        node_param_.ego_nearest_yaw_threshold);
       insertStopPoint(latest_stop_point_.get(), output, planner_data.stop_reason_diag);
       debug_ptr_->pushPose(getPose(latest_stop_point_.get().point), PoseType::TargetStop);
       debug_ptr_->pushPose(getPose(latest_stop_point_.get().point), PoseType::Stop);
