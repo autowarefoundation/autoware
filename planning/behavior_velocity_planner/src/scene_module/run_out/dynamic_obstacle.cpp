@@ -71,6 +71,15 @@ pcl::PointCloud<pcl::PointXYZ> applyVoxelGridFilter(
   return output_points;
 }
 
+bool isAheadOf(
+  const geometry_msgs::msg::Point & target_point, const geometry_msgs::msg::Pose & base_pose)
+{
+  const auto longitudinal_deviation =
+    tier4_autoware_utils::calcLongitudinalDeviation(base_pose, target_point);
+  const bool is_ahead = longitudinal_deviation > 0;
+  return is_ahead;
+}
+
 pcl::PointCloud<pcl::PointXYZ> extractObstaclePointsWithinPolygon(
   const pcl::PointCloud<pcl::PointXYZ> & input_points, const Polygons2d & polys)
 {
@@ -104,6 +113,90 @@ pcl::PointCloud<pcl::PointXYZ> extractObstaclePointsWithinPolygon(
   }
 
   return output_points;
+}
+
+// group points with its nearest segment of path points
+std::vector<pcl::PointCloud<pcl::PointXYZ>> groupPointsWithNearestSegmentIndex(
+  const pcl::PointCloud<pcl::PointXYZ> & input_points, const PathPointsWithLaneId & path_points)
+{
+  // assign nearest segment index to each point
+  std::vector<pcl::PointCloud<pcl::PointXYZ>> points_with_index;
+  points_with_index.resize(path_points.size());
+
+  for (const auto & p : input_points.points) {
+    const auto ros_point = tier4_autoware_utils::createPoint(p.x, p.y, p.z);
+    const size_t nearest_seg_idx = motion_utils::findNearestSegmentIndex(path_points, ros_point);
+
+    // if the point is ahead of end of the path, index should be path.size() - 1
+    if (
+      nearest_seg_idx == path_points.size() - 2 &&
+      isAheadOf(ros_point, path_points.back().point.pose)) {
+      points_with_index.back().push_back(p);
+      continue;
+    }
+
+    points_with_index.at(nearest_seg_idx).push_back(p);
+  }
+
+  return points_with_index;
+}
+
+// calculate lateral nearest point from base_pose
+pcl::PointXYZ calculateLateralNearestPoint(
+  const pcl::PointCloud<pcl::PointXYZ> & input_points, const geometry_msgs::msg::Pose & base_pose)
+{
+  const auto lateral_nearest_point = std::min_element(
+    input_points.points.begin(), input_points.points.end(), [&](const auto & p1, const auto & p2) {
+      const auto lateral_deviation_p1 = std::abs(tier4_autoware_utils::calcLateralDeviation(
+        base_pose, tier4_autoware_utils::createPoint(p1.x, p1.y, 0)));
+      const auto lateral_deviation_p2 = std::abs(tier4_autoware_utils::calcLateralDeviation(
+        base_pose, tier4_autoware_utils::createPoint(p2.x, p2.y, 0)));
+
+      return lateral_deviation_p1 < lateral_deviation_p2;
+    });
+
+  return *lateral_nearest_point;
+}
+
+pcl::PointCloud<pcl::PointXYZ> selectLateralNearestPoints(
+  const std::vector<pcl::PointCloud<pcl::PointXYZ>> & points_with_index,
+  const PathPointsWithLaneId & path_points)
+{
+  pcl::PointCloud<pcl::PointXYZ> lateral_nearest_points;
+  for (size_t idx = 0; idx < points_with_index.size(); idx++) {
+    if (points_with_index.at(idx).points.empty()) {
+      continue;
+    }
+
+    lateral_nearest_points.push_back(
+      calculateLateralNearestPoint(points_with_index.at(idx), path_points.at(idx).point.pose));
+  }
+
+  return lateral_nearest_points;
+}
+
+// extract lateral nearest points for nearest segment of the path
+// path is interpolated with given interval
+pcl::PointCloud<pcl::PointXYZ> extractLateralNearestPoints(
+  const pcl::PointCloud<pcl::PointXYZ> & input_points, const PathWithLaneId & path,
+  const float interval)
+{
+  // interpolate path points with given interval
+  PathWithLaneId interpolated_path;
+  if (!splineInterpolate(
+        path, interval, interpolated_path, rclcpp::get_logger("dynamic_obstacle_creator"))) {
+    return input_points;
+  }
+
+  // divide points into groups according to nearest segment index
+  const auto points_with_index =
+    groupPointsWithNearestSegmentIndex(input_points, interpolated_path.points);
+
+  // select the lateral nearest point for each group
+  const auto lateral_nearest_points =
+    selectLateralNearestPoints(points_with_index, interpolated_path.points);
+
+  return lateral_nearest_points;
 }
 }  // namespace
 
@@ -191,7 +284,7 @@ std::vector<DynamicObstacle> DynamicObstacleCreatorForPoints::createDynamicObsta
 {
   std::lock_guard<std::mutex> lock(mutex_);
   std::vector<DynamicObstacle> dynamic_obstacles;
-  for (const auto & point : dynamic_obstacle_data_.compare_map_filtered_pointcloud) {
+  for (const auto & point : dynamic_obstacle_data_.obstacle_points) {
     DynamicObstacle dynamic_obstacle;
 
     // create pose facing the direction of the lane
@@ -233,7 +326,7 @@ void DynamicObstacleCreatorForPoints::onCompareMapFilteredPointCloud(
 {
   if (msg->data.empty()) {
     std::lock_guard<std::mutex> lock(mutex_);
-    dynamic_obstacle_data_.compare_map_filtered_pointcloud.clear();
+    dynamic_obstacle_data_.obstacle_points.clear();
     return;
   }
 
@@ -253,9 +346,24 @@ void DynamicObstacleCreatorForPoints::onCompareMapFilteredPointCloud(
   pcl::PointCloud<pcl::PointXYZ>::Ptr pc_transformed(new pcl::PointCloud<pcl::PointXYZ>);
   pcl::transformPointCloud(pc, *pc_transformed, affine);
 
+  // apply voxel grid filter to reduce calculation cost
   const auto voxel_grid_filtered_points = applyVoxelGridFilter(pc_transformed);
+
+  // these variables are written in another callback
+  mutex_.lock();
+  const auto detection_area_polygon = dynamic_obstacle_data_.detection_area_polygon;
+  const auto path = dynamic_obstacle_data_.path;
+  mutex_.unlock();
+
+  // filter obstacle points within detection area polygon
+  const auto detection_area_filtered_points =
+    extractObstaclePointsWithinPolygon(voxel_grid_filtered_points, detection_area_polygon);
+
+  // filter points that have lateral nearest distance
+  const auto lateral_nearest_points =
+    extractLateralNearestPoints(detection_area_filtered_points, path, param_.points_interval);
+
   std::lock_guard<std::mutex> lock(mutex_);
-  dynamic_obstacle_data_.compare_map_filtered_pointcloud = extractObstaclePointsWithinPolygon(
-    voxel_grid_filtered_points, dynamic_obstacle_data_.detection_area_polygon);
+  dynamic_obstacle_data_.obstacle_points = lateral_nearest_points;
 }
 }  // namespace behavior_velocity_planner

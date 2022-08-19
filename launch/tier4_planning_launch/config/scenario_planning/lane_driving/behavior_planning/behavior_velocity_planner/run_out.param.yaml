@@ -24,6 +24,7 @@
         height: 2.0               # [m] height of obstacles. used for creating dynamic obstacles from points
         max_prediction_time: 10.0 # [sec] create predicted path until this time
         time_step: 0.5            # [sec] time step for each path step. used for creating dynamic obstacles from points or objects without path
+        points_interval: 0.1      # [m] divide obstacle points into groups with this interval, and detect only lateral nearest point. used only for Points method
 
       # approach if ego has stopped in the front of the obstacle for a certain amount of time
       approaching:

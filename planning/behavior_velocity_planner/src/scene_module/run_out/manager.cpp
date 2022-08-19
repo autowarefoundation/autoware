@@ -78,6 +78,7 @@ RunOutModuleManager::RunOutModuleManager(rclcpp::Node & node)
     p.height = node.declare_parameter(ns_do + ".height", 2.0);
     p.max_prediction_time = node.declare_parameter(ns_do + ".max_prediction_time", 10.0);
     p.time_step = node.declare_parameter(ns_do + ".time_step", 0.5);
+    p.points_interval = node.declare_parameter(ns_do + ".points_interval", 0.1);
   }
 
   {

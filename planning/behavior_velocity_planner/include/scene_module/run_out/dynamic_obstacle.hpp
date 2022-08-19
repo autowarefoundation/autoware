@@ -16,6 +16,7 @@
 #define SCENE_MODULE__RUN_OUT__DYNAMIC_OBSTACLE_HPP_
 
 #include "behavior_velocity_planner/planner_data.hpp"
+#include "utilization/path_utilization.hpp"
 #include "utilization/util.hpp"
 
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
@@ -52,6 +53,7 @@ struct DynamicObstacleParam
   float height{2.0};                // [m]
   float max_prediction_time{10.0};  // [sec]
   float time_step{0.5};             // [sec]
+  float points_interval{0.1};       // [m]
 };
 
 struct PoseWithRange
@@ -84,7 +86,7 @@ struct DynamicObstacle
 struct DynamicObstacleData
 {
   PredictedObjects predicted_objects;
-  pcl::PointCloud<pcl::PointXYZ> compare_map_filtered_pointcloud;
+  pcl::PointCloud<pcl::PointXYZ> obstacle_points;
   PathWithLaneId path;
   Polygons2d detection_area_polygon;
 };
@@ -102,6 +104,8 @@ public:
   void setData(
     const PlannerData & planner_data, const PathWithLaneId & path, const Polygons2d & poly)
   {
+    std::lock_guard<std::mutex> lock(mutex_);
+
     // compare map filtered points are subscribed in derived class that needs points
     dynamic_obstacle_data_.predicted_objects = *planner_data.predicted_objects;
     dynamic_obstacle_data_.path = path;
@@ -112,6 +116,9 @@ protected:
   DynamicObstacleParam param_;
   rclcpp::Node & node_;
   DynamicObstacleData dynamic_obstacle_data_;
+
+  // mutex for dynamic_obstacle_data_
+  std::mutex mutex_;
 };
 
 /**
@@ -153,9 +160,6 @@ private:
   // tf
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
-
-  // mutex for compare_map_filtered_pointcloud
-  std::mutex mutex_;
 };
 
 }  // namespace behavior_velocity_planner
