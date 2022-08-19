@@ -13,4 +13,4 @@ jobs:
 
       - name: Run setup script
         run: |
-          ./setup-dev-env.sh -y -v --no-nvidia universe
+          ./setup-dev-env.sh -y -v universe
