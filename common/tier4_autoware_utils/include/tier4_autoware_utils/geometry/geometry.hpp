@@ -232,6 +232,14 @@ inline void setPose(
 }
 
 template <class T>
+inline void setOrientation(const geometry_msgs::msg::Quaternion & orientation, T & p)
+{
+  auto pose = getPose(p);
+  pose.orientation = orientation;
+  setPose(pose, p);
+}
+
+template <class T>
 void setLongitudinalVelocity([[maybe_unused]] const double velocity, [[maybe_unused]] T & p)
 {
   static_assert(sizeof(T) == 0, "Only specializations of getLongitudinalVelocity can be used.");

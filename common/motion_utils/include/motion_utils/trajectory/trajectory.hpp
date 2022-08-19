@@ -1058,6 +1058,38 @@ inline boost::optional<size_t> insertStopPoint(
 }
 
 template <class T>
+void insertOrientation(T & points, const bool is_driving_forward)
+{
+  if (is_driving_forward) {
+    for (size_t i = 0; i < points.size() - 1; ++i) {
+      const auto & src_point = tier4_autoware_utils::getPoint(points.at(i));
+      const auto & dst_point = tier4_autoware_utils::getPoint(points.at(i + 1));
+      const double pitch = tier4_autoware_utils::calcElevationAngle(src_point, dst_point);
+      const double yaw = tier4_autoware_utils::calcAzimuthAngle(src_point, dst_point);
+      tier4_autoware_utils::setOrientation(
+        tier4_autoware_utils::createQuaternionFromRPY(0.0, pitch, yaw), points.at(i));
+      if (i == points.size() - 2) {
+        // Terminal orientation is same as the point before it
+        tier4_autoware_utils::setOrientation(
+          tier4_autoware_utils::getPose(points.at(i)).orientation, points.at(i + 1));
+      }
+    }
+  } else {
+    for (size_t i = points.size() - 1; i >= 1; --i) {
+      const auto & src_point = tier4_autoware_utils::getPoint(points.at(i));
+      const auto & dst_point = tier4_autoware_utils::getPoint(points.at(i - 1));
+      const double pitch = tier4_autoware_utils::calcElevationAngle(src_point, dst_point);
+      const double yaw = tier4_autoware_utils::calcAzimuthAngle(src_point, dst_point);
+      tier4_autoware_utils::setOrientation(
+        tier4_autoware_utils::createQuaternionFromRPY(0.0, pitch, yaw), points.at(i));
+    }
+    // Initial orientation is same as the point after it
+    tier4_autoware_utils::setOrientation(
+      tier4_autoware_utils::getPose(points.at(1)).orientation, points.at(0));
+  }
+}
+
+template <class T>
 double calcSignedArcLength(
   const T & points, const geometry_msgs::msg::Point & src_point, const size_t src_seg_idx,
   const geometry_msgs::msg::Point & dst_point, const size_t dst_seg_idx)

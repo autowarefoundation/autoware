@@ -288,6 +288,22 @@ TEST(geometry, setPose)
   }
 }
 
+TEST(geometry, setOrientation)
+{
+  using tier4_autoware_utils::createQuaternionFromRPY;
+  using tier4_autoware_utils::deg2rad;
+  using tier4_autoware_utils::setOrientation;
+
+  geometry_msgs::msg::Pose p;
+  const auto orientation = createQuaternionFromRPY(deg2rad(30), deg2rad(30), deg2rad(30));
+  setOrientation(orientation, p);
+
+  EXPECT_DOUBLE_EQ(p.orientation.x, orientation.x);
+  EXPECT_DOUBLE_EQ(p.orientation.y, orientation.y);
+  EXPECT_DOUBLE_EQ(p.orientation.z, orientation.z);
+  EXPECT_DOUBLE_EQ(p.orientation.w, orientation.w);
+}
+
 TEST(geometry, setLongitudinalVelocity)
 {
   using tier4_autoware_utils::setLongitudinalVelocity;

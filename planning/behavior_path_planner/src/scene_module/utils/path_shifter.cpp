@@ -114,6 +114,9 @@ bool PathShifter::generate(
   type == SHIFT_TYPE::SPLINE ? applySplineShifter(shifted_path, offset_back)
                              : applyLinearShifter(shifted_path);
 
+  const bool is_driving_forward = true;
+  motion_utils::insertOrientation(shifted_path->path.points, is_driving_forward);
+
   // DEBUG
   RCLCPP_DEBUG_STREAM(
     logger_, "PathShifter::generate end. shift_points_.size = " << shift_points_.size());
