@@ -42,15 +42,12 @@ PoseHistory::PoseHistory() : last_stamp_(0, 0, RCL_ROS_TIME)
   property_line_width_->setMin(0.0);
 }
 
-PoseHistory::~PoseHistory()
-{
-  // Properties are deleted by Qt
-}
+PoseHistory::~PoseHistory() = default;  // Properties are deleted by Qt
 
 void PoseHistory::onInitialize()
 {
   MFDClass::onInitialize();
-  lines_.reset(new rviz_rendering::BillboardLine(scene_manager_, scene_node_));
+  lines_ = std::make_unique<rviz_rendering::BillboardLine>(scene_manager_, scene_node_);
 }
 
 void PoseHistory::onEnable() { subscribe(); }
@@ -65,7 +62,7 @@ void PoseHistory::update(float wall_dt, float ros_dt)
   if (!history_.empty()) {
     lines_->clear();
     if (property_line_view_->getBool()) {
-      updateLines();
+      update_lines();
     }
   }
 }
@@ -95,10 +92,10 @@ void PoseHistory::processMessage(const geometry_msgs::msg::PoseStamped::ConstSha
   history_.emplace_back(message);
   last_stamp_ = message->header.stamp;
 
-  updateHistory();
+  update_history();
 }
 
-void PoseHistory::updateHistory()
+void PoseHistory::update_history()
 {
   const auto buffer_size = static_cast<size_t>(property_buffer_size_->getInt());
   while (buffer_size < history_.size()) {
@@ -106,7 +103,7 @@ void PoseHistory::updateHistory()
   }
 }
 
-void PoseHistory::updateLines()
+void PoseHistory::update_lines()
 {
   Ogre::ColourValue color = rviz_common::properties::qtToOgre(property_line_color_->getColor());
   color.a = property_line_alpha_->getFloat();
