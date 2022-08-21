@@ -79,39 +79,6 @@ bool buildDetectionAreaPolygon(
     slices, path, pose, da_range, p.pedestrian_vel);
 }
 
-ROAD_TYPE getCurrentRoadType(
-  const lanelet::ConstLanelet & current_lanelet,
-  [[maybe_unused]] const lanelet::LaneletMapPtr & lanelet_map_ptr)
-{
-  const auto logger{rclcpp::get_logger("behavior_velocity_planner").get_child("occlusion_spot")};
-  rclcpp::Clock clock{RCL_ROS_TIME};
-  occlusion_spot_utils::ROAD_TYPE road_type;
-  std::string location;
-  if (
-    current_lanelet.hasAttribute(lanelet::AttributeNamesString::Subtype) &&
-    current_lanelet.attribute(lanelet::AttributeNamesString::Subtype) ==
-      lanelet::AttributeValueString::Highway) {
-    location = "highway";
-  } else {
-    location = current_lanelet.attributeOr("location", "else");
-  }
-  RCLCPP_DEBUG_STREAM_THROTTLE(logger, clock, 3000, "location: " << location);
-  if (location == "urban" || location == "public") {
-    road_type = occlusion_spot_utils::ROAD_TYPE::PUBLIC;
-    RCLCPP_DEBUG_STREAM_THROTTLE(logger, clock, 3000, "public road: " << location);
-  } else if (location == "private") {
-    road_type = occlusion_spot_utils::ROAD_TYPE::PRIVATE;
-    RCLCPP_DEBUG_STREAM_THROTTLE(logger, clock, 3000, "private road");
-  } else if (location == "highway") {
-    road_type = occlusion_spot_utils::ROAD_TYPE::HIGHWAY;
-    RCLCPP_DEBUG_STREAM_THROTTLE(logger, clock, 3000, "highway road");
-  } else {
-    road_type = occlusion_spot_utils::ROAD_TYPE::UNKNOWN;
-    RCLCPP_DEBUG_STREAM_THROTTLE(logger, clock, 3000, "unknown road");
-  }
-  return road_type;
-}
-
 void calcSlowDownPointsForPossibleCollision(
   const int closest_idx, const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
   const double offset, std::vector<PossibleCollisionInfo> & possible_collisions)

@@ -117,7 +117,6 @@ void denoiseOccupancyGridCV(
   const Polygons2d & stuck_vehicle_foot_prints, const Polygons2d & moving_vehicle_foot_prints,
   grid_map::GridMap & grid_map, const GridParam & param, const bool is_show_debug_window,
   const int num_iter, const bool use_object_footprints, const bool use_object_ray_casts);
-void addObjectsToGridMap(const std::vector<PredictedObject> & objs, grid_map::GridMap & grid);
 }  // namespace grid_utils
 }  // namespace behavior_velocity_planner
 

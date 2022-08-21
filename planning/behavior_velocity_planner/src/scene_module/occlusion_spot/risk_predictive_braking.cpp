@@ -64,34 +64,6 @@ void applySafeVelocityConsideringPossibleCollision(
   }
 }
 
-int insertSafeVelocityToPath(
-  const geometry_msgs::msg::Pose & in_pose, const double safe_vel, const PlannerParam & param,
-  PathWithLaneId * inout_path)
-{
-  const auto closest_idx_opt =
-    motion_utils::findNearestIndex(inout_path->points, in_pose, param.dist_thr, param.angle_thr);
-  if (!closest_idx_opt) {
-    return -1;
-  }
-  const size_t closest_idx = closest_idx_opt.get();
-
-  PathPointWithLaneId inserted_point;
-  inserted_point = inout_path->points.at(closest_idx);
-  size_t insert_idx = closest_idx;
-  if (planning_utils::isAheadOf(in_pose, inout_path->points.at(closest_idx).point.pose)) {
-    ++insert_idx;
-    if (insert_idx == static_cast<size_t>(inout_path->points.size())) return -1;
-  }
-  // return if index is after the last path point
-  inserted_point.point.pose = in_pose;
-  // insert velocity to path if distance is not too close else insert new collision point
-  // if original path has narrow points it's better to set higher distance threshold
-  // TODO(tanaka): use Spherical Linear Interpolation for inserting point
-  const double eps = 0.05;
-  planning_utils::insertVelocity(*inout_path, inserted_point, safe_vel, insert_idx, eps);
-  return 0;
-}
-
 SafeMotion calculateSafeMotion(const Velocity & v, const double ttv)
 {
   SafeMotion sm;

@@ -227,28 +227,6 @@ void insertVelocity(
   setVelocityFromIndex(insert_index, v, &path);
 }
 
-boost::optional<geometry_msgs::msg::Pose> insertDecelPoint(
-  const geometry_msgs::msg::Point & stop_point, PathWithLaneId & output,
-  const float target_velocity)
-{
-  // TODO(tanaka): consider proper overlap threshold for inserting decel point
-  const double overlap_threshold = 5e-2;
-  const size_t base_idx = motion_utils::findNearestSegmentIndex(output.points, stop_point);
-  const auto insert_idx =
-    motion_utils::insertTargetPoint(base_idx, stop_point, output.points, overlap_threshold);
-
-  if (!insert_idx) {
-    return {};
-  }
-
-  for (size_t i = insert_idx.get(); i < output.points.size(); ++i) {
-    const auto & original_velocity = output.points.at(i).point.longitudinal_velocity_mps;
-    output.points.at(i).point.longitudinal_velocity_mps =
-      std::min(original_velocity, target_velocity);
-  }
-  return tier4_autoware_utils::getPose(output.points.at(insert_idx.get()));
-}
-
 Polygon2d toFootprintPolygon(const PredictedObject & object)
 {
   Polygon2d obj_footprint;
@@ -644,6 +622,28 @@ bool isOverLine(
   return motion_utils::calcSignedArcLength(path.points, self_pose.position, line_pose.position) +
            offset <
          0.0;
+}
+
+boost::optional<geometry_msgs::msg::Pose> insertDecelPoint(
+  const geometry_msgs::msg::Point & stop_point, PathWithLaneId & output,
+  const float target_velocity)
+{
+  // TODO(tanaka): consider proper overlap threshold for inserting decel point
+  const double overlap_threshold = 5e-2;
+  const size_t base_idx = motion_utils::findNearestSegmentIndex(output.points, stop_point);
+  const auto insert_idx =
+    motion_utils::insertTargetPoint(base_idx, stop_point, output.points, overlap_threshold);
+
+  if (!insert_idx) {
+    return {};
+  }
+
+  for (size_t i = insert_idx.get(); i < output.points.size(); ++i) {
+    const auto & original_velocity = output.points.at(i).point.longitudinal_velocity_mps;
+    output.points.at(i).point.longitudinal_velocity_mps =
+      std::min(original_velocity, target_velocity);
+  }
+  return tier4_autoware_utils::getPose(output.points.at(insert_idx.get()));
 }
 
 boost::optional<geometry_msgs::msg::Pose> insertStopPoint(

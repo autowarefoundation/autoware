@@ -56,30 +56,6 @@ std::vector<std::pair<grid_map::Position, grid_map::Position>> pointsToRays(
   return lines;
 }
 
-void addObjectsToGridMap(const std::vector<PredictedObject> & objs, grid_map::GridMap & grid)
-{
-  auto & grid_data = grid["layer"];
-  for (const auto & obj : objs) {
-    Polygon2d foot_print_polygon = planning_utils::toFootprintPolygon(obj);
-    grid_map::Polygon grid_polygon;
-    const auto & pos = obj.kinematics.initial_pose_with_covariance.pose.position;
-    if (grid.isInside(grid_map::Position(pos.x, pos.y))) continue;
-    try {
-      for (const auto & point : foot_print_polygon.outer()) {
-        grid_polygon.addVertex({point.x(), point.y()});
-      }
-      for (grid_map_utils::PolygonIterator iterator(grid, grid_polygon); !iterator.isPastEnd();
-           ++iterator) {
-        const grid_map::Index & index = *iterator;
-        if (!grid.isValid(index)) continue;
-        grid_data(index.x(), index.y()) = grid_utils::occlusion_cost_value::OCCUPIED;
-      }
-    } catch (const std::invalid_argument & e) {
-      std::cerr << e.what() << std::endl;
-    }
-  }
-}
-
 void findOcclusionSpots(
   std::vector<grid_map::Position> & occlusion_spot_positions, const grid_map::GridMap & grid,
   const Polygon2d & polygon, [[maybe_unused]] double min_size)
