@@ -1312,6 +1312,98 @@ TEST(trajectory, calcLongitudinalOffsetPoseFromIndex_quatInterpolation)
   }
 }
 
+TEST(trajectory, calcLongitudinalOffsetPoseFromIndex_quatSphericalInterpolation)
+{
+  using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+  using motion_utils::calcArcLength;
+  using motion_utils::calcLongitudinalOffsetPose;
+  using tier4_autoware_utils::deg2rad;
+
+  Trajectory traj{};
+
+  {
+    TrajectoryPoint p;
+    p.pose = createPose(0.0, 0.0, 0.0, deg2rad(0.0), deg2rad(0.0), deg2rad(45.0));
+    p.longitudinal_velocity_mps = 0.0;
+    traj.points.push_back(p);
+  }
+
+  {
+    TrajectoryPoint p;
+    p.pose = createPose(1.0, 1.0, 0.0, deg2rad(0.0), deg2rad(0.0), deg2rad(0.0));
+    p.longitudinal_velocity_mps = 0.0;
+    traj.points.push_back(p);
+  }
+
+  const auto total_length = calcArcLength(traj.points);
+
+  // Found pose(forward)
+  for (double len = 0.0; len < total_length; len += 0.1) {
+    const auto p_out = calcLongitudinalOffsetPose(traj.points, 0, len, false);
+    // ratio between two points
+    const auto ratio = len / total_length;
+    const auto ans_quat =
+      createQuaternionFromRPY(deg2rad(0.0), deg2rad(0.0), deg2rad(45.0 - 45.0 * ratio));
+
+    EXPECT_NE(p_out, boost::none);
+    EXPECT_NEAR(p_out.get().position.x, len * std::cos(deg2rad(45.0)), epsilon);
+    EXPECT_NEAR(p_out.get().position.y, len * std::sin(deg2rad(45.0)), epsilon);
+    EXPECT_NEAR(p_out.get().position.z, 0.0, epsilon);
+    EXPECT_NEAR(p_out.get().orientation.x, ans_quat.x, epsilon);
+    EXPECT_NEAR(p_out.get().orientation.y, ans_quat.y, epsilon);
+    EXPECT_NEAR(p_out.get().orientation.z, ans_quat.z, epsilon);
+    EXPECT_NEAR(p_out.get().orientation.w, ans_quat.w, epsilon);
+  }
+
+  // Found pose(backward)
+  for (double len = total_length; 0.0 < len; len -= 0.1) {
+    const auto p_out = calcLongitudinalOffsetPose(traj.points, 1, -len, false);
+    // ratio between two points
+    const auto ratio = len / total_length;
+    const auto ans_quat =
+      createQuaternionFromRPY(deg2rad(0.0), deg2rad(0.0), deg2rad(45.0 * ratio));
+
+    EXPECT_NE(p_out, boost::none);
+    EXPECT_NEAR(p_out.get().position.x, 1.0 - len * std::cos(deg2rad(45.0)), epsilon);
+    EXPECT_NEAR(p_out.get().position.y, 1.0 - len * std::sin(deg2rad(45.0)), epsilon);
+    EXPECT_NEAR(p_out.get().position.z, 0.0, epsilon);
+    EXPECT_NEAR(p_out.get().orientation.x, ans_quat.x, epsilon);
+    EXPECT_NEAR(p_out.get().orientation.y, ans_quat.y, epsilon);
+    EXPECT_NEAR(p_out.get().orientation.z, ans_quat.z, epsilon);
+    EXPECT_NEAR(p_out.get().orientation.w, ans_quat.w, epsilon);
+  }
+
+  // Boundary condition
+  {
+    const auto p_out = calcLongitudinalOffsetPose(traj.points, 0, total_length, false);
+    const auto ans_quat = createQuaternionFromRPY(deg2rad(0.0), deg2rad(0.0), deg2rad(0.0));
+
+    EXPECT_NE(p_out, boost::none);
+    EXPECT_NEAR(p_out.get().position.x, 1.0, epsilon);
+    EXPECT_NEAR(p_out.get().position.y, 1.0, epsilon);
+    EXPECT_NEAR(p_out.get().position.z, 0.0, epsilon);
+    EXPECT_NEAR(p_out.get().orientation.x, ans_quat.x, epsilon);
+    EXPECT_NEAR(p_out.get().orientation.y, ans_quat.y, epsilon);
+    EXPECT_NEAR(p_out.get().orientation.z, ans_quat.z, epsilon);
+    EXPECT_NEAR(p_out.get().orientation.w, ans_quat.w, epsilon);
+  }
+
+  // Boundary condition
+  {
+    const auto p_out = calcLongitudinalOffsetPose(traj.points, 1, 0.0, false);
+    const auto ans_quat = createQuaternionFromRPY(deg2rad(0.0), deg2rad(0.0), deg2rad(0.0));
+
+    EXPECT_NE(p_out, boost::none);
+    EXPECT_NEAR(p_out.get().position.x, 1.0, epsilon);
+    EXPECT_NEAR(p_out.get().position.y, 1.0, epsilon);
+    EXPECT_NEAR(p_out.get().position.z, 0.0, epsilon);
+    EXPECT_NEAR(p_out.get().orientation.x, ans_quat.x, epsilon);
+    EXPECT_NEAR(p_out.get().orientation.y, ans_quat.y, epsilon);
+    EXPECT_NEAR(p_out.get().orientation.z, ans_quat.z, epsilon);
+    EXPECT_NEAR(p_out.get().orientation.w, ans_quat.w, epsilon);
+  }
+}
+
 TEST(trajectory, calcLongitudinalOffsetPoseFromPoint)
 {
   using motion_utils::calcArcLength;
@@ -1459,6 +1551,84 @@ TEST(trajectory, calcLongitudinalOffsetPoseFromPoint_quatInterpolation)
     const auto src_offset = calcLongitudinalOffsetToSegment(traj.points, 0, p_src);
 
     const auto p_out = calcLongitudinalOffsetPose(traj.points, p_src, total_length - src_offset);
+    const auto ans_quat = createQuaternionFromRPY(deg2rad(0.0), deg2rad(0.0), deg2rad(0.0));
+
+    EXPECT_NE(p_out, boost::none);
+    EXPECT_NEAR(p_out.get().position.x, 1.0, epsilon);
+    EXPECT_NEAR(p_out.get().position.y, 1.0, epsilon);
+    EXPECT_NEAR(p_out.get().position.z, 0.0, epsilon);
+    EXPECT_NEAR(p_out.get().orientation.x, ans_quat.x, epsilon);
+    EXPECT_NEAR(p_out.get().orientation.y, ans_quat.y, epsilon);
+    EXPECT_NEAR(p_out.get().orientation.z, ans_quat.z, epsilon);
+    EXPECT_NEAR(p_out.get().orientation.w, ans_quat.w, epsilon);
+  }
+}
+
+TEST(trajectory, calcLongitudinalOffsetPoseFromPoint_quatSphericalInterpolation)
+{
+  using autoware_auto_planning_msgs::msg::TrajectoryPoint;
+  using motion_utils::calcArcLength;
+  using motion_utils::calcLongitudinalOffsetPose;
+  using motion_utils::calcLongitudinalOffsetToSegment;
+  using tier4_autoware_utils::createPoint;
+  using tier4_autoware_utils::deg2rad;
+
+  Trajectory traj{};
+
+  {
+    TrajectoryPoint p;
+    p.pose = createPose(0.0, 0.0, 0.0, deg2rad(0.0), deg2rad(0.0), deg2rad(45.0));
+    p.longitudinal_velocity_mps = 0.0;
+    traj.points.push_back(p);
+  }
+
+  {
+    TrajectoryPoint p;
+    p.pose = createPose(1.0, 1.0, 0.0, deg2rad(0.0), deg2rad(0.0), deg2rad(0.0));
+    p.longitudinal_velocity_mps = 0.0;
+    traj.points.push_back(p);
+  }
+
+  const auto total_length = calcArcLength(traj.points);
+
+  // Found pose
+  for (double len_start = 0.0; len_start < total_length; len_start += 0.1) {
+    constexpr double deviation = 0.1;
+
+    const auto p_src = createPoint(
+      len_start * std::cos(deg2rad(45.0)) + deviation,
+      len_start * std::sin(deg2rad(45.0)) - deviation, 0.0);
+    const auto src_offset = calcLongitudinalOffsetToSegment(traj.points, 0, p_src);
+
+    for (double len = -src_offset; len < total_length - src_offset; len += 0.1) {
+      const auto p_out = calcLongitudinalOffsetPose(traj.points, p_src, len, false);
+      // ratio between two points
+      const auto ratio = (src_offset + len) / total_length;
+      const auto ans_quat =
+        createQuaternionFromRPY(deg2rad(0.0), deg2rad(0.0), deg2rad(45.0 - 45.0 * ratio));
+
+      EXPECT_NE(p_out, boost::none);
+      EXPECT_NEAR(
+        p_out.get().position.x, p_src.x + len * std::cos(deg2rad(45.0)) - deviation, epsilon);
+      EXPECT_NEAR(
+        p_out.get().position.y, p_src.y + len * std::sin(deg2rad(45.0)) + deviation, epsilon);
+      EXPECT_NEAR(p_out.get().position.z, 0.0, epsilon);
+      EXPECT_NEAR(p_out.get().orientation.x, ans_quat.x, epsilon);
+      EXPECT_NEAR(p_out.get().orientation.y, ans_quat.y, epsilon);
+      EXPECT_NEAR(p_out.get().orientation.z, ans_quat.z, epsilon);
+      EXPECT_NEAR(p_out.get().orientation.w, ans_quat.w, epsilon);
+    }
+  }
+
+  // Boundary condition
+  {
+    constexpr double deviation = 0.1;
+
+    const auto p_src = createPoint(1.0 + deviation, 1.0 - deviation, 0.0);
+    const auto src_offset = calcLongitudinalOffsetToSegment(traj.points, 0, p_src);
+
+    const auto p_out =
+      calcLongitudinalOffsetPose(traj.points, p_src, total_length - src_offset, false);
     const auto ans_quat = createQuaternionFromRPY(deg2rad(0.0), deg2rad(0.0), deg2rad(0.0));
 
     EXPECT_NE(p_out, boost::none);

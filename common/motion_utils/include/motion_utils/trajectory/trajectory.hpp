@@ -703,11 +703,14 @@ inline boost::optional<geometry_msgs::msg::Point> calcLongitudinalOffsetPoint(
  * @param points points of trajectory, path, ...
  * @param src_idx index of source point
  * @param offset length of offset from source point
+ * @param set_orientation_from_position_direction set orientation by spherical interpolation if
+ * false
  * @return offset pose
  */
 template <class T>
 inline boost::optional<geometry_msgs::msg::Pose> calcLongitudinalOffsetPose(
-  const T & points, const size_t src_idx, const double offset, const bool throw_exception = false)
+  const T & points, const size_t src_idx, const double offset,
+  const bool set_orientation_from_position_direction = true, const bool throw_exception = false)
 {
   try {
     validateNonEmpty(points);
@@ -749,7 +752,8 @@ inline boost::optional<geometry_msgs::msg::Pose> calcLongitudinalOffsetPose(
       const auto dist_res = -offset - dist_sum;
       if (dist_res <= 0.0) {
         return tier4_autoware_utils::calcInterpolatedPose(
-          p_back, p_front, std::abs(dist_res / dist_segment));
+          p_back, p_front, std::abs(dist_res / dist_segment),
+          set_orientation_from_position_direction);
       }
     }
   } else {
@@ -765,7 +769,8 @@ inline boost::optional<geometry_msgs::msg::Pose> calcLongitudinalOffsetPose(
       const auto dist_res = offset - dist_sum;
       if (dist_res <= 0.0) {
         return tier4_autoware_utils::calcInterpolatedPose(
-          p_front, p_back, 1.0 - std::abs(dist_res / dist_segment));
+          p_front, p_back, 1.0 - std::abs(dist_res / dist_segment),
+          set_orientation_from_position_direction);
       }
     }
   }
@@ -779,11 +784,14 @@ inline boost::optional<geometry_msgs::msg::Pose> calcLongitudinalOffsetPose(
  * @param points points of trajectory, path, ...
  * @param src_point source point
  * @param offset length of offset from source point
+ * @param set_orientation_from_position_direction set orientation by spherical interpolation if
+ * false
  * @return offset pase
  */
 template <class T>
 inline boost::optional<geometry_msgs::msg::Pose> calcLongitudinalOffsetPose(
-  const T & points, const geometry_msgs::msg::Point & src_point, const double offset)
+  const T & points, const geometry_msgs::msg::Point & src_point, const double offset,
+  const bool set_orientation_from_position_direction = true)
 {
   try {
     validateNonEmpty(points);
@@ -796,7 +804,9 @@ inline boost::optional<geometry_msgs::msg::Pose> calcLongitudinalOffsetPose(
   const double signed_length_src_offset =
     calcLongitudinalOffsetToSegment(points, src_seg_idx, src_point);
 
-  return calcLongitudinalOffsetPose(points, src_seg_idx, offset + signed_length_src_offset);
+  return calcLongitudinalOffsetPose(
+    points, src_seg_idx, offset + signed_length_src_offset,
+    set_orientation_from_position_direction);
 }
 
 /**
