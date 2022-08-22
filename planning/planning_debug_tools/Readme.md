@@ -87,6 +87,7 @@ function PlotValue(name, path, timestamp, value)
     new_series:push_back(s,k)
     index = index+1
   end
+end
 
 function PlotCurvatureOverArclength(name, path, timestamp)
   PlotValue(name, path, timestamp,"curvature")
@@ -137,3 +138,32 @@ ros2 run planning_debug_tools closest_velocity_checker.py
 ## Trajectory visualizer
 
 The old version of the trajectory analyzer. It is written in Python and more flexible, but very slow.
+
+## For other use case (experimental)
+
+To see behavior velocity planner's internal plath with lane id
+add below example value to behavior velocity analayzer and set `is_publish_debug_path: true`
+
+```lua
+crosswalk ='/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/path_with_lane_id/crosswalk/debug_info'
+intersection ='/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/path_with_lane_id/intersection/debug_info'
+traffic_light ='/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/path_with_lane_id/traffic_light/debug_info'
+merge_from_private ='/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/path_with_lane_id/merge_from_private/debug_info'
+occlusion_spot ='/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/path_with_lane_id/occlusion_spot/debug_info'
+```
+
+```lua
+PlotVelocityOverArclength('v_crosswalk', crosswalk, tracker_time)
+PlotVelocityOverArclength('v_intersection', intersection, tracker_time)
+PlotVelocityOverArclength('v_merge_from_private', merge_from_private, tracker_time)
+PlotVelocityOverArclength('v_traffic_light', traffic_light, tracker_time)
+PlotVelocityOverArclength('v_occlusion', occlusion_spot, tracker_time)
+
+PlotYawOverArclength('yaw_crosswalk', crosswalk, tracker_time)
+PlotYawOverArclength('yaw_intersection', intersection, tracker_time)
+PlotYawOverArclength('yaw_merge_from_private', merge_from_private, tracker_time)
+PlotYawOverArclength('yaw_traffic_light', traffic_light, tracker_time)
+PlotYawOverArclength('yaw_occlusion', occlusion_spot, tracker_time)
+
+PlotCurrentVelocity('localization_kinematic_state', '/localization/kinematic_state', tracker_time)
+```
