@@ -128,7 +128,6 @@ TrafficLightPublishPanel::TrafficLightPublishPanel(QWidget * parent) : rviz_comm
   h_layout_5->addWidget(traffic_table_);
 
   setLayout(h_layout_5);
-  received_vector_map_ = false;
 }
 
 void TrafficLightPublishPanel::onSetTrafficLightState()
