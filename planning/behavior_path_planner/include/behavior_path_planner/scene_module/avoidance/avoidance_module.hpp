@@ -83,6 +83,7 @@ private:
 
   RegisteredShiftPointArray left_shift_array_;
   RegisteredShiftPointArray right_shift_array_;
+  UUID candidate_uuid_;
   UUID uuid_left_;
   UUID uuid_right_;
 
@@ -91,11 +92,13 @@ private:
     if (candidate.lateral_shift > 0.0) {
       rtc_interface_left_.updateCooperateStatus(
         uuid_left_, isExecutionReady(), candidate.distance_to_path_change, clock_->now());
+      candidate_uuid_ = uuid_left_;
       return;
     }
     if (candidate.lateral_shift < 0.0) {
       rtc_interface_right_.updateCooperateStatus(
         uuid_right_, isExecutionReady(), candidate.distance_to_path_change, clock_->now());
+      candidate_uuid_ = uuid_right_;
       return;
     }
 
@@ -124,6 +127,15 @@ private:
   {
     rtc_interface_left_.clearCooperateStatus();
     rtc_interface_right_.clearCooperateStatus();
+  }
+
+  void removeCandidateRTCStatus()
+  {
+    if (rtc_interface_left_.isRegistered(candidate_uuid_)) {
+      rtc_interface_left_.removeCooperateStatus(candidate_uuid_);
+    } else if (rtc_interface_right_.isRegistered(candidate_uuid_)) {
+      rtc_interface_right_.removeCooperateStatus(candidate_uuid_);
+    }
   }
 
   void removePreviousRTCStatusLeft()
