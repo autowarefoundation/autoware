@@ -177,6 +177,7 @@ private:
     double collision_time_margin;
     // outside
     double outside_rough_detection_area_expand_width;
+    double outside_obstacle_min_velocity_threshold;
     double ego_obstacle_overlap_time_threshold;
     double max_prediction_time_for_collision_check;
     double crossing_obstacle_traj_angle_threshold;

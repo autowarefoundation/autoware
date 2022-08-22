@@ -242,6 +242,8 @@ ObstacleCruisePlannerNode::ObstacleCruisePlannerNode(const rclcpp::NodeOptions &
       declare_parameter<double>("obstacle_filtering.collision_time_margin");
     obstacle_filtering_param_.outside_rough_detection_area_expand_width =
       declare_parameter<double>("obstacle_filtering.outside_rough_detection_area_expand_width");
+    obstacle_filtering_param_.outside_obstacle_min_velocity_threshold =
+      declare_parameter<double>("obstacle_filtering.outside_obstacle_min_velocity_threshold");
     obstacle_filtering_param_.ego_obstacle_overlap_time_threshold =
       declare_parameter<double>("obstacle_filtering.ego_obstacle_overlap_time_threshold");
     obstacle_filtering_param_.max_prediction_time_for_collision_check =
@@ -741,6 +743,16 @@ std::vector<TargetObstacle> ObstacleCruisePlannerNode::filterObstacles(
         RCLCPP_INFO_EXPRESSION(
           get_logger(), is_showing_debug_info_,
           "Ignore outside obstacle (%s) since it is far from the trajectory.", object_id.c_str());
+        continue;
+      }
+
+      const double object_vel =
+        predicted_object.kinematics.initial_twist_with_covariance.twist.linear.x;
+      if (
+        std::fabs(object_vel) < obstacle_filtering_param_.outside_obstacle_min_velocity_threshold) {
+        RCLCPP_INFO_EXPRESSION(
+          get_logger(), is_showing_debug_info_,
+          "Ignore outside obstacle (%s) since the obstacle velocity is low.", object_id.c_str());
         continue;
       }
 

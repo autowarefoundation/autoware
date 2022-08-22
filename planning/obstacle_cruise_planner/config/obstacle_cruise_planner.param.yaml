@@ -50,6 +50,7 @@
       collision_time_margin : 8.0 # time threshold of collision between obstacle adn ego for cruise or stop [s]
 
       outside_rough_detection_area_expand_width : 0.5 # rough lateral margin for rough detection area expansion for obstacles outside the trajectory [m]
+      outside_obstacle_min_velocity_threshold : 3.0 # minimum velocity threshold of obstacles outside the trajectory to cruise or stop [m/s]
       ego_obstacle_overlap_time_threshold : 1.0 #  time threshold to decide cut-in obstacle for cruise or stop [s]
       max_prediction_time_for_collision_check : 20.0 # prediction time to check collision between obstacle and ego
 
