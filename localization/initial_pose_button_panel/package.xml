@@ -4,10 +4,10 @@
   <name>initial_pose_button_panel</name>
   <version>0.1.0</version>
   <description>The initial_pose_button_panel package</description>
-  <maintainer email="yamato.ando@gmail.com">Yamato ANDO</maintainer>
+  <maintainer email="yamato.ando@tier4.jp">Yamato ANDO</maintainer>
   <license>Apache License 2.0</license>
 
-  <author email="yamato.ando@gmail.com">Yamato ANDO</author>
+  <author email="yamato.ando@tier4.jp">Yamato ANDO</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 

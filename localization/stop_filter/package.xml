@@ -5,7 +5,9 @@
   <version>0.0.0</version>
   <description>The stop filter package</description>
   <maintainer email="koji.minoda@tier4.jp">Koji Minoda</maintainer>
+  <maintainer email="yamato.ando@tier4.jp">Yamato Ando</maintainer>
   <license>Apache License 2.0</license>
+  <author email="koji.minoda@tier4.jp">Koji Minoda</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 

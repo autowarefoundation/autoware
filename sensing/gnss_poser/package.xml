@@ -4,8 +4,9 @@
   <name>gnss_poser</name>
   <version>1.0.0</version>
   <description>The ROS2 gnss_poser package</description>
-  <maintainer email="ryo.watanabe@tier4.jp">Ryo Watanabe</maintainer>
+  <maintainer email="yamato.ando@tier4.jp">Yamato Ando</maintainer>
   <license>Apache License 2.0</license>
+  <author email="ryo.watanabe@tier4.jp">Ryo Watanabe</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
