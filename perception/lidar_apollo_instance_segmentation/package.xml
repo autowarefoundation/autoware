@@ -4,11 +4,11 @@
   <name>lidar_apollo_instance_segmentation</name>
   <version>0.1.0</version>
   <description>lidar_apollo_instance_segmentation</description>
-  <maintainer email="yukky.saito@gmail.com">Yukihiro Saito</maintainer>
+  <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>
   <license>Apache License 2.0</license>
 
   <author email="kosuke.tnp@gmail.com">Kosuke Takeuchi</author>
-  <author email="yukky.saito@gmail.com">Yukihiro Saito</author>
+  <author email="yukihiro.saito@tier4.jp">Yukihiro Saito</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
