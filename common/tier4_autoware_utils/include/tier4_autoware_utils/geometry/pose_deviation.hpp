@@ -24,9 +24,9 @@ namespace tier4_autoware_utils
 {
 struct PoseDeviation
 {
-  double lateral;
-  double longitudinal;
-  double yaw;
+  double lateral{0.0};
+  double longitudinal{0.0};
+  double yaw{0.0};
 };
 
 inline double calcLateralDeviation(

@@ -19,8 +19,6 @@
 
 #include <gtest/gtest.h>
 
-namespace bg = boost::geometry;
-
 using tier4_autoware_utils::Polygon2d;
 
 namespace

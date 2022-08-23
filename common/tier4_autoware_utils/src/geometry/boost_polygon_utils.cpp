@@ -33,7 +33,7 @@ void appendPointToPolygon(Polygon2d & polygon, const geometry_msgs::msg::Point &
   bg::append(polygon.outer(), point);
 }
 
-void appendPointToPolygon(Polygon2d & polygon, const Point2d point)
+void appendPointToPolygon(Polygon2d & polygon, const Point2d & point)
 {
   bg::append(polygon.outer(), point);
 }
@@ -160,7 +160,7 @@ Polygon2d toPolygon2d(
   }
 
   // NOTE: push back the first point in order to close polygon
-  if (polygon.outer().size() > 0) {
+  if (!polygon.outer().empty()) {
     appendPointToPolygon(polygon, polygon.outer().front());
   }
 
