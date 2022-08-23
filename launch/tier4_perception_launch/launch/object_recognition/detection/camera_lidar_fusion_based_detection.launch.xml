@@ -132,9 +132,9 @@
 
       <group>
         <include file="$(find-pkg-share object_range_splitter)/launch/object_range_splitter.launch.xml">
-          <arg name="input/object" value="camera_lidar_fusion/objects"/>
-          <arg name="output/long_range_object" value="camera_lidar_fusion/long_range_objects"/>
-          <arg name="output/short_range_object" value="camera_lidar_fusion/short_range_objects"/>
+          <arg name="input/object" value="objects"/>
+          <arg name="output/long_range_object" value="long_range_objects"/>
+          <arg name="output/short_range_object" value="short_range_objects"/>
           <arg name="split_range" value="30.0"/>
         </include>
       </group>
