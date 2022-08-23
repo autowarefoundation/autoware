@@ -67,4 +67,4 @@ Future packages will use tvm_utility as part of the perception stack to run mach
 
 ## Related issues
 
-<https://github.com/autowarefoundation/autoware/discussions/226>
+<https://github.com/autowarefoundation/autoware/discussions/2557>
