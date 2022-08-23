@@ -32,7 +32,7 @@ public:
   using ResponseStatus = tier4_external_api_msgs::msg::ResponseStatus;
   using AutowareServiceResult = std::pair<ResponseStatus, typename ServiceT::Response::SharedPtr>;
 
-  Client(typename rclcpp::Client<ServiceT>::SharedPtr client, rclcpp::Logger logger)
+  Client(typename rclcpp::Client<ServiceT>::SharedPtr client, const rclcpp::Logger & logger)
   : client_(client), logger_(logger)
   {
   }
