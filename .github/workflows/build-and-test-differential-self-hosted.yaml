@@ -26,7 +26,6 @@ jobs:
           - galactic
           - humble
         container-suffix:
-          - ""
           - -cuda
         include:
           - rosdistro: galactic

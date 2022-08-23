@@ -51,7 +51,6 @@
         sd -- \
         "       include:" \
         "       container-suffix:
-                  - \"\"
                   - -cuda
                 include:" {source}
 
@@ -66,7 +65,6 @@
         sd -- \
         "       include:" \
         "       container-suffix:
-                  - \"\"
                   - -cuda
                 include:" {source}
     - source: .github/workflows/build-and-test-self-hosted.yaml
