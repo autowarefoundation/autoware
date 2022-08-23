@@ -3,6 +3,7 @@
   <arg name="ignore_missing_diagnostics"/>
   <arg name="add_leaf_diagnostics"/>
   <arg name="data_ready_timeout"/>
+  <arg name="data_heartbeat_timeout"/>
   <arg name="diag_timeout_sec"/>
   <arg name="hazard_recovery_timeout"/>
   <arg name="use_emergency_hold"/>
@@ -23,6 +24,7 @@
     <param name="ignore_missing_diagnostics" value="$(var ignore_missing_diagnostics)"/>
     <param name="add_leaf_diagnostics" value="$(var add_leaf_diagnostics)"/>
     <param name="data_ready_timeout" value="$(var data_ready_timeout)"/>
+    <param name="data_heartbeat_timeout" value="$(var data_heartbeat_timeout)"/>
     <param name="diag_timeout_sec" value="$(var diag_timeout_sec)"/>
     <param name="hazard_recovery_timeout" value="$(var hazard_recovery_timeout)"/>
     <param name="use_emergency_hold" value="$(var use_emergency_hold)"/>
