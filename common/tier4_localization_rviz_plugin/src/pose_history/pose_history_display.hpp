@@ -59,8 +59,8 @@ private:
   void subscribe() override;
   void unsubscribe() override;
   void processMessage(const geometry_msgs::msg::PoseStamped::ConstSharedPtr message) override;
-  void update_history();
-  void update_lines();
+  void updateHistory();
+  void updateLines();
 
   std::string target_frame_;
   std::deque<geometry_msgs::msg::PoseStamped::ConstSharedPtr> history_;
