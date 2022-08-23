@@ -57,11 +57,11 @@
 
 namespace rviz_plugins
 {
-PolarGridDisplay::PolarGridDisplay() : Display(), wave_range_(0.0)
+PolarGridDisplay::PolarGridDisplay()
 {
   frame_property_ = new rviz_common::properties::TfFrameProperty(
     "Reference Frame", rviz_common::properties::TfFrameProperty::FIXED_FRAME_STRING,
-    "The TF frame this grid will use for its origin.", this, 0, true);
+    "The TF frame this grid will use for its origin.", this, nullptr, true);
 
   color_property_ = new rviz_common::properties::ColorProperty(
     "Color", Qt::white, "The color of the grid lines.", this, SLOT(updatePlane()));

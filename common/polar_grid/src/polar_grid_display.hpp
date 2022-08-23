@@ -71,20 +71,20 @@ class PolarGridDisplay : public rviz_common::Display
 
 public:
   PolarGridDisplay();
-  virtual ~PolarGridDisplay();
+  ~PolarGridDisplay() override;
 
   // Overrides from Display
-  virtual void onInitialize();
-  virtual void update(float dt, float ros_dt);
+  void onInitialize() override;
+  void update(float dt, float ros_dt) override;
   void reset() override;
 
 private Q_SLOTS:
   void updatePlane();
 
 private:
-  Ogre::ManualObject * rings_manual_object_;
-  Ogre::ManualObject * wave_manual_object_;
-  float wave_range_;
+  Ogre::ManualObject * rings_manual_object_{nullptr};
+  Ogre::ManualObject * wave_manual_object_{nullptr};
+  float wave_range_{0.0};
 
   rviz_common::properties::TfFrameProperty * frame_property_;
   rviz_common::properties::FloatProperty * d_range_property_;
