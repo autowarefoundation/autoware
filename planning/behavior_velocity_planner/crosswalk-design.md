@@ -197,6 +197,15 @@ If there are objects stop within a radius of `min_object_velocity * ego_pass_lat
   <figcaption>dead lock situation</figcaption>
 </figure>
 
+#### Safety Slow Down Behavior
+
+In current autoware implementation if there are no target objects around a crosswalk, ego vehicle
+will not slow down for the crosswalk. However, if ego vehicle to slow down to a certain speed in
+such cases is wanted then it is possible by adding some tags to the related crosswalk definition as
+it is instructed
+in [lanelet2_format_extension.md](https://github.com/autowarefoundation/autoware_common/blob/main/tmp/lanelet2_extension/docs/lanelet2_format_extension.md)
+document.
+
 ### Limitations
 
 When multiple crosswalks are nearby (such as intersection), this module may make a stop decision even at crosswalks where the object has no intention of crossing.

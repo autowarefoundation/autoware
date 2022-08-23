@@ -23,7 +23,6 @@
 
 namespace behavior_velocity_planner
 {
-
 namespace bg = boost::geometry;
 using Point = bg::model::d2::point_xy<double>;
 using Polygon = bg::model::polygon<Point>;
@@ -137,6 +136,7 @@ CrosswalkModule::CrosswalkModule(
   crosswalk_(std::move(crosswalk)),
   planner_param_(planner_param)
 {
+  passed_safety_slow_point_ = false;
 }
 
 bool CrosswalkModule::modifyPathVelocity(PathWithLaneId * path, StopReason * stop_reason)
@@ -150,7 +150,7 @@ bool CrosswalkModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
   debug_data_.base_link2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
   *stop_reason = planning_utils::initializeStopReason(StopReason::CROSSWALK);
 
-  const auto ego_path = *path;
+  auto ego_path = *path;
 
   RCLCPP_INFO_EXPRESSION(
     logger_, planner_param_.show_processing_time, "- step1: %f ms",
@@ -168,6 +168,12 @@ bool CrosswalkModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
 
   for (const auto & p : crosswalk_.polygon2d().basicPolygon()) {
     debug_data_.crosswalk_polygon.push_back(createPoint(p.x(), p.y(), ego_pos.z));
+  }
+
+  if (crosswalk_.hasAttribute("safety_slow_down_speed")) {
+    // Safety slow down is on
+    applySafetySlowDownSpeed(*path);
+    ego_path = *path;
   }
 
   RCLCPP_INFO_EXPRESSION(
@@ -723,6 +729,49 @@ CollisionPointState CrosswalkModule::getCollisionPointState(
   }
 
   return CollisionPointState::YIELD;
+}
+
+void CrosswalkModule::applySafetySlowDownSpeed(PathWithLaneId & output)
+{
+  const auto & ego_pos = planner_data_->current_pose.pose.position;
+  const auto ego_path = output;
+
+  // Safety slow down speed in [m/s]
+  const auto & safety_slow_down_speed =
+    static_cast<float>(crosswalk_.attribute("safety_slow_down_speed").asDouble().get());
+
+  if (!passed_safety_slow_point_) {
+    // Safety slow down distance [m]
+    double safety_slow_down_distance = crosswalk_.attributeOr("safety_slow_down_distance", 2.0);
+
+    // the range until to the point where ego will have a const safety slow down speed
+    auto safety_slow_point_range =
+      calcSignedArcLength(ego_path.points, ego_pos, path_intersects_.front());
+    const auto & safety_slow_margin =
+      planner_data_->vehicle_info_.max_longitudinal_offset_m + safety_slow_down_distance;
+    safety_slow_point_range -= safety_slow_margin;
+
+    const auto & p_safety_slow =
+      calcLongitudinalOffsetPoint(ego_path.points, ego_pos, safety_slow_point_range);
+
+    insertDecelPointWithDebugInfo(p_safety_slow.get(), safety_slow_down_speed, output);
+
+    if (safety_slow_point_range < 0.0) {
+      passed_safety_slow_point_ = true;
+    }
+  } else {
+    // the range until to the point where ego will start accelerate
+    auto safety_slow_end_point_range =
+      calcSignedArcLength(ego_path.points, ego_pos, path_intersects_.back());
+
+    if (safety_slow_end_point_range > 0) {
+      // insert constant ego speed until the end of the crosswalk
+      for (auto & p : output.points) {
+        const auto & original_velocity = p.point.longitudinal_velocity_mps;
+        p.point.longitudinal_velocity_mps = std::min(original_velocity, safety_slow_down_speed);
+      }
+    }
+  }
 }
 
 bool CrosswalkModule::isStuckVehicle(
