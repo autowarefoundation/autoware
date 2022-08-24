@@ -195,7 +195,7 @@ std::vector<ShiftParkingPath> getShiftParkingPaths(
           p.position.x -= std::sin(yaw) * offset;
           p.position.y += std::cos(yaw) * offset;
         }
-        path_shifter.setPath(target_lane_reference_path);
+        path_shifter.setPath(util::resamplePathWithSpline(target_lane_reference_path, 1.0));
       }
     }
     ShiftPoint shift_point;
@@ -222,61 +222,50 @@ std::vector<ShiftParkingPath> getShiftParkingPaths(
 
     const auto shift_end_idx =
       motion_utils::findNearestIndex(shifted_path.path.points, shift_end_point.point.pose);
-
     const auto goal_idx = motion_utils::findNearestIndex(shifted_path.path.points, goal_pose);
-
     if (shift_end_idx && goal_idx) {
+      // get target shoulder lane
+      lanelet::ConstLanelet target_shoulder_lanelet;
+      lanelet::utils::query::getClosestLanelet(
+        target_lanelets, shifted_path.path.points.back().point.pose, &target_shoulder_lanelet);
+
       for (size_t i = 0; i < shifted_path.path.points.size(); ++i) {
         auto & point = shifted_path.path.points.at(i);
+
+        // add road lane_ids if not found
+        for (const auto id : road_lane_reference_path.points.back().lane_ids) {
+          if (std::find(point.lane_ids.begin(), point.lane_ids.end(), id) == point.lane_ids.end()) {
+            point.lane_ids.push_back(id);
+          }
+        }
+
+        // add shoulder lane_id if not found
+        if (
+          std::find(point.lane_ids.begin(), point.lane_ids.end(), target_shoulder_lanelet.id()) ==
+          point.lane_ids.end()) {
+          point.lane_ids.push_back(target_shoulder_lanelet.id());
+        }
+
+        // set velocity
         if (i < *shift_end_idx) {
           // set velocity during shift
           point.point.longitudinal_velocity_mps = std::min(
             point.point.longitudinal_velocity_mps,
             road_lane_reference_path.points.back().point.longitudinal_velocity_mps);
           continue;
-        } else if (i > *goal_idx) {
+        } else if (i >= *goal_idx) {
           // set velocity after goal
           point.point.longitudinal_velocity_mps = 0.0;
           continue;
         }
         point.point.longitudinal_velocity_mps = pull_over_velocity;
-
-        // add closest shoulder lane id
-        lanelet::Lanelet closest_shoulder_lanelet;
-        lanelet::utils::query::getClosestLanelet(
-          route_handler.getShoulderLanelets(), point.point.pose, &closest_shoulder_lanelet);
-        point.lane_ids.clear();
-        point.lane_ids.push_back(closest_shoulder_lanelet.id());
       }
 
       candidate_path.straight_path = road_lane_reference_path;
-      // resample is needed for adding orientation to path points for collision check
-      candidate_path.path = util::resamplePathWithSpline(
-        combineReferencePath(road_lane_reference_path, shifted_path.path), 1.0);
-
-      // add goal pose because resampling removes it
-      PathPointWithLaneId goal_path_point{};
-      goal_path_point.point.pose = goal_pose;
-      // z of goal_pose can not be used
-      // https://github.com/autowarefoundation/autoware.universe/issues/711
-      goal_path_point.point.pose.position.z =
-        candidate_path.path.points.back().point.pose.position.z;
-      goal_path_point.point.longitudinal_velocity_mps = 0.0;
-      goal_path_point.lane_ids = shifted_path.path.points.back().lane_ids;
-      candidate_path.path.points.push_back(goal_path_point);
-
-      const auto shift_start_idx =
-        motion_utils::findNearestIndex(candidate_path.path.points, shift_point.start.position);
-      for (size_t i = shift_start_idx; i < candidate_path.path.points.size(); i++) {
-        candidate_path.shifted_path.path.points.push_back(candidate_path.path.points.at(i));
-      }
-
-      shift_point.start_idx = motion_utils::findNearestIndex(
-        candidate_path.shifted_path.path.points, shift_point.start.position);
-      shift_point.end_idx = motion_utils::findNearestIndex(
-        candidate_path.shifted_path.path.points, shift_point.end.position);
-      // todo: shift_length size dose not match path size due to resample,
-      // so sume fuctions (like getTurnInfo()) can not be used with this shifted_point.
+      candidate_path.path = combineReferencePath(road_lane_reference_path, shifted_path.path);
+      candidate_path.shifted_path = shifted_path;
+      shift_point.start_idx = path_shifter.getShiftPoints().front().start_idx;
+      shift_point.end_idx = path_shifter.getShiftPoints().front().end_idx;
       candidate_path.shifted_path.shift_length = shifted_path.shift_length;
       candidate_path.shift_point = shift_point;
       // candidate_path.acceleration = acceleration;
@@ -299,16 +288,26 @@ std::vector<ShiftParkingPath> selectValidPaths(
   const std::vector<ShiftParkingPath> & paths, const lanelet::ConstLanelets & current_lanes,
   const lanelet::ConstLanelets & target_lanes,
   const lanelet::routing::RoutingGraphContainer & overall_graphs, const Pose & current_pose,
-  const bool isInGoalRouteSection, const Pose & goal_pose)
+  const bool isInGoalRouteSection, const Pose & goal_pose,
+  const lane_departure_checker::LaneDepartureChecker & lane_departure_checker)
 {
-  std::vector<ShiftParkingPath> available_paths;
+  // combine road and shoulder lanes
+  lanelet::ConstLanelets lanes = current_lanes;
+  lanes.insert(lanes.end(), target_lanes.begin(), target_lanes.end());
 
+  std::vector<ShiftParkingPath> available_paths;
   for (const auto & path : paths) {
-    if (hasEnoughDistance(
+    if (!hasEnoughDistance(
           path, current_lanes, target_lanes, current_pose, isInGoalRouteSection, goal_pose,
           overall_graphs)) {
-      available_paths.push_back(path);
+      continue;
     }
+
+    if (lane_departure_checker.checkPathWillLeaveLane(lanes, path.shifted_path.path)) {
+      continue;
+    }
+
+    available_paths.push_back(path);
   }
 
   return available_paths;

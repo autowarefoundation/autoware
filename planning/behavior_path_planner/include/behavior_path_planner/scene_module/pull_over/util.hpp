@@ -18,6 +18,8 @@
 #include "behavior_path_planner/scene_module/pull_over/pull_over_module.hpp"
 #include "behavior_path_planner/utilities.hpp"
 
+#include <lane_departure_checker/lane_departure_checker.hpp>
+
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_auto_perception_msgs/msg/predicted_path.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
@@ -54,7 +56,8 @@ std::vector<ShiftParkingPath> selectValidPaths(
   const std::vector<ShiftParkingPath> & paths, const lanelet::ConstLanelets & current_lanes,
   const lanelet::ConstLanelets & target_lanes,
   const lanelet::routing::RoutingGraphContainer & overall_graphs, const Pose & current_pose,
-  const bool isInGoalRouteSection, const Pose & goal_pose);
+  const bool isInGoalRouteSection, const Pose & goal_pose,
+  const lane_departure_checker::LaneDepartureChecker & lane_departure_checker);
 bool selectSafePath(
   const std::vector<ShiftParkingPath> & paths,
   const OccupancyGridBasedCollisionDetector & occupancy_grid_map, ShiftParkingPath & selected_path);

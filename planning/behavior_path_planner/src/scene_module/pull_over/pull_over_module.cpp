@@ -335,12 +335,9 @@ bool PullOverModule::planWithEfficientPath()
     for (const auto goal_candidate : goal_candidates_) {
       modified_goal_pose_ = goal_candidate.goal_pose;
       if (
-        planShiftPath() &&
-        isLongEnoughToParkingStart(
-          shift_parking_path_.path, shift_parking_path_.shift_point.start) &&
-        !lane_departure_checker_->checkPathWillLeaveLane(
-          status_.lanes, shift_parking_path_.shifted_path.path)) {
-        // shift parking path already confirm safe in it's own function.
+        planShiftPath() && isLongEnoughToParkingStart(
+                             shift_parking_path_.path, shift_parking_path_.shift_point.start)) {
+        // shift parking plan already confirms safety and no lane departure in it's own function.
         status_.path = shift_parking_path_.path;
         status_.path_type = PathType::SHIFT;
         status_.is_safe = true;
@@ -403,10 +400,8 @@ bool PullOverModule::planWithCloseGoal()
     // Generate arc shift path.
     if (
       parameters_.enable_shift_parking && planShiftPath() &&
-      isLongEnoughToParkingStart(shift_parking_path_.path, shift_parking_path_.shift_point.start) &&
-      !lane_departure_checker_->checkPathWillLeaveLane(
-        status_.lanes, shift_parking_path_.shifted_path.path)) {
-      // shift parking path already confirm safe in it's own function.
+      isLongEnoughToParkingStart(shift_parking_path_.path, shift_parking_path_.shift_point.start)) {
+      // shift parking plan already confirms safety and no lane departure in it's own function.
       status_.path = shift_parking_path_.path;
       status_.path_type = PathType::SHIFT;
       status_.is_safe = true;
@@ -645,6 +640,9 @@ bool PullOverModule::planShiftPath()
   // Find pull_over path
   bool found_valid_path, found_safe_path;
   std::tie(found_valid_path, found_safe_path) = getSafePath(shift_parking_path_);
+  if (!found_safe_path) {
+    return found_safe_path;
+  }
 
   shift_parking_path_.path.drivable_area = util::generateDrivableArea(
     shift_parking_path_.path, status_.lanes, common_parameters.drivable_area_resolution,
@@ -808,7 +806,7 @@ std::pair<bool, bool> PullOverModule::getSafePath(ShiftParkingPath & safe_path) 
     valid_paths = pull_over_utils::selectValidPaths(
       pull_over_paths, status_.current_lanes, check_lanes, *route_handler->getOverallGraphPtr(),
       current_pose, route_handler->isInGoalRouteSection(status_.current_lanes.back()),
-      modified_goal_pose_);
+      modified_goal_pose_, *lane_departure_checker_);
 
     if (valid_paths.empty()) {
       return std::make_pair(false, false);

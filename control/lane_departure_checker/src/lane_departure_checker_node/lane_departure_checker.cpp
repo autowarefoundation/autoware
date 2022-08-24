@@ -145,7 +145,7 @@ Output LaneDepartureChecker::update(const Input & input)
 }
 
 bool LaneDepartureChecker::checkPathWillLeaveLane(
-  const lanelet::ConstLanelets & lanelets, const PathWithLaneId & path)
+  const lanelet::ConstLanelets & lanelets, const PathWithLaneId & path) const
 {
   std::vector<LinearRing2d> vehicle_footprints = createVehicleFootprints(path);
   lanelet::ConstLanelets candidate_lanelets = getCandidateLanelets(lanelets, vehicle_footprints);
@@ -242,7 +242,8 @@ std::vector<LinearRing2d> LaneDepartureChecker::createVehicleFootprints(
   return vehicle_footprints;
 }
 
-std::vector<LinearRing2d> LaneDepartureChecker::createVehicleFootprints(const PathWithLaneId & path)
+std::vector<LinearRing2d> LaneDepartureChecker::createVehicleFootprints(
+  const PathWithLaneId & path) const
 {
   // Create vehicle footprint in base_link coordinate
   const auto local_vehicle_footprint = createVehicleFootprint(*vehicle_info_ptr_);
