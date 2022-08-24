@@ -1,5 +1,5 @@
 <launch>
-  <arg name="velodyne_monitor_param_file" default="$(find-pkg-share velodyne_monitor)/config/velodyne_monitor.param.yaml"/>
+  <arg name="velodyne_monitor_param_file" default="$(find-pkg-share velodyne_monitor)/config/VLP-16.param.yaml"/>
   <arg name="ip_address" default="192.168.1.201"/>
 
   <node pkg="velodyne_monitor" exec="velodyne_monitor" name="velodyne_monitor" output="log" respawn="true">

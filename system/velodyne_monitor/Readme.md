@@ -58,6 +58,20 @@ None
 | `rpm_ratio_warn`  | double | 0.80            | If the rpm rate of the motor (= current rpm / default rpm) is lower than this value, the diagnostics status becomes WARN  |
 | `rpm_ratio_error` | double | 0.70            | If the rpm rate of the motor (= current rpm / default rpm) is lower than this value, the diagnostics status becomes ERROR |
 
+### Config files
+
+Config files for several velodyne models are prepared.
+The `temp_**` parameters are set with reference to the operational temperature from each datasheet.
+Now, `VLP-16.param.yaml` is used as default argument because it is lowest spec.
+
+| Model Name     | Config name               | Operational Temperature [℃] |
+| -------------- | ------------------------- | --------------------------- |
+| VLP-16         | VLP-16.param.yaml         | -10 to 60                   |
+| VLP-32C        | VLP-32C.param.yaml        | -20 to 60                   |
+| VLS-128        | VLS-128.param.yaml        | -20 to 60                   |
+| Velarray M1600 | Velarray_M1600.param.yaml | -40 to 85                   |
+| HDL-32E        | HDL-32E.param.yaml        | -10 to 60                   |
+
 ## Assumptions / Known limits
 
 TBD.

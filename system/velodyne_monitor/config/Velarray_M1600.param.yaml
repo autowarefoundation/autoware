@@ -1,0 +1,10 @@
+---
+/**:
+  ros__parameters:
+    timeout: 5.0
+    temp_cold_warn: -35.0
+    temp_cold_error: -40.0
+    temp_hot_warn: 80.0
+    temp_hot_error: 85.0
+    rpm_ratio_warn: 0.80
+    rpm_ratio_error: 0.70
