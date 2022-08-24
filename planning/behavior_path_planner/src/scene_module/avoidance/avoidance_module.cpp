@@ -2255,6 +2255,7 @@ void AvoidanceModule::addShiftPointIfApproved(const AvoidPointArray & shift_poin
 
     uuid_left_ = generateUUID();
     uuid_right_ = generateUUID();
+    candidate_uuid_ = generateUUID();
 
     DEBUG_PRINT("shift_point size: %lu -> %lu", prev_size, path_shifter_.getShiftPointsSize());
   } else {
