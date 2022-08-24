@@ -15,11 +15,12 @@
 #ifndef INTERFACE_HPP_
 #define INTERFACE_HPP_
 
-#include "default_ad_api/specs/interface/version.hpp"
-#include "utils/types.hpp"
-
+#include <autoware_ad_api_specs/interface.hpp>
 #include <component_interface_utils/rclcpp.hpp>
 #include <rclcpp/rclcpp.hpp>
+
+// This file should be included after messages.
+#include "utils/types.hpp"
 
 namespace default_ad_api
 {
@@ -30,7 +31,7 @@ public:
   explicit InterfaceNode(const rclcpp::NodeOptions & options);
 
 private:
-  Service<ad_api::interface::version::T>::SharedPtr srv_;
+  Srv<autoware_ad_api::interface::Version> srv_;
 };
 
 }  // namespace default_ad_api

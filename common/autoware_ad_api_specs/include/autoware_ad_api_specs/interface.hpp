@@ -12,20 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DEFAULT_AD_API__SPECS__INTERFACE__VERSION_HPP_
-#define DEFAULT_AD_API__SPECS__INTERFACE__VERSION_HPP_
+#ifndef AUTOWARE_AD_API_SPECS__INTERFACE_HPP_
+#define AUTOWARE_AD_API_SPECS__INTERFACE_HPP_
 
-#include "autoware_ad_api_msgs/srv/interface_version.hpp"
+#include <autoware_ad_api_msgs/srv/interface_version.hpp>
 
-namespace ad_api::interface::version
+namespace autoware_ad_api::interface
 {
 
-struct T
+struct Version
 {
   using Service = autoware_ad_api_msgs::srv::InterfaceVersion;
   static constexpr char name[] = "/api/interface/version";
 };
 
-}  // namespace ad_api::interface::version
+}  // namespace autoware_ad_api::interface
 
-#endif  // DEFAULT_AD_API__SPECS__INTERFACE__VERSION_HPP_
+#endif  // AUTOWARE_AD_API_SPECS__INTERFACE_HPP_
