@@ -31,6 +31,7 @@ void DetectedObjectsDisplay::processMessage(DetectedObjects::ConstSharedPtr msg)
   clear_markers();
   int id = 0;
   for (const auto & object : msg->objects) {
+    // TODO(Satoshi Tanaka): fixing from string label to one string
     // Get marker for shape
     auto shape_marker = get_shape_marker_ptr(
       object.shape, object.kinematics.pose_with_covariance.pose.position,
@@ -52,6 +53,28 @@ void DetectedObjectsDisplay::processMessage(DetectedObjects::ConstSharedPtr msg)
       label_marker_ptr->header = msg->header;
       label_marker_ptr->id = id++;
       add_marker(label_marker_ptr);
+    }
+
+    // Get marker for velocity text
+    geometry_msgs::msg::Point vel_vis_position;
+    vel_vis_position.x = object.kinematics.pose_with_covariance.pose.position.x - 0.5;
+    vel_vis_position.y = object.kinematics.pose_with_covariance.pose.position.y;
+    vel_vis_position.z = object.kinematics.pose_with_covariance.pose.position.z - 0.5;
+    auto velocity_text_marker = get_velocity_text_marker_ptr(
+      object.kinematics.twist_with_covariance.twist, vel_vis_position, object.classification);
+    if (velocity_text_marker) {
+      auto velocity_text_marker_ptr = velocity_text_marker.value();
+      velocity_text_marker_ptr->header = msg->header;
+      add_marker(velocity_text_marker_ptr);
+    }
+
+    // Get marker for twist
+    auto twist_marker = get_twist_marker_ptr(
+      object.kinematics.pose_with_covariance, object.kinematics.twist_with_covariance);
+    if (twist_marker) {
+      auto twist_marker_ptr = twist_marker.value();
+      twist_marker_ptr->header = msg->header;
+      add_marker(twist_marker_ptr);
     }
   }
 }
