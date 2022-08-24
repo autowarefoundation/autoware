@@ -318,8 +318,8 @@ int BlindSpotModule::insertPoint(
   }
   int insert_idx = -1;
   // initialize with epsilon so that comparison with insert_point_s = 0.0 would work
-  constexpr double eps = 1e-4;
-  double accum_s = eps * 2.0;
+  constexpr double eps = 1e-2;
+  double accum_s = eps + std::numeric_limits<double>::epsilon();
   for (size_t i = 1; i < inout_path->points.size(); i++) {
     accum_s += tier4_autoware_utils::calcDistance2d(
       inout_path->points[i].point.pose.position, inout_path->points[i - 1].point.pose.position);
@@ -340,6 +340,15 @@ int BlindSpotModule::insertPoint(
       tier4_autoware_utils::calcDistance2d(
         inserted_point, inout_path->points.at(insert_idx).point) < min_dist) {
       inout_path->points.at(insert_idx).point.longitudinal_velocity_mps = 0.0;
+      is_point_inserted = false;
+      return insert_idx;
+    } else if (
+      insert_idx != 0 &&
+      tier4_autoware_utils::calcDistance2d(
+        inserted_point, inout_path->points.at(static_cast<size_t>(insert_idx - 1)).point) <
+        min_dist) {
+      inout_path->points.at(insert_idx - 1).point.longitudinal_velocity_mps = 0.0;
+      insert_idx--;
       is_point_inserted = false;
       return insert_idx;
     }
