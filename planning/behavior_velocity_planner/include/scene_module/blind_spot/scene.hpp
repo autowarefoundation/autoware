@@ -207,8 +207,7 @@ private:
    */
   bool generateStopLine(
     const lanelet::ConstLanelets straight_lanelets,
-    autoware_auto_planning_msgs::msg::PathWithLaneId * path, int * stop_line_idx,
-    int * pass_judge_line_idx) const;
+    autoware_auto_planning_msgs::msg::PathWithLaneId * path, int * stop_line_idx) const;
 
   /**
    * @brief Insert a point to target path
@@ -219,7 +218,7 @@ private:
    */
   int insertPoint(
     const int insert_idx_ip, const autoware_auto_planning_msgs::msg::PathWithLaneId path_ip,
-    autoware_auto_planning_msgs::msg::PathWithLaneId * path, bool & is_point_inserted) const;
+    autoware_auto_planning_msgs::msg::PathWithLaneId * path) const;
 
   /**
    * @brief Calculate first path index that is conflicting lanelets.
