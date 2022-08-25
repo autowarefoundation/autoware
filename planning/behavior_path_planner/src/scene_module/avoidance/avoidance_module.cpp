@@ -1701,68 +1701,57 @@ double AvoidanceModule::getLeftShiftBound() const
 void AvoidanceModule::generateExtendedDrivableArea(ShiftedPath * shifted_path) const
 {
   const auto & route_handler = planner_data_->route_handler;
-  lanelet::ConstLanelets extended_lanelets = avoidance_data_.current_lanelets;
+  const auto & current_lanes = avoidance_data_.current_lanelets;
+  lanelet::ConstLanelets extended_lanelets = current_lanes;
 
-  {
-    // 0. Extend to right/left of objects
-    for (const auto & obstacle : avoidance_data_.objects) {
-      lanelet::ConstLanelets search_lanelets;
-      auto object_lanelet = obstacle.overhang_lanelet;
-      constexpr bool get_right = true;
-      constexpr bool get_left = true;
-      const bool include_opposite = parameters_.enable_avoidance_over_opposite_direction;
-      if (isOnRight(obstacle)) {
-        search_lanelets = route_handler->getAllSharedLineStringLanelets(
-          object_lanelet, !get_right, get_left, include_opposite);
-      } else {
-        search_lanelets = route_handler->getAllSharedLineStringLanelets(
-          object_lanelet, get_right, !get_left, include_opposite);
-      }
-      extended_lanelets.insert(
-        extended_lanelets.end(), search_lanelets.begin(), search_lanelets.end());
-    }
-  }
-
-  for (const auto & lane : avoidance_data_.current_lanelets) {
-    {  // 1. extend to right/left or adjacent right/left (where lane_change tag = no, but not a
-       // problem to extend for avoidance) lane if it exists
-      // this can be available only if line string is shared
-      const auto opt_right_lane = route_handler->getRightLanelet(lane);
-      const auto opt_left_lane = route_handler->getLeftLanelet(lane);
-
-      if (opt_right_lane) {
-        extended_lanelets.push_back(opt_right_lane.get());
-        continue;
-      } else if (opt_left_lane) {
-        extended_lanelets.push_back(opt_left_lane.get());
-        continue;
-      }
+  const auto shared_linestring_lanelets = [this,
+                                           &route_handler](const lanelet::ConstLanelet & lane) {
+    const auto ignore_opposite = !parameters_.enable_avoidance_over_opposite_direction;
+    if (ignore_opposite) {
+      return route_handler->getAllSharedLineStringLanelets(lane, true, true, ignore_opposite);
     }
 
-    {  // 2. when there are multiple turning lanes whose previous lanelet is the same in
-       // intersection
-      const bool update_extended_lanelets = [&]() {
-        // lanelet is not turning lane
+    return route_handler->getAllSharedLineStringLanelets(lane);
+  };
+
+  for (const auto & current_lane : avoidance_data_.current_lanelets) {
+    if (!parameters_.enable_avoidance_over_opposite_direction) {
+      break;
+    }
+
+    const auto extend_from_current_lane = std::invoke(shared_linestring_lanelets, current_lane);
+    extended_lanelets.insert(
+      extended_lanelets.end(), extend_from_current_lane.begin(), extend_from_current_lane.end());
+
+    // 2. when there are multiple turning lanes whose previous lanelet is the same in
+    // intersection
+    const lanelet::ConstLanelets next_lanes_from_intersection = std::invoke(
+      [&route_handler](const lanelet::ConstLanelet & lane) {
         const std::string turn_direction = lane.attributeOr("turn_direction", "none");
         if (turn_direction != "right" && turn_direction != "left") {
-          return false;
+          return lanelet::ConstLanelets{};
         }
 
         // get previous lane, and return false if previous lane does not exist
         lanelet::ConstLanelets prev_lanes;
         if (!route_handler->getPreviousLaneletsWithinRoute(lane, &prev_lanes)) {
-          return false;
+          return lanelet::ConstLanelets{};
         }
 
         // get next lanes from the previous lane, and return false if next lanes do not exist
-        const auto next_lanes = route_handler->getNextLanelets(lane);
-        if (next_lanes.empty()) {
-          return false;
-        }
+        return route_handler->getNextLanelets(lane);
+      },
+      current_lane);
 
-        // look for neighbour lane, where end line of the lane is connected to end line of the
-        // original lane
-        for (const auto & next_lane : next_lanes) {
+    if (next_lanes_from_intersection.empty()) {
+      continue;
+    }
+
+    // 2.1 look for neighbour lane, where end line of the lane is connected to end line of the
+    // original lane
+    const lanelet::ConstLanelet next_lane_from_intersection = std::invoke(
+      [&next_lanes_from_intersection](const auto & lane) {
+        for (const auto & next_lane : next_lanes_from_intersection) {
           if (lane.id() == next_lane.id()) {
             continue;
           }
@@ -1781,110 +1770,19 @@ void AvoidanceModule::generateExtendedDrivableArea(ShiftedPath * shifted_path) c
             (next_left_back_point_2d - orig_right_back_point_2d).norm() < epsilon ||
             (next_right_back_point_2d - orig_left_back_point_2d).norm() < epsilon;
           if (is_neighbour_lane) {
-            extended_lanelets.push_back(next_lane);
-            return true;
+            return next_lane;
           }
         }
+        return lanelet::ConstLanelet{};
+      },
+      current_lane);
 
-        return false;
-      }();
-      if (update_extended_lanelets) {
-        continue;
-      }
-    }
+    if (next_lane_from_intersection.id()) {
+      const auto extended_from_next =
+        std::invoke(shared_linestring_lanelets, next_lane_from_intersection);
 
-    {  // 3. deal with the problem that line string is not shared to neighbour lanelets in
-       // intersection (for left lane), assuming that points are shared
-      // this part will be removed when the map format is modified correctly wrt sharing line string
-      // since 1 works for this
-      bool update_extended_lanelets = false;
-      const auto & left_lane_candidates =
-        route_handler->getLaneletsFromPoint(lane.leftBound().front());
-      for (const auto & left_lane_candidate : left_lane_candidates) {
-        const Eigen::Vector2d & left_lane_right_back_point_2d =
-          left_lane_candidate.rightBound2d().back().basicPoint();
-        const Eigen::Vector2d & orig_lane_left_back_point_2d =
-          lane.leftBound2d().back().basicPoint();
-
-        const double epsilon = 1e-5;
-        const bool is_neighbour_lane =
-          (left_lane_right_back_point_2d - orig_lane_left_back_point_2d).norm() < epsilon;
-        if (is_neighbour_lane) {
-          extended_lanelets.push_back(left_lane_candidate);
-          update_extended_lanelets = true;
-          break;
-        }
-      }
-      if (update_extended_lanelets) {
-        continue;
-      }
-    }
-
-    {  // 4. deal with the problem that line string is not shared to neighbour lanelets in
-       // intersection (for right lane), assuming that points are shared
-      // this part will be removed if the map format is modified correctly wrt sharing line string
-      // since 1 works for this
-      bool update_extended_lanelets = false;
-      const auto & right_lane_candidates =
-        route_handler->getLaneletsFromPoint(lane.rightBound().front());
-      for (const auto & right_lane_candidate : right_lane_candidates) {
-        const Eigen::Vector2d & right_lane_left_back_point_2d =
-          right_lane_candidate.leftBound2d().back().basicPoint();
-        const Eigen::Vector2d & orig_lane_right_back_point_2d =
-          lane.rightBound2d().back().basicPoint();
-
-        const double epsilon = 1e-5;
-        const bool is_neighbour_lane =
-          (right_lane_left_back_point_2d - orig_lane_right_back_point_2d).norm() < epsilon;
-        if (is_neighbour_lane) {
-          extended_lanelets.push_back(right_lane_candidate);
-          update_extended_lanelets = true;
-          break;
-        }
-      }
-      if (update_extended_lanelets) {
-        continue;
-      }
-    }
-
-    {
-      // 5. if drivable area cannot be extended inside the same-direction lane, extend to even
-      // opposite lane
-      const auto opposite_lanes = route_handler->getRightOppositeLanelets(lane);
-
-      if (!opposite_lanes.empty()) {
-        for (const auto & opposite_lane : opposite_lanes) {
-          extended_lanelets.push_back(opposite_lane);
-        }
-        continue;
-      }
-    }
-
-    {  // 6. deal with the problem that line string is not shared to neighbour opposite lanelet,
-       // assuming that points are shared
-      // this part will be removed when the map format is modified correctly wrt sharing line string
-      // since 5 works for this
-      bool update_extended_lanelets = false;
-      const auto & opposite_lane_candidates =
-        route_handler->getLaneletsFromPoint(lane.rightBound().front());
-      for (const auto & opposite_lane_candidate : opposite_lane_candidates) {
-        const Eigen::Vector2d & opposite_lane_right_front_point_2d =
-          opposite_lane_candidate.rightBound2d().front().basicPoint();
-        const Eigen::Vector2d & orig_lane_right_back_point_2d =
-          lane.rightBound2d().back().basicPoint();
-
-        const double epsilon = 1e-5;
-        const bool is_neighbour_lane =
-          (opposite_lane_right_front_point_2d - orig_lane_right_back_point_2d).norm() < epsilon;
-        if (is_neighbour_lane) {
-          extended_lanelets.push_back(opposite_lane_candidate);
-          update_extended_lanelets = true;
-          break;
-        }
-      }
-      if (update_extended_lanelets) {
-        continue;
-      }
+      extended_lanelets.insert(
+        extended_lanelets.end(), extended_from_next.begin(), extended_from_next.end());
     }
   }
 

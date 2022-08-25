@@ -1177,9 +1177,11 @@ OccupancyGrid generateDrivableArea(
         tf2::doTransform(geom_pt, transformed_geom_pt, geom_tf_map2grid);
         cv_polygon.push_back(toCVPoint(transformed_geom_pt, width, height, resolution));
       }
-      cv_polygons.push_back(cv_polygon);
-      // fill in drivable area and copy to occupancy grid
-      cv::fillPoly(cv_image, cv_polygons, cv::Scalar(free_space));
+      if (!cv_polygon.empty()) {
+        cv_polygons.push_back(cv_polygon);
+        // fill in drivable area and copy to occupancy grid
+        cv::fillPoly(cv_image, cv_polygons, cv::Scalar(free_space));
+      }
     }
 
     // Closing
