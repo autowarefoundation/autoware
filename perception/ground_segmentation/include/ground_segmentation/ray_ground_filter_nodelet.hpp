@@ -110,7 +110,6 @@ protected:
     const PointCloud2ConstPtr & input, const IndicesPtr & indices, PointCloud2 & output) override;
 
 private:
-  std::string base_frame_ = "base_link";
   double general_max_slope_;            // degrees
   double local_max_slope_;              // degrees
   double initial_max_slope_;            // degrees
@@ -150,9 +149,6 @@ private:
    * @retval true transform succeeded
    * @retval false transform failed
    */
-  bool TransformPointCloud(
-    const std::string & in_target_frame, const PointCloud2ConstPtr & in_cloud_ptr,
-    const PointCloud2::SharedPtr & out_cloud_ptr);
 
   /*!
    *

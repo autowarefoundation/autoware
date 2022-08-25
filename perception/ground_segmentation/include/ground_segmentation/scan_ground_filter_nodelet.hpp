@@ -131,9 +131,6 @@ private:
    * @retval true transform succeeded
    * @retval false transform failed
    */
-  bool transformPointCloud(
-    const std::string & in_target_frame, const PointCloud2ConstPtr & in_cloud_ptr,
-    const PointCloud2::SharedPtr & out_cloud_ptr);
 
   /*!
    * Convert pcl::PointCloud to sorted PointCloudRefVector

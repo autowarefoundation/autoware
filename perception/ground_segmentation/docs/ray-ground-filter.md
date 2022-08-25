@@ -26,7 +26,8 @@ This implementation inherits `pointcloud_preprocessor::Filter` class, please ref
 
 | Name                          | Type   | Description                                                                                                                                                                                                                    |
 | ----------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `base_frame`                  | string | The target frame of input points                                                                                                                                                                                               |
+| `input_frame`                 | string | frame id of input pointcloud                                                                                                                                                                                                   |
+| `output_frame`                | string | frame id of output pointcloud                                                                                                                                                                                                  |
 | `general_max_slope`           | double | The triangle created by `general_max_slope` is called the global cone. If the point is outside the global cone, it is judged to be a point that is no on the ground                                                            |
 | `initial_max_slope`           | double | Generally, the point where the object first hits is far from ego-vehicle because of sensor blind spot, so resolution is different from that point and thereafter, so this parameter exists to set a separate `local_max_slope` |
 | `local_max_slope`             | double | The triangle created by `local_max_slope` is called the local cone. This parameter for classification based on the continuity of points                                                                                        |
@@ -40,6 +41,8 @@ This implementation inherits `pointcloud_preprocessor::Filter` class, please ref
 | `max_y`                       | double | The parameter to set vehicle footprint manually                                                                                                                                                                                |
 
 ## Assumptions / Known limits
+
+The input_frame is set as parameter but it must be fixed as base_link for the current algorithm.
 
 ## (Optional) Error detection and handling
 

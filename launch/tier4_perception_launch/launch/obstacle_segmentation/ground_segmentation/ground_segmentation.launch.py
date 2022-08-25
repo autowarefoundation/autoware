@@ -238,6 +238,8 @@ class GroundSegmentationPipeline:
                 parameters=[
                     self.ground_segmentation_param["common_ground_filter"]["parameters"],
                     self.vehicle_info,
+                    {"input_frame": "base_link"},
+                    {"output_frame": "base_link"},
                 ],
                 extra_arguments=[
                     {"use_intra_process_comms": LaunchConfiguration("use_intra_process")}

@@ -31,8 +31,6 @@
 
 #include "ground_segmentation/ray_ground_filter_nodelet.hpp"
 
-#include <pcl_ros/transforms.hpp>
-
 #include <string>
 #include <vector>
 
@@ -59,7 +57,6 @@ RayGroundFilterComponent::RayGroundFilterComponent(const rclcpp::NodeOptions & o
 
     use_vehicle_footprint_ = declare_parameter("use_vehicle_footprint", false);
 
-    base_frame_ = declare_parameter("base_frame", "base_link");
     general_max_slope_ = declare_parameter("general_max_slope", 8.0);
     local_max_slope_ = declare_parameter("local_max_slope", 6.0);
     initial_max_slope_ = declare_parameter("initial_max_slope", 3.0);
@@ -72,32 +69,6 @@ RayGroundFilterComponent::RayGroundFilterComponent(const rclcpp::NodeOptions & o
   using std::placeholders::_1;
   set_param_res_ = this->add_on_set_parameters_callback(
     std::bind(&RayGroundFilterComponent::paramCallback, this, _1));
-}
-
-bool RayGroundFilterComponent::TransformPointCloud(
-  const std::string & in_target_frame,
-  const sensor_msgs::msg::PointCloud2::ConstSharedPtr & in_cloud_ptr,
-  const sensor_msgs::msg::PointCloud2::SharedPtr & out_cloud_ptr)
-{
-  if (in_target_frame == in_cloud_ptr->header.frame_id) {
-    *out_cloud_ptr = *in_cloud_ptr;
-    return true;
-  }
-
-  geometry_msgs::msg::TransformStamped transform_stamped;
-  try {
-    transform_stamped = tf_buffer_->lookupTransform(
-      in_target_frame, in_cloud_ptr->header.frame_id, in_cloud_ptr->header.stamp,
-      rclcpp::Duration::from_seconds(1.0));
-  } catch (tf2::TransformException & ex) {
-    RCLCPP_WARN(this->get_logger(), "%s", ex.what());
-    return false;
-  }
-  // tf2::doTransform(*in_cloud_ptr, *out_cloud_ptr, transform_stamped);
-  Eigen::Matrix4f mat = tf2::transformToEigen(transform_stamped.transform).matrix().cast<float>();
-  pcl_ros::transformPointCloud(mat, *in_cloud_ptr, *out_cloud_ptr);
-  out_cloud_ptr->header.frame_id = in_target_frame;
-  return true;
 }
 
 void RayGroundFilterComponent::ConvertXYZIToRTZColor(
@@ -156,10 +127,6 @@ void RayGroundFilterComponent::ConvertXYZIToRTZColor(
 
 boost::optional<float> RayGroundFilterComponent::calcPointVehicleIntersection(const Point & point)
 {
-  float distance_to_intersection_point = 0.0;
-  if (base_frame_ != "base_link") {
-    return distance_to_intersection_point;
-  }
   bg::model::linestring<Point> ls = {{0.0, 0.0}, point};
   std::vector<Point> collision_points;
   bg::intersection(ls, vehicle_footprint_, collision_points);
@@ -312,17 +279,8 @@ void RayGroundFilterComponent::filter(
 {
   std::scoped_lock lock(mutex_);
 
-  sensor_msgs::msg::PointCloud2::SharedPtr input_transformed_ptr(new sensor_msgs::msg::PointCloud2);
-  bool succeeded = TransformPointCloud(base_frame_, input, input_transformed_ptr);
-  if (!succeeded) {
-    RCLCPP_ERROR_STREAM_THROTTLE(
-      this->get_logger(), *this->get_clock(), std::chrono::milliseconds(1000).count(),
-      "Failed transform from " << base_frame_ << " to " << input->header.frame_id);
-    return;
-  }
-
   pcl::PointCloud<PointType_>::Ptr current_sensor_cloud_ptr(new pcl::PointCloud<PointType_>);
-  pcl::fromROSMsg(*input_transformed_ptr, *current_sensor_cloud_ptr);
+  pcl::fromROSMsg(*input, *current_sensor_cloud_ptr);
 
   PointCloudXYZRTColor organized_points;
   std::vector<pcl::PointIndices> radial_division_indices;
@@ -348,19 +306,8 @@ void RayGroundFilterComponent::filter(
     new sensor_msgs::msg::PointCloud2);
   pcl::toROSMsg(*no_ground_cloud_ptr, *no_ground_cloud_msg_ptr);
   no_ground_cloud_msg_ptr->header = input->header;
-  no_ground_cloud_msg_ptr->header.frame_id = base_frame_;
-  sensor_msgs::msg::PointCloud2::SharedPtr no_ground_cloud_transformed_msg_ptr(
-    new sensor_msgs::msg::PointCloud2);
-  succeeded =
-    TransformPointCloud(base_frame_, no_ground_cloud_msg_ptr, no_ground_cloud_transformed_msg_ptr);
-  if (!succeeded) {
-    RCLCPP_ERROR_STREAM_THROTTLE(
-      this->get_logger(), *this->get_clock(), std::chrono::milliseconds(1000).count(),
-      "Failed transform from " << base_frame_ << " to "
-                               << no_ground_cloud_msg_ptr->header.frame_id);
-    return;
-  }
-  output = *no_ground_cloud_transformed_msg_ptr;
+
+  output = *no_ground_cloud_msg_ptr;
 }
 
 rcl_interfaces::msg::SetParametersResult RayGroundFilterComponent::paramCallback(
@@ -383,9 +330,6 @@ rcl_interfaces::msg::SetParametersResult RayGroundFilterComponent::paramCallback
 
   setVehicleFootprint(min_x_, max_x_, min_y_, max_y_);
 
-  if (get_param(p, "base_frame", base_frame_)) {
-    RCLCPP_DEBUG(get_logger(), "Setting base_frame to: %s.", base_frame_.c_str());
-  }
   if (get_param(p, "general_max_slope", general_max_slope_)) {
     RCLCPP_DEBUG(get_logger(), "Setting general_max_slope to: %f.", general_max_slope_);
   }
