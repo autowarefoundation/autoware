@@ -36,13 +36,26 @@ using tier4_autoware_utils::createMarkerScale;
 using tier4_autoware_utils::createPoint;
 
 SurroundObstacleCheckerDebugNode::SurroundObstacleCheckerDebugNode(
-  const double base_link2front, const rclcpp::Clock::SharedPtr clock, rclcpp::Node & node)
-: base_link2front_(base_link2front), clock_(clock)
+  const Polygon2d & ego_polygon, const double base_link2front,
+  const double & surround_check_distance, const double & surround_check_recover_distance,
+  const geometry_msgs::msg::Pose & self_pose, const rclcpp::Clock::SharedPtr clock,
+  rclcpp::Node & node)
+: ego_polygon_(ego_polygon),
+  base_link2front_(base_link2front),
+  surround_check_distance_(surround_check_distance),
+  surround_check_recover_distance_(surround_check_recover_distance),
+  self_pose_(self_pose),
+  clock_(clock)
 {
   debug_virtual_wall_pub_ =
     node.create_publisher<visualization_msgs::msg::MarkerArray>("~/virtual_wall", 1);
   debug_viz_pub_ = node.create_publisher<visualization_msgs::msg::MarkerArray>("~/debug/marker", 1);
   stop_reason_pub_ = node.create_publisher<StopReasonArray>("~/output/stop_reasons", 1);
+  vehicle_footprint_pub_ = node.create_publisher<PolygonStamped>("~/debug/footprint", 1);
+  vehicle_footprint_offset_pub_ =
+    node.create_publisher<PolygonStamped>("~/debug/footprint_offset", 1);
+  vehicle_footprint_recover_offset_pub_ =
+    node.create_publisher<PolygonStamped>("~/debug/footprint_recover_offset", 1);
 }
 
 bool SurroundObstacleCheckerDebugNode::pushPose(
@@ -67,6 +80,27 @@ bool SurroundObstacleCheckerDebugNode::pushObstaclePoint(
     default:
       return false;
   }
+}
+
+void SurroundObstacleCheckerDebugNode::publishFootprints()
+{
+  /* publish vehicle footprint polygon */
+  const auto footprint = boostPolygonToPolygonStamped(ego_polygon_, self_pose_.position.z);
+  vehicle_footprint_pub_->publish(footprint);
+
+  /* publish vehicle footprint polygon with offset */
+  const auto polygon_with_offset =
+    createSelfPolygonWithOffset(ego_polygon_, surround_check_distance_);
+  const auto footprint_with_offset =
+    boostPolygonToPolygonStamped(polygon_with_offset, self_pose_.position.z);
+  vehicle_footprint_offset_pub_->publish(footprint_with_offset);
+
+  /* publish vehicle footprint polygon with recover offset */
+  const auto polygon_with_recover_offset =
+    createSelfPolygonWithOffset(ego_polygon_, surround_check_recover_distance_);
+  const auto footprint_with_recover_offset =
+    boostPolygonToPolygonStamped(polygon_with_recover_offset, self_pose_.position.z);
+  vehicle_footprint_recover_offset_pub_->publish(footprint_with_recover_offset);
 }
 
 void SurroundObstacleCheckerDebugNode::publish()
@@ -147,6 +181,44 @@ StopReasonArray SurroundObstacleCheckerDebugNode::makeStopReasonArray()
   stop_reason_array.header = header;
   stop_reason_array.stop_reasons.emplace_back(stop_reason_msg);
   return stop_reason_array;
+}
+
+Polygon2d SurroundObstacleCheckerDebugNode::createSelfPolygonWithOffset(
+  const Polygon2d & base_polygon, const double & offset)
+{
+  typedef double coordinate_type;
+  const double buffer_distance = offset;
+  const int points_per_circle = 36;
+  boost::geometry::strategy::buffer::distance_symmetric<coordinate_type> distance_strategy(
+    buffer_distance);
+  boost::geometry::strategy::buffer::join_round join_strategy(points_per_circle);
+  boost::geometry::strategy::buffer::end_round end_strategy(points_per_circle);
+  boost::geometry::strategy::buffer::point_circle circle_strategy(points_per_circle);
+  boost::geometry::strategy::buffer::side_straight side_strategy;
+  boost::geometry::model::multi_polygon<Polygon2d> result;
+  // Create the buffer of a multi polygon
+  boost::geometry::buffer(
+    base_polygon, result, distance_strategy, side_strategy, join_strategy, end_strategy,
+    circle_strategy);
+  return result.front();
+}
+
+PolygonStamped SurroundObstacleCheckerDebugNode::boostPolygonToPolygonStamped(
+  const Polygon2d & boost_polygon, const double & z)
+{
+  PolygonStamped polygon_stamped;
+  polygon_stamped.header.frame_id = "base_link";
+  polygon_stamped.header.stamp = this->clock_->now();
+
+  for (auto const & p : boost_polygon.outer()) {
+    geometry_msgs::msg::Point32 gp;
+    gp.x = p.x();
+    gp.y = p.y();
+    gp.z = z;
+    polygon_stamped.polygon.points.push_back(gp);
+  }
+
+  return polygon_stamped;
 }
 
 }  // namespace surround_obstacle_checker

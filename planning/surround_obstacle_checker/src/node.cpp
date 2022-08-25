@@ -44,7 +44,6 @@
 
 namespace surround_obstacle_checker
 {
-
 namespace bg = boost::geometry;
 using Point2d = bg::model::d2::point_xy<double>;
 using Polygon2d = bg::model::polygon<Point2d>;
@@ -124,15 +123,16 @@ Polygon2d createObjPolygon(
 Polygon2d createSelfPolygon(const VehicleInfo & vehicle_info)
 {
   const double & front_m = vehicle_info.max_longitudinal_offset_m;
-  const double & width_m = vehicle_info.min_lateral_offset_m;
+  const double & width_left_m = vehicle_info.max_lateral_offset_m;
+  const double & width_right_m = vehicle_info.min_lateral_offset_m;
   const double & rear_m = vehicle_info.min_longitudinal_offset_m;
 
   Polygon2d ego_polygon;
 
-  ego_polygon.outer().push_back(Point2d(front_m, -width_m));
-  ego_polygon.outer().push_back(Point2d(front_m, width_m));
-  ego_polygon.outer().push_back(Point2d(rear_m, width_m));
-  ego_polygon.outer().push_back(Point2d(rear_m, -width_m));
+  ego_polygon.outer().push_back(Point2d(front_m, width_left_m));
+  ego_polygon.outer().push_back(Point2d(front_m, width_right_m));
+  ego_polygon.outer().push_back(Point2d(rear_m, width_right_m));
+  ego_polygon.outer().push_back(Point2d(rear_m, width_left_m));
 
   bg::correct(ego_polygon);
 
@@ -152,6 +152,7 @@ SurroundObstacleCheckerNode::SurroundObstacleCheckerNode(const rclcpp::NodeOptio
     p.surround_check_recover_distance =
       this->declare_parameter("surround_check_recover_distance", 2.5);
     p.state_clear_time = this->declare_parameter("state_clear_time", 2.0);
+    p.publish_debug_footprints = this->declare_parameter("publish_debug_footprints", true);
   }
 
   vehicle_info_ = vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo();
@@ -183,12 +184,27 @@ SurroundObstacleCheckerNode::SurroundObstacleCheckerNode(const rclcpp::NodeOptio
   vehicle_stop_checker_ = std::make_unique<VehicleStopChecker>(this);
 
   // Debug
+  auto const self_polygon = createSelfPolygon(vehicle_info_);
+  odometry_ptr_ = std::make_shared<nav_msgs::msg::Odometry>();
+
   debug_ptr_ = std::make_shared<SurroundObstacleCheckerDebugNode>(
-    vehicle_info_.max_longitudinal_offset_m, this->get_clock(), *this);
+    self_polygon, vehicle_info_.max_longitudinal_offset_m, node_param_.surround_check_distance,
+    node_param_.surround_check_recover_distance, odometry_ptr_->pose.pose, this->get_clock(),
+    *this);
 }
 
 void SurroundObstacleCheckerNode::onTimer()
 {
+  if (!odometry_ptr_) {
+    RCLCPP_WARN_THROTTLE(
+      this->get_logger(), *this->get_clock(), 1000 /* ms */, "waiting for current velocity...");
+    return;
+  }
+
+  if (node_param_.publish_debug_footprints) {
+    debug_ptr_->publishFootprints();
+  }
+
   if (node_param_.use_pointcloud && !pointcloud_ptr_) {
     RCLCPP_WARN_THROTTLE(
       this->get_logger(), *this->get_clock(), 1000 /* ms */, "waiting for pointcloud info...");
@@ -198,12 +214,6 @@ void SurroundObstacleCheckerNode::onTimer()
   if (node_param_.use_dynamic_object && !object_ptr_) {
     RCLCPP_WARN_THROTTLE(
       this->get_logger(), *this->get_clock(), 1000 /* ms */, "waiting for dynamic object info...");
-    return;
-  }
-
-  if (!odometry_ptr_) {
-    RCLCPP_WARN_THROTTLE(
-      this->get_logger(), *this->get_clock(), 1000 /* ms */, "waiting for current velocity...");
     return;
   }
 

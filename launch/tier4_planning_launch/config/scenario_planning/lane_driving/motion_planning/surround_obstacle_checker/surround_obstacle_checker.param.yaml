@@ -10,3 +10,6 @@
 
     # ego stop state
     stop_state_ego_speed: 0.1 #[m/s]
+
+    # debug
+    publish_debug_footprints: true # publish vehicle footprint & footprints with surround_check_distance and surround_check_recover_distance offsets

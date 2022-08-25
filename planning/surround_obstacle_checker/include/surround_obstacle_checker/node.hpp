@@ -72,6 +72,7 @@ public:
     double surround_check_recover_distance;
     double surround_check_distance;
     double state_clear_time;
+    bool publish_debug_footprints;
   };
 
 private:
