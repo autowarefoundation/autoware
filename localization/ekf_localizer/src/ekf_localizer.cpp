@@ -65,6 +65,8 @@ EKFLocalizer::EKFLocalizer(const std::string & node_name, const rclcpp::NodeOpti
   proc_cov_wz_d_ = std::pow(proc_stddev_wz_c_ * ekf_dt_, 2.0);
   proc_cov_yaw_d_ = std::pow(proc_stddev_yaw_c_ * ekf_dt_, 2.0);
 
+  is_initialized_ = false;
+
   /* initialize ros system */
   auto period_control_ns =
     std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::duration<double>(ekf_dt_));
@@ -137,6 +139,10 @@ void EKFLocalizer::updatePredictFrequency()
  */
 void EKFLocalizer::timerCallback()
 {
+  if (!is_initialized_) {
+    return;
+  }
+
   DEBUG_INFO(get_logger(), "========================= timer called =========================");
 
   /* update predict frequency with measured timer rate */
@@ -234,6 +240,10 @@ void EKFLocalizer::setCurrentResult()
  */
 void EKFLocalizer::timerTFCallback()
 {
+  if (!is_initialized_) {
+    return;
+  }
+
   if (current_ekf_pose_.header.frame_id == "") {
     return;
   }
@@ -325,6 +335,8 @@ void EKFLocalizer::callbackInitialPose(
   updateSimple1DFilters(*initialpose);
 
   while (!current_pose_info_queue_.empty()) current_pose_info_queue_.pop();
+
+  is_initialized_ = true;
 }
 
 /*
