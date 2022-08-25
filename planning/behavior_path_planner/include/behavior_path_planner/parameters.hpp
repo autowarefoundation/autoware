@@ -39,6 +39,8 @@ struct BehaviorPathPlannerParameters
   double turn_light_on_threshold_dis_long;
   double turn_light_on_threshold_time;
 
+  double path_interval;
+
   // vehicle info
   vehicle_info_util::VehicleInfo vehicle_info;
   double wheel_base;

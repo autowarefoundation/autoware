@@ -14,3 +14,4 @@
     drivable_area_margin: 6.0
     refine_goal_search_radius_range: 7.5
     intersection_search_distance: 30.0
+    path_interval: 2.0
