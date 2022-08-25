@@ -7,7 +7,7 @@
   <arg name="output_trajectory" default="/planning/scenario_planning/trajectory"/>
 
   <!-- debug flags -->
-  <arg name="publish_debug_trajs" default="true"/>
+  <arg name="publish_debug_trajs" default="false"/>
   <arg name="smoother_type" default="JerkFiltered"/>
   <!-- Analytical, JerkFiltered, L2, or Linf -->
 
