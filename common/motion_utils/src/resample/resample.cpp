@@ -16,6 +16,7 @@
 
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 
+constexpr double CLOSE_S_THRESHOLD = 1e-6;
 namespace motion_utils
 {
 std::vector<geometry_msgs::msg::Pose> resamplePath(
@@ -35,23 +36,30 @@ std::vector<geometry_msgs::msg::Pose> resamplePath(
   }
 
   // Input Path Information
-  std::vector<double> input_arclength(points.size());
-  std::vector<double> x(points.size());
-  std::vector<double> y(points.size());
-  std::vector<double> z(points.size());
+  std::vector<double> input_arclength;
+  std::vector<double> x;
+  std::vector<double> y;
+  std::vector<double> z;
+  input_arclength.reserve(points.size());
+  x.reserve(points.size());
+  y.reserve(points.size());
+  z.reserve(points.size());
 
-  input_arclength.front() = 0.0;
-  x.front() = points.front().position.x;
-  y.front() = points.front().position.y;
-  z.front() = points.front().position.z;
+  input_arclength.push_back(0.0);
+  x.push_back(points.front().position.x);
+  y.push_back(points.front().position.y);
+  z.push_back(points.front().position.z);
   for (size_t i = 1; i < points.size(); ++i) {
     const auto & prev_pt = points.at(i - 1);
     const auto & curr_pt = points.at(i);
     const double ds = tier4_autoware_utils::calcDistance2d(prev_pt.position, curr_pt.position);
-    input_arclength.at(i) = ds + input_arclength.at(i - 1);
-    x.at(i) = curr_pt.position.x;
-    y.at(i) = curr_pt.position.y;
-    z.at(i) = curr_pt.position.z;
+    if (ds < CLOSE_S_THRESHOLD) {
+      continue;
+    }
+    input_arclength.push_back(ds + input_arclength.at(i - 1));
+    x.push_back(curr_pt.position.x);
+    y.push_back(curr_pt.position.y);
+    z.push_back(curr_pt.position.z);
   }
 
   // Interpolate
@@ -115,33 +123,43 @@ autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
   // resampled[6] = base[2]
 
   // Input Path Information
-  std::vector<double> input_arclength(input_path.points.size());
-  std::vector<geometry_msgs::msg::Pose> input_pose(input_path.points.size());
-  std::vector<double> v_lon(input_path.points.size());
-  std::vector<double> v_lat(input_path.points.size());
-  std::vector<double> heading_rate(input_path.points.size());
-  std::vector<bool> is_final(input_path.points.size());
-  std::vector<std::vector<int64_t>> lane_ids(input_path.points.size());
+  std::vector<double> input_arclength;
+  std::vector<geometry_msgs::msg::Pose> input_pose;
+  std::vector<double> v_lon;
+  std::vector<double> v_lat;
+  std::vector<double> heading_rate;
+  std::vector<bool> is_final;
+  std::vector<std::vector<int64_t>> lane_ids;
+  input_arclength.reserve(input_path.points.size());
+  input_pose.reserve(input_path.points.size());
+  v_lon.reserve(input_path.points.size());
+  v_lat.reserve(input_path.points.size());
+  heading_rate.reserve(input_path.points.size());
+  is_final.reserve(input_path.points.size());
+  lane_ids.reserve(input_path.points.size());
 
-  input_arclength.front() = 0.0;
-  input_pose.front() = input_path.points.front().point.pose;
-  v_lon.front() = input_path.points.front().point.longitudinal_velocity_mps;
-  v_lat.front() = input_path.points.front().point.lateral_velocity_mps;
-  heading_rate.front() = input_path.points.front().point.heading_rate_rps;
-  is_final.front() = input_path.points.front().point.is_final;
-  lane_ids.front() = input_path.points.front().lane_ids;
+  input_arclength.push_back(0.0);
+  input_pose.push_back(input_path.points.front().point.pose);
+  v_lon.push_back(input_path.points.front().point.longitudinal_velocity_mps);
+  v_lat.push_back(input_path.points.front().point.lateral_velocity_mps);
+  heading_rate.push_back(input_path.points.front().point.heading_rate_rps);
+  is_final.push_back(input_path.points.front().point.is_final);
+  lane_ids.push_back(input_path.points.front().lane_ids);
   for (size_t i = 1; i < input_path.points.size(); ++i) {
     const auto & prev_pt = input_path.points.at(i - 1).point;
     const auto & curr_pt = input_path.points.at(i).point;
     const double ds =
       tier4_autoware_utils::calcDistance2d(prev_pt.pose.position, curr_pt.pose.position);
-    input_arclength.at(i) = ds + input_arclength.at(i - 1);
-    input_pose.at(i) = curr_pt.pose;
-    v_lon.at(i) = curr_pt.longitudinal_velocity_mps;
-    v_lat.at(i) = curr_pt.lateral_velocity_mps;
-    heading_rate.at(i) = curr_pt.heading_rate_rps;
-    is_final.at(i) = curr_pt.is_final;
-    lane_ids.at(i) = input_path.points.at(i).lane_ids;
+    if (ds < CLOSE_S_THRESHOLD) {
+      continue;
+    }
+    input_arclength.push_back(ds + input_arclength.at(i - 1));
+    input_pose.push_back(curr_pt.pose);
+    v_lon.push_back(curr_pt.longitudinal_velocity_mps);
+    v_lat.push_back(curr_pt.lateral_velocity_mps);
+    heading_rate.push_back(curr_pt.heading_rate_rps);
+    is_final.push_back(curr_pt.is_final);
+    lane_ids.push_back(input_path.points.at(i).lane_ids);
   }
 
   if (input_arclength.back() < resampled_arclength.back()) {
@@ -275,27 +293,35 @@ autoware_auto_planning_msgs::msg::Path resamplePath(
   }
 
   // Input Path Information
-  std::vector<double> input_arclength(input_path.points.size());
-  std::vector<geometry_msgs::msg::Pose> input_pose(input_path.points.size());
-  std::vector<double> v_lon(input_path.points.size());
-  std::vector<double> v_lat(input_path.points.size());
-  std::vector<double> heading_rate(input_path.points.size());
+  std::vector<double> input_arclength;
+  std::vector<geometry_msgs::msg::Pose> input_pose;
+  std::vector<double> v_lon;
+  std::vector<double> v_lat;
+  std::vector<double> heading_rate;
+  input_arclength.reserve(input_path.points.size());
+  input_pose.reserve(input_path.points.size());
+  v_lon.reserve(input_path.points.size());
+  v_lat.reserve(input_path.points.size());
+  heading_rate.reserve(input_path.points.size());
 
-  input_arclength.front() = 0.0;
-  input_pose.front() = input_path.points.front().pose;
-  v_lon.front() = input_path.points.front().longitudinal_velocity_mps;
-  v_lat.front() = input_path.points.front().lateral_velocity_mps;
-  heading_rate.front() = input_path.points.front().heading_rate_rps;
+  input_arclength.push_back(0.0);
+  input_pose.push_back(input_path.points.front().pose);
+  v_lon.push_back(input_path.points.front().longitudinal_velocity_mps);
+  v_lat.push_back(input_path.points.front().lateral_velocity_mps);
+  heading_rate.push_back(input_path.points.front().heading_rate_rps);
   for (size_t i = 1; i < input_path.points.size(); ++i) {
     const auto & prev_pt = input_path.points.at(i - 1);
     const auto & curr_pt = input_path.points.at(i);
     const double ds =
       tier4_autoware_utils::calcDistance2d(prev_pt.pose.position, curr_pt.pose.position);
-    input_arclength.at(i) = ds + input_arclength.at(i - 1);
-    input_pose.at(i) = curr_pt.pose;
-    v_lon.at(i) = curr_pt.longitudinal_velocity_mps;
-    v_lat.at(i) = curr_pt.lateral_velocity_mps;
-    heading_rate.at(i) = curr_pt.heading_rate_rps;
+    if (ds < CLOSE_S_THRESHOLD) {
+      continue;
+    }
+    input_arclength.push_back(ds + input_arclength.at(i - 1));
+    input_pose.push_back(curr_pt.pose);
+    v_lon.push_back(curr_pt.longitudinal_velocity_mps);
+    v_lat.push_back(curr_pt.lateral_velocity_mps);
+    heading_rate.push_back(curr_pt.heading_rate_rps);
   }
 
   // Interpolate
@@ -351,40 +377,52 @@ autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
   }
 
   // Input Trajectory Information
-  std::vector<double> input_arclength(input_trajectory.points.size());
-  std::vector<geometry_msgs::msg::Pose> input_pose(input_trajectory.points.size());
-  std::vector<double> v_lon(input_trajectory.points.size());
-  std::vector<double> v_lat(input_trajectory.points.size());
-  std::vector<double> heading_rate(input_trajectory.points.size());
-  std::vector<double> acceleration(input_trajectory.points.size());
-  std::vector<double> front_wheel_angle(input_trajectory.points.size());
-  std::vector<double> rear_wheel_angle(input_trajectory.points.size());
-  std::vector<double> time_from_start(input_trajectory.points.size());
+  std::vector<double> input_arclength;
+  std::vector<geometry_msgs::msg::Pose> input_pose;
+  std::vector<double> v_lon;
+  std::vector<double> v_lat;
+  std::vector<double> heading_rate;
+  std::vector<double> acceleration;
+  std::vector<double> front_wheel_angle;
+  std::vector<double> rear_wheel_angle;
+  std::vector<double> time_from_start;
+  input_arclength.reserve(input_trajectory.points.size());
+  input_pose.reserve(input_trajectory.points.size());
+  v_lon.reserve(input_trajectory.points.size());
+  v_lat.reserve(input_trajectory.points.size());
+  heading_rate.reserve(input_trajectory.points.size());
+  acceleration.reserve(input_trajectory.points.size());
+  front_wheel_angle.reserve(input_trajectory.points.size());
+  rear_wheel_angle.reserve(input_trajectory.points.size());
+  time_from_start.reserve(input_trajectory.points.size());
 
-  input_arclength.front() = 0.0;
-  input_pose.front() = input_trajectory.points.front().pose;
-  v_lon.front() = input_trajectory.points.front().longitudinal_velocity_mps;
-  v_lat.front() = input_trajectory.points.front().lateral_velocity_mps;
-  heading_rate.front() = input_trajectory.points.front().heading_rate_rps;
-  acceleration.front() = input_trajectory.points.front().acceleration_mps2;
-  front_wheel_angle.front() = input_trajectory.points.front().front_wheel_angle_rad;
-  rear_wheel_angle.front() = input_trajectory.points.front().rear_wheel_angle_rad;
-  time_from_start.front() =
-    rclcpp::Duration(input_trajectory.points.front().time_from_start).seconds();
+  input_arclength.push_back(0.0);
+  input_pose.push_back(input_trajectory.points.front().pose);
+  v_lon.push_back(input_trajectory.points.front().longitudinal_velocity_mps);
+  v_lat.push_back(input_trajectory.points.front().lateral_velocity_mps);
+  heading_rate.push_back(input_trajectory.points.front().heading_rate_rps);
+  acceleration.push_back(input_trajectory.points.front().acceleration_mps2);
+  front_wheel_angle.push_back(input_trajectory.points.front().front_wheel_angle_rad);
+  rear_wheel_angle.push_back(input_trajectory.points.front().rear_wheel_angle_rad);
+  time_from_start.push_back(
+    rclcpp::Duration(input_trajectory.points.front().time_from_start).seconds());
   for (size_t i = 1; i < input_trajectory.points.size(); ++i) {
     const auto & prev_pt = input_trajectory.points.at(i - 1);
     const auto & curr_pt = input_trajectory.points.at(i);
     const double ds =
       tier4_autoware_utils::calcDistance2d(prev_pt.pose.position, curr_pt.pose.position);
-    input_arclength.at(i) = ds + input_arclength.at(i - 1);
-    input_pose.at(i) = curr_pt.pose;
-    v_lon.at(i) = curr_pt.longitudinal_velocity_mps;
-    v_lat.at(i) = curr_pt.lateral_velocity_mps;
-    heading_rate.at(i) = curr_pt.heading_rate_rps;
-    acceleration.at(i) = curr_pt.acceleration_mps2;
-    front_wheel_angle.at(i) = curr_pt.front_wheel_angle_rad;
-    rear_wheel_angle.at(i) = curr_pt.rear_wheel_angle_rad;
-    time_from_start.at(i) = rclcpp::Duration(curr_pt.time_from_start).seconds();
+    if (ds < CLOSE_S_THRESHOLD) {
+      continue;
+    }
+    input_arclength.push_back(ds + input_arclength.at(i - 1));
+    input_pose.push_back(curr_pt.pose);
+    v_lon.push_back(curr_pt.longitudinal_velocity_mps);
+    v_lat.push_back(curr_pt.lateral_velocity_mps);
+    heading_rate.push_back(curr_pt.heading_rate_rps);
+    acceleration.push_back(curr_pt.acceleration_mps2);
+    front_wheel_angle.push_back(curr_pt.front_wheel_angle_rad);
+    rear_wheel_angle.push_back(curr_pt.rear_wheel_angle_rad);
+    time_from_start.push_back(rclcpp::Duration(curr_pt.time_from_start).seconds());
   }
 
   // Interpolate

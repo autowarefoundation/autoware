@@ -356,6 +356,114 @@ TEST(resample_path_with_lane_id, resample_path_by_vector)
     }
   }
 
+  // Duplicated points in the original path
+  {
+    autoware_auto_planning_msgs::msg::PathWithLaneId path;
+    path.points.resize(11);
+    for (size_t i = 0; i < 10; ++i) {
+      path.points.at(i) = generateTestPathPointWithLaneId(
+        i * 1.0, 0.0, 0.0, 0.0, i * 1.0, i * 0.5, i * 0.1, false, {static_cast<int64_t>(i)});
+    }
+    path.points.at(10) = path.points.at(9);
+    path.points.at(9).point.is_final = true;
+    path.points.at(10).point.is_final = true;
+    std::vector<double> resampled_arclength = {0.0, 1.2, 1.5, 5.3, 7.5, 9.0};
+
+    const auto resampled_path = resamplePath(path, resampled_arclength);
+
+    {
+      const auto p = resampled_path.points.at(0);
+      EXPECT_NEAR(p.point.pose.position.x, 0.0, epsilon);
+      EXPECT_NEAR(p.point.pose.position.y, 0.0, epsilon);
+      EXPECT_NEAR(p.point.pose.position.z, 0.0, epsilon);
+      EXPECT_NEAR(p.point.longitudinal_velocity_mps, 0.0, epsilon);
+      EXPECT_NEAR(p.point.lateral_velocity_mps, 0.0, epsilon);
+      EXPECT_NEAR(p.point.heading_rate_rps, 0.0, epsilon);
+      EXPECT_EQ(p.point.is_final, false);
+      for (size_t i = 0; i < p.lane_ids.size(); ++i) {
+        EXPECT_EQ(p.lane_ids.at(i), 0);
+      }
+    }
+
+    {
+      const auto p = resampled_path.points.at(1);
+      EXPECT_NEAR(p.point.pose.position.x, 1.2, epsilon);
+      EXPECT_NEAR(p.point.pose.position.y, 0.0, epsilon);
+      EXPECT_NEAR(p.point.pose.position.z, 0.0, epsilon);
+      EXPECT_NEAR(p.point.longitudinal_velocity_mps, 1.0, epsilon);
+      EXPECT_NEAR(p.point.lateral_velocity_mps, 0.5, epsilon);
+      EXPECT_NEAR(p.point.heading_rate_rps, 0.12, epsilon);
+      EXPECT_EQ(p.point.is_final, false);
+      for (size_t i = 0; i < p.lane_ids.size(); ++i) {
+        EXPECT_EQ(p.lane_ids.at(i), 1);
+      }
+    }
+
+    {
+      const auto p = resampled_path.points.at(2);
+      EXPECT_NEAR(p.point.pose.position.x, 1.5, epsilon);
+      EXPECT_NEAR(p.point.pose.position.y, 0.0, epsilon);
+      EXPECT_NEAR(p.point.pose.position.z, 0.0, epsilon);
+      EXPECT_NEAR(p.point.longitudinal_velocity_mps, 1.0, epsilon);
+      EXPECT_NEAR(p.point.lateral_velocity_mps, 0.5, epsilon);
+      EXPECT_NEAR(p.point.heading_rate_rps, 0.15, epsilon);
+      EXPECT_EQ(p.point.is_final, false);
+      for (size_t i = 0; i < p.lane_ids.size(); ++i) {
+        EXPECT_EQ(p.lane_ids.at(i), 1);
+      }
+    }
+
+    {
+      const auto p = resampled_path.points.at(3);
+      EXPECT_NEAR(p.point.pose.position.x, 5.3, epsilon);
+      EXPECT_NEAR(p.point.pose.position.y, 0.0, epsilon);
+      EXPECT_NEAR(p.point.pose.position.z, 0.0, epsilon);
+      EXPECT_NEAR(p.point.longitudinal_velocity_mps, 5.0, epsilon);
+      EXPECT_NEAR(p.point.lateral_velocity_mps, 2.5, epsilon);
+      EXPECT_NEAR(p.point.heading_rate_rps, 0.53, epsilon);
+      EXPECT_EQ(p.point.is_final, false);
+      for (size_t i = 0; i < p.lane_ids.size(); ++i) {
+        EXPECT_EQ(p.lane_ids.at(i), 5);
+      }
+    }
+
+    {
+      const auto p = resampled_path.points.at(4);
+      EXPECT_NEAR(p.point.pose.position.x, 7.5, epsilon);
+      EXPECT_NEAR(p.point.pose.position.y, 0.0, epsilon);
+      EXPECT_NEAR(p.point.pose.position.z, 0.0, epsilon);
+      EXPECT_NEAR(p.point.longitudinal_velocity_mps, 7.0, epsilon);
+      EXPECT_NEAR(p.point.lateral_velocity_mps, 3.5, epsilon);
+      EXPECT_NEAR(p.point.heading_rate_rps, 0.75, epsilon);
+      EXPECT_EQ(p.point.is_final, false);
+      for (size_t i = 0; i < p.lane_ids.size(); ++i) {
+        EXPECT_EQ(p.lane_ids.at(i), 7);
+      }
+    }
+
+    {
+      const auto p = resampled_path.points.at(5);
+      EXPECT_NEAR(p.point.pose.position.x, 9.0, epsilon);
+      EXPECT_NEAR(p.point.pose.position.y, 0.0, epsilon);
+      EXPECT_NEAR(p.point.pose.position.z, 0.0, epsilon);
+      EXPECT_NEAR(p.point.longitudinal_velocity_mps, 9.0, epsilon);
+      EXPECT_NEAR(p.point.lateral_velocity_mps, 4.5, epsilon);
+      EXPECT_NEAR(p.point.heading_rate_rps, 0.9, epsilon);
+      EXPECT_EQ(p.point.is_final, true);
+      for (size_t i = 0; i < p.lane_ids.size(); ++i) {
+        EXPECT_EQ(p.lane_ids.at(i), 9);
+      }
+    }
+
+    for (size_t i = 0; i < resampled_path.points.size(); ++i) {
+      const auto p = resampled_path.points.at(i);
+      EXPECT_NEAR(p.point.pose.orientation.x, 0.0, epsilon);
+      EXPECT_NEAR(p.point.pose.orientation.y, 0.0, epsilon);
+      EXPECT_NEAR(p.point.pose.orientation.z, 0.0, epsilon);
+      EXPECT_NEAR(p.point.pose.orientation.w, 1.0, epsilon);
+    }
+  }
+
   // No Interpolation
   {
     // Input path size is not enough for interpolation
