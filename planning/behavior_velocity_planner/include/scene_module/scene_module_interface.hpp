@@ -209,6 +209,7 @@ protected:
     pub_debug_->publish(debug_marker_array);
     if (is_publish_debug_path_) {
       autoware_auto_planning_msgs::msg::PathWithLaneId debug_path;
+      debug_path.header = path->header;
       debug_path.points = path->points;
       pub_debug_path_->publish(debug_path);
     }
