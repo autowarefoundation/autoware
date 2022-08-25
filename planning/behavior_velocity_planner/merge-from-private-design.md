@@ -4,7 +4,7 @@
 
 When an ego vehicle enters a public road from a private road (e.g. a parking lot), it needs to face and stop before entering the public road to make sure it is safe.
 
-This module is activated when there is an intersection at the location where the vehicle enters the public road from the private road. The basic behavior is the same as the intersection module, but the ego vehicle must stop once at the stop line.
+This module is activated when there is an intersection at the private area from which the vehicle enters the public road. The stop line is generated both when the goal is in the intersection lane and when the path goes beyond the intersection lane. The basic behavior is the same as the intersection module, but the ego vehicle must stop once at the stop line.
 
 ![merge-from-private](docs/intersection/merge_from_private.png)
 

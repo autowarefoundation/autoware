@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <lanelet2_extension/utility/utilities.hpp>
 #include <scene_module/intersection/manager.hpp>
 #include <utilization/boost_geometry_helper.hpp>
 #include <utilization/util.hpp>
@@ -118,14 +119,31 @@ void MergeFromPrivateModuleManager::launchNewModules(
     }
 
     // Is merging from private road?
-    if (i + 1 < lanelets.size()) {
-      const auto next_lane = lanelets.at(i + 1);
-      const std::string lane_location = ll.attributeOr("location", "else");
-      const std::string next_lane_location = next_lane.attributeOr("location", "else");
-      if (lane_location == "private" && next_lane_location != "private") {
-        registerModule(std::make_shared<MergeFromPrivateRoadModule>(
-          module_id, lane_id, planner_data_, merge_from_private_area_param_,
-          logger_.get_child("merge_from_private_road_module"), clock_));
+    // In case the goal is in private road, check if this lanelet is conflicting with urban lanelet
+    const std::string lane_location = ll.attributeOr("location", "else");
+    if (lane_location == "private") {
+      if (i + 1 < lanelets.size()) {
+        const auto next_lane = lanelets.at(i + 1);
+        const std::string next_lane_location = next_lane.attributeOr("location", "else");
+        if (next_lane_location != "private") {
+          registerModule(std::make_shared<MergeFromPrivateRoadModule>(
+            module_id, lane_id, planner_data_, merge_from_private_area_param_,
+            logger_.get_child("merge_from_private_road_module"), clock_));
+          continue;
+        }
+      } else {
+        const auto routing_graph_ptr = planner_data_->route_handler_->getRoutingGraphPtr();
+        const auto conflicting_lanelets =
+          lanelet::utils::getConflictingLanelets(routing_graph_ptr, ll);
+        for (auto && conflicting_lanelet : conflicting_lanelets) {
+          const std::string conflicting_attr = conflicting_lanelet.attributeOr("location", "else");
+          if (conflicting_attr == "urban") {
+            registerModule(std::make_shared<MergeFromPrivateRoadModule>(
+              module_id, lane_id, planner_data_, merge_from_private_area_param_,
+              logger_.get_child("merge_from_private_road_module"), clock_));
+            continue;
+          }
+        }
       }
     }
   }
