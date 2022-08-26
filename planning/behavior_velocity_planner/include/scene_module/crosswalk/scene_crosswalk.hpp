@@ -133,7 +133,7 @@ private:
 
   CollisionPointState getCollisionPointState(const double ttc, const double ttv) const;
 
-  void applySafetySlowDownSpeed(PathWithLaneId & output);
+  bool applySafetySlowDownSpeed(PathWithLaneId & output);
 
   float calcTargetVelocity(
     const geometry_msgs::msg::Point & stop_point, const PathWithLaneId & ego_path) const;

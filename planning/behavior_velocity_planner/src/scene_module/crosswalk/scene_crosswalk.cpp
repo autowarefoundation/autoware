@@ -172,8 +172,9 @@ bool CrosswalkModule::modifyPathVelocity(PathWithLaneId * path, StopReason * sto
 
   if (crosswalk_.hasAttribute("safety_slow_down_speed")) {
     // Safety slow down is on
-    applySafetySlowDownSpeed(*path);
-    ego_path = *path;
+    if (applySafetySlowDownSpeed(*path)) {
+      ego_path = *path;
+    }
   }
 
   RCLCPP_INFO_EXPRESSION(
@@ -731,8 +732,12 @@ CollisionPointState CrosswalkModule::getCollisionPointState(
   return CollisionPointState::YIELD;
 }
 
-void CrosswalkModule::applySafetySlowDownSpeed(PathWithLaneId & output)
+bool CrosswalkModule::applySafetySlowDownSpeed(PathWithLaneId & output)
 {
+  if (path_intersects_.empty()) {
+    return false;
+  }
+
   const auto & ego_pos = planner_data_->current_pose.pose.position;
   const auto ego_path = output;
 
@@ -772,6 +777,7 @@ void CrosswalkModule::applySafetySlowDownSpeed(PathWithLaneId & output)
       }
     }
   }
+  return true;
 }
 
 bool CrosswalkModule::isStuckVehicle(
