@@ -5,11 +5,12 @@
   <arg name="model_name" default="centerpoint_tiny" description="options: `centerpoint` or `centerpoint_tiny`"/>
   <arg name="model_path" default="$(find-pkg-share lidar_centerpoint)/data"/>
   <arg name="model_param_path" default="$(find-pkg-share lidar_centerpoint)/config/$(var model_name).param.yaml"/>
+  <arg name="score_threshold" default="0.45"/>
 
   <node pkg="lidar_centerpoint" exec="lidar_centerpoint_node" name="lidar_centerpoint" output="screen">
     <remap from="~/input/pointcloud" to="$(var input/pointcloud)"/>
     <remap from="~/output/objects" to="$(var output/objects)"/>
-    <param name="score_threshold" value="0.45"/>
+    <param name="score_threshold" value="$(var score_threshold)"/>
     <param name="densification_world_frame_id" value="map"/>
     <param name="densification_num_past_frames" value="1"/>
     <param name="trt_precision" value="fp16"/>
