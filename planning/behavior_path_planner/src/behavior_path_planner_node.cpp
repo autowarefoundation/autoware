@@ -65,8 +65,6 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
   turn_signal_publisher_ =
     create_publisher<TurnIndicatorsCommand>("~/output/turn_indicators_cmd", 1);
   hazard_signal_publisher_ = create_publisher<HazardLightsCommand>("~/output/hazard_lights_cmd", 1);
-  debug_drivable_area_publisher_ = create_publisher<OccupancyGrid>("~/debug/drivable_area", 1);
-  debug_path_publisher_ = create_publisher<Path>("~/debug/path_for_visualize", 1);
   debug_avoidance_msg_array_publisher_ =
     create_publisher<AvoidanceDebugMsgArray>("~/debug/avoidance_debug_message_array", 1);
 
@@ -577,9 +575,6 @@ void BehaviorPathPlannerNode::run()
   }
 
   path_candidate_publisher_->publish(util::toPath(*path_candidate));
-
-  // debug_path_publisher_->publish(util::toPath(path));
-  debug_drivable_area_publisher_->publish(path->drivable_area);
 
   // for turn signal
   {
