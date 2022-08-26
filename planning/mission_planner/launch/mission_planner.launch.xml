@@ -1,7 +1,7 @@
 <launch>
   <arg name="goal_topic_name" default="/planning/mission_planning/goal"/>
   <arg name="checkpoint_topic_name" default="/planning/mission_planning/checkpoint"/>
-  <arg name="rout_topic_name" default="/planning/mission_planning/route"/>
+  <arg name="route_topic_name" default="/planning/mission_planning/route"/>
   <arg name="map_topic_name" default="/map/vector_map"/>
   <arg name="visualization_topic_name" default="/planning/mission_planning/route_marker"/>
 
@@ -11,7 +11,7 @@
     <remap from="input/vector_map" to="$(var map_topic_name)"/>
     <remap from="input/goal_pose" to="$(var goal_topic_name)"/>
     <remap from="input/checkpoint" to="$(var checkpoint_topic_name)"/>
-    <remap from="output/route" to="$(var rout_topic_name)"/>
+    <remap from="output/route" to="$(var route_topic_name)"/>
     <remap from="debug/route_marker" to="$(var visualization_topic_name)"/>
   </node>
 </launch>

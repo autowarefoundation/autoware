@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MISSION_PLANNER__MISSION_PLANNER_BASE_HPP_
-#define MISSION_PLANNER__MISSION_PLANNER_BASE_HPP_
+#ifndef MISSION_PLANNER__MISSION_PLANNER_HPP_
+#define MISSION_PLANNER__MISSION_PLANNER_HPP_
 
 #include <string>
 #include <vector>
@@ -70,4 +70,4 @@ private:
 };
 
 }  // namespace mission_planner
-#endif  // MISSION_PLANNER__MISSION_PLANNER_BASE_HPP_
+#endif  // MISSION_PLANNER__MISSION_PLANNER_HPP_

@@ -15,7 +15,7 @@
     <!-- mission planning module -->
     <group>
       <push-ros-namespace namespace="mission_planning"/>
-      <include file="$(find-pkg-share tier4_planning_launch)/launch/mission_planning/mission_planning.launch.py"/>
+      <include file="$(find-pkg-share tier4_planning_launch)/launch/mission_planning/mission_planning.launch.xml"/>
     </group>
 
     <!-- scenario planning module -->

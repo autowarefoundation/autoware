@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mission_planner/goal_pose_visualizer.hpp"
+#include "goal_pose_visualizer.hpp"
 
 namespace mission_planner
 {
 GoalPoseVisualizer::GoalPoseVisualizer(const rclcpp::NodeOptions & node_options)
-: Node("goal_pose_visualizer_node", node_options)
+: Node("goal_pose_visualizer", node_options)
 {
   sub_route_ = create_subscription<autoware_auto_planning_msgs::msg::HADMapRoute>(
     "input/route", rclcpp::QoS{1}.transient_local(),

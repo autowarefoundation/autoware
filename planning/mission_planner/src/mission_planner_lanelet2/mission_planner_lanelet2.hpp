@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MISSION_PLANNER__LANELET2_IMPL__MISSION_PLANNER_LANELET2_HPP_
-#define MISSION_PLANNER__LANELET2_IMPL__MISSION_PLANNER_LANELET2_HPP_
+#ifndef MISSION_PLANNER_LANELET2__MISSION_PLANNER_LANELET2_HPP_
+#define MISSION_PLANNER_LANELET2__MISSION_PLANNER_LANELET2_HPP_
 
 #include <string>
 #include <vector>
@@ -25,7 +25,7 @@
 #include <tf2_ros/transform_listener.h>
 
 // Autoware
-#include "mission_planner/mission_planner_base.hpp"
+#include "../mission_planner/mission_planner.hpp"
 
 #include <route_handler/route_handler.hpp>
 
@@ -67,4 +67,4 @@ private:
 };
 }  // namespace mission_planner
 
-#endif  // MISSION_PLANNER__LANELET2_IMPL__MISSION_PLANNER_LANELET2_HPP_
+#endif  // MISSION_PLANNER_LANELET2__MISSION_PLANNER_LANELET2_HPP_

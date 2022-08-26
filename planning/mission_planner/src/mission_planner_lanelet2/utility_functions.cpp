@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mission_planner/lanelet2_impl/utility_functions.hpp"
+#include "utility_functions.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
