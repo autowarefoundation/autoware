@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="ad_api_adaptors" exec="initial_pose_adaptor" name="initial_pose_adaptor">
+    <remap from="~/input/goal" to="/planning/mission_planning/goal"/>
+    <remap from="~/input/waypoint" to="/planning/mission_planning/checkpoint"/>
+  </node>
+</launch>
