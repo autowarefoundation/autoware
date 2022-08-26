@@ -1116,6 +1116,34 @@ double calcSignedArcLength(
 }
 
 template <class T>
+double calcSignedArcLength(
+  const T & points, const geometry_msgs::msg::Point & src_point, const size_t src_seg_idx,
+  const size_t dst_idx)
+{
+  validateNonEmpty(points);
+
+  const double signed_length_on_traj = calcSignedArcLength(points, src_seg_idx, dst_idx);
+  const double signed_length_src_offset =
+    calcLongitudinalOffsetToSegment(points, src_seg_idx, src_point);
+
+  return signed_length_on_traj - signed_length_src_offset;
+}
+
+template <class T>
+double calcSignedArcLength(
+  const T & points, const size_t src_idx, const geometry_msgs::msg::Point & dst_point,
+  const size_t dst_seg_idx)
+{
+  validateNonEmpty(points);
+
+  const double signed_length_on_traj = calcSignedArcLength(points, src_idx, dst_seg_idx);
+  const double signed_length_dst_offset =
+    calcLongitudinalOffsetToSegment(points, dst_seg_idx, dst_point);
+
+  return signed_length_on_traj + signed_length_dst_offset;
+}
+
+template <class T>
 size_t findFirstNearestIndexWithSoftConstraints(
   const T & points, const geometry_msgs::msg::Pose & pose,
   const double dist_threshold = std::numeric_limits<double>::max(),

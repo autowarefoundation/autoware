@@ -4185,3 +4185,152 @@ TEST(trajectory, findFirstNearestIndexWithSoftConstraints)
     }
   }
 }
+
+TEST(trajectory, calcSignedArcLengthFromPointAndSegmentIndexToPointAndSegmentIndex)
+{
+  using motion_utils::calcSignedArcLength;
+
+  const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
+
+  // Empty
+  EXPECT_DOUBLE_EQ(calcSignedArcLength(Trajectory{}.points, {}, {}), 0.0);
+
+  // Same point
+  {
+    const auto p = createPoint(3.0, 0.0, 0.0);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, p, 2, p, 2), 0, epsilon);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, p, 3, p, 3), 0, epsilon);
+  }
+
+  // Forward
+  {
+    const auto p1 = createPoint(0.0, 0.0, 0.0);
+    const auto p2 = createPoint(3.0, 1.0, 0.0);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, p1, 0, p2, 2), 3, epsilon);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, p1, 0, p2, 3), 3, epsilon);
+  }
+
+  // Backward
+  {
+    const auto p1 = createPoint(9.0, 0.0, 0.0);
+    const auto p2 = createPoint(8.0, 0.0, 0.0);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, p1, 8, p2, 7), -1, epsilon);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, p1, 8, p2, 8), -1, epsilon);
+  }
+
+  // Point before start point
+  {
+    const auto p1 = createPoint(-3.9, 3.0, 0.0);
+    const auto p2 = createPoint(6.0, -10.0, 0.0);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, p1, 0, p2, 5), 9.9, epsilon);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, p1, 0, p2, 6), 9.9, epsilon);
+  }
+
+  // Point after end point
+  {
+    const auto p1 = createPoint(7.0, -5.0, 0.0);
+    const auto p2 = createPoint(13.3, -10.0, 0.0);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, p1, 6, p2, 8), 6.3, epsilon);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, p1, 7, p2, 8), 6.3, epsilon);
+  }
+
+  // Point before start point and after end point
+  {
+    const auto p1 = createPoint(-4.3, 10.0, 0.0);
+    const auto p2 = createPoint(13.8, -1.0, 0.0);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, p1, 0, p2, 8), 18.1, epsilon);
+  }
+
+  // Random cases
+  {
+    const auto p1 = createPoint(1.0, 3.0, 0.0);
+    const auto p2 = createPoint(9.0, -1.0, 0.0);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, p1, 0, p2, 8), 8, epsilon);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, p1, 1, p2, 8), 8, epsilon);
+  }
+  {
+    const auto p1 = createPoint(4.3, 7.0, 0.0);
+    const auto p2 = createPoint(2.0, 3.0, 0.0);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, p1, 4, p2, 2), -2.3, epsilon);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, p1, 4, p2, 1), -2.3, epsilon);
+  }
+}
+
+TEST(trajectory, calcSignedArcLengthFromPointAndSegmentIndexToPointIndex)
+{
+  using motion_utils::calcSignedArcLength;
+
+  const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
+
+  // Empty
+  EXPECT_DOUBLE_EQ(calcSignedArcLength(Trajectory{}.points, {}, {}), 0.0);
+
+  // Same point
+  {
+    const auto p = createPoint(3.0, 0.0, 0.0);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, p, 2, 3), 0, epsilon);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, 3, p, 3), 0, epsilon);
+  }
+
+  // Forward
+  {
+    const auto p1 = createPoint(0.0, 0.0, 0.0);
+    const auto p2 = createPoint(3.0, 1.0, 0.0);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, p1, 0, 3), 3, epsilon);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, 0, p2, 2), 3, epsilon);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, 0, p2, 3), 3, epsilon);
+  }
+
+  // Backward
+  {
+    const auto p1 = createPoint(9.0, 0.0, 0.0);
+    const auto p2 = createPoint(8.0, 0.0, 0.0);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, p1, 8, 8), -1, epsilon);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, 8, p2, 7), 0, epsilon);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, 8, p2, 8), 0, epsilon);
+  }
+
+  // Point before start point
+  {
+    const auto p1 = createPoint(-3.9, 3.0, 0.0);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, p1, 0, 6), 9.9, epsilon);
+  }
+
+  // Point after end point
+  {
+    const auto p2 = createPoint(13.3, -10.0, 0.0);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, 7, p2, 8), 6.3, epsilon);
+  }
+
+  // Start point
+  {
+    const auto p1 = createPoint(0.0, 3.0, 0.0);
+    const auto p2 = createPoint(5.3, -10.0, 0.0);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, p1, 0, 5), 5, epsilon);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, 0, p2, 5), 5.3, epsilon);
+  }
+
+  // Point after end point
+  {
+    const auto p1 = createPoint(7.3, -5.0, 0.0);
+    const auto p2 = createPoint(9.0, -10.0, 0.0);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, p1, 7, 9), 1.7, epsilon);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, 7, p2, 8), 2.0, epsilon);
+  }
+
+  // Random cases
+  {
+    const auto p1 = createPoint(1.0, 3.0, 0.0);
+    const auto p2 = createPoint(9.0, -1.0, 0.0);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, p1, 0, 9), 8, epsilon);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, p1, 1, 9), 8, epsilon);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, 1, p2, 8), 8, epsilon);
+  }
+  {
+    const auto p1 = createPoint(4.3, 7.0, 0.0);
+    const auto p2 = createPoint(2.3, 3.0, 0.0);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, p1, 4, 2), -2.3, epsilon);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, 4, p2, 2), -1.7, epsilon);
+    EXPECT_NEAR(calcSignedArcLength(traj.points, 4, p2, 1), -1.7, epsilon);
+  }
+}
