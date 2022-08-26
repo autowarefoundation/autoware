@@ -1,0 +1,6 @@
+std_msgs/Header header
+geometry_msgs/Pose goal
+autoware_ad_api_msgs/RouteSegment[] segments
+---
+uint16 ERROR_ROUTE_EXISTS = 1
+autoware_ad_api_msgs/ResponseStatus status

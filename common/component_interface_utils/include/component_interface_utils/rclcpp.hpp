@@ -87,11 +87,9 @@ public:
   void relay_service(
     C & cli, S & srv, CallbackGroup group, std::optional<double> timeout = std::nullopt) const
   {
-    using ReqT = typename C::element_type::SpecType::Service::Request::SharedPtr;
-    using ResT = typename C::element_type::SpecType::Service::Response::SharedPtr;
     init_cli(cli);
     init_srv(
-      srv, [cli, timeout](ReqT req, ResT res) { *res = *cli->call(req, timeout); }, group);
+      srv, [cli, timeout](auto req, auto res) { *res = *cli->call(req, timeout); }, group);
   }
 
   /// Create a service wrapper for logging.
