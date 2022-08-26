@@ -114,10 +114,16 @@ void Lanelet2MapVisualizationNode::onMapBin(
   lanelet::ConstPolygons3d parking_lots = lanelet::utils::query::getAllParkingLots(viz_lanelet_map);
   lanelet::ConstPolygons3d obstacle_polygons =
     lanelet::utils::query::getAllObstaclePolygons(viz_lanelet_map);
+  lanelet::ConstPolygons3d no_obstacle_segmentation_area =
+    lanelet::utils::query::getAllPolygonsByType(viz_lanelet_map, "no_obstacle_segmentation_area");
+  lanelet::ConstPolygons3d no_obstacle_segmentation_area_for_run_out =
+    lanelet::utils::query::getAllPolygonsByType(
+      viz_lanelet_map, "no_obstacle_segmentation_area_for_run_out");
 
   std_msgs::msg::ColorRGBA cl_road, cl_shoulder, cl_cross, cl_partitions, cl_pedestrian_markings,
     cl_ll_borders, cl_shoulder_borders, cl_stoplines, cl_trafficlights, cl_detection_areas,
-    cl_parking_lots, cl_parking_spaces, cl_lanelet_id, cl_obstacle_polygons, cl_no_stopping_areas;
+    cl_parking_lots, cl_parking_spaces, cl_lanelet_id, cl_obstacle_polygons, cl_no_stopping_areas,
+    cl_no_obstacle_segmentation_area, cl_no_obstacle_segmentation_area_for_run_out;
   setColor(&cl_road, 0.27, 0.27, 0.27, 0.999);
   setColor(&cl_shoulder, 0.15, 0.15, 0.15, 0.999);
   setColor(&cl_cross, 0.27, 0.3, 0.27, 0.5);
@@ -133,6 +139,8 @@ void Lanelet2MapVisualizationNode::onMapBin(
   setColor(&cl_parking_lots, 0.5, 0.5, 0.0, 0.3);
   setColor(&cl_parking_spaces, 1.0, 0.647, 0.0, 0.6);
   setColor(&cl_lanelet_id, 0.5, 0.5, 0.5, 0.999);
+  setColor(&cl_no_obstacle_segmentation_area, 0.37, 0.37, 0.27, 0.5);
+  setColor(&cl_no_obstacle_segmentation_area_for_run_out, 0.37, 0.7, 0.27, 0.5);
 
   visualization_msgs::msg::MarkerArray map_marker_array;
 
@@ -196,6 +204,13 @@ void Lanelet2MapVisualizationNode::onMapBin(
   insertMarkerArray(
     &map_marker_array,
     lanelet::visualization::laneletsAsTriangleMarkerArray("road_lanelets", road_lanelets, cl_road));
+  insertMarkerArray(
+    &map_marker_array, lanelet::visualization::noObstacleSegmentationAreaAsMarkerArray(
+                         no_obstacle_segmentation_area, cl_no_obstacle_segmentation_area));
+  insertMarkerArray(
+    &map_marker_array,
+    lanelet::visualization::noObstacleSegmentationAreaForRunOutAsMarkerArray(
+      no_obstacle_segmentation_area_for_run_out, cl_no_obstacle_segmentation_area_for_run_out));
 
   pub_marker_->publish(map_marker_array);
 }

@@ -14,9 +14,6 @@
 
 #include "pointcloud_preprocessor/polygon_remover/polygon_remover.hpp"
 
-using K = CGAL::Exact_predicates_inexact_constructions_kernel;
-using PointCgal = K::Point_2;
-
 namespace pointcloud_preprocessor
 {
 PolygonRemoverComponent::PolygonRemoverComponent(const rclcpp::NodeOptions & options)
@@ -70,7 +67,7 @@ void PolygonRemoverComponent::filter(
 void PolygonRemoverComponent::update_polygon(
   const geometry_msgs::msg::Polygon::ConstSharedPtr & polygon_in)
 {
-  polygon_cgal_ = polygon_geometry_to_cgal(polygon_in);
+  pointcloud_preprocessor::utils::to_cgal_polygon(*polygon_in, polygon_cgal_);
   if (will_visualize_) {
     marker_.ns = "";
     marker_.id = 0;
@@ -131,49 +128,10 @@ sensor_msgs::msg::PointCloud2 PolygonRemoverComponent::remove_updated_polygon_fr
     throw std::runtime_error("Polygon is not initialized. Please use `update_polygon` first.");
   }
 
-  return remove_polygon_cgal_from_cloud(cloud_in, polygon_cgal_);
-}
-
-sensor_msgs::msg::PointCloud2 PolygonRemoverComponent::remove_polygon_cgal_from_cloud(
-  const sensor_msgs::msg::PointCloud2::ConstSharedPtr & cloud_in_ptr,
-  const std::vector<PointCgal> & polyline_polygon)
-{
-  sensor_msgs::msg::PointCloud2 output;
-  pcl::PointCloud<pcl::PointXYZ> pcl_output;
-
-  sensor_msgs::msg::PointCloud2 transformed_cluster = *cloud_in_ptr;
-
-  for (sensor_msgs::PointCloud2ConstIterator<float> iter_x(transformed_cluster, "x"),
-       iter_y(transformed_cluster, "y"), iter_z(transformed_cluster, "z");
-       iter_x != iter_x.end(); ++iter_x, ++iter_y, ++iter_z) {
-    if (
-      CGAL::bounded_side_2(
-        polyline_polygon.begin(), polyline_polygon.end(), PointCgal(*iter_x, *iter_y), K()) ==
-      CGAL::ON_UNBOUNDED_SIDE) {
-      pcl::PointXYZ p;
-      p.x = *iter_x;
-      p.y = *iter_y;
-      p.z = *iter_z;
-      pcl_output.emplace_back(p);
-    }
-  }
-  pcl::toROSMsg(pcl_output, output);
-  output.header = cloud_in_ptr->header;
-  return output;
-}
-std::vector<PointCgal> PolygonRemoverComponent::polygon_geometry_to_cgal(
-  const geometry_msgs::msg::Polygon::ConstSharedPtr & polygon_in)
-{
-  std::vector<PointCgal> polyline_polygon;
-  if (polygon_in->points.size() < 3) {
-    throw std::length_error("Polygon vertex count should be larger than 2.");
-  }
-  const auto & vertices_in = polygon_in->points;
-  polyline_polygon.resize(vertices_in.size());
-  std::transform(
-    polygon_in->points.begin(), polygon_in->points.end(), polyline_polygon.begin(),
-    [](const geometry_msgs::msg::Point32 & p_in) { return PointCgal(p_in.x, p_in.y); });
-  return polyline_polygon;
+  PointCloud2 cloud_out;
+  pointcloud_preprocessor::utils::remove_polygon_cgal_from_cloud(
+    *cloud_in, polygon_cgal_, cloud_out);
+  return cloud_out;
 }
 }  // namespace pointcloud_preprocessor
 

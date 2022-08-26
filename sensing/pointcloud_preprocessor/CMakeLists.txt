@@ -23,6 +23,7 @@ include_directories(
 
 ament_auto_add_library(pointcloud_preprocessor_filter SHARED
   src/filter.cpp
+  src/utility/utilities.cpp
   src/concatenate_data/concatenate_data_nodelet.cpp
   src/crop_box_filter/crop_box_filter_nodelet.cpp
   src/downsample_filter/voxel_grid_downsample_filter_nodelet.cpp
@@ -40,6 +41,7 @@ ament_auto_add_library(pointcloud_preprocessor_filter SHARED
   src/distortion_corrector/distortion_corrector.cpp
   src/blockage_diag/blockage_diag_nodelet.cpp
   src/polygon_remover/polygon_remover.cpp
+  src/vector_map_filter/vector_map_inside_area_filter.cpp
 )
 
 target_link_libraries(pointcloud_preprocessor_filter
@@ -60,12 +62,10 @@ rclcpp_components_register_node(pointcloud_preprocessor_filter
   PLUGIN "pointcloud_preprocessor::PointCloudConcatenateDataSynchronizerComponent"
   EXECUTABLE concatenate_data_node)
 
-
 # ========== CropBox ==========
 rclcpp_components_register_node(pointcloud_preprocessor_filter
   PLUGIN "pointcloud_preprocessor::CropBoxFilterComponent"
   EXECUTABLE crop_box_filter_node)
-
 
 # ========== Down Sampler Filter ==========
 # -- Voxel Grid Downsample Filter --
@@ -114,18 +114,15 @@ rclcpp_components_register_node(pointcloud_preprocessor_filter
   PLUGIN "pointcloud_preprocessor::PassThroughFilterUInt16Component"
   EXECUTABLE passthrough_filter_uint16_node)
 
-
 # ========== Pointcloud Accumulator Filter ==========
 rclcpp_components_register_node(pointcloud_preprocessor_filter
   PLUGIN "pointcloud_preprocessor::PointcloudAccumulatorComponent"
   EXECUTABLE pointcloud_accumulator_node)
 
-
 # ========== Vector Map Filter ==========
 rclcpp_components_register_node(pointcloud_preprocessor_filter
   PLUGIN "pointcloud_preprocessor::Lanelet2MapFilterComponent"
   EXECUTABLE vector_map_filter_node)
-
 
 # ========== Distortion Corrector ==========
 rclcpp_components_register_node(pointcloud_preprocessor_filter
@@ -144,6 +141,11 @@ rclcpp_components_register_node(pointcloud_preprocessor_filter
 
 set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
 target_link_libraries(polygon_remover_node gmp CGAL CGAL::CGAL CGAL::CGAL_Core)
+
+# ========== Vector Map Inside Area Filter ===========
+rclcpp_components_register_node(pointcloud_preprocessor_filter
+  PLUGIN "pointcloud_preprocessor::VectorMapInsideAreaFilterComponent"
+  EXECUTABLE vector_map_inside_area_filter_node)
 
 ament_auto_package(INSTALL_TO_SHARE
   launch
