@@ -93,7 +93,7 @@ private:
   std::mutex mutex_bt_;  // mutex for bt_manager_
 
   // setup
-  void waitForData();
+  bool isDataReady();
 
   // parameters
   BehaviorPathPlannerParameters getCommonParam();
