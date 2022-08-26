@@ -7,6 +7,8 @@ autoware_package()
 rosidl_generate_interfaces(${PROJECT_NAME}
   common/msg/ResponseStatus.msg
   interface/srv/InterfaceVersion.srv
+  localization/msg/LocalizationInitializationState.msg
+  localization/srv/InitializeLocalization.srv
   routing/msg/RouteState.msg
   routing/msg/Route.msg
   routing/msg/RouteData.msg
