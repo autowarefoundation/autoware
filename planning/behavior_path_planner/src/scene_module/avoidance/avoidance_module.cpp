@@ -1704,22 +1704,22 @@ void AvoidanceModule::generateExtendedDrivableArea(ShiftedPath * shifted_path) c
   const auto & current_lanes = avoidance_data_.current_lanelets;
   lanelet::ConstLanelets extended_lanelets = current_lanes;
 
-  const auto shared_linestring_lanelets = [this,
-                                           &route_handler](const lanelet::ConstLanelet & lane) {
-    const auto ignore_opposite = !parameters_.enable_avoidance_over_opposite_direction;
-    if (ignore_opposite) {
-      return route_handler->getAllSharedLineStringLanelets(lane, true, true, ignore_opposite);
-    }
-
-    return route_handler->getAllSharedLineStringLanelets(lane);
-  };
-
-  for (const auto & current_lane : avoidance_data_.current_lanelets) {
+  for (const auto & current_lane : current_lanes) {
     if (!parameters_.enable_avoidance_over_opposite_direction) {
       break;
     }
 
-    const auto extend_from_current_lane = std::invoke(shared_linestring_lanelets, current_lane);
+    const auto extend_from_current_lane = std::invoke(
+      [this, &route_handler](const lanelet::ConstLanelet & lane) {
+        const auto ignore_opposite = !parameters_.enable_avoidance_over_opposite_direction;
+        if (ignore_opposite) {
+          return route_handler->getAllSharedLineStringLanelets(lane, true, true, ignore_opposite);
+        }
+
+        return route_handler->getAllSharedLineStringLanelets(lane);
+      },
+      current_lane);
+    extended_lanelets.reserve(extended_lanelets.size() + extend_from_current_lane.size());
     extended_lanelets.insert(
       extended_lanelets.end(), extend_from_current_lane.begin(), extend_from_current_lane.end());
 
@@ -1727,8 +1727,7 @@ void AvoidanceModule::generateExtendedDrivableArea(ShiftedPath * shifted_path) c
     // intersection
     const lanelet::ConstLanelets next_lanes_from_intersection = std::invoke(
       [&route_handler](const lanelet::ConstLanelet & lane) {
-        const std::string turn_direction = lane.attributeOr("turn_direction", "none");
-        if (turn_direction != "right" && turn_direction != "left") {
+        if (!lane.hasAttribute("turn_direction")) {
           return lanelet::ConstLanelets{};
         }
 
@@ -1738,52 +1737,34 @@ void AvoidanceModule::generateExtendedDrivableArea(ShiftedPath * shifted_path) c
           return lanelet::ConstLanelets{};
         }
 
-        // get next lanes from the previous lane, and return false if next lanes do not exist
-        return route_handler->getNextLanelets(lane);
+        lanelet::ConstLanelets next_lanes;
+        for (const auto & prev_lane : prev_lanes) {
+          const auto next_lanes_from_prev = route_handler->getNextLanelets(prev_lane);
+          next_lanes.reserve(next_lanes.size() + next_lanes_from_prev.size());
+          next_lanes.insert(
+            next_lanes.end(), next_lanes_from_prev.begin(), next_lanes_from_prev.end());
+        }
+        return next_lanes;
       },
       current_lane);
-
-    if (next_lanes_from_intersection.empty()) {
-      continue;
-    }
 
     // 2.1 look for neighbour lane, where end line of the lane is connected to end line of the
     // original lane
-    const lanelet::ConstLanelet next_lane_from_intersection = std::invoke(
-      [&next_lanes_from_intersection](const auto & lane) {
-        for (const auto & next_lane : next_lanes_from_intersection) {
-          if (lane.id() == next_lane.id()) {
-            continue;
-          }
+    std::copy_if(
+      next_lanes_from_intersection.begin(), next_lanes_from_intersection.end(),
+      std::back_inserter(extended_lanelets),
+      [&current_lane](const lanelet::ConstLanelet & neighbor_lane) {
+        const auto & next_left_back_point_2d = neighbor_lane.leftBound2d().back().basicPoint();
+        const auto & next_right_back_point_2d = neighbor_lane.rightBound2d().back().basicPoint();
 
-          const Eigen::Vector2d & next_left_back_point_2d =
-            next_lane.leftBound2d().back().basicPoint();
-          const Eigen::Vector2d & next_right_back_point_2d =
-            next_lane.rightBound2d().back().basicPoint();
-
-          const Eigen::Vector2d & orig_left_back_point_2d = lane.leftBound2d().back().basicPoint();
-          const Eigen::Vector2d & orig_right_back_point_2d =
-            lane.rightBound2d().back().basicPoint();
-
-          constexpr double epsilon = 1e-5;
-          const bool is_neighbour_lane =
-            (next_left_back_point_2d - orig_right_back_point_2d).norm() < epsilon ||
-            (next_right_back_point_2d - orig_left_back_point_2d).norm() < epsilon;
-          if (is_neighbour_lane) {
-            return next_lane;
-          }
-        }
-        return lanelet::ConstLanelet{};
-      },
-      current_lane);
-
-    if (next_lane_from_intersection.id()) {
-      const auto extended_from_next =
-        std::invoke(shared_linestring_lanelets, next_lane_from_intersection);
-
-      extended_lanelets.insert(
-        extended_lanelets.end(), extended_from_next.begin(), extended_from_next.end());
-    }
+        const auto & orig_left_back_point_2d = current_lane.leftBound2d().back().basicPoint();
+        const auto & orig_right_back_point_2d = current_lane.rightBound2d().back().basicPoint();
+        constexpr double epsilon = 1e-5;
+        const bool is_neighbour_lane =
+          (next_left_back_point_2d - orig_right_back_point_2d).norm() < epsilon ||
+          (next_right_back_point_2d - orig_left_back_point_2d).norm() < epsilon;
+        return (current_lane.id() != neighbor_lane.id() && is_neighbour_lane);
+      });
   }
 
   {
