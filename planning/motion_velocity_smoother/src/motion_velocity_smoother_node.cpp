@@ -726,7 +726,7 @@ void MotionVelocitySmootherNode::overwriteStopPoint(
     double optimized_stop_point_vel =
       output.at(*nearest_output_point_idx).longitudinal_velocity_mps;
     is_stop_velocity_exceeded = (optimized_stop_point_vel > over_stop_velocity_warn_thr_);
-    input_stop_vel = input.at(*nearest_output_point_idx).longitudinal_velocity_mps;
+    input_stop_vel = input.at(*stop_idx).longitudinal_velocity_mps;
     output_stop_vel = output.at(*nearest_output_point_idx).longitudinal_velocity_mps;
     trajectory_utils::applyMaximumVelocityLimit(
       *nearest_output_point_idx, output.size(), 0.0, output);
