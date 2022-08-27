@@ -48,7 +48,6 @@ BigVehicleTracker::BigVehicleTracker(
   object_ = object;
 
   // initialize params
-  ekf_params_.use_measurement_covariance = false;
   float q_stddev_x = 1.5;                                     // [m/s]
   float q_stddev_y = 1.5;                                     // [m/s]
   float q_stddev_yaw = tier4_autoware_utils::deg2rad(20);     // [rad/s]
@@ -96,11 +95,7 @@ BigVehicleTracker::BigVehicleTracker(
 
   // initialize P matrix
   Eigen::MatrixXd P = Eigen::MatrixXd::Zero(ekf_params_.dim_x, ekf_params_.dim_x);
-  if (
-    !ekf_params_.use_measurement_covariance ||
-    object.kinematics.pose_with_covariance.covariance[utils::MSG_COV_IDX::X_X] == 0.0 ||
-    object.kinematics.pose_with_covariance.covariance[utils::MSG_COV_IDX::Y_Y] == 0.0 ||
-    object.kinematics.pose_with_covariance.covariance[utils::MSG_COV_IDX::YAW_YAW] == 0.0) {
+  if (!object.kinematics.has_position_covariance) {
     const double cos_yaw = std::cos(X(IDX::YAW));
     const double sin_yaw = std::sin(X(IDX::YAW));
     const double sin_2yaw = std::sin(2.0f * X(IDX::YAW));
@@ -283,11 +278,7 @@ bool BigVehicleTracker::measureWithPose(
   C(2, IDX::YAW) = 1.0;  // for yaw
 
   /* Set measurement noise covariance */
-  if (
-    !ekf_params_.use_measurement_covariance ||
-    object.kinematics.pose_with_covariance.covariance[utils::MSG_COV_IDX::X_X] == 0.0 ||
-    object.kinematics.pose_with_covariance.covariance[utils::MSG_COV_IDX::Y_Y] == 0.0 ||
-    object.kinematics.pose_with_covariance.covariance[utils::MSG_COV_IDX::YAW_YAW] == 0.0) {
+  if (!object.kinematics.has_position_covariance) {
     const double cos_yaw = std::cos(measurement_yaw);
     const double sin_yaw = std::sin(measurement_yaw);
     const double sin_2yaw = std::sin(2.0f * measurement_yaw);
@@ -312,9 +303,7 @@ bool BigVehicleTracker::measureWithPose(
     Y(IDX::VX, 0) = object.kinematics.twist_with_covariance.twist.linear.x;
     C(3, IDX::VX) = 1.0;  // for vx
 
-    if (
-      !ekf_params_.use_measurement_covariance ||
-      object.kinematics.twist_with_covariance.covariance[utils::MSG_COV_IDX::X_X] == 0.0) {
+    if (!object.kinematics.has_twist_covariance) {
       R(3, 3) = ekf_params_.r_cov_vx;  // vx -vx
     } else {
       R(3, 3) = object.kinematics.twist_with_covariance.covariance[utils::MSG_COV_IDX::X_X];

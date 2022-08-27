@@ -42,7 +42,6 @@ UnknownTracker::UnknownTracker(
   object_ = object;
 
   // initialize params
-  ekf_params_.use_measurement_covariance = false;
   float q_stddev_x = 0.0;                                   // [m/s]
   float q_stddev_y = 0.0;                                   // [m/s]
   float q_stddev_vx = tier4_autoware_utils::kmph2mps(20);   // [m/(s*s)]
@@ -80,10 +79,7 @@ UnknownTracker::UnknownTracker(
 
   // initialize P matrix
   Eigen::MatrixXd P = Eigen::MatrixXd::Zero(ekf_params_.dim_x, ekf_params_.dim_x);
-  if (
-    !ekf_params_.use_measurement_covariance ||
-    object.kinematics.pose_with_covariance.covariance[utils::MSG_COV_IDX::X_X] == 0.0 ||
-    object.kinematics.pose_with_covariance.covariance[utils::MSG_COV_IDX::Y_Y] == 0.0) {
+  if (!object.kinematics.has_position_covariance) {
     // Rotate the covariance matrix according to the vehicle yaw
     // because p0_cov_x and y are in the vehicle coordinate system.
     P(IDX::X, IDX::X) = ekf_params_.p0_cov_x;
@@ -193,10 +189,7 @@ bool UnknownTracker::measureWithPose(
 
   /* Set measurement noise covariance */
   Eigen::MatrixXd R = Eigen::MatrixXd::Zero(dim_y, dim_y);
-  if (
-    !ekf_params_.use_measurement_covariance ||
-    object.kinematics.pose_with_covariance.covariance[utils::MSG_COV_IDX::X_X] == 0.0 ||
-    object.kinematics.pose_with_covariance.covariance[utils::MSG_COV_IDX::Y_Y] == 0.0) {
+  if (!object.kinematics.has_position_covariance) {
     R(0, 0) = ekf_params_.r_cov_x;  // x - x
     R(0, 1) = 0.0;                  // x - y
     R(1, 1) = ekf_params_.r_cov_y;  // y - y

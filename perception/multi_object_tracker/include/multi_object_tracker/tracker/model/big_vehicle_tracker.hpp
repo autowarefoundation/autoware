@@ -49,8 +49,6 @@ private:
     float q_cov_vx;
     float p0_cov_vx;
     float p0_cov_wz;
-    // if use_measurement_covariance_ is false, use following params
-    bool use_measurement_covariance;
     float r_cov_x;
     float r_cov_y;
     float r_cov_yaw;
