@@ -1,4 +1,4 @@
-# Lateral Controller
+# MPC Lateral Controller
 
 This is the design document for the lateral controller node
 in the `trajectory_follower_nodes` package.
@@ -22,29 +22,62 @@ The node uses an implementation of linear model predictive control (MPC) for acc
 The MPC uses a model of the vehicle to simulate the trajectory resulting from the control command.
 The optimization of the control command is formulated as a Quadratic Program (QP).
 
-These functionalities are implemented in the `trajectory_follower` package
-(see [trajectory_follower-mpc-design](../../trajectory_follower/design/trajectory_follower-mpc-design.md#mpc-trajectory-follower))
+Different vehicle models are implemented:
 
-### Assumptions / Known limits
+- kinematics : bicycle kinematics model with steering 1st-order delay.
+- kinematics_no_delay : bicycle kinematics model without steering delay.
+- dynamics : bicycle dynamics model considering slip angle.
+  The kinematics model is being used by default. Please see the reference [1] for more details.
+
+For the optimization, a Quadratic Programming (QP) solver is used and two options are currently implemented:
+
+- unconstraint_fast : use least square method to solve unconstraint QP with eigen.
+- [osqp](https://osqp.org/): run the [following ADMM](https://web.stanford.edu/~boyd/papers/admm_distr_stats.html) algorithm (for more details see the related papers at the [Citing OSQP](https://web.stanford.edu/~boyd/papers/admm_distr_stats.html) section):
+
+### Filtering
+
+Filtering is required for good noise reduction.
+A [Butterworth filter](https://en.wikipedia.org/wiki/Butterworth_filter) is used for the yaw and lateral errors used as input of the MPC as well as for
+the output steering angle.
+Other filtering methods can be considered as long as the noise reduction performances are good
+enough.
+The moving average filter for example is not suited and can yield worse results than without any
+filtering.
+
+## Assumptions / Known limits
 
 <!-- Required -->
 
 The tracking is not accurate if the first point of the reference trajectory is at or in front of the current ego pose.
 
-- Issue to add points behind ego: <https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/1273>
-
-### Inputs / Outputs / API
+## Inputs / Outputs / API
 
 <!-- Required -->
 <!-- Things to consider:
     - How do you use the package / API? -->
 
-Inputs
+### Inputs
 
-- `input/reference_trajectory` : reference trajectory to follow.
-- `input/current_kinematic_state`: current state of the vehicle (position, velocity, etc).
-  Output
-- `output/lateral_control_cmd`: generated lateral control command.
+Set the following from the [controller_node](../../trajectory_follower_nodes/design/trajectory_follower-design.md)
+
+- `autoware_auto_planning_msgs/Trajectory` : reference trajectory to follow.
+- `nav_msgs/Odometry`: current odometry
+- `autoware_auto_vehicle_msgs/SteeringReport` current steering
+
+### Outputs
+
+Return LateralOutput which contains the following to [controller_node](../../trajectory_follower_nodes/design/trajectory_follower-design.md)
+
+- `autoware_auto_control_msgs/AckermannLateralCommand`
+- LateralSyncData
+  - steer angle convergence
+
+### MPC class
+
+The `MPC` class (defined in `mpc.hpp`) provides the interface with the MPC algorithm.
+Once a vehicle model, a QP solver, and the reference trajectory to follow have been set
+(using `setVehicleModel()`, `setQPSolver()`, `setReferenceTrajectory()`), a lateral control command
+can be calculated by providing the current steer, velocity, and pose to function `calculateMPC()`.
 
 ### Parameter description
 
@@ -132,8 +165,13 @@ AutonomouStuff Lexus RX 450h for under 40 km/h driving.
 - `weight_terminal_lat_error`: Preferable to set a higher value than normal lateral weight `weight_lat_error` for stability.
 - `weight_terminal_heading_error`: Preferable to set a higher value than normal heading weight `weight_heading_error` for stability.
 
+## References / External links
+
+<!-- Optional -->
+
+- [1] Jarrod M. Snider, "Automatic Steering Methods for Autonomous Automobile Path Tracking",
+  Robotics Institute, Carnegie Mellon University, February 2009.
+
 ## Related issues
 
 <!-- Required -->
-
-- <https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/1057>

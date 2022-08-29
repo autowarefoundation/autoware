@@ -147,5 +147,3 @@ Not Available.
 ## Related issues
 
 <!-- Required -->
-
-<https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/1294>

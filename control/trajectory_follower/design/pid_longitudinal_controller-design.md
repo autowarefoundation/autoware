@@ -1,4 +1,4 @@
-# Longitudinal Controller
+# PID Longitudinal Controller
 
 ## Purpose / Use cases
 
@@ -9,56 +9,7 @@ It is assumed that the target acceleration calculated here will be properly real
 
 Note that the use of this module is not mandatory for Autoware if the vehicle supports the "target speed" interface.
 
-## Separated lateral (steering) and longitudinal (velocity) controls
-
-This longitudinal controller assumes that the roles of lateral and longitudinal control are separated as follows.
-
-- Lateral control computes a target steering to keep the vehicle on the trajectory, assuming perfect velocity tracking.
-- Longitudinal control computes a target velocity/acceleration to keep the vehicle velocity on the trajectory speed, assuming perfect trajectory tracking.
-
-Ideally, dealing with the lateral and longitudinal control as a single mixed problem can achieve high performance. In contrast, there are two reasons to provide velocity controller as a stand-alone function, described below.
-
-### Complex requirements for longitudinal motion
-
-The longitudinal vehicle behavior that humans expect is difficult to express in a single logic. For example, the expected behavior just before stopping differs depending on whether the ego-position is ahead/behind of the stop line, or whether the current speed is higher/lower than the target speed to achieve a human-like movement.
-
-In addition, some vehicles have difficulty measuring the ego-speed at extremely low speeds. In such cases, a configuration that can improve the functionality of the longitudinal control without affecting the lateral control is important.
-
-There are many characteristics and needs that are unique to longitudinal control. Designing them separately from the lateral control keeps the modules less coupled and improves maintainability.
-
-### Nonlinear coupling of lateral and longitudinal motion
-
-The lat-lon mixed control problem is very complex and uses nonlinear optimization to achieve high performance. Since it is difficult to guarantee the convergence of the nonlinear optimization, a simple control logic is also necessary for development.
-
-Also, the benefits of simultaneous longitudinal and lateral control are small if the vehicle doesn't move at high speed.
-
-## Design
-
-## Assumptions / Known limits
-
-1. Smoothed target velocity and its acceleration shall be set in the trajectory
-   1. The velocity command is not smoothed inside the controller (only noise may be removed).
-   2. For step-like target signal, tracking is performed as fast as possible.
-2. The vehicle velocity must be an appropriate value
-   1. The ego-velocity must be a signed-value corresponding to the forward/backward direction
-   2. The ego-velocity should be given with appropriate noise processing.
-   3. If there is a large amount of noise in the ego-velocity, the tracking performance will be significantly reduced.
-3. The output of this controller must be achieved by later modules (e.g. vehicle interface).
-   1. If the vehicle interface does not have the target velocity or acceleration interface (e.g., the vehicle only has a gas pedal and brake interface), an appropriate conversion must be done after this controller.
-
-## Inputs / Outputs / API
-
-### Output
-
-- control_cmd [`autoware_auto_msgs/LongitudinalCommand`] : command to control the longitudinal motion of the vehicle. It contains the target velocity and target acceleration.
-- debug_values [`autoware_auto_msgs/Float32MultiArrayDiagnostic`] : debug values used for the control command generation (e.g. the contributions of each P-I-D terms).
-
-### Input
-
-- current_state [`autoware_auto_msgs/VehicleKinematicState`] : Current ego state including the current pose and velocity.
-- current_trajectory [`autoware_auto_msgs/Trajectory`] : Current target trajectory for the desired velocity on the each trajectory points.
-
-## Inner-workings / Algorithms
+## Design / Inner-workings / Algorithms
 
 ### States
 
@@ -141,7 +92,59 @@ Depending on the actuating principle of the vehicle, the mechanism that physical
 
 In this controller, the predicted ego-velocity and the target velocity after the delay time are calculated and used for the feedback to address the time delay problem.
 
-### Parameter description
+### Slope compensation
+
+Based on the slope information, a compensation term is added to the target acceleration.
+
+There are two sources of the slope information, which can be switched by a parameter.
+
+- Pitch of the estimated ego-pose (default)
+  - Calculates the current slope from the pitch angle of the estimated ego-pose
+  - Pros: Easily available
+  - Cons: Cannot extract accurate slope information due to the influence of vehicle vibration.
+- Z coordinate on the trajectory
+  - Calculates the road slope from the difference of z-coordinates between the front and rear wheel positions in the target trajectory
+  - Pros: More accurate than pitch information, if the z-coordinates of the route are properly maintained
+  - Pros: Can be used in combination with delay compensation (not yet implemented)
+  - Cons: z-coordinates of high-precision map is needed.
+  - Cons: Does not support free space planning (for now)
+
+## Assumptions / Known limits
+
+1. Smoothed target velocity and its acceleration shall be set in the trajectory
+   1. The velocity command is not smoothed inside the controller (only noise may be removed).
+   2. For step-like target signal, tracking is performed as fast as possible.
+2. The vehicle velocity must be an appropriate value
+   1. The ego-velocity must be a signed-value corresponding to the forward/backward direction
+   2. The ego-velocity should be given with appropriate noise processing.
+   3. If there is a large amount of noise in the ego-velocity, the tracking performance will be significantly reduced.
+3. The output of this controller must be achieved by later modules (e.g. vehicle interface).
+   1. If the vehicle interface does not have the target velocity or acceleration interface (e.g., the vehicle only has a gas pedal and brake interface), an appropriate conversion must be done after this controller.
+
+## Inputs / Outputs / API
+
+### Input
+
+Set the following from the [controller_node](../../trajectory_follower_nodes/design/trajectory_follower-design.md)
+
+- `autoware_auto_planning_msgs/Trajectory` : reference trajectory to follow.
+- `nav_msgs/Odometry`: current odometry
+
+### Output
+
+Return LongitudinalOutput which contains the following to [controller_node](../../trajectory_follower_nodes/design/trajectory_follower-design.md)
+
+- `autoware_auto_control_msgs/LongitudinalCommand`: command to control the longitudinal motion of the vehicle. It contains the target velocity and target acceleration.
+- LongitudinalSyncData
+  - velocity convergence(currently not used)
+
+### PIDController class
+
+The `PIDController` class is straightforward to use.
+First, gains and limits must be set (using `setGains()` and `setLimits()`) for the proportional (P), integral (I), and derivative (D) components.
+Then, the velocity can be calculated by providing the current error and time step duration to the `calculate()` function.
+
+## Parameter description
 
 The default parameters defined in `param/lateral_controller_defaults.param.yaml` are adjusted to the
 AutonomouStuff Lexus RX 450h for under 40 km/h driving.
@@ -164,7 +167,7 @@ AutonomouStuff Lexus RX 450h for under 40 km/h driving.
 | max_pitch_rad                               | double | max value of estimated pitch [rad]                                                                                                                                                      | 0.1           |
 | min_pitch_rad                               | double | min value of estimated pitch [rad]                                                                                                                                                      | -0.1          |
 
-#### State transition
+### State transition
 
 | Name                                | Type   | Description                                                                                                                                                          | Default value |
 | :---------------------------------- | :----- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
@@ -177,7 +180,7 @@ AutonomouStuff Lexus RX 450h for under 40 km/h driving.
 | emergency_state_traj_trans_dev      | double | If the ego's position is `emergency_state_traj_tran_dev` meter away from the nearest trajectory point, the state will transit to EMERGENCY. [m]                      | 3.0           |
 | emergency_state_traj_rot_dev        | double | If the ego's orientation is `emergency_state_traj_rot_dev` rad away from the nearest trajectory point orientation, the state will transit to EMERGENCY. [rad]        | 0.784         |
 
-#### DRIVE Parameter
+### DRIVE Parameter
 
 | Name                                  | Type   | Description                                                                                                                                                        | Default value |
 | :------------------------------------ | :----- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
@@ -196,7 +199,7 @@ AutonomouStuff Lexus RX 450h for under 40 km/h driving.
 | current_vel_threshold_pid_integration | double | Velocity error is integrated for I-term only when the absolute value of current velocity is larger than this parameter. [m/s]                                      | 0.5           |
 | brake_keeping_acc                     | double | If `enable_brake_keeping_before_stop` is true, a certain acceleration is kept during DRIVE state before the ego stops [m/s^2] See [Brake keeping](#brake-keeping). | 0.2           |
 
-#### STOPPING Parameter (smooth stop)
+### STOPPING Parameter (smooth stop)
 
 Smooth stop is enabled if `enable_smooth_stop` is true.
 In smooth stop, strong acceleration (`strong_acc`) will be output first to decrease the ego velocity.
@@ -218,7 +221,7 @@ If the ego is still running, strong acceleration (`strong_stop_acc`) to stop rig
 | smooth_stop_weak_stop_dist   | double | Weak acceleration will be output when the ego is `smooth_stop_weak_stop_dist`-meter before the stop point. [m]       | -0.3          |
 | smooth_stop_strong_stop_dist | double | Strong acceleration will be output when the ego is `smooth_stop_strong_stop_dist`-meter over the stop point. [m]     | -0.5          |
 
-#### STOPPED Parameter
+### STOPPED Parameter
 
 | Name         | Type   | Description                                  | Default value |
 | :----------- | :----- | :------------------------------------------- | :------------ |
@@ -226,7 +229,7 @@ If the ego is still running, strong acceleration (`strong_stop_acc`) to stop rig
 | stopped_acc  | double | target acceleration in STOPPED state [m/s^2] | -3.4          |
 | stopped_jerk | double | target jerk in STOPPED state [m/s^3]         | -5.0          |
 
-#### EMERGENCY Parameter
+### EMERGENCY Parameter
 
 | Name           | Type   | Description                                       | Default value |
 | :------------- | :----- | :------------------------------------------------ | :------------ |
@@ -239,6 +242,3 @@ If the ego is still running, strong acceleration (`strong_stop_acc`) to stop rig
 ## Future extensions / Unimplemented parts
 
 ## Related issues
-
-- <https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/1058>
-- <https://github.com/autowarefoundation/autoware.universe/issues/701>

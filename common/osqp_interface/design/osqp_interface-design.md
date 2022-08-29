@@ -68,5 +68,3 @@ The interface can be used in several ways:
 ## Related issues
 
 <!-- Required -->
-
-- This package was introduced as a dependency of the MPC-based lateral controller: <https://gitlab.com/autowarefoundation/autoware.auto/AutowareAuto/-/issues/1057>
