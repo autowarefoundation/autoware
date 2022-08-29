@@ -140,41 +140,20 @@ TrajectoryPoints extractPathAroundIndex(
   return extracted_traj;
 }
 
-double calcArcLength(const TrajectoryPoints & path, const int idx1, const int idx2)
-{
-  if (idx1 == idx2) {  // zero distance
-    return 0.0;
-  }
-
-  if (
-    idx1 < 0 || idx2 < 0 || static_cast<int>(path.size()) - 1 < idx1 ||
-    static_cast<int>(path.size()) - 1 < idx2) {
-    RCLCPP_ERROR(
-      rclcpp::get_logger("motion_velocity_smoother").get_child("trajectory_utils"),
-      "invalid index");
-    return 0.0;
-  }
-
-  const int idx_from = std::min(idx1, idx2);
-  const int idx_to = std::max(idx1, idx2);
-  double dist_sum = 0.0;
-  for (int i = idx_from; i < idx_to; ++i) {
-    dist_sum += tier4_autoware_utils::calcDistance2d(path.at(i), path.at(i + 1));
-  }
-  return dist_sum;
-}
-
 std::vector<double> calcArclengthArray(const TrajectoryPoints & trajectory)
 {
-  std::vector<double> arclength;
+  if (trajectory.empty()) {
+    return {};
+  }
+
+  std::vector<double> arclength(trajectory.size());
   double dist = 0.0;
-  arclength.clear();
-  arclength.push_back(dist);
+  arclength.front() = dist;
   for (unsigned int i = 1; i < trajectory.size(); ++i) {
     const TrajectoryPoint tp = trajectory.at(i);
     const TrajectoryPoint tp_prev = trajectory.at(i - 1);
     dist += tier4_autoware_utils::calcDistance2d(tp.pose, tp_prev.pose);
-    arclength.push_back(dist);
+    arclength.at(i) = dist;
   }
   return arclength;
 }

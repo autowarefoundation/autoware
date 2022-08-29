@@ -44,8 +44,6 @@ TrajectoryPoints extractPathAroundIndex(
   const TrajectoryPoints & trajectory, const size_t index, const double & ahead_length,
   const double & behind_length);
 
-double calcArcLength(const TrajectoryPoints & trajectory, const int idx1, const int idx2);
-
 std::vector<double> calcArclengthArray(const TrajectoryPoints & trajectory);
 
 std::vector<double> calcTrajectoryIntervalDistance(const TrajectoryPoints & trajectory);

@@ -616,14 +616,13 @@ void MotionVelocitySmootherNode::publishStopDistance(const TrajectoryPoints & tr
   double stop_dist{stop_dist_lim};
   const auto stop_idx{motion_utils::searchZeroVelocityIndex(trajectory)};
   if (stop_idx) {
-    stop_dist = trajectory_utils::calcArcLength(trajectory, closest, *stop_idx);
-    stop_dist = closest > *stop_idx ? stop_dist : -stop_dist;
+    stop_dist = motion_utils::calcSignedArcLength(trajectory, closest, *stop_idx);
   } else {
     stop_dist = closest > 0 ? stop_dist : -stop_dist;
   }
   Float32Stamped dist_to_stopline{};
   dist_to_stopline.stamp = this->now();
-  dist_to_stopline.data = std::max(-stop_dist_lim, std::min(stop_dist_lim, stop_dist));
+  dist_to_stopline.data = std::clamp(stop_dist, -stop_dist_lim, stop_dist_lim);
   pub_dist_to_stopline_->publish(dist_to_stopline);
 }
 
