@@ -24,6 +24,38 @@
 #include <string>
 #include <vector>
 
+namespace
+{
+double calcInterpolatedZ(
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & input,
+  const geometry_msgs::msg::Point target_pos, const size_t seg_idx)
+{
+  const double closest_to_target_dist = motion_utils::calcSignedArcLength(
+    input.points, input.points.at(seg_idx).point.pose.position,
+    target_pos);  // TODO(murooka) implement calcSignedArcLength(points, idx, point)
+  const double seg_dist = motion_utils::calcSignedArcLength(input.points, seg_idx, seg_idx + 1);
+
+  const double closest_z = input.points.at(seg_idx).point.pose.position.z;
+  const double next_z = input.points.at(seg_idx + 1).point.pose.position.z;
+  const double interpolated_z =
+    std::abs(seg_dist) < 1e-6
+      ? next_z
+      : closest_z + (next_z - closest_z) * closest_to_target_dist / seg_dist;
+  return interpolated_z;
+}
+
+double calcInterpolatedVelocity(
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & input, const size_t seg_idx)
+{
+  const double seg_dist = motion_utils::calcSignedArcLength(input.points, seg_idx, seg_idx + 1);
+
+  const double closest_vel = input.points.at(seg_idx).point.longitudinal_velocity_mps;
+  const double next_vel = input.points.at(seg_idx + 1).point.longitudinal_velocity_mps;
+  const double interpolated_vel = std::abs(seg_dist) < 1e-06 ? next_vel : closest_vel;
+  return interpolated_vel;
+}
+}  // namespace
+
 namespace drivable_area_utils
 {
 double quantize(const double val, const double resolution)
@@ -892,66 +924,27 @@ bool setGoal(
     }
 
     // calculate refined_goal with interpolation
+    // NOTE: goal does not have valid z, that will be calculated by interpolation here
     PathPointWithLaneId refined_goal{};
-    {  // NOTE: goal does not have valid z, that will be calculated by interpolation here
-      const size_t closest_seg_idx =
-        motion_utils::findNearestSegmentIndex(input.points, goal.position);
-      const double closest_to_goal_dist = motion_utils::calcSignedArcLength(
-        input.points, input.points.at(closest_seg_idx).point.pose.position,
-        goal.position);  // TODO(murooka) implement calcSignedArcLength(points, idx, point)
-      const double seg_dist =
-        motion_utils::calcSignedArcLength(input.points, closest_seg_idx, closest_seg_idx + 1);
-      const double closest_z = input.points.at(closest_seg_idx).point.pose.position.z;
-      const double next_z = input.points.at(closest_seg_idx + 1).point.pose.position.z;
-      const double goal_z = std::abs(seg_dist) < 1e-6
-                              ? next_z
-                              : closest_z + (next_z - closest_z) * closest_to_goal_dist / seg_dist;
-
-      refined_goal.point.pose = goal;
-      refined_goal.point.pose.position.z = goal_z;
-      refined_goal.point.longitudinal_velocity_mps = 0.0;
-      refined_goal.lane_ids = input.points.back().lane_ids;
-    }
-
-    // calculate pre_goal
-    double roll{};
-    double pitch{};
-    double yaw{};
-    tf2::Quaternion tf2_quaternion(
-      goal.orientation.x, goal.orientation.y, goal.orientation.z, goal.orientation.w);
-    tf2::Matrix3x3 tf2_matrix(tf2_quaternion);
-    tf2_matrix.getRPY(roll, pitch, yaw);
+    const size_t closest_seg_idx_for_goal =
+      motion_utils::findNearestSegmentIndex(input.points, goal.position);
+    refined_goal.point.pose = goal;
+    refined_goal.point.pose.position.z =
+      calcInterpolatedZ(input, goal.position, closest_seg_idx_for_goal);
+    refined_goal.point.longitudinal_velocity_mps = 0.0;
 
     // calculate pre_refined_goal with interpolation
+    // NOTE: z and velocity are filled
     PathPointWithLaneId pre_refined_goal{};
-    pre_refined_goal.point.pose.position.x = goal.position.x - std::cos(yaw);
-    pre_refined_goal.point.pose.position.y = goal.position.y - std::sin(yaw);
-    pre_refined_goal.point.pose.orientation = goal.orientation;
-
-    {  // NOTE: interpolate z and velocity of pre_refined_goal
-      const size_t closest_seg_idx =
-        motion_utils::findNearestSegmentIndex(input.points, pre_refined_goal.point.pose.position);
-      const double closest_to_pre_goal_dist = motion_utils::calcSignedArcLength(
-        input.points, input.points.at(closest_seg_idx).point.pose.position,
-        pre_refined_goal.point.pose.position);
-      const double seg_dist = motion_utils::calcSignedArcLength(
-        input.points, closest_seg_idx,
-        closest_seg_idx + 1);  // TODO(murooka) implement calcSignedArcLength(points, idx, point)
-
-      const double closest_z = input.points.at(closest_seg_idx).point.pose.position.z;
-      const double next_z = input.points.at(closest_seg_idx + 1).point.pose.position.z;
-      pre_refined_goal.point.pose.position.z =
-        std::abs(seg_dist) < 1e-06
-          ? next_z
-          : closest_z + (next_z - closest_z) * closest_to_pre_goal_dist / seg_dist;
-
-      const double closest_vel = input.points.at(closest_seg_idx).point.longitudinal_velocity_mps;
-      const double next_vel = input.points.at(closest_seg_idx + 1).point.longitudinal_velocity_mps;
-      pre_refined_goal.point.longitudinal_velocity_mps =
-        std::abs(seg_dist) < 1e-06 ? next_vel : closest_vel;
-
-      pre_refined_goal.lane_ids = input.points.back().lane_ids;
-    }
+    constexpr double goal_to_pre_goal_distance = -1.0;
+    pre_refined_goal.point.pose =
+      tier4_autoware_utils::calcOffsetPose(goal, goal_to_pre_goal_distance, 0.0, 0.0);
+    const size_t closest_seg_idx_for_pre_goal =
+      motion_utils::findNearestSegmentIndex(input.points, pre_refined_goal.point.pose.position);
+    pre_refined_goal.point.pose.position.z =
+      calcInterpolatedZ(input, pre_refined_goal.point.pose.position, closest_seg_idx_for_pre_goal);
+    pre_refined_goal.point.longitudinal_velocity_mps =
+      calcInterpolatedVelocity(input, closest_seg_idx_for_pre_goal);
 
     // find min_dist_index whose distance to goal is shorter than search_radius_range
     const auto min_dist_index_opt =
@@ -975,11 +968,30 @@ bool setGoal(
       }
     }
 
+    // create output points
     for (size_t i = 0; i <= min_dist_out_of_circle_index; ++i) {
       output_ptr->points.push_back(input.points.at(i));
     }
     output_ptr->points.push_back(pre_refined_goal);
     output_ptr->points.push_back(refined_goal);
+
+    {  // fill skipped lane ids
+      // pre refined goal
+      auto & pre_goal = output_ptr->points.at(output_ptr->points.size() - 2);
+      for (size_t i = min_dist_out_of_circle_index + 1; i < input.points.size(); ++i) {
+        for (const auto target_lane_id : input.points.at(i).lane_ids) {
+          const bool is_lane_id_found =
+            std::find(pre_goal.lane_ids.begin(), pre_goal.lane_ids.end(), target_lane_id) !=
+            pre_goal.lane_ids.end();
+          if (!is_lane_id_found) {
+            pre_goal.lane_ids.push_back(target_lane_id);
+          }
+        }
+      }
+
+      // goal
+      output_ptr->points.back().lane_ids = input.points.back().lane_ids;
+    }
 
     output_ptr->drivable_area = input.drivable_area;
     return true;
