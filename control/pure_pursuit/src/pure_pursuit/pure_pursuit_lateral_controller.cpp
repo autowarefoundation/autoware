@@ -61,6 +61,7 @@ PurePursuitLateralController::PurePursuitLateralController(rclcpp::Node & node)
   // Vehicle Parameters
   const auto vehicle_info = vehicle_info_util::VehicleInfoUtil(*node_).getVehicleInfo();
   param_.wheel_base = vehicle_info.wheel_base_m;
+  param_.max_steering_angle = vehicle_info.max_steer_angle_rad;
 
   // Algorithm Parameters
   param_.lookahead_distance_ratio =
@@ -137,10 +138,13 @@ boost::optional<LateralOutput> PurePursuitLateralController::run()
 AckermannLateralCommand PurePursuitLateralController::generateCtrlCmdMsg(
   const double target_curvature)
 {
+  const double tmp_steering =
+    planning_utils::convertCurvatureToSteeringAngle(param_.wheel_base, target_curvature);
   AckermannLateralCommand cmd;
   cmd.stamp = node_->get_clock()->now();
-  cmd.steering_tire_angle =
-    planning_utils::convertCurvatureToSteeringAngle(param_.wheel_base, target_curvature);
+  cmd.steering_tire_angle = static_cast<float>(
+    std::min(std::max(tmp_steering, -param_.max_steering_angle), param_.max_steering_angle));
+
   // pub_ctrl_cmd_->publish(cmd);
   return cmd;
 }

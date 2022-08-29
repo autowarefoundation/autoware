@@ -60,6 +60,7 @@ struct Param
 {
   // Global Parameters
   double wheel_base;
+  double max_steering_angle;  // [rad]
 
   // Algorithm Parameters
   double lookahead_distance_ratio;
