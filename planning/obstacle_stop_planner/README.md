@@ -347,3 +347,5 @@ If the target velocity exceeds the value of `thresh_vel_to_stop`, the target vel
 - It is strongly depends on velocity planning module whether or not it moves according to the target speed embedded by `Adaptive Cruise Controller` module. If the velocity planning module is updated, please take care of the vehicle's behavior as much as possible and always be ready for overriding.
 
 - The velocity estimation algorithm in `Adaptive Cruise Controller` is depend on object tracking module. Please note that if the object-tracking fails or the tracking result is incorrect, it the possibility that the vehicle behaves dangerously.
+
+- It does not work for backward driving, but publishes the path of the input as it is. Please use [obstacle_cruise_planner](../obstacle_cruise_planner/README.md) if you want to stop against an obstacle when backward driving.
