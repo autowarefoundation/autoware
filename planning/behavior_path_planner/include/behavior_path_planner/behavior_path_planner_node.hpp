@@ -148,8 +148,6 @@ private:
   // debug
   rclcpp::Publisher<MarkerArray>::SharedPtr debug_drivable_area_lanelets_publisher_;
   rclcpp::Publisher<AvoidanceDebugMsgArray>::SharedPtr debug_avoidance_msg_array_publisher_;
-  rclcpp::Publisher<MarkerArray>::SharedPtr debug_marker_publisher_;
-  void publishDebugMarker(const std::vector<MarkerArray> & debug_markers);
 };
 }  // namespace behavior_path_planner
 

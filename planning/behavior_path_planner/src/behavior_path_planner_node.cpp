@@ -68,9 +68,6 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
   debug_avoidance_msg_array_publisher_ =
     create_publisher<AvoidanceDebugMsgArray>("~/debug/avoidance_debug_message_array", 1);
 
-  // Debug
-  debug_marker_publisher_ = create_publisher<MarkerArray>("~/debug/markers", 1);
-
   if (planner_data_->parameters.visualize_drivable_area_for_shared_linestrings_lanelet) {
     debug_drivable_area_lanelets_publisher_ =
       create_publisher<MarkerArray>("~/drivable_area_boundary", 1);
@@ -596,7 +593,6 @@ void BehaviorPathPlannerNode::run()
 
   // for debug
   debug_avoidance_msg_array_publisher_->publish(bt_manager_->getAvoidanceDebugMsgArray());
-  publishDebugMarker(bt_manager_->getDebugMarkers());
 
   if (planner_data->parameters.visualize_drivable_area_for_shared_linestrings_lanelet) {
     const auto drivable_area_lines = marker_utils::createFurthestLineStringMarkerArray(
@@ -650,15 +646,6 @@ bool BehaviorPathPlannerNode::skipSmoothGoalConnection(
     }
   }
   return false;
-}
-
-void BehaviorPathPlannerNode::publishDebugMarker(const std::vector<MarkerArray> & debug_markers)
-{
-  MarkerArray msg{};
-  for (const auto & markers : debug_markers) {
-    tier4_autoware_utils::appendMarkerArray(markers, &msg);
-  }
-  debug_marker_publisher_->publish(msg);
 }
 
 void BehaviorPathPlannerNode::onVelocity(const Odometry::ConstSharedPtr msg)

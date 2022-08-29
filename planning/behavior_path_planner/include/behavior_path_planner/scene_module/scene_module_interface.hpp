@@ -30,6 +30,7 @@
 
 #include <behaviortree_cpp_v3/basic_types.h>
 
+#include <algorithm>
 #include <limits>
 #include <memory>
 #include <random>
@@ -97,6 +98,12 @@ public:
     is_waiting_approval_{false},
     current_state_{BT::NodeStatus::IDLE}
   {
+    std::string module_ns;
+    module_ns.resize(name.size());
+    std::transform(name.begin(), name.end(), module_ns.begin(), tolower);
+
+    const auto ns = std::string("~/debug/") + module_ns;
+    pub_debug_marker_ = node.create_publisher<MarkerArray>(ns, 20);
   }
 
   virtual ~SceneModuleInterface() = default;
@@ -212,13 +219,13 @@ public:
    */
   void setData(const std::shared_ptr<const PlannerData> & data) { planner_data_ = data; }
 
+  void publishDebugMarker() { pub_debug_marker_->publish(debug_marker_); }
+
   std::string name() const { return name_; }
 
   rclcpp::Logger getLogger() const { return logger_; }
 
   std::shared_ptr<const PlannerData> planner_data_;
-
-  MarkerArray getDebugMarker() { return debug_marker_; }
 
   AvoidanceDebugMsgArray::SharedPtr getAvoidanceDebugMsgArray()
   {
@@ -234,9 +241,10 @@ private:
   rclcpp::Logger logger_;
 
 protected:
-  MarkerArray debug_marker_;
   rclcpp::Clock::SharedPtr clock_;
+  rclcpp::Publisher<MarkerArray>::SharedPtr pub_debug_marker_;
   mutable AvoidanceDebugMsgArray::SharedPtr debug_avoidance_msg_array_ptr_{};
+  mutable MarkerArray debug_marker_;
 
   std::shared_ptr<RTCInterface> rtc_interface_ptr_;
   UUID uuid_;

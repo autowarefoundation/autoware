@@ -49,7 +49,6 @@ public:
 
   BehaviorModuleOutput run(const std::shared_ptr<PlannerData> & data);
   std::vector<std::shared_ptr<SceneModuleStatus>> getModulesStatus();
-  std::vector<MarkerArray> getDebugMarkers();
   AvoidanceDebugMsgArray getAvoidanceDebugMsgArray();
 
 private:

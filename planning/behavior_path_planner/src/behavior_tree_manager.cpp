@@ -98,6 +98,7 @@ BehaviorModuleOutput BehaviorTreeManager::run(const std::shared_ptr<PlannerData>
   RCLCPP_DEBUG(logger_, "BehaviorPathPlanner::run end status = %s", BT::toStr(res).c_str());
 
   std::for_each(scene_modules_.begin(), scene_modules_.end(), [](const auto & m) {
+    m->publishDebugMarker();
     if (!m->isExecutionRequested()) {
       m->onExit();
     }
@@ -110,15 +111,6 @@ std::vector<std::shared_ptr<behavior_path_planner::SceneModuleStatus>>
 BehaviorTreeManager::getModulesStatus()
 {
   return modules_status_;
-}
-
-std::vector<MarkerArray> BehaviorTreeManager::getDebugMarkers()
-{
-  std::vector<MarkerArray> data;
-  for (const auto & module : scene_modules_) {
-    data.push_back(module->getDebugMarker());
-  }
-  return data;
 }
 
 AvoidanceDebugMsgArray BehaviorTreeManager::getAvoidanceDebugMsgArray()
