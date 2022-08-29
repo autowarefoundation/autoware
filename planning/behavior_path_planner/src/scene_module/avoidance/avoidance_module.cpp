@@ -148,8 +148,9 @@ AvoidancePlanningData AvoidanceModule::calcAvoidancePlanningData(DebugData & deb
     calcSignedArcLength(data.reference_path.points, getEgoPosition(), 0));
 
   // lanelet info
-  data.current_lanelets = calcLaneAroundPose(
-    planner_data_, reference_pose.pose, planner_data_->parameters.backward_path_length);
+  data.current_lanelets = util::calcLaneAroundPose(
+    planner_data_->route_handler, reference_pose.pose,
+    planner_data_->parameters.forward_path_length, planner_data_->parameters.backward_path_length);
 
   // target objects for avoidance
   data.objects = calcAvoidanceTargetObjects(data.current_lanelets, data.reference_path, debug);
@@ -1875,7 +1876,7 @@ PathWithLaneId AvoidanceModule::calcCenterLinePath(
     p.backward_path_length, longest_dist_to_shift_point, backward_length);
 
   const lanelet::ConstLanelets current_lanes =
-    calcLaneAroundPose(planner_data, pose.pose, backward_length);
+    util::calcLaneAroundPose(route_handler, pose.pose, p.forward_path_length, backward_length);
   centerline_path = util::getCenterLinePath(
     *route_handler, current_lanes, pose.pose, backward_length, p.forward_path_length, p);
 

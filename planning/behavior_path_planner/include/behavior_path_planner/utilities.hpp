@@ -282,6 +282,10 @@ lanelet::ConstLanelets getCurrentLanes(const std::shared_ptr<const PlannerData> 
 lanelet::ConstLanelets getExtendedCurrentLanes(
   const std::shared_ptr<const PlannerData> & planner_data);
 
+lanelet::ConstLanelets calcLaneAroundPose(
+  const std::shared_ptr<RouteHandler> route_handler, const geometry_msgs::msg::Pose & pose,
+  const double forward_length, const double backward_length);
+
 }  // namespace behavior_path_planner::util
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILITIES_HPP_

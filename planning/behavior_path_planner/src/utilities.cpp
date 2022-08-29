@@ -1978,4 +1978,22 @@ lanelet::ConstLanelets getExtendedCurrentLanes(
   return current_lanes;
 }
 
+lanelet::ConstLanelets calcLaneAroundPose(
+  const std::shared_ptr<RouteHandler> route_handler, const geometry_msgs::msg::Pose & pose,
+  const double forward_length, const double backward_length)
+{
+  lanelet::ConstLanelet current_lane;
+  if (!route_handler->getClosestLaneletWithinRoute(pose, &current_lane)) {
+    RCLCPP_ERROR(
+      rclcpp::get_logger("behavior_path_planner").get_child("avoidance"),
+      "failed to find closest lanelet within route!!!");
+    return {};  // TODO(Horibe)
+  }
+
+  // For current_lanes with desired length
+  lanelet::ConstLanelets current_lanes =
+    route_handler->getLaneletSequence(current_lane, pose, backward_length, forward_length);
+
+  return current_lanes;
+}
 }  // namespace behavior_path_planner::util

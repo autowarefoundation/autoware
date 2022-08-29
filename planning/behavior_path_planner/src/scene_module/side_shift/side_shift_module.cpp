@@ -24,28 +24,6 @@
 #include <memory>
 #include <string>
 
-namespace
-{
-lanelet::ConstLanelets calcLaneAroundPose(
-  const std::shared_ptr<const behavior_path_planner::PlannerData> & planner_data,
-  const geometry_msgs::msg::Pose & pose, const double backward_length)
-{
-  const auto & p = planner_data->parameters;
-  const auto & route_handler = planner_data->route_handler;
-
-  lanelet::ConstLanelet current_lane;
-  if (!route_handler->getClosestLaneletWithinRoute(pose, &current_lane)) {
-    return {};  // TODO(Horibe)
-  }
-
-  // For current_lanes with desired length
-  lanelet::ConstLanelets current_lanes =
-    route_handler->getLaneletSequence(current_lane, pose, backward_length, p.forward_path_length);
-
-  return current_lanes;
-}
-}  // namespace
-
 namespace behavior_path_planner
 {
 using geometry_msgs::msg::Point;
@@ -488,7 +466,7 @@ PathWithLaneId SideShiftModule::calcCenterLinePath(
     p.backward_path_length, longest_dist_to_shift_point, backward_length);
 
   const lanelet::ConstLanelets current_lanes =
-    calcLaneAroundPose(planner_data, pose.pose, backward_length);
+    util::calcLaneAroundPose(route_handler, pose.pose, p.forward_path_length, backward_length);
   centerline_path = util::getCenterLinePath(
     *route_handler, current_lanes, pose.pose, backward_length, p.forward_path_length, p);
 

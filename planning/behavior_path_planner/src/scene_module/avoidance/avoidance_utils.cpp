@@ -43,28 +43,6 @@ bool isSameDirectionShift(const bool & is_object_on_right, const double & shift_
   return (is_object_on_right == std::signbit(shift_length));
 }
 
-lanelet::ConstLanelets calcLaneAroundPose(
-  const std::shared_ptr<const PlannerData> & planner_data, const geometry_msgs::msg::Pose & pose,
-  const double backward_length)
-{
-  const auto & p = planner_data->parameters;
-  const auto & route_handler = planner_data->route_handler;
-
-  lanelet::ConstLanelet current_lane;
-  if (!route_handler->getClosestLaneletWithinRoute(pose, &current_lane)) {
-    RCLCPP_ERROR(
-      rclcpp::get_logger("behavior_path_planner").get_child("avoidance"),
-      "failed to find closest lanelet within route!!!");
-    return {};  // TODO(Horibe)
-  }
-
-  // For current_lanes with desired length
-  lanelet::ConstLanelets current_lanes =
-    route_handler->getLaneletSequence(current_lane, pose, backward_length, p.forward_path_length);
-
-  return current_lanes;
-}
-
 ShiftedPath toShiftedPath(const PathWithLaneId & path)
 {
   ShiftedPath out;

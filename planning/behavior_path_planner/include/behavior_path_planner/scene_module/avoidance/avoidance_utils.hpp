@@ -32,10 +32,6 @@ double calcShiftLength(
 
 bool isSameDirectionShift(const bool & is_object_on_right, const double & shift_length);
 
-lanelet::ConstLanelets calcLaneAroundPose(
-  const std::shared_ptr<const PlannerData> & planner_data, const Pose & pose,
-  const double backward_length);
-
 size_t findPathIndexFromArclength(
   const std::vector<double> & path_arclength_arr, const double target_arc);
 
