@@ -12,7 +12,7 @@
       min_acc: -0.5
       enable_shift_parking: true
       enable_arc_forward_parking: true
-      enable_arc_backward_parking: false
+      enable_arc_backward_parking: true
       # goal research
       search_priority: "efficient_path" # "efficient_path" or "close_goal"
       enable_goal_research: true

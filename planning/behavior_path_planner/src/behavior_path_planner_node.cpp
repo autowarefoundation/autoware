@@ -365,7 +365,7 @@ PullOverParameters BehaviorPathPlannerNode::getPullOverParam()
   p.min_acc = dp("min_acc", -0.5);
   p.enable_shift_parking = dp("enable_shift_parking", true);
   p.enable_arc_forward_parking = dp("enable_arc_forward_parking", true);
-  p.enable_arc_backward_parking = dp("enable_arc_backward_parking", false);
+  p.enable_arc_backward_parking = dp("enable_arc_backward_parking", true);
   // goal research
   p.search_priority = dp("search_priority", "efficient_path");
   p.enable_goal_research = dp("enable_goal_research", true);
