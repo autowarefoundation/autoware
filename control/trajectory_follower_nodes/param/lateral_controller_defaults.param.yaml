@@ -56,7 +56,7 @@
     stop_state_entry_ego_speed: 0.001
     stop_state_entry_target_speed: 0.001
     converged_steer_rad: 0.1
-    keep_steer_control_until_converged: false
+    keep_steer_control_until_converged: true
     new_traj_duration_time: 1.0
     new_traj_end_dist: 0.3
 

@@ -66,7 +66,7 @@ AutonomouStuff Lexus RX 450h for under 40 km/h driving.
 | stop_state_entry_ego_speed <sup>\*1</sup>    | double | threshold value of the ego vehicle speed used to the stop state entry condition                                                                   | 0.0           |
 | stop_state_entry_target_speed <sup>\*1</sup> | double | threshold value of the target speed used to the stop state entry condition                                                                        | 0.0           |
 | converged_steer_rad                          | double | threshold value of the steer convergence                                                                                                          | 0.1           |
-| keep_steer_control_until_converged           | bool   | keep steer control until steer is converged                                                                                                       | false         |
+| keep_steer_control_until_converged           | bool   | keep steer control until steer is converged                                                                                                       | true          |
 | new_traj_duration_time                       | double | threshold value of the time to be considered as new trajectory                                                                                    | 1.0           |
 | new_traj_end_dist                            | double | threshold value of the distance between trajectory ends to be considered as new trajectory                                                        | 0.3           |
 
