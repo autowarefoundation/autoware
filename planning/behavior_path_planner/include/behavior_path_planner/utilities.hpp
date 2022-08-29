@@ -54,6 +54,8 @@ using autoware_auto_perception_msgs::msg::ObjectClassification;
 using autoware_auto_perception_msgs::msg::PredictedObject;
 using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_perception_msgs::msg::PredictedPath;
+
+using autoware_auto_perception_msgs::msg::Shape;
 using autoware_auto_planning_msgs::msg::Path;
 using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
@@ -66,7 +68,10 @@ using geometry_msgs::msg::Vector3;
 using nav_msgs::msg::OccupancyGrid;
 using route_handler::RouteHandler;
 using tier4_autoware_utils::LineString2d;
+using tier4_autoware_utils::Point2d;
 using tier4_autoware_utils::Polygon2d;
+namespace bg = boost::geometry;
+using geometry_msgs::msg::Pose;
 
 struct FrenetCoordinate3d
 {
@@ -74,6 +79,20 @@ struct FrenetCoordinate3d
   double distance{0.0};  // lateral
 };
 
+struct ProjectedDistancePoint
+{
+  Point2d projected_point;
+  double distance{0.0};
+};
+
+template <typename Pythagoras = bg::strategy::distance::pythagoras<> >
+ProjectedDistancePoint pointToSegment(
+  const Point2d & reference_point, const Point2d & point_from_ego,
+  const Point2d & point_from_object);
+
+void getProjectedDistancePointFromPolygons(
+  const Polygon2d & ego_polygon, const Polygon2d & object_polygon, Pose & point_on_ego,
+  Pose & point_on_object);
 // data conversions
 
 Path convertToPathFromPathWithLaneId(const PathWithLaneId & path_with_lane_id);
@@ -86,7 +105,8 @@ PoseArray convertToGeometryPoseArray(const PathWithLaneId & path);
 
 PredictedPath convertToPredictedPath(
   const PathWithLaneId & path, const Twist & vehicle_twist, const Pose & vehicle_pose,
-  const double duration, const double resolution, const double acceleration);
+  const double duration, const double resolution, const double acceleration,
+  double min_speed = 1.0);
 
 FrenetCoordinate3d convertToFrenetCoordinate3d(
   const std::vector<Point> & linestring, const Point & search_point_geom);
@@ -285,7 +305,67 @@ lanelet::ConstLanelets getExtendedCurrentLanes(
 lanelet::ConstLanelets calcLaneAroundPose(
   const std::shared_ptr<RouteHandler> route_handler, const geometry_msgs::msg::Pose & pose,
   const double forward_length, const double backward_length);
+Polygon2d convertBoundingBoxObjectToGeometryPolygon(
+  const Pose & current_pose, const double & length, const double & width);
 
+Polygon2d convertCylindricalObjectToGeometryPolygon(
+  const Pose & current_pose, const Shape & obj_shape);
+
+Polygon2d convertPolygonObjectToGeometryPolygon(const Pose & current_pose, const Shape & obj_shape);
+
+std::vector<PredictedPath> getPredictedPathFromObj(
+  const PredictedObject & obj, const bool & is_use_all_predicted_path);
+
+Pose projectCurrentPoseToTarget(const Pose & desired_object, const Pose & target_object);
+
+bool getEgoExpectedPoseAndConvertToPolygon(
+  const Pose & current_pose, const PredictedPath & pred_path, Pose & expected_pose,
+  tier4_autoware_utils::Polygon2d & ego_polygon, const double & check_current_time,
+  const double & length, const double & width);
+
+bool getObjectExpectedPoseAndConvertToPolygon(
+  const PredictedPath & pred_path, const PredictedObject & object, Pose & expected_pose,
+  Polygon2d & obj_polygon, const double & check_current_time);
+
+bool isObjectFront(const Pose & ego_pose, const Pose & obj_pose);
+
+bool isObjectFront(const Pose & projected_ego_pose);
+
+double stoppingDistance(const double & vehicle_velocity, const double & vehicle_accel);
+
+double frontVehicleStopDistance(
+  const double & front_vehicle_velocity, const double & front_vehicle_accel,
+  const double & distance_to_collision);
+
+double rearVehicleStopDistance(
+  const double & rear_vehicle_velocity, const double & rear_vehicle_accel,
+  const double & rear_vehicle_reaction_time, const double & rear_vehicle_safety_time_margin);
+
+bool isLongitudinalDistanceEnough(
+  const double & rear_vehicle_stop_threshold, const double & front_vehicle_stop_threshold);
+
+bool hasEnoughDistance(
+  const Pose & expected_ego_pose, const Twist & ego_current_twist,
+  const Pose & expected_object_pose, const Twist & object_current_twist,
+  const BehaviorPathPlannerParameters & param);
+
+bool isLateralDistanceEnough(
+  const double & relative_lateral_distance, const double & lateral_distance_threshold);
+
+bool isSafeInLaneletCollisionCheck(
+  const Pose & ego_current_pose, const Twist & ego_current_twist,
+  const PredictedPath & ego_predicted_path, const double & ego_vehicle_length,
+  const double & ego_vehicle_width, const double & check_start_time, const double & check_end_time,
+  const double & check_time_resolution, const PredictedObject & target_object,
+  const PredictedPath & target_object_path,
+  const BehaviorPathPlannerParameters & common_parameters);
+
+bool isSafeInFreeSpaceCollisionCheck(
+  const Pose & ego_current_pose, const Twist & ego_current_twist,
+  const PredictedPath & ego_predicted_path, const double & ego_vehicle_length,
+  const double & ego_vehicle_width, const double & check_start_time, const double & check_end_time,
+  const double & check_time_resolution, const PredictedObject & target_object,
+  const BehaviorPathPlannerParameters & common_parameters);
 }  // namespace behavior_path_planner::util
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILITIES_HPP_

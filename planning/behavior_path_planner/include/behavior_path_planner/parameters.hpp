@@ -56,6 +56,14 @@ struct BehaviorPathPlannerParameters
 
   // drivable area visualization
   bool visualize_drivable_area_for_shared_linestrings_lanelet;
+
+  // collision check
+  double lateral_distance_max_threshold;
+  double longitudinal_distance_min_threshold;
+  double expected_front_deceleration;
+  double expected_rear_deceleration;
+  double rear_vehicle_reaction_time;
+  double rear_vehicle_safety_time_margin;
 };
 
 #endif  // BEHAVIOR_PATH_PLANNER__PARAMETERS_HPP_

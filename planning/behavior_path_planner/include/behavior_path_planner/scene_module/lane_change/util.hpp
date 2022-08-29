@@ -31,25 +31,30 @@
 #include <memory>
 #include <vector>
 
-namespace behavior_path_planner
+namespace behavior_path_planner::lane_change_utils
 {
-namespace lane_change_utils
-{
+using autoware_auto_perception_msgs::msg::PredictedObject;
 using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_perception_msgs::msg::PredictedPath;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::Twist;
+using tier4_autoware_utils::Polygon2d;
 
 PathWithLaneId combineReferencePath(const PathWithLaneId path1, const PathWithLaneId path2);
 bool isPathInLanelets(
   const PathWithLaneId & path, const lanelet::ConstLanelets & original_lanelets,
   const lanelet::ConstLanelets & target_lanelets);
+double getExpectedVelocityWhenDecelerate(
+  const double & current_velocity, const double & expected_acceleration,
+  const double & lane_change_prepare_duration);
+double getDistanceWhenDecelerate(
+  const double & velocity, const double & expected_acceleration, const double & duration,
+  const double & minimum_distance);
 std::vector<LaneChangePath> getLaneChangePaths(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & original_lanelets,
   const lanelet::ConstLanelets & target_lanelets, const Pose & pose, const Twist & twist,
-  const BehaviorPathPlannerParameters & common_parameter,
-  const behavior_path_planner::LaneChangeParameters & parameter);
+  const BehaviorPathPlannerParameters & common_parameter, const LaneChangeParameters & parameter);
 std::vector<LaneChangePath> selectValidPaths(
   const std::vector<LaneChangePath> & paths, const lanelet::ConstLanelets & current_lanes,
   const lanelet::ConstLanelets & target_lanes,
@@ -59,23 +64,20 @@ bool selectSafePath(
   const std::vector<LaneChangePath> & paths, const lanelet::ConstLanelets & current_lanes,
   const lanelet::ConstLanelets & target_lanes,
   const PredictedObjects::ConstSharedPtr dynamic_objects, const Pose & current_pose,
-  const Twist & current_twist, const double vehicle_width,
-  const behavior_path_planner::LaneChangeParameters & ros_parameters,
-  LaneChangePath * selected_path);
+  const Twist & current_twist, const BehaviorPathPlannerParameters & common_parameters,
+  const LaneChangeParameters & ros_parameters, LaneChangePath * selected_path);
 bool isLaneChangePathSafe(
   const PathWithLaneId & path, const lanelet::ConstLanelets & current_lanes,
   const lanelet::ConstLanelets & target_lanes,
   const PredictedObjects::ConstSharedPtr dynamic_objects, const Pose & current_pose,
-  const Twist & current_twist, const double vehicle_width,
-  const behavior_path_planner::LaneChangeParameters & ros_parameters, const bool use_buffer = true,
+  const Twist & current_twist, const BehaviorPathPlannerParameters & common_parameters,
+  const LaneChangeParameters & lane_change_parameters, const bool use_buffer = true,
   const double acceleration = 0.0);
 bool hasEnoughDistance(
   const LaneChangePath & path, const lanelet::ConstLanelets & current_lanes,
   const lanelet::ConstLanelets & target_lanes, const Pose & current_pose,
   const bool isInGoalRouteSection, const Pose & goal_pose,
   const lanelet::routing::RoutingGraphContainer & overall_graphs);
-bool isObjectFront(const Pose & ego_pose, const Pose & obj_pose);
-}  // namespace lane_change_utils
-}  // namespace behavior_path_planner
+}  // namespace behavior_path_planner::lane_change_utils
 
 #endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__UTIL_HPP_
