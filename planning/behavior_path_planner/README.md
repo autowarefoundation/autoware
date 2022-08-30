@@ -15,7 +15,7 @@ The following modules are currently supported:
 - **Lane Following**: Generate lane centerline from map.
 - **Lane Change**: Performs a lane change. This module is performed when it is necessary and a collision check with other vehicles is cleared.
 - **Obstacle Avoidance**: Perform an obstacle avoidance. This module is for avoidance of a vehicle parked on the edge of the lane or overtaking a low-speed obstacle.
-- **Pull Over**: Performs a pull over. This module is performed when goal is in the shoulder lane. Ego-vehicle will stop at the goal.
+- **Pull Over**: Performs a pull over. This module is performed when ego-vehicle is in the road lane and goal is in the shoulder lane. ego-vehicle will stop at the goal.
 - **Pull Out**: Performs a pull out. This module is performed when ego-vehicle is stationary and footprint of ego-vehicle is included in shoulder lane. This module ends when ego-vehicle merges into the road.
 - **Side Shift**: (For remote control) Shift the path to left or right according to an external instruction.
 
@@ -46,6 +46,7 @@ The following modules are currently supported:
 - /planning/mission_planning/route [`autoware_auto_planning_msgs/HADMapRoute`] : Current route from start to goal.
 - /map/vector_map [autoware_auto_mapping_msgs/HADMapBin] : Map information.
 - /perception/object_recognition/objects [`autoware_auto_perception_msgs/PredictedObjects`] : dynamic objects from perception module.
+- /perception/occupancy_grid_map/map [nav_msgs/msg/OccupancyGrid] : occupancy grid map from perception module. This is used for only Pull Over module
 - /tf [`tf2_msgs/TFMessage`] : For ego-pose.
 - /localization/kinematic_state [`nav_msgs/Odometry] : For ego-velocity.
 - path_change_approval [`std_msgs::Bool`] : (For remote control)
@@ -195,32 +196,79 @@ The Pull Over module is activated when goal is in the shoulder lane. Ego-vehicle
 
 - Pull over request condition
 
-  - The goal is in shoulder lane
-  - The distance from ego-vehicle to the destination is long enough for pull over
-    - The distance required for a pull over is determined by the sum of the straight distance before pull over, the straight distance after pull over, and the minimum distance required for pull over
+  - The goal is in shoulder lane and the ego-vehicle is in road lane.
+  - The distance between the goal and ego-vehicle is somewhat close.
+    - It is shorter than `request_length`(default: < `100m`).
 
 - Pull over ready condition
 
-  - The end of generated path is located before the end of the road
-  - Distance required for pull over of generated path is shorter than distance from ego-pose to goal-pose
-  - Generated Path of the pull over doesn’t collide with other objects
+  - It is always ready if the conditions of the request are met.
+
+- Pull over start condition
+  - Generate safe parking goal and path.
+    - The generated path does not collide with obstacles.
   - Pull over is allowed by an operator
     - If pull over path is not allowed by an operator, leave distance required for pull over and stop.
-      This case is defined as UC ID: UC-F-11-00004 at [ODD Use Case Slide Pullover draft](https://docs.google.com/presentation/d/19-G1vj0rG-1P1RKWLg-Iq3_7YgcIYgXZ1wq2_J9NXGo/edit#slide=id.gf4f59f078d_0_1)
 
 #### **finish pull over condition** (need to meet any of the conditions below)
 
 - The distance to the goal from your vehicle is lower than threshold (default: < `1m`)
-- The speed of the vehicle is 0.
+- The ego-vehicle is stopped.
+  - The speed is lower than threshold (default: < `0.01m/s`).
 
-#### **Collision prediction with obstacles**
+#### General parameters for pull_over
 
-1. Predict each position of the ego-vehicle and other vehicle on the target lane of the pull over at t1, t2,...tn
-2. If a distance between the ego-vehicle and other one is lower than the threshold (`ego_velocity * stop_time (2s)`) at each time, that is judged as a collision
+| Name                       | Unit   | Type   | Description                                                                                                                             | Default value |
+| :------------------------- | :----- | :----- | :-------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
+| request_length             | [m]    | double | when the ego-vehicle approaches the goal by this distance, the module is activated.                                                     | 100.0         |
+| th_arrived_distance_m      | [m]    | double | distance threshold for arrival of path termination                                                                                      | 1.0           |
+| th_stopped_velocity_mps    | [m/s]  | double | velocity threshold for arrival of path termination                                                                                      | 0.01          |
+| th_stopped_time_sec        | [s]    | double | time threshold for arrival of path termination                                                                                          | 2.0           |
+| pull_over_velocity         | [m/s]  | double | decelerate to this speed by the goal search area                                                                                        | 2.0           |
+| pull_over_minimum_velocity | [m/s]  | double | speed of pull_over after stopping once. this prevents excessive acceleration.                                                           | 0.3           |
+| margin_from_boundary       | [m]    | double | distance margin from edge of the shoulder lane                                                                                          | 0.5           |
+| decide_path_distance       | [m]    | double | decide path if it approaches this distance relative to the parking position. after that, no path planning and goal search are performed | 10.0          |
+| maximum_deceleration       | [m/s2] | double | maximum deceleration. it prevents sudden deceleration when a parking path cannot be found suddenly                                      | 0.5           |
+
+#### **collision check**
+
+##### **occupancy grid based collision check**
+
+Generate footprints from ego-vehicle path points and determine obstacle collision from the value of occupancy_grid of the corresponding cell.
+
+##### Parameters for occupancy grid based collision check
+
+| Name                   | Unit | Type   | Description                                                                                                     | Default value |
+| :--------------------- | :--- | :----- | :-------------------------------------------------------------------------------------------------------------- | :------------ |
+| collision_check_margin | [m]  | double | margin to calculate ego-vehicle cells from footprint.                                                           | 0.5           |
+| theta_size             | -    | int    | size of theta angle to be considered. angular resolution for collision check will be 2$\pi$ / theta_size [rad]. | 360           |
+| obstacle_threshold     | -    | int    | threshold of cell values to be considered as obstacles                                                          | 60            |
+
+#### **Goal Search**
+
+If it is not possible to park safely at a given goal, `/planning/scenario_planning/modified_goal` is
+searched for in certain range of the shoulder lane.
+
+[Video of how goal search works](https://user-images.githubusercontent.com/39142679/178033628-bec1bbc7-3b27-47b1-b50b-55f855e2e399.mp4)
+
+##### Parameters for goal search
+
+| Name                        | Unit | Type   | Description                                                                                                                                                                                                              | Default value  |
+| :-------------------------- | :--- | :----- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------- |
+| search_priority             | -    | string | In case `efficient_path` use a goal that can generate an efficient path( priority is `shift_parking` -> `arc_forward_parking` -> `arc_backward_parking`). In case `close_goal` use the closest goal to the original one. | efficient_path |
+| enable_goal_research        | -    | double | flag whether to search goal                                                                                                                                                                                              | true           |
+| forward_goal_search_length  | [m]  | double | length of forward range to be explored from the original goal                                                                                                                                                            | 20.0           |
+| backward_goal_search_length | [m]  | double | length of backward range to be explored from the original goal                                                                                                                                                           | 20.0           |
+| goal_search_interval        | [m]  | double | distance interval for goal search                                                                                                                                                                                        | 1.0            |
+| goal_to_obj_margin          | [m]  | double | margin between ego-vehicle and obstacles when arriving the goal                                                                                                                                                          | 2.0            |
 
 #### **Path Generation**
 
+There are three path generation methods.
 The path is generated with a certain margin (default: `0.5 m`) from left boundary of shoulder lane.
+
+##### **shift parking**
+
 Pull over distance is calculated by the speed, lateral deviation, and the lateral jerk.
 The lateral jerk is searched for among the predetermined minimum and maximum values, and the one satisfies ready conditions described above is output.
 
@@ -228,21 +276,75 @@ The lateral jerk is searched for among the predetermined minimum and maximum val
 2. In the section between merge start and end, path is shifted by a method that is used to generate avoidance path (four segmental constant jerk polynomials)
 3. Combine this path with center line of road lane
 
-![pull_over](./image/pull_over_fig1.drawio.svg)
+![shift_parking](./image/shift_parking.drawio.svg)
 
-#### Parameters for path generation
+[Video of how shift_parking works](https://user-images.githubusercontent.com/39142679/178034101-4dc61a33-bc49-41a0-a9a8-755cce53cbc6.mp4)
 
-| Name                 | Unit   | Type   | Description                                                                                                 | Default value |
-| :------------------- | :----- | :----- | :---------------------------------------------------------------------------------------------------------- | :------------ |
-| straight_distance    | [m]    | double | straight distance after pull over.                                                                          | 5.0           |
-| minimum_lateral_jerk | [m/s3] | double | minimum lateral jerk to calculate shifting distance.                                                        | 0.5           |
-| maximum_lateral_jerk | [m/s3] | double | maximum lateral jerk to calculate shifting distance.                                                        | 2.0           |
-| pull_over_velocity   | [m/s]  | double | Accelerate/decelerate to this speed before the start of the pullover.                                       | 3.0           |
-| margin               | [m]    | double | distance from ego-vehicle's footprint to the edge of the shoulder lane. This value determines shift length. | 0.5           |
+###### Parameters for shift parking
+
+| Name                               | Unit   | Type   | Description                                                                                              | Default value |
+| :--------------------------------- | :----- | :----- | :------------------------------------------------------------------------------------------------------- | :------------ |
+| enable_shift_parking               | [-]    | bool   | flag whether to enable shift parking                                                                     | true          |
+| pull_over_sampling_num             | [-]    | int    | Number of samplings in the minimum to maximum range of lateral_jerk                                      | 4             |
+| maximum_lateral_jerk               | [m/s3] | double | maximum lateral jerk                                                                                     | 2.0           |
+| minimum_lateral_jerk               | [m/s3] | double | minimum lateral jerk                                                                                     | 0.5           |
+| deceleration_interval              | [m]    | double | distance of deceleration section                                                                         | 15.0          |
+| after_pull_over_straight_distance  | [m]    | double | straight line distance after pull over end point                                                         | 5.0           |
+| before_pull_over_straight_distance | [m]    | double | straight line distance before pull over end point. a safe path should have a distance that includes this | 5.0           |
+
+##### **geometric parallel parking**
+
+Generate two arc paths with discontinuous curvature. It stops twice in the middle of the path to control the steer on the spot. There are two path generation methods: forward and backward.
+See also [[1]](https://www.sciencedirect.com/science/article/pii/S1474667015347431) for details of the algorithm. There is also [a simple python implementation](https://github.com/kosuke55/geometric-parallel-parking).
+
+###### Parameters geometric parallel parking
+
+| Name              | Unit  | Type   | Description                             | Default value |
+| :---------------- | :---- | :----- | :-------------------------------------- | :------------ |
+| arc_path_interval | [m]   | double | interval between arc path points        | 1.0           |
+| max_steer_rad     | [rad] | double | maximum steer angle for path generation | 0.35          |
+
+###### arc forward parking
+
+Generate two forward arc paths.
+
+![arc_forward_parking](./image/arc_forward_parking.drawio.svg)
+
+[Video of how arc_forward_parking works](https://user-images.githubusercontent.com/39142679/178034128-4754c401-8aff-4745-b69a-4a69ca29ce4b.mp4)
+
+###### Parameters arc forward parking
+
+| Name                                    | Unit  | Type   | Description                                                                      | Default value |
+| :-------------------------------------- | :---- | :----- | :------------------------------------------------------------------------------- | :------------ |
+| enable_arc_forward_parking              | [-]   | bool   | flag whether to enable arc forward parking                                       | true          |
+| after_forward_parking_straight_distance | [m]   | double | straight line distance after pull over end point                                 | 2.0           |
+| forward_parking_velocity                | [m/s] | double | velocity when forward parking                                                    | 0.3           |
+| forward_parking_lane_departure_margin   | [m/s] | double | lane departure margin for front left corner of ego-vehicle when forkward parking | 0.0           |
+
+###### arc backward parking
+
+Generate two backward arc paths.
+
+![arc_backward_parking](./image/arc_backward_parking.drawio.svg).
+
+[Video of how arc_forward_parking works](https://user-images.githubusercontent.com/39142679/178034280-4b6754fe-3981-4aee-b5e0-970f34563c6d.mp4)
+
+###### Parameters arc backward parking
+
+| Name                                     | Unit  | Type   | Description                                                               | Default value |
+| :--------------------------------------- | :---- | :----- | :------------------------------------------------------------------------ | :------------ |
+| enable_arc_backward_parking              | [-]   | bool   | flag whether to enable arc backward parking                               | true          |
+| after_backward_parking_straight_distance | [m]   | double | straight line distance after pull over end point                          | 2.0           |
+| backward_parking_velocity                | [m/s] | double | velocity when backward parking                                            | -0.3          |
+| backward_parking_lane_departure_margin   | [m/s] | double | lane departure margin for front right corner of ego-vehicle when backward | 0.0           |
 
 #### Unimplemented parts / limitations for pull over
 
-- When parking on the shoulder of the road, 3.5m space on the right side should be secured
+- parking on the right shoulder is not allowed
+- if the distance from the edge of the shoulder is too narrow, parking is not possible.
+  - if `margin_from_boundary` is set to `0.0`, etc., a path without deviation cannot be found.
+- geometric_parallel_parking assumes road lanes and shoulder lanes are straight and parallel.
+  - sift parking is possible on curved lanes.
 
 ### Pull Out
 
@@ -340,6 +442,8 @@ When multiple turn signal conditions are met, the turn signal with the smaller d
 ## References / External links
 
 This module depends on the external [BehaviorTreeCpp](https://github.com/BehaviorTree/BehaviorTree.CPP) library.
+
+[[1]](https://www.sciencedirect.com/science/article/pii/S1474667015347431) H. Vorobieva, S. Glaser, N. Minoiu-Enache, and S. Mammar, “Geometric path planning for automatic parallel parking in tiny spots”, IFAC Proceedings Volumes, vol. 45, no. 24, pp. 36–42, 2012.
 
 ## Future extensions / Unimplemented parts
 
