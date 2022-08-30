@@ -2035,6 +2035,15 @@ Polygon2d convertPolygonObjectToGeometryPolygon(const Pose & current_pose, const
   return object_polygon;
 }
 
+std::string getUuidStr(const PredictedObject & obj)
+{
+  std::stringstream hex_value;
+  for (const auto & uuid : obj.object_id.uuid) {
+    hex_value << std::hex << std::setfill('0') << std::setw(2) << +uuid;
+  }
+  return hex_value.str();
+}
+
 template <typename Pythagoras>
 ProjectedDistancePoint pointToSegment(
   const Point2d & reference_point, const Point2d & point_from_ego,
@@ -2208,10 +2217,11 @@ bool isLongitudinalDistanceEnough(
 bool hasEnoughDistance(
   const Pose & expected_ego_pose, const Twist & ego_current_twist,
   const Pose & expected_object_pose, const Twist & object_current_twist,
-  const BehaviorPathPlannerParameters & param)
+  const BehaviorPathPlannerParameters & param, CollisionCheckDebug & debug)
 {
   const auto front_vehicle_pose =
     projectCurrentPoseToTarget(expected_ego_pose, expected_object_pose);
+  debug.relative_to_ego = front_vehicle_pose;
 
   if (isLateralDistanceEnough(
         front_vehicle_pose.position.y, param.lateral_distance_max_threshold)) {
@@ -2219,6 +2229,7 @@ bool hasEnoughDistance(
   }
 
   const auto is_obj_in_front = isObjectFront(front_vehicle_pose);
+  debug.is_front = is_obj_in_front;
 
   const auto front_vehicle_velocity =
     (is_obj_in_front) ? object_current_twist.linear : ego_current_twist.linear;
@@ -2253,13 +2264,20 @@ bool isSafeInLaneletCollisionCheck(
   const PredictedPath & ego_predicted_path, const double & ego_vehicle_length,
   const double & ego_vehicle_width, const double & check_start_time, const double & check_end_time,
   const double & check_time_resolution, const PredictedObject & target_object,
-  const PredictedPath & target_object_path, const BehaviorPathPlannerParameters & common_parameters)
+  const PredictedPath & target_object_path, const BehaviorPathPlannerParameters & common_parameters,
+  CollisionCheckDebug & debug)
 {
+  const auto lerp_path_reserve = (check_end_time - check_start_time) / check_time_resolution;
+  if (lerp_path_reserve > 1e-3) {
+    debug.lerped_path.reserve(static_cast<size_t>(lerp_path_reserve));
+  }
+
   for (double t = check_start_time; t < check_end_time; t += check_time_resolution) {
     Pose expected_obj_pose;
     tier4_autoware_utils::Polygon2d obj_polygon;
     if (!util::getObjectExpectedPoseAndConvertToPolygon(
           target_object_path, target_object, expected_obj_pose, obj_polygon, t)) {
+      debug.failed_reason = "get_obj_info_failed";
       continue;
     }
 
@@ -2268,20 +2286,29 @@ bool isSafeInLaneletCollisionCheck(
     if (!util::getEgoExpectedPoseAndConvertToPolygon(
           ego_current_pose, ego_predicted_path, expected_ego_pose, ego_polygon, t,
           ego_vehicle_length, ego_vehicle_width)) {
+      debug.failed_reason = "get_ego_info_failed";
       continue;
     }
 
+    debug.ego_polygon = ego_polygon;
+    debug.obj_polygon = obj_polygon;
     if (boost::geometry::overlaps(ego_polygon, obj_polygon)) {
+      debug.failed_reason = "overlap_polygon";
       return false;
     }
 
+    debug.lerped_path.push_back(expected_ego_pose);
+
     util::getProjectedDistancePointFromPolygons(
       ego_polygon, obj_polygon, expected_ego_pose, expected_obj_pose);
+    debug.expected_ego_pose = expected_ego_pose;
+    debug.expected_obj_pose = expected_obj_pose;
 
     const auto & object_twist = target_object.kinematics.initial_twist_with_covariance.twist;
     if (!util::hasEnoughDistance(
-          expected_ego_pose, ego_current_twist, expected_obj_pose, object_twist,
-          common_parameters)) {
+          expected_ego_pose, ego_current_twist, expected_obj_pose, object_twist, common_parameters,
+          debug)) {
+      debug.failed_reason = "not_enough_longitudinal";
       return false;
     }
   }
@@ -2293,7 +2320,7 @@ bool isSafeInFreeSpaceCollisionCheck(
   const PredictedPath & ego_predicted_path, const double & ego_vehicle_length,
   const double & ego_vehicle_width, const double & check_start_time, const double & check_end_time,
   const double & check_time_resolution, const PredictedObject & target_object,
-  const BehaviorPathPlannerParameters & common_parameters)
+  const BehaviorPathPlannerParameters & common_parameters, CollisionCheckDebug & debug)
 {
   tier4_autoware_utils::Polygon2d obj_polygon;
   if (!util::calcObjectPolygon(target_object, &obj_polygon)) {
@@ -2305,10 +2332,14 @@ bool isSafeInFreeSpaceCollisionCheck(
     if (!util::getEgoExpectedPoseAndConvertToPolygon(
           ego_current_pose, ego_predicted_path, expected_ego_pose, ego_polygon, t,
           ego_vehicle_length, ego_vehicle_width)) {
+      debug.failed_reason = "get_ego_info_failed";
       continue;
     }
 
+    debug.ego_polygon = ego_polygon;
+    debug.obj_polygon = obj_polygon;
     if (boost::geometry::overlaps(ego_polygon, obj_polygon)) {
+      debug.failed_reason = "overlap_polygon";
       return false;
     }
 
@@ -2316,11 +2347,15 @@ bool isSafeInFreeSpaceCollisionCheck(
     util::getProjectedDistancePointFromPolygons(
       ego_polygon, obj_polygon, expected_ego_pose, expected_obj_pose);
 
+    debug.expected_ego_pose = expected_ego_pose;
+    debug.expected_obj_pose = expected_obj_pose;
+
     const auto object_twist = target_object.kinematics.initial_twist_with_covariance.twist;
     if (!util::hasEnoughDistance(
           expected_ego_pose, ego_current_twist,
           target_object.kinematics.initial_pose_with_covariance.pose, object_twist,
-          common_parameters)) {
+          common_parameters, debug)) {
+      debug.failed_reason = "not_enough_longitudinal";
       return false;
     }
   }

@@ -16,4 +16,4 @@
       enable_collision_check_at_prepare_phase: true
       use_predicted_path_outside_lanelet: true
       use_all_predicted_path: true
-      publish_debug_marker: true
+      publish_debug_marker: false

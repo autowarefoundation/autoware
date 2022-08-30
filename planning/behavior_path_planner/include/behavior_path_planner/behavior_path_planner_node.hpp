@@ -148,6 +148,10 @@ private:
   // debug
   rclcpp::Publisher<MarkerArray>::SharedPtr debug_drivable_area_lanelets_publisher_;
   rclcpp::Publisher<AvoidanceDebugMsgArray>::SharedPtr debug_avoidance_msg_array_publisher_;
+  /**
+   * @brief check path if it is unsafe or forced
+   */
+  bool isForcedCandidatePath() const;
 };
 }  // namespace behavior_path_planner
 

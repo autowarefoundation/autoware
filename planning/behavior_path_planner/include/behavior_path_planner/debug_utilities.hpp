@@ -15,10 +15,12 @@
 #define BEHAVIOR_PATH_PLANNER__DEBUG_UTILITIES_HPP_
 
 #include "behavior_path_planner/scene_module/utils/path_shifter.hpp"
+#include "tier4_autoware_utils/tier4_autoware_utils.hpp"
 
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
 
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
+#include <autoware_auto_perception_msgs/msg/predicted_path.hpp>
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 #include <geometry_msgs/msg/polygon.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
@@ -31,15 +33,51 @@
 namespace marker_utils
 {
 using autoware_auto_perception_msgs::msg::PredictedObjects;
+using autoware_auto_perception_msgs::msg::PredictedPath;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using behavior_path_planner::ShiftPointArray;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Polygon;
 using geometry_msgs::msg::Pose;
+using geometry_msgs::msg::Twist;
 using geometry_msgs::msg::Vector3;
 using std_msgs::msg::ColorRGBA;
+using tier4_autoware_utils::Polygon2d;
 using visualization_msgs::msg::Marker;
 using visualization_msgs::msg::MarkerArray;
+
+struct CollisionCheckDebug
+{
+  std::string failed_reason;
+  std::size_t lane_id{0};
+  Pose current_pose{};
+  Twist current_twist{};
+  Pose expected_ego_pose{};
+  Pose expected_obj_pose{};
+  Pose relative_to_ego{};
+  bool is_front{false};
+  bool allow_lane_change{false};
+  std::vector<Pose> lerped_path;
+  std::vector<PredictedPath> ego_predicted_path{};
+  Polygon2d ego_polygon{};
+  Polygon2d obj_polygon{};
+};
+
+constexpr std::array<std::array<float, 3>, 10> colorsList()
+{
+  constexpr std::array<float, 3> red = {1., 0., 0.};
+  constexpr std::array<float, 3> green = {0., 1., 0.};
+  constexpr std::array<float, 3> blue = {0., 0., 1.};
+  constexpr std::array<float, 3> yellow = {1., 1., 0.};
+  constexpr std::array<float, 3> aqua = {0., 1., 1.};
+  constexpr std::array<float, 3> magenta = {1., 0., 1.};
+  constexpr std::array<float, 3> medium_orchid = {0.729, 0.333, 0.827};
+  constexpr std::array<float, 3> light_pink = {1, 0.713, 0.756};
+  constexpr std::array<float, 3> light_yellow = {1, 1, 0.878};
+  constexpr std::array<float, 3> light_steel_blue = {0.690, 0.768, 0.870};
+  return {red,     green,         blue,       yellow,       aqua,
+          magenta, medium_orchid, light_pink, light_yellow, light_steel_blue};
+}
 
 inline int64_t bitShift(int64_t original_id) { return original_id << (sizeof(int32_t) * 8 / 2); }
 

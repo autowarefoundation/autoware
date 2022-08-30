@@ -15,6 +15,7 @@
 #ifndef BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__LANE_CHANGE_MODULE_HPP_
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__LANE_CHANGE_MODULE_HPP_
 
+#include "behavior_path_planner/scene_module/lane_change/debug.hpp"
 #include "behavior_path_planner/scene_module/lane_change/lane_change_path.hpp"
 #include "behavior_path_planner/scene_module/scene_module_interface.hpp"
 
@@ -25,12 +26,14 @@
 #include <tf2/utils.h>
 
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
 namespace behavior_path_planner
 {
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
+using marker_utils::CollisionCheckDebug;
 
 struct LaneChangeParameters
 {
@@ -49,6 +52,7 @@ struct LaneChangeParameters
   bool enable_collision_check_at_prepare_phase;
   bool use_predicted_path_outside_lanelet;
   bool use_all_predicted_path;
+  bool publish_debug_marker;
 };
 
 struct LaneChangeStatus
@@ -166,6 +170,10 @@ private:
   bool isCurrentSpeedLow() const;
   bool isAbortConditionSatisfied() const;
   bool hasFinishedLaneChange() const;
+
+  void setObjectDebugVisualization() const;
+  mutable std::unordered_map<std::string, CollisionCheckDebug> object_debug_;
+  mutable std::vector<LaneChangePath> debug_valid_path_;
 };
 }  // namespace behavior_path_planner
 

@@ -329,7 +329,8 @@ LaneChangeParameters BehaviorPathPlannerNode::getLaneChangeParam()
   p.enable_abort_lane_change = dp("enable_abort_lane_change", true);
   p.enable_collision_check_at_prepare_phase = dp("enable_collision_check_at_prepare_phase", true);
   p.use_predicted_path_outside_lanelet = dp("use_predicted_path_outside_lanelet", true);
-  p.use_all_predicted_path = dp("use_all_predicted_path", false);
+  p.use_all_predicted_path = dp("use_all_predicted_path", true);
+  p.publish_debug_marker = dp("publish_debug_marker", false);
 
   // validation of parameters
   if (p.lane_change_sampling_num < 1) {
@@ -552,18 +553,19 @@ void BehaviorPathPlannerNode::run()
 
   // path handling
   const auto path = getPath(output, planner_data);
-  const auto path_candidate = getPathCandidate(output, planner_data);
 
   // update planner data
   planner_data_->prev_output_path = path;
   mutex_pd_.unlock();
 
   PathWithLaneId clipped_path;
-  if (skipSmoothGoalConnection(bt_manager_->getModulesStatus())) {
+  const auto module_status_ptr_vec = bt_manager_->getModulesStatus();
+  if (skipSmoothGoalConnection(module_status_ptr_vec)) {
     clipped_path = *path;
   } else {
     clipped_path = modifyPathForSmoothGoalConnection(*path);
   }
+
   clipPathLength(clipped_path);
   if (!clipped_path.points.empty()) {
     path_publisher_->publish(clipped_path);
@@ -572,6 +574,7 @@ void BehaviorPathPlannerNode::run()
       get_logger(), *get_clock(), 5000, "behavior path output is empty! Stop publish.");
   }
 
+  const auto path_candidate = getPathCandidate(output, planner_data);
   path_candidate_publisher_->publish(util::toPath(*path_candidate));
 
   // for turn signal
@@ -627,12 +630,39 @@ PathWithLaneId::SharedPtr BehaviorPathPlannerNode::getPathCandidate(
 {
   auto path_candidate =
     bt_output.path_candidate ? bt_output.path_candidate : std::make_shared<PathWithLaneId>();
+
+  if (isForcedCandidatePath()) {
+    for (auto & path_point : path_candidate->points) {
+      path_point.point.longitudinal_velocity_mps = 1.0;
+    }
+  }
+
   path_candidate->header = planner_data->route_handler->getRouteHeader();
   path_candidate->header.stamp = this->now();
   RCLCPP_DEBUG(
     get_logger(), "BehaviorTreeManager: path candidate is %s.",
     bt_output.path_candidate ? "FOUND" : "NOT FOUND");
   return path_candidate;
+}
+
+bool BehaviorPathPlannerNode::isForcedCandidatePath() const
+{
+  const auto & module_status_ptr_vec = bt_manager_->getModulesStatus();
+  for (const auto & module_status_ptr : module_status_ptr_vec) {
+    if (!module_status_ptr) {
+      continue;
+    }
+    if (module_status_ptr->module_name != "LaneChange") {
+      continue;
+    }
+    const auto & is_waiting_approval = module_status_ptr->is_waiting_approval;
+    const auto & is_execution_ready = module_status_ptr->is_execution_ready;
+    if (is_waiting_approval && !is_execution_ready) {
+      return true;
+    }
+    break;
+  }
+  return false;
 }
 
 bool BehaviorPathPlannerNode::skipSmoothGoalConnection(

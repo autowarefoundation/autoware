@@ -45,6 +45,7 @@ BT::NodeStatus SceneModuleBTNodeInterface::tick()
 
   scene_module_->onEntry();
   module_status_->is_waiting_approval = scene_module_->isWaitingApproval();
+  module_status_->is_execution_ready = scene_module_->isExecutionReady();
 
   const bool is_lane_following = scene_module_->name() == "LaneFollowing";
 
@@ -59,6 +60,7 @@ BT::NodeStatus SceneModuleBTNodeInterface::tick()
         RCLCPP_ERROR_STREAM(scene_module_->getLogger(), "setOutput() failed : " << res.error());
       }
       module_status_->is_waiting_approval = scene_module_->isWaitingApproval();
+      module_status_->is_execution_ready = scene_module_->isExecutionReady();
     } catch (const std::exception & e) {
       RCLCPP_ERROR_STREAM(
         scene_module_->getLogger(), "behavior module has failed with exception: " << e.what());
@@ -81,6 +83,7 @@ BT::NodeStatus SceneModuleBTNodeInterface::tick()
       // for data output
       module_status_->status = current_status;
       module_status_->is_waiting_approval = scene_module_->isWaitingApproval();
+      module_status_->is_execution_ready = scene_module_->isExecutionReady();
     } catch (const std::exception & e) {
       RCLCPP_ERROR_STREAM(
         scene_module_->getLogger(), "behavior module has failed with exception: " << e.what());

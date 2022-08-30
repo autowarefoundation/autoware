@@ -29,6 +29,8 @@
 #include <lanelet2_core/primitives/Primitive.h>
 
 #include <memory>
+#include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace behavior_path_planner::lane_change_utils
@@ -65,13 +67,16 @@ bool selectSafePath(
   const lanelet::ConstLanelets & target_lanes,
   const PredictedObjects::ConstSharedPtr dynamic_objects, const Pose & current_pose,
   const Twist & current_twist, const BehaviorPathPlannerParameters & common_parameters,
-  const LaneChangeParameters & ros_parameters, LaneChangePath * selected_path);
+  const behavior_path_planner::LaneChangeParameters & ros_parameters,
+  LaneChangePath * selected_path,
+  std::unordered_map<std::string, CollisionCheckDebug> & debug_data);
 bool isLaneChangePathSafe(
   const PathWithLaneId & path, const lanelet::ConstLanelets & current_lanes,
   const lanelet::ConstLanelets & target_lanes,
   const PredictedObjects::ConstSharedPtr dynamic_objects, const Pose & current_pose,
   const Twist & current_twist, const BehaviorPathPlannerParameters & common_parameters,
-  const LaneChangeParameters & lane_change_parameters, const bool use_buffer = true,
+  const behavior_path_planner::LaneChangeParameters & lane_change_parameters,
+  std::unordered_map<std::string, CollisionCheckDebug> & debug_data, const bool use_buffer = true,
   const double acceleration = 0.0);
 bool hasEnoughDistance(
   const LaneChangePath & path, const lanelet::ConstLanelets & current_lanes,
