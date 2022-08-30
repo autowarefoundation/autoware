@@ -430,6 +430,18 @@ inline geometry_msgs::msg::TransformStamped pose2transform(
   return transform;
 }
 
+template <class Point1, class Point2>
+tf2::Vector3 point2tfVector(const Point1 & src, const Point2 & dst)
+{
+  const auto src_p = getPoint(src);
+  const auto dst_p = getPoint(dst);
+
+  double dx = dst_p.x - src_p.x;
+  double dy = dst_p.y - src_p.y;
+  double dz = dst_p.z - src_p.z;
+  return tf2::Vector3(dx, dy, dz);
+}
+
 inline Point3d transformPoint(
   const Point3d & point, const geometry_msgs::msg::Transform & transform)
 {

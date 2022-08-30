@@ -752,6 +752,73 @@ TEST(geometry, pose2transform)
   }
 }
 
+TEST(geometry, point2tfVector)
+{
+  using tier4_autoware_utils::createQuaternionFromRPY;
+  using tier4_autoware_utils::deg2rad;
+  using tier4_autoware_utils::point2tfVector;
+
+  // Point
+  {
+    geometry_msgs::msg::Point src;
+    src.x = 1.0;
+    src.y = 2.0;
+    src.z = 3.0;
+
+    geometry_msgs::msg::Point dst;
+    dst.x = 10.0;
+    dst.y = 5.0;
+    dst.z = -5.0;
+
+    const auto vec = point2tfVector(src, dst);
+
+    EXPECT_DOUBLE_EQ(vec.x(), 9.0);
+    EXPECT_DOUBLE_EQ(vec.y(), 3.0);
+    EXPECT_DOUBLE_EQ(vec.z(), -8.0);
+  }
+
+  // Pose
+  {
+    geometry_msgs::msg::Pose src;
+    src.position.x = 1.0;
+    src.position.y = 2.0;
+    src.position.z = 3.0;
+    src.orientation = createQuaternionFromRPY(deg2rad(30), deg2rad(30), deg2rad(30));
+
+    geometry_msgs::msg::Pose dst;
+    dst.position.x = 10.0;
+    dst.position.y = 5.0;
+    dst.position.z = -5.0;
+    dst.orientation = createQuaternionFromRPY(deg2rad(10), deg2rad(10), deg2rad(10));
+
+    const auto vec = point2tfVector(src, dst);
+
+    EXPECT_DOUBLE_EQ(vec.x(), 9.0);
+    EXPECT_DOUBLE_EQ(vec.y(), 3.0);
+    EXPECT_DOUBLE_EQ(vec.z(), -8.0);
+  }
+
+  // Point and Pose
+  {
+    geometry_msgs::msg::Point src;
+    src.x = 1.0;
+    src.y = 2.0;
+    src.z = 3.0;
+
+    geometry_msgs::msg::Pose dst;
+    dst.position.x = 10.0;
+    dst.position.y = 5.0;
+    dst.position.z = -5.0;
+    dst.orientation = createQuaternionFromRPY(deg2rad(10), deg2rad(10), deg2rad(10));
+
+    const auto vec = point2tfVector(src, dst);
+
+    EXPECT_DOUBLE_EQ(vec.x(), 9.0);
+    EXPECT_DOUBLE_EQ(vec.y(), 3.0);
+    EXPECT_DOUBLE_EQ(vec.z(), -8.0);
+  }
+}
+
 TEST(geometry, transformPoint)
 {
   using tier4_autoware_utils::createQuaternionFromRPY;
