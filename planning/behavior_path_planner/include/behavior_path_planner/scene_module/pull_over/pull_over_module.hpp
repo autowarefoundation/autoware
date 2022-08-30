@@ -48,10 +48,7 @@ struct PullOverParameters
   double th_stopped_time_sec;
   double margin_from_boundary;
   double decide_path_distance;
-  double min_acc;
-  bool enable_shift_parking;
-  bool enable_arc_forward_parking;
-  bool enable_arc_backward_parking;
+  double maximum_deceleration;
   // goal research
   std::string search_priority;  // "efficient_path" or "close_goal"
   bool enable_goal_research;
@@ -64,22 +61,27 @@ struct PullOverParameters
   double theta_size;
   double obstacle_threshold;
   // shift path
+  bool enable_shift_parking;
   int pull_over_sampling_num;
   double maximum_lateral_jerk;
   double minimum_lateral_jerk;
   double deceleration_interval;
   double pull_over_velocity;
   double pull_over_minimum_velocity;
-  double maximum_deceleration;
   double after_pull_over_straight_distance;
   double before_pull_over_straight_distance;
   // parallel parking
+  bool enable_arc_forward_parking;
+  bool enable_arc_backward_parking;
   double after_forward_parking_straight_distance;
   double after_backward_parking_straight_distance;
   double forward_parking_velocity;
   double backward_parking_velocity;
+  double forward_parking_lane_departure_margin;
+  double backward_parking_lane_departure_margin;
   double arc_path_interval;
-  // hazard. Not used now.
+  double max_steer_rad;
+  // hazard
   double hazard_on_threshold_dis;
   double hazard_on_threshold_vel;
   // check safety with dynamic objects. Not used now.
@@ -190,13 +192,14 @@ private:
   std::pair<bool, bool> getSafePath(ShiftParkingPath & safe_path) const;
   Pose getRefinedGoal() const;
   Pose getParkingStartPose() const;
-  bool isLongEnoughToParkingStart(const PathWithLaneId path, const Pose parking_start_pose) const;
+  ParallelParkingParameters getGeometricPullOutParameters() const;
+  bool isLongEnoughToParkingStart(
+    const PathWithLaneId & path, const Pose & parking_start_pose) const;
   bool isLongEnough(
-    const lanelet::ConstLanelets & lanelets, const Pose goal_pose, const double buffer = 0) const;
+    const lanelet::ConstLanelets & lanelets, const Pose & goal_pose, const double buffer = 0) const;
   bool isArcPath() const;
   double calcMinimumShiftPathDistance() const;
   double calcDistanceToPathChange() const;
-
   bool planShiftPath();
   bool isStopped();
   bool hasFinishedCurrentPath();
@@ -210,7 +213,7 @@ private:
   std::pair<TurnIndicatorsCommand, double> getTurnInfo() const;
 
   // debug
-  Marker createParkingAreaMarker(const Pose back_pose, const Pose front_pose, const int32_t id);
+  Marker createParkingAreaMarker(const Pose & back_pose, const Pose & front_pose, const int32_t id);
   void publishDebugData();
   void printParkingPositionError() const;
 };

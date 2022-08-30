@@ -85,6 +85,28 @@ BehaviorModuleOutput PullOverModule::run()
   return plan();
 }
 
+ParallelParkingParameters PullOverModule::getGeometricPullOutParameters() const
+{
+  ParallelParkingParameters params;
+
+  params.th_arrived_distance_m = parameters_.th_arrived_distance_m;
+  params.th_stopped_velocity_mps = parameters_.th_stopped_velocity_mps;
+  params.after_forward_parking_straight_distance =
+    parameters_.after_forward_parking_straight_distance;
+  params.after_backward_parking_straight_distance =
+    parameters_.after_backward_parking_straight_distance;
+  params.forward_parking_velocity = parameters_.forward_parking_velocity;
+  params.backward_parking_velocity = parameters_.backward_parking_velocity;
+  params.forward_parking_lane_departure_margin = parameters_.forward_parking_lane_departure_margin;
+  params.backward_parking_lane_departure_margin =
+    parameters_.backward_parking_lane_departure_margin;
+  params.arc_path_interval = parameters_.arc_path_interval;
+  params.maximum_deceleration = parameters_.maximum_deceleration;
+  params.max_steer_rad = parameters_.max_steer_rad;
+
+  return params;
+}
+
 void PullOverModule::onEntry()
 {
   RCLCPP_DEBUG(getLogger(), "PULL_OVER onEntry");
@@ -108,16 +130,7 @@ void PullOverModule::onEntry()
     last_received_time_.get() == nullptr ||
     *last_received_time_ != planner_data_->route_handler->getRouteHeader().stamp) {
     // Initialize parallel parking planner status
-    parallel_parking_planner_.clear();
-    parallel_parking_parameters_ = ParallelParkingParameters{
-      parameters_.th_arrived_distance_m,
-      parameters_.th_stopped_velocity_mps,
-      parameters_.after_forward_parking_straight_distance,
-      parameters_.after_backward_parking_straight_distance,
-      parameters_.forward_parking_velocity,
-      parameters_.backward_parking_velocity,
-      parameters_.arc_path_interval,
-      parameters_.min_acc};
+    parallel_parking_parameters_ = getGeometricPullOutParameters();
 
     resetStatus();
   }
@@ -239,7 +252,7 @@ void PullOverModule::researchGoal()
   const Pose goal_pose_map_coords = global2local(occupancy_grid_map_.getMap(), goal_pose);
   Pose start_pose = calcOffsetPose(goal_pose, dx, 0, 0);
   // Search non collision areas around the goal
-  while (true) {
+  while (rclcpp::ok()) {
     bool is_last_search = (dx >= parameters_.forward_goal_search_length);
     Pose search_pose = calcOffsetPose(goal_pose_map_coords, dx, 0, 0);
     bool is_collided = occupancy_grid_map_.detectCollision(
@@ -304,7 +317,7 @@ BT::NodeStatus PullOverModule::updateState()
 }
 
 bool PullOverModule::isLongEnoughToParkingStart(
-  const PathWithLaneId path, const Pose parking_start_pose) const
+  const PathWithLaneId & path, const Pose & parking_start_pose) const
 {
   const auto dist_to_parking_start_pose = calcSignedArcLength(
     path.points, planner_data_->self_pose->pose, parking_start_pose.position,
@@ -313,7 +326,7 @@ bool PullOverModule::isLongEnoughToParkingStart(
 
   const double current_vel = planner_data_->self_odometry->twist.twist.linear.x;
   const double current_to_stop_distance =
-    std::pow(current_vel, 2) / std::abs(parameters_.min_acc) / 2;
+    std::pow(current_vel, 2) / parameters_.maximum_deceleration / 2;
 
   // once stopped, it cannot start again if start_pose is close.
   // so need enough distance to restart
@@ -350,9 +363,10 @@ bool PullOverModule::planWithEfficientPath()
   if (parameters_.enable_arc_forward_parking) {
     for (const auto goal_candidate : goal_candidates_) {
       modified_goal_pose_ = goal_candidate.goal_pose;
-      parallel_parking_planner_.setParams(planner_data_, parallel_parking_parameters_);
+      parallel_parking_planner_.setData(planner_data_, parallel_parking_parameters_);
       if (
-        parallel_parking_planner_.plan(modified_goal_pose_, status_.lanes, true) &&
+        parallel_parking_planner_.planPullOver(
+          modified_goal_pose_, status_.current_lanes, status_.pull_over_lanes, true) &&
         isLongEnoughToParkingStart(
           parallel_parking_planner_.getCurrentPath(),
           parallel_parking_planner_.getStartPose().pose) &&
@@ -371,9 +385,10 @@ bool PullOverModule::planWithEfficientPath()
   if (parameters_.enable_arc_backward_parking) {
     for (const auto goal_candidate : goal_candidates_) {
       modified_goal_pose_ = goal_candidate.goal_pose;
-      parallel_parking_planner_.setParams(planner_data_, parallel_parking_parameters_);
+      parallel_parking_planner_.setData(planner_data_, parallel_parking_parameters_);
       if (
-        parallel_parking_planner_.plan(modified_goal_pose_, status_.lanes, false) &&
+        parallel_parking_planner_.planPullOver(
+          modified_goal_pose_, status_.current_lanes, status_.pull_over_lanes, false) &&
         isLongEnoughToParkingStart(
           parallel_parking_planner_.getCurrentPath(),
           parallel_parking_planner_.getStartPose().pose) &&
@@ -408,11 +423,12 @@ bool PullOverModule::planWithCloseGoal()
       return true;
     }
 
-    parallel_parking_planner_.setParams(planner_data_, parallel_parking_parameters_);
+    parallel_parking_planner_.setData(planner_data_, parallel_parking_parameters_);
     // Generate arc forward path.
     if (
       parameters_.enable_arc_forward_parking &&
-      parallel_parking_planner_.plan(modified_goal_pose_, status_.lanes, true) &&
+      parallel_parking_planner_.planPullOver(
+        modified_goal_pose_, status_.current_lanes, status_.pull_over_lanes, true) &&
       isLongEnoughToParkingStart(
         parallel_parking_planner_.getCurrentPath(),
         parallel_parking_planner_.getStartPose().pose) &&
@@ -428,7 +444,8 @@ bool PullOverModule::planWithCloseGoal()
     // Generate arc backward path.
     if (
       parameters_.enable_arc_backward_parking &&
-      parallel_parking_planner_.plan(modified_goal_pose_, status_.lanes, false) &&
+      parallel_parking_planner_.planPullOver(
+        modified_goal_pose_, status_.current_lanes, status_.pull_over_lanes, false) &&
       isLongEnoughToParkingStart(
         parallel_parking_planner_.getCurrentPath(),
         parallel_parking_planner_.getStartPose().pose) &&
@@ -714,7 +731,7 @@ PathWithLaneId PullOverModule::getStopPath() const
 
   const double current_vel = planner_data_->self_odometry->twist.twist.linear.x;
   const double current_to_stop_distance =
-    std::pow(current_vel, 2) / std::abs(parameters_.min_acc) / 2;
+    std::pow(current_vel, 2) / parameters_.maximum_deceleration / 2;
   const auto arclength_current_pose =
     lanelet::utils::getArcCoordinates(status_.current_lanes, current_pose).length;
 
@@ -846,7 +863,7 @@ double PullOverModule::calcMinimumShiftPathDistance() const
 }
 
 bool PullOverModule::isLongEnough(
-  const lanelet::ConstLanelets & lanelets, const Pose goal_pose, const double buffer) const
+  const lanelet::ConstLanelets & lanelets, const Pose & goal_pose, const double buffer) const
 {
   const auto current_pose = planner_data_->self_pose->pose;
   const double distance_to_goal =
@@ -859,7 +876,7 @@ bool PullOverModule::isStopped()
 {
   odometry_buffer_.push_back(planner_data_->self_odometry);
   // Delete old data in buffer
-  while (true) {
+  while (rclcpp::ok()) {
     const auto time_diff = rclcpp::Time(odometry_buffer_.back()->header.stamp) -
                            rclcpp::Time(odometry_buffer_.front()->header.stamp);
     if (time_diff.seconds() < parameters_.th_stopped_time_sec) {
@@ -966,7 +983,7 @@ bool PullOverModule::isArcPath() const
 }
 
 Marker PullOverModule::createParkingAreaMarker(
-  const Pose start_pose, const Pose end_pose, const int32_t id)
+  const Pose & start_pose, const Pose & end_pose, const int32_t id)
 {
   const auto color = status_.has_decided_path ? createMarkerColor(1.0, 1.0, 0.0, 0.999)   // yellow
                                               : createMarkerColor(0.0, 1.0, 0.0, 0.999);  // green

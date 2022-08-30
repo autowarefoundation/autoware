@@ -365,13 +365,10 @@ PullOverParameters BehaviorPathPlannerNode::getPullOverParam()
   p.th_stopped_time_sec = dp("th_stopped_time_sec", 2.0);
   p.margin_from_boundary = dp("margin_from_boundary", 0.3);
   p.decide_path_distance = dp("decide_path_distance", 10.0);
-  p.min_acc = dp("min_acc", -0.5);
-  p.enable_shift_parking = dp("enable_shift_parking", true);
-  p.enable_arc_forward_parking = dp("enable_arc_forward_parking", true);
-  p.enable_arc_backward_parking = dp("enable_arc_backward_parking", true);
+  p.maximum_deceleration = dp("maximum_deceleration", 0.5);
   // goal research
-  p.search_priority = dp("search_priority", "efficient_path");
   p.enable_goal_research = dp("enable_goal_research", true);
+  p.search_priority = dp("search_priority", "efficient_path");
   p.forward_goal_search_length = dp("forward_goal_search_length", 20.0);
   p.backward_goal_search_length = dp("backward_goal_search_length", 20.0);
   p.goal_search_interval = dp("goal_search_interval", 5.0);
@@ -381,21 +378,26 @@ PullOverParameters BehaviorPathPlannerNode::getPullOverParam()
   p.theta_size = dp("theta_size", 360);
   p.obstacle_threshold = dp("obstacle_threshold", 90);
   // shift path
+  p.enable_shift_parking = dp("enable_shift_parking", true);
   p.pull_over_sampling_num = dp("pull_over_sampling_num", 4);
   p.maximum_lateral_jerk = dp("maximum_lateral_jerk", 3.0);
   p.minimum_lateral_jerk = dp("minimum_lateral_jerk", 1.0);
   p.deceleration_interval = dp("deceleration_interval", 10.0);
   p.pull_over_velocity = dp("pull_over_velocity", 8.3);
   p.pull_over_minimum_velocity = dp("pull_over_minimum_velocity", 0.3);
-  p.maximum_deceleration = dp("maximum_deceleration", 1.0);
   p.after_pull_over_straight_distance = dp("after_pull_over_straight_distance", 3.0);
   p.before_pull_over_straight_distance = dp("before_pull_over_straight_distance", 3.0);
   // parallel parking
+  p.enable_arc_forward_parking = dp("enable_arc_forward_parking", true);
+  p.enable_arc_backward_parking = dp("enable_arc_backward_parking", true);
   p.after_forward_parking_straight_distance = dp("after_forward_parking_straight_distance", 0.5);
   p.after_backward_parking_straight_distance = dp("after_backward_parking_straight_distance", 0.5);
   p.forward_parking_velocity = dp("forward_parking_velocity", 1.0);
   p.backward_parking_velocity = dp("backward_parking_velocity", -0.5);
+  p.forward_parking_lane_departure_margin = dp("forward_parking_lane_departure_margin", 0.0);
+  p.backward_parking_lane_departure_margin = dp("backward_parking_lane_departure_margin", 0.0);
   p.arc_path_interval = dp("arc_path_interval", 1.0);
+  p.max_steer_rad = dp("max_steer_rad", 0.35);  // 20deg
   // hazard
   p.hazard_on_threshold_dis = dp("hazard_on_threshold_dis", 1.0);
   p.hazard_on_threshold_vel = dp("hazard_on_threshold_vel", 0.5);
