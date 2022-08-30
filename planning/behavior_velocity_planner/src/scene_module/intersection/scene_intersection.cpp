@@ -122,17 +122,19 @@ bool IntersectionModule::modifyPathVelocity(
   debug_data_.detection_area_with_margin = detection_areas_with_margin;
 
   /* set stop-line and stop-judgement-line for base_link */
-  int stop_line_idx = -1;
-  int pass_judge_line_idx = -1;
-  int first_idx_inside_lane = -1;
+  util::StopLineIdx stop_line_idxs;
   if (!util::generateStopLine(
-        lane_id_, conflicting_areas, planner_data_, planner_param_.stop_line_margin, path, *path,
-        &stop_line_idx, &pass_judge_line_idx, &first_idx_inside_lane, logger_.get_child("util"))) {
+        lane_id_, conflicting_areas, planner_data_, planner_param_.stop_line_margin,
+        planner_param_.keep_detection_line_margin, path, *path, &stop_line_idxs,
+        logger_.get_child("util"))) {
     RCLCPP_WARN_SKIPFIRST_THROTTLE(logger_, *clock_, 1000 /* ms */, "setStopLineIdx fail");
     RCLCPP_DEBUG(logger_, "===== plan end =====");
     return false;
   }
 
+  const int stop_line_idx = stop_line_idxs.stop_line_idx;
+  const int pass_judge_line_idx = stop_line_idxs.pass_judge_line_idx;
+  const int keep_detection_line_idx = stop_line_idxs.keep_detection_line_idx;
   if (stop_line_idx <= 0) {
     RCLCPP_DEBUG(logger_, "stop line line is at path[0], ignore planning.");
     RCLCPP_DEBUG(logger_, "===== plan end =====");
@@ -152,21 +154,32 @@ bool IntersectionModule::modifyPathVelocity(
   }
   const size_t closest_idx = closest_idx_opt.get();
 
-  /* if current_state = GO, and current_pose is in front of stop_line, ignore planning. */
-  bool is_over_pass_judge_line =
-    static_cast<bool>(static_cast<int>(closest_idx) > pass_judge_line_idx);
-  if (static_cast<int>(closest_idx) == pass_judge_line_idx) {
-    geometry_msgs::msg::Pose pass_judge_line = path->points.at(pass_judge_line_idx).point.pose;
-    is_over_pass_judge_line = planning_utils::isAheadOf(current_pose.pose, pass_judge_line);
-  }
-  if (is_go_out_ && is_over_pass_judge_line && !external_stop) {
-    RCLCPP_DEBUG(logger_, "over the pass judge line. no plan needed.");
-    RCLCPP_DEBUG(logger_, "===== plan end =====");
-    setSafe(true);
-    setDistance(motion_utils::calcSignedArcLength(
-      path->points, planner_data_->current_pose.pose.position,
-      path->points.at(stop_line_idx).point.pose.position));
-    return true;  // no plan needed.
+  const bool is_over_pass_judge_line =
+    util::isOverTargetIndex(*path, closest_idx, current_pose.pose, pass_judge_line_idx);
+  if (is_over_pass_judge_line) {
+    /*
+      in case ego could not stop exactly before the stop line, but with some overshoot, keep
+      detection within some margin and low velocity threshold
+     */
+    const bool is_before_keep_detection_line =
+      util::isBeforeTargetIndex(*path, closest_idx, current_pose.pose, keep_detection_line_idx);
+    if (
+      is_before_keep_detection_line && std::fabs(planner_data_->current_velocity->twist.linear.x) <
+                                         planner_param_.keep_detection_vel_thr) {
+      RCLCPP_DEBUG(
+        logger_,
+        "over the pass judge line, but before keep detection line and low speed, "
+        "continue planning");
+      // no return here, keep planning
+    } else if (is_go_out_ && !external_stop) {
+      RCLCPP_DEBUG(logger_, "over the keep_detection line and not low speed. no plan needed.");
+      RCLCPP_DEBUG(logger_, "===== plan end =====");
+      setSafe(true);
+      setDistance(motion_utils::calcSignedArcLength(
+        path->points, planner_data_->current_pose.pose.position,
+        path->points.at(stop_line_idx).point.pose.position));
+      return true;  // no plan needed.
+    }
   }
 
   /* get dynamic object */
@@ -201,22 +214,24 @@ bool IntersectionModule::modifyPathVelocity(
   if (!isActivated()) {
     constexpr double v = 0.0;
     is_go_out_ = false;
+    int stop_line_idx_stop = stop_line_idx;
+    int pass_judge_line_idx_stop = pass_judge_line_idx;
     if (planner_param_.use_stuck_stopline && is_stuck) {
       int stuck_stop_line_idx = -1;
       int stuck_pass_judge_line_idx = -1;
       if (util::generateStopLineBeforeIntersection(
             lane_id_, lanelet_map_ptr, planner_data_, *path, path, &stuck_stop_line_idx,
             &stuck_pass_judge_line_idx, logger_.get_child("util"))) {
-        stop_line_idx = stuck_stop_line_idx;
-        pass_judge_line_idx = stuck_pass_judge_line_idx;
+        stop_line_idx_stop = stuck_stop_line_idx;
+        pass_judge_line_idx_stop = stuck_pass_judge_line_idx;
       }
     }
-    planning_utils::setVelocityFromIndex(stop_line_idx, v, path);
+    planning_utils::setVelocityFromIndex(stop_line_idx_stop, v, path);
     debug_data_.stop_required = true;
     debug_data_.stop_wall_pose =
-      planning_utils::getAheadPose(stop_line_idx, base_link2front, *path);
-    debug_data_.stop_point_pose = path->points.at(stop_line_idx).point.pose;
-    debug_data_.judge_point_pose = path->points.at(pass_judge_line_idx).point.pose;
+      planning_utils::getAheadPose(stop_line_idx_stop, base_link2front, *path);
+    debug_data_.stop_point_pose = path->points.at(stop_line_idx_stop).point.pose;
+    debug_data_.judge_point_pose = path->points.at(pass_judge_line_idx_stop).point.pose;
 
     /* get stop point and stop factor */
     tier4_planning_msgs::msg::StopFactor stop_factor;

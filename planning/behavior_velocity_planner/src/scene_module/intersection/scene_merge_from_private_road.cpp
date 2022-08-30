@@ -83,27 +83,27 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(
   debug_data_.detection_area = conflicting_areas;
 
   /* set stop-line and stop-judgement-line for base_link */
-  int stop_line_idx = -1;
-  int judge_line_idx = -1;
-  int first_idx_inside_lane = -1;
+  util::StopLineIdx stop_line_idxs;
   const auto private_path =
     extractPathNearExitOfPrivateRoad(*path, planner_data_->vehicle_info_.vehicle_length_m);
   if (!util::generateStopLine(
-        lane_id_, conflicting_areas, planner_data_, planner_param_.stop_line_margin, path,
-        private_path, &stop_line_idx, &judge_line_idx, &first_idx_inside_lane,
+        lane_id_, conflicting_areas, planner_data_, planner_param_.stop_line_margin,
+        0.0 /* unnecessary in merge_from_private */, path, private_path, &stop_line_idxs,
         logger_.get_child("util"))) {
     RCLCPP_WARN_SKIPFIRST_THROTTLE(logger_, *clock_, 1000 /* ms */, "setStopLineIdx fail");
     return false;
   }
 
-  if (stop_line_idx <= 0 || judge_line_idx <= 0) {
-    RCLCPP_DEBUG(logger_, "stop line or judge line is at path[0], ignore planning.");
+  const int stop_line_idx = stop_line_idxs.stop_line_idx;
+  if (stop_line_idx <= 0) {
+    RCLCPP_DEBUG(logger_, "stop line is at path[0], ignore planning.");
     return true;
   }
 
   debug_data_.virtual_wall_pose = planning_utils::getAheadPose(
     stop_line_idx, planner_data_->vehicle_info_.max_longitudinal_offset_m, *path);
   debug_data_.stop_point_pose = path->points.at(stop_line_idx).point.pose;
+  const int first_idx_inside_lane = stop_line_idxs.first_idx_inside_lane;
   if (first_idx_inside_lane != -1) {
     debug_data_.first_collision_point = path->points.at(first_idx_inside_lane).point.pose.position;
   }

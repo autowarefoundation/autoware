@@ -73,7 +73,7 @@ bool hasLaneId(const autoware_auto_planning_msgs::msg::PathPointWithLaneId & p, 
   return false;
 }
 
-bool hasDuplicatedPoint(
+bool getDuplicatedPointIdx(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
   const geometry_msgs::msg::Point & point, int * duplicated_point_idx)
 {
@@ -116,9 +116,10 @@ int getFirstPointInsidePolygons(
 bool generateStopLine(
   const int lane_id, const std::vector<lanelet::CompoundPolygon3d> detection_areas,
   const std::shared_ptr<const PlannerData> & planner_data, const double stop_line_margin,
+  const double keep_detection_line_margin,
   autoware_auto_planning_msgs::msg::PathWithLaneId * original_path,
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & target_path, int * stop_line_idx,
-  int * pass_judge_line_idx, int * first_idx_inside_lane, const rclcpp::Logger logger)
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & target_path,
+  StopLineIdx * stop_line_idxs, const rclcpp::Logger logger)
 {
   /* set judge line dist */
   const double current_vel = planner_data->current_velocity->twist.linear.x;
@@ -132,7 +133,8 @@ bool generateStopLine(
   /* set parameters */
   constexpr double interval = 0.2;
 
-  const int margin_idx_dist = std::ceil(stop_line_margin / interval);
+  const int stop_line_margin_idx_dist = std::ceil(stop_line_margin / interval);
+  const int keep_detection_line_margin_idx_dist = std::ceil(keep_detection_line_margin / interval);
   const int base2front_idx_dist =
     std::ceil(planner_data->vehicle_info_.max_longitudinal_offset_m / interval);
   const int pass_judge_idx_dist = std::ceil(pass_judge_line_dist / interval);
@@ -143,6 +145,10 @@ bool generateStopLine(
     return false;
   }
 
+  int first_idx_inside_lane = -1;
+  int pass_judge_line_idx = -1;
+  int stop_line_idx = -1;
+  int keep_detection_line_idx = -1;
   /* generate stop point */
   // If a stop_line is defined in lanelet_map, use it.
   // else, generates a local stop_line with considering the lane conflicts.
@@ -163,32 +169,45 @@ bool generateStopLine(
     const auto first_idx_inside_lane_opt =
       motion_utils::findNearestIndex(original_path->points, first_inside_point, 10.0, M_PI_4);
     if (first_idx_inside_lane_opt) {
-      *first_idx_inside_lane = first_idx_inside_lane_opt.get();
+      first_idx_inside_lane = first_idx_inside_lane_opt.get();
     }
 
-    if (*first_idx_inside_lane == 0) {
+    if (first_idx_inside_lane == 0) {
       RCLCPP_DEBUG(
         logger,
         "path[0] is already in the detection area. This happens if you have "
         "already crossed the stop line or are very far from the intersection. Ignore computation.");
-      *stop_line_idx = 0;
-      *pass_judge_line_idx = 0;
+      stop_line_idxs->first_idx_inside_lane = 0;
+      stop_line_idxs->pass_judge_line_idx = 0;
+      stop_line_idxs->stop_line_idx = 0;
+      stop_line_idxs->keep_detection_line_idx = 0;
       return true;
     }
-    stop_idx_ip = std::max(first_idx_ip_inside_lane - 1 - margin_idx_dist - base2front_idx_dist, 0);
+    stop_idx_ip =
+      std::max(first_idx_ip_inside_lane - 1 - stop_line_margin_idx_dist - base2front_idx_dist, 0);
+  }
+
+  /* insert keep_detection_line */
+  const int keep_detection_idx_ip = std::min(
+    stop_idx_ip + keep_detection_line_margin_idx_dist, static_cast<int>(path_ip.points.size()) - 1);
+  const auto inserted_keep_detection_point = path_ip.points.at(keep_detection_idx_ip).point.pose;
+  if (!util::getDuplicatedPointIdx(
+        *original_path, inserted_keep_detection_point.position, &keep_detection_line_idx)) {
+    keep_detection_line_idx = util::insertPoint(inserted_keep_detection_point, original_path);
   }
 
   /* insert stop_point */
   const auto inserted_stop_point = path_ip.points.at(stop_idx_ip).point.pose;
   // if path has too close (= duplicated) point to the stop point, do not insert it
   // and consider the index of the duplicated point as stop_line_idx
-  if (!util::hasDuplicatedPoint(*original_path, inserted_stop_point.position, stop_line_idx)) {
-    *stop_line_idx = util::insertPoint(inserted_stop_point, original_path);
+  if (!util::getDuplicatedPointIdx(*original_path, inserted_stop_point.position, &stop_line_idx)) {
+    stop_line_idx = util::insertPoint(inserted_stop_point, original_path);
+    ++keep_detection_line_idx;  // the index is incremented by judge stop line insertion
   }
 
   /* if another stop point exist before intersection stop_line, disable judge_line. */
   bool has_prior_stopline = false;
-  for (int i = 0; i < *stop_line_idx; ++i) {
+  for (int i = 0; i < stop_line_idx; ++i) {
     if (std::fabs(original_path->points.at(i).point.longitudinal_velocity_mps) < 0.1) {
       has_prior_stopline = true;
       break;
@@ -199,23 +218,29 @@ bool generateStopLine(
   const int pass_judge_idx_ip = std::min(
     static_cast<int>(path_ip.points.size()) - 1, std::max(stop_idx_ip - pass_judge_idx_dist, 0));
   if (has_prior_stopline || stop_idx_ip == pass_judge_idx_ip) {
-    *pass_judge_line_idx = *stop_line_idx;
+    pass_judge_line_idx = stop_line_idx;
   } else {
     const auto inserted_pass_judge_point = path_ip.points.at(pass_judge_idx_ip).point.pose;
     // if path has too close (= duplicated) point to the pass judge point, do not insert it
     // and consider the index of the duplicated point as pass_judge_line_idx
-    if (!util::hasDuplicatedPoint(
-          *original_path, inserted_pass_judge_point.position, pass_judge_line_idx)) {
-      *pass_judge_line_idx = util::insertPoint(inserted_pass_judge_point, original_path);
-      ++(*stop_line_idx);  // stop index is incremented by judge line insertion
+    if (!util::getDuplicatedPointIdx(
+          *original_path, inserted_pass_judge_point.position, &pass_judge_line_idx)) {
+      pass_judge_line_idx = util::insertPoint(inserted_pass_judge_point, original_path);
+      ++stop_line_idx;            // stop index is incremented by judge line insertion
+      ++keep_detection_line_idx;  // same.
     }
   }
+
+  stop_line_idxs->first_idx_inside_lane = first_idx_inside_lane;
+  stop_line_idxs->pass_judge_line_idx = pass_judge_line_idx;
+  stop_line_idxs->stop_line_idx = stop_line_idx;
+  stop_line_idxs->keep_detection_line_idx = keep_detection_line_idx;
 
   RCLCPP_DEBUG(
     logger,
     "generateStopLine() : stop_idx = %d, pass_judge_idx = %d, stop_idx_ip = "
     "%d, pass_judge_idx_ip = %d, has_prior_stopline = %d",
-    *stop_line_idx, *pass_judge_line_idx, stop_idx_ip, pass_judge_idx_ip, has_prior_stopline);
+    stop_line_idx, pass_judge_line_idx, stop_idx_ip, pass_judge_idx_ip, has_prior_stopline);
 
   return true;
 }
@@ -507,7 +532,7 @@ bool generateStopLineBeforeIntersection(
       const auto inserted_stop_point = path_ip.points.at(stop_idx_ip).point.pose;
       // if path has too close (= duplicated) point to the stop point, do not insert it
       // and consider the index of the duplicated point as *stuck_stop_line_idx
-      if (!util::hasDuplicatedPoint(
+      if (!util::getDuplicatedPointIdx(
             *output_path, inserted_stop_point.position, stuck_stop_line_idx)) {
         *stuck_stop_line_idx = util::insertPoint(inserted_stop_point, output_path);
       }
@@ -531,7 +556,7 @@ bool generateStopLineBeforeIntersection(
         const auto inserted_pass_judge_point = path_ip.points.at(pass_judge_idx_ip).point.pose;
         // if path has too close (= duplicated) point to the pass judge point, do not insert it
         // and consider the index of the duplicated point as pass_judge_line_idx
-        if (!util::hasDuplicatedPoint(
+        if (!util::getDuplicatedPointIdx(
               *output_path, inserted_pass_judge_point.position, pass_judge_line_idx)) {
           *pass_judge_line_idx = util::insertPoint(inserted_pass_judge_point, output_path);
           ++(*stuck_stop_line_idx);  // stop index is incremented by judge line insertion
@@ -556,5 +581,28 @@ geometry_msgs::msg::Pose toPose(const geometry_msgs::msg::Point & p)
   pose.position = p;
   return pose;
 }
+
+bool isOverTargetIndex(
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const int closest_idx,
+  const geometry_msgs::msg::Pose & current_pose, const int target_idx)
+{
+  if (closest_idx == target_idx) {
+    const geometry_msgs::msg::Pose target_pose = path.points.at(target_idx).point.pose;
+    return planning_utils::isAheadOf(current_pose, target_pose);
+  }
+  return static_cast<bool>(closest_idx > target_idx);
+}
+
+bool isBeforeTargetIndex(
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const int closest_idx,
+  const geometry_msgs::msg::Pose & current_pose, const int target_idx)
+{
+  if (closest_idx == target_idx) {
+    const geometry_msgs::msg::Pose target_pose = path.points.at(target_idx).point.pose;
+    return planning_utils::isAheadOf(target_pose, current_pose);
+  }
+  return static_cast<bool>(target_idx > closest_idx);
+}
+
 }  // namespace util
 }  // namespace behavior_velocity_planner
