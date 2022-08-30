@@ -85,58 +85,16 @@ inline Quaternion lerpOrientation(
   return tf2::toMsg(q_interpolated);
 }
 
-/**
- * @brief apply linear interpolation to trajectory point that is nearest to a certain point
- * @param [in] points trajectory points
- * @param [in] point Interpolated point is nearest to this point.
- */
-template <class T>
-boost::optional<TrajectoryPointWithIdx> getLerpTrajectoryPointWithIdx(
-  const T & points, const geometry_msgs::msg::Point & point)
-{
-  TrajectoryPoint interpolated_point;
-  const size_t nearest_seg_idx = motion_utils::findNearestSegmentIndex(points, point);
-  const double len_to_interpolated =
-    motion_utils::calcLongitudinalOffsetToSegment(points, nearest_seg_idx, point);
-  const double len_segment =
-    motion_utils::calcSignedArcLength(points, nearest_seg_idx, nearest_seg_idx + 1);
-  const double ratio = len_to_interpolated / len_segment;
-  if (ratio <= 0.0 || 1.0 <= ratio) return boost::none;
-  const double interpolate_ratio = std::clamp(ratio, 0.0, 1.0);
-  {
-    const size_t i = nearest_seg_idx;
-    const auto & pos0 = points.at(i).pose.position;
-    const auto & pos1 = points.at(i + 1).pose.position;
-    interpolated_point.pose.position.x = interpolation::lerp(pos0.x, pos1.x, interpolate_ratio);
-    interpolated_point.pose.position.y = interpolation::lerp(pos0.y, pos1.y, interpolate_ratio);
-    interpolated_point.pose.position.z = interpolation::lerp(pos0.z, pos1.z, interpolate_ratio);
-    interpolated_point.pose.orientation = lerpOrientation(
-      points.at(i).pose.orientation, points.at(i + 1).pose.orientation, interpolate_ratio);
-    interpolated_point.longitudinal_velocity_mps = interpolation::lerp(
-      points.at(i).longitudinal_velocity_mps, points.at(i + 1).longitudinal_velocity_mps,
-      interpolate_ratio);
-    interpolated_point.lateral_velocity_mps = interpolation::lerp(
-      points.at(i).lateral_velocity_mps, points.at(i + 1).lateral_velocity_mps, interpolate_ratio);
-    interpolated_point.acceleration_mps2 = interpolation::lerp(
-      points.at(i).acceleration_mps2, points.at(i + 1).acceleration_mps2, interpolate_ratio);
-    interpolated_point.heading_rate_rps = interpolation::lerp(
-      points.at(i).heading_rate_rps, points.at(i + 1).heading_rate_rps, interpolate_ratio);
-  }
-  return std::make_pair(interpolated_point, nearest_seg_idx);
-}
-
 //! smooth path point with lane id starts from ego position on path to the path end
 inline bool smoothPath(
   const PathWithLaneId & in_path, PathWithLaneId & out_path,
   const std::shared_ptr<const PlannerData> & planner_data)
 {
-  using motion_utils::findNearestIndex;
   const geometry_msgs::msg::Pose current_pose = planner_data->current_pose.pose;
   const double v0 = planner_data->current_velocity->twist.linear.x;
   const double a0 = planner_data->current_accel.get();
   const auto & external_v_limit = planner_data->external_velocity_limit;
   const auto & smoother = planner_data->velocity_smoother_;
-  const double max = std::numeric_limits<double>::max();
 
   auto trajectory = convertPathToTrajectoryPoints(in_path);
   if (external_v_limit) {
@@ -148,23 +106,22 @@ inline bool smoothPath(
   // Resample trajectory with ego-velocity based interval distances
   auto traj_resampled = smoother->resampleTrajectory(
     *traj_lateral_acc_filtered, v0, current_pose, std::numeric_limits<double>::max());
-  const auto traj_resampled_closest = findNearestIndex(*traj_resampled, current_pose, max, M_PI_4);
-  if (!traj_resampled_closest) {
-    return false;
-  }
+  const size_t traj_resampled_closest = motion_utils::findFirstNearestIndexWithSoftConstraints(
+    *traj_resampled, current_pose, planner_data->ego_nearest_dist_threshold,
+    planner_data->ego_nearest_yaw_threshold);
   std::vector<TrajectoryPoints> debug_trajectories;
   // Clip trajectory from closest point
   TrajectoryPoints clipped;
   TrajectoryPoints traj_smoothed;
   clipped.insert(
-    clipped.end(), traj_resampled->begin() + *traj_resampled_closest, traj_resampled->end());
+    clipped.end(), traj_resampled->begin() + traj_resampled_closest, traj_resampled->end());
   if (!smoother->apply(v0, a0, clipped, traj_smoothed, debug_trajectories)) {
     std::cerr << "[behavior_velocity][trajectory_utils]: failed to smooth" << std::endl;
     return false;
   }
   traj_smoothed.insert(
     traj_smoothed.begin(), traj_resampled->begin(),
-    traj_resampled->begin() + *traj_resampled_closest);
+    traj_resampled->begin() + traj_resampled_closest);
 
   out_path = convertTrajectoryPointsToPath(traj_smoothed);
   return true;

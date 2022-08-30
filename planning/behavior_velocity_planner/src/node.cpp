@@ -163,6 +163,12 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode(const rclcpp::NodeOptio
   planner_data_.accel_lowpass_gain_ = this->declare_parameter("lowpass_gain", 0.5);
   planner_data_.stop_line_extend_length = this->declare_parameter("stop_line_extend_length", 5.0);
 
+  // nearest search
+  planner_data_.ego_nearest_dist_threshold =
+    this->declare_parameter<double>("ego_nearest_dist_threshold");
+  planner_data_.ego_nearest_yaw_threshold =
+    this->declare_parameter<double>("ego_nearest_yaw_threshold");
+
   // Initialize PlannerManager
   if (this->declare_parameter("launch_crosswalk", true)) {
     planner_manager_.launchSceneModule(std::make_shared<CrosswalkModuleManager>(*this));

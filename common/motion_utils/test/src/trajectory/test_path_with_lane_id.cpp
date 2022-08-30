@@ -72,16 +72,16 @@ TEST(path_with_lane_id, getPathIndexRangeWithLaneId)
     {
       const auto res = getPathIndexRangeWithLaneId(points, 3);
       EXPECT_EQ(res->first, 0U);
-      EXPECT_EQ(res->second, 1U);
-    }
-    {
-      const auto res = getPathIndexRangeWithLaneId(points, 1);
-      EXPECT_EQ(res->first, 2U);
       EXPECT_EQ(res->second, 2U);
     }
     {
+      const auto res = getPathIndexRangeWithLaneId(points, 1);
+      EXPECT_EQ(res->first, 1U);
+      EXPECT_EQ(res->second, 3U);
+    }
+    {
       const auto res = getPathIndexRangeWithLaneId(points, 2);
-      EXPECT_EQ(res->first, 3U);
+      EXPECT_EQ(res->first, 2U);
       EXPECT_EQ(res->second, 5U);
     }
     {
@@ -142,7 +142,7 @@ TEST(path_with_lane_id, findNearestIndexFromLaneId)
     for (size_t i = 3; i < 9; ++i) {
       modified_path.points.at(i).lane_ids = {100};
     }
-    EXPECT_EQ(findNearestIndexFromLaneId(modified_path, createPoint(2.4, 1.3, 0.0), 100), 3U);
+    EXPECT_EQ(findNearestIndexFromLaneId(modified_path, createPoint(2.4, 1.3, 0.0), 100), 2U);
     EXPECT_EQ(
       findNearestSegmentIndexFromLaneId(modified_path, createPoint(2.4, 1.3, 0.0), 100), 2U);
   }

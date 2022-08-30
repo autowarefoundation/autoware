@@ -66,8 +66,9 @@ public:
 
 public:
   TrafficLightModule(
-    const int64_t module_id, const lanelet::TrafficLight & traffic_light_reg_elem,
-    lanelet::ConstLanelet lane, const PlannerParam & planner_param, const rclcpp::Logger logger,
+    const int64_t module_id, const int64_t lane_id,
+    const lanelet::TrafficLight & traffic_light_reg_elem, lanelet::ConstLanelet lane,
+    const PlannerParam & planner_param, const rclcpp::Logger logger,
     const rclcpp::Clock::SharedPtr clock);
 
   bool modifyPathVelocity(
@@ -122,6 +123,9 @@ private:
 
   autoware_auto_perception_msgs::msg::TrafficSignalWithJudge generateTlStateWithJudgeFromTlState(
     const autoware_auto_perception_msgs::msg::TrafficSignal tl_state) const;
+
+  // Lane id
+  const int64_t lane_id_;
 
   // Key Feature
   const lanelet::TrafficLight & traffic_light_reg_elem_;

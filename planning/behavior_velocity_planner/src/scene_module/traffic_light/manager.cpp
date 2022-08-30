@@ -108,11 +108,12 @@ void TrafficLightModuleManager::launchNewModules(
     }
 
     // Use lanelet_id to unregister module when the route is changed
-    const auto module_id = traffic_light_reg_elem.second.id();
+    const auto lane_id = traffic_light_reg_elem.second.id();
+    const auto module_id = lane_id;
     if (!isModuleRegistered(module_id)) {
       registerModule(std::make_shared<TrafficLightModule>(
-        module_id, *(traffic_light_reg_elem.first), traffic_light_reg_elem.second, planner_param_,
-        logger_.get_child("traffic_light_module"), clock_));
+        module_id, lane_id, *(traffic_light_reg_elem.first), traffic_light_reg_elem.second,
+        planner_param_, logger_.get_child("traffic_light_module"), clock_));
       generateUUID(module_id);
     }
   }

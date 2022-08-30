@@ -156,8 +156,9 @@ Polygons2d RunOutModule::createDetectionAreaPolygon(const PathWithLaneId & smoot
   da_range.min_lateral_distance = p.vehicle_param.width / 2.0;
   da_range.max_lateral_distance = obstacle_vel_mps * p.dynamic_obstacle.max_prediction_time;
   Polygons2d detection_area_poly;
+  const size_t ego_seg_idx = findEgoSegmentIndex(smoothed_path.points);
   planning_utils::createDetectionAreaPolygons(
-    detection_area_poly, smoothed_path, planner_data_->current_pose.pose, da_range,
+    detection_area_poly, smoothed_path, planner_data_->current_pose.pose, ego_seg_idx, da_range,
     p.dynamic_obstacle.max_vel_kmph / 3.6);
 
   for (const auto & poly : detection_area_poly) {

@@ -79,7 +79,8 @@ public:
 
 public:
   NoStoppingAreaModule(
-    const int64_t module_id, const lanelet::autoware::NoStoppingArea & no_stopping_area_reg_elem,
+    const int64_t module_id, const int64_t lane_id,
+    const lanelet::autoware::NoStoppingArea & no_stopping_area_reg_elem,
     const PlannerParam & planner_param, const rclcpp::Logger logger,
     const rclcpp::Clock::SharedPtr clock);
 
@@ -91,6 +92,8 @@ public:
   visualization_msgs::msg::MarkerArray createVirtualWallMarkerArray() override;
 
 private:
+  const int64_t lane_id_;
+
   mutable bool pass_judged_ = false;
   mutable bool is_stoppable_ = true;
   StateMachine state_machine_;  //! for state

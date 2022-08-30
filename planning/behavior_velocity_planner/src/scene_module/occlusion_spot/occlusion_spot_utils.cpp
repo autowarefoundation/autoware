@@ -61,8 +61,8 @@ PathWithLaneId applyVelocityToPath(const PathWithLaneId & path, const double v0)
 }
 
 bool buildDetectionAreaPolygon(
-  Polygons2d & slices, const PathWithLaneId & path, const geometry_msgs::msg::Pose & pose,
-  const PlannerParam & param)
+  Polygons2d & slices, const PathWithLaneId & path, const geometry_msgs::msg::Pose & target_pose,
+  const size_t target_seg_idx, const PlannerParam & param)
 {
   const auto & p = param;
   DetectionRange da_range;
@@ -76,7 +76,7 @@ bool buildDetectionAreaPolygon(
   da_range.max_lateral_distance = p.detection_area.max_lateral_distance;
   slices.clear();
   return planning_utils::createDetectionAreaPolygons(
-    slices, path, pose, da_range, p.pedestrian_vel);
+    slices, path, target_pose, target_seg_idx, da_range, p.pedestrian_vel);
 }
 
 void calcSlowDownPointsForPossibleCollision(

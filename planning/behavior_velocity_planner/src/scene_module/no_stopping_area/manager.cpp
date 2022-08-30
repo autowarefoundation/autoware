@@ -52,11 +52,14 @@ void NoStoppingAreaModuleManager::launchNewModules(
          path, planner_data_->route_handler_->getLaneletMapPtr(),
          planner_data_->current_pose.pose)) {
     // Use lanelet_id to unregister module when the route is changed
-    const auto module_id = m.first->id();
+    const int64_t module_id = m.first->id();
+    const int64_t lane_id = m.second.id();
+
     if (!isModuleRegistered(module_id)) {
       // assign 1 no stopping area for each module
       registerModule(std::make_shared<NoStoppingAreaModule>(
-        module_id, *m.first, planner_param_, logger_.get_child("no_stopping_area_module"), clock_));
+        module_id, lane_id, *m.first, planner_param_, logger_.get_child("no_stopping_area_module"),
+        clock_));
       generateUUID(module_id);
     }
   }

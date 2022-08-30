@@ -123,7 +123,7 @@ public:
   visualization_msgs::msg::MarkerArray createVirtualWallMarkerArray() override;
 
 private:
-  int64_t lane_id_;
+  const int64_t lane_id_;
   TurnDirection turn_direction_;
   bool has_traffic_light_;
   bool is_over_pass_judge_line_;

@@ -78,6 +78,10 @@ struct PlannerData
   // occupancy grid
   nav_msgs::msg::OccupancyGrid::ConstSharedPtr occupancy_grid;
 
+  // nearest search
+  double ego_nearest_dist_threshold;
+  double ego_nearest_yaw_threshold;
+
   // other internal data
   std::map<int, autoware_auto_perception_msgs::msg::TrafficSignalStamped> traffic_light_id_map;
   // external data

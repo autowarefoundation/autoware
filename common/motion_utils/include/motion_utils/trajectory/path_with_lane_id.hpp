@@ -20,13 +20,14 @@
 
 #include <boost/optional.hpp>
 
+#include <algorithm>
 #include <utility>
 #include <vector>
 
 namespace motion_utils
 {
 inline boost::optional<std::pair<size_t, size_t>> getPathIndexRangeWithLaneId(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const int64_t lane_id)
+  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const int64_t target_lane_id)
 {
   size_t start_idx = 0;  // NOTE: to prevent from maybe-uninitialized error
   size_t end_idx = 0;    // NOTE: to prevent from maybe-uninitialized error
@@ -35,7 +36,7 @@ inline boost::optional<std::pair<size_t, size_t>> getPathIndexRangeWithLaneId(
   for (size_t i = 0; i < path.points.size(); ++i) {
     const auto & p = path.points.at(i);
     for (const auto & id : p.lane_ids) {
-      if (id == lane_id) {
+      if (id == target_lane_id) {
         if (!found_first_idx) {
           start_idx = i;
           found_first_idx = true;
@@ -46,6 +47,10 @@ inline boost::optional<std::pair<size_t, size_t>> getPathIndexRangeWithLaneId(
   }
 
   if (found_first_idx) {
+    // NOTE: In order to fully cover lanes with target_lane_id, start_idx and end_idx are expanded.
+    start_idx = static_cast<size_t>(std::max(0, static_cast<int>(start_idx) - 1));
+    end_idx = std::min(path.points.size() - 1, end_idx + 1);
+
     return std::make_pair(start_idx, end_idx);
   }
 

@@ -47,8 +47,9 @@ PathPoint getLerpPathPointWithLaneId(const PathPoint p0, const PathPoint p1, con
 }
 
 bool createDetectionAreaPolygons(
-  Polygons2d & da_polys, const PathWithLaneId & path, const geometry_msgs::msg::Pose & pose,
-  const DetectionRange & da_range, const double obstacle_vel_mps, const double min_velocity)
+  Polygons2d & da_polys, const PathWithLaneId & path, const geometry_msgs::msg::Pose & target_pose,
+  const size_t target_seg_idx, const DetectionRange & da_range, const double obstacle_vel_mps,
+  const double min_velocity)
 {
   /**
    * @brief relationships for interpolated polygon
@@ -67,28 +68,27 @@ bool createDetectionAreaPolygons(
   const size_t max_index = static_cast<size_t>(path.points.size() - 1);
   //! avoid bug with same point polygon
   const double eps = 1e-3;
-  auto nearest_idx = findNearestIndex(path.points, pose.position);
+  auto nearest_idx =
+    calcPointIndexFromSegmentIndex(path.points, target_pose.position, target_seg_idx);
   if (max_index == nearest_idx) return false;  // case of path point is not enough size
   auto p0 = path.points.at(nearest_idx).point;
   auto first_idx = nearest_idx + 1;
 
   // use ego point as start point if same point as ego is not in the path
   const auto dist_to_nearest =
-    std::fabs(calcSignedArcLength(path.points, pose.position, nearest_idx));
+    std::fabs(calcSignedArcLength(path.points, target_pose.position, target_seg_idx, nearest_idx));
   if (dist_to_nearest > eps) {
-    const auto nearest_seg_idx = motion_utils::findNearestSegmentIndex(path.points, pose.position);
-
     // interpolate ego point
     const auto & pp = path.points;
-    const double ds = calcDistance2d(pp.at(nearest_seg_idx), pp.at(nearest_seg_idx + 1));
-    const double dist_to_nearest_seg =
-      calcSignedArcLength(path.points, nearest_seg_idx, pose.position);
-    const double ratio = dist_to_nearest_seg / ds;
+    const double ds = calcDistance2d(pp.at(target_seg_idx), pp.at(target_seg_idx + 1));
+    const double dist_to_target_seg =
+      calcSignedArcLength(path.points, target_seg_idx, target_pose.position, target_seg_idx);
+    const double ratio = dist_to_target_seg / ds;
     p0 = getLerpPathPointWithLaneId(
-      pp.at(nearest_seg_idx).point, pp.at(nearest_seg_idx + 1).point, ratio);
+      pp.at(target_seg_idx).point, pp.at(target_seg_idx + 1).point, ratio);
 
     // new first index should be ahead of p0
-    first_idx = nearest_seg_idx + 1;
+    first_idx = target_seg_idx + 1;
   }
 
   double ttc = 0.0;
@@ -523,15 +523,8 @@ LineString2d extendLine(
 
 boost::optional<int64_t> getNearestLaneId(
   const PathWithLaneId & path, const lanelet::LaneletMapPtr lanelet_map,
-  const geometry_msgs::msg::Pose & current_pose, boost::optional<size_t> & nearest_segment_idx)
+  const geometry_msgs::msg::Pose & current_pose)
 {
-  nearest_segment_idx = motion_utils::findNearestSegmentIndex(
-    path.points, current_pose, std::numeric_limits<double>::max(), M_PI_2);
-
-  if (!nearest_segment_idx) {
-    return boost::none;
-  }
-
   lanelet::ConstLanelets lanes;
   const auto lane_ids = getSortedLaneIdsFromPath(path);
   for (const auto & lane_id : lane_ids) {
@@ -549,9 +542,7 @@ std::vector<lanelet::ConstLanelet> getLaneletsOnPath(
   const PathWithLaneId & path, const lanelet::LaneletMapPtr lanelet_map,
   const geometry_msgs::msg::Pose & current_pose)
 {
-  boost::optional<size_t> nearest_segment_idx;
-  const auto nearest_lane_id =
-    getNearestLaneId(path, lanelet_map, current_pose, nearest_segment_idx);
+  const auto nearest_lane_id = getNearestLaneId(path, lanelet_map, current_pose);
 
   std::vector<int64_t> unique_lane_ids;
   if (nearest_lane_id) {
@@ -614,6 +605,7 @@ std::vector<int64_t> getSubsequentLaneIdsSetOnPath(
   return subsequent_lane_ids;
 }
 
+// TODO(murooka) remove calcSignedArcLength using findNearestSegmentIndex
 bool isOverLine(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
   const geometry_msgs::msg::Pose & self_pose, const geometry_msgs::msg::Pose & line_pose,
@@ -630,6 +622,7 @@ boost::optional<geometry_msgs::msg::Pose> insertDecelPoint(
 {
   // TODO(tanaka): consider proper overlap threshold for inserting decel point
   const double overlap_threshold = 5e-2;
+  // TODO(murooka): remove this function for u-turn and crossing-path
   const size_t base_idx = motion_utils::findNearestSegmentIndex(output.points, stop_point);
   const auto insert_idx =
     motion_utils::insertTargetPoint(base_idx, stop_point, output.points, overlap_threshold);
@@ -646,11 +639,28 @@ boost::optional<geometry_msgs::msg::Pose> insertDecelPoint(
   return tier4_autoware_utils::getPose(output.points.at(insert_idx.get()));
 }
 
+// TODO(murooka): remove this function for u-turn and crossing-path
 boost::optional<geometry_msgs::msg::Pose> insertStopPoint(
   const geometry_msgs::msg::Point & stop_point, PathWithLaneId & output)
 {
   const size_t base_idx = motion_utils::findNearestSegmentIndex(output.points, stop_point);
   const auto insert_idx = motion_utils::insertTargetPoint(base_idx, stop_point, output.points);
+
+  if (!insert_idx) {
+    return {};
+  }
+
+  for (size_t i = insert_idx.get(); i < output.points.size(); ++i) {
+    output.points.at(i).point.longitudinal_velocity_mps = 0.0;
+  }
+
+  return tier4_autoware_utils::getPose(output.points.at(insert_idx.get()));
+}
+
+boost::optional<geometry_msgs::msg::Pose> insertStopPoint(
+  const geometry_msgs::msg::Point & stop_point, const size_t stop_seg_idx, PathWithLaneId & output)
+{
+  const auto insert_idx = motion_utils::insertTargetPoint(stop_seg_idx, stop_point, output.points);
 
   if (!insert_idx) {
     return {};

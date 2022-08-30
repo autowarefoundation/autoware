@@ -34,14 +34,14 @@ namespace behavior_velocity_planner
 namespace bg = boost::geometry;
 using motion_utils::calcLongitudinalOffsetPose;
 using motion_utils::calcSignedArcLength;
-using motion_utils::findNearestSegmentIndex;
-using motion_utils::insertTargetPoint;
 
 DetectionAreaModule::DetectionAreaModule(
-  const int64_t module_id, const lanelet::autoware::DetectionArea & detection_area_reg_elem,
+  const int64_t module_id, const int64_t lane_id,
+  const lanelet::autoware::DetectionArea & detection_area_reg_elem,
   const PlannerParam & planner_param, const rclcpp::Logger logger,
   const rclcpp::Clock::SharedPtr clock)
 : SceneModuleInterface(module_id, logger, clock),
+  lane_id_(lane_id),
   detection_area_reg_elem_(detection_area_reg_elem),
   state_(State::GO),
   planner_param_(planner_param)
@@ -77,19 +77,27 @@ bool DetectionAreaModule::modifyPathVelocity(PathWithLaneId * path, StopReason *
 
   // Get self pose
   const auto & self_pose = planner_data_->current_pose.pose;
+  const size_t current_seg_idx = findEgoSegmentIndex(path->points);
 
   // Get stop point
   const auto stop_point = arc_lane_utils::createTargetPoint(
-    original_path, stop_line, planner_param_.stop_margin,
+    original_path, stop_line, lane_id_, planner_param_.stop_margin,
     planner_data_->vehicle_info_.max_longitudinal_offset_m);
   if (!stop_point) {
     return true;
   }
 
-  const auto is_stopped = planner_data_->isVehicleStopped(0.0);
+  const auto & stop_point_idx = stop_point->first;
+  const auto & stop_pose = stop_point->second;
+  const size_t stop_line_seg_idx = planning_utils::calcSegmentIndexFromPointIndex(
+    path->points, stop_pose.position, stop_point_idx);
 
-  auto stop_pose = stop_point->second;
-  const auto stop_dist = calcSignedArcLength(path->points, self_pose.position, stop_pose.position);
+  auto modified_stop_pose = stop_pose;
+  size_t modified_stop_line_seg_idx = stop_line_seg_idx;
+
+  const auto is_stopped = planner_data_->isVehicleStopped(0.0);
+  const auto stop_dist = calcSignedArcLength(
+    path->points, self_pose.position, current_seg_idx, stop_pose.position, stop_line_seg_idx);
 
   // Don't re-approach when the ego stops closer to the stop point than hold_stop_margin_distance
   if (is_stopped && stop_dist < planner_param_.hold_stop_margin_distance) {
@@ -100,7 +108,8 @@ bool DetectionAreaModule::modifyPathVelocity(PathWithLaneId * path, StopReason *
       return false;
     }
 
-    stop_pose = ego_pos_on_path.get();
+    modified_stop_pose = ego_pos_on_path.get();
+    modified_stop_line_seg_idx = current_seg_idx;
   }
 
   setDistance(stop_dist);
@@ -117,14 +126,22 @@ bool DetectionAreaModule::modifyPathVelocity(PathWithLaneId * path, StopReason *
   if (planner_param_.use_dead_line) {
     // Use '-' for margin because it's the backward distance from stop line
     const auto dead_line_point = arc_lane_utils::createTargetPoint(
-      original_path, stop_line, -planner_param_.dead_line_margin,
+      original_path, stop_line, lane_id_, -planner_param_.dead_line_margin,
       planner_data_->vehicle_info_.max_longitudinal_offset_m);
 
     if (dead_line_point) {
+      const size_t dead_line_point_idx = dead_line_point->first;
       const auto & dead_line_pose = dead_line_point->second;
+
+      const size_t dead_line_seg_idx = planning_utils::calcSegmentIndexFromPointIndex(
+        path->points, dead_line_pose.position, dead_line_point_idx);
+
       debug_data_.dead_line_poses.push_back(dead_line_pose);
 
-      if (planning_utils::isOverLine(original_path, self_pose, dead_line_pose)) {
+      const double dist_from_ego_to_dead_line = calcSignedArcLength(
+        original_path.points, self_pose.position, current_seg_idx, dead_line_pose.position,
+        dead_line_seg_idx);
+      if (dist_from_ego_to_dead_line < 0.0) {
         RCLCPP_WARN(logger_, "[detection_area] vehicle is over dead line");
         setSafe(true);
         return true;
@@ -133,9 +150,10 @@ bool DetectionAreaModule::modifyPathVelocity(PathWithLaneId * path, StopReason *
   }
 
   // Ignore objects detected after stop_line if not in STOP state
-  if (
-    state_ != State::STOP &&
-    planning_utils::isOverLine(original_path, self_pose, stop_point->second)) {
+  const double dist_from_ego_to_stop = calcSignedArcLength(
+    original_path.points, self_pose.position, current_seg_idx, stop_pose.position,
+    stop_line_seg_idx);
+  if (state_ != State::STOP && dist_from_ego_to_stop < 0.0) {
     setSafe(true);
     return true;
   }
@@ -153,7 +171,7 @@ bool DetectionAreaModule::modifyPathVelocity(PathWithLaneId * path, StopReason *
 
   // Insert stop point
   state_ = State::STOP;
-  planning_utils::insertStopPoint(stop_pose.position, *path);
+  planning_utils::insertStopPoint(modified_stop_pose.position, modified_stop_line_seg_idx, *path);
 
   // For virtual wall
   debug_data_.stop_poses.push_back(stop_point->second);

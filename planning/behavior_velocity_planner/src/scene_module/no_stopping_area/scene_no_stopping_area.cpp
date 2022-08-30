@@ -40,10 +40,12 @@ namespace behavior_velocity_planner
 namespace bg = boost::geometry;
 
 NoStoppingAreaModule::NoStoppingAreaModule(
-  const int64_t module_id, const lanelet::autoware::NoStoppingArea & no_stopping_area_reg_elem,
+  const int64_t module_id, const int64_t lane_id,
+  const lanelet::autoware::NoStoppingArea & no_stopping_area_reg_elem,
   const PlannerParam & planner_param, const rclcpp::Logger logger,
   const rclcpp::Clock::SharedPtr clock)
 : SceneModuleInterface(module_id, logger, clock),
+  lane_id_(lane_id),
   no_stopping_area_reg_elem_(no_stopping_area_reg_elem),
   planner_param_(planner_param)
 {
@@ -128,7 +130,7 @@ bool NoStoppingAreaModule::modifyPathVelocity(
     return true;
   }
   const auto stop_point = arc_lane_utils::createTargetPoint(
-    original_path, stop_line.value(), planner_param_.stop_margin,
+    original_path, stop_line.value(), lane_id_, planner_param_.stop_margin,
     planner_data_->vehicle_info_.max_longitudinal_offset_m);
   if (!stop_point) {
     setSafe(true);
