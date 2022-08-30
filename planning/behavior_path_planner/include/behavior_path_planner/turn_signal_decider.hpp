@@ -35,8 +35,9 @@ class TurnSignalDecider
 {
 public:
   TurnIndicatorsCommand getTurnSignal(
-    const PathWithLaneId & path, const Pose & current_pose, const RouteHandler & route_handler,
-    const TurnIndicatorsCommand & turn_signal_plan, const double plan_distance) const;
+    const PathWithLaneId & path, const Pose & current_pose, const size_t current_seg_idx,
+    const RouteHandler & route_handler, const TurnIndicatorsCommand & turn_signal_plan,
+    const double plan_distance) const;
 
   void setParameters(const double base_link2front, const double intersection_search_distance)
   {
@@ -46,7 +47,7 @@ public:
 
 private:
   std::pair<TurnIndicatorsCommand, double> getIntersectionTurnSignal(
-    const PathWithLaneId & path, const Pose & current_pose,
+    const PathWithLaneId & path, const Pose & current_pose, const size_t current_seg_idx,
     const RouteHandler & route_handler) const;
 
   rclcpp::Logger logger_{

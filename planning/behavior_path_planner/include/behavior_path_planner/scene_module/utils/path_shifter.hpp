@@ -96,7 +96,7 @@ public:
    * @details The previous offset information is stored in the base_offset_.
    *          This should be called after generate().
    */
-  void removeBehindShiftPointAndSetBaseOffset(const Point & base);
+  void removeBehindShiftPointAndSetBaseOffset(const Pose & pose, const size_t nearest_idx);
 
   ////////////////////////////////////////
   // Utility Functions
@@ -168,13 +168,6 @@ public:
    * @return Jerk array. THe size is same as the shift points.
    */
   std::vector<double> calcLateralJerk();
-
-  /**
-   * @brief  Calculate shift point from path arclength for start and end point.
-   */
-  static bool calcShiftPointFromArcLength(
-    const PathWithLaneId & path, const Point & origin, double dist_to_start, double dist_to_end,
-    double shift_length, ShiftPoint * shift_point);
 
 private:
   // The reference path along which the shift will be performed.

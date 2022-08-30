@@ -111,7 +111,9 @@ PathWithLaneId LaneFollowingModule::getReferencePath() const
     p.forward_path_length, p);
 
   // clip backward length
-  util::clipPathLength(reference_path, current_pose, p.forward_path_length, p.backward_path_length);
+  const size_t current_seg_idx = findEgoSegmentIndex(reference_path.points);
+  util::clipPathLength(
+    reference_path, current_seg_idx, p.forward_path_length, p.backward_path_length);
 
   {
     double optional_lengths{0.0};

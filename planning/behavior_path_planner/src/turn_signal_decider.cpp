@@ -25,14 +25,16 @@
 namespace behavior_path_planner
 {
 TurnIndicatorsCommand TurnSignalDecider::getTurnSignal(
-  const PathWithLaneId & path, const Pose & current_pose, const RouteHandler & route_handler,
-  const TurnIndicatorsCommand & turn_signal_plan, const double plan_distance) const
+  const PathWithLaneId & path, const Pose & current_pose, const size_t current_seg_idx,
+  const RouteHandler & route_handler, const TurnIndicatorsCommand & turn_signal_plan,
+  const double plan_distance) const
 {
   auto turn_signal = turn_signal_plan;
 
   // If the distance to intersection is nearer than path change point,
   // use turn signal for turning at the intersection
-  const auto intersection_result = getIntersectionTurnSignal(path, current_pose, route_handler);
+  const auto intersection_result =
+    getIntersectionTurnSignal(path, current_pose, current_seg_idx, route_handler);
   const auto intersection_turn_signal = intersection_result.first;
   const auto intersection_distance = intersection_result.second;
 
@@ -47,7 +49,8 @@ TurnIndicatorsCommand TurnSignalDecider::getTurnSignal(
 }
 
 std::pair<TurnIndicatorsCommand, double> TurnSignalDecider::getIntersectionTurnSignal(
-  const PathWithLaneId & path, const Pose & current_pose, const RouteHandler & route_handler) const
+  const PathWithLaneId & path, const Pose & current_pose, const size_t current_seg_idx,
+  const RouteHandler & route_handler) const
 {
   TurnIndicatorsCommand turn_signal{};
   turn_signal.command = TurnIndicatorsCommand::DISABLE;
@@ -59,7 +62,8 @@ std::pair<TurnIndicatorsCommand, double> TurnSignalDecider::getIntersectionTurnS
   }
 
   // Get frenet coordinate of current_pose on path
-  const auto vehicle_pose_frenet = util::convertToFrenetCoordinate3d(path, current_pose.position);
+  const auto vehicle_pose_frenet =
+    util::convertToFrenetCoordinate3d(path, current_pose.position, current_seg_idx);
 
   // Get nearest intersection and decide turn signal
   double accumulated_distance = 0;

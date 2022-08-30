@@ -25,12 +25,14 @@ TEST(BehaviorPathPlanningUtilitiesBehaviorTest, vehiclePoseToFrenetOnStraightLin
 {
   PathWithLaneId path =
     behavior_path_planner::generateStraightSamplePathWithLaneId(0.0f, 1.0f, 10u);
-  std::vector<Point> geometry_points =
-    behavior_path_planner::util::convertToGeometryPointArray(path);
+  std::vector<geometry_msgs::msg::Pose> geometry_points =
+    behavior_path_planner::util::convertToPoseArray(path);
   Pose vehicle_pose = behavior_path_planner::generateEgoSamplePose(10.7f, -1.7f, 0.0);
 
+  const size_t vehicle_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    geometry_points, vehicle_pose, 3.0, 1.0);
   FrenetCoordinate3d vehicle_pose_frenet = behavior_path_planner::util::convertToFrenetCoordinate3d(
-    geometry_points, vehicle_pose.position);
+    geometry_points, vehicle_pose.position, vehicle_seg_idx);
 
   EXPECT_NEAR(vehicle_pose_frenet.distance, -1.7f, 1e-3);
   EXPECT_NEAR(vehicle_pose_frenet.length, 10.7f, 1e-3);
@@ -40,12 +42,14 @@ TEST(BehaviorPathPlanningUtilitiesBehaviorTest, vehiclePoseToFrenetOnDiagonalLin
 {
   PathWithLaneId path =
     behavior_path_planner::generateDiagonalSamplePathWithLaneId(0.0f, 1.0f, 10u);
-  std::vector<Point> geometry_points =
-    behavior_path_planner::util::convertToGeometryPointArray(path);
+  std::vector<geometry_msgs::msg::Pose> geometry_points =
+    behavior_path_planner::util::convertToPoseArray(path);
   Pose vehicle_pose = behavior_path_planner::generateEgoSamplePose(0.1f, 0.1f, 0.0);
 
+  const size_t vehicle_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    geometry_points, vehicle_pose, 3.0, 1.0);
   FrenetCoordinate3d vehicle_pose_frenet = behavior_path_planner::util::convertToFrenetCoordinate3d(
-    geometry_points, vehicle_pose.position);
+    geometry_points, vehicle_pose.position, vehicle_seg_idx);
 
   EXPECT_NEAR(vehicle_pose_frenet.distance, 0, 1e-2);
   EXPECT_NEAR(vehicle_pose_frenet.length, 0.1414f, 1e-2);

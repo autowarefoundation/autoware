@@ -292,9 +292,12 @@ bool selectSafePath(
   std::unordered_map<std::string, CollisionCheckDebug> & debug_data)
 {
   for (const auto & path : paths) {
+    const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+      path.path.points, current_pose, common_parameters.ego_nearest_dist_threshold,
+      common_parameters.ego_nearest_yaw_threshold);
     if (isLaneChangePathSafe(
-          path.path, current_lanes, target_lanes, dynamic_objects, current_pose, current_twist,
-          common_parameters, ros_parameters, debug_data, true, path.acceleration)) {
+          path.path, current_lanes, target_lanes, dynamic_objects, current_pose, current_seg_idx,
+          current_twist, common_parameters, ros_parameters, debug_data, true, path.acceleration)) {
       *selected_path = path;
       return true;
     }
@@ -344,7 +347,8 @@ bool isLaneChangePathSafe(
   const PathWithLaneId & path, const lanelet::ConstLanelets & current_lanes,
   const lanelet::ConstLanelets & target_lanes,
   const PredictedObjects::ConstSharedPtr dynamic_objects, const Pose & current_pose,
-  const Twist & current_twist, const BehaviorPathPlannerParameters & common_parameters,
+  const size_t current_seg_idx, const Twist & current_twist,
+  const BehaviorPathPlannerParameters & common_parameters,
   const LaneChangeParameters & lane_change_parameters,
   std::unordered_map<std::string, CollisionCheckDebug> & debug_data, const bool use_buffer,
   const double acceleration)
@@ -370,8 +374,8 @@ bool isLaneChangePathSafe(
   const double target_lane_check_end_time = lane_change_prepare_duration + lane_changing_duration;
   constexpr double ego_predicted_path_min_speed{1.0};
   const auto vehicle_predicted_path = util::convertToPredictedPath(
-    path, current_twist, current_pose, target_lane_check_end_time, time_resolution, acceleration,
-    ego_predicted_path_min_speed);
+    path, current_twist, current_pose, current_seg_idx, target_lane_check_end_time, time_resolution,
+    acceleration, ego_predicted_path_min_speed);
 
   const auto arc = lanelet::utils::getArcCoordinates(current_lanes, current_pose);
 

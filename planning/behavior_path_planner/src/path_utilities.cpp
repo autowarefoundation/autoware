@@ -53,34 +53,6 @@ std::vector<double> calcPathArcLengthArray(
 }
 
 /**
- * @brief calc path arclength from start point to end point.
- */
-double calcPathArcLength(const PathWithLaneId & path, size_t start, size_t end)
-{
-  if (path.points.size() < 2) {
-    return 0.0;
-  }
-
-  // swap
-  bool is_negative_direction = false;
-  if (start > end) {
-    std::swap(start, end);
-    is_negative_direction = true;
-  }
-
-  start = std::max(start, size_t{1});
-  end = std::min(end, path.points.size());
-
-  double sum = 0.0;
-  for (size_t i = start; i < end; ++i) {
-    sum +=
-      tier4_autoware_utils::calcDistance2d(path.points.at(i).point, path.points.at(i - 1).point);
-  }
-
-  return is_negative_direction ? -sum : sum;
-}
-
-/**
  * @brief resamplePathWithSpline
  */
 PathWithLaneId resamplePathWithSpline(const PathWithLaneId & path, double interval)
@@ -159,24 +131,17 @@ Path toPath(const PathWithLaneId & input)
   return output;
 }
 
-size_t getIdxByArclength(const PathWithLaneId & path, const Pose & origin, const double signed_arc)
+size_t getIdxByArclength(
+  const PathWithLaneId & path, const size_t target_idx, const double signed_arc)
 {
   if (path.points.empty()) {
     throw std::runtime_error("[getIdxByArclength] path points must be > 0");
   }
 
-  const auto boost_closest_idx = motion_utils::findNearestIndex(
-    path.points, origin, std::numeric_limits<double>::max(), M_PI / 4.0);
-
-  // If the nearest index search with angle limit fails, search again without angle limit.
-  size_t closest_idx = boost_closest_idx
-                         ? *boost_closest_idx
-                         : motion_utils::findNearestIndex(path.points, origin.position);
-
   using tier4_autoware_utils::calcDistance2d;
   double sum_length = 0.0;
   if (signed_arc >= 0.0) {
-    for (size_t i = closest_idx; i < path.points.size() - 1; ++i) {
+    for (size_t i = target_idx; i < path.points.size() - 1; ++i) {
       const auto next_i = i + 1;
       sum_length += calcDistance2d(path.points.at(i), path.points.at(next_i));
       if (sum_length > signed_arc) {
@@ -185,7 +150,7 @@ size_t getIdxByArclength(const PathWithLaneId & path, const Pose & origin, const
     }
     return path.points.size() - 1;
   } else {
-    for (size_t i = closest_idx; i > 0; --i) {
+    for (size_t i = target_idx; i > 0; --i) {
       const auto next_i = i - 1;
       sum_length -= calcDistance2d(path.points.at(i), path.points.at(next_i));
       if (sum_length < signed_arc) {
@@ -197,19 +162,25 @@ size_t getIdxByArclength(const PathWithLaneId & path, const Pose & origin, const
 }
 
 void clipPathLength(
-  PathWithLaneId & path, const Pose base_pose, const double forward, const double backward)
+  PathWithLaneId & path, const size_t target_idx, const double forward, const double backward)
 {
   if (path.points.size() < 3) {
     return;
   }
 
-  const auto start_idx = util::getIdxByArclength(path, base_pose, -backward);
-  const auto end_idx = util::getIdxByArclength(path, base_pose, forward);
+  const auto start_idx = util::getIdxByArclength(path, target_idx, -backward);
+  const auto end_idx = util::getIdxByArclength(path, target_idx, forward);
 
   const std::vector<PathPointWithLaneId> clipped_points{
     path.points.begin() + start_idx, path.points.begin() + end_idx + 1};
 
   path.points = clipped_points;
+}
+
+void clipPathLength(
+  PathWithLaneId & path, const size_t target_idx, const BehaviorPathPlannerParameters & params)
+{
+  clipPathLength(path, target_idx, params.forward_path_length, params.backward_path_length);
 }
 
 std::pair<TurnIndicatorsCommand, double> getPathTurnSignal(

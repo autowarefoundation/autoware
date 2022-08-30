@@ -120,8 +120,6 @@ private:
   PathWithLaneId modifyPathForSmoothGoalConnection(
     const PathWithLaneId & path) const;  // (TODO) move to util
 
-  void clipPathLength(PathWithLaneId & path) const;  // (TODO) move to util
-
   /**
    * @brief Execute behavior tree and publish planned data.
    */
@@ -152,6 +150,24 @@ private:
    * @brief check path if it is unsafe or forced
    */
   bool isForcedCandidatePath() const;
+
+  template <class T>
+  size_t findEgoIndex(const std::vector<T> & points) const
+  {
+    const auto & p = planner_data_;
+    return motion_utils::findFirstNearestIndexWithSoftConstraints(
+      points, p->self_pose->pose, p->parameters.ego_nearest_dist_threshold,
+      p->parameters.ego_nearest_yaw_threshold);
+  }
+
+  template <class T>
+  size_t findEgoSegmentIndex(const std::vector<T> & points) const
+  {
+    const auto & p = planner_data_;
+    return motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+      points, p->self_pose->pose, p->parameters.ego_nearest_dist_threshold,
+      p->parameters.ego_nearest_yaw_threshold);
+  }
 };
 }  // namespace behavior_path_planner
 

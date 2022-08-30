@@ -41,6 +41,9 @@ struct BehaviorPathPlannerParameters
 
   double path_interval;
 
+  double ego_nearest_dist_threshold;
+  double ego_nearest_yaw_threshold;
+
   // vehicle info
   vehicle_info_util::VehicleInfo vehicle_info;
   double wheel_base;

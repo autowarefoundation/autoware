@@ -260,8 +260,6 @@ private:
   PathWithLaneId calcCenterLinePath(
     const std::shared_ptr<const PlannerData> & planner_data, const PoseStamped & pose) const;
 
-  void clipPathLength(PathWithLaneId & path) const;
-
   // TODO(Horibe): think later.
   // for unique ID
   mutable uint64_t original_unique_id = 0;  // TODO(Horibe) remove mutable

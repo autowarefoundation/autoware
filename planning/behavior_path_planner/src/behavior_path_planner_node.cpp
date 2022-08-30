@@ -203,6 +203,8 @@ BehaviorPathPlannerParameters BehaviorPathPlannerNode::getCommonParam()
   p.path_interval = declare_parameter<double>("path_interval");
   p.visualize_drivable_area_for_shared_linestrings_lanelet =
     declare_parameter("visualize_drivable_area_for_shared_linestrings_lanelet", true);
+  p.ego_nearest_dist_threshold = declare_parameter<double>("ego_nearest_dist_threshold");
+  p.ego_nearest_yaw_threshold = declare_parameter<double>("ego_nearest_yaw_threshold");
 
   p.lateral_distance_max_threshold = declare_parameter("lateral_distance_max_threshold", 3.0);
   p.longitudinal_distance_min_threshold =
@@ -568,7 +570,9 @@ void BehaviorPathPlannerNode::run()
     clipped_path = modifyPathForSmoothGoalConnection(*path);
   }
 
-  clipPathLength(clipped_path);
+  const size_t target_idx = findEgoIndex(clipped_path.points);
+  util::clipPathLength(clipped_path, target_idx, planner_data_->parameters);
+
   if (!clipped_path.points.empty()) {
     path_publisher_->publish(clipped_path);
   } else {
@@ -587,8 +591,9 @@ void BehaviorPathPlannerNode::run()
       turn_signal.command = TurnIndicatorsCommand::DISABLE;
       hazard_signal.command = output.turn_signal_info.hazard_signal.command;
     } else {
+      const size_t ego_seg_idx = findEgoSegmentIndex(path->points);
       turn_signal = turn_signal_decider_.getTurnSignal(
-        *path, planner_data->self_pose->pose, *(planner_data->route_handler),
+        *path, planner_data->self_pose->pose, ego_seg_idx, *(planner_data->route_handler),
         output.turn_signal_info.turn_signal, output.turn_signal_info.signal_distance);
       hazard_signal.command = HazardLightsCommand::DISABLE;
     }
@@ -735,15 +740,6 @@ void BehaviorPathPlannerNode::onRoute(const HADMapRoute::ConstSharedPtr msg)
     RCLCPP_DEBUG(get_logger(), "new route is received. reset behavior tree.");
     bt_manager_->resetBehaviorTree();
   }
-}
-
-void BehaviorPathPlannerNode::clipPathLength(PathWithLaneId & path) const
-{
-  const auto ego_pose = planner_data_->self_pose->pose;
-  const double forward = planner_data_->parameters.forward_path_length;
-  const double backward = planner_data_->parameters.backward_path_length;
-
-  util::clipPathLength(path, ego_pose, forward, backward);
 }
 
 PathWithLaneId BehaviorPathPlannerNode::modifyPathForSmoothGoalConnection(
