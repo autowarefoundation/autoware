@@ -1,0 +1,33 @@
+name: update-codeowners-from-packages
+
+on:
+  schedule:
+    - cron: 0 0 * * *
+  workflow_dispatch:
+
+jobs:
+  check-secret:
+    uses: autowarefoundation/autoware-github-actions/.github/workflows/check-secret.yaml@v1
+    secrets:
+      secret: ${{ secrets.APP_ID }}
+
+  update-codeowners-from-packages:
+    needs: check-secret
+    if: ${{ needs.check-secret.outputs.set == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate token
+        id: generate-token
+        uses: tibdex/github-app-token@v1
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.PRIVATE_KEY }}
+
+      - name: Run update-codeowners-from-packages
+        uses: autowarefoundation/autoware-github-actions/update-codeowners-from-packages@v1
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          pr-labels: |
+            bot
+            update-codeowners-from-packages
+          auto-merge-method: squash

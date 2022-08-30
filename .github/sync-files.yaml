@@ -83,6 +83,7 @@
       pre-commands: |
         sd "container: ros:(\w+)" "container: ghcr.io/autowarefoundation/autoware-universe:\$1-latest" {source}
         sd -f ms '(rosdistro: humble.*?build-depends-repos): build_depends.repos' '$1: build_depends.humble.repos' {source}
+    - source: .github/workflows/update-codeowners-from-packages.yaml
     - source: codecov.yaml
 
 - repository: autowarefoundation/autoware-documentation
