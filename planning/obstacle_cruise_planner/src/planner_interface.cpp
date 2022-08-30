@@ -102,7 +102,7 @@ Trajectory PlannerInterface::generateStopTrajectory(
   // Get Closest Stop Obstacle
   const auto closest_stop_obstacle =
     obstacle_cruise_utils::getClosestStopObstacle(planner_data.traj, planner_data.target_obstacles);
-  if (!closest_stop_obstacle && closest_stop_obstacle->collision_points.empty()) {
+  if (!closest_stop_obstacle || closest_stop_obstacle->collision_points.empty()) {
     // delete marker
     const auto markers =
       motion_utils::createDeletedStopVirtualWallMarker(planner_data.current_time, 0);
