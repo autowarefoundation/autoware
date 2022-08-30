@@ -4,8 +4,10 @@
   <name>vehicle_cmd_gate</name>
   <version>0.1.0</version>
   <description>The vehicle_cmd_gate package</description>
-  <maintainer email="h_ohta@ertl.jp">h_ohta</maintainer>
+  <maintainer email="takamasa.horibe@tier4.jp">Takamasa Horibe</maintainer>
   <license>Apache License 2.0</license>
+
+  <author email="hiroki.ota@tier4.jp">Hiroki OTA</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 

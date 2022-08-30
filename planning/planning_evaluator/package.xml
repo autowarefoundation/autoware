@@ -7,6 +7,8 @@
   <maintainer email="maxime.clement@tier4.jp">Maxime CLEMENT</maintainer>
   <license>Apache License 2.0</license>
 
+  <author email="maxime.clement@tier4.jp">Maxime CLEMENT</author>
+
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
   <build_depend>autoware_cmake</build_depend>

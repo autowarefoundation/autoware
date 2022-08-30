@@ -4,7 +4,7 @@
   <name>tier4_map_launch</name>
   <version>0.1.0</version>
   <description>The tier4_map_launch package</description>
-  <maintainer email="ryohsuke.mitsudome@tier4.jp">mitsudome-r</maintainer>
+  <maintainer email="ryohsuke.mitsudome@tier4.jp">Ryohsuke Mitsudome</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>

@@ -4,8 +4,13 @@
   <name>obstacle_stop_planner</name>
   <version>0.1.0</version>
   <description>The obstacle_stop_planner package</description>
-  <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>
+
+  <maintainer email="satoshi.ota@tier4.jp">Satoshi Ota</maintainer>
+
   <license>Apache License 2.0</license>
+
+  <author email="satoshi.ota@tier4.jp">Satoshi Ota</author>
+  <author email="yukihiro.saito@tier4.jp">Yukihiro Saito</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 

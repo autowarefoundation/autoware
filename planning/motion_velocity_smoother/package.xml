@@ -4,10 +4,14 @@
   <name>motion_velocity_smoother</name>
   <version>0.1.0</version>
   <description>The motion_velocity_smoother package</description>
-  <maintainer email="horibe.takamasa@gmail.com">Takamasa Horibe</maintainer>
+
   <maintainer email="fumiya.watanabe@tier4.jp">Fumiya Watanabe</maintainer>
-  <maintainer email="yutaka.shimizu@tier4.jp">Yutaka Shimizu</maintainer>
   <license>Apache License 2.0</license>
+
+  <author email="takamasa.horibe@tier4.jp">Takamasa Horibe</author>
+  <author email="fumiya.watanabe@tier4.jp">Fumiya Watanabe</author>
+  <author email="yutaka.shimizu@tier4.jp">Yutaka Shimizu</author>
+  <author email="makoto.kurihara@tier4.jp">Makoto Kurihara</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>eigen3_cmake_module</buildtool_depend>

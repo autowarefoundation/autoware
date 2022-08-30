@@ -7,6 +7,7 @@
   <maintainer email="kenji.miyake@tier4.jp">Kenji Miyake</maintainer>
   <license>Apache License 2.0</license>
 
+  <author email="kenji.miyake@tier4.jp">Kenji Miyake</author>
   <author email="satoshi.tanaka@tier4.jp">Satoshi Tanaka</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>

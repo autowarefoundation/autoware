@@ -2,11 +2,15 @@
 <package format="3">
   <name>obstacle_cruise_planner</name>
   <version>0.1.0</version>
-  <description>The Stop/Slow down planner for dynamic obstacles</description>
+  <description>The obstacle_cruise_planner package</description>
 
   <maintainer email="takayuki.murooka@tier4.jp">Takayuki Murooka</maintainer>
+  <maintainer email="yutaka.shimizu@tier4.jp">Yutaka Shimizu</maintainer>
 
   <license>Apache License 2.0</license>
+
+  <author email="takayuki.murooka@tier4.jp">Takayuki Murooka</author>
+  <author email="yutaka.shimizu@tier4.jp">Yutaka Shimizu</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 

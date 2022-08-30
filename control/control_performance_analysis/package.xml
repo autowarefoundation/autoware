@@ -9,6 +9,9 @@
 
   <license>Apache License 2.0</license>
 
+  <author email="ali.boyali@tier4.jp">Ali Boyali</author>
+  <author email="berkay@leodrive.ai">Berkay Karaman</author>
+
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
   <buildtool_depend>rosidl_default_generators</buildtool_depend>
 

@@ -4,7 +4,7 @@
   <name>kalman_filter</name>
   <version>0.1.0</version>
   <description>The kalman filter package</description>
-  <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito Horibe</maintainer>
+  <maintainer email="yukihiro.saito@tier4.jp">Yukihiro Saito</maintainer>
   <license>Apache License 2.0</license>
 
   <author email="takamasa.horibe@tier4.jp">Takamasa Horibe</author>

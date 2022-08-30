@@ -4,12 +4,31 @@
   <name>behavior_path_planner</name>
   <version>0.1.0</version>
   <description>The behavior_path_planner package</description>
+
+  <!-- lane change module -->
+  <maintainer email="zulfaqar.azmi@tier4.jp">Zulfaqar Azmi</maintainer>
+  <!-- pull over module -->
+  <maintainer email="kosuke.takeuchi@tier4.jp">Kosuke Takeuchi</maintainer>
+  <!-- pull out module -->
+  <maintainer email="kosuke.takeuchi@tier4.jp">Kosuke Takeuchi</maintainer>
+  <!-- side shift module -->
+  <maintainer email="fumiya.watanabe@tier4.jp">Fumiya Watanabe</maintainer>
+  <!-- avoidance module -->
   <maintainer email="takamasa.horibe@tier4.jp">Takamasa Horibe</maintainer>
+  <!-- turn signal decider -->
+  <maintainer email="yutaka.shimizu@tier4.jp">Yutaka Shimizu</maintainer>
+  <!-- drivable area generation-->
+  <maintainer email="takayuki.murooka@tier4.jp">Takayuki Murooka</maintainer>
+
   <license>Apache License 2.0</license>
 
   <author email="takamasa.horibe@tier4.jp">Takamasa Horibe</author>
-  <author email="ryohsuke.mitsudome@tier4.jp">mitsudome-r</author>
   <author email="fumiya.watanabe@tier4.jp">Fumiya Watanabe</author>
+  <author email="zulfaqar.azmi@tier4.jp">Zulfaqar Azmi</author>
+  <author email="kosuke.takeuchi@tier4.jp">Kosuke Takeuchi</author>
+  <author email="yutaka.shimizu@tier4.jp">Yutaka Shimizu</author>
+  <author email="takayuki.murooka@tier4.jp">Takayuki Murooka</author>
+  <author email="ryohsuke.mitsudome@tier4.jp">Ryohsuke Mitsudome</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 

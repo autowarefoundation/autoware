@@ -3,9 +3,11 @@
 <package format="3">
   <name>obstacle_avoidance_planner</name>
   <version>0.1.0</version>
-  <description>The path_planner package</description>
+  <description>The obstacle_avoidance_planner package</description>
   <maintainer email="takayuki.murooka@tier4.jp">Takayuki Murooka</maintainer>
   <license>Apache License 2.0</license>
+
+  <author email="takayuki.murooka@tier4.jp">Takayuki Murooka</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 

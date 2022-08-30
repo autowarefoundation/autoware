@@ -8,6 +8,8 @@
 
   <license>Apache License 2.0</license>
 
+  <author email="fumiya.watanabe@tier4.jp">Fumiya Watanabe</author>
+
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 
   <depend>rclcpp</depend>
