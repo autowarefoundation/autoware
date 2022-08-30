@@ -20,7 +20,8 @@ This package converts autoware_auto_vehicle_msgs::msg::VehicleReport message to 
 
 ## Parameters
 
-| Name         | Type   | Description                               |
-| ------------ | ------ | ----------------------------------------- |
-| `frame_id`   | string | frame id for output message               |
-| `covariance` | double | set covariance value to the twist message |
+| Name                         | Type   | Description                     |
+| ---------------------------- | ------ | ------------------------------- |
+| `frame_id`                   | string | frame id for output message     |
+| `velocity_stddev_xx`         | double | standard deviation for vx       |
+| `angular_velocity_stddev_zz` | double | standard deviation for yaw rate |

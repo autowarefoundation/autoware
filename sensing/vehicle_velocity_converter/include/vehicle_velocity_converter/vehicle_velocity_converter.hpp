@@ -41,6 +41,8 @@ private:
     twist_with_covariance_pub_;
 
   std::string frame_id_;
+  double stddev_vx_;
+  double stddev_wz_;
   std::array<double, 36> twist_covariance_;
 };
 

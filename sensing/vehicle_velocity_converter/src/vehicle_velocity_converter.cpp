@@ -17,10 +17,8 @@
 VehicleVelocityConverter::VehicleVelocityConverter() : Node("vehicle_velocity_converter")
 {
   // set covariance value for twist with covariance msg
-  std::vector<double> covariance = declare_parameter<std::vector<double>>("twist_covariance");
-  for (std::size_t i = 0; i < covariance.size(); ++i) {
-    twist_covariance_[i] = covariance[i];
-  }
+  stddev_vx_ = declare_parameter("velocity_stddev_xx", 0.2);
+  stddev_wz_ = declare_parameter("angular_velocity_stddev_zz", 0.1);
   frame_id_ = declare_parameter("frame_id", "base_link");
 
   vehicle_report_sub_ = create_subscription<autoware_auto_vehicle_msgs::msg::VelocityReport>(
@@ -44,7 +42,12 @@ void VehicleVelocityConverter::callbackVelocityReport(
   twist_with_covariance_msg.twist.twist.linear.x = msg->longitudinal_velocity;
   twist_with_covariance_msg.twist.twist.linear.y = msg->lateral_velocity;
   twist_with_covariance_msg.twist.twist.angular.z = msg->heading_rate;
-  twist_with_covariance_msg.twist.covariance = twist_covariance_;
+  twist_with_covariance_msg.twist.covariance[0 + 0 * 6] = stddev_vx_ * stddev_vx_;
+  twist_with_covariance_msg.twist.covariance[1 + 1 * 6] = 10000.0;
+  twist_with_covariance_msg.twist.covariance[2 + 2 * 6] = 10000.0;
+  twist_with_covariance_msg.twist.covariance[3 + 3 * 6] = 10000.0;
+  twist_with_covariance_msg.twist.covariance[4 + 4 * 6] = 10000.0;
+  twist_with_covariance_msg.twist.covariance[5 + 5 * 6] = stddev_wz_ * stddev_wz_;
 
   twist_with_covariance_pub_->publish(twist_with_covariance_msg);
 }
