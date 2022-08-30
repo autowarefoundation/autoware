@@ -460,8 +460,8 @@ std::vector<PathWithLaneId> GeometricParallelParking::planOneTrial(
   // debug
   Cr_.pose = Cr;
   Cr_.header = planner_data_->route_handler->getRouteHeader();
-  Cr_.pose = Cr;
-  Cr_.header = planner_data_->route_handler->getRouteHeader();
+  Cl_.pose = Cl;
+  Cl_.header = planner_data_->route_handler->getRouteHeader();
   start_pose_.pose = start_pose;
   start_pose_.header = planner_data_->route_handler->getRouteHeader();
   arc_end_pose_.pose = arc_end_pose;
