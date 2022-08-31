@@ -26,16 +26,15 @@ namespace resampling
 {
 boost::optional<TrajectoryPoints> resampleTrajectory(
   const TrajectoryPoints & input, const double v_current,
-  const geometry_msgs::msg::Pose & current_pose, const double delta_yaw_threshold,
-  const ResampleParam & param, const bool use_zoh_for_v)
+  const geometry_msgs::msg::Pose & current_pose, const double nearest_dist_threshold,
+  const double nearest_yaw_threshold, const ResampleParam & param, const bool use_zoh_for_v)
 {
   // Arc length from the initial point to the closest point
-  const auto negative_front_arclength_value = motion_utils::calcSignedArcLength(
-    input, current_pose, 0, std::numeric_limits<double>::max(), delta_yaw_threshold);
-  if (!negative_front_arclength_value) {
-    return {};
-  }
-  const auto front_arclength_value = std::fabs(*negative_front_arclength_value);
+  const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    input, current_pose, nearest_dist_threshold, nearest_yaw_threshold);
+  const double negative_front_arclength_value = motion_utils::calcSignedArcLength(
+    input, current_pose.position, current_seg_idx, input.at(0).pose.position, 0);
+  const auto front_arclength_value = std::fabs(negative_front_arclength_value);
 
   const auto dist_to_closest_stop_point =
     motion_utils::calcDistanceToForwardStopPoint(input, current_pose);
@@ -145,8 +144,8 @@ boost::optional<TrajectoryPoints> resampleTrajectory(
 
 boost::optional<TrajectoryPoints> resampleTrajectory(
   const TrajectoryPoints & input, const geometry_msgs::msg::Pose & current_pose,
-  const double delta_yaw_threshold, const ResampleParam & param, const double nominal_ds,
-  const bool use_zoh_for_v)
+  const double nearest_dist_threshold, const double nearest_yaw_threshold,
+  const ResampleParam & param, const double nominal_ds, const bool use_zoh_for_v)
 {
   // input arclength
   const double trajectory_length = motion_utils::calcArcLength(input);
@@ -169,12 +168,12 @@ boost::optional<TrajectoryPoints> resampleTrajectory(
 
   // Step1. Resample front trajectory
   // Arc length from the initial point to the closest point
-  const auto negative_front_arclength_value = motion_utils::calcSignedArcLength(
-    input, current_pose, 0, std::numeric_limits<double>::max(), delta_yaw_threshold);
-  if (!negative_front_arclength_value) {
-    return {};
-  }
-  const auto front_arclength_value = std::fabs(*negative_front_arclength_value);
+  const size_t current_seg_idx = motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+    input, current_pose, nearest_dist_threshold, nearest_yaw_threshold);
+  const double negative_front_arclength_value = motion_utils::calcSignedArcLength(
+    input, current_pose.position, current_seg_idx, input.at(0).pose.position,
+    static_cast<size_t>(0));
+  const auto front_arclength_value = std::fabs(negative_front_arclength_value);
   for (double s = 0.0; s <= front_arclength_value; s += nominal_ds) {
     out_arclength.push_back(s);
   }

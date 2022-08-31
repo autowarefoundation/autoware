@@ -223,10 +223,11 @@ bool L2PseudoJerkSmoother::apply(
 
 boost::optional<TrajectoryPoints> L2PseudoJerkSmoother::resampleTrajectory(
   const TrajectoryPoints & input, const double v0, const geometry_msgs::msg::Pose & current_pose,
-  const double delta_yaw_threshold) const
+  const double nearest_dist_threshold, const double nearest_yaw_threshold) const
 {
   return resampling::resampleTrajectory(
-    input, v0, current_pose, delta_yaw_threshold, base_param_.resample_param);
+    input, v0, current_pose, nearest_dist_threshold, nearest_yaw_threshold,
+    base_param_.resample_param);
 }
 
 }  // namespace motion_velocity_smoother

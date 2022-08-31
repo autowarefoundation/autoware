@@ -1,6 +1,7 @@
 <launch>
   <!-- common param -->
   <arg name="common_param_path" default="$(find-pkg-share motion_velocity_smoother)/config/default_common.param.yaml"/>
+  <arg name="nearest_search_param_path"/>
 
   <!-- input/output -->
   <arg name="input_trajectory" default="/planning/scenario_planning/scenario_selector/trajectory"/>
@@ -16,6 +17,7 @@
 
   <node pkg="motion_velocity_smoother" exec="motion_velocity_smoother" name="motion_velocity_smoother" output="screen">
     <param from="$(var common_param_path)"/>
+    <param from="$(var nearest_search_param_path)"/>
     <param from="$(var param_path)"/>
     <param from="$(var smoother_param_path)"/>
     <param name="publish_debug_trajs" value="$(var publish_debug_trajs)"/>

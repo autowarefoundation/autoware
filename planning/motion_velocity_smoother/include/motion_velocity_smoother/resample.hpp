@@ -45,13 +45,13 @@ struct ResampleParam
 
 boost::optional<TrajectoryPoints> resampleTrajectory(
   const TrajectoryPoints & input, const double v_current,
-  const geometry_msgs::msg::Pose & current_pose, const double delta_yaw_threshold,
-  const ResampleParam & param, const bool use_zoh_for_v = true);
+  const geometry_msgs::msg::Pose & current_pose, const double nearest_dist_threshold,
+  const double nearest_yaw_threshold, const ResampleParam & param, const bool use_zoh_for_v = true);
 
 boost::optional<TrajectoryPoints> resampleTrajectory(
   const TrajectoryPoints & input, const geometry_msgs::msg::Pose & current_pose,
-  const double delta_yaw_threshold, const ResampleParam & param, const double nominal_ds,
-  const bool use_zoh_for_v = true);
+  const double nearest_dist_threshold, const double nearest_yaw_threshold,
+  const ResampleParam & param, const double nominal_ds, const bool use_zoh_for_v = true);
 }  // namespace resampling
 }  // namespace motion_velocity_smoother
 

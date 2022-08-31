@@ -105,7 +105,8 @@ inline bool smoothPath(
 
   // Resample trajectory with ego-velocity based interval distances
   auto traj_resampled = smoother->resampleTrajectory(
-    *traj_lateral_acc_filtered, v0, current_pose, std::numeric_limits<double>::max());
+    *traj_lateral_acc_filtered, v0, current_pose, planner_data->ego_nearest_dist_threshold,
+    planner_data->ego_nearest_yaw_threshold);
   const size_t traj_resampled_closest = motion_utils::findFirstNearestIndexWithSoftConstraints(
     *traj_resampled, current_pose, planner_data->ego_nearest_dist_threshold,
     planner_data->ego_nearest_yaw_threshold);

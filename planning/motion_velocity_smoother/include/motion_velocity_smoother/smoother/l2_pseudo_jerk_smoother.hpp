@@ -46,7 +46,7 @@ public:
 
   boost::optional<TrajectoryPoints> resampleTrajectory(
     const TrajectoryPoints & input, const double v0, const geometry_msgs::msg::Pose & current_pose,
-    const double delta_yaw_threshold) const override;
+    const double nearest_dist_threshold, const double nearest_yaw_threshold) const override;
 
   void setParam(const Param & smoother_param);
   Param getParam() const;

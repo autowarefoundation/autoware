@@ -58,7 +58,7 @@ inline double integ_v(double v0, double a0, double j0, double t)
 inline double integ_a(double a0, double j0, double t) { return a0 + j0 * t; }
 
 TrajectoryPoint calcInterpolatedTrajectoryPoint(
-  const TrajectoryPoints & trajectory, const Pose & target_pose)
+  const TrajectoryPoints & trajectory, const Pose & target_pose, const size_t seg_idx)
 {
   TrajectoryPoint traj_p{};
   traj_p.pose = target_pose;
@@ -75,17 +75,14 @@ TrajectoryPoint calcInterpolatedTrajectoryPoint(
     return traj_p;
   }
 
-  const size_t segment_idx =
-    motion_utils::findNearestSegmentIndex(trajectory, target_pose.position);
-
-  auto v1 = getTransVector3(trajectory.at(segment_idx).pose, trajectory.at(segment_idx + 1).pose);
-  auto v2 = getTransVector3(trajectory.at(segment_idx).pose, target_pose);
+  auto v1 = getTransVector3(trajectory.at(seg_idx).pose, trajectory.at(seg_idx + 1).pose);
+  auto v2 = getTransVector3(trajectory.at(seg_idx).pose, target_pose);
   // calc internal proportion
   const double prop{std::max(0.0, std::min(1.0, v1.dot(v2) / v1.length2()))};
 
   {
-    const auto & seg_pt = trajectory.at(segment_idx);
-    const auto & next_pt = trajectory.at(segment_idx + 1);
+    const auto & seg_pt = trajectory.at(seg_idx);
+    const auto & next_pt = trajectory.at(seg_idx + 1);
     traj_p.pose = tier4_autoware_utils::calcInterpolatedPose(seg_pt.pose, next_pt.pose, prop);
     traj_p.longitudinal_velocity_mps = interpolation::lerp(
       seg_pt.longitudinal_velocity_mps, next_pt.longitudinal_velocity_mps, prop);

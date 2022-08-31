@@ -38,7 +38,7 @@ using TrajectoryPoints = std::vector<TrajectoryPoint>;
 using geometry_msgs::msg::Pose;
 
 TrajectoryPoint calcInterpolatedTrajectoryPoint(
-  const TrajectoryPoints & trajectory, const Pose & target_pose);
+  const TrajectoryPoints & trajectory, const Pose & target_pose, const size_t seg_idx);
 
 TrajectoryPoints extractPathAroundIndex(
   const TrajectoryPoints & trajectory, const size_t index, const double & ahead_length,

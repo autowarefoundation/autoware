@@ -234,7 +234,8 @@ bool AnalyticalJerkConstrainedSmoother::apply(
 boost::optional<TrajectoryPoints> AnalyticalJerkConstrainedSmoother::resampleTrajectory(
   const TrajectoryPoints & input, [[maybe_unused]] const double v0,
   [[maybe_unused]] const geometry_msgs::msg::Pose & current_pose,
-  [[maybe_unused]] const double delta_yaw_threshold) const
+  [[maybe_unused]] const double nearest_dist_threshold,
+  [[maybe_unused]] const double nearest_yaw_threshold) const
 {
   TrajectoryPoints output;
   if (input.empty()) {
