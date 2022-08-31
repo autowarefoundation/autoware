@@ -79,6 +79,7 @@
                   - \"\"
                   - -cuda
                 include:" {source}
+    - source: .github/workflows/cancel-previous-workflows.yaml
     - source: .github/workflows/check-build-depends.yaml
       pre-commands: |
         sd "container: ros:(\w+)" "container: ghcr.io/autowarefoundation/autoware-universe:\$1-latest" {source}
