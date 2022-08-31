@@ -3,12 +3,25 @@ name: check-build-depends
 on:
   pull_request:
     paths:
-      - build_depends.repos
+      - build_depends*.repos
 
 jobs:
   check-build-depends:
     runs-on: ubuntu-latest
-    container: ghcr.io/autowarefoundation/autoware-universe:galactic-latest
+    container: ${{ matrix.container }}
+    strategy:
+      fail-fast: false
+      matrix:
+        rosdistro:
+          - galactic
+          - humble
+        include:
+          - rosdistro: galactic
+            container: ghcr.io/autowarefoundation/autoware-universe:galactic-latest
+            build-depends-repos: build_depends.repos
+          - rosdistro: humble
+            container: ghcr.io/autowarefoundation/autoware-universe:humble-latest
+            build-depends-repos: build_depends.humble.repos
     steps:
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.10.0
@@ -26,6 +39,6 @@ jobs:
       - name: Build
         uses: autowarefoundation/autoware-github-actions/colcon-build@v1
         with:
-          rosdistro: galactic
+          rosdistro: ${{ matrix.rosdistro }}
           target-packages: ${{ steps.get-self-packages.outputs.self-packages }}
           build-depends-repos: build_depends.repos
