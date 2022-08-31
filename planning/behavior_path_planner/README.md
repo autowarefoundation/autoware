@@ -221,9 +221,9 @@ The Pull Over module is activated when goal is in the shoulder lane. Ego-vehicle
 | Name                       | Unit   | Type   | Description                                                                                                                             | Default value |
 | :------------------------- | :----- | :----- | :-------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
 | request_length             | [m]    | double | when the ego-vehicle approaches the goal by this distance, the module is activated.                                                     | 100.0         |
-| th_arrived_distance_m      | [m]    | double | distance threshold for arrival of path termination                                                                                      | 1.0           |
-| th_stopped_velocity_mps    | [m/s]  | double | velocity threshold for arrival of path termination                                                                                      | 0.01          |
-| th_stopped_time_sec        | [s]    | double | time threshold for arrival of path termination                                                                                          | 2.0           |
+| th_arrived_distance        | [m]    | double | distance threshold for arrival of path termination                                                                                      | 1.0           |
+| th_stopped_velocity        | [m/s]  | double | velocity threshold for arrival of path termination                                                                                      | 0.01          |
+| th_stopped_time            | [s]    | double | time threshold for arrival of path termination                                                                                          | 2.0           |
 | pull_over_velocity         | [m/s]  | double | decelerate to this speed by the goal search area                                                                                        | 2.0           |
 | pull_over_minimum_velocity | [m/s]  | double | speed of pull_over after stopping once. this prevents excessive acceleration.                                                           | 0.3           |
 | margin_from_boundary       | [m]    | double | distance margin from edge of the shoulder lane                                                                                          | 0.5           |
@@ -299,10 +299,10 @@ See also [[1]](https://www.sciencedirect.com/science/article/pii/S14746670153474
 
 ###### Parameters geometric parallel parking
 
-| Name              | Unit  | Type   | Description                             | Default value |
-| :---------------- | :---- | :----- | :-------------------------------------- | :------------ |
-| arc_path_interval | [m]   | double | interval between arc path points        | 1.0           |
-| max_steer_rad     | [rad] | double | maximum steer angle for path generation | 0.35          |
+| Name                    | Unit  | Type   | Description                                                                                                                         | Default value |
+| :---------------------- | :---- | :----- | :---------------------------------------------------------------------------------------------------------------------------------- | :------------ |
+| arc_path_interval       | [m]   | double | interval between arc path points                                                                                                    | 1.0           |
+| pull_over_max_steer_rad | [rad] | double | maximum steer angle for path generation. it may not be possible to control steer up to max_steer_angle in vehicle_info when stopped | 0.35          |
 
 ###### arc forward parking
 

@@ -48,8 +48,8 @@ using geometry_msgs::msg::PoseStamped;
 
 struct ParallelParkingParameters
 {
-  double th_arrived_distance_m;
-  double th_stopped_velocity_mps;
+  double th_arrived_distance;
+  double th_stopped_velocity;
   double after_forward_parking_straight_distance;
   double after_backward_parking_straight_distance;
   double forward_parking_velocity;
@@ -60,7 +60,7 @@ struct ParallelParkingParameters
   double departing_lane_departure_margin;
   double arc_path_interval;
   double maximum_deceleration;
-  double max_steer_rad;
+  double max_steer_angle;
 };
 
 class GeometricParallelParking

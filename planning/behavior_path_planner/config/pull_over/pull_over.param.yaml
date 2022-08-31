@@ -2,9 +2,9 @@
   ros__parameters:
     pull_over:
       request_length: 100.0
-      th_arrived_distance_m: 1.0
-      th_stopped_velocity_mps: 0.01
-      th_stopped_time_sec: 2.0  # It must be greater than the state_machine's.
+      th_arrived_distance: 1.0
+      th_stopped_velocity: 0.01
+      th_stopped_time: 2.0  # It must be greater than the state_machine's.
       pull_over_velocity: 3.0
       pull_over_minimum_velocity: 0.3
       margin_from_boundary: 0.5
@@ -39,7 +39,7 @@
       forward_parking_lane_departure_margin: 0.0
       backward_parking_lane_departure_margin: 0.0
       arc_path_interval: 1.0
-      max_steer_rad: 0.35  # 20deg
+      pull_over_max_steer_angle: 0.35  # 20deg
       # hazard on when parked
       hazard_on_threshold_dis: 1.0
       hazard_on_threshold_vel: 0.5

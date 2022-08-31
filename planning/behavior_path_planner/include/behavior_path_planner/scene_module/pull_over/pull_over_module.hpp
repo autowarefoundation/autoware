@@ -43,9 +43,9 @@ using visualization_msgs::msg::MarkerArray;
 struct PullOverParameters
 {
   double request_length;
-  double th_arrived_distance_m;
-  double th_stopped_velocity_mps;
-  double th_stopped_time_sec;
+  double th_arrived_distance;
+  double th_stopped_velocity;
+  double th_stopped_time;
   double margin_from_boundary;
   double decide_path_distance;
   double maximum_deceleration;
@@ -80,7 +80,7 @@ struct PullOverParameters
   double forward_parking_lane_departure_margin;
   double backward_parking_lane_departure_margin;
   double arc_path_interval;
-  double max_steer_rad;
+  double pull_over_max_steer_angle;
   // hazard
   double hazard_on_threshold_dis;
   double hazard_on_threshold_vel;

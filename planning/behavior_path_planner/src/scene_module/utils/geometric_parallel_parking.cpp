@@ -114,8 +114,8 @@ bool GeometricParallelParking::isEnoughDistanceToStart(const Pose & start_pose) 
   // not enough to restart from stopped
   constexpr double min_restart_distance = 3.0;
   if (
-    current_vel < parameters_.th_stopped_velocity_mps &&
-    current_to_start.position.x > parameters_.th_arrived_distance_m &&
+    current_vel < parameters_.th_stopped_velocity &&
+    current_to_start.position.x > parameters_.th_arrived_distance &&
     current_to_start.position.x < min_restart_distance) {
     return false;
   }
@@ -200,7 +200,8 @@ bool GeometricParallelParking::planPullOver(
     constexpr double start_pose_offset = 0.0;
     constexpr double min_steer_rad = 0.05;
     constexpr double steer_interval = 0.1;
-    for (double steer = parameters_.max_steer_rad; steer > min_steer_rad; steer -= steer_interval) {
+    for (double steer = parameters_.max_steer_angle; steer > min_steer_rad;
+         steer -= steer_interval) {
       const double R_E_r = common_params.wheel_base / std::tan(steer);
       const auto start_pose = calcStartPose(arc_end_pose, start_pose_offset, R_E_r, is_forward);
       if (!start_pose) {
@@ -537,7 +538,7 @@ void GeometricParallelParking::setData(
 
   auto common_params = planner_data_->parameters;
 
-  R_E_min_ = common_params.wheel_base / std::tan(parameters_.max_steer_rad);
+  R_E_min_ = common_params.wheel_base / std::tan(parameters_.max_steer_angle);
   R_Bl_min_ = std::hypot(
     R_E_min_ + common_params.wheel_tread / 2 + common_params.left_over_hang,
     common_params.wheel_base + common_params.front_overhang);

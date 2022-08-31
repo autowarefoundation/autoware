@@ -89,8 +89,8 @@ ParallelParkingParameters PullOverModule::getGeometricPullOutParameters() const
 {
   ParallelParkingParameters params;
 
-  params.th_arrived_distance_m = parameters_.th_arrived_distance_m;
-  params.th_stopped_velocity_mps = parameters_.th_stopped_velocity_mps;
+  params.th_arrived_distance = parameters_.th_arrived_distance;
+  params.th_stopped_velocity = parameters_.th_stopped_velocity;
   params.after_forward_parking_straight_distance =
     parameters_.after_forward_parking_straight_distance;
   params.after_backward_parking_straight_distance =
@@ -102,7 +102,7 @@ ParallelParkingParameters PullOverModule::getGeometricPullOutParameters() const
     parameters_.backward_parking_lane_departure_margin;
   params.arc_path_interval = parameters_.arc_path_interval;
   params.maximum_deceleration = parameters_.maximum_deceleration;
-  params.max_steer_rad = parameters_.max_steer_rad;
+  params.max_steer_angle = parameters_.pull_over_max_steer_angle;
 
   return params;
 }
@@ -879,7 +879,7 @@ bool PullOverModule::isStopped()
   while (rclcpp::ok()) {
     const auto time_diff = rclcpp::Time(odometry_buffer_.back()->header.stamp) -
                            rclcpp::Time(odometry_buffer_.front()->header.stamp);
-    if (time_diff.seconds() < parameters_.th_stopped_time_sec) {
+    if (time_diff.seconds() < parameters_.th_stopped_time) {
       break;
     }
     odometry_buffer_.pop_front();
@@ -887,7 +887,7 @@ bool PullOverModule::isStopped()
   bool is_stopped = true;
   for (const auto & odometry : odometry_buffer_) {
     const double ego_vel = util::l2Norm(odometry->twist.twist.linear);
-    if (ego_vel > parameters_.th_stopped_velocity_mps) {
+    if (ego_vel > parameters_.th_stopped_velocity) {
       is_stopped = false;
       break;
     }
@@ -900,7 +900,7 @@ bool PullOverModule::hasFinishedCurrentPath()
   const auto current_path_end = status_.path.points.back();
   const auto self_pose = planner_data_->self_pose->pose;
   const bool is_near_target = tier4_autoware_utils::calcDistance2d(current_path_end, self_pose) <
-                              parameters_.th_arrived_distance_m;
+                              parameters_.th_arrived_distance;
 
   return is_near_target && isStopped();
 }
@@ -910,7 +910,7 @@ bool PullOverModule::hasFinishedPullOver()
   // check ego car is close enough to goal pose
   const auto current_pose = planner_data_->self_pose->pose;
   const bool car_is_on_goal =
-    calcDistance2d(current_pose, modified_goal_pose_) < parameters_.th_arrived_distance_m;
+    calcDistance2d(current_pose, modified_goal_pose_) < parameters_.th_arrived_distance;
 
   return car_is_on_goal && isStopped();
 }
