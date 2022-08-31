@@ -61,7 +61,8 @@ None
 ### Config files
 
 Config files for several velodyne models are prepared.
-The `temp_**` parameters are set with reference to the operational temperature from each datasheet.
+The `temp_***` parameters are set with reference to the operational temperature from each datasheet.
+Moreover, the `temp_hot_***` of each model are set highly as 20 from operational temperature.
 Now, `VLP-16.param.yaml` is used as default argument because it is lowest spec.
 
 | Model Name     | Config name               | Operational Temperature [℃] |
