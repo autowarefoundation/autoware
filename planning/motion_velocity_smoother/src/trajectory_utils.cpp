@@ -16,7 +16,6 @@
 
 #include "interpolation/linear_interpolation.hpp"
 #include "interpolation/spline_interpolation.hpp"
-#include "motion_velocity_smoother/linear_interpolation.hpp"
 
 #include <algorithm>
 #include <limits>
@@ -499,21 +498,14 @@ boost::optional<TrajectoryPoints> applyDecelFilterWithJerkConstraint(
     distance_all.begin(), distance_all.end(), [&xs](double x) { return x > xs.back(); });
   const std::vector<double> distance{distance_all.begin() + start_index, it_end};
 
-  const auto vel_at_wp = linear_interpolation::interpolate(xs, vs, distance);
-  const auto acc_at_wp = linear_interpolation::interpolate(xs, as, distance);
+  const auto vel_at_wp = interpolation::lerp(xs, vs, distance);
+  const auto acc_at_wp = interpolation::lerp(xs, as, distance);
 
-  if (!vel_at_wp || !acc_at_wp) {
-    RCLCPP_WARN_STREAM(
-      rclcpp::get_logger("motion_velocity_smoother").get_child("trajectory_utils"),
-      "interpolation error");
-    return {};
+  for (unsigned int i = 0; i < vel_at_wp.size(); ++i) {
+    output_trajectory.at(start_index + i).longitudinal_velocity_mps = vel_at_wp.at(i);
+    output_trajectory.at(start_index + i).acceleration_mps2 = acc_at_wp.at(i);
   }
-
-  for (unsigned int i = 0; i < vel_at_wp->size(); ++i) {
-    output_trajectory.at(start_index + i).longitudinal_velocity_mps = vel_at_wp->at(i);
-    output_trajectory.at(start_index + i).acceleration_mps2 = acc_at_wp->at(i);
-  }
-  for (unsigned int i = start_index + vel_at_wp->size(); i < output_trajectory.size(); ++i) {
+  for (unsigned int i = start_index + vel_at_wp.size(); i < output_trajectory.size(); ++i) {
     output_trajectory.at(i).longitudinal_velocity_mps = decel_target_vel;
     output_trajectory.at(i).acceleration_mps2 = 0.0;
   }

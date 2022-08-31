@@ -14,6 +14,8 @@
 
 #include "motion_velocity_smoother/smoother/analytical_jerk_constrained_smoother/velocity_planning_utils.hpp"
 
+#include "interpolation/linear_interpolation.hpp"
+
 #include <algorithm>
 #include <vector>
 
@@ -232,28 +234,24 @@ bool calcStopVelocityWithConstantJerkAccLimit(
     dists.push_back(dist);
   }
 
-  const auto vel_at_wp = linear_interpolation::interpolate(xs, vs, dists);
-  const auto acc_at_wp = linear_interpolation::interpolate(xs, as, dists);
-  const auto jerk_at_wp = linear_interpolation::interpolate(xs, js, dists);
-  if (!vel_at_wp || !acc_at_wp || !jerk_at_wp) {
-    RCLCPP_DEBUG(rclcpp::get_logger("velocity_planning_utils"), "Interpolation error");
-    return false;
-  }
+  const auto vel_at_wp = interpolation::lerp(xs, vs, dists);
+  const auto acc_at_wp = interpolation::lerp(xs, as, dists);
+  const auto jerk_at_wp = interpolation::lerp(xs, js, dists);
 
   // for debug
   std::stringstream ssi;
   for (unsigned int i = 0; i < dists.size(); ++i) {
-    ssi << "d: " << dists.at(i) << ", v: " << vel_at_wp->at(i) << ", a: " << acc_at_wp->at(i)
-        << ", j: " << jerk_at_wp->at(i) << std::endl;
+    ssi << "d: " << dists.at(i) << ", v: " << vel_at_wp.at(i) << ", a: " << acc_at_wp.at(i)
+        << ", j: " << jerk_at_wp.at(i) << std::endl;
   }
   RCLCPP_DEBUG(
     rclcpp::get_logger("velocity_planning_utils"), "Interpolated = %s", ssi.str().c_str());
 
-  for (size_t i = 0; i < vel_at_wp->size(); ++i) {
-    output_trajectory.at(start_index + i).longitudinal_velocity_mps = vel_at_wp->at(i);
-    output_trajectory.at(start_index + i).acceleration_mps2 = acc_at_wp->at(i);
+  for (size_t i = 0; i < vel_at_wp.size(); ++i) {
+    output_trajectory.at(start_index + i).longitudinal_velocity_mps = vel_at_wp.at(i);
+    output_trajectory.at(start_index + i).acceleration_mps2 = acc_at_wp.at(i);
   }
-  for (size_t i = start_index + vel_at_wp->size(); i < output_trajectory.size(); ++i) {
+  for (size_t i = start_index + vel_at_wp.size(); i < output_trajectory.size(); ++i) {
     output_trajectory.at(i).longitudinal_velocity_mps = decel_target_vel;
     output_trajectory.at(i).acceleration_mps2 = 0.0;
   }
