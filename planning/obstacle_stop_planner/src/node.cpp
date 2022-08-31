@@ -1392,14 +1392,18 @@ bool ObstacleStopPlannerNode::searchPointcloudNearTrajectory(
                                  ? slow_down_param_.slow_down_search_radius
                                  : stop_param.stop_search_radius;
   const double squared_radius = search_radius * search_radius;
-  for (const auto & trajectory_point : trajectory) {
-    const auto center_pose = getVehicleCenterFromBase(trajectory_point.pose, vehicle_info);
-    for (const auto & point : transformed_points_ptr->points) {
-      const double x = center_pose.position.x - point.x;
-      const double y = center_pose.position.y - point.y;
+  std::vector<geometry_msgs::msg::Point> center_points;
+  center_points.reserve(trajectory.size());
+  for (const auto & trajectory_point : trajectory)
+    center_points.push_back(getVehicleCenterFromBase(trajectory_point.pose, vehicle_info).position);
+  for (const auto & point : transformed_points_ptr->points) {
+    for (const auto & center_point : center_points) {
+      const double x = center_point.x - point.x;
+      const double y = center_point.y - point.y;
       const double squared_distance = x * x + y * y;
       if (squared_distance < squared_radius) {
         output_points_ptr->points.push_back(point);
+        break;
       }
     }
   }
