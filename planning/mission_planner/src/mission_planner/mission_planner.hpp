@@ -47,11 +47,11 @@ protected:
 
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_publisher_;
 
-  virtual bool isRoutingGraphReady() const = 0;
-  virtual autoware_auto_planning_msgs::msg::HADMapRoute planRoute() = 0;
-  virtual void visualizeRoute(
+  virtual bool is_routing_graph_ready() const = 0;
+  virtual autoware_auto_planning_msgs::msg::HADMapRoute plan_route() = 0;
+  virtual void visualize_route(
     const autoware_auto_planning_msgs::msg::HADMapRoute & route) const = 0;
-  virtual void publishRoute(const autoware_auto_planning_msgs::msg::HADMapRoute & route) const;
+  virtual void publish_route(const autoware_auto_planning_msgs::msg::HADMapRoute & route) const;
 
 private:
   rclcpp::Publisher<autoware_auto_planning_msgs::msg::HADMapRoute>::SharedPtr route_publisher_;
@@ -61,12 +61,13 @@ private:
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
 
-  bool getEgoVehiclePose(geometry_msgs::msg::PoseStamped * ego_vehicle_pose);
-  void goalPoseCallback(const geometry_msgs::msg::PoseStamped::ConstSharedPtr goal_msg_ptr);
-  void checkpointCallback(const geometry_msgs::msg::PoseStamped::ConstSharedPtr checkpoint_msg_ptr);
-  bool transformPose(
+  bool get_ego_vehicle_pose(geometry_msgs::msg::PoseStamped * ego_vehicle_pose);
+  void goal_pose_callback(const geometry_msgs::msg::PoseStamped::ConstSharedPtr goal_msg_ptr);
+  void checkpoint_callback(
+    const geometry_msgs::msg::PoseStamped::ConstSharedPtr checkpoint_msg_ptr);
+  bool transform_pose(
     const geometry_msgs::msg::PoseStamped & input_pose,
-    geometry_msgs::msg::PoseStamped * output_pose, const std::string target_frame);
+    geometry_msgs::msg::PoseStamped * output_pose, const std::string & target_frame);
 };
 
 }  // namespace mission_planner

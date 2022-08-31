@@ -40,9 +40,9 @@ MissionPlanner::MissionPlanner(
   using std::placeholders::_1;
 
   goal_subscriber_ = create_subscription<geometry_msgs::msg::PoseStamped>(
-    "input/goal_pose", 10, std::bind(&MissionPlanner::goalPoseCallback, this, _1));
+    "input/goal_pose", 10, std::bind(&MissionPlanner::goal_pose_callback, this, _1));
   checkpoint_subscriber_ = create_subscription<geometry_msgs::msg::PoseStamped>(
-    "input/checkpoint", 10, std::bind(&MissionPlanner::checkpointCallback, this, _1));
+    "input/checkpoint", 10, std::bind(&MissionPlanner::checkpoint_callback, this, _1));
 
   rclcpp::QoS durable_qos{1};
   durable_qos.transient_local();
@@ -52,7 +52,7 @@ MissionPlanner::MissionPlanner(
     create_publisher<visualization_msgs::msg::MarkerArray>("debug/route_marker", durable_qos);
 }
 
-bool MissionPlanner::getEgoVehiclePose(geometry_msgs::msg::PoseStamped * ego_vehicle_pose)
+bool MissionPlanner::get_ego_vehicle_pose(geometry_msgs::msg::PoseStamped * ego_vehicle_pose)
 {
   geometry_msgs::msg::PoseStamped base_link_origin;
   base_link_origin.header.frame_id = base_link_frame_;
@@ -65,12 +65,12 @@ bool MissionPlanner::getEgoVehiclePose(geometry_msgs::msg::PoseStamped * ego_veh
   base_link_origin.pose.orientation.w = 1;
 
   //  transform base_link frame origin to map_frame to get vehicle positions
-  return transformPose(base_link_origin, ego_vehicle_pose, map_frame_);
+  return transform_pose(base_link_origin, ego_vehicle_pose, map_frame_);
 }
 
-bool MissionPlanner::transformPose(
+bool MissionPlanner::transform_pose(
   const geometry_msgs::msg::PoseStamped & input_pose, geometry_msgs::msg::PoseStamped * output_pose,
-  const std::string target_frame)
+  const std::string & target_frame)
 {
   geometry_msgs::msg::TransformStamped transform;
   try {
@@ -84,17 +84,17 @@ bool MissionPlanner::transformPose(
   }
 }
 
-void MissionPlanner::goalPoseCallback(
+void MissionPlanner::goal_pose_callback(
   const geometry_msgs::msg::PoseStamped::ConstSharedPtr goal_msg_ptr)
 {
   // set start pose
-  if (!getEgoVehiclePose(&start_pose_)) {
+  if (!get_ego_vehicle_pose(&start_pose_)) {
     RCLCPP_ERROR(
       get_logger(), "Failed to get ego vehicle pose in map frame. Aborting mission planning");
     return;
   }
   // set goal pose
-  if (!transformPose(*goal_msg_ptr, &goal_pose_, map_frame_)) {
+  if (!transform_pose(*goal_msg_ptr, &goal_pose_, map_frame_)) {
     RCLCPP_ERROR(get_logger(), "Failed to get goal pose in map frame. Aborting mission planning");
     return;
   }
@@ -104,16 +104,16 @@ void MissionPlanner::goalPoseCallback(
   checkpoints_.push_back(start_pose_);
   checkpoints_.push_back(goal_pose_);
 
-  if (!isRoutingGraphReady()) {
+  if (!is_routing_graph_ready()) {
     RCLCPP_ERROR(get_logger(), "RoutingGraph is not ready. Aborting mission planning");
     return;
   }
 
-  autoware_auto_planning_msgs::msg::HADMapRoute route = planRoute();
-  publishRoute(route);
+  autoware_auto_planning_msgs::msg::HADMapRoute route = plan_route();
+  publish_route(route);
 }  // namespace mission_planner
 
-void MissionPlanner::checkpointCallback(
+void MissionPlanner::checkpoint_callback(
   const geometry_msgs::msg::PoseStamped::ConstSharedPtr checkpoint_msg_ptr)
 {
   if (checkpoints_.size() < 2) {
@@ -124,7 +124,7 @@ void MissionPlanner::checkpointCallback(
   }
 
   geometry_msgs::msg::PoseStamped transformed_checkpoint;
-  if (!transformPose(*checkpoint_msg_ptr, &transformed_checkpoint, map_frame_)) {
+  if (!transform_pose(*checkpoint_msg_ptr, &transformed_checkpoint, map_frame_)) {
     RCLCPP_ERROR(
       get_logger(), "Failed to get checkpoint pose in map frame. Aborting mission planning");
     return;
@@ -133,16 +133,17 @@ void MissionPlanner::checkpointCallback(
   // insert checkpoint before goal
   checkpoints_.insert(checkpoints_.end() - 1, transformed_checkpoint);
 
-  autoware_auto_planning_msgs::msg::HADMapRoute route = planRoute();
-  publishRoute(route);
+  autoware_auto_planning_msgs::msg::HADMapRoute route = plan_route();
+  publish_route(route);
 }
 
-void MissionPlanner::publishRoute(const autoware_auto_planning_msgs::msg::HADMapRoute & route) const
+void MissionPlanner::publish_route(
+  const autoware_auto_planning_msgs::msg::HADMapRoute & route) const
 {
   if (!route.segments.empty()) {
     RCLCPP_INFO(get_logger(), "Route successfully planned. Publishing...");
     route_publisher_->publish(route);
-    visualizeRoute(route);
+    visualize_route(route);
   } else {
     RCLCPP_ERROR(get_logger(), "Calculated route is empty!");
   }

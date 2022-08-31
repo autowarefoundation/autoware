@@ -21,12 +21,12 @@ GoalPoseVisualizer::GoalPoseVisualizer(const rclcpp::NodeOptions & node_options)
 {
   sub_route_ = create_subscription<autoware_auto_planning_msgs::msg::HADMapRoute>(
     "input/route", rclcpp::QoS{1}.transient_local(),
-    std::bind(&GoalPoseVisualizer::echoBackRouteCallback, this, std::placeholders::_1));
+    std::bind(&GoalPoseVisualizer::echo_back_route_callback, this, std::placeholders::_1));
   pub_goal_pose_ = create_publisher<geometry_msgs::msg::PoseStamped>(
     "output/goal_pose", rclcpp::QoS{1}.transient_local());
 }
 
-void GoalPoseVisualizer::echoBackRouteCallback(
+void GoalPoseVisualizer::echo_back_route_callback(
   const autoware_auto_planning_msgs::msg::HADMapRoute::ConstSharedPtr msg)
 {
   geometry_msgs::msg::PoseStamped goal_pose;

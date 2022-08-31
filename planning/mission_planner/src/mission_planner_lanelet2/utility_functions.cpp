@@ -49,7 +49,7 @@ void insertMarkerArray(
   a1->markers.insert(a1->markers.end(), a2.markers.begin(), a2.markers.end());
 }
 
-std::vector<std::pair<double, lanelet::Lanelet>> excludeSubtypeLaneletsWithDistance(
+std::vector<std::pair<double, lanelet::Lanelet>> exclude_subtype_lanelets_with_distance(
   const std::vector<std::pair<double, lanelet::Lanelet>> & lls, const char subtype[])
 {
   std::vector<std::pair<double, lanelet::Lanelet>> exclude_subtype_lanelets;

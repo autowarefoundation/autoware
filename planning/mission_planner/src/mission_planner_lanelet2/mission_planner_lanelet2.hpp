@@ -56,14 +56,14 @@ private:
 
   rclcpp::Subscription<autoware_auto_mapping_msgs::msg::HADMapBin>::SharedPtr map_subscriber_;
 
-  void mapCallback(const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr msg);
-  bool isGoalValid() const;
-  void refineGoalHeight(const RouteSections & route_sections);
+  void map_callback(const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr msg);
+  bool is_goal_valid() const;
+  void refine_goal_height(const RouteSections & route_sections);
 
   // virtual functions
-  bool isRoutingGraphReady() const;
-  autoware_auto_planning_msgs::msg::HADMapRoute planRoute();
-  void visualizeRoute(const autoware_auto_planning_msgs::msg::HADMapRoute & route) const;
+  bool is_routing_graph_ready() const override;
+  autoware_auto_planning_msgs::msg::HADMapRoute plan_route() override;
+  void visualize_route(const autoware_auto_planning_msgs::msg::HADMapRoute & route) const override;
 };
 }  // namespace mission_planner
 

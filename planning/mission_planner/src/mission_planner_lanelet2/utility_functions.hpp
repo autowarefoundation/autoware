@@ -39,8 +39,8 @@ bool exists(const std::vector<T> & vectors, const T & item)
   return false;
 }
 
-void setColor(std_msgs::msg::ColorRGBA * cl, double r, double g, double b, double a);
-void insertMarkerArray(
+void set_color(std_msgs::msg::ColorRGBA * cl, double r, double g, double b, double a);
+void insert_marker_array(
   visualization_msgs::msg::MarkerArray * a1, const visualization_msgs::msg::MarkerArray & a2);
-std::string toString(const geometry_msgs::msg::Pose & pose);
+std::string to_string(const geometry_msgs::msg::Pose & pose);
 #endif  // MISSION_PLANNER_LANELET2__UTILITY_FUNCTIONS_HPP_
