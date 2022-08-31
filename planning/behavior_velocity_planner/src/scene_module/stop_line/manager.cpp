@@ -29,7 +29,7 @@ StopLineModuleManager::StopLineModuleManager(rclcpp::Node & node)
   const std::string ns(getModuleName());
   auto & p = planner_param_;
   p.stop_margin = node.declare_parameter(ns + ".stop_margin", 0.0);
-  p.stop_check_dist = node.declare_parameter(ns + ".stop_check_dist", 2.0);
+  p.hold_stop_margin_distance = node.declare_parameter(ns + ".hold_stop_margin_distance", 2.0);
   p.stop_duration_sec = node.declare_parameter(ns + ".stop_duration_sec", 1.0);
   p.use_initialization_stop_line_state =
     node.declare_parameter(ns + ".use_initialization_stop_line_state", false);

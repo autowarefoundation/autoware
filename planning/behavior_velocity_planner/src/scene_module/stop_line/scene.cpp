@@ -74,53 +74,91 @@ bool StopLineModule::modifyPathVelocity(
    */
   const size_t stop_line_seg_idx = planning_utils::calcSegmentIndexFromPointIndex(
     path->points, stop_pose.position, stop_point_idx);
-  const double stop_line_margin = base_link2front + planner_param_.stop_margin;
   const size_t current_seg_idx = findEgoSegmentIndex(path->points);
-  const double signed_arc_dist_to_stop_point =
-    motion_utils::calcSignedArcLength(
-      path->points, planner_data_->current_pose.pose.position, current_seg_idx, stop_pose.position,
-      stop_line_seg_idx) -
-    stop_line_margin;
-  if (state_ == State::APPROACH) {
-    // Insert stop pose
-    planning_utils::insertStopPoint(stop_pose.position, stop_line_seg_idx, *path);
+  const double signed_arc_dist_to_stop_point = motion_utils::calcSignedArcLength(
+    path->points, planner_data_->current_pose.pose.position, current_seg_idx, stop_pose.position,
+    stop_line_seg_idx);
+  switch (state_) {
+    case State::APPROACH: {
+      // Insert stop pose
+      planning_utils::insertStopPoint(stop_pose.position, stop_line_seg_idx, *path);
 
-    // Update first stop index
-    first_stop_path_point_index_ = static_cast<int>(stop_point_idx);
-    debug_data_.stop_pose = stop_pose;
+      // Update first stop index
+      first_stop_path_point_index_ = static_cast<int>(stop_point_idx);
+      debug_data_.stop_pose = stop_pose;
 
-    // Get stop point and stop factor
-    {
-      tier4_planning_msgs::msg::StopFactor stop_factor;
-      stop_factor.stop_pose = stop_pose;
-      stop_factor.stop_factor_points.push_back(getCenterOfStopLine(stop_line_));
-      planning_utils::appendStopReason(stop_factor, stop_reason);
-    }
-
-    // Move to stopped state if stopped
-    if (
-      signed_arc_dist_to_stop_point < planner_param_.stop_check_dist &&
-      planner_data_->isVehicleStopped(planner_param_.stop_duration_sec)) {
-      RCLCPP_INFO(logger_, "APPROACH -> STOPPED");
-      state_ = State::STOPPED;
-      if (signed_arc_dist_to_stop_point < -planner_param_.stop_check_dist) {
-        RCLCPP_ERROR(
-          logger_, "Failed to stop near stop line but ego stopped. Change state to STOPPED");
+      // Get stop point and stop factor
+      {
+        tier4_planning_msgs::msg::StopFactor stop_factor;
+        stop_factor.stop_pose = stop_pose;
+        stop_factor.stop_factor_points.push_back(getCenterOfStopLine(stop_line_));
+        planning_utils::appendStopReason(stop_factor, stop_reason);
       }
-    }
-  } else if (state_ == State::STOPPED) {
-    // Change state after vehicle departure
-    if (!planner_data_->isVehicleStopped()) {
-      RCLCPP_INFO(logger_, "STOPPED -> START");
-      state_ = State::START;
-    }
-  } else if (state_ == State::START) {
-    // Initialize if vehicle is far from stop_line
-    if (planner_param_.use_initialization_stop_line_state) {
-      if (signed_arc_dist_to_stop_point > planner_param_.stop_check_dist) {
-        RCLCPP_INFO(logger_, "START -> APPROACH");
-        state_ = State::APPROACH;
+
+      // Move to stopped state if stopped
+      if (
+        signed_arc_dist_to_stop_point < planner_param_.hold_stop_margin_distance &&
+        planner_data_->isVehicleStopped()) {
+        RCLCPP_INFO(logger_, "APPROACH -> STOPPED");
+
+        state_ = State::STOPPED;
+        stopped_time_ = std::make_shared<const rclcpp::Time>(clock_->now());
+
+        if (signed_arc_dist_to_stop_point < -planner_param_.hold_stop_margin_distance) {
+          RCLCPP_ERROR(
+            logger_, "Failed to stop near stop line but ego stopped. Change state to STOPPED");
+        }
       }
+
+      break;
+    }
+
+    case State::STOPPED: {
+      // Change state after vehicle departure
+      const auto stopped_pose = motion_utils::calcLongitudinalOffsetPose(
+        path->points, planner_data_->current_pose.pose.position, 0.0);
+
+      if (!stopped_pose) {
+        break;
+      }
+
+      SegmentIndexWithPose ego_pos_on_path;
+      ego_pos_on_path.pose = stopped_pose.get();
+      ego_pos_on_path.index = findEgoSegmentIndex(path->points);
+
+      // Insert stop pose
+      planning_utils::insertStopPoint(ego_pos_on_path.pose.position, ego_pos_on_path.index, *path);
+
+      debug_data_.stop_pose = stop_pose;
+
+      // Get stop point and stop factor
+      {
+        tier4_planning_msgs::msg::StopFactor stop_factor;
+        stop_factor.stop_pose = ego_pos_on_path.pose;
+        stop_factor.stop_factor_points.push_back(getCenterOfStopLine(stop_line_));
+        planning_utils::appendStopReason(stop_factor, stop_reason);
+      }
+
+      const auto elapsed_time = (clock_->now() - *stopped_time_).seconds();
+
+      if (planner_param_.stop_duration_sec < elapsed_time) {
+        RCLCPP_INFO(logger_, "STOPPED -> START");
+        state_ = State::START;
+      }
+
+      break;
+    }
+
+    case State::START: {
+      // Initialize if vehicle is far from stop_line
+      if (planner_param_.use_initialization_stop_line_state) {
+        if (signed_arc_dist_to_stop_point > planner_param_.hold_stop_margin_distance) {
+          RCLCPP_INFO(logger_, "START -> APPROACH");
+          state_ = State::APPROACH;
+        }
+      }
+
+      break;
     }
   }
 
