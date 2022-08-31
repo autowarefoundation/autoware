@@ -57,10 +57,12 @@ protected:
    * @brief function to execute chronyc
    * @param [out] outOffset offset value of NTP time
    * @param [out] out_tracking_map "chronyc tracking" output for diagnostic
-   * @return if error occurred, return error string
+   * @param [out] pipe2_err_str if pipe2 error occurred, return error string
+   * @return if chronyc error occurred, return error string
    */
   std::string executeChronyc(
-    float & outOffset, std::map<std::string, std::string> & out_tracking_map);
+    float & outOffset, std::map<std::string, std::string> & out_tracking_map,
+    std::string & pipe2_err_str);
 
   diagnostic_updater::Updater updater_;  //!< @brief Updater class which advertises to /diagnostics
 

@@ -198,8 +198,31 @@ void HDDMonitor::checkUsage(diagnostic_updater::DiagnosticStatusWrapper & stat)
 
   for (auto itr = hdd_params_.begin(); itr != hdd_params_.end(); ++itr, ++hdd_index) {
     // Get summary of disk space usage of ext4
-    bp::ipstream is_out;
-    bp::ipstream is_err;
+
+    // boost::process create file descriptor without O_CLOEXEC required for multithreading.
+    // So create file descriptor with O_CLOEXEC and pass it to boost::process.
+    int out_fd[2];
+    if (pipe2(out_fd, O_CLOEXEC) != 0) {
+      error_str = "pipe2 error";
+      stat.add(fmt::format("HDD {}: status", hdd_index), "pipe2 error");
+      stat.add(fmt::format("HDD {}: name", hdd_index), itr->first.c_str());
+      stat.add(fmt::format("HDD {}: pipe2", hdd_index), strerror(errno));
+      continue;
+    }
+    bp::pipe out_pipe{out_fd[0], out_fd[1]};
+    bp::ipstream is_out{std::move(out_pipe)};
+
+    int err_fd[2];
+    if (pipe2(err_fd, O_CLOEXEC) != 0) {
+      error_str = "pipe2 error";
+      stat.add(fmt::format("HDD {}: status", hdd_index), "pipe2 error");
+      stat.add(fmt::format("HDD {}: name", hdd_index), itr->first.c_str());
+      stat.add(fmt::format("HDD {}: pipe2", hdd_index), strerror(errno));
+      continue;
+    }
+    bp::pipe err_pipe{err_fd[0], err_fd[1]};
+    bp::ipstream is_err{std::move(err_pipe)};
+
     // Invoke shell to use shell wildcard expansion
     bp::child c(
       "/bin/sh", "-c", fmt::format("df -Pm {}*", itr->first.c_str()), bp::std_out > is_out,
@@ -324,8 +347,24 @@ void HDDMonitor::getHDDParams()
 std::string HDDMonitor::getDeviceFromMountPoint(const std::string & mount_point)
 {
   std::string ret;
-  bp::ipstream is_out;
-  bp::ipstream is_err;
+
+  // boost::process create file descriptor without O_CLOEXEC required for multithreading.
+  // So create file descriptor with O_CLOEXEC and pass it to boost::process.
+  int out_fd[2];
+  if (pipe2(out_fd, O_CLOEXEC) != 0) {
+    RCLCPP_ERROR(get_logger(), "Failed to execute pipe2. %s", strerror(errno));
+    return "";
+  }
+  bp::pipe out_pipe{out_fd[0], out_fd[1]};
+  bp::ipstream is_out{std::move(out_pipe)};
+
+  int err_fd[2];
+  if (pipe2(err_fd, O_CLOEXEC) != 0) {
+    RCLCPP_ERROR(get_logger(), "Failed to execute pipe2. %s", strerror(errno));
+    return "";
+  }
+  bp::pipe err_pipe{err_fd[0], err_fd[1]};
+  bp::ipstream is_err{std::move(err_pipe)};
 
   bp::child c(
     "/bin/sh", "-c", fmt::format("findmnt -n -o SOURCE {}", mount_point.c_str()),

@@ -48,8 +48,27 @@ void MemMonitor::checkUsage(diagnostic_updater::DiagnosticStatusWrapper & stat)
   const auto t_start = SystemMonitorUtility::startMeasurement();
 
   // Get total amount of free and used memory
-  bp::ipstream is_out;
-  bp::ipstream is_err;
+
+  // boost::process create file descriptor without O_CLOEXEC required for multithreading.
+  // So create file descriptor with O_CLOEXEC and pass it to boost::process.
+  int out_fd[2];
+  if (pipe2(out_fd, O_CLOEXEC) != 0) {
+    stat.summary(DiagStatus::ERROR, "pipe2 error");
+    stat.add("pipe2", strerror(errno));
+    return;
+  }
+  bp::pipe out_pipe{out_fd[0], out_fd[1]};
+  bp::ipstream is_out{std::move(out_pipe)};
+
+  int err_fd[2];
+  if (pipe2(err_fd, O_CLOEXEC) != 0) {
+    stat.summary(DiagStatus::ERROR, "pipe2 error");
+    stat.add("pipe2", strerror(errno));
+    return;
+  }
+  bp::pipe err_pipe{err_fd[0], err_fd[1]};
+  bp::ipstream is_err{std::move(err_pipe)};
+
   bp::child c("free -tb", bp::std_out > is_out, bp::std_err > is_err);
   c.wait();
   if (c.exit_code() != 0) {

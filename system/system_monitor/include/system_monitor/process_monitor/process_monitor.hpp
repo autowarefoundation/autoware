@@ -122,7 +122,8 @@ protected:
     memory_tasks_;                      //!< @brief list of diagnostics tasks for high memory procs
   rclcpp::TimerBase::SharedPtr timer_;  //!< @brief timer to execute top command
   std::string top_output_;              //!< @brief output from top command
-  bool is_top_error_;                   //!< @brief flag if an error occurs
+  bool is_top_error_;                   //!< @brief flag if an top error occurs
+  bool is_pipe2_error_;                 //!< @brief flag if an pipe2 error occurs
   double elapsed_ms_;                   //!< @brief Execution time of top command
   std::mutex mutex_;                    //!< @brief mutex for output from top command
   rclcpp::CallbackGroup::SharedPtr timer_callback_group_;  //!< @brief Callback Group

@@ -64,9 +64,15 @@ void NTPMonitor::checkOffset(diagnostic_updater::DiagnosticStatusWrapper & stat)
   }
 
   std::string error_str;
+  std::string pipe2_err_str;
   float offset = 0.0f;
   std::map<std::string, std::string> tracking_map;
-  error_str = executeChronyc(offset, tracking_map);
+  error_str = executeChronyc(offset, tracking_map, pipe2_err_str);
+  if (!pipe2_err_str.empty()) {
+    stat.summary(DiagStatus::ERROR, "pipe2 error");
+    stat.add("pipe2", pipe2_err_str);
+    return;
+  }
   if (!error_str.empty()) {
     stat.summary(DiagStatus::ERROR, "chronyc error");
     stat.add("chronyc", error_str);
@@ -92,12 +98,23 @@ void NTPMonitor::checkOffset(diagnostic_updater::DiagnosticStatusWrapper & stat)
 }
 
 std::string NTPMonitor::executeChronyc(
-  float & out_offset, std::map<std::string, std::string> & out_tracking_map)
+  float & out_offset, std::map<std::string, std::string> & out_tracking_map,
+  std::string & pipe2_err_str)
 {
   std::string result;
 
   // Tracking chrony status
-  bp::ipstream is_out;
+
+  // boost::process create file descriptor without O_CLOEXEC required for multithreading.
+  // So create file descriptor with O_CLOEXEC and pass it to boost::process.
+  int out_fd[2];
+  if (pipe2(out_fd, O_CLOEXEC) != 0) {
+    pipe2_err_str = std::string(strerror(errno));
+    return result;
+  }
+  bp::pipe out_pipe{out_fd[0], out_fd[1]};
+  bp::ipstream is_out{std::move(out_pipe)};
+
   bp::child c("chronyc tracking", bp::std_out > is_out);
   c.wait();
   if (c.exit_code() != 0) {
