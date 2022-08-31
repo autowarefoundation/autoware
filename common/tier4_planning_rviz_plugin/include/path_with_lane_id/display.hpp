@@ -24,6 +24,7 @@
 #include <rviz_common/properties/float_property.hpp>
 #include <rviz_common/properties/parse_color.hpp>
 #include <rviz_common/validate_floats.hpp>
+#include <rviz_rendering/objects/movable_text.hpp>
 
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 
@@ -35,6 +36,7 @@
 
 #include <deque>
 #include <memory>
+#include <vector>
 
 namespace rviz_plugins
 {
@@ -62,6 +64,8 @@ protected:
     const QColor & color_min, const QColor & color_max, const double ratio);
   Ogre::ManualObject * path_manual_object_;
   Ogre::ManualObject * velocity_manual_object_;
+  std::vector<rviz_rendering::MovableText *> velocity_texts_;
+  std::vector<Ogre::SceneNode *> velocity_text_nodes_;
   rviz_common::properties::BoolProperty * property_path_view_;
   rviz_common::properties::BoolProperty * property_velocity_view_;
   rviz_common::properties::FloatProperty * property_path_width_;
@@ -70,6 +74,8 @@ protected:
   rviz_common::properties::FloatProperty * property_path_alpha_;
   rviz_common::properties::FloatProperty * property_velocity_alpha_;
   rviz_common::properties::FloatProperty * property_velocity_scale_;
+  rviz_common::properties::BoolProperty * property_velocity_text_view_;
+  rviz_common::properties::FloatProperty * property_velocity_text_scale_;
   rviz_common::properties::BoolProperty * property_path_color_view_;
   rviz_common::properties::BoolProperty * property_velocity_color_view_;
   rviz_common::properties::FloatProperty * property_vel_max_;

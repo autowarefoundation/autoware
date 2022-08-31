@@ -85,7 +85,10 @@ AutowarePathWithLaneIdDisplay::AutowarePathWithLaneIdDisplay()
     "Constant Color", false, "", property_velocity_view_, SLOT(updateVisualization()), this);
   property_velocity_color_ = new rviz_common::properties::ColorProperty(
     "Color", Qt::black, "", property_velocity_view_, SLOT(updateVisualization()), this);
-
+  property_velocity_text_view_ = new rviz_common::properties::BoolProperty(
+    "View Text Velocity", false, "", this, SLOT(updateVisualization()), this);
+  property_velocity_text_scale_ = new rviz_common::properties::FloatProperty(
+    "Scale", 0.3, "", property_velocity_text_view_, SLOT(updateVisualization()), this);
   property_vel_max_ = new rviz_common::properties::FloatProperty(
     "Color Border Vel Max", 3.0, "[m/s]", this, SLOT(updateVisualization()), this);
   property_vel_max_->setMin(0.0);
@@ -96,6 +99,12 @@ AutowarePathWithLaneIdDisplay::~AutowarePathWithLaneIdDisplay()
   if (initialized()) {
     scene_manager_->destroyManualObject(path_manual_object_);
     scene_manager_->destroyManualObject(velocity_manual_object_);
+    for (size_t i = 0; i < velocity_text_nodes_.size(); i++) {
+      Ogre::SceneNode * node = velocity_text_nodes_.at(i);
+      node->removeAndDestroyAllChildren();
+      node->detachAllObjects();
+      scene_manager_->destroySceneNode(node);
+    }
   }
 }
 
@@ -168,6 +177,29 @@ void AutowarePathWithLaneIdDisplay::processMessage(
     // path_manual_object_->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_TRIANGLE_STRIP);
     velocity_manual_object_->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP);
 
+    if (msg_ptr->points.size() > velocity_texts_.size()) {
+      for (size_t i = velocity_texts_.size(); i < msg_ptr->points.size(); i++) {
+        Ogre::SceneNode * node = scene_node_->createChildSceneNode();
+        rviz_rendering::MovableText * text =
+          new rviz_rendering::MovableText("not initialized", "Liberation Sans", 0.1);
+        text->setVisible(false);
+        text->setTextAlignment(
+          rviz_rendering::MovableText::H_CENTER, rviz_rendering::MovableText::V_ABOVE);
+        node->attachObject(text);
+        velocity_texts_.push_back(text);
+        velocity_text_nodes_.push_back(node);
+      }
+    } else if (msg_ptr->points.size() < velocity_texts_.size()) {
+      for (size_t i = velocity_texts_.size() - 1; i >= msg_ptr->points.size(); i--) {
+        Ogre::SceneNode * node = velocity_text_nodes_.at(i);
+        node->detachAllObjects();
+        node->removeAndDestroyAllChildren();
+        scene_manager_->destroySceneNode(node);
+      }
+      velocity_texts_.resize(msg_ptr->points.size());
+      velocity_text_nodes_.resize(msg_ptr->points.size());
+    }
+
     for (size_t point_idx = 0; point_idx < msg_ptr->points.size(); point_idx++) {
       const auto & e = msg_ptr->points.at(point_idx);
       /*
@@ -235,6 +267,29 @@ void AutowarePathWithLaneIdDisplay::processMessage(
           e.point.pose.position.z +
             e.point.longitudinal_velocity_mps * property_velocity_scale_->getFloat());
         velocity_manual_object_->colour(color);
+      }
+
+      /*
+       * Velocity Text
+       */
+      if (property_velocity_text_view_->getBool()) {
+        Ogre::Vector3 position;
+        position.x = e.point.pose.position.x;
+        position.y = e.point.pose.position.y;
+        position.z = e.point.pose.position.z;
+        Ogre::SceneNode * node = velocity_text_nodes_.at(point_idx);
+        node->setPosition(position);
+
+        rviz_rendering::MovableText * text = velocity_texts_.at(point_idx);
+        double vel = e.point.longitudinal_velocity_mps;
+        text->setCaption(
+          std::to_string(static_cast<int>(std::floor(vel))) + "." +
+          std::to_string(static_cast<int>(std::floor(vel * 100))));
+        text->setCharacterHeight(property_velocity_text_scale_->getFloat());
+        text->setVisible(true);
+      } else {
+        rviz_rendering::MovableText * text = velocity_texts_.at(point_idx);
+        text->setVisible(false);
       }
     }
 
