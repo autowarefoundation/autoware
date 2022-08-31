@@ -45,6 +45,8 @@ This implementation inherits `pointcloud_preprocessor::Filter` class, please ref
 | `angle_range`              | vector | The effective range of LiDAR                       |
 | `vertical_bins`            | int    | The LiDAR channel number                           |
 | `model`                    | string | The LiDAR model                                    |
+| `buffering_frames`         | uint   | The number of buffering [range:1-200]              |
+| `buffering_interval`       | uint   | The interval of buffering                          |
 
 ## Assumptions / Known limits
 

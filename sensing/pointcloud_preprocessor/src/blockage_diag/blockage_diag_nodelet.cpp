@@ -16,7 +16,7 @@
 
 #include "autoware_point_types/types.hpp"
 
-#include <boost/thread/detail/platform_time.hpp>
+#include <boost/circular_buffer.hpp>
 
 #include <algorithm>
 
@@ -38,6 +38,8 @@ BlockageDiagComponent::BlockageDiagComponent(const rclcpp::NodeOptions & options
     lidar_model_ = static_cast<std::string>(declare_parameter("model", "Pandar40P"));
     blockage_count_threshold_ =
       static_cast<uint>(declare_parameter("blockage_count_threshold", 50));
+    buffering_frames_ = static_cast<uint>(declare_parameter("buffering_frames", 100));
+    buffering_interval_ = static_cast<uint>(declare_parameter("buffering_interval", 5));
   }
 
   updater_.setHardwareID("blockage_diag");
@@ -73,7 +75,6 @@ void BlockageDiagComponent::onBlockageChecker(DiagnosticStatusWrapper & stat)
   stat.add(
     "sky_blockage_range_deg", "[" + std::to_string(sky_blockage_range_deg_[0]) + "," +
                                 std::to_string(sky_blockage_range_deg_[1]) + "]");
-
   // TODO(badai-nguyen): consider sky_blockage_ratio_ for DiagnosticsStatus." [todo]
 
   auto level = DiagnosticStatus::OK;
@@ -151,16 +152,44 @@ void BlockageDiagComponent::filter(
     lidar_depth_map.convertTo(lidar_depth_map, CV_8UC1, 1.0 / 100.0);
     cv::Mat no_return_mask;
     cv::inRange(lidar_depth_map_8u, 0, 1, no_return_mask);
+
     cv::Mat erosion_dst;
     cv::Mat element = cv::getStructuringElement(
       cv::MORPH_RECT, cv::Size(2 * erode_kernel_ + 1, 2 * erode_kernel_ + 1),
       cv::Point(erode_kernel_, erode_kernel_));
     cv::erode(no_return_mask, erosion_dst, element);
     cv::dilate(erosion_dst, no_return_mask, element);
+
+    static boost::circular_buffer<cv::Mat> no_return_mask_buffer(buffering_frames_);
+
+    cv::Mat no_return_mask_result(cv::Size(horizontal_bins, vertical_bins), CV_8UC1, cv::Scalar(0));
+    cv::Mat time_series_blockage_mask(
+      cv::Size(horizontal_bins, vertical_bins), CV_8UC1, cv::Scalar(0));
+    cv::Mat no_return_mask_binarized(
+      cv::Size(horizontal_bins, vertical_bins), CV_8UC1, cv::Scalar(0));
+
+    static uint frame_count;
+    frame_count++;
+    if (buffering_interval_ != 0) {
+      no_return_mask_binarized = no_return_mask / 255;
+      if (frame_count == buffering_interval_) {
+        no_return_mask_buffer.push_back(no_return_mask_binarized);
+        frame_count = 0;
+      }
+      for (const auto & binary_mask : no_return_mask_buffer) {
+        time_series_blockage_mask += binary_mask;
+      }
+      cv::inRange(
+        time_series_blockage_mask, no_return_mask_buffer.size() - 1, no_return_mask_buffer.size(),
+        no_return_mask_result);
+    } else {
+      no_return_mask.copyTo(no_return_mask_result);
+    }
     cv::Mat ground_no_return_mask;
     cv::Mat sky_no_return_mask;
-    no_return_mask(cv::Rect(0, 0, horizontal_bins, horizontal_ring_id_)).copyTo(sky_no_return_mask);
-    no_return_mask(
+    no_return_mask_result(cv::Rect(0, 0, horizontal_bins, horizontal_ring_id_))
+      .copyTo(sky_no_return_mask);
+    no_return_mask_result(
       cv::Rect(0, horizontal_ring_id_, horizontal_bins, vertical_bins - horizontal_ring_id_))
       .copyTo(ground_no_return_mask);
     ground_blockage_ratio_ =
@@ -203,7 +232,7 @@ void BlockageDiagComponent::filter(
     lidar_depth_map_pub_.publish(lidar_depth_msg);
 
     cv::Mat blockage_mask_colorized;
-    cv::applyColorMap(no_return_mask, blockage_mask_colorized, cv::COLORMAP_JET);
+    cv::applyColorMap(no_return_mask_result, blockage_mask_colorized, cv::COLORMAP_JET);
     sensor_msgs::msg::Image::SharedPtr blockage_mask_msg =
       cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", blockage_mask_colorized).toImageMsg();
     blockage_mask_msg->header = input->header;
@@ -248,6 +277,12 @@ rcl_interfaces::msg::SetParametersResult BlockageDiagComponent::paramCallback(
     RCLCPP_DEBUG(
       get_logger(), " Setting new angle_range to: [%f , %f].", angle_range_deg_[0],
       angle_range_deg_[1]);
+  }
+  if (get_param(p, "buffering_frames", buffering_frames_)) {
+    RCLCPP_DEBUG(get_logger(), "Setting new buffering_frames to: %d.", buffering_frames_);
+  }
+  if (get_param(p, "buffering_interval", buffering_interval_)) {
+    RCLCPP_DEBUG(get_logger(), "Setting new buffering_interval to: %d.", buffering_interval_);
   }
   rcl_interfaces::msg::SetParametersResult result;
   result.successful = true;
