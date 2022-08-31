@@ -294,10 +294,6 @@ private:
     const std::vector<ReferencePoint> & ref_points,
     std::shared_ptr<DebugData> debug_data_ptr) const;
 
-  size_t findNearestIndexWithSoftYawConstraints(
-    const std::vector<geometry_msgs::msg::Point> & points, const geometry_msgs::msg::Pose & pose,
-    const double dist_threshold, const double yaw_threshold) const;
-
 public:
   MPTOptimizer(
     const bool is_showing_debug_info, const TrajectoryParam & traj_param,

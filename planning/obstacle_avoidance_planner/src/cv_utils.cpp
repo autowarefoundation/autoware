@@ -213,6 +213,7 @@ std::vector<cv::Point> getCVPolygon(
   const std::vector<autoware_auto_planning_msgs::msg::PathPoint> & path_points,
   const cv::Mat & clearance_map, const nav_msgs::msg::MapMetaData & map_info)
 {
+  // TODO(murooka) remove findNearestIndex without any constraints
   const int nearest_idx = motion_utils::findNearestIndex(
     path_points, object.kinematics.initial_pose_with_covariance.pose.position);
   const auto nearest_path_point = path_points[nearest_idx];
@@ -249,6 +250,7 @@ std::vector<cv::Point> getExtendedCVPolygon(
   }
   const Edges edges = optional_edges.get();
 
+  // TODO(murooka) remove findNearestIndex without any constraints
   const int nearest_polygon_idx = motion_utils::findNearestIndex(points_in_image, edges.origin);
   std::vector<cv::Point> cv_polygon;
   if (edges.back_idx == nearest_polygon_idx || edges.front_idx == nearest_polygon_idx) {

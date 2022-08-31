@@ -190,6 +190,18 @@ std::vector<double> slerpYawFromReferencePoints(const std::vector<ReferencePoint
   }
   return interpolation::slerpYawFromPoints(points);
 }
+
+size_t findNearestIndexWithSoftYawConstraints(
+  const std::vector<geometry_msgs::msg::Point> & points, const geometry_msgs::msg::Pose & pose,
+  const double dist_threshold, const double yaw_threshold)
+{
+  const auto points_with_yaw = points_utils::convertToPosesWithYawEstimation(points);
+
+  const auto nearest_idx_optional =
+    motion_utils::findNearestIndex(points_with_yaw, pose, dist_threshold, yaw_threshold);
+  return nearest_idx_optional ? *nearest_idx_optional
+                              : motion_utils::findNearestIndex(points_with_yaw, pose.position);
+}
 }  // namespace
 
 MPTOptimizer::MPTOptimizer(
@@ -434,10 +446,10 @@ void MPTOptimizer::calcPlanningFromEgo(std::vector<ReferencePoint> & ref_points)
     */
 
     // assign fix kinematics
-    const size_t nearest_ref_idx = findNearestIndexWithSoftYawConstraints(
-      points_utils::convertToPoints(ref_points), current_ego_pose_,
-      traj_param_.delta_dist_threshold_for_closest_point,
-      traj_param_.delta_yaw_threshold_for_closest_point);
+    const size_t nearest_ref_idx = motion_utils::findFirstNearestIndexWithSoftConstraints(
+      points_utils::convertToPosesWithYawEstimation(points_utils::convertToPoints(ref_points)),
+      current_ego_pose_, traj_param_.ego_nearest_dist_threshold,
+      traj_param_.ego_nearest_yaw_threshold);
 
     // calculate cropped_ref_points.at(nearest_ref_idx) with yaw
     const geometry_msgs::msg::Pose nearest_ref_pose = [&]() -> geometry_msgs::msg::Pose {
@@ -473,10 +485,11 @@ std::vector<ReferencePoint> MPTOptimizer::getFixedReferencePoints(
   }
 
   const auto & prev_ref_points = prev_trajs->mpt_ref_points;
-  const int nearest_prev_ref_idx = static_cast<int>(findNearestIndexWithSoftYawConstraints(
-    points_utils::convertToPoints(prev_ref_points), current_ego_pose_,
-    traj_param_.delta_dist_threshold_for_closest_point,
-    traj_param_.delta_yaw_threshold_for_closest_point));
+  const int nearest_prev_ref_idx =
+    static_cast<int>(motion_utils::findFirstNearestIndexWithSoftConstraints(
+      points_utils::convertToPosesWithYawEstimation(points_utils::convertToPoints(prev_ref_points)),
+      current_ego_pose_, traj_param_.ego_nearest_dist_threshold,
+      traj_param_.ego_nearest_yaw_threshold));
 
   // calculate begin_prev_ref_idx
   const int begin_prev_ref_idx = [&]() {
@@ -723,8 +736,14 @@ boost::optional<Eigen::VectorXd> MPTOptimizer::executeOptimization(
     const size_t D_x = vehicle_model_ptr_->getDimX();
 
     if (prev_trajs && prev_trajs->mpt_ref_points.size() > 1) {
-      const size_t seg_idx =
-        motion_utils::findNearestSegmentIndex(prev_trajs->mpt_ref_points, ref_points.front().p);
+      geometry_msgs::msg::Pose ref_front_point;
+      ref_front_point.position = ref_points.front().p;
+      ref_front_point.orientation =
+        tier4_autoware_utils::createQuaternionFromYaw(ref_points.front().yaw);
+
+      const size_t seg_idx = findNearestIndexWithSoftYawConstraints(
+        points_utils::convertToPoints(prev_trajs->mpt_ref_points), ref_front_point,
+        traj_param_.ego_nearest_dist_threshold, traj_param_.ego_nearest_yaw_threshold);
       double offset = motion_utils::calcLongitudinalOffsetToSegment(
         prev_trajs->mpt_ref_points, seg_idx, ref_points.front().p);
 
@@ -1221,18 +1240,6 @@ std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> MPTOptimizer::get
                              << " [ms]\n";
 
   return traj_points;
-}
-
-size_t MPTOptimizer::findNearestIndexWithSoftYawConstraints(
-  const std::vector<geometry_msgs::msg::Point> & points, const geometry_msgs::msg::Pose & pose,
-  const double dist_threshold, const double yaw_threshold) const
-{
-  const auto points_with_yaw = points_utils::convertToPosesWithYawEstimation(points);
-
-  const auto nearest_idx_optional =
-    motion_utils::findNearestIndex(points_with_yaw, pose, dist_threshold, yaw_threshold);
-  return nearest_idx_optional ? *nearest_idx_optional
-                              : motion_utils::findNearestIndex(points_with_yaw, pose.position);
 }
 
 void MPTOptimizer::calcOrientation(std::vector<ReferencePoint> & ref_points) const

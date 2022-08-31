@@ -236,10 +236,9 @@ std::vector<geometry_msgs::msg::Pose> EBPathOptimizer::getFixedPoints(
       std::vector<geometry_msgs::msg::Pose> empty_points;
       return empty_points;
     }
-    const auto opt_begin_idx = motion_utils::findNearestIndex(
-      prev_trajs->smoothed_trajectory, ego_pose, std::numeric_limits<double>::max(),
-      traj_param_.delta_yaw_threshold_for_closest_point);
-    const int begin_idx = opt_begin_idx ? *opt_begin_idx : 0;
+    const size_t begin_idx = motion_utils::findFirstNearestIndexWithSoftConstraints(
+      prev_trajs->smoothed_trajectory, ego_pose, traj_param_.ego_nearest_dist_threshold,
+      traj_param_.ego_nearest_yaw_threshold);
     const int backward_fixing_idx = std::max(
       static_cast<int>(
         begin_idx -

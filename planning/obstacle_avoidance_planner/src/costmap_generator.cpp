@@ -85,6 +85,7 @@ bool isAvoidingObject(
     return false;
   }
 
+  // TODO(murooka) remove findNearestIndex without any constraints
   const int nearest_idx = motion_utils::findNearestIndex(
     path_points, object.kinematics.initial_pose_with_covariance.pose.position);
   const auto nearest_path_point = path_points[nearest_idx];
@@ -272,6 +273,7 @@ cv::Mat CostmapGenerator::drawObstaclesOnImage(
 
   // fill between objects in the same side
   const auto get_closest_obj_point = [&](size_t idx) {
+    // TODO(murooka) remove findNearestIndex without any constraints
     const auto & path_point =
       path_points.at(motion_utils::findNearestIndex(path_points, obj_positions.at(idx)));
     double min_dist = std::numeric_limits<double>::min();

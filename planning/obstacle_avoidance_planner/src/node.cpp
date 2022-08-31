@@ -38,38 +38,27 @@
 
 namespace
 {
-template <typename T1, typename T2>
-size_t searchExtendedZeroVelocityIndex(
-  const std::vector<T1> & fine_points, const std::vector<T2> & vel_points)
-{
-  const auto opt_zero_vel_idx = motion_utils::searchZeroVelocityIndex(vel_points);
-  const size_t zero_vel_idx = opt_zero_vel_idx ? opt_zero_vel_idx.get() : vel_points.size() - 1;
-  return motion_utils::findNearestIndex(fine_points, vel_points.at(zero_vel_idx).pose.position);
-}
-
 bool isPathShapeChanged(
   const geometry_msgs::msg::Pose & ego_pose,
   const std::vector<autoware_auto_planning_msgs::msg::PathPoint> & path_points,
   const std::unique_ptr<std::vector<autoware_auto_planning_msgs::msg::PathPoint>> &
     prev_path_points,
-  const double max_mpt_length, const double max_path_shape_change_dist,
-  const double delta_yaw_threshold)
+  const double max_mpt_length, const double max_path_shape_change_dist, const double dist_threshold,
+  const double yaw_threshold)
 {
   if (!prev_path_points) {
     return false;
   }
 
   // truncate prev points from ego pose to fixed end points
-  const auto opt_prev_begin_idx = motion_utils::findNearestIndex(
-    *prev_path_points, ego_pose, std::numeric_limits<double>::max(), delta_yaw_threshold);
-  const size_t prev_begin_idx = opt_prev_begin_idx ? *opt_prev_begin_idx : 0;
+  const auto prev_begin_idx = motion_utils::findFirstNearestIndexWithSoftConstraints(
+    *prev_path_points, ego_pose, dist_threshold, yaw_threshold);
   const auto truncated_prev_points =
     points_utils::clipForwardPoints(*prev_path_points, prev_begin_idx, max_mpt_length);
 
   // truncate points from ego pose to fixed end points
-  const auto opt_begin_idx = motion_utils::findNearestIndex(
-    path_points, ego_pose, std::numeric_limits<double>::max(), delta_yaw_threshold);
-  const size_t begin_idx = opt_begin_idx ? *opt_begin_idx : 0;
+  const auto begin_idx = motion_utils::findFirstNearestIndexWithSoftConstraints(
+    path_points, ego_pose, dist_threshold, yaw_threshold);
   const auto truncated_points =
     points_utils::clipForwardPoints(path_points, begin_idx, max_mpt_length);
 
@@ -200,16 +189,60 @@ std::tuple<std::vector<double>, std::vector<double>> calcVehicleCirclesInfo(
   }
 }
 
+template <class T>
+[[maybe_unused]] size_t findNearestIndexWithSoftYawConstraints(
+  const std::vector<T> & points, const geometry_msgs::msg::Pose & pose, const double dist_threshold,
+  const double yaw_threshold)
+{
+  const auto nearest_idx_optional =
+    motion_utils::findNearestIndex(points, pose, dist_threshold, yaw_threshold);
+  return nearest_idx_optional ? *nearest_idx_optional
+                              : motion_utils::findNearestIndex(points, pose.position);
+}
+
+template <>
 [[maybe_unused]] size_t findNearestIndexWithSoftYawConstraints(
   const std::vector<geometry_msgs::msg::Point> & points, const geometry_msgs::msg::Pose & pose,
   const double dist_threshold, const double yaw_threshold)
 {
   const auto points_with_yaw = points_utils::convertToPosesWithYawEstimation(points);
 
+  return findNearestIndexWithSoftYawConstraints(
+    points_with_yaw, pose, dist_threshold, yaw_threshold);
+}
+
+template <class T>
+[[maybe_unused]] size_t findNearestSegmentIndexWithSoftYawConstraints(
+  const std::vector<T> & points, const geometry_msgs::msg::Pose & pose, const double dist_threshold,
+  const double yaw_threshold)
+{
   const auto nearest_idx_optional =
-    motion_utils::findNearestIndex(points_with_yaw, pose, dist_threshold, yaw_threshold);
+    motion_utils::findNearestSegmentIndex(points, pose, dist_threshold, yaw_threshold);
   return nearest_idx_optional ? *nearest_idx_optional
-                              : motion_utils::findNearestIndex(points_with_yaw, pose.position);
+                              : motion_utils::findNearestSegmentIndex(points, pose.position);
+}
+
+template <>
+[[maybe_unused]] size_t findNearestSegmentIndexWithSoftYawConstraints(
+  const std::vector<geometry_msgs::msg::Point> & points, const geometry_msgs::msg::Pose & pose,
+  const double dist_threshold, const double yaw_threshold)
+{
+  const auto points_with_yaw = points_utils::convertToPosesWithYawEstimation(points);
+
+  return findNearestSegmentIndexWithSoftYawConstraints(
+    points_with_yaw, pose, dist_threshold, yaw_threshold);
+}
+
+template <typename T1, typename T2>
+size_t searchExtendedZeroVelocityIndex(
+  const std::vector<T1> & fine_points, const std::vector<T2> & vel_points,
+  const double yaw_threshold)
+{
+  const auto opt_zero_vel_idx = motion_utils::searchZeroVelocityIndex(vel_points);
+  const size_t zero_vel_idx = opt_zero_vel_idx ? opt_zero_vel_idx.get() : vel_points.size() - 1;
+  return findNearestIndexWithSoftYawConstraints(
+    fine_points, vel_points.at(zero_vel_idx).pose, std::numeric_limits<double>::max(),
+    yaw_threshold);
 }
 }  // namespace
 
@@ -344,6 +377,11 @@ ObstacleAvoidancePlanner::ObstacleAvoidancePlanner(const rclcpp::NodeOptions & n
       declare_parameter<bool>("object.avoiding_object_type.pedestrian", true);
     traj_param_.is_avoiding_animal =
       declare_parameter<bool>("object.avoiding_object_type.animal", true);
+
+    // ego nearest search
+    traj_param_.ego_nearest_dist_threshold =
+      declare_parameter<double>("ego_nearest_dist_threshold");
+    traj_param_.ego_nearest_yaw_threshold = declare_parameter<double>("ego_nearest_yaw_threshold");
   }
 
   {  // elastic band parameter
@@ -986,8 +1024,8 @@ bool ObstacleAvoidancePlanner::checkReplan(
     traj_param_.num_sampling_points * mpt_param_.delta_arc_length_for_mpt_points;
   if (isPathShapeChanged(
         current_ego_pose_, path_points, prev_path_points_ptr_, max_mpt_length,
-        max_path_shape_change_dist_for_replan_,
-        traj_param_.delta_yaw_threshold_for_closest_point)) {
+        max_path_shape_change_dist_for_replan_, traj_param_.ego_nearest_dist_threshold,
+        traj_param_.ego_nearest_yaw_threshold)) {
     RCLCPP_INFO(get_logger(), "Replan with resetting optimization since path shape was changed.");
     resetPrevOptimization();
     return true;
@@ -1110,15 +1148,9 @@ void ObstacleAvoidancePlanner::calcVelocity(
   std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> & traj_points) const
 {
   for (size_t i = 0; i < traj_points.size(); i++) {
-    const size_t nearest_seg_idx = [&]() {
-      const auto opt_seg_idx = motion_utils::findNearestSegmentIndex(
-        path_points, traj_points.at(i).pose, traj_param_.delta_dist_threshold_for_closest_point,
-        traj_param_.delta_yaw_threshold_for_closest_point);
-      if (opt_seg_idx) {
-        return opt_seg_idx.get();
-      }
-      return motion_utils::findNearestSegmentIndex(path_points, traj_points.at(i).pose.position);
-    }();
+    const size_t nearest_seg_idx = findNearestSegmentIndexWithSoftYawConstraints(
+      path_points, traj_points.at(i).pose, traj_param_.delta_dist_threshold_for_closest_point,
+      traj_param_.delta_yaw_threshold_for_closest_point);
 
     // add this line not to exceed max index size
     const size_t max_idx = std::min(nearest_seg_idx + 1, path_points.size() - 1);
@@ -1144,8 +1176,9 @@ void ObstacleAvoidancePlanner::insertZeroVelocityOutsideDrivableArea(
   const auto & map_info = cv_maps.map_info;
   const auto & road_clearance_map = cv_maps.clearance_map;
 
-  const size_t nearest_idx =
-    motion_utils::findNearestIndex(traj_points, current_ego_pose_.position);
+  const size_t nearest_idx = motion_utils::findFirstNearestIndexWithSoftConstraints(
+    traj_points, current_ego_pose_, traj_param_.ego_nearest_dist_threshold,
+    traj_param_.ego_nearest_yaw_threshold);
 
   // NOTE: Some end trajectory points will be ignored to check if outside the drivable area
   //       since these points might be outside drivable area if only end reference points have high
@@ -1469,8 +1502,9 @@ ObstacleAvoidancePlanner::alignVelocity(
   // search zero velocity index of fine_traj_points
   const size_t zero_vel_fine_traj_idx = [&]() {
     // zero velocity for being outside drivable area
-    const size_t zero_vel_traj_idx =
-      searchExtendedZeroVelocityIndex(fine_traj_points_with_path_zero_vel, traj_points);
+    const size_t zero_vel_traj_idx = searchExtendedZeroVelocityIndex(
+      fine_traj_points_with_path_zero_vel, traj_points,
+      traj_param_.delta_yaw_threshold_for_closest_point);
 
     // zero velocity in path points
     if (opt_zero_vel_path_idx) {
@@ -1492,14 +1526,9 @@ ObstacleAvoidancePlanner::alignVelocity(
     }
 
     const auto & target_pose = fine_traj_points_with_vel[i].pose;
-    const auto closest_seg_idx_optional = motion_utils::findNearestSegmentIndex(
+    const size_t closest_seg_idx = findNearestSegmentIndexWithSoftYawConstraints(
       truncated_points, target_pose, traj_param_.delta_dist_threshold_for_closest_point,
       traj_param_.delta_yaw_threshold_for_closest_point);
-
-    const auto closest_seg_idx =
-      closest_seg_idx_optional
-        ? *closest_seg_idx_optional
-        : motion_utils::findNearestSegmentIndex(truncated_points, target_pose.position);
 
     // lerp z
     fine_traj_points_with_vel[i].pose.position.z =
