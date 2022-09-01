@@ -28,14 +28,14 @@ bool exists(const std::unordered_set<lanelet::Id> & set, const lanelet::Id & id)
   return set.find(id) != set.end();
 }
 
-std::string toString(const geometry_msgs::msg::Pose & pose)
+std::string to_string(const geometry_msgs::msg::Pose & pose)
 {
   std::stringstream ss;
   ss << "(" << pose.position.x << ", " << pose.position.y << "," << pose.position.z << ")";
   return ss.str();
 }
 
-void setColor(std_msgs::msg::ColorRGBA * cl, double r, double g, double b, double a)
+void set_color(std_msgs::msg::ColorRGBA * cl, double r, double g, double b, double a)
 {
   cl->r = r;
   cl->g = g;
@@ -43,7 +43,7 @@ void setColor(std_msgs::msg::ColorRGBA * cl, double r, double g, double b, doubl
   cl->a = a;
 }
 
-void insertMarkerArray(
+void insert_marker_array(
   visualization_msgs::msg::MarkerArray * a1, const visualization_msgs::msg::MarkerArray & a2)
 {
   a1->markers.insert(a1->markers.end(), a2.markers.begin(), a2.markers.end());
