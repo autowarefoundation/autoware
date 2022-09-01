@@ -234,6 +234,18 @@ bool calcStopVelocityWithConstantJerkAccLimit(
     dists.push_back(dist);
   }
 
+  if (
+    !interpolation_utils::isIncreasing(xs) || !interpolation_utils::isIncreasing(dists) ||
+    !interpolation_utils::isNotDecreasing(xs) || !interpolation_utils::isNotDecreasing(dists)) {
+    return false;
+  }
+
+  if (
+    xs.size() < 2 || vs.size() < 2 || as.size() < 2 || js.size() < 2 || dists.empty() ||
+    dists.front() < xs.front() || xs.back() < dists.back()) {
+    return false;
+  }
+
   const auto vel_at_wp = interpolation::lerp(xs, vs, dists);
   const auto acc_at_wp = interpolation::lerp(xs, as, dists);
   const auto jerk_at_wp = interpolation::lerp(xs, js, dists);
