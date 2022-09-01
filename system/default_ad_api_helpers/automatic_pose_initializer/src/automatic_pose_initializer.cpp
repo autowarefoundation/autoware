@@ -35,6 +35,7 @@ AutomaticPoseInitializer::AutomaticPoseInitializer() : Node("automatic_pose_init
 
 void AutomaticPoseInitializer::on_timer()
 {
+  timer_->cancel();
   if (state_.state == State::Message::UNINITIALIZED) {
     try {
       const auto req = std::make_shared<Initialize::Service::Request>();
@@ -42,6 +43,7 @@ void AutomaticPoseInitializer::on_timer()
     } catch (const component_interface_utils::ServiceException & error) {
     }
   }
+  timer_->reset();
 }
 
 }  // namespace automatic_pose_initializer
