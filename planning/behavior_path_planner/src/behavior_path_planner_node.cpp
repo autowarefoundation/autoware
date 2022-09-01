@@ -101,6 +101,11 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     "~/input/route", qos_transient_local, std::bind(&BehaviorPathPlannerNode::onRoute, this, _1),
     createSubscriptionOptions(this));
 
+  avoidance_param_ptr = std::make_shared<AvoidanceParameters>(getAvoidanceParam());
+  lane_change_param_ptr = std::make_shared<LaneChangeParameters>(getLaneChangeParam());
+
+  m_set_param_res = this->add_on_set_parameters_callback(
+    std::bind(&BehaviorPathPlannerNode::onSetParam, this, std::placeholders::_1));
   // behavior tree manager
   {
     mutex_bt_.lock();
@@ -112,17 +117,15 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
     bt_manager_->registerSceneModule(side_shift_module);
 
     auto avoidance_module =
-      std::make_shared<AvoidanceModule>("Avoidance", *this, getAvoidanceParam());
+      std::make_shared<AvoidanceModule>("Avoidance", *this, avoidance_param_ptr);
     bt_manager_->registerSceneModule(avoidance_module);
 
     auto lane_following_module =
       std::make_shared<LaneFollowingModule>("LaneFollowing", *this, getLaneFollowingParam());
     bt_manager_->registerSceneModule(lane_following_module);
 
-    const auto lane_change_param = getLaneChangeParam();
-
     auto lane_change_module =
-      std::make_shared<LaneChangeModule>("LaneChange", *this, lane_change_param);
+      std::make_shared<LaneChangeModule>("LaneChange", *this, lane_change_param_ptr);
     bt_manager_->registerSceneModule(lane_change_module);
 
     auto pull_over_module = std::make_shared<PullOverModule>("PullOver", *this, getPullOverParam());
@@ -740,6 +743,33 @@ void BehaviorPathPlannerNode::onRoute(const HADMapRoute::ConstSharedPtr msg)
     RCLCPP_DEBUG(get_logger(), "new route is received. reset behavior tree.");
     bt_manager_->resetBehaviorTree();
   }
+}
+
+SetParametersResult BehaviorPathPlannerNode::onSetParam(
+  const std::vector<rclcpp::Parameter> & parameters)
+{
+  rcl_interfaces::msg::SetParametersResult result;
+
+  if (!lane_change_param_ptr && !avoidance_param_ptr) {
+    result.successful = false;
+    result.reason = "param not initialized";
+    return result;
+  }
+
+  result.successful = true;
+  result.reason = "success";
+
+  try {
+    update_param(
+      parameters, "avoidance.publish_debug_marker", avoidance_param_ptr->publish_debug_marker);
+    update_param(
+      parameters, "lane_change.publish_debug_marker", lane_change_param_ptr->publish_debug_marker);
+  } catch (const rclcpp::exceptions::InvalidParameterTypeException & e) {
+    result.successful = false;
+    result.reason = e.what();
+  }
+
+  return result;
 }
 
 PathWithLaneId BehaviorPathPlannerNode::modifyPathForSmoothGoalConnection(

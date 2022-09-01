@@ -46,6 +46,18 @@
 #include <string>
 #include <vector>
 
+template <typename T>
+inline void update_param(
+  const std::vector<rclcpp::Parameter> & parameters, const std::string & name, T & value)
+{
+  const auto it = std::find_if(
+    parameters.cbegin(), parameters.cend(),
+    [&name](const rclcpp::Parameter & parameter) { return parameter.get_name() == name; });
+  if (it != parameters.cend()) {
+    value = static_cast<T>(it->template get_value<T>());
+  }
+}
+
 namespace behavior_path_planner
 {
 using ApprovalMsg = tier4_planning_msgs::msg::Approval;
@@ -59,6 +71,7 @@ using autoware_auto_vehicle_msgs::msg::TurnIndicatorsCommand;
 using geometry_msgs::msg::TwistStamped;
 using nav_msgs::msg::OccupancyGrid;
 using nav_msgs::msg::Odometry;
+using rcl_interfaces::msg::SetParametersResult;
 using tier4_planning_msgs::msg::AvoidanceDebugMsgArray;
 using tier4_planning_msgs::msg::PathChangeModule;
 using tier4_planning_msgs::msg::Scenario;
@@ -96,6 +109,9 @@ private:
   bool isDataReady();
 
   // parameters
+  std::shared_ptr<AvoidanceParameters> avoidance_param_ptr;
+  std::shared_ptr<LaneChangeParameters> lane_change_param_ptr;
+
   BehaviorPathPlannerParameters getCommonParam();
   BehaviorTreeManagerParam getBehaviorTreeManagerParam();
   SideShiftParameters getSideShiftParam();
@@ -113,12 +129,14 @@ private:
   void onForceApproval(const PathChangeModule::ConstSharedPtr msg);
   void onMap(const HADMapBin::ConstSharedPtr map_msg);
   void onRoute(const HADMapRoute::ConstSharedPtr route_msg);
+  SetParametersResult onSetParam(const std::vector<rclcpp::Parameter> & parameters);
 
   /**
    * @brief Modify the path points near the goal to smoothly connect the lanelet and the goal point.
    */
   PathWithLaneId modifyPathForSmoothGoalConnection(
     const PathWithLaneId & path) const;  // (TODO) move to util
+  OnSetParametersCallbackHandle::SharedPtr m_set_param_res;
 
   /**
    * @brief Execute behavior tree and publish planned data.

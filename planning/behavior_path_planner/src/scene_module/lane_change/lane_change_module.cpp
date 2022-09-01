@@ -36,12 +36,11 @@
 namespace behavior_path_planner
 {
 using autoware_auto_perception_msgs::msg::ObjectClassification;
-using route_handler::LaneChangeDirection;
 
 LaneChangeModule::LaneChangeModule(
-  const std::string & name, rclcpp::Node & node, const LaneChangeParameters & parameters)
+  const std::string & name, rclcpp::Node & node, std::shared_ptr<LaneChangeParameters> parameters)
 : SceneModuleInterface{name, node},
-  parameters_{parameters},
+  parameters_{std::move(parameters)},
   rtc_interface_left_(&node, "lane_change_left"),
   rtc_interface_right_(&node, "lane_change_right"),
   uuid_left_{generateUUID()},
@@ -214,11 +213,6 @@ BehaviorModuleOutput LaneChangeModule::planWaitingApproval()
   return out;
 }
 
-void LaneChangeModule::setParameters(const LaneChangeParameters & parameters)
-{
-  parameters_ = parameters;
-}
-
 void LaneChangeModule::updateLaneChangeStatus()
 {
   const auto current_lanes = getCurrentLanes();
@@ -286,7 +280,7 @@ PathWithLaneId LaneChangeModule::getReferencePath() const
     num_lane_change * (common_parameters.minimum_lane_change_length + buffer);
 
   reference_path = util::setDecelerationVelocity(
-    *route_handler, reference_path, current_lanes, parameters_.lane_change_prepare_duration,
+    *route_handler, reference_path, current_lanes, parameters_->lane_change_prepare_duration,
     lane_change_buffer);
 
   reference_path.drivable_area = util::generateDrivableArea(
@@ -332,7 +326,7 @@ lanelet::ConstLanelets LaneChangeModule::getLaneChangeLanes(
   lanelet::utils::query::getClosestLanelet(
     current_lanes, planner_data_->self_pose->pose, &current_lane);
   const double lane_change_prepare_length = std::max(
-    current_twist.linear.x * parameters_.lane_change_prepare_duration,
+    current_twist.linear.x * parameters_->lane_change_prepare_duration,
     planner_data_->parameters.minimum_lane_change_length);
   lanelet::ConstLanelets current_check_lanes =
     route_handler->getLaneletSequence(current_lane, current_pose, 0.0, lane_change_prepare_length);
@@ -364,7 +358,7 @@ std::pair<bool, bool> LaneChangeModule::getSafePath(
     // find candidate paths
     const auto lane_change_paths = lane_change_utils::getLaneChangePaths(
       *route_handler, current_lanes, lane_change_lanes, current_pose, current_twist,
-      common_parameters, parameters_);
+      common_parameters, *parameters_);
 
     // get lanes used for detection
     lanelet::ConstLanelets check_lanes;
@@ -392,9 +386,9 @@ std::pair<bool, bool> LaneChangeModule::getSafePath(
     object_debug_.clear();
     bool found_safe_path = lane_change_utils::selectSafePath(
       valid_paths, current_lanes, check_lanes, planner_data_->dynamic_object, current_pose,
-      current_twist, common_parameters, parameters_, &safe_path, object_debug_);
+      current_twist, common_parameters, *parameters_, &safe_path, object_debug_);
 
-    if (parameters_.publish_debug_marker) {
+    if (parameters_->publish_debug_marker) {
       setObjectDebugVisualization();
     } else {
       debug_marker_.markers.clear();
@@ -436,7 +430,7 @@ bool LaneChangeModule::isAbortConditionSatisfied() const
   const auto current_lanes = status_.current_lanes;
 
   // check abort enable flag
-  if (!parameters_.enable_abort_lane_change) {
+  if (!parameters_->enable_abort_lane_change) {
     return false;
   }
 
@@ -469,12 +463,12 @@ bool LaneChangeModule::isAbortConditionSatisfied() const
     std::unordered_map<std::string, CollisionCheckDebug> debug_data;
     is_path_safe = lane_change_utils::isLaneChangePathSafe(
       path.path, current_lanes, check_lanes, objects, current_pose, current_seg_idx, current_twist,
-      common_parameters, parameters_, debug_data, false, status_.lane_change_path.acceleration);
+      common_parameters, *parameters_, debug_data, false, status_.lane_change_path.acceleration);
   }
 
   // check vehicle velocity thresh
   const bool is_velocity_low =
-    util::l2Norm(current_twist.linear) < parameters_.abort_lane_change_velocity_thresh;
+    util::l2Norm(current_twist.linear) < parameters_->abort_lane_change_velocity_thresh;
 
   // check if vehicle is within lane
   bool is_within_original_lane = false;
@@ -494,7 +488,7 @@ bool LaneChangeModule::isAbortConditionSatisfied() const
     const auto centerline2d = lanelet::utils::to2D(closest_lanelet.centerline()).basicLineString();
     lanelet::BasicPoint2d vehicle_pose2d(current_pose.position.x, current_pose.position.y);
     const double distance = lanelet::geometry::distance2d(centerline2d, vehicle_pose2d);
-    is_distance_small = distance < parameters_.abort_lane_change_distance_thresh;
+    is_distance_small = distance < parameters_->abort_lane_change_distance_thresh;
   }
 
   // check angle thresh from original lane
@@ -504,7 +498,7 @@ bool LaneChangeModule::isAbortConditionSatisfied() const
       lanelet::utils::getLaneletAngle(closest_lanelet, current_pose.position);
     const double vehicle_yaw = tf2::getYaw(current_pose.orientation);
     const double yaw_diff = tier4_autoware_utils::normalizeRadian(lane_angle - vehicle_yaw);
-    is_angle_diff_small = std::abs(yaw_diff) < parameters_.abort_lane_change_angle_thresh;
+    is_angle_diff_small = std::abs(yaw_diff) < parameters_->abort_lane_change_angle_thresh;
   }
 
   // abort only if velocity is low or vehicle pose is close enough
@@ -532,7 +526,7 @@ bool LaneChangeModule::hasFinishedLaneChange() const
   const double travel_distance = arclength_current.length - status_.start_distance;
   const double finish_distance = status_.lane_change_path.preparation_length +
                                  status_.lane_change_path.lane_change_length +
-                                 parameters_.lane_change_finish_judge_buffer;
+                                 parameters_->lane_change_finish_judge_buffer;
   return travel_distance > finish_distance;
 }
 

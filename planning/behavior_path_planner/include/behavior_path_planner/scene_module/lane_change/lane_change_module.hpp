@@ -25,6 +25,7 @@
 
 #include <tf2/utils.h>
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -71,7 +72,8 @@ class LaneChangeModule : public SceneModuleInterface
 {
 public:
   LaneChangeModule(
-    const std::string & name, rclcpp::Node & node, const LaneChangeParameters & parameters);
+    const std::string & name, rclcpp::Node & node,
+    std::shared_ptr<LaneChangeParameters> parameters);
 
   BehaviorModuleOutput run() override;
 
@@ -101,10 +103,8 @@ public:
     return false;
   }
 
-  void setParameters(const LaneChangeParameters & parameters);
-
 private:
-  LaneChangeParameters parameters_;
+  std::shared_ptr<LaneChangeParameters> parameters_;
   LaneChangeStatus status_;
   PathShifter path_shifter_;
 
