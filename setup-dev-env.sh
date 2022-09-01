@@ -109,9 +109,9 @@ fi
 
 # Install ansible
 ansible_version=$(pip3 list | grep -oP "^ansible\s+\K([0-9]+)" || true)
-if [ "$ansible_version" != "5" ]; then
+if [ "$ansible_version" != "6" ]; then
     sudo apt-get -y purge ansible
-    pip3 install -U "ansible==5.*"
+    pip3 install -U "ansible==6.*"
 fi
 
 # For Python packages installed with user privileges
