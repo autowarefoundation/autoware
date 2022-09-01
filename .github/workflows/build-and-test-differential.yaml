@@ -78,11 +78,20 @@ jobs:
         id: get-modified-packages
         uses: autowarefoundation/autoware-github-actions/get-modified-packages@v1
 
+      - name: Get modified files
+        id: get-modified-files
+        uses: tj-actions/changed-files@v28
+        with:
+          files: |
+            **/*.cpp
+            **/*.hpp
+
       - name: Run clang-tidy
-        if: ${{ steps.get-modified-packages.outputs.modified-packages != '' }}
+        if: ${{ steps.get-modified-files.outputs.all_changed_files != '' }}
         uses: autowarefoundation/autoware-github-actions/clang-tidy@v1
         with:
           rosdistro: humble
           target-packages: ${{ steps.get-modified-packages.outputs.modified-packages }}
+          target-files: ${{ steps.get-modified-files.outputs.all_changed_files }}
           clang-tidy-config-url: https://raw.githubusercontent.com/autowarefoundation/autoware/main/.clang-tidy
           build-depends-repos: build_depends.humble.repos
