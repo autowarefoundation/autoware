@@ -16,8 +16,5 @@
       name="crosswalk_states"
       args="/api/autoware/set/crosswalk_states /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/input/external_crosswalk_states"
     />
-
-    <!-- TODO(Takagi, Isamu): workaround for topic check -->
-    <node pkg="topic_tools" exec="relay" name="initial_pose_2d" args="/initialpose /initialpose2d"/>
   </group>
 </launch>

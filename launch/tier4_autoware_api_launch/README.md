@@ -10,13 +10,10 @@ Please see `<exec_depend>` in `package.xml`.
 
 ## Usage
 
-You can include as follows in `*.launch.xml` to use `control.launch.py`.
+You can include as follows in `*.launch.xml` to use `autoware_api.launch.xml`.
 
 ```xml
-  <include file="$(find-pkg-share tier4_autoware_api_launch)/launch/autoware_api.launch.xml">
-    <arg name="init_simulator_pose" value="true"/>
-    <arg name="init_localization_pose" value="false"/>
-  </include>
+  <include file="$(find-pkg-share tier4_autoware_api_launch)/launch/autoware_api.launch.xml"/>
 ```
 
 ## Notes

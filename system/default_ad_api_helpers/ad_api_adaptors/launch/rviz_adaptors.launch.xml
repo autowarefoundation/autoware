@@ -1,6 +1,14 @@
 <launch>
-  <node pkg="ad_api_adaptors" exec="initial_pose_adaptor" name="initial_pose_adaptor">
-    <remap from="~/input/goal" to="/planning/mission_planning/goal"/>
-    <remap from="~/input/waypoint" to="/planning/mission_planning/checkpoint"/>
-  </node>
+  <group>
+    <push-ros-namespace namespace="default_ad_api/helpers"/>
+    <node pkg="ad_api_adaptors" exec="initial_pose_adaptor" name="initial_pose_adaptor">
+      <param from="$(find-pkg-share ad_api_adaptors)/config/initial_pose.param.yaml"/>
+      <remap from="~/initialpose" to="/initialpose"/>
+      <remap from="~/fit_map_height" to="/localization/util/fit_map_height"/>
+    </node>
+    <node pkg="ad_api_adaptors" exec="routing_adaptor" name="routing_adaptor">
+      <remap from="~/input/goal" to="/planning/mission_planning/goal"/>
+      <remap from="~/input/waypoint" to="/planning/mission_planning/checkpoint"/>
+    </node>
+  </group>
 </launch>

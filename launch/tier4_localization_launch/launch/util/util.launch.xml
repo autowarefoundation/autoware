@@ -13,6 +13,7 @@
   <!-- pose_initializer -->
   <group>
     <include file="$(find-pkg-share pose_initializer)/launch/pose_initializer.launch.xml"/>
+    <include file="$(find-pkg-share automatic_pose_initializer)/launch/automatic_pose_initializer.launch.xml"/>
   </group>
   <!-- util -->
   <group>
