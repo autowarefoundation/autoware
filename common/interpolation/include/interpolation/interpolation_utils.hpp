@@ -76,8 +76,9 @@ inline void validateKeys(
   }
 }
 
-inline void validateKeysAndValues(
-  const std::vector<double> & base_keys, const std::vector<double> & base_values)
+template <class T>
+void validateKeysAndValues(
+  const std::vector<double> & base_keys, const std::vector<T> & base_values)
 {
   // when vectors are empty
   if (base_keys.empty() || base_values.empty()) {
