@@ -10,6 +10,7 @@ ament_auto_add_library(motion_utils SHARED
   src/motion_utils.cpp
   src/marker/marker_helper.cpp
   src/resample/resample.cpp
+  src/trajectory/interpolation.cpp
   src/vehicle/vehicle_state_checker.cpp
 )
 
