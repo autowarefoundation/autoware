@@ -17,10 +17,10 @@ jobs:
           - humble
         include:
           - rosdistro: galactic
-            container: ghcr.io/autowarefoundation/autoware-universe:galactic-latest
+            container: ros:galactic
             build-depends-repos: build_depends.repos
           - rosdistro: humble
-            container: ghcr.io/autowarefoundation/autoware-universe:humble-latest
+            container: ros:humble
             build-depends-repos: build_depends.humble.repos
     steps:
       - name: Check out repository
