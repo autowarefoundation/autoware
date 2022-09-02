@@ -153,7 +153,7 @@ Heading nlerp(Heading a, Heading b, Real t)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-Orientation slerp(const Orientation & a, const Orientation & b, const Real t)
+Orientation spline(const Orientation & a, const Orientation & b, const Real t)
 {
   tf2::Quaternion quat_a;
   tf2::Quaternion quat_b;
@@ -163,12 +163,12 @@ Orientation slerp(const Orientation & a, const Orientation & b, const Real t)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-Point interpolate(Point a, Point b, Real t) { return interpolate(a, b, t, slerp); }
+Point interpolate(Point a, Point b, Real t) { return interpolate(a, b, t, spline); }
 
 ////////////////////////////////////////////////////////////////////////////////
 void sample(const Trajectory & in, Trajectory & out, std::chrono::nanoseconds period)
 {
-  sample(in, out, period, slerp);
+  sample(in, out, period, spline);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -46,10 +46,10 @@ struct MultiSplineCoef
 };
 
 // static spline interpolation functions
-std::vector<double> slerp(
+std::vector<double> spline(
   const std::vector<double> & base_keys, const std::vector<double> & base_values,
   const std::vector<double> & query_keys);
-std::vector<double> slerpByAkima(
+std::vector<double> splineByAkima(
   const std::vector<double> & base_keys, const std::vector<double> & base_values,
   const std::vector<double> & query_keys);
 }  // namespace interpolation

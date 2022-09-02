@@ -110,7 +110,7 @@ std::array<std::vector<double>, 2> validatePoints(
 }
 
 // only two points is supported
-std::vector<double> slerpTwoPoints(
+std::vector<double> splineTwoPoints(
   std::vector<double> base_s, std::vector<double> base_x, const double begin_diff,
   const double end_diff, std::vector<double> new_s)
 {
@@ -259,8 +259,8 @@ std::vector<geometry_msgs::msg::Point> interpolate2DPoints(
   }
 
   // spline interpolation
-  const std::vector<double> interpolated_x = interpolation::slerp(base_s, base_x, new_s);
-  const std::vector<double> interpolated_y = interpolation::slerp(base_s, base_y, new_s);
+  const std::vector<double> interpolated_x = interpolation::spline(base_s, base_x, new_s);
+  const std::vector<double> interpolated_y = interpolation::spline(base_s, base_y, new_s);
   for (size_t i = 0; i < interpolated_x.size(); ++i) {
     if (std::isnan(interpolated_x[i]) || std::isnan(interpolated_y[i])) {
       return std::vector<geometry_msgs::msg::Point>{};
@@ -296,9 +296,9 @@ std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> interpolateConnec
 
   // spline interpolation
   const auto interpolated_x =
-    slerpTwoPoints(base_s, base_x, std::cos(begin_yaw), std::cos(end_yaw), new_s);
+    splineTwoPoints(base_s, base_x, std::cos(begin_yaw), std::cos(end_yaw), new_s);
   const auto interpolated_y =
-    slerpTwoPoints(base_s, base_y, std::sin(begin_yaw), std::sin(end_yaw), new_s);
+    splineTwoPoints(base_s, base_y, std::sin(begin_yaw), std::sin(end_yaw), new_s);
 
   for (size_t i = 0; i < interpolated_x.size(); i++) {
     if (std::isnan(interpolated_x[i]) || std::isnan(interpolated_y[i])) {
@@ -343,9 +343,9 @@ std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> interpolate2DTraj
   const auto monotonic_base_yaw = convertEulerAngleToMonotonic(base_yaw);
 
   // spline interpolation
-  const auto interpolated_x = interpolation::slerp(base_s, base_x, new_s);
-  const auto interpolated_y = interpolation::slerp(base_s, base_y, new_s);
-  const auto interpolated_yaw = interpolation::slerp(base_s, monotonic_base_yaw, new_s);
+  const auto interpolated_x = interpolation::spline(base_s, base_x, new_s);
+  const auto interpolated_y = interpolation::spline(base_s, base_y, new_s);
+  const auto interpolated_yaw = interpolation::spline(base_s, monotonic_base_yaw, new_s);
 
   for (size_t i = 0; i < interpolated_x.size(); i++) {
     if (std::isnan(interpolated_x[i]) || std::isnan(interpolated_y[i])) {

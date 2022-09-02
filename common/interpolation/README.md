@@ -12,7 +12,7 @@ Then it calculates interpolated values on y-axis for `query_keys` on x-axis.
 
 ## Spline Interpolation
 
-`slerp(base_keys, base_values, query_keys)` (for vector interpolation) applies spline regression to each two continuous points whose x values are`base_keys` and whose y values are `base_values`.
+`spline(base_keys, base_values, query_keys)` (for vector interpolation) applies spline regression to each two continuous points whose x values are`base_keys` and whose y values are `base_values`.
 Then it calculates interpolated values on y-axis for `query_keys` on x-axis.
 
 ### Evaluation of calculation cost

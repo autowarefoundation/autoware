@@ -66,10 +66,10 @@ autoware_auto_perception_msgs::msg::PredictedPath resamplePredictedPath(
     return interpolation::lerp(input_time, input, resampled_time);
   };
   const auto spline = [&](const auto & input) {
-    return interpolation::slerp(input_time, input, resampled_time);
+    return interpolation::spline(input_time, input, resampled_time);
   };
   const auto slerp = [&](const auto & input) {
-    return interpolation::spherical_linear_interpolation(input_time, input, resampled_time);
+    return interpolation::slerp(input_time, input, resampled_time);
   };
 
   const auto interpolated_x = use_spline_for_xy ? spline(x) : lerp(x);

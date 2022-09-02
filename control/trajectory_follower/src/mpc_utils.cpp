@@ -100,13 +100,13 @@ bool8_t resampleMPCTrajectoryByDistance(
   std::vector<float64_t> input_yaw = input.yaw;
   convertEulerAngleToMonotonic(&input_yaw);
 
-  output->x = interpolation::slerp(input_arclength, input.x, output_arclength);
-  output->y = interpolation::slerp(input_arclength, input.y, output_arclength);
-  output->z = interpolation::slerp(input_arclength, input.z, output_arclength);
-  output->yaw = interpolation::slerp(input_arclength, input.yaw, output_arclength);
+  output->x = interpolation::spline(input_arclength, input.x, output_arclength);
+  output->y = interpolation::spline(input_arclength, input.y, output_arclength);
+  output->z = interpolation::spline(input_arclength, input.z, output_arclength);
+  output->yaw = interpolation::spline(input_arclength, input.yaw, output_arclength);
   output->vx = interpolation::lerp(input_arclength, input.vx, output_arclength);
-  output->k = interpolation::slerp(input_arclength, input.k, output_arclength);
-  output->smooth_k = interpolation::slerp(input_arclength, input.smooth_k, output_arclength);
+  output->k = interpolation::spline(input_arclength, input.k, output_arclength);
+  output->smooth_k = interpolation::spline(input_arclength, input.smooth_k, output_arclength);
   output->relative_time =
     interpolation::lerp(input_arclength, input.relative_time, output_arclength);
 

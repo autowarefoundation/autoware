@@ -109,8 +109,8 @@ TEST(Interpolation, Slerp2d)
   };
   // Plain check
   const auto test_case = [=](Orientation a, Orientation b, Real t, Orientation res, Real tol) {
-    using motion::motion_common::slerp;
-    const auto ret = slerp(a, b, t);
+    using motion::motion_common::spline;
+    const auto ret = spline(a, b, t);
     EXPECT_LT(std::fabs(to_angle(ret) - to_angle(res)), tol)
       << to_angle(ret) << ", " << to_angle(res);
   };
@@ -123,10 +123,10 @@ TEST(Interpolation, Slerp2d)
     const auto t_ = motion::motion_common::clamp(t, 0.0F, 1.0F);
     const auto th_t = th_a + (t_ * ab);
     const auto res_th = from_angle(th_t);
-    using motion::motion_common::slerp;
+    using motion::motion_common::spline;
     test_case(a, b, t, res_th, tol);
     if (HasFailure()) {
-      const auto ret = slerp(a, b, t);
+      const auto ret = spline(a, b, t);
       std::cout << "Angles: " << th_a << ", " << th_b << "; " << th_t << ", " << to_angle(ret)
                 << "\n";
     }

@@ -203,7 +203,7 @@ void PathShifter::applySplineShifter(ShiftedPath * shifted_path, const bool offs
       query_distance.push_back(dist_from_start);
     }
     if (!query_distance.empty()) {
-      query_length = interpolation::slerp(base_distance, base_length, query_distance);
+      query_length = interpolation::spline(base_distance, base_length, query_distance);
     }
 
     // Apply shifting.

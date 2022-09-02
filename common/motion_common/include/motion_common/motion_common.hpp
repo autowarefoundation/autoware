@@ -159,11 +159,11 @@ T interpolate(T a, T b, RealT t)
 }
 
 /// Spherical linear interpolation
-MOTION_COMMON_PUBLIC Orientation slerp(const Orientation & a, const Orientation & b, const Real t);
+MOTION_COMMON_PUBLIC Orientation spline(const Orientation & a, const Orientation & b, const Real t);
 
 /// Trajectory point interpolation
 template <typename SlerpF>
-Point interpolate(Point a, Point b, Real t, SlerpF slerp_fn)
+Point interpolate(Point a, Point b, Real t, SlerpF spline_fn)
 {
   Point ret{rosidl_runtime_cpp::MessageInitialization::ALL};
   {
@@ -173,7 +173,7 @@ Point interpolate(Point a, Point b, Real t, SlerpF slerp_fn)
   }
   ret.pose.position.x = interpolate(a.pose.position.x, b.pose.position.x, t);
   ret.pose.position.y = interpolate(a.pose.position.y, b.pose.position.y, t);
-  ret.pose.orientation = slerp_fn(a.pose.orientation, b.pose.orientation, t);
+  ret.pose.orientation = spline_fn(a.pose.orientation, b.pose.orientation, t);
   ret.longitudinal_velocity_mps =
     interpolate(a.longitudinal_velocity_mps, b.longitudinal_velocity_mps, t);
   ret.lateral_velocity_mps = interpolate(a.lateral_velocity_mps, b.lateral_velocity_mps, t);
@@ -191,7 +191,7 @@ MOTION_COMMON_PUBLIC Point interpolate(Point a, Point b, Real t);
 /// Sample a trajectory using interpolation; does not extrapolate
 template <typename SlerpF>
 void sample(
-  const Trajectory & in, Trajectory & out, std::chrono::nanoseconds period, SlerpF slerp_fn)
+  const Trajectory & in, Trajectory & out, std::chrono::nanoseconds period, SlerpF spline_fn)
 {
   out.points.clear();
   out.header = in.header;
@@ -230,7 +230,7 @@ void sample(
       const auto dt_ = std::chrono::duration_cast<std::chrono::duration<Real>>(
         ref_duration - from_message(curr_pt.time_from_start));
       const auto t = dt_.count() / dt.count();
-      out.points.push_back(interpolate(curr_pt, next_pt, t, slerp_fn));
+      out.points.push_back(interpolate(curr_pt, next_pt, t, spline_fn));
     }
     ref_duration += period;
   }

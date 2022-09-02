@@ -23,7 +23,7 @@
 
 constexpr double epsilon = 1e-6;
 
-TEST(spline_interpolation, slerp)
+TEST(spline_interpolation, spline)
 {
   {  // straight: query_keys is same as base_keys
     const std::vector<double> base_keys{0.0, 1.0, 2.0, 3.0, 4.0};
@@ -31,7 +31,7 @@ TEST(spline_interpolation, slerp)
     const std::vector<double> query_keys = base_keys;
     const std::vector<double> ans = base_values;
 
-    const auto query_values = interpolation::slerp(base_keys, base_values, query_keys);
+    const auto query_values = interpolation::spline(base_keys, base_values, query_keys);
     for (size_t i = 0; i < query_values.size(); ++i) {
       EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
     }
@@ -43,7 +43,7 @@ TEST(spline_interpolation, slerp)
     const std::vector<double> query_keys{0.0, 0.7, 1.9, 4.0};
     const std::vector<double> ans{0.0, 1.05, 2.85, 6.0};
 
-    const auto query_values = interpolation::slerp(base_keys, base_values, query_keys);
+    const auto query_values = interpolation::spline(base_keys, base_values, query_keys);
     for (size_t i = 0; i < query_values.size(); ++i) {
       EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
     }
@@ -55,7 +55,7 @@ TEST(spline_interpolation, slerp)
     const std::vector<double> query_keys = base_keys;
     const std::vector<double> ans = base_values;
 
-    const auto query_values = interpolation::slerp(base_keys, base_values, query_keys);
+    const auto query_values = interpolation::spline(base_keys, base_values, query_keys);
     for (size_t i = 0; i < query_values.size(); ++i) {
       EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
     }
@@ -67,7 +67,7 @@ TEST(spline_interpolation, slerp)
     const std::vector<double> query_keys{0.0, 8.0, 18.0};
     const std::vector<double> ans{-0.075611, 0.997242, 1.573258};
 
-    const auto query_values = interpolation::slerp(base_keys, base_values, query_keys);
+    const auto query_values = interpolation::spline(base_keys, base_values, query_keys);
     for (size_t i = 0; i < query_values.size(); ++i) {
       EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
     }
@@ -79,7 +79,7 @@ TEST(spline_interpolation, slerp)
     const std::vector<double> query_keys = base_keys;
     const std::vector<double> ans = base_values;
 
-    const auto query_values = interpolation::slerp(base_keys, base_values, query_keys);
+    const auto query_values = interpolation::spline(base_keys, base_values, query_keys);
     for (size_t i = 0; i < query_values.size(); ++i) {
       EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
     }
@@ -91,7 +91,7 @@ TEST(spline_interpolation, slerp)
     const std::vector<double> query_keys = base_keys;
     const std::vector<double> ans = base_values;
 
-    const auto query_values = interpolation::slerp(base_keys, base_values, query_keys);
+    const auto query_values = interpolation::spline(base_keys, base_values, query_keys);
     for (size_t i = 0; i < query_values.size(); ++i) {
       EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
     }
@@ -103,7 +103,7 @@ TEST(spline_interpolation, slerp)
     const std::vector<double> query_keys{-1.0, 0.0, 4.0};
     const std::vector<double> ans{-0.808769, -0.077539, 1.035096};
 
-    const auto query_values = interpolation::slerp(base_keys, base_values, query_keys);
+    const auto query_values = interpolation::spline(base_keys, base_values, query_keys);
     for (size_t i = 0; i < query_values.size(); ++i) {
       EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
     }
@@ -115,14 +115,14 @@ TEST(spline_interpolation, slerp)
     const std::vector<double> query_keys = {0.0, 1.0, 1.5, 2.0, 3.0, 4.0};
     const std::vector<double> ans = {0.0, 0.0, 137.591789, 0.1, 0.1, 0.1};
 
-    const auto query_values = interpolation::slerp(base_keys, base_values, query_keys);
+    const auto query_values = interpolation::spline(base_keys, base_values, query_keys);
     for (size_t i = 0; i < query_values.size(); ++i) {
       EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
     }
   }
 }
 
-TEST(spline_interpolation, slerpByAkima)
+TEST(spline_interpolation, splineByAkima)
 {
   {  // straight: query_keys is same as base_keys
     const std::vector<double> base_keys{0.0, 1.0, 2.0, 3.0, 4.0};
@@ -130,7 +130,7 @@ TEST(spline_interpolation, slerpByAkima)
     const std::vector<double> query_keys = base_keys;
     const std::vector<double> ans = base_values;
 
-    const auto query_values = interpolation::slerpByAkima(base_keys, base_values, query_keys);
+    const auto query_values = interpolation::splineByAkima(base_keys, base_values, query_keys);
     for (size_t i = 0; i < query_values.size(); ++i) {
       EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
     }
@@ -142,7 +142,7 @@ TEST(spline_interpolation, slerpByAkima)
     const std::vector<double> query_keys{0.0, 0.7, 1.9, 4.0};
     const std::vector<double> ans{0.0, 1.05, 2.85, 6.0};
 
-    const auto query_values = interpolation::slerpByAkima(base_keys, base_values, query_keys);
+    const auto query_values = interpolation::splineByAkima(base_keys, base_values, query_keys);
     for (size_t i = 0; i < query_values.size(); ++i) {
       EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
     }
@@ -154,7 +154,7 @@ TEST(spline_interpolation, slerpByAkima)
     const std::vector<double> query_keys = base_keys;
     const std::vector<double> ans = base_values;
 
-    const auto query_values = interpolation::slerpByAkima(base_keys, base_values, query_keys);
+    const auto query_values = interpolation::splineByAkima(base_keys, base_values, query_keys);
     for (size_t i = 0; i < query_values.size(); ++i) {
       EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
     }
@@ -166,7 +166,7 @@ TEST(spline_interpolation, slerpByAkima)
     const std::vector<double> query_keys{0.0, 8.0, 18.0};
     const std::vector<double> ans{-0.0801, 1.110749, 1.4864};
 
-    const auto query_values = interpolation::slerpByAkima(base_keys, base_values, query_keys);
+    const auto query_values = interpolation::splineByAkima(base_keys, base_values, query_keys);
     for (size_t i = 0; i < query_values.size(); ++i) {
       EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
     }
@@ -178,7 +178,7 @@ TEST(spline_interpolation, slerpByAkima)
     const std::vector<double> query_keys = base_keys;
     const std::vector<double> ans = base_values;
 
-    const auto query_values = interpolation::slerpByAkima(base_keys, base_values, query_keys);
+    const auto query_values = interpolation::splineByAkima(base_keys, base_values, query_keys);
     for (size_t i = 0; i < query_values.size(); ++i) {
       EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
     }
@@ -190,7 +190,7 @@ TEST(spline_interpolation, slerpByAkima)
     const std::vector<double> query_keys = base_keys;
     const std::vector<double> ans = base_values;
 
-    const auto query_values = interpolation::slerpByAkima(base_keys, base_values, query_keys);
+    const auto query_values = interpolation::splineByAkima(base_keys, base_values, query_keys);
     for (size_t i = 0; i < query_values.size(); ++i) {
       EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
     }
@@ -202,7 +202,7 @@ TEST(spline_interpolation, slerpByAkima)
     const std::vector<double> query_keys{-1.0, 0.0, 4.0};
     const std::vector<double> ans{-0.8378, -0.0801, 0.927031};
 
-    const auto query_values = interpolation::slerpByAkima(base_keys, base_values, query_keys);
+    const auto query_values = interpolation::splineByAkima(base_keys, base_values, query_keys);
     for (size_t i = 0; i < query_values.size(); ++i) {
       EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
     }
@@ -214,14 +214,14 @@ TEST(spline_interpolation, slerpByAkima)
     const std::vector<double> query_keys = {0.0, 1.0, 1.5, 2.0, 3.0, 4.0};
     const std::vector<double> ans = {0.0, 0.0, 0.1, 0.1, 0.1, 0.1};
 
-    const auto query_values = interpolation::slerpByAkima(base_keys, base_values, query_keys);
+    const auto query_values = interpolation::splineByAkima(base_keys, base_values, query_keys);
     for (size_t i = 0; i < query_values.size(); ++i) {
       EXPECT_NEAR(query_values.at(i), ans.at(i), epsilon);
     }
   }
 }
 
-TEST(spline_interpolation, slerpYawFromPoints)
+TEST(spline_interpolation, splineYawFromPoints)
 {
   using tier4_autoware_utils::createPoint;
 
@@ -235,7 +235,7 @@ TEST(spline_interpolation, slerpYawFromPoints)
 
     const std::vector<double> ans{0.9827937, 0.9827937, 0.9827937, 0.9827937, 0.9827937};
 
-    const auto yaws = interpolation::slerpYawFromPoints(points);
+    const auto yaws = interpolation::splineYawFromPoints(points);
     for (size_t i = 0; i < yaws.size(); ++i) {
       EXPECT_NEAR(yaws.at(i), ans.at(i), epsilon);
     }
@@ -251,7 +251,7 @@ TEST(spline_interpolation, slerpYawFromPoints)
 
     const std::vector<double> ans{1.3593746, 0.9813541, 1.0419655, 0.8935115, 0.2932783};
 
-    const auto yaws = interpolation::slerpYawFromPoints(points);
+    const auto yaws = interpolation::splineYawFromPoints(points);
     for (size_t i = 0; i < yaws.size(); ++i) {
       EXPECT_NEAR(yaws.at(i), ans.at(i), epsilon);
     }
@@ -261,7 +261,7 @@ TEST(spline_interpolation, slerpYawFromPoints)
     std::vector<geometry_msgs::msg::Point> points;
     points.push_back(createPoint(1.0, 0.0, 0.0));
 
-    EXPECT_THROW(interpolation::slerpYawFromPoints(points), std::logic_error);
+    EXPECT_THROW(interpolation::splineYawFromPoints(points), std::logic_error);
   }
 
   {  // straight: size of base_keys is 2 (edge case in the implementation)
@@ -271,7 +271,7 @@ TEST(spline_interpolation, slerpYawFromPoints)
 
     const std::vector<double> ans{0.9827937, 0.9827937};
 
-    const auto yaws = interpolation::slerpYawFromPoints(points);
+    const auto yaws = interpolation::splineYawFromPoints(points);
     for (size_t i = 0; i < yaws.size(); ++i) {
       EXPECT_NEAR(yaws.at(i), ans.at(i), epsilon);
     }
@@ -285,7 +285,7 @@ TEST(spline_interpolation, slerpYawFromPoints)
 
     const std::vector<double> ans{0.9827937, 0.9827937, 0.9827937};
 
-    const auto yaws = interpolation::slerpYawFromPoints(points);
+    const auto yaws = interpolation::splineYawFromPoints(points);
     for (size_t i = 0; i < yaws.size(); ++i) {
       EXPECT_NEAR(yaws.at(i), ans.at(i), epsilon);
     }

@@ -66,13 +66,13 @@ std::vector<geometry_msgs::msg::Pose> resamplePath(
   const auto lerp = [&](const auto & input) {
     return interpolation::lerp(input_arclength, input, resampled_arclength);
   };
-  const auto slerp = [&](const auto & input) {
-    return interpolation::slerp(input_arclength, input, resampled_arclength);
+  const auto spline = [&](const auto & input) {
+    return interpolation::spline(input_arclength, input, resampled_arclength);
   };
 
-  const auto interpolated_x = use_lerp_for_xy ? lerp(x) : slerp(x);
-  const auto interpolated_y = use_lerp_for_xy ? lerp(y) : slerp(y);
-  const auto interpolated_z = use_lerp_for_z ? lerp(z) : slerp(z);
+  const auto interpolated_x = use_lerp_for_xy ? lerp(x) : spline(x);
+  const auto interpolated_y = use_lerp_for_xy ? lerp(y) : spline(y);
+  const auto interpolated_z = use_lerp_for_z ? lerp(z) : spline(z);
 
   std::vector<geometry_msgs::msg::Pose> resampled_points;
   resampled_points.resize(interpolated_x.size());

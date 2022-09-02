@@ -32,9 +32,9 @@ inline geometry_msgs::msg::Quaternion createQuaternionFromRPY(
 }
 }  // namespace
 
-TEST(spherical_linear_interpolation, slerp_scalar)
+TEST(slerp, spline_scalar)
 {
-  using interpolation::spherical_linear_interpolation;
+  using interpolation::slerp;
 
   // Same value
   {
@@ -46,7 +46,7 @@ TEST(spherical_linear_interpolation, slerp_scalar)
     const auto ans_quat = createQuaternionFromRPY(0.0, 0.0, 0.0);
 
     for (double ratio = -2.0; ratio < 2.0 + epsilon; ratio += 0.1) {
-      const auto interpolated_quat = spherical_linear_interpolation(src_quat, dst_quat, ratio);
+      const auto interpolated_quat = slerp(src_quat, dst_quat, ratio);
       EXPECT_NEAR(ans_quat.x, interpolated_quat.x, epsilon);
       EXPECT_NEAR(ans_quat.y, interpolated_quat.y, epsilon);
       EXPECT_NEAR(ans_quat.z, interpolated_quat.z, epsilon);
@@ -62,7 +62,7 @@ TEST(spherical_linear_interpolation, slerp_scalar)
     const auto dst_quat = createQuaternionFromRPY(0.0, 0.0, dst_yaw);
 
     for (double ratio = -2.0; ratio < 2.0 + epsilon; ratio += 0.1) {
-      const auto interpolated_quat = spherical_linear_interpolation(src_quat, dst_quat, ratio);
+      const auto interpolated_quat = slerp(src_quat, dst_quat, ratio);
 
       const double ans_yaw = M_PI * ratio;
       tf2::Quaternion ans;
@@ -77,9 +77,9 @@ TEST(spherical_linear_interpolation, slerp_scalar)
   }
 }
 
-TEST(spherical_linear_interpolation, slerp_vector)
+TEST(slerp, spline_vector)
 {
-  using interpolation::spherical_linear_interpolation;
+  using interpolation::slerp;
 
   // query keys are same as base keys
   {
@@ -92,7 +92,7 @@ TEST(spherical_linear_interpolation, slerp_vector)
     const std::vector<double> query_keys = base_keys;
     const auto ans = base_values;
 
-    const auto results = spherical_linear_interpolation(base_keys, base_values, query_keys);
+    const auto results = slerp(base_keys, base_values, query_keys);
 
     for (size_t i = 0; i < results.size(); ++i) {
       const auto interpolated_quat = results.at(i);
@@ -122,7 +122,7 @@ TEST(spherical_linear_interpolation, slerp_vector)
     ans.at(4) = createQuaternionFromRPY(0.0, 0.0, 0.1 * M_PI / 5.0 + 3.0 * M_PI / 5.0);
     ans.at(5) = createQuaternionFromRPY(0.0, 0.0, 0.8 * M_PI / 5.0 + 3.0 * M_PI / 5.0);
 
-    const auto results = spherical_linear_interpolation(base_keys, base_values, query_keys);
+    const auto results = slerp(base_keys, base_values, query_keys);
 
     for (size_t i = 0; i < results.size(); ++i) {
       const auto interpolated_quat = results.at(i);

@@ -16,7 +16,7 @@
 
 namespace interpolation
 {
-geometry_msgs::msg::Quaternion spherical_linear_interpolation(
+geometry_msgs::msg::Quaternion slerp(
   const geometry_msgs::msg::Quaternion & src_quat, const geometry_msgs::msg::Quaternion & dst_quat,
   const double ratio)
 {
@@ -28,7 +28,7 @@ geometry_msgs::msg::Quaternion spherical_linear_interpolation(
   return tf2::toMsg(interpolated_quat);
 }
 
-std::vector<geometry_msgs::msg::Quaternion> spherical_linear_interpolation(
+std::vector<geometry_msgs::msg::Quaternion> slerp(
   const std::vector<double> & base_keys,
   const std::vector<geometry_msgs::msg::Quaternion> & base_values,
   const std::vector<double> & query_keys)
@@ -50,7 +50,7 @@ std::vector<geometry_msgs::msg::Quaternion> spherical_linear_interpolation(
     const double ratio = (query_key - base_keys.at(key_index)) /
                          (base_keys.at(key_index + 1) - base_keys.at(key_index));
 
-    const auto interpolated_quat = spherical_linear_interpolation(src_quat, dst_quat, ratio);
+    const auto interpolated_quat = slerp(src_quat, dst_quat, ratio);
     query_values.push_back(interpolated_quat);
   }
 

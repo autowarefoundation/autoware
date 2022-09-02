@@ -69,7 +69,7 @@ std::array<std::vector<double>, 3> getBaseValues(
 namespace interpolation
 {
 template <typename T>
-std::vector<double> slerpYawFromPoints(const std::vector<T> & points)
+std::vector<double> splineYawFromPoints(const std::vector<T> & points)
 {
   SplineInterpolationPoints2d interpolator;
 
@@ -84,7 +84,7 @@ std::vector<double> slerpYawFromPoints(const std::vector<T> & points)
   }
   return yaw_vec;
 }
-template std::vector<double> slerpYawFromPoints(
+template std::vector<double> splineYawFromPoints(
   const std::vector<geometry_msgs::msg::Point> & points);
 }  // namespace interpolation
 
@@ -103,8 +103,8 @@ geometry_msgs::msg::Point SplineInterpolationPoints2d::getSplineInterpolatedPoin
     whole_s = base_s_vec_.back();
   }
 
-  const double x = slerp_x_.getSplineInterpolatedValues({whole_s}).at(0);
-  const double y = slerp_y_.getSplineInterpolatedValues({whole_s}).at(0);
+  const double x = spline_x_.getSplineInterpolatedValues({whole_s}).at(0);
+  const double y = spline_y_.getSplineInterpolatedValues({whole_s}).at(0);
 
   geometry_msgs::msg::Point geom_point;
   geom_point.x = x;
@@ -126,8 +126,8 @@ double SplineInterpolationPoints2d::getSplineInterpolatedYaw(const size_t idx, c
     whole_s = base_s_vec_.back();
   }
 
-  const double diff_x = slerp_x_.getSplineInterpolatedDiffValues({whole_s}).at(0);
-  const double diff_y = slerp_y_.getSplineInterpolatedDiffValues({whole_s}).at(0);
+  const double diff_x = spline_x_.getSplineInterpolatedDiffValues({whole_s}).at(0);
+  const double diff_y = spline_y_.getSplineInterpolatedDiffValues({whole_s}).at(0);
 
   return std::atan2(diff_y, diff_x);
 }
@@ -150,6 +150,6 @@ void SplineInterpolationPoints2d::calcSplineCoefficientsInner(
   const auto & base_y_vec = base.at(2);
 
   // calculate spline coefficients
-  slerp_x_.calcSplineCoefficients(base_s_vec_, base_x_vec);
-  slerp_y_.calcSplineCoefficients(base_s_vec_, base_y_vec);
+  spline_x_.calcSplineCoefficients(base_s_vec_, base_x_vec);
+  spline_y_.calcSplineCoefficients(base_s_vec_, base_y_vec);
 }

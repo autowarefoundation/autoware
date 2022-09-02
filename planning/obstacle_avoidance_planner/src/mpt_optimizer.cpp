@@ -178,7 +178,7 @@ Eigen::Vector2d getState(
   return kinematics;
 }
 
-std::vector<double> slerpYawFromReferencePoints(const std::vector<ReferencePoint> & ref_points)
+std::vector<double> splineYawFromReferencePoints(const std::vector<ReferencePoint> & ref_points)
 {
   if (ref_points.size() == 1) {
     return {ref_points.front().yaw};
@@ -188,7 +188,7 @@ std::vector<double> slerpYawFromReferencePoints(const std::vector<ReferencePoint
   for (const auto & ref_point : ref_points) {
     points.push_back(ref_point.p);
   }
-  return interpolation::slerpYawFromPoints(points);
+  return interpolation::splineYawFromPoints(points);
 }
 
 size_t findNearestIndexWithSoftYawConstraints(
@@ -1244,7 +1244,7 @@ std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> MPTOptimizer::get
 
 void MPTOptimizer::calcOrientation(std::vector<ReferencePoint> & ref_points) const
 {
-  const auto yaw_angles = slerpYawFromReferencePoints(ref_points);
+  const auto yaw_angles = splineYawFromReferencePoints(ref_points);
   for (size_t i = 0; i < ref_points.size(); ++i) {
     if (ref_points.at(i).fix_kinematic_state) {
       continue;

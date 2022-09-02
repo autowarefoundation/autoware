@@ -181,7 +181,7 @@ std::tuple<std::vector<double>, std::vector<double>> calcVehicleCirclesInfo(
   for (const auto & traj_point : traj_points) {
     points.push_back(traj_point.pose.position);
   }
-  const auto yaw_vec = interpolation::slerpYawFromPoints(points);
+  const auto yaw_vec = interpolation::splineYawFromPoints(points);
 
   for (size_t i = 0; i < traj_points.size(); ++i) {
     traj_points.at(i).pose.orientation =
