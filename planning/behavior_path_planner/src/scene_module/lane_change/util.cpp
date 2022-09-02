@@ -382,17 +382,17 @@ bool isLaneChangePathSafe(
   // find obstacle in lane change target lanes
   // retrieve lanes that are merging target lanes as well
   const auto target_lane_object_indices =
-    util::filterObjectsByLanelets(*dynamic_objects, target_lanes);
+    util::filterObjectIndicesByLanelets(*dynamic_objects, target_lanes);
 
   // find objects in current lane
   constexpr double check_distance = 100.0;
-  const auto current_lane_object_indices_lanelet = util::filterObjectsByLanelets(
+  const auto current_lane_object_indices_lanelet = util::filterObjectIndicesByLanelets(
     *dynamic_objects, current_lanes, arc.length, arc.length + check_distance);
 
   const double lateral_buffer = (use_buffer) ? 0.5 : 0.0;
   const auto & vehicle_width = common_parameters.vehicle_width;
   const auto & vehicle_length = common_parameters.vehicle_length;
-  const auto current_lane_object_indices = util::filterObjectsByPath(
+  const auto current_lane_object_indices = util::filterObjectsIndicesByPath(
     *dynamic_objects, current_lane_object_indices_lanelet, path,
     vehicle_width / 2 + lateral_buffer);
 

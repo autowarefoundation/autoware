@@ -19,23 +19,16 @@
 
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 
+#include <vector>
+
 namespace behavior_path_planner
 {
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 struct PullOutPath
 {
-  PathWithLaneId path;
-  ShiftedPath shifted_path;
-  ShiftPoint shift_point;
-  double acceleration = 0.0;
-  double preparation_length = 0.0;
-  double pull_out_length = 0.0;
-};
-
-struct RetreatPath
-{
-  behavior_path_planner::PullOutPath pull_out_path;
-  Pose backed_pose;
+  std::vector<PathWithLaneId> partial_paths;
+  Pose start_pose;
+  Pose end_pose;
 };
 }  // namespace behavior_path_planner
 #endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OUT__PULL_OUT_PATH_HPP_

@@ -63,7 +63,7 @@ void PathShifter::setShiftPoints(const std::vector<ShiftPoint> & points)
 bool PathShifter::generate(
   ShiftedPath * shifted_path, const bool offset_back, const SHIFT_TYPE type)
 {
-  RCLCPP_DEBUG_STREAM(logger_, "PathShifter::generate start!");
+  RCLCPP_DEBUG_STREAM_THROTTLE(logger_, clock_, 3000, "PathShifter::generate start!");
 
   // Guard
   if (reference_path_.points.empty()) {
@@ -75,7 +75,8 @@ bool PathShifter::generate(
   shifted_path->shift_length.resize(reference_path_.points.size(), 0.0);
 
   if (shift_points_.empty()) {
-    RCLCPP_DEBUG_STREAM(logger_, "shift_points_ is empty. Return reference with base offset.");
+    RCLCPP_DEBUG_STREAM_THROTTLE(
+      logger_, clock_, 3000, "shift_points_ is empty. Return reference with base offset.");
     shiftBaseLength(shifted_path, base_offset_);
     return true;
   }
@@ -85,8 +86,8 @@ bool PathShifter::generate(
     for (const auto & shift_point : shift_points_) {
       int idx_gap = shift_point.end_idx - shift_point.start_idx;
       if (idx_gap <= 1) {
-        RCLCPP_WARN_STREAM(
-          logger_,
+        RCLCPP_WARN_STREAM_THROTTLE(
+          logger_, clock_, 3000,
           "shift start point and end point can't be adjoining "
           "Maybe shift length is too short?");
         return false;
@@ -96,15 +97,15 @@ bool PathShifter::generate(
 
   // Sort shift points since applyShift function only supports sorted points
   if (!sortShiftPointsAlongPath(reference_path_)) {
-    RCLCPP_ERROR_STREAM(logger_, "has duplicated points. Failed!");
+    RCLCPP_ERROR_STREAM_THROTTLE(logger_, clock_, 3000, "has duplicated points. Failed!");
     return false;
   }
 
   if (shift_points_.front().start_idx == 0) {
     // if offset is applied on front side, shifting from first point is no problem
     if (offset_back) {
-      RCLCPP_WARN_STREAM(
-        logger_,
+      RCLCPP_WARN_STREAM_THROTTLE(
+        logger_, clock_, 3000,
         "shift start point is at the edge of path. It could cause undesired result."
         " Maybe path is too short for backward?");
     }
@@ -118,8 +119,9 @@ bool PathShifter::generate(
   motion_utils::insertOrientation(shifted_path->path.points, is_driving_forward);
 
   // DEBUG
-  RCLCPP_DEBUG_STREAM(
-    logger_, "PathShifter::generate end. shift_points_.size = " << shift_points_.size());
+  RCLCPP_DEBUG_STREAM_THROTTLE(
+    logger_, clock_, 3000,
+    "PathShifter::generate end. shift_points_.size = " << shift_points_.size());
 
   return true;
 }
@@ -282,7 +284,7 @@ bool PathShifter::checkShiftPointsAlignment(const ShiftPointArray & shift_points
 bool PathShifter::sortShiftPointsAlongPath([[maybe_unused]] const PathWithLaneId & path)
 {
   if (shift_points_.empty()) {
-    RCLCPP_DEBUG_STREAM(logger_, "shift_points_ is empty. do nothing.");
+    RCLCPP_DEBUG_STREAM_THROTTLE(logger_, clock_, 3000, "shift_points_ is empty. do nothing.");
     return true;
   }
 
@@ -312,13 +314,14 @@ bool PathShifter::sortShiftPointsAlongPath([[maybe_unused]] const PathWithLaneId
 
   // Debug
   for (const auto & p : unsorted_shift_points) {
-    RCLCPP_DEBUG_STREAM(logger_, "unsorted_shift_points: " << toStr(p));
+    RCLCPP_DEBUG_STREAM_THROTTLE(logger_, clock_, 3000, "unsorted_shift_points: " << toStr(p));
   }
   for (const auto & i : sorted_indices) {
-    RCLCPP_DEBUG_STREAM(logger_, "sorted_indices i = " << i);
+    RCLCPP_DEBUG_STREAM_THROTTLE(logger_, clock_, 3000, "sorted_indices i = " << i);
   }
   for (const auto & p : sorted_shift_points) {
-    RCLCPP_DEBUG_STREAM(logger_, "sorted_shift_points: in order: " << toStr(p));
+    RCLCPP_DEBUG_STREAM_THROTTLE(
+      logger_, clock_, 3000, "sorted_shift_points: in order: " << toStr(p));
   }
   RCLCPP_DEBUG(logger_, "PathShifter::sortShiftPointsAlongPath end.");
 

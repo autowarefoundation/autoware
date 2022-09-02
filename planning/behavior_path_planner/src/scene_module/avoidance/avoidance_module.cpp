@@ -182,7 +182,7 @@ ObjectDataArray AvoidanceModule::calcAvoidanceTargetObjects(
     current_lanes, parameters_->detection_area_left_expand_dist,
     parameters_->detection_area_right_expand_dist * (-1.0));
   const auto lane_filtered_objects_index =
-    util::filterObjectsByLanelets(objects_candidate, expanded_lanelets);
+    util::filterObjectIndicesByLanelets(objects_candidate, expanded_lanelets);
 
   DEBUG_PRINT("dynamic_objects size = %lu", planner_data_->dynamic_object->objects.size());
   DEBUG_PRINT("object_candidate size = %lu", objects_candidate.objects.size());

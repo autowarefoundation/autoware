@@ -250,9 +250,9 @@ public:
     const lanelet::ConstLanelets & lanelets, lanelet::ConstLanelet * target_lanelet) const;
   bool getPullOverTarget(
     const lanelet::ConstLanelets & lanelets, lanelet::ConstLanelet * target_lanelet) const;
-  bool getPullOutStart(
-    const lanelet::ConstLanelets & lanelets, lanelet::ConstLanelet * target_lanelet,
-    const Pose & pose, const double vehicle_width) const;
+  bool getPullOutStartLane(
+    const lanelet::ConstLanelets & lanelets, const Pose & pose, const double vehicle_width,
+    lanelet::ConstLanelet * target_lanelet) const;
   double getLaneChangeableDistance(
     const Pose & current_pose, const LaneChangeDirection & direction) const;
   lanelet::ConstPolygon3d getIntersectionAreaById(const lanelet::Id id) const;

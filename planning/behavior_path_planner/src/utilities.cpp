@@ -499,34 +499,6 @@ bool lerpByTimeStamp(const PredictedPath & path, const double t_query, Pose * le
   return false;
 }
 
-bool lerpByDistance(
-  const behavior_path_planner::PullOutPath & path, const double & s, Pose * lerped_pt,
-  const lanelet::ConstLanelets & road_lanes)
-{
-  if (lerped_pt == nullptr) {
-    // ROS_WARN_STREAM_THROTTLE(1, "failed to lerp by distance due to nullptr pt");
-    return false;
-  }
-
-  for (size_t i = 1; i < path.path.points.size(); i++) {
-    const auto & pt = path.path.points.at(i).point.pose;
-    const auto & prev_pt = path.path.points.at(i - 1).point.pose;
-    if (
-      (s >= lanelet::utils::getArcCoordinates(road_lanes, prev_pt).length) &&
-      (s < lanelet::utils::getArcCoordinates(road_lanes, pt).length)) {
-      const double distance = lanelet::utils::getArcCoordinates(road_lanes, pt).length -
-                              lanelet::utils::getArcCoordinates(road_lanes, prev_pt).length;
-      const auto offset = s - lanelet::utils::getArcCoordinates(road_lanes, prev_pt).length;
-      const auto ratio = offset / distance;
-      *lerped_pt = lerpByPose(prev_pt, pt, ratio);
-      return true;
-    }
-  }
-
-  // ROS_ERROR_STREAM("Something failed in function: " << __func__);
-  return false;
-}
-
 double getDistanceBetweenPredictedPaths(
   const PredictedPath & object_path, const PredictedPath & ego_path, const double start_time,
   const double end_time, const double resolution)
@@ -578,43 +550,40 @@ double getDistanceBetweenPredictedPathAndObject(
   return min_distance;
 }
 
-double getDistanceBetweenPredictedPathAndObjectPolygon(
-  const PredictedObject & object, const PullOutPath & ego_path,
-  const tier4_autoware_utils::LinearRing2d & vehicle_footprint, double distance_resolution,
-  const lanelet::ConstLanelets & road_lanes)
+bool checkCollisionBetweenPathFootprintsAndObjects(
+  const tier4_autoware_utils::LinearRing2d & local_vehicle_footprint,
+  const PathWithLaneId & ego_path, const PredictedObjects & dynamic_objects, const double margin)
 {
-  double min_distance = std::numeric_limits<double>::max();
-
-  const auto ego_path_point_array = convertToGeometryPointArray(ego_path.path);
-  Polygon2d obj_polygon;
-  if (!calcObjectPolygon(object, &obj_polygon)) {
-    // ROS_ERROR("calcObjectPolygon failed");
-    return min_distance;
+  for (const auto & p : ego_path.points) {
+    if (checkCollisionBetweenFootprintAndObjects(
+          local_vehicle_footprint, p.point.pose, dynamic_objects, margin)) {
+      return true;
+    }
   }
-  const auto s_start =
-    lanelet::utils::getArcCoordinates(road_lanes, ego_path.path.points.front().point.pose).length;
-  const auto s_end = lanelet::utils::getArcCoordinates(road_lanes, ego_path.shift_point.end).length;
+  return false;
+}
 
-  for (auto s = s_start + distance_resolution; s < s_end; s += distance_resolution) {
-    Pose ego_pose;
-    if (!lerpByDistance(ego_path, s, &ego_pose, road_lanes)) {
-      // ROS_ERROR("lerp failed");
+bool checkCollisionBetweenFootprintAndObjects(
+  const tier4_autoware_utils::LinearRing2d & local_vehicle_footprint, const Pose & ego_pose,
+  const PredictedObjects & dynamic_objects, const double margin)
+{
+  const auto vehicle_footprint =
+    transformVector(local_vehicle_footprint, tier4_autoware_utils::pose2transform(ego_pose));
+
+  for (const auto & object : dynamic_objects.objects) {
+    Polygon2d obj_polygon;
+    if (!calcObjectPolygon(object, &obj_polygon)) {
       continue;
     }
-    const auto vehicle_footprint_on_path =
-      transformVector(vehicle_footprint, tier4_autoware_utils::pose2transform(ego_pose));
-    Point2d ego_point{ego_pose.position.x, ego_pose.position.y};
-    for (const auto & vehicle_footprint : vehicle_footprint_on_path) {
-      double distance = boost::geometry::distance(obj_polygon, vehicle_footprint);
-      if (distance < min_distance) {
-        min_distance = distance;
-      }
-    }
+
+    const double distance = boost::geometry::distance(obj_polygon, vehicle_footprint);
+    if (distance < margin) return true;
   }
-  return min_distance;
+  return false;
 }
+
 // only works with consecutive lanes
-std::vector<size_t> filterObjectsByLanelets(
+std::vector<size_t> filterObjectIndicesByLanelets(
   const PredictedObjects & objects, const lanelet::ConstLanelets & target_lanelets,
   const double start_arc_length, const double end_arc_length)
 {
@@ -655,7 +624,7 @@ std::vector<size_t> filterObjectsByLanelets(
 }
 
 // works with random lanelets
-std::vector<size_t> filterObjectsByLanelets(
+std::vector<size_t> filterObjectIndicesByLanelets(
   const PredictedObjects & objects, const lanelet::ConstLanelets & target_lanelets)
 {
   std::vector<size_t> indices;
@@ -697,6 +666,17 @@ std::vector<size_t> filterObjectsByLanelets(
     }
   }
   return indices;
+}
+
+PredictedObjects filterObjectsByLanelets(
+  const PredictedObjects & objects, const lanelet::ConstLanelets & target_lanelets)
+{
+  PredictedObjects filtered_objects;
+  const auto indices = filterObjectIndicesByLanelets(objects, target_lanelets);
+  for (const size_t i : indices) {
+    filtered_objects.objects.push_back(objects.objects.at(i));
+  }
+  return filtered_objects;
 }
 
 bool calcObjectPolygon(const PredictedObject & object, Polygon2d * object_polygon)
@@ -744,7 +724,7 @@ std::vector<double> calcObjectsDistanceToPath(
   return distance_array;
 }
 
-std::vector<size_t> filterObjectsByPath(
+std::vector<size_t> filterObjectsIndicesByPath(
   const PredictedObjects & objects, const std::vector<size_t> & object_indices,
   const PathWithLaneId & ego_path, const double vehicle_width)
 {

@@ -183,6 +183,7 @@ private:
   bool is_index_aligned_{false};
 
   rclcpp::Logger logger_{rclcpp::get_logger("behavior_path_planner").get_child("path_shifter")};
+  rclcpp::Clock clock_{RCL_ROS_TIME};
 
   /**
    * @brief Calculate path index for shift_points and set is_index_aligned_ to true.
