@@ -45,7 +45,7 @@ struct Output
 class GoalDistanceCalculator
 {
 public:
-  Output update(const Input & input);
+  static Output update(const Input & input);
 
   void setParam(const Param & param) { param_ = param; }
 

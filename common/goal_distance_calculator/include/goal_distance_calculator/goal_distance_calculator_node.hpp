@@ -33,8 +33,8 @@ namespace goal_distance_calculator
 {
 struct NodeParam
 {
-  double update_rate;
-  bool oneshot;
+  double update_rate{0.0};
+  bool oneshot{false};
 };
 
 class GoalDistanceCalculatorNode : public rclcpp::Node
