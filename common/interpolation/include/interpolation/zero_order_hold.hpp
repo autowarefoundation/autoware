@@ -28,23 +28,7 @@ std::vector<T> zero_order_hold(
 {
   // throw exception for invalid arguments
   interpolation_utils::validateKeys(base_keys, query_keys);
-
-  // when vectors are empty
-  if (base_keys.empty() || base_values.empty()) {
-    throw std::invalid_argument("Points is empty.");
-  }
-
-  // when size of vectors are less than 2
-  if (base_keys.size() < 2 || base_values.size() < 2) {
-    throw std::invalid_argument(
-      "The size of points is less than 2. base_keys.size() = " + std::to_string(base_keys.size()) +
-      ", base_values.size() = " + std::to_string(base_values.size()));
-  }
-
-  // when sizes of indices and values are not same
-  if (base_keys.size() != base_values.size()) {
-    throw std::invalid_argument("The size of base_keys and base_values are not the same.");
-  }
+  interpolation_utils::validateKeysAndValues(base_keys, base_values);
 
   std::vector<T> query_values;
   size_t closest_segment_idx = 0;
