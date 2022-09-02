@@ -108,12 +108,14 @@ enum PathType {
 struct PUllOverStatus
 {
   PathWithLaneId path;
+  std::shared_ptr<PathWithLaneId> prev_stop_path = nullptr;
   lanelet::ConstLanelets current_lanes;
   lanelet::ConstLanelets pull_over_lanes;
   lanelet::ConstLanelets lanes;  // current + pull_over
   bool has_decided_path = false;
   int path_type = PathType::NONE;
   bool is_safe = false;
+  bool prev_is_safe = false;
   bool has_decided_velocity = false;
   bool has_requested_approval_ = false;
 };
@@ -187,7 +189,7 @@ private:
   std::unique_ptr<rclcpp::Time> last_approved_time_;
 
   PathWithLaneId getReferencePath() const;
-  PathWithLaneId getStopPath() const;
+  PathWithLaneId generateStopPath() const;
   lanelet::ConstLanelets getPullOverLanes() const;
   std::pair<bool, bool> getSafePath(ShiftParkingPath & safe_path) const;
   Pose getRefinedGoal() const;

@@ -570,8 +570,18 @@ BehaviorModuleOutput PullOverModule::plan()
   }
 
   BehaviorModuleOutput output;
-  output.path = status_.is_safe ? std::make_shared<PathWithLaneId>(status_.path)
-                                : std::make_shared<PathWithLaneId>(getStopPath());
+
+  // safe: use pull over path
+  if (status_.is_safe) {
+    output.path = std::make_shared<PathWithLaneId>(status_.path);
+  } else if (status_.prev_is_safe || status_.prev_stop_path == nullptr) {
+    // safe -> not_safe or no prev_stop_path: generate new stop_path
+    output.path = std::make_shared<PathWithLaneId>(generateStopPath());
+    status_.prev_stop_path = output.path;
+  } else {  // not_safe -> not_safe: use previous stop path
+    output.path = status_.prev_stop_path;
+  }
+  status_.prev_is_safe = status_.is_safe;
 
   // set hazard and turn signal
   if (status_.has_decided_path) {
@@ -696,7 +706,7 @@ PathWithLaneId PullOverModule::getReferencePath() const
 
   // stop pose is behind current pose
   if (s_forward < s_backward) {
-    return getStopPath();
+    return generateStopPath();
   }
 
   PathWithLaneId reference_path =
@@ -721,45 +731,43 @@ PathWithLaneId PullOverModule::getReferencePath() const
   return reference_path;
 }
 
-PathWithLaneId PullOverModule::getStopPath() const
+PathWithLaneId PullOverModule::generateStopPath() const
 {
-  PathWithLaneId reference_path;
-
   const auto & route_handler = planner_data_->route_handler;
   const auto current_pose = planner_data_->self_pose->pose;
   const auto common_parameters = planner_data_->parameters;
 
   const double current_vel = planner_data_->self_odometry->twist.twist.linear.x;
-  const double current_to_stop_distance =
-    std::pow(current_vel, 2) / parameters_.maximum_deceleration / 2;
-  const auto arclength_current_pose =
-    lanelet::utils::getArcCoordinates(status_.current_lanes, current_pose).length;
-
-  reference_path = util::getCenterLinePath(
+  auto stop_path = util::getCenterLinePath(
     *route_handler, status_.current_lanes, current_pose, common_parameters.backward_path_length,
     common_parameters.forward_path_length, common_parameters);
 
-  for (auto & point : reference_path.points) {
-    const auto arclength =
+  const double current_to_stop_distance =
+    std::pow(current_vel, 2) / parameters_.maximum_deceleration / 2;
+  const double arclength_current_pose =
+    lanelet::utils::getArcCoordinates(status_.current_lanes, current_pose).length;
+
+  for (auto & point : stop_path.points) {
+    const double arclength =
       lanelet::utils::getArcCoordinates(status_.current_lanes, point.point.pose).length;
-    const auto arclength_current_to_point = arclength - arclength_current_pose;
-    if (0 < arclength_current_to_point) {
-      point.point.longitudinal_velocity_mps = std::min(
-        point.point.longitudinal_velocity_mps,
-        static_cast<float>(std::max(
-          0.0, current_vel * (current_to_stop_distance - arclength_current_to_point) /
-                 current_to_stop_distance)));
+    const double arclength_current_to_point = arclength - arclength_current_pose;
+    if (0.0 < arclength_current_to_point) {
+      point.point.longitudinal_velocity_mps = std::clamp(
+        static_cast<float>(
+          current_vel * (current_to_stop_distance - arclength_current_to_point) /
+          current_to_stop_distance),
+        0.0f, point.point.longitudinal_velocity_mps);
     } else {
       point.point.longitudinal_velocity_mps =
         std::min(point.point.longitudinal_velocity_mps, static_cast<float>(current_vel));
     }
   }
 
-  reference_path.drivable_area = util::generateDrivableArea(
-    reference_path, status_.current_lanes, common_parameters.drivable_area_resolution,
+  stop_path.drivable_area = util::generateDrivableArea(
+    stop_path, status_.current_lanes, common_parameters.drivable_area_resolution,
     common_parameters.vehicle_length, planner_data_);
 
-  return reference_path;
+  return stop_path;
 }
 
 lanelet::ConstLanelets PullOverModule::getPullOverLanes() const
