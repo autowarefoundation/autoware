@@ -16,6 +16,7 @@
 #define PERCEPTION_UTILS__PREDICTED_PATH_UTILS_HPP_
 
 #include "interpolation/linear_interpolation.hpp"
+#include "interpolation/spherical_linear_interpolation.hpp"
 #include "interpolation/spline_interpolation.hpp"
 #include "perception_utils/geometry.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
@@ -39,28 +40,8 @@ namespace perception_utils
  * time_step*(num_of_path_points)]
  * @return interpolated pose
  */
-inline boost::optional<geometry_msgs::msg::Pose> calcInterpolatedPose(
-  const autoware_auto_perception_msgs::msg::PredictedPath & path, const double relative_time)
-{
-  // Check if relative time is in the valid range
-  if (path.path.empty() || relative_time < 0.0) {
-    return boost::none;
-  }
-
-  constexpr double epsilon = 1e-6;
-  const double & time_step = rclcpp::Duration(path.time_step).seconds();
-  for (size_t path_idx = 1; path_idx < path.path.size(); ++path_idx) {
-    const auto & pt = path.path.at(path_idx);
-    const auto & prev_pt = path.path.at(path_idx - 1);
-    if (relative_time - epsilon < time_step * path_idx) {
-      const double offset = relative_time - time_step * (path_idx - 1);
-      const double ratio = std::clamp(offset / time_step, 0.0, 1.0);
-      return tier4_autoware_utils::calcInterpolatedPose(prev_pt, pt, ratio);
-    }
-  }
-
-  return boost::none;
-}
+boost::optional<geometry_msgs::msg::Pose> calcInterpolatedPose(
+  const autoware_auto_perception_msgs::msg::PredictedPath & path, const double relative_time);
 
 /**
  * @brief Resampling predicted path by time step vector. Note this function does not substitute
@@ -70,63 +51,10 @@ inline boost::optional<geometry_msgs::msg::Pose> calcInterpolatedPose(
  * time_step*(num_of_path_points)]
  * @return resampled path
  */
-inline autoware_auto_perception_msgs::msg::PredictedPath resamplePredictedPath(
+autoware_auto_perception_msgs::msg::PredictedPath resamplePredictedPath(
   const autoware_auto_perception_msgs::msg::PredictedPath & path,
   const std::vector<double> & resampled_time, const bool use_spline_for_xy = true,
-  const bool use_spline_for_z = false)
-{
-  if (path.path.empty() || resampled_time.empty()) {
-    throw std::invalid_argument("input path or resampled_time is empty");
-  }
-
-  const double & time_step = rclcpp::Duration(path.time_step).seconds();
-  std::vector<double> input_time(path.path.size());
-  std::vector<double> x(path.path.size());
-  std::vector<double> y(path.path.size());
-  std::vector<double> z(path.path.size());
-  for (size_t i = 0; i < path.path.size(); ++i) {
-    input_time.at(i) = time_step * i;
-    x.at(i) = path.path.at(i).position.x;
-    y.at(i) = path.path.at(i).position.y;
-    z.at(i) = path.path.at(i).position.z;
-  }
-
-  const auto lerp = [&](const auto & input) {
-    return interpolation::lerp(input_time, input, resampled_time);
-  };
-  const auto slerp = [&](const auto & input) {
-    return interpolation::slerp(input_time, input, resampled_time);
-  };
-
-  const auto interpolated_x = use_spline_for_xy ? slerp(x) : lerp(x);
-  const auto interpolated_y = use_spline_for_xy ? slerp(y) : lerp(y);
-  const auto interpolated_z = use_spline_for_z ? slerp(z) : lerp(z);
-
-  autoware_auto_perception_msgs::msg::PredictedPath resampled_path;
-  const auto resampled_size = std::min(resampled_path.path.max_size(), resampled_time.size());
-  resampled_path.confidence = path.confidence;
-  resampled_path.path.resize(resampled_size);
-
-  // Set Position
-  for (size_t i = 0; i < resampled_size; ++i) {
-    const auto p = tier4_autoware_utils::createPoint(
-      interpolated_x.at(i), interpolated_y.at(i), interpolated_z.at(i));
-    resampled_path.path.at(i).position = p;
-  }
-
-  // Set Quaternion
-  for (size_t i = 0; i < resampled_size - 1; ++i) {
-    const auto & src_point = resampled_path.path.at(i).position;
-    const auto & dst_point = resampled_path.path.at(i + 1).position;
-    const double pitch = tier4_autoware_utils::calcElevationAngle(src_point, dst_point);
-    const double yaw = tier4_autoware_utils::calcAzimuthAngle(src_point, dst_point);
-    resampled_path.path.at(i).orientation =
-      tier4_autoware_utils::createQuaternionFromRPY(0.0, pitch, yaw);
-  }
-  resampled_path.path.back().orientation = resampled_path.path.at(resampled_size - 2).orientation;
-
-  return resampled_path;
-}
+  const bool use_spline_for_z = false);
 
 /**
  * @brief Resampling predicted path by sampling time interval. Note that this function samples
@@ -136,37 +64,10 @@ inline autoware_auto_perception_msgs::msg::PredictedPath resamplePredictedPath(
  * @param sampling_horizon sampling time horizon
  * @return resampled path
  */
-inline autoware_auto_perception_msgs::msg::PredictedPath resamplePredictedPath(
+autoware_auto_perception_msgs::msg::PredictedPath resamplePredictedPath(
   const autoware_auto_perception_msgs::msg::PredictedPath & path,
   const double sampling_time_interval, const double sampling_horizon,
-  const bool use_spline_for_xy = true, const bool use_spline_for_z = false)
-{
-  if (path.path.empty()) {
-    throw std::invalid_argument("Predicted Path is empty");
-  }
-
-  if (sampling_time_interval <= 0.0 || sampling_horizon <= 0.0) {
-    throw std::invalid_argument("sampling time interval or sampling time horizon is negative");
-  }
-
-  // Calculate Horizon
-  const double predicted_horizon =
-    rclcpp::Duration(path.time_step).seconds() * static_cast<double>(path.path.size() - 1);
-  const double horizon = std::min(predicted_horizon, sampling_horizon);
-
-  // Get sampling time vector
-  constexpr double epsilon = 1e-6;
-  std::vector<double> sampling_time_vector;
-  for (double t = 0.0; t < horizon + epsilon; t += sampling_time_interval) {
-    sampling_time_vector.push_back(t);
-  }
-
-  // Resample and substitute time interval
-  auto resampled_path =
-    resamplePredictedPath(path, sampling_time_vector, use_spline_for_xy, use_spline_for_z);
-  resampled_path.time_step = rclcpp::Duration::from_seconds(sampling_time_interval);
-  return resampled_path;
-}
+  const bool use_spline_for_xy = true, const bool use_spline_for_z = false);
 }  // namespace perception_utils
 
 #endif  // PERCEPTION_UTILS__PREDICTED_PATH_UTILS_HPP_
