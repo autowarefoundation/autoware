@@ -1,5 +1,4 @@
 ### Copied from .github/CODEOWNERS-manual ###
-.github/* @autowarefoundation/autoware-maintainers
 
 ### Automatically generated from package.xml ###
 control/external_cmd_selector/* kenji.miyake@tier4.jp
@@ -147,6 +146,7 @@ localization/ndt/* yamato.ando@tier4.jp
 localization/ekf_localizer/* takamasa.horibe@tier4.jp koji.minoda@tier4.jp yamato.ando@tier4.jp
 localization/stop_filter/* koji.minoda@tier4.jp yamato.ando@tier4.jp
 system/default_ad_api_helpers/ad_api_adaptors/* isamu.takagi@tier4.jp
+system/default_ad_api_helpers/automatic_pose_initializer/* isamu.takagi@tier4.jp
 system/velodyne_monitor/* fumihito.ito@tier4.jp
 system/dummy_infrastructure/* kenji.miyake@tier4.jp
 system/topic_state_monitor/* kenji.miyake@tier4.jp
