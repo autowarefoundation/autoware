@@ -194,7 +194,7 @@ private:
   std::pair<bool, bool> getSafePath(ShiftParkingPath & safe_path) const;
   Pose getRefinedGoal() const;
   Pose getParkingStartPose() const;
-  ParallelParkingParameters getGeometricPullOutParameters() const;
+  ParallelParkingParameters getGeometricPullOverParameters() const;
   bool isLongEnoughToParkingStart(
     const PathWithLaneId & path, const Pose & parking_start_pose) const;
   bool isLongEnough(
