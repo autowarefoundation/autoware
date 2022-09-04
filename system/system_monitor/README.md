@@ -53,28 +53,29 @@ Every topic is published in 1 minute interval.
 
 [Usage] ✓：Supported, -：Not supported
 
-| Node            | Message                | Intel | arm64(tegra) | arm64(raspi) | Notes                                                         |
-| --------------- | ---------------------- | :---: | :----------: | :----------: | ------------------------------------------------------------- |
-| CPU Monitor     | CPU Temperature        |   ✓   |      ✓       |      ✓       |                                                               |
-|                 | CPU Usage              |   ✓   |      ✓       |      ✓       |                                                               |
-|                 | CPU Load Average       |   ✓   |      ✓       |      ✓       |                                                               |
-|                 | CPU Thermal Throttling |   ✓   |      -       |      ✓       |                                                               |
-|                 | CPU Frequency          |   ✓   |      ✓       |      ✓       | Notification of frequency only, normally error not generated. |
-| HDD Monitor     | HDD Temperature        |   ✓   |      ✓       |      ✓       |                                                               |
-|                 | HDD PowerOnHours       |   ✓   |      ✓       |      ✓       |                                                               |
-|                 | HDD TotalDataWritten   |   ✓   |      ✓       |      ✓       |                                                               |
-|                 | HDD Usage              |   ✓   |      ✓       |      ✓       |                                                               |
-| Memory Monitor  | Memory Usage           |   ✓   |      ✓       |      ✓       |                                                               |
-| Net Monitor     | Network Usage          |   ✓   |      ✓       |      ✓       |                                                               |
-| NTP Monitor     | NTP Offset             |   ✓   |      ✓       |      ✓       |                                                               |
-| Process Monitor | Tasks Summary          |   ✓   |      ✓       |      ✓       |                                                               |
-|                 | High-load Proc[0-9]    |   ✓   |      ✓       |      ✓       |                                                               |
-|                 | High-mem Proc[0-9]     |   ✓   |      ✓       |      ✓       |                                                               |
-| GPU Monitor     | GPU Temperature        |   ✓   |      ✓       |      -       |                                                               |
-|                 | GPU Usage              |   ✓   |      ✓       |      -       |                                                               |
-|                 | GPU Memory Usage       |   ✓   |      -       |      -       |                                                               |
-|                 | GPU Thermal Throttling |   ✓   |      -       |      -       |                                                               |
-|                 | GPU Frequency          |   -   |      ✓       |      -       |                                                               |
+| Node            | Message                | Intel | arm64(tegra) | arm64(raspi) | Notes                                                                                                                                                                                           |
+| --------------- | ---------------------- | :---: | :----------: | :----------: | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CPU Monitor     | CPU Temperature        |   ✓   |      ✓       |      ✓       |                                                                                                                                                                                                 |
+|                 | CPU Usage              |   ✓   |      ✓       |      ✓       |                                                                                                                                                                                                 |
+|                 | CPU Load Average       |   ✓   |      ✓       |      ✓       |                                                                                                                                                                                                 |
+|                 | CPU Thermal Throttling |   ✓   |      -       |      ✓       |                                                                                                                                                                                                 |
+|                 | CPU Frequency          |   ✓   |      ✓       |      ✓       | Notification of frequency only, normally error not generated.                                                                                                                                   |
+| HDD Monitor     | HDD Temperature        |   ✓   |      ✓       |      ✓       |                                                                                                                                                                                                 |
+|                 | HDD PowerOnHours       |   ✓   |      ✓       |      ✓       |                                                                                                                                                                                                 |
+|                 | HDD TotalDataWritten   |   ✓   |      ✓       |      ✓       |                                                                                                                                                                                                 |
+|                 | HDD Usage              |   ✓   |      ✓       |      ✓       |                                                                                                                                                                                                 |
+| Memory Monitor  | Memory Usage           |   ✓   |      ✓       |      ✓       |                                                                                                                                                                                                 |
+| Net Monitor     | Network Usage          |   ✓   |      ✓       |      ✓       |                                                                                                                                                                                                 |
+|                 | Network CRC Error      |   ✓   |      ✓       |      ✓       | Warning occurs when the number of CRC errors in the period reaches the threshold value. The number of CRC errors that occur is the same as the value that can be confirmed with the ip command. |
+| NTP Monitor     | NTP Offset             |   ✓   |      ✓       |      ✓       |                                                                                                                                                                                                 |
+| Process Monitor | Tasks Summary          |   ✓   |      ✓       |      ✓       |                                                                                                                                                                                                 |
+|                 | High-load Proc[0-9]    |   ✓   |      ✓       |      ✓       |                                                                                                                                                                                                 |
+|                 | High-mem Proc[0-9]     |   ✓   |      ✓       |      ✓       |                                                                                                                                                                                                 |
+| GPU Monitor     | GPU Temperature        |   ✓   |      ✓       |      -       |                                                                                                                                                                                                 |
+|                 | GPU Usage              |   ✓   |      ✓       |      -       |                                                                                                                                                                                                 |
+|                 | GPU Memory Usage       |   ✓   |      -       |      -       |                                                                                                                                                                                                 |
+|                 | GPU Thermal Throttling |   ✓   |      -       |      -       |                                                                                                                                                                                                 |
+|                 | GPU Frequency          |   -   |      ✓       |      -       |                                                                                                                                                                                                 |
 
 ## ROS parameters
 

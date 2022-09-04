@@ -25,6 +25,7 @@
 #include <diagnostic_updater/diagnostic_updater.hpp>
 
 #include <climits>
+#include <deque>
 #include <map>
 #include <string>
 #include <vector>
@@ -56,11 +57,6 @@ public:
   ~NetMonitor();
 
   /**
-   * @brief Update the diagnostic state.
-   */
-  void update();
-
-  /**
    * @brief Shutdown nl80211 object
    */
   void shutdown_nl80211();
@@ -87,23 +83,119 @@ protected:
     diagnostic_updater::DiagnosticStatusWrapper & stat);  // NOLINT(runtime/references)
 
   /**
+   * @brief check CRC error
+   * @param [out] stat diagnostic message passed directly to diagnostic publish calls
+   * @note NOLINT syntax is needed since diagnostic_updater asks for a non-const reference
+   * to pass diagnostic message updated in this function to diagnostic publish calls.
+   */
+  void checkCrcError(
+    diagnostic_updater::DiagnosticStatusWrapper & stat);  // NOLINT(runtime/references)
+
+  /**
    * @brief get wireless speed
    * @param [in] ifa_name interface name
    * @return wireless speed
    */
   float getWirelessSpeed(const char * ifa_name);
 
+  /**
+   * @brief timer callback
+   */
+  void onTimer();
+
+  /**
+   * @brief update Network information list
+   */
+  void updateNetworkInfoList();
+
+  /**
+   * @brief check NetMonitor General Infomation
+   * @param [out] stat diagnostic message passed directly to diagnostic publish calls
+   * @return check result
+   */
+  bool checkGeneralInfo(diagnostic_updater::DiagnosticStatusWrapper & stat);
+
+  /**
+   * @brief Network information
+   */
+  struct NetworkInfo
+  {
+    int mtu_errno;               //!< @brief errno set by ioctl() with SIOCGIFMTU
+    int ethtool_errno;           //!< @brief errno set by ioctl() with SIOCETHTOOL
+    bool is_running;             //!< @brief resource allocated flag
+    std::string interface_name;  //!< @brief interface name
+    float speed;                 //!< @brief network capacity
+    int mtu;                     //!< @brief MTU
+    float rx_traffic;            //!< @brief traffic received
+    float tx_traffic;            //!< @brief traffic transmitted
+    float rx_usage;              //!< @brief network capacity usage rate received
+    float tx_usage;              //!< @brief network capacity usage rate transmitted
+    unsigned int rx_bytes;       //!< @brief total bytes received
+    unsigned int rx_errors;      //!< @brief bad packets received
+    unsigned int tx_bytes;       //!< @brief total bytes transmitted
+    unsigned int tx_errors;      //!< @brief packet transmit problems
+    unsigned int collisions;     //!< @brief number of collisions during packet transmissions
+
+    NetworkInfo()
+    : mtu_errno(0),
+      ethtool_errno(0),
+      is_running(false),
+      interface_name(""),
+      speed(0.0),
+      mtu(0),
+      rx_traffic(0.0),
+      tx_traffic(0.0),
+      rx_usage(0.0),
+      tx_usage(0.0),
+      rx_bytes(0),
+      rx_errors(0),
+      tx_bytes(0),
+      tx_errors(0),
+      collisions(0)
+    {
+    }
+  };
+
+  /**
+   * @brief determine if it is a supported network
+   * @param [in] net_info network infomation
+   * @param [in] index index of network infomation index
+   * @param [out] stat diagnostic message passed directly to diagnostic publish calls
+   * @param [out] error_str error string
+   * @return result of determining whether it is a supported network
+   */
+  bool isSupportedNetwork(
+    const NetworkInfo & net_info, int index, diagnostic_updater::DiagnosticStatusWrapper & stat,
+    std::string & error_str);
+
   diagnostic_updater::Updater updater_;  //!< @brief Updater class which advertises to /diagnostics
+  rclcpp::TimerBase::SharedPtr timer_;   //!< @brief timer to get Network information
 
   char hostname_[HOST_NAME_MAX + 1];        //!< @brief host name
   std::map<std::string, bytes> bytes_;      //!< @brief list of bytes
   rclcpp::Time last_update_time_;           //!< @brief last update time
   std::vector<std::string> device_params_;  //!< @brief list of devices
-  NL80211 nl80211_;                         // !< @brief 802.11 netlink-based interface
+  NL80211 nl80211_;                         //!< @brief 802.11 netlink-based interface
+  int getifaddrs_errno_;                    //!< @brief errno set by getifaddrs()
+  std::vector<NetworkInfo> net_info_list_;  //!< @brief list of Network information
 
-  std::string monitor_program_;  //!< @brief nethogs monitor program name
-  bool nethogs_all_;             //!< @brief nethogs result all mode
-  int traffic_reader_port_;      //!< @brief port number to connect to traffic_reader
+  /**
+   * @brief CRC errors information
+   */
+  typedef struct crc_errors
+  {
+    std::deque<unsigned int> errors_queue;  //!< @brief queue that holds count of CRC errors
+    unsigned int last_rx_crc_errors;  //!< @brief rx_crc_error at the time of the last monitoring
+
+    crc_errors() : last_rx_crc_errors(0) {}
+  } crc_errors;
+  std::map<std::string, crc_errors> crc_errors_;  //!< @brief list of CRC errors
+
+  std::string monitor_program_;             //!< @brief nethogs monitor program name
+  bool nethogs_all_;                        //!< @brief nethogs result all mode
+  int traffic_reader_port_;                 //!< @brief port number to connect to traffic_reader
+  unsigned int crc_error_check_duration_;   //!< @brief CRC error check duration
+  unsigned int crc_error_count_threshold_;  //!< @brief CRC error count threshold
 
   /**
    * @brief Network usage status messages

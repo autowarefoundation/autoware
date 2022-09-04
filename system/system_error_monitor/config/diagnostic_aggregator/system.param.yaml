@@ -122,6 +122,12 @@
                   contains: [": Network Traffic"]
                   timeout: 3.0
 
+                netowork_crc_error:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: network_crc_error
+                  contains: [": Network CRC Error"]
+                  timeout: 3.0
+
             storage:
               type: diagnostic_aggregator/AnalyzerGroup
               path: storage
