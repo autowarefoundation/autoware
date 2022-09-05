@@ -198,15 +198,6 @@ private:
 
   bool is_initialized_;
 
-  enum IDX {
-    X = 0,
-    Y = 1,
-    YAW = 2,
-    YAWB = 3,
-    VX = 4,
-    WZ = 5,
-  };
-
   /* for model prediction */
   std::queue<TwistInfo> current_twist_info_queue_;    //!< @brief current measured pose
   std::queue<PoseInfo> current_pose_info_queue_;      //!< @brief current measured pose
@@ -290,13 +281,6 @@ private:
   bool getTransformFromTF(
     std::string parent_frame, std::string child_frame,
     geometry_msgs::msg::TransformStamped & transform);
-
-  /**
-   * @brief normalize yaw angle
-   * @param yaw yaw angle
-   * @return normalized yaw
-   */
-  double normalizeYaw(const double & yaw) const;
 
   /**
    * @brief set current EKF estimation result to current_ekf_pose_ & current_ekf_twist_
