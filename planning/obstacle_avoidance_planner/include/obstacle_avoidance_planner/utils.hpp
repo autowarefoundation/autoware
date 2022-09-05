@@ -18,6 +18,7 @@
 #include "eigen3/Eigen/Core"
 #include "interpolation/linear_interpolation.hpp"
 #include "interpolation/spline_interpolation.hpp"
+#include "interpolation/spline_interpolation_points_2d.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "obstacle_avoidance_planner/common_structs.hpp"
 
@@ -114,6 +115,9 @@ std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> interpolateConnec
 std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> interpolate2DTrajectoryPoints(
   const std::vector<double> & base_x, const std::vector<double> & base_y,
   const std::vector<double> & base_yaw, const double resolution);
+
+std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> interpolate2DTrajectoryPoints(
+  const std::vector<double> & base_x, const std::vector<double> & base_y, const double resolution);
 
 template <typename T>
 std::vector<geometry_msgs::msg::Point> getInterpolatedPoints(

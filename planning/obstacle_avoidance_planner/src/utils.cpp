@@ -366,13 +366,55 @@ std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> interpolate2DTraj
   return interpolated_points;
 }
 
+std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> interpolate2DTrajectoryPoints(
+  const std::vector<double> & base_x, const std::vector<double> & base_y, const double resolution)
+{
+  if (base_x.empty() || base_y.empty()) {
+    return std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint>{};
+  }
+  std::vector<double> base_s = calcEuclidDist(base_x, base_y);
+  if (base_s.empty() || base_s.size() == 1) {
+    return std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint>{};
+  }
+  std::vector<double> new_s;
+  for (double i = 0.0; i < base_s.back() - 1e-6; i += resolution) {
+    new_s.push_back(i);
+  }
+
+  // spline interpolation
+  //  x = interpolated[0], y = interpolated[1], yaw = interpolated[2]
+  std::array<std::vector<double>, 3> interpolated =
+    interpolation::slerp2dFromXY(base_s, base_x, base_y, new_s);
+  const auto & interpolated_x = interpolated[0];
+  const auto & interpolated_y = interpolated[1];
+  const auto & interpolated_yaw = interpolated[2];
+
+  for (size_t i = 0; i < interpolated_x.size(); i++) {
+    if (std::isnan(interpolated_x[i]) || std::isnan(interpolated_y[i])) {
+      return std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint>{};
+    }
+  }
+
+  std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> interpolated_points;
+  for (size_t i = 0; i < interpolated_x.size(); i++) {
+    autoware_auto_planning_msgs::msg::TrajectoryPoint point;
+    point.pose.position.x = interpolated_x[i];
+    point.pose.position.y = interpolated_y[i];
+    point.pose.orientation = tier4_autoware_utils::createQuaternionFromYaw(
+      tier4_autoware_utils::normalizeRadian(interpolated_yaw[i]));
+    interpolated_points.push_back(point);
+  }
+
+  return interpolated_points;
+}
+
 std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> getInterpolatedTrajectoryPoints(
   const std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> & points,
   const double delta_arc_length)
 {
   std::array<std::vector<double>, 3> validated_pose = validateTrajectoryPoints(points);
   return interpolation_utils::interpolate2DTrajectoryPoints(
-    validated_pose.at(0), validated_pose.at(1), validated_pose.at(2), delta_arc_length);
+    validated_pose.at(0), validated_pose.at(1), delta_arc_length);
 }
 
 std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> getConnectedInterpolatedPoints(
