@@ -238,18 +238,26 @@ Generate footprints from ego-vehicle path points and determine obstacle collisio
 
 ##### Parameters for occupancy grid based collision check
 
-| Name                   | Unit | Type   | Description                                                                                                     | Default value |
-| :--------------------- | :--- | :----- | :-------------------------------------------------------------------------------------------------------------- | :------------ |
-| collision_check_margin | [m]  | double | margin to calculate ego-vehicle cells from footprint.                                                           | 0.5           |
-| theta_size             | -    | int    | size of theta angle to be considered. angular resolution for collision check will be 2$\pi$ / theta_size [rad]. | 360           |
-| obstacle_threshold     | -    | int    | threshold of cell values to be considered as obstacles                                                          | 60            |
+| Name                                  | Unit | Type   | Description                                                                                                     | Default value |
+| :------------------------------------ | :--- | :----- | :-------------------------------------------------------------------------------------------------------------- | :------------ |
+| use_occupancy_grid                    | -    | bool   | flag whether to use occupancy grid for collision check                                                          | true          |
+| occupancy_grid_collision_check_margin | [m]  | double | margin to calculate ego-vehicle cells from footprint.                                                           | 0.0           |
+| theta_size                            | -    | int    | size of theta angle to be considered. angular resolution for collision check will be 2$\pi$ / theta_size [rad]. | 360           |
+| obstacle_threshold                    | -    | int    | threshold of cell values to be considered as obstacles                                                          | 60            |
+
+##### Parameters for object recognition based collision check
+
+| Name                                      | Unit | Type   | Description                                                | Default value |
+| :---------------------------------------- | :--- | :----- | :--------------------------------------------------------- | :------------ |
+| use_object_recognition                    | -    | bool   | flag whether to use object recognition for collision check | true          |
+| object_recognition_collision_check_margin | [m]  | double | margin to calculate ego-vehicle cells from footprint.      | 1.0           |
 
 #### **Goal Search**
 
 If it is not possible to park safely at a given goal, `/planning/scenario_planning/modified_goal` is
 searched for in certain range of the shoulder lane.
 
-[Video of how goal search works](https://user-images.githubusercontent.com/39142679/178033628-bec1bbc7-3b27-47b1-b50b-55f855e2e399.mp4)
+[Video of how goal search works](https://user-images.githubusercontent.com/39142679/188359594-c6724e3e-1cb7-4051-9a18-8d2c67d4dee9.mp4)
 
 ##### Parameters for goal search
 

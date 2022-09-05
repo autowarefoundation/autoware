@@ -379,9 +379,14 @@ PullOverParameters BehaviorPathPlannerNode::getPullOverParam()
   p.goal_search_interval = dp("goal_search_interval", 5.0);
   p.goal_to_obj_margin = dp("goal_to_obj_margin", 2.0);
   // occupancy grid map
-  p.collision_check_margin = dp("collision_check_margin", 0.5);
+  p.use_occupancy_grid = dp("use_occupancy_grid", true);
+  p.occupancy_grid_collision_check_margin = dp("occupancy_grid_collision_check_margin", 0.0);
   p.theta_size = dp("theta_size", 360);
   p.obstacle_threshold = dp("obstacle_threshold", 90);
+  // object recognition
+  p.use_object_recognition = dp("use_object_recognition", true);
+  p.object_recognition_collision_check_margin =
+    dp("object_recognition_collision_check_margin", 1.0);
   // shift path
   p.enable_shift_parking = dp("enable_shift_parking", true);
   p.pull_over_sampling_num = dp("pull_over_sampling_num", 4);

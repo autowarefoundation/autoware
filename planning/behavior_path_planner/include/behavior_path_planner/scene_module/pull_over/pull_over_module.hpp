@@ -57,9 +57,13 @@ struct PullOverParameters
   double goal_search_interval;
   double goal_to_obj_margin;
   // occupancy grid map
-  double collision_check_margin;
+  bool use_occupancy_grid;
+  double occupancy_grid_collision_check_margin;
   double theta_size;
   double obstacle_threshold;
+  // object recognition
+  bool use_object_recognition;
+  double object_recognition_collision_check_margin;
   // shift path
   bool enable_shift_parking;
   int pull_over_sampling_num;
@@ -107,11 +111,11 @@ enum PathType {
 
 struct PUllOverStatus
 {
-  PathWithLaneId path;
+  PathWithLaneId path{};
   std::shared_ptr<PathWithLaneId> prev_stop_path = nullptr;
-  lanelet::ConstLanelets current_lanes;
-  lanelet::ConstLanelets pull_over_lanes;
-  lanelet::ConstLanelets lanes;  // current + pull_over
+  lanelet::ConstLanelets current_lanes{};
+  lanelet::ConstLanelets pull_over_lanes{};
+  lanelet::ConstLanelets lanes{};  // current + pull_over
   bool has_decided_path = false;
   int path_type = PathType::NONE;
   bool is_safe = false;
@@ -120,18 +124,12 @@ struct PUllOverStatus
   bool has_requested_approval_ = false;
 };
 
-struct PullOverArea
-{
-  Pose start_pose;
-  Pose end_pose;
-};
-
 struct GoalCandidate
 {
-  Pose goal_pose;
-  double distance_from_original_goal;
+  Pose goal_pose{};
+  double distance_from_original_goal = 0.0;
 
-  bool operator<(const GoalCandidate & other) noexcept
+  bool operator<(const GoalCandidate & other) const noexcept
   {
     return distance_from_original_goal < other.distance_from_original_goal;
   }
@@ -161,11 +159,12 @@ public:
 
 private:
   PullOverParameters parameters_;
-  ShiftParkingPath shift_parking_path_;
-  rclcpp::Node * node_;
 
-  double pull_over_lane_length_ = 200.0;
-  double check_distance_ = 100.0;
+  ShiftParkingPath shift_parking_path_;
+  vehicle_info_util::VehicleInfo vehicle_info_;
+
+  const double pull_over_lane_length_ = 200.0;
+  const double check_distance_ = 100.0;
 
   rclcpp::Subscription<OccupancyGrid>::SharedPtr occupancy_grid_sub_;
   rclcpp::Publisher<PoseStamped>::SharedPtr Cr_pub_;
@@ -174,17 +173,17 @@ private:
   rclcpp::Publisher<PoseStamped>::SharedPtr goal_pose_pub_;
   rclcpp::Publisher<PoseArray>::SharedPtr path_pose_array_pub_;
   rclcpp::Publisher<MarkerArray>::SharedPtr parking_area_pub_;
-  rclcpp::Clock::SharedPtr clock_;
 
   PUllOverStatus status_;
   OccupancyGridBasedCollisionDetector occupancy_grid_map_;
-  std::vector<PullOverArea> pull_over_areas_;
   Pose modified_goal_pose_;
+  Pose refined_goal_pose_;
   std::vector<GoalCandidate> goal_candidates_;
   GeometricParallelParking parallel_parking_planner_;
   ParallelParkingParameters parallel_parking_parameters_;
   std::deque<nav_msgs::msg::Odometry::ConstSharedPtr> odometry_buffer_;
   std::unique_ptr<LaneDepartureChecker> lane_departure_checker_;
+  tier4_autoware_utils::LinearRing2d vehicle_footprint_;
   std::unique_ptr<rclcpp::Time> last_received_time_;
   std::unique_ptr<rclcpp::Time> last_approved_time_;
 
@@ -209,6 +208,8 @@ private:
   void updateOccupancyGrid();
   void researchGoal();
   void resetStatus();
+  bool checkCollisionWithPose(const Pose & pose) const;
+  bool checkCollisionWithPath(const PathWithLaneId & path) const;
 
   // turn signal
   std::pair<HazardLightsCommand, double> getHazardInfo() const;

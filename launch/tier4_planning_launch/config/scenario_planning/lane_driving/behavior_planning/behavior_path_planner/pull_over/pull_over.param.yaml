@@ -18,9 +18,13 @@
       goal_search_interval: 1.0
       goal_to_obj_margin: 2.0
       # occupancy grid map
-      collision_check_margin: 0.5
+      use_occupancy_grid: true
+      occupancy_grid_collision_check_margin: 0.0
       theta_size: 360
       obstacle_threshold: 60
+      # object recognition
+      use_object_recognition: true
+      object_recognition_collision_check_margin: 1.0
       # shift path
       enable_shift_parking: true
       pull_over_sampling_num: 4
