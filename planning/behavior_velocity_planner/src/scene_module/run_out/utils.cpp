@@ -195,6 +195,7 @@ Polygon2d createBoostPolyFromMsg(const std::vector<geometry_msgs::msg::Point> & 
   const auto & first_point = input_poly.front();
   bg_poly.outer().emplace_back(bg::make<Point2d>(first_point.x, first_point.y));
 
+  bg::correct(bg_poly);
   return bg_poly;
 }
 

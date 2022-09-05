@@ -167,6 +167,13 @@ Polygon2d toPolygon2d(
   return isClockwise(polygon) ? polygon : inverseClockwise(polygon);
 }
 
+tier4_autoware_utils::Polygon2d toPolygon2d(
+  const autoware_auto_perception_msgs::msg::PredictedObject & object)
+{
+  return tier4_autoware_utils::toPolygon2d(
+    object.kinematics.initial_pose_with_covariance.pose, object.shape);
+}
+
 double getArea(const autoware_auto_perception_msgs::msg::Shape & shape)
 {
   if (shape.type == autoware_auto_perception_msgs::msg::Shape::BOUNDING_BOX) {

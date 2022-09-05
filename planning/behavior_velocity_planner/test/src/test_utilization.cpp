@@ -33,14 +33,6 @@
     std::cerr << ss.str() << std::endl;                                               \
   }
 
-TEST(to_footprint_polygon, nominal)
-{
-  using behavior_velocity_planner::planning_utils::toFootprintPolygon;
-  autoware_auto_perception_msgs::msg::PredictedObject obj = test::generatePredictedObject(0.0);
-  auto poly = toFootprintPolygon(obj);
-  EXPECT_TRUE(true);
-}
-
 TEST(is_ahead_of, nominal)
 {
   using behavior_velocity_planner::planning_utils::isAheadOf;

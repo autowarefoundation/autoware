@@ -240,24 +240,6 @@ private:
     const autoware_auto_perception_msgs::msg::PredictedObject & object) const;
 
   /**
-   * @brief convert object to footprint polygon
-   * @param object detected object
-   * @return 2d polygon of the object footprint
-   */
-  Polygon2d toFootprintPolygon(
-    const autoware_auto_perception_msgs::msg::PredictedObject & object) const;
-
-  /**
-   * @brief convert predicted object to footprint polygon
-   * @param object detected object
-   * @param predicted_pose predicted object pose
-   * @return 2d polygon of the object footprint
-   */
-  Polygon2d toPredictedFootprintPolygon(
-    const autoware_auto_perception_msgs::msg::PredictedObject & object,
-    const geometry_msgs::msg::Pose & predicted_pose) const;
-
-  /**
    * @brief Whether target tier4_api_msgs::Intersection::status is valid or not
    * @param target_status target tier4_api_msgs::Intersection::status
    * @return rue if the object has a target type

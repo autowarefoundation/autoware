@@ -90,15 +90,15 @@ private:
     const float velocity_mps) const;
 
   bool checkCollisionWithShape(
-    const tier4_autoware_utils::Polygon2d & vehicle_polygon, const PoseWithRange pose_with_range,
-    const Shape & shape, std::vector<geometry_msgs::msg::Point> & collision_points) const;
+    const Polygon2d & vehicle_polygon, const PoseWithRange pose_with_range, const Shape & shape,
+    std::vector<geometry_msgs::msg::Point> & collision_points) const;
 
   bool checkCollisionWithCylinder(
-    const tier4_autoware_utils::Polygon2d & vehicle_polygon, const PoseWithRange pose_with_range,
-    const float radius, std::vector<geometry_msgs::msg::Point> & collision_points) const;
+    const Polygon2d & vehicle_polygon, const PoseWithRange pose_with_range, const float radius,
+    std::vector<geometry_msgs::msg::Point> & collision_points) const;
 
   bool checkCollisionWithBoundingBox(
-    const tier4_autoware_utils::Polygon2d & vehicle_polygon, const PoseWithRange pose_with_range,
+    const Polygon2d & vehicle_polygon, const PoseWithRange pose_with_range,
     const geometry_msgs::msg::Vector3 & dimension,
     std::vector<geometry_msgs::msg::Point> & collision_points) const;
 

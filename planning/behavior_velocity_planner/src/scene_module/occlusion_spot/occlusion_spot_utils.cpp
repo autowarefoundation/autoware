@@ -209,9 +209,9 @@ void categorizeVehicles(
   stuck_vehicle_foot_prints.clear();
   for (const auto & vehicle : vehicles) {
     if (isMovingVehicle(vehicle, stuck_vehicle_vel)) {
-      moving_vehicle_foot_prints.emplace_back(planning_utils::toFootprintPolygon(vehicle));
+      moving_vehicle_foot_prints.emplace_back(tier4_autoware_utils::toPolygon2d(vehicle));
     } else if (isStuckVehicle(vehicle, stuck_vehicle_vel)) {
-      stuck_vehicle_foot_prints.emplace_back(planning_utils::toFootprintPolygon(vehicle));
+      stuck_vehicle_foot_prints.emplace_back(tier4_autoware_utils::toPolygon2d(vehicle));
     }
   }
   return;
@@ -219,7 +219,7 @@ void categorizeVehicles(
 
 ArcCoordinates getOcclusionPoint(const PredictedObject & obj, const ConstLineString2d & ll_string)
 {
-  Polygon2d poly = planning_utils::toFootprintPolygon(obj);
+  const auto poly = tier4_autoware_utils::toPolygon2d(obj);
   std::deque<lanelet::ArcCoordinates> arcs;
   for (const auto & p : poly.outer()) {
     lanelet::BasicPoint2d obj_p = {p.x(), p.y()};
@@ -342,7 +342,7 @@ std::vector<PredictedObject> filterVehiclesByDetectionArea(
   // stuck points by predicted objects
   for (const auto & object : objs) {
     // check if the footprint is in the stuck detect area
-    const Polygon2d obj_footprint = planning_utils::toFootprintPolygon(object);
+    const auto obj_footprint = tier4_autoware_utils::toPolygon2d(object);
     for (const auto & p : polys) {
       if (!bg::disjoint(obj_footprint, p)) {
         filtered_obj.emplace_back(object);

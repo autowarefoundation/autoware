@@ -227,19 +227,6 @@ void insertVelocity(
   setVelocityFromIndex(insert_index, v, &path);
 }
 
-Polygon2d toFootprintPolygon(const PredictedObject & object)
-{
-  Polygon2d obj_footprint;
-  if (object.shape.type == Shape::POLYGON) {
-    obj_footprint = toBoostPoly(object.shape.footprint);
-  } else {
-    // cylinder type is treated as square-polygon
-    obj_footprint =
-      obj2polygon(object.kinematics.initial_pose_with_covariance.pose, object.shape.dimensions);
-  }
-  return obj_footprint;
-}
-
 bool isAheadOf(const geometry_msgs::msg::Pose & target, const geometry_msgs::msg::Pose & origin)
 {
   geometry_msgs::msg::Pose p = planning_utils::transformRelCoordinate2D(target, origin);
@@ -296,6 +283,8 @@ Polygon2d generatePathPolygon(
     const double y = path.points.at(i).point.pose.position.y + width * std::cos(yaw);
     ego_area.outer().push_back(Point2d(x, y));
   }
+
+  bg::correct(ego_area);
   return ego_area;
 }
 
