@@ -53,22 +53,6 @@ RouteSections combine_consecutive_route_sections(
   return route_sections;
 }
 
-bool is_route_looped(const RouteSections & route_sections)
-{
-  for (std::size_t i = 0; i < route_sections.size(); i++) {
-    const auto & route_section = route_sections.at(i);
-    for (const auto & lane_id : route_section.primitives) {
-      for (std::size_t j = i + 1; j < route_sections.size(); j++) {
-        const auto & future_route_section = route_sections.at(j);
-        if (exists(future_route_section.primitives, lane_id)) {
-          return true;
-        }
-      }
-    }
-  }
-  return false;
-}
-
 double normalize_radian(const double rad, const double min_rad = -M_PI, const double max_rad = M_PI)
 {
   const auto value = std::fmod(rad, 2 * M_PI);
@@ -297,9 +281,9 @@ autoware_auto_planning_msgs::msg::HADMapRoute MissionPlannerLanelet2::plan_route
     route_sections = combine_consecutive_route_sections(route_sections, local_route_sections);
   }
 
-  if (is_route_looped(route_sections)) {
-    RCLCPP_WARN(
-      get_logger(), "Loop detected within route! Be aware that looped route is not debugged!");
+  if (route_handler_.isRouteLooped(route_sections)) {
+    RCLCPP_WARN(get_logger(), "Loop detected within route!");
+    return route_msg;
   }
 
   refine_goal_height(route_sections);

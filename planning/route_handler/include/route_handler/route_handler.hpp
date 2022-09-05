@@ -50,6 +50,7 @@ using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::PoseStamped;
 using std_msgs::msg::Header;
+using RouteSections = std::vector<autoware_auto_mapping_msgs::msg::HADMapSegment>;
 
 enum class LaneChangeDirection { NONE, LEFT, RIGHT };
 enum class PullOverDirection { NONE, LEFT, RIGHT };
@@ -87,6 +88,7 @@ public:
     const Pose & start_checkpoint, const Pose & goal_checkpoint,
     lanelet::ConstLanelets * path_lanelets) const;
   std::vector<HADMapSegment> createMapSegments(const lanelet::ConstLanelets & path_lanelets) const;
+  bool isRouteLooped(const RouteSections & route_sections) const;
 
   // for goal
   bool isInGoalRouteSection(const lanelet::ConstLanelet & lanelet) const;

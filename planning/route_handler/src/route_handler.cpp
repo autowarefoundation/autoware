@@ -61,22 +61,6 @@ bool exists(const std::vector<T> & vectors, const T & item)
   return false;
 }
 
-bool isRouteLooped(const autoware_auto_planning_msgs::msg::HADMapRoute & route_msg)
-{
-  const auto & route_sections = route_msg.segments;
-  for (const auto & route_section : route_sections) {
-    const auto primitives = route_section.primitives;
-    for (auto itr = primitives.begin(); itr != primitives.end(); ++itr) {
-      const auto next_itr = itr + 1;
-      if (next_itr == primitives.end()) break;
-      if (std::any_of(next_itr, primitives.end(), [itr](auto p) { return p.id == itr->id; })) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
 lanelet::ConstPoint3d get3DPointFrom2DArcLength(
   const lanelet::ConstLanelets & lanelet_sequence, const double s)
 {
@@ -199,9 +183,24 @@ void RouteHandler::setMap(const HADMapBin & map_msg)
   setLaneletsFromRouteMsg();
 }
 
+bool RouteHandler::isRouteLooped(const RouteSections & route_sections) const
+{
+  std::set<lanelet::Id> lane_primitives;
+  for (const auto & route_section : route_sections) {
+    for (const auto & primitive : route_section.primitives) {
+      if (lane_primitives.find(primitive.id) == lane_primitives.end()) {
+        lane_primitives.emplace(primitive.id);
+      } else {
+        return true;  // find duplicated id
+      }
+    }
+  }
+  return false;
+}
+
 void RouteHandler::setRoute(const HADMapRoute & route_msg)
 {
-  if (!isRouteLooped(route_msg)) {
+  if (!isRouteLooped(route_msg.segments)) {
     route_msg_ = route_msg;
     is_route_msg_ready_ = true;
     is_handler_ready_ = false;
