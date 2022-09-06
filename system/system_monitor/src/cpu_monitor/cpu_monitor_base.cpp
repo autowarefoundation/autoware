@@ -298,7 +298,8 @@ int CPUMonitorBase::CpuUsageToLevel(const std::string & cpu_name, float usage)
   if (usage >= usage_warn_) {
     if (usage_warn_check_cnt_[idx] < usage_warn_count_) {
       usage_warn_check_cnt_[idx]++;
-    } else {
+    }
+    if (usage_warn_check_cnt_[idx] >= usage_warn_count_) {
       level = DiagStatus::WARN;
     }
   } else {
@@ -307,7 +308,8 @@ int CPUMonitorBase::CpuUsageToLevel(const std::string & cpu_name, float usage)
   if (usage >= usage_error_) {
     if (usage_error_check_cnt_[idx] < usage_error_count_) {
       usage_error_check_cnt_[idx]++;
-    } else {
+    }
+    if (usage_error_check_cnt_[idx] >= usage_error_count_) {
       level = DiagStatus::ERROR;
     }
   } else {
