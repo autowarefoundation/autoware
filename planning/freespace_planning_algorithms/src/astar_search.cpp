@@ -274,13 +274,12 @@ bool AstarSearch::search()
 
       // Compare cost
       AstarNode * next_node = getNodeRef(next_index);
-      const double next_gc = current_node->gc + move_cost;
-      if (next_node->status == NodeStatus::None || next_gc < next_node->gc) {
+      if (next_node->status == NodeStatus::None) {
         next_node->status = NodeStatus::Open;
         next_node->x = next_pose.position.x;
         next_node->y = next_pose.position.y;
         next_node->theta = tf2::getYaw(next_pose.orientation);
-        next_node->gc = next_gc;
+        next_node->gc = current_node->gc + move_cost;
         next_node->hc = estimateCost(next_pose);
         next_node->is_back = transition.is_back;
         next_node->parent = current_node;
