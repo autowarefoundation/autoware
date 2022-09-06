@@ -80,8 +80,9 @@ bool IntersectionModule::modifyPathVelocity(
 
   debug_data_.path_raw = *path;
 
-  State current_state = state_machine_.getState();
-  RCLCPP_DEBUG(logger_, "lane_id = %ld, state = %s", lane_id_, toString(current_state).c_str());
+  StateMachine::State current_state = state_machine_.getState();
+  RCLCPP_DEBUG(
+    logger_, "lane_id = %ld, state = %s", lane_id_, StateMachine::toString(current_state).c_str());
 
   /* get current pose */
   geometry_msgs::msg::PoseStamped current_pose = planner_data_->current_pose;
@@ -202,11 +203,12 @@ bool IntersectionModule::modifyPathVelocity(
     is_entry_prohibited = true;
   }
   state_machine_.setStateWithMarginTime(
-    is_entry_prohibited ? State::STOP : State::GO, logger_.get_child("state_machine"), *clock_);
+    is_entry_prohibited ? StateMachine::State::STOP : StateMachine::State::GO,
+    logger_.get_child("state_machine"), *clock_);
 
   const double base_link2front = planner_data_->vehicle_info_.max_longitudinal_offset_m;
 
-  setSafe(state_machine_.getState() == State::GO);
+  setSafe(state_machine_.getState() == StateMachine::State::GO);
   setDistance(motion_utils::calcSignedArcLength(
     path->points, planner_data_->current_pose.pose.position,
     path->points.at(stop_line_idx).point.pose.position));
@@ -603,44 +605,6 @@ bool IntersectionModule::isTargetStuckVehicleType(
   }
   return false;
 }
-void IntersectionModule::StateMachine::setStateWithMarginTime(
-  State state, rclcpp::Logger logger, rclcpp::Clock & clock)
-{
-  /* same state request */
-  if (state_ == state) {
-    start_time_ = nullptr;  // reset timer
-    return;
-  }
-
-  /* GO -> STOP */
-  if (state == State::STOP) {
-    state_ = State::STOP;
-    start_time_ = nullptr;  // reset timer
-    return;
-  }
-
-  /* STOP -> GO */
-  if (state == State::GO) {
-    if (start_time_ == nullptr) {
-      start_time_ = std::make_shared<rclcpp::Time>(clock.now());
-    } else {
-      const double duration = (clock.now() - *start_time_).seconds();
-      if (duration > margin_time_) {
-        state_ = State::GO;
-        start_time_ = nullptr;  // reset timer
-      }
-    }
-    return;
-  }
-
-  RCLCPP_ERROR(logger, "Unsuitable state. ignore request.");
-}
-
-void IntersectionModule::StateMachine::setState(State state) { state_ = state; }
-
-void IntersectionModule::StateMachine::setMarginTime(const double t) { margin_time_ = t; }
-
-IntersectionModule::State IntersectionModule::StateMachine::getState() { return state_; }
 
 bool IntersectionModule::isTargetExternalInputStatus(const int target_status)
 {

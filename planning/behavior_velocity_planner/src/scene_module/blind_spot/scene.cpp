@@ -69,8 +69,9 @@ bool BlindSpotModule::modifyPathVelocity(
   const auto input_path = *path;
   debug_data_.path_raw = input_path;
 
-  State current_state = state_machine_.getState();
-  RCLCPP_DEBUG(logger_, "lane_id = %ld, state = %s", lane_id_, toString(current_state).c_str());
+  StateMachine::State current_state = state_machine_.getState();
+  RCLCPP_DEBUG(
+    logger_, "lane_id = %ld, state = %s", lane_id_, StateMachine::toString(current_state).c_str());
 
   /* get current pose */
   geometry_msgs::msg::PoseStamped current_pose = planner_data_->current_pose;
@@ -133,7 +134,9 @@ bool BlindSpotModule::modifyPathVelocity(
   /* if current_state = GO, and current_pose is over judge_line, ignore planning. */
   if (planner_param_.use_pass_judge_line) {
     const double eps = 1e-1;  // to prevent hunting
-    if (current_state == State::GO && *distance_until_stop + eps < pass_judge_line_dist) {
+    if (
+      current_state == StateMachine::State::GO &&
+      *distance_until_stop + eps < pass_judge_line_dist) {
       RCLCPP_DEBUG(logger_, "over the pass judge line. no plan needed.");
       *path = input_path;  // reset path
       setSafe(true);
@@ -149,10 +152,11 @@ bool BlindSpotModule::modifyPathVelocity(
   bool has_obstacle = checkObstacleInBlindSpot(
     lanelet_map_ptr, routing_graph_ptr, *path, objects_ptr, closest_idx, stop_line_pose);
   state_machine_.setStateWithMarginTime(
-    has_obstacle ? State::STOP : State::GO, logger_.get_child("state_machine"), *clock_);
+    has_obstacle ? StateMachine::State::STOP : StateMachine::State::GO,
+    logger_.get_child("state_machine"), *clock_);
 
   /* set stop speed */
-  setSafe(state_machine_.getState() != State::STOP);
+  setSafe(state_machine_.getState() != StateMachine::State::STOP);
   setDistance(motion_utils::calcSignedArcLength(
     path->points, current_pose.pose.position, path->points.at(stop_line_idx).point.pose.position));
   if (!isActivated()) {
@@ -580,43 +584,4 @@ lanelet::ConstLanelets BlindSpotModule::getStraightLanelets(
   }
   return straight_lanelets;
 }
-
-void BlindSpotModule::StateMachine::setStateWithMarginTime(
-  State state, rclcpp::Logger logger, rclcpp::Clock & clock)
-{
-  /* same state request */
-  if (state_ == state) {
-    start_time_ = nullptr;  // reset timer
-    return;
-  }
-
-  /* GO -> STOP */
-  if (state == State::STOP) {
-    state_ = State::STOP;
-    start_time_ = nullptr;  // reset timer
-    return;
-  }
-
-  /* STOP -> GO */
-  if (state == State::GO) {
-    if (start_time_ == nullptr) {
-      start_time_ = std::make_shared<rclcpp::Time>(clock.now());
-    } else {
-      const double duration = (clock.now() - *start_time_).seconds();
-      if (duration > margin_time_) {
-        state_ = State::GO;
-        start_time_ = nullptr;  // reset timer
-      }
-    }
-    return;
-  }
-
-  RCLCPP_ERROR(logger, "Unsuitable state. ignore request.");
-}
-
-void BlindSpotModule::StateMachine::setState(State state) { state_ = state; }
-
-void BlindSpotModule::StateMachine::setMarginTime(const double t) { margin_time_ = t; }
-
-BlindSpotModule::State BlindSpotModule::StateMachine::getState() { return state_; }
 }  // namespace behavior_velocity_planner

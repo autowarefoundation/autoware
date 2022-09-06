@@ -40,7 +40,7 @@ MergeFromPrivateRoadModule::MergeFromPrivateRoadModule(
 : SceneModuleInterface(module_id, logger, clock), lane_id_(lane_id)
 {
   planner_param_ = planner_param;
-  state_machine_.setState(State::STOP);
+  state_machine_.setState(StateMachine::State::STOP);
 }
 
 bool MergeFromPrivateRoadModule::modifyPathVelocity(
@@ -54,8 +54,9 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(
   const auto input_path = *path;
   debug_data_.path_raw = input_path;
 
-  State current_state = state_machine_.getState();
-  RCLCPP_DEBUG(logger_, "lane_id = %ld, state = %s", lane_id_, toString(current_state).c_str());
+  StateMachine::State current_state = state_machine_.getState();
+  RCLCPP_DEBUG(
+    logger_, "lane_id = %ld, state = %s", lane_id_, StateMachine::toString(current_state).c_str());
 
   /* get current pose */
   geometry_msgs::msg::PoseStamped current_pose = planner_data_->current_pose;
@@ -109,7 +110,7 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(
   }
 
   /* set stop speed */
-  if (state_machine_.getState() == State::STOP) {
+  if (state_machine_.getState() == StateMachine::State::STOP) {
     constexpr double v = 0.0;
     planning_utils::setVelocityFromIndex(stop_line_idx, v, path);
 
@@ -126,7 +127,7 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(
     if (
       signed_arc_dist_to_stop_point < distance_threshold &&
       planner_data_->isVehicleStopped(planner_param_.stop_duration_sec)) {
-      state_machine_.setState(State::GO);
+      state_machine_.setState(StateMachine::State::GO);
       if (signed_arc_dist_to_stop_point < -distance_threshold) {
         RCLCPP_ERROR(logger_, "Failed to stop near stop line but ego stopped. Change state to GO");
       }
@@ -178,14 +179,5 @@ MergeFromPrivateRoadModule::extractPathNearExitOfPrivateRoad(
 
   std::reverse(private_path.points.begin(), private_path.points.end());
   return private_path;
-}
-
-void MergeFromPrivateRoadModule::StateMachine::setState(State state) { state_ = state; }
-
-void MergeFromPrivateRoadModule::StateMachine::setMarginTime(const double t) { margin_time_ = t; }
-
-MergeFromPrivateRoadModule::State MergeFromPrivateRoadModule::StateMachine::getState()
-{
-  return state_;
 }
 }  // namespace behavior_velocity_planner

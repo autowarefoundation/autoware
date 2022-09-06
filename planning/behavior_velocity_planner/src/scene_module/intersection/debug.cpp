@@ -24,7 +24,6 @@ namespace behavior_velocity_planner
 {
 namespace
 {
-using State = IntersectionModule::State;
 using tier4_autoware_utils::appendMarkerArray;
 using tier4_autoware_utils::createMarkerColor;
 using tier4_autoware_utils::createMarkerOrientation;
@@ -249,7 +248,7 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray(
       debug_data_.predicted_obj_pose, "predicted_obj_pose", lane_id_, 0.7, 0.85, 0.9),
     &debug_marker_array, current_time);
 
-  if (state == IntersectionModule::State::STOP) {
+  if (state == StateMachine::State::STOP) {
     appendMarkerArray(
       createPoseMarkerArray(
         debug_data_.stop_point_pose, "stop_point_pose", lane_id_, 1.0, 0.0, 0.0),
@@ -276,7 +275,7 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createVirtualWallMarker
       motion_utils::createStopVirtualWallMarker(
         debug_data_.stop_wall_pose, "intersection", now, lane_id_),
       &wall_marker, now);
-  } else if (state == IntersectionModule::State::STOP) {
+  } else if (state == StateMachine::State::STOP) {
     appendMarkerArray(
       motion_utils::createStopVirtualWallMarker(
         debug_data_.slow_wall_pose, "intersection", now, lane_id_),
@@ -292,7 +291,7 @@ visualization_msgs::msg::MarkerArray MergeFromPrivateRoadModule::createDebugMark
   const auto state = state_machine_.getState();
 
   const auto now = this->clock_->now();
-  if (state == MergeFromPrivateRoadModule::State::STOP) {
+  if (state == StateMachine::State::STOP) {
     appendMarkerArray(
       createPoseMarkerArray(
         debug_data_.stop_point_pose, "stop_point_pose", lane_id_, 1.0, 0.0, 0.0),
@@ -309,7 +308,7 @@ visualization_msgs::msg::MarkerArray MergeFromPrivateRoadModule::createVirtualWa
   const auto state = state_machine_.getState();
 
   const auto now = this->clock_->now();
-  if (state == MergeFromPrivateRoadModule::State::STOP) {
+  if (state == StateMachine::State::STOP) {
     appendMarkerArray(
       motion_utils::createStopVirtualWallMarker(
         debug_data_.virtual_wall_pose, "merge_from_private_road", now, lane_id_),

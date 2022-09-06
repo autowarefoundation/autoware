@@ -19,6 +19,7 @@
 #include <scene_module/scene_module_interface.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 #include <utilization/boost_geometry_helper.hpp>
+#include <utilization/state_machine.hpp>
 
 #include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
@@ -42,43 +43,6 @@ using TimeDistanceArray = std::vector<std::pair<double, double>>;
 class IntersectionModule : public SceneModuleInterface
 {
 public:
-  enum class State {
-    STOP = 0,
-    GO,
-  };
-  std::string toString(const State & state)
-  {
-    if (state == State::STOP) {
-      return "STOP";
-    } else if (state == State::GO) {
-      return "GO";
-    } else {
-      return "UNKNOWN";
-    }
-  }
-
-  /**
-   * @brief Manage stop-go states with safety margin time.
-   */
-  class StateMachine
-  {
-  public:
-    StateMachine()
-    {
-      state_ = State::GO;
-      margin_time_ = 0.0;
-    }
-    void setStateWithMarginTime(State state, rclcpp::Logger logger, rclcpp::Clock & clock);
-    void setState(State state);
-    void setMarginTime(const double t);
-    State getState();
-
-  private:
-    State state_;                               //! current state
-    double margin_time_;                        //! margin time when transit to Go from Stop
-    std::shared_ptr<rclcpp::Time> start_time_;  //! first time received GO when STOP state
-  };
-
   struct DebugData
   {
     bool stop_required;

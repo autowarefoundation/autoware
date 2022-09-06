@@ -33,7 +33,7 @@ public:
     STOP = 0,
     GO,
   };
-  std::string toString(const State & state)
+  static std::string toString(const State & state)
   {
     if (state == State::STOP) {
       return "STOP";

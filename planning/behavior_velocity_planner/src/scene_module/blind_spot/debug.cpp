@@ -27,7 +27,6 @@ using tier4_autoware_utils::createMarkerScale;
 
 namespace
 {
-using State = BlindSpotModule::State;
 
 visualization_msgs::msg::MarkerArray createPolygonMarkerArray(
   const lanelet::CompoundPolygon3d & polygon, const std::string & ns, const int64_t lane_id,
@@ -115,12 +114,12 @@ visualization_msgs::msg::MarkerArray createPathMarkerArray(
 }
 
 visualization_msgs::msg::MarkerArray createPoseMarkerArray(
-  const geometry_msgs::msg::Pose & pose, const State & state, const std::string & ns,
+  const geometry_msgs::msg::Pose & pose, const StateMachine::State & state, const std::string & ns,
   const int64_t id, const double r, const double g, const double b)
 {
   visualization_msgs::msg::MarkerArray msg;
 
-  if (state == State::STOP) {
+  if (state == StateMachine::State::STOP) {
     visualization_msgs::msg::Marker marker_line{};
     marker_line.header.frame_id = "map";
     marker_line.ns = ns + "_line";
