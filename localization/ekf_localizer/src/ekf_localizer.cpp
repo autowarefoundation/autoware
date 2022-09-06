@@ -89,10 +89,9 @@ EKFLocalizer::EKFLocalizer(const std::string & node_name, const rclcpp::NodeOpti
   pub_twist_cov_ = create_publisher<geometry_msgs::msg::TwistWithCovarianceStamped>(
     "ekf_twist_with_covariance", 1);
   pub_yaw_bias_ = create_publisher<tier4_debug_msgs::msg::Float64Stamped>("estimated_yaw_bias", 1);
-  pub_pose_no_yawbias_ =
-    create_publisher<geometry_msgs::msg::PoseStamped>("ekf_pose_without_yawbias", 1);
-  pub_pose_cov_no_yawbias_ = create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
-    "ekf_pose_with_covariance_without_yawbias", 1);
+  pub_biased_pose_ = create_publisher<geometry_msgs::msg::PoseStamped>("ekf_biased_pose", 1);
+  pub_biased_pose_cov_ = create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
+    "ekf_biased_pose_with_covariance", 1);
   sub_initialpose_ = create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
     "initialpose", 1, std::bind(&EKFLocalizer::callbackInitialPose, this, _1));
   sub_pose_with_cov_ = create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
@@ -229,8 +228,8 @@ void EKFLocalizer::setCurrentResult()
   current_ekf_pose_.pose.orientation =
     tier4_autoware_utils::createQuaternionFromRPY(roll, pitch, yaw);
 
-  current_ekf_pose_no_yawbias_ = current_ekf_pose_;
-  current_ekf_pose_no_yawbias_.pose.orientation =
+  current_biased_ekf_pose_ = current_ekf_pose_;
+  current_biased_ekf_pose_.pose.orientation =
     tier4_autoware_utils::createQuaternionFromRPY(roll, pitch, ekf_.getXelement(IDX::YAW));
 
   current_ekf_twist_.header.frame_id = "base_link";
@@ -661,7 +660,7 @@ void EKFLocalizer::publishEstimateResult()
 
   /* publish latest pose */
   pub_pose_->publish(current_ekf_pose_);
-  pub_pose_no_yawbias_->publish(current_ekf_pose_no_yawbias_);
+  pub_biased_pose_->publish(current_biased_ekf_pose_);
 
   /* publish latest pose with covariance */
   geometry_msgs::msg::PoseWithCovarianceStamped pose_cov;
@@ -679,9 +678,9 @@ void EKFLocalizer::publishEstimateResult()
   pose_cov.pose.covariance[35] = P(IDX::YAW, IDX::YAW);
   pub_pose_cov_->publish(pose_cov);
 
-  geometry_msgs::msg::PoseWithCovarianceStamped pose_cov_no_yawbias = pose_cov;
-  pose_cov_no_yawbias.pose.pose = current_ekf_pose_no_yawbias_.pose;
-  pub_pose_cov_no_yawbias_->publish(pose_cov_no_yawbias);
+  geometry_msgs::msg::PoseWithCovarianceStamped biased_pose_cov = pose_cov;
+  biased_pose_cov.pose.pose = current_biased_ekf_pose_.pose;
+  pub_biased_pose_cov_->publish(biased_pose_cov);
 
   /* publish latest twist */
   pub_twist_->publish(current_ekf_twist_);

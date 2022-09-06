@@ -130,10 +130,9 @@ private:
   //!< @brief ekf estimated yaw bias publisher
   rclcpp::Publisher<tier4_debug_msgs::msg::Float64Stamped>::SharedPtr pub_yaw_bias_;
   //!< @brief ekf estimated yaw bias publisher
-  rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pub_pose_no_yawbias_;
+  rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pub_biased_pose_;
   //!< @brief ekf estimated yaw bias publisher
-  rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr
-    pub_pose_cov_no_yawbias_;
+  rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pub_biased_pose_cov_;
   //!< @brief initial pose subscriber
   rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr sub_initialpose_;
   //!< @brief measurement pose with covariance subscriber
@@ -203,7 +202,7 @@ private:
   std::queue<PoseInfo> current_pose_info_queue_;      //!< @brief current measured pose
   geometry_msgs::msg::PoseStamped current_ekf_pose_;  //!< @brief current estimated pose
   geometry_msgs::msg::PoseStamped
-    current_ekf_pose_no_yawbias_;  //!< @brief current estimated pose w/o yaw bias
+    current_biased_ekf_pose_;  //!< @brief current estimated pose without yaw bias correction
   geometry_msgs::msg::TwistStamped current_ekf_twist_;  //!< @brief current estimated twist
   std::array<double, 36ul> current_pose_covariance_;
   std::array<double, 36ul> current_twist_covariance_;

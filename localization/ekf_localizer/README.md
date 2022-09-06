@@ -67,13 +67,13 @@ The parameters and input topic names can be set in the `ekf_localizer.launch` fi
 
   Estimated pose with covariance.
 
-- ekf_pose_with_covariance (geometry_msgs/PoseStamped)
+- ekf_biased_pose (geometry_msgs/PoseStamped)
 
-  Estimated pose without yawbias effect.
+  Estimated pose including the yaw bias
 
-- ekf_pose_with_covariance_without_yawbias (geometry_msgs/PoseWithCovarianceStamped)
+- ekf_biased_pose_with_covariance (geometry_msgs/PoseWithCovarianceStamped)
 
-  Estimated pose with covariance without yawbias effect.
+  Estimated pose with covariance including the yaw bias
 
 - ekf_twist (geometry_msgs/TwistStamped)
 

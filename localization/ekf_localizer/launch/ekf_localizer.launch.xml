@@ -29,8 +29,8 @@
   <arg name="output_odom_name" default="ekf_odom"/>
   <arg name="output_pose_name" default="ekf_pose"/>
   <arg name="output_pose_with_covariance_name" default="ekf_pose_with_covariance"/>
-  <arg name="output_pose_without_yawbias_name" default="ekf_pose_without_yawbias"/>
-  <arg name="output_pose_with_covariance_without_yawbias_name" default="ekf_pose_with_covariance_without_yawbias"/>
+  <arg name="output_biased_pose_name" default="ekf_biased_pose"/>
+  <arg name="output_biased_pose_with_covariance_name" default="ekf_biased_pose_with_covariance"/>
   <arg name="output_twist_name" default="ekf_twist"/>
   <arg name="output_twist_with_covariance_name" default="ekf_twist_with_covariance"/>
 
@@ -66,8 +66,8 @@
     <remap from="ekf_odom" to="$(var output_odom_name)"/>
     <remap from="ekf_pose" to="$(var output_pose_name)"/>
     <remap from="ekf_pose_with_covariance" to="$(var output_pose_with_covariance_name)"/>
-    <remap from="ekf_pose_without_yawbias" to="$(var output_pose_without_yawbias_name)"/>
-    <remap from="ekf_pose_with_covariance_without_yawbias" to="$(var output_pose_with_covariance_without_yawbias_name)"/>
+    <remap from="ekf_biased_pose" to="$(var output_biased_pose_name)"/>
+    <remap from="ekf_biased_pose_with_covariance" to="$(var output_biased_pose_with_covariance_name)"/>
     <remap from="ekf_twist" to="$(var output_twist_name)"/>
     <remap from="ekf_twist_with_covariance" to="$(var output_twist_with_covariance_name)"/>
   </node>

@@ -11,8 +11,8 @@
       <arg name="output_odom_name" value="kinematic_state"/>
       <arg name="output_pose_name" value="pose"/>
       <arg name="output_pose_with_covariance_name" value="/localization/pose_with_covariance"/>
-      <arg name="output_pose_without_yawbias_name" value="pose_without_yawbias"/>
-      <arg name="output_pose_with_covariance_without_yawbias_name" value="pose_with_covariance_without_yawbias"/>
+      <arg name="output_biased_pose_name" value="biased_pose"/>
+      <arg name="output_biased_pose_with_covariance_name" value="biased_pose_with_covariance"/>
       <arg name="output_twist_name" value="twist"/>
       <arg name="output_twist_with_covariance_name" value="twist_with_covariance"/>
       <arg name="proc_stddev_vx_c" value="10.0"/>
