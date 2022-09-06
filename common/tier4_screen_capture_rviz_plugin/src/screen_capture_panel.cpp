@@ -26,7 +26,7 @@ using std::placeholders::_2;
 void setFormatDate(QLabel * line, double time)
 {
   char buffer[128];
-  time_t seconds = static_cast<time_t>(time);
+  auto seconds = static_cast<time_t>(time);
   strftime(buffer, sizeof(buffer), "%Y-%m-%d-%H-%M-%S", localtime(&seconds));
   line->setText(QString(buffer));
 }
@@ -71,7 +71,7 @@ AutowareScreenCapturePanel::AutowareScreenCapturePanel(QWidget * parent)
     v_layout->addLayout(video_cap_layout);
     setLayout(v_layout);
   }
-  QTimer * timer = new QTimer(this);
+  auto * timer = new QTimer(this);
   connect(timer, &QTimer::timeout, this, &AutowareScreenCapturePanel::update);
   timer->start(1000);
   capture_timer_ = new QTimer(this);
@@ -80,8 +80,8 @@ AutowareScreenCapturePanel::AutowareScreenCapturePanel(QWidget * parent)
 }
 
 void AutowareScreenCapturePanel::onCaptureTrigger(
-  [[maybe_unused]] const std::shared_ptr<std_srvs::srv::Trigger::Request> req,
-  const std::shared_ptr<std_srvs::srv::Trigger::Response> res)
+  [[maybe_unused]] const std_srvs::srv::Trigger::Request::SharedPtr req,
+  const std_srvs::srv::Trigger::Response::SharedPtr res)
 {
   onClickVideoCapture();
   res->success = true;
@@ -103,7 +103,6 @@ void AutowareScreenCapturePanel::onClickScreenCapture()
   const std::string time_text = "capture/" + ros_time_label_->text().toStdString();
   getDisplayContext()->getViewManager()->getRenderPanel()->getRenderWindow()->captureScreenShot(
     time_text + ".png");
-  return;
 }
 
 void AutowareScreenCapturePanel::onClickVideoCapture()
@@ -112,7 +111,7 @@ void AutowareScreenCapturePanel::onClickVideoCapture()
   try {
     const QWidgetList top_level_widgets = QApplication::topLevelWidgets();
     for (QWidget * widget : top_level_widgets) {
-      QMainWindow * main_window_candidate = qobject_cast<QMainWindow *>(widget);
+      auto * main_window_candidate = qobject_cast<QMainWindow *>(widget);
       if (main_window_candidate) {
         main_window_ = main_window_candidate;
       }
@@ -153,7 +152,6 @@ void AutowareScreenCapturePanel::onClickVideoCapture()
       state_ = State::WAITING_FOR_CAPTURE;
       break;
   }
-  return;
 }
 
 void AutowareScreenCapturePanel::onTimer()
