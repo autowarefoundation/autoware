@@ -48,46 +48,6 @@ geometry_msgs::msg::Point findLongitudinalNearestPoint(
   return min_dist_point;
 }
 
-template <class T>
-size_t calcIndexByLength(
-  const T & points, const geometry_msgs::msg::Pose & current_pose, const double target_length)
-{
-  const size_t nearest_index = motion_utils::findNearestIndex(points, current_pose.position);
-  if (target_length < 0) {
-    return nearest_index;
-  }
-
-  for (size_t i = nearest_index; i < points.size(); i++) {
-    double length_sum = motion_utils::calcSignedArcLength(points, current_pose.position, i);
-    if (length_sum > target_length) {
-      return i;
-    }
-  }
-
-  // reach the end of the points, so return the last index
-  return points.size() - 1;
-}
-
-template <class T>
-size_t calcIndexByLengthReverse(
-  const T & points, const geometry_msgs::msg::Point & src_point, const float target_length)
-{
-  const auto nearest_seg_idx = motion_utils::findNearestSegmentIndex(points, src_point);
-  if (nearest_seg_idx == 0) {
-    return 0;
-  }
-
-  for (size_t i = nearest_seg_idx; i > 0; i--) {
-    const auto length_sum = std::abs(motion_utils::calcSignedArcLength(points, src_point, i));
-    if (length_sum > target_length) {
-      return i + 1;
-    }
-  }
-
-  // reach the beginning of the path
-  return 0;
-}
-
 }  // namespace run_out_utils
 }  // namespace behavior_velocity_planner
 #endif  // SCENE_MODULE__RUN_OUT__PATH_UTILS_HPP_

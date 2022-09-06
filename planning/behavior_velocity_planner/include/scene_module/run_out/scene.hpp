@@ -124,12 +124,11 @@ private:
   void insertStoppingVelocity(
     const boost::optional<DynamicObstacle> & dynamic_obstacle,
     const geometry_msgs::msg::Pose & current_pose, const float current_vel, const float current_acc,
-    const PathWithLaneId & smoothed_path, PathWithLaneId & output_path);
+    PathWithLaneId & output_path);
 
   void insertApproachingVelocity(
     const DynamicObstacle & dynamic_obstacle, const geometry_msgs::msg::Pose & current_pose,
-    const float approaching_vel, const float approach_margin, const PathWithLaneId & resampled_path,
-    PathWithLaneId & output_path);
+    const float approaching_vel, const float approach_margin, PathWithLaneId & output_path);
 
   void applyMaxJerkLimit(
     const geometry_msgs::msg::Pose & current_pose, const float current_vel, const float current_acc,
