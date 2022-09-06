@@ -233,15 +233,15 @@ boost::optional<double> calcDecelDistWithJerkAndAccConstraints(
   return {};
 }
 boost::optional<std::pair<double, double>> calcFeasibleMarginAndVelocity(
-  const ObstacleStopPlannerNode::SlowDownParam & slow_down_param,
-  const double dist_baselink_to_obstacle, const double current_vel, const double current_acc)
+  const SlowDownParam & slow_down_param, const double dist_baselink_to_obstacle,
+  const double current_vel, const double current_acc)
 {
   const auto & p = slow_down_param;
   const auto & logger = rclcpp::get_logger("calcFeasibleMarginAndVelocity");
   constexpr double epsilon = 1e-4;
 
-  if (current_vel < p.slow_down_vel + epsilon) {
-    return std::make_pair(p.forward_margin, p.slow_down_vel);
+  if (current_vel < p.slow_down_velocity + epsilon) {
+    return std::make_pair(p.longitudinal_forward_margin, p.slow_down_velocity);
   }
 
   for (double planning_jerk = p.jerk_start; planning_jerk > p.slow_down_min_jerk - epsilon;
@@ -252,17 +252,18 @@ boost::optional<std::pair<double, double>> calcFeasibleMarginAndVelocity(
     const auto planning_dec =
       planning_jerk > p.normal_min_jerk ? p.limit_min_acc : p.normal_min_acc;
     const auto stop_dist = calcDecelDistWithJerkAndAccConstraints(
-      current_vel, p.slow_down_vel, current_acc, planning_dec, jerk_acc, jerk_dec);
+      current_vel, p.slow_down_velocity, current_acc, planning_dec, jerk_acc, jerk_dec);
 
     if (!stop_dist) {
       continue;
     }
 
-    if (stop_dist.get() + p.forward_margin < dist_baselink_to_obstacle) {
+    if (stop_dist.get() + p.longitudinal_forward_margin < dist_baselink_to_obstacle) {
       RCLCPP_DEBUG(
         logger, "[found plan] dist:%-6.2f jerk:%-6.2f margin:%-6.2f v0:%-6.2f vt:%-6.2f",
-        stop_dist.get(), planning_jerk, p.forward_margin, p.slow_down_vel, current_vel);
-      return std::make_pair(p.forward_margin, p.slow_down_vel);
+        stop_dist.get(), planning_jerk, p.longitudinal_forward_margin, p.slow_down_velocity,
+        current_vel);
+      return std::make_pair(p.longitudinal_forward_margin, p.slow_down_velocity);
     }
   }
 
@@ -273,18 +274,18 @@ boost::optional<std::pair<double, double>> calcFeasibleMarginAndVelocity(
     const auto planning_dec =
       p.slow_down_min_jerk > p.normal_min_jerk ? p.limit_min_acc : p.normal_min_acc;
     const auto stop_dist = calcDecelDistWithJerkAndAccConstraints(
-      current_vel, p.slow_down_vel, current_acc, planning_dec, jerk_acc, jerk_dec);
+      current_vel, p.slow_down_velocity, current_acc, planning_dec, jerk_acc, jerk_dec);
 
     if (!stop_dist) {
       return {};
     }
 
-    if (stop_dist.get() + p.forward_margin_min < dist_baselink_to_obstacle) {
+    if (stop_dist.get() + p.min_longitudinal_forward_margin < dist_baselink_to_obstacle) {
       const auto planning_margin = dist_baselink_to_obstacle - stop_dist.get();
       RCLCPP_DEBUG(
         logger, "[relax margin] dist:%-6.2f jerk:%-6.2f margin:%-6.2f v0:%-6.2f vt%-6.2f",
-        stop_dist.get(), p.slow_down_min_jerk, planning_margin, p.slow_down_vel, current_vel);
-      return std::make_pair(planning_margin, p.slow_down_vel);
+        stop_dist.get(), p.slow_down_min_jerk, planning_margin, p.slow_down_velocity, current_vel);
+      return std::make_pair(planning_margin, p.slow_down_velocity);
     }
   }
 
@@ -453,10 +454,10 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & nod
   // Parameters
   {
     auto & p = node_param_;
-    p.enable_slow_down = declare_parameter("enable_slow_down", false);
-    p.max_velocity = declare_parameter("max_velocity", 20.0);
-    p.hunting_threshold = declare_parameter("hunting_threshold", 0.5);
-    p.lowpass_gain = declare_parameter("lowpass_gain", 0.9);
+    p.enable_slow_down = declare_parameter<bool>("enable_slow_down");
+    p.max_velocity = declare_parameter<double>("max_velocity");
+    p.hunting_threshold = declare_parameter<double>("hunting_threshold");
+    p.lowpass_gain = declare_parameter<double>("lowpass_gain");
     lpf_acc_ = std::make_shared<LowpassFilter1d>(p.lowpass_gain);
     p.ego_nearest_dist_threshold = declare_parameter<double>("ego_nearest_dist_threshold");
     p.ego_nearest_yaw_threshold = declare_parameter<double>("ego_nearest_yaw_threshold");
@@ -465,51 +466,76 @@ ObstacleStopPlannerNode::ObstacleStopPlannerNode(const rclcpp::NodeOptions & nod
   {
     auto & p = stop_param_;
     const std::string ns = "stop_planner.";
-    p.stop_margin = declare_parameter(ns + "stop_margin", 5.0);
-    p.min_behavior_stop_margin = declare_parameter(ns + "min_behavior_stop_margin", 2.0);
-    p.expand_stop_range = declare_parameter(ns + "expand_stop_range", 0.0);
-    p.extend_distance = declare_parameter(ns + "extend_distance", 0.0);
-    p.step_length = declare_parameter(ns + "step_length", 1.0);
-    p.stop_margin += i.max_longitudinal_offset_m;
-    p.min_behavior_stop_margin += i.max_longitudinal_offset_m;
+
+    // params for stop position
+    p.max_longitudinal_margin =
+      declare_parameter<double>(ns + "stop_position.max_longitudinal_margin");
+    p.min_longitudinal_margin =
+      declare_parameter<double>(ns + "stop_position.min_longitudinal_margin");
+    p.hold_stop_margin_distance =
+      declare_parameter<double>(ns + "stop_position.hold_stop_margin_distance");
+
+    // params for detection area
+    p.lateral_margin = declare_parameter<double>(ns + "detection_area.lateral_margin");
+    p.extend_distance = declare_parameter<double>(ns + "detection_area.extend_distance");
+    p.step_length = declare_parameter<double>(ns + "detection_area.step_length");
+
+    // apply offset
+    p.max_longitudinal_margin += i.max_longitudinal_offset_m;
+    p.min_longitudinal_margin += i.max_longitudinal_offset_m;
     p.stop_search_radius =
       p.step_length +
-      std::hypot(i.vehicle_width_m / 2.0 + p.expand_stop_range, i.vehicle_length_m / 2.0);
-    p.hold_stop_margin_distance = declare_parameter(ns + "hold_stop_margin_distance", 0.0);
+      std::hypot(i.vehicle_width_m / 2.0 + p.lateral_margin, i.vehicle_length_m / 2.0);
   }
 
   {
     auto & p = slow_down_param_;
     const std::string ns = "slow_down_planner.";
+
     // common param
-    p.normal_min_jerk = declare_parameter("normal.min_jerk", -0.3);
-    p.normal_min_acc = declare_parameter("normal.min_acc", -1.0);
-    p.limit_min_jerk = declare_parameter("limit.min_jerk", -1.5);
-    p.limit_min_acc = declare_parameter("limit.min_acc", -2.5);
-    // slow down planner specific parameters
-    p.forward_margin = declare_parameter(ns + "forward_margin", 5.0);
-    p.backward_margin = declare_parameter(ns + "backward_margin", 5.0);
-    p.expand_slow_down_range = declare_parameter(ns + "expand_slow_down_range", 1.0);
-    p.max_slow_down_vel = declare_parameter(ns + "max_slow_down_vel", 4.0);
-    p.min_slow_down_vel = declare_parameter(ns + "min_slow_down_vel", 2.0);
+    p.normal_min_jerk = declare_parameter<double>("normal.min_jerk");
+    p.normal_min_acc = declare_parameter<double>("normal.min_acc");
+    p.limit_min_jerk = declare_parameter<double>("limit.min_jerk");
+    p.limit_min_acc = declare_parameter<double>("limit.min_acc");
+
+    // params for slow down section
+    p.longitudinal_forward_margin =
+      declare_parameter<double>(ns + "slow_down_section.longitudinal_forward_margin");
+    p.longitudinal_backward_margin =
+      declare_parameter<double>(ns + "slow_down_section.longitudinal_backward_margin");
+    p.min_longitudinal_forward_margin =
+      declare_parameter<double>(ns + "slow_down_section.min_longitudinal_forward_margin");
+    p.longitudinal_margin_span =
+      declare_parameter<double>(ns + "slow_down_section.longitudinal_margin_span");
+
+    // params for detection area
+    p.lateral_margin = declare_parameter<double>(ns + "detection_area.lateral_margin");
+
+    // params for target velocity
+    p.max_slow_down_velocity =
+      declare_parameter<double>(ns + "target_velocity.max_slow_down_velocity");
+    p.min_slow_down_velocity =
+      declare_parameter<double>(ns + "target_velocity.min_slow_down_velocity");
+    p.slow_down_velocity = declare_parameter<double>(ns + "target_velocity.slow_down_velocity");
+
     // consider jerk/dec constraints in slow down
-    p.consider_constraints = declare_parameter(ns + "consider_constraints", false);
-    p.forward_margin_min = declare_parameter(ns + "forward_margin_min", 1.0);
-    p.forward_margin_span = declare_parameter(ns + "forward_margin_span", -0.1);
-    p.slow_down_min_jerk = declare_parameter(ns + "jerk_min_slow_down", -0.3);
-    p.jerk_start = declare_parameter(ns + "jerk_start", -0.1);
-    p.jerk_span = declare_parameter(ns + "jerk_span", -0.01);
-    p.slow_down_vel = declare_parameter(ns + "slow_down_vel", 1.39);
-    p.vel_threshold_reset_velocity_limit_ =
-      declare_parameter(ns + "vel_threshold_reset_velocity_limit_", 0.2);
-    p.dec_threshold_reset_velocity_limit_ =
-      declare_parameter(ns + "dec_threshold_reset_velocity_limit_", 0.1);
-    p.forward_margin += i.max_longitudinal_offset_m;
-    p.forward_margin_min += i.wheel_base_m + i.front_overhang_m;
-    p.backward_margin += i.rear_overhang_m;
+    p.consider_constraints = declare_parameter<bool>(ns + "consider_constraints");
+    p.slow_down_min_jerk = declare_parameter<double>(ns + "constraints.jerk_min_slow_down");
+    p.jerk_start = declare_parameter<double>(ns + "constraints.jerk_start");
+    p.jerk_span = declare_parameter<double>(ns + "constraints.jerk_span");
+
+    p.velocity_threshold_decel_complete =
+      declare_parameter<double>(ns + "velocity_threshold_decel_complete");
+    p.acceleration_threshold_decel_complete =
+      declare_parameter<double>(ns + "acceleration_threshold_decel_complete");
+
+    // apply offset
+    p.longitudinal_forward_margin += i.max_longitudinal_offset_m;
+    p.min_longitudinal_forward_margin += i.wheel_base_m + i.front_overhang_m;
+    p.longitudinal_backward_margin += i.rear_overhang_m;
     p.slow_down_search_radius =
       stop_param_.step_length +
-      std::hypot(i.vehicle_width_m / 2.0 + p.expand_slow_down_range, i.vehicle_length_m / 2.0);
+      std::hypot(i.vehicle_width_m / 2.0 + p.lateral_margin, i.vehicle_length_m / 2.0);
   }
 
   // Initializer
@@ -700,7 +726,7 @@ void ObstacleStopPlannerNode::searchObstacle(
       // create one step polygon for slow_down range
       createOneStepPolygon(
         p_front, p_back, one_step_move_slow_down_range_polygon, vehicle_info,
-        slow_down_param_.expand_slow_down_range);
+        slow_down_param_.lateral_margin);
       debug_ptr_->pushPolygon(
         one_step_move_slow_down_range_polygon, p_front.position.z, PolygonType::SlowDownRange);
 
@@ -738,7 +764,7 @@ void ObstacleStopPlannerNode::searchObstacle(
       std::vector<cv::Point2d> one_step_move_vehicle_polygon;
       // create one step polygon for vehicle
       createOneStepPolygon(
-        p_front, p_back, one_step_move_vehicle_polygon, vehicle_info, stop_param.expand_stop_range);
+        p_front, p_back, one_step_move_vehicle_polygon, vehicle_info, stop_param.lateral_margin);
       debug_ptr_->pushPolygon(
         one_step_move_vehicle_polygon, decimate_trajectory.at(i).pose.position.z,
         PolygonType::Vehicle);
@@ -942,8 +968,8 @@ void ObstacleStopPlannerNode::insertVelocity(
       slow_down_section.start_point = output.front();
       slow_down_section.slow_down_end_idx = end_insert_point_with_idx.get().first;
       slow_down_section.end_point = end_insert_point_with_idx.get().second;
-      slow_down_section.velocity =
-        set_velocity_limit_ ? std::numeric_limits<double>::max() : slow_down_param_.slow_down_vel;
+      slow_down_section.velocity = set_velocity_limit_ ? std::numeric_limits<double>::max()
+                                                       : slow_down_param_.slow_down_velocity;
 
       insertSlowDownSection(slow_down_section, output);
     } else if (no_hunting_slowdown_point) {
@@ -996,10 +1022,10 @@ void ObstacleStopPlannerNode::externalExpandStopRangeCallback(
   std::lock_guard<std::mutex> lock(mutex_);
 
   const auto & i = vehicle_info_;
-  stop_param_.expand_stop_range = input_msg->expand_stop_range;
+  stop_param_.lateral_margin = input_msg->expand_stop_range;
   stop_param_.stop_search_radius =
     stop_param_.step_length +
-    std::hypot(i.vehicle_width_m / 2.0 + stop_param_.expand_stop_range, i.vehicle_length_m / 2.0);
+    std::hypot(i.vehicle_width_m / 2.0 + stop_param_.lateral_margin, i.vehicle_length_m / 2.0);
 }
 
 void ObstacleStopPlannerNode::insertStopPoint(
@@ -1042,9 +1068,9 @@ StopPoint ObstacleStopPlannerNode::searchInsertPoint(
   const StopParam & stop_param)
 {
   const auto max_dist_stop_point =
-    createTargetPoint(idx, stop_param.stop_margin, base_trajectory, dist_remain);
+    createTargetPoint(idx, stop_param.max_longitudinal_margin, base_trajectory, dist_remain);
   const auto min_dist_stop_point =
-    createTargetPoint(idx, stop_param.min_behavior_stop_margin, base_trajectory, dist_remain);
+    createTargetPoint(idx, stop_param.min_longitudinal_margin, base_trajectory, dist_remain);
 
   // check if stop point is already inserted by behavior planner
   bool is_inserted_already_stop_point = false;
@@ -1099,7 +1125,7 @@ SlowDownSection ObstacleStopPlannerNode::createSlowDownSection(
     }
 
     const auto no_need_velocity_limit =
-      dist_baselink_to_obstacle + dist_remain > slow_down_param_.forward_margin;
+      dist_baselink_to_obstacle + dist_remain > slow_down_param_.longitudinal_forward_margin;
     if (set_velocity_limit_ && no_need_velocity_limit) {
       resetExternalVelocityLimit(current_acc, current_vel);
     }
@@ -1107,9 +1133,10 @@ SlowDownSection ObstacleStopPlannerNode::createSlowDownSection(
     const auto use_velocity_limit = relax_target_vel || set_velocity_limit_;
 
     const auto update_forward_margin_from_vehicle =
-      use_velocity_limit ? slow_down_param_.forward_margin_min - dist_remain
+      use_velocity_limit ? slow_down_param_.min_longitudinal_forward_margin - dist_remain
                          : margin_with_vel.get().first - dist_remain;
-    const auto update_backward_margin_from_vehicle = slow_down_param_.backward_margin + dist_remain;
+    const auto update_backward_margin_from_vehicle =
+      slow_down_param_.longitudinal_backward_margin + dist_remain;
 
     const auto velocity =
       use_velocity_limit ? std::numeric_limits<double>::max() : margin_with_vel.get().second;
@@ -1118,14 +1145,16 @@ SlowDownSection ObstacleStopPlannerNode::createSlowDownSection(
       idx, base_trajectory, update_forward_margin_from_vehicle, update_backward_margin_from_vehicle,
       velocity);
   } else {
-    const auto update_forward_margin_from_vehicle = slow_down_param_.forward_margin - dist_remain;
-    const auto update_backward_margin_from_vehicle = slow_down_param_.backward_margin + dist_remain;
+    const auto update_forward_margin_from_vehicle =
+      slow_down_param_.longitudinal_forward_margin - dist_remain;
+    const auto update_backward_margin_from_vehicle =
+      slow_down_param_.longitudinal_backward_margin + dist_remain;
 
     const auto velocity =
-      slow_down_param_.min_slow_down_vel +
-      (slow_down_param_.max_slow_down_vel - slow_down_param_.min_slow_down_vel) *
+      slow_down_param_.min_slow_down_velocity +
+      (slow_down_param_.max_slow_down_velocity - slow_down_param_.min_slow_down_velocity) *
         std::max(lateral_deviation - vehicle_info.vehicle_width_m / 2, 0.0) /
-        slow_down_param_.expand_slow_down_range;
+        slow_down_param_.lateral_margin;
 
     return createSlowDownSectionFromMargin(
       idx, base_trajectory, update_forward_margin_from_vehicle, update_backward_margin_from_vehicle,
@@ -1569,7 +1598,7 @@ void ObstacleStopPlannerNode::setExternalVelocityLimit()
   const auto & p = slow_down_param_;
   auto slow_down_limit_vel = std::make_shared<VelocityLimit>();
   slow_down_limit_vel->stamp = this->now();
-  slow_down_limit_vel->max_velocity = p.slow_down_vel;
+  slow_down_limit_vel->max_velocity = p.slow_down_velocity;
   slow_down_limit_vel->constraints.min_acceleration =
     p.slow_down_min_jerk < p.normal_min_jerk ? p.limit_min_acc : p.normal_min_acc;
   slow_down_limit_vel->constraints.max_jerk = std::abs(p.slow_down_min_jerk);
@@ -1588,11 +1617,10 @@ void ObstacleStopPlannerNode::setExternalVelocityLimit()
 void ObstacleStopPlannerNode::resetExternalVelocityLimit(
   const double current_acc, const double current_vel)
 {
-  const auto reach_target_vel =
-    current_vel <
-    slow_down_param_.slow_down_vel + slow_down_param_.vel_threshold_reset_velocity_limit_;
+  const auto reach_target_vel = current_vel < slow_down_param_.slow_down_velocity +
+                                                slow_down_param_.velocity_threshold_decel_complete;
   const auto constant_vel =
-    std::abs(current_acc) < slow_down_param_.dec_threshold_reset_velocity_limit_;
+    std::abs(current_acc) < slow_down_param_.acceleration_threshold_decel_complete;
   const auto no_undershoot = reach_target_vel && constant_vel;
 
   if (!no_undershoot) {

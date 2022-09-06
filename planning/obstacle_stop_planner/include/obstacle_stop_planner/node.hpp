@@ -17,6 +17,7 @@
 
 #include "obstacle_stop_planner/adaptive_cruise_control.hpp"
 #include "obstacle_stop_planner/debug_marker.hpp"
+#include "obstacle_stop_planner/planner_data.hpp"
 
 #include <motion_utils/trajectory/tmp_conversion.hpp>
 #include <motion_utils/trajectory/trajectory.hpp>
@@ -76,96 +77,10 @@ using tier4_planning_msgs::msg::VelocityLimit;
 using tier4_planning_msgs::msg::VelocityLimitClearCommand;
 using vehicle_info_util::VehicleInfo;
 
-struct StopPoint
-{
-  TrajectoryPoint point{};
-  size_t index;
-};
-
-struct SlowDownSection
-{
-  TrajectoryPoint start_point{};
-  TrajectoryPoint end_point{};
-  size_t slow_down_start_idx;
-  size_t slow_down_end_idx;
-  double velocity;
-};
-
 class ObstacleStopPlannerNode : public rclcpp::Node
 {
 public:
   explicit ObstacleStopPlannerNode(const rclcpp::NodeOptions & node_options);
-
-  struct NodeParam
-  {
-    bool enable_slow_down;              // set True, slow down for obstacle beside the path
-    double max_velocity;                // max velocity [m/s]
-    double lowpass_gain;                // smoothing calculated current acceleration [-]
-    double hunting_threshold;           // keep slow down or stop state if obstacle vanished [s]
-    double ego_nearest_dist_threshold;  // dist threshold for ego's nearest index
-    double ego_nearest_yaw_threshold;   // yaw threshold for ego's nearest index
-  };
-
-  struct StopParam
-  {
-    double stop_margin;                // stop margin distance from obstacle on the path [m]
-    double min_behavior_stop_margin;   // margin distance, any other stop point is inserted [m]
-    double expand_stop_range;          // margin of vehicle footprint [m]
-    double extend_distance;            // trajectory extend_distance [m]
-    double step_length;                // step length for pointcloud search range [m]
-    double stop_search_radius;         // search radius for obstacle point cloud [m]
-    double hold_stop_margin_distance;  // keep stopping if the ego is in this margin [m]
-  };
-
-  struct SlowDownParam
-  {
-    double normal_min_jerk;         // min jerk limit for mild stop [m/sss]
-    double normal_min_acc;          // min deceleration limit for mild stop [m/ss]
-    double limit_min_jerk;          // min jerk limit [m/sss]
-    double limit_min_acc;           // min deceleration limit [m/ss]
-    double forward_margin;          // slow down margin(vehicle front -> obstacle) [m]
-    double backward_margin;         // slow down margin(obstacle vehicle rear) [m]
-    double expand_slow_down_range;  // lateral range of detection area [m]
-    double max_slow_down_vel;       // maximum speed in slow down section [m/s]
-    double min_slow_down_vel;       // minimum velocity in slow down section [m/s]
-    bool consider_constraints;      // set "True", decel point is planned under jerk/dec constraints
-    double slow_down_vel;           // target slow down velocity [m/s]
-    double forward_margin_min;      // min margin for relaxing slow down margin [m/s]
-    double forward_margin_span;     // fineness param for relaxing slow down margin [m/s]
-    double slow_down_min_jerk;      // min slow down jerk constraint [m/sss]
-    double jerk_start;              // init jerk used for deceleration planning [m/sss]
-    double jerk_span;               // fineness param for planning deceleration jerk [m/sss]
-    double vel_threshold_reset_velocity_limit_;  // velocity threshold,
-                                                 // check complete deceleration [m/s]
-    double dec_threshold_reset_velocity_limit_;  // acceleration threshold,
-                                                 // check complete deceleration [m/ss]
-    double slow_down_search_radius;  // search radius for slow down obstacle point cloud [m]
-  };
-
-  struct PlannerData
-  {
-    diagnostic_msgs::msg::DiagnosticStatus stop_reason_diag{};
-
-    geometry_msgs::msg::Pose current_pose{};
-
-    pcl::PointXYZ nearest_collision_point;
-    pcl::PointXYZ nearest_slow_down_point;
-    pcl::PointXYZ lateral_nearest_slow_down_point;
-    rclcpp::Time nearest_collision_point_time{};
-    double lateral_deviation{0.0};
-
-    size_t trajectory_trim_index{};
-    size_t decimate_trajectory_collision_index{};
-    size_t decimate_trajectory_slow_down_index{};
-    std::map<size_t, size_t> decimate_trajectory_index_map{};  // key: decimate index
-                                                               // value: original index
-
-    bool found_collision_points{false};
-    bool found_slow_down_points{false};
-    bool stop_require{false};
-    bool slow_down_require{false};
-    bool enable_adaptive_cruise{false};
-  };
 
 private:
   /*
