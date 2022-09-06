@@ -16,6 +16,9 @@
 #ifndef RADAR_OBJECT_FUSION_TO_DETECTED_OBJECT__RADAR_OBJECT_FUSION_TO_DETECTED_OBJECT_NODE_HPP_
 #define RADAR_OBJECT_FUSION_TO_DETECTED_OBJECT__RADAR_OBJECT_FUSION_TO_DETECTED_OBJECT_NODE_HPP_
 
+#include "message_filters/subscriber.h"
+#include "message_filters/sync_policies/approximate_time.h"
+#include "message_filters/synchronizer.h"
 #include "radar_fusion_to_detected_object.hpp"
 #include "rclcpp/rclcpp.hpp"
 
@@ -46,12 +49,19 @@ public:
 
 private:
   // Subscriber
-  rclcpp::Subscription<DetectedObjects>::SharedPtr sub_object_{};
-  rclcpp::Subscription<TrackedObjects>::SharedPtr sub_radar_{};
+  message_filters::Subscriber<DetectedObjects> sub_object_{};
+  message_filters::Subscriber<TrackedObjects> sub_radar_{};
+
+  using SyncPolicy =
+    message_filters::sync_policies::ApproximateTime<DetectedObjects, TrackedObjects>;
+  using Sync = message_filters::Synchronizer<SyncPolicy>;
+  typename std::shared_ptr<Sync> sync_ptr_;
 
   // Callback
-  void onDetectedObjects(const DetectedObjects::ConstSharedPtr msg);
-  void onRadarObjects(const TrackedObjects::ConstSharedPtr msg);
+  void onData(
+    const DetectedObjects::ConstSharedPtr object_msg,
+    const TrackedObjects::ConstSharedPtr radar_msg);
+  bool isDataReady();
 
   // Data Buffer
   DetectedObjects::ConstSharedPtr detected_objects_{};
@@ -59,12 +69,6 @@ private:
 
   // Publisher
   rclcpp::Publisher<DetectedObjects>::SharedPtr pub_objects_{};
-
-  // Timer
-  rclcpp::TimerBase::SharedPtr timer_{};
-
-  bool isDataReady();
-  void onTimer();
 
   // Parameter Server
   OnSetParametersCallbackHandle::SharedPtr set_param_res_;
