@@ -21,13 +21,14 @@ while (...) {
   const bool safe = ...
 
   // Get distance to the object corresponding to the module id
-  const double distance = ...
+  const double start_distance = ...
+  const double finish_distance = ...
 
   // Get time stamp
   const rclcpp::Time stamp = ...
 
   // Update status
-  rtc_interface.updateCooperateStatus(uuid, safe, distance, stamp);
+  rtc_interface.updateCooperateStatus(uuid, safe, start_distance, finish_distance, stamp);
 
   if (rtc_interface.isActivated(uuid)) {
     // Execute planning
@@ -89,7 +90,7 @@ Nothing
 ### updateCooperateStatus
 
 ```c++
-rtc_interface::updateCooperateStatus(const unique_identifier_msgs::msg::UUID & uuid, const bool safe, const double distance, const rclcpp::Time & stamp)
+rtc_interface::updateCooperateStatus(const unique_identifier_msgs::msg::UUID & uuid, const bool safe, const double start_distance, const double finish_distance, const rclcpp::Time & stamp)
 ```
 
 #### Description
@@ -101,7 +102,8 @@ If cooperate status corresponding to `uuid` is not registered yet, add new coope
 
 - `uuid` : UUID for requesting module
 - `safe` : Safety status of requesting module
-- `distance` : Distance to the object from ego vehicle
+- `start_distance` : Distance to the start object from ego vehicle
+- `finish_distance` : Distance to the finish object from ego vehicle
 - `stamp` : Time stamp
 
 #### Output

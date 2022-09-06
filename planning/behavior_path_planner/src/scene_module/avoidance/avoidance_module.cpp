@@ -2084,7 +2084,8 @@ CandidateOutput AvoidanceModule::planCandidate() const
       }
     }
     output.lateral_shift = new_shift_points->at(i).getRelativeLength();
-    output.distance_to_path_change = new_shift_points->front().start_longitudinal;
+    output.start_distance_to_path_change = new_shift_points->front().start_longitudinal;
+    output.finish_distance_to_path_change = new_shift_points->back().end_longitudinal;
   }
 
   const size_t ego_idx = findEgoIndex(shifted_path.path.points);
@@ -2101,7 +2102,7 @@ BehaviorModuleOutput AvoidanceModule::planWaitingApproval()
   BehaviorModuleOutput out = plan();
   const auto candidate = planCandidate();
   constexpr double threshold_to_update_status = -1.0e-03;
-  if (candidate.distance_to_path_change > threshold_to_update_status) {
+  if (candidate.start_distance_to_path_change > threshold_to_update_status) {
     updateCandidateRTCStatus(candidate);
     waitApproval();
   } else {
@@ -2132,9 +2133,11 @@ void AvoidanceModule::addShiftPointIfApproved(const AvoidPointArray & shift_poin
     }
 
     if (shift_points.at(i).getRelativeLength() > 0.0) {
-      left_shift_array_.push_back({uuid_left_, shift_points.front().start});
+      left_shift_array_.push_back(
+        {uuid_left_, shift_points.front().start, shift_points.back().end});
     } else if (shift_points.at(i).getRelativeLength() < 0.0) {
-      right_shift_array_.push_back({uuid_right_, shift_points.front().start});
+      right_shift_array_.push_back(
+        {uuid_right_, shift_points.front().start, shift_points.back().end});
     }
 
     uuid_left_ = generateUUID();

@@ -608,8 +608,8 @@ BehaviorModuleOutput PullOverModule::plan()
     }
   }
 
-  const double distance_to_path_change = calcDistanceToPathChange();
-  updateRTCStatus(distance_to_path_change);
+  const auto distance_to_path_change = calcDistanceToPathChange();
+  updateRTCStatus(distance_to_path_change.first, distance_to_path_change.second);
 
   publishDebugData();
 
@@ -637,22 +637,25 @@ BehaviorModuleOutput PullOverModule::planWaitingApproval()
     out.path_candidate = std::make_shared<PathWithLaneId>(parallel_parking_planner_.getFullPath());
   }
 
-  const double distance_to_path_change = calcDistanceToPathChange();
-  updateRTCStatus(distance_to_path_change);
+  const auto distance_to_path_change = calcDistanceToPathChange();
+  updateRTCStatus(distance_to_path_change.first, distance_to_path_change.second);
   waitApproval();
 
   return out;
 }
 
-double PullOverModule::calcDistanceToPathChange() const
+std::pair<double, double> PullOverModule::calcDistanceToPathChange() const
 {
   const Pose parking_start_pose = getParkingStartPose();
+  const Pose parking_end_pose = modified_goal_pose_;
   const auto dist_to_parking_start_pose = calcSignedArcLength(
     status_.path.points, planner_data_->self_pose->pose, parking_start_pose.position,
     std::numeric_limits<double>::max(), M_PI_2);
-  const double distance_to_path_change =
+  const double dist_to_parking_finish_pose = calcSignedArcLength(
+    status_.path.points, planner_data_->self_pose->pose.position, parking_end_pose.position);
+  const double start_distance_to_path_change =
     dist_to_parking_start_pose ? *dist_to_parking_start_pose : std::numeric_limits<double>::max();
-  return distance_to_path_change;
+  return {start_distance_to_path_change, dist_to_parking_finish_pose};
 }
 
 void PullOverModule::setParameters(const PullOverParameters & parameters)

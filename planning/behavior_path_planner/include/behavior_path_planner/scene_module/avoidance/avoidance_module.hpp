@@ -36,8 +36,6 @@ namespace behavior_path_planner
 using tier4_planning_msgs::msg::AvoidanceDebugMsg;
 class AvoidanceModule : public SceneModuleInterface
 {
-  using RegisteredShiftPointArray = std::vector<std::pair<UUID, Pose>>;
-
 public:
   AvoidanceModule(
     const std::string & name, rclcpp::Node & node, std::shared_ptr<AvoidanceParameters> parameters);
@@ -70,6 +68,14 @@ public:
   }
 
 private:
+  struct RegisteredShiftPoint
+  {
+    UUID uuid;
+    Pose start_pose;
+    Pose finish_pose;
+  };
+  using RegisteredShiftPointArray = std::vector<RegisteredShiftPoint>;
+
   std::shared_ptr<AvoidanceParameters> parameters_;
 
   AvoidancePlanningData avoidance_data_;
@@ -89,19 +95,22 @@ private:
   {
     if (candidate.lateral_shift > 0.0) {
       rtc_interface_left_.updateCooperateStatus(
-        uuid_left_, isExecutionReady(), candidate.distance_to_path_change, clock_->now());
+        uuid_left_, isExecutionReady(), candidate.start_distance_to_path_change,
+        candidate.finish_distance_to_path_change, clock_->now());
       candidate_uuid_ = uuid_left_;
       return;
     }
     if (candidate.lateral_shift < 0.0) {
       rtc_interface_right_.updateCooperateStatus(
-        uuid_right_, isExecutionReady(), candidate.distance_to_path_change, clock_->now());
+        uuid_right_, isExecutionReady(), candidate.start_distance_to_path_change,
+        candidate.finish_distance_to_path_change, clock_->now());
       candidate_uuid_ = uuid_right_;
       return;
     }
 
     RCLCPP_WARN_STREAM(
-      getLogger(), "Direction is UNKNOWN, distance = " << candidate.distance_to_path_change);
+      getLogger(),
+      "Direction is UNKNOWN, start_distance = " << candidate.start_distance_to_path_change);
   }
 
   void updateRegisteredRTCStatus(const PathWithLaneId & path)
@@ -109,15 +118,21 @@ private:
     const Point ego_position = planner_data_->self_pose->pose.position;
 
     for (const auto & left_shift : left_shift_array_) {
-      const double distance =
-        motion_utils::calcSignedArcLength(path.points, ego_position, left_shift.second.position);
-      rtc_interface_left_.updateCooperateStatus(left_shift.first, true, distance, clock_->now());
+      const double start_distance = motion_utils::calcSignedArcLength(
+        path.points, ego_position, left_shift.start_pose.position);
+      const double finish_distance = motion_utils::calcSignedArcLength(
+        path.points, ego_position, left_shift.finish_pose.position);
+      rtc_interface_left_.updateCooperateStatus(
+        left_shift.uuid, true, start_distance, finish_distance, clock_->now());
     }
 
     for (const auto & right_shift : right_shift_array_) {
-      const double distance =
-        motion_utils::calcSignedArcLength(path.points, ego_position, right_shift.second.position);
-      rtc_interface_right_.updateCooperateStatus(right_shift.first, true, distance, clock_->now());
+      const double start_distance = motion_utils::calcSignedArcLength(
+        path.points, ego_position, right_shift.start_pose.position);
+      const double finish_distance = motion_utils::calcSignedArcLength(
+        path.points, ego_position, right_shift.finish_pose.position);
+      rtc_interface_right_.updateCooperateStatus(
+        right_shift.uuid, true, start_distance, finish_distance, clock_->now());
     }
   }
 

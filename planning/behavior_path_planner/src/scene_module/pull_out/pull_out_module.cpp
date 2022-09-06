@@ -85,8 +85,8 @@ void PullOutModule::onEntry()
     if (last_pull_out_start_update_time_ == nullptr) {
       last_pull_out_start_update_time_ = std::make_unique<rclcpp::Time>(clock_->now());
     }
-    const auto elpased_time = (clock_->now() - *last_pull_out_start_update_time_).seconds();
-    if (elpased_time < parameters_.backward_path_update_duration) {
+    const auto elapsed_time = (clock_->now() - *last_pull_out_start_update_time_).seconds();
+    if (elapsed_time < parameters_.backward_path_update_duration) {
       return;
     }
     last_pull_out_start_update_time_ = std::make_unique<rclcpp::Time>(clock_->now());
@@ -173,6 +173,21 @@ BehaviorModuleOutput PullOutModule::plan()
   output.turn_signal_info =
     calcTurnSignalInfo(status_.pull_out_path.start_pose, status_.pull_out_path.end_pose);
 
+  if (status_.back_finished) {
+    const double start_distance = motion_utils::calcSignedArcLength(
+      path.points, planner_data_->self_pose->pose.position,
+      status_.pull_out_path.start_pose.position);
+    const double finish_distance = motion_utils::calcSignedArcLength(
+      path.points, planner_data_->self_pose->pose.position,
+      status_.pull_out_path.end_pose.position);
+    updateRTCStatus(start_distance, finish_distance);
+  } else {
+    const double distance = motion_utils::calcSignedArcLength(
+      path.points, planner_data_->self_pose->pose.position,
+      status_.pull_out_path.start_pose.position);
+    updateRTCStatus(0.0, distance);
+  }
+
   setDebugData();
 
   return output;
@@ -234,8 +249,20 @@ BehaviorModuleOutput PullOutModule::planWaitingApproval()
   output.path_candidate = std::make_shared<PathWithLaneId>(candidate_path);
 
   waitApproval();
-  // requset approval when stopped at the corresponding point, so distance is 0
-  updateRTCStatus(0.0);
+  if (status_.back_finished) {
+    const double start_distance = motion_utils::calcSignedArcLength(
+      candidate_path.points, planner_data_->self_pose->pose.position,
+      status_.pull_out_path.start_pose.position);
+    const double finish_distance = motion_utils::calcSignedArcLength(
+      candidate_path.points, planner_data_->self_pose->pose.position,
+      status_.pull_out_path.end_pose.position);
+    updateRTCStatus(start_distance, finish_distance);
+  } else {
+    const double distance = motion_utils::calcSignedArcLength(
+      candidate_path.points, planner_data_->self_pose->pose.position,
+      status_.pull_out_path.start_pose.position);
+    updateRTCStatus(0.0, distance);
+  }
 
   setDebugData();
   return output;
@@ -421,7 +448,7 @@ std::vector<Pose> PullOutModule::searchBackedPoses()
     p.point.pose = calcOffsetPose(p.point.pose, 0, distance_from_center_line, 0);
   }
 
-  // check collision between footprint and onject at the backed pose
+  // check collision between footprint and object at the backed pose
   const auto local_vehicle_footprint = createVehicleFootprint(vehicle_info_);
   std::vector<Pose> backed_poses;
   for (double back_distance = 0.0; back_distance <= parameters_.max_back_distance;
@@ -489,12 +516,10 @@ void PullOutModule::checkBackFinished()
     RCLCPP_INFO(getLogger(), "back finished");
     status_.back_finished = true;
 
-    // requst pull_out approval
+    // request pull_out approval
     waitApproval();
     removeRTCStatus();
     uuid_ = generateUUID();
-    // requset approval when stopped at the corresponding point, so distance is 0
-    updateRTCStatus(0.0);
     current_state_ = BT::NodeStatus::SUCCESS;  // for breaking loop
   }
 }

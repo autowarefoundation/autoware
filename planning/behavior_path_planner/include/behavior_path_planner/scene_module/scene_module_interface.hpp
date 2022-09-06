@@ -85,7 +85,8 @@ struct CandidateOutput
   explicit CandidateOutput(const PathWithLaneId & path) : path_candidate{path} {}
   PathWithLaneId path_candidate{};
   double lateral_shift{0.0};
-  double distance_to_path_change{std::numeric_limits<double>::lowest()};
+  double start_distance_to_path_change{std::numeric_limits<double>::lowest()};
+  double finish_distance_to_path_change{std::numeric_limits<double>::lowest()};
 };
 
 class SceneModuleInterface
@@ -251,12 +252,13 @@ protected:
   UUID uuid_;
   bool is_waiting_approval_;
 
-  void updateRTCStatus(const double distance)
+  void updateRTCStatus(const double start_distance, const double finish_distance)
   {
     if (!rtc_interface_ptr_) {
       return;
     }
-    rtc_interface_ptr_->updateCooperateStatus(uuid_, isExecutionReady(), distance, clock_->now());
+    rtc_interface_ptr_->updateCooperateStatus(
+      uuid_, isExecutionReady(), start_distance, finish_distance, clock_->now());
   }
 
   virtual void removeRTCStatus()

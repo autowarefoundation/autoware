@@ -125,7 +125,8 @@ void RTCInterface::onCooperateCommandService(
 }
 
 void RTCInterface::updateCooperateStatus(
-  const UUID & uuid, const bool safe, const double distance, const rclcpp::Time & stamp)
+  const UUID & uuid, const bool safe, const double start_distance, const double finish_distance,
+  const rclcpp::Time & stamp)
 {
   std::lock_guard<std::mutex> lock(mutex_);
   // Find registered status which has same uuid
@@ -141,7 +142,8 @@ void RTCInterface::updateCooperateStatus(
     status.module = module_;
     status.safe = safe;
     status.command_status.type = Command::DEACTIVATE;
-    status.distance = distance;
+    status.start_distance = start_distance;
+    status.finish_distance = finish_distance;
     registered_status_.statuses.push_back(status);
     return;
   }
@@ -149,7 +151,8 @@ void RTCInterface::updateCooperateStatus(
   // If the registered status is found, update status
   itr->stamp = stamp;
   itr->safe = safe;
-  itr->distance = distance;
+  itr->start_distance = start_distance;
+  itr->finish_distance = finish_distance;
 }
 
 void RTCInterface::removeCooperateStatus(const UUID & uuid)

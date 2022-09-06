@@ -47,7 +47,8 @@ public:
   RTCInterface(rclcpp::Node * node, const std::string & name);
   void publishCooperateStatus(const rclcpp::Time & stamp);
   void updateCooperateStatus(
-    const UUID & uuid, const bool safe, const double distance, const rclcpp::Time & stamp);
+    const UUID & uuid, const bool safe, const double start_distance, const double finish_distance,
+    const rclcpp::Time & stamp);
   void removeCooperateStatus(const UUID & uuid);
   void clearCooperateStatus();
   bool isActivated(const UUID & uuid);

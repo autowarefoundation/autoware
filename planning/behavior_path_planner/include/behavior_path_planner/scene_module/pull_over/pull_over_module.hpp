@@ -200,7 +200,8 @@ private:
     const lanelet::ConstLanelets & lanelets, const Pose & goal_pose, const double buffer = 0) const;
   bool isArcPath() const;
   double calcMinimumShiftPathDistance() const;
-  double calcDistanceToPathChange() const;
+  std::pair<double, double> calcDistanceToPathChange() const;
+
   bool planShiftPath();
   bool isStopped();
   bool hasFinishedCurrentPath();

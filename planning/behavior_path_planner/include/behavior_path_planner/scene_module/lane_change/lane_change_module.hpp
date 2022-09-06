@@ -118,17 +118,17 @@ private:
 
   bool is_activated_ = false;
 
-  void waitApprovalLeft(const double distance)
+  void waitApprovalLeft(const double start_distance, const double finish_distance)
   {
     rtc_interface_left_.updateCooperateStatus(
-      uuid_left_, isExecutionReady(), distance, clock_->now());
+      uuid_left_, isExecutionReady(), start_distance, finish_distance, clock_->now());
     is_waiting_approval_ = true;
   }
 
-  void waitApprovalRight(const double distance)
+  void waitApprovalRight(const double start_distance, const double finish_distance)
   {
     rtc_interface_right_.updateCooperateStatus(
-      uuid_right_, isExecutionReady(), distance, clock_->now());
+      uuid_right_, isExecutionReady(), start_distance, finish_distance, clock_->now());
     is_waiting_approval_ = true;
   }
 
@@ -136,17 +136,20 @@ private:
   {
     if (candidate.lateral_shift > 0.0) {
       rtc_interface_left_.updateCooperateStatus(
-        uuid_left_, isExecutionReady(), candidate.distance_to_path_change, clock_->now());
+        uuid_left_, isExecutionReady(), candidate.start_distance_to_path_change,
+        candidate.finish_distance_to_path_change, clock_->now());
       return;
     }
     if (candidate.lateral_shift < 0.0) {
       rtc_interface_right_.updateCooperateStatus(
-        uuid_right_, isExecutionReady(), candidate.distance_to_path_change, clock_->now());
+        uuid_right_, isExecutionReady(), candidate.start_distance_to_path_change,
+        candidate.finish_distance_to_path_change, clock_->now());
       return;
     }
 
     RCLCPP_WARN_STREAM(
-      getLogger(), "Direction is UNKNOWN, distance = " << candidate.distance_to_path_change);
+      getLogger(),
+      "Direction is UNKNOWN, start_distance = " << candidate.start_distance_to_path_change);
   }
 
   void removeRTCStatus() override

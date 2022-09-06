@@ -354,7 +354,7 @@ protected:
   void updateRTCStatus(
     const UUID & uuid, const bool safe, const double distance, const Time & stamp)
   {
-    rtc_interface_.updateCooperateStatus(uuid, safe, distance, stamp);
+    rtc_interface_.updateCooperateStatus(uuid, safe, distance, distance, stamp);
   }
 
   void removeRTCStatus(const UUID & uuid) { rtc_interface_.removeCooperateStatus(uuid); }
