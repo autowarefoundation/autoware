@@ -44,6 +44,7 @@
 #define EIGEN_MPL2_ONLY
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <rosbag2_storage_default_plugins/sqlite/sqlite_statement_wrapper.hpp>
 
 ElevationMapLoaderNode::ElevationMapLoaderNode(const rclcpp::NodeOptions & options)
 : Node("elevation_map_loader", options)
@@ -102,8 +103,25 @@ void ElevationMapLoaderNode::publish()
     RCLCPP_INFO(
       this->get_logger(), "Load elevation map from: %s",
       data_manager_.elevation_map_path_->c_str());
-    grid_map::GridMapRosConverter::loadFromBag(
-      *data_manager_.elevation_map_path_, "elevation_map", elevation_map_);
+
+    // Check if bag can be loaded
+    bool is_bag_loaded = false;
+    try {
+      is_bag_loaded = grid_map::GridMapRosConverter::loadFromBag(
+        *data_manager_.elevation_map_path_, "elevation_map", elevation_map_);
+    } catch (rosbag2_storage_plugins::SqliteException & e) {
+      is_bag_loaded = false;
+    }
+    if (!is_bag_loaded) {
+      // Delete directory including elevation map if bag is broken
+      RCLCPP_ERROR(
+        this->get_logger(), "Try to loading bag, but bag is broken. Remove %s",
+        data_manager_.elevation_map_path_->c_str());
+      std::filesystem::remove_all(data_manager_.elevation_map_path_->c_str());
+      // Create elevation map from pointcloud map if bag is broken
+      RCLCPP_INFO(this->get_logger(), "Create elevation map from pointcloud map ");
+      createElevationMap();
+    }
   }
 
   elevation_map_.setFrameId(map_frame_);
