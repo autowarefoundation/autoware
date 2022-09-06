@@ -198,7 +198,7 @@ The Pull Over module is activated when goal is in the shoulder lane. Ego-vehicle
 
   - The goal is in shoulder lane and the ego-vehicle is in road lane.
   - The distance between the goal and ego-vehicle is somewhat close.
-    - It is shorter than `request_length`(default: < `100m`).
+    - It is shorter than `request_length`(default: < `200m`).
 
 - Pull over ready condition
 
@@ -220,7 +220,7 @@ The Pull Over module is activated when goal is in the shoulder lane. Ego-vehicle
 
 | Name                       | Unit   | Type   | Description                                                                                                                             | Default value |
 | :------------------------- | :----- | :----- | :-------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
-| request_length             | [m]    | double | when the ego-vehicle approaches the goal by this distance, the module is activated.                                                     | 100.0         |
+| request_length             | [m]    | double | when the ego-vehicle approaches the goal by this distance, the module is activated.                                                     | 200.0         |
 | th_arrived_distance        | [m]    | double | distance threshold for arrival of path termination                                                                                      | 1.0           |
 | th_stopped_velocity        | [m/s]  | double | velocity threshold for arrival of path termination                                                                                      | 0.01          |
 | th_stopped_time            | [s]    | double | time threshold for arrival of path termination                                                                                          | 2.0           |
@@ -228,7 +228,7 @@ The Pull Over module is activated when goal is in the shoulder lane. Ego-vehicle
 | pull_over_minimum_velocity | [m/s]  | double | speed of pull_over after stopping once. this prevents excessive acceleration.                                                           | 0.3           |
 | margin_from_boundary       | [m]    | double | distance margin from edge of the shoulder lane                                                                                          | 0.5           |
 | decide_path_distance       | [m]    | double | decide path if it approaches this distance relative to the parking position. after that, no path planning and goal search are performed | 10.0          |
-| maximum_deceleration       | [m/s2] | double | maximum deceleration. it prevents sudden deceleration when a parking path cannot be found suddenly                                      | 0.5           |
+| maximum_deceleration       | [m/s2] | double | maximum deceleration. it prevents sudden deceleration when a parking path cannot be found suddenly                                      | 1.0           |
 
 #### **collision check**
 
@@ -322,12 +322,12 @@ Generate two forward arc paths.
 
 ###### Parameters arc forward parking
 
-| Name                                    | Unit  | Type   | Description                                                                      | Default value |
-| :-------------------------------------- | :---- | :----- | :------------------------------------------------------------------------------- | :------------ |
-| enable_arc_forward_parking              | [-]   | bool   | flag whether to enable arc forward parking                                       | true          |
-| after_forward_parking_straight_distance | [m]   | double | straight line distance after pull over end point                                 | 2.0           |
-| forward_parking_velocity                | [m/s] | double | velocity when forward parking                                                    | 0.3           |
-| forward_parking_lane_departure_margin   | [m/s] | double | lane departure margin for front left corner of ego-vehicle when forkward parking | 0.0           |
+| Name                                    | Unit  | Type   | Description                                                                     | Default value |
+| :-------------------------------------- | :---- | :----- | :------------------------------------------------------------------------------ | :------------ |
+| enable_arc_forward_parking              | [-]   | bool   | flag whether to enable arc forward parking                                      | true          |
+| after_forward_parking_straight_distance | [m]   | double | straight line distance after pull over end point                                | 2.0           |
+| forward_parking_velocity                | [m/s] | double | velocity when forward parking                                                   | 0.3           |
+| forward_parking_lane_departure_margin   | [m/s] | double | lane departure margin for front left corner of ego-vehicle when forward parking | 0.0           |
 
 ###### arc backward parking
 

@@ -364,13 +364,13 @@ PullOverParameters BehaviorPathPlannerNode::getPullOverParam()
   };
 
   PullOverParameters p;
-  p.request_length = dp("request_length", 100.0);
+  p.request_length = dp("request_length", 200.0);
   p.th_stopped_velocity = dp("th_stopped_velocity", 0.01);
   p.th_arrived_distance = dp("th_arrived_distance", 0.3);
   p.th_stopped_time = dp("th_stopped_time", 2.0);
   p.margin_from_boundary = dp("margin_from_boundary", 0.3);
   p.decide_path_distance = dp("decide_path_distance", 10.0);
-  p.maximum_deceleration = dp("maximum_deceleration", 0.5);
+  p.maximum_deceleration = dp("maximum_deceleration", 1.0);
   // goal research
   p.enable_goal_research = dp("enable_goal_research", true);
   p.search_priority = dp("search_priority", "efficient_path");

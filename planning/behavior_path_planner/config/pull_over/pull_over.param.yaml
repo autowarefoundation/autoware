@@ -9,7 +9,7 @@
       pull_over_minimum_velocity: 0.3
       margin_from_boundary: 0.5
       decide_path_distance: 10.0
-      maximum_deceleration: 0.5
+      maximum_deceleration: 1.0
       # goal research
       enable_goal_research: true
       search_priority: "efficient_path" # "efficient_path" or "close_goal"
