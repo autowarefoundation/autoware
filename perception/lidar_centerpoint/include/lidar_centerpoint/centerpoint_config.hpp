@@ -27,7 +27,8 @@ public:
     const std::size_t class_size, const float point_feature_size, const std::size_t max_voxel_size,
     const std::vector<double> & point_cloud_range, const std::vector<double> & voxel_size,
     const std::size_t downsample_factor, const std::size_t encoder_in_feature_size,
-    const float score_threshold, const float circle_nms_dist_threshold)
+    const float score_threshold, const float circle_nms_dist_threshold,
+    const float yaw_norm_threshold)
   {
     class_size_ = class_size;
     point_feature_size_ = point_feature_size;
@@ -54,6 +55,10 @@ public:
 
     if (circle_nms_dist_threshold > 0) {
       circle_nms_dist_threshold_ = circle_nms_dist_threshold;
+    }
+
+    if (yaw_norm_threshold > 0 && yaw_norm_threshold < 1) {
+      yaw_norm_threshold_ = yaw_norm_threshold;
     }
 
     grid_size_x_ = static_cast<std::size_t>((range_max_x_ - range_min_x_) / voxel_size_x_);
@@ -97,6 +102,7 @@ public:
   // post-process params
   float score_threshold_{0.4f};
   float circle_nms_dist_threshold_{1.5f};
+  float yaw_norm_threshold_{0.5f};
 
   // calculated params
   std::size_t grid_size_x_ = (range_max_x_ - range_min_x_) / voxel_size_x_;
