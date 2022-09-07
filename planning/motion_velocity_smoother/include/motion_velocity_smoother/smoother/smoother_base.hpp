@@ -20,6 +20,7 @@
 #include "motion_velocity_smoother/trajectory_utils.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
+#include "vehicle_info_util/vehicle_info_util.hpp"
 
 #include "autoware_auto_planning_msgs/msg/trajectory_point.hpp"
 
@@ -32,6 +33,7 @@ namespace motion_velocity_smoother
 {
 using autoware_auto_planning_msgs::msg::TrajectoryPoint;
 using TrajectoryPoints = std::vector<TrajectoryPoint>;
+using vehicle_info_util::VehicleInfoUtil;
 
 class SmootherBase
 {
@@ -47,6 +49,13 @@ public:
     double min_curve_velocity;           // min velocity at curve [m/s]
     double decel_distance_before_curve;  // distance before slow down for lateral acc at a curve
     double decel_distance_after_curve;   // distance after slow down for lateral acc at a curve
+    double max_steering_angle_rate;      // max steering angle rate [degree/s]
+    double wheel_base;                   // wheel base [m]
+    double sample_ds;                    // distance between trajectory points [m]
+    double curvature_threshold;  // look-up distance of Trajectory point for calculation of steering
+                                 // angle limit [m]
+    double curvature_calculation_distance;  // threshold steering degree limit to trigger
+                                            // steeringRateLimit [degree]
     resampling::ResampleParam resample_param;
   };
 
@@ -64,6 +73,8 @@ public:
     const TrajectoryPoints & input, [[maybe_unused]] const double v0 = 0.0,
     [[maybe_unused]] const double a0 = 0.0,
     [[maybe_unused]] const bool enable_smooth_limit = false) const;
+
+  boost::optional<TrajectoryPoints> applySteeringRateLimit(const TrajectoryPoints & input) const;
 
   double getMaxAccel() const;
   double getMinDecel() const;

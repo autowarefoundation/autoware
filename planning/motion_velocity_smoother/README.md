@@ -35,6 +35,10 @@ The velocity limit is set as not to fall under `min_curve_velocity`.
 
 Note: velocity limit that requests larger than `nominal.jerk` is not applied. In other words, even if a sharp curve is planned just in front of the ego, no deceleration is performed.
 
+#### Apply steering rate limit
+
+It calculates the desired steering angles of trajectory points. and it applies the steering rate limit. If the (`steering_angle_rate` > `max_steering_angle_rate`), it decreases the velocity of the trajectory point to acceptable velocity.
+
 #### Resample trajectory
 
 It resamples the points on the reference trajectory with designated time interval.
@@ -108,6 +112,7 @@ After the optimization, a resampling called `post resampling` is performed befor
 | `~/debug/trajectory_raw`                           | `autoware_auto_planning_msgs/Trajectory` | Extracted trajectory (for debug)                                                                          |
 | `~/debug/trajectory_external_velocity_limited`     | `autoware_auto_planning_msgs/Trajectory` | External velocity limited trajectory (for debug)                                                          |
 | `~/debug/trajectory_lateral_acc_filtered`          | `autoware_auto_planning_msgs/Trajectory` | Lateral acceleration limit filtered trajectory (for debug)                                                |
+| `~/debug/trajectory_steering_rate_limited`         | `autoware_auto_planning_msgs/Trajectory` | Steering angle rate limit filtered trajectory (for debug)                                                 |
 | `~/debug/trajectory_time_resampled`                | `autoware_auto_planning_msgs/Trajectory` | Time resampled trajectory (for debug)                                                                     |
 | `~/distance_to_stopline`                           | `std_msgs/Float32`                       | Distance to stop line from current ego pose (max 50 m) (for debug)                                        |
 | `~/stop_speed_exceeded`                            | `std_msgs/Bool`                          | It publishes `true` if planned velocity on the point which the maximum velocity is zero is over threshold |
@@ -188,6 +193,15 @@ After the optimization, a resampling called `post resampling` is performed befor
 | `post_dense_min_interval_distance`  | `double` | minimum points-interval length for dense sampling [m]  | 0.1           |
 | `post_sparse_dt`                    | `double` | resample time interval for sparse sampling [s]         | 0.1           |
 | `post_sparse_min_interval_distance` | `double` | minimum points-interval length for sparse sampling [m] | 1.0           |
+
+### Limit steering angle rate parameters
+
+| Name                             | Type     | Description                                                              | Default value |
+| :------------------------------- | :------- | :----------------------------------------------------------------------- | :------------ |
+| `max_steering_angle_rate`        | `double` | Maximum steering angle rate [degree/s]                                   | 40.0          |
+| `resample_ds`                    | `double` | Distance between trajectory points [m]                                   | 0.1           |
+| `curvature_threshold`            | `double` | If curvature > curvature_threshold, steeringRateLimit is triggered [1/m] | 0.02          |
+| `curvature_calculation_distance` | `double` | Distance of points while curvature is calculating [m]                    | 1.0           |
 
 ### Weights for optimization
 
