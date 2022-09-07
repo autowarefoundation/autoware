@@ -4,6 +4,8 @@
 
 This node monitors the status of Velodyne LiDARs.
 The result of the status is published as diagnostics.
+Take care not to use this diagnostics to decide the lidar error.
+Please read [Assumptions / Known limits](#assumptions--known-limits) for the detail reason.
 
 ## Inner-workings / Algorithms
 
@@ -75,4 +77,7 @@ Now, `VLP-16.param.yaml` is used as default argument because it is lowest spec.
 
 ## Assumptions / Known limits
 
-TBD.
+This node uses the [http_client](https://github.com/microsoft/cpprestsdk) and request results by GET method.
+It takes a few seconds to get results, or generate a timeout exception if it does not succeed the GET request.
+This occurs frequently and the diagnostics aggregator output STALE.
+Therefore I recommend to stop using this results to decide the lidar error, and only monitor it to confirm lidar status.
