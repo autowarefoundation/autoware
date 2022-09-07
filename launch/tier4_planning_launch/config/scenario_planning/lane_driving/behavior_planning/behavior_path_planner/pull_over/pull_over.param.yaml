@@ -16,7 +16,7 @@
       forward_goal_search_length: 20.0
       backward_goal_search_length: 20.0
       goal_search_interval: 1.0
-      goal_to_obj_margin: 2.0
+      goal_to_obstacle_margin: 2.0
       # occupancy grid map
       use_occupancy_grid: true
       occupancy_grid_collision_check_margin: 0.0

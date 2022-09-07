@@ -377,7 +377,7 @@ PullOverParameters BehaviorPathPlannerNode::getPullOverParam()
   p.forward_goal_search_length = dp("forward_goal_search_length", 20.0);
   p.backward_goal_search_length = dp("backward_goal_search_length", 20.0);
   p.goal_search_interval = dp("goal_search_interval", 5.0);
-  p.goal_to_obj_margin = dp("goal_to_obj_margin", 2.0);
+  p.goal_to_obstacle_margin = dp("goal_to_obstacle_margin", 2.0);
   // occupancy grid map
   p.use_occupancy_grid = dp("use_occupancy_grid", true);
   p.occupancy_grid_collision_check_margin = dp("occupancy_grid_collision_check_margin", 0.0);

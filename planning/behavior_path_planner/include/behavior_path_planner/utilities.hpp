@@ -226,6 +226,22 @@ bool checkCollisionBetweenFootprintAndObjects(
   const PredictedObjects & dynamic_objects, const double margin);
 
 /**
+ * @brief calculate longitudinal distance from ego pose to object
+ * @return distance from ego pose to object
+ */
+double calcLongitudinalDistanceFromEgoToObject(
+  const Pose & ego_pose, double base_link2front, double base_link2rear,
+  const PredictedObject & dynamic_object);
+
+/**
+ * @brief calculate minimum longitudinal distance from ego pose to objects
+ * @return minimum distance from ego pose to objects
+ */
+double calcLongitudinalDistanceFromEgoToObjects(
+  const Pose & ego_pose, double base_link2front, double base_link2rear,
+  const PredictedObjects & dynamic_objects);
+
+/**
  * @brief Get index of the obstacles inside the lanelets with start and end length
  * @return Indices corresponding to the obstacle inside the lanelets
  */

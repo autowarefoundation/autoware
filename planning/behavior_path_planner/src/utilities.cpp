@@ -582,6 +582,54 @@ bool checkCollisionBetweenFootprintAndObjects(
   return false;
 }
 
+double calcLongitudinalDistanceFromEgoToObject(
+  const Pose & ego_pose, double base_link2front, double base_link2rear,
+  const PredictedObject & dynamic_object)
+{
+  double min_distance = std::numeric_limits<double>::max();
+  Polygon2d obj_polygon;
+  if (!calcObjectPolygon(dynamic_object, &obj_polygon)) {
+    return min_distance;
+  }
+
+  const auto vehicle_front_pose =
+    tier4_autoware_utils::calcOffsetPose(ego_pose, base_link2front, 0, 0);
+  const auto vehicle_rear_pose =
+    tier4_autoware_utils::calcOffsetPose(ego_pose, base_link2rear, 0, 0);
+
+  for (const auto & p : obj_polygon.outer()) {
+    const auto point = tier4_autoware_utils::createPoint(p.x(), p.y(), 0.0);
+
+    const double signed_distance_from_front =
+      tier4_autoware_utils::calcLongitudinalDeviation(vehicle_front_pose, point);
+    const double signed_distance_from_rear =
+      -tier4_autoware_utils::calcLongitudinalDeviation(vehicle_rear_pose, point);
+
+    if (signed_distance_from_front < 0.0 && signed_distance_from_rear < 0.0) {
+      // point is between front and rear
+      return 0.0;
+    }
+
+    const double distance_from_ego =
+      std::min(std::abs(signed_distance_from_front), std::abs(signed_distance_from_rear));
+    min_distance = std::min(min_distance, distance_from_ego);
+  }
+  return min_distance;
+}
+
+double calcLongitudinalDistanceFromEgoToObjects(
+  const Pose & ego_pose, double base_link2front, double base_link2rear,
+  const PredictedObjects & dynamic_objects)
+{
+  double min_distance = std::numeric_limits<double>::max();
+  for (const auto & object : dynamic_objects.objects) {
+    min_distance = std::min(
+      min_distance,
+      calcLongitudinalDistanceFromEgoToObject(ego_pose, base_link2front, base_link2rear, object));
+  }
+  return min_distance;
+}
+
 // only works with consecutive lanes
 std::vector<size_t> filterObjectIndicesByLanelets(
   const PredictedObjects & objects, const lanelet::ConstLanelets & target_lanelets,

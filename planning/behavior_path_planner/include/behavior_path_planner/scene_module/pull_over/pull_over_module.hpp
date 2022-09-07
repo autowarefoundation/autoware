@@ -55,7 +55,7 @@ struct PullOverParameters
   double forward_goal_search_length;
   double backward_goal_search_length;
   double goal_search_interval;
-  double goal_to_obj_margin;
+  double goal_to_obstacle_margin;
   // occupancy grid map
   bool use_occupancy_grid;
   double occupancy_grid_collision_check_margin;
@@ -209,6 +209,8 @@ private:
   void updateOccupancyGrid();
   void researchGoal();
   void resetStatus();
+  bool checkCollisionWtihLongitudinalDistance(
+    const Pose & ego_pose, const PredictedObjects & dynamic_objects) const;
   bool checkCollisionWithPose(const Pose & pose) const;
   bool checkCollisionWithPath(const PathWithLaneId & path) const;
 

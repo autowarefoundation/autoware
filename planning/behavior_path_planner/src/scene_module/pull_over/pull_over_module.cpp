@@ -260,6 +260,12 @@ void PullOverModule::researchGoal()
       continue;
     }
 
+    const auto objects_in_shoulder_lane =
+      util::filterObjectsByLanelets(*(planner_data_->dynamic_object), status_.pull_over_lanes);
+    if (checkCollisionWtihLongitudinalDistance(search_pose, objects_in_shoulder_lane)) {
+      continue;
+    }
+
     GoalCandidate goal_candidate;
     goal_candidate.goal_pose = search_pose;
     goal_candidate.distance_from_original_goal =
@@ -305,6 +311,49 @@ bool PullOverModule::isLongEnoughToParkingStart(
   }
 
   return *dist_to_parking_start_pose > current_to_stop_distance;
+}
+
+bool PullOverModule::checkCollisionWtihLongitudinalDistance(
+  const Pose & ego_pose, const PredictedObjects & dynamic_objects) const
+{
+  if (parameters_.use_occupancy_grid) {
+    bool check_out_of_range = false;
+    const double offset = std::max(
+      parameters_.goal_to_obstacle_margin - parameters_.occupancy_grid_collision_check_margin, 0.0);
+
+    // check forward collison
+    const Pose ego_pose_moved_forward = calcOffsetPose(ego_pose, offset, 0, 0);
+    const Pose forward_pose_grid_coords =
+      global2local(occupancy_grid_map_.getMap(), ego_pose_moved_forward);
+    const auto forward_idx = pose2index(
+      occupancy_grid_map_.getMap(), forward_pose_grid_coords,
+      occupancy_grid_map_.getParam().theta_size);
+    if (occupancy_grid_map_.detectCollision(forward_idx, check_out_of_range)) {
+      return true;
+    }
+
+    // check backward collison
+    const Pose ego_pose_moved_backward = calcOffsetPose(ego_pose, -offset, 0, 0);
+    const Pose backward_pose_grid_coords =
+      global2local(occupancy_grid_map_.getMap(), ego_pose_moved_backward);
+    const auto backward_idx = pose2index(
+      occupancy_grid_map_.getMap(), backward_pose_grid_coords,
+      occupancy_grid_map_.getParam().theta_size);
+    if (occupancy_grid_map_.detectCollision(backward_idx, check_out_of_range)) {
+      return true;
+    }
+  }
+
+  if (parameters_.use_object_recognition) {
+    if (
+      util::calcLongitudinalDistanceFromEgoToObjects(
+        ego_pose, planner_data_->parameters.base_link2front,
+        planner_data_->parameters.base_link2rear,
+        dynamic_objects) < parameters_.goal_to_obstacle_margin) {
+      return true;
+    }
+  }
+  return false;
 }
 
 bool PullOverModule::checkCollisionWithPose(const Pose & pose) const

@@ -268,7 +268,7 @@ searched for in certain range of the shoulder lane.
 | forward_goal_search_length  | [m]  | double | length of forward range to be explored from the original goal                                                                                                                                                            | 20.0           |
 | backward_goal_search_length | [m]  | double | length of backward range to be explored from the original goal                                                                                                                                                           | 20.0           |
 | goal_search_interval        | [m]  | double | distance interval for goal search                                                                                                                                                                                        | 1.0            |
-| goal_to_obj_margin          | [m]  | double | margin between ego-vehicle and obstacles when arriving the goal                                                                                                                                                          | 2.0            |
+| goal_to_obstacle_margin     | [m]  | double | margin between ego-vehicle at the goal position and obstacles                                                                                                                                                            | 2.0            |
 
 #### **Path Generation**
 
