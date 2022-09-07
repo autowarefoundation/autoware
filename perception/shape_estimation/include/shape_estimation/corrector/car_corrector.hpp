@@ -28,10 +28,10 @@ public:
   explicit CarCorrector(bool use_reference_yaw = false) : use_reference_yaw_(use_reference_yaw)
   {
     params_.min_width = 1.2;
-    params_.max_width = 2.2;
+    params_.max_width = 2.5;
     params_.avg_width = (params_.min_width + params_.max_width) * 0.5;
     params_.min_length = 3.0;
-    params_.max_length = 5.0;
+    params_.max_length = 5.8;
     params_.avg_length = (params_.min_length + params_.max_length) * 0.5;
   }
 

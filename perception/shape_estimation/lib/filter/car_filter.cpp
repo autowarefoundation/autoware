@@ -19,7 +19,7 @@ bool CarFilter::filter(
   [[maybe_unused]] const geometry_msgs::msg::Pose & pose)
 {
   constexpr float min_width = 1.2;
-  constexpr float max_width = 2.2;
-  constexpr float max_length = 5.0;
+  constexpr float max_width = 2.5;
+  constexpr float max_length = 5.8;
   return utils::filterVehicleBoundingBox(shape, min_width, max_width, max_length);
 }
