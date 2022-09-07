@@ -56,8 +56,6 @@ private:
   std::tuple<double, double> calcInitialMotion(
     const ObstacleCruisePlannerData & planner_data, const Trajectory & prev_traj);
 
-  TrajectoryPoint calcInterpolatedTrajectoryPoint(
-    const Trajectory & trajectory, const geometry_msgs::msg::Pose & target_pose);
   bool checkHasReachedGoal(const ObstacleCruisePlannerData & planner_data);
 
   boost::optional<SBoundaries> getSBoundaries(

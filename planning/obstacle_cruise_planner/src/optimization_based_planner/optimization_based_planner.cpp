@@ -18,6 +18,7 @@
 #include "interpolation/spline_interpolation.hpp"
 #include "interpolation/zero_order_hold.hpp"
 #include "motion_utils/resample/resample.hpp"
+#include "motion_utils/trajectory/interpolation.hpp"
 #include "motion_utils/trajectory/trajectory.hpp"
 #include "obstacle_cruise_planner/utils.hpp"
 #include "tier4_autoware_utils/tier4_autoware_utils.hpp"
@@ -32,27 +33,6 @@
 
 constexpr double ZERO_VEL_THRESHOLD = 0.01;
 constexpr double CLOSE_S_DIST_THRESHOLD = 1e-3;
-
-namespace
-{
-inline void convertEulerAngleToMonotonic(std::vector<double> & a)
-{
-  for (unsigned int i = 1; i < a.size(); ++i) {
-    const double da = a[i] - a[i - 1];
-    a[i] = a[i - 1] + tier4_autoware_utils::normalizeRadian(da);
-  }
-}
-
-inline tf2::Vector3 getTransVector3(
-  const geometry_msgs::msg::Pose & from, const geometry_msgs::msg::Pose & to)
-{
-  double dx = to.position.x - from.position.x;
-  double dy = to.position.y - from.position.y;
-  double dz = to.position.z - from.position.z;
-  return tf2::Vector3(dx, dy, dz);
-}
-
-}  // namespace
 
 OptimizationBasedPlanner::OptimizationBasedPlanner(
   rclcpp::Node & node, const LongitudinalInfo & longitudinal_info,
@@ -312,8 +292,9 @@ std::tuple<double, double> OptimizationBasedPlanner::calcInitialMotion(
   const auto & current_pose = planner_data.current_pose;
   const auto & input_traj = planner_data.traj;
   const double vehicle_speed{std::abs(current_vel)};
-  const auto current_closest_point =
-    calcInterpolatedTrajectoryPoint(input_traj, planner_data.current_pose);
+  const auto current_closest_point = motion_utils::calcInterpolatedPoint(
+    input_traj, planner_data.current_pose, nearest_dist_deviation_threshold_,
+    nearest_yaw_deviation_threshold_);
   const double target_vel{std::abs(current_closest_point.longitudinal_velocity_mps)};
 
   double initial_vel{};
@@ -328,10 +309,12 @@ std::tuple<double, double> OptimizationBasedPlanner::calcInitialMotion(
 
   TrajectoryPoint prev_output_closest_point;
   if (smoothed_trajectory_ptr_) {
-    prev_output_closest_point =
-      calcInterpolatedTrajectoryPoint(*smoothed_trajectory_ptr_, current_pose);
+    prev_output_closest_point = motion_utils::calcInterpolatedPoint(
+      *smoothed_trajectory_ptr_, current_pose, nearest_dist_deviation_threshold_,
+      nearest_yaw_deviation_threshold_);
   } else {
-    prev_output_closest_point = calcInterpolatedTrajectoryPoint(prev_traj, current_pose);
+    prev_output_closest_point = motion_utils::calcInterpolatedPoint(
+      prev_traj, current_pose, nearest_dist_deviation_threshold_, nearest_yaw_deviation_threshold_);
   }
 
   // when velocity tracking deviation is large
@@ -383,47 +366,6 @@ std::tuple<double, double> OptimizationBasedPlanner::calcInitialMotion(
   initial_vel = prev_output_closest_point.longitudinal_velocity_mps;
   initial_acc = prev_output_closest_point.acceleration_mps2;
   return std::make_tuple(initial_vel, initial_acc);
-}
-
-TrajectoryPoint OptimizationBasedPlanner::calcInterpolatedTrajectoryPoint(
-  const Trajectory & trajectory, const geometry_msgs::msg::Pose & target_pose)
-{
-  TrajectoryPoint traj_p{};
-  traj_p.pose = target_pose;
-
-  if (trajectory.points.empty()) {
-    traj_p.longitudinal_velocity_mps = 0.0;
-    traj_p.acceleration_mps2 = 0.0;
-    return traj_p;
-  }
-
-  if (trajectory.points.size() == 1) {
-    traj_p.longitudinal_velocity_mps = trajectory.points.at(0).longitudinal_velocity_mps;
-    traj_p.acceleration_mps2 = trajectory.points.at(0).acceleration_mps2;
-    return traj_p;
-  }
-
-  const size_t segment_idx =
-    motion_utils::findNearestSegmentIndex(trajectory.points, target_pose.position);
-
-  const auto v1 = getTransVector3(
-    trajectory.points.at(segment_idx).pose, trajectory.points.at(segment_idx + 1).pose);
-  const auto v2 = getTransVector3(trajectory.points.at(segment_idx).pose, target_pose);
-
-  // Calc interpolation ratio
-  const double prop{std::clamp(v1.dot(v2) / v1.length2(), 0.0, 1.0)};
-
-  {
-    const auto & curr_pt = trajectory.points.at(segment_idx);
-    const auto & next_pt = trajectory.points.at(segment_idx + 1);
-    traj_p.pose = tier4_autoware_utils::calcInterpolatedPose(curr_pt, next_pt, prop);
-    traj_p.longitudinal_velocity_mps = interpolation::lerp(
-      curr_pt.longitudinal_velocity_mps, next_pt.longitudinal_velocity_mps, prop);
-    traj_p.acceleration_mps2 =
-      interpolation::lerp(curr_pt.acceleration_mps2, next_pt.acceleration_mps2, prop);
-  }
-
-  return traj_p;
 }
 
 bool OptimizationBasedPlanner::checkHasReachedGoal(const ObstacleCruisePlannerData & planner_data)
