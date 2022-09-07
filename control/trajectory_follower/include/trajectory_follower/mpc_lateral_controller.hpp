@@ -114,10 +114,8 @@ private:
   // MPC object
   trajectory_follower::MPC m_mpc;
 
-  //!< @brief measured pose
-  geometry_msgs::msg::PoseStamped::SharedPtr m_current_pose_ptr;
-  //!< @brief measured velocity
-  nav_msgs::msg::Odometry::SharedPtr m_current_odometry_ptr;
+  //!< @brief measured kinematic state
+  nav_msgs::msg::Odometry::SharedPtr m_current_kinematic_state_ptr;
   //!< @brief measured steering
   autoware_auto_vehicle_msgs::msg::SteeringReport::SharedPtr m_current_steering_ptr;
   //!< @brief reference trajectory
@@ -133,10 +131,6 @@ private:
 
   //!< @brief flag whether the first trajectory has been received
   bool m_has_received_first_trajectory = false;
-
-  //!< @brief buffer for transforms
-  tf2::BufferCore m_tf_buffer{tf2::BUFFER_CORE_DEFAULT_CACHE_TIME};
-  tf2_ros::TransformListener m_tf_listener{m_tf_buffer};
 
   // ego nearest index search
   double m_ego_nearest_dist_threshold;
@@ -158,12 +152,6 @@ private:
    * @brief set m_current_trajectory with received message
    */
   void setTrajectory(const autoware_auto_planning_msgs::msg::Trajectory::SharedPtr);
-
-  /**
-   * @brief update current_pose from tf
-   * @return true if the current pose was updated, false otherwise
-   */
-  bool8_t updateCurrentPose();
 
   /**
    * @brief check if the received data is valid.

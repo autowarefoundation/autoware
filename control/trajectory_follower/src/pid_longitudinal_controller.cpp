@@ -206,18 +206,17 @@ PidLongitudinalController::PidLongitudinalController(rclcpp::Node & node) : node
 void PidLongitudinalController::setInputData(InputData const & input_data)
 {
   setTrajectory(input_data.current_trajectory_ptr);
-  setCurrentVelocity(input_data.current_odometry_ptr);
+  setKinematicState(input_data.current_odometry_ptr);
 }
 
-void PidLongitudinalController::setCurrentVelocity(
-  const nav_msgs::msg::Odometry::ConstSharedPtr msg)
+void PidLongitudinalController::setKinematicState(const nav_msgs::msg::Odometry::ConstSharedPtr msg)
 {
   if (!msg) return;
 
-  if (m_current_velocity_ptr) {
-    m_prev_velocity_ptr = m_current_velocity_ptr;
+  if (m_current_kinematic_state_ptr) {
+    m_prev_kienmatic_state_ptr = m_current_kinematic_state_ptr;
   }
-  m_current_velocity_ptr = std::make_shared<nav_msgs::msg::Odometry>(*msg);
+  m_current_kinematic_state_ptr = msg;
 }
 
 void PidLongitudinalController::setTrajectory(
@@ -237,7 +236,7 @@ void PidLongitudinalController::setTrajectory(
     return;
   }
 
-  m_trajectory_ptr = std::make_shared<autoware_auto_planning_msgs::msg::Trajectory>(*msg);
+  m_trajectory_ptr = msg;
 }
 
 rcl_interfaces::msg::SetParametersResult PidLongitudinalController::paramCallback(
@@ -366,22 +365,12 @@ rcl_interfaces::msg::SetParametersResult PidLongitudinalController::paramCallbac
 boost::optional<LongitudinalOutput> PidLongitudinalController::run()
 {
   // wait for initial pointers
-  if (
-    !m_current_velocity_ptr || !m_prev_velocity_ptr || !m_trajectory_ptr ||
-    !m_tf_buffer.canTransform(m_trajectory_ptr->header.frame_id, "base_link", tf2::TimePointZero)) {
+  if (!m_current_kinematic_state_ptr || !m_prev_kienmatic_state_ptr || !m_trajectory_ptr) {
     return boost::none;
   }
 
-  // get current ego pose
-  geometry_msgs::msg::TransformStamped tf =
-    m_tf_buffer.lookupTransform(m_trajectory_ptr->header.frame_id, "base_link", tf2::TimePointZero);
-
   // calculate current pose and control data
-  geometry_msgs::msg::Pose current_pose;
-  current_pose.position.x = tf.transform.translation.x;
-  current_pose.position.y = tf.transform.translation.y;
-  current_pose.position.z = tf.transform.translation.z;
-  current_pose.orientation = tf.transform.rotation;
+  geometry_msgs::msg::Pose current_pose = m_current_kinematic_state_ptr->pose.pose;
 
   const auto control_data = getControlData(current_pose);
 
@@ -712,16 +701,16 @@ float64_t PidLongitudinalController::getDt()
 
 PidLongitudinalController::Motion PidLongitudinalController::getCurrentMotion() const
 {
-  const float64_t dv =
-    m_current_velocity_ptr->twist.twist.linear.x - m_prev_velocity_ptr->twist.twist.linear.x;
+  const float64_t dv = m_current_kinematic_state_ptr->twist.twist.linear.x -
+                       m_prev_kienmatic_state_ptr->twist.twist.linear.x;
   const float64_t dt = std::max(
-    (rclcpp::Time(m_current_velocity_ptr->header.stamp) -
-     rclcpp::Time(m_prev_velocity_ptr->header.stamp))
+    (rclcpp::Time(m_current_kinematic_state_ptr->header.stamp) -
+     rclcpp::Time(m_prev_kienmatic_state_ptr->header.stamp))
       .seconds(),
     1e-03);
   const float64_t accel = dv / dt;
 
-  const float64_t current_vel = m_current_velocity_ptr->twist.twist.linear.x;
+  const float64_t current_vel = m_current_kinematic_state_ptr->twist.twist.linear.x;
   const float64_t current_acc = m_lpf_acc->filter(accel);
 
   return Motion{current_vel, current_acc};

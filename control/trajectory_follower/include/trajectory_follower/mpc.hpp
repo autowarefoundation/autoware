@@ -395,8 +395,7 @@ public:
     const autoware_auto_planning_msgs::msg::Trajectory & trajectory_msg,
     const float64_t traj_resample_dist, const bool8_t enable_path_smoothing,
     const int64_t path_filter_moving_ave_num, const int64_t curvature_smoothing_num_traj,
-    const int64_t curvature_smoothing_num_ref_steer,
-    const geometry_msgs::msg::PoseStamped::SharedPtr current_pose_ptr);
+    const int64_t curvature_smoothing_num_ref_steer);
   /**
    * @brief set the vehicle model of this MPC
    */

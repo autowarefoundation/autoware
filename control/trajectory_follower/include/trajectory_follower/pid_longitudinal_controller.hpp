@@ -91,19 +91,14 @@ private:
   rclcpp::Publisher<autoware_auto_system_msgs::msg::Float32MultiArrayDiagnostic>::SharedPtr
     m_pub_debug;
 
-  rclcpp::Subscription<tf2_msgs::msg::TFMessage>::SharedPtr m_tf_sub;
-  rclcpp::Subscription<tf2_msgs::msg::TFMessage>::SharedPtr m_tf_static_sub;
-  tf2::BufferCore m_tf_buffer{tf2::BUFFER_CORE_DEFAULT_CACHE_TIME};
-  tf2_ros::TransformListener m_tf_listener{m_tf_buffer};
-
   rclcpp::Node::OnSetParametersCallbackHandle::SharedPtr m_set_param_res;
   rcl_interfaces::msg::SetParametersResult paramCallback(
     const std::vector<rclcpp::Parameter> & parameters);
 
   // pointers for ros topic
-  std::shared_ptr<nav_msgs::msg::Odometry> m_current_velocity_ptr{nullptr};
-  std::shared_ptr<nav_msgs::msg::Odometry> m_prev_velocity_ptr{nullptr};
-  std::shared_ptr<autoware_auto_planning_msgs::msg::Trajectory> m_trajectory_ptr{nullptr};
+  nav_msgs::msg::Odometry::ConstSharedPtr m_current_kinematic_state_ptr{nullptr};
+  nav_msgs::msg::Odometry::ConstSharedPtr m_prev_kienmatic_state_ptr{nullptr};
+  autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr m_trajectory_ptr{nullptr};
 
   // vehicle info
   float64_t m_wheel_base;
@@ -216,7 +211,7 @@ private:
    * @brief set current and previous velocity with received message
    * @param [in] msg current state message
    */
-  void setCurrentVelocity(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
+  void setKinematicState(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
 
   /**
    * @brief set reference trajectory with received message

@@ -177,7 +177,7 @@ MpcLateralController::~MpcLateralController() {}
 
 boost::optional<LateralOutput> MpcLateralController::run()
 {
-  if (!checkData() || !updateCurrentPose()) {
+  if (!checkData()) {
     return boost::none;
   }
 
@@ -191,8 +191,8 @@ boost::optional<LateralOutput> MpcLateralController::run()
   }
 
   const bool8_t is_mpc_solved = m_mpc.calculateMPC(
-    *m_current_steering_ptr, m_current_odometry_ptr->twist.twist.linear.x, m_current_pose_ptr->pose,
-    ctrl_cmd, predicted_traj, diagnostic);
+    *m_current_steering_ptr, m_current_kinematic_state_ptr->twist.twist.linear.x,
+    m_current_kinematic_state_ptr->pose.pose, ctrl_cmd, predicted_traj, diagnostic);
 
   publishPredictedTraj(predicted_traj);
   publishDiagnostic(diagnostic);
@@ -228,7 +228,7 @@ boost::optional<LateralOutput> MpcLateralController::run()
 void MpcLateralController::setInputData(InputData const & input_data)
 {
   setTrajectory(input_data.current_trajectory_ptr);
-  m_current_odometry_ptr = input_data.current_odometry_ptr;
+  m_current_kinematic_state_ptr = input_data.current_odometry_ptr;
   m_current_steering_ptr = input_data.current_steering_ptr;
 }
 
@@ -259,10 +259,10 @@ bool8_t MpcLateralController::checkData() const
     return false;
   }
 
-  if (!m_current_odometry_ptr) {
+  if (!m_current_kinematic_state_ptr) {
     RCLCPP_DEBUG(
-      node_->get_logger(), "waiting data. current_velocity = %d",
-      m_current_odometry_ptr != nullptr);
+      node_->get_logger(), "waiting data. kinematic_state = %d",
+      m_current_kinematic_state_ptr != nullptr);
     return false;
   }
 
@@ -288,8 +288,8 @@ void MpcLateralController::setTrajectory(
 
   m_current_trajectory_ptr = msg;
 
-  if (!m_current_pose_ptr && !updateCurrentPose()) {
-    RCLCPP_DEBUG(node_->get_logger(), "Current pose is not received yet.");
+  if (!m_current_kinematic_state_ptr) {
+    RCLCPP_DEBUG(node_->get_logger(), "Current kinematic state is not received yet.");
     return;
   }
 
@@ -305,7 +305,7 @@ void MpcLateralController::setTrajectory(
 
   m_mpc.setReferenceTrajectory(
     *msg, m_traj_resample_dist, m_enable_path_smoothing, m_path_filter_moving_ave_num,
-    m_curvature_smoothing_num_traj, m_curvature_smoothing_num_ref_steer, m_current_pose_ptr);
+    m_curvature_smoothing_num_traj, m_curvature_smoothing_num_ref_steer);
 
   // update trajectory buffer to check the trajectory shape change.
   m_trajectory_buffer.push_back(*m_current_trajectory_ptr);
@@ -322,31 +322,6 @@ void MpcLateralController::setTrajectory(
     }
     m_trajectory_buffer.pop_front();
   }
-}
-
-bool8_t MpcLateralController::updateCurrentPose()
-{
-  geometry_msgs::msg::TransformStamped transform;
-  try {
-    transform = m_tf_buffer.lookupTransform(
-      m_current_trajectory_ptr->header.frame_id, "base_link", tf2::TimePointZero);
-  } catch (tf2::TransformException & ex) {
-    RCLCPP_WARN_SKIPFIRST_THROTTLE(
-      node_->get_logger(), *node_->get_clock(), 5000 /*ms*/, ex.what());
-    RCLCPP_WARN_SKIPFIRST_THROTTLE(
-      node_->get_logger(), *node_->get_clock(), 5000 /*ms*/,
-      m_tf_buffer.allFramesAsString().c_str());
-    return false;
-  }
-
-  geometry_msgs::msg::PoseStamped ps;
-  ps.header = transform.header;
-  ps.pose.position.x = transform.transform.translation.x;
-  ps.pose.position.y = transform.transform.translation.y;
-  ps.pose.position.z = transform.transform.translation.z;
-  ps.pose.orientation = transform.transform.rotation;
-  m_current_pose_ptr = std::make_shared<geometry_msgs::msg::PoseStamped>(ps);
-  return true;
 }
 
 autoware_auto_control_msgs::msg::AckermannLateralCommand
@@ -379,10 +354,10 @@ bool8_t MpcLateralController::isStoppedState() const
   // control was turned off when approaching/exceeding the stop line on a curve or
   // emergency stop situation and it caused large tracking error.
   const size_t nearest = motion_utils::findFirstNearestIndexWithSoftConstraints(
-    m_current_trajectory_ptr->points, m_current_pose_ptr->pose, m_ego_nearest_dist_threshold,
-    m_ego_nearest_yaw_threshold);
+    m_current_trajectory_ptr->points, m_current_kinematic_state_ptr->pose.pose,
+    m_ego_nearest_dist_threshold, m_ego_nearest_yaw_threshold);
 
-  const float64_t current_vel = m_current_odometry_ptr->twist.twist.linear.x;
+  const float64_t current_vel = m_current_kinematic_state_ptr->twist.twist.linear.x;
   const float64_t target_vel =
     m_current_trajectory_ptr->points.at(static_cast<size_t>(nearest)).longitudinal_velocity_mps;
 
