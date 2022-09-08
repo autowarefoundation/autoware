@@ -1,3 +1,8 @@
 /**:
   ros__parameters:
     update_rate_hz: 10.0
+    use_first_command: false
+    use_command_state: true
+    instrument_id: '0'
+    approval: true
+    is_finalized: true

@@ -47,21 +47,37 @@ bool update_param(
   return true;
 }
 
-boost::optional<InfrastructureCommand> findCommand(
+boost::optional<InfrastructureCommandArray> findCommand(
   const InfrastructureCommandArray & command_array, const std::string & instrument_id,
-  const bool use_first_command)
+  const bool use_first_command, const bool use_command_state)
 {
+  InfrastructureCommandArray array;
+  bool found_flag = false;
   if (use_first_command && !command_array.commands.empty()) {
-    return command_array.commands.front();
+    array.commands.push_back(command_array.commands.front());
+    return array;
+  }
+
+  if (use_command_state) {
+    for (const auto & command : command_array.commands) {
+      if (command.state >= InfrastructureCommand::REQUESTING) {
+        array.commands.push_back(command);
+        found_flag = true;
+      }
+    }
   }
 
   for (const auto & command : command_array.commands) {
     if (command.id == instrument_id) {
-      return command;
+      array.commands.push_back(command);
+      found_flag = true;
     }
   }
-
-  return {};
+  if (found_flag) {
+    return array;
+  } else {
+    return {};
+  }
 }
 }  // namespace
 
@@ -75,6 +91,7 @@ DummyInfrastructureNode::DummyInfrastructureNode(const rclcpp::NodeOptions & nod
   // Parameter
   node_param_.update_rate_hz = declare_parameter<double>("update_rate_hz", 10.0);
   node_param_.use_first_command = declare_parameter<bool>("use_first_command", true);
+  node_param_.use_command_state = declare_parameter<bool>("use_command_state", false);
   node_param_.instrument_id = declare_parameter<std::string>("instrument_id", "");
   node_param_.approval = declare_parameter<bool>("approval", false);
   node_param_.is_finalized = declare_parameter<bool>("is_finalized", false);
@@ -95,7 +112,9 @@ DummyInfrastructureNode::DummyInfrastructureNode(const rclcpp::NodeOptions & nod
 
 void DummyInfrastructureNode::onCommandArray(const InfrastructureCommandArray::ConstSharedPtr msg)
 {
-  command_array_ = msg;
+  if (!msg->commands.empty()) {
+    command_array_ = msg;
+  }
 }
 
 rcl_interfaces::msg::SetParametersResult DummyInfrastructureNode::onSetParam(
@@ -110,6 +129,7 @@ rcl_interfaces::msg::SetParametersResult DummyInfrastructureNode::onSetParam(
     // Update params
     update_param(params, "update_rate_hz", p.update_rate_hz);
     update_param(params, "use_first_command", p.use_first_command);
+    update_param(params, "use_command_state", p.use_command_state);
     update_param(params, "instrument_id", p.instrument_id);
     update_param(params, "approval", p.approval);
     update_param(params, "is_finalized", p.is_finalized);
@@ -142,20 +162,33 @@ void DummyInfrastructureNode::onTimer()
   if (!isDataReady()) {
     return;
   }
-
-  const auto command =
-    findCommand(*command_array_, node_param_.instrument_id, node_param_.use_first_command);
-
-  VirtualTrafficLightState state;
-  state.stamp = get_clock()->now();
-  state.id = command ? command->id : node_param_.instrument_id;
-  state.type = "dummy_infrastructure";
-  state.approval = command ? node_param_.approval : false;
-  state.is_finalized = node_param_.is_finalized;
-
   VirtualTrafficLightStateArray state_array;
   state_array.stamp = get_clock()->now();
-  state_array.states.push_back(state);
+
+  const auto found_command_array = findCommand(
+    *command_array_, node_param_.instrument_id, node_param_.use_first_command,
+    node_param_.use_command_state);
+
+  if (!found_command_array) {
+    VirtualTrafficLightState state;
+    state.stamp = get_clock()->now();
+    state.id = node_param_.instrument_id;
+    state.type = "dummy_infrastructure";
+    state.approval = false;
+    state.is_finalized = node_param_.is_finalized;
+    state_array.states.push_back(state);
+  } else {
+    for (auto command : found_command_array->commands) {
+      VirtualTrafficLightState state;
+      state.stamp = get_clock()->now();
+      state.id = command.id;
+      state.type = command.type;
+      state.approval = node_param_.approval;
+      state.is_finalized = node_param_.is_finalized;
+      state_array.states.push_back(state);
+    }
+  }
+
   pub_state_array_->publish(state_array);
 }
 
