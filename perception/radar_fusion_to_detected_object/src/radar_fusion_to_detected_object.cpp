@@ -65,6 +65,7 @@ void RadarFusionToDetectedObject::setParam(const Param & param)
   // Parameters for fixing object information
   param_.threshold_probability = param.threshold_probability;
   param_.convert_doppler_to_twist = param.convert_doppler_to_twist;
+  param_.compensate_probability = param.compensate_probability;
 }
 
 RadarFusionToDetectedObject::Output RadarFusionToDetectedObject::update(
@@ -112,9 +113,13 @@ RadarFusionToDetectedObject::Output RadarFusionToDetectedObject::update(
 
       // Delete objects with low probability
       if (isQualified(split_object, radars_within_split_object)) {
-        split_object.classification.at(0).probability =
-          std::max(split_object.classification.at(0).probability, param_.threshold_probability);
+        if (param_.compensate_probability) {
+          split_object.existence_probability =
+            std::max(split_object.existence_probability, param_.threshold_probability);
+        }
         output.objects.objects.emplace_back(split_object);
+      } else {
+        output.debug_low_confidence_objects.objects.emplace_back(split_object);
       }
     }
   }

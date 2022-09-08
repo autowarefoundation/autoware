@@ -13,4 +13,5 @@
       velocity_weight_target_value_average: 0.0
       velocity_weight_target_value_top: 0.0
       convert_doppler_to_twist: false
-      threshold_probability: 0.4
+      threshold_probability: 0.35
+      compensate_probability: false

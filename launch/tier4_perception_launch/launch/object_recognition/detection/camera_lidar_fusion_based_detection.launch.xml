@@ -27,6 +27,7 @@
   <arg name="use_pointcloud_container" default="false" description="use pointcloud container for detection preprocessor"/>
   <arg name="container_name" default="pointcloud_container"/>
   <arg name="use_validator" default="true" description="use obstacle_pointcloud based validator"/>
+  <arg name="score_threshold" default="0.45"/>
 
   <!-- Jetson AGX -->
   <!-- <include file="$(find-pkg-share tensorrt_yolo)/launch/yolo.launch.xml">
@@ -154,6 +155,7 @@
     <include file="$(find-pkg-share lidar_centerpoint)/launch/lidar_centerpoint.launch.xml">
       <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
       <arg name="output/objects" value="objects"/>
+      <arg name="score_threshold" value="$(var score_threshold)"/>
     </include>
   </group>
 

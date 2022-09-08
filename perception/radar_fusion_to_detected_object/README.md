@@ -38,6 +38,7 @@ To tune these weight parameters, please see [document](docs/algorithm.md) in det
 | :----------------------- | :---- | :----------------------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
 | convert_doppler_to_twist | bool  | Convert doppler velocity to twist using the yaw information of a detected object.                                                                      | false         |
 | threshold_probability    | float | If the probability of an output object is lower than this parameter, and the output object does not have radar points/objects, then delete the object. | 0.4           |
+| compensate_probability   | bool  | If this parameter is true, compensate probability of objects to threshold probability.                                                                 | false         |
 
 ## radar_object_fusion_to_detected_object
 
@@ -62,9 +63,10 @@ ros2 launch radar_fusion_to_detected_object radar_object_to_detected_object.laun
 
 ### Output
 
-| Name               | Type                                                  | Description                    |
-| ------------------ | ----------------------------------------------------- | ------------------------------ |
-| `~/output/objects` | autoware_auto_perception_msgs/msg/DetectedObjects.msg | 3D detected object with twist. |
+| Name                             | Type                                                  | Description                                                                            |
+| -------------------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `~/output/objects`               | autoware_auto_perception_msgs/msg/DetectedObjects.msg | 3D detected object with twist.                                                         |
+| `~/debug/low_confidence_objects` | autoware_auto_perception_msgs/msg/DetectedObjects.msg | 3D detected object that doesn't output as `~/output/objects` because of low confidence |
 
 ### Parameters
 

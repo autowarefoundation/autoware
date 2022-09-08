@@ -85,6 +85,8 @@ RadarObjectFusionToDetectedObjectNode::RadarObjectFusionToDetectedObjectNode(
     declare_parameter<bool>("core_params.convert_doppler_to_twist", false);
   core_param_.threshold_probability =
     declare_parameter<float>("core_params.threshold_probability", 0.0);
+  core_param_.compensate_probability =
+    declare_parameter<bool>("core_params.compensate_probability", false);
 
   // Core
   radar_fusion_to_detected_object_ = std::make_unique<RadarFusionToDetectedObject>(get_logger());
@@ -102,6 +104,8 @@ RadarObjectFusionToDetectedObjectNode::RadarObjectFusionToDetectedObjectNode(
 
   // Publisher
   pub_objects_ = create_publisher<DetectedObjects>("~/output/objects", 1);
+  pub_debug_low_confidence_objects_ =
+    create_publisher<DetectedObjects>("~/debug/low_confidence_objects", 1);
 }
 
 rcl_interfaces::msg::SetParametersResult RadarObjectFusionToDetectedObjectNode::onSetParam(
@@ -134,6 +138,9 @@ rcl_interfaces::msg::SetParametersResult RadarObjectFusionToDetectedObjectNode::
         p.velocity_weight_target_value_average);
       update_param(
         params, "core_params.velocity_weight_target_value_top", p.velocity_weight_target_value_top);
+      update_param(params, "core_params.convert_doppler_to_twist", p.convert_doppler_to_twist);
+      update_param(params, "core_params.threshold_probability", p.threshold_probability);
+      update_param(params, "core_params.compensate_probability", p.compensate_probability);
 
       // Set parameter to instance
       if (radar_fusion_to_detected_object_) {
@@ -173,7 +180,6 @@ bool RadarObjectFusionToDetectedObjectNode::isDataReady()
   return true;
 }
 
-// void RadarObjectFusionToDetectedObjectNode::onTimer()
 void RadarObjectFusionToDetectedObjectNode::onData(
   const DetectedObjects::ConstSharedPtr object_msg, const TrackedObjects::ConstSharedPtr radar_msg)
 {
@@ -201,6 +207,7 @@ void RadarObjectFusionToDetectedObjectNode::onData(
   // Update
   output_ = radar_fusion_to_detected_object_->update(input);
   pub_objects_->publish(output_.objects);
+  pub_debug_low_confidence_objects_->publish(output_.debug_low_confidence_objects);
 }
 
 RadarFusionToDetectedObject::RadarInput RadarObjectFusionToDetectedObjectNode::setRadarInput(
