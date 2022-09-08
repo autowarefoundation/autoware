@@ -1706,18 +1706,14 @@ void AvoidanceModule::generateExtendedDrivableArea(ShiftedPath * shifted_path) c
   lanelet::ConstLanelets extended_lanelets = current_lanes;
 
   for (const auto & current_lane : current_lanes) {
-    if (!parameters_->enable_avoidance_over_opposite_direction) {
+    if (!parameters_->enable_avoidance_over_same_direction) {
       break;
     }
 
     const auto extend_from_current_lane = std::invoke(
       [this, &route_handler](const lanelet::ConstLanelet & lane) {
-        const auto ignore_opposite = !parameters_->enable_avoidance_over_opposite_direction;
-        if (ignore_opposite) {
-          return route_handler->getAllSharedLineStringLanelets(lane, true, true, ignore_opposite);
-        }
-
-        return route_handler->getAllSharedLineStringLanelets(lane);
+        const auto enable_opposite = parameters_->enable_avoidance_over_opposite_direction;
+        return route_handler->getAllSharedLineStringLanelets(lane, true, true, enable_opposite);
       },
       current_lane);
     extended_lanelets.reserve(extended_lanelets.size() + extend_from_current_lane.size());
