@@ -144,6 +144,19 @@ boost::optional<size_t> searchZeroVelocityIndex(
 }
 
 template <class T>
+boost::optional<size_t> searchZeroVelocityIndex(const T & points_with_twist, const size_t & src_idx)
+{
+  try {
+    validateNonEmpty(points_with_twist);
+  } catch (const std::exception & e) {
+    std::cerr << e.what() << std::endl;
+    return {};
+  }
+
+  return searchZeroVelocityIndex(points_with_twist, src_idx, points_with_twist.size());
+}
+
+template <class T>
 boost::optional<size_t> searchZeroVelocityIndex(const T & points_with_twist)
 {
   return searchZeroVelocityIndex(points_with_twist, 0, points_with_twist.size());

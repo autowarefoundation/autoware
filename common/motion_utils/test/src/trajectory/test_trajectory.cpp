@@ -242,6 +242,69 @@ TEST(trajectory, searchZeroVelocityIndex)
   }
 }
 
+TEST(trajectory, searchZeroVelocityIndex_from_pose)
+{
+  using motion_utils::searchZeroVelocityIndex;
+
+  // No zero velocity point
+  {
+    const auto traj = generateTestTrajectory<Trajectory>(10, 1.0, 1.0);
+    EXPECT_FALSE(searchZeroVelocityIndex(traj.points, 0));
+  }
+
+  // Only start point is zero
+  {
+    const size_t idx_ans = 0;
+
+    auto traj = generateTestTrajectory<Trajectory>(10, 1.0, 1.0);
+    updateTrajectoryVelocityAt(traj.points, idx_ans, 0.0);
+
+    EXPECT_EQ(*searchZeroVelocityIndex(traj.points, 0), idx_ans);
+  }
+
+  // Only end point is zero
+  {
+    const size_t idx_ans = 9;
+
+    auto traj = generateTestTrajectory<Trajectory>(10, 1.0, 1.0);
+    updateTrajectoryVelocityAt(traj.points, idx_ans, 0.0);
+
+    EXPECT_EQ(*searchZeroVelocityIndex(traj.points, 0), idx_ans);
+  }
+
+  // Only middle point is zero
+  {
+    const size_t idx_ans = 5;
+
+    auto traj = generateTestTrajectory<Trajectory>(10, 1.0, 1.0);
+    updateTrajectoryVelocityAt(traj.points, idx_ans, 0.0);
+
+    EXPECT_EQ(*searchZeroVelocityIndex(traj.points, 0), idx_ans);
+  }
+
+  // Two points are zero
+  {
+    const size_t idx_ans = 3;
+
+    auto traj = generateTestTrajectory<Trajectory>(10, 1.0, 1.0);
+    updateTrajectoryVelocityAt(traj.points, idx_ans, 0.0);
+    updateTrajectoryVelocityAt(traj.points, 6, 0.0);
+
+    EXPECT_EQ(*searchZeroVelocityIndex(traj.points, 0), idx_ans);
+  }
+
+  // Negative velocity point is before zero velocity point
+  {
+    const size_t idx_ans = 3;
+
+    auto traj = generateTestTrajectory<Trajectory>(10, 1.0, 1.0);
+    updateTrajectoryVelocityAt(traj.points, 2, -1.0);
+    updateTrajectoryVelocityAt(traj.points, idx_ans, 0.0);
+
+    EXPECT_EQ(*searchZeroVelocityIndex(traj.points, 0), idx_ans);
+  }
+}
+
 TEST(trajectory, findNearestIndex_Pos_StraightTrajectory)
 {
   using motion_utils::findNearestIndex;
