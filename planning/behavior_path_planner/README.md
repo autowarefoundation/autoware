@@ -225,7 +225,7 @@ The Pull Over module is activated when goal is in the shoulder lane. Ego-vehicle
 | th_stopped_velocity        | [m/s]  | double | velocity threshold for arrival of path termination                                                                                      | 0.01          |
 | th_stopped_time            | [s]    | double | time threshold for arrival of path termination                                                                                          | 2.0           |
 | pull_over_velocity         | [m/s]  | double | decelerate to this speed by the goal search area                                                                                        | 2.0           |
-| pull_over_minimum_velocity | [m/s]  | double | speed of pull_over after stopping once. this prevents excessive acceleration.                                                           | 0.3           |
+| pull_over_minimum_velocity | [m/s]  | double | speed of pull_over after stopping once. this prevents excessive acceleration.                                                           | 1.38          |
 | margin_from_boundary       | [m]    | double | distance margin from edge of the shoulder lane                                                                                          | 0.5           |
 | decide_path_distance       | [m]    | double | decide path if it approaches this distance relative to the parking position. after that, no path planning and goal search are performed | 10.0          |
 | maximum_deceleration       | [m/s2] | double | maximum deceleration. it prevents sudden deceleration when a parking path cannot be found suddenly                                      | 1.0           |
@@ -267,8 +267,8 @@ searched for in certain range of the shoulder lane.
 | enable_goal_research        | -    | double | flag whether to search goal                                                                                                                                                                                              | true           |
 | forward_goal_search_length  | [m]  | double | length of forward range to be explored from the original goal                                                                                                                                                            | 20.0           |
 | backward_goal_search_length | [m]  | double | length of backward range to be explored from the original goal                                                                                                                                                           | 20.0           |
-| goal_search_interval        | [m]  | double | distance interval for goal search                                                                                                                                                                                        | 1.0            |
-| goal_to_obstacle_margin     | [m]  | double | margin between ego-vehicle at the goal position and obstacles                                                                                                                                                            | 2.0            |
+| goal_search_interval        | [m]  | double | distance interval for goal search                                                                                                                                                                                        | 2.0            |
+| goal_to_obstacle_margin     | [m]  | double | margin between ego-vehicle at the goal position and obstacles                                                                                                                                                            | 3.0            |
 
 #### **Path Generation**
 
@@ -326,7 +326,7 @@ Generate two forward arc paths.
 | :-------------------------------------- | :---- | :----- | :------------------------------------------------------------------------------ | :------------ |
 | enable_arc_forward_parking              | [-]   | bool   | flag whether to enable arc forward parking                                      | true          |
 | after_forward_parking_straight_distance | [m]   | double | straight line distance after pull over end point                                | 2.0           |
-| forward_parking_velocity                | [m/s] | double | velocity when forward parking                                                   | 0.3           |
+| forward_parking_velocity                | [m/s] | double | velocity when forward parking                                                   | 1.38          |
 | forward_parking_lane_departure_margin   | [m/s] | double | lane departure margin for front left corner of ego-vehicle when forward parking | 0.0           |
 
 ###### arc backward parking
@@ -343,7 +343,7 @@ Generate two backward arc paths.
 | :--------------------------------------- | :---- | :----- | :------------------------------------------------------------------------ | :------------ |
 | enable_arc_backward_parking              | [-]   | bool   | flag whether to enable arc backward parking                               | true          |
 | after_backward_parking_straight_distance | [m]   | double | straight line distance after pull over end point                          | 2.0           |
-| backward_parking_velocity                | [m/s] | double | velocity when backward parking                                            | -0.3          |
+| backward_parking_velocity                | [m/s] | double | velocity when backward parking                                            | -1.38         |
 | backward_parking_lane_departure_margin   | [m/s] | double | lane departure margin for front right corner of ego-vehicle when backward | 0.0           |
 
 #### Unimplemented parts / limitations for pull over

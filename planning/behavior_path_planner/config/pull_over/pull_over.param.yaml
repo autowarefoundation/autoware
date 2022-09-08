@@ -1,12 +1,12 @@
 /**:
   ros__parameters:
     pull_over:
-      request_length: 100.0
+      request_length: 200.0
       th_arrived_distance: 1.0
       th_stopped_velocity: 0.01
       th_stopped_time: 2.0  # It must be greater than the state_machine's.
       pull_over_velocity: 3.0
-      pull_over_minimum_velocity: 0.3
+      pull_over_minimum_velocity: 1.38
       margin_from_boundary: 0.5
       decide_path_distance: 10.0
       maximum_deceleration: 1.0
@@ -15,8 +15,8 @@
       search_priority: "efficient_path" # "efficient_path" or "close_goal"
       forward_goal_search_length: 20.0
       backward_goal_search_length: 20.0
-      goal_search_interval: 1.0
-      goal_to_obstacle_margin: 2.0
+      goal_search_interval: 2.0
+      goal_to_obstacle_margin: 3.0
       # occupancy grid map
       use_occupancy_grid: true
       occupancy_grid_collision_check_margin: 0.0
@@ -38,8 +38,8 @@
       enable_arc_backward_parking: true
       after_forward_parking_straight_distance: 2.0
       after_backward_parking_straight_distance: 2.0
-      forward_parking_velocity: 0.3
-      backward_parking_velocity: -0.3
+      forward_parking_velocity: 1.38
+      backward_parking_velocity: -1.38
       forward_parking_lane_departure_margin: 0.0
       backward_parking_lane_departure_margin: 0.0
       arc_path_interval: 1.0
