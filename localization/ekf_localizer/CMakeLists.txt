@@ -15,12 +15,16 @@ ament_auto_find_build_dependencies()
 
 ament_auto_add_library(ekf_localizer_lib SHARED
   src/ekf_localizer.cpp
+  src/measurement.cpp
   src/state_transition.cpp
 )
 
 target_link_libraries(ekf_localizer_lib Eigen3::Eigen)
 
 ament_auto_add_executable(ekf_localizer src/ekf_localizer_node.cpp)
+
+target_compile_options(ekf_localizer PUBLIC -g -Wall -Wextra -Wpedantic -Werror)
+
 target_link_libraries(ekf_localizer ekf_localizer_lib)
 target_include_directories(ekf_localizer PUBLIC include)
 
@@ -37,6 +41,7 @@ if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
 
   set(TEST_FILES
+    test/test_measurement.cpp
     test/test_state_transition.cpp)
 
   foreach(filepath ${TEST_FILES})
