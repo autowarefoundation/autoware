@@ -65,6 +65,7 @@ void DetectedObjectsDisplay::processMessage(DetectedObjects::ConstSharedPtr msg)
     if (velocity_text_marker) {
       auto velocity_text_marker_ptr = velocity_text_marker.value();
       velocity_text_marker_ptr->header = msg->header;
+      velocity_text_marker_ptr->id = id++;
       add_marker(velocity_text_marker_ptr);
     }
 
@@ -74,6 +75,7 @@ void DetectedObjectsDisplay::processMessage(DetectedObjects::ConstSharedPtr msg)
     if (twist_marker) {
       auto twist_marker_ptr = twist_marker.value();
       twist_marker_ptr->header = msg->header;
+      twist_marker_ptr->id = id++;
       add_marker(twist_marker_ptr);
     }
   }
