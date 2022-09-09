@@ -28,6 +28,7 @@ jobs:
         run: |
           mkdir src
           vcs import src < autoware.repos
+          vcs export --exact src || true
 
       - name: Run rosdep install
         run: |
