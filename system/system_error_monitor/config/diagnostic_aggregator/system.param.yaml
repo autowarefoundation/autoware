@@ -96,6 +96,12 @@
                   contains: [": GPU Thermal Throttling"]
                   timeout: 3.0
 
+                frequency:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: frequency
+                  contains: [": GPU Frequency"]
+                  timeout: 3.0
+
             memory:
               type: diagnostic_aggregator/AnalyzerGroup
               path: memory

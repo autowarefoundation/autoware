@@ -96,9 +96,26 @@
 
 ## <u>GPU Frequency</u>
 
-> Tegra platform only.
-
 /diagnostics/gpu_monitor: GPU Frequency
+
+### Intel platform
+
+<b>[summary]</b>
+
+| level | message           |
+| ----- | ----------------- |
+| OK    | OK                |
+| WARN  | unsupported clock |
+
+<b>[values]</b>
+
+| key                       | value (example)        |
+| ------------------------- | ---------------------- |
+| GPU [0-9]: status         | OK / unsupported clock |
+| GPU [0-9]: name           | GeForce GTX 1650       |
+| GPU [0-9]: graphics clock | 1020 MHz               |
+
+### Tegra platform
 
 <b>[summary]</b>
 

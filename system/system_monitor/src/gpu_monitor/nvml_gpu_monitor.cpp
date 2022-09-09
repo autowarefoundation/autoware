@@ -34,9 +34,6 @@
 
 GPUMonitor::GPUMonitor(const rclcpp::NodeOptions & options) : GPUMonitorBase("gpu_monitor", options)
 {
-  // Include frequency into GPU Thermal Throttling thus remove.
-  updater_.removeByName("GPU Frequency");
-
   nvmlReturn_t ret = nvmlInit();
   if (ret != NVML_SUCCESS) {
     RCLCPP_ERROR(this->get_logger(), "Failed to initialize NVML: %s\n", nvmlErrorString(ret));
@@ -71,6 +68,9 @@ GPUMonitor::GPUMonitor(const rclcpp::NodeOptions & options) : GPUMonitorBase("gp
       RCLCPP_ERROR(
         this->get_logger(), "Failed to retrieve the PCI attributes [%d]: %s", index,
         nvmlErrorString(ret));
+      continue;
+    }
+    if (!getSupportedGPUClocks(index, info.device, info.supported_gpu_clocks)) {
       continue;
     }
     gpus_.push_back(info);
@@ -395,6 +395,102 @@ std::string GPUMonitor::toHumanReadable(unsigned long long size)  // NOLINT
   }
   const char * format = (dsize > 0 && dsize < 10) ? "{:.1f}{}" : "{:.0f}{}";
   return fmt::format(format, dsize, units[count]);
+}
+
+void GPUMonitor::checkFrequency(diagnostic_updater::DiagnosticStatusWrapper & stat)
+{
+  // Remember start time to measure elapsed time
+  const auto t_start = SystemMonitorUtility::startMeasurement();
+
+  int whole_level = DiagStatus::OK;
+  int index = 0;
+  nvmlReturn_t ret{};
+
+  if (gpus_.empty()) {
+    stat.summary(DiagStatus::ERROR, "gpu not found");
+    return;
+  }
+
+  for (auto itr = gpus_.begin(); itr != gpus_.end(); ++itr, ++index) {
+    int level = DiagStatus::OK;
+    unsigned int clock = 0;
+    ret = nvmlDeviceGetClockInfo(itr->device, NVML_CLOCK_GRAPHICS, &clock);
+    if (ret != NVML_SUCCESS) {
+      stat.summary(DiagStatus::ERROR, "Failed to retrieve the current clock speeds");
+      stat.add(fmt::format("GPU {}: name", index), itr->name);
+      stat.add(fmt::format("GPU {}: bus-id", index), itr->pci.busId);
+      stat.add(fmt::format("GPU {}: content", index), nvmlErrorString(ret));
+      return;
+    }
+
+    if (itr->supported_gpu_clocks.find(clock) == itr->supported_gpu_clocks.end()) {
+      level = DiagStatus::WARN;
+    }
+
+    stat.add(fmt::format("GPU {}: status", index), frequency_dict_.at(level));
+    stat.add(fmt::format("GPU {}: name", index), itr->name);
+    stat.addf(fmt::format("GPU {}: graphics clock", index), "%d MHz", clock);
+
+    whole_level = std::max(whole_level, level);
+  }
+
+  stat.summary(whole_level, frequency_dict_.at(whole_level));
+
+  // Measure elapsed time since start time and report
+  SystemMonitorUtility::stopMeasurement(t_start, stat);
+}
+
+bool GPUMonitor::getSupportedGPUClocks(
+  int index, nvmlDevice_t & device, std::set<unsigned int> & supported_gpu_clocks)
+{
+  unsigned int mem_clock_count = 0;
+  nvmlReturn_t ret{};
+
+  ret = nvmlDeviceGetSupportedMemoryClocks(device, &mem_clock_count, nullptr);
+  if (ret != NVML_ERROR_INSUFFICIENT_SIZE) {
+    RCLCPP_ERROR(
+      this->get_logger(), "Failed to retrieve the count of possible memory clocks [%d]: %s", index,
+      nvmlErrorString(ret));
+    return false;
+  }
+
+  std::shared_ptr<unsigned int[]> mem_clocks(new unsigned int[mem_clock_count]);
+  ret = nvmlDeviceGetSupportedMemoryClocks(device, &mem_clock_count, mem_clocks.get());
+  if (ret != NVML_SUCCESS) {
+    RCLCPP_ERROR(
+      this->get_logger(), "Failed to retrieve the list of possible memory clocks [%d]: %s", index,
+      nvmlErrorString(ret));
+    return false;
+  }
+
+  for (unsigned int mem_clock_index = 0; mem_clock_index < mem_clock_count; mem_clock_index++) {
+    unsigned int gpu_clock_count = 0;
+
+    ret = nvmlDeviceGetSupportedGraphicsClocks(
+      device, mem_clocks[mem_clock_index], &gpu_clock_count, nullptr);
+    if (ret != NVML_ERROR_INSUFFICIENT_SIZE) {
+      RCLCPP_ERROR(
+        this->get_logger(),
+        "Failed to retrieve the count of possible graphics clocks for %d MHz memory clock [%d]: %s",
+        mem_clocks[mem_clock_index], index, nvmlErrorString(ret));
+      return false;
+    }
+
+    std::shared_ptr<unsigned int[]> gpu_clocks(new unsigned int[gpu_clock_count]);
+    ret = nvmlDeviceGetSupportedGraphicsClocks(
+      device, mem_clocks[mem_clock_index], &gpu_clock_count, gpu_clocks.get());
+    if (ret != NVML_SUCCESS) {
+      RCLCPP_ERROR(
+        this->get_logger(),
+        "Failed to retrieve the list of possible graphics clocks for %d MHz memory clock [%d]: %s",
+        mem_clocks[mem_clock_index], index, nvmlErrorString(ret));
+      return false;
+    }
+    for (unsigned int gpu_clock_index = 0; gpu_clock_index < gpu_clock_count; gpu_clock_index++) {
+      supported_gpu_clocks.insert(gpu_clocks[gpu_clock_index]);
+    }
+  }
+  return true;
 }
 
 #include <rclcpp_components/register_node_macro.hpp>
