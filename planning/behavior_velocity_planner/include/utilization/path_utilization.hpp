@@ -35,7 +35,6 @@ autoware_auto_planning_msgs::msg::Path filterLitterPathPoint(
   const autoware_auto_planning_msgs::msg::Path & path);
 autoware_auto_planning_msgs::msg::Path filterStopPathPoint(
   const autoware_auto_planning_msgs::msg::Path & path);
-std::vector<double> calcEuclidDist(const std::vector<double> & x, const std::vector<double> & y);
 }  // namespace behavior_velocity_planner
 
 #endif  // UTILIZATION__PATH_UTILIZATION_HPP_

@@ -14,6 +14,7 @@
 
 #include <motion_utils/motion_utils.hpp>
 #include <scene_module/detection_area/scene.hpp>
+#include <utilization/debug.hpp>
 #include <utilization/util.hpp>
 
 #ifdef ROS_DISTRO_GALACTIC
@@ -129,44 +130,21 @@ visualization_msgs::msg::MarkerArray createCorrespondenceMarkerArray(
 
   return msg;
 }
-
-visualization_msgs::msg::MarkerArray createObstacleMarkerArray(
-  const std::vector<geometry_msgs::msg::Point> & obstacle_points, const rclcpp::Time & now)
-{
-  visualization_msgs::msg::MarkerArray msg;
-
-  {
-    auto marker = createDefaultMarker(
-      "map", now, "obstacles", 0, visualization_msgs::msg::Marker::SPHERE,
-      createMarkerScale(0.6, 0.6, 0.6), createMarkerColor(1.0, 0.0, 0.0, 0.999));
-    marker.lifetime = rclcpp::Duration::from_seconds(0.5);
-
-    for (size_t i = 0; i < obstacle_points.size(); ++i) {
-      marker.id = i;
-      marker.pose.position = obstacle_points.at(i);
-
-      msg.markers.push_back(marker);
-    }
-  }
-
-  return msg;
-}
-
 }  // namespace
 
 visualization_msgs::msg::MarkerArray DetectionAreaModule::createDebugMarkerArray()
 {
   visualization_msgs::msg::MarkerArray wall_marker;
-  const rclcpp::Time current_time = clock_->now();
+  const rclcpp::Time now = clock_->now();
 
   if (!debug_data_.stop_poses.empty()) {
     appendMarkerArray(
-      createCorrespondenceMarkerArray(detection_area_reg_elem_, current_time), &wall_marker,
-      current_time);
+      createCorrespondenceMarkerArray(detection_area_reg_elem_, now), &wall_marker, now);
 
     appendMarkerArray(
-      createObstacleMarkerArray(debug_data_.obstacle_points, current_time), &wall_marker,
-      current_time);
+      debug::createPointsMarkerArray(
+        debug_data_.obstacle_points, "obstalces", module_id_, now, 0.6, 0.6, 0.6, 1.0, 0.0, 0.0),
+      &wall_marker, now);
   }
 
   return wall_marker;

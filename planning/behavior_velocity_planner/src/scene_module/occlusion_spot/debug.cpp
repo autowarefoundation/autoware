@@ -16,6 +16,7 @@
 #include <scene_module/occlusion_spot/occlusion_spot_utils.hpp>
 #include <scene_module/occlusion_spot/scene_occlusion_spot.hpp>
 #include <tier4_autoware_utils/ros/marker_helper.hpp>
+#include <utilization/debug.hpp>
 #include <utilization/util.hpp>
 
 #include <cmath>
@@ -183,86 +184,43 @@ MarkerArray makeSlicePolygonMarker(
   }
   return debug_markers;
 }
-
-MarkerArray createPathMarkerArray(
-  const PathWithLaneId & path, const std::string & ns, const int64_t lane_id, const double r,
-  const double g, const double b)
-{
-  MarkerArray msg;
-  int32_t uid = planning_utils::bitShift(lane_id);
-  int32_t i = 0;
-  for (const auto & p : path.points) {
-    Marker marker{};
-    marker.header.frame_id = "map";
-    marker.ns = ns;
-    marker.id = uid + i++;
-    marker.lifetime = rclcpp::Duration::from_seconds(0.3);
-    marker.type = Marker::ARROW;
-    marker.action = Marker::ADD;
-    marker.pose = p.point.pose;
-    marker.scale = createMarkerScale(0.6, 0.3, 0.3);
-    if (std::find(p.lane_ids.begin(), p.lane_ids.end(), lane_id) != p.lane_ids.end()) {
-      // if p.lane_ids has lane_id
-      marker.color = createMarkerColor(r, g, b, 0.999);
-    } else {
-      marker.color = createMarkerColor(0.5, 0.5, 0.5, 0.999);
-    }
-    msg.markers.push_back(marker);
-  }
-
-  return msg;
-}
-
-MarkerArray createOcclusionMarkerArray(
-  const std::vector<geometry_msgs::msg::Point> & occlusion_points, const int64_t module_id)
-{
-  MarkerArray msg;
-  {
-    const Time now = rclcpp::Time(0);
-    auto marker = createDefaultMarker(
-      "map", now, "occlusion", 0, Marker::SPHERE, createMarkerScale(0.5, 0.5, 0.5),
-      createMarkerColor(1.0, 0.0, 0.0, 0.999));
-    marker.lifetime = rclcpp::Duration::from_seconds(0.1);
-    for (size_t i = 0; i < occlusion_points.size(); ++i) {
-      marker.id = i + planning_utils::bitShift(module_id);
-      marker.pose.position = occlusion_points.at(i);
-      msg.markers.push_back(marker);
-    }
-  }
-  return msg;
-}
 }  // namespace
 
 MarkerArray OcclusionSpotModule::createDebugMarkerArray()
 {
-  const auto current_time = this->clock_->now();
+  const auto now = this->clock_->now();
   MarkerArray debug_marker_array;
   if (!debug_data_.possible_collisions.empty()) {
-    appendMarkerArray(makeDebugInfoMarkers(debug_data_), &debug_marker_array, current_time);
+    appendMarkerArray(makeDebugInfoMarkers(debug_data_), &debug_marker_array, now);
   }
   if (!debug_data_.detection_area_polygons.empty()) {
     appendMarkerArray(
       makeSlicePolygonMarker(
         debug_data_.detection_area_polygons, "detection_area", module_id_, debug_data_.z),
-      &debug_marker_array, current_time);
+      &debug_marker_array, now);
   }
   if (!debug_data_.close_partition.empty() && param_.is_show_occlusion) {
     appendMarkerArray(
       makePolygonMarker(debug_data_.close_partition, "close_partition", module_id_, debug_data_.z),
-      &debug_marker_array, current_time);
+      &debug_marker_array, now);
   }
   if (!debug_data_.path_interpolated.points.empty()) {
+    const int64_t virtual_lane_id = 0;
     appendMarkerArray(
-      createPathMarkerArray(debug_data_.path_raw, "path_raw", 0, 0.0, 1.0, 1.0),
-      &debug_marker_array, current_time);
+      debug::createPathMarkerArray(
+        debug_data_.path_raw, "path_raw", virtual_lane_id, now, 0.6, 0.3, 0.3, 0.0, 1.0, 1.0),
+      &debug_marker_array, now);
     appendMarkerArray(
-      createPathMarkerArray(debug_data_.path_interpolated, "path_interpolated", 0, 0.0, 1.0, 1.0),
-      &debug_marker_array, current_time);
+      debug::createPathMarkerArray(
+        debug_data_.path_interpolated, "path_interpolated", virtual_lane_id, now, 0.6, 0.3, 0.3,
+        0.0, 1.0, 1.0),
+      &debug_marker_array, now);
   }
   if (!debug_data_.occlusion_points.empty()) {
     appendMarkerArray(
-      createOcclusionMarkerArray(debug_data_.occlusion_points, module_id_), &debug_marker_array,
-      current_time);
+      debug::createPointsMarkerArray(
+        debug_data_.occlusion_points, "occlusion", module_id_, now, 0.5, 0.5, 0.5, 1.0, 0.0, 0.0),
+      &debug_marker_array, now);
   }
   return debug_marker_array;
 }

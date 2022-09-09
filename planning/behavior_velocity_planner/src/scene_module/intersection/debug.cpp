@@ -15,6 +15,7 @@
 #include <motion_utils/motion_utils.hpp>
 #include <scene_module/intersection/scene_intersection.hpp>
 #include <scene_module/intersection/scene_merge_from_private_road.hpp>
+#include <utilization/debug.hpp>
 #include <utilization/util.hpp>
 
 #include <string>
@@ -31,12 +32,12 @@ using tier4_autoware_utils::createMarkerScale;
 
 visualization_msgs::msg::MarkerArray createLaneletPolygonsMarkerArray(
   const std::vector<lanelet::CompoundPolygon3d> & polygons, const std::string & ns,
-  const int64_t lane_id)
+  const int64_t module_id)
 {
   visualization_msgs::msg::MarkerArray msg;
 
   int32_t i = 0;
-  int32_t uid = planning_utils::bitShift(lane_id);
+  int32_t uid = planning_utils::bitShift(module_id);
   for (const auto & polygon : polygons) {
     visualization_msgs::msg::Marker marker{};
     marker.header.frame_id = "map";
@@ -58,93 +59,6 @@ visualization_msgs::msg::MarkerArray createLaneletPolygonsMarkerArray(
     }
     if (!marker.points.empty()) {
       marker.points.push_back(marker.points.front());
-    }
-    msg.markers.push_back(marker);
-  }
-
-  return msg;
-}
-
-visualization_msgs::msg::MarkerArray createPolygonMarkerArray(
-  const geometry_msgs::msg::Polygon & polygon, const std::string & ns, const int64_t lane_id,
-  const double r, const double g, const double b)
-{
-  visualization_msgs::msg::MarkerArray msg;
-
-  visualization_msgs::msg::Marker marker{};
-  marker.header.frame_id = "map";
-
-  marker.ns = ns;
-  marker.id = lane_id;
-  marker.lifetime = rclcpp::Duration::from_seconds(0.3);
-  marker.type = visualization_msgs::msg::Marker::LINE_STRIP;
-  marker.action = visualization_msgs::msg::Marker::ADD;
-  marker.pose.orientation = createMarkerOrientation(0, 0, 0, 1.0);
-  marker.scale = createMarkerScale(0.3, 0.0, 0.0);
-  marker.color = createMarkerColor(r, g, b, 0.8);
-  for (const auto & p : polygon.points) {
-    geometry_msgs::msg::Point point;
-    point.x = p.x;
-    point.y = p.y;
-    point.z = p.z;
-    marker.points.push_back(point);
-  }
-  if (!marker.points.empty()) {
-    marker.points.push_back(marker.points.front());
-  }
-  msg.markers.push_back(marker);
-
-  return msg;
-}
-
-visualization_msgs::msg::MarkerArray createObjectsMarkerArray(
-  const autoware_auto_perception_msgs::msg::PredictedObjects & objects, const std::string & ns,
-  const int64_t lane_id, const double r, const double g, const double b)
-{
-  visualization_msgs::msg::MarkerArray msg;
-
-  visualization_msgs::msg::Marker marker{};
-  marker.header.frame_id = "map";
-  marker.ns = ns;
-
-  int32_t uid = planning_utils::bitShift(lane_id);
-  int32_t i = 0;
-  for (const auto & object : objects.objects) {
-    marker.id = uid + i++;
-    marker.lifetime = rclcpp::Duration::from_seconds(1.0);
-    marker.type = visualization_msgs::msg::Marker::CUBE;
-    marker.action = visualization_msgs::msg::Marker::ADD;
-    marker.pose = object.kinematics.initial_pose_with_covariance.pose;
-    marker.scale = createMarkerScale(3.0, 1.0, 1.0);
-    marker.color = createMarkerColor(r, g, b, 0.8);
-    msg.markers.push_back(marker);
-  }
-
-  return msg;
-}
-
-visualization_msgs::msg::MarkerArray createPathMarkerArray(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const std::string & ns,
-  const int64_t lane_id, const double r, const double g, const double b)
-{
-  visualization_msgs::msg::MarkerArray msg;
-  int32_t uid = planning_utils::bitShift(lane_id);
-  int32_t i = 0;
-  for (const auto & p : path.points) {
-    visualization_msgs::msg::Marker marker{};
-    marker.header.frame_id = "map";
-    marker.ns = ns;
-    marker.id = uid + i++;
-    marker.lifetime = rclcpp::Duration::from_seconds(0.3);
-    marker.type = visualization_msgs::msg::Marker::ARROW;
-    marker.action = visualization_msgs::msg::Marker::ADD;
-    marker.pose = p.point.pose;
-    marker.scale = createMarkerScale(0.6, 0.3, 0.3);
-    if (std::find(p.lane_ids.begin(), p.lane_ids.end(), lane_id) != p.lane_ids.end()) {
-      // if p.lane_ids has lane_id
-      marker.color = createMarkerColor(r, g, b, 0.999);
-    } else {
-      marker.color = createMarkerColor(0.5, 0.5, 0.5, 0.999);
     }
     msg.markers.push_back(marker);
   }
@@ -196,68 +110,73 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createDebugMarkerArray(
   visualization_msgs::msg::MarkerArray debug_marker_array;
 
   const auto state = state_machine_.getState();
-  const auto current_time = this->clock_->now();
+  const auto now = this->clock_->now();
 
   appendMarkerArray(
-    createPathMarkerArray(debug_data_.path_raw, "path_raw", lane_id_, 0.0, 1.0, 1.0),
-    &debug_marker_array, current_time);
+    debug::createPathMarkerArray(
+      debug_data_.path_raw, "path_raw", lane_id_, now, 0.6, 0.3, 0.3, 0.0, 1.0, 1.0),
+    &debug_marker_array, now);
 
   appendMarkerArray(
-    createLaneletPolygonsMarkerArray(debug_data_.detection_area, "detection_area", lane_id_),
-    &debug_marker_array, current_time);
+    createLaneletPolygonsMarkerArray(debug_data_.detection_area, "detection_area", module_id_),
+    &debug_marker_array, now);
 
   appendMarkerArray(
     createLaneletPolygonsMarkerArray(
-      debug_data_.detection_area_with_margin, "detection_area_with_margin", lane_id_),
-    &debug_marker_array, current_time);
+      debug_data_.detection_area_with_margin, "detection_area_with_margin", module_id_),
+    &debug_marker_array, now);
 
   appendMarkerArray(
-    createPolygonMarkerArray(debug_data_.ego_lane_polygon, "ego_lane", lane_id_, 0.0, 0.3, 0.7),
-    &debug_marker_array, current_time);
+    debug::createPolygonMarkerArray(
+      debug_data_.ego_lane_polygon, "ego_lane", module_id_, now, 0.3, 0.0, 0.0, 0.0, 0.3, 0.7),
+    &debug_marker_array, now);
 
   appendMarkerArray(
-    createPolygonMarkerArray(
-      debug_data_.stuck_vehicle_detect_area, "stuck_vehicle_detect_area", lane_id_, 0.0, 0.5, 0.5),
-    &debug_marker_array, current_time);
+    debug::createPolygonMarkerArray(
+      debug_data_.stuck_vehicle_detect_area, "stuck_vehicle_detect_area", module_id_, now, 0.3, 0.0,
+      0.0, 0.0, 0.5, 0.5),
+    &debug_marker_array, now);
 
   appendMarkerArray(
-    createPolygonMarkerArray(
+    debug::createPolygonMarkerArray(
       debug_data_.candidate_collision_ego_lane_polygon, "candidate_collision_ego_lane_polygon",
-      lane_id_, 0.5, 0.0, 0.0),
-    &debug_marker_array, current_time);
+      module_id_, now, 0.3, 0.0, 0.0, 0.5, 0.0, 0.0),
+    &debug_marker_array, now);
 
   size_t i{0};
   for (const auto & p : debug_data_.candidate_collision_object_polygons) {
     appendMarkerArray(
-      createPolygonMarkerArray(
-        p, "candidate_collision_object_polygons", lane_id_ + i++, 0.0, 0.5, 0.5),
-      &debug_marker_array, current_time);
+      debug::createPolygonMarkerArray(
+        p, "candidate_collision_object_polygons", module_id_ + i++, now, 0.3, 0.0, 0.0, 0.0, 0.5,
+        0.5),
+      &debug_marker_array, now);
   }
 
   appendMarkerArray(
-    createObjectsMarkerArray(
-      debug_data_.conflicting_targets, "conflicting_targets", lane_id_, 0.99, 0.4, 0.0),
-    &debug_marker_array, current_time);
+    debug::createObjectsMarkerArray(
+      debug_data_.conflicting_targets, "conflicting_targets", module_id_, now, 0.99, 0.4, 0.0),
+    &debug_marker_array, now);
 
   appendMarkerArray(
-    createObjectsMarkerArray(debug_data_.stuck_targets, "stuck_targets", lane_id_, 0.99, 0.99, 0.2),
-    &debug_marker_array, current_time);
+    debug::createObjectsMarkerArray(
+      debug_data_.stuck_targets, "stuck_targets", module_id_, now, 0.99, 0.99, 0.2),
+    &debug_marker_array, now);
 
   appendMarkerArray(
     createPoseMarkerArray(
-      debug_data_.predicted_obj_pose, "predicted_obj_pose", lane_id_, 0.7, 0.85, 0.9),
-    &debug_marker_array, current_time);
+      debug_data_.predicted_obj_pose, "predicted_obj_pose", module_id_, 0.7, 0.85, 0.9),
+    &debug_marker_array, now);
 
   if (state == StateMachine::State::STOP) {
     appendMarkerArray(
       createPoseMarkerArray(
-        debug_data_.stop_point_pose, "stop_point_pose", lane_id_, 1.0, 0.0, 0.0),
-      &debug_marker_array, current_time);
+        debug_data_.stop_point_pose, "stop_point_pose", module_id_, 1.0, 0.0, 0.0),
+      &debug_marker_array, now);
 
     appendMarkerArray(
       createPoseMarkerArray(
-        debug_data_.judge_point_pose, "judge_point_pose", lane_id_, 1.0, 1.0, 0.5),
-      &debug_marker_array, current_time);
+        debug_data_.judge_point_pose, "judge_point_pose", module_id_, 1.0, 1.0, 0.5),
+      &debug_marker_array, now);
   }
 
   return debug_marker_array;
@@ -273,12 +192,12 @@ visualization_msgs::msg::MarkerArray IntersectionModule::createVirtualWallMarker
   if (debug_data_.stop_required) {
     appendMarkerArray(
       motion_utils::createStopVirtualWallMarker(
-        debug_data_.stop_wall_pose, "intersection", now, lane_id_),
+        debug_data_.stop_wall_pose, "intersection", now, module_id_),
       &wall_marker, now);
   } else if (state == StateMachine::State::STOP) {
     appendMarkerArray(
       motion_utils::createStopVirtualWallMarker(
-        debug_data_.slow_wall_pose, "intersection", now, lane_id_),
+        debug_data_.slow_wall_pose, "intersection", now, module_id_),
       &wall_marker, now);
   }
   return wall_marker;
@@ -294,7 +213,7 @@ visualization_msgs::msg::MarkerArray MergeFromPrivateRoadModule::createDebugMark
   if (state == StateMachine::State::STOP) {
     appendMarkerArray(
       createPoseMarkerArray(
-        debug_data_.stop_point_pose, "stop_point_pose", lane_id_, 1.0, 0.0, 0.0),
+        debug_data_.stop_point_pose, "stop_point_pose", module_id_, 1.0, 0.0, 0.0),
       &debug_marker_array, now);
   }
 
@@ -311,7 +230,7 @@ visualization_msgs::msg::MarkerArray MergeFromPrivateRoadModule::createVirtualWa
   if (state == StateMachine::State::STOP) {
     appendMarkerArray(
       motion_utils::createStopVirtualWallMarker(
-        debug_data_.virtual_wall_pose, "merge_from_private_road", now, lane_id_),
+        debug_data_.virtual_wall_pose, "merge_from_private_road", now, module_id_),
       &wall_marker, now);
   }
 

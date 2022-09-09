@@ -178,21 +178,4 @@ autoware_auto_planning_msgs::msg::Path filterStopPathPoint(
   }
   return filtered_path;
 }
-
-std::vector<double> calcEuclidDist(const std::vector<double> & x, const std::vector<double> & y)
-{
-  if (x.size() != y.size()) {
-    std::cerr << "x y vector size should be the same." << std::endl;
-  }
-
-  std::vector<double> dist_v;
-  dist_v.push_back(0.0);
-  for (unsigned int i = 0; i < x.size() - 1; ++i) {
-    const double dx = x.at(i + 1) - x.at(i);
-    const double dy = y.at(i + 1) - y.at(i);
-    dist_v.push_back(dist_v.at(i) + std::hypot(dx, dy));
-  }
-
-  return dist_v;
-}
 }  // namespace behavior_velocity_planner

@@ -52,8 +52,8 @@ public:
     geometry_msgs::msg::Pose virtual_wall_pose;
     geometry_msgs::msg::Pose stop_point_pose;
     geometry_msgs::msg::Pose judge_point_pose;
-    lanelet::CompoundPolygon3d conflict_area_for_blind_spot;
-    lanelet::CompoundPolygon3d detection_area_for_blind_spot;
+    geometry_msgs::msg::Polygon conflict_area_for_blind_spot;
+    geometry_msgs::msg::Polygon detection_area_for_blind_spot;
     autoware_auto_planning_msgs::msg::PathWithLaneId spline_path;
     autoware_auto_perception_msgs::msg::PredictedObjects conflicting_targets;
   };

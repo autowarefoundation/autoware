@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "utilization/debug.hpp"
+
 #include "scene_module/no_stopping_area/scene_no_stopping_area.hpp"
 #include "utilization/util.hpp"
 
@@ -52,15 +54,6 @@ geometry_msgs::msg::Point toMsg(const lanelet::BasicPoint3d & point)
   msg.x = point.x();
   msg.y = point.y();
   msg.z = point.z();
-  return msg;
-}
-
-geometry_msgs::msg::Point toPoint2d(const geometry_msgs::msg::Point32 & poly)
-{
-  geometry_msgs::msg::Point msg;
-  msg.x = poly.x;
-  msg.y = poly.y;
-  msg.z = 0;
   return msg;
 }
 
@@ -136,73 +129,35 @@ visualization_msgs::msg::MarkerArray createLaneletInfoMarkerArray(
 
   return msg;
 }
-
-visualization_msgs::msg::MarkerArray createStuckPointsMarkerArray(
-  const std::vector<geometry_msgs::msg::Point> & stuck_points, const rclcpp::Time & now)
-{
-  visualization_msgs::msg::MarkerArray msg;
-  {
-    auto marker = createDefaultMarker(
-      "map", now, "stuck_points", 0, visualization_msgs::msg::Marker::SPHERE,
-      createMarkerScale(0.3, 0.3, 0.3), createMarkerColor(1.0, 1.0, 0.0, 0.999));
-    marker.lifetime = rclcpp::Duration::from_seconds(marker_lifetime);
-    for (size_t i = 0; i < stuck_points.size(); ++i) {
-      marker.id = i;
-      marker.pose.position = stuck_points.at(i);
-      msg.markers.push_back(marker);
-    }
-  }
-  return msg;
-}
-
-visualization_msgs::msg::MarkerArray createNoStoppingAreaMarkerArray(
-  const geometry_msgs::msg::Polygon & stuck_vehicle_detect_area, const std::string & ns,
-  const rclcpp::Time & now)
-{
-  visualization_msgs::msg::MarkerArray msg;
-  {
-    auto marker = createDefaultMarker(
-      "map", now, ns.c_str(), 0, visualization_msgs::msg::Marker::LINE_STRIP,
-      createMarkerScale(0.1, 0.1, 0.1), createMarkerColor(1.0, 1.0, 0.0, 0.999));
-    marker.lifetime = rclcpp::Duration::from_seconds(marker_lifetime);
-
-    for (size_t i = 0; i < stuck_vehicle_detect_area.points.size(); ++i) {
-      marker.id = i;
-      marker.points.emplace_back(toPoint2d(stuck_vehicle_detect_area.points[i]));
-    }
-    marker.points.emplace_back(toPoint2d(stuck_vehicle_detect_area.points.at(0)));
-    msg.markers.push_back(marker);
-  }
-  return msg;
-}
-
 }  // namespace
 
 visualization_msgs::msg::MarkerArray NoStoppingAreaModule::createDebugMarkerArray()
 {
   visualization_msgs::msg::MarkerArray debug_marker_array;
-  const rclcpp::Time current_time = clock_->now();
+  const rclcpp::Time now = clock_->now();
 
   appendMarkerArray(
-    createLaneletInfoMarkerArray(no_stopping_area_reg_elem_, current_time), &debug_marker_array,
-    current_time);
+    createLaneletInfoMarkerArray(no_stopping_area_reg_elem_, now), &debug_marker_array, now);
 
   if (!debug_data_.stuck_points.empty()) {
     appendMarkerArray(
-      createStuckPointsMarkerArray(debug_data_.stuck_points, current_time), &debug_marker_array,
-      current_time);
+      debug::createPointsMarkerArray(
+        debug_data_.stuck_points, "stuck_points", module_id_, now, 0.3, 0.3, 0.3, 1.0, 1.0, 0.0),
+      &debug_marker_array, now);
   }
   if (!debug_data_.stuck_vehicle_detect_area.points.empty()) {
     appendMarkerArray(
-      createNoStoppingAreaMarkerArray(
-        debug_data_.stuck_vehicle_detect_area, "stuck_vehicle_detect_area", current_time),
-      &debug_marker_array, current_time);
+      debug::createPolygonMarkerArray(
+        debug_data_.stuck_vehicle_detect_area, "stuck_vehicle_detect_area", module_id_, now, 0.1,
+        0.1, 0.1, 1.0, 1.0, 0.0),
+      &debug_marker_array, now);
   }
   if (!debug_data_.stop_line_detect_area.points.empty()) {
     appendMarkerArray(
-      createNoStoppingAreaMarkerArray(
-        debug_data_.stop_line_detect_area, "stop_line_detect_area", current_time),
-      &debug_marker_array, current_time);
+      debug::createPolygonMarkerArray(
+        debug_data_.stop_line_detect_area, "stop_line_detect_area", module_id_, now, 0.1, 0.1, 0.1,
+        1.0, 1.0, 0.0),
+      &debug_marker_array, now);
   }
   return debug_marker_array;
 }

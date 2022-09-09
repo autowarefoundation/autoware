@@ -36,6 +36,24 @@ namespace behavior_velocity_planner
 {
 namespace bg = boost::geometry;
 
+namespace
+{
+geometry_msgs::msg::Polygon toGeomPoly(const lanelet::CompoundPolygon3d & poly)
+{
+  geometry_msgs::msg::Polygon geom_poly;
+
+  for (const auto & p : poly) {
+    geometry_msgs::msg::Point32 geom_point;
+    geom_point.x = p.x();
+    geom_point.y = p.y();
+    geom_point.z = p.z();
+    geom_poly.points.push_back(geom_point);
+  }
+
+  return geom_poly;
+}
+}  // namespace
+
 BlindSpotModule::BlindSpotModule(
   const int64_t module_id, const int64_t lane_id, std::shared_ptr<const PlannerData> planner_data,
   const PlannerParam & planner_param, const rclcpp::Logger logger,
@@ -356,8 +374,8 @@ bool BlindSpotModule::checkObstacleInBlindSpot(
   const auto areas_opt = generateBlindSpotPolygons(
     lanelet_map_ptr, routing_graph_ptr, path, closest_idx, stop_line_pose);
   if (!!areas_opt) {
-    debug_data_.detection_area_for_blind_spot = areas_opt.get().detection_area;
-    debug_data_.conflict_area_for_blind_spot = areas_opt.get().conflict_area;
+    debug_data_.detection_area_for_blind_spot = toGeomPoly(areas_opt.get().detection_area);
+    debug_data_.conflict_area_for_blind_spot = toGeomPoly(areas_opt.get().conflict_area);
 
     autoware_auto_perception_msgs::msg::PredictedObjects objects = *objects_ptr;
     cutPredictPathWithDuration(&objects, planner_param_.max_future_movement_time);
