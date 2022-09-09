@@ -203,13 +203,15 @@ void CrosswalkTrafficLightEstimatorNode::updateLastDetectedSignal(
     last_detect_color_.at(id) = input_traffic_signal.second;
   }
 
+  std::vector<int32_t> erase_id_list;
   for (auto & last_traffic_signal : last_detect_color_) {
     const auto & id = last_traffic_signal.second.map_primitive_id;
 
     if (traffic_light_id_map.count(id) == 0) {
-      last_detect_color_.erase(id);
+      erase_id_list.emplace_back(id);
     }
   }
+  for (const auto id : erase_id_list) last_detect_color_.erase(id);
 }
 
 void CrosswalkTrafficLightEstimatorNode::setCrosswalkTrafficSignal(
