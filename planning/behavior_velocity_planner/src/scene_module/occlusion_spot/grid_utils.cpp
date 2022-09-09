@@ -128,14 +128,10 @@ boost::optional<Polygon2d> generateOcclusionPolygon(
   using tier4_autoware_utils::normalizeRadian;
   const double origin_x = origin.x();
   const double origin_y = origin.y();
-  // TODO(tanaka): consider this later
-  const double delay_angle = M_PI / 6.0;
   const double min_theta =
-    normalizeRadian(std::atan2(min_theta_pos.y() - origin_y, min_theta_pos.x() - origin_x), 0.0) -
-    delay_angle;
+    normalizeRadian(std::atan2(min_theta_pos.y() - origin_y, min_theta_pos.x() - origin_x), 0.0);
   const double max_theta =
-    normalizeRadian(std::atan2(max_theta_pos.y() - origin_y, max_theta_pos.x() - origin_x), 0.0) +
-    delay_angle;
+    normalizeRadian(std::atan2(max_theta_pos.y() - origin_y, max_theta_pos.x() - origin_x), 0.0);
   LineString2d theta_min_ray = {
     origin,
     {origin_x + ray_max_length * std::cos(min_theta),

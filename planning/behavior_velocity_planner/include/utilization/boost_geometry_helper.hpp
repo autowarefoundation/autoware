@@ -101,6 +101,19 @@ inline Polygon2d lines2polygon(const LineString2d & left_line, const LineString2
   return polygon;
 }
 
+inline Polygon2d upScalePolygon(
+  const geometry_msgs::msg::Point & position, const Polygon2d & polygon, const double scale)
+{
+  Polygon2d transformed_polygon;
+  // upscale
+  for (size_t i = 0; i < polygon.outer().size(); i++) {
+    const double upscale_x = (polygon.outer().at(i).x() - position.x) * scale + position.x;
+    const double upscale_y = (polygon.outer().at(i).y() - position.y) * scale + position.y;
+    transformed_polygon.outer().emplace_back(Point2d(upscale_x, upscale_y));
+  }
+  return transformed_polygon;
+}
+
 inline geometry_msgs::msg::Polygon toGeomPoly(const Polygon2d & polygon)
 {
   geometry_msgs::msg::Polygon polygon_msg;

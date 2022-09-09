@@ -35,6 +35,15 @@ namespace behavior_velocity_planner
 namespace bg = boost::geometry;
 namespace occlusion_spot_utils
 {
+Polygon2d toFootprintPolygon(const PredictedObject & object, const double scale = 1.0)
+{
+  const Pose & obj_pose = object.kinematics.initial_pose_with_covariance.pose;
+  Polygon2d obj_footprint = tier4_autoware_utils::toPolygon2d(object);
+  // upscale foot print for noise
+  obj_footprint = upScalePolygon(obj_pose.position, obj_footprint, scale);
+  return obj_footprint;
+}
+
 lanelet::ConstLanelet toPathLanelet(const PathWithLaneId & path)
 {
   lanelet::Points3d path_points;
@@ -207,11 +216,18 @@ void categorizeVehicles(
 {
   moving_vehicle_foot_prints.clear();
   stuck_vehicle_foot_prints.clear();
+  /**
+   * Note: these parameters are use to reduce noise in occupancy grid
+   * up_scale: case predicted poly is larger than actual
+   * down_scale: case predicted poly is smaller than actual
+   */
+  const double up_scale = 1.5;
+  const double down_scale = 0.8;
   for (const auto & vehicle : vehicles) {
     if (isMovingVehicle(vehicle, stuck_vehicle_vel)) {
-      moving_vehicle_foot_prints.emplace_back(tier4_autoware_utils::toPolygon2d(vehicle));
+      moving_vehicle_foot_prints.emplace_back(toFootprintPolygon(vehicle, up_scale));
     } else if (isStuckVehicle(vehicle, stuck_vehicle_vel)) {
-      stuck_vehicle_foot_prints.emplace_back(tier4_autoware_utils::toPolygon2d(vehicle));
+      stuck_vehicle_foot_prints.emplace_back(toFootprintPolygon(vehicle, down_scale));
     }
   }
   return;
