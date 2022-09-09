@@ -152,6 +152,41 @@ double calcObjectMaxLength(const autoware_auto_perception_msgs::msg::Shape & sha
 
   throw std::logic_error("The shape type is not supported in obstacle_cruise_planner.");
 }
+
+TrajectoryPoint getExtendTrajectoryPoint(
+  const double extend_distance, const TrajectoryPoint & goal_point)
+{
+  TrajectoryPoint extend_trajectory_point;
+  extend_trajectory_point.pose =
+    tier4_autoware_utils::calcOffsetPose(goal_point.pose, extend_distance, 0.0, 0.0);
+  extend_trajectory_point.longitudinal_velocity_mps = goal_point.longitudinal_velocity_mps;
+  extend_trajectory_point.lateral_velocity_mps = goal_point.lateral_velocity_mps;
+  extend_trajectory_point.acceleration_mps2 = goal_point.acceleration_mps2;
+  return extend_trajectory_point;
+}
+
+Trajectory extendTrajectory(
+  const Trajectory & input, const double extend_distance, const double step_length)
+{
+  Trajectory output = input;
+
+  if (extend_distance < std::numeric_limits<double>::epsilon()) {
+    return output;
+  }
+
+  const auto goal_point = input.points.back();
+
+  double extend_sum = 0.0;
+  while (extend_sum <= (extend_distance - step_length)) {
+    const auto extend_trajectory_point = getExtendTrajectoryPoint(extend_sum, goal_point);
+    output.points.push_back(extend_trajectory_point);
+    extend_sum += step_length;
+  }
+  const auto extend_trajectory_point = getExtendTrajectoryPoint(extend_distance, goal_point);
+  output.points.push_back(extend_trajectory_point);
+
+  return output;
+}
 }  // namespace
 
 namespace motion_planning
@@ -256,6 +291,10 @@ ObstacleCruisePlannerNode::ObstacleCruisePlannerNode(const rclcpp::NodeOptions &
       declare_parameter<double>("obstacle_filtering.prediction_resampling_time_interval");
     obstacle_filtering_param_.prediction_resampling_time_horizon =
       declare_parameter<double>("obstacle_filtering.prediction_resampling_time_horizon");
+    obstacle_filtering_param_.goal_extension_length =
+      declare_parameter<double>("obstacle_filtering.goal_extension_length");
+    obstacle_filtering_param_.goal_extension_interval =
+      declare_parameter<double>("obstacle_filtering.goal_extension_interval");
 
     {
       if (declare_parameter<bool>("obstacle_filtering.ignored_outside_obstacle_type.unknown")) {
@@ -443,6 +482,12 @@ rcl_interfaces::msg::SetParametersResult ObstacleCruisePlannerNode::onParam(
   tier4_autoware_utils::updateParam<double>(
     parameters, "obstacle_filtering.prediction_resampling_time_horizon",
     obstacle_filtering_param_.prediction_resampling_time_horizon);
+  tier4_autoware_utils::updateParam<double>(
+    parameters, "obstacle_filtering.goal_extension_length",
+    obstacle_filtering_param_.goal_extension_length);
+  tier4_autoware_utils::updateParam<double>(
+    parameters, "obstacle_filtering.goal_extension_interval",
+    obstacle_filtering_param_.goal_extension_interval);
 
   rcl_interfaces::msg::SetParametersResult result;
   result.successful = true;
@@ -637,11 +682,14 @@ std::vector<TargetObstacle> ObstacleCruisePlannerNode::filterObstacles(
   if (decimated_traj.points.size() < 2) {
     return {};
   }
+  const auto extended_traj = extendTrajectory(
+    decimated_traj, obstacle_filtering_param_.goal_extension_length,
+    obstacle_filtering_param_.goal_extension_interval);
 
-  // calculate decimated trajectory polygons
-  const auto decimated_traj_polygons = polygon_utils::createOneStepPolygons(
-    decimated_traj, vehicle_info_, obstacle_filtering_param_.detection_area_expand_width);
-  debug_data.detection_polygons = decimated_traj_polygons;
+  // calculate extended trajectory polygons
+  const auto extended_traj_polygons = polygon_utils::createOneStepPolygons(
+    extended_traj, vehicle_info_, obstacle_filtering_param_.detection_area_expand_width);
+  debug_data.detection_polygons = extended_traj_polygons;
 
   std::vector<TargetObstacle> target_obstacles;
   for (const auto & predicted_object : predicted_objects.objects) {
@@ -674,7 +722,7 @@ std::vector<TargetObstacle> ObstacleCruisePlannerNode::filterObstacles(
     // rough detection area filtering without polygons
     const double dist_from_obstacle_to_traj = [&]() {
       return motion_utils::calcLateralOffset(
-        decimated_traj.points, current_object_pose.pose.position);
+        extended_traj.points, current_object_pose.pose.position);
     }();
     const double obstacle_max_length = calcObjectMaxLength(predicted_object.shape);
     if (
@@ -696,7 +744,7 @@ std::vector<TargetObstacle> ObstacleCruisePlannerNode::filterObstacles(
     // calculate current collision points
     std::vector<geometry_msgs::msg::PointStamped> closest_collision_points;
     const auto first_within_idx = polygon_utils::getCollisionIndex(
-      decimated_traj, decimated_traj_polygons, current_object_pose, predicted_object.shape,
+      extended_traj, extended_traj_polygons, current_object_pose, predicted_object.shape,
       closest_collision_points);
 
     // precise detection area filtering with polygons
@@ -704,12 +752,12 @@ std::vector<TargetObstacle> ObstacleCruisePlannerNode::filterObstacles(
     if (first_within_idx) {  // obstacles inside the trajectory
       // calculate nearest collision point
       collision_points = polygon_utils::getCollisionPoints(
-        decimated_traj, decimated_traj_polygons, predicted_objects.header, resampled_predicted_path,
+        extended_traj, extended_traj_polygons, predicted_objects.header, resampled_predicted_path,
         predicted_object.shape, current_time, vehicle_info_.max_longitudinal_offset_m,
         is_driving_forward);
 
       const bool is_angle_aligned = isAngleAlignedWithTrajectory(
-        decimated_traj, current_object_pose.pose,
+        extended_traj, current_object_pose.pose,
         obstacle_filtering_param_.crossing_obstacle_traj_angle_threshold);
       const double has_high_speed =
         std::abs(object_velocity) > obstacle_filtering_param_.crossing_obstacle_velocity_threshold;
@@ -717,7 +765,7 @@ std::vector<TargetObstacle> ObstacleCruisePlannerNode::filterObstacles(
       // ignore running vehicle crossing the ego trajectory with high speed with some condition
       if (!is_angle_aligned && has_high_speed && !collision_points.empty()) {
         const double collision_time_margin = calcCollisionTimeMargin(
-          current_pose, current_vel, collision_points, predicted_object, decimated_traj,
+          current_pose, current_vel, collision_points, predicted_object, extended_traj,
           is_driving_forward);
         if (collision_time_margin > obstacle_filtering_param_.collision_time_margin) {
           // Ignore vehicle obstacles inside the trajectory, which is crossing the trajectory with
@@ -762,7 +810,7 @@ std::vector<TargetObstacle> ObstacleCruisePlannerNode::filterObstacles(
       }
 
       collision_points = polygon_utils::willCollideWithSurroundObstacle(
-        decimated_traj, decimated_traj_polygons, predicted_objects.header, resampled_predicted_path,
+        extended_traj, extended_traj_polygons, predicted_objects.header, resampled_predicted_path,
         predicted_object.shape, current_time,
         vehicle_info_.vehicle_width_m + obstacle_filtering_param_.rough_detection_area_expand_width,
         obstacle_filtering_param_.ego_obstacle_overlap_time_threshold,
@@ -912,8 +960,7 @@ void ObstacleCruisePlannerNode::checkConsistency(
 double ObstacleCruisePlannerNode::calcCollisionTimeMargin(
   const geometry_msgs::msg::Pose & current_pose, const double current_vel,
   const std::vector<geometry_msgs::msg::PointStamped> & collision_points,
-  const PredictedObject & predicted_object, const Trajectory & decimated_traj,
-  const bool is_driving_forward)
+  const PredictedObject & predicted_object, const Trajectory & traj, const bool is_driving_forward)
 {
   const auto predicted_path = getHighestConfidencePredictedPath(predicted_object);
   const auto resampled_predicted_path = perception_utils::resamplePredictedPath(
@@ -926,7 +973,7 @@ double ObstacleCruisePlannerNode::calcCollisionTimeMargin(
                                     : std::abs(vehicle_info_.min_longitudinal_offset_m);
     const double dist_from_ego_to_obstacle =
       motion_utils::calcSignedArcLength(
-        decimated_traj.points, current_pose.position, collision_points.front().point) -
+        traj.points, current_pose.position, collision_points.front().point) -
       abs_ego_offset;
     return dist_from_ego_to_obstacle / std::max(1e-6, std::abs(current_vel));
   }();

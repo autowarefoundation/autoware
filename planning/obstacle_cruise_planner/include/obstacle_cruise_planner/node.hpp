@@ -93,7 +93,7 @@ private:
   double calcCollisionTimeMargin(
     const geometry_msgs::msg::Pose & current_pose, const double current_vel,
     const std::vector<geometry_msgs::msg::PointStamped> & collision_points,
-    const PredictedObject & predicted_object, const Trajectory & decimated_traj,
+    const PredictedObject & predicted_object, const Trajectory & traj,
     const bool is_driving_forward);
   void publishVelocityLimit(const boost::optional<VelocityLimit> & vel_limit);
   void publishDebugData(const DebugData & debug_data) const;
@@ -181,6 +181,9 @@ private:
     // prediction resampling
     double prediction_resampling_time_interval;
     double prediction_resampling_time_horizon;
+    // goal extension
+    double goal_extension_length;
+    double goal_extension_interval;
   };
   ObstacleFilteringParam obstacle_filtering_param_;
 

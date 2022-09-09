@@ -131,17 +131,25 @@ Trajectory PlannerInterface::generateStopTrajectory(
   // If behavior stop point is ahead of the closest_obstacle_stop point within a certain margin
   // we set closest_obstacle_stop_distance to closest_behavior_stop_distance
   const double margin_from_obstacle = [&]() {
-    const auto closest_behavior_stop_dist_from_ego = motion_utils::calcDistanceToForwardStopPoint(
-      planner_data.traj.points, planner_data.current_pose, nearest_dist_deviation_threshold_,
-      nearest_yaw_deviation_threshold_);
+    const size_t nearest_segment_idx =
+      motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+        planner_data.traj.points, planner_data.current_pose, nearest_dist_deviation_threshold_,
+        nearest_yaw_deviation_threshold_);
+    const auto closest_behavior_stop_idx =
+      motion_utils::searchZeroVelocityIndex(planner_data.traj.points, nearest_segment_idx + 1);
 
-    if (closest_behavior_stop_dist_from_ego) {
+    if (
+      closest_behavior_stop_idx &&
+      closest_behavior_stop_idx != planner_data.traj.points.size() - 1) {
+      const double closest_behavior_stop_dist_from_ego = motion_utils::calcSignedArcLength(
+        planner_data.traj.points, planner_data.current_pose.position, nearest_segment_idx,
+        *closest_behavior_stop_idx);
       const double closest_obstacle_stop_dist_from_ego = closest_obstacle_dist - dist_to_ego -
                                                          longitudinal_info_.safe_distance_margin -
                                                          abs_ego_offset;
 
       const double stop_dist_diff =
-        *closest_behavior_stop_dist_from_ego - closest_obstacle_stop_dist_from_ego;
+        closest_behavior_stop_dist_from_ego - closest_obstacle_stop_dist_from_ego;
       if (0.0 < stop_dist_diff && stop_dist_diff < longitudinal_info_.safe_distance_margin) {
         // Use shorter margin (min_behavior_stop_margin) for obstacle stop
         return min_behavior_stop_margin_;

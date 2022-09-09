@@ -57,6 +57,9 @@
       prediction_resampling_time_interval: 0.1
       prediction_resampling_time_horizon: 10.0
 
+      goal_extension_length: 5.0 # extension length for collision check around the goal
+      goal_extension_interval: 1.0 # extension interval for collision check around the goal
+
       stop_obstacle_hold_time_threshold : 1.0 # maximum time for holding closest stop obstacle
 
       ignored_outside_obstacle_type:
