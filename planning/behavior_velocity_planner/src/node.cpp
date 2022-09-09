@@ -119,28 +119,28 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode(const rclcpp::NodeOptio
     createSubscriptionOptions(this));
   sub_traffic_signals_ =
     this->create_subscription<autoware_auto_perception_msgs::msg::TrafficSignalArray>(
-      "~/input/traffic_signals", 10,
+      "~/input/traffic_signals", 1,
       std::bind(&BehaviorVelocityPlannerNode::onTrafficSignals, this, _1),
       createSubscriptionOptions(this));
   sub_external_crosswalk_states_ = this->create_subscription<tier4_api_msgs::msg::CrosswalkStatus>(
-    "~/input/external_crosswalk_states", 10,
+    "~/input/external_crosswalk_states", 1,
     std::bind(&BehaviorVelocityPlannerNode::onExternalCrosswalkStates, this, _1),
     createSubscriptionOptions(this));
   sub_external_intersection_states_ =
     this->create_subscription<tier4_api_msgs::msg::IntersectionStatus>(
-      "~/input/external_intersection_states", 10,
+      "~/input/external_intersection_states", 1,
       std::bind(&BehaviorVelocityPlannerNode::onExternalIntersectionStates, this, _1));
   sub_external_velocity_limit_ = this->create_subscription<VelocityLimit>(
     "~/input/external_velocity_limit_mps", rclcpp::QoS{1}.transient_local(),
     std::bind(&BehaviorVelocityPlannerNode::onExternalVelocityLimit, this, _1));
   sub_external_traffic_signals_ =
     this->create_subscription<autoware_auto_perception_msgs::msg::TrafficSignalArray>(
-      "~/input/external_traffic_signals", 10,
+      "~/input/external_traffic_signals", 1,
       std::bind(&BehaviorVelocityPlannerNode::onExternalTrafficSignals, this, _1),
       createSubscriptionOptions(this));
   sub_virtual_traffic_light_states_ =
     this->create_subscription<tier4_v2x_msgs::msg::VirtualTrafficLightStateArray>(
-      "~/input/virtual_traffic_light_states", 10,
+      "~/input/virtual_traffic_light_states", 1,
       std::bind(&BehaviorVelocityPlannerNode::onVirtualTrafficLightStates, this, _1),
       createSubscriptionOptions(this));
   sub_occupancy_grid_ = this->create_subscription<nav_msgs::msg::OccupancyGrid>(

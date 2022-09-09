@@ -136,7 +136,7 @@ public:
   : clock_(node.get_clock()), logger_(node.get_logger())
   {
     const auto ns = std::string("~/debug/") + module_name;
-    pub_debug_ = node.create_publisher<visualization_msgs::msg::MarkerArray>(ns, 20);
+    pub_debug_ = node.create_publisher<visualization_msgs::msg::MarkerArray>(ns, 1);
     if (!node.has_parameter("is_publish_debug_path")) {
       is_publish_debug_path_ = node.declare_parameter("is_publish_debug_path", false);
     } else {
@@ -147,12 +147,12 @@ public:
         std::string("~/debug/path_with_lane_id/") + module_name, 1);
     }
     pub_virtual_wall_ = node.create_publisher<visualization_msgs::msg::MarkerArray>(
-      std::string("~/virtual_wall/") + module_name, 20);
+      std::string("~/virtual_wall/") + module_name, 5);
     pub_stop_reason_ =
-      node.create_publisher<tier4_planning_msgs::msg::StopReasonArray>("~/output/stop_reasons", 20);
+      node.create_publisher<tier4_planning_msgs::msg::StopReasonArray>("~/output/stop_reasons", 1);
     pub_infrastructure_commands_ =
       node.create_publisher<tier4_v2x_msgs::msg::InfrastructureCommandArray>(
-        "~/output/infrastructure_commands", 20);
+        "~/output/infrastructure_commands", 1);
 
     processing_time_publisher_ = std::make_shared<DebugPublisher>(&node, "~/debug");
   }
