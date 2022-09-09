@@ -99,10 +99,20 @@ std::vector<ShiftParkingPath> getShiftParkingPaths(
   const double jerk_resolution =
     std::abs(maximum_lateral_jerk - minimum_lateral_jerk) / pull_over_sampling_num;
 
-  double distance_to_shoulder_lane_boundary =
+  const double distance_to_shoulder_lane_boundary =
     util::getDistanceToShoulderBoundary(route_handler.getShoulderLanelets(), current_pose);
-  double offset_from_current_pose =
+  const double offset_from_current_pose =
     distance_to_shoulder_lane_boundary + common_parameter.vehicle_width / 2 + margin;
+
+  // shift end point in shoulder lane
+  PathPointWithLaneId shift_end_point;
+  {
+    const auto arc_position_goal = lanelet::utils::getArcCoordinates(target_lanelets, goal_pose);
+    const double s_start = arc_position_goal.length - after_pull_over_straight_distance;
+    const double s_end = s_start + std::numeric_limits<double>::epsilon();
+    const auto path = route_handler.getCenterLinePath(target_lanelets, s_start, s_end, true);
+    shift_end_point = path.points.front();
+  }
 
   for (double lateral_jerk = minimum_lateral_jerk; lateral_jerk <= maximum_lateral_jerk;
        lateral_jerk += jerk_resolution) {
@@ -123,15 +133,6 @@ std::vector<ShiftParkingPath> getShiftParkingPaths(
       straight_distance = arc_position_goal.length - after_pull_over_straight_distance -
                           pull_over_distance - arc_position_pose.length;
     }
-
-    // shift end point in shoulder lane
-    const auto shift_end_point = [&]() {
-      const auto arc_position_goal = lanelet::utils::getArcCoordinates(target_lanelets, goal_pose);
-      const double s_start = arc_position_goal.length - after_pull_over_straight_distance;
-      const double s_end = s_start + std::numeric_limits<double>::epsilon();
-      const auto path = route_handler.getCenterLinePath(target_lanelets, s_start, s_end, true);
-      return path.points.front();
-    }();
 
     PathWithLaneId road_lane_reference_path;
     {
