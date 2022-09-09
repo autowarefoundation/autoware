@@ -155,6 +155,11 @@ void OccupancyGridBasedCollisionDetector::computeCollisionIndexes(
 bool OccupancyGridBasedCollisionDetector::detectCollision(
   const IndexXYT & base_index, const bool check_out_of_range) const
 {
+  if (coll_indexes_table_.empty()) {
+    std::cerr << "[occupancy_grid_based_collision_detector] setMap has not yet been done."
+              << std::endl;
+    return false;
+  }
   const auto & coll_indexes_2d = coll_indexes_table_[base_index.theta];
   for (const auto & coll_index_2d : coll_indexes_2d) {
     int idx_theta = 0;  // whatever. Yaw is nothing to do with collision detection between grids.

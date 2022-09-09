@@ -160,6 +160,10 @@ void AbstractPlanningAlgorithm::computeCollisionIndexes(
 
 bool AbstractPlanningAlgorithm::detectCollision(const IndexXYT & base_index)
 {
+  if (coll_indexes_table_.empty()) {
+    std::cerr << "[abstract_algorithm] setMap has not yet been done." << std::endl;
+    return false;
+  }
   const auto & coll_indexes_2d = coll_indexes_table_[base_index.theta];
   for (const auto & coll_index_2d : coll_indexes_2d) {
     int idx_theta = 0;  // whatever. Yaw is nothing to do with collision detection between grids.
