@@ -63,6 +63,44 @@ inline std::vector<double> getVelocityArray(const T & points)
   return v_arr;
 }
 
+template <class T>
+inline std::vector<double> getAccelerationArray(const T & points)
+{
+  std::vector<double> segment_wise_a_arr;
+  for (size_t i = 0; i < points.size() - 1; ++i) {
+    const auto & prev_point = points.at(i);
+    const auto & next_point = points.at(i + 1);
+
+    const double delta_s = tier4_autoware_utils::calcDistance2d(prev_point, next_point);
+    if (delta_s == 0.0) {
+      segment_wise_a_arr.push_back(0.0);
+    } else {
+      const double prev_vel = getVelocity(prev_point);
+      const double next_vel = getVelocity(next_point);
+
+      const double acc = (std::pow(next_vel, 2) - std::pow(prev_vel, 2)) / 2.0 / delta_s;
+
+      segment_wise_a_arr.push_back(acc);
+    }
+  }
+
+  std::vector<double> point_wise_a_arr;
+  for (size_t i = 0; i < points.size(); ++i) {
+    if (i == 0) {
+      point_wise_a_arr.push_back(segment_wise_a_arr.at(i));
+    } else if (i == points.size() - 1 || i == points.size() - 2) {
+      // Ignore the last two acceleration values which are negative infinity since the path end
+      // velocity is always 0 by motion_velocity_smoother. NOTE: Path end velocity affects the last
+      // two acceleration values.
+      point_wise_a_arr.push_back(0.0);
+    } else {
+      point_wise_a_arr.push_back((segment_wise_a_arr.at(i - 1) + segment_wise_a_arr.at(i)) / 2.0);
+    }
+  }
+
+  return point_wise_a_arr;
+}
+
 template <typename T>
 std::vector<double> calcPathArcLengthArray(const T & points, const double offset)
 {

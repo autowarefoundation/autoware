@@ -91,6 +91,7 @@ public:
     const auto arclength_offset = motion_utils::calcSignedArcLength(points, 0, ego_p);
     data.arclength = calcPathArcLengthArray(points, -arclength_offset);
     data.velocity = getVelocityArray(points);
+    data.acceleration = getAccelerationArray(points);
     data.yaw = getYawArray(points);
 
     if (

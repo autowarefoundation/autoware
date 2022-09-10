@@ -54,6 +54,12 @@ PlotVelocityOverArclength('v_motion_avoid', motion_avoid, tracker_time)
 PlotVelocityOverArclength('v_motion_smoother_latacc', motion_smoother_latacc, tracker_time)
 PlotVelocityOverArclength('v_motion_smoother', motion_smoother, tracker_time)
 
+PlotAccelerationOverArclength('a_behavior_path', behavior_path, tracker_time)
+PlotAccelerationOverArclength('a_behavior_velocity', behavior_velocity, tracker_time)
+PlotAccelerationOverArclength('a_motion_avoid', motion_avoid, tracker_time)
+PlotAccelerationOverArclength('a_motion_smoother_latacc', motion_smoother_latacc, tracker_time)
+PlotAccelerationOverArclength('a_motion_smoother', motion_smoother, tracker_time)
+
 PlotYawOverArclength('yaw_behavior_path', behavior_path, tracker_time)
 PlotYawOverArclength('yaw_behavior_velocity', behavior_velocity, tracker_time)
 PlotYawOverArclength('yaw_motion_avoid', motion_avoid, tracker_time)
@@ -95,6 +101,10 @@ end
 
 function PlotVelocityOverArclength(name, path, timestamp)
   PlotValue(name, path, timestamp,"velocity")
+end
+
+function PlotAccelerationOverArclength(name, path, timestamp)
+  PlotValue(name, path, timestamp,"acceleration")
 end
 
 function PlotYawOverArclength(name, path, timestamp)
