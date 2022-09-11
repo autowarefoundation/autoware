@@ -465,7 +465,7 @@ def launch_setup(context, *args, **kwargs):
     components = []
     components.extend(
         pipeline.create_single_frame_obstacle_segmentation_components(
-            input_topic="/sensing/lidar/concatenated/pointcloud",
+            input_topic=LaunchConfiguration("input/pointcloud"),
             output_topic=pipeline.single_frame_obstacle_seg_output,
         )
     )
@@ -521,6 +521,7 @@ def generate_launch_description():
     add_launch_arg("use_pointcloud_container", "False")
     add_launch_arg("container_name", "perception_pipeline_container")
     add_launch_arg("tier4_perception_launch_param_path", "tier4_perception_launch parameter path")
+    add_launch_arg("input/pointcloud", "/sensing/lidar/concatenated/pointcloud")
 
     set_container_executable = SetLaunchConfiguration(
         "container_executable",
