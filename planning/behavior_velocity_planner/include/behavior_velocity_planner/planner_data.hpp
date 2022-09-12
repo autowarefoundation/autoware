@@ -118,7 +118,9 @@ struct PlannerData
     for (const auto & velocity : velocity_buffer) {
       vs.push_back(velocity.twist.linear.x);
 
-      const auto time_diff = now - velocity.header.stamp;
+      const auto & s = velocity.header.stamp;
+      const auto time_diff =
+        now >= s ? now - s : rclcpp::Duration(0, 0);  // Note: negative time throws an exception.
       if (time_diff.seconds() >= stop_duration) {
         break;
       }
