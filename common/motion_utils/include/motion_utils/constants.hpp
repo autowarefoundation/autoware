@@ -1,4 +1,4 @@
-// Copyright 2022 Tier IV, Inc.
+// Copyright 2022 TIER IV, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,16 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MOTION_UTILS__MOTION_UTILS_HPP_
-#define MOTION_UTILS__MOTION_UTILS_HPP_
+#ifndef MOTION_UTILS__CONSTANTS_HPP_
+#define MOTION_UTILS__CONSTANTS_HPP_
 
-#include "motion_utils/constants.hpp"
-#include "motion_utils/marker/marker_helper.hpp"
-#include "motion_utils/resample/resample.hpp"
-#include "motion_utils/trajectory/interpolation.hpp"
-#include "motion_utils/trajectory/path_with_lane_id.hpp"
-#include "motion_utils/trajectory/tmp_conversion.hpp"
-#include "motion_utils/trajectory/trajectory.hpp"
-#include "motion_utils/vehicle/vehicle_state_checker.hpp"
+namespace motion_utils
+{
+constexpr double overlap_threshold = 0.1;
+}  // namespace motion_utils
 
-#endif  // MOTION_UTILS__MOTION_UTILS_HPP_
+#endif  // MOTION_UTILS__CONSTANTS_HPP_
