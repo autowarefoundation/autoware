@@ -61,9 +61,13 @@ double calcInterpolatedVelocity(
 
 namespace drivable_area_utils
 {
+using autoware_auto_planning_msgs::msg::PathWithLaneId;
+using geometry_msgs::msg::Pose;
+using route_handler::RouteHandler;
+
 template <class T>
 size_t findNearestSegmentIndex(
-  const std::vector<T> & points, const geometry_msgs::msg::Pose & pose, const double dist_threshold,
+  const std::vector<T> & points, const Pose & pose, const double dist_threshold,
   const double yaw_threshold)
 {
   const auto nearest_idx =
@@ -112,7 +116,7 @@ bool sumLengthFromTwoPoints(
   return is_end;
 }
 
-void fillYawFromXY(std::vector<geometry_msgs::msg::Pose> & points)
+void fillYawFromXY(std::vector<Pose> & points)
 {
   if (points.size() < 2) {
     return;
@@ -128,51 +132,166 @@ void fillYawFromXY(std::vector<geometry_msgs::msg::Pose> & points)
   }
 }
 
-std::array<double, 4> getPathScope(
-  const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-  const std::shared_ptr<route_handler::RouteHandler> route_handler,
-  const geometry_msgs::msg::Pose & current_pose, const double forward_lane_length,
-  const double backward_lane_length, const double lane_margin, const double max_dist,
-  const double max_yaw)
+lanelet::ConstLanelets extractLanesFromPathWithLaneId(
+  const std::shared_ptr<RouteHandler> & route_handler, const PathWithLaneId & path)
 {
-  // extract lanes from path_with_lane_id
-  lanelet::ConstLanelets path_lanes = [&]() {
-    // extract "unique" lane ids from path_with_lane_id
-    std::vector<size_t> path_lane_ids;
-    for (const auto & path_point : path.points) {
-      for (const size_t lane_id : path_point.lane_ids) {
-        if (std::find(path_lane_ids.begin(), path_lane_ids.end(), lane_id) == path_lane_ids.end()) {
-          path_lane_ids.push_back(lane_id);
-        }
+  // extract "unique" lane ids from path_with_lane_id
+  std::vector<size_t> path_lane_ids;
+  for (const auto & path_point : path.points) {
+    for (const size_t lane_id : path_point.lane_ids) {
+      if (std::find(path_lane_ids.begin(), path_lane_ids.end(), lane_id) == path_lane_ids.end()) {
+        path_lane_ids.push_back(lane_id);
       }
     }
+  }
 
-    // get lanes according to lane ids
-    lanelet::ConstLanelets path_lanes;
-    for (const auto path_lane_id : path_lane_ids) {
-      const auto & lane = route_handler->getLaneletsFromId(path_lane_id);
-      path_lanes.push_back(lane);
-    }
+  // get lanes according to lane ids
+  lanelet::ConstLanelets path_lanes;
+  path_lanes.reserve(path_lane_ids.size());
+  for (const auto path_lane_id : path_lane_ids) {
+    const auto & lane = route_handler->getLaneletsFromId(static_cast<lanelet::Id>(path_lane_id));
+    path_lanes.push_back(lane);
+  }
 
-    return path_lanes;
-  }();
+  return path_lanes;
+}
 
-  // calculate nearest lane idx
-  const int nearest_lane_idx = [&]() -> int {
-    lanelet::ConstLanelet closest_lanelet;
-    if (lanelet::utils::query::getClosestLanelet(path_lanes, current_pose, &closest_lanelet)) {
-      for (size_t i = 0; i < path_lanes.size(); ++i) {
-        if (path_lanes.at(i).id() == closest_lanelet.id()) {
-          return i;
-        }
+size_t getNearestLaneId(const lanelet::ConstLanelets & path_lanes, const Pose & current_pose)
+{
+  lanelet::ConstLanelet closest_lanelet;
+  if (lanelet::utils::query::getClosestLanelet(path_lanes, current_pose, &closest_lanelet)) {
+    for (size_t i = 0; i < path_lanes.size(); ++i) {
+      if (path_lanes.at(i).id() == closest_lanelet.id()) {
+        return i;
       }
     }
-    return 0;
-  }();
+  }
+  return 0;
+}
+
+void updateMinMaxPositionFromForwardLanelet(
+  const lanelet::ConstLanelets & path_lanes, const std::vector<Pose> & points,
+  const Pose & current_pose, const double & forward_lane_length, const double & lane_margin,
+  const size_t & nearest_lane_idx, const size_t & nearest_segment_idx,
+  const std::function<lanelet::ConstLineString2d(const lanelet::ConstLanelet & lane)> &
+    get_bound_func,
+  boost::optional<double> & min_x, boost::optional<double> & min_y, boost::optional<double> & max_x,
+  boost::optional<double> & max_y)
+{
+  const auto forward_offset_length = motion_utils::calcSignedArcLength(
+    points, current_pose.position, nearest_segment_idx, nearest_segment_idx);
+  double sum_length = std::min(forward_offset_length, 0.0);
+  size_t current_lane_idx = nearest_lane_idx;
+  auto current_lane = path_lanes.at(current_lane_idx);
+  size_t current_point_idx = nearest_segment_idx;
+  while (true) {
+    const auto & bound = get_bound_func(current_lane);
+    if (current_point_idx != bound.size() - 1) {
+      const Eigen::Vector2d & current_point = bound[current_point_idx].basicPoint();
+      const Eigen::Vector2d & next_point = bound[current_point_idx + 1].basicPoint();
+      const bool is_end_lane = drivable_area_utils::sumLengthFromTwoPoints(
+        current_point, next_point, forward_lane_length + lane_margin, sum_length, min_x, min_y,
+        max_x, max_y);
+      if (is_end_lane) {
+        break;
+      }
+
+      ++current_point_idx;
+    } else {
+      const auto previous_lane = current_lane;
+      const size_t previous_point_idx = get_bound_func(previous_lane).size() - 1;
+      const auto & previous_bound = get_bound_func(previous_lane);
+      drivable_area_utils::updateMinMaxPosition(
+        previous_bound[previous_point_idx].basicPoint(), min_x, min_y, max_x, max_y);
+
+      if (current_lane_idx == path_lanes.size() - 1) {
+        break;
+      }
+
+      current_lane_idx += 1;
+      current_lane = path_lanes.at(current_lane_idx);
+      current_point_idx = 0;
+      const auto & current_bound = get_bound_func(current_lane);
+
+      const Eigen::Vector2d & prev_point = previous_bound[previous_point_idx].basicPoint();
+      const Eigen::Vector2d & current_point = current_bound[current_point_idx].basicPoint();
+      const bool is_end_lane = drivable_area_utils::sumLengthFromTwoPoints(
+        prev_point, current_point, forward_lane_length + lane_margin, sum_length, min_x, min_y,
+        max_x, max_y);
+      if (is_end_lane) {
+        break;
+      }
+    }
+  }
+}
+
+void updateMinMaxPositionFromBackwardLanelet(
+  const lanelet::ConstLanelets & path_lanes, const std::vector<Pose> & points,
+  const Pose & current_pose, const double & backward_lane_length, const double & lane_margin,
+  const size_t & nearest_lane_idx, const size_t & nearest_segment_idx,
+  const std::function<lanelet::ConstLineString2d(const lanelet::ConstLanelet & lane)> &
+    get_bound_func,
+  boost::optional<double> & min_x, boost::optional<double> & min_y, boost::optional<double> & max_x,
+  boost::optional<double> & max_y)
+{
+  size_t current_point_idx = nearest_segment_idx + 1;
+  const auto backward_offset_length = motion_utils::calcSignedArcLength(
+    points, nearest_segment_idx + 1, current_pose.position, nearest_segment_idx);
+  double sum_length = std::min(backward_offset_length, 0.0);
+  size_t current_lane_idx = nearest_lane_idx;
+  lanelet::ConstLanelet current_lane = path_lanes.at(current_lane_idx);
+  while (true) {
+    const auto & bound = get_bound_func(current_lane);
+    if (current_point_idx != 0) {
+      const Eigen::Vector2d & current_point = bound[current_point_idx].basicPoint();
+      const Eigen::Vector2d & prev_point = bound[current_point_idx - 1].basicPoint();
+      const bool is_end_lane = drivable_area_utils::sumLengthFromTwoPoints(
+        current_point, prev_point, backward_lane_length + lane_margin, sum_length, min_x, min_y,
+        max_x, max_y);
+      if (is_end_lane) {
+        break;
+      }
+
+      --current_point_idx;
+    } else {
+      const auto next_lane = current_lane;
+      const size_t next_point_idx = 0;
+      const auto & next_bound = get_bound_func(next_lane);
+      drivable_area_utils::updateMinMaxPosition(
+        next_bound[next_point_idx].basicPoint(), min_x, min_y, max_x, max_y);
+
+      if (current_lane_idx == 0) {
+        break;
+      }
+
+      current_lane_idx -= 1;
+      current_lane = path_lanes.at(current_lane_idx);
+      const auto & current_bound = get_bound_func(current_lane);
+      current_point_idx = current_bound.size() - 1;
+
+      const Eigen::Vector2d & next_point = next_bound[next_point_idx].basicPoint();
+      const Eigen::Vector2d & current_point = current_bound[current_point_idx].basicPoint();
+      const bool is_end_lane = drivable_area_utils::sumLengthFromTwoPoints(
+        next_point, current_point, backward_lane_length + lane_margin, sum_length, min_x, min_y,
+        max_x, max_y);
+      if (is_end_lane) {
+        break;
+      }
+    }
+  }
+}
+std::array<double, 4> getPathScope(
+  const PathWithLaneId & path, const std::shared_ptr<RouteHandler> & route_handler,
+  const Pose & current_pose, const double forward_lane_length, const double backward_lane_length,
+  const double lane_margin, const double max_dist, const double max_yaw)
+{
+  const lanelet::ConstLanelets path_lanes = extractLanesFromPathWithLaneId(route_handler, path);
+
+  const size_t nearest_lane_idx = getNearestLaneId(path_lanes, current_pose);
 
   // define functions to get right/left bounds as a vector
-  const auto get_bound_funcs =
-    std::vector<std::function<lanelet::ConstLineString2d(const lanelet::ConstLanelet & lane)>>{
+  const std::vector<std::function<lanelet::ConstLineString2d(const lanelet::ConstLanelet & lane)>>
+    get_bound_funcs{
       [](const lanelet::ConstLanelet & lane) -> lanelet::ConstLineString2d {
         return lane.rightBound2d();
       },
@@ -193,111 +312,33 @@ std::array<double, 4> getPathScope(
       continue;
     }
 
-    std::vector<geometry_msgs::msg::Pose> points;
-    for (const auto & point : nearest_bound) {  // calculate x and y
-      geometry_msgs::msg::Pose p;
-      p.position.x = point.x();
-      p.position.y = point.y();
-      points.push_back(p);
-    }
-    fillYawFromXY(points);  // calculate yaw
+    const std::vector<Pose> points = std::invoke([&nearest_bound]() {
+      std::vector<Pose> points;
+      points.reserve(nearest_bound.size());
+      for (const auto & point : nearest_bound) {  // calculate x and y
+        Pose p;
+        p.position.x = point.x();
+        p.position.y = point.y();
+        points.push_back(p);
+      }
+
+      fillYawFromXY(points);  // calculate yaw
+      return points;
+    });
+
     const size_t nearest_segment_idx =
       motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
         points, current_pose, max_dist, max_yaw);
 
     // forward lanelet
-    const auto forward_offset_length = motion_utils::calcSignedArcLength(
-      points, current_pose.position, nearest_segment_idx, nearest_segment_idx);
-    double sum_length = std::min(forward_offset_length, 0.0);
-    size_t current_lane_idx = nearest_lane_idx;
-    auto current_lane = path_lanes.at(current_lane_idx);
-    size_t current_point_idx = nearest_segment_idx;
-    while (true) {
-      const auto & bound = get_bound_func(current_lane);
-      if (current_point_idx != bound.size() - 1) {
-        const Eigen::Vector2d & current_point = bound[current_point_idx].basicPoint();
-        const Eigen::Vector2d & next_point = bound[current_point_idx + 1].basicPoint();
-        const bool is_end_lane = drivable_area_utils::sumLengthFromTwoPoints(
-          current_point, next_point, forward_lane_length + lane_margin, sum_length, min_x, min_y,
-          max_x, max_y);
-        if (is_end_lane) {
-          break;
-        }
-
-        ++current_point_idx;
-      } else {
-        const auto previous_lane = current_lane;
-        const size_t previous_point_idx = get_bound_func(previous_lane).size() - 1;
-        const auto & previous_bound = get_bound_func(previous_lane);
-        drivable_area_utils::updateMinMaxPosition(
-          previous_bound[previous_point_idx].basicPoint(), min_x, min_y, max_x, max_y);
-
-        if (current_lane_idx == path_lanes.size() - 1) {
-          break;
-        }
-
-        current_lane_idx += 1;
-        current_lane = path_lanes.at(current_lane_idx);
-        current_point_idx = 0;
-        const auto & current_bound = get_bound_func(current_lane);
-
-        const Eigen::Vector2d & prev_point = previous_bound[previous_point_idx].basicPoint();
-        const Eigen::Vector2d & current_point = current_bound[current_point_idx].basicPoint();
-        const bool is_end_lane = drivable_area_utils::sumLengthFromTwoPoints(
-          prev_point, current_point, forward_lane_length + lane_margin, sum_length, min_x, min_y,
-          max_x, max_y);
-        if (is_end_lane) {
-          break;
-        }
-      }
-    }
+    updateMinMaxPositionFromForwardLanelet(
+      path_lanes, points, current_pose, forward_lane_length, lane_margin, nearest_lane_idx,
+      nearest_segment_idx, get_bound_func, min_x, min_y, max_x, max_y);
 
     // backward lanelet
-    current_point_idx = nearest_segment_idx + 1;
-    const auto backward_offset_length = motion_utils::calcSignedArcLength(
-      points, nearest_segment_idx + 1, current_pose.position, nearest_segment_idx);
-    sum_length = std::min(backward_offset_length, 0.0);
-    current_lane_idx = nearest_lane_idx;
-    current_lane = path_lanes.at(current_lane_idx);
-    while (true) {
-      const auto & bound = get_bound_func(current_lane);
-      if (current_point_idx != 0) {
-        const Eigen::Vector2d & current_point = bound[current_point_idx].basicPoint();
-        const Eigen::Vector2d & prev_point = bound[current_point_idx - 1].basicPoint();
-        const bool is_end_lane = drivable_area_utils::sumLengthFromTwoPoints(
-          current_point, prev_point, backward_lane_length + lane_margin, sum_length, min_x, min_y,
-          max_x, max_y);
-        if (is_end_lane) {
-          break;
-        }
-
-        --current_point_idx;
-      } else {
-        const auto next_lane = current_lane;
-        const size_t next_point_idx = 0;
-        const auto & next_bound = get_bound_func(next_lane);
-        drivable_area_utils::updateMinMaxPosition(
-          next_bound[next_point_idx].basicPoint(), min_x, min_y, max_x, max_y);
-
-        if (current_lane_idx == 0) {
-          break;
-        }
-
-        current_lane_idx -= 1;
-        current_lane = path_lanes.at(current_lane_idx);
-        const auto & current_bound = get_bound_func(current_lane);
-        current_point_idx = current_bound.size() - 1;
-
-        const Eigen::Vector2d & next_point = next_bound[next_point_idx].basicPoint();
-        const Eigen::Vector2d & current_point = current_bound[current_point_idx].basicPoint();
-        const bool is_end_lane = drivable_area_utils::sumLengthFromTwoPoints(
-          next_point, current_point, backward_lane_length + lane_margin, sum_length, min_x, min_y,
-          max_x, max_y);
-        if (is_end_lane) {
-          break;
-        }
-      }
-    }
+    updateMinMaxPositionFromBackwardLanelet(
+      path_lanes, points, current_pose, backward_lane_length, lane_margin, nearest_lane_idx,
+      nearest_segment_idx, get_bound_func, min_x, min_y, max_x, max_y);
   }
 
   if (!min_x || !min_y || !max_x || !max_y) {
@@ -321,6 +362,7 @@ using tier4_autoware_utils::Point2d;
 std::vector<Pose> convertToPoseArray(const PathWithLaneId & path)
 {
   std::vector<Pose> pose_array;
+  pose_array.reserve(path.points.size());
   for (const auto & pt : path.points) {
     pose_array.push_back(pt.point.pose);
   }
@@ -656,6 +698,7 @@ std::vector<size_t> filterObjectIndicesByLanelets(
     }
     // create lanelet polygon
     Polygon2d lanelet_polygon;
+    lanelet_polygon.outer().reserve(polygon2d.size() + 1);
     for (const auto & lanelet_point : polygon2d) {
       lanelet_polygon.outer().emplace_back(lanelet_point.x(), lanelet_point.y());
     }
@@ -700,6 +743,7 @@ std::vector<size_t> filterObjectIndicesByLanelets(
         continue;
       }
       Polygon2d lanelet_polygon;
+      lanelet_polygon.outer().reserve(polygon2d.size() + 1);
       for (const auto & lanelet_point : polygon2d) {
         lanelet_polygon.outer().emplace_back(lanelet_point.x(), lanelet_point.y());
       }
@@ -721,6 +765,7 @@ PredictedObjects filterObjectsByLanelets(
 {
   PredictedObjects filtered_objects;
   const auto indices = filterObjectIndicesByLanelets(objects, target_lanelets);
+  filtered_objects.objects.reserve(indices.size());
   for (const size_t i : indices) {
     filtered_objects.objects.push_back(objects.objects.at(i));
   }
@@ -762,9 +807,9 @@ std::vector<double> calcObjectsDistanceToPath(
       continue;
     }
     LineString2d ego_path_line;
-    for (size_t j = 0; j < ego_path_point_array.size(); ++j) {
-      boost::geometry::append(
-        ego_path_line, Point2d(ego_path_point_array.at(j).x, ego_path_point_array.at(j).y));
+    ego_path_line.reserve(ego_path_point_array.size());
+    for (const auto & ego_path_point : ego_path_point_array) {
+      boost::geometry::append(ego_path_line, Point2d(ego_path_point.x, ego_path_point.y));
     }
     const double distance = boost::geometry::distance(obj_polygon, ego_path_line);
     distance_array.push_back(distance);
@@ -784,9 +829,9 @@ std::vector<size_t> filterObjectsIndicesByPath(
       continue;
     }
     LineString2d ego_path_line;
-    for (size_t j = 0; j < ego_path_point_array.size(); ++j) {
-      boost::geometry::append(
-        ego_path_line, Point2d(ego_path_point_array.at(j).x, ego_path_point_array.at(j).y));
+    ego_path_line.reserve(ego_path_point_array.size());
+    for (const auto & ego_path_point : ego_path_point_array) {
+      boost::geometry::append(ego_path_line, Point2d(ego_path_point.x, ego_path_point.y));
     }
     const double distance = boost::geometry::distance(obj_polygon, ego_path_line);
     if (distance < vehicle_width) {
@@ -829,7 +874,7 @@ bool exists(std::vector<T> vec, T element)
 
 boost::optional<size_t> findIndexOutOfGoalSearchRange(
   const std::vector<autoware_auto_planning_msgs::msg::PathPointWithLaneId> & points,
-  const geometry_msgs::msg::Pose & goal, const int64_t goal_lane_id,
+  const Pose & goal, const int64_t goal_lane_id,
   const double max_dist = std::numeric_limits<double>::max())
 {
   if (points.empty()) {
@@ -915,6 +960,7 @@ bool setGoal(
     const size_t min_dist_out_of_circle_index = min_dist_out_of_circle_index_opt.get();
 
     // create output points
+    output_ptr->points.reserve(output_ptr->points.size() + min_dist_out_of_circle_index + 3);
     for (size_t i = 0; i <= min_dist_out_of_circle_index; ++i) {
       output_ptr->points.push_back(input.points.at(i));
     }
@@ -1129,6 +1175,7 @@ OccupancyGrid generateDrivableArea(
       // create drivable area using opencv
       std::vector<std::vector<cv::Point>> cv_polygons;
       std::vector<cv::Point> cv_polygon;
+      cv_polygon.reserve(lane_poly.size());
       for (const auto & p : lane_poly) {
         const double z = lane.polygon3d().basicPolygon().at(0).z();
         Point geom_pt = tier4_autoware_utils::createPoint(p.x(), p.y(), z);
@@ -1250,6 +1297,7 @@ double getDistanceToCrosswalk(
         // create centerline
         const lanelet::ConstLineString2d lanelet_centerline = llt.centerline2d();
         LineString2d centerline;
+        centerline.reserve(lanelet_centerline.size());
         for (const auto & point : lanelet_centerline) {
           boost::geometry::append(centerline, Point2d(point.x(), point.y()));
         }
@@ -1259,6 +1307,7 @@ double getDistanceToCrosswalk(
         for (const auto & crosswalk : conflicting_crosswalks) {
           lanelet::CompoundPolygon2d lanelet_crosswalk_polygon = crosswalk.polygon2d();
           Polygon2d polygon;
+          polygon.outer().reserve(lanelet_crosswalk_polygon.size() + 1);
           for (const auto & point : lanelet_crosswalk_polygon) {
             polygon.outer().emplace_back(point.x(), point.y());
           }
@@ -1304,6 +1353,7 @@ double getSignedDistance(
 std::vector<uint64_t> getIds(const lanelet::ConstLanelets & lanelets)
 {
   std::vector<uint64_t> ids;
+  ids.reserve(lanelets.size());
   for (const auto & llt : lanelets) {
     ids.push_back(llt.id());
   }
@@ -1315,6 +1365,7 @@ Path convertToPathFromPathWithLaneId(const PathWithLaneId & path_with_lane_id)
   Path path;
   path.header = path_with_lane_id.header;
   path.drivable_area = path_with_lane_id.drivable_area;
+  path.points.reserve(path_with_lane_id.points.size());
   for (const auto & pt_with_lane_id : path_with_lane_id.points) {
     path.points.push_back(pt_with_lane_id.point);
   }
@@ -1339,6 +1390,7 @@ lanelet::Polygon3d getVehiclePolygon(
 
   lanelet::Polygon3d llt_poly;
   auto toPoint3d = [](const tf2::Vector3 & v) { return lanelet::Point3d(0, v.x(), v.y(), v.z()); };
+  llt_poly.reserve(4);
   llt_poly.push_back(toPoint3d(front_left_transformed));
   llt_poly.push_back(toPoint3d(front_right_transformed));
   llt_poly.push_back(toPoint3d(rear_right_transformed));
@@ -1357,7 +1409,7 @@ PathPointWithLaneId insertStopPoint(double length, PathWithLaneId * path)
   }
 
   double accumulated_length = 0;
-  double insert_idx = 0;
+  size_t insert_idx = 0;
   Pose stop_pose;
   for (size_t i = 1; i < path->points.size(); i++) {
     const auto prev_pose = path->points.at(i - 1).point.pose;
@@ -1381,7 +1433,7 @@ PathPointWithLaneId insertStopPoint(double length, PathWithLaneId * path)
   PathPointWithLaneId stop_point;
   stop_point.lane_ids = path->points.at(insert_idx).lane_ids;
   stop_point.point.pose = stop_pose;
-  path->points.insert(path->points.begin() + insert_idx, stop_point);
+  path->points.insert(path->points.begin() + static_cast<int>(insert_idx), stop_point);
   for (size_t i = insert_idx; i < path->points.size(); i++) {
     path->points.at(i).point.longitudinal_velocity_mps = 0.0;
     path->points.at(i).point.lateral_velocity_mps = 0.0;
@@ -1481,6 +1533,7 @@ std::vector<Polygon2d> getTargetLaneletPolygons(
   }
 
   Polygon2d llt_polygon_bg;
+  llt_polygon_bg.outer().reserve(llt_polygon_2d.size() + 1);
   for (const auto & llt_pt : llt_polygon_2d) {
     llt_polygon_bg.outer().emplace_back(llt_pt.x(), llt_pt.y());
   }
@@ -1493,6 +1546,7 @@ std::vector<Polygon2d> getTargetLaneletPolygons(
     if (type == target_type && map_polygon.size() > 2) {
       // create map polygon
       Polygon2d map_polygon_bg;
+      map_polygon_bg.outer().reserve(map_polygon.size() + 1);
       for (const auto & pt : map_polygon) {
         map_polygon_bg.outer().emplace_back(pt.x(), pt.y());
       }
@@ -1536,9 +1590,9 @@ void imageToOccupancyGrid(const cv::Mat & cv_image, OccupancyGrid * occupancy_gr
 cv::Point toCVPoint(
   const Point & geom_point, const double width_m, const double height_m, const double resolution)
 {
-  return cv::Point(
+  return {
     static_cast<int>((height_m - geom_point.y) / resolution),
-    static_cast<int>((width_m - geom_point.x) / resolution));
+    static_cast<int>((width_m - geom_point.x) / resolution)};
 }
 
 // TODO(Horibe) There is a similar function in route_handler.
@@ -1931,8 +1985,8 @@ lanelet::ConstLanelets getExtendedCurrentLanes(
 }
 
 lanelet::ConstLanelets calcLaneAroundPose(
-  const std::shared_ptr<RouteHandler> route_handler, const geometry_msgs::msg::Pose & pose,
-  const double forward_length, const double backward_length)
+  const std::shared_ptr<RouteHandler> route_handler, const Pose & pose, const double forward_length,
+  const double backward_length)
 {
   lanelet::ConstLanelet current_lane;
   if (!route_handler->getClosestLaneletWithinRoute(pose, &current_lane)) {
@@ -1988,6 +2042,8 @@ Polygon2d convertBoundingBoxObjectToGeometryPolygon(
   tf2::Vector3 p3_obj = tf_map2obj * p3_map;
   tf2::Vector3 p4_obj = tf_map2obj * p4_map;
 
+  object_polygon.outer().reserve(5);
+
   object_polygon.outer().emplace_back(p1_obj.x(), p1_obj.y());
   object_polygon.outer().emplace_back(p2_obj.x(), p2_obj.y());
   object_polygon.outer().emplace_back(p3_obj.x(), p3_obj.y());
@@ -2008,6 +2064,7 @@ Polygon2d convertCylindricalObjectToGeometryPolygon(
 
   constexpr int N = 20;
   const double r = obj_shape.dimensions.x / 2;
+  object_polygon.outer().reserve(N + 1);
   for (int i = 0; i < N; ++i) {
     object_polygon.outer().emplace_back(
       obj_x + r * std::cos(2.0 * M_PI / N * i), obj_y + r * std::sin(2.0 * M_PI / N * i));
@@ -2024,6 +2081,7 @@ Polygon2d convertPolygonObjectToGeometryPolygon(const Pose & current_pose, const
   tf2::Transform tf_map2obj;
   fromMsg(current_pose, tf_map2obj);
   const auto obj_points = obj_shape.footprint.points;
+  object_polygon.outer().reserve(obj_points.size() + 1);
   for (const auto & obj_point : obj_points) {
     tf2::Vector3 obj(obj_point.x, obj_point.y, obj_point.z);
     tf2::Vector3 tf_obj = tf_map2obj * obj;

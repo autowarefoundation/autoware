@@ -38,8 +38,8 @@ using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 
 std::vector<double> calcPathArcLengthArray(
-  const PathWithLaneId & path, size_t start = 0, size_t end = std::numeric_limits<size_t>::max(),
-  double offset = 0.0);
+  const PathWithLaneId & path, const size_t start = 0,
+  const size_t end = std::numeric_limits<size_t>::max(), const double offset = 0.0);
 
 PathWithLaneId resamplePathWithSpline(const PathWithLaneId & path, double interval);
 

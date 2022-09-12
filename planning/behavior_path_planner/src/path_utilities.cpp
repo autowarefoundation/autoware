@@ -34,17 +34,17 @@ namespace behavior_path_planner::util
  * @brief calc path arclength on each points from start point to end point.
  */
 std::vector<double> calcPathArcLengthArray(
-  const PathWithLaneId & path, size_t start, size_t end, double offset)
+  const PathWithLaneId & path, const size_t start, const size_t end, const double offset)
 {
+  const auto bounded_start = std::max(start, size_t{0});
+  const auto bounded_end = std::min(end, path.points.size());
   std::vector<double> out;
+  out.reserve(bounded_end - bounded_start);
 
   double sum = offset;
   out.push_back(sum);
 
-  start = std::max(start + 1, size_t{1});
-  end = std::min(end, path.points.size());
-
-  for (size_t i = start; i < end; ++i) {
+  for (size_t i = bounded_start + 1; i < bounded_end; ++i) {
     sum +=
       tier4_autoware_utils::calcDistance2d(path.points.at(i).point, path.points.at(i - 1).point);
     out.push_back(sum);
@@ -110,11 +110,11 @@ PathWithLaneId resamplePathWithSpline(const PathWithLaneId & path, double interv
     s_out.push_back(*closest_stop_dist);
   }
 
-  std::sort(s_out.begin(), s_out.end());
-
   if (s_out.empty()) {
     return path;
   }
+
+  std::sort(s_out.begin(), s_out.end());
 
   return motion_utils::resamplePath(path, s_out);
 }
@@ -201,7 +201,7 @@ std::pair<TurnIndicatorsCommand, double> getPathTurnSignal(
   const auto tl_on_threshold_lat = common_parameter.turn_light_on_threshold_dis_lat;
   const auto tl_on_threshold_long = common_parameter.turn_light_on_threshold_dis_long;
   const auto prev_sec = common_parameter.turn_light_on_threshold_time;
-  const double epsilon = 1e-6;
+  constexpr double epsilon = 1e-6;
   const auto arc_position_current_pose = lanelet::utils::getArcCoordinates(current_lanes, pose);
 
   // Start turn signal when 1 or 2 is satisfied
@@ -212,12 +212,12 @@ std::pair<TurnIndicatorsCommand, double> getPathTurnSignal(
   //  1. lateral offset is larger than tl_on_threshold_lat for left signal
   //                      smaller than tl_on_threshold_lat for right signal
   //  2. side point at shift start/end point cross the line
-  double distance_to_shift_start;
-  {
-    const auto arc_position_shift_start =
-      lanelet::utils::getArcCoordinates(current_lanes, shift_point.start);
-    distance_to_shift_start = arc_position_shift_start.length - arc_position_current_pose.length;
-  }
+  const double distance_to_shift_start =
+    std::invoke([&current_lanes, &shift_point, &arc_position_current_pose]() {
+      const auto arc_position_shift_start =
+        lanelet::utils::getArcCoordinates(current_lanes, shift_point.start);
+      return arc_position_shift_start.length - arc_position_current_pose.length;
+    });
 
   const auto time_to_shift_start =
     (std::abs(velocity) < epsilon) ? max_time : distance_to_shift_start / velocity;
@@ -265,17 +265,17 @@ std::pair<TurnIndicatorsCommand, double> getPathTurnSignal(
     }
   }
 
-  bool cross_line = false;
-  bool TEMPORARY_SET_CROSS_LINE_TRUE =
-    true;  // due to a bug. See link:
-           // https://github.com/autowarefoundation/autoware.universe/pull/748
-  if (TEMPORARY_SET_CROSS_LINE_TRUE) {
-    cross_line = true;
-  } else {
-    cross_line =
-      (left_start_point_is_in_lane != left_end_point_is_in_lane ||
-       right_start_point_is_in_lane != right_end_point_is_in_lane);
-  }
+  const bool cross_line = std::invoke([&]() {
+    constexpr bool temporary_set_cross_line_true =
+      true;  // due to a bug. See link:
+             // https://github.com/autowarefoundation/autoware.universe/pull/748
+    if (temporary_set_cross_line_true) {
+      return true;
+    }
+    return (
+      left_start_point_is_in_lane != left_end_point_is_in_lane ||
+      right_start_point_is_in_lane != right_end_point_is_in_lane);
+  });
 
   if (time_to_shift_start < prev_sec || distance_to_shift_start < tl_on_threshold_long) {
     if (diff > tl_on_threshold_lat && cross_line) {
@@ -286,13 +286,12 @@ std::pair<TurnIndicatorsCommand, double> getPathTurnSignal(
   }
 
   // calc distance from ego vehicle front to shift end point.
-  double distance_from_vehicle_front;
-  {
-    const auto arc_position_shift_end =
-      lanelet::utils::getArcCoordinates(current_lanes, shift_point.end);
-    distance_from_vehicle_front =
-      arc_position_shift_end.length - arc_position_current_pose.length - base_link2front;
-  }
+  const double distance_from_vehicle_front =
+    std::invoke([&current_lanes, &shift_point, &arc_position_current_pose, &base_link2front]() {
+      const auto arc_position_shift_end =
+        lanelet::utils::getArcCoordinates(current_lanes, shift_point.end);
+      return arc_position_shift_end.length - arc_position_current_pose.length - base_link2front;
+    });
 
   if (distance_from_vehicle_front >= 0.0) {
     return std::make_pair(turn_signal, distance_from_vehicle_front);
