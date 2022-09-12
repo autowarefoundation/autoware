@@ -57,7 +57,7 @@ public:
       circle_nms_dist_threshold_ = circle_nms_dist_threshold;
     }
 
-    if (yaw_norm_threshold > 0 && yaw_norm_threshold < 1) {
+    if (yaw_norm_threshold >= 0 && yaw_norm_threshold < 1) {
       yaw_norm_threshold_ = yaw_norm_threshold;
     }
 
