@@ -86,17 +86,6 @@ lanelet::ConstPoint3d get3DPointFrom2DArcLength(
   return lanelet::ConstPoint3d();
 }
 
-Path convertToPathFromPathWithLaneId(const PathWithLaneId & path_with_lane_id)
-{
-  Path path;
-  path.header = path_with_lane_id.header;
-  path.drivable_area = path_with_lane_id.drivable_area;
-  for (const auto & pt_with_lane_id : path_with_lane_id.points) {
-    path.points.push_back(pt_with_lane_id.point);
-  }
-  return path;
-}
-
 PathWithLaneId removeOverlappingPoints(const PathWithLaneId & input_path)
 {
   PathWithLaneId filtered_path;
@@ -120,27 +109,6 @@ PathWithLaneId removeOverlappingPoints(const PathWithLaneId & input_path)
   }
   filtered_path.drivable_area = input_path.drivable_area;
   return filtered_path;
-}
-
-double getDistanceToShoulderBoundary(
-  const lanelet::ConstLanelets & shoulder_lanelets, const Pose & pose)
-{
-  lanelet::ConstLanelet closest_shoulder_lanelet;
-  lanelet::ArcCoordinates arc_coordinates;
-  if (lanelet::utils::query::getClosestLanelet(
-        shoulder_lanelets, pose, &closest_shoulder_lanelet)) {
-    const auto lanelet_point = lanelet::utils::conversion::toLaneletPoint(pose.position);
-    const auto & left_line_2d = lanelet::utils::to2D(closest_shoulder_lanelet.leftBound3d());
-    arc_coordinates = lanelet::geometry::toArcCoordinates(
-      left_line_2d, lanelet::utils::to2D(lanelet_point).basicPoint());
-
-  } else {
-    RCLCPP_ERROR_STREAM(
-      rclcpp::get_logger("behavior_path_planner").get_child("utilities"),
-      "closest shoulder lanelet not found.");
-  }
-
-  return arc_coordinates.distance;
 }
 
 std::string toString(const geometry_msgs::msg::Pose & pose)
@@ -397,40 +365,6 @@ std::vector<lanelet::ConstLanelet> RouteHandler::getLanesAfterGoal(
 lanelet::ConstLanelets RouteHandler::getRouteLanelets() const { return route_lanelets_; }
 
 Pose RouteHandler::getGoalPose() const { return route_msg_.goal_pose; }
-
-void RouteHandler::setPullOverGoalPose(
-  const lanelet::ConstLanelet target_lane, const double vehicle_width, const double margin)
-{
-  const auto arc_position_goal =
-    lanelet::utils::getArcCoordinates({target_lane}, route_msg_.goal_pose);
-  Path centerline_path = convertToPathFromPathWithLaneId(
-    getCenterLinePath({target_lane}, 0.0, arc_position_goal.length + 10));
-  const auto seg_idx =
-    motion_utils::findNearestSegmentIndex(centerline_path.points, route_msg_.goal_pose.position);
-  const double d_lat = motion_utils::calcLongitudinalOffsetToSegment(
-    centerline_path.points, seg_idx, route_msg_.goal_pose.position);
-  const auto shoulder_point =
-    tier4_autoware_utils::calcOffsetPose(centerline_path.points.at(seg_idx).pose, d_lat, 0.0, 0.0);
-  pull_over_goal_pose_.orientation = shoulder_point.orientation;
-  pull_over_goal_pose_.position = shoulder_point.position;
-
-  // distance between shoulder lane's left boundary and shoulder lane center
-  double distance_shoulder_to_left_boundary =
-    getDistanceToShoulderBoundary({target_lane}, shoulder_point);
-
-  // distance between shoulder lane center and target line
-  double distance_shoulder_to_target =
-    distance_shoulder_to_left_boundary + vehicle_width / 2 + margin;
-
-  // Apply shifting shoulder lane to adjust to target line
-  double offset = -distance_shoulder_to_target;
-
-  double yaw = tf2::getYaw(shoulder_point.orientation);
-  pull_over_goal_pose_.position.x = shoulder_point.position.x - std::sin(yaw) * offset;
-  pull_over_goal_pose_.position.y = shoulder_point.position.y + std::cos(yaw) * offset;
-}
-
-Pose RouteHandler::getPullOverGoalPose() const { return pull_over_goal_pose_; }
 
 lanelet::Id RouteHandler::getGoalLaneId() const
 {
@@ -731,7 +665,7 @@ lanelet::ConstLanelets RouteHandler::getShoulderLaneletSequenceUpTo(
 }
 
 lanelet::ConstLanelets RouteHandler::getShoulderLaneletSequence(
-  const lanelet::ConstLanelet & lanelet, const Pose & current_pose, const double backward_distance,
+  const lanelet::ConstLanelet & lanelet, const Pose & pose, const double backward_distance,
   const double forward_distance) const
 {
   lanelet::ConstLanelets lanelet_sequence;
@@ -743,7 +677,7 @@ lanelet::ConstLanelets RouteHandler::getShoulderLaneletSequence(
 
   lanelet_sequence_forward = getShoulderLaneletSequenceAfter(lanelet, forward_distance);
 
-  const auto arc_coordinate = lanelet::utils::getArcCoordinates({lanelet}, current_pose);
+  const auto arc_coordinate = lanelet::utils::getArcCoordinates({lanelet}, pose);
   if (arc_coordinate.length < backward_distance) {
     lanelet_sequence_backward = getShoulderLaneletSequenceUpTo(lanelet, backward_distance);
   }
@@ -1130,10 +1064,11 @@ bool RouteHandler::getLaneChangeTarget(
 }
 
 bool RouteHandler::getPullOverTarget(
-  const lanelet::ConstLanelets & lanelets, lanelet::ConstLanelet * target_lanelet) const
+  const lanelet::ConstLanelets & lanelets, const Pose & goal_pose,
+  lanelet::ConstLanelet * target_lanelet) const
 {
   for (const auto & shoulder_lanelet : lanelets) {
-    if (lanelet::utils::isInLanelet(getGoalPose(), shoulder_lanelet, 0.1)) {
+    if (lanelet::utils::isInLanelet(goal_pose, shoulder_lanelet, 0.1)) {
       *target_lanelet = shoulder_lanelet;
       return true;
     }

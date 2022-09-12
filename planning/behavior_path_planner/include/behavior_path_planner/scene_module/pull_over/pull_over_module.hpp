@@ -189,9 +189,7 @@ private:
 
   PathWithLaneId getReferencePath() const;
   PathWithLaneId generateStopPath() const;
-  lanelet::ConstLanelets getPullOverLanes() const;
-  std::pair<bool, bool> getSafePath(ShiftParkingPath & safe_path) const;
-  Pose getRefinedGoal() const;
+  Pose calcRefinedGoal() const;
   Pose getParkingStartPose() const;
   ParallelParkingParameters getGeometricPullOverParameters() const;
   bool isLongEnoughToParkingStart(
@@ -202,7 +200,7 @@ private:
   double calcMinimumShiftPathDistance() const;
   std::pair<double, double> calcDistanceToPathChange() const;
 
-  bool planShiftPath();
+  bool planShiftPath(const Pose goal_pose);
   bool isStopped();
   bool hasFinishedCurrentPath();
   bool hasFinishedPullOver();
