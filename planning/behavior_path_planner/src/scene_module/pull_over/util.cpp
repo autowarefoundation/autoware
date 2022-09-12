@@ -343,5 +343,36 @@ lanelet::ConstLanelets getPullOverLanes(const RouteHandler & route_handler)
   }
   return pull_over_lanes;
 }
+
+Marker createPullOverAreaMarker(
+  const Pose & start_pose, const Pose & end_pose, const int32_t id,
+  const std_msgs::msg::Header & header, const double base_link2front, const double base_link2rear,
+  const double vehicle_width, const std_msgs::msg::ColorRGBA & color)
+{
+  using tier4_autoware_utils::createDefaultMarker;
+  using tier4_autoware_utils::createMarkerScale;
+  using tier4_autoware_utils::createPoint;
+
+  Marker marker = createDefaultMarker(
+    header.frame_id, header.stamp, "pull_over_area", id,
+    visualization_msgs::msg::Marker::LINE_STRIP, createMarkerScale(0.1, 0.0, 0.0), color);
+
+  auto p_left_front = calcOffsetPose(end_pose, base_link2front, vehicle_width / 2, 0).position;
+  marker.points.push_back(createPoint(p_left_front.x, p_left_front.y, p_left_front.z));
+
+  auto p_right_front = calcOffsetPose(end_pose, base_link2front, -vehicle_width / 2, 0).position;
+  marker.points.push_back(createPoint(p_right_front.x, p_right_front.y, p_right_front.z));
+
+  auto p_right_back = calcOffsetPose(start_pose, -base_link2rear, -vehicle_width / 2, 0).position;
+  marker.points.push_back(createPoint(p_right_back.x, p_right_back.y, p_right_back.z));
+
+  auto p_left_back = calcOffsetPose(start_pose, -base_link2rear, vehicle_width / 2, 0).position;
+  marker.points.push_back(createPoint(p_left_back.x, p_left_back.y, p_left_back.z));
+
+  marker.points.push_back(createPoint(p_left_front.x, p_left_front.y, p_left_front.z));
+
+  return marker;
+}
+
 }  // namespace pull_over_utils
 }  // namespace behavior_path_planner

@@ -174,7 +174,6 @@ void GeometricParallelParking::clearPaths()
 {
   current_path_idx_ = 0;
   arc_paths_.clear();
-  path_pose_array_.poses.clear();
   paths_.clear();
 }
 
@@ -448,16 +447,10 @@ std::vector<PathWithLaneId> GeometricParallelParking::planOneTrial(
   paths_.push_back(path_turn_right);
 
   // debug
-  Cr_.pose = Cr;
-  Cr_.header = planner_data_->route_handler->getRouteHeader();
-  Cl_.pose = Cl;
-  Cl_.header = planner_data_->route_handler->getRouteHeader();
-  start_pose_.pose = start_pose;
-  start_pose_.header = planner_data_->route_handler->getRouteHeader();
-  arc_end_pose_.pose = arc_end_pose;
-  arc_end_pose_.header = planner_data_->route_handler->getRouteHeader();
-  path_pose_array_ = convertToGeometryPoseArray(getFullPath());
-  path_pose_array_.header = planner_data_->route_handler->getRouteHeader();
+  Cr_ = Cr;
+  Cl_ = Cl;
+  start_pose_ = start_pose;
+  arc_end_pose_ = arc_end_pose;
 
   return paths_;
 }

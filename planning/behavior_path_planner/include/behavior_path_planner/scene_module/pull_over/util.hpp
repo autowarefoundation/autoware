@@ -62,6 +62,12 @@ bool hasEnoughDistance(
   const ShiftParkingPath & path, const lanelet::ConstLanelets & current_lanes,
   const Pose & current_pose, const bool is_in_goal_route_section, const Pose & goal_pose);
 lanelet::ConstLanelets getPullOverLanes(const RouteHandler & route_handler);
+
+// debug
+Marker createPullOverAreaMarker(
+  const Pose & start_pose, const Pose & end_pose, const int32_t id,
+  const std_msgs::msg::Header & header, const double base_link2front, const double base_link2rear,
+  const double vehicle_width, const std_msgs::msg::ColorRGBA & color);
 }  // namespace pull_over_utils
 }  // namespace behavior_path_planner
 

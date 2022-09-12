@@ -69,7 +69,7 @@ public:
   bool isParking() const;
   bool planPullOver(
     const Pose & goal_pose, const lanelet::ConstLanelets & road_lanes,
-    const lanelet::ConstLanelets & shoulder_lanesconst, const bool is_forward);
+    const lanelet::ConstLanelets & shoulder_lanes, const bool is_forward);
   bool planPullOut(
     const Pose & start_pose, const Pose & goal_pose, const lanelet::ConstLanelets & road_lanes,
     const lanelet::ConstLanelets & shoulder_lanes);
@@ -84,11 +84,10 @@ public:
   PathWithLaneId getCurrentPath() const;
   PathWithLaneId getFullPath() const;
   PathWithLaneId getArcPath() const;
-  PoseStamped getCr() const { return Cr_; }
-  PoseStamped getCl() const { return Cl_; }
-  PoseStamped getStartPose() const { return start_pose_; }
-  PoseStamped getArcEndPose() const { return arc_end_pose_; }
-  PoseArray getPathPoseArray() const { return path_pose_array_; }
+  Pose getCr() const { return Cr_; }
+  Pose getCl() const { return Cl_; }
+  Pose getStartPose() const { return start_pose_; }
+  Pose getArcEndPose() const { return arc_end_pose_; }
 
 private:
   std::shared_ptr<const PlannerData> planner_data_;
@@ -105,7 +104,7 @@ private:
   bool isEnoughDistanceToStart(const Pose & start_pose) const;
   std::vector<PathWithLaneId> planOneTrial(
     const Pose & start_pose, const Pose & goal_pose, const double R_E_r,
-    const lanelet::ConstLanelets & road_lanes, const lanelet::ConstLanelets & shoulder_lanesconst,
+    const lanelet::ConstLanelets & road_lanes, const lanelet::ConstLanelets & shoulder_lanes,
     bool is_forward, const double end_pose_offset, const double lane_departure_margin);
   PathWithLaneId generateArcPath(
     const Pose & center, const double radius, const double start_yaw, double end_yaw,
@@ -123,11 +122,11 @@ private:
   PathWithLaneId generateStraightPath(const Pose & start_pose);
   void setVelocityToArcPaths(std::vector<PathWithLaneId> & arc_paths, const double velocity);
 
-  PoseStamped Cr_;
-  PoseStamped Cl_;
-  PoseStamped start_pose_;
-  PoseStamped arc_end_pose_;
-  PoseArray path_pose_array_;
+  // debug
+  Pose Cr_;
+  Pose Cl_;
+  Pose start_pose_;
+  Pose arc_end_pose_;
 };
 }  // namespace behavior_path_planner
 
