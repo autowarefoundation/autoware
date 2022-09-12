@@ -274,6 +274,16 @@ In the case of the crosswalk described above, `obstacle_cruise_planner` inserts 
 | --------------------------------- | ------ | ---------------------------------------------------------------------- |
 | `common.min_behavior_stop_margin` | double | minimum stop margin when stopping with the behavior module enabled [m] |
 
+### A function to keep the closest stop obstacle in target obstacles
+
+In order to keep the closest stop obstacle in the target obstacles, we check whether it is disappeared or not from the target obstacles in the `checkConsistency` function.
+If the previous closest stop obstacle is remove from the lists, we keep it in the lists for `stop_obstacle_hold_time_threshold` seconds.
+Note that if a new stop obstacle appears and the previous closest obstacle removes from the lists, we do not add it to the target obstacles again.
+
+| Parameter                                              | Type   | Description                                        |
+| ------------------------------------------------------ | ------ | -------------------------------------------------- |
+| `obstacle_filtering.stop_obstacle_hold_time_threshold` | double | maximum time for holding closest stop obstacle [s] |
+
 ## Visualization for debugging
 
 ### Detection area
