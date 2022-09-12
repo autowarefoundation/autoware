@@ -24,12 +24,6 @@ using autoware_auto_planning_msgs::msg::Trajectory;
 using tier4_debug_msgs::msg::Float32MultiArrayStamped;
 using tier4_debug_msgs::msg::Int32Stamped;
 
-enum class PointType : int8_t {
-  Blue = 0,
-  Red,
-  Yellow,
-};
-
 class DebugValues
 {
 public:
@@ -99,24 +93,21 @@ public:
     debug_values_.setValues(type, val);
   }
 
-  bool pushObstaclePoint(const geometry_msgs::msg::Point & obstacle_point, const PointType & type);
-  bool pushObstaclePoint(const pcl::PointXYZ & obstacle_point, const PointType & type);
-  void pushDebugPoints(const pcl::PointXYZ & debug_point);
-  void pushDebugPoints(const geometry_msgs::msg::Point & debug_point);
-  void pushDebugPoints(const std::vector<geometry_msgs::msg::Point> & debug_points);
-  void pushDebugPoints(const geometry_msgs::msg::Point & debug_point, const PointType point_type);
+  void pushCollisionPoints(const geometry_msgs::msg::Point & point);
+  void pushCollisionPoints(const std::vector<geometry_msgs::msg::Point> & points);
+  void pushNearestCollisionPoint(const geometry_msgs::msg::Point & point);
   void pushStopPose(const geometry_msgs::msg::Pose & pose);
-  void pushDebugLines(const std::vector<geometry_msgs::msg::Point> & debug_line);
-  void pushDebugPolygons(const std::vector<geometry_msgs::msg::Point> & debug_polygon);
+  void pushPredictedVehiclePolygons(const std::vector<geometry_msgs::msg::Point> & polygon);
+  void pushPredictedObstaclePolygons(const std::vector<geometry_msgs::msg::Point> & polygon);
+  void pushCollisionObstaclePolygons(const std::vector<geometry_msgs::msg::Point> & polygon);
   void pushDetectionAreaPolygons(const Polygon2d & debug_polygon);
-  void pushDebugTexts(const TextWithPosition & debug_text);
-  void pushDebugTexts(
-    const std::string text, const geometry_msgs::msg::Pose pose, const float lateral_offset);
-  void pushDebugTexts(const std::string text, const geometry_msgs::msg::Point position);
+  void pushTravelTimeTexts(
+    const double travel_time, const geometry_msgs::msg::Pose pose, const float lateral_offset);
   void setAccelReason(const AccelReason & accel_reason);
   void publishDebugValue();
   void publishDebugTrajectory(const Trajectory & trajectory);
   visualization_msgs::msg::MarkerArray createVisualizationMarkerArray();
+  void setHeight(const double height);
   visualization_msgs::msg::MarkerArray createVirtualWallMarkerArray();
 
 private:
@@ -128,16 +119,17 @@ private:
   rclcpp::Publisher<Float32MultiArrayStamped>::SharedPtr pub_debug_values_;
   rclcpp::Publisher<Int32Stamped>::SharedPtr pub_accel_reason_;
   rclcpp::Publisher<Trajectory>::SharedPtr pub_debug_trajectory_;
-  std::vector<geometry_msgs::msg::Point> debug_points_;
-  std::vector<geometry_msgs::msg::Point> debug_points_red_;
-  std::vector<geometry_msgs::msg::Point> debug_points_yellow_;
+  std::vector<geometry_msgs::msg::Point> collision_points_;
+  std::vector<geometry_msgs::msg::Point> nearest_collision_point_;
   std::vector<geometry_msgs::msg::Pose> stop_pose_;
-  std::vector<std::vector<geometry_msgs::msg::Point>> debug_lines_;
-  std::vector<std::vector<geometry_msgs::msg::Point>> debug_polygons_;
+  std::vector<std::vector<geometry_msgs::msg::Point>> predicted_vehicle_polygons_;
+  std::vector<std::vector<geometry_msgs::msg::Point>> predicted_obstacle_polygons_;
+  std::vector<std::vector<geometry_msgs::msg::Point>> collision_obstacle_polygons_;
   std::vector<std::vector<geometry_msgs::msg::Point>> detection_area_polygons_;
-  std::vector<TextWithPosition> debug_texts_;
+  std::vector<TextWithPosition> travel_time_texts_;
   DebugValues debug_values_;
   AccelReason accel_reason_;
+  double height_{0};
 };
 
 }  // namespace behavior_velocity_planner

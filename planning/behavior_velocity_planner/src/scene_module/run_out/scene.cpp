@@ -55,6 +55,9 @@ bool RunOutModule::modifyPathVelocity(
   const auto current_acc = planner_data_->current_accel.get();
   const auto & current_pose = planner_data_->current_pose.pose;
 
+  // set height of debug data
+  debug_ptr_->setHeight(current_pose.position.z);
+
   // smooth velocity of the path to calculate time to collision accurately
   PathWithLaneId smoothed_path;
   if (!smoothPath(*path, smoothed_path, planner_data_)) {
@@ -198,13 +201,8 @@ boost::optional<DynamicObstacle> RunOutModule::detectCollision(
 
     const auto vehicle_poly = createVehiclePolygon(p2.pose);
 
-    // debug
-    {
-      debug_ptr_->pushDebugPolygons(vehicle_poly);
-      std::stringstream sstream;
-      sstream << std::setprecision(4) << travel_time << "s";
-      debug_ptr_->pushDebugTexts(sstream.str(), p2.pose, /* lateral_offset */ 3.0);
-    }
+    debug_ptr_->pushPredictedVehiclePolygons(vehicle_poly);
+    debug_ptr_->pushTravelTimeTexts(travel_time, p2.pose, /* lateral_offset */ 3.0);
 
     auto obstacles_collision =
       checkCollisionWithObstacles(dynamic_obstacles, vehicle_poly, travel_time);
@@ -217,14 +215,8 @@ boost::optional<DynamicObstacle> RunOutModule::detectCollision(
       continue;
     }
 
-    // debug
-    {
-      std::stringstream sstream;
-      sstream << std::setprecision(4) << "ttc: " << std::to_string(travel_time) << "s";
-      debug_ptr_->pushDebugTexts(sstream.str(), obstacle_selected->nearest_collision_point);
-      debug_ptr_->pushDebugPoints(obstacle_selected->collision_points);
-      debug_ptr_->pushDebugPoints(obstacle_selected->nearest_collision_point, PointType::Red);
-    }
+    debug_ptr_->pushCollisionPoints(obstacle_selected->collision_points);
+    debug_ptr_->pushNearestCollisionPoint(obstacle_selected->nearest_collision_point);
 
     return obstacle_selected;
   }
@@ -447,18 +439,18 @@ bool RunOutModule::checkCollisionWithCylinder(
   const auto bg_bounding_box_for_points =
     run_out_utils::createBoostPolyFromMsg(bounding_box_for_points);
 
-  // debug
-  debug_ptr_->pushDebugPolygons(bounding_box_for_points);
-
   // check collision with 2d polygon
   std::vector<tier4_autoware_utils::Point2d> collision_points_bg;
   bg::intersection(vehicle_polygon, bg_bounding_box_for_points, collision_points_bg);
 
   // no collision detected
   if (collision_points_bg.empty()) {
+    debug_ptr_->pushPredictedObstaclePolygons(bounding_box_for_points);
     return false;
   }
 
+  // detected collision
+  debug_ptr_->pushCollisionObstaclePolygons(bounding_box_for_points);
   for (const auto & p : collision_points_bg) {
     const auto p_msg =
       tier4_autoware_utils::createPoint(p.x(), p.y(), pose_with_range.pose_min.position.z);
@@ -512,18 +504,18 @@ bool RunOutModule::checkCollisionWithBoundingBox(
     createBoundingBoxForRangedPoints(pose_with_range, dimension.x / 2.0, dimension.y / 2.0);
   const auto bg_bounding_box = run_out_utils::createBoostPolyFromMsg(bounding_box);
 
-  // debug
-  debug_ptr_->pushDebugPolygons(bounding_box);
-
   // check collision with 2d polygon
   std::vector<tier4_autoware_utils::Point2d> collision_points_bg;
   bg::intersection(vehicle_polygon, bg_bounding_box, collision_points_bg);
 
   // no collision detected
   if (collision_points_bg.empty()) {
+    debug_ptr_->pushPredictedObstaclePolygons(bounding_box);
     return false;
   }
 
+  // detected collision
+  debug_ptr_->pushCollisionObstaclePolygons(bounding_box);
   for (const auto & p : collision_points_bg) {
     const auto p_msg =
       tier4_autoware_utils::createPoint(p.x(), p.y(), pose_with_range.pose_min.position.z);
@@ -737,10 +729,6 @@ void RunOutModule::insertApproachingVelocity(
     motion_utils::findNearestSegmentIndex(output_path.points, current_pose.position);
   run_out_utils::insertPathVelocityFromIndexLimited(
     nearest_seg_idx, approaching_vel, output_path.points);
-
-  // debug
-  debug_ptr_->pushDebugPoints(
-    output_path.points.at(nearest_seg_idx).point.pose.position, PointType::Yellow);
 
   // calculate stop point to insert 0 velocity
   const float base_to_collision_point =
