@@ -197,8 +197,35 @@ void EKFLocalizer::timerCallback()
     DEBUG_INFO(get_logger(), "------------------------- end Twist -------------------------\n");
   }
 
-  /* set current pose, twist */
-  setCurrentResult();
+  const double x = ekf_.getXelement(IDX::X);
+  const double y = ekf_.getXelement(IDX::Y);
+  const double z = z_filter_.get_x();
+
+  const double biased_yaw = ekf_.getXelement(IDX::YAW);
+  const double yaw_bias = ekf_.getXelement(IDX::YAWB);
+
+  const double roll = roll_filter_.get_x();
+  const double pitch = pitch_filter_.get_x();
+  const double yaw = biased_yaw + yaw_bias;
+  const double vx = ekf_.getXelement(IDX::VX);
+  const double wz = ekf_.getXelement(IDX::WZ);
+
+  current_ekf_pose_.header.frame_id = pose_frame_id_;
+  current_ekf_pose_.header.stamp = this->now();
+  current_ekf_pose_.pose.position.x = x;
+  current_ekf_pose_.pose.position.y = y;
+  current_ekf_pose_.pose.position.z = z;
+  current_ekf_pose_.pose.orientation =
+    tier4_autoware_utils::createQuaternionFromRPY(roll, pitch, yaw);
+
+  current_biased_ekf_pose_ = current_ekf_pose_;
+  current_biased_ekf_pose_.pose.orientation =
+    tier4_autoware_utils::createQuaternionFromRPY(roll, pitch, biased_yaw);
+
+  current_ekf_twist_.header.frame_id = "base_link";
+  current_ekf_twist_.header.stamp = this->now();
+  current_ekf_twist_.twist.linear.x = vx;
+  current_ekf_twist_.twist.angular.z = wz;
 
   /* publish ekf result */
   publishEstimateResult();
@@ -211,32 +238,6 @@ void EKFLocalizer::showCurrentX()
     ekf_.getLatestX(X);
     DEBUG_PRINT_MAT(X.transpose());
   }
-}
-
-/*
- * setCurrentResult
- */
-void EKFLocalizer::setCurrentResult()
-{
-  current_ekf_pose_.header.frame_id = pose_frame_id_;
-  current_ekf_pose_.header.stamp = this->now();
-  current_ekf_pose_.pose.position.x = ekf_.getXelement(IDX::X);
-  current_ekf_pose_.pose.position.y = ekf_.getXelement(IDX::Y);
-  current_ekf_pose_.pose.position.z = z_filter_.get_x();
-  double roll = roll_filter_.get_x();
-  double pitch = pitch_filter_.get_x();
-  double yaw = ekf_.getXelement(IDX::YAW) + ekf_.getXelement(IDX::YAWB);
-  current_ekf_pose_.pose.orientation =
-    tier4_autoware_utils::createQuaternionFromRPY(roll, pitch, yaw);
-
-  current_biased_ekf_pose_ = current_ekf_pose_;
-  current_biased_ekf_pose_.pose.orientation =
-    tier4_autoware_utils::createQuaternionFromRPY(roll, pitch, ekf_.getXelement(IDX::YAW));
-
-  current_ekf_twist_.header.frame_id = "base_link";
-  current_ekf_twist_.header.stamp = this->now();
-  current_ekf_twist_.twist.linear.x = ekf_.getXelement(IDX::VX);
-  current_ekf_twist_.twist.angular.z = ekf_.getXelement(IDX::WZ);
 }
 
 /*
