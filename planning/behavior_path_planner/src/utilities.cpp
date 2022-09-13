@@ -1686,7 +1686,7 @@ void shiftPose(Pose * pose, double shift_length)
 PathWithLaneId getCenterLinePath(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & lanelet_sequence,
   const Pose & pose, const double backward_path_length, const double forward_path_length,
-  const BehaviorPathPlannerParameters & parameter, double optional_length)
+  const BehaviorPathPlannerParameters & parameter, const double optional_length)
 {
   PathWithLaneId reference_path;
 
@@ -1699,13 +1699,13 @@ PathWithLaneId getCenterLinePath(
   const double s_backward = std::max(0., s - backward_path_length);
   double s_forward = s + forward_path_length;
 
-  const double buffer = parameter.backward_length_buffer_for_end_of_lane +
-                        optional_length;  // buffer for min_lane_change_length
+  const double buffer =
+    parameter.backward_length_buffer_for_end_of_lane;  // buffer for min_lane_change_length
   const int num_lane_change =
     std::abs(route_handler.getNumLaneToPreferredLane(lanelet_sequence.back()));
   const double lane_length = lanelet::utils::getLaneletLength2d(lanelet_sequence);
   const double lane_change_buffer =
-    num_lane_change * (parameter.minimum_lane_change_length + buffer);
+    std::fabs(num_lane_change * (parameter.minimum_lane_change_length + buffer) + optional_length);
 
   if (route_handler.isDeadEndLanelet(lanelet_sequence.back())) {
     s_forward = std::min(s_forward, lane_length - lane_change_buffer);
@@ -1723,44 +1723,77 @@ PathWithLaneId getCenterLinePath(
 bool checkLaneIsInIntersection(
   const RouteHandler & route_handler, const PathWithLaneId & reference_path,
   const lanelet::ConstLanelets & lanelet_sequence, const BehaviorPathPlannerParameters & parameter,
-  double & additional_length_to_add)
+  const int num_lane_change, double & additional_length_to_add)
 {
+  if (num_lane_change == 0) {
+    return false;
+  }
+
   if (lanelet_sequence.size() < 2 || reference_path.points.empty()) {
     return false;
   }
 
+  const auto goal_pose = route_handler.getGoalPose();
+  lanelet::ConstLanelet goal_lanelet;
+  if (!route_handler.getGoalLanelet(&goal_lanelet)) {
+    std::cerr << "fail to get goal lanelet for intersection check.\n";
+    return false;
+  }
+  const auto goal_lanelet_point = lanelet::utils::conversion::toLaneletPoint(goal_pose.position);
+
+  const auto min_lane_change_distance =
+    num_lane_change *
+    (parameter.minimum_lane_change_length + parameter.backward_length_buffer_for_end_of_lane);
+  const double goal_distance_in_goal_lanelet = std::invoke([&goal_lanelet_point, &goal_lanelet]() {
+    const auto goal_centerline = goal_lanelet.centerline2d();
+    const auto arc_coordinate =
+      lanelet::geometry::toArcCoordinates(goal_centerline, goal_lanelet_point.basicPoint2d());
+    return arc_coordinate.length;
+  });
+
+  if (goal_distance_in_goal_lanelet > min_lane_change_distance) {
+    return false;
+  }
+
   const auto & path_points = reference_path.points;
-  auto end_of_route_pose = path_points.back().point.pose;
+  const auto & end_of_route_pose = path_points.back().point.pose;
 
-  lanelet::ConstLanelet check_lane;
-  if (!lanelet::utils::query::getClosestLanelet(lanelet_sequence, end_of_route_pose, &check_lane)) {
-    return false;
+  if (lanelet_sequence.back().id() != goal_lanelet.id()) {
+    const auto get_signed_distance =
+      getSignedDistance(end_of_route_pose, goal_pose, lanelet_sequence);
+
+    if (get_signed_distance > min_lane_change_distance) {
+      return false;
+    }
   }
+  // if you come to here, basically either back lane is goal, or back lane to goal is not enough
+  // distance
+  auto prev_lane = lanelet_sequence.crbegin();
+  auto find_intersection_iter = lanelet_sequence.crbegin();
+  for (; find_intersection_iter != lanelet_sequence.crend(); ++find_intersection_iter) {
+    prev_lane = std::next(find_intersection_iter);
+    if (prev_lane == lanelet_sequence.crend()) {
+      return false;
+    }
+    const auto lanes = route_handler.getNextLanelets(*prev_lane);
+    const auto is_neighbor_with_turn_direction = std::any_of(
+      lanes.cbegin(), lanes.cend(),
+      [](const lanelet::ConstLanelet & lane) { return lane.hasAttribute("turn_direction"); });
 
-  lanelet::ConstLanelets lane_change_prohibited_lanes{check_lane};
+    if (is_neighbor_with_turn_direction) {
+      const auto & intersection_back = find_intersection_iter->centerline2d().back();
+      geometry_msgs::msg::Pose intersection_back_pose;
+      intersection_back_pose.position.x = intersection_back.x();
+      intersection_back_pose.position.y = intersection_back.y();
+      intersection_back_pose.position.z = 0.0;
+      const auto get_signed_distance =
+        getSignedDistance(intersection_back_pose, goal_pose, lanelet_sequence);
 
-  const auto checking_rev_iter = std::find_if(
-    lanelet_sequence.crbegin(), lanelet_sequence.crend(),
-    [&check_lane](const lanelet::ConstLanelet & lanelet) noexcept {
-      return lanelet.id() == check_lane.id();
-    });
-  if (checking_rev_iter == lanelet_sequence.crend()) {
-    return false;
-  }
-
-  const auto prev_lane = std::next(checking_rev_iter);
-  if (prev_lane == lanelet_sequence.crend()) {
-    return false;
-  }
-
-  const auto lanes = route_handler.getNextLanelets(*prev_lane);
-  const auto isHaveNeighborWithTurnDirection = [&](const lanelet::ConstLanelets & lanes) noexcept {
-    return std::any_of(lanes.cbegin(), lanes.cend(), [](const lanelet::ConstLanelet & lane) {
-      return lane.hasAttribute("turn_direction");
-    });
-  };
-  if (!isHaveNeighborWithTurnDirection(lanes)) {
-    return false;
+      if (get_signed_distance > min_lane_change_distance) {
+        return false;
+      }
+      break;
+    }
   }
 
   const auto checkAttribute = [](const lanelet::ConstLineString3d & linestring) noexcept {
@@ -1779,21 +1812,21 @@ bool checkLaneIsInIntersection(
       return (checkAttribute(lanelet.rightBound()) || checkAttribute(lanelet.leftBound()));
     };
 
+  lanelet::ConstLanelets lane_change_prohibited_lanes{*find_intersection_iter};
   for (auto prev_ll_itr = prev_lane; prev_ll_itr != lanelet_sequence.crend(); ++prev_ll_itr) {
-    if (!isLaneChangeAttributeYes(*prev_ll_itr)) {
-      lane_change_prohibited_lanes.push_back(*prev_ll_itr);
-    } else {
+    if (isLaneChangeAttributeYes(*prev_ll_itr)) {
       break;
     }
+    lane_change_prohibited_lanes.push_back(*prev_ll_itr);
   }
 
   std::reverse(lane_change_prohibited_lanes.begin(), lane_change_prohibited_lanes.end());
   const auto prohibited_arc_coordinate =
-    lanelet::utils::getArcCoordinates(lane_change_prohibited_lanes, end_of_route_pose);
+    lanelet::utils::getArcCoordinates(lane_change_prohibited_lanes, goal_pose);
 
-  additional_length_to_add = prohibited_arc_coordinate.length +
-                             parameter.minimum_lane_change_length +
-                             parameter.backward_length_buffer_for_end_of_lane;
+  additional_length_to_add =
+    (num_lane_change > 0 ? 1 : -1) *
+    (parameter.backward_length_buffer_for_end_of_lane + prohibited_arc_coordinate.length);
 
   return true;
 }
@@ -1812,7 +1845,7 @@ PathWithLaneId setDecelerationVelocity(
       const double lane_length = lanelet::utils::getLaneletLength2d(lanelet_sequence);
       const auto arclength = lanelet::utils::getArcCoordinates(lanelet_sequence, point.point.pose);
       const double distance_to_end =
-        std::max(0.0, lane_length - lane_change_buffer - arclength.length);
+        std::max(0.0, lane_length - std::fabs(lane_change_buffer) - arclength.length);
       point.point.longitudinal_velocity_mps = std::min(
         point.point.longitudinal_velocity_mps,
         static_cast<float>(distance_to_end / lane_change_prepare_duration));

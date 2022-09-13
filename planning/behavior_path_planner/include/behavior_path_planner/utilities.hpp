@@ -345,7 +345,7 @@ void shiftPose(Pose * pose, double shift_length);
 PathWithLaneId getCenterLinePath(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & lanelet_sequence,
   const Pose & pose, const double backward_path_length, const double forward_path_length,
-  const BehaviorPathPlannerParameters & parameter, double optional_length = 0.0);
+  const BehaviorPathPlannerParameters & parameter, const double optional_length = 0.0);
 
 PathWithLaneId setDecelerationVelocity(
   const RouteHandler & route_handler, const PathWithLaneId & input,
@@ -361,7 +361,7 @@ PathWithLaneId setDecelerationVelocity(
 bool checkLaneIsInIntersection(
   const RouteHandler & route_handler, const PathWithLaneId & ref,
   const lanelet::ConstLanelets & lanelet_sequence, const BehaviorPathPlannerParameters & parameters,
-  double & additional_length_to_add);
+  const int num_lane_change, double & additional_length_to_add);
 
 PathWithLaneId setDecelerationVelocity(
   const PathWithLaneId & input, const double target_velocity, const Pose target_pose,
