@@ -137,7 +137,13 @@ def launch_setup(context, *args, **kwargs):
         name="shift_decider",
         remappings=[
             ("input/control_cmd", "/control/trajectory_follower/control_cmd"),
+            ("input/state", "/autoware/state"),
             ("output/gear_cmd", "/control/shift_decider/gear_cmd"),
+        ],
+        parameters=[
+            {
+                "park_on_goal": True,
+            }
         ],
         extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
     )

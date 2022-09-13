@@ -30,10 +30,14 @@ ShiftDecider::ShiftDecider(const rclcpp::NodeOptions & node_options)
   rclcpp::QoS durable_qos(queue_size);
   durable_qos.transient_local();
 
+  park_on_goal_ = declare_parameter("park_on_goal", true);
+
   pub_shift_cmd_ =
     create_publisher<autoware_auto_vehicle_msgs::msg::GearCommand>("output/gear_cmd", durable_qos);
   sub_control_cmd_ = create_subscription<autoware_auto_control_msgs::msg::AckermannControlCommand>(
     "input/control_cmd", queue_size, std::bind(&ShiftDecider::onControlCmd, this, _1));
+  sub_autoware_state_ = create_subscription<autoware_auto_system_msgs::msg::AutowareState>(
+    "input/state", queue_size, std::bind(&ShiftDecider::onAutowareState, this, _1));
 
   initTimer(0.1);
 }
@@ -44,9 +48,14 @@ void ShiftDecider::onControlCmd(
   control_cmd_ = msg;
 }
 
+void ShiftDecider::onAutowareState(autoware_auto_system_msgs::msg::AutowareState::SharedPtr msg)
+{
+  autoware_state_ = msg;
+}
+
 void ShiftDecider::onTimer()
 {
-  if (!control_cmd_) {
+  if (!autoware_state_ || !control_cmd_) {
     return;
   }
 
@@ -56,11 +65,14 @@ void ShiftDecider::onTimer()
 
 void ShiftDecider::updateCurrentShiftCmd()
 {
+  using autoware_auto_system_msgs::msg::AutowareState;
   using autoware_auto_vehicle_msgs::msg::GearCommand;
 
   shift_cmd_.stamp = now();
   static constexpr double vel_threshold = 0.01;  // to prevent chattering
-  if (control_cmd_->longitudinal.speed > vel_threshold) {
+  if (autoware_state_->state == AutowareState::ARRIVED_GOAL && park_on_goal_) {
+    shift_cmd_.command = GearCommand::PARK;
+  } else if (control_cmd_->longitudinal.speed > vel_threshold) {
     shift_cmd_.command = GearCommand::DRIVE;
   } else if (control_cmd_->longitudinal.speed < -vel_threshold) {
     shift_cmd_.command = GearCommand::REVERSE;
