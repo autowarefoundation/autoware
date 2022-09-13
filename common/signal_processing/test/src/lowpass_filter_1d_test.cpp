@@ -41,9 +41,3 @@ TEST(lowpass_filter_1d, filter)
   EXPECT_NEAR(lowpass_filter_1d.filter(0.0), -0.11, epsilon);
   EXPECT_NEAR(*lowpass_filter_1d.getValue(), -0.11, epsilon);
 }
-
-int main(int argc, char * argv[])
-{
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
