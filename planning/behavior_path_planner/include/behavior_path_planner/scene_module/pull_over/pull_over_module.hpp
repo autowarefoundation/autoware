@@ -112,6 +112,7 @@ enum PathType {
 struct PUllOverStatus
 {
   PathWithLaneId path{};
+  PathWithLaneId full_path{};
   std::shared_ptr<PathWithLaneId> prev_stop_path = nullptr;
   lanelet::ConstLanelets current_lanes{};
   lanelet::ConstLanelets pull_over_lanes{};

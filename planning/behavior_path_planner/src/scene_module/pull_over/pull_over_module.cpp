@@ -407,6 +407,7 @@ bool PullOverModule::planWithEfficientPath()
         // shift parking plan already confirms safety and no lane departure in it's own function.
         modified_goal_pose_ = goal_candidate.goal_pose;
         status_.path = shift_parking_path_.path;
+        status_.full_path = shift_parking_path_.path;
         status_.path_type = PathType::SHIFT;
         status_.is_safe = true;
         return true;
@@ -428,6 +429,7 @@ bool PullOverModule::planWithEfficientPath()
           status_.lanes, parallel_parking_planner_.getArcPath())) {
         modified_goal_pose_ = goal_candidate.goal_pose;
         status_.path = parallel_parking_planner_.getCurrentPath();
+        status_.full_path = parallel_parking_planner_.getFullPath();
         status_.path_type = PathType::ARC_FORWARD;
         status_.is_safe = true;
         return true;
@@ -449,6 +451,7 @@ bool PullOverModule::planWithEfficientPath()
           status_.lanes, parallel_parking_planner_.getArcPath())) {
         modified_goal_pose_ = goal_candidate.goal_pose;
         status_.path = parallel_parking_planner_.getCurrentPath();
+        status_.full_path = parallel_parking_planner_.getFullPath();
         status_.path_type = PathType::ARC_BACKWARD;
         status_.is_safe = true;
         return true;
@@ -472,6 +475,7 @@ bool PullOverModule::planWithCloseGoal()
       // shift parking plan already confirms safety and no lane departure in it's own function.
       modified_goal_pose_ = goal_candidate.goal_pose;
       status_.path = shift_parking_path_.path;
+      status_.full_path = shift_parking_path_.path;
       status_.path_type = PathType::SHIFT;
       status_.is_safe = true;
       return true;
@@ -490,6 +494,7 @@ bool PullOverModule::planWithCloseGoal()
         status_.lanes, parallel_parking_planner_.getArcPath())) {
       modified_goal_pose_ = goal_candidate.goal_pose;
       status_.path = parallel_parking_planner_.getCurrentPath();
+      status_.full_path = parallel_parking_planner_.getFullPath();
       status_.path_type = PathType::ARC_FORWARD;
       status_.is_safe = true;
       return true;
@@ -507,6 +512,7 @@ bool PullOverModule::planWithCloseGoal()
         status_.lanes, parallel_parking_planner_.getArcPath())) {
       modified_goal_pose_ = goal_candidate.goal_pose;
       status_.path = parallel_parking_planner_.getCurrentPath();
+      status_.full_path = parallel_parking_planner_.getFullPath();
       status_.path_type = PathType::ARC_BACKWARD;
       status_.is_safe = true;
       return true;
@@ -633,6 +639,7 @@ BehaviorModuleOutput PullOverModule::plan()
   // safe: use pull over path
   if (status_.is_safe) {
     output.path = std::make_shared<PathWithLaneId>(status_.path);
+    output.path_candidate = std::make_shared<PathWithLaneId>(status_.full_path);
   } else {
     RCLCPP_WARN_THROTTLE(
       getLogger(), *clock_, 5000, "Not found safe pull_over path. Stop in road lane.");
