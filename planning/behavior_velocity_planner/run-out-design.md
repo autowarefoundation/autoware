@@ -153,7 +153,6 @@ You can choose whether to use this feature by parameter of `slow_down_limit.enab
 | `stop_margin`           | double | [m] the vehicle decelerates to be able to stop with this margin                                                          |
 | `passing_margin`        | double | [m] the vehicle begins to accelerate if the vehicle's front in predicted position is ahead of the obstacle + this margin |
 | `deceleration_jerk`     | double | [m/s^3] ego decelerates with this jerk when stopping for obstacles                                                       |
-| `obstacle_velocity_kph` | double | [km/h] assumption for obstacle velocity                                                                                  |
 | `detection_distance`    | double | [m] ahead distance from ego to detect the obstacles                                                                      |
 | `detection_span`        | double | [m] calculate collision with this span to reduce calculation time                                                        |
 | `min_vel_ego_kmph`      | double | [km/h] min velocity to calculate time to collision                                                                       |
