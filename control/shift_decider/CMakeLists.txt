@@ -16,4 +16,5 @@ rclcpp_components_register_node(shift_decider_node
 ament_auto_package(
   INSTALL_TO_SHARE
   launch
+  config
 )
