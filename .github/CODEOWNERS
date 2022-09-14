@@ -35,6 +35,7 @@ common/tier4_localization_rviz_plugin/* isamu.takagi@tier4.jp
 common/autoware_point_types/* taichi.higashide@tier4.jp
 common/tier4_screen_capture_rviz_plugin/* taiki.tanaka@tier4.jp
 common/tier4_control_rviz_plugin/* taiki.tanaka@tier4.jp
+common/bag_time_manager_rviz_plugin/* taiki.tanaka@tier4.jp
 common/osqp_interface/* maxime.clement@tier4.jp
 common/tier4_simulated_clock_rviz_plugin/* maxime.clement@tier4.jp
 common/neural_networks_provider/* ambroise.vincent@arm.com
@@ -64,7 +65,7 @@ launch/tier4_autoware_api_launch/* isamu.takagi@tier4.jp ryohsuke.mitsudome@tier
 launch/tier4_perception_launch/* yukihiro.saito@tier4.jp
 launch/tier4_planning_launch/* takamasa.horibe@tier4.jp
 launch/tier4_localization_launch/* yamato.ando@tier4.jp
-launch/tier4_simulator_launch/* keisuke.shima@tier4.jp
+launch/tier4_simulator_launch/** keisuke.shima@tier4.jp
 evaluator/localization_evaluator/* dominik.jargot@robotec.ai
 evaluator/kinematic_evaluator/* dominik.jargot@robotec.ai
 map/map_loader/* ryohsuke.mitsudome@tier4.jp kenji.miyake@tier4.jp
