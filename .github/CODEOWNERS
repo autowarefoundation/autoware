@@ -1,160 +1,160 @@
 ### Copied from .github/CODEOWNERS-manual ###
 
 ### Automatically generated from package.xml ###
-control/external_cmd_selector/* kenji.miyake@tier4.jp
-control/obstacle_collision_checker/* kenji.miyake@tier4.jp
-control/vehicle_cmd_gate/* takamasa.horibe@tier4.jp
-control/trajectory_follower/* takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp
-control/trajectory_follower_nodes/* takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp
-control/joy_controller/* kenji.miyake@tier4.jp
-control/lane_departure_checker/* kyoichi.sugahara@tier4.jp
-control/shift_decider/* takamasa.horibe@tier4.jp
-control/pure_pursuit/* takamasa.horibe@tier4.jp
-control/operation_mode_transition_manager/* takamasa.horibe@tier4.jp
-control/control_performance_analysis/* ali.boyali@tier4.jp berkay@leodrive.ai
-common/autoware_ad_api_msgs/* isamu.takagi@tier4.jp
-common/motion_common/* christopherj.ho@gmail.com
-common/component_interface_specs/* isamu.takagi@tier4.jp
-common/motion_testing/* christopherj.ho@gmail.com
-common/autoware_auto_perception_rviz_plugin/* opensource@apex.ai taichi.higashide@tier4.jp
-common/autoware_auto_tf2/* jit.ray.c@gmail.com
-common/signal_processing/* takayuki.murooka@tier4.jp
-common/tier4_perception_rviz_plugin/* yukihiro.saito@tier4.jp
-common/path_distance_calculator/* isamu.takagi@tier4.jp
-common/kalman_filter/* yukihiro.saito@tier4.jp
-common/tier4_traffic_light_rviz_plugin/* satoshi.ota@tier4.jp
-common/vehicle_constants_manager/* mfc@leodrive.ai
-common/component_interface_utils/* isamu.takagi@tier4.jp
-common/tier4_planning_rviz_plugin/* yukihiro.saito@tier4.jp
-common/perception_utils/* takayuki.murooka@tier4.jp
-common/web_controller/* yukihiro.saito@tier4.jp
-common/goal_distance_calculator/* taiki.tanaka@tier4.jp
-common/motion_utils/* yutaka.shimizu@tier4.jp satoshi.ota@tier4.jp takayuki.murooka@tier4.jp
-common/tier4_debug_tools/* kenji.miyake@tier4.jp
-common/tier4_localization_rviz_plugin/* isamu.takagi@tier4.jp
-common/autoware_point_types/* taichi.higashide@tier4.jp
-common/tier4_screen_capture_rviz_plugin/* taiki.tanaka@tier4.jp
-common/tier4_control_rviz_plugin/* taiki.tanaka@tier4.jp
-common/bag_time_manager_rviz_plugin/* taiki.tanaka@tier4.jp
-common/osqp_interface/* maxime.clement@tier4.jp
-common/tier4_simulated_clock_rviz_plugin/* maxime.clement@tier4.jp
-common/neural_networks_provider/* ambroise.vincent@arm.com
-common/global_parameter_loader/* kenji.miyake@tier4.jp
-common/autoware_auto_common/* opensource@apex.ai
-common/tvm_utility/* ambroise.vincent@arm.com
-common/autoware_auto_geometry/* opensource@apex.ai
-common/autoware_ad_api_specs/* isamu.takagi@tier4.jp
-common/tier4_state_rviz_plugin/* hiroki.ota@tier4.jp
-common/tier4_datetime_rviz_plugin/* isamu.takagi@tier4.jp
-common/grid_map_utils/* maxime.clement@tier4.jp
-common/tier4_autoware_utils/* takamasa.horibe@tier4.jp kenji.miyake@tier4.jp
-common/fake_test_node/* opensource@apex.ai
-common/autoware_testing/* adam.dabrowski@robotec.ai
-common/tier4_api_utils/* isamu.takagi@tier4.jp
-common/tier4_calibration_rviz_plugin/* tomoya.kimura@tier4.jp
-common/interpolation/* fumiya.watanabe@tier4.jp takayuki.murooka@tier4.jp
-common/time_utils/* christopherj.ho@gmail.com
-common/polar_grid/* yukihiro.saito@tier4.jp
-common/tier4_vehicle_rviz_plugin/* yukihiro.saito@tier4.jp
-launch/tier4_vehicle_launch/* yukihiro.saito@tier4.jp
-launch/tier4_system_launch/* kenji.miyake@tier4.jp
-launch/tier4_map_launch/* ryohsuke.mitsudome@tier4.jp
-launch/tier4_control_launch/* takamasa.horibe@tier4.jp
-launch/tier4_sensing_launch/* yukihiro.saito@tier4.jp
-launch/tier4_autoware_api_launch/* isamu.takagi@tier4.jp ryohsuke.mitsudome@tier4.jp
-launch/tier4_perception_launch/* yukihiro.saito@tier4.jp
-launch/tier4_planning_launch/* takamasa.horibe@tier4.jp
-launch/tier4_localization_launch/* yamato.ando@tier4.jp
+control/external_cmd_selector/** kenji.miyake@tier4.jp
+control/obstacle_collision_checker/** kenji.miyake@tier4.jp
+control/vehicle_cmd_gate/** takamasa.horibe@tier4.jp
+control/trajectory_follower/** takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp
+control/trajectory_follower_nodes/** takamasa.horibe@tier4.jp takayuki.murooka@tier4.jp
+control/joy_controller/** kenji.miyake@tier4.jp
+control/lane_departure_checker/** kyoichi.sugahara@tier4.jp
+control/shift_decider/** takamasa.horibe@tier4.jp
+control/pure_pursuit/** takamasa.horibe@tier4.jp
+control/operation_mode_transition_manager/** takamasa.horibe@tier4.jp
+control/control_performance_analysis/** ali.boyali@tier4.jp berkay@leodrive.ai
+common/autoware_ad_api_msgs/** isamu.takagi@tier4.jp
+common/motion_common/** christopherj.ho@gmail.com
+common/component_interface_specs/** isamu.takagi@tier4.jp
+common/motion_testing/** christopherj.ho@gmail.com
+common/autoware_auto_perception_rviz_plugin/** opensource@apex.ai taichi.higashide@tier4.jp
+common/autoware_auto_tf2/** jit.ray.c@gmail.com
+common/signal_processing/** takayuki.murooka@tier4.jp
+common/tier4_perception_rviz_plugin/** yukihiro.saito@tier4.jp
+common/path_distance_calculator/** isamu.takagi@tier4.jp
+common/kalman_filter/** yukihiro.saito@tier4.jp
+common/tier4_traffic_light_rviz_plugin/** satoshi.ota@tier4.jp
+common/vehicle_constants_manager/** mfc@leodrive.ai
+common/component_interface_utils/** isamu.takagi@tier4.jp
+common/tier4_planning_rviz_plugin/** yukihiro.saito@tier4.jp
+common/perception_utils/** takayuki.murooka@tier4.jp
+common/web_controller/** yukihiro.saito@tier4.jp
+common/goal_distance_calculator/** taiki.tanaka@tier4.jp
+common/motion_utils/** yutaka.shimizu@tier4.jp satoshi.ota@tier4.jp takayuki.murooka@tier4.jp
+common/tier4_debug_tools/** kenji.miyake@tier4.jp
+common/tier4_localization_rviz_plugin/** isamu.takagi@tier4.jp
+common/autoware_point_types/** taichi.higashide@tier4.jp
+common/tier4_screen_capture_rviz_plugin/** taiki.tanaka@tier4.jp
+common/tier4_control_rviz_plugin/** taiki.tanaka@tier4.jp
+common/bag_time_manager_rviz_plugin/** taiki.tanaka@tier4.jp
+common/osqp_interface/** maxime.clement@tier4.jp
+common/tier4_simulated_clock_rviz_plugin/** maxime.clement@tier4.jp
+common/neural_networks_provider/** ambroise.vincent@arm.com
+common/global_parameter_loader/** kenji.miyake@tier4.jp
+common/autoware_auto_common/** opensource@apex.ai
+common/tvm_utility/** ambroise.vincent@arm.com
+common/autoware_auto_geometry/** opensource@apex.ai
+common/autoware_ad_api_specs/** isamu.takagi@tier4.jp
+common/tier4_state_rviz_plugin/** hiroki.ota@tier4.jp
+common/tier4_datetime_rviz_plugin/** isamu.takagi@tier4.jp
+common/grid_map_utils/** maxime.clement@tier4.jp
+common/tier4_autoware_utils/** takamasa.horibe@tier4.jp kenji.miyake@tier4.jp
+common/fake_test_node/** opensource@apex.ai
+common/autoware_testing/** adam.dabrowski@robotec.ai
+common/tier4_api_utils/** isamu.takagi@tier4.jp
+common/tier4_calibration_rviz_plugin/** tomoya.kimura@tier4.jp
+common/interpolation/** fumiya.watanabe@tier4.jp takayuki.murooka@tier4.jp
+common/time_utils/** christopherj.ho@gmail.com
+common/polar_grid/** yukihiro.saito@tier4.jp
+common/tier4_vehicle_rviz_plugin/** yukihiro.saito@tier4.jp
+launch/tier4_vehicle_launch/** yukihiro.saito@tier4.jp
+launch/tier4_system_launch/** kenji.miyake@tier4.jp
+launch/tier4_map_launch/** ryohsuke.mitsudome@tier4.jp
+launch/tier4_control_launch/** takamasa.horibe@tier4.jp
+launch/tier4_sensing_launch/** yukihiro.saito@tier4.jp
+launch/tier4_autoware_api_launch/** isamu.takagi@tier4.jp ryohsuke.mitsudome@tier4.jp
+launch/tier4_perception_launch/** yukihiro.saito@tier4.jp
+launch/tier4_planning_launch/** takamasa.horibe@tier4.jp
+launch/tier4_localization_launch/** yamato.ando@tier4.jp
 launch/tier4_simulator_launch/** keisuke.shima@tier4.jp
-evaluator/localization_evaluator/* dominik.jargot@robotec.ai
-evaluator/kinematic_evaluator/* dominik.jargot@robotec.ai
-map/map_loader/* ryohsuke.mitsudome@tier4.jp kenji.miyake@tier4.jp
-map/map_tf_generator/* azumi.suzuki@tier4.jp
-map/util/lanelet2_map_preprocessor/* ryohsuke.mitsudome@tier4.jp
-simulator/simple_planning_simulator/* takamasa.horibe@tier4.jp
-simulator/dummy_perception_publisher/* yukihiro.saito@tier4.jp
-simulator/fault_injection/* keisuke.shima@tier4.jp
-tools/simulator_test/simulator_compatibility_test/* shpark@morai.ai
-sensing/livox/livox_tag_filter/* kenji.miyake@tier4.jp
-sensing/pointcloud_preprocessor/* abrahammonrroy@yahoo.com yukihiro.saito@tier4.jp
-sensing/probabilistic_occupancy_grid_map/* yukihiro.saito@tier4.jp
-sensing/imu_corrector/* yamato.ando@tier4.jp
-sensing/geo_pos_conv/* yamato.ando@tier4.jp
-sensing/image_transport_decompressor/* yukihiro.saito@tier4.jp
-sensing/vehicle_velocity_converter/* ryu.yamamoto@tier4.jp
-sensing/image_diagnostics/* dai.nguyen@tier4.jp
-sensing/tier4_pcl_extensions/* ryu.yamamoto@tier4.jp
-sensing/gnss_poser/* yamato.ando@tier4.jp
-planning/freespace_planner/* takamasa.horibe@tier4.jp
-planning/obstacle_cruise_planner/* takayuki.murooka@tier4.jp yutaka.shimizu@tier4.jp
-planning/planning_error_monitor/* yutaka.shimizu@tier4.jp
-planning/surround_obstacle_checker/* satoshi.ota@tier4.jp
-planning/costmap_generator/* kenji.miyake@tier4.jp
-planning/behavior_path_planner/* zulfaqar.azmi@tier4.jp kosuke.takeuchi@tier4.jp kosuke.takeuchi@tier4.jp fumiya.watanabe@tier4.jp takamasa.horibe@tier4.jp yutaka.shimizu@tier4.jp takayuki.murooka@tier4.jp
-planning/obstacle_stop_planner/* satoshi.ota@tier4.jp
-planning/behavior_velocity_planner/* mamoru.sobue@tier4.jp satoshi.ota@tier4.jp kyoichi.sugahara@tier4.jp taiki.tanaka@tier4.jp kosuke.takeuchi@tier4.jp satoshi.ota@tier4.jp mamoru.sobue@tier4.jp yutaka.shimizu@tier4.jp kosuke.takeuchi@tier4.jp tomohito.ando@tier4.jp
-planning/rtc_auto_approver/* fumiya.watanabe@tier4.jp
-planning/scenario_selector/* kenji.miyake@tier4.jp
-planning/planning_evaluator/* maxime.clement@tier4.jp
-planning/rtc_interface/* fumiya.watanabe@tier4.jp
-planning/planning_debug_tools/* takamasa.horibe@tier4.jp
-planning/external_velocity_limit_selector/* satoshi.ota@tier4.jp
-planning/freespace_planning_algorithms/* takamasa.horibe@tier4.jp
-planning/obstacle_avoidance_planner/* takayuki.murooka@tier4.jp
-planning/motion_velocity_smoother/* fumiya.watanabe@tier4.jp
-planning/route_handler/* fumiya.watanabe@tier4.jp
-planning/mission_planner/* ryohsuke.mitsudome@tier4.jp
-perception/shape_estimation/* yukihiro.saito@tier4.jp
-perception/front_vehicle_velocity_estimator/* satoshi.tanaka@tier4.jp
-perception/traffic_light_visualization/* yukihiro.saito@tier4.jp
-perception/detection_by_tracker/* yukihiro.saito@tier4.jp
-perception/object_range_splitter/* yukihiro.saito@tier4.jp
-perception/heatmap_visualizer/* kotaro.uetake@tier4.jp
-perception/detected_object_feature_remover/* tomoya.kimura@tier4.jp
-perception/crosswalk_traffic_light_estimator/* satoshi.ota@tier4.jp
-perception/euclidean_cluster/* yukihiro.saito@tier4.jp
-perception/image_projection_based_fusion/* yukihiro.saito@tier4.jp yusuke.muramatsu@tier4.jp
-perception/traffic_light_ssd_fine_detector/* daisuke.nishimatsu@tier4.jp
-perception/lidar_centerpoint/* yusuke.muramatsu@tier4.jp
-perception/map_based_prediction/* yutaka.shimizu@tier4.jp
-perception/multi_object_tracker/* yukihiro.saito@tier4.jp jilada.eccleston@tier4.jp
-perception/object_merger/* yukihiro.saito@tier4.jp
-perception/elevation_map_loader/* kosuke.takeuchi@tier4.jp taichi.higashide@tier4.jp
-perception/traffic_light_map_based_detector/* yukihiro.saito@tier4.jp
-perception/tensorrt_yolo/* daisuke.nishimatsu@tier4.jp
-perception/lidar_apollo_instance_segmentation/* yukihiro.saito@tier4.jp
-perception/radar_fusion_to_detected_object/* satoshi.tanaka@tier4.jp
-perception/radar_tracks_msgs_converter/* satoshi.tanaka@tier4.jp
-perception/traffic_light_classifier/* yukihiro.saito@tier4.jp
-perception/detected_object_validation/* yukihiro.saito@tier4.jp
-perception/ground_segmentation/* abrahammonrroy@yahoo.com yukihiro.saito@tier4.jp
-perception/occupancy_grid_map_outlier_filter/* abrahammonrroy@yahoo.com yukihiro.saito@tier4.jp
-perception/compare_map_segmentation/* abrahammonrroy@yahoo.com yukihiro.saito@tier4.jp
-vehicle/steer_offset_estimator/* taiki.tanaka@tier4.jp
-vehicle/raw_vehicle_cmd_converter/* takamasa.horibe@tier4.jp
-vehicle/vehicle_info_util/* yamato.ando@tier4.jp
-vehicle/accel_brake_map_calibrator/accel_brake_map_calibrator/* tomoya.kimura@tier4.jp
-vehicle/external_cmd_converter/* takamasa.horibe@tier4.jp
-localization/pose_initializer/* yamato.ando@tier4.jp
-localization/ndt_pcl_modified/* yamato.ando@tier4.jp
-localization/pose2twist/* yamato.ando@tier4.jp
-localization/ndt_scan_matcher/* yamato.ando@tier4.jp
-localization/gyro_odometer/* yamato.ando@tier4.jp
-localization/localization_error_monitor/* yamato.ando@tier4.jp
-localization/initial_pose_button_panel/* yamato.ando@tier4.jp
-localization/twist2accel/* koji.minoda@tier4.jp yamato.ando@tier4.jp
-localization/ndt/* yamato.ando@tier4.jp
-localization/ekf_localizer/* takamasa.horibe@tier4.jp koji.minoda@tier4.jp yamato.ando@tier4.jp
-localization/stop_filter/* koji.minoda@tier4.jp yamato.ando@tier4.jp
-system/default_ad_api_helpers/ad_api_adaptors/* isamu.takagi@tier4.jp
-system/default_ad_api_helpers/automatic_pose_initializer/* isamu.takagi@tier4.jp
-system/velodyne_monitor/* fumihito.ito@tier4.jp
-system/dummy_infrastructure/* kenji.miyake@tier4.jp
-system/topic_state_monitor/* kenji.miyake@tier4.jp
-system/bluetooth_monitor/* fumihito.ito@tier4.jp
-system/ad_service_state_monitor/* kenji.miyake@tier4.jp
-system/system_monitor/* fumihito.ito@tier4.jp
-system/emergency_handler/* kenji.miyake@tier4.jp
-system/dummy_diag_publisher/* kenji.miyake@tier4.jp
-system/system_error_monitor/* kenji.miyake@tier4.jp
-system/default_ad_api/* isamu.takagi@tier4.jp
+evaluator/localization_evaluator/** dominik.jargot@robotec.ai
+evaluator/kinematic_evaluator/** dominik.jargot@robotec.ai
+map/map_loader/** ryohsuke.mitsudome@tier4.jp kenji.miyake@tier4.jp
+map/map_tf_generator/** azumi.suzuki@tier4.jp
+map/util/lanelet2_map_preprocessor/** ryohsuke.mitsudome@tier4.jp
+simulator/simple_planning_simulator/** takamasa.horibe@tier4.jp
+simulator/dummy_perception_publisher/** yukihiro.saito@tier4.jp
+simulator/fault_injection/** keisuke.shima@tier4.jp
+tools/simulator_test/simulator_compatibility_test/** shpark@morai.ai
+sensing/livox/livox_tag_filter/** kenji.miyake@tier4.jp
+sensing/pointcloud_preprocessor/** abrahammonrroy@yahoo.com yukihiro.saito@tier4.jp
+sensing/probabilistic_occupancy_grid_map/** yukihiro.saito@tier4.jp
+sensing/imu_corrector/** yamato.ando@tier4.jp
+sensing/geo_pos_conv/** yamato.ando@tier4.jp
+sensing/image_transport_decompressor/** yukihiro.saito@tier4.jp
+sensing/vehicle_velocity_converter/** ryu.yamamoto@tier4.jp
+sensing/image_diagnostics/** dai.nguyen@tier4.jp
+sensing/tier4_pcl_extensions/** ryu.yamamoto@tier4.jp
+sensing/gnss_poser/** yamato.ando@tier4.jp
+planning/freespace_planner/** takamasa.horibe@tier4.jp
+planning/obstacle_cruise_planner/** takayuki.murooka@tier4.jp yutaka.shimizu@tier4.jp
+planning/planning_error_monitor/** yutaka.shimizu@tier4.jp
+planning/surround_obstacle_checker/** satoshi.ota@tier4.jp
+planning/costmap_generator/** kenji.miyake@tier4.jp
+planning/behavior_path_planner/** zulfaqar.azmi@tier4.jp kosuke.takeuchi@tier4.jp kosuke.takeuchi@tier4.jp fumiya.watanabe@tier4.jp takamasa.horibe@tier4.jp yutaka.shimizu@tier4.jp takayuki.murooka@tier4.jp
+planning/obstacle_stop_planner/** satoshi.ota@tier4.jp
+planning/behavior_velocity_planner/** mamoru.sobue@tier4.jp satoshi.ota@tier4.jp kyoichi.sugahara@tier4.jp taiki.tanaka@tier4.jp kosuke.takeuchi@tier4.jp satoshi.ota@tier4.jp mamoru.sobue@tier4.jp yutaka.shimizu@tier4.jp kosuke.takeuchi@tier4.jp tomohito.ando@tier4.jp
+planning/rtc_auto_approver/** fumiya.watanabe@tier4.jp
+planning/scenario_selector/** kenji.miyake@tier4.jp
+planning/planning_evaluator/** maxime.clement@tier4.jp
+planning/rtc_interface/** fumiya.watanabe@tier4.jp
+planning/planning_debug_tools/** takamasa.horibe@tier4.jp taiki.tanaka@tier4.jp
+planning/external_velocity_limit_selector/** satoshi.ota@tier4.jp
+planning/freespace_planning_algorithms/** takamasa.horibe@tier4.jp
+planning/obstacle_avoidance_planner/** takayuki.murooka@tier4.jp
+planning/motion_velocity_smoother/** fumiya.watanabe@tier4.jp
+planning/route_handler/** fumiya.watanabe@tier4.jp
+planning/mission_planner/** ryohsuke.mitsudome@tier4.jp
+perception/shape_estimation/** yukihiro.saito@tier4.jp
+perception/front_vehicle_velocity_estimator/** satoshi.tanaka@tier4.jp
+perception/traffic_light_visualization/** yukihiro.saito@tier4.jp
+perception/detection_by_tracker/** yukihiro.saito@tier4.jp
+perception/object_range_splitter/** yukihiro.saito@tier4.jp
+perception/heatmap_visualizer/** kotaro.uetake@tier4.jp
+perception/detected_object_feature_remover/** tomoya.kimura@tier4.jp
+perception/crosswalk_traffic_light_estimator/** satoshi.ota@tier4.jp
+perception/euclidean_cluster/** yukihiro.saito@tier4.jp
+perception/image_projection_based_fusion/** yukihiro.saito@tier4.jp yusuke.muramatsu@tier4.jp
+perception/traffic_light_ssd_fine_detector/** daisuke.nishimatsu@tier4.jp
+perception/lidar_centerpoint/** yusuke.muramatsu@tier4.jp
+perception/map_based_prediction/** yutaka.shimizu@tier4.jp
+perception/multi_object_tracker/** yukihiro.saito@tier4.jp jilada.eccleston@tier4.jp
+perception/object_merger/** yukihiro.saito@tier4.jp
+perception/elevation_map_loader/** kosuke.takeuchi@tier4.jp taichi.higashide@tier4.jp
+perception/traffic_light_map_based_detector/** yukihiro.saito@tier4.jp
+perception/tensorrt_yolo/** daisuke.nishimatsu@tier4.jp
+perception/lidar_apollo_instance_segmentation/** yukihiro.saito@tier4.jp
+perception/radar_fusion_to_detected_object/** satoshi.tanaka@tier4.jp
+perception/radar_tracks_msgs_converter/** satoshi.tanaka@tier4.jp
+perception/traffic_light_classifier/** yukihiro.saito@tier4.jp
+perception/detected_object_validation/** yukihiro.saito@tier4.jp
+perception/ground_segmentation/** abrahammonrroy@yahoo.com yukihiro.saito@tier4.jp
+perception/occupancy_grid_map_outlier_filter/** abrahammonrroy@yahoo.com yukihiro.saito@tier4.jp
+perception/compare_map_segmentation/** abrahammonrroy@yahoo.com yukihiro.saito@tier4.jp
+vehicle/steer_offset_estimator/** taiki.tanaka@tier4.jp
+vehicle/raw_vehicle_cmd_converter/** takamasa.horibe@tier4.jp
+vehicle/vehicle_info_util/** yamato.ando@tier4.jp
+vehicle/accel_brake_map_calibrator/accel_brake_map_calibrator/** tomoya.kimura@tier4.jp
+vehicle/external_cmd_converter/** takamasa.horibe@tier4.jp
+localization/pose_initializer/** yamato.ando@tier4.jp
+localization/ndt_pcl_modified/** yamato.ando@tier4.jp
+localization/pose2twist/** yamato.ando@tier4.jp
+localization/ndt_scan_matcher/** yamato.ando@tier4.jp
+localization/gyro_odometer/** yamato.ando@tier4.jp
+localization/localization_error_monitor/** yamato.ando@tier4.jp
+localization/initial_pose_button_panel/** yamato.ando@tier4.jp
+localization/twist2accel/** koji.minoda@tier4.jp yamato.ando@tier4.jp
+localization/ndt/** yamato.ando@tier4.jp
+localization/ekf_localizer/** takamasa.horibe@tier4.jp koji.minoda@tier4.jp yamato.ando@tier4.jp
+localization/stop_filter/** koji.minoda@tier4.jp yamato.ando@tier4.jp
+system/default_ad_api_helpers/ad_api_adaptors/** isamu.takagi@tier4.jp
+system/default_ad_api_helpers/automatic_pose_initializer/** isamu.takagi@tier4.jp
+system/velodyne_monitor/** fumihito.ito@tier4.jp
+system/dummy_infrastructure/** kenji.miyake@tier4.jp
+system/topic_state_monitor/** kenji.miyake@tier4.jp
+system/bluetooth_monitor/** fumihito.ito@tier4.jp
+system/ad_service_state_monitor/** kenji.miyake@tier4.jp
+system/system_monitor/** fumihito.ito@tier4.jp
+system/emergency_handler/** kenji.miyake@tier4.jp
+system/dummy_diag_publisher/** kenji.miyake@tier4.jp
+system/system_error_monitor/** kenji.miyake@tier4.jp
+system/default_ad_api/** isamu.takagi@tier4.jp
