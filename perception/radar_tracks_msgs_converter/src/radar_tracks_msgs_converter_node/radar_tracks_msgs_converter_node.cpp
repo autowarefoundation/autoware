@@ -184,15 +184,21 @@ TrackedObjects RadarTracksMsgsConverterNode::convertRadarTrackToTrackedObjects()
     tf2::doTransform(radar_pose_stamped, transformed_pose_stamped, *transform_);
     kinematics.pose_with_covariance.pose = transformed_pose_stamped.pose;
 
-    kinematics.pose_with_covariance.covariance[0] = radar_track.position_covariance[0];
-    kinematics.pose_with_covariance.covariance[1] = radar_track.position_covariance[1];
-    kinematics.pose_with_covariance.covariance[2] = radar_track.position_covariance[2];
-    kinematics.pose_with_covariance.covariance[6] = radar_track.position_covariance[1];
-    kinematics.pose_with_covariance.covariance[7] = radar_track.position_covariance[3];
-    kinematics.pose_with_covariance.covariance[8] = radar_track.position_covariance[4];
-    kinematics.pose_with_covariance.covariance[12] = radar_track.position_covariance[2];
-    kinematics.pose_with_covariance.covariance[13] = radar_track.position_covariance[4];
-    kinematics.pose_with_covariance.covariance[14] = radar_track.position_covariance[5];
+    {
+      using P_IDX = tier4_autoware_utils::pose_covariance_index::POSE_COV_IDX;
+      using R_IDX = tier4_autoware_utils::xyz_upper_covariance_index::XYZ_UPPER_COV_IDX;
+
+      auto & covariance = kinematics.pose_with_covariance.covariance;
+      covariance[P_IDX::X_X] = radar_track.position_covariance[R_IDX::X_X];
+      covariance[P_IDX::X_Y] = radar_track.position_covariance[R_IDX::X_Y];
+      covariance[P_IDX::X_Z] = radar_track.position_covariance[R_IDX::X_Z];
+      covariance[P_IDX::Y_X] = radar_track.position_covariance[R_IDX::X_Y];
+      covariance[P_IDX::Y_Y] = radar_track.position_covariance[R_IDX::Y_Y];
+      covariance[P_IDX::Y_Z] = radar_track.position_covariance[R_IDX::Y_Z];
+      covariance[P_IDX::Z_X] = radar_track.position_covariance[R_IDX::X_Z];
+      covariance[P_IDX::Z_Y] = radar_track.position_covariance[R_IDX::Y_Z];
+      covariance[P_IDX::Z_Z] = radar_track.position_covariance[R_IDX::Z_Z];
+    }
 
     // convert by tf
     geometry_msgs::msg::Vector3Stamped radar_velocity_stamped{};
