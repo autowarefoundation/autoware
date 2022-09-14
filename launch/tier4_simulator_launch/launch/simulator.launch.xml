@@ -1,5 +1,6 @@
 <launch>
   <arg name="tier4_simulator_launch_param_path" default="$(find-pkg-share tier4_simulator_launch)/config" description="tier4_simulator_launch parameter path"/>
+  <arg name="tier4_perception_launch_param_path" default="$(find-pkg-share tier4_perception_launch)/config" description="tier4_perception_launch parameter path"/>
 
   <arg name="launch_dummy_perception"/>
   <arg name="launch_dummy_vehicle"/>
@@ -7,6 +8,7 @@
 
   <arg name="perception/enable_detection_failure" default="true" description="enable to simulate detection failure when using dummy perception"/>
   <arg name="perception/enable_object_recognition" default="false" description="enable object recognition"/>
+  <arg name="perception/enable_elevation_map" default="false" description="enable elevation map loader"/>
   <arg name="perception/enable_traffic_light" default="false" description="enable traffic light"/>
   <arg name="sensing/visible_range" default="300.0" description="visible range when using dummy perception"/>
 
@@ -65,6 +67,21 @@
       <push-ros-namespace namespace="object_recognition"/>
       <node pkg="dummy_perception_publisher" exec="empty_objects_publisher" name="empty_objects_publisher" output="screen">
         <remap from="~/output/objects" to="/perception/object_recognition/objects"/>
+      </node>
+    </group>
+
+    <group if="$(var perception/enable_elevation_map)">
+      <push-ros-namespace namespace="obstacle_segmentation/elevation_map"/>
+      <node pkg="elevation_map_loader" exec="elevation_map_loader" name="elevation_map_loader" output="screen">
+        <remap from="output/elevation_map" to="map"/>
+        <remap from="input/pointcloud_map" to="/map/pointcloud_map"/>
+        <remap from="input/vector_map" to="/map/vector_map"/>
+        <param name="use_lane_filter" value="false"/>
+        <param name="use_inpaint" value="true"/>
+        <param name="inpaint_radius" value="1.0"/>
+        <param name="param_file_path" value="$(var tier4_perception_launch_param_path)/obstacle_segmentation/ground_segmentation/elevation_map_parameters.yaml"/>
+        <param name="elevation_map_directory" value="$(find-pkg-share elevation_map_loader)/data/elevation_maps"/>
+        <param name="use_elevation_map_cloud_publisher" value="false"/>
       </node>
     </group>
 
