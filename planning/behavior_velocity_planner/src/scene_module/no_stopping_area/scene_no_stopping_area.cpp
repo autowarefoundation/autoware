@@ -368,16 +368,10 @@ bool NoStoppingAreaModule::isStoppable(
 {
   // get vehicle info and compute pass_judge_line_distance
   const auto current_velocity = planner_data_->current_velocity->twist.linear.x;
-  const auto current_acceleration = planner_data_->current_accel.get();
+  const auto current_acceleration = planner_data_->current_acceleration->accel.accel.linear.x;
   const double max_acc = planner_data_->max_stop_acceleration_threshold;
   const double max_jerk = planner_data_->max_stop_jerk_threshold;
   const double delay_response_time = planner_data_->delay_response_time;
-  if (!planner_data_->current_accel) {
-    RCLCPP_WARN_THROTTLE(
-      logger_, *clock_, 1000,
-      "[no stopping area] empty current acc! check current vel has been received.");
-    return false;
-  }
   const double stoppable_distance = planning_utils::calcJudgeLineDistWithJerkLimit(
     current_velocity, current_acceleration, max_acc, max_jerk, delay_response_time);
   const double signed_arc_length =

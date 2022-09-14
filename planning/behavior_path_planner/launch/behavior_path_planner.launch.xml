@@ -10,6 +10,7 @@
     <remap from="~/input/vector_map" to="$(var map_topic_name)"/>
     <remap from="~/input/perception" to="/perception/object_recognition/objects"/>
     <remap from="~/input/odometry" to="/localization/kinematic_state"/>
+    <remap from="~/input/accel" to="/localization/acceleration"/>
     <remap from="~/output/path" to="path_with_lane_id"/>
     <remap from="~/input/scenario" to="/planning/scenario_planning/scenario"/>
 

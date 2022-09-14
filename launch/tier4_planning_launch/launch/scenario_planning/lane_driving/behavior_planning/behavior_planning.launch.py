@@ -142,6 +142,7 @@ def launch_setup(context, *args, **kwargs):
             ("~/input/vector_map", LaunchConfiguration("map_topic_name")),
             ("~/input/perception", "/perception/object_recognition/objects"),
             ("~/input/odometry", "/localization/kinematic_state"),
+            ("~/input/accel", "/localization/acceleration"),
             ("~/input/scenario", "/planning/scenario_planning/scenario"),
             ("~/output/path", "path_with_lane_id"),
             ("~/output/turn_indicators_cmd", "/planning/turn_indicators_cmd"),
@@ -329,6 +330,7 @@ def launch_setup(context, *args, **kwargs):
             ("~/input/path_with_lane_id", "path_with_lane_id"),
             ("~/input/vector_map", "/map/vector_map"),
             ("~/input/vehicle_odometry", "/localization/kinematic_state"),
+            ("~/input/accel", "/localization/acceleration"),
             ("~/input/dynamic_objects", "/perception/object_recognition/objects"),
             (
                 "~/input/no_ground_pointcloud",

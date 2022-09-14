@@ -332,17 +332,12 @@ bool TrafficLightModule::isPassthrough(const double & signed_arc_length) const
   const double reachable_distance =
     planner_data_->current_velocity->twist.linear.x * planner_param_.yellow_lamp_period;
 
-  if (!planner_data_->current_accel) {
-    RCLCPP_WARN_THROTTLE(
-      logger_, *clock_, 1000,
-      "[traffic_light] empty current acc! check current vel has been received.");
-    return false;
-  }
   // Calculate distance until ego vehicle decide not to stop,
   // taking into account the jerk and acceleration.
   const double pass_judge_line_distance = planning_utils::calcJudgeLineDistWithJerkLimit(
-    planner_data_->current_velocity->twist.linear.x, planner_data_->current_accel.get(), max_acc,
-    max_jerk, delay_response_time);
+    planner_data_->current_velocity->twist.linear.x,
+    planner_data_->current_acceleration->accel.accel.linear.x, max_acc, max_jerk,
+    delay_response_time);
 
   const bool distance_stoppable = pass_judge_line_distance < signed_arc_length;
   const bool slow_velocity = planner_data_->current_velocity->twist.linear.x < 2.0;

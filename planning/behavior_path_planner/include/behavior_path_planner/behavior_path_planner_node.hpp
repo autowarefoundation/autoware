@@ -86,6 +86,7 @@ private:
   rclcpp::Subscription<HADMapRoute>::SharedPtr route_subscriber_;
   rclcpp::Subscription<HADMapBin>::SharedPtr vector_map_subscriber_;
   rclcpp::Subscription<Odometry>::SharedPtr velocity_subscriber_;
+  rclcpp::Subscription<AccelWithCovarianceStamped>::SharedPtr acceleration_subscriber_;
   rclcpp::Subscription<Scenario>::SharedPtr scenario_subscriber_;
   rclcpp::Subscription<PredictedObjects>::SharedPtr perception_subscriber_;
   rclcpp::Subscription<OccupancyGrid>::SharedPtr occupancy_grid_subscriber_;
@@ -123,6 +124,7 @@ private:
 
   // callback
   void onVelocity(const Odometry::ConstSharedPtr msg);
+  void onAcceleration(const AccelWithCovarianceStamped::ConstSharedPtr msg);
   void onPerception(const PredictedObjects::ConstSharedPtr msg);
   void onOccupancyGrid(const OccupancyGrid::ConstSharedPtr msg);
   void onExternalApproval(const ApprovalMsg::ConstSharedPtr msg);

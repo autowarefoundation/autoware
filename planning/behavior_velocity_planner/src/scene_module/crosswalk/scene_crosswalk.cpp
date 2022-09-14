@@ -470,7 +470,7 @@ float CrosswalkModule::calcTargetVelocity(
     return 0.0;
   }
 
-  const auto ego_acc = planner_data_->current_accel.get();
+  const auto ego_acc = planner_data_->current_acceleration->accel.accel.linear.x;
   const auto dist_deceleration = calcSignedArcLength(ego_path.points, ego_pos, stop_point);
   const auto feasible_velocity = planning_utils::calcDecelerationVelocityFromDistanceToTarget(
     max_jerk, max_accel, ego_acc, ego_vel, dist_deceleration);

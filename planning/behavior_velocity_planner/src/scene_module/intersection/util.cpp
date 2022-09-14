@@ -123,7 +123,7 @@ bool generateStopLine(
 {
   /* set judge line dist */
   const double current_vel = planner_data->current_velocity->twist.linear.x;
-  const double current_acc = planner_data->current_accel.get();
+  const double current_acc = planner_data->current_acceleration->accel.accel.linear.x;
   const double max_acc = planner_data->max_stop_acceleration_threshold;
   const double max_jerk = planner_data->max_stop_jerk_threshold;
   const double delay_response_time = planner_data->delay_response_time;
@@ -499,7 +499,7 @@ bool generateStopLineBeforeIntersection(
 {
   /* set judge line dist */
   const double current_vel = planner_data->current_velocity->twist.linear.x;
-  const double current_acc = planner_data->current_accel.get();
+  const double current_acc = planner_data->current_acceleration->accel.accel.linear.x;
   const double max_acc = planner_data->max_stop_acceleration_threshold;
   const double max_jerk = planner_data->max_stop_jerk_threshold;
   const double delay_response_time = planner_data->delay_response_time;

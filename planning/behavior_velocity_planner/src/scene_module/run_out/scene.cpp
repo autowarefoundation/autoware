@@ -52,7 +52,7 @@ bool RunOutModule::modifyPathVelocity(
 
   // set planner data
   const auto current_vel = planner_data_->current_velocity->twist.linear.x;
-  const auto current_acc = planner_data_->current_accel.get();
+  const auto current_acc = planner_data_->current_acceleration->accel.accel.linear.x;
   const auto & current_pose = planner_data_->current_pose.pose;
 
   // set height of debug data
@@ -129,7 +129,7 @@ Polygons2d RunOutModule::createDetectionAreaPolygon(const PathWithLaneId & smoot
 {
   // calculate distance needed to stop with jerk and acc constraints
   const float initial_vel = planner_data_->current_velocity->twist.linear.x;
-  const float initial_acc = planner_data_->current_accel.get();
+  const float initial_acc = planner_data_->current_acceleration->accel.accel.linear.x;
   const float target_vel = 0.0;
   const float jerk_dec_max = planner_param_.smoother.start_jerk;
   const float jerk_dec = planner_param_.run_out.specify_decel_jerk

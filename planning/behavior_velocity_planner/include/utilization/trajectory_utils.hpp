@@ -92,7 +92,7 @@ inline bool smoothPath(
 {
   const geometry_msgs::msg::Pose current_pose = planner_data->current_pose.pose;
   const double v0 = planner_data->current_velocity->twist.linear.x;
-  const double a0 = planner_data->current_accel.get();
+  const double a0 = planner_data->current_acceleration->accel.accel.linear.x;
   const auto & external_v_limit = planner_data->external_velocity_limit;
   const auto & smoother = planner_data->velocity_smoother_;
 
