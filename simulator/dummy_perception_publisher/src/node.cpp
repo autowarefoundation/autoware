@@ -14,6 +14,8 @@
 
 #include "dummy_perception_publisher/node.hpp"
 
+#include "tier4_autoware_utils/tier4_autoware_utils.hpp"
+
 #include <pcl/filters/voxel_grid_occlusion_estimation.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Transform.h>
@@ -41,22 +43,60 @@ ObjectInfo::ObjectInfo(
   std_dev_z(std::sqrt(object.initial_state.pose_covariance.covariance[14])),
   std_dev_yaw(std::sqrt(object.initial_state.pose_covariance.covariance[35]))
 {
-  const double move_distance =
-    object.initial_state.twist_covariance.twist.linear.x *
-    (current_time.seconds() - rclcpp::Time(object.header.stamp).seconds());
-  tf2::Transform tf_object_origin2moved_object;
-  tf2::Transform tf_map2object_origin;
-  {
-    geometry_msgs::msg::Transform ros_object_origin2moved_object;
-    ros_object_origin2moved_object.translation.x = move_distance;
-    ros_object_origin2moved_object.rotation.x = 0;
-    ros_object_origin2moved_object.rotation.y = 0;
-    ros_object_origin2moved_object.rotation.z = 0;
-    ros_object_origin2moved_object.rotation.w = 1;
-    tf2::fromMsg(ros_object_origin2moved_object, tf_object_origin2moved_object);
+  // calculate current pose
+  const auto & initial_pose = object.initial_state.pose_covariance.pose;
+  const double initial_vel = std::clamp(
+    object.initial_state.twist_covariance.twist.linear.x, static_cast<double>(object.min_velocity),
+    static_cast<double>(object.max_velocity));
+  const double initial_acc = object.initial_state.accel_covariance.accel.linear.x;
+
+  const double elapsed_time = current_time.seconds() - rclcpp::Time(object.header.stamp).seconds();
+
+  double move_distance;
+  if (initial_acc == 0.0) {
+    move_distance = initial_vel * elapsed_time;
+  } else {
+    double current_vel = initial_vel + initial_acc * elapsed_time;
+    if (initial_acc < 0 && 0 < initial_vel) {
+      current_vel = std::max(current_vel, 0.0);
+    }
+    if (0 < initial_acc && initial_vel < 0) {
+      current_vel = std::min(current_vel, 0.0);
+    }
+
+    // add distance on acceleration or deceleration
+    current_vel = std::clamp(
+      current_vel, static_cast<double>(object.min_velocity),
+      static_cast<double>(object.max_velocity));
+    move_distance = (std::pow(current_vel, 2) - std::pow(initial_vel, 2)) * 0.5 / initial_acc;
+
+    // add distance after reaching max_velocity
+    if (0 < initial_acc) {
+      const double time_to_reach_max_vel =
+        std::max(static_cast<double>(object.max_velocity) - initial_vel, 0.0) / initial_acc;
+      move_distance += static_cast<double>(object.max_velocity) *
+                       std::max(elapsed_time - time_to_reach_max_vel, 0.0);
+    }
+
+    // add distance after reaching min_velocity
+    if (initial_acc < 0) {
+      const double time_to_reach_min_vel =
+        std::min(static_cast<double>(object.min_velocity) - initial_vel, 0.0) / initial_acc;
+      move_distance += static_cast<double>(object.min_velocity) *
+                       std::max(elapsed_time - time_to_reach_min_vel, 0.0);
+    }
   }
-  tf2::fromMsg(object.initial_state.pose_covariance.pose, tf_map2object_origin);
-  this->tf_map2moved_object = tf_map2object_origin * tf_object_origin2moved_object;
+
+  const auto current_pose =
+    tier4_autoware_utils::calcOffsetPose(initial_pose, move_distance, 0.0, 0.0);
+
+  // calculate tf from map to moved_object
+  geometry_msgs::msg::Transform ros_map2moved_object;
+  ros_map2moved_object.translation.x = current_pose.position.x;
+  ros_map2moved_object.translation.y = current_pose.position.y;
+  ros_map2moved_object.translation.z = current_pose.position.z;
+  ros_map2moved_object.rotation = current_pose.orientation;
+  tf2::fromMsg(ros_map2moved_object, tf_map2moved_object);
 }
 
 DummyPerceptionPublisherNode::DummyPerceptionPublisherNode()
@@ -182,6 +222,7 @@ void DummyPerceptionPublisherNode::timerCallback()
       tf2::Transform tf_base_link2noised_moved_object;
       tf_base_link2noised_moved_object =
         tf_base_link2map * object_info.tf_map2moved_object * tf_moved_object2noised_moved_object;
+
       tier4_perception_msgs::msg::DetectedObjectWithFeature feature_object;
       feature_object.object.classification.push_back(object.classification);
       feature_object.object.kinematics.pose_with_covariance = object.initial_state.pose_covariance;
