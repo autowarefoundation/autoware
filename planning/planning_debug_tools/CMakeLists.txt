@@ -18,6 +18,10 @@ ament_auto_add_library(trajectory_analyzer_node SHARED
   src/trajectory_analyzer.cpp
 )
 
+ament_auto_add_library(stop_reason_visualizer_node SHARED
+  src/stop_reason_visualizer.cpp
+)
+
 if(${rosidl_cmake_VERSION} VERSION_LESS 2.5.0)
     rosidl_target_interfaces(trajectory_analyzer_node
     planning_debug_tools "rosidl_typesupport_cpp")
@@ -31,6 +35,11 @@ endif()
 rclcpp_components_register_node(trajectory_analyzer_node
   PLUGIN "planning_debug_tools::TrajectoryAnalyzerNode"
   EXECUTABLE trajectory_analyzer_exe
+)
+
+rclcpp_components_register_node(stop_reason_visualizer_node
+  PLUGIN "planning_debug_tools::StopReasonVisualizerNode"
+  EXECUTABLE stop_reason_visualizer_exe
 )
 
 ament_auto_package(

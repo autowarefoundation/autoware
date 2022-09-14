@@ -11,6 +11,11 @@ The `trajectory_analyzer` visualizes the information (speed, curvature, yaw, etc
 
 ![how this works](https://user-images.githubusercontent.com/21360593/179361367-a9fa136c-cd65-4f3c-ad7c-f542346a8d37.mp4)
 
+## Stop reason visualizer
+
+This is to visualize stop factor and reason.
+[see the details](./doc-stop-reason-visualizer.md)
+
 ### How to use
 
 please launch the analyzer node
