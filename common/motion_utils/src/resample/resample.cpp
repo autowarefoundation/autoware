@@ -56,7 +56,7 @@ std::vector<geometry_msgs::msg::Pose> resamplePath(
     if (ds < CLOSE_S_THRESHOLD) {
       continue;
     }
-    input_arclength.push_back(ds + input_arclength.at(i - 1));
+    input_arclength.push_back(ds + input_arclength.back());
     x.push_back(curr_pt.position.x);
     y.push_back(curr_pt.position.y);
     z.push_back(curr_pt.position.z);
@@ -153,7 +153,7 @@ autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
     if (ds < CLOSE_S_THRESHOLD) {
       continue;
     }
-    input_arclength.push_back(ds + input_arclength.at(i - 1));
+    input_arclength.push_back(ds + input_arclength.back());
     input_pose.push_back(curr_pt.pose);
     v_lon.push_back(curr_pt.longitudinal_velocity_mps);
     v_lat.push_back(curr_pt.lateral_velocity_mps);
@@ -317,7 +317,7 @@ autoware_auto_planning_msgs::msg::Path resamplePath(
     if (ds < CLOSE_S_THRESHOLD) {
       continue;
     }
-    input_arclength.push_back(ds + input_arclength.at(i - 1));
+    input_arclength.push_back(ds + input_arclength.back());
     input_pose.push_back(curr_pt.pose);
     v_lon.push_back(curr_pt.longitudinal_velocity_mps);
     v_lat.push_back(curr_pt.lateral_velocity_mps);
@@ -414,7 +414,7 @@ autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
     if (ds < CLOSE_S_THRESHOLD) {
       continue;
     }
-    input_arclength.push_back(ds + input_arclength.at(i - 1));
+    input_arclength.push_back(ds + input_arclength.back());
     input_pose.push_back(curr_pt.pose);
     v_lon.push_back(curr_pt.longitudinal_velocity_mps);
     v_lat.push_back(curr_pt.lateral_velocity_mps);
