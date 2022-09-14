@@ -440,8 +440,9 @@ bool TrafficLightModule::getHighestConfidenceTrafficSignal(
       highest_confidence = tl_state.lights.front().confidence;
       highest_confidence_tl_state = *tl_state_stamped;
       try {
-        debug_data_.traffic_light_points.push_back(getTrafficLightPosition(traffic_light));
-        debug_data_.highest_confidence_traffic_light_point = getTrafficLightPosition(traffic_light);
+        auto tl_position = getTrafficLightPosition(traffic_light);
+        debug_data_.traffic_light_points.push_back(tl_position);
+        debug_data_.highest_confidence_traffic_light_point = std::make_optional(tl_position);
       } catch (const std::invalid_argument & ex) {
         RCLCPP_WARN_STREAM(logger_, ex.what());
         continue;
@@ -485,10 +486,11 @@ autoware_auto_planning_msgs::msg::PathWithLaneId TrafficLightModule::insertStopP
   // Get stop point and stop factor
   tier4_planning_msgs::msg::StopFactor stop_factor;
   stop_factor.stop_pose = debug_data_.first_stop_pose;
-  stop_factor.stop_factor_points =
-    std::vector<geometry_msgs::msg::Point>{debug_data_.highest_confidence_traffic_light_point};
-  planning_utils::appendStopReason(stop_factor, stop_reason);
-
+  if (debug_data_.highest_confidence_traffic_light_point != std::nullopt) {
+    stop_factor.stop_factor_points = std::vector<geometry_msgs::msg::Point>{
+      debug_data_.highest_confidence_traffic_light_point.value()};
+    planning_utils::appendStopReason(stop_factor, stop_reason);
+  }
   return modified_path;
 }
 

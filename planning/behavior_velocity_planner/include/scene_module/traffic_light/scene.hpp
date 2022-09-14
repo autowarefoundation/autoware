@@ -16,6 +16,7 @@
 #define SCENE_MODULE__TRAFFIC_LIGHT__SCENE_HPP_
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -52,7 +53,8 @@ public:
     geometry_msgs::msg::Pose first_stop_pose;
     std::vector<geometry_msgs::msg::Pose> dead_line_poses;
     std::vector<geometry_msgs::msg::Point> traffic_light_points;
-    geometry_msgs::msg::Point highest_confidence_traffic_light_point;
+    std::optional<geometry_msgs::msg::Point> highest_confidence_traffic_light_point = {
+      std::nullopt};
   };
 
   struct PlannerParam
