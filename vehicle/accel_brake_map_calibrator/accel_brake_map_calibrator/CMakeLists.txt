@@ -13,6 +13,9 @@ ament_target_dependencies(accel_brake_map_calibrator)
 install(
   PROGRAMS
   scripts/__init__.py
+  scripts/actuation_cmd_publisher.py
+  scripts/accel_tester.py
+  scripts/brake_tester.py
   scripts/config.py
   scripts/delay_estimator.py
   scripts/plotter.py
