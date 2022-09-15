@@ -25,7 +25,15 @@ The version of AD API follows [Semantic Versioning][semver] in order to provide 
 
 The routing service support two formats. One uses pose and the other uses map dependent data directly.
 The body part of the route message is optional, since the route does not exist when it is cleared by the service.
+[See also routing API][api-routing].
+
+## Localization
+
+The initialization state does not reflect localization errors. Use diagnostics for that purpose.
+[See also localization API][api-localization].
 
 <!-- link -->
 
 [semver]: https://semver.org/
+[api-localization]: https://autowarefoundation.github.io/autoware-documentation/main/design/autoware-interfaces/ad-api/list/api/localization/
+[api-routing]: https://autowarefoundation.github.io/autoware-documentation/main/design/autoware-interfaces/ad-api/list/api/routing/

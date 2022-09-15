@@ -53,6 +53,7 @@ def launch_setup(context, *args, **kwargs):
             },
         ],
         remappings=[
+            ("input/initialpose", "/initialpose3d"),
             ("input/ackermann_control_command", "/control/command/control_cmd"),
             ("input/manual_ackermann_control_command", "/vehicle/command/manual_control_cmd"),
             ("input/gear_command", "/control/command/gear_cmd"),
@@ -70,7 +71,6 @@ def launch_setup(context, *args, **kwargs):
             ("output/turn_indicators_report", "/vehicle/status/turn_indicators_status"),
             ("output/hazard_lights_report", "/vehicle/status/hazard_lights_status"),
             ("output/control_mode_report", "/vehicle/status/control_mode"),
-            ("/initialpose", "/initialpose"),
         ],
     )
 

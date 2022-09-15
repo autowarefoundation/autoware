@@ -1,16 +1,26 @@
 <launch>
   <arg name="config_file" default="$(find-pkg-share pose_initializer)/config/pose_initializer.param.yaml"/>
+  <arg name="gnss_enabled"/>
+  <arg name="ndt_enabled"/>
+  <arg name="stop_check_enabled"/>
 
-  <node pkg="pose_initializer" exec="pose_initializer" name="pose_initializer" output="log">
-    <remap from="initialpose" to="/initialpose"/>
-    <remap from="initialpose3d" to="/initialpose3d"/>
-    <remap from="gnss_pose_cov" to="/sensing/gnss/pose_with_covariance"/>
+  <!-- for gnss and rviz -->
+  <node pkg="pose_initializer" exec="map_height_fitter" name="map_height_fitter">
+    <remap from="fit_map_height" to="/localization/util/fit_map_height"/>
     <remap from="pointcloud_map" to="/map/pointcloud_map"/>
-    <remap from="ndt_align_srv" to="/localization/pose_estimator/ndt_align_srv"/>
-    <remap from="service/initialize_pose" to="/localization/util/initialize_pose"/>
-    <remap from="service/initialize_pose_auto" to="/localization/util/initialize_pose_auto"/>
+  </node>
 
+  <!-- pose initializer -->
+  <node pkg="pose_initializer" exec="pose_initializer_node" name="pose_initializer_node">
     <param from="$(var config_file)"/>
-    <param name="enable_gnss_callback" value="true"/>
+    <param name="ndt_enabled" value="$(var ndt_enabled)"/>
+    <remap from="ndt_align" to="/localization/pose_estimator/ndt_align_srv"/>
+    <param name="stop_check_enabled" value="$(var stop_check_enabled)"/>
+    <param name="stop_check_duration" value="3.0"/>
+    <remap from="stop_check_twist" to="/sensing/vehicle_velocity_converter/twist_with_covariance"/>
+    <param name="gnss_enabled" value="$(var gnss_enabled)"/>
+    <param name="gnss_pose_timeout" value="3.0"/>
+    <remap from="gnss_pose_cov" to="/sensing/gnss/pose_with_covariance"/>
+    <remap from="pose_reset" to="/initialpose3d"/>
   </node>
 </launch>

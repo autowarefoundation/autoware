@@ -24,7 +24,7 @@
       names: [
         "/map/vector_map",
         "/perception/object_recognition/objects",
-        "/initialpose2d",
+        "/initialpose3d",
         "/planning/mission_planning/route",
         "/planning/scenario_planning/trajectory",
         "/control/trajectory_follower/control_cmd",
@@ -48,7 +48,7 @@
           warn_rate: 5.0
           type: "autoware_auto_perception_msgs/msg/PredictedObjects"
 
-        /initialpose2d:
+        /initialpose3d:
           module: "localization"
           timeout: 0.0
           warn_rate: 0.0

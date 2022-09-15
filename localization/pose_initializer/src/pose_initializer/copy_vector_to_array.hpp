@@ -19,19 +19,30 @@
 
 #include <algorithm>
 #include <array>
+#include <string>
 #include <vector>
 
 template <typename T, size_t N>
-void CopyVectorToArray(const std::vector<T> & vector, std::array<T, N> & array)
+void copy_vector_to_array(const std::vector<T> & vector, std::array<T, N> & array)
 {
   if (N != vector.size()) {
     // throws the error to prevent causing an anonymous bug
     // such as only partial array is initialized
-    throw std::invalid_argument(fmt::format(
-      "Vector size (which is {}) is different from the copy size (which is {})", vector.size(), N));
+    const auto v = std::to_string(vector.size());
+    const auto n = std::to_string(N);
+    throw std::invalid_argument(
+      "Vector size (which is " + v + ") is different from the copy size (which is " + n + ")");
   }
-
   std::copy_n(vector.begin(), N, array.begin());
+}
+
+template <class NodeT>
+std::array<double, 36> get_covariance_parameter(NodeT * node, const std::string & name)
+{
+  const auto parameter = node->template declare_parameter<std::vector<double>>(name);
+  std::array<double, 36> covariance;
+  copy_vector_to_array(parameter, covariance);
+  return covariance;
 }
 
 #endif  // POSE_INITIALIZER__COPY_VECTOR_TO_ARRAY_HPP_

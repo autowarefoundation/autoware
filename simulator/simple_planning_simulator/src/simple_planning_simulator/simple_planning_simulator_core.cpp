@@ -86,7 +86,7 @@ SimplePlanningSimulator::SimplePlanningSimulator(const rclcpp::NodeOptions & opt
   using std::placeholders::_2;
 
   sub_init_pose_ = create_subscription<PoseWithCovarianceStamped>(
-    "/initialpose", QoS{1}, std::bind(&SimplePlanningSimulator::on_initialpose, this, _1));
+    "input/initialpose", QoS{1}, std::bind(&SimplePlanningSimulator::on_initialpose, this, _1));
   sub_ackermann_cmd_ = create_subscription<AckermannControlCommand>(
     "input/ackermann_control_command", QoS{1},
     [this](const AckermannControlCommand::SharedPtr msg) { current_ackermann_cmd_ = *msg; });

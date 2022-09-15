@@ -69,7 +69,7 @@ void InitialPoseButtonPanel::onInitialize()
     std::bind(&InitialPoseButtonPanel::callbackPoseCov, this, std::placeholders::_1));
 
   client_ = raw_node->create_client<tier4_localization_msgs::srv::PoseWithCovarianceStamped>(
-    "/localization/util/initialize_pose");
+    "/localization/initialize");
 }
 
 void InitialPoseButtonPanel::callbackPoseCov(

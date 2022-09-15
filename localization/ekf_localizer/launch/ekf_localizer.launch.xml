@@ -5,7 +5,7 @@
   <arg name="tf_rate" default="10.0"/>
   <arg name="extend_state_step" default="50"/>
 
-  <arg name="input_initial_pose_name" default="initialpose"/>
+  <arg name="input_initial_pose_name" default="initialpose3d"/>
 
   <!-- for Pose measurement -->
   <arg name="input_pose_with_cov_name" default="in_pose_with_covariance"/>

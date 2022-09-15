@@ -17,7 +17,7 @@ The purpose of this simulator is for the integration test of planning and contro
 
 ### input
 
-- /initialpose [`geometry_msgs/msg/PoseWithCovarianceStamped`] : for initial pose
+- input/initialpose [`geometry_msgs/msg/PoseWithCovarianceStamped`] : for initial pose
 - input/ackermann_control_command [`autoware_auto_msgs/msg/AckermannControlCommand`] : target command to drive a vehicle
 - input/manual_ackermann_control_command [`autoware_auto_msgs/msg/AckermannControlCommand`] : manual target command to drive a vehicle (used when control_mode_request = Manual)
 - input/gear_command [`autoware_auto_vehicle_msgs/msg/GearCommand`] : target gear command.
@@ -40,17 +40,17 @@ The purpose of this simulator is for the integration test of planning and contro
 
 ### Common Parameters
 
-| Name                  | Type   | Description                                                                                                                           | Default value        |
-| :-------------------- | :----- | :------------------------------------------------------------------------------------------------------------------------------------ | :------------------- |
-| simulated_frame_id    | string | set to the child_frame_id in output tf                                                                                                | "base_link"          |
-| origin_frame_id       | string | set to the frame_id in output tf                                                                                                      | "odom"               |
-| initialize_source     | string | If "ORIGIN", the initial pose is set at (0,0,0). If "INITIAL_POSE_TOPIC", node will wait until the `/initialpose` topic is published. | "INITIAL_POSE_TOPIC" |
-| add_measurement_noise | bool   | If true, the Gaussian noise is added to the simulated results.                                                                        | true                 |
-| pos_noise_stddev      | double | Standard deviation for position noise                                                                                                 | 0.01                 |
-| rpy_noise_stddev      | double | Standard deviation for Euler angle noise                                                                                              | 0.0001               |
-| vel_noise_stddev      | double | Standard deviation for longitudinal velocity noise                                                                                    | 0.0                  |
-| angvel_noise_stddev   | double | Standard deviation for angular velocity noise                                                                                         | 0.0                  |
-| steer_noise_stddev    | double | Standard deviation for steering angle noise                                                                                           | 0.0001               |
+| Name                  | Type   | Description                                                                                                                                | Default value        |
+| :-------------------- | :----- | :----------------------------------------------------------------------------------------------------------------------------------------- | :------------------- |
+| simulated_frame_id    | string | set to the child_frame_id in output tf                                                                                                     | "base_link"          |
+| origin_frame_id       | string | set to the frame_id in output tf                                                                                                           | "odom"               |
+| initialize_source     | string | If "ORIGIN", the initial pose is set at (0,0,0). If "INITIAL_POSE_TOPIC", node will wait until the `input/initialpose` topic is published. | "INITIAL_POSE_TOPIC" |
+| add_measurement_noise | bool   | If true, the Gaussian noise is added to the simulated results.                                                                             | true                 |
+| pos_noise_stddev      | double | Standard deviation for position noise                                                                                                      | 0.01                 |
+| rpy_noise_stddev      | double | Standard deviation for Euler angle noise                                                                                                   | 0.0001               |
+| vel_noise_stddev      | double | Standard deviation for longitudinal velocity noise                                                                                         | 0.0                  |
+| angvel_noise_stddev   | double | Standard deviation for angular velocity noise                                                                                              | 0.0                  |
+| steer_noise_stddev    | double | Standard deviation for steering angle noise                                                                                                | 0.0001               |
 
 ### Vehicle Model Parameters
 
