@@ -4397,3 +4397,130 @@ TEST(trajectory, calcSignedArcLengthFromPointAndSegmentIndexToPointIndex)
     EXPECT_NEAR(calcSignedArcLength(traj.points, 4, p2, 1), -1.7, epsilon);
   }
 }
+
+TEST(trajectory, removeOverlapPoints)
+{
+  using motion_utils::removeOverlapPoints;
+
+  const auto traj = generateTestTrajectory<Trajectory>(10, 1.0, 1.0);
+  const auto removed_traj = removeOverlapPoints(traj.points, 0);
+  EXPECT_EQ(traj.points.size(), removed_traj.size());
+  for (size_t i = 0; i < traj.points.size(); ++i) {
+    EXPECT_NEAR(traj.points.at(i).pose.position.x, removed_traj.at(i).pose.position.x, epsilon);
+    EXPECT_NEAR(traj.points.at(i).pose.position.y, removed_traj.at(i).pose.position.y, epsilon);
+    EXPECT_NEAR(traj.points.at(i).pose.position.z, removed_traj.at(i).pose.position.z, epsilon);
+    EXPECT_NEAR(
+      traj.points.at(i).pose.orientation.x, removed_traj.at(i).pose.orientation.x, epsilon);
+    EXPECT_NEAR(
+      traj.points.at(i).pose.orientation.y, removed_traj.at(i).pose.orientation.y, epsilon);
+    EXPECT_NEAR(
+      traj.points.at(i).pose.orientation.z, removed_traj.at(i).pose.orientation.z, epsilon);
+    EXPECT_NEAR(
+      traj.points.at(i).pose.orientation.w, removed_traj.at(i).pose.orientation.w, epsilon);
+    EXPECT_NEAR(
+      traj.points.at(i).longitudinal_velocity_mps, removed_traj.at(i).longitudinal_velocity_mps,
+      epsilon);
+  }
+
+  // No overlap points
+  {
+    const auto traj = generateTestTrajectory<Trajectory>(10, 1.0, 1.0);
+    for (size_t start_idx = 0; start_idx < 10; ++start_idx) {
+      const auto removed_traj = removeOverlapPoints(traj.points, start_idx);
+      EXPECT_EQ(traj.points.size(), removed_traj.size());
+      for (size_t i = 0; i < traj.points.size(); ++i) {
+        EXPECT_NEAR(traj.points.at(i).pose.position.x, removed_traj.at(i).pose.position.x, epsilon);
+        EXPECT_NEAR(traj.points.at(i).pose.position.y, removed_traj.at(i).pose.position.y, epsilon);
+        EXPECT_NEAR(traj.points.at(i).pose.position.z, removed_traj.at(i).pose.position.z, epsilon);
+        EXPECT_NEAR(
+          traj.points.at(i).pose.orientation.x, removed_traj.at(i).pose.orientation.x, epsilon);
+        EXPECT_NEAR(
+          traj.points.at(i).pose.orientation.y, removed_traj.at(i).pose.orientation.y, epsilon);
+        EXPECT_NEAR(
+          traj.points.at(i).pose.orientation.z, removed_traj.at(i).pose.orientation.z, epsilon);
+        EXPECT_NEAR(
+          traj.points.at(i).pose.orientation.w, removed_traj.at(i).pose.orientation.w, epsilon);
+        EXPECT_NEAR(
+          traj.points.at(i).longitudinal_velocity_mps, removed_traj.at(i).longitudinal_velocity_mps,
+          epsilon);
+      }
+    }
+  }
+
+  // Overlap points from certain point
+  {
+    auto traj = generateTestTrajectory<Trajectory>(10, 1.0, 1.0);
+    traj.points.at(5) = traj.points.at(6);
+    const auto removed_traj = removeOverlapPoints(traj.points);
+
+    EXPECT_EQ(traj.points.size() - 1, removed_traj.size());
+    for (size_t i = 0; i < 6; ++i) {
+      EXPECT_NEAR(traj.points.at(i).pose.position.x, removed_traj.at(i).pose.position.x, epsilon);
+      EXPECT_NEAR(traj.points.at(i).pose.position.y, removed_traj.at(i).pose.position.y, epsilon);
+      EXPECT_NEAR(traj.points.at(i).pose.position.z, removed_traj.at(i).pose.position.z, epsilon);
+      EXPECT_NEAR(
+        traj.points.at(i).pose.orientation.x, removed_traj.at(i).pose.orientation.x, epsilon);
+      EXPECT_NEAR(
+        traj.points.at(i).pose.orientation.y, removed_traj.at(i).pose.orientation.y, epsilon);
+      EXPECT_NEAR(
+        traj.points.at(i).pose.orientation.z, removed_traj.at(i).pose.orientation.z, epsilon);
+      EXPECT_NEAR(
+        traj.points.at(i).pose.orientation.w, removed_traj.at(i).pose.orientation.w, epsilon);
+      EXPECT_NEAR(
+        traj.points.at(i).longitudinal_velocity_mps, removed_traj.at(i).longitudinal_velocity_mps,
+        epsilon);
+    }
+
+    for (size_t i = 6; i < 9; ++i) {
+      EXPECT_NEAR(
+        traj.points.at(i + 1).pose.position.x, removed_traj.at(i).pose.position.x, epsilon);
+      EXPECT_NEAR(
+        traj.points.at(i + 1).pose.position.y, removed_traj.at(i).pose.position.y, epsilon);
+      EXPECT_NEAR(
+        traj.points.at(i + 1).pose.position.z, removed_traj.at(i).pose.position.z, epsilon);
+      EXPECT_NEAR(
+        traj.points.at(i + 1).pose.orientation.x, removed_traj.at(i).pose.orientation.x, epsilon);
+      EXPECT_NEAR(
+        traj.points.at(i + 1).pose.orientation.y, removed_traj.at(i).pose.orientation.y, epsilon);
+      EXPECT_NEAR(
+        traj.points.at(i + 1).pose.orientation.z, removed_traj.at(i).pose.orientation.z, epsilon);
+      EXPECT_NEAR(
+        traj.points.at(i + 1).pose.orientation.w, removed_traj.at(i).pose.orientation.w, epsilon);
+      EXPECT_NEAR(
+        traj.points.at(i + 1).longitudinal_velocity_mps,
+        removed_traj.at(i).longitudinal_velocity_mps, epsilon);
+    }
+  }
+
+  // Overlap points from certain point
+  {
+    auto traj = generateTestTrajectory<Trajectory>(10, 1.0, 1.0);
+    traj.points.at(5) = traj.points.at(6);
+    const auto removed_traj = removeOverlapPoints(traj.points, 6);
+
+    EXPECT_EQ(traj.points.size(), removed_traj.size());
+    for (size_t i = 0; i < traj.points.size(); ++i) {
+      EXPECT_NEAR(traj.points.at(i).pose.position.x, removed_traj.at(i).pose.position.x, epsilon);
+      EXPECT_NEAR(traj.points.at(i).pose.position.y, removed_traj.at(i).pose.position.y, epsilon);
+      EXPECT_NEAR(traj.points.at(i).pose.position.z, removed_traj.at(i).pose.position.z, epsilon);
+      EXPECT_NEAR(
+        traj.points.at(i).pose.orientation.x, removed_traj.at(i).pose.orientation.x, epsilon);
+      EXPECT_NEAR(
+        traj.points.at(i).pose.orientation.y, removed_traj.at(i).pose.orientation.y, epsilon);
+      EXPECT_NEAR(
+        traj.points.at(i).pose.orientation.z, removed_traj.at(i).pose.orientation.z, epsilon);
+      EXPECT_NEAR(
+        traj.points.at(i).pose.orientation.w, removed_traj.at(i).pose.orientation.w, epsilon);
+      EXPECT_NEAR(
+        traj.points.at(i).longitudinal_velocity_mps, removed_traj.at(i).longitudinal_velocity_mps,
+        epsilon);
+    }
+  }
+
+  // Empty Points
+  {
+    const Trajectory traj;
+    const auto removed_traj = removeOverlapPoints(traj.points);
+    EXPECT_TRUE(removed_traj.empty());
+  }
+}

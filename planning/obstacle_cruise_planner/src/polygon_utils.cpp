@@ -224,7 +224,7 @@ geometry_msgs::msg::PointStamped calcNearestCollisionPoint(
   const autoware_auto_planning_msgs::msg::Trajectory & decimated_traj,
   const double vehicle_max_longitudinal_offset, const bool is_driving_forward)
 {
-  std::array<geometry_msgs::msg::Point, 2> segment_points;
+  std::vector<geometry_msgs::msg::Point> segment_points(2);
   if (first_within_idx == 0) {
     const auto & traj_front_pose = decimated_traj.points.at(0).pose;
     const auto front_pos = tier4_autoware_utils::calcOffsetPose(

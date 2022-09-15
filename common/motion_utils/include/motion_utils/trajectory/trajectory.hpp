@@ -26,37 +26,6 @@
 #include <stdexcept>
 #include <vector>
 
-namespace
-{
-template <class T>
-std::vector<geometry_msgs::msg::Point> removeOverlapPoints(const T & points, const size_t & idx)
-{
-  std::vector<geometry_msgs::msg::Point> dst;
-
-  for (const auto & pt : points) {
-    dst.push_back(tier4_autoware_utils::getPoint(pt));
-  }
-
-  if (points.empty()) {
-    return dst;
-  }
-
-  constexpr double eps = 1.0E-08;
-  size_t i = idx;
-  while (i != dst.size() - 1) {
-    const auto p = tier4_autoware_utils::getPoint(dst.at(i));
-    const auto p_next = tier4_autoware_utils::getPoint(dst.at(i + 1));
-    const Eigen::Vector3d v{p_next.x - p.x, p_next.y - p.y, 0.0};
-    if (v.norm() < eps) {
-      dst.erase(dst.begin() + i + 1);
-    } else {
-      ++i;
-    }
-  }
-  return dst;
-}
-}  // namespace
-
 namespace motion_utils
 {
 template <class T>
@@ -120,6 +89,33 @@ boost::optional<bool> isDrivingForwardWithTwist(const T points_with_twist)
   }
 
   return isDrivingForward(points_with_twist);
+}
+
+template <class T>
+T removeOverlapPoints(const T & points, const size_t & start_idx = 0)
+{
+  if (points.size() < start_idx + 1) {
+    return points;
+  }
+
+  T dst;
+
+  for (size_t i = 0; i <= start_idx; ++i) {
+    dst.push_back(points.at(i));
+  }
+
+  constexpr double eps = 1.0E-08;
+  for (size_t i = start_idx + 1; i < points.size(); ++i) {
+    const auto prev_p = tier4_autoware_utils::getPoint(dst.back());
+    const auto curr_p = tier4_autoware_utils::getPoint(points.at(i));
+    const double dist = tier4_autoware_utils::calcDistance2d(prev_p, curr_p);
+    if (dist < eps) {
+      continue;
+    }
+    dst.push_back(points.at(i));
+  }
+
+  return dst;
 }
 
 template <class T>
