@@ -25,11 +25,11 @@
       </group>
       <group>
         <arg
-          name="rtc_auto_approver_param_path"
-          default="$(find-pkg-share tier4_planning_launch)/config/scenario_planning/lane_driving/behavior_planning/rtc_auto_approver/rtc_auto_approver.param.yaml"
+          name="rtc_auto_mode_manager_param_path"
+          default="$(find-pkg-share tier4_planning_launch)/config/scenario_planning/lane_driving/behavior_planning/rtc_auto_mode_manager/rtc_auto_mode_manager.param.yaml"
         />
-        <include file="$(find-pkg-share rtc_auto_approver)/launch/rtc_auto_approver.launch.xml">
-          <arg name="param_path" value="$(var rtc_auto_approver_param_path)"/>
+        <include file="$(find-pkg-share rtc_auto_mode_manager)/launch/rtc_auto_mode_manager.launch.xml">
+          <arg name="param_path" value="$(var rtc_auto_mode_manager_param_path)"/>
         </include>
       </group>
     </group>

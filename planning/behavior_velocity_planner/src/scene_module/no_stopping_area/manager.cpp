@@ -61,6 +61,8 @@ void NoStoppingAreaModuleManager::launchNewModules(
         module_id, lane_id, *m.first, planner_param_, logger_.get_child("no_stopping_area_module"),
         clock_));
       generateUUID(module_id);
+      updateRTCStatus(
+        getUUID(module_id), true, std::numeric_limits<double>::lowest(), path.header.stamp);
     }
   }
 }

@@ -56,6 +56,8 @@ void DetectionAreaModuleManager::launchNewModules(
         module_id, lane_id, *detection_area_with_lane_id.first, planner_param_,
         logger_.get_child("detection_area_module"), clock_));
       generateUUID(module_id);
+      updateRTCStatus(
+        getUUID(module_id), true, std::numeric_limits<double>::lowest(), path.header.stamp);
     }
   }
 }

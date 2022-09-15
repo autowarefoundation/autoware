@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(rtc_auto_approver)
+project(rtc_auto_mode_manager)
 
 ### Compile options
 if(NOT CMAKE_CXX_STANDARD)
@@ -13,12 +13,12 @@ find_package(autoware_cmake REQUIRED)
 autoware_package()
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
-  src/rtc_auto_approver_interface.cpp
+  src/rtc_auto_mode_manager_interface.cpp
   src/node.cpp
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "rtc_auto_approver::RTCAutoApproverNode"
+  PLUGIN "rtc_auto_mode_manager::RTCAutoModeManagerNode"
   EXECUTABLE ${PROJECT_NAME}_node
 )
 

@@ -61,6 +61,8 @@ void BlindSpotModuleManager::launchNewModules(
       module_id, lane_id, planner_data_, planner_param_, logger_.get_child("blind_spot_module"),
       clock_));
     generateUUID(module_id);
+    updateRTCStatus(
+      getUUID(module_id), true, std::numeric_limits<double>::lowest(), path.header.stamp);
   }
 }
 

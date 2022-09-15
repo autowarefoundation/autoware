@@ -115,6 +115,8 @@ void TrafficLightModuleManager::launchNewModules(
         module_id, lane_id, *(traffic_light_reg_elem.first), traffic_light_reg_elem.second,
         planner_param_, logger_.get_child("traffic_light_module"), clock_));
       generateUUID(module_id);
+      updateRTCStatus(
+        getUUID(module_id), true, std::numeric_limits<double>::lowest(), path.header.stamp);
     }
   }
 }

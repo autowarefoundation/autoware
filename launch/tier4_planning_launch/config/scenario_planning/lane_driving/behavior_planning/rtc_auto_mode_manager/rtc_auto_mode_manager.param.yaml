@@ -1,0 +1,29 @@
+/**:
+  ros__parameters:
+    module_list:
+      - "blind_spot"
+      - "crosswalk"
+      - "detection_area"
+      - "intersection"
+      - "no_stopping_area"
+      - "traffic_light"
+      - "lane_change_left"
+      - "lane_change_right"
+      - "avoidance_left"
+      - "avoidance_right"
+      - "pull_over"
+      - "pull_out"
+
+    default_enable_list:
+      - "blind_spot"
+      - "crosswalk"
+      - "detection_area"
+      - "intersection"
+      - "no_stopping_area"
+      - "traffic_light"
+      - "lane_change_left"
+      - "lane_change_right"
+      - "avoidance_left"
+      - "avoidance_right"
+      - "pull_over"
+      - "pull_out"

@@ -162,7 +162,8 @@ Return received command status corresponding to `uuid`.
 
 #### Output
 
-If received command is `ACTIVATED`, return `true`.
+If auto mode is enabled, return based on the safety status.
+If not, if received command is `ACTIVATED`, return `true`.
 If not, return `false`.
 
 ### isRegistered

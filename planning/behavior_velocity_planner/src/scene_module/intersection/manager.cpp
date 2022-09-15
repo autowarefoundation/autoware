@@ -99,6 +99,8 @@ void IntersectionModuleManager::launchNewModules(
       module_id, lane_id, planner_data_, intersection_param_,
       logger_.get_child("intersection_module"), clock_));
     generateUUID(module_id);
+    updateRTCStatus(
+      getUUID(module_id), true, std::numeric_limits<double>::lowest(), path.header.stamp);
   }
 }
 

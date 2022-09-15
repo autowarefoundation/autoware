@@ -130,6 +130,8 @@ bool IntersectionModule::modifyPathVelocity(
         logger_.get_child("util"))) {
     RCLCPP_WARN_SKIPFIRST_THROTTLE(logger_, *clock_, 1000 /* ms */, "setStopLineIdx fail");
     RCLCPP_DEBUG(logger_, "===== plan end =====");
+    setSafe(true);
+    setDistance(std::numeric_limits<double>::lowest());
     return false;
   }
 
@@ -151,6 +153,8 @@ bool IntersectionModule::modifyPathVelocity(
     RCLCPP_WARN_SKIPFIRST_THROTTLE(
       logger_, *clock_, 1000 /* ms */, "motion_utils::findNearestIndex fail");
     RCLCPP_DEBUG(logger_, "===== plan end =====");
+    setSafe(true);
+    setDistance(std::numeric_limits<double>::lowest());
     return false;
   }
   const size_t closest_idx = closest_idx_opt.get();

@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "rtc_auto_approver/node.hpp"
+#include "rtc_auto_mode_manager/node.hpp"
 
 #include <algorithm>
 
-namespace rtc_auto_approver
+namespace rtc_auto_mode_manager
 {
 
-RTCAutoApproverNode::RTCAutoApproverNode(const rclcpp::NodeOptions & node_options)
-: Node("rtc_auto_approver_node", node_options)
+RTCAutoModeManagerNode::RTCAutoModeManagerNode(const rclcpp::NodeOptions & node_options)
+: Node("rtc_auto_mode_manager_node", node_options)
 {
   const std::vector<std::string> module_list =
     declare_parameter("module_list", std::vector<std::string>());
@@ -28,14 +28,13 @@ RTCAutoApproverNode::RTCAutoApproverNode(const rclcpp::NodeOptions & node_option
     declare_parameter("default_enable_list", std::vector<std::string>());
 
   for (const auto & module_name : module_list) {
-    const std::string name_space = BEHAVIOR_PLANNING_NAMESPACE + "/" + module_name;
     const bool enabled =
       std::count(default_enable_list.begin(), default_enable_list.end(), module_name) != 0;
-    approvers_.push_back(std::make_shared<RTCAutoApproverInterface>(this, name_space, enabled));
+    managers_.push_back(std::make_shared<RTCAutoModeManagerInterface>(this, module_name, enabled));
   }
 }
 
-}  // namespace rtc_auto_approver
+}  // namespace rtc_auto_mode_manager
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(rtc_auto_approver::RTCAutoApproverNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(rtc_auto_mode_manager::RTCAutoModeManagerNode)

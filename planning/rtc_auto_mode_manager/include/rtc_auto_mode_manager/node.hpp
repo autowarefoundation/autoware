@@ -12,30 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RTC_AUTO_APPROVER__NODE_HPP_
-#define RTC_AUTO_APPROVER__NODE_HPP_
+#ifndef RTC_AUTO_MODE_MANAGER__NODE_HPP_
+#define RTC_AUTO_MODE_MANAGER__NODE_HPP_
 
 #include "rclcpp/rclcpp.hpp"
-#include "rtc_auto_approver/rtc_auto_approver_interface.hpp"
+#include "rtc_auto_mode_manager/rtc_auto_mode_manager_interface.hpp"
 
 #include <memory>
 #include <string>
 #include <vector>
 
-namespace rtc_auto_approver
+namespace rtc_auto_mode_manager
 {
-class RTCAutoApproverNode : public rclcpp::Node
+class RTCAutoModeManagerNode : public rclcpp::Node
 {
 public:
-  explicit RTCAutoApproverNode(const rclcpp::NodeOptions & node_options);
+  explicit RTCAutoModeManagerNode(const rclcpp::NodeOptions & node_options);
 
 private:
-  std::vector<std::shared_ptr<RTCAutoApproverInterface>> approvers_;
-
-  std::string BEHAVIOR_PLANNING_NAMESPACE =
-    "/planning/scenario_planning/lane_driving/behavior_planning";
+  std::vector<std::shared_ptr<RTCAutoModeManagerInterface>> managers_;
 };
 
-}  // namespace rtc_auto_approver
+}  // namespace rtc_auto_mode_manager
 
-#endif  // RTC_AUTO_APPROVER__NODE_HPP_
+#endif  // RTC_AUTO_MODE_MANAGER__NODE_HPP_
