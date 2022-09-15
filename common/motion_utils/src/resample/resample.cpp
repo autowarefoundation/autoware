@@ -14,9 +14,9 @@
 
 #include "motion_utils/resample/resample.hpp"
 
+#include "motion_utils/resample/resample_utils.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 
-constexpr double CLOSE_S_THRESHOLD = 1e-6;
 namespace motion_utils
 {
 std::vector<geometry_msgs::msg::Pose> resamplePath(
@@ -24,14 +24,8 @@ std::vector<geometry_msgs::msg::Pose> resamplePath(
   const std::vector<double> & resampled_arclength, const bool use_lerp_for_xy,
   const bool use_lerp_for_z)
 {
-  // Check vector size and if out_arclength have the end point of the path
-  const double input_path_len = motion_utils::calcArcLength(points);
-  if (
-    points.size() < 2 || resampled_arclength.size() < 2 ||
-    input_path_len < resampled_arclength.back()) {
-    std::cerr
-      << "[motion_utils]: input points size, input points length or resampled arclength is wrong"
-      << std::endl;
+  // validate arguments
+  if (!resample_utils::validate_arguments(points, resampled_arclength)) {
     return points;
   }
 
@@ -53,9 +47,6 @@ std::vector<geometry_msgs::msg::Pose> resamplePath(
     const auto & prev_pt = points.at(i - 1);
     const auto & curr_pt = points.at(i);
     const double ds = tier4_autoware_utils::calcDistance2d(prev_pt.position, curr_pt.position);
-    if (ds < CLOSE_S_THRESHOLD) {
-      continue;
-    }
     input_arclength.push_back(ds + input_arclength.back());
     x.push_back(curr_pt.position.x);
     y.push_back(curr_pt.position.y);
@@ -104,9 +95,8 @@ autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
   const std::vector<double> & resampled_arclength, const bool use_lerp_for_xy,
   const bool use_lerp_for_z, const bool use_zero_order_hold_for_v)
 {
-  // Check vector size and if out_arclength have the end point of the path
-  if (input_path.points.size() < 2 || resampled_arclength.size() < 2) {
-    std::cerr << "[motion_utils]: input path size or input path length is wrong" << std::endl;
+  // validate arguments
+  if (!resample_utils::validate_arguments(input_path.points, resampled_arclength)) {
     return input_path;
   }
 
@@ -150,9 +140,6 @@ autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
     const auto & curr_pt = input_path.points.at(i).point;
     const double ds =
       tier4_autoware_utils::calcDistance2d(prev_pt.pose.position, curr_pt.pose.position);
-    if (ds < CLOSE_S_THRESHOLD) {
-      continue;
-    }
     input_arclength.push_back(ds + input_arclength.back());
     input_pose.push_back(curr_pt.pose);
     v_lon.push_back(curr_pt.longitudinal_velocity_mps);
@@ -213,11 +200,8 @@ autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
   const double resample_interval, const bool use_lerp_for_xy, const bool use_lerp_for_z,
   const bool use_zero_order_hold_for_v, const bool resample_input_path_stop_point)
 {
-  // Check vector size and if out_arclength have the end point of the trajectory
-  if (input_path.points.size() < 2 || resample_interval < 1e-3) {
-    std::cerr << "[motion_utils]: input trajectory size or resample "
-                 "interval is invalid"
-              << std::endl;
+  // validate arguments
+  if (!resample_utils::validate_arguments(input_path.points, resample_interval)) {
     return input_path;
   }
 
@@ -240,7 +224,7 @@ autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
   }
 
   // Insert terminal point
-  if (input_path_len - resampling_arclength.back() < 1e-3) {
+  if (input_path_len - resampling_arclength.back() < motion_utils::overlap_threshold) {
     resampling_arclength.back() = input_path_len;
   } else {
     resampling_arclength.push_back(input_path_len);
@@ -259,9 +243,9 @@ autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
             std::fabs(*distance_to_stop_point - resampling_arclength.at(i - 1));
           const double dist_to_following_point =
             std::fabs(resampling_arclength.at(i) - *distance_to_stop_point);
-          if (dist_to_prev_point < 1e-3) {
+          if (dist_to_prev_point < motion_utils::overlap_threshold) {
             resampling_arclength.at(i - 1) = *distance_to_stop_point;
-          } else if (dist_to_following_point < 1e-3) {
+          } else if (dist_to_following_point < motion_utils::overlap_threshold) {
             resampling_arclength.at(i) = *distance_to_stop_point;
           } else {
             resampling_arclength.insert(resampling_arclength.begin() + i, *distance_to_stop_point);
@@ -281,14 +265,8 @@ autoware_auto_planning_msgs::msg::Path resamplePath(
   const std::vector<double> & resampled_arclength, const bool use_lerp_for_xy,
   const bool use_lerp_for_z, const bool use_zero_order_hold_for_v)
 {
-  // Check vector size and if out_arclength have the end point of the path
-  const double input_path_len = motion_utils::calcArcLength(input_path.points);
-  if (
-    input_path.points.size() < 2 || resampled_arclength.size() < 2 ||
-    input_path_len < resampled_arclength.back()) {
-    std::cerr
-      << "[motion_utils]: input path size, input path length or resampled arclength is wrong"
-      << std::endl;
+  // validate arguments
+  if (!resample_utils::validate_arguments(input_path.points, resampled_arclength)) {
     return input_path;
   }
 
@@ -314,9 +292,6 @@ autoware_auto_planning_msgs::msg::Path resamplePath(
     const auto & curr_pt = input_path.points.at(i);
     const double ds =
       tier4_autoware_utils::calcDistance2d(prev_pt.pose.position, curr_pt.pose.position);
-    if (ds < CLOSE_S_THRESHOLD) {
-      continue;
-    }
     input_arclength.push_back(ds + input_arclength.back());
     input_pose.push_back(curr_pt.pose);
     v_lon.push_back(curr_pt.longitudinal_velocity_mps);
@@ -365,14 +340,8 @@ autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
   const std::vector<double> & resampled_arclength, const bool use_lerp_for_xy,
   const bool use_lerp_for_z, const bool use_zero_order_hold_for_twist)
 {
-  // Check vector size and if out_arclength have the end point of the trajectory
-  const double input_trajectory_len = motion_utils::calcArcLength(input_trajectory.points);
-  if (
-    input_trajectory.points.size() < 2 || resampled_arclength.size() < 2 ||
-    input_trajectory_len < resampled_arclength.back()) {
-    std::cerr << "[motion_utils]: input trajectory size, input trajectory length or resampled "
-                 "arclength is wrong"
-              << std::endl;
+  // validate arguments
+  if (!resample_utils::validate_arguments(input_trajectory.points, resampled_arclength)) {
     return input_trajectory;
   }
 
@@ -411,9 +380,6 @@ autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
     const auto & curr_pt = input_trajectory.points.at(i);
     const double ds =
       tier4_autoware_utils::calcDistance2d(prev_pt.pose.position, curr_pt.pose.position);
-    if (ds < CLOSE_S_THRESHOLD) {
-      continue;
-    }
     input_arclength.push_back(ds + input_arclength.back());
     input_pose.push_back(curr_pt.pose);
     v_lon.push_back(curr_pt.longitudinal_velocity_mps);
@@ -474,15 +440,12 @@ autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
   const double resample_interval, const bool use_lerp_for_xy, const bool use_lerp_for_z,
   const bool use_zero_order_hold_for_twist, const bool resample_input_trajectory_stop_point)
 {
-  const double input_trajectory_len = motion_utils::calcArcLength(input_trajectory.points);
-  // Check vector size and if out_arclength have the end point of the trajectory
-  if (
-    input_trajectory.points.size() < 2 || input_trajectory_len < 1e-3 || resample_interval < 1e-3) {
-    std::cerr << "[motion_utils]: input trajectory size, input_trajectory length or resample "
-                 "interval is invalid"
-              << std::endl;
+  // validate arguments
+  if (!resample_utils::validate_arguments(input_trajectory.points, resample_interval)) {
     return input_trajectory;
   }
+
+  const double input_trajectory_len = motion_utils::calcArcLength(input_trajectory.points);
 
   std::vector<double> resampling_arclength;
   for (double s = 0.0; s < input_trajectory_len; s += resample_interval) {
@@ -494,7 +457,7 @@ autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
   }
 
   // Insert terminal point
-  if (input_trajectory_len - resampling_arclength.back() < 1e-3) {
+  if (input_trajectory_len - resampling_arclength.back() < motion_utils::overlap_threshold) {
     resampling_arclength.back() = input_trajectory_len;
   } else {
     resampling_arclength.push_back(input_trajectory_len);
@@ -513,9 +476,9 @@ autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
             std::fabs(*distance_to_stop_point - resampling_arclength.at(i - 1));
           const double dist_to_following_point =
             std::fabs(resampling_arclength.at(i) - *distance_to_stop_point);
-          if (dist_to_prev_point < 1e-3) {
+          if (dist_to_prev_point < motion_utils::overlap_threshold) {
             resampling_arclength.at(i - 1) = *distance_to_stop_point;
-          } else if (dist_to_following_point < 1e-3) {
+          } else if (dist_to_following_point < motion_utils::overlap_threshold) {
             resampling_arclength.at(i) = *distance_to_stop_point;
           } else {
             resampling_arclength.insert(resampling_arclength.begin() + i, *distance_to_stop_point);
