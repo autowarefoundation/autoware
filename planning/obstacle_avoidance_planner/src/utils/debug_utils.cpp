@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "obstacle_avoidance_planner/debug_visualization.hpp"
+#include "obstacle_avoidance_planner/utils/debug_utils.hpp"
 
-#include "obstacle_avoidance_planner/cv_utils.hpp"
 #include "obstacle_avoidance_planner/mpt_optimizer.hpp"
-#include "obstacle_avoidance_planner/utils.hpp"
+#include "obstacle_avoidance_planner/utils/cv_utils.hpp"
+#include "obstacle_avoidance_planner/utils/utils.hpp"
 #include "tf2/utils.h"
 
 #include "visualization_msgs/msg/marker.hpp"
@@ -713,10 +713,10 @@ visualization_msgs::msg::MarkerArray getVirtualWallTextMarkerArray(
 }
 }  // namespace
 
-namespace debug_visualization
+namespace debug_utils
 {
 visualization_msgs::msg::MarkerArray getDebugVisualizationMarker(
-  const std::shared_ptr<DebugData> debug_data_ptr,
+  DebugData & debug_data,
   const std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> & optimized_points,
   const VehicleParam & vehicle_param, const bool is_showing_debug_detail)
 {
@@ -724,88 +724,88 @@ visualization_msgs::msg::MarkerArray getDebugVisualizationMarker(
 
   if (is_showing_debug_detail) {
     const auto points_marker_array = getDebugPointsMarkers(
-      debug_data_ptr->interpolated_points, optimized_points, debug_data_ptr->straight_points,
-      debug_data_ptr->fixed_points, debug_data_ptr->non_fixed_points);
+      debug_data.interpolated_points, optimized_points, debug_data.straight_points,
+      debug_data.fixed_points, debug_data.non_fixed_points);
 
     const auto constrain_marker_array =
-      getDebugConstrainMarkers(debug_data_ptr->constrain_rectangles, "constrain_rect");
+      getDebugConstrainMarkers(debug_data.constrain_rectangles, "constrain_rect");
 
     appendMarkerArray(points_marker_array, &vis_marker_array);
     appendMarkerArray(constrain_marker_array, &vis_marker_array);
 
     appendMarkerArray(
       getRectanglesNumMarkerArray(
-        debug_data_ptr->mpt_traj, vehicle_param, "num_vehicle_footprint", 0.99, 0.99, 0.2),
+        debug_data.mpt_traj, vehicle_param, "num_vehicle_footprint", 0.99, 0.99, 0.2),
       &vis_marker_array);
 
     appendMarkerArray(
-      getPointsTextMarkerArray(debug_data_ptr->eb_traj, "eb_traj_text", 0.99, 0.99, 0.2),
+      getPointsTextMarkerArray(debug_data.eb_traj, "eb_traj_text", 0.99, 0.99, 0.2),
       &vis_marker_array);
   }
 
   // avoiding objects
   appendMarkerArray(
-    getObjectsMarkerArray(debug_data_ptr->avoiding_objects, "avoiding_objects", 0.99, 0.99, 0.2),
+    getObjectsMarkerArray(debug_data.avoiding_objects, "avoiding_objects", 0.99, 0.99, 0.2),
     &vis_marker_array);
   // mpt footprints
   appendMarkerArray(
     getRectanglesMarkerArray(
-      debug_data_ptr->mpt_traj, vehicle_param, "mpt_footprints", 0.99, 0.99, 0.2,
-      debug_data_ptr->mpt_visualize_sampling_num),
+      debug_data.mpt_traj, vehicle_param, "mpt_footprints", 0.99, 0.99, 0.2,
+      debug_data.mpt_visualize_sampling_num),
     &vis_marker_array);
   // bounds
   appendMarkerArray(
     getBoundsLineMarkerArray(
-      debug_data_ptr->ref_points, 0.99, 0.99, 0.2, vehicle_param.width,
-      debug_data_ptr->mpt_visualize_sampling_num),
+      debug_data.ref_points, 0.99, 0.99, 0.2, vehicle_param.width,
+      debug_data.mpt_visualize_sampling_num),
     &vis_marker_array);
 
   // bounds candidates
   appendMarkerArray(
     getBoundsCandidatesLineMarkerArray(
-      debug_data_ptr->ref_points, debug_data_ptr->sequential_bounds_candidates, 0.2, 0.99, 0.99,
-      vehicle_param.width, debug_data_ptr->mpt_visualize_sampling_num),
+      debug_data.ref_points, debug_data.sequential_bounds_candidates, 0.2, 0.99, 0.99,
+      vehicle_param.width, debug_data.mpt_visualize_sampling_num),
     &vis_marker_array);
 
   // vehicle circle line
   appendMarkerArray(
     getVehicleCircleLineMarkerArray(
-      debug_data_ptr->vehicle_circles_pose, vehicle_param.width,
-      debug_data_ptr->mpt_visualize_sampling_num, "vehicle_circle_lines", 0.99, 0.99, 0.2),
+      debug_data.vehicle_circles_pose, vehicle_param.width, debug_data.mpt_visualize_sampling_num,
+      "vehicle_circle_lines", 0.99, 0.99, 0.2),
     &vis_marker_array);
 
   // lateral error line
   appendMarkerArray(
     getLateralErrorsLineMarkerArray(
-      debug_data_ptr->mpt_ref_poses, debug_data_ptr->lateral_errors,
-      debug_data_ptr->mpt_visualize_sampling_num, "lateral_errors", 0.1, 0.1, 0.8),
+      debug_data.mpt_ref_poses, debug_data.lateral_errors, debug_data.mpt_visualize_sampling_num,
+      "lateral_errors", 0.1, 0.1, 0.8),
     &vis_marker_array);
 
   // current vehicle circles
   appendMarkerArray(
     getCurrentVehicleCirclesMarkerArray(
-      debug_data_ptr->current_ego_pose, debug_data_ptr->vehicle_circle_longitudinal_offsets,
-      debug_data_ptr->vehicle_circle_radiuses, "current_vehicle_circles", 1.0, 0.3, 0.3),
+      debug_data.current_ego_pose, debug_data.vehicle_circle_longitudinal_offsets,
+      debug_data.vehicle_circle_radiuses, "current_vehicle_circles", 1.0, 0.3, 0.3),
     &vis_marker_array);
 
   // vehicle circles
   appendMarkerArray(
     getVehicleCirclesMarkerArray(
-      debug_data_ptr->mpt_traj, debug_data_ptr->vehicle_circle_longitudinal_offsets,
-      debug_data_ptr->vehicle_circle_radiuses, debug_data_ptr->mpt_visualize_sampling_num,
-      "vehicle_circles", 1.0, 0.3, 0.3),
+      debug_data.mpt_traj, debug_data.vehicle_circle_longitudinal_offsets,
+      debug_data.vehicle_circle_radiuses, debug_data.mpt_visualize_sampling_num, "vehicle_circles",
+      1.0, 0.3, 0.3),
     &vis_marker_array);
 
   return vis_marker_array;
 }
 
 visualization_msgs::msg::MarkerArray getDebugVisualizationWallMarker(
-  const std::shared_ptr<DebugData> debug_data_ptr, const VehicleParam & vehicle_param)
+  DebugData & debug_data, const VehicleParam & vehicle_param)
 {
   visualization_msgs::msg::MarkerArray vis_marker_array;
-  if (debug_data_ptr->stop_pose_by_drivable_area) {
+  if (debug_data.stop_pose_by_drivable_area) {
     const auto virtual_wall_pose =
-      getVirtualWallPose(debug_data_ptr->stop_pose_by_drivable_area.get(), vehicle_param);
+      getVirtualWallPose(debug_data.stop_pose_by_drivable_area.get(), vehicle_param);
     appendMarkerArray(
       getVirtualWallMarkerArray(virtual_wall_pose, "virtual_wall", 1.0, 0, 0), &vis_marker_array);
     appendMarkerArray(
@@ -829,4 +829,4 @@ nav_msgs::msg::OccupancyGrid getDebugCostmap(
   });
   return clearance_map_in_og;
 }
-}  // namespace debug_visualization
+}  // namespace debug_utils

@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "obstacle_avoidance_planner/cv_utils.hpp"
+#include "obstacle_avoidance_planner/utils/cv_utils.hpp"
 
-#include "obstacle_avoidance_planner/utils.hpp"
+#include "obstacle_avoidance_planner/utils/utils.hpp"
 #include "tf2/utils.h"
 #include "tier4_autoware_utils/system/stop_watch.hpp"
 

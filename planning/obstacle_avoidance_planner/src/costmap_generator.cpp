@@ -14,8 +14,8 @@
 
 #include "obstacle_avoidance_planner/costmap_generator.hpp"
 
-#include "obstacle_avoidance_planner/cv_utils.hpp"
-#include "obstacle_avoidance_planner/utils.hpp"
+#include "obstacle_avoidance_planner/utils/cv_utils.hpp"
+#include "obstacle_avoidance_planner/utils/utils.hpp"
 #include "tier4_autoware_utils/tier4_autoware_utils.hpp"
 
 namespace
@@ -146,39 +146,37 @@ geometry_msgs::msg::Point getPoint(const cv::Point & p)
 CVMaps CostmapGenerator::getMaps(
   const bool enable_avoidance, const autoware_auto_planning_msgs::msg::Path & path,
   const std::vector<autoware_auto_perception_msgs::msg::PredictedObject> & objects,
-  const TrajectoryParam & traj_param, std::shared_ptr<DebugData> debug_data_ptr)
+  const TrajectoryParam & traj_param, DebugData & debug_data)
 {
   stop_watch_.tic(__func__);
 
   // make cv_maps
   CVMaps cv_maps;
 
-  cv_maps.drivable_area = getDrivableAreaInCV(path.drivable_area, debug_data_ptr);
-  cv_maps.clearance_map = getClearanceMap(cv_maps.drivable_area, debug_data_ptr);
+  cv_maps.drivable_area = getDrivableAreaInCV(path.drivable_area, debug_data);
+  cv_maps.clearance_map = getClearanceMap(cv_maps.drivable_area, debug_data);
 
   std::vector<autoware_auto_perception_msgs::msg::PredictedObject> debug_avoiding_objects;
   cv::Mat objects_image = drawObstaclesOnImage(
     enable_avoidance, objects, path.points, path.drivable_area.info, cv_maps.drivable_area,
-    cv_maps.clearance_map, traj_param, &debug_avoiding_objects, debug_data_ptr);
+    cv_maps.clearance_map, traj_param, &debug_avoiding_objects, debug_data);
 
   cv_maps.area_with_objects_map =
-    getAreaWithObjects(cv_maps.drivable_area, objects_image, debug_data_ptr);
-  cv_maps.only_objects_clearance_map = getClearanceMap(objects_image, debug_data_ptr);
+    getAreaWithObjects(cv_maps.drivable_area, objects_image, debug_data);
+  cv_maps.only_objects_clearance_map = getClearanceMap(objects_image, debug_data);
   cv_maps.map_info = path.drivable_area.info;
 
   // debug data
-  debug_data_ptr->clearance_map = cv_maps.clearance_map;
-  debug_data_ptr->only_object_clearance_map = cv_maps.only_objects_clearance_map;
-  debug_data_ptr->area_with_objects_map = cv_maps.area_with_objects_map;
-  debug_data_ptr->avoiding_objects = debug_avoiding_objects;
-  debug_data_ptr->msg_stream << "    " << __func__ << ":= " << stop_watch_.toc(__func__)
-                             << " [ms]\n";
+  debug_data.clearance_map = cv_maps.clearance_map;
+  debug_data.only_object_clearance_map = cv_maps.only_objects_clearance_map;
+  debug_data.area_with_objects_map = cv_maps.area_with_objects_map;
+  debug_data.avoiding_objects = debug_avoiding_objects;
+  debug_data.msg_stream << "    " << __func__ << ":= " << stop_watch_.toc(__func__) << " [ms]\n";
   return cv_maps;
 }
 
 cv::Mat CostmapGenerator::getDrivableAreaInCV(
-  const nav_msgs::msg::OccupancyGrid & occupancy_grid,
-  std::shared_ptr<DebugData> debug_data_ptr) const
+  const nav_msgs::msg::OccupancyGrid & occupancy_grid, DebugData & debug_data) const
 {
   stop_watch_.tic(__func__);
 
@@ -188,21 +186,19 @@ cv::Mat CostmapGenerator::getDrivableAreaInCV(
     cv_utils::getOccupancyGridValue(occupancy_grid, position[0], position[1], value);
   });
 
-  debug_data_ptr->msg_stream << "      " << __func__ << ":= " << stop_watch_.toc(__func__)
-                             << " [ms]\n";
+  debug_data.msg_stream << "      " << __func__ << ":= " << stop_watch_.toc(__func__) << " [ms]\n";
   return drivable_area;
 }
 
 cv::Mat CostmapGenerator::getClearanceMap(
-  const cv::Mat & drivable_area, std::shared_ptr<DebugData> debug_data_ptr) const
+  const cv::Mat & drivable_area, DebugData & debug_data) const
 {
   stop_watch_.tic(__func__);
 
   cv::Mat clearance_map;
   cv::distanceTransform(drivable_area, clearance_map, cv::DIST_L2, 5);
 
-  debug_data_ptr->msg_stream << "      " << __func__ << ":= " << stop_watch_.toc(__func__)
-                             << " [ms]\n";
+  debug_data.msg_stream << "      " << __func__ << ":= " << stop_watch_.toc(__func__) << " [ms]\n";
   return clearance_map;
 }
 
@@ -213,7 +209,7 @@ cv::Mat CostmapGenerator::drawObstaclesOnImage(
   const nav_msgs::msg::MapMetaData & map_info, [[maybe_unused]] const cv::Mat & drivable_area,
   const cv::Mat & clearance_map, const TrajectoryParam & traj_param,
   std::vector<autoware_auto_perception_msgs::msg::PredictedObject> * debug_avoiding_objects,
-  std::shared_ptr<DebugData> debug_data_ptr) const
+  DebugData & debug_data) const
 {
   stop_watch_.tic(__func__);
 
@@ -324,21 +320,18 @@ cv::Mat CostmapGenerator::drawObstaclesOnImage(
   }
   */
 
-  debug_data_ptr->msg_stream << "      " << __func__ << ":= " << stop_watch_.toc(__func__)
-                             << " [ms]\n";
+  debug_data.msg_stream << "      " << __func__ << ":= " << stop_watch_.toc(__func__) << " [ms]\n";
 
   return objects_image;
 }
 
 cv::Mat CostmapGenerator::getAreaWithObjects(
-  const cv::Mat & drivable_area, const cv::Mat & objects_image,
-  std::shared_ptr<DebugData> debug_data_ptr) const
+  const cv::Mat & drivable_area, const cv::Mat & objects_image, DebugData & debug_data) const
 {
   stop_watch_.tic(__func__);
 
   cv::Mat area_with_objects = cv::min(objects_image, drivable_area);
 
-  debug_data_ptr->msg_stream << "      " << __func__ << ":= " << stop_watch_.toc(__func__)
-                             << " [ms]\n";
+  debug_data.msg_stream << "      " << __func__ << ":= " << stop_watch_.toc(__func__) << " [ms]\n";
   return area_with_objects;
 }

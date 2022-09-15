@@ -11,8 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef OBSTACLE_AVOIDANCE_PLANNER__DEBUG_VISUALIZATION_HPP_
-#define OBSTACLE_AVOIDANCE_PLANNER__DEBUG_VISUALIZATION_HPP_
+#ifndef OBSTACLE_AVOIDANCE_PLANNER__UTILS__DEBUG_UTILS_HPP_
+#define OBSTACLE_AVOIDANCE_PLANNER__UTILS__DEBUG_UTILS_HPP_
 
 #include "obstacle_avoidance_planner/common_structs.hpp"
 #include "opencv2/core.hpp"
@@ -33,18 +33,18 @@
 using tier4_autoware_utils::createMarkerColor;
 using tier4_autoware_utils::createMarkerScale;
 
-namespace debug_visualization
+namespace debug_utils
 {
 visualization_msgs::msg::MarkerArray getDebugVisualizationMarker(
-  const std::shared_ptr<DebugData> debug_data_ptr,
+  DebugData & debug_data,
   const std::vector<autoware_auto_planning_msgs::msg::TrajectoryPoint> & optimized_points,
   const VehicleParam & vehicle_param, const bool is_showing_debug_detail);
 
 visualization_msgs::msg::MarkerArray getDebugVisualizationWallMarker(
-  const std::shared_ptr<DebugData> debug_data_ptr, const VehicleParam & vehicle_param);
+  DebugData & debug_data, const VehicleParam & vehicle_param);
 
 nav_msgs::msg::OccupancyGrid getDebugCostmap(
   const cv::Mat & clearance_map, const nav_msgs::msg::OccupancyGrid & occupancy_grid);
-}  // namespace debug_visualization
+}  // namespace debug_utils
 
-#endif  // OBSTACLE_AVOIDANCE_PLANNER__DEBUG_VISUALIZATION_HPP_
+#endif  // OBSTACLE_AVOIDANCE_PLANNER__UTILS__DEBUG_UTILS_HPP_

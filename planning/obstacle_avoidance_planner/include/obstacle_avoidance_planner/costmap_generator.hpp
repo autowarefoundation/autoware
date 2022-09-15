@@ -36,7 +36,7 @@ public:
   CVMaps getMaps(
     const bool enable_avoidance, const autoware_auto_planning_msgs::msg::Path & path,
     const std::vector<autoware_auto_perception_msgs::msg::PredictedObject> & objects,
-    const TrajectoryParam & traj_param, std::shared_ptr<DebugData> debug_data_ptr);
+    const TrajectoryParam & traj_param, DebugData & debug_data);
 
 private:
   mutable tier4_autoware_utils::StopWatch<
@@ -44,11 +44,9 @@ private:
     stop_watch_;
 
   cv::Mat getAreaWithObjects(
-    const cv::Mat & drivable_area, const cv::Mat & objects_image,
-    std::shared_ptr<DebugData> debug_data_ptr) const;
+    const cv::Mat & drivable_area, const cv::Mat & objects_image, DebugData & debug_data) const;
 
-  cv::Mat getClearanceMap(
-    const cv::Mat & drivable_area, std::shared_ptr<DebugData> debug_data_ptr) const;
+  cv::Mat getClearanceMap(const cv::Mat & drivable_area, DebugData & debug_data) const;
 
   cv::Mat drawObstaclesOnImage(
     const bool enable_avoidance,
@@ -57,10 +55,9 @@ private:
     const nav_msgs::msg::MapMetaData & map_info, [[maybe_unused]] const cv::Mat & drivable_area,
     const cv::Mat & clearance_map, const TrajectoryParam & traj_param,
     std::vector<autoware_auto_perception_msgs::msg::PredictedObject> * debug_avoiding_objects,
-    std::shared_ptr<DebugData> debug_data_ptr) const;
+    DebugData & debug_data) const;
 
   cv::Mat getDrivableAreaInCV(
-    const nav_msgs::msg::OccupancyGrid & occupancy_grid,
-    std::shared_ptr<DebugData> debug_data_ptr) const;
+    const nav_msgs::msg::OccupancyGrid & occupancy_grid, DebugData & debug_data) const;
 };
 #endif  // OBSTACLE_AVOIDANCE_PLANNER__COSTMAP_GENERATOR_HPP_

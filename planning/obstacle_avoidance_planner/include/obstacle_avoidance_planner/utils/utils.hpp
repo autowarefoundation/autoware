@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OBSTACLE_AVOIDANCE_PLANNER__UTILS_HPP_
-#define OBSTACLE_AVOIDANCE_PLANNER__UTILS_HPP_
+#ifndef OBSTACLE_AVOIDANCE_PLANNER__UTILS__UTILS_HPP_
+#define OBSTACLE_AVOIDANCE_PLANNER__UTILS__UTILS_HPP_
 
 #include "eigen3/Eigen/Core"
 #include "interpolation/linear_interpolation.hpp"
@@ -354,4 +354,4 @@ namespace utils
 void logOSQPSolutionStatus(const int solution_status, const std::string & msg);
 }  // namespace utils
 
-#endif  // OBSTACLE_AVOIDANCE_PLANNER__UTILS_HPP_
+#endif  // OBSTACLE_AVOIDANCE_PLANNER__UTILS__UTILS_HPP_
