@@ -36,11 +36,11 @@ LidarCenterPointNode::LidarCenterPointNode(const rclcpp::NodeOptions & node_opti
 : Node("lidar_center_point", node_options), tf_buffer_(this->get_clock())
 {
   const float score_threshold =
-    static_cast<float>(this->declare_parameter<double>("score_threshold", 0.4));
+    static_cast<float>(this->declare_parameter<double>("score_threshold", 0.35));
   const float circle_nms_dist_threshold =
     static_cast<float>(this->declare_parameter<double>("circle_nms_dist_threshold", 1.5));
   const float yaw_norm_threshold =
-    static_cast<float>(this->declare_parameter<double>("yaw_norm_threshold", 0.5));
+    static_cast<float>(this->declare_parameter<double>("yaw_norm_threshold", 0.0));
   const std::string densification_world_frame_id =
     this->declare_parameter("densification_world_frame_id", "map");
   const int densification_num_past_frames =

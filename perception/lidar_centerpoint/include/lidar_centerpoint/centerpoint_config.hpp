@@ -100,9 +100,9 @@ public:
   const std::size_t head_out_vel_size_{2};
 
   // post-process params
-  float score_threshold_{0.4f};
+  float score_threshold_{0.35f};
   float circle_nms_dist_threshold_{1.5f};
-  float yaw_norm_threshold_{0.5f};
+  float yaw_norm_threshold_{0.0f};
 
   // calculated params
   std::size_t grid_size_x_ = (range_max_x_ - range_min_x_) / voxel_size_x_;
