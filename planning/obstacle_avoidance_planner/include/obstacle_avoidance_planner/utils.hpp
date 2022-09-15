@@ -225,6 +225,16 @@ std::vector<geometry_msgs::msg::Point> convertToPoints(const std::vector<T> & po
 }
 
 template <typename T>
+std::vector<geometry_msgs::msg::Pose> convertToPoses(const std::vector<T> & points)
+{
+  std::vector<geometry_msgs::msg::Pose> geom_points;
+  for (const auto & point : points) {
+    geom_points.push_back(tier4_autoware_utils::getPose(point));
+  }
+  return geom_points;
+}
+
+template <typename T>
 autoware_auto_planning_msgs::msg::TrajectoryPoint convertToTrajectoryPoint(const T & point)
 {
   autoware_auto_planning_msgs::msg::TrajectoryPoint traj_point;

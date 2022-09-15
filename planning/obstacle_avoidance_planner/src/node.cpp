@@ -126,6 +126,33 @@ bool hasValidNearestPointFromEgo(
   return true;
 }
 
+std::tuple<std::vector<double>, std::vector<double>> calcVehicleCirclesInfoByBicycleModel(
+  const VehicleParam & vehicle_param, const size_t circle_num, const double rear_radius_ratio,
+  const double front_radius_ratio)
+{
+  std::vector<double> longitudinal_offsets;
+  std::vector<double> radiuses;
+
+  {  // 1st circle (rear wheel)
+    longitudinal_offsets.push_back(0.0);
+    radiuses.push_back(vehicle_param.width / 2.0 * rear_radius_ratio);
+  }
+
+  {  // 2nd circle (front wheel)
+    const double radius = std::hypot(
+      vehicle_param.length / static_cast<double>(circle_num) / 2.0, vehicle_param.width / 2.0);
+
+    const double unit_lon_length = vehicle_param.length / static_cast<double>(circle_num);
+    const double longitudinal_offset =
+      unit_lon_length / 2.0 + unit_lon_length * (circle_num - 1) - vehicle_param.rear_overhang;
+
+    longitudinal_offsets.push_back(longitudinal_offset);
+    radiuses.push_back(radius * front_radius_ratio);
+  }
+
+  return {radiuses, longitudinal_offsets};
+}
+
 std::tuple<std::vector<double>, std::vector<double>> calcVehicleCirclesInfo(
   const VehicleParam & vehicle_param, const size_t circle_num, const double rear_radius_ratio,
   const double front_radius_ratio)
@@ -429,6 +456,7 @@ ObstacleAvoidancePlanner::ObstacleAvoidancePlanner(const rclcpp::NodeOptions & n
     mpt_param_.enable_manual_warm_start =
       declare_parameter<bool>("mpt.option.enable_manual_warm_start");
     mpt_visualize_sampling_num_ = declare_parameter<int>("mpt.option.visualize_sampling_num");
+    mpt_param_.is_fixed_point_single = declare_parameter<bool>("mpt.option.is_fixed_point_single");
 
     // common
     mpt_param_.num_curvature_sampling_points =
@@ -458,6 +486,7 @@ ObstacleAvoidancePlanner::ObstacleAvoidancePlanner(const rclcpp::NodeOptions & n
       declare_parameter<bool>("advanced.mpt.collision_free_constraints.option.soft_constraint");
     mpt_param_.hard_constraint =
       declare_parameter<bool>("advanced.mpt.collision_free_constraints.option.hard_constraint");
+
     // TODO(murooka) implement two-step soft constraint
     mpt_param_.two_step_soft_constraint = false;
     // mpt_param_.two_step_soft_constraint =
@@ -491,6 +520,23 @@ ObstacleAvoidancePlanner::ObstacleAvoidancePlanner(const rclcpp::NodeOptions & n
         std::tie(
           mpt_param_.vehicle_circle_radiuses, mpt_param_.vehicle_circle_longitudinal_offsets) =
           calcVehicleCirclesInfo(
+            vehicle_param_, vehicle_circle_num_for_calculation_,
+            vehicle_circle_radius_ratios_.front(), vehicle_circle_radius_ratios_.back());
+      } else if (vehicle_circle_method_ == "bicycle_model") {
+        vehicle_circle_num_for_calculation_ = declare_parameter<int>(
+          "advanced.mpt.collision_free_constraints.vehicle_circles.bicycle_model.num_for_"
+          "calculation");
+
+        vehicle_circle_radius_ratios_.push_back(
+          declare_parameter<double>("advanced.mpt.collision_free_constraints.vehicle_circles."
+                                    "bicycle_model.rear_radius_ratio"));
+        vehicle_circle_radius_ratios_.push_back(
+          declare_parameter<double>("advanced.mpt.collision_free_constraints.vehicle_circles."
+                                    "bicycle_model.front_radius_ratio"));
+
+        std::tie(
+          mpt_param_.vehicle_circle_radiuses, mpt_param_.vehicle_circle_longitudinal_offsets) =
+          calcVehicleCirclesInfoByBicycleModel(
             vehicle_param_, vehicle_circle_num_for_calculation_,
             vehicle_circle_radius_ratios_.front(), vehicle_circle_radius_ratios_.back());
       } else {
@@ -688,6 +734,8 @@ rcl_interfaces::msg::SetParametersResult ObstacleAvoidancePlanner::paramCallback
     updateParam<bool>(
       parameters, "mpt.option.enable_manual_warm_start", mpt_param_.enable_manual_warm_start);
     updateParam<int>(parameters, "mpt.option.visualize_sampling_num", mpt_visualize_sampling_num_);
+    updateParam<bool>(
+      parameters, "mpt.option.option.is_fixed_point_single", mpt_param_.is_fixed_point_single);
 
     // common
     updateParam<int>(

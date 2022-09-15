@@ -215,6 +215,7 @@ struct MPTParam
   bool steer_limit_constraint;
   bool fix_points_around_ego;
   int num_curvature_sampling_points;
+  bool is_fixed_point_single;
 
   std::vector<double> vehicle_circle_longitudinal_offsets;  // from base_link
   std::vector<double> vehicle_circle_radiuses;

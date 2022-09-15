@@ -63,6 +63,7 @@
         visualize_sampling_num: 1
         enable_manual_warm_start: true
         enable_warm_start: true # false
+        is_fixed_point_single: false
 
       common:
         num_curvature_sampling_points: 5 # number of sampling points when calculating curvature
@@ -145,6 +146,11 @@
               radius_ratio: 0.8
 
             rear_drive:
+              num_for_calculation: 3
+              front_radius_ratio: 1.0
+              rear_radius_ratio: 1.0
+
+            bicycle_model:
               num_for_calculation: 3
               front_radius_ratio: 1.0
               rear_radius_ratio: 1.0
