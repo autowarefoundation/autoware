@@ -176,7 +176,7 @@ void SideShiftModule::updateData()
     current_lane, reference_pose.pose, p.backward_path_length, p.forward_path_length);
 
   const size_t nearest_idx = findEgoIndex(path_shifter_.getReferencePath().points);
-  path_shifter_.removeBehindShiftPointAndSetBaseOffset(planner_data_->self_pose->pose, nearest_idx);
+  path_shifter_.removeBehindShiftPointAndSetBaseOffset(nearest_idx);
 }
 
 bool SideShiftModule::addShiftPoint()

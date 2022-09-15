@@ -2341,7 +2341,7 @@ ShiftedPath AvoidanceModule::generateAvoidancePath(PathShifter & path_shifter) c
 void AvoidanceModule::postProcess(PathShifter & path_shifter) const
 {
   const size_t nearest_idx = findEgoIndex(path_shifter.getReferencePath().points);
-  path_shifter.removeBehindShiftPointAndSetBaseOffset(getEgoPose().pose, nearest_idx);
+  path_shifter.removeBehindShiftPointAndSetBaseOffset(nearest_idx);
 }
 
 void AvoidanceModule::updateData()
