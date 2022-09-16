@@ -133,7 +133,8 @@ std::vector<geometry_msgs::msg::PointStamped> getCollisionPoints(
   const autoware_auto_perception_msgs::msg::PredictedPath & predicted_path,
   const autoware_auto_perception_msgs::msg::Shape & shape, const rclcpp::Time & current_time,
   const double vehicle_max_longitudinal_offset, const bool is_driving_forward,
-  const double max_dist, const double max_prediction_time_for_collision_check)
+  std::vector<size_t> & collision_index, const double max_dist,
+  const double max_prediction_time_for_collision_check)
 {
   std::vector<geometry_msgs::msg::PointStamped> collision_points;
   for (size_t i = 0; i < predicted_path.path.size(); ++i) {
@@ -163,6 +164,7 @@ std::vector<geometry_msgs::msg::PointStamped> getCollisionPoints(
         *collision_idx, current_collision_points, traj, vehicle_max_longitudinal_offset,
         is_driving_forward);
       collision_points.push_back(nearest_collision_point);
+      collision_index.push_back(*collision_idx);
     }
   }
 
@@ -175,12 +177,12 @@ std::vector<geometry_msgs::msg::PointStamped> willCollideWithSurroundObstacle(
   const autoware_auto_perception_msgs::msg::PredictedPath & predicted_path,
   const autoware_auto_perception_msgs::msg::Shape & shape, const rclcpp::Time & current_time,
   const double max_dist, const double ego_obstacle_overlap_time_threshold,
-  const double max_prediction_time_for_collision_check,
+  const double max_prediction_time_for_collision_check, std::vector<size_t> & collision_index,
   const double vehicle_max_longitudinal_offset, const bool is_driving_forward)
 {
   const auto collision_points = getCollisionPoints(
     traj, traj_polygons, obj_header, predicted_path, shape, current_time,
-    vehicle_max_longitudinal_offset, is_driving_forward, max_dist,
+    vehicle_max_longitudinal_offset, is_driving_forward, collision_index, max_dist,
     max_prediction_time_for_collision_check);
 
   if (collision_points.empty()) {

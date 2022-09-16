@@ -48,7 +48,7 @@ std::vector<geometry_msgs::msg::PointStamped> getCollisionPoints(
   const autoware_auto_perception_msgs::msg::PredictedPath & predicted_path,
   const autoware_auto_perception_msgs::msg::Shape & shape, const rclcpp::Time & current_time,
   const double vehicle_max_longitudinal_offset, const bool is_driving_forward,
-  const double max_dist = std::numeric_limits<double>::max(),
+  std::vector<size_t> & collision_index, const double max_dist = std::numeric_limits<double>::max(),
   const double max_prediction_time_for_collision_check = std::numeric_limits<double>::max());
 
 std::vector<geometry_msgs::msg::PointStamped> willCollideWithSurroundObstacle(
@@ -57,7 +57,7 @@ std::vector<geometry_msgs::msg::PointStamped> willCollideWithSurroundObstacle(
   const autoware_auto_perception_msgs::msg::PredictedPath & predicted_path,
   const autoware_auto_perception_msgs::msg::Shape & shape, const rclcpp::Time & current_time,
   const double max_dist, const double ego_obstacle_overlap_time_threshold,
-  const double max_prediction_time_for_collision_check,
+  const double max_prediction_time_for_collision_check, std::vector<size_t> & collision_index,
   const double vehicle_max_longitudinal_offset, const bool is_driving_forward);
 
 std::vector<Polygon2d> createOneStepPolygons(
