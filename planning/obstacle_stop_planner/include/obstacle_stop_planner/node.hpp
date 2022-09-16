@@ -26,7 +26,6 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <pcl_ros/transforms.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <signal_processing/lowpass_filter_1d.hpp>
 #include <tier4_autoware_utils/math/unit_conversion.hpp>
 #include <tier4_autoware_utils/tier4_autoware_utils.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
@@ -34,6 +33,8 @@
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_auto_planning_msgs/msg/trajectory.hpp>
 #include <diagnostic_msgs/msg/diagnostic_status.hpp>
+#include <geometry_msgs/msg/accel_stamped.hpp>
+#include <geometry_msgs/msg/accel_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <tier4_debug_msgs/msg/bool_stamped.hpp>
@@ -66,6 +67,7 @@ namespace bg = boost::geometry;
 
 using diagnostic_msgs::msg::DiagnosticStatus;
 using diagnostic_msgs::msg::KeyValue;
+using geometry_msgs::msg::AccelWithCovarianceStamped;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 using geometry_msgs::msg::TransformStamped;
@@ -101,6 +103,8 @@ private:
 
   rclcpp::Subscription<Odometry>::SharedPtr sub_odometry_;
 
+  rclcpp::Subscription<AccelWithCovarianceStamped>::SharedPtr sub_acceleration_;
+
   rclcpp::Subscription<PredictedObjects>::SharedPtr sub_dynamic_objects_;
 
   rclcpp::Subscription<ExpandStopRange>::SharedPtr sub_expand_stop_range_;
@@ -115,7 +119,6 @@ private:
 
   std::unique_ptr<AdaptiveCruiseController> acc_controller_;
   std::shared_ptr<ObstacleStopPlannerDebugNode> debug_ptr_;
-  std::shared_ptr<LowpassFilter1d> lpf_acc_{nullptr};
   boost::optional<StopPoint> latest_stop_point_{boost::none};
   boost::optional<SlowDownSection> latest_slow_down_section_{boost::none};
   tf2_ros::Buffer tf_buffer_{get_clock()};
@@ -126,8 +129,7 @@ private:
   rclcpp::Time last_detect_time_slowdown_point_;
 
   Odometry::ConstSharedPtr current_velocity_ptr_{nullptr};
-  Odometry::ConstSharedPtr prev_velocity_ptr_{nullptr};
-  double current_acc_{0.0};
+  AccelWithCovarianceStamped::ConstSharedPtr current_acceleration_ptr_{nullptr};
   bool is_driving_forward_{true};
 
   bool set_velocity_limit_{false};
@@ -137,9 +139,9 @@ private:
   StopParam stop_param_;
   SlowDownParam slow_down_param_;
 
-  // mutex for vehicle_info_, stop_param_, current_acc_, lpf_acc_, obstacle_ros_pointcloud_ptr_
+  // mutex for vehicle_info_, stop_param_, current_acc_, obstacle_ros_pointcloud_ptr_
   // NOTE: shared_ptr itself is thread safe so we do not have to care if *ptr is not used
-  //   (current_velocity_ptr_, prev_velocity_ptr_)
+  //   (current_velocity_ptr_)
   std::mutex mutex_;
 
   void searchObstacle(
@@ -190,6 +192,8 @@ private:
   void onTrigger(const Trajectory::ConstSharedPtr input_msg);
 
   void onOdometry(const Odometry::ConstSharedPtr input_msg);
+
+  void onAcceleration(const AccelWithCovarianceStamped::ConstSharedPtr input_msg);
 
   void onPointCloud(const PointCloud2::ConstSharedPtr input_msg);
 

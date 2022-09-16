@@ -76,6 +76,8 @@ Controller::Controller(const rclcpp::NodeOptions & node_options) : Node("control
     "~/input/current_steering", rclcpp::QoS{1}, std::bind(&Controller::onSteering, this, _1));
   sub_odometry_ = create_subscription<nav_msgs::msg::Odometry>(
     "~/input/current_odometry", rclcpp::QoS{1}, std::bind(&Controller::onOdometry, this, _1));
+  sub_accel_ = create_subscription<geometry_msgs::msg::AccelWithCovarianceStamped>(
+    "~/input/current_accel", rclcpp::QoS{1}, std::bind(&Controller::onAccel, this, _1));
   control_cmd_pub_ = create_publisher<autoware_auto_control_msgs::msg::AckermannControlCommand>(
     "~/output/control_cmd", rclcpp::QoS{1}.transient_local());
 
@@ -118,6 +120,11 @@ void Controller::onOdometry(const nav_msgs::msg::Odometry::SharedPtr msg)
 void Controller::onSteering(const autoware_auto_vehicle_msgs::msg::SteeringReport::SharedPtr msg)
 {
   input_data_.current_steering_ptr = msg;
+}
+
+void Controller::onAccel(const geometry_msgs::msg::AccelWithCovarianceStamped::SharedPtr msg)
+{
+  input_data_.current_accel_ptr = msg;
 }
 
 bool Controller::isTimeOut()

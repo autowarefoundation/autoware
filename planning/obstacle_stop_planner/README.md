@@ -36,7 +36,6 @@
 | `enable_slow_down`  | bool   | enable slow down planner [-]                                                           |
 | `max_velocity`      | double | max velocity [m/s]                                                                     |
 | `hunting_threshold` | double | even if the obstacle disappears, the stop judgment continues for hunting_threshold [s] |
-| `lowpass_gain`      | double | low pass gain for calculating acceleration [-]                                         |
 
 ## Obstacle Stop Planner
 

@@ -99,6 +99,7 @@ def launch_setup(context, *args, **kwargs):
             ("~/input/reference_trajectory", "/planning/scenario_planning/trajectory"),
             ("~/input/current_odometry", "/localization/kinematic_state"),
             ("~/input/current_steering", "/vehicle/status/steering_status"),
+            ("~/input/current_accel", "/localization/acceleration"),
             ("~/output/predicted_trajectory", "lateral/predicted_trajectory"),
             ("~/output/lateral_diagnostic", "lateral/diagnostic"),
             ("~/output/slope_angle", "longitudinal/slope_angle"),

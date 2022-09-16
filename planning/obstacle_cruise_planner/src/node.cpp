@@ -196,7 +196,6 @@ ObstacleCruisePlannerNode::ObstacleCruisePlannerNode(const rclcpp::NodeOptions &
 : Node("obstacle_cruise_planner", node_options),
   self_pose_listener_(this),
   in_objects_ptr_(nullptr),
-  lpf_acc_ptr_(nullptr),
   vehicle_info_(vehicle_info_util::VehicleInfoUtil(*this).getVehicleInfo())
 {
   using std::placeholders::_1;
@@ -213,6 +212,9 @@ ObstacleCruisePlannerNode::ObstacleCruisePlannerNode(const rclcpp::NodeOptions &
   odom_sub_ = create_subscription<Odometry>(
     "~/input/odometry", rclcpp::QoS{1},
     std::bind(&ObstacleCruisePlannerNode::onOdometry, this, std::placeholders::_1));
+  acc_sub_ = create_subscription<AccelWithCovarianceStamped>(
+    "~/input/acceleration", rclcpp::QoS{1},
+    std::bind(&ObstacleCruisePlannerNode::onAccel, this, std::placeholders::_1));
 
   // publisher
   trajectory_pub_ = create_publisher<Trajectory>("~/output/trajectory", 1);
@@ -260,10 +262,6 @@ ObstacleCruisePlannerNode::ObstacleCruisePlannerNode(const rclcpp::NodeOptions &
   }();
 
   is_showing_debug_info_ = declare_parameter<bool>("common.is_showing_debug_info");
-
-  // low pass filter for ego acceleration
-  const double lpf_gain_for_accel = declare_parameter<double>("common.lpf_gain_for_accel");
-  lpf_acc_ptr_ = std::make_shared<LowpassFilter1d>(lpf_gain_for_accel);
 
   {  // Obstacle filtering parameters
     obstacle_filtering_param_.rough_detection_area_expand_width =
@@ -503,13 +501,16 @@ void ObstacleCruisePlannerNode::onObjects(const PredictedObjects::ConstSharedPtr
 
 void ObstacleCruisePlannerNode::onOdometry(const Odometry::ConstSharedPtr msg)
 {
-  if (current_twist_ptr_) {
-    prev_twist_ptr_ = current_twist_ptr_;
-  }
-
   current_twist_ptr_ = std::make_unique<geometry_msgs::msg::TwistStamped>();
   current_twist_ptr_->header = msg->header;
   current_twist_ptr_->twist = msg->twist.twist;
+}
+
+void ObstacleCruisePlannerNode::onAccel(const AccelWithCovarianceStamped::ConstSharedPtr msg)
+{
+  current_accel_ptr_ = std::make_unique<geometry_msgs::msg::AccelStamped>();
+  current_accel_ptr_->header = msg->header;
+  current_accel_ptr_->accel = msg->accel.accel;
 }
 
 void ObstacleCruisePlannerNode::onSmoothedTrajectory(const Trajectory::ConstSharedPtr msg)
@@ -522,9 +523,7 @@ void ObstacleCruisePlannerNode::onTrajectory(const Trajectory::ConstSharedPtr ms
   const auto current_pose_ptr = self_pose_listener_.getCurrentPose();
 
   // check if subscribed variables are ready
-  if (
-    msg->points.empty() || !current_twist_ptr_ || !prev_twist_ptr_ || !in_objects_ptr_ ||
-    !current_pose_ptr) {
+  if (msg->points.empty() || !current_twist_ptr_ || !in_objects_ptr_ || !current_pose_ptr) {
     return;
   }
 
@@ -589,7 +588,7 @@ ObstacleCruisePlannerData ObstacleCruisePlannerNode::createStopData(
 {
   const auto current_time = now();
   const double current_vel = current_twist_ptr_->twist.linear.x;
-  const double current_accel = calcCurrentAccel();
+  const double current_accel = current_accel_ptr_->accel.linear.x;
 
   // create planner_stop data
   ObstacleCruisePlannerData planner_data;
@@ -629,7 +628,7 @@ ObstacleCruisePlannerData ObstacleCruisePlannerNode::createCruiseData(
 {
   const auto current_time = now();
   const double current_vel = current_twist_ptr_->twist.linear.x;
-  const double current_accel = calcCurrentAccel();
+  const double current_accel = current_accel_ptr_->accel.linear.x;
 
   // create planner_stop data
   ObstacleCruisePlannerData planner_data;
@@ -646,19 +645,6 @@ ObstacleCruisePlannerData ObstacleCruisePlannerNode::createCruiseData(
   }
 
   return planner_data;
-}
-
-double ObstacleCruisePlannerNode::calcCurrentAccel() const
-{
-  const double diff_vel = current_twist_ptr_->twist.linear.x - prev_twist_ptr_->twist.linear.x;
-  const double diff_time = std::max(
-    (rclcpp::Time(current_twist_ptr_->header.stamp) - rclcpp::Time(prev_twist_ptr_->header.stamp))
-      .seconds(),
-    1e-03);
-
-  const double accel = diff_vel / diff_time;
-
-  return lpf_acc_ptr_->filter(accel);
 }
 
 std::vector<TargetObstacle> ObstacleCruisePlannerNode::getTargetObstacles(

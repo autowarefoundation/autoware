@@ -62,9 +62,6 @@ struct NodeParam
   // max velocity [m/s]
   double max_velocity;
 
-  // smoothing calculated current acceleration [-]
-  double lowpass_gain;
-
   // keep slow down or stop state if obstacle vanished [s]
   double hunting_threshold;
 

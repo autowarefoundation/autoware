@@ -24,6 +24,7 @@
 #include "autoware_auto_planning_msgs/msg/trajectory.hpp"
 #include "autoware_auto_vehicle_msgs/msg/steering_report.hpp"
 #include "autoware_auto_vehicle_msgs/msg/vehicle_odometry.hpp"
+#include "geometry_msgs/msg/accel_with_covariance_stamped.hpp"
 #include "geometry_msgs/msg/pose.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
@@ -38,6 +39,7 @@ using Trajectory = autoware_auto_planning_msgs::msg::Trajectory;
 using TrajectoryPoint = autoware_auto_planning_msgs::msg::TrajectoryPoint;
 using VehicleOdometry = nav_msgs::msg::Odometry;
 using SteeringReport = autoware_auto_vehicle_msgs::msg::SteeringReport;
+using geometry_msgs::msg::AccelWithCovarianceStamped;
 
 using FakeNodeFixture = autoware::tools::testing::FakeTestNode;
 
@@ -68,815 +70,415 @@ std::shared_ptr<Controller> makeNode()
   return node;
 }
 
-TEST_F(FakeNodeFixture, no_input)
+class ControllerTester
 {
-  // Data to test
+public:
+  explicit ControllerTester(FakeNodeFixture * _fnf) : fnf(_fnf) {}
+
+  std::shared_ptr<Controller> node = makeNode();
+
+  FakeNodeFixture * fnf;
   AckermannControlCommand::SharedPtr cmd_msg;
   bool received_control_command = false;
-  // Node
-  std::shared_ptr<Controller> node = makeNode();
-  // Publisher/Subscribers
+
+  void publish_default_odom()
+  {
+    VehicleOdometry odom_msg;
+    odom_msg.header.stamp = node->now();
+    odom_pub->publish(odom_msg);
+  };
+
+  void publish_odom_vx(const double vx)
+  {
+    VehicleOdometry odom_msg;
+    odom_msg.header.stamp = node->now();
+    odom_msg.twist.twist.linear.x = vx;
+    odom_pub->publish(odom_msg);
+  };
+
+  void publish_default_steer()
+  {
+    SteeringReport steer_msg;
+    steer_msg.stamp = node->now();
+    steer_pub->publish(steer_msg);
+  };
+
+  void publish_steer_angle(const double steer)
+  {
+    SteeringReport steer_msg;
+    steer_msg.stamp = node->now();
+    steer_msg.steering_tire_angle = steer;
+    steer_pub->publish(steer_msg);
+  };
+
+  void publish_default_acc()
+  {
+    AccelWithCovarianceStamped acc_msg;
+    acc_msg.header.stamp = node->now();
+    accel_pub->publish(acc_msg);
+  };
+
+  void publish_default_traj()
+  {
+    Trajectory traj_msg;
+    traj_msg.header.stamp = node->now();
+    traj_msg.header.frame_id = "map";
+    traj_pub->publish(traj_msg);
+  };
+
+  void send_default_transform()
+  {
+    // Dummy transform: ego is at (0.0, 0.0) in map frame
+    geometry_msgs::msg::TransformStamped transform = test_utils::getDummyTransform();
+    transform.header.stamp = node->now();
+    br->sendTransform(transform);
+
+    // Spin for transform to be published
+    test_utils::spinWhile(node);
+  };
+
   rclcpp::Publisher<Trajectory>::SharedPtr traj_pub =
-    this->create_publisher<Trajectory>("controller/input/reference_trajectory");
+    fnf->create_publisher<Trajectory>("controller/input/reference_trajectory");
+
   rclcpp::Publisher<VehicleOdometry>::SharedPtr odom_pub =
-    this->create_publisher<VehicleOdometry>("controller/input/current_odometry");
+    fnf->create_publisher<VehicleOdometry>("controller/input/current_odometry");
+
   rclcpp::Publisher<SteeringReport>::SharedPtr steer_pub =
-    this->create_publisher<SteeringReport>("controller/input/current_steering");
+    fnf->create_publisher<SteeringReport>("controller/input/current_steering");
+
+  rclcpp::Publisher<AccelWithCovarianceStamped>::SharedPtr accel_pub =
+    fnf->create_publisher<AccelWithCovarianceStamped>("controller/input/current_accel");
+
   rclcpp::Subscription<AckermannControlCommand>::SharedPtr cmd_sub =
-    this->create_subscription<AckermannControlCommand>(
-      "controller/output/control_cmd", *this->get_fake_node(),
-      [&cmd_msg, &received_control_command](const AckermannControlCommand::SharedPtr msg) {
+    fnf->create_subscription<AckermannControlCommand>(
+      "controller/output/control_cmd", *fnf->get_fake_node(),
+      [this](const AckermannControlCommand::SharedPtr msg) {
         cmd_msg = msg;
         received_control_command = true;
       });
+
   std::shared_ptr<tf2_ros::StaticTransformBroadcaster> br =
-    std::make_shared<tf2_ros::StaticTransformBroadcaster>(this->get_fake_node());
+    std::make_shared<tf2_ros::StaticTransformBroadcaster>(fnf->get_fake_node());
+};
+
+TrajectoryPoint make_traj_point(const double px, const double py, const float vx)
+{
+  TrajectoryPoint p;
+  p.pose.position.x = px;
+  p.pose.position.y = py;
+  p.longitudinal_velocity_mps = vx;
+  return p;
+}
+
+TEST_F(FakeNodeFixture, no_input)
+{
+  ControllerTester tester(this);
 
   // No published data: expect a stopped command
   test_utils::waitForMessage(
-    node, this, received_control_command, std::chrono::seconds{1LL}, false);
-  ASSERT_FALSE(received_control_command);
+    tester.node, this, tester.received_control_command, std::chrono::seconds{1LL}, false);
+  ASSERT_FALSE(tester.received_control_command);
 }
 
 TEST_F(FakeNodeFixture, empty_trajectory)
 {
-  // Data to test
-  AckermannControlCommand::SharedPtr cmd_msg;
-  bool received_control_command = false;
-  // Node
-  std::shared_ptr<Controller> node = makeNode();
-  // Publisher/Subscribers
-  rclcpp::Publisher<Trajectory>::SharedPtr traj_pub =
-    this->create_publisher<Trajectory>("controller/input/reference_trajectory");
-  rclcpp::Publisher<VehicleOdometry>::SharedPtr odom_pub =
-    this->create_publisher<VehicleOdometry>("controller/input/current_odometry");
-  rclcpp::Publisher<SteeringReport>::SharedPtr steer_pub =
-    this->create_publisher<SteeringReport>("controller/input/current_steering");
-  rclcpp::Subscription<AckermannControlCommand>::SharedPtr cmd_sub =
-    this->create_subscription<AckermannControlCommand>(
-      "controller/output/control_cmd", *this->get_fake_node(),
-      [&cmd_msg, &received_control_command](const AckermannControlCommand::SharedPtr msg) {
-        cmd_msg = msg;
-        received_control_command = true;
-      });
-  std::shared_ptr<tf2_ros::StaticTransformBroadcaster> br =
-    std::make_shared<tf2_ros::StaticTransformBroadcaster>(this->get_fake_node());
+  ControllerTester tester(this);
 
-  // Dummy transform: ego is at (0.0, 0.0) in map frame
-  geometry_msgs::msg::TransformStamped transform = test_utils::getDummyTransform();
-  transform.header.stamp = node->now();
-  br->sendTransform(transform);
-
-  // Spin for transform to be published
-  test_utils::spinWhile(node);
+  tester.send_default_transform();
 
   // Empty trajectory: expect a stopped command
-  Trajectory traj_msg;
-  traj_msg.header.stamp = node->now();
-  traj_msg.header.frame_id = "map";
-  VehicleOdometry odom_msg;
-  SteeringReport steer_msg;
-  traj_msg.header.stamp = node->now();
-  odom_msg.header.stamp = node->now();
-  odom_msg.twist.twist.linear.x = 0.0;
-  steer_msg.stamp = node->now();
-  steer_msg.steering_tire_angle = 0.0;
-  traj_pub->publish(traj_msg);
-  odom_pub->publish(odom_msg);
-  steer_pub->publish(steer_msg);
+  tester.publish_default_traj();
+  tester.publish_default_odom();
+  tester.publish_default_acc();
+  tester.publish_default_steer();
 
   test_utils::waitForMessage(
-    node, this, received_control_command, std::chrono::seconds{1LL}, false);
-  ASSERT_FALSE(received_control_command);
+    tester.node, this, tester.received_control_command, std::chrono::seconds{1LL}, false);
+  ASSERT_FALSE(tester.received_control_command);
 }
 
 // lateral
 TEST_F(FakeNodeFixture, straight_trajectory)
 {
-  // Data to test
-  AckermannControlCommand::SharedPtr cmd_msg;
-  bool received_control_command = false;
-  // Node
-  std::shared_ptr<Controller> node = makeNode();
-  // Publisher/Subscribers
-  rclcpp::Publisher<Trajectory>::SharedPtr traj_pub =
-    this->create_publisher<Trajectory>("controller/input/reference_trajectory");
-  rclcpp::Publisher<VehicleOdometry>::SharedPtr odom_pub =
-    this->create_publisher<VehicleOdometry>("controller/input/current_odometry");
-  rclcpp::Publisher<SteeringReport>::SharedPtr steer_pub =
-    this->create_publisher<SteeringReport>("controller/input/current_steering");
-  rclcpp::Subscription<AckermannControlCommand>::SharedPtr cmd_sub =
-    this->create_subscription<AckermannControlCommand>(
-      "controller/output/control_cmd", *this->get_fake_node(),
-      [&cmd_msg, &received_control_command](const AckermannControlCommand::SharedPtr msg) {
-        cmd_msg = msg;
-        received_control_command = true;
-      });
-  std::shared_ptr<tf2_ros::StaticTransformBroadcaster> br =
-    std::make_shared<tf2_ros::StaticTransformBroadcaster>(this->get_fake_node());
+  ControllerTester tester(this);
 
-  // Dummy transform: ego is at (0.0, 0.0) in map frame
-  geometry_msgs::msg::TransformStamped transform = test_utils::getDummyTransform();
-  transform.header.stamp = node->now();
-  br->sendTransform(transform);
+  tester.send_default_transform();
+  tester.publish_odom_vx(1.0);
+  tester.publish_default_steer();
+  tester.publish_default_acc();
 
-  // Spin for transform to be published
-  test_utils::spinWhile(node);
-
-  // Straight trajectory: expect no steering
-  received_control_command = false;
   Trajectory traj_msg;
-  traj_msg.header.stamp = node->now();
+  traj_msg.header.stamp = tester.node->now();
   traj_msg.header.frame_id = "map";
-  VehicleOdometry odom_msg;
-  SteeringReport steer_msg;
-  TrajectoryPoint p;
-  traj_msg.header.stamp = node->now();
-  p.pose.position.x = -1.0;
-  p.pose.position.y = 0.0;
-  p.longitudinal_velocity_mps = 1.0f;
-  traj_msg.points.push_back(p);
-  p.pose.position.x = 0.0;
-  p.pose.position.y = 0.0;
-  p.longitudinal_velocity_mps = 1.0f;
-  traj_msg.points.push_back(p);
-  p.pose.position.x = 1.0;
-  p.pose.position.y = 0.0;
-  p.longitudinal_velocity_mps = 1.0f;
-  traj_msg.points.push_back(p);
-  p.pose.position.x = 2.0;
-  p.pose.position.y = 0.0;
-  p.longitudinal_velocity_mps = 1.0f;
-  traj_msg.points.push_back(p);
-  traj_pub->publish(traj_msg);
-  odom_msg.header.stamp = node->now();
-  odom_msg.twist.twist.linear.x = 1.0;
-  steer_msg.stamp = node->now();
-  steer_msg.steering_tire_angle = 0.0;
-  odom_pub->publish(odom_msg);
-  steer_pub->publish(steer_msg);
+  traj_msg.points.push_back(make_traj_point(-1.0, 0.0, 1.0f));
+  traj_msg.points.push_back(make_traj_point(0.0, 0.0, 1.0f));
+  traj_msg.points.push_back(make_traj_point(1.0, 0.0, 1.0f));
+  traj_msg.points.push_back(make_traj_point(2.0, 0.0, 1.0f));
+  tester.traj_pub->publish(traj_msg);
 
-  test_utils::waitForMessage(node, this, received_control_command);
-  ASSERT_TRUE(received_control_command);
-  EXPECT_EQ(cmd_msg->lateral.steering_tire_angle, 0.0f);
-  EXPECT_EQ(cmd_msg->lateral.steering_tire_rotation_rate, 0.0f);
-  EXPECT_GT(rclcpp::Time(cmd_msg->stamp), rclcpp::Time(traj_msg.header.stamp));
+  test_utils::waitForMessage(tester.node, this, tester.received_control_command);
+  ASSERT_TRUE(tester.received_control_command);
+  EXPECT_EQ(tester.cmd_msg->lateral.steering_tire_angle, 0.0f);
+  EXPECT_EQ(tester.cmd_msg->lateral.steering_tire_rotation_rate, 0.0f);
+  EXPECT_GT(rclcpp::Time(tester.cmd_msg->stamp), rclcpp::Time(traj_msg.header.stamp));
 }
 
 TEST_F(FakeNodeFixture, right_turn)
 {
-  // Data to test
-  AckermannControlCommand::SharedPtr cmd_msg;
-  bool received_control_command = false;
-  // Node
-  std::shared_ptr<Controller> node = makeNode();
-  // Publisher/Subscribers
-  rclcpp::Publisher<Trajectory>::SharedPtr traj_pub =
-    this->create_publisher<Trajectory>("controller/input/reference_trajectory");
-  rclcpp::Publisher<VehicleOdometry>::SharedPtr odom_pub =
-    this->create_publisher<VehicleOdometry>("controller/input/current_odometry");
-  rclcpp::Publisher<SteeringReport>::SharedPtr steer_pub =
-    this->create_publisher<SteeringReport>("controller/input/current_steering");
-  rclcpp::Subscription<AckermannControlCommand>::SharedPtr cmd_sub =
-    this->create_subscription<AckermannControlCommand>(
-      "controller/output/control_cmd", *this->get_fake_node(),
-      [&cmd_msg, &received_control_command](const AckermannControlCommand::SharedPtr msg) {
-        cmd_msg = msg;
-        received_control_command = true;
-      });
-  std::shared_ptr<tf2_ros::StaticTransformBroadcaster> br =
-    std::make_shared<tf2_ros::StaticTransformBroadcaster>(this->get_fake_node());
+  ControllerTester tester(this);
 
-  // Dummy transform: ego is at (0.0, 0.0) in map frame
-  geometry_msgs::msg::TransformStamped transform = test_utils::getDummyTransform();
-  transform.header.stamp = node->now();
-  br->sendTransform(transform);
-
-  // Spin for transform to be published
-  test_utils::spinWhile(node);
+  tester.send_default_transform();
+  tester.publish_odom_vx(1.0);
+  tester.publish_default_steer();
+  tester.publish_default_acc();
 
   // Right turning trajectory: expect right steering
-  received_control_command = false;
   Trajectory traj_msg;
-  traj_msg.header.stamp = node->now();
+  traj_msg.header.stamp = tester.node->now();
   traj_msg.header.frame_id = "map";
-  VehicleOdometry odom_msg;
-  SteeringReport steer_msg;
-  TrajectoryPoint p;
-  traj_msg.points.clear();
-  p.pose.position.x = -1.0;
-  p.pose.position.y = -1.0;
-  p.longitudinal_velocity_mps = 1.0f;
-  traj_msg.points.push_back(p);
-  p.pose.position.x = 0.0;
-  p.pose.position.y = 0.0;
-  p.longitudinal_velocity_mps = 1.0f;
-  traj_msg.points.push_back(p);
-  p.pose.position.x = 1.0;
-  p.pose.position.y = -1.0;
-  p.longitudinal_velocity_mps = 1.0f;
-  traj_msg.points.push_back(p);
-  p.pose.position.x = 2.0;
-  p.pose.position.y = -2.0;
-  p.longitudinal_velocity_mps = 1.0f;
-  traj_msg.points.push_back(p);
-  traj_pub->publish(traj_msg);
-  odom_msg.header.stamp = node->now();
-  odom_msg.twist.twist.linear.x = 1.0;
-  steer_msg.stamp = node->now();
-  steer_msg.steering_tire_angle = 0.0;
-  odom_pub->publish(odom_msg);
-  steer_pub->publish(steer_msg);
+  traj_msg.points.push_back(make_traj_point(-1.0, -1.0, 1.0f));
+  traj_msg.points.push_back(make_traj_point(0.0, 0.0, 1.0f));
+  traj_msg.points.push_back(make_traj_point(1.0, -1.0, 1.0f));
+  traj_msg.points.push_back(make_traj_point(2.0, -2.0, 1.0f));
+  tester.traj_pub->publish(traj_msg);
 
-  test_utils::waitForMessage(node, this, received_control_command);
-  ASSERT_TRUE(received_control_command);
-  EXPECT_LT(cmd_msg->lateral.steering_tire_angle, 0.0f);
-  EXPECT_LT(cmd_msg->lateral.steering_tire_rotation_rate, 0.0f);
-  EXPECT_GT(rclcpp::Time(cmd_msg->stamp), rclcpp::Time(traj_msg.header.stamp));
+  test_utils::waitForMessage(tester.node, this, tester.received_control_command);
+  ASSERT_TRUE(tester.received_control_command);
+  EXPECT_LT(tester.cmd_msg->lateral.steering_tire_angle, 0.0f);
+  EXPECT_LT(tester.cmd_msg->lateral.steering_tire_rotation_rate, 0.0f);
+  EXPECT_GT(rclcpp::Time(tester.cmd_msg->stamp), rclcpp::Time(traj_msg.header.stamp));
 }
 
 TEST_F(FakeNodeFixture, left_turn)
 {
-  // Data to test
-  AckermannControlCommand::SharedPtr cmd_msg;
-  bool received_control_command = false;
-  // Node
-  std::shared_ptr<Controller> node = makeNode();
-  // Publisher/Subscribers
-  rclcpp::Publisher<Trajectory>::SharedPtr traj_pub =
-    this->create_publisher<Trajectory>("controller/input/reference_trajectory");
-  rclcpp::Publisher<VehicleOdometry>::SharedPtr odom_pub =
-    this->create_publisher<VehicleOdometry>("controller/input/current_odometry");
-  rclcpp::Publisher<SteeringReport>::SharedPtr steer_pub =
-    this->create_publisher<SteeringReport>("controller/input/current_steering");
-  rclcpp::Subscription<AckermannControlCommand>::SharedPtr cmd_sub =
-    this->create_subscription<AckermannControlCommand>(
-      "controller/output/control_cmd", *this->get_fake_node(),
-      [&cmd_msg, &received_control_command](const AckermannControlCommand::SharedPtr msg) {
-        cmd_msg = msg;
-        received_control_command = true;
-      });
-  std::shared_ptr<tf2_ros::StaticTransformBroadcaster> br =
-    std::make_shared<tf2_ros::StaticTransformBroadcaster>(this->get_fake_node());
+  ControllerTester tester(this);
 
-  // Dummy transform: ego is at (0.0, 0.0) in map frame
-  geometry_msgs::msg::TransformStamped transform = test_utils::getDummyTransform();
-  transform.header.stamp = node->now();
-  br->sendTransform(transform);
-
-  // Spin for transform to be published
-  test_utils::spinWhile(node);
+  tester.send_default_transform();
+  tester.publish_odom_vx(1.0);
+  tester.publish_default_steer();
+  tester.publish_default_acc();
 
   // Left turning trajectory: expect left steering
-  received_control_command = false;
   Trajectory traj_msg;
-  traj_msg.header.stamp = node->now();
+  traj_msg.header.stamp = tester.node->now();
   traj_msg.header.frame_id = "map";
-  VehicleOdometry odom_msg;
-  SteeringReport steer_msg;
-  TrajectoryPoint p;
-  traj_msg.points.clear();
-  p.pose.position.x = -1.0;
-  p.pose.position.y = 1.0;
-  p.longitudinal_velocity_mps = 1.0f;
-  traj_msg.points.push_back(p);
-  p.pose.position.x = 0.0;
-  p.pose.position.y = 0.0;
-  p.longitudinal_velocity_mps = 1.0f;
-  traj_msg.points.push_back(p);
-  p.pose.position.x = 1.0;
-  p.pose.position.y = 1.0;
-  p.longitudinal_velocity_mps = 1.0f;
-  traj_msg.points.push_back(p);
-  p.pose.position.x = 2.0;
-  p.pose.position.y = 2.0;
-  p.longitudinal_velocity_mps = 1.0f;
-  traj_msg.points.push_back(p);
-  traj_pub->publish(traj_msg);
-  odom_msg.header.stamp = node->now();
-  odom_msg.twist.twist.linear.x = 1.0;
-  steer_msg.stamp = node->now();
-  steer_msg.steering_tire_angle = 0.0;
-  odom_pub->publish(odom_msg);
-  steer_pub->publish(steer_msg);
+  traj_msg.points.push_back(make_traj_point(-1.0, 1.0, 1.0f));
+  traj_msg.points.push_back(make_traj_point(0.0, 0.0, 1.0f));
+  traj_msg.points.push_back(make_traj_point(1.0, 1.0, 1.0f));
+  traj_msg.points.push_back(make_traj_point(2.0, 2.0, 1.0f));
+  tester.traj_pub->publish(traj_msg);
 
-  test_utils::waitForMessage(node, this, received_control_command);
-  ASSERT_TRUE(received_control_command);
-  EXPECT_GT(cmd_msg->lateral.steering_tire_angle, 0.0f);
-  EXPECT_GT(cmd_msg->lateral.steering_tire_rotation_rate, 0.0f);
-  EXPECT_GT(rclcpp::Time(cmd_msg->stamp), rclcpp::Time(traj_msg.header.stamp));
+  test_utils::waitForMessage(tester.node, this, tester.received_control_command);
+  ASSERT_TRUE(tester.received_control_command);
+  EXPECT_GT(tester.cmd_msg->lateral.steering_tire_angle, 0.0f);
+  EXPECT_GT(tester.cmd_msg->lateral.steering_tire_rotation_rate, 0.0f);
+  EXPECT_GT(rclcpp::Time(tester.cmd_msg->stamp), rclcpp::Time(traj_msg.header.stamp));
 }
 
 TEST_F(FakeNodeFixture, stopped)
 {
-  // Data to test
-  AckermannControlCommand::SharedPtr cmd_msg;
-  bool received_control_command = false;
-  // Node
-  std::shared_ptr<Controller> node = makeNode();
-  // Publisher/Subscribers
-  rclcpp::Publisher<Trajectory>::SharedPtr traj_pub =
-    this->create_publisher<Trajectory>("controller/input/reference_trajectory");
-  rclcpp::Publisher<VehicleOdometry>::SharedPtr odom_pub =
-    this->create_publisher<VehicleOdometry>("controller/input/current_odometry");
-  rclcpp::Publisher<SteeringReport>::SharedPtr steer_pub =
-    this->create_publisher<SteeringReport>("controller/input/current_steering");
-  rclcpp::Subscription<AckermannControlCommand>::SharedPtr cmd_sub =
-    this->create_subscription<AckermannControlCommand>(
-      "controller/output/control_cmd", *this->get_fake_node(),
-      [&cmd_msg, &received_control_command](const AckermannControlCommand::SharedPtr msg) {
-        cmd_msg = msg;
-        received_control_command = true;
-      });
-  std::shared_ptr<tf2_ros::StaticTransformBroadcaster> br =
-    std::make_shared<tf2_ros::StaticTransformBroadcaster>(this->get_fake_node());
+  ControllerTester tester(this);
 
-  // Dummy transform: ego is at (0.0, 0.0) in map frame
-  geometry_msgs::msg::TransformStamped transform = test_utils::getDummyTransform();
-  transform.header.stamp = node->now();
-  br->sendTransform(transform);
+  tester.send_default_transform();
+  tester.publish_default_odom();
+  tester.publish_default_acc();
 
-  // Spin for transform to be published
-  test_utils::spinWhile(node);
+  const double steering_tire_angle = -0.5;
+  tester.publish_steer_angle(steering_tire_angle);
 
   // Straight trajectory: expect no steering
-  received_control_command = false;
   Trajectory traj_msg;
-  traj_msg.header.stamp = node->now();
+  traj_msg.header.stamp = tester.node->now();
   traj_msg.header.frame_id = "map";
-  VehicleOdometry odom_msg;
-  SteeringReport steer_msg;
-  TrajectoryPoint p;
-  traj_msg.header.stamp = node->now();
-  p.pose.position.x = -1.0;
-  p.pose.position.y = 0.0;
-  // Set a 0 current velocity and 0 target velocity -> stopped state
-  p.longitudinal_velocity_mps = 0.0f;
-  traj_msg.points.push_back(p);
-  p.pose.position.x = 0.0;
-  p.pose.position.y = 0.0;
-  p.longitudinal_velocity_mps = 0.0f;
-  traj_msg.points.push_back(p);
-  p.pose.position.x = 1.0;
-  p.pose.position.y = 0.0;
-  p.longitudinal_velocity_mps = 0.0f;
-  traj_msg.points.push_back(p);
-  p.pose.position.x = 2.0;
-  p.pose.position.y = 0.0;
-  p.longitudinal_velocity_mps = 0.0f;
-  traj_msg.points.push_back(p);
-  traj_pub->publish(traj_msg);
-  odom_msg.header.stamp = node->now();
-  odom_msg.twist.twist.linear.x = 0.0;
-  steer_msg.stamp = node->now();
-  steer_msg.steering_tire_angle = -0.5;
-  odom_pub->publish(odom_msg);
-  steer_pub->publish(steer_msg);
+  traj_msg.points.push_back(make_traj_point(-1.0, 0.0, 0.0f));
+  traj_msg.points.push_back(make_traj_point(0.0, 0.0, 0.0f));
+  traj_msg.points.push_back(make_traj_point(1.0, 0.0, 0.0f));
+  traj_msg.points.push_back(make_traj_point(2.0, 0.0, 0.0f));
+  tester.traj_pub->publish(traj_msg);
 
-  test_utils::waitForMessage(node, this, received_control_command);
-  ASSERT_TRUE(received_control_command);
-  EXPECT_EQ(cmd_msg->lateral.steering_tire_angle, steer_msg.steering_tire_angle);
-  EXPECT_EQ(cmd_msg->lateral.steering_tire_rotation_rate, 0.0f);
-  EXPECT_GT(rclcpp::Time(cmd_msg->stamp), rclcpp::Time(traj_msg.header.stamp));
+  test_utils::waitForMessage(tester.node, this, tester.received_control_command);
+  ASSERT_TRUE(tester.received_control_command);
+  EXPECT_EQ(tester.cmd_msg->lateral.steering_tire_angle, steering_tire_angle);
+  EXPECT_EQ(tester.cmd_msg->lateral.steering_tire_rotation_rate, 0.0f);
+  EXPECT_GT(rclcpp::Time(tester.cmd_msg->stamp), rclcpp::Time(traj_msg.header.stamp));
 }
 
 // longitudinal
 TEST_F(FakeNodeFixture, longitudinal_keep_velocity)
 {
-  // Data to test
-  AckermannControlCommand::SharedPtr cmd_msg;
-  bool received_control_command = false;
-  // Node
-  std::shared_ptr<Controller> node = makeNode();
-  // Publisher/Subscribers
-  rclcpp::Publisher<Trajectory>::SharedPtr traj_pub =
-    this->create_publisher<Trajectory>("controller/input/reference_trajectory");
-  rclcpp::Publisher<VehicleOdometry>::SharedPtr odom_pub =
-    this->create_publisher<VehicleOdometry>("controller/input/current_odometry");
-  rclcpp::Publisher<SteeringReport>::SharedPtr steer_pub =
-    this->create_publisher<SteeringReport>("controller/input/current_steering");
-  rclcpp::Subscription<AckermannControlCommand>::SharedPtr cmd_sub =
-    this->create_subscription<AckermannControlCommand>(
-      "controller/output/control_cmd", *this->get_fake_node(),
-      [&cmd_msg, &received_control_command](const AckermannControlCommand::SharedPtr msg) {
-        cmd_msg = msg;
-        received_control_command = true;
-      });
-  std::shared_ptr<tf2_ros::StaticTransformBroadcaster> br =
-    std::make_shared<tf2_ros::StaticTransformBroadcaster>(this->get_fake_node());
+  ControllerTester tester(this);
 
-  // Dummy transform: ego is at (0.0, 0.0) in map frame
-  geometry_msgs::msg::TransformStamped transform = test_utils::getDummyTransform();
-  transform.header.stamp = node->now();
-  br->sendTransform(transform);
-  /// Already running at target vel + Non stopping trajectory -> no change in velocity
-  // Publish velocity
-  VehicleOdometry odom_msg;
-  odom_msg.header.stamp = node->now();
-  odom_msg.twist.twist.linear.x = 1.0;
-  odom_pub->publish(odom_msg);
-  // the node needs to receive two velocity msg
-  rclcpp::spin_some(node);
-  rclcpp::spin_some(this->get_fake_node());
-  odom_msg.header.stamp = node->now();
-  odom_pub->publish(odom_msg);
-  // Publish steering
-  SteeringReport steer_msg;
-  steer_msg.stamp = node->now();
-  steer_msg.steering_tire_angle = 0.0;
-  steer_pub->publish(steer_msg);
+  tester.send_default_transform();
+  tester.publish_odom_vx(1.0);
+  tester.publish_default_steer();
+  tester.publish_default_acc();
+
   // Publish non stopping trajectory
-  Trajectory traj;
-  traj.header.stamp = node->now();
-  traj.header.frame_id = "map";
-  TrajectoryPoint point;
-  point.pose.position.x = 0.0;
-  point.pose.position.y = 0.0;
-  point.longitudinal_velocity_mps = 1.0;
-  traj.points.push_back(point);
-  point.pose.position.x = 50.0;
-  point.pose.position.y = 0.0;
-  point.longitudinal_velocity_mps = 1.0;
-  traj.points.push_back(point);
-  point.pose.position.x = 100.0;
-  point.pose.position.y = 0.0;
-  point.longitudinal_velocity_mps = 1.0;
-  traj.points.push_back(point);
-  traj_pub->publish(traj);
-  test_utils::waitForMessage(node, this, received_control_command);
+  Trajectory traj_msg;
+  traj_msg.header.stamp = tester.node->now();
+  traj_msg.header.frame_id = "map";
+  traj_msg.points.push_back(make_traj_point(0.0, 0.0, 1.0f));
+  traj_msg.points.push_back(make_traj_point(50.0, 0.0, 1.0f));
+  traj_msg.points.push_back(make_traj_point(100.0, 0.0, 1.0f));
+  tester.traj_pub->publish(traj_msg);
 
-  ASSERT_TRUE(received_control_command);
-  EXPECT_DOUBLE_EQ(cmd_msg->longitudinal.speed, 1.0);
-  EXPECT_DOUBLE_EQ(cmd_msg->longitudinal.acceleration, 0.0);
+  test_utils::waitForMessage(tester.node, this, tester.received_control_command);
+
+  ASSERT_TRUE(tester.received_control_command);
+  EXPECT_DOUBLE_EQ(tester.cmd_msg->longitudinal.speed, 1.0);
+  EXPECT_DOUBLE_EQ(tester.cmd_msg->longitudinal.acceleration, 0.0);
 
   // Generate another control message
-  received_control_command = false;
-  traj_pub->publish(traj);
-  test_utils::waitForMessage(node, this, received_control_command);
-  ASSERT_TRUE(received_control_command);
-  EXPECT_DOUBLE_EQ(cmd_msg->longitudinal.speed, 1.0);
-  EXPECT_DOUBLE_EQ(cmd_msg->longitudinal.acceleration, 0.0);
+  tester.traj_pub->publish(traj_msg);
+  test_utils::waitForMessage(tester.node, this, tester.received_control_command);
+  ASSERT_TRUE(tester.received_control_command);
+  EXPECT_DOUBLE_EQ(tester.cmd_msg->longitudinal.speed, 1.0);
+  EXPECT_DOUBLE_EQ(tester.cmd_msg->longitudinal.acceleration, 0.0);
 }
 
 TEST_F(FakeNodeFixture, longitudinal_slow_down)
 {
-  // Data to test
-  AckermannControlCommand::SharedPtr cmd_msg;
-  bool received_control_command = false;
-  // Node
-  std::shared_ptr<Controller> node = makeNode();
-  // Publisher/Subscribers
-  rclcpp::Publisher<Trajectory>::SharedPtr traj_pub =
-    this->create_publisher<Trajectory>("controller/input/reference_trajectory");
-  rclcpp::Publisher<VehicleOdometry>::SharedPtr odom_pub =
-    this->create_publisher<VehicleOdometry>("controller/input/current_odometry");
-  rclcpp::Publisher<SteeringReport>::SharedPtr steer_pub =
-    this->create_publisher<SteeringReport>("controller/input/current_steering");
-  rclcpp::Subscription<AckermannControlCommand>::SharedPtr cmd_sub =
-    this->create_subscription<AckermannControlCommand>(
-      "controller/output/control_cmd", *this->get_fake_node(),
-      [&cmd_msg, &received_control_command](const AckermannControlCommand::SharedPtr msg) {
-        cmd_msg = msg;
-        received_control_command = true;
-      });
-  std::shared_ptr<tf2_ros::StaticTransformBroadcaster> br =
-    std::make_shared<tf2_ros::StaticTransformBroadcaster>(this->get_fake_node());
+  ControllerTester tester(this);
 
-  // Dummy transform: ego is at (0.0, 0.0) in map frame
-  geometry_msgs::msg::TransformStamped transform = test_utils::getDummyTransform();
-  transform.header.stamp = node->now();
-  br->sendTransform(transform);
-  /// Already running at target vel + Non stopping trajectory -> no change in velocity
-  // Publish velocity
-  VehicleOdometry odom_msg;
-  odom_msg.header.stamp = node->now();
-  odom_msg.twist.twist.linear.x = 1.0;
-  odom_pub->publish(odom_msg);
-  // the node needs to receive two velocity msg
-  rclcpp::spin_some(node);
-  rclcpp::spin_some(this->get_fake_node());
-  odom_msg.header.stamp = node->now();
-  odom_pub->publish(odom_msg);
-  // Publish steering
-  SteeringReport steer_msg;
-  steer_msg.stamp = node->now();
-  steer_msg.steering_tire_angle = 0.0;
-  steer_pub->publish(steer_msg);
+  tester.send_default_transform();
+  tester.publish_default_acc();
+  tester.publish_default_steer();
+
+  const double odom_vx = 1.0;
+  tester.publish_odom_vx(odom_vx);
+
   // Publish non stopping trajectory
   Trajectory traj;
-  traj.header.stamp = node->now();
+  traj.header.stamp = tester.node->now();
   traj.header.frame_id = "map";
-  TrajectoryPoint point;
-  point.pose.position.x = 0.0;
-  point.pose.position.y = 0.0;
-  point.longitudinal_velocity_mps = 0.5;
-  traj.points.push_back(point);
-  point.pose.position.x = 50.0;
-  point.pose.position.y = 0.0;
-  point.longitudinal_velocity_mps = 0.5;
-  traj.points.push_back(point);
-  point.pose.position.x = 100.0;
-  point.pose.position.y = 0.0;
-  point.longitudinal_velocity_mps = 0.5;
-  traj.points.push_back(point);
-  traj_pub->publish(traj);
-  test_utils::waitForMessage(node, this, received_control_command);
+  traj.points.push_back(make_traj_point(0.0, 0.0, 0.5f));
+  traj.points.push_back(make_traj_point(50.0, 0.0, 0.5f));
+  traj.points.push_back(make_traj_point(100.0, 0.0, 0.5f));
+  tester.traj_pub->publish(traj);
 
-  ASSERT_TRUE(received_control_command);
-  EXPECT_LT(cmd_msg->longitudinal.speed, static_cast<float>(odom_msg.twist.twist.linear.x));
-  EXPECT_LT(cmd_msg->longitudinal.acceleration, 0.0f);
+  test_utils::waitForMessage(tester.node, this, tester.received_control_command);
+
+  ASSERT_TRUE(tester.received_control_command);
+  EXPECT_LT(tester.cmd_msg->longitudinal.speed, static_cast<float>(odom_vx));
+  EXPECT_LT(tester.cmd_msg->longitudinal.acceleration, 0.0f);
 
   // Generate another control message
-  received_control_command = false;
-  traj_pub->publish(traj);
-  test_utils::waitForMessage(node, this, received_control_command);
-  ASSERT_TRUE(received_control_command);
-  EXPECT_LT(cmd_msg->longitudinal.speed, static_cast<float>(odom_msg.twist.twist.linear.x));
-  EXPECT_LT(cmd_msg->longitudinal.acceleration, 0.0f);
+  tester.traj_pub->publish(traj);
+  test_utils::waitForMessage(tester.node, this, tester.received_control_command);
+  ASSERT_TRUE(tester.received_control_command);
+  EXPECT_LT(tester.cmd_msg->longitudinal.speed, static_cast<float>(odom_vx));
+  EXPECT_LT(tester.cmd_msg->longitudinal.acceleration, 0.0f);
 }
 
 TEST_F(FakeNodeFixture, longitudinal_accelerate)
 {
-  // Data to test
-  AckermannControlCommand::SharedPtr cmd_msg;
-  bool received_control_command = false;
-  // Node
-  std::shared_ptr<Controller> node = makeNode();
-  // Publisher/Subscribers
-  rclcpp::Publisher<Trajectory>::SharedPtr traj_pub =
-    this->create_publisher<Trajectory>("controller/input/reference_trajectory");
-  rclcpp::Publisher<VehicleOdometry>::SharedPtr odom_pub =
-    this->create_publisher<VehicleOdometry>("controller/input/current_odometry");
-  rclcpp::Publisher<SteeringReport>::SharedPtr steer_pub =
-    this->create_publisher<SteeringReport>("controller/input/current_steering");
-  rclcpp::Subscription<AckermannControlCommand>::SharedPtr cmd_sub =
-    this->create_subscription<AckermannControlCommand>(
-      "controller/output/control_cmd", *this->get_fake_node(),
-      [&cmd_msg, &received_control_command](const AckermannControlCommand::SharedPtr msg) {
-        cmd_msg = msg;
-        received_control_command = true;
-      });
-  std::shared_ptr<tf2_ros::StaticTransformBroadcaster> br =
-    std::make_shared<tf2_ros::StaticTransformBroadcaster>(this->get_fake_node());
+  ControllerTester tester(this);
 
-  // Dummy transform: ego is at (0.0, 0.0) in map frame
-  geometry_msgs::msg::TransformStamped transform = test_utils::getDummyTransform();
-  transform.header.stamp = node->now();
-  br->sendTransform(transform);
-  /// Below target vel + Non stopping trajectory -> accelerate
-  // Publish velocity
-  VehicleOdometry odom_msg;
-  odom_msg.header.stamp = node->now();
-  odom_msg.twist.twist.linear.x = 0.5;
-  odom_pub->publish(odom_msg);
-  // the node needs to receive two velocity msg
-  rclcpp::spin_some(node);
-  rclcpp::spin_some(this->get_fake_node());
-  odom_msg.header.stamp = node->now();
-  odom_pub->publish(odom_msg);
-  // Publish steering
-  SteeringReport steer_msg;
-  steer_msg.stamp = node->now();
-  steer_msg.steering_tire_angle = 0.0;
-  steer_pub->publish(steer_msg);
+  tester.send_default_transform();
+  tester.publish_default_steer();
+  tester.publish_default_acc();
+
+  const double odom_vx = 0.5;
+  tester.publish_odom_vx(odom_vx);
+
   // Publish non stopping trajectory
   Trajectory traj;
-  traj.header.stamp = node->now();
+  traj.header.stamp = tester.node->now();
   traj.header.frame_id = "map";
-  TrajectoryPoint point;
-  point.pose.position.x = 0.0;
-  point.pose.position.y = 0.0;
-  point.longitudinal_velocity_mps = 1.0;
-  traj.points.push_back(point);
-  point.pose.position.x = 50.0;
-  point.pose.position.y = 0.0;
-  point.longitudinal_velocity_mps = 1.0;
-  traj.points.push_back(point);
-  point.pose.position.x = 100.0;
-  point.pose.position.y = 0.0;
-  point.longitudinal_velocity_mps = 1.0;
-  traj.points.push_back(point);
-  traj_pub->publish(traj);
-  test_utils::waitForMessage(node, this, received_control_command);
+  traj.points.push_back(make_traj_point(0.0, 0.0, 1.0f));
+  traj.points.push_back(make_traj_point(50.0, 0.0, 1.0f));
+  traj.points.push_back(make_traj_point(100.0, 0.0, 1.0f));
+  tester.traj_pub->publish(traj);
 
-  ASSERT_TRUE(received_control_command);
-  EXPECT_GT(cmd_msg->longitudinal.speed, static_cast<float>(odom_msg.twist.twist.linear.x));
-  EXPECT_GT(cmd_msg->longitudinal.acceleration, 0.0f);
+  test_utils::waitForMessage(tester.node, this, tester.received_control_command);
+
+  ASSERT_TRUE(tester.received_control_command);
+  EXPECT_GT(tester.cmd_msg->longitudinal.speed, static_cast<float>(odom_vx));
+  EXPECT_GT(tester.cmd_msg->longitudinal.acceleration, 0.0f);
 
   // Generate another control message
-  received_control_command = false;
-  traj_pub->publish(traj);
-  test_utils::waitForMessage(node, this, received_control_command);
-  ASSERT_TRUE(received_control_command);
-  EXPECT_GT(cmd_msg->longitudinal.speed, static_cast<float>(odom_msg.twist.twist.linear.x));
-  EXPECT_GT(cmd_msg->longitudinal.acceleration, 0.0f);
+  tester.traj_pub->publish(traj);
+  test_utils::waitForMessage(tester.node, this, tester.received_control_command);
+  ASSERT_TRUE(tester.received_control_command);
+  EXPECT_GT(tester.cmd_msg->longitudinal.speed, static_cast<float>(odom_vx));
+  EXPECT_GT(tester.cmd_msg->longitudinal.acceleration, 0.0f);
 }
 
 TEST_F(FakeNodeFixture, longitudinal_stopped)
 {
-  // Data to test
-  AckermannControlCommand::SharedPtr cmd_msg;
-  bool received_control_command = false;
-  // Node
-  std::shared_ptr<Controller> node = makeNode();
-  // Publisher/Subscribers
-  rclcpp::Publisher<Trajectory>::SharedPtr traj_pub =
-    this->create_publisher<Trajectory>("controller/input/reference_trajectory");
-  rclcpp::Publisher<VehicleOdometry>::SharedPtr odom_pub =
-    this->create_publisher<VehicleOdometry>("controller/input/current_odometry");
-  rclcpp::Publisher<SteeringReport>::SharedPtr steer_pub =
-    this->create_publisher<SteeringReport>("controller/input/current_steering");
-  rclcpp::Subscription<AckermannControlCommand>::SharedPtr cmd_sub =
-    this->create_subscription<AckermannControlCommand>(
-      "controller/output/control_cmd", *this->get_fake_node(),
-      [&cmd_msg, &received_control_command](const AckermannControlCommand::SharedPtr msg) {
-        cmd_msg = msg;
-        received_control_command = true;
-      });
-  std::shared_ptr<tf2_ros::StaticTransformBroadcaster> br =
-    std::make_shared<tf2_ros::StaticTransformBroadcaster>(this->get_fake_node());
+  ControllerTester tester(this);
 
-  // Dummy transform: ego is at (0.0, 0.0) in map frame
-  geometry_msgs::msg::TransformStamped transform = test_utils::getDummyTransform();
-  transform.header.stamp = node->now();
-  br->sendTransform(transform);
-  /// Below target vel + Non stopping trajectory -> accelerate
-  // Publish velocity
-  VehicleOdometry odom_msg;
-  odom_msg.header.stamp = node->now();
-  odom_msg.twist.twist.linear.x = 0.0;
-  odom_pub->publish(odom_msg);
-  // the node needs to receive two velocity msg
-  rclcpp::spin_some(node);
-  rclcpp::spin_some(this->get_fake_node());
-  odom_msg.header.stamp = node->now();
-  odom_pub->publish(odom_msg);
-  // Publish steering
-  SteeringReport steer_msg;
-  steer_msg.stamp = node->now();
-  steer_msg.steering_tire_angle = 0.0;
-  steer_pub->publish(steer_msg);
+  tester.send_default_transform();
+  tester.publish_default_odom();
+  tester.publish_default_steer();
+  tester.publish_default_acc();
+
   // Publish stopping trajectory
   Trajectory traj;
-  traj.header.stamp = node->now();
+  traj.header.stamp = tester.node->now();
   traj.header.frame_id = "map";
-  TrajectoryPoint point;
-  point.pose.position.x = 0.0;
-  point.pose.position.y = 0.0;
-  point.longitudinal_velocity_mps = 0.0;
-  traj.points.push_back(point);
-  point.pose.position.x = 50.0;
-  point.pose.position.y = 0.0;
-  point.longitudinal_velocity_mps = 0.0;
-  traj.points.push_back(point);
-  point.pose.position.x = 100.0;
-  point.pose.position.y = 0.0;
-  point.longitudinal_velocity_mps = 0.0;
-  traj.points.push_back(point);
-  traj_pub->publish(traj);
-  test_utils::waitForMessage(node, this, received_control_command);
+  traj.points.push_back(make_traj_point(0.0, 0.0, 0.0f));
+  traj.points.push_back(make_traj_point(50.0, 0.0, 0.0f));
+  traj.points.push_back(make_traj_point(100.0, 0.0, 0.0f));
+  tester.traj_pub->publish(traj);
 
-  ASSERT_TRUE(received_control_command);
-  EXPECT_DOUBLE_EQ(cmd_msg->longitudinal.speed, 0.0f);
+  test_utils::waitForMessage(tester.node, this, tester.received_control_command);
+
+  ASSERT_TRUE(tester.received_control_command);
+  EXPECT_DOUBLE_EQ(tester.cmd_msg->longitudinal.speed, 0.0f);
   EXPECT_LT(
-    cmd_msg->longitudinal.acceleration, 0.0f);  // when stopped negative acceleration to brake
+    tester.cmd_msg->longitudinal.acceleration,
+    0.0f);  // when stopped negative acceleration to brake
 }
 
 TEST_F(FakeNodeFixture, longitudinal_reverse)
 {
-  // Data to test
-  AckermannControlCommand::SharedPtr cmd_msg;
-  bool received_control_command = false;
-  // Node
-  std::shared_ptr<Controller> node = makeNode();
-  // Publisher/Subscribers
-  rclcpp::Publisher<Trajectory>::SharedPtr traj_pub =
-    this->create_publisher<Trajectory>("controller/input/reference_trajectory");
-  rclcpp::Publisher<VehicleOdometry>::SharedPtr odom_pub =
-    this->create_publisher<VehicleOdometry>("controller/input/current_odometry");
-  rclcpp::Publisher<SteeringReport>::SharedPtr steer_pub =
-    this->create_publisher<SteeringReport>("controller/input/current_steering");
-  rclcpp::Subscription<AckermannControlCommand>::SharedPtr cmd_sub =
-    this->create_subscription<AckermannControlCommand>(
-      "controller/output/control_cmd", *this->get_fake_node(),
-      [&cmd_msg, &received_control_command](const AckermannControlCommand::SharedPtr msg) {
-        cmd_msg = msg;
-        received_control_command = true;
-      });
-  std::shared_ptr<tf2_ros::StaticTransformBroadcaster> br =
-    std::make_shared<tf2_ros::StaticTransformBroadcaster>(this->get_fake_node());
+  ControllerTester tester(this);
 
-  // Dummy transform: ego is at (0.0, 0.0) in map frame
-  geometry_msgs::msg::TransformStamped transform = test_utils::getDummyTransform();
-  transform.header.stamp = node->now();
-  br->sendTransform(transform);
-  /// Below target vel + Non stopping trajectory -> accelerate
-  // Publish velocity
-  VehicleOdometry odom_msg;
-  odom_msg.header.stamp = node->now();
-  odom_msg.twist.twist.linear.x = 0.0;
-  odom_pub->publish(odom_msg);
-  // the node needs to receive two velocity msg
-  rclcpp::spin_some(node);
-  rclcpp::spin_some(this->get_fake_node());
-  odom_msg.header.stamp = node->now();
-  odom_pub->publish(odom_msg);
-  // Publish steering
-  SteeringReport steer_msg;
-  steer_msg.stamp = node->now();
-  steer_msg.steering_tire_angle = 0.0;
-  steer_pub->publish(steer_msg);
+  tester.send_default_transform();
+
+  tester.publish_default_odom();
+  tester.publish_default_steer();
+  tester.publish_default_acc();
+
   // Publish reverse
   Trajectory traj;
-  traj.header.stamp = node->now();
+  traj.header.stamp = tester.node->now();
   traj.header.frame_id = "map";
-  TrajectoryPoint point;
-  point.pose.position.x = 0.0;
-  point.pose.position.y = 0.0;
-  point.longitudinal_velocity_mps = -1.0;
-  traj.points.push_back(point);
-  point.pose.position.x = 50.0;
-  point.pose.position.y = 0.0;
-  point.longitudinal_velocity_mps = -1.0;
-  traj.points.push_back(point);
-  point.pose.position.x = 100.0;
-  point.pose.position.y = 0.0;
-  point.longitudinal_velocity_mps = -1.0;
-  traj.points.push_back(point);
-  traj_pub->publish(traj);
-  test_utils::waitForMessage(node, this, received_control_command);
+  traj.points.push_back(make_traj_point(0.0, 0.0, -1.0f));
+  traj.points.push_back(make_traj_point(50.0, 0.0, -1.0f));
+  traj.points.push_back(make_traj_point(100.0, 0.0, -1.0f));
+  tester.traj_pub->publish(traj);
 
-  ASSERT_TRUE(received_control_command);
-  EXPECT_LT(cmd_msg->longitudinal.speed, 0.0f);
-  EXPECT_GT(cmd_msg->longitudinal.acceleration, 0.0f);
+  test_utils::waitForMessage(tester.node, this, tester.received_control_command);
+
+  ASSERT_TRUE(tester.received_control_command);
+  EXPECT_LT(tester.cmd_msg->longitudinal.speed, 0.0f);
+  EXPECT_GT(tester.cmd_msg->longitudinal.acceleration, 0.0f);
 }
 
 TEST_F(FakeNodeFixture, longitudinal_emergency)
 {
-  // Data to test
-  AckermannControlCommand::SharedPtr cmd_msg;
-  bool received_control_command = false;
-  // Node
-  std::shared_ptr<Controller> node = makeNode();
-  // Publisher/Subscribers
-  rclcpp::Publisher<Trajectory>::SharedPtr traj_pub =
-    this->create_publisher<Trajectory>("controller/input/reference_trajectory");
-  rclcpp::Publisher<VehicleOdometry>::SharedPtr odom_pub =
-    this->create_publisher<VehicleOdometry>("controller/input/current_odometry");
-  rclcpp::Publisher<SteeringReport>::SharedPtr steer_pub =
-    this->create_publisher<SteeringReport>("controller/input/current_steering");
-  rclcpp::Subscription<AckermannControlCommand>::SharedPtr cmd_sub =
-    this->create_subscription<AckermannControlCommand>(
-      "controller/output/control_cmd", *this->get_fake_node(),
-      [&cmd_msg, &received_control_command](const AckermannControlCommand::SharedPtr msg) {
-        cmd_msg = msg;
-        received_control_command = true;
-      });
-  std::shared_ptr<tf2_ros::StaticTransformBroadcaster> br =
-    std::make_shared<tf2_ros::StaticTransformBroadcaster>(this->get_fake_node());
+  ControllerTester tester(this);
 
-  // Dummy transform: ego is at (0.0, 0.0) in map frame
-  geometry_msgs::msg::TransformStamped transform = test_utils::getDummyTransform();
-  transform.header.stamp = node->now();
-  br->sendTransform(transform);
-  /// Below target vel + Non stopping trajectory -> accelerate
-  // Publish velocity
-  VehicleOdometry odom_msg;
-  odom_msg.header.stamp = node->now();
-  odom_msg.twist.twist.linear.x = 0.0;
-  odom_pub->publish(odom_msg);
-  // the node needs to receive two velocity msg
-  rclcpp::spin_some(node);
-  rclcpp::spin_some(this->get_fake_node());
-  odom_msg.header.stamp = node->now();
-  odom_pub->publish(odom_msg);
-  // Publish steering
-  SteeringReport steer_msg;
-  steer_msg.stamp = node->now();
-  steer_msg.steering_tire_angle = 0.0;
-  steer_pub->publish(steer_msg);
+  tester.send_default_transform();
+  tester.publish_default_odom();
+  tester.publish_default_steer();
+  tester.publish_default_acc();
+
   // Publish trajectory starting away from the current ego pose
   Trajectory traj;
-  traj.header.stamp = node->now();
+  traj.header.stamp = tester.node->now();
   traj.header.frame_id = "map";
-  TrajectoryPoint point;
-  point.pose.position.x = 10.0;
-  point.pose.position.y = 0.0;
-  point.longitudinal_velocity_mps = 1.0;
-  traj.points.push_back(point);
-  point.pose.position.x = 50.0;
-  point.pose.position.y = 0.0;
-  point.longitudinal_velocity_mps = 1.0;
-  traj.points.push_back(point);
-  point.pose.position.x = 100.0;
-  point.pose.position.y = 0.0;
-  point.longitudinal_velocity_mps = 1.0;
-  traj.points.push_back(point);
-  traj_pub->publish(traj);
-  test_utils::waitForMessage(node, this, received_control_command);
+  traj.points.push_back(make_traj_point(10.0, 0.0, 1.0f));
+  traj.points.push_back(make_traj_point(50.0, 0.0, 1.0f));
+  traj.points.push_back(make_traj_point(100.0, 0.0, 1.0f));
+  tester.traj_pub->publish(traj);
 
-  ASSERT_TRUE(received_control_command);
+  test_utils::waitForMessage(tester.node, this, tester.received_control_command);
+
+  ASSERT_TRUE(tester.received_control_command);
   // Emergencies (e.g., far from trajectory) produces braking command (0 vel, negative accel)
-  EXPECT_DOUBLE_EQ(cmd_msg->longitudinal.speed, 0.0f);
-  EXPECT_LT(cmd_msg->longitudinal.acceleration, 0.0f);
+  EXPECT_DOUBLE_EQ(tester.cmd_msg->longitudinal.speed, 0.0f);
+  EXPECT_LT(tester.cmd_msg->longitudinal.acceleration, 0.0f);
 }

@@ -97,7 +97,7 @@ private:
 
   // pointers for ros topic
   nav_msgs::msg::Odometry::ConstSharedPtr m_current_kinematic_state_ptr{nullptr};
-  nav_msgs::msg::Odometry::ConstSharedPtr m_prev_kienmatic_state_ptr{nullptr};
+  geometry_msgs::msg::AccelWithCovarianceStamped::ConstSharedPtr m_current_accel_ptr{nullptr};
   autoware_auto_planning_msgs::msg::Trajectory::ConstSharedPtr m_trajectory_ptr{nullptr};
 
   // vehicle info
@@ -185,9 +185,6 @@ private:
   double m_ego_nearest_dist_threshold;
   double m_ego_nearest_yaw_threshold;
 
-  // 1st order lowpass filter for acceleration
-  std::shared_ptr<trajectory_follower::LowpassFilter1d> m_lpf_acc{nullptr};
-
   // buffer of send command
   std::vector<autoware_auto_control_msgs::msg::LongitudinalCommand> m_ctrl_cmd_vec;
 
@@ -212,6 +209,13 @@ private:
    * @param [in] msg current state message
    */
   void setKinematicState(const nav_msgs::msg::Odometry::ConstSharedPtr msg);
+
+  /**
+   * @brief set current acceleration with received message
+   * @param [in] msg trajectory message
+   */
+  void setCurrentAcceleration(
+    const geometry_msgs::msg::AccelWithCovarianceStamped::ConstSharedPtr msg);
 
   /**
    * @brief set reference trajectory with received message
