@@ -34,7 +34,6 @@ using tier4_autoware_utils::appendMarkerArray;
 using tier4_autoware_utils::calcOffsetPose;
 using tier4_autoware_utils::createDefaultMarker;
 using tier4_autoware_utils::createMarkerColor;
-using tier4_autoware_utils::createMarkerOrientation;
 using tier4_autoware_utils::createMarkerScale;
 using tier4_autoware_utils::createPoint;
 
@@ -44,12 +43,9 @@ ObstacleStopPlannerDebugNode::ObstacleStopPlannerDebugNode(
   rclcpp::Node * node, const double base_link2front)
 : node_(node), base_link2front_(base_link2front)
 {
-  virtual_wall_pub_ =
-    node_->create_publisher<visualization_msgs::msg::MarkerArray>("~/virtual_wall", 1);
-  debug_viz_pub_ =
-    node_->create_publisher<visualization_msgs::msg::MarkerArray>("~/debug/marker", 1);
-  stop_reason_pub_ =
-    node_->create_publisher<tier4_planning_msgs::msg::StopReasonArray>("~/output/stop_reasons", 1);
+  virtual_wall_pub_ = node_->create_publisher<MarkerArray>("~/virtual_wall", 1);
+  debug_viz_pub_ = node_->create_publisher<MarkerArray>("~/debug/marker", 1);
+  stop_reason_pub_ = node_->create_publisher<StopReasonArray>("~/output/stop_reasons", 1);
   pub_debug_values_ =
     node_->create_publisher<Float32MultiArrayStamped>("~/obstacle_stop/debug_values", 1);
 }
@@ -95,21 +91,20 @@ bool ObstacleStopPlannerDebugNode::pushPolygon(
   }
 }
 
-bool ObstacleStopPlannerDebugNode::pushPose(
-  const geometry_msgs::msg::Pose & pose, const PoseType & type)
+bool ObstacleStopPlannerDebugNode::pushPose(const Pose & pose, const PoseType & type)
 {
   switch (type) {
     case PoseType::Stop:
-      stop_pose_ptr_ = std::make_shared<geometry_msgs::msg::Pose>(pose);
+      stop_pose_ptr_ = std::make_shared<Pose>(pose);
       return true;
     case PoseType::TargetStop:
-      target_stop_pose_ptr_ = std::make_shared<geometry_msgs::msg::Pose>(pose);
+      target_stop_pose_ptr_ = std::make_shared<Pose>(pose);
       return true;
     case PoseType::SlowDownStart:
-      slow_down_start_pose_ptr_ = std::make_shared<geometry_msgs::msg::Pose>(pose);
+      slow_down_start_pose_ptr_ = std::make_shared<Pose>(pose);
       return true;
     case PoseType::SlowDownEnd:
-      slow_down_end_pose_ptr_ = std::make_shared<geometry_msgs::msg::Pose>(pose);
+      slow_down_end_pose_ptr_ = std::make_shared<Pose>(pose);
       return true;
     default:
       return false;
@@ -117,14 +112,14 @@ bool ObstacleStopPlannerDebugNode::pushPose(
 }
 
 bool ObstacleStopPlannerDebugNode::pushObstaclePoint(
-  const geometry_msgs::msg::Point & obstacle_point, const PointType & type)
+  const Point & obstacle_point, const PointType & type)
 {
   switch (type) {
     case PointType::Stop:
-      stop_obstacle_point_ptr_ = std::make_shared<geometry_msgs::msg::Point>(obstacle_point);
+      stop_obstacle_point_ptr_ = std::make_shared<Point>(obstacle_point);
       return true;
     case PointType::SlowDown:
-      slow_down_obstacle_point_ptr_ = std::make_shared<geometry_msgs::msg::Point>(obstacle_point);
+      slow_down_obstacle_point_ptr_ = std::make_shared<Point>(obstacle_point);
       return true;
     default:
       return false;
@@ -134,7 +129,7 @@ bool ObstacleStopPlannerDebugNode::pushObstaclePoint(
 bool ObstacleStopPlannerDebugNode::pushObstaclePoint(
   const pcl::PointXYZ & obstacle_point, const PointType & type)
 {
-  geometry_msgs::msg::Point ros_point;
+  Point ros_point;
   ros_point.x = obstacle_point.x;
   ros_point.y = obstacle_point.y;
   ros_point.z = obstacle_point.z;
@@ -156,7 +151,7 @@ void ObstacleStopPlannerDebugNode::publish()
   stop_reason_pub_->publish(stop_reason_msg);
 
   // publish debug values
-  tier4_debug_msgs::msg::Float32MultiArrayStamped debug_msg{};
+  Float32MultiArrayStamped debug_msg{};
   debug_msg.stamp = node_->now();
   for (const auto & v : debug_values_.getValues()) {
     debug_msg.data.push_back(v);
@@ -175,9 +170,9 @@ void ObstacleStopPlannerDebugNode::publish()
   slow_down_obstacle_point_ptr_ = nullptr;
 }
 
-visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVirtualWallMarker()
+MarkerArray ObstacleStopPlannerDebugNode::makeVirtualWallMarker()
 {
-  visualization_msgs::msg::MarkerArray msg;
+  MarkerArray msg;
   rclcpp::Time current_time = node_->now();
 
   if (stop_pose_ptr_ != nullptr) {
@@ -220,15 +215,15 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVirtualWa
   return msg;
 }
 
-visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualizationMarker()
+MarkerArray ObstacleStopPlannerDebugNode::makeVisualizationMarker()
 {
-  visualization_msgs::msg::MarkerArray msg;
+  MarkerArray msg;
   rclcpp::Time current_time = node_->now();
 
   // polygon
   if (!vehicle_polygons_.empty()) {
     auto marker = createDefaultMarker(
-      "map", current_time, "detection_polygons", 0, visualization_msgs::msg::Marker::LINE_LIST,
+      "map", current_time, "detection_polygons", 0, Marker::LINE_LIST,
       createMarkerScale(0.01, 0.0, 0.0), createMarkerColor(0.0, 1.0, 0.0, 0.999));
 
     for (size_t i = 0; i < vehicle_polygons_.size(); ++i) {
@@ -251,7 +246,7 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
 
   if (!collision_polygons_.empty()) {
     auto marker = createDefaultMarker(
-      "map", current_time, "collision_polygons", 0, visualization_msgs::msg::Marker::LINE_LIST,
+      "map", current_time, "collision_polygons", 0, Marker::LINE_LIST,
       createMarkerScale(0.05, 0.0, 0.0), createMarkerColor(1.0, 0.0, 0.0, 0.999));
 
     for (size_t i = 0; i < collision_polygons_.size(); ++i) {
@@ -274,9 +269,8 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
 
   if (!slow_down_range_polygons_.empty()) {
     auto marker = createDefaultMarker(
-      "map", current_time, "slow_down_detection_polygons", 0,
-      visualization_msgs::msg::Marker::LINE_LIST, createMarkerScale(0.01, 0.0, 0.0),
-      createMarkerColor(0.0, 1.0, 0.0, 0.999));
+      "map", current_time, "slow_down_detection_polygons", 0, Marker::LINE_LIST,
+      createMarkerScale(0.01, 0.0, 0.0), createMarkerColor(0.0, 1.0, 0.0, 0.999));
 
     for (size_t i = 0; i < slow_down_range_polygons_.size(); ++i) {
       for (size_t j = 0; j < slow_down_range_polygons_.at(i).size(); ++j) {
@@ -298,7 +292,7 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
 
   if (!slow_down_polygons_.empty()) {
     auto marker = createDefaultMarker(
-      "map", current_time, "slow_down_polygons", 0, visualization_msgs::msg::Marker::LINE_LIST,
+      "map", current_time, "slow_down_polygons", 0, Marker::LINE_LIST,
       createMarkerScale(0.05, 0.0, 0.0), createMarkerColor(1.0, 1.0, 0.0, 0.999));
 
     for (size_t i = 0; i < slow_down_polygons_.size(); ++i) {
@@ -331,7 +325,7 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
 
   if (stop_obstacle_point_ptr_ != nullptr) {
     auto marker = createDefaultMarker(
-      "map", current_time, "stop_obstacle_point", 0, visualization_msgs::msg::Marker::SPHERE,
+      "map", current_time, "stop_obstacle_point", 0, Marker::SPHERE,
       createMarkerScale(0.25, 0.25, 0.25), createMarkerColor(1.0, 0.0, 0.0, 0.999));
     marker.pose.position = *stop_obstacle_point_ptr_;
     msg.markers.push_back(marker);
@@ -339,9 +333,8 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
 
   if (stop_obstacle_point_ptr_ != nullptr) {
     auto marker = createDefaultMarker(
-      "map", current_time, "stop_obstacle_text", 0,
-      visualization_msgs::msg::Marker::TEXT_VIEW_FACING, createMarkerScale(0.0, 0.0, 1.0),
-      createMarkerColor(1.0, 1.0, 1.0, 0.999));
+      "map", current_time, "stop_obstacle_text", 0, Marker::TEXT_VIEW_FACING,
+      createMarkerScale(0.0, 0.0, 1.0), createMarkerColor(1.0, 1.0, 1.0, 0.999));
     marker.pose.position = *stop_obstacle_point_ptr_;
     marker.pose.position.z += 2.0;
     marker.text = "!";
@@ -350,7 +343,7 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
 
   if (slow_down_obstacle_point_ptr_ != nullptr) {
     auto marker = createDefaultMarker(
-      "map", current_time, "slow_down_obstacle_point", 0, visualization_msgs::msg::Marker::SPHERE,
+      "map", current_time, "slow_down_obstacle_point", 0, Marker::SPHERE,
       createMarkerScale(0.25, 0.25, 0.25), createMarkerColor(1.0, 0.0, 0.0, 0.999));
     marker.pose.position = *slow_down_obstacle_point_ptr_;
     msg.markers.push_back(marker);
@@ -358,9 +351,8 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
 
   if (slow_down_obstacle_point_ptr_ != nullptr) {
     auto marker = createDefaultMarker(
-      "map", current_time, "slow_down_obstacle_text", 0,
-      visualization_msgs::msg::Marker::TEXT_VIEW_FACING, createMarkerScale(0.0, 0.0, 1.0),
-      createMarkerColor(1.0, 1.0, 1.0, 0.999));
+      "map", current_time, "slow_down_obstacle_text", 0, Marker::TEXT_VIEW_FACING,
+      createMarkerScale(0.0, 0.0, 1.0), createMarkerColor(1.0, 1.0, 1.0, 0.999));
     marker.pose.position = *slow_down_obstacle_point_ptr_;
     marker.pose.position.z += 2.0;
     marker.text = "!";
@@ -370,17 +362,17 @@ visualization_msgs::msg::MarkerArray ObstacleStopPlannerDebugNode::makeVisualiza
   return msg;
 }
 
-tier4_planning_msgs::msg::StopReasonArray ObstacleStopPlannerDebugNode::makeStopReasonArray()
+StopReasonArray ObstacleStopPlannerDebugNode::makeStopReasonArray()
 {
   // create header
-  std_msgs::msg::Header header;
+  Header header;
   header.frame_id = "map";
   header.stamp = node_->now();
 
   // create stop reason stamped
-  tier4_planning_msgs::msg::StopReason stop_reason_msg;
-  stop_reason_msg.reason = tier4_planning_msgs::msg::StopReason::OBSTACLE_STOP;
-  tier4_planning_msgs::msg::StopFactor stop_factor;
+  StopReason stop_reason_msg;
+  stop_reason_msg.reason = StopReason::OBSTACLE_STOP;
+  StopFactor stop_factor;
 
   if (stop_pose_ptr_ != nullptr) {
     stop_factor.stop_pose = *stop_pose_ptr_;
@@ -391,7 +383,7 @@ tier4_planning_msgs::msg::StopReasonArray ObstacleStopPlannerDebugNode::makeStop
   }
 
   // create stop reason array
-  tier4_planning_msgs::msg::StopReasonArray stop_reason_array;
+  StopReasonArray stop_reason_array;
   stop_reason_array.header = header;
   stop_reason_array.stop_reasons.emplace_back(stop_reason_msg);
   return stop_reason_array;

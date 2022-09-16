@@ -11,6 +11,7 @@ find_package(PCL REQUIRED)
 ament_auto_add_library(obstacle_stop_planner SHARED
   src/debug_marker.cpp
   src/node.cpp
+  src/planner_utils.cpp
   src/adaptive_cruise_control.cpp
 )
 

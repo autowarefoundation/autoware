@@ -36,7 +36,17 @@
 #include <eigen3/Eigen/Geometry>
 namespace motion_planning
 {
+
+using geometry_msgs::msg::Point;
+using geometry_msgs::msg::Pose;
+using std_msgs::msg::Header;
+using visualization_msgs::msg::Marker;
+using visualization_msgs::msg::MarkerArray;
+
 using tier4_debug_msgs::msg::Float32MultiArrayStamped;
+using tier4_planning_msgs::msg::StopFactor;
+using tier4_planning_msgs::msg::StopReason;
+using tier4_planning_msgs::msg::StopReasonArray;
 
 enum class PolygonType : int8_t { Vehicle = 0, Collision, SlowDownRange, SlowDown };
 
@@ -97,12 +107,12 @@ public:
   bool pushPolygon(
     const std::vector<cv::Point2d> & polygon, const double z, const PolygonType & type);
   bool pushPolygon(const std::vector<Eigen::Vector3d> & polygon, const PolygonType & type);
-  bool pushPose(const geometry_msgs::msg::Pose & pose, const PoseType & type);
-  bool pushObstaclePoint(const geometry_msgs::msg::Point & obstacle_point, const PointType & type);
+  bool pushPose(const Pose & pose, const PoseType & type);
+  bool pushObstaclePoint(const Point & obstacle_point, const PointType & type);
   bool pushObstaclePoint(const pcl::PointXYZ & obstacle_point, const PointType & type);
-  visualization_msgs::msg::MarkerArray makeVirtualWallMarker();
-  visualization_msgs::msg::MarkerArray makeVisualizationMarker();
-  tier4_planning_msgs::msg::StopReasonArray makeStopReasonArray();
+  MarkerArray makeVirtualWallMarker();
+  MarkerArray makeVisualizationMarker();
+  StopReasonArray makeStopReasonArray();
 
   void setDebugValues(const DebugValues::TYPE type, const double val)
   {
@@ -111,19 +121,19 @@ public:
   void publish();
 
 private:
-  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr virtual_wall_pub_;
-  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr debug_viz_pub_;
-  rclcpp::Publisher<tier4_planning_msgs::msg::StopReasonArray>::SharedPtr stop_reason_pub_;
+  rclcpp::Publisher<MarkerArray>::SharedPtr virtual_wall_pub_;
+  rclcpp::Publisher<MarkerArray>::SharedPtr debug_viz_pub_;
+  rclcpp::Publisher<StopReasonArray>::SharedPtr stop_reason_pub_;
   rclcpp::Publisher<Float32MultiArrayStamped>::SharedPtr pub_debug_values_;
   rclcpp::Node * node_;
   double base_link2front_;
 
-  std::shared_ptr<geometry_msgs::msg::Pose> stop_pose_ptr_;
-  std::shared_ptr<geometry_msgs::msg::Pose> target_stop_pose_ptr_;
-  std::shared_ptr<geometry_msgs::msg::Pose> slow_down_start_pose_ptr_;
-  std::shared_ptr<geometry_msgs::msg::Pose> slow_down_end_pose_ptr_;
-  std::shared_ptr<geometry_msgs::msg::Point> stop_obstacle_point_ptr_;
-  std::shared_ptr<geometry_msgs::msg::Point> slow_down_obstacle_point_ptr_;
+  std::shared_ptr<Pose> stop_pose_ptr_;
+  std::shared_ptr<Pose> target_stop_pose_ptr_;
+  std::shared_ptr<Pose> slow_down_start_pose_ptr_;
+  std::shared_ptr<Pose> slow_down_end_pose_ptr_;
+  std::shared_ptr<Point> stop_obstacle_point_ptr_;
+  std::shared_ptr<Point> slow_down_obstacle_point_ptr_;
   std::vector<std::vector<Eigen::Vector3d>> vehicle_polygons_;
   std::vector<std::vector<Eigen::Vector3d>> slow_down_range_polygons_;
   std::vector<std::vector<Eigen::Vector3d>> collision_polygons_;
