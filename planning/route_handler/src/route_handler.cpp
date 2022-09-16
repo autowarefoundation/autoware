@@ -865,7 +865,19 @@ boost::optional<lanelet::ConstLanelet> RouteHandler::getLeftLanelet(
 lanelet::Lanelets RouteHandler::getRightOppositeLanelets(
   const lanelet::ConstLanelet & lanelet) const
 {
-  return lanelet_map_ptr_->laneletLayer.findUsages(lanelet.rightBound().invert());
+  const auto opposite_candidate_lanelets =
+    lanelet_map_ptr_->laneletLayer.findUsages(lanelet.rightBound().invert());
+
+  lanelet::Lanelets opposite_lanelets;
+  for (const auto & candidate_lanelet : opposite_candidate_lanelets) {
+    if (candidate_lanelet.leftBound().id() == lanelet.rightBound().id()) {
+      continue;
+    }
+
+    opposite_lanelets.push_back(candidate_lanelet);
+  }
+
+  return opposite_lanelets;
 }
 
 lanelet::ConstLanelets RouteHandler::getAllLeftSharedLinestringLanelets(
@@ -943,7 +955,19 @@ lanelet::ConstLanelets RouteHandler::getAllSharedLineStringLanelets(
 
 lanelet::Lanelets RouteHandler::getLeftOppositeLanelets(const lanelet::ConstLanelet & lanelet) const
 {
-  return lanelet_map_ptr_->laneletLayer.findUsages(lanelet.leftBound().invert());
+  const auto opposite_candidate_lanelets =
+    lanelet_map_ptr_->laneletLayer.findUsages(lanelet.leftBound().invert());
+
+  lanelet::Lanelets opposite_lanelets;
+  for (const auto & candidate_lanelet : opposite_candidate_lanelets) {
+    if (candidate_lanelet.rightBound().id() == lanelet.leftBound().id()) {
+      continue;
+    }
+
+    opposite_lanelets.push_back(candidate_lanelet);
+  }
+
+  return opposite_lanelets;
 }
 
 lanelet::ConstLineString3d RouteHandler::getRightMostSameDirectionLinestring(
