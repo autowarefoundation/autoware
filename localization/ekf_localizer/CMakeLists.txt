@@ -44,6 +44,7 @@ if(BUILD_TESTING)
   set(TEST_FILES
     test/test_mahalanobis.cpp
     test/test_measurement.cpp
+    test/test_numeric.cpp
     test/test_state_transition.cpp)
 
   foreach(filepath ${TEST_FILES})
