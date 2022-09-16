@@ -267,18 +267,6 @@ private:
   void measurementUpdateTwist(const geometry_msgs::msg::TwistWithCovarianceStamped & twist);
 
   /**
-   * @brief check whether a measurement value falls within the mahalanobis distance threshold
-   * @param dist_max mahalanobis distance threshold
-   * @param estimated current estimated state
-   * @param measured measured state
-   * @param estimated_cov current estimation covariance
-   * @return whether it falls within the mahalanobis distance threshold
-   */
-  bool mahalanobisGate(
-    const double & dist_max, const Eigen::MatrixXd & estimated, const Eigen::MatrixXd & measured,
-    const Eigen::MatrixXd & estimated_cov) const;
-
-  /**
    * @brief get transform from frame_id
    */
   bool getTransformFromTF(

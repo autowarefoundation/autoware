@@ -14,6 +14,7 @@
 
 #include "ekf_localizer/ekf_localizer.hpp"
 
+#include "ekf_localizer/mahalanobis.hpp"
 #include "ekf_localizer/matrix_types.hpp"
 #include "ekf_localizer/measurement.hpp"
 #include "ekf_localizer/state_index.hpp"
@@ -601,24 +602,6 @@ void EKFLocalizer::measurementUpdateTwist(
   ekf_.getLatestX(X_result);
   DEBUG_PRINT_MAT(X_result.transpose());
   DEBUG_PRINT_MAT((X_result - X_curr).transpose());
-}
-
-/*
- * mahalanobisGate
- */
-bool EKFLocalizer::mahalanobisGate(
-  const double & dist_max, const Eigen::MatrixXd & x, const Eigen::MatrixXd & obj_x,
-  const Eigen::MatrixXd & cov) const
-{
-  Eigen::MatrixXd mahalanobis_squared = (x - obj_x).transpose() * cov.inverse() * (x - obj_x);
-  DEBUG_INFO(
-    get_logger(), "measurement update: mahalanobis = %f, gate limit = %f",
-    std::sqrt(mahalanobis_squared(0)), dist_max);
-  if (mahalanobis_squared(0) > dist_max * dist_max) {
-    return false;
-  }
-
-  return true;
 }
 
 /*
