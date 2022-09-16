@@ -13,3 +13,8 @@ ament_auto_package(
     config
     launch
 )
+
+install(PROGRAMS
+  scripts/min_turning_radius_calculator.py
+  DESTINATION lib/${PROJECT_NAME}
+)
