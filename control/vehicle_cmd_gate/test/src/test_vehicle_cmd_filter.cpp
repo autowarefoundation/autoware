@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "vehicle_cmd_gate/vehicle_cmd_filter.hpp"
+#include "../../src/vehicle_cmd_filter.hpp"
 
 #include <gtest/gtest.h>
 

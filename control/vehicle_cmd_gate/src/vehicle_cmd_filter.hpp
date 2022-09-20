@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef VEHICLE_CMD_GATE__VEHICLE_CMD_FILTER_HPP_
-#define VEHICLE_CMD_GATE__VEHICLE_CMD_FILTER_HPP_
+#ifndef VEHICLE_CMD_FILTER_HPP_
+#define VEHICLE_CMD_FILTER_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -74,4 +74,4 @@ private:
   double limitDiff(const double curr, const double prev, const double diff_lim) const;
 };
 
-#endif  // VEHICLE_CMD_GATE__VEHICLE_CMD_FILTER_HPP_
+#endif  // VEHICLE_CMD_FILTER_HPP_

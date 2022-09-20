@@ -11,7 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#include "vehicle_cmd_gate/vehicle_cmd_filter.hpp"
+
+#include "vehicle_cmd_filter.hpp"
 
 #include <algorithm>
 #include <cmath>

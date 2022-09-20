@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef VEHICLE_CMD_GATE__VEHICLE_CMD_GATE_HPP_
-#define VEHICLE_CMD_GATE__VEHICLE_CMD_GATE_HPP_
+#ifndef VEHICLE_CMD_GATE_HPP_
+#define VEHICLE_CMD_GATE_HPP_
 
-#include "vehicle_cmd_gate/vehicle_cmd_filter.hpp"
+#include "vehicle_cmd_filter.hpp"
 
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -252,4 +252,4 @@ private:
 };
 
 }  // namespace vehicle_cmd_gate
-#endif  // VEHICLE_CMD_GATE__VEHICLE_CMD_GATE_HPP_
+#endif  // VEHICLE_CMD_GATE_HPP_
