@@ -31,7 +31,7 @@ GNSSPoser::GNSSPoser(const rclcpp::NodeOptions & node_options)
   gnss_frame_(declare_parameter("gnss_frame", "gnss")),
   gnss_base_frame_(declare_parameter("gnss_base_frame", "gnss_base_link")),
   map_frame_(declare_parameter("map_frame", "map")),
-  use_gnss_ins_orientation_(declare_parameter("use_gnss_heading", true)),
+  use_gnss_ins_orientation_(declare_parameter("use_gnss_ins_orientation", true)),
   plane_zone_(declare_parameter<int>("plane_zone", 9)),
   msg_gnss_ins_orientation_stamped_(
     std::make_shared<autoware_sensing_msgs::msg::GnssInsOrientationStamped>())

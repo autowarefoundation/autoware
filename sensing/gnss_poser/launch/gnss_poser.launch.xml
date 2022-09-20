@@ -33,6 +33,7 @@
     <param name="coordinate_system" value="$(var coordinate_system)"/>
     <param name="buff_epoch" value="$(var buff_epoch)"/>
     <param name="plane_zone" value="$(var plane_zone)"/>
+    <param name="use_gnss_ins_orientation" value="$(var use_gnss_ins_orientation)"/>
     <param from="$(var param_file)"/>
   </node>
 </launch>
