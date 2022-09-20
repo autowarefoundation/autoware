@@ -44,10 +44,18 @@ TopicStateMonitorNode::TopicStateMonitorNode(const rclcpp::NodeOptions & node_op
   // Parameter
   node_param_.update_rate = declare_parameter("update_rate", 10.0);
   node_param_.topic = declare_parameter<std::string>("topic");
-  node_param_.topic_type = declare_parameter<std::string>("topic_type");
   node_param_.transient_local = declare_parameter("transient_local", false);
   node_param_.best_effort = declare_parameter("best_effort", false);
   node_param_.diag_name = declare_parameter<std::string>("diag_name");
+  node_param_.is_transform = (node_param_.topic == "/tf" || node_param_.topic == "/tf_static");
+
+  if (node_param_.is_transform) {
+    node_param_.frame_id = declare_parameter<std::string>("frame_id");
+    node_param_.child_frame_id = declare_parameter<std::string>("child_frame_id");
+  } else {
+    node_param_.topic_type = declare_parameter<std::string>("topic_type");
+  }
+
   param_.warn_rate = declare_parameter("warn_rate", 0.5);
   param_.error_rate = declare_parameter("error_rate", 0.1);
   param_.timeout = declare_parameter("timeout", 1.0);
@@ -69,11 +77,25 @@ TopicStateMonitorNode::TopicStateMonitorNode(const rclcpp::NodeOptions & node_op
   if (node_param_.best_effort) {
     qos.best_effort();
   }
-  sub_topic_ = this->create_generic_subscription(
-    node_param_.topic, node_param_.topic_type, qos,
-    [this]([[maybe_unused]] std::shared_ptr<rclcpp::SerializedMessage> msg) {
-      topic_state_monitor_->update();
-    });
+
+  if (node_param_.is_transform) {
+    sub_transform_ = this->create_subscription<tf2_msgs::msg::TFMessage>(
+      node_param_.topic, qos, [this](tf2_msgs::msg::TFMessage::ConstSharedPtr msg) {
+        for (const auto & transform : msg->transforms) {
+          if (
+            transform.header.frame_id == node_param_.frame_id &&
+            transform.child_frame_id == node_param_.child_frame_id) {
+            topic_state_monitor_->update();
+          }
+        }
+      });
+  } else {
+    sub_topic_ = this->create_generic_subscription(
+      node_param_.topic, node_param_.topic_type, qos,
+      [this]([[maybe_unused]] std::shared_ptr<rclcpp::SerializedMessage> msg) {
+        topic_state_monitor_->update();
+      });
+  }
 
   // Diagnostic Updater
   updater_.setHardwareID("topic_state_monitor");
@@ -122,7 +144,12 @@ void TopicStateMonitorNode::checkTopicStatus(diagnostic_updater::DiagnosticStatu
   const auto topic_rate = topic_state_monitor_->getTopicRate();
 
   // Add topic name
-  stat.addf("topic", "%s", node_param_.topic.c_str());
+  if (node_param_.is_transform) {
+    const auto frame = "(" + node_param_.frame_id + " to " + node_param_.child_frame_id + ")";
+    stat.addf("topic", "%s %s", node_param_.topic.c_str(), frame.c_str());
+  } else {
+    stat.addf("topic", "%s", node_param_.topic.c_str());
+  }
 
   // Judge level
   int8_t level = DiagnosticStatus::OK;

@@ -35,14 +35,16 @@ The types of topic status and corresponding diagnostic status are following.
 
 ### Node Parameters
 
-| Name              | Type   | Default Value | Description                                                 |
-| ----------------- | ------ | ------------- | ----------------------------------------------------------- |
-| `topic`           | string | -             | Name of target topic                                        |
-| `topic_type`      | string | -             | Type of target topic                                        |
-| `transient_local` | bool   | false         | QoS policy of topic subscription (Transient Local/Volatile) |
-| `best_effort`     | bool   | false         | QoS policy of topic subscription (Best Effort/Reliable)     |
-| `diag_name`       | string | -             | Name used for the diagnostics to publish                    |
-| `update_rate`     | double | 10.0          | Timer callback period [Hz]                                  |
+| Name              | Type   | Default Value | Description                                                   |
+| ----------------- | ------ | ------------- | ------------------------------------------------------------- |
+| `topic`           | string | -             | Name of target topic                                          |
+| `topic_type`      | string | -             | Type of target topic (used if the topic is not transform)     |
+| `frame_id`        | string | -             | Frame ID of transform parent (used if the topic is transform) |
+| `child_frame_id`  | string | -             | Frame ID of transform child (used if the topic is transform)  |
+| `transient_local` | bool   | false         | QoS policy of topic subscription (Transient Local/Volatile)   |
+| `best_effort`     | bool   | false         | QoS policy of topic subscription (Best Effort/Reliable)       |
+| `diag_name`       | string | -             | Name used for the diagnostics to publish                      |
+| `update_rate`     | double | 10.0          | Timer callback period [Hz]                                    |
 
 ### Core Parameters
 

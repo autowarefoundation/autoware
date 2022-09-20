@@ -1,0 +1,26 @@
+<launch>
+  <arg name="node_name_suffix" description="node name suffix"/>
+  <arg name="topic" description="transform topic name"/>
+  <arg name="frame_id" description="parent frame id"/>
+  <arg name="child_frame_id" description="child frame id"/>
+  <arg name="transient_local" default="false" description="add transient_local option to subscriber or not"/>
+  <arg name="best_effort" default="false" description="add best_effort option to subscriber or not"/>
+  <arg name="diag_name" description="diag name"/>
+  <arg name="warn_rate" description="warn rate[Hz]"/>
+  <arg name="error_rate" description="error rate[Hz]"/>
+  <arg name="timeout" description="timeout period[s]"/>
+  <arg name="window_size" default="10" description="window size"/>
+
+  <node pkg="topic_state_monitor" exec="topic_state_monitor_node" name="topic_state_monitor_$(var node_name_suffix)" output="screen">
+    <param name="topic" value="$(var topic)"/>
+    <param name="frame_id" value="$(var frame_id)"/>
+    <param name="child_frame_id" value="$(var child_frame_id)"/>
+    <param name="transient_local" value="$(var transient_local)"/>
+    <param name="best_effort" value="$(var best_effort)"/>
+    <param name="diag_name" value="$(var diag_name)"/>
+    <param name="warn_rate" value="$(var warn_rate)"/>
+    <param name="error_rate" value="$(var error_rate)"/>
+    <param name="timeout" value="$(var timeout)"/>
+    <param name="window_size" value="$(var window_size)"/>
+  </node>
+</launch>
