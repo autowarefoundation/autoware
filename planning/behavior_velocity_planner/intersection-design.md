@@ -25,11 +25,12 @@ Objects that satisfy all of the following conditions are considered as target ob
 
 - The type of object type is **car**, **truck**, **bus** or **motorbike**. (Bicycle, pedestrian, animal, unknown are not.)
 - The center of gravity of object is **located within a certain distance** from the attention lane (threshold = `detection_area_margin`) .
-  - In the past, the decision was made based on whether any points of the object's polygon exists in the attention lane, but since there were many false positives, the logic has changed to the current one.
+  - (Optional condition) The center of gravity is in the **intersection area**.
+    - To deal with objects that is in the area not covered by the lanelets in the intersection.
 - The posture of object is **the same direction as the attention lane** (threshold = `detection_area_angle_threshold`).
   - The orientation of the target is recalculated in this module according to the `orientation_reliable` and the sign of the velocity of the target.
-- Not being **in the same lane as the ego vehicle**.
-  - To avoid judging the vehicle ahead as a collision target. This logic needs to be improved.
+- Not being **in the neighbouring lanes of the ego vehicle**.
+  - neighbouring lanes include the ego lane of the vehicle and the adjacent lanes of it with turn_direction as the ego lane.
 
 #### How to Define Attention Lanes
 

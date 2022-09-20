@@ -53,12 +53,13 @@ public:
     geometry_msgs::msg::Pose stop_point_pose;
     geometry_msgs::msg::Pose judge_point_pose;
     geometry_msgs::msg::Polygon ego_lane_polygon;
-    std::vector<lanelet::CompoundPolygon3d> detection_area_with_margin;
     geometry_msgs::msg::Polygon stuck_vehicle_detect_area;
     geometry_msgs::msg::Polygon candidate_collision_ego_lane_polygon;
     std::vector<geometry_msgs::msg::Polygon> candidate_collision_object_polygons;
     std::vector<lanelet::ConstLanelet> intersection_detection_lanelets;
     std::vector<lanelet::CompoundPolygon3d> detection_area;
+    geometry_msgs::msg::Polygon intersection_area;
+    std::vector<lanelet::CompoundPolygon3d> adjacent_area;
     autoware_auto_perception_msgs::msg::PredictedObjects conflicting_targets;
     autoware_auto_perception_msgs::msg::PredictedObjects stuck_targets;
     geometry_msgs::msg::Pose predicted_obj_pose;
@@ -129,6 +130,7 @@ private:
    * @param path             ego-car lane
    * @param detection_area_lanelet_ids  angle check is performed for obstacles using this lanelet
    * ids
+   * @param intersection_area associated intersection_area if exists
    * @param objects_ptr      target objects
    * @param closest_idx      ego-car position index on the lane
    * @return true if collision is detected
@@ -137,6 +139,8 @@ private:
     lanelet::LaneletMapConstPtr lanelet_map_ptr,
     const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
     const std::vector<int> & detection_area_lanelet_ids,
+    const std::vector<int> & adjacent_lanelet_ids,
+    const std::optional<Polygon2d> & intersection_area,
     const autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr objects_ptr,
     const int closest_idx, const Polygon2d & stuck_vehicle_detect_area);
 
@@ -218,7 +222,8 @@ private:
    * @return true if the given pose belongs to any target lanelet
    */
   bool checkAngleForTargetLanelets(
-    const geometry_msgs::msg::Pose & pose, const std::vector<int> & target_lanelet_ids);
+    const geometry_msgs::msg::Pose & pose, const std::vector<int> & target_lanelet_ids,
+    const double margin = 0);
 
   /**
    * @brief Get lanes including ego lanelet and next lanelet

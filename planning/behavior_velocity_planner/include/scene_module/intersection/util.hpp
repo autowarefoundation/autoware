@@ -27,6 +27,7 @@
 #endif
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -48,11 +49,9 @@ bool getDuplicatedPointIdx(
  */
 bool getObjectiveLanelets(
   lanelet::LaneletMapConstPtr lanelet_map_ptr, lanelet::routing::RoutingGraphPtr routing_graph_ptr,
-  const int lane_id, const double detection_area_length, const double right_margin,
-  const double left_margin, std::vector<lanelet::ConstLanelets> * conflicting_lanelets_result,
-  lanelet::ConstLanelets * objective_lanelets_result,
-  std::vector<lanelet::ConstLanelets> * objective_lanelets_with_margin_result,
-  const rclcpp::Logger logger);
+  const int lane_id, const double detection_area_length,
+  std::vector<lanelet::ConstLanelets> * conflicting_lanelets_result,
+  lanelet::ConstLanelets * objective_lanelets_result, const rclcpp::Logger logger);
 
 struct StopLineIdx
 {
@@ -142,6 +141,13 @@ bool isOverTargetIndex(
 bool isBeforeTargetIndex(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const int closest_idx,
   const geometry_msgs::msg::Pose & current_pose, const int target_idx);
+
+std::vector<int> extendedAdjacentDirectionLanes(
+  const lanelet::LaneletMapPtr map, const lanelet::routing::RoutingGraphPtr routing_graph,
+  lanelet::ConstLanelet lane);
+
+std::optional<Polygon2d> getIntersectionArea(
+  lanelet::ConstLanelet assigned_lane, lanelet::LaneletMapConstPtr lanelet_map_ptr);
 
 }  // namespace util
 }  // namespace behavior_velocity_planner

@@ -26,6 +26,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -310,11 +311,9 @@ bool getStopPoseIndexFromMap(
 
 bool getObjectiveLanelets(
   lanelet::LaneletMapConstPtr lanelet_map_ptr, lanelet::routing::RoutingGraphPtr routing_graph_ptr,
-  const int lane_id, const double detection_area_length, double right_margin, double left_margin,
+  const int lane_id, const double detection_area_length,
   std::vector<lanelet::ConstLanelets> * conflicting_lanelets_result,
-  lanelet::ConstLanelets * objective_lanelets_result,
-  std::vector<lanelet::ConstLanelets> * objective_lanelets_with_margin_result,
-  const rclcpp::Logger logger)
+  lanelet::ConstLanelets * objective_lanelets_result, const rclcpp::Logger logger)
 {
   const auto & assigned_lanelet = lanelet_map_ptr->laneletLayer.get(lane_id);
 
@@ -355,7 +354,6 @@ bool getObjectiveLanelets(
   std::vector<lanelet::ConstLanelets>                      // conflicting lanes with "lane_id"
     conflicting_lanelets_ex_yield_ego;                     // excluding ego lanes and yield lanes
   std::vector<lanelet::ConstLanelets> objective_lanelets;  // final objective lanelets
-  std::vector<lanelet::ConstLanelets> objective_lanelets_with_margin;  // final objective lanelets
 
   // exclude yield lanelets and ego lanelets from objective_lanelets
   for (const auto & conflicting_lanelet : conflicting_lanelets) {
@@ -365,11 +363,8 @@ bool getObjectiveLanelets(
     if (lanelet::utils::contains(ego_lanelets, conflicting_lanelet)) {
       continue;
     }
-    const auto objective_lanelet_with_margin =
-      generateOffsetLanelet(conflicting_lanelet, right_margin, left_margin);
     conflicting_lanelets_ex_yield_ego.push_back({conflicting_lanelet});
     objective_lanelets.push_back({conflicting_lanelet});
-    objective_lanelets_with_margin.push_back({objective_lanelet_with_margin});
   }
 
   // get possible lanelet path that reaches conflicting_lane longer than given length
@@ -396,7 +391,6 @@ bool getObjectiveLanelets(
 
   *conflicting_lanelets_result = conflicting_lanelets_ex_yield_ego;
   *objective_lanelets_result = objective_and_preceding_lanelets;
-  *objective_lanelets_with_margin_result = objective_lanelets_with_margin;
 
   // set this flag true when debugging
   const bool is_debug = false;
@@ -582,6 +576,11 @@ geometry_msgs::msg::Pose toPose(const geometry_msgs::msg::Point & p)
   return pose;
 }
 
+static std::string getTurnDirection(lanelet::ConstLanelet lane)
+{
+  return lane.attributeOr("turn_direction", "else");
+}
+
 bool isOverTargetIndex(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const int closest_idx,
   const geometry_msgs::msg::Pose & current_pose, const int target_idx)
@@ -602,6 +601,79 @@ bool isBeforeTargetIndex(
     return planning_utils::isAheadOf(target_pose, current_pose);
   }
   return static_cast<bool>(target_idx > closest_idx);
+}
+
+static std::vector<int> getAllAdjacentLanelets(
+  const lanelet::routing::RoutingGraphPtr routing_graph, lanelet::ConstLanelet lane)
+{
+  std::set<int> results;
+
+  results.insert(lane.id());
+
+  auto it = routing_graph->adjacentRight(lane);
+  // take all lane on the right side
+  while (!!it) {
+    results.insert(it.get().id());
+    it = routing_graph->adjacentRight(it.get());
+  }
+  // take all lane on the left side
+  it = routing_graph->adjacentLeft(lane);
+  while (!!it) {
+    results.insert(it.get().id());
+    it = routing_graph->adjacentLeft(it.get());
+  }
+
+  return std::vector<int>(results.begin(), results.end());
+}
+
+std::vector<int> extendedAdjacentDirectionLanes(
+  const lanelet::LaneletMapPtr map, const lanelet::routing::RoutingGraphPtr routing_graph,
+  lanelet::ConstLanelet lane)
+{
+  // some of the intersections are not well-formed, and "adjacent" turning
+  // lanelets are not sharing the LineStrings
+  const std::string turn_direction = getTurnDirection(lane);
+  if (turn_direction != "left" && turn_direction != "right" && turn_direction != "straight")
+    return std::vector<int>();
+
+  std::set<int> previous_lanelet_ids;
+  for (auto && previous_lanelet : routing_graph->previous(lane)) {
+    previous_lanelet_ids.insert(previous_lanelet.id());
+  }
+
+  std::set<int> besides_previous_lanelet_ids;
+  for (auto && previous_lanelet_id : previous_lanelet_ids) {
+    lanelet::ConstLanelet previous_lanelet = map->laneletLayer.get(previous_lanelet_id);
+    for (auto && beside_lanelet : getAllAdjacentLanelets(routing_graph, previous_lanelet)) {
+      besides_previous_lanelet_ids.insert(beside_lanelet);
+    }
+  }
+
+  std::set<int> following_turning_lanelets;
+  following_turning_lanelets.insert(lane.id());
+  for (auto && besides_previous_lanelet_id : besides_previous_lanelet_ids) {
+    lanelet::ConstLanelet besides_previous_lanelet =
+      map->laneletLayer.get(besides_previous_lanelet_id);
+    for (auto && following_lanelet : routing_graph->following(besides_previous_lanelet)) {
+      // if this has {"turn_direction", "${turn_direction}"}, take this
+      if (getTurnDirection(following_lanelet) == turn_direction)
+        following_turning_lanelets.insert(following_lanelet.id());
+    }
+  }
+  return std::vector<int>(following_turning_lanelets.begin(), following_turning_lanelets.end());
+}
+
+std::optional<Polygon2d> getIntersectionArea(
+  lanelet::ConstLanelet assigned_lane, lanelet::LaneletMapConstPtr lanelet_map_ptr)
+{
+  const std::string area_id_str = assigned_lane.attributeOr("intersection_area", "else");
+  if (area_id_str == "else") return std::nullopt;
+
+  const int area_id = std::atoi(area_id_str.c_str());
+  const auto poly_3d = lanelet_map_ptr->polygonLayer.get(area_id);
+  Polygon2d poly{};
+  for (const auto & p : poly_3d) poly.outer().emplace_back(p.x(), p.y());
+  return std::make_optional(poly);
 }
 
 }  // namespace util

@@ -14,6 +14,7 @@
       detection_area_right_margin: 0.5 # [m]
       detection_area_left_margin: 0.5 # [m]
       detection_area_length: 200.0 # [m]
+      detection_area_angle_threshold: 0.785 # [rad]
       min_predicted_path_confidence: 0.05
       collision_start_margin_time: 5.0 # [s]
       collision_end_margin_time: 2.0 # [s]
