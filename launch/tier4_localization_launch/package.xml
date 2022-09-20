@@ -12,6 +12,7 @@
 
   <build_depend>autoware_cmake</build_depend>
 
+  <exec_depend>automatic_pose_initializer</exec_depend>
   <exec_depend>ekf_localizer</exec_depend>
   <exec_depend>gyro_odometer</exec_depend>
   <exec_depend>ndt_scan_matcher</exec_depend>
