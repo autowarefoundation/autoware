@@ -20,6 +20,11 @@
   <!-- drivable area generation-->
   <maintainer email="takayuki.murooka@tier4.jp">Takayuki Murooka</maintainer>
 
+  <!-- maintainer -->
+  <maintainer email="taiki.tanaka@tier4.jp">Taiki Tanaka</maintainer>
+  <maintainer email="tomoya.kimura@tier4.jp">Tomoya Kimura</maintainer>
+  <maintainer email="shumpei.wakabayashi@tier4.jp">Shumpei Wakabayashi</maintainer>
+
   <license>Apache License 2.0</license>
 
   <author email="takamasa.horibe@tier4.jp">Takamasa Horibe</author>
