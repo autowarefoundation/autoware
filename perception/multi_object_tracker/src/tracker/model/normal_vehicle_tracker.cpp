@@ -226,7 +226,7 @@ bool NormalVehicleTracker::measureWithPose(
   if (label == Label::CAR) {
     r_cov_x = ekf_params_.r_cov_x;
     r_cov_y = ekf_params_.r_cov_y;
-  } else if (label == Label::TRUCK || label == Label::BUS) {
+  } else if (utils::isLargeVehicleLabel(label)) {
     constexpr float r_stddev_x = 8.0;  // [m]
     constexpr float r_stddev_y = 0.8;  // [m]
     r_cov_x = std::pow(r_stddev_x, 2.0);

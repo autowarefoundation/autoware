@@ -106,7 +106,7 @@ bool isSpecificAlivePattern(
     tracker->getTotalMeasurementCount() /
     (tracker->getTotalNoMeasurementCount() + tracker->getTotalMeasurementCount());
 
-  const bool big_vehicle = (label == Label::TRUCK || label == Label::BUS);
+  const bool big_vehicle = utils::isLargeVehicleLabel(label);
 
   const bool slow_velocity = getVelocity(object) < max_velocity;
 
@@ -172,6 +172,8 @@ MultiObjectTracker::MultiObjectTracker(const rclcpp::NodeOptions & node_options)
     std::make_pair(Label::TRUCK, this->declare_parameter<std::string>("truck_tracker")));
   tracker_map_.insert(
     std::make_pair(Label::BUS, this->declare_parameter<std::string>("bus_tracker")));
+  tracker_map_.insert(
+    std::make_pair(Label::TRAILER, this->declare_parameter<std::string>("trailer_tracker")));
   tracker_map_.insert(
     std::make_pair(Label::PEDESTRIAN, this->declare_parameter<std::string>("pedestrian_tracker")));
   tracker_map_.insert(

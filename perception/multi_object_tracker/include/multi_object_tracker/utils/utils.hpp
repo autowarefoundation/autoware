@@ -71,6 +71,13 @@ enum MSG_COV_IDX {
   YAW_PITCH = 34,
   YAW_YAW = 35
 };
+
+inline bool isLargeVehicleLabel(const uint8_t label)
+{
+  using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
+  return label == Label::BUS || label == Label::TRUCK || label == Label::TRAILER;
+}
+
 }  // namespace utils
 
 #endif  // MULTI_OBJECT_TRACKER__UTILS__UTILS_HPP_

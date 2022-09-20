@@ -228,7 +228,7 @@ bool BigVehicleTracker::measureWithPose(
     constexpr float r_stddev_y = 0.8;  // [m]
     r_cov_x = std::pow(r_stddev_x, 2.0);
     r_cov_y = std::pow(r_stddev_y, 2.0);
-  } else if (label == Label::TRUCK || label == Label::BUS) {
+  } else if (utils::isLargeVehicleLabel(label)) {
     r_cov_x = ekf_params_.r_cov_x;
     r_cov_y = ekf_params_.r_cov_y;
   } else {

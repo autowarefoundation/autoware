@@ -3,6 +3,7 @@
     car_tracker: "multi_vehicle_tracker"
     truck_tracker: "multi_vehicle_tracker"
     bus_tracker: "multi_vehicle_tracker"
+    trailer_tracker: "multi_vehicle_tracker"
     pedestrian_tracker: "pedestrian_and_bicycle_tracker"
     bicycle_tracker: "pedestrian_and_bicycle_tracker"
     motorcycle_tracker: "pedestrian_and_bicycle_tracker"
