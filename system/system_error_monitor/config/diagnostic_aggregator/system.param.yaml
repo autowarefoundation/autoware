@@ -134,6 +134,12 @@
                   contains: [": Network CRC Error"]
                   timeout: 3.0
 
+                ip_packet_reassembles_failed:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: ip_packet_reassembles_failed
+                  contains: [": IP Packet Reassembles Failed"]
+                  timeout: 3.0
+
             storage:
               type: diagnostic_aggregator/AnalyzerGroup
               path: storage

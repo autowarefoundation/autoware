@@ -92,6 +92,15 @@ protected:
     diagnostic_updater::DiagnosticStatusWrapper & stat);  // NOLINT(runtime/references)
 
   /**
+   * @brief check IP packet reassembles failed
+   * @param [out] stat diagnostic message passed directly to diagnostic publish calls
+   * @note NOLINT syntax is needed since diagnostic_updater asks for a non-const reference
+   * to pass diagnostic message updated in this function to diagnostic publish calls.
+   */
+  void checkReassemblesFailed(
+    diagnostic_updater::DiagnosticStatusWrapper & stat);  // NOLINT(runtime/references)
+
+  /**
    * @brief get wireless speed
    * @param [in] ifa_name interface name
    * @return wireless speed
@@ -168,6 +177,18 @@ protected:
     const NetworkInfo & net_info, int index, diagnostic_updater::DiagnosticStatusWrapper & stat,
     std::string & error_str);
 
+  /**
+   * @brief search column index of IP packet reassembles failed in /proc/net/snmp
+   */
+  void searchReassemblesFailedColumnIndex();
+
+  /**
+   * @brief get IP packet reassembles failed
+   * @param [out] reassembles_failed IP packet reassembles failed
+   * @return execution result
+   */
+  bool getReassemblesFailed(uint64_t & reassembles_failed);
+
   diagnostic_updater::Updater updater_;  //!< @brief Updater class which advertises to /diagnostics
   rclcpp::TimerBase::SharedPtr timer_;   //!< @brief timer to get Network information
 
@@ -191,11 +212,22 @@ protected:
   } crc_errors;
   std::map<std::string, crc_errors> crc_errors_;  //!< @brief list of CRC errors
 
+  std::deque<unsigned int>
+    reassembles_failed_queue_;  //!< @brief queue that holds count of IP packet reassembles failed
+  uint64_t last_reassembles_failed_;  //!< @brief IP packet reassembles failed at the time of the
+                                      //!< last monitoring
+
   std::string monitor_program_;             //!< @brief nethogs monitor program name
   bool nethogs_all_;                        //!< @brief nethogs result all mode
   int traffic_reader_port_;                 //!< @brief port number to connect to traffic_reader
   unsigned int crc_error_check_duration_;   //!< @brief CRC error check duration
   unsigned int crc_error_count_threshold_;  //!< @brief CRC error count threshold
+  unsigned int
+    reassembles_failed_check_duration_;  //!< @brief IP packet reassembles failed check duration
+  unsigned int
+    reassembles_failed_check_count_;  //!< @brief IP packet reassembles failed check count threshold
+  unsigned int reassembles_failed_column_index_;  //!< @brief column index of IP Reassembles failed
+                                                  //!< in /proc/net/snmp
 
   /**
    * @brief Network usage status messages

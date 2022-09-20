@@ -81,3 +81,21 @@
 | Network [0-9]: interface name              | wlp82s0         |
 | Network [0-9]: total rx_crc_errors         | 0               |
 | Network [0-9]: rx_crc_errors per unit time | 0               |
+
+## <u>IP Packet Reassembles Failed</u>
+
+/diagnostics/net_monitor: IP Packet Reassembles Failed
+
+<b>[summary]</b>
+
+| level | message            |
+| ----- | ------------------ |
+| OK    | OK                 |
+| WARN  | reassembles failed |
+
+<b>[values]</b>
+
+| key                                     | value (example) |
+| --------------------------------------- | --------------- |
+| total packet reassembles failed         | 0               |
+| packet reassembles failed per unit time | 0               |

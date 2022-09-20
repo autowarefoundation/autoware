@@ -5,3 +5,5 @@
     monitor_program: "greengrass"
     crc_error_check_duration: 1
     crc_error_count_threshold: 1
+    reassembles_failed_check_duration: 1
+    reassembles_failed_check_count: 1
