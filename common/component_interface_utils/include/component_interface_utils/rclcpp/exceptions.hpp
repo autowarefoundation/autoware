@@ -15,7 +15,7 @@
 #ifndef COMPONENT_INTERFACE_UTILS__RCLCPP__EXCEPTIONS_HPP_
 #define COMPONENT_INTERFACE_UTILS__RCLCPP__EXCEPTIONS_HPP_
 
-#include <autoware_ad_api_msgs/msg/response_status.hpp>
+#include <autoware_adapi_v1_msgs/msg/response_status.hpp>
 
 #include <stdexcept>
 #include <string>
@@ -26,7 +26,7 @@ namespace component_interface_utils
 class ServiceException : public std::runtime_error
 {
 public:
-  using ResponseStatus = autoware_ad_api_msgs::msg::ResponseStatus;
+  using ResponseStatus = autoware_adapi_v1_msgs::msg::ResponseStatus;
   using ResponseStatusCode = ResponseStatus::_code_type;
 
   ServiceException(ResponseStatusCode code, const std::string & message)

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from autoware_ad_api_msgs.srv import InterfaceVersion
+from autoware_adapi_version_msgs.srv import InterfaceVersion
 import rclpy
 import rclpy.node
 

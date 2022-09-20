@@ -17,21 +17,21 @@
 
 #include <rclcpp/qos.hpp>
 
-#include <autoware_ad_api_msgs/msg/localization_initialization_state.hpp>
-#include <autoware_ad_api_msgs/srv/initialize_localization.hpp>
+#include <autoware_adapi_v1_msgs/msg/localization_initialization_state.hpp>
+#include <autoware_adapi_v1_msgs/srv/initialize_localization.hpp>
 
 namespace autoware_ad_api::localization
 {
 
 struct Initialize
 {
-  using Service = autoware_ad_api_msgs::srv::InitializeLocalization;
+  using Service = autoware_adapi_v1_msgs::srv::InitializeLocalization;
   static constexpr char name[] = "/api/localization/initialize";
 };
 
 struct InitializationState
 {
-  using Message = autoware_ad_api_msgs::msg::LocalizationInitializationState;
+  using Message = autoware_adapi_v1_msgs::msg::LocalizationInitializationState;
   static constexpr char name[] = "/api/localization/initialization_state";
   static constexpr size_t depth = 3;
   static constexpr auto reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;

@@ -11,8 +11,8 @@
 
   <build_depend>autoware_cmake</build_depend>
 
-  <depend>autoware_ad_api_msgs</depend>
   <depend>autoware_ad_api_specs</depend>
+  <depend>autoware_adapi_v1_msgs</depend>
   <depend>component_interface_utils</depend>
   <depend>rclcpp</depend>
   <depend>tier4_localization_msgs</depend>

@@ -12,7 +12,6 @@ control/shift_decider/** takamasa.horibe@tier4.jp
 control/pure_pursuit/** takamasa.horibe@tier4.jp
 control/operation_mode_transition_manager/** takamasa.horibe@tier4.jp
 control/control_performance_analysis/** ali.boyali@tier4.jp berkay@leodrive.ai
-common/autoware_ad_api_msgs/** isamu.takagi@tier4.jp
 common/motion_common/** christopherj.ho@gmail.com
 common/component_interface_specs/** isamu.takagi@tier4.jp
 common/motion_testing/** christopherj.ho@gmail.com

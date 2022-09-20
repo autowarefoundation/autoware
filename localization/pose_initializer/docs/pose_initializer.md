@@ -21,9 +21,9 @@ Finally, it publishes the initial pose to `ekf_localizer`.
 
 ### Services
 
-| Name                       | Type                                              | Description           |
-| -------------------------- | ------------------------------------------------- | --------------------- |
-| `/localization/initialize` | autoware_ad_api_msgs::srv::InitializeLocalization | initial pose from api |
+| Name                       | Type                                                | Description           |
+| -------------------------- | --------------------------------------------------- | --------------------- |
+| `/localization/initialize` | autoware_adapi_v1_msgs::srv::InitializeLocalization | initial pose from api |
 
 ### Clients
 
@@ -40,7 +40,7 @@ Finally, it publishes the initial pose to `ekf_localizer`.
 
 ### Publications
 
-| Name                                 | Type                                                       | Description                 |
-| ------------------------------------ | ---------------------------------------------------------- | --------------------------- |
-| `/localization/initialization_state` | autoware_ad_api_msgs::msg::LocalizationInitializationState | pose initialization state   |
-| `/initialpose3d`                     | geometry_msgs::msg::PoseWithCovarianceStamped              | calculated initial ego pose |
+| Name                                 | Type                                                         | Description                 |
+| ------------------------------------ | ------------------------------------------------------------ | --------------------------- |
+| `/localization/initialization_state` | autoware_adapi_v1_msgs::msg::LocalizationInitializationState | pose initialization state   |
+| `/initialpose3d`                     | geometry_msgs::msg::PoseWithCovarianceStamped                | calculated initial ego pose |

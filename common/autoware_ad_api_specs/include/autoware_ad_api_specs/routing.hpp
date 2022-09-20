@@ -17,36 +17,36 @@
 
 #include <rclcpp/qos.hpp>
 
-#include <autoware_ad_api_msgs/msg/route.hpp>
-#include <autoware_ad_api_msgs/msg/route_state.hpp>
-#include <autoware_ad_api_msgs/srv/clear_route.hpp>
-#include <autoware_ad_api_msgs/srv/set_route.hpp>
-#include <autoware_ad_api_msgs/srv/set_route_points.hpp>
+#include <autoware_adapi_v1_msgs/msg/route.hpp>
+#include <autoware_adapi_v1_msgs/msg/route_state.hpp>
+#include <autoware_adapi_v1_msgs/srv/clear_route.hpp>
+#include <autoware_adapi_v1_msgs/srv/set_route.hpp>
+#include <autoware_adapi_v1_msgs/srv/set_route_points.hpp>
 
 namespace autoware_ad_api::routing
 {
 
 struct SetRoutePoints
 {
-  using Service = autoware_ad_api_msgs::srv::SetRoutePoints;
+  using Service = autoware_adapi_v1_msgs::srv::SetRoutePoints;
   static constexpr char name[] = "/api/routing/set_route_points";
 };
 
 struct SetRoute
 {
-  using Service = autoware_ad_api_msgs::srv::SetRoute;
+  using Service = autoware_adapi_v1_msgs::srv::SetRoute;
   static constexpr char name[] = "/api/routing/set_route";
 };
 
 struct ClearRoute
 {
-  using Service = autoware_ad_api_msgs::srv::ClearRoute;
+  using Service = autoware_adapi_v1_msgs::srv::ClearRoute;
   static constexpr char name[] = "/api/routing/clear_route";
 };
 
 struct RouteState
 {
-  using Message = autoware_ad_api_msgs::msg::RouteState;
+  using Message = autoware_adapi_v1_msgs::msg::RouteState;
   static constexpr char name[] = "/api/routing/state";
   static constexpr size_t depth = 3;
   static constexpr auto reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;
@@ -55,7 +55,7 @@ struct RouteState
 
 struct Route
 {
-  using Message = autoware_ad_api_msgs::msg::Route;
+  using Message = autoware_adapi_v1_msgs::msg::Route;
   static constexpr char name[] = "/api/routing/route";
   static constexpr size_t depth = 1;
   static constexpr auto reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;

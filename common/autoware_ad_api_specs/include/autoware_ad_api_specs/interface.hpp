@@ -15,14 +15,14 @@
 #ifndef AUTOWARE_AD_API_SPECS__INTERFACE_HPP_
 #define AUTOWARE_AD_API_SPECS__INTERFACE_HPP_
 
-#include <autoware_ad_api_msgs/srv/interface_version.hpp>
+#include <autoware_adapi_version_msgs/srv/interface_version.hpp>
 
 namespace autoware_ad_api::interface
 {
 
 struct Version
 {
-  using Service = autoware_ad_api_msgs::srv::InterfaceVersion;
+  using Service = autoware_adapi_version_msgs::srv::InterfaceVersion;
   static constexpr char name[] = "/api/interface/version";
 };
 

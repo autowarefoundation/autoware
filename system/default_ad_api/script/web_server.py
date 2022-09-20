@@ -17,7 +17,7 @@
 import sys
 from threading import Thread
 
-from autoware_ad_api_msgs.srv import InterfaceVersion
+from autoware_adapi_version_msgs.srv import InterfaceVersion
 import flask
 import rclpy
 from rclpy.node import Node
