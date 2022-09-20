@@ -28,6 +28,9 @@
   <arg name="container_name" default="pointcloud_container"/>
   <arg name="use_validator" default="true" description="use obstacle_pointcloud based validator"/>
   <arg name="score_threshold" default="0.35"/>
+  <arg name="centerpoint_model_name" default="centerpoint_tiny" description="options: `centerpoint` or `centerpoint_tiny`"/>
+  <arg name="centerpoint_model_path" default="$(find-pkg-share lidar_centerpoint)/data"/>
+  <arg name="centerpoint_model_param_path" default="$(find-pkg-share lidar_centerpoint)/config/$(var centerpoint_model_name).param.yaml"/>
 
   <!-- Jetson AGX -->
   <!-- <include file="$(find-pkg-share tensorrt_yolo)/launch/yolo.launch.xml">
@@ -152,11 +155,16 @@
   <!-- CenterPoint -->
   <group if="$(eval &quot;'$(var lidar_detection_model)'=='centerpoint'&quot;)">
     <push-ros-namespace namespace="centerpoint"/>
-    <include file="$(find-pkg-share lidar_centerpoint)/launch/lidar_centerpoint.launch.xml">
-      <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
-      <arg name="output/objects" value="objects"/>
-      <arg name="score_threshold" value="$(var score_threshold)"/>
-    </include>
+    <group>
+      <include file="$(find-pkg-share lidar_centerpoint)/launch/lidar_centerpoint.launch.xml">
+        <arg name="input/pointcloud" value="$(var input/pointcloud)"/>
+        <arg name="output/objects" value="objects"/>
+        <arg name="score_threshold" value="$(var score_threshold)"/>
+        <arg name="model_name" value="$(var centerpoint_model_name)"/>
+        <arg name="model_path" value="$(var centerpoint_model_path)"/>
+        <arg name="model_param_path" value="$(var centerpoint_model_param_path)"/>
+      </include>
+    </group>
   </group>
 
   <!-- Lidar Apollo Instance Segmentation -->
