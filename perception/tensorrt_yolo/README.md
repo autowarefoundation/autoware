@@ -68,7 +68,9 @@ This package includes multiple licenses.
 
 ## Onnx model
 
-All YOLO ONNX models are converted from the officially trained model. If you need information about training datasets and conditions, please refer to the official repositories .
+All YOLO ONNX models are converted from the officially trained model. If you need information about training datasets and conditions, please refer to the official repositories.
+
+All models are downloaded automatically when building. When launching the node with a model for the first time, the model is automatically converted to TensorRT, although this may take some time.
 
 ### YOLOv3
 
