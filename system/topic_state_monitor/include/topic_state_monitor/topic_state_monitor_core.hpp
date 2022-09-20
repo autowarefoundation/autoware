@@ -31,6 +31,11 @@ namespace topic_state_monitor
 struct NodeParam
 {
   double update_rate;
+  std::string diag_name;
+  std::string topic;
+  std::string topic_type;
+  bool transient_local;
+  bool best_effort;
 };
 
 class TopicStateMonitorNode : public rclcpp::Node
