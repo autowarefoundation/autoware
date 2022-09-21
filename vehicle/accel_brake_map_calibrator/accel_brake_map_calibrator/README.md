@@ -31,11 +31,13 @@ The `rviz:=true` option displays the RViz with a calibration plugin as below.
 <img src="./media/calib_rviz_image_sample.png" width="600">
 </p>
 
-The current status (velocity and pedal) is shown in the plugin. The color on the current cell varies green/red depending on the current data is valid/invalid. The data that doesn't satisfy the following conditions are considered invalid and will not be used for estimation.
+The current status (velocity and pedal) is shown in the plugin. The color on the current cell varies green/red depending on the current data is valid/invalid. The data that doesn't satisfy the following conditions are considered invalid and will not be used for estimation since aggressive data (e.g. when the pedal is moving fast) causes bad calibration accuracy.
 
 - The velocity and pedal conditions are within certain ranges from the index values.
 - The steer value, pedal speed, pitch value, etc. are less than corresponding thresholds.
 - The velocity is higher than a threshold.
+
+The detailed parameters are described in the parameter section.
 
 Note: You don't need to worry about whether the current state is red or green during calibration. Just keep getting data until all the cells turn red.
 
@@ -130,6 +132,8 @@ You can also save accel and brake map in the default directory where Autoware re
 
 ## Parameters
 
+## System Parameters
+
 | Name                     | Type   | Description                                                                                                                                                                       | Default value                                            |
 | :----------------------- | :----- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------- |
 | update_method            | string | you can select map calibration method. "update_offset_each_cell" calculates offsets for each grid cells on the map. "update_offset_total" calculates the total offset of the map. | "update_offset_each_cell"                                |
@@ -138,6 +142,25 @@ You can also save accel and brake map in the default directory where Autoware re
 | progress_file_output     | bool   | if true, it will output a log and csv file of the update process.                                                                                                                 | false                                                    |
 | default_map_dir          | str    | directory of default map                                                                                                                                                          | [directory of *raw_vehicle_cmd_converter*]/data/default/ |
 | calibrated_map_dir       | str    | directory of calibrated map                                                                                                                                                       | [directory of *accel_brake_map_calibrator*]/config/      |
+| update_hz                | double | hz for update                                                                                                                                                                     | 10.0                                                     |
+
+## Algorithm Parameters
+
+| Name                    | Type   | Description                                                                                                                                         | Default value |
+| :---------------------- | :----- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :------------ |
+| initial_covariance      | double | Covariance of initial acceleration map (larger covariance makes the update speed faster)                                                            | 0.05          |
+| velocity_min_threshold  | double | Speeds smaller than this are not used for updating.                                                                                                 | 0.1           |
+| velocity_diff_threshold | double | When the velocity data is more than this threshold away from the grid reference speed (center value), the associated data is not used for updating. | 0.556         |
+| max_steer_threshold     | double | If the steer angle is greater than this value, the associated data is not used for updating.                                                        | 0.2           |
+| max_pitch_threshold     | double | If the pitch angle is greater than this value, the associated data is not used for updating.                                                        | 0.02          |
+| max_jerk_threshold      | double | If the ego jerk calculated from ego acceleration is greater than this value, the associated data is not used for updating.                          | 0.7           |
+| pedal_velocity_thresh   | double | If the pedal moving speed is greater than this value, the associated data is not used for updating.                                                 | 0.15          |
+| pedal_diff_threshold    | double | If the current pedal value is more then this threshold away from the previous value, the associated data is not used for updating.                  | 0.03          |
+| max_accel               | double | Maximum value of acceleration calculated from velocity source.                                                                                      | 5.0           |
+| min_accel               | double | Minimum value of acceleration calculated from velocity source.                                                                                      | -5.0          |
+| pedal_to_accel_delay    | double | The delay time between actuation_cmd to acceleration, considered in the update logic.                                                               | 0.3           |
+| update_suggest_thresh   | double | threshold of RMSE ratio that update suggest flag becomes true. ( RMSE ratio: [RMSE of new map] / [RMSE of original map] )                           | 0.7           |
+| max_data_count          | int    | For visualization. When the data num of each grid gets this value, the grid color gets red.                                                         | 100           |
 
 ## Test utility scripts
 

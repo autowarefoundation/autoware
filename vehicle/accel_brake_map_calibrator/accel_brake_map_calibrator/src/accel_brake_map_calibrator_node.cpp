@@ -40,7 +40,6 @@ AccelBrakeMapCalibrator::AccelBrakeMapCalibrator(const rclcpp::NodeOptions & nod
   max_pitch_threshold_ = this->declare_parameter<double>("max_pitch_threshold", 0.02);
   max_jerk_threshold_ = this->declare_parameter<double>("max_jerk_threshold", 0.7);
   pedal_velocity_thresh_ = this->declare_parameter<double>("pedal_velocity_thresh", 0.15);
-  map_update_gain_ = this->declare_parameter<double>("map_update_gain", 0.02);
   max_accel_ = this->declare_parameter<double>("max_accel", 5.0);
   min_accel_ = this->declare_parameter<double>("min_accel", -5.0);
   pedal_to_accel_delay_ = this->declare_parameter<double>("pedal_to_accel_delay", 0.3);

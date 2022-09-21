@@ -136,7 +136,6 @@ private:
   double max_pitch_threshold_;
   double max_jerk_threshold_;
   double pedal_velocity_thresh_;
-  double map_update_gain_;
   double max_accel_;
   double min_accel_;
   double pedal_to_accel_delay_;
