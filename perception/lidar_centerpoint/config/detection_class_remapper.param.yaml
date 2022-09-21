@@ -1,0 +1,38 @@
+/**:
+  ros__parameters:
+    allow_remapping_by_area_matrix:
+      # NOTE(kl): We turn all vehicles into trailers if they go over 3x12 [m^2].
+      # NOTE(kl): We turn cars into trucks if they have an area between 2.2 x 5.5 and 3.0 * 12.0 [m^2]
+      # row: original class. column: class to remap to
+      #UNKNOWN, CAR, TRUCK, BUS,  TRAILER, MOTORBIKE, BICYCLE,PEDESTRIAN
+      [0,       0,   0,     0,    0,       0,         0,      0,         #UNKNOWN
+       0,       0,   1,     0,    1,       0,         0,      0,         #CAR
+       0,       0,   0,     0,    1,       0,         0,      0,         #TRUCK
+       0,       0,   0,     0,    1,       0,         0,      0,         #BUS
+       0,       0,   0,     0,    0,       0,         0,      0,         #TRAILER
+       0,       0,   0,     0,    0,       0,         0,      0,         #MOTORBIKE
+       0,       0,   0,     0,    0,       0,         0,      0,         #BICYCLE
+       0,       0,   0,     0,    0,       0,         0,      0]         #PEDESTRIAN
+
+    min_area_matrix:
+      #UNKNOWN, CAR,   TRUCK,   BUS,   TRAILER,  MOTORBIKE, BICYCLE, PEDESTRIAN
+      [ 0.000,  0.000,  0.000,  0.000,  0.000,   0.000,     0.000,   0.000,      #UNKNOWN
+        0.000,  0.000, 12.100,  0.000, 36.000,   0.000,     0.000,   0.000,      #CAR
+        0.000,  0.000,  0.000,  0.000, 36.000,   0.000,     0.000,   0.000,      #TRUCK
+        0.000,  0.000,  0.000,  0.000, 36.000,   0.000,     0.000,   0.000,      #BUS
+        0.000,  0.000,  0.000,  0.000,  0.000,   0.000,     0.000,   0.000,      #TRAILER
+        0.000,  0.000,  0.000,  0.000,  0.000,   0.000,     0.000,   0.000,      #MOTORBIKE
+        0.000,  0.000,  0.000,  0.000,  0.000,   0.000,     0.000,   0.000,      #BICYCLE
+        0.000,  0.000,  0.000,  0.000,  0.000,   0.000,     0.000,   0.000]      #PEDESTRIAN
+
+
+    max_area_matrix:
+      #UNKNOWN, CAR,   TRUCK,  BUS,    TRAILER,   MOTORBIKE, BICYCLE, PEDESTRIAN
+      [ 0.000,  0.000,  0.000,  0.000,   0.000,   0.000,     0.000,   0.000,      #UNKNOWN
+        0.000,  0.000, 36.000,  0.000,     inf,   0.000,     0.000,   0.000,      #CAR
+        0.000,  0.000,  0.000,  0.000,     inf,   0.000,     0.000,   0.000,      #TRUCK
+        0.000,  0.000,  0.000,  0.000,     inf,   0.000,     0.000,   0.000,      #BUS
+        0.000,  0.000,  0.000,  0.000,   0.000,   0.000,     0.000,   0.000,      #TRAILER
+        0.000,  0.000,  0.000,  0.000,   0.000,   0.000,     0.000,   0.000,      #MOTORBIKE
+        0.000,  0.000,  0.000,  0.000,   0.000,   0.000,     0.000,   0.000,      #BICYCLE
+        0.000,  0.000,  0.000,  0.000,   0.000,   0.000,     0.000,   0.000]      #PEDESTRIAN

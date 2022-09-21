@@ -23,8 +23,7 @@ namespace centerpoint
 using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
 
 void box3DToDetectedObject(
-  const Box3D & box3d, const std::vector<std::string> & class_names,
-  const bool rename_car_to_truck_and_bus, const bool has_twist,
+  const Box3D & box3d, const std::vector<std::string> & class_names, const bool has_twist,
   autoware_auto_perception_msgs::msg::DetectedObject & obj)
 {
   // TODO(yukke42): the value of classification confidence of DNN, not probability.
@@ -39,17 +38,6 @@ void box3DToDetectedObject(
     classification.label = Label::UNKNOWN;
     RCLCPP_WARN_STREAM(
       rclcpp::get_logger("lidar_centerpoint"), "Unexpected label: UNKNOWN is set.");
-  }
-
-  float l = box3d.length;
-  float w = box3d.width;
-  if (classification.label == Label::CAR && rename_car_to_truck_and_bus) {
-    // Note: object size is referred from multi_object_tracker
-    if ((w * l > 2.2 * 5.5) && (w * l <= 2.5 * 7.9)) {
-      classification.label = Label::TRUCK;
-    } else if (w * l > 2.5 * 7.9) {
-      classification.label = Label::BUS;
-    }
   }
 
   if (isCarLikeVehicleLabel(classification.label)) {

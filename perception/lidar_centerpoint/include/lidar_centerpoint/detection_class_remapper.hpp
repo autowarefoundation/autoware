@@ -12,32 +12,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef LIDAR_CENTERPOINT__ROS_UTILS_HPP_
-#define LIDAR_CENTERPOINT__ROS_UTILS_HPP_
+#ifndef LIDAR_CENTERPOINT__DETECTION_CLASS_REMAPPER_HPP_
+#define LIDAR_CENTERPOINT__DETECTION_CLASS_REMAPPER_HPP_
 
-// ros packages cannot be included from cuda.
-
-#include <lidar_centerpoint/utils.hpp>
+#include <Eigen/Core>
 
 #include <autoware_auto_perception_msgs/msg/detected_object_kinematics.hpp>
 #include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
 #include <autoware_auto_perception_msgs/msg/object_classification.hpp>
 #include <autoware_auto_perception_msgs/msg/shape.hpp>
 
-#include <string>
 #include <vector>
 
 namespace centerpoint
 {
 
-void box3DToDetectedObject(
-  const Box3D & box3d, const std::vector<std::string> & class_names, const bool has_twist,
-  autoware_auto_perception_msgs::msg::DetectedObject & obj);
+class DetectionClassRemapper
+{
+public:
+  void setParameters(
+    const std::vector<int64_t> & allow_remapping_by_area_matrix,
+    const std::vector<double> & min_area_matrix, const std::vector<double> & max_area_matrix);
+  void mapClasses(autoware_auto_perception_msgs::msg::DetectedObjects & msg);
 
-uint8_t getSemanticType(const std::string & class_name);
-
-bool isCarLikeVehicleLabel(const uint8_t label);
+protected:
+  Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> allow_remapping_by_area_matrix_;
+  Eigen::MatrixXd min_area_matrix_;
+  Eigen::MatrixXd max_area_matrix_;
+  int num_labels_;
+};
 
 }  // namespace centerpoint
 
-#endif  // LIDAR_CENTERPOINT__ROS_UTILS_HPP_
+#endif  // LIDAR_CENTERPOINT__DETECTION_CLASS_REMAPPER_HPP_

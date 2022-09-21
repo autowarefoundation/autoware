@@ -47,7 +47,6 @@ PointpaintingFusionNode::PointpaintingFusionNode(const rclcpp::NodeOptions & opt
   const std::string head_onnx_path = this->declare_parameter("head_onnx_path", "");
   const std::string head_engine_path = this->declare_parameter("head_engine_path", "");
   class_names_ = this->declare_parameter<std::vector<std::string>>("class_names");
-  rename_car_to_truck_and_bus_ = this->declare_parameter("rename_car_to_truck_and_bus", false);
   has_twist_ = this->declare_parameter("has_twist", false);
   const std::size_t point_feature_size =
     static_cast<std::size_t>(this->declare_parameter<std::int64_t>("point_feature_size"));
@@ -59,6 +58,13 @@ PointpaintingFusionNode::PointpaintingFusionNode(const rclcpp::NodeOptions & opt
     static_cast<std::size_t>(this->declare_parameter<std::int64_t>("downsample_factor"));
   const std::size_t encoder_in_feature_size =
     static_cast<std::size_t>(this->declare_parameter<std::int64_t>("encoder_in_feature_size"));
+  const auto allow_remapping_by_area_matrix =
+    this->declare_parameter<std::vector<int64_t>>("allow_remapping_by_area_matrix");
+  const auto min_area_matrix = this->declare_parameter<std::vector<double>>("min_area_matrix");
+  const auto max_area_matrix = this->declare_parameter<std::vector<double>>("max_area_matrix");
+
+  detection_class_remapper_.setParameters(
+    allow_remapping_by_area_matrix, min_area_matrix, max_area_matrix);
 
   centerpoint::NetworkParam encoder_param(encoder_onnx_path, encoder_engine_path, trt_precision);
   centerpoint::NetworkParam head_param(head_onnx_path, head_engine_path, trt_precision);
@@ -240,10 +246,11 @@ void PointpaintingFusionNode::postprocess(sensor_msgs::msg::PointCloud2 & painte
       continue;
     }
     autoware_auto_perception_msgs::msg::DetectedObject obj;
-    centerpoint::box3DToDetectedObject(
-      box3d, class_names_, rename_car_to_truck_and_bus_, has_twist_, obj);
+    centerpoint::box3DToDetectedObject(box3d, class_names_, has_twist_, obj);
     output_obj_msg.objects.emplace_back(obj);
   }
+
+  detection_class_remapper_.mapClasses(output_obj_msg);
 
   obj_pub_ptr_->publish(output_obj_msg);
 }

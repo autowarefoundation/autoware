@@ -16,6 +16,7 @@
 #define LIDAR_CENTERPOINT__NODE_HPP_
 
 #include <lidar_centerpoint/centerpoint_trt.hpp>
+#include <lidar_centerpoint/detection_class_remapper.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tier4_autoware_utils/ros/debug_publisher.hpp>
 #include <tier4_autoware_utils/system/stop_watch.hpp>
@@ -49,8 +50,9 @@ private:
 
   float score_threshold_{0.0};
   std::vector<std::string> class_names_;
-  bool rename_car_to_truck_and_bus_{false};
   bool has_twist_{false};
+
+  DetectionClassRemapper detection_class_remapper_;
 
   std::unique_ptr<CenterPointTRT> detector_ptr_{nullptr};
 

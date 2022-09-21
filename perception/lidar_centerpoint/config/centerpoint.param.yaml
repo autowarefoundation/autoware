@@ -1,7 +1,6 @@
 /**:
   ros__parameters:
     class_names: ["CAR", "PEDESTRIAN", "BICYCLE"]
-    rename_car_to_truck_and_bus: true
     point_feature_size: 4
     max_voxel_size: 40000
     point_cloud_range: [-89.6, -89.6, -3.0, 89.6, 89.6, 5.0]
