@@ -2229,6 +2229,11 @@ boost::optional<AvoidPointArray> AvoidanceModule::findNewShiftPoint(
       throw std::logic_error("prev_reference_ and prev_linear_shift_path_ must have same size.");
     }
 
+    // new shift points must exist in front of Ego
+    if (candidate.start_longitudinal < 0.0) {
+      continue;
+    }
+
     // TODO(Horibe): this code prohibits the changes on ego pose. Think later.
     // if (candidate.start_idx < avoidance_data_.ego_closest_path_index) {
     //   DEBUG_PRINT("%s, start_idx is behind ego. skip.", pfx);
