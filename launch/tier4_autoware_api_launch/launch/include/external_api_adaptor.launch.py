@@ -54,6 +54,7 @@ def generate_launch_description():
         _create_api_node("operator", "Operator"),
         _create_api_node("metadata_packages", "MetadataPackages"),
         _create_api_node("route", "Route"),
+        _create_api_node("rtc_controller", "RTCController"),
         _create_api_node("service", "Service"),
         _create_api_node("vehicle_status", "VehicleStatus"),
         _create_api_node("velocity", "Velocity"),
