@@ -22,7 +22,7 @@ RoutingNode::RoutingNode(const rclcpp::NodeOptions & options) : Node("routing", 
   const auto adaptor = component_interface_utils::NodeAdaptor(this);
   group_srv_ = create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   adaptor.relay_message(pub_route_state_, sub_route_state_);
-  adaptor.relay_message(pub_route_, sub_route_);
+  // adaptor.relay_message(pub_route_, sub_route_);  // TODO(Takagi, Isamu): temporary disabled
   adaptor.relay_service(cli_set_route_points_, srv_set_route_points_, group_srv_);
   adaptor.relay_service(cli_set_route_, srv_set_route_, group_srv_);
   adaptor.relay_service(cli_clear_route_, srv_clear_route_, group_srv_);
