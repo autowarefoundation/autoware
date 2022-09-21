@@ -70,7 +70,7 @@ public:
         try {
           callback(request, response);
         } catch (const ServiceException & error) {
-          response->status = error.status();
+          error.set(response->status);
         }
       }
       RCLCPP_INFO_STREAM(logger, "service exit: " << SpecT::name << "\n" << to_yaml(*response));

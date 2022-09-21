@@ -34,6 +34,15 @@ public:
   {
     code_ = code;
   }
+
+  template <class T>
+  void set(T & status) const
+  {
+    status.success = false;
+    status.code = code_;
+    status.message = what();
+  }
+
   ResponseStatus status() const
   {
     ResponseStatus status;
