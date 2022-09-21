@@ -150,6 +150,36 @@
                   contains: [": HDD Temperature"]
                   timeout: 3.0
 
+                recovered_error:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: recovered_error
+                  contains: [": HDD RecoveredError"]
+                  timeout: 3.0
+
+                read_data_rate:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: read_data_rate
+                  contains: [": HDD ReadDataRate"]
+                  timeout: 3.0
+
+                write_data_rate:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: write_data_rate
+                  contains: [": HDD WriteDataRate"]
+                  timeout: 3.0
+
+                read_iops:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: read_iops
+                  contains: [": HDD ReadIOPS"]
+                  timeout: 3.0
+
+                write_iops:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: write_iops
+                  contains: [": HDD WriteIOPS"]
+                  timeout: 3.0
+
                 usage:
                   type: diagnostic_aggregator/GenericAnalyzer
                   path: usage
@@ -166,6 +196,12 @@
                   type: diagnostic_aggregator/GenericAnalyzer
                   path: total_data_written
                   contains: [": HDD TotalDataWritten"]
+                  timeout: 3.0
+
+                connection:
+                  type: diagnostic_aggregator/GenericAnalyzer
+                  path: connection
+                  contains: [": HDD Connection"]
                   timeout: 3.0
 
             process:

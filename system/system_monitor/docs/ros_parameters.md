@@ -25,12 +25,20 @@ hdd_monitor:
 | Name                             |  Type  |       Unit        | Default | Notes                                                                              |
 | :------------------------------- | :----: | :---------------: | :-----: | :--------------------------------------------------------------------------------- |
 | name                             | string |        n/a        |  none   | The disk name to monitor temperature. (e.g. /dev/sda)                              |
+| temp_attribute_id                |  int   |        n/a        |  0xC2   | S.M.A.R.T attribute ID of temperature.                                             |
 | temp_warn                        | float  |       DegC        |  55.0   | Generates warning when HDD temperature reaches a specified value or higher.        |
 | temp_error                       | float  |       DegC        |  70.0   | Generates error when HDD temperature reaches a specified value or higher.          |
+| power_on_hours_attribute_id      |  int   |        n/a        |  0x09   | S.M.A.R.T attribute ID of power-on hours.                                          |
 | power_on_hours_warn              |  int   |       Hour        | 3000000 | Generates warning when HDD power-on hours reaches a specified value or higher.     |
 | total_data_written_attribute_id  |  int   |        n/a        |  0xF1   | S.M.A.R.T attribute ID of total data written.                                      |
 | total_data_written_warn          |  int   | depends on device | 4915200 | Generates warning when HDD total data written reaches a specified value or higher. |
 | total_data_written_safety_factor |  int   |      %(1e-2)      |  0.05   | Safety factor of HDD total data written.                                           |
+| recovered_error_attribute_id     |  int   |        n/a        |  0xC3   | S.M.A.R.T attribute ID of recovered error.                                         |
+| recovered_error_warn             |  int   |        n/a        |    1    | Generates warning when HDD recovered error reaches a specified value or higher.    |
+| read_data_rate_warn              | float  |       MB/s        |  360.0  | Generates warning when HDD read data rate reaches a specified value or higher.     |
+| write_data_rate_warn             | float  |       MB/s        |  103.5  | Generates warning when HDD write data rate reaches a specified value or higher.    |
+| read_iops_warn                   | float  |       IOPS        | 63360.0 | Generates warning when HDD read IOPS reaches a specified value or higher.          |
+| write_iops_warn                  | float  |       IOPS        | 24120.0 | Generates warning when HDD write IOPS reaches a specified value or higher.         |
 
 hdd_monitor:
 

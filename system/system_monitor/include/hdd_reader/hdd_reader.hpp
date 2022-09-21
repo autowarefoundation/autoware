@@ -29,18 +29,24 @@
 #include <string>
 
 /**
- * @brief ATA attribute IDs
+ * @brief Enumeration of Request ID to hdd_reader
  */
-enum class ATAAttributeIDs : uint8_t { TEMPERATURE = 0, POWER_ON_HOURS = 1, SIZE };
+enum HDDReaderRequestID {
+  GetHDDInfo,
+  UnmountDevice,
+};
 
 /**
  * @brief HDD device
  */
 struct HDDDevice
 {
-  std::string name_;  //!< @brief Device name
+  std::string name_;                     //!< @brief Device name
+  uint8_t temp_attribute_id_;            //!< @brief S.M.A.R.T attribute ID of temperature
+  uint8_t power_on_hours_attribute_id_;  //!< @brief S.M.A.R.T attribute ID of power on hours
   uint8_t
-    total_data_written_attribute_id_;  //!< @brief S.M.A.R.T attribute ID of total data written
+    total_data_written_attribute_id_;     //!< @brief S.M.A.R.T attribute ID of total data written
+  uint8_t recovered_error_attribute_id_;  //!< @brief S.M.A.R.T attribute ID of recovered error
 
   /**
    * @brief Load or save data members.
@@ -53,7 +59,10 @@ struct HDDDevice
   void serialize(archive & ar, const unsigned /*version*/)  // NOLINT(runtime/references)
   {
     ar & name_;
+    ar & temp_attribute_id_;
+    ar & power_on_hours_attribute_id_;
     ar & total_data_written_attribute_id_;
+    ar & recovered_error_attribute_id_;
   }
 };
 
@@ -70,7 +79,11 @@ struct HDDInfo
   // in S.M.A.R.T. information.
   uint64_t power_on_hours_;           //!< @brief power on hours count
   uint64_t total_data_written_;       //!< @brief total data written
+  uint32_t recovered_error_;          //!< @brief recovered error count
+  bool is_valid_temp_;                //!< @brief whether temp_ is valid value
+  bool is_valid_power_on_hours_;      //!< @brief whether power_on_hours_ is valid value
   bool is_valid_total_data_written_;  //!< @brief whether total_data_written_ is valid value
+  bool is_valid_recovered_error_;     //!< @brief whether recovered_error_ is valid value
 
   /**
    * @brief Load or save data members.
@@ -88,7 +101,32 @@ struct HDDInfo
     ar & temp_;
     ar & power_on_hours_;
     ar & total_data_written_;
+    ar & recovered_error_;
+    ar & is_valid_temp_;
+    ar & is_valid_power_on_hours_;
     ar & is_valid_total_data_written_;
+    ar & is_valid_recovered_error_;
+  }
+};
+
+/**
+ * @brief unmount device information
+ */
+struct UnmountDeviceInfo
+{
+  std::string part_device_;  //!< @brief partition device
+
+  /**
+   * @brief Load or save data members.
+   * @param [inout] ar archive reference to load or save the serialized data members
+   * @param [in] version version for the archive
+   * @note NOLINT syntax is needed since this is an interface to serialization and
+   * used inside boost serialization.
+   */
+  template <typename archive>
+  void serialize(archive & ar, const unsigned /*version*/)  // NOLINT(runtime/references)
+  {
+    ar & part_device_;
   }
 };
 
