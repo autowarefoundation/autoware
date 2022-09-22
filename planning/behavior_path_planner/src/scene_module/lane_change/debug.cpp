@@ -51,7 +51,8 @@ MarkerArray showObjectInfo(
     std::ostringstream ss;
 
     ss << info.failed_reason << "\nLon: " << std::setprecision(4) << info.relative_to_ego.position.x
-       << "\nLat: " << info.relative_to_ego.position.y;
+       << "\nLat: " << info.relative_to_ego.position.y
+       << "\nPosition: " << (info.is_front ? "front" : "back");
 
     marker.text = ss.str();
 

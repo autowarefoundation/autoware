@@ -19,6 +19,8 @@
 
 #include <autoware_auto_planning_msgs/msg/path_with_lane_id.hpp>
 
+#include <vector>
+
 namespace behavior_path_planner
 {
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
@@ -31,5 +33,7 @@ struct LaneChangePath
   double preparation_length{0.0};
   double lane_change_length{0.0};
 };
+using LaneChangePaths = std::vector<LaneChangePath>;
+
 }  // namespace behavior_path_planner
 #endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__LANE_CHANGE_PATH_HPP_
