@@ -11,17 +11,17 @@ This role installs TensorRT and cuDNN following [this page](https://docs.nvidia.
 
 ## Manual Installation
 
-For Universe, the `cudnn_version` and `tensorrt_version` variable can also be found in:
-[../../playbooks/universe.yaml](../../playbooks/universe.yaml)
+For Universe, the `cudnn_version` and `tensorrt_version` variables should be copied from
+[amd64.env](../../../amd64.env) or [arm64.env](../../../arm64.env) depending on the architecture used.
 
 ```bash
 # Taken from: https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing
 
-cudnn_version="8.2.4.15-1+cuda11.4"
+cudnn_version=8.4.1.50-1+cuda11.6
 sudo apt-get install libcudnn8=${cudnn_version} libcudnn8-dev=${cudnn_version}
 sudo apt-mark hold libcudnn8 libcudnn8-dev
 
-tensorrt_version="8.2.4-1+cuda11.4"
+tensorrt_version=8.4.2-1+cuda11.6
 sudo apt-get install libnvinfer8=${tensorrt_version} libnvonnxparsers8=${tensorrt_version} libnvparsers8=${tensorrt_version} libnvinfer-plugin8=${tensorrt_version} libnvinfer-dev=${tensorrt_version} libnvonnxparsers-dev=${tensorrt_version} libnvparsers-dev=${tensorrt_version} libnvinfer-plugin-dev=${tensorrt_version}
 sudo apt-mark hold libnvinfer8 libnvonnxparsers8 libnvparsers8 libnvinfer-plugin8 libnvinfer-dev libnvonnxparsers-dev libnvparsers-dev libnvinfer-plugin-dev
 ```
