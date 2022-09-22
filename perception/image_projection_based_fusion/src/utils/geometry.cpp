@@ -122,7 +122,7 @@ void boundingBoxToVertices(
 
   const auto position = Eigen::Vector3d(pose.position.x, pose.position.y, pose.position.z);
   const auto orientation = Eigen::Quaterniond(
-    pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w);
+    pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z);
 
   for (const auto & corner : corners_template) {
     Eigen::Vector3d corner_point(
