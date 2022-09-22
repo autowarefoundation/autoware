@@ -57,7 +57,7 @@ common/time_utils/** christopherj.ho@gmail.com
 common/polar_grid/** yukihiro.saito@tier4.jp
 common/tier4_vehicle_rviz_plugin/** yukihiro.saito@tier4.jp
 launch/tier4_vehicle_launch/** yukihiro.saito@tier4.jp
-launch/tier4_system_launch/** kenji.miyake@tier4.jp
+launch/tier4_system_launch/** kenji.miyake@tier4.jp fumihito.ito@tier4.jp
 launch/tier4_map_launch/** ryohsuke.mitsudome@tier4.jp
 launch/tier4_control_launch/** takamasa.horibe@tier4.jp
 launch/tier4_sensing_launch/** yukihiro.saito@tier4.jp
@@ -156,5 +156,5 @@ system/ad_service_state_monitor/** kenji.miyake@tier4.jp
 system/system_monitor/** fumihito.ito@tier4.jp
 system/emergency_handler/** kenji.miyake@tier4.jp
 system/dummy_diag_publisher/** kenji.miyake@tier4.jp
-system/system_error_monitor/** kenji.miyake@tier4.jp
+system/system_error_monitor/** kenji.miyake@tier4.jp fumihito.ito@tier4.jp
 system/default_ad_api/** isamu.takagi@tier4.jp
