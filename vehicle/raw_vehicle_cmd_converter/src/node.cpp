@@ -102,7 +102,9 @@ void RawVehicleCommandConverterNode::publishActuationCmd()
   }
   if (!current_twist_ptr_ || !control_cmd_ptr_ || !current_steer_ptr_) {
     RCLCPP_WARN_EXPRESSION(
-      get_logger(), is_debugging_, "some of twist/control_cmd/steer pointer is null");
+      get_logger(), is_debugging_, "some pointers are null: %s, %s, %s",
+      !current_twist_ptr_ ? "twist" : "", !control_cmd_ptr_ ? "cmd" : "",
+      !current_steer_ptr_ ? "steer" : "");
     return;
   }
   double desired_accel_cmd = 0.0;
@@ -124,9 +126,9 @@ void RawVehicleCommandConverterNode::publishActuationCmd()
     if (accel_cmd_is_zero) {
       desired_brake_cmd = calculateBrakeMap(vel, acc);
     }
-  } else {
-    // if conversion is disabled use acceleration as brake cmd
-    desired_brake_cmd = (acc < 0) ? acc : 0;
+  } else if (acc < 0) {
+    // if conversion is disabled use negative acceleration as brake cmd
+    desired_brake_cmd = -acc;
   }
   if (convert_steer_cmd_) {
     desired_steer_cmd = calculateSteer(vel, steer, steer_rate);
