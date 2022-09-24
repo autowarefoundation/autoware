@@ -1145,12 +1145,12 @@ Trajectories ObstacleAvoidancePlanner::optimizeTrajectory(
   constexpr double max_path_change_diff = 1.0e4;
   for (size_t i = 0; i < eb_traj->size(); ++i) {
     const auto & eb_pos = eb_traj->at(i).pose.position;
-    const auto & path_pos = path.points.at(std::min(i, path.points.size() - 1)).pose.position;
+    const auto & path_pos = p.path.points.at(std::min(i, p.path.points.size() - 1)).pose.position;
 
     const double diff_x = eb_pos.x - path_pos.x;
     const double diff_y = eb_pos.y - path_pos.y;
     if (max_path_change_diff < std::abs(diff_x) || max_path_change_diff < std::abs(diff_y)) {
-      return getPrevTrajs(path.points);
+      return getPrevTrajs(p.path.points);
     }
   }
 
