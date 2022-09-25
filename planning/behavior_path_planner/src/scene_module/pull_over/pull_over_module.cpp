@@ -52,6 +52,7 @@ PullOverModule::PullOverModule(
   vehicle_info_{vehicle_info_util::VehicleInfoUtil(node).getVehicleInfo()}
 {
   rtc_interface_ptr_ = std::make_shared<RTCInterface>(&node, "pull_over");
+  steering_factor_interface_ptr_ = std::make_unique<SteeringFactorInterface>(&node, "pull_over");
   goal_pose_pub_ =
     node.create_publisher<PoseStamped>("/planning/scenario_planning/modified_goal", 1);
 
@@ -160,6 +161,7 @@ void PullOverModule::onExit()
   RCLCPP_DEBUG(getLogger(), "PULL_OVER onExit");
   clearWaitingApproval();
   removeRTCStatus();
+  steering_factor_interface_ptr_->clearSteeringFactors();
 
   // A child node must never return IDLE
   // https://github.com/BehaviorTree/BehaviorTree.CPP/blob/master/include/behaviortree_cpp_v3/basic_types.h#L34
@@ -566,6 +568,7 @@ BehaviorModuleOutput PullOverModule::plan()
       // request approval again one the final path is decided
       waitApproval();
       removeRTCStatus();
+      steering_factor_interface_ptr_->clearSteeringFactors();
       uuid_ = generateUUID();
       current_state_ = BT::NodeStatus::SUCCESS;  // for breaking loop
       status_.has_requested_approval_ = true;
@@ -679,6 +682,21 @@ BehaviorModuleOutput PullOverModule::plan()
     goal_pose_pub_->publish(goal_pose_stamped);
   }
 
+  const uint16_t steering_factor_direction = std::invoke([this]() {
+    if (getTurnInfo().first.command == TurnIndicatorsCommand::ENABLE_LEFT) {
+      return SteeringFactor::LEFT;
+    } else if (getTurnInfo().first.command == TurnIndicatorsCommand::ENABLE_RIGHT) {
+      return SteeringFactor::RIGHT;
+    }
+    return SteeringFactor::STRAIGHT;
+  });
+
+  // TODO(tkhmy) add handle status TRYING
+  steering_factor_interface_ptr_->updateSteeringFactor(
+    {getParkingStartPose(), modified_goal_pose_},
+    {distance_to_path_change.first, distance_to_path_change.second}, SteeringFactor::PULL_OVER,
+    steering_factor_direction, SteeringFactor::TURNING, "");
+
   // For evaluations
   if (parameters_.print_debug_info) {
     printParkingPositionError();
@@ -705,6 +723,20 @@ BehaviorModuleOutput PullOverModule::planWaitingApproval()
 
   const auto distance_to_path_change = calcDistanceToPathChange();
   updateRTCStatus(distance_to_path_change.first, distance_to_path_change.second);
+
+  const uint16_t steering_factor_direction = std::invoke([this]() {
+    if (getTurnInfo().first.command == TurnIndicatorsCommand::ENABLE_LEFT) {
+      return SteeringFactor::LEFT;
+    } else if (getTurnInfo().first.command == TurnIndicatorsCommand::ENABLE_RIGHT) {
+      return SteeringFactor::RIGHT;
+    }
+    return SteeringFactor::STRAIGHT;
+  });
+
+  steering_factor_interface_ptr_->updateSteeringFactor(
+    {getParkingStartPose(), modified_goal_pose_},
+    {distance_to_path_change.first, distance_to_path_change.second}, SteeringFactor::PULL_OVER,
+    steering_factor_direction, SteeringFactor::APPROACHING, "");
   waitApproval();
 
   return out;

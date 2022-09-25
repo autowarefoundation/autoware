@@ -22,6 +22,7 @@
 
 #include <lanelet2_core/LaneletMap.h>
 
+#include <limits>
 #include <memory>
 #include <utility>
 
@@ -45,6 +46,9 @@ public:
     intersection_search_distance_ = intersection_search_distance;
   }
 
+  std::pair<bool, bool> getIntersectionTurnSignalFlag();
+  std::pair<Pose, double> getIntersectionPoseAndDistance();
+
 private:
   std::pair<TurnIndicatorsCommand, double> getIntersectionTurnSignal(
     const PathWithLaneId & path, const Pose & current_pose, const size_t current_seg_idx,
@@ -56,6 +60,10 @@ private:
   // data
   double intersection_search_distance_{0.0};
   double base_link2front_{0.0};
+  mutable bool intersection_turn_signal_ = false;
+  mutable bool approaching_intersection_turn_signal_ = false;
+  mutable double intersection_distance_ = std::numeric_limits<double>::max();
+  mutable Pose intersection_pose_point_ = Pose();
 };
 }  // namespace behavior_path_planner
 

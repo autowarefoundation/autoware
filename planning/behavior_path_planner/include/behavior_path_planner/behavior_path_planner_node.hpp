@@ -23,6 +23,7 @@
 #include "behavior_path_planner/scene_module/pull_out/pull_out_module.hpp"
 #include "behavior_path_planner/scene_module/pull_over/pull_over_module.hpp"
 #include "behavior_path_planner/scene_module/side_shift/side_shift_module.hpp"
+#include "behavior_path_planner/steering_factor_interface.hpp"
 #include "behavior_path_planner/turn_signal_decider.hpp"
 
 #include <tier4_autoware_utils/ros/self_pose_listener.hpp>
@@ -72,6 +73,7 @@ using geometry_msgs::msg::TwistStamped;
 using nav_msgs::msg::OccupancyGrid;
 using nav_msgs::msg::Odometry;
 using rcl_interfaces::msg::SetParametersResult;
+using steering_factor_interface::SteeringFactorInterface;
 using tier4_planning_msgs::msg::AvoidanceDebugMsgArray;
 using tier4_planning_msgs::msg::PathChangeModule;
 using tier4_planning_msgs::msg::Scenario;
@@ -98,6 +100,7 @@ private:
 
   std::shared_ptr<PlannerData> planner_data_;
   std::shared_ptr<BehaviorTreeManager> bt_manager_;
+  std::unique_ptr<SteeringFactorInterface> steering_factor_interface_ptr_;
   tier4_autoware_utils::SelfPoseListener self_pose_listener_{this};
   Scenario::SharedPtr current_scenario_{nullptr};
 
@@ -170,6 +173,11 @@ private:
    * @brief check path if it is unsafe or forced
    */
   bool isForcedCandidatePath() const;
+
+  /**
+   * @brief publish the steering factor from intersection
+   */
+  void publish_steering_factor(const TurnIndicatorsCommand & turn_signal);
 
   template <class T>
   size_t findEgoIndex(const std::vector<T> & points) const

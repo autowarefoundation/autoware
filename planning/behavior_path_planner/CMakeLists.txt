@@ -12,6 +12,7 @@ ament_auto_add_library(behavior_path_planner_node SHARED
   src/utilities.cpp
   src/path_utilities.cpp
   src/debug_utilities.cpp
+  src/steering_factor_interface.cpp
   src/turn_signal_decider.cpp
   src/scene_module/scene_module_bt_node_interface.cpp
   src/scene_module/side_shift/side_shift_module.cpp

@@ -103,6 +103,7 @@ BehaviorModuleOutput BehaviorTreeManager::run(const std::shared_ptr<PlannerData>
       m->onExit();
     }
     m->publishRTCStatus();
+    m->publishSteeringFactor();
   });
   return output;
 }

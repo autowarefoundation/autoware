@@ -149,6 +149,8 @@ BehaviorPathPlannerNode::BehaviorPathPlannerNode(const rclcpp::NodeOptions & nod
       planner_data_->parameters.base_link2front, intersection_search_distance);
   }
 
+  steering_factor_interface_ptr_ = std::make_unique<SteeringFactorInterface>(this, "intersection");
+
   // Start timer
   {
     const auto planning_hz = declare_parameter("planning_hz", 10.0);
@@ -614,6 +616,8 @@ void BehaviorPathPlannerNode::run()
     hazard_signal.stamp = get_clock()->now();
     turn_signal_publisher_->publish(turn_signal);
     hazard_signal_publisher_->publish(hazard_signal);
+
+    publish_steering_factor(turn_signal);
   }
 
   // for debug
@@ -627,6 +631,36 @@ void BehaviorPathPlannerNode::run()
 
   mutex_bt_.unlock();
   RCLCPP_DEBUG(get_logger(), "----- behavior path planner end -----\n\n");
+}
+
+void BehaviorPathPlannerNode::publish_steering_factor(const TurnIndicatorsCommand & turn_signal)
+{
+  const auto [intersection_flag, approaching_intersection_flag] =
+    turn_signal_decider_.getIntersectionTurnSignalFlag();
+  if (intersection_flag || approaching_intersection_flag) {
+    const uint16_t steering_factor_direction = std::invoke([&turn_signal]() {
+      if (turn_signal.command == TurnIndicatorsCommand::ENABLE_LEFT) {
+        return SteeringFactor::LEFT;
+      }
+      return SteeringFactor::RIGHT;
+    });
+
+    const auto [intersection_pose, intersection_distance] =
+      turn_signal_decider_.getIntersectionPoseAndDistance();
+    const uint16_t steering_factor_state = std::invoke([&intersection_flag]() {
+      if (intersection_flag) {
+        return SteeringFactor::TURNING;
+      }
+      return SteeringFactor::TRYING;
+    });
+
+    steering_factor_interface_ptr_->updateSteeringFactor(
+      {intersection_pose, intersection_pose}, {intersection_distance, intersection_distance},
+      SteeringFactor::INTERSECTION, steering_factor_direction, steering_factor_state, "");
+  } else {
+    steering_factor_interface_ptr_->clearSteeringFactors();
+  }
+  steering_factor_interface_ptr_->publishSteeringFactor(get_clock()->now());
 }
 
 PathWithLaneId::SharedPtr BehaviorPathPlannerNode::getPath(
