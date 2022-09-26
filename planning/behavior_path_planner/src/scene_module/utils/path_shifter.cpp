@@ -259,6 +259,11 @@ std::vector<double> PathShifter::calcLateralJerk() const
 
 void PathShifter::updateShiftPointIndices(ShiftPointArray & shift_points) const
 {
+  if (reference_path_.points.empty()) {
+    RCLCPP_ERROR(
+      logger_, "reference path is empty, setPath is needed before addShiftPoint/setShiftPoints.");
+  }
+
   for (auto & p : shift_points) {
     // TODO(murooka) remove findNearestIndex for except
     // lane_following to support u-turn & crossing path
