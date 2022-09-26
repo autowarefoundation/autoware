@@ -15,6 +15,7 @@
   <maintainer email="fumiya.watanabe@tier4.jp">Fumiya Watanabe</maintainer>
   <!-- avoidance module -->
   <maintainer email="takamasa.horibe@tier4.jp">Takamasa Horibe</maintainer>
+  <maintainer email="satoshi.ota@tier4.jp">Satoshi Ota</maintainer>
   <!-- turn signal decider -->
   <maintainer email="yutaka.shimizu@tier4.jp">Yutaka Shimizu</maintainer>
   <!-- drivable area generation-->
@@ -28,6 +29,7 @@
   <license>Apache License 2.0</license>
 
   <author email="takamasa.horibe@tier4.jp">Takamasa Horibe</author>
+  <author email="satoshi.ota@tier4.jp">Satoshi Ota</author>
   <author email="fumiya.watanabe@tier4.jp">Fumiya Watanabe</author>
   <author email="zulfaqar.azmi@tier4.jp">Zulfaqar Azmi</author>
   <author email="kosuke.takeuchi@tier4.jp">Kosuke Takeuchi</author>
