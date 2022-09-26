@@ -446,11 +446,14 @@ std::vector<PathWithLaneId> GeometricParallelParking::planOneTrial(
   paths_.push_back(path_turn_left);
   paths_.push_back(path_turn_right);
 
+  // set pull_over start and end pose
+  // todo: make start and end pose for pull_out
+  start_pose_ = start_pose;
+  arc_end_pose_ = arc_end_pose;
+
   // debug
   Cr_ = Cr;
   Cl_ = Cl;
-  start_pose_ = start_pose;
-  arc_end_pose_ = arc_end_pose;
 
   return paths_;
 }

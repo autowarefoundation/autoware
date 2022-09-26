@@ -45,8 +45,8 @@
       arc_path_interval: 1.0
       pull_over_max_steer_angle: 0.35  # 20deg
       # hazard on when parked
-      hazard_on_threshold_dis: 1.0
-      hazard_on_threshold_vel: 0.5
+      hazard_on_threshold_distance: 1.0
+      hazard_on_threshold_velocity: 0.5
       # check safety with dynamic objects. Not used now.
       pull_over_duration: 2.0
       pull_over_prepare_duration: 4.0

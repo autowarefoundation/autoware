@@ -26,6 +26,8 @@ ament_auto_add_library(behavior_path_planner_node SHARED
   src/scene_module/lane_change/debug.cpp
   src/scene_module/pull_over/pull_over_module.cpp
   src/scene_module/pull_over/util.cpp
+  src/scene_module/pull_over/shift_pull_over.cpp
+  src/scene_module/pull_over/geometric_pull_over.cpp
   src/scene_module/pull_out/pull_out_module.cpp
   src/scene_module/pull_out/util.cpp
   src/scene_module/pull_out/shift_pull_out.cpp

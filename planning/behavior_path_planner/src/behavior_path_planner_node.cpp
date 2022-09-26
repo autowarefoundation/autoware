@@ -414,8 +414,8 @@ PullOverParameters BehaviorPathPlannerNode::getPullOverParam()
   p.arc_path_interval = dp("arc_path_interval", 1.0);
   p.pull_over_max_steer_angle = dp("pull_over_max_steer_angle", 0.35);  // 20deg
   // hazard
-  p.hazard_on_threshold_dis = dp("hazard_on_threshold_dis", 1.0);
-  p.hazard_on_threshold_vel = dp("hazard_on_threshold_vel", 0.5);
+  p.hazard_on_threshold_distance = dp("hazard_on_threshold_distance", 1.0);
+  p.hazard_on_threshold_velocity = dp("hazard_on_threshold_velocity", 0.5);
   // safety with dynamic objects. Not used now.
   p.pull_over_duration = dp("pull_over_duration", 4.0);
   p.pull_over_prepare_duration = dp("pull_over_prepare_duration", 2.0);
