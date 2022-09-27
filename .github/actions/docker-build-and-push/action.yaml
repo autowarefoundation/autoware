@@ -85,15 +85,6 @@ runs:
         username: ${{ github.repository_owner }}
         password: ${{ github.token }}
 
-    # For https://github.com/docker/buildx/issues/756
-    - name: Merge json files
-      run: |
-        jq -s ".[0] * .[1]" \
-          "${{ steps.meta-devel.outputs.bake-file }}" \
-          "${{ steps.meta-prebuilt.outputs.bake-file }}" \
-          > bake.json
-      shell: bash
-
     - name: Build and push
       uses: docker/bake-action@v2
       with:
@@ -101,6 +92,7 @@ runs:
         push: ${{ github.event_name == 'schedule' || github.ref_name == github.event.repository.default_branch }}
         files: |
           docker/${{ inputs.bake-target }}/docker-bake.hcl
-          bake.json
+          ${{ steps.meta-devel.outputs.bake-file }}
+          ${{ steps.meta-prebuilt.outputs.bake-file }}
         set: |
           ${{ inputs.build-args }}
