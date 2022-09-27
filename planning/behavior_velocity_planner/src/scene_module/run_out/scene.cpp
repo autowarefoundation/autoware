@@ -30,7 +30,8 @@ RunOutModule::RunOutModule(
 : SceneModuleInterface(module_id, logger, clock),
   planner_param_(planner_param),
   dynamic_obstacle_creator_(std::move(dynamic_obstacle_creator)),
-  debug_ptr_(debug_ptr)
+  debug_ptr_(debug_ptr),
+  state_machine_(std::make_unique<run_out_utils::StateMachine>(planner_param.state_param))
 {
   if (planner_param.run_out.use_partition_lanelet) {
     const lanelet::LaneletMapConstPtr & ll = planner_data->route_handler_->getLaneletMapPtr();
@@ -100,8 +101,8 @@ bool RunOutModule::modifyPathVelocity(
   if (planner_param_.approaching.enable) {
     // after a certain amount of time has elapsed since the ego stopped,
     // approach the obstacle with slow velocity
-    insertVelocity(
-      dynamic_obstacle, current_pose, current_vel, current_acc, trim_smoothed_path, *path);
+    insertVelocityForState(
+      dynamic_obstacle, *planner_data_, planner_param_, trim_smoothed_path, *path);
   } else {
     // just insert zero velocity for stopping
     insertStoppingVelocity(dynamic_obstacle, current_pose, current_vel, current_acc, *path);
@@ -648,57 +649,53 @@ void RunOutModule::insertStopPoint(
   planning_utils::insertVelocity(path, stop_point_with_lane_id, 0.0, insert_idx);
 }
 
-void RunOutModule::insertVelocity(
-  const boost::optional<DynamicObstacle> & dynamic_obstacle,
-  const geometry_msgs::msg::Pose & current_pose, const float current_vel, const float current_acc,
-  const PathWithLaneId & smoothed_path, PathWithLaneId & output_path)
+void RunOutModule::insertVelocityForState(
+  const boost::optional<DynamicObstacle> & dynamic_obstacle, const PlannerData planner_data,
+  const PlannerParam & planner_param, const PathWithLaneId & smoothed_path,
+  PathWithLaneId & output_path)
 {
-  // no obstacles
+  using State = run_out_utils::StateMachine::State;
+
+  const auto & current_pose = planner_data.current_pose.pose;
+  const auto & current_vel = planner_data.current_velocity->twist.linear.x;
+  const auto & current_acc = planner_data.current_acceleration->accel.accel.linear.x;
+
+  // set data to judge the state
+  run_out_utils::StateMachine::StateInput state_input;
+  state_input.current_velocity = current_vel;
+  state_input.current_obstacle = dynamic_obstacle;
+  state_input.dist_to_collision =
+    motion_utils::calcSignedArcLength(
+      smoothed_path.points, current_pose.position, dynamic_obstacle->nearest_collision_point) -
+    planner_param.vehicle_param.base_to_front;
+
+  // update state
+  state_machine_->updateState(state_input, *clock_);
+
+  // get updated state and target obstacle to decelerate
+  const auto state = state_machine_->getCurrentState();
+
+  // no obstacles to decelerate
   if (!dynamic_obstacle) {
-    state_ = State::GO;
     return;
   }
 
-  const auto longitudinal_offset_to_collision_point =
-    motion_utils::calcSignedArcLength(
-      smoothed_path.points, current_pose.position, dynamic_obstacle->nearest_collision_point) -
-    planner_param_.vehicle_param.base_to_front;
-  // enough distance to the obstacle
-  if (
-    longitudinal_offset_to_collision_point >
-    planner_param_.run_out.stop_margin + planner_param_.approaching.dist_thresh) {
-    state_ = State::GO;
-  }
-
-  switch (state_) {
+  // insert velocity for each state
+  switch (state) {
     case State::GO: {
-      if (
-        planner_data_->current_velocity->twist.linear.x < planner_param_.approaching.stop_thresh) {
-        RCLCPP_DEBUG_STREAM(logger_, "transit to STOP state.");
-        stop_time_ = clock_->now();
-        state_ = State::STOP;
-      }
-
       insertStoppingVelocity(dynamic_obstacle, current_pose, current_vel, current_acc, output_path);
       break;
     }
 
     case State::STOP: {
-      RCLCPP_DEBUG_STREAM(logger_, "STOP state");
-      const auto elapsed_time = (clock_->now() - stop_time_).seconds();
-      state_ =
-        elapsed_time > planner_param_.approaching.stop_time_thresh ? State::APPROACH : State::STOP;
-      RCLCPP_DEBUG_STREAM(logger_, "elapsed time: " << elapsed_time);
-
       insertStoppingVelocity(dynamic_obstacle, current_pose, current_vel, current_acc, output_path);
       break;
     }
 
     case State::APPROACH: {
-      RCLCPP_DEBUG_STREAM(logger_, "APPROACH state");
       insertApproachingVelocity(
-        *dynamic_obstacle, current_pose, planner_param_.approaching.limit_vel_kmph / 3.6,
-        planner_param_.approaching.margin, output_path);
+        *dynamic_obstacle, current_pose, planner_param.approaching.limit_vel_kmph / 3.6,
+        planner_param.approaching.margin, output_path);
       debug_ptr_->setAccelReason(RunOutDebug::AccelReason::STOP);
       break;
     }

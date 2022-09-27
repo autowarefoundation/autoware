@@ -86,9 +86,14 @@ RunOutModuleManager::RunOutModuleManager(rclcpp::Node & node)
     p.enable = node.declare_parameter(ns_a + ".enable", false);
     p.margin = node.declare_parameter(ns_a + ".margin", 0.0);
     p.limit_vel_kmph = node.declare_parameter(ns_a + ".limit_vel_kmph", 5.0);
-    p.stop_thresh = node.declare_parameter(ns_a + ".stop_thresh", 0.01);
-    p.stop_time_thresh = node.declare_parameter(ns_a + ".stop_time_thresh", 3.0);
-    p.dist_thresh = node.declare_parameter(ns_a + ".dist_thresh", 0.5);
+  }
+
+  {
+    auto & p = planner_param_.state_param;
+    const std::string ns_s = ns + ".state";
+    p.stop_thresh = node.declare_parameter(ns_s + ".stop_thresh", 0.01);
+    p.stop_time_thresh = node.declare_parameter(ns_s + ".stop_time_thresh", 3.0);
+    p.disable_approach_dist = node.declare_parameter(ns_s + ".disable_approach_dist", 4.0);
   }
 
   {

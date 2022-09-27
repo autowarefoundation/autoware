@@ -17,6 +17,7 @@
 
 #include "scene_module/run_out/debug.hpp"
 #include "scene_module/run_out/dynamic_obstacle.hpp"
+#include "scene_module/run_out/state_machine.hpp"
 #include "scene_module/run_out/utils.hpp"
 #include "scene_module/scene_module_interface.hpp"
 
@@ -31,7 +32,6 @@ using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_planning_msgs::msg::PathPointWithLaneId;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using run_out_utils::PlannerParam;
-using run_out_utils::State;
 using tier4_debug_msgs::msg::Float32Stamped;
 using BasicPolygons2d = std::vector<lanelet::BasicPolygon2d>;
 
@@ -58,11 +58,10 @@ private:
   PlannerParam planner_param_;
 
   // Variable
-  State state_{State::GO};
-  rclcpp::Time stop_time_;
   BasicPolygons2d partition_lanelets_;
   std::unique_ptr<DynamicObstacleCreator> dynamic_obstacle_creator_;
   std::shared_ptr<RunOutDebug> debug_ptr_;
+  std::unique_ptr<run_out_utils::StateMachine> state_machine_;
 
   // Function
   Polygons2d createDetectionAreaPolygon(const PathWithLaneId & smoothed_path) const;
@@ -116,10 +115,10 @@ private:
     const boost::optional<geometry_msgs::msg::Pose> stop_point,
     autoware_auto_planning_msgs::msg::PathWithLaneId & path);
 
-  void insertVelocity(
-    const boost::optional<DynamicObstacle> & dynamic_obstacle,
-    const geometry_msgs::msg::Pose & current_pose, const float current_vel, const float current_acc,
-    const PathWithLaneId & smoothed_path, PathWithLaneId & output_path);
+  void insertVelocityForState(
+    const boost::optional<DynamicObstacle> & dynamic_obstacle, const PlannerData planner_data,
+    const PlannerParam & planner_param, const PathWithLaneId & smoothed_path,
+    PathWithLaneId & output_path);
 
   void insertStoppingVelocity(
     const boost::optional<DynamicObstacle> & dynamic_obstacle,

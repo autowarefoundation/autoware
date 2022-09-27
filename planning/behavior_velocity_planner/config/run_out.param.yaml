@@ -23,15 +23,19 @@
         height: 2.0               # [m] height of obstacles. used for creating dynamic obstacles from points
         max_prediction_time: 10.0 # [sec] create predicted path until this time
         time_step: 0.5            # [sec] time step for each path step. used for creating dynamic obstacles from points or objects without path
+        points_interval: 0.1      # [m] divide obstacle points into groups with this interval, and detect only lateral nearest point. used only for Points method
 
       # approach if ego has stopped in the front of the obstacle for a certain amount of time
       approaching:
         enable: false
         margin: 0.0           # [m] distance on how close ego approaches the obstacle
         limit_vel_kmph: 3.0   # [km/h] limit velocity for approaching after stopping
-        stop_thresh: 0.01     # [m/s] threshold to decide if ego is stopping
-        stop_time_thresh: 3.0 # [sec] threshold for stopping time to transit to approaching state
-        dist_thresh: 0.5      # [m] end the approaching state if distance to the obstacle is longer than stop_margin + dist_thresh
+
+      # parameters for the change of state. used only when approaching is enabled
+      state:
+        stop_thresh: 0.01          # [m/s] threshold to decide if ego is stopping
+        stop_time_thresh: 3.0      # [sec] threshold for stopping time to transit to approaching state
+        disable_approach_dist: 3.0 # [m] end the approaching state if distance to the obstacle is longer than this value
 
       # parameter to avoid sudden stopping
       slow_down_limit:

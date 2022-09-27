@@ -137,6 +137,18 @@ If the collision is detected, stop point is inserted on distance of base link to
 
 ![brief](./docs/run_out/insert_velocity.svg)
 
+#### Insert velocity to approach the obstacles
+
+If you select the method of `Points` or `ObjectWithoutPath`, sometimes ego keeps stopping in front of the obstacle.
+To avoid this problem, This feature has option to approach the obstacle with slow velocity after stopping.
+If the parameter of `approaching.enable` is set to true, ego will approach the obstacle after ego stopped for `state.stop_time_thresh` seconds.
+The maximum velocity of approaching can be specified by the parameter of `approaching.limit_vel_kmph`.
+The decision to approach the obstacle is determined by a simple state transition as following image.
+
+![brief](./docs/run_out/insert_velocity_to_approach.svg)
+
+![brief](./docs/run_out/state_transition.svg)
+
 ##### Limit velocity with specified jerk and acc limit
 
 The maximum slowdown velocity is calculated in order not to slowdown too much.
@@ -172,14 +184,17 @@ You can choose whether to use this feature by parameter of `slow_down_limit.enab
 | `time_step`                 | double | [sec] time step for each path step. used for creating dynamic obstacles from points or objects without path                   |
 | `points_interval`           | double | [m] divide obstacle points into groups with this interval, and detect only lateral nearest point. used only for Points method |
 
-| Parameter /approaching | Type   | Description                                                                                        |
-| ---------------------- | ------ | -------------------------------------------------------------------------------------------------- |
-| `enable`               | bool   | [-] whether to enable approaching after stopping                                                   |
-| `margin`               | double | [m] distance on how close ego approaches the obstacle                                              |
-| `limit_vel_kmph`       | double | [km/h] limit velocity for approaching after stopping                                               |
-| `stop_thresh`          | double | [m/s] threshold to decide if ego is stopping                                                       |
-| `stop_time_thresh`     | double | [sec] threshold for stopping time to transit to approaching state                                  |
-| `dist_thresh`          | double | [m] end the approaching state if distance to the obstacle is longer than stop_margin + dist_thresh |
+| Parameter /approaching | Type   | Description                                           |
+| ---------------------- | ------ | ----------------------------------------------------- |
+| `enable`               | bool   | [-] whether to enable approaching after stopping      |
+| `margin`               | double | [m] distance on how close ego approaches the obstacle |
+| `limit_vel_kmph`       | double | [km/h] limit velocity for approaching after stopping  |
+
+| Parameter /state        | Type   | Description                                                                         |
+| ----------------------- | ------ | ----------------------------------------------------------------------------------- |
+| `stop_thresh`           | double | [m/s] threshold to decide if ego is stopping                                        |
+| `stop_time_thresh`      | double | [sec] threshold for stopping time to transit to approaching state                   |
+| `disable_approach_dist` | double | [m] end the approaching state if distance to the obstacle is longer than this value |
 
 | Parameter /slow_down_limit | Type   | Description                                                   |
 | -------------------------- | ------ | ------------------------------------------------------------- |
