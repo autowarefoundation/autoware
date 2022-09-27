@@ -13,6 +13,7 @@
 
   <depend>autoware_auto_perception_msgs</depend>
   <depend>pcl_ros</depend>
+  <depend>perception_utils</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>tf2_eigen</depend>

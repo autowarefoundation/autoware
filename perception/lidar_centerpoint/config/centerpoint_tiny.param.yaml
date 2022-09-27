@@ -7,3 +7,8 @@
     voxel_size: [0.32, 0.32, 8.0]
     downsample_factor: 2
     encoder_in_feature_size: 9
+    # post-process params
+    circle_nms_dist_threshold: 0.5
+    iou_nms_target_class_names: ["CAR"]
+    iou_nms_search_distance_2d: 10.0
+    iou_nms_threshold: 0.1

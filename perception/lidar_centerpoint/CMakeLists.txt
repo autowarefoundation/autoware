@@ -70,12 +70,12 @@ message(STATUS "start to download")
 if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
 # Download trained models
   set(DATA_PATH ${CMAKE_CURRENT_SOURCE_DIR}/data)
-  set(DONWLOAD_BASE_URL https://awf.ml.dev.web.auto/perception/models/centerpoint)
+  set(DOWNLOAD_BASE_URL https://awf.ml.dev.web.auto/perception/models/centerpoint)
   execute_process(COMMAND mkdir -p ${DATA_PATH})
 
   function(download VERSION FILE_NAME FILE_HASH)
     message(STATUS "Checking and downloading ${FILE_NAME} ")
-    set(DOWNLOAD_URL ${DONWLOAD_BASE_URL}/${VERSION}/${FILE_NAME})
+    set(DOWNLOAD_URL ${DOWNLOAD_BASE_URL}/${VERSION}/${FILE_NAME})
     set(FILE_PATH ${DATA_PATH}/${FILE_NAME})
     set(STATUS_CODE 0)
     message(STATUS "start ${FILE_NAME}")
@@ -130,6 +130,7 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
     lib/ros_utils.cpp
     lib/network/network_trt.cpp
     lib/network/tensorrt_wrapper.cpp
+    lib/postprocess/non_maximum_suppression.cpp
     lib/preprocess/pointcloud_densification.cpp
     lib/preprocess/voxel_generator.cpp
   )

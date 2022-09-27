@@ -15,6 +15,8 @@
 #ifndef LIDAR_CENTERPOINT__NODE_HPP_
 #define LIDAR_CENTERPOINT__NODE_HPP_
 
+#include "lidar_centerpoint/postprocess/non_maximum_suppression.hpp"
+
 #include <lidar_centerpoint/centerpoint_trt.hpp>
 #include <lidar_centerpoint/detection_class_remapper.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -52,6 +54,7 @@ private:
   std::vector<std::string> class_names_;
   bool has_twist_{false};
 
+  NonMaximumSuppression iou_bev_nms_;
   DetectionClassRemapper detection_class_remapper_;
 
   std::unique_ptr<CenterPointTRT> detector_ptr_{nullptr};

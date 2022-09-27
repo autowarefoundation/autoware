@@ -26,6 +26,9 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
 
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -38,7 +41,7 @@ LidarCenterPointNode::LidarCenterPointNode(const rclcpp::NodeOptions & node_opti
   const float score_threshold =
     static_cast<float>(this->declare_parameter<double>("score_threshold", 0.35));
   const float circle_nms_dist_threshold =
-    static_cast<float>(this->declare_parameter<double>("circle_nms_dist_threshold", 1.5));
+    static_cast<float>(this->declare_parameter<double>("circle_nms_dist_threshold"));
   const float yaw_norm_threshold =
     static_cast<float>(this->declare_parameter<double>("yaw_norm_threshold", 0.0));
   const std::string densification_world_frame_id =
@@ -70,6 +73,16 @@ LidarCenterPointNode::LidarCenterPointNode(const rclcpp::NodeOptions & node_opti
 
   detection_class_remapper_.setParameters(
     allow_remapping_by_area_matrix, min_area_matrix, max_area_matrix);
+
+  {
+    NMSParams p;
+    p.nms_type_ = NMS_TYPE::IoU_BEV;
+    p.target_class_names_ =
+      this->declare_parameter<std::vector<std::string>>("iou_nms_target_class_names");
+    p.search_distance_2d_ = this->declare_parameter<double>("iou_nms_search_distance_2d");
+    p.iou_threshold_ = this->declare_parameter<double>("iou_nms_threshold");
+    iou_bev_nms_.setParameters(p);
+  }
 
   NetworkParam encoder_param(encoder_onnx_path, encoder_engine_path, trt_precision);
   NetworkParam head_param(head_onnx_path, head_engine_path, trt_precision);
@@ -129,13 +142,17 @@ void LidarCenterPointNode::pointCloudCallback(
     return;
   }
 
-  autoware_auto_perception_msgs::msg::DetectedObjects output_msg;
-  output_msg.header = input_pointcloud_msg->header;
+  std::vector<autoware_auto_perception_msgs::msg::DetectedObject> raw_objects;
+  raw_objects.reserve(det_boxes3d.size());
   for (const auto & box3d : det_boxes3d) {
     autoware_auto_perception_msgs::msg::DetectedObject obj;
     box3DToDetectedObject(box3d, class_names_, has_twist_, obj);
-    output_msg.objects.emplace_back(obj);
+    raw_objects.emplace_back(obj);
   }
+
+  autoware_auto_perception_msgs::msg::DetectedObjects output_msg;
+  output_msg.header = input_pointcloud_msg->header;
+  output_msg.objects = iou_bev_nms_.apply(raw_objects);
 
   detection_class_remapper_.mapClasses(output_msg);
 
