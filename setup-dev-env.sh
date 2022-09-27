@@ -101,23 +101,17 @@ if ! (command -v git >/dev/null 2>&1); then
     sudo apt-get -y install git
 fi
 
-# Install pip for ansible
-if ! (command -v pip3 >/dev/null 2>&1); then
+# Install pipx for ansible
+if ! (python3 -m pipx >/dev/null 2>&1); then
     sudo apt-get -y update
-    sudo apt-get -y install python3-pip
+    sudo apt-get -y install python3-pip python3-venv
+    python3 -m pip install --user pipx
 fi
 
 # Install ansible
-ansible_version=$(pip3 list | grep -oP "^ansible\s+\K([0-9]+)" || true)
-if [ "$ansible_version" != "6" ]; then
-    sudo apt-get -y purge ansible
-    pip3 install -U "ansible==6.*"
-    # Workaround for https://github.com/autowarefoundation/autoware/issues/2849
-    pip3 install -U "pyOpenSSL>=22.0.0"
-fi
-
-# For Python packages installed with user privileges
-export PATH="$HOME/.local/bin:$PATH"
+python3 -m pipx ensurepath
+export PATH="${PIPX_BIN_DIR:=$HOME/.local/bin}:$PATH"
+pipx install --include-deps --force "ansible==6.*"
 
 # Install ansible collections
 echo -e "\e[36m"ansible-galaxy collection install -f -r "$SCRIPT_DIR/ansible-galaxy-requirements.yaml" "\e[m"
