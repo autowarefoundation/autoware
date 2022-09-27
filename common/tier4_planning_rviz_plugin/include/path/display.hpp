@@ -45,7 +45,7 @@ class AutowarePathDisplay
 
 public:
   AutowarePathDisplay();
-  virtual ~AutowarePathDisplay();
+  ~AutowarePathDisplay() override;
 
   void onInitialize() override;
   void reset() override;
@@ -56,12 +56,12 @@ private Q_SLOTS:
 protected:
   void processMessage(
     const autoware_auto_planning_msgs::msg::Path::ConstSharedPtr msg_ptr) override;
-  std::unique_ptr<Ogre::ColourValue> setColorDependsOnVelocity(
+  static std::unique_ptr<Ogre::ColourValue> setColorDependsOnVelocity(
     const double vel_max, const double cmd_vel);
-  std::unique_ptr<Ogre::ColourValue> gradation(
+  static std::unique_ptr<Ogre::ColourValue> gradation(
     const QColor & color_min, const QColor & color_max, const double ratio);
-  Ogre::ManualObject * path_manual_object_;
-  Ogre::ManualObject * velocity_manual_object_;
+  Ogre::ManualObject * path_manual_object_{nullptr};
+  Ogre::ManualObject * velocity_manual_object_{nullptr};
   rviz_common::properties::BoolProperty * property_path_view_;
   rviz_common::properties::BoolProperty * property_velocity_view_;
   rviz_common::properties::FloatProperty * property_path_width_;
@@ -74,9 +74,10 @@ protected:
   rviz_common::properties::BoolProperty * property_velocity_color_view_;
   rviz_common::properties::FloatProperty * property_vel_max_;
 
-private:
+private:  // NOLINT for Qt
   autoware_auto_planning_msgs::msg::Path::ConstSharedPtr last_msg_ptr_;
-  bool validateFloats(const autoware_auto_planning_msgs::msg::Path::ConstSharedPtr & msg_ptr);
+  static bool validateFloats(
+    const autoware_auto_planning_msgs::msg::Path::ConstSharedPtr & msg_ptr);
 };
 
 }  // namespace rviz_plugins

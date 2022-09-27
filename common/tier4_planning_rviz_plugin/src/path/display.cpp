@@ -26,9 +26,10 @@ std::unique_ptr<Ogre::ColourValue> AutowarePathDisplay::gradation(
   const QColor & color_min, const QColor & color_max, const double ratio)
 {
   std::unique_ptr<Ogre::ColourValue> color_ptr(new Ogre::ColourValue);
-  color_ptr->g = color_max.greenF() * ratio + color_min.greenF() * (1.0 - ratio);
-  color_ptr->r = color_max.redF() * ratio + color_min.redF() * (1.0 - ratio);
-  color_ptr->b = color_max.blueF() * ratio + color_min.blueF() * (1.0 - ratio);
+  color_ptr->g =
+    static_cast<float>(color_max.greenF() * ratio + color_min.greenF() * (1.0 - ratio));
+  color_ptr->r = static_cast<float>(color_max.redF() * ratio + color_min.redF() * (1.0 - ratio));
+  color_ptr->b = static_cast<float>(color_max.blueF() * ratio + color_min.blueF() * (1.0 - ratio));
 
   return color_ptr;
 }
@@ -183,7 +184,8 @@ void AutowarePathDisplay::processMessage(
           color = *dynamic_color_ptr;
         }
         color.a = property_path_alpha_->getFloat();
-        Eigen::Vector3f vec_in, vec_out;
+        Eigen::Vector3f vec_in;
+        Eigen::Vector3f vec_out;
         Eigen::Quaternionf quat_yaw_reverse(0, 0, 0, 1);
         {
           vec_in << 0, (property_path_width_->getFloat() / 2.0), 0;
@@ -195,8 +197,9 @@ void AutowarePathDisplay::processMessage(
           }
           vec_out = quat * vec_in;
           path_manual_object_->position(
-            path_point.pose.position.x + vec_out.x(), path_point.pose.position.y + vec_out.y(),
-            path_point.pose.position.z + vec_out.z());
+            static_cast<float>(path_point.pose.position.x) + vec_out.x(),
+            static_cast<float>(path_point.pose.position.y) + vec_out.y(),
+            static_cast<float>(path_point.pose.position.z) + vec_out.z());
           path_manual_object_->colour(color);
         }
         {
@@ -209,8 +212,9 @@ void AutowarePathDisplay::processMessage(
           }
           vec_out = quat * vec_in;
           path_manual_object_->position(
-            path_point.pose.position.x + vec_out.x(), path_point.pose.position.y + vec_out.y(),
-            path_point.pose.position.z + vec_out.z());
+            static_cast<float>(path_point.pose.position.x) + vec_out.x(),
+            static_cast<float>(path_point.pose.position.y) + vec_out.y(),
+            static_cast<float>(path_point.pose.position.z) + vec_out.z());
           path_manual_object_->colour(color);
         }
       }
@@ -231,7 +235,7 @@ void AutowarePathDisplay::processMessage(
 
         velocity_manual_object_->position(
           path_point.pose.position.x, path_point.pose.position.y,
-          path_point.pose.position.z +
+          static_cast<float>(path_point.pose.position.z) +
             path_point.longitudinal_velocity_mps * property_velocity_scale_->getFloat());
         velocity_manual_object_->colour(color);
       }
