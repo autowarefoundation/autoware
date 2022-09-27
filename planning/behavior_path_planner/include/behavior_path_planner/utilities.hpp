@@ -119,7 +119,8 @@ FrenetCoordinate3d convertToFrenetCoordinate3d(
     motion_utils::calcLongitudinalOffsetToSegment(pose_array, seg_idx, search_point_geom);
   frenet_coordinate.length =
     motion_utils::calcSignedArcLength(pose_array, 0, seg_idx) + longitudinal_length;
-  frenet_coordinate.distance = motion_utils::calcLateralOffset(pose_array, search_point_geom);
+  frenet_coordinate.distance =
+    motion_utils::calcLateralOffset(pose_array, search_point_geom, seg_idx);
 
   return frenet_coordinate;
 }

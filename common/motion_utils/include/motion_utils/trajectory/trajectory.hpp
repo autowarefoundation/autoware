@@ -347,6 +347,43 @@ boost::optional<size_t> findNearestSegmentIndex(
  */
 template <class T>
 double calcLateralOffset(
+  const T & points, const geometry_msgs::msg::Point & p_target, const size_t seg_idx,
+  const bool throw_exception = false)
+{
+  const auto overlap_removed_points = removeOverlapPoints(points, 0);
+
+  if (throw_exception) {
+    validateNonEmpty(overlap_removed_points);
+  } else {
+    try {
+      validateNonEmpty(overlap_removed_points);
+    } catch (const std::exception & e) {
+      std::cerr << e.what() << std::endl;
+      return std::nan("");
+    }
+  }
+
+  if (overlap_removed_points.size() == 1) {
+    const std::runtime_error e("Same points are given.");
+    if (throw_exception) {
+      throw e;
+    }
+    std::cerr << e.what() << std::endl;
+    return std::nan("");
+  }
+
+  const auto p_front = tier4_autoware_utils::getPoint(overlap_removed_points.at(seg_idx));
+  const auto p_back = tier4_autoware_utils::getPoint(overlap_removed_points.at(seg_idx + 1));
+
+  const Eigen::Vector3d segment_vec{p_back.x - p_front.x, p_back.y - p_front.y, 0.0};
+  const Eigen::Vector3d target_vec{p_target.x - p_front.x, p_target.y - p_front.y, 0.0};
+
+  const Eigen::Vector3d cross_vec = segment_vec.cross(target_vec);
+  return cross_vec(2) / segment_vec.norm();
+}
+
+template <class T>
+double calcLateralOffset(
   const T & points, const geometry_msgs::msg::Point & p_target, const bool throw_exception = false)
 {
   const auto overlap_removed_points = removeOverlapPoints(points, 0);
@@ -372,15 +409,7 @@ double calcLateralOffset(
   }
 
   const size_t seg_idx = findNearestSegmentIndex(overlap_removed_points, p_target);
-
-  const auto p_front = tier4_autoware_utils::getPoint(overlap_removed_points.at(seg_idx));
-  const auto p_back = tier4_autoware_utils::getPoint(overlap_removed_points.at(seg_idx + 1));
-
-  const Eigen::Vector3d segment_vec{p_back.x - p_front.x, p_back.y - p_front.y, 0.0};
-  const Eigen::Vector3d target_vec{p_target.x - p_front.x, p_target.y - p_front.y, 0.0};
-
-  const Eigen::Vector3d cross_vec = segment_vec.cross(target_vec);
-  return cross_vec(2) / segment_vec.norm();
+  return calcLateralOffset(points, p_target, seg_idx, throw_exception);
 }
 
 /**

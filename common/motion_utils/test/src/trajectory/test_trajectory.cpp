@@ -564,6 +564,67 @@ TEST(trajectory, calcLateralOffset)
   EXPECT_NEAR(calcLateralOffset(traj.points, createPoint(1.0, -3.0, 0.0)), -3.0, epsilon);
 }
 
+TEST(trajectory, calcLateralOffset_without_segment_idx)
+{
+  using motion_utils::calcLateralOffset;
+
+  const auto traj = generateTestTrajectory<Trajectory>(10, 1.0);
+  const bool throw_exception = true;
+
+  // Empty
+  EXPECT_THROW(
+    calcLateralOffset(Trajectory{}.points, geometry_msgs::msg::Point{}, throw_exception),
+    std::invalid_argument);
+
+  // Trajectory size is 1
+  {
+    const auto one_point_traj = generateTestTrajectory<Trajectory>(1, 1.0);
+    EXPECT_THROW(
+      calcLateralOffset(
+        one_point_traj.points, geometry_msgs::msg::Point{}, static_cast<size_t>(0),
+        throw_exception),
+      std::runtime_error);
+  }
+
+  // Same close points in trajectory
+  {
+    const auto invalid_traj = generateTestTrajectory<Trajectory>(10, 0.0);
+    const auto p = createPoint(3.0, 0.0, 0.0);
+    EXPECT_THROW(
+      calcLateralOffset(invalid_traj.points, p, static_cast<size_t>(2), throw_exception),
+      std::runtime_error);
+    EXPECT_THROW(
+      calcLateralOffset(invalid_traj.points, p, static_cast<size_t>(3), throw_exception),
+      std::runtime_error);
+  }
+
+  // Point on trajectory
+  EXPECT_NEAR(
+    calcLateralOffset(traj.points, createPoint(3.1, 0.0, 0.0), static_cast<size_t>(3)), 0.0,
+    epsilon);
+
+  // Point before start point
+  EXPECT_NEAR(
+    calcLateralOffset(traj.points, createPoint(-3.9, 3.0, 0.0), static_cast<size_t>(0)), 3.0,
+    epsilon);
+
+  // Point after start point
+  EXPECT_NEAR(
+    calcLateralOffset(traj.points, createPoint(13.3, -10.0, 0.0), static_cast<size_t>(8)), -10.0,
+    epsilon);
+
+  // Random cases
+  EXPECT_NEAR(
+    calcLateralOffset(traj.points, createPoint(4.3, 7.0, 0.0), static_cast<size_t>(4)), 7.0,
+    epsilon);
+  EXPECT_NEAR(
+    calcLateralOffset(traj.points, createPoint(1.0, -3.0, 0.0), static_cast<size_t>(0)), -3.0,
+    epsilon);
+  EXPECT_NEAR(
+    calcLateralOffset(traj.points, createPoint(1.0, -3.0, 0.0), static_cast<size_t>(1)), -3.0,
+    epsilon);
+}
+
 TEST(trajectory, calcLateralOffset_CurveTrajectory)
 {
   using motion_utils::calcLateralOffset;
