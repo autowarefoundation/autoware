@@ -54,14 +54,14 @@ enum RPY_COV_IDX {
 };
 }  // namespace rpy_covariance_index
 
-namespace pose_covariance_index
+namespace xyzrpy_covariance_index
 {
-/// Covariance for 6-DOF pose.
+/// Covariance for 6-DOF.
 /// Used at
 /// - geometry_msgs/msg/AccelWithCovariance.msg: msg.covariance
 /// - geometry_msgs/msg/TwistWithCovariance.msg: msg.covariance
 /// - geometry_msgs/msg/PoseWithCovariance.msg: msg.covariance
-enum POSE_COV_IDX {
+enum XYZRPY_COV_IDX {
   X_X = 0,
   X_Y = 1,
   X_Z = 2,
@@ -99,7 +99,7 @@ enum POSE_COV_IDX {
   YAW_PITCH = 34,
   YAW_YAW = 35
 };
-}  // namespace pose_covariance_index
+}  // namespace xyzrpy_covariance_index
 
 namespace xyz_upper_covariance_index
 {
