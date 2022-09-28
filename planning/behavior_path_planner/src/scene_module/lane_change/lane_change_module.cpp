@@ -17,6 +17,7 @@
 #include "behavior_path_planner/path_utilities.hpp"
 #include "behavior_path_planner/scene_module/lane_change/util.hpp"
 #include "behavior_path_planner/scene_module/scene_module_interface.hpp"
+#include "behavior_path_planner/turn_signal_decider.hpp"
 #include "behavior_path_planner/utilities.hpp"
 
 #include <lanelet2_extension/utility/message_conversion.hpp>
@@ -190,7 +191,9 @@ BehaviorModuleOutput LaneChangeModule::plan()
     status_.lane_change_path.shift_point, planner_data_->self_pose->pose,
     planner_data_->self_odometry->twist.twist.linear.x, planner_data_->parameters);
   output.turn_signal_info.turn_signal.command = turn_signal_info.first.command;
-  output.turn_signal_info.signal_distance = turn_signal_info.second;
+
+  lane_change_utils::get_turn_signal_info(status_.lane_change_path, &output.turn_signal_info);
+  // output.turn_signal_info.signal_distance = turn_signal_info.second;
   return output;
 }
 

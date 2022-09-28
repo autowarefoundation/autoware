@@ -19,6 +19,7 @@
 #include "behavior_path_planner/scene_module/lane_change/lane_change_module_data.hpp"
 #include "behavior_path_planner/scene_module/lane_change/lane_change_path.hpp"
 #include "behavior_path_planner/scene_module/scene_module_interface.hpp"
+#include "behavior_path_planner/turn_signal_decider.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 

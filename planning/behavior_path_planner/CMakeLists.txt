@@ -67,6 +67,14 @@ if(BUILD_TESTING)
     behavior_path_planner_node
   )
 
+  ament_add_ros_isolated_gmock(test_${CMAKE_PROJECT_NAME}_turn_signal
+    test/test_turn_signal.cpp
+  )
+
+  target_link_libraries(test_${CMAKE_PROJECT_NAME}_turn_signal
+    behavior_path_planner_node
+  )
+
 endif()
 
 ament_auto_package(

@@ -125,6 +125,7 @@ private:
   tier4_autoware_utils::LinearRing2d vehicle_footprint_;
   std::unique_ptr<rclcpp::Time> last_received_time_;
   std::unique_ptr<rclcpp::Time> last_approved_time_;
+  std::unique_ptr<Pose> last_approved_pose_;
 
   void incrementPathIndex();
   PathWithLaneId getCurrentPath() const;
@@ -150,9 +151,7 @@ private:
     const Pose & ego_pose, const PredictedObjects & dynamic_objects) const;
   bool checkCollisionWithPose(const Pose & pose) const;
 
-  // turn signal
-  std::pair<HazardLightsCommand, double> getHazardInfo() const;
-  std::pair<TurnIndicatorsCommand, double> getTurnInfo() const;
+  TurnSignalInfo calcTurnSignalInfo() const;
 
   // debug
   void setDebugData();

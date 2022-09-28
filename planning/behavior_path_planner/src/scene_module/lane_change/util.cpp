@@ -87,8 +87,10 @@ std::optional<LaneChangePath> constructCandidatePath(
   const PathWithLaneId & prepare_segment, const PathWithLaneId & lane_changing_segment,
   const PathWithLaneId & target_lane_reference_path, const ShiftPoint & shift_point,
   const lanelet::ConstLanelets & original_lanelets, const lanelet::ConstLanelets & target_lanelets,
-  const double & acceleration, const double & prepare_distance, const double & lane_change_distance,
-  const double & lane_changing_duration, const double & minimum_lane_change_velocity)
+  const double & acceleration, const double & prepare_distance, const double & prepare_duration,
+  const double & prepare_speed, const double & minimum_prepare_distance,
+  const double & lane_change_distance, const double & lane_changing_duration,
+  const double & minimum_lane_change_velocity)
 {
   PathShifter path_shifter;
   path_shifter.setPath(target_lane_reference_path);
@@ -147,6 +149,9 @@ std::optional<LaneChangePath> constructCandidatePath(
     return std::nullopt;
   }
 
+  candidate_path.turn_signal_info = lane_change_utils::calc_turn_signal_info(
+    prepare_segment, prepare_speed, minimum_prepare_distance, prepare_duration, shift_point,
+    shifted_path);
   // check candidate path is in lanelet
   if (!isPathInLanelets(candidate_path.path, original_lanelets, target_lanelets)) {
     return std::nullopt;
@@ -241,6 +246,7 @@ LaneChangePaths getLaneChangePaths(
     const auto candidate_path = constructCandidatePath(
       prepare_segment_reference, lane_changing_segment_reference, target_lane_reference_path,
       shift_point, original_lanelets, target_lanelets, acceleration, prepare_distance,
+      lane_change_prepare_duration, prepare_speed, minimum_lane_change_prepare_distance,
       lane_changing_distance, lane_changing_duration, minimum_lane_change_velocity);
 
     if (!candidate_path) {
@@ -579,6 +585,46 @@ PathWithLaneId getLaneChangePathLaneChangingSegment(
   }
 
   return lane_changing_segment;
+}
+
+TurnSignalInfo calc_turn_signal_info(
+  const PathWithLaneId & prepare_path, const double prepare_velocity,
+  const double min_prepare_distance, const double prepare_duration, const ShiftPoint & shift_points,
+  const ShiftedPath & lane_changing_path)
+{
+  TurnSignalInfo turn_signal_info{};
+  constexpr double turn_signal_start_duration{3.0};
+  turn_signal_info.desired_start_point =
+    std::invoke([&prepare_path, &prepare_velocity, &min_prepare_distance, &prepare_duration]() {
+      if (prepare_velocity * turn_signal_start_duration > min_prepare_distance) {
+        const auto duration = static_cast<double>(prepare_path.points.size()) / prepare_duration;
+        double time{-duration};
+        for (auto itr = prepare_path.points.crbegin(); itr != prepare_path.points.crend(); ++itr) {
+          time += duration;
+          if (time >= turn_signal_start_duration) {
+            return itr->point.pose.position;
+          }
+        }
+      }
+      return prepare_path.points.front().point.pose.position;
+    });
+
+  turn_signal_info.required_start_point = shift_points.start.position;
+  turn_signal_info.required_end_point = std::invoke([&lane_changing_path]() {
+    const auto mid_path_idx = lane_changing_path.path.points.size() / 2;
+    return lane_changing_path.path.points.at(mid_path_idx).point.pose.position;
+  });
+  turn_signal_info.desired_end_point = shift_points.end.position;
+  return turn_signal_info;
+}
+
+void get_turn_signal_info(
+  const LaneChangePath & lane_change_path, TurnSignalInfo * turn_signal_info)
+{
+  turn_signal_info->desired_start_point = lane_change_path.turn_signal_info.desired_start_point;
+  turn_signal_info->required_start_point = lane_change_path.turn_signal_info.required_start_point;
+  turn_signal_info->required_end_point = lane_change_path.turn_signal_info.required_end_point;
+  turn_signal_info->desired_end_point = lane_change_path.turn_signal_info.desired_end_point;
 }
 
 }  // namespace behavior_path_planner::lane_change_utils

@@ -175,7 +175,7 @@ private:
   bool isForcedCandidatePath() const;
 
   /**
-   * @brief publish the steering factor from intersection
+   * @brief publish steering factor from intersection
    */
   void publish_steering_factor(const TurnIndicatorsCommand & turn_signal);
 

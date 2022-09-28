@@ -61,8 +61,10 @@ std::optional<LaneChangePath> constructCandidatePath(
   const PathWithLaneId & prepare_segment, const PathWithLaneId & lane_changing_segment,
   const PathWithLaneId & target_lane_reference_path, const ShiftPoint & shift_point,
   const lanelet::ConstLanelets & original_lanelets, const lanelet::ConstLanelets & target_lanelets,
-  const double & acceleration, const double & prepare_distance, const double & lane_change_distance,
-  const double & lane_changing_duration, const double & minimum_lane_change_velocity);
+  const double & acceleration, const double & prepare_distance, const double & prepare_duration,
+  const double & prepare_speed, const double & minimum_prepare_distance,
+  const double & lane_change_distance, const double & lane_changing_duration,
+  const double & minimum_lane_change_velocity);
 
 LaneChangePaths getLaneChangePaths(
   const RouteHandler & route_handler, const lanelet::ConstLanelets & original_lanelets,
@@ -126,6 +128,13 @@ PathWithLaneId getLaneChangePathLaneChangingSegment(
   const double & lane_change_distance_buffer, const double & lane_changing_duration,
   const double & minimum_lane_change_velocity);
 
+TurnSignalInfo calc_turn_signal_info(
+  const PathWithLaneId & prepare_path, const double prepare_velocity,
+  const double min_prepare_distance, const double prepare_duration, const ShiftPoint & shift_points,
+  const ShiftedPath & lane_changing_path);
+
+void get_turn_signal_info(
+  const LaneChangePath & lane_change_path, TurnSignalInfo * turn_signal_info);
 }  // namespace behavior_path_planner::lane_change_utils
 
 #endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__LANE_CHANGE__UTIL_HPP_

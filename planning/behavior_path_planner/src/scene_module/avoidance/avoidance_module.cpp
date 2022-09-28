@@ -2546,25 +2546,44 @@ TurnSignalInfo AvoidanceModule::calcTurnSignalInfo(const ShiftedPath & path) con
     return {};
   }
 
-  const auto latest_shift_point = shift_points.front();  // assuming it is sorted.
+  const auto getRelativeLength = [this](const ShiftPoint & sp) {
+    const auto current_shift = getCurrentShift();
+    return sp.length - current_shift;
+  };
 
-  const auto turn_info = util::getPathTurnSignal(
-    avoidance_data_.current_lanelets, path, latest_shift_point, planner_data_->self_pose->pose,
-    planner_data_->self_odometry->twist.twist.linear.x, planner_data_->parameters);
+  const auto front_shift_point = shift_points.front();
 
-  // Set turn signal if the vehicle across the lane.
-  if (!path.shift_length.empty()) {
-    if (isAvoidancePlanRunning()) {
-      turn_signal.turn_signal.command = turn_info.first.command;
-    }
+  TurnSignalInfo turn_signal_info{};
+
+  if (std::abs(getRelativeLength(front_shift_point)) < 0.1) {
+    return turn_signal_info;
   }
 
-  // calc distance from ego to latest_shift_point end point.
-  if (turn_info.second >= 0.0) {
-    turn_signal.signal_distance = turn_info.second;
+  const auto signal_prepare_distance = std::max(getEgoSpeed() * 3.0, 10.0);
+  const auto ego_to_shift_start =
+    calcSignedArcLength(path.path.points, getEgoPosition(), front_shift_point.start.position);
+
+  if (signal_prepare_distance < ego_to_shift_start) {
+    return turn_signal_info;
   }
 
-  return turn_signal;
+  if (getRelativeLength(front_shift_point) > 0.0) {
+    turn_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_LEFT;
+  } else {
+    turn_signal_info.turn_signal.command = TurnIndicatorsCommand::ENABLE_RIGHT;
+  }
+
+  if (ego_to_shift_start > 0.0) {
+    turn_signal_info.desired_start_point = getEgoPosition();
+  } else {
+    turn_signal_info.desired_start_point = front_shift_point.start.position;
+  }
+
+  turn_signal_info.desired_end_point = front_shift_point.end.position;
+  turn_signal_info.required_start_point = front_shift_point.start.position;
+  turn_signal_info.required_end_point = front_shift_point.end.position;
+
+  return turn_signal_info;
 }
 
 double AvoidanceModule::getCurrentShift() const

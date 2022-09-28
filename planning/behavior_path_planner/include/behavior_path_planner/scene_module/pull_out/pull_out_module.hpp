@@ -87,12 +87,11 @@ private:
   std::vector<std::shared_ptr<PullOutPlannerBase>> pull_out_planners_;
   PullOutStatus status_;
 
-  std::vector<Pose> backed_pose_candidates_;
-  PoseStamped backed_pose_;
   std::deque<nav_msgs::msg::Odometry::ConstSharedPtr> odometry_buffer_;
 
   std::unique_ptr<rclcpp::Time> last_route_received_time_;
   std::unique_ptr<rclcpp::Time> last_pull_out_start_update_time_;
+  std::unique_ptr<Pose> last_approved_pose_;
 
   std::shared_ptr<PullOutPlannerBase> getCurrentPlanner() const;
   lanelet::ConstLanelets getCurrentLanes() const;
@@ -103,7 +102,7 @@ private:
   std::shared_ptr<LaneDepartureChecker> lane_departure_checker_;
 
   // turn signal
-  TurnSignalInfo calcTurnSignalInfo(const Pose start_pose, const Pose end_pose) const;
+  TurnSignalInfo calcTurnSignalInfo() const;
 
   void incrementPathIndex();
   PathWithLaneId getCurrentPath() const;
