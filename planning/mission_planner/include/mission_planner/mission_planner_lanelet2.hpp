@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MISSION_PLANNER_LANELET2__MISSION_PLANNER_LANELET2_HPP_
-#define MISSION_PLANNER_LANELET2__MISSION_PLANNER_LANELET2_HPP_
+#ifndef MISSION_PLANNER__MISSION_PLANNER_LANELET2_HPP_
+#define MISSION_PLANNER__MISSION_PLANNER_LANELET2_HPP_
 
 #include <string>
 #include <vector>
@@ -25,7 +25,7 @@
 #include <tf2_ros/transform_listener.h>
 
 // Autoware
-#include "../mission_planner/mission_planner.hpp"
+#include "mission_planner/mission_planner_interface.hpp"
 
 #include <route_handler/route_handler.hpp>
 
@@ -40,7 +40,7 @@
 namespace mission_planner
 {
 using RouteSections = std::vector<autoware_auto_mapping_msgs::msg::HADMapSegment>;
-class MissionPlannerLanelet2 : public MissionPlanner
+class MissionPlannerLanelet2 : public MissionPlannerInterface
 {
 public:
   explicit MissionPlannerLanelet2(const rclcpp::NodeOptions & node_options);
@@ -57,14 +57,16 @@ private:
   rclcpp::Subscription<autoware_auto_mapping_msgs::msg::HADMapBin>::SharedPtr map_subscriber_;
 
   void map_callback(const autoware_auto_mapping_msgs::msg::HADMapBin::ConstSharedPtr msg);
-  bool is_goal_valid() const;
-  void refine_goal_height(const RouteSections & route_sections);
+  bool is_goal_valid(const geometry_msgs::msg::Pose & goal_pose) const;
+  geometry_msgs::msg::Pose refine_goal_height(
+    const RouteSections & route_sections, const geometry_msgs::msg::Pose & goal_pose) const;
 
   // virtual functions
   bool is_routing_graph_ready() const override;
-  autoware_auto_planning_msgs::msg::HADMapRoute plan_route() override;
+  autoware_auto_planning_msgs::msg::HADMapRoute plan_route(
+    const std::vector<geometry_msgs::msg::Pose> & check_points) override;
   void visualize_route(const autoware_auto_planning_msgs::msg::HADMapRoute & route) const override;
 };
 }  // namespace mission_planner
 
-#endif  // MISSION_PLANNER_LANELET2__MISSION_PLANNER_LANELET2_HPP_
+#endif  // MISSION_PLANNER__MISSION_PLANNER_LANELET2_HPP_

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "utility_functions.hpp"
+#include "mission_planner/utility_functions.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 

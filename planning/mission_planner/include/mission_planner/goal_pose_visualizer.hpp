@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef GOAL_POSE_VISUALIZER__GOAL_POSE_VISUALIZER_HPP_
-#define GOAL_POSE_VISUALIZER__GOAL_POSE_VISUALIZER_HPP_
+#ifndef MISSION_PLANNER__GOAL_POSE_VISUALIZER_HPP_
+#define MISSION_PLANNER__GOAL_POSE_VISUALIZER_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -36,4 +36,4 @@ private:
 };
 
 }  // namespace mission_planner
-#endif  // GOAL_POSE_VISUALIZER__GOAL_POSE_VISUALIZER_HPP_
+#endif  // MISSION_PLANNER__GOAL_POSE_VISUALIZER_HPP_
