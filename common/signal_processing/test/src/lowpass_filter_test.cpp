@@ -39,13 +39,7 @@ TEST(lowpass_filter_twist, filter)
   LowpassFilterTwist lowpass_filter_(0.1);
 
   {  // initial state
-    const auto filtered_twist = lowpass_filter_.getValue();
-    EXPECT_NEAR(filtered_twist->linear.x, 0.0, epsilon);
-    EXPECT_NEAR(filtered_twist->linear.y, 0.0, epsilon);
-    EXPECT_NEAR(filtered_twist->linear.z, 0.0, epsilon);
-    EXPECT_NEAR(filtered_twist->angular.x, 0.0, epsilon);
-    EXPECT_NEAR(filtered_twist->angular.y, 0.0, epsilon);
-    EXPECT_NEAR(filtered_twist->angular.z, 0.0, epsilon);
+    EXPECT_EQ(lowpass_filter_.getValue(), boost::none);
   }
 
   {  // random filter
@@ -62,14 +56,7 @@ TEST(lowpass_filter_twist, filter)
 
   {  // reset without value
     lowpass_filter_.reset();
-
-    const auto filtered_twist = lowpass_filter_.getValue();
-    EXPECT_NEAR(filtered_twist->linear.x, 0.0, epsilon);
-    EXPECT_NEAR(filtered_twist->linear.y, 0.0, epsilon);
-    EXPECT_NEAR(filtered_twist->linear.z, 0.0, epsilon);
-    EXPECT_NEAR(filtered_twist->angular.x, 0.0, epsilon);
-    EXPECT_NEAR(filtered_twist->angular.y, 0.0, epsilon);
-    EXPECT_NEAR(filtered_twist->angular.z, 0.0, epsilon);
+    EXPECT_EQ(lowpass_filter_.getValue(), boost::none);
   }
 
   {  // reset with value
