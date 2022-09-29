@@ -16,7 +16,7 @@ common/global_parameter_loader/** kenji.miyake@tier4.jp
 common/goal_distance_calculator/** taiki.tanaka@tier4.jp
 common/grid_map_utils/** maxime.clement@tier4.jp
 common/interpolation/** fumiya.watanabe@tier4.jp takayuki.murooka@tier4.jp
-common/kalman_filter/** yukihiro.saito@tier4.jp
+common/kalman_filter/** koji.minoda@tier4.jp takeshi.ishita@tier4.jp yukihiro.saito@tier4.jp
 common/motion_common/** christopherj.ho@gmail.com
 common/motion_testing/** christopherj.ho@gmail.com
 common/motion_utils/** satoshi.ota@tier4.jp taiki.tanaka@tier4.jp takayuki.murooka@tier4.jp yutaka.shimizu@tier4.jp
