@@ -240,8 +240,7 @@ void EKFLocalizer::timerCallback()
 void EKFLocalizer::showCurrentX()
 {
   if (show_debug_info_) {
-    Eigen::MatrixXd X(dim_x_, 1);
-    ekf_.getLatestX(X);
+    const Eigen::MatrixXd X = ekf_.getLatestX();
     DEBUG_PRINT_MAT(X.transpose());
   }
 }
@@ -418,12 +417,10 @@ void EKFLocalizer::predictKinematicsModel()
    *     [ 0, 0,                 0,                 0,             0,  1]
    */
 
-  Eigen::MatrixXd X_curr(dim_x_, 1);  // current state
-  ekf_.getLatestX(X_curr);
+  const Eigen::MatrixXd X_curr = ekf_.getLatestX();
   DEBUG_PRINT_MAT(X_curr.transpose());
 
-  Eigen::MatrixXd P_curr;
-  ekf_.getLatestP(P_curr);
+  const Eigen::MatrixXd P_curr = ekf_.getLatestP();
 
   const double dt = ekf_dt_;
 
@@ -434,8 +431,7 @@ void EKFLocalizer::predictKinematicsModel()
   ekf_.predictWithDelay(X_next, A, Q);
 
   // debug
-  Eigen::MatrixXd X_result(dim_x_, 1);
-  ekf_.getLatestX(X_result);
+  const Eigen::MatrixXd X_result = ekf_.getLatestX();
   DEBUG_PRINT_MAT(X_result.transpose());
   DEBUG_PRINT_MAT((X_result - X_curr).transpose());
 }
@@ -452,8 +448,7 @@ void EKFLocalizer::measurementUpdatePose(const geometry_msgs::msg::PoseWithCovar
         pose.header.frame_id.c_str(), pose_frame_id_.c_str()),
       2000);
   }
-  Eigen::MatrixXd X_curr(dim_x_, 1);  // current state
-  ekf_.getLatestX(X_curr);
+  const Eigen::MatrixXd X_curr = ekf_.getLatestX();
   DEBUG_PRINT_MAT(X_curr.transpose());
 
   constexpr int dim_y = 3;  // pos_x, pos_y, yaw, depending on Pose output
@@ -499,9 +494,8 @@ void EKFLocalizer::measurementUpdatePose(const geometry_msgs::msg::PoseWithCovar
   Eigen::MatrixXd y_ekf(dim_y, 1);
   y_ekf << ekf_.getXelement(delay_step * dim_x_ + IDX::X),
     ekf_.getXelement(delay_step * dim_x_ + IDX::Y), ekf_yaw;
-  Eigen::MatrixXd P_curr, P_y;
-  ekf_.getLatestP(P_curr);
-  P_y = P_curr.block(0, 0, dim_y, dim_y);
+  const Eigen::MatrixXd P_curr = ekf_.getLatestP();
+  const Eigen::MatrixXd P_y = P_curr.block(0, 0, dim_y, dim_y);
   if (!mahalanobisGate(pose_gate_dist_, y_ekf, y, P_y)) {
     warning_.warnThrottle(
       "[EKF] Pose measurement update, mahalanobis distance is over limit. ignore "
@@ -520,8 +514,7 @@ void EKFLocalizer::measurementUpdatePose(const geometry_msgs::msg::PoseWithCovar
   ekf_.updateWithDelay(y, C, R, delay_step);
 
   // debug
-  Eigen::MatrixXd X_result(dim_x_, 1);
-  ekf_.getLatestX(X_result);
+  const Eigen::MatrixXd X_result = ekf_.getLatestX();
   DEBUG_PRINT_MAT(X_result.transpose());
   DEBUG_PRINT_MAT((X_result - X_curr).transpose());
 }
@@ -538,8 +531,7 @@ void EKFLocalizer::measurementUpdateTwist(
       "twist frame_id must be base_link");
   }
 
-  Eigen::MatrixXd X_curr(dim_x_, 1);  // current state
-  ekf_.getLatestX(X_curr);
+  const Eigen::MatrixXd X_curr = ekf_.getLatestX();
   DEBUG_PRINT_MAT(X_curr.transpose());
 
   constexpr int dim_y = 2;  // vx, wz
@@ -580,9 +572,8 @@ void EKFLocalizer::measurementUpdateTwist(
   Eigen::MatrixXd y_ekf(dim_y, 1);
   y_ekf << ekf_.getXelement(delay_step * dim_x_ + IDX::VX),
     ekf_.getXelement(delay_step * dim_x_ + IDX::WZ);
-  Eigen::MatrixXd P_curr, P_y;
-  ekf_.getLatestP(P_curr);
-  P_y = P_curr.block(4, 4, dim_y, dim_y);
+  const Eigen::MatrixXd P_curr = ekf_.getLatestP();
+  const Eigen::MatrixXd P_y = P_curr.block(4, 4, dim_y, dim_y);
   if (!mahalanobisGate(twist_gate_dist_, y_ekf, y, P_y)) {
     warning_.warnThrottle(
       "[EKF] Twist measurement update, mahalanobis distance is over limit. ignore "
@@ -602,8 +593,7 @@ void EKFLocalizer::measurementUpdateTwist(
   ekf_.updateWithDelay(y, C, R, delay_step);
 
   // debug
-  Eigen::MatrixXd X_result(dim_x_, 1);
-  ekf_.getLatestX(X_result);
+  const Eigen::MatrixXd X_result = ekf_.getLatestX();
   DEBUG_PRINT_MAT(X_result.transpose());
   DEBUG_PRINT_MAT((X_result - X_curr).transpose());
 }
@@ -614,10 +604,8 @@ void EKFLocalizer::measurementUpdateTwist(
 void EKFLocalizer::publishEstimateResult()
 {
   rclcpp::Time current_time = this->now();
-  Eigen::MatrixXd X(dim_x_, 1);
-  Eigen::MatrixXd P(dim_x_, dim_x_);
-  ekf_.getLatestX(X);
-  ekf_.getLatestP(P);
+  const Eigen::MatrixXd X = ekf_.getLatestX();
+  const Eigen::MatrixXd P = ekf_.getLatestP();
 
   /* publish latest pose */
   pub_pose_->publish(current_ekf_pose_);
