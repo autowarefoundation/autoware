@@ -23,7 +23,6 @@ namespace centerpoint
 
 void NonMaximumSuppression::setParameters(const NMSParams & params)
 {
-  assert(params.target_class_names_.size() == 8);
   assert(params.search_distance_2d_ >= 0.0);
   assert(params.iou_threshold_ >= 0.0 && params.iou_threshold_ <= 1.0);
 

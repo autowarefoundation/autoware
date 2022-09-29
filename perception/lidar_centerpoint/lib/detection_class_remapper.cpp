@@ -23,7 +23,8 @@ void DetectionClassRemapper::setParameters(
 {
   assert(allow_remapping_by_area_matrix.size() == min_area_matrix.size());
   assert(allow_remapping_by_area_matrix.size() == max_area_matrix.size());
-  assert(std::pow(std::sqrt(min_area_matrix.size()), 2) == std::sqrt(min_area_matrix.size()));
+  assert(
+    std::pow(static_cast<int>(std::sqrt(min_area_matrix.size())), 2) == min_area_matrix.size());
 
   num_labels_ = static_cast<int>(std::sqrt(min_area_matrix.size()));
 

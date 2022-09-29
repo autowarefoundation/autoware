@@ -33,8 +33,8 @@ PointpaintingFusionNode::PointpaintingFusionNode(const rclcpp::NodeOptions & opt
     static_cast<float>(this->declare_parameter<double>("score_threshold", 0.4));
   const float circle_nms_dist_threshold =
     static_cast<float>(this->declare_parameter<double>("circle_nms_dist_threshold", 1.5));
-  const float yaw_norm_threshold =
-    static_cast<float>(this->declare_parameter<double>("yaw_norm_threshold", 0.5));
+  const auto yaw_norm_thresholds =
+    this->declare_parameter<std::vector<double>>("yaw_norm_thresholds");
   // densification param
   const std::string densification_world_frame_id =
     this->declare_parameter("densification_world_frame_id", "map");
@@ -73,7 +73,7 @@ PointpaintingFusionNode::PointpaintingFusionNode(const rclcpp::NodeOptions & opt
   centerpoint::CenterPointConfig config(
     class_names_.size(), point_feature_size, max_voxel_size, pointcloud_range, voxel_size,
     downsample_factor, encoder_in_feature_size, score_threshold, circle_nms_dist_threshold,
-    yaw_norm_threshold);
+    yaw_norm_thresholds);
 
   // create detector
   detector_ptr_ = std::make_unique<image_projection_based_fusion::PointPaintingTRT>(

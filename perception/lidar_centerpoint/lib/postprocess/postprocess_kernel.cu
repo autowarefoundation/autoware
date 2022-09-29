@@ -17,6 +17,7 @@
 #include <lidar_centerpoint/postprocess/postprocess_kernel.hpp>
 
 #include <thrust/count.h>
+#include <thrust/device_vector.h>
 #include <thrust/sort.h>
 
 namespace
@@ -54,7 +55,7 @@ __global__ void generateBoxes3D_kernel(
   const float * out_rot, const float * out_vel, const float voxel_size_x, const float voxel_size_y,
   const float range_min_x, const float range_min_y, const std::size_t down_grid_size_x,
   const std::size_t down_grid_size_y, const std::size_t downsample_factor, const int class_size,
-  const float yaw_norm_threshold, Box3D * det_boxes3d)
+  const float * yaw_norm_thresholds, Box3D * det_boxes3d)
 {
   // generate boxes3d from the outputs of the network.
   // shape of out_*: (N, DOWN_GRID_SIZE_Y, DOWN_GRID_SIZE_X)
@@ -93,7 +94,7 @@ __global__ void generateBoxes3D_kernel(
   const float vel_y = out_vel[down_grid_size * 1 + idx];
 
   det_boxes3d[idx].label = label;
-  det_boxes3d[idx].score = yaw_norm >= yaw_norm_threshold ? max_score : 0.f;
+  det_boxes3d[idx].score = yaw_norm >= yaw_norm_thresholds[label] ? max_score : 0.f;
   det_boxes3d[idx].x = x;
   det_boxes3d[idx].y = y;
   det_boxes3d[idx].z = z;
@@ -109,6 +110,8 @@ PostProcessCUDA::PostProcessCUDA(const CenterPointConfig & config) : config_(con
 {
   const auto num_raw_boxes3d = config.down_grid_size_y_ * config.down_grid_size_x_;
   boxes3d_d_ = thrust::device_vector<Box3D>(num_raw_boxes3d);
+  yaw_norm_thresholds_d_ = thrust::device_vector<float>(
+    config_.yaw_norm_thresholds_.begin(), config_.yaw_norm_thresholds_.end());
 }
 
 cudaError_t PostProcessCUDA::generateDetectedBoxes3D_launch(
@@ -124,7 +127,8 @@ cudaError_t PostProcessCUDA::generateDetectedBoxes3D_launch(
     out_heatmap, out_offset, out_z, out_dim, out_rot, out_vel, config_.voxel_size_x_,
     config_.voxel_size_y_, config_.range_min_x_, config_.range_min_y_, config_.down_grid_size_x_,
     config_.down_grid_size_y_, config_.downsample_factor_, config_.class_size_,
-    config_.yaw_norm_threshold_, thrust::raw_pointer_cast(boxes3d_d_.data()));
+    thrust::raw_pointer_cast(yaw_norm_thresholds_d_.data()),
+    thrust::raw_pointer_cast(boxes3d_d_.data()));
 
   // suppress by socre
   const auto num_det_boxes3d = thrust::count_if(
