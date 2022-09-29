@@ -27,6 +27,7 @@ ament_auto_add_executable(ndt_scan_matcher
   src/ndt_scan_matcher_node.cpp
   src/ndt_scan_matcher_core.cpp
   src/util_func.cpp
+  src/pose_array_interpolator.cpp
 )
 
 ament_auto_package(

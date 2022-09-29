@@ -21,7 +21,7 @@
 
 #include <string>
 
-visualization_msgs::msg::MarkerArray makeDebugMarkers(
+visualization_msgs::msg::MarkerArray make_debug_markers(
   const builtin_interfaces::msg::Time & stamp, const std::string & map_frame_,
   const geometry_msgs::msg::Vector3 & scale, const Particle & particle, const size_t i);
 

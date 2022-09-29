@@ -16,7 +16,7 @@
 
 #include "ndt_scan_matcher/util_func.hpp"
 
-visualization_msgs::msg::MarkerArray makeDebugMarkers(
+visualization_msgs::msg::MarkerArray make_debug_markers(
   const builtin_interfaces::msg::Time & stamp, const std::string & map_frame_,
   const geometry_msgs::msg::Vector3 & scale, const Particle & particle, const size_t i)
 {
@@ -34,32 +34,32 @@ visualization_msgs::msg::MarkerArray makeDebugMarkers(
 
   marker.ns = "initial_pose_transform_probability_color_marker";
   marker.pose = particle.initial_pose;
-  marker.color = ExchangeColorCrc(particle.score / 4.5);
+  marker.color = exchange_color_crc(particle.score / 4.5);
   marker_array.markers.push_back(marker);
 
   marker.ns = "initial_pose_iteration_color_marker";
   marker.pose = particle.initial_pose;
-  marker.color = ExchangeColorCrc((1.0 * particle.iteration) / 30.0);
+  marker.color = exchange_color_crc((1.0 * particle.iteration) / 30.0);
   marker_array.markers.push_back(marker);
 
   marker.ns = "initial_pose_index_color_marker";
   marker.pose = particle.initial_pose;
-  marker.color = ExchangeColorCrc((1.0 * i) / 100);
+  marker.color = exchange_color_crc((1.0 * i) / 100);
   marker_array.markers.push_back(marker);
 
   marker.ns = "result_pose_transform_probability_color_marker";
   marker.pose = particle.result_pose;
-  marker.color = ExchangeColorCrc(particle.score / 4.5);
+  marker.color = exchange_color_crc(particle.score / 4.5);
   marker_array.markers.push_back(marker);
 
   marker.ns = "result_pose_iteration_color_marker";
   marker.pose = particle.result_pose;
-  marker.color = ExchangeColorCrc((1.0 * particle.iteration) / 30.0);
+  marker.color = exchange_color_crc((1.0 * particle.iteration) / 30.0);
   marker_array.markers.push_back(marker);
 
   marker.ns = "result_pose_index_color_marker";
   marker.pose = particle.result_pose;
-  marker.color = ExchangeColorCrc((1.0 * i) / 100);
+  marker.color = exchange_color_crc((1.0 * i) / 100);
   marker_array.markers.push_back(marker);
 
   return marker_array;

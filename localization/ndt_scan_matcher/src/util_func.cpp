@@ -19,7 +19,7 @@
 static std::random_device seed_gen;
 
 // ref by http://takacity.blog.fc2.com/blog-entry-69.html
-std_msgs::msg::ColorRGBA ExchangeColorCrc(double x)
+std_msgs::msg::ColorRGBA exchange_color_crc(double x)
 {
   std_msgs::msg::ColorRGBA color;
 
@@ -47,7 +47,7 @@ std_msgs::msg::ColorRGBA ExchangeColorCrc(double x)
   return color;
 }
 
-double calcDiffForRadian(const double lhs_rad, const double rhs_rad)
+double calc_diff_for_radian(const double lhs_rad, const double rhs_rad)
 {
   double diff_rad = lhs_rad - rhs_rad;
   if (diff_rad > M_PI) {
@@ -64,7 +64,7 @@ Eigen::Map<const RowMatrixXd> makeEigenCovariance(const std::array<double, 36> &
 }
 
 // x: roll, y: pitch, z: yaw
-geometry_msgs::msg::Vector3 getRPY(const geometry_msgs::msg::Pose & pose)
+geometry_msgs::msg::Vector3 get_rpy(const geometry_msgs::msg::Pose & pose)
 {
   geometry_msgs::msg::Vector3 rpy;
   tf2::Quaternion q(pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w);
@@ -72,17 +72,17 @@ geometry_msgs::msg::Vector3 getRPY(const geometry_msgs::msg::Pose & pose)
   return rpy;
 }
 
-geometry_msgs::msg::Vector3 getRPY(const geometry_msgs::msg::PoseStamped & pose)
+geometry_msgs::msg::Vector3 get_rpy(const geometry_msgs::msg::PoseStamped & pose)
 {
-  return getRPY(pose.pose);
+  return get_rpy(pose.pose);
 }
 
-geometry_msgs::msg::Vector3 getRPY(const geometry_msgs::msg::PoseWithCovarianceStamped & pose)
+geometry_msgs::msg::Vector3 get_rpy(const geometry_msgs::msg::PoseWithCovarianceStamped & pose)
 {
-  return getRPY(pose.pose.pose);
+  return get_rpy(pose.pose.pose);
 }
 
-geometry_msgs::msg::Twist calcTwist(
+geometry_msgs::msg::Twist calc_twist(
   const geometry_msgs::msg::PoseStamped & pose_a, const geometry_msgs::msg::PoseStamped & pose_b)
 {
   const rclcpp::Duration dt = rclcpp::Time(pose_b.header.stamp) - rclcpp::Time(pose_a.header.stamp);
@@ -92,8 +92,8 @@ geometry_msgs::msg::Twist calcTwist(
     return geometry_msgs::msg::Twist();
   }
 
-  const auto pose_a_rpy = getRPY(pose_a);
-  const auto pose_b_rpy = getRPY(pose_b);
+  const auto pose_a_rpy = get_rpy(pose_a);
+  const auto pose_b_rpy = get_rpy(pose_b);
 
   geometry_msgs::msg::Vector3 diff_xyz;
   geometry_msgs::msg::Vector3 diff_rpy;
@@ -101,9 +101,9 @@ geometry_msgs::msg::Twist calcTwist(
   diff_xyz.x = pose_b.pose.position.x - pose_a.pose.position.x;
   diff_xyz.y = pose_b.pose.position.y - pose_a.pose.position.y;
   diff_xyz.z = pose_b.pose.position.z - pose_a.pose.position.z;
-  diff_rpy.x = calcDiffForRadian(pose_b_rpy.x, pose_a_rpy.x);
-  diff_rpy.y = calcDiffForRadian(pose_b_rpy.y, pose_a_rpy.y);
-  diff_rpy.z = calcDiffForRadian(pose_b_rpy.z, pose_a_rpy.z);
+  diff_rpy.x = calc_diff_for_radian(pose_b_rpy.x, pose_a_rpy.x);
+  diff_rpy.y = calc_diff_for_radian(pose_b_rpy.y, pose_a_rpy.y);
+  diff_rpy.z = calc_diff_for_radian(pose_b_rpy.z, pose_a_rpy.z);
 
   geometry_msgs::msg::Twist twist;
   twist.linear.x = diff_xyz.x / dt_s;
@@ -116,7 +116,7 @@ geometry_msgs::msg::Twist calcTwist(
   return twist;
 }
 
-void getNearestTimeStampPose(
+void get_nearest_timestamp_pose(
   const std::deque<geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr> &
     pose_cov_msg_ptr_array,
   const rclcpp::Time & time_stamp,
@@ -138,7 +138,7 @@ void getNearestTimeStampPose(
   }
 }
 
-geometry_msgs::msg::PoseStamped interpolatePose(
+geometry_msgs::msg::PoseStamped interpolate_pose(
   const geometry_msgs::msg::PoseStamped & pose_a, const geometry_msgs::msg::PoseStamped & pose_b,
   const rclcpp::Time & time_stamp)
 {
@@ -150,10 +150,10 @@ geometry_msgs::msg::PoseStamped interpolatePose(
     return geometry_msgs::msg::PoseStamped();
   }
 
-  const auto twist = calcTwist(pose_a, pose_b);
+  const auto twist = calc_twist(pose_a, pose_b);
   const double dt = (time_stamp - pose_a_time_stamp).seconds();
 
-  const auto pose_a_rpy = getRPY(pose_a);
+  const auto pose_a_rpy = get_rpy(pose_a);
 
   geometry_msgs::msg::Vector3 xyz;
   geometry_msgs::msg::Vector3 rpy;
@@ -177,7 +177,7 @@ geometry_msgs::msg::PoseStamped interpolatePose(
   return pose;
 }
 
-geometry_msgs::msg::PoseStamped interpolatePose(
+geometry_msgs::msg::PoseStamped interpolate_pose(
   const geometry_msgs::msg::PoseWithCovarianceStamped & pose_a,
   const geometry_msgs::msg::PoseWithCovarianceStamped & pose_b, const rclcpp::Time & time_stamp)
 {
@@ -189,10 +189,10 @@ geometry_msgs::msg::PoseStamped interpolatePose(
   tmp_pose_b.header = pose_b.header;
   tmp_pose_b.pose = pose_b.pose.pose;
 
-  return interpolatePose(tmp_pose_a, tmp_pose_b, time_stamp);
+  return interpolate_pose(tmp_pose_a, tmp_pose_b, time_stamp);
 }
 
-void popOldPose(
+void pop_old_pose(
   std::deque<geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr> &
     pose_cov_msg_ptr_array,
   const rclcpp::Time & time_stamp)
@@ -205,14 +205,38 @@ void popOldPose(
   }
 }
 
-Eigen::Affine3d fromRosPoseToEigen(const geometry_msgs::msg::Pose & ros_pose)
+Eigen::Affine3d pose_to_affine3d(const geometry_msgs::msg::Pose & ros_pose)
 {
   Eigen::Affine3d eigen_pose;
   tf2::fromMsg(ros_pose, eigen_pose);
   return eigen_pose;
 }
 
-std::vector<geometry_msgs::msg::Pose> createRandomPoseArray(
+Eigen::Matrix4f pose_to_matrix4f(const geometry_msgs::msg::Pose & ros_pose)
+{
+  Eigen::Affine3d eigen_pose_affine = pose_to_affine3d(ros_pose);
+  Eigen::Matrix4f eigen_pose_matrix = eigen_pose_affine.matrix().cast<float>();
+  return eigen_pose_matrix;
+}
+
+Eigen::Vector3d point_to_vector3d(const geometry_msgs::msg::Point & ros_pos)
+{
+  Eigen::Vector3d eigen_pos;
+  eigen_pos.x() = ros_pos.x;
+  eigen_pos.y() = ros_pos.y;
+  eigen_pos.z() = ros_pos.z;
+  return eigen_pos;
+}
+
+geometry_msgs::msg::Pose matrix4f_to_pose(const Eigen::Matrix4f & eigen_pose_matrix)
+{
+  Eigen::Affine3d eigen_pose_affine;
+  eigen_pose_affine.matrix() = eigen_pose_matrix.cast<double>();
+  geometry_msgs::msg::Pose ros_pose = tf2::toMsg(eigen_pose_affine);
+  return ros_pose;
+}
+
+std::vector<geometry_msgs::msg::Pose> create_random_pose_array(
   const geometry_msgs::msg::PoseWithCovarianceStamped & base_pose_with_cov, const int particle_num)
 {
   std::default_random_engine engine(seed_gen());
@@ -226,7 +250,7 @@ std::vector<geometry_msgs::msg::Pose> createRandomPoseArray(
   std::normal_distribution<> pitch_distribution(0.0, std::sqrt(covariance(4, 4)));
   std::normal_distribution<> yaw_distribution(0.0, std::sqrt(covariance(5, 5)));
 
-  const auto base_rpy = getRPY(base_pose_with_cov);
+  const auto base_rpy = get_rpy(base_pose_with_cov);
 
   std::vector<geometry_msgs::msg::Pose> poses;
   for (int i = 0; i < particle_num; ++i) {
@@ -253,4 +277,12 @@ std::vector<geometry_msgs::msg::Pose> createRandomPoseArray(
   }
 
   return poses;
+}
+
+double norm(const geometry_msgs::msg::Point & p1, const geometry_msgs::msg::Point & p2)
+{
+  const double dx = p1.x - p2.x;
+  const double dy = p1.y - p2.y;
+  const double dz = p1.z - p2.z;
+  return std::sqrt(dx * dx + dy * dy + dz * dz);
 }
