@@ -75,9 +75,8 @@ private:
   CooperateStatusArray registered_status_;
   bool is_auto_mode_;
 
-  // TEMPORARY: Name space will be changed.
-  // std::string cooperate_status_namespace_ = "/planning/cooperate_status";
-  // std::string cooperate_commands_namespace_ = "/planning/cooperate_commands";
+  std::string cooperate_status_namespace_ = "/planning/cooperate_status";
+  std::string cooperate_commands_namespace_ = "/planning/cooperate_commands";
   std::string enable_auto_mode_namespace_ = "/planning/enable_auto_mode/internal";
 };
 

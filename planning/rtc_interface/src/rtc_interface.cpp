@@ -76,12 +76,12 @@ RTCInterface::RTCInterface(rclcpp::Node * node, const std::string & name)
 
   // Publisher
   pub_statuses_ =
-    node->create_publisher<CooperateStatusArray>("~/" + name + "/cooperate_status", 1);
+    node->create_publisher<CooperateStatusArray>(cooperate_status_namespace_ + "/" + name, 1);
 
   // Service
   callback_group_ = node->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   srv_commands_ = node->create_service<CooperateCommands>(
-    "~/" + name + "/cooperate_commands",
+    cooperate_commands_namespace_ + "/" + name,
     std::bind(&RTCInterface::onCooperateCommandService, this, _1, _2),
     rmw_qos_profile_services_default, callback_group_);
   srv_auto_mode_ = node->create_service<AutoMode>(
