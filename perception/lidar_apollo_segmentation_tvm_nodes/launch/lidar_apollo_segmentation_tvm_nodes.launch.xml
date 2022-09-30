@@ -1,0 +1,13 @@
+<launch>
+  <arg name="input/pointcloud" default="/sensing/lidar/pointcloud"/>
+  <arg name="output/objects" default="labeled_clusters"/>
+  <arg name="param_file" default="$(find-pkg-share lidar_apollo_segmentation_tvm_nodes)/param/test.param.yaml"/>
+  <arg name="z_offset" default="-2.0"/>
+
+  <node pkg="lidar_apollo_segmentation_tvm_nodes" exec="lidar_apollo_segmentation_tvm_nodes_exe" name="lidar_apollo_segmentation_tvm_nodes" output="screen">
+    <remap from="points_in" to="$(var input/pointcloud)"/>
+    <remap from="objects_out" to="$(var output/objects)"/>
+    <param name="z_offset" value="$(var z_offset)"/>
+    <param from="$(var param_file)"/>
+  </node>
+</launch>

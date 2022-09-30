@@ -1,0 +1,13 @@
+/**:
+  ros__parameters:
+    # The range of the 2D grid with respect to the origin.
+    range: 70
+    # The detection confidence score threshold for filtering out the candidate
+    # clusters in the post-processing step.
+    score_threshold: 0.8
+    # Enable input channel intensity feature.
+    use_intensity_feature: true
+    # Enable input channel constant feature.
+    use_constant_feature: false
+    # Vertical translation of the pointcloud before inference.
+    z_offset: 0.0
