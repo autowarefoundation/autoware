@@ -14,6 +14,8 @@
 
 #include "imu_corrector/imu_corrector_core.hpp"
 
+#include "tier4_autoware_utils/tier4_autoware_utils.hpp"
+
 namespace imu_corrector
 {
 ImuCorrector::ImuCorrector(const rclcpp::NodeOptions & node_options)
@@ -42,11 +44,12 @@ void ImuCorrector::callbackImu(const sensor_msgs::msg::Imu::ConstSharedPtr imu_m
   imu_msg.angular_velocity.y -= angular_velocity_offset_y_;
   imu_msg.angular_velocity.z -= angular_velocity_offset_z_;
 
-  imu_msg.angular_velocity_covariance[0 * 3 + 0] =
+  using IDX = tier4_autoware_utils::xyz_covariance_index::XYZ_COV_IDX;
+  imu_msg.angular_velocity_covariance[IDX::X_X] =
     angular_velocity_stddev_xx_ * angular_velocity_stddev_xx_;
-  imu_msg.angular_velocity_covariance[1 * 3 + 1] =
+  imu_msg.angular_velocity_covariance[IDX::Y_Y] =
     angular_velocity_stddev_yy_ * angular_velocity_stddev_yy_;
-  imu_msg.angular_velocity_covariance[2 * 3 + 2] =
+  imu_msg.angular_velocity_covariance[IDX::Z_Z] =
     angular_velocity_stddev_zz_ * angular_velocity_stddev_zz_;
 
   imu_pub_->publish(imu_msg);
