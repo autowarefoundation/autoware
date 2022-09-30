@@ -19,7 +19,8 @@ find_package(autoware_cmake REQUIRED)
 autoware_package()
 
 # Check that a neural network was available for lidar_apollo_segmentation_tvm to be built.
-if(lidar_apollo_segmentation_tvm_FOUND)
+autoware_check_neural_network(baidu_cnn "${${lidar_apollo_segmentation_tvm}_BACKEND}")
+if(baidu_cnn_FOUND)
   # Set lidar_apollo_segmentation_tvm includes as "SYSTEM" to ignore compiler errors on PCL headers
   include_directories(SYSTEM "${lidar_apollo_segmentation_tvm_INCLUDE_DIRS}")
 
@@ -48,4 +49,5 @@ if(lidar_apollo_segmentation_tvm_FOUND)
   )
 else()
   message(WARNING "lidar_apollo_segmentation_tvm not found, skipping package.")
+  ament_auto_package()
 endif()
