@@ -86,7 +86,7 @@ public:
     const Pose & start_checkpoint, const Pose & goal_checkpoint,
     lanelet::ConstLanelets * path_lanelets) const;
   std::vector<HADMapSegment> createMapSegments(const lanelet::ConstLanelets & path_lanelets) const;
-  bool isRouteLooped(const RouteSections & route_sections) const;
+  static bool isRouteLooped(const RouteSections & route_sections);
 
   // for goal
   bool isInGoalRouteSection(const lanelet::ConstLanelet & lanelet) const;
@@ -222,7 +222,7 @@ public:
   bool getClosestLaneletWithinRoute(
     const Pose & search_pose, lanelet::ConstLanelet * closest_lanelet) const;
   lanelet::ConstLanelet getLaneletsFromId(const lanelet::Id id) const;
-  lanelet::ConstLanelets getLaneletsFromIds(const lanelet::Ids ids) const;
+  lanelet::ConstLanelets getLaneletsFromIds(const lanelet::Ids & ids) const;
   lanelet::ConstLanelets getLaneletSequence(
     const lanelet::ConstLanelet & lanelet, const Pose & current_pose,
     const double backward_distance, const double forward_distance) const;
@@ -247,12 +247,12 @@ public:
     bool use_exact = true) const;
   bool getLaneChangeTarget(
     const lanelet::ConstLanelets & lanelets, lanelet::ConstLanelet * target_lanelet) const;
-  bool getPullOverTarget(
+  static bool getPullOverTarget(
     const lanelet::ConstLanelets & lanelets, const Pose & goal_pose,
-    lanelet::ConstLanelet * target_lanelet) const;
-  bool getPullOutStartLane(
+    lanelet::ConstLanelet * target_lanelet);
+  static bool getPullOutStartLane(
     const lanelet::ConstLanelets & lanelets, const Pose & pose, const double vehicle_width,
-    lanelet::ConstLanelet * target_lanelet) const;
+    lanelet::ConstLanelet * target_lanelet);
   double getLaneChangeableDistance(
     const Pose & current_pose, const LaneChangeDirection & direction) const;
   lanelet::ConstPolygon3d getIntersectionAreaById(const lanelet::Id id) const;
