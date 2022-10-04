@@ -1986,6 +1986,7 @@ lanelet::ConstLanelets getExtendedCurrentLanes(
   const auto & route_handler = planner_data->route_handler;
   const auto current_pose = planner_data->self_pose->pose;
   const auto common_parameters = planner_data->parameters;
+  const auto routing_graph_ptr = route_handler->getRoutingGraphPtr();
 
   lanelet::ConstLanelet current_lane;
   if (!route_handler->getClosestLaneletWithinRoute(current_pose, &current_lane)) {
@@ -2001,17 +2002,13 @@ lanelet::ConstLanelets getExtendedCurrentLanes(
     common_parameters.forward_path_length);
 
   // Add next_lanes
-  const auto next_lanes = route_handler->getNextLanelets(current_lanes.back());
-  if (!next_lanes.empty()) {
-    // TODO(kosuke55) which lane should be added?
-    current_lanes.push_back(next_lanes.front());
+  for (const auto & next_lane : route_handler->getNextLanelets(current_lanes.back())) {
+    current_lanes.push_back(next_lane);
   }
 
-  // Add prev_lane
-  lanelet::ConstLanelets prev_lanes;
-  if (route_handler->getPreviousLaneletsWithinRoute(current_lanes.front(), &prev_lanes)) {
-    // TODO(kosuke55) which lane should be added?
-    current_lanes.insert(current_lanes.begin(), 0, prev_lanes.front());
+  // Add previous lanes
+  for (const auto & prev_lane : route_handler->getPreviousLanelets(current_lanes.front())) {
+    current_lanes.insert(current_lanes.begin(), prev_lane);
   }
 
   return current_lanes;

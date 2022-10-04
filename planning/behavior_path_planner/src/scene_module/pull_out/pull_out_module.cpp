@@ -124,7 +124,7 @@ bool PullOutModule::isExecutionRequested() const
     const auto vehicle_footprint = transformVector(
       local_vehicle_footprint,
       tier4_autoware_utils::pose2transform(planner_data_->self_pose->pose));
-    const auto road_lanes = getCurrentLanes();
+    const auto road_lanes = util::getExtendedCurrentLanes(planner_data_);
 
     // check if goal pose is in shoulder lane and distance is long enough for pull out
     if (isInLane(closest_shoulder_lanelet, vehicle_footprint)) {
@@ -263,7 +263,7 @@ BehaviorModuleOutput PullOutModule::planWaitingApproval()
   waitApproval();
 
   BehaviorModuleOutput output;
-  const auto current_lanes = getCurrentLanes();
+  const auto current_lanes = util::getExtendedCurrentLanes(planner_data_);
   const auto pull_out_lanes = pull_out_utils::getPullOutLanes(current_lanes, planner_data_);
   auto lanes = current_lanes;
   lanes.insert(lanes.end(), pull_out_lanes.begin(), pull_out_lanes.end());
@@ -353,9 +353,14 @@ void PullOutModule::planWithPriorityOnEfficientPath(
 {
   status_.is_safe = false;
 
+  // plan with each planner
   for (const auto & planner : pull_out_planners_) {
-    for (const auto & pull_out_start_pose : start_pose_candidates) {
-      // plan with each planner
+    for (size_t i = 0; i < start_pose_candidates.size(); ++i) {
+      // pull out start pose is current_pose
+      if (i == 0) {
+        status_.back_finished = true;
+      }
+      const auto & pull_out_start_pose = start_pose_candidates.at(i);
       planner->setPlannerData(planner_data_);
       const auto pull_out_path = planner->plan(pull_out_start_pose, goal_pose);
       if (pull_out_path) {  // found safe path
@@ -379,7 +384,12 @@ void PullOutModule::planWithPriorityOnShortBackDistance(
 {
   status_.is_safe = false;
 
-  for (const auto & pull_out_start_pose : start_pose_candidates) {
+  for (size_t i = 0; i < start_pose_candidates.size(); ++i) {
+    // pull out start pose is current_pose
+    if (i == 0) {
+      status_.back_finished = true;
+    }
+    const auto & pull_out_start_pose = start_pose_candidates.at(i);
     // plan with each planner
     for (const auto & planner : pull_out_planners_) {
       planner->setPlannerData(planner_data_);
@@ -406,16 +416,17 @@ void PullOutModule::updatePullOutStatus()
   const auto & current_pose = planner_data_->self_pose->pose;
   const auto & goal_pose = planner_data_->route_handler->getGoalPose();
 
-  const auto current_lanes = getCurrentLanes();
-  status_.current_lanes = current_lanes;
+  status_.current_lanes = util::getExtendedCurrentLanes(planner_data_);
+  status_.pull_out_lanes = pull_out_utils::getPullOutLanes(status_.current_lanes, planner_data_);
 
   // Get pull_out lanes
-  const auto pull_out_lanes = pull_out_utils::getPullOutLanes(current_lanes, planner_data_);
+  const auto pull_out_lanes = pull_out_utils::getPullOutLanes(status_.current_lanes, planner_data_);
   status_.pull_out_lanes = pull_out_lanes;
 
   // combine road and shoulder lanes
-  status_.lanes = current_lanes;
-  status_.lanes.insert(status_.lanes.end(), pull_out_lanes.begin(), pull_out_lanes.end());
+  status_.lanes = status_.current_lanes;
+  status_.lanes.insert(
+    status_.lanes.end(), status_.pull_out_lanes.begin(), status_.pull_out_lanes.end());
 
   // search pull out start candidates backward
   std::vector<Pose> start_pose_candidates;
@@ -449,32 +460,13 @@ void PullOutModule::updatePullOutStatus()
   checkBackFinished();
   if (!status_.back_finished) {
     status_.backward_path = pull_out_utils::getBackwardPath(
-      *route_handler, pull_out_lanes, current_pose, status_.pull_out_start_pose,
+      *route_handler, status_.pull_out_lanes, current_pose, status_.pull_out_start_pose,
       parameters_.backward_velocity);
   }
 
   // Update status
-  status_.lane_follow_lane_ids = util::getIds(current_lanes);
-  status_.pull_out_lane_ids = util::getIds(pull_out_lanes);
-}
-
-lanelet::ConstLanelets PullOutModule::getCurrentLanes() const
-{
-  const auto & route_handler = planner_data_->route_handler;
-  const auto current_pose = planner_data_->self_pose->pose;
-  const auto common_parameters = planner_data_->parameters;
-
-  lanelet::ConstLanelet current_lane;
-  if (!route_handler->getClosestLaneletWithinRoute(current_pose, &current_lane)) {
-    RCLCPP_ERROR_THROTTLE(
-      getLogger(), *clock_, 5000, "failed to find closest lanelet within route!!!");
-    return {};  // TODO(Horibe) what should be returned?
-  }
-
-  // For current_lanes with desired length
-  return route_handler->getLaneletSequence(
-    current_lane, current_pose, common_parameters.backward_path_length,
-    common_parameters.forward_path_length);
+  status_.lane_follow_lane_ids = util::getIds(status_.current_lanes);
+  status_.pull_out_lane_ids = util::getIds(status_.pull_out_lanes);
 }
 
 // make this class?

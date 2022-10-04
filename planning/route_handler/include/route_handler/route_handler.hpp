@@ -123,6 +123,7 @@ public:
   boost::optional<lanelet::ConstLanelet> getLeftLanelet(
     const lanelet::ConstLanelet & lanelet) const;
   lanelet::ConstLanelets getNextLanelets(const lanelet::ConstLanelet & lanelet) const;
+  lanelet::ConstLanelets getPreviousLanelets(const lanelet::ConstLanelet & lanelet) const;
 
   /**
    * @brief Check if opposite-direction lane is available at the right side of the lanelet

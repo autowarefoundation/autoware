@@ -39,7 +39,7 @@ boost::optional<PullOverPath> ShiftPullOver::plan(const Pose & goal_pose)
 {
   const auto & route_handler = planner_data_->route_handler;
 
-  const auto road_lanes = util::getCurrentLanes(planner_data_);
+  const auto road_lanes = util::getExtendedCurrentLanes(planner_data_);
   const auto shoulder_lanes = pull_over_utils::getPullOverLanes(*route_handler);
   if (road_lanes.empty() || shoulder_lanes.empty()) {
     return {};

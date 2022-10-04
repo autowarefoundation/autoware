@@ -94,7 +94,6 @@ private:
   std::unique_ptr<Pose> last_approved_pose_;
 
   std::shared_ptr<PullOutPlannerBase> getCurrentPlanner() const;
-  lanelet::ConstLanelets getCurrentLanes() const;
   PathWithLaneId getFullPath() const;
   ParallelParkingParameters getGeometricPullOutParameters() const;
   std::vector<Pose> searchBackedPoses();
