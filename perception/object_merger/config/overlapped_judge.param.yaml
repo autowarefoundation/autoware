@@ -1,0 +1,5 @@
+/**:
+  ros__parameters:
+    distance_threshold_list:
+      #UNKNOWN, CAR, TRUCK, BUS,  TRAILER, MOTORBIKE, BICYCLE,PEDESTRIAN
+      [9.0,     9.0, 9.0,   9.0,  9.0,     9.0,       9.0,    9.0]         #UNKNOWN

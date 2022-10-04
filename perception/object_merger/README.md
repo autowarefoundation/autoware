@@ -25,14 +25,26 @@ The successive shortest path algorithm is used to solve the data association pro
 
 ## Parameters
 
-| Name                 | Type   | Description                                 |
-| -------------------- | ------ | ------------------------------------------- |
-| `can_assign_matrix`  | double | Assignment table for data association       |
-| `max_dist_matrix`    | double | Maximum distance table for data association |
-| `max_area_matrix`    | double | Maximum area table for data association     |
-| `min_area_matrix`    | double | Minimum area table for data association     |
-| `max_rad_matrix`     | double | Maximum angle table for data association    |
-| `base_link_frame_id` | double | association frame                           |
+| Name                        | Type                  | Description                                                                                                                                                                                                                           |
+| --------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `can_assign_matrix`         | double                | Assignment table for data association                                                                                                                                                                                                 |
+| `max_dist_matrix`           | double                | Maximum distance table for data association                                                                                                                                                                                           |
+| `max_area_matrix`           | double                | Maximum area table for data association                                                                                                                                                                                               |
+| `min_area_matrix`           | double                | Minimum area table for data association                                                                                                                                                                                               |
+| `max_rad_matrix`            | double                | Maximum angle table for data association                                                                                                                                                                                              |
+| `base_link_frame_id`        | double                | association frame                                                                                                                                                                                                                     |
+| `distance_threshold_list`   | `std::vector<double>` | Distance threshold for each class used in judging overlap. The class order depends on [ObjectClassification](https://github.com/tier4/autoware_auto_msgs/blob/tier4/main/autoware_auto_perception_msgs/msg/ObjectClassification.idl). |
+| `generalized_iou_threshold` | double                | Generalized IoU threshold                                                                                                                                                                                                             |
+
+## Tips
+
+- False Positive Unknown object detected by clustering method sometimes raises the risk of sudden stop and interferes with Planning module. If ML based detector rarely misses objects, you can tune the parameter of object_merger and make Perception module ignore unknown objects.
+  - If you want to remove unknown object close to large vehicle,
+    - use HIGH `distance_threshold_list`
+      - However, this causes high computational load
+    - use LOW `precision_threshold_to_judge_overlapped`
+    - use LOW `generalized_iou_threshold`
+      - However, these 2 params raise the risk of overlooking object close to known object.
 
 ## Assumptions / Known limits
 
