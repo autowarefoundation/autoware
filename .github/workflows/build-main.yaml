@@ -2,7 +2,7 @@ name: build-main
 
 on:
   schedule:
-    - cron: 0 0 * * 0
+    - cron: 0 12 * * *
   workflow_dispatch:
 
 jobs:
@@ -28,6 +28,10 @@ jobs:
         run: |
           mkdir src
           vcs import src < autoware.repos
+
+      - name: Run vcs export
+        run: |
+          vcs export --exact src || true
 
       - name: Run rosdep install
         run: |

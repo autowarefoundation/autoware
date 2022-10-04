@@ -1,0 +1,14 @@
+name: cancel-previous-workflows
+
+on:
+  pull_request_target:
+
+jobs:
+  cancel-previous-workflows:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel previous runs
+        uses: styfle/cancel-workflow-action@0.10.1
+        with:
+          workflow_id: all
+          all_but_latest: true

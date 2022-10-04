@@ -1,7 +1,6 @@
 extends: default
 
 ignore: |
-  .clang-tidy
   *.param.yaml
 
 rules:
