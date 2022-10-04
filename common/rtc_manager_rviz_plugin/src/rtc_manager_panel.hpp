@@ -75,6 +75,10 @@ public:
 class RTCManagerPanel : public rviz_common::Panel
 {
   Q_OBJECT
+public Q_SLOTS:
+  void onClickExecution();
+  void onClickWait();
+
 public:
   explicit RTCManagerPanel(QWidget * parent = nullptr);
   void onInitialize() override;
@@ -83,16 +87,22 @@ protected:
   void onRTCStatus(const CooperateStatusArray::ConstSharedPtr msg);
   void onEnableService(
     const AutoMode::Request::SharedPtr request, const AutoMode::Response::SharedPtr response) const;
+  void onClickCommandRequest(const uint8_t command);
 
+private:
   rclcpp::Node::SharedPtr raw_node_;
   rclcpp::Subscription<CooperateStatusArray>::SharedPtr sub_rtc_status_;
   rclcpp::Client<CooperateCommands>::SharedPtr client_rtc_commands_;
   rclcpp::Client<AutoMode>::SharedPtr enable_auto_mode_cli_;
   std::vector<RTCAutoMode *> auto_modes_;
-  std::string enable_auto_mode_namespace_ = "/planning/enable_auto_mode";
+
+  std::shared_ptr<CooperateStatusArray> cooperate_statuses_ptr_;
   QTableWidget * rtc_table_;
   QTableWidget * auto_mode_table_;
+  QPushButton * exec_button_ptr_ = {nullptr};
+  QPushButton * wait_button_ptr_ = {nullptr};
   size_t column_size_ = {7};
+  std::string enable_auto_mode_namespace_ = "/planning/enable_auto_mode";
 };
 
 }  // namespace rviz_plugins
