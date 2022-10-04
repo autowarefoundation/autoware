@@ -42,6 +42,7 @@ namespace behavior_path_planner
 {
 using motion_utils::calcSignedArcLength;
 using motion_utils::findNearestIndex;
+using motion_utils::findNearestSegmentIndex;
 using tier4_autoware_utils::calcDistance2d;
 using tier4_autoware_utils::calcLateralDeviation;
 using tier4_planning_msgs::msg::AvoidanceDebugFactor;
@@ -140,8 +141,11 @@ AvoidancePlanningData AvoidanceModule::calcAvoidancePlanningData(DebugData & deb
     // if the resampled path has only 1 point, use original path.
     data.reference_path = center_path;
   }
+
+  const size_t nearest_segment_index =
+    findNearestSegmentIndex(data.reference_path.points, data.reference_pose.position);
   data.ego_closest_path_index =
-    findNearestIndex(data.reference_path.points, data.reference_pose.position);
+    std::min(nearest_segment_index + 1, data.reference_path.points.size() - 1);
 
   // arclength from ego pose (used in many functions)
   data.arclength_from_ego = util::calcPathArcLengthArray(
