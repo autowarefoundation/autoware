@@ -19,7 +19,7 @@
 
 namespace motion_utils
 {
-std::vector<geometry_msgs::msg::Pose> resamplePath(
+std::vector<geometry_msgs::msg::Pose> resamplePoseVector(
   const std::vector<geometry_msgs::msg::Pose> & points,
   const std::vector<double> & resampled_arclength, const bool use_lerp_for_xy,
   const bool use_lerp_for_z)
@@ -164,7 +164,7 @@ autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
   };
 
   const auto interpolated_pose =
-    resamplePath(input_pose, resampled_arclength, use_lerp_for_xy, use_lerp_for_z);
+    resamplePoseVector(input_pose, resampled_arclength, use_lerp_for_xy, use_lerp_for_z);
   const auto interpolated_v_lon = use_zero_order_hold_for_v ? zoh(v_lon) : lerp(v_lon);
   const auto interpolated_v_lat = use_zero_order_hold_for_v ? zoh(v_lat) : lerp(v_lat);
   const auto interpolated_heading_rate = lerp(heading_rate);
@@ -308,7 +308,7 @@ autoware_auto_planning_msgs::msg::Path resamplePath(
   };
 
   const auto interpolated_pose =
-    resamplePath(input_pose, resampled_arclength, use_lerp_for_xy, use_lerp_for_z);
+    resamplePoseVector(input_pose, resampled_arclength, use_lerp_for_xy, use_lerp_for_z);
   const auto interpolated_v_lon = use_zero_order_hold_for_v ? zoh(v_lon) : lerp(v_lon);
   const auto interpolated_v_lat = use_zero_order_hold_for_v ? zoh(v_lat) : lerp(v_lat);
   const auto interpolated_heading_rate = lerp(heading_rate);
@@ -459,7 +459,7 @@ autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
   };
 
   const auto interpolated_pose =
-    resamplePath(input_pose, resampled_arclength, use_lerp_for_xy, use_lerp_for_z);
+    resamplePoseVector(input_pose, resampled_arclength, use_lerp_for_xy, use_lerp_for_z);
   const auto interpolated_v_lon = use_zero_order_hold_for_twist ? zoh(v_lon) : lerp(v_lon);
   const auto interpolated_v_lat = use_zero_order_hold_for_twist ? zoh(v_lat) : lerp(v_lat);
   const auto interpolated_heading_rate = lerp(heading_rate);

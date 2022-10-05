@@ -39,39 +39,39 @@ namespace motion_utils
 {
 /**
  * @brief A resampling function for a path(poses). Note that in a default setting, position xy are
- * resampled by spline interpolation, position z are resampled by linear interpolation, and
- * orientation of the resampled path are calculated by a forward difference method
- * based on the interpolated position x and y.
+ *        resampled by spline interpolation, position z are resampled by linear interpolation, and
+ *        orientation of the resampled path are calculated by a forward difference method
+ *        based on the interpolated position x and y.
  * @param input_path input path(poses) to resample
  * @param resampled_arclength arclength that contains length of each resampling points from initial
- * point
+ *        point
  * @param use_lerp_for_xy If true, it uses linear interpolation to resample position x and
- * y. Otherwise, it uses spline interpolation
+ *        y. Otherwise, it uses spline interpolation
  * @param use_lerp_for_z If true, it uses linear interpolation to resample position z.
- * Otherwise, it uses spline interpolation
+ *        Otherwise, it uses spline interpolation
  * @return resampled path(poses)
  */
-std::vector<geometry_msgs::msg::Pose> resamplePath(
+std::vector<geometry_msgs::msg::Pose> resamplePoseVector(
   const std::vector<geometry_msgs::msg::Pose> & points,
   const std::vector<double> & resampled_arclength, const bool use_lerp_for_xy = false,
   const bool use_lerp_for_z = true);
 
 /**
  * @brief A resampling function for a path with lane id. Note that in a default setting, position xy
- * are resampled by spline interpolation, position z are resampled by linear interpolation,
- * longitudinal and lateral velocity are resampled by zero_order_hold, and heading rate is resampled
- * by linear interpolation. Orientation of the resampled path are calculated by a forward difference
- * method based on the interpolated position x and y. Moreover, lane_ids and is_final are also
- * interpolated by zero order hold
+ *        are resampled by spline interpolation, position z are resampled by linear interpolation,
+ *        longitudinal and lateral velocity are resampled by zero_order_hold, and heading rate is
+ *        resampled by linear interpolation. Orientation of the resampled path are calculated by a
+ *        forward difference method based on the interpolated position x and y. Moreover, lane_ids
+ *        and is_final are also interpolated by zero order hold
  * @param input_path input path to resample
  * @param resampled_arclength arclength that contains length of each resampling points from initial
- * point
+ *        point
  * @param use_lerp_for_xy If true, it uses linear interpolation to resample position x and
- * y. Otherwise, it uses spline interpolation
+ *        y. Otherwise, it uses spline interpolation
  * @param use_lerp_for_z If true, it uses linear interpolation to resample position z.
- * Otherwise, it uses spline interpolation
+ *        Otherwise, it uses spline interpolation
  * @param use_zero_order_hold_for_v If true, it uses zero_order_hold to resample
- * longitudinal and lateral velocity. Otherwise, it uses linear interpolation
+ *        longitudinal and lateral velocity. Otherwise, it uses linear interpolation
  * @return resampled path
  */
 autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
@@ -81,20 +81,19 @@ autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
 
 /**
  * @brief A resampling function for a path with lane id. Note that in a default setting, position xy
- * are resampled by spline interpolation, position z are resampled by linear interpolation,
- * longitudinal and lateral velocity are resampled by zero_order_hold, and heading rate is resampled
- * by linear interpolation. Orientation of the resampled path are calculated by a forward difference
- * method based on the interpolated position x and y. Moreover, lane_ids and is_final are also
- * interpolated by zero order hold
+ *        are resampled by spline interpolation, position z are resampled by linear interpolation,
+ *        longitudinal and lateral velocity are resampled by zero_order_hold, and heading rate is
+ *        resampled by linear interpolation. Orientation of the resampled path are calculated by a
+ *        forward difference method based on the interpolated position x and y. Moreover, lane_ids
+ *        and is_final are also interpolated by zero order hold
  * @param input_path input path to resample
- * @param resampled_interval resampling interval
- * point
+ * @param resampled_interval resampling interval point
  * @param use_lerp_for_xy If true, it uses linear interpolation to resample position x and
- * y. Otherwise, it uses spline interpolation
+ *        y. Otherwise, it uses spline interpolation
  * @param use_lerp_for_z If true, it uses linear interpolation to resample position z.
- * Otherwise, it uses spline interpolation
+ *        Otherwise, it uses spline interpolation
  * @param use_zero_order_hold_for_v If true, it uses zero_order_hold to resample
- * longitudinal and lateral velocity. Otherwise, it uses linear interpolation
+ *        longitudinal and lateral velocity. Otherwise, it uses linear interpolation
  * @param resample_input_path_stop_point If true, resample closest stop point in input path
  * @return resampled path
  */
@@ -106,19 +105,19 @@ autoware_auto_planning_msgs::msg::PathWithLaneId resamplePath(
 
 /**
  * @brief A resampling function for a path. Note that in a default setting, position xy are
- * resampled by spline interpolation, position z are resampled by linear interpolation, longitudinal
- * and lateral velocity are resampled by zero_order_hold, and heading rate is resampled by linear
- * interpolation. Orientation of the resampled path are calculated by a forward difference method
- * based on the interpolated position x and y.
+ *        resampled by spline interpolation, position z are resampled by linear interpolation,
+ *        longitudinal and lateral velocity are resampled by zero_order_hold, and heading rate is
+ *        resampled by linear interpolation. Orientation of the resampled path are calculated by a
+ *        forward difference method based on the interpolated position x and y.
  * @param input_path input path to resample
  * @param resampled_arclength arclength that contains length of each resampling points from initial
- * point
+ *        point
  * @param use_lerp_for_xy If true, it uses linear interpolation to resample position x and
- * y. Otherwise, it uses spline interpolation
+ *        y. Otherwise, it uses spline interpolation
  * @param use_lerp_for_z If true, it uses linear interpolation to resample position z.
- * Otherwise, it uses spline interpolation
+ *        Otherwise, it uses spline interpolation
  * @param use_zero_order_hold_for_v If true, it uses zero_order_hold to resample
- * longitudinal and lateral velocity. Otherwise, it uses linear interpolation
+ *        longitudinal and lateral velocity. Otherwise, it uses linear interpolation
  * @return resampled path
  */
 autoware_auto_planning_msgs::msg::Path resamplePath(
@@ -128,19 +127,18 @@ autoware_auto_planning_msgs::msg::Path resamplePath(
 
 /**
  * @brief A resampling function for a path. Note that in a default setting, position xy
- * are resampled by spline interpolation, position z are resampled by linear interpolation,
- * longitudinal and lateral velocity are resampled by zero_order_hold, and heading rate is resampled
- * by linear interpolation. Orientation of the resampled path are calculated by a forward difference
- * method based on the interpolated position x and y.
+ *        are resampled by spline interpolation, position z are resampled by linear interpolation,
+ *        longitudinal and lateral velocity are resampled by zero_order_hold, and heading rate is
+ *        resampled by linear interpolation. Orientation of the resampled path are calculated by a
+ *        forward difference method based on the interpolated position x and y.
  * @param input_path input path to resample
- * @param resampled_interval resampling interval
- * point
+ * @param resampled_interval resampling interval point
  * @param use_lerp_for_xy If true, it uses linear interpolation to resample position x and
- * y. Otherwise, it uses spline interpolation
+ *        y. Otherwise, it uses spline interpolation
  * @param use_lerp_for_z If true, it uses linear interpolation to resample position z.
- * Otherwise, it uses spline interpolation
+ *        Otherwise, it uses spline interpolation
  * @param use_zero_order_hold_for_v If true, it uses zero_order_hold to resample
- * longitudinal and lateral velocity. Otherwise, it uses linear interpolation
+ *        longitudinal and lateral velocity. Otherwise, it uses linear interpolation
  * @param resample_input_path_stop_point If true, resample closest stop point in input path
  * @return resampled path
  */
@@ -151,20 +149,20 @@ autoware_auto_planning_msgs::msg::Path resamplePath(
 
 /**
  * @brief A resampling function for a trajectory. Note that in a default setting, position xy are
- * resampled by spline interpolation, position z are resampled by linear interpolation, twist
- * informaiton(velocity and acceleration) are resampled by zero_order_hold, and heading rate is
- * resampled by linear interpolation. The rest of the category is resampled by linear interpolation.
- * Orientation of the resampled path are calculated by a forward difference method based on the
- * interpolated position x and y.
+ *        resampled by spline interpolation, position z are resampled by linear interpolation, twist
+ *        informaiton(velocity and acceleration) are resampled by zero_order_hold, and heading rate
+ *        is resampled by linear interpolation. The rest of the category is resampled by linear
+ *        interpolation. Orientation of the resampled path are calculated by a forward difference
+ *        method based on the interpolated position x and y.
  * @param input_trajectory input trajectory to resample
  * @param resampled_arclength arclength that contains length of each resampling points from initial
- * point
+ *        point
  * @param use_lerp_for_xy If true, it uses linear interpolation to resample position x and
- * y. Otherwise, it uses spline interpolation
+ *        y. Otherwise, it uses spline interpolation
  * @param use_lerp_for_z If true, it uses linear interpolation to resample position z.
- * Otherwise, it uses spline interpolation
+ *        Otherwise, it uses spline interpolation
  * @param use_zero_order_hold_for_twist If true, it uses zero_order_hold to resample
- * longitudinal, lateral velocity and acceleration. Otherwise, it uses linear interpolation
+ *        longitudinal, lateral velocity and acceleration. Otherwise, it uses linear interpolation
  * @return resampled trajectory
  */
 autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
@@ -174,22 +172,22 @@ autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
 
 /**
  * @brief A resampling function for a trajectory. This function resamples closest stop point,
- * terminal point and points by resample interval. Note that in a default setting, position xy are
- * resampled by spline interpolation, position z are resampled by linear interpolation, twist
- * informaiton(velocity and acceleration) are resampled by zero_order_hold, and heading rate is
- * resampled by linear interpolation. The rest of the category is resampled by linear interpolation.
- * Orientation of the resampled path are calculated by a forward difference method based on the
- * interpolated position x and y.
+ *        terminal point and points by resample interval. Note that in a default setting, position
+ * xy are resampled by spline interpolation, position z are resampled by linear interpolation, twist
+ *        informaiton(velocity and acceleration) are resampled by zero_order_hold, and heading rate
+ *        is resampled by linear interpolation. The rest of the category is resampled by linear
+ *        interpolation. Orientation of the resampled path are calculated by a forward difference
+ *        method based on the interpolated position x and y.
  * @param input_trajectory input trajectory to resample
  * @param resampled_interval resampling interval
  * @param use_lerp_for_xy If true, it uses linear interpolation to resample position x and
- * y. Otherwise, it uses spline interpolation
+ *        y. Otherwise, it uses spline interpolation
  * @param use_lerp_for_z If true, it uses linear interpolation to resample position z.
- * Otherwise, it uses spline interpolation
+ *        Otherwise, it uses spline interpolation
  * @param use_zero_order_hold_for_twist If true, it uses zero_order_hold to resample
- * longitudinal, lateral velocity and acceleration. Otherwise, it uses linear interpolation
+ *        longitudinal, lateral velocity and acceleration. Otherwise, it uses linear interpolation
  * @param resample_input_trajectory_stop_point If true, resample closest stop point in input
- * trajectory
+ *        trajectory
  * @return resampled trajectory
  */
 autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(

@@ -321,7 +321,7 @@ geometry_msgs::msg::Point TurnSignalDecider::get_required_end_point(
   }
 
   const auto resampled_centerline =
-    motion_utils::resamplePath(converted_centerline, resampling_arclength);
+    motion_utils::resamplePoseVector(converted_centerline, resampling_arclength);
 
   const double terminal_yaw = tf2::getYaw(resampled_centerline.back().orientation);
   for (size_t i = 0; i < resampled_centerline.size(); ++i) {
