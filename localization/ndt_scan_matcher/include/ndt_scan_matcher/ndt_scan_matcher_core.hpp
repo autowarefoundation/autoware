@@ -18,6 +18,7 @@
 #define FMT_HEADER_ONLY
 
 #include "ndt_scan_matcher/particle.hpp"
+#include "ndt_scan_matcher/tf2_listener_module.hpp"
 
 #include <ndt/omp.hpp>
 #include <ndt/pcl_generic.hpp>
@@ -43,9 +44,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
 
-#include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_broadcaster.h>
-#include <tf2_ros/transform_listener.h>
 
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
@@ -154,10 +153,6 @@ private:
     const geometry_msgs::msg::PoseWithCovarianceStamped & initial_pose_old_msg,
     const geometry_msgs::msg::PoseWithCovarianceStamped & initial_pose_new_msg);
 
-  bool get_transform(
-    const std::string & target_frame, const std::string & source_frame,
-    const geometry_msgs::msg::TransformStamped::SharedPtr & transform_stamped_ptr);
-
   bool validate_num_iteration(const int iter_num, const int max_iter_num);
   bool validate_score(
     const double score, const double score_threshold, const std::string score_name);
@@ -200,8 +195,6 @@ private:
 
   rclcpp::Service<tier4_localization_msgs::srv::PoseWithCovarianceStamped>::SharedPtr service_;
 
-  tf2_ros::Buffer tf2_buffer_;
-  tf2_ros::TransformListener tf2_listener_;
   tf2_ros::TransformBroadcaster tf2_broadcaster_;
 
   NDTImplementType ndt_implement_type_;
@@ -238,6 +231,8 @@ private:
   const float regularization_scale_factor_;
   std::deque<geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr>
     regularization_pose_msg_ptr_array_;
+
+  std::shared_ptr<Tf2ListenerModule> tf2_listener_module_;
 };
 
 #endif  // NDT_SCAN_MATCHER__NDT_SCAN_MATCHER_CORE_HPP_

@@ -51,19 +51,6 @@ tier4_debug_msgs::msg::Int32Stamped make_int32_stamped(
   return tier4_debug_msgs::build<T>().stamp(stamp).data(data);
 }
 
-geometry_msgs::msg::TransformStamped identity_transform_stamped(
-  const builtin_interfaces::msg::Time & timestamp, const std::string & header_frame_id,
-  const std::string & child_frame_id)
-{
-  geometry_msgs::msg::TransformStamped transform;
-  transform.header.stamp = timestamp;
-  transform.header.frame_id = header_frame_id;
-  transform.child_frame_id = child_frame_id;
-  transform.transform.rotation = tier4_autoware_utils::createQuaternion(0.0, 0.0, 0.0, 1.0);
-  transform.transform.translation = tier4_autoware_utils::createTranslation(0.0, 0.0, 0.0);
-  return transform;
-}
-
 bool validate_local_optimal_solution_oscillation(
   const std::vector<geometry_msgs::msg::Pose> & result_pose_msg_array,
   const float oscillation_threshold, const float inversion_vector_threshold)
@@ -94,8 +81,6 @@ bool validate_local_optimal_solution_oscillation(
 
 NDTScanMatcher::NDTScanMatcher()
 : Node("ndt_scan_matcher"),
-  tf2_buffer_(this->get_clock()),
-  tf2_listener_(tf2_buffer_),
   tf2_broadcaster_(*this),
   ndt_implement_type_(NDTImplementType::PCL_GENERIC),
   base_frame_("base_link"),
@@ -272,6 +257,8 @@ NDTScanMatcher::NDTScanMatcher()
 
   diagnostic_thread_ = std::thread(&NDTScanMatcher::timer_diagnostic, this);
   diagnostic_thread_.detach();
+
+  tf2_listener_module_ = std::make_shared<Tf2ListenerModule>(this);
 }
 
 void NDTScanMatcher::timer_diagnostic()
@@ -331,7 +318,8 @@ void NDTScanMatcher::service_ndt_align(
 {
   // get TF from pose_frame to map_frame
   auto TF_pose_to_map_ptr = std::make_shared<geometry_msgs::msg::TransformStamped>();
-  get_transform(map_frame_, req->pose_with_covariance.header.frame_id, TF_pose_to_map_ptr);
+  tf2_listener_module_->get_transform(
+    this->now(), map_frame_, req->pose_with_covariance.header.frame_id, TF_pose_to_map_ptr);
 
   // transform pose_frame to map_frame
   const auto mapTF_initial_pose_msg = transform(req->pose_with_covariance, *TF_pose_to_map_ptr);
@@ -378,7 +366,8 @@ void NDTScanMatcher::callback_initial_pose(
   } else {
     // get TF from pose_frame to map_frame
     auto TF_pose_to_map_ptr = std::make_shared<geometry_msgs::msg::TransformStamped>();
-    get_transform(map_frame_, initial_pose_msg_ptr->header.frame_id, TF_pose_to_map_ptr);
+    tf2_listener_module_->get_transform(
+      this->now(), map_frame_, initial_pose_msg_ptr->header.frame_id, TF_pose_to_map_ptr);
 
     // transform pose_frame to map_frame
     auto mapTF_initial_pose_msg_ptr =
@@ -558,7 +547,8 @@ void NDTScanMatcher::transform_sensor_measurement(
   pcl::shared_ptr<pcl::PointCloud<PointSource>> sensor_points_output_ptr)
 {
   auto TF_target_to_source_ptr = std::make_shared<geometry_msgs::msg::TransformStamped>();
-  get_transform(target_frame, source_frame, TF_target_to_source_ptr);
+  tf2_listener_module_->get_transform(
+    this->now(), target_frame, source_frame, TF_target_to_source_ptr);
   const geometry_msgs::msg::PoseStamped target_to_source_pose_stamped =
     tier4_autoware_utils::transform2pose(*TF_target_to_source_ptr);
   const Eigen::Matrix4f base_to_sensor_matrix =
@@ -731,32 +721,6 @@ void NDTScanMatcher::publish_initial_to_result_distances(
     norm(initial_pose_new_msg.pose.pose.position, result_pose_msg.position);
   initial_to_result_distance_new_pub_->publish(
     make_float32_stamped(sensor_ros_time, initial_to_result_distance_new));
-}
-
-bool NDTScanMatcher::get_transform(
-  const std::string & target_frame, const std::string & source_frame,
-  const geometry_msgs::msg::TransformStamped::SharedPtr & transform_stamped_ptr)
-{
-  const geometry_msgs::msg::TransformStamped identity =
-    identity_transform_stamped(this->now(), target_frame, source_frame);
-
-  if (target_frame == source_frame) {
-    *transform_stamped_ptr = identity;
-    return true;
-  }
-
-  try {
-    *transform_stamped_ptr =
-      tf2_buffer_.lookupTransform(target_frame, source_frame, tf2::TimePointZero);
-  } catch (tf2::TransformException & ex) {
-    RCLCPP_WARN(get_logger(), "%s", ex.what());
-    RCLCPP_ERROR(
-      get_logger(), "Please publish TF %s to %s", target_frame.c_str(), source_frame.c_str());
-
-    *transform_stamped_ptr = identity;
-    return false;
-  }
-  return true;
 }
 
 bool NDTScanMatcher::validate_num_iteration(const int iter_num, const int max_iter_num)
