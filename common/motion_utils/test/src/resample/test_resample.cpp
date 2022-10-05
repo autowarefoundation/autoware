@@ -2129,7 +2129,465 @@ TEST(resample_path, resample_path_by_vector_non_default)
   }
 }
 
-TEST(resample_path, resample_trajectory_by_vector)
+TEST(resample_path, resample_path_by_same_interval)
+{
+  using motion_utils::resamplePath;
+
+  // Same point resampling
+  {
+    autoware_auto_planning_msgs::msg::Path path;
+    path.points.resize(10);
+    for (size_t i = 0; i < 10; ++i) {
+      path.points.at(i) = generateTestPathPoint(i * 1.0, 0.0, 0.0, 0.0, i * 1.0, i * 0.5, i * 0.1);
+    }
+
+    {
+      const auto resampled_path = resamplePath(path, 1.0);
+      for (size_t i = 0; i < resampled_path.points.size(); ++i) {
+        const auto p = resampled_path.points.at(i);
+        const auto ans_p = path.points.at(i);
+        EXPECT_NEAR(p.pose.position.x, ans_p.pose.position.x, epsilon);
+        EXPECT_NEAR(p.pose.position.y, ans_p.pose.position.y, epsilon);
+        EXPECT_NEAR(p.pose.position.z, ans_p.pose.position.z, epsilon);
+        EXPECT_NEAR(p.pose.orientation.x, ans_p.pose.orientation.x, epsilon);
+        EXPECT_NEAR(p.pose.orientation.y, ans_p.pose.orientation.y, epsilon);
+        EXPECT_NEAR(p.pose.orientation.z, ans_p.pose.orientation.z, epsilon);
+        EXPECT_NEAR(p.pose.orientation.w, ans_p.pose.orientation.w, epsilon);
+        EXPECT_NEAR(p.longitudinal_velocity_mps, ans_p.longitudinal_velocity_mps, epsilon);
+        EXPECT_NEAR(p.lateral_velocity_mps, ans_p.lateral_velocity_mps, epsilon);
+        EXPECT_NEAR(p.heading_rate_rps, ans_p.heading_rate_rps, epsilon);
+      }
+    }
+
+    // Change the last point orientation
+    path.points.back() =
+      generateTestPathPoint(9.0, 0.0, 0.0, tier4_autoware_utils::pi / 3.0, 3.0, 1.0, 0.01);
+    {
+      const auto resampled_path = resamplePath(path, 1.0);
+      for (size_t i = 0; i < resampled_path.points.size() - 1; ++i) {
+        const auto p = resampled_path.points.at(i);
+        const auto ans_p = path.points.at(i);
+        EXPECT_NEAR(p.pose.position.x, ans_p.pose.position.x, epsilon);
+        EXPECT_NEAR(p.pose.position.y, ans_p.pose.position.y, epsilon);
+        EXPECT_NEAR(p.pose.position.z, ans_p.pose.position.z, epsilon);
+        EXPECT_NEAR(p.pose.orientation.x, ans_p.pose.orientation.x, epsilon);
+        EXPECT_NEAR(p.pose.orientation.y, ans_p.pose.orientation.y, epsilon);
+        EXPECT_NEAR(p.pose.orientation.z, ans_p.pose.orientation.z, epsilon);
+        EXPECT_NEAR(p.pose.orientation.w, ans_p.pose.orientation.w, epsilon);
+        EXPECT_NEAR(p.longitudinal_velocity_mps, ans_p.longitudinal_velocity_mps, epsilon);
+        EXPECT_NEAR(p.lateral_velocity_mps, ans_p.lateral_velocity_mps, epsilon);
+        EXPECT_NEAR(p.heading_rate_rps, ans_p.heading_rate_rps, epsilon);
+      }
+
+      const auto p = resampled_path.points.back();
+      const auto ans_p = path.points.back();
+      const auto ans_quat = tier4_autoware_utils::createQuaternion(0.0, 0.0, 0.0, 1.0);
+      EXPECT_NEAR(p.pose.position.x, ans_p.pose.position.x, epsilon);
+      EXPECT_NEAR(p.pose.position.y, ans_p.pose.position.y, epsilon);
+      EXPECT_NEAR(p.pose.position.z, ans_p.pose.position.z, epsilon);
+      EXPECT_NEAR(p.pose.orientation.x, ans_quat.x, epsilon);
+      EXPECT_NEAR(p.pose.orientation.y, ans_quat.y, epsilon);
+      EXPECT_NEAR(p.pose.orientation.z, ans_quat.z, epsilon);
+      EXPECT_NEAR(p.pose.orientation.w, ans_quat.w, epsilon);
+      EXPECT_NEAR(p.longitudinal_velocity_mps, ans_p.longitudinal_velocity_mps, epsilon);
+      EXPECT_NEAR(p.lateral_velocity_mps, ans_p.lateral_velocity_mps, epsilon);
+      EXPECT_NEAR(p.heading_rate_rps, ans_p.heading_rate_rps, epsilon);
+    }
+  }
+
+  // Normal Case without zero point
+  {
+    autoware_auto_planning_msgs::msg::Path path;
+    path.points.resize(10);
+    for (size_t i = 0; i < 10; ++i) {
+      path.points.at(i) = generateTestPathPoint(i * 1.0, 0.0, 0.0, 0.0, i * 1.0, i * 0.5, i * 0.1);
+    }
+    path.points.at(0).longitudinal_velocity_mps = 5.0;
+
+    const auto resampled_path = resamplePath(path, 0.1);
+    for (size_t i = 0; i < resampled_path.points.size(); ++i) {
+      const auto p = resampled_path.points.at(i);
+      EXPECT_NEAR(p.pose.position.x, 0.1 * i, epsilon);
+      EXPECT_NEAR(p.pose.position.y, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.position.z, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.x, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.y, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.z, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.w, 1.0, epsilon);
+
+      const size_t idx = i / 10;
+      EXPECT_NEAR(
+        p.longitudinal_velocity_mps, path.points.at(idx).longitudinal_velocity_mps, epsilon);
+      EXPECT_NEAR(p.lateral_velocity_mps, path.points.at(idx).lateral_velocity_mps, epsilon);
+      EXPECT_NEAR(p.heading_rate_rps, 0.01 * i, epsilon);
+    }
+  }
+
+  // Normal Case without stop point but with terminal point
+  {
+    autoware_auto_planning_msgs::msg::Path path;
+    path.points.resize(10);
+    for (size_t i = 0; i < 10; ++i) {
+      path.points.at(i) = generateTestPathPoint(i * 1.0, 0.0, 0.0, 0.0, i * 1.0, i * 0.5, i * 0.1);
+    }
+    path.points.at(0).longitudinal_velocity_mps = 5.0;
+
+    const auto resampled_path = resamplePath(path, 0.4);
+    for (size_t i = 0; i < resampled_path.points.size() - 1; ++i) {
+      const auto p = resampled_path.points.at(i);
+      EXPECT_NEAR(p.pose.position.x, 0.4 * i, epsilon);
+      EXPECT_NEAR(p.pose.position.y, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.position.z, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.x, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.y, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.z, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.w, 1.0, epsilon);
+
+      const size_t idx = i / 2.5;
+      EXPECT_NEAR(
+        p.longitudinal_velocity_mps, path.points.at(idx).longitudinal_velocity_mps, epsilon);
+      EXPECT_NEAR(p.lateral_velocity_mps, path.points.at(idx).lateral_velocity_mps, epsilon);
+      EXPECT_NEAR(p.heading_rate_rps, 0.04 * i, epsilon);
+    }
+
+    {
+      const auto p = resampled_path.points.at(23);
+      EXPECT_NEAR(p.pose.position.x, 9.0, epsilon);
+      EXPECT_NEAR(p.pose.position.y, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.position.z, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.x, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.y, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.z, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.w, 1.0, epsilon);
+
+      const size_t idx = 9;
+      EXPECT_NEAR(
+        p.longitudinal_velocity_mps, path.points.at(idx).longitudinal_velocity_mps, epsilon);
+      EXPECT_NEAR(p.lateral_velocity_mps, path.points.at(idx).lateral_velocity_mps, epsilon);
+      EXPECT_NEAR(p.heading_rate_rps, 0.9, epsilon);
+    }
+  }
+
+  // Normal Case without stop point but with terminal point (Boundary Condition)
+  {
+    autoware_auto_planning_msgs::msg::Path path;
+    path.points.resize(10);
+    for (size_t i = 0; i < 10; ++i) {
+      path.points.at(i) = generateTestPathPoint(i * 1.0, 0.0, 0.0, 0.0, i * 1.0, i * 0.5, i * 0.1);
+    }
+    path.points.at(0).longitudinal_velocity_mps = 5.0;
+
+    const double ds = 1.0 - motion_utils::overlap_threshold;
+    const auto resampled_path = resamplePath(path, ds);
+    for (size_t i = 0; i < resampled_path.points.size() - 1; ++i) {
+      const auto p = resampled_path.points.at(i);
+      EXPECT_NEAR(p.pose.position.x, ds * i, epsilon);
+      EXPECT_NEAR(p.pose.position.y, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.position.z, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.x, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.y, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.z, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.w, 1.0, epsilon);
+
+      const size_t idx = i == 0 ? 0 : i - 1;
+      EXPECT_NEAR(
+        p.longitudinal_velocity_mps, path.points.at(idx).longitudinal_velocity_mps, epsilon);
+      EXPECT_NEAR(p.lateral_velocity_mps, path.points.at(idx).lateral_velocity_mps, epsilon);
+      EXPECT_NEAR(p.heading_rate_rps, ds / 10.0 * i, epsilon);
+    }
+
+    {
+      const auto p = resampled_path.points.at(10);
+      EXPECT_NEAR(p.pose.position.x, 9.0, epsilon);
+      EXPECT_NEAR(p.pose.position.y, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.position.z, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.x, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.y, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.z, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.w, 1.0, epsilon);
+
+      const size_t idx = 9;
+      EXPECT_NEAR(
+        p.longitudinal_velocity_mps, path.points.at(idx).longitudinal_velocity_mps, epsilon);
+      EXPECT_NEAR(p.lateral_velocity_mps, path.points.at(idx).lateral_velocity_mps, epsilon);
+      EXPECT_NEAR(p.heading_rate_rps, 0.9, epsilon);
+    }
+  }
+
+  // Normal Case with duplicated zero point
+  {
+    autoware_auto_planning_msgs::msg::Path path;
+    path.points.resize(10);
+    for (size_t i = 0; i < 10; ++i) {
+      path.points.at(i) = generateTestPathPoint(i * 1.0, 0.0, 0.0, 0.0, i * 1.0, i * 0.5, i * 0.1);
+    }
+    path.points.at(0).longitudinal_velocity_mps = 5.0;
+    path.points.at(5).longitudinal_velocity_mps = 0.0;
+
+    const auto resampled_path = resamplePath(path, 0.1);
+    EXPECT_EQ(resampled_path.points.size(), static_cast<size_t>(91));
+    for (size_t i = 0; i < resampled_path.points.size(); ++i) {
+      const auto p = resampled_path.points.at(i);
+      EXPECT_NEAR(p.pose.position.x, 0.1 * i, epsilon);
+      EXPECT_NEAR(p.pose.position.y, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.position.z, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.x, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.y, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.z, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.w, 1.0, epsilon);
+
+      const size_t idx = i / 10;
+      EXPECT_NEAR(
+        p.longitudinal_velocity_mps, path.points.at(idx).longitudinal_velocity_mps, epsilon);
+      EXPECT_NEAR(p.lateral_velocity_mps, path.points.at(idx).lateral_velocity_mps, epsilon);
+      EXPECT_NEAR(p.heading_rate_rps, 0.01 * i, epsilon);
+    }
+  }
+
+  // Normal Case with zero point
+  {
+    autoware_auto_planning_msgs::msg::Path path;
+    path.points.resize(10);
+    for (size_t i = 0; i < 10; ++i) {
+      path.points.at(i) = generateTestPathPoint(i * 1.0, 0.0, 0.0, 0.0, i * 1.0, i * 0.5, i * 0.1);
+    }
+    path.points.at(0).longitudinal_velocity_mps = 8.0;
+    path.points.at(5).longitudinal_velocity_mps = 0.0;
+
+    const auto resampled_path = resamplePath(path, 1.5);
+    EXPECT_EQ(resampled_path.points.size(), static_cast<size_t>(8));
+    {
+      const auto p = resampled_path.points.at(0);
+      EXPECT_NEAR(p.pose.position.x, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.position.y, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.position.z, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.x, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.y, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.z, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.w, 1.0, epsilon);
+
+      EXPECT_NEAR(
+        p.longitudinal_velocity_mps, path.points.at(0).longitudinal_velocity_mps, epsilon);
+      EXPECT_NEAR(p.lateral_velocity_mps, path.points.at(0).lateral_velocity_mps, epsilon);
+      EXPECT_NEAR(p.heading_rate_rps, 0.0, epsilon);
+    }
+
+    {
+      const auto p = resampled_path.points.at(1);
+      EXPECT_NEAR(p.pose.position.x, 1.5, epsilon);
+      EXPECT_NEAR(p.pose.position.y, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.position.z, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.x, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.y, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.z, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.w, 1.0, epsilon);
+
+      EXPECT_NEAR(
+        p.longitudinal_velocity_mps, path.points.at(1).longitudinal_velocity_mps, epsilon);
+      EXPECT_NEAR(p.lateral_velocity_mps, path.points.at(1).lateral_velocity_mps, epsilon);
+      EXPECT_NEAR(p.heading_rate_rps, 0.15, epsilon);
+    }
+
+    {
+      const auto p = resampled_path.points.at(2);
+      EXPECT_NEAR(p.pose.position.x, 3.0, epsilon);
+      EXPECT_NEAR(p.pose.position.y, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.position.z, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.x, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.y, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.z, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.w, 1.0, epsilon);
+
+      EXPECT_NEAR(
+        p.longitudinal_velocity_mps, path.points.at(3).longitudinal_velocity_mps, epsilon);
+      EXPECT_NEAR(p.lateral_velocity_mps, path.points.at(3).lateral_velocity_mps, epsilon);
+      EXPECT_NEAR(p.heading_rate_rps, 0.30, epsilon);
+    }
+
+    {
+      const auto p = resampled_path.points.at(3);
+      EXPECT_NEAR(p.pose.position.x, 4.5, epsilon);
+      EXPECT_NEAR(p.pose.position.y, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.position.z, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.x, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.y, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.z, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.w, 1.0, epsilon);
+
+      EXPECT_NEAR(
+        p.longitudinal_velocity_mps, path.points.at(4).longitudinal_velocity_mps, epsilon);
+      EXPECT_NEAR(p.lateral_velocity_mps, path.points.at(4).lateral_velocity_mps, epsilon);
+      EXPECT_NEAR(p.heading_rate_rps, 0.45, epsilon);
+    }
+
+    {
+      const auto p = resampled_path.points.at(4);
+      EXPECT_NEAR(p.pose.position.x, 5.0, epsilon);
+      EXPECT_NEAR(p.pose.position.y, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.position.z, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.x, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.y, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.z, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.w, 1.0, epsilon);
+
+      EXPECT_NEAR(p.longitudinal_velocity_mps, 0.0, epsilon);
+      EXPECT_NEAR(p.lateral_velocity_mps, path.points.at(5).lateral_velocity_mps, epsilon);
+      EXPECT_NEAR(p.heading_rate_rps, 0.50, epsilon);
+    }
+
+    {
+      const auto p = resampled_path.points.at(5);
+      EXPECT_NEAR(p.pose.position.x, 6.0, epsilon);
+      EXPECT_NEAR(p.pose.position.y, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.position.z, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.x, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.y, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.z, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.w, 1.0, epsilon);
+
+      EXPECT_NEAR(
+        p.longitudinal_velocity_mps, path.points.at(6).longitudinal_velocity_mps, epsilon);
+      EXPECT_NEAR(p.lateral_velocity_mps, path.points.at(6).lateral_velocity_mps, epsilon);
+      EXPECT_NEAR(p.heading_rate_rps, 0.60, epsilon);
+    }
+
+    {
+      const auto p = resampled_path.points.at(6);
+      EXPECT_NEAR(p.pose.position.x, 7.5, epsilon);
+      EXPECT_NEAR(p.pose.position.y, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.position.z, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.x, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.y, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.z, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.w, 1.0, epsilon);
+
+      EXPECT_NEAR(
+        p.longitudinal_velocity_mps, path.points.at(7).longitudinal_velocity_mps, epsilon);
+      EXPECT_NEAR(p.lateral_velocity_mps, path.points.at(7).lateral_velocity_mps, epsilon);
+      EXPECT_NEAR(p.heading_rate_rps, 0.75, epsilon);
+    }
+
+    {
+      const auto p = resampled_path.points.at(7);
+      EXPECT_NEAR(p.pose.position.x, 9.0, epsilon);
+      EXPECT_NEAR(p.pose.position.y, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.position.z, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.x, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.y, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.z, 0.0, epsilon);
+      EXPECT_NEAR(p.pose.orientation.w, 1.0, epsilon);
+
+      EXPECT_NEAR(
+        p.longitudinal_velocity_mps, path.points.at(9).longitudinal_velocity_mps, epsilon);
+      EXPECT_NEAR(p.lateral_velocity_mps, path.points.at(9).lateral_velocity_mps, epsilon);
+      EXPECT_NEAR(p.heading_rate_rps, 0.90, epsilon);
+    }
+  }
+
+  // No Resample
+  {
+    // Input path size is not enough for resample
+    {
+      autoware_auto_planning_msgs::msg::Path path;
+      path.points.resize(1);
+      for (size_t i = 0; i < 1; ++i) {
+        path.points.at(i) =
+          generateTestPathPoint(i * 1.0, 0.0, 0.0, 0.0, i * 1.0, i * 0.5, i * 0.1);
+      }
+
+      const auto resampled_path = resamplePath(path, 1.0);
+      EXPECT_EQ(resampled_path.points.size(), path.points.size());
+      for (size_t i = 0; i < resampled_path.points.size(); ++i) {
+        EXPECT_NEAR(
+          resampled_path.points.at(i).pose.position.x, path.points.at(i).pose.position.x, epsilon);
+        EXPECT_NEAR(
+          resampled_path.points.at(i).pose.position.y, path.points.at(i).pose.position.y, epsilon);
+        EXPECT_NEAR(
+          resampled_path.points.at(i).pose.position.z, path.points.at(i).pose.position.z, epsilon);
+        EXPECT_NEAR(
+          resampled_path.points.at(i).pose.orientation.x, path.points.at(i).pose.orientation.x,
+          epsilon);
+        EXPECT_NEAR(
+          resampled_path.points.at(i).pose.orientation.y, path.points.at(i).pose.orientation.y,
+          epsilon);
+        EXPECT_NEAR(
+          resampled_path.points.at(i).pose.orientation.z, path.points.at(i).pose.orientation.z,
+          epsilon);
+        EXPECT_NEAR(
+          resampled_path.points.at(i).pose.orientation.w, path.points.at(i).pose.orientation.w,
+          epsilon);
+      }
+    }
+
+    // Resample interval is invalid
+    {
+      autoware_auto_planning_msgs::msg::Path path;
+      path.points.resize(10);
+      for (size_t i = 0; i < 10; ++i) {
+        path.points.at(i) =
+          generateTestPathPoint(i * 1.0, 0.0, 0.0, 0.0, i * 1.0, i * 0.5, i * 0.1);
+      }
+
+      const auto resampled_path = resamplePath(path, 1e-4);
+      EXPECT_EQ(resampled_path.points.size(), path.points.size());
+      for (size_t i = 0; i < resampled_path.points.size(); ++i) {
+        EXPECT_NEAR(
+          resampled_path.points.at(i).pose.position.x, path.points.at(i).pose.position.x, epsilon);
+        EXPECT_NEAR(
+          resampled_path.points.at(i).pose.position.y, path.points.at(i).pose.position.y, epsilon);
+        EXPECT_NEAR(
+          resampled_path.points.at(i).pose.position.z, path.points.at(i).pose.position.z, epsilon);
+        EXPECT_NEAR(
+          resampled_path.points.at(i).pose.orientation.x, path.points.at(i).pose.orientation.x,
+          epsilon);
+        EXPECT_NEAR(
+          resampled_path.points.at(i).pose.orientation.y, path.points.at(i).pose.orientation.y,
+          epsilon);
+        EXPECT_NEAR(
+          resampled_path.points.at(i).pose.orientation.z, path.points.at(i).pose.orientation.z,
+          epsilon);
+        EXPECT_NEAR(
+          resampled_path.points.at(i).pose.orientation.w, path.points.at(i).pose.orientation.w,
+          epsilon);
+      }
+    }
+
+    // Resample interval is invalid (Negative value)
+    {
+      autoware_auto_planning_msgs::msg::Path path;
+      path.points.resize(10);
+      for (size_t i = 0; i < 10; ++i) {
+        path.points.at(i) =
+          generateTestPathPoint(i * 1.0, 0.0, 0.0, 0.0, i * 1.0, i * 0.5, i * 0.1);
+      }
+
+      const auto resampled_path = resamplePath(path, -5.0);
+      EXPECT_EQ(resampled_path.points.size(), path.points.size());
+      for (size_t i = 0; i < resampled_path.points.size(); ++i) {
+        EXPECT_NEAR(
+          resampled_path.points.at(i).pose.position.x, path.points.at(i).pose.position.x, epsilon);
+        EXPECT_NEAR(
+          resampled_path.points.at(i).pose.position.y, path.points.at(i).pose.position.y, epsilon);
+        EXPECT_NEAR(
+          resampled_path.points.at(i).pose.position.z, path.points.at(i).pose.position.z, epsilon);
+        EXPECT_NEAR(
+          resampled_path.points.at(i).pose.orientation.x, path.points.at(i).pose.orientation.x,
+          epsilon);
+        EXPECT_NEAR(
+          resampled_path.points.at(i).pose.orientation.y, path.points.at(i).pose.orientation.y,
+          epsilon);
+        EXPECT_NEAR(
+          resampled_path.points.at(i).pose.orientation.z, path.points.at(i).pose.orientation.z,
+          epsilon);
+        EXPECT_NEAR(
+          resampled_path.points.at(i).pose.orientation.w, path.points.at(i).pose.orientation.w,
+          epsilon);
+      }
+    }
+  }
+}
+
+TEST(resample_trajectory, resample_trajectory_by_vector)
 {
   using motion_utils::resampleTrajectory;
   // Output is same as input

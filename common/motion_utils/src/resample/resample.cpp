@@ -335,6 +335,65 @@ autoware_auto_planning_msgs::msg::Path resamplePath(
   return resampled_path;
 }
 
+autoware_auto_planning_msgs::msg::Path resamplePath(
+  const autoware_auto_planning_msgs::msg::Path & input_path, const double resample_interval,
+  const bool use_lerp_for_xy, const bool use_lerp_for_z, const bool use_zero_order_hold_for_twist,
+  const bool resample_input_path_stop_point)
+{
+  // validate arguments
+  if (!resample_utils::validate_arguments(input_path.points, resample_interval)) {
+    return input_path;
+  }
+
+  const double input_path_len = motion_utils::calcArcLength(input_path.points);
+
+  std::vector<double> resampling_arclength;
+  for (double s = 0.0; s < input_path_len; s += resample_interval) {
+    resampling_arclength.push_back(s);
+  }
+  if (resampling_arclength.empty()) {
+    std::cerr << "[motion_utils]: resampling arclength is empty" << std::endl;
+    return input_path;
+  }
+
+  // Insert terminal point
+  if (input_path_len - resampling_arclength.back() < motion_utils::overlap_threshold) {
+    resampling_arclength.back() = input_path_len;
+  } else {
+    resampling_arclength.push_back(input_path_len);
+  }
+
+  // Insert stop point
+  if (resample_input_path_stop_point) {
+    const auto distance_to_stop_point =
+      motion_utils::calcDistanceToForwardStopPoint(input_path.points, 0);
+    if (distance_to_stop_point && !resampling_arclength.empty()) {
+      for (size_t i = 1; i < resampling_arclength.size(); ++i) {
+        if (
+          resampling_arclength.at(i - 1) <= *distance_to_stop_point &&
+          *distance_to_stop_point < resampling_arclength.at(i)) {
+          const double dist_to_prev_point =
+            std::fabs(*distance_to_stop_point - resampling_arclength.at(i - 1));
+          const double dist_to_following_point =
+            std::fabs(resampling_arclength.at(i) - *distance_to_stop_point);
+          if (dist_to_prev_point < motion_utils::overlap_threshold) {
+            resampling_arclength.at(i - 1) = *distance_to_stop_point;
+          } else if (dist_to_following_point < motion_utils::overlap_threshold) {
+            resampling_arclength.at(i) = *distance_to_stop_point;
+          } else {
+            resampling_arclength.insert(resampling_arclength.begin() + i, *distance_to_stop_point);
+          }
+          break;
+        }
+      }
+    }
+  }
+
+  return resamplePath(
+    input_path, resampling_arclength, use_lerp_for_xy, use_lerp_for_z,
+    use_zero_order_hold_for_twist);
+}
+
 autoware_auto_planning_msgs::msg::Trajectory resampleTrajectory(
   const autoware_auto_planning_msgs::msg::Trajectory & input_trajectory,
   const std::vector<double> & resampled_arclength, const bool use_lerp_for_xy,
