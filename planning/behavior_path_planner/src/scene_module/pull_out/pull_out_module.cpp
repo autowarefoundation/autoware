@@ -112,27 +112,36 @@ bool PullOutModule::isExecutionRequested() const
 
   const bool is_stopped = util::l2Norm(planner_data_->self_odometry->twist.twist.linear) <
                           parameters_.th_arrived_distance;
-
-  lanelet::Lanelet closest_shoulder_lanelet;
-  if (
-    lanelet::utils::query::getClosestLanelet(
-      planner_data_->route_handler->getShoulderLanelets(), planner_data_->self_pose->pose,
-      &closest_shoulder_lanelet) &&
-    is_stopped) {
-    // Create vehicle footprint
-    const auto local_vehicle_footprint = createVehicleFootprint(vehicle_info_);
-    const auto vehicle_footprint = transformVector(
-      local_vehicle_footprint,
-      tier4_autoware_utils::pose2transform(planner_data_->self_pose->pose));
-    const auto road_lanes = util::getExtendedCurrentLanes(planner_data_);
-
-    // check if goal pose is in shoulder lane and distance is long enough for pull out
-    if (isInLane(closest_shoulder_lanelet, vehicle_footprint)) {
-      return true;
-    }
+  if (!is_stopped) {
+    return false;
   }
 
-  return false;
+  // Create vehicle footprint
+  const auto local_vehicle_footprint = createVehicleFootprint(vehicle_info_);
+  const auto vehicle_footprint = transformVector(
+    local_vehicle_footprint, tier4_autoware_utils::pose2transform(planner_data_->self_pose->pose));
+
+  // Check if ego is not out of lanes
+  const auto current_lanes = util::getExtendedCurrentLanes(planner_data_);
+  const auto pull_out_lanes = pull_out_utils::getPullOutLanes(current_lanes, planner_data_);
+  auto lanes = current_lanes;
+  lanes.insert(lanes.end(), pull_out_lanes.begin(), pull_out_lanes.end());
+  if (LaneDepartureChecker::isOutOfLane(lanes, vehicle_footprint)) {
+    return false;
+  }
+
+  // Check if any of the footprint points are in the shoulder lane
+  lanelet::Lanelet closest_shoulder_lanelet;
+  if (!lanelet::utils::query::getClosestLanelet(
+        planner_data_->route_handler->getShoulderLanelets(), planner_data_->self_pose->pose,
+        &closest_shoulder_lanelet)) {
+    return false;
+  }
+  if (!isOverlappedWithLane(closest_shoulder_lanelet, vehicle_footprint)) {
+    return false;
+  }
+
+  return true;
 }
 
 bool PullOutModule::isExecutionReady() const { return true; }
@@ -510,7 +519,7 @@ std::vector<Pose> PullOutModule::searchBackedPoses()
   return backed_poses;
 }
 
-bool PullOutModule::isInLane(
+bool PullOutModule::isOverlappedWithLane(
   const lanelet::ConstLanelet & candidate_lanelet,
   const tier4_autoware_utils::LinearRing2d & vehicle_footprint)
 {

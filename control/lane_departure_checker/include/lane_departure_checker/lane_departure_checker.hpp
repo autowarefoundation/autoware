@@ -107,6 +107,9 @@ public:
   bool checkPathWillLeaveLane(
     const lanelet::ConstLanelets & lanelets, const PathWithLaneId & path) const;
 
+  static bool isOutOfLane(
+    const lanelet::ConstLanelets & candidate_lanelets, const LinearRing2d & vehicle_footprint);
+
 private:
   Param param_;
   std::shared_ptr<vehicle_info_util::VehicleInfo> vehicle_info_ptr_;
@@ -131,9 +134,6 @@ private:
   static bool willLeaveLane(
     const lanelet::ConstLanelets & candidate_lanelets,
     const std::vector<LinearRing2d> & vehicle_footprints);
-
-  static bool isOutOfLane(
-    const lanelet::ConstLanelets & candidate_lanelets, const LinearRing2d & vehicle_footprint);
 };
 }  // namespace lane_departure_checker
 

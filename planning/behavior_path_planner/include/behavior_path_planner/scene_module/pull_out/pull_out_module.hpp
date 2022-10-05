@@ -110,7 +110,7 @@ private:
   void planWithPriorityOnShortBackDistance(
     const std::vector<Pose> & start_pose_candidates, const Pose & goal_pose);
   void updatePullOutStatus();
-  static bool isInLane(
+  static bool isOverlappedWithLane(
     const lanelet::ConstLanelet & candidate_lanelet,
     const tier4_autoware_utils::LinearRing2d & vehicle_footprint);
   bool hasFinishedPullOut() const;

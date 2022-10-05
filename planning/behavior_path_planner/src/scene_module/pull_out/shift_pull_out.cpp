@@ -42,7 +42,6 @@ boost::optional<PullOutPath> ShiftPullOut::plan(Pose start_pose, Pose goal_pose)
   const auto & common_parameters = planner_data_->parameters;
   const auto & dynamic_objects = planner_data_->dynamic_object;
   const auto & road_lanes = util::getExtendedCurrentLanes(planner_data_);
-  const auto & current_pose = planner_data_->self_pose->pose;
   const auto & shoulder_lanes = getPullOutLanes(road_lanes, planner_data_);
   if (shoulder_lanes.empty()) {
     return boost::none;
@@ -69,24 +68,24 @@ boost::optional<PullOutPath> ShiftPullOut::plan(Pose start_pose, Pose goal_pose)
     auto & shift_path =
       pull_out_path.partial_paths.front();  // shift path is not separate but only one.
 
-    // check lane_departure and collision with path between current to pull_out_end
-    PathWithLaneId path_current_to_shift_end;
+    // check lane_departure and collision with path between pull_out_start to pull_out_end
+    PathWithLaneId path_start_to_end{};
     {
-      const auto current_idx = findNearestIndex(shift_path.points, current_pose);
+      const auto pull_out_start_idx = findNearestIndex(shift_path.points, start_pose);
       const auto pull_out_end_idx = findNearestIndex(shift_path.points, pull_out_path.end_pose);
-      path_current_to_shift_end.points.insert(
-        path_current_to_shift_end.points.begin(), shift_path.points.begin() + *current_idx,
+      path_start_to_end.points.insert(
+        path_start_to_end.points.begin(), shift_path.points.begin() + *pull_out_start_idx,
         shift_path.points.begin() + *pull_out_end_idx + 1);
     }
 
     // check lane departure
-    if (lane_departure_checker_->checkPathWillLeaveLane(lanes, path_current_to_shift_end)) {
+    if (lane_departure_checker_->checkPathWillLeaveLane(lanes, path_start_to_end)) {
       continue;
     }
 
     // check collision
     if (util::checkCollisionBetweenPathFootprintsAndObjects(
-          vehicle_footprint_, path_current_to_shift_end, shoulder_lane_objects,
+          vehicle_footprint_, path_start_to_end, shoulder_lane_objects,
           parameters_.collision_check_margin)) {
       continue;
     }
