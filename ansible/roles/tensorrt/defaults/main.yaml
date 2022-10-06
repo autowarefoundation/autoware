@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 install_devel: true
+=======
+install_devel: true
+>>>>>>> perf(docker): reduce prebuilt docker image size
