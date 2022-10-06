@@ -49,8 +49,5 @@
     - libnvinfer-plugin-dev
     - libnvparsers-dev
     - libnvonnxparsers-dev
-<<<<<<< HEAD
   when: install_devel | bool
-=======
-  when: install_devel | bool
->>>>>>> perf(docker): reduce prebuilt docker image size
+

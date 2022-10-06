@@ -31,6 +31,10 @@ while [ "$1" != "" ]; do
         # Disable installation dev package of role 'cuda' and 'tensorrt'.
         option_runtime=true
         ;;
+    --runtime)
+        # Disable installation dev package of role 'cuda' and 'tensorrt'.
+        option_runtime=true
+        ;;
     *)
         args+=("$1")
         ;;
@@ -86,8 +90,6 @@ if [ "$option_runtime" = "true" ]; then
     ansible_args+=("--extra-vars" "install_devel=false")
     # ROS installation type, default "desktop"
     ansible_args+=("--extra-vars" "installation_type=ros-base")
-else
-    ansible_args+=("--extra-vars" "install_devel=true")
 fi
 
 # Load env
