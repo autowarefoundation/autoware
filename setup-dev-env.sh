@@ -27,6 +27,10 @@ while [ "$1" != "" ]; do
         # Disable installation of 'cuda-drivers' in the role 'cuda'.
         option_no_cuda_drivers=true
         ;;
+    --no-dev)
+        # Disable installation dev packages .
+        option_no_dev=true
+        ;;
     *)
         args+=("$1")
         ;;
@@ -75,6 +79,14 @@ fi
 # Check installation of CUDA Drivers
 if [ "$option_no_cuda_drivers" = "true" ]; then
     ansible_args+=("--extra-vars" "install_cuda_drivers=false")
+fi
+
+# Check installation of dev package
+if [ "$option_no_dev" = "true" ]; then
+    ansible_args+=("--extra-vars" "install_devel=false")
+    ansible_args+=("--extra-vars" "installation_type=ros-base")
+else
+    ansible_args+=("--extra-vars" "install_devel=true")
 fi
 
 # Load env
