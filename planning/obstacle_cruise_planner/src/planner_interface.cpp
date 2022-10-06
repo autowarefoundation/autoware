@@ -140,16 +140,29 @@ Trajectory PlannerInterface::generateStopTrajectory(
     const auto closest_behavior_stop_idx =
       motion_utils::searchZeroVelocityIndex(planner_data.traj.points, nearest_segment_idx + 1);
 
-    if (
-      closest_behavior_stop_idx &&
-      closest_behavior_stop_idx != planner_data.traj.points.size() - 1) {
-      const double closest_behavior_stop_dist_from_ego = motion_utils::calcSignedArcLength(
-        planner_data.traj.points, planner_data.current_pose.position, nearest_segment_idx,
-        *closest_behavior_stop_idx);
+    if (!closest_behavior_stop_idx) {
+      return longitudinal_info_.safe_distance_margin;
+    }
+
+    const double closest_behavior_stop_dist_from_ego = motion_utils::calcSignedArcLength(
+      planner_data.traj.points, planner_data.current_pose.position, nearest_segment_idx,
+      *closest_behavior_stop_idx);
+
+    if (*closest_behavior_stop_idx == planner_data.traj.points.size() - 1) {
+      // Closest behavior stop point is the end point
+      const double closest_obstacle_stop_dist_from_ego =
+        closest_obstacle_dist - dist_to_ego - longitudinal_info_.terminal_safe_distance_margin -
+        abs_ego_offset;
+      const double stop_dist_diff =
+        closest_behavior_stop_dist_from_ego - closest_obstacle_stop_dist_from_ego;
+      if (stop_dist_diff < 0.5) {
+        // Use terminal margin (terminal_safe_distance_margin) for obstacle stop
+        return longitudinal_info_.terminal_safe_distance_margin;
+      }
+    } else {
       const double closest_obstacle_stop_dist_from_ego = closest_obstacle_dist - dist_to_ego -
                                                          longitudinal_info_.safe_distance_margin -
                                                          abs_ego_offset;
-
       const double stop_dist_diff =
         closest_behavior_stop_dist_from_ego - closest_obstacle_stop_dist_from_ego;
       if (0.0 < stop_dist_diff && stop_dist_diff < longitudinal_info_.safe_distance_margin) {

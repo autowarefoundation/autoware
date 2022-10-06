@@ -245,6 +245,8 @@ ObstacleCruisePlannerNode::ObstacleCruisePlannerNode(const rclcpp::NodeOptions &
       declare_parameter<double>("common.min_object_accel_for_rss");
     const double idling_time = declare_parameter<double>("common.idling_time");
     const double safe_distance_margin = declare_parameter<double>("common.safe_distance_margin");
+    const double terminal_safe_distance_margin =
+      declare_parameter<double>("common.terminal_safe_distance_margin");
 
     return LongitudinalInfo{
       max_accel,
@@ -258,7 +260,8 @@ ObstacleCruisePlannerNode::ObstacleCruisePlannerNode(const rclcpp::NodeOptions &
       idling_time,
       min_ego_accel_for_rss,
       min_object_accel_for_rss,
-      safe_distance_margin};
+      safe_distance_margin,
+      terminal_safe_distance_margin};
   }();
 
   is_showing_debug_info_ = declare_parameter<bool>("common.is_showing_debug_info");

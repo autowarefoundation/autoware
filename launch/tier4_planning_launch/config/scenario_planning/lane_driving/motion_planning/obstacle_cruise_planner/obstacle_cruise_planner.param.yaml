@@ -10,6 +10,7 @@
       min_ego_accel_for_rss: -1.0 # ego's acceleration to calculate RSS distance [m/ss]
       min_object_accel_for_rss: -1.0 # front obstacle's acceleration to calculate RSS distance [m/ss]
       safe_distance_margin : 6.0 # This is also used as a stop margin [m]
+      terminal_safe_distance_margin : 3.0 # Stop margin at the goal [m]
 
       nearest_dist_deviation_threshold: 3.0 # [m] for finding nearest index
       nearest_yaw_deviation_threshold: 1.57 # [rad] for finding nearest index

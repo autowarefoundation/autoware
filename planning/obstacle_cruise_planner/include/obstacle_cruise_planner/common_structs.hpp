@@ -109,6 +109,7 @@ struct LongitudinalInfo
   double min_ego_accel_for_rss;
   double min_object_accel_for_rss;
   double safe_distance_margin;
+  double terminal_safe_distance_margin;
 };
 
 struct DebugData
