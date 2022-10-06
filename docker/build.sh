@@ -70,6 +70,7 @@ docker buildx bake --no-cache --load --progress=plain -f "$SCRIPT_DIR/autoware-u
     --set "*.args.ROS_DISTRO=$rosdistro" \
     --set "*.args.BASE_IMAGE=$base_image" \
     --set "*.args.SETUP_ARGS=$setup_args" \
+    --set "*.args.CUDA_RUNTIME_BASE_IMAGE=$cuda_runtime_base_image" \
     --set "devel.tags=ghcr.io/autowarefoundation/autoware-universe:$rosdistro-latest$image_name_suffix" \
     --set "prebuilt.tags=ghcr.io/autowarefoundation/autoware-universe:$rosdistro-latest-prebuilt$image_name_suffix" \
     "$targets"
