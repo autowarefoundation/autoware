@@ -239,7 +239,7 @@ def launch_setup(context, *args, **kwargs):
         launch_arguments=[
             ("use_intra_process", LaunchConfiguration("use_intra_process")),
             ("target_container", "/control/control_container"),
-            ("initial_selector_mode", "remote"),
+            ("initial_selector_mode", LaunchConfiguration("initial_selector_mode")),
         ],
     )
 
