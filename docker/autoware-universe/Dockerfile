@@ -95,7 +95,7 @@ RUN mkdir -p ~/.ssh \
 
 ## Set up runtime environment
 RUN --mount=type=ssh \
-  ./setup-dev-env.sh -y $SETUP_ARGS --no-cuda-drivers --no-dev --ros-install-base universe \
+  ./setup-dev-env.sh -y $SETUP_ARGS --no-cuda-drivers --no-dev --runtime --ros-install-base universe \
   && pip uninstall -y ansible ansible-core \
   && mkdir src \
   && vcs import src < autoware.repos \
@@ -106,7 +106,7 @@ RUN --mount=type=ssh \
   && rm -rf /var/lib/apt/lists/*
 
 ## Copy install folder from builder
-COPY --from=builder /autoware/install/ /autoware/install/
+COPY --from=builder /autoware/install .
 
 ## Clean up unnecessary files
 RUN rm -rf \
