@@ -106,7 +106,7 @@ RUN --mount=type=ssh \
   && rm -rf /var/lib/apt/lists/*
 
 ## Copy install folder from builder
-COPY --from=builder /autoware/install .
+COPY --from=builder /autoware/install/ /autoware/install/
 
 ## Clean up unnecessary files
 RUN rm -rf \
