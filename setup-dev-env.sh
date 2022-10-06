@@ -90,6 +90,8 @@ fi
 # Check installation of dev package
 if [ "$option_runtime" = "true" ]; then
     ansible_args+=("--extra-vars" "install_devel=false")
+else
+    ansible_args+=("--extra-vars" "install_devel=true")
 fi
 
 # Ros installation type, default "desktop"
