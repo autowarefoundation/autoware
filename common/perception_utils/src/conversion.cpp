@@ -12,28 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "perception_utils/perception_utils.hpp"
+#include "perception_utils/conversion.hpp"
 
 namespace perception_utils
 {
-std::uint8_t getHighestProbLabel(
-  const std::vector<autoware_auto_perception_msgs::msg::ObjectClassification> & classification)
-{
-  std::uint8_t label = autoware_auto_perception_msgs::msg::ObjectClassification::UNKNOWN;
-  float highest_prob = 0.0;
-  for (const auto & _class : classification) {
-    if (highest_prob < _class.probability) {
-      highest_prob = _class.probability;
-      label = _class.label;
-    }
-  }
-  return label;
-}
+using autoware_auto_perception_msgs::msg::DetectedObject;
+using autoware_auto_perception_msgs::msg::DetectedObjects;
+using autoware_auto_perception_msgs::msg::TrackedObject;
+using autoware_auto_perception_msgs::msg::TrackedObjects;
 
-autoware_auto_perception_msgs::msg::DetectedObject toDetectedObject(
-  const autoware_auto_perception_msgs::msg::TrackedObject & tracked_object)
+DetectedObject toDetectedObject(const TrackedObject & tracked_object)
 {
-  autoware_auto_perception_msgs::msg::DetectedObject detected_object;
+  DetectedObject detected_object;
   detected_object.existence_probability = tracked_object.existence_probability;
 
   detected_object.classification = tracked_object.classification;
@@ -51,8 +41,7 @@ autoware_auto_perception_msgs::msg::DetectedObject toDetectedObject(
   return detected_object;
 }
 
-autoware_auto_perception_msgs::msg::DetectedObjects toDetectedObjects(
-  const autoware_auto_perception_msgs::msg::TrackedObjects & tracked_objects)
+DetectedObjects toDetectedObjects(const TrackedObjects & tracked_objects)
 {
   autoware_auto_perception_msgs::msg::DetectedObjects detected_objects;
   detected_objects.header = tracked_objects.header;
@@ -63,10 +52,9 @@ autoware_auto_perception_msgs::msg::DetectedObjects toDetectedObjects(
   return detected_objects;
 }
 
-autoware_auto_perception_msgs::msg::TrackedObject toTrackedObject(
-  const autoware_auto_perception_msgs::msg::DetectedObject & detected_object)
+TrackedObject toTrackedObject(const DetectedObject & detected_object)
 {
-  autoware_auto_perception_msgs::msg::TrackedObject tracked_object;
+  TrackedObject tracked_object;
   tracked_object.existence_probability = detected_object.existence_probability;
 
   tracked_object.classification = detected_object.classification;
@@ -81,10 +69,9 @@ autoware_auto_perception_msgs::msg::TrackedObject toTrackedObject(
   return tracked_object;
 }
 
-autoware_auto_perception_msgs::msg::TrackedObjects toTrackedObjects(
-  const autoware_auto_perception_msgs::msg::DetectedObjects & detected_objects)
+TrackedObjects toTrackedObjects(const DetectedObjects & detected_objects)
 {
-  autoware_auto_perception_msgs::msg::TrackedObjects tracked_objects;
+  TrackedObjects tracked_objects;
   tracked_objects.header = detected_objects.header;
 
   for (auto & detected_object : detected_objects.objects) {

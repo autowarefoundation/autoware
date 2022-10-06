@@ -15,20 +15,13 @@
 #ifndef PERCEPTION_UTILS__PREDICTED_PATH_UTILS_HPP_
 #define PERCEPTION_UTILS__PREDICTED_PATH_UTILS_HPP_
 
-#include "interpolation/linear_interpolation.hpp"
-#include "interpolation/spherical_linear_interpolation.hpp"
-#include "interpolation/spline_interpolation.hpp"
-#include "perception_utils/geometry.hpp"
 #include "tier4_autoware_utils/geometry/geometry.hpp"
-
-#include <rclcpp/rclcpp.hpp>
 
 #include "autoware_auto_perception_msgs/msg/predicted_path.hpp"
 #include <geometry_msgs/msg/pose.hpp>
 
 #include <boost/optional.hpp>
 
-#include <algorithm>
 #include <vector>
 
 namespace perception_utils
