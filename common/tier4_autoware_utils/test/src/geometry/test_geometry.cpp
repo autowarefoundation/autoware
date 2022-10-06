@@ -15,6 +15,8 @@
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 #include "tier4_autoware_utils/math/unit_conversion.hpp"
 
+#include <geometry_msgs/msg/point32.hpp>
+
 #include <gtest/gtest.h>
 
 #include <string>
@@ -890,6 +892,25 @@ TEST(geometry, transformPoint)
     EXPECT_DOUBLE_EQ(p_transformed.x, 3.1919872981077804);
     EXPECT_DOUBLE_EQ(p_transformed.y, 3.5334936490538906);
     EXPECT_DOUBLE_EQ(p_transformed.z, 5.6160254037844393);
+  }
+
+  {
+    geometry_msgs::msg::Point32 p;
+    p.x = 1.0;
+    p.y = 2.0;
+    p.z = 3.0;
+
+    geometry_msgs::msg::Pose pose_transform;
+    pose_transform.position.x = 1.0;
+    pose_transform.position.y = 2.0;
+    pose_transform.position.z = 3.0;
+    pose_transform.orientation = createQuaternionFromRPY(deg2rad(30), deg2rad(30), deg2rad(30));
+
+    const geometry_msgs::msg::Point32 p_transformed = transformPoint(p, pose_transform);
+
+    EXPECT_DOUBLE_EQ(p_transformed.x, 3.1919872760772705);
+    EXPECT_DOUBLE_EQ(p_transformed.y, 3.5334937572479248);
+    EXPECT_DOUBLE_EQ(p_transformed.z, 5.616025447845459);
   }
 }
 
