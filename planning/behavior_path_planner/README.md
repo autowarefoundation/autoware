@@ -491,39 +491,11 @@ If the target path contains a goal, modify the points of the path so that the pa
 
 ![path_goal_refinement](./image/path_goal_refinement.drawio.svg)
 
-### Turn signal
-
-Turn on signal when the planned path crosses lanes or when a right or left turn is required. The turn signal information includes the direction of the turn signal and the distance to the point where the turn signal is needed.
-
-#### From planned path
-
-- turn signal direction  
-  Calculate the lateral movement distance from the shift start and end point and judges whether the line is crossed or not. If the vehicle straddles the line during lateral movement, the system turns on the blinker.  
-  ![cross_judgment](./image/turn_signal_fig1.drawio.svg)  
-  The timing to start lighting is when the time required to reach the shift start point is 3 seconds or less, or when the distance becomes smaller than threshold (default: `10.0 m`).  
-  The Japanese Road Traffic Law requires turn signal to be turned on `3.0 sec` before the vehicle starts moving sideways, but it also gives a condition based on distance because the turn signal may be turned off by slowing down before the shift start point.
-- distance  
-  The distance from the top of ego vehicle to the shift end point.
-
-#### From map information
-
-- turn signal direction  
-  Determine right or left turns based on the "turn_direction" information embedded in the lanelet.
-
-- distance  
-  The distance to the lane where you start to turn.
-
-#### Conciliation
-
-When multiple turn signal conditions are met, the turn signal with the smaller distance is selected.
-
-#### Limitation
-
-Currently, the algorithm of turn signal has been chagned, and the document of the turn signal will be available soon.
-
 ## References / External links
 
 This module depends on the external [BehaviorTreeCpp](https://github.com/BehaviorTree/BehaviorTree.CPP) library.
+
+<!-- cspell:ignore Vorobieva, Minoiu, Enache, Mammar, IFAC -->
 
 [[1]](https://www.sciencedirect.com/science/article/pii/S1474667015347431) H. Vorobieva, S. Glaser, N. Minoiu-Enache, and S. Mammar, “Geometric path planning for automatic parallel parking in tiny spots”, IFAC Proceedings Volumes, vol. 45, no. 24, pp. 36–42, 2012.
 
