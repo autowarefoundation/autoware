@@ -35,7 +35,7 @@ while [ "$1" != "" ]; do
         # Disable installation dev package of role 'cuda' and 'tensorrt'.
         option_runtime=true
         # The installation type (`desktop` or `ros-base`), default 'desktop'.
-        option_ros_install_base=true     
+        option_ros_install_base=true
         ;;
     *)
         args+=("$1")

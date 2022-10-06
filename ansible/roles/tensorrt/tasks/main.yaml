@@ -50,4 +50,3 @@
     - libnvparsers-dev
     - libnvonnxparsers-dev
   when: install_devel | bool
-
