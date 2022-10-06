@@ -122,5 +122,6 @@ ADD "https://gitlab.com/nvidia/container-images/opengl/raw/5191cf205d3e4bb115009
 RUN chmod 644 /etc/glvnd/egl_vendor.d/10_nvidia.json
 
 ## Create entrypoint
+# hadolint ignore=DL3059
 RUN echo "source /autoware/install/setup.bash" > /etc/bash.bashrc
 CMD ["/bin/bash"]
