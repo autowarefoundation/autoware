@@ -54,9 +54,12 @@ private:
     POINT_FOLLOW,
     UNKNOWN,
     VIRTUAL_GROUND,
+    OUT_OF_RANGE
   };
   struct PointRef
   {
+    float grid_size;    // radius of grid
+    uint16_t grid_id;   // id of grid in vertical
     float radius;       // cylindrical coords on XY Plane
     float theta;        // angle deg on XY plane
     size_t radial_div;  // index of the radial division to which this point belongs to
@@ -67,13 +70,23 @@ private:
   };
   using PointCloudRefVector = std::vector<PointRef>;
 
+  struct GridCenter
+  {
+    float radius;
+    float avg_height;
+    float max_height;
+    uint16_t grid_id;
+  };
+
   struct PointsCentroid
   {
     float radius_sum;
     float height_sum;
     float radius_avg;
     float height_avg;
+    float height_max;
     uint32_t point_num;
+    uint16_t grid_id;
 
     PointsCentroid()
     : radius_sum(0.0f), height_sum(0.0f), radius_avg(0.0f), height_avg(0.0f), point_num(0)
@@ -86,7 +99,9 @@ private:
       height_sum = 0.0f;
       radius_avg = 0.0f;
       height_avg = 0.0f;
+      height_max = 0.0f;
       point_num = 0;
+      grid_id = 0;
     }
 
     void addPoint(const float radius, const float height)
@@ -96,6 +111,7 @@ private:
       ++point_num;
       radius_avg = radius_sum / point_num;
       height_avg = height_sum / point_num;
+      height_max = height_max < height ? height : height_max;
     }
 
     float getAverageSlope() { return std::atan2(height_avg, radius_avg); }
@@ -103,6 +119,10 @@ private:
     float getAverageHeight() { return height_avg; }
 
     float getAverageRadius() { return radius_avg; }
+
+    float getMaxHeight() { return height_max; }
+
+    uint16_t getGridId() { return grid_id; }
   };
 
   void filter(
@@ -111,8 +131,19 @@ private:
   tf2_ros::Buffer tf_buffer_{get_clock()};
   tf2_ros::TransformListener tf_listener_{tf_buffer_};
 
-  std::string base_frame_;
-  std::string sensor_frame_;
+  const uint16_t gnd_grid_continual_thresh_ = 3;
+  bool elevation_grid_mode_;
+  float non_ground_height_threshold_;
+  float grid_size_rad_;
+  float grid_size_m_;
+  float low_priority_region_x_;
+  uint16_t gnd_grid_buffer_size_;
+  float grid_mode_switch_grid_id_;
+  float grid_mode_switch_angle_rad_;
+  float virtual_lidar_z_;
+  float detection_range_z_max_;
+  float center_pcl_shift_;                  // virtual center of pcl to center mass
+  float grid_mode_switch_radius_;           // non linear grid size switching distance
   double global_slope_max_angle_rad_;       // radians
   double local_slope_max_angle_rad_;        // radians
   double radial_divider_angle_rad_;         // distance in rads between dividers
@@ -141,7 +172,9 @@ private:
   void convertPointcloud(
     const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud,
     std::vector<PointCloudRefVector> & out_radial_ordered_points_manager);
-
+  void convertPointcloudGridScan(
+    const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud,
+    std::vector<PointCloudRefVector> & out_radial_ordered_points_manager);
   /*!
    * Output ground center of front wheels as the virtual ground point
    * @param[out] point Virtual ground origin point
@@ -155,10 +188,22 @@ private:
    * @param out_no_ground_indices Returns the indices of the points
    *     classified as not ground in the original PointCloud
    */
+
+  void initializeFirstGndGrids(
+    const float h, const float r, const uint16_t id, std::vector<GridCenter> & gnd_grids);
+
+  void checkContinuousGndGrid(
+    PointRef & p, const std::vector<GridCenter> & gnd_grids_list, PointsCentroid & gnd_cluster);
+  void checkDiscontinuousGndGrid(
+    PointRef & p, const std::vector<GridCenter> & gnd_grids_list, PointsCentroid & gnd_cluster);
+  void checkBreakGndGrid(
+    PointRef & p, const std::vector<GridCenter> & gnd_grids_list, PointsCentroid & gnd_cluster);
   void classifyPointCloud(
     std::vector<PointCloudRefVector> & in_radial_ordered_clouds,
     pcl::PointIndices & out_no_ground_indices);
-
+  void classifyPointCloudGridScan(
+    std::vector<PointCloudRefVector> & in_radial_ordered_clouds,
+    pcl::PointIndices & out_no_ground_indices);
   /*!
    * Returns the resulting complementary PointCloud, one with the points kept
    * and the other removed as indicated in the indices

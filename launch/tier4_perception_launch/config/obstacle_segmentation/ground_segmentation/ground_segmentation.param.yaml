@@ -11,13 +11,21 @@
         max_x: 100.0
         min_y: -50.0
         max_y: 50.0
+        max_z: 10.7  # recommended 2.5 for non elevation_grid_mode
+        min_z: -8.7 # recommended 0.0 for non elevation_grid_mode
         negative: False
 
     common_ground_filter:
       plugin: "ground_segmentation::ScanGroundFilterComponent"
       parameters:
         global_slope_max_angle_deg: 10.0
-        local_slope_max_angle_deg: 30.0
+        local_slope_max_angle_deg: 13.0 # recommended 30.0 for non elevation_grid_mode
         split_points_distance_tolerance: 0.2
-        split_height_distance: 0.3
         use_virtual_ground_point: True
+        split_height_distance: 0.2
+        non_ground_height_threshold: 0.20
+        grid_size_m: 0.1
+        grid_mode_switch_radius: 20.0
+        gnd_grid_buffer_size: 4
+        detection_range_z_max: 2.5
+        elevation_grid_mode: true
