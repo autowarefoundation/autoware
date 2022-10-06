@@ -20,6 +20,7 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QSpinBox>
+#include <QString>
 #include <QTableWidget>
 
 #ifndef Q_MOC_RUN
@@ -56,6 +57,13 @@ using tier4_rtc_msgs::srv::AutoMode;
 using tier4_rtc_msgs::srv::CooperateCommands;
 using unique_identifier_msgs::msg::UUID;
 
+static const QString BG_BLUE = "background-color: #3dffff;";
+static const QString BG_YELLOW = "background-color: #ffff3d;";
+static const QString BG_PURPLE = "background-color: #9e3dff;";
+static const QString BG_ORANGE = "background-color: #ff7f00;";
+static const QString BG_GREEN = "background-color: #3dff3d;";
+static const QString BG_RED = "background-color: #ff3d3d;";
+
 struct RTCAutoMode : public QObject
 {
   Q_OBJECT
@@ -78,6 +86,11 @@ class RTCManagerPanel : public rviz_common::Panel
 public Q_SLOTS:
   void onClickExecution();
   void onClickWait();
+  void onClickVelocityChangeRequest();
+  void onClickExecutePathChange();
+  void onClickWaitPathChange();
+  void onClickExecuteVelChange();
+  void onClickWaitVelChange();
 
 public:
   explicit RTCManagerPanel(QWidget * parent = nullptr);
@@ -88,6 +101,7 @@ protected:
   void onEnableService(
     const AutoMode::Request::SharedPtr request, const AutoMode::Response::SharedPtr response) const;
   void onClickCommandRequest(const uint8_t command);
+  void onClickChangeRequest(const bool is_path_change, const uint8_t command);
 
 private:
   rclcpp::Node::SharedPtr raw_node_;
@@ -99,8 +113,15 @@ private:
   std::shared_ptr<CooperateStatusArray> cooperate_statuses_ptr_;
   QTableWidget * rtc_table_;
   QTableWidget * auto_mode_table_;
+  QPushButton * path_change_button_ptr_ = {nullptr};
+  QPushButton * velocity_change_button_ptr_ = {nullptr};
+  QPushButton * exec_path_change_button_ptr_ = {nullptr};
+  QPushButton * wait_path_change_button_ptr_ = {nullptr};
+  QPushButton * exec_vel_change_button_ptr_ = {nullptr};
+  QPushButton * wait_vel_change_button_ptr_ = {nullptr};
   QPushButton * exec_button_ptr_ = {nullptr};
   QPushButton * wait_button_ptr_ = {nullptr};
+
   size_t column_size_ = {7};
   std::string enable_auto_mode_namespace_ = "/planning/enable_auto_mode";
 };

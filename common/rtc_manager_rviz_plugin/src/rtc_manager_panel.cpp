@@ -18,7 +18,6 @@
 
 #include <QHBoxLayout>
 #include <QHeaderView>
-#include <QString>
 #include <QVBoxLayout>
 #include <rviz_common/display_context.hpp>
 
@@ -77,6 +76,17 @@ std::string getModuleName(const uint8_t module_type)
   return "NONE";
 }
 
+bool isPathChangeModule(const uint8_t module_type)
+{
+  if (
+    module_type == Module::LANE_CHANGE_LEFT || module_type == Module::LANE_CHANGE_RIGHT ||
+    module_type == Module::AVOIDANCE_LEFT || module_type == Module::AVOIDANCE_RIGHT ||
+    module_type == Module::PULL_OVER || module_type == Module::PULL_OUT) {
+    return true;
+  }
+  return false;
+}
+
 RTCManagerPanel::RTCManagerPanel(QWidget * parent) : rviz_common::Panel(parent)
 {
   // TODO(tanaka): replace this magic number to Module::SIZE
@@ -100,11 +110,16 @@ RTCManagerPanel::RTCManagerPanel(QWidget * parent) : rviz_common::Panel(parent)
     rtc_auto_mode->setParent(this);
     // module
     {
-      rtc_auto_mode->module_name = getModuleName(static_cast<uint8_t>(i));
+      const uint8_t module_type = static_cast<uint8_t>(i);
+      rtc_auto_mode->module_name = getModuleName(module_type);
       std::string module_name = rtc_auto_mode->module_name;
       auto label = new QLabel(QString::fromStdString(module_name));
       label->setAlignment(Qt::AlignCenter);
       label->setText(QString::fromStdString(module_name));
+      if (isPathChangeModule(module_type))
+        label->setStyleSheet(BG_PURPLE);
+      else
+        label->setStyleSheet(BG_ORANGE);
       auto_mode_table_->setCellWidget(i, 0, label);
     }
     // mode button
@@ -136,14 +151,54 @@ RTCManagerPanel::RTCManagerPanel(QWidget * parent) : rviz_common::Panel(parent)
   }
   v_layout->addWidget(auto_mode_table_);
 
+  // lateral execution
+  auto * exe_path_change_layout = new QHBoxLayout;
+  {
+    exec_path_change_button_ptr_ = new QPushButton("Execute Path Change");
+    exec_path_change_button_ptr_->setCheckable(false);
+    exec_path_change_button_ptr_->setStyleSheet(BG_PURPLE);
+    connect(
+      exec_path_change_button_ptr_, &QPushButton::clicked, this,
+      &RTCManagerPanel::onClickExecutePathChange);
+    exe_path_change_layout->addWidget(exec_path_change_button_ptr_);
+    wait_path_change_button_ptr_ = new QPushButton("Wait Path Change");
+    wait_path_change_button_ptr_->setCheckable(false);
+    wait_path_change_button_ptr_->setStyleSheet(BG_PURPLE);
+    connect(
+      wait_path_change_button_ptr_, &QPushButton::clicked, this,
+      &RTCManagerPanel::onClickWaitPathChange);
+    exe_path_change_layout->addWidget(wait_path_change_button_ptr_);
+  }
+  v_layout->addLayout(exe_path_change_layout);
+
+  // longitudinal execution
+  auto * exe_vel_change_layout = new QHBoxLayout;
+  {
+    exec_vel_change_button_ptr_ = new QPushButton("Execute Velocity Change");
+    exec_vel_change_button_ptr_->setCheckable(false);
+    exec_vel_change_button_ptr_->setStyleSheet(BG_ORANGE);
+    connect(
+      exec_vel_change_button_ptr_, &QPushButton::clicked, this,
+      &RTCManagerPanel::onClickExecuteVelChange);
+    exe_vel_change_layout->addWidget(exec_vel_change_button_ptr_);
+    wait_vel_change_button_ptr_ = new QPushButton("Wait Velocity Change");
+    wait_vel_change_button_ptr_->setCheckable(false);
+    wait_vel_change_button_ptr_->setStyleSheet(BG_ORANGE);
+    connect(
+      wait_vel_change_button_ptr_, &QPushButton::clicked, this,
+      &RTCManagerPanel::onClickWaitVelChange);
+    exe_vel_change_layout->addWidget(wait_vel_change_button_ptr_);
+  }
+  v_layout->addLayout(exe_vel_change_layout);
+
   // execution
   auto * rtc_exe_layout = new QHBoxLayout;
   {
-    exec_button_ptr_ = new QPushButton("Execute");
+    exec_button_ptr_ = new QPushButton("Execute All");
     exec_button_ptr_->setCheckable(false);
     connect(exec_button_ptr_, &QPushButton::clicked, this, &RTCManagerPanel::onClickExecution);
     rtc_exe_layout->addWidget(exec_button_ptr_);
-    wait_button_ptr_ = new QPushButton("Wait");
+    wait_button_ptr_ = new QPushButton("Wait All");
     wait_button_ptr_->setCheckable(false);
     connect(wait_button_ptr_, &QPushButton::clicked, this, &RTCManagerPanel::onClickWait);
     rtc_exe_layout->addWidget(wait_button_ptr_);
@@ -193,7 +248,7 @@ void RTCAutoMode::onChangeToAutoMode()
   request->enable = true;
   enable_auto_mode_cli->async_send_request(request);
   auto_manual_mode_label->setText("AutoMode");
-  auto_manual_mode_label->setStyleSheet("background-color: #00FFFF;");
+  auto_manual_mode_label->setStyleSheet(BG_BLUE);
   auto_module_button_ptr->setChecked(true);
   manual_module_button_ptr->setChecked(false);
 }
@@ -204,9 +259,38 @@ void RTCAutoMode::onChangeToManualMode()
   request->enable = false;
   enable_auto_mode_cli->async_send_request(request);
   auto_manual_mode_label->setText("ManualMode");
-  auto_manual_mode_label->setStyleSheet("background-color: #FFFF00;");
+  auto_manual_mode_label->setStyleSheet(BG_YELLOW);
   manual_module_button_ptr->setChecked(true);
   auto_module_button_ptr->setChecked(false);
+}
+
+CooperateCommand setRTCCommandFromStatus(CooperateStatus & status)
+{
+  CooperateCommand cooperate_command;
+  cooperate_command.uuid = status.uuid;
+  cooperate_command.module = status.module;
+  cooperate_command.command = status.command_status;
+  return cooperate_command;
+}
+
+void RTCManagerPanel::onClickChangeRequest(const bool is_path_change, const uint8_t command)
+{
+  if (!cooperate_statuses_ptr_) return;
+  if (cooperate_statuses_ptr_->statuses.empty()) return;
+  auto executable_cooperate_commands_request = std::make_shared<CooperateCommands::Request>();
+  executable_cooperate_commands_request->stamp = cooperate_statuses_ptr_->stamp;
+  // send coop request
+  for (auto status : cooperate_statuses_ptr_->statuses) {
+    if (is_path_change ^ isPathChangeModule(status.module.type)) continue;
+    CooperateCommand cooperate_command = setRTCCommandFromStatus(status);
+    cooperate_command.command.type = command;
+    executable_cooperate_commands_request->commands.emplace_back(cooperate_command);
+    //  To consider needs to change path step by step
+    if (is_path_change && !status.auto_mode && status.command_status.type ^ command) {
+      break;
+    }
+  }
+  client_rtc_commands_->async_send_request(executable_cooperate_commands_request);
 }
 
 void RTCManagerPanel::onClickCommandRequest(const uint8_t command)
@@ -217,17 +301,18 @@ void RTCManagerPanel::onClickCommandRequest(const uint8_t command)
   executable_cooperate_commands_request->stamp = cooperate_statuses_ptr_->stamp;
   // send coop request
   for (auto status : cooperate_statuses_ptr_->statuses) {
-    CooperateCommand cooperate_command;
-    cooperate_command.uuid = status.uuid;
-    cooperate_command.module = status.module;
+    CooperateCommand cooperate_command = setRTCCommandFromStatus(status);
     cooperate_command.command.type = command;
     executable_cooperate_commands_request->commands.emplace_back(cooperate_command);
   }
   client_rtc_commands_->async_send_request(executable_cooperate_commands_request);
 }
 
+void RTCManagerPanel::onClickExecuteVelChange() { onClickChangeRequest(false, Command::ACTIVATE); }
+void RTCManagerPanel::onClickWaitVelChange() { onClickChangeRequest(false, Command::DEACTIVATE); }
+void RTCManagerPanel::onClickExecutePathChange() { onClickChangeRequest(true, Command::ACTIVATE); }
+void RTCManagerPanel::onClickWaitPathChange() { onClickChangeRequest(true, Command::DEACTIVATE); }
 void RTCManagerPanel::onClickExecution() { onClickCommandRequest(Command::ACTIVATE); }
-
 void RTCManagerPanel::onClickWait() { onClickCommandRequest(Command::DEACTIVATE); }
 
 void RTCManagerPanel::onRTCStatus(const CooperateStatusArray::ConstSharedPtr msg)
@@ -314,11 +399,11 @@ void RTCManagerPanel::onRTCStatus(const CooperateStatusArray::ConstSharedPtr msg
 
     // add color for recognition
     if (is_rtc_auto_mode || (is_aw_safe && is_execute)) {
-      rtc_table_->cellWidget(cnt, 1)->setStyleSheet("background-color: #00FF00;");
+      rtc_table_->cellWidget(cnt, 1)->setStyleSheet(BG_GREEN);
     } else if (is_aw_safe || is_execute) {
-      rtc_table_->cellWidget(cnt, 1)->setStyleSheet("background-color: #FFFF00;");
+      rtc_table_->cellWidget(cnt, 1)->setStyleSheet(BG_YELLOW);
     } else {
-      rtc_table_->cellWidget(cnt, 1)->setStyleSheet("background-color: #FF0000;");
+      rtc_table_->cellWidget(cnt, 1)->setStyleSheet(BG_RED);
     }
     cnt++;
   }
