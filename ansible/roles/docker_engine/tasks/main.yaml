@@ -20,6 +20,13 @@
       - lsb-release
     update_cache: true
 
+# sudo mkdir -p /etc/apt/keyrings
+- name: Create the directory for keyrings
+  become: true
+  ansible.builtin.file:
+    state: directory
+    path: /etc/apt/keyrings
+
 # curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 - name: Authorize Docker GPG key
   become: true
