@@ -674,27 +674,28 @@ void RunOutModule::insertVelocityForState(
 
   // get updated state and target obstacle to decelerate
   const auto state = state_machine_->getCurrentState();
+  const auto target_obstacle = state_machine_->getTargetObstacle();
 
   // no obstacles to decelerate
-  if (!dynamic_obstacle) {
+  if (!target_obstacle) {
     return;
   }
 
   // insert velocity for each state
   switch (state) {
     case State::GO: {
-      insertStoppingVelocity(dynamic_obstacle, current_pose, current_vel, current_acc, output_path);
+      insertStoppingVelocity(target_obstacle, current_pose, current_vel, current_acc, output_path);
       break;
     }
 
     case State::STOP: {
-      insertStoppingVelocity(dynamic_obstacle, current_pose, current_vel, current_acc, output_path);
+      insertStoppingVelocity(target_obstacle, current_pose, current_vel, current_acc, output_path);
       break;
     }
 
     case State::APPROACH: {
       insertApproachingVelocity(
-        *dynamic_obstacle, current_pose, planner_param.approaching.limit_vel_kmph / 3.6,
+        *target_obstacle, current_pose, planner_param.approaching.limit_vel_kmph / 3.6,
         planner_param.approaching.margin, output_path);
       debug_ptr_->setAccelReason(RunOutDebug::AccelReason::STOP);
       break;

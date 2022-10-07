@@ -39,11 +39,7 @@ std::string StateMachine::toString(const State & state) const
 
 void StateMachine::updateState(const StateInput & state_input, rclcpp::Clock & clock)
 {
-  // no obstacles
-  if (!state_input.current_obstacle) {
-    state_ = State::GO;
-    return;
-  }
+  target_obstacle_ = state_input.current_obstacle;
 
   switch (state_) {
     case State::GO: {
@@ -59,8 +55,10 @@ void StateMachine::updateState(const StateInput & state_input, rclcpp::Clock & c
     }
 
     case State::STOP: {
-      // if current velocity is larger than the threshold, transit to STOP state
-      if (state_input.current_velocity > state_param_.stop_thresh) {
+      // if current velocity is larger than the threshold or
+      // there are no obstacles, transit to GO state
+      if (
+        state_input.current_velocity > state_param_.stop_thresh || !state_input.current_obstacle) {
         state_ = State::GO;
         return;
       }
@@ -69,6 +67,8 @@ void StateMachine::updateState(const StateInput & state_input, rclcpp::Clock & c
       const auto elapsed_time = (clock.now() - stop_time_).seconds();
       if (elapsed_time > state_param_.stop_time_thresh) {
         state_ = State::APPROACH;
+        prev_approach_time_ = clock.now();
+        prev_obstacle_ = state_input.current_obstacle;
         return;
       }
 
@@ -77,15 +77,25 @@ void StateMachine::updateState(const StateInput & state_input, rclcpp::Clock & c
     }
 
     case State::APPROACH: {
-      // if the obstacle is far enough from ego, transit to GO state
       const bool enough_dist_from_obstacle =
         state_input.dist_to_collision > state_param_.disable_approach_dist;
-      if (enough_dist_from_obstacle) {
+      // if the obstacle is enough distance from ego or there are no obstacles, transit to GO state
+      if (enough_dist_from_obstacle || !state_input.current_obstacle) {
+        // if elapsed time from entering APPROACH state is less than threshold,
+        // keep APPROACH state to avoid chattering of state transition
+        const auto elapsed_time = (clock.now() - prev_approach_time_).seconds();
+        if (elapsed_time < state_param_.keep_approach_duration) {
+          target_obstacle_ = prev_obstacle_;
+          return;
+        }
+
         state_ = State::GO;
         return;
       }
 
       // continue APPROACH state
+      prev_approach_time_ = clock.now();
+      prev_obstacle_ = state_input.current_obstacle;
       return;
     }
 

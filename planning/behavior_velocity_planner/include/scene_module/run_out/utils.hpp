@@ -82,6 +82,7 @@ struct StateParam
   float stop_thresh;
   float stop_time_thresh;
   float disable_approach_dist;
+  float keep_approach_duration;
 };
 
 struct SlowDownLimit

@@ -44,6 +44,7 @@ public:
 
   explicit StateMachine(const StateParam & state_param) { state_param_ = state_param; }
   State getCurrentState() const { return state_; }
+  boost::optional<DynamicObstacle> getTargetObstacle() const { return target_obstacle_; }
   std::string toString(const State & state) const;
   void updateState(const StateInput & state_input, rclcpp::Clock & clock);
 
@@ -51,6 +52,9 @@ private:
   StateParam state_param_;
   State state_{State::GO};
   rclcpp::Time stop_time_;
+  rclcpp::Time prev_approach_time_;
+  boost::optional<DynamicObstacle> prev_obstacle_{};
+  boost::optional<DynamicObstacle> target_obstacle_{};
 };
 }  // namespace run_out_utils
 }  // namespace behavior_velocity_planner

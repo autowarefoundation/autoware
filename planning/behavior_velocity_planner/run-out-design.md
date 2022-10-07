@@ -147,7 +147,21 @@ The decision to approach the obstacle is determined by a simple state transition
 
 ![brief](./docs/run_out/insert_velocity_to_approach.svg)
 
-![brief](./docs/run_out/state_transition.svg)
+```plantuml
+@startuml
+hide empty description
+left to right direction
+title State transition for approaching the obstacle
+
+[*] --> GO
+GO --> STOP : Current velocity is less than threshold
+STOP --> GO : Current velocity is larger than threshold
+
+STOP --> APPROACH : Stop duration is larger than threshold
+APPROACH --> GO : There are no obstacles or \n distance to the obstacle is larger than threshold
+APPROACH --> APPROACH : Approach duration is less than threshold
+@enduml
+```
 
 ##### Limit velocity with specified jerk and acc limit
 
@@ -190,11 +204,12 @@ You can choose whether to use this feature by parameter of `slow_down_limit.enab
 | `margin`               | double | [m] distance on how close ego approaches the obstacle |
 | `limit_vel_kmph`       | double | [km/h] limit velocity for approaching after stopping  |
 
-| Parameter /state        | Type   | Description                                                                         |
-| ----------------------- | ------ | ----------------------------------------------------------------------------------- |
-| `stop_thresh`           | double | [m/s] threshold to decide if ego is stopping                                        |
-| `stop_time_thresh`      | double | [sec] threshold for stopping time to transit to approaching state                   |
-| `disable_approach_dist` | double | [m] end the approaching state if distance to the obstacle is longer than this value |
+| Parameter /state         | Type   | Description                                                                         |
+| ------------------------ | ------ | ----------------------------------------------------------------------------------- |
+| `stop_thresh`            | double | [m/s] threshold to decide if ego is stopping                                        |
+| `stop_time_thresh`       | double | [sec] threshold for stopping time to transit to approaching state                   |
+| `disable_approach_dist`  | double | [m] end the approaching state if distance to the obstacle is longer than this value |
+| `keep_approach_duration` | double | [sec] keep approach state for this duration to avoid chattering of state transition |
 
 | Parameter /slow_down_limit | Type   | Description                                                   |
 | -------------------------- | ------ | ------------------------------------------------------------- |

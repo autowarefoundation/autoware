@@ -33,9 +33,10 @@
 
       # parameters for the change of state. used only when approaching is enabled
       state:
-        stop_thresh: 0.01          # [m/s] threshold to decide if ego is stopping
-        stop_time_thresh: 3.0      # [sec] threshold for stopping time to transit to approaching state
-        disable_approach_dist: 3.0 # [m] end the approaching state if distance to the obstacle is longer than this value
+        stop_thresh: 0.01           # [m/s] threshold to decide if ego is stopping
+        stop_time_thresh: 3.0       # [sec] threshold for stopping time to transit to approaching state
+        disable_approach_dist: 3.0  # [m] end the approaching state if distance to the obstacle is longer than this value
+        keep_approach_duration: 1.0 # [sec] keep approach state for this duration to avoid chattering of state transition
 
       # parameter to avoid sudden stopping
       slow_down_limit:
