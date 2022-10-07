@@ -168,6 +168,20 @@ Polygon2d toPolygon2d(
 }
 
 tier4_autoware_utils::Polygon2d toPolygon2d(
+  const autoware_auto_perception_msgs::msg::DetectedObject & object)
+{
+  return tier4_autoware_utils::toPolygon2d(
+    object.kinematics.pose_with_covariance.pose, object.shape);
+}
+
+tier4_autoware_utils::Polygon2d toPolygon2d(
+  const autoware_auto_perception_msgs::msg::TrackedObject & object)
+{
+  return tier4_autoware_utils::toPolygon2d(
+    object.kinematics.pose_with_covariance.pose, object.shape);
+}
+
+tier4_autoware_utils::Polygon2d toPolygon2d(
   const autoware_auto_perception_msgs::msg::PredictedObject & object)
 {
   return tier4_autoware_utils::toPolygon2d(

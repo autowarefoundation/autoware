@@ -17,8 +17,10 @@
 
 #include "tier4_autoware_utils/geometry/boost_geometry.hpp"
 
-#include "autoware_auto_perception_msgs/msg/predicted_object.hpp"
-#include "geometry_msgs/msg/pose.hpp"
+#include <autoware_auto_perception_msgs/msg/detected_object.hpp>
+#include <autoware_auto_perception_msgs/msg/predicted_object.hpp>
+#include <autoware_auto_perception_msgs/msg/tracked_object.hpp>
+#include <geometry_msgs/msg/pose.hpp>
 
 #include <boost/geometry.hpp>
 #include <boost/optional.hpp>
@@ -27,13 +29,14 @@
 
 namespace tier4_autoware_utils
 {
-
 bool isClockwise(const Polygon2d & polygon);
 Polygon2d inverseClockwise(const Polygon2d & polygon);
 geometry_msgs::msg::Polygon rotatePolygon(
   const geometry_msgs::msg::Polygon & polygon, const double & angle);
 Polygon2d toPolygon2d(
   const geometry_msgs::msg::Pose & pose, const autoware_auto_perception_msgs::msg::Shape & shape);
+Polygon2d toPolygon2d(const autoware_auto_perception_msgs::msg::DetectedObject & object);
+Polygon2d toPolygon2d(const autoware_auto_perception_msgs::msg::TrackedObject & object);
 Polygon2d toPolygon2d(const autoware_auto_perception_msgs::msg::PredictedObject & object);
 double getArea(const autoware_auto_perception_msgs::msg::Shape & shape);
 
