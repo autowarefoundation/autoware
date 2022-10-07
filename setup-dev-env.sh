@@ -114,7 +114,7 @@ if ! (command -v git >/dev/null 2>&1); then
 fi
 
 # Install pipx for ansible
-if ! (python3 -m pipx >/dev/null 2>&1); then
+if ! (python3 -m pipx --version >/dev/null 2>&1); then
     sudo apt-get -y update
     sudo apt-get -y install python3-pip python3-venv
     python3 -m pip install --user pipx
