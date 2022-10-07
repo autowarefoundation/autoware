@@ -80,7 +80,7 @@ jobs:
 
       - name: Get modified files
         id: get-modified-files
-        uses: tj-actions/changed-files@v31
+        uses: tj-actions/changed-files@v32
         with:
           files: |
             **/*.cpp
