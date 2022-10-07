@@ -149,15 +149,17 @@ In the `obstacle_filtering` namespace,
 
 ### Stop planning
 
-| Parameter                     | Type   | Description                               |
-| ----------------------------- | ------ | ----------------------------------------- |
-| `common.min_strong_accel`     | double | ego's minimum acceleration to stop [m/ss] |
-| `common.safe_distance_margin` | double | distance with obstacles for stop [m]      |
+| Parameter                              | Type   | Description                                                                                |
+| -------------------------------------- | ------ | ------------------------------------------------------------------------------------------ |
+| `common.min_strong_accel`              | double | ego's minimum acceleration to stop [m/ss]                                                  |
+| `common.safe_distance_margin`          | double | distance with obstacles for stop [m]                                                       |
+| `common.terminal_safe_distance_margin` | double | terminal_distance with obstacles for stop, which cannot be exceed safe distance margin [m] |
 
 The role of the stop planning is keeping a safe distance with static vehicle objects or dynamic/static non vehicle objects.
 
 The stop planning just inserts the stop point in the trajectory to keep a distance with obstacles inside the detection area.
 The safe distance is parameterized as `common.safe_distance_margin`.
+When it stops at the end of the trajectory, and obstacle is on the same point, the safe distance becomes `terminal_safe_distance_margin`.
 
 When inserting the stop point, the required acceleration for the ego to stop in front of the stop point is calculated.
 If the acceleration is less than `common.min_strong_accel`, the stop planning will be cancelled since this package does not assume a strong sudden brake for emergency.

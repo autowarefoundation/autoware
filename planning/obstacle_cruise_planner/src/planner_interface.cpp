@@ -155,7 +155,7 @@ Trajectory PlannerInterface::generateStopTrajectory(
         abs_ego_offset;
       const double stop_dist_diff =
         closest_behavior_stop_dist_from_ego - closest_obstacle_stop_dist_from_ego;
-      if (stop_dist_diff < 0.5) {
+      if (stop_dist_diff < longitudinal_info_.safe_distance_margin) {
         // Use terminal margin (terminal_safe_distance_margin) for obstacle stop
         return longitudinal_info_.terminal_safe_distance_margin;
       }
