@@ -26,6 +26,7 @@
   ansible.builtin.file:
     state: directory
     path: /etc/apt/keyrings
+    mode: 0755
 
 # curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 - name: Authorize Docker GPG key
