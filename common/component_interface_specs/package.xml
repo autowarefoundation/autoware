@@ -11,6 +11,8 @@
 
   <build_depend>autoware_cmake</build_depend>
 
+  <depend>autoware_adapi_v1_msgs</depend>
+
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>
 
