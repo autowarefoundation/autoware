@@ -15,24 +15,23 @@
 #ifndef PERCEPTION_UTILS__TRANSFORM_HPP_
 #define PERCEPTION_UTILS__TRANSFORM_HPP_
 
-#include "geometry_msgs/msg/transform.hpp"
+#include <geometry_msgs/msg/transform.hpp>
+
+#include <boost/optional.hpp>
 
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
-
 #ifdef ROS_DISTRO_GALACTIC
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #else
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
 
-#include "boost/optional.hpp"
-
 #include <string>
 
-namespace
+namespace detail
 {
-[[maybe_unused]] boost::optional<geometry_msgs::msg::Transform> getTransform(
+[[maybe_unused]] inline boost::optional<geometry_msgs::msg::Transform> getTransform(
   const tf2_ros::Buffer & tf_buffer, const std::string & source_frame_id,
   const std::string & target_frame_id, const rclcpp::Time & time)
 {
@@ -46,7 +45,7 @@ namespace
     return boost::none;
   }
 }
-}  // namespace
+}  // namespace detail
 
 namespace perception_utils
 {
@@ -64,8 +63,8 @@ bool transformObjects(
     tf2::Transform tf_target2objects;
     tf2::Transform tf_objects_world2objects;
     {
-      const auto ros_target2objects_world =
-        getTransform(tf_buffer, input_msg.header.frame_id, target_frame_id, input_msg.header.stamp);
+      const auto ros_target2objects_world = detail::getTransform(
+        tf_buffer, input_msg.header.frame_id, target_frame_id, input_msg.header.stamp);
       if (!ros_target2objects_world) {
         return false;
       }

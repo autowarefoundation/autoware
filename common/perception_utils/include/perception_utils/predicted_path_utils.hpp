@@ -17,7 +17,7 @@
 
 #include "tier4_autoware_utils/geometry/geometry.hpp"
 
-#include "autoware_auto_perception_msgs/msg/predicted_path.hpp"
+#include <autoware_auto_perception_msgs/msg/predicted_path.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 
 #include <boost/optional.hpp>
