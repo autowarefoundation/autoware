@@ -28,7 +28,7 @@ void setFormatDate(QLabel * line, double time)
   char buffer[128];
   auto seconds = static_cast<time_t>(time);
   strftime(buffer, sizeof(buffer), "%Y-%m-%d-%H-%M-%S", localtime(&seconds));
-  line->setText(QString(buffer));
+  line->setText(QString("- ") + QString(buffer) + QString(".mp4"));
 }
 
 AutowareScreenCapturePanel::AutowareScreenCapturePanel(QWidget * parent)
@@ -42,11 +42,13 @@ AutowareScreenCapturePanel::AutowareScreenCapturePanel(QWidget * parent)
     ros_time_label_ = new QLabel;
     screen_capture_button_ptr_ = new QPushButton("Capture Screen Shot");
     connect(screen_capture_button_ptr_, SIGNAL(clicked()), this, SLOT(onClickScreenCapture()));
+    file_name_prefix_ = new QLineEdit("cap");
+    connect(file_name_prefix_, SIGNAL(valueChanged(std::string)), this, SLOT(onPrefixChanged()));
     cap_layout->addWidget(screen_capture_button_ptr_);
+    cap_layout->addWidget(file_name_prefix_);
     cap_layout->addWidget(ros_time_label_);
     // initialize file name system clock is better for identification.
     setFormatDate(ros_time_label_, rclcpp::Clock().now().seconds());
-    cap_layout->addWidget(new QLabel(" [.mp4] "));
   }
 
   // video capture
@@ -96,6 +98,8 @@ void AutowareScreenCapturePanel::onInitialize()
     std::bind(&AutowareScreenCapturePanel::onCaptureTrigger, this, _1, _2));
 }
 
+void onPrefixChanged() {}
+
 void AutowareScreenCapturePanel::onRateChanged() {}
 
 void AutowareScreenCapturePanel::onClickScreenCapture()
@@ -138,8 +142,8 @@ void AutowareScreenCapturePanel::onClickVideoCapture()
                               .size();
         current_movie_size_ = cv::Size(q_size.width(), q_size.height());
         writer_.open(
-          "capture/" + capture_file_name_ + ".mp4", fourcc, capture_hz_->value(),
-          current_movie_size_);
+          "capture/" + file_name_prefix_->text().toStdString() + capture_file_name_ + ".mp4",
+          fourcc, capture_hz_->value(), current_movie_size_);
       }
       capture_timer_->start(clock);
       state_ = State::CAPTURING;

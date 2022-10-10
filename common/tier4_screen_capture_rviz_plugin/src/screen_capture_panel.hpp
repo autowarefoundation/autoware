@@ -67,12 +67,14 @@ public:
 public Q_SLOTS:
   void onClickScreenCapture();
   void onClickVideoCapture();
+  void onPrefixChanged();
   void onRateChanged();
 
 private:
   QLabel * ros_time_label_;
   QPushButton * screen_capture_button_ptr_;
   QPushButton * capture_to_mp4_button_ptr_;
+  QLineEdit * file_name_prefix_;
   QSpinBox * capture_hz_;
   QTimer * capture_timer_;
   QMainWindow * main_window_{nullptr};
