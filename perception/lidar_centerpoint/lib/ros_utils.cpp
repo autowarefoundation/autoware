@@ -14,8 +14,9 @@
 
 #include "lidar_centerpoint/ros_utils.hpp"
 
-#include <tier4_autoware_utils/geometry/geometry.hpp>
-#include <tier4_autoware_utils/math/constants.hpp>
+#include "perception_utils/perception_utils.hpp"
+#include "tier4_autoware_utils/geometry/geometry.hpp"
+#include "tier4_autoware_utils/math/constants.hpp"
 
 namespace centerpoint
 {
@@ -40,7 +41,7 @@ void box3DToDetectedObject(
       rclcpp::get_logger("lidar_centerpoint"), "Unexpected label: UNKNOWN is set.");
   }
 
-  if (isCarLikeVehicleLabel(classification.label)) {
+  if (perception_utils::isCarLikeVehicle(classification.label)) {
     obj.kinematics.orientation_availability =
       autoware_auto_perception_msgs::msg::DetectedObjectKinematics::SIGN_UNKNOWN;
   }
@@ -89,12 +90,6 @@ uint8_t getSemanticType(const std::string & class_name)
   } else {
     return Label::UNKNOWN;
   }
-}
-
-bool isCarLikeVehicleLabel(const uint8_t label)
-{
-  return label == Label::CAR || label == Label::TRUCK || label == Label::BUS ||
-         label == Label::TRAILER;
 }
 
 }  // namespace centerpoint
