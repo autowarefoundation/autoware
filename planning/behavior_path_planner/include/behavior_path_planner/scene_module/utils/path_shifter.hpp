@@ -35,16 +35,17 @@ using autoware_auto_planning_msgs::msg::PathWithLaneId;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Pose;
 
-struct ShiftPoint
+struct ShiftLine
 {
-  Pose start{};     // shift start point in absolute coordinate
-  Pose end{};       // shift start point in absolute coordinate
-  double length{};  // absolute shift length at the end point related to the reference path
+  Pose start{};  // shift start point in absolute coordinate
+  Pose end{};    // shift start point in absolute coordinate
+  double
+    end_shift_length{};  // absolute shift length at the end point related to the reference path
 
   size_t start_idx{};  // associated start-point index for the reference path
   size_t end_idx{};    // associated end-point index for the reference path
 };
-using ShiftPointArray = std::vector<ShiftPoint>;
+using ShiftLineArray = std::vector<ShiftLine>;
 
 struct ShiftedPath
 {
@@ -70,22 +71,22 @@ public:
   /**
    * @brief  Add shift point. You don't have to care about the start/end_idx.
    */
-  void addShiftPoint(const ShiftPoint & point);
+  void addShiftLine(const ShiftLine & point);
 
   /**
    * @brief  Set new shift point. You don't have to care about the start/end_idx.
    */
-  void setShiftPoints(const std::vector<ShiftPoint> & points);
+  void setShiftLines(const std::vector<ShiftLine> & lines);
 
   /**
    * @brief  Get shift points.
    */
-  std::vector<ShiftPoint> getShiftPoints() const { return shift_points_; }
+  std::vector<ShiftLine> getShiftLines() const { return shift_lines_; }
 
   /**
    * @brief  Get shift points size.
    */
-  size_t getShiftPointsSize() const { return shift_points_.size(); }
+  size_t getShiftLinesSize() const { return shift_lines_.size(); }
 
   /**
    * @brief  Get base offset.
@@ -110,7 +111,7 @@ public:
    * @details The previous offset information is stored in the base_offset_.
    *          This should be called after generate().
    */
-  void removeBehindShiftPointAndSetBaseOffset(const size_t nearest_idx);
+  void removeBehindShiftLineAndSetBaseOffset(const size_t nearest_idx);
 
   ////////////////////////////////////////
   // Utility Functions
@@ -141,40 +142,40 @@ public:
   double getTotalShiftLength() const
   {
     double sum = base_offset_;
-    for (const auto & p : shift_points_) {
-      sum += p.length;
+    for (const auto & l : shift_lines_) {
+      sum += l.end_shift_length;
     }
     return sum;
   }
 
   double getLastShiftLength() const
   {
-    if (shift_points_.empty()) {
+    if (shift_lines_.empty()) {
       return base_offset_;
     }
 
     const auto furthest = std::max_element(
-      shift_points_.begin(), shift_points_.end(),
+      shift_lines_.begin(), shift_lines_.end(),
       [](auto & a, auto & b) { return a.end_idx < b.end_idx; });
 
-    return furthest->length;
+    return furthest->end_shift_length;
   }
 
-  boost::optional<ShiftPoint> getLastShiftPoint() const
+  boost::optional<ShiftLine> getLastShiftLine() const
   {
-    if (shift_points_.empty()) {
+    if (shift_lines_.empty()) {
       return {};
     }
 
     const auto furthest = std::max_element(
-      shift_points_.begin(), shift_points_.end(),
+      shift_lines_.begin(), shift_lines_.end(),
       [](auto & a, auto & b) { return a.end_idx > b.end_idx; });
 
     return *furthest;
   }
 
   /**
-   * @brief  Calculate the theoretical lateral jerk by spline shifting for current shift_points_.
+   * @brief  Calculate the theoretical lateral jerk by spline shifting for current shift_lines_.
    * @return Jerk array. THe size is same as the shift points.
    */
   std::vector<double> calcLateralJerk() const;
@@ -184,7 +185,7 @@ private:
   PathWithLaneId reference_path_;
 
   // Shift points used for shifted-path generation.
-  ShiftPointArray shift_points_;
+  ShiftLineArray shift_lines_;
 
   // The amount of shift length to the entire path.
   double base_offset_{0.0};
@@ -197,22 +198,22 @@ private:
   mutable rclcpp::Clock clock_{RCL_ROS_TIME};
 
   /**
-   * @brief Calculate path index for shift_points and set is_index_aligned_ to true.
+   * @brief Calculate path index for shift_lines and set is_index_aligned_ to true.
    */
-  void updateShiftPointIndices(ShiftPointArray & shift_points) const;
+  void updateShiftLinesIndices(ShiftLineArray & shift_lines) const;
 
   /**
    * @brief Sort the points in order from the front of the path.
    */
-  void sortShiftPointsAlongPath(ShiftPointArray & shift_points) const;
+  void sortShiftLinesAlongPath(ShiftLineArray & shift_lines) const;
 
   /**
-   * @brief Generate shifted path from reference_path_ and shift_points_ with linear shifting.
+   * @brief Generate shifted path from reference_path_ and shift_lines_ with linear shifting.
    */
   void applyLinearShifter(ShiftedPath * shifted_path) const;
 
   /**
-   * @brief Generate shifted path from reference_path_ and shift_points_ with spline_based shifting.
+   * @brief Generate shifted path from reference_path_ and shift_lines_ with spline_based shifting.
    * @details Calculate the shift so that the horizontal jerk remains constant. This is achieved by
    *          dividing the shift interval into four parts and apply a cubic spline to them.
    *          The resultant shifting shape is closed to the Clothoid curve.
@@ -226,7 +227,7 @@ private:
   /**
    * @brief Check if the shift points are aligned in order and have no conflict range.
    */
-  bool checkShiftPointsAlignment(const ShiftPointArray & shift_points) const;
+  bool checkShiftLinesAlignment(const ShiftLineArray & shift_lines) const;
 
   void addLateralOffsetOnIndexPoint(ShiftedPath * path, double offset, size_t index) const;
 

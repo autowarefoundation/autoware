@@ -30,7 +30,7 @@ struct LaneChangePath
 {
   PathWithLaneId path;
   ShiftedPath shifted_path;
-  ShiftPoint shift_point;
+  ShiftLine shift_line;
   double acceleration{0.0};
   double preparation_length{0.0};
   double lane_change_length{0.0};

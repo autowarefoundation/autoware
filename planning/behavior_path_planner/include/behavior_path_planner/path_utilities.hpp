@@ -56,7 +56,7 @@ void clipPathLength(
 
 std::pair<TurnIndicatorsCommand, double> getPathTurnSignal(
   const lanelet::ConstLanelets & current_lanes, const ShiftedPath & path,
-  const ShiftPoint & shift_point, const Pose & pose, const double & velocity,
+  const ShiftLine & shift_line, const Pose & pose, const double & velocity,
   const BehaviorPathPlannerParameters & common_parameter);
 
 }  // namespace behavior_path_planner::util

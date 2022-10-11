@@ -85,7 +85,7 @@ double getDistanceWhenDecelerate(
 
 std::optional<LaneChangePath> constructCandidatePath(
   const PathWithLaneId & prepare_segment, const PathWithLaneId & lane_changing_segment,
-  const PathWithLaneId & target_lane_reference_path, const ShiftPoint & shift_point,
+  const PathWithLaneId & target_lane_reference_path, const ShiftLine & shift_line,
   const lanelet::ConstLanelets & original_lanelets, const lanelet::ConstLanelets & target_lanelets,
   const double & acceleration, const double & prepare_distance, const double & prepare_duration,
   const double & prepare_speed, const double & minimum_prepare_distance,
@@ -94,7 +94,7 @@ std::optional<LaneChangePath> constructCandidatePath(
 {
   PathShifter path_shifter;
   path_shifter.setPath(target_lane_reference_path);
-  path_shifter.addShiftPoint(shift_point);
+  path_shifter.addShiftLine(shift_line);
   ShiftedPath shifted_path;
 
   // offset front side
@@ -109,7 +109,7 @@ std::optional<LaneChangePath> constructCandidatePath(
   candidate_path.acceleration = acceleration;
   candidate_path.preparation_length = prepare_distance;
   candidate_path.lane_change_length = lane_change_distance;
-  candidate_path.shift_point = shift_point;
+  candidate_path.shift_line = shift_line;
 
   const PathPointWithLaneId & lane_changing_start_point = prepare_segment.points.back();
   const PathPointWithLaneId & lane_changing_end_point = lane_changing_segment.points.front();
@@ -150,7 +150,7 @@ std::optional<LaneChangePath> constructCandidatePath(
   }
 
   candidate_path.turn_signal_info = lane_change_utils::calc_turn_signal_info(
-    prepare_segment, prepare_speed, minimum_prepare_distance, prepare_duration, shift_point,
+    prepare_segment, prepare_speed, minimum_prepare_distance, prepare_duration, shift_line,
     shifted_path);
   // check candidate path is in lanelet
   if (!isPathInLanelets(candidate_path.path, original_lanelets, target_lanelets)) {
@@ -239,13 +239,13 @@ LaneChangePaths getLaneChangePaths(
       route_handler, target_lanelets, lane_changing_start_pose, prepare_distance,
       lane_changing_distance, forward_path_length);
 
-    const ShiftPoint shift_point = getLaneChangeShiftPoint(
+    const ShiftLine shift_line = getLaneChangeShiftLine(
       prepare_segment_reference, lane_changing_segment_reference, target_lanelets,
       target_lane_reference_path);
 
     const auto candidate_path = constructCandidatePath(
       prepare_segment_reference, lane_changing_segment_reference, target_lane_reference_path,
-      shift_point, original_lanelets, target_lanelets, acceleration, prepare_distance,
+      shift_line, original_lanelets, target_lanelets, acceleration, prepare_distance,
       lane_change_prepare_duration, prepare_speed, minimum_lane_change_prepare_distance,
       lane_changing_distance, lane_changing_duration, minimum_lane_change_velocity);
 
@@ -499,7 +499,7 @@ PathWithLaneId getReferencePathFromTargetLane(
   return route_handler.getCenterLinePath(target_lanes, s_start, s_end);
 }
 
-ShiftPoint getLaneChangeShiftPoint(
+ShiftLine getLaneChangeShiftLine(
   const PathWithLaneId & path1, const PathWithLaneId & path2,
   const lanelet::ConstLanelets & target_lanes, const PathWithLaneId & reference_path)
 {
@@ -508,16 +508,16 @@ ShiftPoint getLaneChangeShiftPoint(
   const ArcCoordinates lane_change_start_on_self_lane_arc =
     lanelet::utils::getArcCoordinates(target_lanes, lane_change_start_on_self_lane);
 
-  ShiftPoint shift_point;
-  shift_point.length = lane_change_start_on_self_lane_arc.distance;
-  shift_point.start = lane_change_start_on_self_lane;
-  shift_point.end = lane_change_end_on_target_lane;
-  shift_point.start_idx =
+  ShiftLine shift_line;
+  shift_line.end_shift_length = lane_change_start_on_self_lane_arc.distance;
+  shift_line.start = lane_change_start_on_self_lane;
+  shift_line.end = lane_change_end_on_target_lane;
+  shift_line.start_idx =
     motion_utils::findNearestIndex(reference_path.points, lane_change_start_on_self_lane.position);
-  shift_point.end_idx =
+  shift_line.end_idx =
     motion_utils::findNearestIndex(reference_path.points, lane_change_end_on_target_lane.position);
 
-  return shift_point;
+  return shift_line;
 }
 
 PathWithLaneId getLaneChangePathPrepareSegment(
@@ -589,7 +589,7 @@ PathWithLaneId getLaneChangePathLaneChangingSegment(
 
 TurnSignalInfo calc_turn_signal_info(
   const PathWithLaneId & prepare_path, const double prepare_velocity,
-  const double min_prepare_distance, const double prepare_duration, const ShiftPoint & shift_points,
+  const double min_prepare_distance, const double prepare_duration, const ShiftLine & shift_line,
   const ShiftedPath & lane_changing_path)
 {
   TurnSignalInfo turn_signal_info{};
@@ -609,12 +609,12 @@ TurnSignalInfo calc_turn_signal_info(
       return prepare_path.points.front().point.pose.position;
     });
 
-  turn_signal_info.required_start_point = shift_points.start.position;
+  turn_signal_info.required_start_point = shift_line.start.position;
   turn_signal_info.required_end_point = std::invoke([&lane_changing_path]() {
     const auto mid_path_idx = lane_changing_path.path.points.size() / 2;
     return lane_changing_path.path.points.at(mid_path_idx).point.pose.position;
   });
-  turn_signal_info.desired_end_point = shift_points.end.position;
+  turn_signal_info.desired_end_point = shift_line.end.position;
   return turn_signal_info;
 }
 

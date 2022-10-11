@@ -185,7 +185,7 @@ void clipPathLength(
 
 std::pair<TurnIndicatorsCommand, double> getPathTurnSignal(
   const lanelet::ConstLanelets & current_lanes, const ShiftedPath & path,
-  const ShiftPoint & shift_point, const Pose & pose, const double & velocity,
+  const ShiftLine & shift_line, const Pose & pose, const double & velocity,
   const BehaviorPathPlannerParameters & common_parameter)
 {
   TurnIndicatorsCommand turn_signal;
@@ -213,9 +213,9 @@ std::pair<TurnIndicatorsCommand, double> getPathTurnSignal(
   //                      smaller than tl_on_threshold_lat for right signal
   //  2. side point at shift start/end point cross the line
   const double distance_to_shift_start =
-    std::invoke([&current_lanes, &shift_point, &arc_position_current_pose]() {
+    std::invoke([&current_lanes, &shift_line, &arc_position_current_pose]() {
       const auto arc_position_shift_start =
-        lanelet::utils::getArcCoordinates(current_lanes, shift_point.start);
+        lanelet::utils::getArcCoordinates(current_lanes, shift_line.start);
       return arc_position_shift_start.length - arc_position_current_pose.length;
     });
 
@@ -223,17 +223,17 @@ std::pair<TurnIndicatorsCommand, double> getPathTurnSignal(
     (std::abs(velocity) < epsilon) ? max_time : distance_to_shift_start / velocity;
 
   const double diff =
-    path.shift_length.at(shift_point.end_idx) - path.shift_length.at(shift_point.start_idx);
+    path.shift_length.at(shift_line.end_idx) - path.shift_length.at(shift_line.start_idx);
 
-  Pose shift_start_point = path.path.points.at(shift_point.start_idx).point.pose;
-  Pose shift_end_point = path.path.points.at(shift_point.end_idx).point.pose;
+  Pose shift_start_point = path.path.points.at(shift_line.start_idx).point.pose;
+  Pose shift_end_point = path.path.points.at(shift_line.end_idx).point.pose;
   Pose left_start_point = shift_start_point;
   Pose right_start_point = shift_start_point;
   Pose left_end_point = shift_end_point;
   Pose right_end_point = shift_end_point;
   {
-    const double start_yaw = tf2::getYaw(shift_point.start.orientation);
-    const double end_yaw = tf2::getYaw(shift_point.end.orientation);
+    const double start_yaw = tf2::getYaw(shift_line.start.orientation);
+    const double end_yaw = tf2::getYaw(shift_line.end.orientation);
     left_start_point.position.x -= std::sin(start_yaw) * (shift_to_outside);
     left_start_point.position.y += std::cos(start_yaw) * (shift_to_outside);
     right_start_point.position.x -= std::sin(start_yaw) * (-shift_to_outside);
@@ -287,9 +287,9 @@ std::pair<TurnIndicatorsCommand, double> getPathTurnSignal(
 
   // calc distance from ego vehicle front to shift end point.
   const double distance_from_vehicle_front =
-    std::invoke([&current_lanes, &shift_point, &arc_position_current_pose, &base_link2front]() {
+    std::invoke([&current_lanes, &shift_line, &arc_position_current_pose, &base_link2front]() {
       const auto arc_position_shift_end =
-        lanelet::utils::getArcCoordinates(current_lanes, shift_point.end);
+        lanelet::utils::getArcCoordinates(current_lanes, shift_line.end);
       return arc_position_shift_end.length - arc_position_current_pose.length - base_link2front;
     });
 

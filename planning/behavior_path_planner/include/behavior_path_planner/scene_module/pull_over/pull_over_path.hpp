@@ -32,7 +32,7 @@ struct PullOverPath
   Pose start_pose{};
   Pose end_pose{};
   ShiftedPath shifted_path{};
-  ShiftPoint shift_point{};
+  ShiftLine shift_line{};
   double acceleration{0.0};
   double preparation_length{0.0};
   double pull_over_length{0.0};

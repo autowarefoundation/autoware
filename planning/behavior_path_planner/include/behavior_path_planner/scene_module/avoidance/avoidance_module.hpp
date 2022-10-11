@@ -68,13 +68,13 @@ public:
   }
 
 private:
-  struct RegisteredShiftPoint
+  struct RegisteredShiftLine
   {
     UUID uuid;
     Pose start_pose;
     Pose finish_pose;
   };
-  using RegisteredShiftPointArray = std::vector<RegisteredShiftPoint>;
+  using RegisteredShiftLineArray = std::vector<RegisteredShiftLine>;
 
   std::shared_ptr<AvoidanceParameters> parameters_;
 
@@ -85,8 +85,8 @@ private:
   RTCInterface rtc_interface_left_;
   RTCInterface rtc_interface_right_;
 
-  RegisteredShiftPointArray left_shift_array_;
-  RegisteredShiftPointArray right_shift_array_;
+  RegisteredShiftLineArray left_shift_array_;
+  RegisteredShiftLineArray right_shift_array_;
   UUID candidate_uuid_;
   UUID uuid_left_;
   UUID uuid_right_;
@@ -181,11 +181,11 @@ private:
   ShiftedPath prev_linear_shift_path_;  // used for shift point check
   PathWithLaneId prev_reference_;
 
-  // for raw_shift_point registration
-  AvoidPointArray registered_raw_shift_points_;
-  AvoidPointArray current_raw_shift_points_;
-  void registerRawShiftPoints(const AvoidPointArray & future_registered);
-  void updateRegisteredRawShiftPoints();
+  // for raw_shift_line registration
+  AvoidLineArray registered_raw_shift_lines_;
+  AvoidLineArray current_raw_shift_lines_;
+  void registerRawShiftLines(const AvoidLineArray & future_registered);
+  void updateRegisteredRawShiftLines();
 
   // -- for state management --
   bool isAvoidancePlanRunning() const;
@@ -202,55 +202,53 @@ private:
   void CompensateDetectionLost(ObjectDataArray & objects) const;
 
   // -- for shift point generation --
-  AvoidPointArray calcShiftPoints(
-    AvoidPointArray & current_raw_shift_points, DebugData & debug) const;
+  AvoidLineArray calcShiftLines(AvoidLineArray & current_raw_shift_lines, DebugData & debug) const;
 
   // shift point generation: generator
   double getShiftLength(
     const ObjectData & object, const bool & is_object_on_right, const double & avoid_margin) const;
-  AvoidPointArray calcRawShiftPointsFromObjects(const ObjectDataArray & objects) const;
+  AvoidLineArray calcRawShiftLinesFromObjects(const ObjectDataArray & objects) const;
   double getRightShiftBound() const;
   double getLeftShiftBound() const;
 
   // shift point generation: combiner
-  AvoidPointArray combineRawShiftPointsWithUniqueCheck(
-    const AvoidPointArray & base_points, const AvoidPointArray & added_points) const;
+  AvoidLineArray combineRawShiftLinesWithUniqueCheck(
+    const AvoidLineArray & base_points, const AvoidLineArray & added_points) const;
 
   // shift point generation: merger
-  AvoidPointArray mergeShiftPoints(
-    const AvoidPointArray & raw_shift_points, DebugData & debug) const;
+  AvoidLineArray mergeShiftLines(const AvoidLineArray & raw_shift_lines, DebugData & debug) const;
   void generateTotalShiftLine(
-    const AvoidPointArray & avoid_points, ShiftLineData & shift_line_data) const;
-  AvoidPointArray extractShiftPointsFromLine(ShiftLineData & shift_line_data) const;
+    const AvoidLineArray & avoid_points, ShiftLineData & shift_line_data) const;
+  AvoidLineArray extractShiftLinesFromLine(ShiftLineData & shift_line_data) const;
   std::vector<size_t> calcParentIds(
-    const AvoidPointArray & parent_candidates, const AvoidPoint & child) const;
+    const AvoidLineArray & parent_candidates, const AvoidLine & child) const;
 
   // shift point generation: trimmers
-  AvoidPointArray trimShiftPoint(const AvoidPointArray & shift_points, DebugData & debug) const;
-  void quantizeShiftPoint(AvoidPointArray & shift_points, const double interval) const;
-  void trimSmallShiftPoint(AvoidPointArray & shift_points, const double shift_diff_thres) const;
-  void trimSimilarGradShiftPoint(AvoidPointArray & shift_points, const double threshold) const;
-  void trimMomentaryReturn(AvoidPointArray & shift_points) const;
-  void trimTooSharpShift(AvoidPointArray & shift_points) const;
-  void trimSharpReturn(AvoidPointArray & shift_points) const;
+  AvoidLineArray trimShiftLine(const AvoidLineArray & shift_lines, DebugData & debug) const;
+  void quantizeShiftLine(AvoidLineArray & shift_lines, const double interval) const;
+  void trimSmallShiftLine(AvoidLineArray & shift_lines, const double shift_diff_thres) const;
+  void trimSimilarGradShiftLine(AvoidLineArray & shift_lines, const double threshold) const;
+  void trimMomentaryReturn(AvoidLineArray & shift_lines) const;
+  void trimTooSharpShift(AvoidLineArray & shift_lines) const;
+  void trimSharpReturn(AvoidLineArray & shift_lines) const;
 
   // shift point generation: return-shift generator
-  void addReturnShiftPointFromEgo(
-    AvoidPointArray & sp_candidates, AvoidPointArray & current_raw_shift_points) const;
+  void addReturnShiftLineFromEgo(
+    AvoidLineArray & sl_candidates, AvoidLineArray & current_raw_shift_lines) const;
 
   // -- for shift point operations --
-  void alignShiftPointsOrder(
-    AvoidPointArray & shift_points, const bool recalculate_start_length = true) const;
-  AvoidPointArray fillAdditionalInfo(const AvoidPointArray & shift_points) const;
-  AvoidPoint fillAdditionalInfo(const AvoidPoint & shift_point) const;
-  void fillAdditionalInfoFromPoint(AvoidPointArray & shift_points) const;
-  void fillAdditionalInfoFromLongitudinal(AvoidPointArray & shift_points) const;
+  void alignShiftLinesOrder(
+    AvoidLineArray & shift_lines, const bool recalculate_start_length = true) const;
+  AvoidLineArray fillAdditionalInfo(const AvoidLineArray & shift_lines) const;
+  AvoidLine fillAdditionalInfo(const AvoidLine & shift_line) const;
+  void fillAdditionalInfoFromPoint(AvoidLineArray & shift_lines) const;
+  void fillAdditionalInfoFromLongitudinal(AvoidLineArray & shift_lines) const;
 
   // -- for new shift point approval --
-  boost::optional<AvoidPointArray> findNewShiftPoint(
-    const AvoidPointArray & shift_points, const PathShifter & shifter) const;
-  void addShiftPointIfApproved(const AvoidPointArray & point);
-  void addNewShiftPoints(PathShifter & path_shifter, const AvoidPointArray & shift_points) const;
+  boost::optional<AvoidLineArray> findNewShiftLine(
+    const AvoidLineArray & shift_lines, const PathShifter & shifter) const;
+  void addShiftLineIfApproved(const AvoidLineArray & point);
+  void addNewShiftLines(PathShifter & path_shifter, const AvoidLineArray & shift_lines) const;
 
   // -- path generation --
   ShiftedPath generateAvoidancePath(PathShifter & shifter) const;
@@ -267,7 +265,7 @@ private:
   TurnSignalInfo calcTurnSignalInfo(const ShiftedPath & path) const;
 
   // intersection (old)
-  boost::optional<AvoidPoint> calcIntersectionShiftPoint(const AvoidancePlanningData & data) const;
+  boost::optional<AvoidLine> calcIntersectionShiftLine(const AvoidancePlanningData & data) const;
 
   bool isTargetObjectType(const PredictedObject & object) const;
 
@@ -275,8 +273,8 @@ private:
   mutable DebugData debug_data_;
   void setDebugData(const PathShifter & shifter, const DebugData & debug);
   void updateAvoidanceDebugData(std::vector<AvoidanceDebugMsg> & avoidance_debug_msg_array) const;
-  mutable std::vector<AvoidanceDebugMsg> debug_avoidance_initializer_for_shift_point_;
-  mutable rclcpp::Time debug_avoidance_initializer_for_shift_point_time_;
+  mutable std::vector<AvoidanceDebugMsg> debug_avoidance_initializer_for_shift_line_;
+  mutable rclcpp::Time debug_avoidance_initializer_for_shift_line_time_;
   // =====================================
   // ========= helper functions ==========
   // =====================================
@@ -287,7 +285,7 @@ private:
   // TODO(Horibe): think later.
   // for unique ID
   mutable uint64_t original_unique_id = 0;  // TODO(Horibe) remove mutable
-  uint64_t getOriginalShiftPointUniqueId() const { return original_unique_id++; }
+  uint64_t getOriginalShiftLineUniqueId() const { return original_unique_id++; }
 
   double getNominalAvoidanceDistance(const double shift_length) const;
   double getNominalPrepareDistance() const;

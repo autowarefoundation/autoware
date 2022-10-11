@@ -33,11 +33,12 @@ std::string toStr(const geometry_msgs::msg::Point & p)
 {
   return "(" + std::to_string(p.x) + ", " + std::to_string(p.y) + ", " + std::to_string(p.z) + ")";
 }
-std::string toStr(const behavior_path_planner::ShiftPoint & p)
+std::string toStr(const behavior_path_planner::ShiftLine & p)
 {
   return "start point = " + toStr(p.start.position) + ", end point = " + toStr(p.end.position) +
          ", start idx = " + std::to_string(p.start_idx) +
-         ", end idx = " + std::to_string(p.end_idx) + ", length = " + std::to_string(p.length);
+         ", end idx = " + std::to_string(p.end_idx) +
+         ", length = " + std::to_string(p.end_shift_length);
 }
 }  // namespace
 
@@ -51,23 +52,23 @@ void PathShifter::setPath(const PathWithLaneId & path)
 {
   reference_path_ = path;
 
-  updateShiftPointIndices(shift_points_);
-  sortShiftPointsAlongPath(shift_points_);
+  updateShiftLinesIndices(shift_lines_);
+  sortShiftLinesAlongPath(shift_lines_);
 }
-void PathShifter::addShiftPoint(const ShiftPoint & point)
+void PathShifter::addShiftLine(const ShiftLine & line)
 {
-  shift_points_.push_back(point);
+  shift_lines_.push_back(line);
 
-  updateShiftPointIndices(shift_points_);
-  sortShiftPointsAlongPath(shift_points_);
+  updateShiftLinesIndices(shift_lines_);
+  sortShiftLinesAlongPath(shift_lines_);
 }
 
-void PathShifter::setShiftPoints(const std::vector<ShiftPoint> & points)
+void PathShifter::setShiftLines(const std::vector<ShiftLine> & lines)
 {
-  shift_points_ = points;
+  shift_lines_ = lines;
 
-  updateShiftPointIndices(shift_points_);
-  sortShiftPointsAlongPath(shift_points_);
+  updateShiftLinesIndices(shift_lines_);
+  sortShiftLinesAlongPath(shift_lines_);
 }
 
 bool PathShifter::generate(
@@ -84,15 +85,15 @@ bool PathShifter::generate(
   shifted_path->path = reference_path_;
   shifted_path->shift_length.resize(reference_path_.points.size(), 0.0);
 
-  if (shift_points_.empty()) {
+  if (shift_lines_.empty()) {
     RCLCPP_DEBUG_STREAM_THROTTLE(
-      logger_, clock_, 3000, "shift_points_ is empty. Return reference with base offset.");
+      logger_, clock_, 3000, "shift_lines_ is empty. Return reference with base offset.");
     shiftBaseLength(shifted_path, base_offset_);
     return true;
   }
 
-  for (const auto & shift_point : shift_points_) {
-    int idx_gap = shift_point.end_idx - shift_point.start_idx;
+  for (const auto & shift_line : shift_lines_) {
+    int idx_gap = shift_line.end_idx - shift_line.start_idx;
     if (idx_gap <= 1) {
       RCLCPP_WARN_STREAM_THROTTLE(
         logger_, clock_, 3000,
@@ -103,12 +104,12 @@ bool PathShifter::generate(
   }
 
   // Check if the shift points are sorted correctly
-  if (!checkShiftPointsAlignment(shift_points_)) {
+  if (!checkShiftLinesAlignment(shift_lines_)) {
     RCLCPP_ERROR_STREAM(logger_, "Failed to sort shift points..!!");
     return false;
   }
 
-  if (shift_points_.front().start_idx == 0) {
+  if (shift_lines_.front().start_idx == 0) {
     // if offset is applied on front side, shifting from first point is no problem
     if (offset_back) {
       RCLCPP_WARN_STREAM_THROTTLE(
@@ -128,7 +129,7 @@ bool PathShifter::generate(
   // DEBUG
   RCLCPP_DEBUG_STREAM_THROTTLE(
     logger_, clock_, 3000,
-    "PathShifter::generate end. shift_points_.size = " << shift_points_.size());
+    "PathShifter::generate end. shift_lines_.size = " << shift_lines_.size());
 
   return true;
 }
@@ -141,21 +142,21 @@ void PathShifter::applyLinearShifter(ShiftedPath * shifted_path) const
 
   constexpr double epsilon = 1.0e-8;  // to avoid 0 division
 
-  // For all shift_points,
-  for (const auto & shift_point : shift_points_) {
-    const auto current_shift = shifted_path->shift_length.at(shift_point.end_idx);
-    const auto delta_shift = shift_point.length - current_shift;
+  // For all shift_lines_,
+  for (const auto & shift_line : shift_lines_) {
+    const auto current_shift = shifted_path->shift_length.at(shift_line.end_idx);
+    const auto delta_shift = shift_line.end_shift_length - current_shift;
     const auto shifting_arclength = std::max(
-      arclength_arr.at(shift_point.end_idx) - arclength_arr.at(shift_point.start_idx), epsilon);
+      arclength_arr.at(shift_line.end_idx) - arclength_arr.at(shift_line.start_idx), epsilon);
 
     // For all path.points,
     for (size_t i = 0; i < shifted_path->path.points.size(); ++i) {
       // Set shift length.
       double ith_shift_length;
-      if (i < shift_point.start_idx) {
+      if (i < shift_line.start_idx) {
         ith_shift_length = 0.0;
-      } else if (shift_point.start_idx <= i && i <= shift_point.end_idx) {
-        auto dist_from_start = arclength_arr.at(i) - arclength_arr.at(shift_point.start_idx);
+      } else if (shift_line.start_idx <= i && i <= shift_line.end_idx) {
+        auto dist_from_start = arclength_arr.at(i) - arclength_arr.at(shift_line.start_idx);
         ith_shift_length = (dist_from_start / shifting_arclength) * delta_shift;
       } else {
         ith_shift_length = delta_shift;
@@ -175,21 +176,22 @@ void PathShifter::applySplineShifter(ShiftedPath * shifted_path, const bool offs
 
   constexpr double epsilon = 1.0e-8;  // to avoid 0 division
 
-  // For all shift_points,
-  for (const auto & shift_point : shift_points_) {
+  // For all shift_lines,
+  for (const auto & shift_line : shift_lines_) {
     // calc delta shift at the sp.end_idx so that the sp.end_idx on the path will have
     // the desired shift length.
-    const auto current_shift = shifted_path->shift_length.at(shift_point.end_idx);
-    const auto delta_shift = shift_point.length - current_shift;
+    const auto current_shift = shifted_path->shift_length.at(shift_line.end_idx);
+    const auto delta_shift = shift_line.end_shift_length - current_shift;
 
-    RCLCPP_DEBUG(logger_, "current_shift = %f, sp.length = %f", current_shift, shift_point.length);
+    RCLCPP_DEBUG(
+      logger_, "current_shift = %f, sp.length = %f", current_shift, shift_line.end_shift_length);
 
     if (std::abs(delta_shift) < 0.01) {
       RCLCPP_DEBUG(logger_, "delta shift is zero. skip for this shift point.");
     }
 
     const auto shifting_arclength = std::max(
-      arclength_arr.at(shift_point.end_idx) - arclength_arr.at(shift_point.start_idx), epsilon);
+      arclength_arr.at(shift_line.end_idx) - arclength_arr.at(shift_line.start_idx), epsilon);
 
     // TODO(Watanabe) write docs.
     // These points are defined to achieve the constant-jerk shifting (see the header description).
@@ -205,8 +207,8 @@ void PathShifter::applySplineShifter(ShiftedPath * shifted_path, const bool offs
     // For all path.points,
     // Note: start_idx is not included since shift = 0,
     //       end_idx is not included since shift is considered out of spline.
-    for (size_t i = shift_point.start_idx + 1; i < shift_point.end_idx; ++i) {
-      const double dist_from_start = arclength_arr.at(i) - arclength_arr.at(shift_point.start_idx);
+    for (size_t i = shift_line.start_idx + 1; i < shift_line.end_idx; ++i) {
+      const double dist_from_start = arclength_arr.at(i) - arclength_arr.at(shift_line.start_idx);
       query_distance.push_back(dist_from_start);
     }
     if (!query_distance.empty()) {
@@ -215,7 +217,7 @@ void PathShifter::applySplineShifter(ShiftedPath * shifted_path, const bool offs
 
     // Apply shifting.
     {
-      size_t i = shift_point.start_idx + 1;
+      size_t i = shift_line.start_idx + 1;
       for (const auto & itr : query_length) {
         addLateralOffsetOnIndexPoint(shifted_path, itr, i);
         ++i;
@@ -224,12 +226,12 @@ void PathShifter::applySplineShifter(ShiftedPath * shifted_path, const bool offs
 
     if (offset_back == true) {
       // Apply shifting after shift
-      for (size_t i = shift_point.end_idx; i < shifted_path->path.points.size(); ++i) {
+      for (size_t i = shift_line.end_idx; i < shifted_path->path.points.size(); ++i) {
         addLateralOffsetOnIndexPoint(shifted_path, delta_shift, i);
       }
     } else {
       // Apply shifting before shift
-      for (size_t i = 0; i < shift_point.start_idx + 1; ++i) {
+      for (size_t i = 0; i < shift_line.start_idx + 1; ++i) {
         addLateralOffsetOnIndexPoint(shifted_path, query_length.front(), i);
       }
     }
@@ -246,43 +248,43 @@ std::vector<double> PathShifter::calcLateralJerk() const
 
   // TODO(Watanabe) write docs.
   double current_shift = base_offset_;
-  for (const auto & shift_point : shift_points_) {
-    const double delta_shift = shift_point.length - current_shift;
+  for (const auto & shift_line : shift_lines_) {
+    const double delta_shift = shift_line.end_shift_length - current_shift;
     const auto shifting_arclength = std::max(
-      arclength_arr.at(shift_point.end_idx) - arclength_arr.at(shift_point.start_idx), epsilon);
+      arclength_arr.at(shift_line.end_idx) - arclength_arr.at(shift_line.start_idx), epsilon);
     lateral_jerk.push_back((delta_shift / 2.0) / std::pow(shifting_arclength / 4.0, 3.0));
-    current_shift = shift_point.length;
+    current_shift = shift_line.end_shift_length;
   }
 
   return lateral_jerk;
 }
 
-void PathShifter::updateShiftPointIndices(ShiftPointArray & shift_points) const
+void PathShifter::updateShiftLinesIndices(ShiftLineArray & shift_lines) const
 {
   if (reference_path_.points.empty()) {
     RCLCPP_ERROR(
-      logger_, "reference path is empty, setPath is needed before addShiftPoint/setShiftPoints.");
+      logger_, "reference path is empty, setPath is needed before addShiftLine/setShiftLines.");
   }
 
-  for (auto & p : shift_points) {
+  for (auto & l : shift_lines) {
     // TODO(murooka) remove findNearestIndex for except
     // lane_following to support u-turn & crossing path
-    p.start_idx = findNearestIndex(reference_path_.points, p.start.position);
+    l.start_idx = findNearestIndex(reference_path_.points, l.start.position);
     // TODO(murooka) remove findNearestIndex for except
     // lane_following to support u-turn & crossing path
-    p.end_idx = findNearestIndex(reference_path_.points, p.end.position);
+    l.end_idx = findNearestIndex(reference_path_.points, l.end.position);
   }
 }
 
-bool PathShifter::checkShiftPointsAlignment(const ShiftPointArray & shift_points) const
+bool PathShifter::checkShiftLinesAlignment(const ShiftLineArray & shift_lines) const
 {
-  for (const auto & p : shift_points) {
-    RCLCPP_DEBUG(logger_, "shift point = %s", toStr(p).c_str());
+  for (const auto & l : shift_lines) {
+    RCLCPP_DEBUG(logger_, "shift point = %s", toStr(l).c_str());
   }
 
-  for (const auto & c : shift_points) {
-    if (c.start_idx > c.end_idx) {
-      RCLCPP_ERROR(logger_, "shift_point must satisfy start_idx <= end_idx.");
+  for (const auto & l : shift_lines) {
+    if (l.start_idx > l.end_idx) {
+      RCLCPP_ERROR(logger_, "shift_line must satisfy start_idx <= end_idx.");
       return false;
     }
   }
@@ -290,61 +292,60 @@ bool PathShifter::checkShiftPointsAlignment(const ShiftPointArray & shift_points
   return true;
 }
 
-void PathShifter::sortShiftPointsAlongPath(ShiftPointArray & shift_points) const
+void PathShifter::sortShiftLinesAlongPath(ShiftLineArray & shift_lines) const
 {
-  if (shift_points.empty()) {
-    RCLCPP_DEBUG_STREAM_THROTTLE(logger_, clock_, 3000, "shift_points is empty. do nothing.");
+  if (shift_lines.empty()) {
+    RCLCPP_DEBUG_STREAM_THROTTLE(logger_, clock_, 3000, "shift_lines is empty. do nothing.");
     return;
   }
 
-  const auto unsorted_shift_points = shift_points;
+  const auto unsorted_shift_lines = shift_lines;
 
   // Calc indices sorted by "shift start point index" order
-  std::vector<size_t> sorted_indices(unsorted_shift_points.size());
+  std::vector<size_t> sorted_indices(unsorted_shift_lines.size());
   std::iota(sorted_indices.begin(), sorted_indices.end(), 0);
   std::sort(sorted_indices.begin(), sorted_indices.end(), [&](size_t i, size_t j) {
-    return unsorted_shift_points.at(i).start_idx < unsorted_shift_points.at(j).start_idx;
+    return unsorted_shift_lines.at(i).start_idx < unsorted_shift_lines.at(j).start_idx;
   });
 
   // Set shift points and index by sorted_indices
-  ShiftPointArray sorted_shift_points;
+  ShiftLineArray sorted_shift_lines;
   for (const auto sorted_i : sorted_indices) {
-    sorted_shift_points.push_back(unsorted_shift_points.at(sorted_i));
+    sorted_shift_lines.push_back(unsorted_shift_lines.at(sorted_i));
   }
 
-  shift_points = sorted_shift_points;
+  shift_lines = sorted_shift_lines;
 
   // Debug
-  for (const auto & p : unsorted_shift_points) {
-    RCLCPP_DEBUG_STREAM_THROTTLE(logger_, clock_, 3000, "unsorted_shift_points: " << toStr(p));
+  for (const auto & l : unsorted_shift_lines) {
+    RCLCPP_DEBUG_STREAM_THROTTLE(logger_, clock_, 3000, "unsorted_shift_lines: " << toStr(l));
   }
   for (const auto & i : sorted_indices) {
     RCLCPP_DEBUG_STREAM_THROTTLE(logger_, clock_, 3000, "sorted_indices i = " << i);
   }
-  for (const auto & p : sorted_shift_points) {
+  for (const auto & l : sorted_shift_lines) {
     RCLCPP_DEBUG_STREAM_THROTTLE(
-      logger_, clock_, 3000, "sorted_shift_points: in order: " << toStr(p));
+      logger_, clock_, 3000, "sorted_shift_lines: in order: " << toStr(l));
   }
-  RCLCPP_DEBUG(logger_, "PathShifter::sortShiftPointsAlongPath end.");
+  RCLCPP_DEBUG(logger_, "PathShifter::sortShiftLinesAlongPath end.");
 }
 
-void PathShifter::removeBehindShiftPointAndSetBaseOffset(const size_t nearest_idx)
+void PathShifter::removeBehindShiftLineAndSetBaseOffset(const size_t nearest_idx)
 {
-  // If shift_point.end is behind the ego_pose, remove the shift_point and
+  // If shift_line.end is behind the ego_pose, remove the shift_line and
   // set its shift_length to the base_offset.
-  ShiftPointArray new_shift_points;
-  ShiftPointArray removed_shift_points;
-  for (const auto & sp : shift_points_) {
-    (sp.end_idx > nearest_idx) ? new_shift_points.push_back(sp)
-                               : removed_shift_points.push_back(sp);
+  ShiftLineArray new_shift_lines;
+  ShiftLineArray removed_shift_lines;
+  for (const auto & sl : shift_lines_) {
+    (sl.end_idx > nearest_idx) ? new_shift_lines.push_back(sl) : removed_shift_lines.push_back(sl);
   }
 
   double new_base_offset = base_offset_;
-  if (!removed_shift_points.empty()) {
-    const auto last_removed_sp = std::max_element(
-      removed_shift_points.begin(), removed_shift_points.end(),
+  if (!removed_shift_lines.empty()) {
+    const auto last_removed_sl = std::max_element(
+      removed_shift_lines.begin(), removed_shift_lines.end(),
       [](auto & a, auto & b) { return a.end_idx > b.end_idx; });
-    new_base_offset = last_removed_sp->length;
+    new_base_offset = last_removed_sl->end_shift_length;
   }
 
   // remove accumulated floating noise
@@ -353,9 +354,9 @@ void PathShifter::removeBehindShiftPointAndSetBaseOffset(const size_t nearest_id
   }
 
   RCLCPP_DEBUG(
-    logger_, "shift_points_ size: %lu -> %lu", shift_points_.size(), new_shift_points.size());
+    logger_, "shift_lines size: %lu -> %lu", shift_lines_.size(), new_shift_lines.size());
 
-  setShiftPoints(new_shift_points);
+  setShiftLines(new_shift_lines);
 
   setBaseOffset(new_base_offset);
 }

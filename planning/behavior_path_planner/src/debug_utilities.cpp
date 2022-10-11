@@ -21,7 +21,7 @@
 
 namespace marker_utils
 {
-using behavior_path_planner::ShiftPoint;
+using behavior_path_planner::ShiftLine;
 using behavior_path_planner::util::calcPathArcLengthArray;
 using behavior_path_planner::util::shiftPose;
 using std_msgs::msg::ColorRGBA;
@@ -85,23 +85,23 @@ MarkerArray createPathMarkerArray(
 
   return msg;
 }
-MarkerArray createShiftPointMarkerArray(
-  const ShiftPointArray & shift_points, const double & base_shift, std::string && ns,
-  const float & r, const float & g, const float & b, const float & w)
+MarkerArray createShiftLineMarkerArray(
+  const ShiftLineArray & shift_lines, const double & base_shift, std::string && ns, const float & r,
+  const float & g, const float & b, const float & w)
 {
-  ShiftPointArray shift_points_local = shift_points;
-  if (shift_points_local.empty()) {
-    shift_points_local.push_back(ShiftPoint());
+  ShiftLineArray shift_lines_local = shift_lines;
+  if (shift_lines.empty()) {
+    shift_lines_local.push_back(ShiftLine());
   }
 
   MarkerArray msg;
-  msg.markers.reserve(shift_points_local.size() * 3);
+  msg.markers.reserve(shift_lines_local.size() * 3);
   const auto current_time = rclcpp::Clock{RCL_ROS_TIME}.now();
   int id{0};
 
   // TODO(Horibe) now assuming the shift point is aligned in longitudinal distance order
   double current_shift = base_shift;
-  for (const auto & sp : shift_points_local) {
+  for (const auto & sp : shift_lines_local) {
     // ROS_ERROR("sp: s = (%f, %f), g = (%f, %f)", sp.start.x, sp.start.y, sp.end.x, sp.end.y);
     Marker basic_marker = createDefaultMarker(
       "map", current_time, ns, 0L, Marker::CUBE, createMarkerScale(0.5, 0.5, 0.5),
@@ -119,7 +119,7 @@ MarkerArray createShiftPointMarkerArray(
       auto marker_e = basic_marker;
       marker_e.id = ++id;
       marker_e.pose = sp.end;
-      shiftPose(&marker_e.pose, sp.length);
+      shiftPose(&marker_e.pose, sp.end_shift_length);
       msg.markers.push_back(marker_e);
 
       // start-to-end line
@@ -132,7 +132,7 @@ MarkerArray createShiftPointMarkerArray(
       marker_l.points.push_back(marker_e.pose.position);
       msg.markers.push_back(marker_l);
     }
-    current_shift = sp.length;
+    current_shift = sp.end_shift_length;
   }
 
   return msg;

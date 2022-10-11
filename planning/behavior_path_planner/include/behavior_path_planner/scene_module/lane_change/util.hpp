@@ -59,7 +59,7 @@ double getDistanceWhenDecelerate(
 
 std::optional<LaneChangePath> constructCandidatePath(
   const PathWithLaneId & prepare_segment, const PathWithLaneId & lane_changing_segment,
-  const PathWithLaneId & target_lane_reference_path, const ShiftPoint & shift_point,
+  const PathWithLaneId & target_lane_reference_path, const ShiftLine & shift_line,
   const lanelet::ConstLanelets & original_lanelets, const lanelet::ConstLanelets & target_lanelets,
   const double & acceleration, const double & prepare_distance, const double & prepare_duration,
   const double & prepare_speed, const double & minimum_prepare_distance,
@@ -103,7 +103,7 @@ bool hasEnoughDistance(
   const bool isInGoalRouteSection, const Pose & goal_pose,
   const lanelet::routing::RoutingGraphContainer & overall_graphs);
 
-ShiftPoint getLaneChangeShiftPoint(
+ShiftLine getLaneChangeShiftLine(
   const PathWithLaneId & path1, const PathWithLaneId & path2,
   const lanelet::ConstLanelets & target_lanes, const PathWithLaneId & reference_path);
 
@@ -130,7 +130,7 @@ PathWithLaneId getLaneChangePathLaneChangingSegment(
 
 TurnSignalInfo calc_turn_signal_info(
   const PathWithLaneId & prepare_path, const double prepare_velocity,
-  const double min_prepare_distance, const double prepare_duration, const ShiftPoint & shift_points,
+  const double min_prepare_distance, const double prepare_duration, const ShiftLine & shift_line,
   const ShiftedPath & lane_changing_path);
 
 void get_turn_signal_info(

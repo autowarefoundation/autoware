@@ -59,10 +59,9 @@ BehaviorModuleOutput LaneChangeModule::run()
   const auto turn_signal_info = output.turn_signal_info;
   const auto current_pose = planner_data_->self_pose->pose;
   const double start_distance = motion_utils::calcSignedArcLength(
-    output.path->points, current_pose.position,
-    status_.lane_change_path.shift_point.start.position);
+    output.path->points, current_pose.position, status_.lane_change_path.shift_line.start.position);
   const double finish_distance = motion_utils::calcSignedArcLength(
-    output.path->points, current_pose.position, status_.lane_change_path.shift_point.end.position);
+    output.path->points, current_pose.position, status_.lane_change_path.shift_line.end.position);
 
   const uint16_t steering_factor_direction =
     std::invoke([this, &start_distance, &finish_distance, &turn_signal_info]() {
@@ -78,7 +77,7 @@ BehaviorModuleOutput LaneChangeModule::run()
     });
   // TODO(tkhmy) add handle status TRYING
   steering_factor_interface_ptr_->updateSteeringFactor(
-    {status_.lane_change_path.shift_point.start, status_.lane_change_path.shift_point.end},
+    {status_.lane_change_path.shift_line.start, status_.lane_change_path.shift_line.end},
     {start_distance, finish_distance}, SteeringFactor::LANE_CHANGE, steering_factor_direction,
     SteeringFactor::TURNING, "");
   return output;
@@ -188,7 +187,7 @@ BehaviorModuleOutput LaneChangeModule::plan()
   output.path = std::make_shared<PathWithLaneId>(path);
   const auto turn_signal_info = util::getPathTurnSignal(
     status_.current_lanes, status_.lane_change_path.shifted_path,
-    status_.lane_change_path.shift_point, planner_data_->self_pose->pose,
+    status_.lane_change_path.shift_line, planner_data_->self_pose->pose,
     planner_data_->self_odometry->twist.twist.linear.x, planner_data_->parameters);
   output.turn_signal_info.turn_signal.command = turn_signal_info.first.command;
 
@@ -214,18 +213,18 @@ CandidateOutput LaneChangeModule::planCandidate() const
     return output;
   }
 
-  const auto & start_idx = selected_path.shift_point.start_idx;
-  const auto & end_idx = selected_path.shift_point.end_idx;
+  const auto & start_idx = selected_path.shift_line.start_idx;
+  const auto & end_idx = selected_path.shift_line.end_idx;
 
   output.path_candidate = selected_path.path;
   output.lateral_shift = selected_path.shifted_path.shift_length.at(end_idx) -
                          selected_path.shifted_path.shift_length.at(start_idx);
   output.start_distance_to_path_change = motion_utils::calcSignedArcLength(
     selected_path.path.points, planner_data_->self_pose->pose.position,
-    selected_path.shift_point.start.position);
+    selected_path.shift_line.start.position);
   output.finish_distance_to_path_change = motion_utils::calcSignedArcLength(
     selected_path.path.points, planner_data_->self_pose->pose.position,
-    selected_path.shift_point.end.position);
+    selected_path.shift_line.end.position);
 
   const uint16_t steering_factor_direction = std::invoke([&output]() {
     if (output.lateral_shift > 0.0) {
@@ -235,7 +234,7 @@ CandidateOutput LaneChangeModule::planCandidate() const
   });
 
   steering_factor_interface_ptr_->updateSteeringFactor(
-    {selected_path.shift_point.start, selected_path.shift_point.end},
+    {selected_path.shift_line.start, selected_path.shift_line.end},
     {output.start_distance_to_path_change, output.finish_distance_to_path_change},
     SteeringFactor::LANE_CHANGE, steering_factor_direction, SteeringFactor::APPROACHING, "");
 

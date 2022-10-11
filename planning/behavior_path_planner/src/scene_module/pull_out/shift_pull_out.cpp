@@ -169,23 +169,23 @@ std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
     path_shifter.setPath(road_lane_reference_path);
 
     // get shift point start/end
-    const auto shift_point_start = shoulder_reference_path.points.back();
-    const auto shift_point_end = [&]() {
+    const auto shift_line_start = shoulder_reference_path.points.back();
+    const auto shift_line_end = [&]() {
       const auto arc_position_shift_start =
-        lanelet::utils::getArcCoordinates(road_lanes, shift_point_start.point.pose);
+        lanelet::utils::getArcCoordinates(road_lanes, shift_line_start.point.pose);
       const double s_start = arc_position_shift_start.length + pull_out_distance;
       const double s_end = s_start + std::numeric_limits<double>::epsilon();
       const auto path = route_handler.getCenterLinePath(road_lanes, s_start, s_end, true);
       return path.points.front();
     }();
 
-    ShiftPoint shift_point;
+    ShiftLine shift_line;
     {
-      shift_point.start = shift_point_start.point.pose;
-      shift_point.end = shift_point_end.point.pose;
-      shift_point.length = distance_to_road_center;
+      shift_line.start = shift_line_start.point.pose;
+      shift_line.end = shift_line_end.point.pose;
+      shift_line.end_shift_length = distance_to_road_center;
     }
-    path_shifter.addShiftPoint(shift_point);
+    path_shifter.addShiftLine(shift_line);
 
     // offset front side
     ShiftedPath shifted_path;
@@ -195,7 +195,7 @@ std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
     }
 
     const auto pull_out_end_idx =
-      findNearestIndex(shifted_path.path.points, shift_point_end.point.pose);
+      findNearestIndex(shifted_path.path.points, shift_line_end.point.pose);
     const auto goal_idx = findNearestIndex(shifted_path.path.points, goal_pose);
 
     if (pull_out_end_idx && goal_idx) {
@@ -215,8 +215,8 @@ std::vector<PullOutPath> ShiftPullOut::calcPullOutPaths(
       PullOutPath candidate_path;
       const auto combined_path = combineReferencePath(shoulder_reference_path, shifted_path.path);
       candidate_path.partial_paths.push_back(util::resamplePathWithSpline(combined_path, 1.0));
-      candidate_path.start_pose = shift_point.start;
-      candidate_path.end_pose = shift_point.end;
+      candidate_path.start_pose = shift_line.start;
+      candidate_path.end_pose = shift_line.end;
 
       // add goal pose because resampling removes it
       // but this point will be removed by SmoothGoalConnection again

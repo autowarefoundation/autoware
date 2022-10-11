@@ -209,10 +209,10 @@ std::vector<PullOverPath> ShiftPullOver::generatePullOverPaths(
     path_shifter.setPath(
       util::resamplePathWithSpline(target_lane_reference_path, resample_interval));
 
-    ShiftPoint shift_point;
+    ShiftLine shift_line;
     {
-      shift_point.start = road_lane_reference_path.points.back().point.pose;
-      shift_point.end = shift_end_point.point.pose;
+      shift_line.start = road_lane_reference_path.points.back().point.pose;
+      shift_line.end = shift_end_point.point.pose;
 
       // distance between shoulder lane's left boundary and current lane center
       const double distance_road_to_left_boundary = util::getDistanceToShoulderBoundary(
@@ -220,8 +220,8 @@ std::vector<PullOverPath> ShiftPullOver::generatePullOverPaths(
       // distance between shoulder lane's left boundary and current lane center
       const double distance_road_to_target = distance_road_to_left_boundary + margin_from_boundary;
 
-      shift_point.length = distance_road_to_target;
-      path_shifter.addShiftPoint(shift_point);
+      shift_line.end_shift_length = distance_road_to_target;
+      path_shifter.addShiftLine(shift_line);
     }
 
     // offset front side from reference path
@@ -278,12 +278,12 @@ std::vector<PullOverPath> ShiftPullOver::generatePullOverPaths(
       candidate_path.partial_paths.push_back(
         pull_over_utils::combineReferencePath(road_lane_reference_path, shifted_path.path));
       candidate_path.shifted_path = shifted_path;
-      shift_point.start_idx = path_shifter.getShiftPoints().front().start_idx;
-      shift_point.end_idx = path_shifter.getShiftPoints().front().end_idx;
-      candidate_path.start_pose = path_shifter.getShiftPoints().front().start;
-      candidate_path.end_pose = path_shifter.getShiftPoints().front().end;
+      shift_line.start_idx = path_shifter.getShiftLines().front().start_idx;
+      shift_line.end_idx = path_shifter.getShiftLines().front().end_idx;
+      candidate_path.start_pose = path_shifter.getShiftLines().front().start;
+      candidate_path.end_pose = path_shifter.getShiftLines().front().end;
       candidate_path.shifted_path.shift_length = shifted_path.shift_length;
-      candidate_path.shift_point = shift_point;
+      candidate_path.shift_line = shift_line;
       candidate_path.preparation_length = straight_distance;
       candidate_path.pull_over_length = pull_over_distance;
     } else {

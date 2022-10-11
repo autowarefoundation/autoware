@@ -36,15 +36,15 @@ namespace marker_utils::avoidance_marker
 {
 using autoware_auto_perception_msgs::msg::PredictedObjects;
 using autoware_auto_planning_msgs::msg::PathWithLaneId;
-using behavior_path_planner::AvoidPointArray;
-using behavior_path_planner::ShiftPointArray;
+using behavior_path_planner::AvoidLineArray;
+using behavior_path_planner::ShiftLineArray;
 using geometry_msgs::msg::Point;
 using geometry_msgs::msg::Polygon;
 using geometry_msgs::msg::Pose;
 using visualization_msgs::msg::MarkerArray;
 
-MarkerArray createAvoidPointMarkerArray(
-  const AvoidPointArray & shift_points, std::string && ns, const float & r, const float & g,
+MarkerArray createAvoidLineMarkerArray(
+  const AvoidLineArray & shift_points, std::string && ns, const float & r, const float & g,
   const float & b, const double & w);
 
 MarkerArray createAvoidanceObjectsMarkerArray(
@@ -59,12 +59,12 @@ MarkerArray createOverhangFurthestLineStringMarkerArray(
 
 }  // namespace marker_utils::avoidance_marker
 
-std::string toStrInfo(const behavior_path_planner::ShiftPointArray & sp_arr);
+std::string toStrInfo(const behavior_path_planner::ShiftLineArray & sp_arr);
 
-std::string toStrInfo(const behavior_path_planner::AvoidPointArray & ap_arr);
+std::string toStrInfo(const behavior_path_planner::AvoidLineArray & ap_arr);
 
-std::string toStrInfo(const behavior_path_planner::ShiftPoint & sp);
+std::string toStrInfo(const behavior_path_planner::ShiftLine & sp);
 
-std::string toStrInfo(const behavior_path_planner::AvoidPoint & ap);
+std::string toStrInfo(const behavior_path_planner::AvoidLine & ap);
 
 #endif  // BEHAVIOR_PATH_PLANNER__SCENE_MODULE__AVOIDANCE__DEBUG_HPP_
