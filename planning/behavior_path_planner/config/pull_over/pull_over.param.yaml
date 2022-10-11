@@ -16,9 +16,12 @@
       forward_goal_search_length: 20.0
       backward_goal_search_length: 20.0
       goal_search_interval: 2.0
-      goal_to_obstacle_margin: 3.0
+      longitudinal_margin: 3.0
+      max_lateral_offset: 1.0
+      lateral_offset_interval: 0.25
       # occupancy grid map
       use_occupancy_grid: true
+      use_occupancy_grid_for_longitudinal_margin: false
       occupancy_grid_collision_check_margin: 0.0
       theta_size: 360
       obstacle_threshold: 60

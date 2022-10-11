@@ -382,9 +382,13 @@ PullOverParameters BehaviorPathPlannerNode::getPullOverParam()
   p.forward_goal_search_length = dp("forward_goal_search_length", 20.0);
   p.backward_goal_search_length = dp("backward_goal_search_length", 20.0);
   p.goal_search_interval = dp("goal_search_interval", 5.0);
-  p.goal_to_obstacle_margin = dp("goal_to_obstacle_margin", 2.0);
+  p.longitudinal_margin = dp("longitudinal_margin", 3.0);
+  p.max_lateral_offset = dp("max_lateral_offset", 1.0);
+  p.lateral_offset_interval = dp("lateral_offset_interval", 0.25);
   // occupancy grid map
   p.use_occupancy_grid = dp("use_occupancy_grid", true);
+  p.use_occupancy_grid_for_longitudinal_margin =
+    dp("use_occupancy_grid_for_longitudinal_margin", false);
   p.occupancy_grid_collision_check_margin = dp("occupancy_grid_collision_check_margin", 0.0);
   p.theta_size = dp("theta_size", 360);
   p.obstacle_threshold = dp("obstacle_threshold", 90);

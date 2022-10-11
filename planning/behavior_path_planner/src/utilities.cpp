@@ -624,8 +624,43 @@ bool checkCollisionBetweenFootprintAndObjects(
   return false;
 }
 
+double calcLateralDistanceFromEgoToObject(
+  const Pose & ego_pose, const double vehicle_width, const PredictedObject & dynamic_object)
+{
+  double min_distance = std::numeric_limits<double>::max();
+  Polygon2d obj_polygon;
+  if (!calcObjectPolygon(dynamic_object, &obj_polygon)) {
+    return min_distance;
+  }
+
+  const auto vehicle_left_pose =
+    tier4_autoware_utils::calcOffsetPose(ego_pose, 0, vehicle_width / 2, 0);
+  const auto vehicle_right_pose =
+    tier4_autoware_utils::calcOffsetPose(ego_pose, 0, -vehicle_width / 2, 0);
+
+  for (const auto & p : obj_polygon.outer()) {
+    const auto point = tier4_autoware_utils::createPoint(p.x(), p.y(), 0.0);
+    // left direction is positive
+    const double signed_distance_from_left =
+      tier4_autoware_utils::calcLateralDeviation(vehicle_left_pose, point);
+    // right direction is positive
+    const double signed_distance_from_right =
+      tier4_autoware_utils::calcLateralDeviation(vehicle_right_pose, point);
+
+    if (signed_distance_from_left < 0.0 && signed_distance_from_right < 0.0) {
+      // point is between left and right
+      return 0.0;
+    }
+
+    const double distance_from_ego =
+      std::min(std::abs(signed_distance_from_left), std::abs(signed_distance_from_right));
+    min_distance = std::min(min_distance, distance_from_ego);
+  }
+  return min_distance;
+}
+
 double calcLongitudinalDistanceFromEgoToObject(
-  const Pose & ego_pose, double base_link2front, double base_link2rear,
+  const Pose & ego_pose, const double base_link2front, const double base_link2rear,
   const PredictedObject & dynamic_object)
 {
   double min_distance = std::numeric_limits<double>::max();
@@ -642,8 +677,10 @@ double calcLongitudinalDistanceFromEgoToObject(
   for (const auto & p : obj_polygon.outer()) {
     const auto point = tier4_autoware_utils::createPoint(p.x(), p.y(), 0.0);
 
+    // forward is positive
     const double signed_distance_from_front =
       tier4_autoware_utils::calcLongitudinalDeviation(vehicle_front_pose, point);
+    // backward is positive
     const double signed_distance_from_rear =
       -tier4_autoware_utils::calcLongitudinalDeviation(vehicle_rear_pose, point);
 

@@ -238,12 +238,13 @@ Generate footprints from ego-vehicle path points and determine obstacle collisio
 
 ##### Parameters for occupancy grid based collision check
 
-| Name                                  | Unit | Type   | Description                                                                                                     | Default value |
-| :------------------------------------ | :--- | :----- | :-------------------------------------------------------------------------------------------------------------- | :------------ |
-| use_occupancy_grid                    | -    | bool   | flag whether to use occupancy grid for collision check                                                          | true          |
-| occupancy_grid_collision_check_margin | [m]  | double | margin to calculate ego-vehicle cells from footprint.                                                           | 0.0           |
-| theta_size                            | -    | int    | size of theta angle to be considered. angular resolution for collision check will be 2$\pi$ / theta_size [rad]. | 360           |
-| obstacle_threshold                    | -    | int    | threshold of cell values to be considered as obstacles                                                          | 60            |
+| Name                                       | Unit | Type   | Description                                                                                                     | Default value |
+| :----------------------------------------- | :--- | :----- | :-------------------------------------------------------------------------------------------------------------- | :------------ |
+| use_occupancy_grid                         | -    | bool   | flag whether to use occupancy grid for collision check                                                          | true          |
+| use_occupancy_grid_for_longitudinal_margin | -    | bool   | flag whether to use occupancy grid for keeping longitudinal margin                                              | false         |
+| occupancy_grid_collision_check_margin      | [m]  | double | margin to calculate ego-vehicle cells from footprint.                                                           | 0.0           |
+| theta_size                                 | -    | int    | size of theta angle to be considered. angular resolution for collision check will be 2$\pi$ / theta_size [rad]. | 360           |
+| obstacle_threshold                         | -    | int    | threshold of cell values to be considered as obstacles                                                          | 60            |
 
 ##### Parameters for object recognition based collision check
 
@@ -268,7 +269,9 @@ searched for in certain range of the shoulder lane.
 | forward_goal_search_length  | [m]  | double | length of forward range to be explored from the original goal                                                                                                                                                            | 20.0           |
 | backward_goal_search_length | [m]  | double | length of backward range to be explored from the original goal                                                                                                                                                           | 20.0           |
 | goal_search_interval        | [m]  | double | distance interval for goal search                                                                                                                                                                                        | 2.0            |
-| goal_to_obstacle_margin     | [m]  | double | margin between ego-vehicle at the goal position and obstacles                                                                                                                                                            | 3.0            |
+| longitudinal_margin         | [m]  | double | margin between ego-vehicle at the goal position and obstacles                                                                                                                                                            | 3.0            |
+| max_lateral_offset          | [m]  | double | maximum offset of goal search in the latearl direction                                                                                                                                                                   | 3.0            |
+| lateral_offset_interval     | [m]  | double | distance interval of goal search in the latearl direction                                                                                                                                                                | 3.0            |
 
 #### **Path Generation**
 

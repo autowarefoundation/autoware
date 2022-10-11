@@ -29,6 +29,7 @@
 #include <lanelet2_core/primitives/Primitive.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace behavior_path_planner
@@ -48,12 +49,21 @@ bool hasEnoughDistanceToParkingStart(
   const PathWithLaneId & path, const Pose & current_pose, const Pose & start_pose,
   const double current_vel, const double maximum_deceleration, const double decide_path_distance,
   const double ego_nearest_dist_threshold, const double ego_nearest_yaw_threshold);
+PredictedObjects filterObjectsByLateralDistance(
+  const Pose & ego_pose, const double vehicle_width, const PredictedObjects & objects,
+  const double distance_thresh, const bool filter_inside);
 
 // debug
 Marker createPullOverAreaMarker(
   const Pose & start_pose, const Pose & end_pose, const int32_t id,
   const std_msgs::msg::Header & header, const double base_link2front, const double base_link2rear,
   const double vehicle_width, const std_msgs::msg::ColorRGBA & color);
+MarkerArray createPosesMarkerArray(
+  const std::vector<Pose> & poses, std::string && ns, const std_msgs::msg::ColorRGBA & color);
+MarkerArray createTextsMarkerArray(
+  const std::vector<Pose> & poses, std::string && ns, const std_msgs::msg::ColorRGBA & color);
+MarkerArray createGoalCandidatesMarkerArray(
+  std::vector<GoalCandidate> goal_candidates, const std_msgs::msg::ColorRGBA & color);
 }  // namespace pull_over_utils
 }  // namespace behavior_path_planner
 

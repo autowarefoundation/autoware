@@ -29,6 +29,7 @@
 #include <autoware_auto_vehicle_msgs/msg/hazard_lights_command.hpp>
 
 #include <deque>
+#include <limits>
 #include <memory>
 #include <string>
 #include <utility>
@@ -70,9 +71,14 @@ struct GoalCandidate
 {
   Pose goal_pose{};
   double distance_from_original_goal{0.0};
+  double lateral_offset{0.0};
 
   bool operator<(const GoalCandidate & other) const noexcept
   {
+    // compare in order of decreasing lateral offset.
+    if (std::abs(lateral_offset - other.lateral_offset) > std::numeric_limits<double>::epsilon()) {
+      return lateral_offset < other.lateral_offset;
+    }
     return distance_from_original_goal < other.distance_from_original_goal;
   }
 };

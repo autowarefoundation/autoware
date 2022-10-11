@@ -36,6 +36,10 @@
 
 using motion_utils::calcSignedArcLength;
 using tier4_autoware_utils::calcOffsetPose;
+using tier4_autoware_utils::createDefaultMarker;
+using tier4_autoware_utils::createMarkerColor;
+using tier4_autoware_utils::createMarkerScale;
+using tier4_autoware_utils::createPoint;
 using tier4_autoware_utils::inverseTransformPoint;
 
 namespace behavior_path_planner
@@ -96,15 +100,27 @@ bool hasEnoughDistanceToParkingStart(
   return dist_to_start_pose > current_to_stop_distance;
 }
 
+PredictedObjects filterObjectsByLateralDistance(
+  const Pose & ego_pose, const double vehicle_width, const PredictedObjects & objects,
+  const double distance_thresh, const bool filter_inside)
+{
+  PredictedObjects filtered_objects;
+  for (const auto & object : objects.objects) {
+    const double distance =
+      util::calcLateralDistanceFromEgoToObject(ego_pose, vehicle_width, object);
+    if (filter_inside ? distance < distance_thresh : distance > distance_thresh) {
+      filtered_objects.objects.push_back(object);
+    }
+  }
+
+  return filtered_objects;
+}
+
 Marker createPullOverAreaMarker(
   const Pose & start_pose, const Pose & end_pose, const int32_t id,
   const std_msgs::msg::Header & header, const double base_link2front, const double base_link2rear,
   const double vehicle_width, const std_msgs::msg::ColorRGBA & color)
 {
-  using tier4_autoware_utils::createDefaultMarker;
-  using tier4_autoware_utils::createMarkerScale;
-  using tier4_autoware_utils::createPoint;
-
   Marker marker = createDefaultMarker(
     header.frame_id, header.stamp, "pull_over_area", id,
     visualization_msgs::msg::Marker::LINE_STRIP, createMarkerScale(0.1, 0.0, 0.0), color);
@@ -126,5 +142,60 @@ Marker createPullOverAreaMarker(
   return marker;
 }
 
+MarkerArray createPosesMarkerArray(
+  const std::vector<Pose> & poses, std::string && ns, const std_msgs::msg::ColorRGBA & color)
+{
+  MarkerArray msg{};
+  int32_t i = 0;
+  for (const auto & pose : poses) {
+    Marker marker = tier4_autoware_utils::createDefaultMarker(
+      "map", rclcpp::Clock{RCL_ROS_TIME}.now(), ns, i, Marker::ARROW,
+      createMarkerScale(0.5, 0.25, 0.25), color);
+    marker.pose = pose;
+    marker.id = i++;
+    msg.markers.push_back(marker);
+  }
+
+  return msg;
+}
+
+MarkerArray createTextsMarkerArray(
+  const std::vector<Pose> & poses, std::string && ns, const std_msgs::msg::ColorRGBA & color)
+{
+  MarkerArray msg{};
+  int32_t i = 0;
+  for (const auto & pose : poses) {
+    Marker marker = createDefaultMarker(
+      "map", rclcpp::Clock{RCL_ROS_TIME}.now(), ns, i, Marker::TEXT_VIEW_FACING,
+      createMarkerScale(0.3, 0.3, 0.3), color);
+    marker.pose = calcOffsetPose(pose, 0, 0, 1.0);
+    marker.id = i;
+    marker.text = std::to_string(i);
+    msg.markers.push_back(marker);
+    i++;
+  }
+
+  return msg;
+}
+
+MarkerArray createGoalCandidatesMarkerArray(
+  std::vector<GoalCandidate> goal_candidates, const std_msgs::msg::ColorRGBA & color)
+{
+  // convert to pose vector
+  std::vector<Pose> pose_vector{};
+  for (const auto & goal_candidate : goal_candidates) {
+    pose_vector.push_back(goal_candidate.goal_pose);
+  }
+
+  auto marker_array = createPosesMarkerArray(pose_vector, "goal_candidates", color);
+  for (const auto & text_marker :
+       createTextsMarkerArray(
+         pose_vector, "goal_candidates_priority", createMarkerColor(1.0, 1.0, 1.0, 0.999))
+         .markers) {
+    marker_array.markers.push_back(text_marker);
+  }
+
+  return marker_array;
+}
 }  // namespace pull_over_utils
 }  // namespace behavior_path_planner

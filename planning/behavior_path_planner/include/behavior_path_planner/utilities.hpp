@@ -226,11 +226,18 @@ bool checkCollisionBetweenFootprintAndObjects(
   const PredictedObjects & dynamic_objects, const double margin);
 
 /**
+ * @brief calculate lateral distance from ego pose to object
+ * @return distance from ego pose to object
+ */
+double calcLateralDistanceFromEgoToObject(
+  const Pose & ego_pose, const double vehicle_width, const PredictedObject & dynamic_object);
+
+/**
  * @brief calculate longitudinal distance from ego pose to object
  * @return distance from ego pose to object
  */
 double calcLongitudinalDistanceFromEgoToObject(
-  const Pose & ego_pose, double base_link2front, double base_link2rear,
+  const Pose & ego_pose, const double base_link2front, const double base_link2rear,
   const PredictedObject & dynamic_object);
 
 /**

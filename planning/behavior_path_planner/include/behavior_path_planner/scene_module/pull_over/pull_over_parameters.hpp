@@ -35,9 +35,12 @@ struct PullOverParameters
   double forward_goal_search_length;
   double backward_goal_search_length;
   double goal_search_interval;
-  double goal_to_obstacle_margin;
+  double longitudinal_margin;
+  double max_lateral_offset;
+  double lateral_offset_interval;
   // occupancy grid map
   bool use_occupancy_grid;
+  bool use_occupancy_grid_for_longitudinal_margin;
   double occupancy_grid_collision_check_margin;
   double theta_size;
   double obstacle_threshold;

@@ -262,21 +262,47 @@ void PullOverModule::researchGoal()
 {
   // Find goals in pull over areas.
   goal_candidates_.clear();
+
+  const auto shoulder_lane_objects =
+    util::filterObjectsByLanelets(*(planner_data_->dynamic_object), status_.pull_over_lanes);
+
   for (double dx = -parameters_.backward_goal_search_length;
        dx <= parameters_.forward_goal_search_length; dx += parameters_.goal_search_interval) {
-    const Pose search_pose = calcOffsetPose(refined_goal_pose_, dx, 0, 0);
-    if (checkCollisionWithPose(search_pose)) {
-      continue;
-    }
+    // search goal_pose in lateral direction
+    Pose search_pose{};
+    bool found_lateral_no_collision_pose = false;
+    double lateral_offset = 0.0;
+    for (double dy = 0; dy <= parameters_.max_lateral_offset;
+         dy += parameters_.lateral_offset_interval) {
+      lateral_offset = dy;
+      search_pose = calcOffsetPose(refined_goal_pose_, dx, -dy, 0);
+      if (checkCollisionWithPose(search_pose)) {
+        continue;
+      }
 
-    const auto objects_in_shoulder_lane =
-      util::filterObjectsByLanelets(*(planner_data_->dynamic_object), status_.pull_over_lanes);
-    if (checkCollisionWithLongitudinalDistance(search_pose, objects_in_shoulder_lane)) {
+      // if finding objects near the search pose,
+      // shift search_pose in lateral direction one more
+      // because collsion may be detected on other path points
+      if (dy > 0) {
+        search_pose = calcOffsetPose(search_pose, 0, -parameters_.lateral_offset_interval, 0);
+      }
+
+      found_lateral_no_collision_pose = true;
+      break;
+    }
+    if (!found_lateral_no_collision_pose) continue;
+
+    constexpr bool filter_inside = true;
+    const auto target_objects = pull_over_utils::filterObjectsByLateralDistance(
+      search_pose, planner_data_->parameters.vehicle_width, shoulder_lane_objects,
+      parameters_.object_recognition_collision_check_margin, filter_inside);
+    if (checkCollisionWithLongitudinalDistance(search_pose, target_objects)) {
       continue;
     }
 
     GoalCandidate goal_candidate;
     goal_candidate.goal_pose = search_pose;
+    goal_candidate.lateral_offset = lateral_offset;
     goal_candidate.distance_from_original_goal =
       std::abs(inverseTransformPose(search_pose, refined_goal_pose_).position.x);
     goal_candidates_.push_back(goal_candidate);
@@ -325,10 +351,10 @@ bool PullOverModule::isLongEnoughToParkingStart(
 bool PullOverModule::checkCollisionWithLongitudinalDistance(
   const Pose & ego_pose, const PredictedObjects & dynamic_objects) const
 {
-  if (parameters_.use_occupancy_grid) {
-    bool check_out_of_range = false;
+  if (parameters_.use_occupancy_grid && parameters_.use_occupancy_grid_for_longitudinal_margin) {
+    constexpr bool check_out_of_range = false;
     const double offset = std::max(
-      parameters_.goal_to_obstacle_margin - parameters_.occupancy_grid_collision_check_margin, 0.0);
+      parameters_.longitudinal_margin - parameters_.occupancy_grid_collision_check_margin, 0.0);
 
     // check forward collision
     const Pose ego_pose_moved_forward = calcOffsetPose(ego_pose, offset, 0, 0);
@@ -358,7 +384,7 @@ bool PullOverModule::checkCollisionWithLongitudinalDistance(
       util::calcLongitudinalDistanceFromEgoToObjects(
         ego_pose, planner_data_->parameters.base_link2front,
         planner_data_->parameters.base_link2rear,
-        dynamic_objects) < parameters_.goal_to_obstacle_margin) {
+        dynamic_objects) < parameters_.longitudinal_margin) {
       return true;
     }
   }
@@ -390,7 +416,7 @@ bool PullOverModule::checkCollisionWithPose(const Pose & pose) const
 bool PullOverModule::planWithEfficientPath()
 {
   for (const auto & planner : pull_over_planners_) {
-    for (const auto goal_candidate : goal_candidates_) {
+    for (const auto & goal_candidate : goal_candidates_) {
       planner->setPlannerData(planner_data_);
       const auto pull_over_path = planner->plan(goal_candidate.goal_pose);
       if (!pull_over_path) {
@@ -408,7 +434,7 @@ bool PullOverModule::planWithEfficientPath()
 
 bool PullOverModule::planWithCloseGoal()
 {
-  for (const auto goal_candidate : goal_candidates_) {
+  for (const auto & goal_candidate : goal_candidates_) {
     for (const auto & planner : pull_over_planners_) {
       planner->setPlannerData(planner_data_);
       const auto pull_over_path = planner->plan(goal_candidate.goal_pose);
@@ -875,18 +901,18 @@ void PullOverModule::setDebugData()
 
   using marker_utils::createPathMarkerArray;
   using marker_utils::createPoseMarkerArray;
+  using tier4_autoware_utils::createMarkerColor;
 
   const auto add = [this](const MarkerArray & added) {
     tier4_autoware_utils::appendMarkerArray(added, &debug_marker_);
   };
 
-  // Visualize pull over areas
   if (parameters_.enable_goal_research) {
+    // Visualize pull over areas
     const Pose start_pose =
       calcOffsetPose(refined_goal_pose_, -parameters_.backward_goal_search_length, 0, 0);
     const Pose end_pose =
       calcOffsetPose(refined_goal_pose_, parameters_.forward_goal_search_length, 0, 0);
-    // marker_array.markers.push_back(createParkingAreaMarker(start_pose, end_pose, 0));
     const auto header = planner_data_->route_handler->getRouteHeader();
     const auto color = status_.has_decided_path ? createMarkerColor(1.0, 1.0, 0.0, 0.999)  // yellow
                                                 : createMarkerColor(0.0, 1.0, 0.0, 0.999);  // green
@@ -894,6 +920,9 @@ void PullOverModule::setDebugData()
     debug_marker_.markers.push_back(pull_over_utils::createPullOverAreaMarker(
       start_pose, end_pose, 0, header, p.base_link2front, p.base_link2rear, p.vehicle_width,
       color));
+
+    // Visualize goal candidates
+    add(pull_over_utils::createGoalCandidatesMarkerArray(goal_candidates_, color));
   }
 
   // Visualize path and related pose
