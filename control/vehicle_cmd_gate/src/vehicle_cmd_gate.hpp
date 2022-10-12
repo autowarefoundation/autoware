@@ -15,6 +15,7 @@
 #ifndef VEHICLE_CMD_GATE_HPP_
 #define VEHICLE_CMD_GATE_HPP_
 
+#include "pause_interface.hpp"
 #include "vehicle_cmd_filter.hpp"
 
 #include <diagnostic_updater/diagnostic_updater.hpp>
@@ -216,39 +217,8 @@ private:
   OperationMode current_operation_mode_;
   VehicleCmdFilter filter_on_transition_;
 
-  // Start request service
-  struct StartRequest
-  {
-  private:
-    static constexpr double eps = 1e-3;
-    using ControlCommandStamped = AckermannControlCommand;
-
-  public:
-    StartRequest(
-      rclcpp::Node * node, bool use_start_request, double stopped_state_entry_duration_time);
-    bool isAccepted();
-    void publishStartAccepted();
-    void checkStopped(const ControlCommandStamped & control);
-    void checkStartRequest(const ControlCommandStamped & control);
-
-  private:
-    bool use_start_request_;
-    bool is_start_requesting_;
-    bool is_start_accepted_;
-    bool is_start_cancelled_;
-    Odometry current_twist_;
-
-    std::shared_ptr<rclcpp::Time> last_running_time_;
-    double stopped_state_entry_duration_time_;
-
-    rclcpp::Node * node_;
-    rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr request_start_cli_;
-    rclcpp::Publisher<tier4_debug_msgs::msg::BoolStamped>::SharedPtr request_start_pub_;
-    rclcpp::Subscription<Odometry>::SharedPtr current_twist_sub_;
-    void onCurrentTwist(Odometry::ConstSharedPtr msg);
-  };
-
-  std::unique_ptr<StartRequest> start_request_;
+  // Pause interface for API
+  std::unique_ptr<PauseInterface> pause_;
 };
 
 }  // namespace vehicle_cmd_gate

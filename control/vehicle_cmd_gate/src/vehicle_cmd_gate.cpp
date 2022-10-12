@@ -185,12 +185,8 @@ VehicleCmdGate::VehicleCmdGate(const rclcpp::NodeOptions & node_options)
   });
   updater_.add("emergency_stop_operation", this, &VehicleCmdGate::checkExternalEmergencyStop);
 
-  // Start Request
-  const auto use_start_request = declare_parameter("use_start_request", false);
-  const auto stopped_state_entry_duration_time =
-    declare_parameter("stopped_state_entry_duration_time", 0.1);
-  start_request_ =
-    std::make_unique<StartRequest>(this, use_start_request, stopped_state_entry_duration_time);
+  // Pause interface
+  pause_ = std::make_unique<PauseInterface>(this);
 
   // Timer
   const auto period_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -373,9 +369,6 @@ void VehicleCmdGate::onTimer()
   turn_indicator_cmd_pub_->publish(turn_indicator);
   hazard_light_cmd_pub_->publish(hazard_light);
   gear_cmd_pub_->publish(gear);
-
-  // Publish start request
-  start_request_->publishStartAccepted();
 }
 
 void VehicleCmdGate::publishControlCommands(const Commands & commands)
@@ -411,18 +404,16 @@ void VehicleCmdGate::publishControlCommands(const Commands & commands)
     filtered_commands.gear = emergency_commands_.gear;  // tmp
   }
 
-  // Check start after applying all gates except engage
-  if (is_engaged_) {
-    start_request_->checkStartRequest(filtered_commands.control);
-  }
-
   // Check engage
-  if (!is_engaged_ || !start_request_->isAccepted()) {
+  if (!is_engaged_) {
     filtered_commands.control = createStopControlCmd();
   }
 
-  // Check stopped after applying all gates
-  start_request_->checkStopped(filtered_commands.control);
+  // Check pause
+  pause_->update(filtered_commands.control);
+  if (pause_->is_paused()) {
+    filtered_commands.control = createStopControlCmd();
+  }
 
   // Apply limit filtering
   filtered_commands.control = filterControlCommand(filtered_commands.control);
@@ -449,8 +440,8 @@ void VehicleCmdGate::publishEmergencyStopControlCommands()
   control_cmd.stamp = stamp;
   control_cmd = createEmergencyStopControlCmd();
 
-  // Check stopped after applying all gates
-  start_request_->checkStopped(control_cmd);
+  // Update control command
+  pause_->update(control_cmd);
 
   // gear
   GearCommand gear;
@@ -478,9 +469,6 @@ void VehicleCmdGate::publishEmergencyStopControlCommands()
   turn_indicator_cmd_pub_->publish(turn_indicator);
   hazard_light_cmd_pub_->publish(hazard_light);
   gear_cmd_pub_->publish(gear);
-
-  // Publish start request
-  start_request_->publishStartAccepted();
 }
 
 void VehicleCmdGate::publishStatus()
@@ -501,6 +489,7 @@ void VehicleCmdGate::publishStatus()
   engage_pub_->publish(autoware_engage);
   pub_external_emergency_->publish(external_emergency);
   operation_mode_pub_->publish(current_operation_mode_);
+  pause_->publish();
 }
 
 AckermannControlCommand VehicleCmdGate::filterControlCommand(const AckermannControlCommand & in)
@@ -681,108 +670,6 @@ void VehicleCmdGate::checkExternalEmergencyStop(diagnostic_updater::DiagnosticSt
   }
 
   stat.summary(status.level, status.message);
-}
-
-VehicleCmdGate::StartRequest::StartRequest(
-  rclcpp::Node * node, bool use_start_request, double stopped_state_entry_duration_time)
-{
-  using std::placeholders::_1;
-
-  node_ = node;
-  use_start_request_ = use_start_request;
-  is_start_requesting_ = false;
-  is_start_accepted_ = false;
-  is_start_cancelled_ = false;
-
-  if (!use_start_request_) {
-    return;
-  }
-
-  request_start_cli_ =
-    node_->create_client<std_srvs::srv::Trigger>("/api/autoware/set/start_request");
-  request_start_pub_ = node_->create_publisher<tier4_debug_msgs::msg::BoolStamped>(
-    "/api/autoware/get/start_accepted", rclcpp::QoS(1));
-  current_twist_sub_ = node_->create_subscription<Odometry>(
-    "/localization/kinematic_state", rclcpp::QoS(1),
-    std::bind(&VehicleCmdGate::StartRequest::onCurrentTwist, this, _1));
-
-  last_running_time_ = std::make_shared<rclcpp::Time>(node_->now());
-  stopped_state_entry_duration_time_ = stopped_state_entry_duration_time;
-}
-
-void VehicleCmdGate::StartRequest::onCurrentTwist(Odometry::ConstSharedPtr msg)
-{
-  current_twist_ = *msg;
-}
-
-bool VehicleCmdGate::StartRequest::isAccepted()
-{
-  return !use_start_request_ || is_start_accepted_;
-}
-
-void VehicleCmdGate::StartRequest::publishStartAccepted()
-{
-  if (!use_start_request_) {
-    return;
-  }
-
-  tier4_debug_msgs::msg::BoolStamped start_accepted;
-  start_accepted.stamp = node_->now();
-  start_accepted.data = is_start_accepted_;
-  request_start_pub_->publish(start_accepted);
-}
-
-void VehicleCmdGate::StartRequest::checkStopped(const ControlCommandStamped & control)
-{
-  if (!use_start_request_) {
-    return;
-  }
-
-  if (is_start_accepted_) {
-    const auto control_velocity = std::abs(control.longitudinal.speed);
-    const auto current_velocity = std::abs(current_twist_.twist.twist.linear.x);
-
-    if (eps < current_velocity) {
-      last_running_time_ = std::make_shared<rclcpp::Time>(node_->now());
-    }
-
-    const auto is_stopped =
-      stopped_state_entry_duration_time_ < (node_->now() - *last_running_time_).seconds();
-
-    if (control_velocity < eps && is_stopped) {
-      is_start_accepted_ = false;
-      is_start_cancelled_ = true;
-      RCLCPP_INFO(node_->get_logger(), "clear start request");
-    }
-  }
-}
-
-void VehicleCmdGate::StartRequest::checkStartRequest(const ControlCommandStamped & control)
-{
-  if (!use_start_request_) {
-    return;
-  }
-
-  if (!is_start_accepted_ && !is_start_requesting_) {
-    const auto control_velocity = std::abs(control.longitudinal.speed);
-    if (eps < control_velocity) {
-      is_start_requesting_ = true;
-      is_start_cancelled_ = false;
-      request_start_cli_->async_send_request(
-        std::make_shared<std_srvs::srv::Trigger::Request>(),
-        [this](rclcpp::Client<std_srvs::srv::Trigger>::SharedFuture future) {
-          const auto response = future.get();
-          is_start_requesting_ = false;
-          if (!is_start_cancelled_) {
-            is_start_accepted_ = response->success;
-            RCLCPP_INFO(node_->get_logger(), "start request is updated");
-          } else {
-            RCLCPP_INFO(node_->get_logger(), "start request is cancelled");
-          }
-        });
-      RCLCPP_INFO(node_->get_logger(), "call start request");
-    }
-  }
 }
 
 }  // namespace vehicle_cmd_gate
