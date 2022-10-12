@@ -91,19 +91,18 @@ bool IntersectionModule::modifyPathVelocity(
   const auto lanelet_map_ptr = planner_data_->route_handler_->getLaneletMapPtr();
   const auto routing_graph_ptr = planner_data_->route_handler_->getRoutingGraphPtr();
 
-  /* get detection area and conflicting area */
-  lanelet::ConstLanelets detection_area_lanelets;
-  std::vector<lanelet::ConstLanelets> conflicting_area_lanelets;
+  const auto & assigned_lanelet =
+    planner_data_->route_handler_->getLaneletMapPtr()->laneletLayer.get(lane_id_);
 
-  util::getObjectiveLanelets(
+  /* get detection area*/
+  lanelet::ConstLanelets detection_area_lanelets;
+  const bool tl_arrow_solid_on =
+    util::isTrafficLightArrowActivated(assigned_lanelet, planner_data_->traffic_light_id_map);
+  util::getDetectionLanelets(
     lanelet_map_ptr, routing_graph_ptr, lane_id_, planner_param_.detection_area_length,
-    &conflicting_area_lanelets, &detection_area_lanelets, logger_);
-  std::vector<lanelet::CompoundPolygon3d> conflicting_areas = util::getPolygon3dFromLaneletsVec(
-    conflicting_area_lanelets, planner_param_.detection_area_length);
+    &detection_area_lanelets, tl_arrow_solid_on);
   std::vector<lanelet::CompoundPolygon3d> detection_areas =
     util::getPolygon3dFromLanelets(detection_area_lanelets, planner_param_.detection_area_length);
-  std::vector<int> conflicting_area_lanelet_ids =
-    util::getLaneletIdsFromLaneletsVec(conflicting_area_lanelets);
   std::vector<int> detection_area_lanelet_ids =
     util::getLaneletIdsFromLaneletsVec({detection_area_lanelets});
 
@@ -116,8 +115,6 @@ bool IntersectionModule::modifyPathVelocity(
   debug_data_.detection_area = detection_areas;
 
   /* get intersection area */
-  const auto & assigned_lanelet =
-    planner_data_->route_handler_->getLaneletMapPtr()->laneletLayer.get(lane_id_);
   const auto intersection_area = util::getIntersectionArea(assigned_lanelet, lanelet_map_ptr);
   if (intersection_area) {
     const auto intersection_area_2d = intersection_area.value();
@@ -136,7 +133,7 @@ bool IntersectionModule::modifyPathVelocity(
   /* set stop-line and stop-judgement-line for base_link */
   util::StopLineIdx stop_line_idxs;
   if (!util::generateStopLine(
-        lane_id_, conflicting_areas, planner_data_, planner_param_.stop_line_margin,
+        lane_id_, detection_areas, planner_data_, planner_param_.stop_line_margin,
         planner_param_.keep_detection_line_margin, path, *path, &stop_line_idxs,
         logger_.get_child("util"))) {
     RCLCPP_WARN_SKIPFIRST_THROTTLE(logger_, *clock_, 1000 /* ms */, "setStopLineIdx fail");

@@ -26,6 +26,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #endif
 
+#include <map>
 #include <memory>
 #include <optional>
 #include <string>
@@ -47,11 +48,10 @@ bool getDuplicatedPointIdx(
 /**
  * @brief get objective polygons for detection area
  */
-bool getObjectiveLanelets(
+bool getDetectionLanelets(
   lanelet::LaneletMapConstPtr lanelet_map_ptr, lanelet::routing::RoutingGraphPtr routing_graph_ptr,
   const int lane_id, const double detection_area_length,
-  std::vector<lanelet::ConstLanelets> * conflicting_lanelets_result,
-  lanelet::ConstLanelets * objective_lanelets_result, const rclcpp::Logger logger);
+  lanelet::ConstLanelets * detection_lanelets_result, const bool tl_arrow_solid_on = false);
 
 struct StopLineIdx
 {
@@ -148,6 +148,10 @@ std::vector<int> extendedAdjacentDirectionLanes(
 
 std::optional<Polygon2d> getIntersectionArea(
   lanelet::ConstLanelet assigned_lane, lanelet::LaneletMapConstPtr lanelet_map_ptr);
+
+bool isTrafficLightArrowActivated(
+  lanelet::ConstLanelet lane,
+  const std::map<int, autoware_auto_perception_msgs::msg::TrafficSignalStamped> & tl_infos);
 
 }  // namespace util
 }  // namespace behavior_velocity_planner
