@@ -57,7 +57,7 @@ MarkerArray createAvoidLineMarkerArray(
       marker_s.id = id++;
       marker_s.pose = sl.start;
       // shiftPose(&marker_s.pose, current_shift);  // old
-      shiftPose(&marker_s.pose, sl.start_length);
+      shiftPose(&marker_s.pose, sl.start_shift_length);
       msg.markers.push_back(marker_s);
 
       // end point
@@ -208,8 +208,8 @@ std::string toStrInfo(const behavior_path_planner::AvoidLine & ap)
   ss << "id = " << ap.id << ", shift length: " << ap.end_shift_length
      << ", start_idx: " << ap.start_idx << ", end_idx: " << ap.end_idx
      << ", start_dist = " << ap.start_longitudinal << ", end_dist = " << ap.end_longitudinal
-     << ", start_length: " << ap.start_length << ", start: (" << ps.x << ", " << ps.y << "), end: ("
-     << pe.x << ", " << pe.y << "), relative_length: " << ap.getRelativeLength()
+     << ", start_shift_length: " << ap.start_shift_length << ", start: (" << ps.x << ", " << ps.y
+     << "), end: (" << pe.x << ", " << pe.y << "), relative_length: " << ap.getRelativeLength()
      << ", grad = " << ap.getGradient() << ", parent_ids = [" << pids.str() << "]";
   return ss.str();
 }

@@ -39,8 +39,12 @@ struct ShiftLine
 {
   Pose start{};  // shift start point in absolute coordinate
   Pose end{};    // shift start point in absolute coordinate
-  double
-    end_shift_length{};  // absolute shift length at the end point related to the reference path
+
+  // relative shift length at the start point related to the reference path
+  double start_shift_length{};
+
+  // relative shift length at the end point related to the reference path
+  double end_shift_length{};
 
   size_t start_idx{};  // associated start-point index for the reference path
   size_t end_idx{};    // associated end-point index for the reference path

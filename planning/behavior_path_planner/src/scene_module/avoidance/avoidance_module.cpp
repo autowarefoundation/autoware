@@ -564,7 +564,7 @@ AvoidLineArray AvoidanceModule::calcRawShiftLinesFromObjects(const ObjectDataArr
 
     AvoidLine al_avoid;
     al_avoid.end_shift_length = shift_length;
-    al_avoid.start_length = current_ego_shift;
+    al_avoid.start_shift_length = current_ego_shift;
     al_avoid.end_longitudinal = o.longitudinal;
     al_avoid.start_longitudinal = o.longitudinal - avoiding_distance;
     al_avoid.id = getOriginalShiftLineUniqueId();
@@ -579,7 +579,7 @@ AvoidLineArray AvoidanceModule::calcRawShiftLinesFromObjects(const ObjectDataArr
 
     AvoidLine al_return;
     al_return.end_shift_length = 0.0;
-    al_return.start_length = shift_length;
+    al_return.start_shift_length = shift_length;
     al_return.start_longitudinal = o.longitudinal + o.length;
     al_return.end_longitudinal =
       o.longitudinal + o.length + std::min(nominal_return_distance, return_remaining_distance);
@@ -630,9 +630,9 @@ AvoidLineArray AvoidanceModule::fillAdditionalInfo(const AvoidLineArray & shift_
   });
 
   // calc relative lateral length
-  out_points.front().start_length = getCurrentBaseShift();
+  out_points.front().start_shift_length = getCurrentBaseShift();
   for (size_t i = 1; i < shift_lines.size(); ++i) {
-    out_points.at(i).start_length = shift_lines.at(i - 1).end_shift_length;
+    out_points.at(i).start_shift_length = shift_lines.at(i - 1).end_shift_length;
   }
 
   return out_points;
@@ -1045,9 +1045,9 @@ void AvoidanceModule::alignShiftLinesOrder(
   // NOTE: the input shift point must not have conflict range. Otherwise relative
   // length value will be broken.
   if (recalculate_start_length) {
-    shift_lines.front().start_length = getCurrentLinearShift();
+    shift_lines.front().start_shift_length = getCurrentLinearShift();
     for (size_t i = 1; i < shift_lines.size(); ++i) {
-      shift_lines.at(i).start_length = shift_lines.at(i - 1).end_shift_length;
+      shift_lines.at(i).start_shift_length = shift_lines.at(i - 1).end_shift_length;
     }
   }
 }
@@ -1083,7 +1083,7 @@ void AvoidanceModule::trimSmallShiftLine(
     // remove the shift point if the length is almost same as the previous one.
     if (std::abs(shift_diff) < shift_diff_thres) {
       sl_modified.end_shift_length = sl_prev.end_shift_length;
-      sl_modified.start_length = sl_prev.end_shift_length;
+      sl_modified.start_shift_length = sl_prev.end_shift_length;
       DEBUG_PRINT(
         "i = %lu, relative shift = %f is small. set with relative shift = 0.", i, shift_diff);
     } else {
@@ -1123,7 +1123,8 @@ void AvoidanceModule::trimSimilarGradShiftLine(
     const auto has_large_length_change = [&]() {
       for (const auto & original : being_merged_points) {
         const auto longitudinal = original.end_longitudinal - combined_al.start_longitudinal;
-        const auto new_length = combined_al.getGradient() * longitudinal + combined_al.start_length;
+        const auto new_length =
+          combined_al.getGradient() * longitudinal + combined_al.start_shift_length;
         const bool has_large_change =
           std::abs(new_length - original.end_shift_length) > change_shift_dist_threshold;
 
@@ -1272,7 +1273,7 @@ void AvoidanceModule::trimMomentaryReturn(AvoidLineArray & shift_lines) const
 
     // Calculate start point from end point and avoidance distance.
     auto sl_next_modified = sl_next_avoid;
-    sl_next_modified.start_length = sl_prev_length;
+    sl_next_modified.start_shift_length = sl_prev_length;
     sl_next_modified.start_longitudinal =
       std::max(sl_next_avoid.end_longitudinal - avoid_distance, sl_now.start_longitudinal);
     sl_next_modified.start_idx =
@@ -1284,7 +1285,7 @@ void AvoidanceModule::trimMomentaryReturn(AvoidLineArray & shift_lines) const
     // Straight shift point
     if (sl_next_modified.start_idx > sl_now.start_idx) {  // the case where a straight route exists.
       auto sl_now_modified = sl_now;
-      sl_now_modified.start_length = sl_prev_length;
+      sl_now_modified.start_shift_length = sl_prev_length;
       setEndData(
         sl_now_modified, sl_prev_length, sl_next_modified.start, sl_next_modified.start_idx,
         sl_next_modified.start_longitudinal);
@@ -1317,13 +1318,13 @@ void AvoidanceModule::trimSharpReturn(AvoidLineArray & shift_lines) const
   // check if the shift point is positive (avoiding) shift
   const auto isPositive = [&](const auto & sp) {
     constexpr auto POSITIVE_SHIFT_THR = 0.1;
-    return std::abs(sp.end_shift_length) - std::abs(sp.start_length) > POSITIVE_SHIFT_THR;
+    return std::abs(sp.end_shift_length) - std::abs(sp.start_shift_length) > POSITIVE_SHIFT_THR;
   };
 
   // check if the shift point is negative (returning) shift
   const auto isNegative = [&](const auto & sp) {
     constexpr auto NEGATIVE_SHIFT_THR = -0.1;
-    return std::abs(sp.end_shift_length) - std::abs(sp.start_length) < NEGATIVE_SHIFT_THR;
+    return std::abs(sp.end_shift_length) - std::abs(sp.start_shift_length) < NEGATIVE_SHIFT_THR;
   };
 
   // combine two shift points. Be careful the order of "now" and "next".
@@ -1356,10 +1357,10 @@ void AvoidanceModule::trimSharpReturn(AvoidLineArray & shift_lines) const
   // check for all shift points
   for (size_t i = 0; i < shift_lines_orig.size(); ++i) {
     auto sp_now = shift_lines_orig.at(i);
-    sp_now.start_length =
+    sp_now.start_shift_length =
       shift_lines.empty() ? getCurrentLinearShift() : shift_lines.back().end_shift_length;
 
-    if (sp_now.end_shift_length * sp_now.start_length < -0.01) {
+    if (sp_now.end_shift_length * sp_now.start_shift_length < -0.01) {
       DEBUG_PRINT("i = %lu, This is avoid shift for opposite direction. take this one", i);
       continue;
     }
@@ -1369,7 +1370,7 @@ void AvoidanceModule::trimSharpReturn(AvoidLineArray & shift_lines) const
       shift_lines.push_back(sp_now);
       DEBUG_PRINT(
         "i = %lu, positive shift. take this one. sp_now.length * sp_now.start_length = %f", i,
-        sp_now.end_shift_length * sp_now.start_length);
+        sp_now.end_shift_length * sp_now.start_shift_length);
       continue;
     }
 
@@ -1659,7 +1660,7 @@ void AvoidanceModule::addReturnShiftLineFromEgo(
     al.end = avoidance_data_.reference_path.points.at(al.end_idx).point.pose;
     al.end_longitudinal = arclength_from_ego.at(al.end_idx);
     al.end_shift_length = last_sl.end_shift_length;
-    al.start_length = last_sl.end_shift_length;
+    al.start_shift_length = last_sl.end_shift_length;
     sl_candidates.push_back(al);
     printShiftLines(AvoidLineArray{al}, "prepare for return");
     debug_data_.extra_return_shift.push_back(al);
@@ -1680,7 +1681,7 @@ void AvoidanceModule::addReturnShiftLineFromEgo(
     al.end = avoidance_data_.reference_path.points.at(al.end_idx).point.pose;
     al.end_longitudinal = arclength_from_ego.at(al.end_idx);
     al.end_shift_length = 0.0;
-    al.start_length = last_sl.end_shift_length;
+    al.start_shift_length = last_sl.end_shift_length;
     sl_candidates.push_back(al);
     printShiftLines(AvoidLineArray{al}, "return point");
     debug_data_.extra_return_shift = AvoidLineArray{al};

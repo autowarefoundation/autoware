@@ -94,7 +94,7 @@ double lerpShiftLengthOnArc(double arc, const AvoidLine & ap)
       return ap.end_shift_length;
     }
     const auto start_weight = (ap.end_longitudinal - arc) / ap.getRelativeLongitudinal();
-    return start_weight * ap.start_length + (1.0 - start_weight) * ap.end_shift_length;
+    return start_weight * ap.start_shift_length + (1.0 - start_weight) * ap.end_shift_length;
   }
   return 0.0;
 }
@@ -178,10 +178,10 @@ void setEndData(
 }
 
 void setStartData(
-  AvoidLine & ap, const double start_length, const geometry_msgs::msg::Pose & start,
+  AvoidLine & ap, const double start_shift_length, const geometry_msgs::msg::Pose & start,
   const size_t start_idx, const double start_dist)
 {
-  ap.start_length = start_length;
+  ap.start_shift_length = start_shift_length;
   ap.start = start;
   ap.start_idx = start_idx;
   ap.start_longitudinal = start_dist;

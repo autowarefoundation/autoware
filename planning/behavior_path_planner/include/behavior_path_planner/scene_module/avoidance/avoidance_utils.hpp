@@ -58,7 +58,7 @@ void setEndData(
   const double end_dist);
 
 void setStartData(
-  AvoidLine & al, const double start_length, const geometry_msgs::msg::Pose & start,
+  AvoidLine & al, const double start_shift_length, const geometry_msgs::msg::Pose & start,
   const size_t start_idx, const double start_dist);
 
 std::string getUuidStr(const ObjectData & obj);

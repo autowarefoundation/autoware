@@ -203,9 +203,6 @@ using ObjectDataArray = std::vector<ObjectData>;
  */
 struct AvoidLine : public ShiftLine
 {
-  // relative shift length from start to end point
-  double start_length = 0.0;
-
   // Distance from ego to start point in Frenet
   double start_longitudinal = 0.0;
 
@@ -221,7 +218,7 @@ struct AvoidLine : public ShiftLine
   // corresponding object
   ObjectData object{};
 
-  double getRelativeLength() const { return end_shift_length - start_length; }
+  double getRelativeLength() const { return end_shift_length - start_shift_length; }
 
   double getRelativeLongitudinal() const { return end_longitudinal - start_longitudinal; }
 
