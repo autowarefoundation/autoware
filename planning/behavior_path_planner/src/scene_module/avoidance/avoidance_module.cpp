@@ -684,7 +684,7 @@ void AvoidanceModule::fillAdditionalInfoFromLongitudinal(AvoidLineArray & shift_
  * similar shape is already in B, it will not be added into B.
  */
 AvoidLineArray AvoidanceModule::combineRawShiftLinesWithUniqueCheck(
-  const AvoidLineArray & base_points, const AvoidLineArray & added_points) const
+  const AvoidLineArray & base_lines, const AvoidLineArray & added_lines) const
 {
   // TODO(Horibe) parametrize
   const auto isSimilar = [](const AvoidLine & a, const AvoidLine & b) {
@@ -704,18 +704,18 @@ AvoidLineArray AvoidanceModule::combineRawShiftLinesWithUniqueCheck(
     return a.object.object.object_id == b.object.object.object_id;
   };
 
-  auto combined = base_points;  // initialized
-  for (const auto & o : added_points) {
+  auto combined = base_lines;  // initialized
+  for (const auto & added_line : added_lines) {
     bool skip = false;
 
-    for (const auto & b : base_points) {
-      if (hasSameObjectId(o, b) && isSimilar(o, b)) {
+    for (const auto & base_line : base_lines) {
+      if (hasSameObjectId(added_line, base_line) && isSimilar(added_line, base_line)) {
         skip = true;
         break;
       }
     }
     if (!skip) {
-      combined.push_back(o);
+      combined.push_back(added_line);
     }
   }
 
@@ -1316,38 +1316,38 @@ void AvoidanceModule::trimSharpReturn(AvoidLineArray & shift_lines) const
   const auto isZero = [](double v) { return std::abs(v) < 0.01; };
 
   // check if the shift point is positive (avoiding) shift
-  const auto isPositive = [&](const auto & sp) {
+  const auto isPositive = [&](const auto & sl) {
     constexpr auto POSITIVE_SHIFT_THR = 0.1;
-    return std::abs(sp.end_shift_length) - std::abs(sp.start_shift_length) > POSITIVE_SHIFT_THR;
+    return std::abs(sl.end_shift_length) - std::abs(sl.start_shift_length) > POSITIVE_SHIFT_THR;
   };
 
   // check if the shift point is negative (returning) shift
-  const auto isNegative = [&](const auto & sp) {
+  const auto isNegative = [&](const auto & sl) {
     constexpr auto NEGATIVE_SHIFT_THR = -0.1;
-    return std::abs(sp.end_shift_length) - std::abs(sp.start_shift_length) < NEGATIVE_SHIFT_THR;
+    return std::abs(sl.end_shift_length) - std::abs(sl.start_shift_length) < NEGATIVE_SHIFT_THR;
   };
 
   // combine two shift points. Be careful the order of "now" and "next".
-  const auto combineShiftLine = [this](const auto & sp_next, const auto & sp_now) {
-    auto sp_modified = sp_now;
+  const auto combineShiftLine = [this](const auto & sl_next, const auto & sl_now) {
+    auto sl_modified = sl_now;
     setEndData(
-      sp_modified, sp_next.end_shift_length, sp_next.end, sp_next.end_idx,
-      sp_next.end_longitudinal);
-    sp_modified.parent_ids = concatParentIds(sp_modified.parent_ids, sp_now.parent_ids);
-    return sp_modified;
+      sl_modified, sl_next.end_shift_length, sl_next.end, sl_next.end_idx,
+      sl_next.end_longitudinal);
+    sl_modified.parent_ids = concatParentIds(sl_modified.parent_ids, sl_now.parent_ids);
+    return sl_modified;
   };
 
   // Check if the merged shift has a conflict with the original shifts.
   const auto hasViolation = [this](const auto & combined, const auto & combined_src) {
     constexpr auto VIOLATION_SHIFT_THR = 0.3;
-    for (const auto & sp : combined_src) {
-      const auto combined_shift = lerpShiftLengthOnArc(sp.end_longitudinal, combined);
+    for (const auto & sl : combined_src) {
+      const auto combined_shift = lerpShiftLengthOnArc(sl.end_longitudinal, combined);
       if (
-        sp.end_shift_length < -0.01 && combined_shift > sp.end_shift_length + VIOLATION_SHIFT_THR) {
+        sl.end_shift_length < -0.01 && combined_shift > sl.end_shift_length + VIOLATION_SHIFT_THR) {
         return true;
       }
       if (
-        sp.end_shift_length > 0.01 && combined_shift < sp.end_shift_length - VIOLATION_SHIFT_THR) {
+        sl.end_shift_length > 0.01 && combined_shift < sl.end_shift_length - VIOLATION_SHIFT_THR) {
         return true;
       }
     }
@@ -1356,27 +1356,27 @@ void AvoidanceModule::trimSharpReturn(AvoidLineArray & shift_lines) const
 
   // check for all shift points
   for (size_t i = 0; i < shift_lines_orig.size(); ++i) {
-    auto sp_now = shift_lines_orig.at(i);
-    sp_now.start_shift_length =
+    auto sl_now = shift_lines_orig.at(i);
+    sl_now.start_shift_length =
       shift_lines.empty() ? getCurrentLinearShift() : shift_lines.back().end_shift_length;
 
-    if (sp_now.end_shift_length * sp_now.start_shift_length < -0.01) {
+    if (sl_now.end_shift_length * sl_now.start_shift_length < -0.01) {
       DEBUG_PRINT("i = %lu, This is avoid shift for opposite direction. take this one", i);
       continue;
     }
 
     // Do nothing for non-reduce shift point
-    if (!isNegative(sp_now)) {
-      shift_lines.push_back(sp_now);
+    if (!isNegative(sl_now)) {
+      shift_lines.push_back(sl_now);
       DEBUG_PRINT(
-        "i = %lu, positive shift. take this one. sp_now.length * sp_now.start_length = %f", i,
-        sp_now.end_shift_length * sp_now.start_shift_length);
+        "i = %lu, positive shift. take this one. sl_now.length * sl_now.start_length = %f", i,
+        sl_now.end_shift_length * sl_now.start_shift_length);
       continue;
     }
 
     // The last point is out of target of this function.
     if (i == shift_lines_orig.size() - 1) {
-      shift_lines.push_back(sp_now);
+      shift_lines.push_back(sl_now);
       DEBUG_PRINT("i = %lu, last shift. take this one.", i);
       continue;
     }
@@ -1389,55 +1389,55 @@ void AvoidanceModule::trimSharpReturn(AvoidLineArray & shift_lines) const
     // exceeds merged shift point.
     DEBUG_PRINT("i = %lu, found negative dist. search.", i);
     {
-      auto sp_combined = sp_now;
-      auto sp_combined_prev = sp_combined;
-      AvoidLineArray sp_combined_array{sp_now};
+      auto sl_combined = sl_now;
+      auto sl_combined_prev = sl_combined;
+      AvoidLineArray sl_combined_array{sl_now};
       size_t j = i + 1;
       for (; i < shift_lines_orig.size(); ++j) {
-        const auto sp_combined = combineShiftLine(shift_lines_orig.at(j), sp_now);
+        const auto sl_combined = combineShiftLine(shift_lines_orig.at(j), sl_now);
 
         {
           std::stringstream ss;
-          ss << "i = " << i << ", j = " << j << ": sp_combined = " << toStrInfo(sp_combined);
+          ss << "i = " << i << ", j = " << j << ": sl_combined = " << toStrInfo(sl_combined);
           DEBUG_PRINT("%s", ss.str().c_str());
         }
 
         // it gets positive. Finish merging.
-        if (isPositive(sp_combined)) {
-          shift_lines.push_back(sp_combined);
+        if (isPositive(sl_combined)) {
+          shift_lines.push_back(sl_combined);
           DEBUG_PRINT("reach positive.");
           break;
         }
 
         // Still negative, but it violates the original shift points.
         // Finish with the previous merge result.
-        if (hasViolation(sp_combined, sp_combined_array)) {
-          shift_lines.push_back(sp_combined_prev);
+        if (hasViolation(sl_combined, sl_combined_array)) {
+          shift_lines.push_back(sl_combined_prev);
           DEBUG_PRINT("violation found.");
           --j;
           break;
         }
 
         // Still negative, but it has an enough long distance. Finish merging.
-        const auto nominal_distance = getNominalAvoidanceDistance(sp_combined.getRelativeLength());
+        const auto nominal_distance = getNominalAvoidanceDistance(sl_combined.getRelativeLength());
         const auto long_distance =
-          isZero(sp_combined.end_shift_length) ? nominal_distance : nominal_distance * 5.0;
-        if (sp_combined.getRelativeLongitudinal() > long_distance) {
-          shift_lines.push_back(sp_combined);
+          isZero(sl_combined.end_shift_length) ? nominal_distance : nominal_distance * 5.0;
+        if (sl_combined.getRelativeLongitudinal() > long_distance) {
+          shift_lines.push_back(sl_combined);
           DEBUG_PRINT("still negative, but long enough. Threshold = %f", long_distance);
           break;
         }
 
         // It reaches the last point. Still the shift is sharp, but merge with the current result.
         if (j == shift_lines_orig.size() - 1) {
-          shift_lines.push_back(sp_combined);
+          shift_lines.push_back(sl_combined);
           DEBUG_PRINT("reach end point.");
           break;
         }
 
         // Still negative shift, and the distance is not enough. Search next.
-        sp_combined_prev = sp_combined;
-        sp_combined_array.push_back(shift_lines_orig.at(j));
+        sl_combined_prev = sl_combined;
+        sl_combined_array.push_back(shift_lines_orig.at(j));
       }
       i = j;
       continue;

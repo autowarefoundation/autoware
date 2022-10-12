@@ -213,7 +213,7 @@ private:
 
   // shift point generation: combiner
   AvoidLineArray combineRawShiftLinesWithUniqueCheck(
-    const AvoidLineArray & base_points, const AvoidLineArray & added_points) const;
+    const AvoidLineArray & base_lines, const AvoidLineArray & added_lines) const;
 
   // shift point generation: merger
   AvoidLineArray mergeShiftLines(const AvoidLineArray & raw_shift_lines, DebugData & debug) const;
