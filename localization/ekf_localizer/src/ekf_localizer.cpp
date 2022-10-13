@@ -14,6 +14,7 @@
 
 #include "ekf_localizer/ekf_localizer.hpp"
 
+#include "ekf_localizer/covariance.hpp"
 #include "ekf_localizer/mahalanobis.hpp"
 #include "ekf_localizer/matrix_types.hpp"
 #include "ekf_localizer/measurement.hpp"
@@ -612,20 +613,11 @@ void EKFLocalizer::publishEstimateResult()
   pub_biased_pose_->publish(current_biased_ekf_pose_);
 
   /* publish latest pose with covariance */
-  using COV_IDX = tier4_autoware_utils::xyzrpy_covariance_index::XYZRPY_COV_IDX;
   geometry_msgs::msg::PoseWithCovarianceStamped pose_cov;
   pose_cov.header.stamp = current_time;
   pose_cov.header.frame_id = current_ekf_pose_.header.frame_id;
   pose_cov.pose.pose = current_ekf_pose_.pose;
-  pose_cov.pose.covariance[COV_IDX::X_X] = P(IDX::X, IDX::X);
-  pose_cov.pose.covariance[COV_IDX::X_Y] = P(IDX::X, IDX::Y);
-  pose_cov.pose.covariance[COV_IDX::X_YAW] = P(IDX::X, IDX::YAW);
-  pose_cov.pose.covariance[COV_IDX::Y_X] = P(IDX::Y, IDX::X);
-  pose_cov.pose.covariance[COV_IDX::Y_Y] = P(IDX::Y, IDX::Y);
-  pose_cov.pose.covariance[COV_IDX::Y_YAW] = P(IDX::Y, IDX::YAW);
-  pose_cov.pose.covariance[COV_IDX::YAW_X] = P(IDX::YAW, IDX::X);
-  pose_cov.pose.covariance[COV_IDX::YAW_Y] = P(IDX::YAW, IDX::Y);
-  pose_cov.pose.covariance[COV_IDX::YAW_YAW] = P(IDX::YAW, IDX::YAW);
+  pose_cov.pose.covariance = ekfCovarianceToPoseMessageCovariance(P);
   pub_pose_cov_->publish(pose_cov);
 
   geometry_msgs::msg::PoseWithCovarianceStamped biased_pose_cov = pose_cov;
@@ -640,10 +632,7 @@ void EKFLocalizer::publishEstimateResult()
   twist_cov.header.stamp = current_time;
   twist_cov.header.frame_id = current_ekf_twist_.header.frame_id;
   twist_cov.twist.twist = current_ekf_twist_.twist;
-  twist_cov.twist.covariance[COV_IDX::X_X] = P(IDX::VX, IDX::VX);
-  twist_cov.twist.covariance[COV_IDX::X_YAW] = P(IDX::VX, IDX::WZ);
-  twist_cov.twist.covariance[COV_IDX::YAW_X] = P(IDX::WZ, IDX::VX);
-  twist_cov.twist.covariance[COV_IDX::YAW_YAW] = P(IDX::WZ, IDX::WZ);
+  twist_cov.twist.covariance = ekfCovarianceToTwistMessageCovariance(P);
   pub_twist_cov_->publish(twist_cov);
 
   /* publish yaw bias */
