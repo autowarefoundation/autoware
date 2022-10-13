@@ -21,8 +21,25 @@ include_directories(
   ${GRID_MAP_INCLUDE_DIR}
 )
 
-ament_auto_add_library(pointcloud_preprocessor_filter SHARED
+add_library(pointcloud_preprocessor_filter_base SHARED
   src/filter.cpp
+)
+
+target_include_directories(pointcloud_preprocessor_filter_base PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+)
+
+ament_target_dependencies(pointcloud_preprocessor_filter_base
+  message_filters
+  pcl_conversions
+  rclcpp
+  sensor_msgs
+  tf2_ros
+  tier4_autoware_utils
+)
+
+ament_auto_add_library(pointcloud_preprocessor_filter SHARED
   src/utility/utilities.cpp
   src/concatenate_data/concatenate_data_nodelet.cpp
   src/crop_box_filter/crop_box_filter_nodelet.cpp
@@ -45,6 +62,7 @@ ament_auto_add_library(pointcloud_preprocessor_filter SHARED
 )
 
 target_link_libraries(pointcloud_preprocessor_filter
+  pointcloud_preprocessor_filter_base
   ${Boost_LIBRARIES}
   ${OpenCV_LIBRARIES}
   ${PCL_LIBRARIES}
@@ -146,6 +164,20 @@ target_link_libraries(polygon_remover_node gmp CGAL CGAL::CGAL CGAL::CGAL_Core)
 rclcpp_components_register_node(pointcloud_preprocessor_filter
   PLUGIN "pointcloud_preprocessor::VectorMapInsideAreaFilterComponent"
   EXECUTABLE vector_map_inside_area_filter_node)
+
+install(
+  TARGETS pointcloud_preprocessor_filter_base EXPORT export_${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+install(
+  DIRECTORY include/
+  DESTINATION include/${PROJECT_NAME}
+)
+
+ament_export_targets(export_${PROJECT_NAME})
 
 ament_auto_package(INSTALL_TO_SHARE
   launch

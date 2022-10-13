@@ -21,7 +21,7 @@ include_directories(
   ${GRID_MAP_INCLUDE_DIR}
 )
 
-ament_auto_add_library(compare_map_segmentation SHARED
+add_library(compare_map_segmentation SHARED
   src/distance_based_compare_map_filter_nodelet.cpp
   src/voxel_based_approximate_compare_map_filter_nodelet.cpp
   src/voxel_based_compare_map_filter_nodelet.cpp
@@ -30,9 +30,20 @@ ament_auto_add_library(compare_map_segmentation SHARED
 )
 
 target_link_libraries(compare_map_segmentation
+  pointcloud_preprocessor::pointcloud_preprocessor_filter_base
   ${Boost_LIBRARIES}
   ${OpenCV_LIBRARIES}
   ${PCL_LIBRARIES}
+)
+
+ament_target_dependencies(compare_map_segmentation
+  grid_map_pcl
+  grid_map_ros
+  pcl_conversions
+  rclcpp
+  rclcpp_components
+  sensor_msgs
+  tier4_autoware_utils
 )
 
 if(OPENMP_FOUND)
@@ -67,6 +78,13 @@ rclcpp_components_register_node(compare_map_segmentation
 rclcpp_components_register_node(compare_map_segmentation
   PLUGIN "compare_map_segmentation::CompareElevationMapFilterComponent"
   EXECUTABLE compare_elevation_map_filter_node)
+
+install(
+  TARGETS compare_map_segmentation
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
 
 ament_auto_package(INSTALL_TO_SHARE
   launch
