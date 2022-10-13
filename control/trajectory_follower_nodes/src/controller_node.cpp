@@ -132,13 +132,13 @@ bool Controller::isTimeOut()
   const auto now = this->now();
   if ((now - lateral_output_->control_cmd.stamp).seconds() > timeout_thr_sec_) {
     RCLCPP_ERROR_THROTTLE(
-      get_logger(), *get_clock(), 1000 /*ms*/,
+      get_logger(), *get_clock(), 5000 /*ms*/,
       "Lateral control command too old, control_cmd will not be published.");
     return true;
   }
   if ((now - longitudinal_output_->control_cmd.stamp).seconds() > timeout_thr_sec_) {
     RCLCPP_ERROR_THROTTLE(
-      get_logger(), *get_clock(), 1000 /*ms*/,
+      get_logger(), *get_clock(), 5000 /*ms*/,
       "Longitudinal control command too old, control_cmd will not be published.");
     return true;
   }

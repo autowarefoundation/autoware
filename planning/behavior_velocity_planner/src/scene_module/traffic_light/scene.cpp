@@ -452,7 +452,7 @@ bool TrafficLightModule::getHighestConfidenceTrafficSignal(
   }
   if (!found) {
     RCLCPP_WARN_THROTTLE(
-      logger_, *clock_, 1000 /* ms */, "cannot find traffic light lamp state (%s).",
+      logger_, *clock_, 5000 /* ms */, "cannot find traffic light lamp state (%s).",
       reason.c_str());
     return false;
   }

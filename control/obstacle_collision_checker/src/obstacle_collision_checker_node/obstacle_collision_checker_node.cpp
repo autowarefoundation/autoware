@@ -182,7 +182,7 @@ bool ObstacleCollisionCheckerNode::isDataTimeout()
   const auto pose_time_diff = rclcpp::Time(current_pose_->header.stamp).seconds() - now.seconds();
   if (pose_time_diff > th_pose_timeout) {
     RCLCPP_WARN_THROTTLE(
-      this->get_logger(), *this->get_clock(), 1000 /* ms */, "pose is timeout...");
+      this->get_logger(), *this->get_clock(), 5000 /* ms */, "pose is timeout...");
     return true;
   }
 

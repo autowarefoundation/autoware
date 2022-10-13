@@ -307,7 +307,7 @@ void VehicleCmdGate::onTimer()
 
     if (is_emergency_state_heartbeat_timeout_) {
       RCLCPP_WARN_THROTTLE(
-        get_logger(), *get_clock(), 1000 /*ms*/, "system_emergency heartbeat is timeout.");
+        get_logger(), *get_clock(), 5000 /*ms*/, "system_emergency heartbeat is timeout.");
       publishEmergencyStopControlCommands();
       return;
     }
@@ -320,7 +320,7 @@ void VehicleCmdGate::onTimer()
 
     if (is_external_emergency_stop_heartbeat_timeout_) {
       RCLCPP_WARN_THROTTLE(
-        get_logger(), *get_clock(), 1000 /*ms*/, "external_emergency_stop heartbeat is timeout.");
+        get_logger(), *get_clock(), 5000 /*ms*/, "external_emergency_stop heartbeat is timeout.");
       is_external_emergency_stop_ = true;
     }
   }
@@ -329,7 +329,7 @@ void VehicleCmdGate::onTimer()
   if (is_external_emergency_stop_) {
     if (!is_external_emergency_stop_heartbeat_timeout_) {
       RCLCPP_INFO_THROTTLE(
-        get_logger(), *get_clock(), 1000 /*ms*/,
+        get_logger(), *get_clock(), 5000 /*ms*/,
         "Please call `clear_external_emergency_stop` service to clear state.");
     }
 

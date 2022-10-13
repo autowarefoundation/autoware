@@ -234,7 +234,7 @@ void ObstacleStopPlannerNode::onTrigger(const Trajectory::ConstSharedPtr input_m
   {
     const auto waiting = [this](const auto & str) {
       RCLCPP_WARN_THROTTLE(
-        get_logger(), *get_clock(), std::chrono::milliseconds(1000).count(), "waiting for %s ...",
+        get_logger(), *get_clock(), std::chrono::milliseconds(5000).count(), "waiting for %s ...",
         str);
     };
 

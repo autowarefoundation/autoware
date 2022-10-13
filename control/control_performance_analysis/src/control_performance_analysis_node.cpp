@@ -123,7 +123,7 @@ void ControlPerformanceAnalysisNode::onVecSteeringMeasured(
 {
   if (!meas_steer_msg) {
     RCLCPP_WARN_THROTTLE(
-      get_logger(), *get_clock(), 1000, "waiting for vehicle measured steering message ...");
+      get_logger(), *get_clock(), 5000, "waiting for vehicle measured steering message ...");
     return;
   }
   current_vec_steering_msg_ptr_ = meas_steer_msg;

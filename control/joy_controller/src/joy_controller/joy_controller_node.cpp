@@ -202,7 +202,7 @@ bool AutowareJoyControllerNode::isDataReady()
   {
     if (!joy_) {
       RCLCPP_WARN_THROTTLE(
-        get_logger(), *get_clock(), std::chrono::milliseconds(1000).count(),
+        get_logger(), *get_clock(), std::chrono::milliseconds(5000).count(),
         "waiting for joy msg...");
       return false;
     }
@@ -211,7 +211,7 @@ bool AutowareJoyControllerNode::isDataReady()
     const auto time_diff = this->now() - last_joy_received_time_;
     if (time_diff.seconds() > timeout) {
       RCLCPP_WARN_THROTTLE(
-        get_logger(), *get_clock(), std::chrono::milliseconds(1000).count(), "joy msg is timeout");
+        get_logger(), *get_clock(), std::chrono::milliseconds(5000).count(), "joy msg is timeout");
       return false;
     }
   }
@@ -220,7 +220,7 @@ bool AutowareJoyControllerNode::isDataReady()
   {
     if (!twist_) {
       RCLCPP_WARN_THROTTLE(
-        get_logger(), *get_clock(), std::chrono::milliseconds(1000).count(),
+        get_logger(), *get_clock(), std::chrono::milliseconds(5000).count(),
         "waiting for twist msg...");
       return false;
     }
@@ -229,7 +229,7 @@ bool AutowareJoyControllerNode::isDataReady()
     const auto time_diff = this->now() - twist_->header.stamp;
     if (time_diff.seconds() > timeout) {
       RCLCPP_WARN_THROTTLE(
-        get_logger(), *get_clock(), std::chrono::milliseconds(1000).count(),
+        get_logger(), *get_clock(), std::chrono::milliseconds(5000).count(),
         "twist msg is timeout");
       return false;
     }
