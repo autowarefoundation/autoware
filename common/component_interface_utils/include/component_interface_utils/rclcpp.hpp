@@ -16,11 +16,13 @@
 #define COMPONENT_INTERFACE_UTILS__RCLCPP_HPP_
 
 #include <component_interface_utils/rclcpp/create_interface.hpp>
+#include <component_interface_utils/rclcpp/interface.hpp>
 #include <component_interface_utils/rclcpp/service_client.hpp>
 #include <component_interface_utils/rclcpp/service_server.hpp>
 #include <component_interface_utils/rclcpp/topic_publisher.hpp>
 #include <component_interface_utils/rclcpp/topic_subscription.hpp>
 
+#include <memory>
 #include <optional>
 #include <utility>
 
@@ -43,14 +45,14 @@ private:
 
 public:
   /// Constructor.
-  explicit NodeAdaptor(rclcpp::Node * node) : node_(node) {}
+  explicit NodeAdaptor(rclcpp::Node * node) { interface_ = std::make_shared<NodeInterface>(node); }
 
   /// Create a client wrapper for logging.
   template <class SharedPtrT>
   void init_cli(SharedPtrT & cli, CallbackGroup group = nullptr) const
   {
     using SpecT = typename SharedPtrT::element_type::SpecType;
-    cli = create_client_impl<SpecT>(node_, group);
+    cli = create_client_impl<SpecT>(interface_, group);
   }
 
   /// Create a service wrapper for logging.
@@ -58,7 +60,7 @@ public:
   void init_srv(SharedPtrT & srv, CallbackT && callback, CallbackGroup group = nullptr) const
   {
     using SpecT = typename SharedPtrT::element_type::SpecType;
-    srv = create_service_impl<SpecT>(node_, std::forward<CallbackT>(callback), group);
+    srv = create_service_impl<SpecT>(interface_, std::forward<CallbackT>(callback), group);
   }
 
   /// Create a publisher using traits like services.
@@ -66,7 +68,7 @@ public:
   void init_pub(SharedPtrT & pub) const
   {
     using SpecT = typename SharedPtrT::element_type::SpecType;
-    pub = create_publisher_impl<SpecT>(node_);
+    pub = create_publisher_impl<SpecT>(interface_->node);
   }
 
   /// Create a subscription using traits like services.
@@ -74,7 +76,7 @@ public:
   void init_sub(SharedPtrT & sub, CallbackT && callback) const
   {
     using SpecT = typename SharedPtrT::element_type::SpecType;
-    sub = create_subscription_impl<SpecT>(node_, std::forward<CallbackT>(callback));
+    sub = create_subscription_impl<SpecT>(interface_->node, std::forward<CallbackT>(callback));
   }
 
   /// Relay message.
@@ -119,7 +121,7 @@ public:
 
 private:
   // Use a node pointer because shared_from_this cannot be used in constructor.
-  rclcpp::Node * node_;
+  NodeInterface::SharedPtr interface_;
 };
 
 }  // namespace component_interface_utils

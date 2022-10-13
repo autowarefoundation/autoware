@@ -15,6 +15,7 @@
 #ifndef COMPONENT_INTERFACE_UTILS__RCLCPP__CREATE_INTERFACE_HPP_
 #define COMPONENT_INTERFACE_UTILS__RCLCPP__CREATE_INTERFACE_HPP_
 
+#include <component_interface_utils/rclcpp/interface.hpp>
 #include <component_interface_utils/rclcpp/service_client.hpp>
 #include <component_interface_utils/rclcpp/service_server.hpp>
 #include <component_interface_utils/rclcpp/topic_publisher.hpp>
@@ -28,28 +29,24 @@ namespace component_interface_utils
 {
 
 /// Create a client wrapper for logging. This is a private implementation.
-template <class SpecT, class NodeT>
+template <class SpecT>
 typename Client<SpecT>::SharedPtr create_client_impl(
-  NodeT * node, rclcpp::CallbackGroup::SharedPtr group = nullptr)
+  NodeInterface::SharedPtr interface, rclcpp::CallbackGroup::SharedPtr group = nullptr)
 {
   // This function is a wrapper for the following.
   // https://github.com/ros2/rclcpp/blob/48068130edbb43cdd61076dc1851672ff1a80408/rclcpp/include/rclcpp/node.hpp#L253-L265
-  auto client = node->template create_client<typename SpecT::Service>(
-    SpecT::name, rmw_qos_profile_services_default, group);
-  return Client<SpecT>::make_shared(client, node->get_logger());
+  return Client<SpecT>::make_shared(interface, group);
 }
 
 /// Create a service wrapper for logging. This is a private implementation.
-template <class SpecT, class NodeT, class CallbackT>
+template <class SpecT, class CallbackT>
 typename Service<SpecT>::SharedPtr create_service_impl(
-  NodeT * node, CallbackT && callback, rclcpp::CallbackGroup::SharedPtr group = nullptr)
+  NodeInterface::SharedPtr interface, CallbackT && callback,
+  rclcpp::CallbackGroup::SharedPtr group = nullptr)
 {
   // This function is a wrapper for the following.
   // https://github.com/ros2/rclcpp/blob/48068130edbb43cdd61076dc1851672ff1a80408/rclcpp/include/rclcpp/node.hpp#L267-L281
-  auto wrapped = Service<SpecT>::wrap(callback, node->get_logger());
-  auto service = node->template create_service<typename SpecT::Service>(
-    SpecT::name, wrapped, rmw_qos_profile_services_default, group);
-  return Service<SpecT>::make_shared(service);
+  return Service<SpecT>::make_shared(interface, std::forward<CallbackT>(callback), group);
 }
 
 /// Create a publisher using traits like services. This is a private implementation.

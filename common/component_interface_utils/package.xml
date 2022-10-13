@@ -18,6 +18,8 @@
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>autoware_lint_common</test_depend>
 
+  <build_export_depend>tier4_system_msgs</build_export_depend>
+
   <export>
     <build_type>ament_cmake</build_type>
   </export>
