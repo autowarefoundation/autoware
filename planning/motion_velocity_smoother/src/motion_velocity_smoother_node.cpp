@@ -316,13 +316,7 @@ void MotionVelocitySmootherNode::onExternalVelocityLimit(const VelocityLimit::Co
       const auto a_min = msg->use_constraints ? cstr.min_acceleration : smoother_->getMinDecel();
       const auto j_max = msg->use_constraints ? cstr.max_jerk : smoother_->getMaxJerk();
       const auto j_min = msg->use_constraints ? cstr.min_jerk : smoother_->getMinJerk();
-      double stop_dist = 0.0;
-      std::map<double, double> jerk_profile;
-      if (!trajectory_utils::calcStopDistWithJerkConstraints(
-            v0, a0, j_max, j_min, a_min, msg->max_velocity, jerk_profile, stop_dist)) {
-        RCLCPP_WARN(get_logger(), "Stop distance calculation is failed!");
-      }
-      external_velocity_limit_dist_ = stop_dist + margin;
+
       // If the closest acceleration is positive, velocity will increase
       // until the acceleration becomes zero
       // So we set the maximum increased velocity as the velocity limit
@@ -332,7 +326,17 @@ void MotionVelocitySmootherNode::onExternalVelocityLimit(const VelocityLimit::Co
         max_velocity_with_deceleration_ = v0;
       }
 
-      if (max_velocity_with_deceleration_ < msg->max_velocity) {
+      if (msg->max_velocity < max_velocity_with_deceleration_) {
+        // TODO(mkuri) If v0 < msg->max_velocity < max_velocity_with_deceleration_ meets, stronger
+        // jerk than expected may be applied to external velocity limit.
+        double stop_dist = 0.0;
+        std::map<double, double> jerk_profile;
+        if (!trajectory_utils::calcStopDistWithJerkConstraints(
+              v0, a0, j_max, j_min, a_min, msg->max_velocity, jerk_profile, stop_dist)) {
+          RCLCPP_WARN(get_logger(), "Stop distance calculation failed!");
+        }
+        external_velocity_limit_dist_ = stop_dist + margin;
+      } else {
         max_velocity_with_deceleration_ = msg->max_velocity;
         external_velocity_limit_dist_ = 0.0;
       }
