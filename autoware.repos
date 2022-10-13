@@ -7,15 +7,15 @@ repositories:
   core/autoware_adapi_msgs:
     type: git
     url: https://github.com/autowarefoundation/autoware_adapi_msgs.git
-    version: 6ff9b7b22d9ed7ac4f46b05e4a3e9f6dc007af51
+    version: c9a964e24af0c6edc050d2b2ee01e6e110cbfdbd
   core/autoware_common:
     type: git
     url: https://github.com/autowarefoundation/autoware_common.git
-    version: ef386c9d9d705ea31eb311d60deb5e39ccae00ec
+    version: ba4d3cc3f729ebedc16aba7d745bcc54fd935e61
   core/autoware.core:
     type: git
     url: https://github.com/autowarefoundation/autoware.core.git
-    version: 4df187097af1aecbfaedb1ac32142e4ddc785440
+    version: 062fdea5059eaf196a2d0fd531e4433efd1502e4
   core/external/autoware_auto_msgs: # TODO(mfc): Remove when autoware_msgs is merged
     type: git
     url: https://github.com/tier4/autoware_auto_msgs.git
@@ -24,11 +24,11 @@ repositories:
   universe/autoware.universe:
     type: git
     url: https://github.com/autowarefoundation/autoware.universe.git
-    version: c7698fc5d6b54932816077539b01c224e60861c2
+    version: 4be6931c811422f16d95c1460c046f2540d1f628
   universe/external/tier4_ad_api_adaptor: # TODO(TIER IV): Improve design/code and transfer to AWF
     type: git
     url: https://github.com/tier4/tier4_ad_api_adaptor.git
-    version: 15c7aa413ba9aa3abd8a978dc98acbb83e6ed1cd
+    version: 050fa514074be9e55a772ff9776cea5cfa04a403
   universe/external/tier4_autoware_msgs:
     type: git
     url: https://github.com/tier4/tier4_autoware_msgs.git
@@ -57,7 +57,7 @@ repositories:
   launcher/autoware_launch:
     type: git
     url: https://github.com/autowarefoundation/autoware_launch.git
-    version: c999488b2fb753939b1af3e10c148b84079a9db0
+    version: 5a770252eaa4a50144fbdf8ce98bd02a7ce4e180
   # sensor_component
   sensor_component/external/sensor_component_description:
     type: git
