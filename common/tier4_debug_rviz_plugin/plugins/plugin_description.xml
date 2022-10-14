@@ -1,0 +1,7 @@
+<library path="tier4_debug_rviz_plugin">
+  <class name="rviz_plugins/Float32MultiArrayStampedPieChart"
+    type="rviz_plugins::Float32MultiArrayStampedPieChartDisplay"
+    base_class_type="rviz_common::Display">
+    <description>Display drivable area of tier4_debug_msgs::msg::Float32MultiArrayStamped</description>
+  </class>
+</library>
