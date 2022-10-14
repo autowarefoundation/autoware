@@ -40,7 +40,6 @@ using tier4_autoware_utils::createDefaultMarker;
 using tier4_autoware_utils::createMarkerColor;
 using tier4_autoware_utils::createMarkerScale;
 using tier4_autoware_utils::createPoint;
-using tier4_autoware_utils::inverseTransformPoint;
 
 namespace behavior_path_planner
 {

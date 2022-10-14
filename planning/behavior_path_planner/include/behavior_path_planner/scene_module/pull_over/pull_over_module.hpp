@@ -16,6 +16,7 @@
 #define BEHAVIOR_PATH_PLANNER__SCENE_MODULE__PULL_OVER__PULL_OVER_MODULE_HPP_
 
 #include "behavior_path_planner/scene_module/pull_over/geometric_pull_over.hpp"
+#include "behavior_path_planner/scene_module/pull_over/goal_searcher.hpp"
 #include "behavior_path_planner/scene_module/pull_over/pull_over_parameters.hpp"
 #include "behavior_path_planner/scene_module/pull_over/pull_over_path.hpp"
 #include "behavior_path_planner/scene_module/pull_over/shift_pull_over.hpp"
@@ -67,22 +68,6 @@ struct PUllOverStatus
   bool has_requested_approval{false};
 };
 
-struct GoalCandidate
-{
-  Pose goal_pose{};
-  double distance_from_original_goal{0.0};
-  double lateral_offset{0.0};
-
-  bool operator<(const GoalCandidate & other) const noexcept
-  {
-    // compare in order of decreasing lateral offset.
-    if (std::abs(lateral_offset - other.lateral_offset) > std::numeric_limits<double>::epsilon()) {
-      return lateral_offset < other.lateral_offset;
-    }
-    return distance_from_original_goal < other.distance_from_original_goal;
-  }
-};
-
 class PullOverModule : public SceneModuleInterface
 {
 public:
@@ -109,6 +94,7 @@ private:
   PullOverParameters parameters_;
 
   std::vector<std::shared_ptr<PullOverPlannerBase>> pull_over_planners_;
+  std::shared_ptr<GoalSearcherBase> goal_searcher_;
 
   PullOverPath shift_parking_path_;
   vehicle_info_util::VehicleInfo vehicle_info_;
@@ -151,11 +137,7 @@ private:
   bool hasFinishedCurrentPath();
   bool hasFinishedPullOver();
   void updateOccupancyGrid();
-  void researchGoal();
   void resetStatus();
-  bool checkCollisionWithLongitudinalDistance(
-    const Pose & ego_pose, const PredictedObjects & dynamic_objects) const;
-  bool checkCollisionWithPose(const Pose & pose) const;
 
   TurnSignalInfo calcTurnSignalInfo() const;
 
