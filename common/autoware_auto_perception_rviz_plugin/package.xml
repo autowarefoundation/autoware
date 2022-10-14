@@ -5,7 +5,8 @@
   <version>1.0.0</version>
   <description>Contains plugins to visualize object detection outputs</description>
   <maintainer email="opensource@apex.ai">Apex.AI, Inc.</maintainer>
-  <maintainer email="taichi.higashide@tier4.jp">Taichi Higashide</maintainer>
+  <maintainer email="satoshi.tanaka@tier4.jp">Satoshi Tanaka</maintainer>
+  <maintainer email="taiki.tanaka@tier4.jp">Taiki Tanaka</maintainer>
   <license>Apache 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
