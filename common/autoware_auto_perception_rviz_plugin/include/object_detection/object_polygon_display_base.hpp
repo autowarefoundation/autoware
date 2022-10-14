@@ -127,6 +127,11 @@ public:
     m_marker_common.addMessage(marker_ptr);
   }
 
+  void add_marker(visualization_msgs::msg::MarkerArray::ConstSharedPtr markers_ptr)
+  {
+    m_marker_common.addMessage(markers_ptr);
+  }
+
 protected:
   /// \brief Convert given shape msg into a Marker
   /// \tparam ClassificationContainerT List type with ObjectClassificationMsg

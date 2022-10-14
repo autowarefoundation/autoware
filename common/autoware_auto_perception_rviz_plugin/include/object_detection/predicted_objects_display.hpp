@@ -18,12 +18,14 @@
 
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 
+#include <boost/functional/hash.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 
+#include <condition_variable>
 #include <list>
-#include <map>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace autoware
@@ -93,10 +95,23 @@ private:
     return id_map.at(uuid);
   }
 
-  std::map<boost::uuids::uuid, int32_t> id_map;
+  std::vector<visualization_msgs::msg::Marker::SharedPtr> createMarkers(
+    PredictedObjects::ConstSharedPtr msg);
+  void workerThread();
+
+  void update(float wall_dt, float ros_dt) override;
+
+  std::unordered_map<boost::uuids::uuid, int32_t, boost::hash<boost::uuids::uuid>> id_map;
+  // std::unordered_map<boost::uuids::uuid, int32_t> id_map;
   std::list<int32_t> unused_marker_ids;
   int32_t marker_id = 0;
   const int32_t PATH_ID_CONSTANT = 1e3;
+
+  PredictedObjects::ConstSharedPtr msg;
+  bool consumed{false};
+  std::mutex mutex;
+  std::condition_variable condition;
+  std::vector<visualization_msgs::msg::Marker::SharedPtr> markers;
 };
 
 }  // namespace object_detection
