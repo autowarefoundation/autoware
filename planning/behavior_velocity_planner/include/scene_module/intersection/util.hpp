@@ -30,6 +30,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace behavior_velocity_planner
@@ -48,10 +49,9 @@ bool getDuplicatedPointIdx(
 /**
  * @brief get objective polygons for detection area
  */
-bool getDetectionLanelets(
+std::tuple<lanelet::ConstLanelets, lanelet::ConstLanelets> getObjectiveLanelets(
   lanelet::LaneletMapConstPtr lanelet_map_ptr, lanelet::routing::RoutingGraphPtr routing_graph_ptr,
-  const int lane_id, const double detection_area_length,
-  lanelet::ConstLanelets * detection_lanelets_result, const bool tl_arrow_solid_on = false);
+  const int lane_id, const double detection_area_length, const bool tl_arrow_solid_on = false);
 
 struct StopLineIdx
 {
@@ -70,7 +70,7 @@ struct StopLineIdx
  * lane)
  * @param stop_line_idx   generated stop line index
  * @param pass_judge_line_idx  generated stop line index
- * @return false when generation failed
+ * @return false when path is not intersecting with detection area, or stop_line is behind path[0]
  */
 bool generateStopLine(
   const int lane_id, const std::vector<lanelet::CompoundPolygon3d> detection_areas,
@@ -110,9 +110,9 @@ int getFirstPointInsidePolygons(
  * @param stop_pose stop point defined on map
  * @return true when the stop point is defined on map.
  */
-bool getStopPoseIndexFromMap(
+bool getStopLineIndexFromMap(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const int lane_id,
-  const std::shared_ptr<const PlannerData> & planner_data, int & stop_idx_ip, int dist_thr,
+  const std::shared_ptr<const PlannerData> & planner_data, int * stop_idx_ip, int dist_thr,
   const rclcpp::Logger logger);
 
 std::vector<lanelet::CompoundPolygon3d> getPolygon3dFromLaneletsVec(
@@ -120,6 +120,9 @@ std::vector<lanelet::CompoundPolygon3d> getPolygon3dFromLaneletsVec(
 
 std::vector<lanelet::CompoundPolygon3d> getPolygon3dFromLanelets(
   const lanelet::ConstLanelets & ll_vec, double clip_length);
+
+std::vector<lanelet::CompoundPolygon3d> getPolygon3dFromLanelets(
+  const lanelet::ConstLanelets & ll_vec);
 
 std::vector<int> getLaneletIdsFromLaneletsVec(const std::vector<lanelet::ConstLanelets> & ll_vec);
 
@@ -142,7 +145,7 @@ bool isBeforeTargetIndex(
   const autoware_auto_planning_msgs::msg::PathWithLaneId & path, const int closest_idx,
   const geometry_msgs::msg::Pose & current_pose, const int target_idx);
 
-std::vector<int> extendedAdjacentDirectionLanes(
+lanelet::ConstLanelets extendedAdjacentDirectionLanes(
   const lanelet::LaneletMapPtr map, const lanelet::routing::RoutingGraphPtr routing_graph,
   lanelet::ConstLanelet lane);
 

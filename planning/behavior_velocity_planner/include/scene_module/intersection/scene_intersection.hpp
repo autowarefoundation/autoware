@@ -138,8 +138,8 @@ private:
   bool checkCollision(
     lanelet::LaneletMapConstPtr lanelet_map_ptr,
     const autoware_auto_planning_msgs::msg::PathWithLaneId & path,
-    const std::vector<int> & detection_area_lanelet_ids,
-    const std::vector<int> & adjacent_lanelet_ids,
+    const lanelet::ConstLanelets & detection_area_lanelets,
+    const lanelet::ConstLanelets & adjacent_lanelets,
     const std::optional<Polygon2d> & intersection_area,
     const autoware_auto_perception_msgs::msg::PredictedObjects::ConstSharedPtr objects_ptr,
     const int closest_idx, const Polygon2d & stuck_vehicle_detect_area);
@@ -222,7 +222,7 @@ private:
    * @return true if the given pose belongs to any target lanelet
    */
   bool checkAngleForTargetLanelets(
-    const geometry_msgs::msg::Pose & pose, const std::vector<int> & target_lanelet_ids,
+    const geometry_msgs::msg::Pose & pose, const lanelet::ConstLanelets & target_lanelet_ids,
     const double margin = 0);
 
   /**

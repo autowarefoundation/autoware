@@ -66,24 +66,23 @@ bool MergeFromPrivateRoadModule::modifyPathVelocity(
   const auto routing_graph_ptr = planner_data_->route_handler_->getRoutingGraphPtr();
 
   /* get detection area */
-  lanelet::ConstLanelets detection_area_lanelets;
-  util::getDetectionLanelets(
+  auto && [detection_lanelets, conflicting_lanelets] = util::getObjectiveLanelets(
     lanelet_map_ptr, routing_graph_ptr, lane_id_, planner_param_.detection_area_length,
-    &detection_area_lanelets);
-  std::vector<lanelet::CompoundPolygon3d> detection_areas =
-    util::getPolygon3dFromLanelets(detection_area_lanelets, planner_param_.detection_area_length);
-  if (detection_areas.empty()) {
+    false /* tl_arrow_solid on does not matter here*/);
+  if (detection_lanelets.empty()) {
     RCLCPP_DEBUG(logger_, "no detection area. skip computation.");
     return true;
   }
-  debug_data_.detection_area = detection_areas;
+  const auto detection_area =
+    util::getPolygon3dFromLanelets(detection_lanelets, planner_param_.detection_area_length);
+  debug_data_.detection_area = detection_area;
 
   /* set stop-line and stop-judgement-line for base_link */
   util::StopLineIdx stop_line_idxs;
   const auto private_path =
     extractPathNearExitOfPrivateRoad(*path, planner_data_->vehicle_info_.vehicle_length_m);
   if (!util::generateStopLine(
-        lane_id_, detection_areas, planner_data_, planner_param_.stop_line_margin,
+        lane_id_, detection_area, planner_data_, planner_param_.stop_line_margin,
         0.0 /* unnecessary in merge_from_private */, path, private_path, &stop_line_idxs,
         logger_.get_child("util"))) {
     RCLCPP_WARN_SKIPFIRST_THROTTLE(logger_, *clock_, 1000 /* ms */, "setStopLineIdx fail");
