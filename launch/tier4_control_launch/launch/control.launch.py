@@ -306,6 +306,13 @@ def generate_launch_description():
         "lateral controller mode: `mpc_follower` or `pure_pursuit`",
     )
 
+    # longitudinal controller mode
+    add_launch_arg(
+        "longitudinal_controller_mode",
+        "pid",
+        "longitudinal controller mode: `pid`",
+    )
+
     add_launch_arg(
         "vehicle_info_param_file",
         [
