@@ -54,8 +54,8 @@ Float32MultiArrayStamped convertDebugValuesToMsg(
 
 PIDBasedPlanner::PIDBasedPlanner(
   rclcpp::Node & node, const LongitudinalInfo & longitudinal_info,
-  const vehicle_info_util::VehicleInfo & vehicle_info)
-: PlannerInterface(node, longitudinal_info, vehicle_info)
+  const vehicle_info_util::VehicleInfo & vehicle_info, const EgoNearestParam & ego_nearest_param)
+: PlannerInterface(node, longitudinal_info, vehicle_info, ego_nearest_param)
 {
   min_accel_during_cruise_ =
     node.declare_parameter<double>("pid_based_planner.min_accel_during_cruise");
@@ -199,7 +199,7 @@ VelocityLimit PIDBasedPlanner::doCruise(
   }();
   const double dist_to_obstacle = cruise_obstacle_info.dist_to_obstacle;
 
-  const size_t ego_idx = findExtendedNearestIndex(planner_data.traj, planner_data.current_pose);
+  const size_t ego_idx = findEgoIndex(planner_data.traj, planner_data.current_pose);
 
   // calculate target velocity with acceleration limit by PID controller
   const double pid_output_vel = pid_controller_->calc(filtered_normalized_dist_to_cruise);

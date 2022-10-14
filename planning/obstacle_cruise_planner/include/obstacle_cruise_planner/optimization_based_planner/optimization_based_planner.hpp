@@ -44,7 +44,7 @@ class OptimizationBasedPlanner : public PlannerInterface
 public:
   OptimizationBasedPlanner(
     rclcpp::Node & node, const LongitudinalInfo & longitudinal_info,
-    const vehicle_info_util::VehicleInfo & vehicle_info);
+    const vehicle_info_util::VehicleInfo & vehicle_info, const EgoNearestParam & ego_nearest_param);
 
   Trajectory generateCruiseTrajectory(
     const ObstacleCruisePlannerData & planner_data, boost::optional<VelocityLimit> & vel_limit,

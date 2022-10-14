@@ -264,6 +264,14 @@ ObstacleCruisePlannerNode::ObstacleCruisePlannerNode(const rclcpp::NodeOptions &
       terminal_safe_distance_margin};
   }();
 
+  const auto ego_nearest_param = [&]() {
+    const double ego_nearest_dist_threshold =
+      declare_parameter<double>("ego_nearest_dist_threshold");
+    const double ego_nearest_yaw_threshold = declare_parameter<double>("ego_nearest_yaw_threshold");
+
+    return EgoNearestParam(ego_nearest_dist_threshold, ego_nearest_yaw_threshold);
+  }();
+
   is_showing_debug_info_ = declare_parameter<bool>("common.is_showing_debug_info");
 
   {  // Obstacle filtering parameters
@@ -340,10 +348,11 @@ ObstacleCruisePlannerNode::ObstacleCruisePlannerNode(const rclcpp::NodeOptions &
     planning_algorithm_ = getPlanningAlgorithmType(planning_algorithm_param);
 
     if (planning_algorithm_ == PlanningAlgorithm::OPTIMIZATION_BASE) {
-      planner_ptr_ =
-        std::make_unique<OptimizationBasedPlanner>(*this, longitudinal_info, vehicle_info_);
+      planner_ptr_ = std::make_unique<OptimizationBasedPlanner>(
+        *this, longitudinal_info, vehicle_info_, ego_nearest_param);
     } else if (planning_algorithm_ == PlanningAlgorithm::PID_BASE) {
-      planner_ptr_ = std::make_unique<PIDBasedPlanner>(*this, longitudinal_info, vehicle_info_);
+      planner_ptr_ = std::make_unique<PIDBasedPlanner>(
+        *this, longitudinal_info, vehicle_info_, ego_nearest_param);
     } else {
       std::logic_error("Designated algorithm is not supported.");
     }

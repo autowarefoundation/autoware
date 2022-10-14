@@ -53,7 +53,7 @@ public:
 
   PIDBasedPlanner(
     rclcpp::Node & node, const LongitudinalInfo & longitudinal_info,
-    const vehicle_info_util::VehicleInfo & vehicle_info);
+    const vehicle_info_util::VehicleInfo & vehicle_info, const EgoNearestParam & ego_nearest_param);
 
   Trajectory generateCruiseTrajectory(
     const ObstacleCruisePlannerData & planner_data, boost::optional<VelocityLimit> & vel_limit,
@@ -75,28 +75,6 @@ private:
     visualization_msgs::msg::MarkerArray & debug_walls_marker);
 
   void publishDebugValues(const ObstacleCruisePlannerData & planner_data) const;
-
-  size_t findExtendedNearestIndex(
-    const Trajectory traj, const geometry_msgs::msg::Pose & pose) const
-  {
-    const auto nearest_idx = motion_utils::findNearestIndex(
-      traj.points, pose, nearest_dist_deviation_threshold_, nearest_yaw_deviation_threshold_);
-    if (nearest_idx) {
-      return nearest_idx.get();
-    }
-    return motion_utils::findNearestIndex(traj.points, pose.position);
-  }
-
-  size_t findExtendedNearestSegmentIndex(
-    const Trajectory traj, const geometry_msgs::msg::Pose & pose) const
-  {
-    const auto nearest_segment_idx = motion_utils::findNearestSegmentIndex(
-      traj.points, pose, nearest_dist_deviation_threshold_, nearest_yaw_deviation_threshold_);
-    if (nearest_segment_idx) {
-      return nearest_segment_idx.get();
-    }
-    return motion_utils::findNearestSegmentIndex(traj.points, pose.position);
-  }
 
   // ROS parameters
   double min_accel_during_cruise_;

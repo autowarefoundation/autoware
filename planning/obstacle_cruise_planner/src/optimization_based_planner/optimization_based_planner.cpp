@@ -36,8 +36,8 @@ constexpr double CLOSE_S_DIST_THRESHOLD = 1e-3;
 
 OptimizationBasedPlanner::OptimizationBasedPlanner(
   rclcpp::Node & node, const LongitudinalInfo & longitudinal_info,
-  const vehicle_info_util::VehicleInfo & vehicle_info)
-: PlannerInterface(node, longitudinal_info, vehicle_info)
+  const vehicle_info_util::VehicleInfo & vehicle_info, const EgoNearestParam & ego_nearest_param)
+: PlannerInterface(node, longitudinal_info, vehicle_info, ego_nearest_param)
 {
   // parameter
   dense_resampling_time_interval_ =
@@ -105,16 +105,7 @@ Trajectory OptimizationBasedPlanner::generateCruiseTrajectory(
   }
 
   // Get the nearest point on the trajectory
-  const auto closest_idx = motion_utils::findNearestSegmentIndex(
-    planner_data.traj.points, planner_data.current_pose, nearest_dist_deviation_threshold_,
-    nearest_yaw_deviation_threshold_);
-  if (!closest_idx) {  // Check validity of the closest index
-    RCLCPP_ERROR(
-      rclcpp::get_logger("ObstacleCruisePlanner::OptimizationBasedPlanner"),
-      "Closest Index is Invalid");
-    prev_output_ = planner_data.traj;
-    return planner_data.traj;
-  }
+  const size_t closest_idx = findEgoSegmentIndex(planner_data.traj, planner_data.current_pose);
 
   // Compute maximum velocity
   double v_max = 0.0;
@@ -129,7 +120,7 @@ Trajectory OptimizationBasedPlanner::generateCruiseTrajectory(
   a0 = std::min(longitudinal_info_.max_accel, std::max(a0, longitudinal_info_.min_accel));
 
   // Check trajectory size
-  if (planner_data.traj.points.size() - *closest_idx <= 2) {
+  if (planner_data.traj.points.size() - closest_idx <= 2) {
     RCLCPP_DEBUG(
       rclcpp::get_logger("ObstacleCruisePlanner::OptimizationBasedPlanner"),
       "The number of points on the trajectory is too small or failed to calculate front offset");
@@ -174,7 +165,7 @@ Trajectory OptimizationBasedPlanner::generateCruiseTrajectory(
 
   // Publish Debug trajectories
   const double traj_front_to_vehicle_offset =
-    motion_utils::calcSignedArcLength(planner_data.traj.points, 0, *closest_idx);
+    motion_utils::calcSignedArcLength(planner_data.traj.points, 0, closest_idx);
   publishDebugTrajectory(
     planner_data, traj_front_to_vehicle_offset, time_vec, *s_boundaries, optimized_result);
 
@@ -194,8 +185,8 @@ Trajectory OptimizationBasedPlanner::generateCruiseTrajectory(
   // Check Size
   if (opt_position.size() == 1 && opt_velocity.front() < ZERO_VEL_THRESHOLD) {
     auto output = planner_data.traj;
-    output.points.at(*closest_idx).longitudinal_velocity_mps = data.v0;
-    for (size_t i = *closest_idx + 1; i < output.points.size(); ++i) {
+    output.points.at(closest_idx).longitudinal_velocity_mps = data.v0;
+    for (size_t i = closest_idx + 1; i < output.points.size(); ++i) {
       output.points.at(i).longitudinal_velocity_mps = 0.0;
     }
     prev_output_ = output;
@@ -217,7 +208,7 @@ Trajectory OptimizationBasedPlanner::generateCruiseTrajectory(
     }
   }
   const auto traj_stop_dist =
-    motion_utils::calcDistanceToForwardStopPoint(planner_data.traj.points, *closest_idx);
+    motion_utils::calcDistanceToForwardStopPoint(planner_data.traj.points, closest_idx);
   if (traj_stop_dist) {
     closest_stop_dist = std::min(*traj_stop_dist + traj_front_to_vehicle_offset, closest_stop_dist);
   }
@@ -225,7 +216,7 @@ Trajectory OptimizationBasedPlanner::generateCruiseTrajectory(
   // Resample Optimum Velocity
   size_t break_id = planner_data.traj.points.size();
   std::vector<double> resampled_opt_position;
-  for (size_t i = *closest_idx; i < planner_data.traj.points.size(); ++i) {
+  for (size_t i = closest_idx; i < planner_data.traj.points.size(); ++i) {
     const double query_s = std::max(
       motion_utils::calcSignedArcLength(planner_data.traj.points, 0, i), opt_position.front());
     if (query_s > opt_position.back()) {
@@ -243,12 +234,12 @@ Trajectory OptimizationBasedPlanner::generateCruiseTrajectory(
 
   // Create Output Data
   Trajectory output = planner_data.traj;
-  for (size_t i = 0; i < *closest_idx; ++i) {
+  for (size_t i = 0; i < closest_idx; ++i) {
     output.points.at(i).longitudinal_velocity_mps = data.v0;
   }
-  for (size_t i = *closest_idx; i < output.points.size(); ++i) {
+  for (size_t i = closest_idx; i < output.points.size(); ++i) {
     output.points.at(i).longitudinal_velocity_mps =
-      resampled_opt_velocity.at(i - *closest_idx) + velocity_margin_;
+      resampled_opt_velocity.at(i - closest_idx) + velocity_margin_;
   }
   output.points.back().longitudinal_velocity_mps = 0.0;  // terminal velocity is zero
 

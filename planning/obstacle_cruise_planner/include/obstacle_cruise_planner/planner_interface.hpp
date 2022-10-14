@@ -34,6 +34,7 @@
 
 using autoware_auto_perception_msgs::msg::ObjectClassification;
 using autoware_auto_planning_msgs::msg::Trajectory;
+using autoware_auto_planning_msgs::msg::TrajectoryPoint;
 using tier4_planning_msgs::msg::StopSpeedExceeded;
 using tier4_planning_msgs::msg::VelocityLimit;
 
@@ -42,8 +43,10 @@ class PlannerInterface
 public:
   PlannerInterface(
     rclcpp::Node & node, const LongitudinalInfo & longitudinal_info,
-    const vehicle_info_util::VehicleInfo & vehicle_info)
-  : longitudinal_info_(longitudinal_info), vehicle_info_(vehicle_info)
+    const vehicle_info_util::VehicleInfo & vehicle_info, const EgoNearestParam & ego_nearest_param)
+  : longitudinal_info_(longitudinal_info),
+    vehicle_info_(vehicle_info),
+    ego_nearest_param_(ego_nearest_param)
   {
     stop_reasons_pub_ =
       node.create_publisher<tier4_planning_msgs::msg::StopReasonArray>("~/output/stop_reasons", 1);
@@ -112,6 +115,8 @@ protected:
   // Vehicle Parameters
   vehicle_info_util::VehicleInfo vehicle_info_;
 
+  EgoNearestParam ego_nearest_param_;
+
   // TODO(shimizu) remove these parameters
   Trajectory::ConstSharedPtr smoothed_trajectory_ptr_;
 
@@ -127,6 +132,25 @@ protected:
       ego_vel * i.idling_time + std::pow(ego_vel, 2) * 0.5 / std::abs(i.min_ego_accel_for_rss) -
       std::pow(obj_vel, 2) * 0.5 / std::abs(i.min_object_accel_for_rss) + margin;
     return rss_dist_with_margin;
+  }
+
+  size_t findEgoIndex(const Trajectory & traj, const geometry_msgs::msg::Pose & ego_pose) const
+  {
+    const auto traj_points = motion_utils::convertToTrajectoryPointArray(traj);
+
+    const auto & p = ego_nearest_param_;
+    return motion_utils::findFirstNearestIndexWithSoftConstraints(
+      traj_points, ego_pose, p.dist_threshold, p.yaw_threshold);
+  }
+
+  size_t findEgoSegmentIndex(
+    const Trajectory & traj, const geometry_msgs::msg::Pose & ego_pose) const
+  {
+    const auto traj_points = motion_utils::convertToTrajectoryPointArray(traj);
+
+    const auto & p = ego_nearest_param_;
+    return motion_utils::findFirstNearestSegmentIndexWithSoftConstraints(
+      traj_points, ego_pose, p.dist_threshold, p.yaw_threshold);
   }
 };
 
