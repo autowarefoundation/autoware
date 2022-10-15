@@ -127,10 +127,4 @@ std::string getClassName(const uint8_t label)
   }
 }
 
-bool isCarLikeVehicleLabel(const uint8_t label)
-{
-  return label == Label::CAR || label == Label::TRUCK || label == Label::BUS ||
-         label == Label::TRAILER;
-}
-
 }  // namespace heatmap_visualizer

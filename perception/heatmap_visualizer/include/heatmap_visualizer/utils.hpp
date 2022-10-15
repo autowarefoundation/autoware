@@ -104,14 +104,6 @@ uint8_t getSemanticType(const std::string & class_name);
  */
 std::string getClassName(const uint8_t label);
 
-/**
- * @brief
- *
- * @param label
- * @return true
- * @return false
- */
-bool isCarLikeVehicleLabel(const uint8_t label);
 }  // namespace heatmap_visualizer
 
 #endif  // HEATMAP_VISUALIZER__UTILS_HPP_

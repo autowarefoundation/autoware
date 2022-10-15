@@ -27,8 +27,6 @@
 
 namespace heatmap_visualizer
 {
-using Label = autoware_auto_perception_msgs::msg::ObjectClassification;
-
 class HeatmapVisualizerNode : public rclcpp::Node
 {
 public:
