@@ -94,34 +94,14 @@ bool SteerConverter::readSteerMapFromCSV(
   std::vector<std::vector<std::string>> table;
 
   if (!csv.readCSV(table)) {
-    RCLCPP_ERROR_THROTTLE(logger_, clock, 3000, "Cannot open %s", csv_path.c_str());
-    return false;
-  }
-
-  if (table[0].size() < 2) {
-    RCLCPP_ERROR_THROTTLE(
-      logger_, clock, 3000,
-      "Cannot read %s. CSV file should have "
-      "at least 2 column",
-      csv_path.c_str());
     return false;
   }
 
   vehicle_name = table[0][0];
-  for (unsigned int i = 1; i < table[0].size(); ++i) {
-    vel_index.push_back(std::stod(table[0][i]));
-  }
+  vel_index = CSVLoader::getRowIndex(table);
+  output_index = CSVLoader::getColumnIndex(table);
 
   for (unsigned int i = 1; i < table.size(); ++i) {
-    if (table[0].size() != table[i].size()) {
-      RCLCPP_ERROR_THROTTLE(
-        logger_, clock, 3000,
-        "Cannot read %s. Each row should have "
-        "a same number of columns",
-        csv_path.c_str());
-      return false;
-    }
-    output_index.push_back(std::stod(table[i][0]));
     std::vector<double> steer_angle_velocities;
     for (unsigned int j = 1; j < table[i].size(); ++j) {
       steer_angle_velocities.push_back(std::stod(table[i][j]));
@@ -138,20 +118,11 @@ void SteerConverter::calcFFMap(double steer_vel, double vehicle_vel, double & ou
 
   std::vector<double> steer_angle_velocities_interp;
 
-  if (vehicle_vel < vel_index_.front()) {
-    RCLCPP_WARN_THROTTLE(
-      logger_, clock, 1000,
-      "Exceeding the vel range. Current vel: "
-      "%f < min vel on map: %f. Use min velocity.",
-      vehicle_vel, vel_index_.front());
-    vehicle_vel = vel_index_.front();
-  } else if (vel_index_.back() < vehicle_vel) {
-    RCLCPP_WARN_THROTTLE(
-      logger_, clock, 1000,
-      "Exceeding the vel range. Current vel: "
-      "%f > max vel on map: %f. Use max velocity.",
+  if (vehicle_vel < vel_index_.front() || vel_index_.back() < vehicle_vel) {
+    RCLCPP_WARN_SKIPFIRST_THROTTLE(
+      logger_, clock, 1000, "Exceeding the  min:%f  < current vel:%f < max:%f.", vel_index_.front(),
       vehicle_vel, vel_index_.back());
-    vehicle_vel = vel_index_.back();
+    vehicle_vel = std::min(std::max(vehicle_vel, vel_index_.front()), vel_index_.back());
   }
 
   for (std::vector<double> steer_angle_velocities : steer_map_) {

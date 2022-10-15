@@ -28,28 +28,14 @@ bool BrakeMap::readBrakeMapFromCSV(std::string csv_path)
   std::vector<std::vector<std::string>> table;
 
   if (!csv.readCSV(table)) {
-    RCLCPP_ERROR(logger_, "Cannot open %s", csv_path.c_str());
-    return false;
-  }
-
-  if (table[0].size() < 2) {
-    RCLCPP_ERROR(
-      logger_, "Cannot read %s. CSV file should have at least 2 column", csv_path.c_str());
     return false;
   }
 
   vehicle_name_ = table[0][0];
-  for (unsigned int i = 1; i < table[0].size(); i++) {
-    vel_index_.push_back(std::stod(table[0][i]));
-  }
+  vel_index_ = CSVLoader::getRowIndex(table);
+  brake_index_ = CSVLoader::getColumnIndex(table);
 
   for (unsigned int i = 1; i < table.size(); i++) {
-    if (table[0].size() != table[i].size()) {
-      RCLCPP_ERROR(
-        logger_, "Cannot read %s. Each row should have a same number of columns", csv_path.c_str());
-      return false;
-    }
-    brake_index_.push_back(std::stod(table[i][0]));
     std::vector<double> accs;
     for (unsigned int j = 1; j < table[i].size(); j++) {
       accs.push_back(std::stod(table[i][j]));
@@ -67,22 +53,12 @@ bool BrakeMap::getBrake(double acc, double vel, double & brake)
 {
   std::vector<double> accs_interpolated;
 
-  if (vel < vel_index_.front()) {
+  if (vel < vel_index_.front() || vel_index_.back() < vel) {
     RCLCPP_WARN_SKIPFIRST_THROTTLE(
-      logger_, clock_, 1000,
-      "Exceeding the vel range. Current vel: %f < min vel on map: %f. Use min "
-      "velocity.",
-      vel, vel_index_.front());
-    vel = vel_index_.front();
-  } else if (vel_index_.back() < vel) {
-    RCLCPP_WARN_SKIPFIRST_THROTTLE(
-      logger_, clock_, 1000,
-      "Exceeding the vel range. Current vel: %f > max vel on map: %f. Use max "
-      "velocity.",
-      vel, vel_index_.back());
-    vel = vel_index_.back();
+      logger_, clock_, 1000, "Exceeding the  min:%f  < current vel:%f < max:%f.",
+      vel_index_.front(), vel, vel_index_.back());
+    vel = std::min(std::max(vel, vel_index_.front()), vel_index_.back());
   }
-
   // (throttle, vel, acc) map => (throttle, acc) map by fixing vel
   for (std::vector<double> accs : brake_map_) {
     accs_interpolated.push_back(interpolation::lerp(vel_index_, accs, vel));
@@ -114,20 +90,12 @@ bool BrakeMap::getAcceleration(double brake, double vel, double & acc)
 {
   std::vector<double> accs_interpolated;
 
-  if (vel < vel_index_.front()) {
+  if (vel < vel_index_.front() || vel_index_.back() < vel) {
     RCLCPP_WARN_SKIPFIRST_THROTTLE(
       logger_, clock_, 1000,
-      "Exceeding the vel range. Current vel: %f < min vel on map: %f. Use min "
-      "velocity.",
-      vel, vel_index_.front());
-    vel = vel_index_.front();
-  } else if (vel_index_.back() < vel) {
-    RCLCPP_WARN_SKIPFIRST_THROTTLE(
-      logger_, clock_, 1000,
-      "Exceeding the vel range. Current vel: %f > max vel on map: %f. Use max "
-      "velocity.",
-      vel, vel_index_.back());
-    vel = vel_index_.back();
+      "Exceeding the vel range. Current vel: %f < min or max < %f vel on map: %f.", vel,
+      vel_index_.front(), vel_index_.back());
+    vel = std::min(std::max(vel, vel_index_.front()), vel_index_.back());
   }
 
   // (throttle, vel, acc) map => (throttle, acc) map by fixing vel
