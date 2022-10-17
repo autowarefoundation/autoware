@@ -78,6 +78,7 @@ public:
   OSQPInterface(
     const CSC_Matrix & P, const CSC_Matrix & A, const std::vector<float64_t> & q,
     const std::vector<float64_t> & l, const std::vector<float64_t> & u, const c_float eps_abs);
+  ~OSQPInterface();
 
   /****************
    * OPTIMIZATION

@@ -68,6 +68,12 @@ OSQPInterface::OSQPInterface(
   initializeProblem(P, A, q, l, u);
 }
 
+OSQPInterface::~OSQPInterface()
+{
+  if (m_data->P) free(m_data->P);
+  if (m_data->A) free(m_data->A);
+}
+
 void OSQPInterface::OSQPWorkspaceDeleter(OSQPWorkspace * ptr) noexcept
 {
   if (ptr != nullptr) {
@@ -261,10 +267,12 @@ int64_t OSQPInterface::initializeProblem(
    * POPULATE DATA
    *****************/
   m_data->n = m_param_n;
+  if (m_data->P) free(m_data->P);
   m_data->P = csc_matrix(
     m_data->n, m_data->n, static_cast<c_int>(P_csc.m_vals.size()), P_csc.m_vals.data(),
     P_csc.m_row_idxs.data(), P_csc.m_col_idxs.data());
   m_data->q = q_dyn;
+  if (m_data->A) free(m_data->A);
   m_data->A = csc_matrix(
     m_data->m, m_data->n, static_cast<c_int>(A_csc.m_vals.size()), A_csc.m_vals.data(),
     A_csc.m_row_idxs.data(), A_csc.m_col_idxs.data());
