@@ -688,6 +688,7 @@ visualization_msgs::msg::MarkerArray getVirtualWallMarkerArray(
     createMarkerScale(0.1, 5.0, 2.0), createMarkerColor(r, g, b, 0.5));
   marker.lifetime = rclcpp::Duration::from_seconds(1.5);
   marker.pose = pose;
+  marker.pose.position.z += 1.0;
 
   visualization_msgs::msg::MarkerArray msg;
   msg.markers.push_back(marker);
@@ -704,6 +705,7 @@ visualization_msgs::msg::MarkerArray getVirtualWallTextMarkerArray(
     createMarkerScale(0.0, 0.0, 1.0), createMarkerColor(r, g, b, 0.99));
   marker.lifetime = rclcpp::Duration::from_seconds(1.5);
   marker.pose = pose;
+  marker.pose.position.z += 2.0;
   marker.text = "drivable area";
 
   visualization_msgs::msg::MarkerArray msg;
