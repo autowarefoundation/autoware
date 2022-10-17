@@ -25,7 +25,7 @@ using namespace std::literals::chrono_literals;
 
 namespace raw_vehicle_cmd_converter
 {
-bool AccelMap::readAccelMapFromCSV(std::string csv_path)
+bool AccelMap::readAccelMapFromCSV(const std::string & csv_path)
 {
   CSVLoader csv(csv_path);
   std::vector<std::vector<std::string>> table;
@@ -37,76 +37,49 @@ bool AccelMap::readAccelMapFromCSV(std::string csv_path)
   vehicle_name_ = table[0][0];
   vel_index_ = CSVLoader::getRowIndex(table);
   throttle_index_ = CSVLoader::getColumnIndex(table);
-
-  for (unsigned int i = 1; i < table.size(); i++) {
-    std::vector<double> accs;
-    for (unsigned int j = 1; j < table[i].size(); j++) {
-      accs.push_back(std::stod(table[i][j]));
-    }
-    accel_map_.push_back(accs);
-  }
-
+  accel_map_ = CSVLoader::getMap(table);
   return true;
 }
 
-bool AccelMap::getThrottle(double acc, double vel, double & throttle)
+bool AccelMap::getThrottle(const double acc, double vel, double & throttle) const
 {
-  std::vector<double> accs_interpolated;
-
-  if (vel < vel_index_.front() || vel_index_.back() < vel) {
-    RCLCPP_WARN_SKIPFIRST_THROTTLE(
-      logger_, clock_, 1000, "Exceeding the  min:%f  < current vel:%f < max:%f.",
-      vel_index_.front(), vel, vel_index_.back());
-    vel = std::min(std::max(vel, vel_index_.front()), vel_index_.back());
-  }
+  std::vector<double> interpolated_acc_vec;
+  const double clamped_vel = CSVLoader::clampValue(vel, vel_index_, "throttle: vel");
 
   // (throttle, vel, acc) map => (throttle, acc) map by fixing vel
-  for (std::vector<double> accs : accel_map_) {
-    accs_interpolated.push_back(interpolation::lerp(vel_index_, accs, vel));
+  for (std::vector<double> accelerations : accel_map_) {
+    interpolated_acc_vec.push_back(interpolation::lerp(vel_index_, accelerations, clamped_vel));
   }
 
   // calculate throttle
   // When the desired acceleration is smaller than the throttle area, return false => brake sequence
   // When the desired acceleration is greater than the throttle area, return max throttle
-  if (acc < accs_interpolated.front()) {
+  if (acc < interpolated_acc_vec.front()) {
     return false;
-  } else if (accs_interpolated.back() < acc) {
+  } else if (interpolated_acc_vec.back() < acc) {
     throttle = throttle_index_.back();
     return true;
   }
-  throttle = interpolation::lerp(accs_interpolated, throttle_index_, acc);
+  throttle = interpolation::lerp(interpolated_acc_vec, throttle_index_, acc);
 
   return true;
 }
 
-bool AccelMap::getAcceleration(double throttle, double vel, double & acc)
+bool AccelMap::getAcceleration(const double throttle, const double vel, double & acc) const
 {
-  std::vector<double> accs_interpolated;
-
-  if (vel < vel_index_.front() || vel_index_.back() < vel) {
-    RCLCPP_WARN_SKIPFIRST_THROTTLE(
-      logger_, clock_, 1000, "Exceeding the  min:%f  < current vel:%f < max:%f.",
-      vel_index_.front(), vel, vel_index_.back());
-    vel = std::min(std::max(vel, vel_index_.front()), vel_index_.back());
-  }
+  std::vector<double> interpolated_acc_vec;
+  const double clamped_vel = CSVLoader::clampValue(vel, vel_index_, "throttle: vel");
 
   // (throttle, vel, acc) map => (throttle, acc) map by fixing vel
-  for (std::vector<double> accs : accel_map_) {
-    accs_interpolated.push_back(interpolation::lerp(vel_index_, accs, vel));
+  for (const auto & acc_vec : accel_map_) {
+    interpolated_acc_vec.push_back(interpolation::lerp(vel_index_, acc_vec, clamped_vel));
   }
 
   // calculate throttle
-  // When the desired acceleration is smaller than the throttle area, return false => brake sequence
-  // When the desired acceleration is greater than the throttle area, return max throttle
-  const double max_throttle = throttle_index_.back();
-  const double min_throttle = throttle_index_.front();
-  if (throttle < min_throttle || max_throttle < throttle) {
-    RCLCPP_WARN_SKIPFIRST_THROTTLE(
-      logger_, clock_, 1000, "Input throttle: %f is out off range. use closest value.", throttle);
-    throttle = std::min(std::max(throttle, min_throttle), max_throttle);
-  }
-
-  acc = interpolation::lerp(throttle_index_, accs_interpolated, throttle);
+  // When the desired acceleration is smaller than the throttle area, return min acc
+  // When the desired acceleration is greater than the throttle area, return max acc
+  const double clamped_throttle = CSVLoader::clampValue(throttle, throttle_index_, "throttle: acc");
+  acc = interpolation::lerp(throttle_index_, interpolated_acc_vec, clamped_throttle);
 
   return true;
 }

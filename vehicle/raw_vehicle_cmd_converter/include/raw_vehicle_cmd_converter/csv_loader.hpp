@@ -24,15 +24,19 @@
 namespace raw_vehicle_cmd_converter
 {
 using Table = std::vector<std::vector<std::string>>;
+using Map = std::vector<std::vector<double>>;
 class CSVLoader
 {
 public:
-  explicit CSVLoader(std::string csv_path);
+  explicit CSVLoader(const std::string & csv_path);
 
   bool readCSV(Table & result, const char delim = ',');
   static bool validateData(const Table & table, const std::string & csv_path);
+  static Map getMap(const Table & table);
   static std::vector<double> getRowIndex(const Table & table);
   static std::vector<double> getColumnIndex(const Table & table);
+  static double clampValue(
+    const double val, const std::vector<double> & ranges, const std::string & name);
 
 private:
   std::string csv_path_;

@@ -5,10 +5,13 @@
   <version>0.1.0</version>
   <description>The raw_vehicle_cmd_converter package</description>
   <maintainer email="takamasa.horibe@tier4.jp">Takamasa Horibe</maintainer>
+  <maintainer email="taiki.tanaka@tier4.jp">Tanaka Taiki</maintainer>
+
   <license>Apache License 2.0</license>
 
   <author email="makoto.kurihara@tier4.jp">Makoto Kurihara</author>
   <author email="takamasa.horibe@tier4.jp">Takamasa Horibe</author>
+  <author email="taiki.tanaka@tier4.jp">Tanaka Taiki</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
 

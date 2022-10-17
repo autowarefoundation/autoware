@@ -19,7 +19,7 @@
 
 namespace raw_vehicle_cmd_converter
 {
-CSVLoader::CSVLoader(std::string csv_path) { csv_path_ = csv_path; }
+CSVLoader::CSVLoader(const std::string & csv_path) { csv_path_ = csv_path; }
 
 bool CSVLoader::readCSV(Table & result, const char delim)
 {
@@ -56,7 +56,7 @@ bool CSVLoader::validateData(const Table & table, const std::string & csv_path)
               << std::endl;
     return false;
   }
-  for (unsigned int i = 1; i < table.size(); i++) {
+  for (size_t i = 1; i < table.size(); i++) {
     if (table[0].size() != table[i].size()) {
       std::cerr << "Cannot read " << csv_path.c_str()
                 << ". Each row should have a same number of columns" << std::endl;
@@ -66,10 +66,23 @@ bool CSVLoader::validateData(const Table & table, const std::string & csv_path)
   return true;
 }
 
+Map CSVLoader::getMap(const Table & table)
+{
+  Map map = {};
+  for (size_t i = 1; i < table.size(); i++) {
+    std::vector<double> accelerations;
+    for (size_t j = 1; j < table[i].size(); j++) {
+      accelerations.push_back(std::stod(table[i][j]));
+    }
+    map.push_back(accelerations);
+  }
+  return map;
+}
+
 std::vector<double> CSVLoader::getRowIndex(const Table & table)
 {
   std::vector<double> index = {};
-  for (unsigned int i = 1; i < table[0].size(); i++) {
+  for (size_t i = 1; i < table[0].size(); i++) {
     index.push_back(std::stod(table[0][i]));
   }
   return index;
@@ -78,10 +91,23 @@ std::vector<double> CSVLoader::getRowIndex(const Table & table)
 std::vector<double> CSVLoader::getColumnIndex(const Table & table)
 {
   std::vector<double> index = {};
-  for (unsigned int i = 1; i < table.size(); i++) {
+  for (size_t i = 1; i < table.size(); i++) {
     index.push_back(std::stod(table[i][0]));
   }
   return index;
+}
+
+double CSVLoader::clampValue(
+  const double val, const std::vector<double> & ranges, const std::string & name)
+{
+  const double max_value = ranges.back();
+  const double min_value = ranges.front();
+  if (val < min_value || max_value < val) {
+    std::cerr << "Input" << name << ": " << val << " is out off range. use closest value."
+              << std::endl;
+    return std::min(std::max(val, min_value), max_value);
+  }
+  return val;
 }
 
 }  // namespace raw_vehicle_cmd_converter

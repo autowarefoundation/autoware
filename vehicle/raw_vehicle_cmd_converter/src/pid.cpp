@@ -19,6 +19,16 @@
 
 namespace raw_vehicle_cmd_converter
 {
+
+double PIDController::calculateFB(
+  const double target_value, const double dt, const double reset_trigger_value,
+  const double current_value, std::vector<double> & pid_contributions, std::vector<double> & errors)
+{
+  const double error = target_value - current_value;
+  const bool enable_integration = (std::abs(reset_trigger_value) < 0.01) ? false : true;
+  return calculatePID(error, dt, enable_integration, pid_contributions, errors, false);
+}
+
 double PIDController::calculatePID(
   const double error, const double dt, const bool enable_integration,
   std::vector<double> & pid_contributions, std::vector<double> & errors, bool is_debugging)

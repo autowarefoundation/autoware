@@ -24,6 +24,10 @@ namespace raw_vehicle_cmd_converter
 class PIDController
 {
 public:
+  double calculateFB(
+    const double target_value, const double dt, const double reset_trigger_value,
+    const double current_value, std::vector<double> & pid_contributions,
+    std::vector<double> & errors);
   double calculatePID(
     const double error, const double dt, const bool enable_integration,
     std::vector<double> & pid_contributions, std::vector<double> & errors, bool is_debugging);
@@ -33,6 +37,8 @@ public:
     const double max_ret_i, const double min_ret_i, const double max_ret_d, const double min_ret_d);
   void reset();
   void setDecay(const double decay) { invalid_integration_decay_ = decay; }
+  void setInitialized() { is_initialized_ = true; }
+  bool getInitialized() { return is_initialized_; }
 
 private:
   // parameters
@@ -52,6 +58,7 @@ private:
   double prev_error_{0.0};
   bool is_first_time_{true};
   double invalid_integration_decay_{0.0};
+  double is_initialized_{false};
 };
 }  // namespace raw_vehicle_cmd_converter
 
