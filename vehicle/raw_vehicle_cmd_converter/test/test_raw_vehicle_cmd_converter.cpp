@@ -84,6 +84,10 @@ TEST(ConverterTests, LoadValidPath)
   EXPECT_FALSE(accel_map.readAccelMapFromCSV("invalid.csv"));
   EXPECT_FALSE(brake_map.readBrakeMapFromCSV("invalid.csv"));
   EXPECT_FALSE(steer_map.setFFMap("invalid.csv"));
+
+  // for invalid maps
+  EXPECT_FALSE(accel_map.readAccelMapFromCSV(map_path + "test_1col_map.csv"));
+  EXPECT_FALSE(accel_map.readAccelMapFromCSV(map_path + "test_inconsistent_rows_map.csv"));
 }
 
 TEST(ConverterTests, AccelMapCalculation)
