@@ -78,7 +78,7 @@ std::vector<double> CSVLoader::getRowIndex(const Table & table)
 std::vector<double> CSVLoader::getColumnIndex(const Table & table)
 {
   std::vector<double> index = {};
-  for (unsigned int i = 1; i < table[0].size(); i++) {
+  for (unsigned int i = 1; i < table.size(); i++) {
     index.push_back(std::stod(table[i][0]));
   }
   return index;
