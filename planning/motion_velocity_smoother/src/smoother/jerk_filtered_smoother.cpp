@@ -304,10 +304,7 @@ bool JerkFilteredSmoother::apply(
     output.at(i).acceleration_mps2 = a_stop_decel;
   }
 
-  const int status_val = std::get<3>(result);
-  if (status_val != 1) {
-    RCLCPP_ERROR(logger_, "optimization failed : %s", qp_solver_.getStatusMessage().c_str());
-  }
+  qp_solver_.logUnsolvedStatus("[motion_velocity_smoother]");
 
   if (TMP_SHOW_DEBUG_INFO) {
     // jerk calculation

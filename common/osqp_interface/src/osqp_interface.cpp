@@ -343,6 +343,26 @@ OSQPInterface::optimize(
   return result;
 }
 
+void OSQPInterface::logUnsolvedStatus(const std::string & prefix_message) const
+{
+  const int status = getStatus();
+  if (status == 1) {
+    // No need to log since optimization was solved.
+    return;
+  }
+
+  // create message
+  std::string output_message = "";
+  if (prefix_message != "") {
+    output_message = prefix_message + " ";
+  }
+
+  const auto status_message = getStatusMessage();
+  output_message += "Optimization failed due to " + status_message;
+
+  // log with warning
+  RCLCPP_WARN(rclcpp::get_logger("osqp_interface"), output_message.c_str());
+}
 }  // namespace osqp
 }  // namespace common
 }  // namespace autoware
