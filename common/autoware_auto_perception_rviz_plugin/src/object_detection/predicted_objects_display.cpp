@@ -118,6 +118,21 @@ std::vector<visualization_msgs::msg::Marker::SharedPtr> PredictedObjectsDisplay:
       markers.push_back(velocity_text_marker_ptr);
     }
 
+    // Get marker for acceleration text
+    geometry_msgs::msg::Point acc_vis_position;
+    acc_vis_position.x = uuid_vis_position.x - 1.0;
+    acc_vis_position.y = uuid_vis_position.y;
+    acc_vis_position.z = uuid_vis_position.z - 1.0;
+    auto acceleration_text_marker = get_acceleration_text_marker_ptr(
+      object.kinematics.initial_acceleration_with_covariance.accel, acc_vis_position,
+      object.classification);
+    if (acceleration_text_marker) {
+      auto acceleration_text_marker_ptr = acceleration_text_marker.value();
+      acceleration_text_marker_ptr->header = msg->header;
+      acceleration_text_marker_ptr->id = uuid_to_marker_id(object.object_id);
+      add_marker(acceleration_text_marker_ptr);
+    }
+
     // Get marker for twist
     auto twist_marker = get_twist_marker_ptr(
       object.kinematics.initial_pose_with_covariance,

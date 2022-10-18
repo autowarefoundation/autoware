@@ -22,6 +22,7 @@
 #include <autoware_auto_perception_msgs/msg/object_classification.hpp>
 #include <autoware_auto_perception_msgs/msg/predicted_path.hpp>
 #include <autoware_auto_perception_msgs/msg/shape.hpp>
+#include <geometry_msgs/msg/accel.hpp>
 #include <geometry_msgs/msg/pose_with_covariance.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <geometry_msgs/msg/twist_with_covariance.hpp>
@@ -103,6 +104,11 @@ get_pose_with_covariance_marker_ptr(
 AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN_PUBLIC visualization_msgs::msg::Marker::SharedPtr
 get_velocity_text_marker_ptr(
   const geometry_msgs::msg::Twist & twist, const geometry_msgs::msg::Point & vis_pos,
+  const std_msgs::msg::ColorRGBA & color_rgba);
+
+AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN_PUBLIC visualization_msgs::msg::Marker::SharedPtr
+get_acceleration_text_marker_ptr(
+  const geometry_msgs::msg::Accel & accel, const geometry_msgs::msg::Point & vis_pos,
   const std_msgs::msg::ColorRGBA & color_rgba);
 
 AUTOWARE_AUTO_PERCEPTION_RVIZ_PLUGIN_PUBLIC visualization_msgs::msg::Marker::SharedPtr

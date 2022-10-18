@@ -20,9 +20,23 @@
 
 #include <algorithm>
 #include <cmath>
+#include <iomanip>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
+
+namespace
+{
+// get string of double value rounded after first decimal place
+// e.g. roundAfterFirstDecimalPlace(12.345) -> "1.2"
+std::string getRoundedDoubleString(const double val)
+{
+  std::stringstream ss;
+  ss << std::fixed << std::setprecision(1) << val;
+  return ss.str();
+}
+}  // namespace
 
 namespace autoware
 {
@@ -123,6 +137,27 @@ visualization_msgs::msg::Marker::SharedPtr get_velocity_text_marker_ptr(
     twist.linear.x * twist.linear.x + twist.linear.y * twist.linear.y +
     twist.linear.z * twist.linear.z);
   marker_ptr->text = std::to_string(static_cast<int>(vel * 3.6)) + std::string("[km/h]");
+  marker_ptr->action = visualization_msgs::msg::Marker::MODIFY;
+  marker_ptr->pose.position = vis_pos;
+  marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.2);
+  marker_ptr->color = color_rgba;
+  return marker_ptr;
+}
+
+visualization_msgs::msg::Marker::SharedPtr get_acceleration_text_marker_ptr(
+  const geometry_msgs::msg::Accel & accel, const geometry_msgs::msg::Point & vis_pos,
+  const std_msgs::msg::ColorRGBA & color_rgba)
+{
+  auto marker_ptr = std::make_shared<Marker>();
+  marker_ptr->type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
+  marker_ptr->ns = std::string("acceleration");
+  marker_ptr->scale.x = 0.5;
+  marker_ptr->scale.z = 0.5;
+
+  double acc = std::sqrt(
+    accel.linear.x * accel.linear.x + accel.linear.y * accel.linear.y +
+    accel.linear.z * accel.linear.z);
+  marker_ptr->text = getRoundedDoubleString(acc) + std::string("[m/s^2]");
   marker_ptr->action = visualization_msgs::msg::Marker::MODIFY;
   marker_ptr->pose.position = vis_pos;
   marker_ptr->lifetime = rclcpp::Duration::from_seconds(0.2);
