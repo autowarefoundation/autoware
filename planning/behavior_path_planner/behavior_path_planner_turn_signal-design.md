@@ -6,9 +6,29 @@ Turn Signal decider determines necessary blinkers.
 
 This module is responsible for activating a necessary blinker during driving. It uses rule-based algorithm to determine blinkers, and the details of this algorithm are described in the following sections. Note that this algorithm is strictly based on the Japanese Road Traffic Raw.
 
+### Assumptions
+
+Autoware has following order of priorities for turn signals.
+
+1. Activate turn signal to safely navigate ego vehicle and protect other road participants
+2. Follow traffic laws
+3. Follow human driving practices
+
 ### Limitations
 
 Currently, this algorithm can sometimes give unnatural (not wrong) blinkers in a complicated situations. This is because it tries to follow the road traffic raw and cannot solve `blinker conflicts` clearly in that environment.
+
+## Parameters for turn signal decider
+
+| Name                                            | Unit | Type   | Description                                                                  | Default value |
+| :---------------------------------------------- | :--- | :----- | :--------------------------------------------------------------------------- | :------------ |
+| turn_signal_intersection_search_distance        | [m]  | double | constant search distance to decide activation of blinkers at intersections   | 30            |
+| turn_signal_intersection_angle_threshold_degree | deg  | double | angle threshold to determined the end point of intersection required section | 15            |
+| turn_signal_minimum_search_distance             | [m]  | double | minimum search distance for avoidance and lane change                        | 10            |
+| turn_signal_search_time                         | [s]  | double | search time for to decide activation of blinkers                             | 3.0           |
+| turn_signal_shift_length_threshold              | [m]  | double | shift length threshold to decide activation of blinkers                      | 0.3           |
+
+Note that the default values for `turn_signal_intersection_search_distance` and `turn_signal_search_time` is strictly followed by [Japanese Road Traffic Laws](https://www.japaneselawtranslation.go.jp/ja/laws/view/2962). So if your country does not allow to use these default values, you should change these values in configuration files.
 
 ## Inner-workings / Algorithms
 
@@ -35,7 +55,7 @@ For left turn, right turn, avoidance, lane change, pull over and pull out, we de
 Turn signal decider checks each lanelet on the map if it has `turn_direction` information. If a lanelet has this information, it activates necessary blinker based on this information.
 
 - desired start point  
-  `v*3.0 + 30` meters before the start point of the intersection lanelet(depicted in gree in the following picture), where `v` is the velocity of the ego vehicle.
+  The `search_distance` for blinkers at intersections is `v * turn_signal_search_time + turn_signal_intersection_search_distance`. Then the start point becomes `search_distance` meters before the start point of the intersection lanelet(depicted in gree in the following picture), where `v` is the velocity of the ego vehicle. However, if we set `turn_signal_distance` in the lanelet, we use that length as search distance.
 
 - desired end point  
   Terminal point of the intersection lanelet.
@@ -50,12 +70,12 @@ Turn signal decider checks each lanelet on the map if it has `turn_direction` in
 
 #### 2. Avoidance
 
-Avoidance can be separated into two sections, first section and second section. The first section is from the start point of the path shift to the end of the path shift. The second section is from the end of shift point to the end of avoidance.
+Avoidance can be separated into two sections, first section and second section. The first section is from the start point of the path shift to the end of the path shift. The second section is from the end of shift point to the end of avoidance. Note that avoidance module will not activate turn signal when its shift length is below `turn_signal_shift_length_threshold`.
 
 First section
 
 - desired start point  
-  `v*3.0` meters before the start point of the avoidance shift path.
+  `v * turn_signal_search_time` meters before the start point of the avoidance shift path.
 
 - desired end point  
   Shift complete point where the path shift is completed.
@@ -87,7 +107,7 @@ Second section
 #### 3. Lane Change
 
 - desired start point  
-  `v*3.0` meters before the start point of the lane change path.
+  `v * turn_signal_search_time` meters before the start point of the lane change path.
 
 - desired end point  
   Terminal point of the lane change path.
@@ -119,7 +139,7 @@ Second section
 #### 5. Pull over
 
 - desired start point  
-  `v*3.0` meters before the start point of the pull over path.
+  `v * turn_signal_search_time` meters before the start point of the pull over path.
 
 - desired end point  
   Terminal point of the path of pull over.
