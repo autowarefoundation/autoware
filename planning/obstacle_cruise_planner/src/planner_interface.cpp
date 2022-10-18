@@ -195,13 +195,10 @@ Trajectory PlannerInterface::generateStopTrajectory(
     std::max(0.0, closest_obstacle_dist - abs_ego_offset - feasible_margin_from_obstacle);
   const auto zero_vel_idx = motion_utils::insertStopPoint(0, zero_vel_dist, output_traj.points);
   if (zero_vel_idx) {
-    const auto wall_idx = obstacle_cruise_utils::getIndexWithLongitudinalOffset(
-      output_traj.points, abs_ego_offset, *zero_vel_idx);
-
     // virtual wall marker for stop obstacle
-    const auto marker_pose = output_traj.points.at(wall_idx).pose;
     const auto markers = motion_utils::createStopVirtualWallMarker(
-      marker_pose, "obstacle stop", planner_data.current_time, 0);
+      output_traj.points.at(*zero_vel_idx).pose, "obstacle stop", planner_data.current_time, 0,
+      abs_ego_offset);
     tier4_autoware_utils::appendMarkerArray(markers, &debug_data.stop_wall_marker);
     debug_data.obstacles_to_stop.push_back(*closest_stop_obstacle);
 

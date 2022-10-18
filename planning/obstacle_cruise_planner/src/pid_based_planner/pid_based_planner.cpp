@@ -238,11 +238,10 @@ VelocityLimit PIDBasedPlanner::doCruise(
                                   : std::abs(vehicle_info_.min_longitudinal_offset_m);
   const double dist_to_rss_wall =
     std::min(dist_to_cruise + abs_ego_offset, dist_to_obstacle + abs_ego_offset);
-  const size_t wall_idx = obstacle_cruise_utils::getIndexWithLongitudinalOffset(
-    planner_data.traj.points, dist_to_rss_wall, ego_idx);
 
   const auto markers = motion_utils::createSlowDownVirtualWallMarker(
-    planner_data.traj.points.at(wall_idx).pose, "obstacle cruise", planner_data.current_time, 0);
+    planner_data.traj.points.at(ego_idx).pose, "obstacle cruise", planner_data.current_time, 0,
+    dist_to_rss_wall);
   tier4_autoware_utils::appendMarkerArray(markers, &debug_wall_marker);
 
   debug_obstacles_to_cruise.push_back(cruise_obstacle_info.obstacle);
