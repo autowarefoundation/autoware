@@ -87,6 +87,17 @@ geometry_msgs::msg::Pose local2global(
   return transformPose(pose_local, transform);
 }
 
+double PlannerWaypoints::compute_length() const
+{
+  double total_cost = 0.0;
+  for (size_t i = 0; i < waypoints.size() - 1; ++i) {
+    const auto pose_a = waypoints.at(i);
+    const auto pose_b = waypoints.at(i + 1);
+    total_cost += tier4_autoware_utils::calcDistance2d(pose_a.pose, pose_b.pose);
+  }
+  return total_cost;
+}
+
 void AbstractPlanningAlgorithm::setMap(const nav_msgs::msg::OccupancyGrid & costmap)
 {
   costmap_ = costmap;
@@ -117,10 +128,10 @@ void AbstractPlanningAlgorithm::setMap(const nav_msgs::msg::OccupancyGrid & cost
 }
 
 void AbstractPlanningAlgorithm::computeCollisionIndexes(
-  int theta_index, std::vector<IndexXY> & indexes_2d)
+  int theta_index, std::vector<IndexXY> & indexes_2d) const
 {
   IndexXYT base_index{0, 0, theta_index};
-  const VehicleShape & vehicle_shape = planner_common_param_.vehicle_shape;
+  const VehicleShape & vehicle_shape = collision_vehicle_shape_;
 
   // Define the robot as rectangle
   const double back = -1.0 * vehicle_shape.base2back;
@@ -158,7 +169,7 @@ void AbstractPlanningAlgorithm::computeCollisionIndexes(
   addIndex2d(front, left);
 }
 
-bool AbstractPlanningAlgorithm::detectCollision(const IndexXYT & base_index)
+bool AbstractPlanningAlgorithm::detectCollision(const IndexXYT & base_index) const
 {
   if (coll_indexes_table_.empty()) {
     std::cerr << "[abstract_algorithm] setMap has not yet been done." << std::endl;
@@ -180,7 +191,7 @@ bool AbstractPlanningAlgorithm::detectCollision(const IndexXYT & base_index)
 }
 
 bool AbstractPlanningAlgorithm::hasObstacleOnTrajectory(
-  const geometry_msgs::msg::PoseArray & trajectory)
+  const geometry_msgs::msg::PoseArray & trajectory) const
 {
   for (const auto & pose : trajectory.poses) {
     const auto pose_local = global2local(costmap_, pose);

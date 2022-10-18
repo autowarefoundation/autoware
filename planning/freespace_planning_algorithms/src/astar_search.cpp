@@ -1,4 +1,4 @@
-// Copyright 2015-2019 Autoware Foundation
+// Copyright 2015-2019 Autoware Foundation. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,9 +31,11 @@ namespace freespace_planning_algorithms
 double calcReedsSheppDistance(
   const geometry_msgs::msg::Pose & p1, const geometry_msgs::msg::Pose & p2, double radius)
 {
-  auto rs_space = ReedsSheppStateSpace(radius);
-  ReedsSheppStateSpace::StateXYT pose0{p1.position.x, p1.position.y, tf2::getYaw(p1.orientation)};
-  ReedsSheppStateSpace::StateXYT pose1{p2.position.x, p2.position.y, tf2::getYaw(p2.orientation)};
+  const auto rs_space = ReedsSheppStateSpace(radius);
+  const ReedsSheppStateSpace::StateXYT pose0{
+    p1.position.x, p1.position.y, tf2::getYaw(p1.orientation)};
+  const ReedsSheppStateSpace::StateXYT pose1{
+    p2.position.x, p2.position.y, tf2::getYaw(p2.orientation)};
   return rs_space.distance(pose0, pose1);
 }
 
@@ -95,8 +97,9 @@ AstarSearch::TransitionTable createTransitionTable(
   for (int i = 0; i < turning_radius_size + 1; ++i) {
     double R = R_min + i * dR;
     double step = R * dtheta;
-    NodeUpdate forward_left{R * sin(dtheta), R * (1 - cos(dtheta)), dtheta, step, true, false};
-    NodeUpdate forward_right = forward_left.flipped();
+    const NodeUpdate forward_left{
+      R * sin(dtheta), R * (1 - cos(dtheta)), dtheta, step, true, false};
+    const NodeUpdate forward_right = forward_left.flipped();
     forward_node_candidates.push_back(forward_left);
     forward_node_candidates.push_back(forward_right);
   }
@@ -119,8 +122,9 @@ AstarSearch::TransitionTable createTransitionTable(
 }
 
 AstarSearch::AstarSearch(
-  const PlannerCommonParam & planner_common_param, const AstarParam & astar_param)
-: AbstractPlanningAlgorithm(planner_common_param),
+  const PlannerCommonParam & planner_common_param, const VehicleShape & collision_vehicle_shape,
+  const AstarParam & astar_param)
+: AbstractPlanningAlgorithm(planner_common_param, collision_vehicle_shape),
   astar_param_(astar_param),
   goal_node_(nullptr),
   use_reeds_shepp_(true)
@@ -211,14 +215,14 @@ bool AstarSearch::setGoalNode()
   return true;
 }
 
-double AstarSearch::estimateCost(const geometry_msgs::msg::Pose & pose)
+double AstarSearch::estimateCost(const geometry_msgs::msg::Pose & pose) const
 {
   double total_cost = 0.0;
   // Temporarily, until reeds_shepp gets stable.
   if (use_reeds_shepp_) {
-    double radius = (planner_common_param_.minimum_turning_radius +
-                     planner_common_param_.maximum_turning_radius) *
-                    0.5;
+    const double radius = (planner_common_param_.minimum_turning_radius +
+                           planner_common_param_.maximum_turning_radius) *
+                          0.5;
     total_cost +=
       calcReedsSheppDistance(pose, goal_pose_, radius) * astar_param_.distance_heuristic_weight;
   } else {
@@ -329,23 +333,7 @@ void AstarSearch::setPath(const AstarNode & goal_node)
   }
 }
 
-bool AstarSearch::hasFeasibleSolution()
-{
-  if (goal_node_ == nullptr) {
-    return false;
-  }
-  const AstarNode * node = goal_node_;
-  while (node != nullptr) {
-    auto index = pose2index(costmap_, node2pose(*node), planner_common_param_.theta_size);
-    if (isOutOfRange(index) || detectCollision(index)) {
-      return false;
-    }
-    node = node->parent;
-  }
-  return true;
-}
-
-bool AstarSearch::isGoal(const AstarNode & node)
+bool AstarSearch::isGoal(const AstarNode & node) const
 {
   const double lateral_goal_range = planner_common_param_.lateral_goal_range / 2.0;
   const double longitudinal_goal_range = planner_common_param_.longitudinal_goal_range / 2.0;

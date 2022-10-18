@@ -42,6 +42,8 @@ None
 
 | Parameter                    | Type   | Description                                                                     |
 | ---------------------------- | ------ | ------------------------------------------------------------------------------- |
+| `planning_algorithms`        | string | algorithms used in the node                                                     |
+| `vehicle_shape_margin_m`     | float  | collision margin in planning algorithm                                          |
 | `update_rate`                | double | timer's update rate                                                             |
 | `waypoints_velocity`         | double | velocity in output trajectory (currently, only constant velocity is supported)  |
 | `th_arrived_distance_m`      | double | threshold distance to check if vehicle has arrived at the trajectory's endpoint |
@@ -56,12 +58,9 @@ None
 
 | Parameter                 | Type   | Description                                        |
 | ------------------------- | ------ | -------------------------------------------------- |
-| `planning_algorithms`     | string | algorithms used in the node                        |
 | `time_limit`              | double | time limit of planning                             |
-| `robot_length`            | double | robot length                                       |
-| `robot_width`             | double | robot width                                        |
-| `robot_base2back`         | double | distance from robot's back to robot's base_link    |
 | `minimum_turning_radius`  | double | minimum turning radius of robot                    |
+| `maximum_turning_radius`  | double | maximum turning radius of robot                    |
 | `theta_size`              | double | the number of angle's discretization               |
 | `lateral_goal_range`      | double | goal range of lateral position                     |
 | `longitudinal_goal_range` | double | goal range of longitudinal position                |
@@ -77,6 +76,16 @@ None
 | `only_behind_solutions`     | bool   | whether restricting the solutions to be behind the goal |
 | `use_back`                  | bool   | whether using backward trajectory                       |
 | `distance_heuristic_weight` | double | heuristic weight for estimating node's cost             |
+
+#### RRT\* search parameters
+
+| Parameter               | Type   | Description                                                                   |
+| ----------------------- | ------ | ----------------------------------------------------------------------------- |
+| `max planning time`     | double | maximum planning time [msec] (used only when `enable_update` is set `true`)   |
+| `enable_update`         | bool   | whether update after feasible solution found until `max_planning time` elapse |
+| `use_informed_sampling` | bool   | Use informed RRT\* (of Gammmell et al.)                                       |
+| `neighbour_radius`      | double | neighbour radius of RRT\* algorithm                                           |
+| `margin`                | double | safety margin ensured in path's collision checking in RRT\* algorithm         |
 
 ### Flowchart
 

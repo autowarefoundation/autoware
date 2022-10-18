@@ -32,6 +32,7 @@
 #define FREESPACE_PLANNER__FREESPACE_PLANNER_NODE_HPP_
 
 #include <freespace_planning_algorithms/astar_search.hpp>
+#include <freespace_planning_algorithms/rrtstar.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <vehicle_info_util/vehicle_info_util.hpp>
 
@@ -66,7 +67,11 @@ using autoware_auto_planning_msgs::msg::HADMapRoute;
 using autoware_auto_planning_msgs::msg::Trajectory;
 using freespace_planning_algorithms::AbstractPlanningAlgorithm;
 using freespace_planning_algorithms::AstarParam;
+using freespace_planning_algorithms::AstarSearch;
 using freespace_planning_algorithms::PlannerCommonParam;
+using freespace_planning_algorithms::RRTStar;
+using freespace_planning_algorithms::RRTStarParam;
+using freespace_planning_algorithms::VehicleShape;
 using geometry_msgs::msg::PoseArray;
 using geometry_msgs::msg::PoseStamped;
 using geometry_msgs::msg::TransformStamped;
@@ -83,7 +88,7 @@ struct NodeParam
   double th_arrived_distance_m;
   double th_stopped_time_sec;
   double th_stopped_velocity_mps;
-  double th_course_out_distance_m;
+  double th_course_out_distance_m;  // collision margin [m]
   double vehicle_shape_margin_m;
   bool replan_when_obstacle_found;
   bool replan_when_course_out;
@@ -113,8 +118,7 @@ private:
 
   // params
   NodeParam node_param_;
-  PlannerCommonParam planner_common_param_;
-  AstarParam astar_param_;
+  VehicleShape vehicle_shape_;
 
   // variables
   std::unique_ptr<AbstractPlanningAlgorithm> algo_;
@@ -137,8 +141,7 @@ private:
   std::deque<Odometry::ConstSharedPtr> odom_buffer_;
 
   // functions used in the constructor
-  void getPlanningCommonParam();
-  void getAstarParam();
+  PlannerCommonParam getPlannerCommonParam();
 
   // functions, callback
   void onRoute(const HADMapRoute::ConstSharedPtr msg);

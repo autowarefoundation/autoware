@@ -15,120 +15,210 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import csv
+import argparse
+from dataclasses import dataclass
+from math import asin
+from math import atan2
 from math import cos
 from math import sin
+import os
+import re
+import subprocess
+from typing import Dict
+from typing import Tuple
 
 from geometry_msgs.msg import Pose
+from geometry_msgs.msg import PoseArray
 import matplotlib.pyplot as plt
-from nav_msgs.msg import MapMetaData
 from nav_msgs.msg import OccupancyGrid
 import numpy as np
+from rclpy.serialization import deserialize_message
+import rosbag2_py
+from rosidl_runtime_py.utilities import get_message
+from std_msgs.msg import Float64
 
 
-class CarModel(object):
-    def __init__(self, length=5.5, width=2.75, base2back=1.5):
-        self.length = length
-        self.width = width
-        self.base2back = base2back
+@dataclass
+class ProblemDescription:
+    costmap: OccupancyGrid
+    start: Pose
+    goal: Pose
+    trajectory: PoseArray
+    vehicle_length: Float64
+    vehicle_width: Float64
+    vehicle_base2back: Float64
+    elapsed_time: Float64
 
-    def _get_four_points(self):
+    @classmethod
+    def from_rosbag_path(cls, path: str) -> "ProblemDescription":
+        # ref: rosbag2/rosbag2_py/test/test_sequential_reader.py
+        storage_options, converter_options = cls.get_rosbag_options(bag_path)
+        reader = rosbag2_py.SequentialReader()
+        reader.open(storage_options, converter_options)
+        topic_types = reader.get_all_topics_and_types()
+
+        type_map = {topic_types[i].name: topic_types[i].type for i in range(len(topic_types))}
+        message_map = {}
+
+        while reader.has_next():
+            (topic, data, t) = reader.read_next()
+            msg_type = get_message(type_map[topic])
+            msg = deserialize_message(data, msg_type)
+            message_map[topic] = msg
+
+        return cls(**message_map)
+
+    @staticmethod
+    def get_rosbag_options(path: str, serialization_format="cdr"):
+        # copied from rosbag2/rosbag2_py/test/test_sequential_reader.py
+        storage_options = rosbag2_py.StorageOptions(uri=path, storage_id="sqlite3")
+
+        converter_options = rosbag2_py.ConverterOptions(
+            input_serialization_format=serialization_format,
+            output_serialization_format=serialization_format,
+        )
+
+        return storage_options, converter_options
+
+
+@dataclass
+class VehicleModel:
+    length: float
+    width: float
+    base2back: float
+
+    @classmethod
+    def from_problem_description(cls, pd: ProblemDescription) -> "VehicleModel":
+        return cls(pd.vehicle_length.data, pd.vehicle_width.data, pd.vehicle_base2back.data)
+
+    def get_vertices(self, pose: Pose) -> np.ndarray:
+        x, y, yaw = self.posemsg_to_nparr(pose)
+
         back = -1.0 * self.base2back
         front = self.length - self.base2back
         right = -0.5 * self.width
         left = 0.5 * self.width
-        P = np.array([[back, left], [back, right], [front, right], [front, left]])
-        return P
+        vertices_local = np.array([[back, left], [back, right], [front, right], [front, left]])
 
-    def get_four_points(self, pos, yaw=0.0):
         R_mat = np.array([[cos(yaw), -sin(yaw)], [sin(yaw), cos(yaw)]])
-        pos = np.array(pos)
-        P_ = self._get_four_points()
-        P = P_.dot(R_mat.T) + pos[None, :]
-        return P
+        vertices_global = vertices_local.dot(R_mat.T) + np.array([x, y])
+        return vertices_global
+
+    def plot_pose(self, pose: Pose, ax, color="black", lw=1):
+        x = pose.position.x
+        y = pose.position.y
+        V = self.get_vertices(pose)
+        ax.scatter(x, y, c=color, s=2)
+        for idx_pair in [[0, 1], [1, 2], [2, 3], [3, 0]]:
+            i, j = idx_pair
+            ax.plot([V[i, 0], V[j, 0]], [V[i, 1], V[j, 1]], color=color, linewidth=lw)
+
+    @staticmethod
+    def euler_from_quaternion(quaternion):
+        x = quaternion.x
+        y = quaternion.y
+        z = quaternion.z
+        w = quaternion.w
+
+        sinr_cosp = 2 * (w * x + y * z)
+        cosr_cosp = 1 - 2 * (x * x + y * y)
+        roll = atan2(sinr_cosp, cosr_cosp)
+
+        sinp = 2 * (w * y - z * x)
+        pitch = asin(sinp)
+
+        siny_cosp = 2 * (w * z + x * y)
+        cosy_cosp = 1 - 2 * (y * y + z * z)
+        yaw = atan2(siny_cosp, cosy_cosp)
+        return roll, pitch, yaw
+
+    @staticmethod
+    def posemsg_to_nparr(pose_msg: Pose) -> Tuple[float, float, float]:
+        _, _, yaw = VehicleModel.euler_from_quaternion(pose_msg.orientation)
+        return pose_msg.position.x, pose_msg.position.y, yaw
 
 
-def create_costmap_msg():
-    costmap_msg = OccupancyGrid()
+def plot_problem(pd: ProblemDescription, ax, meta_info):
+    info = pd.costmap.info
+    n_grid = np.array([info.width, info.height])
+    res = info.resolution
+    origin = info.origin
+    arr = np.array(pd.costmap.data).reshape((n_grid[1], n_grid[0]))
+    b_min = np.array([origin.position.x, origin.position.y])
+    b_max = b_min + n_grid * res
 
-    origin = Pose()
-    origin.orientation.w = 1.0
+    x_lin, y_lin = [np.linspace(b_min[i], b_max[i], n_grid[i]) for i in range(2)]
+    X, Y = np.meshgrid(x_lin, y_lin)
+    ax.contourf(X, Y, arr, cmap="Greys")
 
-    info = MapMetaData()
-    info.width = 150
-    info.height = 150
-    info.resolution = 0.2
-    info.origin = origin
-    costmap_msg.info = info
+    vmodel = VehicleModel.from_problem_description(pd)
+    vmodel.plot_pose(pd.start, ax, "green")
+    vmodel.plot_pose(pd.goal, ax, "red")
 
-    data = np.zeros((info.height, info.width), dtype=int)
-    data[:, :10] = 100
-    data[:, -10:] = 100
-    data[:10, :] = 100
-    data[-10:, :] = 100
-    costmap_msg.data = data.flatten().tolist()
-    return costmap_msg
+    for pose in pd.trajectory.poses:
+        vmodel.plot_pose(pose, ax, "blue", 0.5)
+
+    text = "elapsed : {0} [msec]".format(int(round(pd.elapsed_time.data)))
+    ax.text(0.3, 0.3, text, fontsize=15, color="red")
+
+    ax.text(0.3, b_max[1] - 1.5, meta_info, fontsize=15, color="red")
+
+    ax.axis("equal")
+    ax.set_xlim([b_min[0], b_max[0]])
+    ax.set_ylim([b_min[1], b_max[1]])
 
 
-class Plotter(object):
-    def __init__(self, msg):
-        info = msg.info
-        n_grid = np.array([info.width, info.height])
-        res = info.resolution
-        origin = info.origin
-
-        tmp = np.array(msg.data).reshape((n_grid[1], n_grid[0]))  # about to be transposed!!
-
-        self.arr = tmp  # [IMPORTANT] !!
-        self.b_min = np.array([origin.position.x, origin.position.y])
-        self.b_max = self.b_min + n_grid * res
-        self.n_grid = n_grid
-        self.origin = origin
-
-    def plot(self, pose_start=None, pose_goal=None, pose_seq=None, plan_duration=None):
-        fig, ax = plt.subplots()
-        x_lin, y_lin = [np.linspace(self.b_min[i], self.b_max[i], self.n_grid[i]) for i in range(2)]
-        X, Y = np.meshgrid(x_lin, y_lin)
-        ax.contourf(X, Y, self.arr, cmap="Greys")
-
-        car = CarModel()
-
-        def plot_pose(pose, color, lw=1.0):
-            pos_xy = pose[:2]
-            yaw = pose[2]
-            P = car.get_four_points(pos_xy, yaw=yaw)
-            ax.scatter(pos_xy[0], pos_xy[1], c=color, s=2)
-            for idx_pair in [[0, 1], [1, 2], [2, 3], [3, 0]]:
-                i, j = idx_pair
-                ax.plot([P[i, 0], P[j, 0]], [P[i, 1], P[j, 1]], color=color, linewidth=lw)
-
-        if pose_start:
-            plot_pose(pose_start, "green")
-        if pose_goal:
-            plot_pose(pose_goal, "red")
-
-        if pose_seq is not None:
-            for pose in pose_seq:
-                plot_pose(pose, "blue", lw=0.5)
-
-        ax.axis("equal")
-        ax.text(4, 25, "elapsed : {0} [sec]".format(plan_duration * 1e-3), fontsize=12)
+def create_concate_png(src_list, dest, is_horizontal):
+    opt = "+append" if is_horizontal else "-append"
+    cmd = ["convert", opt]
+    for src in src_list:
+        cmd.append(src)
+    cmd.append(dest)
+    subprocess.Popen(cmd)
 
 
 if __name__ == "__main__":
-    for postfix in ["single", "multi"]:
-        for idx in range(4):
-            pose_list = []
-            file_base = "/tmp/result_{0}{1}".format(postfix, idx)
-            with open(file_base + ".txt", "r") as f:
-                reader = csv.reader(f)
-                plan_duration = float(next(reader)[0])
-                pose_start = [float(e) for e in next(reader)]
-                pose_goal = [float(e) for e in next(reader)]
-                for row in reader:
-                    pose_list.append([float(e) for e in row])
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--concat", action="store_true", help="concat pngs (requires image magick)")
+    args = parser.parse_args()
+    concat = args.concat
 
-            costmap_msg = create_costmap_msg()
-            plotter = Plotter(costmap_msg)
-            plotter.plot(pose_start, pose_goal, pose_list, plan_duration)
-            plt.savefig(file_base + ".png")
+    dir_name_table: Dict[Tuple[str, int], str] = {}
+    prefix = "fpalgos"
+    for cand_dir in os.listdir("/tmp"):
+        if cand_dir.startswith(prefix):
+            m = re.match(r"{}-(\w+)-case([0-9])".format(prefix), cand_dir)
+            assert m is not None
+            algo_name = m.group(1)
+            case_number = int(m.group(2))
+            dir_name_table[(algo_name, case_number)] = cand_dir
+
+    algo_names = sorted({key[0] for key in dir_name_table.keys()})
+    case_indices = sorted({key[1] for key in dir_name_table.keys()})
+    n_algo = len(algo_names)
+    n_case = len(case_indices)
+
+    for i in range(n_algo):
+        algo_name = algo_names[i]
+        algo_pngs = []
+        for j in range(n_case):
+
+            fig, ax = plt.subplots()
+
+            result_dir = dir_name_table[(algo_name, j)]
+            bag_path = os.path.join("/tmp", result_dir)
+
+            pd = ProblemDescription.from_rosbag_path(bag_path)
+
+            meta_info = "{}-case{}".format(algo_name, j)
+            plot_problem(pd, ax, meta_info)
+            fig.tight_layout()
+
+            file_name = os.path.join("/tmp", "plot-{}.png".format(meta_info))
+            algo_pngs.append(file_name)
+            plt.savefig(file_name)
+            print("saved to {}".format(file_name))
+
+        algowise_summary_file = os.path.join("/tmp", "summary-{}.png".format(algo_name))
+        if concat:
+            create_concate_png(algo_pngs, algowise_summary_file, True)
